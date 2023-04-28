@@ -757,7 +757,9 @@
     <None Include="shader\SMAA.fxh">
       <Filter>shaders</Filter>
     </None>
-    <None Include="res\Default VPinballX.ini" />
+    <None Include="res\Default VPinballX.ini">
+      <Filter>res</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="inc">
