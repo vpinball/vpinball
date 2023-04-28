@@ -956,7 +956,7 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    if (m_stereo3D == STEREO_VR) {
       //AMD Debugging
       colorFormat renderBufferFormatVR;
-      const int textureModeVR = LoadValueIntWithDefault(regKey[RegName::Player], "textureModeVR"s, 1);
+      const int textureModeVR = LoadValueIntWithDefault(regKey[RegName::Player], "EyeFBFormat"s, 1);
       switch (textureModeVR) {
       case 0:
          renderBufferFormatVR = RGB8;
@@ -1286,11 +1286,11 @@ RenderDevice::~RenderDevice()
    if (m_pHMD)
    {
       turnVROff();
-      SaveValueFloat(regKey[RegName::Player], "VRSlope"s, m_slope);
-      SaveValueFloat(regKey[RegName::Player], "VROrientation"s, m_orientation);
-      SaveValueFloat(regKey[RegName::Player], "VRTableX"s, m_tablex);
-      SaveValueFloat(regKey[RegName::Player], "VRTableY"s, m_tabley);
-      SaveValueFloat(regKey[RegName::Player], "VRTableZ"s, m_tablez);
+      SaveValueFloat(regKey[RegName::PlayerVR], "Slope"s, m_slope);
+      SaveValueFloat(regKey[RegName::PlayerVR], "Orientation"s, m_orientation);
+      SaveValueFloat(regKey[RegName::PlayerVR], "TableX"s, m_tablex);
+      SaveValueFloat(regKey[RegName::PlayerVR], "TableY"s, m_tabley);
+      SaveValueFloat(regKey[RegName::PlayerVR], "TableZ"s, m_tablez);
    }
 #endif
 
@@ -2019,11 +2019,11 @@ void RenderDevice::InitVR() {
       throw(noDevicesFound);
    }
 
-   m_slope = LoadValueFloatWithDefault(regKey[RegName::Player], "VRSlope"s, 6.5f);
-   m_orientation = LoadValueFloatWithDefault(regKey[RegName::Player], "VROrientation"s, 0.0f);
-   m_tablex = LoadValueFloatWithDefault(regKey[RegName::Player], "VRTableX"s, 0.0f);
-   m_tabley = LoadValueFloatWithDefault(regKey[RegName::Player], "VRTableY"s, 0.0f);
-   m_tablez = LoadValueFloatWithDefault(regKey[RegName::Player], "VRTableZ"s, 80.0f);
+   m_slope = LoadValueFloatWithDefault(regKey[RegName::Player], "Slope"s, 6.5f);
+   m_orientation = LoadValueFloatWithDefault(regKey[RegName::Player], "Orientation"s, 0.0f);
+   m_tablex = LoadValueFloatWithDefault(regKey[RegName::Player], "TableX"s, 0.0f);
+   m_tabley = LoadValueFloatWithDefault(regKey[RegName::Player], "TableY"s, 0.0f);
+   m_tablez = LoadValueFloatWithDefault(regKey[RegName::Player], "TableZ"s, 80.0f);
 
    updateTableMatrix();
 }
