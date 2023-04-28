@@ -194,7 +194,6 @@ void VPinball::GetMyPath()
    m_wzMyPath = wzPath;
 }
 
-#include <shlobj_core.h>
 void VPinball::GetMyPrefPath()
 {
 #ifdef WIN32
