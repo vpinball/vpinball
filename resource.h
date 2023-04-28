@@ -1398,11 +1398,14 @@
 #define DZVALUE                         65535
 #define DZName                          65535
 
+#define INI_FILE                        670
+#define IDR_DEFAULT_INI                 671
+
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        670
+#define _APS_NEXT_RESOURCE_VALUE        672
 #define _APS_NEXT_COMMAND_VALUE         4028
 #define _APS_NEXT_CONTROL_VALUE         910
 #define _APS_NEXT_SYMED_VALUE           188

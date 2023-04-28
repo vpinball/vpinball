@@ -47,8 +47,8 @@ static const string regKey[RegName::Num]
        "DefaultProps\\Bumper"s, "DefaultProps\\Decal"s, "DefaultProps\\EMReel"s, "DefaultProps\\Flasher"s, "DefaultProps\\Flipper"s, "DefaultProps\\Gate"s, "DefaultProps\\HitTarget"s, "DefaultProps\\Kicker"s, "DefaultProps\\Light"s, "DefaultProps\\LightSequence"s, "DefaultProps\\Plunger"s, "DefaultProps\\Primitive"s, "DefaultProps\\Ramp"s, "DefaultProps\\Rubber"s, "DefaultProps\\Spinner"s, "DefaultProps\\Wall"s, "DefaultProps\\Target"s, "DefaultProps\\TextBox"s, "DefaultProps\\Timer"s, "DefaultProps\\Trigger"s };
 
 
-void SaveXMLregistry(const string &path);
-void InitXMLregistry(const string &path);
+void SaveRegistry(const string &path);
+void InitRegistry(const string &path);
 
 
 HRESULT LoadValue(const string &szKey, const string &zValue, string &buffer);

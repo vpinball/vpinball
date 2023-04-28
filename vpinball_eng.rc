@@ -20,6 +20,8 @@
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #pragma code_page(1252)
 
+IDR_DEFAULT_INI INI_FILE "res/Default VPinballX.ini"
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // Dialog
