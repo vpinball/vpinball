@@ -193,7 +193,7 @@ void Sampler::SetName(const string& name)
 {
    #ifdef ENABLE_SDL
    if (GLAD_GL_VERSION_4_3)
-      glObjectLabel(GL_TEXTURE, m_texture, name.length(), name.c_str());
+      glObjectLabel(GL_TEXTURE, m_texture, (GLsizei) name.length(), name.c_str());
    #endif
 }
 

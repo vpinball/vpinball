@@ -132,7 +132,7 @@ RenderTarget::RenderTarget(RenderDevice* rd, const string& name, const int width
    }
 
    if (GLAD_GL_VERSION_4_3)
-      glObjectLabel(GL_FRAMEBUFFER, m_framebuffer, name.length(), name.c_str());
+      glObjectLabel(GL_FRAMEBUFFER, m_framebuffer, (GLsizei) name.length(), name.c_str());
 
    constexpr GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
    glDrawBuffers(1, DrawBuffers);

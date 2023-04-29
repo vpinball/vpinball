@@ -91,7 +91,7 @@ void RenderCommand::Execute(const bool log)
       if (m_rd->IsVRReady())
       {
          RenderTarget* leftTexture = m_rd->GetOffscreenVR(0);
-         vr::Texture_t leftEyeTexture = { (void*)leftTexture->GetColorSampler()->GetCoreTexture(), vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
+         vr::Texture_t leftEyeTexture = { (void*)(__int64)leftTexture->GetColorSampler()->GetCoreTexture(), vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
          vr::EVRCompositorError errorLeft = vr::VRCompositor()->Submit(vr::Eye_Left, &leftEyeTexture);
          if (errorLeft != vr::VRCompositorError_None)
          {
@@ -101,7 +101,7 @@ void RenderCommand::Execute(const bool log)
          }
 
          RenderTarget* rightTexture = m_rd->GetOffscreenVR(1);
-         vr::Texture_t rightEyeTexture = { (void*)rightTexture->GetColorSampler()->GetCoreTexture(), vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
+         vr::Texture_t rightEyeTexture = { (void*)(__int64)rightTexture->GetColorSampler()->GetCoreTexture(), vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
          vr::EVRCompositorError errorRight = vr::VRCompositor()->Submit(vr::Eye_Right, &rightEyeTexture);
          if (errorRight != vr::VRCompositorError_None)
          {
