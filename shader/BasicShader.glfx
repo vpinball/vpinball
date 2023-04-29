@@ -335,13 +335,15 @@ out vec3 normal;
 in vec3 tablePos_gs[];
 out float3 tablePos;
 
+uniform float fKickerScale;
+
 void main()
 {
    gl_ViewportIndex = gl_InvocationID;
    for (int i=0;i<gl_in.length();i++) {
       //Default
       float4 P2 = gl_in[i].gl_Position;
-      P2.z -= 30.0*1.0; // 1.0 = fKickerScale
+      P2.z -= 30.0 * fKickerScale;
       gl_Position.xyw = (matWorldViewProj[gl_InvocationID]*gl_in[i].gl_Position).xyw;
       gl_Position.z = (matWorldViewProj[gl_InvocationID]*P2).z;
       //Custom
