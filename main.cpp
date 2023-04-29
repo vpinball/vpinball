@@ -256,9 +256,6 @@ public:
 
       IsOnWine(); // init static variable in there
 
-      SetupLogger();
-      PLOGI << "Starting VPX...";
-
 #ifdef _MSC_VER
 #if _WIN32_WINNT >= 0x0400 & defined(_ATL_FREE_THREADED)
       const HRESULT hRes = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
@@ -476,6 +473,9 @@ public:
       free(szArglist);
 
       InitRegistry(szIniFileName);
+
+      SetupLogger();
+      PLOGI << "Starting VPX...";
 
       // Start VP with file dialog open and then also playing that one?
       const bool stos = LoadValueBoolWithDefault(regKey[RegName::Editor], "SelectTableOnStart"s, true);
