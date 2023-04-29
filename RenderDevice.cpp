@@ -956,7 +956,7 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    if (m_stereo3D == STEREO_VR) {
       //AMD Debugging
       colorFormat renderBufferFormatVR;
-      const int textureModeVR = LoadValueIntWithDefault(regKey[RegName::Player], "EyeFBFormat"s, 1);
+      const int textureModeVR = LoadValueIntWithDefault(regKey[RegName::PlayerVR], "EyeFBFormat"s, 1);
       switch (textureModeVR) {
       case 0:
          renderBufferFormatVR = RGB8;
@@ -2019,11 +2019,11 @@ void RenderDevice::InitVR() {
       throw(noDevicesFound);
    }
 
-   m_slope = LoadValueFloatWithDefault(regKey[RegName::Player], "Slope"s, 6.5f);
-   m_orientation = LoadValueFloatWithDefault(regKey[RegName::Player], "Orientation"s, 0.0f);
-   m_tablex = LoadValueFloatWithDefault(regKey[RegName::Player], "TableX"s, 0.0f);
-   m_tabley = LoadValueFloatWithDefault(regKey[RegName::Player], "TableY"s, 0.0f);
-   m_tablez = LoadValueFloatWithDefault(regKey[RegName::Player], "TableZ"s, 80.0f);
+   m_slope = LoadValueFloatWithDefault(regKey[RegName::PlayerVR], "Slope"s, 6.5f);
+   m_orientation = LoadValueFloatWithDefault(regKey[RegName::PlayerVR], "Orientation"s, 0.0f);
+   m_tablex = LoadValueFloatWithDefault(regKey[RegName::PlayerVR], "TableX"s, 0.0f);
+   m_tabley = LoadValueFloatWithDefault(regKey[RegName::PlayerVR], "TableY"s, 0.0f);
+   m_tablez = LoadValueFloatWithDefault(regKey[RegName::PlayerVR], "TableZ"s, 80.0f);
 
    updateTableMatrix();
 }
