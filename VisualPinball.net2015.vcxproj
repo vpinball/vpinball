@@ -1251,7 +1251,6 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="inc\Sci_Position.h" />
     <ClInclude Include="inc\serial.h" />
     <ClInclude Include="inc\stb_image.h" />
-    <ClInclude Include="inc\stb_image_write.h" />
     <ClInclude Include="inc\ThreadPool.h" />
     <ClInclude Include="inc\tinyxml2\tinyxml2.h" />
     <ClInclude Include="inc\win32xx\include\default_resource.h" />

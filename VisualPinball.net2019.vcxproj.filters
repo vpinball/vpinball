@@ -1617,9 +1617,6 @@
     <ClInclude Include="captureExt.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="inc\stb_image_write.h">
-      <Filter>inc</Filter>
-    </ClInclude>
     <ClInclude Include="inc\glad\glad.h">
       <Filter>headers</Filter>
     </ClInclude>
