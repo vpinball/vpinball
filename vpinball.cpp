@@ -6,6 +6,7 @@
 #include "resource.h"
 #include "KeysConfigDialog.h"
 #include <filesystem>
+#include "shlobj_core.h"
 
 #if defined(IMSPANISH)
 #define TOOLBAR_WIDTH 152
@@ -117,7 +118,7 @@ VPinball::VPinball()
    m_hbmInPlayMode = nullptr;
 
    GetMyPath();				//Store path of vpinball.exe in m_szMyPath and m_wzMyPath
-   GetMyPrefPath();			//Store preference path of vpinball.exe in m_szMyPath and m_wzMyPath
+   GetMyPrefPath();			//Store preference path of vpinball.exe in m_szMyPath
 
 #ifdef _WIN64
    m_scintillaDll = LoadLibrary("SciLexerVP64.DLL");
@@ -197,10 +198,17 @@ void VPinball::GetMyPath()
 void VPinball::GetMyPrefPath()
 {
 #ifdef WIN32
-   // Defaults to using the application directory
-   // This means that settings are per application install, this also needs this directory to be write enabled
-   // TODO we could defaults to AppData directory (see SDL_GetPrefPath implementation which is exactly what we would need)
+   // Use standard Windows AppData directory (to avoid requesting write permissions, and behave correctly for Windows restore,...)
+   // That would look something like: C:\Users\bob\AppData\Roaming\VPinballX\ 
+   TCHAR szPath[MAX_PATH];
    m_szMyPrefPath = m_szMyPath;
+   if (FAILED(SHGetFolderPath(NULL, CSIDL_APPDATA | CSIDL_FLAG_CREATE, NULL, 0, szPath)))
+   {
+      PLOGE << "Failed to get AppData location, using application folder for settings";
+      return;
+   }
+   PathAppend(szPath, TEXT("VPinballX"));
+   m_szMyPrefPath = string(szPath);
 #elif defined(__ANDROID__)
    char *szPrefPath = SDL_GetPrefPath(NULL, NULL);
    m_szMyPrefPath = szPrefPath;

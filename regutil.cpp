@@ -14,18 +14,22 @@ mINI::INIStructure ini;
 
 void InitRegistry(const string &path)
 {
-   mINI::INIFile file(path + "VPinballX.ini");
-   if (!file.read(ini))
+   mINI::INIFile file(path);
+   if (file.read(ini))
    {
+      PLOGI << "Settings file was loaded from '" << path << "'";
+   }
+   else
+   {
+      PLOGI << "Settings file was not found at '" << path << "' creating a default one";
 #ifdef WIN32
       // Load failed: initialize from a default setting file
-      PLOGI << "Settings file was not found at '" << path << "VPinballX.ini" << "' creating a default one";
       HMODULE handle = ::GetModuleHandle(NULL);
       HRSRC rc = ::FindResource(handle, MAKEINTRESOURCE(IDR_DEFAULT_INI), MAKEINTRESOURCE(INI_FILE));
       HGLOBAL rcData = ::LoadResource(handle, rc);
       DWORD size = ::SizeofResource(handle, rc);
       const char * data = static_cast<const char *>(::LockResource(rcData));
-      std::ofstream defaultFile(path + "VPinballX.ini");
+      std::ofstream defaultFile(path);
       defaultFile << data;
       defaultFile.close();
       if (!file.read(ini))
@@ -116,7 +120,7 @@ void InitRegistry(const string &path)
 
 void SaveRegistry(const string &path)
 {
-   mINI::INIFile file(path + "VPinballX.ini");
+   mINI::INIFile file(path);
    file.write(ini, true);
 }
 
@@ -215,7 +219,7 @@ void SaveRegistry(const string &path)
    tinyxml2::XMLPrinter prn;
    xmlDoc.Print(&prn);
 
-   std::ofstream myFile(path + "VPinballX.ini");
+   std::ofstream myFile(path);
    myFile << prn.CStr();
    myFile.close();
 }
@@ -223,7 +227,7 @@ void SaveRegistry(const string &path)
 void InitRegistry(const string &path)
 {
    std::stringstream buffer;
-   std::ifstream myFile(path + "VPinballX.ini");
+   std::ifstream myFile(path);
    if (myFile.is_open() && myFile.good())
    {
       buffer << myFile.rdbuf();

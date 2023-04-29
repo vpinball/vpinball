@@ -206,6 +206,7 @@ private:
    bool bgles;
    float fgles;
    string szTableFileName;
+   string szIniFileName;
    VPinball m_vpinball;
 
 public:
@@ -255,8 +256,6 @@ public:
 
       IsOnWine(); // init static variable in there
 
-      InitRegistry(m_vpinball.m_szMyPrefPath);
-
       SetupLogger();
       PLOGI << "Starting VPX...";
 
@@ -280,14 +279,9 @@ public:
       bgles = false;
 
       szTableFileName.clear();
-
-      // Start VP with file dialog open and then also playing that one?
-      const bool stos = LoadValueBoolWithDefault(regKey[RegName::Editor], "SelectTableOnStart"s, true);
-      if (stos)
-      {
-         file = true;
-         play = true;
-      }
+      
+      // Default ini path (can be overriden from command line)
+      szIniFileName = m_vpinball.m_szMyPrefPath + PATH_SEPARATOR_CHAR + "VPinballX.ini"s;
 
       int nArgs;
       LPSTR *szArglist = CommandLineToArgvA(GetCommandLine(), &nArgs);
@@ -298,7 +292,7 @@ public:
             || lstrcmpi(szArglist[i], _T("-Help")) == 0 || lstrcmpi(szArglist[i], _T("/Help")) == 0
             || lstrcmpi(szArglist[i], _T("-?")) == 0 || lstrcmpi(szArglist[i], _T("/?")) == 0)
          {
-            m_vpinball.MessageBox("-UnregServer  Unregister VP functions\n-RegServer  Register VP functions\n\n-DisableTrueFullscreen  Force-disable True Fullscreen setting\n-EnableTrueFullscreen  Force-enable True Fullscreen setting\n-Minimized  Start VP in the 'invisible' minimized window mode\n-ExtMinimized  Start VP in the 'invisible' minimized window mode, but with enabled Pause Menu\n-Primary  Force VP to render on the Primary/Pixel(0,0) Monitor\n\n-GLES [value]  Overrides the global emission scale (day/night setting, value range: 0.115..0.925)\n\n-LessCPUthreads  Limit the amount of parallel execution\n\n-Edit [filename]  Load file into VP\n-Play [filename]  Load and play file\n-PovEdit [filename]  Load and run file in camera mode, then export new pov on exit\n-Pov [filename]  Load, export pov and close\n-ExtractVBS [filename]  Load, export table script and close\n-c1 [customparam] .. -c9 [customparam]  Custom user parameters that can be accessed in the script via GetCustomParam(X)",
+            m_vpinball.MessageBox("-UnregServer  Unregister VP functions\n-RegServer  Register VP functions\n\n-DisableTrueFullscreen  Force-disable True Fullscreen setting\n-EnableTrueFullscreen  Force-enable True Fullscreen setting\n-Minimized  Start VP in the 'invisible' minimized window mode\n-ExtMinimized  Start VP in the 'invisible' minimized window mode, but with enabled Pause Menu\n-Primary  Force VP to render on the Primary/Pixel(0,0) Monitor\n\n-GLES [value]  Overrides the global emission scale (day/night setting, value range: 0.115..0.925)\n\n-LessCPUthreads  Limit the amount of parallel execution\n\n-Edit [filename]  Load file into VP\n-Play [filename]  Load and play file\n-PovEdit [filename]  Load and run file in camera mode, then export new pov on exit\n-Pov [filename]  Load, export pov and close\n-ExtractVBS [filename]  Load, export table script and close\n-Ini [filename] Use a custom settings file instead of loading it from the default location\n-c1 [customparam] .. -c9 [customparam]  Custom user parameters that can be accessed in the script via GetCustomParam(X)",
                  "Visual Pinball Usage", MB_OK);
             //run = false;
             exit(0);
@@ -400,6 +394,8 @@ public:
          const bool extractpov = (lstrcmpi(szArglist[i], _T("-Pov")) == 0 || lstrcmpi(szArglist[i], _T("/Pov")) == 0);
          const bool extractscript = (lstrcmpi(szArglist[i], _T("-ExtractVBS")) == 0 || lstrcmpi(szArglist[i], _T("/ExtractVBS")) == 0);
 
+         const bool ini = (lstrcmpi(szArglist[i], _T("-Ini")) == 0 || lstrcmpi(szArglist[i], _T("/Ini")) == 0);
+
          // global emission scale parameter handling
          if (gles && (i + 1 < nArgs))
          {
@@ -411,6 +407,30 @@ public:
 
             fgles = clamp((float)atof(lpszStr), 0.115f, 0.925f);
             bgles = true;
+         }
+
+         // user specified ini  handling
+         if (ini && (i + 1 < nArgs))
+         {
+            // Remove leading - or /
+            if ((szArglist[i + 1][0] == '-') || (szArglist[i + 1][0] == '/'))
+                 szIniFileName = szArglist[i + 1] + 1;
+            else
+                 szIniFileName = szArglist[i + 1];
+
+            // Remove " "
+            if (szIniFileName[0] == '"')
+                 szIniFileName = szIniFileName.substr(1, szIniFileName.size() - 1);
+
+            // Add current path
+            if (szIniFileName[1] != ':')
+            {
+                 char szLoadDir[MAXSTRING];
+                 GetCurrentDirectory(MAXSTRING, szLoadDir);
+                 szIniFileName = string(szLoadDir) + PATH_SEPARATOR_CHAR + szIniFileName;
+            }
+
+            ++i; // two params processed
          }
 
          // table name handling
@@ -454,6 +474,16 @@ public:
       }
 
       free(szArglist);
+
+      InitRegistry(szIniFileName);
+
+      // Start VP with file dialog open and then also playing that one?
+      const bool stos = LoadValueBoolWithDefault(regKey[RegName::Editor], "SelectTableOnStart"s, true);
+      if (stos)
+      {
+         file = true;
+         play = true;
+      }
 
       // load and register VP type library for COM integration
       char szFileName[MAXSTRING];
@@ -579,7 +609,7 @@ public:
          _Module.RevokeClassObjects();
          Sleep(THREADS_PAUSE); //wait for any threads to finish
 
-         SaveRegistry(m_vpinball.m_szMyPrefPath);
+         SaveRegistry(szIniFileName);
       }
       return 0;
    }
