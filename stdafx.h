@@ -19,6 +19,9 @@
 // Needed by ImPlot when using ImGUI
 #define IMGUI_DEFINE_MATH_OPERATORS
 
+// Needed to avoid duplicate definitions between ImGui and GLAD
+#define IMGUI_IMPL_OPENGL_LOADER_CUSTOM
+
 
 #define COMPRESS_MESHES // uses miniz for compressing the meshes
 
