@@ -34,7 +34,6 @@ BOOL RenderProbeDialog::OnInitDialog()
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Static Only");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Static & Balls");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Static & Unsynced Dynamic");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Static & Synced Dynamic");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Dynamic");
    SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 
@@ -146,7 +145,7 @@ INT_PTR RenderProbeDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
    case WM_HSCROLL:
    {
-      if ((HWND)lParam == GetDlgItem(IDC_ROUGHNESS_BASE).GetHwnd() || (HWND)lParam == GetDlgItem(IDC_ROUGHNESS_CLEAR_LABEL).GetHwnd())
+      if ((HWND)lParam == GetDlgItem(IDC_ROUGHNESS).GetHwnd())
       {
          auto sel = ListView_GetSelectionMark(hListHwnd);
          if (sel >= 0)
@@ -189,22 +188,14 @@ void RenderProbeDialog::LoadProbeToUI(RenderProbe *const pb)
    GetDlgItem(IDC_REFLECTION_PLANE_NZ).EnableWindow(type == RenderProbe::PLANE_REFLECTION);
    GetDlgItem(IDC_REFLECTION_PLANE_DIST).EnableWindow(type == RenderProbe::PLANE_REFLECTION);
    GetDlgItem(IDC_REFLECTION_MAX_LEVEL).EnableWindow(type == RenderProbe::PLANE_REFLECTION);
-   HWND hwnd = GetDlgItem(IDC_ROUGHNESS_BASE).GetHwnd();
+   HWND hwnd = GetDlgItem(IDC_ROUGHNESS).GetHwnd();
    SendMessage(hwnd, TBM_SETRANGE, fTrue, MAKELONG(0, 13 - 1));
    SendMessage(hwnd, TBM_SETTICFREQ, 1, 0);
    SendMessage(hwnd, TBM_SETLINESIZE, 0, 1);
    SendMessage(hwnd, TBM_SETPAGESIZE, 0, 1);
    SendMessage(hwnd, TBM_SETTHUMBLENGTH, 5, 0);
-   SendMessage(hwnd, TBM_SETPOS, TRUE, pb->GetBaseRoughness());
-   GetDlgItem(IDC_ROUGHNESS_BASE_LABEL).SetWindowText("Base: "s.append(std::to_string(pb->GetBaseRoughness())).c_str());
-   hwnd = GetDlgItem(IDC_ROUGHNESS_CLEAR).GetHwnd();
-   SendMessage(hwnd, TBM_SETRANGE, fTrue, MAKELONG(0, 13 - 1));
-   SendMessage(hwnd, TBM_SETTICFREQ, 1, 0);
-   SendMessage(hwnd, TBM_SETLINESIZE, 0, 1);
-   SendMessage(hwnd, TBM_SETPAGESIZE, 0, 1);
-   SendMessage(hwnd, TBM_SETTHUMBLENGTH, 5, 0);
-   SendMessage(hwnd, TBM_SETPOS, TRUE, pb->GetClearRoughness());
-   GetDlgItem(IDC_ROUGHNESS_CLEAR_LABEL).SetWindowText("Clear: "s.append(std::to_string(pb->GetClearRoughness())).c_str());
+   SendMessage(hwnd, TBM_SETPOS, TRUE, pb->GetRoughness());
+   GetDlgItem(IDC_ROUGHNESS_LABEL).SetWindowText("Level: "s.append(std::to_string(pb->GetRoughness())).c_str());
 }
 
 void RenderProbeDialog::SaveProbeFromUI(RenderProbe *const pb)
@@ -220,18 +211,16 @@ void RenderProbeDialog::SaveProbeFromUI(RenderProbe *const pb)
    LRESULT reflectionMode = SendMessage(GetDlgItem(IDC_REFLECTION_MAX_LEVEL).GetHwnd(), CB_GETCURSEL, 0, 0);
    if (reflectionMode == LB_ERR)
       reflectionMode = RenderProbe::REFL_STATIC;
-   const size_t roughness_base = SendMessage(GetDlgItem(IDC_ROUGHNESS_BASE).GetHwnd(), TBM_GETPOS, 0, 0);
-   const size_t roughness_clear = SendMessage(GetDlgItem(IDC_ROUGHNESS_CLEAR).GetHwnd(), TBM_GETPOS, 0, 0);
+   const size_t roughness = SendMessage(GetDlgItem(IDC_ROUGHNESS).GetHwnd(), TBM_GETPOS, 0, 0);
 
-   if (pb->GetType() != type || pb->GetReflectionMode() != reflectionMode || plane.x != vx || plane.y != vy || plane.z != vz || plane.w != vw || roughness_base != pb->GetBaseRoughness() || roughness_clear != pb->GetClearRoughness())
+   if (pb->GetType() != type || pb->GetReflectionMode() != reflectionMode || plane.x != vx || plane.y != vy || plane.z != vz || plane.w != vw || roughness != pb->GetRoughness())
    {
       plane.x = vx;
       plane.y = vy;
       plane.z = vz;
       plane.w = vw;
       pb->SetType(type);
-      pb->SetBaseRoughness((int)roughness_base);
-      pb->SetClearRoughness((int)roughness_clear);
+      pb->SetRoughness((int)roughness);
       pb->SetReflectionPlane(plane);
       pb->SetReflectionMode((RenderProbe::ReflectionMode)reflectionMode);
       CCO(PinTable) *const pt = g_pvp->GetActiveTable();
