@@ -278,7 +278,7 @@ public:
       szTableFileName.clear();
       
       // Default ini path (can be overriden from command line)
-      szIniFileName = m_vpinball.m_szMyPrefPath + PATH_SEPARATOR_CHAR + "VPinballX.ini"s;
+      szIniFileName = m_vpinball.m_szMyPrefPath + "VPinballX.ini"s;
 
       int nArgs;
       LPSTR *szArglist = CommandLineToArgvA(GetCommandLine(), &nArgs);
