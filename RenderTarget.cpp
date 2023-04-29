@@ -419,32 +419,3 @@ void RenderTarget::Activate(const bool ignoreStereo)
 #endif
    current_render_target = this;
 }
-
-#ifdef _DEBUG
-#ifdef ENABLE_SDL
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "inc/stb_image_write.h"
-#endif
-
-void RenderTarget::SaveToPng(string filename)
-{
-#ifdef ENABLE_SDL
-   bool rt_is_stereo = m_current_stereo_mode != -1 && m_current_stereo_mode != STEREO_OFF;
-   RenderTarget* rt = GetCurrentRenderTarget();
-   Activate(true);
-   glFlush();
-   GLsizei nrChannels = 3;
-   GLsizei stride = nrChannels * m_width;
-   stride += (stride % 4) ? (4 - stride % 4) : 0;
-   GLsizei bufferSize = stride * m_height;
-   std::vector<char> buffer(bufferSize);
-   glPixelStorei(GL_PACK_ALIGNMENT, 4);
-   glReadPixels(0, 0, m_width, m_height, GL_RGB, GL_UNSIGNED_BYTE, buffer.data());
-   stbi_flip_vertically_on_write(true);
-   stbi_write_png(filename.c_str(), m_width, m_height, nrChannels, buffer.data(), stride);
-   rt->Activate(!rt_is_stereo);
-#else
-   D3DXSaveSurfaceToFile(filename.c_str(), D3DXIFF_PNG, m_color_surface, nullptr, nullptr);
-#endif
-}
-#endif

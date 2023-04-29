@@ -31,10 +31,6 @@ public:
    bool HasDepth() const { return m_has_depth; }
    colorFormat GetColorFormat() const { return m_format; }
 
-#ifdef _DEBUG
-   void SaveToPng(string filename);
-#endif
-
 #ifdef ENABLE_SDL
    GLuint GetCoreFrameBuffer() const { return m_framebuffer; }
 #else
