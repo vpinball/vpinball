@@ -2330,8 +2330,7 @@ void PinTable::Play(const bool cameraMode)
    for (size_t i = 0; i < m_vrenderprobe.size(); i++)
    {
       RenderProbe *rp = new RenderProbe();
-      rp->SetBaseRoughness(m_vrenderprobe[i]->GetBaseRoughness());
-      rp->SetClearRoughness(m_vrenderprobe[i]->GetClearRoughness());
+      rp->SetRoughness(m_vrenderprobe[i]->GetRoughness());
       rp->SetType(m_vrenderprobe[i]->GetType());
       rp->SetName(m_vrenderprobe[i]->GetName());
       rp->SetReflectionMode(m_vrenderprobe[i]->GetReflectionMode());

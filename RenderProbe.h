@@ -29,10 +29,8 @@ public:
    void SetName(const string& name);
    ProbeType GetType() const { return m_type; }
    void SetType(const ProbeType type) { m_type = type; }
-   int GetBaseRoughness() const { return m_roughness_base; }
-   void SetBaseRoughness(const int roughness) { m_roughness_base = roughness; }
-   int GetClearRoughness() const { return m_roughness_clear; }
-   void SetClearRoughness(const int roughness) { m_roughness_clear = roughness; }
+   int GetRoughness() const { return m_roughness; }
+   void SetRoughness(const int roughness) { m_roughness = roughness; }
 
    // Reflection plane properties
    void GetReflectionPlane(vec4& plane) const;
@@ -67,8 +65,7 @@ private:
    ProbeType m_type = PLANE_REFLECTION;
    bool m_dirty = true;
    string m_name;
-   int m_roughness_base = 0; // Default roughness level
-   int m_roughness_clear = 0; // Roughness level to be used when there is a roughness map (lerp between base and clear according to roughness map)
+   int m_roughness = 0;
    bool m_rendering = false;
    RenderTarget* m_blurRT = nullptr;
    RenderTarget* m_prerenderRT = nullptr;

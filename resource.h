@@ -1195,11 +1195,9 @@
 #define IDC_REFLECTION_PLANE_DIST       894
 #define IDC_RENDERPROBE_LIST            895
 #define IDC_REFLECTION_MAX_LEVEL        896
-#define IDC_ROUGHNESS_BASE              897
-#define IDC_ROUGHNESS_CLEAR             898
+#define IDC_ROUGHNESS                   897
 #define IDC_MATERIAL_TYPE               899
-#define IDC_ROUGHNESS_BASE_LABEL        900
-#define IDC_ROUGHNESS_CLEAR_LABEL       901
+#define IDC_ROUGHNESS_LABEL             900
 #define IDC_POS_X                       902
 #define IDC_POS_Y                       903
 #define IDC_POS_Z                       904
