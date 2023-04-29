@@ -100,8 +100,8 @@ void RenderPass::Execute(const bool log)
 	      - Playfield *
 	      - Static render,  not decals * => Unsorted
 	      - Static render decals * => Unsorted
-	      - Dynamic render Opaque, not DMD => Unsorted (front to back, state changes,…)
-	      - Dynamic render Opaque DMD => Unsorted (front to back, state changes,…)
+	      - Dynamic render Opaque, not DMD => Unsorted (front to back, state changes,...)
+	      - Dynamic render Opaque DMD => Unsorted (front to back, state changes,...)
 	      - Balls
 	      - Dynamic render Transparent, not DMD => Sorted back to front
 	      - Dynamic render Transparent DMD => Sorted back to front
@@ -111,15 +111,16 @@ void RenderPass::Execute(const bool log)
          - Depth sorting is not done based on view vector but on depth bias and absolute z coordinate
 
       For 10.8, the render command sorting has been designed to ensure backward compatibility:
-	      - Identify transparent parts in a backward compatible way (using IsTransparent, and not according to real 'transparency' state as evaluated from depth & blend state)
-	      - Sort render commands with the following constraints:
-		      . Draw kickers first (at least before balls)
-		      . TODO Sort opaque DMD after other opaques
-		      . TODO Sort transparent DMD after other transparents
-		      . Sort opaque parts together based on efficiency (state, real view depth, whatever…)
-		      . Use existing sorting of transparent parts (based on absolute z and depthbias)
-		      . TODO Sort "deferred draw light render commands" after opaque and before transparents
-		      . TODO Group draw call of each refraction probe together (after the first part, based on default sorting)
+         - Identify transparent parts in a backward compatible way (using IsTransparent, and not according to real 'transparency' state as evaluated from depth & blend state)
+         - Sort render commands with the following constraints:
+            . Draw kickers first (at least before balls)
+            . TODO Sort opaque DMD after other opaques
+            . TODO Sort transparent DMD after other transparents
+            . Draw playfield of old tables before other parts. Old table's PF command is opaque with a very high depth bias (this is enforced when loading the table, see pintable.cpp)
+            . Sort opaque parts together based on efficiency (state, real view depth, whatever...)
+            . Use existing sorting of transparent parts (based on absolute z and depthbias)
+            . TODO Sort "deferred draw light render commands" after opaque and before transparents
+            . TODO Group draw call of each refraction probe together (after the first part, based on default sorting)
       */
       struct
       {
@@ -145,23 +146,31 @@ void RenderPass::Execute(const bool log)
             if (r2->GetShaderTechnique() == SHADER_TECHNIQUE_kickerBoolean || r2->GetShaderTechnique() == SHADER_TECHNIQUE_kickerBoolean_isMetal)
                return false;
             
-            // Non opaque items: render them after opaque ones, sorted back to front since their rendering depends on the framebuffer
-            bool transparent1 = r1->IsTransparent(); // !r1->GetRenderState().IsOpaque();
-            bool transparent2 = r2->IsTransparent(); // !r2->GetRenderState().IsOpaque();
+            // At least one transparent item (identify by legacy transparency flag): render them after opaque ones
+            bool transparent1 = r1->IsTransparent();
+            bool transparent2 = r2->IsTransparent();
             if (transparent1)
             {
                if (transparent2)
                {
+                  // Both transparent: sorted back to front since their rendering depends on the framebuffer (keep submission order if same depth)
                   if (r1->GetDepth() == r2->GetDepth())
                      return false;
-                  return r1->GetDepth() > r2->GetDepth(); // Back to front
+                  return r1->GetDepth() > r2->GetDepth();
                }
                return false;
             }
             if (transparent2)
                return true;
             
-            // Opaque items: render them front to back (to limit overdraw, thanks to early depth test), limiting shader/mesh buffer/sampler/uniform/state changes
+            // At this point, both commands are draw commands of opaque items
+            
+            // HACKY: if marked with a very high depthbias, render them first. This is needed to avoid breaking playfield rendering of old table 
+            // since before 10.8, playfield was always rendered before all other parts, with alpha testing and depth writing.
+            if (r1->GetDepth() != r2->GetDepth() && abs(r1->GetDepth() - r2->GetDepth()) > 50000.f)
+               return r1->GetDepth() > r2->GetDepth(); // Back to front
+
+            // Sort by shader to limit the number of shader changes
             if (r1->GetShaderTechnique() != r2->GetShaderTechnique())
             {
                // TODO sort by minimum depth of the technique
@@ -171,8 +180,12 @@ void RenderPass::Execute(const bool log)
                   return m_min_depth[r1->technique] < m_min_depth[r2->technique];*/
                return r1->GetShaderTechnique() > r2->GetShaderTechnique();
             }
+
+            // Sort front to back to limit overdraw, limiting the number of processed fragment thanks to early depth test
             if (r1->GetDepth() != r2->GetDepth())
                return r1->GetDepth() < r2->GetDepth(); // Front to back
+
+            // Sort by mesh buffer id, to limit buffer switching
             if (r1->IsDrawMeshCommand() && r2->IsDrawMeshCommand())
             {
                unsigned int mbS1 = r1->GetMeshBuffer()->GetSortKey();
@@ -182,6 +195,8 @@ void RenderPass::Execute(const bool log)
                   return mbS1 < mbS2;
                }
             }
+
+            // Sort by render state ot limit the amount of state changes
             return r1->GetRenderState().m_state < r2->GetRenderState().m_state;
          }
       } sortFunc;
