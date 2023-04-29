@@ -610,7 +610,7 @@ void Light::PrepareMoversCustom()
    }
 
    m_customMoverVertexNum = (unsigned int)m_vvertex.size();
-   VertexBuffer *customMoverVBuffer = new VertexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_customMoverVertexNum);
+   VertexBuffer *customMoverVBuffer = new VertexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_customMoverVertexNum, nullptr, true);
 
    m_customMoverIndexNum = (unsigned int)vtri.size();
    IndexBuffer* customMoverIBuffer = new IndexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_customMoverIndexNum, 0, IndexBuffer::FMT_INDEX16);
