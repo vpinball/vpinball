@@ -26,10 +26,11 @@ If applicable, add screenshots to help explain your problem.
 **Crash dump**
 If it's about a crash, please attach `crash.dmp` as well.
 
-**Versions**
+**Versions & Settings**
  - VPX: [e.g. 1.7.0 Final Revision 367 (e242d7c), 32 bit - see *Help - About*]
  - Windows version
  - GPU and video settings if applicable
-
+ - If this bug report is for VPX 10.8+, please join your setting file (locate 'VPinballX.ini' in '%AppData%\VPinballX', either zip it or change its extension to '.log', then drag'n drop it here)
+ 
 **Additional context**
 Add any other context about the problem here.
