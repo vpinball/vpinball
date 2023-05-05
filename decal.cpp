@@ -440,8 +440,6 @@ void Decal::RenderDynamic()
       RenderObject();
 }
 
-static constexpr WORD rgi0123[4] = { 0, 1, 2, 3 };
-
 void Decal::RenderSetup()
 {
 #ifdef ENABLE_SDL
@@ -474,52 +472,56 @@ void Decal::RenderSetup()
    const float cs = cosf(radangle);
 
    VertexBuffer *vertexBuffer = new VertexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, 4);
-
-
    Vertex3D_NoTex2 *vertices;
    vertexBuffer->lock(0, 0, (void**)&vertices, VertexBuffer::WRITEONLY);
+   float z = m_backglass ? 0.f : (height + 0.2f);
 
    vertices[0].x = m_d.m_vCenter.x + sn*(halfheight + leading) - cs*halfwidth;
    vertices[0].y = m_d.m_vCenter.y - cs*(halfheight + leading) - sn*halfwidth;
+   vertices[0].z = z;
+   vertices[0].nx = 0.f;
+   vertices[0].ny = 0.f;
+   vertices[0].nz = 1.f;
+   vertices[0].tu = 0;
+   vertices[0].tv = 0;
 
    vertices[1].x = m_d.m_vCenter.x + sn*(halfheight + leading) + cs*halfwidth;
    vertices[1].y = m_d.m_vCenter.y - cs*(halfheight + leading) + sn*halfwidth;
-
-   vertices[2].x = m_d.m_vCenter.x - sn*(halfheight + descent) + cs*halfwidth;
-   vertices[2].y = m_d.m_vCenter.y + cs*(halfheight + descent) + sn*halfwidth;
-
-   vertices[3].x = m_d.m_vCenter.x - sn*(halfheight + descent) - cs*halfwidth;
-   vertices[3].y = m_d.m_vCenter.y + cs*(halfheight + descent) - sn*halfwidth;
-
-   if (!m_backglass)
-   {
-      for (int i = 0; i < 4; i++)
-         vertices[i].z = height + 0.2f;
-
-      SetNormal(vertices, rgi0123, 4);
-   }
-   else
-   {
-      const float  mult = getBGxmult();
-      const float ymult = getBGymult();
-
-      for (int i = 0; i < 4; ++i)
-      {
-         vertices[i].x = vertices[i].x * mult  - 0.5f;
-         vertices[i].y = vertices[i].y * ymult - 0.5f;
-         vertices[i].z = 0.0f;
-      }
-   }
-
-   vertices[0].tu = 0;
-   vertices[0].tv = 0;
+   vertices[1].z = z;
+   vertices[1].nx = 0.f;
+   vertices[1].ny = 0.f;
+   vertices[1].nz = 1.f;
    vertices[1].tu = 1.0f;
    vertices[1].tv = 0;
-   vertices[2].tu = 1.0f;
+
+   vertices[2].x = m_d.m_vCenter.x - sn*(halfheight + descent) - cs*halfwidth;
+   vertices[2].y = m_d.m_vCenter.y + cs*(halfheight + descent) - sn*halfwidth;
+   vertices[2].z = z;
+   vertices[2].nx = 0.f;
+   vertices[2].ny = 0.f;
+   vertices[2].nz = 1.f;
+   vertices[2].tu = 0;
    vertices[2].tv = 1.0f;
-   vertices[3].tu = 0;
+
+   vertices[3].x = m_d.m_vCenter.x - sn*(halfheight + descent) + cs*halfwidth;
+   vertices[3].y = m_d.m_vCenter.y + cs*(halfheight + descent) + sn*halfwidth;
+   vertices[3].z = z;
+   vertices[3].nx = 0.f;
+   vertices[3].ny = 0.f;
+   vertices[3].nz = 1.f;
+   vertices[3].tu = 1.0f;
    vertices[3].tv = 1.0f;
 
+   if (m_backglass)
+   {
+      const float xmult = getBGxmult();
+      const float ymult = getBGymult();
+      for (int i = 0; i < 4; ++i)
+      {
+         vertices[i].x = vertices[i].x * xmult  - 0.5f;
+         vertices[i].y = vertices[i].y * ymult - 0.5f;
+      }
+   }
    vertexBuffer->unlock();
 
    delete m_meshBuffer;

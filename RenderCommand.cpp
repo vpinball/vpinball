@@ -206,7 +206,7 @@ void RenderCommand::Execute(const bool log)
             #ifdef ENABLE_SDL
             glDrawArrays(m_primitiveType, m_mb->m_vb->GetVertexOffset(), m_indicesCount);
             #else
-            CHECKD3D(m_rd->GetCoreDevice()->DrawPrimitive((D3DPRIMITIVETYPE)m_primitiveType, 0, np));
+            CHECKD3D(m_rd->GetCoreDevice()->DrawPrimitive((D3DPRIMITIVETYPE)m_primitiveType, m_mb->m_vb->GetVertexOffset(), np));
             #endif
          }
          else
