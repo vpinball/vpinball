@@ -715,7 +715,6 @@ LiveUI::LiveUI(RenderDevice *const rd)
 
    SetupImGuiStyle(1.0f);
 
-   ImGui_ImplWin32_EnableDpiAwareness();
    m_dpi = ImGui_ImplWin32_GetDpiScaleForHwnd(rd->getHwnd());
    ImGui::GetStyle().ScaleAllSizes(m_dpi);
 
