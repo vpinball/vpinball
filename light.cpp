@@ -111,6 +111,7 @@ void Light::SetDefaults(const bool fromMouseClick)
    m_d.m_meshRadius = fromMouseClick ? LoadValueFloatWithDefault(regKey, "ScaleBulbMesh"s, 20.0f) : 20.0f;
    m_d.m_modulate_vs_add = fromMouseClick ? LoadValueFloatWithDefault(regKey, "BulbModulateVsAdd"s, 0.9f) : 0.9f;
    m_d.m_bulbHaloHeight = fromMouseClick ? LoadValueFloatWithDefault(regKey, "BulbHaloHeight"s, 28.0f) : 28.0f;
+   m_d.m_reflectionEnabled = fromMouseClick ? LoadValueBoolWithDefault(regKey, "ReflectionEnabled"s, true) : true;
 
 #undef regKey
 }
@@ -129,7 +130,6 @@ void Light::WriteRegDefaults()
    SaveValue(regKey, "OffImage"s, m_d.m_szImage);
    SaveValue(regKey, "BlinkPattern"s, m_d.m_rgblinkpattern);
    SaveValueInt(regKey, "BlinkInterval"s, m_d.m_blinkinterval);
-   //SaveValueInt(regKey,"BorderColor"s, m_d.m_bordercolor);
    SaveValue(regKey, "Surface"s, m_d.m_szSurface);
    SaveValueFloat(regKey, "FadeSpeedUp"s, m_d.m_fadeSpeedUp);
    SaveValueFloat(regKey, "FadeSpeedDown"s, m_d.m_fadeSpeedDown);
@@ -143,6 +143,7 @@ void Light::WriteRegDefaults()
    SaveValueFloat(regKey, "ScaleBulbMesh"s, m_d.m_meshRadius);
    SaveValueFloat(regKey, "BulbModulateVsAdd"s, m_d.m_modulate_vs_add);
    SaveValueFloat(regKey, "BulbHaloHeight"s, m_d.m_bulbHaloHeight);
+   SaveValueBool(regKey, "ReflectionEnabled"s, m_d.m_reflectionEnabled);
 
 #undef regKey
 }
@@ -391,7 +392,7 @@ void Light::RenderDynamic()
 {
    TRACE_FUNCTION();
 
-   if (g_pplayer->IsRenderPass(Player::REFLECTION_PASS))
+   if (!m_d.m_reflectionEnabled && g_pplayer->IsRenderPass(Player::REFLECTION_PASS))
       return;
 
    if (m_customMoverMeshBuffer == nullptr) // in case of degenerate light

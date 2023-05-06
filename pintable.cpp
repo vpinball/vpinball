@@ -4053,6 +4053,8 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
                if (m_vedit[i]->GetItemType() == ItemTypeEnum::eItemLight)
                {
                   Light* const light = (Light *)m_vedit[i];
+                  // Before 10.8, lights would never be reflected
+                  light->m_d.m_reflectionEnabled = false;
                   // Before 10.8, lights did not have a z coordinate (light emission point)
                   // Before 10.8, bulb mesh was rendered at surface level (28 VP units below light emission point)
                   light->m_d.m_height = light->m_d.m_BulbLight ? light->m_d.m_showBulbMesh ? 28.f : light->m_d.m_bulbHaloHeight : 0.0f;
