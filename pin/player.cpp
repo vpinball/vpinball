@@ -1315,6 +1315,7 @@ HRESULT Player::Init()
          m_implicitPlayfieldMesh->SetName("playfield_mesh"s);
          m_implicitPlayfieldMesh->m_backglass = false;
          m_implicitPlayfieldMesh->m_d.m_staticRendering = true;
+         m_implicitPlayfieldMesh->m_d.m_reflectionEnabled = true;
          m_implicitPlayfieldMesh->m_d.m_collidable = false;
          m_implicitPlayfieldMesh->m_d.m_toy = true;
          m_implicitPlayfieldMesh->m_d.m_use3DMesh = true;
