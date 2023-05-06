@@ -158,7 +158,6 @@ enum InfoMode
    IF_NONE,
    IF_FPS,
    IF_PROFILING,
-   IF_PROFILING_SPLIT_RENDERING,
    IF_STATIC_ONLY,
    IF_DYNAMIC_ONLY,
    IF_AO_ONLY,
@@ -172,7 +171,6 @@ enum ProfilingMode
 {
    PF_DISABLED,
    PF_ENABLED,
-   PF_SPLIT_RENDERING,
 };
 
 #ifndef ENABLE_SDL

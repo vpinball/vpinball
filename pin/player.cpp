@@ -842,8 +842,6 @@ ProfilingMode Player::GetProfilingMode() const
    const InfoMode mode = GetInfoMode();
    if (mode == IF_PROFILING)
       return ProfilingMode::PF_ENABLED;
-   else if (mode == IF_PROFILING_SPLIT_RENDERING)
-      return ProfilingMode::PF_SPLIT_RENDERING;
    else
       return ProfilingMode::PF_DISABLED;
 }
@@ -857,7 +855,7 @@ bool Player::ShowFPSonly() const
 bool Player::ShowStats() const
 {
    const InfoMode mode = GetInfoMode();
-   return mode == IF_FPS || mode == IF_PROFILING || mode == IF_PROFILING_SPLIT_RENDERING;
+   return mode == IF_FPS || mode == IF_PROFILING;
 }
 
 void Player::RecomputePauseState()
@@ -4042,7 +4040,7 @@ void Player::Render()
       m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(startRenderUsec / 1000)); // trigger key events mainly for VPM<->VP roundtrip
 
    // Kill the profiler so that it does not affect performance => FIXME move to player
-   if (m_infoMode != IF_PROFILING && m_infoMode != IF_PROFILING_SPLIT_RENDERING)
+   if (m_infoMode != IF_PROFILING)
       m_pin3d.m_gpu_profiler.Shutdown();
 
    // Try to bring PinMAME window back on top
@@ -4573,145 +4571,68 @@ void Player::DrawDynamics(bool onlyBalls)
    // Declare dependency on Bulb Light buffer (actually rendered to the bloom buffer texture)
    m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pin3d.m_pd3dPrimaryDevice->GetBloomBufferTexture());
 
-   if (GetProfilingMode() != PF_SPLIT_RENDERING) // normal rendering path for standard gameplay
-   {
-      // Draw non-transparent objects. No DMD's
-      for (size_t i = 0; i < m_vHitNonTrans.size(); ++i)
-         if (!m_vHitNonTrans[i]->IsDMD())
-         {
-            m_vHitNonTrans[i]->RenderDynamic();
-            #ifdef DEBUG
-            m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(true, live_state);
-            assert(initial_state.m_state == live_state.m_state);
-            assert(initial_state.m_depthBias== live_state.m_depthBias);
-            #endif
-         }
+   // Draw non-transparent objects. No DMD's
+   for (size_t i = 0; i < m_vHitNonTrans.size(); ++i)
+      if (!m_vHitNonTrans[i]->IsDMD())
+      {
+         m_vHitNonTrans[i]->RenderDynamic();
+         #ifdef DEBUG
+         m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(true, live_state);
+         assert(initial_state.m_state == live_state.m_state);
+         assert(initial_state.m_depthBias== live_state.m_depthBias);
+         #endif
+      }
 
-      // Draw non-transparent DMD's
-      m_render_mask |= OPAQUE_DMD_PASS;
-      for (size_t i = 0; i < m_vHitNonTrans.size(); ++i)
-         if (m_vHitNonTrans[i]->IsDMD())
-         {
-            m_vHitNonTrans[i]->RenderDynamic();
-            #ifdef DEBUG
-            m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(true, live_state);
-            assert(initial_state.m_state == live_state.m_state);
-            assert(initial_state.m_depthBias == live_state.m_depthBias);
-            #endif
-         }
-      m_render_mask &= ~OPAQUE_DMD_PASS;
+   // Draw non-transparent DMD's
+   m_render_mask |= OPAQUE_DMD_PASS;
+   for (size_t i = 0; i < m_vHitNonTrans.size(); ++i)
+      if (m_vHitNonTrans[i]->IsDMD())
+      {
+         m_vHitNonTrans[i]->RenderDynamic();
+         #ifdef DEBUG
+         m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(true, live_state);
+         assert(initial_state.m_state == live_state.m_state);
+         assert(initial_state.m_depthBias == live_state.m_depthBias);
+         #endif
+      }
+   m_render_mask &= ~OPAQUE_DMD_PASS;
 
-      // Balls must be rendered after (non transparent) kickers since kickers perform a depth shift (to be visible despite the playfield) that would render them above the ball otherwise
-      DrawBalls();
+   // Balls must be rendered after (non transparent) kickers since kickers perform a depth shift (to be visible despite the playfield) that would render them above the ball otherwise
+   DrawBalls();
 
-      if (GetProfilingMode() == PF_ENABLED)
-         m_pin3d.m_gpu_profiler.Timestamp(GTS_NonTransparent);
+   if (GetProfilingMode() == PF_ENABLED)
+      m_pin3d.m_gpu_profiler.Timestamp(GTS_NonTransparent);
 
-      m_limiter.Execute(m_pin3d.m_pd3dPrimaryDevice); //!! move below other draw calls??
+   m_limiter.Execute(m_pin3d.m_pd3dPrimaryDevice); //!! move below other draw calls??
 
-      // Draw transparent objects. No DMD's
-      for (size_t i = 0; i < m_vHitTrans.size(); ++i)
-         if (!m_vHitTrans[i]->IsDMD())
-         {
-            m_vHitTrans[i]->RenderDynamic();
-            #ifdef DEBUG
-            m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(true, live_state);
-            assert(initial_state.m_state == live_state.m_state);
-            assert(initial_state.m_depthBias == live_state.m_depthBias);
+   // Draw transparent objects. No DMD's
+   for (size_t i = 0; i < m_vHitTrans.size(); ++i)
+      if (!m_vHitTrans[i]->IsDMD())
+      {
+         m_vHitTrans[i]->RenderDynamic();
+         #ifdef DEBUG
+         m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(true, live_state);
+         assert(initial_state.m_state == live_state.m_state);
+         assert(initial_state.m_depthBias == live_state.m_depthBias);
 #endif
-         }
+      }
 
-      // Draw only transparent DMD's
-      m_render_mask |= TRANSPARENT_DMD_PASS;
-      for (size_t i = 0; i < m_vHitNonTrans.size(); ++i) // NonTrans is correct as DMDs are always sorted in there
-         if (m_vHitNonTrans[i]->IsDMD())
-         {
-            m_vHitNonTrans[i]->RenderDynamic();
-            #ifdef DEBUG
-            m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(true, live_state);
-            assert(initial_state.m_state == live_state.m_state);
-            assert(initial_state.m_depthBias == live_state.m_depthBias);
+   // Draw only transparent DMD's
+   m_render_mask |= TRANSPARENT_DMD_PASS;
+   for (size_t i = 0; i < m_vHitNonTrans.size(); ++i) // NonTrans is correct as DMDs are always sorted in there
+      if (m_vHitNonTrans[i]->IsDMD())
+      {
+         m_vHitNonTrans[i]->RenderDynamic();
+         #ifdef DEBUG
+         m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(true, live_state);
+         assert(initial_state.m_state == live_state.m_state);
+         assert(initial_state.m_depthBias == live_state.m_depthBias);
 #endif
-         }
-      m_render_mask &= ~TRANSPARENT_DMD_PASS;
+      }
+   m_render_mask &= ~TRANSPARENT_DMD_PASS;
 
-      if (GetProfilingMode() == PF_ENABLED)
-         m_pin3d.m_gpu_profiler.Timestamp(GTS_Transparent);
-   }
-   else // special profiling path by doing separate items, will not be accurate, both perf and rendering wise, but better than nothing
-   {
-      m_limiter.Execute(m_pin3d.m_pd3dPrimaryDevice); //!! move below other draw calls??
-#ifndef ENABLE_SDL
-      m_pin3d.m_gpu_profiler.BeginFrame(m_pin3d.m_pd3dPrimaryDevice->GetCoreDevice());
-#endif
-
-      // Draw non-transparent Primitives.
-      for (size_t i = 0; i < m_vHitNonTrans.size(); ++i)
-         if (m_vHitNonTrans[i]->HitableGetItemType() == eItemPrimitive)
-            m_vHitNonTrans[i]->RenderDynamic();
-      m_pin3d.m_gpu_profiler.Timestamp(GTS_Primitives_NT);
-
-      // Draw non-transparent Walls, Ramps, Rubbers.
-      for (size_t i = 0; i < m_vHitNonTrans.size(); ++i)
-         if (m_vHitNonTrans[i]->HitableGetItemType() == eItemSurface || m_vHitNonTrans[i]->HitableGetItemType() == eItemRamp || m_vHitNonTrans[i]->HitableGetItemType() == eItemRubber)
-            m_vHitNonTrans[i]->RenderDynamic();
-      m_pin3d.m_gpu_profiler.Timestamp(GTS_Walls_Ramps_Rubbers_NT);
-
-      // Else.
-      m_render_mask |= TRANSPARENT_DMD_PASS;
-      for (size_t i = 0; i < m_vHitNonTrans.size(); ++i)
-         if (m_vHitNonTrans[i]->IsDMD() && m_vHitNonTrans[i]->HitableGetItemType() == eItemFlasher)
-            m_vHitNonTrans[i]->RenderDynamic();
-      m_render_mask &= ~TRANSPARENT_DMD_PASS;
-
-      DrawBalls();
-
-      for (size_t i = 0; i < m_vHitNonTrans.size(); ++i)
-         if (m_vHitNonTrans[i]->HitableGetItemType() != eItemPrimitive && m_vHitNonTrans[i]->HitableGetItemType() != eItemSurface && m_vHitNonTrans[i]->HitableGetItemType() != eItemRamp
-            && m_vHitNonTrans[i]->HitableGetItemType() != eItemRubber)
-            m_vHitNonTrans[i]->RenderDynamic();
-
-      for (size_t i = 0; i < m_vHitTrans.size(); ++i)
-         if (m_vHitTrans[i]->HitableGetItemType() != eItemPrimitive && m_vHitTrans[i]->HitableGetItemType() != eItemSurface && m_vHitTrans[i]->HitableGetItemType() != eItemRamp
-            && m_vHitTrans[i]->HitableGetItemType() != eItemRubber && m_vHitTrans[i]->HitableGetItemType() != eItemLight && m_vHitTrans[i]->HitableGetItemType() != eItemFlasher)
-            m_vHitTrans[i]->RenderDynamic();
-      m_pin3d.m_gpu_profiler.Timestamp(GTS_Else);
-
-      // Draw transparent Walls, Ramps, Rubbers.
-      for (size_t i = 0; i < m_vHitTrans.size(); ++i)
-         if (m_vHitTrans[i]->HitableGetItemType() == eItemSurface || m_vHitTrans[i]->HitableGetItemType() == eItemRamp || m_vHitTrans[i]->HitableGetItemType() == eItemRubber)
-            m_vHitTrans[i]->RenderDynamic();
-      m_pin3d.m_gpu_profiler.Timestamp(GTS_Walls_Ramps_Rubbers_T);
-
-      // Draw transparent Primitives.
-      for (size_t i = 0; i < m_vHitTrans.size(); ++i)
-         if (m_vHitTrans[i]->HitableGetItemType() == eItemPrimitive)
-            m_vHitTrans[i]->RenderDynamic();
-      m_pin3d.m_gpu_profiler.Timestamp(GTS_Primitives_T);
-
-      // Draw Lights.
-      for (size_t i = 0; i < m_vHitNonTrans.size(); ++i) //!! not necessary??!
-         if (m_vHitNonTrans[i]->HitableGetItemType() == eItemLight)
-            m_vHitNonTrans[i]->RenderDynamic();
-      for (size_t i = 0; i < m_vHitTrans.size(); ++i)
-         if (m_vHitTrans[i]->HitableGetItemType() == eItemLight)
-            m_vHitTrans[i]->RenderDynamic();
-      m_pin3d.m_gpu_profiler.Timestamp(GTS_Lights);
-
-      // Draw Flashers.
-      for (size_t i = 0; i < m_vHitTrans.size(); ++i)
-         if (!m_vHitTrans[i]->IsDMD() && m_vHitTrans[i]->HitableGetItemType() == eItemFlasher)
-            m_vHitTrans[i]->RenderDynamic();
-      m_render_mask |= TRANSPARENT_DMD_PASS;
-      for (size_t i = 0; i < m_vHitNonTrans.size(); ++i)
-         if (m_vHitNonTrans[i]->IsDMD() && m_vHitNonTrans[i]->HitableGetItemType() == eItemFlasher)
-            m_vHitNonTrans[i]->RenderDynamic();
-      m_render_mask &= ~TRANSPARENT_DMD_PASS;
-      m_pin3d.m_gpu_profiler.Timestamp(GTS_Flashers);
-
-      // Unused so far.
-      m_pin3d.m_gpu_profiler.Timestamp(GTS_UNUSED); //!!
-   }
+   if (GetProfilingMode() == PF_ENABLED)
+      m_pin3d.m_gpu_profiler.Timestamp(GTS_Transparent);
 }
 
 void Player::DrawBalls()
