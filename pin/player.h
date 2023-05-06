@@ -367,7 +367,6 @@ public:
 
    string GetPerfInfo();
 
-   void SetViewVector(const Vertex3Ds &viewVec);
    void DrawStatics();
    void DrawDynamics(bool onlyBalls);
 

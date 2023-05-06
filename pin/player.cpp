@@ -4500,15 +4500,6 @@ void Player::GetBallAspectRatio(const Ball * const pball, Vertex2D &stretch, con
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE);
 }*/
 
-void Player::SetViewVector(const Vertex3Ds &viewVec)
-{
-   // For the time being, the view vector used for sorting is not the one from the actual view and is directly set from the rendering
-   g_viewDir = viewVec;
-
-   // Sort transparent parts according to the view vector
-   stable_sort(m_vHitTrans.begin(), m_vHitTrans.end(), CompareHitableDepth);
-}
-
 void Player::DrawStatics()
 {
    #ifdef DEBUG
@@ -4616,7 +4607,7 @@ void Player::DrawDynamics(bool onlyBalls)
          m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(true, live_state);
          assert(initial_state.m_state == live_state.m_state);
          assert(initial_state.m_depthBias == live_state.m_depthBias);
-#endif
+         #endif
       }
 
    // Draw only transparent DMD's
@@ -4629,7 +4620,7 @@ void Player::DrawDynamics(bool onlyBalls)
          m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(true, live_state);
          assert(initial_state.m_state == live_state.m_state);
          assert(initial_state.m_depthBias == live_state.m_depthBias);
-#endif
+         #endif
       }
    m_render_mask &= ~TRANSPARENT_DMD_PASS;
 
