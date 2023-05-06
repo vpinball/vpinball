@@ -538,7 +538,7 @@ void Player::CreateWnd(HWND parent /* = 0 */)
    // Create the window.
    Uint32 flags = SDL_WINDOW_OPENGL | (m_fullScreen ? SDL_WINDOW_FULLSCREEN : 0);
 #ifdef _MSC_VER
-   flags |= SDL_WINDOW_BORDERLESS | SDL_WINDOW_HIDDEN;
+   flags |= SDL_WINDOW_BORDERLESS | SDL_WINDOW_HIDDEN | SDL_WINDOW_ALLOW_HIGHDPI;
 #elif defined(__APPLE__) && !TARGET_OS_TV
    if (LoadValueBoolWithDefault(regKey[RegName::Player], "HighDPI"s, true))
       flags |= SDL_WINDOW_ALLOW_HIGHDPI;
