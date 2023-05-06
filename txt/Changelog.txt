@@ -91,6 +91,8 @@ FEATURES:
   - allow to see all the available settings at once (not so easy before, since there are a few hundreds of them),
   - allow easier collaboration by being able to share the setting file with bug reports.
 
+- the application is now 'DPI aware' this means that it can be used with multiple monitors using different DPI settings. This may needs to adjust position of windows on existing installs.
+
 FIXES:
 
 - fix analogue nudge not working for joysticks/gamepads in XInput mode
