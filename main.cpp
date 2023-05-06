@@ -627,9 +627,12 @@ public:
          return;
       #ifdef _WIN32
       // Convert from wchar* to char* on Win32
-      using convert_typeX = std::codecvt_utf8<wchar_t>;
-      std::wstring_convert<convert_typeX, wchar_t> converterX;
-      table->m_pcv->AddToDebugOutput(converterX.to_bytes(record.getMessage()).c_str());
+      auto msg = record.getMessage();
+      const int len = (int)lstrlenW(msg);
+      char *const szT = new char[len + 1];
+      WideCharToMultiByteNull(CP_ACP, 0, msg, -1, szT, len + 1, nullptr, nullptr);
+      table->m_pcv->AddToDebugOutput(szT);
+      delete szT;
       #else
       table->m_pcv->AddToDebugOutput(record.getMessage());
       #endif
