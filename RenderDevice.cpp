@@ -357,12 +357,33 @@ int getDisplayList(vector<DisplayConfig>& displays)
 {
    displays.clear();
 
-#ifdef _MSC_VER
    std::map<string, DisplayConfig> displayMap;
+   int i = 0;
+
+   #ifdef ENABLE_SDL
+   // Windows and SDL order of display enumeration do not match, therefore the display identifier will not match between DX and OpenGL version
+   // SDL2 display identifier do not match the id of the native Windows settings
+   // SDL2 does not offer a way to get the adapter (i.e. Graphics Card) associated with a display (i.e. Monitor) so we use the monitor name for both
+   for (; i < getNumberOfDisplays(); ++i) {
+      SDL_Rect displayBounds;
+      if (SDL_GetDisplayBounds(i, &displayBounds) == 0) {
+         DisplayConfig displayConf;
+         displayConf.display = i;
+         displayConf.adapter = 0;
+         displayConf.isPrimary = (displayBounds.x == 0) && (displayBounds.y == 0);
+         displayConf.top = displayBounds.y;
+         displayConf.left = displayBounds.x;
+         displayConf.width = displayBounds.w;
+         displayConf.height = displayBounds.h;
+         strncpy_s(displayConf.DeviceName, SDL_GetDisplayName(displayConf.display), CCHDEVICENAME - 1);
+         strncpy_s(displayConf.GPU_Name, SDL_GetDisplayName(displayConf.display), MAX_DEVICE_IDENTIFIER_STRING - 1);
+         displays.push_back(displayConf);
+      }
+   }
+   #else
    // Get the resolution of all enabled displays.
    EnumDisplayMonitors(nullptr, nullptr, MonitorEnumList, reinterpret_cast<LPARAM>(&displayMap));
 
-#ifndef ENABLE_SDL
    IDirect3D9* pD3D = Direct3DCreate9(D3D_SDK_VERSION);
    if (pD3D == nullptr)
    {
@@ -371,57 +392,31 @@ int getDisplayList(vector<DisplayConfig>& displays)
    }
    // Map the displays to the DX9 adapter. Otherwise this leads to an performance impact on systems with multiple GPUs
    const int adapterCount = pD3D->GetAdapterCount();
-   for (int i = 0;i < adapterCount;++i) {
+   for (int i = 0; i < adapterCount; ++i)
+   {
       D3DADAPTER_IDENTIFIER9 adapter;
       pD3D->GetAdapterIdentifier(i, 0, &adapter);
       std::map<string, DisplayConfig>::iterator display = displayMap.find(adapter.DeviceName);
-      if (display != displayMap.end()) {
+      if (display != displayMap.end())
+      {
          display->second.adapter = i;
-         strncpy_s(display->second.GPU_Name, adapter.Description, sizeof(display->second.GPU_Name)-1);
+         strncpy_s(display->second.GPU_Name, adapter.Description, sizeof(display->second.GPU_Name) - 1);
       }
    }
    SAFE_RELEASE(pD3D);
-#endif
-
+   
    // Apply the same numbering as windows
    int i = 0;
    for (std::map<string, DisplayConfig>::iterator display = displayMap.begin(); display != displayMap.end(); ++display)
    {
       if (display->second.adapter >= 0) {
          display->second.display = i;
-#ifdef ENABLE_SDL
-         const char* name = SDL_GetDisplayName(display->second.adapter);
-         if(name != nullptr)
-            strncpy_s(display->second.GPU_Name, name, sizeof(display->second.GPU_Name) - 1);
-         else
-            display->second.GPU_Name[0] = '\0'; //!!
-#endif
          displays.push_back(display->second);
       }
       i++;
    }
-#else
-   //int maxAdapter = SDL_GetNumVideoDrivers(); //!!
-   int i;
-   for (i = 0; i < getNumberOfDisplays(); ++i) {
-      SDL_Rect displayBounds;
-      if (SDL_GetDisplayBounds(i, &displayBounds) == 0) {
-         DisplayConfig displayConf;
-         displayConf.display = i;
-         displayConf.adapter = 0;
-         displayConf.isPrimary = (displayBounds.x == 0) && (displayBounds.y == 0);
-         displayConf.top = displayBounds.x;
-         displayConf.left = displayBounds.x;
-         displayConf.width = displayBounds.w;
-         displayConf.height = displayBounds.h;
+   #endif
 
-         strncpy_s(displayConf.DeviceName, SDL_GetDisplayName(displayConf.display), 32);
-         strncpy_s(displayConf.GPU_Name, SDL_GetVideoDriver(displayConf.adapter), MAX_DEVICE_IDENTIFIER_STRING-1);
-
-         displays.push_back(displayConf);
-      }
-   }
-#endif
    return i;
 }
 
