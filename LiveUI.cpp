@@ -1782,7 +1782,6 @@ void LiveUI::UpdateRendererInspectionModal()
       ImGui::RadioButton("Disabled", &pass_selection, IF_FPS);
       #ifndef ENABLE_SDL // No GPU profiler for OpenGL
       ImGui::RadioButton("Profiler", &pass_selection, IF_PROFILING);
-      ImGui::RadioButton("Profiler (Split rendering)", &pass_selection, IF_PROFILING_SPLIT_RENDERING);
       #endif
       ImGui::RadioButton("Static prerender pass", &pass_selection, IF_STATIC_ONLY);
       ImGui::RadioButton("Dynamic render pass", &pass_selection, IF_DYNAMIC_ONLY);
