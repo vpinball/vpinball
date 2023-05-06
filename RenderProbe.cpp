@@ -103,10 +103,14 @@ void RenderProbe::PreRenderStatic()
 
 RenderTarget *RenderProbe::GetProbe(const bool is_static)
 {
-   // Rendering is not reentrant. If a probe is requested while probe is being updated 
-   // (for example an object with reflection, rendering itself in its reflection probe),
-   // then the last render probe (may be null) will be returned
-   if (m_dirty && !m_rendering && !g_pplayer->IsRenderPass(Player::REFLECTION_PASS))
+   // Probes are rendered and used in screen space therefore, they can't be recusively used (e.g. reflections
+   // of reflections). Beside this, some properties are not cached (clip plane,...) and would break if
+   // we would allow this. We simply return nullptr to disable this behavior.
+   // Note that this will break for refractions, but since the implementation is a preliminary one, waiting 
+   // for order independent transparency pass, this is not a big deal.
+   if (g_pplayer->IsRenderPass(Player::REFLECTION_PASS))
+      return nullptr;
+   if (m_dirty && !m_rendering)
    {
       m_rendering = true;
       switch (m_type)
