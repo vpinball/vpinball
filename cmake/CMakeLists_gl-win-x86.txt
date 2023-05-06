@@ -59,16 +59,12 @@ set_source_files_properties(
 add_executable(vpinball WIN32
    backGlass.cpp
    backGlass.h
-   captureExt.cpp
-   captureExt.h
-   dialogs/VROptionsDialog.cpp
-   dialogs/VROptionsDialog.h
-   Shader.cpp
-
    BlackBox.cpp
    BlackBox.h
    bulb.cpp
    bulb.h
+   captureExt.cpp
+   captureExt.h
    codeviewedit.cpp
    codeviewedit.h
    CrashHandler.cpp
@@ -103,6 +99,8 @@ add_executable(vpinball WIN32
    dialogs/RenderProbeDialog.h
    dialogs/PhysicsOptionsDialog.cpp
    dialogs/PhysicsOptionsDialog.h
+   dialogs/VROptionsDialog.cpp
+   dialogs/VROptionsDialog.h
    dialogs/Properties/BackglassCameraProperty.cpp
    dialogs/Properties/BackglassCameraProperty.h
    dialogs/Properties/BackglassVisualsProperty.cpp
@@ -467,10 +465,11 @@ add_executable(vpinball WIN32
    RenderState.h
    RenderTarget.cpp
    RenderTarget.h
-   Sampler.cpp
-   Sampler.h
    resource.h
    rubber.h
+   Sampler.cpp
+   Sampler.h
+   Shader.cpp
    Shader.h
    slintf.cpp
    slintf.h
@@ -543,7 +542,6 @@ target_include_directories(vpinball PUBLIC
    ${CMAKE_CURRENT_SOURCE_DIR}
    ${CMAKE_CURRENT_BINARY_DIR}/$(IntDir)
    inc
-   inc/rapidxml
    inc/win32xx/include
    dialogs
    media
@@ -591,7 +589,7 @@ target_link_options(vpinball PUBLIC
 )
 
 set_target_properties(vpinball PROPERTIES
-   VS_DPI_AWARE "On"
+   VS_DPI_AWARE "PerMonitor"
    RUNTIME_OUTPUT_NAME "VPinballX_GL"
    MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:DEBUG>:Debug>"
 )
