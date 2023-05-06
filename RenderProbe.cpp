@@ -104,7 +104,7 @@ void RenderProbe::PreRenderStatic()
 RenderTarget *RenderProbe::GetProbe(const bool is_static)
 {
    // Rendering is not reentrant. If a probe is requested while probe is being updated 
-   // (for example and object with reflection, rendering itself in its reflection probe),
+   // (for example an object with reflection, rendering itself in its reflection probe),
    // then the last render probe (may be null) will be returned
    if (m_dirty && !m_rendering && !g_pplayer->IsRenderPass(Player::REFLECTION_PASS))
    {
@@ -333,7 +333,7 @@ void RenderProbe::RenderReflectionProbe(const bool is_static)
       m_dynamicRT = new RenderTarget(p3dDevice, "DynamicReflProbe"s, w, h, p3dDevice->GetBackBufferTexture()->GetColorFormat(), true, 1, p3dDevice->GetBackBufferTexture()->GetStereo(),
          "Failed to create plane reflection dynamic render target", nullptr);
    }
-   p3dDevice->SetRenderTarget("Reflection"s, m_dynamicRT);
+   p3dDevice->SetRenderTarget(m_name, m_dynamicRT);
    if (mode == REFL_DYNAMIC && m_prerenderRT != nullptr && !g_pplayer->m_dynamicMode)
       p3dDevice->BlitRenderTarget(m_prerenderRT, m_dynamicRT, true, true);
    else
@@ -361,7 +361,7 @@ void RenderProbe::DoRenderReflectionProbe(const bool render_static, const bool r
    n.Normalize();
 
    // Set the clip plane to only render objects above the reflection plane (do not reflect what is under or the plane itself)
-   vec4 clip_plane = vec4(-n.x, -n.y, -n.z, m_reflection_plane.w);
+   vec4 clip_plane = vec4(-n.x, -n.y, -n.z, -m_reflection_plane.w);
    p3dDevice->SetClipPlane(clip_plane);
    p3dDevice->SetRenderState(RenderState::CLIPPLANEENABLE, RenderState::RS_TRUE);
 
@@ -386,9 +386,9 @@ void RenderProbe::DoRenderReflectionProbe(const bool render_static, const bool r
    reflect._32 =      - 2.0f * n.z * n.y;
    reflect._33 = 1.0f - 2.0f * n.z * n.z;
 
-   reflect._41 = 2.0f * n.x * m_reflection_plane.w;
-   reflect._42 = 2.0f * n.y * m_reflection_plane.w;
-   reflect._43 = 2.0f * n.z * m_reflection_plane.w;
+   reflect._41 = -2.0f * n.x * m_reflection_plane.w;
+   reflect._42 = -2.0f * n.y * m_reflection_plane.w;
+   reflect._43 = -2.0f * n.z * m_reflection_plane.w;
    viewMat = reflect * viewMat;
    g_pplayer->m_pin3d.GetMVP().SetView(viewMat);
 

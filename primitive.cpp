@@ -462,8 +462,6 @@ void Primitive::GetHitShapes(vector<HitObject*> &pvho)
    char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
    WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), nullptr, nullptr);
    m_d.m_useAsPlayfield = IsPlayfield();
-   if (m_d.m_useAsPlayfield) // Do not render playfield in playfield reflection probe
-      m_d.m_reflectionEnabled = false;
 
    //
 

@@ -38,12 +38,12 @@ FEATURES:
     weird we warned you). If you have issues locating the table or getting nightmares, it is NOT our fault.
     Default values are: box unchecked and 1.
 
-  - added rudimentary support for BAM Headtracking (thanks to Rafal from ravarcade.pl). Usage:
-    It works almost the same way as with Arcade Pinball, but one doesn't have control over the table location.
-     1. The User needs a working Future Pinball installation with head tracking enabled (FP is just used to setup the head tracking, FP can then be closed).
-     2. Start BAM-Tracker.exe, select head tracking method, leave it running.
-     3. Run VPinballX (the OpenGL version)
-     https://www.youtube.com/watch?v=g-EpTp_3wKo
+- added rudimentary support for BAM Headtracking (thanks to Rafal from ravarcade.pl). Usage:
+  It works almost the same way as with Arcade Pinball, but one doesn't have control over the table location.
+   1. The User needs a working Future Pinball installation with head tracking enabled (FP is just used to setup the head tracking, FP can then be closed).
+   2. Start BAM-Tracker.exe, select head tracking method, leave it running.
+   3. Run VPinballX (the OpenGL version)
+   https://www.youtube.com/watch?v=g-EpTp_3wKo
 
 - the playfield is now processed like all the other parts, i.e. its not forced as static/preprocessed anymore, and thus underlying table elements will work as expected now (so no more under playfield clipping, and alpha blending is not limited to simple alpha clipping/cutouts anymore):
   - if the 'playfield_mesh' primitive has 'Static rendering' disabled, it will be rendered with transparent parts (this results in the 'playfield_mesh' to be blended like plain primitives, so no more need for alpha test or insert overlays)
@@ -59,11 +59,10 @@ FEATURES:
     - Static Only: reflection of static parts only (no change)
     - Static & Balls: reflection of static parts and dynamic balls (no change)
     - Static & Unsynced Dynamic: *NEW* reflection of static parts and dynamic parts without depth buffer synchronisation. Overlapping of dynamic-over-static and of static-over-dynamic reflections is thus incorrect (features just a limited performance cost, added for lower end systems)
-    - Static & Synced Dynamic: reflection of static parts and dynamic parts with depth buffer synchronisation. This corresponds to the way reflections were processed before. Overlapping of dynamic-over-static reflections is incorrect (features just a small performance cost)
-    - Dynamic: *NEW* dynamic reflection of all parts. It provides the best results without any overlapping artefact at the cost of more performance (recommended)
+    - Dynamic: *NEW* dynamic reflection of all parts. It provides the best results without any overlapping artefact at the cost of a little bit more performance (recommended)
   - additional roughness parameter
 
-- add support for refraction to primitives (using 'refraction probe's)
+- add support for preliminary refraction to primitives (using 'refraction probe's). This feature is still preliminary and will evolve in the coming updates.
 
 - add refraction tint to the material parameters
 
