@@ -714,7 +714,6 @@
 #define IDC_CONVERT_COORD_CHECK         431
 #define IDC_LEGACYMODE                  431
 #define IDC_REFLECT_ELEMENTS_CHECK      431
-#define IDC_REFLECT_ENABLED_CHECK       431
 #define IDC_CVP_CHKBOX_SHOWAUTOCOMPLETE 431
 #define IDC_USE_NVIDIA_API_CHECK        431
 #define IDC_AUDIOOPT_3D_SOUND           431
@@ -727,6 +726,7 @@
 #define IDC_JOYTABLEUP                  432
 #define IDC_TARGET_LEGACY_MODE_CHECK    433
 #define IDC_MODULATE_VS_ADD             433
+#define IDC_REFLECT_ENABLED_CHECK2      433
 #define IDC_INTENSITY_SCALE_LIGHT       434
 #define IDC_OVERWRITE_MATERIAL_SETTINGS2 434
 #define IDC_TARGET_ISDROPPED_CHECK      435
@@ -965,6 +965,8 @@
 #define IDC_DATE_SAVED                  667
 #define IDD_NOTES_DIALOG                668
 #define IDD_RENDERPROBE                 669
+#define INI_FILE                        670
+#define IDR_DEFAULT_INI                 671
 #define IDC_CVP_BUT_CANCEL              701
 #define IDC_CVP_BUT_OK                  702
 #define IDC_CVP_BUT_COL_COMPS           703
@@ -1206,6 +1208,7 @@
 #define IDC_TRANSMIT_LABEL              907
 #define IDC_IMAGE_LABEL                 908
 #define IDC_DEPTHBIAS_LABEL             909
+#define IDC_REFLECT_ENABLED_CHECK       910
 #define IDC_LAYBACK_EDIT                1040
 #define IDC_3D_STEREO_SEPARATION_EDIT   1041
 #define IDC_3D_STEREO_ZPD_EDIT          1042
@@ -1396,16 +1399,13 @@
 #define DZVALUE                         65535
 #define DZName                          65535
 
-#define INI_FILE                        670
-#define IDR_DEFAULT_INI                 671
-
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        672
 #define _APS_NEXT_COMMAND_VALUE         4028
-#define _APS_NEXT_CONTROL_VALUE         910
+#define _APS_NEXT_CONTROL_VALUE         911
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif

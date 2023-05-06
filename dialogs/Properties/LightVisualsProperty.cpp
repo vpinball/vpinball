@@ -349,6 +349,7 @@ BOOL LightVisualsProperty::OnInitDialog()
 
     m_resizer.AddChild(GetDlgItem(IDC_STATIC8), CResizer::topleft, RD_STRETCH_WIDTH); // Render Mode group box
     m_resizer.AddChild(GetDlgItem(IDC_STATIC23), CResizer::topleft, 0);
+    m_hReflectionEnabledCheck = ::GetDlgItem(GetHwnd(), IDC_REFLECT_ENABLED_CHECK);
     m_typeCombo.AttachItem(IDC_LIGHT_TYPE_COMBO);
     m_typeCombo.AddString("Hidden");
     m_typeCombo.AddString("Classic");
