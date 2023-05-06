@@ -878,7 +878,7 @@ void LiveUI::Update()
    ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
    ImGui::PushFont(m_baseFont);
 
-   if (m_ShowUI || m_ShowSplashModal)
+   if (m_ShowUI || m_ShowSplashModal || ImGui::IsPopupOpen(ID_BAM_SETTINGS))
    {
       // Main UI
       UpdateMainUI();
@@ -1105,24 +1105,36 @@ void LiveUI::UpdateMainUI()
    bool popup_video_settings = false;
    bool popup_audio_settings = false;
    bool popup_renderer_inspection = false;
-   bool popup_headtracking = false;
 
-   // Main menubar
-   if (!m_RendererInspection)
+   bool showFullUI = true;
+   showFullUI &= !m_ShowSplashModal;
+   showFullUI &= !m_RendererInspection;
+   showFullUI &= !m_player->m_cameraMode;
+   showFullUI &= !ImGui::IsPopupOpen(ID_BAM_SETTINGS);
+
+   if (showFullUI)
    {
       m_player->EnableStaticPrePass(false);
+
+      // Main menubar
       if (ImGui::BeginMainMenuBar())
       {
-         if (ImGui::BeginMenu("Preferences"))
+         if (ImGui::BeginMenu("Debug"))
          {
-            //if (ImGui::MenuItem("Audio Options"))
-            //   popup_audio_settings = true;
-            if (ImGui::MenuItem("Video Options"))
-               popup_video_settings = true;
-            if (ImGui::MenuItem("BAM Headtracking"))
-               popup_headtracking = true;
+            if (ImGui::MenuItem("Open debugger"))
+               m_player->m_showDebugger = true;
             if (ImGui::MenuItem("Renderer Inspection"))
                m_RendererInspection = true;
+            if (ImGui::MenuItem(g_pplayer->m_debugWindowActive ? "Play" : "Pause"))
+               PausePlayer(!g_pplayer->m_debugWindowActive);
+            ImGui::EndMenu();
+         }
+         if (ImGui::BeginMenu("Preferences"))
+         {
+            if (ImGui::MenuItem("Audio Options"))
+               popup_audio_settings = true;
+            if (ImGui::MenuItem("Video Options"))
+               popup_video_settings = true;
             ImGui::EndMenu();
          }
          m_menubar_height = ImGui::GetWindowSize().y;
@@ -1222,8 +1234,6 @@ void LiveUI::UpdateMainUI()
    if (m_RendererInspection)
       UpdateRendererInspectionModal();
 
-   if (popup_headtracking)
-      ImGui::OpenPopup(ID_BAM_SETTINGS);
    if (ImGui::IsPopupOpen(ID_BAM_SETTINGS))
       UpdateHeadTrackingModal();
 
@@ -1734,6 +1744,34 @@ void LiveUI::UpdateAudioOptionsModal()
    bool p_open = true;
    if (ImGui::BeginPopupModal(ID_AUDIO_SETTINGS, &p_open, ImGuiWindowFlags_AlwaysAutoResize))
    {
+      bool fsound = LoadValueBoolWithDefault(regKey[RegName::Player], "PlayMusic"s, true);
+      if (ImGui::Checkbox("Enable music", &fsound))
+      {
+         SaveValueBool(regKey[RegName::Player], "PlayMusic"s, fsound);
+         m_player->m_PlayMusic = fsound;
+      }
+
+      int volume = LoadValueIntWithDefault(regKey[RegName::Player], "MusicVolume"s, 100);
+      if (ImGui::SliderInt("Music Volume", &volume, 0, 100))
+      {
+         SaveValueInt(regKey[RegName::Player], "MusicVolume"s, volume);
+         m_player->m_MusicVolume = volume;
+      }
+
+      fsound = LoadValueBoolWithDefault(regKey[RegName::Player], "PlaySound"s, true);
+      if (ImGui::Checkbox("Enable sound", &fsound))
+      {
+         SaveValueBool(regKey[RegName::Player], "PlaySound"s, fsound);
+         m_player->m_PlaySound = fsound;
+      }
+
+      volume = LoadValueIntWithDefault(regKey[RegName::Player], "SoundVolume"s, 100);
+      if (ImGui::SliderInt("Sound Volume", &volume, 0, 100))
+      {
+         SaveValueInt(regKey[RegName::Player], "SoundVolume"s, volume);
+         m_player->m_SoundVolume = volume;
+      }
+
       ImGui::EndPopup();
    }
 }
@@ -1743,8 +1781,6 @@ void LiveUI::UpdateVideoOptionsModal()
    bool p_open = true;
    if (ImGui::BeginPopupModal(ID_VIDEO_SETTINGS, &p_open, ImGuiWindowFlags_AlwaysAutoResize))
    {
-      ImGui::Text("Global settings");
-      ImGui::NewLine();
       if (ImGui::Checkbox("Force Bloom filter off", &m_player->m_bloomOff))
          SaveValueBool(regKey[m_player->m_stereo3D == STEREO_VR ? RegName::PlayerVR : RegName::Player], "ForceBloomOff"s, m_player->m_bloomOff);
       if (m_table->m_useFXAA == -1)
@@ -1951,28 +1987,61 @@ void LiveUI::UpdateMainSplashModal()
    constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings;
    if (ImGui::BeginPopupModal(ID_MODAL_SPLASH, nullptr, window_flags))
    {
-      const ImVec2 size(100.f * m_dpi, 0);
+      const ImVec2 size(m_dpi * (m_player->m_headTracking ? 120.f : 100.f), 0);
+
+      // If displaying the main splash popup, save user changes and exit camera mode started from it
+      if (m_player->m_cameraMode && !m_old_player_camera_mode && m_live_table != nullptr && m_table != nullptr)
+      {
+         m_player->m_cameraMode = m_old_player_camera_mode;
+         PinTable *src = m_live_table, *dst = m_table;
+         for (int i = 0; i < 3; i++)
+         {
+            dst->m_BG_rotation[i] = src->m_BG_rotation[i];
+            dst->m_BG_inclination[i] = src->m_BG_inclination[i];
+            dst->m_BG_layback[i] = src->m_BG_layback[i];
+            dst->m_BG_FOV[i] = src->m_BG_FOV[i];
+            dst->m_BG_xlatex[i] = src->m_BG_xlatex[i];
+            dst->m_BG_xlatey[i] = src->m_BG_xlatey[i];
+            dst->m_BG_xlatez[i] = src->m_BG_xlatez[i];
+            dst->m_BG_scalex[i] = src->m_BG_scalex[i];
+            dst->m_BG_scaley[i] = src->m_BG_scaley[i];
+            dst->m_BG_scalez[i] = src->m_BG_scalez[i];
+            dst->m_BG_image[i] = src->m_BG_image[i];
+         }
+         m_table->SetNonUndoableDirty(eSaveDirty);
+      }
+
       // Resume: click on the button, or press escape key
       if (ImGui::Button("Resume Game", size) || (enableKeyboardShortcuts && ((ImGui::IsKeyPressed(dikToImGuiKeys[m_player->m_rgKeys[eEscape]]) && !m_disable_esc))))
       {
-         ExitEditMode();
          ImGui::CloseCurrentPopup();
+         ExitEditMode();
          HideUI();
+      }
+      if (ImGui::Button("Adjust Camera", size))
+      {
+         ImGui::CloseCurrentPopup();
+         m_ShowUI = false;
+         m_ShowSplashModal = false;
+         EnterEditMode();
+         m_player->m_cameraMode = true;
+      }
+      bool popup_headtracking = false;
+      if (m_player->m_headTracking && ImGui::Button("Adjust Headtracking", size))
+      {
+         ImGui::CloseCurrentPopup();
+         m_ShowUI = false;
+         m_ShowSplashModal = false;
+         EnterEditMode();
+         popup_headtracking = true;
       }
       if (ImGui::Button("Live Editor", size))
       {
+         ImGui::CloseCurrentPopup();
          m_ShowUI = true;
          m_ShowSplashModal = false;
          m_useEditorCam = true;
-         ImGui::CloseCurrentPopup();
          EnterEditMode();
-      }
-      if (ImGui::Button("Debugger", size) || (enableKeyboardShortcuts && ImGui::IsKeyPressed(dikToImGuiKeys[m_player->m_rgKeys[eDebugger]])))
-      {
-         ExitEditMode();
-         ImGui::CloseCurrentPopup();
-         HideUI();
-         m_player->m_showDebugger = true;
       }
       // Quit: click on the button, or press exit button
       if (ImGui::Button("Quit to editor", size) || (enableKeyboardShortcuts && ImGui::IsKeyPressed(dikToImGuiKeys[m_player->m_rgKeys[eExitGame]])))
@@ -1985,6 +2054,9 @@ void LiveUI::UpdateMainSplashModal()
       ImVec2 max = ImGui::GetWindowSize();
       bool hovered = ImGui::IsWindowHovered();
       ImGui::EndPopup();
+
+      if (popup_headtracking)
+         ImGui::OpenPopup(ID_BAM_SETTINGS);
 
       // Handle dragging mouse to allow dragging the main application window
       max.x += pos.x;
@@ -2106,47 +2178,17 @@ void LiveUI::CameraProperties(bool is_live)
    if (ImGui::Button("Export"))
       m_table->ExportBackdropPOV(string());
    ImGui::NewLine();
-   ImGui::Checkbox("Interactive camera mode", &m_player->m_cameraMode);
-   ImGui::NewLine();
    if (BEGIN_PROP_TABLE)
    {
-      for (int i = 0; i < 14; i++)
-      {
-         if (m_player->m_cameraMode && (i == m_player->m_backdropSettingActive || (m_player->m_backdropSettingActive == 3 && (i == 4 || i == 5))))
-            ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
-         switch (i)
-         {
-         case 0:
-            PropFloat("Inclination", m_table, is_live, &(m_table->m_BG_inclination[m_selection.camera]), m_live_table ? &(m_live_table->m_BG_inclination[m_selection.camera]) : nullptr, 0.2f, 1.0f);
-            break;
-         case 1:
-            PropFloat("Field Of View", m_table, is_live, &(m_table->m_BG_FOV[m_selection.camera]), m_live_table ? &(m_live_table->m_BG_FOV[m_selection.camera]) : nullptr, 0.2f, 1.0f);
-            break;
-         case 2:
-            PropFloat("Layback", m_table, is_live, &(m_table->m_BG_layback[m_selection.camera]), m_live_table ? &(m_live_table->m_BG_layback[m_selection.camera]) : nullptr, 0.2f, 1.0f);
-            break;
-         case 4:
-            PropFloat("X Scale", m_table, is_live, &(m_table->m_BG_scalex[m_selection.camera]), m_live_table ? &(m_live_table->m_BG_scalex[m_selection.camera]) : nullptr, 0.002f, 0.01f);
-            break;
-         case 5:
-            PropFloat("Y Scale", m_table, is_live, &(m_table->m_BG_scaley[m_selection.camera]), m_live_table ? &(m_live_table->m_BG_scaley[m_selection.camera]) : nullptr, 0.002f, 0.01f);
-            break;
-         case 6:
-            PropFloat("Z Scale", m_table, is_live, &(m_table->m_BG_scalez[m_selection.camera]), m_live_table ? &(m_live_table->m_BG_scalez[m_selection.camera]) : nullptr, 0.002f, 0.01f);
-            break;
-         case 7:
-            PropFloat("X Offset", m_table, is_live, &(m_table->m_BG_xlatex[m_selection.camera]), m_live_table ? &(m_live_table->m_BG_xlatex[m_selection.camera]) : nullptr, 10.0f, 50.0f, "%.0f");
-            break;
-         case 8:
-            PropFloat("Y Offset", m_table, is_live, &(m_table->m_BG_xlatey[m_selection.camera]), m_live_table ? &(m_live_table->m_BG_xlatey[m_selection.camera]) : nullptr, 10.0f, 50.0f, "%.0f");
-            break;
-         case 9:
-            PropFloat("Z Offset", m_table, is_live, &(m_table->m_BG_xlatez[m_selection.camera]), m_live_table ? &(m_live_table->m_BG_xlatez[m_selection.camera]) : nullptr, 10.0f, 50.0f, "%.0f");
-            break;
-         }
-         if (m_player->m_cameraMode && (i == m_player->m_backdropSettingActive || (m_player->m_backdropSettingActive == 3 && (i == 4 || i == 5))))
-            ImGui::PopStyleColor();
-      }
+      PropFloat("Inclination", m_table, is_live, &(m_table->m_BG_inclination[m_selection.camera]), m_live_table ? &(m_live_table->m_BG_inclination[m_selection.camera]) : nullptr, 0.2f, 1.0f);
+      PropFloat("Field Of View", m_table, is_live, &(m_table->m_BG_FOV[m_selection.camera]), m_live_table ? &(m_live_table->m_BG_FOV[m_selection.camera]) : nullptr, 0.2f, 1.0f);
+      PropFloat("Layback", m_table, is_live, &(m_table->m_BG_layback[m_selection.camera]), m_live_table ? &(m_live_table->m_BG_layback[m_selection.camera]) : nullptr, 0.2f, 1.0f);
+      PropFloat("X Scale", m_table, is_live, &(m_table->m_BG_scalex[m_selection.camera]), m_live_table ? &(m_live_table->m_BG_scalex[m_selection.camera]) : nullptr, 0.002f, 0.01f);
+      PropFloat("Y Scale", m_table, is_live, &(m_table->m_BG_scaley[m_selection.camera]), m_live_table ? &(m_live_table->m_BG_scaley[m_selection.camera]) : nullptr, 0.002f, 0.01f);
+      PropFloat("Z Scale", m_table, is_live, &(m_table->m_BG_scalez[m_selection.camera]), m_live_table ? &(m_live_table->m_BG_scalez[m_selection.camera]) : nullptr, 0.002f, 0.01f);
+      PropFloat("X Offset", m_table, is_live, &(m_table->m_BG_xlatex[m_selection.camera]), m_live_table ? &(m_live_table->m_BG_xlatex[m_selection.camera]) : nullptr, 10.0f, 50.0f, "%.0f");
+      PropFloat("Y Offset", m_table, is_live, &(m_table->m_BG_xlatey[m_selection.camera]), m_live_table ? &(m_live_table->m_BG_xlatey[m_selection.camera]) : nullptr, 10.0f, 50.0f, "%.0f");
+      PropFloat("Z Offset", m_table, is_live, &(m_table->m_BG_xlatez[m_selection.camera]), m_live_table ? &(m_live_table->m_BG_xlatez[m_selection.camera]) : nullptr, 10.0f, 50.0f, "%.0f");
       PropFloat("Rotation", m_table, true, &(m_table->m_BG_rotation[m_selection.camera]), m_live_table ? &(m_live_table->m_BG_rotation[m_selection.camera]) : nullptr, 90.f, 90.0f, "%.0f");
       ImGui::EndTable();
    }
