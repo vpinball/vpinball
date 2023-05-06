@@ -3256,7 +3256,8 @@ void Player::StereoFXAA(RenderTarget* renderedRT, const bool stereo, const bool 
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, renderedRT->GetColorSampler());
       if (depth_available) // Depth is always taken from the MSAA resolved render buffer
       {
-         m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture());
+         if (outputRT != m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()) // We can not add this dependency for SMAA since it would create a (wrong) circular dependency
+            m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture());
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_depth, m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetDepthSampler());
       }
       else
