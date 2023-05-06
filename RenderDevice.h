@@ -49,15 +49,15 @@ struct VideoMode
 
 struct DisplayConfig
 {
-   int display;
-   int adapter;
+   int display; // Window Display identifier (the number that appears in the native Windows settings)
+   int adapter; // DirextX or SDL display/adapter identifier
    int top;
    int left;
    int width;
    int height;
    bool isPrimary;
-   char DeviceName[CCHDEVICENAME];
-   char GPU_Name[MAX_DEVICE_IDENTIFIER_STRING];
+   char DeviceName[CCHDEVICENAME]; // Device native identifier, e.g. "\\\\.\\DISPLAY1"
+   char GPU_Name[MAX_DEVICE_IDENTIFIER_STRING]; // GPU name if available, device (monitor) name otherwise
 };
 
 int getNumberOfDisplays();
