@@ -241,7 +241,7 @@ void IEditable::InitScript()
 
    if (GetScriptable()->m_wzName[0] == '\0')
       // Just in case something screws up - not good having a null script name
-      swprintf_s(GetScriptable()->m_wzName, sizeof(GetScriptable()->m_wzName), L"%d", (long)this);
+      swprintf_s(GetScriptable()->m_wzName, sizeof(GetScriptable()->m_wzName), L"%Id", reinterpret_cast<uintptr_t>(this));
 
    GetPTable()->m_pcv->AddItem(GetScriptable(), false);
 }

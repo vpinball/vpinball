@@ -52,7 +52,9 @@
 // HLSL defines to support common shader code
 #else
 #define HLSL
-#pragma warning(once : 3571) // only output 'pow(f, e) will not work for negative f, use abs(f) or conditionally handle negative values if you expect them' once
+
+// disable warning 'pow(f, e) will not work for negative f, use abs(f) or conditionally handle negative values if you expect them' as it is fairly common and not actionable.
+#pragma warning(disable : 3571)
 
 #define FLT_MIN_VALUE 0.0000001
 

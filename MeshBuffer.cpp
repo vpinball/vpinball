@@ -18,7 +18,7 @@ MeshBuffer::MeshBuffer(VertexBuffer* vb, IndexBuffer* ib, const bool applyVertex
 }
 
 MeshBuffer::MeshBuffer(const wstring& name, VertexBuffer* vb, IndexBuffer* ib, const bool applyVertexBufferOffsetToIndexBuffer)
-   : m_name(std::wstring_convert<std::codecvt_utf8<wchar_t>>().to_bytes(name))
+   : m_name(MakeString(name))
    , m_vb(vb)
    , m_ib(ib)
    , m_isVBOffsetApplied(applyVertexBufferOffsetToIndexBuffer)
@@ -58,7 +58,7 @@ unsigned int MeshBuffer::GetSortKey() const
    #ifdef ENABLE_SDL // OpenGL
    return m_vao;
    #else // DirectX 9
-   return ((unsigned int)m_vb) ^ ((unsigned int)m_ib);
+   return (unsigned int) ((reinterpret_cast<uintptr_t>(m_vb)) ^ (reinterpret_cast<uintptr_t>(m_ib)));
    #endif
 }
 

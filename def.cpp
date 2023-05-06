@@ -126,6 +126,17 @@ WCHAR *MakeWide(const string& sz)
    return wzT;
 }
 
+string MakeString(const wstring &wz)
+{
+   // Somewhat overkill since we copy the string twice, once in the temp buffer for conversion, then in the string constructor
+   const int len = (int)wz.length();
+   char *const szT = new char[len + 1];
+   WideCharToMultiByteNull(CP_ACP, 0, wz.c_str(), -1, szT, len + 1, nullptr, nullptr);
+   string result = string(szT);
+   delete szT;
+   return result;
+}
+
 char *MakeChar(const WCHAR * const wz)
 {
    const int len = lstrlenW(wz);
