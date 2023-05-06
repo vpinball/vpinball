@@ -343,11 +343,7 @@ BOOL CALLBACK MonitorEnumList(__in  HMONITOR hMonitor, __in  HDC hdcMonitor, __i
    config.height = info.rcMonitor.bottom - info.rcMonitor.top;
    config.isPrimary = (config.top == 0) && (config.left == 0);
    config.display = (int)data->size(); // This number does neither map to the number form display settings nor something else.
-#ifdef ENABLE_SDL
-   config.adapter = config.display;
-#else
    config.adapter = -1;
-#endif
    memcpy(config.DeviceName, info.szDevice, CCHDEVICENAME); // Internal display name e.g. "\\\\.\\DISPLAY1"
    data->insert(std::pair<string, DisplayConfig>(config.DeviceName, config));
    return TRUE;
@@ -357,31 +353,63 @@ int getDisplayList(vector<DisplayConfig>& displays)
 {
    displays.clear();
 
-   std::map<string, DisplayConfig> displayMap;
-   int i = 0;
-
-   #ifdef ENABLE_SDL
+#if defined(ENABLE_SDL) && defined(WIN32)
    // Windows and SDL order of display enumeration do not match, therefore the display identifier will not match between DX and OpenGL version
    // SDL2 display identifier do not match the id of the native Windows settings
    // SDL2 does not offer a way to get the adapter (i.e. Graphics Card) associated with a display (i.e. Monitor) so we use the monitor name for both
-   for (; i < getNumberOfDisplays(); ++i) {
+   // Get the resolution of all enabled displays as they appear in the Windows settings UI.
+   std::map<string, DisplayConfig> displayMap;
+   EnumDisplayMonitors(nullptr, nullptr, MonitorEnumList, reinterpret_cast<LPARAM>(&displayMap));
+   for (int i = 0; i < SDL_GetNumVideoDisplays(); ++i)
+   {
+      SDL_Rect displayBounds;
+      if (SDL_GetDisplayBounds(i, &displayBounds) == 0)
+      {
+         for (std::map<string, DisplayConfig>::iterator display = displayMap.begin(); display != displayMap.end(); ++display)
+         {
+            if (display->second.left == displayBounds.x && display->second.top == displayBounds.y && display->second.width == displayBounds.w && display->second.height == displayBounds.h)
+            {
+               display->second.adapter = i;
+               strncpy_s(display->second.GPU_Name, SDL_GetDisplayName(display->second.adapter), MAX_DEVICE_IDENTIFIER_STRING - 1);
+            }
+         }
+      }
+   }
+
+   // Apply the same numbering as windows
+   int i = 0;
+   for (std::map<string, DisplayConfig>::iterator display = displayMap.begin(); display != displayMap.end(); ++display)
+   {
+      if (display->second.adapter >= 0)
+      {
+         display->second.display = i;
+         displays.push_back(display->second);
+      }
+      i++;
+   }
+#elif defined(ENABLE_SDL)
+   int i = 0;
+   for (; i < SDL_GetNumVideoDisplays(); ++i)
+   {
       SDL_Rect displayBounds;
       if (SDL_GetDisplayBounds(i, &displayBounds) == 0) {
          DisplayConfig displayConf;
-         displayConf.display = i;
-         displayConf.adapter = 0;
+         displayConf.display = i; // Window Display identifier (the number that appears in the native Windows settings)
+         displayConf.adapter = i; // SDL Display identifier. Will be used for creating the display
          displayConf.isPrimary = (displayBounds.x == 0) && (displayBounds.y == 0);
          displayConf.top = displayBounds.y;
          displayConf.left = displayBounds.x;
          displayConf.width = displayBounds.w;
          displayConf.height = displayBounds.h;
-         strncpy_s(displayConf.DeviceName, SDL_GetDisplayName(displayConf.display), CCHDEVICENAME - 1);
+         string devicename = "\\\\.\\DISPLAY"s.append(std::to_string(i));
+         strncpy_s(displayConf.DeviceName, devicename.c_str(), CCHDEVICENAME - 1);
          strncpy_s(displayConf.GPU_Name, SDL_GetDisplayName(displayConf.display), MAX_DEVICE_IDENTIFIER_STRING - 1);
          displays.push_back(displayConf);
       }
    }
-   #else
-   // Get the resolution of all enabled displays.
+#else
+   // Get the resolution of all enabled displays as they appear in the Windows settings UI.
+   std::map<string, DisplayConfig> displayMap;
    EnumDisplayMonitors(nullptr, nullptr, MonitorEnumList, reinterpret_cast<LPARAM>(&displayMap));
 
    IDirect3D9* pD3D = Direct3DCreate9(D3D_SDK_VERSION);
@@ -415,7 +443,7 @@ int getDisplayList(vector<DisplayConfig>& displays)
       }
       i++;
    }
-   #endif
+#endif
 
    return i;
 }
