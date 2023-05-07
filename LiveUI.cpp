@@ -1533,6 +1533,17 @@ void LiveUI::SetSelectionTransform(Matrix3D &newTransform, bool clearPosition, b
    }
 }
 
+bool LiveUI::IsOutlinerFiltered(const string& name)
+{
+   if (m_outlinerFilter.size() == 0)
+      return true;
+   string name_lcase = string(name);
+   std::transform(name_lcase.begin(), name_lcase.end(), name_lcase.begin(), [](unsigned char c) { return std::tolower(c); });
+   string filter_lcase = string(m_outlinerFilter);
+   std::transform(filter_lcase.begin(), filter_lcase.end(), filter_lcase.begin(), [](unsigned char c) { return std::tolower(c); });
+   return name_lcase.find(filter_lcase) != std::string::npos;
+}
+
 void LiveUI::UpdateOutlinerUI()
 {
    const ImGuiViewport * const viewport = ImGui::GetMainViewport();
@@ -1545,6 +1556,8 @@ void LiveUI::UpdateOutlinerUI()
    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
    ImGui::Begin("OUTLINER", nullptr, window_flags);
+
+   ImGui::InputTextWithHint("Filter", "Name part filter", &m_outlinerFilter);
 
    if (ImGui::BeginTabBar("Startup/Live", ImGuiTabBarFlags_AutoSelectNewTabs))
    {
@@ -1590,7 +1603,7 @@ void LiveUI::UpdateOutlinerUI()
                {
                   Material *material = table->m_materials[t];
                   Selection sel(is_live, material);
-                  if (ImGui::Selectable(material->m_szName.c_str(), m_selection == sel))
+                  if (IsOutlinerFiltered(material->m_szName) && ImGui::Selectable(material->m_szName.c_str(), m_selection == sel))
                      m_selection = sel;
                }
                ImGui::TreePop();
@@ -1603,7 +1616,7 @@ void LiveUI::UpdateOutlinerUI()
                   if (psel != nullptr && psel->m_layerName.empty())
                   {
                      Selection sel(is_live, table->m_vedit[t]);
-                     if (ImGui::Selectable(table->m_vedit[t]->GetName(), m_selection == sel))
+                     if (IsOutlinerFiltered(table->m_vedit[t]->GetName()) && ImGui::Selectable(table->m_vedit[t]->GetName(), m_selection == sel))
                         m_selection = sel;
                   }
                }
@@ -1662,7 +1675,7 @@ void LiveUI::UpdateOutlinerUI()
                      for (size_t t = 0; t < list.size(); t++)
                      {
                         Selection sel(is_live, list[t]);
-                        if (ImGui::Selectable(list[t]->GetName(), m_selection == sel))
+                        if (IsOutlinerFiltered(list[t]->GetName()) && ImGui::Selectable(list[t]->GetName(), m_selection == sel))
                            m_selection = sel;
                      }
                      ImGui::TreePop();
