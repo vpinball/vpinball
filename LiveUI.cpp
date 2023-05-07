@@ -1012,7 +1012,9 @@ void LiveUI::UpdateCameraModeUI()
    ImGui::SetNextWindowBgAlpha(0.35f);
    ImGui::SetNextWindowPos(ImVec2(10, ImGui::GetIO().DisplaySize.y - 10 - last_frame_height));
    ImGui::Begin("CameraMode", nullptr, window_flags);
-   for (int i = 0; i < 14; i++)
+   bool isStereo = m_player->m_stereo3Denabled && m_player->m_stereo3D != STEREO_OFF && m_player->m_stereo3D != STEREO_VR;
+   bool isAnaglyph = isStereo && m_player->m_stereo3D >= STEREO_ANAGLYPH_RC && m_player->m_stereo3D <= STEREO_ANAGLYPH_AB;
+   for (int i = 0; i < (isAnaglyph ? 17 : (isStereo ? 15 : 14)); i++)
    {
       if (m_player->m_cameraMode && (i == m_player->m_backdropSettingActive || (m_player->m_backdropSettingActive == 3 && (i == 4 || i == 5))))
          ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
@@ -1030,7 +1032,15 @@ void LiveUI::UpdateCameraModeUI()
       case 10: ImGui::Text("Light Emission Scale: %.0f", table->m_lightEmissionScale); break;
       case 11: ImGui::Text("Light Range: %.0f", table->m_lightRange); break;
       case 12: ImGui::Text("Light Height: %.0f", table->m_lightHeight); ImGui::NewLine(); break;
-      case 13: ImGui::Text("Environment Emission: %.3f", table->m_envEmissionScale); break;
+      case 13: ImGui::Text("Environment Emission: %.3f", table->m_envEmissionScale); ImGui::NewLine(); break;
+      case 14:
+      {
+         const char *txt = m_table->m_overwriteGlobalStereo3D ? "Max Separation [Table setting]: %.3f" : "Max Separation [Application setting]: %.3f";
+         ImGui::Text(txt, table->GetMaxSeparation());
+         break;
+      }
+      case 15: ImGui::Text("Anaglyph desaturation: %.2f", m_player->m_global3DDesaturation); break;
+      case 16: ImGui::Text("Anaglyph contrast: %.2f", m_player->m_global3DContrast); break;
       }
       if (m_player->m_cameraMode && (i == m_player->m_backdropSettingActive || (m_player->m_backdropSettingActive == 3 && (i == 4 || i == 5))))
          ImGui::PopStyleColor();
@@ -1994,6 +2004,7 @@ void LiveUI::UpdateMainSplashModal()
       {
          m_player->m_cameraMode = m_old_player_camera_mode;
          PinTable *src = m_live_table, *dst = m_table;
+         dst->m_3DmaxSeparation = src->m_3DmaxSeparation;
          for (int i = 0; i < 3; i++)
          {
             dst->m_BG_rotation[i] = src->m_BG_rotation[i];
