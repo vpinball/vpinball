@@ -1305,12 +1305,45 @@ void LiveUI::UpdateMainUI()
    {
       // Apply editor camera to renderer (move view from right handed to left handed)
       Matrix3D mat(m_camView); // Convert from right handed (ImGuizmo view manipulate is right handed) to VPX's left handed coordinate system
-      mat._31 = -mat._31;
-      mat._32 = -mat._32;
-      mat._33 = -mat._33;
-      mat._34 = -mat._34;
-      m_pin3d->GetMVP().SetView(mat);
-      m_pin3d->GetMVP().SetProj(0, m_camProj);
+      Matrix3D RH2LH; // Right Hand to Left Hand (note that RH2LH = inverse(RH2LH), so RH2LH.RH2LH is identity, which property is used below)
+      RH2LH.SetIdentity();
+      RH2LH._33 = -1.f;
+      Matrix3D view = RH2LH * m_camView * RH2LH;
+      Matrix3D proj = RH2LH * m_camProj;
+
+      m_pin3d->GetMVP().SetView(view);
+
+      #ifdef ENABLE_SDL
+      if (m_player->m_stereo3D != STEREO_OFF && m_player->m_stereo3D != STEREO_VR)
+      {
+         Matrix3D view(m_camView);
+         view.Invert();
+         // Create eye projection matrices for real stereo (not VR but anaglyph,...)
+         // 63mm is the average distance between eyes (varies from 54 to 74mm between adults, 43 to 58mm for children), 50 VPUnit is 1.25 inches
+         Matrix3D leftEye, rightEye, rot;
+         const float stereo3DMS = LoadValueFloatWithDefault(regKey[RegName::Player], "Stereo3DEyeSeparation"s, 63.0f);
+         float halfEyeDist = 0.5f * (stereo3DMS / 25.4f) * (50.f / 1.25f);
+         Matrix3D invView(view);
+         invView.Invert();
+         invView.OrthoNormalize();
+         vec3 right(invView._11, invView._12, invView._13);
+         vec3 up(invView._21, invView._22, invView._23);
+         vec3 dir(invView._31, invView._32, invView._33);
+         vec3 pos(invView._41, invView._42, invView._43);
+         vec3 at = pos + dir * m_camDistance;
+         rot = Matrix3D::MatrixLookAtLH(pos + (-halfEyeDist * right), at, up);
+         leftEye = invView * rot * proj; // Apply offset & rotation to the view
+         rot = Matrix3D::MatrixLookAtLH(pos + (halfEyeDist * right), at, up);
+         rightEye = invView * rot * proj; // Apply offset & rotation to the view
+         m_pin3d->GetMVP().SetProj(0, leftEye);
+         m_pin3d->GetMVP().SetProj(1, rightEye);
+      }
+      else
+      #endif
+      {
+         m_pin3d->GetMVP().SetProj(0, proj);
+         m_pin3d->GetMVP().SetProj(1, proj);
+      }
    }
    else
    {
