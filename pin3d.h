@@ -164,8 +164,8 @@ public:
    Texture m_builtinEnvTexture; // loaded from Resources
    Texture m_aoDitherTexture;   // loaded from Resources
 
-   Texture* m_envTexture;
-   BaseTexture* m_envRadianceTexture;
+   Texture* m_envTexture = nullptr;
+   BaseTexture* m_envRadianceTexture = nullptr;
 
    // free-camera-mode-fly-around parameters
    Vertex3Ds m_cam;
