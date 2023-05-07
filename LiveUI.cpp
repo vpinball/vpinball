@@ -1913,8 +1913,8 @@ void LiveUI::UpdateMainSplashModal()
          m_table->SetNonUndoableDirty(eSaveDirty);
       }
 
-      // Resume: click on the button, or press escape key
-      if (ImGui::Button("Resume Game", size) || (enableKeyboardShortcuts && ((ImGui::IsKeyPressed(dikToImGuiKeys[m_player->m_rgKeys[eEscape]]) && !m_disable_esc))))
+      // Resume: click on the button, or press escape key (react on key released, otherwise, it would immediatly reopen the UI)
+      if (ImGui::Button("Resume Game", size) || (enableKeyboardShortcuts && ((ImGui::IsKeyReleased(dikToImGuiKeys[m_player->m_rgKeys[eEscape]]) && !m_disable_esc))))
       {
          ImGui::CloseCurrentPopup();
          ExitEditMode();
