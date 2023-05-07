@@ -507,15 +507,15 @@ public:
    
    //
 
-   void SetOrthoOffCenterRH(const float l, float r, float b, const float t, float zn, const float zf)
+   void SetOrthoOffCenterRH(const float l, const float r, const float b, const float t, const float zn, const float zf)
    {
-      _11 = 2 / (r - l);
+      _11 = 2.f / (r - l);
       _12 = 0.0f;
       _13 = 0.0f;
       _14 = 0.0f;
 
       _21 = 0.0f;
-      _22 = 2 / (t - b);
+      _22 = 2.f / (t - b);
       _23 = 0.0f;
       _24 = 0.0f;
 
@@ -530,36 +530,34 @@ public:
       _44 = 1.0f;
    }
 
-   void SetFrustumRH(float left, float right, float bottom, float top, float znear, float zfar)
+   void SetFrustumRH(const float left, const float right, const float bottom, const float top, const float znear, const float zfar)
    {
-      float temp, temp2, temp3, temp4;
-      temp = 2.0f * znear;
-      temp2 = right - left;
-      temp3 = top - bottom;
-      temp4 = zfar - znear;
+      const float temp = 2.0f * znear;
+      const float temp2 = right - left;
+      const float temp3 = top - bottom;
+      const float temp4 = znear - zfar;
       _11 = temp / temp2;
-      _12 = 0.0;
-      _13 = 0.0;
-      _14 = 0.0;
-      _21 = 0.0;
+      _12 = 0.0f;
+      _13 = 0.0f;
+      _14 = 0.0f;
+      _21 = 0.0f;
       _22 = temp / temp3;
-      _23 = 0.0;
-      _24 = 0.0;
+      _23 = 0.0f;
+      _24 = 0.0f;
       _31 = (right + left) / temp2;
       _32 = (top + bottom) / temp3;
-      _33 = (-zfar - znear) / temp4;
+      _33 = (zfar + znear) / temp4;
       _34 = -1.0f;
-      _41 = 0.0;
-      _42 = 0.0;
-      _43 = (-temp * zfar) / temp4;
-      _44 = 0.0;
+      _41 = 0.0f;
+      _42 = 0.0f;
+      _43 = temp * zfar / temp4;
+      _44 = 0.0f;
    }
 
-   void SetPerspectiveRH(float fovyInDegrees, float aspectRatio, float znear, float zfar)
+   void SetPerspectiveRH(const float fovyInDegrees, const float aspectRatio, const float znear, const float zfar)
    {
-      float ymax, xmax;
-      ymax = znear * tanf(ANGTORAD(fovyInDegrees));
-      xmax = ymax * aspectRatio;
+      const float ymax = znear * tanf(ANGTORAD(fovyInDegrees));
+      const float xmax = ymax * aspectRatio;
       SetFrustumRH(-xmax, xmax, -ymax, ymax, znear, zfar);
    }
 

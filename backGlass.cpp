@@ -282,7 +282,7 @@ void BackGlass::Render()
 
    m_pd3dDevice->DMDShader->SetVector(SHADER_vColor_Intensity, 1.0f, 1.0f, 1.0f, 1.0f);
 
-   Vertex3D_NoTex2 vertices[4] =
+   static constexpr Vertex3D_NoTex2 vertices[4] =
    {
       { 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f },
       { 0.f, 1.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f },

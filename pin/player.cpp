@@ -541,7 +541,7 @@ void Player::CreateWnd(HWND parent /* = 0 */)
    int adapter = 0;
    for (vector<DisplayConfig>::iterator dispConf = displays.begin(); dispConf != displays.end(); ++dispConf)
       if (display == dispConf->display)
-            adapter = dispConf->adapter;
+         adapter = dispConf->adapter;
    int displayX, displayY, displayWidth, displayHeight;
    getDisplaySetupByID(display, displayX, displayY, displayWidth, displayHeight);
 
@@ -570,10 +570,10 @@ void Player::CreateWnd(HWND parent /* = 0 */)
       for (int index = 0; index < SDL_GetNumDisplayModes(adapter); index++)
       {
          SDL_GetDisplayMode(adapter, index, &mode);
-            if (mode.w == displayWidth && mode.h == displayHeight && mode.refresh_rate == m_refreshrate && mode.format == format)
+         if (mode.w == displayWidth && mode.h == displayHeight && mode.refresh_rate == m_refreshrate && mode.format == format)
          {
             SDL_SetWindowDisplayMode(m_sdl_playfieldHwnd, &mode);
-                found = true;
+            found = true;
             break;
          }
       }
@@ -848,22 +848,22 @@ void Player::InitFPS()
    m_frame_submit_total = 0;
    m_frame_flip_total = 0;
 
-    m_total = 0;
-    m_count = 0;
-    m_max = 0;
-    m_max_total = 0;
-    m_lastMaxChangeTime = 0;
-    m_lastTime_usec = 0;
+   m_total = 0;
+   m_count = 0;
+   m_max = 0;
+   m_max_total = 0;
+   m_lastMaxChangeTime = 0;
+   m_lastTime_usec = 0;
 
-    m_phys_total = 0;
-    m_phys_max = 0;
-    m_phys_max_total = 0;
-    m_phys_max_iterations = 0;
-    m_phys_total_iterations = 0;
+   m_phys_total = 0;
+   m_phys_max = 0;
+   m_phys_max_total = 0;
+   m_phys_max_iterations = 0;
+   m_phys_total_iterations = 0;
 
-    m_script_total = 0;
-    m_script_max = 0;
-    m_script_max_total = 0;
+   m_script_total = 0;
+   m_script_max = 0;
+   m_script_max_total = 0;
 }
 
 InfoMode Player::GetInfoMode() const {
@@ -1891,7 +1891,7 @@ void Player::InitStatic()
       m_ptable->m_vrenderprobe[i]->PreRenderStatic();
    }
 
-   // Stoee the total number of triangle prerendered (including for render probes)
+   // Store the total number of triangles prerendered (including ones done for render probes)
    stats_drawn_static_triangles = m_pin3d.m_pd3dPrimaryDevice->m_curDrawnTriangles;
 
    g_pvp->ProfileLog("Static PreRender End"s);
@@ -3538,7 +3538,7 @@ string Player::GetPerfInfo()
         << (float((double)m_script_total * 100.0 / (double)m_total)) << "%% avg, " << (float(1e-3 * m_script_max_total)) << "ms max\n";
    info << "\n";*/
 
-   // Renderer addtional informations
+   // Renderer additional informations
    info << "Triangles: " << ((m_pin3d.m_pd3dPrimaryDevice->m_frameDrawnTriangles + 999) / 1000) << "k per frame, "
         << ((stats_drawn_static_triangles + m_pin3d.m_pd3dPrimaryDevice->m_frameDrawnTriangles + 999) / 1000) << "k overall. DayNight " << quantizeUnsignedPercent(m_globalEmissionScale)
         << "%%\n";

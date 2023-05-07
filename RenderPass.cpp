@@ -147,8 +147,8 @@ void RenderPass::Execute(const bool log)
                return false;
             
             // At least one transparent item (identify by legacy transparency flag): render them after opaque ones
-            bool transparent1 = r1->IsTransparent();
-            bool transparent2 = r2->IsTransparent();
+            const bool transparent1 = r1->IsTransparent();
+            const bool transparent2 = r2->IsTransparent();
             if (transparent1)
             {
                if (transparent2)
@@ -167,7 +167,7 @@ void RenderPass::Execute(const bool log)
             
             // HACKY: if marked with a very high depthbias, render them first. This is needed to avoid breaking playfield rendering of old table 
             // since before 10.8, playfield was always rendered before all other parts, with alpha testing and depth writing.
-            if (r1->GetDepth() != r2->GetDepth() && abs(r1->GetDepth() - r2->GetDepth()) > 50000.f)
+            if (r1->GetDepth() != r2->GetDepth() && fabsf(r1->GetDepth() - r2->GetDepth()) > 50000.f)
                return r1->GetDepth() > r2->GetDepth(); // Back to front
 
             // Sort by shader to limit the number of shader changes

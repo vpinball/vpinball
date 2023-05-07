@@ -312,7 +312,7 @@ private:
       if (m_timenextblink <= time_msec)
       {
          m_iblinkframe++;
-          if (m_iblinkframe >= (U32)m_d.m_rgblinkpattern.length() || m_d.m_rgblinkpattern[m_iblinkframe] == '\0')
+         if (m_iblinkframe >= (U32)m_d.m_rgblinkpattern.length() || m_d.m_rgblinkpattern[m_iblinkframe] == '\0')
             m_iblinkframe = 0;
 
          m_timenextblink += m_d.m_blinkinterval;

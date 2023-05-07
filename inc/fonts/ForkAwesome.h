@@ -1,7 +1,7 @@
 // File: '.\forkawesome-webfont.ttf' (219004 bytes)
 // Exported using binary_to_compressed_c.cpp
-static const unsigned int fork_awesome_compressed_size = 172743;
-static const unsigned int fork_awesome_compressed_data[172744/4] =
+static constexpr unsigned int fork_awesome_compressed_size = 172743;
+static constexpr unsigned int fork_awesome_compressed_data[172744/4] =
 {
     0x0000bc57, 0x00000000, 0x7c570300, 0x00000400, 0x00010037, 0x000d0000, 0x00030080, 0x54464650, 0x8f22954d, 0x57030088, 0x2c158260, 0x2f534f1c, 
     0xee686132, 0x01000023, 0x3c0f8258, 0x616d6360, 0xc403bb70, 0x0e0000fb, 0x02000038, 0x747663d2, 0x043b0020, 0x1100006f, 0x261f820c, 0x73616704, 
@@ -3603,4 +3603,3 @@ static const unsigned int fork_awesome_compressed_data[172744/4] =
     0x6b730574, 0x09657461, 0x74656b73, 0x61666863, 0x65740362, 0x03820b78, 0x61707434, 0x72657474, 0x6e75056e, 0x05797469, 0x6e6e7562, 0x00820079, 
     0xffff0128, 0x00000200, 0x03820100, 0x87da0024, 0x07838f6f, 0x8f4ddd2b, 0x000000fb, 0x8f4ddd00, 0x01fa05fd, 0x0066af3a, 
 };
-

@@ -166,11 +166,11 @@ RenderTarget::RenderTarget(RenderDevice* rd, const string& name, const int width
    if (nMSAASamples == 1)
    {
       m_color_sampler = new Sampler(m_rd, m_color_tex, false, true);
-      m_color_sampler->SetName(name + ".Color"s);
+      m_color_sampler->SetName(name + ".Color");
       if (with_depth)
       {
          m_depth_sampler = new Sampler(m_rd, m_depth_tex, false, true);
-         m_depth_sampler->SetName(name + ".Depth"s);
+         m_depth_sampler->SetName(name + ".Depth");
       }
    }
 

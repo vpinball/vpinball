@@ -50,7 +50,7 @@ struct VideoMode
 struct DisplayConfig
 {
    int display; // Window Display identifier (the number that appears in the native Windows settings)
-   int adapter; // DirextX or SDL display/adapter identifier
+   int adapter; // DirectX or SDL display/adapter identifier
    int top;
    int left;
    int width;
@@ -210,7 +210,7 @@ public:
    HWND getHwnd() const { return m_windowHwnd; }
 
    HWND         m_windowHwnd;
-   int          m_width; // Width of the render buffer (not the window width, for example for stereo the render width is doubled, or for VR, the size depends on the headset)
+   int          m_width;  // Width of the render buffer (not the window width, for example for stereo the render width is doubled, or for VR, the size depends on the headset)
    int          m_height; // Height of the render buffer
    bool         m_fullscreen;
    int          m_colorDepth;
@@ -283,9 +283,9 @@ private:
    bool m_dwm_enabled;
 
 public:
-   MeshBuffer* m_quadMeshBuffer = nullptr; // internal vb for rendering quads
+   MeshBuffer* m_quadMeshBuffer = nullptr;       // internal vb for rendering quads
    MeshBuffer* m_quadPNTDynMeshBuffer = nullptr; // internal vb for rendering dynamic quads (position/normal/texture)
-   MeshBuffer* m_quadPTDynMeshBuffer = nullptr; // internal vb for rendering dynamic quads (position/texture)
+   MeshBuffer* m_quadPTDynMeshBuffer = nullptr;  // internal vb for rendering dynamic quads (position/texture)
 
 public:
 #ifndef ENABLE_SDL

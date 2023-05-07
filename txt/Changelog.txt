@@ -4,9 +4,10 @@ VP 10.8.0 Changelog
 FEATURES:
 
 - VPX and VPVR are finally reunited!
-  some of the changes that came in via VPVR:
+  So, similar to the VP9.9 release, this pretty much rearchitects VPs whole rendering pipeline, but still allows to play all tables with (hopefully) pretty much the same look and feel.
+  Some of the changes that came in via VPVR:
 
-  - added SDL2 / OpenGL as an additional render pipeline.
+  - added SDL2 / OpenGL / OpenGLES as an additional render pipeline.
     switching between DirectX 9 and OpenGL is (for now) only possible at compile time, thus two executables are shipped.
 
   - the new OpenGL pipeline is also capable to render to VR devices (support for SteamVR):
@@ -38,12 +39,16 @@ FEATURES:
     weird we warned you). If you have issues locating the table or getting nightmares, it is NOT our fault.
     Default values are: box unchecked and 1.
 
+  - note that adaptive vsync (=mode value 2) is recommended (at least) on macOS/iOS and Android
+
 - added rudimentary support for BAM Headtracking (thanks to Rafal from ravarcade.pl). Usage:
   It works almost the same way as with Arcade Pinball, but one doesn't have control over the table location.
    1. The User needs a working Future Pinball installation with head tracking enabled (FP is just used to setup the head tracking, FP can then be closed).
    2. Start BAM-Tracker.exe, select head tracking method, leave it running.
    3. Run VPinballX (the OpenGL version)
    https://www.youtube.com/watch?v=g-EpTp_3wKo
+
+- completely revamped F11 (note that on macOS its F1)/ESC menu, including much more detailed live editing options of table elements
 
 - the playfield is now processed like all the other parts, i.e. its not forced as static/preprocessed anymore, and thus underlying table elements will work as expected now (so no more under playfield clipping, and alpha blending is not limited to simple alpha clipping/cutouts anymore):
   - if the 'playfield_mesh' primitive has 'Static rendering' disabled, it will be rendered with transparent parts (this results in the 'playfield_mesh' to be blended like plain primitives, so no more need for alpha test or insert overlays)
@@ -90,7 +95,8 @@ FEATURES:
   - allow to see all the available settings at once (not so easy before, since there are a few hundreds of them),
   - allow easier collaboration by being able to share the setting file with bug reports.
 
-- the application is now 'DPI aware' this means that it can be used with multiple monitors using different DPI settings. This may needs to adjust position of windows on existing installs.
+- the application is now fully 'DPI aware'. This means that one can use multiple monitors at different DPI settings.
+  This may require to adjust the position of windows on existing installs.
 
 FIXES:
 
@@ -111,9 +117,14 @@ FIXES:
 
 - improve script editing performance again
 
+- improve mouse cursor hide/unhide in (windowed) fullscreen
+
+- fix 'O'-key ball debugging
+
 - fix crash if sound card(s) hardware/driver setup changed
 
 - update example tables with new raytraced ball shadows enabled
+- add better wood texture
 
 - update FreeImage library to latest 3.18.0 (custom build) (currently disabled)
 - DirectX 8 port for input handling (currently disabled)

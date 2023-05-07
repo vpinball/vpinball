@@ -132,7 +132,7 @@ string MakeString(const wstring &wz)
    const int len = (int)wz.length();
    char *const szT = new char[len + 1];
    WideCharToMultiByteNull(CP_ACP, 0, wz.c_str(), -1, szT, len + 1, nullptr, nullptr);
-   string result = string(szT);
+   const string result(szT);
    delete szT;
    return result;
 }

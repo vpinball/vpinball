@@ -218,12 +218,13 @@ vec3 vec3::operator*(const float s) const {
    return vec3(x * s, y * s, z * s);
 }
 
-vec3 operator*(float s, const vec3 &v) {
+vec3 operator*(const float s, const vec3 &v) {
    return vec3(s * v.x, s * v.y, s * v.z);
 }
 
 vec3 vec3::operator/(const float s) const {
-   return vec3(x / s, y / s, z / s);
+   const float inv_s = 1.f / s;
+   return vec3(x * inv_s, y * inv_s, z * inv_s);
 }
 
 #endif

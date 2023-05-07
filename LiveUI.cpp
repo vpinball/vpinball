@@ -575,9 +575,9 @@ LiveUI::LiveUI(RenderDevice *const rd)
    m_orthoCam = true;
    m_camDistance = m_live_table->m_bottom * 0.7f;
    bool isPerspective = false;
-   float viewWidth = 10.f; // for orthographic
-   float camYAngle = 165.f / 180.f * 3.14159f;
-   float camXAngle = 32.f / 180.f * 3.14159f;
+   constexpr float viewWidth = 10.f; // for orthographic
+   constexpr float camYAngle = 165.f * float(M_PI / 180.);
+   constexpr float camXAngle = 32.f * float(M_PI / 180.);
    vec3 eye(m_live_table->m_right * 0.5f, m_live_table->m_bottom * 0.5f, -m_camDistance);
    vec3 at(m_live_table->m_right * 0.5f, m_live_table->m_bottom * 0.5f, 0.f);
    vec3 up(0.f, -1.f, 0.f);
@@ -1079,8 +1079,8 @@ void LiveUI::UpdateMainUI()
       float *cameraProjection = (float *)(m_camProj.m); 
 
       /* Matrix3D gridMatrix;
-      static const float identityMatrix[16] = { 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 1.f };
-      gridMatrix.RotateXMatrix(M_PI * 0.5f);
+      static constexpr float identityMatrix[16] = { 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 1.f };
+      gridMatrix.RotateXMatrix(M_PI * 0.5);
       gridMatrix.Scale(10.0f, 1.0f, 10.0f);
       ImGuizmo::DrawGrid((const float *)(m_camView.m), (const float *)(m_camProj.m), (const float *)(gridMatrix.m), 100.f); */
       //ImGuizmo::DrawGrid(cameraView, cameraProjection, identityMatrix, 100.f);
@@ -1320,21 +1320,20 @@ void LiveUI::UpdateMainUI()
          view.Invert();
          // Create eye projection matrices for real stereo (not VR but anaglyph,...)
          // 63mm is the average distance between eyes (varies from 54 to 74mm between adults, 43 to 58mm for children), 50 VPUnit is 1.25 inches
-         Matrix3D leftEye, rightEye, rot;
          const float stereo3DMS = LoadValueFloatWithDefault(regKey[RegName::Player], "Stereo3DEyeSeparation"s, 63.0f);
-         float halfEyeDist = 0.5f * (stereo3DMS / 25.4f) * (50.f / 1.25f);
+         const float halfEyeDist = 0.5f * (stereo3DMS / 25.4f) * (float)(50. / 1.25);
          Matrix3D invView(view);
          invView.Invert();
          invView.OrthoNormalize();
-         vec3 right(invView._11, invView._12, invView._13);
-         vec3 up(invView._21, invView._22, invView._23);
-         vec3 dir(invView._31, invView._32, invView._33);
-         vec3 pos(invView._41, invView._42, invView._43);
-         vec3 at = pos + dir * m_camDistance;
-         rot = Matrix3D::MatrixLookAtLH(pos + (-halfEyeDist * right), at, up);
-         leftEye = invView * rot * proj; // Apply offset & rotation to the view
+         const vec3 right(invView._11, invView._12, invView._13);
+         const vec3 up(invView._21, invView._22, invView._23);
+         const vec3 dir(invView._31, invView._32, invView._33);
+         const vec3 pos(invView._41, invView._42, invView._43);
+         const vec3 at = pos + dir * m_camDistance;
+         Matrix3D rot = Matrix3D::MatrixLookAtLH(pos + (-halfEyeDist * right), at, up);
+         const Matrix3D leftEye = invView * rot * proj; // Apply offset & rotation to the view
          rot = Matrix3D::MatrixLookAtLH(pos + (halfEyeDist * right), at, up);
-         rightEye = invView * rot * proj; // Apply offset & rotation to the view
+         const Matrix3D rightEye = invView * rot * proj; // Apply offset & rotation to the view
          m_pin3d->GetMVP().SetProj(0, leftEye);
          m_pin3d->GetMVP().SetProj(1, rightEye);
       }
@@ -1927,7 +1926,8 @@ void LiveUI::UpdateMainSplashModal()
       if (m_player->m_cameraMode && !m_old_player_camera_mode && m_live_table != nullptr && m_table != nullptr)
       {
          m_player->m_cameraMode = m_old_player_camera_mode;
-         PinTable *src = m_live_table, *dst = m_table;
+         const PinTable * const __restrict src = m_live_table;
+         PinTable * const __restrict dst = m_table;
          dst->m_3DmaxSeparation = src->m_3DmaxSeparation;
          for (int i = 0; i < 3; i++)
          {

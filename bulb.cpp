@@ -66,7 +66,7 @@ void bulb_init()
    for (int i=0; i<3000; i++)
    {
       double T = i;
-      // Compute Tungsten specific heat (energy to temperature transfer, depending on temperature) according to forumla from "Heating-times of tungsten filament incandescent lamps" by Dulli Chandra Agrawal
+      // Compute Tungsten specific heat (energy to temperature transfer, depending on temperature) according to formula from "Heating-times of tungsten filament incandescent lamps" by Dulli Chandra Agrawal
       locals.specific_heat[i] = 3.0 * 45.2268 * (1.0 - 310.0 * 310.0 / (20.0 * T*T)) + (2.0 * 0.0045549 * T) + (4 * 0.000000000577874 * T*T*T);
       // Compute cooldown and heat up factor for the predefined bulbs
       for (int j=0; j<BULB_MAX; j++)

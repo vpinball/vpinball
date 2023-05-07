@@ -57,7 +57,7 @@ public:
    vec3 operator/(const float s) const;
 };
 
-inline vec3* Vec3Normalize(vec3* out, const vec3* v)
+inline vec3* Vec3Normalize(vec3* const out, const vec3* const v)
 {
    float len = v->x * v->x + v->y * v->y + v->z * v->z;
    if (len <= 1.e-10f)
@@ -70,13 +70,13 @@ inline vec3* Vec3Normalize(vec3* out, const vec3* v)
    return out;
 }
 
-inline vec3* Vec3Cross(vec3* out, const vec3* v1, const vec3* v2)
+inline vec3* Vec3Cross(vec3* const out, const vec3* const v1, const vec3* const v2)
 { 
    *out = vec3(v1->y * v2->z - v1->z * v2->y, v1->z * v2->x - v1->x * v2->z, v1->x * v2->y - v1->y * v2->x); 
    return out;
 };
 
-inline float Vec3Dot(const vec3* v1, const vec3* v2) { return v1->x * v2->x + v1->y * v2->y + v1->z * v2->z; }
+inline float Vec3Dot(const vec3* const __restrict v1, const vec3* const __restrict v2) { return v1->x * v2->x + v1->y * v2->y + v1->z * v2->z; }
 
 #else
 typedef struct D3DXVECTOR3 vec3;

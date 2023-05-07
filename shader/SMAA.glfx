@@ -134,9 +134,9 @@ void main()
     // gl_Position = vec4(vPosition.x * 4.0 + 0.5, -vPosition.y * 4.0 + 0.75,0.0,1.0);
     texcoord = tc;
     SMAANeighborhoodBlendingVS(texcoord, offset);
-	// Reverse Y offset to account for texture orientation
-	offset.y *= -1.;
-	offset.w *= -1.;
+    // Reverse Y offset to account for texture orientation
+    offset.y *= -1.;
+    offset.w *= -1.;
 }
 
 ////GLSL_SMAAColorEdgeDetectionPS
