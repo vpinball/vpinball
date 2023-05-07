@@ -112,6 +112,10 @@ private:
       };
    } m_selection;
 
+   // Outliner
+   string m_outlinerFilter;
+   bool IsOutlinerFiltered(const string& name);
+
    // Rendering
    RenderDevice* const m_rd;
    int m_rotate = 0;
