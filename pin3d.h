@@ -123,7 +123,7 @@ public:
    HRESULT InitPin3D(const bool fullScreen, const int width, const int height, const int colordepth, int &refreshrate, const int VSync, const float AAfactor, const StereoMode stereo3D, const unsigned int FXAA, const bool sharpen, const bool ss_refl);
 
    // void InitLayoutFS(); // Legacy
-   void InitLayout(const bool FSS_mode, const float max_separation, const float xpixoff = 0.f, const float ypixoff = 0.f);
+   void InitLayout(const float xpixoff = 0.f, const float ypixoff = 0.f);
 
    void TransformVertices(const Vertex3D_NoTex2 * const __restrict rgv, const WORD * const __restrict rgi, const int count, Vertex2D * const __restrict rgvout) const;
    void TransformVertices(const Vertex3Ds* const __restrict rgv, const WORD* const __restrict rgi, const int count, Vertex2D* const __restrict rgvout) const;

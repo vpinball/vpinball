@@ -55,133 +55,6 @@
 
 #define ICON_SAVE ICON_FK_FLOPPY_O
 
-void Frustum(float left, float right, float bottom, float top, float znear, float zfar, float *m16)
-{
-   float temp, temp2, temp3, temp4;
-   temp = 2.0f * znear;
-   temp2 = right - left;
-   temp3 = top - bottom;
-   temp4 = zfar - znear;
-   m16[0] = temp / temp2;
-   m16[1] = 0.0;
-   m16[2] = 0.0;
-   m16[3] = 0.0;
-   m16[4] = 0.0;
-   m16[5] = temp / temp3;
-   m16[6] = 0.0;
-   m16[7] = 0.0;
-   m16[8] = (right + left) / temp2;
-   m16[9] = (top + bottom) / temp3;
-   m16[10] = (-zfar - znear) / temp4;
-   m16[11] = -1.0f;
-   m16[12] = 0.0;
-   m16[13] = 0.0;
-   m16[14] = (-temp * zfar) / temp4;
-   m16[15] = 0.0;
-}
-
-void Perspective(float fovyInDegrees, float aspectRatio, float znear, float zfar, float *m16)
-{
-   float ymax, xmax;
-   ymax = znear * tanf(fovyInDegrees * 3.141592f / 180.0f);
-   xmax = ymax * aspectRatio;
-   Frustum(-xmax, xmax, -ymax, ymax, znear, zfar, m16);
-}
-
-void Cross(const float *a, const float *b, float *r)
-{
-   r[0] = a[1] * b[2] - a[2] * b[1];
-   r[1] = a[2] * b[0] - a[0] * b[2];
-   r[2] = a[0] * b[1] - a[1] * b[0];
-}
-
-float Dot(const float *a, const float *b) { return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]; }
-
-void Normalize(const float *a, float *r)
-{
-   float il = 1.f / (sqrtf(Dot(a, a)) + FLT_EPSILON);
-   r[0] = a[0] * il;
-   r[1] = a[1] * il;
-   r[2] = a[2] * il;
-}
-
-void LookAt(const float *eye, const float *at, const float *up, float *m16)
-{
-   float X[3], Y[3], Z[3], tmp[3];
-
-   tmp[0] = eye[0] - at[0];
-   tmp[1] = eye[1] - at[1];
-   tmp[2] = eye[2] - at[2];
-   Normalize(tmp, Z);
-   Normalize(up, Y);
-
-   Cross(Y, Z, tmp);
-   Normalize(tmp, X);
-
-   Cross(Z, X, tmp);
-   Normalize(tmp, Y);
-
-   m16[0] = X[0];
-   m16[1] = Y[0];
-   m16[2] = Z[0];
-   m16[3] = 0.0f;
-   m16[4] = X[1];
-   m16[5] = Y[1];
-   m16[6] = Z[1];
-   m16[7] = 0.0f;
-   m16[8] = X[2];
-   m16[9] = Y[2];
-   m16[10] = Z[2];
-   m16[11] = 0.0f;
-   m16[12] = -Dot(X, eye);
-   m16[13] = -Dot(Y, eye);
-   m16[14] = -Dot(Z, eye);
-   m16[15] = 1.0f;
-}
-
-void OrthoGraphic(const float l, float r, float b, const float t, float zn, const float zf, float *m16)
-{
-   m16[0] = 2 / (r - l);
-   m16[1] = 0.0f;
-   m16[2] = 0.0f;
-   m16[3] = 0.0f;
-   m16[4] = 0.0f;
-   m16[5] = 2 / (t - b);
-   m16[6] = 0.0f;
-   m16[7] = 0.0f;
-   m16[8] = 0.0f;
-   m16[9] = 0.0f;
-   m16[10] = 1.0f / (zf - zn);
-   m16[11] = 0.0f;
-   m16[12] = (l + r) / (l - r);
-   m16[13] = (t + b) / (b - t);
-   m16[14] = zn / (zn - zf);
-   m16[15] = 1.0f;
-}
-
-inline void rotationY(const float angle, float *m16)
-{
-   float c = cosf(angle);
-   float s = sinf(angle);
-
-   m16[0] = c;
-   m16[1] = 0.0f;
-   m16[2] = -s;
-   m16[3] = 0.0f;
-   m16[4] = 0.0f;
-   m16[5] = 1.f;
-   m16[6] = 0.0f;
-   m16[7] = 0.0f;
-   m16[8] = s;
-   m16[9] = 0.0f;
-   m16[10] = c;
-   m16[11] = 0.0f;
-   m16[12] = 0.f;
-   m16[13] = 0.f;
-   m16[14] = 0.f;
-   m16[15] = 1.0f;
-}
-
 // utility structure for realtime plot //!! cleanup
 class ScrollingData
 {
@@ -705,10 +578,10 @@ LiveUI::LiveUI(RenderDevice *const rd)
    float viewWidth = 10.f; // for orthographic
    float camYAngle = 165.f / 180.f * 3.14159f;
    float camXAngle = 32.f / 180.f * 3.14159f;
-   float eye[] = { m_live_table->m_right * 0.5f, m_live_table->m_bottom * 0.5f, -m_camDistance };
-   float at[] = { m_live_table->m_right * 0.5f, m_live_table->m_bottom * 0.5f, 0.f };
-   float up[] = { 0.f, -1.f, 0.f };
-   LookAt(eye, at, up, (float *)(m_camView.m));
+   vec3 eye(m_live_table->m_right * 0.5f, m_live_table->m_bottom * 0.5f, -m_camDistance);
+   vec3 at(m_live_table->m_right * 0.5f, m_live_table->m_bottom * 0.5f, 0.f);
+   vec3 up(0.f, -1.f, 0.f);
+   m_camView.SetLookAtRH(eye, at, up);
    ImGuizmo::AllowAxisFlip(false);
 
    ImGui_ImplWin32_Init(rd->getHwnd());
@@ -1035,8 +908,13 @@ void LiveUI::UpdateCameraModeUI()
       case 13: ImGui::Text("Environment Emission: %.3f", table->m_envEmissionScale); ImGui::NewLine(); break;
       case 14:
       {
+         #ifdef ENABLE_SDL
+         float stereo3DEyeSep = LoadValueFloatWithDefault(regKey[RegName::Player], "Stereo3DEyeSeparation"s, 63.0f);
+         ImGui::Text("Eye distance: %.0fmm", stereo3DEyeSep);
+         #else
          const char *txt = m_table->m_overwriteGlobalStereo3D ? "Max Separation [Table setting]: %.3f" : "Max Separation [Application setting]: %.3f";
          ImGui::Text(txt, table->GetMaxSeparation());
+         #endif
          break;
       }
       case 15: ImGui::Text("Anaglyph desaturation: %.2f", m_player->m_global3DDesaturation); break;
@@ -1091,7 +969,7 @@ void LiveUI::ExitEditMode()
    m_player->m_cameraMode = m_old_player_camera_mode;
    SetupImGuiStyle(1.0f);
    m_useEditorCam = false;
-   m_pin3d->InitLayout(m_live_table->m_BG_enable_FSS, m_live_table->GetMaxSeparation());
+   m_pin3d->InitLayout();
 }
 
 void LiveUI::HideUI()
@@ -1191,11 +1069,11 @@ void LiveUI::UpdateMainUI()
       {
          float viewHeight = m_camDistance;
          float viewWidth = viewHeight * io.DisplaySize.x / io.DisplaySize.y;
-         OrthoGraphic(-viewWidth, viewWidth, -viewHeight, viewHeight, 10.f, -10000.f, (float *)(m_camProj.m));
+         m_camProj.SetOrthoOffCenterRH(-viewWidth, viewWidth, -viewHeight, viewHeight, 10.f, -10000.f);
       }
       else
       {
-         Perspective(39.6f, io.DisplaySize.x / io.DisplaySize.y, 10.0f, 10000.0f, (float *)(m_camProj.m));
+         m_camProj.SetPerspectiveRH(39.6f, io.DisplaySize.x / io.DisplaySize.y, 10.0f, 10000.0f);
       }
       float* cameraView = (float *)(m_camView.m);
       float *cameraProjection = (float *)(m_camProj.m); 
@@ -1266,7 +1144,7 @@ void LiveUI::UpdateMainUI()
          vec3 camTarget = pos - dir * m_camDistance;
          m_camDistance *= (float) pow(1.1, -ImGui::GetIO().MouseWheel);
          vec3 newEye = camTarget + dir * m_camDistance;
-         LookAt(&newEye.x, &camTarget.x, &up.x, (float *)(m_camView.m));
+         m_camView.SetLookAtRH(newEye, camTarget, up);
       }
 
       // Pan mouse
@@ -1286,7 +1164,7 @@ void LiveUI::UpdateMainUI()
          {
             pos = pos - right * drag.x + up * drag.y;
             camTarget = camTarget - right * drag.x + up * drag.y;
-            LookAt(&pos.x, &camTarget.x, &up.x, (float *)(m_camView.m));
+            m_camView.SetLookAtRH(pos, camTarget, up);
          }
       }
    }
@@ -1370,7 +1248,7 @@ void LiveUI::UpdateMainUI()
             if (GetSelectionTransform(transform))
                newTarget = vec3(transform._41, transform._42, transform._43);
             vec3 newEye = newTarget + dir * m_camDistance;
-            LookAt(&newEye.x, &newTarget.x, &up.x, (float *)(m_camView.m));
+            m_camView.SetLookAtRH(newEye, newTarget, up);
          }
          else if (ImGui::IsKeyPressed(ImGuiKey_Keypad7))
          {
@@ -1386,7 +1264,7 @@ void LiveUI::UpdateMainUI()
             vec3 newUp(0.f, -1.f, 0.f);
             vec3 newDir(0.f, 0.f, ImGui::GetIO().KeyCtrl ? 1.f : -1.f);
             vec3 newEye = camTarget + newDir * m_camDistance;
-            LookAt(&newEye.x, &camTarget.x, &newUp.x, (float *)(m_camView.m));
+            m_camView.SetLookAtRH(newEye, camTarget, newUp);
          }
          else if (ImGui::IsKeyPressed(ImGuiKey_Keypad1))
          {
@@ -1402,7 +1280,7 @@ void LiveUI::UpdateMainUI()
             vec3 newUp(0.f, 0.f, -1.f);
             vec3 newDir(0.f, ImGui::GetIO().KeyCtrl ? -1.f : 1.f, 0.f);
             vec3 newEye = camTarget + newDir * m_camDistance;
-            LookAt(&newEye.x, &camTarget.x, &newUp.x, (float *)(m_camView.m));
+            m_camView.SetLookAtRH(newEye, camTarget, newUp);
          }
          else if (ImGui::IsKeyPressed(ImGuiKey_Keypad3))
          {
@@ -1415,10 +1293,10 @@ void LiveUI::UpdateMainUI()
             vec3 dir(view._31, view._32, view._33);
             vec3 pos(view._41, view._42, view._43);
             vec3 camTarget = pos - dir * m_camDistance;
-            vec3 newUp(0.f, 0.f, 1.f);
+            vec3 newUp(0.f, 0.f, -1.f);
             vec3 newDir(ImGui::GetIO().KeyCtrl ? 1.f : -1.f, 0.f, 0.f);
             vec3 newEye = camTarget + newDir * m_camDistance;
-            LookAt(&newEye.x, &camTarget.x, &newUp.x, (float *)(m_camView.m));
+            m_camView.SetLookAtRH(newEye, camTarget, newUp);
          }
       }
    }
@@ -1436,7 +1314,7 @@ void LiveUI::UpdateMainUI()
    }
    else
    {
-      m_pin3d->InitLayout(m_live_table->m_BG_enable_FSS, m_live_table->GetMaxSeparation());
+      m_pin3d->InitLayout();
    }
 }
 
@@ -1831,7 +1709,7 @@ void LiveUI::UpdateRendererInspectionModal()
    m_player->EnableStaticPrePass(!m_old_player_dynamic_mode);
    m_player->m_cameraMode = m_old_player_camera_mode;
    m_useEditorCam = false;
-   m_pin3d->InitLayout(m_live_table->m_BG_enable_FSS, m_live_table->GetMaxSeparation());
+   m_pin3d->InitLayout();
 
    ImGui::SetNextWindowSize(ImVec2(550.f * m_dpi, 0));
    if (ImGui::Begin(ID_RENDERER_INSPECTION, &m_RendererInspection))

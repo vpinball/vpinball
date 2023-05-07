@@ -1303,7 +1303,7 @@ HRESULT Player::Init()
    else
        m_toogle_DTFS = false;
 
-   m_pin3d.InitLayout(m_ptable->m_BG_enable_FSS, m_ptable->GetMaxSeparation());
+   m_pin3d.InitLayout();
 
    m_liveUI = new LiveUI(m_pin3d.m_pd3dPrimaryDevice);
 
@@ -1754,7 +1754,7 @@ void Player::InitStatic()
       assert(iter != 0 || (u1 == 0.f && u2 == 0.f));
 
       // Setup Camera,etc matrices for each iteration.
-      m_pin3d.InitLayout(m_ptable->m_BG_enable_FSS, m_ptable->GetMaxSeparation(), u1, u2);
+      m_pin3d.InitLayout(u1, u2);
 
       // Direct all renders to the "static" buffer
       m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("PreRender Background"s, renderRT);
@@ -4028,6 +4028,11 @@ void Player::UpdateBackdropSettings(const bool up)
    }
    case 14:
    {
+      #ifdef ENABLE_SDL
+      float stereo3DEyeSep = LoadValueFloatWithDefault(regKey[RegName::Player], "Stereo3DEyeSeparation"s, 63.0f);
+      stereo3DEyeSep = clamp(stereo3DEyeSep + thesign * 5.0f, 0.f, 1000.f);
+      SaveValueFloat(regKey[RegName::Player], "Stereo3DEyeSeparation"s, stereo3DEyeSep);
+      #else
       if (m_ptable->m_overwriteGlobalStereo3D)
       {
          m_ptable->m_3DmaxSeparation += thesign * 0.0025f;
@@ -4041,6 +4046,7 @@ void Player::UpdateBackdropSettings(const bool up)
             m_ptable->m_global3DMaxSeparation = 0.f;
          SaveValueFloat(regKey[RegName::Player], "Stereo3DMaxSeparation"s, m_ptable->m_global3DMaxSeparation);
       }
+      #endif
       break;
    }
    case 15:
@@ -4201,7 +4207,7 @@ void Player::Render()
          m_pin3d.m_pd3dPrimaryDevice->UpdateVRPosition(m_pin3d.GetMVP());
       else
       #endif
-      m_pin3d.InitLayout(m_ptable->m_BG_enable_FSS, m_ptable->GetMaxSeparation());
+      m_pin3d.InitLayout();
    }
    else if (m_headTracking)
    {
@@ -4210,7 +4216,7 @@ void Player::Render()
    }
    else if (m_cameraMode)
    {
-      m_pin3d.InitLayout(m_ptable->m_BG_enable_FSS, m_ptable->GetMaxSeparation());
+      m_pin3d.InitLayout();
    }
 
    if (GetInfoMode() != IF_STATIC_ONLY)

@@ -2,8 +2,87 @@
 
 #include <cfloat>
 
-#ifndef ENABLE_SDL
+#ifdef ENABLE_SDL
+class Matrix3D;
+
+class vec4 final
+{
+public:
+   union
+   {
+      struct
+      {
+         float x, y, z, w;
+      };
+      struct
+      {
+         float r, g, b, a;
+      };
+      float v[4];
+   };
+
+   vec4(const float x, const float y, const float z, const float w);
+   vec4();
+   static vec4 normal(const vec4& input);
+   static float dot(const vec4& a, const vec4& b);
+   vec4 operator+(const vec4& m) const;
+   vec4 operator-(const vec4& m) const;
+};
+
+typedef vec4 D3DXPLANE;
+
+class vec3 final
+{
+public:
+   union
+   {
+      struct
+      {
+         float x, y, z;
+      };
+      struct
+      {
+         float r, g, b;
+      };
+      float v[3];
+   };
+
+   vec3(const float x, const float y, const float z);
+   vec3();
+   static vec3 TransformCoord(const vec3& ec, const Matrix3D& mat);
+   vec3 operator+(const vec3& m) const;
+   vec3 operator-(const vec3& m) const;
+   vec3 operator*(const float s) const;
+   vec3 operator/(const float s) const;
+};
+
+inline vec3* Vec3Normalize(vec3* out, const vec3* v)
+{
+   float len = v->x * v->x + v->y * v->y + v->z * v->z;
+   if (len <= 1.e-10f)
+      *out = vec3(0.0f, 0.0f, 0.0f);
+   else
+   {
+      len = 1.0f / sqrtf(len);
+      *out = vec3(v->x * len, v->y * len, v->z * len);
+   }
+   return out;
+}
+
+inline vec3* Vec3Cross(vec3* out, const vec3* v1, const vec3* v2)
+{ 
+   *out = vec3(v1->y * v2->z - v1->z * v2->y, v1->z * v2->x - v1->x * v2->z, v1->x * v2->y - v1->y * v2->x); 
+   return out;
+};
+
+inline float Vec3Dot(const vec3* v1, const vec3* v2) { return v1->x * v2->x + v1->y * v2->y + v1->z * v2->z; }
+
+#else
 typedef struct D3DXVECTOR3 vec3;
+#define Vec3Normalize D3DXVec3Normalize
+#define Vec3Cross D3DXVec3Cross
+#define Vec3Dot D3DXVec3Dot
+
 typedef struct D3DXVECTOR4 vec4;
 #endif
 
