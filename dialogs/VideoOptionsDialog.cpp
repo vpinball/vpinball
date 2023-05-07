@@ -476,6 +476,12 @@ BOOL VideoOptionsDialog::OnInitDialog()
    GetDlgItem(IDC_3D_STEREO_Y).EnableWindow(false);
    GetDlgItem(IDC_3D_STEREO_OFS).EnableWindow(false);
    GetDlgItem(IDC_3D_STEREO_ZPD).EnableWindow(false);
+   // Completely hide parallax settings to avoid confusing user
+   GetDlgItem(IDC_3D_STEREO_Y).ShowWindow(false);
+   GetDlgItem(IDC_3D_STEREO_OFS_LABEL).ShowWindow(false);
+   GetDlgItem(IDC_3D_STEREO_OFS).ShowWindow(false);
+   GetDlgItem(IDC_3D_STEREO_ZPD_LABEL).ShowWindow(false);
+   GetDlgItem(IDC_3D_STEREO_ZPD).ShowWindow(false);
    #else
    const float stereo3DMS = LoadValueFloatWithDefault(regKey[RegName::Player], "Stereo3DMaxSeparation"s, 0.03f);
    SetDlgItemText(IDC_3D_STEREO_MS_LABEL, "Parallax Separation");
