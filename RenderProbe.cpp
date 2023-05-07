@@ -269,7 +269,7 @@ void RenderProbe::PreRenderStaticReflectionProbe()
       assert(iter != 0 || (u1 == 0.f && u2 == 0.f));
 
       // Setup Camera,etc matrices for each iteration, applying antialiasing offset
-      g_pplayer->m_pin3d.InitLayout(g_pplayer->m_ptable->m_BG_enable_FSS, g_pplayer->m_ptable->GetMaxSeparation(), u1, u2);
+      g_pplayer->m_pin3d.InitLayout(u1, u2);
 
       RenderState initial_state;
       p3dDevice->CopyRenderStates(true, initial_state);

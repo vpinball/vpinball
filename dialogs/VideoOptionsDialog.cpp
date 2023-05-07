@@ -121,7 +121,11 @@ void VideoOptionsDialog::ResetVideoPreferences(const unsigned int profile) // 0 
    char tmp[256];
    sprintf_s(tmp, sizeof(tmp), "%f", stereo3DOfs);
    SetDlgItemText(IDC_3D_STEREO_OFS, tmp);
-   constexpr float stereo3DMS = 0.03f;
+   #ifdef ENABLE_SDL
+   constexpr float stereo3DMS = 63.0f; // Eye separation
+   #else
+   constexpr float stereo3DMS = 0.03f; // Parallax separation factor
+   #endif
    sprintf_s(tmp, sizeof(tmp), "%f", stereo3DMS);
    SetDlgItemText(IDC_3D_STEREO_MS, tmp);
    constexpr float stereo3DZPD = 0.5f;
@@ -466,7 +470,16 @@ BOOL VideoOptionsDialog::OnInitDialog()
    sprintf_s(tmp, sizeof(tmp), "%f", stereo3DOfs);
    SetDlgItemText(IDC_3D_STEREO_OFS, tmp);
 
+   #ifdef ENABLE_SDL
+   const float stereo3DMS = LoadValueFloatWithDefault(regKey[RegName::Player], "Stereo3DEyeSeparation"s, 63.0f);
+   SetDlgItemText(IDC_3D_STEREO_MS_LABEL, "Eye Separation (mm)");
+   GetDlgItem(IDC_3D_STEREO_Y).EnableWindow(false);
+   GetDlgItem(IDC_3D_STEREO_OFS).EnableWindow(false);
+   GetDlgItem(IDC_3D_STEREO_ZPD).EnableWindow(false);
+   #else
    const float stereo3DMS = LoadValueFloatWithDefault(regKey[RegName::Player], "Stereo3DMaxSeparation"s, 0.03f);
+   SetDlgItemText(IDC_3D_STEREO_MS_LABEL, "Parallax Separation");
+   #endif
    sprintf_s(tmp, sizeof(tmp), "%f", stereo3DMS);
    SetDlgItemText(IDC_3D_STEREO_MS, tmp);
 
@@ -946,7 +959,11 @@ void VideoOptionsDialog::OnOK()
    const size_t alphaRampsAccuracy = SendMessage(GetDlgItem(IDC_ARASlider).GetHwnd(), TBM_GETPOS, 0, 0);
    SaveValueInt(regKey[RegName::Player], "AlphaRampAccuracy"s, (int)alphaRampsAccuracy);
    SaveValue(regKey[RegName::Player], "Stereo3DOffset"s, GetDlgItemText(IDC_3D_STEREO_OFS).c_str());
+   #ifdef ENABLE_SDL
+   SaveValue(regKey[RegName::Player], "Stereo3DEyeSeparation"s, GetDlgItemText(IDC_3D_STEREO_MS).c_str());
+   #else
    SaveValue(regKey[RegName::Player], "Stereo3DMaxSeparation"s, GetDlgItemText(IDC_3D_STEREO_MS).c_str());
+   #endif
    SaveValue(regKey[RegName::Player], "Stereo3DZPD"s, GetDlgItemText(IDC_3D_STEREO_ZPD).c_str());
    SaveValue(regKey[RegName::Player], "Stereo3DContrast"s, GetDlgItemText(IDC_3D_STEREO_CONTRAST).c_str());
    SaveValue(regKey[RegName::Player], "Stereo3DDesaturation"s, GetDlgItemText(IDC_3D_STEREO_DESATURATION).c_str());

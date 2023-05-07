@@ -1995,7 +1995,7 @@ void RenderDevice::InitVR() {
       left_eye_pos = m_pHMD->GetEyeToHeadTransform(vr::Eye_Left);
       right_eye_pos = m_pHMD->GetEyeToHeadTransform(vr::Eye_Right);
       left_eye_proj = m_pHMD->GetProjectionMatrix(vr::Eye_Left, nearPlane, farPlane); //5cm to 50m should be a reasonable range
-      right_eye_proj = m_pHMD->GetProjectionMatrix(vr::Eye_Right, nearPlane, farPlane); //5cm to 500m should be a reasonable range
+      right_eye_proj = m_pHMD->GetProjectionMatrix(vr::Eye_Right, nearPlane, farPlane); //5cm to 50m should be a reasonable range
    }
 
    //Calculate left EyeProjection Matrix relative to HMD position

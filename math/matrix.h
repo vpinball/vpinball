@@ -27,51 +27,6 @@ public:
 };
 
 #define D3DMATRIX D3DXMATRIX
-class vec4 final {
-public:
-   union {
-      struct {
-         float        x, y, z, w;
-      };
-      struct {
-         float        r, g, b, a;
-      };
-      float v[4];
-   };
-
-   vec4(const float x, const float y, const float z, const float w);
-   vec4();
-   static vec4 normal(const vec4 &input);
-   static float dot(const vec4 &a, const vec4 &b);
-   vec4 operator+ (const vec4& m) const;
-   vec4 operator- (const vec4& m) const;
-};
-
-typedef vec4 D3DXPLANE;
-
-class vec3 final {
-public:
-   union {
-      struct {
-         float        x, y, z;
-      };
-      struct {
-         float        r, g, b;
-      };
-      float v[3];
-   };
-
-   vec3(const float x, const float y, const float z);
-   vec3();
-   static vec3 normal(const vec3 &input);
-   static vec3 cross(const vec3 &a, const vec3 &b);
-   static float dot(const vec3 &a, const vec3 &b);
-   static vec3 TransformCoord(const vec3 &ec, const Matrix3D &mat);
-   vec3 operator+ (const vec3& m) const;
-   vec3 operator- (const vec3& m) const;
-   vec3 operator* (const float s) const;
-   vec3 operator/ (const float s) const;
-};
 #endif
 
 // 3x3 matrix for representing linear transformation of 3D vectors
@@ -531,6 +486,19 @@ public:
       *this = tmp;
    }
 
+   void OrthoNormalize()
+   {
+      vec3 right(_11, _12, _13);
+      vec3 up(_21, _22, _23);
+      vec3 dir(_31, _32, _33);
+      Vec3Normalize(&right, &right);
+      Vec3Normalize(&up, &up);
+      Vec3Normalize(&dir, &dir);
+      _11 = right.x; _12 = right.y; _13 = right.z;
+      _21 = up.x; _22 = up.y; _23 = up.z;
+      _31 = dir.x; _32 = dir.y; _33 = dir.z;
+   }
+
    Matrix3D operator+(const Matrix3D& m) const
    {
       return Matrix3D(_11 + m._11, _12 + m._12, _13 + m._13, _14 + m._14,
@@ -541,26 +509,87 @@ public:
    
    //
 
+   void SetOrthoOffCenterRH(const float l, float r, float b, const float t, float zn, const float zf)
+   {
+      _11 = 2 / (r - l);
+      _12 = 0.0f;
+      _13 = 0.0f;
+      _14 = 0.0f;
+
+      _21 = 0.0f;
+      _22 = 2 / (t - b);
+      _23 = 0.0f;
+      _24 = 0.0f;
+
+      _31 = 0.0f;
+      _32 = 0.0f;
+      _33 = 1.0f / (zf - zn);
+      _34 = 0.0f;
+
+      _41 = (l + r) / (l - r);
+      _42 = (t + b) / (b - t);
+      _43 = zn / (zn - zf);
+      _44 = 1.0f;
+   }
+
+   void SetFrustumRH(float left, float right, float bottom, float top, float znear, float zfar)
+   {
+      float temp, temp2, temp3, temp4;
+      temp = 2.0f * znear;
+      temp2 = right - left;
+      temp3 = top - bottom;
+      temp4 = zfar - znear;
+      _11 = temp / temp2;
+      _12 = 0.0;
+      _13 = 0.0;
+      _14 = 0.0;
+      _21 = 0.0;
+      _22 = temp / temp3;
+      _23 = 0.0;
+      _24 = 0.0;
+      _31 = (right + left) / temp2;
+      _32 = (top + bottom) / temp3;
+      _33 = (-zfar - znear) / temp4;
+      _34 = -1.0f;
+      _41 = 0.0;
+      _42 = 0.0;
+      _43 = (-temp * zfar) / temp4;
+      _44 = 0.0;
+   }
+
+   void SetPerspectiveRH(float fovyInDegrees, float aspectRatio, float znear, float zfar)
+   {
+      float ymax, xmax;
+      ymax = znear * tanf(ANGTORAD(fovyInDegrees));
+      xmax = ymax * aspectRatio;
+      SetFrustumRH(-xmax, xmax, -ymax, ymax, znear, zfar);
+   }
+
+   void SetLookAtRH(const vec3& eye, const vec3& at, const vec3& up)
+   {
+      vec3 xaxis, yaxis, zaxis;
+      const vec3 e_a = eye - at;
+      Vec3Normalize(&zaxis, &e_a);
+      Vec3Cross(&xaxis, &up, &zaxis);
+      Vec3Normalize(&xaxis, &xaxis);
+      Vec3Cross(&yaxis, &zaxis, &xaxis);
+      const float dotX = Vec3Dot(&xaxis, &eye);
+      const float dotY = Vec3Dot(&yaxis, &eye);
+      const float dotZ = Vec3Dot(&zaxis, &eye);
+      *this = Matrix3D(xaxis.x, yaxis.x, zaxis.x, 0.f, xaxis.y, yaxis.y, zaxis.y, 0.f, xaxis.z, yaxis.z, zaxis.z, 0.f, -dotX, -dotY, -dotZ, 1.f);
+   }
+
    static Matrix3D MatrixLookAtLH(const vec3& eye, const vec3& at, const vec3& up)
    {
-#ifdef ENABLE_SDL
-      const vec3 zaxis = vec3::normal(at - eye);
-      const vec3 xaxis = vec3::normal(vec3::cross(up, zaxis));
-      const vec3 yaxis = vec3::cross(zaxis, xaxis);
-      const float dotX = vec3::dot(xaxis, eye);
-      const float dotY = vec3::dot(yaxis, eye);
-      const float dotZ = vec3::dot(zaxis, eye);
-#else
       vec3 xaxis, yaxis, zaxis;
       const vec3 a_e = at - eye;
-      D3DXVec3Normalize(&zaxis, &a_e);
-      D3DXVec3Cross(&xaxis, &up, &zaxis);
-      D3DXVec3Normalize(&xaxis, &xaxis);
-      D3DXVec3Cross(&yaxis, &zaxis, &xaxis);
-      const float dotX = D3DXVec3Dot(&xaxis, &eye);
-      const float dotY = D3DXVec3Dot(&yaxis, &eye);
-      const float dotZ = D3DXVec3Dot(&zaxis, &eye);
-#endif
+      Vec3Normalize(&zaxis, &a_e);
+      Vec3Cross(&xaxis, &up, &zaxis);
+      Vec3Normalize(&xaxis, &xaxis);
+      Vec3Cross(&yaxis, &zaxis, &xaxis);
+      const float dotX = Vec3Dot(&xaxis, &eye);
+      const float dotY = Vec3Dot(&yaxis, &eye);
+      const float dotZ = Vec3Dot(&zaxis, &eye);
       return Matrix3D(xaxis.x, yaxis.x, zaxis.x, 0.f, xaxis.y, yaxis.y, zaxis.y, 0.f, xaxis.z, yaxis.z, zaxis.z, 0.f, -dotX, -dotY, -dotZ, 1.f);
    }
 

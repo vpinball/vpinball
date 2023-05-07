@@ -774,10 +774,11 @@ void Pin3D::InitLayoutFS()
 // here is where the tables camera / rotation / scale is setup
 // flashers are ignored in the calculation of boundaries to center the
 // table in the view
-void Pin3D::InitLayout(const bool FSS_mode, const float max_separation, const float xpixoff, const float ypixoff)
+void Pin3D::InitLayout(const float xpixoff, const float ypixoff)
 {
    TRACE_FUNCTION();
 
+   const bool FSS_mode = g_pplayer->m_ptable->m_BG_enable_FSS;
    const float rotation = ANGTORAD(g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set]);
    float inclination = ANGTORAD(g_pplayer->m_ptable->m_BG_inclination[g_pplayer->m_ptable->m_BG_current_set]);
    const float FOV = (g_pplayer->m_ptable->m_BG_FOV[g_pplayer->m_ptable->m_BG_current_set] < 1.0f) ? 1.0f : g_pplayer->m_ptable->m_BG_FOV[g_pplayer->m_ptable->m_BG_current_set];
@@ -881,7 +882,6 @@ void Pin3D::InitLayout(const bool FSS_mode, const float max_separation, const fl
       m_proj.RotateView(0, 0, rotation);
       m_proj.RotateView(inclination, 0, 0);
    }
-   m_proj.MultiplyView(ComputeLaybackTransform(g_pplayer->m_ptable->m_BG_layback[g_pplayer->m_ptable->m_BG_current_set]));
 
    // recompute near and far plane (workaround for VP9 FitCameraToVertices bugs)
    m_proj.ComputeNearFarPlane(vvertex3D);
@@ -892,20 +892,24 @@ void Pin3D::InitLayout(const bool FSS_mode, const float max_separation, const fl
 
 #ifdef ENABLE_SDL
    if (m_stereo3D != STEREO_OFF) {
-      // Create eye projection matrices for stereo (not VR but anaglyph,...)
-      float top = m_proj.m_rznear * tanf(ANGTORAD(FOV) / 2.0f);
-      float bottom = -top;
-      float right = top * aspect;
-      float left = -right;
-      // float stereoOffset = 0.04f*m_proj.m_rznear;
-      // This is not a perfect interpretation of parallax settings but it is somewhat close to what it gives in parallax with ZPD=0.5
-      float stereoOffset = max_separation * 2.0f * m_proj.m_rznear;
-      proj = Matrix3D::MatrixPerspectiveOffCenterLH(left + stereoOffset, right + stereoOffset, bottom, top, m_proj.m_rznear, m_proj.m_rzfar);
-      proj._41 += 1.4f * stereoOffset;
-      memcpy(m_proj.m_matProj[0].m, proj.m, sizeof(float) * 4 * 4);
-      proj = Matrix3D::MatrixPerspectiveOffCenterLH(left - stereoOffset, right - stereoOffset, bottom, top, m_proj.m_rznear, m_proj.m_rzfar);
-      proj._41 -= 1.4f * stereoOffset;
-      memcpy(m_proj.m_matProj[1].m, proj.m, sizeof(float) * 4 * 4);
+      // Create eye projection matrices for real stereo (not VR but anaglyph,...)
+      // 63mm is the average distance between eyes (varies from 54 to 74mm between adults, 43 to 58mm for children), 50 VPUnit is 1.25 inches
+      Matrix3D leftEye, rightEye, rot;
+      const float stereo3DMS = LoadValueFloatWithDefault(regKey[RegName::Player], "Stereo3DEyeSeparation"s, 63.0f);
+      float halfEyeDist = 0.5f * (stereo3DMS / 25.4f) * (50.f / 1.25f);
+      Matrix3D invView(m_proj.m_matView);
+      invView.Invert();
+      invView.OrthoNormalize();
+      vec3 up(invView._21, invView._22, invView._23);
+      vec3 dir(invView._31, invView._32, invView._33);
+      vec3 pos(invView._41, invView._42, invView._43);
+      vec3 at = pos + dir * ((50 - pos.y) / dir.y); // look at the ball (playfield level = 0 + ball radius = 50)
+      rot = Matrix3D::MatrixLookAtLH(pos + vec3(-halfEyeDist, 0.f, 0.f), at, up);
+      leftEye = invView * rot * proj; // Apply offset & rotation to the view
+      rot = Matrix3D::MatrixLookAtLH(pos + vec3(halfEyeDist, 0.f, 0.f), at, up);
+      rightEye = invView * rot * proj; // Apply offset & rotation to the view
+      memcpy(m_proj.m_matProj[0].m, leftEye.m, sizeof(float) * 4 * 4);
+      memcpy(m_proj.m_matProj[1].m, rightEye.m, sizeof(float) * 4 * 4);
    }
 #endif
 
@@ -917,6 +921,9 @@ void Pin3D::InitLayout(const bool FSS_mode, const float max_separation, const fl
       projTrans.Multiply(m_proj.m_matProj[0], m_proj.m_matProj[0]);
       projTrans.Multiply(m_proj.m_matProj[1], m_proj.m_matProj[1]);
    }
+
+   // Apply layback (shear the view backward)
+   m_proj.MultiplyView(ComputeLaybackTransform(g_pplayer->m_ptable->m_BG_layback[g_pplayer->m_ptable->m_BG_current_set]));
 
    m_mvp->SetModel(m_proj.m_matWorld);
    m_mvp->SetView(m_proj.m_matView);

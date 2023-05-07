@@ -195,25 +195,6 @@ vec3::vec3(const float x, const float y, const float z) {
 vec3::vec3() {
 }
 
-vec3 vec3::normal(const vec3 &input) {
-   float len = input.x*input.x + input.y*input.y + input.z*input.z;
-   if (len <= 1.e-10f)
-      return vec3(0.0f, 0.0f, 0.0f);
-   len = 1.0f / sqrtf(len);
-   return vec3(input.x*len, input.y*len, input.z*len);
-}
-
-vec3 vec3::cross(const vec3 &a, const vec3 &b) {
-   return vec3(
-      a.y * b.z - a.z * b.y,
-      a.z * b.x - a.x * b.z,
-      a.x * b.y - a.y * b.x);
-}
-
-float vec3::dot(const vec3 &a, const vec3 &b) {
-   return a.x * b.x + a.y * b.y + a.z * b.z;
-}
-
 vec3 vec3::TransformCoord(const vec3& vec, const Matrix3D& mat) {
    float w = (vec.x * mat._14 + vec.y * mat._24 + vec.z * mat._34 + mat._44);
    if (w <= 1.e-10f)
