@@ -1177,7 +1177,7 @@ void LiveUI::UpdateMainUI()
             // Cancel current operation
             m_gizmoOperation = ImGuizmo::NONE;
          }
-         else if (ImGui::IsKeyPressed(dikToImGuiKeys[m_player->m_rgKeys[eEscape]]) && !m_disable_esc)
+         else if (ImGui::IsKeyReleased(dikToImGuiKeys[m_player->m_rgKeys[eEscape]]) && !m_disable_esc)
          {
             // Open Main modal dialog
             m_ShowSplashModal = true;
