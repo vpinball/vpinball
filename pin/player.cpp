@@ -476,15 +476,14 @@ void Player::CreateWnd(HWND parent /* = 0 */)
 
    // Set the WNDCLASS parameters
    PreRegisterClass(wc);
-   // TODO use the VPX window class
-   /*if (wc.lpszClassName)
+   if (wc.lpszClassName)
    {
       ::RegisterClass(&wc);
       cs.lpszClass = wc.lpszClassName;
    }
    else
       cs.lpszClass = _T("Win32++ Window");
-   SDL_RegisterApp(wc.lpszClassName, 0, g_pvp->theInstance);*/
+   SDL_RegisterApp(wc.lpszClassName, 0, g_pvp->theInstance);
 
    // Set a reasonable default window style.
    DWORD dwOverlappedStyle = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX;
