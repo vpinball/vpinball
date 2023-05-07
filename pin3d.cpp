@@ -891,7 +891,13 @@ void Pin3D::InitLayout(const float xpixoff, const float ypixoff)
    memcpy(m_proj.m_matProj[0].m, proj.m, sizeof(float) * 4 * 4);
 
 #ifdef ENABLE_SDL
-   if (m_stereo3D != STEREO_OFF) {
+   if (m_stereo3D == STEREO_VR)
+   {
+      // Use the same projection for VR debug since the anaglyph stereo computation would fail due to scene scaling
+      memcpy(m_proj.m_matProj[1].m, proj.m, sizeof(float) * 4 * 4);
+   }
+   else if (m_stereo3D != STEREO_OFF)
+   {
       // Create eye projection matrices for real stereo (not VR but anaglyph,...)
       // 63mm is the average distance between eyes (varies from 54 to 74mm between adults, 43 to 58mm for children), 50 VPUnit is 1.25 inches
       Matrix3D leftEye, rightEye, rot;
