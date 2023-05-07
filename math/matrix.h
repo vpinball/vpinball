@@ -16,8 +16,6 @@ public:
          float        _41, _42, _43, _44;
       };
       float m[4][4];
-      float m16[16];
-//      __m128 m128[4]; // could use potentially faster loads/stores if enforcing this alignment
    };
 
    D3DXMATRIX();
