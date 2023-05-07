@@ -204,11 +204,14 @@ vec3 vec3::normal(const vec3 &input) {
 }
 
 vec3 vec3::cross(const vec3 &a, const vec3 &b) {
-   return vec3(a.x - b.x, b.y - a.y, a.z - b.z);
+   return vec3(
+      a.y * b.z - a.z * b.y,
+      a.z * b.x - a.x * b.z,
+      a.x * b.y - a.y * b.x);
 }
 
 float vec3::dot(const vec3 &a, const vec3 &b) {
-   return a.x * b.x + a.y * a.y + a.z * b.z;
+   return a.x * b.x + a.y * b.y + a.z * b.z;
 }
 
 vec3 vec3::TransformCoord(const vec3& vec, const Matrix3D& mat) {

@@ -561,7 +561,7 @@ public:
       const float dotY = D3DXVec3Dot(&yaxis, &eye);
       const float dotZ = D3DXVec3Dot(&zaxis, &eye);
 #endif
-      return Matrix3D(xaxis.x, yaxis.x, zaxis.x, 0.f, xaxis.y, yaxis.y, zaxis.x, 0.f, xaxis.z, yaxis.z, zaxis.z, 0.f, -dotX, -dotY, -dotZ, 1.f);
+      return Matrix3D(xaxis.x, yaxis.x, zaxis.x, 0.f, xaxis.y, yaxis.y, zaxis.y, 0.f, xaxis.z, yaxis.z, zaxis.z, 0.f, -dotX, -dotY, -dotZ, 1.f);
    }
 
    static Matrix3D MatrixPerspectiveFovLH(const float fovy, const float aspect, const float zn, const float zf)
