@@ -53,6 +53,7 @@ public:
    vec3 operator+(const vec3& m) const;
    vec3 operator-(const vec3& m) const;
    vec3 operator*(const float s) const;
+   friend vec3 operator*(float s, const vec3& v);
    vec3 operator/(const float s) const;
 };
 

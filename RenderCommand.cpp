@@ -216,7 +216,7 @@ void RenderCommand::Execute(const bool log)
             const GLenum indexType = m_mb->m_ib->m_indexFormat == IndexBuffer::FMT_INDEX16 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT;
             if (m_mb->m_isVBOffsetApplied || m_mb->m_vb->GetOffset() == 0)
             {
-               //glDrawElements(type, indexCount, indexType, (void*)(intptr_t)indexOffset);
+               //glDrawElements(m_primitiveType, m_indicesCount, indexType, (void*)(intptr_t)indexOffset);
                glDrawRangeElements(m_primitiveType, 
                   m_mb->m_vb->GetVertexOffset(), m_mb->m_vb->GetVertexOffset() + m_mb->m_vb->m_vertexCount, 
                   m_indicesCount, indexType, (void*)(intptr_t)indexOffset);
@@ -226,7 +226,7 @@ void RenderCommand::Execute(const bool log)
                #if defined(__OPENGLES__)
                assert(false); // OpenGL ES does not support offseted vertices. The buffers must be built accordingly
                #else
-               //glDrawElementsBaseVertex(type, indexCount, indexType, (void*)(intptr_t)indexOffset, mb->m_vb->GetVertexOffset());
+               //glDrawElementsBaseVertex(m_primitiveType, m_indicesCount, indexType, (void*)(intptr_t)indexOffset, mb->m_vb->GetVertexOffset());
                glDrawRangeElementsBaseVertex(m_primitiveType, 
                   m_mb->m_vb->GetVertexOffset(), m_mb->m_vb->GetVertexOffset() + m_mb->m_vb->m_vertexCount, 
                   m_indicesCount, indexType, (void*)(intptr_t)indexOffset, 
