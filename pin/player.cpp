@@ -378,16 +378,16 @@ void Player::PreCreate(CREATESTRUCT& cs)
        m_wnd_height = 480;
     }
 
-    if (m_fullScreen)
-    {
-        x = 0;
-        y = 0;
-        m_screenwidth = m_wnd_width;
-        m_screenheight = m_wnd_height;
-        m_refreshrate = LoadValueIntWithDefault(regKey[RegName::Player], "RefreshRate"s, 0);
-    }
-    else
-    {
+   if (m_fullScreen)
+   {
+      x = 0;
+      y = 0;
+      m_screenwidth = m_wnd_width;
+      m_screenheight = m_wnd_height;
+      m_refreshrate = LoadValueIntWithDefault(regKey[RegName::Player], "RefreshRate"s, 0);
+   }
+   else
+   {
         m_refreshrate = 0; // The default
 
         // constrain window to screen
@@ -476,15 +476,15 @@ void Player::CreateWnd(HWND parent /* = 0 */)
 
    // Set the WNDCLASS parameters
    PreRegisterClass(wc);
-   /* TODO use the VPX window class
-   if (wc.lpszClassName)
+   // TODO use the VPX window class
+   /*if (wc.lpszClassName)
    {
-      RegisterClass(wc);
+      ::RegisterClass(&wc);
       cs.lpszClass = wc.lpszClassName;
    }
    else
       cs.lpszClass = _T("Win32++ Window");
-   SDL_RegisterApp(wc.lpszClassName, 0, g_pvp->theInstance); */
+   SDL_RegisterApp(wc.lpszClassName, 0, g_pvp->theInstance);*/
 
    // Set a reasonable default window style.
    DWORD dwOverlappedStyle = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX;
@@ -501,8 +501,6 @@ void Player::CreateWnd(HWND parent /* = 0 */)
 
    // Allow the CREATESTRUCT parameters to be modified.
    PreCreate(cs);
-
-   DWORD style = cs.style & ~WS_VISIBLE;
 
    const int colordepth = m_stereo3D == STEREO_VR ? 32 : LoadValueIntWithDefault(regKey[RegName::Player], "ColorDepth"s, 32);
    const bool video10bit = m_stereo3D == STEREO_VR ? false : LoadValueBoolWithDefault(regKey[RegName::Player], "Render10Bit"s, false);
@@ -521,8 +519,6 @@ void Player::CreateWnd(HWND parent /* = 0 */)
    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
 
-   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-
 #ifdef __OPENGLES__
    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
@@ -531,12 +527,27 @@ void Player::CreateWnd(HWND parent /* = 0 */)
    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+#else
+   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+   //This would enforce a 4.1 context, disabling all recent features (storage buffers, debug informations,...)
+   //SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+   //SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
 #endif
 
-   //SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+
+   const int display = g_pvp->m_primaryDisplay ? 0 : LoadValueIntWithDefault(regKey[RegName::Player], "Display"s, 0);
+   vector<DisplayConfig> displays;
+   getDisplayList(displays);
+   int adapter = 0;
+   for (vector<DisplayConfig>::iterator dispConf = displays.begin(); dispConf != displays.end(); ++dispConf)
+      if (display == dispConf->display)
+            adapter = dispConf->adapter;
+   int displayX, displayY, displayWidth, displayHeight;
+   getDisplaySetupByID(display, displayX, displayY, displayWidth, displayHeight);
 
    // Create the window.
-   Uint32 flags = SDL_WINDOW_OPENGL | (m_fullScreen ? SDL_WINDOW_FULLSCREEN : 0);
+   Uint32 flags = SDL_WINDOW_OPENGL;
 #ifdef _MSC_VER
    flags |= SDL_WINDOW_BORDERLESS | SDL_WINDOW_HIDDEN | SDL_WINDOW_ALLOW_HIGHDPI;
 #elif defined(__APPLE__) && !TARGET_OS_TV
@@ -545,15 +556,37 @@ void Player::CreateWnd(HWND parent /* = 0 */)
 #endif
 
 #ifndef _MSC_VER
-   int display = LoadValueIntWithDefault(regKey[RegName::Player], "Display"s, -1);
-   if ((display >= getNumberOfDisplays()) || (g_pvp->m_primaryDisplay) || (display == -1))
-      display = 0; 
-
-   cs.x = SDL_WINDOWPOS_CENTERED_DISPLAY(display);
-   cs.y = SDL_WINDOWPOS_CENTERED_DISPLAY(display);
+   cs.x = SDL_WINDOWPOS_CENTERED_DISPLAY(adapter);
+   cs.y = SDL_WINDOWPOS_CENTERED_DISPLAY(adapter);
 #endif
 
-   m_sdl_playfieldHwnd = SDL_CreateWindow("Visual Pinball Player SDL", cs.x, cs.y, cs.cx, cs.cy, flags);
+   if (m_fullScreen)
+   {
+      m_sdl_playfieldHwnd = SDL_CreateWindow(cs.lpszName, displayX, displayY, displayWidth, displayHeight, flags | SDL_WINDOW_FULLSCREEN);
+      // Adjust refresh rate
+      SDL_DisplayMode mode;
+      SDL_GetWindowDisplayMode(m_sdl_playfieldHwnd, &mode);
+      Uint32 format = mode.format;
+      bool found = false;
+      for (int index = 0; index < SDL_GetNumDisplayModes(adapter); index++)
+      {
+         SDL_GetDisplayMode(adapter, index, &mode);
+            if (mode.w == displayWidth && mode.h == displayHeight && mode.refresh_rate == m_refreshrate && mode.format == format)
+         {
+            SDL_SetWindowDisplayMode(m_sdl_playfieldHwnd, &mode);
+                found = true;
+            break;
+         }
+      }
+      if (!found)
+         PLOGE << "Failed to find a display mode matching the requested refresh rate [" << m_refreshrate << "]";
+   }
+   else
+   {
+      if (cs.cx == displayWidth && cs.cy == displayHeight)
+         flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+      m_sdl_playfieldHwnd = SDL_CreateWindow(cs.lpszName, cs.x, cs.y, cs.cx, cs.cy, flags);
+   }
 
    SDL_SysWMinfo wmInfo;
    SDL_VERSION(&wmInfo.version);
@@ -565,11 +598,11 @@ void Player::CreateWnd(HWND parent /* = 0 */)
    if (cs.style & WS_VISIBLE)
    {
       if (cs.style & WS_MAXIMIZE)
-         ShowWindow(SW_MAXIMIZE);
+         SDL_MaximizeWindow(m_sdl_playfieldHwnd);
       else if (cs.style & WS_MINIMIZE)
-         ShowWindow(SW_MINIMIZE);
+         SDL_MinimizeWindow(m_sdl_playfieldHwnd);
       else
-         ShowWindow();
+         SDL_ShowWindow(m_sdl_playfieldHwnd);
    }
 #else
    Create();

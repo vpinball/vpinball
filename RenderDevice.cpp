@@ -251,15 +251,21 @@ void EnumerateDisplayModes(const int display, vector<VideoMode>& modes)
 {
    modes.clear();
 
+   vector<DisplayConfig> displays;
+   getDisplayList(displays);
+   if (display >= (int)displays.size())
+      return;
+   const int adapter = displays[display].adapter;
+
 #ifdef ENABLE_SDL
-   const int amount = SDL_GetNumDisplayModes(display);
+   const int amount = SDL_GetNumDisplayModes(adapter);
    for (int mode = 0; mode < amount; ++mode) {
-      SDL_DisplayMode myMode;
-      SDL_GetDisplayMode(display, mode, &myMode);
+      SDL_DisplayMode sdlMode;
+      SDL_GetDisplayMode(adapter, mode, &sdlMode);
       VideoMode vmode = {};
-      vmode.width = myMode.w;
-      vmode.height = myMode.h;
-      switch (myMode.format) {
+      vmode.width = sdlMode.w;
+      vmode.height = sdlMode.h;
+      switch (sdlMode.format) {
       case SDL_PIXELFORMAT_RGB24:
       case SDL_PIXELFORMAT_BGR24:
       case SDL_PIXELFORMAT_RGB888:
@@ -286,16 +292,10 @@ void EnumerateDisplayModes(const int display, vector<VideoMode>& modes)
       default:
          vmode.depth = 0;
       }
-      vmode.refreshrate = myMode.refresh_rate;
+      vmode.refreshrate = sdlMode.refresh_rate;
       modes.push_back(vmode);
    }
 #else
-   vector<DisplayConfig> displays;
-   getDisplayList(displays);
-   if (display >= (int)displays.size())
-      return;
-   const int adapter = displays[display].adapter;
-
    IDirect3D9 *d3d = Direct3DCreate9(D3D_SDK_VERSION);
    if (d3d == nullptr)
    {
@@ -543,7 +543,7 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
 #ifdef ENABLE_SDL
    ///////////////////////////////////
    // OpenGL device initialization
-   const int displays = getNumberOfDisplays();
+   const int displays = SDL_GetNumVideoDisplays();
    if ((int)adapterIndex >= displays)
       m_adapter = 0;
    else
