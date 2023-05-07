@@ -680,6 +680,7 @@ void Player::Shutdown()
    {
       // Save edited camera to editor's table
       PinTable *src = m_ptable, *dst = m_pEditorTable;
+      dst->m_3DmaxSeparation = src->m_3DmaxSeparation;
       for (int i = 0; i < 3; i++)
       {
          dst->m_BG_rotation[i] = src->m_BG_rotation[i];
@@ -3373,12 +3374,10 @@ void Player::StereoFXAA(RenderTarget* renderedRT, const bool stereo, const bool 
       {
          // Anaglyph
          assert(renderedRT != m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer());
-         const vec4 ms_zpd_ya_td(m_ptable->GetMaxSeparation(), m_ptable->GetZPD(), m_stereo3DY ? 1.0f : 0.0f, (float)m_stereo3D);
-         const vec4 a_ds_c(m_global3DDesaturation, m_global3DContrast, 0.f, 0.f);
          m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetTechnique(SHADER_TECHNIQUE_stereo_anaglyph);
          m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetTexture(SHADER_tex_stereo_fb, renderedRT->GetColorSampler());
-         m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetVector(SHADER_ms_zpd_ya_td, &ms_zpd_ya_td);
-         m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetVector(SHADER_Anaglyph_DeSaturation_Contrast, &a_ds_c);
+         m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetVector(SHADER_ms_zpd_ya_td, m_ptable->GetMaxSeparation(), m_ptable->GetZPD(), m_stereo3DY ? 1.0f : 0.0f, (float)m_stereo3D);
+         m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetVector(SHADER_Anaglyph_DeSaturation_Contrast, m_global3DDesaturation, m_global3DContrast, 0.f, 0.f);
          m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("Stereo Anaglyph"s, m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer());
          m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
          m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pin3d.m_pd3dPrimaryDevice->StereoShader);
@@ -3411,18 +3410,17 @@ void Player::StereoFXAA(RenderTarget* renderedRT, const bool stereo, const bool 
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_depth, m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetDepthSampler());
 
       const bool is_anaglyph = m_stereo3D >= STEREO_ANAGLYPH_RC && m_stereo3D <= STEREO_ANAGLYPH_AB;
-      const vec4 ms_zpd_ya_td(m_ptable->GetMaxSeparation(), m_ptable->GetZPD(), m_stereo3DY ? 1.0f : 0.0f,
-          is_anaglyph ? (float)m_stereo3D : ((m_stereo3D == STEREO_SBS) ? 2.0f : (m_stereo3D == STEREO_TB) ? 1.0f : ((m_stereo3D == STEREO_INT) ? 0.0f : 0.5f)));
-      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_ms_zpd_ya_td, &ms_zpd_ya_td);
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_ms_zpd_ya_td, 
+         m_ptable->GetMaxSeparation(),
+         m_ptable->GetZPD(),
+         m_stereo3DY ? 1.0f : 0.0f,
+         is_anaglyph ? (float)m_stereo3D : ((m_stereo3D == STEREO_SBS) ? 2.0f : (m_stereo3D == STEREO_TB) ? 1.0f : ((m_stereo3D == STEREO_INT) ? 0.0f : 0.5f)));
 
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(
          SHADER_w_h_height, (float)(1.0 / renderedRT->GetWidth()), (float)(1.0 / renderedRT->GetHeight()), (float)renderedRT->GetHeight(), m_ptable->Get3DOffset());
 
       if (is_anaglyph)
-      {
-         const vec4 a_ds_c(m_global3DDesaturation, m_global3DContrast, 0.f,0.f);
-         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_Anaglyph_DeSaturation_Contrast, &a_ds_c);
-      }
+         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_Anaglyph_DeSaturation_Contrast, m_global3DDesaturation, m_global3DContrast, 0.f, 0.f);
 
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(is_anaglyph ? SHADER_TECHNIQUE_stereo_anaglyph : SHADER_TECHNIQUE_stereo);
 
@@ -3994,6 +3992,35 @@ void Player::UpdateBackdropSettings(const bool up)
          m_ptable->m_envEmissionScale = 0.f;
       const vec4 st(m_ptable->m_envEmissionScale*m_globalEmissionScale, m_pin3d.m_envTexture ? (float)m_pin3d.m_envTexture->m_height/*+m_pin3d.m_envTexture->m_width)*0.5f*/ : (float)m_pin3d.m_builtinEnvTexture.m_height/*+m_pin3d.m_builtinEnvTexture.m_width)*0.5f*/, 0.f, 0.f);
       m_pin3d.m_pd3dPrimaryDevice->basicShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
+      break;
+   }
+   case 14:
+   {
+      if (m_ptable->m_overwriteGlobalStereo3D)
+      {
+         m_ptable->m_3DmaxSeparation += thesign * 0.0025f;
+         if (m_ptable->m_3DmaxSeparation < 0.f)
+            m_ptable->m_3DmaxSeparation = 0.f;
+      }
+      else
+      {
+         m_ptable->m_global3DMaxSeparation += thesign * 0.0025f;
+         if (m_ptable->m_global3DMaxSeparation < 0.f)
+            m_ptable->m_global3DMaxSeparation = 0.f;
+         SaveValueFloat(regKey[RegName::Player], "Stereo3DMaxSeparation"s, m_ptable->m_global3DMaxSeparation);
+      }
+      break;
+   }
+   case 15:
+   {
+      m_global3DDesaturation = clamp(m_global3DDesaturation + thesign * 0.05f, 0.f, 1.f);
+      SaveValueFloat(regKey[RegName::Player], "Stereo3DDesaturation"s, m_global3DDesaturation);
+      break;
+   }
+   case 16:
+   {
+      m_global3DContrast = clamp(m_global3DContrast + thesign * 0.05f, 0.f, 1.f);
+      SaveValueFloat(regKey[RegName::Player], "Stereo3DContrast"s, m_global3DContrast);
       break;
    }
    default:

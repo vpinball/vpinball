@@ -1066,14 +1066,18 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
       else if (keycode == g_pplayer->m_rgKeys[eRightMagnaSave] && dispid == DISPID_GameEvents_KeyDown)
       {
          g_pplayer->m_backdropSettingActive++;
-         if (g_pplayer->m_backdropSettingActive == 14)
+         bool isStereo = g_pplayer->m_stereo3Denabled && g_pplayer->m_stereo3D != STEREO_OFF && g_pplayer->m_stereo3D != STEREO_VR;
+         bool isAnaglyph = isStereo && g_pplayer->m_stereo3D >= STEREO_ANAGLYPH_RC && g_pplayer->m_stereo3D <= STEREO_ANAGLYPH_AB;
+         if (g_pplayer->m_backdropSettingActive == (isAnaglyph ? 17 : (isStereo ? 15 : 14)))
             g_pplayer->m_backdropSettingActive = 0;
       }
       else if (keycode == g_pplayer->m_rgKeys[eLeftMagnaSave] && dispid == DISPID_GameEvents_KeyDown)
       {
          g_pplayer->m_backdropSettingActive--;
+         bool isStereo = g_pplayer->m_stereo3Denabled && g_pplayer->m_stereo3D != STEREO_OFF && g_pplayer->m_stereo3D != STEREO_VR;
+         bool isAnaglyph = isStereo && g_pplayer->m_stereo3D >= STEREO_ANAGLYPH_RC && g_pplayer->m_stereo3D <= STEREO_ANAGLYPH_AB;
          if (g_pplayer->m_backdropSettingActive == -1)
-            g_pplayer->m_backdropSettingActive = 13;
+            g_pplayer->m_backdropSettingActive = isAnaglyph ? 16 : (isStereo ? 14 : 13);
       }
    }
    else

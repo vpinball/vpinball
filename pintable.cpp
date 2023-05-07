@@ -2185,7 +2185,6 @@ void PinTable::Play(const bool cameraMode)
    dst->m_zoom = src->m_zoom;
    dst->m_angletiltMax = src->m_angletiltMax;
    dst->m_angletiltMin = src->m_angletiltMin;
-   dst->m_3DmaxSeparation = src->m_3DmaxSeparation;
    dst->m_3DZPD = src->m_3DZPD;
    dst->m_3DOffset = src->m_3DOffset;
    dst->m_overwriteGlobalStereo3D = src->m_overwriteGlobalStereo3D;
@@ -2239,6 +2238,7 @@ void PinTable::Play(const bool cameraMode)
 
    dst->m_BG_current_set = src->m_BG_current_set;
    dst->m_currentBackglassMode = src->m_currentBackglassMode;
+   dst->m_3DmaxSeparation = src->m_3DmaxSeparation;
    for (int i = 0; i < 3; i++)
    {
       dst->m_BG_rotation[i] = src->m_BG_rotation[i];
