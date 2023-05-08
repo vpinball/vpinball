@@ -98,6 +98,11 @@ FEATURES:
 - the application is now fully 'DPI aware'. This means that one can use multiple monitors at different DPI settings.
   This may require to adjust the position of windows on existing installs.
 
+- add a new camera layout mode which works better for anaglyph stereo (as well as other uses) and allows:
+  - to setup the player position in real word units, measuring from the bottom center of the playfield in centimeters. This should allow to have a single position corresponding to your size and play position for all your tables.
+  - to setup the camera like a 'real' camera: there is no more layback but a view offset, the other properties being simply the inclination and the field of view
+  - for camera mode, adjust the user interface to show these informations and allow to easily reset to a default position by pressing the credit key.
+
 FIXES:
 
 - fix analogue nudge not working for joysticks/gamepads in XInput mode
