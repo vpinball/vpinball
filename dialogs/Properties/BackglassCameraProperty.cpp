@@ -31,8 +31,15 @@ void BackglassCameraProperty::UpdateVisuals(const int dispid/*=-1*/)
         PropertyDialog::SetCheckboxState(m_hFssModeCheck, table->GetShowFSS());
     if(dispid == IDC_BG_TEST_DESKTOP_CHECK || dispid==-1)
         PropertyDialog::SetCheckboxState(m_hTestDesktopCheck, table->GetShowDT());
-    if (dispid == IDC_CAMERA_LAYOUT_MODE || dispid == -1)
-        PropertyDialog::SetCheckboxState(m_hCameraLayoutModeCheck, table->m_cameraLayoutMode == CLM_ABSOLUTE);
+   if (dispid == IDC_CAMERA_LAYOUT_MODE || dispid == -1)
+   {
+      bool absolute = table->m_cameraLayoutMode == CLM_ABSOLUTE;
+      PropertyDialog::SetCheckboxState(m_hCameraLayoutModeCheck, absolute);
+      GetDlgItem(IDC_STATIC4).SetWindowText(absolute ? "View Offset" : "Layback");
+      GetDlgItem(IDC_STATIC9).SetWindowText(absolute ? "X Position" : "X Offset");
+      GetDlgItem(IDC_STATIC10).SetWindowText(absolute ? "Y Position" : "Y Offset");
+      GetDlgItem(IDC_STATIC11).SetWindowText(absolute ? "Z Position" : "Z Offset");
+   }
     if (dispid == IDC_BG_COMBOBOX || dispid == -1)
         PropertyDialog::UpdateComboBox(m_modeList, m_modeCombo, m_modeList[table->m_currentBackglassMode]);
     if(dispid == IDC_INCLINATION_EDIT || dispid==-1)
