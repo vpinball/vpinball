@@ -873,12 +873,34 @@ void LiveUI::Update()
 
 void LiveUI::UpdateCameraModeUI()
 {
+   // To place it at the bottom of screen. It used to be there but it would be hidden for people placing a real apron on their cab
+   constexpr bool positionTop = true;
    static float last_frame_height = -100.f; // Hide first frame below display bounds
    PinTable* table = m_live_table;
    constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
    ImGui::SetNextWindowBgAlpha(0.35f);
-   ImGui::SetNextWindowPos(ImVec2(10, ImGui::GetIO().DisplaySize.y - 10 - last_frame_height));
+   ImGui::SetNextWindowPos(ImVec2(10, positionTop ? 10 : (ImGui::GetIO().DisplaySize.y - 10 - last_frame_height)));
    ImGui::Begin("CameraMode", nullptr, window_flags);
+
+   if (positionTop && m_player->m_cameraMode)
+   {
+      ImGui::Text("Left/Right flipper key: decrease/increase highlighted value");
+      ImGui::Text("Left/Right magna save key: previous/next option");
+      if (LoadValueBoolWithDefault(regKey[RegName::Player], "EnableCameraModeFlyAround"s, false))
+      {
+         ImGui::Text("Left/Right nudge key: rotate table orientation");
+         ImGui::Text("Arrows & Left Alt Key: Navigate around");
+      }
+      if (m_app->m_povEdit)
+      {
+         ImGui::Text("Start Key: export POV file and quit");
+         ImGui::Text("Credit Key: quit without export");
+      }
+      else
+         ImGui::Text("Start Key: reset POV to old values");
+      ImGui::NewLine();
+   }
+
    bool isStereo = m_player->m_stereo3Denabled && m_player->m_stereo3D != STEREO_OFF && m_player->m_stereo3D != STEREO_VR;
    bool isAnaglyph = isStereo && m_player->m_stereo3D >= STEREO_ANAGLYPH_RC && m_player->m_stereo3D <= STEREO_ANAGLYPH_AB;
    for (int i = 0; i < (isAnaglyph ? 17 : (isStereo ? 15 : 14)); i++)
@@ -926,16 +948,21 @@ void LiveUI::UpdateCameraModeUI()
       m_pin3d->GetMVP().GetView()._43,
       table->m_BG_rotation[table->m_BG_current_set]);
    
-   if (m_player->m_cameraMode)
+   if (!positionTop && m_player->m_cameraMode)
    {
       ImGui::NewLine();
-      ImGui::Text("Left / Right flipper key = decrease / increase value highlighted in green");
-      ImGui::Text("Left / Right magna save key = previous / next option");
-      ImGui::NewLine();
-      ImGui::Text("Left / Right nudge key = rotate table orientation (if enabled in the Key settings)");
-      ImGui::Text("Navigate around with the Arrow Keys and Left Alt Key (if enabled in the Key settings)");
+      ImGui::Text("Left/Right flipper key: decrease/increase highlighted value");
+      ImGui::Text("Left/Right magna save key: previous/next option");
+      if (LoadValueBoolWithDefault(regKey[RegName::Player], "EnableCameraModeFlyAround"s, false))
+      {
+         ImGui::Text("Left/Right nudge key: rotate table orientation");
+         ImGui::Text("Arrows & Left Alt Key: Navigate around");
+      }
       if (m_app->m_povEdit)
-         ImGui::Text("Start Key: export POV file and quit, or Credit Key: quit without export");
+      {
+         ImGui::Text("Start Key: export POV file and quit");
+         ImGui::Text("Credit Key: quit without export");
+      }
       else
          ImGui::Text("Start Key: reset POV to old values");
    }

@@ -1885,56 +1885,55 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
    // Camera/Light tweaking mode (F6) incl. fly-around parameters
    if (g_pplayer->m_cameraMode)
    {
-       if (m_head == m_tail) // key queue empty, so just continue using the old pressed key
-       {
+      if (m_head == m_tail) // key queue empty, so just continue using the old pressed key
+      {
          if ((curr_time_msec - m_nextKeyPressedTime) > 10) // reduce update rate
          {
-           m_nextKeyPressedTime = curr_time_msec;
+            m_nextKeyPressedTime = curr_time_msec;
 
-           // Flying
-           if (m_cameraMode == 1)
-           {
-			   if (!m_cameraModeAltKey)
-				   g_pplayer->m_pin3d.m_cam.y += 10.0f;
-			   else
-				   g_pplayer->m_pin3d.m_cam.z += 10.0f;
-           }
-           else if (m_cameraMode == 2)
-		   {
-			   if (!m_cameraModeAltKey)
-				   g_pplayer->m_pin3d.m_cam.y -= 10.0f;
-			   else
-				   g_pplayer->m_pin3d.m_cam.z -= 10.0f;
-           }
-           else if (m_cameraMode == 3)
-           {
-			   if (!m_cameraModeAltKey)
-				   g_pplayer->m_pin3d.m_cam.x -= 10.0f;
-			   else
-				   g_pplayer->m_pin3d.m_inc -= 0.01f;
-           }
-           else if (m_cameraMode == 4)
-           {
-			   if (!m_cameraModeAltKey)
-				   g_pplayer->m_pin3d.m_cam.x += 10.0f;
-			   else
-				   g_pplayer->m_pin3d.m_inc += 0.01f;
-           }
+            // Flying
+            if (m_cameraMode == 1)
+            {
+			      if (!m_cameraModeAltKey)
+				      g_pplayer->m_pin3d.m_cam.y += 10.0f;
+			      else
+				      g_pplayer->m_pin3d.m_cam.z += 10.0f;
+            }
+            else if (m_cameraMode == 2)
+		      {
+			      if (!m_cameraModeAltKey)
+				      g_pplayer->m_pin3d.m_cam.y -= 10.0f;
+			      else
+				      g_pplayer->m_pin3d.m_cam.z -= 10.0f;
+            }
+            else if (m_cameraMode == 3)
+            {
+			      if (!m_cameraModeAltKey)
+				      g_pplayer->m_pin3d.m_cam.x -= 10.0f;
+			      else
+				      g_pplayer->m_pin3d.m_inc -= 0.01f;
+            }
+            else if (m_cameraMode == 4)
+            {
+			      if (!m_cameraModeAltKey)
+				      g_pplayer->m_pin3d.m_cam.x += 10.0f;
+			      else
+				      g_pplayer->m_pin3d.m_inc += 0.01f;
+            }
 
-           // Table tweaks
-           if (m_keyPressedState[eLeftFlipperKey])
+            // Table tweaks
+            if (m_keyPressedState[eLeftFlipperKey])
                g_pplayer->UpdateBackdropSettings(false);
-           if (m_keyPressedState[eRightFlipperKey])
+            if (m_keyPressedState[eRightFlipperKey])
                g_pplayer->UpdateBackdropSettings(true);
-           if (m_enableCameraModeFlyAround)
-           {
-              if (m_keyPressedState[eLeftTiltKey])
-                 g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set] -= 1.0f;
-              if (m_keyPressedState[eRightTiltKey])
-                 g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set] += 1.0f;
-           }
+            if (m_enableCameraModeFlyAround)
+            {
+               if (m_keyPressedState[eLeftTiltKey])
+                  g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set] -= 1.0f;
+               if (m_keyPressedState[eRightTiltKey])
+                  g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set] += 1.0f;
+            }
          }
-
          return;
       }
    }
