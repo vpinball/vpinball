@@ -484,6 +484,13 @@ public:
       *this = tmp;
    }
 
+   // If matrix defines and orthonormal transformation (like a view or model matrix), these function give the defining vectors
+   vec3 GetOrthoNormalRight() const { return vec3(_11, _12, _13); }
+   vec3 GetOrthoNormalUp() const { return vec3(_21, _22, _23); }
+   vec3 GetOrthoNormalDir() const { return vec3(_31, _32, _33); }
+   vec3 GetOrthoNormalPos() const { return vec3(_41, _42, _43); }
+
+   // Normalize the 3 defining vector of an ortho normal matrix
    void OrthoNormalize()
    {
       vec3 right(_11, _12, _13);

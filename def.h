@@ -196,6 +196,14 @@ public:
 #define ANGTORAD(x) ((x) *(float)(M_PI/180.0))
 #define RADTOANG(x) ((x) *(float)(180.0/M_PI))
 
+// Conversions to/from VP units (50 VPU = 1.25 inches which is the default size of a ball, 1 inch is 2.54cm)
+#define MMTOVPU(x) (((x) / 25.4f) * (float)(50. / 1.25))
+#define CMTOVPU(x) (((x) / 2.54f) * (float)(50. / 1.25))
+#define VPUTOMM(x) (25.4f * (x) / (float)(50. / 1.25))
+#define VPUTOCM(x) (2.54f * (x) / (float)(50. / 1.25))
+#define INCHESTOVPU(x) ((x) * (float)(50. / 1.25))
+#define VPUTOINCHES(x) ((x) / (float)(50. / 1.25))
+
 #define VBTOF(x) ((x) ? fTrue : fFalse)
 #define VBTOb(x) (!!(x))
 #define FTOVB(x) ((x) ? (VARIANT_BOOL)-1 : (VARIANT_BOOL)0)
