@@ -96,6 +96,12 @@ public:
       const Vertex3Ds& cam = Vertex3Ds(0.f, 0.f, 0.f), const float cam_inc = 0.f, const float scene_scale = 1.f, 
       const float xpixoff = 0.f, const float ypixoff = 0.f);
 
+   Matrix3D m_matWorld;
+   Matrix3D m_matView;
+   Matrix3D m_matProj[2];
+   RECT m_rcviewport;
+
+private:
    void ScaleView(const float x, const float y, const float z);
    void MultiplyView(const Matrix3D& mat);
    void RotateView(float x, float y, float z);
@@ -106,16 +112,8 @@ public:
 
    void ComputeNearFarPlane(const vector<Vertex3Ds>& verts);
 
-   Matrix3D m_matWorld;
-   Matrix3D m_matView;
-   Matrix3D m_matProj[2];
-   StereoMode m_stereo3D;
-
-   RECT m_rcviewport;
-
    float m_rznear, m_rzfar;
    Vertex3Ds m_vertexcamera;
-   //float m_cameraLength;
 };
 
 class Pin3D
@@ -126,7 +124,6 @@ public:
 
    HRESULT InitPin3D(const bool fullScreen, const int width, const int height, const int colordepth, int &refreshrate, const int VSync, const float AAfactor, const StereoMode stereo3D, const unsigned int FXAA, const bool sharpen, const bool ss_refl);
 
-   // void InitLayoutFS(); // Legacy
    void InitLayout(const float xpixoff = 0.f, const float ypixoff = 0.f);
 
    void TransformVertices(const Vertex3D_NoTex2 * const __restrict rgv, const WORD * const __restrict rgi, const int count, Vertex2D * const __restrict rgvout) const;
@@ -180,5 +177,3 @@ public:
 
    void UpdateBAMHeadTracking();                 // #ravarcade: UpdateBAMHeadTracking will set proj/view matrix to add BAM view and head tracking
 };
-
-Matrix3D ComputeLaybackTransform(float layback);

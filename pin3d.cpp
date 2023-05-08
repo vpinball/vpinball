@@ -673,103 +673,6 @@ Matrix3D ComputeLaybackTransform(const float layback)
    return matTrans;
 }
 
-// This part is legacy and not used anymore
-#if 0
-void Pin3D::InitLayoutFS()
-{
-   TRACE_FUNCTION();
-
-   const float rotation = ANGTORAD(g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set]);
-   constexpr float inclination = 0.0f;// ANGTORAD(g_pplayer->m_ptable->m_BG_inclination[g_pplayer->m_ptable->m_BG_current_set]);
-   //const float FOV = (g_pplayer->m_ptable->m_BG_FOV[g_pplayer->m_ptable->m_BG_current_set] < 1.0f) ? 1.0f : g_pplayer->m_ptable->m_BG_FOV[g_pplayer->m_ptable->m_BG_current_set];
-
-   vector<Vertex3Ds> vvertex3D;
-   for (size_t i = 0; i < g_pplayer->m_ptable->m_vedit.size(); ++i)
-      g_pplayer->m_ptable->m_vedit[i]->GetBoundingVertices(vvertex3D);
-
-   m_proj.m_rcviewport.left = 0;
-   m_proj.m_rcviewport.top = 0;
-   m_proj.m_rcviewport.right = m_viewPort.Width;
-   m_proj.m_rcviewport.bottom = m_viewPort.Height;
-
-   //const float aspect = (float)m_viewPort.Width / (float)m_viewPort.Height; //(float)(4.0/3.0);
-
-   //m_proj.FitCameraToVerticesFS(vvertex3D, aspect, rotation, inclination, FOV, g_pplayer->m_ptable->m_BG_xlatez[g_pplayer->m_ptable->m_BG_current_set], g_pplayer->m_ptable->m_BG_layback[g_pplayer->m_ptable->m_BG_current_set]);
-   const float yof = g_pplayer->m_ptable->m_bottom*0.5f + g_pplayer->m_ptable->m_BG_xlatey[g_pplayer->m_ptable->m_BG_current_set];
-   constexpr float camx = 0.0f;
-   const float camy = g_pplayer->m_ptable->m_bottom*0.5f + g_pplayer->m_ptable->m_BG_xlatex[g_pplayer->m_ptable->m_BG_current_set];
-   const float camz = g_pplayer->m_ptable->m_bottom + g_pplayer->m_ptable->m_BG_xlatez[g_pplayer->m_ptable->m_BG_current_set];
-   m_proj.m_matWorld.SetIdentity();
-   vec3 eye(camx, camy, camz);
-   vec3 at(0.0f, yof, 1.0f);
-   const vec3 up(0.0f, -1.0f, 0.0f);
-
-   const Matrix3D rotationMat = Matrix3D::MatrixRotationYawPitchRoll(inclination, 0.0f, rotation);
-#ifdef ENABLE_SDL
-   eye = vec3::TransformCoord(eye, rotationMat);
-   at = vec3::TransformCoord(at, rotationMat);
-#else
-   D3DXVec3TransformCoord(&eye, &eye, (const D3DXMATRIX*)&rotationMat);
-   D3DXVec3TransformCoord(&at, &at, (const D3DXMATRIX*)&rotationMat);
-#endif
-   //D3DXVec3TransformCoord(&up, &up, &rotationMat);
-   //at=eye+at;
-
-   const Matrix3D mView = Matrix3D::MatrixLookAtLH(eye, at, up);
-   memcpy(m_proj.m_matView.m, mView.m, sizeof(float) * 4 * 4);
-   m_proj.ScaleView(g_pplayer->m_ptable->m_BG_scalex[g_pplayer->m_ptable->m_BG_current_set], g_pplayer->m_ptable->m_BG_scaley[g_pplayer->m_ptable->m_BG_current_set], 1.0f);
-   m_proj.RotateView(0, 0, rotation);
-   m_proj.m_matWorld._41 = -g_pplayer->m_ptable->m_right*0.5f;//-m_proj.m_vertexcamera.x;
-   m_proj.m_matWorld._42 = -g_pplayer->m_ptable->m_bottom*0.5f;//-m_proj.m_vertexcamera.y*1.0f;
-   m_proj.m_matWorld._43 = -g_pplayer->m_ptable->m_glassheight;
-   // recompute near and far plane (workaround for VP9 FitCameraToVertices bugs)
-   m_proj.ComputeNearFarPlane(vvertex3D);
-   Matrix3D proj;
-   //proj = Matrix3D::MatrixPerspectiveFovLH(ANGTORAD(FOV), aspect, m_proj.m_rznear, m_proj.m_rzfar);
-   //proj = Matrix3D::MatrixPerspectiveFovLH((float)(M_PI / 4.0), aspect, m_proj.m_rznear, m_proj.m_rzfar);
-
-   proj.SetIdentity();
-   constexpr float monitorPixel = 1.0f;// 25.4f * 23.3f / sqrt(1920.0f*1920.0f + 1080.0f*1080.0f);
-   const float viewRight = monitorPixel*(float)m_viewPort.Width *0.5f;
-   const float viewTop = monitorPixel*(float)m_viewPort.Height *0.5f;
-   //eye.x = g_pplayer->m_ptable->m_bottom*0.4f;
-   //eye.z += g_pplayer->m_ptable->m_glassheight;
-   eye.z = g_pplayer->m_ptable->m_bottom;
-
-   float right = viewRight - eye.x;
-   float left = -viewRight - eye.x;
-   float top = viewTop - eye.y;
-   float bottom = -viewTop - eye.y;
-   const float z_screen = eye.z >= m_proj.m_rznear ? eye.z : m_proj.m_rznear;
-
-   // move edges of frustum from z_screen to z_near
-   const float z_near_to_z_screen = m_proj.m_rznear / z_screen; // <=1.0
-   right *= z_near_to_z_screen;
-   left *= z_near_to_z_screen;
-   top *= z_near_to_z_screen;
-   bottom *= z_near_to_z_screen;
-
-   //Create Projection Matrix - For Realtime Headtracking this matrix should be updated every frame. VR has its own V and P matrices.
-#ifdef ENABLE_SDL
-   if (m_stereo3D != STEREO_OFF) {
-      constexpr float stereoOffset = 0.03f; //!!
-      proj = Matrix3D::MatrixPerspectiveOffCenterLH(left - stereoOffset, right - stereoOffset, bottom, top, m_proj.m_rznear, m_proj.m_rzfar);
-      memcpy(m_proj.m_matProj[0].m, proj.m, sizeof(float) * 4 * 4);
-      proj = Matrix3D::MatrixPerspectiveOffCenterLH(left + stereoOffset, right + stereoOffset, bottom, top, m_proj.m_rznear, m_proj.m_rzfar);
-      memcpy(m_proj.m_matProj[1].m, proj.m, sizeof(float) * 4 * 4);
-   }
-   else
-#endif
-   {
-      proj = Matrix3D::MatrixPerspectiveOffCenterLH(left, right, bottom, top, m_proj.m_rznear, m_proj.m_rzfar);
-      memcpy(m_proj.m_matProj[0].m, proj.m, sizeof(float) * 4 * 4);
-   }
-
-   //m_proj.m_cameraLength = sqrtf(m_proj.m_vertexcamera.x*m_proj.m_vertexcamera.x + m_proj.m_vertexcamera.y*m_proj.m_vertexcamera.y + m_proj.m_vertexcamera.z*m_proj.m_vertexcamera.z);
-
-   InitLights();
-}
-#endif
 
 // Setup the tables camera / rotation / scale.
 // 
@@ -843,7 +746,6 @@ void PinProjection::Setup(const PinTable* table, const ViewPort& viewPort, const
    const CameraLayoutMode layoutMode = table->m_cameraLayoutMode;
    const bool FSS_mode = table->m_BG_enable_FSS;
 
-   m_stereo3D = stereo3D;
    m_rcviewport.left = 0;
    m_rcviewport.top = 0;
    m_rcviewport.right = viewPort.Width;
@@ -929,7 +831,7 @@ void PinProjection::Setup(const PinTable* table, const ViewPort& viewPort, const
 
 #ifdef ENABLE_VR
    // Full scene scaling is only used in VR (and VR preview for debugging) to adapt to HMD scale
-   if (m_stereo3D == STEREO_VR)
+   if (stereo3D == STEREO_VR)
       ScaleView(scene_scale, scene_scale, scene_scale);
 #endif
 
@@ -986,12 +888,12 @@ void PinProjection::Setup(const PinTable* table, const ViewPort& viewPort, const
    memcpy(m_matProj[0].m, proj.m, sizeof(float) * 4 * 4);
 
 #ifdef ENABLE_SDL
-   if (m_stereo3D == STEREO_VR)
+   if (stereo3D == STEREO_VR)
    {
       // Use the same projection for VR debug since the anaglyph stereo computation would fail due to scene scaling
       memcpy(m_matProj[1].m, proj.m, sizeof(float) * 4 * 4);
    }
-   else if (m_stereo3D != STEREO_OFF)
+   else if (stereo3D != STEREO_OFF)
    {
       // Create eye projection matrices for real stereo (not VR but anaglyph,...)
       // 63mm is the average distance between eyes (varies from 54 to 74mm between adults, 43 to 58mm for children), 50 VPUnit is 1.25 inches
