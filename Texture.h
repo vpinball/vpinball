@@ -13,15 +13,15 @@ class BaseTexture final
 {
 public:
    enum Format
-   { // RGB/RGBA formats must be ordered R, G, B (and eventually A)
-      BW,			// Linear BW image, 1 byte per texel
-      RGB,			// Linear RGB without alpha channel, 1 byte per channel
-      RGBA,			// Linear RGB with alpha channel, 1 byte per channel
-      SRGB,			// sRGB without alpha channel, 1 byte per channel
-      SRGBA,		// sRGB with alpha channel, 1 byte per channel
-      RGB_FP16,		// Linear RGB, 1 half float per channel
-      RGBA_FP16,	// Linear RGB with alpha channel, 1 half float per channel
-      RGB_FP32		// Linear RGB, 1 float per channel
+   { // RGB/RGBA formats must be ordered R, G, B (and optionally A)
+      BW,        // Linear BW image, 1 byte per texel
+      RGB,       // Linear RGB without alpha channel, 1 byte per channel
+      RGBA,      // Linear RGB with alpha channel, 1 byte per channel
+      SRGB,      // sRGB without alpha channel, 1 byte per channel
+      SRGBA,     // sRGB with alpha channel, 1 byte per channel
+      RGB_FP16,  // Linear RGB, 1 half float per channel
+      RGBA_FP16, // Linear RGB with alpha channel, 1 half float per channel
+      RGB_FP32   // Linear RGB, 1 float per channel
    };
 
    BaseTexture(const unsigned int w, const unsigned int h, const Format format);

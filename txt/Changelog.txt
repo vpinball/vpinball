@@ -108,6 +108,8 @@ FIXES:
 
 - fix overbrightness in F6 (interactive camera/light editing) mode
 
+- fix swapped red & blue channels when exporting from BMPs
+
 - handle broken tables better and try to load as much as possible
 
 - static element preprocessing is now done on the GPU (which leads to a faster VPX-player start)

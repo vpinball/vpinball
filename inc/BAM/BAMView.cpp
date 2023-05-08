@@ -196,7 +196,7 @@ void _ceateProjectionAndViewMatrix(float* const __restrict P, float* const __res
    const float scale = (float)(displayLengthInMillimeters / tableLengthInMillimeters); // calc here scale
 
    // combine all to one matrix
-   const float I[16] = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
+   constexpr float I[16] = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
    memcpy_s(V, sizeof(I), I, sizeof(I));
    Scale(V, 1, -1, 1); // mirror on Y axis
    Translate(V, -tableWidth * 0.5f, tableLength * 0.5f, -tableGlass); // center table
@@ -211,7 +211,7 @@ void _ceateProjectionAndViewMatrix(float* const __restrict P, float* const __res
 
 std::wstring GetFileNameForSettingsXML()
 {
-   string path = string(GetAppDataPath()) + PATH_SEPARATOR_CHAR + "VPinballX"s + PATH_SEPARATOR_CHAR + "BAMViewSettings.xml"s;
+   const string path = string(GetAppDataPath()) + PATH_SEPARATOR_CHAR + "VPinballX" + PATH_SEPARATOR_CHAR + "BAMViewSettings.xml";
    return MakeWString(path);
 }
 
@@ -226,9 +226,7 @@ std::string GetTableName()
 
 bool SaveFile(const std::wstring& path, const void* data, SIZE_T size)
 {
-   HANDLE hFile;
-
-   hFile = CreateFileW(path.c_str(), GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+   HANDLE hFile = CreateFileW(path.c_str(), GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 
    DWORD err = GetLastError();
 
