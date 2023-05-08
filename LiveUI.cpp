@@ -1138,9 +1138,7 @@ void LiveUI::UpdateMainUI()
       {
          Matrix3D view(m_camView);
          view.Invert();
-         vec3 up(view._21, view._22, view._23);
-         vec3 dir(view._31, view._32, view._33);
-         vec3 pos(view._41, view._42, view._43);
+         const vec3 up = view.GetOrthoNormalUp(), dir = view.GetOrthoNormalDir(), pos = view.GetOrthoNormalPos();
          vec3 camTarget = pos - dir * m_camDistance;
          m_camDistance *= (float) pow(1.1, -ImGui::GetIO().MouseWheel);
          vec3 newEye = camTarget + dir * m_camDistance;
@@ -1155,16 +1153,12 @@ void LiveUI::UpdateMainUI()
          m_useEditorCam = true;
          Matrix3D view(m_camView);
          view.Invert();
-         vec3 right(view._11, view._12, view._13);
-         vec3 up(view._21, view._22, view._23);
-         vec3 dir(view._31, view._32, view._33);
-         vec3 pos(view._41, view._42, view._43);
+         const vec3 right = view.GetOrthoNormalRight(), up = view.GetOrthoNormalUp(), dir = view.GetOrthoNormalDir(), pos = view.GetOrthoNormalPos();
          vec3 camTarget = pos - dir * m_camDistance;
          if (ImGui::GetIO().KeyShift)
          {
-            pos = pos - right * drag.x + up * drag.y;
             camTarget = camTarget - right * drag.x + up * drag.y;
-            m_camView.SetLookAtRH(pos, camTarget, up);
+            m_camView.SetLookAtRH(pos - right * drag.x + up * drag.y, camTarget, up);
          }
       }
    }
@@ -1239,9 +1233,7 @@ void LiveUI::UpdateMainUI()
             m_useEditorCam = true;
             Matrix3D view(m_camView);
             view.Invert();
-            vec3 up(view._21, view._22, view._23);
-            vec3 dir(view._31, view._32, view._33);
-            vec3 pos(view._41, view._42, view._43);
+            const vec3 up = view.GetOrthoNormalUp(), dir = view.GetOrthoNormalDir(), pos = view.GetOrthoNormalPos();
             vec3 camTarget = pos - dir * m_camDistance;
             vec3 newTarget = camTarget;
             Matrix3D transform;
@@ -1257,9 +1249,7 @@ void LiveUI::UpdateMainUI()
             m_orthoCam = true;
             Matrix3D view(m_camView);
             view.Invert();
-            vec3 up(view._21, view._22, view._23);
-            vec3 dir(view._31, view._32, view._33);
-            vec3 pos(view._41, view._42, view._43);
+            const vec3 up = view.GetOrthoNormalUp(), dir = view.GetOrthoNormalDir(), pos = view.GetOrthoNormalPos();
             vec3 camTarget = pos - dir * m_camDistance;
             vec3 newUp(0.f, -1.f, 0.f);
             vec3 newDir(0.f, 0.f, ImGui::GetIO().KeyCtrl ? 1.f : -1.f);
@@ -1273,9 +1263,7 @@ void LiveUI::UpdateMainUI()
             m_orthoCam = true;
             Matrix3D view(m_camView);
             view.Invert();
-            vec3 up(view._21, view._22, view._23);
-            vec3 dir(view._31, view._32, view._33);
-            vec3 pos(view._41, view._42, view._43);
+            const vec3 up = view.GetOrthoNormalUp(), dir = view.GetOrthoNormalDir(), pos = view.GetOrthoNormalPos();
             vec3 camTarget = pos - dir * m_camDistance;
             vec3 newUp(0.f, 0.f, -1.f);
             vec3 newDir(0.f, ImGui::GetIO().KeyCtrl ? -1.f : 1.f, 0.f);
@@ -1289,9 +1277,7 @@ void LiveUI::UpdateMainUI()
             m_orthoCam = true;
             Matrix3D view(m_camView);
             view.Invert();
-            vec3 up(view._21, view._22, view._23);
-            vec3 dir(view._31, view._32, view._33);
-            vec3 pos(view._41, view._42, view._43);
+            const vec3 up = view.GetOrthoNormalUp(), dir = view.GetOrthoNormalDir(), pos = view.GetOrthoNormalPos();
             vec3 camTarget = pos - dir * m_camDistance;
             vec3 newUp(0.f, 0.f, -1.f);
             vec3 newDir(ImGui::GetIO().KeyCtrl ? 1.f : -1.f, 0.f, 0.f);
@@ -1303,7 +1289,7 @@ void LiveUI::UpdateMainUI()
 
    if (m_useEditorCam)
    {
-      // Apply editor camera to renderer (move view from right handed to left handed)
+      // Apply editor camera to renderer (move view/projection from right handed to left handed)
       Matrix3D mat(m_camView); // Convert from right handed (ImGuizmo view manipulate is right handed) to VPX's left handed coordinate system
       Matrix3D RH2LH; // Right Hand to Left Hand (note that RH2LH = inverse(RH2LH), so RH2LH.RH2LH is identity, which property is used below)
       RH2LH.SetIdentity();
@@ -1325,15 +1311,15 @@ void LiveUI::UpdateMainUI()
          Matrix3D invView(view);
          invView.Invert();
          invView.OrthoNormalize();
-         const vec3 right(invView._11, invView._12, invView._13);
-         const vec3 up(invView._21, invView._22, invView._23);
-         const vec3 dir(invView._31, invView._32, invView._33);
-         const vec3 pos(invView._41, invView._42, invView._43);
+         const vec3 right = invView.GetOrthoNormalRight();
+         const vec3 up = invView.GetOrthoNormalUp();
+         const vec3 dir = invView.GetOrthoNormalDir();
+         const vec3 pos = invView.GetOrthoNormalPos();
          const vec3 at = pos + dir * m_camDistance;
          Matrix3D rot = Matrix3D::MatrixLookAtLH(pos + (-halfEyeDist * right), at, up);
-         const Matrix3D leftEye = invView * rot * proj; // Apply offset & rotation to the view
+         const Matrix3D leftEye = invView * rot * proj;
          rot = Matrix3D::MatrixLookAtLH(pos + (halfEyeDist * right), at, up);
-         const Matrix3D rightEye = invView * rot * proj; // Apply offset & rotation to the view
+         const Matrix3D rightEye = invView * rot * proj;
          m_pin3d->GetMVP().SetProj(0, leftEye);
          m_pin3d->GetMVP().SetProj(1, rightEye);
       }
