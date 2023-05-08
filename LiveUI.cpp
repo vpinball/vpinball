@@ -491,12 +491,6 @@ static void HelpSplash(const std::string& text, int rotation)
 {
    ImVec2 win_size = ImGui::GetIO().DisplaySize;
    const ImVec2 text_size = ImGui::CalcTextSize(text.c_str());
-   if (rotation == 1 || rotation == 3)
-   {
-      const float tmp = win_size.x;
-      win_size.x = win_size.y;
-      win_size.y = tmp;
-   }
    constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
    ImGui::SetNextWindowBgAlpha(0.35f);
    ImGui::SetNextWindowPos(ImVec2((win_size.x - text_size.x - 10) / 2, (win_size.y - text_size.y - 10) / 2));
