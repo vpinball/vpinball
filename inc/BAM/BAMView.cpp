@@ -211,34 +211,8 @@ void _ceateProjectionAndViewMatrix(float* const __restrict P, float* const __res
 
 std::wstring GetFileNameForSettingsXML()
 {
-   const wchar_t* SettingsXML = L"BAMViewSettings.xml";
-   wchar_t path[2048]; // [MAX_PATH] ;
-   HMODULE hm;
-   path[0] = 0;
-
-   //if (GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, (LPCSTR)&GetFileNameForSettingsXML, &hm) == 0)
-   if ((hm = GetModuleHandle((LPCSTR)&GetFileNameForSettingsXML)) == 0)
-   {
-      int ret = GetLastError();
-      TRACE("GetModuleHandle failed");
-      return SettingsXML;
-   }
-
-   if (GetModuleFileNameW(hm, path, sizeof(path)) == 0)
-   {
-      int ret = GetLastError();
-      TRACE("GetModuleFileName failed");
-      return SettingsXML;
-   }
-
-   auto backslash = wcsrchr(path, '\\');
-   auto slash = wcsrchr(path, '/');
-   auto dst = std::max(backslash, slash);
-   if (dst == nullptr)
-      return SettingsXML;
-   wcscpy_s(dst + 1, path + _countof(path) - dst - 2, SettingsXML);
-
-   return path;
+   string path = string(GetAppDataPath()) + PATH_SEPARATOR_CHAR + "VPinballX"s + PATH_SEPARATOR_CHAR + "BAMViewSettings.xml"s;
+   return MakeWString(path);
 }
 
 std::string GetTableName()

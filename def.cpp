@@ -137,7 +137,18 @@ string MakeString(const wstring &wz)
    return result;
 }
 
-char *MakeChar(const WCHAR * const wz)
+wstring MakeWString(const string &sz)
+{
+   // Somewhat overkill since we copy the string twice, once in the temp buffer for conversion, then in the string constructor
+   const int len = (int)sz.length();
+   WCHAR *const wzT = new WCHAR[len + 1];
+   MultiByteToWideCharNull(CP_ACP, 0, sz.c_str(), -1, wzT, len + 1);
+   const wstring result(wzT);
+   delete wzT;
+   return result;
+}
+
+char *MakeChar(const WCHAR *const wz)
 {
    const int len = lstrlenW(wz);
    char * const szT = new char[len + 1];
