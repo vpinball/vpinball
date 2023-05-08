@@ -6780,7 +6780,7 @@ bool PinTable::ExportImage(const Texture * const ppi, const char * const szfilen
       //write BMP Info Header
       WriteFile(hFile, &bmpi, sizeof(BITMAPINFOHEADER), &write, nullptr);
 
-      unsigned char* const sinfo = new unsigned char[bmplnsize + 4]; //linebuffer and safty pad
+      unsigned char* const sinfo = new unsigned char[bmplnsize + 4]; //linebuffer and safety pad
       if (!sinfo)
       {
          CloseHandle(hFile);
@@ -6808,22 +6808,42 @@ bool PinTable::ExportImage(const Texture * const ppi, const char * const szfilen
       if (ppi->m_pdsBuffer->m_format == BaseTexture::RGB_FP16 || ppi->m_pdsBuffer->m_format == BaseTexture::RGB_FP32)
       {
           assert(!"float format export");
-          return false; // Unsupported but this should not happens since all HDR image are imported and have a m_ppb field
+          return false; // Unsupported but this should not happen since all HDR images are imported and have a m_ppb field
       }
 
       FIBITMAP *dib = FreeImage_Allocate(ppi->m_width, ppi->m_height, ppi->m_pdsBuffer->has_alpha() ? 32 : 24);
-      BYTE * const psrc = FreeImage_GetBits(dib);
+      BYTE *const psrc = FreeImage_GetBits(dib);
 
       const unsigned int pitch = ppi->m_pdsBuffer->pitch();
       const BYTE *spch = ppi->m_pdsBuffer->data() + (ppi->m_height * pitch); // just past the end of the Texture part of DD surface
+      const unsigned int ch = ppi->m_pdsBuffer->has_alpha() ? 4 : 3;
 
       for (unsigned int i = 0; i < ppi->m_height; i++)
       {
-         const BYTE * const pch = (spch -= pitch); // start on previous previous line
-         memcpy(psrc + i * (ppi->m_width*(ppi->m_pdsBuffer->has_alpha() ? 4:3)), pch, ppi->m_width*(ppi->m_pdsBuffer->has_alpha() ? 4:3));
+         const BYTE *__restrict src = (spch -= pitch); // start on previous previous line
+         BYTE * __restrict dst = psrc + i * (ppi->m_width * ch);
+         for (unsigned int x = 0; x < ppi->m_width; x++,src+=ch,dst+=ch) // copy and swap red & blue
+         {
+            dst[0] = src[2];
+            dst[1] = src[1];
+            dst[2] = src[0];
+            if (ppi->m_pdsBuffer->has_alpha())
+               dst[3] = src[3];
+         }
       }
 
-      if (!FreeImage_Save(FreeImage_GetFIFFromFilename(szfilename), dib, szfilename, PNG_Z_BEST_COMPRESSION | JPEG_QUALITYGOOD | BMP_SAVE_RLE))
+      const FREE_IMAGE_FORMAT fiff = FreeImage_GetFIFFromFilename(szfilename);
+      int flags;
+      switch (fiff)
+      {
+      case FIF_BMP: flags = BMP_SAVE_RLE; break;
+      case FIF_JPEG: flags = JPEG_QUALITYGOOD | JPEG_OPTIMIZE; break;
+      case FIF_PNG: flags = PNG_Z_BEST_COMPRESSION; break;
+      case FIF_TARGA: flags = TARGA_SAVE_RLE; break;
+      case FIF_WEBP: flags = WEBP_DEFAULT; break; // WEBP_LOSSLESS
+      default: flags = 0; break;
+      }
+      if (!FreeImage_Save(fiff, dib, szfilename, flags))
           m_vpinball->MessageBox("Export failed!", "BMP Export", MB_OK | MB_ICONEXCLAMATION);
       //else
       //   m_vpinball->MessageBox("Export finished!", "BMP Export", MB_OK);
