@@ -153,6 +153,8 @@ FIXES:
 
 - fix some problems with playing sounds via BASS: pitch/frequency change and loop/restart should now be matching the 'old' player
 
+- fix swapped red & blue channels when exporting from BMPs
+
 - fix Light Debugger dialog 2nd color button
 
 - improve script editing performance again

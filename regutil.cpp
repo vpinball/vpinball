@@ -386,7 +386,7 @@ static HRESULT LoadValue(const string &szKey, const string &szValue, DWORD &type
       }
       else if (type == REG_SZ)
       {
-         const DWORD len = (DWORD)strlen(value.c_str()) + 1;
+         const DWORD len = (DWORD)value.length() + 1;
          const DWORD len_min = min(len, size) - 1;
          memcpy(pvalue, value.c_str(), len_min);
          ((char *)pvalue)[len_min] = '\0';

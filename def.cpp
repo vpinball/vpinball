@@ -133,7 +133,7 @@ string MakeString(const wstring &wz)
    char *const szT = new char[len + 1];
    WideCharToMultiByteNull(CP_ACP, 0, wz.c_str(), -1, szT, len + 1, nullptr, nullptr);
    const string result(szT);
-   delete szT;
+   delete [] szT;
    return result;
 }
 
@@ -144,7 +144,7 @@ wstring MakeWString(const string &sz)
    WCHAR *const wzT = new WCHAR[len + 1];
    MultiByteToWideCharNull(CP_ACP, 0, sz.c_str(), -1, wzT, len + 1);
    const wstring result(wzT);
-   delete wzT;
+   delete [] wzT;
    return result;
 }
 

@@ -632,7 +632,7 @@ public:
       char *const szT = new char[len + 1];
       WideCharToMultiByteNull(CP_ACP, 0, msg, -1, szT, len + 1, nullptr, nullptr);
       table->m_pcv->AddToDebugOutput(szT);
-      delete szT;
+      delete [] szT;
       #else
       table->m_pcv->AddToDebugOutput(record.getMessage());
       #endif
