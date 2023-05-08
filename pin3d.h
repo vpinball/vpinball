@@ -92,6 +92,10 @@ private:
 class PinProjection
 {
 public:
+   void Setup(const PinTable* table, const ViewPort& viewPort, const bool cameraMode = false, const StereoMode stereo3D = STEREO_OFF, 
+      const Vertex3Ds& cam = Vertex3Ds(0.f, 0.f, 0.f), const float cam_inc = 0.f, const float scene_scale = 1.f, 
+      const float xpixoff = 0.f, const float ypixoff = 0.f);
+
    void ScaleView(const float x, const float y, const float z);
    void MultiplyView(const Matrix3D& mat);
    void RotateView(float x, float y, float z);

@@ -19,6 +19,7 @@ protected:
 private:
     HWND            m_hFssModeCheck;
     HWND            m_hTestDesktopCheck;
+    HWND            m_hCameraLayoutModeCheck;
     ComboBox        m_modeCombo;
     EditBox         m_inclinationEdit;
     EditBox         m_fovEdit;

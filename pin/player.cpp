@@ -705,14 +705,21 @@ void Player::Shutdown()
    delete m_liveUI;
    m_liveUI = nullptr;
 
-   if(m_toogle_DTFS && m_ptable->m_BG_current_set != 2)
-      m_ptable->m_BG_current_set ^= 1;
+   if (m_toogle_DTFS && m_ptable->m_BG_current_set != BG_FSS)
+   {
+      switch (m_ptable->m_BG_current_set)
+      {
+      case BG_DESKTOP: m_ptable->m_BG_current_set = BG_FSS; break;
+      case BG_FSS: m_ptable->m_BG_current_set = BG_DESKTOP; break;
+      }
+   }
 
    if (m_cameraMode)
    {
       // Save edited camera to editor's table
       PinTable *src = m_ptable, *dst = m_pEditorTable;
       dst->m_3DmaxSeparation = src->m_3DmaxSeparation;
+      dst->m_cameraLayoutMode = src->m_cameraLayoutMode;
       for (int i = 0; i < 3; i++)
       {
          dst->m_BG_rotation[i] = src->m_BG_rotation[i];
@@ -1292,13 +1299,17 @@ HRESULT Player::Init()
    m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderState::CULL_CCW);
 
    // if left flipper or shift hold during load, then swap DT/FS view (for quick testing)
-   if (m_ptable->m_BG_current_set != 2 &&
+   if (m_ptable->m_BG_current_set != BG_FSS &&
        !m_ptable->m_tblMirrorEnabled &&
        ((GetAsyncKeyState(VK_LSHIFT) & 0x8000)
        || ((lflip != ~0u) && (GetAsyncKeyState(lflip) & 0x8000))))
    {
-       m_toogle_DTFS = true;
-       m_ptable->m_BG_current_set ^= 1;
+      m_toogle_DTFS = true;
+      switch (m_ptable->m_BG_current_set)
+      {
+      case BG_DESKTOP: m_ptable->m_BG_current_set = BG_FSS; break;
+      case BG_FSS: m_ptable->m_BG_current_set = BG_DESKTOP; break;
+      }
    }
    else
        m_toogle_DTFS = false;
@@ -3982,17 +3993,17 @@ void Player::UpdateBackdropSettings(const bool up)
    }
    case 7:
    {
-      m_ptable->m_BG_xlatex[m_ptable->m_BG_current_set] += thesign;
+      m_ptable->m_BG_xlatex[m_ptable->m_BG_current_set] += 5.f * thesign;
       break;
    }
    case 8:
    {
-      m_ptable->m_BG_xlatey[m_ptable->m_BG_current_set] += thesign;
+      m_ptable->m_BG_xlatey[m_ptable->m_BG_current_set] += 5.f * thesign;
       break;
    }
    case 9:
    {
-      m_ptable->m_BG_xlatez[m_ptable->m_BG_current_set] += thesign*50.0f;
+      m_ptable->m_BG_xlatez[m_ptable->m_BG_current_set] += 50.f * thesign;
       break;
    }
    case 10:

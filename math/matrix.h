@@ -537,35 +537,64 @@ public:
       _44 = 1.0f;
    }
 
-   void SetFrustumRH(const float left, const float right, const float bottom, const float top, const float znear, const float zfar)
+   void SetPerspectiveOffCenterRH(const float left, const float right, const float bottom, const float top, const float znear, const float zfar)
    {
-      const float temp = 2.0f * znear;
-      const float temp2 = right - left;
-      const float temp3 = top - bottom;
-      const float temp4 = znear - zfar;
-      _11 = temp / temp2;
+      const float r_l = right - left;
+      const float t_b = top - bottom;
+      const float zn_zf = znear - zfar;
+      _11 = 2.0f * znear / r_l;
       _12 = 0.0f;
       _13 = 0.0f;
       _14 = 0.0f;
       _21 = 0.0f;
-      _22 = temp / temp3;
+      _22 = 2.0f * znear / t_b;
       _23 = 0.0f;
       _24 = 0.0f;
-      _31 = (right + left) / temp2;
-      _32 = (top + bottom) / temp3;
-      _33 = (zfar + znear) / temp4;
+      _31 = (right + left) / r_l;
+      _32 = (top + bottom) / t_b;
+      _33 = zfar / zn_zf;
       _34 = -1.0f;
       _41 = 0.0f;
       _42 = 0.0f;
-      _43 = temp * zfar / temp4;
+      _43 = znear * zfar / zn_zf;
       _44 = 0.0f;
    }
 
-   void SetPerspectiveRH(const float fovyInDegrees, const float aspectRatio, const float znear, const float zfar)
+   void SetPerspectiveOffCenterLH(const float left, const float right, const float bottom, const float top, const float znear, const float zfar)
    {
-      const float ymax = znear * tanf(ANGTORAD(fovyInDegrees));
+      const float r_l = right - left;
+      const float t_b = top - bottom;
+      const float zn_zf = znear - zfar;
+      _11 = 2.0f * znear / r_l;
+      _12 = 0.0f;
+      _13 = 0.0f;
+      _14 = 0.0f;
+      _21 = 0.0f;
+      _22 = 2.0f * znear / t_b;
+      _23 = 0.0f;
+      _24 = 0.0f;
+      _31 = -(right + left) / r_l;
+      _32 = -(top + bottom) / t_b;
+      _33 = -zfar / zn_zf;
+      _34 = 1.0f;
+      _41 = 0.0f;
+      _42 = 0.0f;
+      _43 = znear * zfar / zn_zf;
+      _44 = 0.0f;
+   }
+
+   void SetPerspectiveFovRH(const float fovyInDegrees, const float aspectRatio, const float znear, const float zfar)
+   {
+      const float ymax = znear * tanf(0.5f * ANGTORAD(fovyInDegrees));
       const float xmax = ymax * aspectRatio;
-      SetFrustumRH(-xmax, xmax, -ymax, ymax, znear, zfar);
+      SetPerspectiveOffCenterRH(-xmax, xmax, -ymax, ymax, znear, zfar);
+   }
+
+   void SetPerspectiveFovLH(const float fovyInDegrees, const float aspectRatio, const float znear, const float zfar)
+   {
+      const float ymax = znear * tanf(0.5f * ANGTORAD(fovyInDegrees));
+      const float xmax = ymax * aspectRatio;
+      SetPerspectiveOffCenterLH(-xmax, xmax, -ymax, ymax, znear, zfar);
    }
 
    void SetLookAtRH(const vec3& eye, const vec3& at, const vec3& up)
@@ -582,7 +611,7 @@ public:
       *this = Matrix3D(xaxis.x, yaxis.x, zaxis.x, 0.f, xaxis.y, yaxis.y, zaxis.y, 0.f, xaxis.z, yaxis.z, zaxis.z, 0.f, -dotX, -dotY, -dotZ, 1.f);
    }
 
-   static Matrix3D MatrixLookAtLH(const vec3& eye, const vec3& at, const vec3& up)
+   void SetLookAtLH(const vec3& eye, const vec3& at, const vec3& up)
    {
       vec3 xaxis, yaxis, zaxis;
       const vec3 a_e = at - eye;
@@ -593,19 +622,28 @@ public:
       const float dotX = Vec3Dot(&xaxis, &eye);
       const float dotY = Vec3Dot(&yaxis, &eye);
       const float dotZ = Vec3Dot(&zaxis, &eye);
-      return Matrix3D(xaxis.x, yaxis.x, zaxis.x, 0.f, xaxis.y, yaxis.y, zaxis.y, 0.f, xaxis.z, yaxis.z, zaxis.z, 0.f, -dotX, -dotY, -dotZ, 1.f);
+      *this = Matrix3D(xaxis.x, yaxis.x, zaxis.x, 0.f, xaxis.y, yaxis.y, zaxis.y, 0.f, xaxis.z, yaxis.z, zaxis.z, 0.f, -dotX, -dotY, -dotZ, 1.f);
+   }
+
+   static Matrix3D MatrixLookAtLH(const vec3& eye, const vec3& at, const vec3& up)
+   {
+      Matrix3D result;
+      result.SetLookAtLH(eye, at, up);
+      return result;
    }
 
    static Matrix3D MatrixPerspectiveFovLH(const float fovy, const float aspect, const float zn, const float zf)
    {
-      const float yScale = 1.0f / tanf(fovy * 0.5f);
-      const float xScale = yScale / aspect;
-      return Matrix3D(xScale, 0.0f, 0.0f, 0.0f, 0.0f, yScale, 0.0f, 0.0f, 0.0f, 0.0f, zf / (zf - zn), 1.0f, 0.0f, 0.0f, -zn * zf / (zf - zn), 0.0f);
+      Matrix3D result;
+      result.SetPerspectiveFovLH(fovy, aspect, zn, zf);
+      return result;
    }
 
    static Matrix3D MatrixPerspectiveOffCenterLH(const float l, const float r, const float b, const float t, const float zn, const float zf)
    {
-      return Matrix3D(2.0f * zn / (r - l), 0.0f, 0.0f, 0.0f, 0.0f, 2.0f * zn / (t - b), 0.0f, 0.0f, (l + r) / (l - r), (t + b) / (b - t), zf / (zf - zn), 1.0f, 0.0f, 0.0f, -zn * zf / (zf - zn), 0.0f);
+      Matrix3D result;
+      result.SetPerspectiveOffCenterLH(l, r, b, t, zn, zf);
+      return result;
    }
 
    static Matrix3D MatrixRotationYawPitchRoll(const float yaw, const float pitch, const float roll)
@@ -618,6 +656,16 @@ public:
       const float cy = cosf(yaw);
       //!! This code should be validated!
       return Matrix3D(cr * cy, sr, cr * sy, 0.0f, -sr * cp * sy - sp * sy, cr * cp, sr * cp * sy + sp * cy, 0.0f, -sr * sp * cy - cp * sy, -cr * sp, -sr * sp * sy + cp * cy, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+   }
+
+   template <class T> void TransformVec3(T& v) const
+   {
+      const float x = v.x;
+      const float y = v.y;
+      const float z = v.z;
+      v.x = _11 * x + _21 * y + _31 * z + _41;
+      v.y = _12 * x + _22 * y + _32 * z + _42;
+      v.z = _13 * x + _23 * y + _33 * z + _43;
    }
 
    template <class T> void TransformVertices(const T* const __restrict rgv, const WORD* const __restrict rgi, const int count, Vertex2D* const __restrict rgvout, const RECT& viewPort) const

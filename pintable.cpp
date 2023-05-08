@@ -1282,29 +1282,29 @@ PinTable::PinTable()
    m_glassheight = 210;
    m_tableheight = 0;
 
-   m_BG_current_set = LoadValueIntWithDefault(regKey[RegName::Player], "BGSet"s, BG_DESKTOP);
+   m_BG_current_set = (ViewSetupID) LoadValueIntWithDefault(regKey[RegName::Player], "BGSet"s, BG_DESKTOP);
    m_currentBackglassMode = m_BG_current_set;
 
    m_BG_enable_FSS = false;
    //if (m_BG_enable_FSS)
    //   m_currentBackglassMode = FULL_SINGLE_SCREEN;
 
+   m_cameraLayoutMode = CLM_RELATIVE;
    for (int i = 0; i < NUM_BG_SETS; ++i)
    {
       m_BG_inclination[i] = 0;
-      m_BG_FOV[i] = FLT_MAX;
+      m_BG_FOV[i] = 60.0f;
 
       m_BG_rotation[i] = 0;
       m_BG_layback[i] = 0;
 
       m_BG_scalex[i] = 1.0f;
       m_BG_scaley[i] = 1.0f;
+      m_BG_scalez[i] = 1.0f;
 
       m_BG_xlatex[i] = 0.0f;
-      m_BG_xlatey[i] = 0.0f;
-
-      m_BG_scalez[i] = 1.0f;
-      m_BG_xlatez[i] = 0.0f;
+      m_BG_xlatey[i] = CMTOVPU(10.f);
+      m_BG_xlatez[i] = CMTOVPU(90.f);
    }
 
    CComObject<CodeViewer>::CreateInstance(&m_pcv);
@@ -1979,44 +1979,12 @@ void PinTable::Render3DProjection(Sur * const psur)
    if (m_vedit.empty())
       return;
 
-   const float rotation = ANGTORAD(m_BG_rotation[m_BG_current_set]);
-   const float inclination = ANGTORAD(m_BG_inclination[m_BG_current_set]);
-   const float FOV = (m_BG_FOV[m_BG_current_set] < 1.0f) ? 1.0f : m_BG_FOV[m_BG_current_set]; // Can't have a real zero FOV, but this will look almost the same
-
-   vector<Vertex3Ds> vvertex3D;
-   for(auto &ptr : m_vedit)
-      ptr->GetBoundingVertices(vvertex3D);
-
    // dummy coordinate system for backdrop view
+   ViewPort viewport;
+   viewport.Width = EDITOR_BG_WIDTH;
+   viewport.Height = EDITOR_BG_HEIGHT;
    PinProjection pinproj;
-   pinproj.m_rcviewport.left = 0;
-   pinproj.m_rcviewport.top = 0;
-   pinproj.m_rcviewport.right = EDITOR_BG_WIDTH;
-   pinproj.m_rcviewport.bottom = EDITOR_BG_HEIGHT;
-
-   //const float aspect = 4.0f/3.0f;
-   const bool fullscreen = LoadValueBoolWithDefault(regKey[RegName::Player], "FullScreen"s, IsWindows10_1803orAbove());
-   const int renderWidth = LoadValueIntWithDefault(regKey[RegName::Player], "Width"s, fullscreen ? DEFAULT_PLAYER_FS_WIDTH : DEFAULT_PLAYER_WIDTH);
-   const int renderHeight = LoadValueIntWithDefault(regKey[RegName::Player], "Height"s, renderWidth * 9 / 16);
-   const float aspect = (float)((double)renderWidth / (double)renderHeight); //(float)(4.0/3.0);
-
-   pinproj.FitCameraToVertices(vvertex3D, aspect, rotation, inclination, FOV, m_BG_xlatez[m_BG_current_set], m_BG_layback[m_BG_current_set]);
-   pinproj.m_matView.RotateXMatrix((float)M_PI);  // convert Z=out to Z=in (D3D coordinate system)
-   pinproj.m_matWorld.SetIdentity();
-   const Matrix3D proj = Matrix3D::MatrixPerspectiveFovLH(ANGTORAD(FOV), aspect, pinproj.m_rznear, pinproj.m_rzfar);
-   memcpy(pinproj.m_matProj[0].m, proj.m, sizeof(float) * 4 * 4);
-   memcpy(pinproj.m_matProj[1].m, proj.m, sizeof(float) * 4 * 4);
-
-   //pinproj.SetFieldOfView(FOV, aspect, pinproj.m_rznear, pinproj.m_rzfar);
-
-   pinproj.ScaleView(m_BG_scalex[m_BG_current_set], m_BG_scaley[m_BG_current_set], 1.0f);
-   pinproj.TranslateView(m_BG_xlatex[m_BG_current_set] - pinproj.m_vertexcamera.x, m_BG_xlatey[m_BG_current_set] - pinproj.m_vertexcamera.y, -pinproj.m_vertexcamera.z);
-   pinproj.RotateView(0, 0, rotation);
-   pinproj.RotateView(inclination, 0, 0);
-   pinproj.MultiplyView(ComputeLaybackTransform(m_BG_layback[m_BG_current_set]));
-
-   psur->SetFillColor(RGB(200, 200, 200));
-   psur->SetBorderColor(-1, false, 0);
+   pinproj.Setup(this, viewport);
 
    Vertex3Ds rgvIn[8];
    rgvIn[0].x = m_left;  rgvIn[0].y = m_top;    rgvIn[0].z = 50.0f;
@@ -2033,6 +2001,9 @@ void PinTable::Render3DProjection(Sur * const psur)
    pinproj.m_matProj[0].Multiply(pinproj.m_matView, matT); // matT = matView * matProj
    matT.Multiply(pinproj.m_matWorld, matT); // matT = matWorld * matView * matProj
    matT.TransformVertices(rgvIn, nullptr, 8, rgvOut, pinproj.m_rcviewport);
+
+   psur->SetFillColor(RGB(200, 200, 200));
+   psur->SetBorderColor(-1, false, 0);
    psur->Polygon(rgvOut, 8);
 }
 
@@ -2239,6 +2210,7 @@ void PinTable::Play(const bool cameraMode)
    dst->m_BG_current_set = src->m_BG_current_set;
    dst->m_currentBackglassMode = src->m_currentBackglassMode;
    dst->m_3DmaxSeparation = src->m_3DmaxSeparation;
+   dst->m_cameraLayoutMode = src->m_cameraLayoutMode;
    for (int i = 0; i < 3; i++)
    {
       dst->m_BG_rotation[i] = src->m_BG_rotation[i];
@@ -3413,6 +3385,8 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
    bw.WriteFloat(FID(RGHT), m_right);
    bw.WriteFloat(FID(BOTM), m_bottom);
 
+   bw.WriteInt(FID(CLMO), m_cameraLayoutMode);
+
    bw.WriteFloat(FID(ROTA), m_BG_rotation[0]);
    bw.WriteFloat(FID(INCL), m_BG_inclination[0]);
    bw.WriteFloat(FID(LAYB), m_BG_layback[0]);
@@ -4029,6 +4003,8 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 
          if (loadfileversion < 1080) 
          {
+            // Absolute camera mode was added in 10.8
+            m_cameraLayoutMode = CLM_RELATIVE;
             // reflections were hardcoded without render probe before 10.8.0
             RenderProbe* const pf_reflections = new RenderProbe();
             pf_reflections->SetName(PLAYFIELD_REFLECTION_RENDERPROBE_NAME);
@@ -4198,6 +4174,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    case FID(TOPX): pbr->GetFloat(m_top); break;
    case FID(RGHT): pbr->GetFloat(m_right); break;
    case FID(BOTM): pbr->GetFloat(m_bottom); break;
+   case FID(CLMO): pbr->GetInt(&m_cameraLayoutMode); break;
    case FID(ROTA): pbr->GetFloat(m_BG_rotation[BG_DESKTOP]); break;
    case FID(LAYB): pbr->GetFloat(m_BG_layback[BG_DESKTOP]); break;
    case FID(INCL): pbr->GetFloat(m_BG_inclination[BG_DESKTOP]); break;
@@ -5937,6 +5914,12 @@ void PinTable::ImportBackdropPOV(const string& filename)
            return;
         }
 
+        auto layoutmode = root->FirstChildElement("LayoutMode");
+        if (layoutmode == nullptr)
+           m_cameraLayoutMode = CLM_RELATIVE;
+        else
+           sscanf_s(layoutmode->GetText(), "%i", &m_cameraLayoutMode);
+
         auto desktop = root->FirstChildElement("desktop");
         if(!desktop)
         {
@@ -6118,6 +6101,9 @@ void PinTable::ExportBackdropPOV(const string& filename)
     try
     {
       auto root = xmlDoc.NewElement("POV");
+      auto layoutmode = xmlDoc.NewElement("LayoutMode");
+      layoutmode->SetText(m_cameraLayoutMode);
+      root->InsertEndChild(layoutmode);
       for (int i = 0; i < 3; i++)
       {
          auto view = xmlDoc.NewElement(i == 0 ? "desktop" : i == 1 ? "fullscreen" : "fullsinglescreen");
@@ -8834,9 +8820,13 @@ void PinTable::SetShowFSS(const bool enable)
 {
    m_BG_enable_FSS = enable;
    if (m_BG_enable_FSS)
-      m_BG_current_set = FULL_SINGLE_SCREEN;
+      m_BG_current_set = BG_FSS;
    else
-      LoadValue(regKey[RegName::Player], "BGSet"s, m_BG_current_set);
+   {
+      int setup;
+      LoadValue(regKey[RegName::Player], "BGSet"s, setup);
+      m_BG_current_set = (ViewSetupID)setup;
+   }
 }
 
 STDMETHODIMP PinTable::get_ShowFSS(VARIANT_BOOL *pVal)
@@ -9144,7 +9134,7 @@ STDMETHODIMP PinTable::get_BackglassMode(BackglassIndex *pVal)
 
 STDMETHODIMP PinTable::put_BackglassMode(BackglassIndex pVal)
 {
-   m_currentBackglassMode = (int)(pVal-DESKTOP);
+   m_currentBackglassMode = (ViewSetupID)(pVal - DESKTOP);
 
    return S_OK;
 }
