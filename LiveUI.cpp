@@ -897,7 +897,10 @@ void LiveUI::UpdateCameraModeUI()
          ImGui::Text("Credit Key: quit without export");
       }
       else
+      {
          ImGui::Text("Start Key: reset POV to old values");
+         ImGui::Text("Credit Key: reset POV to global defaults");
+      }
       ImGui::NewLine();
    }
 
@@ -909,18 +912,18 @@ void LiveUI::UpdateCameraModeUI()
          ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
       switch (i)
       {
-      case 0: ImGui::Text("Inclination: %.3f", table->m_BG_inclination[table->m_BG_current_set]); break;
-      case 1: ImGui::Text("Field Of View: %.3f", table->m_BG_FOV[table->m_BG_current_set]); break;
-      case 2: ImGui::Text("Layback: %.3f", table->m_BG_layback[table->m_BG_current_set]); ImGui::NewLine(); break;
+      case 0: ImGui::Text("Inclination: %.1f", table->m_BG_inclination[table->m_BG_current_set]); break;
+      case 1: ImGui::Text("Field Of View: %.1f", table->m_BG_FOV[table->m_BG_current_set]); break;
+      case 2: ImGui::Text(table->m_cameraLayoutMode == CLM_RELATIVE ? "Layback: %.1f" : "Table View Offset: %.1f", table->m_BG_layback[table->m_BG_current_set]); ImGui::NewLine(); break;
       case 4: ImGui::Text("X Scale: %.3f", table->m_BG_scalex[table->m_BG_current_set]); break;
       case 5: ImGui::Text("Y Scale: %.3f", table->m_BG_scaley[table->m_BG_current_set]); break;
       case 6: ImGui::Text("Z Scale: %.3f", table->m_BG_scalez[table->m_BG_current_set]); ImGui::NewLine(); break;
-      case 7: ImGui::Text("X Offset: %.0f", table->m_BG_xlatex[table->m_BG_current_set]); break;
-      case 8: ImGui::Text("Y Offset: %.0f", table->m_BG_xlatey[table->m_BG_current_set]); break;
-      case 9: ImGui::Text("Z Offset: %.0f", table->m_BG_xlatez[table->m_BG_current_set]); ImGui::NewLine(); break;
+      case 7: ImGui::Text(table->m_cameraLayoutMode == CLM_RELATIVE ? "X Offset: %.0f cm" : "X Position: %.0f cm", VPUTOCM(table->m_BG_xlatex[table->m_BG_current_set])); break;
+      case 8: ImGui::Text(table->m_cameraLayoutMode == CLM_RELATIVE ? "Y Offset: %.0f cm" : "Y Position: %.0f cm", VPUTOCM(table->m_BG_xlatey[table->m_BG_current_set])); break;
+      case 9: ImGui::Text(table->m_cameraLayoutMode == CLM_RELATIVE ? "Z Offset: %.0f cm" : "Z Position: %.0f cm", VPUTOCM(table->m_BG_xlatez[table->m_BG_current_set])); ImGui::NewLine(); break;
       case 10: ImGui::Text("Light Emission Scale: %.0f", table->m_lightEmissionScale); break;
-      case 11: ImGui::Text("Light Range: %.0f", table->m_lightRange); break;
-      case 12: ImGui::Text("Light Height: %.0f", table->m_lightHeight); ImGui::NewLine(); break;
+      case 11: ImGui::Text("Light Range: %.0f cm", VPUTOCM(table->m_lightRange)); break;
+      case 12: ImGui::Text("Light Height: %.0f cm", VPUTOCM(table->m_lightHeight)); ImGui::NewLine(); break;
       case 13: ImGui::Text("Environment Emission: %.3f", table->m_envEmissionScale); ImGui::NewLine(); break;
       case 14:
       {
@@ -940,12 +943,15 @@ void LiveUI::UpdateCameraModeUI()
          ImGui::PopStyleColor();
    }
 
-   ImGui::NewLine();
+   if (isStereo || isAnaglyph) ImGui::NewLine();
 
-   ImGui::Text("Camera at X: %.2f Y: %.2f Z: %.2f,  Rotation: %.2f", 
-      -m_pin3d->GetMVP().GetView()._41,
-      (table->m_BG_current_set == 0 || table->m_BG_current_set == 2) ? m_pin3d->GetMVP().GetView()._42 : -m_pin3d->GetMVP().GetView()._42, 
-      m_pin3d->GetMVP().GetView()._43,
+   Matrix3D view = m_pin3d->GetMVP().GetView();
+   view.Invert();
+   vec3 pos = view.GetOrthoNormalPos();
+   ImGui::Text("Camera at X: %.0f Y: %.0f Z: %.0f (cm), Rotation: %.2f", 
+      VPUTOCM(pos.x - 0.5f * g_pplayer->m_ptable->m_right), 
+      VPUTOCM(pos.y - g_pplayer->m_ptable->m_bottom), 
+      VPUTOCM(pos.z),
       table->m_BG_rotation[table->m_BG_current_set]);
    
    if (!positionTop && m_player->m_cameraMode)
@@ -964,7 +970,10 @@ void LiveUI::UpdateCameraModeUI()
          ImGui::Text("Credit Key: quit without export");
       }
       else
+      {
          ImGui::Text("Start Key: reset POV to old values");
+         ImGui::Text("Credit Key: reset POV to global defaults");
+      }
    }
 
    last_frame_height = ImGui::GetWindowHeight();
@@ -1094,7 +1103,7 @@ void LiveUI::UpdateMainUI()
       }
       else
       {
-         m_camProj.SetPerspectiveRH(39.6f, io.DisplaySize.x / io.DisplaySize.y, 10.0f, 10000.0f);
+         m_camProj.SetPerspectiveFovRH(39.6f, io.DisplaySize.x / io.DisplaySize.y, 10.0f, 10000.0f);
       }
       float* cameraView = (float *)(m_camView.m);
       float *cameraProjection = (float *)(m_camProj.m); 
@@ -1496,21 +1505,21 @@ void LiveUI::UpdateOutlinerUI()
                {
                   m_selection = cam0;
                   m_useEditorCam = false;
-                  table->m_BG_current_set = 0;
+                  table->m_BG_current_set = BG_DESKTOP;
                }
                Selection cam1(Selection::SelectionType::S_CAMERA, is_live, 1);
                if (ImGui::Selectable("Cabinet", m_selection == cam1))
                {
                   m_selection = cam1;
                   m_useEditorCam = false;
-                  table->m_BG_current_set = 1;
+                  table->m_BG_current_set = BG_FULLSCREEN;
                }
                Selection cam2(Selection::SelectionType::S_CAMERA, is_live, 2);
                if (ImGui::Selectable("Full Single Screen", m_selection == cam2))
                {
                   m_selection = cam2;
                   m_useEditorCam = false;
-                  table->m_BG_current_set = 2;
+                  table->m_BG_current_set = BG_FSS;
                }
                ImGui::TreePop();
             }
@@ -2122,6 +2131,12 @@ void LiveUI::CameraProperties(bool is_live)
    ImGui::NewLine();
    if (BEGIN_PROP_TABLE)
    {
+      const string layoutModeLabels[] = { "Relative"s, "Absolute"s};
+      int startup_mode = m_table ? (int)m_table->m_cameraLayoutMode : 0;
+      int live_mode = m_live_table ? (int)m_live_table->m_cameraLayoutMode : 0;
+      PinTable *table = (is_live ? m_live_table : m_table);
+      auto upd_mode = [table](bool is_live, int prev, int v) { table->m_cameraLayoutMode = (CameraLayoutMode)v; };
+      PropCombo("Layout Mode", m_table, is_live, &startup_mode, &live_mode, 2, layoutModeLabels, upd_mode);
       PropFloat("Inclination", m_table, is_live, &(m_table->m_BG_inclination[m_selection.camera]), m_live_table ? &(m_live_table->m_BG_inclination[m_selection.camera]) : nullptr, 0.2f, 1.0f);
       PropFloat("Field Of View", m_table, is_live, &(m_table->m_BG_FOV[m_selection.camera]), m_live_table ? &(m_live_table->m_BG_FOV[m_selection.camera]) : nullptr, 0.2f, 1.0f);
       PropFloat("Layback", m_table, is_live, &(m_table->m_BG_layback[m_selection.camera]), m_live_table ? &(m_live_table->m_BG_layback[m_selection.camera]) : nullptr, 0.2f, 1.0f);
@@ -2603,7 +2618,7 @@ void LiveUI::PropVec3(const char *label, IEditable *undo_obj, bool is_live, Vert
    PROP_HELPER_END
 }
 
-void LiveUI::PropCombo(const char* label, IEditable* undo_obj, bool is_live, int* startup_v, int* live_v, int n_values, const string labels[])
+void LiveUI::PropCombo(const char *label, IEditable *undo_obj, bool is_live, int *startup_v, int *live_v, int n_values, const string labels[], OnIntPropChange chg_callback)
 {
    PROP_HELPER_BEGIN(int)
    const char *preview_value = labels[*v].c_str();
@@ -2614,6 +2629,8 @@ void LiveUI::PropCombo(const char* label, IEditable* undo_obj, bool is_live, int
          if (ImGui::Selectable(labels[i].c_str()))
          {
             *v = i;
+            if (chg_callback)
+               chg_callback(is_live, prev_v, i);
             if (!is_live)
                m_table->SetNonUndoableDirty(eSaveDirty);
          }

@@ -771,176 +771,30 @@ void Pin3D::InitLayoutFS()
 }
 #endif
 
-// here is where the tables camera / rotation / scale is setup
-// flashers are ignored in the calculation of boundaries to center the
-// table in the view
+// Setup the tables camera / rotation / scale.
+// 
+// 2 layout modes are supported:
+// - Relative layout mode which is the default that has been there since the beginning
+//   This mode computes the camera position by computing an approximate bounding box of the table, then offseting.
+//   Flashers and primitive are ignored in the calculation of boundaries to center the table in the view
+//   
+// - Absolute layout mode which was added in 10.8
+//   This mode computes the camera position by using an absolute coordinate system with origin at the bottom center of the table.
+//
 void Pin3D::InitLayout(const float xpixoff, const float ypixoff)
 {
    TRACE_FUNCTION();
-
-   const bool FSS_mode = g_pplayer->m_ptable->m_BG_enable_FSS;
-   const float rotation = ANGTORAD(g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set]);
-   float inclination = ANGTORAD(g_pplayer->m_ptable->m_BG_inclination[g_pplayer->m_ptable->m_BG_current_set]);
-   const float FOV = (g_pplayer->m_ptable->m_BG_FOV[g_pplayer->m_ptable->m_BG_current_set] < 1.0f) ? 1.0f : g_pplayer->m_ptable->m_BG_FOV[g_pplayer->m_ptable->m_BG_current_set];
-
-   vector<Vertex3Ds> vvertex3D;
-   for (size_t i = 0; i < g_pplayer->m_ptable->m_vedit.size(); ++i)
-      g_pplayer->m_ptable->m_vedit[i]->GetBoundingVertices(vvertex3D);
-
-   PinProjection m_proj; // Used to compute MVP for desktop/cab view (not headtracking, VR or live editor)
-   m_proj.m_stereo3D = m_stereo3D; 
-   m_proj.m_rcviewport.left = 0;
-   m_proj.m_rcviewport.top = 0;
-   m_proj.m_rcviewport.right = m_viewPort.Width;
-   m_proj.m_rcviewport.bottom = m_viewPort.Height;
-
-   const float aspect = ((float)m_viewPort.Width) / ((float)m_viewPort.Height); //(float)(4.0/3.0);
-
-   // next 4 def values for layout portrait(game vert) in landscape(screen horz)
-   // for FSS, force an offset to camy which drops the table down 1/3 of the way.
-   // some values to camy have been commented out because I found the default value 
-   // better and just modify the camz and keep the table design inclination 
-   // within 50-60 deg and 40-50 FOV in editor.
-   // these values were tested against all known video modes upto 1920x1080 
-   // in landscape and portrait on the display
-   const float camx = m_cam.x;
-   const float camy = m_cam.y + (FSS_mode ? 500.0f : 0.f);
-         float camz = m_cam.z;
-   const float inc  = m_inc  + (FSS_mode ? 0.2f : 0.f);
-
-   if (FSS_mode)
-   {
-      //m_proj.m_rcviewport.right = m_viewPort.Height;
-      //m_proj.m_rcviewport.bottom = m_viewPort.Width;
-      const int width = GetSystemMetrics(SM_CXSCREEN);
-      const int height = GetSystemMetrics(SM_CYSCREEN);
-
-      // layout landscape(game horz) in lanscape(LCD\LED horz)
-      if ((m_viewPort.Width > m_viewPort.Height) && (height < width))
-      {
-         //inc += 0.1f;       // 0.05-best, 0.1-good, 0.2-bad > (0.2 terrible original)
-         //camy -= 30.0f;     // 70.0f original // 100
-         if (aspect > 1.6f)
-             camz -= 1170.0f; // 700
-         else if (aspect > 1.5f)
-             camz -= 1070.0f; // 650
-         else if (aspect > 1.4f)
-             camz -= 900.0f;  // 580
-         else if (aspect > 1.3f)
-             camz -= 820.0f;  // 500 // 600
-         else
-             camz -= 800.0f;  // 480
-      }
-      else {
-         // layout potrait(game vert) in portrait(LCD\LED vert)
-         if (height > width)
-         {
-            if (aspect > 0.6f) {
-               camz += 10.0f;
-               //camy += 50.0f;
-            }
-            else if (aspect > 0.5f) {
-               camz += 300.0f;
-               //camy += 100.0f;
-            }
-            else {
-               camz += 300.0f;
-               //camy += 200.0f;
-            }
-         }
-         // layout landscape(game horz) in portrait(LCD\LED vert), who would but the UI allows for it!
-         else {
-         }
-      }
-   }
-
-   inclination += inc; // added this to inclination in radians
-
-   m_proj.FitCameraToVertices(vvertex3D, aspect, rotation, inclination, FOV, g_pplayer->m_ptable->m_BG_xlatez[g_pplayer->m_ptable->m_BG_current_set], g_pplayer->m_ptable->m_BG_layback[g_pplayer->m_ptable->m_BG_current_set]);
-
-   m_proj.m_matWorld.SetIdentity();
-
-   m_proj.m_matView.RotateXMatrix((float)M_PI);  // convert Z=out to Z=in (D3D coordinate system)
-   m_proj.ScaleView(g_pplayer->m_ptable->m_BG_scalex[g_pplayer->m_ptable->m_BG_current_set], g_pplayer->m_ptable->m_BG_scaley[g_pplayer->m_ptable->m_BG_current_set], 1.0f);
-
-#ifdef ENABLE_VR
-   // Full scene scaling is only used in VR (and VR preview for debugging) to adapt to HMD scale
-   if (m_stereo3D == STEREO_VR)
-      m_proj.ScaleView(m_pd3dPrimaryDevice->m_scale, m_pd3dPrimaryDevice->m_scale, m_pd3dPrimaryDevice->m_scale);
-#endif
-
-   //!! FSS: added 500.0f to next line on camera y
-   //!! FSS: m_proj.m_vertexcamera.y += camy;
-   //!! FSS: g_pplayer->m_ptable->m_BG_xlatey[g_pplayer->m_ptable->m_BG_current_set] += camy;
-   //!! FSS: camy = 0.0f;
-
-   m_proj.TranslateView(g_pplayer->m_ptable->m_BG_xlatex[g_pplayer->m_ptable->m_BG_current_set] - m_proj.m_vertexcamera.x + camx, g_pplayer->m_ptable->m_BG_xlatey[g_pplayer->m_ptable->m_BG_current_set] - m_proj.m_vertexcamera.y + camy, -m_proj.m_vertexcamera.z + camz);
-   if (g_pplayer->m_cameraMode && (g_pplayer->m_ptable->m_BG_current_set == 0 || g_pplayer->m_ptable->m_BG_current_set == 2)) // DT & FSS
-      m_proj.RotateView(inclination, 0, rotation);
-   else
-   {
-      m_proj.RotateView(0, 0, rotation);
-      m_proj.RotateView(inclination, 0, 0);
-   }
-
-   // recompute near and far plane (workaround for VP9 FitCameraToVertices bugs)
-   m_proj.ComputeNearFarPlane(vvertex3D);
-   if (fabsf(inclination) < 0.0075f) //!! magic threshold, otherwise kicker holes are missing for inclination ~0
-      m_proj.m_rzfar += 10.f;
-   Matrix3D proj = Matrix3D::MatrixPerspectiveFovLH(ANGTORAD(FOV), aspect, m_proj.m_rznear, m_proj.m_rzfar);
-   memcpy(m_proj.m_matProj[0].m, proj.m, sizeof(float) * 4 * 4);
-
-#ifdef ENABLE_SDL
-   if (m_stereo3D == STEREO_VR)
-   {
-      // Use the same projection for VR debug since the anaglyph stereo computation would fail due to scene scaling
-      memcpy(m_proj.m_matProj[1].m, proj.m, sizeof(float) * 4 * 4);
-   }
-   else if (m_stereo3D != STEREO_OFF)
-   {
-      // Create eye projection matrices for real stereo (not VR but anaglyph,...)
-      // 63mm is the average distance between eyes (varies from 54 to 74mm between adults, 43 to 58mm for children), 50 VPUnit is 1.25 inches
-      const float stereo3DMS = LoadValueFloatWithDefault(regKey[RegName::Player], "Stereo3DEyeSeparation"s, 63.0f);
-      const float halfEyeDist = 0.5f * MMTOVPU(stereo3DMS);
-      Matrix3D invView(m_proj.m_matView);
-      invView.Invert();
-      invView.OrthoNormalize();
-      const vec3 right = invView.GetOrthoNormalRight();
-      const vec3 up = invView.GetOrthoNormalUp();
-      const vec3 dir = invView.GetOrthoNormalDir();
-      const vec3 pos = invView.GetOrthoNormalPos();
-      // Default is to look at the ball (playfield level = 0 + ball radius = 50)
-      // Clamp it to a reasonable range, a normal viewing distance being around 80cm between view focus (table) and viewer (depends a lot on the player size & position)
-      constexpr float minCamDistance = CMTOVPU(80.f - 30.f);
-      constexpr float maxCamDistance = CMTOVPU(80.f + 30.f);
-      float camDistance = clamp((50.f - pos.z) / dir.z, minCamDistance, maxCamDistance);
-      const vec3 at = pos + dir * camDistance;
-      Matrix3D rot = Matrix3D::MatrixLookAtLH(pos + (-halfEyeDist * right), at, up); // Apply offset & rotation to the left eye projection
-      m_proj.m_matProj[0] = invView * rot * proj;
-      rot = Matrix3D::MatrixLookAtLH(pos + (halfEyeDist * right), at, up); // Apply offset & rotation to the right eye projection
-      m_proj.m_matProj[1] = invView * rot * proj;
-   }
-#endif
-
-   // in-pixel offset for manual oversampling
-   if (xpixoff != 0.f || ypixoff != 0.f)
-   {
-      Matrix3D projTrans;
-      projTrans.SetTranslation((float)((double)xpixoff / (double)m_viewPort.Width), (float)((double)ypixoff / (double)m_viewPort.Height), 0.f);
-      projTrans.Multiply(m_proj.m_matProj[0], m_proj.m_matProj[0]);
-      projTrans.Multiply(m_proj.m_matProj[1], m_proj.m_matProj[1]);
-   }
-
-   // Apply layback (shear the view backward)
-   m_proj.MultiplyView(ComputeLaybackTransform(g_pplayer->m_ptable->m_BG_layback[g_pplayer->m_ptable->m_BG_current_set]));
-
-   m_mvp->SetModel(m_proj.m_matWorld);
-   m_mvp->SetView(m_proj.m_matView);
+   PinProjection proj;
+   #ifdef ENABLE_VR
+   float vrScale = m_pd3dPrimaryDevice->m_scale;
+   #else
+   float vrScale = 1.0f;
+   #endif
+   proj.Setup(g_pplayer->m_ptable, m_viewPort, g_pplayer->m_cameraMode, m_stereo3D, m_cam, m_inc, vrScale, xpixoff, ypixoff);
+   m_mvp->SetModel(proj.m_matWorld);
+   m_mvp->SetView(proj.m_matView);
    for (unsigned int eye = 0; eye < m_mvp->m_nEyes; eye++)
-      m_mvp->SetProj(eye, m_proj.m_matProj[eye]);
-
-   //m_proj.m_cameraLength = sqrtf(m_proj.m_vertexcamera.x*m_proj.m_vertexcamera.x + m_proj.m_vertexcamera.y*m_proj.m_vertexcamera.y + m_proj.m_vertexcamera.z*m_proj.m_vertexcamera.z);
-
+      m_mvp->SetProj(eye, proj.m_matProj[eye]);
    InitLights();
 }
 
@@ -977,6 +831,212 @@ Vertex3Ds Pin3D::Get3DPointFrom2D(const POINT& p)
    const float wy = ((wz - p1.z)*(p2.y - p1.y)) / (p2.z - p1.z) + p1.y;
    const Vertex3Ds vertex(wx, wy, wz);
    return vertex;
+}
+
+void PinProjection::Setup(const PinTable* table, const ViewPort& viewPort, const bool cameraMode, const StereoMode stereo3D, 
+   const Vertex3Ds& cam, const float cam_inc, const float scene_scale, const float xpixoff, const float ypixoff)
+{
+
+   const float rotation = ANGTORAD(table->m_BG_rotation[table->m_BG_current_set]);
+   const float inclination = ANGTORAD(table->m_BG_inclination[table->m_BG_current_set]);
+   const float FOV = (table->m_BG_FOV[table->m_BG_current_set] < 1.0f) ? 1.0f : table->m_BG_FOV[table->m_BG_current_set]; // Can't have a real zero FOV, but this will look almost the same
+   const CameraLayoutMode layoutMode = table->m_cameraLayoutMode;
+   const bool FSS_mode = table->m_BG_enable_FSS;
+
+   m_stereo3D = stereo3D;
+   m_rcviewport.left = 0;
+   m_rcviewport.top = 0;
+   m_rcviewport.right = viewPort.Width;
+   m_rcviewport.bottom = viewPort.Height;
+
+   const float aspect = ((float)viewPort.Width) / ((float)viewPort.Height); //(float)(4.0/3.0);
+
+   vector<Vertex3Ds> vvertex3D;
+   for (size_t i = 0; i < table->m_vedit.size(); ++i)
+      table->m_vedit[i]->GetBoundingVertices(vvertex3D);
+
+   // next 4 def values for layout portrait(game vert) in landscape(screen horz)
+   // for FSS, force an offset to camy which drops the table down 1/3 of the way.
+   // some values to camy have been commented out because I found the default value
+   // better and just modify the camz and keep the table design inclination
+   // within 50-60 deg and 40-50 FOV in editor.
+   // these values were tested against all known video modes upto 1920x1080
+   // in landscape and portrait on the display
+   const float camx = cam.x;
+   const float camy = cam.y + (layoutMode == CLM_RELATIVE && FSS_mode ? 500.0f : 0.f);
+   float camz = cam.z;
+   const float inc = inclination + cam_inc + (layoutMode == CLM_RELATIVE && FSS_mode ? 0.2f : 0.f);
+
+   if (layoutMode == CLM_RELATIVE && FSS_mode)
+   {
+      //m_proj.m_rcviewport.right = m_viewPort.Height;
+      //m_proj.m_rcviewport.bottom = m_viewPort.Width;
+      const int width = GetSystemMetrics(SM_CXSCREEN);
+      const int height = GetSystemMetrics(SM_CYSCREEN);
+
+      // layout landscape(game horz) in lanscape(LCD\LED horz)
+      if ((viewPort.Width > viewPort.Height) && (height < width))
+      {
+         //inc += 0.1f;       // 0.05-best, 0.1-good, 0.2-bad > (0.2 terrible original)
+         //camy -= 30.0f;     // 70.0f original // 100
+         if (aspect > 1.6f)
+            camz -= 1170.0f; // 700
+         else if (aspect > 1.5f)
+            camz -= 1070.0f; // 650
+         else if (aspect > 1.4f)
+            camz -= 900.0f; // 580
+         else if (aspect > 1.3f)
+            camz -= 820.0f; // 500 // 600
+         else
+            camz -= 800.0f; // 480
+      }
+      else
+      {
+         // layout potrait(game vert) in portrait(LCD\LED vert)
+         if (height > width)
+         {
+            if (aspect > 0.6f)
+            {
+               camz += 10.0f;
+               //camy += 50.0f;
+            }
+            else if (aspect > 0.5f)
+            {
+               camz += 300.0f;
+               //camy += 100.0f;
+            }
+            else
+            {
+               camz += 300.0f;
+               //camy += 200.0f;
+            }
+         }
+         // layout landscape(game horz) in portrait(LCD\LED vert), who would but the UI allows for it!
+         else
+         {
+         }
+      }
+   }
+
+   if (layoutMode == CLM_RELATIVE)
+      FitCameraToVertices(vvertex3D, aspect, rotation, inc, FOV, table->m_BG_xlatez[table->m_BG_current_set],
+         table->m_BG_layback[table->m_BG_current_set]);
+
+   m_matWorld.SetIdentity();
+
+   m_matView.RotateXMatrix((float)M_PI); // convert Z=out to Z=in (D3D coordinate system)
+   ScaleView(table->m_BG_scalex[table->m_BG_current_set], table->m_BG_scaley[table->m_BG_current_set], 1.0f);
+
+#ifdef ENABLE_VR
+   // Full scene scaling is only used in VR (and VR preview for debugging) to adapt to HMD scale
+   if (m_stereo3D == STEREO_VR)
+      ScaleView(scene_scale, scene_scale, scene_scale);
+#endif
+
+   //!! FSS: added 500.0f to next line on camera y
+   //!! FSS: m_proj.m_vertexcamera.y += camy;
+   //!! FSS: g_pplayer->m_ptable->m_BG_xlatey[g_pplayer->m_ptable->m_BG_current_set] += camy;
+   //!! FSS: camy = 0.0f;
+
+   if (layoutMode == CLM_RELATIVE)
+   {
+      TranslateView(table->m_BG_xlatex[table->m_BG_current_set] - m_vertexcamera.x + camx,
+         table->m_BG_xlatey[table->m_BG_current_set] - m_vertexcamera.y + camy, -m_vertexcamera.z + camz);
+      if (cameraMode && (table->m_BG_current_set == BG_DESKTOP || table->m_BG_current_set == BG_FSS))
+      {
+         RotateView(inc, 0, rotation);
+      }
+      else
+      {
+         RotateView(0, 0, rotation);
+         RotateView(inc, 0, 0);
+      }
+   }
+   else if (layoutMode == CLM_ABSOLUTE)
+   {
+      // Rotate view first (to keep player position constant and independent of rotation)
+      RotateView(inc, 0, 0);
+      // Move it according to player position
+      TranslateView(-table->m_BG_xlatex[table->m_BG_current_set] + cam.x - 0.5f * table->m_right,
+         -table->m_BG_xlatey[table->m_BG_current_set] + cam.y - table->m_bottom,
+         -table->m_BG_xlatez[table->m_BG_current_set] + cam.z);
+   }
+
+   // recompute near and far plane (workaround for VP9 FitCameraToVertices bugs)
+   ComputeNearFarPlane(vvertex3D);
+   if (fabsf(inc) < 0.0075f) //!! magic threshold, otherwise kicker holes are missing for inclination ~0
+      m_rzfar += 10.f;
+   Matrix3D proj;
+   if (layoutMode == CLM_RELATIVE)
+   {
+      proj.SetPerspectiveFovLH(FOV, aspect, m_rznear, m_rzfar);
+   }
+   else if (layoutMode == CLM_ABSOLUTE)
+   {
+      const float ymax = m_rznear * tanf(0.5f * ANGTORAD(FOV));
+      const float xmax = ymax * aspect;
+      const float ofs = 10.f * table->m_BG_layback[table->m_BG_current_set];
+      const float xofs = ofs * sinf(rotation);
+      const float yofs = ofs * cosf(rotation);
+      proj.SetPerspectiveOffCenterLH(-xmax + xofs, xmax + xofs, -ymax + yofs, ymax + yofs, m_rznear, m_rzfar);
+      Matrix3D rot;
+      rot.RotateZMatrix(-rotation);
+      proj.Multiply(rot, proj);
+   }
+   memcpy(m_matProj[0].m, proj.m, sizeof(float) * 4 * 4);
+
+#ifdef ENABLE_SDL
+   if (m_stereo3D == STEREO_VR)
+   {
+      // Use the same projection for VR debug since the anaglyph stereo computation would fail due to scene scaling
+      memcpy(m_matProj[1].m, proj.m, sizeof(float) * 4 * 4);
+   }
+   else if (m_stereo3D != STEREO_OFF)
+   {
+      // Create eye projection matrices for real stereo (not VR but anaglyph,...)
+      // 63mm is the average distance between eyes (varies from 54 to 74mm between adults, 43 to 58mm for children), 50 VPUnit is 1.25 inches
+      const float stereo3DMS = LoadValueFloatWithDefault(regKey[RegName::Player], "Stereo3DEyeSeparation"s, 63.0f);
+      const float halfEyeDist = 0.5f * MMTOVPU(stereo3DMS);
+      Matrix3D invView(m_matView);
+      invView.Invert();
+      invView.OrthoNormalize();
+      vec3 right = invView.GetOrthoNormalRight();
+      const vec3 up = invView.GetOrthoNormalUp();
+      const vec3 dir = invView.GetOrthoNormalDir();
+      const vec3 pos = invView.GetOrthoNormalPos();
+      if (layoutMode == CLM_RELATIVE)
+      {
+         Matrix3D rot;
+         rot.RotateZMatrix(-rotation);
+         rot.TransformVec3(right);
+      }
+      // Default is to look at the ball (playfield level = 0 + ball radius = 50)
+      // Clamp it to a reasonable range, a normal viewing distance being around 80cm between view focus (table) and viewer (depends a lot on the player size & position)
+      constexpr float minCamDistance = CMTOVPU(80.f - 30.f);
+      constexpr float maxCamDistance = CMTOVPU(80.f + 30.f);
+      float camDistance = clamp((50.f - pos.z) / dir.z, minCamDistance, maxCamDistance);
+      const vec3 at = pos + dir * camDistance;
+      Matrix3D rot = Matrix3D::MatrixLookAtLH(pos + (-halfEyeDist * right), at, up); // Apply offset & rotation to the left eye projection
+      m_matProj[0] = invView * rot * proj;
+      rot = Matrix3D::MatrixLookAtLH(pos + (halfEyeDist * right), at, up); // Apply offset & rotation to the right eye projection
+      m_matProj[1] = invView * rot * proj;
+   }
+#endif
+
+   // in-pixel offset for manual oversampling
+   if (xpixoff != 0.f || ypixoff != 0.f)
+   {
+      Matrix3D projTrans;
+      projTrans.SetTranslation((float)((double)xpixoff / (double)viewPort.Width), (float)((double)ypixoff / (double)viewPort.Height), 0.f);
+      projTrans.Multiply(m_matProj[0], m_matProj[0]);
+      projTrans.Multiply(m_matProj[1], m_matProj[1]);
+   }
+
+   if (layoutMode == CLM_RELATIVE)
+   {
+      // Apply layback to view (shear the view backward)
+      MultiplyView(ComputeLaybackTransform(table->m_BG_layback[table->m_BG_current_set]));
+   }
 }
 
 void PinProjection::RotateView(float x, float y, float z)

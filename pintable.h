@@ -29,6 +29,22 @@ struct LightSource
    Vertex3Ds pos;
 };
 
+// View setup identifier
+enum ViewSetupID
+{
+   BG_DESKTOP = 0,
+   BG_FULLSCREEN = 1,
+   BG_FSS = 2,
+   NUM_BG_SETS
+};
+
+// View layout mode
+enum CameraLayoutMode : int
+{
+   CLM_RELATIVE = 0, // All tables before 10.8 used a camera position relative to a fitting of a set of bounding vertices (not all parts)
+   CLM_ABSOLUTE // Position camera relative to the bottom center of the table
+};
+
 struct ProtectionData
 {
    int32_t fileversion;
@@ -608,7 +624,8 @@ public:
    float m_global3DOffset;
    float m_defaultBulbIntensityScaleOnBall;
 
-   unsigned int m_BG_current_set;
+   ViewSetupID m_BG_current_set;
+   CameraLayoutMode m_cameraLayoutMode = CLM_ABSOLUTE;
    float m_BG_inclination[NUM_BG_SETS];
    float m_BG_FOV[NUM_BG_SETS];
    float m_BG_layback[NUM_BG_SETS];
@@ -622,7 +639,7 @@ public:
    string m_BG_image[NUM_BG_SETS];
 
    bool m_BG_enable_FSS;
-   int m_currentBackglassMode;
+   ViewSetupID m_currentBackglassMode;
 
    float m_angletiltMax;
    float m_angletiltMin;

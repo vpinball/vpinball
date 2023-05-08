@@ -1019,7 +1019,7 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
       }
       else if (keycode == g_pplayer->m_rgKeys[eStartGameKey] && dispid == DISPID_GameEvents_KeyDown)
       {
-         int view_setup = g_pplayer->m_ptable->m_BG_current_set;
+         ViewSetupID view_setup = g_pplayer->m_ptable->m_BG_current_set;
          PinTable *src, *dst;
          if (!g_pvp->m_povEdit)
          {
@@ -1033,6 +1033,7 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
             src = g_pplayer->m_ptable;
             dst = g_pplayer->m_pEditorTable;
          }
+         dst->m_cameraLayoutMode = src->m_cameraLayoutMode;
          dst->m_BG_layback[view_setup] = src->m_BG_layback[view_setup];
          dst->m_BG_rotation[view_setup] = src->m_BG_rotation[view_setup];
          dst->m_BG_inclination[view_setup] = src->m_BG_inclination[view_setup];
@@ -1058,6 +1059,41 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
                g_pplayer->m_ptable->ExportBackdropPOV(szPOVFilename);
             g_pvp->QuitPlayer(Player::CloseState::CS_CLOSE_APP);
          }
+      }
+      else if (keycode == g_pplayer->m_rgKeys[eAddCreditKey] && dispid == DISPID_GameEvents_KeyDown && !g_pvp->m_povEdit)
+      {
+         PinTable* table = g_pplayer->m_ptable;
+         ViewSetupID view_setup = table->m_BG_current_set;
+         table->m_cameraLayoutMode = CLM_ABSOLUTE;
+         // Default player position (90cm above, 30 cm away)
+         table->m_BG_xlatex[view_setup] = 0.f;
+         table->m_BG_xlatey[view_setup] = CMTOVPU(30);
+         table->m_BG_xlatez[view_setup] = CMTOVPU(90);
+         table->m_BG_scalex[view_setup] = 1.f;
+         table->m_BG_scaley[view_setup] = 1.f;
+         table->m_BG_scalez[view_setup] = 1.f;
+         if (table->m_BG_rotation[view_setup] != 0.f && table->m_BG_rotation[view_setup] != 90.f && table->m_BG_rotation[view_setup] != 180.f && table->m_BG_rotation[view_setup] != 270.f)
+            table->m_BG_rotation[view_setup] = 0.f;
+         bool portrait = g_pplayer->m_wnd_width < g_pplayer->m_wnd_height;
+         switch (view_setup)
+         {
+         case BG_DESKTOP:
+         case BG_FSS:
+            table->m_BG_rotation[view_setup] = 0.f;
+            table->m_BG_inclination[view_setup] = (view_setup == BG_DESKTOP && !portrait) ? 45.f : 56.f;
+            table->m_BG_FOV[view_setup] = (view_setup == BG_DESKTOP && !portrait) ? 45.f : 68.f;
+            table->m_BG_layback[view_setup] = 0.f;
+            break;
+         case BG_FULLSCREEN:
+            table->m_BG_rotation[view_setup] = portrait ? 0.f : 270.f;
+            table->m_BG_inclination[view_setup] = 6.5f;
+            table->m_BG_FOV[view_setup] = portrait ? 65.5f : 40.f;
+            table->m_BG_layback[view_setup] = 105.5f;
+            break;
+         }
+         g_pplayer->m_pin3d.m_cam.x = 0;
+         g_pplayer->m_pin3d.m_cam.y = 0;
+         g_pplayer->m_pin3d.m_cam.z = 0;
       }
       else if (keycode == g_pplayer->m_rgKeys[eAddCreditKey] && dispid == DISPID_GameEvents_KeyDown && g_pvp->m_povEdit)
       {

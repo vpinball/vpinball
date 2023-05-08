@@ -31,7 +31,9 @@ void BackglassCameraProperty::UpdateVisuals(const int dispid/*=-1*/)
         PropertyDialog::SetCheckboxState(m_hFssModeCheck, table->GetShowFSS());
     if(dispid == IDC_BG_TEST_DESKTOP_CHECK || dispid==-1)
         PropertyDialog::SetCheckboxState(m_hTestDesktopCheck, table->GetShowDT());
-    if(dispid == IDC_BG_COMBOBOX || dispid==-1)
+    if (dispid == IDC_CAMERA_LAYOUT_MODE || dispid == -1)
+        PropertyDialog::SetCheckboxState(m_hCameraLayoutModeCheck, table->m_cameraLayoutMode == CLM_ABSOLUTE);
+    if (dispid == IDC_BG_COMBOBOX || dispid == -1)
         PropertyDialog::UpdateComboBox(m_modeList, m_modeCombo, m_modeList[table->m_currentBackglassMode]);
     if(dispid == IDC_INCLINATION_EDIT || dispid==-1)
         PropertyDialog::SetFloatTextbox(m_inclinationEdit, table->m_BG_inclination[table->m_currentBackglassMode]);
@@ -69,8 +71,11 @@ void BackglassCameraProperty::UpdateProperties(const int dispid)
         case IDC_BG_TEST_DESKTOP_CHECK:
             CHECK_UPDATE_VALUE_SETTER(table->SetShowDT, table->GetShowDT, PropertyDialog::GetCheckboxState, m_hTestDesktopCheck, table);
             break;
+        case IDC_CAMERA_LAYOUT_MODE:
+           CHECK_UPDATE_ITEM(table->m_cameraLayoutMode, (PropertyDialog::GetCheckboxState(m_hCameraLayoutModeCheck) ? CLM_ABSOLUTE : CLM_RELATIVE), table);
+           break;
         case IDC_BG_COMBOBOX:
-            CHECK_UPDATE_ITEM(table->m_currentBackglassMode, PropertyDialog::GetComboBoxIndex(m_modeCombo, m_modeList), table);
+            CHECK_UPDATE_ITEM(table->m_currentBackglassMode, (ViewSetupID) PropertyDialog::GetComboBoxIndex(m_modeCombo, m_modeList), table);
             break;
         case IDC_INCLINATION_EDIT:
             CHECK_UPDATE_ITEM(table->m_BG_inclination[table->m_currentBackglassMode], PropertyDialog::GetFloatTextbox(m_inclinationEdit), table);
@@ -113,6 +118,7 @@ BOOL BackglassCameraProperty::OnInitDialog()
 {
     m_hFssModeCheck = ::GetDlgItem(GetHwnd(), IDC_BG_FSS);
     m_hTestDesktopCheck = ::GetDlgItem(GetHwnd(), IDC_BG_TEST_DESKTOP_CHECK);
+    m_hCameraLayoutModeCheck = ::GetDlgItem(GetHwnd(), IDC_CAMERA_LAYOUT_MODE);
     m_modeCombo.AttachItem(IDC_BG_COMBOBOX);
     m_inclinationEdit.AttachItem(IDC_INCLINATION_EDIT);
     m_fovEdit.AttachItem(IDC_FOV_EDIT);
@@ -141,6 +147,7 @@ BOOL BackglassCameraProperty::OnInitDialog()
     m_resizer.AddChild(GetDlgItem(IDC_STATIC11), CResizer::topleft, 0);
     m_resizer.AddChild(m_hFssModeCheck, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_hTestDesktopCheck, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hCameraLayoutModeCheck, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_modeCombo, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_inclinationEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_fovEdit, CResizer::topleft, RD_STRETCH_WIDTH);
