@@ -187,12 +187,8 @@ float3 ballLightLoop(const float3 pos, float3 N, float3 V, float3 diffuse, float
 float3 PFDoPointLight(const float3 pos, const float3 N, const float3 diffuse, const int i) 
 {
    //!! do in vertex shader?! or completely before?!
-#if ENABLE_VR
-   const float3 lightDir = ((matView * vec4(lightPos[i].xyz, 1.0)).xyz - pos) / fSceneScale; // In VR we need to scale to the overall scene scaling
-#else
    //const float3 lightDir = mul_w1(lightPos[i].xyz, matView) - pos;
    const float3 lightDir = (matView * vec4(lightPos[i].xyz, 1.0)).xyz - pos;
-#endif
    const float3 L = normalize(lightDir);
    const float NdotL = dot(N, L);
    // compute diffuse color (lambert)

@@ -688,12 +688,7 @@ void Pin3D::InitLayout(const float xpixoff, const float ypixoff)
 {
    TRACE_FUNCTION();
    PinProjection proj;
-   #ifdef ENABLE_VR
-   float vrScale = m_pd3dPrimaryDevice->m_scale;
-   #else
-   float vrScale = 1.0f;
-   #endif
-   proj.Setup(g_pplayer->m_ptable, m_viewPort, g_pplayer->m_cameraMode, m_stereo3D, m_cam, m_inc, vrScale, xpixoff, ypixoff);
+   proj.Setup(g_pplayer->m_ptable, m_viewPort, g_pplayer->m_cameraMode, m_stereo3D, m_cam, m_inc, xpixoff, ypixoff);
    m_mvp->SetModel(proj.m_matWorld);
    m_mvp->SetView(proj.m_matView);
    for (unsigned int eye = 0; eye < m_mvp->m_nEyes; eye++)
@@ -737,7 +732,7 @@ Vertex3Ds Pin3D::Get3DPointFrom2D(const POINT& p)
 }
 
 void PinProjection::Setup(const PinTable* table, const ViewPort& viewPort, const bool cameraMode, const StereoMode stereo3D, 
-   const Vertex3Ds& cam, const float cam_inc, const float scene_scale, const float xpixoff, const float ypixoff)
+   const Vertex3Ds& cam, const float cam_inc, const float xpixoff, const float ypixoff)
 {
 
    const float rotation = ANGTORAD(table->m_BG_rotation[table->m_BG_current_set]);
@@ -836,7 +831,7 @@ void PinProjection::Setup(const PinTable* table, const ViewPort& viewPort, const
 
    Matrix3D DD, rotx, trans, rotz, rotnz, scale, proj;
    DD.SetRotateX((float)M_PI); // convert Z=out to Z=in (D3D coordinate system)
-   scale.SetScaling(scene_scale * table->m_BG_scalex[table->m_BG_current_set], scene_scale * table->m_BG_scaley[table->m_BG_current_set], scene_scale);
+   scale.SetScaling(table->m_BG_scalex[table->m_BG_current_set], table->m_BG_scaley[table->m_BG_current_set], 1.f);
    rotx.SetRotateX(inc);
    rotz.SetRotateZ(rotation);
    rotnz.SetRotateZ(-rotation);
