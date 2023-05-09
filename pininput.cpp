@@ -1060,17 +1060,17 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
             g_pvp->QuitPlayer(Player::CloseState::CS_CLOSE_APP);
          }
       }
-      else if (keycode == g_pplayer->m_rgKeys[eAddCreditKey] && dispid == DISPID_GameEvents_KeyDown && !g_pvp->m_povEdit)
+      else if (keycode == g_pplayer->m_rgKeys[ePlungerKey])
       {
          PinTable* table = g_pplayer->m_ptable;
          ViewSetupID view_setup = table->m_BG_current_set;
          table->m_cameraLayoutMode = CLM_ABSOLUTE;
          // Default player position (90cm above, 30 cm away)
-         table->m_BG_xlatex[view_setup] = 0.f;
-         table->m_BG_xlatey[view_setup] = CMTOVPU(30);
-         table->m_BG_xlatez[view_setup] = CMTOVPU(90);
-         table->m_BG_scalex[view_setup] = 1.f;
-         table->m_BG_scaley[view_setup] = 1.f;
+         table->m_BG_xlatex[view_setup] = CMTOVPU(LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "CamX"s, 0.f));
+         table->m_BG_xlatey[view_setup] = CMTOVPU(LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "CamY"s, 30.f));
+         table->m_BG_xlatez[view_setup] = CMTOVPU(LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "CamZ"s, 90.f));
+         table->m_BG_scalex[view_setup] = LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "ScaleX"s, 1.f);
+         table->m_BG_scaley[view_setup] = LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "ScaleY"s, 1.f);
          table->m_BG_scalez[view_setup] = 1.f;
          if (table->m_BG_rotation[view_setup] != 0.f && table->m_BG_rotation[view_setup] != 90.f && table->m_BG_rotation[view_setup] != 180.f && table->m_BG_rotation[view_setup] != 270.f)
             table->m_BG_rotation[view_setup] = 0.f;
@@ -1080,15 +1080,18 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
          case BG_DESKTOP:
          case BG_FSS:
             table->m_BG_rotation[view_setup] = 0.f;
-            table->m_BG_inclination[view_setup] = (view_setup == BG_DESKTOP && !portrait) ? 45.f : 56.f;
-            table->m_BG_FOV[view_setup] = (view_setup == BG_DESKTOP && !portrait) ? 45.f : 68.f;
-            table->m_BG_layback[view_setup] = 0.f;
+            table->m_BG_inclination[view_setup] = (view_setup == BG_DESKTOP && !portrait) ? LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "DesktopInclinationPortrait"s, 45.f)
+                                                                                          : LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "DesktopFSSInclination"s, 56.f);
+            table->m_BG_FOV[view_setup] = (view_setup == BG_DESKTOP && !portrait) ? LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "DesktopFovPortrait"s, 45.f)
+                                                                                  : LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "DesktopFovLandscape"s, 68.f);
+            table->m_BG_layback[view_setup] = LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "DesktopViewOffset"s, 0.f);
             break;
          case BG_FULLSCREEN:
             table->m_BG_rotation[view_setup] = portrait ? 0.f : 270.f;
-            table->m_BG_inclination[view_setup] = 6.5f;
-            table->m_BG_FOV[view_setup] = portrait ? 65.5f : 40.f;
-            table->m_BG_layback[view_setup] = 105.5f;
+            table->m_BG_inclination[view_setup] = LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "CabinetInclination"s, 6.5f);
+            table->m_BG_FOV[view_setup] = portrait ? LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "CabinetFovPortrait"s, 65.5f)
+                                                   : LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "CabinetFovLandscape"s, 40.f);
+            table->m_BG_layback[view_setup] = LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "CabinetViewOffset"s, 105.5f);
             break;
          }
          g_pplayer->m_pin3d.m_cam.x = 0;

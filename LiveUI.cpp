@@ -884,6 +884,7 @@ void LiveUI::UpdateCameraModeUI()
 
    if (positionTop && m_player->m_cameraMode)
    {
+      ImGui::Text(table->m_cameraLayoutMode == CLM_RELATIVE ? "Legacy Relative Camera Layout Mode" : "Absolute Camera Layout Mode");
       ImGui::Text("Left/Right flipper key: decrease/increase highlighted value");
       ImGui::Text("Left/Right magna save key: previous/next option");
       if (LoadValueBoolWithDefault(regKey[RegName::Player], "EnableCameraModeFlyAround"s, false))
@@ -891,6 +892,7 @@ void LiveUI::UpdateCameraModeUI()
          ImGui::Text("Left/Right nudge key: rotate table orientation");
          ImGui::Text("Arrows & Left Alt Key: Navigate around");
       }
+      ImGui::Text("Plunger Key: reset POV to defaults");
       if (m_app->m_povEdit)
       {
          ImGui::Text("Start Key: export POV file and quit");
@@ -899,7 +901,6 @@ void LiveUI::UpdateCameraModeUI()
       else
       {
          ImGui::Text("Start Key: reset POV to old values");
-         ImGui::Text("Credit Key: reset POV to global defaults");
       }
       ImGui::NewLine();
    }
@@ -957,6 +958,7 @@ void LiveUI::UpdateCameraModeUI()
    if (!positionTop && m_player->m_cameraMode)
    {
       ImGui::NewLine();
+      ImGui::Text(table->m_cameraLayoutMode == CLM_RELATIVE ? "Legacy Relative Camera Layout Mode" : "Absolute Camera Layout Mode");
       ImGui::Text("Left/Right flipper key: decrease/increase highlighted value");
       ImGui::Text("Left/Right magna save key: previous/next option");
       if (LoadValueBoolWithDefault(regKey[RegName::Player], "EnableCameraModeFlyAround"s, false))
@@ -964,6 +966,7 @@ void LiveUI::UpdateCameraModeUI()
          ImGui::Text("Left/Right nudge key: rotate table orientation");
          ImGui::Text("Arrows & Left Alt Key: Navigate around");
       }
+      ImGui::Text("Plunger Key: reset POV to defaults");
       if (m_app->m_povEdit)
       {
          ImGui::Text("Start Key: export POV file and quit");
@@ -972,7 +975,6 @@ void LiveUI::UpdateCameraModeUI()
       else
       {
          ImGui::Text("Start Key: reset POV to old values");
-         ImGui::Text("Credit Key: reset POV to global defaults");
       }
    }
 
