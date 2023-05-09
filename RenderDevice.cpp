@@ -2100,7 +2100,7 @@ void RenderDevice::recenterTable()
    if (m_orientation < 0.0f)
       m_orientation += 360.0f;
    const float w = m_scale * (g_pplayer->m_ptable->m_right - g_pplayer->m_ptable->m_left) * 0.5f;
-   const float h = m_scale * (g_pplayer->m_ptable->m_bottom - g_pplayer->m_ptable->m_top) + 20.0f;
+   const float h = m_scale * (g_pplayer->m_ptable->m_bottom - g_pplayer->m_ptable->m_top) + 0.2f;
    const float c = cosf(ANGTORAD(m_orientation));
    const float s = sinf(ANGTORAD(m_orientation));
    m_tablex = 100.0f * ( m_hmdPosition.mDeviceToAbsoluteTracking.m[0][3] - c * w + s * h);
