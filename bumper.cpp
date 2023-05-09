@@ -353,12 +353,12 @@ void Bumper::UpdateSkirt(const bool doCalculation)
    Matrix3D tempMatrix, rMatrix;
    rMatrix.SetIdentity();
 
-   tempMatrix.RotateZMatrix(ANGTORAD(m_d.m_orientation));
+   tempMatrix.SetRotateZ(ANGTORAD(m_d.m_orientation));
    tempMatrix.Multiply(rMatrix, rMatrix);
 
-   tempMatrix.RotateYMatrix(ANGTORAD(roty));
+   tempMatrix.SetRotateY(ANGTORAD(roty));
    tempMatrix.Multiply(rMatrix, rMatrix);
-   tempMatrix.RotateXMatrix(ANGTORAD(rotx));
+   tempMatrix.SetRotateX(ANGTORAD(rotx));
    tempMatrix.Multiply(rMatrix, rMatrix);
 
    Vertex3D_NoTex2 *buf;
@@ -461,7 +461,7 @@ void Bumper::ExportMesh(ObjLoader& loader)
    WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), nullptr, nullptr);
 
    m_baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
-   m_fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_orientation));
+   m_fullMatrix.SetRotateZ(ANGTORAD(m_d.m_orientation));
 
    if (m_d.m_baseVisible)
    {
@@ -622,7 +622,7 @@ void Bumper::RenderSetup()
 {
    m_baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
-   m_fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_orientation));
+   m_fullMatrix.SetRotateZ(ANGTORAD(m_d.m_orientation));
    if (m_d.m_baseVisible)
    {
       m_baseTexture.CreateFromResource(IDB_BUMPER_BASE);

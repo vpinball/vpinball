@@ -272,7 +272,7 @@ void Spinner::ExportMesh(ObjLoader& loader)
       const string subObjName = name + "Bracket"s;
       loader.WriteObjectName(subObjName);
 
-      m_fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotation));
+      m_fullMatrix.SetRotateZ(ANGTORAD(m_d.m_rotation));
 
       transformedVertices.resize(spinnerBracketNumVertices);
 
@@ -328,9 +328,9 @@ void Spinner::UpdatePlate(Vertex3D_NoTex2 * const vertBuffer)
    Matrix3D rotzMat, rotxMat;
 
    fullMatrix.SetIdentity();
-   rotxMat.RotateXMatrix(-m_phitspinner->m_spinnerMover.m_angle);
+   rotxMat.SetRotateX(-m_phitspinner->m_spinnerMover.m_angle);
    rotxMat.Multiply(fullMatrix, fullMatrix);
-   rotzMat.RotateZMatrix(ANGTORAD(m_d.m_rotation));
+   rotzMat.SetRotateZ(ANGTORAD(m_d.m_rotation));
    rotzMat.Multiply(fullMatrix, fullMatrix);
 
    Vertex3D_NoTex2 *buf;
@@ -416,7 +416,7 @@ void Spinner::RenderSetup()
    VertexBuffer *bracketVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, spinnerBracketNumVertices);
    m_bracketMeshBuffer = new MeshBuffer(m_wzName + L".Bracket"s, bracketVertexBuffer, bracketIndexBuffer, true);
 
-   m_fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotation));
+   m_fullMatrix.SetRotateZ(ANGTORAD(m_d.m_rotation));
 
    Vertex3D_NoTex2 *buf;
    bracketVertexBuffer->lock(0, 0, (void **)&buf, VertexBuffer::WRITEONLY);

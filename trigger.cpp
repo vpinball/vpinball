@@ -100,7 +100,7 @@ void Trigger::UpdateStatusBarInfo()
 
       m_vertices.resize(m_numVertices);
       Matrix3D fullMatrix;
-      fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotation));
+      fullMatrix.SetRotateZ(ANGTORAD(m_d.m_rotation));
       for (int i = 0; i < m_numVertices; i++)
       {
          Vertex3Ds vert(meshVertices[i].x, meshVertices[i].y, meshVertices[i].z);
@@ -745,19 +745,19 @@ void Trigger::GenerateMesh()
    if (m_d.m_shape == TriggerWireB)
    {
       Matrix3D tempMatrix;
-      fullMatrix.RotateXMatrix(ANGTORAD(-23.f));
-      tempMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotation));
+      fullMatrix.SetRotateX(ANGTORAD(-23.f));
+      tempMatrix.SetRotateZ(ANGTORAD(m_d.m_rotation));
       tempMatrix.Multiply(fullMatrix, fullMatrix);
    }
    else if (m_d.m_shape == TriggerWireC)
    {
       Matrix3D tempMatrix;
-      fullMatrix.RotateXMatrix(ANGTORAD(140.f));
-      tempMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotation));
+      fullMatrix.SetRotateX(ANGTORAD(140.f));
+      tempMatrix.SetRotateZ(ANGTORAD(m_d.m_rotation));
       tempMatrix.Multiply(fullMatrix, fullMatrix);
    }
    else
-      fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotation));
+      fullMatrix.SetRotateZ(ANGTORAD(m_d.m_rotation));
 
    for (int i = 0; i < m_numVertices; i++)
    {

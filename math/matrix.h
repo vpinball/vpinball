@@ -257,7 +257,6 @@ class Matrix3D final : public D3DMATRIX
 {
 public:
    Matrix3D() {}
-   Matrix3D(const float Scale) { SetScaling(Scale, Scale, Scale); }
    Matrix3D(
       const float __11, const float __12, const float __13, const float __14, const float __21, const float __22, const float __23, const float __24, const float __31, const float __32, const float __33, const float __34, const float __41, const float __42, const float __43, const float __44)
    {
@@ -272,59 +271,18 @@ public:
 // Ported at: VisualPinball.Engine/Math/Matrix3D.cs
 //
 
-   // premultiply the given matrix, i.e., result = mult * (*this)
-   void Multiply(const Matrix3D &mult, Matrix3D &result) const
-   {
-      Matrix3D matrixT;
-#ifdef ENABLE_SSE_OPTIMIZATIONS
-      // could replace the loadu/storeu's if alignment would be stricter
-      for (int i = 0; i < 16; i += 4) {
-         // unroll first step of the loop
-         __m128 a = _mm_loadu_ps(&_11);
-         __m128 b = _mm_set1_ps((&mult._11)[i]);
-         __m128 r = _mm_mul_ps(a, b);
-         for (int j = 1; j < 4; j++) {
-            a = _mm_loadu_ps((&_11)+j * 4);
-            b = _mm_set1_ps((&mult._11)[i + j]);
-            r = _mm_add_ps(_mm_mul_ps(a, b), r);
-         }
-         _mm_storeu_ps((&matrixT._11)+i, r);
-      }
-#else
-#pragma message ("Warning: No SSE matrix mul")
-      for (int i = 0; i < 4; ++i)
-         for (int l = 0; l < 4; ++l)
-            matrixT.m[i][l] = (m[0][l] * mult.m[i][0]) + (m[1][l] * mult.m[i][1]) + (m[2][l] * mult.m[i][2]) + (m[3][l] * mult.m[i][3]);
-#endif
-      result = matrixT;
-   }
+#pragma region SetMatrix
+   ////////////////////////////////////////////////////////////////////////////////
+   // Math for definig usual affine transforms and projection matrices
 
-   Matrix3D operator*(const Matrix3D& mult) const
+   void SetIdentity()
    {
-      Matrix3D matrixT;
-#ifdef ENABLE_SSE_OPTIMIZATIONS
-      // could replace the loadu/storeu's if alignment would be stricter
-      for (int i = 0; i < 16; i += 4) {
-         // unroll first step of the loop
-         __m128 a = _mm_loadu_ps(&mult._11);
-         __m128 b = _mm_set1_ps((&_11)[i]);
-         __m128 r = _mm_mul_ps(a, b);
-         for (int j = 1; j < 4; j++) {
-            a = _mm_loadu_ps((&mult._11)+j * 4);
-            b = _mm_set1_ps((&_11)[i + j]);
-            r = _mm_add_ps(_mm_mul_ps(a, b), r);
-         }
-         _mm_storeu_ps((&matrixT._11)+i, r);
-      }
-#else
-#pragma message ("Warning: No SSE matrix mul")
-      for (int i = 0; i < 4; ++i)
-         for (int l = 0; l < 4; ++l)
-            matrixT.m[i][l] = (mult.m[0][l] * m[i][0]) + (mult.m[1][l] * m[i][1]) + (mult.m[2][l] * m[i][2]) + (mult.m[3][l] * m[i][3]);
-#endif
-      return matrixT;
+      _11 = _22 = _33 = _44 = 1.0f;
+      _12 = _13 = _14 = _41 =
+      _21 = _23 = _24 = _42 =
+      _31 = _32 = _34 = _43 = 0.0f;
    }
-
+   
    void SetTranslation(const float tx, const float ty, const float tz)
    {
       SetIdentity();
@@ -332,6 +290,7 @@ public:
       _42 = ty;
       _43 = tz;
    }
+   
    void SetTranslation(const Vertex3Ds& t)
    {
       SetTranslation(t.x, t.y, t.z);
@@ -345,174 +304,29 @@ public:
       _33 = sz;
    }
 
-   void RotateXMatrix(const float x)
+   void SetRotateX(const float angRad)
    {
       SetIdentity();
-      _22 = _33 = cosf(x);
-      _23 = sinf(x);
+      _22 = _33 = cosf(angRad);
+      _23 = sinf(angRad);
       _32 = -_23;
    }
 
-   void RotateYMatrix(const float y)
+   void SetRotateY(const float angRad)
    {
       SetIdentity();
-      _11 = _33 = cosf(y);
-      _31 = sinf(y);
+      _11 = _33 = cosf(angRad);
+      _31 = sinf(angRad);
       _13 = -_31;
    }
 
-   void RotateZMatrix(const float z)
+   void SetRotateZ(const float angRad)
    {
       SetIdentity();
-      _11 = _22 = cosf(z);
-      _12 = sinf(z);
+      _11 = _22 = cosf(angRad);
+      _12 = sinf(angRad);
       _21 = -_12;
    }
-
-   void SetIdentity()
-   {
-      _11 = _22 = _33 = _44 = 1.0f;
-      _12 = _13 = _14 = _41 =
-      _21 = _23 = _24 = _42 =
-      _31 = _32 = _34 = _43 = 0.0f;
-   }
-   void Scale(const float x, const float y, const float z)
-   {
-      _11 *= x; _12 *= x; _13 *= x;
-      _21 *= y; _22 *= y; _23 *= y;
-      _31 *= z; _32 *= z; _33 *= z;
-   }
-
-//
-// end of license:GPLv3+, back to 'old MAME'-like
-//
-
-   // extract the matrix corresponding to the 3x3 rotation part
-   void GetRotationPart(Matrix3D& rot)
-   {
-      rot._11 = _11; rot._12 = _12; rot._13 = _13; rot._14 = 0.0f;
-      rot._21 = _21; rot._22 = _22; rot._23 = _23; rot._24 = 0.0f;
-      rot._31 = _31; rot._32 = _32; rot._33 = _33; rot._34 = 0.0f;
-      rot._41 = rot._42 = rot._43 = 0.0f; rot._44 = 1.0f;
-   }
-
-   // generic multiply function for everything that has .x, .y and .z
-   template <class VecIn, class VecOut>
-   void MultiplyVector(const VecIn& vIn, VecOut& vOut) const
-   {
-      // Transform it through the current matrix set
-      const float xp = _11*vIn.x + _21*vIn.y + _31*vIn.z + _41;
-      const float yp = _12*vIn.x + _22*vIn.y + _32*vIn.z + _42;
-      const float zp = _13*vIn.x + _23*vIn.y + _33*vIn.z + _43;
-      const float wp = _14*vIn.x + _24*vIn.y + _34*vIn.z + _44;
-
-      const float inv_wp = 1.0f / wp;
-      vOut.x = xp*inv_wp;
-      vOut.y = yp*inv_wp;
-      vOut.z = zp*inv_wp;
-   }
-
-//
-// license:GPLv3+
-// Ported at: VisualPinball.Engine/Math/Matrix3D.cs
-//
-
-   Vertex3Ds MultiplyVector(const Vertex3Ds &v) const
-   {
-      // Transform it through the current matrix set
-      const float xp = _11*v.x + _21*v.y + _31*v.z + _41;
-      const float yp = _12*v.x + _22*v.y + _32*v.z + _42;
-      const float zp = _13*v.x + _23*v.y + _33*v.z + _43;
-      const float wp = _14*v.x + _24*v.y + _34*v.z + _44;
-
-      const float inv_wp = 1.0f / wp;
-      return Vertex3Ds(xp*inv_wp,yp*inv_wp,zp*inv_wp);
-   }
-
-   Vertex3Ds MultiplyVectorNoTranslate(const Vertex3Ds &v) const
-   {
-      // Transform it through the current matrix set
-      const float xp = _11*v.x + _21*v.y + _31*v.z;
-      const float yp = _12*v.x + _22*v.y + _32*v.z;
-      const float zp = _13*v.x + _23*v.y + _33*v.z;
-
-      return Vertex3Ds(xp,yp,zp);
-   }
-
-//
-// end of license:GPLv3+, back to 'old MAME'-like
-//
-
-   template <class VecIn, class VecOut>
-   void MultiplyVectorNoTranslate(const VecIn& vIn, VecOut& vOut) const
-   {
-      // Transform it through the current matrix set
-      const float xp = _11*vIn.x + _21*vIn.y + _31*vIn.z;
-      const float yp = _12*vIn.x + _22*vIn.y + _32*vIn.z;
-      const float zp = _13*vIn.x + _23*vIn.y + _33*vIn.z;
-
-      vOut.x = xp;
-      vOut.y = yp;
-      vOut.z = zp;
-   }
-
-   template <class VecIn, class VecOut>
-   void MultiplyVectorNoTranslateNormal(const VecIn& vIn, VecOut& vOut) const
-   {
-      // Transform it through the current matrix set
-      const float xp = _11*vIn.nx + _21*vIn.ny + _31*vIn.nz;
-      const float yp = _12*vIn.nx + _22*vIn.ny + _32*vIn.nz;
-      const float zp = _13*vIn.nx + _23*vIn.ny + _33*vIn.nz;
-
-      vOut.x = xp;
-      vOut.y = yp;
-      vOut.z = zp;
-   }
-
-   void Invert();
-
-   void Transpose()
-   {
-      Matrix3D tmp;
-      for (int i = 0; i < 4; ++i)
-      {
-         tmp.m[0][i] = m[i][0];
-         tmp.m[1][i] = m[i][1];
-         tmp.m[2][i] = m[i][2];
-         tmp.m[3][i] = m[i][3];
-      }
-      *this = tmp;
-   }
-
-   // If matrix defines and orthonormal transformation (like a view or model matrix), these function give the defining vectors
-   vec3 GetOrthoNormalRight() const { return vec3(_11, _12, _13); }
-   vec3 GetOrthoNormalUp() const { return vec3(_21, _22, _23); }
-   vec3 GetOrthoNormalDir() const { return vec3(_31, _32, _33); }
-   vec3 GetOrthoNormalPos() const { return vec3(_41, _42, _43); }
-
-   // Normalize the 3 defining vector of an ortho normal matrix
-   void OrthoNormalize()
-   {
-      vec3 right(_11, _12, _13);
-      vec3 up(_21, _22, _23);
-      vec3 dir(_31, _32, _33);
-      Vec3Normalize(&right, &right);
-      Vec3Normalize(&up, &up);
-      Vec3Normalize(&dir, &dir);
-      _11 = right.x; _12 = right.y; _13 = right.z;
-      _21 = up.x; _22 = up.y; _23 = up.z;
-      _31 = dir.x; _32 = dir.y; _33 = dir.z;
-   }
-
-   Matrix3D operator+(const Matrix3D& m) const
-   {
-      return Matrix3D(_11 + m._11, _12 + m._12, _13 + m._13, _14 + m._14,
-                      _21 + m._21, _22 + m._22, _23 + m._23, _24 + m._24,
-                      _31 + m._31, _32 + m._32, _33 + m._33, _34 + m._34,
-                      _41 + m._41, _42 + m._42, _43 + m._43, _44 + m._44);
-   }
-   
-   //
 
    void SetOrthoOffCenterRH(const float l, const float r, const float b, const float t, const float zn, const float zf)
    {
@@ -625,6 +439,27 @@ public:
       *this = Matrix3D(xaxis.x, yaxis.x, zaxis.x, 0.f, xaxis.y, yaxis.y, zaxis.y, 0.f, xaxis.z, yaxis.z, zaxis.z, 0.f, -dotX, -dotY, -dotZ, 1.f);
    }
 
+#pragma endregion SetMatrix
+
+
+#pragma region FactoryConstructors
+   ////////////////////////////////////////////////////////////////////////////////
+   // Factory methods for building usual affine transform and projection matrices
+
+   static Matrix3D MatrixIdentity()
+   {
+      Matrix3D result;
+      result.SetIdentity();
+      return result;
+   }
+
+   static Matrix3D MatrixScale(float scale)
+   {
+      Matrix3D result;
+      result.SetScaling(scale, scale, scale);
+      return result;
+   }
+
    static Matrix3D MatrixLookAtLH(const vec3& eye, const vec3& at, const vec3& up)
    {
       Matrix3D result;
@@ -656,6 +491,233 @@ public:
       const float cy = cosf(yaw);
       //!! This code should be validated!
       return Matrix3D(cr * cy, sr, cr * sy, 0.0f, -sr * cp * sy - sp * sy, cr * cp, sr * cp * sy + sp * cy, 0.0f, -sr * sp * cy - cp * sy, -cr * sp, -sr * sp * sy + cp * cy, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+   }
+
+#pragma endregion FactoryConstructors
+
+
+#pragma region MatrixOperations
+
+   void Invert();
+
+   void Transpose()
+   {
+      Matrix3D tmp;
+      for (int i = 0; i < 4; ++i)
+      {
+         tmp.m[0][i] = m[i][0];
+         tmp.m[1][i] = m[i][1];
+         tmp.m[2][i] = m[i][2];
+         tmp.m[3][i] = m[i][3];
+      }
+      *this = tmp;
+   }
+
+   // premultiply the given matrix, i.e., result = mult * (*this)
+   void Multiply(const Matrix3D &mult, Matrix3D &result) const
+   {
+      Matrix3D matrixT;
+#ifdef ENABLE_SSE_OPTIMIZATIONS
+      // could replace the loadu/storeu's if alignment would be stricter
+      for (int i = 0; i < 16; i += 4) {
+         // unroll first step of the loop
+         __m128 a = _mm_loadu_ps(&_11);
+         __m128 b = _mm_set1_ps((&mult._11)[i]);
+         __m128 r = _mm_mul_ps(a, b);
+         for (int j = 1; j < 4; j++) {
+            a = _mm_loadu_ps((&_11)+j * 4);
+            b = _mm_set1_ps((&mult._11)[i + j]);
+            r = _mm_add_ps(_mm_mul_ps(a, b), r);
+         }
+         _mm_storeu_ps((&matrixT._11)+i, r);
+      }
+#else
+#pragma message ("Warning: No SSE matrix mul")
+      for (int i = 0; i < 4; ++i)
+         for (int l = 0; l < 4; ++l)
+            matrixT.m[i][l] = (m[0][l] * mult.m[i][0]) + (m[1][l] * mult.m[i][1]) + (m[2][l] * mult.m[i][2]) + (m[3][l] * mult.m[i][3]);
+#endif
+      result = matrixT;
+   }
+
+   Matrix3D operator*(const Matrix3D& mult) const
+   {
+      Matrix3D matrixT;
+#ifdef ENABLE_SSE_OPTIMIZATIONS
+      // could replace the loadu/storeu's if alignment would be stricter
+      for (int i = 0; i < 16; i += 4) {
+         // unroll first step of the loop
+         __m128 a = _mm_loadu_ps(&mult._11);
+         __m128 b = _mm_set1_ps((&_11)[i]);
+         __m128 r = _mm_mul_ps(a, b);
+         for (int j = 1; j < 4; j++) {
+            a = _mm_loadu_ps((&mult._11)+j * 4);
+            b = _mm_set1_ps((&_11)[i + j]);
+            r = _mm_add_ps(_mm_mul_ps(a, b), r);
+         }
+         _mm_storeu_ps((&matrixT._11)+i, r);
+      }
+#else
+#pragma message ("Warning: No SSE matrix mul")
+      for (int i = 0; i < 4; ++i)
+         for (int l = 0; l < 4; ++l)
+            matrixT.m[i][l] = (mult.m[0][l] * m[i][0]) + (mult.m[1][l] * m[i][1]) + (mult.m[2][l] * m[i][2]) + (mult.m[3][l] * m[i][3]);
+#endif
+      return matrixT;
+   }
+
+   Matrix3D operator+(const Matrix3D& m) const
+   {
+      return Matrix3D(_11 + m._11, _12 + m._12, _13 + m._13, _14 + m._14,
+                      _21 + m._21, _22 + m._22, _23 + m._23, _24 + m._24,
+                      _31 + m._31, _32 + m._32, _33 + m._33, _34 + m._34,
+                      _41 + m._41, _42 + m._42, _43 + m._43, _44 + m._44);
+   }
+   
+   void Scale(const float x, const float y, const float z)
+   {
+      _11 *= x; _12 *= x; _13 *= x;
+      _21 *= y; _22 *= y; _23 *= y;
+      _31 *= z; _32 *= z; _33 *= z;
+   }
+
+   // Normalize the 3 defining vector of an orthogonal matrix
+   void OrthoNormalize()
+   {
+      vec3 right(_11, _12, _13);
+      vec3 up(_21, _22, _23);
+      vec3 dir(_31, _32, _33);
+      Vec3Normalize(&right, &right);
+      Vec3Normalize(&up, &up);
+      Vec3Normalize(&dir, &dir);
+      _11 = right.x; _12 = right.y; _13 = right.z;
+      _21 = up.x; _22 = up.y; _23 = up.z;
+      _31 = dir.x; _32 = dir.y; _33 = dir.z;
+   }
+
+   void Translate(const float x, const float y, const float z)
+   {
+      Matrix3D matTrans;
+      matTrans.SetTranslation(x, y, z);
+      Multiply(matTrans, *this);
+   }
+
+   void RotateX(const float angRad)
+   {
+      Matrix3D rot;
+      rot.SetRotateX(angRad);
+      Multiply(rot, *this);
+   }
+
+   void RotateY(const float angRad)
+   {
+      Matrix3D rot;
+      rot.SetRotateY(angRad);
+      Multiply(rot, *this);
+   }
+
+   void RotateZ(const float angRad)
+   {
+      Matrix3D rot;
+      rot.SetRotateZ(angRad);
+      Multiply(rot, *this);
+   }
+
+#pragma endregion MatrixOperations
+
+//
+// end of license:GPLv3+, back to 'old MAME'-like
+//
+
+
+#pragma region VectorOperations
+
+   // If matrix defines and orthonormal transformation (like a view or model matrix), these function give the defining vectors
+   vec3 GetOrthoNormalRight() const { return vec3(_11, _12, _13); }
+   vec3 GetOrthoNormalUp() const { return vec3(_21, _22, _23); }
+   vec3 GetOrthoNormalDir() const { return vec3(_31, _32, _33); }
+   vec3 GetOrthoNormalPos() const { return vec3(_41, _42, _43); }
+
+   // extract the matrix corresponding to the 3x3 rotation part
+   void GetRotationPart(Matrix3D& rot)
+   {
+      rot._11 = _11; rot._12 = _12; rot._13 = _13; rot._14 = 0.0f;
+      rot._21 = _21; rot._22 = _22; rot._23 = _23; rot._24 = 0.0f;
+      rot._31 = _31; rot._32 = _32; rot._33 = _33; rot._34 = 0.0f;
+      rot._41 = rot._42 = rot._43 = 0.0f; rot._44 = 1.0f;
+   }
+
+   // generic multiply function for everything that has .x, .y and .z
+   template <class VecIn, class VecOut>
+   void MultiplyVector(const VecIn& vIn, VecOut& vOut) const
+   {
+      // Transform it through the current matrix set
+      const float xp = _11*vIn.x + _21*vIn.y + _31*vIn.z + _41;
+      const float yp = _12*vIn.x + _22*vIn.y + _32*vIn.z + _42;
+      const float zp = _13*vIn.x + _23*vIn.y + _33*vIn.z + _43;
+      const float wp = _14*vIn.x + _24*vIn.y + _34*vIn.z + _44;
+
+      const float inv_wp = 1.0f / wp;
+      vOut.x = xp*inv_wp;
+      vOut.y = yp*inv_wp;
+      vOut.z = zp*inv_wp;
+   }
+
+//
+// license:GPLv3+
+// Ported at: VisualPinball.Engine/Math/Matrix3D.cs
+//
+
+   Vertex3Ds MultiplyVector(const Vertex3Ds &v) const
+   {
+      // Transform it through the current matrix set
+      const float xp = _11*v.x + _21*v.y + _31*v.z + _41;
+      const float yp = _12*v.x + _22*v.y + _32*v.z + _42;
+      const float zp = _13*v.x + _23*v.y + _33*v.z + _43;
+      const float wp = _14*v.x + _24*v.y + _34*v.z + _44;
+
+      const float inv_wp = 1.0f / wp;
+      return Vertex3Ds(xp*inv_wp,yp*inv_wp,zp*inv_wp);
+   }
+
+   Vertex3Ds MultiplyVectorNoTranslate(const Vertex3Ds &v) const
+   {
+      // Transform it through the current matrix set
+      const float xp = _11*v.x + _21*v.y + _31*v.z;
+      const float yp = _12*v.x + _22*v.y + _32*v.z;
+      const float zp = _13*v.x + _23*v.y + _33*v.z;
+
+      return Vertex3Ds(xp,yp,zp);
+   }
+
+//
+// end of license:GPLv3+, back to 'old MAME'-like
+//
+
+   template <class VecIn, class VecOut>
+   void MultiplyVectorNoTranslate(const VecIn& vIn, VecOut& vOut) const
+   {
+      // Transform it through the current matrix set
+      const float xp = _11*vIn.x + _21*vIn.y + _31*vIn.z;
+      const float yp = _12*vIn.x + _22*vIn.y + _32*vIn.z;
+      const float zp = _13*vIn.x + _23*vIn.y + _33*vIn.z;
+
+      vOut.x = xp;
+      vOut.y = yp;
+      vOut.z = zp;
+   }
+
+   template <class VecIn, class VecOut>
+   void MultiplyVectorNoTranslateNormal(const VecIn& vIn, VecOut& vOut) const
+   {
+      // Transform it through the current matrix set
+      const float xp = _11*vIn.nx + _21*vIn.ny + _31*vIn.nz;
+      const float yp = _12*vIn.nx + _22*vIn.ny + _32*vIn.nz;
+      const float zp = _13*vIn.nx + _23*vIn.ny + _33*vIn.nz;
+
+      vOut.x = xp;
+      vOut.y = yp;
+      vOut.z = zp;
    }
 
    template <class T> void TransformVec3(T& v) const
@@ -705,4 +767,7 @@ public:
          rgvout[l].y = vTy;
       }
    }
+
+#pragma endregion VectorOperations
+
 };

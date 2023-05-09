@@ -402,8 +402,8 @@ void Gate::RenderObject()
 
       Matrix3D fullMatrix, tempMat;
 
-      fullMatrix.RotateXMatrix(m_d.m_twoWay ? m_phitgate->m_gateMover.m_angle : -m_phitgate->m_gateMover.m_angle);
-      tempMat.RotateZMatrix(ANGTORAD(m_d.m_rotation));
+      fullMatrix.SetRotateX(m_d.m_twoWay ? m_phitgate->m_gateMover.m_angle : -m_phitgate->m_gateMover.m_angle);
+      tempMat.SetRotateZ(ANGTORAD(m_d.m_rotation));
       tempMat.Multiply(fullMatrix, fullMatrix);
 
       Matrix3D vertMatrix;
@@ -510,7 +510,7 @@ void Gate::ExportMesh(ObjLoader& loader)
 void Gate::GenerateBracketMesh(Vertex3D_NoTex2 *buf)
 {
    Matrix3D fullMatrix;
-   fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotation));
+   fullMatrix.SetRotateZ(ANGTORAD(m_d.m_rotation));
    for (unsigned int i = 0; i < gateBracketNumVertices; i++)
    {
       Vertex3Ds vert(gateBracket[i].x, gateBracket[i].y, gateBracket[i].z);
@@ -532,7 +532,7 @@ void Gate::GenerateBracketMesh(Vertex3D_NoTex2 *buf)
 void Gate::GenerateWireMesh(Vertex3D_NoTex2 *buf)
 {
    Matrix3D fullMatrix;
-   fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotation));
+   fullMatrix.SetRotateZ(ANGTORAD(m_d.m_rotation));
 
    for (unsigned int i = 0; i < m_numVertices; i++)
    {
