@@ -180,7 +180,6 @@ Shader::ShaderUniform Shader::shaderUniformNames[SHADER_UNIFORM_COUNT] {
    SHADER_UNIFORM(SUT_Float4v, basicPackedLights, 3),
    SHADER_UNIFORM(SUT_Float4v, ballPackedLights, 15),
    #endif
-   SHADER_UNIFORM(SUT_Float, fSceneScale, 1), // VR only
    SHADER_UNIFORM(SUT_Float4, Roughness_WrapL_Edge_Thickness, 1),
    SHADER_UNIFORM(SUT_Float4, cBase_Alpha, 1),
    SHADER_UNIFORM(SUT_Float2, fDisableLighting_top_below, 1),

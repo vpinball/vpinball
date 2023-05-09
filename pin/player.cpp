@@ -1084,16 +1084,6 @@ void Player::InitShader()
    //vec4 cam( worldViewProj._41, worldViewProj._42, worldViewProj._43, 1 );
    //m_pin3d.m_pd3dPrimaryDevice->basicShader->SetVector("camera", &cam);
 
-   #ifdef ENABLE_SDL
-   // In VR we scale the scene to the controller scale, so the shader needs to scale light range accordingly
-   if (m_pin3d.m_pd3dPrimaryDevice->basicShader->HasUniform(SHADER_fSceneScale))
-      #ifdef ENABLE_VR
-      m_pin3d.m_pd3dPrimaryDevice->basicShader->SetFloat(SHADER_fSceneScale, m_pin3d.m_pd3dPrimaryDevice->m_scale);
-      #else
-      m_pin3d.m_pd3dPrimaryDevice->basicShader->SetFloat(SHADER_fSceneScale, 1.0f);
-      #endif
-   #endif
-
    m_pin3d.m_pd3dPrimaryDevice->basicShader->SetTexture(SHADER_tex_env, m_pin3d.m_envTexture ? m_pin3d.m_envTexture : &m_pin3d.m_builtinEnvTexture);
    m_pin3d.m_pd3dPrimaryDevice->basicShader->SetTexture(SHADER_tex_diffuse_env, m_pin3d.m_envRadianceTexture);
    const vec4 st(m_ptable->m_envEmissionScale*m_globalEmissionScale, m_pin3d.m_envTexture ? (float)m_pin3d.m_envTexture->m_height/*+m_pin3d.m_envTexture->m_width)*0.5f*/ : (float)m_pin3d.m_builtinEnvTexture.m_height/*+m_pin3d.m_builtinEnvTexture.m_width)*0.5f*/, 0.f, 0.f);
@@ -1131,13 +1121,6 @@ void Player::InitBallShader()
 {
 #ifdef ENABLE_SDL
    m_ballShader = new Shader(m_pin3d.m_pd3dPrimaryDevice, "BallShader.glfx"s);
-   // In VR we scale the scene to the controller scale, so the shader needs to scale light range accordingly
-   if (m_pin3d.m_pd3dPrimaryDevice->basicShader->HasUniform(SHADER_fSceneScale))
-      #ifdef ENABLE_VR
-      m_ballShader->SetFloat(SHADER_fSceneScale, m_pin3d.m_pd3dPrimaryDevice->m_scale);
-      #else
-      m_ballShader->SetFloat(SHADER_fSceneScale, 1.0f);
-      #endif
 #else
    m_ballShader = new Shader(m_pin3d.m_pd3dPrimaryDevice, "BallShader.hlsl"s, g_ballShaderCode, sizeof(g_ballShaderCode));
 #endif

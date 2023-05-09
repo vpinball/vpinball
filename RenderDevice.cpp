@@ -2005,8 +2005,8 @@ void RenderDevice::InitVR() {
          matEye2Head.m[j][i] = left_eye_pos.m[i][j];
    for (int j = 0;j < 4;j++)
       matEye2Head.m[j][3] = (j == 3) ? 1.0f : 0.0f;
-
    matEye2Head.Invert();
+   matEye2Head.Scale(m_scale, m_scale, m_scale);
 
    left_eye_proj.m[2][2] = -1.0f;
    left_eye_proj.m[2][3] = -nearPlane;
@@ -2023,8 +2023,8 @@ void RenderDevice::InitVR() {
          matEye2Head.m[j][i] = right_eye_pos.m[i][j];
    for (int j = 0;j < 4;j++)
       matEye2Head.m[j][3] = (j == 3) ? 1.0f : 0.0f;
-
    matEye2Head.Invert();
+   matEye2Head.Scale(m_scale, m_scale, m_scale);
 
    right_eye_proj.m[2][2] = -1.0f;
    right_eye_proj.m[2][3] = -nearPlane;
@@ -2099,33 +2099,34 @@ void RenderDevice::recenterTable()
    m_orientation = -RADTOANG(atan2(m_hmdPosition.mDeviceToAbsoluteTracking.m[0][2], m_hmdPosition.mDeviceToAbsoluteTracking.m[0][0]));
    if (m_orientation < 0.0f)
       m_orientation += 360.0f;
-   const float w = 100.f * 0.5f * m_scale * (g_pplayer->m_ptable->m_right - g_pplayer->m_ptable->m_left);
-   const float h = 100.f * m_scale * (g_pplayer->m_ptable->m_bottom - g_pplayer->m_ptable->m_top) + 20.0f;
-   const float c = cos(ANGTORAD(m_orientation));
-   const float s = sin(ANGTORAD(m_orientation));
-   m_tablex = 100.0f * m_hmdPosition.mDeviceToAbsoluteTracking.m[0][3] - c * w + s * h;
-   m_tabley = -100.0f * m_hmdPosition.mDeviceToAbsoluteTracking.m[2][3] + s * w + c * h;
+   const float w = m_scale * (g_pplayer->m_ptable->m_right - g_pplayer->m_ptable->m_left) * 0.5f;
+   const float h = m_scale * (g_pplayer->m_ptable->m_bottom - g_pplayer->m_ptable->m_top) + 20.0f;
+   const float c = cosf(ANGTORAD(m_orientation));
+   const float s = sinf(ANGTORAD(m_orientation));
+   m_tablex = 100.0f * ( m_hmdPosition.mDeviceToAbsoluteTracking.m[0][3] - c * w + s * h);
+   m_tabley = 100.0f * (-m_hmdPosition.mDeviceToAbsoluteTracking.m[2][3] + s * w + c * h);
    updateTableMatrix();
 }
 
 void RenderDevice::updateTableMatrix()
 {
    Matrix3D tmp;
-   //Tilt playfield.
-   m_tableWorld.SetIdentity();
+
+   // Tilt playfield.
    m_tableWorld.SetRotateX(ANGTORAD(-m_slope));
-   //Convert from VPX scale and coords to VR
+
+   // Convert from VPX scale and coords to VR
    tmp.SetIdentity();
-   tmp.m[0][0] = -m_scale;  tmp.m[0][1] =    0.0f;  tmp.m[0][2] =     0.0f;
-   tmp.m[1][0] =     0.0f;  tmp.m[1][1] =    0.0f;  tmp.m[1][2] = -m_scale;
-   tmp.m[2][0] =     0.0f;  tmp.m[2][1] = m_scale;  tmp.m[2][2] =     0.0f;
+   tmp._11 = -1.f; tmp._12 = 0.f; tmp._13 =  0.f;
+   tmp._21 =  0.f; tmp._22 = 0.f; tmp._23 = -1.f;
+   tmp._31 =  0.f; tmp._32 = 1.f; tmp._33 =  0.f;
    m_tableWorld = m_tableWorld * tmp;
-   //Rotate table around VR height axis
-   tmp.SetIdentity();
+
+   // Rotate table around VR height axis
    tmp.SetRotateY(ANGTORAD(180.f - m_orientation));
    m_tableWorld = m_tableWorld * tmp;
-   //Locate front left corner of the table in the room -x is to the right, -y is up and -z is back - all units in meters
-   tmp.SetIdentity();
+
+   // Locate front left corner of the table in the room -x is to the right, -y is up and -z is back - all units in meters
    tmp.SetTranslation(m_tablex / 100.0f, m_tablez / 100.0f, -m_tabley / 100.0f);
    m_tableWorld = m_tableWorld * tmp;
 }
