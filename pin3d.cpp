@@ -824,79 +824,71 @@ void PinProjection::Setup(const PinTable* table, const ViewPort& viewPort, const
       FitCameraToVertices(vvertex3D, aspect, rotation, inc, FOV, table->m_BG_xlatez[table->m_BG_current_set],
          table->m_BG_layback[table->m_BG_current_set]);
 
-   m_matWorld.SetIdentity();
+   // Original matrix stack was: [Lb.Rx.Rz.T.S.Rpi] . [P]   ([first] part is view matrix, [second] is projection matrix)
+   // This leads to a non orthonormal view matrix since layback and scaling are part of it. This slightly breaks lighting, reflection and stereo.
+   // 
+   // To improve this situation, a new 'absolute' camera mode was added. The matrix stack was also modified to move scaling (S) and DirectX 
+   // coordinate system (Rpi) from view to projection matrix. The final matrix stacks are the following:
+   // 'relative' mode: [Lb.Rx.Rz.T] . [S.Rpi.P]
+   // 'absolute' mode:       [T.Rx] . [S.Rpi.Rnz.P]
+   // 
+   // This seems ok for 'absolute' mode since the view is orthonormal (it transforms normals and points without changing their length or relative angle).
 
-   m_matView.SetRotateX((float)M_PI); // convert Z=out to Z=in (D3D coordinate system)
-   
-   // FIXME move scaling to the projection matrix. View matrix must stay orthonormal
-   m_matView.Scale(table->m_BG_scalex[table->m_BG_current_set], table->m_BG_scaley[table->m_BG_current_set], 1.0f);
-
-#ifdef ENABLE_VR
-   // Full scene scaling is only used in VR (and VR preview for debugging) to adapt to HMD scale
-   if (stereo3D == STEREO_VR)
-      // FIXME move scaling to the projection matrix. View matrix must stay orthonormal
-      m_matView.Scale(scene_scale, scene_scale, scene_scale);
-#endif
-
-   //!! FSS: added 500.0f to next line on camera y
-   //!! FSS: m_proj.m_vertexcamera.y += camy;
-   //!! FSS: g_pplayer->m_ptable->m_BG_xlatey[g_pplayer->m_ptable->m_BG_current_set] += camy;
-   //!! FSS: camy = 0.0f;
-
+   Matrix3D DD, rotx, trans, rotz, rotnz, scale, proj;
+   DD.SetRotateX((float)M_PI); // convert Z=out to Z=in (D3D coordinate system)
+   scale.SetScaling(scene_scale * table->m_BG_scalex[table->m_BG_current_set], scene_scale * table->m_BG_scaley[table->m_BG_current_set], scene_scale);
+   rotx.SetRotateX(inc);
+   rotz.SetRotateZ(rotation);
+   rotnz.SetRotateZ(-rotation);
    if (layoutMode == CLM_RELATIVE)
-   {
-      m_matView.Translate(table->m_BG_xlatex[table->m_BG_current_set] - m_vertexcamera.x + camx,
-         table->m_BG_xlatey[table->m_BG_current_set] - m_vertexcamera.y + camy, -m_vertexcamera.z + camz);
-      if (cameraMode && (table->m_BG_current_set == BG_DESKTOP || table->m_BG_current_set == BG_FSS))
-      {
-         m_matView.RotateX(inc);
-         m_matView.RotateZ(rotation);
-      }
-      else
-      {
-         m_matView.RotateZ(rotation);
-         m_matView.RotateX(inc);
-      }
-   }
-   else if (layoutMode == CLM_ABSOLUTE)
-   {
-      // Rotate view first (to keep player position constant and independent of rotation)
-      m_matView.RotateX(inc);
-      // Move it according to player position
-      m_matView.Translate(-table->m_BG_xlatex[table->m_BG_current_set] + cam.x - 0.5f * table->m_right,
+      trans.SetTranslation(
+         table->m_BG_xlatex[table->m_BG_current_set] - m_vertexcamera.x + camx,
+         table->m_BG_xlatey[table->m_BG_current_set] - m_vertexcamera.y + camy,
+         -m_vertexcamera.z + camz);
+   else
+      trans.SetTranslation(
+         -table->m_BG_xlatex[table->m_BG_current_set] + cam.x - 0.5f * table->m_right,
          -table->m_BG_xlatey[table->m_BG_current_set] + cam.y - table->m_bottom,
          -table->m_BG_xlatez[table->m_BG_current_set] + cam.z);
-   }
 
-   // recompute near and far plane (workaround for VP9 FitCameraToVertices bugs)
+   m_matWorld.SetIdentity();
+
+   // recompute near and far plane (workaround for VP9 FitCameraToVertices bugs), needs a complete matView with DirectX coordinate change
+   if (layoutMode == CLM_RELATIVE)
+   {
+      if (cameraMode && (table->m_BG_current_set == BG_DESKTOP || table->m_BG_current_set == BG_FSS))
+         m_matView = rotz * rotx * trans * scale * DD;
+      else
+         m_matView = rotx * rotz * trans * scale * DD;
+   }
+   else if (layoutMode == CLM_ABSOLUTE)
+      m_matView = trans * rotx * scale * DD;
    ComputeNearFarPlane(vvertex3D);
    if (fabsf(inc) < 0.0075f) //!! magic threshold, otherwise kicker holes are missing for inclination ~0
       m_rzfar += 10.f;
-   Matrix3D proj;
+
+   const float ymax = m_rznear * tanf(0.5f * ANGTORAD(FOV));
+   const float xmax = ymax * aspect;
+   const float ofs = layoutMode == CLM_RELATIVE ? 0.f : 10.f * table->m_BG_layback[table->m_BG_current_set];
+   const float xofs = ofs * sinf(rotation);
+   const float yofs = ofs * cosf(rotation);
+   proj.SetPerspectiveOffCenterLH(-xmax + xofs, xmax + xofs, -ymax + yofs, ymax + yofs, m_rznear, m_rzfar);
    if (layoutMode == CLM_RELATIVE)
    {
-      proj.SetPerspectiveFovLH(FOV, aspect, m_rznear, m_rzfar);
+      if (cameraMode && (table->m_BG_current_set == BG_DESKTOP || table->m_BG_current_set == BG_FSS))
+         m_matView = rotz * rotx * trans;
+      else
+         m_matView = rotx * rotz * trans;
+      m_matProj[0] = proj;
    }
    else if (layoutMode == CLM_ABSOLUTE)
    {
-      const float ymax = m_rznear * tanf(0.5f * ANGTORAD(FOV));
-      const float xmax = ymax * aspect;
-      const float ofs = 10.f * table->m_BG_layback[table->m_BG_current_set];
-      const float xofs = ofs * sinf(rotation);
-      const float yofs = ofs * cosf(rotation);
-      proj.SetPerspectiveOffCenterLH(-xmax + xofs, xmax + xofs, -ymax + yofs, ymax + yofs, m_rznear, m_rzfar);
-      proj.RotateZ(-rotation);
+      m_matView = trans * rotx;
+      m_matProj[0] = rotnz * proj;
    }
-   memcpy(m_matProj[0].m, proj.m, sizeof(float) * 4 * 4);
 
 #ifdef ENABLE_SDL
-   // FIXME remove when scene scaling will be part of projection matrix instead of view matrix
-   if (stereo3D == STEREO_VR)
-   {
-      // Use the same projection for VR debug since the anaglyph stereo computation would fail due to scene scaling
-      memcpy(m_matProj[1].m, proj.m, sizeof(float) * 4 * 4);
-   }
-   else if (stereo3D != STEREO_OFF)
+   if (stereo3D != STEREO_OFF)
    {
       // Create eye projection matrices for real stereo (not VR but anaglyph,...)
       // 63mm is the average distance between eyes (varies from 54 to 74mm between adults, 43 to 58mm for children), 50 VPUnit is 1.25 inches
@@ -904,7 +896,7 @@ void PinProjection::Setup(const PinTable* table, const ViewPort& viewPort, const
       const float halfEyeDist = 0.5f * MMTOVPU(stereo3DMS);
       Matrix3D invView(m_matView);
       invView.Invert();
-      invView.OrthoNormalize();
+      invView.OrthoNormalize(); // TODO remove since this is should not be needed anymore
       vec3 right = invView.GetOrthoNormalRight();
       const vec3 up = invView.GetOrthoNormalUp();
       const vec3 dir = invView.GetOrthoNormalDir();
@@ -922,9 +914,9 @@ void PinProjection::Setup(const PinTable* table, const ViewPort& viewPort, const
       float camDistance = clamp((50.f - pos.z) / dir.z, minCamDistance, maxCamDistance);
       const vec3 at = pos + dir * camDistance;
       Matrix3D rot = Matrix3D::MatrixLookAtLH(pos + (-halfEyeDist * right), at, up); // Apply offset & rotation to the left eye projection
-      m_matProj[0] = invView * rot * proj;
+      m_matProj[0] = invView * rot * m_matProj[0];
       rot = Matrix3D::MatrixLookAtLH(pos + (halfEyeDist * right), at, up); // Apply offset & rotation to the right eye projection
-      m_matProj[1] = invView * rot * proj;
+      m_matProj[1] = invView * rot * m_matProj[0];
    }
 #endif
 
@@ -933,14 +925,26 @@ void PinProjection::Setup(const PinTable* table, const ViewPort& viewPort, const
    {
       Matrix3D projTrans;
       projTrans.SetTranslation((float)((double)xpixoff / (double)viewPort.Width), (float)((double)ypixoff / (double)viewPort.Height), 0.f);
-      projTrans.Multiply(m_matProj[0], m_matProj[0]);
-      projTrans.Multiply(m_matProj[1], m_matProj[1]);
+      m_matProj[0] = scale * DD * projTrans * m_matProj[0];
+      #ifdef ENABLE_SDL
+      if (stereo3D != STEREO_OFF)
+         m_matProj[1] = scale * DD * projTrans * m_matProj[1];
+      #endif
+   }
+   else
+   {
+      m_matProj[0] = scale * DD * m_matProj[0];
+      #ifdef ENABLE_SDL
+      if (stereo3D != STEREO_OFF)
+         m_matProj[1] = scale * DD * m_matProj[1];
+      #endif
    }
 
    if (layoutMode == CLM_RELATIVE)
    {
-      // Apply layback to view (shear the view backward)
-      m_matView.Multiply(ComputeLaybackTransform(table->m_BG_layback[table->m_BG_current_set]), m_matView);
+      // Apply layback to view (skew the view backward), apply after stereo eye adjustment to limit impact on eye matrix computation
+      Matrix3D layback = ComputeLaybackTransform(table->m_BG_layback[table->m_BG_current_set]);
+      m_matView = layback * m_matView;
    }
 }
 
