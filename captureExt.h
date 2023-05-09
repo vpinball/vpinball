@@ -7,7 +7,6 @@
 
 bool captureExternalDMD();
 bool capturePUP();
-void captureStartup();
 void captureStop();
 
 // Disabled for DX9 since it causes conflict with DX9
