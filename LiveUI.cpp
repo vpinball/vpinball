@@ -641,7 +641,7 @@ void LiveUI::Render()
          {
             LiveUI *const lui = (LiveUI *)cmd->UserCallbackData;
             Matrix3D matRotate, matTranslate;
-            matRotate.RotateZMatrix((float)(lui->m_rotate * (M_PI / 2.0)));
+            matRotate.SetRotateZ((float)(lui->m_rotate * (M_PI / 2.0)));
             switch (lui->m_rotate)
             {
             case 1: matTranslate.SetTranslation(ImGui::GetIO().DisplaySize.y, 0, 0); break;
@@ -1110,7 +1110,7 @@ void LiveUI::UpdateMainUI()
 
       /* Matrix3D gridMatrix;
       static constexpr float identityMatrix[16] = { 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 1.f };
-      gridMatrix.RotateXMatrix(M_PI * 0.5);
+      gridMatrix.SetRotateX(M_PI * 0.5);
       gridMatrix.Scale(10.0f, 1.0f, 10.0f);
       ImGuizmo::DrawGrid((const float *)(m_camView.m), (const float *)(m_camProj.m), (const float *)(gridMatrix.m), 100.f); */
       //ImGuizmo::DrawGrid(cameraView, cameraProjection, identityMatrix, 100.f);
@@ -1377,10 +1377,10 @@ bool LiveUI::GetSelectionTransform(Matrix3D& transform)
       Tmatrix.SetTranslation(p->m_d.m_vPosition.x, p->m_d.m_vPosition.y, p->m_d.m_vPosition.z + m_live_table->m_tableheight);
       Matrix3D Rmatrix;
       Matrix3D tempMatrix;
-      Rmatrix.RotateZMatrix(ANGTORAD(p->m_d.m_aRotAndTra[2]));
-      tempMatrix.RotateYMatrix(ANGTORAD(p->m_d.m_aRotAndTra[1]));
+      Rmatrix.SetRotateZ(ANGTORAD(p->m_d.m_aRotAndTra[2]));
+      tempMatrix.SetRotateY(ANGTORAD(p->m_d.m_aRotAndTra[1]));
       tempMatrix.Multiply(Rmatrix, Rmatrix);
-      tempMatrix.RotateXMatrix(ANGTORAD(p->m_d.m_aRotAndTra[0]));
+      tempMatrix.SetRotateX(ANGTORAD(p->m_d.m_aRotAndTra[0]));
       tempMatrix.Multiply(Rmatrix, Rmatrix);
       transform = Smatrix;
       Rmatrix.Multiply(transform, transform);

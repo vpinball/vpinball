@@ -1486,10 +1486,10 @@ void Rubber::GenerateVertexBuffer()
 void Rubber::UpdateRubber(const bool updateVB, const float height)
 {
    Matrix3D fullMatrix,tempMat;
-   fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotZ));
-   tempMat.RotateYMatrix(ANGTORAD(m_d.m_rotY));
+   fullMatrix.SetRotateZ(ANGTORAD(m_d.m_rotZ));
+   tempMat.SetRotateY(ANGTORAD(m_d.m_rotY));
    tempMat.Multiply(fullMatrix, fullMatrix);
-   tempMat.RotateXMatrix(ANGTORAD(m_d.m_rotX));
+   tempMat.SetRotateX(ANGTORAD(m_d.m_rotX));
    tempMat.Multiply(fullMatrix, fullMatrix);
 
    Matrix3D vertMatrix;

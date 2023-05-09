@@ -365,7 +365,7 @@ void Kicker::GenerateMesh(Vertex3D_NoTex2 *const buf)
    }
 
    Matrix3D fullMatrix;
-   fullMatrix.RotateZMatrix(ANGTORAD(zrot));
+   fullMatrix.SetRotateZ(ANGTORAD(zrot));
 
    for (int i = 0; i < num_vertices; i++)
    {

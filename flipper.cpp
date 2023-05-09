@@ -637,7 +637,7 @@ void Flipper::RenderDynamic()
    if (m_phitflipper)
    {
       Matrix3D matTemp;
-      matTemp.RotateZMatrix(m_phitflipper->m_flipperMover.m_angleCur);
+      matTemp.SetRotateZ(m_phitflipper->m_flipperMover.m_angleCur);
       matTrafo.Multiply(matTemp, matTrafo);
    }
    g_pplayer->UpdateBasicShaderMatrix(matTrafo);
@@ -674,7 +674,7 @@ void Flipper::ExportMesh(ObjLoader& loader)
    matTemp.SetIdentity();
    matTrafo._41 = m_d.m_Center.x;
    matTrafo._42 = m_d.m_Center.y;
-   matTemp.RotateZMatrix(ANGTORAD(m_d.m_StartAngle));
+   matTemp.SetRotateZ(ANGTORAD(m_d.m_StartAngle));
    matTrafo.Multiply(matTemp, matTrafo);
 
    Vertex3D_NoTex2 *const flipper = new Vertex3D_NoTex2[flipperBaseVertices * 2];
@@ -777,7 +777,7 @@ void Flipper::GenerateBaseMesh(Vertex3D_NoTex2 *buf)
 {
    Matrix3D fullMatrix;
 
-   fullMatrix.RotateZMatrix(ANGTORAD(180.0f));
+   fullMatrix.SetRotateZ(ANGTORAD(180.0f));
 
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_Center.x, m_d.m_Center.y);
    m_boundingSphereCenter.Set(m_d.m_Center.x, m_d.m_Center.y, height);

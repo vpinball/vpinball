@@ -676,18 +676,18 @@ void Primitive::RecalculateMatrices()
    RTmatrix.SetTranslation(m_d.m_aRotAndTra[3], m_d.m_aRotAndTra[4], m_d.m_aRotAndTra[5]);
 
    Matrix3D tempMatrix;
-   tempMatrix.RotateZMatrix(ANGTORAD(m_d.m_aRotAndTra[2]));
+   tempMatrix.SetRotateZ(ANGTORAD(m_d.m_aRotAndTra[2]));
    tempMatrix.Multiply(RTmatrix, RTmatrix);
-   tempMatrix.RotateYMatrix(ANGTORAD(m_d.m_aRotAndTra[1]));
+   tempMatrix.SetRotateY(ANGTORAD(m_d.m_aRotAndTra[1]));
    tempMatrix.Multiply(RTmatrix, RTmatrix);
-   tempMatrix.RotateXMatrix(ANGTORAD(m_d.m_aRotAndTra[0]));
+   tempMatrix.SetRotateX(ANGTORAD(m_d.m_aRotAndTra[0]));
    tempMatrix.Multiply(RTmatrix, RTmatrix);
 
-   tempMatrix.RotateZMatrix(ANGTORAD(m_d.m_aRotAndTra[8]));
+   tempMatrix.SetRotateZ(ANGTORAD(m_d.m_aRotAndTra[8]));
    tempMatrix.Multiply(RTmatrix, RTmatrix);
-   tempMatrix.RotateYMatrix(ANGTORAD(m_d.m_aRotAndTra[7]));
+   tempMatrix.SetRotateY(ANGTORAD(m_d.m_aRotAndTra[7]));
    tempMatrix.Multiply(RTmatrix, RTmatrix);
-   tempMatrix.RotateXMatrix(ANGTORAD(m_d.m_aRotAndTra[6]));
+   tempMatrix.SetRotateX(ANGTORAD(m_d.m_aRotAndTra[6]));
    tempMatrix.Multiply(RTmatrix, RTmatrix);
 
    m_fullMatrix = Smatrix;

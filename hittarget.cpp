@@ -279,7 +279,7 @@ void HitTarget::GetHitShapes(vector<HitObject*> &pvho)
        Matrix3D fullMatrix, tempMatrix;
        fullMatrix.SetIdentity();
        tempMatrix.SetIdentity();
-       tempMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotZ));
+       tempMatrix.SetRotateZ(ANGTORAD(m_d.m_rotZ));
        tempMatrix.Multiply(fullMatrix, fullMatrix);
 
        // add the normal drop target as collidable but without hit event
@@ -447,7 +447,7 @@ void HitTarget::GenerateMesh(vector<Vertex3D_NoTex2> &buf)
    Matrix3D fullMatrix, tempMatrix;
    fullMatrix.SetIdentity();
    tempMatrix.SetIdentity();
-   tempMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotZ));
+   tempMatrix.SetRotateZ(ANGTORAD(m_d.m_rotZ));
    tempMatrix.Multiply(fullMatrix, fullMatrix);
 
    for (unsigned int i = 0; i < m_numVertices; i++)
@@ -481,7 +481,7 @@ void HitTarget::TransformVertices()
    m_hitUIVertices.resize(m_numVertices);
    fullMatrix.SetIdentity();
    tempMatrix.SetIdentity();
-   tempMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotZ));
+   tempMatrix.SetRotateZ(ANGTORAD(m_d.m_rotZ));
    tempMatrix.Multiply(fullMatrix, fullMatrix);
 
    for (unsigned i = 0; i < m_numVertices; i++)
@@ -757,8 +757,8 @@ void HitTarget::UpdateTarget()
    else
    {
        Matrix3D fullMatrix, tempMatrix;
-       fullMatrix.RotateXMatrix(ANGTORAD(m_moveAnimationOffset));
-       tempMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotZ));
+       fullMatrix.SetRotateX(ANGTORAD(m_moveAnimationOffset));
+       tempMatrix.SetRotateZ(ANGTORAD(m_d.m_rotZ));
        tempMatrix.Multiply(fullMatrix, fullMatrix);
 
        Matrix3D vertMatrix;

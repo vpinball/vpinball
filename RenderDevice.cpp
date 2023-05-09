@@ -2113,7 +2113,7 @@ void RenderDevice::updateTableMatrix()
    Matrix3D tmp;
    //Tilt playfield.
    m_tableWorld.SetIdentity();
-   m_tableWorld.RotateXMatrix(ANGTORAD(-m_slope));
+   m_tableWorld.SetRotateX(ANGTORAD(-m_slope));
    //Convert from VPX scale and coords to VR
    tmp.SetIdentity();
    tmp.m[0][0] = -m_scale;  tmp.m[0][1] =    0.0f;  tmp.m[0][2] =     0.0f;
@@ -2122,7 +2122,7 @@ void RenderDevice::updateTableMatrix()
    m_tableWorld = m_tableWorld * tmp;
    //Rotate table around VR height axis
    tmp.SetIdentity();
-   tmp.RotateYMatrix(ANGTORAD(180.f - m_orientation));
+   tmp.SetRotateY(ANGTORAD(180.f - m_orientation));
    m_tableWorld = m_tableWorld * tmp;
    //Locate front left corner of the table in the room -x is to the right, -y is up and -z is back - all units in meters
    tmp.SetIdentity();

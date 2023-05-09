@@ -315,10 +315,10 @@ void Flasher::UpdateMesh()
    const float movy = m_miny + (m_maxy - m_miny)*0.5f;
 
    Matrix3D tempMatrix, TMatrix;
-   TMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotZ));
-   tempMatrix.RotateYMatrix(ANGTORAD(m_d.m_rotY));
+   TMatrix.SetRotateZ(ANGTORAD(m_d.m_rotZ));
+   tempMatrix.SetRotateY(ANGTORAD(m_d.m_rotY));
    tempMatrix.Multiply(TMatrix, TMatrix);
-   tempMatrix.RotateXMatrix(ANGTORAD(m_d.m_rotX));
+   tempMatrix.SetRotateX(ANGTORAD(m_d.m_rotX));
    tempMatrix.Multiply(TMatrix, TMatrix);
 
    tempMatrix.SetTranslation(m_d.m_vCenter.x,m_d.m_vCenter.y,height);

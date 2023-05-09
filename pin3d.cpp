@@ -826,13 +826,16 @@ void PinProjection::Setup(const PinTable* table, const ViewPort& viewPort, const
 
    m_matWorld.SetIdentity();
 
-   m_matView.RotateXMatrix((float)M_PI); // convert Z=out to Z=in (D3D coordinate system)
-   ScaleView(table->m_BG_scalex[table->m_BG_current_set], table->m_BG_scaley[table->m_BG_current_set], 1.0f);
+   m_matView.SetRotateX((float)M_PI); // convert Z=out to Z=in (D3D coordinate system)
+   
+   // FIXME move scaling to the projection matrix. View matrix must stay orthonormal
+   m_matView.Scale(table->m_BG_scalex[table->m_BG_current_set], table->m_BG_scaley[table->m_BG_current_set], 1.0f);
 
 #ifdef ENABLE_VR
    // Full scene scaling is only used in VR (and VR preview for debugging) to adapt to HMD scale
    if (stereo3D == STEREO_VR)
-      ScaleView(scene_scale, scene_scale, scene_scale);
+      // FIXME move scaling to the projection matrix. View matrix must stay orthonormal
+      m_matView.Scale(scene_scale, scene_scale, scene_scale);
 #endif
 
    //!! FSS: added 500.0f to next line on camera y
@@ -842,24 +845,25 @@ void PinProjection::Setup(const PinTable* table, const ViewPort& viewPort, const
 
    if (layoutMode == CLM_RELATIVE)
    {
-      TranslateView(table->m_BG_xlatex[table->m_BG_current_set] - m_vertexcamera.x + camx,
+      m_matView.Translate(table->m_BG_xlatex[table->m_BG_current_set] - m_vertexcamera.x + camx,
          table->m_BG_xlatey[table->m_BG_current_set] - m_vertexcamera.y + camy, -m_vertexcamera.z + camz);
       if (cameraMode && (table->m_BG_current_set == BG_DESKTOP || table->m_BG_current_set == BG_FSS))
       {
-         RotateView(inc, 0, rotation);
+         m_matView.RotateX(inc);
+         m_matView.RotateZ(rotation);
       }
       else
       {
-         RotateView(0, 0, rotation);
-         RotateView(inc, 0, 0);
+         m_matView.RotateZ(rotation);
+         m_matView.RotateX(inc);
       }
    }
    else if (layoutMode == CLM_ABSOLUTE)
    {
       // Rotate view first (to keep player position constant and independent of rotation)
-      RotateView(inc, 0, 0);
+      m_matView.RotateX(inc);
       // Move it according to player position
-      TranslateView(-table->m_BG_xlatex[table->m_BG_current_set] + cam.x - 0.5f * table->m_right,
+      m_matView.Translate(-table->m_BG_xlatex[table->m_BG_current_set] + cam.x - 0.5f * table->m_right,
          -table->m_BG_xlatey[table->m_BG_current_set] + cam.y - table->m_bottom,
          -table->m_BG_xlatez[table->m_BG_current_set] + cam.z);
    }
@@ -881,13 +885,12 @@ void PinProjection::Setup(const PinTable* table, const ViewPort& viewPort, const
       const float xofs = ofs * sinf(rotation);
       const float yofs = ofs * cosf(rotation);
       proj.SetPerspectiveOffCenterLH(-xmax + xofs, xmax + xofs, -ymax + yofs, ymax + yofs, m_rznear, m_rzfar);
-      Matrix3D rot;
-      rot.RotateZMatrix(-rotation);
-      proj.Multiply(rot, proj);
+      proj.RotateZ(-rotation);
    }
    memcpy(m_matProj[0].m, proj.m, sizeof(float) * 4 * 4);
 
 #ifdef ENABLE_SDL
+   // FIXME remove when scene scaling will be part of projection matrix instead of view matrix
    if (stereo3D == STEREO_VR)
    {
       // Use the same projection for VR debug since the anaglyph stereo computation would fail due to scene scaling
@@ -909,7 +912,7 @@ void PinProjection::Setup(const PinTable* table, const ViewPort& viewPort, const
       if (layoutMode == CLM_RELATIVE)
       {
          Matrix3D rot;
-         rot.RotateZMatrix(-rotation);
+         rot.SetRotateZ(-rotation);
          rot.TransformVec3(right);
       }
       // Default is to look at the ball (playfield level = 0 + ball radius = 50)
@@ -937,97 +940,8 @@ void PinProjection::Setup(const PinTable* table, const ViewPort& viewPort, const
    if (layoutMode == CLM_RELATIVE)
    {
       // Apply layback to view (shear the view backward)
-      MultiplyView(ComputeLaybackTransform(table->m_BG_layback[table->m_BG_current_set]));
+      m_matView.Multiply(ComputeLaybackTransform(table->m_BG_layback[table->m_BG_current_set]), m_matView);
    }
-}
-
-void PinProjection::RotateView(float x, float y, float z)
-{
-   Matrix3D matRotateX, matRotateY, matRotateZ;
-
-   matRotateX.RotateXMatrix(x);
-   m_matView.Multiply(matRotateX, m_matView);
-   matRotateY.RotateYMatrix(y);
-   m_matView.Multiply(matRotateY, m_matView);
-   matRotateZ.RotateZMatrix(z);
-   m_matView.Multiply(matRotateZ, m_matView);        // matView = rotZ * rotY * rotX * origMatView
-}
-
-void PinProjection::TranslateView(const float x, const float y, const float z)
-{
-   Matrix3D matTrans;
-   matTrans.SetTranslation(x, y, z);
-   m_matView.Multiply(matTrans, m_matView);
-}
-
-void PinProjection::ScaleView(const float x, const float y, const float z)
-{
-   m_matView.Scale(x, y, z);
-}
-
-void PinProjection::MultiplyView(const Matrix3D& mat)
-{
-   m_matView.Multiply(mat, m_matView);
-}
-
-void PinProjection::FitCameraToVerticesFS(const vector<Vertex3Ds>& pvvertex3D, float aspect, float rotation, float inclination, float FOV, float xlatez, float layback)
-{
-   // Determine camera distance
-   const float rrotsin = sinf(rotation);
-   const float rrotcos = cosf(rotation);
-   const float rincsin = sinf(inclination);
-   const float rinccos = cosf(inclination);
-
-   const float slopey = tanf(0.5f*ANGTORAD(FOV)); // *0.5 because slope is half of FOV - FOV includes top and bottom
-
-   // Field of view along the axis = atan(tan(yFOV)*width/height)
-   // So the slope of x simply equals slopey*width/height
-
-   const float slopex = slopey*aspect;
-
-   float maxyintercept = -FLT_MAX;
-   float minyintercept = FLT_MAX;
-   float maxxintercept = -FLT_MAX;
-   float minxintercept = FLT_MAX;
-
-   //const Matrix3D laybackTrans = ComputeLaybackTransform(layback);
-
-   for (size_t i = 0; i < pvvertex3D.size(); ++i)
-   {
-      Vertex3Ds v = pvvertex3D[i];
-      float temp;
-
-      //v = laybackTrans.MultiplyVector(v);
-
-      // Rotate vertex about x axis according to incoming inclination
-      temp = v.y;
-      v.y = rinccos*temp - rincsin*v.z;
-      v.z = rincsin*temp + rinccos*v.z;
-
-      // Rotate vertex about z axis according to incoming rotation
-      temp = v.x;
-      v.x = rrotcos*temp - rrotsin*v.y;
-      v.y = rrotsin*temp + rrotcos*v.y;
-
-      // Extend slope lines from point to find camera intersection
-      maxyintercept = max(maxyintercept, v.y + slopey*v.z);
-      minyintercept = min(minyintercept, v.y - slopey*v.z);
-      maxxintercept = max(maxxintercept, v.x + slopex*v.z);
-      minxintercept = min(minxintercept, v.x - slopex*v.z);
-   }
-
-   slintf("maxy: %f\n", maxyintercept);
-   slintf("miny: %f\n", minyintercept);
-   slintf("maxx: %f\n", maxxintercept);
-   slintf("minx: %f\n", minxintercept);
-
-   // Find camera center in xy plane
-
-   const float ydist = (maxyintercept - minyintercept) / (slopey*2.0f);
-   const float xdist = (maxxintercept - minxintercept) / (slopex*2.0f);
-   m_vertexcamera.z = (float)(max(ydist, xdist)) + xlatez;
-   m_vertexcamera.y = (float)((maxyintercept + minyintercept) * 0.5f);
-   m_vertexcamera.x = (float)((maxxintercept + minxintercept) * 0.5f);
 }
 
 void PinProjection::FitCameraToVertices(const vector<Vertex3Ds>& pvvertex3D, float aspect, float rotation, float inclination, float FOV, float xlatez, float layback)

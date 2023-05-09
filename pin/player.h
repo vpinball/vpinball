@@ -717,7 +717,7 @@ private:
 public:
    void StopPlayer();
 
-   void UpdateBasicShaderMatrix(const Matrix3D& objectTrafo = Matrix3D(1.0f));
+   void UpdateBasicShaderMatrix(const Matrix3D& objectTrafo = Matrix3D::MatrixIdentity());
    void UpdateBackdropSettings(const bool up);
    void UpdateBallShaderMatrix();
 

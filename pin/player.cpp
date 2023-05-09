@@ -1110,7 +1110,7 @@ void Player::UpdateBallShaderMatrix()
       Matrix3D matWorldViewInverse;
       Matrix3D matWorldViewProj[2];
    } matrices;
-   m_pin3d.GetMVP().SetModel(Matrix3D(1.0f));
+   m_pin3d.GetMVP().SetModel(Matrix3D::MatrixIdentity());
    matrices.matView = m_pin3d.GetMVP().GetView();
    matrices.matWorldView = m_pin3d.GetMVP().GetModelView();
    matrices.matWorldViewInverse = m_pin3d.GetMVP().GetModelViewInverse();
