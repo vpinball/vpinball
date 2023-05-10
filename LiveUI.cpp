@@ -907,7 +907,7 @@ void LiveUI::UpdateCameraModeUI()
 
    bool isStereo = m_player->m_stereo3Denabled && m_player->m_stereo3D != STEREO_OFF && m_player->m_stereo3D != STEREO_VR;
    bool isAnaglyph = isStereo && m_player->m_stereo3D >= STEREO_ANAGLYPH_RC && m_player->m_stereo3D <= STEREO_ANAGLYPH_AB;
-   for (int i = 0; i < (isAnaglyph ? 17 : (isStereo ? 15 : 14)); i++)
+   for (int i = 0; i < (isAnaglyph ? 16 : (isStereo ? 14 : 13)); i++)
    {
       if (m_player->m_cameraMode && (i == m_player->m_backdropSettingActive || (m_player->m_backdropSettingActive == 3 && (i == 4 || i == 5))))
          ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
@@ -917,16 +917,15 @@ void LiveUI::UpdateCameraModeUI()
       case 1: ImGui::Text("Field Of View: %.1f", table->m_BG_FOV[table->m_BG_current_set]); break;
       case 2: ImGui::Text(table->m_cameraLayoutMode == CLM_RELATIVE ? "Layback: %.1f" : "Table View Offset: %.1f", table->m_BG_layback[table->m_BG_current_set]); ImGui::NewLine(); break;
       case 4: ImGui::Text("X Scale: %.3f", table->m_BG_scalex[table->m_BG_current_set]); break;
-      case 5: ImGui::Text("Y Scale: %.3f", table->m_BG_scaley[table->m_BG_current_set]); break;
-      case 6: ImGui::Text("Z Scale: %.3f", table->m_BG_scalez[table->m_BG_current_set]); ImGui::NewLine(); break;
-      case 7: ImGui::Text(table->m_cameraLayoutMode == CLM_RELATIVE ? "X Offset: %.0f cm" : "X Position: %.0f cm", VPUTOCM(table->m_BG_xlatex[table->m_BG_current_set])); break;
-      case 8: ImGui::Text(table->m_cameraLayoutMode == CLM_RELATIVE ? "Y Offset: %.0f cm" : "Y Position: %.0f cm", VPUTOCM(table->m_BG_xlatey[table->m_BG_current_set])); break;
-      case 9: ImGui::Text(table->m_cameraLayoutMode == CLM_RELATIVE ? "Z Offset: %.0f cm" : "Z Position: %.0f cm", VPUTOCM(table->m_BG_xlatez[table->m_BG_current_set])); ImGui::NewLine(); break;
-      case 10: ImGui::Text("Light Emission Scale: %.0f", table->m_lightEmissionScale); break;
-      case 11: ImGui::Text("Light Range: %.0f cm", VPUTOCM(table->m_lightRange)); break;
-      case 12: ImGui::Text("Light Height: %.0f cm", VPUTOCM(table->m_lightHeight)); ImGui::NewLine(); break;
-      case 13: ImGui::Text("Environment Emission: %.3f", table->m_envEmissionScale); ImGui::NewLine(); break;
-      case 14:
+      case 5: ImGui::Text("Y Scale: %.3f", table->m_BG_scaley[table->m_BG_current_set]); ImGui::NewLine(); break;
+      case 6: ImGui::Text(table->m_cameraLayoutMode == CLM_RELATIVE ? "X Offset: %.0f cm" : "X Position: %.0f cm", VPUTOCM(table->m_BG_xlatex[table->m_BG_current_set])); break;
+      case 7: ImGui::Text(table->m_cameraLayoutMode == CLM_RELATIVE ? "Y Offset: %.0f cm" : "Y Position: %.0f cm", VPUTOCM(table->m_BG_xlatey[table->m_BG_current_set])); break;
+      case 8: ImGui::Text(table->m_cameraLayoutMode == CLM_RELATIVE ? "Z Offset: %.0f cm" : "Z Position: %.0f cm", VPUTOCM(table->m_BG_xlatez[table->m_BG_current_set])); ImGui::NewLine(); break;
+      case 9: ImGui::Text("Light Emission Scale: %.0f", table->m_lightEmissionScale); break;
+      case 10: ImGui::Text("Light Range: %.0f cm", VPUTOCM(table->m_lightRange)); break;
+      case 11: ImGui::Text("Light Height: %.0f cm", VPUTOCM(table->m_lightHeight)); ImGui::NewLine(); break;
+      case 12: ImGui::Text("Environment Emission: %.3f", table->m_envEmissionScale); ImGui::NewLine(); break;
+      case 13:
       {
          #ifdef ENABLE_SDL
          float stereo3DEyeSep = LoadValueFloatWithDefault(regKey[RegName::Player], "Stereo3DEyeSeparation"s, 63.0f);
@@ -937,8 +936,8 @@ void LiveUI::UpdateCameraModeUI()
          #endif
          break;
       }
-      case 15: ImGui::Text("Anaglyph desaturation: %.2f", m_player->m_global3DDesaturation); break;
-      case 16: ImGui::Text("Anaglyph contrast: %.2f", m_player->m_global3DContrast); break;
+      case 14: ImGui::Text("Anaglyph desaturation: %.2f", m_player->m_global3DDesaturation); break;
+      case 15: ImGui::Text("Anaglyph contrast: %.2f", m_player->m_global3DContrast); break;
       }
       if (m_player->m_cameraMode && (i == m_player->m_backdropSettingActive || (m_player->m_backdropSettingActive == 3 && (i == 4 || i == 5))))
          ImGui::PopStyleColor();
