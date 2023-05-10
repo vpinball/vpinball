@@ -648,22 +648,6 @@ void Pin3D::InitLights()
    m_pd3dPrimaryDevice->basicShader->SetVector(SHADER_cAmbient_LightRange, &amb_lr);
 }
 
-// currently unused
-//void LookAt( Matrix3D &mat, D3DVECTOR eye, D3DVECTOR target, D3DVECTOR up )
-//{
-//   D3DVECTOR zaxis = Normalize(eye - target);
-//   D3DVECTOR xaxis = Normalize(CrossProduct(up,zaxis));
-//   D3DVECTOR yaxis = CrossProduct(zaxis,xaxis);
-//   mat._11 = xaxis.x; mat._12 = yaxis.x; mat._13 = zaxis.x; mat._14=0.0f;
-//   mat._21 = xaxis.y; mat._22 = yaxis.y; mat._23 = zaxis.y; mat._24=0.0f;
-//   mat._31 = xaxis.z; mat._32 = yaxis.z; mat._33 = zaxis.z; mat._34=0.0f;
-//   mat._41 = 0.0f;    mat._42 = 0.0f;    mat._43 = zaxis.x; mat._44=0.0f;
-//   Matrix3D trans;
-//   trans.SetIdentity();
-//   trans._41 = eye.x; trans._42 = eye.y; trans._43=eye.z;
-//   mat.Multiply( trans, mat );
-//}
-
 Matrix3D ComputeLaybackTransform(const float layback)
 {
    // skew the coordinate system from kartesian to non kartesian.
@@ -680,6 +664,7 @@ Matrix3D ComputeLaybackTransform(const float layback)
 // - Relative layout mode which is the default that has been there since the beginning
 //   This mode computes the camera position by computing an approximate bounding box of the table, then offseting.
 //   Flashers and primitive are ignored in the calculation of boundaries to center the table in the view
+//   The view resulting from this mode is not orthonormal and (slightly) breaks stereo, lighting and reflections
 //   
 // - Absolute layout mode which was added in 10.8
 //   This mode computes the camera position by using an absolute coordinate system with origin at the bottom center of the table.
