@@ -196,14 +196,6 @@ public:
 #define ANGTORAD(x) ((x) *(float)(M_PI/180.0))
 #define RADTOANG(x) ((x) *(float)(180.0/M_PI))
 
-// Conversions to/from VP units (50 VPU = 1.0625 inches which is 1"1/16, the default size of a ball, 1 inch is 2.54cm)
-#define MMTOVPU(x) (((x) / 25.4f) * (float)(50. / 1.0625))
-#define CMTOVPU(x) (((x) / 2.54f) * (float)(50. / 1.0625))
-#define VPUTOMM(x) (25.4f * (x) / (float)(50. / 1.0625))
-#define VPUTOCM(x) (2.54f * (x) / (float)(50. / 1.0625))
-#define INCHESTOVPU(x) ((x) * (float)(50. / 1.0625))
-#define VPUTOINCHES(x) ((x) / (float)(50. / 1.0625))
-
 #define VBTOF(x) ((x) ? fTrue : fFalse)
 #define VBTOb(x) (!!(x))
 #define FTOVB(x) ((x) ? (VARIANT_BOOL)-1 : (VARIANT_BOOL)0)
@@ -440,24 +432,37 @@ inline void RemoveSpaces(char* const source)
 
 //
 
-constexpr __forceinline float vpUnitsToInches(const float value)
-{
-   return value * 0.0212765f;
+// Conversions to/from VP units (50 VPU = 1.0625 inches which is 1"1/16, the default size of a ball, 1 inch is 2.54cm)
+// These value are very slightly off from original values which used a VPU to MM of 0.540425 instead of 0.53975 (result of the following formula)
+// So it used to be 0.125% larger which is not noticeable but makes it difficult to have perfect matches when playing between apps
+#define MMTOVPU(x) (((x) / 25.4f) * (float)(50. / 1.0625))
+#define CMTOVPU(x) (((x) / 2.54f) * (float)(50. / 1.0625))
+#define VPUTOMM(x) (25.4f * (x) / (float)(50. / 1.0625))
+#define VPUTOCM(x) (2.54f * (x) / (float)(50. / 1.0625))
+#define INCHESTOVPU(x) ((x) * (float)(50. / 1.0625))
+#define VPUTOINCHES(x) ((x) / (float)(50. / 1.0625))
+
+constexpr __forceinline float vpUnitsToInches(const float value) {
+   return VPUTOINCHES(value);
+   // return value * 0.0212765f;
 }
 
 constexpr __forceinline float inchesToVPUnits(const float value)
 {
-   return value * (float)(1.0/0.0212765);
+   return INCHESTOVPU(value);
+   //return value * (float)(1.0 / 0.0212765);
 }
 
 constexpr __forceinline float vpUnitsToMillimeters(const float value)
 {
-   return value * 0.540425f;
+   return VPUTOMM(value);
+   //return value * 0.540425f;
 }
 
 constexpr __forceinline float millimetersToVPUnits(const float value)
 {
-   return value * (float)(1.0/0.540425);
+   return MMTOVPU(value);
+   // return value * (float)(1.0 / 0.540425);
 }
 
 float sz2f(const string& sz);
