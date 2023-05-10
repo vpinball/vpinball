@@ -2127,7 +2127,7 @@ void RenderDevice::updateTableMatrix()
    roty.SetRotateY(ANGTORAD(180.f - m_orientation));
 
    // Locate front left corner of the table in the room -x is to the right, -y is up and -z is back - all units in meters
-   float transScale = 1.0f / (100.0f * m_scale);
+   float transScale = 100.0f * m_scale;
    trans.SetTranslation(m_tablex / transScale, m_tablez / transScale, -m_tabley / transScale);
    
    m_tableWorld = rotx * coords * roty * trans;
