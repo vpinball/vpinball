@@ -101,7 +101,8 @@ FEATURES:
 - add a new camera layout mode which works better for anaglyph stereo (as well as other uses) and allows:
   - to setup the player position in real word units, measuring from the bottom center of the playfield in centimeters. This should allow to have a single position corresponding to your size and play position for all your tables.
   - to setup the camera like a 'real' camera: there is no more layback but a view offset, the other properties being simply the inclination and the field of view
-  - for camera mode, adjust the user interface to show these informations and allow to easily reset to a default position by pressing the credit key.
+  - for camera mode, adjust the user interface to show these informations and allow to easily reset to a default position by pressing the plunger key.
+- change camera mode buttons to match the ones when starting VPX with -povedit (Start = Export POV, Credit = Reset/Quit, Plunger = Defaults)
 
 FIXES:
 
