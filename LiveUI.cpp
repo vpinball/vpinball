@@ -9,6 +9,7 @@
 #include "inc/fonts/ForkAwesome.h"
 
 #include "imgui/imgui.h"
+#include "imgui/imgui_internal.h" // Needed for FindRenderedTextEnd in HelpSplash (should be adapted when this function will refactored in ImGui)
 #ifdef ENABLE_SDL
 #include "imgui/imgui_impl_opengl3.h"
 #else
@@ -487,16 +488,61 @@ static void HelpTextCentered(const std::string& text)
    ImGui::PopTextWrapPos();
 }
 
-static void HelpSplash(const std::string& text, int rotation)
+static void HelpSplash(const std::string &text, int rotation)
 {
    ImVec2 win_size = ImGui::GetIO().DisplaySize;
-   const ImVec2 text_size = ImGui::CalcTextSize(text.c_str());
-   constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
+
+   vector<string> lines;
+   ImVec2 text_size(0, 0);
+
+   float padding = 60;
+   float maxWidth = win_size.x - padding;
+   ImFont *font = ImGui::GetFont();
+
+   const char *textEnd = text.c_str();
+   while (*textEnd)
+   {
+      const char *nextLineTextEnd = ImGui::FindRenderedTextEnd(textEnd, nullptr);
+      ImVec2 lineSize = font->CalcTextSizeA(font->FontSize, FLT_MAX, 0.0f, textEnd, nextLineTextEnd);
+      if (lineSize.x > maxWidth)
+      {
+         const char *wrapPoint = font->CalcWordWrapPositionA(font->Scale, textEnd, nextLineTextEnd, maxWidth);
+         if (wrapPoint == textEnd)
+            wrapPoint++;
+         nextLineTextEnd = wrapPoint;
+         lineSize = font->CalcTextSizeA(font->FontSize, FLT_MAX, 0.0f, textEnd, wrapPoint);
+      }
+
+      string line(textEnd, nextLineTextEnd);
+      lines.push_back(line);
+
+      if (lineSize.x > text_size.x)
+         text_size.x = lineSize.x;
+
+      text_size.y += ImGui::GetTextLineHeightWithSpacing();
+
+      textEnd = nextLineTextEnd;
+
+      if (*textEnd == '\n' || *textEnd == ' ')
+         textEnd++;
+   }
+
+   text_size.x += (padding / 2);
+   text_size.y += (padding / 2);
+
+   constexpr ImGuiWindowFlags window_flags
+      = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
    ImGui::SetNextWindowBgAlpha(0.35f);
-   ImGui::SetNextWindowPos(ImVec2((win_size.x - text_size.x - 10) / 2, (win_size.y - text_size.y - 10) / 2));
-   ImGui::SetNextWindowSize(ImVec2(text_size.x + 20, text_size.y + 20));
+   ImGui::SetNextWindowPos(ImVec2((win_size.x - text_size.x) / 2, (win_size.y - text_size.y) / 2));
+   ImGui::SetNextWindowSize(ImVec2(text_size.x, text_size.y));
    ImGui::Begin("ToolTip", nullptr, window_flags);
-   ImGui::Text(text.c_str());
+   ImGui::SetCursorPosY(padding / 4);
+   for (string line : lines)
+   {
+      ImVec2 lineSize = font->CalcTextSizeA(font->FontSize, FLT_MAX, 0.0f, line.c_str());
+      ImGui::SetCursorPosX(((text_size.x - lineSize.x) / 2));
+      ImGui::Text(line.c_str());
+   }
    ImGui::End();
 }
 
@@ -724,28 +770,32 @@ void LiveUI::Update()
    ImGui_ImplDX9_NewFrame();
 #endif
    ImGui_ImplWin32_NewFrame();
-   if (m_ShowUI || m_ShowSplashModal)
+
+   ImGui::NewFrame();
+   bool isInteractiveUI = m_ShowUI || m_ShowSplashModal || ImGui::IsPopupOpen(ID_BAM_SETTINGS);
+   if (isInteractiveUI)
       m_rotate = 0;
    else
    {
-      // If we are showing overlays, apply main camera rotation
+      // If we are only showing overlays, apply main camera rotation
       m_rotate = ((int)(g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set] / 90.0f)) & 3;
       if (m_rotate == 1 || m_rotate == 3)
       {
+         ImGui::EndFrame();
          ImGuiIO &io = ImGui::GetIO();
          float tmp = io.DisplaySize.x;
          io.DisplaySize.x = io.DisplaySize.y;
          io.DisplaySize.y = tmp;
+         ImGui::NewFrame();
       }
    }
-   ImGui::NewFrame();
    ImGuizmo::SetOrthographic(m_orthoCam);
    ImGuizmo::BeginFrame();
    ImGuiIO &io = ImGui::GetIO();
    ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
    ImGui::PushFont(m_baseFont);
 
-   if (m_ShowUI || m_ShowSplashModal || ImGui::IsPopupOpen(ID_BAM_SETTINGS))
+   if (isInteractiveUI)
    {
       // Main UI
       UpdateMainUI();
