@@ -643,7 +643,7 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    */
 
 #ifdef ENABLE_VR
-   m_scale = 1.0f;
+   m_scale = 1.0f; // Scale factor from scene (in VP units) to VR view (in meters)
    if (m_stereo3D == STEREO_VR)
    {
       if (LoadValueBoolWithDefault(regKey[RegName::PlayerVR], "scaleToFixedWidth"s, false))
@@ -653,9 +653,9 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
          m_scale = LoadValueFloatWithDefault(regKey[RegName::PlayerVR], "scaleAbsolute"s, 55.0f) * 0.01f / width;
       }
       else
-         m_scale = 0.000540425f * LoadValueFloatWithDefault(regKey[RegName::PlayerVR], "scaleRelative"s, 1.0f);
+         m_scale = VPUTOCM(0.01f) * LoadValueFloatWithDefault(regKey[RegName::PlayerVR], "scaleRelative"s, 1.0f);
       if (m_scale <= 0.000001f)
-         m_scale = 0.000540425f; // Scale factor for VPUnits to Meters
+         m_scale = VPUTOCM(0.01f); // Scale factor for VPUnits to Meters
       // Initialize VR, this will also override the render buffer size (m_width, m_height) to account for HMD render size and render the 2 eyes simultaneously
       InitVR();
    }
