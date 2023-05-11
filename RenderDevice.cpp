@@ -227,11 +227,11 @@ void APIENTRY GLDebugMessageCallback(GLenum source, GLenum type, GLuint id,
    if (severity != GL_DEBUG_SEVERITY_NOTIFICATION)
    {
       // FIXME this will crash if the drivers performs the call on the wrong thread (nvogl does...)
-      assert(false);
+      /* assert(false);
       PLOGE << "OpenGL Error #" << id << ": " << _type << " of " << _severity << "severity, raised from " << _source << ": " << msg;
       fprintf(stderr, "%d: %s of %s severity, raised from %s: %s\n", id, _type, _severity, _source, msg);
       if (type == GL_DEBUG_TYPE_ERROR || type == GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR || severity == GL_DEBUG_SEVERITY_HIGH)
-         ShowError(msg);
+         ShowError(msg);*/
    }
 }
 #endif
@@ -1962,29 +1962,31 @@ void RenderDevice::InitVR() {
    const float nearPlane = LoadValueFloatWithDefault(regKey[RegName::PlayerVR], "nearPlane"s, 5.0f) / 100.0f;
    const float farPlane = 5000.0f; //LoadValueFloatWithDefault(regKey[RegName::PlayerVR], "farPlane"s, 5000.0f) / 100.0f;
 
-   vr::HmdMatrix34_t left_eye_pos, right_eye_pos;
-   vr::HmdMatrix44_t left_eye_proj, right_eye_proj;
+   // Move from VP units to meters, and also apply user scene scaling if any
+   Matrix3D sceneScale = Matrix3D::MatrixScale(m_scale);
+
+   // Convert from VPX coords to VR (270deg rotation around X axis, and flip x axis)
+   Matrix3D coords;
+   coords.SetIdentity();
+   coords._11 = -1.f; coords._12 = 0.f; coords._13 =  0.f;
+   coords._21 =  0.f; coords._22 = 0.f; coords._23 = -1.f;
+   coords._31 =  0.f; coords._32 = 1.f; coords._33 =  0.f;
+
    if (m_pHMD == nullptr)
    {
-      // Default debug output
+      // Basic debug setup (All OpenVR matrices are left handed, using meter units)
+      // For debugging without a headset, the null driver of OpenVR should be enabled. To do so:
+      // - Set "enable": true in default.vrsettings from C:\Program Files (x86)\Steam\steamapps\common\SteamVR\drivers\null\resources\settings
+      // - Add "activateMultipleDrivers" : true, "forcedDriver" : "null", to "steamvr" section of steamvr.vrsettings from C :\Program Files(x86)\Steam\config
       uint32_t eye_width = 1080, eye_height = 1200; // Oculus Rift resolution
       m_width = eye_width * 2;
       m_height = eye_height;
-      Matrix3D left, right;
-      left.SetIdentity(); // TODO find sensible value and use them instead of the desktop projection
-      right.SetIdentity();
-      for (int i = 0; i < 3; i++)
-         for (int j = 0; j < 4; j++)
-         {
-            left_eye_pos.m[i][j] = left.m[j][i];
-            right_eye_pos.m[i][j] = right.m[j][i];
-         }
-      for (int i = 0; i < 4; i++)
-         for (int j = 0; j < 4; j++)
-         {
-            left_eye_proj.m[i][j] = left.m[j][i];
-            right_eye_proj.m[i][j] = right.m[j][i];
-         }
+      for (int i = 0; i < 2; i++)
+      {
+         Matrix3D proj;
+         proj.SetPerspectiveFovLH(90.f, 1.f, 0.01f, 50000000.f);
+         m_vrMatProj[i] = coords * sceneScale * proj;
+      }
    }
    else
    {
@@ -1992,48 +1994,43 @@ void RenderDevice::InitVR() {
       m_pHMD->GetRecommendedRenderTargetSize(&eye_width, &eye_height);
       m_width = eye_width * 2;
       m_height = eye_height;
-      left_eye_pos = m_pHMD->GetEyeToHeadTransform(vr::Eye_Left);
-      right_eye_pos = m_pHMD->GetEyeToHeadTransform(vr::Eye_Right);
-      left_eye_proj = m_pHMD->GetProjectionMatrix(vr::Eye_Left, nearPlane, farPlane); //5cm to 50m should be a reasonable range
-      right_eye_proj = m_pHMD->GetProjectionMatrix(vr::Eye_Right, nearPlane, farPlane); //5cm to 50m should be a reasonable range
+      vr::HmdMatrix34_t left_eye_pos = m_pHMD->GetEyeToHeadTransform(vr::Eye_Left);
+      vr::HmdMatrix34_t right_eye_pos = m_pHMD->GetEyeToHeadTransform(vr::Eye_Right);
+      vr::HmdMatrix44_t left_eye_proj = m_pHMD->GetProjectionMatrix(vr::Eye_Left, nearPlane, farPlane); //5cm to 50m should be a reasonable range
+      vr::HmdMatrix44_t right_eye_proj = m_pHMD->GetProjectionMatrix(vr::Eye_Right, nearPlane, farPlane); //5cm to 50m should be a reasonable range
+
+      Matrix3D matEye2Head, matProjection;
+
+      //Calculate left EyeProjection Matrix relative to HMD position
+      matEye2Head.SetIdentity();
+      for (int i = 0; i < 3; i++)
+         for (int j = 0;j < 4;j++)
+            matEye2Head.m[j][i] = left_eye_pos.m[i][j];
+      matEye2Head.Invert();
+
+      left_eye_proj.m[2][2] = -1.0f;
+      left_eye_proj.m[2][3] = -nearPlane;
+      for (int i = 0;i < 4;i++)
+         for (int j = 0;j < 4;j++)
+            matProjection.m[j][i] = left_eye_proj.m[i][j];
+
+      m_vrMatProj[0] = coords * sceneScale * matEye2Head * matProjection;
+
+      //Calculate right EyeProjection Matrix relative to HMD position
+      matEye2Head.SetIdentity();
+      for (int i = 0; i < 3; i++)
+         for (int j = 0;j < 4;j++)
+            matEye2Head.m[j][i] = right_eye_pos.m[i][j];
+      matEye2Head.Invert();
+
+      right_eye_proj.m[2][2] = -1.0f;
+      right_eye_proj.m[2][3] = -nearPlane;
+      for (int i = 0;i < 4;i++)
+         for (int j = 0;j < 4;j++)
+            matProjection.m[j][i] = right_eye_proj.m[i][j];
+
+      m_vrMatProj[1] = coords * sceneScale * matEye2Head * matProjection;
    }
-
-   // Move from VP units to meters, and also apply user scene scaling if any
-   Matrix3D sceneScale = Matrix3D::MatrixScale(m_scale);
-
-   //Calculate left EyeProjection Matrix relative to HMD position
-   Matrix3D matEye2Head;
-   for (int i = 0;i < 3;i++)
-      for (int j = 0;j < 4;j++)
-         matEye2Head.m[j][i] = left_eye_pos.m[i][j];
-   for (int j = 0;j < 4;j++)
-      matEye2Head.m[j][3] = (j == 3) ? 1.0f : 0.0f;
-   matEye2Head.Invert();
-
-   left_eye_proj.m[2][2] = -1.0f;
-   left_eye_proj.m[2][3] = -nearPlane;
-   Matrix3D matProjection;
-   for (int i = 0;i < 4;i++)
-      for (int j = 0;j < 4;j++)
-         matProjection.m[j][i] = left_eye_proj.m[i][j];
-
-   m_vrMatProj[0] = sceneScale * matEye2Head * matProjection;
-
-   //Calculate right EyeProjection Matrix relative to HMD position
-   for (int i = 0;i < 3;i++)
-      for (int j = 0;j < 4;j++)
-         matEye2Head.m[j][i] = right_eye_pos.m[i][j];
-   for (int j = 0;j < 4;j++)
-      matEye2Head.m[j][3] = (j == 3) ? 1.0f : 0.0f;
-   matEye2Head.Invert();
-
-   right_eye_proj.m[2][2] = -1.0f;
-   right_eye_proj.m[2][3] = -nearPlane;
-   for (int i = 0;i < 4;i++)
-      for (int j = 0;j < 4;j++)
-         matProjection.m[j][i] = right_eye_proj.m[i][j];
-
-   m_vrMatProj[1] = sceneScale * matEye2Head * matProjection;
 
    if (vr::k_unMaxTrackedDeviceCount > 0) {
       m_rTrackedDevicePose = new vr::TrackedDevicePose_t[vr::k_unMaxTrackedDeviceCount];
@@ -2054,29 +2051,50 @@ void RenderDevice::InitVR() {
 
 void RenderDevice::UpdateVRPosition(ModelViewProj& mvp)
 {
-   if (!m_pHMD)
-      return;
-
    mvp.SetProj(0, m_vrMatProj[0]);
    mvp.SetProj(1, m_vrMatProj[1]);
 
-   vr::VRCompositor()->WaitGetPoses(m_rTrackedDevicePose, vr::k_unMaxTrackedDeviceCount, nullptr, 0);
-   for (unsigned int device = 0; device < vr::k_unMaxTrackedDeviceCount; device++)
+   Matrix3D matView;
+   matView.SetIdentity();
+
+   if (IsVRReady())
    {
-      if ((m_rTrackedDevicePose[device].bPoseIsValid) && (m_pHMD->GetTrackedDeviceClass(device) == vr::TrackedDeviceClass_HMD))
+      vr::VRCompositor()->WaitGetPoses(m_rTrackedDevicePose, vr::k_unMaxTrackedDeviceCount, nullptr, 0);
+      for (unsigned int device = 0; device < vr::k_unMaxTrackedDeviceCount; device++)
       {
-         m_hmdPosition = m_rTrackedDevicePose[device];
-         Matrix3D matView;
-         matView.SetIdentity();
-         for (int i = 0; i < 3; i++)
-            for (int j = 0; j < 4; j++)
-               matView.m[j][i] = m_hmdPosition.mDeviceToAbsoluteTracking.m[i][j];
-         matView.Invert();
-         matView = m_tableWorld * matView;
-         mvp.SetView(matView);
-         break;
+         if ((m_rTrackedDevicePose[device].bPoseIsValid) && (m_pHMD->GetTrackedDeviceClass(device) == vr::TrackedDeviceClass_HMD))
+         {
+            m_hmdPosition = m_rTrackedDevicePose[device];
+
+            // Convert to 4x4 inverse matrix (world to head)
+            for (int i = 0; i < 3; i++)
+               for (int j = 0; j < 4; j++)
+                  matView.m[j][i] = m_hmdPosition.mDeviceToAbsoluteTracking.m[i][j];
+            matView.Invert();
+
+            // Scale translation part
+            for (int i = 0; i < 3; i++)
+               matView.m[3][i] /= m_scale;
+
+            // Convert from VPX coords to VR and back (270deg rotation around X axis, and flip x axis)
+            Matrix3D coords, revCoords;
+            coords.SetIdentity();
+            coords._11 = -1.f; coords._12 = 0.f; coords._13 =  0.f;
+            coords._21 =  0.f; coords._22 = 0.f; coords._23 = -1.f;
+            coords._31 =  0.f; coords._32 = 1.f; coords._33 =  0.f;
+            revCoords.SetIdentity();
+            revCoords._11 = -1.f; revCoords._12 =  0.f; revCoords._13 = 0.f;
+            revCoords._21 =  0.f; revCoords._22 =  0.f; revCoords._23 = 1.f;
+            revCoords._31 =  0.f; revCoords._32 = -1.f; revCoords._33 = 0.f;
+            matView = coords * matView * revCoords;
+
+            break;
+         }
       }
    }
+
+   // Apply table world position
+   mvp.SetView(m_tableWorld * matView);
 }
 
 void RenderDevice::tableUp()
@@ -2097,39 +2115,38 @@ void RenderDevice::tableDown()
 
 void RenderDevice::recenterTable()
 {
-   m_orientation = -RADTOANG(atan2(m_hmdPosition.mDeviceToAbsoluteTracking.m[0][2], m_hmdPosition.mDeviceToAbsoluteTracking.m[0][0]));
-   if (m_orientation < 0.0f)
-      m_orientation += 360.0f;
    const float w = m_scale * (g_pplayer->m_ptable->m_right - g_pplayer->m_ptable->m_left) * 0.5f;
    const float h = m_scale * (g_pplayer->m_ptable->m_bottom - g_pplayer->m_ptable->m_top) + 0.2f;
+   float headX = 0.f, headY = 0.f;
+   if (IsVRReady())
+   {
+      m_orientation = -RADTOANG(atan2(m_hmdPosition.mDeviceToAbsoluteTracking.m[0][2], m_hmdPosition.mDeviceToAbsoluteTracking.m[0][0]));
+      if (m_orientation < 0.0f)
+         m_orientation += 360.0f;
+      headX = m_hmdPosition.mDeviceToAbsoluteTracking.m[0][3];
+      headY = -m_hmdPosition.mDeviceToAbsoluteTracking.m[2][3];
+   }
    const float c = cos(ANGTORAD(m_orientation));
    const float s = sin(ANGTORAD(m_orientation));
-   m_tablex = 100.0f * ( m_hmdPosition.mDeviceToAbsoluteTracking.m[0][3] - c * w + s * h);
-   m_tabley = 100.0f * (-m_hmdPosition.mDeviceToAbsoluteTracking.m[2][3] + s * w + c * h);
+   m_tablex = 100.0f * (headX - c * w + s * h);
+   m_tabley = 100.0f * (headY + s * w + c * h);
    updateTableMatrix();
 }
 
 void RenderDevice::updateTableMatrix()
 {
-   Matrix3D rotx, coords, roty, trans, tmp;
+   Matrix3D rotx, rotz, trans, coords;
 
    // Tilt playfield.
    rotx.SetRotateX(ANGTORAD(-m_slope));
 
-   // Convert from VPX scale and coords to VR (rotation and LH/RH)
-   // FIXME keep rotation in view, and move LH/RH to projection
-   coords.SetIdentity();
-   coords._11 = -1.f; coords._12 = 0.f; coords._13 =  0.f;
-   coords._21 =  0.f; coords._22 = 0.f; coords._23 = -1.f;
-   coords._31 =  0.f; coords._32 = 1.f; coords._33 =  0.f;
-
    // Rotate table around VR height axis
-   roty.SetRotateY(ANGTORAD(180.f - m_orientation));
-
+   rotz.SetRotateZ(ANGTORAD(180.f + m_orientation));
+   
    // Locate front left corner of the table in the room -x is to the right, -y is up and -z is back - all units in meters
    float transScale = 100.0f * m_scale;
-   trans.SetTranslation(m_tablex / transScale, m_tablez / transScale, -m_tabley / transScale);
+   trans.SetTranslation(-m_tablex / transScale, m_tabley / transScale, m_tablez / transScale);
    
-   m_tableWorld = rotx * coords * roty * trans;
+   m_tableWorld = rotx * rotz * trans;
 }
 #endif
