@@ -235,7 +235,7 @@ void main()
 		edge*(6.0*1.0/0.4)-(6.0*0.6/0.4) :
 		0.0;
 
-    const float2 uv0 = %PARAM0% ? float2(r.y*-m + 0.5, r.x*-m + 0.5) : float2(r.x*-m + 0.5, r.y*m + 0.5);
+    const float2 uv0 = %PARAM0% ? float2(0.5 + r.y*m, 0.5 - r.x*m) : float2(0.5 - r.x*m, 0.5 - r.y*m);
     float3 ballImageColor = texture(tex_ball_color, uv0).xyz;
 
     const float4 decalColorT = texture(tex_ball_decal, float2(normal_t0x.w, worldPos_t0y.w));
