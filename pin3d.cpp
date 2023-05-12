@@ -885,20 +885,24 @@ void PinProjection::Setup(const PinTable* table, const ViewPort& viewPort, const
          const float halfEyeDist = 0.5f * MMTOVPU(stereo3DMS);
          Matrix3D invView(m_matView);
          invView.Invert();
-         vec3 right = invView.GetOrthoNormalRight();
-         const vec3 up = invView.GetOrthoNormalUp();
-         const vec3 dir = invView.GetOrthoNormalDir();
-         const vec3 pos = invView.GetOrthoNormalPos();
+         // Compute the view orthonormal basis
+         Matrix3D baseView, coords;
+         coords.SetScaling(1.f, -1.f, -1.f);
+         baseView = coords * invView;
+         const vec3 right = baseView.GetOrthoNormalRight();
+         const vec3 up = baseView.GetOrthoNormalUp();
+         const vec3 dir = baseView.GetOrthoNormalDir();
+         const vec3 pos = baseView.GetOrthoNormalPos();
          // Default is to look at the ball (playfield level = 0 + ball radius = 50)
+         float camDistance = (50.f - pos.z) / dir.z;
          // Clamp it to a reasonable range, a normal viewing distance being around 80cm between view focus (table) and viewer (depends a lot on the player size & position)
-         constexpr float minCamDistance = CMTOVPU(80.f - 30.f);
-         constexpr float maxCamDistance = CMTOVPU(80.f + 30.f);
-         float camDistance = clamp((50.f - pos.z) / dir.z, minCamDistance, maxCamDistance);
-         const vec3 at = pos + dir * camDistance;
-         Matrix3D lookat = Matrix3D::MatrixLookAtLH(pos + (-halfEyeDist * right), at, up); // Apply offset & rotation to the left eye projection
-         m_matProj[0] = invView * lookat * m_matProj[0];
-         lookat = Matrix3D::MatrixLookAtLH(pos + (halfEyeDist * right), at, up); // Apply offset & rotation to the right eye projection
-         m_matProj[1] = invView * lookat * m_matProj[0];
+         constexpr float minCamDistance = CMTOVPU(30.f);
+         constexpr float maxCamDistance = CMTOVPU(200.f);
+         const vec3 at = pos + dir * clamp(camDistance, minCamDistance, maxCamDistance);
+         Matrix3D lookat = Matrix3D::MatrixLookAtLH(pos + (halfEyeDist * right), at, up); // Apply offset & rotation to the right eye projection
+         m_matProj[1] = invView * lookat * coords * m_matProj[0];
+         lookat = Matrix3D::MatrixLookAtLH(pos + (-halfEyeDist * right), at, up); // Apply offset & rotation to the left eye projection
+         m_matProj[0] = invView * lookat * coords * m_matProj[0];
       }
    }
 #endif
