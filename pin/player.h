@@ -596,7 +596,6 @@ public:
    bool m_gameWindowActive;
    bool m_userDebugPaused;
    bool m_debugWindowActive;
-   bool m_cabinetMode;
    Primitive *m_implicitPlayfieldMesh = nullptr;
    bool m_recordContacts;         // flag for DoHitTest()
    vector< CollisionEvent > m_contacts;

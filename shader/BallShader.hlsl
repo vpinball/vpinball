@@ -240,7 +240,7 @@ float4 psBall( const in vout IN, uniform bool cabMode, uniform bool decalMode ) 
 		edge*(6.0*1.0/0.4)-(6.0*0.6/0.4) :
 		0.0;
 
-    const float2 uv0 = cabMode ? float2(r.y*-m + 0.5, r.x*-m + 0.5) : float2(r.x*-m + 0.5, r.y*m + 0.5);
+    const float2 uv0 = cabMode ? float2(0.5 + r.y*m, 0.5 - r.x*m) : float2(0.5 - r.x*m, 0.5 - r.y*m);
     float3 ballImageColor = tex2Dlod(tex_ball_color, float4(uv0, 0., lod)).xyz;
 
     const float4 decalColorT = tex2D(tex_ball_decal, float2(IN.normal_t0x.w, IN.worldPos_t0y.w));
