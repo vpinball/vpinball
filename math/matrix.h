@@ -477,10 +477,24 @@ public:
       return result;
    }
 
+   static Matrix3D MatrixLookAtRH(const vec3& eye, const vec3& at, const vec3& up)
+   {
+      Matrix3D result;
+      result.SetLookAtRH(eye, at, up);
+      return result;
+   }
+
    static Matrix3D MatrixPerspectiveFovLH(const float fovy, const float aspect, const float zn, const float zf)
    {
       Matrix3D result;
       result.SetPerspectiveFovLH(fovy, aspect, zn, zf);
+      return result;
+   }
+
+   static Matrix3D MatrixPerspectiveFovRH(const float fovy, const float aspect, const float zn, const float zf)
+   {
+      Matrix3D result;
+      result.SetPerspectiveFovRH(fovy, aspect, zn, zf);
       return result;
    }
 

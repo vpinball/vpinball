@@ -1003,8 +1003,8 @@ void LiveUI::UpdateCameraModeUI()
             break;
          }
 
-         case Player::BS_AnaglyphDesat: CM_ROW("Anaglyph desaturation", "%.2f", m_player->m_global3DDesaturation, ""); break;
-         case Player::BS_AnaglyphContrast: CM_ROW("Anaglyph contrast", "%.2f", m_player->m_global3DContrast, ""); break;
+         case Player::BS_AnaglyphDesat: CM_ROW("Anaglyph desaturation", "%.0f", 100.f * m_player->m_global3DDesaturation, "%%"); break;
+         case Player::BS_AnaglyphContrast: CM_ROW("Anaglyph contrast", "%.0f", 100.f * m_player->m_global3DContrast, "%%"); break;
          }
          if (settings[i] == m_player->m_backdropSettingActive
             || (m_player->m_backdropSettingActive == Player::BS_XYScale && (settings[i] == Player::BS_XScale || settings[i] == Player::BS_YScale)))
@@ -1407,24 +1407,21 @@ void LiveUI::UpdateMainUI()
       #ifdef ENABLE_SDL
       if (m_player->m_stereo3D != STEREO_OFF && m_player->m_stereo3D != STEREO_VR)
       {
-         Matrix3D view(m_camView);
-         view.Invert();
          // Create eye projection matrices for real stereo (not VR but anaglyph,...)
          // 63mm is the average distance between eyes (varies from 54 to 74mm between adults, 43 to 58mm for children), 50 VPUnit is 1.25 inches
          const float stereo3DMS = LoadValueFloatWithDefault(regKey[RegName::Player], "Stereo3DEyeSeparation"s, 63.0f);
          const float halfEyeDist = 0.5f * (stereo3DMS / 25.4f) * (float)(50. / 1.25);
-         Matrix3D invView(view);
+         Matrix3D invView(m_camView);
          invView.Invert();
-         invView.OrthoNormalize();
          const vec3 right = invView.GetOrthoNormalRight();
          const vec3 up = invView.GetOrthoNormalUp();
          const vec3 dir = invView.GetOrthoNormalDir();
          const vec3 pos = invView.GetOrthoNormalPos();
          const vec3 at = pos + dir * m_camDistance;
-         Matrix3D rot = Matrix3D::MatrixLookAtLH(pos + (-halfEyeDist * right), at, up);
-         const Matrix3D leftEye = invView * rot * proj;
-         rot = Matrix3D::MatrixLookAtLH(pos + (halfEyeDist * right), at, up);
-         const Matrix3D rightEye = invView * rot * proj;
+         Matrix3D lookat = Matrix3D::MatrixLookAtLH(pos + (-halfEyeDist * right), at, up);
+         const Matrix3D leftEye = invView * lookat * proj;
+         lookat = Matrix3D::MatrixLookAtLH(pos + (halfEyeDist * right), at, up);
+         const Matrix3D rightEye = invView * lookat * proj;
          m_pin3d->GetMVP().SetProj(0, leftEye);
          m_pin3d->GetMVP().SetProj(1, rightEye);
       }
