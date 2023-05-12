@@ -1471,6 +1471,13 @@ bool LiveUI::GetSelectionTransform(Matrix3D& transform)
       return true;
    }
 
+   if (m_selection.type == LiveUI::Selection::SelectionType::S_BALL)
+   {
+      Ball *ball = m_player->m_vball[m_selection.ball_index];
+      transform.SetTranslation(ball->m_d.m_pos);
+      return true;
+   }
+
    return false;
 }
 
@@ -1531,6 +1538,14 @@ void LiveUI::SetSelectionTransform(Matrix3D &newTransform, bool clearPosition, b
       p->m_d.m_vSize.x = xscale;
       p->m_d.m_vSize.y = yscale;
       p->m_d.m_vSize.z = zscale;
+   }
+
+   if (m_selection.type == LiveUI::Selection::SelectionType::S_BALL)
+   {
+      Ball *ball = m_player->m_vball[m_selection.ball_index];
+      ball->m_d.m_pos.x = posX;
+      ball->m_d.m_pos.y = posY;
+      ball->m_d.m_pos.z = posZ;
    }
 }
 
