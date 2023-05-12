@@ -1046,13 +1046,13 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
          case BG_DESKTOP:
          case BG_FSS:
             table->m_BG_rotation[view_setup] = 0.f;
-            table->m_BG_FOV[view_setup] = (view_setup == BG_DESKTOP && !portrait) ? LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "DesktopFov"s, 40.f)
+            table->m_BG_FOV[view_setup] = (view_setup == BG_DESKTOP && !portrait) ? LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "DesktopFov"s, 43.2f)
                                                                                   : LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "FSSFov"s, 67.f);
-            table->m_BG_layback[view_setup] = (view_setup == BG_DESKTOP && !portrait) ? LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "DesktopViewOffset"s, 32.f)
+            table->m_BG_layback[view_setup] = (view_setup == BG_DESKTOP && !portrait) ? LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "DesktopViewOffset"s, -12.2f)
                                                                                       : LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "FSSViewOffset"s, 15.f);
-            table->m_BG_inclination[view_setup] = (view_setup == BG_DESKTOP && !portrait) ? LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "DesktopInclination"s, 45.f)
+            table->m_BG_inclination[view_setup] = (view_setup == BG_DESKTOP && !portrait) ? LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "DesktopInclination"s, 50.f)
                                                                                           : LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "FSSInclination"s, 56.f);
-            table->m_BG_xlatez[view_setup] = (view_setup == BG_DESKTOP && !portrait) ? CMTOVPU(LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "DesktopCamZ"s, 40.f))
+            table->m_BG_xlatez[view_setup] = (view_setup == BG_DESKTOP && !portrait) ? CMTOVPU(LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "DesktopCamZ"s, 80.f))
                                                                                      : CMTOVPU(LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "FSSCamZ"s, 65.f));
             break;
          case BG_FULLSCREEN:
