@@ -138,14 +138,22 @@ float3 compute_reflection(const float2 screenSpace, const float3 N)
 }
 
 // Compute refractions from screen space probe
-float3 compute_refraction(const float3 pos, const float2 screenSpace, const float3 N, const float3 V)
+float3 compute_refraction(const float3 pos, const float2 screenSpace, const float3 N, const float3 V, const float eye)
 {
    // Compute refracted visible position then project from world view position to probe UV
    // const float4x4 matProj = mul(inverse4x4(matWorldView), matWorldViewProj[0]); // this has been moved to the matrix uniform stack for performance reasons
    const float3 R = refract(V, N, 1.0 / 1.5); // n1 = 1.0 (air), n2 = 1.5 (plastic), eta = n1 / n2
    const float3 refracted_pos = pos + refractionThickness * R; // Shift ray by the thickness of the material
    const float4 proj = matProj * float4(refracted_pos, 1.0);
+
    float2 uv = float2(0.5, 0.5) + proj.xy * (0.5 / proj.w);
+   #if (N_EYES == 2)
+      #if VERTICAL_STEREO
+         uv.xy = vec2(uv.x, 0.5 * (uv.y + eye)); // Sampling from a vertical stereo screen space texture
+      #else
+         uv.xy = vec2(0.5 * (uv.x + eye), uv.y); // Sampling from a horizontal stereo screen space texture
+      #endif
+   #endif
 
    // Check if the sample position is behind the object pos. If not take don't perform refraction as it would lead to refract things above us (so reflect)
    const float d = tex2D(tex_probe_depth, uv).x;
@@ -254,6 +262,8 @@ out vec3 normal;
 in vec3 tablePos_gs[];
 out float3 tablePos;
 
+out float eye;
+
 void main()
 {
    gl_ViewportIndex = gl_InvocationID;
@@ -276,6 +286,7 @@ void main()
       tablePos = tablePos_gs[i];
       worldPos = worldPos_gs[i];
       normal = normal_gs[i];
+      eye = gl_InvocationID;
       //Default
       EmitVertex();
    }
@@ -294,6 +305,8 @@ out vec3 normal;
 
 in vec3 tablePos_gs[];
 out float3 tablePos;
+
+out float eye;
 
 void main()
 {
@@ -316,6 +329,7 @@ void main()
       tablePos = tablePos_gs[i];
       worldPos = worldPos_gs[i];
       normal = normal_gs[i];
+      eye = gl_InvocationID;
       //Default
       EmitVertex();
    }
@@ -406,6 +420,7 @@ noperspective in vec2 tex03;
 in vec3 worldPos;
 in vec3 tablePos;
 in vec3 normal;
+in float eye;
 
 void main() {
    const float3 diffuse  = cBase_Alpha.xyz;
@@ -445,7 +460,7 @@ void main() {
    BRANCH if (doRefractions)
    {
       // alpha channel is the transparency of the object, tinting is supported even if alpha is 0 by applying a tint color
-      color.rgb = lerp(compute_refraction(worldPos.xyz, tex03, N, V), color.rgb, cBase_Alpha.a);
+      color.rgb = lerp(compute_refraction(worldPos.xyz, tex03, N, V, eye), color.rgb, cBase_Alpha.a);
       color.a = 1.0;
    }
 
@@ -459,8 +474,10 @@ noperspective in vec2 tex03;
 in vec3 worldPos;
 in vec3 tablePos;
 in vec3 normal;
+in float eye;
 
 void main() {
+   float eye = 0.0f;
    float4 pixel = texture(tex_base_color, tex01);
 
    if (pixel.a <= alphaTestValue)
@@ -510,7 +527,7 @@ void main() {
    BRANCH if (doRefractions)
    {
       // alpha channel is the transparency of the object, tinting is supported even if alpha is 0 by applying a tint color (not from main texture since these are different informations (reflected/refracted color))
-      color.rgb = lerp(compute_refraction(worldPos, tex03, N, V), color.rgb, color.a);
+      color.rgb = lerp(compute_refraction(worldPos, tex03, N, V, eye), color.rgb, color.a);
       color.a = 1.0;
    }
 
