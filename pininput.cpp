@@ -1035,7 +1035,6 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
          // Default player position (90cm above, 30 cm away)
          table->m_BG_xlatex[view_setup] = CMTOVPU(LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "CamX"s, 0.f));
          table->m_BG_xlatey[view_setup] = CMTOVPU(LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "CamY"s, 30.f));
-         table->m_BG_xlatez[view_setup] = CMTOVPU(LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "CamZ"s, 90.f));
          table->m_BG_scalex[view_setup] = LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "ScaleX"s, 1.f);
          table->m_BG_scaley[view_setup] = LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "ScaleY"s, 1.f);
          table->m_BG_scalez[view_setup] = 1.f;
@@ -1047,18 +1046,22 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
          case BG_DESKTOP:
          case BG_FSS:
             table->m_BG_rotation[view_setup] = 0.f;
-            table->m_BG_inclination[view_setup] = (view_setup == BG_DESKTOP && !portrait) ? LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "DesktopInclinationPortrait"s, 45.f)
-                                                                                          : LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "DesktopFSSInclination"s, 56.f);
-            table->m_BG_FOV[view_setup] = (view_setup == BG_DESKTOP && !portrait) ? LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "DesktopFovPortrait"s, 45.f)
-                                                                                  : LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "DesktopFovLandscape"s, 68.f);
-            table->m_BG_layback[view_setup] = LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "DesktopViewOffset"s, 0.f);
+            table->m_BG_FOV[view_setup] = (view_setup == BG_DESKTOP && !portrait) ? LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "DesktopFov"s, 40.f)
+                                                                                  : LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "FSSFov"s, 67.f);
+            table->m_BG_layback[view_setup] = (view_setup == BG_DESKTOP && !portrait) ? LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "DesktopViewOffset"s, 32.f)
+                                                                                      : LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "FSSViewOffset"s, 15.f);
+            table->m_BG_inclination[view_setup] = (view_setup == BG_DESKTOP && !portrait) ? LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "DesktopInclination"s, 45.f)
+                                                                                          : LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "FSSInclination"s, 56.f);
+            table->m_BG_xlatez[view_setup] = (view_setup == BG_DESKTOP && !portrait) ? CMTOVPU(LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "DesktopCamZ"s, 40.f))
+                                                                                     : CMTOVPU(LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "FSSCamZ"s, 65.f));
             break;
          case BG_FULLSCREEN:
             table->m_BG_rotation[view_setup] = portrait ? 0.f : 270.f;
-            table->m_BG_inclination[view_setup] = LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "CabinetInclination"s, 6.5f);
-            table->m_BG_FOV[view_setup] = portrait ? LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "CabinetFovPortrait"s, 65.5f)
-                                                   : LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "CabinetFovLandscape"s, 40.f);
-            table->m_BG_layback[view_setup] = LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "CabinetViewOffset"s, 105.5f);
+            table->m_BG_inclination[view_setup] = LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "CabinetInclination"s, 10.0f);
+            table->m_BG_FOV[view_setup] = portrait ? LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "CabinetFovPortrait"s, 55.1f)
+                                                   : LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "CabinetFovLandscape"s, 32.7f);
+            table->m_BG_layback[view_setup] = LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "CabinetViewOffset"s, 70.1f);
+            table->m_BG_xlatez[view_setup] = CMTOVPU(LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "CabinetCamZ"s, 90.f));
             break;
          }
          g_pplayer->m_pin3d.m_cam.x = 0;
@@ -1097,21 +1100,22 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
             g_pplayer->m_pin3d.m_cam.z = 0;
          }
       }
-      else if (keycode == g_pplayer->m_rgKeys[eRightMagnaSave] && dispid == DISPID_GameEvents_KeyDown)
+      else if ((keycode == g_pplayer->m_rgKeys[eRightMagnaSave] || keycode == g_pplayer->m_rgKeys[eLeftMagnaSave]) && dispid == DISPID_GameEvents_KeyDown)
       {
-         g_pplayer->m_backdropSettingActive++;
          bool isStereo = g_pplayer->m_stereo3Denabled && g_pplayer->m_stereo3D != STEREO_OFF && g_pplayer->m_stereo3D != STEREO_VR;
          bool isAnaglyph = isStereo && g_pplayer->m_stereo3D >= STEREO_ANAGLYPH_RC && g_pplayer->m_stereo3D <= STEREO_ANAGLYPH_AB;
-         if (g_pplayer->m_backdropSettingActive == (isAnaglyph ? 16 : (isStereo ? 14 : 13)))
-            g_pplayer->m_backdropSettingActive = 0;
-      }
-      else if (keycode == g_pplayer->m_rgKeys[eLeftMagnaSave] && dispid == DISPID_GameEvents_KeyDown)
-      {
-         g_pplayer->m_backdropSettingActive--;
-         bool isStereo = g_pplayer->m_stereo3Denabled && g_pplayer->m_stereo3D != STEREO_OFF && g_pplayer->m_stereo3D != STEREO_VR;
-         bool isAnaglyph = isStereo && g_pplayer->m_stereo3D >= STEREO_ANAGLYPH_RC && g_pplayer->m_stereo3D <= STEREO_ANAGLYPH_AB;
-         if (g_pplayer->m_backdropSettingActive == -1)
-            g_pplayer->m_backdropSettingActive = isAnaglyph ? 15 : (isStereo ? 13 : 12);
+         const Player::BackdropSetting *settings = g_pplayer->m_ptable->m_cameraLayoutMode == CLM_RELATIVE ? Player::m_relativeBackdropSettings : Player::m_absoluteBackdropSettings; 
+         int nSettings = (g_pplayer->m_ptable->m_cameraLayoutMode == CLM_RELATIVE ? sizeof(Player::m_relativeBackdropSettings) : sizeof(Player::m_absoluteBackdropSettings)) / sizeof(Player::BackdropSetting);
+         nSettings = isAnaglyph ? nSettings : isStereo ? (nSettings - 2) : (nSettings - 3);
+         for (int i = 0; i < nSettings; i++)
+            if (settings[i] == g_pplayer->m_backdropSettingActive)
+            {
+               if (keycode == g_pplayer->m_rgKeys[eRightMagnaSave])
+                  g_pplayer->m_backdropSettingActive = i < nSettings - 1 ? settings[i + 1] : settings[0];
+               else
+                  g_pplayer->m_backdropSettingActive = i > 0 ? settings[i - 1] : settings[nSettings - 1];
+               break;
+            }
       }
    }
    else

@@ -39,6 +39,9 @@ void BackglassCameraProperty::UpdateVisuals(const int dispid/*=-1*/)
       GetDlgItem(IDC_STATIC9).SetWindowText(absolute ? "X Position" : "X Offset");
       GetDlgItem(IDC_STATIC10).SetWindowText(absolute ? "Y Position" : "Y Offset");
       GetDlgItem(IDC_STATIC11).SetWindowText(absolute ? "Z Position" : "Z Offset");
+      GetDlgItem(IDC_STATIC6).SetWindowText(absolute ? "Hor. Stretch" : "X Scale");
+      GetDlgItem(IDC_STATIC7).ShowWindow(!absolute);
+      m_yScaleEdit.ShowWindow(!absolute);
    }
     if (dispid == IDC_BG_COMBOBOX || dispid == -1)
         PropertyDialog::UpdateComboBox(m_modeList, m_modeCombo, m_modeList[table->m_currentBackglassMode]);
@@ -141,6 +144,7 @@ BOOL BackglassCameraProperty::OnInitDialog()
     UpdateVisuals();
 
     m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
+    // Labels
     m_resizer.AddChild(GetDlgItem(IDC_STATIC1), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC2), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC3), CResizer::topleft, 0);
@@ -152,6 +156,13 @@ BOOL BackglassCameraProperty::OnInitDialog()
     m_resizer.AddChild(GetDlgItem(IDC_STATIC9), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC10), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC11), CResizer::topleft, 0);
+    // Group boxes
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC21), CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC22), CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC23), CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC24), CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC25), CResizer::topleft, RD_STRETCH_WIDTH);
+    // Controls
     m_resizer.AddChild(m_hFssModeCheck, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_hTestDesktopCheck, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_hCameraLayoutModeCheck, CResizer::topleft, RD_STRETCH_WIDTH);

@@ -418,7 +418,20 @@ public:
 
    bool m_dynamicMode;
    bool m_cameraMode;
-   int m_backdropSettingActive;
+   enum BackdropSetting
+   {
+      BS_Inclination, BS_FOV, BS_Layback, BS_XYScale, BS_XScale, BS_YScale, BS_XOffset, BS_YOffset, BS_ZOffset,
+      BS_LightEmissionScale, BS_LightRange, BS_LightHeight, BS_EnvEmissionScale, BS_EyeSeparation, BS_AnaglyphDesat, BS_AnaglyphContrast,
+   };
+   static constexpr Player::BackdropSetting m_relativeBackdropSettings[] = {
+      BS_Inclination, BS_FOV, BS_Layback, BS_XYScale, BS_XScale, BS_YScale, BS_XOffset, BS_YOffset, BS_ZOffset,
+      BS_LightEmissionScale, BS_LightRange, BS_LightHeight, BS_EnvEmissionScale, BS_EyeSeparation, BS_AnaglyphDesat, BS_AnaglyphContrast,
+   };
+   static constexpr Player::BackdropSetting m_absoluteBackdropSettings[] = {
+      BS_FOV, BS_Layback, BS_XScale, BS_Inclination, BS_XOffset, BS_YOffset, BS_ZOffset,
+      BS_LightEmissionScale, BS_LightRange, BS_LightHeight, BS_EnvEmissionScale, BS_EyeSeparation, BS_AnaglyphDesat, BS_AnaglyphContrast,
+   };
+   BackdropSetting m_backdropSettingActive = BS_FOV;
    PinTable * const m_pEditorTable; // The untouched version of the table, as it is in the editor (The Player needs it to interact with the UI)
    PinTable * const m_ptable; // The played table, which can be modified by the script
 
