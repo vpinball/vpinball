@@ -305,7 +305,6 @@ Player::Player(const bool cameraMode, PinTable *const editor_table, PinTable *co
 
    m_dmd = int2(0,0);
    m_texdmd = nullptr;
-   m_backdropSettingActive = 0;
 
    m_ScreenOffset = Vertex2D(0.f, 0.f);
 
@@ -3938,19 +3937,19 @@ void Player::UpdateBackdropSettings(const bool up)
 
    switch (m_backdropSettingActive)
    {
-   case 0: m_ptable->m_BG_inclination[m_ptable->m_BG_current_set] += thesign; break;
-   case 1: m_ptable->m_BG_FOV[m_ptable->m_BG_current_set] += thesign; break;
-   case 2: m_ptable->m_BG_layback[m_ptable->m_BG_current_set] += thesign; break;
-   case 3:
+   case BS_Inclination: m_ptable->m_BG_inclination[m_ptable->m_BG_current_set] += 0.5f * thesign; break;
+   case BS_FOV: m_ptable->m_BG_FOV[m_ptable->m_BG_current_set] += 0.5f * thesign; break;
+   case BS_Layback: m_ptable->m_BG_layback[m_ptable->m_BG_current_set] += 0.5f * thesign; break;
+   case BS_XYScale:
       m_ptable->m_BG_scalex[m_ptable->m_BG_current_set] += 0.01f*thesign;
       m_ptable->m_BG_scaley[m_ptable->m_BG_current_set] += 0.01f*thesign;
       break;
-   case 4: m_ptable->m_BG_scalex[m_ptable->m_BG_current_set] += 0.01f*thesign; break;
-   case 5: m_ptable->m_BG_scaley[m_ptable->m_BG_current_set] += 0.01f*thesign; break;
-   case 6: m_ptable->m_BG_xlatex[m_ptable->m_BG_current_set] += 5.f * thesign; break;
-   case 7: m_ptable->m_BG_xlatey[m_ptable->m_BG_current_set] += 5.f * thesign; break;
-   case 8: m_ptable->m_BG_xlatez[m_ptable->m_BG_current_set] += 50.f * thesign; break;
-   case 9:
+   case BS_XScale: m_ptable->m_BG_scalex[m_ptable->m_BG_current_set] += 0.01f * thesign; break;
+   case BS_YScale: m_ptable->m_BG_scaley[m_ptable->m_BG_current_set] += 0.01f * thesign; break;
+   case BS_XOffset: m_ptable->m_BG_xlatex[m_ptable->m_BG_current_set] += 5.f * thesign; break;
+   case BS_YOffset: m_ptable->m_BG_xlatey[m_ptable->m_BG_current_set] += 5.f * thesign; break;
+   case BS_ZOffset: m_ptable->m_BG_xlatez[m_ptable->m_BG_current_set] += 50.f * thesign; break;
+   case BS_LightEmissionScale:
    {
       m_ptable->m_lightEmissionScale += thesign*100000.f;
       if (m_ptable->m_lightEmissionScale < 0.f)
@@ -3958,21 +3957,21 @@ void Player::UpdateBackdropSettings(const bool up)
       m_pin3d.InitLights();
       break;
    }
-   case 10:
+   case BS_LightRange:
    {
       m_ptable->m_lightRange += thesign*1000.f;
       if (m_ptable->m_lightRange < 0.f)
          m_ptable->m_lightRange = 0.f;
       break;
    }
-   case 11:
+   case BS_LightHeight:
    {
       m_ptable->m_lightHeight += thesign*100.f;
       if (m_ptable->m_lightHeight < 100.f)
          m_ptable->m_lightHeight = 100.f;
       break;
    }
-   case 12:
+   case BS_EnvEmissionScale:
    {
       m_ptable->m_envEmissionScale += thesign*0.5f;
       if (m_ptable->m_envEmissionScale < 0.f)
@@ -3981,7 +3980,7 @@ void Player::UpdateBackdropSettings(const bool up)
       m_pin3d.m_pd3dPrimaryDevice->basicShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
       break;
    }
-   case 13:
+   case BS_EyeSeparation:
    {
       #ifdef ENABLE_SDL
       float stereo3DEyeSep = LoadValueFloatWithDefault(regKey[RegName::Player], "Stereo3DEyeSeparation"s, 63.0f);
@@ -4004,13 +4003,13 @@ void Player::UpdateBackdropSettings(const bool up)
       #endif
       break;
    }
-   case 14:
+   case BS_AnaglyphDesat:
    {
       m_global3DDesaturation = clamp(m_global3DDesaturation + thesign * 0.05f, 0.f, 1.f);
       SaveValueFloat(regKey[RegName::Player], "Stereo3DDesaturation"s, m_global3DDesaturation);
       break;
    }
-   case 15:
+   case BS_AnaglyphContrast:
    {
       m_global3DContrast = clamp(m_global3DContrast + thesign * 0.05f, 0.f, 1.f);
       SaveValueFloat(regKey[RegName::Player], "Stereo3DContrast"s, m_global3DContrast);

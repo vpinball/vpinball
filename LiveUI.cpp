@@ -928,113 +928,130 @@ void LiveUI::Update()
 
 void LiveUI::UpdateCameraModeUI()
 {
-   // To place it at the bottom of screen. It used to be there but it would be hidden for people placing a real apron on their cab
-   constexpr bool positionTop = true;
-   static float last_frame_height = -100.f; // Hide first frame below display bounds
    PinTable* table = m_live_table;
    constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
    ImGui::SetNextWindowBgAlpha(0.35f);
-   ImGui::SetNextWindowPos(ImVec2(10, positionTop ? 10 : (ImGui::GetIO().DisplaySize.y - 10 - last_frame_height)));
+   ImGui::SetNextWindowPos(ImVec2(0.5f * ImGui::GetIO().DisplaySize.x, 0.8f * ImGui::GetIO().DisplaySize.y), 0, ImVec2(0.5f, 1.f));
    ImGui::Begin("CameraMode", nullptr, window_flags);
 
-   if (positionTop && m_player->m_cameraMode)
+   bool isRelative = table->m_cameraLayoutMode == CLM_RELATIVE;
+
+   if (isRelative)
    {
-      ImGui::Text(table->m_cameraLayoutMode == CLM_RELATIVE ? "- Legacy Relative Camera Layout Mode -" : "- Absolute Camera Layout Mode -");
-      ImGui::Text("Left/Right flipper key: decrease/increase highlighted value");
-      ImGui::Text("Left/Right magna save key: previous/next option");
-      if (LoadValueBoolWithDefault(regKey[RegName::Player], "EnableCameraModeFlyAround"s, false))
-      {
-         ImGui::Text("Left/Right nudge key: rotate table orientation");
-         ImGui::Text("Arrows & Left Alt Key: Navigate around");
-      }
-      ImGui::Text("Plunger Key: reset POV to defaults");
-      if (m_app->m_povEdit)
-      {
-         ImGui::Text("Start Key: export POV file and quit");
-         ImGui::Text("Credit Key: quit without export");
-      }
-      else
-      {
-         ImGui::Text("Start Key: export POV file");
-         ImGui::Text("Credit Key: reset POV to old values");
-      }
+      HelpTextCentered("WARNING"s);
+      ImGui::NewLine();
+      HelpTextCentered("This table use the legacy camera positionning."s);
+      ImGui::NewLine();
+      HelpTextCentered("Update it to avoid rendering artefacts."s);
       ImGui::NewLine();
    }
-
+   
    bool isStereo = m_player->m_stereo3Denabled && m_player->m_stereo3D != STEREO_OFF && m_player->m_stereo3D != STEREO_VR;
    bool isAnaglyph = isStereo && m_player->m_stereo3D >= STEREO_ANAGLYPH_RC && m_player->m_stereo3D <= STEREO_ANAGLYPH_AB;
-   for (int i = 0; i < (isAnaglyph ? 16 : (isStereo ? 14 : 13)); i++)
+   const Player::BackdropSetting *settings = isRelative ? Player::m_relativeBackdropSettings : Player::m_absoluteBackdropSettings;
+   int nSettings = (isRelative ? sizeof(Player::m_relativeBackdropSettings) : sizeof(Player::m_absoluteBackdropSettings)) / sizeof(Player::BackdropSetting);
+   nSettings = isAnaglyph ? nSettings : isStereo ? (nSettings - 2) : (nSettings - 3);
+   if (ImGui::BeginTable("Camera", 3, ImGuiTableFlags_Borders))
    {
-      if (m_player->m_cameraMode && (i == m_player->m_backdropSettingActive || (m_player->m_backdropSettingActive == 3 && (i == 4 || i == 5))))
-         ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
-      switch (i)
-      {
-      case 0: ImGui::Text("Inclination: %.1f", table->m_BG_inclination[table->m_BG_current_set]); break;
-      case 1: ImGui::Text("Field Of View: %.1f", table->m_BG_FOV[table->m_BG_current_set]); break;
-      case 2: ImGui::Text(table->m_cameraLayoutMode == CLM_RELATIVE ? "Layback: %.1f" : "Table View Offset: %.1f", table->m_BG_layback[table->m_BG_current_set]); ImGui::NewLine(); break;
-      case 4: ImGui::Text("X Scale: %.3f", table->m_BG_scalex[table->m_BG_current_set]); break;
-      case 5: ImGui::Text("Y Scale: %.3f", table->m_BG_scaley[table->m_BG_current_set]); ImGui::NewLine(); break;
-      case 6: ImGui::Text(table->m_cameraLayoutMode == CLM_RELATIVE ? "X Offset: %.0f cm" : "X Position: %.0f cm", VPUTOCM(table->m_BG_xlatex[table->m_BG_current_set])); break;
-      case 7: ImGui::Text(table->m_cameraLayoutMode == CLM_RELATIVE ? "Y Offset: %.0f cm" : "Y Position: %.0f cm", VPUTOCM(table->m_BG_xlatey[table->m_BG_current_set])); break;
-      case 8: ImGui::Text(table->m_cameraLayoutMode == CLM_RELATIVE ? "Z Offset: %.0f cm" : "Z Position: %.0f cm", VPUTOCM(table->m_BG_xlatez[table->m_BG_current_set])); ImGui::NewLine(); break;
-      case 9: ImGui::Text("Light Emission Scale: %.0f", table->m_lightEmissionScale); break;
-      case 10: ImGui::Text("Light Range: %.0f cm", VPUTOCM(table->m_lightRange)); break;
-      case 11: ImGui::Text("Light Height: %.0f cm", VPUTOCM(table->m_lightHeight)); ImGui::NewLine(); break;
-      case 12: ImGui::Text("Environment Emission: %.3f", table->m_envEmissionScale); ImGui::NewLine(); break;
-      case 13:
-      {
-         #ifdef ENABLE_SDL
-         float stereo3DEyeSep = LoadValueFloatWithDefault(regKey[RegName::Player], "Stereo3DEyeSeparation"s, 63.0f);
-         ImGui::Text("Eye distance: %.0fmm", stereo3DEyeSep);
-         #else
-         const char *txt = m_table->m_overwriteGlobalStereo3D ? "Max Separation [Table setting]: %.3f" : "Max Separation [Application setting]: %.3f";
-         ImGui::Text(txt, table->GetMaxSeparation());
-         #endif
-         break;
+      static float vWidth = 50.f;
+      ImGui::TableSetupColumn("Property", ImGuiTableColumnFlags_WidthStretch);
+      ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthFixed, vWidth);
+      ImGui::TableSetupColumn("Unit", ImGuiTableColumnFlags_WidthFixed);
+      #define CM_ROW(label, format, value, unit) \
+      { \
+         char buf[1024]; snprintf(buf, 1024, format, value); \
+         ImGui::TableNextColumn(); ImGui::Text(label); ImGui::TableNextColumn(); \
+         float textWidth = ImGui::CalcTextSize(buf).x; \
+         vWidth = max(vWidth, textWidth); \
+         if (textWidth < vWidth) ImGui::SameLine(vWidth - textWidth); \
+         ImGui::Text(buf); ImGui::TableNextColumn(); ImGui::Text(unit); ImGui::TableNextRow();\
       }
-      case 14: ImGui::Text("Anaglyph desaturation: %.2f", m_player->m_global3DDesaturation); break;
-      case 15: ImGui::Text("Anaglyph contrast: %.2f", m_player->m_global3DContrast); break;
+      #define CM_SKIP_LINE {ImGui::TableNextColumn(); ImGui::NewLine(); ImGui::TableNextRow();}
+      for (int i = 0; i < nSettings; i++)
+      {
+         if (settings[i] == m_player->m_backdropSettingActive 
+            || (m_player->m_backdropSettingActive == Player::BS_XYScale && (settings[i] == Player::BS_XScale || settings[i] == Player::BS_YScale)))
+            ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
+         switch (settings[i])
+         {
+         case Player::BS_FOV: CM_ROW("Field Of View (overall scale)", "%.1f", table->m_BG_FOV[table->m_BG_current_set], "deg"); break;
+         case Player::BS_Layback: CM_ROW(isRelative ? "Layback" : "Vertical Offset", "%.1f", table->m_BG_layback[table->m_BG_current_set], ""); break;
+         case Player::BS_XScale: CM_ROW(isRelative ? "X Scale" : "Horizontal Stretch", "%.1f", 100.f * table->m_BG_scalex[table->m_BG_current_set], "%%");
+            if (!isRelative) CM_SKIP_LINE;
+            break;
+         case Player::BS_YScale: CM_ROW("Y Scale", "%.1f", 100.f * table->m_BG_scaley[table->m_BG_current_set], "%%"); CM_SKIP_LINE; break;
+
+         case Player::BS_Inclination: CM_ROW(isRelative ? "Inclination" : "Head Inclination", "%.1f", table->m_BG_inclination[table->m_BG_current_set], "deg"); break;
+         case Player::BS_XOffset: CM_ROW(isRelative ? "X Offset" : "Player X", "%.1f", VPUTOCM(table->m_BG_xlatex[table->m_BG_current_set]), "cm"); break;
+         case Player::BS_YOffset: CM_ROW(isRelative ? "Y Offset" : "Player Y", "%.1f", VPUTOCM(table->m_BG_xlatey[table->m_BG_current_set]), "cm"); break;
+         case Player::BS_ZOffset: CM_ROW(isRelative ? "Z Offset" : "Player Z", "%.1f", VPUTOCM(table->m_BG_xlatez[table->m_BG_current_set]), "cm"); CM_SKIP_LINE; break;
+
+         case Player::BS_LightEmissionScale: CM_ROW("Light Emission Scale", "%.0f", table->m_lightEmissionScale, ""); break;
+         case Player::BS_LightRange: CM_ROW("Light Range", "%.0f", VPUTOCM(table->m_lightRange), "cm"); break;
+         case Player::BS_LightHeight: CM_ROW("Light Height", "%.0f", VPUTOCM(table->m_lightHeight), "cm"); CM_SKIP_LINE; break;
+
+         case Player::BS_EnvEmissionScale: CM_ROW("Environment Emission", "%.1f", 100.f * table->m_envEmissionScale, "%%"); break;
+
+         case Player::BS_EyeSeparation:
+         {
+            CM_SKIP_LINE;
+            #ifdef ENABLE_SDL
+            CM_ROW("Eye distance", "%.0f", LoadValueFloatWithDefault(regKey[RegName::Player], "Stereo3DEyeSeparation"s, 63.0f), "mm");
+            #else
+            CM_ROW(m_table->m_overwriteGlobalStereo3D ? "Max Separation [Table setting]" : "Max Separation [Application setting]", "%.3f", table->GetMaxSeparation(), "");
+            #endif
+            break;
+         }
+
+         case Player::BS_AnaglyphDesat: CM_ROW("Anaglyph desaturation", "%.2f", m_player->m_global3DDesaturation, ""); break;
+         case Player::BS_AnaglyphContrast: CM_ROW("Anaglyph contrast", "%.2f", m_player->m_global3DContrast, ""); break;
+         }
+         if (settings[i] == m_player->m_backdropSettingActive
+            || (m_player->m_backdropSettingActive == Player::BS_XYScale && (settings[i] == Player::BS_XScale || settings[i] == Player::BS_YScale)))
+            ImGui::PopStyleColor();
       }
-      if (m_player->m_cameraMode && (i == m_player->m_backdropSettingActive || (m_player->m_backdropSettingActive == 3 && (i == 4 || i == 5))))
-         ImGui::PopStyleColor();
+      #undef CM_ROW
+      #undef CM_SKIP_LINE
+      ImGui::EndTable();
    }
 
-   if (isStereo || isAnaglyph) ImGui::NewLine();
-
-   Matrix3D view = m_pin3d->GetMVP().GetView();
-   view.Invert();
-   vec3 pos = view.GetOrthoNormalPos();
-   ImGui::Text("Camera at X: %.0f Y: %.0f Z: %.0f (cm), Rotation: %.2f", 
-      VPUTOCM(pos.x - 0.5f * g_pplayer->m_ptable->m_right), 
-      VPUTOCM(pos.y - g_pplayer->m_ptable->m_bottom), 
-      VPUTOCM(pos.z),
-      table->m_BG_rotation[table->m_BG_current_set]);
-   
-   if (!positionTop && m_player->m_cameraMode)
+   if (isRelative)
    {
+      // Useless for absolute mode: the camera is always where we put it
+      Matrix3D view = m_pin3d->GetMVP().GetView();
+      view.Invert();
+      vec3 pos = view.GetOrthoNormalPos();
       ImGui::NewLine();
-      ImGui::Text(table->m_cameraLayoutMode == CLM_RELATIVE ? "Legacy Relative Camera Layout Mode" : "Absolute Camera Layout Mode");
-      ImGui::Text("Left/Right flipper key: decrease/increase highlighted value");
-      ImGui::Text("Left/Right magna save key: previous/next option");
-      if (LoadValueBoolWithDefault(regKey[RegName::Player], "EnableCameraModeFlyAround"s, false))
-      {
-         ImGui::Text("Left/Right nudge key: rotate table orientation");
-         ImGui::Text("Arrows & Left Alt Key: Navigate around");
-      }
-      ImGui::Text("Plunger Key: reset POV to defaults");
-      if (m_app->m_povEdit)
-      {
-         ImGui::Text("Start Key: export POV file and quit");
-         ImGui::Text("Credit Key: quit without export");
-      }
-      else
-      {
-         ImGui::Text("Start Key: export POV file");
-         ImGui::Text("Credit Key: reset POV to old values");
-      }
+      ImGui::Text("Camera at X: %.0f Y: %.0f Z: %.0f (cm), Rotation: %.2f", 
+         VPUTOCM(pos.x - 0.5f * g_pplayer->m_ptable->m_right), 
+         VPUTOCM(pos.y - g_pplayer->m_ptable->m_bottom), 
+         VPUTOCM(pos.z),
+         table->m_BG_rotation[table->m_BG_current_set]);
    }
 
-   last_frame_height = ImGui::GetWindowHeight();
+   ImGui::NewLine();
+   vector<string> infos;
+   infos.push_back("Plunger Key:   Reset POV to defaults"s);
+   if (m_app->m_povEdit)
+   {
+      infos.push_back("Start Key:   Export POV file and quit"s);
+      infos.push_back("Credit Key:   Quit without export"s);
+   }
+   else
+   {
+      infos.push_back("Start Key: export POV file"s);
+      infos.push_back("Credit Key: reset POV to old values"s);
+   }
+   infos.push_back("Flipper keys:   Adjust highlighted value"s);
+   infos.push_back("Magna save keys:   Previous/Next option"s);
+   if (LoadValueBoolWithDefault(regKey[RegName::Player], "EnableCameraModeFlyAround"s, false))
+   {
+      infos.push_back("Nudge key:   Rotate table orientation"s);
+      infos.push_back("Arrows & Left Alt Key:   Navigate around"s);
+   }
+   int info = ((int)((usec() - m_StartTime_usec) / 2e6)) % infos.size();
+   HelpTextCentered(infos[info]);
+
    ImGui::End();
 }
 
