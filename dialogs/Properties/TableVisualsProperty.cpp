@@ -27,6 +27,8 @@ void TableVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
         PropertyDialog::SetCheckboxState(m_hReflectElementsCheck, table->m_reflectElementsOnPlayfield);
     if (dispid == IDC_REFLECTION_PLAYFIELD || dispid == -1)
         PropertyDialog::SetIntTextbox(m_reflectionStrengthEdit, table->GetPlayfieldReflectionStrength());
+    if (dispid == IDC_BALL_SPHERICAL_MAP || dispid == -1)
+        PropertyDialog::SetCheckboxState(m_hSphericalMapCheck, table->m_ballSphericalMapping);
     if (dispid == DISPID_Image3 || dispid == -1)
         PropertyDialog::UpdateTextureComboBox(table->GetImageList(), m_ballImageCombo, table->m_ballImage);
     if (dispid == IDC_BALL_DECAL_MODE || dispid == -1)
@@ -59,6 +61,9 @@ void TableVisualsProperty::UpdateProperties(const int dispid)
         case IDC_REFLECTION_PLAYFIELD:
             CHECK_UPDATE_VALUE_SETTER(table->SetPlayfieldReflectionStrength, table->GetPlayfieldReflectionStrength, PropertyDialog::GetIntTextbox, m_reflectionStrengthEdit, table);
             break;
+        case IDC_BALL_SPHERICAL_MAP:
+            CHECK_UPDATE_ITEM(table->m_ballSphericalMapping, PropertyDialog::GetCheckboxState(m_hSphericalMapCheck), table);
+            break;
         case IDC_BALL_DECAL_MODE:
             CHECK_UPDATE_ITEM(table->m_BallDecalMode, PropertyDialog::GetCheckboxState(m_hLogoModeCheck), table);
             break;
@@ -89,6 +94,7 @@ BOOL TableVisualsProperty::OnInitDialog()
     m_hReflectElementsCheck = ::GetDlgItem(GetHwnd(), IDC_REFLECT_ELEMENTS_CHECK);
     m_reflectionStrengthEdit.AttachItem(IDC_REFLECTION_PLAYFIELD);
     m_hLogoModeCheck = ::GetDlgItem(GetHwnd(), IDC_BALL_DECAL_MODE);
+    m_hSphericalMapCheck = ::GetDlgItem(GetHwnd(), IDC_BALL_SPHERICAL_MAP);
     m_ballReflectPlayfieldEdit.AttachItem(IDC_BALLPLAYFIELD_REFLECTION);
     m_ballDefaultBulbIntensScaleEdit.AttachItem(IDC_BULBINTENSITYSCALE);
 
@@ -110,6 +116,7 @@ BOOL TableVisualsProperty::OnInitDialog()
     m_resizer.AddChild(m_hReflectElementsCheck, CResizer::topleft, 0);
     m_resizer.AddChild(m_reflectionStrengthEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_hLogoModeCheck, CResizer::topleft, 0);
+    m_resizer.AddChild(m_hSphericalMapCheck, CResizer::topleft, 0);
     m_resizer.AddChild(m_ballReflectPlayfieldEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_ballDefaultBulbIntensScaleEdit, CResizer::topleft, RD_STRETCH_WIDTH);
 

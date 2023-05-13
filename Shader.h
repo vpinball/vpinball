@@ -23,6 +23,8 @@ enum ShaderTechniques
 {
    SHADER_TECHNIQUE(RenderBall),
    SHADER_TECHNIQUE(RenderBall_DecalMode),
+   SHADER_TECHNIQUE(RenderBall_SphericalMap),
+   SHADER_TECHNIQUE(RenderBall_SphericalMap_DecalMode),
    SHADER_TECHNIQUE(RenderBallTrail),
    // OpenGL only has the first variant. DX9 needs all of them due to shader compiler limitation
    SHADER_TECHNIQUE(basic_with_texture),

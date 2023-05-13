@@ -104,6 +104,10 @@ FEATURES:
   - for camera mode, adjust the user interface to show these informations and allow to easily reset to a default position by pressing the plunger key.
 - change camera mode buttons to match the ones when starting VPX with -povedit (Start = Export POV, Credit = Reset/Quit, Plunger = Defaults)
 
+- ball texture can be set as either a spherical map (the default, like it used to be before 10.8) or an equirectangular map. Equirectangular maps
+  are what is usually used for environment lighting. The benefit of using them is that the reflections are view dependent and that they can match
+  the table environment image for consistency between lighting and reflections.
+
 FIXES:
 
 - fix analogue nudge not working for joysticks/gamepads in XInput mode

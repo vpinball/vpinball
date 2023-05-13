@@ -737,6 +737,7 @@
 #define IDC_FADE_SPEED_DOWN             437
 #define IDC_BALL_DECAL_MODE             438
 #define IDC_FS_INCL                     439
+#define IDC_BALL_SPHERICAL_MAP          439
 #define IDC_FS_FOV                      440
 #define IDC_FS_LB                       441
 #define IDC_FS_ROT                      442
