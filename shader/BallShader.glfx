@@ -235,13 +235,13 @@ void main()
 		edge*(6.0*1.0/0.4)-(6.0*0.6/0.4) :
 		0.0;
 
-    const float2 uv0 = %PARAM0% ? float2(0.5 + r.y*m, 0.5 - r.x*m) : float2(0.5 - r.x*m, 0.5 - r.y*m);
+    const float2 uv0 = float2(0.5 - r.x*m, 0.5 - r.y*m);
     float3 ballImageColor = texture(tex_ball_color, uv0).xyz;
 
     const float4 decalColorT = texture(tex_ball_decal, float2(normal_t0x.w, worldPos_t0y.w));
     float3 decalColor = decalColorT.xyz;
 
-    if (!%PARAM1%) // decalMode
+    if (!%PARAM0%) // decalMode
     {
        // decal texture is an alpha scratch texture and must be added to the ball texture
        // the strength of the scratches totally rely on the alpha values.
@@ -257,7 +257,7 @@ void main()
        return;
     }
 
-    if (!%PARAM1%) // decalMode
+    if (!%PARAM0%) // decalMode
        ballImageColor *= fenvEmissionScale_TexWidth.x;
     else
        ballImageColor *= 0.5*fenvEmissionScale_TexWidth.x; //!! 0.5=magic
@@ -291,13 +291,13 @@ void main()
 
     float3 diffuse = cBase_Alpha.xyz*0.075;
 
-    if(!%PARAM1%) // decalMode
+    if(!%PARAM0%) // decalMode
        diffuse *= decalColor; // scratches make the material more rough
 
     const float3 glossy = max(diffuse*2.0, float3(0.1,0.1,0.1)); //!! meh
     float3 specular = playfieldColor*cBase_Alpha.xyz; //!! meh, too, as only added in ballLightLoop anyhow
 
-    if(!%PARAM1%)
+    if(!%PARAM0%)
        specular *= float3(1.,1.,1.)-decalColor; // see above
 
    color.xyz = ballLightLoop(worldPos_t0y.xyz, normal_t0x.xyz, /*camera=0,0,0,1*/-worldPos_t0y.xyz, diffuse, glossy, specular, 1.0, false);
@@ -307,7 +307,7 @@ void main()
 #if 0
 float4 psBallReflection( const in voutReflection IN ) : COLOR
 {
-   const float2 envTex = cabMode ? float2(r.y*0.5 + 0.5, -r.x*0.5 + 0.5) : float2(r.x*0.5 + 0.5, r.y*0.5 + 0.5);
+   const float2 envTex = float2(r.x*0.5 + 0.5, r.y*0.5 + 0.5);
    float3 ballImageColor = texture(tex_ball_color, envTex).xyz;
    ballImageColor = (cBase_Alpha.xyz*(0.075*0.25) + ballImageColor)*fenvEmissionScale_TexWidth.x; //!! just add the ballcolor in, this is a whacky reflection anyhow
    float alpha = saturate((tex0.y - position_radius.y) / position_radius.w);
@@ -334,9 +334,7 @@ void main()
 
 ////TECHNIQUES
 
-RenderBall:P0:vsBall():gsBall():psBall(false,false)
-RenderBall_DecalMode:P0:vsBall():gsBall():psBall(false, true)
-RenderBall_CabMode:P0:vsBall():gsBall():psBall(true,false)
-RenderBall_CabMode_DecalMode:P0:vsBall():gsBall():psBall(true,true)
+RenderBall:P0:vsBall():gsBall():psBall(false)
+RenderBall_DecalMode:P0:vsBall():gsBall():psBall(true)
 //RenderBallReflection:P0:vsBallReflection():psBallReflection()
 RenderBallTrail:P0:vsBallTrail():gsBallTrail():psBallTrail()
