@@ -917,11 +917,11 @@ void MaterialDialog::OnClose()
 
 void MaterialDialog::LoadPosition()
 {
-    const int x = LoadValueIntWithDefault(regKey[RegName::Editor], "MaterialMngPosX"s, 0);
-    const int y = LoadValueIntWithDefault(regKey[RegName::Editor], "MaterialMngPosY"s, 0);
+    const int x = LoadValueWithDefault(regKey[RegName::Editor], "MaterialMngPosX"s, 0);
+    const int y = LoadValueWithDefault(regKey[RegName::Editor], "MaterialMngPosY"s, 0);
 
-    const int w = LoadValueIntWithDefault(regKey[RegName::Editor], "MaterialMngWidth"s, 1000);
-    const int h = LoadValueIntWithDefault(regKey[RegName::Editor], "MaterialMngHeight"s, 800);
+    const int w = LoadValueWithDefault(regKey[RegName::Editor], "MaterialMngWidth"s, 1000);
+    const int h = LoadValueWithDefault(regKey[RegName::Editor], "MaterialMngHeight"s, 800);
     SetWindowPos(nullptr, x, y, w, h, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE);
 }
 
@@ -929,10 +929,10 @@ void MaterialDialog::SavePosition()
 {
     const CRect rect = GetWindowRect();
 
-    SaveValueInt(regKey[RegName::Editor], "MaterialMngPosX"s, rect.left);
-    SaveValueInt(regKey[RegName::Editor], "MaterialMngPosY"s, rect.top);
+    SaveValue(regKey[RegName::Editor], "MaterialMngPosX"s, (int)rect.left);
+    SaveValue(regKey[RegName::Editor], "MaterialMngPosY"s, (int)rect.top);
     const int w = rect.right - rect.left;
-    SaveValueInt(regKey[RegName::Editor], "MaterialMngWidth"s, w);
+    SaveValue(regKey[RegName::Editor], "MaterialMngWidth"s, w);
     const int h = rect.bottom - rect.top;
-    SaveValueInt(regKey[RegName::Editor], "MaterialMngHeight"s, h);
+    SaveValue(regKey[RegName::Editor], "MaterialMngHeight"s, h);
 }

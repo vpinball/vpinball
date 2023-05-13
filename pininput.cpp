@@ -138,57 +138,57 @@ PinInput::~PinInput()
 
 void PinInput::LoadSettings()
 {
-   m_lr_axis = LoadValueIntWithDefault(regKey[RegName::Player], "LRAxis"s, m_lr_axis);
-   m_ud_axis = LoadValueIntWithDefault(regKey[RegName::Player], "UDAxis"s, m_ud_axis);
-   m_lr_axis_reverse = LoadValueBoolWithDefault(regKey[RegName::Player], "LRAxisFlip"s, m_lr_axis_reverse);
-   m_ud_axis_reverse = LoadValueBoolWithDefault(regKey[RegName::Player], "UDAxisFlip"s, m_ud_axis_reverse);
-   m_plunger_axis = LoadValueIntWithDefault(regKey[RegName::Player], "PlungerAxis"s, m_plunger_axis);
-   m_plunger_reverse = LoadValueBoolWithDefault(regKey[RegName::Player], "ReversePlungerAxis"s, m_plunger_reverse);
-   m_plunger_retract = LoadValueBoolWithDefault(regKey[RegName::Player], "PlungerRetract"s, m_plunger_retract);
-   m_override_default_buttons = LoadValueBoolWithDefault(regKey[RegName::Player], "PBWDefaultLayout"s, m_override_default_buttons);
-   m_disable_esc = LoadValueBoolWithDefault(regKey[RegName::Player], "DisableESC"s, m_disable_esc);
-   m_joylflipkey = LoadValueIntWithDefault(regKey[RegName::Player], "JoyLFlipKey"s, m_joylflipkey);
-   m_joyrflipkey = LoadValueIntWithDefault(regKey[RegName::Player], "JoyRFlipKey"s, m_joyrflipkey);
-   m_joyplungerkey = LoadValueIntWithDefault(regKey[RegName::Player], "JoyPlungerKey"s, m_joyplungerkey);
-   m_joyaddcreditkey = LoadValueIntWithDefault(regKey[RegName::Player], "JoyAddCreditKey"s, m_joyaddcreditkey);
-   m_joyaddcreditkey2 = LoadValueIntWithDefault(regKey[RegName::Player], "JoyAddCredit2Key"s, m_joyaddcreditkey2);
-   m_joylmagnasave = LoadValueIntWithDefault(regKey[RegName::Player], "JoyLMagnaSave"s, m_joylmagnasave);
-   m_joyrmagnasave = LoadValueIntWithDefault(regKey[RegName::Player], "JoyRMagnaSave"s, m_joyrmagnasave);
-   m_joystartgamekey = LoadValueIntWithDefault(regKey[RegName::Player], "JoyStartGameKey"s, m_joystartgamekey);
-   m_joyframecount = LoadValueIntWithDefault(regKey[RegName::Player], "JoyFrameCount"s, m_joyframecount);
-   m_joyexitgamekey = LoadValueIntWithDefault(regKey[RegName::Player], "JoyExitGameKey"s, m_joyexitgamekey);
-   m_joyvolumeup = LoadValueIntWithDefault(regKey[RegName::Player], "JoyVolumeUp"s, m_joyvolumeup);
-   m_joyvolumedown = LoadValueIntWithDefault(regKey[RegName::Player], "JoyVolumeDown"s, m_joyvolumedown);
-   m_joylefttilt = LoadValueIntWithDefault(regKey[RegName::Player], "JoyLTiltKey"s, m_joylefttilt);
-   m_joycentertilt = LoadValueIntWithDefault(regKey[RegName::Player], "JoyCTiltKey"s, m_joycentertilt);
-   m_joyrighttilt = LoadValueIntWithDefault(regKey[RegName::Player], "JoyRTiltKey"s, m_joyrighttilt);
-   m_joypmbuyin = LoadValueIntWithDefault(regKey[RegName::Player], "JoyPMBuyIn"s, m_joypmbuyin);
-   m_joypmcoin3 = LoadValueIntWithDefault(regKey[RegName::Player], "JoyPMCoin3"s, m_joypmcoin3);
-   m_joypmcoin4 = LoadValueIntWithDefault(regKey[RegName::Player], "JoyPMCoin4"s, m_joypmcoin4);
-   m_joypmcoindoor = LoadValueIntWithDefault(regKey[RegName::Player], "JoyPMCoinDoor"s, m_joypmcoindoor);
-   m_joypmcancel = LoadValueIntWithDefault(regKey[RegName::Player], "JoyPMCancel"s, m_joypmcancel);
-   m_joypmdown = LoadValueIntWithDefault(regKey[RegName::Player], "JoyPMDown"s, m_joypmdown);
-   m_joypmup = LoadValueIntWithDefault(regKey[RegName::Player], "JoyPMUp"s, m_joypmup);
-   m_joypmenter = LoadValueIntWithDefault(regKey[RegName::Player], "JoyPMEnter"s, m_joypmenter);
-   m_joycustom1 = LoadValueIntWithDefault(regKey[RegName::Player], "JoyCustom1"s, m_joycustom1);
-   m_joycustom1key = LoadValueIntWithDefault(regKey[RegName::Player], "JoyCustom1Key"s, m_joycustom1key);
-   m_joycustom2 = LoadValueIntWithDefault(regKey[RegName::Player], "JoyCustom2"s, m_joycustom2);
-   m_joycustom2key = LoadValueIntWithDefault(regKey[RegName::Player], "JoyCustom2Key"s, m_joycustom2key);
-   m_joycustom3 = LoadValueIntWithDefault(regKey[RegName::Player], "JoyCustom3"s, m_joycustom3);
-   m_joycustom3key = LoadValueIntWithDefault(regKey[RegName::Player], "JoyCustom3Key"s, m_joycustom3key);
-   m_joycustom4 = LoadValueIntWithDefault(regKey[RegName::Player], "JoyCustom4"s, m_joycustom4);
-   m_joycustom4key = LoadValueIntWithDefault(regKey[RegName::Player], "JoyCustom4Key"s, m_joycustom4key);
-   m_joymechtilt = LoadValueIntWithDefault(regKey[RegName::Player], "JoyMechTiltKey"s, m_joymechtilt);
-   m_joydebugballs = LoadValueIntWithDefault(regKey[RegName::Player], "JoyDebugKey"s, m_joydebugballs);
-   m_joydebugger = LoadValueIntWithDefault(regKey[RegName::Player], "JoyDebuggerKey"s, m_joydebugger);
-   m_joylockbar = LoadValueIntWithDefault(regKey[RegName::Player], "JoyLockbarKey"s, m_joylockbar);
-   m_joytablerecenter = LoadValueIntWithDefault(regKey[RegName::Player], "JoyTableRecenterKey"s, m_joytablerecenter);
-   m_joytableup = LoadValueIntWithDefault(regKey[RegName::Player], "JoyTableUpKey"s, m_joytableup);
-   m_joytabledown = LoadValueIntWithDefault(regKey[RegName::Player], "JoyTableDownKey"s, m_joytabledown);
-   m_enableMouseInPlayer = LoadValueBoolWithDefault(regKey[RegName::Player], "EnableMouseInPlayer"s, m_enableMouseInPlayer);
-   m_enableCameraModeFlyAround = LoadValueBoolWithDefault(regKey[RegName::Player], "EnableCameraModeFlyAround"s, m_enableCameraModeFlyAround);
-   m_enable_nudge_filter = LoadValueBoolWithDefault(regKey[RegName::Player], "EnableNudgeFilter"s, m_enable_nudge_filter);
-   m_deadz = LoadValueIntWithDefault(regKey[RegName::Player], "DeadZone"s, 0);
+   m_lr_axis = LoadValueWithDefault(regKey[RegName::Player], "LRAxis"s, m_lr_axis);
+   m_ud_axis = LoadValueWithDefault(regKey[RegName::Player], "UDAxis"s, m_ud_axis);
+   m_lr_axis_reverse = LoadValueWithDefault(regKey[RegName::Player], "LRAxisFlip"s, m_lr_axis_reverse);
+   m_ud_axis_reverse = LoadValueWithDefault(regKey[RegName::Player], "UDAxisFlip"s, m_ud_axis_reverse);
+   m_plunger_axis = LoadValueWithDefault(regKey[RegName::Player], "PlungerAxis"s, m_plunger_axis);
+   m_plunger_reverse = LoadValueWithDefault(regKey[RegName::Player], "ReversePlungerAxis"s, m_plunger_reverse);
+   m_plunger_retract = LoadValueWithDefault(regKey[RegName::Player], "PlungerRetract"s, m_plunger_retract);
+   m_override_default_buttons = LoadValueWithDefault(regKey[RegName::Player], "PBWDefaultLayout"s, m_override_default_buttons);
+   m_disable_esc = LoadValueWithDefault(regKey[RegName::Player], "DisableESC"s, m_disable_esc);
+   m_joylflipkey = LoadValueWithDefault(regKey[RegName::Player], "JoyLFlipKey"s, m_joylflipkey);
+   m_joyrflipkey = LoadValueWithDefault(regKey[RegName::Player], "JoyRFlipKey"s, m_joyrflipkey);
+   m_joyplungerkey = LoadValueWithDefault(regKey[RegName::Player], "JoyPlungerKey"s, m_joyplungerkey);
+   m_joyaddcreditkey = LoadValueWithDefault(regKey[RegName::Player], "JoyAddCreditKey"s, m_joyaddcreditkey);
+   m_joyaddcreditkey2 = LoadValueWithDefault(regKey[RegName::Player], "JoyAddCredit2Key"s, m_joyaddcreditkey2);
+   m_joylmagnasave = LoadValueWithDefault(regKey[RegName::Player], "JoyLMagnaSave"s, m_joylmagnasave);
+   m_joyrmagnasave = LoadValueWithDefault(regKey[RegName::Player], "JoyRMagnaSave"s, m_joyrmagnasave);
+   m_joystartgamekey = LoadValueWithDefault(regKey[RegName::Player], "JoyStartGameKey"s, m_joystartgamekey);
+   m_joyframecount = LoadValueWithDefault(regKey[RegName::Player], "JoyFrameCount"s, m_joyframecount);
+   m_joyexitgamekey = LoadValueWithDefault(regKey[RegName::Player], "JoyExitGameKey"s, m_joyexitgamekey);
+   m_joyvolumeup = LoadValueWithDefault(regKey[RegName::Player], "JoyVolumeUp"s, m_joyvolumeup);
+   m_joyvolumedown = LoadValueWithDefault(regKey[RegName::Player], "JoyVolumeDown"s, m_joyvolumedown);
+   m_joylefttilt = LoadValueWithDefault(regKey[RegName::Player], "JoyLTiltKey"s, m_joylefttilt);
+   m_joycentertilt = LoadValueWithDefault(regKey[RegName::Player], "JoyCTiltKey"s, m_joycentertilt);
+   m_joyrighttilt = LoadValueWithDefault(regKey[RegName::Player], "JoyRTiltKey"s, m_joyrighttilt);
+   m_joypmbuyin = LoadValueWithDefault(regKey[RegName::Player], "JoyPMBuyIn"s, m_joypmbuyin);
+   m_joypmcoin3 = LoadValueWithDefault(regKey[RegName::Player], "JoyPMCoin3"s, m_joypmcoin3);
+   m_joypmcoin4 = LoadValueWithDefault(regKey[RegName::Player], "JoyPMCoin4"s, m_joypmcoin4);
+   m_joypmcoindoor = LoadValueWithDefault(regKey[RegName::Player], "JoyPMCoinDoor"s, m_joypmcoindoor);
+   m_joypmcancel = LoadValueWithDefault(regKey[RegName::Player], "JoyPMCancel"s, m_joypmcancel);
+   m_joypmdown = LoadValueWithDefault(regKey[RegName::Player], "JoyPMDown"s, m_joypmdown);
+   m_joypmup = LoadValueWithDefault(regKey[RegName::Player], "JoyPMUp"s, m_joypmup);
+   m_joypmenter = LoadValueWithDefault(regKey[RegName::Player], "JoyPMEnter"s, m_joypmenter);
+   m_joycustom1 = LoadValueWithDefault(regKey[RegName::Player], "JoyCustom1"s, m_joycustom1);
+   m_joycustom1key = LoadValueWithDefault(regKey[RegName::Player], "JoyCustom1Key"s, m_joycustom1key);
+   m_joycustom2 = LoadValueWithDefault(regKey[RegName::Player], "JoyCustom2"s, m_joycustom2);
+   m_joycustom2key = LoadValueWithDefault(regKey[RegName::Player], "JoyCustom2Key"s, m_joycustom2key);
+   m_joycustom3 = LoadValueWithDefault(regKey[RegName::Player], "JoyCustom3"s, m_joycustom3);
+   m_joycustom3key = LoadValueWithDefault(regKey[RegName::Player], "JoyCustom3Key"s, m_joycustom3key);
+   m_joycustom4 = LoadValueWithDefault(regKey[RegName::Player], "JoyCustom4"s, m_joycustom4);
+   m_joycustom4key = LoadValueWithDefault(regKey[RegName::Player], "JoyCustom4Key"s, m_joycustom4key);
+   m_joymechtilt = LoadValueWithDefault(regKey[RegName::Player], "JoyMechTiltKey"s, m_joymechtilt);
+   m_joydebugballs = LoadValueWithDefault(regKey[RegName::Player], "JoyDebugKey"s, m_joydebugballs);
+   m_joydebugger = LoadValueWithDefault(regKey[RegName::Player], "JoyDebuggerKey"s, m_joydebugger);
+   m_joylockbar = LoadValueWithDefault(regKey[RegName::Player], "JoyLockbarKey"s, m_joylockbar);
+   m_joytablerecenter = LoadValueWithDefault(regKey[RegName::Player], "JoyTableRecenterKey"s, m_joytablerecenter);
+   m_joytableup = LoadValueWithDefault(regKey[RegName::Player], "JoyTableUpKey"s, m_joytableup);
+   m_joytabledown = LoadValueWithDefault(regKey[RegName::Player], "JoyTableDownKey"s, m_joytabledown);
+   m_enableMouseInPlayer = LoadValueWithDefault(regKey[RegName::Player], "EnableMouseInPlayer"s, m_enableMouseInPlayer);
+   m_enableCameraModeFlyAround = LoadValueWithDefault(regKey[RegName::Player], "EnableCameraModeFlyAround"s, m_enableCameraModeFlyAround);
+   m_enable_nudge_filter = LoadValueWithDefault(regKey[RegName::Player], "EnableNudgeFilter"s, m_enable_nudge_filter);
+   m_deadz = LoadValueWithDefault(regKey[RegName::Player], "DeadZone"s, 0);
    m_deadz = m_deadz*JOYRANGEMX / 100;
 }
 
@@ -856,7 +856,7 @@ void PinInput::Init(const HWND hwnd)
    m_nextKeyPressedTime = 0;
    uShockType = 0;
 
-   m_inputApi = LoadValueIntWithDefault(regKey[RegName::Player], "InputApi"s, 0);
+   m_inputApi = LoadValueWithDefault(regKey[RegName::Player], "InputApi"s, 0);
 
    switch (m_inputApi) {
    case 1: //xInput
@@ -899,7 +899,7 @@ void PinInput::Init(const HWND hwnd)
       break;
    }
 
-   m_rumbleMode = (m_inputApi > 0) ? LoadValueIntWithDefault(regKey[RegName::Player], "RumbleMode"s, 3) : 0;
+   m_rumbleMode = (m_inputApi > 0) ? LoadValueWithDefault(regKey[RegName::Player], "RumbleMode"s, 3) : 0;
 
    if (m_inputApi == 0) {
 #ifdef USE_DINPUT8
@@ -1033,10 +1033,10 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
          ViewSetupID view_setup = table->m_BG_current_set;
          table->m_cameraLayoutMode = CLM_ABSOLUTE;
          // Default player position (90cm above, 30 cm away)
-         table->m_BG_xlatex[view_setup] = CMTOVPU(LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "CamX"s, 0.f));
-         table->m_BG_xlatey[view_setup] = CMTOVPU(LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "CamY"s, 30.f));
-         table->m_BG_scalex[view_setup] = LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "ScaleX"s, 1.f);
-         table->m_BG_scaley[view_setup] = LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "ScaleY"s, 1.f);
+         table->m_BG_xlatex[view_setup] = CMTOVPU(LoadValueWithDefault(regKey[RegName::DefaultCamera], "CamX"s, 0.f));
+         table->m_BG_xlatey[view_setup] = CMTOVPU(LoadValueWithDefault(regKey[RegName::DefaultCamera], "CamY"s, 30.f));
+         table->m_BG_scalex[view_setup] = LoadValueWithDefault(regKey[RegName::DefaultCamera], "ScaleX"s, 1.f);
+         table->m_BG_scaley[view_setup] = LoadValueWithDefault(regKey[RegName::DefaultCamera], "ScaleY"s, 1.f);
          table->m_BG_scalez[view_setup] = 1.f;
          if (table->m_BG_rotation[view_setup] != 0.f && table->m_BG_rotation[view_setup] != 90.f && table->m_BG_rotation[view_setup] != 180.f && table->m_BG_rotation[view_setup] != 270.f)
             table->m_BG_rotation[view_setup] = 0.f;
@@ -1046,22 +1046,22 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
          case BG_DESKTOP:
          case BG_FSS:
             table->m_BG_rotation[view_setup] = 0.f;
-            table->m_BG_FOV[view_setup] = (view_setup == BG_DESKTOP && !portrait) ? LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "DesktopFov"s, 43.2f)
-                                                                                  : LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "FSSFov"s, 67.f);
-            table->m_BG_layback[view_setup] = (view_setup == BG_DESKTOP && !portrait) ? LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "DesktopViewOffset"s, -12.2f)
-                                                                                      : LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "FSSViewOffset"s, 15.f);
-            table->m_BG_inclination[view_setup] = (view_setup == BG_DESKTOP && !portrait) ? LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "DesktopInclination"s, 50.f)
-                                                                                          : LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "FSSInclination"s, 56.f);
-            table->m_BG_xlatez[view_setup] = (view_setup == BG_DESKTOP && !portrait) ? CMTOVPU(LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "DesktopCamZ"s, 80.f))
-                                                                                     : CMTOVPU(LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "FSSCamZ"s, 65.f));
+            table->m_BG_FOV[view_setup] = (view_setup == BG_DESKTOP && !portrait) ? LoadValueWithDefault(regKey[RegName::DefaultCamera], "DesktopFov"s, 43.2f)
+                                                                                  : LoadValueWithDefault(regKey[RegName::DefaultCamera], "FSSFov"s, 67.f);
+            table->m_BG_layback[view_setup] = (view_setup == BG_DESKTOP && !portrait) ? LoadValueWithDefault(regKey[RegName::DefaultCamera], "DesktopViewOffset"s, -12.2f)
+                                                                                      : LoadValueWithDefault(regKey[RegName::DefaultCamera], "FSSViewOffset"s, 15.f);
+            table->m_BG_inclination[view_setup] = (view_setup == BG_DESKTOP && !portrait) ? LoadValueWithDefault(regKey[RegName::DefaultCamera], "DesktopInclination"s, 50.f)
+                                                                                          : LoadValueWithDefault(regKey[RegName::DefaultCamera], "FSSInclination"s, 56.f);
+            table->m_BG_xlatez[view_setup] = (view_setup == BG_DESKTOP && !portrait) ? CMTOVPU(LoadValueWithDefault(regKey[RegName::DefaultCamera], "DesktopCamZ"s, 80.f))
+                                                                                     : CMTOVPU(LoadValueWithDefault(regKey[RegName::DefaultCamera], "FSSCamZ"s, 65.f));
             break;
          case BG_FULLSCREEN:
             table->m_BG_rotation[view_setup] = portrait ? 0.f : 270.f;
-            table->m_BG_inclination[view_setup] = LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "CabinetInclination"s, 10.0f);
-            table->m_BG_FOV[view_setup] = portrait ? LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "CabinetFovPortrait"s, 55.1f)
-                                                   : LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "CabinetFovLandscape"s, 32.7f);
-            table->m_BG_layback[view_setup] = LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "CabinetViewOffset"s, 70.1f);
-            table->m_BG_xlatez[view_setup] = CMTOVPU(LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "CabinetCamZ"s, 90.f));
+            table->m_BG_inclination[view_setup] = LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetInclination"s, 10.0f);
+            table->m_BG_FOV[view_setup] = portrait ? LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetFovPortrait"s, 55.1f)
+                                                   : LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetFovLandscape"s, 32.7f);
+            table->m_BG_layback[view_setup] = LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetViewOffset"s, 70.1f);
+            table->m_BG_xlatez[view_setup] = CMTOVPU(LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetCamZ"s, 90.f));
             break;
          }
          g_pplayer->m_pin3d.m_cam.x = 0.f;
@@ -2012,7 +2012,7 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
             if ((input->dwData & 0x80) != 0)
             {
                g_pplayer->m_stereo3Denabled = !g_pplayer->m_stereo3Denabled;
-               SaveValueBool(regKey[RegName::Player], "Stereo3DEnabled"s, g_pplayer->m_stereo3Denabled);
+               SaveValue(regKey[RegName::Player], "Stereo3DEnabled"s, g_pplayer->m_stereo3Denabled);
             }
          }
          else if (input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eDBGBalls])

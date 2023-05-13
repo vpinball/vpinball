@@ -334,11 +334,11 @@ void RenderProbeDialog::OnClose()
 
 void RenderProbeDialog::LoadPosition()
 {
-   const int x = LoadValueIntWithDefault(regKey[RegName::Editor], "RenderProbeMngPosX"s, 0);
-   const int y = LoadValueIntWithDefault(regKey[RegName::Editor], "RenderProbeMngPosY"s, 0);
+   const int x = LoadValueWithDefault(regKey[RegName::Editor], "RenderProbeMngPosX"s, 0);
+   const int y = LoadValueWithDefault(regKey[RegName::Editor], "RenderProbeMngPosY"s, 0);
 
-   const int w = LoadValueIntWithDefault(regKey[RegName::Editor], "RenderProbeMngWidth"s, 1000);
-   const int h = LoadValueIntWithDefault(regKey[RegName::Editor], "RenderProbeMngHeight"s, 800);
+   const int w = LoadValueWithDefault(regKey[RegName::Editor], "RenderProbeMngWidth"s, 1000);
+   const int h = LoadValueWithDefault(regKey[RegName::Editor], "RenderProbeMngHeight"s, 800);
    SetWindowPos(nullptr, x, y, w, h, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE);
 }
 
@@ -346,10 +346,10 @@ void RenderProbeDialog::SavePosition()
 {
    const CRect rect = GetWindowRect();
 
-   SaveValueInt(regKey[RegName::Editor], "RenderProbeMngPosX"s, rect.left);
-   SaveValueInt(regKey[RegName::Editor], "RenderProbeMngPosY"s, rect.top);
+   SaveValue(regKey[RegName::Editor], "RenderProbeMngPosX"s, (int)rect.left);
+   SaveValue(regKey[RegName::Editor], "RenderProbeMngPosY"s, (int)rect.top);
    const int w = rect.right - rect.left;
-   SaveValueInt(regKey[RegName::Editor], "RenderProbeMngWidth"s, w);
+   SaveValue(regKey[RegName::Editor], "RenderProbeMngWidth"s, w);
    const int h = rect.bottom - rect.top;
-   SaveValueInt(regKey[RegName::Editor], "RenderProbeMngHeight"s, h);
+   SaveValue(regKey[RegName::Editor], "RenderProbeMngHeight"s, h);
 }

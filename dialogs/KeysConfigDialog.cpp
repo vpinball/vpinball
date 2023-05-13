@@ -295,70 +295,70 @@ void KeysConfigDialog::AddToolTip(char *text, HWND parentHwnd, HWND toolTipHwnd,
 
 BOOL KeysConfigDialog::OnInitDialog()
 {
-    bool on = LoadValueBoolWithDefault(regKey[RegName::Player], "PBWDefaultLayout"s, false);
+    bool on = LoadValueWithDefault(regKey[RegName::Player], "PBWDefaultLayout"s, false);
     ::SendMessage(GetDlgItem(IDC_DefaultLayout).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    on = LoadValueBoolWithDefault(regKey[RegName::Player], "DisableESC"s, false);
+    on = LoadValueWithDefault(regKey[RegName::Player], "DisableESC"s, false);
     ::SendMessage(GetDlgItem(IDC_DisableESC_CB).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    on = LoadValueBoolWithDefault(regKey[RegName::Player], "PBWRotationCB"s, false);
+    on = LoadValueWithDefault(regKey[RegName::Player], "PBWRotationCB"s, false);
     ::SendMessage(GetDlgItem(IDC_CBGLOBALROTATION).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    int key = LoadValueIntWithDefault(regKey[RegName::Player], "PBWRotationValue"s, 0);
+    int key = LoadValueWithDefault(regKey[RegName::Player], "PBWRotationValue"s, 0);
     SetDlgItemInt( IDC_GLOBALROTATION, key, FALSE);
 
-    on = LoadValueBoolWithDefault(regKey[RegName::Player], "TiltSensCB"s, false);
+    on = LoadValueWithDefault(regKey[RegName::Player], "TiltSensCB"s, false);
     ::SendMessage(GetDlgItem(IDC_CBGLOBALTILT).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    key = LoadValueIntWithDefault(regKey[RegName::Player], "TiltSensValue"s, 400);
+    key = LoadValueWithDefault(regKey[RegName::Player], "TiltSensValue"s, 400);
     SetDlgItemInt( IDC_GLOBALTILT, key, FALSE);
 
-    key = LoadValueIntWithDefault(regKey[RegName::Player], "DeadZone"s, 0);
+    key = LoadValueWithDefault(regKey[RegName::Player], "DeadZone"s, 0);
     SetDlgItemInt( IDC_DEADZONEAMT, key, FALSE);
 
-    on = LoadValueBoolWithDefault(regKey[RegName::Player], "PBWEnabled"s, false);
+    on = LoadValueWithDefault(regKey[RegName::Player], "PBWEnabled"s, false);
     ::SendMessage(GetDlgItem(IDC_GLOBALACCEL).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    on = LoadValueBoolWithDefault(regKey[RegName::Player], "PBWNormalMount"s, false);
+    on = LoadValueWithDefault(regKey[RegName::Player], "PBWNormalMount"s, false);
     ::SendMessage(GetDlgItem(IDC_GLOBALNMOUNT).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    on = LoadValueBoolWithDefault(regKey[RegName::Player], "ReversePlungerAxis"s, false);
+    on = LoadValueWithDefault(regKey[RegName::Player], "ReversePlungerAxis"s, false);
     ::SendMessage(GetDlgItem(IDC_ReversePlunger).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    on = LoadValueBoolWithDefault(regKey[RegName::Player], "PlungerRetract"s, false);
+    on = LoadValueWithDefault(regKey[RegName::Player], "PlungerRetract"s, false);
     ::SendMessage(GetDlgItem(IDC_PLUNGERRETRACT).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    on = LoadValueBoolWithDefault(regKey[RegName::Player], "LRAxisFlip"s, false);
+    on = LoadValueWithDefault(regKey[RegName::Player], "LRAxisFlip"s, false);
     ::SendMessage(GetDlgItem(IDC_LRAXISFLIP).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    on = LoadValueBoolWithDefault(regKey[RegName::Player], "UDAxisFlip"s, false);
+    on = LoadValueWithDefault(regKey[RegName::Player], "UDAxisFlip"s, false);
     ::SendMessage(GetDlgItem(IDC_UDAXISFLIP).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    key = LoadValueIntWithDefault(regKey[RegName::Player], "PBWAccelGainX"s, 150);
+    key = LoadValueWithDefault(regKey[RegName::Player], "PBWAccelGainX"s, 150);
     SetDlgItemInt( IDC_LRAXISGAIN, key, FALSE);
 
-    key = LoadValueIntWithDefault(regKey[RegName::Player], "PBWAccelGainY"s, 150);
+    key = LoadValueWithDefault(regKey[RegName::Player], "PBWAccelGainY"s, 150);
     SetDlgItemInt( IDC_UDAXISGAIN, key, FALSE);
 
-    key = LoadValueIntWithDefault(regKey[RegName::Player], "PBWAccelMaxX"s, 100);
+    key = LoadValueWithDefault(regKey[RegName::Player], "PBWAccelMaxX"s, 100);
     SetDlgItemInt( IDC_XMAX_EDIT, key, FALSE);
 
-    key = LoadValueIntWithDefault(regKey[RegName::Player], "PBWAccelMaxY"s, 100);
+    key = LoadValueWithDefault(regKey[RegName::Player], "PBWAccelMaxY"s, 100);
     SetDlgItemInt( IDC_YMAX_EDIT, key, FALSE);
 
-    on = LoadValueBoolWithDefault(regKey[RegName::Player], "EnableMouseInPlayer"s, true);
+    on = LoadValueWithDefault(regKey[RegName::Player], "EnableMouseInPlayer"s, true);
     ::SendMessage(GetDlgItem(IDC_ENABLE_MOUSE_PLAYER).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    on = LoadValueBoolWithDefault(regKey[RegName::Player], "EnableCameraModeFlyAround"s, false);
+    on = LoadValueWithDefault(regKey[RegName::Player], "EnableCameraModeFlyAround"s, false);
     ::SendMessage(GetDlgItem(IDC_ENABLE_CAMERA_FLY_AROUND).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    on = LoadValueBoolWithDefault(regKey[RegName::Player], "EnableNudgeFilter"s, false);
+    on = LoadValueWithDefault(regKey[RegName::Player], "EnableNudgeFilter"s, false);
     ::SendMessage(GetDlgItem(IDC_ENABLE_NUDGE_FILTER).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    on = LoadValueBoolWithDefault(regKey[RegName::Player], "EnableLegacyNudge"s, false);
+    on = LoadValueWithDefault(regKey[RegName::Player], "EnableLegacyNudge"s, false);
     ::SendMessage(GetDlgItem(IDC_ENABLE_LEGACY_NUDGE).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    const float legacyNudgeStrength = LoadValueFloatWithDefault(regKey[RegName::Player], "LegacyNudgeStrength"s, 1.f);
+    const float legacyNudgeStrength = LoadValueWithDefault(regKey[RegName::Player], "LegacyNudgeStrength"s, 1.f);
     SetDlgItemInt(IDC_LEGACY_NUDGE_STRENGTH, quantizeUnsignedPercent(legacyNudgeStrength), FALSE);
 
     for (unsigned int i = 0; i <= 30; ++i)
@@ -442,66 +442,66 @@ BOOL KeysConfigDialog::OnInitDialog()
 
     //
 
-    on = LoadValueBoolWithDefault(regKey[RegName::Controller], "ForceDisableB2S"s, false);
+    on = LoadValueWithDefault(regKey[RegName::Controller], "ForceDisableB2S"s, false);
     ::SendMessage(GetDlgItem(IDC_DOF_FORCEDISABLE).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    int selected = LoadValueIntWithDefault(regKey[RegName::Controller], "DOFContactors"s, 2); // assume both as standard
+    int selected = LoadValueWithDefault(regKey[RegName::Controller], "DOFContactors"s, 2); // assume both as standard
     HWND hwnd = GetDlgItem(IDC_DOF_CONTACTORS).GetHwnd();
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Sound FX");
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"DOF");
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Both");
     ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
 
-    selected = LoadValueIntWithDefault(regKey[RegName::Controller], "DOFKnocker"s, 2); // assume both as standard
+    selected = LoadValueWithDefault(regKey[RegName::Controller], "DOFKnocker"s, 2); // assume both as standard
     hwnd = GetDlgItem(IDC_DOF_KNOCKER).GetHwnd();
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Sound FX");
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"DOF");
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Both");
     ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
 
-    selected = LoadValueIntWithDefault(regKey[RegName::Controller], "DOFChimes"s, 2); // assume both as standard
+    selected = LoadValueWithDefault(regKey[RegName::Controller], "DOFChimes"s, 2); // assume both as standard
     hwnd = GetDlgItem(IDC_DOF_CHIMES).GetHwnd();
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Sound FX");
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"DOF");
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Both");
     ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
 
-    selected = LoadValueIntWithDefault(regKey[RegName::Controller], "DOFBell"s, 2); // assume both as standard
+    selected = LoadValueWithDefault(regKey[RegName::Controller], "DOFBell"s, 2); // assume both as standard
     hwnd = GetDlgItem(IDC_DOF_BELL).GetHwnd();
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Sound FX");
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"DOF");
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Both");
     ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
 
-    selected = LoadValueIntWithDefault(regKey[RegName::Controller], "DOFGear"s, 2); // assume both as standard
+    selected = LoadValueWithDefault(regKey[RegName::Controller], "DOFGear"s, 2); // assume both as standard
     hwnd = GetDlgItem(IDC_DOF_GEAR).GetHwnd();
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Sound FX");
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"DOF");
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Both");
     ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
 
-    selected = LoadValueIntWithDefault(regKey[RegName::Controller], "DOFShaker"s, 2); // assume both as standard
+    selected = LoadValueWithDefault(regKey[RegName::Controller], "DOFShaker"s, 2); // assume both as standard
     hwnd = GetDlgItem(IDC_DOF_SHAKER).GetHwnd();
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Sound FX");
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"DOF");
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Both");
     ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
 
-    selected = LoadValueIntWithDefault(regKey[RegName::Controller], "DOFFlippers"s, 2); // assume both as standard
+    selected = LoadValueWithDefault(regKey[RegName::Controller], "DOFFlippers"s, 2); // assume both as standard
     hwnd = GetDlgItem(IDC_DOF_FLIPPERS).GetHwnd();
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Sound FX");
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"DOF");
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Both");
     ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
 
-    selected = LoadValueIntWithDefault(regKey[RegName::Controller], "DOFTargets"s, 2); // assume both as standard
+    selected = LoadValueWithDefault(regKey[RegName::Controller], "DOFTargets"s, 2); // assume both as standard
     hwnd = GetDlgItem(IDC_DOF_TARGETS).GetHwnd();
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Sound FX");
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"DOF");
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Both");
     ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
 
-    selected = LoadValueIntWithDefault(regKey[RegName::Controller], "DOFDropTargets"s, 2); // assume both as standard
+    selected = LoadValueWithDefault(regKey[RegName::Controller], "DOFDropTargets"s, 2); // assume both as standard
     hwnd = GetDlgItem(IDC_DOF_DROPTARGETS).GetHwnd();
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Sound FX");
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"DOF");
@@ -510,7 +510,7 @@ BOOL KeysConfigDialog::OnInitDialog()
 
     //
 
-    selected = LoadValueIntWithDefault(regKey[RegName::Player], "PlungerAxis"s, 3); // assume Z Axis as standard
+    selected = LoadValueWithDefault(regKey[RegName::Player], "PlungerAxis"s, 3); // assume Z Axis as standard
     hwnd = GetDlgItem(IDC_PLUNGERAXIS).GetHwnd();
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"(disabled)");
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"X Axis");
@@ -523,7 +523,7 @@ BOOL KeysConfigDialog::OnInitDialog()
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Slider 2");
     ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
 
-    selected = LoadValueIntWithDefault(regKey[RegName::Player], "LRAxis"s, 1); // assume X Axis as standard
+    selected = LoadValueWithDefault(regKey[RegName::Player], "LRAxis"s, 1); // assume X Axis as standard
     hwnd = GetDlgItem(IDC_LRAXISCOMBO).GetHwnd();
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"(disabled)");
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"X Axis");
@@ -536,7 +536,7 @@ BOOL KeysConfigDialog::OnInitDialog()
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Slider 2");
     ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
 
-    selected = LoadValueIntWithDefault(regKey[RegName::Player], "UDAxis"s, 2); // assume Y Axis as standard
+    selected = LoadValueWithDefault(regKey[RegName::Player], "UDAxis"s, 2); // assume Y Axis as standard
     hwnd = GetDlgItem(IDC_UDAXISCOMBO).GetHwnd();
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"(disabled)");
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"X Axis");
@@ -688,7 +688,7 @@ BOOL KeysConfigDialog::OnInitDialog()
     ::SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc);
     ::SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
 
-    int inputApi = LoadValueIntWithDefault(regKey[RegName::Player], "InputApi"s, 0);
+    int inputApi = LoadValueWithDefault(regKey[RegName::Player], "InputApi"s, 0);
     int inputApiIndex = inputApi;
     const HWND hwndInputApi = GetDlgItem(IDC_COMBO_INPUT_API).GetHwnd();
 
@@ -726,7 +726,7 @@ BOOL KeysConfigDialog::OnInitDialog()
 
     GetDlgItem(IDC_COMBO_RUMBLE).EnableWindow(inputApiCount > 1);
 
-    const int rumbleMode = LoadValueIntWithDefault(regKey[RegName::Player], "RumbleMode"s, 3);
+    const int rumbleMode = LoadValueWithDefault(regKey[RegName::Player], "RumbleMode"s, 3);
     const HWND hwndRumble = GetDlgItem(IDC_COMBO_RUMBLE).GetHwnd();
     ::SendMessage(hwndRumble, CB_ADDSTRING, 0, (LPARAM)"Off");
     ::SendMessage(hwndRumble, CB_ADDSTRING, 0, (LPARAM)"Table only (N/A yet)"); //!! not supported yet
@@ -953,66 +953,66 @@ void KeysConfigDialog::OnOK()
 
     newvalue = GetDlgItemInt(IDC_LRAXISGAIN, nothing, TRUE);
     if (newvalue < 0) { newvalue = 0; }
-    SaveValueInt(regKey[RegName::Player], "PBWAccelGainX"s, newvalue);
+    SaveValue(regKey[RegName::Player], "PBWAccelGainX"s, newvalue);
 
     newvalue = GetDlgItemInt(IDC_UDAXISGAIN, nothing, TRUE);
     if (newvalue < 0) { newvalue = 0; }
-    SaveValueInt(regKey[RegName::Player], "PBWAccelGainY"s, newvalue);
+    SaveValue(regKey[RegName::Player], "PBWAccelGainY"s, newvalue);
 
     newvalue = GetDlgItemInt(IDC_DEADZONEAMT, nothing, TRUE);
     if (newvalue < 0) { newvalue = 0; }
     if (newvalue > 100) { newvalue = 100; }
-    SaveValueInt(regKey[RegName::Player], "DeadZone"s, newvalue);
+    SaveValue(regKey[RegName::Player], "DeadZone"s, newvalue);
 
     newvalue = GetDlgItemInt(IDC_XMAX_EDIT, nothing, TRUE);
     if (newvalue < 0) { newvalue = 0; }
     if (newvalue > 100) { newvalue = 100; }
-    SaveValueInt(regKey[RegName::Player], "PBWAccelMaxX"s, newvalue);
+    SaveValue(regKey[RegName::Player], "PBWAccelMaxX"s, newvalue);
 
     newvalue = GetDlgItemInt(IDC_YMAX_EDIT, nothing, TRUE);
     if (newvalue < 0) { newvalue = 0; }
     if (newvalue > 100) { newvalue = 100; }
-    SaveValueInt(regKey[RegName::Player], "PBWAccelMaxY"s, newvalue);
+    SaveValue(regKey[RegName::Player], "PBWAccelMaxY"s, newvalue);
 
     selected = ::SendMessage(GetDlgItem(IDC_DefaultLayout).GetHwnd(), BM_GETCHECK, 0, 0);
-    SaveValueBool(regKey[RegName::Player], "PBWDefaultLayout"s, selected != 0);
+    SaveValue(regKey[RegName::Player], "PBWDefaultLayout"s, selected != 0);
 
     selected = ::SendMessage(GetDlgItem(IDC_DisableESC_CB).GetHwnd(), BM_GETCHECK, 0, 0);
-    SaveValueBool(regKey[RegName::Player], "DisableESC"s, selected != 0);
+    SaveValue(regKey[RegName::Player], "DisableESC"s, selected != 0);
 
     selected = ::SendMessage(GetDlgItem(IDC_LRAXISFLIP).GetHwnd(), BM_GETCHECK, 0, 0);
-    SaveValueBool(regKey[RegName::Player], "LRAxisFlip"s, selected != 0);
+    SaveValue(regKey[RegName::Player], "LRAxisFlip"s, selected != 0);
 
     selected = ::SendMessage(GetDlgItem(IDC_UDAXISFLIP).GetHwnd(), BM_GETCHECK, 0, 0);
-    SaveValueBool(regKey[RegName::Player], "UDAxisFlip"s, selected != 0);
+    SaveValue(regKey[RegName::Player], "UDAxisFlip"s, selected != 0);
 
     selected = ::SendMessage(GetDlgItem(IDC_ReversePlunger).GetHwnd(), BM_GETCHECK, 0, 0);
-    SaveValueBool(regKey[RegName::Player], "ReversePlungerAxis"s, selected != 0);
+    SaveValue(regKey[RegName::Player], "ReversePlungerAxis"s, selected != 0);
 
     selected = ::SendMessage(GetDlgItem(IDC_PLUNGERRETRACT).GetHwnd(), BM_GETCHECK, 0, 0);
-    SaveValueBool(regKey[RegName::Player], "PlungerRetract"s, selected != 0);
+    SaveValue(regKey[RegName::Player], "PlungerRetract"s, selected != 0);
 
     selected = ::SendMessage(GetDlgItem(IDC_GLOBALACCEL).GetHwnd(), BM_GETCHECK, 0, 0);
-    SaveValueBool(regKey[RegName::Player], "PBWEnabled"s, selected != 0);
+    SaveValue(regKey[RegName::Player], "PBWEnabled"s, selected != 0);
 
     selected = ::SendMessage(GetDlgItem(IDC_GLOBALNMOUNT).GetHwnd(), BM_GETCHECK, 0, 0);
-    SaveValueBool(regKey[RegName::Player], "PBWNormalMount"s, selected != 0);
+    SaveValue(regKey[RegName::Player], "PBWNormalMount"s, selected != 0);
 
     selected = ::SendMessage(GetDlgItem(IDC_CBGLOBALROTATION).GetHwnd(), BM_GETCHECK, 0, 0);
-    SaveValueBool(regKey[RegName::Player], "PBWRotationCB"s, selected != 0);
+    SaveValue(regKey[RegName::Player], "PBWRotationCB"s, selected != 0);
 
     newvalue = GetDlgItemInt(IDC_GLOBALROTATION, nothing, TRUE);
-    SaveValueInt(regKey[RegName::Player], "PBWRotationValue"s, newvalue);
+    SaveValue(regKey[RegName::Player], "PBWRotationValue"s, newvalue);
 
     const bool tscb = (::SendMessage(GetDlgItem(IDC_CBGLOBALTILT).GetHwnd(), BM_GETCHECK, 0, 0) != 0);
-    SaveValueBool(regKey[RegName::Player], "TiltSensCB"s, tscb);
+    SaveValue(regKey[RegName::Player], "TiltSensCB"s, tscb);
 
     newvalue = GetDlgItemInt(IDC_GLOBALTILT, nothing, TRUE);
     if (newvalue < 0) { newvalue = 0; }
     if (newvalue > 1000) { newvalue = 1000; }
-    SaveValueInt(regKey[RegName::Player], "TiltSensValue"s, newvalue);
+    SaveValue(regKey[RegName::Player], "TiltSensValue"s, newvalue);
     if (tscb)
-        SaveValueInt(regKey[RegName::Player], "TiltSensitivity"s, newvalue);
+        SaveValue(regKey[RegName::Player], "TiltSensitivity"s, newvalue);
     else
         DeleteValue(regKey[RegName::Player], "TiltSensitivity"s);
 
@@ -1021,7 +1021,7 @@ void KeysConfigDialog::OnOK()
         if (i == eTableRecenter || i == eTableUp || i == eTableDown)
            continue;
         const size_t key = ::GetWindowLongPtr(GetDlgItem(regkey_idc[i]).GetHwnd(), GWLP_USERDATA);
-        SaveValueInt(regKey[RegName::Player], regkey_string[i], (int)key);
+        SaveValue(regKey[RegName::Player], regkey_string[i], (int)key);
     }
 
     SetValue(IDC_JOYCUSTOM1, regKey[RegName::Player], "JoyCustom1Key"s);
@@ -1039,22 +1039,22 @@ void KeysConfigDialog::OnOK()
     SetValue(IDC_DOF_DROPTARGETS, regKey[RegName::Controller], "DOFDropTargets"s);
 
     selected = ::SendMessage(GetDlgItem(IDC_ENABLE_NUDGE_FILTER).GetHwnd(), BM_GETCHECK, 0, 0);
-    SaveValueBool(regKey[RegName::Player], "EnableNudgeFilter"s, selected != 0);
+    SaveValue(regKey[RegName::Player], "EnableNudgeFilter"s, selected != 0);
 
     selected = ::SendMessage(GetDlgItem(IDC_ENABLE_LEGACY_NUDGE).GetHwnd(), BM_GETCHECK, 0, 0);
-    SaveValueBool(regKey[RegName::Player], "EnableLegacyNudge"s, selected != 0);
+    SaveValue(regKey[RegName::Player], "EnableLegacyNudge"s, selected != 0);
 
     newvalue = GetDlgItemInt(IDC_LEGACY_NUDGE_STRENGTH, nothing, TRUE);
-    SaveValueFloat(regKey[RegName::Player], "LegacyNudgeStrength"s, dequantizeUnsignedPercent((unsigned int)newvalue));
+    SaveValue(regKey[RegName::Player], "LegacyNudgeStrength"s, dequantizeUnsignedPercent((unsigned int)newvalue));
 
     selected = ::SendMessage(GetDlgItem(IDC_ENABLE_MOUSE_PLAYER).GetHwnd(), BM_GETCHECK, 0, 0);
-    SaveValueBool(regKey[RegName::Player], "EnableMouseInPlayer"s, selected != 0);
+    SaveValue(regKey[RegName::Player], "EnableMouseInPlayer"s, selected != 0);
 
     selected = ::SendMessage(GetDlgItem(IDC_ENABLE_CAMERA_FLY_AROUND).GetHwnd(), BM_GETCHECK, 0, 0);
-    SaveValueBool(regKey[RegName::Player], "EnableCameraModeFlyAround"s, selected != 0);
+    SaveValue(regKey[RegName::Player], "EnableCameraModeFlyAround"s, selected != 0);
 
     selected = ::SendMessage(GetDlgItem(IDC_DOF_FORCEDISABLE).GetHwnd(), BM_GETCHECK, 0, 0);
-    SaveValueBool(regKey[RegName::Controller], "ForceDisableB2S"s, selected != 0);
+    SaveValue(regKey[RegName::Controller], "ForceDisableB2S"s, selected != 0);
 
     int inputApi = (int)SendMessage(GetDlgItem(IDC_COMBO_INPUT_API).GetHwnd(), CB_GETCURSEL, 0, 0);
 #ifndef ENABLE_XINPUT
@@ -1069,10 +1069,10 @@ void KeysConfigDialog::OnOK()
 #ifndef ENABLE_VRCONTROLLER
     if (inputApi >= 4) inputApi++;
 #endif
-    SaveValueInt(regKey[RegName::Player], "InputApi"s, inputApi);
+    SaveValue(regKey[RegName::Player], "InputApi"s, inputApi);
 
     const int rumble = (int)SendMessage(GetDlgItem(IDC_COMBO_RUMBLE).GetHwnd(), CB_GETCURSEL, 0, 0);
-    SaveValueInt(regKey[RegName::Player], "RumbleMode"s, rumble);
+    SaveValue(regKey[RegName::Player], "RumbleMode"s, rumble);
 
     CDialog::OnOK();
 }
@@ -1099,7 +1099,7 @@ void KeysConfigDialog::SetValue(int nID, const string& regKey, const string& reg
     LRESULT selected = ::SendMessage(GetDlgItem(nID).GetHwnd(), CB_GETCURSEL, 0, 0);
     if (selected == LB_ERR)
         selected = 2; // assume both as standard
-    SaveValueInt(regKey, regValue, (int)selected);
+    SaveValue(regKey, regValue, (int)selected);
 }
 
 void KeysConfigDialog::StartTimer(int nID)

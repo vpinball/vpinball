@@ -205,7 +205,7 @@ class FrameQueueLimiter
 public:
    void Init(RenderDevice * const pd3dDevice, const int numFrames)
    {
-      const int EnableLegacyMaximumPreRenderedFrames = LoadValueIntWithDefault(regKey[RegName::Player], "EnableLegacyMaximumPreRenderedFrames"s, 0);
+      const int EnableLegacyMaximumPreRenderedFrames = LoadValueWithDefault(regKey[RegName::Player], "EnableLegacyMaximumPreRenderedFrames"s, 0);
 
       // if available, use the official RenderDevice mechanism
       if (!EnableLegacyMaximumPreRenderedFrames && pd3dDevice->SetMaximumPreRenderedFrames(numFrames))

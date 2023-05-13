@@ -25,8 +25,8 @@ HRESULT Textbox::Init(PinTable * const ptable, const float x, const float y, con
 {
    m_ptable = ptable;
 
-   const float width  = LoadValueFloatWithDefault(regKey[RegName::DefaultPropsTextBox], "Width"s, 100.0f);
-   const float height = LoadValueFloatWithDefault(regKey[RegName::DefaultPropsTextBox], "Height"s, 50.0f);
+   const float width  = LoadValueWithDefault(regKey[RegName::DefaultPropsTextBox], "Width"s, 100.0f);
+   const float height = LoadValueWithDefault(regKey[RegName::DefaultPropsTextBox], "Height"s, 50.0f);
 
    m_d.m_v1.x = x;
    m_d.m_v1.y = y;
@@ -72,16 +72,16 @@ void Textbox::SetDefaults(const bool fromMouseClick)
    }
    else
    {
-      m_d.m_backcolor = LoadValueIntWithDefault(regKey, "BackColor"s, RGB(0, 0, 0));
-      m_d.m_fontcolor = LoadValueIntWithDefault(regKey, "FontColor"s, RGB(255, 255, 255));
-      m_d.m_intensity_scale = LoadValueFloatWithDefault(regKey, "IntensityScale"s, 1.0f);
-      m_d.m_tdr.m_TimerEnabled = LoadValueBoolWithDefault(regKey, "TimerEnabled"s, false) ? true : false;
-      m_d.m_tdr.m_TimerInterval = LoadValueIntWithDefault(regKey, "TimerInterval"s, 100);
-      m_d.m_talign = (TextAlignment)LoadValueIntWithDefault(regKey, "TextAlignment"s, TextAlignRight);
-      m_d.m_transparent = LoadValueBoolWithDefault(regKey, "Transparent"s, false);
-      m_d.m_isDMD = LoadValueBoolWithDefault(regKey, "DMD"s, false);
+      m_d.m_backcolor = LoadValueWithDefault(regKey, "BackColor"s, (int)RGB(0, 0, 0));
+      m_d.m_fontcolor = LoadValueWithDefault(regKey, "FontColor"s, (int)RGB(255, 255, 255));
+      m_d.m_intensity_scale = LoadValueWithDefault(regKey, "IntensityScale"s, 1.0f);
+      m_d.m_tdr.m_TimerEnabled = LoadValueWithDefault(regKey, "TimerEnabled"s, false) ? true : false;
+      m_d.m_tdr.m_TimerInterval = LoadValueWithDefault(regKey, "TimerInterval"s, 100);
+      m_d.m_talign = (TextAlignment)LoadValueWithDefault(regKey, "TextAlignment"s, (int)TextAlignRight);
+      m_d.m_transparent = LoadValueWithDefault(regKey, "Transparent"s, false);
+      m_d.m_isDMD = LoadValueWithDefault(regKey, "DMD"s, false);
 
-      m_d.m_fontsize = LoadValueFloatWithDefault(regKey, "FontSize"s, 14.25f);
+      m_d.m_fontsize = LoadValueWithDefault(regKey, "FontSize"s, 14.25f);
       fd.cySize.int64 = (LONGLONG)(m_d.m_fontsize * 10000.0f);
 
       string tmp;
@@ -99,11 +99,11 @@ void Textbox::SetDefaults(const bool fromMouseClick)
          free_lpstrName = true;
       }
 
-      fd.sWeight = LoadValueIntWithDefault(regKey, "FontWeight"s, FW_NORMAL);
-      fd.sCharset = LoadValueIntWithDefault(regKey, "FontCharSet"s, 0);
-      fd.fItalic = LoadValueIntWithDefault(regKey, "FontItalic"s, 0);
-      fd.fUnderline = LoadValueIntWithDefault(regKey, "FontUnderline"s, 0);
-      fd.fStrikethrough = LoadValueIntWithDefault(regKey, "FontStrikeThrough"s, 0);
+      fd.sWeight = LoadValueWithDefault(regKey, "FontWeight"s, (int)FW_NORMAL);
+      fd.sCharset = LoadValueWithDefault(regKey, "FontCharSet"s, 0);
+      fd.fItalic = LoadValueWithDefault(regKey, "FontItalic"s, 0);
+      fd.fUnderline = LoadValueWithDefault(regKey, "FontUnderline"s, 0);
+      fd.fStrikethrough = LoadValueWithDefault(regKey, "FontStrikeThrough"s, 0);
 
       hr = LoadValue(regKey, "Text"s, m_d.m_sztext);
       if (hr != S_OK)
@@ -123,12 +123,12 @@ void Textbox::WriteRegDefaults()
 {
 #define regKey regKey[RegName::DefaultPropsTextBox]
 
-   SaveValueInt(regKey, "BackColor"s, m_d.m_backcolor);
-   SaveValueInt(regKey, "FontColor"s, m_d.m_fontcolor);
-   SaveValueBool(regKey, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
-   SaveValueInt(regKey, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
-   SaveValueBool(regKey, "Transparent"s, m_d.m_transparent);
-   SaveValueBool(regKey, "DMD"s, m_d.m_isDMD);
+   SaveValue(regKey, "BackColor"s, (int)m_d.m_backcolor);
+   SaveValue(regKey, "FontColor"s, (int)m_d.m_fontcolor);
+   SaveValue(regKey, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
+   SaveValue(regKey, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
+   SaveValue(regKey, "Transparent"s, m_d.m_transparent);
+   SaveValue(regKey, "DMD"s, m_d.m_isDMD);
 
    FONTDESC fd;
    fd.cbSizeofstruct = sizeof(FONTDESC);
@@ -141,7 +141,7 @@ void Textbox::WriteRegDefaults()
    m_pIFont->get_Strikethrough(&fd.fStrikethrough);
 
    const float fTmp = (float)(fd.cySize.int64 / 10000.0);
-   SaveValueFloat(regKey, "FontSize"s, fTmp);
+   SaveValue(regKey, "FontSize"s, fTmp);
    const size_t charCnt = wcslen(fd.lpstrName) + 1;
    char * const strTmp = new char[2 * charCnt];
    WideCharToMultiByteNull(CP_ACP, 0, fd.lpstrName, -1, strTmp, (int)(2 * charCnt), nullptr, nullptr);
@@ -149,11 +149,11 @@ void Textbox::WriteRegDefaults()
    delete[] strTmp;
    const int weight = fd.sWeight;
    const int charset = fd.sCharset;
-   SaveValueInt(regKey, "FontWeight"s, weight);
-   SaveValueInt(regKey, "FontCharSet"s, charset);
-   SaveValueInt(regKey, "FontItalic"s, fd.fItalic);
-   SaveValueInt(regKey, "FontUnderline"s, fd.fUnderline);
-   SaveValueInt(regKey, "FontStrikeThrough"s, fd.fStrikethrough);
+   SaveValue(regKey, "FontWeight"s, weight);
+   SaveValue(regKey, "FontCharSet"s, charset);
+   SaveValue(regKey, "FontItalic"s, fd.fItalic);
+   SaveValue(regKey, "FontUnderline"s, fd.fUnderline);
+   SaveValue(regKey, "FontStrikeThrough"s, fd.fStrikethrough);
 
    SaveValue(regKey, "Text"s, m_d.m_sztext);
 

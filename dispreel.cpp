@@ -49,20 +49,20 @@ void DispReel::SetDefaults(const bool fromMouseClick)
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szSound.clear();
 
-   m_d.m_useImageGrid = fromMouseClick ? LoadValueBoolWithDefault(regKey, "UseImageGrid"s, false) : false;
-   m_d.m_visible = fromMouseClick ? LoadValueBoolWithDefault(regKey, "Visible"s, true) : true;
-   m_d.m_imagesPerGridRow = fromMouseClick ? LoadValueIntWithDefault(regKey, "ImagesPerRow"s, 1) : 1;
-   m_d.m_transparent = fromMouseClick ? LoadValueBoolWithDefault(regKey, "Transparent"s, false) : false;
-   m_d.m_reelcount = fromMouseClick ? LoadValueIntWithDefault(regKey, "ReelCount"s, 5) : 5;
-   m_d.m_width = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Width"s, 30.0f) : 30.0f;
-   m_d.m_height = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Height"s, 40.0f) : 40.0f;
-   m_d.m_reelspacing = fromMouseClick ? LoadValueFloatWithDefault(regKey, "ReelSpacing"s, 4.0f) : 4.0f;
-   m_d.m_motorsteps = fromMouseClick ? (int)LoadValueFloatWithDefault(regKey, "MotorSteps"s, 2.f) : 2;
-   m_d.m_digitrange = fromMouseClick ? LoadValueIntWithDefault(regKey, "DigitRange"s, 9) : 9;
-   m_d.m_updateinterval = fromMouseClick ? LoadValueIntWithDefault(regKey, "UpdateInterval"s, 50) : 50;
-   m_d.m_backcolor = fromMouseClick ? LoadValueIntWithDefault(regKey, "BackColor"s, RGB(64, 64, 64)) : RGB(64, 64, 64);
-   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault(regKey, "TimerEnabled"s, false) : false;
-   m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault(regKey, "TimerInterval"s, 100) : 100;
+   m_d.m_useImageGrid = fromMouseClick ? LoadValueWithDefault(regKey, "UseImageGrid"s, false) : false;
+   m_d.m_visible = fromMouseClick ? LoadValueWithDefault(regKey, "Visible"s, true) : true;
+   m_d.m_imagesPerGridRow = fromMouseClick ? LoadValueWithDefault(regKey, "ImagesPerRow"s, 1) : 1;
+   m_d.m_transparent = fromMouseClick ? LoadValueWithDefault(regKey, "Transparent"s, false) : false;
+   m_d.m_reelcount = fromMouseClick ? LoadValueWithDefault(regKey, "ReelCount"s, 5) : 5;
+   m_d.m_width = fromMouseClick ? LoadValueWithDefault(regKey, "Width"s, 30.0f) : 30.0f;
+   m_d.m_height = fromMouseClick ? LoadValueWithDefault(regKey, "Height"s, 40.0f) : 40.0f;
+   m_d.m_reelspacing = fromMouseClick ? LoadValueWithDefault(regKey, "ReelSpacing"s, 4.0f) : 4.0f;
+   m_d.m_motorsteps = fromMouseClick ? (int)LoadValueWithDefault(regKey, "MotorSteps"s, 2.f) : 2;
+   m_d.m_digitrange = fromMouseClick ? LoadValueWithDefault(regKey, "DigitRange"s, 9) : 9;
+   m_d.m_updateinterval = fromMouseClick ? LoadValueWithDefault(regKey, "UpdateInterval"s, 50) : 50;
+   m_d.m_backcolor = fromMouseClick ? LoadValueWithDefault(regKey, "BackColor"s, (int)RGB(64, 64, 64)) : RGB(64, 64, 64);
+   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueWithDefault(regKey, "TimerEnabled"s, false) : false;
+   m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueWithDefault(regKey, "TimerInterval"s, 100) : 100;
 
 #undef regKey
 }
@@ -73,20 +73,20 @@ void DispReel::WriteRegDefaults()
 
    SaveValue(regKey, "Image"s, m_d.m_szImage);
    SaveValue(regKey, "Sound"s, m_d.m_szSound);
-   SaveValueBool(regKey, "UseImageGrid"s, m_d.m_useImageGrid);
-   SaveValueBool(regKey, "Visible"s, m_d.m_visible);
-   SaveValueInt(regKey, "ImagesPerRow"s, m_d.m_imagesPerGridRow);
-   SaveValueBool(regKey, "Transparent"s, m_d.m_transparent);
-   SaveValueInt(regKey, "ReelCount"s, m_d.m_reelcount);
-   SaveValueFloat(regKey, "Width"s, m_d.m_width);
-   SaveValueFloat(regKey, "Height"s, m_d.m_height);
-   SaveValueFloat(regKey, "ReelSpacing"s, m_d.m_reelspacing);
-   SaveValueFloat(regKey, "MotorSteps"s, (float)m_d.m_motorsteps);
-   SaveValueInt(regKey, "DigitRange"s, m_d.m_digitrange);
-   SaveValueInt(regKey, "UpdateInterval"s, m_d.m_updateinterval);
-   SaveValueInt(regKey, "BackColor"s, m_d.m_backcolor);
-   SaveValueBool(regKey, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
-   SaveValueInt(regKey, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
+   SaveValue(regKey, "UseImageGrid"s, m_d.m_useImageGrid);
+   SaveValue(regKey, "Visible"s, m_d.m_visible);
+   SaveValue(regKey, "ImagesPerRow"s, m_d.m_imagesPerGridRow);
+   SaveValue(regKey, "Transparent"s, m_d.m_transparent);
+   SaveValue(regKey, "ReelCount"s, m_d.m_reelcount);
+   SaveValue(regKey, "Width"s, m_d.m_width);
+   SaveValue(regKey, "Height"s, m_d.m_height);
+   SaveValue(regKey, "ReelSpacing"s, m_d.m_reelspacing);
+   SaveValue(regKey, "MotorSteps"s, (float)m_d.m_motorsteps);
+   SaveValue(regKey, "DigitRange"s, m_d.m_digitrange);
+   SaveValue(regKey, "UpdateInterval"s, m_d.m_updateinterval);
+   SaveValue(regKey, "BackColor"s, (int)m_d.m_backcolor);
+   SaveValue(regKey, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
+   SaveValue(regKey, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
 
 #undef regKey
 }

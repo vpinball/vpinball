@@ -759,11 +759,11 @@ void ImageDialog::ReimportFrom()
 
 void ImageDialog::LoadPosition()
 {
-    const int x = LoadValueIntWithDefault(regKey[RegName::Editor], "ImageMngPosX"s, 0 );
-    const int y = LoadValueIntWithDefault(regKey[RegName::Editor], "ImageMngPosY"s, 0 );
+    const int x = LoadValueWithDefault(regKey[RegName::Editor], "ImageMngPosX"s, 0);
+    const int y = LoadValueWithDefault(regKey[RegName::Editor], "ImageMngPosY"s, 0);
 
-    const int w = LoadValueIntWithDefault(regKey[RegName::Editor], "ImageMngWidth"s, 1000);
-    const int h = LoadValueIntWithDefault(regKey[RegName::Editor], "ImageMngHeight"s, 800);
+    const int w = LoadValueWithDefault(regKey[RegName::Editor], "ImageMngWidth"s, 1000);
+    const int h = LoadValueWithDefault(regKey[RegName::Editor], "ImageMngHeight"s, 800);
     SetWindowPos(nullptr, x, y, w, h, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE);
 }
 
@@ -771,10 +771,10 @@ void ImageDialog::SavePosition()
 {
     const CRect rect = GetWindowRect();
 
-    SaveValueInt(regKey[RegName::Editor], "ImageMngPosX"s, rect.left);
-    SaveValueInt(regKey[RegName::Editor], "ImageMngPosY"s, rect.top);
+    SaveValue(regKey[RegName::Editor], "ImageMngPosX"s, (int)rect.left);
+    SaveValue(regKey[RegName::Editor], "ImageMngPosY"s, (int)rect.top);
     const int w = rect.right - rect.left;
-    SaveValueInt(regKey[RegName::Editor], "ImageMngWidth"s, w);
+    SaveValue(regKey[RegName::Editor], "ImageMngWidth"s, w);
     const int h = rect.bottom - rect.top;
-    SaveValueInt(regKey[RegName::Editor], "ImageMngHeight"s, h);
+    SaveValue(regKey[RegName::Editor], "ImageMngHeight"s, h);
 }

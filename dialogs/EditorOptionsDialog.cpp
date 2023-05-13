@@ -52,53 +52,53 @@ BOOL EditorOptionsDialog::OnInitDialog()
     m_colorButton6.SetColor(g_pvp->m_backgroundColor);
 
     // drag points
-    const bool fdrawpoints = LoadValueBoolWithDefault(regKey[RegName::Editor], "ShowDragPoints"s, false);
+    const bool fdrawpoints = LoadValueWithDefault(regKey[RegName::Editor], "ShowDragPoints"s, false);
     SendMessage(GetDlgItem(IDC_DRAW_DRAGPOINTS).GetHwnd(), BM_SETCHECK, fdrawpoints ? BST_CHECKED : BST_UNCHECKED, 0);
 
     // light centers
-    const bool fdrawcenters = LoadValueBoolWithDefault(regKey[RegName::Editor], "DrawLightCenters"s, false);
+    const bool fdrawcenters = LoadValueWithDefault(regKey[RegName::Editor], "DrawLightCenters"s, false);
     SendMessage(GetDlgItem(IDC_DRAW_LIGHTCENTERS).GetHwnd(), BM_SETCHECK, fdrawcenters ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    const bool fautosave = LoadValueBoolWithDefault(regKey[RegName::Editor], "AutoSaveOn"s, true);
+    const bool fautosave = LoadValueWithDefault(regKey[RegName::Editor], "AutoSaveOn"s, true);
     SendDlgItemMessage(IDC_AUTOSAVE, BM_SETCHECK, fautosave ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    const int fautosavetime = LoadValueIntWithDefault(regKey[RegName::Editor], "AutoSaveTime"s, AUTOSAVE_DEFAULT_TIME);
+    const int fautosavetime = LoadValueWithDefault(regKey[RegName::Editor], "AutoSaveTime"s, AUTOSAVE_DEFAULT_TIME);
     SetDlgItemInt(IDC_AUTOSAVE_MINUTES, fautosavetime, FALSE);
 
-    const int gridsize = LoadValueIntWithDefault(regKey[RegName::Editor], "GridSize"s, 50);
+    const int gridsize = LoadValueWithDefault(regKey[RegName::Editor], "GridSize"s, 50);
     SetDlgItemInt(IDC_GRID_SIZE, gridsize, FALSE);
 
-    const bool throwBallsAlwaysOn = LoadValueBoolWithDefault(regKey[RegName::Editor], "ThrowBallsAlwaysOn"s, false);
+    const bool throwBallsAlwaysOn = LoadValueWithDefault(regKey[RegName::Editor], "ThrowBallsAlwaysOn"s, false);
     SendDlgItemMessage(IDC_THROW_BALLS_ALWAYS_ON_CHECK, BM_SETCHECK, throwBallsAlwaysOn ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    const bool ballControlAlwaysOn = LoadValueBoolWithDefault(regKey[RegName::Editor], "BallControlAlwaysOn"s, false);
+    const bool ballControlAlwaysOn = LoadValueWithDefault(regKey[RegName::Editor], "BallControlAlwaysOn"s, false);
     SendDlgItemMessage(IDC_BALL_CONTROL_ALWAYS_ON_CHECK, BM_SETCHECK, ballControlAlwaysOn ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    const bool groupElementsCollection = LoadValueBoolWithDefault(regKey[RegName::Editor], "GroupElementsInCollection"s, true);
+    const bool groupElementsCollection = LoadValueWithDefault(regKey[RegName::Editor], "GroupElementsInCollection"s, true);
     SendDlgItemMessage(IDC_DEFAULT_GROUP_COLLECTION_CHECK, BM_SETCHECK, groupElementsCollection ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    const bool alwaysViewScript = LoadValueBoolWithDefault(regKey[RegName::Editor], "AlwaysViewScript"s, false);
+    const bool alwaysViewScript = LoadValueWithDefault(regKey[RegName::Editor], "AlwaysViewScript"s, false);
     SendDlgItemMessage(IDC_ALWAYSVIEWSCRIPT, BM_SETCHECK, alwaysViewScript ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    const int throwBallSize = LoadValueIntWithDefault(regKey[RegName::Editor], "ThrowBallSize"s, 50);
+    const int throwBallSize = LoadValueWithDefault(regKey[RegName::Editor], "ThrowBallSize"s, 50);
     SetDlgItemInt( IDC_THROW_BALLS_SIZE_EDIT, throwBallSize, FALSE);
 
-    const bool startVPfileDialog = LoadValueBoolWithDefault(regKey[RegName::Editor], "SelectTableOnStart"s, true);
+    const bool startVPfileDialog = LoadValueWithDefault(regKey[RegName::Editor], "SelectTableOnStart"s, true);
     SendDlgItemMessage(IDC_START_VP_FILE_DIALOG, BM_SETCHECK, startVPfileDialog ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    const bool startVPfileDialogPlayerClose = LoadValueBoolWithDefault(regKey[RegName::Editor], "SelectTableOnPlayerClose"s, true);
+    const bool startVPfileDialogPlayerClose = LoadValueWithDefault(regKey[RegName::Editor], "SelectTableOnPlayerClose"s, true);
     SendDlgItemMessage(IDC_START_VP_FILE_DIALOG2, BM_SETCHECK, startVPfileDialogPlayerClose ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    const float throwBallMass = LoadValueFloatWithDefault(regKey[RegName::Editor], "ThrowBallMass"s, 1.0f);
+    const float throwBallMass = LoadValueWithDefault(regKey[RegName::Editor], "ThrowBallMass"s, 1.0f);
     SetDlgItemText(IDC_THROW_BALLS_MASS_EDIT, f2sz(throwBallMass).c_str());
 
-    const bool enableLog = LoadValueBoolWithDefault(regKey[RegName::Editor], "EnableLog"s, false);
+    const bool enableLog = LoadValueWithDefault(regKey[RegName::Editor], "EnableLog"s, false);
     SendMessage(GetDlgItem(IDC_ENABLE_LOGGING).GetHwnd(), BM_SETCHECK, enableLog ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    const bool logScript = LoadValueBoolWithDefault(regKey[RegName::Editor], "LogScriptOutput"s, false);
+    const bool logScript = LoadValueWithDefault(regKey[RegName::Editor], "LogScriptOutput"s, false);
     SendMessage(GetDlgItem(IDC_ENABLE_SCRIPT_LOGGING).GetHwnd(), BM_SETCHECK, logScript ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    const int units = LoadValueIntWithDefault(regKey[RegName::Editor], "Units"s, 0);
+    const int units = LoadValueWithDefault(regKey[RegName::Editor], "Units"s, 0);
     const HWND hwnd = GetDlgItem(IDC_UNIT_LIST_COMBO).GetHwnd();
     SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"VPUnits");
     SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Inches");
@@ -217,12 +217,12 @@ BOOL EditorOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
           SendMessage(GetDlgItem(IDC_ENABLE_SCRIPT_LOGGING).GetHwnd(), BM_SETCHECK, BST_CHECKED, 0);
           constexpr int x = 0;
           constexpr int y = 0;
-          SaveValueInt(regKey[RegName::Editor], "CodeViewPosX"s, x);
-          SaveValueInt(regKey[RegName::Editor], "CodeViewPosY"s, y);
+          SaveValue(regKey[RegName::Editor], "CodeViewPosX"s, x);
+          SaveValue(regKey[RegName::Editor], "CodeViewPosY"s, y);
           constexpr int width = 640;
           constexpr int height = 490;
-          SaveValueInt(regKey[RegName::Editor], "CodeViewPosWidth"s, width);
-          SaveValueInt(regKey[RegName::Editor], "CodeViewPosHeight"s, height);
+          SaveValue(regKey[RegName::Editor], "CodeViewPosWidth"s, width);
+          SaveValue(regKey[RegName::Editor], "CodeViewPosHeight"s, height);
 
           return TRUE;
        }
@@ -278,45 +278,45 @@ void EditorOptionsDialog::OnOK()
 
     // drag points
     checked = (SendDlgItemMessage(IDC_DRAW_DRAGPOINTS, BM_GETCHECK, 0, 0) == BST_CHECKED);
-    SaveValueBool(regKey[RegName::Editor], "ShowDragPoints"s, checked);
+    SaveValue(regKey[RegName::Editor], "ShowDragPoints"s, checked);
 
     // light centers
     checked = (SendDlgItemMessage(IDC_DRAW_LIGHTCENTERS, BM_GETCHECK, 0, 0) == BST_CHECKED);
-    SaveValueBool(regKey[RegName::Editor], "DrawLightCenters"s, checked);
+    SaveValue(regKey[RegName::Editor], "DrawLightCenters"s, checked);
 
     // auto save
     const bool autosave = (SendDlgItemMessage(IDC_AUTOSAVE, BM_GETCHECK, 0, 0) == BST_CHECKED);
-    SaveValueBool(regKey[RegName::Editor], "AutoSaveOn"s, autosave);
+    SaveValue(regKey[RegName::Editor], "AutoSaveOn"s, autosave);
 
     const int autosavetime = GetDlgItemInt(IDC_AUTOSAVE_MINUTES, nothing, FALSE);
-    SaveValueInt(regKey[RegName::Editor], "AutoSaveTime"s, autosavetime);
+    SaveValue(regKey[RegName::Editor], "AutoSaveTime"s, autosavetime);
 
     const int gridsize = GetDlgItemInt(IDC_GRID_SIZE, nothing, FALSE);
-    SaveValueInt(regKey[RegName::Editor], "GridSize"s, gridsize);
+    SaveValue(regKey[RegName::Editor], "GridSize"s, gridsize);
 
     checked = (SendDlgItemMessage(IDC_THROW_BALLS_ALWAYS_ON_CHECK, BM_GETCHECK, 0, 0) == BST_CHECKED);
-    SaveValueBool(regKey[RegName::Editor], "ThrowBallsAlwaysOn"s, checked);
+    SaveValue(regKey[RegName::Editor], "ThrowBallsAlwaysOn"s, checked);
 
     checked = (SendDlgItemMessage(IDC_BALL_CONTROL_ALWAYS_ON_CHECK, BM_GETCHECK, 0, 0) == BST_CHECKED);
-    SaveValueBool(regKey[RegName::Editor], "BallControlAlwaysOn"s, checked);
+    SaveValue(regKey[RegName::Editor], "BallControlAlwaysOn"s, checked);
 
     const int ballSize = GetDlgItemInt(IDC_THROW_BALLS_SIZE_EDIT, nothing, FALSE);
-    SaveValueInt(regKey[RegName::Editor], "ThrowBallSize"s, ballSize);
+    SaveValue(regKey[RegName::Editor], "ThrowBallSize"s, ballSize);
 
     const float fv = sz2f(GetDlgItemText(IDC_THROW_BALLS_MASS_EDIT).c_str());
-    SaveValueFloat(regKey[RegName::Editor], "ThrowBallMass"s, fv);
+    SaveValue(regKey[RegName::Editor], "ThrowBallMass"s, fv);
 
     checked = (SendDlgItemMessage(IDC_DEFAULT_GROUP_COLLECTION_CHECK, BM_GETCHECK, 0, 0) == BST_CHECKED);
-    SaveValueBool(regKey[RegName::Editor], "GroupElementsInCollection"s, checked);
+    SaveValue(regKey[RegName::Editor], "GroupElementsInCollection"s, checked);
 
     checked = (SendDlgItemMessage(IDC_ALWAYSVIEWSCRIPT, BM_GETCHECK, 0, 0) == BST_CHECKED);
-    SaveValueBool(regKey[RegName::Editor], "AlwaysViewScript"s, checked);
+    SaveValue(regKey[RegName::Editor], "AlwaysViewScript"s, checked);
 
     checked = (SendDlgItemMessage(IDC_ENABLE_LOGGING, BM_GETCHECK, 0, 0) == BST_CHECKED);
-    SaveValueBool(regKey[RegName::Editor], "EnableLog"s, checked);
+    SaveValue(regKey[RegName::Editor], "EnableLog"s, checked);
 
     checked = (SendDlgItemMessage(IDC_ENABLE_SCRIPT_LOGGING, BM_GETCHECK, 0, 0) == BST_CHECKED);
-    SaveValueBool(regKey[RegName::Editor], "LogScriptOutput"s, checked);
+    SaveValue(regKey[RegName::Editor], "LogScriptOutput"s, checked);
 
     SetupLogger();
 
@@ -329,22 +329,22 @@ void EditorOptionsDialog::OnOK()
     for (size_t i = 0; i < g_pvp->m_vtable.size(); i++)
         g_pvp->m_vtable[i]->BeginAutoSaveCounter();
 
-    SaveValueInt(regKey[RegName::Editor], "DefaultMaterialColor"s, g_pvp->m_dummyMaterial.m_cBase);
-    SaveValueInt(regKey[RegName::Editor], "ElementSelectColor"s, g_pvp->m_elemSelectColor);
-    SaveValueInt(regKey[RegName::Editor], "ElementSelectLockedColor"s, g_pvp->m_elemSelectLockedColor);
-    SaveValueInt(regKey[RegName::Editor], "BackgroundColor"s, g_pvp->m_backgroundColor);
-    SaveValueInt(regKey[RegName::Editor], "FillColor"s, g_pvp->m_fillColor);
+    SaveValue(regKey[RegName::Editor], "DefaultMaterialColor"s, (int)g_pvp->m_dummyMaterial.m_cBase);
+    SaveValue(regKey[RegName::Editor], "ElementSelectColor"s, (int)g_pvp->m_elemSelectColor);
+    SaveValue(regKey[RegName::Editor], "ElementSelectLockedColor"s, (int)g_pvp->m_elemSelectLockedColor);
+    SaveValue(regKey[RegName::Editor], "BackgroundColor"s, (int)g_pvp->m_backgroundColor);
+    SaveValue(regKey[RegName::Editor], "FillColor"s, (int)g_pvp->m_fillColor);
 
     checked = (SendDlgItemMessage(IDC_START_VP_FILE_DIALOG, BM_GETCHECK, 0, 0) == BST_CHECKED);
-    SaveValueBool(regKey[RegName::Editor], "SelectTableOnStart"s, checked);
+    SaveValue(regKey[RegName::Editor], "SelectTableOnStart"s, checked);
 
     checked = (SendDlgItemMessage(IDC_START_VP_FILE_DIALOG2, BM_GETCHECK, 0, 0) == BST_CHECKED);
-    SaveValueBool(regKey[RegName::Editor], "SelectTableOnPlayerClose"s, checked);
+    SaveValue(regKey[RegName::Editor], "SelectTableOnPlayerClose"s, checked);
 
     LRESULT units = SendMessage(GetDlgItem(IDC_UNIT_LIST_COMBO).GetHwnd(), CB_GETCURSEL, 0, 0);
     if (units == LB_ERR)
         units = 0;
-    SaveValueInt(regKey[RegName::Editor], "Units"s, (int)units);
+    SaveValue(regKey[RegName::Editor], "Units"s, (int)units);
 
     CDialog::OnOK();
 }

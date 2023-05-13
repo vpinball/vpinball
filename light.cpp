@@ -70,16 +70,16 @@ void Light::SetDefaults(const bool fromMouseClick)
    m_duration = 0;
    m_finalLightState = 0.f;
 
-   m_d.m_falloff = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Falloff"s, 50.f) : 50.f;
-   m_d.m_falloff_power = fromMouseClick ? LoadValueFloatWithDefault(regKey, "FalloffPower"s, 2.0f) : 2.0f;
-   m_d.m_state = fromMouseClick ? LoadValueFloatWithDefault(regKey, "LightState"s, 0.f) : 0.f;
+   m_d.m_falloff = fromMouseClick ? LoadValueWithDefault(regKey, "Falloff"s, 50.f) : 50.f;
+   m_d.m_falloff_power = fromMouseClick ? LoadValueWithDefault(regKey, "FalloffPower"s, 2.0f) : 2.0f;
+   m_d.m_state = fromMouseClick ? LoadValueWithDefault(regKey, "LightState"s, 0.f) : 0.f;
 
    m_d.m_shape = ShapeCustom;
 
-   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault(regKey, "TimerEnabled"s, false) : false;
-   m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault(regKey, "TimerInterval"s, 100) : 100;
-   m_d.m_color = fromMouseClick ? LoadValueIntWithDefault(regKey, "Color"s, RGB(255,169,87)) : RGB(255,169,87); // Default to 2700K incandescent bulb
-   m_d.m_color2 = fromMouseClick ? LoadValueIntWithDefault(regKey, "ColorFull"s, RGB(255,169,87)) : RGB(255,169,87); // Default to 2700K incandescent bulb (burst is useless since VPX is HDR)
+   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueWithDefault(regKey, "TimerEnabled"s, false) : false;
+   m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueWithDefault(regKey, "TimerInterval"s, 100) : 100;
+   m_d.m_color = fromMouseClick ? LoadValueWithDefault(regKey, "Color"s, (int)RGB(255,169,87)) : RGB(255,169,87); // Default to 2700K incandescent bulb
+   m_d.m_color2 = fromMouseClick ? LoadValueWithDefault(regKey, "ColorFull"s, (int)RGB(255,169,87)) : RGB(255,169,87); // Default to 2700K incandescent bulb (burst is useless since VPX is HDR)
 
    HRESULT hr = LoadValue(regKey, "OffImage"s, m_d.m_szImage);
    if ((hr != S_OK) || !fromMouseClick)
@@ -89,29 +89,29 @@ void Light::SetDefaults(const bool fromMouseClick)
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_rgblinkpattern = "10";
 
-   m_d.m_blinkinterval = fromMouseClick ? LoadValueIntWithDefault(regKey, "BlinkInterval"s, 125) : 125;
-   m_d.m_intensity = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Intensity"s, 10.0f) : 10.0f;
-   m_d.m_transmissionScale = fromMouseClick ? LoadValueFloatWithDefault(regKey, "TransmissionScale"s, 0.5f) : 0.f; // difference in defaults is intended
+   m_d.m_blinkinterval = fromMouseClick ? LoadValueWithDefault(regKey, "BlinkInterval"s, 125) : 125;
+   m_d.m_intensity = fromMouseClick ? LoadValueWithDefault(regKey, "Intensity"s, 10.0f) : 10.0f;
+   m_d.m_transmissionScale = fromMouseClick ? LoadValueWithDefault(regKey, "TransmissionScale"s, 0.5f) : 0.f; // difference in defaults is intended
 
    m_d.m_intensity_scale = 1.0f;
 
-   //m_d.m_bordercolor = fromMouseClick ? LoadValueIntWithDefault(regKey, "BorderColor"s, RGB(0,0,0)) : RGB(0,0,0);
+   //m_d.m_bordercolor = fromMouseClick ? LoadValueWithDefault(regKey, "BorderColor"s, (int)RGB(0,0,0)) : RGB(0,0,0);
 
    hr = LoadValue(regKey, "Surface"s, m_d.m_szSurface);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szSurface.clear();
 
-   m_d.m_fadeSpeedUp = fromMouseClick ? LoadValueFloatWithDefault(regKey, "FadeSpeedUp"s, m_d.m_intensity * (float)(1.0/200.0)) : (m_d.m_intensity * (float)(1.0/200.0)); // Default: 200ms up (slow incandescent bulb)
-   m_d.m_fadeSpeedDown = fromMouseClick ? LoadValueFloatWithDefault(regKey, "FadeSpeedDown"s, m_d.m_intensity * (float)(1.0/500.0)) : m_d.m_intensity * (float)(1.0/500.0); // Default: 500ms down (slow incandescent bulb)
-   m_d.m_BulbLight = fromMouseClick ? LoadValueBoolWithDefault(regKey, "Bulb"s, false) : false;
-   m_d.m_imageMode = fromMouseClick ? LoadValueBoolWithDefault(regKey, "ImageMode"s, false) : false;
-   m_d.m_showBulbMesh = fromMouseClick ? LoadValueBoolWithDefault(regKey, "ShowBulbMesh"s, false) : false;
-   m_d.m_staticBulbMesh = fromMouseClick ? LoadValueBoolWithDefault(regKey, "StaticBulbMesh"s, true) : true;
-   m_d.m_showReflectionOnBall = fromMouseClick ? LoadValueBoolWithDefault(regKey, "ShowReflectionOnBall"s, true) : true;
-   m_d.m_meshRadius = fromMouseClick ? LoadValueFloatWithDefault(regKey, "ScaleBulbMesh"s, 20.0f) : 20.0f;
-   m_d.m_modulate_vs_add = fromMouseClick ? LoadValueFloatWithDefault(regKey, "BulbModulateVsAdd"s, 0.9f) : 0.9f;
-   m_d.m_bulbHaloHeight = fromMouseClick ? LoadValueFloatWithDefault(regKey, "BulbHaloHeight"s, 28.0f) : 28.0f;
-   m_d.m_reflectionEnabled = fromMouseClick ? LoadValueBoolWithDefault(regKey, "ReflectionEnabled"s, true) : true;
+   m_d.m_fadeSpeedUp = fromMouseClick ? LoadValueWithDefault(regKey, "FadeSpeedUp"s, m_d.m_intensity * (float)(1.0/200.0)) : (m_d.m_intensity * (float)(1.0/200.0)); // Default: 200ms up (slow incandescent bulb)
+   m_d.m_fadeSpeedDown = fromMouseClick ? LoadValueWithDefault(regKey, "FadeSpeedDown"s, m_d.m_intensity * (float)(1.0/500.0)) : m_d.m_intensity * (float)(1.0/500.0); // Default: 500ms down (slow incandescent bulb)
+   m_d.m_BulbLight = fromMouseClick ? LoadValueWithDefault(regKey, "Bulb"s, false) : false;
+   m_d.m_imageMode = fromMouseClick ? LoadValueWithDefault(regKey, "ImageMode"s, false) : false;
+   m_d.m_showBulbMesh = fromMouseClick ? LoadValueWithDefault(regKey, "ShowBulbMesh"s, false) : false;
+   m_d.m_staticBulbMesh = fromMouseClick ? LoadValueWithDefault(regKey, "StaticBulbMesh"s, true) : true;
+   m_d.m_showReflectionOnBall = fromMouseClick ? LoadValueWithDefault(regKey, "ShowReflectionOnBall"s, true) : true;
+   m_d.m_meshRadius = fromMouseClick ? LoadValueWithDefault(regKey, "ScaleBulbMesh"s, 20.0f) : 20.0f;
+   m_d.m_modulate_vs_add = fromMouseClick ? LoadValueWithDefault(regKey, "BulbModulateVsAdd"s, 0.9f) : 0.9f;
+   m_d.m_bulbHaloHeight = fromMouseClick ? LoadValueWithDefault(regKey, "BulbHaloHeight"s, 28.0f) : 28.0f;
+   m_d.m_reflectionEnabled = fromMouseClick ? LoadValueWithDefault(regKey, "ReflectionEnabled"s, true) : true;
 
 #undef regKey
 }
@@ -120,30 +120,30 @@ void Light::WriteRegDefaults()
 {
 #define regKey regKey[RegName::DefaultPropsLight]
 
-   SaveValueFloat(regKey, "Falloff"s, m_d.m_falloff);
-   SaveValueFloat(regKey, "FalloffPower"s, m_d.m_falloff_power);
-   SaveValueFloat(regKey, "LightState"s, m_d.m_state);
-   SaveValueBool(regKey, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
-   SaveValueInt(regKey, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
-   SaveValueInt(regKey, "Color"s, m_d.m_color);
-   SaveValueInt(regKey, "ColorFull"s, m_d.m_color2);
+   SaveValue(regKey, "Falloff"s, m_d.m_falloff);
+   SaveValue(regKey, "FalloffPower"s, m_d.m_falloff_power);
+   SaveValue(regKey, "LightState"s, m_d.m_state);
+   SaveValue(regKey, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
+   SaveValue(regKey, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
+   SaveValue(regKey, "Color"s, (int)m_d.m_color);
+   SaveValue(regKey, "ColorFull"s, (int)m_d.m_color2);
    SaveValue(regKey, "OffImage"s, m_d.m_szImage);
    SaveValue(regKey, "BlinkPattern"s, m_d.m_rgblinkpattern);
-   SaveValueInt(regKey, "BlinkInterval"s, m_d.m_blinkinterval);
+   SaveValue(regKey, "BlinkInterval"s, m_d.m_blinkinterval);
    SaveValue(regKey, "Surface"s, m_d.m_szSurface);
-   SaveValueFloat(regKey, "FadeSpeedUp"s, m_d.m_fadeSpeedUp);
-   SaveValueFloat(regKey, "FadeSpeedDown"s, m_d.m_fadeSpeedDown);
-   SaveValueFloat(regKey, "Intensity"s, m_d.m_intensity);
-   SaveValueFloat(regKey, "TransmissionScale"s, m_d.m_transmissionScale);
-   SaveValueBool(regKey, "Bulb"s, m_d.m_BulbLight);
-   SaveValueBool(regKey, "ImageMode"s, m_d.m_imageMode);
-   SaveValueBool(regKey, "ShowBulbMesh"s, m_d.m_showBulbMesh);
-   SaveValueBool(regKey, "StaticBulbMesh"s, m_d.m_staticBulbMesh);
-   SaveValueBool(regKey, "ShowReflectionOnBall"s, m_d.m_showReflectionOnBall);
-   SaveValueFloat(regKey, "ScaleBulbMesh"s, m_d.m_meshRadius);
-   SaveValueFloat(regKey, "BulbModulateVsAdd"s, m_d.m_modulate_vs_add);
-   SaveValueFloat(regKey, "BulbHaloHeight"s, m_d.m_bulbHaloHeight);
-   SaveValueBool(regKey, "ReflectionEnabled"s, m_d.m_reflectionEnabled);
+   SaveValue(regKey, "FadeSpeedUp"s, m_d.m_fadeSpeedUp);
+   SaveValue(regKey, "FadeSpeedDown"s, m_d.m_fadeSpeedDown);
+   SaveValue(regKey, "Intensity"s, m_d.m_intensity);
+   SaveValue(regKey, "TransmissionScale"s, m_d.m_transmissionScale);
+   SaveValue(regKey, "Bulb"s, m_d.m_BulbLight);
+   SaveValue(regKey, "ImageMode"s, m_d.m_imageMode);
+   SaveValue(regKey, "ShowBulbMesh"s, m_d.m_showBulbMesh);
+   SaveValue(regKey, "StaticBulbMesh"s, m_d.m_staticBulbMesh);
+   SaveValue(regKey, "ShowReflectionOnBall"s, m_d.m_showReflectionOnBall);
+   SaveValue(regKey, "ScaleBulbMesh"s, m_d.m_meshRadius);
+   SaveValue(regKey, "BulbModulateVsAdd"s, m_d.m_modulate_vs_add);
+   SaveValue(regKey, "BulbHaloHeight"s, m_d.m_bulbHaloHeight);
+   SaveValue(regKey, "ReflectionEnabled"s, m_d.m_reflectionEnabled);
 
 #undef regKey
 }

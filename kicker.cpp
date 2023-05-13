@@ -56,13 +56,13 @@ void Kicker::SetDefaults(const bool fromMouseClick)
 {
 #define regKey regKey[RegName::DefaultPropsKicker]
 
-   m_d.m_radius = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Radius"s, 25.f) : 25.f;
-   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault(regKey, "TimerEnabled"s, false) : false;
-   m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault(regKey, "TimerInterval"s, 100) : 100;
-   m_d.m_enabled = fromMouseClick ? LoadValueBoolWithDefault(regKey, "Enabled"s, true) : true;
-   m_d.m_hitAccuracy = fromMouseClick ? LoadValueFloatWithDefault(regKey, "HitAccuracy"s, 0.5f) : 0.5f;
-   m_d.m_hit_height = fromMouseClick ? LoadValueFloatWithDefault(regKey, "HitHeight"s, 35.0f) : 35.0f;
-   m_d.m_orientation = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Orientation"s, 0.f) : 0.f;
+   m_d.m_radius = fromMouseClick ? LoadValueWithDefault(regKey, "Radius"s, 25.f) : 25.f;
+   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueWithDefault(regKey, "TimerEnabled"s, false) : false;
+   m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueWithDefault(regKey, "TimerInterval"s, 100) : 100;
+   m_d.m_enabled = fromMouseClick ? LoadValueWithDefault(regKey, "Enabled"s, true) : true;
+   m_d.m_hitAccuracy = fromMouseClick ? LoadValueWithDefault(regKey, "HitAccuracy"s, 0.5f) : 0.5f;
+   m_d.m_hit_height = fromMouseClick ? LoadValueWithDefault(regKey, "HitHeight"s, 35.0f) : 35.0f;
+   m_d.m_orientation = fromMouseClick ? LoadValueWithDefault(regKey, "Orientation"s, 0.f) : 0.f;
 
    SetDefaultPhysics(fromMouseClick);
 
@@ -70,13 +70,13 @@ void Kicker::SetDefaults(const bool fromMouseClick)
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szSurface.clear();
 
-   m_d.m_kickertype = fromMouseClick ? (KickerType)LoadValueIntWithDefault(regKey, "KickerType"s, KickerHole) : KickerHole;
+   m_d.m_kickertype = fromMouseClick ? (KickerType)LoadValueWithDefault(regKey, "KickerType"s, (int)KickerHole) : KickerHole;
    //legacy handling:
    if (m_d.m_kickertype > KickerCup2)
       m_d.m_kickertype = KickerInvisible;
 
-   m_d.m_fallThrough = fromMouseClick ? LoadValueBoolWithDefault(regKey, "FallThrough"s, false) : false;
-   m_d.m_legacyMode = fromMouseClick ? LoadValueBoolWithDefault(regKey, "Legacy"s, true) : true;
+   m_d.m_fallThrough = fromMouseClick ? LoadValueWithDefault(regKey, "FallThrough"s, false) : false;
+   m_d.m_legacyMode = fromMouseClick ? LoadValueWithDefault(regKey, "Legacy"s, true) : true;
 
 #undef regKey
 }
@@ -85,18 +85,18 @@ void Kicker::WriteRegDefaults()
 {
 #define regKey regKey[RegName::DefaultPropsKicker]
 
-   SaveValueBool(regKey, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
-   SaveValueInt(regKey, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
-   SaveValueBool(regKey, "Enabled"s, m_d.m_enabled);
-   SaveValueFloat(regKey, "HitAccuracy"s, m_d.m_hitAccuracy);
-   SaveValueFloat(regKey, "HitHeight"s, m_d.m_hit_height);
-   SaveValueFloat(regKey, "Orientation"s, m_d.m_orientation);
-   SaveValueFloat(regKey, "Radius"s, m_d.m_radius);
-   SaveValueFloat(regKey, "Scatter"s, m_d.m_scatter);
-   SaveValueInt(regKey, "KickerType"s, m_d.m_kickertype);
+   SaveValue(regKey, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
+   SaveValue(regKey, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
+   SaveValue(regKey, "Enabled"s, m_d.m_enabled);
+   SaveValue(regKey, "HitAccuracy"s, m_d.m_hitAccuracy);
+   SaveValue(regKey, "HitHeight"s, m_d.m_hit_height);
+   SaveValue(regKey, "Orientation"s, m_d.m_orientation);
+   SaveValue(regKey, "Radius"s, m_d.m_radius);
+   SaveValue(regKey, "Scatter"s, m_d.m_scatter);
+   SaveValue(regKey, "KickerType"s, m_d.m_kickertype);
    SaveValue(regKey, "Surface"s, m_d.m_szSurface);
-   SaveValueBool(regKey, "FallThrough"s, m_d.m_fallThrough);
-   SaveValueBool(regKey, "Legacy"s, m_d.m_legacyMode);
+   SaveValue(regKey, "FallThrough"s, m_d.m_fallThrough);
+   SaveValue(regKey, "Legacy"s, m_d.m_legacyMode);
 
 #undef regKey
 }
@@ -516,7 +516,7 @@ void Kicker::RenderSetup()
 
 void Kicker::SetDefaultPhysics(const bool fromMouseClick)
 {
-   m_d.m_scatter = fromMouseClick ? LoadValueFloatWithDefault(regKey[RegName::DefaultPropsKicker], "Scatter"s, 0.f) : 0.f;
+   m_d.m_scatter = fromMouseClick ? LoadValueWithDefault(regKey[RegName::DefaultPropsKicker], "Scatter"s, 0.f) : 0.f;
 }
 
 void Kicker::RenderDynamic()

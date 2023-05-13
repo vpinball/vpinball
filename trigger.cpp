@@ -180,24 +180,24 @@ void Trigger::SetDefaults(const bool fromMouseClick)
 {
 #define regKey regKey[RegName::DefaultPropsTrigger]
 
-   m_d.m_radius = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Radius"s, 25.0f) : 25.0f;
-   m_d.m_rotation = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Rotation"s, 0.f) : 0.f;
-   m_d.m_wireThickness = fromMouseClick ? LoadValueFloatWithDefault(regKey, "WireThickness"s, 0.f) : 0.f;
-   m_d.m_scaleX = fromMouseClick ? LoadValueFloatWithDefault(regKey, "ScaleX"s, 1.f) : 1.f;
-   m_d.m_scaleY = fromMouseClick ? LoadValueFloatWithDefault(regKey, "ScaleY"s, 1.f) : 1.f;
-   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault(regKey, "TimerEnabled"s, false) : false;
-   m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault(regKey, "TimerInterval"s, 100) : 100;
-   m_d.m_enabled = fromMouseClick ? LoadValueBoolWithDefault(regKey, "Enabled"s, true) : true;
-   m_d.m_visible = fromMouseClick ? LoadValueBoolWithDefault(regKey, "Visible"s, true) : true;
-   m_d.m_hit_height = fromMouseClick ? LoadValueFloatWithDefault(regKey, "HitHeight"s, 50.f) : 50.f;
-   m_d.m_shape = fromMouseClick ? (TriggerShape)LoadValueIntWithDefault(regKey, "Shape"s, TriggerWireA) : TriggerWireA;
+   m_d.m_radius = fromMouseClick ? LoadValueWithDefault(regKey, "Radius"s, 25.0f) : 25.0f;
+   m_d.m_rotation = fromMouseClick ? LoadValueWithDefault(regKey, "Rotation"s, 0.f) : 0.f;
+   m_d.m_wireThickness = fromMouseClick ? LoadValueWithDefault(regKey, "WireThickness"s, 0.f) : 0.f;
+   m_d.m_scaleX = fromMouseClick ? LoadValueWithDefault(regKey, "ScaleX"s, 1.f) : 1.f;
+   m_d.m_scaleY = fromMouseClick ? LoadValueWithDefault(regKey, "ScaleY"s, 1.f) : 1.f;
+   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueWithDefault(regKey, "TimerEnabled"s, false) : false;
+   m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueWithDefault(regKey, "TimerInterval"s, 100) : 100;
+   m_d.m_enabled = fromMouseClick ? LoadValueWithDefault(regKey, "Enabled"s, true) : true;
+   m_d.m_visible = fromMouseClick ? LoadValueWithDefault(regKey, "Visible"s, true) : true;
+   m_d.m_hit_height = fromMouseClick ? LoadValueWithDefault(regKey, "HitHeight"s, 50.f) : 50.f;
+   m_d.m_shape = fromMouseClick ? (TriggerShape)LoadValueWithDefault(regKey, "Shape"s, (int)TriggerWireA) : TriggerWireA;
 
    const HRESULT hr = LoadValue(regKey, "Surface"s, m_d.m_szSurface);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szSurface.clear();
 
-   m_d.m_animSpeed = fromMouseClick ? LoadValueFloatWithDefault(regKey, "AnimSpeed"s, 1.f) : 1.f;
-   m_d.m_reflectionEnabled = fromMouseClick ? LoadValueBoolWithDefault(regKey, "ReflectionEnabled"s, true) : true;
+   m_d.m_animSpeed = fromMouseClick ? LoadValueWithDefault(regKey, "AnimSpeed"s, 1.f) : 1.f;
+   m_d.m_reflectionEnabled = fromMouseClick ? LoadValueWithDefault(regKey, "ReflectionEnabled"s, true) : true;
 
 #undef regKey
 }
@@ -1064,20 +1064,20 @@ void Trigger::WriteRegDefaults()
 {
 #define regKey regKey[RegName::DefaultPropsTrigger]
 
-   SaveValueBool(regKey, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
-   SaveValueInt(regKey, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
-   SaveValueBool(regKey, "Enabled"s, m_d.m_enabled);
-   SaveValueBool(regKey, "Visible"s, m_d.m_visible);
-   SaveValueFloat(regKey, "HitHeight"s, m_d.m_hit_height);
-   SaveValueFloat(regKey, "Radius"s, m_d.m_radius);
-   SaveValueFloat(regKey, "Rotation"s, m_d.m_rotation);
-   SaveValueFloat(regKey, "WireThickness"s, m_d.m_wireThickness);
-   SaveValueFloat(regKey, "ScaleX"s, m_d.m_scaleX);
-   SaveValueFloat(regKey, "ScaleY"s, m_d.m_scaleY);
-   SaveValueInt(regKey, "Shape"s, m_d.m_shape);
+   SaveValue(regKey, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
+   SaveValue(regKey, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
+   SaveValue(regKey, "Enabled"s, m_d.m_enabled);
+   SaveValue(regKey, "Visible"s, m_d.m_visible);
+   SaveValue(regKey, "HitHeight"s, m_d.m_hit_height);
+   SaveValue(regKey, "Radius"s, m_d.m_radius);
+   SaveValue(regKey, "Rotation"s, m_d.m_rotation);
+   SaveValue(regKey, "WireThickness"s, m_d.m_wireThickness);
+   SaveValue(regKey, "ScaleX"s, m_d.m_scaleX);
+   SaveValue(regKey, "ScaleY"s, m_d.m_scaleY);
+   SaveValue(regKey, "Shape"s, m_d.m_shape);
    SaveValue(regKey, "Surface"s, m_d.m_szSurface);
-   SaveValueFloat(regKey, "AnimSpeed"s, m_d.m_animSpeed);
-   SaveValueBool(regKey, "ReflectionEnabled"s, m_d.m_reflectionEnabled);
+   SaveValue(regKey, "AnimSpeed"s, m_d.m_animSpeed);
+   SaveValue(regKey, "ReflectionEnabled"s, m_d.m_reflectionEnabled);
 
 #undef regKey
 }

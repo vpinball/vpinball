@@ -769,10 +769,10 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
 
 void SearchSelectDialog::LoadPosition()
 {
-   const int x = LoadValueIntWithDefault(regKey[RegName::Editor], "SearchSelectPosX"s, 0);
-   const int y = LoadValueIntWithDefault(regKey[RegName::Editor], "SearchSelectPosY"s, 0);
-   const int w = LoadValueIntWithDefault(regKey[RegName::Editor], "SearchSelectWidth"s, 650);
-   const int h = LoadValueIntWithDefault(regKey[RegName::Editor], "SearchSelectHeight"s, 400);
+   const int x = LoadValueWithDefault(regKey[RegName::Editor], "SearchSelectPosX"s, 0);
+   const int y = LoadValueWithDefault(regKey[RegName::Editor], "SearchSelectPosY"s, 0);
+   const int w = LoadValueWithDefault(regKey[RegName::Editor], "SearchSelectWidth"s, 650);
+   const int h = LoadValueWithDefault(regKey[RegName::Editor], "SearchSelectHeight"s, 400);
 
    SetWindowPos(nullptr, x, y, w, h, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE);
 }
@@ -780,10 +780,10 @@ void SearchSelectDialog::LoadPosition()
 void SearchSelectDialog::SavePosition()
 {
    const CRect rect = GetWindowRect();
-   SaveValueInt(regKey[RegName::Editor], "SearchSelectPosX"s, rect.left);
-   SaveValueInt(regKey[RegName::Editor], "SearchSelectPosY"s, rect.top);
+   SaveValue(regKey[RegName::Editor], "SearchSelectPosX"s, (int)rect.left);
+   SaveValue(regKey[RegName::Editor], "SearchSelectPosY"s, (int)rect.top);
    const int w = rect.right - rect.left;
-   SaveValueInt(regKey[RegName::Editor], "SearchSelectWidth"s, w);
+   SaveValue(regKey[RegName::Editor], "SearchSelectWidth"s, w);
    const int h = rect.bottom - rect.top;
-   SaveValueInt(regKey[RegName::Editor], "SearchSelectHeight"s, h);
+   SaveValue(regKey[RegName::Editor], "SearchSelectHeight"s, h);
 }

@@ -153,42 +153,42 @@ void HitTarget::SetDefaults(const bool fromMouseClick)
 {
 #define strKeyName regKey[RegName::DefaultPropsHitTarget]
 
-   m_d.m_legacy = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "LegacyMode"s, false) : false;
-   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "TimerEnabled"s, false) : false;
-   m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault(strKeyName, "TimerInterval"s, 100) : 100;
-   m_d.m_hitEvent = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "HitEvent"s, true) : true;
-   m_d.m_visible = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "Visible"s, true) : true;
-   m_d.m_isDropped = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "IsDropped"s, false) : false;
+   m_d.m_legacy = fromMouseClick ? LoadValueWithDefault(strKeyName, "LegacyMode"s, false) : false;
+   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueWithDefault(strKeyName, "TimerEnabled"s, false) : false;
+   m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueWithDefault(strKeyName, "TimerInterval"s, 100) : 100;
+   m_d.m_hitEvent = fromMouseClick ? LoadValueWithDefault(strKeyName, "HitEvent"s, true) : true;
+   m_d.m_visible = fromMouseClick ? LoadValueWithDefault(strKeyName, "Visible"s, true) : true;
+   m_d.m_isDropped = fromMouseClick ? LoadValueWithDefault(strKeyName, "IsDropped"s, false) : false;
 
    // Position (X and Y is already set by the click of the user)
-   m_d.m_vPosition.z = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Position_Z"s, 0.0f) : 0.0f;
+   m_d.m_vPosition.z = fromMouseClick ? LoadValueWithDefault(strKeyName, "Position_Z"s, 0.0f) : 0.0f;
 
    // Size
-   m_d.m_vSize.x = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "ScaleX"s, 32.0f) : 32.0f;
-   m_d.m_vSize.y = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "ScaleY"s, 32.0f) : 32.0f;
-   m_d.m_vSize.z = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "ScaleZ"s, 32.0f) : 32.0f;
+   m_d.m_vSize.x = fromMouseClick ? LoadValueWithDefault(strKeyName, "ScaleX"s, 32.0f) : 32.0f;
+   m_d.m_vSize.y = fromMouseClick ? LoadValueWithDefault(strKeyName, "ScaleY"s, 32.0f) : 32.0f;
+   m_d.m_vSize.z = fromMouseClick ? LoadValueWithDefault(strKeyName, "ScaleZ"s, 32.0f) : 32.0f;
 
    // Rotation and Transposition
-   m_d.m_rotZ = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Orientation"s, 0.0f) : 0.0f;
+   m_d.m_rotZ = fromMouseClick ? LoadValueWithDefault(strKeyName, "Orientation"s, 0.0f) : 0.0f;
 
    const HRESULT hr = LoadValue(strKeyName, "Image"s, m_d.m_szImage);
    if ((hr != S_OK) && fromMouseClick)
       m_d.m_szImage.clear();
 
-   m_d.m_targetType = fromMouseClick ? (TargetType)LoadValueIntWithDefault(strKeyName, "TargetType"s, DropTargetSimple) : DropTargetSimple;
-   m_d.m_threshold = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "HitThreshold"s, 2.0f) : 2.0f;
+   m_d.m_targetType = fromMouseClick ? (TargetType)LoadValueWithDefault(strKeyName, "TargetType"s, (int)DropTargetSimple) : DropTargetSimple;
+   m_d.m_threshold = fromMouseClick ? LoadValueWithDefault(strKeyName, "HitThreshold"s, 2.0f) : 2.0f;
    if (m_d.m_targetType == DropTargetBeveled || m_d.m_targetType == DropTargetSimple || m_d.m_targetType == DropTargetFlatSimple)
-       m_d.m_dropSpeed = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "DropSpeed"s, 0.5f) : 0.5f;
+       m_d.m_dropSpeed = fromMouseClick ? LoadValueWithDefault(strKeyName, "DropSpeed"s, 0.5f) : 0.5f;
    else
-       m_d.m_dropSpeed = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "DropSpeed"s, 0.2f) : 0.2f;
+       m_d.m_dropSpeed = fromMouseClick ? LoadValueWithDefault(strKeyName, "DropSpeed"s, 0.2f) : 0.2f;
 
    SetDefaultPhysics(fromMouseClick);
 
-   m_d.m_collidable = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "Collidable"s, true) : true;
-   m_d.m_disableLightingTop = dequantizeUnsigned<8>(fromMouseClick ? LoadValueIntWithDefault(strKeyName, "DisableLighting"s, 0) : 0); // stored as uchar for backward compatibility
-   m_d.m_disableLightingBelow = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "DisableLightingBelow"s, 0.f) : 0.f;
-   m_d.m_reflectionEnabled = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "ReflectionEnabled"s, true) : true;
-   m_d.m_raiseDelay = fromMouseClick ? LoadValueIntWithDefault(strKeyName, "RaiseDelay"s, 100) : 100;
+   m_d.m_collidable = fromMouseClick ? LoadValueWithDefault(strKeyName, "Collidable"s, true) : true;
+   m_d.m_disableLightingTop = dequantizeUnsigned<8>(fromMouseClick ? LoadValueWithDefault(strKeyName, "DisableLighting"s, 0) : 0); // stored as uchar for backward compatibility
+   m_d.m_disableLightingBelow = fromMouseClick ? LoadValueWithDefault(strKeyName, "DisableLightingBelow"s, 0.f) : 0.f;
+   m_d.m_reflectionEnabled = fromMouseClick ? LoadValueWithDefault(strKeyName, "ReflectionEnabled"s, true) : true;
+   m_d.m_raiseDelay = fromMouseClick ? LoadValueWithDefault(strKeyName, "RaiseDelay"s, 100) : 100;
 
 #undef strKeyName
 }
@@ -197,37 +197,37 @@ void HitTarget::WriteRegDefaults()
 {
 #define strKeyName regKey[RegName::DefaultPropsHitTarget]
 
-   SaveValueBool(strKeyName, "LegacyMode"s, m_d.m_legacy);
-   SaveValueBool(strKeyName, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
-   SaveValueInt(strKeyName, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
-   SaveValueBool(strKeyName, "Visible"s, m_d.m_visible);
-   SaveValueBool(strKeyName, "IsDropped"s, m_d.m_isDropped);
+   SaveValue(strKeyName, "LegacyMode"s, m_d.m_legacy);
+   SaveValue(strKeyName, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
+   SaveValue(strKeyName, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
+   SaveValue(strKeyName, "Visible"s, m_d.m_visible);
+   SaveValue(strKeyName, "IsDropped"s, m_d.m_isDropped);
 
-   SaveValueFloat(strKeyName, "Position_Z"s, m_d.m_vPosition.z);
-   SaveValueFloat(strKeyName, "DropSpeed"s, m_d.m_dropSpeed);
+   SaveValue(strKeyName, "Position_Z"s, m_d.m_vPosition.z);
+   SaveValue(strKeyName, "DropSpeed"s, m_d.m_dropSpeed);
 
-   SaveValueFloat(strKeyName, "ScaleX"s, m_d.m_vSize.x);
-   SaveValueFloat(strKeyName, "ScaleY"s, m_d.m_vSize.y);
-   SaveValueFloat(strKeyName, "ScaleZ"s, m_d.m_vSize.z);
+   SaveValue(strKeyName, "ScaleX"s, m_d.m_vSize.x);
+   SaveValue(strKeyName, "ScaleY"s, m_d.m_vSize.y);
+   SaveValue(strKeyName, "ScaleZ"s, m_d.m_vSize.z);
 
-   SaveValueFloat(strKeyName, "Orientation"s, m_d.m_rotZ);
+   SaveValue(strKeyName, "Orientation"s, m_d.m_rotZ);
 
    SaveValue(strKeyName, "Image"s, m_d.m_szImage);
-   SaveValueBool(strKeyName, "HitEvent"s, m_d.m_hitEvent);
-   SaveValueFloat(strKeyName, "HitThreshold"s, m_d.m_threshold);
-   SaveValueFloat(strKeyName, "Elasticity"s, m_d.m_elasticity);
-   SaveValueFloat(strKeyName, "ElasticityFalloff"s, m_d.m_elasticityFalloff);
-   SaveValueFloat(strKeyName, "Friction"s, m_d.m_friction);
-   SaveValueFloat(strKeyName, "Scatter"s, m_d.m_scatter);
+   SaveValue(strKeyName, "HitEvent"s, m_d.m_hitEvent);
+   SaveValue(strKeyName, "HitThreshold"s, m_d.m_threshold);
+   SaveValue(strKeyName, "Elasticity"s, m_d.m_elasticity);
+   SaveValue(strKeyName, "ElasticityFalloff"s, m_d.m_elasticityFalloff);
+   SaveValue(strKeyName, "Friction"s, m_d.m_friction);
+   SaveValue(strKeyName, "Scatter"s, m_d.m_scatter);
 
-   SaveValueInt(strKeyName, "TargetType"s, m_d.m_targetType);
+   SaveValue(strKeyName, "TargetType"s, m_d.m_targetType);
 
-   SaveValueBool(strKeyName, "Collidable"s, m_d.m_collidable);
+   SaveValue(strKeyName, "Collidable"s, m_d.m_collidable);
    const int tmp = quantizeUnsigned<8>(clamp(m_d.m_disableLightingTop, 0.f, 1.f));
-   SaveValueInt(strKeyName, "DisableLighting"s, (tmp == 1) ? 0 : tmp); // backwards compatible saving
-   SaveValueFloat(strKeyName, "DisableLightingBelow"s, m_d.m_disableLightingBelow);
-   SaveValueBool(strKeyName, "ReflectionEnabled"s, m_d.m_reflectionEnabled);
-   SaveValueInt(strKeyName, "RaiseDelay"s, m_d.m_raiseDelay);
+   SaveValue(strKeyName, "DisableLighting"s, (tmp == 1) ? 0 : tmp); // backwards compatible saving
+   SaveValue(strKeyName, "DisableLightingBelow"s, m_d.m_disableLightingBelow);
+   SaveValue(strKeyName, "ReflectionEnabled"s, m_d.m_reflectionEnabled);
+   SaveValue(strKeyName, "RaiseDelay"s, m_d.m_raiseDelay);
 
 #undef strKeyName
 }
@@ -1312,10 +1312,10 @@ void HitTarget::SetDefaultPhysics(const bool fromMouseClick)
 {
 #define strKeyName regKey[RegName::DefaultPropsHitTarget]
 
-   m_d.m_elasticity = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Elasticity"s, 0.35f) : 0.35f;
-   m_d.m_elasticityFalloff = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "ElasticityFalloff"s, 0.5f) : 0.5f;
-   m_d.m_friction = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Friction"s, 0.2f) : 0.2f;
-   m_d.m_scatter = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Scatter"s, 5) : 5;
+   m_d.m_elasticity = fromMouseClick ? LoadValueWithDefault(strKeyName, "Elasticity"s, 0.35f) : 0.35f;
+   m_d.m_elasticityFalloff = fromMouseClick ? LoadValueWithDefault(strKeyName, "ElasticityFalloff"s, 0.5f) : 0.5f;
+   m_d.m_friction = fromMouseClick ? LoadValueWithDefault(strKeyName, "Friction"s, 0.2f) : 0.2f;
+   m_d.m_scatter = fromMouseClick ? LoadValueWithDefault(strKeyName, "Scatter"s, 5.f) : 5.f;
 
 #undef strKeyName
 }

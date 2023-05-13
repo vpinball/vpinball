@@ -44,31 +44,31 @@ void CVPreference::ReadCheckBox(const HWND hwndDlg)
 
 void CVPreference::GetPrefsFromReg()
 {
-	m_highlight = LoadValueBoolWithDefault(regKey[RegName::CVEdit], m_szRegName, m_highlight);
-	m_rgb = LoadValueIntWithDefault(regKey[RegName::CVEdit], m_szRegName + "_color", m_rgb);
-	m_pointSize = LoadValueIntWithDefault(regKey[RegName::CVEdit], m_szRegName + "_FontPointSize", m_pointSize);
+	m_highlight = LoadValueWithDefault(regKey[RegName::CVEdit], m_szRegName, m_highlight);
+	m_rgb = LoadValueWithDefault(regKey[RegName::CVEdit], m_szRegName + "_color", (int)m_rgb);
+	m_pointSize = LoadValueWithDefault(regKey[RegName::CVEdit], m_szRegName + "_FontPointSize", m_pointSize);
 
 	char bakupFaceName[LF_FACESIZE]; // to save the default font name, in case the corresponding registry entry is empty
 	strncpy_s(bakupFaceName, m_logFont.lfFaceName, sizeof(bakupFaceName)-1);
 	if (LoadValue(regKey[RegName::CVEdit], m_szRegName + "_Font", m_logFont.lfFaceName, LF_FACESIZE) != S_OK)
 		strncpy_s(m_logFont.lfFaceName, bakupFaceName, sizeof(m_logFont.lfFaceName)-1);
 
-	m_logFont.lfWeight = LoadValueIntWithDefault(regKey[RegName::CVEdit], m_szRegName + "_FontWeight", m_logFont.lfWeight);
-	m_logFont.lfItalic = LoadValueIntWithDefault(regKey[RegName::CVEdit], m_szRegName + "_FontItalic", m_logFont.lfItalic);
-	m_logFont.lfUnderline = LoadValueIntWithDefault(regKey[RegName::CVEdit], m_szRegName + "_FontUnderline", m_logFont.lfUnderline);
-	m_logFont.lfStrikeOut = LoadValueIntWithDefault(regKey[RegName::CVEdit], m_szRegName + "_FontStrike", m_logFont.lfStrikeOut);
+	m_logFont.lfWeight = LoadValueWithDefault(regKey[RegName::CVEdit], m_szRegName + "_FontWeight", (int)m_logFont.lfWeight);
+	m_logFont.lfItalic = LoadValueWithDefault(regKey[RegName::CVEdit], m_szRegName + "_FontItalic", m_logFont.lfItalic);
+	m_logFont.lfUnderline = LoadValueWithDefault(regKey[RegName::CVEdit], m_szRegName + "_FontUnderline", m_logFont.lfUnderline);
+	m_logFont.lfStrikeOut = LoadValueWithDefault(regKey[RegName::CVEdit], m_szRegName + "_FontStrike", m_logFont.lfStrikeOut);
 }
 
 void CVPreference::SetPrefsToReg()
 {
-	SaveValueBool(regKey[RegName::CVEdit], m_szRegName, m_highlight);
-	SaveValueInt(regKey[RegName::CVEdit], m_szRegName + "_color", m_rgb);
-	SaveValueInt(regKey[RegName::CVEdit], m_szRegName + "_FontPointSize", m_pointSize);
+	SaveValue(regKey[RegName::CVEdit], m_szRegName, m_highlight);
+	SaveValue(regKey[RegName::CVEdit], m_szRegName + "_color", (int)m_rgb);
+	SaveValue(regKey[RegName::CVEdit], m_szRegName + "_FontPointSize", m_pointSize);
 	SaveValue(regKey[RegName::CVEdit], m_szRegName + "_Font", m_logFont.lfFaceName);
-	SaveValueInt(regKey[RegName::CVEdit], m_szRegName + "_FontWeight", m_logFont.lfWeight);
-	SaveValueInt(regKey[RegName::CVEdit], m_szRegName + "_FontItalic", m_logFont.lfItalic);
-	SaveValueInt(regKey[RegName::CVEdit], m_szRegName + "_FontUnderline", m_logFont.lfUnderline);
-	SaveValueInt(regKey[RegName::CVEdit], m_szRegName + "_FontStrike", m_logFont.lfStrikeOut);
+	SaveValue(regKey[RegName::CVEdit], m_szRegName + "_FontWeight", (int)m_logFont.lfWeight);
+	SaveValue(regKey[RegName::CVEdit], m_szRegName + "_FontItalic", m_logFont.lfItalic);
+	SaveValue(regKey[RegName::CVEdit], m_szRegName + "_FontUnderline", m_logFont.lfUnderline);
+	SaveValue(regKey[RegName::CVEdit], m_szRegName + "_FontStrike", m_logFont.lfStrikeOut);
 }
 
 void CVPreference::SetDefaultFont(const HWND hwndDlg)

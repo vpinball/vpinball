@@ -58,9 +58,9 @@ void Decal::SetDefaults(const bool fromMouseClick)
 {
 #define regKey regKey[RegName::DefaultPropsDecal]
 
-   m_d.m_width = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Width"s, 100.0f) : 100.0f;
-   m_d.m_height = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Height"s, 100.0f) : 100.0f;
-   m_d.m_rotation = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Rotation"s, 0.f) : 0.f;
+   m_d.m_width = fromMouseClick ? LoadValueWithDefault(regKey, "Width"s, 100.0f) : 100.0f;
+   m_d.m_height = fromMouseClick ? LoadValueWithDefault(regKey, "Height"s, 100.0f) : 100.0f;
+   m_d.m_rotation = fromMouseClick ? LoadValueWithDefault(regKey, "Rotation"s, 0.f) : 0.f;
 
    HRESULT hr = LoadValue(regKey, "Image"s, m_d.m_szImage);
    if ((hr != S_OK) || !fromMouseClick)
@@ -70,15 +70,15 @@ void Decal::SetDefaults(const bool fromMouseClick)
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szSurface.clear();
 
-   m_d.m_decaltype = fromMouseClick ? (enum DecalType)LoadValueIntWithDefault(regKey, "DecalType"s, (int)DecalImage) : DecalImage;
+   m_d.m_decaltype = fromMouseClick ? (enum DecalType)LoadValueWithDefault(regKey, "DecalType"s, (int)DecalImage) : DecalImage;
 
    hr = LoadValue(regKey, "Text"s, m_d.m_sztext);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_sztext.clear();
 
-   m_d.m_sizingtype = fromMouseClick ? (enum SizingType)LoadValueIntWithDefault(regKey, "Sizing"s, (int)ManualSize) : ManualSize;
-   m_d.m_color = fromMouseClick ? LoadValueIntWithDefault(regKey, "Color"s, RGB(0,0,0)) : RGB(0,0,0);
-   m_d.m_verticalText = fromMouseClick ? LoadValueBoolWithDefault(regKey, "VerticalText"s, false) : false;
+   m_d.m_sizingtype = fromMouseClick ? (enum SizingType)LoadValueWithDefault(regKey, "Sizing"s, (int)ManualSize) : ManualSize;
+   m_d.m_color = fromMouseClick ? LoadValueWithDefault(regKey, "Color"s, (int)RGB(0,0,0)) : RGB(0,0,0);
+   m_d.m_verticalText = fromMouseClick ? LoadValueWithDefault(regKey, "VerticalText"s, false) : false;
 
    if (!m_pIFont)
    {
@@ -101,11 +101,11 @@ void Decal::SetDefaults(const bool fromMouseClick)
          MultiByteToWideCharNull(CP_ACP, 0, tmp, -1, fd.lpstrName, len);
       }
 
-      fd.sWeight = fromMouseClick ? LoadValueIntWithDefault(regKey, "FontWeight"s, FW_NORMAL) : FW_NORMAL;
-      fd.sCharset = fromMouseClick ? LoadValueIntWithDefault(regKey, "FontCharSet"s, 0) : 0;
-      fd.fItalic = fromMouseClick ? LoadValueBoolWithDefault(regKey, "FontItalic"s, false) : false;
-      fd.fUnderline = fromMouseClick ? LoadValueBoolWithDefault(regKey, "FontUnderline"s, false) : false;
-      fd.fStrikethrough = fromMouseClick ? LoadValueBoolWithDefault(regKey, "FontStrikeThrough"s, false) : false;
+      fd.sWeight = fromMouseClick ? LoadValueWithDefault(regKey, "FontWeight"s, FW_NORMAL) : FW_NORMAL;
+      fd.sCharset = fromMouseClick ? LoadValueWithDefault(regKey, "FontCharSet"s, 0) : 0;
+      fd.fItalic = fromMouseClick ? LoadValueWithDefault(regKey, "FontItalic"s, false) : false;
+      fd.fUnderline = fromMouseClick ? LoadValueWithDefault(regKey, "FontUnderline"s, false) : false;
+      fd.fStrikethrough = fromMouseClick ? LoadValueWithDefault(regKey, "FontStrikeThrough"s, false) : false;
 
       OleCreateFontIndirect(&fd, IID_IFont, (void **)&m_pIFont);
    }
@@ -131,15 +131,15 @@ void Decal::WriteRegDefaults()
 {
 #define regKey regKey[RegName::DefaultPropsDecal]
 
-   SaveValueFloat(regKey, "Width"s, m_d.m_width);
-   SaveValueFloat(regKey, "Height"s, m_d.m_height);
-   SaveValueFloat(regKey, "Rotation"s, m_d.m_rotation);
+   SaveValue(regKey, "Width"s, m_d.m_width);
+   SaveValue(regKey, "Height"s, m_d.m_height);
+   SaveValue(regKey, "Rotation"s, m_d.m_rotation);
    SaveValue(regKey, "Image"s, m_d.m_szImage);
-   SaveValueInt(regKey, "DecalType"s, m_d.m_decaltype);
+   SaveValue(regKey, "DecalType"s, m_d.m_decaltype);
    SaveValue(regKey, "Text"s, m_d.m_sztext);
-   SaveValueInt(regKey, "Sizing"s, m_d.m_sizingtype);
-   SaveValueInt(regKey, "Color"s, m_d.m_color);
-   SaveValueBool(regKey, "VerticalText"s, m_d.m_verticalText);
+   SaveValue(regKey, "Sizing"s, m_d.m_sizingtype);
+   SaveValue(regKey, "Color"s, (int)m_d.m_color);
+   SaveValue(regKey, "VerticalText"s, m_d.m_verticalText);
    SaveValue(regKey, "Surface"s, m_d.m_szSurface);
 
    if (m_pIFont)
@@ -155,7 +155,7 @@ void Decal::WriteRegDefaults()
       m_pIFont->get_Strikethrough(&fd.fStrikethrough);
 
       const float fTmp = (float)(fd.cySize.int64 / 10000.0);
-      SaveValueFloat(regKey, "FontSize"s, fTmp);
+      SaveValue(regKey, "FontSize"s, fTmp);
 
       const size_t charCnt = wcslen(fd.lpstrName) + 1;
       char * const strTmp = new char[2 * charCnt];
@@ -164,11 +164,11 @@ void Decal::WriteRegDefaults()
       delete[] strTmp;
       const int weight = fd.sWeight;
       const int charset = fd.sCharset;
-      SaveValueInt(regKey, "FontWeight"s, weight);
-      SaveValueInt(regKey, "FontCharSet"s, charset);
-      SaveValueInt(regKey, "FontItalic"s, fd.fItalic);
-      SaveValueInt(regKey, "FontUnderline"s, fd.fUnderline);
-      SaveValueInt(regKey, "FontStrikeThrough"s, fd.fStrikethrough);
+      SaveValue(regKey, "FontWeight"s, weight);
+      SaveValue(regKey, "FontCharSet"s, charset);
+      SaveValue(regKey, "FontItalic"s, fd.fItalic);
+      SaveValue(regKey, "FontUnderline"s, fd.fUnderline);
+      SaveValue(regKey, "FontStrikeThrough"s, fd.fStrikethrough);
    }
 
 #undef regKey

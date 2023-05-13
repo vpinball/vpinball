@@ -599,7 +599,7 @@ LiveUI::LiveUI(RenderDevice *const rd)
    m_live_table = g_pplayer->m_ptable;
    m_pininput = &(g_pplayer->m_pininput);
    m_pin3d = &(g_pplayer->m_pin3d);
-   m_disable_esc = LoadValueBoolWithDefault(regKey[RegName::Player], "DisableESC"s, m_disable_esc);
+   m_disable_esc = LoadValueWithDefault(regKey[RegName::Player], "DisableESC"s, m_disable_esc);
    m_old_player_dynamic_mode = m_player->m_dynamicMode;
    m_old_player_camera_mode = m_player->m_cameraMode;
 
@@ -993,7 +993,7 @@ void LiveUI::UpdateCameraModeUI()
          {
             CM_SKIP_LINE;
             #ifdef ENABLE_SDL
-            CM_ROW("Eye distance", "%.0f", LoadValueFloatWithDefault(regKey[RegName::Player], "Stereo3DEyeSeparation"s, 63.0f), "mm");
+            CM_ROW("Eye distance", "%.0f", LoadValueWithDefault(regKey[RegName::Player], "Stereo3DEyeSeparation"s, 63.0f), "mm");
             #else
             CM_ROW(m_table->m_overwriteGlobalStereo3D ? "Max Separation [Table setting]" : "Max Separation [Application setting]", "%.3f", table->GetMaxSeparation(), "");
             #endif
@@ -1041,7 +1041,7 @@ void LiveUI::UpdateCameraModeUI()
    }
    infos.push_back("Flipper keys:   Adjust highlighted value"s);
    infos.push_back("Magna save keys:   Previous/Next option"s);
-   if (LoadValueBoolWithDefault(regKey[RegName::Player], "EnableCameraModeFlyAround"s, false))
+   if (LoadValueWithDefault(regKey[RegName::Player], "EnableCameraModeFlyAround"s, false))
    {
       infos.push_back("Nudge key:   Rotate table orientation"s);
       infos.push_back("Arrows & Left Alt Key:   Navigate around"s);
@@ -1406,7 +1406,7 @@ void LiveUI::UpdateMainUI()
       {
          // Create eye projection matrices for real stereo (not VR but anaglyph,...)
          // 63mm is the average distance between eyes (varies from 54 to 74mm between adults, 43 to 58mm for children), 50 VPUnit is 1.25 inches
-         const float stereo3DMS = LoadValueFloatWithDefault(regKey[RegName::Player], "Stereo3DEyeSeparation"s, 63.0f);
+         const float stereo3DMS = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DEyeSeparation"s, 63.0f);
          const float halfEyeDist = 0.5f * (stereo3DMS / 25.4f) * (float)(50. / 1.25);
          Matrix3D invView(m_camView);
          invView.Invert();
@@ -1777,31 +1777,31 @@ void LiveUI::UpdateAudioOptionsModal()
    bool p_open = true;
    if (ImGui::BeginPopupModal(ID_AUDIO_SETTINGS, &p_open, ImGuiWindowFlags_AlwaysAutoResize))
    {
-      bool fsound = LoadValueBoolWithDefault(regKey[RegName::Player], "PlayMusic"s, true);
+      bool fsound = LoadValueWithDefault(regKey[RegName::Player], "PlayMusic"s, true);
       if (ImGui::Checkbox("Enable music", &fsound))
       {
-         SaveValueBool(regKey[RegName::Player], "PlayMusic"s, fsound);
+         SaveValue(regKey[RegName::Player], "PlayMusic"s, fsound);
          m_player->m_PlayMusic = fsound;
       }
 
-      int volume = LoadValueIntWithDefault(regKey[RegName::Player], "MusicVolume"s, 100);
+      int volume = LoadValueWithDefault(regKey[RegName::Player], "MusicVolume"s, 100);
       if (ImGui::SliderInt("Music Volume", &volume, 0, 100))
       {
-         SaveValueInt(regKey[RegName::Player], "MusicVolume"s, volume);
+         SaveValue(regKey[RegName::Player], "MusicVolume"s, volume);
          m_player->m_MusicVolume = volume;
       }
 
-      fsound = LoadValueBoolWithDefault(regKey[RegName::Player], "PlaySound"s, true);
+      fsound = LoadValueWithDefault(regKey[RegName::Player], "PlaySound"s, true);
       if (ImGui::Checkbox("Enable sound", &fsound))
       {
-         SaveValueBool(regKey[RegName::Player], "PlaySound"s, fsound);
+         SaveValue(regKey[RegName::Player], "PlaySound"s, fsound);
          m_player->m_PlaySound = fsound;
       }
 
-      volume = LoadValueIntWithDefault(regKey[RegName::Player], "SoundVolume"s, 100);
+      volume = LoadValueWithDefault(regKey[RegName::Player], "SoundVolume"s, 100);
       if (ImGui::SliderInt("Sound Volume", &volume, 0, 100))
       {
-         SaveValueInt(regKey[RegName::Player], "SoundVolume"s, volume);
+         SaveValue(regKey[RegName::Player], "SoundVolume"s, volume);
          m_player->m_SoundVolume = volume;
       }
 
@@ -1815,18 +1815,18 @@ void LiveUI::UpdateVideoOptionsModal()
    if (ImGui::BeginPopupModal(ID_VIDEO_SETTINGS, &p_open, ImGuiWindowFlags_AlwaysAutoResize))
    {
       if (ImGui::Checkbox("Force Bloom filter off", &m_player->m_bloomOff))
-         SaveValueBool(regKey[m_player->m_stereo3D == STEREO_VR ? RegName::PlayerVR : RegName::Player], "ForceBloomOff"s, m_player->m_bloomOff);
+         SaveValue(regKey[m_player->m_stereo3D == STEREO_VR ? RegName::PlayerVR : RegName::Player], "ForceBloomOff"s, m_player->m_bloomOff);
       if (m_table->m_useFXAA == -1)
       {
          const char *postprocessed_aa_items[] = { "Disabled", "Fast FXAA", "Standard FXAA", "Quality FXAA", "Fast NFAA", "Standard DLAA", "Quality SMAA" };
          if (ImGui::Combo("Postprocessed AA", &m_player->m_FXAA, postprocessed_aa_items, IM_ARRAYSIZE(postprocessed_aa_items)))
-            SaveValueInt(regKey[m_player->m_stereo3D == STEREO_VR ? RegName::PlayerVR : RegName::Player], "FXAA"s, m_player->m_FXAA);
+            SaveValue(regKey[m_player->m_stereo3D == STEREO_VR ? RegName::PlayerVR : RegName::Player], "FXAA"s, m_player->m_FXAA);
       }
       const char *sharpen_items[] = { "Disabled", "CAS", "Bilateral CAS" };
       if (ImGui::Combo("Sharpen", &m_player->m_sharpen, sharpen_items, IM_ARRAYSIZE(sharpen_items)))
-         SaveValueInt(regKey[m_player->m_stereo3D == STEREO_VR ? RegName::PlayerVR : RegName::Player], "Sharpen"s, m_player->m_sharpen);
+         SaveValue(regKey[m_player->m_stereo3D == STEREO_VR ? RegName::PlayerVR : RegName::Player], "Sharpen"s, m_player->m_sharpen);
       if (ImGui::Checkbox("Enable stereo rendering", &m_player->m_stereo3Denabled))
-         SaveValueBool(regKey[RegName::Player], "Stereo3DEnabled"s, m_player->m_stereo3Denabled);
+         SaveValue(regKey[RegName::Player], "Stereo3DEnabled"s, m_player->m_stereo3Denabled);
       ImGui::EndPopup();
    }
 }
@@ -2115,8 +2115,8 @@ void LiveUI::UpdateMainSplashModal()
             y = rect.top + (int)drag.y;
             m_player->SetWindowPos(nullptr, x, y, m_player->m_wnd_width, m_player->m_wnd_height, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
 #endif
-            SaveValueInt((m_player->m_stereo3D == STEREO_VR) ? regKey[RegName::PlayerVR] : regKey[RegName::Player], "WindowPosX"s, x);
-            SaveValueInt((m_player->m_stereo3D == STEREO_VR) ? regKey[RegName::PlayerVR] : regKey[RegName::Player], "WindowPosY"s, y);
+            SaveValue((m_player->m_stereo3D == STEREO_VR) ? regKey[RegName::PlayerVR] : regKey[RegName::Player], "WindowPosX"s, x);
+            SaveValue((m_player->m_stereo3D == STEREO_VR) ? regKey[RegName::PlayerVR] : regKey[RegName::Player], "WindowPosY"s, y);
          }
       }
       else

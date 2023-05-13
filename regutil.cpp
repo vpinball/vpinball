@@ -476,23 +476,23 @@ static HRESULT LoadValue(const string &szKey, const string &szValue, DWORD &type
 }
 
 
-int LoadValueIntWithDefault(const string &szKey, const string &szValue, const int def)
+int LoadValueWithDefault(const string &szKey, const string &szValue, const int def)
 {
    int val;
    const HRESULT hr = LoadValue(szKey, szValue, val);
    return SUCCEEDED(hr) ? val : def;
 }
 
-float LoadValueFloatWithDefault(const string &szKey, const string &szValue, const float def)
+float LoadValueWithDefault(const string &szKey, const string &szValue, const float def)
 {
    float val;
    const HRESULT hr = LoadValue(szKey, szValue, val);
    return SUCCEEDED(hr) ? val : def;
 }
 
-bool LoadValueBoolWithDefault(const string &szKey, const string &szValue, const bool def)
+bool LoadValueWithDefault(const string &szKey, const string &szValue, const bool def)
 {
-   return !!LoadValueIntWithDefault(szKey, szValue, def);
+   return !!LoadValueWithDefault(szKey, szValue, (int)def);
 }
 
 //
@@ -595,18 +595,18 @@ static HRESULT SaveValue(const string &szKey, const string &szValue, const DWORD
 #endif
 }
 
-HRESULT SaveValueBool(const string &szKey, const string &szValue, const bool val)
+HRESULT SaveValue(const string &szKey, const string &szValue, const bool val)
 {
    const DWORD dwval = val ? 1 : 0;
    return SaveValue(szKey, szValue, REG_DWORD, &dwval, sizeof(DWORD));
 }
 
-HRESULT SaveValueInt(const string &szKey, const string &szValue, const int val)
+HRESULT SaveValue(const string &szKey, const string &szValue, const int val)
 {
    return SaveValue(szKey, szValue, REG_DWORD, &val, sizeof(DWORD));
 }
 
-HRESULT SaveValueFloat(const string &szKey, const string &szValue, const float val)
+HRESULT SaveValue(const string &szKey, const string &szValue, const float val)
 {
    char buf[16];
    sprintf_s(buf, sizeof(buf), "%f", val);

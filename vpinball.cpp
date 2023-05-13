@@ -286,29 +286,29 @@ void VPinball::InitTools()
 ///</summary>
 void VPinball::InitRegValues()
 {
-   const int deadz = LoadValueIntWithDefault(regKey[RegName::Player], "DeadZone"s, 0);
-   SaveValueInt(regKey[RegName::Player], "DeadZone"s, deadz);
+   const int deadz = LoadValueWithDefault(regKey[RegName::Player], "DeadZone"s, 0);
+   SaveValue(regKey[RegName::Player], "DeadZone"s, deadz);
 
-   m_alwaysDrawDragPoints = LoadValueBoolWithDefault(regKey[RegName::Editor], "ShowDragPoints"s, false);
-   m_alwaysDrawLightCenters = LoadValueBoolWithDefault(regKey[RegName::Editor], "DrawLightCenters"s, false);
-   m_gridSize = LoadValueIntWithDefault(regKey[RegName::Editor], "GridSize"s, 50);
+   m_alwaysDrawDragPoints = LoadValueWithDefault(regKey[RegName::Editor], "ShowDragPoints"s, false);
+   m_alwaysDrawLightCenters = LoadValueWithDefault(regKey[RegName::Editor], "DrawLightCenters"s, false);
+   m_gridSize = LoadValueWithDefault(regKey[RegName::Editor], "GridSize"s, 50);
 
-   const bool autoSave = LoadValueBoolWithDefault(regKey[RegName::Editor], "AutoSaveOn"s, true);
+   const bool autoSave = LoadValueWithDefault(regKey[RegName::Editor], "AutoSaveOn"s, true);
    if (autoSave)
    {
-      m_autosaveTime = LoadValueIntWithDefault(regKey[RegName::Editor], "AutoSaveTime"s, AUTOSAVE_DEFAULT_TIME);
+      m_autosaveTime = LoadValueWithDefault(regKey[RegName::Editor], "AutoSaveTime"s, AUTOSAVE_DEFAULT_TIME);
       SetAutoSaveMinutes(m_autosaveTime);
    }
    else
       m_autosaveTime = -1;
 
-   m_securitylevel = LoadValueIntWithDefault(regKey[RegName::Player], "SecurityLevel"s, DEFAULT_SECURITY_LEVEL);
+   m_securitylevel = LoadValueWithDefault(regKey[RegName::Player], "SecurityLevel"s, DEFAULT_SECURITY_LEVEL);
 
-   m_dummyMaterial.m_cBase = LoadValueIntWithDefault(regKey[RegName::Editor], "DefaultMaterialColor"s, 0xB469FF);
-   m_elemSelectColor = LoadValueIntWithDefault(regKey[RegName::Editor], "ElementSelectColor"s, 0x00FF0000);
-   m_elemSelectLockedColor = LoadValueIntWithDefault(regKey[RegName::Editor], "ElementSelectLockedColor"s, 0x00A7726D);
-   m_backgroundColor = LoadValueIntWithDefault(regKey[RegName::Editor], "BackgroundColor"s, 0x008D8D8D);
-   m_fillColor = LoadValueIntWithDefault(regKey[RegName::Editor], "FillColor"s, 0x00B1CFB3);
+   m_dummyMaterial.m_cBase = LoadValueWithDefault(regKey[RegName::Editor], "DefaultMaterialColor"s, 0xB469FF);
+   m_elemSelectColor = LoadValueWithDefault(regKey[RegName::Editor], "ElementSelectColor"s, 0x00FF0000);
+   m_elemSelectLockedColor = LoadValueWithDefault(regKey[RegName::Editor], "ElementSelectLockedColor"s, 0x00A7726D);
+   m_backgroundColor = LoadValueWithDefault(regKey[RegName::Editor], "BackgroundColor"s, 0x008D8D8D);
+   m_fillColor = LoadValueWithDefault(regKey[RegName::Editor], "FillColor"s, 0x00B1CFB3);
 
    if (m_securitylevel < eSecurityNone || m_securitylevel > eSecurityNoControls)
       m_securitylevel = eSecurityNoControls;
@@ -324,7 +324,7 @@ void VPinball::InitRegValues()
          break;
    }
 
-   m_convertToUnit = LoadValueIntWithDefault(regKey[RegName::Editor], "Units"s, 0);
+   m_convertToUnit = LoadValueWithDefault(regKey[RegName::Editor], "Units"s, 0);
 }
 
 void VPinball::AddMDITable(PinTableMDI* mdiTable) 
@@ -1520,12 +1520,12 @@ void VPinball::OnClose()
 
       if (GetWindowPlacement(winpl))
       {
-         SaveValueInt(regKey[RegName::Editor], "WindowLeft"s, winpl.rcNormalPosition.left);
-         SaveValueInt(regKey[RegName::Editor], "WindowTop"s, winpl.rcNormalPosition.top);
-         SaveValueInt(regKey[RegName::Editor], "WindowRight"s, winpl.rcNormalPosition.right);
-         SaveValueInt(regKey[RegName::Editor], "WindowBottom"s, winpl.rcNormalPosition.bottom);
+         SaveValue(regKey[RegName::Editor], "WindowLeft"s, (int)winpl.rcNormalPosition.left);
+         SaveValue(regKey[RegName::Editor], "WindowTop"s, (int)winpl.rcNormalPosition.top);
+         SaveValue(regKey[RegName::Editor], "WindowRight"s, (int)winpl.rcNormalPosition.right);
+         SaveValue(regKey[RegName::Editor], "WindowBottom"s, (int)winpl.rcNormalPosition.bottom);
 
-         SaveValueBool(regKey[RegName::Editor], "WindowMaximized"s, !!IsZoomed());
+         SaveValue(regKey[RegName::Editor], "WindowMaximized"s, !!IsZoomed());
       }
       if (!m_open_minimized) // otherwise the window/dock settings are screwed up and have to be manually restored each time
          SaveDockRegistrySettings(DOCKER_REGISTRY_KEY);
@@ -1909,7 +1909,7 @@ INT_PTR CALLBACK SecurityOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
          (rcMain.bottom + rcMain.top) / 2 - (rcDlg.bottom - rcDlg.top) / 2,
          0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE/* | SWP_NOMOVE*/);
 
-      int security = LoadValueIntWithDefault(regKey[RegName::Player], "SecurityLevel"s, DEFAULT_SECURITY_LEVEL);
+      int security = LoadValueWithDefault(regKey[RegName::Player], "SecurityLevel"s, DEFAULT_SECURITY_LEVEL);
       if (security < 0 || security > 4)
          security = 0;
 
@@ -1917,7 +1917,7 @@ INT_PTR CALLBACK SecurityOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
 
       SendMessage(GetDlgItem(hwndDlg, buttonid), BM_SETCHECK, BST_CHECKED, 0);
 
-      const bool hangdetect = LoadValueBoolWithDefault(regKey[RegName::Player], "DetectHang"s, false);
+      const bool hangdetect = LoadValueWithDefault(regKey[RegName::Player], "DetectHang"s, false);
       SendMessage(GetDlgItem(hwndDlg, IDC_HANGDETECT), BM_SETCHECK, hangdetect ? BST_CHECKED : BST_UNCHECKED, 0);
 
       return TRUE;
@@ -1937,11 +1937,11 @@ INT_PTR CALLBACK SecurityOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
             {
                const size_t checked = SendMessage(GetDlgItem(hwndDlg, rgDlgIDFromSecurityLevel[i]), BM_GETCHECK, 0, 0);
                if (checked == BST_CHECKED)
-                  SaveValueInt(regKey[RegName::Player], "SecurityLevel"s, i);
+                  SaveValue(regKey[RegName::Player], "SecurityLevel"s, i);
             }
 
             const bool hangdetect = (SendMessage(GetDlgItem(hwndDlg, IDC_HANGDETECT), BM_GETCHECK, 0, 0) != 0);
-            SaveValueBool(regKey[RegName::Player], "DetectHang"s, hangdetect);
+            SaveValue(regKey[RegName::Player], "DetectHang"s, hangdetect);
 
             EndDialog(hwndDlg, TRUE);
          }
@@ -2202,7 +2202,7 @@ void VPinball::ToggleScriptEditor()
    CComObject<PinTable> * const ptCur = GetActiveTable();
    if (ptCur)
    {
-      const bool alwaysViewScript = LoadValueBoolWithDefault(regKey[RegName::Editor], "AlwaysViewScript"s, false);
+      const bool alwaysViewScript = LoadValueWithDefault(regKey[RegName::Editor], "AlwaysViewScript"s, false);
 
       ptCur->m_pcv->SetVisible(alwaysViewScript || !(ptCur->m_pcv->m_visible && !ptCur->m_pcv->m_minimized));
 
@@ -2259,7 +2259,7 @@ void VPinball::SetViewSolidOutline(size_t viewId)
       GetMenu().CheckMenuItem(ID_VIEW_OUTLINE, MF_BYCOMMAND | (ptCur->RenderSolid() ? MF_UNCHECKED : MF_CHECKED));
 
       ptCur->SetDirtyDraw();
-      SaveValueBool(regKey[RegName::Editor], "RenderSolid"s, ptCur->m_renderSolid);
+      SaveValue(regKey[RegName::Editor], "RenderSolid"s, ptCur->m_renderSolid);
    }
 }
 

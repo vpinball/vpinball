@@ -53,28 +53,28 @@ void Bumper::SetDefaults(const bool fromMouseClick)
 {
 #define regKey regKey[RegName::DefaultPropsBumper]
 
-   m_d.m_radius = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Radius"s, 45.f) : 45.f;
+   m_d.m_radius = fromMouseClick ? LoadValueWithDefault(regKey, "Radius"s, 45.f) : 45.f;
 
    SetDefaultPhysics(fromMouseClick);
 
-   m_d.m_heightScale = fromMouseClick ? LoadValueFloatWithDefault(regKey, "HeightScale"s, 90.0f) : 90.0f;
-   m_d.m_ringSpeed = fromMouseClick ? LoadValueFloatWithDefault(regKey, "RingSpeed"s, 0.5f) : 0.5f;
-   m_d.m_orientation = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Orientation"s, 0.0f) : 0.0f;
-   m_d.m_threshold = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Threshold"s, 1.f) : 1.f;
+   m_d.m_heightScale = fromMouseClick ? LoadValueWithDefault(regKey, "HeightScale"s, 90.0f) : 90.0f;
+   m_d.m_ringSpeed = fromMouseClick ? LoadValueWithDefault(regKey, "RingSpeed"s, 0.5f) : 0.5f;
+   m_d.m_orientation = fromMouseClick ? LoadValueWithDefault(regKey, "Orientation"s, 0.0f) : 0.0f;
+   m_d.m_threshold = fromMouseClick ? LoadValueWithDefault(regKey, "Threshold"s, 1.f) : 1.f;
 
    const HRESULT hr = LoadValue(regKey, "Surface"s, m_d.m_szSurface);
    if (hr != S_OK || !fromMouseClick)
       m_d.m_szSurface.clear();
 
-   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault(regKey, "TimerEnabled"s, false) : false;
-   m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault(regKey, "TimerInterval"s, 100) : 100;
-   m_d.m_capVisible = fromMouseClick ? LoadValueBoolWithDefault(regKey, "CapVisible"s, true) : true;
-   m_d.m_baseVisible = fromMouseClick ? LoadValueBoolWithDefault(regKey, "BaseVisible"s, true) : true;
-   m_d.m_ringVisible = fromMouseClick ? LoadValueBoolWithDefault(regKey, "RingVisible"s, true) : true;
-   m_d.m_skirtVisible = fromMouseClick ? LoadValueBoolWithDefault(regKey, "SkirtVisible"s, true) : true;
-   m_d.m_reflectionEnabled = fromMouseClick ? LoadValueBoolWithDefault(regKey, "ReflectionEnabled"s, true) : true;
-   m_d.m_hitEvent = fromMouseClick ? LoadValueBoolWithDefault(regKey, "HasHitEvent"s, true) : true;
-   m_d.m_collidable = fromMouseClick ? LoadValueBoolWithDefault(regKey, "Collidable"s, true) : true;
+   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueWithDefault(regKey, "TimerEnabled"s, false) : false;
+   m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueWithDefault(regKey, "TimerInterval"s, 100) : 100;
+   m_d.m_capVisible = fromMouseClick ? LoadValueWithDefault(regKey, "CapVisible"s, true) : true;
+   m_d.m_baseVisible = fromMouseClick ? LoadValueWithDefault(regKey, "BaseVisible"s, true) : true;
+   m_d.m_ringVisible = fromMouseClick ? LoadValueWithDefault(regKey, "RingVisible"s, true) : true;
+   m_d.m_skirtVisible = fromMouseClick ? LoadValueWithDefault(regKey, "SkirtVisible"s, true) : true;
+   m_d.m_reflectionEnabled = fromMouseClick ? LoadValueWithDefault(regKey, "ReflectionEnabled"s, true) : true;
+   m_d.m_hitEvent = fromMouseClick ? LoadValueWithDefault(regKey, "HasHitEvent"s, true) : true;
+   m_d.m_collidable = fromMouseClick ? LoadValueWithDefault(regKey, "Collidable"s, true) : true;
 
    m_ringAnimate = false;
    m_d.m_ringDropOffset = 0.0f;
@@ -86,20 +86,20 @@ void Bumper::WriteRegDefaults()
 {
 #define regKey regKey[RegName::DefaultPropsBumper]
 
-   SaveValueFloat(regKey, "Radius"s, m_d.m_radius);
-   SaveValueFloat(regKey, "Force"s, m_d.m_force);
-   SaveValueFloat(regKey, "Scatter"s, m_d.m_scatter);
-   SaveValueFloat(regKey, "HeightScale"s, m_d.m_heightScale);
-   SaveValueFloat(regKey, "RingSpeed"s, m_d.m_ringSpeed);
-   SaveValueFloat(regKey, "Orientation"s, m_d.m_orientation);
-   SaveValueFloat(regKey, "Threshold"s, m_d.m_threshold);
-   SaveValueBool(regKey, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
-   SaveValueInt(regKey, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
-   SaveValueBool(regKey, "CapVisible"s, m_d.m_capVisible);
-   SaveValueBool(regKey, "BaseVisible"s, m_d.m_baseVisible);
-   SaveValueBool(regKey, "HasHitEvent"s, m_d.m_hitEvent);
-   SaveValueBool(regKey, "Collidable"s, m_d.m_collidable);
-   SaveValueBool(regKey, "ReflectionEnabled"s, m_d.m_reflectionEnabled);
+   SaveValue(regKey, "Radius"s, m_d.m_radius);
+   SaveValue(regKey, "Force"s, m_d.m_force);
+   SaveValue(regKey, "Scatter"s, m_d.m_scatter);
+   SaveValue(regKey, "HeightScale"s, m_d.m_heightScale);
+   SaveValue(regKey, "RingSpeed"s, m_d.m_ringSpeed);
+   SaveValue(regKey, "Orientation"s, m_d.m_orientation);
+   SaveValue(regKey, "Threshold"s, m_d.m_threshold);
+   SaveValue(regKey, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
+   SaveValue(regKey, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
+   SaveValue(regKey, "CapVisible"s, m_d.m_capVisible);
+   SaveValue(regKey, "BaseVisible"s, m_d.m_baseVisible);
+   SaveValue(regKey, "HasHitEvent"s, m_d.m_hitEvent);
+   SaveValue(regKey, "Collidable"s, m_d.m_collidable);
+   SaveValue(regKey, "ReflectionEnabled"s, m_d.m_reflectionEnabled);
    SaveValue(regKey, "Surface"s, m_d.m_szSurface);
 
 #undef regKey
@@ -1288,6 +1288,6 @@ STDMETHODIMP Bumper::PlayHit()
 
 void Bumper::SetDefaultPhysics(const bool fromMouseClick)
 {
-   m_d.m_force   = fromMouseClick ? LoadValueFloatWithDefault(regKey[RegName::DefaultPropsBumper], "Force"s, 15) : 15;
-   m_d.m_scatter = fromMouseClick ? LoadValueFloatWithDefault(regKey[RegName::DefaultPropsBumper], "Scatter"s, 0) : 0;
+   m_d.m_force   = fromMouseClick ? LoadValueWithDefault(regKey[RegName::DefaultPropsBumper], "Force"s, 15.f) : 15.f;
+   m_d.m_scatter = fromMouseClick ? LoadValueWithDefault(regKey[RegName::DefaultPropsBumper], "Scatter"s, 0.f) : 0.f;
 }

@@ -24,7 +24,7 @@ BaseTexture::BaseTexture(const unsigned int w, const unsigned int h, const Forma
 BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, bool resize_on_low_mem)
 {
    // check if Textures exceed the maximum texture dimension
-   int maxTexDim = LoadValueIntWithDefault(regKey[RegName::Player], "MaxTexDimension"s, 0); // default: Don't resize textures
+   int maxTexDim = LoadValueWithDefault(regKey[RegName::Player], "MaxTexDimension"s, 0); // default: Don't resize textures
    if (maxTexDim <= 0)
       maxTexDim = 65536;
 
@@ -614,7 +614,7 @@ bool Texture::LoadFromMemory(BYTE * const data, const DWORD size)
    if (m_pdsBuffer)
       FreeStuff();
 
-   const int maxTexDim = LoadValueIntWithDefault(regKey[RegName::Player], "MaxTexDimension"s, 0); // default: Don't resize textures
+   const int maxTexDim = LoadValueWithDefault(regKey[RegName::Player], "MaxTexDimension"s, 0); // default: Don't resize textures
    if(maxTexDim <= 0) // only use fast JPG path via stbi if no texture resize must be triggered
    {
       int x, y, channels_in_file = 0;

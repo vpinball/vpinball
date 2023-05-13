@@ -646,14 +646,14 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    m_scale = 1.0f; // Scale factor from scene (in VP units) to VR view (in meters)
    if (m_stereo3D == STEREO_VR)
    {
-      if (LoadValueBoolWithDefault(regKey[RegName::PlayerVR], "scaleToFixedWidth"s, false))
+      if (LoadValueWithDefault(regKey[RegName::PlayerVR], "scaleToFixedWidth"s, false))
       {
          float width;
          g_pplayer->m_ptable->get_Width(&width);
-         m_scale = LoadValueFloatWithDefault(regKey[RegName::PlayerVR], "scaleAbsolute"s, 55.0f) * 0.01f / width;
+         m_scale = LoadValueWithDefault(regKey[RegName::PlayerVR], "scaleAbsolute"s, 55.0f) * 0.01f / width;
       }
       else
-         m_scale = VPUTOCM(0.01f) * LoadValueFloatWithDefault(regKey[RegName::PlayerVR], "scaleRelative"s, 1.0f);
+         m_scale = VPUTOCM(0.01f) * LoadValueWithDefault(regKey[RegName::PlayerVR], "scaleRelative"s, 1.0f);
       if (m_scale <= 0.000001f)
          m_scale = VPUTOCM(0.01f); // Scale factor for VPUnits to Meters
       // Initialize VR, this will also override the render buffer size (m_width, m_height) to account for HMD render size and render the 2 eyes simultaneously
@@ -757,7 +757,7 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    //if (caps.NumSimultaneousRTs < 2)
    //   ShowError("D3D device doesn't support multiple render targets!");
 
-   bool video10bit = LoadValueBoolWithDefault(regKey[RegName::Player], "Render10Bit"s, false);
+   bool video10bit = LoadValueWithDefault(regKey[RegName::Player], "Render10Bit"s, false);
 
    if (!m_fullscreen && video10bit)
    {
@@ -853,7 +853,7 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    else
       params.MultiSampleQuality = min(params.MultiSampleQuality, MultiSampleQualityLevels);
 
-   const bool softwareVP = LoadValueBoolWithDefault(regKey[RegName::Player], "SoftwareVertexProcessing"s, false);
+   const bool softwareVP = LoadValueWithDefault(regKey[RegName::Player], "SoftwareVertexProcessing"s, false);
    const DWORD flags = softwareVP ? D3DCREATE_SOFTWARE_VERTEXPROCESSING : D3DCREATE_HARDWARE_VERTEXPROCESSING;
 
    // Create the D3D device. This optionally goes to the proper fullscreen mode.
@@ -979,7 +979,7 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    if (m_stereo3D == STEREO_VR) {
       //AMD Debugging
       colorFormat renderBufferFormatVR;
-      const int textureModeVR = LoadValueIntWithDefault(regKey[RegName::PlayerVR], "EyeFBFormat"s, 1);
+      const int textureModeVR = LoadValueWithDefault(regKey[RegName::PlayerVR], "EyeFBFormat"s, 1);
       switch (textureModeVR) {
       case 0:
          renderBufferFormatVR = RGB8;
@@ -1309,11 +1309,11 @@ RenderDevice::~RenderDevice()
    if (m_pHMD)
    {
       turnVROff();
-      SaveValueFloat(regKey[RegName::PlayerVR], "Slope"s, m_slope);
-      SaveValueFloat(regKey[RegName::PlayerVR], "Orientation"s, m_orientation);
-      SaveValueFloat(regKey[RegName::PlayerVR], "TableX"s, m_tablex);
-      SaveValueFloat(regKey[RegName::PlayerVR], "TableY"s, m_tabley);
-      SaveValueFloat(regKey[RegName::PlayerVR], "TableZ"s, m_tablez);
+      SaveValue(regKey[RegName::PlayerVR], "Slope"s, m_slope);
+      SaveValue(regKey[RegName::PlayerVR], "Orientation"s, m_orientation);
+      SaveValue(regKey[RegName::PlayerVR], "TableX"s, m_tablex);
+      SaveValue(regKey[RegName::PlayerVR], "TableY"s, m_tabley);
+      SaveValue(regKey[RegName::PlayerVR], "TableZ"s, m_tablez);
    }
 #endif
 
@@ -1959,8 +1959,8 @@ void RenderDevice::InitVR() {
    }
 #endif
 
-   const float nearPlane = LoadValueFloatWithDefault(regKey[RegName::PlayerVR], "nearPlane"s, 5.0f) / 100.0f;
-   const float farPlane = 5000.0f; //LoadValueFloatWithDefault(regKey[RegName::PlayerVR], "farPlane"s, 5000.0f) / 100.0f;
+   const float nearPlane = LoadValueWithDefault(regKey[RegName::PlayerVR], "nearPlane"s, 5.0f) / 100.0f;
+   const float farPlane = 5000.0f; //LoadValueWithDefault(regKey[RegName::PlayerVR], "farPlane"s, 5000.0f) / 100.0f;
 
    // Move from VP units to meters, and also apply user scene scaling if any
    Matrix3D sceneScale = Matrix3D::MatrixScale(m_scale);
@@ -2040,11 +2040,11 @@ void RenderDevice::InitVR() {
       throw(noDevicesFound);
    }
 
-   m_slope = LoadValueFloatWithDefault(regKey[RegName::PlayerVR], "Slope"s, 6.5f);
-   m_orientation = LoadValueFloatWithDefault(regKey[RegName::PlayerVR], "Orientation"s, 0.0f);
-   m_tablex = LoadValueFloatWithDefault(regKey[RegName::PlayerVR], "TableX"s, 0.0f);
-   m_tabley = LoadValueFloatWithDefault(regKey[RegName::PlayerVR], "TableY"s, 0.0f);
-   m_tablez = LoadValueFloatWithDefault(regKey[RegName::PlayerVR], "TableZ"s, 80.0f);
+   m_slope = LoadValueWithDefault(regKey[RegName::PlayerVR], "Slope"s, 6.5f);
+   m_orientation = LoadValueWithDefault(regKey[RegName::PlayerVR], "Orientation"s, 0.0f);
+   m_tablex = LoadValueWithDefault(regKey[RegName::PlayerVR], "TableX"s, 0.0f);
+   m_tabley = LoadValueWithDefault(regKey[RegName::PlayerVR], "TableY"s, 0.0f);
+   m_tablez = LoadValueWithDefault(regKey[RegName::PlayerVR], "TableZ"s, 80.0f);
 
    updateTableMatrix();
 }

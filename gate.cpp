@@ -100,17 +100,17 @@ void Gate::SetDefaults(const bool fromMouseClick)
 {
 #define regKey regKey[RegName::DefaultPropsGate]
 
-   m_d.m_length = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Length"s, 100.f) : 100.f;
-   m_d.m_height = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Height"s, 50.f) : 50.f;
-   m_d.m_rotation = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Rotation"s, -90.f) : -90.f;
-   m_d.m_showBracket = fromMouseClick ? LoadValueBoolWithDefault(regKey, "ShowBracket"s, true) : true;
-   m_d.m_type = fromMouseClick ? (GateType)LoadValueIntWithDefault(regKey, "GateType"s, GateWireW) : GateWireW;
-   m_d.m_collidable = fromMouseClick ? LoadValueBoolWithDefault(regKey, "Collidable"s, true) : true;
-   m_d.m_angleMin = fromMouseClick ? LoadValueFloatWithDefault(regKey, "AngleMin"s, 0.f) : 0.f;
-   m_d.m_angleMax = fromMouseClick ? LoadValueFloatWithDefault(regKey, "AngleMax"s, (float)(M_PI / 2.0)) : (float)(M_PI / 2.0);
-   m_d.m_visible = fromMouseClick ? LoadValueBoolWithDefault(regKey, "Visible"s, true) : true;
-   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault(regKey, "TimerEnabled"s, false) : false;
-   m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault(regKey, "TimerInterval"s, 100) : 100;
+   m_d.m_length = fromMouseClick ? LoadValueWithDefault(regKey, "Length"s, 100.f) : 100.f;
+   m_d.m_height = fromMouseClick ? LoadValueWithDefault(regKey, "Height"s, 50.f) : 50.f;
+   m_d.m_rotation = fromMouseClick ? LoadValueWithDefault(regKey, "Rotation"s, -90.f) : -90.f;
+   m_d.m_showBracket = fromMouseClick ? LoadValueWithDefault(regKey, "ShowBracket"s, true) : true;
+   m_d.m_type = fromMouseClick ? (GateType)LoadValueWithDefault(regKey, "GateType"s, (int)GateWireW) : GateWireW;
+   m_d.m_collidable = fromMouseClick ? LoadValueWithDefault(regKey, "Collidable"s, true) : true;
+   m_d.m_angleMin = fromMouseClick ? LoadValueWithDefault(regKey, "AngleMin"s, 0.f) : 0.f;
+   m_d.m_angleMax = fromMouseClick ? LoadValueWithDefault(regKey, "AngleMax"s, (float)(M_PI / 2.0)) : (float)(M_PI / 2.0);
+   m_d.m_visible = fromMouseClick ? LoadValueWithDefault(regKey, "Visible"s, true) : true;
+   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueWithDefault(regKey, "TimerEnabled"s, false) : false;
+   m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueWithDefault(regKey, "TimerInterval"s, 100) : 100;
 
    const HRESULT hr = LoadValue(regKey, "Surface"s, m_d.m_szSurface);
    if ((hr != S_OK) || !fromMouseClick)
@@ -118,8 +118,8 @@ void Gate::SetDefaults(const bool fromMouseClick)
 
    SetDefaultPhysics(fromMouseClick);
 
-   m_d.m_twoWay = fromMouseClick ? LoadValueBoolWithDefault(regKey, "TwoWay"s, true) : true;
-   m_d.m_reflectionEnabled = fromMouseClick ? LoadValueBoolWithDefault(regKey, "ReflectionEnabled"s, true) : true;
+   m_d.m_twoWay = fromMouseClick ? LoadValueWithDefault(regKey, "TwoWay"s, true) : true;
+   m_d.m_reflectionEnabled = fromMouseClick ? LoadValueWithDefault(regKey, "ReflectionEnabled"s, true) : true;
 
 #undef regKey
 }
@@ -129,24 +129,24 @@ void Gate::WriteRegDefaults()
 {
 #define regKey regKey[RegName::DefaultPropsGate]
 
-   SaveValueFloat(regKey, "Length"s, m_d.m_length);
-   SaveValueFloat(regKey, "Height"s, m_d.m_height);
-   SaveValueFloat(regKey, "Rotation"s, m_d.m_rotation);
-   SaveValueBool(regKey, "ShowBracket"s, m_d.m_showBracket);
-   SaveValueBool(regKey, "Collidable"s, m_d.m_collidable);
-   SaveValueFloat(regKey, "AngleMin"s, m_d.m_angleMin);
-   SaveValueFloat(regKey, "AngleMax"s, m_d.m_angleMax);
-   SaveValueBool(regKey, "Visible"s, m_d.m_visible);
-   SaveValueBool(regKey, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
-   SaveValueInt(regKey, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
+   SaveValue(regKey, "Length"s, m_d.m_length);
+   SaveValue(regKey, "Height"s, m_d.m_height);
+   SaveValue(regKey, "Rotation"s, m_d.m_rotation);
+   SaveValue(regKey, "ShowBracket"s, m_d.m_showBracket);
+   SaveValue(regKey, "Collidable"s, m_d.m_collidable);
+   SaveValue(regKey, "AngleMin"s, m_d.m_angleMin);
+   SaveValue(regKey, "AngleMax"s, m_d.m_angleMax);
+   SaveValue(regKey, "Visible"s, m_d.m_visible);
+   SaveValue(regKey, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
+   SaveValue(regKey, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
    SaveValue(regKey, "Surface"s, m_d.m_szSurface);
-   SaveValueFloat(regKey, "Elasticity"s, m_d.m_elasticity);
-   SaveValueFloat(regKey, "Friction"s, m_d.m_friction);
-   SaveValueFloat(regKey, "Scatter"s, m_d.m_scatter);
-   SaveValueFloat(regKey, "GravityFactor"s, m_d.m_gravityfactor);
-   SaveValueBool(regKey, "TwoWay"s, m_d.m_twoWay);
-   SaveValueBool(regKey, "ReflectionEnabled"s, m_d.m_reflectionEnabled);
-   SaveValueInt(regKey, "GateType"s, m_d.m_type);
+   SaveValue(regKey, "Elasticity"s, m_d.m_elasticity);
+   SaveValue(regKey, "Friction"s, m_d.m_friction);
+   SaveValue(regKey, "Scatter"s, m_d.m_scatter);
+   SaveValue(regKey, "GravityFactor"s, m_d.m_gravityfactor);
+   SaveValue(regKey, "TwoWay"s, m_d.m_twoWay);
+   SaveValue(regKey, "ReflectionEnabled"s, m_d.m_reflectionEnabled);
+   SaveValue(regKey, "GateType"s, m_d.m_type);
 
 #undef regKey
 }
@@ -288,11 +288,11 @@ void Gate::SetDefaultPhysics(const bool fromMouseClick)
 {
 #define regKey regKey[RegName::DefaultPropsGate]
 
-   m_d.m_elasticity = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Elasticity"s, 0.3f) : 0.3f;
-   m_d.m_friction = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Friction"s, 0.02f) : 0.02f;
-   m_d.m_damping = fromMouseClick ? LoadValueFloatWithDefault(regKey, "AntiFriction"s, 0.985f) : 0.985f;
-   m_d.m_scatter = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Scatter"s, 0.f) : 0.f;
-   m_d.m_gravityfactor = fromMouseClick ? LoadValueFloatWithDefault(regKey, "GravityFactor"s, 0.25f) : 0.25f;
+   m_d.m_elasticity = fromMouseClick ? LoadValueWithDefault(regKey, "Elasticity"s, 0.3f) : 0.3f;
+   m_d.m_friction = fromMouseClick ? LoadValueWithDefault(regKey, "Friction"s, 0.02f) : 0.02f;
+   m_d.m_damping = fromMouseClick ? LoadValueWithDefault(regKey, "AntiFriction"s, 0.985f) : 0.985f;
+   m_d.m_scatter = fromMouseClick ? LoadValueWithDefault(regKey, "Scatter"s, 0.f) : 0.f;
+   m_d.m_gravityfactor = fromMouseClick ? LoadValueWithDefault(regKey, "GravityFactor"s, 0.25f) : 0.25f;
 
 #undef regKey
 }

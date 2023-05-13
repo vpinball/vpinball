@@ -195,7 +195,7 @@ public:
     {
         if (m_size == m_elements.size())
         {
-            m_indices.insert(m_indices.begin() + n, m_size);
+            m_indices.insert(m_indices.begin() + n, (unsigned int)m_size);
             m_elements.push_back(value);
         }
         else
@@ -218,7 +218,7 @@ public:
     {
         if (m_size == m_elements.size())
         {
-            m_indices.push_back(m_size);
+            m_indices.push_back((unsigned int)m_size);
             m_elements.push_back(value);
         }
         else

@@ -159,9 +159,9 @@ public:
 
 	void InitPinDirectSound(const HWND hwnd)
 	{
-		const int DSidx1 = LoadValueIntWithDefault(regKey[RegName::Player], "SoundDevice"s, 0);
-		const int DSidx2 = LoadValueIntWithDefault(regKey[RegName::Player], "SoundDeviceBG"s, 0);
-		const SoundConfigTypes SoundMode3D = (SoundConfigTypes)LoadValueIntWithDefault(regKey[RegName::Player], "Sound3D"s, (int)SNDCFG_SND3D2CH);
+		const int DSidx1 = LoadValueWithDefault(regKey[RegName::Player], "SoundDevice"s, 0);
+		const int DSidx2 = LoadValueWithDefault(regKey[RegName::Player], "SoundDeviceBG"s, 0);
+		const SoundConfigTypes SoundMode3D = (SoundConfigTypes)LoadValueWithDefault(regKey[RegName::Player], "Sound3D"s, (int)SNDCFG_SND3D2CH);
 
 		m_pds.InitDirectSound(hwnd, false);
 		// If these are the same device, and we are not in 3d mode, just point the backglass device to the main one.

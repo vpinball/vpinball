@@ -31,7 +31,7 @@ void LightSeq::SetDefaults(const bool fromMouseClick)
 {
 #define regKey regKey[RegName::DefaultPropsLightSequence]
 
-   m_d.m_updateinterval = fromMouseClick ? LoadValueIntWithDefault(regKey, "UpdateInterval"s, 25) : 25;
+   m_d.m_updateinterval = fromMouseClick ? LoadValueWithDefault(regKey, "UpdateInterval"s, 25) : 25;
 
    string tmp;
    const HRESULT hr = LoadValue(regKey, "Collection"s, tmp);
@@ -44,10 +44,10 @@ void LightSeq::SetDefaults(const bool fromMouseClick)
       m_d.m_wzCollection = wtmp;
    }
 
-   m_d.m_vCenter.x = fromMouseClick ? LoadValueFloatWithDefault(regKey, "CenterX"s, EDITOR_BG_WIDTH / 2) : (EDITOR_BG_WIDTH / 2);
-   m_d.m_vCenter.y = fromMouseClick ? LoadValueFloatWithDefault(regKey, "CenterY"s, (2 * EDITOR_BG_WIDTH) / 2) : ((2 * EDITOR_BG_WIDTH) / 2);
-   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault(regKey, "TimerEnabled"s, false) : false;
-   m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault(regKey, "TimerInterval"s, 100) : 100;
+   m_d.m_vCenter.x = fromMouseClick ? LoadValueWithDefault(regKey, "CenterX"s, (float)(EDITOR_BG_WIDTH / 2)) : (EDITOR_BG_WIDTH / 2);
+   m_d.m_vCenter.y = fromMouseClick ? LoadValueWithDefault(regKey, "CenterY"s, (float)((2 * EDITOR_BG_WIDTH) / 2)) : ((2 * EDITOR_BG_WIDTH) / 2);
+   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueWithDefault(regKey, "TimerEnabled"s, false) : false;
+   m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueWithDefault(regKey, "TimerInterval"s, 100) : 100;
 
 #undef regKey
 }
@@ -58,12 +58,12 @@ void LightSeq::WriteRegDefaults()
 
    char strTmp[MAXSTRING];
    WideCharToMultiByteNull(CP_ACP, 0, m_d.m_wzCollection.c_str(), -1, strTmp, MAXSTRING, nullptr, nullptr);
-   SaveValueInt(regKey, "UpdateInterval"s, m_d.m_updateinterval);
+   SaveValue(regKey, "UpdateInterval"s, (int)m_d.m_updateinterval);
    SaveValue(regKey, "Collection"s, strTmp);
-   SaveValueFloat(regKey, "CenterX"s, m_d.m_vCenter.x);
-   SaveValueFloat(regKey, "CenterY"s, m_d.m_vCenter.y);
-   SaveValueBool(regKey, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
-   SaveValueInt(regKey, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
+   SaveValue(regKey, "CenterX"s, m_d.m_vCenter.x);
+   SaveValue(regKey, "CenterY"s, m_d.m_vCenter.y);
+   SaveValue(regKey, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
+   SaveValue(regKey, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
 
 #undef regKey
 }

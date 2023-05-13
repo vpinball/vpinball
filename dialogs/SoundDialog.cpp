@@ -584,8 +584,8 @@ void SoundDialog::DeleteSound()
 
 void SoundDialog::LoadPosition()
 {
-    const int x = LoadValueIntWithDefault(regKey[RegName::Editor], "SoundMngPosX"s, 0);
-    const int y = LoadValueIntWithDefault(regKey[RegName::Editor], "SoundMngPosY"s, 0);
+    const int x = LoadValueWithDefault(regKey[RegName::Editor], "SoundMngPosX"s, 0);
+    const int y = LoadValueWithDefault(regKey[RegName::Editor], "SoundMngPosY"s, 0);
 
     SetWindowPos( nullptr, x, y, 0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE );
 }
@@ -593,8 +593,8 @@ void SoundDialog::LoadPosition()
 void SoundDialog::SavePosition()
 {
     const CRect rect = GetWindowRect();
-    SaveValueInt(regKey[RegName::Editor], "SoundMngPosX"s, rect.left);
-    SaveValueInt(regKey[RegName::Editor], "SoundMngPosY"s, rect.top);
+    SaveValue(regKey[RegName::Editor], "SoundMngPosX"s, (int)rect.left);
+    SaveValue(regKey[RegName::Editor], "SoundMngPosY"s, (int)rect.top);
 }
 
 

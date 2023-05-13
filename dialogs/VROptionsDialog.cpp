@@ -424,11 +424,11 @@ BOOL VROptionsDialog::OnInitDialog()
 
    char tmp[256];
 
-   const float nudgeStrength = LoadValueFloatWithDefault(regKey[RegName::PlayerVR], "NudgeStrength"s, LoadValueFloatWithDefault(regKey[RegName::Player], "NudgeStrength"s, 2e-2f));
+   const float nudgeStrength = LoadValueWithDefault(regKey[RegName::PlayerVR], "NudgeStrength"s, LoadValueWithDefault(regKey[RegName::Player], "NudgeStrength"s, 2e-2f));
    sprintf_s(tmp, sizeof(tmp), "%f", nudgeStrength);
    SetDlgItemText(IDC_NUDGE_STRENGTH, tmp);
 
-   const float AAfactor = LoadValueFloatWithDefault(regKey[RegName::PlayerVR], "AAFactor", LoadValueBoolWithDefault(regKey[RegName::Player], "USEAA"s, false) ? 1.5f : 1.0f);
+   const float AAfactor = LoadValueWithDefault(regKey[RegName::PlayerVR], "AAFactor", LoadValueWithDefault(regKey[RegName::Player], "USEAA"s, false) ? 1.5f : 1.0f);
    const HWND hwndSSSlider = GetDlgItem(IDC_SUPER_SAMPLING_COMBO).GetHwnd();
    SendMessage(hwndSSSlider, TBM_SETRANGE, fTrue, MAKELONG(0, AAfactorCount - 1));
    SendMessage(hwndSSSlider, TBM_SETTICFREQ, 1, 0);
@@ -440,7 +440,7 @@ BOOL VROptionsDialog::OnInitDialog()
    sprintf_s(SSText, sizeof(SSText), "Supersampling Factor: %.2f", AAfactor);
    SetDlgItemText(IDC_SUPER_SAMPLING_LABEL, SSText);
 
-   const int MSAASamples = LoadValueIntWithDefault(regKey[RegName::PlayerVR], "MSAASamples"s, 1);
+   const int MSAASamples = LoadValueWithDefault(regKey[RegName::PlayerVR], "MSAASamples"s, 1);
    const auto CurrMSAAPos = std::find(MSAASamplesOpts, MSAASamplesOpts + (sizeof(MSAASamplesOpts) / sizeof(MSAASamplesOpts[0])), MSAASamples);
    const HWND hwndMSAASlider = GetDlgItem(IDC_MSAA_COMBO).GetHwnd();
    SendMessage(hwndMSAASlider, TBM_SETRANGE, fTrue, MAKELONG(0, MSAASampleCount - 1));
@@ -460,14 +460,14 @@ BOOL VROptionsDialog::OnInitDialog()
    }
    SetDlgItemText(IDC_MSAA_LABEL, MSAAText);
 
-   bool useAO = LoadValueBoolWithDefault(regKey[RegName::PlayerVR], "DynamicAO"s, LoadValueBoolWithDefault(regKey[RegName::Player], "DynamicAO", false));
+   bool useAO = LoadValueWithDefault(regKey[RegName::PlayerVR], "DynamicAO"s, LoadValueWithDefault(regKey[RegName::Player], "DynamicAO", false));
    SendMessage(GetDlgItem(IDC_DYNAMIC_AO).GetHwnd(), BM_SETCHECK, useAO ? BST_CHECKED : BST_UNCHECKED, 0);
 
-   useAO = LoadValueBoolWithDefault(regKey[RegName::PlayerVR], "DisableAO"s, LoadValueBoolWithDefault(regKey[RegName::Player], "DisableAO"s, false));
+   useAO = LoadValueWithDefault(regKey[RegName::PlayerVR], "DisableAO"s, LoadValueWithDefault(regKey[RegName::Player], "DisableAO"s, false));
    SendMessage(GetDlgItem(IDC_ENABLE_AO).GetHwnd(), BM_SETCHECK, useAO ? BST_UNCHECKED : BST_CHECKED, 0); // inverted logic
    GetDlgItem(IDC_DYNAMIC_AO).EnableWindow(!useAO);
 
-   const bool ssreflection = LoadValueBoolWithDefault(regKey[RegName::PlayerVR], "SSRefl"s, LoadValueBoolWithDefault(regKey[RegName::Player], "SSRefl"s, false));
+   const bool ssreflection = LoadValueWithDefault(regKey[RegName::PlayerVR], "SSRefl"s, LoadValueWithDefault(regKey[RegName::Player], "SSRefl"s, false));
    SendMessage(GetDlgItem(IDC_GLOBAL_SSREFLECTION_CHECK).GetHwnd(), BM_SETCHECK, ssreflection ? BST_CHECKED : BST_UNCHECKED, 0);
 
    HWND hwnd = GetDlgItem(IDC_GLOBAL_PF_REFLECTION).GetHwnd();
@@ -475,16 +475,16 @@ BOOL VROptionsDialog::OnInitDialog()
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Disabled");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Balls Only");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Dynamic");
-   int pfr = LoadValueIntWithDefault(regKey[RegName::PlayerVR], "PFReflection"s, -1);
+   int pfr = LoadValueWithDefault(regKey[RegName::PlayerVR], "PFReflection"s, -1);
    RenderProbe::ReflectionMode pfReflection;
    if (pfr != -1)
       pfReflection = (RenderProbe::ReflectionMode)pfr;
    else
    {
       pfReflection = RenderProbe::REFL_NONE;
-      if (LoadValueBoolWithDefault(regKey[RegName::PlayerVR], "BallReflection"s, true))
+      if (LoadValueWithDefault(regKey[RegName::PlayerVR], "BallReflection"s, true))
          pfReflection = RenderProbe::REFL_BALLS;
-      if (LoadValueBoolWithDefault(regKey[RegName::PlayerVR], "PFRefl"s, true))
+      if (LoadValueWithDefault(regKey[RegName::PlayerVR], "PFRefl"s, true))
          pfReflection = RenderProbe::REFL_DYNAMIC;
    }
    if (pfReflection == RenderProbe::REFL_DYNAMIC)
@@ -493,7 +493,7 @@ BOOL VROptionsDialog::OnInitDialog()
       SendMessage(hwnd, CB_SETCURSEL, pfReflection, 0);
    SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 
-   const int fxaa = LoadValueIntWithDefault(regKey[RegName::PlayerVR], "FXAA"s, LoadValueIntWithDefault(regKey[RegName::Player], "FXAA"s, 0));
+   const int fxaa = LoadValueWithDefault(regKey[RegName::PlayerVR], "FXAA"s, LoadValueWithDefault(regKey[RegName::Player], "FXAA"s, 0));
    hwnd = GetDlgItem(IDC_POST_PROCESS_COMBO).GetHwnd();
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Disabled");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Fast FXAA");
@@ -504,17 +504,17 @@ BOOL VROptionsDialog::OnInitDialog()
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Quality SMAA");
    SendMessage(hwnd, CB_SETCURSEL, fxaa, 0);
 
-   const int sharpen = LoadValueIntWithDefault(regKey[RegName::PlayerVR], "Sharpen"s, 0);
+   const int sharpen = LoadValueWithDefault(regKey[RegName::PlayerVR], "Sharpen"s, 0);
    hwnd = GetDlgItem(IDC_SHARPEN_COMBO).GetHwnd();
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Disabled");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "CAS");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Bilateral CAS");
    SendMessage(hwnd, CB_SETCURSEL, sharpen, 0);
 
-   const bool scaleFX_DMD = LoadValueBoolWithDefault(regKey[RegName::PlayerVR], "ScaleFXDMD"s, LoadValueBoolWithDefault(regKey[RegName::Player], "ScaleFXDMD"s, false));
+   const bool scaleFX_DMD = LoadValueWithDefault(regKey[RegName::PlayerVR], "ScaleFXDMD"s, LoadValueWithDefault(regKey[RegName::Player], "ScaleFXDMD"s, false));
    SendMessage(GetDlgItem(IDC_SCALE_FX_DMD).GetHwnd(), BM_SETCHECK, scaleFX_DMD ? BST_CHECKED : BST_UNCHECKED, 0);
 
-   const VRPreviewMode vrPreview = (VRPreviewMode)LoadValueIntWithDefault(regKey[RegName::PlayerVR], "VRPreview"s, VRPREVIEW_LEFT);
+   const VRPreviewMode vrPreview = (VRPreviewMode)LoadValueWithDefault(regKey[RegName::PlayerVR], "VRPreview"s, VRPREVIEW_LEFT);
    hwnd = GetDlgItem(IDC_VR_PREVIEW).GetHwnd();
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Disabled");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Left Eye");
@@ -522,70 +522,70 @@ BOOL VROptionsDialog::OnInitDialog()
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Both Eyes");
    SendMessage(hwnd, CB_SETCURSEL, (int)vrPreview, 0);
 
-   const bool scaleToFixedWidth = LoadValueBoolWithDefault(regKey[RegName::PlayerVR], "scaleToFixedWidth"s, false);
+   const bool scaleToFixedWidth = LoadValueWithDefault(regKey[RegName::PlayerVR], "scaleToFixedWidth"s, false);
    oldScaleValue = scaleToFixedWidth;
    SendMessage(GetDlgItem(IDC_SCALE_TO_CM).GetHwnd(), BM_SETCHECK, scaleToFixedWidth ? BST_CHECKED : BST_UNCHECKED, 0);
 
-   scaleRelative = LoadValueFloatWithDefault(regKey[RegName::PlayerVR], "scaleRelative"s, 1.0f);
-   scaleAbsolute = LoadValueFloatWithDefault(regKey[RegName::PlayerVR], "scaleAbsolute"s, 55.0f);
+   scaleRelative = LoadValueWithDefault(regKey[RegName::PlayerVR], "scaleRelative"s, 1.0f);
+   scaleAbsolute = LoadValueWithDefault(regKey[RegName::PlayerVR], "scaleAbsolute"s, 55.0f);
 
    sprintf_s(tmp, sizeof(tmp), scaleToFixedWidth ? "%0.1f" : "%0.3f", scaleToFixedWidth ? scaleAbsolute : scaleRelative);
    SetDlgItemText(IDC_VR_SCALE, tmp);
 
-   const float vrNearPlane = LoadValueFloatWithDefault(regKey[RegName::PlayerVR], "nearPlane"s, 5.0f);
+   const float vrNearPlane = LoadValueWithDefault(regKey[RegName::PlayerVR], "nearPlane"s, 5.0f);
    sprintf_s(tmp, sizeof(tmp), "%0.1f", vrNearPlane);
    SetDlgItemText(IDC_NEAR_PLANE, tmp);
 
-   const float vrFarPlane = LoadValueFloatWithDefault(regKey[RegName::PlayerVR], "farPlane"s, 5000.0f);
+   const float vrFarPlane = LoadValueWithDefault(regKey[RegName::PlayerVR], "farPlane"s, 5000.0f);
    sprintf_s(tmp, sizeof(tmp), "%0.1f", vrFarPlane);
    SetDlgItemText(IDC_FAR_PLANE, tmp);
 
-   const float vrSlope = LoadValueFloatWithDefault(regKey[RegName::PlayerVR], "Slope"s, 6.5f);
+   const float vrSlope = LoadValueWithDefault(regKey[RegName::PlayerVR], "Slope"s, 6.5f);
    sprintf_s(tmp, sizeof(tmp), "%0.2f", vrSlope);
    SetDlgItemText(IDC_VR_SLOPE, tmp);
 
-   const float vrOrientation = LoadValueFloatWithDefault(regKey[RegName::PlayerVR], "Orientation"s, 0.0f);
+   const float vrOrientation = LoadValueWithDefault(regKey[RegName::PlayerVR], "Orientation"s, 0.0f);
    sprintf_s(tmp, sizeof(tmp), "%0.1f", vrOrientation);
    SetDlgItemText(IDC_3D_VR_ORIENTATION, tmp);
 
-   const float vrX = LoadValueFloatWithDefault(regKey[RegName::PlayerVR], "TableX"s, 0.0f);
+   const float vrX = LoadValueWithDefault(regKey[RegName::PlayerVR], "TableX"s, 0.0f);
    sprintf_s(tmp, sizeof(tmp), "%0.1f", vrX);
    SetDlgItemText(IDC_VR_OFFSET_X, tmp);
 
-   const float vrY = LoadValueFloatWithDefault(regKey[RegName::PlayerVR], "TableY"s, 0.0f);
+   const float vrY = LoadValueWithDefault(regKey[RegName::PlayerVR], "TableY"s, 0.0f);
    sprintf_s(tmp, sizeof(tmp), "%0.1f", vrY);
    SetDlgItemText(IDC_VR_OFFSET_Y, tmp);
 
-   const float vrZ = LoadValueFloatWithDefault(regKey[RegName::PlayerVR], "TableZ"s, 80.0f);
+   const float vrZ = LoadValueWithDefault(regKey[RegName::PlayerVR], "TableZ"s, 80.0f);
    sprintf_s(tmp, sizeof(tmp), "%0.1f", vrZ);
    SetDlgItemText(IDC_VR_OFFSET_Z, tmp);
 
-   const bool bloomOff = LoadValueBoolWithDefault(regKey[RegName::PlayerVR], "ForceBloomOff"s, LoadValueBoolWithDefault(regKey[RegName::Player], "ForceBloomOff"s, false));
+   const bool bloomOff = LoadValueWithDefault(regKey[RegName::PlayerVR], "ForceBloomOff"s, LoadValueWithDefault(regKey[RegName::Player], "ForceBloomOff"s, false));
    SendMessage(GetDlgItem(IDC_BLOOM_OFF).GetHwnd(), BM_SETCHECK, bloomOff ? BST_CHECKED : BST_UNCHECKED, 0);
 
-   const int askToTurnOn = LoadValueIntWithDefault(regKey[RegName::PlayerVR], "AskToTurnOn"s, 1);
+   const int askToTurnOn = LoadValueWithDefault(regKey[RegName::PlayerVR], "AskToTurnOn"s, 1);
    SendMessage(GetDlgItem(IDC_TURN_VR_ON).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"VR enabled");
    SendMessage(GetDlgItem(IDC_TURN_VR_ON).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"VR autodetect");
    SendMessage(GetDlgItem(IDC_TURN_VR_ON).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"VR disabled");
    SendMessage(GetDlgItem(IDC_TURN_VR_ON).GetHwnd(), CB_SETCURSEL, askToTurnOn, 0);
 
-   const int DMDsource = LoadValueIntWithDefault(regKey[RegName::PlayerVR], "DMDsource"s, 1); // Unimplemented for the time being
+   const int DMDsource = LoadValueWithDefault(regKey[RegName::PlayerVR], "DMDsource"s, 1); // Unimplemented for the time being
    SendMessage(GetDlgItem(IDC_DMD_SOURCE).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Internal Text/Flasher (via vbscript)");
    SendMessage(GetDlgItem(IDC_DMD_SOURCE).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Screenreader");
    SendMessage(GetDlgItem(IDC_DMD_SOURCE).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"SharedMemory API");
    SendMessage(GetDlgItem(IDC_DMD_SOURCE).GetHwnd(), CB_SETCURSEL, DMDsource, 0);
 
-   bool on = LoadValueBoolWithDefault(regKey[RegName::Player], "CaptureExternalDMD"s, false);
+   bool on = LoadValueWithDefault(regKey[RegName::Player], "CaptureExternalDMD"s, false);
    ::SendMessage(GetDlgItem(IDC_CAP_EXTDMD).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
-   const int BGsource = LoadValueIntWithDefault(regKey[RegName::PlayerVR], "BGsource"s, 1); // Unimplemented for the time being
+   const int BGsource = LoadValueWithDefault(regKey[RegName::PlayerVR], "BGsource"s, 1); // Unimplemented for the time being
    SendMessage(GetDlgItem(IDC_BG_SOURCE).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Default table background");
    SendMessage(GetDlgItem(IDC_BG_SOURCE).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"directb2s File (auto only)");
    SendMessage(GetDlgItem(IDC_BG_SOURCE).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"directb2s File");
    SendMessage(GetDlgItem(IDC_BG_SOURCE).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"SharedMemory API");
    SendMessage(GetDlgItem(IDC_BG_SOURCE).GetHwnd(), CB_SETCURSEL, BGsource, 0);
 
-   on = LoadValueBoolWithDefault(regKey[RegName::Player], "CapturePUP"s, false);
+   on = LoadValueWithDefault(regKey[RegName::Player], "CapturePUP"s, false);
    ::SendMessage(GetDlgItem(IDC_CAP_PUP).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
    //AMD Debugging
@@ -593,7 +593,7 @@ BOOL VROptionsDialog::OnInitDialog()
    SendMessage(GetDlgItem(IDC_COMBO_TEXTURE).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"RGBA 8 (Recommended)");
    SendMessage(GetDlgItem(IDC_COMBO_TEXTURE).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"RGB 16F");
    SendMessage(GetDlgItem(IDC_COMBO_TEXTURE).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"RGBA 16F");
-   const int textureModeVR = LoadValueIntWithDefault(regKey[RegName::PlayerVR], "EyeFBFormat"s, 1);
+   const int textureModeVR = LoadValueWithDefault(regKey[RegName::PlayerVR], "EyeFBFormat"s, 1);
    SendMessage(GetDlgItem(IDC_COMBO_TEXTURE).GetHwnd(), CB_SETCURSEL, textureModeVR, 0);
 
    int key;
@@ -813,54 +813,54 @@ void VROptionsDialog::OnOK()
    LRESULT fxaa = SendMessage(GetDlgItem(IDC_POST_PROCESS_COMBO).GetHwnd(), CB_GETCURSEL, 0, 0);
    if (fxaa == LB_ERR)
       fxaa = 0;
-   SaveValueInt(regKey[RegName::PlayerVR], "FXAA"s, (int)fxaa);
+   SaveValue(regKey[RegName::PlayerVR], "FXAA"s, (int)fxaa);
 
    LRESULT sharpen = SendMessage(GetDlgItem(IDC_SHARPEN_COMBO).GetHwnd(), CB_GETCURSEL, 0, 0);
    if (sharpen == LB_ERR)
       sharpen = 0;
-   SaveValueInt(regKey[RegName::PlayerVR], "Sharpen"s, (int)sharpen);
+   SaveValue(regKey[RegName::PlayerVR], "Sharpen"s, (int)sharpen);
 
    const bool scaleFX_DMD = SendMessage(GetDlgItem(IDC_SCALE_FX_DMD).GetHwnd(), BM_GETCHECK, 0, 0) != 0;
-   SaveValueBool(regKey[RegName::PlayerVR], "ScaleFXDMD"s, scaleFX_DMD);
+   SaveValue(regKey[RegName::PlayerVR], "ScaleFXDMD"s, scaleFX_DMD);
 
    const size_t AAfactorIndex = SendMessage(GetDlgItem(IDC_SUPER_SAMPLING_COMBO).GetHwnd(), TBM_GETPOS, 0, 0);
    const float AAfactor = (AAfactorIndex < AAfactorCount) ? AAfactors[AAfactorIndex] : 1.0f;
-   SaveValueFloat(regKey[RegName::PlayerVR], "AAFactor"s, AAfactor);
+   SaveValue(regKey[RegName::PlayerVR], "AAFactor"s, AAfactor);
 
    const size_t MSAASamplesIndex = SendMessage(GetDlgItem(IDC_MSAA_COMBO).GetHwnd(), TBM_GETPOS, 0, 0);
    const int MSAASamples = (MSAASamplesIndex < MSAASampleCount) ? MSAASamplesOpts[MSAASamplesIndex] : 1;
-   SaveValueInt(regKey[RegName::PlayerVR], "MSAASamples"s, MSAASamples);
+   SaveValue(regKey[RegName::PlayerVR], "MSAASamples"s, MSAASamples);
 
    bool useAO = SendMessage(GetDlgItem(IDC_DYNAMIC_AO).GetHwnd(), BM_GETCHECK, 0, 0) != 0;
-   SaveValueBool(regKey[RegName::PlayerVR], "DynamicAO"s, useAO);
+   SaveValue(regKey[RegName::PlayerVR], "DynamicAO"s, useAO);
 
    useAO = SendMessage(GetDlgItem(IDC_ENABLE_AO).GetHwnd(), BM_GETCHECK, 0, 0) ? false : true; // inverted logic
-   SaveValueBool(regKey[RegName::PlayerVR], "DisableAO"s, useAO);
+   SaveValue(regKey[RegName::PlayerVR], "DisableAO"s, useAO);
 
    const bool ssreflection = SendMessage(GetDlgItem(IDC_GLOBAL_SSREFLECTION_CHECK).GetHwnd(), BM_GETCHECK, 0, 0) != 0;
-   SaveValueBool(regKey[RegName::PlayerVR], "SSRefl"s, ssreflection);
+   SaveValue(regKey[RegName::PlayerVR], "SSRefl"s, ssreflection);
 
    LRESULT pfReflectionMode = SendMessage(GetDlgItem(IDC_GLOBAL_PF_REFLECTION).GetHwnd(), CB_GETCURSEL, 0, 0);
    if (pfReflectionMode == LB_ERR)
       pfReflectionMode = RenderProbe::REFL_NONE;
    if (pfReflectionMode == 2)
       pfReflectionMode = RenderProbe::REFL_DYNAMIC;
-   SaveValueInt(regKey[RegName::PlayerVR], "PFReflection"s, (int)pfReflectionMode);
+   SaveValue(regKey[RegName::PlayerVR], "PFReflection"s, (int)pfReflectionMode);
 
    //AMD Debugging
    const size_t textureModeVR = SendMessage(GetDlgItem(IDC_COMBO_TEXTURE).GetHwnd(), CB_GETCURSEL, 0, 0);
-   SaveValueInt(regKey[RegName::PlayerVR], "EyeFBFormat"s, (int)textureModeVR);
+   SaveValue(regKey[RegName::PlayerVR], "EyeFBFormat"s, (int)textureModeVR);
 
    LRESULT vrPreview = SendMessage(GetDlgItem(IDC_VR_PREVIEW).GetHwnd(), CB_GETCURSEL, 0, 0);
    if (vrPreview == LB_ERR)
       vrPreview = VRPREVIEW_LEFT;
-   SaveValueInt(regKey[RegName::PlayerVR], "VRPreview"s, (int)vrPreview);
+   SaveValue(regKey[RegName::PlayerVR], "VRPreview"s, (int)vrPreview);
 
    const bool scaleToFixedWidth = SendMessage(GetDlgItem(IDC_SCALE_TO_CM).GetHwnd(), BM_GETCHECK, 0, 0) != 0;
-   SaveValueBool(regKey[RegName::PlayerVR], "scaleToFixedWidth"s, scaleToFixedWidth);
+   SaveValue(regKey[RegName::PlayerVR], "scaleToFixedWidth"s, scaleToFixedWidth);
 
    SaveValue(regKey[RegName::PlayerVR], scaleToFixedWidth ? "scaleAbsolute"s : "scaleRelative"s, GetDlgItemText(IDC_VR_SCALE).c_str());
-   //SaveValueFloat(regKey[RegName::PlayerVR], scaleToFixedWidth ? "scaleRelative"s : "scaleAbsolute"s, scaleToFixedWidth ? scaleRelative : scaleAbsolute); //Also update hidden value?
+   //SaveValue(regKey[RegName::PlayerVR], scaleToFixedWidth ? "scaleRelative"s : "scaleAbsolute"s, scaleToFixedWidth ? scaleRelative : scaleAbsolute); //Also update hidden value?
 
    SaveValue(regKey[RegName::PlayerVR], "nearPlane"s, GetDlgItemText(IDC_NEAR_PLANE).c_str());
 
@@ -878,22 +878,22 @@ void VROptionsDialog::OnOK()
    SaveValue(regKey[RegName::PlayerVR], "TableZ"s, GetDlgItemText(IDC_VR_OFFSET_Z).c_str());
 
    const bool bloomOff = SendMessage(GetDlgItem(IDC_BLOOM_OFF).GetHwnd(), BM_GETCHECK, 0, 0) != 0;
-   SaveValueBool(regKey[RegName::PlayerVR], "ForceBloomOff"s, bloomOff);
+   SaveValue(regKey[RegName::PlayerVR], "ForceBloomOff"s, bloomOff);
 
    const size_t askToTurnOn = SendMessage(GetDlgItem(IDC_TURN_VR_ON).GetHwnd(), CB_GETCURSEL, 0, 0);
-   SaveValueInt(regKey[RegName::PlayerVR], "AskToTurnOn"s, (int)askToTurnOn);
+   SaveValue(regKey[RegName::PlayerVR], "AskToTurnOn"s, (int)askToTurnOn);
 
    const size_t dmdSource = SendMessage(GetDlgItem(IDC_DMD_SOURCE).GetHwnd(), CB_GETCURSEL, 0, 0);
-   SaveValueInt(regKey[RegName::PlayerVR], "DMDsource"s, (int)dmdSource);
+   SaveValue(regKey[RegName::PlayerVR], "DMDsource"s, (int)dmdSource);
 
    const size_t bgSource = SendMessage(GetDlgItem(IDC_BG_SOURCE).GetHwnd(), CB_GETCURSEL, 0, 0);
-   SaveValueInt(regKey[RegName::PlayerVR], "BGsource"s, (int)bgSource);
+   SaveValue(regKey[RegName::PlayerVR], "BGsource"s, (int)bgSource);
 
    bool selected = ::SendMessage(GetDlgItem(IDC_CAP_EXTDMD).GetHwnd(), BM_GETCHECK, 0, 0) != 0;
-   SaveValueBool(regKey[RegName::Player], "CaptureExternalDMD"s, selected);
+   SaveValue(regKey[RegName::Player], "CaptureExternalDMD"s, selected);
 
    selected = ::SendMessage(GetDlgItem(IDC_CAP_PUP).GetHwnd(), BM_GETCHECK, 0, 0) != 0;
-   SaveValueBool(regKey[RegName::Player], "CapturePUP"s, selected);
+   SaveValue(regKey[RegName::Player], "CapturePUP"s, selected);
 
    SetValue(IDC_JOYTABLERECENTER, regKey[RegName::Player], "JoyTableRecenterKey");
    SetValue(IDC_JOYTABLEUP, regKey[RegName::Player], "JoyTableUpKey");
@@ -902,7 +902,7 @@ void VROptionsDialog::OnOK()
     for (unsigned int i = eTableRecenter; i <= eTableDown; ++i) if (regkey_idc[i] != -1)
     {
         const size_t key = ::GetWindowLongPtr(GetDlgItem(regkey_idc[i]).GetHwnd(), GWLP_USERDATA);
-        SaveValueInt(regKey[RegName::Player], regkey_string[i], (int)key);
+        SaveValue(regKey[RegName::Player], regkey_string[i], (int)key);
     }
 
    CDialog::OnOK();
@@ -925,7 +925,7 @@ void VROptionsDialog::SetValue(int nID, const string& regKey, const string& regV
    LRESULT selected = ::SendMessage(GetDlgItem(nID).GetHwnd(), CB_GETCURSEL, 0, 0);
    if (selected == LB_ERR)
       selected = 2; // assume both as standard
-   SaveValueInt(regKey, regValue, (int)selected);
+   SaveValue(regKey, regValue, (int)selected);
 }
 
 void VROptionsDialog::StartTimer(int nID)

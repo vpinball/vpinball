@@ -105,21 +105,21 @@ void Spinner::WriteRegDefaults()
 {
 #define regKey regKey[RegName::DefaultPropsSpinner]
 
-   SaveValueFloat(regKey, "Length"s, m_d.m_length);
-   SaveValueFloat(regKey, "Rotation"s, m_d.m_rotation);
-   SaveValueBool(regKey, "ShowBracket"s, m_d.m_showBracket);
-   SaveValueFloat(regKey, "Height"s, m_d.m_height);
-   SaveValueFloat(regKey, "AngleMax"s, m_d.m_angleMax);
-   SaveValueFloat(regKey, "AngleMin"s, m_d.m_angleMin);
-   SaveValueFloat(regKey, "Elasticity"s, m_d.m_elasticity);
-   SaveValueFloat(regKey, "AntiFriction"s, m_d.m_damping);
-   SaveValueFloat(regKey, "Scatter"s, m_d.m_scatter);
-   SaveValueBool(regKey, "Visible"s, m_d.m_visible);
-   SaveValueBool(regKey, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
-   SaveValueInt(regKey, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
+   SaveValue(regKey, "Length"s, m_d.m_length);
+   SaveValue(regKey, "Rotation"s, m_d.m_rotation);
+   SaveValue(regKey, "ShowBracket"s, m_d.m_showBracket);
+   SaveValue(regKey, "Height"s, m_d.m_height);
+   SaveValue(regKey, "AngleMax"s, m_d.m_angleMax);
+   SaveValue(regKey, "AngleMin"s, m_d.m_angleMin);
+   SaveValue(regKey, "Elasticity"s, m_d.m_elasticity);
+   SaveValue(regKey, "AntiFriction"s, m_d.m_damping);
+   SaveValue(regKey, "Scatter"s, m_d.m_scatter);
+   SaveValue(regKey, "Visible"s, m_d.m_visible);
+   SaveValue(regKey, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
+   SaveValue(regKey, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
    SaveValue(regKey, "Image"s, m_d.m_szImage);
    SaveValue(regKey, "Surface"s, m_d.m_szSurface);
-   SaveValueBool(regKey, "ReflectionEnabled"s, m_d.m_reflectionEnabled);
+   SaveValue(regKey, "ReflectionEnabled"s, m_d.m_reflectionEnabled);
 
 #undef regKey
 }
@@ -128,19 +128,19 @@ void Spinner::SetDefaults(const bool fromMouseClick)
 {
 #define regKey regKey[RegName::DefaultPropsSpinner]
 
-   m_d.m_length = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Length"s, 80.f) : 80.f;
-   m_d.m_rotation = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Rotation"s, 0.f) : 0.f;
-   m_d.m_showBracket = fromMouseClick ? LoadValueBoolWithDefault(regKey, "ShowBracket"s, true) : true;
-   m_d.m_height = (float)(fromMouseClick ? LoadValueIntWithDefault(regKey, "Height"s, 60000) : 60000) / 1000.0f;
+   m_d.m_length = fromMouseClick ? LoadValueWithDefault(regKey, "Length"s, 80.f) : 80.f;
+   m_d.m_rotation = fromMouseClick ? LoadValueWithDefault(regKey, "Rotation"s, 0.f) : 0.f;
+   m_d.m_showBracket = fromMouseClick ? LoadValueWithDefault(regKey, "ShowBracket"s, true) : true;
+   m_d.m_height = (float)(fromMouseClick ? LoadValueWithDefault(regKey, "Height"s, 60000) : 60000) / 1000.0f;
 
    SetDefaultPhysics(fromMouseClick);
 
-   m_d.m_angleMax = fromMouseClick ? LoadValueFloatWithDefault(regKey, "AngleMax"s, 0.f) : 0.f;
-   m_d.m_angleMin = fromMouseClick ? LoadValueFloatWithDefault(regKey, "AngleMin"s, 0.f) : 0.f;
-   m_d.m_visible = fromMouseClick ? LoadValueBoolWithDefault(regKey, "Visible"s, true) : true;
-   m_d.m_reflectionEnabled = fromMouseClick ? LoadValueBoolWithDefault(regKey, "ReflectionEnabled"s, true) : true;
-   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault(regKey, "TimerEnabled"s, false) : false;
-   m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault(regKey, "TimerInterval"s, 100) : 100;
+   m_d.m_angleMax = fromMouseClick ? LoadValueWithDefault(regKey, "AngleMax"s, 0.f) : 0.f;
+   m_d.m_angleMin = fromMouseClick ? LoadValueWithDefault(regKey, "AngleMin"s, 0.f) : 0.f;
+   m_d.m_visible = fromMouseClick ? LoadValueWithDefault(regKey, "Visible"s, true) : true;
+   m_d.m_reflectionEnabled = fromMouseClick ? LoadValueWithDefault(regKey, "ReflectionEnabled"s, true) : true;
+   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueWithDefault(regKey, "TimerEnabled"s, false) : false;
+   m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueWithDefault(regKey, "TimerInterval"s, 100) : 100;
 
    HRESULT hr = LoadValue(regKey, "Image"s, m_d.m_szImage);
    if ((hr != S_OK) || !fromMouseClick)
@@ -510,8 +510,8 @@ void Spinner::PutCenter(const Vertex2D& pv)
 
 void Spinner::SetDefaultPhysics(const bool fromMouseClick)
 {
-   m_d.m_elasticity = fromMouseClick ? LoadValueFloatWithDefault(regKey[RegName::DefaultPropsSpinner], "Elasticity"s, 0.3f) : 0.3f;
-   m_d.m_damping = fromMouseClick ? LoadValueFloatWithDefault(regKey[RegName::DefaultPropsSpinner], "AntiFriction"s, 0.9879f) : 0.9879f;
+   m_d.m_elasticity = fromMouseClick ? LoadValueWithDefault(regKey[RegName::DefaultPropsSpinner], "Elasticity"s, 0.3f) : 0.3f;
+   m_d.m_damping = fromMouseClick ? LoadValueWithDefault(regKey[RegName::DefaultPropsSpinner], "AntiFriction"s, 0.9879f) : 0.9879f;
 }
 
 HRESULT Spinner::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)

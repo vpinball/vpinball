@@ -697,12 +697,12 @@ void CodeViewer::SetVisible(const bool visible)
    if (!visible && !m_minimized)
    {
       const CRect rc = GetWindowRect();
-      SaveValueInt(regKey[RegName::Editor], "CodeViewPosX"s, rc.left);
-      SaveValueInt(regKey[RegName::Editor], "CodeViewPosY"s, rc.top);
+      SaveValue(regKey[RegName::Editor], "CodeViewPosX"s, (int)rc.left);
+      SaveValue(regKey[RegName::Editor], "CodeViewPosY"s, (int)rc.top);
       const int w = rc.right - rc.left;
-      SaveValueInt(regKey[RegName::Editor], "CodeViewPosWidth"s, w);
+      SaveValue(regKey[RegName::Editor], "CodeViewPosWidth"s, w);
       const int h = rc.bottom - rc.top;
-      SaveValueInt(regKey[RegName::Editor], "CodeViewPosHeight"s, h);
+      SaveValue(regKey[RegName::Editor], "CodeViewPosHeight"s, h);
    }
 
    if (m_hwndFind && !visible)
@@ -726,10 +726,10 @@ void CodeViewer::SetVisible(const bool visible)
    {
 	   if (!m_visible)
 	   {
-		   const int x = LoadValueIntWithDefault(regKey[RegName::Editor], "CodeViewPosX"s, 0);
-		   const int y = LoadValueIntWithDefault(regKey[RegName::Editor], "CodeViewPosY"s, 0);
-		   const int w = LoadValueIntWithDefault(regKey[RegName::Editor], "CodeViewPosWidth"s, 640);
-		   const int h = LoadValueIntWithDefault(regKey[RegName::Editor], "CodeViewPosHeight"s, 490);
+		   const int x = LoadValueWithDefault(regKey[RegName::Editor], "CodeViewPosX"s, 0);
+		   const int y = LoadValueWithDefault(regKey[RegName::Editor], "CodeViewPosY"s, 0);
+		   const int w = LoadValueWithDefault(regKey[RegName::Editor], "CodeViewPosWidth"s, 640);
+		   const int h = LoadValueWithDefault(regKey[RegName::Editor], "CodeViewPosHeight"s, 490);
 		   SetWindowPos(HWND_TOP, x, y, w, h, SWP_NOMOVE | SWP_NOSIZE);
 	   }
 	   SetForegroundWindow();
@@ -760,26 +760,26 @@ void CodeViewer::SetCaption(const string& szCaption)
 
 void CodeViewer::UpdatePrefsfromReg()
 {
-   m_bgColor = LoadValueIntWithDefault(regKey[RegName::CVEdit], "BackGroundColor"s, RGB(255,255,255));
-   m_bgSelColor = LoadValueIntWithDefault(regKey[RegName::CVEdit], "BackGroundSelectionColor"s, RGB(192,192,192));
-   m_displayAutoComplete = LoadValueBoolWithDefault(regKey[RegName::CVEdit], "DisplayAutoComplete"s, true);
-   m_displayAutoCompleteLength = LoadValueIntWithDefault(regKey[RegName::CVEdit], "DisplayAutoCompleteAfter"s, 1);
-   m_dwellDisplay = LoadValueBoolWithDefault(regKey[RegName::CVEdit], "DwellDisplay"s, true);
-   m_dwellHelp = LoadValueBoolWithDefault(regKey[RegName::CVEdit], "DwellHelp"s, true);
-   m_dwellDisplayTime = LoadValueIntWithDefault(regKey[RegName::CVEdit], "DwellDisplayTime"s, 700);
+   m_bgColor = LoadValueWithDefault(regKey[RegName::CVEdit], "BackGroundColor"s, (int)RGB(255,255,255));
+   m_bgSelColor = LoadValueWithDefault(regKey[RegName::CVEdit], "BackGroundSelectionColor"s, (int)RGB(192,192,192));
+   m_displayAutoComplete = LoadValueWithDefault(regKey[RegName::CVEdit], "DisplayAutoComplete"s, true);
+   m_displayAutoCompleteLength = LoadValueWithDefault(regKey[RegName::CVEdit], "DisplayAutoCompleteAfter"s, 1);
+   m_dwellDisplay = LoadValueWithDefault(regKey[RegName::CVEdit], "DwellDisplay"s, true);
+   m_dwellHelp = LoadValueWithDefault(regKey[RegName::CVEdit], "DwellHelp"s, true);
+   m_dwellDisplayTime = LoadValueWithDefault(regKey[RegName::CVEdit], "DwellDisplayTime"s, 700);
    for (size_t i = 0; i < m_lPrefsList->size(); ++i)
       m_lPrefsList->at(i)->GetPrefsFromReg();
 }
 
 void CodeViewer::UpdateRegWithPrefs()
 {
-   SaveValueInt(regKey[RegName::CVEdit], "BackGroundColor"s, m_bgColor);
-   SaveValueInt(regKey[RegName::CVEdit], "BackGroundSelectionColor"s, m_bgSelColor);
-   SaveValueBool(regKey[RegName::CVEdit], "DisplayAutoComplete"s, m_displayAutoComplete);
-   SaveValueInt(regKey[RegName::CVEdit], "DisplayAutoCompleteAfter"s, m_displayAutoCompleteLength);
-   SaveValueBool(regKey[RegName::CVEdit], "DwellDisplay"s, m_dwellDisplay);
-   SaveValueBool(regKey[RegName::CVEdit], "DwellHelp"s, m_dwellHelp);
-   SaveValueInt(regKey[RegName::CVEdit], "DwellDisplayTime"s, m_dwellDisplayTime);
+   SaveValue(regKey[RegName::CVEdit], "BackGroundColor"s, (int)m_bgColor);
+   SaveValue(regKey[RegName::CVEdit], "BackGroundSelectionColor"s, (int)m_bgSelColor);
+   SaveValue(regKey[RegName::CVEdit], "DisplayAutoComplete"s, m_displayAutoComplete);
+   SaveValue(regKey[RegName::CVEdit], "DisplayAutoCompleteAfter"s, m_displayAutoCompleteLength);
+   SaveValue(regKey[RegName::CVEdit], "DwellDisplay"s, m_dwellDisplay);
+   SaveValue(regKey[RegName::CVEdit], "DwellHelp"s, m_dwellHelp);
+   SaveValue(regKey[RegName::CVEdit], "DwellDisplayTime"s, m_dwellDisplayTime);
    for (size_t i = 0; i < m_lPrefsList->size(); i++)
       m_lPrefsList->at(i)->SetPrefsToReg();
 }
@@ -2541,10 +2541,10 @@ size_t CodeViewer::SureFind(const string &LineIn, const string &ToFind)
 
 void CodeViewer::PreCreate(CREATESTRUCT& cs)
 {
-    const int x = LoadValueIntWithDefault(regKey[RegName::Editor], "CodeViewPosX"s, 0);
-    const int y = LoadValueIntWithDefault(regKey[RegName::Editor], "CodeViewPosY"s, 0);
-    const int w = LoadValueIntWithDefault(regKey[RegName::Editor], "CodeViewPosWidth"s, 640);
-    const int h = LoadValueIntWithDefault(regKey[RegName::Editor], "CodeViewPosHeight"s, 490);
+    const int x = LoadValueWithDefault(regKey[RegName::Editor], "CodeViewPosX"s, 0);
+    const int y = LoadValueWithDefault(regKey[RegName::Editor], "CodeViewPosY"s, 0);
+    const int w = LoadValueWithDefault(regKey[RegName::Editor], "CodeViewPosWidth"s, 640);
+    const int h = LoadValueWithDefault(regKey[RegName::Editor], "CodeViewPosHeight"s, 490);
 
     cs.x = x;
     cs.y = y;
@@ -3449,8 +3449,8 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 				pcv->m_lPrefsList->at(i)->GetPrefsFromReg();
 				pcv->m_lPrefsList->at(i)->SetCheckBox(hwndDlg);
 			}
-			pcv->m_bgColor = LoadValueIntWithDefault(regKey[RegName::CVEdit], "BackGroundColor"s, RGB(255, 255, 255));
-			pcv->m_bgSelColor = LoadValueIntWithDefault(regKey[RegName::CVEdit], "BackGroundSelectionColor"s, RGB(192, 192, 192));
+			pcv->m_bgColor = LoadValueWithDefault(regKey[RegName::CVEdit], "BackGroundColor"s, (int)RGB(255, 255, 255));
+			pcv->m_bgSelColor = LoadValueWithDefault(regKey[RegName::CVEdit], "BackGroundSelectionColor"s, (int)RGB(192, 192, 192));
 			pcv->UpdateScinFromPrefs();
 			SNDMSG(GetDlgItem(hwndDlg, IDC_CVP_CHKBOX_SHOWAUTOCOMPLETE), BM_SETCHECK, pcv->m_displayAutoComplete ? BST_CHECKED : BST_UNCHECKED, 0L);
 			SNDMSG(GetDlgItem(hwndDlg, IDC_CVP_CHKBOX_DISPLAYDWELL), BM_SETCHECK, pcv->m_dwellDisplay ? BST_CHECKED : BST_UNCHECKED, 0L);
@@ -3502,19 +3502,19 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 				case IDC_CVP_CHKBOX_DISPLAYDWELL:
 				{
 					pcv->m_dwellDisplay = !!IsDlgButtonChecked(hwndDlg, IDC_CVP_CHKBOX_DISPLAYDWELL);
-					SaveValueBool(regKey[RegName::CVEdit], "DwellDisplay"s, pcv->m_dwellDisplay);
+					SaveValue(regKey[RegName::CVEdit], "DwellDisplay"s, pcv->m_dwellDisplay);
 				}
 				break;
 				case IDC_CVP_CHKBOX_HELPWITHDWELL:
 				{
 					pcv->m_dwellHelp = !!IsDlgButtonChecked(hwndDlg, IDC_CVP_CHKBOX_HELPWITHDWELL);
-					SaveValueBool(regKey[RegName::CVEdit], "DwellHelp"s, pcv->m_dwellHelp);
+					SaveValue(regKey[RegName::CVEdit], "DwellHelp"s, pcv->m_dwellHelp);
 				}
 				break;
 				case IDC_CVP_CHKBOX_SHOWAUTOCOMPLETE:
 				{
 					pcv->m_displayAutoComplete = !!IsDlgButtonChecked(hwndDlg, IDC_CVP_CHKBOX_SHOWAUTOCOMPLETE);
-					SaveValueBool(regKey[RegName::CVEdit], "DisplayAutoComplete"s, pcv->m_displayAutoComplete);
+					SaveValue(regKey[RegName::CVEdit], "DisplayAutoComplete"s, pcv->m_displayAutoComplete);
 				}
 				break;
 				case IDC_CVP_BUT_COL_BACKGROUND:
@@ -3734,7 +3734,7 @@ Collection::Collection()
    m_fireEvents = false;
    m_stopSingleEvents = false;
 
-   m_groupElements = LoadValueBoolWithDefault(regKey[RegName::Editor], "GroupElementsInCollection"s, true);
+   m_groupElements = LoadValueWithDefault(regKey[RegName::Editor], "GroupElementsInCollection"s, true);
 }
 
 STDMETHODIMP Collection::get_Name(BSTR *pVal)
@@ -3926,8 +3926,8 @@ void DebuggerModule::Init(CodeViewer * const pcv)
 
 STDMETHODIMP DebuggerModule::Print(VARIANT *pvar)
 {
-   const bool enableLog = LoadValueBoolWithDefault(regKey[RegName::Editor], "EnableLog"s, false);
-   const bool logScript = enableLog && LoadValueBoolWithDefault(regKey[RegName::Editor], "LogScriptOutput"s, true);
+   const bool enableLog = LoadValueWithDefault(regKey[RegName::Editor], "EnableLog"s, false);
+   const bool logScript = enableLog && LoadValueWithDefault(regKey[RegName::Editor], "LogScriptOutput"s, true);
 
    if (V_VT(pvar) == VT_EMPTY || V_VT(pvar) == VT_NULL || V_VT(pvar) == VT_ERROR)
    {

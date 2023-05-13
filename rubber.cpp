@@ -42,7 +42,7 @@ HRESULT Rubber::Init(PinTable * const ptable, const float x, const float y, cons
    m_ptable = ptable;
    m_d.m_visible = true;
 
-   //float length = 0.5f * LoadValueFloatWithDefault(regKey[RegName::DefaultPropsRubber], "Length"s, 400.0f);
+   //float length = 0.5f * LoadValueWithDefault(regKey[RegName::DefaultPropsRubber], "Length"s, 400.0f);
 
    for (int i = 8; i > 0; i--)
    {
@@ -70,31 +70,31 @@ void Rubber::SetDefaults(const bool fromMouseClick)
 {
 #define strKeyName regKey[RegName::DefaultPropsRubber]
 
-   m_d.m_height = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Height"s, 25.0f) : 25.0f;
-   m_d.m_thickness = fromMouseClick ? LoadValueIntWithDefault(strKeyName, "Thickness"s, 8) : 8;
+   m_d.m_height = fromMouseClick ? LoadValueWithDefault(strKeyName, "Height"s, 25.0f) : 25.0f;
+   m_d.m_thickness = fromMouseClick ? LoadValueWithDefault(strKeyName, "Thickness"s, 8) : 8;
 
-   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "TimerEnabled"s, false) : false;
-   m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault(strKeyName, "TimerInterval"s, 100) : 100;
+   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueWithDefault(strKeyName, "TimerEnabled"s, false) : false;
+   m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueWithDefault(strKeyName, "TimerInterval"s, 100) : 100;
 
    const HRESULT hr = LoadValue(strKeyName, "Image"s, m_d.m_szImage);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImage.clear();
 
-   m_d.m_hitEvent = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "HitEvent"s, false) : false;
+   m_d.m_hitEvent = fromMouseClick ? LoadValueWithDefault(strKeyName, "HitEvent"s, false) : false;
 
    SetDefaultPhysics(fromMouseClick);
 
-   m_d.m_visible = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "Visible"s, true) : true;
-   m_d.m_collidable = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "Collidable"s, true) : true;
+   m_d.m_visible = fromMouseClick ? LoadValueWithDefault(strKeyName, "Visible"s, true) : true;
+   m_d.m_collidable = fromMouseClick ? LoadValueWithDefault(strKeyName, "Collidable"s, true) : true;
 
-   m_d.m_staticRendering = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "EnableStaticRendering"s, true) : true;
-   m_d.m_showInEditor = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "EnableShowInEditor"s, false) : false;
+   m_d.m_staticRendering = fromMouseClick ? LoadValueWithDefault(strKeyName, "EnableStaticRendering"s, true) : true;
+   m_d.m_showInEditor = fromMouseClick ? LoadValueWithDefault(strKeyName, "EnableShowInEditor"s, false) : false;
 
-   m_d.m_rotX = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "RotX"s, 0.0f) : 0.0f;
-   m_d.m_rotY = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "RotY"s, 0.0f) : 0.0f;
-   m_d.m_rotZ = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "RotZ"s, 0.0f) : 0.0f;
+   m_d.m_rotX = fromMouseClick ? LoadValueWithDefault(strKeyName, "RotX"s, 0.0f) : 0.0f;
+   m_d.m_rotY = fromMouseClick ? LoadValueWithDefault(strKeyName, "RotY"s, 0.0f) : 0.0f;
+   m_d.m_rotZ = fromMouseClick ? LoadValueWithDefault(strKeyName, "RotZ"s, 0.0f) : 0.0f;
 
-   m_d.m_reflectionEnabled = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "ReflectionEnabled"s, true) : true;
+   m_d.m_reflectionEnabled = fromMouseClick ? LoadValueWithDefault(strKeyName, "ReflectionEnabled"s, true) : true;
 
 #undef strKeyName
 }
@@ -103,25 +103,25 @@ void Rubber::WriteRegDefaults()
 {
 #define strKeyName regKey[RegName::DefaultPropsRubber]
 
-   SaveValueFloat(strKeyName, "Height"s, m_d.m_height);
-   SaveValueFloat(strKeyName, "HitHeight"s, m_d.m_hitHeight);
-   SaveValueInt(strKeyName, "Thickness"s, m_d.m_thickness);
-   SaveValueBool(strKeyName, "HitEvent"s, m_d.m_hitEvent);
-   SaveValueBool(strKeyName, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
-   SaveValueInt(strKeyName, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
+   SaveValue(strKeyName, "Height"s, m_d.m_height);
+   SaveValue(strKeyName, "HitHeight"s, m_d.m_hitHeight);
+   SaveValue(strKeyName, "Thickness"s, m_d.m_thickness);
+   SaveValue(strKeyName, "HitEvent"s, m_d.m_hitEvent);
+   SaveValue(strKeyName, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
+   SaveValue(strKeyName, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
    SaveValue(strKeyName, "Image"s, m_d.m_szImage);
-   SaveValueFloat(strKeyName, "Elasticity"s, m_d.m_elasticity);
-   SaveValueFloat(strKeyName, "ElasticityFalloff"s, m_d.m_elasticityFalloff);
-   SaveValueFloat(strKeyName, "Friction"s, m_d.m_friction);
-   SaveValueFloat(strKeyName, "Scatter"s, m_d.m_scatter);
-   SaveValueBool(strKeyName, "Collidable"s, m_d.m_collidable);
-   SaveValueBool(strKeyName, "Visible"s, m_d.m_visible);
-   SaveValueBool(strKeyName, "EnableStaticRendering"s, m_d.m_staticRendering);
-   SaveValueBool(strKeyName, "EnableShowInEditor"s, m_d.m_showInEditor);
-   SaveValueFloat(strKeyName, "RotX"s, m_d.m_rotX);
-   SaveValueFloat(strKeyName, "RotY"s, m_d.m_rotY);
-   SaveValueFloat(strKeyName, "RotZ"s, m_d.m_rotZ);
-   SaveValueBool(strKeyName, "ReflectionEnabled"s, m_d.m_reflectionEnabled);
+   SaveValue(strKeyName, "Elasticity"s, m_d.m_elasticity);
+   SaveValue(strKeyName, "ElasticityFalloff"s, m_d.m_elasticityFalloff);
+   SaveValue(strKeyName, "Friction"s, m_d.m_friction);
+   SaveValue(strKeyName, "Scatter"s, m_d.m_scatter);
+   SaveValue(strKeyName, "Collidable"s, m_d.m_collidable);
+   SaveValue(strKeyName, "Visible"s, m_d.m_visible);
+   SaveValue(strKeyName, "EnableStaticRendering"s, m_d.m_staticRendering);
+   SaveValue(strKeyName, "EnableShowInEditor"s, m_d.m_showInEditor);
+   SaveValue(strKeyName, "RotX"s, m_d.m_rotX);
+   SaveValue(strKeyName, "RotY"s, m_d.m_rotY);
+   SaveValue(strKeyName, "RotZ"s, m_d.m_rotZ);
+   SaveValue(strKeyName, "ReflectionEnabled"s, m_d.m_reflectionEnabled);
 
 #undef strKeyName
 }
@@ -1537,11 +1537,11 @@ void Rubber::SetDefaultPhysics(const bool fromMouseClick)
 {
 #define strKeyName regKey[RegName::DefaultPropsRubber]
 
-   m_d.m_elasticity = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Elasticity"s, 0.8f) : 0.8f;
-   m_d.m_elasticityFalloff = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "ElasticityFalloff"s, 0.3f) : 0.3f;
-   m_d.m_friction = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Friction"s, 0.6f) : 0.6f;
-   m_d.m_scatter = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Scatter"s, 5) : 5;
-   m_d.m_hitHeight = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "HitHeight"s, 25.0f) : 25.0f;
+   m_d.m_elasticity = fromMouseClick ? LoadValueWithDefault(strKeyName, "Elasticity"s, 0.8f) : 0.8f;
+   m_d.m_elasticityFalloff = fromMouseClick ? LoadValueWithDefault(strKeyName, "ElasticityFalloff"s, 0.3f) : 0.3f;
+   m_d.m_friction = fromMouseClick ? LoadValueWithDefault(strKeyName, "Friction"s, 0.6f) : 0.6f;
+   m_d.m_scatter = fromMouseClick ? LoadValueWithDefault(strKeyName, "Scatter"s, 5.f) : 5.f;
+   m_d.m_hitHeight = fromMouseClick ? LoadValueWithDefault(strKeyName, "HitHeight"s, 25.0f) : 25.0f;
 
 #undef strKeyName
 }

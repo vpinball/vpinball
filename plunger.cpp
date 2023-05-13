@@ -34,44 +34,44 @@ void Plunger::SetDefaults(const bool fromMouseClick)
 
    SetDefaultPhysics(fromMouseClick);
 
-   m_d.m_height = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Height"s, 20.f) : 20.f;
-   m_d.m_width = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Width"s, 25.f) : 25.f;
-   m_d.m_zAdjust = fromMouseClick ? LoadValueFloatWithDefault(regKey, "ZAdjust"s, 0) : 0;
-   m_d.m_stroke = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Stroke"s, m_d.m_height*4) : (m_d.m_height*4);
-   m_d.m_speedPull = fromMouseClick ? LoadValueFloatWithDefault(regKey, "PullSpeed"s, 5.f) : 5.f;
-   m_d.m_type = fromMouseClick ? (PlungerType)LoadValueIntWithDefault(regKey, "PlungerType"s, PlungerTypeModern) : PlungerTypeModern;
-   m_d.m_color = fromMouseClick ? LoadValueIntWithDefault(regKey, "Color"s, RGB(76,76,76)) : RGB(76,76,76);
+   m_d.m_height = fromMouseClick ? LoadValueWithDefault(regKey, "Height"s, 20.f) : 20.f;
+   m_d.m_width = fromMouseClick ? LoadValueWithDefault(regKey, "Width"s, 25.f) : 25.f;
+   m_d.m_zAdjust = fromMouseClick ? LoadValueWithDefault(regKey, "ZAdjust"s, 0.f) : 0.f;
+   m_d.m_stroke = fromMouseClick ? LoadValueWithDefault(regKey, "Stroke"s, m_d.m_height*4.f) : (m_d.m_height*4.f);
+   m_d.m_speedPull = fromMouseClick ? LoadValueWithDefault(regKey, "PullSpeed"s, 5.f) : 5.f;
+   m_d.m_type = fromMouseClick ? (PlungerType)LoadValueWithDefault(regKey, "PlungerType"s, (int)PlungerTypeModern) : PlungerTypeModern;
+   m_d.m_color = fromMouseClick ? LoadValueWithDefault(regKey, "Color"s, (int)RGB(76,76,76)) : RGB(76,76,76);
 
    HRESULT hr = LoadValue(regKey, "Image"s, m_d.m_szImage);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImage.clear();
 
-   m_d.m_animFrames = fromMouseClick ? LoadValueIntWithDefault(regKey, "AnimFrames"s, 1) : 1;
-   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault(regKey, "TimerEnabled"s, false) : false;
-   m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault(regKey, "TimerInterval"s, 100) : 100;
+   m_d.m_animFrames = fromMouseClick ? LoadValueWithDefault(regKey, "AnimFrames"s, 1) : 1;
+   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueWithDefault(regKey, "TimerEnabled"s, false) : false;
+   m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueWithDefault(regKey, "TimerInterval"s, 100) : 100;
 
    hr = LoadValue(regKey, "Surface"s, m_d.m_szSurface);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szSurface.clear();
 
-   m_d.m_mechPlunger = fromMouseClick ? LoadValueBoolWithDefault(regKey, "MechPlunger"s, false) : false; // plungers require selection for mechanical input
-   m_d.m_autoPlunger = fromMouseClick ? LoadValueBoolWithDefault(regKey, "AutoPlunger"s, false) : false;
-   m_d.m_visible = fromMouseClick ? LoadValueBoolWithDefault(regKey, "Visible"s, true) : true;
+   m_d.m_mechPlunger = fromMouseClick ? LoadValueWithDefault(regKey, "MechPlunger"s, false) : false; // plungers require selection for mechanical input
+   m_d.m_autoPlunger = fromMouseClick ? LoadValueWithDefault(regKey, "AutoPlunger"s, false) : false;
+   m_d.m_visible = fromMouseClick ? LoadValueWithDefault(regKey, "Visible"s, true) : true;
 
    hr = LoadValue(regKey, "CustomTipShape"s, m_d.m_szTipShape, MAXTIPSHAPE);
    if ((hr != S_OK) || !fromMouseClick)
       strncpy_s(m_d.m_szTipShape,
       "0 .34; 2 .6; 3 .64; 5 .7; 7 .84; 8 .88; 9 .9; 11 .92; 14 .92; 39 .84", sizeof(m_d.m_szTipShape)-1);
 
-   m_d.m_rodDiam = fromMouseClick ? LoadValueFloatWithDefault(regKey, "CustomRodDiam"s, 0.60f) : 0.60f;
-   m_d.m_ringGap = fromMouseClick ? LoadValueFloatWithDefault(regKey, "CustomRingGap"s, 2.0f) : 2.0f;
-   m_d.m_ringDiam = fromMouseClick ? LoadValueFloatWithDefault(regKey, "CustomRingDiam"s, 0.94f) : 0.94f;
-   m_d.m_ringWidth = fromMouseClick ? LoadValueFloatWithDefault(regKey, "CustomRingWidth"s, 3.0f) : 3.0f;
-   m_d.m_springDiam = fromMouseClick ? LoadValueFloatWithDefault(regKey, "CustomSpringDiam"s, 0.77f) : 0.77f;
-   m_d.m_springGauge = fromMouseClick ? LoadValueFloatWithDefault(regKey, "CustomSpringGauge"s, 1.38f) : 1.38f;
-   m_d.m_springLoops = fromMouseClick ? LoadValueFloatWithDefault(regKey, "CustomSpringLoops"s, 8.0f) : 8.0f;
-   m_d.m_springEndLoops = fromMouseClick ? LoadValueFloatWithDefault(regKey, "CustomSpringEndLoops"s, 2.5f) : 2.5f;
-   m_d.m_reflectionEnabled = fromMouseClick ? LoadValueBoolWithDefault(regKey, "ReflectionEnabled"s, true) : true;
+   m_d.m_rodDiam = fromMouseClick ? LoadValueWithDefault(regKey, "CustomRodDiam"s, 0.60f) : 0.60f;
+   m_d.m_ringGap = fromMouseClick ? LoadValueWithDefault(regKey, "CustomRingGap"s, 2.0f) : 2.0f;
+   m_d.m_ringDiam = fromMouseClick ? LoadValueWithDefault(regKey, "CustomRingDiam"s, 0.94f) : 0.94f;
+   m_d.m_ringWidth = fromMouseClick ? LoadValueWithDefault(regKey, "CustomRingWidth"s, 3.0f) : 3.0f;
+   m_d.m_springDiam = fromMouseClick ? LoadValueWithDefault(regKey, "CustomSpringDiam"s, 0.77f) : 0.77f;
+   m_d.m_springGauge = fromMouseClick ? LoadValueWithDefault(regKey, "CustomSpringGauge"s, 1.38f) : 1.38f;
+   m_d.m_springLoops = fromMouseClick ? LoadValueWithDefault(regKey, "CustomSpringLoops"s, 8.0f) : 8.0f;
+   m_d.m_springEndLoops = fromMouseClick ? LoadValueWithDefault(regKey, "CustomSpringEndLoops"s, 2.5f) : 2.5f;
+   m_d.m_reflectionEnabled = fromMouseClick ? LoadValueWithDefault(regKey, "ReflectionEnabled"s, true) : true;
 
 #undef regKey
 }
@@ -80,36 +80,36 @@ void Plunger::WriteRegDefaults()
 {
 #define regKey regKey[RegName::DefaultPropsPlunger]
 
-   SaveValueFloat(regKey, "Height"s, m_d.m_height);
-   SaveValueFloat(regKey, "Width"s, m_d.m_width);
-   SaveValueFloat(regKey, "ZAdjust"s, m_d.m_zAdjust);
-   SaveValueFloat(regKey, "Stroke"s, m_d.m_stroke);
-   SaveValueFloat(regKey, "PullSpeed"s, m_d.m_speedPull);
-   SaveValueFloat(regKey, "ReleaseSpeed"s, m_d.m_speedFire);
-   SaveValueInt(regKey, "PlungerType"s, m_d.m_type);
-   SaveValueInt(regKey, "AnimFrames"s, m_d.m_animFrames);
-   SaveValueInt(regKey, "Color"s, m_d.m_color);
+   SaveValue(regKey, "Height"s, m_d.m_height);
+   SaveValue(regKey, "Width"s, m_d.m_width);
+   SaveValue(regKey, "ZAdjust"s, m_d.m_zAdjust);
+   SaveValue(regKey, "Stroke"s, m_d.m_stroke);
+   SaveValue(regKey, "PullSpeed"s, m_d.m_speedPull);
+   SaveValue(regKey, "ReleaseSpeed"s, m_d.m_speedFire);
+   SaveValue(regKey, "PlungerType"s, m_d.m_type);
+   SaveValue(regKey, "AnimFrames"s, m_d.m_animFrames);
+   SaveValue(regKey, "Color"s, (int)m_d.m_color);
    SaveValue(regKey, "Image"s, m_d.m_szImage);
-   SaveValueBool(regKey, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
-   SaveValueInt(regKey, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
+   SaveValue(regKey, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
+   SaveValue(regKey, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
    SaveValue(regKey, "Surface"s, m_d.m_szSurface);
-   SaveValueBool(regKey, "MechPlunger"s, m_d.m_mechPlunger);
-   SaveValueBool(regKey, "AutoPlunger"s, m_d.m_autoPlunger);
-   SaveValueFloat(regKey, "MechStrength"s, m_d.m_mechStrength);
-   SaveValueFloat(regKey, "ParkPosition"s, m_d.m_parkPosition);
-   SaveValueBool(regKey, "Visible"s, m_d.m_visible);
-   SaveValueFloat(regKey, "ScatterVelocity"s, m_d.m_scatterVelocity);
-   SaveValueFloat(regKey, "MomentumXfer"s, m_d.m_momentumXfer);
+   SaveValue(regKey, "MechPlunger"s, m_d.m_mechPlunger);
+   SaveValue(regKey, "AutoPlunger"s, m_d.m_autoPlunger);
+   SaveValue(regKey, "MechStrength"s, m_d.m_mechStrength);
+   SaveValue(regKey, "ParkPosition"s, m_d.m_parkPosition);
+   SaveValue(regKey, "Visible"s, m_d.m_visible);
+   SaveValue(regKey, "ScatterVelocity"s, m_d.m_scatterVelocity);
+   SaveValue(regKey, "MomentumXfer"s, m_d.m_momentumXfer);
    SaveValue(regKey, "CustomTipShape"s, m_d.m_szTipShape);
-   SaveValueFloat(regKey, "CustomRodDiam"s, m_d.m_rodDiam);
-   SaveValueFloat(regKey, "CustomRingGap"s, m_d.m_ringGap);
-   SaveValueFloat(regKey, "CustomRingDiam"s, m_d.m_ringDiam);
-   SaveValueFloat(regKey, "CustomRingWidth"s, m_d.m_ringWidth);
-   SaveValueFloat(regKey, "CustomSpringDiam"s, m_d.m_springDiam);
-   SaveValueFloat(regKey, "CustomSpringGauge"s, m_d.m_springGauge);
-   SaveValueFloat(regKey, "CustomSpringLoops"s, m_d.m_springLoops);
-   SaveValueFloat(regKey, "CustomSpringEndLoops"s, m_d.m_springEndLoops);
-   SaveValueBool(regKey, "ReflectionEnabled"s, m_d.m_reflectionEnabled);
+   SaveValue(regKey, "CustomRodDiam"s, m_d.m_rodDiam);
+   SaveValue(regKey, "CustomRingGap"s, m_d.m_ringGap);
+   SaveValue(regKey, "CustomRingDiam"s, m_d.m_ringDiam);
+   SaveValue(regKey, "CustomRingWidth"s, m_d.m_ringWidth);
+   SaveValue(regKey, "CustomSpringDiam"s, m_d.m_springDiam);
+   SaveValue(regKey, "CustomSpringGauge"s, m_d.m_springGauge);
+   SaveValue(regKey, "CustomSpringLoops"s, m_d.m_springLoops);
+   SaveValue(regKey, "CustomSpringEndLoops"s, m_d.m_springEndLoops);
+   SaveValue(regKey, "ReflectionEnabled"s, m_d.m_reflectionEnabled);
 
 #undef regKey
 }
@@ -204,11 +204,11 @@ void Plunger::SetDefaultPhysics(const bool fromMouseClick)
 {
 #define regKey regKey[RegName::DefaultPropsPlunger]
 
-   m_d.m_speedFire = fromMouseClick ? LoadValueFloatWithDefault(regKey, "ReleaseSpeed"s, 80.f) : 80.f;
-   m_d.m_mechStrength = fromMouseClick ? LoadValueFloatWithDefault(regKey, "MechStrength"s, 85.f) : 85.f;
-   m_d.m_parkPosition = fromMouseClick ? LoadValueFloatWithDefault(regKey, "ParkPosition"s, (float)(0.5/3.0)) : (float)(0.5/3.0); // typical mechanical plunger has 3 inch stroke and 0.5 inch rest position //!! 0.01f better for some HW-plungers, but this seems to be rather a firmware/config issue
-   m_d.m_scatterVelocity = fromMouseClick ? LoadValueFloatWithDefault(regKey, "ScatterVelocity"s, 0.f) : 0.f;
-   m_d.m_momentumXfer = fromMouseClick ? LoadValueFloatWithDefault(regKey, "MomentumXfer"s, 1.f) : 1.f;
+   m_d.m_speedFire = fromMouseClick ? LoadValueWithDefault(regKey, "ReleaseSpeed"s, 80.f) : 80.f;
+   m_d.m_mechStrength = fromMouseClick ? LoadValueWithDefault(regKey, "MechStrength"s, 85.f) : 85.f;
+   m_d.m_parkPosition = fromMouseClick ? LoadValueWithDefault(regKey, "ParkPosition"s, (float)(0.5/3.0)) : (float)(0.5/3.0); // typical mechanical plunger has 3 inch stroke and 0.5 inch rest position //!! 0.01f better for some HW-plungers, but this seems to be rather a firmware/config issue
+   m_d.m_scatterVelocity = fromMouseClick ? LoadValueWithDefault(regKey, "ScatterVelocity"s, 0.f) : 0.f;
+   m_d.m_momentumXfer = fromMouseClick ? LoadValueWithDefault(regKey, "MomentumXfer"s, 1.f) : 1.f;
 
 #undef regKey
 }

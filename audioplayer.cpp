@@ -29,9 +29,9 @@ AudioPlayer::AudioPlayer()
 
       //
 
-      const SoundConfigTypes SoundMode3D = (SoundConfigTypes)LoadValueIntWithDefault(regKey[RegName::Player], "Sound3D"s, (int)SNDCFG_SND3D2CH);
-      const int DS_STD_idx = LoadValueIntWithDefault(regKey[RegName::Player], "SoundDevice"s,   -1);
-      const int DS_BG_idx  = LoadValueIntWithDefault(regKey[RegName::Player], "SoundDeviceBG"s, -1);
+      const SoundConfigTypes SoundMode3D = (SoundConfigTypes)LoadValueWithDefault(regKey[RegName::Player], "Sound3D"s, (int)SNDCFG_SND3D2CH);
+      const int DS_STD_idx = LoadValueWithDefault(regKey[RegName::Player], "SoundDevice"s,   -1);
+      const int DS_BG_idx  = LoadValueWithDefault(regKey[RegName::Player], "SoundDeviceBG"s, -1);
       bass_STD_idx = -1;
       bass_BG_idx  = -1;
 

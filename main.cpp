@@ -478,7 +478,7 @@ public:
       PLOGI << "Starting VPX...";
 
       // Start VP with file dialog open and then also playing that one?
-      const bool stos = LoadValueBoolWithDefault(regKey[RegName::Editor], "SelectTableOnStart"s, true);
+      const bool stos = LoadValueWithDefault(regKey[RegName::Editor], "SelectTableOnStart"s, true);
       if (stos)
       {
          file = true;
@@ -572,7 +572,7 @@ public:
            else
            {
                loadFileResult = m_vpinball.LoadFile(!play);
-               m_vpinball.m_table_played_via_SelectTableOnStart = LoadValueBoolWithDefault(regKey[RegName::Editor], "SelectTableOnPlayerClose"s, true) ? loadFileResult : false;
+               m_vpinball.m_table_played_via_SelectTableOnStart = LoadValueWithDefault(regKey[RegName::Editor], "SelectTableOnPlayerClose"s, true) ? loadFileResult : false;
            }
 
            if (extractScript && loadFileResult)
@@ -642,7 +642,7 @@ public:
 void SetupLogger()
 {
    plog::Severity maxLogSeverity = plog::none;
-   if (LoadValueBoolWithDefault(regKey[RegName::Editor], "EnableLog"s, false))
+   if (LoadValueWithDefault(regKey[RegName::Editor], "EnableLog"s, false))
    {
       static bool initialized = false;
       if (!initialized)

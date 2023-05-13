@@ -103,13 +103,13 @@ void Flasher::SetDefaults(const bool fromMouseClick)
 {
 #define regKey regKey[RegName::DefaultPropsFlasher]
 
-   m_d.m_height = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Height"s, 50.f) : 50.f;
-   m_d.m_rotX = fromMouseClick ? LoadValueFloatWithDefault(regKey, "RotX"s, 0.f) : 0.f;
-   m_d.m_rotY = fromMouseClick ? LoadValueFloatWithDefault(regKey, "RotY"s, 0.f) : 0.f;
-   m_d.m_rotZ = fromMouseClick ? LoadValueFloatWithDefault(regKey, "RotZ"s, 0.f) : 0.f;
-   m_d.m_color = fromMouseClick ? LoadValueIntWithDefault(regKey, "Color"s, RGB(50,200,50)) : RGB(50,200,50);
-   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault(regKey, "TimerEnabled"s, false) : false;
-   m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault(regKey, "TimerInterval"s, 100) : 100;
+   m_d.m_height = fromMouseClick ? LoadValueWithDefault(regKey, "Height"s, 50.f) : 50.f;
+   m_d.m_rotX = fromMouseClick ? LoadValueWithDefault(regKey, "RotX"s, 0.f) : 0.f;
+   m_d.m_rotY = fromMouseClick ? LoadValueWithDefault(regKey, "RotY"s, 0.f) : 0.f;
+   m_d.m_rotZ = fromMouseClick ? LoadValueWithDefault(regKey, "RotZ"s, 0.f) : 0.f;
+   m_d.m_color = fromMouseClick ? LoadValueWithDefault(regKey, "Color"s, (int)RGB(50,200,50)) : RGB(50,200,50);
+   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueWithDefault(regKey, "TimerEnabled"s, false) : false;
+   m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueWithDefault(regKey, "TimerInterval"s, 100) : 100;
 
    HRESULT hr = LoadValue(regKey, "ImageA"s, m_d.m_szImageA);
    if ((hr != S_OK) || !fromMouseClick)
@@ -119,19 +119,19 @@ void Flasher::SetDefaults(const bool fromMouseClick)
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImageB.clear();
 
-   m_d.m_alpha = fromMouseClick ? LoadValueIntWithDefault(regKey, "Opacity"s, 100) : 100;
+   m_d.m_alpha = fromMouseClick ? LoadValueWithDefault(regKey, "Opacity"s, 100) : 100;
 
    m_d.m_intensity_scale = 1.0f;
 
-   m_d.m_modulate_vs_add = fromMouseClick ? LoadValueFloatWithDefault(regKey, "ModulateVsAdd"s, 0.9f) : 0.9f;
-   m_d.m_filterAmount = fromMouseClick ? LoadValueIntWithDefault(regKey, "FilterAmount"s, 100) : 100;
-   m_d.m_isVisible = fromMouseClick ? LoadValueBoolWithDefault(regKey, "Visible"s, true) : true;
+   m_d.m_modulate_vs_add = fromMouseClick ? LoadValueWithDefault(regKey, "ModulateVsAdd"s, 0.9f) : 0.9f;
+   m_d.m_filterAmount = fromMouseClick ? LoadValueWithDefault(regKey, "FilterAmount"s, 100) : 100;
+   m_d.m_isVisible = fromMouseClick ? LoadValueWithDefault(regKey, "Visible"s, true) : true;
    m_inPlayState = m_d.m_isVisible;
-   m_d.m_addBlend = fromMouseClick ? LoadValueBoolWithDefault(regKey, "AddBlend"s, false) : false;
-   m_d.m_isDMD = fromMouseClick ? LoadValueBoolWithDefault(regKey, "DMD"s, false) : false;
-   m_d.m_displayTexture = fromMouseClick ? LoadValueBoolWithDefault(regKey, "DisplayTexture"s, false) : false;
-   m_d.m_imagealignment = fromMouseClick ? (RampImageAlignment)LoadValueIntWithDefault(regKey, "ImageMode"s, ImageModeWrap) : ImageModeWrap;
-   m_d.m_filter = fromMouseClick ? (Filters)LoadValueIntWithDefault(regKey, "Filter"s, Filter_Overlay) : Filter_Overlay;
+   m_d.m_addBlend = fromMouseClick ? LoadValueWithDefault(regKey, "AddBlend"s, false) : false;
+   m_d.m_isDMD = fromMouseClick ? LoadValueWithDefault(regKey, "DMD"s, false) : false;
+   m_d.m_displayTexture = fromMouseClick ? LoadValueWithDefault(regKey, "DisplayTexture"s, false) : false;
+   m_d.m_imagealignment = fromMouseClick ? (RampImageAlignment)LoadValueWithDefault(regKey, "ImageMode"s, (int)ImageModeWrap) : ImageModeWrap;
+   m_d.m_filter = fromMouseClick ? (Filters)LoadValueWithDefault(regKey, "Filter"s, (int)Filter_Overlay) : Filter_Overlay;
 
 #undef regKey
 }
@@ -140,24 +140,24 @@ void Flasher::WriteRegDefaults()
 {
 #define regKey regKey[RegName::DefaultPropsFlasher]
 
-   SaveValueFloat(regKey, "Height"s, m_d.m_height);
-   SaveValueFloat(regKey, "RotX"s, m_d.m_rotX);
-   SaveValueFloat(regKey, "RotY"s, m_d.m_rotY);
-   SaveValueFloat(regKey, "RotZ"s, m_d.m_rotZ);
-   SaveValueInt(regKey, "Color"s, m_d.m_color);
-   SaveValueBool(regKey, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
-   SaveValueInt(regKey, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
+   SaveValue(regKey, "Height"s, m_d.m_height);
+   SaveValue(regKey, "RotX"s, m_d.m_rotX);
+   SaveValue(regKey, "RotY"s, m_d.m_rotY);
+   SaveValue(regKey, "RotZ"s, m_d.m_rotZ);
+   SaveValue(regKey, "Color"s, (int)m_d.m_color);
+   SaveValue(regKey, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
+   SaveValue(regKey, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
    SaveValue(regKey, "ImageA"s, m_d.m_szImageA);
    SaveValue(regKey, "ImageB"s, m_d.m_szImageB);
-   SaveValueInt(regKey, "Alpha"s, m_d.m_alpha);
-   SaveValueFloat(regKey, "ModulateVsAdd"s, m_d.m_modulate_vs_add);
-   SaveValueBool(regKey, "Visible"s, m_d.m_isVisible);
-   SaveValueBool(regKey, "DisplayTexture"s, m_d.m_displayTexture);
-   SaveValueBool(regKey, "AddBlend"s, m_d.m_addBlend);
-   SaveValueBool(regKey, "DMD"s, m_d.m_isDMD);
-   SaveValueInt(regKey, "ImageMode"s, m_d.m_imagealignment);
-   SaveValueInt(regKey, "Filter"s, m_d.m_filter);
-   SaveValueInt(regKey, "FilterAmount"s, m_d.m_filterAmount);
+   SaveValue(regKey, "Alpha"s, m_d.m_alpha);
+   SaveValue(regKey, "ModulateVsAdd"s, m_d.m_modulate_vs_add);
+   SaveValue(regKey, "Visible"s, m_d.m_isVisible);
+   SaveValue(regKey, "DisplayTexture"s, m_d.m_displayTexture);
+   SaveValue(regKey, "AddBlend"s, m_d.m_addBlend);
+   SaveValue(regKey, "DMD"s, m_d.m_isDMD);
+   SaveValue(regKey, "ImageMode"s, (int)m_d.m_imagealignment);
+   SaveValue(regKey, "Filter"s, m_d.m_filter);
+   SaveValue(regKey, "FilterAmount"s, (int)m_d.m_filterAmount);
 
 #undef regKey
 }
