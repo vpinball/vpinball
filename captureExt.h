@@ -57,7 +57,9 @@ public:
    static outputmaptype m_duplicatormap;
 
    ecStage m_ecStage = ecUninitialized;
-   BaseTexture* m_texture;
+   HBITMAP m_HBitmap;
+   void* m_pData;
+   //BaseTexture* m_texture;
 
 private:
    friend class ExtCaptureOutput;
