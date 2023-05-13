@@ -229,7 +229,7 @@ float3 PFlightLoop(const float3 pos, const float3 N, const float3 diffuse)
 //------------------------------------
 // PIXEL SHADER
 
-float4 psBall( const in vout IN, uniform bool cabMode, uniform bool decalMode ) : COLOR
+float4 psBall( const in vout IN, uniform bool decalMode ) : COLOR
 {
     const float3 v = normalize(/*camera=0,0,0,1*/-IN.worldPos_t0y.xyz);
     const float3 r = reflect(v, normalize(IN.normal_t0x.xyz));
@@ -240,7 +240,7 @@ float4 psBall( const in vout IN, uniform bool cabMode, uniform bool decalMode ) 
 		edge*(6.0*1.0/0.4)-(6.0*0.6/0.4) :
 		0.0;
 
-    const float2 uv0 = cabMode ? float2(0.5 + r.y*m, 0.5 - r.x*m) : float2(0.5 - r.x*m, 0.5 - r.y*m);
+    const float2 uv0 = float2(0.5 - r.x*m, 0.5 - r.y*m);
     float3 ballImageColor = tex2Dlod(tex_ball_color, float4(uv0, 0., lod)).xyz;
 
     const float4 decalColorT = tex2D(tex_ball_decal, float2(IN.normal_t0x.w, IN.worldPos_t0y.w));
@@ -304,7 +304,7 @@ float4 psBall( const in vout IN, uniform bool cabMode, uniform bool decalMode ) 
 #if 0
 float4 psBallReflection( const in voutReflection IN ) : COLOR
 {
-   const float2 envTex = cabMode ? float2(IN.r.y*0.5 + 0.5, -IN.r.x*0.5 + 0.5) : float2(IN.r.x*0.5 + 0.5, IN.r.y*0.5 + 0.5);
+   const float2 envTex = float2(IN.r.x*0.5 + 0.5, IN.r.y*0.5 + 0.5);
    float3 ballImageColor = tex2D(tex_ball_color, envTex).xyz;
    ballImageColor = (cBase_Alpha.xyz*(0.075*0.25) + ballImageColor)*fenvEmissionScale_TexWidth.x; //!! just add the ballcolor in, this is a whacky reflection anyhow
    float alpha = saturate((IN.tex0.y - position_radius.y) / position_radius.w);
@@ -330,7 +330,7 @@ technique RenderBall
 	pass p0 
 	{		
 		vertexshader = compile vs_3_0 vsBall();
-		pixelshader  = compile ps_3_0 psBall(false,false);
+		pixelshader  = compile ps_3_0 psBall(false);
 	}
 }
 
@@ -339,24 +339,7 @@ technique RenderBall_DecalMode
    pass p0
    {
       vertexshader = compile vs_3_0 vsBall();
-      pixelshader  = compile ps_3_0 psBall(false, true);
-   }
-}
-
-technique RenderBall_CabMode
-{
-   pass p0
-   {
-      vertexshader = compile vs_3_0 vsBall();
-      pixelshader  = compile ps_3_0 psBall(true,false);
-   }
-}
-technique RenderBall_CabMode_DecalMode
-{
-   pass p0
-   {
-      vertexshader = compile vs_3_0 vsBall();
-      pixelshader  = compile ps_3_0 psBall(true,true);
+      pixelshader  = compile ps_3_0 psBall(true);
    }
 }
 

@@ -813,11 +813,12 @@ void PinProjection::Setup(const PinTable* table, const ViewPort& viewPort, const
 
    m_matWorld.SetIdentity();
 
-   Matrix3D coords, rotx, trans, rotz, proj, projTrans;
+   Matrix3D coords, rotx, trans, rotz, proj, projTrans, layback;
    projTrans.SetTranslation((float)((double)xpixoff / (double)viewPort.Width), (float)((double)ypixoff / (double)viewPort.Height), 0.f); // in-pixel offset for manual oversampling
    coords.SetScaling(table->m_BG_scalex[table->m_BG_current_set], isLegacy ? -table->m_BG_scaley[table->m_BG_current_set] : -1.f, -1.f); // Stretch viewport, also revert Y and Z axis to convert to D3D coordinate system
    rotx.SetRotateX(inc); // Player head inclination
    rotz.SetRotateZ(rotation); // Viewport rotation
+   layback = ComputeLaybackTransform(table->m_BG_layback[table->m_BG_current_set]); // Layback to skew the view backward
    if (isLegacy)
    {
       FitCameraToVertices(vvertex3D, aspect, rotation, inc, FOV, table->m_BG_xlatez[table->m_BG_current_set], table->m_BG_layback[table->m_BG_current_set]);
@@ -826,7 +827,6 @@ void PinProjection::Setup(const PinTable* table, const ViewPort& viewPort, const
          table->m_BG_xlatey[table->m_BG_current_set] - m_vertexcamera.y + camy,
          -m_vertexcamera.z + camz);
       // Recompute near and far plane (workaround for VP9 FitCameraToVertices bugs), needs a complete matView with DirectX coordinate change
-      Matrix3D layback = ComputeLaybackTransform(table->m_BG_layback[table->m_BG_current_set]); // Layback to skew the view backward (bug: this breaks orthonormal property of the view matrix)
       if (cameraMode && (table->m_BG_current_set == BG_DESKTOP || table->m_BG_current_set == BG_FSS))
          m_matView = layback * rotz * rotx * trans * projTrans * coords;
       else
@@ -859,12 +859,17 @@ void PinProjection::Setup(const PinTable* table, const ViewPort& viewPort, const
    proj.SetPerspectiveOffCenterLH(-xmax + xofs, xmax + xofs, -ymax + yofs, ymax + yofs, m_rznear, m_rzfar);
    if (isLegacy)
    {
-      Matrix3D layback = ComputeLaybackTransform(table->m_BG_layback[table->m_BG_current_set]); // Layback to skew the view backward (bug: this breaks orthonormal property of the view matrix)
-      if (cameraMode && (table->m_BG_current_set == BG_DESKTOP || table->m_BG_current_set == BG_FSS))
-         m_matView = layback * rotz * rotx * trans;
-      else
-         m_matView = layback * rotx * rotz * trans;
-      m_matProj[0] = projTrans * coords * proj;
+      // To be backward compatible while having a well behaving view matrix, we compute a pseudo view which is meaningful with regards to what was used before.
+      // We use it for rendering computation. It is reverted by the projection matrix which then apply the old transformation.
+      m_matView = rotx * trans;
+      Matrix3D invView(m_matView);
+      invView.Invert();
+      // Or some reason I don't get, viewport rotation (rotz) and head inclination (rotx) used to be swapped when in camera mode on desktop.
+      // This is temporarly kept in case someone would remember why this was needed.
+      //if (cameraMode && (table->m_BG_current_set == BG_DESKTOP || table->m_BG_current_set == BG_FSS))
+      //   m_matProj[0] = invView * layback * rotz * rotx * trans * projTrans * coords * proj;
+      //else
+      m_matProj[0] = invView * layback * rotx * rotz * trans * projTrans * coords * proj;
    }
    else
    {
@@ -876,34 +881,29 @@ void PinProjection::Setup(const PinTable* table, const ViewPort& viewPort, const
    if (stereo3D != STEREO_OFF)
    {
       // Create eye projection matrices for real stereo (not VR but anaglyph,...)
-      if (isLegacy)
-         m_matProj[1] = m_matProj[0];
-      else
-      {
-         // 63mm is the average distance between eyes (varies from 54 to 74mm between adults, 43 to 58mm for children), 50 VPUnit is 1.25 inches
-         const float stereo3DMS = LoadValueFloatWithDefault(regKey[RegName::Player], "Stereo3DEyeSeparation"s, 63.0f);
-         const float halfEyeDist = 0.5f * MMTOVPU(stereo3DMS);
-         Matrix3D invView(m_matView);
-         invView.Invert();
-         // Compute the view orthonormal basis
-         Matrix3D baseView, coords;
-         coords.SetScaling(1.f, -1.f, -1.f);
-         baseView = coords * invView;
-         const vec3 right = baseView.GetOrthoNormalRight();
-         const vec3 up = baseView.GetOrthoNormalUp();
-         const vec3 dir = baseView.GetOrthoNormalDir();
-         const vec3 pos = baseView.GetOrthoNormalPos();
-         // Default is to look at the ball (playfield level = 0 + ball radius = 50)
-         float camDistance = (50.f - pos.z) / dir.z;
-         // Clamp it to a reasonable range, a normal viewing distance being around 80cm between view focus (table) and viewer (depends a lot on the player size & position)
-         constexpr float minCamDistance = CMTOVPU(30.f);
-         constexpr float maxCamDistance = CMTOVPU(200.f);
-         const vec3 at = pos + dir * clamp(camDistance, minCamDistance, maxCamDistance);
-         Matrix3D lookat = Matrix3D::MatrixLookAtLH(pos + (halfEyeDist * right), at, up); // Apply offset & rotation to the right eye projection
-         m_matProj[1] = invView * lookat * coords * m_matProj[0];
-         lookat = Matrix3D::MatrixLookAtLH(pos + (-halfEyeDist * right), at, up); // Apply offset & rotation to the left eye projection
-         m_matProj[0] = invView * lookat * coords * m_matProj[0];
-      }
+      // 63mm is the average distance between eyes (varies from 54 to 74mm between adults, 43 to 58mm for children), 50 VPUnit is 1.25 inches
+      const float stereo3DMS = LoadValueFloatWithDefault(regKey[RegName::Player], "Stereo3DEyeSeparation"s, 63.0f);
+      const float halfEyeDist = 0.5f * MMTOVPU(stereo3DMS);
+      Matrix3D invView(m_matView);
+      invView.Invert();
+      // Compute the view orthonormal basis
+      Matrix3D baseView, coords;
+      coords.SetScaling(1.f, -1.f, -1.f);
+      baseView = coords * invView;
+      const vec3 right = baseView.GetOrthoNormalRight();
+      const vec3 up = baseView.GetOrthoNormalUp();
+      const vec3 dir = baseView.GetOrthoNormalDir();
+      const vec3 pos = baseView.GetOrthoNormalPos();
+      // Default is to look at the ball (playfield level = 0 + ball radius = 50)
+      float camDistance = (50.f - pos.z) / dir.z;
+      // Clamp it to a reasonable range, a normal viewing distance being around 80cm between view focus (table) and viewer (depends a lot on the player size & position)
+      constexpr float minCamDistance = CMTOVPU(30.f);
+      constexpr float maxCamDistance = CMTOVPU(200.f);
+      const vec3 at = pos + dir * clamp(camDistance, minCamDistance, maxCamDistance);
+      Matrix3D lookat = Matrix3D::MatrixLookAtLH(pos + (halfEyeDist * right), at, up); // Apply offset & rotation to the right eye projection
+      m_matProj[1] = invView * lookat * coords * m_matProj[0];
+      lookat = Matrix3D::MatrixLookAtLH(pos + (-halfEyeDist * right), at, up); // Apply offset & rotation to the left eye projection
+      m_matProj[0] = invView * lookat * coords * m_matProj[0];
    }
 #endif
 }

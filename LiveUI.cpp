@@ -818,11 +818,6 @@ void LiveUI::Update()
                && (g_pplayer->m_stereo3D != STEREO_OFF && g_pplayer->m_stereo3D != STEREO_VR && !g_pplayer->m_stereo3Denabled
                && (curr_usec < m_StartTime_usec + (U64)4e+6))) // show for max. 4 seconds
                HelpSplash("3D Stereo is enabled but currently toggled off, press F10 to toggle 3D Stereo on", m_rotate);
-            else if (g_pplayer->m_closing == Player::CS_PLAYING
-               && (g_pplayer->m_stereo3D != STEREO_OFF && g_pplayer->m_stereo3D != STEREO_VR && m_live_table->m_cameraLayoutMode == CLM_RELATIVE
-               && (curr_usec < m_StartTime_usec + (U64)8e+6))) // show for max. 8 seconds
-               HelpSplash("This table use the old 'relative' camera layout mode. This is not supported for stereo mode.\n"
-                          "You need to update the camera position and use the new 'absolute' camera layout mode", m_rotate);
             //!! visualize with real buttons or at least the areas?? Add extra buttons?
             else if (g_pplayer->m_closing == Player::CS_PLAYING && g_pplayer->m_supportsTouch && g_pplayer->m_showTouchMessage
                && (curr_usec < m_StartTime_usec + (U64)12e+6)) // show for max. 12 seconds

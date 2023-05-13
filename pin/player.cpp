@@ -4829,18 +4829,7 @@ void Player::DrawBalls()
       //m_ballShader->SetFloat("reflection_ball_playfield", m_ptable->m_playfieldReflectionStrength);
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
 
-      // Cabinet mode is a hack in the shader to account for the fact that the legacy view matrix includes the viewport rotation
-      bool cabinetMode = false;
-      if (m_ptable->m_cameraLayoutMode == CLM_RELATIVE && m_stereo3D != STEREO_VR && !m_headTracking)
-      {
-         // This will break when using the live editor camera, or when rotation is anything else than 0 or 270
-         const float rotation = fmodf(m_ptable->m_BG_rotation[m_ptable->m_BG_current_set], 360.f);
-         cabinetMode = (rotation != 0.f);
-      }
-      if (m_ptable->m_cameraLayoutMode == CLM_RELATIVE && cabinetMode)
-         m_ballShader->SetTechnique(pball->m_decalMode ? SHADER_TECHNIQUE_RenderBall_CabMode_DecalMode : SHADER_TECHNIQUE_RenderBall_CabMode);
-      else
-         m_ballShader->SetTechnique(pball->m_decalMode ? SHADER_TECHNIQUE_RenderBall_DecalMode : SHADER_TECHNIQUE_RenderBall);
+      m_ballShader->SetTechnique(pball->m_decalMode ? SHADER_TECHNIQUE_RenderBall_DecalMode : SHADER_TECHNIQUE_RenderBall);
 
       Vertex3Ds pos(pball->m_d.m_pos.x, pball->m_d.m_pos.y, zheight);
       m_pin3d.m_pd3dPrimaryDevice->DrawMesh(m_ballShader, false, pos, 0.f, m_ballMeshBuffer, RenderDevice::TRIANGLELIST, 0, lowDetailBall ? basicBallLoNumFaces : basicBallMidNumFaces);
