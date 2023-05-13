@@ -931,7 +931,7 @@ bool Shader::parseFile(const string& fileNameRoot, const string& fileName, int l
    {
       string line;
       size_t linenumber = 0;
-      while (getline(glfxFile, line))
+      while (std::getline(glfxFile, line))
       {
          linenumber++;
          if (line.compare(0, 4, "////") == 0) {

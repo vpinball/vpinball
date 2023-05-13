@@ -4,7 +4,7 @@
 #include <SDL2/SDL_syswm.h>
 #endif
 
-#include "BAM/BAMView.h"
+#include "inc/BAM/BAMView.h"
 
 #include "imgui/imgui_impl_win32.h"
 
@@ -295,7 +295,7 @@ Player::Player(const bool cameraMode, PinTable *const editor_table, PinTable *co
    m_LastPlungerHit = 0;
    m_lastFlipTime = 0;
 
-   for (unsigned int i = 0; i < 8; ++i)
+   for (unsigned int i = 0; i < MAX_TOUCHREGION; ++i)
       m_touchregion_pressed[i] = false;
 
    m_recordContacts = false;
@@ -710,6 +710,7 @@ void Player::Shutdown()
       {
       case BG_DESKTOP: m_ptable->m_BG_current_set = BG_FSS; break;
       case BG_FSS: m_ptable->m_BG_current_set = BG_DESKTOP; break;
+      default: break;
       }
    }
 
@@ -4031,13 +4032,14 @@ void Player::LockForegroundWindow(const bool enable)
         }
     }
 
+#ifdef _MSC_VER
 #if(_WIN32_WINNT >= 0x0500)
     if (m_fullScreen) // revert special tweaks of exclusive fullscreen app
        ::LockSetForegroundWindow(enable ? LSFW_LOCK : LSFW_UNLOCK);
 #else
 #pragma message ( "Warning: Missing LockSetForegroundWindow()" )
 #endif
-
+#endif
 }
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -5246,7 +5248,7 @@ LRESULT Player::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 #endif
             {
                 ScreenToClient(pointerInfo.ptPixelLocation);
-                for (unsigned int i = 0; i < 8; ++i)
+                for (unsigned int i = 0; i < MAX_TOUCHREGION; ++i)
                     if ((m_touchregion_pressed[i] != (uMsg == WM_POINTERDOWN)) && Intersect(touchregion[i], m_wnd_width, m_wnd_height, pointerInfo.ptPixelLocation, fmodf(m_ptable->m_BG_rotation[m_ptable->m_BG_current_set], 360.0f) != 0.f))
                     {
                         m_touchregion_pressed[i] = (uMsg == WM_POINTERDOWN);

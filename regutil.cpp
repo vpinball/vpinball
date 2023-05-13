@@ -9,7 +9,7 @@
 #define VP_REGKEY "Software\\Visual Pinball\\VP10\\"
 
 #ifdef ENABLE_INI_SETTINGS // INI file
-#include "mINI/ini.h"
+#include "inc/mINI/ini.h"
 mINI::INIStructure ini;
 
 void InitRegistry(const string &path)
@@ -127,7 +127,7 @@ void SaveRegistry(const string &path)
 #elif defined(ENABLE_XML_SETTINGS) // (legacy) XML file
 //!! when to save registry? on dialog exits? on player start/end? on table load/unload? UI stuff?
 
-#include "tinyxml2/tinyxml2.h"
+#include "inc/tinyxml2/tinyxml2.h"
 #include <fstream>
 
 static tinyxml2::XMLDocument xmlDoc;

@@ -51,7 +51,9 @@ enum EnumAssignKeys
    eCKeys
 };
 
-static constexpr RECT touchregion[8] = { //left,top,right,bottom (in % of screen)
+#define MAX_TOUCHREGION 8
+
+static constexpr RECT touchregion[MAX_TOUCHREGION] = { //left,top,right,bottom (in % of screen)
    { 0, 0, 50, 10 },      // ExtraBall
    { 0, 10, 50, 50 },     // 2nd Left Button
    { 0, 50, 50, 90 },     // 1st Left Button (Flipper)
@@ -62,7 +64,7 @@ static constexpr RECT touchregion[8] = { //left,top,right,bottom (in % of screen
    { 50, 90, 100, 100 }   // Plunger
 };
 
-static EnumAssignKeys touchkeymap[8] = {
+static EnumAssignKeys touchkeymap[MAX_TOUCHREGION] = {
    eAddCreditKey, //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    eLeftMagnaSave,
    eLeftFlipperKey,
@@ -590,7 +592,7 @@ public:
    int m_screenwidth, m_screenheight, m_refreshrate;
    bool m_fullScreen;
 
-   bool m_touchregion_pressed[8]; // status for each touch region to avoid multitouch double triggers (true = finger on, false = finger off)
+   bool m_touchregion_pressed[MAX_TOUCHREGION]; // status for each touch region to avoid multitouch double triggers (true = finger on, false = finger off)
 
    bool m_drawCursor;
    bool m_gameWindowActive;

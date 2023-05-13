@@ -253,9 +253,8 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, bool resize_on_low_
    FreeImage_Unload(dib);
 
 #ifdef __OPENGLES__
-   if (tex->m_format == SRGB || tex->m_format == RGB_FP16) {
+   if (tex->m_format == SRGB || tex->m_format == RGB_FP16)
       tex->AddAlpha();
-   }
 #endif
 
    return tex;
@@ -651,9 +650,8 @@ bool Texture::LoadFromMemory(BYTE * const data, const DWORD size)
          m_pdsBuffer = tex;
 
 #ifdef __OPENGLES__
-         if (m_pdsBuffer->m_format == BaseTexture::SRGB || m_pdsBuffer->m_format == BaseTexture::RGB_FP16) {
+         if (m_pdsBuffer->m_format == BaseTexture::SRGB || m_pdsBuffer->m_format == BaseTexture::RGB_FP16)
             m_pdsBuffer->AddAlpha();
-         }
 #endif
 
          SetSizeFrom(m_pdsBuffer);
@@ -734,9 +732,8 @@ bool Texture::LoadToken(const int id, BiffReader * const pbr)
       delete[] tmp;
 
 #ifdef __OPENGLES__
-      if (m_pdsBuffer->m_format == BaseTexture::SRGB || m_pdsBuffer->m_format == BaseTexture::RGB_FP16) {
+      if (m_pdsBuffer->m_format == BaseTexture::SRGB || m_pdsBuffer->m_format == BaseTexture::RGB_FP16)
          m_pdsBuffer->AddAlpha();
-      }
 #endif
 
       SetSizeFrom(m_pdsBuffer);

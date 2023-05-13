@@ -28,7 +28,7 @@
 #define sort std::sort
 #endif
 
-#include "BAM/BAMView.h"
+#include "inc/BAM/BAMView.h"
 
 // Titles (used as Ids) of modal dialogs
 #define ID_MODAL_SPLASH "In Game UI"
@@ -576,6 +576,7 @@ static void HelpEditableHeader(bool is_live, IEditable *editable, IEditable *liv
    case eItemTextbox: title = "TextBox"s; break;
    case eItemTimer: title = "Timer"s; break;
    case eItemTrigger: title = "Trigger"s; break;
+   default: break;
    }
    HelpTextCentered(title);
    ImGui::BeginDisabled(is_live); // Do not edit name of live objects, it would likely break the script

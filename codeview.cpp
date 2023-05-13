@@ -1104,16 +1104,19 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 	pscripterror->GetExceptionInfo(&exception);
 	nLine++;
 
-	PLOGE_(PLOG_NO_DBG_OUT_INSTANCE_ID) << "Script Error at line " << nLine << " : " << exception.bstrDescription;
+	const char* const szT = MakeChar((exception.bstrDescription) ? exception.bstrDescription : L"");
+
+	PLOGE_(PLOG_NO_DBG_OUT_INSTANCE_ID) << "Script Error at line " << nLine << " : " << szT;
 
 	if (dwCookie == CONTEXTCOOKIE_DEBUG)
 	{
-		const char* const szT = MakeChar(exception.bstrDescription);
 		AddToDebugOutput(szT);
 		delete[] szT;
 		SysFreeString(bstr);
 		return S_OK;
 	}
+	else
+		delete[] szT;
 
 	m_scriptError = true;
 

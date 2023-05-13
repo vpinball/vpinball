@@ -94,6 +94,8 @@ public:
    void PutCenter(const Vertex2D& pv) final { m_d.m_vCenter = pv; }
    void DoCommand(int icmd, int x, int y) final;
 
+   void AddPoint(int x, int y, const bool smooth) final;
+
    bool IsTransparent() const final { return !m_d.m_isDMD; }
    float GetDepth(const Vertex3Ds& viewDir) const final
    {

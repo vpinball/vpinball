@@ -1411,7 +1411,9 @@ void Primitive::RenderSetup()
    if (m_d.m_groupdRendering || m_d.m_skipRendering)
       return;
 
-   PLOGD_IF(m_d.m_staticRendering && m_d.m_disableLightingBelow != 1.0f) << "Primitive '" << m_wzName << "' is set as static rendering with lighting from below not disabled. The back lighting will not be performed.";
+   const char* const szT = MakeChar(m_wzName);
+   PLOGD_IF(m_d.m_staticRendering && m_d.m_disableLightingBelow != 1.0f) << "Primitive '" << szT << "' is set as static rendering with lighting from below not disabled. The back lighting will not be performed.";
+   delete[] szT;
 
    m_lightmap = m_ptable->GetLight(m_d.m_szLightmap);
    if (m_lightmap)

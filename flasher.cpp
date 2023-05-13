@@ -495,16 +495,12 @@ void Flasher::DoCommand(int icmd, int x, int y)
    switch (icmd)
    {
    case ID_WALLMENU_FLIP:
-   {
       FlipPointY(GetPointCenter());
-   }
-   break;
+      break;
 
    case ID_WALLMENU_MIRROR:
-   {
       FlipPointX(GetPointCenter());
-   }
-   break;
+      break;
 
    case ID_WALLMENU_ROTATE:
       RotateDialog();
@@ -519,7 +515,13 @@ void Flasher::DoCommand(int icmd, int x, int y)
       break;
 
    case ID_WALLMENU_ADDPOINT:
-   {
+      AddPoint(x, y, false);
+      break;
+   }
+}
+
+void Flasher::AddPoint(int x, int y, const bool smooth)
+{
       STARTUNDO
       const Vertex2D v = m_ptable->TransformPoint(x, y);
 
@@ -541,14 +543,11 @@ void Flasher::DoCommand(int icmd, int x, int y)
       if (pdp)
       {
          pdp->AddRef();
-         pdp->Init(this, vOut.x, vOut.y, 0.f, false);
+         pdp->Init(this, vOut.x, vOut.y, 0.f, smooth);
          m_vdpoint.insert(m_vdpoint.begin() + icp, pdp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
       }
 
       STOPUNDO
-   }
-   break;
-   }
 }
 
 HRESULT Flasher::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)

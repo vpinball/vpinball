@@ -1,6 +1,6 @@
 #pragma once
 
-#include "inc\bass.h"
+#include "inc/bass.h"
 
 class AudioPlayer final
 {
