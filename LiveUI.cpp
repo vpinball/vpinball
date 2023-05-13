@@ -495,9 +495,9 @@ static void HelpSplash(const std::string &text, int rotation)
    vector<string> lines;
    ImVec2 text_size(0, 0);
 
-   float padding = 60;
-   float maxWidth = win_size.x - padding;
-   ImFont *font = ImGui::GetFont();
+   constexpr float padding = 60.f;
+   const float maxWidth = win_size.x - padding;
+   ImFont *const font = ImGui::GetFont();
 
    const char *textEnd = text.c_str();
    while (*textEnd)
@@ -631,7 +631,7 @@ LiveUI::LiveUI(RenderDevice *const rd)
    m_dpi = ImGui_ImplWin32_GetDpiScaleForHwnd(rd->getHwnd());
    ImGui::GetStyle().ScaleAllSizes(m_dpi);
 
-   float overlaySize = min(32.f * m_dpi, min(m_player->m_wnd_width, m_player->m_wnd_height) / (26.f * 2.0f)); // Fit 26 lines of text on screen
+   float overlaySize = min(32.f * m_dpi, (float)min(m_player->m_wnd_width, m_player->m_wnd_height) / (26.f * 2.0f)); // Fit 26 lines of text on screen
    m_overlayFont = io.Fonts->AddFontFromMemoryCompressedTTF(droidsans_compressed_data, droidsans_compressed_size, overlaySize);
 
    m_baseFont = io.Fonts->AddFontFromMemoryCompressedTTF(droidsans_compressed_data, droidsans_compressed_size, 13.0f * m_dpi);
@@ -813,20 +813,21 @@ void LiveUI::Update()
          else
          {
             // Info tooltips
+            const U64 curr_usec = usec();
             if (g_pplayer->m_closing == Player::CS_PLAYING
                && (g_pplayer->m_stereo3D != STEREO_OFF && g_pplayer->m_stereo3D != STEREO_VR && !g_pplayer->m_stereo3Denabled
-                  && (usec() < m_StartTime_usec + (U64)4e+6))) // show for max. 4 seconds
+               && (curr_usec < m_StartTime_usec + (U64)4e+6))) // show for max. 4 seconds
                HelpSplash("3D Stereo is enabled but currently toggled off, press F10 to toggle 3D Stereo on", m_rotate);
             else if (g_pplayer->m_closing == Player::CS_PLAYING
                && (g_pplayer->m_stereo3D != STEREO_OFF && g_pplayer->m_stereo3D != STEREO_VR && m_live_table->m_cameraLayoutMode == CLM_RELATIVE
-                  && (usec() < m_StartTime_usec + (U64)8e+6))) // show for max. 4 seconds
+               && (curr_usec < m_StartTime_usec + (U64)8e+6))) // show for max. 8 seconds
                HelpSplash("This table use the old 'relative' camera layout mode. This is not supported for stereo mode.\n"
-                  "You need to update the camera position and use the new 'absolute' camera layout mode", m_rotate);
+                          "You need to update the camera position and use the new 'absolute' camera layout mode", m_rotate);
             //!! visualize with real buttons or at least the areas?? Add extra buttons?
             else if (g_pplayer->m_closing == Player::CS_PLAYING && g_pplayer->m_supportsTouch && g_pplayer->m_showTouchMessage
-               && (usec() < m_StartTime_usec + (U64)12e+6)) // show for max. 12 seconds
+               && (curr_usec < m_StartTime_usec + (U64)12e+6)) // show for max. 12 seconds
                HelpSplash("You can use Touch controls on this display: bottom left area to Start Game, bottom right area to use the Plunger\n"
-                           "lower left/right for Flippers, upper left/right for Magna buttons, top left for Credits and (hold) top right to Exit",
+                          "lower left/right for Flippers, upper left/right for Magna buttons, top left for Credits and (hold) top right to Exit",
                   m_rotate);
          }
       }
@@ -928,7 +929,7 @@ void LiveUI::Update()
 
 void LiveUI::UpdateCameraModeUI()
 {
-   PinTable* table = m_live_table;
+   PinTable* const table = m_live_table;
    constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
    ImGui::SetNextWindowBgAlpha(0.35f);
    ImGui::SetNextWindowPos(ImVec2(0.5f * ImGui::GetIO().DisplaySize.x, 0.8f * ImGui::GetIO().DisplaySize.y), 0, ImVec2(0.5f, 1.f));
@@ -940,12 +941,12 @@ void LiveUI::UpdateCameraModeUI()
    {
       HelpTextCentered("WARNING"s);
       ImGui::NewLine();
-      HelpTextCentered("This table use the legacy camera positionning."s);
+      HelpTextCentered("This table uses the legacy camera positioning."s);
       ImGui::NewLine();
-      HelpTextCentered("Update it to avoid rendering artefacts."s);
+      HelpTextCentered("Update it to avoid rendering artifacts."s);
       ImGui::NewLine();
    }
-   
+
    bool isStereo = m_player->m_stereo3Denabled && m_player->m_stereo3D != STEREO_OFF && m_player->m_stereo3D != STEREO_VR;
    bool isAnaglyph = isStereo && m_player->m_stereo3D >= STEREO_ANAGLYPH_RC && m_player->m_stereo3D <= STEREO_ANAGLYPH_AB;
    const Player::BackdropSetting *settings = isRelative ? Player::m_relativeBackdropSettings : Player::m_absoluteBackdropSettings;
@@ -1039,8 +1040,8 @@ void LiveUI::UpdateCameraModeUI()
    }
    else
    {
-      infos.push_back("Start Key: export POV file"s);
-      infos.push_back("Credit Key: reset POV to old values"s);
+      infos.push_back("Start Key:   Export POV file"s);
+      infos.push_back("Credit Key:   Reset POV to old values"s);
    }
    infos.push_back("Flipper keys:   Adjust highlighted value"s);
    infos.push_back("Magna save keys:   Previous/Next option"s);
@@ -1049,7 +1050,7 @@ void LiveUI::UpdateCameraModeUI()
       infos.push_back("Nudge key:   Rotate table orientation"s);
       infos.push_back("Arrows & Left Alt Key:   Navigate around"s);
    }
-   int info = ((int)((usec() - m_StartTime_usec) / 2e6)) % infos.size();
+   const int info = ((int)((usec() - m_StartTime_usec) / 2e6)) % infos.size();
    HelpTextCentered(infos[info]);
 
    ImGui::End();
@@ -1548,7 +1549,7 @@ void LiveUI::SetSelectionTransform(Matrix3D &newTransform, bool clearPosition, b
 
 bool LiveUI::IsOutlinerFiltered(const string& name)
 {
-   if (m_outlinerFilter.size() == 0)
+   if (m_outlinerFilter.empty())
       return true;
    string name_lcase = string(name);
    std::transform(name_lcase.begin(), name_lcase.end(), name_lcase.begin(), [](unsigned char c) { return std::tolower(c); });
@@ -2314,8 +2315,8 @@ void LiveUI::BallProperties(bool is_live)
    ImGui::Separator();
    if (ImGui::CollapsingHeader("Visual", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
    {
-      auto upd_ball_tex = [this, ball](bool is_live, string prev, string v) { ball->m_pinballEnv = m_live_table->GetImage(ball->m_image); };
-      auto upd_ball_decal = [this, ball](bool is_live, string prev, string v) { ball->m_pinballDecal = m_live_table->GetImage(ball->m_imageDecal); };
+      auto upd_ball_tex = [this, ball](bool is_live, const string& prev, const string& v) { ball->m_pinballEnv = m_live_table->GetImage(ball->m_image); };
+      auto upd_ball_decal = [this, ball](bool is_live, const string& prev, const string& v) { ball->m_pinballDecal = m_live_table->GetImage(ball->m_imageDecal); };
       PropCheckbox("Visible", nullptr, is_live, nullptr, ball ? &(ball->m_visible) : nullptr);
       PropRGB("Color", nullptr, is_live, nullptr, ball ? &(ball->m_color) : nullptr);
       PropImageCombo("Image", nullptr, is_live, nullptr, ball ? &(ball->m_image) : nullptr, m_live_table, upd_ball_tex);

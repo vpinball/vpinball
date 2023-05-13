@@ -1029,7 +1029,7 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
       else if (keycode == g_pplayer->m_rgKeys[ePlungerKey])
       {
          // Reset to default values
-         PinTable* table = g_pplayer->m_ptable;
+         PinTable* const table = g_pplayer->m_ptable;
          ViewSetupID view_setup = table->m_BG_current_set;
          table->m_cameraLayoutMode = CLM_ABSOLUTE;
          // Default player position (90cm above, 30 cm away)
@@ -1040,7 +1040,7 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
          table->m_BG_scalez[view_setup] = 1.f;
          if (table->m_BG_rotation[view_setup] != 0.f && table->m_BG_rotation[view_setup] != 90.f && table->m_BG_rotation[view_setup] != 180.f && table->m_BG_rotation[view_setup] != 270.f)
             table->m_BG_rotation[view_setup] = 0.f;
-         bool portrait = g_pplayer->m_wnd_width < g_pplayer->m_wnd_height;
+         const bool portrait = g_pplayer->m_wnd_width < g_pplayer->m_wnd_height;
          switch (view_setup)
          {
          case BG_DESKTOP:
@@ -1064,9 +1064,9 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
             table->m_BG_xlatez[view_setup] = CMTOVPU(LoadValueFloatWithDefault(regKey[RegName::DefaultCamera], "CabinetCamZ"s, 90.f));
             break;
          }
-         g_pplayer->m_pin3d.m_cam.x = 0;
-         g_pplayer->m_pin3d.m_cam.y = 0;
-         g_pplayer->m_pin3d.m_cam.z = 0;
+         g_pplayer->m_pin3d.m_cam.x = 0.f;
+         g_pplayer->m_pin3d.m_cam.y = 0.f;
+         g_pplayer->m_pin3d.m_cam.z = 0.f;
       }
       else if (keycode == g_pplayer->m_rgKeys[eAddCreditKey])
       {
@@ -1077,9 +1077,8 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
          {
             // Reset POV: copy from startup table to the live one
             ViewSetupID view_setup = g_pplayer->m_ptable->m_BG_current_set;
-            PinTable *src, *dst;
-            src = g_pplayer->m_pEditorTable;
-            dst = g_pplayer->m_ptable;
+            const PinTable * const __restrict src = g_pplayer->m_pEditorTable;
+            PinTable * const __restrict dst = g_pplayer->m_ptable;
             dst->m_cameraLayoutMode = src->m_cameraLayoutMode;
             dst->m_BG_layback[view_setup] = src->m_BG_layback[view_setup];
             dst->m_BG_rotation[view_setup] = src->m_BG_rotation[view_setup];
@@ -1095,9 +1094,9 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
             dst->m_lightRange = src->m_lightRange;
             dst->m_lightEmissionScale = src->m_lightEmissionScale;
             dst->m_envEmissionScale = src->m_envEmissionScale;
-            g_pplayer->m_pin3d.m_cam.x = 0;
-            g_pplayer->m_pin3d.m_cam.y = 0;
-            g_pplayer->m_pin3d.m_cam.z = 0;
+            g_pplayer->m_pin3d.m_cam.x = 0.f;
+            g_pplayer->m_pin3d.m_cam.y = 0.f;
+            g_pplayer->m_pin3d.m_cam.z = 0.f;
          }
       }
       else if ((keycode == g_pplayer->m_rgKeys[eRightMagnaSave] || keycode == g_pplayer->m_rgKeys[eLeftMagnaSave]) && dispid == DISPID_GameEvents_KeyDown)

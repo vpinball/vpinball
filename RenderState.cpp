@@ -141,7 +141,7 @@ void RenderState::Apply(RenderDevice* device)
 
    int val;
    RenderState& active_state = device->GetActiveRenderState();
-   unsigned previous_state = active_state.m_state;
+   const unsigned previous_state = active_state.m_state;
    unsigned new_state = m_state;
    unsigned renderstate_mask = previous_state ^ m_state; // Identify differences
    while (renderstate_mask)

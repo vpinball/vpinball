@@ -435,12 +435,12 @@ inline void RemoveSpaces(char* const source)
 // Conversions to/from VP units (50 VPU = 1.0625 inches which is 1"1/16, the default size of a ball, 1 inch is 2.54cm)
 // These value are very slightly off from original values which used a VPU to MM of 0.540425 instead of 0.53975 (result of the following formula)
 // So it used to be 0.125% larger which is not noticeable but makes it difficult to have perfect matches when playing between apps
-#define MMTOVPU(x) (((x) / 25.4f) * (float)(50. / 1.0625))
-#define CMTOVPU(x) (((x) / 2.54f) * (float)(50. / 1.0625))
-#define VPUTOMM(x) (25.4f * (x) / (float)(50. / 1.0625))
-#define VPUTOCM(x) (2.54f * (x) / (float)(50. / 1.0625))
+#define MMTOVPU(x) ((x) * (float)(50. / (25.4 * 1.0625)))
+#define CMTOVPU(x) ((x) * (float)(50. / (2.54 * 1.0625)))
+#define VPUTOMM(x) ((x) * (float)(25.4 * 1.0625 / 50.))
+#define VPUTOCM(x) ((x) * (float)(2.54 * 1.0625 / 50.))
 #define INCHESTOVPU(x) ((x) * (float)(50. / 1.0625))
-#define VPUTOINCHES(x) ((x) / (float)(50. / 1.0625))
+#define VPUTOINCHES(x) ((x) * (float)(1.0625 / 50.))
 
 constexpr __forceinline float vpUnitsToInches(const float value) {
    return VPUTOINCHES(value);

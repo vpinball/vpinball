@@ -28,7 +28,7 @@ RenderFrame::~RenderFrame()
 RenderPass* RenderFrame::AddPass(const string& name, RenderTarget* const rt, const bool ignoreStereo)
 {
    RenderPass* pass;
-   if (m_passPool.size() == 0)
+   if (m_passPool.empty())
    {
       pass = new RenderPass(name, rt, ignoreStereo);
    }
@@ -44,7 +44,7 @@ RenderPass* RenderFrame::AddPass(const string& name, RenderTarget* const rt, con
 
 RenderCommand* RenderFrame::NewCommand()
 {
-   if (m_commandPool.size() == 0)
+   if (m_commandPool.empty())
    {
       return new RenderCommand(m_rd);
    }
@@ -58,7 +58,7 @@ RenderCommand* RenderFrame::NewCommand()
 
 void RenderFrame::Execute(const bool log)
 {
-   if (m_passes.size() == 0)
+   if (m_passes.empty())
       return;
 
    // Save render/shader states

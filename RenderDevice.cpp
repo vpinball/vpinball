@@ -786,7 +786,7 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    case D3DFMT_A2R10G10B10: back_buffer_format = colorFormat::RGBA10; break;
    default:
    {
-      ShowError("Invalid Output format: "s.append(std::to_string(format).c_str()));
+      ShowError("Invalid Output format: "s.append(std::to_string(format)));
       exit(-1);
    }
    }
@@ -1080,7 +1080,7 @@ RenderTarget* RenderDevice::GetPostProcessRenderTarget1()
    if (m_pPostProcessRenderTarget1 == nullptr)
    {
       // Buffers for post-processing (postprocess is done at scene resolution, on a LDR render target without MSAA nor full scene supersampling)
-      colorFormat pp_format = GetBackBufferTexture()->GetColorFormat() == RGBA10 ? colorFormat::RGBA10 : colorFormat::RGBA8;
+      const colorFormat pp_format = GetBackBufferTexture()->GetColorFormat() == RGBA10 ? colorFormat::RGBA10 : colorFormat::RGBA8;
       m_pPostProcessRenderTarget1 = new RenderTarget(this, "PostProcess1"s, m_width, m_height, pp_format, false, 1, STEREO_OFF, "Fatal Error: unable to create stereo3D/post-processing AA/sharpen buffer!");
    }
    return m_pPostProcessRenderTarget1;
@@ -1762,7 +1762,7 @@ void RenderDevice::DrawTexturedQuad(Shader* shader, const Vertex3D_NoTex2* verti
 void RenderDevice::DrawFullscreenTexturedQuad(Shader* shader)
 {
    assert(shader == FBShader || shader == StereoShader); // FrameBuffer/Stereo shader are the only ones using Position/Texture vertex format
-   Vertex3Ds pos(0.f, 0.f, 0.f);
+   static const Vertex3Ds pos(0.f, 0.f, 0.f);
    DrawMesh(shader, false, pos, 0.f, m_quadMeshBuffer, TRIANGLESTRIP, 0, 4);
 }
 
@@ -1770,7 +1770,7 @@ void RenderDevice::DrawMesh(Shader* shader, const bool isTransparent, const Vert
 {
    RenderCommand* cmd = m_renderFrame.NewCommand();
    // Legacy sorting order (only along negative z axis, which is reversed for reflections)
-   float depth = g_pplayer->IsRenderPass(Player::REFLECTION_PASS) ? depthBias + center.z : depthBias - center.z;
+   const float depth = g_pplayer->IsRenderPass(Player::REFLECTION_PASS) ? depthBias + center.z : depthBias - center.z;
    // Full depth sorting. Disabled since this would break old table and, for the time being, view vector is not homogeneously defined between Normal/VR/LiveUI
    //float depth = isTransparent ? g_pplayer->IsRenderPass(Player::REFLECTION_PASS) ? depthBias + center.z : depthBias - center.z
    //                            : depthBias + (m_viewVec.x * center.x + m_viewVec.y * center.y + m_viewVec.z * center.z);
@@ -2120,14 +2120,14 @@ void RenderDevice::recenterTable()
    float headX = 0.f, headY = 0.f;
    if (IsVRReady())
    {
-      m_orientation = -RADTOANG(atan2(m_hmdPosition.mDeviceToAbsoluteTracking.m[0][2], m_hmdPosition.mDeviceToAbsoluteTracking.m[0][0]));
+      m_orientation = -RADTOANG(atan2f(m_hmdPosition.mDeviceToAbsoluteTracking.m[0][2], m_hmdPosition.mDeviceToAbsoluteTracking.m[0][0]));
       if (m_orientation < 0.0f)
          m_orientation += 360.0f;
       headX = m_hmdPosition.mDeviceToAbsoluteTracking.m[0][3];
       headY = -m_hmdPosition.mDeviceToAbsoluteTracking.m[2][3];
    }
-   const float c = cos(ANGTORAD(m_orientation));
-   const float s = sin(ANGTORAD(m_orientation));
+   const float c = cosf(ANGTORAD(m_orientation));
+   const float s = sinf(ANGTORAD(m_orientation));
    m_tablex = 100.0f * (headX - c * w + s * h);
    m_tabley = 100.0f * (headY + s * w + c * h);
    updateTableMatrix();
@@ -2144,9 +2144,9 @@ void RenderDevice::updateTableMatrix()
    rotz.SetRotateZ(ANGTORAD(180.f + m_orientation));
    
    // Locate front left corner of the table in the room -x is to the right, -y is up and -z is back - all units in meters
-   float transScale = 100.0f * m_scale;
-   trans.SetTranslation(-m_tablex / transScale, m_tabley / transScale, m_tablez / transScale);
-   
+   const float inv_transScale = 1.0f / (100.0f * m_scale);
+   trans.SetTranslation(-m_tablex * inv_transScale, m_tabley * inv_transScale, m_tablez * inv_transScale);
+
    m_tableWorld = rotx * rotz * trans;
 }
 #endif

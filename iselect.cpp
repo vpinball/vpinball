@@ -68,7 +68,7 @@ void ISelect::OnMouseMove(int x, int y)
          m_markedForUndo = true;
          STARTUNDOSELECT
       }
-      MoveOffset((x - m_ptLast.x)*inv_zoom, (y - m_ptLast.y)*inv_zoom);
+      MoveOffset((float)(x - m_ptLast.x)*inv_zoom, (float)(y - m_ptLast.y)*inv_zoom);
 
       ptable->SetDirtyDraw();
 

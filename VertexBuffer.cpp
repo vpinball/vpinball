@@ -59,7 +59,7 @@ VertexBuffer::~VertexBuffer()
    for (PendingUpload upload : m_pendingUploads)
       delete[] upload.data;
    RemoveFromVectorSingle(m_sharedBuffer->buffers, this);
-   if (m_sharedBuffer->buffers.size() == 0)
+   if (m_sharedBuffer->buffers.empty())
    {
       RemoveFromVectorSingle(pendingSharedBuffers, m_sharedBuffer);
       if (IsCreated())
@@ -157,7 +157,7 @@ void VertexBuffer::Upload()
 {
    if (!IsCreated())
       CreateSharedBuffer(m_sharedBuffer);
-   else if (m_pendingUploads.size() > 0)
+   else if (!m_pendingUploads.empty())
    {
       for (PendingUpload upload : m_pendingUploads)
       {

@@ -123,7 +123,7 @@ RenderTarget *RenderProbe::GetProbe(const bool is_static)
    }
    if (m_type == PLANE_REFLECTION)
    {
-      ReflectionMode mode = min(m_reflection_mode, g_pplayer->m_pfReflectionMode);
+      const ReflectionMode mode = min(m_reflection_mode, g_pplayer->m_pfReflectionMode);
       if (is_static)
       {
          if (mode == REFL_STATIC || mode == REFL_STATIC_N_BALLS || mode == REFL_STATIC_N_DYNAMIC)
@@ -318,7 +318,7 @@ void RenderProbe::PreRenderStaticReflectionProbe()
 
 void RenderProbe::RenderReflectionProbe(const bool is_static)
 {
-   ReflectionMode mode = min(m_reflection_mode, g_pplayer->m_pfReflectionMode);
+   const ReflectionMode mode = min(m_reflection_mode, g_pplayer->m_pfReflectionMode);
    if ((is_static && (mode == REFL_NONE || mode == REFL_BALLS || m_reflection_mode == REFL_DYNAMIC)) 
       || (!is_static && (mode == REFL_NONE || mode == REFL_STATIC)))
       return;

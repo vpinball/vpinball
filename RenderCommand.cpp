@@ -30,8 +30,8 @@ void RenderCommand::Execute(const bool log)
       if (log)
          PLOGI << "> Clear";
       m_renderState.Apply(m_rd);
-      const D3DVALUE z = 1.0f;
-      const DWORD stencil = 0L;
+      constexpr D3DVALUE z = 1.0f;
+      constexpr DWORD stencil = 0L;
       #ifdef ENABLE_SDL
          // Default OpenGL Values
          static GLfloat clear_z = 1.f;
@@ -164,22 +164,22 @@ void RenderCommand::Execute(const bool log)
       {
          m_rd->m_curDrawnTriangles += 2;
          #ifdef ENABLE_SDL
-            void* bufvb;
-            m_rd->m_quadPNTDynMeshBuffer->m_vb->lock(0, 0, &bufvb, VertexBuffer::DISCARDCONTENTS);
-            memcpy(bufvb, m_vertices, 4 * sizeof(Vertex3D_NoTex2));
-            m_rd->m_quadPNTDynMeshBuffer->m_vb->unlock();
-            m_rd->m_quadPNTDynMeshBuffer->bind();
-            glDrawArrays(RenderDevice::PrimitiveTypes::TRIANGLESTRIP, m_rd->m_quadPNTDynMeshBuffer->m_vb->GetVertexOffset(), 4);
+         void* bufvb;
+         m_rd->m_quadPNTDynMeshBuffer->m_vb->lock(0, 0, &bufvb, VertexBuffer::DISCARDCONTENTS);
+         memcpy(bufvb, m_vertices, 4 * sizeof(Vertex3D_NoTex2));
+         m_rd->m_quadPNTDynMeshBuffer->m_vb->unlock();
+         m_rd->m_quadPNTDynMeshBuffer->bind();
+         glDrawArrays(RenderDevice::PrimitiveTypes::TRIANGLESTRIP, m_rd->m_quadPNTDynMeshBuffer->m_vb->GetVertexOffset(), 4);
          #else
-            // having a VB and lock/copying stuff each time is slower on DX9 :/ (is it still true ? looks overly complicated for a very marginal benefit)
+         // having a VB and lock/copying stuff each time is slower on DX9 :/ (is it still true ? looks overly complicated for a very marginal benefit)
          if (m_rd->m_currentVertexDeclaration != m_rd->m_pVertexNormalTexelDeclaration)
-            {
-               CHECKD3D(m_rd->GetCoreDevice()->SetVertexDeclaration(m_rd->m_pVertexNormalTexelDeclaration));
-               m_rd->m_currentVertexDeclaration = m_rd->m_pVertexNormalTexelDeclaration;
-               m_rd->m_curStateChanges++;
-            }
-            CHECKD3D(m_rd->GetCoreDevice()->DrawPrimitiveUP((D3DPRIMITIVETYPE)RenderDevice::TRIANGLESTRIP, 2, m_vertices, sizeof(Vertex3D_NoTex2)));
-            m_rd->m_curVertexBuffer = nullptr; // DrawPrimitiveUP sets the VB to nullptr
+         {
+            CHECKD3D(m_rd->GetCoreDevice()->SetVertexDeclaration(m_rd->m_pVertexNormalTexelDeclaration));
+            m_rd->m_currentVertexDeclaration = m_rd->m_pVertexNormalTexelDeclaration;
+            m_rd->m_curStateChanges++;
+         }
+         CHECKD3D(m_rd->GetCoreDevice()->DrawPrimitiveUP((D3DPRIMITIVETYPE)RenderDevice::TRIANGLESTRIP, 2, m_vertices, sizeof(Vertex3D_NoTex2)));
+         m_rd->m_curVertexBuffer = nullptr; // DrawPrimitiveUP sets the VB to nullptr
          #endif
          break;
       }
@@ -370,4 +370,3 @@ void RenderCommand::SetDrawTexturedQuad(Shader* shader, const Vertex3D_NoTex2* v
    }
    m_shader->m_state->CopyTo(true, m_shaderState, m_shaderTechnique);
 }
-

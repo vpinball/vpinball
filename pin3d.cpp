@@ -845,8 +845,8 @@ void PinProjection::Setup(const PinTable* table, const ViewPort& viewPort, const
       ComputeNearFarPlane(vvertex3D);
       if (fabsf(inc) < 0.0075f) //!! magic threshold, otherwise kicker holes are missing for inclination ~0
          m_rzfar += 10.f;*/
-      m_rznear = CMTOVPU(5); //500.f;
-      m_rzfar = CMTOVPU(300); // 5000.0f;
+      m_rznear = CMTOVPU(5.f); //500.f;
+      m_rzfar = CMTOVPU(300.f); // 5000.0f;
    }
 
    const float sx = table->m_BG_scalex[table->m_BG_current_set];

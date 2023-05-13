@@ -129,6 +129,7 @@ public:
    void DrawBackground();
 
    ModelViewProj& GetMVP() { return *m_mvp; }
+   const ModelViewProj& GetMVP() const { return *m_mvp; }
 
    void InitLights();
 

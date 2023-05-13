@@ -56,7 +56,7 @@ void RenderPass::Sort(vector<RenderPass*>& sortedPasses)
    if (me) // Process pass on the same render target after others to allow merging
       me->Sort(sortedPasses);
    m_sortKey = 2;
-   if (sortedPasses.size() > 0 && sortedPasses.back()->m_rt == m_rt)
+   if (!sortedPasses.empty() && sortedPasses.back()->m_rt == m_rt)
    {
       // Merge passes
       sortedPasses.back()->m_depthReadback |= m_depthReadback;
@@ -84,7 +84,7 @@ void RenderPass::Submit(RenderCommand* command)
 
 void RenderPass::Execute(const bool log)
 {
-   if (m_commands.size() > 0)
+   if (!m_commands.empty())
    {
       #ifdef ENABLE_SDL
       if (GLAD_GL_VERSION_4_3)
@@ -188,8 +188,8 @@ void RenderPass::Execute(const bool log)
             // Sort by mesh buffer id, to limit buffer switching
             if (r1->IsDrawMeshCommand() && r2->IsDrawMeshCommand())
             {
-               unsigned int mbS1 = r1->GetMeshBuffer()->GetSortKey();
-               unsigned int mbS2 = r2->GetMeshBuffer()->GetSortKey();
+               const unsigned int mbS1 = r1->GetMeshBuffer()->GetSortKey();
+               const unsigned int mbS2 = r2->GetMeshBuffer()->GetSortKey();
                if (mbS1 != mbS2)
                {
                   return mbS1 < mbS2;
@@ -204,7 +204,7 @@ void RenderPass::Execute(const bool log)
       // stable sort is needed since we don't want to change the order of blended draw calls between frames
       if (log)
       {
-         U64 start = usec();
+         const U64 start = usec();
          stable_sort(m_commands.begin(), m_commands.end(), sortFunc);
          PLOGI << "Pass '" << m_name << "' [RT=" << m_rt->m_name << ", " << m_commands.size() << " commands, sort: " << std::fixed << std::setw(8) << std::setprecision(3) << (usec() - start)
                << "us]";
