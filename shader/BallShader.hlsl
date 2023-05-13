@@ -229,19 +229,30 @@ float3 PFlightLoop(const float3 pos, const float3 N, const float3 diffuse)
 //------------------------------------
 // PIXEL SHADER
 
-float4 psBall( const in vout IN, uniform bool decalMode ) : COLOR
+float4 psBall( const in vout IN, uniform bool equirectangularMap, uniform bool decalMode ) : COLOR
 {
     const float3 v = normalize(/*camera=0,0,0,1*/-IN.worldPos_t0y.xyz);
     const float3 r = reflect(v, normalize(IN.normal_t0x.xyz));
-    // calculate the intermediate value for the final texture coords. found here http://www.ozone3d.net/tutorials/glsl_texturing_p04.php
-    const float  m = (r.z + 1.0 > 0.) ? 0.3535533905932737622 * rsqrt(r.z + 1.0) : 0.; // 0.353...=0.5/sqrt(2)
     const float edge = dot(v, r);
     const float lod = (edge > 0.6) ? // edge falloff to reduce aliasing on edges (picks smaller mipmap -> more blur)
 		edge*(6.0*1.0/0.4)-(6.0*0.6/0.4) :
 		0.0;
 
-    const float2 uv0 = float2(0.5 - r.x*m, 0.5 - r.y*m);
-    float3 ballImageColor = tex2Dlod(tex_ball_color, float4(uv0, 0., lod)).xyz;
+    float3 ballImageColor;
+    if (equirectangularMap)
+    { // Equirectangular Map Reflections
+      const float3 rv = mul_w0(r, matWorldViewInverse);
+      //const float2 uv = float2(0.5 + atan2(rv.y, rv.x) * (0.5 / PI) + 0.5, 0.5 + rv.z * 0.5);
+      const float2 uv = float2(0.5 + atan2(rv.y, rv.x) * (0.5 / PI) + 0.5, 0.5 + asin(rv.z) / PI);
+      ballImageColor = tex2Dlod(tex_ball_color, float4(uv, 0., lod)).xyz;
+    }
+    else
+    { // Spherical Map Reflections
+      // calculate the intermediate value for the final texture coords. found here http://www.ozone3d.net/tutorials/glsl_texturing_p04.php
+      const float m = (r.z + 1.0 > 0.) ? 0.3535533905932737622 * rsqrt(r.z + 1.0) : 0.; // 0.353...=0.5/sqrt(2)
+      const float2 uv = float2(0.5 - r.x * m, 0.5 - r.y * m);
+      ballImageColor = tex2Dlod(tex_ball_color, float4(uv, 0., lod)).xyz;
+    }
 
     const float4 decalColorT = tex2D(tex_ball_decal, float2(IN.normal_t0x.w, IN.worldPos_t0y.w));
     float3 decalColor = decalColorT.xyz;
@@ -330,7 +341,7 @@ technique RenderBall
 	pass p0 
 	{		
 		vertexshader = compile vs_3_0 vsBall();
-		pixelshader  = compile ps_3_0 psBall(false);
+		pixelshader  = compile ps_3_0 psBall(true, false);
 	}
 }
 
@@ -339,7 +350,25 @@ technique RenderBall_DecalMode
    pass p0
    {
       vertexshader = compile vs_3_0 vsBall();
-      pixelshader  = compile ps_3_0 psBall(true);
+      pixelshader  = compile ps_3_0 psBall(true, true);
+   }
+}
+
+technique RenderBall_SphericalMap
+{
+   pass p0
+   {
+      vertexshader = compile vs_3_0 vsBall();
+      pixelshader = compile ps_3_0 psBall(false, false);
+   }
+}
+
+technique RenderBall_SphericalMap_DecalMode
+{
+   pass p0
+   {
+      vertexshader = compile vs_3_0 vsBall();
+      pixelshader = compile ps_3_0 psBall(false, true);
    }
 }
 

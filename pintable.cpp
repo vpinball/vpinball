@@ -2163,6 +2163,7 @@ void PinTable::Play(const bool cameraMode)
    dst->m_ImageBackdropNightDay = src->m_ImageBackdropNightDay;
    dst->m_imageColorGrade = src->m_imageColorGrade;
    dst->m_ballImage = src->m_ballImage;
+   dst->m_ballSphericalMapping = src->m_ballSphericalMapping;
    dst->m_ballImageDecal = src->m_ballImageDecal;
    dst->m_envImage = src->m_envImage;
    dst->m_notesText = src->m_notesText;
@@ -3460,6 +3461,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
    bw.WriteBool(FID(BIMN), m_ImageBackdropNightDay);
    bw.WriteString(FID(IMCG), m_imageColorGrade);
    bw.WriteString(FID(BLIM), m_ballImage);
+   bw.WriteBool(FID(BLSM), m_ballSphericalMapping);
    bw.WriteString(FID(BLIF), m_ballImageDecal);
    bw.WriteString(FID(EIMG), m_envImage);
    bw.WriteString(FID(NOTX), m_notesText);
@@ -4095,6 +4097,7 @@ void PinTable::SetLoadDefaults()
       m_BG_image[i].clear();
    m_imageColorGrade.clear();
    m_ballImage.clear();
+   m_ballSphericalMapping = true;
    m_ballImageDecal.clear();
    m_ImageBackdropNightDay = false;
    m_envImage.clear();
@@ -4258,6 +4261,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    case FID(TBLH): pbr->GetFloat(m_tableheight); break;
    case FID(IMAG): pbr->GetString(m_image); break;
    case FID(BLIM): pbr->GetString(m_ballImage); break;
+   case FID(BLSM): pbr->GetBool(m_ballSphericalMapping); break;
    case FID(BLIF): pbr->GetString(m_ballImageDecal); break;
    case FID(SSHT): pbr->GetString(m_szScreenShot); break;
    case FID(FBCK): pbr->GetBool(m_backdrop); break;

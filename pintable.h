@@ -695,6 +695,7 @@ public:
    string m_imageColorGrade;
 
    string m_ballImage;
+   bool m_ballSphericalMapping = true;
    string m_ballImageDecal;
    bool m_BallDecalMode;
 

@@ -95,6 +95,7 @@ public:
 
    COLORREF m_color;
    Texture *m_pinballEnv;
+   bool m_pinballEnvSphericalMapping;
    Texture *m_pinballDecal;
 
    Vertex3Ds m_oldpos[MAX_BALL_TRAIL_POS]; // for the optional ball trails

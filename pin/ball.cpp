@@ -70,18 +70,23 @@ void Ball::Init(const float mass)
 
    // override table ball image with global ball image?
    if (g_pplayer->m_overwriteBallImages && g_pplayer->m_ballImage)
+   {
        m_pinballEnv = g_pplayer->m_ballImage;
+       m_pinballEnvSphericalMapping = true;
+   }
    else
    {
        if (g_pplayer->m_ptable->m_ballImage.empty())
        {
            m_image.clear();
            m_pinballEnv = nullptr;
+           m_pinballEnvSphericalMapping = true;
        }
        else
        {
            m_image = g_pplayer->m_ptable->m_ballImage;
            m_pinballEnv = g_pplayer->m_ptable->GetImage(m_image);
+           m_pinballEnvSphericalMapping = g_pplayer->m_ptable->m_ballSphericalMapping;
        }
    }
 

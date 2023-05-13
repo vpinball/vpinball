@@ -24,6 +24,7 @@ private:
     EditBox     m_reflectionStrengthEdit;
     EditBox     m_ballReflectPlayfieldEdit;
     EditBox     m_ballDefaultBulbIntensScaleEdit;
+    HWND        m_hSphericalMapCheck;
     HWND        m_hLogoModeCheck;
     HWND        m_hReflectElementsCheck;
 };

@@ -4810,10 +4810,17 @@ void Player::DrawBalls()
 
       m_ballShader->SetBool(SHADER_disableLighting, m_disableLightingForBalls);
 
+      bool sphericalMapping;
       if (!pball->m_pinballEnv)
+      {
+         sphericalMapping = false; // Environment texture is an equirectangular map
          m_ballShader->SetTexture(SHADER_tex_ball_color, &m_pin3d.m_pinballEnvTexture);
+      }
       else
+      {
+         sphericalMapping = pball->m_pinballEnvSphericalMapping;
          m_ballShader->SetTexture(SHADER_tex_ball_color, pball->m_pinballEnv);
+      }
 
       if (pball->m_pinballDecal)
          m_ballShader->SetTexture(SHADER_tex_ball_decal, pball->m_pinballDecal);
@@ -4822,14 +4829,12 @@ void Player::DrawBalls()
 
       const bool lowDetailBall = m_ptable->GetDetailLevel() < 10;
 
-      // old ball reflection code
-      //if (drawReflection)
-      //   DrawBallReflection(pball, zheight, lowDetailBall);
-
-      //m_ballShader->SetFloat("reflection_ball_playfield", m_ptable->m_playfieldReflectionStrength);
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
 
-      m_ballShader->SetTechnique(pball->m_decalMode ? SHADER_TECHNIQUE_RenderBall_DecalMode : SHADER_TECHNIQUE_RenderBall);
+      if (sphericalMapping)
+         m_ballShader->SetTechnique(pball->m_decalMode ? SHADER_TECHNIQUE_RenderBall_SphericalMap_DecalMode : SHADER_TECHNIQUE_RenderBall_SphericalMap);
+      else
+         m_ballShader->SetTechnique(pball->m_decalMode ? SHADER_TECHNIQUE_RenderBall_DecalMode : SHADER_TECHNIQUE_RenderBall);
 
       Vertex3Ds pos(pball->m_d.m_pos.x, pball->m_d.m_pos.y, zheight);
       m_pin3d.m_pd3dPrimaryDevice->DrawMesh(m_ballShader, false, pos, 0.f, m_ballMeshBuffer, RenderDevice::TRIANGLELIST, 0, lowDetailBall ? basicBallLoNumFaces : basicBallMidNumFaces);
