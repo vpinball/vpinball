@@ -1345,7 +1345,9 @@ void Flasher::RenderDynamic()
           pd3dDevice->DMDShader->SetTexture(SHADER_tex_dmd, texdmd, SF_NONE, SA_CLAMP, SA_CLAMP);
 
        Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_height);
-       pd3dDevice->DrawMesh(pd3dDevice->DMDShader, IsTransparent(), pos, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
+       // DMD flasher are rendered transparent. They used to be drawn as a separate pass after opaque parts and before other transparents.
+       // There we shift the depthbias to reproduc this behavior.
+       pd3dDevice->DrawMesh(pd3dDevice->DMDShader, true, pos, m_d.m_depthBias - 10000.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
    }
    else if (!(g_pplayer->IsRenderPass(Player::TRANSPARENT_DMD_PASS) || g_pplayer->IsRenderPass(Player::OPAQUE_DMD_PASS)))
    {
@@ -1419,7 +1421,7 @@ void Flasher::RenderDynamic()
        pd3dDevice->SetRenderState(RenderState::BLENDOP, m_d.m_addBlend ? RenderState::BLENDOP_REVSUBTRACT : RenderState::BLENDOP_ADD);
 
        Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_height);
-       pd3dDevice->DrawMesh(pd3dDevice->flasherShader, IsTransparent(), pos, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
+       pd3dDevice->DrawMesh(pd3dDevice->flasherShader, true, pos, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
 
        pd3dDevice->flasherShader->SetVector(SHADER_lightCenter_doShadow, 0.0f, 0.0f, 0.0f, 0.0f);
    }
