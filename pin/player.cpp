@@ -1341,8 +1341,9 @@ HRESULT Player::Init()
          m_implicitPlayfieldMesh->m_d.m_toy = true;
          m_implicitPlayfieldMesh->m_d.m_use3DMesh = true;
          m_implicitPlayfieldMesh->m_d.m_vSize.Set(1.0f, 1.0f, 1.0f);
-         m_implicitPlayfieldMesh->m_d.m_depthBias = 1000.0f; // Draw before the other objects
+         m_implicitPlayfieldMesh->m_d.m_depthBias = 100000.0f; // Draw before the other objects
          m_implicitPlayfieldMesh->m_mesh.m_vertices.resize(4);
+         m_implicitPlayfieldMesh->m_d.m_disableLightingBelow = 1.0f;
          for (unsigned int y = 0; y <= 1; ++y)
             for (unsigned int x = 0; x <= 1; ++x)
             {
