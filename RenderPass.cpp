@@ -101,10 +101,10 @@ void RenderPass::Execute(const bool log)
 	      - Static render,  not decals * => Unsorted
 	      - Static render decals * => Unsorted
 	      - Dynamic render Opaque, not DMD => Unsorted (front to back, state changes,...)
-	      - Dynamic render Opaque DMD => Unsorted (front to back, state changes,...)
+	      - Dynamic render Opaque DMD => Unsorted (front to back, state changes,...), only used by Flasher DMD
 	      - Balls
 	      - Dynamic render Transparent, not DMD => Sorted back to front
-	      - Dynamic render Transparent DMD => Sorted back to front
+	      - Dynamic render Transparent DMD => Sorted back to front, unused feature (nono of the parts are simultaneously IsDMD and IsTransparent)
       Note that:
          - Kickers are rendered with a "pass always" depth test
          - Transparent parts do write to depth buffer (they can be used as masks)
@@ -114,10 +114,9 @@ void RenderPass::Execute(const bool log)
          - Identify transparent parts in a backward compatible way (using IsTransparent, and not according to real 'transparency' state as evaluated from depth & blend state)
          - Sort render commands with the following constraints:
             . Draw kickers first (at least before balls)
-            . TODO Sort opaque DMD after other opaques
-            . TODO Sort transparent DMD after other transparents
             . Draw playfield of old tables before other parts. Old table's PF command is opaque with a very high depth bias (this is enforced when loading the table, see pintable.cpp)
             . Sort opaque parts together based on efficiency (state, real view depth, whatever...)
+            . Draw flasher DMD after opaques and before transparents (they are marked as transparent with a depthbias shifted by -10000 to ensure this, see flasher.cpp)
             . Use existing sorting of transparent parts (based on absolute z and depthbias)
             . TODO Sort "deferred draw light render commands" after opaque and before transparents
             . TODO Group draw call of each refraction probe together (after the first part, based on default sorting)
