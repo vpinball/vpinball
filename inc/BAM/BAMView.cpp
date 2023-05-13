@@ -118,9 +118,6 @@ void _ceateProjectionAndViewMatrix(float* const __restrict P, float* const __res
    const float tableLength = t->m_bottom;
    const float tableWidth = t->m_right;
    const float tableGlass = t->m_glassheight;
-   const float minSlope = (t->m_overridePhysics ? t->m_fOverrideMinSlope : t->m_angletiltMin);
-   const float maxSlope = (t->m_overridePhysics ? t->m_fOverrideMaxSlope : t->m_angletiltMax);
-   //const float slope = minSlope + (maxSlope - minSlope) * t->m_globalDifficulty;
    rotation = (rotation + settings.rotation) % 4;
 
    // Data from config file (Settings):

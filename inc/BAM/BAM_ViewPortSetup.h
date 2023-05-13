@@ -142,12 +142,12 @@ void BuildProjectionMatrix(
 	ViewerPositionX = tmpPosX*_cos - tmpPosY*_sin;
 	ViewerPositionY = tmpPosX*_sin + tmpPosY*_cos;
 
-	// Calc pixels to millimeters scale. Different for X & Y is possible if res with different aspect ration than native res is used.
+	// Calc pixels to millimeters scale. Different for X & Y is possible if res with different aspect ratio than native res is used.
 	float pixelsToMillimeters = (float)(25.4*DisplaySize / sqrt(DisplayNativeResolutionWidth*DisplayNativeResolutionWidth + DisplayNativeResolutionHeight*DisplayNativeResolutionHeight));
 	float pixelsToMillimetersX = pixelsToMillimeters * DisplayNativeResolutionWidth / DisplayResolutionWidth;
 	float pixelsToMillimetersY = pixelsToMillimeters * DisplayNativeResolutionHeight / DisplayResolutionHeight;
 
-	// Windows edeges position in releation to screen center (in pixels)
+	// Windows edeges position in relation to screen center (in pixels)
 	float l = WindowPositionX - DisplayResolutionWidth * 0.5f;
 	float t = -(WindowPositionY - DisplayResolutionHeight * 0.5f);
 	float r = l + WindowWidth;
