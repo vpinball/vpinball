@@ -233,29 +233,28 @@ float4 psBall( const in vout IN, uniform bool equirectangularMap, uniform bool d
 {
     const float3 v = normalize(/*camera=0,0,0,1*/-IN.worldPos_t0y.xyz);
     const float3 r = reflect(v, normalize(IN.normal_t0x.xyz));
-    const float edge = dot(v, r);
-    const float lod = (edge > 0.6) ? // edge falloff to reduce aliasing on edges (picks smaller mipmap -> more blur)
-		edge*(6.0*1.0/0.4)-(6.0*0.6/0.4) :
-		0.0;
 
-    float3 ballImageColor;
-    if (equirectangularMap)
-    { // Equirectangular Map Reflections
+   float3 ballImageColor;
+   if (equirectangularMap)
+   { // Equirectangular Map Reflections
       const float3 rv = mul_w0(r, matWorldViewInverse);
       //const float2 uv = float2(0.5 + atan2(rv.y, rv.x) * (0.5 / PI) + 0.5, 0.5 + rv.z * 0.5);
       const float2 uv = float2(0.5 + atan2(rv.y, rv.x) * (0.5 / PI) + 0.5, 0.5 + asin(rv.z) / PI);
-      ballImageColor = tex2Dlod(tex_ball_color, float4(uv, 0., lod)).xyz;
-    }
-    else
-    { // Spherical Map Reflections
+      ballImageColor = tex2D(tex_ball_color, uv).rgb;
+   }
+   else
+   { // Spherical Map Reflections
       // calculate the intermediate value for the final texture coords. found here http://www.ozone3d.net/tutorials/glsl_texturing_p04.php
       const float m = (r.z + 1.0 > 0.) ? 0.3535533905932737622 * rsqrt(r.z + 1.0) : 0.; // 0.353...=0.5/sqrt(2)
       const float2 uv = float2(0.5 - r.x * m, 0.5 - r.y * m);
-      ballImageColor = tex2Dlod(tex_ball_color, float4(uv, 0., lod)).xyz;
-    }
+      const float edge = dot(v, r);
+      // edge falloff to reduce aliasing on edges (picks smaller mipmap -> more blur)
+      const float lod = (edge > 0.6) ? edge*(6.0*1.0/0.4)-(6.0*0.6/0.4) : 0.0;
+      ballImageColor = tex2Dlod(tex_ball_color, float4(uv, 0., lod)).rgb;
+   }
 
     const float4 decalColorT = tex2D(tex_ball_decal, float2(IN.normal_t0x.w, IN.worldPos_t0y.w));
-    float3 decalColor = decalColorT.xyz;
+    float3 decalColor = decalColorT.rgb;
     if (!decalMode)
     {
        // decal texture is an alpha scratch texture and must be added to the ball texture
