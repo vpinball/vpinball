@@ -1056,17 +1056,18 @@ void Player::UpdateBasicShaderMatrix(const Matrix3D& objectTrafo)
    matrices.matView = m_pin3d.GetMVP().GetView();
    matrices.matWorldView = m_pin3d.GetMVP().GetModelView();
    matrices.matWorldViewInverseTranspose = m_pin3d.GetMVP().GetModelViewInverseTranspose();
+
+#ifdef ENABLE_SDL // OpenGL
    const int nEyes = m_stereo3D != STEREO_OFF ? 2 : 1;
    for (int eye = 0; eye < nEyes; eye++)
       matrices.matWorldViewProj[eye] = m_pin3d.GetMVP().GetModelViewProj(eye);
-
-#ifdef ENABLE_SDL // OpenGL
    m_pin3d.m_pd3dPrimaryDevice->flasherShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0].m[0][0], nEyes);
    m_pin3d.m_pd3dPrimaryDevice->lightShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0].m[0][0], nEyes);
    m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0].m[0][0], nEyes);
    m_pin3d.m_pd3dPrimaryDevice->basicShader->SetUniformBlock(SHADER_basicMatrixBlock, &matrices.matWorld.m[0][0]);
 
 #else // DirectX 9
+   matrices.matWorldViewProj[0] = m_pin3d.GetMVP().GetModelViewProj(0);
    m_pin3d.m_pd3dPrimaryDevice->basicShader->SetMatrix(SHADER_matWorld, &matrices.matWorld);
    m_pin3d.m_pd3dPrimaryDevice->basicShader->SetMatrix(SHADER_matView, &matrices.matView);
    m_pin3d.m_pd3dPrimaryDevice->basicShader->SetMatrix(SHADER_matWorldView, &matrices.matWorldView);
@@ -1104,12 +1105,13 @@ void Player::UpdateBallShaderMatrix()
    matrices.matView = m_pin3d.GetMVP().GetView();
    matrices.matWorldView = m_pin3d.GetMVP().GetModelView();
    matrices.matWorldViewInverse = m_pin3d.GetMVP().GetModelViewInverse();
+#ifdef ENABLE_SDL
    const int nEyes = m_stereo3D != STEREO_OFF ? 2 : 1;
    for (int eye = 0; eye < nEyes; eye++)
       matrices.matWorldViewProj[eye] = m_pin3d.GetMVP().GetModelViewProj(eye);
-#ifdef ENABLE_SDL
    m_ballShader->SetUniformBlock(SHADER_ballMatrixBlock, &matrices.matView.m[0][0]);
 #else
+   matrices.matWorldViewProj[0] = m_pin3d.GetMVP().GetModelViewProj(0);
    m_ballShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0]);
    m_ballShader->SetMatrix(SHADER_matWorldView, &matrices.matWorldView);
    m_ballShader->SetMatrix(SHADER_matWorldViewInverse, &matrices.matWorldViewInverse);
@@ -3132,11 +3134,16 @@ void Player::RenderDynamics()
       m_ptable->m_vrenderprobe[i]->MarkDirty();
 
    // Setup the projection matrices used for refraction
-   const int nEyes = m_stereo3D != STEREO_OFF ? 2 : 1;
    Matrix3D matProj[2];
+   #ifdef ENABLE_SDL
+   const int nEyes = m_stereo3D != STEREO_OFF ? 2 : 1;
    for (int eye = 0; eye < nEyes; eye++)
       matProj[eye] = m_pin3d.GetMVP().GetProj(eye);
    m_pin3d.m_pd3dPrimaryDevice->basicShader->SetMatrix(SHADER_matProj, &matProj[0], nEyes);
+   #else
+   matProj[0] = m_pin3d.GetMVP().GetProj(0);
+   m_pin3d.m_pd3dPrimaryDevice->basicShader->SetMatrix(SHADER_matProj, &matProj[0]);
+   #endif
 
    // Update ball pos uniforms
 #define MAX_BALL_SHADOW 8

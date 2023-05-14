@@ -433,6 +433,7 @@ public:
          assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
          assert(m_shader->m_stateOffsets[uniformName] != -1);
          assert(shaderUniformNames[uniformName].type == SUT_Float3x4 || shaderUniformNames[uniformName].type == SUT_Float4x3 || shaderUniformNames[uniformName].type == SUT_Float4x4);
+         assert(count == shaderUniformNames[uniformName].count);
          memcpy(m_state + m_shader->m_stateOffsets[uniformName], pMatrix, count * 16 * sizeof(float));
       }
       void SetUniformBlock(const ShaderUniforms uniformName, const float* pMatrix)
