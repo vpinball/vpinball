@@ -235,15 +235,15 @@ float4 psBall( const in vout IN, uniform bool equirectangularMap, uniform bool d
     const float3 r = reflect(v, normalize(IN.normal_t0x.xyz));
 
    float3 ballImageColor;
-   if (equirectangularMap)
+   BRANCH if (equirectangularMap)
    { // Equirectangular Map Reflections
       const float3 rv = mul_w0(r, matWorldViewInverse);
       //const float2 uv = float2(0.5 + atan2(rv.y, rv.x) * (0.5 / PI) + 0.5, 0.5 + rv.z * 0.5);
-      const float2 uv = float2(0.5 + atan2(rv.y, rv.x) * (0.5 / PI) + 0.5, 0.5 + asin(rv.z) / PI);
+      const float2 uv = float2(1.0 + atan2_approx_div2PI(rv.y, rv.x), 0.5 + asin_approx_divPI(rv.z));
       ballImageColor = tex2D(tex_ball_color, uv).rgb;
    }
    else
-   { // Spherical Map Reflections
+   {  // Spherical Map Reflections
       // calculate the intermediate value for the final texture coords. found here http://www.ozone3d.net/tutorials/glsl_texturing_p04.php
       const float m = (r.z + 1.0 > 0.) ? 0.3535533905932737622 * rsqrt(r.z + 1.0) : 0.; // 0.353...=0.5/sqrt(2)
       const float2 uv = float2(0.5 - r.x * m, 0.5 - r.y * m);
