@@ -276,26 +276,30 @@ float4 psBall( const in vout IN, uniform bool equirectangularMap, uniform bool d
     const float3 playfield_normal = normalize(mul(matWorldViewInverse, float3(0.,0.,1.)).xyz); //!! normalize necessary? // actually: mul(float4(0.,0.,1.,0.), matWorldViewInverseTranspose), but optimized to save one matrix
     const float NdotR = dot(playfield_normal,r);
 
-    float3 playfieldColor;
-    BRANCH if(/*(reflection_ball_playfield > 0.0) &&*/ (NdotR > 0.0))
-    {
-       const float3 playfield_p0 = mul_w1(float3(/*playfield_pos=*/0.,0.,invTableRes_playfield_height_reflection.z), matWorldView);
-       const float t = dot(playfield_normal, IN.worldPos_t0y.xyz - playfield_p0) / NdotR;
-       const float3 playfield_hit = IN.worldPos_t0y.xyz - t*r;
+   const float3 playfield_p0 = mul_w1(float3(/*playfield_pos=*/0.,0.,invTableRes_playfield_height_reflection.z), matWorldView);
+   const float t = dot(playfield_normal, IN.worldPos_t0y.xyz - playfield_p0) / NdotR;
+   const float3 playfield_hit = IN.worldPos_t0y.xyz - t * r;
+   const float2 uv = mul_w1(playfield_hit, matWorldViewInverse).xy * invTableRes_playfield_height_reflection.xy;
 
-       const float2 uv = mul_w1(playfield_hit, matWorldViewInverse).xy * invTableRes_playfield_height_reflection.xy;
-       playfieldColor = (t < 0.) ? float3(0.,0.,0.) // happens for example when inside kicker
-                                 : texNoLod(tex_ball_playfield, uv).xyz * invTableRes_playfield_height_reflection.w; //!! rather use screen space sample from previous frame??
+   // This will break with custom playfield texture coordinates (like Flupper's TOTAN and many others)
+   // => Rather use screen space sample from previous frame (it will include the lighting/shadowing but also the ball itself, and would need to account for viewer movement) ?
+   float3 playfieldColor = tex2D(tex_ball_playfield, uv).xyz * invTableRes_playfield_height_reflection.w;
+   BRANCH if (NdotR <= 0. || t < 0.)
+   {
+      // t < 0.0 may happen in some situation where ball intersects the playfield (like in kicker)
+      playfieldColor = ballImageColor;
+   }
+   else
+   {
+      //!! hack to get some lighting on reflection sample, but only diffuse, the rest is not setup correctly anyhow
+      playfieldColor = PFlightLoop(playfield_hit, playfield_normal, playfieldColor);
 
-       //!! hack to get some lighting on reflection sample, but only diffuse, the rest is not setup correctly anyhow
-       playfieldColor = PFlightLoop(playfield_hit, playfield_normal, playfieldColor);
-
-       //!! magic falloff & weight the rest in from the ballImage
-       const float weight = NdotR*NdotR;
-       playfieldColor = lerp(ballImageColor,playfieldColor,weight);
-    }
-    else
-       playfieldColor = ballImageColor;
+      //!! magic falloff & weight the rest in from the ballImage
+      // Before 10.8, used to be: const float weight = NdotR*NdotR; 
+      // const float weight = 1.0 / (1.0 + max(0.0, t - 12.5) * 0.01);
+      const float weight = smoothstep(t, 0.0, 25.0);
+      playfieldColor = lerp(playfieldColor, ballImageColor, weight);
+   }
 
     float3 diffuse = cBase_Alpha.xyz*0.075;
     if(!decalMode)
