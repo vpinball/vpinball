@@ -3136,7 +3136,7 @@ void Player::RenderDynamics()
    Matrix3D matProj[2];
    for (int eye = 0; eye < nEyes; eye++)
       matProj[eye] = m_pin3d.GetMVP().GetProj(eye);
-   m_pin3d.m_pd3dPrimaryDevice->basicShader->SetMatrix(SHADER_matProj, &matProj[0]);
+   m_pin3d.m_pd3dPrimaryDevice->basicShader->SetMatrix(SHADER_matProj, &matProj[0], nEyes);
 
    // Update ball pos uniforms
 #define MAX_BALL_SHADOW 8

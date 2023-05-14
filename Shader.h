@@ -154,7 +154,7 @@ enum ShaderUniforms
 {
    // Shared uniforms
    SHADER_UNIFORM(SUT_Float, alphaTestValue, 1),
-   SHADER_UNIFORM(SUT_Float4x4, matProj, 1),
+   SHADER_UNIFORM(SUT_Float4x4, matProj, 1), // +1 Matrix for stereo
    SHADER_UNIFORM(SUT_Float4x4, matWorldViewProj, 1), // +1 Matrix for stereo
    #ifdef ENABLE_SDL // OpenGL
    SHADER_UNIFORM(SUT_DataBlock, basicMatrixBlock, 5 * 16 * 4), // +1 Matrix for stereo

@@ -65,7 +65,7 @@ uniform bool is_metal;
 uniform bool doNormalMapping;
 uniform bool doRefractions;
 
-uniform mat4 matProj; // Separated from matrix block since we only need to set it once per frame
+uniform mat4 matProj[N_EYES]; // Separated from matrix block since we only need to set it once per frame
 
 uniform float4 refractionTint_thickness;
 #define refractionTint (refractionTint_thickness.rgb)
@@ -141,10 +141,10 @@ float3 compute_reflection(const float2 screenSpace, const float3 N)
 float3 compute_refraction(const float3 pos, const float2 screenSpace, const float3 N, const float3 V, const float eye)
 {
    // Compute refracted visible position then project from world view position to probe UV
-   // const float4x4 matProj = mul(inverse4x4(matWorldView), matWorldViewProj[0]); // this has been moved to the matrix uniform stack for performance reasons
+   // const float4x4 matProj = mul(inverse4x4(matWorldView), matWorldViewProj[int(eye)]); // this has been moved to the matrix uniform stack for performance reasons
    const float3 R = refract(V, N, 1.0 / 1.5); // n1 = 1.0 (air), n2 = 1.5 (plastic), eta = n1 / n2
    const float3 refracted_pos = pos + refractionThickness * R; // Shift ray by the thickness of the material
-   const float4 proj = matProj * float4(refracted_pos, 1.0);
+   const float4 proj = matProj[int(eye)] * float4(refracted_pos, 1.0);
 
    float2 uv = float2(0.5, 0.5) + proj.xy * (0.5 / proj.w);
    #if (N_EYES == 2)

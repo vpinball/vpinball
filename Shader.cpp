@@ -150,7 +150,7 @@ string Shader::GetTechniqueName(ShaderTechniques technique)
 Shader::ShaderUniform Shader::shaderUniformNames[SHADER_UNIFORM_COUNT] {
    // Shared uniforms
    SHADER_UNIFORM(SUT_Float, alphaTestValue, 1),
-   SHADER_UNIFORM(SUT_Float4x4, matProj, 1),
+   SHADER_UNIFORM(SUT_Float4x4, matProj, 1), // +1 Matrix for stereo
    SHADER_UNIFORM(SUT_Float4x4, matWorldViewProj, 1), // +1 Matrix for stereo
    #ifdef ENABLE_SDL // OpenGL
    SHADER_UNIFORM(SUT_DataBlock, basicMatrixBlock, 5 * 16 * 4), // +1 Matrix for stereo
@@ -309,6 +309,7 @@ Shader::Shader(RenderDevice* renderDevice, const std::string& src1, const std::s
    #ifdef ENABLE_SDL
    if (renderDevice->m_stereo3D != STEREO_OFF)
    {
+      shaderUniformNames[SHADER_matProj].count = 2;
       shaderUniformNames[SHADER_matWorldViewProj].count = 2;
       shaderUniformNames[SHADER_basicMatrixBlock].count = 6 * 16 * 4;
       shaderUniformNames[SHADER_ballMatrixBlock].count = 5 * 16 * 4;
@@ -316,6 +317,7 @@ Shader::Shader(RenderDevice* renderDevice, const std::string& src1, const std::s
    }
    else
    {
+      shaderUniformNames[SHADER_matProj].count = 1;
       shaderUniformNames[SHADER_matWorldViewProj].count = 1;
       shaderUniformNames[SHADER_basicMatrixBlock].count = 5 * 16 * 4;
       shaderUniformNames[SHADER_ballMatrixBlock].count = 4 * 16 * 4;
