@@ -1569,14 +1569,17 @@ void LiveUI::UpdateOutlinerUI()
 
    ImGui::InputTextWithHint("Filter", "Name part filter", &m_outlinerFilter);
 
-   if (ImGui::BeginTabBar("Startup/Live", ImGuiTabBarFlags_AutoSelectNewTabs))
+   if (ImGui::BeginTabBar("Startup/Live", ImGuiTabBarFlags_NoCloseWithMiddleMouseButton))
    {
+      static int liveTabSelect = -1;
       for (int tab = 0; tab < 2; tab++)
       {
          const bool is_live = (tab == 1);
          PinTable *table = is_live ? m_live_table : m_table;
-         if (ImGui::BeginTabItem(is_live ? "Live" : "Startup", nullptr))
+         if (ImGui::BeginTabItem(is_live ? "Live" : "Startup", nullptr, (is_live && liveTabSelect == 2) ? ImGuiTabItemFlags_SetSelected : ImGuiTabItemFlags_None))
          {
+            if (liveTabSelect == -1)
+               liveTabSelect = 2; // Skip first frame since it always have the first tab selected (there is only one known by ImGui at this point)
             if (ImGui::TreeNodeEx("View Setups"))
             {
                if (ImGui::Selectable("Live Editor Camera"))
@@ -1717,13 +1720,16 @@ void LiveUI::UpdatePropertyUI()
    ImGui::Begin("PROPERTIES", nullptr, window_flags);
    ImGui::PushItemWidth(PROP_WIDTH);
 
-   if (ImGui::BeginTabBar("Startup/Live", ImGuiTabBarFlags_AutoSelectNewTabs))
+   if (ImGui::BeginTabBar("Startup/Live", ImGuiTabBarFlags_NoCloseWithMiddleMouseButton))
    {
+      static int liveTabSelect = -1;
       for (int tab = 0; tab < 2; tab++)
       {
          const bool is_live = (tab == 1);
-         if (ImGui::BeginTabItem(is_live ? "Live" : "Startup", nullptr))
+         if (ImGui::BeginTabItem(is_live ? "Live" : "Startup", nullptr, (is_live && liveTabSelect == 2) ? ImGuiTabItemFlags_SetSelected : ImGuiTabItemFlags_None))
          {
+            if (liveTabSelect == -1)
+               liveTabSelect = 2; // Skip first frame since it always have the first tab selected (there is only one known by ImGui at this point)
             ImGui::NewLine();
             switch (m_selection.type)
             {
