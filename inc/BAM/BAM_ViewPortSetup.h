@@ -131,7 +131,7 @@ void BuildProjectionMatrix(
 {
 	// Calc sin and cos for rotation (well, read it from table)
 	float _sin, _cos;
-	static float _sin_cos[4][2] = { { 0, 1 }, { -1, 0 }, { 0, -1 }, { 1, 0 } };
+	static constexpr float _sin_cos[4][2] = { { 0, 1 }, { -1, 0 }, { 0, -1 }, { 1, 0 } };
 	Rotation = Rotation < 0 || Rotation > 3 ? 0 : Rotation;
 	_sin = _sin_cos[Rotation][0];
 	_cos = _sin_cos[Rotation][1];
@@ -147,7 +147,7 @@ void BuildProjectionMatrix(
 	float pixelsToMillimetersX = pixelsToMillimeters * DisplayNativeResolutionWidth / DisplayResolutionWidth;
 	float pixelsToMillimetersY = pixelsToMillimeters * DisplayNativeResolutionHeight / DisplayResolutionHeight;
 
-	// Windows edeges position in relation to screen center (in pixels)
+	// Windows edges position in relation to screen center (in pixels)
 	float l = WindowPositionX - DisplayResolutionWidth * 0.5f;
 	float t = -(WindowPositionY - DisplayResolutionHeight * 0.5f);
 	float r = l + WindowWidth;
@@ -161,8 +161,8 @@ void BuildProjectionMatrix(
 
 
 	// Viewer can't be less than 1 mm away from screen
-	if (ViewerPositionZ < 1.0)
-		ViewerPositionZ = 1.0;
+	if (ViewerPositionZ < 1.0f)
+		ViewerPositionZ = 1.0f;
 
 	// Calc z near and z far
 	float zn, zf;
@@ -170,7 +170,7 @@ void BuildProjectionMatrix(
 	zf = ViewerPositionZ + Z_far;
 
 	// zn can't be too close to viewer
-	if (zn < 0.5) {
+	if (zn < 0.5f) {
 		zn = 0.5f;
 	}
 
@@ -188,9 +188,9 @@ void BuildProjectionMatrix(
 	// FINALLY. We have all params needed to build projection matrix.
 	// If you need projection matrix for Left Hand or for OpenGL, replace this part.
 	float P[16] = {
-		2*zn/(r-l),   0,            0,                0,
-		0,            2*zn/(t-b),   0,                0,
-		(l+r)/(r-l),  (t+b)/(t-b),  zf/(zn-zf),       -1,
+		2.f*zn/(r-l), 0,            0,                0,
+		0,            2.f*zn/(t-b), 0,                0,
+		(l+r)/(r-l),  (t+b)/(t-b),  zf/(zn-zf),       -1.f,
 		0,            0,            zn*zf/(zn-zf),    0
 	};
 	//-------------------------------------------------------------------------

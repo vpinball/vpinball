@@ -87,7 +87,7 @@ namespace BAM_Tracker {
 		/// <param name="P">Output position [3 x double].</param>
 		/// <param name="d">Played data: start and end position with timestamps.</param>
 		/// <param name="Tnow">Current time.</param>
-		void InterpolatePosition(double *P, TPlayerData &d, double Tnow)
+		void InterpolatePosition(double *P, TPlayerData &d, double Tnow) const
 		{
 			// 'a' - Blending factor between two points. 
 			// Based on time stamps for start & end point (Tstart & Tend) and current time (Tnow).
@@ -181,7 +181,7 @@ namespace BAM_Tracker {
 		/// Get current time (synchronized with BAM Tracker if BT is present).
 		/// </summary>
 		/// <returns>Current time in milliseconds.</returns>
-		double GetTime(void)
+		double GetTime(void) const
 		{
 			LARGE_INTEGER stop;
 			QueryPerformanceCounter(&stop);
@@ -192,7 +192,7 @@ namespace BAM_Tracker {
 		/// Determines whether [is bam tracker present].
 		/// </summary>
 		/// <returns></returns>
-		bool IsBAMTrackerPresent()
+		bool IsBAMTrackerPresent() const
 		{
 			return m_pData != NULL;
 		}
@@ -201,8 +201,8 @@ namespace BAM_Tracker {
 		/// Gets the width of the screen.
 		/// </summary>
 		/// <returns></returns>
-		double GetScreenWidth() { return m_pData ? m_pData->ScreenWidth : 0; }
-		double GetScreenHeight() { return m_pData ? m_pData->ScreenHeight : 0; }
+		double GetScreenWidth() const { return m_pData ? m_pData->ScreenWidth : 0; }
+		double GetScreenHeight() const { return m_pData ? m_pData->ScreenHeight : 0; }
 
 		bool GetPosition(double &X, double &Y, double &Z)
 		{
@@ -240,7 +240,7 @@ namespace BAM_Tracker {
 				if (a > 1.0) a = 1.0;
 				for (int i = 0; i < 3; ++i)
 				{
-					P[i] = a * P[i] + (1 - a)*P2[i];
+					P[i] = a * P[i] + (1. - a)*P2[i];
 				}
 			}
 

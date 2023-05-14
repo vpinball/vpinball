@@ -35,17 +35,17 @@ struct BAMTableSettings
    {
       scale[0] = scale[1] = scale[2] = 1.0f;
       translation[0] = translation[1] = translation[2] = 0.0f;
-      angle = 0;
-      camera[0] = 0;
-      camera[1] = -650;
-      camera[2] = 500;
-      tableName = "";
+      angle = 0.f;
+      camera[0] = 0.f;
+      camera[1] = -650.f;
+      camera[2] = 500.f;
+      tableName.clear();
    }
 } g_TableSettings, g_DefaultSettings;
 
 XMLDocument g_settings;
 
-void Mat4Mul(float* const __restrict O, const float* const __restrict A, const float* const __restrict B)
+static void Mat4Mul(float* const __restrict O, const float* const __restrict A, const float* const __restrict B)
 {
    O[0] = A[0] * B[0] + A[1] * B[4] + A[2] * B[8] + A[3] * B[12];
    O[1] = A[0] * B[1] + A[1] * B[5] + A[2] * B[9] + A[3] * B[13];
@@ -68,14 +68,14 @@ void Mat4Mul(float* const __restrict O, const float* const __restrict A, const f
    O[15] = A[12] * B[3] + A[13] * B[7] + A[14] * B[11] + A[15] * B[15];
 }
 
-void Mat4Mul(float* const __restrict OA, const float* const __restrict B)
+static void Mat4Mul(float* const __restrict OA, const float* const __restrict B)
 {
    float A[16];
    memcpy_s(A, sizeof(A), OA, sizeof(A));
    Mat4Mul(OA, A, B);
 }
 
-void Rotate(float* const __restrict V, float a)
+static void Rotate(float* const __restrict V, float a)
 {
    a *= degToRad;
    const float _S = sinf(a);
@@ -84,31 +84,31 @@ void Rotate(float* const __restrict V, float a)
    Mat4Mul(V, R);
 }
 
-void Scale(float* const __restrict V, float x, float y, float z)
+static void Scale(float* const __restrict V, float x, float y, float z)
 {
    const float S[16] = { x, 0, 0, 0, 0, y, 0, 0, 0, 0, z, 0, 0, 0, 0, 1 };
    Mat4Mul(V, S);
 }
 
-void Scale(float* const __restrict V, float* s) { Scale(V, s[0], s[1], s[2]); }
-void Scale(float* const __restrict V, float s) { Scale(V, s, s, s); }
+static void Scale(float* const __restrict V, const float* const __restrict s) { Scale(V, s[0], s[1], s[2]); }
+static void Scale(float* const __restrict V, float s) { Scale(V, s, s, s); }
 
-void Translate(float* const __restrict V, float x, float y, float z)
+static void Translate(float* const __restrict V, float x, float y, float z)
 {
    const float T[16] = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, x, y, z, 1 };
    Mat4Mul(V, T);
 }
 
-void Translate(float* const __restrict V, float* t) { Translate(V, t[0], t[1], t[2]); }
+static void Translate(float* const __restrict V, const float* const __restrict t) { Translate(V, t[0], t[1], t[2]); }
 
-void ApplyRST(float* const __restrict V, float a, float* s, float* t)
+static void ApplyRST(float* const __restrict V, float a, const float* const __restrict s, const float* const __restrict t)
 {
    Rotate(V, a);
    Scale(V, s);
    Translate(V, t);
 }
 
-void _ceateProjectionAndViewMatrix(float* const __restrict P, float* const __restrict V)
+static void _createProjectionAndViewMatrix(float* const __restrict P, float* const __restrict V)
 {
    // VPX stuffs
    const PinTable* const t = g_pplayer->m_ptable;
@@ -193,7 +193,7 @@ void _ceateProjectionAndViewMatrix(float* const __restrict P, float* const __res
    const float scale = (float)(displayLengthInMillimeters / tableLengthInMillimeters); // calc here scale
 
    // combine all to one matrix
-   constexpr float I[16] = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
+   static constexpr float I[16] = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
    memcpy_s(V, sizeof(I), I, sizeof(I));
    Scale(V, 1, -1, 1); // mirror on Y axis
    Translate(V, -tableWidth * 0.5f, tableLength * 0.5f, -tableGlass); // center table
@@ -240,7 +240,7 @@ bool SaveFile(const std::wstring& path, const void* data, SIZE_T size)
    return true;
 }
 
-std::string LoadFile(std::wstring path)
+std::string LoadFile(const std::wstring& path)
 {
    HANDLE hFile;
    OVERLAPPED ol = { 0 };
@@ -252,26 +252,26 @@ std::string LoadFile(std::wstring path)
    DWORD err = GetLastError();
 
    if (hFile == INVALID_HANDLE_VALUE)
-      return "";
+      return std::string();
 
    LARGE_INTEGER size;
    if (!GetFileSizeEx(hFile, &size))
    {
       err = GetLastError();
       CloseHandle(hFile);
-      return "";
+      return std::string();
    }
 
    std::string out;
    out.resize(static_cast<size_t>(size.QuadPart));
-   DWORD bytesReaded = 0;
-   ReadFile(hFile, (void*)out.c_str(), static_cast<DWORD>(size.QuadPart), &bytesReaded, &ol);
+   DWORD bytesRead = 0;
+   ReadFile(hFile, (void*)out.c_str(), static_cast<DWORD>(size.QuadPart), &bytesRead, &ol);
 
    CloseHandle(hFile);
    return out;
 }
 
-void SetTableSettingsInXML(BAMTableSettings& t)
+void SetTableSettingsInXML(const BAMTableSettings& t)
 {
    XMLDocument& doc = g_settings;
    auto ts = doc.NewElement("TableSettings");
@@ -323,11 +323,11 @@ void SetTableSettingsInXML(BAMTableSettings& t)
    }
 }
 
-void SaveXML(BAMTableSettings* tableSettings)
+void SaveXML(const BAMTableSettings* const tableSettings)
 {
    XMLDocument& doc = g_settings;
 
-   auto& g = settings;
+   const auto& g = settings;
    auto gs = doc.FirstChildElement("GlobalSettings");
    if (gs == nullptr)
    {
@@ -509,6 +509,6 @@ void createProjectionAndViewMatrix(float* const __restrict P, float* const __res
 {
    // If BAM tracker is not running, we will not do anything.
    if (BAM.IsBAMTrackerPresent() || settings.forceBAMView)
-      _ceateProjectionAndViewMatrix(P, V);
+      _createProjectionAndViewMatrix(P, V);
 }
 } // namespace BAMView
