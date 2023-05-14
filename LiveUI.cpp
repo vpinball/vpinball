@@ -1392,12 +1392,12 @@ void LiveUI::UpdateMainUI()
    if (m_useEditorCam)
    {
       // Apply editor camera to renderer (move view/projection from right handed to left handed)
-      Matrix3D mat(m_camView); // Convert from right handed (ImGuizmo view manipulate is right handed) to VPX's left handed coordinate system
-      Matrix3D RH2LH; // Right Hand to Left Hand (note that RH2LH = inverse(RH2LH), so RH2LH.RH2LH is identity, which property is used below)
-      RH2LH.SetIdentity();
-      RH2LH._33 = -1.f;
-      Matrix3D view = RH2LH * m_camView * RH2LH;
-      Matrix3D proj = RH2LH * m_camProj;
+      Matrix3D mat(m_camView), RH2LH, YAxis; // Convert from right handed (ImGuizmo view manipulate is right handed) to VPX's left handed coordinate system
+      // Right Hand to Left Hand (note that RH2LH = inverse(RH2LH), so RH2LH.RH2LH is identity, which property is used below)
+      RH2LH.SetScaling(1.f, 1.f, -1.f);
+      YAxis.SetScaling(1.f, -1.f, -1.f);
+      Matrix3D view = RH2LH * m_camView * YAxis;
+      Matrix3D proj = YAxis * m_camProj;
 
       m_pin3d->GetMVP().SetView(view);
 
