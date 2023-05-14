@@ -228,12 +228,6 @@ void main()
 {
     const float3 v = normalize(/*camera=0,0,0,1*/-worldPos_t0y.xyz);
     const float3 r = reflect(v, normalize(normal_t0x.xyz));
-    // calculate the intermediate value for the final texture coords. found here http://www.ozone3d.net/tutorials/glsl_texturing_p04.php
-    const float  m = (r.z + 1.0 > 0.) ? 0.3535533905932737622 * rsqrt(r.z + 1.0) : 0.; // 0.353...=0.5/sqrt(2)
-    const float edge = dot(v, r);
-    const float lod = (edge > 0.6) ? // edge falloff to reduce aliasing on edges (picks smaller mipmap -> more blur)
-		edge*(6.0*1.0/0.4)-(6.0*0.6/0.4) :
-		0.0;
 
     float3 ballImageColor;
     if (%PARAM0%) // equirectangularMap
@@ -241,12 +235,15 @@ void main()
       const float3 rv = (matWorldViewInverse * vec4(r.x, r.y, r.z, 0.)).xyz; // mul_w0(r, matWorldViewInverse);
       //const float2 uv = float2(0.5 + atan(rv.y, rv.x) * (0.5 / PI) + 0.5, 0.5 + rv.z * 0.5);
       const float2 uv = float2(0.5 + atan(rv.y, rv.x) * (0.5 / PI) + 0.5, 0.5 + asin(rv.z) / PI);
-      ballImageColor = textureLod(tex_ball_color, uv, lod).xyz;
+      ballImageColor = texture(tex_ball_color, uv).xyz;
     }
     else
     { // Spherical Map Reflections
       // calculate the intermediate value for the final texture coords. found here http://www.ozone3d.net/tutorials/glsl_texturing_p04.php
       const float m = (r.z + 1.0 > 0.) ? 0.3535533905932737622 * rsqrt(r.z + 1.0) : 0.; // 0.353...=0.5/sqrt(2)
+      const float edge = dot(v, r);
+      // edge falloff to reduce aliasing on edges (picks smaller mipmap -> more blur)
+      const float lod = (edge > 0.6) ? edge*(6.0*1.0/0.4)-(6.0*0.6/0.4) : 0.0;
       const float2 uv = float2(0.5 - r.x * m, 0.5 - r.y * m);
       ballImageColor = textureLod(tex_ball_color, uv, lod).xyz;
     }
@@ -278,29 +275,30 @@ void main()
     const float3 playfield_normal = normalize((vec4(0.,0.,1.,0.) * matWorldViewInverse).xyz); //!! normalize necessary? // actually: mul(float4(0.,0.,1.,0.), matWorldViewInverseTranspose), but optimized to save one matrix
     const float NdotR = dot(playfield_normal,r);
 
-    float3 playfieldColor;
-    BRANCH if(/*(reflection_ball_playfield > 0.0) &&*/ (NdotR > 0.0))
+    const float3 playfield_p0 = mul_w1(float3(/*playfield_pos=*/0.,0.,invTableRes_playfield_height_reflection.z), matWorldView);
+    const float t = dot(playfield_normal, worldPos_t0y.xyz - playfield_p0) / NdotR;
+    const float3 playfield_hit = worldPos_t0y.xyz - t*r;
+    const float2 uv = (inverse(matWorldView) * vec4(playfield_hit, 1.0)).xy * invTableRes_playfield_height_reflection.xy;
+
+    // This will break with custom playfield texture coordinates (like Flupper's TOTAN and many others)
+    // => Rather use screen space sample from previous frame (it will include the lighting/shadowing but also the ball itself, and would need to account for viewer movement) ?
+    float3 playfieldColor = tex2D(tex_ball_playfield, uv).xyz * invTableRes_playfield_height_reflection.w;
+    BRANCH if (NdotR <= 0. || t < 0.)
     {
-       const float3 playfield_p0 = mul_w1(float3(/*playfield_pos=*/0.,0.,invTableRes_playfield_height_reflection.z), matWorldView);
-       const float t = dot(playfield_normal, worldPos_t0y.xyz - playfield_p0) / NdotR;
-       const float3 playfield_hit = worldPos_t0y.xyz - t*r;
-
-       const float2 uv = (inverse(matWorldView) * vec4(playfield_hit, 1.0)).xy * invTableRes_playfield_height_reflection.xy;
-       playfieldColor = (t < 0.) ? float3(0.,0.,0.) // happens for example when inside kicker
-                                 : texNoLod(tex_ball_playfield, uv).xyz * invTableRes_playfield_height_reflection.w; //!! rather use screen space sample from previous frame??
-
-       //!! hack to get some lighting on reflection sample, but only diffuse, the rest is not setup correctly anyhow
-       playfieldColor = PFlightLoop(playfield_hit, playfield_normal, playfieldColor);
-       // previous VPVR only shading to be removed after tests
-       // vec3 lightLoop_normal = (matWorldView * vec4(0.,0.,1.,0.)).xyz;
-       //playfieldColor = PFlightLoop(playfield_hit, lightLoop_normal, playfieldColor);
-
-       //!! magic falloff & weight the rest in from the ballImage
-       const float weight = NdotR*NdotR;
-       playfieldColor = lerp(ballImageColor,playfieldColor,weight);
+        // t < 0.0 may happen in some situation where ball intersects the playfield (like in kicker)
+        playfieldColor = ballImageColor;
     }
     else
-       playfieldColor = ballImageColor;
+    {
+       //!! hack to get some lighting on reflection sample, but only diffuse, the rest is not setup correctly anyhow
+       playfieldColor = PFlightLoop(playfield_hit, playfield_normal, playfieldColor);
+
+       //!! magic falloff & weight the rest in from the ballImage
+       // Before 10.8, used to be: const float weight = NdotR*NdotR; 
+       // const float weight = 1.0 / (1.0 + max(0.0, t - 12.5) * 0.01);
+       const float weight = smoothstep(t, 0.0, 25.0);
+       playfieldColor = lerp(playfieldColor, ballImageColor, weight);
+    }
 
     float3 diffuse = cBase_Alpha.xyz*0.075;
 
