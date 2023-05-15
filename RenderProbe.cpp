@@ -365,7 +365,7 @@ void RenderProbe::DoRenderReflectionProbe(const bool render_static, const bool r
    n.Normalize();
 
    // Set the clip plane to only render objects above the reflection plane (do not reflect what is under or the plane itself)
-   vec4 clip_plane = vec4(-n.x, -n.y, -n.z, -m_reflection_plane.w);
+   vec4 clip_plane(-n.x, -n.y, -n.z, -m_reflection_plane.w);
    p3dDevice->SetClipPlane(clip_plane);
    p3dDevice->SetRenderState(RenderState::CLIPPLANEENABLE, RenderState::RS_TRUE);
 

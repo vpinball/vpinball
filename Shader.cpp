@@ -665,24 +665,24 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
    assert(m_stateOffsets[uniformName] != -1);
 
 #ifdef ENABLE_SDL
-   ShaderState* boundState = m_boundState[m_technique];
+   ShaderState* const __restrict boundState = m_boundState[m_technique];
    // For OpenGL uniform binding state is per technique (i.e. program)
-   UniformDesc desc = m_techniques[m_technique]->uniform_desc[uniformName];
+   const UniformDesc& desc = m_techniques[m_technique]->uniform_desc[uniformName];
    assert(desc.location >= 0); // Do not apply to an unused uniform
    if (desc.location < 0) // FIXME remove
       return;
 #else
-   ShaderState* boundState = m_boundState;
-   UniformDesc desc = m_uniform_desc[uniformName];
+   ShaderState* const __restrict boundState = m_boundState;
+   const UniformDesc& desc = m_uniform_desc[uniformName];
 #endif
-   void* src = m_state->m_state + m_stateOffsets[uniformName];
-   void* dst = boundState->m_state + m_stateOffsets[uniformName];
+   void* const src = m_state->m_state + m_stateOffsets[uniformName];
+   void* const dst = boundState->m_state + m_stateOffsets[uniformName];
 
    #ifdef ENABLE_SDL
    if (desc.uniform.type == SUT_Sampler)
    {
       // DX9 implementation uses preaffected texture units, not samplers, so these can not be used for OpenGL. This would cause some collisions.
-      Sampler* texel = *(Sampler**)src;
+      Sampler* const texel = *(Sampler**)src;
       SamplerBinding* tex_unit = nullptr;
       assert(texel != nullptr);
       SamplerFilter filter = texel->GetFilter();
@@ -869,7 +869,7 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
          assert(0 <= unit && unit < TEXTURESET_STATE_CACHE_SIZE);
 
          // Bind the texture to the shader
-         Sampler* tex = *(Sampler**)src;
+         Sampler* const tex = *(Sampler**)src;
          assert(tex != nullptr);
          IDirect3DTexture9* const bounded = m_boundTexture[unit] ? m_boundTexture[unit]->GetCoreTexture() : nullptr;
          IDirect3DTexture9* const tobound = tex ? tex->GetCoreTexture() : nullptr;

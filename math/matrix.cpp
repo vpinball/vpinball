@@ -152,16 +152,9 @@ D3DXMATRIX::D3DXMATRIX(const Matrix3D &input) {
 }
 
 //Vectors4 ------------------------------------------------------------------------------------------------------------------------
-vec4::vec4(const float x, const float y, const float z, const float w) {
-   v[0] = x;
-   v[1] = y;
-   v[2] = z;
-   v[3] = w;
-}
+vec4::vec4(const float _x, const float _y, const float _z, const float _w) : x(_x), y(_y), z(_z), w(_w) {}
 
-vec4::vec4() {
-   x = 0.0f; y = 0.0f;z = 0.0f;w = 1.0f;
-}
+vec4::vec4() {}
 
 vec4 vec4::normal(const vec4 &input) {
    float len = input.x*input.x + input.y*input.y + input.z*input.z + input.w*input.w;
@@ -186,14 +179,9 @@ vec4 vec4::operator- (const vec4& m) const {
 
 //Vectors3 ------------------------------------------------------------------------------------------------------------------------
 
-vec3::vec3(const float x, const float y, const float z) {
-   v[0] = x;
-   v[1] = y;
-   v[2] = z;
-}
+vec3::vec3(const float _x, const float _y, const float _z) : x(_x), y(_y), z(_z) {}
 
-vec3::vec3() {
-}
+vec3::vec3() {}
 
 vec3 vec3::TransformCoord(const vec3& vec, const Matrix3D& mat) {
    float w = (vec.x * mat._14 + vec.y * mat._24 + vec.z * mat._34 + mat._44);

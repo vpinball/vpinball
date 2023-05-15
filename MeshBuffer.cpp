@@ -64,7 +64,7 @@ unsigned int MeshBuffer::GetSortKey() const
 
 void MeshBuffer::bind()
 {
-   RenderDevice* rd = m_vb->m_rd;
+   RenderDevice* const rd = m_vb->m_rd;
 #ifdef ENABLE_SDL
    if (m_vao == 0)
    {
@@ -130,7 +130,7 @@ void MeshBuffer::bind()
 
 #else
    m_vb->Upload();
-   IDirect3DVertexBuffer9* vb = m_vb->GetBuffer();
+   IDirect3DVertexBuffer9 * vb = m_vb->GetBuffer();
    if (rd->m_curVertexBuffer != vb)
    {
       CHECKD3D(rd->GetCoreDevice()->SetStreamSource(0, vb, 0, m_vb->m_sizePerVertex));

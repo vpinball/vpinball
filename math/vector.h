@@ -5,7 +5,7 @@
 #ifdef ENABLE_SDL
 class Matrix3D;
 
-class vec4 final
+class alignas(16) vec4 final
 {
 public:
    union
@@ -88,7 +88,7 @@ typedef struct D3DXVECTOR4 vec4;
 #endif
 
 // 2D vector
-class Vertex2D
+class alignas(8) Vertex2D
 {
 public:
    float x;
@@ -445,7 +445,7 @@ inline Vertex3Ds rotate_to_vector_full(const Vertex3Ds &vec, const Vertex3Ds &no
       return (normal.y < 0.0f) ? -vec : vec;
 }
 
-class Vertex4D final
+class alignas(16) Vertex4D final
 {
 public:
     float x, y, z, w;
@@ -478,7 +478,7 @@ public:
     bool2(const bool _x, const bool _y) : x(_x), y(_y) {}
 };
 
-class int2 final
+class alignas(8) int2 final
 {
 public:
     int x, y;
