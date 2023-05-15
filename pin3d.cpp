@@ -819,18 +819,25 @@ void PinProjection::Setup(const PinTable* table, const ViewPort& viewPort, const
    rotx.SetRotateX(inc); // Player head inclination
    rotz.SetRotateZ(rotation); // Viewport rotation
    layback = ComputeLaybackTransform(table->m_BG_layback[table->m_BG_current_set]); // Layback to skew the view backward
+   
+   // Compute translation and near/far plane
    if (isLegacy)
    {
       FitCameraToVertices(vvertex3D, aspect, rotation, inc, FOV, table->m_BG_xlatez[table->m_BG_current_set], table->m_BG_layback[table->m_BG_current_set]);
-      trans.SetTranslation(
+      vec3 pos = vec3(
          table->m_BG_xlatex[table->m_BG_current_set] - m_vertexcamera.x + camx,
          table->m_BG_xlatey[table->m_BG_current_set] - m_vertexcamera.y + camy,
          -m_vertexcamera.z + camz);
+      // For some reason I don't get, viewport rotation (rotz) and head inclination (rotx) used to be swapped when in camera mode on desktop.
+      // This is no more applied and we always consider this order: rotx * rotz * trans which we swap to apply it as trans * rotx * rotz
+      Matrix3D rot;
+      rot.SetRotateZ(-rotation); // convert position to swap trans and rotz (rotz * trans => trans * rotz)
+      rot.TransformVec3(pos);
+      rot.SetRotateX(-inc); // convert position to swap trans and rotx (rotx * trans => trans * rotx)
+      rot.TransformVec3(pos);
+      trans.SetTranslation(pos.x, pos.y, pos.z);
       // Recompute near and far plane (workaround for VP9 FitCameraToVertices bugs), needs a complete matView with DirectX coordinate change
-      if (cameraMode && (table->m_BG_current_set == BG_DESKTOP || table->m_BG_current_set == BG_FSS))
-         m_matView = layback * rotz * rotx * trans * projTrans * coords;
-      else
-         m_matView = layback * rotx * rotz * trans * projTrans * coords;
+      m_matView = layback * trans * rotx * rotz * projTrans * coords;
       ComputeNearFarPlane(vvertex3D);
       if (fabsf(inc) < 0.0075f) //!! magic threshold, otherwise kicker holes are missing for inclination ~0
          m_rzfar += 10.f;
@@ -849,32 +856,42 @@ void PinProjection::Setup(const PinTable* table, const ViewPort& viewPort, const
       m_rzfar = CMTOVPU(300.f); // 5000.0f;
    }
 
-   const float sx = table->m_BG_scalex[table->m_BG_current_set];
-   const float sy = table->m_BG_scaley[table->m_BG_current_set];
-   const float ymax = m_rznear * tanf(0.5f * ANGTORAD(FOV));
-   const float xmax = ymax * aspect;
-   const float ofs = isLegacy ? 0.f : 0.01f * table->m_BG_layback[table->m_BG_current_set];
-   const float xofs = m_rznear * ofs * sinf(rotation);
-   const float yofs = m_rznear * ofs * cosf(rotation);
-   proj.SetPerspectiveOffCenterLH(-xmax + xofs, xmax + xofs, -ymax + yofs, ymax + yofs, m_rznear, m_rzfar);
    if (isLegacy)
-   {
-      // To be backward compatible while having a well behaving view matrix, we compute a pseudo view which is meaningful with regards to what was used before.
-      // We use it for rendering computation. It is reverted by the projection matrix which then apply the old transformation.
-      m_matView = rotx * trans;
-      Matrix3D invView(m_matView);
-      invView.Invert();
-      // Or some reason I don't get, viewport rotation (rotz) and head inclination (rotx) used to be swapped when in camera mode on desktop.
-      // This is temporarly kept in case someone would remember why this was needed.
-      //if (cameraMode && (table->m_BG_current_set == BG_DESKTOP || table->m_BG_current_set == BG_FSS))
-      //   m_matProj[0] = invView * layback * rotz * rotx * trans * projTrans * coords * proj;
-      //else
-      m_matProj[0] = invView * layback * rotx * rotz * trans * projTrans * coords * proj;
-   }
+      proj.SetPerspectiveFovLH(FOV, aspect, m_rznear, m_rzfar);
    else
    {
-      m_matView = trans * rotx;
-      m_matProj[0] = rotz * projTrans * coords * proj;
+      // Fit camera to adjusted table bounds
+      const vec3 topFitOffset(0.f, 0.f, CMTOVPU(12.5f)); // Make this user adjustable ?
+      const vec3 bottomFitOffset(0.f, 0.f, CMTOVPU(7.5f)); // Make this user adjustable ?
+      Matrix3D fit = trans * rotx * rotz * projTrans * coords * Matrix3D::MatrixPerspectiveFovLH(90.f, 1.f, m_rznear, m_rzfar);
+      Vertex3Ds tl = fit.MultiplyVector(Vertex3Ds(table->m_left - topFitOffset.x, table->m_top - topFitOffset.y, topFitOffset.z));
+      Vertex3Ds tr = fit.MultiplyVector(Vertex3Ds(table->m_right + topFitOffset.x, table->m_top - topFitOffset.y, topFitOffset.z));
+      Vertex3Ds bl = fit.MultiplyVector(Vertex3Ds(table->m_left - bottomFitOffset.x, table->m_bottom + bottomFitOffset.y, bottomFitOffset.z));
+      Vertex3Ds br = fit.MultiplyVector(Vertex3Ds(table->m_right + bottomFitOffset.x, table->m_bottom + bottomFitOffset.y, bottomFitOffset.z));
+      //float ymax = m_rznear * max(br.y, max(bl.y, max(tl.y, tr.y)));
+      float ymin = m_rznear * min(br.y, min(bl.y, min(tl.y, tr.y)));
+      float xmax = m_rznear * max(br.x, max(bl.x, max(tl.x, tr.x)));
+      //float xmin = m_rznear * min(br.x, min(bl.x, min(tl.x, tr.x)));
+      const float ymax2 = m_rznear * tanf(0.5f * ANGTORAD(FOV));
+      const float xmax2 = ymax2 * aspect;
+      // First offset to fit bottom of table to bottom of view, then apply user defined vertical offset
+      const float ofs = m_rznear * 0.01f * table->m_BG_layback[table->m_BG_current_set];
+      const float xofs = ((xmax2 - xmax) + ofs) * sinf(rotation);
+      const float yofs = ((ymin + ymax2) + ofs) * cosf(rotation);
+      proj.SetPerspectiveOffCenterLH(-xmax2 + xofs, xmax2 + xofs, -ymax2 + yofs, ymax2 + yofs, m_rznear, m_rzfar);
+   }
+
+   m_matView = trans * rotx;
+   m_matProj[0] = rotz * projTrans * coords * proj;
+
+   // Apply layback
+   // To be backward compatible while having a well behaving view matrix, we compute a view without the layback (which is meaningful with regards to what was used before).
+   // We use it for rendering computation. It is reverted by the projection matrix which then apply the old transformation, including layback.
+   if (isLegacy && abs(table->m_BG_layback[table->m_BG_current_set]) > 0.1f)
+   {
+      Matrix3D invView(m_matView);
+      invView.Invert();
+      m_matProj[0] = (invView * layback * m_matView) * m_matProj[0];
    }
 
 #ifdef ENABLE_SDL
