@@ -838,9 +838,6 @@ void PinProjection::Setup(const PinTable* table, const ViewPort& viewPort, const
       trans.SetTranslation(pos.x, pos.y, pos.z);
       // Recompute near and far plane (workaround for VP9 FitCameraToVertices bugs), needs a complete matView with DirectX coordinate change
       m_matView = layback * trans * rotx * rotz * projTrans * coords;
-      ComputeNearFarPlane(vvertex3D);
-      if (fabsf(inc) < 0.0075f) //!! magic threshold, otherwise kicker holes are missing for inclination ~0
-         m_rzfar += 10.f;
    }
    else
    {
@@ -848,20 +845,18 @@ void PinProjection::Setup(const PinTable* table, const ViewPort& viewPort, const
          -table->m_BG_xlatex[table->m_BG_current_set] + cam.x - 0.5f * table->m_right,
          -table->m_BG_xlatey[table->m_BG_current_set] + cam.y - table->m_bottom,
          -table->m_BG_xlatez[table->m_BG_current_set] + cam.z);
-      /* m_matView = trans * rotx * rotz * projTrans * coords;
-      ComputeNearFarPlane(vvertex3D);
-      if (fabsf(inc) < 0.0075f) //!! magic threshold, otherwise kicker holes are missing for inclination ~0
-         m_rzfar += 10.f;*/
-      m_rznear = CMTOVPU(5.f); //500.f;
-      m_rzfar = CMTOVPU(300.f); // 5000.0f;
+      m_matView = trans * rotx * rotz * projTrans * coords;
    }
+   ComputeNearFarPlane(vvertex3D);
+   if (fabsf(inc) < 0.0075f) //!! magic threshold, otherwise kicker holes are missing for inclination ~0
+      m_rzfar += 10.f;
 
    if (isLegacy)
       proj.SetPerspectiveFovLH(FOV, aspect, m_rznear, m_rzfar);
    else
    {
       // Fit camera to adjusted table bounds
-      const vec3 topFitOffset(0.f, 0.f, CMTOVPU(12.5f)); // Make this user adjustable ?
+      const vec3 topFitOffset(0.f, 0.f, CMTOVPU(12.5f)); // Make this user adjustable (Note that since we only fit to the bottom, this is more or less useless) ?
       const vec3 bottomFitOffset(0.f, 0.f, CMTOVPU(7.5f)); // Make this user adjustable ?
       Matrix3D fit = trans * rotx * rotz * projTrans * coords * Matrix3D::MatrixPerspectiveFovLH(90.f, 1.f, m_rznear, m_rzfar);
       Vertex3Ds tl = fit.MultiplyVector(Vertex3Ds(table->m_left - topFitOffset.x, table->m_top - topFitOffset.y, topFitOffset.z));
