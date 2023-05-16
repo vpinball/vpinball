@@ -1078,6 +1078,7 @@ void LiveUI::HideUI()
 { 
    m_ShowSplashModal = false;
    m_ShowUI = false;
+   m_flyMode = false;
    PausePlayer(false);
    while (ShowCursor(TRUE)<0) ;
    while (ShowCursor(FALSE)>=0) ;
@@ -1101,6 +1102,7 @@ void LiveUI::UpdateMainUI()
    showFullUI &= !m_RendererInspection;
    showFullUI &= !m_player->m_cameraMode;
    showFullUI &= !ImGui::IsPopupOpen(ID_BAM_SETTINGS);
+   showFullUI &= !m_flyMode;
 
    if (showFullUI)
    {
@@ -1202,7 +1204,7 @@ void LiveUI::UpdateMainUI()
 
       // Camera orbit manipulator
       Matrix3D prevView(m_camView);
-      float viewManipulateRight = ImGui::GetIO().DisplaySize.x - m_properties_width - 16;
+      float viewManipulateRight = ImGui::GetIO().DisplaySize.x - (m_flyMode ? 0 : m_properties_width) - 16;
       float viewManipulateTop = m_toolbar_height + m_menubar_height + 16;
       ImGuizmo::ViewManipulate(cameraView, cameraProjection, m_gizmoOperation, m_gizmoMode, cameraView, m_camDistance,
          ImVec2(viewManipulateRight - 128, viewManipulateTop + 16), ImVec2(128, 128), 0x10101010);
@@ -1277,6 +1279,14 @@ void LiveUI::UpdateMainUI()
          {
             // Open Main modal dialog
             m_ShowSplashModal = true;
+         }
+         else if (ImGui::IsKeyPressed(ImGuiKey_F))
+         {
+            m_flyMode = !m_flyMode;
+         }
+         else if (ImGui::IsKeyPressed(ImGuiKey_P))
+         {
+            PausePlayer(!g_pplayer->m_debugWindowActive);
          }
          else if (m_useEditorCam && ImGui::IsKeyPressed(ImGuiKey_G))
          {

@@ -132,6 +132,7 @@ private:
    // UI state
    bool m_ShowUI = false;
    bool m_ShowSplashModal = false;
+   bool m_flyMode = false;
    bool m_RendererInspection = false;
    bool m_disable_esc = false; // Option for keyboard shortcuts
    U32 m_OpenUITime = 0; // Used to delay keyboard shortcut
