@@ -272,7 +272,7 @@ void Rubber::RenderBlueprint(Sur *psur, const bool solid)
    }
 }
 
-void Rubber::GetBoundingVertices(vector<Vertex3Ds>& pvvertex3D)
+void Rubber::GetBoundingVertices(vector<Vertex3Ds>& pvvertex3D) /*const*/
 {
    //!! meh, this is delivering something loosely related to the bounding vertices, but its only used in the cam fitting code so far, so keep for legacy reasons
    int cvertex;
@@ -283,9 +283,9 @@ void Rubber::GetBoundingVertices(vector<Vertex3Ds>& pvvertex3D)
    Vertex3Ds bbox_max(-FLT_MAX, -FLT_MAX, -FLT_MAX);
    for (int i = 0; i < cvertex; i++)
    {
-      {
-      const Vertex3Ds pv(rgvLocal[i].x,rgvLocal[i].y,m_d.m_height + (float)(2.0*PHYS_SKIN)); // leave room for ball //!! use ballsize
-      //pvvertex3D.push_back(pv);
+	  {
+	  const Vertex3Ds pv(rgvLocal[i].x,rgvLocal[i].y,m_d.m_height + (float)(2.0*PHYS_SKIN)); // leave room for ball //!! use ballsize
+	  //pvvertex3D.push_back(pv);
 	  bbox_min.x = min(bbox_min.x, pv.x);
 	  bbox_min.y = min(bbox_min.y, pv.y);
 	  bbox_min.z = min(bbox_min.z, pv.z);
@@ -294,8 +294,8 @@ void Rubber::GetBoundingVertices(vector<Vertex3Ds>& pvvertex3D)
 	  bbox_max.z = max(bbox_max.z, pv.z);
 	  }
 
-      const Vertex3Ds pv(rgvLocal[cvertex * 2 - i - 1].x,rgvLocal[cvertex * 2 - i - 1].y,m_d.m_height + (float)(2.0*PHYS_SKIN)); // leave room for ball //!! use ballsize
-      //pvvertex3D.push_back(pv);
+	  const Vertex3Ds pv(rgvLocal[cvertex * 2 - i - 1].x,rgvLocal[cvertex * 2 - i - 1].y,m_d.m_height + (float)(2.0*PHYS_SKIN)); // leave room for ball //!! use ballsize
+	  //pvvertex3D.push_back(pv);
 	  bbox_min.x = min(bbox_min.x, pv.x);
 	  bbox_min.y = min(bbox_min.y, pv.y);
 	  bbox_min.z = min(bbox_min.z, pv.z);
@@ -332,7 +332,7 @@ void Rubber::GetBoundingVertices(vector<Vertex3Ds>& pvvertex3D)
  *                 order: first forward along right side of ramp, then backward along the left side
  *  ppfCross     - size cvertex, true if i-th vertex corresponds to a control point
  */
-Vertex2D *Rubber::GetSplineVertex(int &pcvertex, bool ** const ppfCross, Vertex2D ** const pMiddlePoints, const float _accuracy)
+Vertex2D *Rubber::GetSplineVertex(int &pcvertex, bool ** const ppfCross, Vertex2D ** const pMiddlePoints, const float _accuracy) const
 {
    vector<RenderVertex> vvertex;
    GetCentralCurve(vvertex, _accuracy);
@@ -453,22 +453,22 @@ Vertex2D *Rubber::GetSplineVertex(int &pcvertex, bool ** const ppfCross, Vertex2
  */
 void Rubber::GetCentralCurve(vector<RenderVertex> &vv, const float _accuracy) const
 {
-      float accuracy;
+   float accuracy;
 
-      // as solid rubbers are rendered into the static buffer, always use maximum precision
-      if (_accuracy != -1.f)
-         accuracy = _accuracy; // used for hit shape calculation, always!
+   // as solid rubbers are rendered into the static buffer, always use maximum precision
+   if (_accuracy != -1.f)
+      accuracy = _accuracy; // used for hit shape calculation, always!
+   else
+   {
+      if (m_d.m_staticRendering)
+         accuracy = 10.f;
       else
-      {
-         if (m_d.m_staticRendering)
-            accuracy = 10.f;
-         else
-            accuracy = (float)m_ptable->GetDetailLevel();
+         accuracy = (float)m_ptable->GetDetailLevel();
 
-         accuracy = 4.0f*powf(10.0f, (10.0f - accuracy)*(float)(1.0 / 1.5)); // min = 4 (highest accuracy/detail level), max = 4 * 10^(10/1.5) = ~18.000.000 (lowest accuracy/detail level)
-      }
+      accuracy = 4.0f*powf(10.0f, (10.0f - accuracy)*(float)(1.0 / 1.5)); // min = 4 (highest accuracy/detail level), max = 4 * 10^(10/1.5) = ~18.000.000 (lowest accuracy/detail level)
+   }
 
-      IHaveDragPoints::GetRgVertex(vv, true, accuracy);
+   IHaveDragPoints::GetRgVertex(vv, true, accuracy);
 }
 
 #if 0

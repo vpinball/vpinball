@@ -91,7 +91,7 @@ public:
    Vertex2D GetCenter() const final { return GetPointCenter(); }
    void PutCenter(const Vertex2D& pv) final { PutPointCenter(pv); }
 
-   void GetBoundingVertices(vector<Vertex3Ds>& pvvertex3D) final;
+   void GetBoundingVertices(vector<Vertex3Ds>& pvvertex3D) /*const*/ final;
 
    float GetDepth(const Vertex3Ds& viewDir) const final;
    unsigned long long GetMaterialID() const final { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
@@ -135,7 +135,7 @@ private:
 
    void GetCentralCurve(vector<RenderVertex> &vv, const float _accuracy = -1.f) const;
 
-   Vertex2D *GetSplineVertex(int &pcvertex, bool ** const ppfCross, Vertex2D ** const pMiddlePoints, const float _accuracy = -1.f);
+   Vertex2D *GetSplineVertex(int &pcvertex, bool ** const ppfCross, Vertex2D ** const pMiddlePoints, const float _accuracy = -1.f) const;
 
    void GenerateVertexBuffer();
 
