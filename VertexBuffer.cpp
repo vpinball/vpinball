@@ -34,6 +34,9 @@ VertexBuffer::VertexBuffer(RenderDevice* rd, const unsigned int vertexCount, con
       }
    }
    #endif
+   // FIXME Shared buffer are deactivated since they have a bug. It can be reproduced by starting Flupper's TOTAN 1.5 with OpenGL in camera mode (F6).
+   // This should crash the app. But to avoid postponing the 10.8 release, the feature is just deactivated for the time being.
+   m_sharedBuffer = nullptr;
    if (m_sharedBuffer == nullptr)
    {
       m_sharedBuffer = new SharedBuffer();
