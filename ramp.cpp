@@ -288,9 +288,9 @@ void Ramp::GetBoundingVertices(vector<Vertex3Ds>& pvvertex3D)
    Vertex3Ds bbox_max(-FLT_MAX, -FLT_MAX, -FLT_MAX);
    for (int i = 0; i < cvertex; i++)
    {
-      {
-      const Vertex3Ds pv(rgvLocal[i].x,rgvLocal[i].y,rgheight1[i] + (float)(2.0*PHYS_SKIN)); // leave room for ball //!! use ballsize
-      //pvvertex3D.push_back(pv);
+	  {
+	  const Vertex3Ds pv(rgvLocal[i].x,rgvLocal[i].y,rgheight1[i] + (float)(2.0*PHYS_SKIN)); // leave room for ball //!! use ballsize
+	  //pvvertex3D.push_back(pv);
 	  bbox_min.x = min(bbox_min.x, pv.x);
 	  bbox_min.y = min(bbox_min.y, pv.y);
 	  bbox_min.z = min(bbox_min.z, pv.z);
@@ -299,8 +299,8 @@ void Ramp::GetBoundingVertices(vector<Vertex3Ds>& pvvertex3D)
 	  bbox_max.z = max(bbox_max.z, pv.z);
 	  }
 
-      const Vertex3Ds pv(rgvLocal[cvertex * 2 - i - 1].x,rgvLocal[cvertex * 2 - i - 1].y,rgheight1[i] + (float)(2.0*PHYS_SKIN)); // leave room for ball //!! use ballsize
-      //pvvertex3D.push_back(pv);
+	  const Vertex3Ds pv(rgvLocal[cvertex * 2 - i - 1].x,rgvLocal[cvertex * 2 - i - 1].y,rgheight1[i] + (float)(2.0*PHYS_SKIN)); // leave room for ball //!! use ballsize
+	  //pvvertex3D.push_back(pv);
 	  bbox_min.x = min(bbox_min.x, pv.x);
 	  bbox_min.y = min(bbox_min.y, pv.y);
 	  bbox_min.z = min(bbox_min.z, pv.z);
