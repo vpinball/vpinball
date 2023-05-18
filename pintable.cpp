@@ -5843,8 +5843,8 @@ void PinTable::ImportBackdropPOV(const string& filename)
 
     tinyxml2::XMLDocument xmlDoc;
 
-    try
-    {
+   try
+   {
         std::stringstream buffer;
         std::ifstream myFile(szFileName[0]);
         buffer << myFile.rdbuf();
@@ -5865,113 +5865,116 @@ void PinTable::ImportBackdropPOV(const string& filename)
            return;
         }
 
+      #define POV_FIELD(name, parse, field) { auto node = section->FirstChildElement(name); if (node != nullptr) sscanf_s(node->GetText(), parse, &field); }
       string sections[] = { "desktop"s, "fullscreen"s, "fullsinglescreen"s };
       for (int i = 0; i < 3; i++)
       {
-         auto desktop = root->FirstChildElement(sections[i].c_str());
-         if (!desktop)
+         auto section = root->FirstChildElement(sections[i].c_str());
+         if (!section)
          {
             ShowError("Error parsing POV XML file: '"s.append(sections[i]).append("' element is missing"s).c_str());
             xmlDoc.Clear();
             return;
          }
-         sscanf_s(desktop->FirstChildElement("inclination")->GetText(), "%f", &mViewSetups[i].mLookAt);
-         sscanf_s(desktop->FirstChildElement("fov")->GetText(), "%f", &mViewSetups[i].mFOV);
-         sscanf_s(desktop->FirstChildElement("layback")->GetText(), "%f", &mViewSetups[i].mLayback);
-         sscanf_s(desktop->FirstChildElement("rotation")->GetText(), "%f", &mViewSetups[i].mViewportRotation);
-         sscanf_s(desktop->FirstChildElement("xscale")->GetText(), "%f", &mViewSetups[i].mViewportScaleX);
-         sscanf_s(desktop->FirstChildElement("yscale")->GetText(), "%f", &mViewSetups[i].mViewportScaleY);
-         sscanf_s(desktop->FirstChildElement("zscale")->GetText(), "%f", &m_BG_scalez[i]);
-         sscanf_s(desktop->FirstChildElement("xoffset")->GetText(), "%f", &mViewSetups[i].mViewX);
-         sscanf_s(desktop->FirstChildElement("yoffset")->GetText(), "%f", &mViewSetups[i].mViewY);
-         sscanf_s(desktop->FirstChildElement("zoffset")->GetText(), "%f", &mViewSetups[i].mViewZ);
+         POV_FIELD("inclination", "%f", mViewSetups[i].mLookAt);
+         POV_FIELD("fov", "%f", mViewSetups[i].mFOV);
+         POV_FIELD("layback", "%f", mViewSetups[i].mLayback);
+         POV_FIELD("rotation", "%f", mViewSetups[i].mViewportRotation);
+         POV_FIELD("xscale", "%f", mViewSetups[i].mViewportScaleX);
+         POV_FIELD("yscale", "%f", mViewSetups[i].mViewportScaleY);
+         POV_FIELD("zscale", "%f", m_BG_scalez[i]);
+         POV_FIELD("xoffset", "%f", mViewSetups[i].mViewX);
+         POV_FIELD("yoffset", "%f", mViewSetups[i].mViewY);
+         POV_FIELD("zoffset", "%f", mViewSetups[i].mViewZ);
          // These fields were added in 10.8
-         auto layoutmode = desktop->FirstChildElement("LayoutMode");
-         if (layoutmode == nullptr)
-            mViewSetups[i].mMode = VLM_LEGACY;
-         else
-            sscanf_s(layoutmode->GetText(), "%i", &mViewSetups[i].mMode);
+         POV_FIELD("LayoutMode", "%i", mViewSetups[i].mMode);
+         POV_FIELD("ViewHOfs", "%f", mViewSetups[i].mViewHOfs);
+         POV_FIELD("ViewVOfs", "%f", mViewSetups[i].mViewVOfs);
+         POV_FIELD("WindowTopXOfs", "%f", mViewSetups[i].mWindowTopXOfs);
+         POV_FIELD("WindowTopYOfs", "%f", mViewSetups[i].mWindowTopYOfs);
+         POV_FIELD("WindowTopZOfs", "%f", mViewSetups[i].mWindowTopZOfs);
+         POV_FIELD("WindowBottomXOfs", "%f", mViewSetups[i].mWindowBottomXOfs);
+         POV_FIELD("WindowBottomYOfs", "%f", mViewSetups[i].mWindowBottomYOfs);
+         POV_FIELD("WindowBottomZOfs", "%f", mViewSetups[i].mWindowBottomZOfs);
       }
 
-        auto custom = root->FirstChildElement("customsettings");
-        if (custom)
-        {
-            auto node = custom->FirstChildElement("SSAA");
-            if (node) sscanf_s(node->GetText(), "%i", &m_useAA);
-            node = custom->FirstChildElement("postprocAA");
-            if (node) sscanf_s(node->GetText(), "%i", &m_useFXAA);
-            node = custom->FirstChildElement("ingameAO");
-            if (node) sscanf_s(node->GetText(), "%i", &m_useAO);
-            node = custom->FirstChildElement("ScSpReflect");
-            if (node) sscanf_s(node->GetText(), "%i", &m_useSSR);
-            node = custom->FirstChildElement("FPSLimiter");
-            if (node) sscanf_s(node->GetText(), "%i", &m_TableAdaptiveVSync);
-            node = custom->FirstChildElement("OverwriteDetailsLevel");
-            if (node)
-            {
-                int value;
-                sscanf_s(node->GetText(), "%i", &value);
-                m_overwriteGlobalDetailLevel = (value == 1);
-            }
-            node = custom->FirstChildElement("DetailsLevel");
-            if (node) sscanf_s(node->GetText(), "%i", &m_userDetailLevel);
-            node = custom->FirstChildElement("BallReflection");
-            if (node) sscanf_s(node->GetText(), "%i", &m_useReflectionForBalls);
-            node = custom->FirstChildElement("BallTrail");
-            if (node) sscanf_s(node->GetText(), "%i", &m_useTrailForBalls);
-            node = custom->FirstChildElement("BallTrailStrength");
-            if (node) sscanf_s(node->GetText(), "%f", &m_ballTrailStrength);
-            node = custom->FirstChildElement("OverwriteNightDay");
-            if (node)
-            {
-                int value;
-                sscanf_s(node->GetText(), "%i", &value);
-                m_overwriteGlobalDayNight = (value == 1);
-            }
-            node = custom->FirstChildElement("NightDayLevel");
-            if (node)
-            {
-                int value;
-                sscanf_s(node->GetText(), "%i", &value);
-                SetGlobalEmissionScale(value);
-            }
-            node = custom->FirstChildElement("GameplayDifficulty");
-            if (node)
-            {
-                float value;
-                sscanf_s(node->GetText(), "%f", &value);
-                SetGlobalDifficulty(value);
-            }
-            node = custom->FirstChildElement("PhysicsSet");
-            if (node) sscanf_s(node->GetText(), "%i", &m_overridePhysics);
-            node = custom->FirstChildElement("IncludeFlipperPhysics");
-            if (node)
-            {
-                int value;
-                sscanf_s(node->GetText(), "%i", &value);
-                m_overridePhysicsFlipper = (value == 1);
-            }
-            node = custom->FirstChildElement("SoundVolume");
-            if (node) 
-            {
-                int value;
-                sscanf_s(node->GetText(), "%i", &value);
-                SetTableSoundVolume(value);
-            }
-            node = custom->FirstChildElement("MusicVolume");
-            if (node)
-            {
-                int value;
-                sscanf_s(node->GetText(), "%i", &value);
-                SetTableMusicVolume(value);
-            }
-        }
+      auto section = root->FirstChildElement("customsettings");
+      if (section)
+      {
+         int boolTmp = -1;
+         POV_FIELD("SSAA", "%i", m_useAA);
+         POV_FIELD("postprocAA", "%i", m_useFXAA);
+         POV_FIELD("ingameAO", "%i", m_useAO);
+         POV_FIELD("ScSpReflect", "%i", m_useSSR);
+         POV_FIELD("FPSLimiter", "%i", m_TableAdaptiveVSync);
+         POV_FIELD("OverwriteDetailsLevel", "%i", m_useAA);
+         POV_FIELD("DetailsLevel", "%i", m_userDetailLevel);
+         POV_FIELD("BallReflection", "%i", m_useReflectionForBalls);
+         POV_FIELD("BallTrail", "%i", m_useTrailForBalls);
+         POV_FIELD("BallTrailStrength", "%f", m_ballTrailStrength);
+         POV_FIELD("SSAA", "%i", m_useAA);
+         POV_FIELD("SSAA", "%i", m_useAA);
+         POV_FIELD("SSAA", "%i", m_useAA);
+         POV_FIELD("SSAA", "%i", m_useAA);
+         auto node = section->FirstChildElement("OverwriteDetailsLevel");
+         if (node)
+         {
+               int value;
+               sscanf_s(node->GetText(), "%i", &value);
+               m_overwriteGlobalDetailLevel = (value == 1);
+         }
+         node = section->FirstChildElement("OverwriteNightDay");
+         if (node)
+         {
+               int value;
+               sscanf_s(node->GetText(), "%i", &value);
+               m_overwriteGlobalDayNight = (value == 1);
+         }
+         node = section->FirstChildElement("NightDayLevel");
+         if (node)
+         {
+               int value;
+               sscanf_s(node->GetText(), "%i", &value);
+               SetGlobalEmissionScale(value);
+         }
+         node = section->FirstChildElement("GameplayDifficulty");
+         if (node)
+         {
+               float value;
+               sscanf_s(node->GetText(), "%f", &value);
+               SetGlobalDifficulty(value);
+         }
+         node = section->FirstChildElement("PhysicsSet");
+         if (node) sscanf_s(node->GetText(), "%i", &m_overridePhysics);
+         node = section->FirstChildElement("IncludeFlipperPhysics");
+         if (node)
+         {
+               int value;
+               sscanf_s(node->GetText(), "%i", &value);
+               m_overridePhysicsFlipper = (value == 1);
+         }
+         node = section->FirstChildElement("SoundVolume");
+         if (node) 
+         {
+               int value;
+               sscanf_s(node->GetText(), "%i", &value);
+               SetTableSoundVolume(value);
+         }
+         node = section->FirstChildElement("MusicVolume");
+         if (node)
+         {
+               int value;
+               sscanf_s(node->GetText(), "%i", &value);
+               SetTableMusicVolume(value);
+         }
+      }
+      #undef POV_FIELD
 
-        if (filename.empty())
-            SetNonUndoableDirty(eSaveDirty);
-    }
-    catch (...)
-    {
+      if (filename.empty())
+         SetNonUndoableDirty(eSaveDirty);
+   }
+   catch (...)
+   {
        if (!oldFormatLoaded)
          ShowError("Error parsing POV XML file");
     }
@@ -6016,117 +6019,71 @@ void PinTable::ExportBackdropPOV(const string& filename)
 
    tinyxml2::XMLDocument xmlDoc;
 
-    try
-    {
+   try
+   {
       auto root = xmlDoc.NewElement("POV");
+      #define POV_FIELD(name, value) { auto node = xmlDoc.NewElement(name); node->SetText(value); view->InsertEndChild(node);}
       for (int i = 0; i < 3; i++)
       {
          auto view = xmlDoc.NewElement(i == 0 ? "desktop" : i == 1 ? "fullscreen" : "fullsinglescreen");
-         auto layoutmode = xmlDoc.NewElement("LayoutMode");
-         layoutmode->SetText(mViewSetups[i].mMode);
-         root->InsertEndChild(layoutmode);
-         auto node = xmlDoc.NewElement("inclination");
-         node->SetText(mViewSetups[i].mLookAt);
-         view->InsertEndChild(node);
-         node = xmlDoc.NewElement("fov");
-         node->SetText(mViewSetups[i].mFOV);
-         view->InsertEndChild(node);
-         node = xmlDoc.NewElement("layback");
-         node->SetText(mViewSetups[i].mLayback);
-         view->InsertEndChild(node);
-         node = xmlDoc.NewElement("rotation");
-         node->SetText(mViewSetups[i].mViewportRotation);
-         view->InsertEndChild(node);
-         node = xmlDoc.NewElement("xscale");
-         node->SetText(mViewSetups[i].mViewportScaleX);
-         view->InsertEndChild(node);
-         node = xmlDoc.NewElement("yscale");
-         node->SetText(mViewSetups[i].mViewportScaleY);
-         view->InsertEndChild(node);
-         node = xmlDoc.NewElement("zscale");
-         node->SetText(m_BG_scalez[i]);
-         view->InsertEndChild(node);
-         node = xmlDoc.NewElement("xoffset");
-         node->SetText(mViewSetups[i].mViewX);
-         view->InsertEndChild(node);
-         node = xmlDoc.NewElement("yoffset");
-         node->SetText(mViewSetups[i].mViewY);
-         view->InsertEndChild(node);
-         node = xmlDoc.NewElement("zoffset");
-         node->SetText(mViewSetups[i].mViewZ);
-         view->InsertEndChild(node);
+         POV_FIELD("LayoutMode", mViewSetups[i].mMode);
+         POV_FIELD("inclination", mViewSetups[i].mMode);
+         POV_FIELD("fov", mViewSetups[i].mFOV);
+         POV_FIELD("layback", mViewSetups[i].mLayback);
+         POV_FIELD("rotation", mViewSetups[i].mViewportRotation);
+         POV_FIELD("xscale", mViewSetups[i].mViewportScaleX);
+         POV_FIELD("yscale", mViewSetups[i].mViewportScaleY);
+         POV_FIELD("zscale", m_BG_scalez[i]);
+         POV_FIELD("xoffset", mViewSetups[i].mViewX);
+         POV_FIELD("yoffset", mViewSetups[i].mViewY);
+         POV_FIELD("zoffset", mViewSetups[i].mViewZ);
+         POV_FIELD("ViewHOfs", mViewSetups[i].mViewHOfs);
+         POV_FIELD("ViewVOfs", mViewSetups[i].mViewVOfs);
+         POV_FIELD("WindowTopXOfs", mViewSetups[i].mWindowTopXOfs);
+         POV_FIELD("WindowTopYOfs", mViewSetups[i].mWindowTopYOfs);
+         POV_FIELD("WindowTopZOfs", mViewSetups[i].mWindowTopZOfs);
+         POV_FIELD("WindowBottomXOfs", mViewSetups[i].mWindowBottomXOfs);
+         POV_FIELD("WindowBottomYOfs", mViewSetups[i].mWindowBottomYOfs);
+         POV_FIELD("WindowBottomZOfs", mViewSetups[i].mWindowBottomZOfs);
          root->InsertEndChild(view);
       }
 
-      auto custom = xmlDoc.NewElement("customsettings");
-      auto node = xmlDoc.NewElement("SSAA");
-      node->SetText(m_useAA);
-      custom->InsertEndChild(node);
-      node = xmlDoc.NewElement("postprocAA");
-      node->SetText(m_useFXAA);
-      custom->InsertEndChild(node);
-      node = xmlDoc.NewElement("ingameAO");
-      node->SetText(m_useAO);
-      custom->InsertEndChild(node);
-      node = xmlDoc.NewElement("ScSpReflect");
-      node->SetText(m_useSSR);
-      custom->InsertEndChild(node);
-      node = xmlDoc.NewElement("FPSLimiter");
-      node->SetText(m_TableAdaptiveVSync);
-      custom->InsertEndChild(node);
-      node = xmlDoc.NewElement("OverwriteDetailsLevel");
-      node->SetText(m_overwriteGlobalDetailLevel ? 1 : 0);
-      custom->InsertEndChild(node);
-      node = xmlDoc.NewElement("DetailsLevel");
-      node->SetText(m_userDetailLevel);
-      custom->InsertEndChild(node);
-      node = xmlDoc.NewElement("BallReflection");
-      node->SetText(m_useReflectionForBalls);
-      custom->InsertEndChild(node);
-      node = xmlDoc.NewElement("BallTrail");
-      node->SetText(m_useTrailForBalls);
-      custom->InsertEndChild(node);
-      node = xmlDoc.NewElement("BallTrailStrength");
-      node->SetText(m_ballTrailStrength);
-      custom->InsertEndChild(node);
-      node = xmlDoc.NewElement("OverwriteNightDay");
-      node->SetText(m_overwriteGlobalDayNight ? 1 : 0);
-      custom->InsertEndChild(node);
-      node = xmlDoc.NewElement("NightDayLevel");
-      node->SetText(GetGlobalEmissionScale());
-      custom->InsertEndChild(node);
-      node = xmlDoc.NewElement("GameplayDifficulty");
-      node->SetText(GetGlobalDifficulty());
-      custom->InsertEndChild(node);
-      node = xmlDoc.NewElement("PhysicsSet");
-      node->SetText(m_overridePhysics);
-      custom->InsertEndChild(node);
-      node = xmlDoc.NewElement("IncludeFlipperPhysics");
-      node->SetText(m_overridePhysicsFlipper ? 1 : 0);
-      custom->InsertEndChild(node);
-      node = xmlDoc.NewElement("SoundVolume");
-      node->SetText(GetTableSoundVolume());
-      custom->InsertEndChild(node);
-      node = xmlDoc.NewElement("MusicVolume");
-      node->SetText(GetTableMusicVolume());
-      custom->InsertEndChild(node);
-      root->InsertEndChild(custom);
+      auto view = xmlDoc.NewElement("customsettings");
+      POV_FIELD("SSAA", m_useAA);
+      POV_FIELD("postprocAA", m_useFXAA);
+      POV_FIELD("ingameAO", m_useAA);
+      POV_FIELD("ScSpReflect", m_useSSR);
+      POV_FIELD("FPSLimiter", m_TableAdaptiveVSync);
+      POV_FIELD("OverwriteDetailsLevel", m_overwriteGlobalDetailLevel ? 1 : 0);
+      POV_FIELD("DetailsLevel", m_userDetailLevel);
+      POV_FIELD("BallReflection", m_useReflectionForBalls);
+      POV_FIELD("BallTrail", m_useTrailForBalls);
+      POV_FIELD("BallTrailStrength", m_ballTrailStrength);
+      POV_FIELD("OverwriteNightDay", m_overwriteGlobalDayNight ? 1 : 0);
+      POV_FIELD("NightDayLevel", GetGlobalEmissionScale());
+      POV_FIELD("GameplayDifficulty", GetGlobalDifficulty());
+      POV_FIELD("PhysicsSet", m_overridePhysics);
+      POV_FIELD("IncludeFlipperPhysics", m_overridePhysicsFlipper ? 1 : 0);
+      POV_FIELD("SoundVolume", GetTableSoundVolume());
+      POV_FIELD("SoundVMusicVolumeolume", GetTableMusicVolume());
+      root->InsertEndChild(view);
 
-        xmlDoc.InsertEndChild(xmlDoc.NewDeclaration());
-        xmlDoc.InsertEndChild(root);
+      xmlDoc.InsertEndChild(xmlDoc.NewDeclaration());
+      xmlDoc.InsertEndChild(root);
 
-        tinyxml2::XMLPrinter prn;
-        xmlDoc.Print(&prn);
+      tinyxml2::XMLPrinter prn;
+      xmlDoc.Print(&prn);
 
-        std::ofstream myfile(povFileName);
-        myfile << prn.CStr();
-        myfile.close();
-    }
-    catch (...)
-    {
-        ShowError("Error exporting POV settings!");
-    }
-    xmlDoc.Clear();
+      std::ofstream myfile(povFileName);
+      myfile << prn.CStr();
+      myfile.close();
+      #undef POV_FIELD
+   }
+   catch (...)
+   {
+      ShowError("Error exporting POV settings!");
+   }
+   xmlDoc.Clear();
 }
 
 void PinTable::SelectItem(IScriptable *piscript)
