@@ -38,7 +38,7 @@ public:
 
    // View position (relative to table bounds for legacy mode, relative to the bottom center of the table for others)
    float mViewX = 0.f;
-   float mViewY = CMTOVPU(10.f);
+   float mViewY = CMTOVPU(20.f);
    float mViewZ = CMTOVPU(70.f);
    float mLookAt = 0.25f; // Look at expressed as a camera inclination for legacy, or a percent of the table height, starting from bottom (0.25 is around top of slingshots)
 
@@ -56,7 +56,7 @@ public:
    // Magic Window mode properties
    float mWindowTopXOfs = 0.0f; // Upper window border offset from left and right table bounds
    float mWindowTopYOfs = 0.0f; // Upper window border Y coordinate, relative to table top
-   float mWindowTopZOfs = CMTOVPU(12.5f); // Upper window border Z coordinate, relative to table playfield Z
+   float mWindowTopZOfs = CMTOVPU(20.0f); // Upper window border Z coordinate, relative to table playfield Z
    float mWindowBottomXOfs = 0.0f; // Lower window border offset from left and right table bounds
    float mWindowBottomYOfs = 0.0f; // Lower window border Y coordinate, relative to table bottom
    float mWindowBottomZOfs = CMTOVPU(7.5f); // Lower window border Z coordinate, relative to table playfield Z
