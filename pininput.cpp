@@ -1032,7 +1032,7 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
          PinTable* const table = g_pplayer->m_ptable;
          ViewSetupID id = table->m_BG_current_set;
          ViewSetup &viewSetup = table->mViewSetups[id];
-         viewSetup.mMode = CLM_CAMERA;
+         viewSetup.mMode = VLM_CAMERA;
          // Default player position (90cm above, 30 cm away)
          viewSetup.mViewX= CMTOVPU(LoadValueWithDefault(regKey[RegName::DefaultCamera], "CamX"s, 0.f));
          viewSetup.mViewY= CMTOVPU(LoadValueWithDefault(regKey[RegName::DefaultCamera], "CamY"s, 30.f));
@@ -1093,11 +1093,15 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
       }
       else if ((keycode == g_pplayer->m_rgKeys[eRightMagnaSave] || keycode == g_pplayer->m_rgKeys[eLeftMagnaSave]) && dispid == DISPID_GameEvents_KeyDown)
       {
-         ViewSetupID id = g_pplayer->m_ptable->m_BG_current_set;
+         ViewSetup& viewSetup = g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set];
          bool isStereo = g_pplayer->m_stereo3Denabled && g_pplayer->m_stereo3D != STEREO_OFF && g_pplayer->m_stereo3D != STEREO_VR;
          bool isAnaglyph = isStereo && g_pplayer->m_stereo3D >= STEREO_ANAGLYPH_RC && g_pplayer->m_stereo3D <= STEREO_ANAGLYPH_AB;
-         const Player::BackdropSetting *settings = g_pplayer->m_ptable->mViewSetups[id].mMode == CLM_LEGACY ? Player::mLegacyViewSettings : Player::mCameraViewSettings; 
-         int nSettings = (g_pplayer->m_ptable->mViewSetups[id].mMode == CLM_LEGACY ? sizeof(Player::mLegacyViewSettings) : sizeof(Player::mCameraViewSettings)) / sizeof(Player::BackdropSetting);
+         const Player::BackdropSetting *settings = viewSetup.mMode == VLM_LEGACY ? Player::mLegacyViewSettings
+                                                 : viewSetup.mMode == VLM_CAMERA ? Player::mCameraViewSettings
+                                                                                 : Player::mWindowViewSettings; 
+         int nSettings = (viewSetup.mMode == VLM_LEGACY        ? sizeof(Player::mLegacyViewSettings)
+                               : viewSetup.mMode == VLM_CAMERA ? sizeof(Player::mCameraViewSettings)
+                                                               : sizeof(Player::mWindowViewSettings))/ sizeof(Player::BackdropSetting);
          nSettings = isAnaglyph ? nSettings : isStereo ? (nSettings - 2) : (nSettings - 3);
          for (int i = 0; i < nSettings; i++)
             if (settings[i] == g_pplayer->m_backdropSettingActive)
@@ -1949,9 +1953,9 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
             }
 
             // Table tweaks
-            if (m_keyPressedState[eLeftFlipperKey])
+            if (m_keyPressedState[eLeftFlipperKey] && g_pplayer->m_backdropSettingActive != Player::BS_ViewMode)
                g_pplayer->UpdateBackdropSettings(false);
-            if (m_keyPressedState[eRightFlipperKey])
+            if (m_keyPressedState[eRightFlipperKey] && g_pplayer->m_backdropSettingActive != Player::BS_ViewMode)
                g_pplayer->UpdateBackdropSettings(true);
             if (m_enableCameraModeFlyAround)
             {

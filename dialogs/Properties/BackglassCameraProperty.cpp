@@ -34,7 +34,7 @@ void BackglassCameraProperty::UpdateVisuals(const int dispid/*=-1*/)
       PropertyDialog::SetCheckboxState(m_hTestDesktopCheck, table->GetShowDT());
    if (dispid == IDC_CAMERA_LAYOUT_MODE || dispid == -1)
    {
-      bool absolute = viewSetup.mMode == CLM_CAMERA;
+      bool absolute = viewSetup.mMode == VLM_CAMERA;
       PropertyDialog::SetCheckboxState(m_hCameraLayoutModeCheck, absolute);
       GetDlgItem(IDC_STATIC4).SetWindowText(absolute ? "View Offset" : "Layback");
       GetDlgItem(IDC_STATIC9).SetWindowText(absolute ? "X Position" : "X Offset");
@@ -78,7 +78,7 @@ void BackglassCameraProperty::UpdateProperties(const int dispid)
       case IDC_BG_TEST_DESKTOP_CHECK: CHECK_UPDATE_VALUE_SETTER(table->SetShowDT, table->GetShowDT, PropertyDialog::GetCheckboxState, m_hTestDesktopCheck, table); break;
       case IDC_BG_COMBOBOX: CHECK_UPDATE_ITEM(table->m_currentBackglassMode, (ViewSetupID) PropertyDialog::GetComboBoxIndex(m_modeCombo, m_modeList), table); break;
 
-      case IDC_CAMERA_LAYOUT_MODE: CHECK_UPDATE_ITEM(viewSetup.mMode, (PropertyDialog::GetCheckboxState(m_hCameraLayoutModeCheck) ? CLM_CAMERA : CLM_LEGACY), table); break;
+      case IDC_CAMERA_LAYOUT_MODE: CHECK_UPDATE_ITEM(viewSetup.mMode, (PropertyDialog::GetCheckboxState(m_hCameraLayoutModeCheck) ? VLM_CAMERA : VLM_LEGACY), table); break;
       case IDC_INCLINATION_EDIT: CHECK_UPDATE_ITEM(viewSetup.mLookAt, PropertyDialog::GetFloatTextbox(m_inclinationEdit), table); break;
       case IDC_FOV_EDIT: CHECK_UPDATE_ITEM(viewSetup.mFOV, PropertyDialog::GetFloatTextbox(m_fovEdit), table); break;
       case IDC_LAYBACK_EDIT: CHECK_UPDATE_ITEM(viewSetup.mLayback, PropertyDialog::GetFloatTextbox(m_laybackEdit), table); break;

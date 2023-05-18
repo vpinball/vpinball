@@ -3932,49 +3932,32 @@ void Player::UpdateBackdropSettings(const bool up)
    ViewSetup &viewSetup = m_ptable->mViewSetups[m_ptable->m_BG_current_set];
    switch (m_backdropSettingActive)
    {
+   // View setup settings
+   case BS_ViewMode:
+   {
+      int vlm = viewSetup.mMode + (up ? 1 : -1);
+      viewSetup.mMode = vlm < 0 ? VLM_WINDOW : vlm >= 3 ? VLM_LEGACY : (ViewLayoutMode)vlm;
+      break;
+   }
    case BS_Inclination: viewSetup.mLookAt += 0.5f * thesign; break;
    case BS_FOV: viewSetup.mFOV += 0.5f * thesign; break;
    case BS_Layback: viewSetup.mLayback += 0.5f * thesign; break;
-   case BS_XYScale:
-      viewSetup.mViewportScaleX += 0.01f * thesign;
-      viewSetup.mViewportScaleY += 0.01f * thesign;
-      break;
+   case BS_ViewHOfs: viewSetup.mViewHOfs += 0.5f * thesign; break;
+   case BS_ViewVOfs: viewSetup.mViewVOfs += 0.5f * thesign; break;
+   case BS_XYScale: viewSetup.mViewportScaleX += 0.01f * thesign; viewSetup.mViewportScaleY += 0.01f * thesign; break;
    case BS_XScale: viewSetup.mViewportScaleX += 0.01f * thesign; break;
    case BS_YScale: viewSetup.mViewportScaleY += 0.01f * thesign; break;
    case BS_XOffset: viewSetup.mViewX += 5.f * thesign; break;
    case BS_YOffset: viewSetup.mViewY += 5.f * thesign; break;
    case BS_ZOffset: viewSetup.mViewZ += 50.f * thesign; break;
-   case BS_LightEmissionScale:
-   {
-      m_ptable->m_lightEmissionScale += thesign*100000.f;
-      if (m_ptable->m_lightEmissionScale < 0.f)
-         m_ptable->m_lightEmissionScale = 0.f;
-      m_pin3d.InitLights();
-      break;
-   }
-   case BS_LightRange:
-   {
-      m_ptable->m_lightRange += thesign*1000.f;
-      if (m_ptable->m_lightRange < 0.f)
-         m_ptable->m_lightRange = 0.f;
-      break;
-   }
-   case BS_LightHeight:
-   {
-      m_ptable->m_lightHeight += thesign*100.f;
-      if (m_ptable->m_lightHeight < 100.f)
-         m_ptable->m_lightHeight = 100.f;
-      break;
-   }
-   case BS_EnvEmissionScale:
-   {
-      m_ptable->m_envEmissionScale += thesign*0.5f;
-      if (m_ptable->m_envEmissionScale < 0.f)
-         m_ptable->m_envEmissionScale = 0.f;
-      const vec4 st(m_ptable->m_envEmissionScale*m_globalEmissionScale, m_pin3d.m_envTexture ? (float)m_pin3d.m_envTexture->m_height/*+m_pin3d.m_envTexture->m_width)*0.5f*/ : (float)m_pin3d.m_builtinEnvTexture.m_height/*+m_pin3d.m_builtinEnvTexture.m_width)*0.5f*/, 0.f, 0.f);
-      m_pin3d.m_pd3dPrimaryDevice->basicShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
-      break;
-   }
+   case BS_WndTopXOfs: viewSetup.mWindowTopXOfs += 5.f * thesign; break;
+   case BS_WndTopYOfs: viewSetup.mWindowTopYOfs += 5.f * thesign; break;
+   case BS_WndTopZOfs: viewSetup.mWindowTopZOfs += 5.f * thesign; break;
+   case BS_WndBottomXOfs: viewSetup.mWindowBottomXOfs += 5.f * thesign; break;
+   case BS_WndBottomYOfs: viewSetup.mWindowBottomYOfs += 5.f * thesign; break;
+   case BS_WndBottomZOfs: viewSetup.mWindowBottomZOfs += 5.f * thesign; break;
+
+   // Stereo view settings
    case BS_EyeSeparation:
    {
       #ifdef ENABLE_SDL
@@ -4010,6 +3993,40 @@ void Player::UpdateBackdropSettings(const bool up)
       SaveValue(regKey[RegName::Player], "Stereo3DContrast"s, m_global3DContrast);
       break;
    }
+
+   // Scene lighting settings
+   case BS_LightEmissionScale:
+   {
+      m_ptable->m_lightEmissionScale += thesign*100000.f;
+      if (m_ptable->m_lightEmissionScale < 0.f)
+         m_ptable->m_lightEmissionScale = 0.f;
+      m_pin3d.InitLights();
+      break;
+   }
+   case BS_LightRange:
+   {
+      m_ptable->m_lightRange += thesign*1000.f;
+      if (m_ptable->m_lightRange < 0.f)
+         m_ptable->m_lightRange = 0.f;
+      break;
+   }
+   case BS_LightHeight:
+   {
+      m_ptable->m_lightHeight += thesign*100.f;
+      if (m_ptable->m_lightHeight < 100.f)
+         m_ptable->m_lightHeight = 100.f;
+      break;
+   }
+   case BS_EnvEmissionScale:
+   {
+      m_ptable->m_envEmissionScale += thesign*0.5f;
+      if (m_ptable->m_envEmissionScale < 0.f)
+         m_ptable->m_envEmissionScale = 0.f;
+      const vec4 st(m_ptable->m_envEmissionScale*m_globalEmissionScale, m_pin3d.m_envTexture ? (float)m_pin3d.m_envTexture->m_height/*+m_pin3d.m_envTexture->m_width)*0.5f*/ : (float)m_pin3d.m_builtinEnvTexture.m_height/*+m_pin3d.m_builtinEnvTexture.m_width)*0.5f*/, 0.f, 0.f);
+      m_pin3d.m_pd3dPrimaryDevice->basicShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
+      break;
+   }
+
    default:
       assert(!"UpdateBackdropSettings unhandled case");
       break;

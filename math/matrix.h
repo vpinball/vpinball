@@ -301,7 +301,7 @@ public:
       _43 = tz;
    }
    
-   void SetTranslation(const Vertex3Ds& t)
+   template <class Vec> void SetTranslation(const Vec& t)
    {
       SetTranslation(t.x, t.y, t.z);
    }

@@ -932,22 +932,15 @@ void LiveUI::UpdateCameraModeUI()
    ImGui::Begin("CameraMode", nullptr, window_flags);
 
    ViewSetupID vsId = table->m_BG_current_set;
-   bool isRelative = table->mViewSetups[vsId].mMode == CLM_LEGACY;
-
-   if (isRelative)
-   {
-      HelpTextCentered("WARNING"s);
-      ImGui::NewLine();
-      HelpTextCentered("This table uses the legacy camera positioning."s);
-      ImGui::NewLine();
-      HelpTextCentered("Update it to avoid rendering artifacts."s);
-      ImGui::NewLine();
-   }
+   ViewSetup &viewSetup = table->mViewSetups[vsId];
+   bool isLegacy = viewSetup.mMode == VLM_LEGACY;
+   bool isCamera = viewSetup.mMode == VLM_CAMERA;
+   bool isWindow = viewSetup.mMode == VLM_WINDOW;
 
    bool isStereo = m_player->m_stereo3Denabled && m_player->m_stereo3D != STEREO_OFF && m_player->m_stereo3D != STEREO_VR;
    bool isAnaglyph = isStereo && m_player->m_stereo3D >= STEREO_ANAGLYPH_RC && m_player->m_stereo3D <= STEREO_ANAGLYPH_AB;
-   const Player::BackdropSetting *settings = isRelative ? Player::mLegacyViewSettings : Player::mCameraViewSettings;
-   int nSettings = (isRelative ? sizeof(Player::mLegacyViewSettings) : sizeof(Player::mCameraViewSettings)) / sizeof(Player::BackdropSetting);
+   const Player::BackdropSetting *settings = isLegacy ? Player::mLegacyViewSettings : isCamera ? Player::mCameraViewSettings : Player::mWindowViewSettings;
+   int nSettings = (isLegacy ? sizeof(Player::mLegacyViewSettings) : isCamera ? sizeof(Player::mCameraViewSettings) : sizeof(Player::mWindowViewSettings)) / sizeof(Player::BackdropSetting);
    nSettings = isAnaglyph ? nSettings : isStereo ? (nSettings - 2) : (nSettings - 3);
    if (ImGui::BeginTable("Camera", 3, ImGuiTableFlags_Borders))
    {
@@ -972,22 +965,42 @@ void LiveUI::UpdateCameraModeUI()
             ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
          switch (settings[i])
          {
-         case Player::BS_FOV: CM_ROW("Field Of View (overall scale)", "%.1f", table->mViewSetups[vsId].mFOV, "deg"); break;
-         case Player::BS_Layback: CM_ROW(isRelative ? "Layback" : "Vertical Offset", "%.1f", table->mViewSetups[vsId].mLayback, ""); break;
-         case Player::BS_XScale: CM_ROW(isRelative ? "X Scale" : "Horizontal Stretch", "%.1f", 100.f * table->mViewSetups[vsId].mViewportScaleX, "%%"); break;
-         case Player::BS_YScale: CM_ROW("Y Scale", "%.1f", 100.f * table->mViewSetups[vsId].mViewportScaleY, "%%"); CM_SKIP_LINE; break;
+         case Player::BS_ViewMode: CM_ROW("View Layout Mode:", "%s", isLegacy ? "Legacy" : isCamera ? "Camera" : "Window", ""); CM_SKIP_LINE; break;
 
-         case Player::BS_Inclination: CM_ROW(isRelative ? "Inclination" : "Head Inclination", "%.1f", table->mViewSetups[vsId].mLookAt, "deg"); break;
-         case Player::BS_XOffset: CM_ROW(isRelative ? "X Offset" : "Player X", "%.1f", VPUTOCM(table->mViewSetups[vsId].mViewX), "cm"); break;
-         case Player::BS_YOffset: CM_ROW(isRelative ? "Y Offset" : "Player Y", "%.1f", VPUTOCM(table->mViewSetups[vsId].mViewY), "cm"); break;
-         case Player::BS_ZOffset: CM_ROW(isRelative ? "Z Offset" : "Player Z", "%.1f", VPUTOCM(table->mViewSetups[vsId].mViewZ), "cm"); CM_SKIP_LINE; break;
+         // Viewport
+         case Player::BS_XScale: CM_ROW("Viewport X Strech", "%.1f", 100.f * viewSetup.mViewportScaleX, "%%"); break;
+         case Player::BS_YScale: CM_ROW("Viewport Y Strech", "%.1f", 100.f * viewSetup.mViewportScaleY, "%%"); CM_SKIP_LINE; break;
 
+         // Player position
+         case Player::BS_Inclination: 
+            if (isLegacy)
+               { CM_ROW("Inclination", "%.1f", viewSetup.mLookAt, "deg"); }
+            else
+               { CM_ROW("Look at", "%.1f", viewSetup.mLookAt, "%%"); }
+            break;
+         case Player::BS_XOffset: CM_ROW(isLegacy ? "X Offset" : "Player X", "%.1f", VPUTOCM(viewSetup.mViewX), "cm"); break;
+         case Player::BS_YOffset: CM_ROW(isLegacy ? "Y Offset" : "Player Y", "%.1f", VPUTOCM(viewSetup.mViewY), "cm"); break;
+         case Player::BS_ZOffset: CM_ROW(isLegacy ? "Z Offset" : "Player Z", "%.1f", VPUTOCM(viewSetup.mViewZ), "cm"); CM_SKIP_LINE; break;
+
+         // View settings
+         case Player::BS_FOV: CM_ROW("Field Of View (overall scale)", "%.1f", viewSetup.mFOV, "deg"); break;
+         case Player::BS_Layback: CM_ROW("Layback", "%.1f", viewSetup.mLayback, ""); CM_SKIP_LINE; break;
+         case Player::BS_ViewHOfs: CM_ROW("Horizontal Offset", "%.1f", viewSetup.mViewHOfs, ""); break;
+         case Player::BS_ViewVOfs: CM_ROW("Vertical Offset", "%.1f", viewSetup.mViewVOfs, ""); CM_SKIP_LINE; break;
+         case Player::BS_WndTopXOfs: CM_ROW("Window Top X Ofs.", "%.1f", VPUTOCM(viewSetup.mWindowTopXOfs), "cm"); break;
+         case Player::BS_WndTopYOfs: CM_ROW("Window Top Y Ofs.", "%.1f", VPUTOCM(viewSetup.mWindowTopYOfs), "cm"); break;
+         case Player::BS_WndTopZOfs: CM_ROW("Window Top Z Ofs.", "%.1f", VPUTOCM(viewSetup.mWindowTopZOfs), "cm"); break;
+         case Player::BS_WndBottomXOfs: CM_ROW("Window Bottom X Ofs.", "%.1f", VPUTOCM(viewSetup.mWindowBottomXOfs), "cm"); break;
+         case Player::BS_WndBottomYOfs: CM_ROW("Window Bottom Y Ofs.", "%.1f", VPUTOCM(viewSetup.mWindowBottomYOfs), "cm"); break;
+         case Player::BS_WndBottomZOfs: CM_ROW("Window Bottom Z Ofs.", "%.1f", VPUTOCM(viewSetup.mWindowBottomZOfs), "cm"); CM_SKIP_LINE; break;
+
+         // Scene lighting
          case Player::BS_LightEmissionScale: CM_ROW("Light Emission Scale", "%.0f", table->m_lightEmissionScale, ""); break;
          case Player::BS_LightRange: CM_ROW("Light Range", "%.0f", VPUTOCM(table->m_lightRange), "cm"); break;
          case Player::BS_LightHeight: CM_ROW("Light Height", "%.0f", VPUTOCM(table->m_lightHeight), "cm"); CM_SKIP_LINE; break;
-
          case Player::BS_EnvEmissionScale: CM_ROW("Environment Emission", "%.1f", 100.f * table->m_envEmissionScale, "%%"); break;
 
+         // Stereo eye and anglyph setup
          case Player::BS_EyeSeparation:
          {
             CM_SKIP_LINE;
@@ -998,7 +1011,6 @@ void LiveUI::UpdateCameraModeUI()
             #endif
             break;
          }
-
          case Player::BS_AnaglyphDesat: CM_ROW("Anaglyph desaturation", "%.0f", 100.f * m_player->m_global3DDesaturation, "%%"); break;
          case Player::BS_AnaglyphContrast: CM_ROW("Anaglyph contrast", "%.0f", 100.f * m_player->m_global3DContrast, "%%"); break;
          }
@@ -1011,7 +1023,7 @@ void LiveUI::UpdateCameraModeUI()
       ImGui::EndTable();
    }
 
-   if (isRelative)
+   if (isLegacy)
    {
       // Useless for absolute mode: the camera is always where we put it
       Matrix3D view = m_pin3d->GetMVP().GetView();
@@ -1021,7 +1033,7 @@ void LiveUI::UpdateCameraModeUI()
       ImGui::Text("Camera at X: %.0f Y: %.0f Z: %.0f (cm), Rotation: %.2f", 
          VPUTOCM(pos.x - 0.5f * g_pplayer->m_ptable->m_right), 
          VPUTOCM(pos.y - g_pplayer->m_ptable->m_bottom), 
-         VPUTOCM(pos.z), table->mViewSetups[vsId].mViewportRotation);
+         VPUTOCM(pos.z), viewSetup.mViewportRotation);
    }
 
    ImGui::NewLine();
