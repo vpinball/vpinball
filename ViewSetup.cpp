@@ -23,7 +23,7 @@ void ViewSetup::ComputeMVP(const PinTable* table, const int viewportWidth, const
    {
    case VLM_LEGACY: inc = inclination + cam_inc; break;
    case VLM_CAMERA: inc = -M_PIf + atan2f(-mViewY + cam.y - (mLookAt / 100.0f) * table->m_bottom, -mViewZ + cam.z); break;
-   case VLM_WINDOW: inc = 0.f;
+   case VLM_WINDOW: inc = atan2f(mWindowTopZOfs - mWindowBottomZOfs, table->m_bottom); break;
    }
 
    if (isLegacy && table->m_BG_enable_FSS)
