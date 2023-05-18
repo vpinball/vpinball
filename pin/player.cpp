@@ -3939,7 +3939,7 @@ void Player::UpdateBackdropSettings(const bool up)
       viewSetup.mMode = vlm < 0 ? VLM_WINDOW : vlm >= 3 ? VLM_LEGACY : (ViewLayoutMode)vlm;
       break;
    }
-   case BS_Inclination: viewSetup.mLookAt += 0.5f * thesign; break;
+   case BS_LookAt: viewSetup.mLookAt += 0.5f * thesign; break;
    case BS_FOV: viewSetup.mFOV += 0.5f * thesign; break;
    case BS_Layback: viewSetup.mLayback += 0.5f * thesign; break;
    case BS_ViewHOfs: viewSetup.mViewHOfs += 0.5f * thesign; break;
