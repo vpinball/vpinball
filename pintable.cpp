@@ -3349,10 +3349,10 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
    bw.WriteFloat(FID(BOTM), m_bottom);
 
    bw.WriteBool(FID(EFSS), m_BG_enable_FSS);
-   const int vsFields[NUM_BG_SETS][11] = { 
-      { FID(VSM0), FID(ROTA), FID(INCL), FID(LAYB), FID(FOVX), FID(XLTX), FID(XLTY), FID(XLTZ), FID(SCLX), FID(SCLY), FID(SCLZ) },
-      { FID(VSM1), FID(ROTF), FID(INCF), FID(LAYF), FID(FOVF), FID(XLFX), FID(XLFY), FID(XLFZ), FID(SCFX), FID(SCFY), FID(SCFZ) },
-      { FID(VSM2), FID(ROFS), FID(INFS), FID(LAFS), FID(FOFS), FID(XLXS), FID(XLYS), FID(XLZS), FID(SCXS), FID(SCYS), FID(SCZS) },
+   const int vsFields[NUM_BG_SETS][19] = { 
+      { FID(VSM0), FID(ROTA), FID(INCL), FID(LAYB), FID(FOVX), FID(XLTX), FID(XLTY), FID(XLTZ), FID(SCLX), FID(SCLY), FID(SCLZ), FID(HOF0), FID(VOF0), FID(WTX0), FID(WTY0), FID(WTZ0), FID(WBX0), FID(WBY0), FID(WBZ0) },
+      { FID(VSM1), FID(ROTF), FID(INCF), FID(LAYF), FID(FOVF), FID(XLFX), FID(XLFY), FID(XLFZ), FID(SCFX), FID(SCFY), FID(SCFZ), FID(HOF1), FID(VOF1), FID(WTX1), FID(WTY1), FID(WTZ1), FID(WBX1), FID(WBY1), FID(WBZ1) },
+      { FID(VSM2), FID(ROFS), FID(INFS), FID(LAFS), FID(FOFS), FID(XLXS), FID(XLYS), FID(XLZS), FID(SCXS), FID(SCYS), FID(SCZS), FID(HOF2), FID(VOF2), FID(WTX2), FID(WTY2), FID(WTZ2), FID(WBX2), FID(WBY2), FID(WBZ2) },
    };
    for (int i = 0; i < 3; i++)
    {
@@ -3367,6 +3367,14 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
       bw.WriteFloat(vsFields[i][8], mViewSetups[i].mViewportScaleX);
       bw.WriteFloat(vsFields[i][9], mViewSetups[i].mViewportScaleY);
       bw.WriteFloat(vsFields[i][10], m_BG_scalez[0]);
+      bw.WriteFloat(vsFields[i][11], mViewSetups[i].mViewHOfs);
+      bw.WriteFloat(vsFields[i][12], mViewSetups[i].mViewVOfs);
+      bw.WriteFloat(vsFields[i][13], mViewSetups[i].mWindowTopXOfs);
+      bw.WriteFloat(vsFields[i][14], mViewSetups[i].mWindowTopYOfs);
+      bw.WriteFloat(vsFields[i][15], mViewSetups[i].mWindowTopZOfs);
+      bw.WriteFloat(vsFields[i][16], mViewSetups[i].mWindowBottomXOfs);
+      bw.WriteFloat(vsFields[i][17], mViewSetups[i].mWindowBottomYOfs);
+      bw.WriteFloat(vsFields[i][18], mViewSetups[i].mWindowBottomZOfs);
    }
 
    bw.WriteInt(FID(ORRP), m_overridePhysics);
@@ -4133,6 +4141,14 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    case FID(XLTX): pbr->GetFloat(mViewSetups[BG_DESKTOP].mViewX); break;
    case FID(XLTY): pbr->GetFloat(mViewSetups[BG_DESKTOP].mViewY); break;
    case FID(XLTZ): pbr->GetFloat(mViewSetups[BG_DESKTOP].mViewZ); break;
+   case FID(HOF0): pbr->GetFloat(mViewSetups[BG_DESKTOP].mViewHOfs); break;
+   case FID(VOF0): pbr->GetFloat(mViewSetups[BG_DESKTOP].mViewVOfs); break;
+   case FID(WTX0): pbr->GetFloat(mViewSetups[BG_DESKTOP].mWindowTopXOfs); break;
+   case FID(WTY0): pbr->GetFloat(mViewSetups[BG_DESKTOP].mWindowTopYOfs); break;
+   case FID(WTZ0): pbr->GetFloat(mViewSetups[BG_DESKTOP].mWindowTopZOfs); break;
+   case FID(WBX0): pbr->GetFloat(mViewSetups[BG_DESKTOP].mWindowBottomXOfs); break;
+   case FID(WBY0): pbr->GetFloat(mViewSetups[BG_DESKTOP].mWindowBottomYOfs); break;
+   case FID(WBZ0): pbr->GetFloat(mViewSetups[BG_DESKTOP].mWindowBottomZOfs); break;
    case FID(VSM1): pbr->GetInt(&mViewSetups[BG_FULLSCREEN].mMode); break;
    case FID(ROTF): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mViewportRotation); break;
    case FID(LAYF): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mLayback); break;
@@ -4144,6 +4160,14 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    case FID(XLFX): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mViewX); break;
    case FID(XLFY): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mViewY); break;
    case FID(XLFZ): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mViewZ); break;
+   case FID(HOF1): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mViewHOfs); break;
+   case FID(VOF1): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mViewVOfs); break;
+   case FID(WTX1): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mWindowTopXOfs); break;
+   case FID(WTY1): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mWindowTopYOfs); break;
+   case FID(WTZ1): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mWindowTopZOfs); break;
+   case FID(WBX1): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mWindowBottomXOfs); break;
+   case FID(WBY1): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mWindowBottomYOfs); break;
+   case FID(WBZ1): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mWindowBottomZOfs); break;
    case FID(VSM2): pbr->GetInt(&mViewSetups[BG_FSS].mMode); break;
    case FID(ROFS): pbr->GetFloat(mViewSetups[BG_FSS].mViewportRotation); break;
    case FID(LAFS): pbr->GetFloat(mViewSetups[BG_FSS].mLayback); break;
@@ -4155,6 +4179,14 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    case FID(XLXS): pbr->GetFloat(mViewSetups[BG_FSS].mViewX); break;
    case FID(XLYS): pbr->GetFloat(mViewSetups[BG_FSS].mViewY); break;
    case FID(XLZS): pbr->GetFloat(mViewSetups[BG_FSS].mViewZ); break;
+   case FID(HOF2): pbr->GetFloat(mViewSetups[BG_FSS].mViewHOfs); break;
+   case FID(VOF2): pbr->GetFloat(mViewSetups[BG_FSS].mViewVOfs); break;
+   case FID(WTX2): pbr->GetFloat(mViewSetups[BG_FSS].mWindowTopXOfs); break;
+   case FID(WTY2): pbr->GetFloat(mViewSetups[BG_FSS].mWindowTopYOfs); break;
+   case FID(WTZ2): pbr->GetFloat(mViewSetups[BG_FSS].mWindowTopZOfs); break;
+   case FID(WBX2): pbr->GetFloat(mViewSetups[BG_FSS].mWindowBottomXOfs); break;
+   case FID(WBY2): pbr->GetFloat(mViewSetups[BG_FSS].mWindowBottomYOfs); break;
+   case FID(WBZ2): pbr->GetFloat(mViewSetups[BG_FSS].mWindowBottomZOfs); break;
    case FID(EFSS):
    {
       pbr->GetBool(m_BG_enable_FSS);
