@@ -1032,12 +1032,7 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
          PinTable* const table = g_pplayer->m_ptable;
          ViewSetupID id = table->m_BG_current_set;
          ViewSetup &viewSetup = table->mViewSetups[id];
-         viewSetup.mMode = VLM_CAMERA;
          // Default player position (90cm above, 30 cm away)
-         viewSetup.mViewX= CMTOVPU(LoadValueWithDefault(regKey[RegName::DefaultCamera], "CamX"s, 0.f));
-         viewSetup.mViewY= CMTOVPU(LoadValueWithDefault(regKey[RegName::DefaultCamera], "CamY"s, 30.f));
-         viewSetup.mViewportScaleX= LoadValueWithDefault(regKey[RegName::DefaultCamera], "ScaleX"s, 1.f);
-         viewSetup.mViewportScaleY = LoadValueWithDefault(regKey[RegName::DefaultCamera], "ScaleY"s, 1.f);
          table->m_BG_scalez[id] = 1.f;
          if (viewSetup.mViewportRotation != 0.f && viewSetup.mViewportRotation != 90.f && viewSetup.mViewportRotation != 180.f && viewSetup.mViewportRotation != 270.f)
             viewSetup.mViewportRotation = 0.f;
@@ -1046,23 +1041,41 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
          {
          case BG_DESKTOP:
          case BG_FSS:
+            viewSetup.mMode = VLM_CAMERA;
             viewSetup.mViewportRotation = 0.f;
-            viewSetup.mFOV = (id == BG_DESKTOP && !portrait) ? LoadValueWithDefault(regKey[RegName::DefaultCamera], "DesktopFov"s, 43.2f)
-                                                             : LoadValueWithDefault(regKey[RegName::DefaultCamera], "FSSFov"s, 67.f);
-            viewSetup.mLayback = (id == BG_DESKTOP && !portrait) ? LoadValueWithDefault(regKey[RegName::DefaultCamera], "DesktopViewOffset"s, -12.2f)
-                                                                 : LoadValueWithDefault(regKey[RegName::DefaultCamera], "FSSViewOffset"s, 15.f);
-            viewSetup.mLookAt = (id == BG_DESKTOP && !portrait) ? LoadValueWithDefault(regKey[RegName::DefaultCamera], "DesktopInclination"s, 50.f)
-                                                                : LoadValueWithDefault(regKey[RegName::DefaultCamera], "FSSInclination"s, 56.f);
-            viewSetup.mViewZ = (id == BG_DESKTOP && !portrait) ? CMTOVPU(LoadValueWithDefault(regKey[RegName::DefaultCamera], "DesktopCamZ"s, 80.f))
-                                                               : CMTOVPU(LoadValueWithDefault(regKey[RegName::DefaultCamera], "FSSCamZ"s, 65.f));
+            if (id == BG_DESKTOP && !portrait)
+            { // Desktop
+               viewSetup.mViewX = CMTOVPU(LoadValueWithDefault(regKey[RegName::DefaultCamera], "DesktopCamX"s, 0.f));
+               viewSetup.mViewY = CMTOVPU(LoadValueWithDefault(regKey[RegName::DefaultCamera], "DesktopCamY"s, 20.f));
+               viewSetup.mViewZ = CMTOVPU(LoadValueWithDefault(regKey[RegName::DefaultCamera], "DesktopCamZ"s, 70.f));
+               viewSetup.mViewportScaleX = LoadValueWithDefault(regKey[RegName::DefaultCamera], "DesktopScaleX"s, 1.f);
+               viewSetup.mViewportScaleY = LoadValueWithDefault(regKey[RegName::DefaultCamera], "DesktopScaleY"s, 1.f);
+               viewSetup.mFOV = LoadValueWithDefault(regKey[RegName::DefaultCamera], "DesktopFov"s, 50.f);
+               viewSetup.mLookAt = LoadValueWithDefault(regKey[RegName::DefaultCamera], "DesktopLookAt"s, 25.0f);
+               viewSetup.mViewVOfs = LoadValueWithDefault(regKey[RegName::DefaultCamera], "DesktopViewVOfs"s, 14.f);
+            }
+            else
+            { // FSS
+               viewSetup.mViewX = CMTOVPU(LoadValueWithDefault(regKey[RegName::DefaultCamera], "FSSCamX"s, 0.f));
+               viewSetup.mViewY = CMTOVPU(LoadValueWithDefault(regKey[RegName::DefaultCamera], "FSSCamY"s, 20.f));
+               viewSetup.mViewZ = CMTOVPU(LoadValueWithDefault(regKey[RegName::DefaultCamera], "FSSCamZ"s, 70.f));
+               viewSetup.mViewportScaleX = LoadValueWithDefault(regKey[RegName::DefaultCamera], "FSSScaleX"s, 1.f);
+               viewSetup.mViewportScaleY = LoadValueWithDefault(regKey[RegName::DefaultCamera], "FSSScaleY"s, 1.f);
+               viewSetup.mFOV = LoadValueWithDefault(regKey[RegName::DefaultCamera], "FSSFov"s, 77.f);
+               viewSetup.mLookAt = LoadValueWithDefault(regKey[RegName::DefaultCamera], "FSSLookAt"s, 50.0f);
+               viewSetup.mViewVOfs = LoadValueWithDefault(regKey[RegName::DefaultCamera], "FSSViewVOfs"s, 22.f);
+            }
             break;
          case BG_FULLSCREEN:
+            viewSetup.mMode = VLM_WINDOW;
             viewSetup.mViewportRotation = portrait ? 0.f : 270.f;
-            viewSetup.mLookAt = LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetInclination"s, 10.0f);
-            viewSetup.mFOV = portrait ? LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetFovPortrait"s, 55.1f)
-                                      : LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetFovLandscape"s, 32.7f);
-            viewSetup.mLayback = LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetViewOffset"s, 70.1f);
-            viewSetup.mViewZ = CMTOVPU(LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetCamZ"s, 90.f));
+            viewSetup.mViewX = CMTOVPU(LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetCamX"s, 0.f));
+            viewSetup.mViewY = CMTOVPU(LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetCamY"s, 20.f));
+            viewSetup.mViewZ = CMTOVPU(LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetCamZ"s, 70.f));
+            viewSetup.mViewportScaleX = LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetScaleX"s, 1.f);
+            viewSetup.mViewportScaleY = LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetScaleY"s, 1.f);
+            viewSetup.mLookAt = LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetLookAt"s, 25.0f);
+            viewSetup.mViewVOfs = LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetViewVOfs"s, 0.f);
             break;
          }
          g_pplayer->m_pin3d.m_cam.x = 0.f;

@@ -10,7 +10,6 @@ void ViewSetup::ComputeMVP(const PinTable* table, const int viewportWidth, const
 {
    const ViewLayoutMode layoutMode = mMode;
    const float rotation = ANGTORAD(mViewportRotation);
-   const float inclination = ANGTORAD(mLookAt);
    const float FOV = (mFOV < 1.0f) ? 1.0f : mFOV; // Can't have a real zero FOV, but this will look almost the same
    const bool isLegacy = layoutMode == VLM_LEGACY;
    const bool isCamera = layoutMode == VLM_CAMERA;
@@ -18,10 +17,11 @@ void ViewSetup::ComputeMVP(const PinTable* table, const int viewportWidth, const
    const float aspect = ((float)viewportWidth) / ((float)viewportHeight);
    float camx = cam.x, camy = cam.y, camz = cam.z;
    
+   // View angle inclination against playfield. 0 is straight up the playfield.
    float inc;
    switch (mMode)
    {
-   case VLM_LEGACY: inc = inclination + cam_inc; break;
+   case VLM_LEGACY: inc = ANGTORAD(mLookAt) + cam_inc; break;
    case VLM_CAMERA: inc = -M_PIf + atan2f(-mViewY + cam.y - (mLookAt / 100.0f) * table->m_bottom, -mViewZ + cam.z); break;
    case VLM_WINDOW: inc = atan2f(mWindowTopZOfs - mWindowBottomZOfs, table->m_bottom); break;
    }
