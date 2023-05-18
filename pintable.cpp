@@ -5888,9 +5888,9 @@ void PinTable::ImportBackdropPOV(const string& filename)
          // These fields were added in 10.8
          auto layoutmode = desktop->FirstChildElement("LayoutMode");
          if (layoutmode == nullptr)
-            mViewSetups[i].mMode = CLM_LEGACY;
+            mViewSetups[i].mMode = VLM_LEGACY;
          else
-            sscanf_s(layoutmode->GetText(), "%i", mViewSetups[i].mMode);
+            sscanf_s(layoutmode->GetText(), "%i", &mViewSetups[i].mMode);
       }
 
         auto custom = root->FirstChildElement("customsettings");

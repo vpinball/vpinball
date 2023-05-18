@@ -48,6 +48,11 @@ __forceinline T clamp(const T x, const T mn, const T mx)
    return max(min(x,mx),mn);
 }
 
+__forceinline int clamp(const int x, const int mn, const int mx)
+{
+   if (x < mn) return mn; else if (x > mx) return mx; else return x;
+}
+
 template <typename T>
 __forceinline T saturate(const T x)
 {
@@ -193,7 +198,11 @@ public:
 #define M_PI 3.1415926535897932384626433832795
 #endif
 
-#define ANGTORAD(x) ((x) *(float)(M_PI/180.0))
+#ifndef M_PIf
+#define M_PIf 3.1415926535897932384626433832795f
+#endif
+
+#define ANGTORAD(x) ((x) * (float)(M_PI / 180.0))
 #define RADTOANG(x) ((x) *(float)(180.0/M_PI))
 
 #define VBTOF(x) ((x) ? fTrue : fFalse)
