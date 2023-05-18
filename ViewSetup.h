@@ -34,7 +34,7 @@ private:
    vec3 FitCameraToVertices(const vector<Vertex3Ds>& pvvertex3D, const float aspect, const float rotation, const float inclination, const float FOV, const float xlatez, const float layback);
 
 public:
-   ViewLayoutMode mMode = VLM_CAMERA;
+   ViewLayoutMode mMode = VLM_LEGACY;
 
    // View position (relative to table bounds for legacy mode, relative to the bottom center of the table for others)
    float mViewX = 0.f;
