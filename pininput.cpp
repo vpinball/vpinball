@@ -1009,12 +1009,12 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
       }
       else if (keycode == g_pplayer->m_rgKeys[eLeftTiltKey] && dispid == DISPID_GameEvents_KeyDown && m_enableCameraModeFlyAround)
       {
-         g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set] -= 1.0f;
+         g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].mViewportRotation -= 1.0f;
          m_keyPressedState[eLeftTiltKey] = true;
       }
       else if (keycode == g_pplayer->m_rgKeys[eRightTiltKey] && dispid == DISPID_GameEvents_KeyDown && m_enableCameraModeFlyAround)
       {
-         g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set] += 1.0f;
+         g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].mViewportRotation += 1.0f;
          m_keyPressedState[eRightTiltKey] = true;
       }
       else if (keycode == g_pplayer->m_rgKeys[eStartGameKey] && dispid == DISPID_GameEvents_KeyDown)
@@ -1030,38 +1030,39 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
       {
          // Reset to default values
          PinTable* const table = g_pplayer->m_ptable;
-         ViewSetupID view_setup = table->m_BG_current_set;
-         table->m_cameraLayoutMode = CLM_ABSOLUTE;
+         ViewSetupID id = table->m_BG_current_set;
+         ViewSetup &viewSetup = table->mViewSetups[id];
+         viewSetup.mMode = CLM_CAMERA;
          // Default player position (90cm above, 30 cm away)
-         table->m_BG_xlatex[view_setup] = CMTOVPU(LoadValueWithDefault(regKey[RegName::DefaultCamera], "CamX"s, 0.f));
-         table->m_BG_xlatey[view_setup] = CMTOVPU(LoadValueWithDefault(regKey[RegName::DefaultCamera], "CamY"s, 30.f));
-         table->m_BG_scalex[view_setup] = LoadValueWithDefault(regKey[RegName::DefaultCamera], "ScaleX"s, 1.f);
-         table->m_BG_scaley[view_setup] = LoadValueWithDefault(regKey[RegName::DefaultCamera], "ScaleY"s, 1.f);
-         table->m_BG_scalez[view_setup] = 1.f;
-         if (table->m_BG_rotation[view_setup] != 0.f && table->m_BG_rotation[view_setup] != 90.f && table->m_BG_rotation[view_setup] != 180.f && table->m_BG_rotation[view_setup] != 270.f)
-            table->m_BG_rotation[view_setup] = 0.f;
+         viewSetup.mViewX= CMTOVPU(LoadValueWithDefault(regKey[RegName::DefaultCamera], "CamX"s, 0.f));
+         viewSetup.mViewY= CMTOVPU(LoadValueWithDefault(regKey[RegName::DefaultCamera], "CamY"s, 30.f));
+         viewSetup.mViewportScaleX= LoadValueWithDefault(regKey[RegName::DefaultCamera], "ScaleX"s, 1.f);
+         viewSetup.mViewportScaleY = LoadValueWithDefault(regKey[RegName::DefaultCamera], "ScaleY"s, 1.f);
+         table->m_BG_scalez[id] = 1.f;
+         if (viewSetup.mViewportRotation != 0.f && viewSetup.mViewportRotation != 90.f && viewSetup.mViewportRotation != 180.f && viewSetup.mViewportRotation != 270.f)
+            viewSetup.mViewportRotation = 0.f;
          const bool portrait = g_pplayer->m_wnd_width < g_pplayer->m_wnd_height;
-         switch (view_setup)
+         switch (id)
          {
          case BG_DESKTOP:
          case BG_FSS:
-            table->m_BG_rotation[view_setup] = 0.f;
-            table->m_BG_FOV[view_setup] = (view_setup == BG_DESKTOP && !portrait) ? LoadValueWithDefault(regKey[RegName::DefaultCamera], "DesktopFov"s, 43.2f)
-                                                                                  : LoadValueWithDefault(regKey[RegName::DefaultCamera], "FSSFov"s, 67.f);
-            table->m_BG_layback[view_setup] = (view_setup == BG_DESKTOP && !portrait) ? LoadValueWithDefault(regKey[RegName::DefaultCamera], "DesktopViewOffset"s, -12.2f)
-                                                                                      : LoadValueWithDefault(regKey[RegName::DefaultCamera], "FSSViewOffset"s, 15.f);
-            table->m_BG_inclination[view_setup] = (view_setup == BG_DESKTOP && !portrait) ? LoadValueWithDefault(regKey[RegName::DefaultCamera], "DesktopInclination"s, 50.f)
-                                                                                          : LoadValueWithDefault(regKey[RegName::DefaultCamera], "FSSInclination"s, 56.f);
-            table->m_BG_xlatez[view_setup] = (view_setup == BG_DESKTOP && !portrait) ? CMTOVPU(LoadValueWithDefault(regKey[RegName::DefaultCamera], "DesktopCamZ"s, 80.f))
-                                                                                     : CMTOVPU(LoadValueWithDefault(regKey[RegName::DefaultCamera], "FSSCamZ"s, 65.f));
+            viewSetup.mViewportRotation = 0.f;
+            viewSetup.mFOV = (id == BG_DESKTOP && !portrait) ? LoadValueWithDefault(regKey[RegName::DefaultCamera], "DesktopFov"s, 43.2f)
+                                                             : LoadValueWithDefault(regKey[RegName::DefaultCamera], "FSSFov"s, 67.f);
+            viewSetup.mLayback = (id == BG_DESKTOP && !portrait) ? LoadValueWithDefault(regKey[RegName::DefaultCamera], "DesktopViewOffset"s, -12.2f)
+                                                                 : LoadValueWithDefault(regKey[RegName::DefaultCamera], "FSSViewOffset"s, 15.f);
+            viewSetup.mLookAt = (id == BG_DESKTOP && !portrait) ? LoadValueWithDefault(regKey[RegName::DefaultCamera], "DesktopInclination"s, 50.f)
+                                                                : LoadValueWithDefault(regKey[RegName::DefaultCamera], "FSSInclination"s, 56.f);
+            viewSetup.mViewZ = (id == BG_DESKTOP && !portrait) ? CMTOVPU(LoadValueWithDefault(regKey[RegName::DefaultCamera], "DesktopCamZ"s, 80.f))
+                                                               : CMTOVPU(LoadValueWithDefault(regKey[RegName::DefaultCamera], "FSSCamZ"s, 65.f));
             break;
          case BG_FULLSCREEN:
-            table->m_BG_rotation[view_setup] = portrait ? 0.f : 270.f;
-            table->m_BG_inclination[view_setup] = LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetInclination"s, 10.0f);
-            table->m_BG_FOV[view_setup] = portrait ? LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetFovPortrait"s, 55.1f)
-                                                   : LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetFovLandscape"s, 32.7f);
-            table->m_BG_layback[view_setup] = LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetViewOffset"s, 70.1f);
-            table->m_BG_xlatez[view_setup] = CMTOVPU(LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetCamZ"s, 90.f));
+            viewSetup.mViewportRotation = portrait ? 0.f : 270.f;
+            viewSetup.mLookAt = LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetInclination"s, 10.0f);
+            viewSetup.mFOV = portrait ? LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetFovPortrait"s, 55.1f)
+                                      : LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetFovLandscape"s, 32.7f);
+            viewSetup.mLayback = LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetViewOffset"s, 70.1f);
+            viewSetup.mViewZ = CMTOVPU(LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetCamZ"s, 90.f));
             break;
          }
          g_pplayer->m_pin3d.m_cam.x = 0.f;
@@ -1076,20 +1077,11 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
          else
          {
             // Reset POV: copy from startup table to the live one
-            ViewSetupID view_setup = g_pplayer->m_ptable->m_BG_current_set;
+            ViewSetupID id = g_pplayer->m_ptable->m_BG_current_set;
             const PinTable * const __restrict src = g_pplayer->m_pEditorTable;
             PinTable * const __restrict dst = g_pplayer->m_ptable;
-            dst->m_cameraLayoutMode = src->m_cameraLayoutMode;
-            dst->m_BG_layback[view_setup] = src->m_BG_layback[view_setup];
-            dst->m_BG_rotation[view_setup] = src->m_BG_rotation[view_setup];
-            dst->m_BG_inclination[view_setup] = src->m_BG_inclination[view_setup];
-            dst->m_BG_xlatex[view_setup] = src->m_BG_xlatex[view_setup];
-            dst->m_BG_xlatey[view_setup] = src->m_BG_xlatey[view_setup];
-            dst->m_BG_xlatez[view_setup] = src->m_BG_xlatez[view_setup];
-            dst->m_BG_scalex[view_setup] = src->m_BG_scalex[view_setup];
-            dst->m_BG_scaley[view_setup] = src->m_BG_scaley[view_setup];
-            dst->m_BG_scalez[view_setup] = src->m_BG_scalez[view_setup];
-            dst->m_BG_FOV[view_setup] = src->m_BG_FOV[view_setup];
+            dst->mViewSetups[id] = src->mViewSetups[id];
+            dst->m_BG_scalez[id] = src->m_BG_scalez[id];
             dst->m_lightHeight = src->m_lightHeight;
             dst->m_lightRange = src->m_lightRange;
             dst->m_lightEmissionScale = src->m_lightEmissionScale;
@@ -1101,10 +1093,11 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
       }
       else if ((keycode == g_pplayer->m_rgKeys[eRightMagnaSave] || keycode == g_pplayer->m_rgKeys[eLeftMagnaSave]) && dispid == DISPID_GameEvents_KeyDown)
       {
+         ViewSetupID id = g_pplayer->m_ptable->m_BG_current_set;
          bool isStereo = g_pplayer->m_stereo3Denabled && g_pplayer->m_stereo3D != STEREO_OFF && g_pplayer->m_stereo3D != STEREO_VR;
          bool isAnaglyph = isStereo && g_pplayer->m_stereo3D >= STEREO_ANAGLYPH_RC && g_pplayer->m_stereo3D <= STEREO_ANAGLYPH_AB;
-         const Player::BackdropSetting *settings = g_pplayer->m_ptable->m_cameraLayoutMode == CLM_RELATIVE ? Player::m_relativeBackdropSettings : Player::m_absoluteBackdropSettings; 
-         int nSettings = (g_pplayer->m_ptable->m_cameraLayoutMode == CLM_RELATIVE ? sizeof(Player::m_relativeBackdropSettings) : sizeof(Player::m_absoluteBackdropSettings)) / sizeof(Player::BackdropSetting);
+         const Player::BackdropSetting *settings = g_pplayer->m_ptable->mViewSetups[id].mMode == CLM_LEGACY ? Player::mLegacyViewSettings : Player::mCameraViewSettings; 
+         int nSettings = (g_pplayer->m_ptable->mViewSetups[id].mMode == CLM_LEGACY ? sizeof(Player::mLegacyViewSettings) : sizeof(Player::mCameraViewSettings)) / sizeof(Player::BackdropSetting);
          nSettings = isAnaglyph ? nSettings : isStereo ? (nSettings - 2) : (nSettings - 3);
          for (int i = 0; i < nSettings; i++)
             if (settings[i] == g_pplayer->m_backdropSettingActive)
@@ -1382,25 +1375,22 @@ void PinInput::ProcessBallControl(const DIDEVICEOBJECTDATA * __restrict input)
 
 void PinInput::ProcessThrowBalls(const DIDEVICEOBJECTDATA * __restrict input)
 {
-    if (input->dwData == 1 || input->dwData == 3)
-    {
-        POINT point = { mouseX, mouseY };
-        ScreenToClient(m_hwnd, &point);
-        const Vertex3Ds vertex = g_pplayer->m_pin3d.Get3DPointFrom2D(point);
+   if (input->dwData == 1 || input->dwData == 3)
+   {
+      POINT point = { mouseX, mouseY };
+      ScreenToClient(m_hwnd, &point);
+      const Vertex3Ds vertex = g_pplayer->m_pin3d.Get3DPointFrom2D(point);
 
-        float vx = (float)mouseDX*0.1f;
-        float vy = (float)mouseDY*0.1f;
-        if (g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set] != 0.f && g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set] != 360.f)
-        {
-            const float radangle = ANGTORAD(g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set]);
-            const float sn = sinf(radangle);
-            const float cs = cosf(radangle);
+      float vx = (float)mouseDX*0.1f;
+      float vy = (float)mouseDY*0.1f;
+      const float radangle = ANGTORAD(g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].mViewportRotation);
+      const float sn = sinf(radangle);
+      const float cs = cosf(radangle);
+      const float vx2 = cs*vx - sn*vy;
+      const float vy2 = sn*vx + cs*vy;
+      vx = -vx2;
+      vy = -vy2;
 
-            const float vx2 = cs*vx - sn*vy;
-            const float vy2 = sn*vx + cs*vy;
-            vx = -vx2;
-            vy = -vy2;
-        }
 		POINT newPoint;
 		GetCursorPos(&newPoint);
 		ScreenToClient(m_hwnd, &newPoint);
@@ -1966,9 +1956,9 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
             if (m_enableCameraModeFlyAround)
             {
                if (m_keyPressedState[eLeftTiltKey])
-                  g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set] -= 1.0f;
+                  g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].mViewportRotation -= 1.0f;
                if (m_keyPressedState[eRightTiltKey])
-                  g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set] += 1.0f;
+                  g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].mViewportRotation += 1.0f;
             }
          }
          return;

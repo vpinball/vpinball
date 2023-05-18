@@ -914,6 +914,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="variant.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="VertexBuffer.cpp" />
+    <ClCompile Include="ViewSetup.cpp" />
     <ClCompile Include="vpinball.cpp" />
     <ClCompile Include="media\wavread.cpp" />
     <ClCompile Include="wintimer.cpp" />
@@ -1400,6 +1401,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="vector.h" />
     <ClInclude Include="vectorsort.h" />
     <ClInclude Include="VertexBuffer.h" />
+    <ClInclude Include="ViewSetup.h" />
     <ClInclude Include="vpinball_h.h" />
     <ClInclude Include="vpinball.h" />
     <ClInclude Include="vpversion.h" />

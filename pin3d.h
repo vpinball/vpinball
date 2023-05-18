@@ -89,24 +89,6 @@ private:
    mutable Vertex3Ds m_viewVec;
 };
 
-class PinProjection
-{
-public:
-   void Setup(const PinTable* table, const ViewPort& viewPort, const bool cameraMode = false, const StereoMode stereo3D = STEREO_OFF, 
-      const Vertex3Ds& cam = Vertex3Ds(0.f, 0.f, 0.f), const float cam_inc = 0.f, const float xpixoff = 0.f, const float ypixoff = 0.f);
-
-   Matrix3D m_matWorld;
-   Matrix3D m_matView;
-   Matrix3D m_matProj[2];
-   RECT m_rcviewport;
-
-private:
-   void FitCameraToVertices(const vector<Vertex3Ds>& pvvertex3D, float aspect, float rotation, float inclination, float FOV, float xlatez, float layback);
-   void ComputeNearFarPlane(const vector<Vertex3Ds>& verts);
-
-   float m_rznear, m_rzfar;
-   Vertex3Ds m_vertexcamera;
-};
 
 class Pin3D
 {

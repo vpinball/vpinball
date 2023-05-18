@@ -719,18 +719,9 @@ void Player::Shutdown()
       // Save edited camera to editor's table
       PinTable *src = m_ptable, *dst = m_pEditorTable;
       dst->m_3DmaxSeparation = src->m_3DmaxSeparation;
-      dst->m_cameraLayoutMode = src->m_cameraLayoutMode;
       for (int i = 0; i < 3; i++)
       {
-         dst->m_BG_rotation[i] = src->m_BG_rotation[i];
-         dst->m_BG_inclination[i] = src->m_BG_inclination[i];
-         dst->m_BG_layback[i] = src->m_BG_layback[i];
-         dst->m_BG_FOV[i] = src->m_BG_FOV[i];
-         dst->m_BG_xlatex[i] = src->m_BG_xlatex[i];
-         dst->m_BG_xlatey[i] = src->m_BG_xlatey[i];
-         dst->m_BG_xlatez[i] = src->m_BG_xlatez[i];
-         dst->m_BG_scalex[i] = src->m_BG_scalex[i];
-         dst->m_BG_scaley[i] = src->m_BG_scaley[i];
+         dst->mViewSetups[i] = src->mViewSetups[i];
          dst->m_BG_scalez[i] = src->m_BG_scalez[i];
          dst->m_BG_image[i] = src->m_BG_image[i];
       }
@@ -1968,8 +1959,9 @@ void Player::CalcBallAspectRatio()
    const float ballAspecRatioOffsetX = LoadValueWithDefault(regKey[RegName::Player], "BallCorrectionX"s, 0.f);
    const float ballAspecRatioOffsetY = LoadValueWithDefault(regKey[RegName::Player], "BallCorrectionY"s, 0.f);
 
-   const float scalebackX = (m_ptable->m_BG_scalex[m_ptable->m_BG_current_set] != 0.0f) ? ((m_ptable->m_BG_scalex[m_ptable->m_BG_current_set] + m_ptable->m_BG_scaley[m_ptable->m_BG_current_set])*0.5f) / m_ptable->m_BG_scalex[m_ptable->m_BG_current_set] : 1.0f;
-   const float scalebackY = (m_ptable->m_BG_scaley[m_ptable->m_BG_current_set] != 0.0f) ? ((m_ptable->m_BG_scalex[m_ptable->m_BG_current_set] + m_ptable->m_BG_scaley[m_ptable->m_BG_current_set])*0.5f) / m_ptable->m_BG_scaley[m_ptable->m_BG_current_set] : 1.0f;
+   const ViewSetup &viewSetup = m_ptable->mViewSetups[m_ptable->m_BG_current_set];
+   const float scalebackX = (viewSetup.mViewportScaleX != 0.0f) ? ((viewSetup.mViewportScaleX + viewSetup.mViewportScaleY) * 0.5f) / viewSetup.mViewportScaleX : 1.0f;
+   const float scalebackY = (viewSetup.mViewportScaleY != 0.0f) ? ((viewSetup.mViewportScaleX + viewSetup.mViewportScaleY) * 0.5f) / viewSetup.mViewportScaleY : 1.0f;
    double xMonitor = 16.0;
    double yMonitor = 9.0;
 
@@ -2069,7 +2061,7 @@ void Player::CalcBallAspectRatio()
    const double scalebackMonitorX = (xMonitor + yMonitor)*0.5 / xMonitor;
    const double scalebackMonitorY = (xMonitor + yMonitor)*0.5 / yMonitor;
 
-   float temprotation = m_ptable->m_BG_rotation[m_ptable->m_BG_current_set];
+   float temprotation = viewSetup.mViewportRotation;
    while (temprotation < 0.f)
       temprotation += 360.0f;
 
@@ -3212,7 +3204,7 @@ void Player::SSRefl()
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height,
       (float)(1.0 / m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetWidth()), (float)(1.0 / m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetHeight()), 1.0f /*radical_inverse(m_overall_frames%2048)*/, 1.0f);
 
-   const float rotation = fmodf(m_ptable->m_BG_rotation[m_ptable->m_BG_current_set], 360.f);
+   const float rotation = fmodf(m_ptable->mViewSetups[m_ptable->m_BG_current_set].mViewportRotation, 360.f);
    const vec4 SSR_bumpHeight_fresnelRefl_scale_FS(0.3f, 0.3f, m_ptable->m_SSRScale, rotation);
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_SSR_bumpHeight_fresnelRefl_scale_FS, &SSR_bumpHeight_fresnelRefl_scale_FS);
 
@@ -3929,7 +3921,7 @@ void Player::PrepareVideoBuffersAO()
 
 void Player::SetScreenOffset(const float x, const float y)
 {
-   const float rotation = fmodf(m_ptable->m_BG_rotation[m_ptable->m_BG_current_set], 360.f);
+   const float rotation = fmodf(m_ptable->mViewSetups[m_ptable->m_BG_current_set].mViewportRotation, 360.f);
    m_ScreenOffset.x = (rotation != 0.0f ? -y : x);
    m_ScreenOffset.y = (rotation != 0.0f ?  x : y);
 }
@@ -3937,21 +3929,21 @@ void Player::SetScreenOffset(const float x, const float y)
 void Player::UpdateBackdropSettings(const bool up)
 {
    const float thesign = !up ? -0.2f : 0.2f;
-
+   ViewSetup &viewSetup = m_ptable->mViewSetups[m_ptable->m_BG_current_set];
    switch (m_backdropSettingActive)
    {
-   case BS_Inclination: m_ptable->m_BG_inclination[m_ptable->m_BG_current_set] += 0.5f * thesign; break;
-   case BS_FOV: m_ptable->m_BG_FOV[m_ptable->m_BG_current_set] += 0.5f * thesign; break;
-   case BS_Layback: m_ptable->m_BG_layback[m_ptable->m_BG_current_set] += 0.5f * thesign; break;
+   case BS_Inclination: viewSetup.mLookAt += 0.5f * thesign; break;
+   case BS_FOV: viewSetup.mFOV += 0.5f * thesign; break;
+   case BS_Layback: viewSetup.mLayback += 0.5f * thesign; break;
    case BS_XYScale:
-      m_ptable->m_BG_scalex[m_ptable->m_BG_current_set] += 0.01f*thesign;
-      m_ptable->m_BG_scaley[m_ptable->m_BG_current_set] += 0.01f*thesign;
+      viewSetup.mViewportScaleX += 0.01f * thesign;
+      viewSetup.mViewportScaleY += 0.01f * thesign;
       break;
-   case BS_XScale: m_ptable->m_BG_scalex[m_ptable->m_BG_current_set] += 0.01f * thesign; break;
-   case BS_YScale: m_ptable->m_BG_scaley[m_ptable->m_BG_current_set] += 0.01f * thesign; break;
-   case BS_XOffset: m_ptable->m_BG_xlatex[m_ptable->m_BG_current_set] += 5.f * thesign; break;
-   case BS_YOffset: m_ptable->m_BG_xlatey[m_ptable->m_BG_current_set] += 5.f * thesign; break;
-   case BS_ZOffset: m_ptable->m_BG_xlatez[m_ptable->m_BG_current_set] += 50.f * thesign; break;
+   case BS_XScale: viewSetup.mViewportScaleX += 0.01f * thesign; break;
+   case BS_YScale: viewSetup.mViewportScaleY += 0.01f * thesign; break;
+   case BS_XOffset: viewSetup.mViewX += 5.f * thesign; break;
+   case BS_YOffset: viewSetup.mViewY += 5.f * thesign; break;
+   case BS_ZOffset: viewSetup.mViewZ += 50.f * thesign; break;
    case BS_LightEmissionScale:
    {
       m_ptable->m_lightEmissionScale += thesign*100000.f;
@@ -4795,7 +4787,7 @@ void Player::DrawBalls()
 
       // ************************* draw the ball itself ****************************
       Vertex2D stretch;
-      if (m_antiStretchBall && m_ptable->m_BG_rotation[m_ptable->m_BG_current_set] != 0.0f)
+      if (m_antiStretchBall && m_ptable->mViewSetups[m_ptable->m_BG_current_set].mViewportRotation != 0.0f)
          //const vec4 bs(m_BallStretchX/* +stretch.x*/, m_BallStretchY - stretch.y, inv_tablewidth, inv_tableheight);
          GetBallAspectRatio(pball, stretch, zheight);
       else
@@ -5257,7 +5249,7 @@ LRESULT Player::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             {
                 ScreenToClient(pointerInfo.ptPixelLocation);
                 for (unsigned int i = 0; i < MAX_TOUCHREGION; ++i)
-                    if ((m_touchregion_pressed[i] != (uMsg == WM_POINTERDOWN)) && Intersect(touchregion[i], m_wnd_width, m_wnd_height, pointerInfo.ptPixelLocation, fmodf(m_ptable->m_BG_rotation[m_ptable->m_BG_current_set], 360.0f) != 0.f))
+                    if ((m_touchregion_pressed[i] != (uMsg == WM_POINTERDOWN)) && Intersect(touchregion[i], m_wnd_width, m_wnd_height, pointerInfo.ptPixelLocation, fmodf(m_ptable->mViewSetups[m_ptable->m_BG_current_set].mViewportRotation, 360.0f) != 0.f))
                     {
                         m_touchregion_pressed[i] = (uMsg == WM_POINTERDOWN);
 
