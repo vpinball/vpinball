@@ -972,7 +972,7 @@ void LiveUI::UpdateCameraModeUI()
          case Player::BS_YScale: CM_ROW("Viewport Y Strech", "%.1f", 100.f * viewSetup.mViewportScaleY, "%%"); CM_SKIP_LINE; break;
 
          // Player position
-         case Player::BS_Inclination: 
+         case Player::BS_LookAt: 
             if (isLegacy)
                { CM_ROW("Inclination", "%.1f", viewSetup.mLookAt, "deg"); }
             else

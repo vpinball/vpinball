@@ -422,20 +422,20 @@ public:
    bool m_cameraMode;
    enum BackdropSetting
    {
-      BS_ViewMode, BS_Inclination, BS_FOV, BS_Layback, BS_ViewHOfs, BS_ViewVOfs, BS_XYScale, BS_XScale, BS_YScale, BS_XOffset, BS_YOffset, BS_ZOffset,
+      BS_ViewMode, BS_LookAt, BS_FOV, BS_Layback, BS_ViewHOfs, BS_ViewVOfs, BS_XYScale, BS_XScale, BS_YScale, BS_XOffset, BS_YOffset, BS_ZOffset,
       BS_WndTopXOfs, BS_WndTopYOfs, BS_WndTopZOfs, BS_WndBottomXOfs, BS_WndBottomYOfs, BS_WndBottomZOfs,
       BS_LightEmissionScale, BS_LightRange, BS_LightHeight, BS_EnvEmissionScale, BS_EyeSeparation, BS_AnaglyphDesat, BS_AnaglyphContrast,
    };
    static constexpr Player::BackdropSetting mLegacyViewSettings[] = {
-      BS_ViewMode, BS_Inclination, BS_FOV, BS_Layback, BS_XYScale, BS_XScale, BS_YScale, BS_XOffset, BS_YOffset, BS_ZOffset,
+      BS_ViewMode, BS_LookAt, BS_FOV, BS_Layback, BS_XYScale, BS_XScale, BS_YScale, BS_XOffset, BS_YOffset, BS_ZOffset,
       BS_LightEmissionScale, BS_LightRange, BS_LightHeight, BS_EnvEmissionScale, BS_EyeSeparation, BS_AnaglyphDesat, BS_AnaglyphContrast,
    };
    static constexpr Player::BackdropSetting mCameraViewSettings[] = {
-      BS_ViewMode, BS_FOV, BS_ViewHOfs, BS_ViewVOfs, BS_XYScale, BS_XScale, BS_YScale, BS_Inclination, BS_XOffset, BS_YOffset, BS_ZOffset,
+      BS_ViewMode, BS_FOV, BS_ViewHOfs, BS_ViewVOfs, BS_XYScale, BS_XScale, BS_YScale, BS_LookAt, BS_XOffset, BS_YOffset, BS_ZOffset,
       BS_LightEmissionScale, BS_LightRange, BS_LightHeight, BS_EnvEmissionScale, BS_EyeSeparation, BS_AnaglyphDesat, BS_AnaglyphContrast,
    };
    static constexpr Player::BackdropSetting mWindowViewSettings[] = {
-      BS_ViewMode, BS_FOV, BS_ViewHOfs, BS_ViewVOfs, BS_XYScale, BS_XScale, BS_YScale, BS_Inclination, BS_XOffset, BS_YOffset, BS_ZOffset, 
+      BS_ViewMode, BS_ViewHOfs, BS_ViewVOfs, BS_XYScale, BS_XScale, BS_YScale, BS_XOffset, BS_YOffset, BS_ZOffset, 
       BS_WndTopXOfs, BS_WndTopYOfs, BS_WndTopZOfs, BS_WndBottomXOfs, BS_WndBottomYOfs, BS_WndBottomZOfs,
       BS_LightEmissionScale, BS_LightRange, BS_LightHeight, BS_EnvEmissionScale, BS_EyeSeparation, BS_AnaglyphDesat, BS_AnaglyphContrast,
    };
