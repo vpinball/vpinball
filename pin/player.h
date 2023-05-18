@@ -425,11 +425,11 @@ public:
       BS_Inclination, BS_FOV, BS_Layback, BS_XYScale, BS_XScale, BS_YScale, BS_XOffset, BS_YOffset, BS_ZOffset,
       BS_LightEmissionScale, BS_LightRange, BS_LightHeight, BS_EnvEmissionScale, BS_EyeSeparation, BS_AnaglyphDesat, BS_AnaglyphContrast,
    };
-   static constexpr Player::BackdropSetting m_relativeBackdropSettings[] = {
+   static constexpr Player::BackdropSetting mLegacyViewSettings[] = {
       BS_Inclination, BS_FOV, BS_Layback, BS_XYScale, BS_XScale, BS_YScale, BS_XOffset, BS_YOffset, BS_ZOffset,
       BS_LightEmissionScale, BS_LightRange, BS_LightHeight, BS_EnvEmissionScale, BS_EyeSeparation, BS_AnaglyphDesat, BS_AnaglyphContrast,
    };
-   static constexpr Player::BackdropSetting m_absoluteBackdropSettings[] = {
+   static constexpr Player::BackdropSetting mCameraViewSettings[] = {
       BS_FOV, BS_Layback, BS_XScale, BS_Inclination, BS_XOffset, BS_YOffset, BS_ZOffset,
       BS_LightEmissionScale, BS_LightRange, BS_LightHeight, BS_EnvEmissionScale, BS_EyeSeparation, BS_AnaglyphDesat, BS_AnaglyphContrast,
    };

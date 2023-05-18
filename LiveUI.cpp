@@ -779,7 +779,7 @@ void LiveUI::Update()
    else
    {
       // If we are only showing overlays, apply main camera rotation
-      m_rotate = ((int)(g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set] / 90.0f)) & 3;
+      m_rotate = ((int)(g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].mViewportRotation / 90.0f)) & 3;
       if (m_rotate == 1 || m_rotate == 3)
       {
          ImGui::EndFrame();
@@ -806,7 +806,7 @@ void LiveUI::Update()
       // Info overlays: this is not a normal UI aligned to the monitor orientation but an overlay used when playing, 
       // therefore it is rotated like the playfield to face the user and only displays for right angles
       ImGui::PushFont(m_overlayFont);
-      if ((float)m_rotate * 90.0f == g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set])
+      if ((float)m_rotate * 90.0f == g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].mViewportRotation)
       {
          if (g_pplayer->m_cameraMode)
             // Camera mode info text
@@ -931,7 +931,8 @@ void LiveUI::UpdateCameraModeUI()
    ImGui::SetNextWindowPos(ImVec2(0.5f * ImGui::GetIO().DisplaySize.x, 0.8f * ImGui::GetIO().DisplaySize.y), 0, ImVec2(0.5f, 1.f));
    ImGui::Begin("CameraMode", nullptr, window_flags);
 
-   bool isRelative = table->m_cameraLayoutMode == CLM_RELATIVE;
+   ViewSetupID vsId = table->m_BG_current_set;
+   bool isRelative = table->mViewSetups[vsId].mMode == CLM_LEGACY;
 
    if (isRelative)
    {
@@ -945,8 +946,8 @@ void LiveUI::UpdateCameraModeUI()
 
    bool isStereo = m_player->m_stereo3Denabled && m_player->m_stereo3D != STEREO_OFF && m_player->m_stereo3D != STEREO_VR;
    bool isAnaglyph = isStereo && m_player->m_stereo3D >= STEREO_ANAGLYPH_RC && m_player->m_stereo3D <= STEREO_ANAGLYPH_AB;
-   const Player::BackdropSetting *settings = isRelative ? Player::m_relativeBackdropSettings : Player::m_absoluteBackdropSettings;
-   int nSettings = (isRelative ? sizeof(Player::m_relativeBackdropSettings) : sizeof(Player::m_absoluteBackdropSettings)) / sizeof(Player::BackdropSetting);
+   const Player::BackdropSetting *settings = isRelative ? Player::mLegacyViewSettings : Player::mCameraViewSettings;
+   int nSettings = (isRelative ? sizeof(Player::mLegacyViewSettings) : sizeof(Player::mCameraViewSettings)) / sizeof(Player::BackdropSetting);
    nSettings = isAnaglyph ? nSettings : isStereo ? (nSettings - 2) : (nSettings - 3);
    if (ImGui::BeginTable("Camera", 3, ImGuiTableFlags_Borders))
    {
@@ -971,17 +972,15 @@ void LiveUI::UpdateCameraModeUI()
             ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
          switch (settings[i])
          {
-         case Player::BS_FOV: CM_ROW("Field Of View (overall scale)", "%.1f", table->m_BG_FOV[table->m_BG_current_set], "deg"); break;
-         case Player::BS_Layback: CM_ROW(isRelative ? "Layback" : "Vertical Offset", "%.1f", table->m_BG_layback[table->m_BG_current_set], ""); break;
-         case Player::BS_XScale: CM_ROW(isRelative ? "X Scale" : "Horizontal Stretch", "%.1f", 100.f * table->m_BG_scalex[table->m_BG_current_set], "%%");
-            if (!isRelative) CM_SKIP_LINE;
-            break;
-         case Player::BS_YScale: CM_ROW("Y Scale", "%.1f", 100.f * table->m_BG_scaley[table->m_BG_current_set], "%%"); CM_SKIP_LINE; break;
+         case Player::BS_FOV: CM_ROW("Field Of View (overall scale)", "%.1f", table->mViewSetups[vsId].mFOV, "deg"); break;
+         case Player::BS_Layback: CM_ROW(isRelative ? "Layback" : "Vertical Offset", "%.1f", table->mViewSetups[vsId].mLayback, ""); break;
+         case Player::BS_XScale: CM_ROW(isRelative ? "X Scale" : "Horizontal Stretch", "%.1f", 100.f * table->mViewSetups[vsId].mViewportScaleX, "%%"); break;
+         case Player::BS_YScale: CM_ROW("Y Scale", "%.1f", 100.f * table->mViewSetups[vsId].mViewportScaleY, "%%"); CM_SKIP_LINE; break;
 
-         case Player::BS_Inclination: CM_ROW(isRelative ? "Inclination" : "Head Inclination", "%.1f", table->m_BG_inclination[table->m_BG_current_set], "deg"); break;
-         case Player::BS_XOffset: CM_ROW(isRelative ? "X Offset" : "Player X", "%.1f", VPUTOCM(table->m_BG_xlatex[table->m_BG_current_set]), "cm"); break;
-         case Player::BS_YOffset: CM_ROW(isRelative ? "Y Offset" : "Player Y", "%.1f", VPUTOCM(table->m_BG_xlatey[table->m_BG_current_set]), "cm"); break;
-         case Player::BS_ZOffset: CM_ROW(isRelative ? "Z Offset" : "Player Z", "%.1f", VPUTOCM(table->m_BG_xlatez[table->m_BG_current_set]), "cm"); CM_SKIP_LINE; break;
+         case Player::BS_Inclination: CM_ROW(isRelative ? "Inclination" : "Head Inclination", "%.1f", table->mViewSetups[vsId].mLookAt, "deg"); break;
+         case Player::BS_XOffset: CM_ROW(isRelative ? "X Offset" : "Player X", "%.1f", VPUTOCM(table->mViewSetups[vsId].mViewX), "cm"); break;
+         case Player::BS_YOffset: CM_ROW(isRelative ? "Y Offset" : "Player Y", "%.1f", VPUTOCM(table->mViewSetups[vsId].mViewY), "cm"); break;
+         case Player::BS_ZOffset: CM_ROW(isRelative ? "Z Offset" : "Player Z", "%.1f", VPUTOCM(table->mViewSetups[vsId].mViewZ), "cm"); CM_SKIP_LINE; break;
 
          case Player::BS_LightEmissionScale: CM_ROW("Light Emission Scale", "%.0f", table->m_lightEmissionScale, ""); break;
          case Player::BS_LightRange: CM_ROW("Light Range", "%.0f", VPUTOCM(table->m_lightRange), "cm"); break;
@@ -1022,8 +1021,7 @@ void LiveUI::UpdateCameraModeUI()
       ImGui::Text("Camera at X: %.0f Y: %.0f Z: %.0f (cm), Rotation: %.2f", 
          VPUTOCM(pos.x - 0.5f * g_pplayer->m_ptable->m_right), 
          VPUTOCM(pos.y - g_pplayer->m_ptable->m_bottom), 
-         VPUTOCM(pos.z),
-         table->m_BG_rotation[table->m_BG_current_set]);
+         VPUTOCM(pos.z), table->mViewSetups[vsId].mViewportRotation);
    }
 
    ImGui::NewLine();
@@ -2072,15 +2070,7 @@ void LiveUI::UpdateMainSplashModal()
          dst->m_3DmaxSeparation = src->m_3DmaxSeparation;
          for (int i = 0; i < 3; i++)
          {
-            dst->m_BG_rotation[i] = src->m_BG_rotation[i];
-            dst->m_BG_inclination[i] = src->m_BG_inclination[i];
-            dst->m_BG_layback[i] = src->m_BG_layback[i];
-            dst->m_BG_FOV[i] = src->m_BG_FOV[i];
-            dst->m_BG_xlatex[i] = src->m_BG_xlatex[i];
-            dst->m_BG_xlatey[i] = src->m_BG_xlatey[i];
-            dst->m_BG_xlatez[i] = src->m_BG_xlatez[i];
-            dst->m_BG_scalex[i] = src->m_BG_scalex[i];
-            dst->m_BG_scaley[i] = src->m_BG_scaley[i];
+            dst->mViewSetups[i] = src->mViewSetups[i];
             dst->m_BG_scalez[i] = src->m_BG_scalez[i];
             dst->m_BG_image[i] = src->m_BG_image[i];
          }
@@ -2256,22 +2246,27 @@ void LiveUI::CameraProperties(bool is_live)
    ImGui::NewLine();
    if (BEGIN_PROP_TABLE)
    {
+      const ViewSetupID vsId = (ViewSetupID) m_selection.camera;
       const string layoutModeLabels[] = { "Relative"s, "Absolute"s};
-      int startup_mode = m_table ? (int)m_table->m_cameraLayoutMode : 0;
-      int live_mode = m_live_table ? (int)m_live_table->m_cameraLayoutMode : 0;
+      int startup_mode = m_table ? (int)m_table->mViewSetups[vsId].mMode :0;
+      int live_mode = m_live_table ? (int)m_live_table->mViewSetups[vsId].mMode : 0;
       PinTable *table = (is_live ? m_live_table : m_table);
-      auto upd_mode = [table](bool is_live, int prev, int v) { table->m_cameraLayoutMode = (CameraLayoutMode)v; };
+      auto upd_mode = [table, vsId](bool is_live, int prev, int v) { table->mViewSetups[vsId].mMode = (ViewLayoutMode)v; };
+      // View
       PropCombo("Layout Mode", m_table, is_live, &startup_mode, &live_mode, 2, layoutModeLabels, upd_mode);
-      PropFloat("Inclination", m_table, is_live, &(m_table->m_BG_inclination[m_selection.camera]), m_live_table ? &(m_live_table->m_BG_inclination[m_selection.camera]) : nullptr, 0.2f, 1.0f);
-      PropFloat("Field Of View", m_table, is_live, &(m_table->m_BG_FOV[m_selection.camera]), m_live_table ? &(m_live_table->m_BG_FOV[m_selection.camera]) : nullptr, 0.2f, 1.0f);
-      PropFloat("Layback", m_table, is_live, &(m_table->m_BG_layback[m_selection.camera]), m_live_table ? &(m_live_table->m_BG_layback[m_selection.camera]) : nullptr, 0.2f, 1.0f);
-      PropFloat("X Scale", m_table, is_live, &(m_table->m_BG_scalex[m_selection.camera]), m_live_table ? &(m_live_table->m_BG_scalex[m_selection.camera]) : nullptr, 0.002f, 0.01f);
-      PropFloat("Y Scale", m_table, is_live, &(m_table->m_BG_scaley[m_selection.camera]), m_live_table ? &(m_live_table->m_BG_scaley[m_selection.camera]) : nullptr, 0.002f, 0.01f);
+      PropFloat("Field Of View", m_table, is_live, &(m_table->mViewSetups[vsId].mFOV), m_live_table ? &(m_live_table->mViewSetups[vsId].mFOV) : nullptr, 0.2f, 1.0f);
+      PropFloat("Layback", m_table, is_live, &(m_table->mViewSetups[vsId].mLayback), m_live_table ? &(m_live_table->mViewSetups[vsId].mLayback) : nullptr, 0.2f, 1.0f);
+      // Player position
+      PropFloat("Inclination", m_table, is_live, &(m_table->mViewSetups[vsId].mLookAt), m_live_table ? &(m_live_table->mViewSetups[vsId].mLookAt) : nullptr, 0.2f, 1.0f);
+      PropFloat("X Offset", m_table, is_live, &(m_table->mViewSetups[vsId].mViewX), m_live_table ? &(m_live_table->mViewSetups[vsId].mViewX) : nullptr, 10.0f, 50.0f, "%.0f");
+      PropFloat("Y Offset", m_table, is_live, &(m_table->mViewSetups[vsId].mViewY), m_live_table ? &(m_live_table->mViewSetups[vsId].mViewY) : nullptr, 10.0f, 50.0f, "%.0f");
+      PropFloat("Z Offset", m_table, is_live, &(m_table->mViewSetups[vsId].mViewZ), m_live_table ? &(m_live_table->mViewSetups[vsId].mViewZ) : nullptr, 10.0f, 50.0f, "%.0f");
+      // Viewport
+      PropFloat("Rotation", m_table, true, &(m_table->mViewSetups[vsId].mViewportRotation), m_live_table ? &(m_live_table->mViewSetups[vsId].mViewportRotation) : nullptr, 90.f, 90.0f, "%.0f");
+      PropFloat("X Scale", m_table, is_live, &(m_table->mViewSetups[vsId].mViewportScaleX), m_live_table ? &(m_live_table->mViewSetups[vsId].mViewportScaleX) : nullptr, 0.002f, 0.01f);
+      PropFloat("Y Scale", m_table, is_live, &(m_table->mViewSetups[vsId].mViewportScaleY), m_live_table ? &(m_live_table->mViewSetups[vsId].mViewportScaleY) : nullptr, 0.002f, 0.01f);
+      // Legacy tweak
       PropFloat("Z Scale", m_table, is_live, &(m_table->m_BG_scalez[m_selection.camera]), m_live_table ? &(m_live_table->m_BG_scalez[m_selection.camera]) : nullptr, 0.002f, 0.01f);
-      PropFloat("X Offset", m_table, is_live, &(m_table->m_BG_xlatex[m_selection.camera]), m_live_table ? &(m_live_table->m_BG_xlatex[m_selection.camera]) : nullptr, 10.0f, 50.0f, "%.0f");
-      PropFloat("Y Offset", m_table, is_live, &(m_table->m_BG_xlatey[m_selection.camera]), m_live_table ? &(m_live_table->m_BG_xlatey[m_selection.camera]) : nullptr, 10.0f, 50.0f, "%.0f");
-      PropFloat("Z Offset", m_table, is_live, &(m_table->m_BG_xlatez[m_selection.camera]), m_live_table ? &(m_live_table->m_BG_xlatez[m_selection.camera]) : nullptr, 10.0f, 50.0f, "%.0f");
-      PropFloat("Rotation", m_table, true, &(m_table->m_BG_rotation[m_selection.camera]), m_live_table ? &(m_live_table->m_BG_rotation[m_selection.camera]) : nullptr, 90.f, 90.0f, "%.0f");
       ImGui::EndTable();
    }
    ImGui::Separator();

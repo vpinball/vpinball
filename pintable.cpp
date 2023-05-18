@@ -1289,23 +1289,8 @@ PinTable::PinTable()
    //if (m_BG_enable_FSS)
    //   m_currentBackglassMode = FULL_SINGLE_SCREEN;
 
-   m_cameraLayoutMode = CLM_RELATIVE;
    for (int i = 0; i < NUM_BG_SETS; ++i)
-   {
-      m_BG_inclination[i] = 0;
-      m_BG_FOV[i] = 60.0f;
-
-      m_BG_rotation[i] = 0;
-      m_BG_layback[i] = 0;
-
-      m_BG_scalex[i] = 1.0f;
-      m_BG_scaley[i] = 1.0f;
       m_BG_scalez[i] = 1.0f;
-
-      m_BG_xlatex[i] = 0.0f;
-      m_BG_xlatey[i] = CMTOVPU(10.f);
-      m_BG_xlatez[i] = CMTOVPU(90.f);
-   }
 
    CComObject<CodeViewer>::CreateInstance(&m_pcv);
    m_pcv->AddRef();
@@ -1615,25 +1600,12 @@ void PinTable::InitTablePostLoad()
    g_pvp->m_ptableActive = (CComObject<PinTable> *)this;
 
    for (unsigned int i = 1; i < NUM_BG_SETS; ++i)
-      if (m_BG_FOV[i] == FLT_MAX) // old table, copy FS and/or FSS settings over from old DT setting
+      if (mViewSetups[i].mFOV == FLT_MAX) // old table, copy FS and/or FSS settings over from old DT setting
       {
-        m_BG_inclination[i] = m_BG_inclination[BG_DESKTOP];
-        m_BG_FOV[i] = m_BG_FOV[BG_DESKTOP];
-
-        m_BG_rotation[i] = m_BG_rotation[BG_DESKTOP];
-        m_BG_layback[i] = m_BG_layback[BG_DESKTOP];
-
-        m_BG_scalex[i] = m_BG_scalex[BG_DESKTOP];
-        m_BG_scaley[i] = m_BG_scaley[BG_DESKTOP];
-
-        m_BG_xlatex[i] = m_BG_xlatex[BG_DESKTOP];
-        m_BG_xlatey[i] = m_BG_xlatey[BG_DESKTOP];
-
-        m_BG_scalez[i] = m_BG_scalez[BG_DESKTOP];
-        m_BG_xlatez[i] = m_BG_xlatez[BG_DESKTOP];
-
-        if (m_BG_image[i].empty() && i == BG_FSS) // copy image over for FSS mode
-           m_BG_image[i] = m_BG_image[BG_DESKTOP];
+         mViewSetups[i] = mViewSetups[BG_DESKTOP];
+         m_BG_scalez[i] = m_BG_scalez[BG_DESKTOP];
+         if (m_BG_image[i].empty() && i == BG_FSS) // copy image over for FSS mode
+            m_BG_image[i] = m_BG_image[BG_DESKTOP];
       }
 
    m_currentBackglassMode = m_BG_current_set;
@@ -1980,11 +1952,8 @@ void PinTable::Render3DProjection(Sur * const psur)
       return;
 
    // dummy coordinate system for backdrop view
-   ViewPort viewport;
-   viewport.Width = EDITOR_BG_WIDTH;
-   viewport.Height = EDITOR_BG_HEIGHT;
-   PinProjection pinproj;
-   pinproj.Setup(this, viewport);
+   ModelViewProj mvp;
+   mViewSetups[m_BG_current_set].ComputeMVP(this, EDITOR_BG_WIDTH, EDITOR_BG_HEIGHT, false, mvp);
 
    Vertex3Ds rgvIn[8];
    rgvIn[0].x = m_left;  rgvIn[0].y = m_top;    rgvIn[0].z = 50.0f;
@@ -1997,10 +1966,12 @@ void PinTable::Render3DProjection(Sur * const psur)
    rgvIn[7].x = m_left;  rgvIn[7].y = m_bottom; rgvIn[7].z = 50.0f;
 
    Vertex2D rgvOut[8];
-   Matrix3D matT;
-   pinproj.m_matProj[0].Multiply(pinproj.m_matView, matT); // matT = matView * matProj
-   matT.Multiply(pinproj.m_matWorld, matT); // matT = matWorld * matView * matProj
-   matT.TransformVertices(rgvIn, nullptr, 8, rgvOut, pinproj.m_rcviewport);
+   RECT viewport;
+   viewport.left = 0;
+   viewport.top = 0;
+   viewport.right = EDITOR_BG_WIDTH;
+   viewport.bottom = EDITOR_BG_HEIGHT;
+   mvp.GetModelViewProj(0).TransformVertices(rgvIn, nullptr, 8, rgvOut, viewport);
 
    psur->SetFillColor(RGB(200, 200, 200));
    psur->SetBorderColor(-1, false, 0);
@@ -2211,18 +2182,9 @@ void PinTable::Play(const bool cameraMode)
    dst->m_BG_current_set = src->m_BG_current_set;
    dst->m_currentBackglassMode = src->m_currentBackglassMode;
    dst->m_3DmaxSeparation = src->m_3DmaxSeparation;
-   dst->m_cameraLayoutMode = src->m_cameraLayoutMode;
    for (int i = 0; i < 3; i++)
    {
-      dst->m_BG_rotation[i] = src->m_BG_rotation[i];
-      dst->m_BG_inclination[i] = src->m_BG_inclination[i];
-      dst->m_BG_layback[i] = src->m_BG_layback[i];
-      dst->m_BG_FOV[i] = src->m_BG_FOV[i];
-      dst->m_BG_xlatex[i] = src->m_BG_xlatex[i];
-      dst->m_BG_xlatey[i] = src->m_BG_xlatey[i];
-      dst->m_BG_xlatez[i] = src->m_BG_xlatez[i];
-      dst->m_BG_scalex[i] = src->m_BG_scalex[i];
-      dst->m_BG_scaley[i] = src->m_BG_scaley[i];
+      dst->mViewSetups[i] = src->mViewSetups[i];
       dst->m_BG_scalez[i] = src->m_BG_scalez[i];
       dst->m_BG_image[i] = src->m_BG_image[i];
    }
@@ -3386,42 +3348,26 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
    bw.WriteFloat(FID(RGHT), m_right);
    bw.WriteFloat(FID(BOTM), m_bottom);
 
-   bw.WriteInt(FID(CLMO), m_cameraLayoutMode);
-
-   bw.WriteFloat(FID(ROTA), m_BG_rotation[0]);
-   bw.WriteFloat(FID(INCL), m_BG_inclination[0]);
-   bw.WriteFloat(FID(LAYB), m_BG_layback[0]);
-   bw.WriteFloat(FID(FOVX), m_BG_FOV[0]);
-   bw.WriteFloat(FID(XLTX), m_BG_xlatex[0]);
-   bw.WriteFloat(FID(XLTY), m_BG_xlatey[0]);
-   bw.WriteFloat(FID(XLTZ), m_BG_xlatez[0]);
-   bw.WriteFloat(FID(SCLX), m_BG_scalex[0]);
-   bw.WriteFloat(FID(SCLY), m_BG_scaley[0]);
-   bw.WriteFloat(FID(SCLZ), m_BG_scalez[0]);
-
    bw.WriteBool(FID(EFSS), m_BG_enable_FSS);
-
-   bw.WriteFloat(FID(ROTF), m_BG_rotation[1]);
-   bw.WriteFloat(FID(INCF), m_BG_inclination[1]);
-   bw.WriteFloat(FID(LAYF), m_BG_layback[1]);
-   bw.WriteFloat(FID(FOVF), m_BG_FOV[1]);
-   bw.WriteFloat(FID(XLFX), m_BG_xlatex[1]);
-   bw.WriteFloat(FID(XLFY), m_BG_xlatey[1]);
-   bw.WriteFloat(FID(XLFZ), m_BG_xlatez[1]);
-   bw.WriteFloat(FID(SCFX), m_BG_scalex[1]);
-   bw.WriteFloat(FID(SCFY), m_BG_scaley[1]);
-   bw.WriteFloat(FID(SCFZ), m_BG_scalez[1]);
-
-   bw.WriteFloat(FID(ROFS), m_BG_rotation[2]);
-   bw.WriteFloat(FID(INFS), m_BG_inclination[2]);
-   bw.WriteFloat(FID(LAFS), m_BG_layback[2]);
-   bw.WriteFloat(FID(FOFS), m_BG_FOV[2]);
-   bw.WriteFloat(FID(XLXS), m_BG_xlatex[2]);
-   bw.WriteFloat(FID(XLYS), m_BG_xlatey[2]);
-   bw.WriteFloat(FID(XLZS), m_BG_xlatez[2]);
-   bw.WriteFloat(FID(SCXS), m_BG_scalex[2]);
-   bw.WriteFloat(FID(SCYS), m_BG_scaley[2]);
-   bw.WriteFloat(FID(SCZS), m_BG_scalez[2]);
+   const int vsFields[NUM_BG_SETS][11] = { 
+      { FID(VSM0), FID(ROTA), FID(INCL), FID(LAYB), FID(FOVX), FID(XLTX), FID(XLTY), FID(XLTZ), FID(SCLX), FID(SCLY), FID(SCLZ) },
+      { FID(VSM1), FID(ROTF), FID(INCF), FID(LAYF), FID(FOVF), FID(XLFX), FID(XLFY), FID(XLFZ), FID(SCFX), FID(SCFY), FID(SCFZ) },
+      { FID(VSM2), FID(ROFS), FID(INFS), FID(LAFS), FID(FOFS), FID(XLXS), FID(XLYS), FID(XLZS), FID(SCXS), FID(SCYS), FID(SCZS) },
+   };
+   for (int i = 0; i < 3; i++)
+   {
+      bw.WriteInt(vsFields[i][0], mViewSetups[i].mMode);
+      bw.WriteFloat(vsFields[i][1], mViewSetups[i].mViewportRotation);
+      bw.WriteFloat(vsFields[i][2], mViewSetups[i].mLookAt);
+      bw.WriteFloat(vsFields[i][3], mViewSetups[i].mLayback);
+      bw.WriteFloat(vsFields[i][4], mViewSetups[i].mFOV);
+      bw.WriteFloat(vsFields[i][5], mViewSetups[i].mViewX);
+      bw.WriteFloat(vsFields[i][6], mViewSetups[i].mViewY);
+      bw.WriteFloat(vsFields[i][7], mViewSetups[i].mViewZ);
+      bw.WriteFloat(vsFields[i][8], mViewSetups[i].mViewportScaleX);
+      bw.WriteFloat(vsFields[i][9], mViewSetups[i].mViewportScaleY);
+      bw.WriteFloat(vsFields[i][10], m_BG_scalez[0]);
+   }
 
    bw.WriteInt(FID(ORRP), m_overridePhysics);
    bw.WriteBool(FID(ORPF), m_overridePhysicsFlipper);
@@ -4006,8 +3952,6 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 
          if (loadfileversion < 1080) 
          {
-            // Absolute camera mode was added in 10.8
-            m_cameraLayoutMode = CLM_RELATIVE;
             // reflections were hardcoded without render probe before 10.8.0
             RenderProbe* const pf_reflections = new RenderProbe();
             pf_reflections->SetName(PLAYFIELD_REFLECTION_RENDERPROBE_NAME);
@@ -4178,37 +4122,39 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    case FID(TOPX): pbr->GetFloat(m_top); break;
    case FID(RGHT): pbr->GetFloat(m_right); break;
    case FID(BOTM): pbr->GetFloat(m_bottom); break;
-   case FID(CLMO): pbr->GetInt(&m_cameraLayoutMode); break;
-   case FID(ROTA): pbr->GetFloat(m_BG_rotation[BG_DESKTOP]); break;
-   case FID(LAYB): pbr->GetFloat(m_BG_layback[BG_DESKTOP]); break;
-   case FID(INCL): pbr->GetFloat(m_BG_inclination[BG_DESKTOP]); break;
-   case FID(FOVX): pbr->GetFloat(m_BG_FOV[BG_DESKTOP]); break;
-   case FID(SCLX): pbr->GetFloat(m_BG_scalex[BG_DESKTOP]); break;
-   case FID(SCLY): pbr->GetFloat(m_BG_scaley[BG_DESKTOP]); break;
+   case FID(VSM0): pbr->GetInt(&mViewSetups[BG_DESKTOP].mMode); break;
+   case FID(ROTA): pbr->GetFloat(mViewSetups[BG_DESKTOP].mViewportRotation); break;
+   case FID(LAYB): pbr->GetFloat(mViewSetups[BG_DESKTOP].mLayback); break;
+   case FID(INCL): pbr->GetFloat(mViewSetups[BG_DESKTOP].mLookAt); break;
+   case FID(FOVX): pbr->GetFloat(mViewSetups[BG_DESKTOP].mFOV); break;
+   case FID(SCLX): pbr->GetFloat(mViewSetups[BG_DESKTOP].mViewportScaleX); break;
+   case FID(SCLY): pbr->GetFloat(mViewSetups[BG_DESKTOP].mViewportScaleY); break;
    case FID(SCLZ): pbr->GetFloat(m_BG_scalez[BG_DESKTOP]); break;
-   case FID(XLTX): pbr->GetFloat(m_BG_xlatex[BG_DESKTOP]); break;
-   case FID(XLTY): pbr->GetFloat(m_BG_xlatey[BG_DESKTOP]); break;
-   case FID(XLTZ): pbr->GetFloat(m_BG_xlatez[BG_DESKTOP]); break;
-   case FID(ROTF): pbr->GetFloat(m_BG_rotation[BG_FULLSCREEN]); break;
-   case FID(LAYF): pbr->GetFloat(m_BG_layback[BG_FULLSCREEN]); break;
-   case FID(INCF): pbr->GetFloat(m_BG_inclination[BG_FULLSCREEN]); break;
-   case FID(FOVF): pbr->GetFloat(m_BG_FOV[BG_FULLSCREEN]); break;
-   case FID(SCFX): pbr->GetFloat(m_BG_scalex[BG_FULLSCREEN]); break;
-   case FID(SCFY): pbr->GetFloat(m_BG_scaley[BG_FULLSCREEN]); break;
+   case FID(XLTX): pbr->GetFloat(mViewSetups[BG_DESKTOP].mViewX); break;
+   case FID(XLTY): pbr->GetFloat(mViewSetups[BG_DESKTOP].mViewY); break;
+   case FID(XLTZ): pbr->GetFloat(mViewSetups[BG_DESKTOP].mViewZ); break;
+   case FID(VSM1): pbr->GetInt(&mViewSetups[BG_FULLSCREEN].mMode); break;
+   case FID(ROTF): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mViewportRotation); break;
+   case FID(LAYF): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mLayback); break;
+   case FID(INCF): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mLookAt); break;
+   case FID(FOVF): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mFOV); break;
+   case FID(SCFX): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mViewportScaleX); break;
+   case FID(SCFY): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mViewportScaleY); break;
    case FID(SCFZ): pbr->GetFloat(m_BG_scalez[BG_FULLSCREEN]); break;
-   case FID(XLFX): pbr->GetFloat(m_BG_xlatex[BG_FULLSCREEN]); break;
-   case FID(XLFY): pbr->GetFloat(m_BG_xlatey[BG_FULLSCREEN]); break;
-   case FID(XLFZ): pbr->GetFloat(m_BG_xlatez[BG_FULLSCREEN]); break;
-   case FID(ROFS): pbr->GetFloat(m_BG_rotation[BG_FSS]); break;
-   case FID(LAFS): pbr->GetFloat(m_BG_layback[BG_FSS]); break;
-   case FID(INFS): pbr->GetFloat(m_BG_inclination[BG_FSS]); break;
-   case FID(FOFS): pbr->GetFloat(m_BG_FOV[BG_FSS]); break;
-   case FID(SCXS): pbr->GetFloat(m_BG_scalex[BG_FSS]); break;
-   case FID(SCYS): pbr->GetFloat(m_BG_scaley[BG_FSS]); break;
+   case FID(XLFX): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mViewX); break;
+   case FID(XLFY): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mViewY); break;
+   case FID(XLFZ): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mViewZ); break;
+   case FID(VSM2): pbr->GetInt(&mViewSetups[BG_FSS].mMode); break;
+   case FID(ROFS): pbr->GetFloat(mViewSetups[BG_FSS].mViewportRotation); break;
+   case FID(LAFS): pbr->GetFloat(mViewSetups[BG_FSS].mLayback); break;
+   case FID(INFS): pbr->GetFloat(mViewSetups[BG_FSS].mLookAt); break;
+   case FID(FOFS): pbr->GetFloat(mViewSetups[BG_FSS].mFOV); break;
+   case FID(SCXS): pbr->GetFloat(mViewSetups[BG_FSS].mViewportScaleX); break;
+   case FID(SCYS): pbr->GetFloat(mViewSetups[BG_FSS].mViewportScaleY); break;
    case FID(SCZS): pbr->GetFloat(m_BG_scalez[BG_FSS]); break;
-   case FID(XLXS): pbr->GetFloat(m_BG_xlatex[BG_FSS]); break;
-   case FID(XLYS): pbr->GetFloat(m_BG_xlatey[BG_FSS]); break;
-   case FID(XLZS): pbr->GetFloat(m_BG_xlatez[BG_FSS]); break;
+   case FID(XLXS): pbr->GetFloat(mViewSetups[BG_FSS].mViewX); break;
+   case FID(XLYS): pbr->GetFloat(mViewSetups[BG_FSS].mViewY); break;
+   case FID(XLZS): pbr->GetFloat(mViewSetups[BG_FSS].mViewZ); break;
    case FID(EFSS):
    {
       pbr->GetBool(m_BG_enable_FSS);
@@ -5919,66 +5865,33 @@ void PinTable::ImportBackdropPOV(const string& filename)
            return;
         }
 
-        auto layoutmode = root->FirstChildElement("LayoutMode");
-        if (layoutmode == nullptr)
-           m_cameraLayoutMode = CLM_RELATIVE;
-        else
-           sscanf_s(layoutmode->GetText(), "%i", &m_cameraLayoutMode);
-
-        auto desktop = root->FirstChildElement("desktop");
-        if(!desktop)
-        {
-            ShowError("Error parsing POV XML file: 'desktop' element is missing");
-           xmlDoc.Clear();
-           return;
-        }
-        sscanf_s(desktop->FirstChildElement("inclination")->GetText(), "%f", &m_BG_inclination[BG_DESKTOP]);
-        sscanf_s(desktop->FirstChildElement("fov")->GetText(), "%f", &m_BG_FOV[BG_DESKTOP]);
-        sscanf_s(desktop->FirstChildElement("layback")->GetText(), "%f", &m_BG_layback[BG_DESKTOP]);
-        sscanf_s(desktop->FirstChildElement("rotation")->GetText(), "%f", &m_BG_rotation[BG_DESKTOP]);
-        sscanf_s(desktop->FirstChildElement("xscale")->GetText(), "%f", &m_BG_scalex[BG_DESKTOP]);
-        sscanf_s(desktop->FirstChildElement("yscale")->GetText(), "%f", &m_BG_scaley[BG_DESKTOP]);
-        sscanf_s(desktop->FirstChildElement("zscale")->GetText(), "%f", &m_BG_scalez[BG_DESKTOP]);
-        sscanf_s(desktop->FirstChildElement("xoffset")->GetText(), "%f", &m_BG_xlatex[BG_DESKTOP]);
-        sscanf_s(desktop->FirstChildElement("yoffset")->GetText(), "%f", &m_BG_xlatey[BG_DESKTOP]);
-        sscanf_s(desktop->FirstChildElement("zoffset")->GetText(), "%f", &m_BG_xlatez[BG_DESKTOP]);
-
-        auto fullscreen = root->FirstChildElement("fullscreen");
-        if(!fullscreen)
-        {
-            ShowError("Error parsing POV XML file: 'fullscreen' element is missing");
-            return;
-        }
-
-        sscanf_s(fullscreen->FirstChildElement("inclination")->GetText(), "%f", &m_BG_inclination[BG_FULLSCREEN]);
-        sscanf_s(fullscreen->FirstChildElement("fov")->GetText(), "%f", &m_BG_FOV[BG_FULLSCREEN]);
-        sscanf_s(fullscreen->FirstChildElement("layback")->GetText(), "%f", &m_BG_layback[BG_FULLSCREEN]);
-        sscanf_s(fullscreen->FirstChildElement("rotation")->GetText(), "%f", &m_BG_rotation[BG_FULLSCREEN]);
-        sscanf_s(fullscreen->FirstChildElement("xscale")->GetText(), "%f", &m_BG_scalex[BG_FULLSCREEN]);
-        sscanf_s(fullscreen->FirstChildElement("yscale")->GetText(), "%f", &m_BG_scaley[BG_FULLSCREEN]);
-        sscanf_s(fullscreen->FirstChildElement("zscale")->GetText(), "%f", &m_BG_scalez[BG_FULLSCREEN]);
-        sscanf_s(fullscreen->FirstChildElement("xoffset")->GetText(), "%f", &m_BG_xlatex[BG_FULLSCREEN]);
-        sscanf_s(fullscreen->FirstChildElement("yoffset")->GetText(), "%f", &m_BG_xlatey[BG_FULLSCREEN]);
-        sscanf_s(fullscreen->FirstChildElement("zoffset")->GetText(), "%f", &m_BG_xlatez[BG_FULLSCREEN]);
-        oldFormatLoaded = true;
-
-        auto fullsinglescreen = root->FirstChildElement("fullsinglescreen");
-        if(!fullsinglescreen)
-        {
-            ShowError("Error parsing POV XML file: 'fullsinglescreen' is missing");
+      string sections[] = { "desktop"s, "fullscreen"s, "fullsinglescreen"s };
+      for (int i = 0; i < 3; i++)
+      {
+         auto desktop = root->FirstChildElement(sections[i].c_str());
+         if (!desktop)
+         {
+            ShowError("Error parsing POV XML file: '"s.append(sections[i]).append("' element is missing"s).c_str());
             xmlDoc.Clear();
             return;
-        }
-        sscanf_s(fullsinglescreen->FirstChildElement("inclination")->GetText(), "%f", &m_BG_inclination[BG_FSS]);
-        sscanf_s(fullsinglescreen->FirstChildElement("fov")->GetText(), "%f", &m_BG_FOV[BG_FSS]);
-        sscanf_s(fullsinglescreen->FirstChildElement("layback")->GetText(), "%f", &m_BG_layback[BG_FSS]);
-        sscanf_s(fullsinglescreen->FirstChildElement("rotation")->GetText(), "%f", &m_BG_rotation[BG_FSS]);
-        sscanf_s(fullsinglescreen->FirstChildElement("xscale")->GetText(), "%f", &m_BG_scalex[BG_FSS]);
-        sscanf_s(fullsinglescreen->FirstChildElement("yscale")->GetText(), "%f", &m_BG_scaley[BG_FSS]);
-        sscanf_s(fullsinglescreen->FirstChildElement("zscale")->GetText(), "%f", &m_BG_scalez[BG_FSS]);
-        sscanf_s(fullsinglescreen->FirstChildElement("xoffset")->GetText(), "%f", &m_BG_xlatex[BG_FSS]);
-        sscanf_s(fullsinglescreen->FirstChildElement("yoffset")->GetText(), "%f", &m_BG_xlatey[BG_FSS]);
-        sscanf_s(fullsinglescreen->FirstChildElement("zoffset")->GetText(), "%f", &m_BG_xlatez[BG_FSS]);
+         }
+         sscanf_s(desktop->FirstChildElement("inclination")->GetText(), "%f", &mViewSetups[i].mLookAt);
+         sscanf_s(desktop->FirstChildElement("fov")->GetText(), "%f", &mViewSetups[i].mFOV);
+         sscanf_s(desktop->FirstChildElement("layback")->GetText(), "%f", &mViewSetups[i].mLayback);
+         sscanf_s(desktop->FirstChildElement("rotation")->GetText(), "%f", &mViewSetups[i].mViewportRotation);
+         sscanf_s(desktop->FirstChildElement("xscale")->GetText(), "%f", &mViewSetups[i].mViewportScaleX);
+         sscanf_s(desktop->FirstChildElement("yscale")->GetText(), "%f", &mViewSetups[i].mViewportScaleY);
+         sscanf_s(desktop->FirstChildElement("zscale")->GetText(), "%f", &m_BG_scalez[i]);
+         sscanf_s(desktop->FirstChildElement("xoffset")->GetText(), "%f", &mViewSetups[i].mViewX);
+         sscanf_s(desktop->FirstChildElement("yoffset")->GetText(), "%f", &mViewSetups[i].mViewY);
+         sscanf_s(desktop->FirstChildElement("zoffset")->GetText(), "%f", &mViewSetups[i].mViewZ);
+         // These fields were added in 10.8
+         auto layoutmode = desktop->FirstChildElement("LayoutMode");
+         if (layoutmode == nullptr)
+            mViewSetups[i].mMode = CLM_LEGACY;
+         else
+            sscanf_s(layoutmode->GetText(), "%i", mViewSetups[i].mMode);
+      }
 
         auto custom = root->FirstChildElement("customsettings");
         if (custom)
@@ -6106,41 +6019,41 @@ void PinTable::ExportBackdropPOV(const string& filename)
     try
     {
       auto root = xmlDoc.NewElement("POV");
-      auto layoutmode = xmlDoc.NewElement("LayoutMode");
-      layoutmode->SetText(m_cameraLayoutMode);
-      root->InsertEndChild(layoutmode);
       for (int i = 0; i < 3; i++)
       {
          auto view = xmlDoc.NewElement(i == 0 ? "desktop" : i == 1 ? "fullscreen" : "fullsinglescreen");
+         auto layoutmode = xmlDoc.NewElement("LayoutMode");
+         layoutmode->SetText(mViewSetups[i].mMode);
+         root->InsertEndChild(layoutmode);
          auto node = xmlDoc.NewElement("inclination");
-         node->SetText(m_BG_inclination[i]);
+         node->SetText(mViewSetups[i].mLookAt);
          view->InsertEndChild(node);
          node = xmlDoc.NewElement("fov");
-         node->SetText(m_BG_FOV[i]);
+         node->SetText(mViewSetups[i].mFOV);
          view->InsertEndChild(node);
          node = xmlDoc.NewElement("layback");
-         node->SetText(m_BG_layback[i]);
+         node->SetText(mViewSetups[i].mLayback);
          view->InsertEndChild(node);
          node = xmlDoc.NewElement("rotation");
-         node->SetText(m_BG_rotation[i]);
+         node->SetText(mViewSetups[i].mViewportRotation);
          view->InsertEndChild(node);
          node = xmlDoc.NewElement("xscale");
-         node->SetText(m_BG_scalex[i]);
+         node->SetText(mViewSetups[i].mViewportScaleX);
          view->InsertEndChild(node);
          node = xmlDoc.NewElement("yscale");
-         node->SetText(m_BG_scaley[i]);
+         node->SetText(mViewSetups[i].mViewportScaleY);
          view->InsertEndChild(node);
          node = xmlDoc.NewElement("zscale");
          node->SetText(m_BG_scalez[i]);
          view->InsertEndChild(node);
          node = xmlDoc.NewElement("xoffset");
-         node->SetText(m_BG_xlatex[i]);
+         node->SetText(mViewSetups[i].mViewX);
          view->InsertEndChild(node);
          node = xmlDoc.NewElement("yoffset");
-         node->SetText(m_BG_xlatey[i]);
+         node->SetText(mViewSetups[i].mViewY);
          view->InsertEndChild(node);
          node = xmlDoc.NewElement("zoffset");
-         node->SetText(m_BG_xlatez[i]);
+         node->SetText(mViewSetups[i].mViewZ);
          view->InsertEndChild(node);
          root->InsertEndChild(view);
       }
@@ -9146,7 +9059,7 @@ STDMETHODIMP PinTable::put_BackglassMode(BackglassIndex pVal)
 
 STDMETHODIMP PinTable::get_FieldOfView(float *pVal)
 {
-   *pVal = m_BG_FOV[m_currentBackglassMode];
+   *pVal = mViewSetups[m_currentBackglassMode].mFOV;
 
    return S_OK;
 }
@@ -9154,7 +9067,7 @@ STDMETHODIMP PinTable::get_FieldOfView(float *pVal)
 STDMETHODIMP PinTable::put_FieldOfView(float newVal)
 {
    STARTUNDO
-   m_BG_FOV[m_currentBackglassMode] = newVal;
+   mViewSetups[m_currentBackglassMode].mFOV = newVal;
    STOPUNDO
 
    return S_OK;
@@ -9162,7 +9075,7 @@ STDMETHODIMP PinTable::put_FieldOfView(float newVal)
 
 STDMETHODIMP PinTable::get_Inclination(float *pVal)
 {
-   *pVal = m_BG_inclination[m_currentBackglassMode];
+   *pVal = mViewSetups[m_currentBackglassMode].mLookAt;
 
    return S_OK;
 }
@@ -9170,7 +9083,7 @@ STDMETHODIMP PinTable::get_Inclination(float *pVal)
 STDMETHODIMP PinTable::put_Inclination(float newVal)
 {
    STARTUNDO
-   m_BG_inclination[m_currentBackglassMode] = newVal;
+   mViewSetups[m_currentBackglassMode].mLookAt = newVal;
    STOPUNDO
 
    return S_OK;
@@ -9178,7 +9091,7 @@ STDMETHODIMP PinTable::put_Inclination(float newVal)
 
 STDMETHODIMP PinTable::get_Layback(float *pVal)
 {
-   *pVal = m_BG_layback[m_currentBackglassMode];
+   *pVal = mViewSetups[m_currentBackglassMode].mLayback;
 
    return S_OK;
 }
@@ -9186,7 +9099,7 @@ STDMETHODIMP PinTable::get_Layback(float *pVal)
 STDMETHODIMP PinTable::put_Layback(float newVal)
 {
    STARTUNDO
-   m_BG_layback[m_currentBackglassMode] = newVal;
+   mViewSetups[m_currentBackglassMode].mLayback = newVal;
    STOPUNDO
 
    return S_OK;
@@ -9194,7 +9107,7 @@ STDMETHODIMP PinTable::put_Layback(float newVal)
 
 STDMETHODIMP PinTable::get_Rotation(float *pVal)
 {
-   *pVal = m_BG_rotation[m_currentBackglassMode];
+   *pVal = mViewSetups[m_currentBackglassMode].mViewportRotation;
 
    return S_OK;
 }
@@ -9202,7 +9115,7 @@ STDMETHODIMP PinTable::get_Rotation(float *pVal)
 STDMETHODIMP PinTable::put_Rotation(float newVal)
 {
    STARTUNDO
-   m_BG_rotation[m_currentBackglassMode] = newVal;
+   mViewSetups[m_currentBackglassMode].mViewportRotation = newVal;
    STOPUNDO
 
    return S_OK;
@@ -9210,7 +9123,7 @@ STDMETHODIMP PinTable::put_Rotation(float newVal)
 
 STDMETHODIMP PinTable::get_Scalex(float *pVal)
 {
-   *pVal = m_BG_scalex[m_currentBackglassMode];
+   *pVal = mViewSetups[m_currentBackglassMode].mViewportScaleX;
 
    return S_OK;
 }
@@ -9218,7 +9131,7 @@ STDMETHODIMP PinTable::get_Scalex(float *pVal)
 STDMETHODIMP PinTable::put_Scalex(float newVal)
 {
    STARTUNDO
-   m_BG_scalex[m_currentBackglassMode] = newVal;
+   mViewSetups[m_currentBackglassMode].mViewportScaleX = newVal;
    STOPUNDO
 
    return S_OK;
@@ -9226,7 +9139,7 @@ STDMETHODIMP PinTable::put_Scalex(float newVal)
 
 STDMETHODIMP PinTable::get_Scaley(float *pVal)
 {
-   *pVal = m_BG_scaley[m_currentBackglassMode];
+   *pVal = mViewSetups[m_currentBackglassMode].mViewportScaleY;
 
    return S_OK;
 }
@@ -9234,7 +9147,7 @@ STDMETHODIMP PinTable::get_Scaley(float *pVal)
 STDMETHODIMP PinTable::put_Scaley(float newVal)
 {
    STARTUNDO
-   m_BG_scaley[m_currentBackglassMode] = newVal;
+   mViewSetups[m_currentBackglassMode].mViewportScaleY = newVal;
    STOPUNDO
 
    return S_OK;
@@ -9258,7 +9171,7 @@ STDMETHODIMP PinTable::put_Scalez(float newVal)
 
 STDMETHODIMP PinTable::get_Xlatex(float *pVal)
 {
-   *pVal = m_BG_xlatex[m_currentBackglassMode];
+   *pVal = mViewSetups[m_currentBackglassMode].mViewX;
 
    return S_OK;
 }
@@ -9266,7 +9179,7 @@ STDMETHODIMP PinTable::get_Xlatex(float *pVal)
 STDMETHODIMP PinTable::put_Xlatex(float newVal)
 {
    STARTUNDO
-   m_BG_xlatex[m_currentBackglassMode] = newVal;
+   mViewSetups[m_currentBackglassMode].mViewX = newVal;
    STOPUNDO
 
    return S_OK;
@@ -9274,7 +9187,7 @@ STDMETHODIMP PinTable::put_Xlatex(float newVal)
 
 STDMETHODIMP PinTable::get_Xlatey(float *pVal)
 {
-   *pVal = m_BG_xlatey[m_currentBackglassMode];
+   *pVal = mViewSetups[m_currentBackglassMode].mViewY;
 
    return S_OK;
 }
@@ -9282,7 +9195,7 @@ STDMETHODIMP PinTable::get_Xlatey(float *pVal)
 STDMETHODIMP PinTable::put_Xlatey(float newVal)
 {
    STARTUNDO
-   m_BG_xlatey[m_currentBackglassMode] = newVal;
+   mViewSetups[m_currentBackglassMode].mViewY = newVal;
    STOPUNDO
 
    return S_OK;
@@ -9290,7 +9203,7 @@ STDMETHODIMP PinTable::put_Xlatey(float newVal)
 
 STDMETHODIMP PinTable::get_Xlatez(float *pVal)
 {
-   *pVal = m_BG_xlatez[m_currentBackglassMode];
+   *pVal = mViewSetups[m_currentBackglassMode].mViewZ;
 
    return S_OK;
 }
@@ -9298,7 +9211,7 @@ STDMETHODIMP PinTable::get_Xlatez(float *pVal)
 STDMETHODIMP PinTable::put_Xlatez(float newVal)
 {
    STARTUNDO
-   m_BG_xlatez[m_currentBackglassMode] = newVal;
+   mViewSetups[m_currentBackglassMode].mViewZ = newVal;
    STOPUNDO
 
    return S_OK;

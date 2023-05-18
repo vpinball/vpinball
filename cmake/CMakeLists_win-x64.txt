@@ -526,6 +526,8 @@ add_executable(vpinball WIN32
    main.h
    VertexBuffer.cpp
    VertexBuffer.h
+   ViewSetup.cpp
+   ViewSetup.h
    vpinball.cpp
    vpinball_h.h
    vpversion.h

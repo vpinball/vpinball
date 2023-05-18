@@ -11,6 +11,7 @@
 #include "hash.h"
 #include "SearchSelectDialog.h"
 #include "RenderProbe.h"
+#include "ViewSetup.h"
 
 #define VIEW_PLAYFIELD 1
 #define VIEW_BACKGLASS 2
@@ -27,22 +28,6 @@ struct LightSource
 {
    COLORREF emission;
    Vertex3Ds pos;
-};
-
-// View setup identifier
-enum ViewSetupID
-{
-   BG_DESKTOP = 0,
-   BG_FULLSCREEN = 1,
-   BG_FSS = 2,
-   NUM_BG_SETS
-};
-
-// View layout mode
-enum CameraLayoutMode : int
-{
-   CLM_RELATIVE = 0, // All tables before 10.8 used a camera position relative to a fitting of a set of bounding vertices (not all parts)
-   CLM_ABSOLUTE // Position camera relative to the bottom center of the table
 };
 
 struct ProtectionData
@@ -625,17 +610,8 @@ public:
    float m_defaultBulbIntensityScaleOnBall;
 
    ViewSetupID m_BG_current_set;
-   CameraLayoutMode m_cameraLayoutMode = CLM_ABSOLUTE;
-   float m_BG_inclination[NUM_BG_SETS];
-   float m_BG_FOV[NUM_BG_SETS];
-   float m_BG_layback[NUM_BG_SETS];
-   float m_BG_rotation[NUM_BG_SETS];
-   float m_BG_scalex[NUM_BG_SETS];
-   float m_BG_scaley[NUM_BG_SETS];
+   ViewSetup mViewSetups[NUM_BG_SETS];
    float m_BG_scalez[NUM_BG_SETS];
-   float m_BG_xlatex[NUM_BG_SETS];
-   float m_BG_xlatey[NUM_BG_SETS];
-   float m_BG_xlatez[NUM_BG_SETS];
    string m_BG_image[NUM_BG_SETS];
 
    bool m_BG_enable_FSS;
