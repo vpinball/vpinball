@@ -629,19 +629,11 @@ float PinDirectSound::PanTo3D(float input)
 
 float PinDirectSound::PanSSF(float pan)
 {
-	float x = 0.0f;
-
 	// This math could probably be simplified but it is kept in long form
 	// to aide in fine tuning and clarity of function.
 
 	// Clip the pan input range to -1.0 to 1.0
-
-	if (pan < -1.0f)
-		x = -1.0f;
-	else if (pan > 1.0f)
-		x = 1.0f;
-	else
-		x = pan;
+	float x = clamp(pan, -1.f, 1.f);
 
 	// Rescale pan range from an exponential [-1,0] and [0,1] to a linear [-1.0, 1.0]
 	// Do not avoid values close to zero like PanTo3D() does as that
@@ -655,8 +647,8 @@ float PinDirectSound::PanSSF(float pan)
 
 	x *= 3.0f;
 
-	// BASS pan effect is much beter than VPX 10.6/DirectSound3d but it
-	// could still stand a little enhancement to exagerrate the effect.
+	// BASS pan effect is much better than VPX 10.6/DirectSound3d but it
+	// could still stand a little enhancement to exaggerate the effect.
 	// The effect goal is to place slingshot effects almost entirely left/right
 	// and flipper effects in the cross fade region (louder on their corresponding
 	// sides but still audible on the opposite side..)

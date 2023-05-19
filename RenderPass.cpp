@@ -104,7 +104,7 @@ void RenderPass::Execute(const bool log)
 	      - Dynamic render Opaque DMD => Unsorted (front to back, state changes,...), only used by Flasher DMD
 	      - Balls
 	      - Dynamic render Transparent, not DMD => Sorted back to front
-	      - Dynamic render Transparent DMD => Sorted back to front, unused feature (nono of the parts are simultaneously IsDMD and IsTransparent)
+	      - Dynamic render Transparent DMD => Sorted back to front, unused feature (none of the parts are simultaneously IsDMD and IsTransparent)
       Note that:
          - Kickers are rendered with a "pass always" depth test
          - Transparent parts do write to depth buffer (they can be used as masks)

@@ -28,6 +28,9 @@ FEATURES:
   - splitted the video settings into the 'old' 2D based video settings menu and a new VR settings menu.
     Also different registry entries are used to store the various settings like stereo mode, display, resolution, postprocessing etc. separately.
     Things like Ball rendering and Day/Night cycle are used for both.
+    To configure VR, go to the new Preferences->VR Settings menu and (de-)select it in the upper left drop down menu.
+    If you have performance issues, try disabling things like Ambient Occlusion, Supersampling (=1), Postprocess AA & Sharpen, Reflections, and Bloom.
+    One can also select an additional VR Preview window that shows the VR rendering on the screen as Side-By-Side.
 
   - the near/far plane can be adjusted now (in centimeters). Both planes are like walls in front of the player. Everything between the player and the near-
     plane, and everything behind the far-plane is invisible. It might be helpful if one has a room around the table or one changed the scaling too
@@ -41,12 +44,12 @@ FEATURES:
 
   - note that adaptive vsync (=mode value 2) is recommended (at least) on macOS/iOS and Android
 
-- added rudimentary support for BAM Headtracking (thanks to Rafal from ravarcade.pl). Usage:
-  It works almost the same way as with Arcade Pinball, but one doesn't have control over the table location.
-   1. The User needs a working Future Pinball installation with head tracking enabled (FP is just used to setup the head tracking, FP can then be closed).
-   2. Start BAM-Tracker.exe, select head tracking method, leave it running.
-   3. Run VPinballX (the OpenGL version)
-   https://www.youtube.com/watch?v=g-EpTp_3wKo
+  - added rudimentary support for BAM Headtracking (thanks to Rafal from ravarcade.pl). Usage:
+    It works almost the same way as with Arcade Pinball, but one doesn't have control over the table location.
+     1. The User needs a working Future Pinball installation with head tracking enabled (FP is just used to setup the head tracking, FP can then be closed).
+     2. Start BAM-Tracker.exe, select head tracking method, leave it running.
+     3. Run VPinballX (the OpenGL version)
+     https://www.youtube.com/watch?v=g-EpTp_3wKo
 
 - completely revamped F11 (note that on macOS its F1)/ESC menu, including much more detailed live editing options of table elements
 
@@ -85,7 +88,7 @@ FEATURES:
 - add support for more than one DMD (for original tables, in-game DMD menu,...)
 
 - add new log file functionality (vpinball.log), with script and error informations
-  logging can be en/disabled in the UI/Editor preferences
+  it can be en/disabled in the UI/Editor preferences
 
 - the settings are now stored in a file named 'VPinballX.ini' located in the standard Windows location for application data: %AppData%/VPinballX/
   This file will be automatically created and initialized from existing settings if found in Windows registry. This change was made to:
@@ -104,9 +107,9 @@ FEATURES:
   - for camera mode, adjust the user interface to show these informations and allow to easily reset to a default position by pressing the plunger key.
 - change camera mode buttons to match the ones when starting VPX with -povedit (Start = Export POV, Credit = Reset/Quit, Plunger = Defaults)
 
-- ball texture can be set as either a spherical map (the default, like it used to be before 10.8) or an equirectangular map. Equirectangular maps
-  are what is usually used for environment lighting. The benefit of using them is that the reflections are view dependent and that they can match
-  the table environment image for consistency between lighting and reflections.
+- the ball texture can now be set as either a spherical map (the default, like it used to be before 10.8), or as an equirectangular map. Equirectangular maps
+  are also used already for the environment lighting. The benefit of using them is that the reflections are view dependent and that they can match
+  the table environment lighting image for full consistency between the lighting and reflections.
 
 FIXES:
 

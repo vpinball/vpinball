@@ -590,12 +590,12 @@ public:
       return matrixT;
    }
 
-   Matrix3D operator+(const Matrix3D& m) const
+   Matrix3D operator+(const Matrix3D& _m) const
    {
-      return Matrix3D(_11 + m._11, _12 + m._12, _13 + m._13, _14 + m._14,
-                      _21 + m._21, _22 + m._22, _23 + m._23, _24 + m._24,
-                      _31 + m._31, _32 + m._32, _33 + m._33, _34 + m._34,
-                      _41 + m._41, _42 + m._42, _43 + m._43, _44 + m._44);
+      return Matrix3D(_11 + _m._11, _12 + _m._12, _13 + _m._13, _14 + _m._14,
+                      _21 + _m._21, _22 + _m._22, _23 + _m._23, _24 + _m._24,
+                      _31 + _m._31, _32 + _m._32, _33 + _m._33, _34 + _m._34,
+                      _41 + _m._41, _42 + _m._42, _43 + _m._43, _44 + _m._44);
    }
    
    void Scale(const float x, const float y, const float z)

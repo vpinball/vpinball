@@ -389,7 +389,7 @@ float4 ps_main_texture(const in VS_OUTPUT IN, float2 screenSpace : VPOS, uniform
 float4 ps_main_reflection_only_without_texture(const in VS_NOTEX_OUTPUT IN, float2 screenSpace : VPOS) : COLOR
 {
    float4 result;
-   float3 N = normalize(IN.normal);
+   const float3 N = normalize(IN.normal);
    result.rgb = compute_reflection(screenSpace * w_h_height.xy, N);
    result.a = 1.0;
    return result * staticColor_Alpha;

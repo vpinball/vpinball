@@ -5,19 +5,19 @@ ViewSetup::ViewSetup()
 {
 }
 
-void ViewSetup::ComputeMVP(const PinTable* table, const int viewportWidth, const int viewportHeight, const bool stereo, ModelViewProj& mvp, const vec3& cam, const float cam_inc,
+void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth, const int viewportHeight, const bool stereo, ModelViewProj& mvp, const vec3& cam, const float cam_inc,
    const float xpixoff, const float ypixoff)
 {
    const ViewLayoutMode layoutMode = mMode;
    const float rotation = ANGTORAD(mViewportRotation);
    const float FOV = (mFOV < 1.0f) ? 1.0f : mFOV; // Can't have a real zero FOV, but this will look almost the same
    const bool isLegacy = layoutMode == VLM_LEGACY;
-   const bool isCamera = layoutMode == VLM_CAMERA;
-   const bool isWindow = layoutMode == VLM_WINDOW;
-   const float aspect = ((float)viewportWidth) / ((float)viewportHeight);
+   //const bool isCamera = layoutMode == VLM_CAMERA;
+   //const bool isWindow = layoutMode == VLM_WINDOW;
+   const float aspect = (float)((double)viewportWidth / (double)viewportHeight);
    float camx = cam.x, camy = cam.y, camz = cam.z;
-   // For 'Window' mode, we can either have a pespective projection parralel to the screen then reprojected to a view aligned,
-   // or a perspective projection aligned to the view which is then perspective corrected. Both implementation are kept for reference.
+   // For 'Window' mode, we can either have a perspective projection parallel to the screen then reprojected to a view aligned,
+   // or a perspective projection aligned to the view which is then perspective corrected. Both implementations are kept for reference.
    // For the time being, the reprojection postprocess step is not implemented so only screen aligned gives acceptable (distorted) results.
    constexpr bool isWndScreenAligned = true;
    
@@ -61,7 +61,7 @@ void ViewSetup::ComputeMVP(const PinTable* table, const int viewportWidth, const
       }
       else if (height > width)
       {
-         // layout potrait(game vert) in portrait(LCD\LED vert)
+         // layout portrait(game vert) in portrait(LCD\LED vert)
          if (aspect > 0.6f)
             camz += 10.0f; // 50
          else if (aspect > 0.5f)
@@ -192,7 +192,7 @@ void ViewSetup::ComputeMVP(const PinTable* table, const int viewportWidth, const
    // Apply layback
    // To be backward compatible while having a well behaving view matrix, we compute a view without the layback (which is meaningful with regards to what was used before).
    // We use it for rendering computation. It is reverted by the projection matrix which then apply the old transformation, including layback.
-   if (isLegacy && abs(mLayback) > 0.1f)
+   if (isLegacy && fabsf(mLayback) > 0.1f)
    {
       Matrix3D invView(matView);
       invView.Invert();
@@ -208,14 +208,14 @@ void ViewSetup::ComputeMVP(const PinTable* table, const int viewportWidth, const
       Matrix3D invView(matView);
       invView.Invert();
       // Compute the view orthonormal basis
-      Matrix3D baseView, coords;
-      coords.SetScaling(1.f, -1.f, -1.f);
-      baseView = coords * invView;
+      Matrix3D baseCoords;
+      baseCoords.SetScaling(1.f, -1.f, -1.f);
+      const Matrix3D baseView = baseCoords * invView;
       const vec3 right = baseView.GetOrthoNormalRight();
       const vec3 up = baseView.GetOrthoNormalUp();
       const vec3 dir = baseView.GetOrthoNormalDir();
       const vec3 pos = baseView.GetOrthoNormalPos();
-      StereoEyeMode stereoEyeMode = SEM_TOEIN;
+      constexpr StereoEyeMode stereoEyeMode = SEM_TOEIN;
       switch (stereoEyeMode)
       {
       case SEM_PARRALEL:
@@ -240,19 +240,19 @@ void ViewSetup::ComputeMVP(const PinTable* table, const int viewportWidth, const
       case SEM_TOEIN:
       {
          // Default is to look at the ball (playfield level = 0 + ball radius = 50)
-         float camDistance = (50.f - pos.z) / dir.z;
+         const float camDistance = (50.f - pos.z) / dir.z;
          // Clamp it to a reasonable range, a normal viewing distance being around 80cm between view focus (table) and viewer (depends a lot on the player size & position)
          constexpr float minCamDistance = CMTOVPU(30.f);
          constexpr float maxCamDistance = CMTOVPU(200.f);
          const vec3 at = pos + dir * clamp(camDistance, minCamDistance, maxCamDistance);
-         Matrix3D lookat = Matrix3D::MatrixLookAtLH(pos + (halfEyeDist * right), at, up); // Apply offset & rotation to the right eye projection
-         matProj[1] = invView * lookat * coords * matProj[0];
-         lookat = Matrix3D::MatrixLookAtLH(pos + (-halfEyeDist * right), at, up); // Apply offset & rotation to the left eye projection
-         matProj[0] = invView * lookat * coords * matProj[0];
+         Matrix3D toein_lookat = Matrix3D::MatrixLookAtLH(pos + (halfEyeDist * right), at, up); // Apply offset & rotation to the right eye projection
+         matProj[1] = invView * toein_lookat * baseCoords * matProj[0];
+         toein_lookat = Matrix3D::MatrixLookAtLH(pos + (-halfEyeDist * right), at, up); // Apply offset & rotation to the left eye projection
+         matProj[0] = invView * toein_lookat * baseCoords * matProj[0];
          break;
       }
       default:
-         assert(false); // Unsupported stere eye mode
+         assert(false); // Unsupported stereo eye mode
          matProj[1] = matProj[0];
          break;
       }

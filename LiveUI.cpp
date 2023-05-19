@@ -1001,7 +1001,7 @@ void LiveUI::UpdateCameraModeUI()
          case Player::BS_LightHeight: CM_ROW("Light Height", "%.0f", VPUTOCM(table->m_lightHeight), "cm"); CM_SKIP_LINE; break;
          case Player::BS_EnvEmissionScale: CM_ROW("Environment Emission", "%.1f", 100.f * table->m_envEmissionScale, "%%"); break;
 
-         // Stereo eye and anglyph setup
+         // Stereo eye and anaglyph setup
          case Player::BS_EyeSeparation:
          {
             CM_SKIP_LINE;
@@ -1185,7 +1185,8 @@ void LiveUI::UpdateMainUI()
       YAxis.SetScaling(1.f, -1.f, -1.f);
       Matrix3D view = RH2LH * m_camView * YAxis;
       vector<Vertex3Ds> vvertex3D;
-      for (size_t i = 0; i < m_live_table->m_vedit.size(); ++i)
+      const size_t num_vedit = m_live_table->m_vedit.size();
+      for (size_t i = 0; i < num_vedit; ++i)
          m_live_table->m_vedit[i]->GetBoundingVertices(vvertex3D);
       float znear = FLT_MAX, zfar = -FLT_MAX;
       for (size_t i = 0; i < vvertex3D.size(); ++i)
@@ -1240,7 +1241,7 @@ void LiveUI::UpdateMainUI()
 
       // Camera orbit manipulator
       Matrix3D prevView(m_camView);
-      float viewManipulateRight = ImGui::GetIO().DisplaySize.x - (m_flyMode ? 0 : m_properties_width) - 16;
+      float viewManipulateRight = ImGui::GetIO().DisplaySize.x - (m_flyMode ? 0.f : m_properties_width) - 16.f;
       float viewManipulateTop = m_toolbar_height + m_menubar_height + 16;
       ImGuizmo::ViewManipulate(cameraView, cameraProjection, m_gizmoOperation, m_gizmoMode, cameraView, m_camDistance,
          ImVec2(viewManipulateRight - 128, viewManipulateTop + 16), ImVec2(128, 128), 0x10101010);
