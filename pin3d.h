@@ -9,9 +9,9 @@ class ModelViewProj
 {
 public:
    enum FlipMode { NONE, FLIPX, FLIPY };
-   ModelViewProj(const unsigned int nEyes = 1, const FlipMode flip = NONE)
-      : m_nEyes(nEyes), m_flip(flip) { }
-   
+   ModelViewProj(const unsigned int nEyes = 1) : m_nEyes(nEyes) {}
+
+   void SetFlip(const FlipMode flip) { m_dirty = true; m_flip = flip; }
    void SetModel(const Matrix3D& Model) { MarkDirty(Model, m_matModel); m_matModel = Model; }
    void SetView(const Matrix3D& view) { MarkDirty(view, m_matView); m_matView = view; }
    void SetProj(const unsigned int index, const Matrix3D& proj) { MarkDirty(proj, m_matProj[index]); m_matProj[index] = proj; }
@@ -26,7 +26,6 @@ public:
    const Vertex3Ds& GetViewVec() const { Update(); return m_viewVec; }
 
    const unsigned int m_nEyes;
-   const FlipMode m_flip;
 
 private:
    void MarkDirty(const Matrix3D& newMat, const Matrix3D& oldMat)
@@ -82,6 +81,7 @@ private:
    Matrix3D m_matProj[6];
 
    mutable bool m_dirty = true;
+   FlipMode m_flip = NONE;
    mutable Matrix3D m_matModelView;
    mutable Matrix3D m_matModelViewInverse;
    mutable Matrix3D m_matModelViewInverseTranspose;
