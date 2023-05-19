@@ -1259,7 +1259,11 @@ HRESULT Player::Init()
 
    if (((GetAsyncKeyState(VK_LSHIFT) & 0x8000) && (GetAsyncKeyState(VK_RSHIFT) & 0x8000))
       || ((lflip != ~0u) && (rflip != ~0u) && (GetAsyncKeyState(lflip) & 0x8000) && (GetAsyncKeyState(rflip) & 0x8000)))
+   {
       m_ptable->m_tblMirrorEnabled = true;
+      int rotation = ((int)(g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].mViewportRotation) / 90) % 4;
+      m_pin3d.GetMVP().SetFlip(rotation == 0 || rotation == 2 ? ModelViewProj::FLIPX : ModelViewProj::FLIPY);
+   }
    else
       m_ptable->m_tblMirrorEnabled = LoadValueWithDefault(regKey[RegName::Player], "mirror"s, false);
 
