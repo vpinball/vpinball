@@ -52,13 +52,10 @@ sampler2D tex_ball_playfield : TEXUNIT4 = sampler_state // playfield
 
 #include "Material.fxh"
 
-const float4   invTableRes_playfield_height_reflection;
-
-//const float    reflection_ball_playfield;
-
 const float4x3 orientation;
-
+const float4   invTableRes_playfield_height_reflection;
 const bool     disableLighting;
+//const float    reflection_ball_playfield;
 
 //------------------------------------
 
@@ -236,9 +233,8 @@ float4 psBall( const in vout IN, uniform bool equirectangularMap, uniform bool d
 
    float3 ballImageColor;
    BRANCH if (equirectangularMap)
-   { // Equirectangular Map Reflections
+   {  // Equirectangular Map Reflections
       const float3 rv = mul_w0(r, matWorldViewInverse);
-      //const float2 uv = float2(0.5 + atan2(rv.y, rv.x) * (0.5 / PI) + 0.5, 0.5 + rv.z * 0.5);
       const float2 uv = float2(1.0 + atan2_approx_div2PI(rv.y, rv.x), 0.5 + asin_approx_divPI(rv.z));
       ballImageColor = tex2D(tex_ball_color, uv).rgb;
    }

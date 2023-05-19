@@ -211,7 +211,6 @@ enum ShaderUniforms
 
    // Ball Shader
    SHADER_UNIFORM(SUT_Float4x3, orientation, 1),
-   SHADER_UNIFORM(SUT_Float, RenderBall, 1),
    SHADER_UNIFORM(SUT_Float4, invTableRes_playfield_height_reflection, 1),
    SHADER_UNIFORM(SUT_Bool, disableLighting, 1),
    SHADER_SAMPLER(tex_ball_color, Texture0, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // base texture
