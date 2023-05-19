@@ -1,6 +1,5 @@
-'JP's VPX7 Physics
-'Only 2 changes are needed for the physics: the flippers and the rolling sound which will limit the ball speed.
-'Incluced also my latest LUT routine with an increase in the GI light intensity as the table go darker. 
+'JP's VPX7 Rev2 Physics
+'Only 2 changes are needed for the physics: the flippers and the rolling sound with the ball speed limit.
 'Included also my versions of the PlaySoundAt and PlaySoundAtBall which include volume and pitch changes to the sounds according to the ball speed.
 
 '*******************
@@ -13,20 +12,20 @@ SolCallback(sLLFlipper) = "SolLFlipper"
 Sub SolLFlipper(Enabled)
     If Enabled Then
         PlaySoundAt SoundFX("fx_flipperup", DOFFlippers), LeftFlipper
-        LeftFlipper.EOSTorque = 0.75:LeftFlipper.RotateToEnd
+        LeftFlipper.RotateToEnd
     Else
         PlaySoundAt SoundFX("fx_flipperdown", DOFFlippers), LeftFlipper
-        LeftFlipper.EOSTorque = 0.1:LeftFlipper.RotateToStart
+        LeftFlipper.RotateToStart
     End If
 End Sub
 
 Sub SolRFlipper(Enabled)
     If Enabled Then
         PlaySoundAt SoundFX("fx_flipperup", DOFFlippers), RightFlipper
-        RightFlipper.EOSTorque = 0.75:RightFlipper.RotateToEnd
+        RightFlipper.RotateToEnd
     Else
         PlaySoundAt SoundFX("fx_flipperdown", DOFFlippers), RightFlipper
-        RightFlipper.EOSTorque = 0.1:RightFlipper.RotateToStart
+        RightFlipper.RotateToStart
     End If
 End Sub
 
@@ -38,27 +37,68 @@ Sub RightFlipper_Collide(parm)
     PlaySound "fx_rubber_flipper", 0, parm / 60, pan(ActiveBall), 0.2, 0, 0, 0, AudioFade(ActiveBall)
 End Sub
 
+'**********************************************
+'    Flipper adjustments - enable tricks
+'             by JLouLouLou
+'**********************************************
 
+Dim FlipperPower
+Dim FlipperElasticity
+Dim EOSTorque, EOSAngle
+Dim SOSTorque, SOSAngle
+Dim FullStrokeEOS_Torque
 
+Dim LLiveCatchTimer
+Dim RLiveCatchTimer
+Dim LiveCatchSensivity
 
+FlipperPower = 4600
+FlipperElasticity = 0.8
+EOSTorque = 0.2
+EOSAngle = 6
+SOSTorque = 0.1
+SOSAngle = 6
+FullStrokeEOS_Torque = 0.5
+LiveCatchSensivity = 25
+LLiveCatchTimer = 0
+RLiveCatchTimer = 0
 
-'*********************************
-' Diverse Collection Hit Sounds
-'*********************************
+Sub RealTimeFast_Timer 'flipper's tricks timer
+    'Flipper Stroke Routine
+    If LeftFlipper.CurrentAngle => LeftFlipper.StartAngle - SOSAngle Then LeftFlipper.Strength = FlipperPower * SOSTorque:End If                                                       'Start of Stroke for Tap pass and Tap shoot
+    If LeftFlipper.CurrentAngle < LeftFlipper.StartAngle - SOSAngle and LeftFlipper.CurrentAngle > LeftFlipper.EndAngle + EOSAngle Then LeftFlipper.Strength = FlipperPower:End If      'Full Stroke
+    If LeftFlipper.CurrentAngle < LeftFlipper.EndAngle + EOSAngle and LeftFlipper.CurrentAngle > LeftFlipper.EndAngle Then LeftFlipper.Strength = FlipperPower * EOSTorque:End If       'EOS Stroke
+    If LeftFlipper.CurrentAngle = LeftFlipper.EndAngle Then LeftFlipper.Strength = FlipperPower * FullStrokeEOS_Torque:End If                                                           'Bunny Bump Remover
 
-Sub aMetals_Hit(idx):PlaySoundAtBall "fx_MetalHit":End Sub
-Sub aMetalWires_Hit(idx):PlaySoundAtBall "fx_MetalWire":End Sub
-Sub aRubber_Bands_Hit(idx):PlaySoundAtBall "fx_rubber_band":End Sub
-Sub aRubber_LongBands_Hit(idx):PlaySoundAtBall "fx_rubber_longband":End Sub
-Sub aRubber_Posts_Hit(idx):PlaySoundAtBall "fx_rubber_post":End Sub
-Sub aRubber_Pins_Hit(idx):PlaySoundAtBall "fx_rubber_pin":End Sub
-Sub aRubber_Pegs_Hit(idx):PlaySoundAtBall "fx_rubber_peg":End Sub
-Sub aPlastics_Hit(idx):PlaySoundAtBall "fx_PlasticHit":End Sub
-Sub aGates_Hit(idx):PlaySoundAtBall "fx_Gate":End Sub
-Sub aWoods_Hit(idx):PlaySoundAtBall "fx_Woodhit":End Sub
+    If RightFlipper.CurrentAngle <= RightFlipper.StartAngle + SOSAngle Then RightFlipper.Strength = FlipperPower * SOSTorque:End If                                                     'Start of Stroke for Tap pass and Tap shoot
+    If RightFlipper.CurrentAngle > RightFlipper.StartAngle + SOSAngle and RightFlipper.CurrentAngle < RightFlipper.EndAngle - EOSAngle Then RightFlipper.Strength = FlipperPower:End If 'Full Stroke
+    If RightFlipper.CurrentAngle > RightFlipper.EndAngle - EOSAngle and RightFlipper.CurrentAngle < RightFlipper.EndAngle Then RightFlipper.Strength = FlipperPower * EOSTorque:End If  'EOS Stroke
+    If RightFlipper.CurrentAngle = RightFlipper.EndAngle Then RightFlipper.Strength = FlipperPower * FullStrokeEOS_Torque:End If                                                        'Bunny Bump Remover
 
-
-
+    'Live Catch Routine
+    If LeftFlipper.CurrentAngle <= LeftFlipper.EndAngle + EOSAngle and LeftFlipper.CurrentAngle => LeftFlipper.EndAngle Then
+        LLiveCatchTimer = LLiveCatchTimer + 1
+        If LLiveCatchTimer < LiveCatchSensivity Then
+            LeftFlipper.Elasticity = 0.2
+        Else
+            LeftFlipper.Elasticity = FlipperElasticity
+            LLiveCatchTimer = LiveCatchSensivity
+        End If
+    Else
+        LLiveCatchTimer = 0
+    End If
+    If RightFlipper.CurrentAngle => RightFlipper.EndAngle - EOSAngle and RightFlipper.CurrentAngle <= RightFlipper.EndAngle Then
+        RLiveCatchTimer = RLiveCatchTimer + 1
+        If RLiveCatchTimer < LiveCatchSensivity Then
+            RightFlipper.Elasticity = 0.2
+        Else
+            RightFlipper.Elasticity = FlipperElasticity
+            RLiveCatchTimer = LiveCatchSensivity
+        End If
+    Else
+        RLiveCatchTimer = 0
+    End If
+End Sub
 
 
 
@@ -119,10 +159,6 @@ Function RndNbr(n) 'returns a random number between 1 and n
 End Function
 
 
-
-
-
-
 '****************************************************
 '   JP's VPX7 Rolling Sounds + Ballshadow
 '   uses a collection of shadows, aBallShadow
@@ -131,7 +167,7 @@ End Function
 
 Const tnob = 19   'total number of balls, 20 balls, from 0 to 19
 Const lob = 0     'number of locked balls
-Const maxvel = 40 'max ball velocity
+Const maxvel = 45 'max ball velocity
 ReDim rolling(tnob)
 InitRolling
 
@@ -196,58 +232,5 @@ Sub RollingUpdate()
                 BOT(b).VelY = BOT(b).VelY * speedfactory
             End If
         End If
-    Next
-End Sub
-
-'*****************************
-' Ball 2 Ball Collision Sound
-'*****************************
-
-Sub OnBallBallCollision(ball1, ball2, velocity)
-    PlaySound("fx_collide"), 0, Csng(velocity) ^2 / 2000, Pan(ball1), 0, Pitch(ball1), 0, 0, AudioFade(ball1)
-End Sub
-
-
-
-'*********
-'   LUT
-'*********
-
-Dim bLutActive, LUTImage
-Sub LoadLUT
-    bLutActive = False
-    x = LoadValue(cGameName, "LUTImage")
-    If(x <> "")Then LUTImage = x Else LUTImage = 0
-    UpdateLUT
-End Sub
-
-Sub SaveLUT
-    SaveValue cGameName, "LUTImage", LUTImage
-End Sub
-
-Sub NextLUT:LUTImage = (LUTImage + 1)MOD 10:UpdateLUT:SaveLUT:End Sub
-
-Sub UpdateLUT
-    Select Case LutImage
-        Case 0:table1.ColorGradeImage = "LUT0":GiIntensity = 1:ChangeGIIntensity 1
-        Case 1:table1.ColorGradeImage = "LUT1":GiIntensity = 1.1:ChangeGIIntensity 1
-        Case 2:table1.ColorGradeImage = "LUT2":GiIntensity = 1.2:ChangeGIIntensity 1
-        Case 3:table1.ColorGradeImage = "LUT3":GiIntensity = 1.3:ChangeGIIntensity 1
-        Case 4:table1.ColorGradeImage = "LUT4":GiIntensity = 1.4:ChangeGIIntensity 1
-        Case 5:table1.ColorGradeImage = "LUT5":GiIntensity = 1.5:ChangeGIIntensity 1
-        Case 6:table1.ColorGradeImage = "LUT6":GiIntensity = 1.6:ChangeGIIntensity 1
-        Case 7:table1.ColorGradeImage = "LUT7":GiIntensity = 1.7:ChangeGIIntensity 1
-        Case 8:table1.ColorGradeImage = "LUT8":GiIntensity = 1.8:ChangeGIIntensity 1
-        Case 9:table1.ColorGradeImage = "LUT9":GiIntensity = 1.9:ChangeGIIntensity 1
-    End Select
-End Sub
-
-Dim GiIntensity
-GiIntensity = 1               'used for the LUT changing to increase the GI lights when the table is darker
-
-Sub ChangeGIIntensity(factor) 'changes the intensity scale
-    Dim bulb
-    For each bulb in aGILights
-        bulb.IntensityScale = GiIntensity * factor
     Next
 End Sub
