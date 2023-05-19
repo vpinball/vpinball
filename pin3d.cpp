@@ -299,7 +299,7 @@ BaseTexture* EnvmapPrecalc(const Texture* envTex, const unsigned int rad_env_xre
          });
       }
 
-      pool.wait_until_empty();
+      pool.wait_until_nothing_in_flight();
    }
 
    /* ///!!! QA-test above multithreading implementation.
