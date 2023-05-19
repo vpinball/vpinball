@@ -16,6 +16,10 @@ void ViewSetup::ComputeMVP(const PinTable* table, const int viewportWidth, const
    const bool isWindow = layoutMode == VLM_WINDOW;
    const float aspect = ((float)viewportWidth) / ((float)viewportHeight);
    float camx = cam.x, camy = cam.y, camz = cam.z;
+   // For 'Window' mode, we can either have a pespective projection parralel to the screen then reprojected to a view aligned,
+   // or a perspective projection aligned to the view which is then perspective corrected. Both implementation are kept for reference.
+   // For the time being, the reprojection postprocess step is not implemented so only screen aligned gives acceptable (distorted) results.
+   constexpr bool isWndScreenAligned = true;
    
    // View angle inclination against playfield. 0 is straight up the playfield.
    float inc;
@@ -23,7 +27,8 @@ void ViewSetup::ComputeMVP(const PinTable* table, const int viewportWidth, const
    {
    case VLM_LEGACY: inc = ANGTORAD(mLookAt) + cam_inc; break;
    case VLM_CAMERA: inc = -M_PIf + atan2f(-mViewY + cam.y - (mLookAt / 100.0f) * table->m_bottom, -mViewZ + cam.z); break;
-   case VLM_WINDOW: inc = atan2f(mWindowTopZOfs - mWindowBottomZOfs, table->m_bottom); break;
+   case VLM_WINDOW: inc = isWndScreenAligned ? atan2f(mWindowTopZOfs - mWindowBottomZOfs, table->m_bottom) // Screen angle, relative to playfield
+                                             : (-M_PIf + atan2f(-mViewY + cam.y - (mLookAt / 100.0f) * table->m_bottom, -mViewZ + cam.z)); break;
    }
 
    if (isLegacy && table->m_BG_enable_FSS)

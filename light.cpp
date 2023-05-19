@@ -398,7 +398,7 @@ void Light::RenderDynamic()
    if (m_customMoverMeshBuffer == nullptr) // in case of degenerate light
       return;
 
-   if (m_backglass && !GetPTable()->GetDecalsEnabled())
+   if (m_backglass && (!GetPTable()->GetDecalsEnabled() || g_pplayer->m_stereo3D == STEREO_VR))
       return;
 
    if (m_d.m_showBulbMesh && !m_d.m_staticBulbMesh && !g_pplayer->IsRenderPass(Player::LIGHT_BUFFER))

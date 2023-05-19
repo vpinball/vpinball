@@ -547,7 +547,7 @@ void Decal::UpdateBounds()
 
 void Decal::RenderObject()
 {
-   if (m_backglass && !GetPTable()->GetDecalsEnabled())
+   if (m_backglass && (!GetPTable()->GetDecalsEnabled() || g_pplayer->m_stereo3D == STEREO_VR))
       return;
 
    RenderDevice * const pd3dDevice = m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
