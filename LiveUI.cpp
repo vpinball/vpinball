@@ -943,7 +943,7 @@ void LiveUI::UpdateCameraModeUI()
    const Player::BackdropSetting *settings = isLegacy ? Player::mLegacyViewSettings : isCamera ? Player::mCameraViewSettings : Player::mWindowViewSettings;
    int nSettings = (isLegacy ? sizeof(Player::mLegacyViewSettings) : isCamera ? sizeof(Player::mCameraViewSettings) : sizeof(Player::mWindowViewSettings)) / sizeof(Player::BackdropSetting);
    nSettings = isAnaglyph ? nSettings : isStereo ? (nSettings - 2) : (nSettings - 3);
-   if (ImGui::BeginTable("Camera", 3, ImGuiTableFlags_Borders))
+   if (ImGui::BeginTable("Camera", 3, /* ImGuiTableFlags_Borders */ 0))
    {
       static float vWidth = 50.f;
       ImGui::TableSetupColumn("Property", ImGuiTableColumnFlags_WidthStretch);
@@ -958,7 +958,7 @@ void LiveUI::UpdateCameraModeUI()
          if (textWidth < vWidth) ImGui::SameLine(vWidth - textWidth); \
          ImGui::Text(buf); ImGui::TableNextColumn(); ImGui::Text(unit); ImGui::TableNextRow();\
       }
-      #define CM_SKIP_LINE {ImGui::TableNextColumn(); ImGui::NewLine(); ImGui::TableNextRow();}
+      #define CM_SKIP_LINE {ImGui::TableNextColumn(); ImGui::Dummy(ImVec2(0.f, m_dpi * 3.f)); ImGui::TableNextRow();}
       for (int i = 0; i < nSettings; i++)
       {
          if (settings[i] == m_player->m_backdropSettingActive 
