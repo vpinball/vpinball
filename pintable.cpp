@@ -3789,7 +3789,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
                   });
                   cloadeditems++;
                }
-               pool.wait_until_empty();
+               pool.wait_until_nothing_in_flight();
             }
             // due to multithreaded loading and pre-allocation, check if some images could not be loaded, and perform a retry since more memory is available now
             string failed_load_img;
