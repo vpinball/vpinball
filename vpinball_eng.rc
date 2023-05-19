@@ -14,19 +14,13 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Anglais (États-Unis) resources
+// English (United States) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #pragma code_page(1252)
 
-/////////////////////////////////////////////////////////////////////////////
-//
-// 670
-//
-
-IDR_DEFAULT_INI         670                     "res/Default VPinballX.ini"
-
+IDR_DEFAULT_INI INI_FILE "res/Default VPinballX.ini"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -2832,9 +2826,15 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
+#ifdef ENABLE_SDL
+            VALUE "FileDescription", "Visual Pinball OpenGL 10.8.0"
+            VALUE "OriginalFilename", "VPinballX_GL.exe"
+            VALUE "ProductName", "Visual Pinball OpenGL"
+#else
             VALUE "FileDescription", "Visual Pinball 10.8.0"
             VALUE "OriginalFilename", "VPinballX.exe"
             VALUE "ProductName", "Visual Pinball"
+#endif
             VALUE "FileVersion", "10, 8, 0, 0"
             VALUE "InternalName", "Visual Pinball"
             VALUE "LegalCopyright", "Copyright 2000-2023"
@@ -2998,6 +2998,9 @@ BEGIN
     BEGIN
         MENUITEM "&Audio Options...",           ID_EDIT_AUDIOOPTIONS
         MENUITEM "&Video/Graphics Options...",  ID_EDIT_VIDEOOPTIONS
+#ifdef ENABLE_SDL
+        MENUITEM "V&R Settings...",             ID_EDIT_VROPTIONS
+#endif
         MENUITEM "&Editor/UI Options...",       ID_EDIT_EDITOROPTIONS
         MENUITEM "Configure &Keys, Nudge and DOF...", ID_EDIT_KEYS
         MENUITEM "Configure (Optional) Global &Physics Sets...", ID_EDIT_PHYSICSOPTIONS
@@ -3921,7 +3924,7 @@ BEGIN
     IDS_STEP                "Step"
 END
 
-#endif    // Anglais (États-Unis) resources
+#endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
@@ -3935,4 +3938,3 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
-
