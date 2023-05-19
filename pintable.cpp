@@ -5911,6 +5911,7 @@ void PinTable::ImportBackdropPOV(const string& filename)
          POV_FIELD("inclination", "%f", mViewSetups[i].mLookAt);
          POV_FIELD("fov", "%f", mViewSetups[i].mFOV);
          POV_FIELD("layback", "%f", mViewSetups[i].mLayback);
+         POV_FIELD("lookat", "%f", mViewSetups[i].mLookAt);
          POV_FIELD("rotation", "%f", mViewSetups[i].mViewportRotation);
          POV_FIELD("xscale", "%f", mViewSetups[i].mViewportScaleX);
          POV_FIELD("yscale", "%f", mViewSetups[i].mViewportScaleY);
@@ -6062,6 +6063,7 @@ void PinTable::ExportBackdropPOV(const string& filename)
          POV_FIELD("inclination", mViewSetups[i].mMode);
          POV_FIELD("fov", mViewSetups[i].mFOV);
          POV_FIELD("layback", mViewSetups[i].mLayback);
+         POV_FIELD("lookat", mViewSetups[i].mLookAt);
          POV_FIELD("rotation", mViewSetups[i].mViewportRotation);
          POV_FIELD("xscale", mViewSetups[i].mViewportScaleX);
          POV_FIELD("yscale", mViewSetups[i].mViewportScaleY);
@@ -6116,6 +6118,8 @@ void PinTable::ExportBackdropPOV(const string& filename)
       ShowError("Error exporting POV settings!");
    }
    xmlDoc.Clear();
+
+   PLOGI << "View setup exported to '" << povFileName << "'";
 }
 
 void PinTable::SelectItem(IScriptable *piscript)
