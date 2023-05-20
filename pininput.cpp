@@ -1072,9 +1072,9 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
             viewSetup.mMode = (ViewLayoutMode) LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetMode"s, VLM_WINDOW);
             viewSetup.mViewX = CMTOVPU(LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetCamX"s, 0.f));
             viewSetup.mViewY = CMTOVPU(LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetCamY"s, 20.f));
-            viewSetup.mViewZ = CMTOVPU(LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetCamZ"s, 70.f));
-            viewSetup.mViewportScaleX = LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetScaleX"s, 1.f);
-            viewSetup.mViewportScaleY = LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetScaleY"s, 1.f);
+            viewSetup.mViewZ = CMTOVPU(LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetCamZ"s, 80.f));
+            viewSetup.mViewportScaleX = LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetScaleX"s, 1.2f);
+            viewSetup.mViewportScaleY = LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetScaleY"s, 1.2f);
             viewSetup.mFOV = LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetFov"s, 77.f);
             viewSetup.mLookAt = LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetLookAt"s, 25.0f);
             viewSetup.mViewVOfs = LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetViewVOfs"s, 0.f);
