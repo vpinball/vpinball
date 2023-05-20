@@ -25,7 +25,7 @@ float get_light_ball_shadow(const float3 light_pos, const float3 light_dir, cons
 		{
 			const float3 dist = light_ball_ray - dot_lbr_lr_divld * light_dir;
 			const float d2 = length(dist);
-			const float light_r = 10.0; // light radius in VPX units
+			const float light_r = 5.0; // light radius in VPX units
 			const float smoothness = light_r - light_r * dot_lbr_lr_divld;
 			const float light_inside_ball_sqr = saturate((light_ball_ray.x*light_ball_ray.x + light_ball_ray.y*light_ball_ray.y)/(ball_r*ball_r)); // fade to 1 if light inside ball
 			result *= 1.0 + light_inside_ball_sqr*(-1.0 + 0.1 + 0.9 * smoothstep(ball_r-smoothness, ball_r+smoothness, d2));
