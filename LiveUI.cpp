@@ -1659,9 +1659,25 @@ void LiveUI::UpdateOutlinerUI()
             }
             if (ImGui::TreeNode("Materials"))
             {
-               for (size_t t = 0; t < table->m_materials.size(); t++)
+               std::vector<Material*> mats;
+               mats.reserve(table->m_materials.size());
+               mats.insert(mats.begin(), table->m_materials.begin(), table->m_materials.end());
+               struct
                {
-                  Material *material = table->m_materials[t];
+                  inline bool operator()(Material *&a, Material *&b) const
+                  {
+                     string str1 = a->m_szName, str2 = b->m_szName;
+                     if (str1.size() != str2.size())
+                        return false;
+                     for (string::const_iterator c1 = str1.begin(), c2 = str2.begin(); c1 != str1.end(); ++c1, ++c2)
+                        if (tolower(static_cast<unsigned char>(*c1)) != tolower(static_cast<unsigned char>(*c2)))
+                           return false;
+                     return true;
+                  }
+               } sortFunc;
+               sort(mats.begin(), mats.end(), sortFunc);
+               for (Material* &material : mats)
+               {
                   Selection sel(is_live, material);
                   if (IsOutlinerFiltered(material->m_szName) && ImGui::Selectable(material->m_szName.c_str(), m_selection == sel))
                      m_selection = sel;
