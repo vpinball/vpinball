@@ -4025,6 +4025,11 @@ void Player::UpdateBackdropSettings(const bool up)
       m_ptable->m_envEmissionScale += thesign*0.5f;
       if (m_ptable->m_envEmissionScale < 0.f)
          m_ptable->m_envEmissionScale = 0.f;
+      const vec4 st(m_ptable->m_envEmissionScale * m_globalEmissionScale,
+         m_pin3d.m_envTexture ? (float)m_pin3d.m_envTexture->m_height /*+m_pin3d.m_envTexture->m_width)*0.5f*/
+                              : (float)m_pin3d.m_builtinEnvTexture.m_height /*+m_pin3d.m_builtinEnvTexture.m_width)*0.5f*/,
+         0.f, 0.f);
+      m_pin3d.m_pd3dPrimaryDevice->basicShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
       break;
    }
 
