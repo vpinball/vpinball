@@ -929,7 +929,7 @@ void LiveUI::UpdateCameraModeUI()
    constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
    ImGui::SetNextWindowBgAlpha(0.35f);
    ImGui::SetNextWindowPos(ImVec2(0.5f * ImGui::GetIO().DisplaySize.x, 0.8f * ImGui::GetIO().DisplaySize.y), 0, ImVec2(0.5f, 1.f));
-   ImGui::SetNextWindowSize(ImVec2(m_dpi * 300.f, 0.f));
+   //ImGui::SetNextWindowSize(ImVec2(m_dpi * 300.f, 0.f)); // Best to let ImGui size it
    ImGui::Begin("CameraMode", nullptr, window_flags);
 
    ViewSetupID vsId = table->m_BG_current_set;
