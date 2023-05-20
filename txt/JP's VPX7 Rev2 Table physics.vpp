@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <physics>
-	<name>JP&apos;s Space Cadet 1.04</name>
+	<name>Attack from Mars v4 - test</name>
 	<table>
-		<gravityConstant>0.980665</gravityConstant>
+		<gravityConstant>0.981000</gravityConstant>
 		<contactFriction>0.025000</contactFriction>
 		<elasticity>0.200000</elasticity>
 		<elasticityFalloff>0.100000</elasticityFalloff>
@@ -11,15 +11,15 @@
 	</table>
 	<flipper>
 		<speed>1.000000</speed>
-		<strength>3600.000000</strength>
-		<elasticity>0.850000</elasticity>
+		<strength>4600.000000</strength>
+		<elasticity>0.800000</elasticity>
 		<scatter>0.000000</scatter>
-		<eosTorque>0.750000</eosTorque>
-		<eosTorqueAngle>10.000000</eosTorqueAngle>
-		<returnStrength>0.070000</returnStrength>
-		<elasticityFalloff>0.550000</elasticityFalloff>
+		<eosTorque>1.000000</eosTorque>
+		<eosTorqueAngle>0.000000</eosTorqueAngle>
+		<returnStrength>0.040000</returnStrength>
+		<elasticityFalloff>0.500000</elasticityFalloff>
 		<friction>0.250000</friction>
-		<coilRampUp>0.000000</coilRampUp>
+		<coilRampUp>1.000000</coilRampUp>
 	</flipper>
 </physics>
 
