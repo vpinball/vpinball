@@ -2790,7 +2790,7 @@ void LiveUI::PropVec3(const char *label, IEditable *undo_obj, bool is_live, floa
    vec3 v = is_live ? vec3(*live_x, *live_y, *live_z) : vec3(*startup_x, *startup_y, *startup_z);
    ImGui::PushID(label);
    vec3 prev_v = v;
-   if (ImGui::InputFloat3(label, v, format, flags))
+   if (ImGui::InputFloat3(label, (float*) &v.x, format, flags))
    {
       *(is_live ? live_x : startup_x) = v.x;
       *(is_live ? live_y : startup_y) = v.y;
