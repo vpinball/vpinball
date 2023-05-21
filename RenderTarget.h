@@ -7,8 +7,15 @@ class RenderPass;
 class RenderTarget final
 {
 public:
-   RenderTarget(RenderDevice* rd, int width, int height, colorFormat format); // Default output render target
-   RenderTarget(RenderDevice* rd, const string& name, const int width, const int height, const colorFormat format, bool with_depth, int nMSAASamples, StereoMode stereo, const char* failureMessage, RenderTarget* sharedDepth = nullptr);
+   enum RenderTargetType
+   {
+      RT_DEFAULT, // Default single layer render target
+      RT_STEREO,  // Render target to a texture array with 2 layers
+      RT_CUBEMAP  // Render target to a cubemap texture (6 layers)
+   };
+
+   RenderTarget(RenderDevice* const rd, const int width, const int height, const colorFormat format); // Default output render target
+   RenderTarget(RenderDevice* const rd, const RenderTargetType type, const string& name, const int width, const int height, const colorFormat format, bool with_depth, int nMSAASamples, StereoMode stereo, const char* failureMessage, RenderTarget* sharedDepth = nullptr);
    ~RenderTarget();
 
    void Activate(const bool ignoreStereo = false);
@@ -41,17 +48,19 @@ public:
    RenderPass* m_lastRenderPass = nullptr;
 
 private:
+   RenderDevice* const m_rd;
    int m_width;
    int m_height;
-   colorFormat m_format;
-   StereoMode m_stereo;
-   RenderDevice* m_rd;
+   const RenderTargetType m_type;
+   const colorFormat m_format;
+   const StereoMode m_stereo;
+   const bool m_is_back_buffer;
+   const bool m_has_depth;
+   const bool m_shared_depth;
+   const int m_nMSAASamples;
    Sampler* m_color_sampler;
    Sampler* m_depth_sampler;
-   bool m_is_back_buffer;
-   bool m_has_depth;
-   bool m_shared_depth;
-   int m_nMSAASamples;
+
    static RenderTarget* current_render_target;
 
 #ifdef ENABLE_SDL
