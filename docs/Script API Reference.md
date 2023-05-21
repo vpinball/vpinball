@@ -1,7 +1,5 @@
 # Script API Reference
 
-
-
 This is a quick overview of all commands/variables VP knows. A lot of them do not have an effect when called from the script because they have an impact on the pre-rendering only.
 Variables starting with a (*) can't be changed by the script (most can be read though) or don't have an effect.
 
@@ -45,7 +43,7 @@ As for coding light sequences for original tables, please check this helper app:
 | *GameTime | int | gets the current internal game time in milliseconds |
 | *SystemTime | int | gets the current system time in milliseconds |
 | | | |
-| *GetCustomParam | int | 1..9, i.e. GetCustomParam(1) to get "param1" and GetCustomParam(2) to get "param2" from the command line "VPinballX.exe -c1 param1 -c2 param2" |
+| *GetCustomParam | int | 1..9, i.e. `GetCustomParam(1)` to get "param1" and `GetCustomParam(2)` to get "param2" from the command line "VPinballX.exe -c1 param1 -c2 param2" |
 | | | |
 | *NightDay | int | 0..100 value set in the UI (by the user) that defines if its night or day, so that the script can tweak table elements based on that value |
 | | | |
@@ -110,7 +108,7 @@ DMDColoredPixels = myDMDdata
 - `EndMusic)`
 - `FireKnocker(int Count)`
 - `QuitPlayer(int CloseType)`
-- `Version` - returns VP_VERSION_MAJOR * 1000 + VP_VERSION_MINOR * 100 + VP_VERSION_REVISION
+- `Version` - returns `VP_VERSION_MAJOR * 1000 + VP_VERSION_MINOR * 100 + VP_VERSION_REVISION`
 - `VPBuildVersion` - same, deprecated
 - `VersionMajor` - major VP version number
 - `VersionMinor` - minor VP version number
@@ -199,9 +197,9 @@ DMDColoredPixels = myDMDdata
 | *Radius | float | default=45.0
 | *HeightScale  | float | default=90.0
 | *Orientation | float |  
-| RingDropOffset | float | An offset to influence the ring animation. The default move down limit is calculated by (HeightScale*0.5) * Table_Scalez. The final move down limit is calculated by RingDropOffset + (HeightScale*0.5)* Table_Scalez. For example: If the ring is moving too far down you have to try to set the RingDropOffset to -10.
+| RingDropOffset | float | An offset to influence the ring animation. The default move down limit is calculated by `(HeightScale*0.5) * Table_Scalez`. The final move down limit is calculated by `RingDropOffset + (HeightScale*0.5)* Table_Scalez`. For example: If the ring is moving too far down you have to try to set the RingDropOffset to -10.
 | RingSpeed | float | 
-| *CurrentRingOffset | float | Live position of the ring (see RingDropOffset and RingSpeed, default is 0..-45 for RingDropOffset is 0 and HeightScale is 90)
+| *CurrentRingOffset | float | Live position of the ring (see `RingDropOffset` and RingSpeed, default is 0..-45 for `RingDropOffset` is 0 and HeightScale is 90)
 | *X | float |  X position
 | *Y | float |  Y position
 | *Surface | string | 
@@ -486,7 +484,7 @@ DMDColoredPixels = myDMDdata
 ### Methods
 - `Duration(float startState, int durationTime, float endState)` - starts a light in startState (0..1 (Off..On); 2 (Blinking)) and leaves it in that state for the amount of milliseconds defined by durationTime until the light switches to the endState
                                                                
-  e.g.: light1.Duration 2, 1000, 1 (light starts to blink for 1000ms and then switches to ON)
+  e.g.: `light1.Duration 2, 1000, 1` (light starts to blink for 1000ms and then switches to ON)
 
 ### Events
 - `Animate()` - Called when the visual properties of the light are animated (when its GetInPlayIntensity changes)
@@ -598,6 +596,7 @@ DMDColoredPixels = myDMDdata
 | RotAndTra7 | float |  Legacy. Replaced by ObjRotY
 | RotAndTra8 | float |  Legacy. Replaced by ObjRotZ
 
+### Methods
 The following methods only applies to mesh primitives with an animation sequence
 - `PlayAnim(float startFrame, float speed)` - start playing the sequence from 'startFrame' til the end with frame rate 'speed'
 - `PlayAnimEndless(float speed)`            - start playing the sequence in a loop with frame rate 'speed'
@@ -939,8 +938,8 @@ Animate() - Called when the visual properties of the reel are animated
 | *Scatter | float | 
 | *ReflectionEnabled | bool |  default=true
 | DisableLighting | bool | 
-| BlendDisableLighting | float |  0..1, same as DisableLighting, but can blend between the two extremes
-| BlendDisableLightingFromBelow | float |  0..1, similar to DisableLighting, but will block light coming from below (e.g. from light elements)
+| BlendDisableLighting | float |  0..1, same as `DisableLighting`, but can blend between the two extremes
+| BlendDisableLightingFromBelow | float |  0..1, similar to `DisableLighting`, but will block light coming from below (e.g. from light elements)
 
 ### Methods
 - `PlaySlingshotHit()` - if the wall has slingshots defined, a call to this function will play the hit animation without triggering the actual hit event.
