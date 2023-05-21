@@ -7,6 +7,6 @@
    3. [View setup](<View Setup.md>)
    4. [Lights](Lights.md)
 2. Scripting
-   1. [API Reference](<Script API Rederence.md>)
+   1. [API Reference](<Script API Reference.md>)
 
 <sub><sup>[Informations applicable to version 10.8 Beta]</sup></sub>
