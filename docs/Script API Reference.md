@@ -10,26 +10,27 @@ As for coding light sequences for original tables, please check this helper app:
 
 ## Table of Content
 - [Globals](#globals)
-- [Table](#table)
-- [Bumper](#bumper)
-- [Decal](#decal)
-- [Textbox](#textbox)
-- [EM Reel](#emreel)
-- [Flipper](#flipper)
-- [Gate](#gate)
-- [Kicker](#kicker)
-- [Light](#light)
-- [Plunger](#plunger)
-- [Primitive](#primitive)
-- [Ramp](#ramp)
-- [Spinner](#spinner)
-- [Trigger](#trigger)
-- [Wall](#wall)
-- [Flasher](#flasher)
-- [Ball](#ball)
-- [Rubber](#rubber)
-- [Target](#target)
-- [Timer](#timer)
+- API Reference per element
+  - [Ball](#ball)
+  - [Bumper](#bumper)
+  - [Decal](#decal)
+  - [EM Reel](#emreel)
+  - [Flasher](#flasher)
+  - [Flipper](#flipper)
+  - [Gate](#gate)
+  - [Kicker](#kicker)
+  - [Light](#light)
+  - [Plunger](#plunger)
+  - [Primitive](#primitive)
+  - [Ramp](#ramp)
+  - [Rubber](#rubber)
+  - [Spinner](#spinner)
+  - [Table](#table)
+  - [Target](#target)
+  - [Textbox](#textbox)
+  - [Timer](#timer)
+  - [Trigger](#trigger)
+  - [Wall](#wall)
 - [Changelog](#changelog)
 
 
@@ -152,102 +153,36 @@ DMDColoredPixels = myDMDdata
 
 
 -------------------------------------------------------------------------------
-## Table
+## Ball
 
 ### Variables
-
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| *Name | string |  table name
-| *FileName | string | file name (without path and extension)
-| *Width | float |  Playfield width. default=1000
-| *Height | float |  Playfield height. default=2000
-| *GlassHeight | float |  Height of Glass above Playfield
-| *TableHeight | float | 
-| | | |
-| *Inclination | float |  Angle of Table (used for Display only). default=43
-| *Rotation | float |  Rotation of Table (used mainly for FS/Cab tables: 270)
-| *Scalex | float |  X Scale of Table
-| *Scaley | float |  Y Scale of Table
-| *Scalez | float |  Z Scale of Table
-| *Xlatex | float |  X Offset of Table
-| *Xlatey | float |  Y Offset of Table
-| *Xlatez | float |  Z Offset of Table
-| *Layback | float |  Skew of Table (used mainly for FS/Cab tables). default=0
-| *FieldOfView | float | Perspective of Table. default=45
-| | | |
-| *BackglassMode | int | Which Backglass mode is active (0=Desktop,1=Fullscreen,2=FullSingleScreen)
-| | | |
-| *MaxSeparation | float |  Maximum separation/scale effect for Stereo 3D (ranges from 0..1)
-| *ZPD | float |  Reads the depth where the Stereo 3D should happen (ranges from 0..1)
-| *Offset | float |  Reads the constant offset for the Stereo 3D effect (ranges from 0..1)
-| *PlayfieldColor | OLECOLOR | 
-| *BackDropColor | OLECOLOR | 
-| BackdropImage | string | 
-| | | |
-| *SlopeMax | float |  Angle of Playfield within Cabinet (used for Physics only)
-| *SlopeMin | float |  Angle of Playfield within Cabinet (used for Physics only)
-| *GlobalDifficulty | float |  Mainly chooses/weights between SlopeMax and SlopeMin, but also affects precision of flippers/scattering (0..100)
-| Gravity | float |  default=0.86543
-| Friction | float |  for the Playfield, default=0.0025
-| Elasticity | float |  for the Playfield, default=0.2
-| ElasticityFalloff | float |  for the Playfield, default=0
-| Scatter | float |  scatter angle for the Playfield, default=0
-| DefaultScatter | float |  default=0, overrides all elements that have scatter angle set to < 0
-| *OverridePhysics | int |  overrides the table physics settings with pre defined settings defined under Preferences -> Physics Options. You can define up to 8 different physics settings for the table and the flippers. Save them to one of the 8 slots and by assigning the slot number to this OverridePhysics it overrides these settings. default=0 (means use table settings)
-| | | |
-| PhysicsLoopTime | int | the meaning of this has changed starting with 9.2.1: it specifies the maximum number of iterations spent in the physics update. by setting it f.e. to 1, the rendered frame updates will -always- match the physics updates, everything above 1 allows for multiple physics updates per frame (2, 3 or 4 can be good values for this, as it slows down the physics temporarily if the FPS drop below 50, 33 or 25 in these cases). default=-1 (which means infinite updates allowed)
-| YieldTime | int | time in milliseconds to sleep during each frame - can help side threads like vpinmame. default=0
-| | | |
-| BallImage | string |  
-| BallFrontDecal | string |  image of the ball front decal
-| *BallDecalMode | bool |  switch between using the ball decal as ball logo or ball 'scratches'
-| | | |
-| Image | string |  playfield image (this property may be written, but it will only be visually updated if the playfield is not statically rendered, using a non static playfield_mesh primitive)
-| | | |
-| *EnableAntialiasing | bool |  enables AA for this table if you have set 'Enable AntiAliasing' in the video options. default=false
-| *EnableFXAA | bool |  enables FXAA for this table if you have set 'Enable FXAA' in the video options. default=false
-| *RenderEMReels | bool |  default=true
-| *RenderDecals | bool |  default=true
-| *TableAdaptiveVSync | int | sets adaptive vsync option for this table (-1=use global setting, 0=off, 1=automatic, any other number is refresh rate in Hz)
-| *BallReflection | | enable ball reflection on table. depending on the global video setting 'Reflect Ball on Playfield' this is on or off. Or it is defined specific for this table.
-| PlayfieldReflectionStrength | int | defines the reflection strength of the (dynamic) table elements on the playfield (0-100)
-| BallPlayfieldReflectionScale | float | scale/dampen the contribution of the playfield to the ball reflections
-| DefaultBulbIntensityScale | float | scale/dampen the contribution of the bulbs lights on the ball. This is a default setting for all balls created on the the table. If you need ball specific intensity scaling you can change the intensity by using the BulbIntensityScale value on the ball
-| *BallTrail | | enable ball trail/motion blur on table. depending on the global video setting 'Ball Trail/Motion Blur' this is on or off. Or it is defined specific for this table.
-| *TrailStrength | int | defines the strength of the ball trail (0-100)
-| *DetailLevel | int | defines the ramp accuracy for this table and overrides the global setting from the video options (range 0-10).
-| | | |
-| PlungerNormalize | int | Mech-Plunger component adjustment or weak spring, aging. default=100
-| PlungerFilter | bool | default=false
-| *Accelerometer | bool |  
-| *AccelNormalMount | bool | 
-| *AccelerometerAngle | float | 
-| *JoltAmount | int | 
-| *TiltAmount | int | 
-| *JoltTriggerTime | int | 
-| *TiltTriggerTime | int | 
-| *DeadZone | int | 
-| NudgeTime | float | 
-| | | |
-| *TableSoundVolume | int | Scales the global sound volume (in percent). default=100
-| *TableMusicVolume | int | Scales the global music volume (in percent). default=100
-| | | |
-| *LightAmbient | OLECOLOR | changes the ambient light contribution for each material, please always try to keep this at full Black
-| *Light0Emission | OLECOLOR | changes the light contribution for each material (currently light0 emission is copied to light1, too)
-| LightEmissionScale | float | 
-| EnvironmentEmissionScale | float | 
-| AOScale | float | scaling factor when blending the ambient occlusion
-| SSRScale | float | scaling factor when blending the screen space reflections
-| BloomStrength | float | scaling factor when blurring the clipped framebuffer contribution (leave at 1 for kinda natural glow)
-| *LightHeight | float | height of lights
-| *LightRange | float | range of lights
-| | | |
-| ColorGradeImage | string | the 256x16 LUT texture used for the color grading post process
-
-### Callback
-
-- `OnBallBallCollision(ball1, ball2, velocity)`
+| Color | OLECOLOR | sets color of ball
+| Mass | float | 
+| Radius | float | 
+| X | float | 
+| Y | float | 
+| Z | float | 
+| VelX | float | 
+| VelY | float | 
+| VelZ | float | 
+| *AngVelX | float |  note that writing to this is supported for legacy reasons, but is and was always ignored 
+| *AngVelY | float |  note that writing to this is supported for legacy reasons, but is and was always ignored 
+| *AngVelZ | float |  note that writing to this is supported for legacy reasons, but is and was always ignored 
+| AngMomX | float | 
+| AngMomY | float | 
+| AngMomZ | float | 
+| Image | string | 
+| FrontDecal | string |  image of the ball front decal
+| DecalMode | bool |  switch between using the ball decal as ball logo or ball 'scratches'
+| ID | int |  - gets a unique ID for each ball created or allows to set an artificial one to distinguish different balls on the table
+| BulbIntensityScale | float |  allows to dampen/scale the intensity of (bulb-)light reflections on each ball (e.g. to simulate shadowing in the ball lane, etc)
+| ReflectionEnabled | bool |  if playfield reflects objects this can be used to enable/disable the reflection for a specific ball
+| PlayfieldReflectionScale | float |  allows to dampen/scale the contribution of the playfield reflections on each ball (see BallPlayfieldReflectionScale() for the Table)
+| ForceReflection | bool |  if enabled the ball will be reflection on the playfield even it's on a ramp or an upper playfield. (default=0)
+| Visible | bool | changes if the ball is visible on the playfield or not (e.g. only physics simulated)
+| UserValue | any | can store any user defined value for re-use later-on
 
 
 -------------------------------------------------------------------------------
@@ -313,32 +248,6 @@ DMDColoredPixels = myDMDdata
 
 
 -------------------------------------------------------------------------------
-## Textbox
-
-### Variables
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| BackColor | OLECOLOR | 
-| FontColor | OLECOLOR | 
-| Text | string | 
-| Font
-| Name | string | 
-| X | float | 
-| Y | float | 
-| Width | float | 
-| Height | float | 
-| Alignment
-| IsTransparent
-| TimerEnabled
-| TimerInterval | int |  set interval for triggering the timer (1 equals 1000 timer calls per second, 1000 equals 1 timer call per second, -1 makes it dependent on the FPS that a user can reach)
-| UserValue | any | can store any user defined value for re-use later-on
-| IntensityScale | float |  scales the color of the textbox
-| Visible | bool | 
-| DMD | bool |  enable DMD image via script connection
-
-
--------------------------------------------------------------------------------
 ## EMReel
 
 ### Variables
@@ -374,6 +283,39 @@ DMDColoredPixels = myDMDdata
 
 ### Events
 - `Animate()` - Called when the visual properties of the reel are animated
+
+
+-------------------------------------------------------------------------------
+## Flasher
+
+### Variables
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| *Name | string | 
+| TimerEnabled | bool | 
+| TimerInterval | int | set interval for triggering the timer (1 equals 1000 timer calls per second, 1000 equals 1 timer call per second, -1 makes it dependent on the FPS that a user can reach)
+| ImageA | string |  texture name for image A
+| ImageB | string |  texture name for image B
+| Filter | string |  use one of the following filters to blend ImageA > ImageB: 'None', 'Additive', 'Multiply', 'Overlay', 'Screen' (filter names are case sensitive!) this feature only works if you defined both images
+| Amount | int | defines the filter amount how much of ImageB is filtered over ImageA in percent (0..100, can be set to >100 though)
+| Mode | int | 0=ImageModeWorld, 1=ImageModeWrap
+| *DisplayTexture | bool | 
+| Opacity | int | lets you define the blend amount 0..100% (you can use values >100% though to for example enhance the strength of flashers in additive alpha blending mode)
+| IntensityScale | float | sets the flashers brightness/emission scale, so that one can fade in/out all affected flashers with the same scaling factor
+| Color - defines the color of the element in the editor. If you don't want to colorize the image set the color to blank white (RGB 255,255,255)
+| Visible | bool |  shows/hides the flasher
+| AddBlend | bool |  use additive alpha blending instead of classical alpha blending
+| ImageAlignment
+| ModulateVsAdd | float | blends between modulating and additive when bulb is enabled (0..1)
+| DMD | bool |  enable DMD image via script connection
+| DMDWidth | int | set width of DMD
+| DMDHeight | int | set height of DMD
+| DMDPixels | Variant |  set array of (byte-)values (0..100), size needs to match the previously set width and height
+| DMDColoredPixels | Variant |  set array of (long-)values (0..255,0..255,0..255), size needs to match the previously set width and height
+| VideoCapWidth | int | width of the window content to capture
+| VideoCapHeight | int | height of the window content to capture
+| VideoCapUpdate | string |  uses the window title of the window content to capture, which is then copied into the flasher texture each time this function is called
+| UserValue | any |  can store any user defined value for re-use later-on
 
 
 -------------------------------------------------------------------------------
@@ -686,6 +628,35 @@ The following methods only applies to mesh primitives with an animation sequence
 
 
 -------------------------------------------------------------------------------
+## Rubber
+
+### Variables
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| *Name | string | 
+| TimerEnabled | bool | 
+| TimerInterval | int | set interval for triggering the timer (1 equals 1000 timer calls per second, 1000 equals 1 timer call per second, -1 makes it dependent on the FPS that a user can reach)
+| *HasHitEvent | bool | 
+| *Thickness | int | 
+| *Collidable | bool | 
+| *HitHeight | float | defines the collision height of a rubber (default is 25.0 midpoint of a standard ball with size 50)
+| *Material | string | 
+| Visible | bool | 
+| *EnableStaticRendering | bool | if set the rubber is only rendered once (like walls) any dynamic changes later won't have an effect. This is useful for static rubbers like rubbers on posts. 
+| Image | string |  texture name
+| Elasticity | float | 
+| ElasticityFalloff | float | 
+| Friction | float |  0..1
+| *Scatter | float | 
+| RotX | float | angle to rotate the whole rubber around the X axis 
+| RotY | float | angle to rotate the whole rubber around the Y axis 
+| RotZ | float | angle to rotate the whole rubber around the Z axis 
+| *EnableShowInEditor | bool | if set one cannot adjust the control points of the rubber but the rotation angles are applied to the rubber mesh in the editor.
+| *ReflectionEnabled | bool | default=true
+| UserValue | any | can store any user defined value for re-use later-on
+
+
+-------------------------------------------------------------------------------
 ## Spinner
 
 ### Variables
@@ -714,6 +685,182 @@ The following methods only applies to mesh primitives with an animation sequence
 
 ### Events
 - `Animate()` - Called when the visual properties of the gate are animated (when the plate rotates and current angle changes)
+
+
+-------------------------------------------------------------------------------
+## Table
+
+### Variables
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| *Name | string |  table name
+| *FileName | string | file name (without path and extension)
+| *Width | float |  Playfield width. default=1000
+| *Height | float |  Playfield height. default=2000
+| *GlassHeight | float |  Height of Glass above Playfield
+| *TableHeight | float | 
+| | | |
+| *Inclination | float |  Angle of Table (used for Display only). default=43
+| *Rotation | float |  Rotation of Table (used mainly for FS/Cab tables: 270)
+| *Scalex | float |  X Scale of Table
+| *Scaley | float |  Y Scale of Table
+| *Scalez | float |  Z Scale of Table
+| *Xlatex | float |  X Offset of Table
+| *Xlatey | float |  Y Offset of Table
+| *Xlatez | float |  Z Offset of Table
+| *Layback | float |  Skew of Table (used mainly for FS/Cab tables). default=0
+| *FieldOfView | float | Perspective of Table. default=45
+| | | |
+| *BackglassMode | int | Which Backglass mode is active (0=Desktop,1=Fullscreen,2=FullSingleScreen)
+| | | |
+| *MaxSeparation | float |  Maximum separation/scale effect for Stereo 3D (ranges from 0..1)
+| *ZPD | float |  Reads the depth where the Stereo 3D should happen (ranges from 0..1)
+| *Offset | float |  Reads the constant offset for the Stereo 3D effect (ranges from 0..1)
+| *PlayfieldColor | OLECOLOR | 
+| *BackDropColor | OLECOLOR | 
+| BackdropImage | string | 
+| | | |
+| *SlopeMax | float |  Angle of Playfield within Cabinet (used for Physics only)
+| *SlopeMin | float |  Angle of Playfield within Cabinet (used for Physics only)
+| *GlobalDifficulty | float |  Mainly chooses/weights between SlopeMax and SlopeMin, but also affects precision of flippers/scattering (0..100)
+| Gravity | float |  default=0.86543
+| Friction | float |  for the Playfield, default=0.0025
+| Elasticity | float |  for the Playfield, default=0.2
+| ElasticityFalloff | float |  for the Playfield, default=0
+| Scatter | float |  scatter angle for the Playfield, default=0
+| DefaultScatter | float |  default=0, overrides all elements that have scatter angle set to < 0
+| *OverridePhysics | int |  overrides the table physics settings with pre defined settings defined under Preferences -> Physics Options. You can define up to 8 different physics settings for the table and the flippers. Save them to one of the 8 slots and by assigning the slot number to this OverridePhysics it overrides these settings. default=0 (means use table settings)
+| | | |
+| PhysicsLoopTime | int | the meaning of this has changed starting with 9.2.1: it specifies the maximum number of iterations spent in the physics update. by setting it f.e. to 1, the rendered frame updates will -always- match the physics updates, everything above 1 allows for multiple physics updates per frame (2, 3 or 4 can be good values for this, as it slows down the physics temporarily if the FPS drop below 50, 33 or 25 in these cases). default=-1 (which means infinite updates allowed)
+| YieldTime | int | time in milliseconds to sleep during each frame - can help side threads like vpinmame. default=0
+| | | |
+| BallImage | string |  
+| BallFrontDecal | string |  image of the ball front decal
+| *BallDecalMode | bool |  switch between using the ball decal as ball logo or ball 'scratches'
+| | | |
+| Image | string |  playfield image (this property may be written, but it will only be visually updated if the playfield is not statically rendered, using a non static playfield_mesh primitive)
+| | | |
+| *EnableAntialiasing | bool |  enables AA for this table if you have set 'Enable AntiAliasing' in the video options. default=false
+| *EnableFXAA | bool |  enables FXAA for this table if you have set 'Enable FXAA' in the video options. default=false
+| *RenderEMReels | bool |  default=true
+| *RenderDecals | bool |  default=true
+| *TableAdaptiveVSync | int | sets adaptive vsync option for this table (-1=use global setting, 0=off, 1=automatic, any other number is refresh rate in Hz)
+| *BallReflection | | enable ball reflection on table. depending on the global video setting 'Reflect Ball on Playfield' this is on or off. Or it is defined specific for this table.
+| PlayfieldReflectionStrength | int | defines the reflection strength of the (dynamic) table elements on the playfield (0-100)
+| BallPlayfieldReflectionScale | float | scale/dampen the contribution of the playfield to the ball reflections
+| DefaultBulbIntensityScale | float | scale/dampen the contribution of the bulbs lights on the ball. This is a default setting for all balls created on the the table. If you need ball specific intensity scaling you can change the intensity by using the BulbIntensityScale value on the ball
+| *BallTrail | | enable ball trail/motion blur on table. depending on the global video setting 'Ball Trail/Motion Blur' this is on or off. Or it is defined specific for this table.
+| *TrailStrength | int | defines the strength of the ball trail (0-100)
+| *DetailLevel | int | defines the ramp accuracy for this table and overrides the global setting from the video options (range 0-10).
+| | | |
+| PlungerNormalize | int | Mech-Plunger component adjustment or weak spring, aging. default=100
+| PlungerFilter | bool | default=false
+| *Accelerometer | bool |  
+| *AccelNormalMount | bool | 
+| *AccelerometerAngle | float | 
+| *JoltAmount | int | 
+| *TiltAmount | int | 
+| *JoltTriggerTime | int | 
+| *TiltTriggerTime | int | 
+| *DeadZone | int | 
+| NudgeTime | float | 
+| | | |
+| *TableSoundVolume | int | Scales the global sound volume (in percent). default=100
+| *TableMusicVolume | int | Scales the global music volume (in percent). default=100
+| | | |
+| *LightAmbient | OLECOLOR | changes the ambient light contribution for each material, please always try to keep this at full Black
+| *Light0Emission | OLECOLOR | changes the light contribution for each material (currently light0 emission is copied to light1, too)
+| LightEmissionScale | float | 
+| EnvironmentEmissionScale | float | 
+| AOScale | float | scaling factor when blending the ambient occlusion
+| SSRScale | float | scaling factor when blending the screen space reflections
+| BloomStrength | float | scaling factor when blurring the clipped framebuffer contribution (leave at 1 for kinda natural glow)
+| *LightHeight | float | height of lights
+| *LightRange | float | range of lights
+| | | |
+| ColorGradeImage | string | the 256x16 LUT texture used for the color grading post process
+
+### Callback
+
+- `OnBallBallCollision(ball1, ball2, velocity)`
+
+
+-------------------------------------------------------------------------------
+## Target
+
+### Variables
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| *Name | string | 
+| *X | float | 
+| *Y | float | 
+| *Z | float | 
+| *HasHitEvent | bool | if set a hit event is fired when the ball hits the drop/hit target without animation. An additional dropped/raised event is fired for drop targets after the mesh animation is over.
+| *Collidable | bool | 
+| Threshold | float | hit threshold for firing the hit event
+| HitThreshold | float | holds the current hit threshold if a ball has hit the target
+| Visible | bool | 
+| *Material | string | 
+| Image | string |  texture name
+| Elasticity | float | 
+| ElasticityFalloff | float | 
+| Friction | float |  0..1
+| *Scatter | float | 
+| *Orientation | float | angle to rotate the whole target around the Z axis 
+| *ReflectionEnabled | bool | default=true
+| DisableLighting | bool | 
+| BlendDisableLighting | float |  0..1, same as DisableLighting, but can blend between the two extremes
+| BlendDisableLightingFromBelow | float |  0..1, similar to DisableLighting, but will block light coming from below (e.g. from light elements)
+| DropSpeed | float | the speed how fast the drop or hit target will move 
+| *CurrentAnimOffset | float | the current visual animation: 0..-52 for drop targets, 0..-13 for hit targets
+| RaiseDelay | int | defines a delay in milliseconds after the dropped target will start to raise to it's normal position
+| IsDropped | bool | can only be used for drop targets if the drop target is raised or dropped
+| TimerEnabled | bool | each target has a build-in timer which can be enabled by setting this to 1
+| TimerInterval | int | set interval for triggering the timer (1 equals 1000 timer calls per second, 1000 equals 1 timer call per second, -1 makes it dependent on the FPS that a user can reach)
+| UserValue | any | can store any user defined value for re-use later-on
+
+### Events
+Animate() - Called when the visual properties of the reel are animated
+
+
+-------------------------------------------------------------------------------
+## Textbox
+
+### Variables
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| BackColor | OLECOLOR | 
+| FontColor | OLECOLOR | 
+| Text | string | 
+| Font
+| Name | string | 
+| X | float | 
+| Y | float | 
+| Width | float | 
+| Height | float | 
+| Alignment
+| IsTransparent
+| TimerEnabled
+| TimerInterval | int |  set interval for triggering the timer (1 equals 1000 timer calls per second, 1000 equals 1 timer call per second, -1 makes it dependent on the FPS that a user can reach)
+| UserValue | any | can store any user defined value for re-use later-on
+| IntensityScale | float |  scales the color of the textbox
+| Visible | bool | 
+| DMD | bool |  enable DMD image via script connection
+
+
+-------------------------------------------------------------------------------
+## Timer
+
+### Variables
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| ***Name*** | string | |
+| Enabled    | bool   | |
+| Interval   | int    | set interval for triggering the timer (1 equals 1000 timer calls per second, 1000 equals 1 timer call per second, -1 makes it dependent on the FPS that a user can reach) |
+| UserValue  | any    | can store any user defined value for re-use later-on |
 
 
 -------------------------------------------------------------------------------
@@ -791,204 +938,58 @@ The following methods only applies to mesh primitives with an animation sequence
 
 
 -------------------------------------------------------------------------------
-## Flasher
-
-### Variables
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| *Name | string | 
-| TimerEnabled | bool | 
-| TimerInterval | int | set interval for triggering the timer (1 equals 1000 timer calls per second, 1000 equals 1 timer call per second, -1 makes it dependent on the FPS that a user can reach)
-| ImageA | string |  texture name for image A
-| ImageB | string |  texture name for image B
-| Filter | string |  use one of the following filters to blend ImageA > ImageB: 'None', 'Additive', 'Multiply', 'Overlay', 'Screen' (filter names are case sensitive!) this feature only works if you defined both images
-| Amount | int | defines the filter amount how much of ImageB is filtered over ImageA in percent (0..100, can be set to >100 though)
-| Mode | int | 0=ImageModeWorld, 1=ImageModeWrap
-| *DisplayTexture | bool | 
-| Opacity | int | lets you define the blend amount 0..100% (you can use values >100% though to for example enhance the strength of flashers in additive alpha blending mode)
-| IntensityScale | float | sets the flashers brightness/emission scale, so that one can fade in/out all affected flashers with the same scaling factor
-| Color - defines the color of the element in the editor. If you don't want to colorize the image set the color to blank white (RGB 255,255,255)
-| Visible | bool |  shows/hides the flasher
-| AddBlend | bool |  use additive alpha blending instead of classical alpha blending
-| ImageAlignment
-| ModulateVsAdd | float | blends between modulating and additive when bulb is enabled (0..1)
-| DMD | bool |  enable DMD image via script connection
-| DMDWidth | int | set width of DMD
-| DMDHeight | int | set height of DMD
-| DMDPixels | Variant |  set array of (byte-)values (0..100), size needs to match the previously set width and height
-| DMDColoredPixels | Variant |  set array of (long-)values (0..255,0..255,0..255), size needs to match the previously set width and height
-| VideoCapWidth | int | width of the window content to capture
-| VideoCapHeight | int | height of the window content to capture
-| VideoCapUpdate | string |  uses the window title of the window content to capture, which is then copied into the flasher texture each time this function is called
-| UserValue | any |  can store any user defined value for re-use later-on
-
-
--------------------------------------------------------------------------------
-## Ball
-
-### Variables
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| Color | OLECOLOR | sets color of ball
-| Mass | float | 
-| Radius | float | 
-| X | float | 
-| Y | float | 
-| Z | float | 
-| VelX | float | 
-| VelY | float | 
-| VelZ | float | 
-| *AngVelX | float |  note that writing to this is supported for legacy reasons, but is and was always ignored 
-| *AngVelY | float |  note that writing to this is supported for legacy reasons, but is and was always ignored 
-| *AngVelZ | float |  note that writing to this is supported for legacy reasons, but is and was always ignored 
-| AngMomX | float | 
-| AngMomY | float | 
-| AngMomZ | float | 
-| Image | string | 
-| FrontDecal | string |  image of the ball front decal
-| DecalMode | bool |  switch between using the ball decal as ball logo or ball 'scratches'
-| ID | int |  - gets a unique ID for each ball created or allows to set an artificial one to distinguish different balls on the table
-| BulbIntensityScale | float |  allows to dampen/scale the intensity of (bulb-)light reflections on each ball (e.g. to simulate shadowing in the ball lane, etc)
-| ReflectionEnabled | bool |  if playfield reflects objects this can be used to enable/disable the reflection for a specific ball
-| PlayfieldReflectionScale | float |  allows to dampen/scale the contribution of the playfield reflections on each ball (see BallPlayfieldReflectionScale() for the Table)
-| ForceReflection | bool |  if enabled the ball will be reflection on the playfield even it's on a ramp or an upper playfield. (default=0)
-| Visible | bool | changes if the ball is visible on the playfield or not (e.g. only physics simulated)
-| UserValue | any | can store any user defined value for re-use later-on
-
-
--------------------------------------------------------------------------------
-## Rubber
-
-### Variables
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| *Name | string | 
-| TimerEnabled | bool | 
-| TimerInterval | int | set interval for triggering the timer (1 equals 1000 timer calls per second, 1000 equals 1 timer call per second, -1 makes it dependent on the FPS that a user can reach)
-| *HasHitEvent | bool | 
-| *Thickness | int | 
-| *Collidable | bool | 
-| *HitHeight | float | defines the collision height of a rubber (default is 25.0 midpoint of a standard ball with size 50)
-| *Material | string | 
-| Visible | bool | 
-| *EnableStaticRendering | bool | if set the rubber is only rendered once (like walls) any dynamic changes later won't have an effect. This is useful for static rubbers like rubbers on posts. 
-| Image | string |  texture name
-| Elasticity | float | 
-| ElasticityFalloff | float | 
-| Friction | float |  0..1
-| *Scatter | float | 
-| RotX | float | angle to rotate the whole rubber around the X axis 
-| RotY | float | angle to rotate the whole rubber around the Y axis 
-| RotZ | float | angle to rotate the whole rubber around the Z axis 
-| *EnableShowInEditor | bool | if set one cannot adjust the control points of the rubber but the rotation angles are applied to the rubber mesh in the editor.
-| *ReflectionEnabled | bool | default=true
-| UserValue | any | can store any user defined value for re-use later-on
-
-
--------------------------------------------------------------------------------
-## Target
-
-### Variables
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| *Name | string | 
-| *X | float | 
-| *Y | float | 
-| *Z | float | 
-| *HasHitEvent | bool | if set a hit event is fired when the ball hits the drop/hit target without animation. An additional dropped/raised event is fired for drop targets after the mesh animation is over.
-| *Collidable | bool | 
-| Threshold | float | hit threshold for firing the hit event
-| HitThreshold | float | holds the current hit threshold if a ball has hit the target
-| Visible | bool | 
-| *Material | string | 
-| Image | string |  texture name
-| Elasticity | float | 
-| ElasticityFalloff | float | 
-| Friction | float |  0..1
-| *Scatter | float | 
-| *Orientation | float | angle to rotate the whole target around the Z axis 
-| *ReflectionEnabled | bool | default=true
-| DisableLighting | bool | 
-| BlendDisableLighting | float |  0..1, same as DisableLighting, but can blend between the two extremes
-| BlendDisableLightingFromBelow | float |  0..1, similar to DisableLighting, but will block light coming from below (e.g. from light elements)
-| DropSpeed | float | the speed how fast the drop or hit target will move 
-| *CurrentAnimOffset | float | the current visual animation: 0..-52 for drop targets, 0..-13 for hit targets
-| RaiseDelay | int | defines a delay in milliseconds after the dropped target will start to raise to it's normal position
-| IsDropped | bool | can only be used for drop targets if the drop target is raised or dropped
-| TimerEnabled | bool | each target has a build-in timer which can be enabled by setting this to 1
-| TimerInterval | int | set interval for triggering the timer (1 equals 1000 timer calls per second, 1000 equals 1 timer call per second, -1 makes it dependent on the FPS that a user can reach)
-| UserValue | any | can store any user defined value for re-use later-on
-
-### Events
-Animate() - Called when the visual properties of the reel are animated
-
-
--------------------------------------------------------------------------------
-## Timer
-
-### Variables
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| ***Name*** | string | |
-| Enabled    | bool   | |
-| Interval   | int    | set interval for triggering the timer (1 equals 1000 timer calls per second, 1000 equals 1 timer call per second, -1 makes it dependent on the FPS that a user can reach) |
-| UserValue  | any    | can store any user defined value for re-use later-on |
-
-
--------------------------------------------------------------------------------
 ## Changelog
 
 ### 10.8.0
-- add TablesDirectory, MusicDirectory, ScriptsDirectory, PlatformOS, PlatformCPU, PlatformBits, ShowCursor to the globals
-- add Animate event to Bumper, Light, Flipper, Gate, Spinner, Trigger, Targets and EMReel. This event is called when the object's visual properties are animated, in order to easily sync with custom visuals
-- add CurrentAnimOffset to the Trigger and Target elements
-- add CurrentRingOffset to the Bumper Element
-- add support for 'modulated' lights by changing the previous light state (0=Off,1=On,2=Blinking) to float (see State, GetInPlayState and Duration), and allowing it to be also defined between 0 and 1 (2 remains the blinking state)
-- add FilamentTemperature property to lights to get the 'blackbody' temperature of the filament according to the light current intensity, full intensity corresponding to a temperature of 2700K
-- add support for multiple custom DMDs by adding DMDWidth/DMDHeight/DMDPixels/DMDColoredPixels to flashers. The flasher will use the provided data if any, or defaults to the table data (captured or directly defined)
-- add Shadows property to Light element
-- document missing GetTextFile
+- add `TablesDirectory`, `MusicDirectory`, `ScriptsDirectory`, `PlatformOS`, `PlatformCPU`, `PlatformBits`, `ShowCursor` to the globals
+- add `Animate` event to Bumper, Light, Flipper, Gate, Spinner, Trigger, Targets and EMReel. This event is called when the object's visual properties are animated, in order to easily sync with custom visuals
+- add `CurrentAnimOffset` to the Trigger and Target elements
+- add `CurrentRingOffset` to the Bumper Element
+- add support for 'modulated' lights by changing the previous light state (0=Off,1=On,2=Blinking) to float (see `State`, `GetInPlayState` and `Duration`), and allowing it to be also defined between 0 and 1 (2 remains the blinking state)
+- add `FilamentTemperature` property to lights to get the 'blackbody' temperature of the filament according to the light current intensity, full intensity corresponding to a temperature of 2700K
+- add support for multiple custom DMDs by adding `DMDWidth`/`DMDHeight`/`DMDPixels`/`DMDColoredPixels` to flashers. The flasher will use the provided data if any, or defaults to the table data (captured or directly defined)
+- add `Shadows` property to Light element
+- document missing `GetTextFile`
 
 ### 10.7.2
-- add GetInPlayIntensity to the light element
-- add Opacity,Color,AddBlend to the primitive element
-- add RenderingMode to the globals
+- add `GetInPlayIntensity` to the light element
+- add `Opacity`, `Color`, `AddBlend` to the primitive element
+- add `RenderingMode` to the globals
 
 ### 10.7.1
 - internal release only
 
 ### 10.7
-- add GetSerialDevices,OpenSerial,CloseSerial,FlushSerial,SetupSerial,ReadSerial,WriteSerial to the globals
-- add GetInPlayState,GetInPlayStateBool to the light element
-- add VideoCapWidth,VideoCapHeight,VideoCapUpdate to the flasher element
+- add `GetSerialDevices`, `OpenSerial`, `CloseSerial`, `FlushSerial`, `SetupSerial`, `ReadSerial`, `WriteSerial` to the globals
+- add `GetInPlayState`, `GetInPlayStateBool` to the light element
+- add `VideoCapWidth`, `VideoCapHeight`, `VideoCapUpdate` to the flasher element
 - document missing x,y,z to the target element
-- add GetMaterial to the globals (counterpart to UpdateMaterial)
-- add UpdateMaterialPhysics and GetMaterialPhysics to the globals
-- add ActiveTable to the globals
-- document missing ActiveBall global call
-- add PullBackandRetract to the plunger element that can be used instead of PullBack in the KeyDown Sub.
+- add `GetMaterial` to the globals (counterpart to `UpdateMaterial`)
+- add `UpdateMaterialPhysics` and `GetMaterialPhysics` to the globals
+- add `ActiveTable` to the globals
+- document missing `ActiveBall` global call
+- add `PullBackandRetract` to the plunger element that can be used instead of PullBack in the KeyDown Sub.
   The plunger will move forth and back between the maximum and minimum position, allowing for a retry, if the desired firing position has been missed.
-- add ElasticityFalloff to the wall element
+- add `ElasticityFalloff` to the wall element
 
 ### 10.6
-- add UpdateMaterial to the globals
-- fix potential problems for the light element for Bulb, ImageMode, ShowBulbMesh, StaticBulbMesh, ShowReflectionOnBall reads
-- change Position() of the plunger element to return a float instead of an integer
-- add support for non-mechanical/digital Position() plunger call
-- add EnableSkirtAnimation to the bumper element
-- add GetCustomParam to access custom command line parameters 
+- add `UpdateMaterial` to the globals
+- fix potential problems for the light element for `Bulb`, `ImageMode`, `ShowBulbMesh`, `StaticBulbMesh`, `ShowReflectionOnBall` reads
+- change `Position()` of the plunger element to return a float instead of an integer
+- add support for non-mechanical/digital `Position()` plunger call
+- add `EnableSkirtAnimation` to the bumper element
+- add `GetCustomParam` to access custom command line parameters 
 - add support to read out the current hit threshold if the ball hits a Primitive or a HitTarget
 
 ### 10.5
-- EOSTorque, EOSTorqueAngle and Scatter of flipper element can now be changed by script
-- document missing DMDColoredPixels and add simple example for DMD access
-- add SSRScale to the table element
+- `EOSTorque`, `EOSTorqueAngle` and `Scatter` of flipper element can now be changed by script
+- document missing `DMDColoredPixels` and add simple example for DMD access
+- add `SSRScale` to the table element
 - extend X and Y of EMReel and textbox elements so that these can be changed by the script
-- add GravityFactor to the gate element
-- add UserValue to target and primitive elements
-- add BlendDisableLightingFromBelow to target and wall elements
-- add RingDropOffset to the bumper element
+- add `GravityFactor` to the gate element
+- add `UserValue` to target and primitive elements
+- add `BlendDisableLightingFromBelow` to target and wall elements
+- add `RingDropOffset` to the bumper element
 
 ### 10.4
 - support reading nudge data from table script, and reading/writing nudge calibration settings:
