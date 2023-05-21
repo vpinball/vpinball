@@ -2786,8 +2786,6 @@ void Player::UpdatePhysics()
 
    m_phys_iterations = 0;
 
-   bool first_cycle = true;
-
    while (m_curPhysicsFrameTime < initial_time_usec) // loop here until current (real) time matches the physics (simulated) time
    {
       // Get time in milliseconds for timers
@@ -2815,18 +2813,19 @@ void Player::UpdatePhysics()
       //                                        Intended mainly to be used if vsync is enabled (e.g. most idle time is shifted from vsync-waiting to here)
       if (m_minphyslooptime > 0)
       {
-          const U64 basetime = usec(); 
-          const U64 targettime = ((U64)m_minphyslooptime * m_phys_iterations) + m_lastFlipTime;
-          // If we're 3/4 of the way through the loop, fire a "frame sync" timer event so VPM can react to input.
-          // This will effectively double the "-1" timer rate, but the goal, when this option is enabled, is to reduce latency
-          // and those "-1" timer calls should be roughly halfway through the cycle
-          if (m_phys_iterations == 750 / ((int)m_fps + 1))
-          {
-              first_cycle = true; //!! side effects!?!
-              m_script_period = 0; // !!!! SIDE EFFECTS?!?!?!
-          }
-          if (basetime < targettime)
-              uSleep(targettime - basetime);
+         const U64 basetime = usec(); 
+         const U64 targettime = ((U64)m_minphyslooptime * m_phys_iterations) + m_lastFlipTime;
+         // If we're 3/4 of the way through the loop, fire a "frame sync" timer event so VPM can react to input.
+         // This will effectively double the "-1" timer rate, but the goal, when this option is enabled, is to reduce latency
+         // and those "-1" timer calls should be roughly halfway through the cycle
+         if (m_phys_iterations == 750 / ((int)m_fps + 1))
+         {
+            for (HitTimer *const pht : m_vht)
+               if (pht->m_interval < 0)
+                  pht->m_pfe->FireGroupEvent(DISPID_TimerEvents_Timer);
+         }
+         if (basetime < targettime)
+            uSleep(targettime - basetime);
       }
       // end DJRobX's crazy code
       const U64 cur_time_usec = usec()-delta_frame; //!! one could also do this directly in the while loop condition instead (so that the while loop will really match with the current time), but that leads to some stuttering on some heavy frames
@@ -2875,7 +2874,7 @@ void Player::UpdatePhysics()
          for (size_t i = 0; i < m_vht.size(); i++)
          {
             HitTimer * const pht = m_vht[i];
-            if ((pht->m_interval >= 0 && pht->m_nextfire <= p_timeCur) || (pht->m_interval < 0 && first_cycle))
+            if (pht->m_interval >= 0 && pht->m_nextfire <= p_timeCur)
             {
                const unsigned int curnextfire = pht->m_nextfire;
                pht->m_pfe->FireGroupEvent(DISPID_TimerEvents_Timer);
@@ -2961,8 +2960,6 @@ void Player::UpdatePhysics()
 
       m_curPhysicsFrameTime = m_nextPhysicsFrameTime; // new cycle, on physics frame boundary
       m_nextPhysicsFrameTime += PHYSICS_STEPTIME;     // advance physics position
-
-      first_cycle = false;
    } // end while (m_curPhysicsFrameTime < initial_time_usec)
 
    m_phys_period = (U32)((usec() - delta_frame) - initial_time_usec);
@@ -4147,7 +4144,6 @@ void Player::Render()
    U64 clearTiming = usec() - usecTimeStamp;
 
    // Physics/Timer updates, done at the last moment, especially to handle key input (VP<->VPM roundtrip) and animation triggers
-   //if ( !cameraMode )
    if (!m_pause && m_minphyslooptime == 0) // (vsync) latency reduction code not active? -> Do Physics Updates here
       UpdatePhysics();
 
@@ -4166,6 +4162,11 @@ void Player::Render()
                ph->UpdateAnimation(diff_time_msec);
          }
    }
+
+   // Fire all '-1' timers (the ones which are synced to the refresh rate) after physics and animation update but before rendering, to avoid the script being one frame late
+   for (HitTimer *const pht : m_vht)
+      if (pht->m_interval < 0)
+         pht->m_pfe->FireGroupEvent(DISPID_TimerEvents_Timer);
 
 #ifndef ENABLE_SDL
    if (GetProfilingMode() == PF_ENABLED)
@@ -4283,7 +4284,7 @@ void Player::Render()
    for (size_t i=0;i<m_vht.size();i++)
    {
       HitTimer * const pht = m_vht[i];
-      if ((pht->m_interval >= 0 && pht->m_nextfire <= m_time_msec) || pht->m_interval < 0) 
+      if (pht->m_interval >= 0 && pht->m_nextfire <= m_time_msec) 
       {
          const unsigned int curnextfire = pht->m_nextfire;
          pht->m_pfe->FireGroupEvent(DISPID_TimerEvents_Timer);
