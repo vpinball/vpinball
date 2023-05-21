@@ -120,10 +120,10 @@ jobs:
           cp txt/CommandLineParameters.txt tmp
           cp txt/CommandReference.txt tmp
           cp txt/Hotkeys.txt tmp
-          cp "txt/JP's VPX7 Physics Materials.mat" tmp
-          cp "txt/JP's VPX7 Physics.pdf" tmp
-          cp "txt/JP's VPX7 script addons vbs.txt" tmp
-          cp "txt/JP's VPX7 Table physics.vpp" tmp
+          cp "txt/JP's VPX7 Rev2 Physics Materials.mat" tmp
+          cp "txt/JP's VPX7 Rev2 Physics.pdf" tmp
+          cp "txt/JP's VPX7 Rev2 script addons vbs.txt" tmp
+          cp "txt/JP's VPX7 Rev2 Table physics.vpp" tmp
           cp txt/layoutGuideline.txt tmp
           cp txt/license.txt tmp
           cp "txt/New Plunger Documentation.pdf" tmp
