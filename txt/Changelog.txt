@@ -111,6 +111,9 @@ FEATURES:
   are also used already for the environment lighting. The benefit of using them is that the reflections are view dependent and that they can match
   the table environment lighting image for full consistency between the lighting and reflections.
 
+- timers with a -1 interval used to be ran 1 or 2 times per frame (depending on user latency reduction setting). They now are always ran once per frame only.
+  timers with a -2 interval are now considered as controller sync timers and will be ran as many time per frame as needed, depending on user settings.
+
 FIXES:
 
 - timers with a -1 interval are always fired after physics and animation, but before rendering, allowing the script to update visual parts accordingly without any visual lag.

@@ -1,6 +1,6 @@
 Option Explicit
 
-Const VPinMAMEDriverVer = 3.60
+Const VPinMAMEDriverVer = 3.61
 
 '======================
 ' VPinMAME driver core
@@ -45,14 +45,14 @@ Dim vpmShowDips  ' Show DIPs function
 Private vpmVPVer : vpmVPVer = vpmCheckVPVer()
 
 Private Function PinMAMEInterval
-	If vpmVPVer >= 10200 Then
-			PinMAMEInterval = -1 ' VP10.2 introduced special frame-sync'ed timers
+	If vpmVPVer >= 10800 Then
+		PinMAMEInterval = -2 ' VP10.8 introduced special controller-sync'ed timers (more than once a frame to limit latency, without affecting other -1 timers which should run only once per frame)
+	ElseIf vpmVPVer >= 10200 Then
+		PinMAMEInterval = -1 ' VP10.2 introduced special frame-sync'ed timers (run at least once per frame, can be 2 if DJRobX latency reduction code is used)
+	ElseIf vpmVPVer >= 10000 Then
+		PinMAMEInterval = 3  ' as old VP9 timers pretended to run at 1000Hz but actually did only a max of 100Hz (e.g. corresponding nowadays to interval=10), we do something inbetween for VP10+ by default
 	Else
-		If vpmVPVer >= 10000 Then
-			PinMAMEInterval = 3  ' as old VP9 timers pretended to run at 1000Hz but actually did only a max of 100Hz (e.g. corresponding nowadays to interval=10), we do something inbetween for VP10+ by default
-		Else
-			PinMAMEInterval = 1
-		End If
+		PinMAMEInterval = 1
 	End If
 End Function
 
