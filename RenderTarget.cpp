@@ -17,48 +17,51 @@ int RenderTarget::m_current_stereo_mode = -1;
 RenderTarget* RenderTarget::current_render_target = nullptr;
 RenderTarget* RenderTarget::GetCurrentRenderTarget() { return current_render_target; }
 
-RenderTarget::RenderTarget(RenderDevice* rd, int width, int height, colorFormat format)
+RenderTarget::RenderTarget(RenderDevice* const rd, const int width, const int height, const colorFormat format)
    : m_name("BackBuffer"s)
+   , m_is_back_buffer(true)
+   , m_type(RT_DEFAULT)
+   , m_rd(rd)
+   , m_format(format)
+   , m_width(width)
+   , m_height(height)
+   , m_stereo(STEREO_OFF)
+   , m_nMSAASamples(1)
+   , m_has_depth(false)
+   , m_shared_depth(false)
 {
-   m_rd = rd;
-   m_stereo = STEREO_OFF;
-   m_is_back_buffer = true;
-   m_format = format;
-   m_shared_depth = false;
-   m_width = width;
-   m_height = height;
-   m_has_depth = false;
-   m_nMSAASamples = 1;
    m_color_sampler = nullptr;
    m_depth_sampler = nullptr;
 #ifdef ENABLE_SDL
-   m_framebuffer = 0;
-   glGetIntegerv(GL_FRAMEBUFFER_BINDING, (GLint*)&m_framebuffer); // Not sure about this (taken from VPVR original implementation). Doesn't the back buffer alays bind to 0 on OpenGL ?
+   glGetIntegerv(GL_FRAMEBUFFER_BINDING, (GLint*)&m_framebuffer); // Not sure about this (taken from VPVR original implementation). Doesn't the back buffer always bind to 0 on OpenGL ?
+   m_color_tex = 0;
+   m_depth_tex = 0;
 #else
    HRESULT hr = m_rd->GetCoreDevice()->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &m_color_surface);
    if (FAILED(hr))
       ReportError("Fatal Error: unable to create back buffer!", hr, __FILE__, __LINE__);
    m_use_alternate_depth = m_rd->m_useNvidiaApi || !m_rd->m_INTZ_support;
    m_color_tex = nullptr;
-   m_color_sampler = nullptr;
    m_depth_tex = nullptr;
    m_depth_surface = nullptr;
-   m_depth_sampler = nullptr;
 #endif
 }
 
-RenderTarget::RenderTarget(RenderDevice* rd, const string& name, const int width, const int height, const colorFormat format, bool with_depth, int nMSAASamples, StereoMode stereo, const char* failureMessage, RenderTarget* sharedDepth)
+RenderTarget::RenderTarget(RenderDevice* const rd, const RenderTargetType type, const string& name, const int width, const int height, const colorFormat format, bool with_depth, int nMSAASamples, StereoMode stereo, const char* failureMessage, RenderTarget* sharedDepth)
    : m_name(name)
+   , m_is_back_buffer(false)
+   , m_type(type)
+   , m_rd(rd)
+   , m_format(format)
+   , m_width(width)
+   , m_height(height)
+   , m_stereo(stereo)
+   , m_nMSAASamples(nMSAASamples)
+   , m_has_depth(with_depth)
+   , m_shared_depth(with_depth && (sharedDepth != nullptr))
 {
-   m_is_back_buffer = false;
-   m_rd = rd;
-   m_stereo = stereo;
-   m_width = width;
-   m_height = height;
-   m_format = format;
-   m_has_depth = with_depth;
-   m_nMSAASamples = nMSAASamples;
-   m_shared_depth = m_has_depth && (sharedDepth != nullptr);
+   assert(type != RT_CUBEMAP || nMSAASamples == 1); // Cubemap render target do not support multisampling
+
    m_color_sampler = nullptr;
    m_depth_sampler = nullptr;
 #ifdef ENABLE_SDL
@@ -89,13 +92,16 @@ RenderTarget::RenderTarget(RenderDevice* rd, const string& name, const int width
    tex_unit->sampler = nullptr;
    glActiveTexture(GL_TEXTURE0 + tex_unit->unit);
 
+   const unsigned int target = nMSAASamples != 1 ? (type == RT_DEFAULT ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D_MULTISAMPLE_ARRAY)
+                                                 : (type == RT_DEFAULT ? GL_TEXTURE_2D : type == RT_STEREO ? GL_TEXTURE_2D_ARRAY : GL_TEXTURE_CUBE_MAP);
+
    if (nMSAASamples > 1)
    {
       glGenTextures(1, &m_color_tex);
-      glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, m_color_tex);
-      glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, nMSAASamples, format, width, height, GL_TRUE);
-      glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
-      glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, m_color_tex, 0);
+      glBindTexture(target, m_color_tex);
+      glTexImage2DMultisample(target, nMSAASamples, format, width, height, GL_TRUE);
+      glBindTexture(target, 0);
+      glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_color_tex, 0);
       if (with_depth)
       {
          if (!m_shared_depth)
@@ -111,23 +117,35 @@ RenderTarget::RenderTarget(RenderDevice* rd, const string& name, const int width
    else
    {
       glGenTextures(1, &m_color_tex);
-      glBindTexture(GL_TEXTURE_2D, m_color_tex);
-      glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, col_format, col_type, nullptr);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
-      glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_color_tex, 0);
+      glBindTexture(target, m_color_tex);
+      switch (m_type)
+      {
+      case RT_DEFAULT: glTexImage2D(target, 0, format, width, height, 0, col_format, col_type, nullptr); break;
+      case RT_STEREO: glTexImage3D(target, 0, format, width, height, 2, 0, col_format, col_type, nullptr); break;
+      case RT_CUBEMAP:
+         for (int i = 0; i < 6; i++)
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, format, width, height, 0, col_format, col_type, nullptr);
+         break;
+      }
+      glTexParameteri(target, GL_TEXTURE_MAX_LEVEL, 0);
+      glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_color_tex, 0);
       if (with_depth)
       {
          if (!m_shared_depth)
          {
             glGenTextures(1, &m_depth_tex);
-            glBindTexture(GL_TEXTURE_2D, m_depth_tex);
-#ifndef __OPENGLES__
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, col_type, 0);
-#else
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, width, height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, 0); //!!
-#endif
+            glBindTexture(target, m_depth_tex);
+            switch (m_type)
+            {
+            case RT_DEFAULT: glTexImage2D(target, 0, GL_DEPTH_COMPONENT16, width, height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, nullptr); break;
+            case RT_STEREO: glTexImage3D(target, 0, GL_DEPTH_COMPONENT16, width, height, 2, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, nullptr); break;
+            case RT_CUBEMAP:
+               for (int i = 0; i < 6; i++)
+                  glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT16, width, height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, nullptr);
+               break;
+            }
          }
-         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_depth_tex, 0);
+         glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_depth_tex, 0);
       }
    }
 
@@ -169,8 +187,13 @@ RenderTarget::RenderTarget(RenderDevice* rd, const string& name, const int width
       m_color_sampler->SetName(name + ".Color");
       if (with_depth)
       {
-         m_depth_sampler = new Sampler(m_rd, m_depth_tex, false, true);
-         m_depth_sampler->SetName(name + ".Depth");
+         if (m_shared_depth)
+            m_depth_sampler = sharedDepth->GetDepthSampler();
+         else
+         {
+            m_depth_sampler = new Sampler(m_rd, m_depth_tex, false, true);
+            m_depth_sampler->SetName(name + ".Depth");
+         }
       }
    }
 
@@ -179,6 +202,7 @@ RenderTarget::RenderTarget(RenderDevice* rd, const string& name, const int width
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 #else
+   assert(m_type == RT_DEFAULT); // Layered rendering is not yet supported by the DX9 backend
    m_color_tex = nullptr;
    m_color_surface = nullptr;
    m_depth_tex = nullptr;
@@ -299,7 +323,7 @@ void RenderTarget::UpdateDepthSampler(bool insideBeginEnd)
 RenderTarget* RenderTarget::Duplicate(const string& name, const bool shareDepthSurface)
 {
    assert(!m_is_back_buffer);
-   return new RenderTarget(m_rd, name, m_width, m_height, m_format, m_has_depth, m_nMSAASamples, m_stereo, "Failed to duplicate render target", shareDepthSurface ? this : nullptr);
+   return new RenderTarget(m_rd, m_type, name, m_width, m_height, m_format, m_has_depth, m_nMSAASamples, m_stereo, "Failed to duplicate render target", shareDepthSurface ? this : nullptr);
 }
 
 void RenderTarget::CopyTo(RenderTarget* dest, const bool copyColor, const bool copyDepth,
