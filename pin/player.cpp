@@ -2815,13 +2815,11 @@ void Player::UpdatePhysics()
       {
          const U64 basetime = usec(); 
          const U64 targettime = ((U64)m_minphyslooptime * m_phys_iterations) + m_lastFlipTime;
-         // If we're 3/4 of the way through the loop, fire a "frame sync" timer event so VPM can react to input.
-         // This will effectively double the "-1" timer rate, but the goal, when this option is enabled, is to reduce latency
-         // and those "-1" timer calls should be roughly halfway through the cycle
+         // If we're 3/4 of the way through the loop, fire a "controller sync" timer (timers with an interval set to -2) event so VPM can react to input.
          if (m_phys_iterations == 750 / ((int)m_fps + 1))
          {
             for (HitTimer *const pht : m_vht)
-               if (pht->m_interval < 0)
+               if (pht->m_interval = -2)
                   pht->m_pfe->FireGroupEvent(DISPID_TimerEvents_Timer);
          }
          if (basetime < targettime)
@@ -4163,7 +4161,7 @@ void Player::Render()
          }
    }
 
-   // Fire all '-1' timers (the ones which are synced to the refresh rate) after physics and animation update but before rendering, to avoid the script being one frame late
+   // Fire all '-1' (the ones which are synced to the refresh rate) and '-2' (the ones used to sync with the controller) timers after physics and animation update but before rendering, to avoid the script being one frame late
    for (HitTimer *const pht : m_vht)
       if (pht->m_interval < 0)
          pht->m_pfe->FireGroupEvent(DISPID_TimerEvents_Timer);
