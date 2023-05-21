@@ -113,6 +113,9 @@ FEATURES:
 
 FIXES:
 
+- timers with a -1 interval are always fired after physics and animation, but before rendering, allowing the script to update visual parts accordingly without any visual lag.
+  This also apply to the new 'Animate' events which are designed for this purpose.
+
 - fix analogue nudge not working for joysticks/gamepads in XInput mode
 
 - fix some problems with playing sounds via BASS: pitch/frequency change and loop/restart should now be matching the 'old' player
