@@ -176,7 +176,7 @@ DMDColoredPixels = myDMDdata
 | Image | string | 
 | FrontDecal | string |  image of the ball front decal
 | DecalMode | bool |  switch between using the ball decal as ball logo or ball 'scratches'
-| ID | int |  - gets a unique ID for each ball created or allows to set an artificial one to distinguish different balls on the table
+| ID | int | gets a unique ID for each ball created or allows to set an artificial one to distinguish different balls on the table
 | BulbIntensityScale | float |  allows to dampen/scale the intensity of (bulb-)light reflections on each ball (e.g. to simulate shadowing in the ball lane, etc)
 | ReflectionEnabled | bool |  if playfield reflects objects this can be used to enable/disable the reflection for a specific ball
 | PlayfieldReflectionScale | float |  allows to dampen/scale the contribution of the playfield reflections on each ball (see BallPlayfieldReflectionScale() for the Table)
@@ -196,12 +196,12 @@ DMDColoredPixels = myDMDdata
 | *CapMaterial | string | 
 | *BaseMaterial | string | 
 | *SkirtMaterial | string | 
-| *Radius | float |  default=45.0
-| *HeightScale  | float |  default=90.0
+| *Radius | float | default=45.0
+| *HeightScale  | float | default=90.0
 | *Orientation | float |  
-| RingDropOffset | float |  An offset to influence the ring animation. The default move down limit is calculated by (HeightScale*0.5) * Table_Scalez. The final move down limit is calculated by RingDropOffset + (HeightScale*0.5)* Table_Scalez. For example: If the ring is moving too far down you have to try to set the RingDropOffset to -10.
+| RingDropOffset | float | An offset to influence the ring animation. The default move down limit is calculated by (HeightScale*0.5) * Table_Scalez. The final move down limit is calculated by RingDropOffset + (HeightScale*0.5)* Table_Scalez. For example: If the ring is moving too far down you have to try to set the RingDropOffset to -10.
 | RingSpeed | float | 
-| *CurrentRingOffset | float |  Live position of the ring (see RingDropOffset and RingSpeed, default is 0..-45 for RingDropOffset is 0 and HeightScale is 90)
+| *CurrentRingOffset | float | Live position of the ring (see RingDropOffset and RingSpeed, default is 0..-45 for RingDropOffset is 0 and HeightScale is 90)
 | *X | float |  X position
 | *Y | float |  Y position
 | *Surface | string | 
@@ -209,12 +209,12 @@ DMDColoredPixels = myDMDdata
 | Threshold | float | 
 | *Scatter | float | 
 | TimerEnabled | bool | 
-| TimerInterval | int |  - set interval for triggering the timer (1 equals 1000 timer calls per second, 1000 equals 1 timer call per second, -1 makes it dependent on the FPS that a user can reach)
+| TimerInterval | int | set interval for triggering the timer (1 equals 1000 timer calls per second, 1000 equals 1 timer call per second, -1 makes it dependent on the FPS that a user can reach)
 | UserValue | any |  can store any user defined value for re-use later-on
-| *CapVisible | bool |  default=true
-| *BaseVisible | bool |  default=true
-| *ReflectionEnabled | bool |  default=true
-| EnableSkirtAnimation | bool |  default=true, en/disables the skirt animation of a bumper, for example if something external is triggering the bumper (i.e. no ball contact with the skirt)
+| *CapVisible | bool | default=true
+| *BaseVisible | bool | default=true
+| *ReflectionEnabled | bool | default=true
+| EnableSkirtAnimation | bool | default=true, en/disables the skirt animation of a bumper, for example if something external is triggering the bumper (i.e. no ball contact with the skirt)
 | HasHitEvent | bool | 
 | Collidable | bool | 
 
@@ -498,8 +498,8 @@ DMDColoredPixels = myDMDdata
 ### Variables
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| *AnimFrames | int |  - Flat style only: the number of animation frames in the Image; the image must be arranged with all of the frames lined up horizontally, all the same size, with the fully forward image in the leftmost cell
-| *AutoPlunger | bool |  if set, this is a solenoid launcher rather than a traditional plunger
+| *AnimFrames | int | Flat style only: the number of animation frames in the Image; the image must be arranged with all of the frames lined up horizontally, all the same size, with the fully forward image in the leftmost cell
+| *AutoPlunger | bool | if set, this is a solenoid launcher rather than a traditional plunger
 | *Color | OLECOLOR | surface color for 3D rendering; used only if no texture is specified via Image
 | FireSpeed | float |  speed of firing when Fire() is called or mechanical plunger is released; controls both animation speed and ball launch strength
 | *Image | string |  image used as texture for the 3D styles or as animation cell(s) for the flat style
@@ -522,8 +522,8 @@ DMDColoredPixels = myDMDdata
 | *Shape | string |  Custom type only: a list of Distance/Diameter pairs separated by semicolons specifying the shape of the tip, as a series of circles centered on the plunger axis
 | *Surface | string |  object for aligning vertical position of plunger; sits atop playfield if this is left blank
 | TimerEnabled | bool |  enable the plunger's script timer
-| TimerInterval | int |  - interval for firing the plunger's script timer
-| *Type | int |  - the visual style of the plunger drawn on-screen
+| TimerInterval | int |  interval for firing the plunger's script timer
+| *Type | int |  the visual style of the plunger drawn on-screen
 | UserValue | any |  can store any user defined value for re-use later-on
 | *Visible | bool |  true if plunger is visible on-screen
 | *Width | float |  on-screen width of the plunger on each side of the center-line (this acts like a radius, so the actual drawing width is twice this value)
@@ -560,15 +560,15 @@ DMDColoredPixels = myDMDdata
 | Size_X | float |  X size
 | Size_Y | float |  Y size
 | Size_Z | float |  Z size
-| RotAndTra0 | float |  or RotX | float |  rotates the primitive around it's X axis
-| RotAndTra1 | float |  or RotY | float |  rotates the primitive around it's Y axis
-| RotAndTra2 | float |  or RotZ | float |  rotates the primitive around it's Z axis
-| RotAndTra3 | float |  or TransX | float |  translates the primitive along it's X axis
-| RotAndTra4 | float |  or TransY | float |  translates the primitive along it's Y axis
-| RotAndTra5 | float |  or TransZ | float |  translates the primitive along it's Z axis
-| RotAndTra6 | float |  or ObjRotX | float |  rotates the X axis of the primitive's local coordinate system. This is used to orientate the object first, after that RotXYZ will rotate the object around this rotated coordinate system
-| RotAndTra7 | float |  or ObjRotY | float |  rotates the Y axis of the primitive's local coordinate system. This is used to orientate the object first, after that RotXYZ will rotate the object around this rotated coordinate system
-| RotAndTra8 | float |  or ObjRotZ | float |  rotates the Z axis of the primitive's local coordinate system. This is used to orientate the object first, after that RotXYZ will rotate the object around this rotated coordinate system
+| RotX | float |  rotates the primitive around it's X axis
+| RotY | float |  rotates the primitive around it's Y axis
+| RotZ | float |  rotates the primitive around it's Z axis
+| TransX | float |  translates the primitive along it's X axis
+| TransY | float |  translates the primitive along it's Y axis
+| TransZ | float |  translates the primitive along it's Z axis
+| ObjRotX | float |  rotates the X axis of the primitive's local coordinate system. This is used to orientate the object first, after that RotXYZ will rotate the object around this rotated coordinate system
+| ObjRotY | float |  rotates the Y axis of the primitive's local coordinate system. This is used to orientate the object first, after that RotXYZ will rotate the object around this rotated coordinate system
+| ObjRotZ | float |  rotates the Z axis of the primitive's local coordinate system. This is used to orientate the object first, after that RotXYZ will rotate the object around this rotated coordinate system
 | *EnableStaticRendering | bool |  if set the primitive is only rendered once (like walls) any dynamic changes later won't have an effect. This is useful for objects like posts or static toys, because this won't have an impact of the perfomance
 | HasHitEvent | bool |  enables the support for a hit event in the script (it's the same as for walls)
 | Threshold | float |  hit threshold for firing the hit event
@@ -588,6 +588,15 @@ DMDColoredPixels = myDMDdata
 | Opacity | float |  lets you define the blend amount 0..100% (you can use values >100% though to for example enhance the strength of primitives in additive alpha blending mode)
 | Color - defines the color of the element in the editor. If you don't want to colorize the image set the color to blank white (RGB 255,255,255)
 | AddBlend | bool |  use additive alpha blending instead of classical alpha blending (also disable depth buffer writing)
+| RotAndTra0 | float |  Legacy. Replaced by RotX
+| RotAndTra1 | float |  Legacy. Replaced by RotY
+| RotAndTra2 | float |  Legacy. Replaced by RotZ
+| RotAndTra3 | float |  Legacy. Replaced by TransX
+| RotAndTra4 | float |  Legacy. Replaced by TransY
+| RotAndTra5 | float |  Legacy. Replaced by TransZ
+| RotAndTra6 | float |  Legacy. Replaced by ObjRotX
+| RotAndTra7 | float |  Legacy. Replaced by ObjRotY
+| RotAndTra8 | float |  Legacy. Replaced by ObjRotZ
 
 The following methods only applies to mesh primitives with an animation sequence
 - `PlayAnim(float startFrame, float speed)` - start playing the sequence from 'startFrame' til the end with frame rate 'speed'
@@ -874,10 +883,10 @@ Animate() - Called when the visual properties of the reel are animated
 | *Y | float | 
 | *Radius | float | 
 | TimerEnabled | bool | 
-| TimerInterval | int |  - set interval for triggering the timer (1 equals 1000 timer calls per second, 1000 equals 1 timer call per second, -1 makes it dependent on the FPS that a user can reach)
+| TimerInterval | int |  set interval for triggering the timer (1 equals 1000 timer calls per second, 1000 equals 1 timer call per second, -1 makes it dependent on the FPS that a user can reach)
 | *Enabled | bool | 
 | *Visible | bool | 
-| *TriggerShape(Shape) - 0=None, 1=Wire, 2=Star
+| *TriggerShape | Shape | 0=None, 1=Wire, 2=Star
 | Surface | string | 
 | UserValue | any |  can store any user defined value for re-use later-on
 | HitHeight | float | 
@@ -902,7 +911,7 @@ Animate() - Called when the visual properties of the reel are animated
 | ---- | ---- | ----------- |
 | *Name | string | 
 | TimerEnabled | bool | 
-| TimerInterval | int |  - set interval for triggering the timer (1 equals 1000 timer calls per second, 1000 equals 1 timer call per second, -1 makes it dependent on the FPS that a user can reach)
+| TimerInterval | int |  set interval for triggering the timer (1 equals 1000 timer calls per second, 1000 equals 1 timer call per second, -1 makes it dependent on the FPS that a user can reach)
 | *HasHitEvent | bool | 
 | Threshold | float | 
 | *Image | string |  texture name
