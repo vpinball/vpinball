@@ -188,6 +188,8 @@ void RenderProbeDialog::LoadProbeToUI(RenderProbe *const pb)
    GetDlgItem(IDC_REFLECTION_PLANE_NZ).EnableWindow(type == RenderProbe::PLANE_REFLECTION);
    GetDlgItem(IDC_REFLECTION_PLANE_DIST).EnableWindow(type == RenderProbe::PLANE_REFLECTION);
    GetDlgItem(IDC_REFLECTION_MAX_LEVEL).EnableWindow(type == RenderProbe::PLANE_REFLECTION);
+   GetDlgItem(IDC_REFLECTION_NO_LIGHTMAPS).EnableWindow(type == RenderProbe::PLANE_REFLECTION);
+   CheckDlgButton(IDC_REFLECTION_NO_LIGHTMAPS, pb->GetReflectionNoLightmaps() ? 1 : 0);
    HWND hwnd = GetDlgItem(IDC_ROUGHNESS).GetHwnd();
    SendMessage(hwnd, TBM_SETRANGE, fTrue, MAKELONG(0, 13 - 1));
    SendMessage(hwnd, TBM_SETTICFREQ, 1, 0);
@@ -212,6 +214,7 @@ void RenderProbeDialog::SaveProbeFromUI(RenderProbe *const pb)
    if (reflectionMode == LB_ERR)
       reflectionMode = RenderProbe::REFL_STATIC;
    const size_t roughness = SendMessage(GetDlgItem(IDC_ROUGHNESS).GetHwnd(), TBM_GETPOS, 0, 0);
+   pb->SetReflectionNoLightmaps(IsDlgButtonChecked(IDC_REFLECTION_NO_LIGHTMAPS) == BST_CHECKED);
 
    if (pb->GetType() != type || pb->GetReflectionMode() != reflectionMode || plane.x != vx || plane.y != vy || plane.z != vz || plane.w != vw || roughness != pb->GetRoughness())
    {

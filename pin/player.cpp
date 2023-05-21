@@ -1370,6 +1370,7 @@ HRESULT Player::Init()
       vec4 plane = vec4(0.f, 0.f, 1.f, m_ptable->m_tableheight);
       pf_reflection_probe->SetReflectionPlane(plane);
       pf_reflection_probe->SetReflectionMode(m_pfReflectionMode);
+      pf_reflection_probe->SetReflectionNoLightmaps(true);
    }
 
    m_pEditorTable->m_progressDialog.SetProgress(30);

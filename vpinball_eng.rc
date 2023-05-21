@@ -2164,7 +2164,8 @@ BEGIN
     GROUPBOX        "Performance and Troubleshooting",IDC_STATIC,144,136,138,96
     LTEXT           "Framebuffer Format",IDC_STATIC,148,148,130,60
     COMBOBOX        IDC_COMBO_TEXTURE,148,162,130,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Force Bloom Filter off (performance)",IDC_BLOOM_OFF,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,149,182,127,10
+    CONTROL         "Force Bloom Filter off (performance)",IDC_BLOOM_OFF,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,149,182,127,10
     LTEXT           "VR near plane",IDC_NEAR_LABEL,151,199,48,10
     EDITTEXT        IDC_NEAR_PLANE,200,197,40,12,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "VR far plane",IDC_FAR_LABEL,155,214,40,10
@@ -2371,7 +2372,7 @@ BEGIN
     GROUPBOX        "Roughness",IDC_STATIC,246,79,165,47
     LTEXT           "Level",IDC_ROUGHNESS_LABEL,252,93,37,9
     CONTROL         "",IDC_ROUGHNESS,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,292,89,116,15
-    GROUPBOX        "Reflection Plane",IDC_STATIC,246,130,165,56
+    GROUPBOX        "Reflection Plane",IDC_STATIC,246,130,165,68
     LTEXT           "Normal",IDC_STATIC7,252,142,57,9
     EDITTEXT        IDC_REFLECTION_PLANE_NX,332,141,23,12,ES_AUTOHSCROLL
     LTEXT           "Distance",IDC_STATIC,252,155,57,9
@@ -2384,6 +2385,8 @@ BEGIN
     PUSHBUTTON      "&Rename",IDC_RENAME,96,314,57,14
     PUSHBUTTON      "&Delete",IDC_DELETE,183,314,57,14
     DEFPUSHBUTTON   "&OK",IDOK,354,314,57,14
+    CONTROL         "Disable lightmap reflection (for playfield)",IDC_REFLECTION_NO_LIGHTMAPS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,255,183,144,10
 END
 
 
@@ -3937,3 +3940,4 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
+

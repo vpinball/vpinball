@@ -38,6 +38,8 @@ public:
    void GetReflectionPlaneNormal(vec3& normal) const;
    ReflectionMode GetReflectionMode() const { return m_reflection_mode;  }
    void SetReflectionMode(ReflectionMode mode);
+   bool GetReflectionNoLightmaps() const { return m_disableLightReflection; };
+   void SetReflectionNoLightmaps(const bool disableLightmaps) { m_disableLightReflection = disableLightmaps; }
 
    // Load/Save
    int GetSaveSize() const;
@@ -67,6 +69,7 @@ private:
    string m_name;
    int m_roughness = 0;
    bool m_rendering = false;
+   bool m_disableLightReflection = false; // Disable rendering of lightmaps in reflection render probes, needed to avoid having having reflections of playfield lightmaps onto the playfield itself
    RenderTarget* m_blurRT = nullptr;
    RenderTarget* m_prerenderRT = nullptr;
    RenderTarget* m_dynamicRT = nullptr;
