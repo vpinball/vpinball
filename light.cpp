@@ -477,6 +477,12 @@ void Light::RenderDynamic()
       pd3dDevice->DrawMesh(pd3dDevice->lightShader, IsTransparent(), bulbPos, m_d.m_depthBias, m_bulbLightMeshBuffer, RenderDevice::TRIANGLELIST, 0, bulbLightNumFaces);
    }
 
+   if (g_pplayer->IsRenderPass(Player::REFLECTION_PASS) && g_pplayer->IsRenderPass(Player::DISABLE_LIGHTMAPS))
+   {
+      pd3dDevice->CopyRenderStates(false, initial_state);
+      return;
+   }
+
    Shader *shader = m_d.m_BulbLight ? pd3dDevice->lightShader : pd3dDevice->classicLightShader;
    shader->SetLightData(center_range);
    shader->SetLightColor2FalloffPower(lightColor2_falloff_power);

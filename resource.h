@@ -721,6 +721,7 @@
 #define IDC_CHECK_SCALE_CENTER          431
 #define IDC_CHECK_RENAME_ON_EXPORT      431
 #define IDC_BTTABLEUP                   431
+#define IDC_REFLECTION_NO_LIGHTMAPS     431
 #define IDC_OVERWRITE_MATERIAL_SETTINGS 432
 #define IDC_LIGHT_FALLOFF_POWER         432
 #define IDC_JOYTABLEUP                  432

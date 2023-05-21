@@ -359,7 +359,10 @@ void RenderProbe::DoRenderReflectionProbe(const bool render_static, const bool r
    RenderState initial_state;
    p3dDevice->CopyRenderStates(true, initial_state);
 
+   unsigned int prevRenderMask = g_pplayer->m_render_mask;
    g_pplayer->m_render_mask |= Player::REFLECTION_PASS;
+   if (m_disableLightReflection)
+      g_pplayer->m_render_mask |= Player::DISABLE_LIGHTMAPS;
 
    Vertex3Ds n(m_reflection_plane.x, m_reflection_plane.y, m_reflection_plane.z);
    n.Normalize();
@@ -409,7 +412,7 @@ void RenderProbe::DoRenderReflectionProbe(const bool render_static, const bool r
       g_pplayer->DrawDynamics(true);
 
    // Restore initial render states and camera
-   g_pplayer->m_render_mask &= ~Player::REFLECTION_PASS;
+   g_pplayer->m_render_mask = prevRenderMask;
    p3dDevice->CopyRenderStates(false, initial_state);
    g_pplayer->m_pin3d.GetMVP().SetView(initialViewMat);
    if (render_static || render_dynamic)

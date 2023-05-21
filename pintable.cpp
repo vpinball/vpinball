@@ -3963,6 +3963,9 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
             // reflections were hardcoded without render probe before 10.8.0
             RenderProbe* const pf_reflections = new RenderProbe();
             pf_reflections->SetName(PLAYFIELD_REFLECTION_RENDERPROBE_NAME);
+            vec4 plane = vec4(0.f, 0.f, 1.f, m_tableheight);
+            pf_reflections->SetReflectionPlane(plane);
+            pf_reflections->SetReflectionNoLightmaps(true);
             m_vrenderprobe.push_back(pf_reflections);
 
             for (size_t i = 0; i < m_vedit.size(); ++i)
