@@ -2381,12 +2381,12 @@ BEGIN
     EDITTEXT        IDC_REFLECTION_PLANE_DIST,380,154,23,12,ES_AUTOHSCROLL
     LTEXT           "Max Quality:",IDC_STATIC,252,168,50,10
     COMBOBOX        IDC_REFLECTION_MAX_LEVEL,298,167,105,100,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Disable lightmap reflection (for playfield)",IDC_REFLECTION_NO_LIGHTMAPS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,255,183,144,10
     PUSHBUTTON      "&Add",IDC_NEW,7,314,57,14
     PUSHBUTTON      "&Rename",IDC_RENAME,96,314,57,14
     PUSHBUTTON      "&Delete",IDC_DELETE,183,314,57,14
     DEFPUSHBUTTON   "&OK",IDOK,354,314,57,14
-    CONTROL         "Disable lightmap reflection (for playfield)",IDC_REFLECTION_NO_LIGHTMAPS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,255,183,144,10
 END
 
 
@@ -3940,4 +3940,3 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
-

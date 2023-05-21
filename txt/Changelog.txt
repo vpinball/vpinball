@@ -117,7 +117,7 @@ FEATURES:
 FIXES:
 
 - timers with a -1 interval are always fired after physics and animation, but before rendering, allowing the script to update visual parts accordingly without any visual lag.
-  This also apply to the new 'Animate' events which are designed for this purpose.
+  This also applies to the new 'Animate' event which is designed for this purpose.
 
 - fix analogue nudge not working for joysticks/gamepads in XInput mode
 

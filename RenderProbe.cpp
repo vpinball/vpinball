@@ -158,7 +158,7 @@ void RenderProbe::ApplyRoughness(RenderTarget* probe, const int roughness)
    assert(0 <= roughness && roughness <= 12);
    if (roughness > 0)
    {
-      RenderDevice* p3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+      RenderDevice* const p3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
       if (m_blurRT == nullptr)
          m_blurRT = probe->Duplicate("BlurProbe"s);
       // The kernel sizes were chosen by reverse engineering the blur shader. So there's a part of guess here.
@@ -184,8 +184,8 @@ void RenderProbe::ApplyRoughness(RenderTarget* probe, const int roughness)
 
 void RenderProbe::RenderScreenSpaceTransparency(const bool is_static)
 {
-   RenderDevice* p3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-   RenderTarget* previousRT = p3dDevice->GetCurrentRenderTarget();
+   RenderDevice* const p3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+   RenderTarget* const previousRT = p3dDevice->GetCurrentRenderTarget();
    if (m_dynamicRT == nullptr)
    {
       const int downscale = GetRoughnessDownscale(m_roughness);
@@ -233,8 +233,8 @@ void RenderProbe::PreRenderStaticReflectionProbe()
    if (g_pplayer->m_dynamicMode || min(m_reflection_mode, g_pplayer->m_pfReflectionMode) != REFL_DYNAMIC)
       return;
 
-   RenderDevice* p3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-   RenderTarget* previousRT = p3dDevice->GetCurrentRenderTarget();
+   RenderDevice* const p3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+   RenderTarget* const previousRT = p3dDevice->GetCurrentRenderTarget();
 
    if (m_prerenderRT == nullptr)
    {
@@ -326,8 +326,8 @@ void RenderProbe::RenderReflectionProbe(const bool is_static)
    // Rendering reflection is not reentrant and would fail (clip plane and view matrices are not cached)
    assert(!g_pplayer->IsRenderPass(Player::REFLECTION_PASS));
 
-   RenderDevice* p3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-   RenderTarget* previousRT = p3dDevice->GetCurrentRenderTarget();
+   RenderDevice* const p3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+   RenderTarget* const previousRT = p3dDevice->GetCurrentRenderTarget();
 
    // Prepare to render into the reflection back buffer
    if (m_dynamicRT == nullptr)
@@ -355,11 +355,11 @@ void RenderProbe::RenderReflectionProbe(const bool is_static)
 
 void RenderProbe::DoRenderReflectionProbe(const bool render_static, const bool render_balls, const bool render_dynamic)
 {
-   RenderDevice* p3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+   RenderDevice* const p3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
    RenderState initial_state;
    p3dDevice->CopyRenderStates(true, initial_state);
 
-   unsigned int prevRenderMask = g_pplayer->m_render_mask;
+   const unsigned int prevRenderMask = g_pplayer->m_render_mask;
    g_pplayer->m_render_mask |= Player::REFLECTION_PASS;
    if (m_disableLightReflection)
       g_pplayer->m_render_mask |= Player::DISABLE_LIGHTMAPS;
