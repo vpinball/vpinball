@@ -2819,7 +2819,7 @@ void Player::UpdatePhysics()
          if (m_phys_iterations == 750 / ((int)m_fps + 1))
          {
             for (HitTimer *const pht : m_vht)
-               if (pht->m_interval = -2)
+               if (pht->m_interval == -2)
                   pht->m_pfe->FireGroupEvent(DISPID_TimerEvents_Timer);
          }
          if (basetime < targettime)
