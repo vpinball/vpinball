@@ -1504,6 +1504,18 @@ bool LiveUI::GetSelectionTransform(Matrix3D& transform)
       return true;
    }
 
+   if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemFlasher)
+   {
+      Flasher *p = (Flasher *)m_selection.editable;
+      Matrix3D rotx, roty, rotz, trans;
+      trans.SetTranslation(p->m_d.m_vCenter.x, p->m_d.m_vCenter.y, p->m_d.m_height + m_live_table->m_tableheight);
+      rotx.SetRotateX(ANGTORAD(p->m_d.m_rotX));
+      roty.SetRotateY(ANGTORAD(p->m_d.m_rotY));
+      rotz.SetRotateZ(ANGTORAD(p->m_d.m_rotZ));
+      transform = rotz * roty * rotx * trans;
+      return true;
+   }
+
    if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemLight)
    {
       Light *l = (Light *)m_selection.editable;
@@ -1579,6 +1591,17 @@ void LiveUI::SetSelectionTransform(Matrix3D &newTransform, bool clearPosition, b
       p->m_d.m_vSize.x = xscale;
       p->m_d.m_vSize.y = yscale;
       p->m_d.m_vSize.z = zscale;
+   }
+
+   if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemFlasher)
+   {
+      Flasher *p = (Flasher *)m_selection.editable;
+      p->put_X(posX);
+      p->put_Y(posY);
+      p->put_Height(posZ);
+      p->put_RotX(rotX);
+      p->put_RotY(rotY);
+      p->put_RotZ(rotZ);
    }
 
    if (m_selection.type == LiveUI::Selection::SelectionType::S_BALL)
@@ -2442,8 +2465,31 @@ void LiveUI::MaterialProperties(bool is_live)
    }
 }
 
-void LiveUI::FlasherProperties(bool is_live, Flasher *startup_obj, Flasher *live_obj) {
-
+void LiveUI::FlasherProperties(bool is_live, Flasher *startup_obj, Flasher *live_obj)
+{
+   if (ImGui::CollapsingHeader("Visual", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
+   {
+      PropCheckbox("Visible", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_isVisible) : nullptr, live_obj ? &(live_obj->m_d.m_isVisible) : nullptr);
+      PropImageCombo("Image A", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_szImageA) : nullptr, live_obj ? &(live_obj->m_d.m_szImageA) : nullptr, m_table);
+      PropImageCombo("Image B", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_szImageB) : nullptr, live_obj ? &(live_obj->m_d.m_szImageB) : nullptr, m_table);
+      PropCheckbox("Additive Blend", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_addBlend) : nullptr, live_obj ? &(live_obj->m_d.m_addBlend) : nullptr);
+      PropCheckbox("Use Script DMD", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_isDMD) : nullptr, live_obj ? &(live_obj->m_d.m_isDMD) : nullptr);
+      PropRGB("Color", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_color) : nullptr, live_obj ? &(live_obj->m_d.m_color) : nullptr);
+      PropInt("Opacity", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_alpha) : nullptr, live_obj ? &(live_obj->m_d.m_alpha) : nullptr);
+      PropFloat("Modulate", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_modulate_vs_add) : nullptr, live_obj ? &(live_obj->m_d.m_modulate_vs_add) : nullptr, 0.1f, 0.5f);
+      PropFloat("Depth bias", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_depthBias) : nullptr, live_obj ? &(live_obj->m_d.m_depthBias) : nullptr, 10.f, 100.f);
+      ImGui::EndTable();
+   }
+   if (ImGui::CollapsingHeader("Position", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
+   {
+      PropVec3("Position", startup_obj, is_live, 
+         startup_obj ? &(startup_obj->m_d.m_vCenter.x) : nullptr, startup_obj ? &(startup_obj->m_d.m_vCenter.y) : nullptr, startup_obj ? &(startup_obj->m_d.m_height) : nullptr,
+         live_obj    ? &(live_obj   ->m_d.m_vCenter.x) : nullptr, live_obj    ? &(live_obj   ->m_d.m_vCenter.y) : nullptr, live_obj    ? &(live_obj   ->m_d.m_height) : nullptr, "%.0f", ImGuiInputTextFlags_CharsDecimal);
+      PropVec3("Rotation", startup_obj, is_live, 
+         startup_obj ? &(startup_obj->m_d.m_rotX) : nullptr, startup_obj ? &(startup_obj->m_d.m_rotY) : nullptr, startup_obj ? &(startup_obj->m_d.m_rotZ) : nullptr, 
+         live_obj    ? &(live_obj   ->m_d.m_rotX) : nullptr, live_obj    ? &(live_obj   ->m_d.m_rotY) : nullptr, live_obj    ? &(live_obj   ->m_d.m_rotZ) : nullptr, "%.0f", ImGuiInputTextFlags_CharsDecimal);
+      ImGui::EndTable();
+   }
 }
 
 void LiveUI::LightProperties(bool is_live, Light *startup_light, Light *live_light)
@@ -2729,6 +2775,45 @@ void LiveUI::PropRGB(const char *label, IEditable *undo_obj, bool is_live, COLOR
          m_table->SetNonUndoableDirty(eSaveDirty);
    }
    PROP_HELPER_SYNC(COLORREF)
+   PROP_HELPER_END
+}
+
+void LiveUI::PropVec3(const char *label, IEditable *undo_obj, bool is_live, float *startup_x, float *startup_y, float *startup_z, float *live_x, float *live_y, float *live_z, const char *format, ImGuiInputTextFlags flags, OnVec3PropChange chg_callback)
+{
+   PROP_TABLE_SETUP
+   ImGui::TableNextColumn();
+   if ((is_live ? live_x : startup_x) == nullptr)
+   { /* Missing value just skip */
+      ImGui::TableNextColumn();
+      return;
+   }
+   vec3 v = is_live ? vec3(*live_x, *live_y, *live_z) : vec3(*startup_x, *startup_y, *startup_z);
+   ImGui::PushID(label);
+   vec3 prev_v = v;
+   if (ImGui::InputFloat3(label, v, format, flags))
+   {
+      *(is_live ? live_x : startup_x) = v.x;
+      *(is_live ? live_y : startup_y) = v.y;
+      *(is_live ? live_z : startup_z) = v.z;
+      if (chg_callback)
+      {
+         chg_callback(is_live, prev_v, v);
+      }
+      if (!is_live)
+         m_table->SetNonUndoableDirty(eSaveDirty);
+   }
+   /* Sync button(also show if there are difference between live and startup through the enable state) */
+   ImGui::TableNextColumn();
+   if ((is_live ? startup_x : live_x) != nullptr)
+   {
+      const bool synced = ((*startup_x) == (*live_x)) && ((*startup_y) == (*live_y)) && ((*startup_z) == (*live_z));
+      if (synced)
+         ImGui::BeginDisabled();
+      if (ImGui::Button(ICON_SAVE))
+      {
+         *(is_live ? startup_x : live_x) = v.x;
+         *(is_live ? startup_y : live_y) = v.y;
+         *(is_live ? startup_z : live_z) = v.z;
    PROP_HELPER_END
 }
 
