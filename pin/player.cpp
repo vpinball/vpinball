@@ -1002,36 +1002,6 @@ void Player::InitDebugHitStructure()
    m_debugoctree.Initialize(FRect(bbox.left,bbox.right,bbox.top,bbox.bottom));
 }
 
-Vertex3Ds g_viewDir;
-
-static bool CompareHitableDepth(const Hitable* h1, const Hitable* h2)
-{
-   // GetDepth approximates direction in view distance to camera; sort ascending
-   return h1->GetDepth(g_viewDir) >= h2->GetDepth(g_viewDir);
-}
-
-static bool CompareHitableDepthInverse(const Hitable* h1, const Hitable* h2)
-{
-   // GetDepth approximates direction in view distance to camera; sort descending
-   return h1->GetDepth(g_viewDir) <= h2->GetDepth(g_viewDir);
-}
-
-static bool CompareHitableDepthReverse(const Hitable* h1, const Hitable* h2)
-{
-   // GetDepth approximates direction in view distance to camera; sort descending
-   return h1->GetDepth(g_viewDir) < h2->GetDepth(g_viewDir);
-}
-
-static bool CompareHitableMaterial(const Hitable* h1, const Hitable* h2)
-{
-   return h1->GetMaterialID() < h2->GetMaterialID();
-}
-
-static bool CompareHitableImage(const Hitable* h1, const Hitable* h2)
-{
-   return h1->GetImageID() < h2->GetImageID();
-}
-
 void Player::UpdateBasicShaderMatrix(const Matrix3D& objectTrafo)
 {
    struct {
@@ -1488,9 +1458,6 @@ HRESULT Player::Init()
    g_pvp->ProfileLog("Setup Renderer"s);
    PLOGI << "Initalizing renderer"; // For profiling
 
-   // Global view direction used for presorting
-   g_viewDir = Vertex3Ds(0, 0, -1.0f);
-
    InitShader();
 
    // search through all collection for elements which support group rendering
@@ -1511,10 +1478,10 @@ HRESULT Player::Init()
    }
 
    // Start the frame.
-   for (size_t i = 0; i < m_ptable->m_vrenderprobe.size(); ++i)
-      m_ptable->m_vrenderprobe[i]->RenderSetup();
-   for (size_t i = 0; i < m_vhitables.size(); ++i)
-      m_vhitables[i]->RenderSetup();
+   for (RenderProbe* probe : m_ptable->m_vrenderprobe)
+      probe->RenderSetup();
+   for (Hitable* hitable : m_vhitables)
+      hitable->RenderSetup();
 
    // Initialize lighting (maybe move to pin3d ? in InitLights ?)
    const vec4 st(m_ptable->m_envEmissionScale*m_globalEmissionScale, m_pin3d.m_envTexture ? (float)m_pin3d.m_envTexture->m_height/*+m_pin3d.m_envTexture->m_width)*0.5f*/ : (float)m_pin3d.m_builtinEnvTexture.m_height/*+m_pin3d.m_builtinEnvTexture.m_width)*0.5f*/, 0.f, 0.f); //!! dto.
@@ -1524,36 +1491,6 @@ HRESULT Player::Init()
    // Setup anisotropic filtering
    const bool forceAniso = LoadValueWithDefault(regKey[RegName::Player], "ForceAnisotropicFiltering"s, true);
    m_pin3d.m_pd3dPrimaryDevice->SetMainTextureDefaultFiltering(forceAniso ? SF_ANISOTROPIC : SF_TRILINEAR);
-
-   for (size_t i = 0; i < m_ptable->m_vedit.size(); ++i)
-   {
-      IEditable * const pe = m_ptable->m_vedit[i];
-      Hitable * const ph = pe->GetIHitable();
-      if (ph)
-      {
-         // sort into proper categories
-         if (ph->IsTransparent())
-            m_vHitTrans.push_back(ph);
-         else
-            m_vHitNonTrans.push_back(ph);
-      }
-   }
-
-   if (!m_vHitNonTrans.empty())
-   {
-      stable_sort(m_vHitNonTrans.begin(), m_vHitNonTrans.end(), CompareHitableDepthReverse); // stable, so that em reels (=same depth) will keep user defined order
-      stable_sort(m_vHitNonTrans.begin(), m_vHitNonTrans.end(), CompareHitableImage); // stable, so that objects with same images will keep depth order
-      // sort by vertexbuffer not useful currently
-      stable_sort(m_vHitNonTrans.begin(), m_vHitNonTrans.end(), CompareHitableMaterial); // stable, so that objects with same materials will keep image order
-   }
-
-   if (!m_vHitTrans.empty())
-   {
-      stable_sort(m_vHitTrans.begin(), m_vHitTrans.end(), CompareHitableImage); // see above
-      // sort by vertexbuffer not useful currently
-      stable_sort(m_vHitTrans.begin(), m_vHitTrans.end(), CompareHitableMaterial);
-      stable_sort(m_vHitTrans.begin(), m_vHitTrans.end(), CompareHitableDepth);
-   }
 
 #ifdef DEBUG_BALL_SPIN
    {
@@ -3078,10 +3015,10 @@ void Player::DrawBulbLightBuffer()
    bool do_bloom = false;
    m_render_mask |= LIGHT_BUFFER;
    m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE); // disable all z-tests as zbuffer is in different resolution
-   for (size_t i = 0; i < m_vHitTrans.size(); ++i)
-      if (m_vHitTrans[i]->RenderToLightBuffer())
+   for (Hitable *hitable : m_vhitables)
+      if (hitable->RenderToLightBuffer())
       {
-         m_vHitTrans[i]->RenderDynamic();
+         hitable->RenderDynamic();
          do_bloom = true;
       }
    m_render_mask &= ~LIGHT_BUFFER;
@@ -3518,7 +3455,7 @@ string Player::GetPerfInfo()
    info << "State changes: " << m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumStateChanges() << "\n";
    info << "Texture changes: " << m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumTextureChanges() << " (" << m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumTextureUploads() << " Uploads)\n";
    info << "Shader/Parameter changes: " << m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumTechniqueChanges() << " / " << m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumParameterChanges() << "\n";
-   info << "Objects: " << (unsigned int)m_vHitTrans.size() << " Transparent, " << (unsigned int)m_vHitNonTrans.size() << " Solid\n";
+   info << "Objects: " << (unsigned int)m_vhitables.size() << "\n";
    info << "\n";
 
    // Physics addtional informations
@@ -4211,6 +4148,9 @@ void Player::Render()
    m_pin3d.m_pd3dPrimaryDevice->FlushRenderFrame();
    m_frame_submit = usec() - usecTimeStamp;
 
+   // Force queue flushing of the driver. Not sure if it is really of any use nowadays. Anyway this must be done after submiting render commands
+   m_limiter.Execute(m_pin3d.m_pd3dPrimaryDevice);
+
    // DJRobX's crazy latency-reduction code active? Insert some Physics updates before vsync'ing
    if (!m_pause && m_minphyslooptime > 0)
    {
@@ -4569,77 +4509,24 @@ void Player::DrawDynamics(bool onlyBalls)
    // - Write all channels (RGBA + Depth)
    #endif
 
-   if (onlyBalls)
+   if (!onlyBalls)
    {
-      DrawBalls();
-      return;
+      // Declare dependency on Bulb Light buffer (actually rendered to the bloom buffer texture)
+      m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pin3d.m_pd3dPrimaryDevice->GetBloomBufferTexture());
+
+      // Draw all parts
+      for (Hitable *hitable : m_vhitables)
+      {
+         hitable->RenderDynamic();
+         #ifdef DEBUG
+         m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(true, live_state);
+         assert(initial_state.m_state == live_state.m_state);
+         assert(initial_state.m_depthBias == live_state.m_depthBias);
+         #endif
+      }
    }
 
-   // Declare dependency on Bulb Light buffer (actually rendered to the bloom buffer texture)
-   m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pin3d.m_pd3dPrimaryDevice->GetBloomBufferTexture());
-
-   // Draw non-transparent objects. No DMD's
-   for (size_t i = 0; i < m_vHitNonTrans.size(); ++i)
-      if (!m_vHitNonTrans[i]->IsDMD())
-      {
-         m_vHitNonTrans[i]->RenderDynamic();
-         #ifdef DEBUG
-         m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(true, live_state);
-         assert(initial_state.m_state == live_state.m_state);
-         assert(initial_state.m_depthBias== live_state.m_depthBias);
-         #endif
-      }
-
-   // Draw non-transparent DMD's
-   m_render_mask |= OPAQUE_DMD_PASS;
-   for (size_t i = 0; i < m_vHitNonTrans.size(); ++i)
-      if (m_vHitNonTrans[i]->IsDMD())
-      {
-         m_vHitNonTrans[i]->RenderDynamic();
-         #ifdef DEBUG
-         m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(true, live_state);
-         assert(initial_state.m_state == live_state.m_state);
-         assert(initial_state.m_depthBias == live_state.m_depthBias);
-         #endif
-      }
-   m_render_mask &= ~OPAQUE_DMD_PASS;
-
-   // Balls must be rendered after (non transparent) kickers since kickers perform a depth shift (to be visible despite the playfield) that would render them above the ball otherwise
    DrawBalls();
-
-   if (GetProfilingMode() == PF_ENABLED)
-      m_pin3d.m_gpu_profiler.Timestamp(GTS_NonTransparent);
-
-   m_limiter.Execute(m_pin3d.m_pd3dPrimaryDevice); //!! move below other draw calls??
-
-   // Draw transparent objects. No DMD's
-   for (size_t i = 0; i < m_vHitTrans.size(); ++i)
-      if (!m_vHitTrans[i]->IsDMD())
-      {
-         m_vHitTrans[i]->RenderDynamic();
-         #ifdef DEBUG
-         m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(true, live_state);
-         assert(initial_state.m_state == live_state.m_state);
-         assert(initial_state.m_depthBias == live_state.m_depthBias);
-         #endif
-      }
-
-   // Draw only transparent DMD's
-   m_render_mask |= TRANSPARENT_DMD_PASS;
-   for (size_t i = 0; i < m_vHitNonTrans.size(); ++i) // NonTrans is correct as DMDs are always sorted in there
-      if (m_vHitNonTrans[i]->IsDMD())
-      {
-         m_vHitNonTrans[i]->RenderDynamic();
-         #ifdef DEBUG
-         m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(true, live_state);
-         assert(initial_state.m_state == live_state.m_state);
-         assert(initial_state.m_depthBias == live_state.m_depthBias);
-         #endif
-      }
-   m_render_mask &= ~TRANSPARENT_DMD_PASS;
-
-   if (GetProfilingMode() == PF_ENABLED)
-      m_pin3d.m_gpu_profiler.Timestamp(GTS_Transparent);
 }
 
 void Player::DrawBalls()

@@ -647,8 +647,6 @@ private:
 
    // all Hitables obtained from the table's list of Editables
    vector< Hitable* > m_vhitables;
-   vector< Hitable* > m_vHitNonTrans; // non-transparent hitables
-   vector< Hitable* > m_vHitTrans;    // transparent hitables
 
    int2 m_curAccel[PININ_JOYMXCNT];
 
@@ -758,10 +756,8 @@ public:
       DEFAULT = 0,
       STATIC_PREPASS = 1 << 0,
       LIGHT_BUFFER = 1 << 1,
-      TRANSPARENT_DMD_PASS = 1 << 2,
-      OPAQUE_DMD_PASS = 1 << 3,
-      REFLECTION_PASS = 1 << 4,
-      DISABLE_LIGHTMAPS = 1 << 5
+      REFLECTION_PASS = 1 << 2,
+      DISABLE_LIGHTMAPS = 1 << 3
    };
    unsigned int m_render_mask = 0; // Active pass render bit mask
    inline bool IsRenderPass(const RenderMask pass_mask) const { return (m_render_mask & pass_mask) != 0; }
