@@ -241,7 +241,7 @@ public:
    virtual IFireEvents *GetIFireEvents() = 0;
    virtual ItemTypeEnum GetItemType() const = 0;
 
-   virtual void GetBoundingVertices(vector<Vertex3Ds>& pvvertex3D) {}
+   virtual void GetBoundingVertices(vector<Vertex3Ds>& pvvertex3D, const bool isLegacy) {}
    virtual void WriteRegDefaults() {}
 
    void BeginUndo();

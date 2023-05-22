@@ -389,10 +389,6 @@ void VROptionsDialog::ResetVideoPreferences()
    sprintf_s(tmp, sizeof(tmp), "%0.1f", vrNearPlane);
    SetDlgItemText(IDC_NEAR_PLANE, tmp);
 
-   constexpr float vrFarPlane = 5000.0f;
-   sprintf_s(tmp, sizeof(tmp), "%0.1f", vrFarPlane);
-   SetDlgItemText(IDC_FAR_PLANE, tmp);
-
    //AMD Debug
    SendMessage(GetDlgItem(IDC_COMBO_TEXTURE).GetHwnd(), CB_SETCURSEL, 1, 0);
 }
@@ -535,10 +531,6 @@ BOOL VROptionsDialog::OnInitDialog()
    const float vrNearPlane = LoadValueWithDefault(regKey[RegName::PlayerVR], "nearPlane"s, 5.0f);
    sprintf_s(tmp, sizeof(tmp), "%0.1f", vrNearPlane);
    SetDlgItemText(IDC_NEAR_PLANE, tmp);
-
-   const float vrFarPlane = LoadValueWithDefault(regKey[RegName::PlayerVR], "farPlane"s, 5000.0f);
-   sprintf_s(tmp, sizeof(tmp), "%0.1f", vrFarPlane);
-   SetDlgItemText(IDC_FAR_PLANE, tmp);
 
    const float vrSlope = LoadValueWithDefault(regKey[RegName::PlayerVR], "Slope"s, 6.5f);
    sprintf_s(tmp, sizeof(tmp), "%0.2f", vrSlope);
@@ -863,8 +855,6 @@ void VROptionsDialog::OnOK()
    //SaveValue(regKey[RegName::PlayerVR], scaleToFixedWidth ? "scaleRelative"s : "scaleAbsolute"s, scaleToFixedWidth ? scaleRelative : scaleAbsolute); //Also update hidden value?
 
    SaveValue(regKey[RegName::PlayerVR], "nearPlane"s, GetDlgItemText(IDC_NEAR_PLANE).c_str());
-
-   SaveValue(regKey[RegName::PlayerVR], "farPlane"s, GetDlgItemText(IDC_FAR_PLANE).c_str());
 
    //For compatibility keep these in Player instead of PlayerVR
    SaveValue(regKey[RegName::PlayerVR], "Slope"s, GetDlgItemText(IDC_VR_SLOPE).c_str());

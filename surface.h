@@ -77,7 +77,7 @@ public:
    void WriteRegDefaults() final;
    void RenderBlueprint(Sur *psur, const bool solid) final;
 
-   void GetBoundingVertices(vector<Vertex3Ds>& pvvertex3D) /*const*/ final;
+   void GetBoundingVertices(vector<Vertex3Ds> &pvvertex3D, const bool isLegacy) /*const*/ final;
    void ClearForOverwrite() final;
    // end IEditable
 

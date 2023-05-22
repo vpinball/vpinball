@@ -22,10 +22,12 @@ void Mesh::Clear()
    middlePoint.x = 0.0f;
    middlePoint.y = 0.0f;
    middlePoint.z = 0.0f;
+   m_validBounds = false;
 }
 
 bool Mesh::LoadAnimation(const char *fname, const bool flipTV, const bool convertToLeftHanded)
 {
+   m_validBounds = false;
    string name(fname);
    size_t idx = name.find_last_of('_');
    if (idx == string::npos)
@@ -79,6 +81,7 @@ bool Mesh::LoadAnimation(const char *fname, const bool flipTV, const bool conver
 
 bool Mesh::LoadWavefrontObj(const string& fname, const bool flipTV, const bool convertToLeftHanded)
 {
+   m_validBounds = false;
    Clear();
    ObjLoader loader;
    if (loader.Load(fname, flipTV, convertToLeftHanded))
@@ -156,6 +159,25 @@ void Mesh::UploadToVB(VertexBuffer * vb, const float frame)
    vb->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
    memcpy(buf, m_vertices.data(), sizeof(Vertex3D_NoTex2)*m_vertices.size());
    vb->unlock();
+}
+
+void Mesh::UpdateBounds()
+{
+   if (!m_validBounds)
+   {
+      m_validBounds = true;
+      m_minAABound = Vertex3Ds(FLT_MAX, FLT_MAX, FLT_MAX);
+      m_maxAABound = Vertex3Ds(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+      for (const Vertex3D_NoTex2 &v : m_vertices)
+      {
+          m_minAABound.x = min(m_minAABound.x, v.x);
+          m_minAABound.y = min(m_minAABound.y, v.y);
+          m_minAABound.z = min(m_minAABound.z, v.z);
+          m_maxAABound.x = max(m_maxAABound.x, v.x);
+          m_maxAABound.y = max(m_maxAABound.y, v.y);
+          m_maxAABound.z = max(m_maxAABound.z, v.z);
+      }
+   }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -932,6 +954,33 @@ void Primitive::RenderBlueprint(Sur *psur, const bool solid)
    }
 }
 
+void Primitive::GetBoundingVertices(vector<Vertex3Ds> &pvvertex3D, const bool isLegacy)
+{
+   // VPX before 10.8 computed the viewer position based on a partial bounding volume that would not include primitives
+   if (isLegacy)
+      return;
+   RecalculateMatrices();
+   if (m_d.m_use3DMesh)
+   {
+      m_mesh.UpdateBounds();
+      Vertex3Ds minBound(m_mesh.m_minAABound);
+      Vertex3Ds maxBound(m_mesh.m_maxAABound);
+      if (minBound.x != FLT_MAX)
+      {
+         m_fullMatrix.TransformVec3(minBound);
+         m_fullMatrix.TransformVec3(maxBound);
+         pvvertex3D.push_back(Vertex3Ds(minBound.x, minBound.y, minBound.z));
+         pvvertex3D.push_back(Vertex3Ds(minBound.x, minBound.y, maxBound.z));
+         pvvertex3D.push_back(Vertex3Ds(minBound.x, maxBound.y, minBound.z));
+         pvvertex3D.push_back(Vertex3Ds(minBound.x, maxBound.y, maxBound.z));
+         pvvertex3D.push_back(Vertex3Ds(maxBound.x, minBound.y, minBound.z));
+         pvvertex3D.push_back(Vertex3Ds(maxBound.x, minBound.y, maxBound.z));
+         pvvertex3D.push_back(Vertex3Ds(maxBound.x, maxBound.y, minBound.z));
+         pvvertex3D.push_back(Vertex3Ds(maxBound.x, maxBound.y, maxBound.z));
+      }
+   }
+}
+
 //
 // license:GPLv3+
 // Ported at: VisualPinball.Engine/VPT/Primitive/PrimitiveMeshGenerator.cs
@@ -1559,6 +1608,10 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool sav
    bw.WriteBool(FID(DIPT), m_d.m_displayTexture);
    bw.WriteBool(FID(OSNM), m_d.m_objectSpaceNormalMap);
 
+   m_mesh.UpdateBounds();
+   bw.WriteVector3(FID(BMIN), m_mesh.m_minAABound);
+   bw.WriteVector3(FID(BMAX), m_mesh.m_maxAABound);
+
    // Don't save the meshes for undo/redo
    if (m_d.m_use3DMesh && !saveForUndo)
    {
@@ -1668,8 +1721,16 @@ HRESULT Primitive::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int versi
    BiffReader br(pstm, this, pid, version, hcrypthash, hcryptkey);
 
    m_ptable = ptable;
+   m_mesh.m_validBounds = false;
+   m_mesh.m_minAABound = Vertex3Ds(FLT_MAX, FLT_MAX, FLT_MAX);
+   m_mesh.m_maxAABound = Vertex3Ds(FLT_MAX, FLT_MAX, FLT_MAX);
 
    br.Load();
+
+   // If we loaded the bounds, then they are valid and don't need to be recomputed
+   m_mesh.m_validBounds = m_mesh.m_minAABound.x != FLT_MAX && m_mesh.m_minAABound.y != FLT_MAX && m_mesh.m_minAABound.z != FLT_MAX
+      && m_mesh.m_maxAABound.x != FLT_MAX && m_mesh.m_maxAABound.y != FLT_MAX && m_mesh.m_maxAABound.z != FLT_MAX;
+   m_mesh.UpdateBounds();
 
    if(version < 1011) // so that old tables do the reorderForsyth on each load, new tables only on mesh import, so a simple resave of a old table will also skip this step
    {
@@ -1737,6 +1798,8 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
    case FID(U3DM): pbr->GetBool(m_d.m_use3DMesh); break;
    case FID(EBFC): pbr->GetBool(m_d.m_backfacesEnabled); break;
    case FID(DIPT): pbr->GetBool(m_d.m_displayTexture); break;
+   case FID(BMIN): pbr->GetVector3(m_mesh.m_minAABound); break;
+   case FID(BMAX): pbr->GetVector3(m_mesh.m_maxAABound); break;
    case FID(M3DN): pbr->GetString(m_d.m_meshFileName); break;
    case FID(M3VN):
    {

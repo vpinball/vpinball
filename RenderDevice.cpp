@@ -1959,9 +1959,6 @@ void RenderDevice::InitVR() {
    }
 #endif
 
-   const float nearPlane = LoadValueWithDefault(regKey[RegName::PlayerVR], "nearPlane"s, 5.0f) / 100.0f;
-   const float farPlane = 5000.0f; //LoadValueWithDefault(regKey[RegName::PlayerVR], "farPlane"s, 5000.0f) / 100.0f;
-
    // Move from VP units to meters, and also apply user scene scaling if any
    Matrix3D sceneScale = Matrix3D::MatrixScale(m_scale);
 
@@ -1971,6 +1968,11 @@ void RenderDevice::InitVR() {
    coords._11 = -1.f; coords._12 = 0.f; coords._13 =  0.f;
    coords._21 =  0.f; coords._22 = 0.f; coords._23 = -1.f;
    coords._31 =  0.f; coords._32 = 1.f; coords._33 =  0.f;
+
+   float zNear, zFar;
+   g_pplayer->m_ptable->ComputeNearFarPlane(coords * sceneScale, m_scale, zNear, zFar);
+   zNear = LoadValueWithDefault(regKey[RegName::PlayerVR], "nearPlane"s, 5.0f) / 100.0f; // Replace near value to allow player to move near parts up to user defined value
+   zFar *= 1.2f;
 
    if (m_pHMD == nullptr)
    {
@@ -1984,7 +1986,7 @@ void RenderDevice::InitVR() {
       for (int i = 0; i < 2; i++)
       {
          Matrix3D proj;
-         proj.SetPerspectiveFovLH(90.f, 1.f, 0.01f, 50000000.f);
+         proj.SetPerspectiveFovLH(90.f, 1.f, zNear, zFar);
          m_vrMatProj[i] = coords * sceneScale * proj;
       }
    }
@@ -1996,8 +1998,8 @@ void RenderDevice::InitVR() {
       m_height = eye_height;
       vr::HmdMatrix34_t left_eye_pos = m_pHMD->GetEyeToHeadTransform(vr::Eye_Left);
       vr::HmdMatrix34_t right_eye_pos = m_pHMD->GetEyeToHeadTransform(vr::Eye_Right);
-      vr::HmdMatrix44_t left_eye_proj = m_pHMD->GetProjectionMatrix(vr::Eye_Left, nearPlane, farPlane); //5cm to 50m should be a reasonable range
-      vr::HmdMatrix44_t right_eye_proj = m_pHMD->GetProjectionMatrix(vr::Eye_Right, nearPlane, farPlane); //5cm to 50m should be a reasonable range
+      vr::HmdMatrix44_t left_eye_proj = m_pHMD->GetProjectionMatrix(vr::Eye_Left, zNear, zFar);
+      vr::HmdMatrix44_t right_eye_proj = m_pHMD->GetProjectionMatrix(vr::Eye_Right, zNear, zFar);
 
       Matrix3D matEye2Head, matProjection;
 
@@ -2009,7 +2011,7 @@ void RenderDevice::InitVR() {
       matEye2Head.Invert();
 
       left_eye_proj.m[2][2] = -1.0f;
-      left_eye_proj.m[2][3] = -nearPlane;
+      left_eye_proj.m[2][3] = -zNear;
       for (int i = 0;i < 4;i++)
          for (int j = 0;j < 4;j++)
             matProjection.m[j][i] = left_eye_proj.m[i][j];
@@ -2024,7 +2026,7 @@ void RenderDevice::InitVR() {
       matEye2Head.Invert();
 
       right_eye_proj.m[2][2] = -1.0f;
-      right_eye_proj.m[2][3] = -nearPlane;
+      right_eye_proj.m[2][3] = -zNear;
       for (int i = 0;i < 4;i++)
          for (int j = 0;j < 4;j++)
             matProjection.m[j][i] = right_eye_proj.m[i][j];

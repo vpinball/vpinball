@@ -1202,42 +1202,24 @@ void LiveUI::UpdateMainUI()
    // View gizmo
    if (m_useEditorCam)
    {
-      Matrix3D mat(m_camView), RH2LH, YAxis; // Convert from right handed (ImGuizmo view manipulate is right handed) to VPX's left handed coordinate system
+      // Convert from right handed (ImGuizmo view manipulate is right handed) to VPX's left handed coordinate system
       // Right Hand to Left Hand (note that RH2LH = inverse(RH2LH), so RH2LH.RH2LH is identity, which property is used below)
+      Matrix3D RH2LH, YAxis; 
       RH2LH.SetScaling(1.f, 1.f, -1.f);
       YAxis.SetScaling(1.f, -1.f, -1.f);
-      Matrix3D view = RH2LH * m_camView * YAxis;
-      vector<Vertex3Ds> vvertex3D;
-      const size_t num_vedit = m_live_table->m_vedit.size();
-      for (size_t i = 0; i < num_vedit; ++i)
-         m_live_table->m_vedit[i]->GetBoundingVertices(vvertex3D);
-      float znear = FLT_MAX, zfar = -FLT_MAX;
-      for (size_t i = 0; i < vvertex3D.size(); ++i)
-      {
-         const float tempz = view.MultiplyVector(vvertex3D[i]).z;
-         znear = min(znear, tempz);
-         zfar = max(zfar, tempz);
-      }
-      // Avoid near plane below 1 which result in loss of precision and z rendering artefacts
-      if (znear < 1.0f)
-         znear = 1.0f;
-      zfar *= 1.01f;
-      // Avoid div-0 problem (div by far - near)
-      if (zfar <= znear)
-         zfar = znear + 1.0f;
-      // FIXME for the time being, the result is not that good since neither primitives vertices are taken in account, nor reflected geometry, so just add a margin
-      zfar += 1000.0f;
+      float zNear, zFar;
+      m_live_table->ComputeNearFarPlane(RH2LH * m_camView * YAxis, 1.f, zNear, zFar);
 
       ImGuiIO &io = ImGui::GetIO();
       if (m_orthoCam)
       {
          float viewHeight = m_camDistance;
          float viewWidth = viewHeight * io.DisplaySize.x / io.DisplaySize.y;
-         m_camProj.SetOrthoOffCenterRH(-viewWidth, viewWidth, -viewHeight, viewHeight, znear, -zfar);
+         m_camProj.SetOrthoOffCenterRH(-viewWidth, viewWidth, -viewHeight, viewHeight, zNear, -zFar);
       }
       else
       {
-         m_camProj.SetPerspectiveFovRH(39.6f, io.DisplaySize.x / io.DisplaySize.y, znear, zfar);
+         m_camProj.SetPerspectiveFovRH(39.6f, io.DisplaySize.x / io.DisplaySize.y, zNear, zFar);
       }
       float* cameraView = (float *)(m_camView.m);
       float *cameraProjection = (float *)(m_camProj.m); 
@@ -1462,8 +1444,9 @@ void LiveUI::UpdateMainUI()
    if (m_useEditorCam)
    {
       // Apply editor camera to renderer (move view/projection from right handed to left handed)
-      Matrix3D mat(m_camView), RH2LH, YAxis; // Convert from right handed (ImGuizmo view manipulate is right handed) to VPX's left handed coordinate system
+      // Convert from right handed (ImGuizmo view manipulate is right handed) to VPX's left handed coordinate system
       // Right Hand to Left Hand (note that RH2LH = inverse(RH2LH), so RH2LH.RH2LH is identity, which property is used below)
+      Matrix3D RH2LH, YAxis; 
       RH2LH.SetScaling(1.f, 1.f, -1.f);
       YAxis.SetScaling(1.f, -1.f, 1.f);
       Matrix3D view = RH2LH * m_camView * YAxis;

@@ -25,6 +25,8 @@ public:
    vector<FrameData> m_animationFrames;
    vector<Vertex3D_NoTex2> m_vertices;
    vector<unsigned int> m_indices;
+   Vertex3Ds m_minAABound, m_maxAABound;
+   bool m_validBounds = false;
 
    Mesh() { middlePoint.x = 0.0f; middlePoint.y = 0.0f; middlePoint.z = 0.0f; }
    void Clear();
@@ -35,6 +37,7 @@ public:
    size_t NumVertices() const    { return m_vertices.size(); }
    size_t NumIndices() const     { return m_indices.size(); }
    void UploadToVB(VertexBuffer * vb, const float frame);
+   void UpdateBounds();
 };
 
 // Indices for RotAndTra:
@@ -287,6 +290,8 @@ public:
 
    float GetAlpha() const { return m_d.m_alpha; }
    void SetAlpha(const float value) { m_d.m_alpha = max(value, 0.f); }
+
+   void GetBoundingVertices(vector<Vertex3Ds> &pvvertex3D, const bool isLegacy) final;
 
    bool IsTransparent() const final;
    float GetDepth(const Vertex3Ds &viewDir) const final;

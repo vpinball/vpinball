@@ -91,7 +91,7 @@ public:
    Vertex2D GetCenter() const final { return GetPointCenter(); }
    void PutCenter(const Vertex2D& pv) final { PutPointCenter(pv); }
 
-   void GetBoundingVertices(vector<Vertex3Ds>& pvvertex3D) /*const*/ final;
+   void GetBoundingVertices(vector<Vertex3Ds> &pvvertex3D, const bool isLegacy) /*const*/ final;
 
    float GetDepth(const Vertex3Ds& viewDir) const final;
    unsigned long long GetMaterialID() const final { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }

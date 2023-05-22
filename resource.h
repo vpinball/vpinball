@@ -880,7 +880,6 @@
 #define IDC_NEAR_PLANE                  554
 #define IDC_DMD2                        555
 #define IDC_USE_SCRIPT_DMD_CHECK        555
-#define IDC_FAR_PLANE                   555
 #define IDC_ADDBLEND                    556
 #define IDC_DMD                         557
 #define IDC_LIGHTAMBIENT                558

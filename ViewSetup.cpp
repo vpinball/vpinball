@@ -92,17 +92,17 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
    layback.SetIdentity(); // Layback to skew the view backward
    layback._32 = -tanf(0.5f * ANGTORAD(mLayback));
 
-   // Collect part bounds, to fit the legacy mode camera, and to adjust the near/far planes for all modes
-   vector<Vertex3Ds> vvertex3D;
-   for (size_t i = 0; i < table->m_vedit.size(); ++i)
-      table->m_vedit[i]->GetBoundingVertices(vvertex3D);
-
    // Compute translation
    // Also setup matView (complete matrix stack excepted projection) to be able to compute near and far plane
    if (isLegacy)
    {
+      // Collect part bounds, to fit the legacy mode camera
+      vector<Vertex3Ds> vvertex3D;
+      for (IEditable* editable : table->m_vedit)
+         editable->GetBoundingVertices(vvertex3D, true);
       vec3 fit = FitCameraToVertices(vvertex3D, aspect, rotation, inc, FOV, mViewZ, mLayback);
       vec3 pos = vec3(mViewX - fit.x + camx, mViewY - fit.y + camy, -fit.z + camz);
+      vvertex3D.clear();
       // For some reason I don't get, viewport rotation (rotz) and head inclination (rotx) used to be swapped when in camera mode on desktop.
       // This is no more applied and we always consider this order: rotx * rotz * trans which we swap to apply it as trans * rotx * rotz
       Matrix3D rot, trans, rotx;
@@ -125,26 +125,8 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
    }
 
    // Compute near/far plane
-   float zNear = FLT_MAX, zFar = -FLT_MAX;
-   Matrix3D matWorldView(matWorld);
-   matView.Multiply(matWorld, matWorldView);
-   for (size_t i = 0; i < vvertex3D.size(); ++i)
-   {
-      const float tempz = matWorldView.MultiplyVector(vvertex3D[i]).z;
-      zNear = min(zNear, tempz);
-      zFar = max(zFar, tempz);
-   }
-   // Avoid near plane below 1 which result in loss of precision and z rendering artefacts
-   if (zNear < 1.0f)
-      zNear = 1.0f;
-   zFar *= 1.01f;
-   // Avoid div-0 problem (div by far - near)
-   if (zFar <= zNear)
-      zFar = zNear + 1.0f;
-   // FIXME for the time being, the result is not that good since neither primitives vertices are taken in account, nor reflected geometry, so just add a margin
-   zFar += 1000.0f;
-   if (fabsf(inc) < 0.0075f) //!! magic threshold, otherwise kicker holes are missing for inclination ~0
-      zFar += 10.f;
+   float zNear, zFar;
+   table->ComputeNearFarPlane(matWorld * matView, 1.f, zNear, zFar);
 
    switch (layoutMode)
    {

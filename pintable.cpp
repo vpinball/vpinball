@@ -4789,6 +4789,34 @@ FRect3D PinTable::GetBoundingBox() const
    return bbox;
 }
 
+void PinTable::ComputeNearFarPlane(const Matrix3D &matWorldView, const float scale, float &zNear, float &zFar) const
+{
+   // Compute near/far plane
+   vector<Vertex3Ds> vvertex3D;
+   for (IEditable *editable : m_vedit)
+      editable->GetBoundingVertices(vvertex3D, false);
+   zNear = FLT_MAX;
+   zFar = -FLT_MAX;
+   for (const Vertex3Ds &v : vvertex3D)
+   {
+      Vertex3Ds p = v;
+      matWorldView.TransformVec3(p);
+      const float tempz = p.z;
+      zNear = min(zNear, tempz);
+      zFar = max(zFar, tempz);
+   }
+   // Add a bit of margin
+   zNear *= 0.9f;
+   zFar *= 1.1f;
+   // Clip to sensible value to fix tables with parts far far away breaking depth buffer precision
+   zNear = max(zNear, scale * CMTOVPU(5)); // 5 cm
+   zFar = clamp(zFar, zNear + 1.f, scale * CMTOVPU(100000)); // 1 km (yes some VR room do really need this...)
+   // Could not reproduce, so I disabled it for the sake of avoiding to pass inc to the method which is not really meaningfull here (we would have to compute it from the matWorldView)
+   //!! magic threshold, otherwise kicker holes are missing for inclination ~0
+   //if (fabsf(inc) < 0.0075f)
+   //   zFar += 10.f;
+}
+
 void PinTable::MoveCollectionDown(CComObject<Collection> *pcol)
 {
    const int idx = m_vcollection.find(pcol);
