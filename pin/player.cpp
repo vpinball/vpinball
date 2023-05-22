@@ -33,7 +33,6 @@
 #endif /* _WIN32_WINNT >= 0x0500 */
 
 //
-static unsigned int material_flips = 0;
 static unsigned int stats_drawn_static_triangles = 0;
 
 //
@@ -1540,22 +1539,12 @@ HRESULT Player::Init()
       }
    }
 
-   material_flips = 0;
-   unsigned long long m;
    if (!m_vHitNonTrans.empty())
    {
       stable_sort(m_vHitNonTrans.begin(), m_vHitNonTrans.end(), CompareHitableDepthReverse); // stable, so that em reels (=same depth) will keep user defined order
       stable_sort(m_vHitNonTrans.begin(), m_vHitNonTrans.end(), CompareHitableImage); // stable, so that objects with same images will keep depth order
       // sort by vertexbuffer not useful currently
       stable_sort(m_vHitNonTrans.begin(), m_vHitNonTrans.end(), CompareHitableMaterial); // stable, so that objects with same materials will keep image order
-
-      m = m_vHitNonTrans[0]->GetMaterialID();
-      for (size_t i = 1; i < m_vHitNonTrans.size(); ++i)
-         if (m_vHitNonTrans[i]->GetMaterialID() != m)
-         {
-            material_flips++;
-            m = m_vHitNonTrans[i]->GetMaterialID();
-         }
    }
 
    if (!m_vHitTrans.empty())
@@ -1564,14 +1553,6 @@ HRESULT Player::Init()
       // sort by vertexbuffer not useful currently
       stable_sort(m_vHitTrans.begin(), m_vHitTrans.end(), CompareHitableMaterial);
       stable_sort(m_vHitTrans.begin(), m_vHitTrans.end(), CompareHitableDepth);
-
-      m = m_vHitTrans[0]->GetMaterialID();
-      for (size_t i = 1; i < m_vHitTrans.size(); ++i)
-         if (m_vHitTrans[i]->GetMaterialID() != m)
-         {
-            material_flips++;
-            m = m_vHitTrans[i]->GetMaterialID();
-         }
    }
 
 #ifdef DEBUG_BALL_SPIN
@@ -3536,8 +3517,7 @@ string Player::GetPerfInfo()
    info << "Draw calls: " << m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumDrawCalls() << "  (" << m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumLockCalls() << " Locks)\n";
    info << "State changes: " << m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumStateChanges() << "\n";
    info << "Texture changes: " << m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumTextureChanges() << " (" << m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumTextureUploads() << " Uploads)\n";
-   info << "Shader/Parameter changes: " << m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumTechniqueChanges() << " / " << m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumParameterChanges() << " ("
-        << material_flips << " Material ID changes)\n";
+   info << "Shader/Parameter changes: " << m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumTechniqueChanges() << " / " << m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumParameterChanges() << "\n";
    info << "Objects: " << (unsigned int)m_vHitTrans.size() << " Transparent, " << (unsigned int)m_vHitNonTrans.size() << " Solid\n";
    info << "\n";
 
