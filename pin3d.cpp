@@ -503,10 +503,18 @@ HRESULT Pin3D::InitPin3D(const bool fullScreen, const int width, const int heigh
    else
       m_backGlass = nullptr;
 
-   // Create the "static" color buffer.
-   // This will hold a pre-rendered image of the table and any non-changing elements (ie ramps, decals, etc).
+   // This used to be a spheremap BMP, upgraded in 10.8 for an quirectangular HDR env map
+   //m_pinballEnvTexture.CreateFromResource(IDB_BALL);
+   HMODULE handle = ::GetModuleHandle(NULL);
+   HRSRC rc = ::FindResource(handle, MAKEINTRESOURCE(IDB_BALL), MAKEINTRESOURCE(EXR_FILE));
+   HGLOBAL rcData = ::LoadResource(handle, rc);
+   DWORD size = ::SizeofResource(handle, rc);
+   BYTE* data = static_cast<BYTE*>(::LockResource(rcData));
+   BYTE* copy = static_cast<BYTE*>(malloc(size));
+   memcpy(copy, data, size);
+   m_pinballEnvTexture.LoadFromMemory(copy, size);
+   free(copy);
 
-   m_pinballEnvTexture.CreateFromResource(IDB_BALL);
    m_aoDitherTexture.CreateFromResource(IDB_AO_DITHER);
 
    m_envTexture = g_pplayer->m_ptable->GetImage(g_pplayer->m_ptable->m_envImage);
@@ -524,8 +532,6 @@ HRESULT Pin3D::InitPin3D(const bool fullScreen, const int width, const int heigh
    //
 
    InitPrimaryRenderState();
-
-   //m_gpu_profiler.Init(m_pd3dDevice->GetCoreDevice()); // done by first BeginFrame() call lazily
 
    return S_OK;
 }

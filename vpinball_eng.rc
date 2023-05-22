@@ -20,7 +20,11 @@
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #pragma code_page(1252)
 
-IDR_DEFAULT_INI INI_FILE "res/Default VPinballX.ini"
+// Custom resources
+
+IDR_DEFAULT_INI         INI_FILE                "res\\Default VPinballX.ini"
+IDB_BALL                EXR_FILE                "res\\BallEnv.exr"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -3104,8 +3108,6 @@ END
 //
 
 IDB_TOOLBAR             BITMAP                  "res\\toolbar.bmp"
-
-IDB_BALL                BITMAP                  "res\\ball.bmp"
 
 IDB_ENV                 BITMAP                  "res\\envmap.bmp"
 

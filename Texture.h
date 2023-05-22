@@ -63,6 +63,7 @@ public:
 
    HRESULT SaveToStream(IStream *pstream, const PinTable *pt);
    HRESULT LoadFromStream(IStream *pstream, int version, PinTable *pt, bool resize_on_low_mem);
+   bool LoadFromMemory(BYTE *const data, const DWORD size);
 
    void FreeStuff();
 
@@ -90,7 +91,6 @@ public:
 
 private:
    bool m_resize_on_low_mem;
-   bool LoadFromMemory(BYTE * const data, const DWORD size);
 
 public:
 
