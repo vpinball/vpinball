@@ -84,7 +84,11 @@ jobs:
           cmake --build build --config ${{ matrix.config }}
       - run: |
           mkdir tmp
-          cp build/${{ matrix.config }}/VPinballX.exe tmp
+          if [[ "${{ matrix.platform }}" == "win-x64" ]]; then
+            cp build/${{ matrix.config }}/VPinballX64.exe tmp
+          else
+            cp build/${{ matrix.config }}/VPinballX.exe tmp
+          fi
           cp build/${{ matrix.config }}/*.dll tmp
           cp -r build/${{ matrix.config }}/scripts tmp
           cp -r build/${{ matrix.config }}/tables tmp
@@ -124,7 +128,11 @@ jobs:
           cmake --build build --config ${{ matrix.config }}
       - run: |
           mkdir tmp
-          cp build/${{ matrix.config }}/VPinballX_GL.exe tmp
+          if [[ "${{ matrix.platform }}" == "win-x64" ]]; then
+            cp build/${{ matrix.config }}/VPinballX_GL64.exe tmp
+          else
+            cp build/${{ matrix.config }}/VPinballX_GL.exe tmp
+          fi
           cp build/${{ matrix.config }}/*.dll tmp
           cp -r build/${{ matrix.config }}/shader tmp
           cp -r build/${{ matrix.config }}/scripts tmp
