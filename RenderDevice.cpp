@@ -1969,10 +1969,13 @@ void RenderDevice::InitVR() {
    coords._21 =  0.f; coords._22 = 0.f; coords._23 = -1.f;
    coords._31 =  0.f; coords._32 = 1.f; coords._33 =  0.f;
 
-   float zNear, zFar;
-   g_pplayer->m_ptable->ComputeNearFarPlane(coords * sceneScale, m_scale, zNear, zFar);
-   zNear = LoadValueWithDefault(regKey[RegName::PlayerVR], "nearPlane"s, 5.0f) / 100.0f; // Replace near value to allow player to move near parts up to user defined value
-   zFar *= 1.2f;
+   // TODO Adjusted near/far are not working (likely due to a scene scaling issue) but we need someone with testing capabilities to get this right
+   //float zNear, zFar;
+   //g_pplayer->m_ptable->ComputeNearFarPlane(coords * sceneScale, m_scale, zNear, zFar);
+   //zNear = LoadValueWithDefault(regKey[RegName::PlayerVR], "nearPlane"s, 5.0f) / 100.0f; // Replace near value to allow player to move near parts up to user defined value
+   //zFar *= 1.2f;
+   const float zNear = LoadValueWithDefault(regKey[RegName::PlayerVR], "nearPlane"s, 5.0f) / 100.0f;
+   const float zFar = 5000.0f; //LoadValueWithDefault(regKey[RegName::PlayerVR], "farPlane"s, 5000.0f) / 100.0f;
 
    if (m_pHMD == nullptr)
    {
