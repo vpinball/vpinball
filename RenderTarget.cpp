@@ -135,10 +135,12 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const RenderTargetType type, 
          {
             glGenTextures(1, &m_depth_tex);
             glBindTexture(target, m_depth_tex);
+            // VR depth near/far plane is not fitted so we use a float depth buffer.
+            const GLuint depth_type = m_stereo == STEREO_VR ? GL_FLOAT : GL_UNSIGNED_SHORT;
             switch (m_type)
             {
-            case RT_DEFAULT: glTexImage2D(target, 0, GL_DEPTH_COMPONENT16, width, height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, nullptr); break;
-            case RT_STEREO: glTexImage3D(target, 0, GL_DEPTH_COMPONENT16, width, height, 2, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, nullptr); break;
+            case RT_DEFAULT: glTexImage2D(target, 0, GL_DEPTH_COMPONENT16, width, height, 0, GL_DEPTH_COMPONENT, depth_type, nullptr); break;
+            case RT_STEREO: glTexImage3D(target, 0, GL_DEPTH_COMPONENT16, width, height, 2, 0, GL_DEPTH_COMPONENT, depth_type, nullptr); break;
             case RT_CUBEMAP:
                for (int i = 0; i < 6; i++)
                   glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT16, width, height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, nullptr);
