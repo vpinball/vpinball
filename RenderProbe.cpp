@@ -370,7 +370,8 @@ void RenderProbe::DoRenderReflectionProbe(const bool render_static, const bool r
    // Set the clip plane to only render objects above the reflection plane (do not reflect what is under or the plane itself)
    vec4 clip_plane(-n.x, -n.y, -n.z, -m_reflection_plane.w);
    p3dDevice->SetClipPlane(clip_plane);
-   p3dDevice->SetRenderState(RenderState::CLIPPLANEENABLE, RenderState::RS_TRUE);
+   if (p3dDevice->m_stereo3D != STEREO_VR) // FIXME clip plane is breaking reflections for VR so just disable it for the time being (10.8 release)
+      p3dDevice->SetRenderState(RenderState::CLIPPLANEENABLE, RenderState::RS_TRUE);
 
    p3dDevice->SetRenderStateCulling(RenderState::CULL_CCW); // re-init/thrash cache entry due to the hacky nature of the table mirroring
 
