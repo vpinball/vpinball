@@ -1267,20 +1267,13 @@ void Flasher::RenderDynamic()
    if (color.x == 0.f && color.y == 0.f && color.z == 0.f)
       return;
 
-   if (m_d.m_isDMD && !(g_pplayer->IsRenderPass(Player::OPAQUE_DMD_PASS) || g_pplayer->IsRenderPass(Player::TRANSPARENT_DMD_PASS) )) // don't draw any DMD, but this case should not happen in the first place
-      return;
-
    RenderDevice *const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
    RenderState initial_state;
    pd3dDevice->CopyRenderStates(true, initial_state);
 
-   const bool alphadmd = (m_d.m_modulate_vs_add < 1.f);
-
-   if (m_d.m_isDMD &&
-       ((g_pplayer->IsRenderPass(Player::TRANSPARENT_DMD_PASS) && alphadmd) || // render alpha DMD
-        (g_pplayer->IsRenderPass(Player::OPAQUE_DMD_PASS) && !alphadmd))) // render normal DMD
+   if (m_d.m_isDMD)
    {
-       if (m_dynamicVertexBufferRegenerate)
+      if (m_dynamicVertexBufferRegenerate)
        {
           UpdateMesh();
           m_dynamicVertexBufferRegenerate = false;
@@ -1290,7 +1283,7 @@ void Flasher::RenderDynamic()
        pd3dDevice->SetRenderStateCulling(RenderState::CULL_NONE);
 
        pd3dDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
-       if (g_pplayer->IsRenderPass(Player::TRANSPARENT_DMD_PASS) && alphadmd)
+       if (m_d.m_modulate_vs_add < 1.f)
           g_pplayer->m_pin3d.EnableAlphaBlend(m_d.m_addBlend);
        else
           pd3dDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
@@ -1349,7 +1342,7 @@ void Flasher::RenderDynamic()
        // There we shift the depthbias to reproduc this behavior.
        pd3dDevice->DrawMesh(pd3dDevice->DMDShader, true, pos, m_d.m_depthBias - 10000.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
    }
-   else if (!(g_pplayer->IsRenderPass(Player::TRANSPARENT_DMD_PASS) || g_pplayer->IsRenderPass(Player::OPAQUE_DMD_PASS)))
+   else
    {
        if (m_dynamicVertexBufferRegenerate)
        {
