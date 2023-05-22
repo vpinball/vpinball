@@ -65,6 +65,7 @@ void Pin3D::TransformVertices(const Vertex3Ds* const __restrict rgv, const WORD*
 
 BaseTexture* EnvmapPrecalc(const Texture* envTex, const unsigned int rad_env_xres, const unsigned int rad_env_yres)
 {
+   PLOGI << "Computing environment map radiance"; // For profiling
    g_pvp->ProfileLog("EnvmapPrecalc Start"s);
    const void* __restrict envmap = envTex->m_pdsBuffer->data();
    const unsigned int env_xres = envTex->m_pdsBuffer->width();
