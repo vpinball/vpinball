@@ -968,6 +968,7 @@
 #define IDD_RENDERPROBE                 669
 #define INI_FILE                        670
 #define IDR_DEFAULT_INI                 671
+#define EXR_FILE                        672
 #define IDC_CVP_BUT_CANCEL              701
 #define IDC_CVP_BUT_OK                  702
 #define IDC_CVP_BUT_COL_COMPS           703
@@ -1405,7 +1406,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        672
+#define _APS_NEXT_RESOURCE_VALUE        673
 #define _APS_NEXT_COMMAND_VALUE         4028
 #define _APS_NEXT_CONTROL_VALUE         911
 #define _APS_NEXT_SYMED_VALUE           188
