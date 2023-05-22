@@ -618,7 +618,7 @@ target_link_options(vpinball PUBLIC
 
 set_target_properties(vpinball PROPERTIES
    VS_DPI_AWARE "PerMonitor"
-   RUNTIME_OUTPUT_NAME "VPinballX"
+   RUNTIME_OUTPUT_NAME "VPinballX64"
    MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:DEBUG>:Debug>"
 )
 
