@@ -467,6 +467,29 @@ static void HelpMarker(const char *desc)
    }
 }
 
+template <class T> static std::vector<T> SortedCaseInsensitive(std::vector<T>& list, const std::function<string(T)>& map)
+{
+   std::vector<T> sorted;
+   sorted.reserve(list.size());
+   sorted.insert(sorted.begin(), list.begin(), list.end());
+   sort(sorted.begin(), sorted.end(), [map](const T &a, const T &b) -> bool 
+      {
+         string str1 = map(a), str2 = map(b);
+         for (string::const_iterator c1 = str1.begin(), c2 = str2.begin(); c1 != str1.end() && c2 != str2.end(); ++c1, ++c2)
+         {
+            auto cl1 = tolower(static_cast<unsigned char>(*c1));
+            auto cl2 = tolower(static_cast<unsigned char>(*c2));
+            if (cl1 > cl2)
+               return false;
+            if (cl1 < cl2)
+               return true;
+         }
+         return str1.size() > str2.size();
+      });
+   return sorted;
+}
+
+
 static void HelpTextCentered(const std::string& text)
 {
    const ImVec2 win_size = ImGui::GetWindowSize();
@@ -1682,24 +1705,8 @@ void LiveUI::UpdateOutlinerUI()
             }
             if (ImGui::TreeNode("Materials"))
             {
-               std::vector<Material*> mats;
-               mats.reserve(table->m_materials.size());
-               mats.insert(mats.begin(), table->m_materials.begin(), table->m_materials.end());
-               struct
-               {
-                  inline bool operator()(Material *&a, Material *&b) const
-                  {
-                     string str1 = a->m_szName, str2 = b->m_szName;
-                     if (str1.size() != str2.size())
-                        return false;
-                     for (string::const_iterator c1 = str1.begin(), c2 = str2.begin(); c1 != str1.end(); ++c1, ++c2)
-                        if (tolower(static_cast<unsigned char>(*c1)) != tolower(static_cast<unsigned char>(*c2)))
-                           return false;
-                     return true;
-                  }
-               } sortFunc;
-               sort(mats.begin(), mats.end(), sortFunc);
-               for (Material* &material : mats)
+               const std::function<string(Material *)> map = [](Material *image) -> string { return image->m_szName; };
+               for (Material *&material : SortedCaseInsensitive(table->m_materials, map))
                {
                   Selection sel(is_live, material);
                   if (IsOutlinerFiltered(material->m_szName) && ImGui::Selectable(material->m_szName.c_str(), m_selection == sel))
@@ -1770,11 +1777,11 @@ void LiveUI::UpdateOutlinerUI()
                      continue;
                   if (ImGui::TreeNode(it.c_str()))
                   {
-                     auto list = layers[it];
-                     for (size_t t = 0; t < list.size(); t++)
+                     const std::function<string(IEditable *)> map = [](IEditable *editable) -> string { return editable->GetName(); };
+                     for (IEditable *&editable : SortedCaseInsensitive(layers[it], map))
                      {
-                        Selection sel(is_live, list[t]);
-                        if (IsOutlinerFiltered(list[t]->GetName()) && ImGui::Selectable(list[t]->GetName(), m_selection == sel))
+                        Selection sel(is_live, editable);
+                        if (IsOutlinerFiltered(editable->GetName()) && ImGui::Selectable(editable->GetName(), m_selection == sel))
                            m_selection = sel;
                      }
                      ImGui::TreePop();
@@ -2408,6 +2415,7 @@ void LiveUI::BallProperties(bool is_live)
       PropCheckbox("Visible", nullptr, is_live, nullptr, ball ? &(ball->m_visible) : nullptr);
       PropRGB("Color", nullptr, is_live, nullptr, ball ? &(ball->m_color) : nullptr);
       PropImageCombo("Image", nullptr, is_live, nullptr, ball ? &(ball->m_image) : nullptr, m_live_table, upd_ball_tex);
+      PropCheckbox("Spherical Map", nullptr, is_live, nullptr, ball ? &(ball->m_pinballEnvSphericalMapping) : nullptr);
       PropImageCombo("Decal", nullptr, is_live, nullptr, ball ? &(ball->m_imageDecal) : nullptr, m_live_table, upd_ball_decal);
       PropCheckbox("Decal mode", nullptr, is_live, nullptr, ball ? &(ball->m_decalMode) : nullptr);
       PropFloat("PF Reflection Strength", nullptr, is_live, nullptr, ball ? &(ball->m_playfieldReflectionStrength) : nullptr, 0.02f, 0.1f);
@@ -2885,11 +2893,12 @@ void LiveUI::PropImageCombo(const char *label, IEditable *undo_obj, bool is_live
    const char *preview_value = (*v).c_str();
    if (ImGui::BeginCombo(label, preview_value))
    {
-      for (size_t i = 0; i < table->m_vimage.size(); i++)
+      const std::function<string(Texture *)> map = [](Texture *image) -> string { return image->m_szName; };
+      for (Texture *texture : SortedCaseInsensitive(table->m_vimage, map))
       {
-         if (ImGui::Selectable(table->m_vimage[i]->m_szName.c_str()))
+         if (ImGui::Selectable(texture->m_szName.c_str()))
          {
-            *v = table->m_vimage[i]->m_szName;
+            *v = texture->m_szName;
             if (chg_callback)
                chg_callback(is_live, prev_v, *v);
             if (!is_live)
