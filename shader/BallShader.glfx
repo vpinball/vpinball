@@ -236,11 +236,11 @@ void main()
     else
     { // Spherical Map Reflections
       // calculate the intermediate value for the final texture coords. found here http://www.ozone3d.net/tutorials/glsl_texturing_p04.php
-      const float m = (r.z + 1.0 > 0.) ? 0.3535533905932737622 * rsqrt(r.z + 1.0) : 0.; // 0.353...=0.5/sqrt(2)
+      const float m = (1.0 - r.z > 0.) ? 0.3535533905932737622 * rsqrt(1.0 - r.z) : 0.; // 0.353...=0.5/sqrt(2)
+      const float2 uv = float2(0.5 - m * r.x, 0.5 - m * r.y);
       const float edge = dot(v, r);
       // edge falloff to reduce aliasing on edges (picks smaller mipmap -> more blur)
       const float lod = (edge > 0.6) ? edge*(6.0*1.0/0.4)-(6.0*0.6/0.4) : 0.0;
-      const float2 uv = float2(0.5 - r.x * m, 0.5 - r.y * m);
       ballImageColor = textureLod(tex_ball_color, uv, lod).xyz;
     }
 
