@@ -1206,6 +1206,8 @@ HRESULT Player::Init()
 
    const int colordepth = LoadValueWithDefault(regKey[RegName::Player], "ColorDepth"s, 32);
 
+   PLOGI << "Initializing renderer (global states & resources)"; // For profiling
+
    // colordepth & refreshrate are only defined if fullscreen is true.
    // width and height may be modified during initialization (for example for VR, they are adapted to the headset resolution)
    const HRESULT hr = m_pin3d.InitPin3D(m_fullScreen, m_wnd_width, m_wnd_height, colordepth, m_refreshrate, vsync, aaFactor, m_stereo3D, FXAA, !!m_sharpen, ss_refl);
@@ -1250,6 +1252,8 @@ HRESULT Player::Init()
 
    if (m_fullScreen)
       SetWindowPos(nullptr, 0, 0, m_wnd_width, m_wnd_height, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE);
+
+   PLOGI << "Initalizing inputs & implicit objects"; // For profiling
 
    m_pininput.Init(GetHwnd());
 
@@ -1375,6 +1379,7 @@ HRESULT Player::Init()
 
    m_pEditorTable->m_progressDialog.SetProgress(30);
    m_pEditorTable->m_progressDialog.SetName("Initializing Physics..."s);
+   PLOGI << "Initalizing physics"; // For profiling
 
    // Initialize new nudging.
    m_tableVel.SetZero();
@@ -1448,8 +1453,8 @@ HRESULT Player::Init()
 
    m_pEditorTable->m_progressDialog.SetProgress(45);
    m_pEditorTable->m_progressDialog.SetName("Initializing Octree..."s);
-
    g_pvp->ProfileLog("Octree"s);
+   PLOGI << "Initalizing octree"; // For profiling
 
    AddCabinetBoundingHitShapes();
 
@@ -1480,9 +1485,9 @@ HRESULT Player::Init()
    //----------------------------------------------------------------------------------
 
    m_pEditorTable->m_progressDialog.SetProgress(60);
-   m_pEditorTable->m_progressDialog.SetName("Rendering Table..."s);
-
-   g_pvp->ProfileLog("Render Table"s);
+   m_pEditorTable->m_progressDialog.SetName("Initializing Renderer..."s);
+   g_pvp->ProfileLog("Setup Renderer"s);
+   PLOGI << "Initalizing renderer"; // For profiling
 
    // Global view direction used for presorting
    g_viewDir = Vertex3Ds(0, 0, -1.0f);
@@ -1506,7 +1511,6 @@ HRESULT Player::Init()
       }
    }
 
-
    // Start the frame.
    for (size_t i = 0; i < m_ptable->m_vrenderprobe.size(); ++i)
       m_ptable->m_vrenderprobe[i]->RenderSetup();
@@ -1521,9 +1525,6 @@ HRESULT Player::Init()
    // Setup anisotropic filtering
    const bool forceAniso = LoadValueWithDefault(regKey[RegName::Player], "ForceAnisotropicFiltering"s, true);
    m_pin3d.m_pd3dPrimaryDevice->SetMainTextureDefaultFiltering(forceAniso ? SF_ANISOTROPIC : SF_TRILINEAR);
-
-   // Pre-render all non-changing elements such as static walls, rails, backdrops, etc. and also static playfield reflections
-   InitStatic();
 
    for (size_t i = 0; i < m_ptable->m_vedit.size(); ++i)
    {
@@ -1573,9 +1574,6 @@ HRESULT Player::Init()
          }
    }
 
-   m_pEditorTable->m_progressDialog.SetProgress(90);
-
-
 #ifdef DEBUG_BALL_SPIN
    {
       vector<Vertex3D_NoTex2> ballDbgVtx;
@@ -1612,12 +1610,27 @@ HRESULT Player::Init()
    m_ballTrailMeshBuffer = new MeshBuffer(L"Ball.Trail"s, ballTrailVertexBuffer);
 
    m_pEditorTable->m_progressDialog.SetName("Starting Game Scripts..."s);
+   PLOGI << "Starting script"; // For profiling
 
    g_pvp->ProfileLog("Start Scripts"s);
 
    m_ptable->m_pcv->Start(); // Hook up to events and start cranking script
 
+   // Fire Init event for table object and all 'hitable' parts
    m_ptable->FireVoidEvent(DISPID_GameEvents_Init);
+   for (size_t i = 0; i < m_vhitables.size(); ++i)
+   {
+      Hitable *const ph = m_vhitables[i];
+      if (ph->GetEventProxyBase())
+         ph->GetEventProxyBase()->FireVoidEvent(DISPID_GameEvents_Init);
+   }
+
+   // Pre-render all non-changing elements such as static walls, rails, backdrops, etc. and also static playfield reflections
+   // This is done after starting the script and firing the Init event to allow script to adjust static parts on startup
+   m_pEditorTable->m_progressDialog.SetName("Prerendering Static Parts..."s);
+   m_pEditorTable->m_progressDialog.SetProgress(70);
+   PLOGI << "Prerendering static parts"; // For profiling
+   InitStatic();
 
 #ifdef PLAYBACK
    if (m_playback)
@@ -1625,9 +1638,7 @@ HRESULT Player::Init()
 #endif
 
    wintimer_init();
-
    m_StartTime_usec = usec();
-
    m_curPhysicsFrameTime = m_StartTime_usec;
    m_nextPhysicsFrameTime = m_curPhysicsFrameTime + PHYSICS_STEPTIME;
 
@@ -1646,6 +1657,7 @@ HRESULT Player::Init()
 
    m_pEditorTable->m_progressDialog.SetProgress(100);
    m_pEditorTable->m_progressDialog.SetName("Starting..."s);
+   PLOGI << "Startup done"; // For profiling
 
    g_pvp->GetPropertiesDocker()->EnableWindow(FALSE);
    g_pvp->GetLayersDocker()->EnableWindow(FALSE);
@@ -1664,14 +1676,6 @@ HRESULT Player::Init()
    SetFocus();
 
    LockForegroundWindow(true);
-
-   // Call Init -- TODO: what's the relation to ptable->FireVoidEvent() above?
-   for (size_t i = 0; i < m_vhitables.size(); ++i)
-   {
-      Hitable * const ph = m_vhitables[i];
-      if (ph->GetEventProxyBase())
-         ph->GetEventProxyBase()->FireVoidEvent(DISPID_GameEvents_Init);
-   }
 
    if (m_detectScriptHang)
       g_pvp->PostWorkToWorkerThread(HANG_SNOOP_START, NULL);
@@ -1790,7 +1794,7 @@ void Player::InitStatic()
       // Finish the frame.
       m_pin3d.m_pd3dPrimaryDevice->FlushRenderFrame();
       if (m_pEditorTable->m_progressDialog.IsWindow())
-         m_pEditorTable->m_progressDialog.SetProgress(60 +(((30 * (n_iter + 1 - iter)) / (n_iter + 1))));
+         m_pEditorTable->m_progressDialog.SetProgress(70 +(((30 * (n_iter + 1 - iter)) / (n_iter + 1))));
    }
 
    if (accumulationSurface)

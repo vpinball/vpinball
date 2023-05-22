@@ -2083,6 +2083,7 @@ void PinTable::Play(const bool cameraMode)
    if (g_pplayer)
       return; // Can't play twice
 
+   PLOGI << "Starting Play mode [table: " << m_szTableName << ", camera mode: " << cameraMode << "]";
    m_vpinball->ShowSubDialog(m_progressDialog, !g_pvp->m_open_minimized);
 
    m_progressDialog.SetProgress(1);
@@ -2275,8 +2276,6 @@ void PinTable::Play(const bool cameraMode)
       live_table->m_vrenderprobe.push_back(rp);
    }
       
-   PLOGI << "Starting Play mode [table: " << m_szTableName << ", camera mode: " << cameraMode << "]";
-   
    mixer_get_volume();
 
    EndAutoSaveCounter();
@@ -2285,6 +2284,8 @@ void PinTable::Play(const bool cameraMode)
    const string szLoadDir = PathFromFilename(m_szFileName);
    // make sure the load directory is the active directory
    SetCurrentDirectory(szLoadDir.c_str());
+
+   PLOGI << "Compiling script"; // For profiling
 
    live_table->m_pcv->m_scriptError = false;
    live_table->m_pcv->Compile(false);
@@ -2328,6 +2329,7 @@ void PinTable::Play(const bool cameraMode)
 
       // create Player and init that one
 
+      PLOGI << "Creating main window"; // For profiling
       g_pplayer = new Player(cameraMode, this, live_table);
       g_pplayer->CreateWnd();
       const float minSlope = (m_overridePhysics ? m_fOverrideMinSlope : m_angletiltMin);
