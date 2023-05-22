@@ -514,7 +514,7 @@ void Surface::AddLine(vector<HitObject*> &pvho, const RenderVertex &pv1, const R
 // end of license:GPLv3+, back to 'old MAME'-like
 //
 
-void Surface::GetBoundingVertices(vector<Vertex3Ds>& pvvertex3D) /*const*/
+void Surface::GetBoundingVertices(vector<Vertex3Ds> &pvvertex3D, const bool isLegacy) /*const*/
 {
 	// hardwired to table dimensions, but with bottom/top of surface, returns all 8 corners as this will be used for further transformations later-on
 	for (int i = 0; i < 8; i++)

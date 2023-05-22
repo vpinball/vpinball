@@ -276,7 +276,7 @@ void Ramp::RenderBlueprint(Sur *psur, const bool solid)
 }
 
 
-void Ramp::GetBoundingVertices(vector<Vertex3Ds>& pvvertex3D)
+void Ramp::GetBoundingVertices(vector<Vertex3Ds> &pvvertex3D, const bool isLegacy)
 {
    //!! meh, this is delivering something loosely related to the bounding vertices, but its only used in the cam fitting code so far, so keep for legacy reasons
    float *rgheight1;

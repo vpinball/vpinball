@@ -99,7 +99,7 @@ public:
    Vertex2D GetCenter() const final { return GetPointCenter(); }
    void PutCenter(const Vertex2D &pv) final { PutPointCenter(pv); }
 
-   void GetBoundingVertices(vector<Vertex3Ds> &pvvertex3D) final;
+   void GetBoundingVertices(vector<Vertex3Ds> &pvvertex3D, const bool isLegacy) final;
 
    bool IsTransparent() const final;
    float GetDepth(const Vertex3Ds &viewDir) const final;

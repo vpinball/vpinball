@@ -547,6 +547,7 @@ public:
    float Get3DOffset() const;
 
    FRect3D GetBoundingBox() const;
+   void ComputeNearFarPlane(const Matrix3D& matWorldView, const float scale, float &near, float &far) const;
 
    bool RenderSolid() const { return m_renderSolid; }
 
