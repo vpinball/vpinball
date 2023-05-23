@@ -52,14 +52,14 @@ Dim LLiveCatchTimer
 Dim RLiveCatchTimer
 Dim LiveCatchSensivity
 
-FlipperPower = 4600
-FlipperElasticity = 0.8
+FlipperPower = 5000
+FlipperElasticity = 0.85
 EOSTorque = 0.2
 EOSAngle = 6
 SOSTorque = 0.1
 SOSAngle = 6
 FullStrokeEOS_Torque = 0.5
-LiveCatchSensivity = 25
+LiveCatchSensivity = 25 'adjust as you prefer
 LLiveCatchTimer = 0
 RLiveCatchTimer = 0
 
