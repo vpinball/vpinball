@@ -122,7 +122,7 @@
 #ifdef _MSC_VER
 #include <intrin.h>
 #if (defined(_M_AMD64) || defined(__x86_64__)) || \
-    (defined(_M_ARM) || defined(__arm__))
+    (defined(_M_ARM64) || defined(__arm64__))
 #define SSE2NEON_HAS_BITSCAN64
 #endif
 #endif
@@ -786,16 +786,6 @@ FORCE_INLINE __m128 _mm_shuffle_ps_2032(__m128 a, __m128 b)
     float32x2_t b00 = vdup_lane_f32(vget_low_f32(vreinterpretq_f32_m128(b)), 0);
     float32x2_t b20 = vset_lane_f32(b2, b00, 1);
     return vreinterpretq_m128_f32(vcombine_f32(a32, b20));
-}
-
-// Kahan summation for accurate summation of floating-point numbers.
-// http://blog.zachbjornson.com/2019/08/11/fast-float-summation.html
-FORCE_INLINE void _sse2neon_kadd_f32(float *sum, float *c, float y)
-{
-    y -= *c;
-    float t = *sum + y;
-    *c = (t - *sum) - y;
-    *sum = t;
 }
 
 #if defined(__ARM_FEATURE_CRYPTO) && \
@@ -6907,40 +6897,44 @@ FORCE_INLINE __m128d _mm_dp_pd(__m128d a, __m128d b, const int imm)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_dp_ps
 FORCE_INLINE __m128 _mm_dp_ps(__m128 a, __m128 b, const int imm)
 {
+    float32x4_t elementwise_prod = _mm_mul_ps(a, b);
+
 #if defined(__aarch64__) || defined(_M_ARM64)
     /* shortcuts */
     if (imm == 0xFF) {
-        return _mm_set1_ps(vaddvq_f32(_mm_mul_ps(a, b)));
+        return _mm_set1_ps(vaddvq_f32(elementwise_prod));
     }
-    if (imm == 0x7F) {
-        float32x4_t m = _mm_mul_ps(a, b);
-        m[3] = 0;
-        return _mm_set1_ps(vaddvq_f32(m));
+
+    if ((imm & 0x0F) == 0x0F) {
+        if (!(imm & (1 << 4)))
+            elementwise_prod[0] = 0.0f;
+        if (!(imm & (1 << 5)))
+            elementwise_prod[1] = 0.0f;
+        if (!(imm & (1 << 6)))
+            elementwise_prod[2] = 0.0f;
+        if (!(imm & (1 << 7)))
+            elementwise_prod[3] = 0.0f;
+
+        return _mm_set1_ps(vaddvq_f32(elementwise_prod));
     }
 #endif
 
-    float s = 0, c = 0;
-    float32x4_t f32a = vreinterpretq_f32_m128(a);
-    float32x4_t f32b = vreinterpretq_f32_m128(b);
+    float s = 0.0f;
 
-    /* To improve the accuracy of floating-point summation, Kahan algorithm
-     * is used for each operation.
-     */
     if (imm & (1 << 4))
-        _sse2neon_kadd_f32(&s, &c, f32a[0] * f32b[0]);
+        s += elementwise_prod[0];
     if (imm & (1 << 5))
-        _sse2neon_kadd_f32(&s, &c, f32a[1] * f32b[1]);
+        s += elementwise_prod[1];
     if (imm & (1 << 6))
-        _sse2neon_kadd_f32(&s, &c, f32a[2] * f32b[2]);
+        s += elementwise_prod[2];
     if (imm & (1 << 7))
-        _sse2neon_kadd_f32(&s, &c, f32a[3] * f32b[3]);
-    s += c;
+        s += elementwise_prod[3];
 
     float32x4_t res = {
-        (imm & 0x1) ? s : 0,
-        (imm & 0x2) ? s : 0,
-        (imm & 0x4) ? s : 0,
-        (imm & 0x8) ? s : 0,
+        (imm & 0x1) ? s : 0.0f,
+        (imm & 0x2) ? s : 0.0f,
+        (imm & 0x4) ? s : 0.0f,
+        (imm & 0x8) ? s : 0.0f,
     };
     return vreinterpretq_m128_f32(res);
 }
@@ -8040,17 +8034,15 @@ FORCE_INLINE int _sse2neon_ctzll(unsigned long long x)
 #if _MSC_VER
     unsigned long cnt;
 #if defined(SSE2NEON_HAS_BITSCAN64)
-    (defined(_M_AMD64) || defined(__x86_64__))
-        if((_BitScanForward64(&cnt, x))
-            return (int)(cnt);
+    if ((_BitScanForward64(&cnt, x))
+        return (int)(cnt);
 #else
     if (_BitScanForward(&cnt, (unsigned long) (x)))
         return (int) cnt;
     if (_BitScanForward(&cnt, (unsigned long) (x >> 32)))
         return (int) (cnt + 32);
-#endif
-    return 64;
-#else
+#endif /* SSE2NEON_HAS_BITSCAN64 */
+#else  /* assume GNU compatible compilers */
     return x != 0 ? __builtin_ctzll(x) : 64;
 #endif
 }
