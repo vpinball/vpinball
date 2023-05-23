@@ -92,7 +92,7 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const RenderTargetType type, 
    tex_unit->sampler = nullptr;
    glActiveTexture(GL_TEXTURE0 + tex_unit->unit);
 
-   const unsigned int target = nMSAASamples != 1 ? (type == RT_DEFAULT ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D_MULTISAMPLE_ARRAY)
+   const unsigned int target = nMSAASamples > 1 ? (type == RT_DEFAULT ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D_MULTISAMPLE_ARRAY)
                                                  : (type == RT_DEFAULT ? GL_TEXTURE_2D : type == RT_STEREO ? GL_TEXTURE_2D_ARRAY : GL_TEXTURE_CUBE_MAP);
 
    if (nMSAASamples > 1)
@@ -143,11 +143,11 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const RenderTargetType type, 
             #endif
             switch (m_type)
             {
-            case RT_DEFAULT: glTexImage2D(target, 0, GL_DEPTH_COMPONENT16, width, height, 0, GL_DEPTH_COMPONENT, depth_type, nullptr); break;
-            case RT_STEREO: glTexImage3D(target, 0, GL_DEPTH_COMPONENT16, width, height, 2, 0, GL_DEPTH_COMPONENT, depth_type, nullptr); break;
+            case RT_DEFAULT: glTexImage2D(target, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, depth_type, nullptr); break;
+            case RT_STEREO: glTexImage3D(target, 0, GL_DEPTH_COMPONENT, width, height, 2, 0, GL_DEPTH_COMPONENT, depth_type, nullptr); break;
             case RT_CUBEMAP:
                for (int i = 0; i < 6; i++)
-                  glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT16, width, height, 0, GL_DEPTH_COMPONENT, depth_type, nullptr);
+                  glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, depth_type, nullptr);
                break;
             }
          }
