@@ -100,8 +100,6 @@
 #endif
 #define _sse2neon_likely(x) (x)
 #define _sse2neon_unlikely(x) (x)
-#else
-#pragma message("Macro name collisions may happen with unsupported compilers.")
 #endif
 
 /* C language does not allow initializing a variable with a function call. */
