@@ -32,9 +32,8 @@ FEATURES:
     If you have performance issues, try disabling things like Ambient Occlusion, Supersampling (=1), Postprocess AA & Sharpen, Reflections, and Bloom.
     One can also select an additional VR Preview window that shows the VR rendering on the screen as Side-By-Side.
 
-  - the near/far plane can be adjusted now (in centimeters). Both planes are like walls in front of the player. Everything between the player and the near-
-    plane, and everything behind the far-plane is invisible. It might be helpful if one has a room around the table or one changed the scaling too
-    much. Depending on the GPU/driver, having too small values for the near-plane or too large values for the far-plane, Z-fighting artifacts might occur.
+  - when using VR, the near plane can be adjusted (in centimeters). It is like a wall in front of the player. Everything between the player and the near-
+    plane is invisible. It might be helpful if one wants to be adjust visibility when moving or one changed the scaling too much. Having too small values for the near-plane will cause Z-fighting artifacts.
 
   - scaling of the table is now possible within the VR settings. One can either set a factor (e.g. 1.1 increases the table size by 10%) or one can
     scale all tables to a fixed width (in centimeters) to match a PinSim Controller. The scaling factor has no lower/upper limit (so yes,
@@ -101,10 +100,11 @@ FEATURES:
 - the application is now fully 'DPI aware'. This means that one can use multiple monitors at different DPI settings.
   This may require to adjust the position of windows on existing installs.
 
-- add a new camera layout mode which works better for anaglyph stereo (as well as other uses) and allows:
+- add 2 new camera layout mode which works better for cabinets and for anaglyph stereo (as well as other uses) and allows:
   - to setup the player position in real word units, measuring from the bottom center of the playfield in centimeters. This should allow to have a single position corresponding to your size and play position for all your tables.
   - to setup the camera like a 'real' camera: there is no more layback but a view offset, the other properties being simply the inclination and the field of view
   - for camera mode, adjust the user interface to show these informations and allow to easily reset to a default position by pressing the plunger key.
+  - support a new 'window' mode, designed for pincab users, where the screen is not orthogonal to the viewer, requiring an adjusted projection.
 - change camera mode buttons to match the ones when starting VPX with -povedit (Start = Export POV, Credit = Reset/Quit, Plunger = Defaults)
 
 - the ball texture can now be set as either a spherical map (the default, like it used to be before 10.8), or as an equirectangular map. Equirectangular maps
@@ -148,7 +148,7 @@ FIXES:
 
 - fix crash if sound card(s) hardware/driver setup changed
 
-- update example tables with new raytraced ball shadows enabled
+- update example tables with new raytraced ball shadows enabled and other new features
 - add better wood texture
 
 - update FreeImage library to latest 3.18.0 (custom build) (currently disabled)
