@@ -1648,29 +1648,18 @@ void RenderDevice::ApplyRenderStates()
 
 void RenderDevice::SetClipPlane(const vec4 &plane)
 {
-   // FIXME shouldn't we set the Model matrix to identity first ?
 #ifdef ENABLE_SDL
-   const int eyes = m_stereo3D == STEREO_OFF ? 1 : 2;
-   Matrix3D mT;
-   float clip_planes[2][4];
-   for (int eye = 0; eye < eyes; ++eye)
-   {
-      memcpy(mT.m, g_pplayer->m_pin3d.GetMVP().GetModelViewProj(0).m, 64); // = world * view * proj
-      mT.Invert();
-      mT.Transpose();
-      clip_planes[eye][0] = mT._11 * plane.x + mT._21 * plane.y + mT._31 * plane.z + mT._41 * plane.w;
-      clip_planes[eye][1] = mT._12 * plane.x + mT._22 * plane.y + mT._32 * plane.z + mT._42 * plane.w;
-      clip_planes[eye][2] = mT._13 * plane.x + mT._23 * plane.y + mT._33 * plane.z + mT._43 * plane.w;
-      clip_planes[eye][3] = mT._14 * plane.x + mT._24 * plane.y + mT._34 * plane.z + mT._44 * plane.w;
-   }
-   basicShader->SetFloat4v(SHADER_clip_planes, (vec4 *)clip_planes, eyes);
+   // TODO we should apply clip plane to all shaders but I did not find any visual impact so far (at least flasher and balls ?)
+   basicShader->SetVector(SHADER_clip_plane, plane.x, plane.y, plane.z, plane.w);
+   lightShader->SetVector(SHADER_clip_plane, plane.x, plane.y, plane.z, plane.w);
 #else
+   // FIXME shouldn't we set the Model matrix to identity first ?
    Matrix3D mT = g_pplayer->m_pin3d.GetMVP().GetModelViewProj(0); // = world * view * proj
    mT.Invert();
    mT.Transpose();
    const D3DXMATRIX m(mT);
    D3DXPLANE clipSpacePlane;
-   const D3DXPLANE dxplane(plane.x, plane.y, plane.z, plane.w);
+   const D3DXPLANE dxplane(-plane.x, -plane.y, -plane.z, -plane.w);
    D3DXPlaneTransform(&clipSpacePlane, &dxplane, &m);
    GetCoreDevice()->SetClipPlane(0, clipSpacePlane);
 #endif
