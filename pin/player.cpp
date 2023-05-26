@@ -1879,139 +1879,73 @@ void Player::DestroyBall(Ball *pball)
 void Player::CalcBallAspectRatio()
 {
    const int ballStretchMode = LoadValueWithDefault(regKey[RegName::Player], "BallStretchMode"s, 0);
+   if (ballStretchMode == 0)
+   {
+      m_BallStretch = Vertex2D(1.0f, 1.0f);
+      return;
+   }
 
-   // Monitors: 4:3, 16:9, 16:10, 21:10, 21:9
-   //const int ballStretchMonitor = LoadValueWithDefault(regKey[RegName::Player], "BallStretchMonitor"s, 1); // assume 16:9
    const float ballAspecRatioOffsetX = LoadValueWithDefault(regKey[RegName::Player], "BallCorrectionX"s, 0.f);
    const float ballAspecRatioOffsetY = LoadValueWithDefault(regKey[RegName::Player], "BallCorrectionY"s, 0.f);
 
    const ViewSetup &viewSetup = m_ptable->mViewSetups[m_ptable->m_BG_current_set];
    const float scalebackX = (viewSetup.mViewportScaleX != 0.0f) ? ((viewSetup.mViewportScaleX + viewSetup.mViewportScaleY) * 0.5f) / viewSetup.mViewportScaleX : 1.0f;
    const float scalebackY = (viewSetup.mViewportScaleY != 0.0f) ? ((viewSetup.mViewportScaleX + viewSetup.mViewportScaleY) * 0.5f) / viewSetup.mViewportScaleY : 1.0f;
-   double xMonitor = 16.0;
-   double yMonitor = 9.0;
 
-   const double aspect = (double)m_screenwidth / (double)m_screenheight;
-   double factor = aspect*3.0;
-   if (factor > 4.0)
+   const float c = sinf(ANGTORAD(fmodf(viewSetup.mViewportRotation + 90.0f, 180.0f)));
+   const float s = sinf(ANGTORAD(fmodf(viewSetup.mViewportRotation, 180.0f)));
+   m_BallStretch = Vertex2D(scalebackX * c + scalebackY * s, scalebackY * c + scalebackX * s);
+   m_antiStretchBall = false;
+
+   // Cabinet anti stretch mode is fairly weird: it will only apply when using rotated fullscreen, and apply a stretching based on monitor aspect ratio
+   if (ballStretchMode == 2 && (m_fullScreen || (m_wnd_width == m_screenwidth && m_wnd_height == m_screenheight)))
    {
-      factor = aspect*9.0;
-      if ((int)(factor+0.5) == 16)
+      m_antiStretchBall = true;
+      double xMonitor, yMonitor;
+      const double aspect = (double)m_screenwidth / (double)m_screenheight;
+      double factor = aspect * 3.0;
+      if (factor > 4.0)
       {
-         //16:9
-         xMonitor = (16.0 + ballAspecRatioOffsetX) / 4.0;
-         yMonitor = ( 9.0 + ballAspecRatioOffsetY) / 3.0;
-      }
-      else if ((int)(factor+0.5) == 21)
-      {
-         //21:9
-         xMonitor = (21.0 + ballAspecRatioOffsetX) / 4.0;
-         yMonitor = ( 9.0 + ballAspecRatioOffsetY) / 3.0;
-      }
-      else
-      {
-         factor = aspect*10.0;
-         if ((int)(factor+0.5) == 16)
+         factor = aspect * 9.0;
+         if ((int)(factor + 0.5) == 16)
          {
-            //16:10
+            //16:9
             xMonitor = (16.0 + ballAspecRatioOffsetX) / 4.0;
-            yMonitor = (10.0 + ballAspecRatioOffsetY) / 3.0;
+            yMonitor = (9.0 + ballAspecRatioOffsetY) / 3.0;
+         }
+         else if ((int)(factor + 0.5) == 21)
+         {
+            //21:9
+            xMonitor = (21.0 + ballAspecRatioOffsetX) / 4.0;
+            yMonitor = (9.0 + ballAspecRatioOffsetY) / 3.0;
          }
          else
          {
-            //21:10
-            xMonitor = (factor + ballAspecRatioOffsetX) / 4.0;
-            yMonitor = (10.0   + ballAspecRatioOffsetY) / 3.0;
+            factor = aspect * 10.0;
+            if ((int)(factor + 0.5) == 16)
+            {
+               //16:10
+               xMonitor = (16.0 + ballAspecRatioOffsetX) / 4.0;
+               yMonitor = (10.0 + ballAspecRatioOffsetY) / 3.0;
+            }
+            else
+            {
+               //21:10
+               xMonitor = (factor + ballAspecRatioOffsetX) / 4.0;
+               yMonitor = (10.0 + ballAspecRatioOffsetY) / 3.0;
+            }
          }
       }
-   }
-   else
-   {
-      //4:3
-      xMonitor = (factor + ballAspecRatioOffsetX) / 4.0;
-      yMonitor = (3.0    + ballAspecRatioOffsetY) / 3.0;
-   }
-
-   /* legacy
-   switch (ballStretchMonitor)
-   {
-       case 0:
-       xMonitor = (4.0 / 4.0);
-       yMonitor = (3.0 / 3.0);
-       break;
-       case 1:
-       xMonitor = (16.0 / 4.0);
-       yMonitor = (9.0 / 3.0);
-       break;
-       case 2:
-       xMonitor = (16.0 / 4.0);
-       yMonitor = (10.0 / 3.0);
-       break;
-       case 3:
-       xMonitor = (21.0 / 4.0);
-       yMonitor = (10.0 / 3.0);
-       break;
-       case 4:
-       xMonitor = (3.0 / 4.0);
-       yMonitor = (4.0 / 3.0);
-       break;
-       case 5:
-       xMonitor = (9.0 / 4.0);
-       yMonitor = (16.0 / 3.0);
-       break;
-       case 6:
-       xMonitor = (10.0 / 4.0);
-       yMonitor = (16.0 / 3.0);
-       break;
-       case 7:
-       xMonitor = (10.0 / 4.0);
-       yMonitor = (21.0 / 3.0);
-       break;
-       case 8:
-       xMonitor = (9.0 / 4.0);
-       yMonitor = (21.0 / 3.0);
-       break;
-       case 9:
-       xMonitor = (21.0 / 4.0);
-       yMonitor = (9.0 / 3.0);
-       break;
-       default:
-       xMonitor = 16.0f;
-       yMonitor = 9.0f;
-       break;
-   }
-   xMonitor += -0.4f;
-   yMonitor += 0.0f;
-   */
-
-   const double scalebackMonitorX = (xMonitor + yMonitor)*0.5 / xMonitor;
-   const double scalebackMonitorY = (xMonitor + yMonitor)*0.5 / yMonitor;
-
-   float temprotation = viewSetup.mViewportRotation;
-   while (temprotation < 0.f)
-      temprotation += 360.0f;
-
-   const float c = sinf(ANGTORAD(fmodf(temprotation + 90.0f, 180.0f)));
-   const float s = sinf(ANGTORAD(fmodf(temprotation, 180.0f)));
-   m_antiStretchBall = false;
-
-   switch (ballStretchMode)
-   {
-   case 0:
-      m_BallStretch = Vertex2D(1.0f,1.0f);
-      break;
-   case 1:
-      m_BallStretch = Vertex2D(scalebackX*c + scalebackY*s, scalebackY*c + scalebackX*s);
-      break;
-   case 2:
-      m_BallStretch = Vertex2D(scalebackX*c + scalebackY*s, scalebackY*c + scalebackX*s);
-      if (m_fullScreen || (m_wnd_width == m_screenwidth && m_wnd_height == m_screenheight)) // detect windowed fullscreen
+      else
       {
-         m_antiStretchBall = true;
-         m_BallStretch.x *= (float)(scalebackMonitorX*c + scalebackMonitorY*s);
-         m_BallStretch.y *= (float)(scalebackMonitorY*c + scalebackMonitorX*s);
+         //4:3
+         xMonitor = (factor + ballAspecRatioOffsetX) / 4.0;
+         yMonitor = (3.0 + ballAspecRatioOffsetY) / 3.0;
       }
-      break;
+      const double scalebackMonitorX = (xMonitor + yMonitor) * 0.5 / xMonitor;
+      const double scalebackMonitorY = (xMonitor + yMonitor) * 0.5 / yMonitor;
+      m_BallStretch.x *= (float)(scalebackMonitorX * c + scalebackMonitorY * s);
+      m_BallStretch.y *= (float)(scalebackMonitorY * c + scalebackMonitorX * s);
    }
 }
 
@@ -3864,9 +3798,9 @@ void Player::UpdateBackdropSettings(const bool up)
    case BS_Layback: viewSetup.mLayback += 0.5f * thesign; break;
    case BS_ViewHOfs: viewSetup.mViewHOfs += 0.5f * thesign; break;
    case BS_ViewVOfs: viewSetup.mViewVOfs += 0.5f * thesign; break;
-   case BS_XYScale: viewSetup.mViewportScaleX += 0.01f * thesign; viewSetup.mViewportScaleY += 0.01f * thesign; break;
-   case BS_XScale: viewSetup.mViewportScaleX += 0.01f * thesign; break;
-   case BS_YScale: viewSetup.mViewportScaleY += 0.01f * thesign; break;
+   case BS_XYScale: viewSetup.mViewportScaleX += 0.01f * thesign; viewSetup.mViewportScaleY += 0.01f * thesign; CalcBallAspectRatio(); break;
+   case BS_XScale: viewSetup.mViewportScaleX += 0.01f * thesign; CalcBallAspectRatio(); break;
+   case BS_YScale: viewSetup.mViewportScaleY += 0.01f * thesign; CalcBallAspectRatio(); break;
    case BS_XOffset: viewSetup.mViewX += 5.f * thesign; break;
    case BS_YOffset: viewSetup.mViewY += 5.f * thesign; break;
    case BS_ZOffset: viewSetup.mViewZ += 50.f * thesign; break;
@@ -4682,7 +4616,6 @@ void Player::DrawBalls()
       // ************************* draw the ball itself ****************************
       Vertex2D stretch;
       if (m_antiStretchBall && m_ptable->mViewSetups[m_ptable->m_BG_current_set].mViewportRotation != 0.0f)
-         //const vec4 bs(m_BallStretchX/* +stretch.x*/, m_BallStretchY - stretch.y, inv_tablewidth, inv_tableheight);
          GetBallAspectRatio(pball, stretch, zheight);
       else
          stretch = m_BallStretch;
@@ -4690,19 +4623,15 @@ void Player::DrawBalls()
       const vec4 diffuse = convertColor(pball->m_color, 1.0f);
       m_ballShader->SetVector(SHADER_cBase_Alpha, &diffuse);
 
-      Matrix3D m(pball->m_orientation.m_d[0][0], pball->m_orientation.m_d[1][0], pball->m_orientation.m_d[2][0], 0.0f,
+      Matrix3D scale, trans, m3D_full;
+      Matrix3D rot(pball->m_orientation.m_d[0][0], pball->m_orientation.m_d[1][0], pball->m_orientation.m_d[2][0], 0.0f,
          pball->m_orientation.m_d[0][1], pball->m_orientation.m_d[1][1], pball->m_orientation.m_d[2][1], 0.0f,
          pball->m_orientation.m_d[0][2], pball->m_orientation.m_d[1][2], pball->m_orientation.m_d[2][2], 0.0f,
          0.f, 0.f, 0.f, 1.f);
-      Matrix3D temp;
-      memcpy(temp.m, m.m, 4 * 4 * sizeof(float));
-      Matrix3D m3D_full;
-      m3D_full.SetScaling(pball->m_d.m_radius*stretch.x, pball->m_d.m_radius*stretch.y, pball->m_d.m_radius);
-      m3D_full.Multiply(temp, m3D_full);
-      temp.SetTranslation(pball->m_d.m_pos.x, pball->m_d.m_pos.y, zheight);
-      temp.Multiply(m3D_full, m3D_full);
-      memcpy(m.m, m3D_full.m, 4 * 4 * sizeof(float));
-      m_ballShader->SetMatrix(SHADER_orientation, &m);
+      scale.SetScaling(pball->m_d.m_radius * stretch.x, pball->m_d.m_radius * stretch.y, pball->m_d.m_radius);
+      trans.SetTranslation(pball->m_d.m_pos.x, pball->m_d.m_pos.y, zheight);
+      m3D_full = rot * scale * trans;
+      m_ballShader->SetMatrix(SHADER_orientation, &m3D_full);
 
       m_ballShader->SetBool(SHADER_disableLighting, m_disableLightingForBalls);
 
