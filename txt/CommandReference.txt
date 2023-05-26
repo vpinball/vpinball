@@ -17,6 +17,7 @@ Changelog:
 - add FilamentTemperature property to lights to get the 'blackbody' temperature of the filament according to the light current intensity, full intensity corresponding to a temperature of 2700K
 - add support for multiple custom DMDs by adding DMDWidth/DMDHeight/DMDPixels/DMDColoredPixels to flashers. The flasher will use the provided data if any, or defaults to the table data (captured or directly defined)
 - add Shadows property to Light element
+- add Setting property to the globals
 - document missing GetTextFile
 
 10.7.2:
@@ -141,6 +142,8 @@ Variables
 
 *WindowWidth(int) - get width of rendering window/fullscreen
 *WindowHeight(int) - get height of rendering window/fullscreen
+
+*Setting(string, string) - get the value of one of VPX setting
 
 DMDWidth(int) - set width of DMD
 DMDHeight(int) - set height of DMD

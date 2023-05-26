@@ -404,6 +404,26 @@ STDMETHODIMP ScriptGlobalTable::GetCustomParam(long index, BSTR *param)
     return S_OK;
 }
 
+STDMETHODIMP ScriptGlobalTable::get_Setting(BSTR Section, BSTR SettingName, BSTR *param)
+{
+   string value;
+   const int sectionLen = (int)lstrlenW(Section);
+   char *const sectionSz = new char[sectionLen + 1];
+   WideCharToMultiByteNull(CP_ACP, 0, Section, -1, sectionSz, sectionLen + 1, nullptr, nullptr);
+   const int settingLen = (int)lstrlenW(SettingName);
+   char *const settingSz = new char[sectionLen + 1];
+   WideCharToMultiByteNull(CP_ACP, 0, SettingName, -1, settingSz, settingLen + 1, nullptr, nullptr);
+   if (::LoadValue(sectionSz, settingSz, value) == S_OK)
+   {
+      const int len = (int)value.length() + 1;
+      WCHAR *const wzT = new WCHAR[len];
+      MultiByteToWideCharNull(CP_ACP, 0, value.c_str(), -1, wzT, len);
+      *param = SysAllocString(wzT);
+      return S_OK;
+   }
+   return E_FAIL;
+}
+
 STDMETHODIMP ScriptGlobalTable::GetTextFile(BSTR FileName, BSTR *pContents)
 {
    char szFileName[MAX_PATH];
