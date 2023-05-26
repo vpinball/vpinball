@@ -173,7 +173,7 @@ enum ShaderUniforms
 
    // Shared material for Ball, Basic and Classic light shaders
    #ifdef ENABLE_SDL // OpenGL
-   SHADER_UNIFORM(SUT_Float4v, clip_planes, 1), // +1 Matrix for stereo
+   SHADER_UNIFORM(SUT_Float4, clip_plane, 1),
    SHADER_UNIFORM(SUT_Float4v, basicLightEmission, 2),
    SHADER_UNIFORM(SUT_Float4v, basicLightPos, 2),
    SHADER_UNIFORM(SUT_Float4v, ballLightEmission, 10),

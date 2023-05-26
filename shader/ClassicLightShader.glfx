@@ -34,13 +34,11 @@ uniform sampler2D tex_light_color; // base texture
 
 ////vs_light_main
 
-layout(location=0) in vec3 vPosition;
 layout(location=1) in vec3 vNormal;
 layout(location=2) in vec2 tc;
 
 out vec2 tex0_gs;
 out vec3 worldPos_gs;
-out vec3 tablePos_gs;
 out vec3 normal_gs;
 
 void main()
@@ -64,7 +62,6 @@ out vec2 tex0;
 in vec3 worldPos_gs[];
 out vec3 worldPos;
 
-in vec3 tablePos_gs[];
 out vec3 tablePos;
 
 in vec3 normal_gs[];

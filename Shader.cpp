@@ -169,7 +169,7 @@ Shader::ShaderUniform Shader::shaderUniformNames[SHADER_UNIFORM_COUNT] {
 
    // Shared material for Ball, Basic and Classic light shaders
    #ifdef ENABLE_SDL // OpenGL
-   SHADER_UNIFORM(SUT_Float4v, clip_planes, 1), // +1 Matrix for stereo
+   SHADER_UNIFORM(SUT_Float4, clip_plane, 1),
    SHADER_UNIFORM(SUT_Float4v, basicLightEmission, 2),
    SHADER_UNIFORM(SUT_Float4v, basicLightPos, 2),
    SHADER_UNIFORM(SUT_Float4v, ballLightEmission, 10),
@@ -312,7 +312,6 @@ Shader::Shader(RenderDevice* renderDevice, const std::string& src1, const std::s
       shaderUniformNames[SHADER_matWorldViewProj].count = 2;
       shaderUniformNames[SHADER_basicMatrixBlock].count = 6 * 16 * 4;
       shaderUniformNames[SHADER_ballMatrixBlock].count = 5 * 16 * 4;
-      shaderUniformNames[SHADER_clip_planes].count = 2;
    }
    else
    {
@@ -320,7 +319,6 @@ Shader::Shader(RenderDevice* renderDevice, const std::string& src1, const std::s
       shaderUniformNames[SHADER_matWorldViewProj].count = 1;
       shaderUniformNames[SHADER_basicMatrixBlock].count = 5 * 16 * 4;
       shaderUniformNames[SHADER_ballMatrixBlock].count = 4 * 16 * 4;
-      shaderUniformNames[SHADER_clip_planes].count = 1;
    }
    #endif
    
