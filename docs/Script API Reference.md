@@ -69,6 +69,8 @@ As for coding light sequences for original tables, please check this helper app:
 | *WindowWidth | int | get width of rendering window/fullscreen |
 | *WindowHeight | int | get height of rendering window/fullscreen |
 | | | |
+| *Setting(string, string) | string | get the value of one of VPX setting |
+| | | |
 | DMDWidth | int | set width of DMD |
 | DMDHeight | int | set height of DMD |
 | DMDPixels | Variant | set array of (byte-)values (0..100), size needs to match the previously set width and height |

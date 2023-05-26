@@ -108,7 +108,6 @@
 
 Option Explicit
 
-Const directory = "HKEY_CURRENT_USER\SOFTWARE\Visual Pinball\Controller\"
 Dim B2SController
 Dim Controller
 Const DOFContactors = 1
@@ -172,46 +171,23 @@ End Sub
 'The user can put a value of 1 for ForceDisableB2S, which will force to load VPinMAME or no controller for EM tables.
 'Also defines the array of toy categories that will either play the sound or trigger the DOF effect.
 Sub LoadController(TableType, VPMver, VBSfile, VBSver)
-	Dim tempC
+	Dim DisableB2S
 
 	B2SOn = False
 	B2SOnALT = False
-	tempC = 0
-	on error resume next
-	Dim objShell
-	Set objShell = CreateObject("WScript.Shell")
-	objShell.RegRead(directory & "ForceDisableB2S")
-	If Err.number <> 0 Then
-		Dim PopupMessage
-		PopupMessage = "This latest version of Controller.vbs stores its settings in the registry. To adjust the values, you must use VP 10.2 (or newer) and setup your configuration in the DOF section of the -Keys, Nudge and DOF- dialog of Visual Pinball."
-		objShell.RegWrite directory & "ForceDisableB2S",0, "REG_DWORD"
-		objShell.RegWrite directory & "DOFContactors",2, "REG_DWORD"
-		objShell.RegWrite directory & "DOFKnocker",2, "REG_DWORD"
-		objShell.RegWrite directory & "DOFChimes",2, "REG_DWORD"
-		objShell.RegWrite directory & "DOFBell",2, "REG_DWORD"
-		objShell.RegWrite directory & "DOFGear",2, "REG_DWORD"
-		objShell.RegWrite directory & "DOFShaker",2, "REG_DWORD"
-		objShell.RegWrite directory & "DOFFlippers",2, "REG_DWORD"
-		objShell.RegWrite directory & "DOFTargets",2, "REG_DWORD"
-		objShell.RegWrite directory & "DOFDropTargets",2, "REG_DWORD"
-		MsgBox PopupMessage
-	End If
-	tempC = objShell.RegRead(directory & "ForceDisableB2S")
-	DOFeffects(1)=objShell.RegRead(directory & "DOFContactors")
-	DOFeffects(2)=objShell.RegRead(directory & "DOFKnocker")
-	DOFeffects(3)=objShell.RegRead(directory & "DOFChimes")
-	DOFeffects(4)=objShell.RegRead(directory & "DOFBell")
-	DOFeffects(5)=objShell.RegRead(directory & "DOFGear")
-	DOFeffects(6)=objShell.RegRead(directory & "DOFShaker")
-	DOFeffects(7)=objShell.RegRead(directory & "DOFFlippers")
-	DOFeffects(8)=objShell.RegRead(directory & "DOFTargets")
-	DOFeffects(9)=objShell.RegRead(directory & "DOFDropTargets")
-	Set objShell = nothing
+	DisableB2S    = CInt(Setting("Controller", "ForceDisableB2S"))
+	DOFeffects(1) = CInt(Setting("Controller", "DOFContactors"))
+	DOFeffects(2) = CInt(Setting("Controller", "DOFKnocker"))
+	DOFeffects(3) = CInt(Setting("Controller", "DOFChimes"))
+	DOFeffects(4) = CInt(Setting("Controller", "DOFBell"))
+	DOFeffects(5) = CInt(Setting("Controller", "DOFGear"))
+	DOFeffects(6) = CInt(Setting("Controller", "DOFShaker"))
+	DOFeffects(7) = CInt(Setting("Controller", "DOFFlippers"))
+	DOFeffects(8) = CInt(Setting("Controller", "DOFTargets"))
+	DOFeffects(9) = CInt(Setting("Controller", "DOFDropTargets"))
 
 	'deactivate B2S via table script
-	if B2SOff then
-		tempc = 1
-	end if
+	if B2SOff then DisableB2S = 1
 
 	If TableType = "PROC" or TableType = "VPMALT" Then
 		If TableType = "PROC" Then
@@ -220,7 +196,7 @@ Sub LoadController(TableType, VPMver, VBSfile, VBSver)
 		Else
 			LoadVPinMAME VPMver, VBSfile, VBSver
 		End If
-		If tempC = 0 Then
+		If DisableB2S = 0 Then
 			On Error Resume Next
 			If Controller is Nothing Then
 				Err.Clear
@@ -238,7 +214,7 @@ Sub LoadController(TableType, VPMver, VBSfile, VBSver)
 			End If
 		End If
 	Else
-		If tempC = 0 Then
+		If DisableB2S = 0 Then
 			On Error Resume Next
 			Set Controller = CreateObject("B2S.Server")
 			If Controller is Nothing Then
