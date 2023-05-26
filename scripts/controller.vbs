@@ -175,6 +175,7 @@ Sub LoadController(TableType, VPMver, VBSfile, VBSver)
 
 	B2SOn = False
 	B2SOnALT = False
+	On Error Resume Next
 	DisableB2S    = CInt(Setting("Controller", "ForceDisableB2S"))
 	DOFeffects(1) = CInt(Setting("Controller", "DOFContactors"))
 	DOFeffects(2) = CInt(Setting("Controller", "DOFKnocker"))
