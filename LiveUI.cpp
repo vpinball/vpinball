@@ -1654,8 +1654,7 @@ void LiveUI::UpdateOutlinerUI()
          PinTable *table = is_live ? m_live_table : m_table;
          if (ImGui::BeginTabItem(is_live ? "Live" : "Startup", nullptr, (is_live && liveTabSelect == 2) ? ImGuiTabItemFlags_SetSelected : ImGuiTabItemFlags_None))
          {
-            if (liveTabSelect == -1)
-               liveTabSelect = 2; // Skip first frame since it always have the first tab selected (there is only one known by ImGui at this point)
+            liveTabSelect = liveTabSelect == -1 ? 2 : tab; // Skip first frame since it always have the first tab selected (there is only one known by ImGui at this point)
             if (ImGui::TreeNodeEx("View Setups"))
             {
                if (ImGui::Selectable("Live Editor Camera"))
@@ -1804,8 +1803,7 @@ void LiveUI::UpdatePropertyUI()
          const bool is_live = (tab == 1);
          if (ImGui::BeginTabItem(is_live ? "Live" : "Startup", nullptr, (is_live && liveTabSelect == 2) ? ImGuiTabItemFlags_SetSelected : ImGuiTabItemFlags_None))
          {
-            if (liveTabSelect == -1)
-               liveTabSelect = 2; // Skip first frame since it always have the first tab selected (there is only one known by ImGui at this point)
+            liveTabSelect = liveTabSelect == -1 ? 2 : tab; // Skip first frame since it always have the first tab selected (there is only one known by ImGui at this point)
             ImGui::NewLine();
             switch (m_selection.type)
             {
