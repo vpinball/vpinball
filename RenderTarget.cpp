@@ -60,6 +60,7 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const RenderTargetType type, 
    , m_has_depth(with_depth)
    , m_shared_depth(with_depth && (sharedDepth != nullptr))
 {
+   assert(nMSAASamples >= 1);
    assert(type != RT_CUBEMAP || nMSAASamples == 1); // Cubemap render target do not support multisampling
 
    m_color_sampler = nullptr;

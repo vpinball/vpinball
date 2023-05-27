@@ -127,6 +127,12 @@ private:
 
    ModelViewProj* m_mvp = nullptr; // Store the active Model / View / Projection
 
+   #ifdef ENABLE_SDL
+   RenderTarget* m_envRadianceTexture = nullptr;
+   #else
+   BaseTexture* m_envRadianceTexture = nullptr;
+   #endif
+
    // Data members
 public:
    CGpuProfiler m_gpu_profiler;
@@ -141,7 +147,6 @@ public:
    Texture m_aoDitherTexture;   // loaded from Resources
 
    Texture* m_envTexture = nullptr;
-   BaseTexture* m_envRadianceTexture = nullptr;
 
    // free-camera-mode-fly-around parameters
    Vertex3Ds m_cam;

@@ -229,7 +229,7 @@ void main()
     BRANCH if (%PARAM0%) // equirectangularMap
     { // Equirectangular Map Reflections
       const float3 rv = (matWorldViewInverse * vec4(r.x, r.y, r.z, 0.)).xyz; // mul_w0(r, matWorldViewInverse);
-      const float2 uv = float2(1.0 + atan2_approx_div2PI(rv.y, rv.x), 0.5 + asin_approx_divPI(rv.z));
+      const float2 uv = float2(atan2_approx_div2PI(rv.y, rv.x), 0.5 + asin_approx_divPI(rv.z));
       ballImageColor = texture(tex_ball_color, uv).xyz;
     }
     else

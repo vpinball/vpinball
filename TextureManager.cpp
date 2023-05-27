@@ -11,9 +11,7 @@ Sampler* TextureManager::LoadTexture(BaseTexture* memtex, const SamplerFilter fi
    if (it == m_map.end())
    {
       Sampler* sampler = new Sampler(&m_rd, memtex, force_linear_rgb, clampU, clampV, filter);
-      if (g_pplayer->m_pin3d.m_envRadianceTexture == memtex)
-         sampler->SetName("Env Radiance"s);
-      else if (g_pplayer->m_pin3d.m_envTexture != nullptr && g_pplayer->m_pin3d.m_envTexture->m_pdsBuffer == memtex)
+      if (g_pplayer->m_pin3d.m_envTexture != nullptr && g_pplayer->m_pin3d.m_envTexture->m_pdsBuffer == memtex)
          sampler->SetName("Env"s);
       else
       {

@@ -10,7 +10,6 @@ Pin3D::Pin3D()
    m_pd3dPrimaryDevice = nullptr;
    m_pd3dSecondaryDevice = nullptr;
    m_pddsStatic = nullptr;
-   m_envRadianceTexture = nullptr;
    m_backGlass = nullptr;
 
    m_cam.x = 0.f;
@@ -33,13 +32,7 @@ Pin3D::~Pin3D()
 
    m_aoDitherTexture.FreeStuff();
 
-   if (m_envRadianceTexture)
-   {
-      m_pd3dPrimaryDevice->m_texMan.UnloadTexture(m_envRadianceTexture);
-      delete m_envRadianceTexture;
-      m_envRadianceTexture = nullptr;
-   }
-
+   delete m_envRadianceTexture;
    delete m_pddsStatic;
 
    if(m_pd3dPrimaryDevice != m_pd3dSecondaryDevice)
@@ -519,15 +512,33 @@ HRESULT Pin3D::InitPin3D(const bool fullScreen, const int width, const int heigh
 
    m_envTexture = g_pplayer->m_ptable->GetImage(g_pplayer->m_ptable->m_envImage);
    m_builtinEnvTexture.CreateFromResource(IDB_ENV);
-
-   const Texture * const envTex = m_envTexture ? m_envTexture : &m_builtinEnvTexture;
-
-   const unsigned int envTexHeight = min(envTex->m_pdsBuffer->height(),256u) / 8;
-   const unsigned int envTexWidth = envTexHeight*2;
-
+   #ifdef ENABLE_SDL // OpenGL
+   PLOGI << "Computing environment map radiance"; // For profiling
+   g_pvp->ProfileLog("EnvmapPrecalc Start"s);
+   Texture* const envTex = m_envTexture ? m_envTexture : &m_builtinEnvTexture;
+   const int envTexHeight = min(envTex->m_pdsBuffer->height(), 256u) / 8;
+   const int envTexWidth = envTexHeight * 2;
+   const colorFormat rad_format = envTex->m_pdsBuffer->m_format == BaseTexture::RGB_FP32 ? colorFormat::RGBA32F : colorFormat::RGBA16F;
+   m_envRadianceTexture = new RenderTarget(m_pd3dPrimaryDevice, RenderTarget::RenderTargetType::RT_DEFAULT, "Irradiance"s, envTexWidth, envTexHeight, rad_format, false, 1, STEREO_OFF,
+      "Failed to create irradiance render target");
+   m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_irradiance);
+   m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, envTex);
+   m_pd3dPrimaryDevice->SetRenderTarget("Env Irradiance PreCalc"s, m_envRadianceTexture);
+   m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->FBShader);
+   m_pd3dPrimaryDevice->FlushRenderFrame();
+   m_pd3dPrimaryDevice->basicShader->SetTexture(SHADER_tex_diffuse_env, m_envRadianceTexture->GetColorSampler());
+   m_pd3dPrimaryDevice->m_ballShader->SetTexture(SHADER_tex_diffuse_env, m_envRadianceTexture->GetColorSampler());
+   #else // DirectX 9
+   // DirectX 9 does not support bitwise operation in shader, so radical_inverse is not implemented and therefore we use the slow CPU path instead of GPU
+   const Texture* const envTex = m_envTexture ? m_envTexture : &m_builtinEnvTexture;
+   const unsigned int envTexHeight = min(envTex->m_pdsBuffer->height(), 256u) / 8;
+   const unsigned int envTexWidth = envTexHeight * 2;
    m_envRadianceTexture = EnvmapPrecalc(envTex, envTexWidth, envTexHeight);
-
    m_pd3dPrimaryDevice->m_texMan.SetDirty(m_envRadianceTexture);
+   m_pd3dPrimaryDevice->basicShader->SetTexture(SHADER_tex_diffuse_env, m_envRadianceTexture);
+   m_pd3dPrimaryDevice->m_ballShader->SetTexture(SHADER_tex_diffuse_env, m_envRadianceTexture);
+   #endif
+
 
    //
 

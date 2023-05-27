@@ -29,6 +29,7 @@
 #include "FBShader.h"
 #include "FlasherShader.h"
 #include "LightShader.h"
+#include "BallShader.h"
 #endif
 
 
@@ -1051,12 +1052,14 @@ bool RenderDevice::LoadShaders()
    lightShader = new Shader(this, "LightShader.glfx"s);
    if (m_stereo3D != STEREO_OFF)
       StereoShader = new Shader(this, "StereoShader.glfx"s);
+   m_ballShader = new Shader(this, "BallShader.glfx"s);
 #else // DirectX 9
    basicShader = new Shader(this, "BasicShader.hlsl"s, g_basicShaderCode, sizeof(g_basicShaderCode));
    DMDShader = new Shader(this, "DMDShader.hlsl"s, g_dmdShaderCode, sizeof(g_dmdShaderCode));
    FBShader = new Shader(this, "FBShader.hlsl"s, g_FBShaderCode, sizeof(g_FBShaderCode));
    flasherShader = new Shader(this, "FlasherShader.hlsl"s, g_flasherShaderCode, sizeof(g_flasherShaderCode));
    lightShader = new Shader(this, "LightShader.hlsl"s, g_lightShaderCode, sizeof(g_lightShaderCode));
+   m_ballShader = new Shader(this, "BallShader.hlsl"s, g_ballShaderCode, sizeof(g_ballShaderCode));
 #endif
 
    if (basicShader->HasError() || DMDShader->HasError() || FBShader->HasError() || flasherShader->HasError() || lightShader->HasError() || (StereoShader != nullptr && StereoShader->HasError()))
@@ -1224,6 +1227,15 @@ void RenderDevice::FreeShader()
    {
       delete lightShader;
       lightShader = nullptr;
+   }
+   if (m_ballShader)
+   {
+      m_ballShader->SetTextureNull(SHADER_tex_ball_color);
+      m_ballShader->SetTextureNull(SHADER_tex_ball_playfield);
+      m_ballShader->SetTextureNull(SHADER_tex_diffuse_env);
+      m_ballShader->SetTextureNull(SHADER_tex_ball_decal);
+      delete m_ballShader;
+      m_ballShader = nullptr;
    }
 }
 
@@ -1653,7 +1665,7 @@ void RenderDevice::SetClipPlane(const vec4 &plane)
    basicShader->SetVector(SHADER_clip_plane, &plane);
    lightShader->SetVector(SHADER_clip_plane, &plane);
    flasherShader->SetVector(SHADER_clip_plane, &plane);
-   g_pplayer->m_ballShader->SetVector(SHADER_clip_plane, &plane);
+   m_ballShader->SetVector(SHADER_clip_plane, &plane);
 #else
    // FIXME shouldn't we set the Model matrix to identity first ?
    Matrix3D mT = g_pplayer->m_pin3d.GetMVP().GetModelViewProj(0); // = world * view * proj

@@ -410,7 +410,6 @@ public:
 #ifdef ENABLE_SDL
    SDL_Window  *m_sdl_playfieldHwnd;
 #endif
-   Shader      *m_ballShader;
 
    MeshBuffer *m_ballMeshBuffer = nullptr;
    MeshBuffer *m_ballTrailMeshBuffer = nullptr;
