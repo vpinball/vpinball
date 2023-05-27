@@ -411,7 +411,7 @@ STDMETHODIMP ScriptGlobalTable::get_Setting(BSTR Section, BSTR SettingName, BSTR
    char *const sectionSz = new char[sectionLen + 1];
    WideCharToMultiByteNull(CP_ACP, 0, Section, -1, sectionSz, sectionLen + 1, nullptr, nullptr);
    const int settingLen = (int)lstrlenW(SettingName);
-   char *const settingSz = new char[sectionLen + 1];
+   char *const settingSz = new char[settingLen + 1];
    WideCharToMultiByteNull(CP_ACP, 0, SettingName, -1, settingSz, settingLen + 1, nullptr, nullptr);
    if (::LoadValue(sectionSz, settingSz, value) == S_OK)
    {
@@ -419,8 +419,13 @@ STDMETHODIMP ScriptGlobalTable::get_Setting(BSTR Section, BSTR SettingName, BSTR
       WCHAR *const wzT = new WCHAR[len];
       MultiByteToWideCharNull(CP_ACP, 0, value.c_str(), -1, wzT, len);
       *param = SysAllocString(wzT);
+      delete [] wzT;
+      delete [] sectionSz;
+      delete [] settingSz;
       return S_OK;
    }
+   delete [] sectionSz;
+   delete [] settingSz;
    return E_FAIL;
 }
 
@@ -4821,16 +4826,15 @@ void PinTable::ComputeNearFarPlane(const Matrix3D &matWorldView, const float sca
    {
       Vertex3Ds p = v;
       matWorldView.TransformVec3(p);
-      const float tempz = p.z;
-      zNear = min(zNear, tempz);
-      zFar = max(zFar, tempz);
+      zNear = min(zNear, p.z);
+      zFar = max(zFar, p.z);
    }
    // Add a bit of margin
    zNear *= 0.9f;
    zFar *= 1.1f;
    // Clip to sensible value to fix tables with parts far far away breaking depth buffer precision
-   zNear = max(zNear, scale * CMTOVPU(5)); // 5 cm
-   zFar = clamp(zFar, zNear + 1.f, scale * CMTOVPU(100000)); // 1 km (yes some VR room do really need this...)
+   zNear = max(zNear, scale * CMTOVPU(5.f)); // 5 cm
+   zFar = clamp(zFar, zNear + 1.f, scale * CMTOVPU(100000.f)); // 1 km (yes some VR room do really need this...)
    // Could not reproduce, so I disabled it for the sake of avoiding to pass inc to the method which is not really meaningfull here (we would have to compute it from the matWorldView)
    //!! magic threshold, otherwise kicker holes are missing for inclination ~0
    //if (fabsf(inc) < 0.0075f)
