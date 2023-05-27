@@ -11,14 +11,14 @@ precision highp float;
 
 uniform mat4 matWorldViewProj[N_EYES];
 
-uniform vec4 clip_plane; // Clip plane defined in table coordinate system
-
 ////VERTEX
 layout(location=0) in vec3 vPosition;
 layout(location=1) in vec3 vNormal;
 layout(location=2) in vec2 tc;
 
 out vec3 tablePos_gs;
+
+uniform vec4 clip_plane; // Clip plane defined in table coordinate system
 
 
 ////GEOMETRY
@@ -52,6 +52,7 @@ void main()
 {
    gl_Position = vec4(vPosition, 1.0);
    tablePos_gs = vPosition;
+   gl_ClipDistance[0] = dot(vec4(tablePos_gs, 1.0), clip_plane);
 }
 
 
@@ -63,7 +64,7 @@ void main()
         gl_Position = matWorldViewProj[gl_InvocationID]*gl_in[i].gl_Position;
         //Disabled since this would move backdrop lights behind other backdrop parts (rendered at z = 0), this could be readded with a max at 0, but I don't get why we would need this type of hack
         //gl_Position.z = max(gl_Position.z, 0.00006103515625); // clamp lights to near clip plane to avoid them being partially clipped // 0.00006103515625 due to 16bit half float
-        gl_ClipDistance[0] = dot(vec4(tablePos_gs[i], 1.0), clip_plane);
+        gl_ClipDistance[0] = gl_in[i].gl_ClipDistance[0];
         tablePos = tablePos_gs[i];
         EmitVertex();
     }

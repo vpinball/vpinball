@@ -25,6 +25,8 @@ layout(location=2) in vec2 tc;
 
 out vec2 tex0_gs;
 
+uniform vec4 clip_plane; // Clip plane defined in table coordinate system
+
 ////GEOMETRY
 #extension GL_ARB_viewport_array : enable
 layout(triangles) in;
@@ -62,6 +64,7 @@ out vec4 color;
 void main()
 {
    gl_Position = vec4(vPosition, 1.0);
+   gl_ClipDistance[0] = dot(vec4(vPosition, 1.0), clip_plane);
    tex0_gs = tc;
 }
 
@@ -75,12 +78,10 @@ void main()
 {
 	gl_ViewportIndex = gl_InvocationID;
 	for (int i=0;i<gl_in.length();i++) {
-		//Default
 		gl_Position = (matWorldViewProj[gl_InvocationID]*gl_in[i].gl_Position);
-		//Custom
+        gl_ClipDistance[0] = gl_in[i].gl_ClipDistance[0];
 		tablePos = gl_in[i].gl_Position.xyz;
 		tex0 = tex0_gs[i];
-		//Default
 		EmitVertex();
 	}
 	EndPrimitive();
