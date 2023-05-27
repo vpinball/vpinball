@@ -344,6 +344,8 @@ out float3 tablePos;
 
 uniform float fKickerScale;
 
+out float eye;
+
 void main()
 {
    gl_ViewportIndex = gl_InvocationID;
@@ -366,6 +368,7 @@ void main()
       tablePos = tablePos_gs[i];
       worldPos = worldPos_gs[i];
       normal = normal_gs[i];
+      eye = gl_InvocationID;
       EmitVertex();
    }
    EndPrimitive();
