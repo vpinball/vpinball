@@ -22,6 +22,8 @@ layout(std140) uniform ballMatrixBlock {
 
 ////VERTEX
 
+uniform vec4 clip_plane; // Clip plane defined in table coordinate system
+
 ////GEOMETRY
 #extension GL_ARB_viewport_array : enable
 layout(triangles) in;
@@ -82,6 +84,8 @@ void main()
 	gl_Position = pos;
 	normal_t0x_gs = float4(normal,tex0.x);
 	worldPos_t0y_gs = float4(p,tex0.y);
+
+    gl_ClipDistance[0] = dot(vec4(pos.xyz, 1.0), clip_plane);
 }
 
 ////vsBallTrail
@@ -110,12 +114,10 @@ void main()
 {
 	gl_ViewportIndex = gl_InvocationID;
 	for (int i=0;i<gl_in.length();i++) {
-		//Default
 		gl_Position = (matWorldViewProj[gl_InvocationID]*gl_in[i].gl_Position);
-		//Custom
+        gl_ClipDistance[0] = gl_in[i].gl_ClipDistance[0];
 		normal_t0x = normal_t0x_gs[i];
 		worldPos_t0y = worldPos_t0y_gs[i];
-		//Default
 		EmitVertex();
 	}
 	EndPrimitive();
@@ -130,11 +132,8 @@ void main()
 {
 	gl_ViewportIndex = gl_InvocationID;
 	for (int i=0;i<gl_in.length();i++) {
-		//Default
 		gl_Position = (matWorldViewProj[gl_InvocationID]*gl_in[i].gl_Position);
-		//Custom
 		tex0_alpha = tex0_alpha_gs[i];
-		//Default
 		EmitVertex();
 	}
 	EndPrimitive();

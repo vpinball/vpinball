@@ -1649,9 +1649,11 @@ void RenderDevice::ApplyRenderStates()
 void RenderDevice::SetClipPlane(const vec4 &plane)
 {
 #ifdef ENABLE_SDL
-   // TODO we should apply clip plane to all shaders but I did not find any visual impact so far (at least flasher and balls ?)
-   basicShader->SetVector(SHADER_clip_plane, plane.x, plane.y, plane.z, plane.w);
-   lightShader->SetVector(SHADER_clip_plane, plane.x, plane.y, plane.z, plane.w);
+   DMDShader->SetVector(SHADER_clip_plane, &plane);
+   basicShader->SetVector(SHADER_clip_plane, &plane);
+   lightShader->SetVector(SHADER_clip_plane, &plane);
+   flasherShader->SetVector(SHADER_clip_plane, &plane);
+   g_pplayer->m_ballShader->SetVector(SHADER_clip_plane, &plane);
 #else
    // FIXME shouldn't we set the Model matrix to identity first ?
    Matrix3D mT = g_pplayer->m_pin3d.GetMVP().GetModelViewProj(0); // = world * view * proj

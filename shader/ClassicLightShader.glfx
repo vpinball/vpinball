@@ -50,6 +50,7 @@ void main()
     gl_Position = float4(vPosition, 1.0);
     tex0_gs = tc;
     tablePos_gs = vPosition.xyz;
+    gl_ClipDistance[0] = dot(vec4(tablePos_gs, 1.0), clip_plane);
     worldPos_gs = P;
     normal_gs = N;
 }
@@ -73,6 +74,7 @@ void main()
     for (int i=0;i<gl_in.length();i++)
     {
         gl_Position = matWorldViewProj[gl_InvocationID]*gl_in[i].gl_Position;
+        gl_ClipDistance[0] = gl_in[i].gl_ClipDistance[0];
         tex0 = tex0_gs[i];
         worldPos = worldPos_gs[i];
         tablePos = tablePos_gs[i];
