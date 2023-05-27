@@ -1465,21 +1465,21 @@ BEGIN
     COMBOBOX        IDC_ENABLE_SSR,55,44,66,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "FPS Limiter/VSync (-1=def.)",IDC_STATIC5,7,60,94,8
     EDITTEXT        IDC_TABLEAVSYNC,101,58,20,12,ES_AUTOHSCROLL
-    CONTROL         "",IDC_ALPHA_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | TBS_TOP | WS_TABSTOP,9,83,107,19
-    GROUPBOX        "Elements Detail Level",IDC_STATIC6,7,74,114,42
+    CONTROL         "",IDC_ALPHA_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | TBS_TOP | WS_TABSTOP,4,83,114,19
+    GROUPBOX        "Elements Detail Level",IDC_STATIC6,2,74,121,42
     CONTROL         "Use this slider instead of default",IDC_GLOBAL_ALPHA_ACC,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,104,109,10
-    GROUPBOX        "Ball",IDC_STATIC7,7,121,114,56
-    LTEXT           "Reflection",IDC_STATIC8,12,134,61,8
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,104,117,10
+    GROUPBOX        "Ball",IDC_STATIC7,2,121,121,56
+    LTEXT           "Reflection",IDC_STATIC8,7,134,61,8
     COMBOBOX        IDC_BALL_REFLECTION,75,132,40,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Trail/Motion Blur",IDC_STATIC9,12,148,61,8
+    LTEXT           "Trail/Motion Blur",IDC_STATIC9,7,148,61,8
     COMBOBOX        IDC_BALL_TRAIL,75,146,40,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Trail Strength (0..100)",IDC_STATIC10,12,162,81,8
+    LTEXT           "Trail Strength (0..100)",IDC_STATIC10,7,162,81,8
     EDITTEXT        IDC_TRAIL_EDIT,95,160,20,12,ES_AUTOHSCROLL
-    GROUPBOX        "Night->Day cycle",IDC_STATIC11,7,182,114,42
-    CONTROL         "",IDC_DAYNIGHT_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | TBS_TOP | WS_TABSTOP,9,191,107,19
+    GROUPBOX        "Night->Day cycle",IDC_STATIC11,2,182,121,42
+    CONTROL         "",IDC_DAYNIGHT_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | TBS_TOP | WS_TABSTOP,4,191,114,19
     CONTROL         "Use this slider instead of default",IDC_GLOBAL_DAYNIGHT,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,212,110,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,212,117,10
     LTEXT           "Gameplay Difficulty (0..100)",IDC_STATIC12,7,232,90,8
     EDITTEXT        IDC_GAME_DIFFICULTY_EDIT,101,230,20,12,ES_AUTOHSCROLL
     LTEXT           "Overwrite Physics by Global Set",IDC_STATIC13,7,244,60,16

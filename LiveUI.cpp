@@ -992,8 +992,8 @@ void LiveUI::UpdateCameraModeUI()
          case Player::BS_ViewMode: CM_ROW("View Layout Mode:", "%s", isLegacy ? "Legacy" : isCamera ? "Camera" : "Window", ""); CM_SKIP_LINE; break;
 
          // Viewport
-         case Player::BS_XScale: CM_ROW("Viewport X Strech", "%.1f", 100.f * viewSetup.mViewportScaleX, "%%"); break;
-         case Player::BS_YScale: CM_ROW("Viewport Y Strech", "%.1f", 100.f * viewSetup.mViewportScaleY, "%%"); CM_SKIP_LINE; break;
+         case Player::BS_XScale: CM_ROW("Viewport X Stretch", "%.1f", 100.f * viewSetup.mViewportScaleX, "%%"); break;
+         case Player::BS_YScale: CM_ROW("Viewport Y Stretch", "%.1f", 100.f * viewSetup.mViewportScaleY, "%%"); CM_SKIP_LINE; break;
 
          // Player position
          case Player::BS_LookAt: 
