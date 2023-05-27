@@ -310,6 +310,7 @@ public:
    Shader *lightShader = nullptr;
    Shader *StereoShader = nullptr;
    #define classicLightShader basicShader
+   Shader* m_ballShader = nullptr;
 
    //Shader* m_curShader; // for caching
 

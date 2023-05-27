@@ -126,6 +126,7 @@ const string Shader::shaderTechniqueNames[SHADER_TECHNIQUE_COUNT]
    SHADER_TECHNIQUE(stereo_Int),
    SHADER_TECHNIQUE(stereo_Flipped_Int),
    SHADER_TECHNIQUE(stereo_anaglyph),
+   SHADER_TECHNIQUE(irradiance),
 };
 #undef SHADER_TECHNIQUE
 

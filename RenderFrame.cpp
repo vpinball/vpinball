@@ -69,7 +69,7 @@ void RenderFrame::Execute(const bool log)
       m_FBShaderState = new Shader::ShaderState(m_rd->FBShader);
       m_flasherShaderState = new Shader::ShaderState(m_rd->flasherShader);
       m_lightShaderState = new Shader::ShaderState(m_rd->lightShader);
-      m_ballShaderState = new Shader::ShaderState(g_pplayer->m_ballShader);
+      m_ballShaderState = new Shader::ShaderState(m_rd->m_ballShader);
    }
    RenderState prevState;
    m_rd->CopyRenderStates(true, prevState);
@@ -78,7 +78,7 @@ void RenderFrame::Execute(const bool log)
    m_rd->FBShader->m_state->CopyTo(true, m_FBShaderState);
    m_rd->flasherShader->m_state->CopyTo(true, m_flasherShaderState);
    m_rd->lightShader->m_state->CopyTo(true, m_lightShaderState);
-   g_pplayer->m_ballShader->m_state->CopyTo(true, m_ballShaderState);
+   m_rd->m_ballShader->m_state->CopyTo(true, m_ballShaderState);
 
    // Sort passes to avoid useless render target switching, and allow merging passes for better draw call sorting/batching
    vector<RenderPass*> sortedPasses;
@@ -116,5 +116,5 @@ void RenderFrame::Execute(const bool log)
    m_rd->FBShader->m_state->CopyTo(false, m_FBShaderState);
    m_rd->flasherShader->m_state->CopyTo(false, m_flasherShaderState);
    m_rd->lightShader->m_state->CopyTo(false, m_lightShaderState);
-   g_pplayer->m_ballShader->m_state->CopyTo(false, m_ballShaderState);
+   m_rd->m_ballShader->m_state->CopyTo(false, m_ballShaderState);
 }

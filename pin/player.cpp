@@ -14,9 +14,6 @@
 #include "Shader.h"
 #include "typedefs3D.h"
 #include "captureExt.h"
-#ifndef ENABLE_SDL
-#include "BallShader.h"
-#endif
 #include "../math/bluenoise.h"
 #include "../inc/winsdk/legacy_touch.h"
 
@@ -56,7 +53,6 @@ Player::Player(const bool cameraMode, PinTable *const editor_table, PinTable *co
    , m_pEditorTable(editor_table)
    , m_ptable(live_table)
 {
-   m_ballShader = nullptr;
    m_dynamicMode = m_cameraMode; // We can move the camera => disable static pre-rendering
 
 #if !(defined(_M_IX86) || defined(_M_X64) || defined(_M_AMD64) || defined(__i386__) || defined(__i386) || defined(__i486__) || defined(__i486) || defined(i386) || defined(__ia64__) || defined(__x86_64__))
@@ -731,15 +727,6 @@ void Player::Shutdown()
 
    delete m_ballMeshBuffer;
    m_ballMeshBuffer = nullptr;
-   if (m_ballShader)
-   {
-      m_ballShader->SetTextureNull(SHADER_tex_ball_color);
-      m_ballShader->SetTextureNull(SHADER_tex_ball_playfield);
-      m_ballShader->SetTextureNull(SHADER_tex_diffuse_env);
-      m_ballShader->SetTextureNull(SHADER_tex_ball_decal);
-      delete m_ballShader;
-      m_ballShader = nullptr;
-   }
 #ifdef DEBUG_BALL_SPIN
    delete m_ballDebugPoints;
    m_ballDebugPoints = nullptr;
@@ -1046,7 +1033,6 @@ void Player::InitShader()
    //m_pin3d.m_pd3dPrimaryDevice->basicShader->SetVector("camera", &cam);
 
    m_pin3d.m_pd3dPrimaryDevice->basicShader->SetTexture(SHADER_tex_env, m_pin3d.m_envTexture ? m_pin3d.m_envTexture : &m_pin3d.m_builtinEnvTexture);
-   m_pin3d.m_pd3dPrimaryDevice->basicShader->SetTexture(SHADER_tex_diffuse_env, m_pin3d.m_envRadianceTexture);
    const vec4 st(m_ptable->m_envEmissionScale*m_globalEmissionScale, m_pin3d.m_envTexture ? (float)m_pin3d.m_envTexture->m_height/*+m_pin3d.m_envTexture->m_width)*0.5f*/ : (float)m_pin3d.m_builtinEnvTexture.m_height/*+m_pin3d.m_builtinEnvTexture.m_width)*0.5f*/, 0.f, 0.f);
    m_pin3d.m_pd3dPrimaryDevice->basicShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
 
@@ -1069,39 +1055,31 @@ void Player::UpdateBallShaderMatrix()
    const int nEyes = m_stereo3D != STEREO_OFF ? 2 : 1;
    for (int eye = 0; eye < nEyes; eye++)
       matrices.matWorldViewProj[eye] = m_pin3d.GetMVP().GetModelViewProj(eye);
-   m_ballShader->SetUniformBlock(SHADER_ballMatrixBlock, &matrices.matView.m[0][0]);
+   m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetUniformBlock(SHADER_ballMatrixBlock, &matrices.matView.m[0][0]);
 #else
    matrices.matWorldViewProj[0] = m_pin3d.GetMVP().GetModelViewProj(0);
-   m_ballShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0]);
-   m_ballShader->SetMatrix(SHADER_matWorldView, &matrices.matWorldView);
-   m_ballShader->SetMatrix(SHADER_matWorldViewInverse, &matrices.matWorldViewInverse);
-   m_ballShader->SetMatrix(SHADER_matView, &matrices.matView);
+   m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0]);
+   m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetMatrix(SHADER_matWorldView, &matrices.matWorldView);
+   m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetMatrix(SHADER_matWorldViewInverse, &matrices.matWorldViewInverse);
+   m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetMatrix(SHADER_matView, &matrices.matView);
 #endif
 }
 
 void Player::InitBallShader()
 {
-#ifdef ENABLE_SDL
-   m_ballShader = new Shader(m_pin3d.m_pd3dPrimaryDevice, "BallShader.glfx"s);
-#else
-   m_ballShader = new Shader(m_pin3d.m_pd3dPrimaryDevice, "BallShader.hlsl"s, g_ballShaderCode, sizeof(g_ballShaderCode));
-#endif
-
    UpdateBallShaderMatrix();
 
    const vec4 st(m_ptable->m_envEmissionScale*m_globalEmissionScale, m_pin3d.m_envTexture ? (float)m_pin3d.m_envTexture->m_height/*+m_pin3d.m_envTexture->m_width)*0.5f*/ : (float)m_pin3d.m_builtinEnvTexture.m_height/*+m_pin3d.m_builtinEnvTexture.m_width)*0.5f*/, 0.f, 0.f);
-   m_ballShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
-   //m_ballShader->SetInt("iLightPointNum",MAX_LIGHT_SOURCES);
+   m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
+   //m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetInt("iLightPointNum",MAX_LIGHT_SOURCES);
 
    constexpr float Roughness = 0.8f;
    const vec4 rwem(exp2f(10.0f * Roughness + 1.0f), 0.f, 1.f, 0.05f);
-   m_ballShader->SetVector(SHADER_Roughness_WrapL_Edge_Thickness, &rwem);
+   m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetVector(SHADER_Roughness_WrapL_Edge_Thickness, &rwem);
 
    Texture * const playfield = m_ptable->GetImage(m_ptable->m_image);
    if (playfield)
-      m_ballShader->SetTexture(SHADER_tex_ball_playfield, playfield);
-
-   m_ballShader->SetTexture(SHADER_tex_diffuse_env, m_pin3d.m_envRadianceTexture);
+      m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetTexture(SHADER_tex_ball_playfield, playfield);
 
    const bool lowDetailBall = (m_ptable->GetDetailLevel() < 10);
    delete m_ballMeshBuffer;
@@ -1113,7 +1091,7 @@ void Player::InitBallShader()
    amb_lr.x *= m_globalEmissionScale;
    amb_lr.y *= m_globalEmissionScale;
    amb_lr.z *= m_globalEmissionScale;
-   m_ballShader->SetVector(SHADER_cAmbient_LightRange, &amb_lr);
+   m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetVector(SHADER_cAmbient_LightRange, &amb_lr);
 }
 
 HRESULT Player::Init()
@@ -1486,7 +1464,7 @@ HRESULT Player::Init()
    // Initialize lighting (maybe move to pin3d ? in InitLights ?)
    const vec4 st(m_ptable->m_envEmissionScale*m_globalEmissionScale, m_pin3d.m_envTexture ? (float)m_pin3d.m_envTexture->m_height/*+m_pin3d.m_envTexture->m_width)*0.5f*/ : (float)m_pin3d.m_builtinEnvTexture.m_height/*+m_pin3d.m_builtinEnvTexture.m_width)*0.5f*/, 0.f, 0.f); //!! dto.
    m_pin3d.m_pd3dPrimaryDevice->basicShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
-   m_ballShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
+   m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
 
    // Setup anisotropic filtering
    const bool forceAniso = LoadValueWithDefault(regKey[RegName::Player], "ForceAnisotropicFiltering"s, true);
@@ -4368,26 +4346,6 @@ void Player::GetBallAspectRatio(const Ball * const pball, Vertex2D &stretch, con
    stretch.x = 1.0f; // midX/midY;
 }
 
-// not used anymore. Reflection of the ball is done using RenderProbe!
-/*void Player::DrawBallReflection(Ball *pball, const float zheight, const bool lowDetailBall)
-{
-   // this is the old ball reflection hack and can be removed if the new reflection works!
-   const vec4 pos_radRef(pball->m_pos.x, pball->m_pos.y, zheight + m_ptable->m_tableheight, pball->m_radius);
-   m_ballShader->SetVector("position_radius", &pos_radRef);
-   const vec4 refl((float)m_ptable->m_ballReflectionStrength * (float)(1.0 / 255.0), m_ptable->m_playfieldReflectionStrength, 0.f, 0.f);
-   m_ballShader->SetVector("reflection_ball_playfield", &refl);
-   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
-   m_pin3d.EnableAlphaBlend(false, false);
-   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, RenderDevice::DST_ALPHA);
-   m_ballShader->SetTechnique("RenderBallReflection");
-
-   m_ballShader->Begin();
-   m_pin3d.m_pd3dPrimaryDevice->DrawMesh(m_ballMeshBuffer, false, RenderDevice::TRIANGLELIST, 0, lowDetailBall ? basicBallLoNumFaces : basicBallMidNumFaces);
-   m_ballShader->End();
-
-   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE);
-}*/
-
 void Player::DrawStatics()
 {
    #ifdef DEBUG
@@ -4523,7 +4481,7 @@ void Player::DrawBalls()
                      *playfield_avg_diffuse //!! hack: multiply average diffuse from playfield onto strength, as only diffuse lighting is used for reflection
                      *0.5f                  //!! additional magic correction factor due to everything being wrong in the earlier reflection/lighting implementation
                      );
-      m_ballShader->SetVector(SHADER_invTableRes_playfield_height_reflection, &phr);
+      m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetVector(SHADER_invTableRes_playfield_height_reflection, &phr);
 
       if ((zheight > maxz) || (pball->m_d.m_pos.z < minz))
       {
@@ -4597,10 +4555,10 @@ void Player::DrawBalls()
       }
 
 #ifdef ENABLE_SDL
-      m_ballShader->SetFloat4v(SHADER_ballLightPos, (vec4 *)lightPos, MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES);
-      m_ballShader->SetFloat4v(SHADER_ballLightEmission, (vec4 *)lightEmission, MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES);
+      m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetFloat4v(SHADER_ballLightPos, (vec4 *)lightPos, MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES);
+      m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetFloat4v(SHADER_ballLightEmission, (vec4 *)lightEmission, MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES);
 #else
-      m_ballShader->SetFloat4v(SHADER_ballPackedLights, (vec4 *)l, sizeof(CLight) * (MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES) / (4 * sizeof(float)));
+      m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetFloat4v(SHADER_ballPackedLights, (vec4 *)l, sizeof(CLight) * (MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES) / (4 * sizeof(float)));
 #endif
 
       // now for a weird hack: make material more rough, depending on how near the nearest lightsource is, to 'emulate' the area of the bulbs (as VP only features point lights so far)
@@ -4611,7 +4569,7 @@ void Player::DrawBalls()
           Roughness = min(max(dist*0.006f, 0.4f), Roughness);
       }
       const vec4 rwem(exp2f(10.0f * Roughness + 1.0f), 0.f, 1.f, 0.05f);
-      m_ballShader->SetVector(SHADER_Roughness_WrapL_Edge_Thickness, &rwem);
+      m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetVector(SHADER_Roughness_WrapL_Edge_Thickness, &rwem);
 
       // ************************* draw the ball itself ****************************
       Vertex2D stretch;
@@ -4621,7 +4579,7 @@ void Player::DrawBalls()
          stretch = m_BallStretch;
 
       const vec4 diffuse = convertColor(pball->m_color, 1.0f);
-      m_ballShader->SetVector(SHADER_cBase_Alpha, &diffuse);
+      m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetVector(SHADER_cBase_Alpha, &diffuse);
 
       Matrix3D scale, trans, m3D_full;
       Matrix3D rot(pball->m_orientation.m_d[0][0], pball->m_orientation.m_d[1][0], pball->m_orientation.m_d[2][0], 0.0f,
@@ -4631,38 +4589,38 @@ void Player::DrawBalls()
       scale.SetScaling(pball->m_d.m_radius * stretch.x, pball->m_d.m_radius * stretch.y, pball->m_d.m_radius);
       trans.SetTranslation(pball->m_d.m_pos.x, pball->m_d.m_pos.y, zheight);
       m3D_full = rot * scale * trans;
-      m_ballShader->SetMatrix(SHADER_orientation, &m3D_full);
+      m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetMatrix(SHADER_orientation, &m3D_full);
 
-      m_ballShader->SetBool(SHADER_disableLighting, m_disableLightingForBalls);
+      m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetBool(SHADER_disableLighting, m_disableLightingForBalls);
 
       bool sphericalMapping;
       if (!pball->m_pinballEnv)
       {
          sphericalMapping = false; // Environment texture is an equirectangular map
-         m_ballShader->SetTexture(SHADER_tex_ball_color, &m_pin3d.m_pinballEnvTexture);
+         m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetTexture(SHADER_tex_ball_color, &m_pin3d.m_pinballEnvTexture);
       }
       else
       {
          sphericalMapping = pball->m_pinballEnvSphericalMapping;
-         m_ballShader->SetTexture(SHADER_tex_ball_color, pball->m_pinballEnv);
+         m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetTexture(SHADER_tex_ball_color, pball->m_pinballEnv);
       }
 
       if (pball->m_pinballDecal)
-         m_ballShader->SetTexture(SHADER_tex_ball_decal, pball->m_pinballDecal);
+         m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetTexture(SHADER_tex_ball_decal, pball->m_pinballDecal);
       else
-         m_ballShader->SetTextureNull(SHADER_tex_ball_decal);
+         m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetTextureNull(SHADER_tex_ball_decal);
 
       const bool lowDetailBall = m_ptable->GetDetailLevel() < 10;
 
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
 
       if (sphericalMapping)
-         m_ballShader->SetTechnique(pball->m_decalMode ? SHADER_TECHNIQUE_RenderBall_SphericalMap_DecalMode : SHADER_TECHNIQUE_RenderBall_SphericalMap);
+         m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetTechnique(pball->m_decalMode ? SHADER_TECHNIQUE_RenderBall_SphericalMap_DecalMode : SHADER_TECHNIQUE_RenderBall_SphericalMap);
       else
-         m_ballShader->SetTechnique(pball->m_decalMode ? SHADER_TECHNIQUE_RenderBall_DecalMode : SHADER_TECHNIQUE_RenderBall);
+         m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetTechnique(pball->m_decalMode ? SHADER_TECHNIQUE_RenderBall_DecalMode : SHADER_TECHNIQUE_RenderBall);
 
       Vertex3Ds pos(pball->m_d.m_pos.x, pball->m_d.m_pos.y, zheight);
-      m_pin3d.m_pd3dPrimaryDevice->DrawMesh(m_ballShader, false, pos, 0.f, m_ballMeshBuffer, RenderDevice::TRIANGLELIST, 0, lowDetailBall ? basicBallLoNumFaces : basicBallMidNumFaces);
+      m_pin3d.m_pd3dPrimaryDevice->DrawMesh(m_pin3d.m_pd3dPrimaryDevice->m_ballShader, false, pos, 0.f, m_ballMeshBuffer, RenderDevice::TRIANGLELIST, 0, lowDetailBall ? basicBallLoNumFaces : basicBallMidNumFaces);
 
       // ball trails
       if ((!g_pplayer->IsRenderPass(Player::REFLECTION_PASS)) && // do not render trails in reflection pass
@@ -4755,8 +4713,8 @@ void Player::DrawBalls()
             m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
             m_pin3d.EnableAlphaBlend(false);
 
-            m_ballShader->SetTechnique(SHADER_TECHNIQUE_RenderBallTrail);
-            m_pin3d.m_pd3dPrimaryDevice->DrawMesh(m_ballShader, false, pos, 0.f, m_ballTrailMeshBuffer, RenderDevice::TRIANGLESTRIP, 0, num_rgv3D);
+            m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetTechnique(SHADER_TECHNIQUE_RenderBallTrail);
+            m_pin3d.m_pd3dPrimaryDevice->DrawMesh(m_pin3d.m_pd3dPrimaryDevice->m_ballShader, false, pos, 0.f, m_ballTrailMeshBuffer, RenderDevice::TRIANGLESTRIP, 0, num_rgv3D);
          }
       }
 
@@ -4779,7 +4737,7 @@ void Player::DrawBalls()
          // draw points
          constexpr float ptsize = 5.0f;
          m_pin3d.m_pd3dPrimaryDevice->GetCoreDevice()->SetRenderState(D3DRS_POINTSIZE, float_as_uint(ptsize));
-         m_pin3d.m_pd3dPrimaryDevice->DrawMesh(m_ballShader, false, pos, 0.f, m_ballDebugPoints, RenderDevice::POINTLIST, 0, 12);
+         m_pin3d.m_pd3dPrimaryDevice->DrawMesh(m_pin3d.m_pd3dPrimaryDevice->m_ballShader, false, pos, 0.f, m_ballDebugPoints, RenderDevice::POINTLIST, 0, 12);
 
          // reset transform
          m_pin3d.GetMVP().SetModel(matOrig);

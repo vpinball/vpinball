@@ -235,7 +235,7 @@ float4 psBall( const in vout IN, uniform bool equirectangularMap, uniform bool d
    BRANCH if (equirectangularMap)
    {  // Equirectangular Map Reflections
       const float3 rv = mul_w0(r, matWorldViewInverse);
-      const float2 uv = float2(1.0 + atan2_approx_div2PI(rv.y, rv.x), 0.5 + asin_approx_divPI(rv.z));
+      const float2 uv = float2(atan2_approx_div2PI(rv.y, rv.x), 0.5 + asin_approx_divPI(rv.z));
       ballImageColor = tex2D(tex_ball_color, uv).rgb;
    }
    else
