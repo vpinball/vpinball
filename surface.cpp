@@ -1035,6 +1035,8 @@ void Surface::RenderSlingshots()
       return;
 
    RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+   RenderState initial_state;
+   pd3dDevice->CopyRenderStates(true, initial_state);
 
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szSlingShotMaterial);
    pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat);
@@ -1063,7 +1065,7 @@ void Surface::RenderSlingshots()
    pd3dDevice->DrawMesh(
       pd3dDevice->basicShader, m_isDynamic, m_boundingSphereCenter, 0.f, m_slingshotMeshBuffer, RenderDevice::TRIANGLELIST, 0, static_cast<DWORD>(m_vlinesling.size() * 24));
 
-   //pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
+   pd3dDevice->CopyRenderStates(false, initial_state);
 }
 
 void Surface::RenderWallsAtHeight(const bool drop)
