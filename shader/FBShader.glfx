@@ -765,7 +765,7 @@ void main()
    //color = float4(texNoLod(tex_fb_unfiltered, uv0).rgb, 1.0);
 
    // Monte Carlo integration of hemispherical irradiance.
-   const uint NumSamples = 32 * 4096;
+   const uint NumSamples = 16 * 4096; // Limit to 65536, will fail on MacOs Metal above
    const float InvNumSamples = 1.0 / float(NumSamples);
    float3 irradiance = float3(0., 0., 0.);
    for (uint i=0; i<NumSamples; ++i) {
