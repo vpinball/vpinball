@@ -496,7 +496,7 @@ HRESULT Pin3D::InitPin3D(const bool fullScreen, const int width, const int heigh
    else
       m_backGlass = nullptr;
 
-   // This used to be a spheremap BMP, upgraded in 10.8 for an quirectangular HDR env map
+   // This used to be a spheremap BMP, upgraded in 10.8 for an equirectangular HDR env map
    //m_pinballEnvTexture.CreateFromResource(IDB_BALL);
    HMODULE handle = ::GetModuleHandle(NULL);
    HRSRC rc = ::FindResource(handle, MAKEINTRESOURCE(IDB_BALL), MAKEINTRESOURCE(EXR_FILE));
