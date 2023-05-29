@@ -116,6 +116,9 @@ FEATURES:
 
 - the script is started and the Init events are now called *before* the static parts are prerendered. This allows a table script to adjust static parts properties on startup.
 
+- A new folder named 'Cache' was added to VPX's main directory for caching data to improve performance. For the time being, it is used to store the list of textures which are used 
+  by each table during play, this information allows to preload the needed textures when a table is started, limiting stutters during play.
+
 FIXES:
 
 - timers with a -1 interval are always fired after physics and animation, but before rendering, allowing the script to update visual parts accordingly without any visual lag.

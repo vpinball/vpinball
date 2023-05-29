@@ -10,12 +10,16 @@
 
 #include <algorithm>
 #include <ctime>
+#include <fstream>
+#include <sstream>
+#include <filesystem>
 #include "../meshes/ballMesh.h"
 #include "Shader.h"
 #include "typedefs3D.h"
 #include "captureExt.h"
 #include "../math/bluenoise.h"
 #include "../inc/winsdk/legacy_touch.h"
+#include "inc/tinyxml2/tinyxml2.h"
 
 #if __cplusplus >= 202002L && !defined(__clang__)
 #define stable_sort std::ranges::stable_sort
@@ -1428,6 +1432,59 @@ HRESULT Player::Init()
 
    // initialize hit structure for dynamic objects
    m_hitoctree_dynamic.FillFromVector(m_vho_dynamic);
+
+   //----------------------------------------------------------------------------------
+
+   m_pEditorTable->m_progressDialog.SetProgress(50);
+   m_pEditorTable->m_progressDialog.SetName("Loading Textures..."s);
+
+   if (LoadValueWithDefault(regKey[RegName::Player], "CacheMode"s, 1) > 0)
+   {
+      try {
+         string dir = g_pvp->m_szMyPath + "Cache" + PATH_SEPARATOR_CHAR + m_ptable->m_szTitle + PATH_SEPARATOR_CHAR;
+         std::filesystem::create_directories(std::filesystem::path(dir));
+         if (FileExists(dir + "used_textures.xml"))
+         {
+            std::stringstream buffer;
+            std::ifstream myFile(dir + "used_textures.xml"s);
+            buffer << myFile.rdbuf();
+            myFile.close();
+            auto xml = buffer.str();
+            tinyxml2::XMLDocument xmlDoc;
+            if (xmlDoc.Parse(xml.c_str()) == tinyxml2::XML_SUCCESS)
+            {
+               auto root = xmlDoc.FirstChildElement("textures");
+               for (auto node = root->FirstChildElement("texture"); node != nullptr; node = node->NextSiblingElement())
+               {
+                  int filter = 0, clampU = 0, clampV = 0;
+                  bool linearRGB = false, preRenderOnly = false;
+                  const char *name = node->GetText();
+                  Texture *tex = m_ptable->GetImage(name);
+                  if (tex == nullptr 
+                     || node->QueryBoolAttribute("linear", &linearRGB) != tinyxml2::XML_SUCCESS
+                     || node->QueryIntAttribute("clampu", &filter) != tinyxml2::XML_SUCCESS
+                     || node->QueryIntAttribute("clampv", &clampU) != tinyxml2::XML_SUCCESS 
+                     || node->QueryIntAttribute("filter", &clampV) != tinyxml2::XML_SUCCESS
+                     || node->QueryBoolAttribute("prerender", &preRenderOnly) != tinyxml2::XML_SUCCESS)
+                  {
+                     PLOGE << "Texture preloading failed for '" << name << "'. Preloading aborted";
+                     break; // Stop preloading on first error
+                  }
+                  // For dynamic modes (VR, head tracking,...) mark all preloaded textures as static only
+                  // This will make the cache wrong for the next non static run but it will rebuild, while the opposite would not (all preloads would stay as not prerender only)
+                  m_render_mask = (m_dynamicMode || preRenderOnly) ? STATIC_PREPASS : DEFAULT;
+                  m_pin3d.m_pd3dPrimaryDevice->m_texMan.LoadTexture(tex->m_pdsBuffer, (SamplerFilter)filter, (SamplerAddressMode)clampU, (SamplerAddressMode)clampV, linearRGB);
+                  PLOGI << "Texture preloading: '" << name << "'";
+               }
+            }
+         }
+      }
+      catch (...) // something failed while trying to preload images
+      {
+         PLOGE << "Texture preloading failed";
+      }
+      m_render_mask = DEFAULT;
+   }
 
    //----------------------------------------------------------------------------------
 
@@ -5089,6 +5146,67 @@ LRESULT Player::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 void Player::StopPlayer()
 {
+   string szVPXFile = g_pvp->m_currentTablePath + m_ptable->m_szTitle + ".vpx";
+   if ((LoadValueWithDefault(regKey[RegName::Player], "CacheMode"s, 1) > 0) && FileExists(szVPXFile))
+   {
+      string dir = g_pvp->m_szMyPath + "Cache" + PATH_SEPARATOR_CHAR + m_ptable->m_szTitle + PATH_SEPARATOR_CHAR;
+      std::filesystem::create_directories(std::filesystem::path(dir));
+
+      std::map<string, bool> prevPreRenderOnly;
+      if (m_dynamicMode && FileExists(dir + "used_textures.xml"))
+      {
+         std::ifstream myFile(dir + "used_textures.xml"s);
+         std::stringstream buffer;
+         buffer << myFile.rdbuf();
+         myFile.close();
+         auto xml = buffer.str();
+         tinyxml2::XMLDocument xmlDoc;
+         if (xmlDoc.Parse(xml.c_str()) == tinyxml2::XML_SUCCESS)
+         {
+            auto root = xmlDoc.FirstChildElement("textures");
+            for (auto node = root->FirstChildElement("texture"); node != nullptr; node = node->NextSiblingElement())
+            {
+               bool preRenderOnly = false;
+               const char *name = node->GetText();
+               if (node->QueryBoolAttribute("prerender", &preRenderOnly) == tinyxml2::XML_SUCCESS)
+                  prevPreRenderOnly[name] = preRenderOnly;
+            }
+         }
+      }
+
+      tinyxml2::XMLDocument xmlDoc;
+      tinyxml2::XMLElement* root = xmlDoc.NewElement("textures");
+      xmlDoc.InsertEndChild(xmlDoc.NewDeclaration());
+      xmlDoc.InsertEndChild(root);
+      vector<BaseTexture *> textures = m_pin3d.m_pd3dPrimaryDevice->m_texMan.GetLoadedTextures();
+      for (BaseTexture *memtex : textures)
+      {
+            for (Texture *image : g_pplayer->m_ptable->m_vimage)
+            {
+               if (image->m_pdsBuffer == memtex)
+               {
+                  tinyxml2::XMLElement* node = xmlDoc.NewElement("texture");
+                  node->SetText(image->m_szName.c_str());
+                  node->SetAttribute("filter", (int)m_pin3d.m_pd3dPrimaryDevice->m_texMan.GetFilter(memtex));
+                  node->SetAttribute("clampu", (int)m_pin3d.m_pd3dPrimaryDevice->m_texMan.GetClampU(memtex));
+                  node->SetAttribute("clampv", (int)m_pin3d.m_pd3dPrimaryDevice->m_texMan.GetClampV(memtex));
+                  node->SetAttribute("linear", m_pin3d.m_pd3dPrimaryDevice->m_texMan.IsLinearRGB(memtex));
+                  bool preRenderOnly = m_dynamicMode ? (prevPreRenderOnly.contains(image->m_szName) ? prevPreRenderOnly[image->m_szName] : true)
+                                                     : m_pin3d.m_pd3dPrimaryDevice->m_texMan.IsPreRenderOnly(memtex);
+                  node->SetAttribute("prerender", preRenderOnly);
+                  root->InsertEndChild(node);
+                  break;
+               }
+            }
+      }
+      tinyxml2::XMLPrinter prn;
+      xmlDoc.Print(&prn);
+
+      std::ofstream myfile(dir + "used_textures.xml"s);
+      myfile << prn.CStr();
+      myfile.close();
+   }
+
    if (m_audio)
       m_audio->MusicPause();
 
