@@ -715,9 +715,14 @@ void Player::Shutdown()
 
    if (m_cameraMode)
    {
-      // Save edited camera to editor's table
+      // Save edited camera & environment to editor's table
       PinTable *src = m_ptable, *dst = m_pEditorTable;
       dst->m_3DmaxSeparation = src->m_3DmaxSeparation;
+      dst->m_global3DMaxSeparation = src->m_global3DMaxSeparation;
+      dst->m_lightEmissionScale = src->m_lightEmissionScale;
+      dst->m_lightRange = src->m_lightRange;
+      dst->m_lightHeight = src->m_lightHeight;
+      dst->m_envEmissionScale = src->m_envEmissionScale;
       for (int i = 0; i < 3; i++)
       {
          dst->mViewSetups[i] = src->mViewSetups[i];
