@@ -1209,7 +1209,7 @@ HRESULT Player::Init()
    if (m_fullScreen)
       SetWindowPos(nullptr, 0, 0, m_wnd_width, m_wnd_height, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE);
 
-   PLOGI << "Initalizing inputs & implicit objects"; // For profiling
+   PLOGI << "Initializing inputs & implicit objects"; // For profiling
 
    m_pininput.Init(GetHwnd());
 
@@ -1335,7 +1335,7 @@ HRESULT Player::Init()
 
    m_pEditorTable->m_progressDialog.SetProgress(30);
    m_pEditorTable->m_progressDialog.SetName("Initializing Physics..."s);
-   PLOGI << "Initalizing physics"; // For profiling
+   PLOGI << "Initializing physics"; // For profiling
 
    // Initialize new nudging.
    m_tableVel.SetZero();
@@ -1410,7 +1410,7 @@ HRESULT Player::Init()
    m_pEditorTable->m_progressDialog.SetProgress(45);
    m_pEditorTable->m_progressDialog.SetName("Initializing Octree..."s);
    g_pvp->ProfileLog("Octree"s);
-   PLOGI << "Initalizing octree"; // For profiling
+   PLOGI << "Initializing octree"; // For profiling
 
    AddCabinetBoundingHitShapes();
 
@@ -1451,7 +1451,7 @@ HRESULT Player::Init()
          if (FileExists(dir + "used_textures.xml"))
          {
             std::stringstream buffer;
-            std::ifstream myFile(dir + "used_textures.xml"s);
+            std::ifstream myFile(dir + "used_textures.xml");
             buffer << myFile.rdbuf();
             myFile.close();
             auto xml = buffer.str();
@@ -1467,9 +1467,9 @@ HRESULT Player::Init()
                   Texture *tex = m_ptable->GetImage(name);
                   if (tex == nullptr 
                      || node->QueryBoolAttribute("linear", &linearRGB) != tinyxml2::XML_SUCCESS
-                     || node->QueryIntAttribute("clampu", &filter) != tinyxml2::XML_SUCCESS
-                     || node->QueryIntAttribute("clampv", &clampU) != tinyxml2::XML_SUCCESS 
-                     || node->QueryIntAttribute("filter", &clampV) != tinyxml2::XML_SUCCESS
+                     || node->QueryIntAttribute("clampu", &clampU) != tinyxml2::XML_SUCCESS
+                     || node->QueryIntAttribute("clampv", &clampV) != tinyxml2::XML_SUCCESS 
+                     || node->QueryIntAttribute("filter", &filter) != tinyxml2::XML_SUCCESS
                      || node->QueryBoolAttribute("prerender", &preRenderOnly) != tinyxml2::XML_SUCCESS)
                   {
                      PLOGE << "Texture preloading failed for '" << name << "'. Preloading aborted";
@@ -1496,7 +1496,7 @@ HRESULT Player::Init()
    m_pEditorTable->m_progressDialog.SetProgress(60);
    m_pEditorTable->m_progressDialog.SetName("Initializing Renderer..."s);
    g_pvp->ProfileLog("Setup Renderer"s);
-   PLOGI << "Initalizing renderer"; // For profiling
+   PLOGI << "Initializing renderer"; // For profiling
 
    InitShader();
 
@@ -4122,7 +4122,7 @@ void Player::Render()
    m_pin3d.m_pd3dPrimaryDevice->FlushRenderFrame();
    m_frame_submit = usec() - usecTimeStamp;
 
-   // Force queue flushing of the driver. Not sure if it is really of any use nowadays. Anyway this must be done after submiting render commands
+   // (Optionally) force queue flushing of the driver. Can be used to artifically limit latency on DX9 (depends on OS/GFXboard/driver if still useful nowadays). This must be done after submiting render commands
    m_limiter.Execute(m_pin3d.m_pd3dPrimaryDevice);
 
    // DJRobX's crazy latency-reduction code active? Insert some Physics updates before vsync'ing
@@ -5160,7 +5160,7 @@ void Player::StopPlayer()
       std::map<string, bool> prevPreRenderOnly;
       if (m_dynamicMode && FileExists(dir + "used_textures.xml"))
       {
-         std::ifstream myFile(dir + "used_textures.xml"s);
+         std::ifstream myFile(dir + "used_textures.xml");
          std::stringstream buffer;
          buffer << myFile.rdbuf();
          myFile.close();
@@ -5207,7 +5207,7 @@ void Player::StopPlayer()
       tinyxml2::XMLPrinter prn;
       xmlDoc.Print(&prn);
 
-      std::ofstream myfile(dir + "used_textures.xml"s);
+      std::ofstream myfile(dir + "used_textures.xml");
       myfile << prn.CStr();
       myfile.close();
    }
