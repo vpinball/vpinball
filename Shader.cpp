@@ -232,7 +232,7 @@ Shader::ShaderUniform Shader::shaderUniformNames[SHADER_UNIFORM_COUNT] {
    // Flasher Shader
    SHADER_UNIFORM(SUT_Float4, alphaTestValueAB_filterMode_addBlend, 1),
    SHADER_UNIFORM(SUT_Float3, amount_blend_modulate_vs_add_flasherMode, 1),
-   SHADER_SAMPLER(tex_flasher_A, Texture0, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // base texture
+   SHADER_SAMPLER(tex_flasher_A, Texture0, SA_CLAMP, SA_CLAMP, SF_TRILINEAR), // base texture
    SHADER_SAMPLER(tex_flasher_B, Texture1, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // texB
 
    // Post Process Shader
