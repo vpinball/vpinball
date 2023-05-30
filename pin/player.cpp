@@ -5196,7 +5196,7 @@ void Player::StopPlayer()
                   node->SetAttribute("clampu", (int)m_pin3d.m_pd3dPrimaryDevice->m_texMan.GetClampU(memtex));
                   node->SetAttribute("clampv", (int)m_pin3d.m_pd3dPrimaryDevice->m_texMan.GetClampV(memtex));
                   node->SetAttribute("linear", m_pin3d.m_pd3dPrimaryDevice->m_texMan.IsLinearRGB(memtex));
-                  bool preRenderOnly = m_dynamicMode ? (prevPreRenderOnly.contains(image->m_szName) ? prevPreRenderOnly[image->m_szName] : true)
+                  bool preRenderOnly = m_dynamicMode ? (prevPreRenderOnly.find(image->m_szName) != prevPreRenderOnly .end() ? prevPreRenderOnly[image->m_szName] : true)
                                                      : m_pin3d.m_pd3dPrimaryDevice->m_texMan.IsPreRenderOnly(memtex);
                   node->SetAttribute("prerender", preRenderOnly);
                   root->InsertEndChild(node);
