@@ -114,8 +114,6 @@ FEATURES:
 - timers with a -1 interval used to be ran 1 or 2 times per frame (depending on user latency reduction setting). They now are always ran once per frame only.
   timers with a -2 interval are now considered as controller sync timers and will be ran as many time per frame as needed, depending on user settings.
 
-- the script is started and the Init events are now called *before* the static parts are prerendered. This allows a table script to adjust static parts properties on startup.
-
 - A new folder named 'Cache' was added to VPX's main directory for caching data to improve performance. For the time being, it is used to store the list of textures which are used 
   by each table during play, this information allows to preload the needed textures when a table is started, limiting stutters during play.
 

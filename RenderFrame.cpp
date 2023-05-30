@@ -80,6 +80,10 @@ void RenderFrame::Execute(const bool log)
    m_rd->lightShader->m_state->CopyTo(true, m_lightShaderState);
    m_rd->m_ballShader->m_state->CopyTo(true, m_ballShaderState);
 
+   // Clear last render pass to avoid cross frame references
+   for (RenderPass* pass : m_passes)
+      pass->m_rt->m_lastRenderPass = nullptr;
+
    // Sort passes to avoid useless render target switching, and allow merging passes for better draw call sorting/batching
    vector<RenderPass*> sortedPasses;
    sortedPasses.reserve(m_passes.size());
