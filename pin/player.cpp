@@ -1570,19 +1570,6 @@ HRESULT Player::Init()
    m_pEditorTable->m_progressDialog.SetName("Starting Game Scripts..."s);
    PLOGI << "Starting script"; // For profiling
 
-   g_pvp->ProfileLog("Start Scripts"s);
-
-   m_ptable->m_pcv->Start(); // Hook up to events and start cranking script
-
-   // Fire Init event for table object and all 'hitable' parts
-   m_ptable->FireVoidEvent(DISPID_GameEvents_Init);
-   for (size_t i = 0; i < m_vhitables.size(); ++i)
-   {
-      Hitable *const ph = m_vhitables[i];
-      if (ph->GetEventProxyBase())
-         ph->GetEventProxyBase()->FireVoidEvent(DISPID_GameEvents_Init);
-   }
-
    // Pre-render all non-changing elements such as static walls, rails, backdrops, etc. and also static playfield reflections
    // This is done after starting the script and firing the Init event to allow script to adjust static parts on startup
    m_pEditorTable->m_progressDialog.SetName("Prerendering Static Parts..."s);
@@ -1634,6 +1621,19 @@ HRESULT Player::Init()
    SetFocus();
 
    LockForegroundWindow(true);
+
+   g_pvp->ProfileLog("Start Scripts"s);
+
+   m_ptable->m_pcv->Start(); // Hook up to events and start cranking script
+
+   // Fire Init event for table object and all 'hitable' parts
+   m_ptable->FireVoidEvent(DISPID_GameEvents_Init);
+   for (size_t i = 0; i < m_vhitables.size(); ++i)
+   {
+      Hitable *const ph = m_vhitables[i];
+      if (ph->GetEventProxyBase())
+         ph->GetEventProxyBase()->FireVoidEvent(DISPID_GameEvents_Init);
+   }
 
    if (m_detectScriptHang)
       g_pvp->PostWorkToWorkerThread(HANG_SNOOP_START, NULL);
@@ -4421,32 +4421,17 @@ void Player::DrawStatics()
    // - Counter clockwise culling
    // - Write all channels (RGBA + Depth)
    #endif
-
    for (size_t i = 0; i < m_ptable->m_vedit.size(); i++)
-      if (m_ptable->m_vedit[i]->GetItemType() != eItemDecal)
-      {
-         Hitable *const ph = m_ptable->m_vedit[i]->GetIHitable();
-         if (ph)
-            ph->RenderStatic();
-         #ifdef DEBUG
-         m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(true, live_state);
-         assert(initial_state.m_state == live_state.m_state);
-         assert(initial_state.m_depthBias == live_state.m_depthBias);
-         #endif
-      }
-   // Draw decals (they have transparency, so they have to be drawn after the wall they are on)
-   for (size_t i = 0; i < m_ptable->m_vedit.size(); i++)
-      if (m_ptable->m_vedit[i]->GetItemType() == eItemDecal)
-      {
-         Hitable *const ph = m_ptable->m_vedit[i]->GetIHitable();
-         if (ph)
-            ph->RenderStatic();
-         #ifdef DEBUG
-         m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(true, live_state);
-         assert(initial_state.m_state == live_state.m_state);
-         assert(initial_state.m_depthBias == live_state.m_depthBias);
-         #endif
-      }
+   {
+      Hitable *const ph = m_ptable->m_vedit[i]->GetIHitable();
+      if (ph)
+         ph->RenderStatic();
+      #ifdef DEBUG
+      m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(true, live_state);
+      assert(initial_state.m_state == live_state.m_state);
+      assert(initial_state.m_depthBias == live_state.m_depthBias);
+      #endif
+   }
 }
 
 void Player::DrawDynamics(bool onlyBalls)

@@ -35,6 +35,7 @@ void RenderPass::RecycleCommands(std::vector<RenderCommand*>& commandPool)
 
 void RenderPass::AddPrecursor(RenderPass* dependency)
 {
+   assert(this != dependency);
    m_dependencies.push_back(dependency);
 }
 

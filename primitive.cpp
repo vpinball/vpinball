@@ -1262,20 +1262,10 @@ void Primitive::RenderObject()
    }
 
    // Request probes before setting up state
-   RenderProbe *refraction_probe = nullptr;
-   RenderTarget *refractions = nullptr;
-   if (!g_pplayer->IsRenderPass(Player::REFLECTION_PASS)) // Refraction is not supported inside reflection (i.e. do not reflect refracted part)
-   {
-      refraction_probe = m_ptable->GetRenderProbe(m_d.m_szRefractionProbe);
-      refractions = refraction_probe ? refraction_probe->GetProbe(g_pplayer->IsRenderPass(Player::STATIC_PREPASS)) : nullptr;
-   }
-   RenderProbe *reflection_probe = nullptr;
-   RenderTarget *reflections = nullptr;
-   if (m_d.m_reflectionStrength > 0)
-   {
-      reflection_probe = m_ptable->GetRenderProbe(m_d.m_szReflectionProbe);
-      reflections = reflection_probe ? reflection_probe->GetProbe(g_pplayer->IsRenderPass(Player::STATIC_PREPASS)) : nullptr;
-   }
+   RenderProbe * const refraction_probe = m_ptable->GetRenderProbe(m_d.m_szRefractionProbe);
+   RenderTarget * const refractions = refraction_probe ? refraction_probe->GetProbe(g_pplayer->IsRenderPass(Player::STATIC_PREPASS)) : nullptr;
+   RenderProbe *reflection_probe = m_d.m_reflectionStrength <= 0 ? nullptr : m_ptable->GetRenderProbe(m_d.m_szReflectionProbe);
+   RenderTarget *reflections = reflection_probe ? reflection_probe->GetProbe(g_pplayer->IsRenderPass(Player::STATIC_PREPASS)) : nullptr;
 
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
 
@@ -1363,7 +1353,7 @@ void Primitive::RenderObject()
    bool is_reflection_only_pass = false;
 
    // setup for applying reflections from reflection probe
-   if (reflections && m_d.m_reflectionStrength > 0.f)
+   if (reflections)
    {
       pd3dDevice->AddRenderTargetDependency(reflections);
       vec3 plane_normal;
