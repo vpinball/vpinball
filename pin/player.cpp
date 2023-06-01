@@ -4703,7 +4703,7 @@ void Player::DrawBalls()
             m_pin3d.EnableAlphaBlend(false);
 
             m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetTechnique(SHADER_TECHNIQUE_RenderBallTrail);
-            m_pin3d.m_pd3dPrimaryDevice->DrawMesh(m_pin3d.m_pd3dPrimaryDevice->m_ballShader, false, pos, 0.f, m_ballTrailMeshBuffer, RenderDevice::TRIANGLESTRIP, 0, num_rgv3D);
+            m_pin3d.m_pd3dPrimaryDevice->DrawMesh(m_pin3d.m_pd3dPrimaryDevice->m_ballShader, true, pos, 0.f, m_ballTrailMeshBuffer, RenderDevice::TRIANGLESTRIP, 0, num_rgv3D);
          }
       }
 
