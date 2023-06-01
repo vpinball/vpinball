@@ -145,6 +145,8 @@ using std::vector;
 
 #include "idebug.h"
 
+#include "wintimer.h"
+
 #include "eventproxy.h"
 
 #include "worker.h"
@@ -216,8 +218,6 @@ using std::vector;
 #include "plumb.h"
 
 #include "kdtree.h"
-
-#include "wintimer.h"
 
 #include "slintf.h"
 #include "trace.h"

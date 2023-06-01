@@ -677,33 +677,12 @@ public:
 
    // all kinds of stats tracking, incl. FPS measurement
    U64 m_count; // Number of frames included in the total variant of the counters
-   U64 m_total; // Total time corresponding to the m_count frames
    int m_lastMaxChangeTime; // Used to update counters every seconds
-   U64 m_lastTime_usec; // Timestamped marked when updating frmae counters
-   U32 m_lastFrameDuration; // Last frame duration
-   U32 m_avgFrameDuration; // Summed duration of summed frame count (reset on user request)
-   U32 m_avgFrameCount; // Number of frame duration summed up (reset on user request)
-   U32 m_secFrameDuration; // Summed duration of summed frame count (reset once per second)
-   U32 m_secFrameCount; // Number of frame duration summed up (reset once per second)
    float m_fps; // Average number of frames per second, updated once per second
-   U64 m_frame_collect; // Time spent (us) to collect all render commands
-   U64 m_frame_collect_total;
-   U64 m_frame_submit; // Time spent (us) to submit all render commands
-   U64 m_frame_submit_total;
-   U64 m_frame_flip; // Time spent (us) to flip framebuffer
-   U64 m_frame_flip_total;
-   U32 m_max;
-   U32 m_max_total;
-   U32 m_phys_period; // Time spent in physic simulation
-   U64 m_phys_total;
    U64 m_phys_total_iterations;
    U32 m_phys_max_iterations;
    U32 m_phys_max;
-   U32 m_phys_max_total;
-   U32 m_script_period; // Time spent in script timers. TODO for the time being the time spent in events is not taken in account, making this counter misleading
-   U64 m_script_total;
    U32 m_script_max;
-   U32 m_script_max_total;
 
 private:
    FrameQueueLimiter m_limiter;

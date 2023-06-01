@@ -862,8 +862,8 @@ void LiveUI::Update()
       ImGui::SetNextWindowBgAlpha(0.75f);
       ImGui::SetNextWindowPos(ImVec2(10, 10 + m_menubar_height + m_toolbar_height));
       ImGui::Begin("FPS", nullptr, window_flags);
-      const float fpsAvg = (m_player->m_avgFrameDuration == 0) ? 0.0f : ((float)((double)1000000.0 * m_player->m_avgFrameCount / m_player->m_avgFrameDuration));
-      ImGui::Text("FPS: %.1f (%.1f %5.1fms avg)", m_player->m_fps + 0.01f, fpsAvg + 0.01f, 1000.0f / (fpsAvg + 0.01f));
+      ImGui::Text("FPS: %.1f (%.1f %5.1fms avg)", 1e6 / g_frameProfiler.GetPrev(FrameProfiler::PROFILE_FRAME), 1e6 / g_frameProfiler.GetAvg(FrameProfiler::PROFILE_FRAME),
+         1e-3 * g_frameProfiler.GetAvg(FrameProfiler::PROFILE_FRAME));
       ImGui::End();
    }
    if (m_show_fps == 2)
@@ -880,10 +880,10 @@ void LiveUI::Update()
       static double t = 0.;
       t += ImGui::GetIO().DeltaTime;
 
-      sdata6.AddPoint((float)t, float(1e-3 * m_player->m_script_period) * 1.f);
+      sdata6.AddPoint((float)t, float(1e-3 * g_frameProfiler.GetPrev(FrameProfiler::PROFILE_SCRIPT)) * 1.f);
       sdata5.AddPoint((float)t, sdata5.GetLast().y * 0.95f + sdata6.GetLast().y * 0.05f);
 
-      sdata4.AddPoint((float)t, float(1e-3 * (m_player->m_phys_period - m_player->m_script_period)) * 5.f);
+      sdata4.AddPoint((float)t, float(1e-3 * g_frameProfiler.GetPrev(FrameProfiler::PROFILE_PHYSICS)) * 5.f);
       sdata3.AddPoint((float)t, sdata3.GetLast().y * 0.95f + sdata4.GetLast().y * 0.05f);
 
       sdata2.AddPoint((float)t, m_player->m_fps * 0.003f);
@@ -1953,7 +1953,7 @@ void LiveUI::UpdateRendererInspectionModal()
       // Main frame timing table
       if (ImGui::BeginTable("Timings", 6, ImGuiTableFlags_Borders))
       {
-         const U32 period = m_player->m_lastFrameDuration;
+         const U32 period = g_frameProfiler.GetPrev(FrameProfiler::PROFILE_FRAME);
          ImGui::TableSetupColumn("##Cat", ImGuiTableColumnFlags_WidthFixed);
          ImGui::TableSetupColumn("Time", ImGuiTableColumnFlags_WidthFixed);
          ImGui::TableSetupColumn("Ratio", ImGuiTableColumnFlags_WidthFixed);
@@ -1962,87 +1962,31 @@ void LiveUI::UpdateRendererInspectionModal()
          ImGui::TableSetupColumn("Additional informations", ImGuiTableColumnFlags_WidthStretch);
          ImGui::TableHeadersRow();
 
-         // Overall frame timing
-         const float fpsAvg = m_player->m_avgFrameDuration == 0 ? 0.0f : ((float)((double)1000000.0 * m_player->m_avgFrameCount / m_player->m_avgFrameDuration));
-         // info << "Overall: " << (float(1e-3 * m_max)) << "ms max (last second), " << (float(1e-3 * m_max_total)) << "ms max\n";
-         ImGui::TableNextColumn();
-         ImGui::Text("Frame");
-         ImGui::TableNextColumn();
-         ImGui::Text("%4.1fms", 1000.0f / (m_player->m_fps + 0.01f));
-         ImGui::TableNextColumn();
-         ImGui::Text("100.0%%");
-         ImGui::TableNextColumn();
-         ImGui::Text("%4.1fms", 1000.0f / (fpsAvg + 0.01f));
-         ImGui::TableNextColumn();
-         ImGui::Text("100.0%%");
-         ImGui::TableNextColumn();
-         ImGui::Text("FPS: %4.1f (%4.1f average)", m_player->m_fps, fpsAvg);
-         ImGui::TableNextRow();
-         // Renderer command collect timing
-         ImGui::TableNextColumn();
-         ImGui::Text("> Collect");
-         ImGui::TableNextColumn();
-         ImGui::Text("%4.1fms", 1e-3 * m_player->m_frame_collect);
-         ImGui::TableNextColumn();
-         ImGui::Text("%4.1f%%", m_player->m_frame_collect * 100.0 / period);
-         ImGui::TableNextColumn();
-         ImGui::Text("%4.1fms", 1e-3 * (double)m_player->m_frame_collect_total / (double)m_player->m_count);
-         ImGui::TableNextColumn();
-         ImGui::Text("%4.1f%%", (double)m_player->m_frame_collect_total * 100.0 / (double)m_player->m_total);
-         ImGui::TableNextRow();
-         // Renderer command submit timing
-         ImGui::TableNextColumn();
-         ImGui::Text("> Submit");
-         ImGui::TableNextColumn();
-         ImGui::Text("%4.1fms", 1e-3 * m_player->m_frame_submit);
-         ImGui::TableNextColumn();
-         ImGui::Text("%4.1f%%", m_player->m_frame_submit * 100.0 / period);
-         ImGui::TableNextColumn();
-         ImGui::Text("%4.1fms", 1e-3 * (double)m_player->m_frame_submit_total / (double)m_player->m_count);
-         ImGui::TableNextColumn();
-         ImGui::Text("%4.1f%%", (double)m_player->m_frame_submit_total * 100.0 / (double)m_player->m_total);
-         ImGui::TableNextRow();
-         // Renderer frame flip timing
-         ImGui::TableNextColumn();
-         ImGui::Text("> Flip");
-         ImGui::TableNextColumn();
-         ImGui::Text("%4.1fms", 1e-3 * m_player->m_frame_flip);
-         ImGui::TableNextColumn();
-         ImGui::Text("%4.1f%%", m_player->m_frame_flip * 100.0 / period);
-         ImGui::TableNextColumn();
-         ImGui::Text("%4.1fms", 1e-3 * (double)m_player->m_frame_flip_total / (double)m_player->m_count);
-         ImGui::TableNextColumn();
-         ImGui::Text("%4.1f%%", (double)m_player->m_frame_flip_total * 100.0 / (double)m_player->m_total);
-         ImGui::TableNextRow();
-         // Physics timing
-         U32 frame_phys = m_player->m_phys_period - m_player->m_script_period;
-         ImGui::TableNextColumn();
-         ImGui::Text("> Physics");
-         ImGui::TableNextColumn();
-         ImGui::Text("%4.1fms", 1e-3 * frame_phys);
-         ImGui::TableNextColumn();
-         ImGui::Text("%4.1f%%", frame_phys * 100.0 / period);
-         ImGui::TableNextColumn();
-         ImGui::Text("%4.1fms", 1e-3 * (double) m_player->m_phys_total / (double) m_player->m_count);
-         ImGui::TableNextColumn();
-         ImGui::Text("%4.1f%%", (double)m_player->m_phys_total * 100.0 / (double)m_player->m_total);
-         ImGui::TableNextColumn();
-         ImGui::Text("Max: %4.1fms (over last second), %4.1fms", 1e-3 * m_player->m_phys_max, 1e-3 * m_player->m_phys_max_total);
-         ImGui::TableNextRow();
-         // Script timing
-         ImGui::TableNextColumn();
-         ImGui::Text("> Timers");
-         ImGui::TableNextColumn();
-         ImGui::Text("%4.1fms", 1e-3 * m_player->m_script_period);
-         ImGui::TableNextColumn();
-         ImGui::Text("%4.1f%%", m_player->m_script_period * 100.0 / period);
-         ImGui::TableNextColumn();
-         ImGui::Text("%4.1fms", 1e-3 * (double)m_player->m_script_total / (double)m_player->m_count);
-         ImGui::TableNextColumn();
-         ImGui::Text("%4.1f%%", (double)m_player->m_script_total * 100.0 / (double)m_player->m_total);
-         ImGui::TableNextColumn();
-         ImGui::Text("Max: %4.1fms (over last second), %4.1fms", 1e-3 * m_player->m_script_max, 1e-3 * m_player->m_script_max_total);
-         ImGui::TableNextRow();
+         #define PROF_ROW(name, section) \
+         ImGui::TableNextColumn(); ImGui::Text(name); \
+         ImGui::TableNextColumn(); ImGui::Text("%4.1fms", g_frameProfiler.GetPrev(section) * 1e-3); \
+         ImGui::TableNextColumn(); ImGui::Text("%4.1f%%", g_frameProfiler.GetPrev(section) * 100.0 / period); \
+         ImGui::TableNextColumn(); ImGui::Text("%4.1fms", g_frameProfiler.GetAvg(section) * 1e-3); \
+         ImGui::TableNextColumn(); ImGui::Text("%4.1f%%", g_frameProfiler.GetRatio(section) * 100.0);
+
+         PROF_ROW("Frame", FrameProfiler::PROFILE_FRAME) ImGui::TableNextColumn();
+         ImGui::Text("FPS: %4.1f (%4.1f average)", 1e6 / g_frameProfiler.GetPrev(FrameProfiler::PROFILE_FRAME), 1e6 / g_frameProfiler.GetAvg(FrameProfiler::PROFILE_FRAME)); ImGui::TableNextRow();
+         PROF_ROW("> Collect", FrameProfiler::PROFILE_GPU_COLLECT); ImGui::TableNextRow();
+         PROF_ROW("> Submit", FrameProfiler::PROFILE_GPU_SUBMIT); ImGui::TableNextRow();
+         PROF_ROW("> Flip", FrameProfiler::PROFILE_GPU_FLIP); ImGui::TableNextRow();
+         PROF_ROW("> Physics", FrameProfiler::PROFILE_PHYSICS); ImGui::TableNextColumn();
+         ImGui::Text("Max: %4.1fms (over last second), %4.1fms", 1e-3 * m_player->m_phys_max, 1e-3 * g_frameProfiler.GetMax(FrameProfiler::PROFILE_PHYSICS)); ImGui::TableNextRow();
+         PROF_ROW("> Script", FrameProfiler::PROFILE_SCRIPT); ImGui::TableNextColumn();
+         ImGui::Text("Max: %4.1fms (over last second), %4.1fms", 1e-3 * m_player->m_script_max, 1e-3 * g_frameProfiler.GetMax(FrameProfiler::PROFILE_SCRIPT)); ImGui::TableNextRow();
+         PROF_ROW("> Misc", FrameProfiler::PROFILE_MISC); ImGui::TableNextRow();
+         PROF_ROW("> Sleep", FrameProfiler::PROFILE_SLEEP); ImGui::TableNextRow();
+         #ifdef DEBUG
+         PROF_ROW("> Debug #1", FrameProfiler::PROFILE_CUSTOM1); ImGui::TableNextRow();
+         PROF_ROW("> Debug #2", FrameProfiler::PROFILE_CUSTOM2); ImGui::TableNextRow();
+         PROF_ROW("> Debug #3", FrameProfiler::PROFILE_CUSTOM3); ImGui::TableNextRow();
+         #endif
+
+         #undef PROF_ROW
 
          ImGui::EndTable();
 
