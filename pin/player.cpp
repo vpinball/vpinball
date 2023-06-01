@@ -4629,65 +4629,68 @@ void Player::DrawBalls()
 
             if ((pball->m_oldpos[i3].x != FLT_MAX) && (pball->m_oldpos[io].x != FLT_MAX)) // only if already initialized
             {
-               const Vertex3Ds vec(pball->m_oldpos[io].x - pball->m_oldpos[i3].x, pball->m_oldpos[io].y - pball->m_oldpos[i3].y, pball->m_oldpos[io].z - pball->m_oldpos[i3].z);
+               Vertex3Ds vec(pball->m_oldpos[io].x - pball->m_oldpos[i3].x, pball->m_oldpos[io].y - pball->m_oldpos[i3].y, pball->m_oldpos[io].z - pball->m_oldpos[i3].z);
                const float bc = m_ptable->m_ballTrailStrength * powf(1.f - 1.f / max(vec.Length(), 1.0f), 64.0f); //!! 64=magic alpha falloff
                const float r = min(pball->m_d.m_radius*0.9f, 2.0f*pball->m_d.m_radius / powf((float)(i2 + 2), 0.6f)); //!! consts are for magic radius falloff
 
                if (bc > 0.f && r > FLT_MIN)
                {
-                  Vertex3Ds v = vec;
-                  v.Normalize();
-                  const Vertex3Ds up(0.f, 0.f, 1.f);
-                  const Vertex3Ds n = CrossProduct(v, up) * r;
-
-                  Vertex3D_NoTex2 rgv3D[4];
-                  rgv3D[0].x = pball->m_oldpos[i3].x - n.x;
-                  rgv3D[0].y = pball->m_oldpos[i3].y - n.y;
-                  rgv3D[0].z = pball->m_oldpos[i3].z - n.z;
-                  rgv3D[1].x = pball->m_oldpos[i3].x + n.x;
-                  rgv3D[1].y = pball->m_oldpos[i3].y + n.y;
-                  rgv3D[1].z = pball->m_oldpos[i3].z + n.z;
-                  rgv3D[2].x = pball->m_oldpos[io].x + n.x;
-                  rgv3D[2].y = pball->m_oldpos[io].y + n.y;
-                  rgv3D[2].z = pball->m_oldpos[io].z + n.z;
-                  rgv3D[3].x = pball->m_oldpos[io].x - n.x;
-                  rgv3D[3].y = pball->m_oldpos[io].y - n.y;
-                  rgv3D[3].z = pball->m_oldpos[io].z - n.z;
-
-                  rgv3D[0].nx = rgv3D[1].nx = rgv3D[2].nx = rgv3D[3].nx = bc; //!! abuses normal for now for the color/alpha
-
-                  rgv3D[0].tu = 0.5f + (float)(i2)*(float)(1.0 / (2.0*(MAX_BALL_TRAIL_POS - 1)));
-                  rgv3D[0].tv = 0.f;
-                  rgv3D[1].tu = rgv3D[0].tu;
-                  rgv3D[1].tv = 1.f;
-                  rgv3D[2].tu = 0.5f + (float)(i2 + 1)*(float)(1.0 / (2.0*(MAX_BALL_TRAIL_POS - 1)));
-                  rgv3D[2].tv = 1.f;
-                  rgv3D[3].tu = rgv3D[2].tu;
-                  rgv3D[3].tv = 0.f;
-
-                  if (num_rgv3D == 0)
+                  float ls = vec.LengthSquared();
+                  if (ls > 1e-5)
                   {
-                     rgv3D_all[0] = rgv3D[0];
-                     rgv3D_all[1] = rgv3D[1];
-                     rgv3D_all[2] = rgv3D[3];
-                     rgv3D_all[3] = rgv3D[2];
-                  }
-                  else
-                  {
-                     rgv3D_all[num_rgv3D - 2].x = (rgv3D[0].x + rgv3D_all[num_rgv3D - 2].x)*0.5f;
-                     rgv3D_all[num_rgv3D - 2].y = (rgv3D[0].y + rgv3D_all[num_rgv3D - 2].y)*0.5f;
-                     rgv3D_all[num_rgv3D - 2].z = (rgv3D[0].z + rgv3D_all[num_rgv3D - 2].z)*0.5f;
-                     rgv3D_all[num_rgv3D - 1].x = (rgv3D[1].x + rgv3D_all[num_rgv3D - 1].x)*0.5f;
-                     rgv3D_all[num_rgv3D - 1].y = (rgv3D[1].y + rgv3D_all[num_rgv3D - 1].y)*0.5f;
-                     rgv3D_all[num_rgv3D - 1].z = (rgv3D[1].z + rgv3D_all[num_rgv3D - 1].z)*0.5f;
-                     rgv3D_all[num_rgv3D] = rgv3D[3];
-                     rgv3D_all[num_rgv3D + 1] = rgv3D[2];
-                  }
+                     vec *= 1.0f / sqrt(ls);
+                     const Vertex3Ds up(0.f, 0.f, 1.f);
+                     const Vertex3Ds n = CrossProduct(vec, up) * r;
 
-                  if (num_rgv3D == 0)
-                     num_rgv3D += 4;
-                  else
-                     num_rgv3D += 2;
+                     Vertex3D_NoTex2 rgv3D[4];
+                     rgv3D[0].x = pball->m_oldpos[i3].x - n.x;
+                     rgv3D[0].y = pball->m_oldpos[i3].y - n.y;
+                     rgv3D[0].z = pball->m_oldpos[i3].z - n.z;
+                     rgv3D[1].x = pball->m_oldpos[i3].x + n.x;
+                     rgv3D[1].y = pball->m_oldpos[i3].y + n.y;
+                     rgv3D[1].z = pball->m_oldpos[i3].z + n.z;
+                     rgv3D[2].x = pball->m_oldpos[io].x + n.x;
+                     rgv3D[2].y = pball->m_oldpos[io].y + n.y;
+                     rgv3D[2].z = pball->m_oldpos[io].z + n.z;
+                     rgv3D[3].x = pball->m_oldpos[io].x - n.x;
+                     rgv3D[3].y = pball->m_oldpos[io].y - n.y;
+                     rgv3D[3].z = pball->m_oldpos[io].z - n.z;
+
+                     rgv3D[0].nx = rgv3D[1].nx = rgv3D[2].nx = rgv3D[3].nx = bc; //!! abuses normal for now for the color/alpha
+
+                     rgv3D[0].tu = 0.5f + (float)(i2) * (float)(1.0 / (2.0 * (MAX_BALL_TRAIL_POS - 1)));
+                     rgv3D[0].tv = 0.f;
+                     rgv3D[1].tu = rgv3D[0].tu;
+                     rgv3D[1].tv = 1.f;
+                     rgv3D[2].tu = 0.5f + (float)(i2 + 1) * (float)(1.0 / (2.0 * (MAX_BALL_TRAIL_POS - 1)));
+                     rgv3D[2].tv = 1.f;
+                     rgv3D[3].tu = rgv3D[2].tu;
+                     rgv3D[3].tv = 0.f;
+
+                     if (num_rgv3D == 0)
+                     {
+                        rgv3D_all[0] = rgv3D[0];
+                        rgv3D_all[1] = rgv3D[1];
+                        rgv3D_all[2] = rgv3D[3];
+                        rgv3D_all[3] = rgv3D[2];
+                     }
+                     else
+                     {
+                        rgv3D_all[num_rgv3D - 2].x = (rgv3D[0].x + rgv3D_all[num_rgv3D - 2].x) * 0.5f;
+                        rgv3D_all[num_rgv3D - 2].y = (rgv3D[0].y + rgv3D_all[num_rgv3D - 2].y) * 0.5f;
+                        rgv3D_all[num_rgv3D - 2].z = (rgv3D[0].z + rgv3D_all[num_rgv3D - 2].z) * 0.5f;
+                        rgv3D_all[num_rgv3D - 1].x = (rgv3D[1].x + rgv3D_all[num_rgv3D - 1].x) * 0.5f;
+                        rgv3D_all[num_rgv3D - 1].y = (rgv3D[1].y + rgv3D_all[num_rgv3D - 1].y) * 0.5f;
+                        rgv3D_all[num_rgv3D - 1].z = (rgv3D[1].z + rgv3D_all[num_rgv3D - 1].z) * 0.5f;
+                        rgv3D_all[num_rgv3D] = rgv3D[3];
+                        rgv3D_all[num_rgv3D + 1] = rgv3D[2];
+                     }
+
+                     if (num_rgv3D == 0)
+                        num_rgv3D += 4;
+                     else
+                        num_rgv3D += 2;
+                  }
                }
             }
          }
