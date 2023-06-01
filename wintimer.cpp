@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include <time.h>
 
+FrameProfiler g_frameProfiler;
+
 //#define USE_LOWLEVEL_PRECISION_SETTING // does allow to pick lower windows timer resolutions than 1ms (usually 0.5ms as of win10/2020) via undocumented API calls, BUT lead to sound distortion on some setups in PinMAME, so also disable it in VPX for now
 
 #ifdef USE_LOWLEVEL_PRECISION_SETTING

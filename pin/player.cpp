@@ -831,32 +831,18 @@ void Player::Shutdown()
 
 void Player::InitFPS()
 {
-   m_avgFrameDuration = 0;
-   m_avgFrameCount = 0;
-   m_secFrameDuration = 0;
-   m_secFrameCount = 0;
    m_fps = 0.f;
 
-   m_frame_collect_total = 0;
-   m_frame_submit_total = 0;
-   m_frame_flip_total = 0;
-
-   m_total = 0;
    m_count = 0;
-   m_max = 0;
-   m_max_total = 0;
    m_lastMaxChangeTime = 0;
-   m_lastTime_usec = 0;
 
-   m_phys_total = 0;
    m_phys_max = 0;
-   m_phys_max_total = 0;
    m_phys_max_iterations = 0;
    m_phys_total_iterations = 0;
 
-   m_script_total = 0;
    m_script_max = 0;
-   m_script_max_total = 0;
+
+   g_frameProfiler.Reset();
 }
 
 InfoMode Player::GetInfoMode() const {
@@ -2608,6 +2594,7 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 
 void Player::UpdatePhysics()
 {
+   g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_PHYSICS);
    U64 initial_time_usec = usec();
 
    // DJRobX's crazy latency-reduction code
@@ -2657,8 +2644,6 @@ void Player::UpdatePhysics()
    else
       initial_time_usec = m_curPhysicsFrameTime;
 #endif
-
-   m_script_period = 0;
 
 #ifdef LOG
    const double timepassed = (double)(initial_time_usec - m_curPhysicsFrameTime) / 1000000.0;
@@ -2714,12 +2699,18 @@ void Player::UpdatePhysics()
          // If we're 3/4 of the way through the loop, fire a "controller sync" timer (timers with an interval set to -2) event so VPM can react to input.
          if (m_phys_iterations == 750 / ((int)m_fps + 1))
          {
+            g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_SCRIPT);
             for (HitTimer *const pht : m_vht)
                if (pht->m_interval == -2)
                   pht->m_pfe->FireGroupEvent(DISPID_TimerEvents_Timer);
+            g_frameProfiler.ExitProfileSection();
          }
          if (basetime < targettime)
+         {
+            g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_SLEEP);
             uSleep(targettime - basetime);
+            g_frameProfiler.ExitProfileSection();
+         }
       }
       // end DJRobX's crazy code
       const U64 cur_time_usec = usec()-delta_frame; //!! one could also do this directly in the while loop condition instead (so that the while loop will really match with the current time), but that leads to some stuttering on some heavy frames
@@ -2761,10 +2752,11 @@ void Player::UpdatePhysics()
       Ball * const old_pactiveball = m_pactiveball;
       m_pactiveball = nullptr; // No ball is the active ball for timers/key events
 
-      if(m_script_period <= 1000*MAX_TIMERS_MSEC_OVERALL) // if overall script time per frame exceeded, skip
+      if (g_frameProfiler.Get(FrameProfiler::PROFILE_SCRIPT) <= 1000 * MAX_TIMERS_MSEC_OVERALL) // if overall script time per frame exceeded, skip
       {
          const unsigned int p_timeCur = (unsigned int)((m_curPhysicsFrameTime - m_StartTime_usec) / 1000); // milliseconds
 
+         g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_SCRIPT);
          for (size_t i = 0; i < m_vht.size(); i++)
          {
             HitTimer * const pht = m_vht[i];
@@ -2781,8 +2773,7 @@ void Player::UpdatePhysics()
                   pht->m_nextfire += pht->m_interval;
             }
          }
-
-         m_script_period += (unsigned int)(usec() - (cur_time_usec+delta_frame));
+         g_frameProfiler.ExitProfileSection();
       }
 
       m_pactiveball = old_pactiveball;
@@ -2856,7 +2847,7 @@ void Player::UpdatePhysics()
       m_nextPhysicsFrameTime += PHYSICS_STEPTIME;     // advance physics position
    } // end while (m_curPhysicsFrameTime < initial_time_usec)
 
-   m_phys_period = (U32)((usec() - delta_frame) - initial_time_usec);
+   g_frameProfiler.ExitProfileSection();
 }
 
 void Player::DMDdraw(const float DMDposx, const float DMDposy, const float DMDwidth, const float DMDheight, const COLORREF DMDcolor, const float intensity)
@@ -3014,6 +3005,7 @@ void Player::DrawBulbLightBuffer()
 
 void Player::RenderDynamics()
 {
+   PROFILE_FUNCTION(FrameProfiler::PROFILE_GPU_COLLECT);
    TRACE_FUNCTION();
 
    // Mark all probes to be re-rendered for this frame (only if needed, lazily rendered)
@@ -3033,7 +3025,7 @@ void Player::RenderDynamics()
    #endif
 
    // Update ball pos uniforms
-#define MAX_BALL_SHADOW 8
+   #define MAX_BALL_SHADOW 8
    vec4 balls[MAX_BALL_SHADOW];
    int p = 0;
    for (size_t i = 0; i < m_vball.size() && p < MAX_BALL_SHADOW; i++)
@@ -3357,69 +3349,29 @@ string Player::GetPerfInfo()
    lastUpdate = now;
    std::ostringstream info;
    info << std::fixed << std::setprecision(1);
-   const float fpsAvg = (m_avgFrameDuration == 0) ? 0.0f : ((float)((double)1000000.0 * m_avgFrameCount / m_avgFrameDuration));
-   const U32 period = m_lastFrameDuration;
-   if (period > m_max || m_time_msec - m_lastMaxChangeTime > 1000)
-      m_max = period;
-   if (period > m_max_total && period < 100000)
-      m_max_total = period;
 
-   if (m_phys_period - m_script_period > m_phys_max || m_time_msec - m_lastMaxChangeTime > 1000)
-      m_phys_max = m_phys_period - m_script_period;
-   if (m_phys_period - m_script_period > m_phys_max_total)
-      m_phys_max_total = m_phys_period - m_script_period;
+   if (g_frameProfiler.GetPrev(FrameProfiler::PROFILE_PHYSICS) > m_phys_max || m_time_msec - m_lastMaxChangeTime > 1000)
+      m_phys_max = g_frameProfiler.GetPrev(FrameProfiler::PROFILE_PHYSICS);
 
    if (m_phys_iterations > m_phys_max_iterations || m_time_msec - m_lastMaxChangeTime > 1000)
       m_phys_max_iterations = m_phys_iterations;
 
-   if (m_script_period > m_script_max || m_time_msec - m_lastMaxChangeTime > 1000)
-      m_script_max = m_script_period;
-   if (m_script_period > m_script_max_total)
-      m_script_max_total = m_script_period;
+   if (g_frameProfiler.GetPrev(FrameProfiler::PROFILE_SCRIPT) > m_script_max || m_time_msec - m_lastMaxChangeTime > 1000)
+      m_script_max = g_frameProfiler.GetPrev(FrameProfiler::PROFILE_SCRIPT);
 
    if (m_time_msec - m_lastMaxChangeTime > 1000)
       m_lastMaxChangeTime = m_time_msec;
 
    if (m_count == 0)
    {
-      m_total = period;
-      m_phys_total = m_phys_period - m_script_period;
       m_phys_total_iterations = m_phys_iterations;
-      m_script_total = m_script_period;
-      m_frame_collect_total = m_frame_collect;
-      m_frame_submit_total = m_frame_submit;
-      m_frame_flip_total = m_frame_flip;
       m_count = 1;
    }
    else
    {
-      m_total += period;
-      m_phys_total += m_phys_period - m_script_period;
       m_phys_total_iterations += m_phys_iterations;
-      m_script_total += m_script_period;
-      m_frame_collect_total += m_frame_collect;
-      m_frame_submit_total += m_frame_submit;
-      m_frame_flip_total += m_frame_flip;
       m_count++;
    }
-
-   // Overall frame informations (disbaled since it is now displayed in a cleaner ImGui table)
-   /*
-   info << std::fixed << std::setw(4) << std::setprecision(1);
-   info << "Frame: " << (1000.0f / (m_fps + 0.01f)) << "ms [Average: " << (1000.0f / (fpsAvg + 0.01f)) << "ms], FPS: " << (m_fps + 0.01f) << " [Average: " << (fpsAvg + 0.01f)
-        << "]\n";
-   info << "Overall: " << (float(1e-3 * m_max)) << "ms max (last second), " << (float(1e-3 * period)) << "ms, " 
-        << (float(1e-3 * (double)m_total / (double)m_count)) << "ms avg, " << (float(1e-3 * m_max_total)) << "ms max\n";
-   info << "> Collect: " << float((m_frame_collect) * 100.0 / period) << "%%, " << (float(1e-3 * (m_frame_collect))) << "ms\n";
-   info << "> Submit:  " << float((m_frame_submit)*100.0 / period) << "%%, " << (float(1e-3 * (m_frame_submit))) << "ms\n";
-   info << "> Flip:    " << float((m_frame_flip)*100.0 / period) << "%%, " << (float(1e-3 * (m_frame_flip))) << "ms\n";
-   info << "> Physics: " << float((m_phys_period - m_script_period) * 100.0 / period) << "%%, " << (float(1e-3 * (m_phys_period - m_script_period))) << "ms, "
-        << (float(1e-3 * (double)m_phys_total / (double)m_count)) << "ms avg, " << (float(1e-3 * m_phys_max)) << "ms max (last second), " 
-        << (float((double)m_phys_total * 100.0 / (double)m_total)) << "%% avg, " << (float(1e-3 * m_phys_max_total)) << "ms max\n";
-   info << "> Script:    " << (float(m_script_period * 100.0 / period)) << "%%, " << (float(1e-3 * m_script_period)) << "ms, "
-        << (float(1e-3 * (double)m_script_total / (double)m_count)) << "ms avg, " << (float(1e-3 * m_script_max)) << "ms max (last second), "
-        << (float((double)m_script_total * 100.0 / (double)m_total)) << "%% avg, " << (float(1e-3 * m_script_max_total)) << "ms max\n";
-   info << "\n";*/
 
    // Renderer additional informations
    info << "Triangles: " << ((m_pin3d.m_pd3dPrimaryDevice->m_frameDrawnTriangles + 999) / 1000) << "k per frame, "
@@ -3432,7 +3384,7 @@ string Player::GetPerfInfo()
    info << "Objects: " << (unsigned int)m_vhitables.size() << "\n";
    info << "\n";
 
-   // Physics addtional informations
+   // Physics additional informations
    info << "Physics: " << m_phys_iterations << " iterations per frame (" << ((U32)(m_phys_total_iterations / m_count)) << " avg " << m_phys_max_iterations
         << " max)    Ball Velocity / Ang.Vel.: " << (m_pactiveball ? (m_pactiveball->m_d.m_vel + (float)PHYS_FACTOR * m_gravity).Length() : -1.f) << " "
         << (m_pactiveball ? (m_pactiveball->m_angularmomentum / m_pactiveball->Inertia()).Length() : -1.f) << "\n";
@@ -3647,7 +3599,9 @@ void Player::PrepareVideoBuffersNormal()
 void Player::FlipVideoBuffers(const bool vsync)
 {
    // display frame
+   g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_GPU_FLIP);
    m_pin3d.m_pd3dPrimaryDevice->Flip(vsync);
+   g_frameProfiler.ExitProfileSection();
    
    // switch to texture output buffer again
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTextureNull(SHADER_tex_fb_filtered);
@@ -3960,6 +3914,9 @@ void Player::LockForegroundWindow(const bool enable)
 
 void Player::Render()
 {
+   // Collect stats from previous frame and starts profiling a new frame
+   g_frameProfiler.NewFrame();
+
    // Rendering outputs to m_pd3dPrimaryDevice->GetBackBufferTexture(). If MSAA is used, it is resolved as part of the rendering (i.e. this surface is NOT the MSAA rneder surface but its resolved copy)
    // Then it is tonemapped/bloom/dither/... to m_pd3dPrimaryDevice->GetPostProcessRenderTarget1() if needed for postprocessing (sharpen, FXAA,...), or directly to the main output framebuffer otherwise
    // The optional postprocessing is done from m_pd3dPrimaryDevice->GetPostProcessRenderTarget1() to the main output framebuffer
@@ -4080,9 +4037,7 @@ void Player::Render()
       m_pin3d.InitLayout();
 
    if (GetInfoMode() != IF_STATIC_ONLY)
-   {
       RenderDynamics();
-   }
 
    // Resolve MSAA buffer to a normal one (noop if not using MSAA), allowing sampling it for postprocessing
    m_pin3d.m_pd3dPrimaryDevice->ResolveMSAA();
@@ -4092,35 +4047,19 @@ void Player::Render()
    // Check if we should turn animate the plunger light.
    hid_set_output(HID_OUTPUT_PLUNGER, ((m_time_msec - m_LastPlungerHit) < 512) && ((m_time_msec & 512) > 0));
 
-   int localvsync = (m_ptable->m_TableAdaptiveVSync == -1) ? m_VSync : m_ptable->m_TableAdaptiveVSync;
-   if (localvsync > m_refreshrate) // cannot sync, just limit to selected framerate
-      localvsync = 0;
-#ifdef ENABLE_SDL
-   else if (localvsync == 2) // adaptive sync to refresh rate handled by SDL_GL_SetSwapInterval
-      localvsync = 0;
-#endif
-   else if (localvsync > 1) // adaptive sync to refresh rate
-      localvsync = m_refreshrate;
-
-   bool vsync = false;
-   if (localvsync > 0)
-      if (localvsync != 1) // do nothing for 1, as already enforced during device set
-         if (m_fps > localvsync*ADAPT_VSYNC_FACTOR)
-            vsync = true;
-
+   g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_GPU_COLLECT);
    if (GetAOMode() == 2)
       PrepareVideoBuffersAO();
    else
       PrepareVideoBuffersNormal();
+   g_frameProfiler.ExitProfileSection();
 
    m_liveUI->Update();
    m_pin3d.m_pd3dPrimaryDevice->RenderLiveUI();
 
-   m_frame_collect = usec() - usecTimeStamp;
-
-   usecTimeStamp = usec();
+   g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_GPU_SUBMIT);
    m_pin3d.m_pd3dPrimaryDevice->FlushRenderFrame();
-   m_frame_submit = usec() - usecTimeStamp;
+   g_frameProfiler.ExitProfileSection();
 
    // (Optionally) force queue flushing of the driver. Can be used to artifically limit latency on DX9 (depends on OS/GFXboard/driver if still useful nowadays). This must be done after submiting render commands
    m_limiter.Execute(m_pin3d.m_pd3dPrimaryDevice);
@@ -4133,30 +4072,29 @@ void Player::Render()
    }
 
    usecTimeStamp = usec();
+   int localvsync = (m_ptable->m_TableAdaptiveVSync == -1) ? m_VSync : m_ptable->m_TableAdaptiveVSync;
+   if (localvsync > m_refreshrate) // cannot sync, just limit to selected framerate
+      localvsync = 0;
+   #ifdef ENABLE_SDL
+   else if (localvsync == 2) // adaptive sync to refresh rate handled by SDL_GL_SetSwapInterval
+      localvsync = 0;
+   #endif
+   else if (localvsync > 1) // adaptive sync to refresh rate
+      localvsync = m_refreshrate;
+
+   bool vsync = false;
+   if (localvsync > 0)
+      if (localvsync != 1) // do nothing for 1, as already enforced during device set
+         if (m_fps > localvsync*ADAPT_VSYNC_FACTOR)
+            vsync = true;
+
    FlipVideoBuffers(vsync);
-   m_frame_flip = usec() - usecTimeStamp;
 
    if (GetProfilingMode() != PF_DISABLED)
       m_pin3d.m_gpu_profiler.EndFrame();
 
    // Update FPS counter
-   m_lastFrameDuration = (U32)(usecTimeStamp - m_lastTime_usec);
-   if (m_lastFrameDuration > 1000000)
-      m_lastFrameDuration = 0;
-   else
-   {
-      m_avgFrameDuration += m_lastFrameDuration;
-      m_avgFrameCount++;
-      m_secFrameDuration += m_lastFrameDuration;
-      m_secFrameCount ++;
-      if (m_secFrameDuration > 1000000)
-      {
-         m_fps = (float)((double)1000000.0 * m_secFrameCount / m_secFrameDuration);
-         m_secFrameCount = 0;
-         m_secFrameDuration = 0;
-      }
-   }
-   m_lastTime_usec = usecTimeStamp;
+   m_fps = (float) (1e6 / g_frameProfiler.GetSlidingAvg(FrameProfiler::PROFILE_FRAME));
 
 #ifndef ACCURATETIMERS
    // do the en/disable changes for the timers that piled up
@@ -4237,7 +4175,11 @@ void Player::Render()
    {
       const U64 timeForFrame = usec() - startRenderUsec;
       if (timeForFrame < 1000000ull / localvsync)
+      {
+        g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_SLEEP);
          uSleep(1000000ull / localvsync - timeForFrame);
+         g_frameProfiler.ExitProfileSection();
+      }
    }
 
    // Crash back to the editor
