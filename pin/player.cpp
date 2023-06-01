@@ -175,7 +175,7 @@ Player::Player(const bool cameraMode, PinTable *const editor_table, PinTable *co
       m_FXAA = LoadValueWithDefault(regKey[RegName::PlayerVR], "FXAA"s, (int)Disabled);
       m_MSAASamples = LoadValueWithDefault(regKey[RegName::PlayerVR], "MSAASamples"s, 1);
       m_AAfactor = LoadValueWithDefault(regKey[RegName::PlayerVR], "AAFactor"s, LoadValueWithDefault(regKey[RegName::Player], "USEAA"s, false) ? 2.0f : 1.0f);
-      m_dynamicAO = LoadValueWithDefault(regKey[RegName::PlayerVR], "DynamicAO"s, false);
+      m_dynamicAO = LoadValueWithDefault(regKey[RegName::PlayerVR], "DynamicAO"s, true);
       m_disableAO = LoadValueWithDefault(regKey[RegName::PlayerVR], "DisableAO"s, false);
       m_ss_refl = LoadValueWithDefault(regKey[RegName::PlayerVR], "SSRefl"s, false);
       m_scaleFX_DMD = LoadValueWithDefault(regKey[RegName::PlayerVR], "ScaleFXDMD"s, false);
@@ -197,7 +197,7 @@ Player::Player(const bool cameraMode, PinTable *const editor_table, PinTable *co
       m_MSAASamples = 1;
 #endif
       m_AAfactor = LoadValueWithDefault(regKey[RegName::Player], "AAFactor"s, LoadValueWithDefault(regKey[RegName::Player], "USEAA"s, false) ? 2.0f : 1.0f);
-      m_dynamicAO = LoadValueWithDefault(regKey[RegName::Player], "DynamicAO"s, false);
+      m_dynamicAO = LoadValueWithDefault(regKey[RegName::Player], "DynamicAO"s, true);
       m_disableAO = LoadValueWithDefault(regKey[RegName::Player], "DisableAO"s, false);
       m_ss_refl = LoadValueWithDefault(regKey[RegName::Player], "SSRefl"s, false);
       m_stereo3Denabled = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DEnabled"s, (m_stereo3D != STEREO_OFF));
