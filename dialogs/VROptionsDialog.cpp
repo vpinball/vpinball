@@ -456,7 +456,7 @@ BOOL VROptionsDialog::OnInitDialog()
    }
    SetDlgItemText(IDC_MSAA_LABEL, MSAAText);
 
-   bool useAO = LoadValueWithDefault(regKey[RegName::PlayerVR], "DynamicAO"s, LoadValueWithDefault(regKey[RegName::Player], "DynamicAO", false));
+   bool useAO = LoadValueWithDefault(regKey[RegName::PlayerVR], "DynamicAO"s, LoadValueWithDefault(regKey[RegName::Player], "DynamicAO", true));
    SendMessage(GetDlgItem(IDC_DYNAMIC_AO).GetHwnd(), BM_SETCHECK, useAO ? BST_CHECKED : BST_UNCHECKED, 0);
 
    useAO = LoadValueWithDefault(regKey[RegName::PlayerVR], "DisableAO"s, LoadValueWithDefault(regKey[RegName::Player], "DisableAO"s, false));

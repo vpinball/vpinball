@@ -361,7 +361,7 @@ BOOL VideoOptionsDialog::OnInitDialog()
    const int useDN = LoadValueWithDefault(regKey[RegName::Player], "DynamicDayNight"s, 0);
    SendMessage(GetDlgItem(IDC_DYNAMIC_DN).GetHwnd(), BM_SETCHECK, (useDN != 0) ? BST_CHECKED : BST_UNCHECKED, 0);
 
-   bool useAO = LoadValueWithDefault(regKey[RegName::Player], "DynamicAO"s, false);
+   bool useAO = LoadValueWithDefault(regKey[RegName::Player], "DynamicAO"s, true);
    SendMessage(GetDlgItem(IDC_DYNAMIC_AO).GetHwnd(), BM_SETCHECK, useAO ? BST_CHECKED : BST_UNCHECKED, 0);
 
    useAO = LoadValueWithDefault(regKey[RegName::Player], "DisableAO"s, false);
