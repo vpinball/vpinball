@@ -77,6 +77,7 @@ public:
    bool m_drawTexturesInside;
    bool m_staticRendering;
 
+   bool m_useDepthMask = true;
    bool m_addBlend = false;
    COLORREF m_color;
    float m_alpha = 1.0f;
@@ -242,6 +243,8 @@ public:
 
    STDMETHOD(get_AddBlend)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_AddBlend)(/*[in]*/ VARIANT_BOOL newVal);
+   STDMETHOD(get_EnableDepthMask)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_EnableDepthMask)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_Opacity)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_Opacity)(/*[in]*/ float newVal);
    STDMETHOD(get_Color)(/*[out, retval]*/ OLE_COLOR *pVal);

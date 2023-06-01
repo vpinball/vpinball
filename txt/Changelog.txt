@@ -117,6 +117,9 @@ FEATURES:
 - A new folder named 'Cache' was added to VPX's main directory for caching data to improve performance. For the time being, it is used to store the list of textures which are used 
   by each table during play, this information allows to preload the needed textures when a table is started, limiting stutters during play.
 
+- Add an option to primitive to toggle 'depth masking', that is to say hiding parts behind the primitive. If unchecked the primitive will not hide parts behind and will not be visible to ambient occlusion.
+  For example, this is needed to use primitives for user shadows without breaking ambient occlusion, or for transparents part with self overlapping parts like plastic ramps.
+
 FIXES:
 
 - timers with a -1 interval are always fired after physics and animation, but before rendering, allowing the script to update visual parts accordingly without any visual lag.

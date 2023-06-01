@@ -403,6 +403,7 @@ void Primitive::SetDefaults(const bool fromMouseClick)
 
    m_d.m_alpha = fromMouseClick ? LoadValueWithDefault(strKeyName, "Opacity"s, 100.0f) : 100.0f;
    m_d.m_addBlend = fromMouseClick ? LoadValueWithDefault(strKeyName, "AddBlend"s, false) : false;
+   m_d.m_useDepthMask = fromMouseClick ? LoadValueWithDefault(strKeyName, "DepthMask"s, true) : true;
    m_d.m_color = fromMouseClick ? LoadValueWithDefault(strKeyName, "Color"s, (int)RGB(255, 255, 255)) : RGB(255, 255, 255);
 
    m_d.m_edgeFactorUI = fromMouseClick ? LoadValueWithDefault(strKeyName, "EdgeFactorUI"s, 0.25f) : 0.25f;
@@ -455,6 +456,7 @@ void Primitive::WriteRegDefaults()
    SaveValue(strKeyName, "Scatter"s, m_d.m_scatter);
 
    SaveValue(strKeyName, "AddBlend"s, m_d.m_addBlend);
+   SaveValue(strKeyName, "DepthMask"s, m_d.m_useDepthMask);
    SaveValue(strKeyName, "Opacity"s, m_d.m_alpha);
    SaveValue(strKeyName, "Color"s, (int)m_d.m_color);
 
@@ -1270,8 +1272,7 @@ void Primitive::RenderObject()
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
 
    pd3dDevice->SetRenderStateDepthBias(0.f);
-   pd3dDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
-   pd3dDevice->SetRenderStateCulling(m_d.m_backfacesEnabled && mat->m_bOpacityActive ? RenderState::CULL_CW : RenderState::CULL_CCW);
+   pd3dDevice->SetRenderStateCulling(m_d.m_backfacesEnabled && mat->m_bOpacityActive ? (m_d.m_useDepthMask ? RenderState::CULL_CW : RenderState::CULL_NONE) : RenderState::CULL_CCW);
 
    if (m_d.m_disableLightingTop != 0.f || m_d.m_disableLightingBelow != 0.f)
       // Force disable light from below for objects marked as static since there is no light from below during pre-render pass (to get the same result in dynamic mode & static mode)
@@ -1331,7 +1332,7 @@ void Primitive::RenderObject()
    }
    else
    {
-      pd3dDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
+      pd3dDevice->SetRenderState(RenderState::ZWRITEENABLE, m_d.m_useDepthMask ? RenderState::RS_TRUE : RenderState::RS_FALSE);
       const vec4 color = convertColor(m_d.m_color, m_d.m_alpha * (float)(1.0 / 100.0));
       pd3dDevice->basicShader->SetFlasherColorAlpha(color);
    }
@@ -1390,7 +1391,7 @@ void Primitive::RenderObject()
       m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_d.m_groupdRendering ? m_numGroupIndices : (DWORD)m_mesh.NumIndices());
 
    // also draw the back of the primitive faces
-   if (m_d.m_backfacesEnabled && mat->m_bOpacityActive)
+   if (m_d.m_backfacesEnabled && mat->m_bOpacityActive && m_d.m_useDepthMask)
    {
       pd3dDevice->SetRenderStateCulling(RenderState::CULL_CCW);
       pd3dDevice->DrawMesh(pd3dDevice->basicShader, mat->m_bOpacityActive /* IsTransparent() */, m_d.m_vPosition, m_d.m_depthBias, 
@@ -1687,6 +1688,7 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool sav
    }
    bw.WriteFloat(FID(PIDB), m_d.m_depthBias);
    bw.WriteBool(FID(ADDB), m_d.m_addBlend);
+   bw.WriteBool(FID(ZMSK), m_d.m_useDepthMask);
    bw.WriteFloat(FID(FALP), m_d.m_alpha);
    bw.WriteInt(FID(COLR), m_d.m_color);
 
@@ -1918,6 +1920,7 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
    case FID(PIDB): pbr->GetFloat(m_d.m_depthBias); break;
    case FID(OSNM): pbr->GetBool(m_d.m_objectSpaceNormalMap); break;
    case FID(ADDB): pbr->GetBool(m_d.m_addBlend); break;
+   case FID(ZMSK): pbr->GetBool(m_d.m_useDepthMask); break;
    case FID(FALP): pbr->GetFloat(m_d.m_alpha); break;
    case FID(COLR): pbr->GetInt(m_d.m_color); break;
 
@@ -2725,6 +2728,19 @@ STDMETHODIMP Primitive::get_AddBlend(VARIANT_BOOL *pVal)
 STDMETHODIMP Primitive::put_AddBlend(VARIANT_BOOL newVal)
 {
    m_d.m_addBlend = VBTOb(newVal);
+   return S_OK;
+}
+
+STDMETHODIMP Primitive::get_EnableDepthMask(VARIANT_BOOL *pVal)
+{
+   *pVal = FTOVB(m_d.m_useDepthMask);
+
+   return S_OK;
+}
+
+STDMETHODIMP Primitive::put_EnableDepthMask(VARIANT_BOOL newVal)
+{
+   m_d.m_useDepthMask = VBTOb(newVal);
    return S_OK;
 }
 

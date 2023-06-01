@@ -305,6 +305,7 @@ DMDColoredPixels = myDMDdata
 | Color - defines the color of the element in the editor. If you don't want to colorize the image set the color to blank white (RGB 255,255,255)
 | Visible | bool |  shows/hides the flasher
 | AddBlend | bool |  use additive alpha blending instead of classical alpha blending
+| EnableDepthMask | bool | Enable/Disable depth masking
 | ImageAlignment
 | ModulateVsAdd | float | blends between modulating and additive when bulb is enabled (0..1)
 | DMD | bool |  enable DMD image via script connection
@@ -959,6 +960,7 @@ Animate() - Called when the visual properties of the reel are animated
 - add `FilamentTemperature` property to lights to get the 'blackbody' temperature of the filament according to the light current intensity, full intensity corresponding to a temperature of 2700K
 - add support for multiple custom DMDs by adding `DMDWidth`/`DMDHeight`/`DMDPixels`/`DMDColoredPixels` to flashers. The flasher will use the provided data if any, or defaults to the table data (captured or directly defined)
 - add `Shadows` property to Light element
+- add `EnableDepthMask` to the primitive element
 - document missing `GetTextFile`
 
 ### 10.7.2

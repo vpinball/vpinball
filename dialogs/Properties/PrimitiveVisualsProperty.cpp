@@ -38,6 +38,8 @@ void PrimitiveVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
             PropertyDialog::SetCheckboxState(m_hObjectSpaceCheck, prim->m_d.m_objectSpaceNormalMap);
         if (dispid == IDC_PRIMITIVE_ENABLE_BACKFACES || dispid == -1)
             PropertyDialog::SetCheckboxState(m_hRenderBackfacingCheck, prim->m_d.m_backfacesEnabled);
+        if (dispid == IDC_PRIMITIVE_ENABLE_DEPTH_MASK || dispid == -1)
+            PropertyDialog::SetCheckboxState(m_hDepthMaskWriteCheck, prim->m_d.m_useDepthMask);
         if (dispid == IDC_STATIC_RENDERING_CHECK || dispid == -1)
             PropertyDialog::SetCheckboxState(m_hStaticRenderingCheck, prim->m_d.m_staticRendering);
         if (dispid == IDC_ALPHA_EDIT || dispid == -1)
@@ -164,6 +166,9 @@ void PrimitiveVisualsProperty::UpdateProperties(const int dispid)
             case IDC_PRIMITIVE_ENABLE_BACKFACES:
                 CHECK_UPDATE_ITEM(prim->m_d.m_backfacesEnabled, PropertyDialog::GetCheckboxState(m_hRenderBackfacingCheck), prim);
                 break;
+            case IDC_PRIMITIVE_ENABLE_DEPTH_MASK:
+                CHECK_UPDATE_ITEM(prim->m_d.m_useDepthMask, PropertyDialog::GetCheckboxState(m_hDepthMaskWriteCheck), prim);
+                break;
             case IDC_STATIC_RENDERING_CHECK:
                 CHECK_UPDATE_ITEM(prim->m_d.m_staticRendering, PropertyDialog::GetCheckboxState(m_hStaticRenderingCheck), prim);
                 UpdateVisuals(IDC_BLEND_DISABLE_LIGHTING_FROM_BELOW);
@@ -244,6 +249,17 @@ void PrimitiveVisualsProperty::UpdateProperties(const int dispid)
     UpdateVisuals(dispid);
 }
 
+void PrimitiveVisualsProperty::AddToolTip(const char *const text, HWND parentHwnd, HWND toolTipHwnd, HWND controlHwnd)
+{
+    TOOLINFO toolInfo = { 0 };
+    toolInfo.cbSize = sizeof(toolInfo);
+    toolInfo.hwnd = parentHwnd;
+    toolInfo.uFlags = TTF_IDISHWND | TTF_SUBCLASS;
+    toolInfo.uId = (UINT_PTR)controlHwnd;
+    toolInfo.lpszText = (char *)text;
+    SendMessage(toolTipHwnd, TTM_ADDTOOL, 0, (LPARAM)&toolInfo);
+}
+
 BOOL PrimitiveVisualsProperty::OnInitDialog()
 {
     m_hDisplayImageCheck = ::GetDlgItem(GetHwnd(), IDC_DISPLAY_TEXTURE_CHECKBOX);
@@ -251,6 +267,7 @@ BOOL PrimitiveVisualsProperty::OnInitDialog()
     m_hVisibleCheck = ::GetDlgItem(GetHwnd(), IDC_VISIBLE_CHECK);
     m_hReflectionEnabledCheck = ::GetDlgItem(GetHwnd(), IDC_REFLECT_ENABLED_CHECK);
     m_hRenderBackfacingCheck = ::GetDlgItem(GetHwnd(), IDC_PRIMITIVE_ENABLE_BACKFACES);
+    m_hDepthMaskWriteCheck = ::GetDlgItem(GetHwnd(), IDC_PRIMITIVE_ENABLE_DEPTH_MASK);
     m_hStaticRenderingCheck = ::GetDlgItem(GetHwnd(), IDC_STATIC_RENDERING_CHECK);
     m_hDrawTexturesInsideCheck = ::GetDlgItem(GetHwnd(), IDC_DRAW_TEXTURES_SIDES_CHECK);
     AttachItem(IDC_LOAD_MESH_BUTTON, m_importMeshButton);
@@ -287,8 +304,8 @@ BOOL PrimitiveVisualsProperty::OnInitDialog()
     m_resizer.AddChild(m_hVisibleCheck, CResizer::topleft, 0);
     m_resizer.AddChild(m_hStaticRenderingCheck, CResizer::topleft, 0);
     m_resizer.AddChild(m_hReflectionEnabledCheck, CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC5), CResizer::topleft, 0);
     m_resizer.AddChild(m_hRenderBackfacingCheck, CResizer::topleft, 0);
+    m_resizer.AddChild(m_hDepthMaskWriteCheck, CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC6), CResizer::topleft, 0);
     m_resizer.AddChild(m_depthBiasEdit, CResizer::topright, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_hAdditiveBlendCheck, CResizer::topleft, 0);
@@ -322,6 +339,14 @@ BOOL PrimitiveVisualsProperty::OnInitDialog()
     m_resizer.AddChild(GetDlgItem(IDC_STATIC17), CResizer::topleft, 0);
     m_resizer.AddChild(m_refractionThicknessEdit, CResizer::topright, RD_STRETCH_WIDTH);
 
+    const HWND hwndDlg = GetHwnd();
+    const HWND toolTipHwnd = CreateWindowEx(NULL, TOOLTIPS_CLASS, NULL, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, hwndDlg, NULL, g_pvp->theInstance, NULL);
+    if (toolTipHwnd)
+    {
+        SendMessage(toolTipHwnd, TTM_SETMAXTIPWIDTH, 0, 180);
+        AddToolTip("Render backfacing transparent faces (Should be enabled for transparent parts)", hwndDlg, toolTipHwnd, m_hRenderBackfacingCheck);
+        AddToolTip("Hide parts behind this one using the depth mask (Should be disabled for transparent parts)", hwndDlg, toolTipHwnd, m_hDepthMaskWriteCheck);
+    }
     return TRUE;
 }
 
