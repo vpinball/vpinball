@@ -16,7 +16,8 @@ protected:
     virtual BOOL OnInitDialog();
     virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-    void UpdateLightmapComboBox(const PinTable* table, const CComboBox &combo, const string &selectName);
+    void AddToolTip(const char *const text, HWND parentHwnd, HWND toolTipHwnd, HWND controlHwnd);
+    void UpdateLightmapComboBox(const PinTable *table, const CComboBox &combo, const string &selectName);
     void UpdateRenderProbeComboBox(const vector<RenderProbe *> &contentList, const CComboBox &combo, const string &selectName);
 
 private:
@@ -35,6 +36,7 @@ private:
     EditBox     m_depthBiasEdit;
     HWND        m_hStaticRenderingCheck;
     HWND        m_hRenderBackfacingCheck;
+    HWND        m_hDepthMaskWriteCheck;
     HWND        m_hDrawTexturesInsideCheck;
     HWND        m_hAdditiveBlendCheck;
     EditBox     m_opacityAmountEdit;

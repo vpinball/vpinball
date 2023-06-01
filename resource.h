@@ -1073,6 +1073,7 @@
 #define IDC_STATIC_PHY_SCATTER_ANGLE    791
 #define IDC_PRIMITIVE_ENABLE_BACKFACES  792
 #define IDC_FSS_INCL                    793
+#define IDC_PRIMITIVE_ENABLE_DEPTH_MASK 793
 #define IDC_FSS_FOV                     794
 #define IDC_FSS_LB                      795
 #define IDC_FSS_ROT                     796
