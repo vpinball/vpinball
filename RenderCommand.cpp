@@ -204,6 +204,7 @@ void RenderCommand::Execute(const bool log)
          if (m_mb->m_ib == nullptr)
          {
             #ifdef ENABLE_SDL
+            assert(0 <= m_mb->m_vb->GetVertexOffset() && m_mb->m_vb->GetVertexOffset() + m_indicesCount <= m_mb->m_vb->GetSharedBuffer()->GetCount());
             glDrawArrays(m_primitiveType, m_mb->m_vb->GetVertexOffset(), m_indicesCount);
             #else
             CHECKD3D(m_rd->GetCoreDevice()->DrawPrimitive((D3DPRIMITIVETYPE)m_primitiveType, m_mb->m_vb->GetVertexOffset(), np));
@@ -211,14 +212,29 @@ void RenderCommand::Execute(const bool log)
          }
          else
          {
+            const int vertexOffset = m_mb->m_isVBOffsetApplied ? 0 : m_mb->m_vb->GetOffset();
             #ifdef ENABLE_SDL
             const int indexOffset = m_mb->m_ib->GetOffset() + m_startIndice * m_mb->m_ib->m_sizePerIndex;
             const GLenum indexType = m_mb->m_ib->m_indexFormat == IndexBuffer::FMT_INDEX16 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT;
-            if (m_mb->m_isVBOffsetApplied || m_mb->m_vb->GetOffset() == 0)
+            #if defined(DEBUG) && 0
+            // Track invalid vertex memory reference. Very slow, only for debugging memory access exception in OpenGL
+            BYTE* tmp = new BYTE[m_indicesCount * m_mb->m_ib->m_sizePerIndex];
+            U16* tmp16 = (U16*)tmp;
+            U32* tmp32 = (U32*)tmp;
+            glGetNamedBufferSubData(m_mb->m_ib->GetBuffer(), indexOffset, m_indicesCount * m_mb->m_ib->m_sizePerIndex, tmp);
+            assert(m_mb->m_vb->GetVertexOffset() + m_mb->m_vb->m_count <= m_mb->m_vb->GetSharedBuffer()->GetCount());
+            for (unsigned int i = 0; i < m_indicesCount; i++)
+            {
+               unsigned int idx = m_mb->m_ib->m_indexFormat == IndexBuffer::FMT_INDEX16 ? tmp16[i] : tmp32[i];
+               assert((m_mb->m_vb->GetVertexOffset() <= vertexOffset + idx) && (vertexOffset + idx <= m_mb->m_vb->GetVertexOffset() + m_mb->m_vb->m_count));
+            }
+            delete[] tmp;
+            #endif
+            if (vertexOffset == 0)
             {
                //glDrawElements(m_primitiveType, m_indicesCount, indexType, (void*)(intptr_t)indexOffset);
                glDrawRangeElements(m_primitiveType, 
-                  m_mb->m_vb->GetVertexOffset(), m_mb->m_vb->GetVertexOffset() + m_mb->m_vb->m_vertexCount, 
+                  m_mb->m_vb->GetVertexOffset(), m_mb->m_vb->GetVertexOffset() + m_mb->m_vb->m_count, 
                   m_indicesCount, indexType, (void*)(intptr_t)indexOffset);
             }
             else
@@ -226,18 +242,15 @@ void RenderCommand::Execute(const bool log)
                #if defined(__OPENGLES__)
                assert(false); // OpenGL ES does not support offseted vertices. The buffers must be built accordingly
                #else
-               //glDrawElementsBaseVertex(m_primitiveType, m_indicesCount, indexType, (void*)(intptr_t)indexOffset, mb->m_vb->GetVertexOffset());
+               //glDrawElementsBaseVertex(m_primitiveType, m_indicesCount, indexType, (void*)(intptr_t)indexOffset, vertexOffset);
                glDrawRangeElementsBaseVertex(m_primitiveType, 
-                  m_mb->m_vb->GetVertexOffset(), m_mb->m_vb->GetVertexOffset() + m_mb->m_vb->m_vertexCount, 
-                  m_indicesCount, indexType, (void*)(intptr_t)indexOffset, 
-                  m_mb->m_vb->GetVertexOffset());
+                  m_mb->m_vb->GetVertexOffset(), m_mb->m_vb->GetVertexOffset() + m_mb->m_vb->m_count, 
+                  m_indicesCount, indexType, (void*)(intptr_t)indexOffset, vertexOffset);
                #endif
             }
             #else
             CHECKD3D(m_rd->GetCoreDevice()->DrawIndexedPrimitive((D3DPRIMITIVETYPE)m_primitiveType, 
-               m_mb->m_isVBOffsetApplied ? 0 : m_mb->m_vb->GetVertexOffset(), 
-               0, m_mb->m_vb->m_vertexCount, 
-               m_mb->m_ib->GetIndexOffset() + m_startIndice, np));
+               vertexOffset, 0, m_mb->m_vb->m_count, m_mb->m_ib->GetIndexOffset() + m_startIndice, np));
             #endif
          }
          break;
