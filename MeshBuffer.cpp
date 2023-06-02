@@ -87,11 +87,11 @@ void MeshBuffer::bind()
          glBindVertexArray(m_vao);
          rd->m_curVAO = m_vao;
          m_vb->Upload();
-         glBindBuffer(GL_ARRAY_BUFFER, m_vb->GetBuffer());
+         m_vb->Bind();
          if (m_ib != nullptr)
          {
             m_ib->Upload();
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ib->GetBuffer());
+            m_ib->Bind();
          }
          // this needs the attribute layout to be enforced in the shaders using layout(location=...)
          switch (m_vb->m_vertexFormat)
@@ -126,7 +126,30 @@ void MeshBuffer::bind()
    }
    m_vb->Upload();
    if (m_ib != nullptr)
+   {
       m_ib->Upload();
+      // For some reason, it seems the index buffer binding is not stored in the VAO (likely the binding to the VAO is lost somewhere, but where ?)
+      // This can be easily reproducd by commenting the IB binding and running Flupper's Totan 1.5 in camera mode. It should crash directly
+      m_ib->Bind(); 
+   }
+
+   #if defined(DEBUG) && 0
+   GLint current_vao;
+   glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &current_vao);
+   assert(current_vao == m_vao);
+   GLint enabled;
+   glGetVertexAttribiv(0, GL_VERTEX_ATTRIB_ARRAY_ENABLED, &enabled);
+   assert(enabled);
+   glGetVertexAttribiv(1, GL_VERTEX_ATTRIB_ARRAY_ENABLED, &enabled);
+   assert(enabled);
+   glGetVertexAttribiv(2, GL_VERTEX_ATTRIB_ARRAY_ENABLED, &enabled);
+   assert(m_vb->m_vertexFormat == VertexFormat::VF_POS_NORMAL_TEX ? enabled : !enabled);
+   GLint buffer;
+   glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &buffer);
+   assert(buffer == m_vb->GetBuffer());
+   glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &buffer);
+   assert(m_ib == nullptr ? buffer == 0 : buffer == m_ib->GetBuffer());
+   #endif
 
 #else
    m_vb->Upload();
