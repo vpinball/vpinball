@@ -7,7 +7,7 @@
 #endif
 
 #ifndef DISABLE_FORCE_NVIDIA_OPTIMUS
-#include "inc/nvapi.h"
+#include "inc/nvapi/nvapi.h"
 #endif
 
 #ifdef ENABLE_SDL

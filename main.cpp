@@ -615,6 +615,134 @@ public:
    }
 };
 
+#if defined(ENABLE_SDL)
+// OpenGL implementation will fail on Nvidia driver when Threaded Optimization is enabled so we disable it for this app
+// Note: there are quite a lot of application doing this, but I think this may hide an incorrect OpenGL call somewhere 
+// that the threaded optimization of Nvidia drivers ends up to a crash. This would be good to find the root cause if any.
+
+#include "inc/nvapi/nvapi.h"
+#include "inc/nvapi/NvApiDriverSettings.h"
+#include "inc/nvapi/NvApiDriverSettings.c"
+
+enum NvThreadOptimization
+{
+   NV_THREAD_OPTIMIZATION_AUTO = 0,
+   NV_THREAD_OPTIMIZATION_ENABLE = 1,
+   NV_THREAD_OPTIMIZATION_DISABLE = 2,
+   NV_THREAD_OPTIMIZATION_NO_SUPPORT = 3
+};
+
+bool NvAPI_OK_Verify(NvAPI_Status status)
+{
+   if (status == NVAPI_OK)
+      return true;
+
+   NvAPI_ShortString szDesc = { 0 };
+   NvAPI_GetErrorMessage(status, szDesc);
+
+   char szResult[255];
+   sprintf(szResult, "NVAPI error: %s\n\0", szDesc);
+   printf(szResult);
+
+   return false;
+}
+
+NvThreadOptimization GetNVidiaThreadOptimization()
+{
+   NvAPI_Status status;
+   NvDRSSessionHandle hSession;
+   NvThreadOptimization threadOptimization = NV_THREAD_OPTIMIZATION_NO_SUPPORT;
+
+   status = NvAPI_Initialize();
+   if (!NvAPI_OK_Verify(status))
+      return threadOptimization;
+
+   status = NvAPI_DRS_CreateSession(&hSession);
+   if (!NvAPI_OK_Verify(status))
+      return threadOptimization;
+
+   status = NvAPI_DRS_LoadSettings(hSession);
+   if (!NvAPI_OK_Verify(status))
+   {
+      NvAPI_DRS_DestroySession(hSession);
+      return threadOptimization;
+      ;
+   }
+
+
+   NvDRSProfileHandle hProfile;
+   status = NvAPI_DRS_GetBaseProfile(hSession, &hProfile);
+   if (!NvAPI_OK_Verify(status))
+   {
+      NvAPI_DRS_DestroySession(hSession);
+      return threadOptimization;
+      ;
+   }
+
+   NVDRS_SETTING originalSetting;
+   originalSetting.version = NVDRS_SETTING_VER;
+   status = NvAPI_DRS_GetSetting(hSession, hProfile, OGL_THREAD_CONTROL_ID, &originalSetting);
+   if (NvAPI_OK_Verify(status))
+   {
+      threadOptimization = (NvThreadOptimization)originalSetting.u32CurrentValue;
+   }
+
+   NvAPI_DRS_DestroySession(hSession);
+
+   return threadOptimization;
+}
+
+void SetNVidiaThreadOptimization(NvThreadOptimization threadedOptimization)
+{
+   NvAPI_Status status;
+   NvDRSSessionHandle hSession;
+
+   if (threadedOptimization == NV_THREAD_OPTIMIZATION_NO_SUPPORT)
+      return;
+
+   status = NvAPI_Initialize();
+   if (!NvAPI_OK_Verify(status))
+      return;
+
+   status = NvAPI_DRS_CreateSession(&hSession);
+   if (!NvAPI_OK_Verify(status))
+      return;
+
+   status = NvAPI_DRS_LoadSettings(hSession);
+   if (!NvAPI_OK_Verify(status))
+   {
+      NvAPI_DRS_DestroySession(hSession);
+      return;
+   }
+
+   NvDRSProfileHandle hProfile;
+   status = NvAPI_DRS_GetBaseProfile(hSession, &hProfile);
+   if (!NvAPI_OK_Verify(status))
+   {
+      NvAPI_DRS_DestroySession(hSession);
+      return;
+   }
+
+   NVDRS_SETTING setting;
+   setting.version = NVDRS_SETTING_VER;
+   setting.settingId = OGL_THREAD_CONTROL_ID;
+   setting.settingType = NVDRS_DWORD_TYPE;
+   setting.u32CurrentValue = (EValues_OGL_THREAD_CONTROL)threadedOptimization;
+
+   status = NvAPI_DRS_SetSetting(hSession, hProfile, &setting);
+   if (!NvAPI_OK_Verify(status))
+   {
+      NvAPI_DRS_DestroySession(hSession);
+      return;
+   }
+
+   status = NvAPI_DRS_SaveSettings(hSession);
+   NvAPI_OK_Verify(status);
+
+   NvAPI_DRS_DestroySession(hSession);
+}
+#endif
+
 class DebugAppender : public plog::IAppender 
 {
 public:
@@ -654,11 +782,11 @@ void SetupLogger()
          plog::Logger<PLOG_DEFAULT_INSTANCE_ID>::getInstance()->addAppender(&fileAppender);
          plog::Logger<PLOG_NO_DBG_OUT_INSTANCE_ID>::getInstance()->addAppender(&fileAppender);
       }
-#ifdef _DEBUG
+      #ifdef _DEBUG
       maxLogSeverity = plog::debug;
-#else
+      #else
       maxLogSeverity = plog::info;
-#endif
+      #endif
    }
    plog::Logger<PLOG_DEFAULT_INSTANCE_ID>::getInstance()->setMaxSeverity(maxLogSeverity);
    plog::Logger<PLOG_NO_DBG_OUT_INSTANCE_ID>::getInstance()->setMaxSeverity(maxLogSeverity);
@@ -666,19 +794,32 @@ void SetupLogger()
 
 extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR /*lpCmdLine*/, int /*nShowCmd*/)
 {
+   #if defined(ENABLE_SDL)
+   static NvThreadOptimization s_OriginalNVidiaThreadOptimization = NV_THREAD_OPTIMIZATION_NO_SUPPORT;
+   #endif
+
    int retval;
    try
    {
-#if defined(ENABLE_SDL) || defined(ENABLE_SDL_INPUT)
+      #if defined(ENABLE_SDL)
+      s_OriginalNVidiaThreadOptimization = GetNVidiaThreadOptimization();
+      if (s_OriginalNVidiaThreadOptimization != NV_THREAD_OPTIMIZATION_NO_SUPPORT && s_OriginalNVidiaThreadOptimization != NV_THREAD_OPTIMIZATION_DISABLE)
+      {
+         PLOGI << "Disabling NVidia Threaded Optimization";
+         SetNVidiaThreadOptimization(NV_THREAD_OPTIMIZATION_DISABLE);
+      }
+      #endif
+
+      #if defined(ENABLE_SDL) || defined(ENABLE_SDL_INPUT)
       SDL_Init(0
-#ifdef ENABLE_SDL
-         | SDL_INIT_VIDEO
-#endif
-#ifdef ENABLE_SDL_INPUT
-         | SDL_INIT_JOYSTICK
-#endif
+         #ifdef ENABLE_SDL
+            | SDL_INIT_VIDEO
+         #endif
+         #ifdef ENABLE_SDL_INPUT
+            | SDL_INIT_JOYSTICK
+         #endif
       );
-#endif
+      #endif
 
       plog::init<PLOG_DEFAULT_INSTANCE_ID>();
       plog::init<PLOG_NO_DBG_OUT_INSTANCE_ID>(); // Logger that do not show in the debug window to avoid duplicated messages
@@ -698,9 +839,18 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
 
       retval = -1;
    }
-#if defined(ENABLE_SDL) || defined(ENABLE_SDL_INPUT)
+   #if defined(ENABLE_SDL) || defined(ENABLE_SDL_INPUT)
    SDL_Quit();
-#endif
+   #endif
+
+   #if defined(ENABLE_SDL)
+   if (s_OriginalNVidiaThreadOptimization != NV_THREAD_OPTIMIZATION_NO_SUPPORT && s_OriginalNVidiaThreadOptimization != NV_THREAD_OPTIMIZATION_DISABLE)
+   {
+      PLOGI << "Restoring NVidia Threaded Optimization";
+      SetNVidiaThreadOptimization(s_OriginalNVidiaThreadOptimization);
+   };
+   #endif
+
    PLOGI << "Closing VPX...";
    return retval;
 }
