@@ -108,6 +108,7 @@
 
 Option Explicit
 
+Const directory = "HKEY_CURRENT_USER\SOFTWARE\Visual Pinball\Controller\" 'Legacy (<10.8)
 Dim B2SController
 Dim Controller
 Const DOFContactors = 1
@@ -176,16 +177,50 @@ Sub LoadController(TableType, VPMver, VBSfile, VBSver)
 	B2SOn = False
 	B2SOnALT = False
 	On Error Resume Next
-	DisableB2S    = CInt(Setting("Controller", "ForceDisableB2S"))
-	DOFeffects(1) = CInt(Setting("Controller", "DOFContactors"))
-	DOFeffects(2) = CInt(Setting("Controller", "DOFKnocker"))
-	DOFeffects(3) = CInt(Setting("Controller", "DOFChimes"))
-	DOFeffects(4) = CInt(Setting("Controller", "DOFBell"))
-	DOFeffects(5) = CInt(Setting("Controller", "DOFGear"))
-	DOFeffects(6) = CInt(Setting("Controller", "DOFShaker"))
-	DOFeffects(7) = CInt(Setting("Controller", "DOFFlippers"))
-	DOFeffects(8) = CInt(Setting("Controller", "DOFTargets"))
-	DOFeffects(9) = CInt(Setting("Controller", "DOFDropTargets"))
+
+	If VPBuildVersion < 10800
+		DisableB2S = 0
+		Dim objShell
+		Set objShell = CreateObject("WScript.Shell")
+		objShell.RegRead(directory & "ForceDisableB2S")
+		If Err.number <> 0 Then
+			Dim PopupMessage
+			PopupMessage = "This version of Controller.vbs stores its settings in the registry. To adjust the values, you must use VP 10.2 to 10.7 and setup your configuration in the DOF section of the -Keys, Nudge and DOF- dialog of Visual Pinball."
+			objShell.RegWrite directory & "ForceDisableB2S",0, "REG_DWORD"
+			objShell.RegWrite directory & "DOFContactors",2, "REG_DWORD"
+			objShell.RegWrite directory & "DOFKnocker",2, "REG_DWORD"
+			objShell.RegWrite directory & "DOFChimes",2, "REG_DWORD"
+			objShell.RegWrite directory & "DOFBell",2, "REG_DWORD"
+			objShell.RegWrite directory & "DOFGear",2, "REG_DWORD"
+			objShell.RegWrite directory & "DOFShaker",2, "REG_DWORD"
+			objShell.RegWrite directory & "DOFFlippers",2, "REG_DWORD"
+			objShell.RegWrite directory & "DOFTargets",2, "REG_DWORD"
+			objShell.RegWrite directory & "DOFDropTargets",2, "REG_DWORD"
+			MsgBox PopupMessage
+		End If
+		DisableB2S    = objShell.RegRead(directory & "ForceDisableB2S")
+		DOFeffects(1) = objShell.RegRead(directory & "DOFContactors")
+		DOFeffects(2) = objShell.RegRead(directory & "DOFKnocker")
+		DOFeffects(3) = objShell.RegRead(directory & "DOFChimes")
+		DOFeffects(4) = objShell.RegRead(directory & "DOFBell")
+		DOFeffects(5) = objShell.RegRead(directory & "DOFGear")
+		DOFeffects(6) = objShell.RegRead(directory & "DOFShaker")
+		DOFeffects(7) = objShell.RegRead(directory & "DOFFlippers")
+		DOFeffects(8) = objShell.RegRead(directory & "DOFTargets")
+		DOFeffects(9) = objShell.RegRead(directory & "DOFDropTargets")
+		Set objShell  = nothing
+	Else
+		DisableB2S    = CInt(Setting("Controller", "ForceDisableB2S"))
+		DOFeffects(1) = CInt(Setting("Controller", "DOFContactors"))
+		DOFeffects(2) = CInt(Setting("Controller", "DOFKnocker"))
+		DOFeffects(3) = CInt(Setting("Controller", "DOFChimes"))
+		DOFeffects(4) = CInt(Setting("Controller", "DOFBell"))
+		DOFeffects(5) = CInt(Setting("Controller", "DOFGear"))
+		DOFeffects(6) = CInt(Setting("Controller", "DOFShaker"))
+		DOFeffects(7) = CInt(Setting("Controller", "DOFFlippers"))
+		DOFeffects(8) = CInt(Setting("Controller", "DOFTargets"))
+		DOFeffects(9) = CInt(Setting("Controller", "DOFDropTargets"))
+	End If
 
 	'deactivate B2S via table script
 	if B2SOff then DisableB2S = 1
