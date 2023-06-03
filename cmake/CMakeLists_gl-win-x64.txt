@@ -229,14 +229,14 @@ add_executable(vpinball WIN32
    inc/hidpi.h
    inc/hidsdi.h
    inc/hidusage.h
-   inc/nvapi.h
-   inc/nvapi_lite_common.h
-   inc/nvapi_lite_d3dext.h
-   inc/nvapi_lite_salend.h
-   inc/nvapi_lite_salstart.h
-   inc/nvapi_lite_sli.h
-   inc/nvapi_lite_stereo.h
-   inc/nvapi_lite_surround.h
+   inc/nvapi/nvapi.h
+   inc/nvapi/nvapi_lite_common.h
+   inc/nvapi/nvapi_lite_d3dext.h
+   inc/nvapi/nvapi_lite_salend.h
+   inc/nvapi/nvapi_lite_salstart.h
+   inc/nvapi/nvapi_lite_sli.h
+   inc/nvapi/nvapi_lite_stereo.h
+   inc/nvapi/nvapi_lite_surround.h
    inc/progmesh.cpp
    inc/progmesh.h
    inc/progmesh_vecmatquat_minimal.h
