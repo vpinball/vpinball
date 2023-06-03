@@ -130,7 +130,7 @@ VertexBuffer::VertexBuffer(RenderDevice* rd, const unsigned int vertexCount, con
    , m_size(fvfToSize(fvf) * vertexCount)
 {
    #ifndef __OPENGLES__
-   // Disabled since OpenGL ES does not support glDrawElementsBaseVertex and we need it unless we remap the indices when creating the index buffer (and we should)
+   // Disabled since OpenGL ES does not support glDrawElementsBaseVertex, but now that we remap the indices when creating the index buffer it should be good
    for (SharedVertexBuffer* block : pendingSharedBuffers)
    {
       if (block->m_format == fvf && block->m_isStatic == m_isStatic && block->GetCount() + vertexCount <= 65535)
