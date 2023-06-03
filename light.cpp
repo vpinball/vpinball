@@ -6,6 +6,19 @@
 #include "VertexBuffer.h"
 #include "bulb.h"
 
+// Light state can be either a float between 0...1 or 2 for blinking state.
+// Some old table would set it to 255 or 'TRUE' (-1) for full state, so we perform this 'clamping'
+inline float clampLightState(float state)
+{
+   if (state < 0.f) // Legacy script using 'TRUE' for on
+      return 1.f;
+   if (state == 2.f) // Preserve blinking state
+      return 2.f;
+   if (state > 1.f) // Legacy script using 255 for on
+      return 1.f;
+   return state;
+}
+
 Light::Light() : m_lightcenter(this)
 {
    m_menuid = IDR_SURFACEMENU;
@@ -457,6 +470,9 @@ void Light::RenderDynamic()
 
    if (m_d.m_showBulbMesh) // blend bulb mesh hull additive over "normal" bulb to approximate the emission directly reaching the camera
    {
+      RenderState tmp_state;
+      pd3dDevice->CopyRenderStates(true, tmp_state);
+
       pd3dDevice->lightShader->SetLightData(center_range);
       pd3dDevice->lightShader->SetLightColor2FalloffPower(lightColor2_falloff_power);
       pd3dDevice->lightShader->SetTechnique(SHADER_TECHNIQUE_bulb_light);
@@ -475,6 +491,8 @@ void Light::RenderDynamic()
 
       Vertex3Ds bulbPos(m_boundingSphereCenter.x, m_boundingSphereCenter.y, m_boundingSphereCenter.z + m_d.m_height * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]);
       pd3dDevice->DrawMesh(pd3dDevice->lightShader, IsTransparent(), bulbPos, m_d.m_depthBias, m_bulbLightMeshBuffer, RenderDevice::TRIANGLELIST, 0, bulbLightNumFaces);
+
+      pd3dDevice->CopyRenderStates(false, tmp_state);
    }
 
    if (g_pplayer->IsRenderPass(Player::REFLECTION_PASS) && g_pplayer->IsRenderPass(Player::DISABLE_LIGHTMAPS))
@@ -1159,9 +1177,7 @@ STDMETHODIMP Light::get_State(float *pVal)
 
 STDMETHODIMP Light::put_State(float newVal)
 {
-   // Handle legacy scripts that set state to 'TRUE' for ON which happens to be converted to -1.0f
-   if (newVal < 0)
-      newVal = 1;
+   newVal = clampLightState(newVal);
 
    if (!m_lockedByLS)
       setInPlayState(newVal);
@@ -1320,9 +1336,9 @@ STDMETHODIMP Light::put_BlinkInterval(long newVal)
 
 STDMETHODIMP Light::Duration(float startState, long newVal, float endState)
 {
-    m_inPlayState = startState;
+   m_inPlayState = clampLightState(startState);
     m_duration = newVal;
-    m_finalLightState = endState;
+    m_finalLightState = clampLightState(endState);
     if (g_pplayer)
     {
         m_timerDurationEndTime = g_pplayer->m_time_msec + m_duration;
@@ -1606,9 +1622,9 @@ STDMETHODIMP Light::put_BulbHaloHeight(float newVal)
 
 void Light::setInPlayState(const float newVal)
 {
-   if (newVal != m_inPlayState) // state changed???
+   if (clampLightState(newVal) != m_inPlayState) // state changed???
    {
-      m_inPlayState = newVal;
+      m_inPlayState = clampLightState(newVal);
 
       if (g_pplayer)
       {
