@@ -304,7 +304,7 @@
       <AdditionalIncludeDirectories>inc\win32xx\include</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>SDL2.lib;SDL2_ttf.lib;SDL2main.lib;opengl32.lib;openvr_api.lib;comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;odbc32.lib;odbccp32.lib;bass.lib;imm32.lib;setupapi.lib;hid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2_ttf.lib;SDL2main.lib;opengl32.lib;openvr_api.lib;comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;bass.lib;imm32.lib;setupapi.lib;hid.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x86;.\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>
@@ -429,7 +429,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>SDL2.lib;SDL2_ttf.lib;SDL2main.lib;opengl32.lib;openvr_api.lib;comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;odbc32.lib;odbccp32.lib;bass.lib;imm32.lib;setupapi.lib;hid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2_ttf.lib;SDL2main.lib;opengl32.lib;openvr_api.lib;comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;bass.lib;imm32.lib;setupapi.lib;hid.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x64;.\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
@@ -1252,14 +1252,14 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="inc\hidpi.h" />
     <ClInclude Include="inc\hidsdi.h" />
     <ClInclude Include="inc\hidusage.h" />
-    <ClInclude Include="inc\nvapi.h" />
-    <ClInclude Include="inc\nvapi_lite_common.h" />
-    <ClInclude Include="inc\nvapi_lite_d3dext.h" />
-    <ClInclude Include="inc\nvapi_lite_salend.h" />
-    <ClInclude Include="inc\nvapi_lite_salstart.h" />
-    <ClInclude Include="inc\nvapi_lite_sli.h" />
-    <ClInclude Include="inc\nvapi_lite_stereo.h" />
-    <ClInclude Include="inc\nvapi_lite_surround.h" />
+    <ClInclude Include="inc\nvapi\nvapi.h" />
+    <ClInclude Include="inc\nvapi\nvapi_lite_common.h" />
+    <ClInclude Include="inc\nvapi\nvapi_lite_d3dext.h" />
+    <ClInclude Include="inc\nvapi\nvapi_lite_salend.h" />
+    <ClInclude Include="inc\nvapi\nvapi_lite_salstart.h" />
+    <ClInclude Include="inc\nvapi\nvapi_lite_sli.h" />
+    <ClInclude Include="inc\nvapi\nvapi_lite_stereo.h" />
+    <ClInclude Include="inc\nvapi\nvapi_lite_surround.h" />
     <ClInclude Include="inc\progmesh.h" />
     <ClInclude Include="inc\progmesh_vecmatquat_minimal.h" />
     <ClInclude Include="inc\scilexer.h" />

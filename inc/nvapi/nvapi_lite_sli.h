@@ -87,7 +87,7 @@ typedef struct
 //!                  and what the AFR group index will be for the next frame. \p
 //!                  pDevice can be either a IDirect3DDevice9 or ID3D10Device pointer.
 //!
-//! SUPPORTED OS:  Windows XP and higher
+//! SUPPORTED OS:  Windows 7 and higher
 //!
 //!
 //! \since Release: 173
@@ -117,7 +117,7 @@ NVAPI_INTERFACE NvAPI_D3D_GetCurrentSLIState(IUnknown *pDevice, NV_GET_CURRENT_S
 //!                in a rendering context (therefore applying inter-thread synchronization as appropriate).
 //!                As a debug help to an application the driver enforces that a resource in this call was never bound.
 //!
-//! SUPPORTED OS:  Windows XP and higher
+//! SUPPORTED OS:  Windows 7 and higher
 //!
 //!
 //! \since Release: 185
@@ -191,7 +191,7 @@ NVAPI_INTERFACE NvAPI_D3D_SetResourceHint(IUnknown *pDev, NVDX_ObjectHandle obj,
 //!   DESCRIPTION: This function tells the driver that the resource will begin to receive updates. It must be used in combination with NvAPI_D3D_EndResourceRendering(). 
 //!                The primary use of this function is allow the driver to initiate early inter-frame synchronization of resources while running in AFR SLI mode. 
 //!
-//! SUPPORTED OS:  Windows XP and higher
+//! SUPPORTED OS:  Windows 7 and higher
 //!
 //!
 //! \since Release: 185
@@ -230,7 +230,7 @@ NVAPI_INTERFACE NvAPI_D3D_BeginResourceRendering(IUnknown *pDeviceOrContext, NVD
 //!                NvAPI_D3D_BeginResourceRendering(). 
 //!                The primary use of this function is allow the driver to initiate early inter-frame syncs of resources while running in AFR SLI mode. 
 //!
-//! SUPPORTED OS:  Windows XP and higher
+//! SUPPORTED OS:  Windows 7 and higher
 //!
 //!
 //! \since Release: 185

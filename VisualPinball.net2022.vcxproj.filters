@@ -821,28 +821,28 @@
     <ClInclude Include="inc\hidusage.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="inc\nvapi.h">
+    <ClInclude Include="inc\nvapi\nvapi.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="inc\nvapi_lite_common.h">
+    <ClInclude Include="inc\nvapi\nvapi_lite_common.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="inc\nvapi_lite_d3dext.h">
+    <ClInclude Include="inc\nvapi\nvapi_lite_d3dext.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="inc\nvapi_lite_salend.h">
+    <ClInclude Include="inc\nvapi\nvapi_lite_salend.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="inc\nvapi_lite_salstart.h">
+    <ClInclude Include="inc\nvapi\nvapi_lite_salstart.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="inc\nvapi_lite_sli.h">
+    <ClInclude Include="inc\nvapi\nvapi_lite_sli.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="inc\nvapi_lite_stereo.h">
+    <ClInclude Include="inc\nvapi\nvapi_lite_stereo.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="inc\nvapi_lite_surround.h">
+    <ClInclude Include="inc\nvapi\nvapi_lite_surround.h">
       <Filter>inc</Filter>
     </ClInclude>
     <ClInclude Include="inc\scilexer.h">
