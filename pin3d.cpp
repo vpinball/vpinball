@@ -503,10 +503,7 @@ HRESULT Pin3D::InitPin3D(const bool fullScreen, const int width, const int heigh
    HGLOBAL rcData = ::LoadResource(handle, rc);
    DWORD size = ::SizeofResource(handle, rc);
    BYTE* data = static_cast<BYTE*>(::LockResource(rcData));
-   BYTE* copy = static_cast<BYTE*>(malloc(size));
-   memcpy(copy, data, size);
-   m_pinballEnvTexture.LoadFromMemory(copy, size);
-   free(copy);
+   m_pinballEnvTexture.LoadFromMemory(data, size);
 
    m_aoDitherTexture.CreateFromResource(IDB_AO_DITHER);
 

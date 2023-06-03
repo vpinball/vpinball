@@ -6,9 +6,9 @@
 #include "VertexBuffer.h"
 #include "bulb.h"
 
-// Light state can be either a float between 0...1 or 2 for blinking state.
-// Some old table would set it to 255 or 'TRUE' (-1) for full state, so we perform this 'clamping'
-inline float clampLightState(float state)
+// Light state can be either a float between 0...1, or 2 for the blinking state.
+// Some old tables would set it to 255 or 'TRUE' (-1) for the full on state, so we perform this 'clamping'
+inline float clampLightState(const float state)
 {
    if (state < 0.f) // Legacy script using 'TRUE' for on
       return 1.f;
@@ -1336,7 +1336,7 @@ STDMETHODIMP Light::put_BlinkInterval(long newVal)
 
 STDMETHODIMP Light::Duration(float startState, long newVal, float endState)
 {
-   m_inPlayState = clampLightState(startState);
+    m_inPlayState = clampLightState(startState);
     m_duration = newVal;
     m_finalLightState = clampLightState(endState);
     if (g_pplayer)

@@ -129,7 +129,7 @@ void MeshBuffer::bind()
    {
       m_ib->Upload();
       // For some reason, it seems the index buffer binding is not stored in the VAO (likely the binding to the VAO is lost somewhere, but where ?)
-      // This can be easily reproducd by commenting the IB binding and running Flupper's Totan 1.5 in camera mode. It should crash directly
+      // This can be easily reproduced by commenting the IB binding and running Flupper's Totan 1.5 in camera mode. It should crash directly
       m_ib->Bind(); 
    }
 
@@ -177,4 +177,3 @@ void MeshBuffer::bind()
    }
 #endif
 }
-

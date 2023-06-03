@@ -153,16 +153,16 @@ This allows to have multiple DMDs, for example to add an ingame option menu, or 
 
 ## Primitive Depth Masking
 
-Primitives have a new property that allows to disable 'depth masking', that is to say hiding the parts that are behind the primitive, and are drawn after her.
+Primitives have a new property that allows to disable 'depth masking', which otherwise is used during rendering to hide all parts behind the primitive.
 
 
-Depth Masking should be disabled for transparent primitive when:
-- they are used to render shadows,
-- they have visible self overlapping parts (plastic ramps, in conjunction with the option to render backfacing faces).
+Depth Masking should be disabled for transparent primitive if:
+- these are used to render fake/approximate shadows,
+- these have visible self overlapping parts (plastic ramps, in conjunction with the option to render backfacing faces).
 
 ![Before](img/Upgrade10.8-DepthMaskBefore.png)
 ![After](img/Upgrade10.8-DepthMaskAfter.png)
 
-Left shows an (exagerated) ambient occlusion artefact due to depth masking. Right is the same with depth masking disabled.
+Left shows an (exaggerated) ambient occlusion artefact due to depth masking. Right is the same with depth masking disabled.
 
 <sub><sup>[Informations applicable to version 10.8 Beta]</sup></sub>

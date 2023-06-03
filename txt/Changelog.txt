@@ -33,7 +33,7 @@ FEATURES:
     One can also select an additional VR Preview window that shows the VR rendering on the screen as Side-By-Side.
 
   - when using VR, the near plane can be adjusted (in centimeters). It is like a wall in front of the player. Everything between the player and the near-
-    plane is invisible. It might be helpful if one wants to be adjust visibility when moving or one changed the scaling too much. Having too small values for the near-plane will cause Z-fighting artifacts.
+    plane is invisible. It might be helpful if one wants to adjust visibility when moving or if one has changed the scaling too much. Having too small values for the near-plane will cause Z/depth-fighting rendering artifacts.
 
   - scaling of the table is now possible within the VR settings. One can either set a factor (e.g. 1.1 increases the table size by 10%) or one can
     scale all tables to a fixed width (in centimeters) to match a PinSim Controller. The scaling factor has no lower/upper limit (so yes,
@@ -100,9 +100,9 @@ FEATURES:
 - the application is now fully 'DPI aware'. This means that one can use multiple monitors at different DPI settings.
   This may require to adjust the position of windows on existing installs.
 
-- add 2 new camera layout mode which works better for cabinets and for anaglyph stereo (as well as other uses) and allows:
+- add 2 new camera layout modes which work better for cabinets, and for anaglyph stereo (as well as other use cases) and allows:
   - to setup the player position in real word units, measuring from the bottom center of the playfield in centimeters. This should allow to have a single position corresponding to your size and play position for all your tables.
-  - to setup the camera like a 'real' camera: there is no more layback but a view offset, the other properties being simply the inclination and the field of view
+  - to setup the camera like a 'real' camera: there is no more layback but a view offset, the other properties being simply the inclination and the field of view.
   - for camera mode, adjust the user interface to show these informations and allow to easily reset to a default position by pressing the plunger key.
   - support a new 'window' mode, designed for pincab users, where the screen is not orthogonal to the viewer, requiring an adjusted projection.
 - change camera mode buttons to match the ones when starting VPX with -povedit (Start = Export POV, Credit = Reset/Quit, Plunger = Defaults)
@@ -114,18 +114,19 @@ FEATURES:
 - timers with a -1 interval used to be ran 1 or 2 times per frame (depending on user latency reduction setting). They now are always ran once per frame only.
   timers with a -2 interval are now considered as controller sync timers and will be ran as many time per frame as needed, depending on user settings.
 
-- A new folder named 'Cache' was added to VPX's main directory for caching data to improve performance. For the time being, it is used to store the list of textures which are used 
-  by each table during play, this information allows to preload the needed textures when a table is started, limiting stutters during play.
+- a new folder named 'Cache' was added to VPX's main directory for caching data to improve performance. For the time being, it is used to store the list of textures which are used 
+  by each table during play. This allows for preloading of the needed textures when a table is started, limiting stutters during play.
 
-- Add an option to primitive to toggle 'depth masking', that is to say hiding parts behind the primitive. If unchecked the primitive will not hide parts behind and will not be visible to ambient occlusion.
-  For example, this is needed to use primitives for user shadows without breaking ambient occlusion, or for transparents part with self overlapping parts like plastic ramps.
+- Add an option to primitives to toggle 'depth masking', which is otherwise used during rendering to hide all parts behind the primitive. If unchecked, the primitive will not hide parts behind it and it will also not be visible to ambient occlusion.
+  For example, this is needed to employ primitives to render user/fake shadows without breaking ambient occlusion, or for transparents part with self overlapping parts like plastic ramps.
 
 FIXES:
 
 - timers with a -1 interval are always fired after physics and animation, but before rendering, allowing the script to update visual parts accordingly without any visual lag.
   This also applies to the new 'Animate' event which is designed for this purpose.
 
-- fix visible depth range evaluation, allowing to simplify VR settings and to edit large VR room in LiveUI. Note that loading old tables will take a bit longer until they are saved with 10.8, since they need to compute bounds of each part.
+- fix visible depth range evaluation, allowing to simplify VR settings and to edit large VR rooms within the LiveUI.
+  Note that loading pre-10.8 tables will take a bit longer (until they are saved again with 10.8) due to this, as these need to compute 3D-bounds for each part.
 
 - fix analogue nudge not working for joysticks/gamepads in XInput mode
 

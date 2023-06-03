@@ -44,7 +44,7 @@ public:
       m_frameIndex = -1;
       for (int i = 0; i < PROFILE_COUNT; i++)
       {
-         m_profileMinData[i] = LONG_MAX;
+         m_profileMinData[i] = ~0u;
          m_profileMaxData[i] = 0;
          m_profileTotalData[i] = 0;
       }
@@ -57,11 +57,11 @@ public:
       m_profileTimeStamp = usec();
       if (m_frameIndex > 0)
       {
-         unsigned long frameLength = (unsigned long)(m_profileTimeStamp - m_frameTimeStamp);
+         unsigned int frameLength = (unsigned int)(m_profileTimeStamp - m_frameTimeStamp);
          m_profileData[m_profileIndex][PROFILE_FRAME] = frameLength;
          for (int i = 0; i < PROFILE_COUNT; i++)
          {
-            unsigned long data = m_profileData[m_profileIndex][i];
+            unsigned int data = m_profileData[m_profileIndex][i];
             m_profileMinData[i] = min(m_profileMinData[i], data);
             m_profileMaxData[i] = max(m_profileMaxData[i], data);
             m_profileTotalData[i] += data;
@@ -76,7 +76,7 @@ public:
    void SetProfileSection(ProfileSection section)
    {
       unsigned long long ts = usec();
-      m_profileData[m_profileIndex][m_profileSection] += (unsigned long) (ts - m_profileTimeStamp);
+      m_profileData[m_profileIndex][m_profileSection] += (unsigned int) (ts - m_profileTimeStamp);
       m_profileTimeStamp = ts;
       m_profileSection = section;
    }
@@ -96,10 +96,10 @@ public:
       SetProfileSection(m_profileSectionStack[m_profileSectionStackPos]);
    }
 
-   unsigned long Get(ProfileSection section) const { return m_profileData[m_profileIndex][section]; }
-   unsigned long GetPrev(ProfileSection section) const { return m_profileData[(m_profileIndex + N_SAMPLES - 1) % N_SAMPLES][section]; }
-   unsigned long GetMin(ProfileSection section) const { return m_profileMinData[section]; }
-   unsigned long GetMax(ProfileSection section) const { return m_profileMaxData[section]; }
+   unsigned int Get(ProfileSection section) const { return m_profileData[m_profileIndex][section]; }
+   unsigned int GetPrev(ProfileSection section) const { return m_profileData[(m_profileIndex + N_SAMPLES - 1) % N_SAMPLES][section]; }
+   unsigned int GetMin(ProfileSection section) const { return m_profileMinData[section]; }
+   unsigned int GetMax(ProfileSection section) const { return m_profileMaxData[section]; }
    double GetAvg(ProfileSection section) const { return m_frameIndex <= 0 ? 0. : ((double)m_profileTotalData[section] / (double)m_frameIndex); }
    double GetRatio(ProfileSection section) const { return m_profileTotalData[ProfileSection::PROFILE_FRAME] == 0 ? 0. : ((double)m_profileTotalData[section] / (double)m_profileTotalData[ProfileSection::PROFILE_FRAME]); }
 
@@ -107,8 +107,8 @@ public:
    double GetSlidingAvg(ProfileSection section) const
    {
       unsigned int pos = m_profileIndex;
-      unsigned long elapsed = 0ul;
-      unsigned long sum = 0ul;
+      unsigned int elapsed = 0u;
+      unsigned int sum = 0u;
       unsigned int count = 0u;
       for (unsigned int i = 0u; i < N_SAMPLES; i++)
       {
@@ -118,7 +118,7 @@ public:
          pos = (pos + N_SAMPLES - 1) % N_SAMPLES;
          sum += m_profileData[pos][section];
          elapsed += m_profileData[pos][ProfileSection::PROFILE_FRAME];
-         if (elapsed >= 1000000ul) // end of 1s sliding average
+         if (elapsed >= 1000000u) // end of 1s sliding average
             break;
       }
       return count == 0 ? 0. : (double)sum / (double)count;
@@ -131,14 +131,14 @@ private:
    unsigned long long m_profileTimeStamp;
 
    unsigned int m_profileIndex = 0;
-   unsigned long m_profileData[N_SAMPLES][PROFILE_COUNT];
+   unsigned int m_profileData[N_SAMPLES][PROFILE_COUNT];
 
    unsigned int m_frameIndex = -1;
    unsigned long long m_frameTimeStamp;
 
-   unsigned long m_profileMaxData[PROFILE_COUNT];
-   unsigned long m_profileMinData[PROFILE_COUNT];
-   unsigned long m_profileTotalData[PROFILE_COUNT];
+   unsigned int m_profileMaxData[PROFILE_COUNT];
+   unsigned int m_profileMinData[PROFILE_COUNT];
+   unsigned int m_profileTotalData[PROFILE_COUNT];
 
    int m_profileSectionStackPos = 0;
    ProfileSection m_profileSectionStack[STACK_SIZE];

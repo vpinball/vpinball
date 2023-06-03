@@ -144,7 +144,7 @@ Variables
 *WindowWidth(int) - get width of rendering window/fullscreen
 *WindowHeight(int) - get height of rendering window/fullscreen
 
-*Setting(string, string) - get the value of one of VPX setting
+*Setting(string, string) - get the value of one of the VPX .ini settings
 
 DMDWidth(int) - set width of DMD
 DMDHeight(int) - set height of DMD
@@ -743,7 +743,7 @@ UserValue(any) - can store any user defined value for re-use later-on
 Opacity(float) - lets you define the blend amount 0..100% (you can use values >100% though to for example enhance the strength of primitives in additive alpha blending mode)
 Color - defines the color of the element in the editor. If you don't want to colorize the image set the color to blank white (RGB 255,255,255)
 AddBlend(bool) - use additive alpha blending instead of classical alpha blending (also disable depth buffer writing)
-EnableDepthMask(bool) - enable/disable depth masking
+EnableDepthMask(bool) - enables/disables depth masking
 
 The following only applies to mesh primitives with an animation sequence
 ------------------------------------------------------------------------

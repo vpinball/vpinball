@@ -4638,7 +4638,7 @@ void Player::DrawBalls()
                   float ls = vec.LengthSquared();
                   if (ls > 1e-5)
                   {
-                     vec *= 1.0f / sqrt(ls);
+                     vec *= 1.0f / sqrtf(ls);
                      const Vertex3Ds up(0.f, 0.f, 1.f);
                      const Vertex3Ds n = CrossProduct(vec, up) * r;
 
@@ -5126,7 +5126,7 @@ void Player::StopPlayer()
                   node->SetAttribute("clampu", (int)m_pin3d.m_pd3dPrimaryDevice->m_texMan.GetClampU(memtex));
                   node->SetAttribute("clampv", (int)m_pin3d.m_pd3dPrimaryDevice->m_texMan.GetClampV(memtex));
                   node->SetAttribute("linear", m_pin3d.m_pd3dPrimaryDevice->m_texMan.IsLinearRGB(memtex));
-                  bool preRenderOnly = m_dynamicMode ? (prevPreRenderOnly.find(image->m_szName) != prevPreRenderOnly .end() ? prevPreRenderOnly[image->m_szName] : true)
+                  bool preRenderOnly = m_dynamicMode ? (prevPreRenderOnly.find(image->m_szName) != prevPreRenderOnly.end() ? prevPreRenderOnly[image->m_szName] : true)
                                                      : m_pin3d.m_pd3dPrimaryDevice->m_texMan.IsPreRenderOnly(memtex);
                   node->SetAttribute("prerender", preRenderOnly);
                   root->InsertEndChild(node);
