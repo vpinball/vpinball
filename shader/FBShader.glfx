@@ -772,7 +772,7 @@ void main()
    float3 irradiance = float3(0., 0., 0.);
    for (int i=0; i<NumSamples; ++i) {
       //const float2 u = float2(float(i) * InvNumSamples, radicalInverse_VdC(i));
-      const float2 u = float2(float(i) * InvNumSamples, fract(float(i) * g));
+      const float2 u = float2(float(i) * InvNumSamples, frac(float(i) * g));
       const float3 Li = rotate_to_vector_upper(cos_hemisphere_sample(u), N);
       const float2 uv = float2(0.5 + atan2_approx_div2PI(Li.y, Li.x), acos_approx_divPI(Li.z));
       irradiance += texNoLod(tex_fb_unfiltered, uv).rgb * InvNumSamples;

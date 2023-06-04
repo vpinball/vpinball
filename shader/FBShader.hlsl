@@ -318,8 +318,8 @@ float3 bloom_cutoff(const float3 c)
     const float brightness = max(c.r, max(c.g, c.b));
     float soft = brightness - (Threshold - Knee);
     soft = clamp(soft, 0., 2. * Knee);
-    soft *= soft * (1.0 / (4. * Knee + 0.00001));
-    const float contribution = max(soft, brightness - Threshold) / max(brightness, 0.00001);
+    soft *= soft * (1.0 / (4. * Knee + 0.00006103515625)); // 0.00006103515625 due to 16bit half float
+    const float contribution = max(soft, brightness - Threshold) / max(brightness, 0.00006103515625); // dto.
     return c * contribution;
 }
 
@@ -705,6 +705,32 @@ float4 ps_main_fb_mirror(const in VS_OUTPUT_2D IN) : COLOR
 }
 
 
+// cos_hemisphere_sample & rotate_to_vector_upper are defined in FXAAStereoAO
+float4 ps_main_fb_irradiance(const in VS_OUTPUT_2D IN) : COLOR
+{
+   // Compute sample direction
+   const float phi   = PI + IN.tex0.x * (2.0 * PI);
+   const float theta =      IN.tex0.y        * PI;
+   const float3 N = float3(sin(theta) * cos(phi), sin(theta) * sin(phi), cos(theta));
+
+   //const float2 uv0 = float2(0.5 + atan2_approx_div2PI(N.y, N.x), acos_approx_divPI(N.z));
+   //color = float4(texNoLod(tex_fb_unfiltered, uv0).rgb, 1.0);
+
+   // Monte Carlo integration of hemispherical radiance -> irradiance
+   const int NumSamples = 65536; // Limit to 65536, will fail on macOS Metal otherwise
+   const float InvNumSamples = 1.0 / float(NumSamples);
+   const float g = 25962.0 / float(NumSamples); // 25962 = matching rank-1 generator constant for 65536 samples
+   float3 irradiance = float3(0., 0., 0.);
+   [unroll(1)] for (int i=0; i<NumSamples; ++i) {
+      const float2 u = float2(float(i) * InvNumSamples, frac(float(i) * g));
+      const float3 Li = rotate_to_vector_upper(cos_hemisphere_sample(u), N);
+      const float2 uv = float2(0.5 + atan2_approx_div2PI(Li.y, Li.x), acos_approx_divPI(Li.z));
+      irradiance += texNoLod(tex_fb_unfiltered, uv).rgb * InvNumSamples;
+   }
+   return float4(irradiance, 1.0);
+}
+
+
 //
 // Techniques
 //
@@ -1083,6 +1109,17 @@ technique fb_mirror
 	{
 		VertexShader = compile vs_3_0 vs_main_no_trafo();
 		PixelShader  = compile ps_3_0 ps_main_fb_mirror();
+	}
+}
+
+//
+
+technique fb_irradiance
+{
+	pass P0
+	{
+		VertexShader = compile vs_3_0 vs_main_no_trafo();
+		PixelShader  = compile ps_3_0 ps_main_fb_irradiance();
 	}
 }
 
