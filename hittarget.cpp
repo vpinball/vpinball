@@ -600,6 +600,12 @@ void HitTarget::UpdateStatusBarInfo()
 
 void HitTarget::UpdateAnimation(const float diff_time_msec)
 {
+    // Do not perform animation of invisible targets
+    // This is needed for backward compatibility since animation used to be part of rendering and would not be performed, therefore
+    // hidden drop targets would never actually drop, and old tables rely on this behavior.
+    if (!m_d.m_visible)
+       return;
+
     if (m_hitEvent)
     {
         if (!m_d.m_isDropped)
@@ -1232,7 +1238,7 @@ STDMETHODIMP HitTarget::put_Scatter(float newVal)
 
 STDMETHODIMP HitTarget::get_Collidable(VARIANT_BOOL *pVal)
 {
-   *pVal = FTOVB((!g_pplayer) ? m_d.m_collidable : m_vhoCollidable[0]->m_enabled);
+   *pVal = FTOVB(m_d.m_collidable);
 
    return S_OK;
 }
@@ -1240,13 +1246,11 @@ STDMETHODIMP HitTarget::get_Collidable(VARIANT_BOOL *pVal)
 STDMETHODIMP HitTarget::put_Collidable(VARIANT_BOOL newVal)
 {
    const bool val = VBTOb(newVal);
-   if (!g_pplayer)
-      m_d.m_collidable = val;
-   else
+   if (m_d.m_collidable != val)
    {
-       if (!m_vhoCollidable.empty() && m_vhoCollidable[0]->m_enabled != val)
-           for (size_t i = 0; i < m_vhoCollidable.size(); i++) //!! costly
-               m_vhoCollidable[i]->m_enabled = val; //copy to hit checking on entities composing the object 
+      m_d.m_collidable = val;
+      for (auto collidable : m_vhoCollidable)
+         collidable->m_enabled = val;
    }
 
    return S_OK;
@@ -1365,23 +1369,26 @@ STDMETHODIMP HitTarget::get_IsDropped(VARIANT_BOOL *pVal)
 STDMETHODIMP HitTarget::put_IsDropped(VARIANT_BOOL newVal)
 {
    const bool val = (newVal != 0);
-   if (g_pplayer && m_d.m_isDropped != val)
+   if (m_d.m_isDropped != val)
    {
-      m_moveAnimation = true;
-      if (val)
+      PLOGD << GetName() << " set IsDropped to " << val;
+      m_d.m_isDropped = val;
+      if (g_pplayer)
       {
-         m_moveAnimationOffset = 0.0f;
-         m_moveDown = true;
-      }
-      else
-      {
-         m_moveAnimationOffset = -DROP_TARGET_LIMIT*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
-         m_moveDown = false;
-         m_timeStamp = g_pplayer->m_time_msec;
+         m_moveAnimation = true;
+         if (val)
+         {
+            m_moveAnimationOffset = 0.0f;
+            m_moveDown = true;
+         }
+         else
+         {
+            m_moveAnimationOffset = -DROP_TARGET_LIMIT*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+            m_moveDown = false;
+            m_timeStamp = g_pplayer->m_time_msec;
+         }
       }
    }
-   else
-      m_d.m_isDropped = val;
 
    return S_OK;
 }
