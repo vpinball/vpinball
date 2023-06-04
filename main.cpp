@@ -616,9 +616,9 @@ public:
 };
 
 #if defined(ENABLE_SDL)
-// OpenGL implementation will fail on Nvidia driver when Threaded Optimization is enabled so we disable it for this app
-// Note: there are quite a lot of application doing this, but I think this may hide an incorrect OpenGL call somewhere 
-// that the threaded optimization of Nvidia drivers ends up to a crash. This would be good to find the root cause if any.
+// The OpenGL implementation will fail on NVIDIA drivers when Threaded Optimization is enabled so we disable it for this app
+// Note: There are quite a lot of applications doing this, but I think this may hide an incorrect OpenGL call somewhere
+// that the threaded optimization of NVIDIA drivers ends up to crash. This would be good to find the root cause, if any.
 
 #include "inc/nvapi/nvapi.h"
 #include "inc/nvapi/NvApiDriverSettings.h"
@@ -632,7 +632,7 @@ enum NvThreadOptimization
    NV_THREAD_OPTIMIZATION_NO_SUPPORT = 3
 };
 
-bool NvAPI_OK_Verify(NvAPI_Status status)
+static bool NvAPI_OK_Verify(NvAPI_Status status)
 {
    if (status == NVAPI_OK)
       return true;
@@ -640,23 +640,21 @@ bool NvAPI_OK_Verify(NvAPI_Status status)
    NvAPI_ShortString szDesc = { 0 };
    NvAPI_GetErrorMessage(status, szDesc);
 
-   char szResult[255];
-   sprintf(szResult, "NVAPI error: %s\n\0", szDesc);
-   printf(szResult);
+   PLOGI << "NVAPI error: " << szDesc;
 
    return false;
 }
 
-NvThreadOptimization GetNVidiaThreadOptimization()
+static NvThreadOptimization GetNVIDIAThreadOptimization()
 {
-   NvAPI_Status status;
-   NvDRSSessionHandle hSession;
    NvThreadOptimization threadOptimization = NV_THREAD_OPTIMIZATION_NO_SUPPORT;
 
+   NvAPI_Status status;
    status = NvAPI_Initialize();
    if (!NvAPI_OK_Verify(status))
       return threadOptimization;
 
+   NvDRSSessionHandle hSession;
    status = NvAPI_DRS_CreateSession(&hSession);
    if (!NvAPI_OK_Verify(status))
       return threadOptimization;
@@ -666,9 +664,7 @@ NvThreadOptimization GetNVidiaThreadOptimization()
    {
       NvAPI_DRS_DestroySession(hSession);
       return threadOptimization;
-      ;
    }
-
 
    NvDRSProfileHandle hProfile;
    status = NvAPI_DRS_GetBaseProfile(hSession, &hProfile);
@@ -676,10 +672,9 @@ NvThreadOptimization GetNVidiaThreadOptimization()
    {
       NvAPI_DRS_DestroySession(hSession);
       return threadOptimization;
-      ;
    }
 
-   NVDRS_SETTING originalSetting;
+   NVDRS_SETTING originalSetting = {};
    originalSetting.version = NVDRS_SETTING_VER;
    status = NvAPI_DRS_GetSetting(hSession, hProfile, OGL_THREAD_CONTROL_ID, &originalSetting);
    if (NvAPI_OK_Verify(status))
@@ -692,18 +687,17 @@ NvThreadOptimization GetNVidiaThreadOptimization()
    return threadOptimization;
 }
 
-void SetNVidiaThreadOptimization(NvThreadOptimization threadedOptimization)
+static void SetNVIDIAThreadOptimization(NvThreadOptimization threadedOptimization)
 {
-   NvAPI_Status status;
-   NvDRSSessionHandle hSession;
-
    if (threadedOptimization == NV_THREAD_OPTIMIZATION_NO_SUPPORT)
       return;
 
+   NvAPI_Status status;
    status = NvAPI_Initialize();
    if (!NvAPI_OK_Verify(status))
       return;
 
+   NvDRSSessionHandle hSession;
    status = NvAPI_DRS_CreateSession(&hSession);
    if (!NvAPI_OK_Verify(status))
       return;
@@ -723,7 +717,7 @@ void SetNVidiaThreadOptimization(NvThreadOptimization threadedOptimization)
       return;
    }
 
-   NVDRS_SETTING setting;
+   NVDRS_SETTING setting = {};
    setting.version = NVDRS_SETTING_VER;
    setting.settingId = OGL_THREAD_CONTROL_ID;
    setting.settingType = NVDRS_DWORD_TYPE;
@@ -743,7 +737,7 @@ void SetNVidiaThreadOptimization(NvThreadOptimization threadedOptimization)
 }
 #endif
 
-class DebugAppender : public plog::IAppender 
+class DebugAppender : public plog::IAppender
 {
 public:
    virtual void write(const plog::Record &record) PLOG_OVERRIDE
@@ -802,11 +796,11 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
    try
    {
       #if defined(ENABLE_SDL)
-      s_OriginalNVidiaThreadOptimization = GetNVidiaThreadOptimization();
+      s_OriginalNVidiaThreadOptimization = GetNVIDIAThreadOptimization();
       if (s_OriginalNVidiaThreadOptimization != NV_THREAD_OPTIMIZATION_NO_SUPPORT && s_OriginalNVidiaThreadOptimization != NV_THREAD_OPTIMIZATION_DISABLE)
       {
-         PLOGI << "Disabling NVidia Threaded Optimization";
-         SetNVidiaThreadOptimization(NV_THREAD_OPTIMIZATION_DISABLE);
+         PLOGI << "Disabling NVIDIA Threaded Optimization";
+         SetNVIDIAThreadOptimization(NV_THREAD_OPTIMIZATION_DISABLE);
       }
       #endif
 
@@ -846,8 +840,8 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
    #if defined(ENABLE_SDL)
    if (s_OriginalNVidiaThreadOptimization != NV_THREAD_OPTIMIZATION_NO_SUPPORT && s_OriginalNVidiaThreadOptimization != NV_THREAD_OPTIMIZATION_DISABLE)
    {
-      PLOGI << "Restoring NVidia Threaded Optimization";
-      SetNVidiaThreadOptimization(s_OriginalNVidiaThreadOptimization);
+      PLOGI << "Restoring NVIDIA Threaded Optimization";
+      SetNVIDIAThreadOptimization(s_OriginalNVidiaThreadOptimization);
    };
    #endif
 
