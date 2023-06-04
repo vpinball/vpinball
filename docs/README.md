@@ -8,5 +8,7 @@
    4. [Lights](Lights.md)
 2. Scripting
    1. [API Reference](<Script API Reference.md>)
+3. Upgrading to new version
+   1. [Upgrading to VPX 10.8](<Upgrading Table 10.8.md>)
 
 <sub><sup>[Informations applicable to version 10.8 Beta]</sup></sub>

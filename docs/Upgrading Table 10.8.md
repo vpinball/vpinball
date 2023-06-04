@@ -7,6 +7,7 @@ VPX 10.8 tries to be entirely backwards compatible. Therefore, existing tables s
 
 Beside these eventually needed updates, 10.8 offers new features that can be leveraged by updating the table. The main ones are described below.
 
+
 ## Table of Contents
 1. [Ball Shadows](#ball-shadows)
 2. [Ball Reflections](#ball-reflections)
@@ -15,9 +16,9 @@ Beside these eventually needed updates, 10.8 offers new features that can be lev
 5. [Reflections](#reflections)
 6. [Better light fading](better-light-fading)
 7. [Simplified scripting](#simplified-scripting)
-8. [Better statics](#better-statics)
-9. [Additional DMD](additional-dmd)
-10. [Primitive Depth Masking](primitive-depth-masking)
+8. [Additional DMD](additional-dmd)
+9. [Primitive Depth Masking](primitive-depth-masking)
+
 
 ## Ball Shadows
 Dynamically raytraced ball shadows were added to lights. To enable them, just enable the corresponding checkbox in the light properties.
@@ -29,6 +30,7 @@ Dynamically raytraced ball shadows were added to lights. To enable them, just en
 
 Left: no shadow / Right: with ball shadow
 
+
 ## Ball Reflections
 Balls used to be rendered using a 'sphere map' that have the drawback of being view independent, therefore not interacting with the viewer if the camera moves (for example in VR or with headtracking). They can now use an 'equirectangular map', so the same type of texture layout as used already for the environment lighting.
 
@@ -39,6 +41,7 @@ Balls used to be rendered using a 'sphere map' that have the drawback of being v
 
 Left: sphere mapping / Right: view dependent equirectangular mapping
 
+
 ## Playfield Transparency
 Before 10.8, the playfield did only support binary transparency, that is to say either opaque or fully transparent based on the alpha threshold value defined on the playfield image. Now, alpha blended transparency is fully supported, allowing better rendering of tranparent parts like inserts.
 
@@ -48,10 +51,12 @@ There is nothing special to do to be able to use it. Using the feature, the alph
 
 If you are using a custom 'playfield_mesh'-named primitive for the playfield visuals, all the properties are now processed like any other primitive. Especially the 'Disable Lighting From Below' parameter is now supported.
 
+
 ## Playfield Cutouts and lower playfield
 Before 10.8, parts under the playfield needed to be created separately, using an 'Active' material. This restriction does not apply any more. Therefore, you can just create a playfield primitive with its nice beveled cutouts, name it 'playfield_mesh' in order to get good looking cutouts.
 
 The same applies to lower playfields. These used to need an active material and could not be marked as static. This does not apply anymore.
+
 
 ## Reflections
 Reflections used to be limited to the playfield, with no VR nor camera mode support, not taking into account the actual playfield geometry (parts above a hole or outside of the playfield would reflect just like if there was a playfield beneath them).
@@ -75,6 +80,7 @@ The default table offers an example with its 3 reflection probes: one for the pl
 
 ![Example](img/Upgrade10.8-ReflectionsExample.png)
 
+
 ## Better light fading
 
 Light fading was updated and now offers 3 modes:
@@ -87,6 +93,7 @@ Light fading was updated and now offers 3 modes:
 If one is using a custom fader (implemented in your script), then the 'None' fading mode is your friend. Otherwise, the 'Incandescent' mode should give more realistic results than the 'linear' mode.
 
 ![Fading](img/Upgrade10.8-LightFading.gif)
+
 
 ## Simplified Scripting
 A new event called `Animate` was added to most animated parts. It allows to simplify the script written to sync custom visual parts (e.g. primitives) with their actually animated counterparts.
@@ -128,28 +135,11 @@ End Sub
 Custom fading of lights and flashers can also be largely simplified by using the new [light fading](#better-light-fading), leveraging the new 'lightmap' property of flashers and/or using the 'Animate' event, thus reducing the performance impact of the script (which can lead to e.g. microstutter on some systems otherwise).
 
 
-## Better Statics
-VPX 10.8 allows the script to update properties of 'static' parts during initialization, that is to say in the main script part and in the 'Init' events of the table and its parts. This can be leveraged to adjust visiblity of static parts depending on the display setup (e.g. VR vs cab vs desktop vs FSS) or user-selected options.
-
-For example:
-```
-' Detect if VPX is rendering in VR and adjust visibility of parts within the VR_Cab collection
-Dim VRThings
-If RenderingMode = 2 Then
-	For Each VRThings In VR_Cab
-		VRThings.visible = 1
-	Next
-Else
-	For Each VRThings In VR_Cab
-		VRThings.visible = 0
-	Next
-End If
-```
-
 ## Additional DMD
 
 VPX 10.8 added the ability to setup a custom DMD for any flasher object.
 This allows to have multiple DMDs, for example to add an ingame option menu, or to handle additional real DMDs (e.g. Monopoly or TSPP tables).
+
 
 ## Primitive Depth Masking
 
