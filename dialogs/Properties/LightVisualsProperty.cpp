@@ -34,10 +34,11 @@ void LightVisualsProperty::UpdateLightType(const int mode)
     GetDlgItem(IDC_BULB_MODULATE_VS_ADD).ShowWindow(SW_HIDE);
     GetDlgItem(IDC_TRANSMIT_LABEL).ShowWindow(SW_HIDE);
     GetDlgItem(IDC_TRANSMISSION_SCALE).ShowWindow(SW_HIDE);
+    GetDlgItem(IDC_REFLECT_ENABLED_CHECK).ShowWindow(SW_HIDE);
+    GetDlgItem(IDC_DEPTHBIAS_LABEL).ShowWindow(SW_HIDE);
+    GetDlgItem(IDC_DEPTH_BIAS).ShowWindow(SW_HIDE);
     if (mode == 0)
     {
-       GetDlgItem(IDC_DEPTHBIAS_LABEL).ShowWindow(SW_HIDE);
-       GetDlgItem(IDC_DEPTH_BIAS).ShowWindow(SW_HIDE);
     }
     else if (mode == 1)
     {
@@ -46,6 +47,7 @@ void LightVisualsProperty::UpdateLightType(const int mode)
        GetDlgItem(IDC_IMAGE_MODE).ShowWindow(SW_SHOWNORMAL);
        GetDlgItem(IDC_DEPTHBIAS_LABEL).ShowWindow(SW_SHOWNORMAL);
        GetDlgItem(IDC_DEPTH_BIAS).ShowWindow(SW_SHOWNORMAL);
+       GetDlgItem(IDC_REFLECT_ENABLED_CHECK).ShowWindow(SW_SHOWNORMAL);
     }
     else
     {
@@ -57,6 +59,7 @@ void LightVisualsProperty::UpdateLightType(const int mode)
        GetDlgItem(IDC_TRANSMISSION_SCALE).ShowWindow(SW_SHOWNORMAL);
        GetDlgItem(IDC_DEPTHBIAS_LABEL).ShowWindow(SW_SHOWNORMAL);
        GetDlgItem(IDC_DEPTH_BIAS).ShowWindow(SW_SHOWNORMAL);
+       GetDlgItem(IDC_REFLECT_ENABLED_CHECK).ShowWindow(SW_SHOWNORMAL);
     }
 }
 
