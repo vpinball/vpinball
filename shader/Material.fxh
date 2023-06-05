@@ -148,12 +148,8 @@ float3 DoPointLight(const float3 pos, const float3 N, const float3 V, const floa
 // does /PI-corrected lookup/final color already
 float3 DoEnvmapDiffuse(const float3 N, const float3 diffuse)
 {
-   const float2 uv = float2( // remap to 2D envmap coords
-		0.5 + atan2_approx_div2PI(N.y, N.x),
-		acos_approx_divPI(N.z));
-
-   const float3 env = texNoLod(tex_diffuse_env, uv).xyz;
-   return diffuse * env*fenvEmissionScale_TexWidth.x;
+   const float3 env = texNoLod(tex_diffuse_env, ray_to_equirectangular_uv(N)).xyz;
+   return diffuse * env * fenvEmissionScale_TexWidth.x;
 }
 
 //!! PI?
@@ -207,16 +203,18 @@ float3 lightLoop(const float3 pos, float3 N, const float3 V, float3 diffuse, flo
    }
 
    BRANCH if (!is_metal && (diffuseMax > 0.0))
-      color += DoEnvmapDiffuse(normalize(mul(matView, N).xyz), diffuse); // trafo back to world for lookup into world space envmap // actually: mul(float4(N,0.0), matViewInverseInverseTranspose), but optimized to save one matrix
+	  // trafo back to world for lookup into world space envmap 
+	  // matView is always an orthonormal matrix, so no need to normalize after transform
+      color += DoEnvmapDiffuse(/*normalize*/(mul(matView, N).xyz), diffuse); // actually: mul(float4(N,0.0), matViewInverseInverseTranspose), but optimized to save one matrix
 
    BRANCH if ((glossyMax > 0.0) || (specularMax > 0.0))
    {
 	   float3 R = (2.0*NdotV)*N - V; // reflect(-V,n);
-	   R = normalize(mul(matView, R).xyz); // trafo back to world for lookup into world space envmap // actually: mul(float4(R,0.0), matViewInverseInverseTranspose), but optimized to save one matrix
+	   // trafo back to world for lookup into world space envmap 
+	   // matView is always an orthonormal matrix, so no need to normalize after transform
+	   R = /*normalize*/(mul(matView, R).xyz); // actually: mul(float4(R,0.0), matViewInverseInverseTranspose), but optimized to save one matrix
 
-	   const float2 Ruv = float2( // remap to 2D envmap coords
-			0.5 + atan2_approx_div2PI(R.y, R.x),
-			acos_approx_divPI(R.z));
+	   const float2 Ruv = ray_to_equirectangular_uv(R);
 
 #if !ENABLE_VR
 	   if (glossyMax > 0.0)

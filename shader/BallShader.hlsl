@@ -101,6 +101,7 @@ vout vsBall( const in vin IN )
 
 	// apply spinning to the normals too to get the sphere mapping effect
 	const float3 nspin = mul_w0(IN.normal, orientation);
+   // Needs to use a 'normal' matrix, and to normalize since we allow non uniform stretching, therefore matWorldView is not orthonormal
 	const float3 normal = normalize(mul(matWorldViewInverse, nspin).xyz); // actually: mul(float4(nspin,0.), matWorldViewInverseTranspose), but optimized to save one matrix
 
 	const float3 p = mul_w1(pos.xyz, matWorldView);
@@ -152,9 +153,9 @@ voutTrail vsBallTrail( const in vin IN )
 
 float3 ballLightLoop(const float3 pos, float3 N, float3 V, float3 diffuse, float3 glossy, const float3 specular, const float edge, const bool is_metal)
 {
-   // normalize input vectors for BRDF evals
-   N = normalize(N);
-   V = normalize(V);
+   // N and V must be already normalized by the caller
+   // N = normalize(N);
+   // V = normalize(V);
 
    // normalize BRDF layer inputs //!! use diffuse = (1-glossy)*diffuse instead?
    const float diffuseMax = max(diffuse.x,max(diffuse.y,diffuse.z));
@@ -228,14 +229,17 @@ float3 PFlightLoop(const float3 pos, const float3 N, const float3 diffuse)
 
 float4 psBall( const in vout IN, uniform bool equirectangularMap, uniform bool decalMode ) : COLOR
 {
-    const float3 v = normalize(/*camera=0,0,0,1*/-IN.worldPos_t0y.xyz);
-    const float3 r = reflect(v, normalize(IN.normal_t0x.xyz));
+    const float3 V = normalize( /*camera=0,0,0,1*/-IN.worldPos_t0y.xyz);
+    const float3 N = normalize(IN.normal_t0x.xyz);
+    const float3 r = reflect(V, N);
 
    float3 ballImageColor;
    BRANCH if (equirectangularMap)
    {  // Equirectangular Map Reflections
-      const float3 rv = mul_w0(r, matWorldViewInverse);
-      const float2 uv = float2(0.5 + atan2_approx_div2PI(rv.y, rv.x), 0.5 + asin_approx_divPI(rv.z));
+	  // trafo back to world for lookup into world space envmap 
+	  // matView is always an orthonormal matrix, so no need to normalize after transform
+      const float3 rv = /*normalize*/(mul(matView, -r).xyz);
+      const float2 uv = ray_to_equirectangular_uv(rv);
       ballImageColor = tex2D(tex_ball_color, uv).rgb;
    }
    else
@@ -243,7 +247,7 @@ float4 psBall( const in vout IN, uniform bool equirectangularMap, uniform bool d
       // calculate the intermediate value for the final texture coords. found here http://www.ozone3d.net/tutorials/glsl_texturing_p04.php
       const float m = (1.0 - r.z > 0.) ? 0.3535533905932737622 * rsqrt(1.0 - r.z) : 0.; // 0.353...=0.5/sqrt(2)
       const float2 uv = float2(0.5 - m * r.x, 0.5 - m * r.y);
-      const float edge = dot(v, r);
+      const float edge = dot(V, r);
       // edge falloff to reduce aliasing on edges (picks smaller mipmap -> more blur)
       const float lod = (edge > 0.6) ? edge*(6.0*1.0/0.4)-(6.0*0.6/0.4) : 0.0;
       ballImageColor = tex2Dlod(tex_ball_color, float4(uv, 0., lod)).rgb;
@@ -269,7 +273,10 @@ float4 psBall( const in vout IN, uniform bool equirectangularMap, uniform bool d
     else
        ballImageColor *= 0.5*fenvEmissionScale_TexWidth.x; //!! 0.5=magic
 
-    const float3 playfield_normal = normalize(mul(matWorldViewInverse, float3(0.,0.,1.)).xyz); //!! normalize necessary? // actually: mul(float4(0.,0.,1.,0.), matWorldViewInverseTranspose), but optimized to save one matrix
+    // No need to use a dedicated 'normal' matrix and normalize here since the matWorldView matrix is normal (world is identity and view is always orthonormal)
+    //const float3 playfield_normal = normalize(mul(matWorldViewInverse, float3(0.,0.,1.)).xyz); //!! normalize necessary? // actually: mul(float4(0.,0.,1.,0.), matWorldViewInverseTranspose), but optimized to save one matrix
+    //const float3 playfield_normal = mul(float4(0.0, 0.0, 1.0, 0.0), matWorldView).xyz;
+    const float3 playfield_normal = float3(matWorldView._31, matWorldView._32, matWorldView._33);
     const float NdotR = dot(playfield_normal,r);
 
    const float3 playfield_p0 = mul_w1(float3(/*playfield_pos=*/0.,0.,invTableRes_playfield_height_reflection.z), matWorldView);
@@ -306,7 +313,7 @@ float4 psBall( const in vout IN, uniform bool equirectangularMap, uniform bool d
        specular *= float3(1.,1.,1.)-decalColor; // see above
 
     float4 result;
-    result.xyz = ballLightLoop(IN.worldPos_t0y.xyz, IN.normal_t0x.xyz, /*camera=0,0,0,1*/-IN.worldPos_t0y.xyz, diffuse, glossy, specular, 1.0, false);
+    result.xyz = ballLightLoop(IN.worldPos_t0y.xyz, N, V, diffuse, glossy, specular, 1.0, false);
     result.a = cBase_Alpha.a;
     return result;
 }

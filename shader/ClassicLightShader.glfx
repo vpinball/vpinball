@@ -46,7 +46,9 @@ void main()
 {
     // trafo all into worldview space (as most of the weird trafos happen in view, world is identity so far)
     float3 P = (matWorldView * vec4(vPosition,1.0)).xyz;
-    float3 N = normalize((matWorldViewInverseTranspose * vNormal).xyz);
+    // No need to use a dedicated 'normal' matrix and normalize since the matWorldView is orthonormal (world is identity and view is always orthonormal) and we normalize in fragment shader
+    //float3 N = normalize((matWorldViewInverseTranspose * vNormal).xyz);
+    float3 N = (matWorldView * float4(vNormal, 0.0)).xyz;
 
     gl_Position = float4(vPosition, 1.0);
     tex0_gs = tc;

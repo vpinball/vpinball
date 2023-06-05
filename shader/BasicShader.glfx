@@ -208,6 +208,7 @@ void main()
    tex01_gs = tc;
    // trafo all into worldview space (as most of the weird trafos happen in view, world is identity so far)
    worldPos_gs = (matWorldView*vPosition4).xyz;
+   // Needs to use a 'normal' matrix, and to normalize since we allow non uniform stretching, therefore matWorldView is not orthonormal
    normal_gs = normalize((matWorldViewInverseTranspose*vNormal).xyz);
 }
 
@@ -227,6 +228,7 @@ void main()
    tablePos_gs = (matWorld*vPosition4).xyz;
    gl_ClipDistance[0] = dot(vec4(tablePos_gs, 1.0), clip_plane);
    worldPos_gs = (matWorldView*vPosition4).xyz;
+   // Needs to use a 'normal' matrix, and to normalize since we allow non uniform stretching, therefore matWorldView is not orthonormal
    normal_gs = normalize((matWorldViewInverseTranspose*vNormal).xyz);
 }
 

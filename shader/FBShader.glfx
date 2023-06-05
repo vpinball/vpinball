@@ -762,9 +762,6 @@ void main()
    const float theta =      tex0.y        * PI;
    const float3 N = float3(sin(theta) * cos(phi), sin(theta) * sin(phi), cos(theta));
 
-   //const float2 uv0 = float2(0.5 + atan2_approx_div2PI(N.y, N.x), acos_approx_divPI(N.z));
-   //color = float4(texNoLod(tex_fb_unfiltered, uv0).rgb, 1.0);
-
    // Monte Carlo integration of hemispherical radiance -> irradiance
    const int NumSamples = 65536; // Limit to 65536, will fail on macOS Metal otherwise
    const float InvNumSamples = 1.0 / float(NumSamples);
@@ -774,7 +771,7 @@ void main()
       //const float2 u = float2(float(i) * InvNumSamples, radicalInverse_VdC(i));
       const float2 u = float2(float(i) * InvNumSamples, frac(float(i) * g));
       const float3 Li = rotate_to_vector_upper(cos_hemisphere_sample(u), N);
-      const float2 uv = float2(0.5 + atan2_approx_div2PI(Li.y, Li.x), acos_approx_divPI(Li.z));
+	  const float2 uv = ray_to_equirectangular_uv(Li);
       irradiance += texNoLod(tex_fb_unfiltered, uv).rgb * InvNumSamples;
    }
    color = float4(irradiance, 1.0);
