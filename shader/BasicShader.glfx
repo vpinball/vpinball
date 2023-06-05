@@ -552,7 +552,6 @@ in vec3 normal;
 in float eye;
 
 void main() {
-   float eye = 0.0;
    float4 pixel = texture(tex_base_color, tex01);
 
    if (pixel.a <= alphaTestValue)
