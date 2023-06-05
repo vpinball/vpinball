@@ -63,7 +63,7 @@ BOOL MaterialDialog::OnInitDialog()
    SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Basic");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Metal");
-   // SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Unshaded");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Unshaded");
    SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 
    m_resizer.Initialize(*this, CRect(0, 0, 780, 520));
@@ -147,6 +147,24 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 
    switch (LOWORD(wParam))
    {
+   case IDC_MATERIAL_TYPE:
+   {
+      if (HIWORD(wParam) == CBN_SELCHANGE && ListView_GetSelectedCount(m_hMaterialList) == 1)
+      {
+         LVITEM lvitem;
+         lvitem.mask = LVIF_PARAM;
+         lvitem.iItem = ListView_GetNextItem(m_hMaterialList, -1, LVNI_SELECTED);
+         lvitem.iSubItem = 0;
+         ListView_GetItem(m_hMaterialList, &lvitem);
+         Material *const pmat = (Material *)lvitem.lParam;
+         size_t type = SendMessage(GetDlgItem(IDC_MATERIAL_TYPE).GetHwnd(), CB_GETCURSEL, 0, 0);
+         if (pmat->m_type != type)
+            pt->SetNonUndoableDirty(eSaveDirty);
+         pmat->m_type = (Material::MaterialType)type;
+         SetEditedMaterial(*pmat);
+      }
+      break;
+   }
        case IDC_COLOR_BUTTON1:
        {
            CHOOSECOLOR cc = m_colorDialog.GetParameters();
@@ -551,6 +569,118 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
    return TRUE;
 }
 
+void MaterialDialog::SetEditedMaterial(const Material& mat)
+{
+   const int count = ListView_GetSelectedCount(m_hMaterialList);
+
+   // Material type
+   GetDlgItem(IDC_MATERIAL_TYPE).EnableWindow(true);
+   SendMessage(GetDlgItem(IDC_MATERIAL_TYPE).GetHwnd(), CB_SETCURSEL, mat.m_type, 0);
+
+   // Base
+   m_colorButton1.EnableWindow(mat.m_type != Material::UNSHADED && count == 1);
+   GetDlgItem(IDC_DIFFUSE_EDIT).EnableWindow(mat.m_type != Material::UNSHADED && count == 1);
+   m_colorButton1.SetColor(mat.m_cBase);
+   setItemText(IDC_DIFFUSE_EDIT, mat.m_fWrapLighting);
+
+   // Glossy
+   m_colorButton2.EnableWindow(mat.m_type != Material::UNSHADED && mat.m_type != Material::METAL && count == 1);
+   GetDlgItem(IDC_GLOSSY_IMGLERP_EDIT).EnableWindow(mat.m_type != Material::UNSHADED && mat.m_type != Material::METAL && count == 1);
+   m_colorButton2.SetColor(mat.m_cGlossy);
+   setItemText(IDC_GLOSSY_IMGLERP_EDIT, mat.m_fGlossyImageLerp);
+   
+   // Roughness
+   GetDlgItem(IDC_GLOSSY_EDIT).EnableWindow(mat.m_type != Material::UNSHADED && count == 1);
+   setItemText(IDC_GLOSSY_EDIT, mat.m_fRoughness);
+   
+   // Clearcoat
+   m_colorButton3.EnableWindow(mat.m_type != Material::UNSHADED && count == 1);
+   m_colorButton3.SetColor(mat.m_cClearcoat);
+   
+   // Edge brightness
+   GetDlgItem(IDC_SPECULAR_EDIT).EnableWindow(mat.m_type != Material::UNSHADED && count == 1);
+   setItemText(IDC_SPECULAR_EDIT, mat.m_fEdge);
+   
+   // Transparency
+   GetDlgItem(IDC_OPACITY_CHECK).EnableWindow(mat.m_type != Material::UNSHADED && count == 1);
+   GetDlgItem(IDC_OPACITY_EDIT).EnableWindow(mat.m_type != Material::UNSHADED && count == 1);
+   GetDlgItem(IDC_EDGEALPHA_EDIT).EnableWindow(mat.m_type != Material::UNSHADED && count == 1);
+   GetDlgItem(IDC_THICKNESS_EDIT).EnableWindow(mat.m_type != Material::UNSHADED && count == 1);
+   m_colorButton4.EnableWindow(mat.m_type != Material::UNSHADED && count == 1);
+   SendMessage(GetDlgItem(IDC_OPACITY_CHECK).GetHwnd(), BM_SETCHECK, mat.m_bOpacityActive ? BST_CHECKED : BST_UNCHECKED, 0);
+   setItemText(IDC_OPACITY_EDIT, mat.m_fOpacity);
+   setItemText(IDC_EDGEALPHA_EDIT, mat.m_fEdgeAlpha);
+   setItemText(IDC_THICKNESS_EDIT, mat.m_fThickness);
+   m_colorButton4.SetColor(mat.m_cRefractionTint);
+   
+   // Physics
+   setItemText(IDC_MAT_ELASTICITY, mat.m_fElasticity);
+   setItemText(IDC_MAT_ELASTICITY_FALLOFF, mat.m_fElasticityFalloff);
+   setItemText(IDC_MAT_FRICTION, mat.m_fFriction);
+   setItemText(IDC_MAT_SCATTER_ANGLE, mat.m_fScatterAngle);
+}
+
+void MaterialDialog::SaveEditedMaterial(Material& mat)
+{
+   CCO(PinTable) *const pt = g_pvp->GetActiveTable();
+   float fv;
+   fv = saturate(getItemText(IDC_DIFFUSE_EDIT));
+   if (mat.m_fWrapLighting != fv)
+         pt->SetNonUndoableDirty(eSaveDirty);
+   mat.m_fWrapLighting = fv;
+   fv = saturate(getItemText(IDC_GLOSSY_EDIT));
+   if (mat.m_fRoughness != fv)
+         pt->SetNonUndoableDirty(eSaveDirty);
+   mat.m_fRoughness = fv;
+   fv = saturate(getItemText(IDC_GLOSSY_IMGLERP_EDIT));
+   if (mat.m_fGlossyImageLerp != fv)
+         pt->SetNonUndoableDirty(eSaveDirty);
+   mat.m_fGlossyImageLerp = fv;
+   fv = saturate(getItemText(IDC_THICKNESS_EDIT));
+   if (mat.m_fThickness != fv)
+         pt->SetNonUndoableDirty(eSaveDirty);
+   mat.m_fThickness = fv;
+   fv = saturate(getItemText(IDC_SPECULAR_EDIT));
+   if (mat.m_fEdge != fv)
+         pt->SetNonUndoableDirty(eSaveDirty);
+   mat.m_fEdge = fv;
+   fv = saturate(getItemText(IDC_OPACITY_EDIT));
+   if (mat.m_fOpacity != fv)
+         pt->SetNonUndoableDirty(eSaveDirty);
+   mat.m_fOpacity = fv;
+   size_t type = SendMessage(GetDlgItem(IDC_MATERIAL_TYPE).GetHwnd(), CB_GETCURSEL, 0, 0);
+   if (mat.m_type != type)
+         pt->SetNonUndoableDirty(eSaveDirty);
+   mat.m_type = (Material::MaterialType)type;
+   size_t checked = SendDlgItemMessage(IDC_OPACITY_CHECK, BM_GETCHECK, 0, 0);
+   if (mat.m_bOpacityActive != (checked == 1))
+         pt->SetNonUndoableDirty(eSaveDirty);
+   mat.m_bOpacityActive = (checked == 1);
+   fv = saturate(getItemText(IDC_EDGEALPHA_EDIT));
+   if (mat.m_fEdgeAlpha != fv)
+         pt->SetNonUndoableDirty(eSaveDirty);
+   mat.m_fEdgeAlpha = fv;
+
+   fv = getItemText(IDC_MAT_ELASTICITY);
+   if (mat.m_fElasticity != fv)
+         pt->SetNonUndoableDirty(eSaveDirty);
+   mat.m_fElasticity = fv;
+   fv = getItemText(IDC_MAT_ELASTICITY_FALLOFF);
+   if (mat.m_fElasticityFalloff != fv)
+         pt->SetNonUndoableDirty(eSaveDirty);
+   mat.m_fElasticityFalloff = fv;
+   fv = getItemText(IDC_MAT_FRICTION);
+   if (mat.m_fFriction != fv)
+         pt->SetNonUndoableDirty(eSaveDirty);
+   mat.m_fFriction = fv;
+   fv = getItemText(IDC_MAT_SCATTER_ANGLE);
+   if (mat.m_fScatterAngle != fv)
+         pt->SetNonUndoableDirty(eSaveDirty);
+   mat.m_fScatterAngle = fv;
+
+   pt->UpdatePropertyMaterialList();
+}
+
 INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
    m_resizer.HandleMessage(uMsg, wParam, lParam);
@@ -625,15 +755,9 @@ INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             {
                if (m_deletingItem)
                    break;
-
-               const int count = ListView_GetSelectedCount(m_hMaterialList);
-               if (count > 1)
-               {
-                  EnableAllMaterialDialogItems(FALSE);
+               EnableAllMaterialDialogItems(FALSE);
+               if (ListView_GetSelectedCount(m_hMaterialList) > 1)
                   break;
-               }
-               EnableAllMaterialDialogItems(TRUE);
-
                NMLISTVIEW * const plistview = (LPNMLISTVIEW)lParam;
                if ((plistview->uNewState & LVIS_SELECTED) != (plistview->uOldState & LVIS_SELECTED))
                {
@@ -646,42 +770,18 @@ INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                      lvitem.iSubItem = 0;
                      ListView_GetItem(m_hMaterialList, &lvitem);
                      Material * const pmat = (Material*)lvitem.lParam;
-                     m_colorButton1.SetColor(pmat->m_cBase);
-                     m_colorButton2.SetColor(pmat->m_cGlossy);
-                     m_colorButton3.SetColor(pmat->m_cClearcoat);
-                     m_colorButton4.SetColor(pmat->m_cRefractionTint);
-                     setItemText(IDC_DIFFUSE_EDIT, pmat->m_fWrapLighting);
-                     setItemText(IDC_GLOSSY_EDIT, pmat->m_fRoughness);
-                     setItemText(IDC_GLOSSY_IMGLERP_EDIT, pmat->m_fGlossyImageLerp);
-                     setItemText(IDC_THICKNESS_EDIT, pmat->m_fThickness);
-                     setItemText(IDC_SPECULAR_EDIT, pmat->m_fEdge);
-                     setItemText(IDC_OPACITY_EDIT, pmat->m_fOpacity);
-                     setItemText(IDC_EDGEALPHA_EDIT, pmat->m_fEdgeAlpha);
-
-                     SendMessage(GetDlgItem(IDC_MATERIAL_TYPE).GetHwnd(), CB_SETCURSEL, pmat->m_type, 0);
-                     SendMessage(GetDlgItem(IDC_OPACITY_CHECK).GetHwnd(), BM_SETCHECK, pmat->m_bOpacityActive ? BST_CHECKED : BST_UNCHECKED, 0);
-
-                     setItemText(IDC_MAT_ELASTICITY, pmat->m_fElasticity);
-                     setItemText(IDC_MAT_ELASTICITY_FALLOFF, pmat->m_fElasticityFalloff);
-                     setItemText(IDC_MAT_FRICTION, pmat->m_fFriction);
-                     setItemText(IDC_MAT_SCATTER_ANGLE, pmat->m_fScatterAngle);
+                     SetEditedMaterial(*pmat);
                   }
                }
                break;
             }
             case LVN_ITEMCHANGED:
             {
-               const int count = ListView_GetSelectedCount(m_hMaterialList);
-
                if (m_deletingItem)
                    break;
-               if (count > 1)
-               {
-                  EnableAllMaterialDialogItems(FALSE);
+               EnableAllMaterialDialogItems(FALSE);
+               if (ListView_GetSelectedCount(m_hMaterialList) > 1)
                   break;
-               }
-               EnableAllMaterialDialogItems(TRUE);
-
                NMLISTVIEW * const plistview = (LPNMLISTVIEW)lParam;
                const int sel = plistview->iItem;
                LVITEM lvitem;
@@ -691,86 +791,9 @@ INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                ListView_GetItem(m_hMaterialList, &lvitem);
                Material * const pmat = (Material*)lvitem.lParam;
                if ((plistview->uNewState & LVIS_SELECTED) == 0)
-               {
-                  float fv;
-                  fv = saturate(getItemText(IDC_DIFFUSE_EDIT));
-                  if (pmat->m_fWrapLighting != fv)
-                     pt->SetNonUndoableDirty(eSaveDirty);
-                  pmat->m_fWrapLighting = fv;
-                  fv = saturate(getItemText(IDC_GLOSSY_EDIT));
-                  if (pmat->m_fRoughness != fv)
-                     pt->SetNonUndoableDirty(eSaveDirty);
-                  pmat->m_fRoughness = fv;
-                  fv = saturate(getItemText(IDC_GLOSSY_IMGLERP_EDIT));
-                  if (pmat->m_fGlossyImageLerp != fv)
-                     pt->SetNonUndoableDirty(eSaveDirty);
-                  pmat->m_fGlossyImageLerp = fv;
-                  fv = saturate(getItemText(IDC_THICKNESS_EDIT));
-                  if (pmat->m_fThickness != fv)
-                     pt->SetNonUndoableDirty(eSaveDirty);
-                  pmat->m_fThickness = fv;
-                  fv = saturate(getItemText(IDC_SPECULAR_EDIT));
-                  if (pmat->m_fEdge != fv)
-                     pt->SetNonUndoableDirty(eSaveDirty);
-                  pmat->m_fEdge = fv;
-                  fv = saturate(getItemText(IDC_OPACITY_EDIT));
-                  if (pmat->m_fOpacity != fv)
-                     pt->SetNonUndoableDirty(eSaveDirty);
-                  pmat->m_fOpacity = fv;
-                  size_t type = SendMessage(GetDlgItem(IDC_MATERIAL_TYPE).GetHwnd(), CB_GETCURSEL, 0, 0);
-                  if (pmat->m_type != type)
-                     pt->SetNonUndoableDirty(eSaveDirty);
-                  pmat->m_type = (Material::MaterialType) type;
-                  size_t checked = SendDlgItemMessage(IDC_OPACITY_CHECK, BM_GETCHECK, 0, 0);
-                  if (pmat->m_bOpacityActive != (checked == 1))
-                     pt->SetNonUndoableDirty(eSaveDirty);
-                  pmat->m_bOpacityActive = (checked == 1);
-                  fv = saturate(getItemText(IDC_EDGEALPHA_EDIT));
-                  if (pmat->m_fEdgeAlpha != fv)
-                     pt->SetNonUndoableDirty(eSaveDirty);
-                  pmat->m_fEdgeAlpha = fv;
-
-                  fv = getItemText(IDC_MAT_ELASTICITY);
-                  if (pmat->m_fElasticity != fv)
-                     pt->SetNonUndoableDirty(eSaveDirty);
-                  pmat->m_fElasticity = fv;
-                  fv = getItemText(IDC_MAT_ELASTICITY_FALLOFF);
-                  if (pmat->m_fElasticityFalloff != fv)
-                     pt->SetNonUndoableDirty(eSaveDirty);
-                  pmat->m_fElasticityFalloff = fv;
-                  fv = getItemText(IDC_MAT_FRICTION);
-                  if (pmat->m_fFriction != fv)
-                     pt->SetNonUndoableDirty(eSaveDirty);
-                  pmat->m_fFriction = fv;
-                  fv = getItemText(IDC_MAT_SCATTER_ANGLE);
-                  if (pmat->m_fScatterAngle != fv)
-                     pt->SetNonUndoableDirty(eSaveDirty);
-                  pmat->m_fScatterAngle = fv;
-
-                  pt->UpdatePropertyMaterialList();
-               }
+                  SaveEditedMaterial(*pmat);
                else if ((plistview->uOldState & LVIS_SELECTED) == 0)
-               {
-                  m_colorButton1.SetColor(pmat->m_cBase);
-                  m_colorButton2.SetColor(pmat->m_cGlossy);
-                  m_colorButton3.SetColor(pmat->m_cClearcoat);
-                  m_colorButton4.SetColor(pmat->m_cRefractionTint);
-                  setItemText(IDC_DIFFUSE_EDIT, pmat->m_fWrapLighting);
-                  setItemText(IDC_GLOSSY_EDIT, pmat->m_fRoughness);
-                  setItemText(IDC_GLOSSY_IMGLERP_EDIT, pmat->m_fGlossyImageLerp);
-                  setItemText(IDC_THICKNESS_EDIT, pmat->m_fThickness);
-                  setItemText(IDC_SPECULAR_EDIT, pmat->m_fEdge);
-                  setItemText(IDC_OPACITY_EDIT, pmat->m_fOpacity);
-
-                  SendMessage(GetDlgItem(IDC_MATERIAL_TYPE).GetHwnd(), CB_SETCURSEL, pmat->m_type, 0);
-                  SendMessage(GetDlgItem(IDC_OPACITY_CHECK).GetHwnd(), BM_SETCHECK, pmat->m_bOpacityActive ? BST_CHECKED : BST_UNCHECKED, 0);
-
-                  setItemText(IDC_EDGEALPHA_EDIT, pmat->m_fEdgeAlpha);
-                  setItemText(IDC_MAT_ELASTICITY, pmat->m_fElasticity);
-                  setItemText(IDC_MAT_ELASTICITY_FALLOFF, pmat->m_fElasticityFalloff);
-                  setItemText(IDC_MAT_FRICTION, pmat->m_fFriction);
-                  setItemText(IDC_MAT_SCATTER_ANGLE, pmat->m_fScatterAngle);
-               }
+                  SetEditedMaterial(*pmat);
                break;
             }
          }

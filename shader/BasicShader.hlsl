@@ -134,7 +134,7 @@ struct VS_NOTEX_OUTPUT
    float3 normal   : TEXCOORD2;
 };
 
-struct VS_DEPTH_ONLY_NOTEX_OUTPUT 
+struct VS_DEPTH_ONLY_NOTEX_OUTPUT
 {
    float4 pos      : POSITION;
 };
@@ -143,6 +143,19 @@ struct VS_DEPTH_ONLY_TEX_OUTPUT
 {
    float4 pos      : POSITION;
    float2 tex0     : TEXCOORD0;
+};
+
+struct VS_UNSHADED_NOTEX_SHADOW_OUTPUT
+{
+    float4 pos      : POSITION;
+    float3 tablePos : TEXCOORD1; // position in table space (vertex position * world matrix)
+};
+
+struct VS_UNSHADED_TEX_SHADOW_OUTPUT
+{
+    float4 pos      : POSITION;
+    float2 tex0     : TEXCOORD0;
+    float3 tablePos : TEXCOORD1; // position in table space (vertex position * world matrix)
 };
 
 #include "BallShadows.fxh"
@@ -279,6 +292,25 @@ VS_DEPTH_ONLY_TEX_OUTPUT vs_depth_only_main_with_texture(const in float4 vPositi
    Out.tex0 = tc;
 
    return Out;
+}
+
+VS_UNSHADED_NOTEX_SHADOW_OUTPUT vs_main_unshaded_without_texture_shadow(const in float4 vPosition : POSITION0)
+{
+    const float3 P = mul(vPosition, matWorldView).xyz;
+    VS_UNSHADED_NOTEX_SHADOW_OUTPUT Out;
+    Out.pos = mul(vPosition, matWorldViewProj);
+    Out.tablePos = mul(vPosition, matWorld).xyz;
+    return Out;
+}
+
+VS_UNSHADED_TEX_SHADOW_OUTPUT vs_main_unshaded_with_texture_shadow(const in float4 vPosition : POSITION0, const in float2 tc : TEXCOORD0)
+{
+    const float3 P = mul(vPosition, matWorldView).xyz;
+    VS_UNSHADED_TEX_SHADOW_OUTPUT Out;
+    Out.pos = mul(vPosition, matWorldViewProj);
+    Out.tablePos = mul(vPosition, matWorld).xyz;
+    Out.tex0 = tc;
+    return Out;
 }
 
 float4 ps_main(const in VS_NOTEX_OUTPUT IN, float2 screenSpace : VPOS, uniform bool is_metal, uniform bool doReflections, uniform bool doRefractions) : COLOR
@@ -428,6 +460,32 @@ float4 ps_main_depth_only_with_texture(const in VS_DEPTH_ONLY_TEX_OUTPUT IN) : C
    clip(tex2D(tex_base_color, IN.tex0).a <= alphaTestValue ? -1 : 1); // stop the pixel shader if alpha test should reject pixel
 
    return float4(0., 0., 0., 1.);
+}
+
+float4 ps_main_unshaded_without_texture(const in VS_DEPTH_ONLY_NOTEX_OUTPUT IN) : COLOR
+{
+   return staticColor_Alpha;
+}
+
+float4 ps_main_unshaded_with_texture(const in VS_DEPTH_ONLY_TEX_OUTPUT IN) : COLOR
+{
+   return staticColor_Alpha * tex2D(tex_base_color, IN.tex0);
+}
+
+float4 ps_main_unshaded_without_texture_shadow(const in VS_UNSHADED_NOTEX_SHADOW_OUTPUT IN) : COLOR
+{
+   const float3 light_dir = IN.tablePos.xyz - lightCenter_doShadow.xyz;
+   const float light_dist = length(light_dir);
+   const float shadow = get_light_ball_shadow(lightCenter_doShadow.xyz, light_dir, light_dist);
+   return shadow * staticColor_Alpha;
+}
+
+float4 ps_main_unshaded_with_texture_shadow(const in VS_UNSHADED_TEX_SHADOW_OUTPUT IN) : COLOR
+{
+   const float3 light_dir = IN.tablePos.xyz - lightCenter_doShadow.xyz;
+   const float light_dist = length(light_dir);
+   const float shadow = get_light_ball_shadow(lightCenter_doShadow.xyz, light_dir, light_dist);
+   return shadow * staticColor_Alpha * tex2D(tex_base_color, IN.tex0);
 }
 
 //------------------------------------------
@@ -721,8 +779,6 @@ technique basic_refl_only_with_texture
    }
 }
 
-
-
 technique basic_depth_only_without_texture
 {
    pass P0
@@ -738,6 +794,42 @@ technique basic_depth_only_with_texture
    {
       VertexShader = compile vs_3_0 vs_depth_only_main_with_texture(); 
       PixelShader  = compile ps_3_0 ps_main_depth_only_with_texture();
+   }
+}
+
+technique unshaded_without_texture
+{
+   pass P0
+   {
+      VertexShader = compile vs_3_0 vs_depth_only_main_without_texture();
+      PixelShader  = compile ps_3_0 ps_main_unshaded_without_texture();
+   }
+}
+
+technique unshaded_with_texture
+{
+   pass P0
+   {
+      VertexShader = compile vs_3_0 vs_depth_only_main_with_texture(); 
+      PixelShader  = compile ps_3_0 ps_main_unshaded_with_texture();
+   }
+}
+
+technique unshaded_without_texture_shadow
+{
+   pass P0
+   {
+      VertexShader = compile vs_3_0 vs_main_unshaded_without_texture_shadow();
+      PixelShader  = compile ps_3_0 ps_main_unshaded_without_texture_shadow();
+   }
+}
+
+technique unshaded_with_texture_shadow
+{
+   pass P0
+   {
+      VertexShader = compile vs_3_0 vs_main_unshaded_with_texture_shadow(); 
+      PixelShader  = compile ps_3_0 ps_main_unshaded_with_texture_shadow();
    }
 }
 

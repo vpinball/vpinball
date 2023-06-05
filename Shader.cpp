@@ -57,6 +57,11 @@ const string Shader::shaderTechniqueNames[SHADER_TECHNIQUE_COUNT]
    SHADER_TECHNIQUE(basic_without_texture_refr_isMetal),
    SHADER_TECHNIQUE(basic_without_texture_refr_refl),
    SHADER_TECHNIQUE(basic_without_texture_refr_refl_isMetal),
+   // Unshaded
+   SHADER_TECHNIQUE(unshaded_without_texture),
+   SHADER_TECHNIQUE(unshaded_with_texture),
+   SHADER_TECHNIQUE(unshaded_without_texture_shadow),
+   SHADER_TECHNIQUE(unshaded_with_texture_shadow),
 
    SHADER_TECHNIQUE(basic_refl_only_without_texture),
    SHADER_TECHNIQUE(basic_refl_only_with_texture),
@@ -582,63 +587,76 @@ void Shader::SetLightImageBackglassMode(const bool imageMode, const bool backgla
    SetBool(SHADER_lightingOff, imageMode || backglassMode); // at the moment can be combined into a single bool due to what the shader actually does in the end
 }
 
-void Shader::SetTechniqueMetal(ShaderTechniques technique, const Material& mat, const bool doNormalMapping, const bool doReflections, const bool doRefractions)
+void Shader::SetTechniqueMaterial(ShaderTechniques technique, const Material& mat, Light* const lightmap, const bool doNormalMapping, const bool doReflections, const bool doRefractions)
 {
-   const bool isMetal = mat.m_type == Material::MaterialType::METAL;
    ShaderTechniques tech = technique;
-#ifdef ENABLE_SDL
-   // For OpenGL doReflections is computed from the reflection factor
-   SetBool(SHADER_is_metal, isMetal);
-   SetBool(SHADER_doNormalMapping, doNormalMapping);
-   SetBool(SHADER_doRefractions, doRefractions);
-#else
-   switch (technique)
+   if (mat.m_type == Material::MaterialType::UNSHADED)
    {
-   case SHADER_TECHNIQUE_basic_with_texture:
+      switch (technique)
+      {
+      case SHADER_TECHNIQUE_basic_with_texture: tech = lightmap == nullptr ? SHADER_TECHNIQUE_unshaded_with_texture : SHADER_TECHNIQUE_unshaded_with_texture_shadow; break;
+      case SHADER_TECHNIQUE_basic_without_texture: tech = lightmap == nullptr ? SHADER_TECHNIQUE_unshaded_without_texture : SHADER_TECHNIQUE_unshaded_without_texture_shadow; break;
+      default: assert(false); // Unsupported
+      }
+   }
+   else
    {
-      static ShaderTechniques tech_with_texture[16] = {
-         SHADER_TECHNIQUE_basic_with_texture,
-         SHADER_TECHNIQUE_basic_with_texture_isMetal,
-         SHADER_TECHNIQUE_basic_with_texture_normal,
-         SHADER_TECHNIQUE_basic_with_texture_normal_isMetal,
-         SHADER_TECHNIQUE_basic_with_texture_refl,
-         SHADER_TECHNIQUE_basic_with_texture_refl_isMetal,
-         SHADER_TECHNIQUE_basic_with_texture_refl_normal,
-         SHADER_TECHNIQUE_basic_with_texture_refl_normal_isMetal,
-         SHADER_TECHNIQUE_basic_with_texture_refr,
-         SHADER_TECHNIQUE_basic_with_texture_refr_isMetal,
-         SHADER_TECHNIQUE_basic_with_texture_refr_normal,
-         SHADER_TECHNIQUE_basic_with_texture_refr_normal_isMetal,
-         SHADER_TECHNIQUE_basic_with_texture_refr_refl,
-         SHADER_TECHNIQUE_basic_with_texture_refr_refl_isMetal,
-         SHADER_TECHNIQUE_basic_with_texture_refr_refl_normal,
-         SHADER_TECHNIQUE_basic_with_texture_refr_refl_normal_isMetal,
-      };
-      int idx = (isMetal ? 1 : 0) + (doNormalMapping ? 2 : 0) + (doReflections ? 4 : 0) + (doRefractions ? 8 : 0);
-      tech = tech_with_texture[idx];
+      const bool isMetal = mat.m_type == Material::MaterialType::METAL;
+      #ifdef ENABLE_SDL
+      // For OpenGL doReflections is computed from the reflection factor
+      SetBool(SHADER_is_metal, isMetal);
+      SetBool(SHADER_doNormalMapping, doNormalMapping);
+      SetBool(SHADER_doRefractions, doRefractions);
+      #else
+      switch (technique)
+      {
+      case SHADER_TECHNIQUE_basic_with_texture:
+      {
+         static ShaderTechniques tech_with_texture[16] = {
+            SHADER_TECHNIQUE_basic_with_texture,
+            SHADER_TECHNIQUE_basic_with_texture_isMetal,
+            SHADER_TECHNIQUE_basic_with_texture_normal,
+            SHADER_TECHNIQUE_basic_with_texture_normal_isMetal,
+            SHADER_TECHNIQUE_basic_with_texture_refl,
+            SHADER_TECHNIQUE_basic_with_texture_refl_isMetal,
+            SHADER_TECHNIQUE_basic_with_texture_refl_normal,
+            SHADER_TECHNIQUE_basic_with_texture_refl_normal_isMetal,
+            SHADER_TECHNIQUE_basic_with_texture_refr,
+            SHADER_TECHNIQUE_basic_with_texture_refr_isMetal,
+            SHADER_TECHNIQUE_basic_with_texture_refr_normal,
+            SHADER_TECHNIQUE_basic_with_texture_refr_normal_isMetal,
+            SHADER_TECHNIQUE_basic_with_texture_refr_refl,
+            SHADER_TECHNIQUE_basic_with_texture_refr_refl_isMetal,
+            SHADER_TECHNIQUE_basic_with_texture_refr_refl_normal,
+            SHADER_TECHNIQUE_basic_with_texture_refr_refl_normal_isMetal,
+         };
+         int idx = (isMetal ? 1 : 0) + (doNormalMapping ? 2 : 0) + (doReflections ? 4 : 0) + (doRefractions ? 8 : 0);
+         tech = tech_with_texture[idx];
+      }
+      break;
+      case SHADER_TECHNIQUE_basic_without_texture:
+      {
+         static ShaderTechniques tech_without_texture[8] = {
+            SHADER_TECHNIQUE_basic_without_texture,
+            SHADER_TECHNIQUE_basic_without_texture_isMetal,
+            SHADER_TECHNIQUE_basic_without_texture_refl,
+            SHADER_TECHNIQUE_basic_without_texture_refl_isMetal,
+            SHADER_TECHNIQUE_basic_without_texture_refr,
+            SHADER_TECHNIQUE_basic_without_texture_refr_isMetal,
+            SHADER_TECHNIQUE_basic_without_texture_refr_refl,
+            SHADER_TECHNIQUE_basic_without_texture_refr_refl_isMetal,
+         };
+         int idx = (isMetal ? 1 : 0) + (doReflections ? 2 : 0) + (doRefractions ? 4 : 0);
+         tech = tech_without_texture[idx];
+      }
+      break;
+      case SHADER_TECHNIQUE_kickerBoolean: if (isMetal) tech = SHADER_TECHNIQUE_kickerBoolean_isMetal; break;
+      case SHADER_TECHNIQUE_light_with_texture: if (isMetal) tech = SHADER_TECHNIQUE_light_with_texture_isMetal; break;
+      case SHADER_TECHNIQUE_light_without_texture: if (isMetal) tech = SHADER_TECHNIQUE_light_without_texture_isMetal; break;
+      default: assert(false); // Unsupported
+      }
+      #endif
    }
-   break;
-   case SHADER_TECHNIQUE_basic_without_texture:
-   {
-      static ShaderTechniques tech_without_texture[8] = {
-         SHADER_TECHNIQUE_basic_without_texture,
-         SHADER_TECHNIQUE_basic_without_texture_isMetal,
-         SHADER_TECHNIQUE_basic_without_texture_refl,
-         SHADER_TECHNIQUE_basic_without_texture_refl_isMetal,
-         SHADER_TECHNIQUE_basic_without_texture_refr,
-         SHADER_TECHNIQUE_basic_without_texture_refr_isMetal,
-         SHADER_TECHNIQUE_basic_without_texture_refr_refl,
-         SHADER_TECHNIQUE_basic_without_texture_refr_refl_isMetal,
-      };
-      int idx = (isMetal ? 1 : 0) + (doReflections ? 2 : 0) + (doRefractions ? 4 : 0);
-      tech = tech_without_texture[idx];
-   }
-   break;
-   case SHADER_TECHNIQUE_kickerBoolean: if (isMetal) tech = SHADER_TECHNIQUE_kickerBoolean_isMetal; break;
-   case SHADER_TECHNIQUE_light_with_texture: if (isMetal) tech = SHADER_TECHNIQUE_light_with_texture_isMetal; break;
-   case SHADER_TECHNIQUE_light_without_texture: if (isMetal) tech = SHADER_TECHNIQUE_light_without_texture_isMetal; break;
-   }
-#endif
    SetTechnique(tech);
 }
 

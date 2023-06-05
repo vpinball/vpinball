@@ -569,7 +569,7 @@ void Decal::RenderObject()
    if (m_d.m_decaltype != DecalImage)
    {
       if (!m_backglass)
-         pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture, mat);
+         pd3dDevice->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, mat);
       else
          pd3dDevice->basicShader->SetTechnique(SHADER_TECHNIQUE_bg_decal_with_texture);
       pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, m_textImg);
@@ -581,7 +581,7 @@ void Decal::RenderObject()
       if (pin)
       {
          if (!m_backglass)
-            pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture, mat);
+            pd3dDevice->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, mat);
          else
             pd3dDevice->basicShader->SetTechnique(SHADER_TECHNIQUE_bg_decal_with_texture);
          // Set texture to mirror, so the alpha state of the texture blends correctly to the outside
@@ -591,7 +591,7 @@ void Decal::RenderObject()
       else
       {
          if (!m_backglass)
-            pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat);
+            pd3dDevice->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, mat);
          else
             pd3dDevice->basicShader->SetTechnique(SHADER_TECHNIQUE_bg_decal_without_texture);
       }

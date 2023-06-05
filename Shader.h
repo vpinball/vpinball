@@ -52,6 +52,11 @@ enum ShaderTechniques
    SHADER_TECHNIQUE(basic_without_texture_refr_isMetal),
    SHADER_TECHNIQUE(basic_without_texture_refr_refl),
    SHADER_TECHNIQUE(basic_without_texture_refr_refl_isMetal),
+   // Unshaded
+   SHADER_TECHNIQUE(unshaded_without_texture),
+   SHADER_TECHNIQUE(unshaded_with_texture),
+   SHADER_TECHNIQUE(unshaded_without_texture_shadow),
+   SHADER_TECHNIQUE(unshaded_with_texture_shadow),
 
    SHADER_TECHNIQUE(basic_refl_only_without_texture),
    SHADER_TECHNIQUE(basic_refl_only_with_texture),
@@ -304,7 +309,7 @@ public:
    static Shader* GetCurrentShader();
    static string GetTechniqueName(ShaderTechniques technique);
    void SetTechnique(const ShaderTechniques technique);
-   void SetTechniqueMetal(ShaderTechniques technique, const Material& mat, const bool doNormalMapping = false, const bool doReflection = false, const bool doRefraction = false);
+   void SetTechniqueMaterial(ShaderTechniques technique, const Material& mat, Light* const lightmap = nullptr, const bool doNormalMapping = false, const bool doReflection = false, const bool doRefraction = false);
    ShaderTechniques GetCurrentTechnique() { return m_technique; }
 
    static void SetDefaultSamplerFilter(const ShaderUniforms sampler, const SamplerFilter sf);
