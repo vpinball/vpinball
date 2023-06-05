@@ -39,7 +39,8 @@ public:
    enum MaterialType
    {
       BASIC,
-      METAL
+      METAL,
+	  UNSHADED
    };
 
    inline Material() :

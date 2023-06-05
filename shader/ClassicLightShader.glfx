@@ -40,6 +40,7 @@ layout(location=2) in vec2 tc;
 out vec2 tex0_gs;
 out vec3 worldPos_gs;
 out vec3 normal_gs;
+out float3 tablePos_gs;
 
 void main()
 {
@@ -63,6 +64,7 @@ out vec2 tex0;
 in vec3 worldPos_gs[];
 out vec3 worldPos;
 
+in vec3 tablePos_gs[];
 out vec3 tablePos;
 
 in vec3 normal_gs[];

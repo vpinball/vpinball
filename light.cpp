@@ -377,7 +377,7 @@ void Light::RenderBulbMesh()
    mat.m_fGlossyImageLerp = 1.0f;
    mat.m_fThickness = 0.05f;
    mat.m_cClearcoat = 0;
-   pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat);
+   pd3dDevice->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, mat);
    pd3dDevice->basicShader->SetMaterial(&mat, false);
    pd3dDevice->DrawMesh(pd3dDevice->basicShader, IsTransparent(), m_boundingSphereCenter, m_d.m_depthBias, m_bulbSocketMeshBuffer, RenderDevice::TRIANGLELIST, 0, bulbSocketNumFaces);
 
@@ -393,7 +393,7 @@ void Light::RenderBulbMesh()
    mat.m_fGlossyImageLerp = 1.0f;
    mat.m_fThickness = 0.05f;
    mat.m_cClearcoat = 0xFFFFFF;
-   pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat);
+   pd3dDevice->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, mat);
    pd3dDevice->basicShader->SetMaterial(&mat, false);
    Vertex3Ds bulbPos(m_boundingSphereCenter.x, m_boundingSphereCenter.y, m_boundingSphereCenter.z + m_d.m_height * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]);
    pd3dDevice->DrawMesh(pd3dDevice->basicShader, IsTransparent(), bulbPos, m_d.m_depthBias, m_bulbLightMeshBuffer, RenderDevice::TRIANGLELIST, 0, bulbLightNumFaces);
@@ -515,7 +515,7 @@ void Light::RenderDynamic()
       shader->SetMaterial(m_surfaceMaterial);
       if (offTexel != nullptr)
       {
-         shader->SetTechniqueMetal(SHADER_TECHNIQUE_light_with_texture, m_surfaceMaterial);
+         shader->SetTechniqueMaterial(SHADER_TECHNIQUE_light_with_texture, m_surfaceMaterial);
          shader->SetTexture(SHADER_tex_light_color, offTexel, SF_TRILINEAR, SA_CLAMP, SA_CLAMP);
          // Was: if (m_ptable->m_reflectElementsOnPlayfield && g_pplayer->m_pf_refl && !m_backglass)*/
          // TOTAN and Flintstones inserts break if alpha blending is disabled here.
@@ -528,7 +528,7 @@ void Light::RenderDynamic()
          }
       }
       else
-         shader->SetTechniqueMetal(SHADER_TECHNIQUE_light_without_texture, m_surfaceMaterial);
+         shader->SetTechniqueMaterial(SHADER_TECHNIQUE_light_without_texture, m_surfaceMaterial);
    }
    else
    {

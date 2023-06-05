@@ -25,7 +25,6 @@ layout(std140) uniform basicMatrixBlock {
 ////VERTEX
 
 layout(location=0) in vec3 vPosition;
-out vec3 tablePos_gs;
 
 uniform vec4 clip_plane; // Clip plane defined in table coordinate system
 
@@ -34,8 +33,6 @@ uniform vec4 clip_plane; // Clip plane defined in table coordinate system
 
 layout(triangles) in;
 layout(triangle_strip, max_vertices = 3) out;
-
-in vec3 tablePos_gs[];
 
 // Use geometry invocations for stereo rendering
 #if (N_EYES == 1)
@@ -188,12 +185,17 @@ float3 compute_refraction(const float3 pos, const float2 screenSpace, const floa
 // Standard Materials
 //
 
+//-----------------------------------------------------------------------------
+// Vertex shaders
+//-----------------------------------------------------------------------------
+
 ////vs_main
 
 layout(location=1) in vec3 vNormal;
 layout(location=2) in vec2 tc;
 
 out vec2 tex01_gs;
+out vec3 tablePos_gs;
 out vec3 worldPos_gs;
 out vec3 normal_gs;
 
@@ -214,6 +216,7 @@ void main()
 layout(location=1) in vec3 vNormal;
 layout(location=2) in vec2 tc;
 
+out vec3 tablePos_gs;
 out vec3 worldPos_gs;
 out vec3 normal_gs;
 
@@ -233,14 +236,40 @@ void main()
 { 
    float4 vPosition4 = float4(vPosition,1.0);
    gl_Position = vPosition4;
-   tablePos_gs = (matWorld*vPosition4).xyz;
-   gl_ClipDistance[0] = dot(vec4(tablePos_gs, 1.0), clip_plane);
+   gl_ClipDistance[0] = dot(vec4((matWorld*vPosition4).xyz, 1.0), clip_plane);
 }
 
 ////vs_depth_only_main_with_texture
 
-layout(location=1) in vec2 tc;
+layout(location=2) in vec2 tc;
 
+out vec2 tex0_gs;
+
+void main()
+{
+   float4 vPosition4 = float4(vPosition,1.0);
+   gl_Position = vPosition4;
+   gl_ClipDistance[0] = dot(vec4((matWorld*vPosition4).xyz, 1.0), clip_plane);
+   tex0_gs = tc;
+}
+
+////vs_main_unshaded_without_texture_shadow
+
+out vec3 tablePos_gs;
+
+void main()
+{ 
+   float4 vPosition4 = float4(vPosition,1.0);
+   gl_Position = vPosition4;
+   tablePos_gs = (matWorld*vPosition4).xyz;
+   gl_ClipDistance[0] = dot(vec4(tablePos_gs, 1.0), clip_plane);
+}
+
+////vs_main_unshaded_with_texture_shadow
+
+layout(location=2) in vec2 tc;
+
+out vec3 tablePos_gs;
 out vec2 tex0_gs;
 
 void main()
@@ -251,6 +280,12 @@ void main()
    gl_ClipDistance[0] = dot(vec4(tablePos_gs, 1.0), clip_plane);
    tex0_gs = tc;
 }
+
+
+//-----------------------------------------------------------------------------
+// Geometry shaders
+//-----------------------------------------------------------------------------
+
 
 ////gs_main
 
@@ -265,6 +300,7 @@ out vec3 worldPos;
 in vec3 normal_gs[];
 out vec3 normal;
 
+in vec3 tablePos_gs[];
 out float3 tablePos;
 
 out float eye;
@@ -305,6 +341,7 @@ out vec3 worldPos;
 in vec3 normal_gs[];
 out vec3 normal;
 
+in vec3 tablePos_gs[];
 out float3 tablePos;
 
 out float eye;
@@ -344,6 +381,7 @@ out vec3 worldPos;
 in vec3 normal_gs[];
 out vec3 normal;
 
+in vec3 tablePos_gs[];
 out float3 tablePos;
 
 uniform float fKickerScale;
@@ -407,6 +445,49 @@ void main()
    }
    EndPrimitive();
 }
+
+////gs_main_unshaded_without_texture_shadow
+
+in vec3 tablePos_gs[];
+out float3 tablePos;
+
+void main()
+{
+   gl_ViewportIndex = gl_InvocationID;
+   for (int i=0;i<gl_in.length();i++) {
+      gl_Position = (matWorldViewProj[gl_InvocationID] * gl_in[i].gl_Position);
+      gl_ClipDistance[0] = gl_in[i].gl_ClipDistance[0];
+      EmitVertex();
+   }
+   EndPrimitive();
+}
+
+////gs_main_unshaded_with_texture_shadow
+
+in float3 tablePos_gs[];
+out float3 tablePos;
+
+in vec2 tex0_gs[];
+out vec2 tex0;
+
+void main()
+{
+   gl_ViewportIndex = gl_InvocationID;
+   for (int i=0;i<gl_in.length();i++) {
+      gl_Position = (matWorldViewProj[gl_InvocationID] * gl_in[i].gl_Position);
+      gl_ClipDistance[0] = gl_in[i].gl_ClipDistance[0];
+      tex0 = tex0_gs[i];
+      EmitVertex();
+   }
+   EndPrimitive();
+}
+
+
+
+//-----------------------------------------------------------------------------
+// Fragment shaders
+//-----------------------------------------------------------------------------
+
 
 ////ps_main_notex
 
@@ -591,6 +672,48 @@ void main() {
    color = float4(0., 0., 0., 1.);
 }
 
+
+////ps_main_unshaded_without_texture
+
+void main() {
+   color = staticColor_Alpha;
+}
+
+
+////ps_main_unshaded_with_texture
+
+in vec2 tex0;
+
+void main() {
+   color = staticColor_Alpha * texture(tex_base_color, tex0);
+}
+
+
+////ps_main_unshaded_without_texture_shadow
+
+in vec3 tablePos;
+
+void main() {
+   const float3 light_dir = tablePos.xyz - lightCenter_doShadow.xyz;
+   const float light_dist = length(light_dir);
+   const float shadow = get_light_ball_shadow(lightCenter_doShadow.xyz, light_dir, light_dist);
+   color = shadow * staticColor_Alpha;
+}
+
+
+////ps_main_unshaded_with_texture_shadow
+
+in vec2 tex0;
+in vec3 tablePos;
+
+void main() {
+   const float3 light_dir = tablePos.xyz - lightCenter_doShadow.xyz;
+   const float light_dist = length(light_dir);
+   const float shadow = get_light_ball_shadow(lightCenter_doShadow.xyz, light_dir, light_dist);
+   color = shadow * staticColor_Alpha * texture(tex_base_color, tex0);
+}
+
+
 ////ps_main_bg_decal
 
 // BG-Decal
@@ -622,6 +745,7 @@ void main() {
 in vec3 vNormal;
 in vec2 tc;
 
+out float3 tablePos_gs;
 out vec3 worldPos_gs;
 out vec3 normal_gs;
 out vec2 tex03_gs;
@@ -647,11 +771,17 @@ void main() {
 
 basic_without_texture:P0:vs_notex_main():gs_notex_main():ps_main_notex()
 basic_with_texture:P0:vs_main():gs_main():ps_main_texture()
+
 basic_refl_only_without_texture:P0:vs_notex_main():gs_notex_main():ps_main_reflection_only_without_texture()
 basic_refl_only_with_texture:P0:vs_main():gs_main():ps_main_reflection_only_with_texture()
 
 basic_depth_only_without_texture:P0:vs_depth_only_main_without_texture():gs_depth_only_main_without_texture():ps_main_depth_only_without_texture()
 basic_depth_only_with_texture:P0:vs_depth_only_main_with_texture():gs_depth_only_main_with_texture():ps_main_depth_only_with_texture()
+
+unshaded_without_texture:P0:vs_depth_only_main_without_texture():gs_depth_only_main_without_texture():ps_main_unshaded_without_texture()
+unshaded_with_texture:P0:vs_depth_only_main_with_texture():gs_depth_only_main_with_texture():ps_main_unshaded_with_texture()
+unshaded_without_texture_shadow:P0:vs_main_unshaded_without_texture_shadow():gs_main_unshaded_without_texture_shadow():ps_main_unshaded_without_texture_shadow()
+unshaded_with_texture_shadow:P0:vs_main_unshaded_with_texture_shadow():gs_main_unshaded_with_texture_shadow():ps_main_unshaded_with_texture_shadow()
 
 //
 // BG-Decal

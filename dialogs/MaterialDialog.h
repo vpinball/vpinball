@@ -22,6 +22,8 @@ protected:
 
 private:
    void EnableAllMaterialDialogItems(const BOOL e);
+   void SetEditedMaterial(const Material& mat);
+   void SaveEditedMaterial(Material& mat);
    float getItemText(int id);
    void  setItemText(int id, float value);
    void LoadPosition();

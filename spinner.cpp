@@ -385,14 +385,14 @@ void Spinner::RenderDynamic()
    Texture * const image = m_ptable->GetImage(m_d.m_szImage);
    if (image)
    {
-      pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_with_texture, mat);
+      pd3dDevice->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, mat);
       pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, image);
       pd3dDevice->basicShader->SetAlphaTestValue(image->m_alphaTestValue * (float)(1.0 / 255.0));
       pd3dDevice->basicShader->SetMaterial(mat, image->m_pdsBuffer->has_alpha());
    }
    else // No image by that name
    {
-      pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat);
+      pd3dDevice->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, mat);
       pd3dDevice->basicShader->SetMaterial(mat, false);
    }
 
@@ -481,7 +481,7 @@ void Spinner::RenderStatic()
    mat.m_fEdge = 1.0f;
    mat.m_fEdgeAlpha = 1.0f;
    pd3dDevice->basicShader->SetMaterial(&mat, false);
-   pd3dDevice->basicShader->SetTechniqueMetal(SHADER_TECHNIQUE_basic_without_texture, mat);
+   pd3dDevice->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, mat);
 
    Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_posZ);
    pd3dDevice->DrawMesh(pd3dDevice->basicShader, IsTransparent(), pos, 0.f, m_bracketMeshBuffer, RenderDevice::TRIANGLELIST, 0, spinnerBracketNumFaces);
