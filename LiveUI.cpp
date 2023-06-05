@@ -638,13 +638,13 @@ LiveUI::LiveUI(RenderDevice *const rd)
    // Editor camera position. We use a right handed system for easy ImGuizmo integration while VPX renderer is left handed, so reverse X axis
    m_orthoCam = true;
    m_camDistance = m_live_table->m_bottom * 0.7f;
-   bool isPerspective = false;
+   const bool isPerspective = false;
    constexpr float viewWidth = 10.f; // for orthographic
    constexpr float camYAngle = 165.f * float(M_PI / 180.);
    constexpr float camXAngle = 32.f * float(M_PI / 180.);
-   vec3 eye(m_live_table->m_right * 0.5f, m_live_table->m_bottom * 0.5f, -m_camDistance);
-   vec3 at(m_live_table->m_right * 0.5f, m_live_table->m_bottom * 0.5f, 0.f);
-   vec3 up(0.f, -1.f, 0.f);
+   const vec3 eye(m_live_table->m_right * 0.5f, m_live_table->m_bottom * 0.5f, -m_camDistance);
+   const vec3 at(m_live_table->m_right * 0.5f, m_live_table->m_bottom * 0.5f, 0.f);
+   const vec3 up(0.f, -1.f, 0.f);
    m_camView.SetLookAtRH(eye, at, up);
    ImGuizmo::AllowAxisFlip(false);
 
@@ -655,7 +655,7 @@ LiveUI::LiveUI(RenderDevice *const rd)
    m_dpi = ImGui_ImplWin32_GetDpiScaleForHwnd(rd->getHwnd());
    ImGui::GetStyle().ScaleAllSizes(m_dpi);
 
-   float overlaySize = min(32.f * m_dpi, (float)min(m_player->m_wnd_width, m_player->m_wnd_height) / (26.f * 2.0f)); // Fit 26 lines of text on screen
+   const float overlaySize = min(32.f * m_dpi, (float)min(m_player->m_wnd_width, m_player->m_wnd_height) / (26.f * 2.0f)); // Fit 26 lines of text on screen
    m_overlayFont = io.Fonts->AddFontFromMemoryCompressedTTF(droidsans_compressed_data, droidsans_compressed_size, overlaySize);
 
    m_baseFont = io.Fonts->AddFontFromMemoryCompressedTTF(droidsans_compressed_data, droidsans_compressed_size, 13.0f * m_dpi);
@@ -741,10 +741,10 @@ void LiveUI::Render()
          }, this);
    }
    ImGui::Render();
-   ImDrawData *draw_data = ImGui::GetDrawData();
+   ImDrawData * const draw_data = ImGui::GetDrawData();
    if (m_rotate == 1 || m_rotate == 3)
    {
-      float tmp = draw_data->DisplaySize.x;
+      const float tmp = draw_data->DisplaySize.x;
       draw_data->DisplaySize.x = draw_data->DisplaySize.y;
       draw_data->DisplaySize.y = tmp;
    }
@@ -796,7 +796,7 @@ void LiveUI::Update()
    ImGui_ImplWin32_NewFrame();
 
    ImGui::NewFrame();
-   bool isInteractiveUI = m_ShowUI || m_ShowSplashModal || ImGui::IsPopupOpen(ID_BAM_SETTINGS);
+   const bool isInteractiveUI = m_ShowUI || m_ShowSplashModal || ImGui::IsPopupOpen(ID_BAM_SETTINGS);
    if (isInteractiveUI)
       m_rotate = 0;
    else
@@ -957,12 +957,12 @@ void LiveUI::UpdateCameraModeUI()
 
    ViewSetupID vsId = table->m_BG_current_set;
    ViewSetup &viewSetup = table->mViewSetups[vsId];
-   bool isLegacy = viewSetup.mMode == VLM_LEGACY;
-   bool isCamera = viewSetup.mMode == VLM_CAMERA;
-   bool isWindow = viewSetup.mMode == VLM_WINDOW;
+   const bool isLegacy = viewSetup.mMode == VLM_LEGACY;
+   const bool isCamera = viewSetup.mMode == VLM_CAMERA;
+   const bool isWindow = viewSetup.mMode == VLM_WINDOW;
 
-   bool isStereo = m_player->m_stereo3Denabled && m_player->m_stereo3D != STEREO_OFF && m_player->m_stereo3D != STEREO_VR;
-   bool isAnaglyph = isStereo && m_player->m_stereo3D >= STEREO_ANAGLYPH_RC && m_player->m_stereo3D <= STEREO_ANAGLYPH_AB;
+   const bool isStereo = m_player->m_stereo3Denabled && m_player->m_stereo3D != STEREO_OFF && m_player->m_stereo3D != STEREO_VR;
+   const bool isAnaglyph = isStereo && m_player->m_stereo3D >= STEREO_ANAGLYPH_RC && m_player->m_stereo3D <= STEREO_ANAGLYPH_AB;
    const Player::BackdropSetting *settings = isLegacy ? Player::mLegacyViewSettings : isCamera ? Player::mCameraViewSettings : Player::mWindowViewSettings;
    int nSettings = (isLegacy ? sizeof(Player::mLegacyViewSettings) : isCamera ? sizeof(Player::mCameraViewSettings) : sizeof(Player::mWindowViewSettings)) / sizeof(Player::BackdropSetting);
    nSettings = isAnaglyph ? nSettings : isStereo ? (nSettings - 2) : (nSettings - 3);
@@ -1052,7 +1052,7 @@ void LiveUI::UpdateCameraModeUI()
       // Useless for absolute mode: the camera is always where we put it
       Matrix3D view = m_pin3d->GetMVP().GetView();
       view.Invert();
-      vec3 pos = view.GetOrthoNormalPos();
+      const vec3 pos = view.GetOrthoNormalPos();
       ImGui::NewLine();
       ImGui::Text("Camera at X: %.0f Y: %.0f Z: %.0f (cm), Rotation: %.2f", 
          VPUTOCM(pos.x - 0.5f * g_pplayer->m_ptable->m_right), 
@@ -1129,7 +1129,6 @@ void LiveUI::UpdateMainUI()
 
    bool popup_video_settings = false;
    bool popup_audio_settings = false;
-   bool popup_renderer_inspection = false;
 
    bool showFullUI = true;
    showFullUI &= !m_ShowSplashModal;
@@ -1221,8 +1220,8 @@ void LiveUI::UpdateMainUI()
       {
          m_camProj.SetPerspectiveFovRH(39.6f, io.DisplaySize.x / io.DisplaySize.y, zNear, zFar);
       }
-      float* cameraView = (float *)(m_camView.m);
-      float *cameraProjection = (float *)(m_camProj.m); 
+      float * const cameraView = (float *)(m_camView.m);
+      float * const cameraProjection = (float *)(m_camProj.m); 
 
       /* Matrix3D gridMatrix;
       static constexpr float identityMatrix[16] = { 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 1.f };
@@ -1246,8 +1245,8 @@ void LiveUI::UpdateMainUI()
 
       // Camera orbit manipulator
       Matrix3D prevView(m_camView);
-      float viewManipulateRight = ImGui::GetIO().DisplaySize.x - (m_flyMode ? 0.f : m_properties_width) - 16.f;
-      float viewManipulateTop = m_toolbar_height + m_menubar_height + 16;
+      const float viewManipulateRight = ImGui::GetIO().DisplaySize.x - (m_flyMode ? 0.f : m_properties_width) - 16.f;
+      const float viewManipulateTop = m_toolbar_height + m_menubar_height + 16;
       ImGuizmo::ViewManipulate(cameraView, cameraProjection, m_gizmoOperation, m_gizmoMode, cameraView, m_camDistance,
          ImVec2(viewManipulateRight - 128, viewManipulateTop + 16), ImVec2(128, 128), 0x10101010);
       if (memcmp(cameraView, prevView.m, 16 * sizeof(float)) != 0)
@@ -1285,16 +1284,16 @@ void LiveUI::UpdateMainUI()
          Matrix3D view(m_camView);
          view.Invert();
          const vec3 up = view.GetOrthoNormalUp(), dir = view.GetOrthoNormalDir(), pos = view.GetOrthoNormalPos();
-         vec3 camTarget = pos - dir * m_camDistance;
+         const vec3 camTarget = pos - dir * m_camDistance;
          m_camDistance *= (float) pow(1.1, -ImGui::GetIO().MouseWheel);
-         vec3 newEye = camTarget + dir * m_camDistance;
+         const vec3 newEye = camTarget + dir * m_camDistance;
          m_camView.SetLookAtRH(newEye, camTarget, up);
       }
 
       // Pan mouse
       if (m_useEditorCam && ImGui::IsMouseDown(ImGuiMouseButton_Middle))
       {
-         ImVec2 drag = ImGui::GetMouseDragDelta(ImGuiMouseButton_Middle);
+         const ImVec2 drag = ImGui::GetMouseDragDelta(ImGuiMouseButton_Middle);
          ImGui::ResetMouseDragDelta(ImGuiMouseButton_Middle);
          m_useEditorCam = true;
          Matrix3D view(m_camView);
@@ -1388,12 +1387,12 @@ void LiveUI::UpdateMainUI()
             Matrix3D view(m_camView);
             view.Invert();
             const vec3 up = view.GetOrthoNormalUp(), dir = view.GetOrthoNormalDir(), pos = view.GetOrthoNormalPos();
-            vec3 camTarget = pos - dir * m_camDistance;
+            const vec3 camTarget = pos - dir * m_camDistance;
             vec3 newTarget = camTarget;
             Matrix3D transform;
             if (GetSelectionTransform(transform))
                newTarget = vec3(transform._41, transform._42, transform._43);
-            vec3 newEye = newTarget + dir * m_camDistance;
+            const vec3 newEye = newTarget + dir * m_camDistance;
             m_camView.SetLookAtRH(newEye, newTarget, up);
          }
          else if (ImGui::IsKeyPressed(ImGuiKey_Keypad7))
@@ -1404,10 +1403,10 @@ void LiveUI::UpdateMainUI()
             Matrix3D view(m_camView);
             view.Invert();
             const vec3 up = view.GetOrthoNormalUp(), dir = view.GetOrthoNormalDir(), pos = view.GetOrthoNormalPos();
-            vec3 camTarget = pos - dir * m_camDistance;
-            vec3 newUp(0.f, -1.f, 0.f);
-            vec3 newDir(0.f, 0.f, ImGui::GetIO().KeyCtrl ? 1.f : -1.f);
-            vec3 newEye = camTarget + newDir * m_camDistance;
+            const vec3 camTarget = pos - dir * m_camDistance;
+            const vec3 newUp(0.f, -1.f, 0.f);
+            const vec3 newDir(0.f, 0.f, ImGui::GetIO().KeyCtrl ? 1.f : -1.f);
+            const vec3 newEye = camTarget + newDir * m_camDistance;
             m_camView.SetLookAtRH(newEye, camTarget, newUp);
          }
          else if (ImGui::IsKeyPressed(ImGuiKey_Keypad1))
@@ -1418,10 +1417,10 @@ void LiveUI::UpdateMainUI()
             Matrix3D view(m_camView);
             view.Invert();
             const vec3 up = view.GetOrthoNormalUp(), dir = view.GetOrthoNormalDir(), pos = view.GetOrthoNormalPos();
-            vec3 camTarget = pos - dir * m_camDistance;
-            vec3 newUp(0.f, 0.f, -1.f);
-            vec3 newDir(0.f, ImGui::GetIO().KeyCtrl ? -1.f : 1.f, 0.f);
-            vec3 newEye = camTarget + newDir * m_camDistance;
+            const vec3 camTarget = pos - dir * m_camDistance;
+            const vec3 newUp(0.f, 0.f, -1.f);
+            const vec3 newDir(0.f, ImGui::GetIO().KeyCtrl ? -1.f : 1.f, 0.f);
+            const vec3 newEye = camTarget + newDir * m_camDistance;
             m_camView.SetLookAtRH(newEye, camTarget, newUp);
          }
          else if (ImGui::IsKeyPressed(ImGuiKey_Keypad3))
@@ -1432,10 +1431,10 @@ void LiveUI::UpdateMainUI()
             Matrix3D view(m_camView);
             view.Invert();
             const vec3 up = view.GetOrthoNormalUp(), dir = view.GetOrthoNormalDir(), pos = view.GetOrthoNormalPos();
-            vec3 camTarget = pos - dir * m_camDistance;
-            vec3 newUp(0.f, 0.f, -1.f);
-            vec3 newDir(ImGui::GetIO().KeyCtrl ? 1.f : -1.f, 0.f, 0.f);
-            vec3 newEye = camTarget + newDir * m_camDistance;
+            const vec3 camTarget = pos - dir * m_camDistance;
+            const vec3 newUp(0.f, 0.f, -1.f);
+            const vec3 newDir(ImGui::GetIO().KeyCtrl ? 1.f : -1.f, 0.f, 0.f);
+            const vec3 newEye = camTarget + newDir * m_camDistance;
             m_camView.SetLookAtRH(newEye, camTarget, newUp);
          }
       }
@@ -1449,9 +1448,9 @@ void LiveUI::UpdateMainUI()
       Matrix3D RH2LH, YAxis; 
       RH2LH.SetScaling(1.f, 1.f, -1.f);
       YAxis.SetScaling(1.f, -1.f, 1.f);
-      Matrix3D view = RH2LH * m_camView * YAxis;
-      Matrix3D proj = YAxis * m_camProj;
-      
+      const Matrix3D view = RH2LH * m_camView * YAxis;
+      const Matrix3D proj = YAxis * m_camProj;
+
       m_pin3d->GetMVP().SetView(view);
 
       #ifdef ENABLE_SDL
@@ -1512,7 +1511,7 @@ bool LiveUI::GetSelectionTransform(Matrix3D& transform)
 
    if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemFlasher)
    {
-      Flasher *p = (Flasher *)m_selection.editable;
+      Flasher * const p = (Flasher *)m_selection.editable;
       Matrix3D rotx, roty, rotz, trans;
       trans.SetTranslation(p->m_d.m_vCenter.x, p->m_d.m_vCenter.y, p->m_d.m_height + m_live_table->m_tableheight);
       rotx.SetRotateX(ANGTORAD(p->m_d.m_rotX));
@@ -1524,7 +1523,7 @@ bool LiveUI::GetSelectionTransform(Matrix3D& transform)
 
    if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemLight)
    {
-      Light *l = (Light *)m_selection.editable;
+      Light * const l = (Light *)m_selection.editable;
       const float height = (m_selection.is_live ? m_live_table : m_table)->GetSurfaceHeight(l->m_d.m_szSurface, l->m_d.m_vCenter.x, l->m_d.m_vCenter.y);
       transform.SetTranslation(l->m_d.m_vCenter.x, l->m_d.m_vCenter.y, height + l->m_d.m_height);
       return true;
@@ -1532,7 +1531,7 @@ bool LiveUI::GetSelectionTransform(Matrix3D& transform)
 
    if (m_selection.type == LiveUI::Selection::SelectionType::S_BALL)
    {
-      Ball *ball = m_player->m_vball[m_selection.ball_index];
+      Ball * const ball = m_player->m_vball[m_selection.ball_index];
       transform.SetTranslation(ball->m_d.m_pos);
       return true;
    }
@@ -1543,9 +1542,9 @@ bool LiveUI::GetSelectionTransform(Matrix3D& transform)
 void LiveUI::SetSelectionTransform(Matrix3D &newTransform, bool clearPosition, bool clearScale, bool clearRotation)
 {
    Matrix3D transform = newTransform;
-   Vertex3Ds right(transform._11, transform._12, transform._13);
-   Vertex3Ds up(transform._21, transform._22, transform._23);
-   Vertex3Ds dir(transform._31, transform._32, transform._33);
+   const Vertex3Ds right(transform._11, transform._12, transform._13);
+   const Vertex3Ds up(transform._21, transform._22, transform._23);
+   const Vertex3Ds dir(transform._31, transform._32, transform._33);
    float xscale = right.Length();
    float yscale = up.Length();
    float zscale = dir.Length();
@@ -1587,7 +1586,7 @@ void LiveUI::SetSelectionTransform(Matrix3D &newTransform, bool clearPosition, b
 
    if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemPrimitive)
    {
-      Primitive *p = (Primitive *)m_selection.editable;
+      Primitive * const p = (Primitive *)m_selection.editable;
       p->m_d.m_vPosition.x = posX;
       p->m_d.m_vPosition.y = posY;
       p->m_d.m_vPosition.z = posZ;
@@ -1601,7 +1600,7 @@ void LiveUI::SetSelectionTransform(Matrix3D &newTransform, bool clearPosition, b
 
    if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemFlasher)
    {
-      Flasher *p = (Flasher *)m_selection.editable;
+      Flasher * const p = (Flasher *)m_selection.editable;
       p->put_X(posX);
       p->put_Y(posY);
       p->put_Height(posZ);
@@ -1612,7 +1611,7 @@ void LiveUI::SetSelectionTransform(Matrix3D &newTransform, bool clearPosition, b
 
    if (m_selection.type == LiveUI::Selection::SelectionType::S_BALL)
    {
-      Ball *ball = m_player->m_vball[m_selection.ball_index];
+      Ball * const ball = m_player->m_vball[m_selection.ball_index];
       ball->m_d.m_pos.x = posX;
       ball->m_d.m_pos.y = posY;
       ball->m_d.m_pos.z = posZ;
@@ -1651,7 +1650,7 @@ void LiveUI::UpdateOutlinerUI()
       for (int tab = 0; tab < 2; tab++)
       {
          const bool is_live = (tab == 1);
-         PinTable *table = is_live ? m_live_table : m_table;
+         PinTable * const table = is_live ? m_live_table : m_table;
          if (ImGui::BeginTabItem(is_live ? "Live" : "Startup", nullptr, (is_live && liveTabSelect == 2) ? ImGuiTabItemFlags_SetSelected : ImGuiTabItemFlags_None))
          {
             liveTabSelect = liveTabSelect == -1 ? 2 : tab; // Skip first frame since it always have the first tab selected (there is only one known by ImGui at this point)
@@ -1997,7 +1996,7 @@ void LiveUI::UpdateRendererInspectionModal()
       }
       // Other detailled informations
       ImGui::Text(m_player->GetPerfInfo().c_str());
-      
+
       ImGui::End();
    }
 }
@@ -2101,7 +2100,7 @@ void LiveUI::UpdateMainSplashModal()
          HideUI();
          m_table->QuitPlayer(Player::CS_STOP_PLAY);
       }
-      ImVec2 pos = ImGui::GetWindowPos();
+      const ImVec2 pos = ImGui::GetWindowPos();
       ImVec2 max = ImGui::GetWindowSize();
       bool hovered = ImGui::IsWindowHovered();
       ImGui::EndPopup();
@@ -2118,7 +2117,7 @@ void LiveUI::UpdateMainSplashModal()
          if (!hovered  && !(pos.x <= initial_pos.x && initial_pos.x <= max.x && pos.y <= initial_pos.y && initial_pos.y <= max.y))
          {
 
-            ImVec2 drag = ImGui::GetMouseDragDelta();
+            const ImVec2 drag = ImGui::GetMouseDragDelta();
             int x, y;
 #ifdef ENABLE_SDL
             SDL_GetWindowPosition(m_player->m_sdl_playfieldHwnd, &x, &y);
@@ -2235,10 +2234,10 @@ void LiveUI::CameraProperties(bool is_live)
    if (BEGIN_PROP_TABLE)
    {
       const ViewSetupID vsId = (ViewSetupID) m_selection.camera;
-      const string layoutModeLabels[] = { "Relative"s, "Absolute"s};
+      static const string layoutModeLabels[] = { "Relative"s, "Absolute"s};
       int startup_mode = m_table ? (int)m_table->mViewSetups[vsId].mMode :0;
       int live_mode = m_live_table ? (int)m_live_table->mViewSetups[vsId].mMode : 0;
-      PinTable *table = (is_live ? m_live_table : m_table);
+      PinTable * const table = (is_live ? m_live_table : m_table);
       auto upd_mode = [table, vsId](bool is_live, int prev, int v) { table->mViewSetups[vsId].mMode = (ViewLayoutMode)v; };
       // View
       PropCombo("Layout Mode", m_table, is_live, &startup_mode, &live_mode, 2, layoutModeLabels, upd_mode);
@@ -2265,8 +2264,8 @@ void LiveUI::CameraProperties(bool is_live)
 
 void LiveUI::RenderProbeProperties(bool is_live)
 {
-   RenderProbe *live_probe = (RenderProbe *)(m_selection.is_live ? m_selection.renderprobe : m_live_table->m_startupToLive[m_selection.renderprobe]);
-   RenderProbe *startup_probe = (RenderProbe *)(m_selection.is_live ? m_live_table->m_liveToStartup[m_selection.renderprobe] : m_selection.renderprobe);
+   RenderProbe * const live_probe = (RenderProbe *)(m_selection.is_live ? m_selection.renderprobe : m_live_table->m_startupToLive[m_selection.renderprobe]);
+   RenderProbe * const startup_probe = (RenderProbe *)(m_selection.is_live ? m_live_table->m_liveToStartup[m_selection.renderprobe] : m_selection.renderprobe);
    HelpTextCentered("Render Probe");
    string name = ((RenderProbe *)m_selection.renderprobe)->GetName();
    ImGui::BeginDisabled(is_live); // Editing the name of a live item can break the script
@@ -2280,11 +2279,11 @@ void LiveUI::RenderProbeProperties(bool is_live)
    ImGui::Separator();
    if (ImGui::CollapsingHeader("Visuals", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
    {
-      const string types[] = { "Reflection"s, "Refraction"s };
+      static const string types[] = { "Reflection"s, "Refraction"s };
 
       auto upd_normal = [startup_probe, live_probe](bool is_live, vec3& prev, vec3& v)
       {
-         RenderProbe *probe = (is_live ? live_probe : startup_probe);
+         RenderProbe * const probe = (is_live ? live_probe : startup_probe);
          if (probe)
          {
             vec4 plane;
@@ -2311,7 +2310,7 @@ void LiveUI::RenderProbeProperties(bool is_live)
 
       auto upd_distance = [startup_probe, live_probe](bool is_live, float prev, float v)
       {
-         RenderProbe *probe = (is_live ? live_probe : startup_probe);
+         RenderProbe * const probe = (is_live ? live_probe : startup_probe);
          if (probe)
          {
             vec4 plane;
@@ -2330,7 +2329,7 @@ void LiveUI::BallProperties(bool is_live)
 {
    if (!is_live)
       return;
-   Ball *ball = m_player->m_vball[m_selection.ball_index];
+   Ball * const ball = m_player->m_vball[m_selection.ball_index];
    HelpTextCentered("Ball #"s.append(std::to_string(ball->m_id)));
    ImGui::Separator();
    if (ImGui::CollapsingHeader("Visual", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
@@ -2362,8 +2361,8 @@ void LiveUI::BallProperties(bool is_live)
 
 void LiveUI::MaterialProperties(bool is_live)
 {
-   Material *live_material = (Material *)(m_selection.is_live ? m_selection.editable : m_live_table->m_startupToLive[m_selection.editable]);
-   Material *startup_material = (Material *)(m_selection.is_live ? m_live_table->m_liveToStartup[m_selection.editable] : m_selection.editable);
+   Material * const live_material = (Material *)(m_selection.is_live ? m_selection.editable : m_live_table->m_startupToLive[m_selection.editable]);
+   Material * const startup_material = (Material *)(m_selection.is_live ? m_live_table->m_liveToStartup[m_selection.editable] : m_selection.editable);
    HelpTextCentered("Material");
    string name = ((Material *)m_selection.editable)->m_szName;
    ImGui::BeginDisabled(is_live); // Editing the name of a live item can break the script
@@ -2427,7 +2426,7 @@ void LiveUI::FlasherProperties(bool is_live, Flasher *startup_obj, Flasher *live
 
 void LiveUI::LightProperties(bool is_live, Light *startup_light, Light *live_light)
 {
-   Light *light = (is_live ? live_light : startup_light);
+   Light * const light = (is_live ? live_light : startup_light);
    if (ImGui::CollapsingHeader("Visual", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
    {
       auto upd_intensity = [startup_light, live_light, light](bool is_live, float prev, float v)
@@ -2451,10 +2450,10 @@ void LiveUI::LightProperties(bool is_live, Light *startup_light, Light *live_lig
       bool startup_shadow = startup_light ? (startup_light->m_d.m_shadows == ShadowMode::RAYTRACED_BALL_SHADOWS) : ShadowMode::NONE;
       bool live_shadow = live_light ? (live_light->m_d.m_shadows == ShadowMode::RAYTRACED_BALL_SHADOWS) : ShadowMode::NONE;
       auto upd_shadow = [light](bool is_live, bool prev, bool v) { light->m_d.m_shadows = v ? ShadowMode::RAYTRACED_BALL_SHADOWS : ShadowMode::NONE; };
-      
+
       PropSeparator("Light Settings");
       PropFloat("Intensity", startup_light, is_live, startup_light ? &(startup_light->m_d.m_intensity) : nullptr, live_light ? &(live_light->m_d.m_intensity) : nullptr, 0.1f, 1.0f, "%.1f", ImGuiInputTextFlags_CharsDecimal, upd_intensity);
-      const string faders[] = { "None"s, "Linear"s, "Incandescent"s };
+      static const string faders[] = { "None"s, "Linear"s, "Incandescent"s };
       PropCombo("Fader", startup_light, is_live, startup_light ? (int *)&(startup_light->m_d.m_fader) : nullptr, live_light ? (int *)&(live_light->m_d.m_fader) : nullptr, 3, faders);
       PropFloat("Fade Up (ms)", startup_light, is_live, startup_light ? &startup_fadeup : nullptr, live_light ? &live_fadeup : nullptr, 10.0f, 50.0f, "%.0f", ImGuiInputTextFlags_CharsDecimal, upd_fade_up);
       PropFloat("Fade Down (ms)", startup_light, is_live, startup_light ? &startup_fadedown : nullptr, live_light ? &live_fadedown : nullptr, 10.0f, 50.0f, "%.0f", ImGuiInputTextFlags_CharsDecimal, upd_fade_down);
@@ -2462,7 +2461,7 @@ void LiveUI::LightProperties(bool is_live, Light *startup_light, Light *live_lig
       PropRGB("Center Burst", startup_light, is_live, startup_light ? &(startup_light->m_d.m_color2) : nullptr, live_light ? &(live_light->m_d.m_color2) : nullptr);
       PropFloat("Falloff Range", startup_light, is_live, startup_light ? &(startup_light->m_d.m_falloff) : nullptr, live_light ? &(live_light->m_d.m_falloff) : nullptr, 10.f, 100.f, "%.0f");
       PropFloat("Falloff Power", startup_light, is_live, startup_light ? &(startup_light->m_d.m_falloff_power) : nullptr, live_light ? &(live_light->m_d.m_falloff_power) : nullptr, 0.1f, 0.5f, "%.2f");
-      
+
       PropSeparator("Render Mode");
       // Missing render mode properties
       if (!light->m_d.m_visible)
@@ -2483,16 +2482,16 @@ void LiveUI::LightProperties(bool is_live, Light *startup_light, Light *live_lig
          PropCheckbox("PassThrough", startup_light, is_live, startup_light ? &(startup_light->m_d.m_imageMode) : nullptr, live_light ? &(live_light->m_d.m_imageMode) : nullptr);
          PropImageCombo("Image", startup_light, is_live, startup_light ? &(startup_light->m_d.m_szImage) : nullptr, live_light ? &(live_light->m_d.m_szImage) : nullptr, m_table);
       }
-      
+
       PropSeparator("Bulb");
       PropCheckbox("Render bulb", startup_light, is_live, startup_light ? &(startup_light->m_d.m_showBulbMesh) : nullptr, live_light ? &(live_light->m_d.m_showBulbMesh) : nullptr);
       PropCheckbox("Static rendering", startup_light, is_live, startup_light ? &(startup_light->m_d.m_staticBulbMesh) : nullptr, live_light ? &(live_light->m_d.m_staticBulbMesh) : nullptr);
       PropFloat("Bulb Size", startup_light, is_live, startup_light ? &(startup_light->m_d.m_meshRadius) : nullptr, live_light ? &(live_light->m_d.m_meshRadius) : nullptr, 1.0f, 5.0f, "%.0f");
-      
+
       PropSeparator("Ball reflections & Shadows");
       PropCheckbox("Show Reflection on Balls", startup_light, is_live, startup_light ? &(startup_light->m_d.m_showReflectionOnBall) : nullptr, live_light ? &(live_light->m_d.m_showReflectionOnBall) : nullptr);
       PropCheckbox("Raytraced ball shadows", startup_light, is_live, startup_light ? &startup_shadow : nullptr, live_light ? &live_shadow : nullptr, upd_shadow);
-      
+
       PropSeparator("Position");
       PropFloat("X", startup_light, is_live, startup_light ? &(startup_light->m_d.m_vCenter.x) : nullptr, live_light ? &(live_light->m_d.m_vCenter.x) : nullptr, 0.1f, 0.5f, "%.1f");
       PropFloat("Y", startup_light, is_live, startup_light ? &(startup_light->m_d.m_vCenter.y) : nullptr, live_light ? &(live_light->m_d.m_vCenter.y) : nullptr, 0.1f, 0.5f, "%.1f");
@@ -2504,7 +2503,7 @@ void LiveUI::LightProperties(bool is_live, Light *startup_light, Light *live_lig
    {
       auto upd_inplaystate = [startup_light, live_light](bool is_live, float prev, float v)
       {
-         Light *light = (is_live ? live_light : startup_light);
+         Light * const light = (is_live ? live_light : startup_light);
          light->setInPlayState(v > 1.f ? (float)LightStateBlinking : v);
       };
       PropFloat("State", startup_light, is_live, startup_light ? &(startup_light->m_d.m_state) : nullptr, live_light ? &(live_light->m_d.m_state) : nullptr, 0.1f, 0.5f, "%.1f", ImGuiInputTextFlags_CharsDecimal, upd_inplaystate);
@@ -2599,8 +2598,8 @@ void LiveUI::SurfaceProperties(bool is_live, Surface *startup_obj, Surface *live
 
 #define PROP_HELPER_BEGIN(type)                                                                                                                                                              \
    PROP_TABLE_SETUP                                                                                                                                                                          \
-   type *v = is_live ? live_v : startup_v;                                                                                                                                                   \
-   type *ov = is_live ? startup_v : live_v;                                                                                                                                                  \
+   type * const v = is_live ? live_v : startup_v;                                                                                                                                                   \
+   type * const ov = is_live ? startup_v : live_v;                                                                                                                                                  \
    ImGui::TableNextColumn();                                                                                                                                                                 \
    if (v == nullptr)                                                                                                                                                                         \
    {                                                                                                                                                                                         \
@@ -2804,7 +2803,7 @@ void LiveUI::PropVec3(const char *label, IEditable *undo_obj, bool is_live, Vert
 void LiveUI::PropCombo(const char *label, IEditable *undo_obj, bool is_live, int *startup_v, int *live_v, int n_values, const string labels[], OnIntPropChange chg_callback)
 {
    PROP_HELPER_BEGIN(int)
-   const char *preview_value = labels[*v].c_str();
+   const char * const preview_value = labels[*v].c_str();
    if (ImGui::BeginCombo(label, preview_value))
    {
       for (int i = 0; i < n_values; i++)
@@ -2827,7 +2826,7 @@ void LiveUI::PropCombo(const char *label, IEditable *undo_obj, bool is_live, int
 void LiveUI::PropImageCombo(const char *label, IEditable *undo_obj, bool is_live, string *startup_v, string *live_v, PinTable *table, OnStringPropChange chg_callback)
 {
    PROP_HELPER_BEGIN(string)
-   const char *preview_value = (*v).c_str();
+   const char * const preview_value = (*v).c_str();
    if (ImGui::BeginCombo(label, preview_value))
    {
       const std::function<string(Texture *)> map = [](Texture *image) -> string { return image->m_szName; };
