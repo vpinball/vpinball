@@ -34,7 +34,9 @@ VS_LIGHT_OUTPUT vs_light_main (const in float4 vPosition : POSITION0,
 {
    // trafo all into worldview space (as most of the weird trafos happen in view, world is identity so far)
    const float3 P = mul(vPosition, matWorldView).xyz;
-   const float3 N = normalize(mul(vNormal, matWorldViewInverseTranspose).xyz);
+   // No need to use a dedicated 'normal' matrix and normalize since the matWorldView is orthonormal (world is identity and view is always orthonormal) and we normalize in fragment shader
+   //const float3 N = normalize(mul(vNormal, matWorldViewInverseTranspose).xyz);
+   const float3 N = mul(float4(vNormal, 0.0), matWorldView).xyz;
 
    VS_LIGHT_OUTPUT Out;
    Out.pos = mul(vPosition, matWorldViewProj);

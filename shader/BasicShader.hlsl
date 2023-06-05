@@ -247,6 +247,7 @@ VS_OUTPUT vs_main (const in float4 vPosition : POSITION0,
 {
    // trafo all into worldview space (as most of the weird trafos happen in view, world is identity so far)
    const float3 P = mul(vPosition, matWorldView).xyz;
+   // Needs to use a 'normal' matrix, and to normalize since we allow non uniform stretching, therefore matWorldView is not orthonormal
    const float3 N = normalize(mul(vNormal, matWorldViewInverseTranspose).xyz);
 
    VS_OUTPUT Out;
@@ -264,6 +265,7 @@ VS_NOTEX_OUTPUT vs_notex_main (const in float4 vPosition : POSITION0,
 {
    // trafo all into worldview space (as most of the weird trafos happen in view, world is identity so far)
    const float3 P = mul(vPosition, matWorldView).xyz;
+   // Needs to use a 'normal' matrix, and to normalize since we allow non uniform stretching, therefore matWorldView is not orthonormal
    const float3 N = normalize(mul(vNormal, matWorldViewInverseTranspose).xyz);
 
    VS_NOTEX_OUTPUT Out;

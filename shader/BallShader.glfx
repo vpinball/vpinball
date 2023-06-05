@@ -77,6 +77,7 @@ void main()
 
 	// apply spinning to the normals too to get the sphere mapping effect
 	const float3 nspin = (orientation * vec4(vNormal,0.0)).xyz;
+    // Needs to use a 'normal' matrix, and to normalize since we allow non uniform stretching, therefore matWorldView is not orthonormal
 	const float3 normal = normalize((vec4(nspin, 0.0) * matWorldViewInverse).xyz); // actually: mul(vec4(nspin,0.), matWorldViewInverseTranspose), but optimized to save one matrix
 
 	const float3 p = (matWorldView * pos).xyz;
@@ -141,11 +142,11 @@ void main()
 
 ////FRAGMENT
 
-float3 ballLightLoop(const float3 pos, float3 N, float3 V, float3 diffuse, float3 glossy, const float3 specular, const float edge, const bool is_metal)
+float3 ballLightLoop(const float3 pos, const float3 N, const float3 V, float3 diffuse, float3 glossy, const float3 specular, const float edge, const bool is_metal)
 {
-   // normalize input vectors for BRDF evals
-   N = normalize(N);
-   V = normalize(V);
+   // N and V must be already normalized by the caller
+   // N = normalize(N);
+   // V = normalize(V);
 
    // normalize BRDF layer inputs //!! use diffuse = (1-glossy)*diffuse instead?
    const float diffuseMax = max(diffuse.x,max(diffuse.y,diffuse.z));
@@ -222,14 +223,17 @@ in vec4 worldPos_t0y;
 
 void main()
 {
-    const float3 v = normalize(/*camera=0,0,0,1*/-worldPos_t0y.xyz);
-    const float3 r = reflect(v, normalize(normal_t0x.xyz));
+    const float3 V = normalize( /*camera=0,0,0,1*/-worldPos_t0y.xyz);
+    const float3 N = normalize(normal_t0x.xyz);
+    const float3 r = reflect(V, N);
 
     float3 ballImageColor;
     BRANCH if (%PARAM0%) // equirectangularMap
     { // Equirectangular Map Reflections
-      const float3 rv = (matWorldViewInverse * vec4(r.x, r.y, r.z, 0.)).xyz; // mul_w0(r, matWorldViewInverse);
-      const float2 uv = float2(0.5 + atan2_approx_div2PI(rv.y, rv.x), 0.5 + asin_approx_divPI(rv.z));
+	  // trafo back to world for lookup into world space envmap
+	  // matView is always an orthonormal matrix, so no need to normalize after transform
+	  const float3 rv = /*normalize*/((float4(-r,0.0) * matView).xyz);
+      const float2 uv = ray_to_equirectangular_uv(rv);
       ballImageColor = texture(tex_ball_color, uv).xyz;
     }
     else
@@ -237,7 +241,7 @@ void main()
       // calculate the intermediate value for the final texture coords. found here http://www.ozone3d.net/tutorials/glsl_texturing_p04.php
       const float m = (1.0 - r.z > 0.) ? 0.3535533905932737622 * rsqrt(1.0 - r.z) : 0.; // 0.353...=0.5/sqrt(2)
       const float2 uv = float2(0.5 - m * r.x, 0.5 - m * r.y);
-      const float edge = dot(v, r);
+      const float edge = dot(V, r);
       // edge falloff to reduce aliasing on edges (picks smaller mipmap -> more blur)
       const float lod = (edge > 0.6) ? edge*(6.0*1.0/0.4)-(6.0*0.6/0.4) : 0.0;
       ballImageColor = textureLod(tex_ball_color, uv, lod).xyz;
@@ -267,13 +271,17 @@ void main()
     else
        ballImageColor *= 0.5*fenvEmissionScale_TexWidth.x; //!! 0.5=magic
 
-    const float3 playfield_normal = normalize((vec4(0.,0.,1.,0.) * matWorldViewInverse).xyz); //!! normalize necessary? // actually: mul(float4(0.,0.,1.,0.), matWorldViewInverseTranspose), but optimized to save one matrix
+    // No need to normalize here since the matWorldView matrix is normal (world is identity and view is always orthonormal)
+    // No need to use a dedicated 'normal' matrix since the matWorldView is orthonormal (world is identity and view is always orthonormal)
+    //const float3 playfield_normal = normalize((float4(0.,0.,1.,0.) * matWorldViewInverse).xyz); //!! normalize necessary? // actually: mul(float4(0.,0.,1.,0.), matWorldViewInverseTranspose), but optimized to save one matrix
+    //const float3 playfield_normal = (matWorldView * float4(0.,0.,1.,0.)).xyz;
+    const float3 playfield_normal = matWorldView[2].xyz;
     const float NdotR = dot(playfield_normal,r);
 
     const float3 playfield_p0 = mul_w1(float3(/*playfield_pos=*/0.,0.,invTableRes_playfield_height_reflection.z), matWorldView);
     const float t = dot(playfield_normal, worldPos_t0y.xyz - playfield_p0) / NdotR;
     const float3 playfield_hit = worldPos_t0y.xyz - t*r;
-    const float2 uv = (inverse(matWorldView) * vec4(playfield_hit, 1.0)).xy * invTableRes_playfield_height_reflection.xy;
+    const float2 uv = (matWorldViewInverse * float4(playfield_hit, 1.0)).xy * invTableRes_playfield_height_reflection.xy;
 
     // This will break with custom playfield texture coordinates (like Flupper's TOTAN and many others)
     // => Rather use screen space sample from previous frame (it will include the lighting/shadowing but also the ball itself, and would need to account for viewer movement) ?
@@ -306,7 +314,7 @@ void main()
     if(!%PARAM1%)
        specular *= float3(1.,1.,1.)-decalColor; // see above
 
-   color.xyz = ballLightLoop(worldPos_t0y.xyz, normal_t0x.xyz, /*camera=0,0,0,1*/-worldPos_t0y.xyz, diffuse, glossy, specular, 1.0, false);
+   color.xyz = ballLightLoop(worldPos_t0y.xyz, N, V, diffuse, glossy, specular, 1.0, false);
    color.a = cBase_Alpha.a;
 }
 

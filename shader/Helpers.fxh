@@ -167,11 +167,20 @@ float asin_approx(const float v)
 
 float asin_approx_divPI(const float v)
 {
+	//return asin(v) / PI;
+
     const float x = abs(v);
     if(1. - x <= FLT_MIN_VALUE) // necessary due to compiler doing 1./rsqrt instead of sqrt
        return (v >= 0.) ? 0.5 : -0.5;
     const float res = ((-0.155972/PI)/*C1*/ * x + (1.56467/PI)/*C0*/) * sqrt(1. - x);
     return (v >= 0.) ? 0.5 - res : -0.5 + res;
+}
+
+float2 ray_to_equirectangular_uv(const float3 ray)
+{
+   return float2( // remap to 2D envmap coords
+		0.5 + atan2_approx_div2PI(ray.y, ray.x),
+		acos_approx_divPI(ray.z));
 }
 
 #if 0
