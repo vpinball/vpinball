@@ -2377,9 +2377,9 @@ void LiveUI::MaterialProperties(bool is_live)
    ImGui::Separator();
    if (ImGui::CollapsingHeader("Visual", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
    {
-	   const string matType[] = { "Default"s, "Metal"s, "Unshaded"s };
+	   const string matType[] = { "Default"s, "Metal"s };
       PropCombo("Type", m_table, is_live, startup_material ? (int *)&(startup_material->m_type) : nullptr, live_material ? (int *)&(live_material->m_type) : nullptr, 3, matType);
-      if (material != nullptr && material->m_type != Material::UNSHADED)
+      if (material != nullptr)
       {
          PropRGB("Base Color", m_table, is_live, startup_material ? &(startup_material->m_cBase) : nullptr, live_material ? &(live_material->m_cBase) : nullptr);
          PropFloat("Wrap Lighting", m_table, is_live, startup_material ? &(startup_material->m_fWrapLighting) : nullptr, live_material ? &(live_material->m_fWrapLighting) : nullptr, 0.02f, 0.1f);

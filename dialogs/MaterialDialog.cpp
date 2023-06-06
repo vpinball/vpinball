@@ -63,7 +63,6 @@ BOOL MaterialDialog::OnInitDialog()
    SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Basic");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Metal");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Unshaded");
    SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 
    m_resizer.Initialize(*this, CRect(0, 0, 780, 520));
@@ -573,40 +572,44 @@ void MaterialDialog::SetEditedMaterial(const Material& mat)
 {
    const int count = ListView_GetSelectedCount(m_hMaterialList);
 
+   GetDlgItem(IDC_CLONE_BUTTON).EnableWindow(count == 1);
+   GetDlgItem(IDC_RENAME).EnableWindow(count == 1);
+   GetDlgItem(IDC_IMPORT).EnableWindow(count == 1);
+
    // Material type
-   GetDlgItem(IDC_MATERIAL_TYPE).EnableWindow(true);
+   GetDlgItem(IDC_MATERIAL_TYPE).EnableWindow(count == 1);
    SendMessage(GetDlgItem(IDC_MATERIAL_TYPE).GetHwnd(), CB_SETCURSEL, mat.m_type, 0);
 
    // Base
-   m_colorButton1.EnableWindow(mat.m_type != Material::UNSHADED && count == 1);
-   GetDlgItem(IDC_DIFFUSE_EDIT).EnableWindow(mat.m_type != Material::UNSHADED && count == 1);
+   m_colorButton1.EnableWindow(count == 1);
+   GetDlgItem(IDC_DIFFUSE_EDIT).EnableWindow(count == 1);
    m_colorButton1.SetColor(mat.m_cBase);
    setItemText(IDC_DIFFUSE_EDIT, mat.m_fWrapLighting);
 
    // Glossy
-   m_colorButton2.EnableWindow(mat.m_type != Material::UNSHADED && mat.m_type != Material::METAL && count == 1);
-   GetDlgItem(IDC_GLOSSY_IMGLERP_EDIT).EnableWindow(mat.m_type != Material::UNSHADED && mat.m_type != Material::METAL && count == 1);
+   m_colorButton2.EnableWindow(mat.m_type != Material::METAL && count == 1);
+   GetDlgItem(IDC_GLOSSY_IMGLERP_EDIT).EnableWindow(mat.m_type != Material::METAL && count == 1);
    m_colorButton2.SetColor(mat.m_cGlossy);
    setItemText(IDC_GLOSSY_IMGLERP_EDIT, mat.m_fGlossyImageLerp);
    
    // Roughness
-   GetDlgItem(IDC_GLOSSY_EDIT).EnableWindow(mat.m_type != Material::UNSHADED && count == 1);
+   GetDlgItem(IDC_GLOSSY_EDIT).EnableWindow(count == 1);
    setItemText(IDC_GLOSSY_EDIT, mat.m_fRoughness);
    
    // Clearcoat
-   m_colorButton3.EnableWindow(mat.m_type != Material::UNSHADED && count == 1);
+   m_colorButton3.EnableWindow(count == 1);
    m_colorButton3.SetColor(mat.m_cClearcoat);
    
    // Edge brightness
-   GetDlgItem(IDC_SPECULAR_EDIT).EnableWindow(mat.m_type != Material::UNSHADED && count == 1);
+   GetDlgItem(IDC_SPECULAR_EDIT).EnableWindow(count == 1);
    setItemText(IDC_SPECULAR_EDIT, mat.m_fEdge);
    
    // Transparency
-   GetDlgItem(IDC_OPACITY_CHECK).EnableWindow(mat.m_type != Material::UNSHADED && count == 1);
-   GetDlgItem(IDC_OPACITY_EDIT).EnableWindow(mat.m_type != Material::UNSHADED && count == 1);
-   GetDlgItem(IDC_EDGEALPHA_EDIT).EnableWindow(mat.m_type != Material::UNSHADED && count == 1);
-   GetDlgItem(IDC_THICKNESS_EDIT).EnableWindow(mat.m_type != Material::UNSHADED && count == 1);
-   m_colorButton4.EnableWindow(mat.m_type != Material::UNSHADED && count == 1);
+   GetDlgItem(IDC_OPACITY_CHECK).EnableWindow(count == 1);
+   GetDlgItem(IDC_OPACITY_EDIT).EnableWindow(count == 1);
+   GetDlgItem(IDC_EDGEALPHA_EDIT).EnableWindow(count == 1);
+   GetDlgItem(IDC_THICKNESS_EDIT).EnableWindow(count == 1);
+   m_colorButton4.EnableWindow(count == 1);
    SendMessage(GetDlgItem(IDC_OPACITY_CHECK).GetHwnd(), BM_SETCHECK, mat.m_bOpacityActive ? BST_CHECKED : BST_UNCHECKED, 0);
    setItemText(IDC_OPACITY_EDIT, mat.m_fOpacity);
    setItemText(IDC_EDGEALPHA_EDIT, mat.m_fEdgeAlpha);

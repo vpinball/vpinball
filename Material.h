@@ -40,7 +40,6 @@ public:
    {
       BASIC,
       METAL,
-	  UNSHADED
    };
 
    inline Material() :
