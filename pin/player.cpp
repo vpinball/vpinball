@@ -1556,6 +1556,19 @@ HRESULT Player::Init()
    m_pEditorTable->m_progressDialog.SetName("Starting Game Scripts..."s);
    PLOGI << "Starting script"; // For profiling
 
+   g_pvp->ProfileLog("Start Scripts"s);
+
+   m_ptable->m_pcv->Start(); // Hook up to events and start cranking script
+
+   // Fire Init event for table object and all 'hitable' parts
+   m_ptable->FireVoidEvent(DISPID_GameEvents_Init);
+   for (size_t i = 0; i < m_vhitables.size(); ++i)
+   {
+      Hitable *const ph = m_vhitables[i];
+      if (ph->GetEventProxyBase())
+         ph->GetEventProxyBase()->FireVoidEvent(DISPID_GameEvents_Init);
+   }
+
    // Pre-render all non-changing elements such as static walls, rails, backdrops, etc. and also static playfield reflections
    // This is done after starting the script and firing the Init event to allow script to adjust static parts on startup
    m_pEditorTable->m_progressDialog.SetName("Prerendering Static Parts..."s);
@@ -1607,19 +1620,6 @@ HRESULT Player::Init()
    SetFocus();
 
    LockForegroundWindow(true);
-
-   g_pvp->ProfileLog("Start Scripts"s);
-
-   m_ptable->m_pcv->Start(); // Hook up to events and start cranking script
-
-   // Fire Init event for table object and all 'hitable' parts
-   m_ptable->FireVoidEvent(DISPID_GameEvents_Init);
-   for (size_t i = 0; i < m_vhitables.size(); ++i)
-   {
-      Hitable *const ph = m_vhitables[i];
-      if (ph->GetEventProxyBase())
-         ph->GetEventProxyBase()->FireVoidEvent(DISPID_GameEvents_Init);
-   }
 
    if (m_detectScriptHang)
       g_pvp->PostWorkToWorkerThread(HANG_SNOOP_START, NULL);
