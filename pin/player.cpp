@@ -3991,7 +3991,7 @@ void Player::Render()
       m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pin3d.m_pddsStatic);
       m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(m_pin3d.m_pddsStatic, m_pin3d.m_pd3dPrimaryDevice->GetMSAABackBufferTexture()); // cannot be called inside BeginScene -> EndScene cycle
    }
-   U64 clearTiming = usec() - usecTimeStamp;
+   const U64 clearTiming = usec() - usecTimeStamp;
 
    // Physics/Timer updates, done at the last moment, especially to handle key input (VP<->VPM roundtrip) and animation triggers
    if (!m_pause && m_minphyslooptime == 0) // (vsync) latency reduction code not active? -> Do Physics Updates here
@@ -4925,13 +4925,6 @@ LRESULT Player::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     switch (uMsg)
     {
-    case UWM_DESTROYWINDOW:
-      // FIXME since Win32xx 9.2, DestroyWindow is dispatched to the event system to destroy it from the right thread
-      // This is a bug that has been fixed in commit r2618 (see: https://sourceforge.net/p/win32-framework/code/2618/tree//include/wxx_wincore.h?diff=51a508b234309d75510cdce1:2617)
-      // This workaround destroy the window and prevent the message to be further processed since that's where the crashes would occur
-      ::DestroyWindow(*this);
-      return 0;
-
     case MM_MIXM_CONTROL_CHANGE:
         mixer_get_volume();
         break;
