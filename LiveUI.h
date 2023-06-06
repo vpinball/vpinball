@@ -115,8 +115,14 @@ private:
    } m_selection;
 
    // Outliner
-   string m_outlinerFilter;
+   float m_outliner_width = 0.0f;
+   string m_outlinerFilter = ""s;
+   bool m_outlinerSelectLiveTab = true;
    bool IsOutlinerFiltered(const string& name);
+
+   // Properties
+   float m_properties_width = 0.0f;
+   bool m_propertiesSelectLiveTab = true;
 
    // Rendering
    RenderDevice* const m_rd;
@@ -126,8 +132,6 @@ private:
    ImFont *m_overlayFont = nullptr;
    float m_menubar_height = 0.0f;
    float m_toolbar_height = 0.0f;
-   float m_outliner_width = 0.0f;
-   float m_properties_width = 0.0f;
    bool m_old_player_dynamic_mode;
    bool m_old_player_camera_mode;
 
