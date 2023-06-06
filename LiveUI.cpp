@@ -1644,16 +1644,16 @@ void LiveUI::UpdateOutlinerUI()
 
    ImGui::InputTextWithHint("Filter", "Name part filter", &m_outlinerFilter);
 
-   if (ImGui::BeginTabBar("Startup/Live", ImGuiTabBarFlags_NoCloseWithMiddleMouseButton))
+   if (ImGui::BeginTabBar("Startup/Live", ImGuiTabBarFlags_AutoSelectNewTabs | ImGuiTabBarFlags_NoCloseWithMiddleMouseButton))
    {
-      static int liveTabSelect = -1;
       for (int tab = 0; tab < 2; tab++)
       {
          const bool is_live = (tab == 1);
          PinTable * const table = is_live ? m_live_table : m_table;
-         if (ImGui::BeginTabItem(is_live ? "Live" : "Startup", nullptr, (is_live && liveTabSelect == 2) ? ImGuiTabItemFlags_SetSelected : ImGuiTabItemFlags_None))
+         if (ImGui::BeginTabItem(is_live ? "Live" : "Startup", nullptr, (is_live && m_outlinerSelectLiveTab) ? ImGuiTabItemFlags_SetSelected : ImGuiTabItemFlags_None))
          {
-            liveTabSelect = liveTabSelect == -1 ? 2 : tab; // Skip first frame since it always have the first tab selected (there is only one known by ImGui at this point)
+            if (is_live)
+               m_outlinerSelectLiveTab = false;
             if (ImGui::TreeNodeEx("View Setups"))
             {
                if (ImGui::Selectable("Live Editor Camera"))
@@ -1796,13 +1796,13 @@ void LiveUI::UpdatePropertyUI()
 
    if (ImGui::BeginTabBar("Startup/Live", ImGuiTabBarFlags_NoCloseWithMiddleMouseButton))
    {
-      static int liveTabSelect = -1;
       for (int tab = 0; tab < 2; tab++)
       {
          const bool is_live = (tab == 1);
-         if (ImGui::BeginTabItem(is_live ? "Live" : "Startup", nullptr, (is_live && liveTabSelect == 2) ? ImGuiTabItemFlags_SetSelected : ImGuiTabItemFlags_None))
+         if (ImGui::BeginTabItem(is_live ? "Live" : "Startup", nullptr, (is_live && m_propertiesSelectLiveTab) ? ImGuiTabItemFlags_SetSelected : ImGuiTabItemFlags_None))
          {
-            liveTabSelect = liveTabSelect == -1 ? 2 : tab; // Skip first frame since it always have the first tab selected (there is only one known by ImGui at this point)
+            if (is_live)
+               m_propertiesSelectLiveTab = false;
             ImGui::NewLine();
             switch (m_selection.type)
             {
