@@ -5,7 +5,7 @@
 #if !defined(AFX_PINTABLE_H__D14A2DAB_2984_4FE7_A102_D0283ECE31B4__INCLUDED_)
 #define AFX_PINTABLE_H__D14A2DAB_2984_4FE7_A102_D0283ECE31B4__INCLUDED_
 
-#include <inc/robin_hood.h>
+#include "inc/robin_hood.h"
 
 #include <atomic>
 #include "hash.h"
@@ -30,13 +30,13 @@ struct LightSource
 
 struct ProtectionData
 {
-   long fileversion;
-   long size;
-   unsigned char paraphrase[16 + 8];
-   unsigned long flags;
-   int keyversion;
-   int spare1;
-   int spare2;
+   int32_t fileversion;
+   int32_t size;
+   uint8_t paraphrase[16 + 8];
+   uint32_t flags;
+   int32_t keyversion;
+   int32_t spare1;
+   int32_t spare2;
 };
 
 class ScriptGlobalTable;
@@ -892,6 +892,7 @@ public:
    STDMETHOD(BeginModal)();
    STDMETHOD(GetTextFile)(BSTR FileName, /*[out, retval]*/ BSTR *pContents);
    STDMETHOD(GetCustomParam)(long index, /*[out, retval]*/ BSTR *param);
+   STDMETHOD(get_Setting)(BSTR Section, BSTR SettingName, /*[out, retval]*/ BSTR *param);
    STDMETHOD(get_GameTime)(/*[out, retval]*/ long *pVal);
    STDMETHOD(get_SystemTime)(/*[out, retval]*/ long *pVal);
    STDMETHOD(get_AddCreditKey)(/*[out, retval]*/ long *pVal);

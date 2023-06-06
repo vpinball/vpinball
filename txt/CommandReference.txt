@@ -8,6 +8,10 @@ Also see https://docs.orbitalpin.com/welcome for some more detailed help
 As for coding light sequences for original tables, please check this helper app: https://github.com/horseyhorsey/VpLightSequencing
 
 Changelog:
+10.7.4:
+- add Setting property to the globals
+- document missing GetTextFile
+
 10.7.2:
 - add GetInPlayIntensity to the light element
 - add Opacity,Color,AddBlend to the primitive element
@@ -131,6 +135,8 @@ Variables
 *WindowWidth(int) - get width of rendering window/fullscreen
 *WindowHeight(int) - get height of rendering window/fullscreen
 
+*Setting(string, string) - get the value of one of the VPX .ini settings
+
 DMDWidth(int) - set width of DMD
 DMDHeight(int) - set height of DMD
 DMDPixels(VARIANT) - set array of (byte-)values (0..100), size needs to match the previously set width and height
@@ -197,6 +203,8 @@ LoadValue(string,string,VARIANT) - load a value for tablename,valuename,value
 SaveValue(string,string,VARIANT) - save a value for tablename,valuename,value
 
 UserDirectory(string)
+
+GetTextFile(string) - returns content of text file
 
 
 TABLE

@@ -724,6 +724,7 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propget, id(22), helpstring("property GameTime")] HRESULT GameTime([out, retval] long *pVal);
                 [propget, id(225), helpstring("property SystemTime")] HRESULT SystemTime([out, retval] long *pVal);
                 [id(823), helpstring("method GetCustomParam")] HRESULT GetCustomParam(long index, [out, retval] BSTR *param);
+                [propget, id(824), helpstring("property Setting") ] HRESULT Setting(BSTR Section, BSTR SettingName, [ out, retval ] BSTR *pVal);
                 [id(23), helpstring("method GetTextFile")] HRESULT GetTextFile(BSTR FileName, [out, retval] BSTR *pContents);
                 [id(25), helpstring("method BeginModal")] HRESULT BeginModal();
                 [id(26), helpstring("method EndModal")] HRESULT EndModal();

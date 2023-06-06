@@ -11,10 +11,10 @@
 #include <sstream>
 #include "Shader.h"
 #include "freeimage.h"
-#include "inc\ThreadPool.h"
-#include "inc\scalefx.h"
+#include "inc/ThreadPool.h"
+#include "inc/scalefx.h"
 
-#include "inc\serial.h"
+#include "inc/serial.h"
 static serial Serial;
 
 using namespace rapidxml;
@@ -404,6 +404,31 @@ STDMETHODIMP ScriptGlobalTable::GetCustomParam(long index, BSTR *param)
 
     *param = SysAllocString(m_vpinball->m_customParameters[index-1]);
     return S_OK;
+}
+
+STDMETHODIMP ScriptGlobalTable::get_Setting(BSTR Section, BSTR SettingName, BSTR *param)
+{
+   string value;
+   const int sectionLen = (int)lstrlenW(Section);
+   char *const sectionSz = new char[sectionLen + 1];
+   WideCharToMultiByteNull(CP_ACP, 0, Section, -1, sectionSz, sectionLen + 1, nullptr, nullptr);
+   const int settingLen = (int)lstrlenW(SettingName);
+   char *const settingSz = new char[settingLen + 1];
+   WideCharToMultiByteNull(CP_ACP, 0, SettingName, -1, settingSz, settingLen + 1, nullptr, nullptr);
+   if (::LoadValue(sectionSz, settingSz, value) == S_OK)
+   {
+      const int len = (int)value.length() + 1;
+      WCHAR *const wzT = new WCHAR[len];
+      MultiByteToWideCharNull(CP_ACP, 0, value.c_str(), -1, wzT, len);
+      *param = SysAllocString(wzT);
+      delete [] wzT;
+      delete [] sectionSz;
+      delete [] settingSz;
+      return S_OK;
+   }
+   delete [] sectionSz;
+   delete [] settingSz;
+   return E_FAIL;
 }
 
 STDMETHODIMP ScriptGlobalTable::GetTextFile(BSTR FileName, BSTR *pContents)
@@ -1681,7 +1706,7 @@ bool PinTable::IsNameUnique(const WCHAR * const wzName) const
 
 void PinTable::GetUniqueName(const ItemTypeEnum type, WCHAR * const wzUniqueName, const DWORD wzUniqueName_maxlength) const
 {
-   WCHAR wzRoot[256];
+   WCHAR wzRoot[256] = { 0 };
    GetTypeNameForType(type, wzRoot);
    GetUniqueName(wzRoot, wzUniqueName, wzUniqueName_maxlength);
 }
@@ -1691,11 +1716,11 @@ void PinTable::GetUniqueName(const WCHAR *const wzRoot, WCHAR * const wzUniqueNa
    int suffix = 1;
    bool found = false;
    WCHAR * const wzName = new WCHAR[wzUniqueName_maxlength];
-   WCHAR wzSuffix[4];
 
    while (!found)
    {
       WideStrNCopy(wzRoot, wzName, wzUniqueName_maxlength-3);
+      WCHAR wzSuffix[4] = { 0 };
       _itow_s(suffix, wzSuffix, sizeof(wzSuffix)/sizeof(wzSuffix[0]), 10);
       if(suffix < 10)
          WideStrCat(L"0", wzName, wzUniqueName_maxlength);
@@ -1783,9 +1808,9 @@ void PinTable::UIRenderPass2(Sur * const psur)
       const float gridsize = (float)m_vpinball->m_gridSize;
 
       const int beginx = (int)(rlt.x / gridsize);
-      const float lenx = (rrb.x - rlt.x) / gridsize;//(((rc.right - rc.left)/m_zoom));
+      const int lenx = (int)((rrb.x - rlt.x) / gridsize);//(((rc.right - rc.left)/m_zoom));
       const int beginy = (int)(rlt.y / gridsize);
-      const float leny = (rrb.y - rlt.y) / gridsize;//(((rc.bottom - rc.top)/m_zoom));
+      const int leny = (int)((rrb.y - rlt.y) / gridsize);//(((rc.bottom - rc.top)/m_zoom));
 
       psur->SetObject(nullptr); // Don't hit test gridlines
 
@@ -2633,7 +2658,7 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
        delete pps;
        return hr;
    }
-   tmp[len] = 0;
+   tmp[len] = '\0';
    pps->m_szName = tmp;
    delete[] tmp;
 
@@ -2649,7 +2674,7 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
        delete pps;
        return hr;
    }
-   tmp[len] = 0;
+   tmp[len] = '\0';
    pps->m_szPath = tmp;
    delete[] tmp;
 
@@ -2795,17 +2820,17 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
 
    if (FAILED(hr = pps->ReInitialize()))
    {
-	   delete pps;
-	   return hr;
+      delete pps;
+      return hr;
    }
 
    // search for duplicate names, do not load dupes
    for(size_t i = 0; i < m_vsound.size(); ++i)
-       if (m_vsound[i]->m_szName == pps->m_szName && m_vsound[i]->m_szPath == pps->m_szPath)
-       {
-           delete pps;
-           return S_FAIL;
-       }
+      if (m_vsound[i]->m_szName == pps->m_szName && m_vsound[i]->m_szPath == pps->m_szPath)
+      {
+         delete pps;
+         return S_FAIL;
+      }
 
    m_vsound.push_back(pps);
    return S_OK;
@@ -3065,7 +3090,7 @@ HRESULT PinTable::LoadCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH h
 
       char *szValue = nullptr;
       ReadInfoValue(pstg, wzName, &szValue, hcrypthash);
-      m_vCustomInfoContent.push_back(szValue);
+      m_vCustomInfoContent.push_back(szValue ? szValue : "");
 
       delete[] szValue;
       delete[] wzName;
@@ -3488,6 +3513,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
                   });
                   cloadeditems++;
                }
+               pool.wait_until_nothing_in_flight();
             }
             // due to multithreaded loading and pre-allocation, check if some images could not be loaded, and perform a retry since more memory is available now
             for (size_t i = 0; i < m_vimage.size(); ++i)
@@ -4066,8 +4092,7 @@ void PinTable::ReImportSound(const HWND hwndListView, PinSound * const pps, cons
    //!! meh to all of this: kill old raw sound data and DSound/BASS stuff, then copy new one over
 
    pps->UnInitialize();
-   if(pps->m_pdata)
-       delete[] pps->m_pdata;
+   delete[] pps->m_pdata;
 
    *pps = *ppsNew;
 
@@ -4603,7 +4628,7 @@ void PinTable::FillLayerContextMenu(CMenu &mainMenu, CMenu &layerSubMenu, ISelec
 {
    const LocalString ls16(IDS_ASSIGN_TO_LAYER2);
    mainMenu.AppendMenu(MF_POPUP | MF_STRING, (size_t)layerSubMenu.GetHandle(), ls16.m_szbuffer);
-   vector<string> layerNames = g_pvp->GetLayersListDialog()->GetAllLayerNames();
+   const vector<string> layerNames = g_pvp->GetLayersListDialog()->GetAllLayerNames();
    int i = 0;
    for (const auto &name : layerNames)
    {
@@ -6715,7 +6740,7 @@ void PinTable::ReImportImage(Texture * const ppi, const string& filename)
 
    if (tex == nullptr)
    {
-      if (ppb) delete ppb;
+      delete ppb;
       return;
    }
 
@@ -6746,10 +6771,10 @@ bool PinTable::ExportImage(const Texture * const ppi, const char * const szfilen
       if (hFile == INVALID_HANDLE_VALUE)
          return false;
 
-      const unsigned int surfwidth  = ppi->m_width;				// texture width
-      const unsigned int surfheight = ppi->m_height;			// and height
+      const unsigned int surfwidth  = ppi->m_width;            // texture width
+      const unsigned int surfheight = ppi->m_height;           // and height
 
-      const unsigned int bmplnsize = (surfwidth * 4 + 3) & -4;	// line size ... 4 bytes per pixel + pad to 4 byte boundary		
+      const unsigned int bmplnsize = (surfwidth * 4 + 3) & -4; // line size ... 4 bytes per pixel + pad to 4 byte boundary		
 
       //<<<< began bmp file header and info <<<<<<<<<<<<<<<
 
@@ -6919,8 +6944,10 @@ int PinTable::AddListImage(HWND hwndListView, Texture * const ppi)
 
    if (ppi->m_realWidth == ppi->m_width && ppi->m_realHeight == ppi->m_height)
       _snprintf_s(sizeString, MAXTOKEN - 1, "%ix%i", ppi->m_realWidth, ppi->m_realHeight);
-   else
+   else if (ppi->m_realWidth > ppi->m_width || ppi->m_realHeight > ppi->m_height)
       _snprintf_s(sizeString, MAXTOKEN - 1, "%ix%i downsized to %ix%i", ppi->m_realWidth, ppi->m_realHeight, ppi->m_width, ppi->m_height);
+   else
+      _snprintf_s(sizeString, MAXTOKEN - 1, "%ix%i upscaled to %ix%i", ppi->m_realWidth, ppi->m_realHeight, ppi->m_width, ppi->m_height);
    const int index = ListView_InsertItem(hwndListView, &lvitem);
 
    ListView_SetItemText(hwndListView, index, 1, (LPSTR)ppi->m_szPath.c_str());
@@ -10263,7 +10290,7 @@ PinTableMDI::~PinTableMDI()
 
 bool PinTableMDI::CanClose() const
 {
-    if (m_table!=nullptr && m_table->FDirty() && !g_pvp->m_povEdit)
+    if (m_table != nullptr && m_table->FDirty() && !g_pvp->m_povEdit)
     {
         const LocalString ls1(IDS_SAVE_CHANGES1);
         const LocalString ls2(IDS_SAVE_CHANGES2);

@@ -19,6 +19,10 @@ FIXES:
 
 - fix crash if sound card(s) hardware/driver setup changed
 
+- fix crash on tables with weird table info
+
+- fix potential multi-threading screw-up when loading textures
+
 - see Scripts.txt for the actual usage and "documentation" of the scripts that come with VPX
 
 VP 10.7.3 Changelog
