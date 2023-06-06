@@ -587,7 +587,7 @@ void Shader::SetLightImageBackglassMode(const bool imageMode, const bool backgla
    SetBool(SHADER_lightingOff, imageMode || backglassMode); // at the moment can be combined into a single bool due to what the shader actually does in the end
 }
 
-void Shader::SetTechniqueMaterial(ShaderTechniques technique, const Material& mat, Light* const lightmap, const bool doNormalMapping, const bool doReflections, const bool doRefractions)
+void Shader::SetTechniqueMaterial(ShaderTechniques technique, const Material& mat, const bool doNormalMapping, const bool doReflections, const bool doRefractions)
 {
    ShaderTechniques tech = technique;
    const bool isMetal = mat.m_type == Material::MaterialType::METAL;
