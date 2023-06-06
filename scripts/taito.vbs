@@ -120,7 +120,7 @@ Function vpmKeyUp(ByVal keycode)
 			Case StartGameKey    .Switch(swStartButton)   = False
 			Case keySlamDoorHit  .Switch(swSlamTilt)      = False
 			Case keyCoinDoor     If toggleKeyCoinDoor = False Then .Switch(swCoinDoor) = inverseKeyCoinDoor
-			Case keyShowOpts     .Pause = True : .ShowOptsDialog GetPlayerHWnd : .Pause = False
+			Case keyShowOpts     .Pause = True : vpmShowOptions : .Pause = False
 			Case keyShowKeys     .Pause = True : vpmShowHelp : .Pause = False
 			Case keyShowDips     If IsObject(vpmShowDips) Then .Pause = True : vpmShowDips : .Pause = False
 			Case keyConfigurations .Switch(swConfigurations)= False

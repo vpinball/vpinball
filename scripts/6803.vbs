@@ -153,7 +153,7 @@ Function vpmKeyUp(ByVal keycode)
 			Case keyKPEnter      .Switch(swKPEnter)     = False
 			Case keyCancel       .Switch(swKPClear)     = False
 			Case keyKPGame       .Switch(swKPGame)      = False
-			Case keyShowOpts     .Pause = True : .ShowOptsDialog GetPlayerHWnd : .Pause = False
+			Case keyShowOpts     .Pause = True : vpmShowOptions : .Pause = False
 			Case keyShowKeys     .Pause = True : vpmShowHelp : .Pause = False
 			Case keyAddBall      .Pause = True : vpmAddBall  : .Pause = False
 			Case keyShowDips     If IsObject(vpmShowDips) Then .Pause = True : vpmShowDips : .Pause = False

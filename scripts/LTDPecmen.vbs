@@ -1,5 +1,5 @@
 'Last Updated in VBS v3.58
-' Written by Wiesshund to run Haunted Hotel ROM, feel free to improve this
+' Written by Wiesshund to run Pecmen ROM, feel free to improve this
 Option Explicit
 LoadCore
 Private Sub LoadCore
@@ -21,15 +21,18 @@ End Sub
 Const swSelfTest    = 9
 Const swTilt        = -6
 Const swCoin1       = 13
-Const swCoin2       = 13
+Const swCoin2       = 60
 Const swStartButton = 14
 Const swEnter       = 10
 Const swDown        = 11
 
-Const swURFlip      = 3
-Const swULFlip      = 4
-Const swLRFlip      = 84
-Const swLLFlip      = 82
+Const swRFlip      = 1
+Const swLFlip      = 2
+Const swRflipHold = 84
+Const swLflipHold = 82
+' flippers not working, solenoids disengage and dont reliably fire
+Const MazeDirection = 58 ' right flip
+Const MazeMove = 57 ' left flip
 
 ' Help Window
 vpmSystemHelp = "LTD System 4 keys:" & vbNewLine &_
@@ -67,22 +70,11 @@ Function vpmKeyDown(ByVal keycode)
 	vpmKeyDown = True ' Assume we handle the key
 	With Controller
 		Select Case keycode
-			Case RightFlipperKey .Switch(swLRFlip) = True : vpmKeyDown = False
-				If keycode = RightMagnaSave then 
-					.Switch(swURFlip) = True 
-					vpmKeyDown = False
-				End If
-			Case LeftFlipperKey  .Switch(swLLFlip) = True : vpmKeyDown = False
-				If keycode = LeftMagnaSave Then
-					.Switch(swULFlip) = True
-					vpmKeyDown = False
-				End If
-			Case RightMagnaSave .Switch(swURFlip) = True : vpmKeyDown = False
-			Case LeftMagnaSave  .Switch(swULFlip) = True : vpmKeyDown = False
-			Case keyStagedFlipperL .Switch(swULFlip) = True : vpmKeyDown = False
-			Case keyStagedFlipperR .Switch(swURFlip) = True : vpmKeyDown = False
+			Case RightFlipperKey .Switch(MazeMove) = 1 : .Switch(swRFlip) = 1: .Switch(swRflipHold) = 1 : vpmKeyDown = False '
+			Case LeftFlipperKey  .Switch(MazeDirection) = 1 : .Switch(swLFlip) = 1: .Switch(swLflipHold) = 1  : vpmKeyDown = False ' 
 			Case keyInsertCoin1  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin1'" : Playsound SCoin
 			Case keyInsertCoin2  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin2'" : Playsound SCoin
+			Case keyInsertCoin3  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin2'" : Playsound SCoin
 			Case StartGameKey    .Switch(swStartButton) = True
 			Case keySelfTest     .Switch(swSelfTest)    = True
 			Case keyEnter        .Switch(swEnter)       = True
@@ -102,20 +94,8 @@ Function vpmKeyUp(ByVal keycode)
 	vpmKeyUp = True ' Assume we handle the key
 	With Controller
 		Select Case keycode
-			Case RightFlipperKey .Switch(swLRFlip) = False : vpmKeyUp = False
-				If keycode = RightMagnaSave then 
-					.Switch(swURFlip) = False 
-					vpmKeyUp = False
-				End If
-			Case LeftFlipperKey  .Switch(swLLFlip) = False : vpmKeyUp = False
-				If keycode = LeftMagnaSave Then
-					.Switch(swULFlip) = False
-					vpmKeyUp = False
-				End If
-			Case RightMagnaSave .Switch(swURFlip) = False : vpmKeyUp = False
-			Case LeftMagnaSave  .Switch(swULFlip) = False : vpmKeyUp = False
-			Case keyStagedFlipperL .Switch(swULFlip) = False : vpmKeyUp = False
-			Case keyStagedFlipperR .Switch(swURFlip) = False : vpmKeyUp = False
+			Case RightFlipperKey .Switch(MazeMove) = 0 : .Switch(swRFlip) = 0: .Switch(swRflipHold) = 0 : vpmKeyUp = False '
+			Case LeftFlipperKey  .Switch(MazeDirection) = 0 : .Switch(swLFlip) = 0: .Switch(swLflipHold) = 0 : vpmKeyUp = False '
 			Case StartGameKey    .Switch(swStartButton) = False
 			Case keySelfTest     .Switch(swSelfTest)    = False
 			Case keyEnter        .Switch(swEnter)       = False

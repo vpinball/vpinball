@@ -26,9 +26,9 @@ Const swRed            = -2 'DED 6
 Const swStartButton    = 3
 Const swTilt           = 1
 Const swSlamTilt       = 8
-Const swCoin3          =  4
-Const swCoin1          =  5
-Const swCoin2          =  6
+Const swCoin3          = 4
+Const swCoin1          = 5
+Const swCoin2          = 6
 
 Const swLRFlip         = 64
 Const swLLFlip         = 63
@@ -104,7 +104,7 @@ Function vpmKeyUp(ByVal keycode)
 			Case keyGreen        .Switch(swGreen)        = False
 			Case keyRed          .Switch(swRed)          = False
 			Case keySlamDoorHit  .Switch(swSlamTilt)     = False
-			Case keyShowOpts     .Pause = True : .ShowOptsDialog GetPlayerHWnd : .Pause = False
+			Case keyShowOpts     .Pause = True : vpmShowOptions : .Pause = False
 			Case keyShowKeys     .Pause = True : vpmShowHelp : .Pause = False
 			Case keyShowDips     If IsObject(vpmShowDips) Then .Pause = True : vpmShowDips : .Pause = False
 			Case keyAddBall      .Pause = True : vpmAddBall  : .Pause = False
