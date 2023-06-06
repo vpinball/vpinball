@@ -516,7 +516,10 @@ void Surface::AddLine(vector<HitObject*> &pvho, const RenderVertex &pv1, const R
 
 void Surface::GetBoundingVertices(vector<Vertex3Ds> &pvvertex3D, const bool isLegacy) /*const*/
 {
-	// hardwired to table dimensions, but with bottom/top of surface, returns all 8 corners as this will be used for further transformations later-on
+   if (!isLegacy && !m_d.m_visible)
+      return;
+
+   // hardwired to table dimensions, but with bottom/top of surface, returns all 8 corners as this will be used for further transformations later-on
 	for (int i = 0; i < 8; i++)
 	{
 		const Vertex3Ds pv(
