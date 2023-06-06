@@ -120,9 +120,6 @@ FEATURES:
 - Add an option to primitives to toggle 'depth masking', which is otherwise used during rendering to hide all parts behind the primitive. If unchecked, the primitive will not hide parts behind it and it will also not be visible to ambient occlusion.
   For example, this is needed to employ primitives to render user/fake shadows without breaking ambient occlusion, or for transparents part with self overlapping parts like plastic ramps.
 
-- Add an 'unshaded' material to accompany the default and metal ones. As the name implies, it is unshaded (no lighting) and will simply render the texture (if any) and apply the modulate color.
-  This can prove useful when lighting has been precomputed. It also offers very good performance if used intensively.
-
 FIXES:
 
 - timers with a -1 interval are always fired after physics and animation, but before rendering, allowing the script to update visual parts accordingly without any visual lag.
