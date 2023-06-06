@@ -1,12 +1,12 @@
-// Win32++   Version 9.2
-// Release Date: 20th February 2023
+// Win32++   Version 9.3
+// Release Date: 5th June 2023
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2022  David Nash
+// Copyright (c) 2005-2023  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -168,15 +168,17 @@ namespace Win32xx
 
     ////////////////////////////////////////////////////////////////
     // The CResizer class is used to automatically rearrange child
-    // child windows when the parent window is resized. It displays
-    // scroll bars as required. CResizer is often used with dialogs.
+    // windows when the parent window is resized. It displays scroll
+    // bars as required. CResizer is often used with dialogs.
     class CResizer
     {
     public:
 
         enum Alignment { topleft, topright, bottomleft, bottomright, center, leftcenter, rightcenter, topcenter, bottomcenter };
 
-        CResizer() : m_parent(0), m_xScrollPos(0), m_yScrollPos(0) {}
+        CResizer() : m_parent(0), m_xScrollPos(0), m_yScrollPos(0),
+                     m_currentDpi(USER_DEFAULT_SCREEN_DPI)
+                     {}
         virtual ~CResizer() {}
 
         virtual void AddChild(HWND wnd, Alignment corner, DWORD style);
@@ -185,6 +187,7 @@ namespace Win32xx
         virtual void OnHScroll(UINT msg, WPARAM wparam, LPARAM lparam);
         virtual void OnVScroll(UINT msg, WPARAM wparam, LPARAM lparam);
         virtual void RecalcLayout();
+        virtual void RescaleValues();
         CRect GetMinRect() const { return m_minRect; }
         CRect GetMaxRect() const { return m_maxRect; }
         void  SetMinRect(const RECT& minRect) { m_minRect = minRect; }
@@ -206,6 +209,7 @@ namespace Win32xx
         CResizer& operator = (const CResizer&); // Disable assignment operator
 
         static BOOL CALLBACK EnumWindowsProc(HWND wnd, LPARAM lparam);
+        void ScaleRect(CRect& rc, double scale);
 
         HWND m_parent;
         std::vector<ResizeData> m_resizeData;
@@ -216,6 +220,7 @@ namespace Win32xx
 
         int m_xScrollPos;
         int m_yScrollPos;
+        int m_currentDpi;
     };
 
 }
@@ -270,7 +275,7 @@ namespace Win32xx
                     if (GetCWndPtr(*this) == this)  // Is window managed by Win32++?
                     {
                         if (IsWindow())
-                            SendMessage(UWM_DESTROYWINDOW, 0, 0);
+                            ::DestroyWindow(*this);
                     }
 
                     RemoveFromMap();
@@ -433,10 +438,6 @@ namespace Win32xx
 
             return TRUE;
         }
-        case UWM_DESTROYWINDOW:
-            // Destroy the window from its own thread.
-            ::DestroyWindow(*this);
-            break;
 
         } // switch(msg)
 
@@ -853,6 +854,11 @@ namespace Win32xx
     {
         switch (msg)
         {
+        case WM_DPICHANGED:
+        case WM_DPICHANGED_BEFOREPARENT:
+            RescaleValues();
+            break;
+
         case WM_SIZE:
             RecalcLayout();
             break;
@@ -872,7 +878,7 @@ namespace Win32xx
     // Sets up the Resizer by specifying the parent window (usually a dialog),
     // and the minimum and maximum allowed rectangle sizes.
     // Note: parent can either be a CWnd or a window handle (HWND)
-    void inline CResizer::Initialize(HWND parent, const RECT& minRect, const RECT& maxRect)
+    inline void CResizer::Initialize(HWND parent, const RECT& minRect, const RECT& maxRect)
     {
         assert (::IsWindow(parent));
 
@@ -891,10 +897,18 @@ namespace Win32xx
 
         // Calls AddChild for each child window with default settings.
         ::EnumChildWindows(parent, EnumWindowsProc, reinterpret_cast<LPARAM>(this));
+
+        int dpi = GetWindowDpi(m_parent);
+        double scale = (double)dpi / double(m_currentDpi);
+
+        ScaleRect(m_minRect, scale);
+        ScaleRect(m_maxRect, scale);
+        RecalcLayout();
+        m_currentDpi = GetWindowDpi(m_parent);
     }
 
     // Called to perform horizontal scrolling.
-    void inline CResizer::OnHScroll(UINT, WPARAM wparam, LPARAM)
+    inline void CResizer::OnHScroll(UINT, WPARAM wparam, LPARAM)
     {
         int xNewPos;
 
@@ -1142,6 +1156,46 @@ namespace Win32xx
 
         // Reposition all the child windows simultaneously.
         VERIFY(::EndDeferWindowPos(hdwp));
+    }
+
+    // Rescales the layout to changes in the parent window's dpi.
+    inline void CResizer::RescaleValues()
+    {
+        int dpi = GetWindowDpi(m_parent);
+        double scale = (double)dpi / double(m_currentDpi);
+
+        // Reset the scrolling position.
+        SetScrollPos(m_parent, 0, 0, TRUE);
+        m_xScrollPos = 0;
+        m_yScrollPos = 0;
+
+        ScaleRect(m_initRect, scale);
+        ScaleRect(m_minRect, scale);
+        ScaleRect(m_maxRect, scale);
+
+        std::vector<ResizeData>::iterator i;
+        for (i = m_resizeData.begin(); i != m_resizeData.end(); ++i)
+        {
+            ScaleRect((*i).oldRect, scale);
+        }
+
+        RecalcLayout();
+
+        for (i = m_resizeData.begin(); i != m_resizeData.end(); ++i)
+        {
+            ScaleRect((*i).initRect, scale);
+        }
+
+        RecalcLayout();
+        m_currentDpi = dpi;
+    }
+
+    inline void CResizer::ScaleRect(CRect& rc, double scale)
+    {
+        rc.left = static_cast<LONG>(rc.left * scale);
+        rc.top = static_cast<LONG>(rc.top * scale);
+        rc.right = static_cast<LONG>(rc.right * scale);
+        rc.bottom = static_cast<LONG>(rc.bottom * scale);
     }
 
 } // namespace Win32xx

@@ -1,12 +1,12 @@
-// Win32++   Version 9.2
-// Release Date: 20th February 2023
+// Win32++   Version 9.3
+// Release Date: 5th June 2023
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2022  David Nash
+// Copyright (c) 2005-2023  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -87,6 +87,7 @@ namespace Win32xx
 
 
         // Operations
+        int Add(HBITMAP bitmap) const;
         int Add(HBITMAP bitmap, HBITMAP mask) const;
         int Add(HBITMAP bitmap, COLORREF mask) const;
         int Add(HICON icon) const;
@@ -187,17 +188,23 @@ namespace Win32xx
     inline void CImageList::AddToMap() const
     {
         assert(m_pData->images);
-
         GetApp()->AddCImlData(m_pData->images, m_pData);
     }
 
+    // Adds an image or images to an image list.
+    // Refer to ImageList_Add in the Windows API documentation for more information.
+    inline int CImageList::Add(HBITMAP bitmap) const
+    {
+        assert(m_pData);
+        assert(m_pData->images);
+        return ImageList_Add(m_pData->images, bitmap, 0);
+    }
+
     // Adds an image or images to an image list, generating a mask from the specified bitmap.
-    // The mask parameter can be 0.
     // Refer to ImageList_Add in the Windows API documentation for more information.
     inline int CImageList::Add(HBITMAP bitmap, HBITMAP mask) const
     {
         assert(m_pData);
-
         assert (m_pData->images);
         return ImageList_Add(m_pData->images, bitmap, mask );
     }
@@ -207,7 +214,6 @@ namespace Win32xx
     inline int CImageList::Add(HBITMAP bitmap, COLORREF mask) const
     {
         assert(m_pData);
-
         assert (m_pData->images);
         return ImageList_AddMasked(m_pData->images, bitmap, mask);
     }
@@ -217,7 +223,6 @@ namespace Win32xx
     inline int CImageList::Add(HICON icon) const
     {
         assert(m_pData);
-
         assert (m_pData->images);
 
         // Append the icon to the image list
@@ -279,7 +284,6 @@ namespace Win32xx
     inline BOOL CImageList::BeginDrag(int image, CPoint hotSpot) const
     {
         assert(m_pData);
-
         assert(m_pData->images);
         return ImageList_BeginDrag(m_pData->images, image, hotSpot.x, hotSpot.y);
     }
@@ -290,7 +294,6 @@ namespace Win32xx
     inline BOOL CImageList::Copy(int Dest, int Src, UINT flags /*= ILCF_MOVE*/) const
     {
         assert(m_pData);
-
         assert(m_pData->images);
         return ImageList_Copy(*this, Dest, *this, Src, flags);
     }
@@ -556,9 +559,7 @@ namespace Win32xx
     // Refer to ImageList_Read in the Windows API documentation for more information.
     inline void CImageList::Read(LPSTREAM pStream)
     {
-        assert(m_pData->images);
         HIMAGELIST images =  ImageList_Read(pStream);
-
         if (images)
         {
             Assign(images);
@@ -637,7 +638,6 @@ namespace Win32xx
     inline BOOL CImageList::SetDragCursorImage(int drag, int dxHotspot, int dyHotspot) const
     {
         assert(m_pData->images);
-
         return ImageList_SetDragCursorImage(*this, drag, dxHotspot, dyHotspot);
     }
 
@@ -676,7 +676,6 @@ namespace Win32xx
     // Creates a gray scale image list from the specified color image list.
     inline BOOL CImageList::CreateDisabledImageList(HIMAGELIST normalImages)
     {
-        assert(m_pData->images == 0);
         assert(normalImages);
 
         int count = ImageList_GetImageCount(normalImages);

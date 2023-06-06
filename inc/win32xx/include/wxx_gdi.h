@@ -1,5 +1,5 @@
-// Win32++   Version 9.2
-// Release Date: 20th February 2023
+// Win32++   Version 9.3
+// Release Date: 5th June 2023
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -464,7 +464,7 @@ namespace Win32xx
         void CreateBrushIndirect(const LOGBRUSH& logBrush);
         void CreateDIBPatternBrush(HGLOBAL hDIBPacked, UINT colorSpec);
         void CreateDIBPatternBrushPt(LPCVOID pPackedDIB, UINT usage);
-        void CreateHatchBrush(int fnStyle, COLORREF color);
+        void CreateHatchBrush(int style, COLORREF color);
         void CreatePatternBrush(HBITMAP bitmap);
         void CreateSolidBrush(COLORREF color);
 

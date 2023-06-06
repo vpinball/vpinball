@@ -1,3 +1,155 @@
+Version 9.3
+===========
+This version improves the support for high resolution monitors by automatically
+adjusting the size of the frame's toolbar bitmaps and menu icons appropriately.
+A number of functions have been added to make supporting high resolution
+monitors easier (see below). 
+
+This version also provides support for per-monitor(v2) DPI awareness.
+Per-monitor DPI awareness allows applications to maintain their visual quality
+when they are moved between monitors with different Dots Per Inch (DPI)
+settings.
+
+The new FrameEx sample demonstrates the use of PNG resources instead of bitmap
+resources for the toolbar and menu images. 
+
+New Features and Enhancements
+-----------------------------
+* The toolbar bitmaps are automatically scaled up to a size appropriate for
+  the frame window's DPI. Bitmaps that are appropriate for lower resolution
+  monitors are be scaled up for use on higher resolution monitors without
+  a noticeable loss of visual quality.
+
+* The menu icon bitmaps are automatically scaled up to fit the menu item.
+  Note that menu icon bitmaps are not scaled down to fit the menu item, as 
+  that would result in poor image quality. If the menu item images specified
+  in the frame's SetupMenuItemIcons are too big to fit in the menu item,
+  the menu icons are not displayed.
+
+* Frames support per monitor DPI awareness by resizing themselves to the 
+  size recommended by the WM_DPICHANGED message in the OnDpiChanged function.
+  They also automatically adjust the toolbar images, menu icons, and statusbar
+  fonts when the frame window is moved between monitors with different DPI
+  settings.  
+
+* Dockers and docking frames call OnDpiChanged and OnDpiChangedBeforeParent
+  in response to WM_DPICHANGED and WM_DPICHANGED_BEFOREARENT to rearrange
+  dockers after a DPI change occurs. View windows should handle the
+  WM_DPICHANGEDBEFOREPARENT message if they need to account for DPI 
+  changes.  
+  
+* CResizer supports per monitor DPI awareness by repositioning the child
+  windows when the WM_DPICHANGED or WM_DPICHANGED_BEFOREPARENT message is
+  handled.
+
+* Added the FrameEx sample.
+  The FrameEx sample uses PNG images instead of bitmaps for the toolbar 
+  and menu item images. As PNG images scale better than bitmaps, this approach
+  is better for applications supporting Per Monitor DPI and high resolution
+  monitors.
+
+About high resolution monitor support
+-------------------------------------
+Modern monitors can now use scaling factors of 400% or more. Applications which
+look good with scaling factors of 100% or 150% may not look good at higher
+scaling factors. It will often be necessary to adjust the image-list for
+list-view and tree-view controls and adjust the fonts used by other windows
+to cater for larger scaling factors.
+
+Win32++ provides the following functions for high resolution monitor support.
+::GetWindowDpi
+CWnd::DpiScaleFont
+CWnd::DpiScaleInt
+CWnd::DpiScaleLogFont
+CWnd::DpiScaleRect
+CWnd::DpiScaleUpBitmap
+
+The GetWindowDpi function retrieves the window's current DPI. We can also
+call GetWindowDpi(HWND_DESKTOP) to retrieve the system DPI, and the desktop's
+DPI when per monitor dpi awareness is enabled.
+
+The various DpiScaleXXX functions take values which are appropriate for a 
+a scaling factor of 100% and scale them up to the appropriate values for
+the current window's Dots Per Inch (DPI).
+
+About per monitor dpi aware v2
+------------------------------
+Per monitor dpi aware v2 is a feature that allows applications to maintain
+their visual quality when moved between monitors with different DPI settings.
+Applications may appear blurry when moved between monitors with different DPI
+settings unless per monitor dpi aware v2 is enabled. Per monitor dpi aware v2
+is supported on later versions of Windows 10 and Windows 11.
+
+To add per-monitor dpi aware v2 to your application, use a manifest that
+includes the per monitor dpi aware v2 entry, such as "PerMonitorV2.manifest"
+provided in many of the samples. The manifest should be specified in the
+application's resource script, often called "resource.rc". You may also need
+to handle the WM_DPICHANGED_BEFOREPARENT message in view windows if they 
+require special DPI handling.
+
+If per monitor dpi aware v2 is enabled, a WM_DPICHANGED message is sent to the
+top level windows after the DPI change occurs. That usually occurs when the 
+window is moved between monitors, but can also occur as a result of a settings
+change. A WM_DPICHANGED_BEFOREPARENT to all of the top level window's child and
+descendant windows before the WM_DPICHANGED message is sent. A 
+WM_DPICHANGED_AFTERPARENT message is is sent to all of the top level window's
+child and descendant windows After the WM_DPICHANGED is sent.
+
+The following messages are sent when the application's manifest specifies per
+monitor dpi aware V2:
+
+WM_GETDPISCALEDSIZE
+Sent to the top level window before the DPI change occurs. The WPARAM
+contains the new DPI.
+
+WM_DPICHANGED
+Sent to top level windows after a DPI change occurs. The LPARAM contains a 
+pointer to rect that provides the suggested new size of the window. 
+
+WM_DPICHANGED_BEFOREPARENT
+Sent before the DPI change to all child windows and descendants of the top
+level window that is undergoing a DPI change.
+
+WM_DPICHANGED_AFTERPARENT
+Sent after the DPI change to all child windows and descendants of the top
+level window that is undergoing a DPI change.
+
+WM_SETTINGCHANGE
+Sent when the user manually changes the display settings.
+
+
+Changes in Detail
+-----------------
+Added ::GetWindowDpi
+Added ::ScaleUpBitmap
+Added CDockContainer::CreateToolBar
+Added CDockContainer::OnDpiChangedBeforeParent 
+Added CDockContainer::SetTBImageList
+Added CDockContainer::SetTBImageListDis
+Added CDockContainer::SetTBImageListHot
+Added CDockContainer::UpdateTabs;
+Added CDocker::DpiUpdateDockerSizes
+Added CDocker::OnDpiChanged
+Added CDocker::OnDpiChangedBeforeParent
+Added CDocker::OnGetDpiScaledSize
+Added CDocker::SetDefaultCaptionHeight
+Added CDockFrame::OnDpiChanged
+Added CFrameT::ClearMenuIcons
+Added CFrameT::OnDpiChanged
+Added CFrameT::UpdateSettings
+Added CImageList::Add  additional overload
+Added CTab::OnDpiChangedBeforeParent
+Added CTab::UpdateTabs
+Added CTabbedMDI::OnDpiChangedBeforeParent
+Added CWnd::DpiScaleFont
+Added CWnd::DpiScaleInt
+Added CWnd::DpiScaleLogFont
+Added CWnd::DpiScaleRect
+Added CWnd::DpiScaleUpBitmap
+Renamed CFrameT::GetMenuBarFont to CFrameT::GetMenuFont
+Updated the dock target images in the samples.
+
+
 Version 9.2
 ===========
 

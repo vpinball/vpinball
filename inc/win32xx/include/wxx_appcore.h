@@ -1,12 +1,12 @@
-// Win32++   Version 9.2
-// Release Date: 20th February 2023
+// Win32++   Version 9.3
+// Release Date: 5th June 2023
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2022  David Nash
+// Copyright (c) 2005-2023  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -610,6 +610,113 @@ namespace Win32xx
 
     inline CString CWinApp::MsgDDV_StringSize() const
     { return _T("%s\n is too long.\nPlease enter no more than %ld characters."); }
+
+
+    /////////////////////////////////////////////////////////
+    // Definitions of CString functions that require CWinApp
+    //
+
+    // Appends formatted data to the CStringT content.
+    template <class T>
+    inline void CStringT<T>::AppendFormat(UINT formatID, ...)
+    {
+        CStringT str1;
+        CStringT str2;
+
+        if (str1.LoadString(formatID))
+        {
+            va_list args;
+            va_start(args, formatID);
+            str2.FormatV(str1.c_str(), args);
+            va_end(args);
+
+            m_str.append(str2);
+        }
+    }
+
+    // Formats the string as sprintf does.
+    template <class T>
+    inline void CStringT<T>::Format(UINT id, ...)
+    {
+        CStringT str;
+        if (str.LoadString(id))
+        {
+            va_list args;
+            va_start(args, id);
+            FormatV(str.c_str(), args);
+            va_end(args);
+        }
+    }
+
+    // Loads the string from a Windows resource.
+    template <>
+    inline bool CStringT<CHAR>::LoadString(UINT id)
+    {
+        assert(GetApp());
+
+        int startSize = 64;
+        CHAR* pTCharArray = 0;
+        std::vector<CHAR> vString;
+        int chars = startSize;
+
+        Empty();
+
+        // Increase the size of our array in a loop until we load the entire string
+        // The ANSI and _UNICODE versions of LoadString behave differently. This technique works for both.
+        while (startSize - 1 <= chars)
+        {
+            startSize = startSize * 4;
+            vString.assign(size_t(startSize) + 1, 0);
+            pTCharArray = &vString.front();
+            chars = ::LoadStringA(GetApp()->GetResourceHandle(), id, pTCharArray, startSize);
+        }
+
+        if (chars > 0)
+            m_str.assign(pTCharArray);
+
+        return (chars != 0);
+    }
+
+    // Loads the string from a Windows resource.
+    // Refer to LoadString in the Windows API documentation for more information.
+    template <>
+    inline bool CStringT<WCHAR>::LoadString(UINT id)
+    {
+        assert(GetApp());
+
+        int startSize = 64;
+        WCHAR* pTCharArray = 0;
+        std::vector<WCHAR> vString;
+        int chars = startSize;
+
+        Empty();
+
+        // Increase the size of our array in a loop until we load the entire string
+        // The ANSI and _UNICODE versions of LoadString behave differently.
+        // This technique works for both.
+        while (startSize - 1 <= chars)
+        {
+            startSize = startSize * 4;
+            vString.assign(size_t(startSize) + 1, 0);
+            pTCharArray = &vString.front();
+            chars = ::LoadStringW(GetApp()->GetResourceHandle(), id, pTCharArray, startSize);
+        }
+
+        if (chars > 0)
+            m_str.assign(pTCharArray);
+
+        return (chars != 0);
+    }
+
+    // Returns a CString containing the specified string resource.
+    // Returns an empty string if the string resource is not defined.
+    // Refer to LoadString in the Windows API documentation for more information.
+    inline CString LoadString(UINT id)
+    {
+        CString str;
+        str.LoadString(id);
+        return str;
+    }
 
 } // namespace Win32xx
 
