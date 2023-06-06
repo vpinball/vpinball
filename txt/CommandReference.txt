@@ -17,8 +17,10 @@ Changelog:
 - add FilamentTemperature property to lights to get the 'blackbody' temperature of the filament according to the light current intensity, full intensity corresponding to a temperature of 2700K
 - add support for multiple custom DMDs by adding DMDWidth/DMDHeight/DMDPixels/DMDColoredPixels to flashers. The flasher will use the provided data if any, or defaults to the table data (captured or directly defined)
 - add Shadows property to Light element
-- add Setting property to the globals
 - add EnableDepthMask to the primitive element
+
+10.7.4:
+- add Setting property to the globals
 - document missing GetTextFile
 
 10.7.2:

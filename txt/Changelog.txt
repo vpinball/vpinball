@@ -158,6 +158,8 @@ FIXES:
 
 - fix crash on tables with weird table info
 
+- fix potential multi-threading screw-up when loading textures
+
 - update example tables with new raytraced ball shadows enabled and other new features
 - add better wood texture
 
@@ -188,6 +190,10 @@ FIXES:
 - improve script editing performance again
 
 - fix crash if sound card(s) hardware/driver setup changed
+
+- fix crash on tables with weird table info
+
+- fix potential multi-threading screw-up when loading textures
 
 - see Scripts.txt for the actual usage and "documentation" of the scripts that come with VPX
 

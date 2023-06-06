@@ -108,7 +108,7 @@
 
 Option Explicit
 
-'Legacy (<10.8):
+'Legacy (<10.7.4):
 Const directory = "HKEY_CURRENT_USER\SOFTWARE\Visual Pinball\Controller\"
 
 Dim B2SController
@@ -180,7 +180,7 @@ Sub LoadController(TableType, VPMver, VBSfile, VBSver)
 	B2SOnALT = False
 	On Error Resume Next
 
-	If VPBuildVersion < 10800 Then
+	If VPBuildVersion < 10704 Then
 		DisableB2S = 0
 		Dim objShell
 		Set objShell = CreateObject("WScript.Shell")

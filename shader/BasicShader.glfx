@@ -424,7 +424,7 @@ void main()
 {
    gl_ViewportIndex = gl_InvocationID;
    for (int i=0;i<gl_in.length();i++) {
-      gl_Position = (matWorldViewProj[gl_InvocationID] * gl_in[i].gl_Position);
+      gl_Position = matWorldViewProj[gl_InvocationID] * gl_in[i].gl_Position;
       gl_ClipDistance[0] = gl_in[i].gl_ClipDistance[0];
       EmitVertex();
    }
@@ -440,7 +440,7 @@ void main()
 {
    gl_ViewportIndex = gl_InvocationID;
    for (int i=0;i<gl_in.length();i++) {
-      gl_Position = (matWorldViewProj[gl_InvocationID] * gl_in[i].gl_Position);
+      gl_Position = matWorldViewProj[gl_InvocationID] * gl_in[i].gl_Position;
       gl_ClipDistance[0] = gl_in[i].gl_ClipDistance[0];
       tex0 = tex0_gs[i];
       EmitVertex();
