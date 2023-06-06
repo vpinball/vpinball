@@ -1368,7 +1368,7 @@ void Primitive::RenderObject()
       is_reflection_only_pass = m_d.m_staticRendering && !g_pplayer->IsRenderPass(Player::STATIC_PREPASS) && !g_pplayer->m_dynamicMode;
       if (!is_reflection_only_pass && mat->m_bOpacityActive && (mat->m_fOpacity < 1.0f || (pin && pin->has_alpha())))
       { // Primitive uses alpha transparency => render in 2 passes, one for the texture with alpha blending, one for the reflections which can happen above a transparent part (like for a glass or insert plastic)
-         pd3dDevice->basicShader->SetTechniqueMaterial(pin ? SHADER_TECHNIQUE_basic_with_texture : SHADER_TECHNIQUE_basic_without_texture, mat, m_lightmap, nMap, false, false);
+         pd3dDevice->basicShader->SetTechniqueMaterial(pin ? SHADER_TECHNIQUE_basic_with_texture : SHADER_TECHNIQUE_basic_without_texture, mat, nMap, false, false);
          pd3dDevice->DrawMesh(pd3dDevice->basicShader, !m_d.m_staticRendering && mat->m_bOpacityActive /* IsTransparent() */, m_d.m_vPosition, m_d.m_depthBias, 
             m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_d.m_groupdRendering ? m_numGroupIndices : (DWORD)m_mesh.NumIndices());
          is_reflection_only_pass = true;
@@ -1383,7 +1383,7 @@ void Primitive::RenderObject()
    }
    else
    {
-      pd3dDevice->basicShader->SetTechniqueMaterial(pin ? SHADER_TECHNIQUE_basic_with_texture : SHADER_TECHNIQUE_basic_without_texture, mat, m_lightmap, nMap, reflections, refractions);
+      pd3dDevice->basicShader->SetTechniqueMaterial(pin ? SHADER_TECHNIQUE_basic_with_texture : SHADER_TECHNIQUE_basic_without_texture, mat, nMap, reflections, refractions);
    }
 
    // draw the mesh

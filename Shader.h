@@ -309,7 +309,7 @@ public:
    static Shader* GetCurrentShader();
    static string GetTechniqueName(ShaderTechniques technique);
    void SetTechnique(const ShaderTechniques technique);
-   void SetTechniqueMaterial(ShaderTechniques technique, const Material& mat, Light* const lightmap = nullptr, const bool doNormalMapping = false, const bool doReflection = false, const bool doRefraction = false);
+   void SetTechniqueMaterial(ShaderTechniques technique, const Material& mat, const bool doNormalMapping = false, const bool doReflection = false, const bool doRefraction = false);
    ShaderTechniques GetCurrentTechnique() { return m_technique; }
 
    static void SetDefaultSamplerFilter(const ShaderUniforms sampler, const SamplerFilter sf);
