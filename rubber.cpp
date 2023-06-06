@@ -274,6 +274,9 @@ void Rubber::RenderBlueprint(Sur *psur, const bool solid)
 
 void Rubber::GetBoundingVertices(vector<Vertex3Ds> &pvvertex3D, const bool isLegacy) /*const*/
 {
+   if (!isLegacy && !m_d.m_visible)
+      return;
+
    //!! meh, this is delivering something loosely related to the bounding vertices, but its only used in the cam fitting code so far, so keep for legacy reasons
    int cvertex;
    const Vertex2D * const rgvLocal = GetSplineVertex(cvertex, nullptr, nullptr);

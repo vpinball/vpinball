@@ -959,7 +959,7 @@ void Primitive::RenderBlueprint(Sur *psur, const bool solid)
 void Primitive::GetBoundingVertices(vector<Vertex3Ds> &pvvertex3D, const bool isLegacy)
 {
    // VPX before 10.8 computed the viewer position based on a partial bounding volume that would not include primitives
-   if (isLegacy)
+   if (isLegacy || !m_d.m_visible)
       return;
    RecalculateMatrices();
    if (m_d.m_use3DMesh)

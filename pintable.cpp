@@ -4827,10 +4827,12 @@ void PinTable::ComputeNearFarPlane(const Matrix3D &matWorldView, const float sca
       {
          Vertex3Ds p = v;
          matWorldView.TransformVec3(p);
-         // HACK: skip primitive for near plane since on some tables it would break the view with some primitive being too near, leading to depth buffer precision issues
-         if (editable->GetItemType() != eItemPrimitive)
+         if (p.z > 0.0)
+         {
+            // Clip points behind the viewer (VR room have a lot of these)
             zNear = min(zNear, p.z);
-         zFar = max(zFar, p.z);
+            zFar = max(zFar, p.z);
+         }
       }
       vvertex3D.clear();
    }
