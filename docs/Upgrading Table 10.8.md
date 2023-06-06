@@ -16,8 +16,9 @@ Beside these eventually needed updates, 10.8 offers new features that can be lev
 5. [Reflections](#reflections)
 6. [Better light fading](better-light-fading)
 7. [Simplified scripting](#simplified-scripting)
-8. [Additional DMD](additional-dmd)
-9. [Primitive Depth Masking](primitive-depth-masking)
+8. [Better statics](#better-statics)
+9. [Additional DMD](additional-dmd)
+10. [Primitive Depth Masking](primitive-depth-masking)
 
 
 ## Ball Shadows
@@ -133,6 +134,25 @@ End Sub
 ```
 
 Custom fading of lights and flashers can also be largely simplified by using the new [light fading](#better-light-fading), leveraging the new 'lightmap' property of flashers and/or using the 'Animate' event, thus reducing the performance impact of the script (which can lead to e.g. microstutter on some systems otherwise).
+
+
+## Better Statics
+VPX 10.8 allows the script to update properties of 'static' parts during initialization, that is to say in the main script part and in the 'Init' events of the table and its parts. This can be leveraged to adjust visiblity of static parts depending on the display setup (e.g. VR vs cab vs desktop vs FSS) or user-selected options.
+
+For example:
+```
+' Detect if VPX is rendering in VR and adjust visibility of parts within the VR_Cab collection
+Dim VRThings
+If RenderingMode = 2 Then
+	For Each VRThings In VR_Cab
+		VRThings.visible = 1
+	Next
+Else
+	For Each VRThings In VR_Cab
+		VRThings.visible = 0
+	Next
+End If
+```
 
 
 ## Additional DMD

@@ -120,6 +120,8 @@ FEATURES:
 - Add an option to primitives to toggle 'depth masking', which is otherwise used during rendering to hide all parts behind the primitive. If unchecked, the primitive will not hide parts behind it and it will also not be visible to ambient occlusion.
   For example, this is needed to employ primitives to render user/fake shadows without breaking ambient occlusion, or for transparents part with self overlapping parts like plastic ramps.
 
+- the script is started and the Init events are now called *before* the static parts are prerendered. This allows a table script to adjust static parts properties on startup.
+
 FIXES:
 
 - timers with a -1 interval are always fired after physics and animation, but before rendering, allowing the script to update visual parts accordingly without any visual lag.
