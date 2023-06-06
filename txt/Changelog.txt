@@ -120,7 +120,7 @@ FEATURES:
 - Add an option to primitives to toggle 'depth masking', which is otherwise used during rendering to hide all parts behind the primitive. If unchecked, the primitive will not hide parts behind it and it will also not be visible to ambient occlusion.
   For example, this is needed to employ primitives to render user/fake shadows without breaking ambient occlusion, or for transparents part with self overlapping parts like plastic ramps.
 
-- Add an 'unshaded' material along the default and metal ones. As the name implies, it is unshaded (no lighting) and will simply render the texture if any and apply the modulate color.
+- Add an 'unshaded' material to accompany the default and metal ones. As the name implies, it is unshaded (no lighting) and will simply render the texture (if any) and apply the modulate color.
   This can prove useful when lighting has been precomputed. It also offers very good performance if used intensively.
 
 FIXES:
@@ -155,6 +155,8 @@ FIXES:
 - fix 'O'-key ball debugging
 
 - fix crash if sound card(s) hardware/driver setup changed
+
+- fix crash on tables with weird table info
 
 - update example tables with new raytraced ball shadows enabled and other new features
 - add better wood texture
