@@ -159,6 +159,8 @@ FIXES:
 
 - fix potential multi-threading screw-up when loading textures
 
+- improve UI scaling on high resolutions (e.g. 4K)
+
 - update example tables with new raytraced ball shadows enabled and other new features
 - add better wood texture
 
