@@ -187,6 +187,7 @@ namespace IMGUIZMO_NAMESPACE
       SCALE_YU         = (1u << 12),
       SCALE_ZU         = (1u << 13),
 
+      NONE = 0,
       TRANSLATE = TRANSLATE_X | TRANSLATE_Y | TRANSLATE_Z,
       ROTATE = ROTATE_X | ROTATE_Y | ROTATE_Z | ROTATE_SCREEN,
       SCALE = SCALE_X | SCALE_Y | SCALE_Z,
