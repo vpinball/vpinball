@@ -106,11 +106,11 @@ void RenderFrame::Execute(const bool log)
       pass->Execute(log);
       if (m_commandPool.size() < 1024)
          pass->RecycleCommands(m_commandPool);
-      m_passPool.push_back(pass);
    }
    #ifndef ENABLE_SDL
    CHECKD3D(m_rd->GetCoreDevice()->EndScene());
    #endif
+   m_passPool.insert(m_passPool.end(), m_passes.begin(), m_passes.end());
    m_passes.clear();
 
    // Restore render/shader states
