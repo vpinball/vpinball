@@ -523,6 +523,7 @@ static HRESULT SaveValue(const string &szKey, const string &szValue, const DWORD
       return E_FAIL;
    }
    ini[szKey][szValue] = copy;
+   delete[] copy;
    return S_OK;
 
 #elif defined(ENABLE_XML_SETTINGS)

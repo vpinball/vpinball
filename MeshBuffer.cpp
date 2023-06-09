@@ -42,6 +42,7 @@ MeshBuffer::~MeshBuffer()
       {
          glDeleteVertexArrays(1, &m_sharedVAO->vao);
          RemoveFromVectorSingle(sharedVAOs, m_sharedVAO);
+         delete m_sharedVAO;
       }
    }
    else if (m_vao != 0)
