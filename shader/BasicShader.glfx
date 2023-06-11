@@ -23,10 +23,10 @@ layout(std140) uniform basicMatrixBlock {
 };
 
 ////VERTEX
-
 layout(location=0) in vec3 vPosition;
 
 uniform vec4 clip_plane; // Clip plane defined in table coordinate system
+uniform int layer; // Layer being rendered (set to 0 is using layered rendering, that is to say rendering multiple layers using instanced rendering)
 
 out int eye_gs;
 
@@ -207,7 +207,7 @@ void main()
    worldPos_gs = (matWorldView*vPosition4).xyz;
    // Needs to use a 'normal' matrix, and to normalize since we allow non uniform stretching, therefore matWorldView is not orthonormal
    normal_gs = normalize((matWorldViewInverseTranspose*vNormal).xyz);
-   eye_gs = gl_InstanceID;
+   eye_gs = gl_InstanceID + layer;
 }
 
 ////vs_notex_main
@@ -228,7 +228,7 @@ void main()
    worldPos_gs = (matWorldView*vPosition4).xyz;
    // Needs to use a 'normal' matrix, and to normalize since we allow non uniform stretching, therefore matWorldView is not orthonormal
    normal_gs = normalize((matWorldViewInverseTranspose*vNormal).xyz);
-   eye_gs = gl_InstanceID;
+   eye_gs = gl_InstanceID + layer;
 }
 
 ////vs_depth_only_main_without_texture
@@ -238,7 +238,7 @@ void main()
    float4 vPosition4 = float4(vPosition,1.0);
    gl_Position = vPosition4;
    gl_ClipDistance[0] = dot(vec4((matWorld*vPosition4).xyz, 1.0), clip_plane);
-   eye_gs = gl_InstanceID;
+   eye_gs = gl_InstanceID + layer;
 }
 
 ////vs_depth_only_main_with_texture
@@ -253,7 +253,7 @@ void main()
    gl_Position = vPosition4;
    gl_ClipDistance[0] = dot(vec4((matWorld*vPosition4).xyz, 1.0), clip_plane);
    tex0_gs = tc;
-   eye_gs = gl_InstanceID;
+   eye_gs = gl_InstanceID + layer;
 }
 
 ////vs_main_unshaded_without_texture_shadow
@@ -266,7 +266,7 @@ void main()
    gl_Position = vPosition4;
    tablePos_gs = (matWorld*vPosition4).xyz;
    gl_ClipDistance[0] = dot(vec4(tablePos_gs, 1.0), clip_plane);
-   eye_gs = gl_InstanceID;
+   eye_gs = gl_InstanceID + layer;
 }
 
 ////vs_main_unshaded_with_texture_shadow
@@ -283,7 +283,7 @@ void main()
    tablePos_gs = (matWorld*vPosition4).xyz;
    gl_ClipDistance[0] = dot(vec4(tablePos_gs, 1.0), clip_plane);
    tex0_gs = tc;
-   eye_gs = gl_InstanceID;
+   eye_gs = gl_InstanceID + layer;
 }
 
 

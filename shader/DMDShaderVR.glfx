@@ -19,6 +19,7 @@ uniform mat4 matWorldViewProj[N_EYES];
 //!! split into pure sprite & pure DMD?
 
 ////VERTEX
+uniform int layer; // Layer being rendered (set to 0 is using layered rendering, that is to say rendering multiple layers using instanced rendering)
 
 out int eye_gs;
 
@@ -52,7 +53,7 @@ void main()
 {
    gl_Position = float4(vPosition.x*backBoxSize.z+backBoxSize.x, 0.0, vPosition.y*backBoxSize.w+backBoxSize.y, 1.0);
    tex0_gs = tc;
-   eye_gs = gl_InstanceID;
+   eye_gs = gl_InstanceID + layer;
 }
 
 ////vs_simple_world
@@ -67,7 +68,7 @@ void main()
 {
    gl_Position = float4(vPosition, 1.0);
    tex0_gs = tc;
-   eye_gs = gl_InstanceID;
+   eye_gs = gl_InstanceID + layer;
 }
 
 ////gs_simple
