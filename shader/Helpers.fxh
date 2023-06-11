@@ -48,6 +48,20 @@
 #define BRANCH
 #define UNROLL
 
+// For the time being, stereo SamplerComparisonState being done by rendering to 2 viewports inside a single layer render target
+#if (N_EYES == 1)
+// Sampling from a normal screen space texture
+float2 toScreenSpaceUV(float2 uvIn, int eye) { return uvIn; }
+#elif VERTICAL_STEREO
+// Sampling from a vertical stereo screen space texture
+float2 toScreenSpaceUV(float2 uvIn, int eye) { return float2(uvIn.x, 0.5 * (uvIn.y + eye)); }
+#else
+// Sampling from a horizontal stereo screen space texture
+float2 toScreenSpaceUV(float2 uvIn, int eye) { return float2(0.5 * (uvIn.x + eye), uvIn.y); }
+#endif
+
+
+
 //**************************************************************************
 // HLSL defines to support common shader code
 #else

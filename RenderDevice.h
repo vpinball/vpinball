@@ -138,10 +138,10 @@ public:
    RenderTarget* GetReflectionBufferTexture() const { return m_pReflectionBufferTexture; }
    RenderTarget* GetBloomBufferTexture() const { return m_pBloomBufferTexture; }
    RenderTarget* GetBloomTmpBufferTexture() const { return m_pBloomTmpBufferTexture; }
-   RenderTarget* GetOutputBackBuffer() const { return m_pBackBuffer; } // The screen render target
    RenderTarget* GetAORenderTarget(int idx);
    void SwapAORenderTargets();
    void ReleaseAORenderTargets() { delete m_pAORenderTarget1; m_pAORenderTarget1 = nullptr; delete m_pAORenderTarget2; m_pAORenderTarget2 = nullptr; }
+   RenderTarget* GetOutputBackBuffer() const { return m_pBackBuffer; } // The screen render target (the only one which is not stereo when doing stereo rendering)
 
    // VR/Stereo Stuff
 #ifdef ENABLE_VR

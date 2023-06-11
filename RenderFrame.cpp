@@ -25,18 +25,18 @@ RenderFrame::~RenderFrame()
    delete m_ballShaderState;
 }
 
-RenderPass* RenderFrame::AddPass(const string& name, RenderTarget* const rt, const bool ignoreStereo)
+RenderPass* RenderFrame::AddPass(const string& name, RenderTarget* const rt)
 {
    RenderPass* pass;
    if (m_passPool.empty())
    {
-      pass = new RenderPass(name, rt, ignoreStereo);
+      pass = new RenderPass(name, rt);
    }
    else
    {
       pass = m_passPool.back();
       m_passPool.pop_back();
-      pass->Reset(name, rt, ignoreStereo);
+      pass->Reset(name, rt);
    }
    m_passes.push_back(pass);
    return pass;

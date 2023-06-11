@@ -28,18 +28,15 @@ layout(location=0) in vec3 vPosition;
 
 uniform vec4 clip_plane; // Clip plane defined in table coordinate system
 
+out int eye_gs;
+
 ////GEOMETRY
 #extension GL_ARB_viewport_array : enable
 
 layout(triangles) in;
 layout(triangle_strip, max_vertices = 3) out;
 
-// Use geometry invocations for stereo rendering
-#if (N_EYES == 1)
-   layout(invocations = 1) in;
-#else
-   layout(invocations = 2) in;
-#endif
+in int eye_gs[];
 
 ////FRAGMENT
 // Early-Z-test implementation:
@@ -210,6 +207,7 @@ void main()
    worldPos_gs = (matWorldView*vPosition4).xyz;
    // Needs to use a 'normal' matrix, and to normalize since we allow non uniform stretching, therefore matWorldView is not orthonormal
    normal_gs = normalize((matWorldViewInverseTranspose*vNormal).xyz);
+   eye_gs = gl_InstanceID;
 }
 
 ////vs_notex_main
@@ -230,6 +228,7 @@ void main()
    worldPos_gs = (matWorldView*vPosition4).xyz;
    // Needs to use a 'normal' matrix, and to normalize since we allow non uniform stretching, therefore matWorldView is not orthonormal
    normal_gs = normalize((matWorldViewInverseTranspose*vNormal).xyz);
+   eye_gs = gl_InstanceID;
 }
 
 ////vs_depth_only_main_without_texture
@@ -239,6 +238,7 @@ void main()
    float4 vPosition4 = float4(vPosition,1.0);
    gl_Position = vPosition4;
    gl_ClipDistance[0] = dot(vec4((matWorld*vPosition4).xyz, 1.0), clip_plane);
+   eye_gs = gl_InstanceID;
 }
 
 ////vs_depth_only_main_with_texture
@@ -253,6 +253,7 @@ void main()
    gl_Position = vPosition4;
    gl_ClipDistance[0] = dot(vec4((matWorld*vPosition4).xyz, 1.0), clip_plane);
    tex0_gs = tc;
+   eye_gs = gl_InstanceID;
 }
 
 ////vs_main_unshaded_without_texture_shadow
@@ -265,6 +266,7 @@ void main()
    gl_Position = vPosition4;
    tablePos_gs = (matWorld*vPosition4).xyz;
    gl_ClipDistance[0] = dot(vec4(tablePos_gs, 1.0), clip_plane);
+   eye_gs = gl_InstanceID;
 }
 
 ////vs_main_unshaded_with_texture_shadow
@@ -281,6 +283,7 @@ void main()
    tablePos_gs = (matWorld*vPosition4).xyz;
    gl_ClipDistance[0] = dot(vec4(tablePos_gs, 1.0), clip_plane);
    tex0_gs = tc;
+   eye_gs = gl_InstanceID;
 }
 
 
@@ -305,29 +308,20 @@ out vec3 normal;
 in vec3 tablePos_gs[];
 out float3 tablePos;
 
-out float eye;
+flat out float eye;
 
 void main()
 {
-   gl_ViewportIndex = gl_InvocationID;
+   gl_ViewportIndex = eye_gs[0];
    for (int i=0; i<gl_in.length(); i++) {
-      gl_Position = matWorldViewProj[gl_InvocationID] * gl_in[i].gl_Position;
+      gl_Position = matWorldViewProj[eye_gs[i]] * gl_in[i].gl_Position;
       gl_ClipDistance[0] = gl_in[i].gl_ClipDistance[0];
       tex01 = tex01_gs[i];
-      vec2 screen_space = 0.5 * (gl_Position.xy / gl_Position.w) + vec2(0.5);
-      #if (N_EYES == 1)
-         tex03.xy = screen_space; // Sampling from a normal screen space texture
-      #else
-         #if VERTICAL_STEREO
-            tex03.xy = vec2(screen_space.x, 0.5 * (screen_space.y + gl_InvocationID)); // Sampling from a vertical stereo screen space texture
-         #else
-            tex03.xy = vec2(0.5 * (screen_space.x + gl_InvocationID), screen_space.y); // Sampling from a horizontal stereo screen space texture
-         #endif
-      #endif
+      tex03 = toScreenSpaceUV(0.5 * (gl_Position.xy / gl_Position.w) + vec2(0.5), eye_gs[i]);
       tablePos = tablePos_gs[i];
       worldPos = worldPos_gs[i];
       normal = normal_gs[i];
-      eye = gl_InvocationID;
+      eye = eye_gs[i];
       EmitVertex();
    }
    EndPrimitive();
@@ -346,28 +340,19 @@ out vec3 normal;
 in vec3 tablePos_gs[];
 out float3 tablePos;
 
-out float eye;
+flat out float eye;
 
 void main()
 {
-   gl_ViewportIndex = gl_InvocationID;
+   gl_ViewportIndex = eye_gs[0];
    for (int i=0;i<gl_in.length();i++) {
-      gl_Position = matWorldViewProj[gl_InvocationID] * gl_in[i].gl_Position;
+      gl_Position = matWorldViewProj[eye_gs[i]] * gl_in[i].gl_Position;
       gl_ClipDistance[0] = gl_in[i].gl_ClipDistance[0];
-      vec2 screen_space = 0.5 * (gl_Position.xy / gl_Position.w) + vec2(0.5);
-      #if (N_EYES == 1)
-         tex03.xy = screen_space; // Sampling from a normal screen space texture
-      #else
-         #if VERTICAL_STEREO
-            tex03.xy = vec2(screen_space.x, 0.5 * (screen_space.y + gl_InvocationID)); // Sampling from a vertical stereo screen space texture
-         #else
-            tex03.xy = vec2(0.5 * (screen_space.x + gl_InvocationID), screen_space.y); // Sampling from a horizontal stereo screen space texture
-         #endif
-      #endif
+      tex03 = toScreenSpaceUV(0.5 * (gl_Position.xy / gl_Position.w) + vec2(0.5), eye_gs[i]);
       tablePos = tablePos_gs[i];
       worldPos = worldPos_gs[i];
       normal = normal_gs[i];
-      eye = gl_InvocationID;
+      eye = eye_gs[i];
       EmitVertex();
    }
    EndPrimitive();
@@ -388,31 +373,19 @@ out float3 tablePos;
 
 uniform float fKickerScale;
 
-out float eye;
-
 void main()
 {
-   gl_ViewportIndex = gl_InvocationID;
+   gl_ViewportIndex = eye_gs[0];
    for (int i=0;i<gl_in.length();i++) {
       float4 P2 = gl_in[i].gl_Position;
       P2.z -= 30.0 * fKickerScale;
-      gl_Position.xyw = (matWorldViewProj[gl_InvocationID] * gl_in[i].gl_Position).xyw;
-      gl_Position.z = (matWorldViewProj[gl_InvocationID] * P2).z;
+      gl_Position.xyw = (matWorldViewProj[eye_gs[i]] * gl_in[i].gl_Position).xyw;
+      gl_Position.z = (matWorldViewProj[eye_gs[i]] * P2).z;
       gl_ClipDistance[0] = gl_in[i].gl_ClipDistance[0];
-      vec2 screen_space = 0.5 * (gl_Position.xy / gl_Position.w) + vec2(0.5);
-      #if (N_EYES == 1)
-         tex03.xy = screen_space; // Sampling from a normal screen space texture
-      #else
-         #if VERTICAL_STEREO
-            tex03.xy = vec2(screen_space.x, 0.5 * (screen_space.y + gl_InvocationID)); // Sampling from a vertical stereo screen space texture
-         #else
-            tex03.xy = vec2(0.5 * (screen_space.x + gl_InvocationID), screen_space.y); // Sampling from a horizontal stereo screen space texture
-         #endif
-      #endif
+      tex03 = toScreenSpaceUV(0.5 * (gl_Position.xy / gl_Position.w) + vec2(0.5), eye_gs[i]);
       tablePos = tablePos_gs[i];
       worldPos = worldPos_gs[i];
       normal = normal_gs[i];
-      eye = gl_InvocationID;
       EmitVertex();
    }
    EndPrimitive();
@@ -422,9 +395,9 @@ void main()
 
 void main()
 {
-   gl_ViewportIndex = gl_InvocationID;
+   gl_ViewportIndex = eye_gs[0];
    for (int i=0;i<gl_in.length();i++) {
-      gl_Position = matWorldViewProj[gl_InvocationID] * gl_in[i].gl_Position;
+      gl_Position = matWorldViewProj[eye_gs[i]] * gl_in[i].gl_Position;
       gl_ClipDistance[0] = gl_in[i].gl_ClipDistance[0];
       EmitVertex();
    }
@@ -438,9 +411,9 @@ out vec2 tex0;
 
 void main()
 {
-   gl_ViewportIndex = gl_InvocationID;
+   gl_ViewportIndex = eye_gs[0];
    for (int i=0;i<gl_in.length();i++) {
-      gl_Position = matWorldViewProj[gl_InvocationID] * gl_in[i].gl_Position;
+      gl_Position = matWorldViewProj[eye_gs[i]] * gl_in[i].gl_Position;
       gl_ClipDistance[0] = gl_in[i].gl_ClipDistance[0];
       tex0 = tex0_gs[i];
       EmitVertex();
@@ -455,9 +428,9 @@ out float3 tablePos;
 
 void main()
 {
-   gl_ViewportIndex = gl_InvocationID;
+   gl_ViewportIndex = eye_gs[0];
    for (int i=0;i<gl_in.length();i++) {
-      gl_Position = (matWorldViewProj[gl_InvocationID] * gl_in[i].gl_Position);
+      gl_Position = (matWorldViewProj[eye_gs[i]] * gl_in[i].gl_Position);
       gl_ClipDistance[0] = gl_in[i].gl_ClipDistance[0];
       EmitVertex();
    }
@@ -474,9 +447,9 @@ out vec2 tex0;
 
 void main()
 {
-   gl_ViewportIndex = gl_InvocationID;
+   gl_ViewportIndex = eye_gs[0];
    for (int i=0;i<gl_in.length();i++) {
-      gl_Position = (matWorldViewProj[gl_InvocationID] * gl_in[i].gl_Position);
+      gl_Position = (matWorldViewProj[eye_gs[i]] * gl_in[i].gl_Position);
       gl_ClipDistance[0] = gl_in[i].gl_ClipDistance[0];
       tex0 = tex0_gs[i];
       EmitVertex();
@@ -497,7 +470,7 @@ noperspective in vec2 tex03;
 in vec3 worldPos;
 in vec3 tablePos;
 in vec3 normal;
-in float eye;
+flat in float eye;
 
 void main() {
    const float3 diffuse  = cBase_Alpha.xyz;
@@ -551,7 +524,7 @@ noperspective in vec2 tex03;
 in vec3 worldPos;
 in vec3 tablePos;
 in vec3 normal;
-in float eye;
+flat in float eye;
 
 void main() {
    float4 pixel = texture(tex_base_color, tex01);

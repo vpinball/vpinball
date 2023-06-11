@@ -7,6 +7,7 @@ precision highp float;
 #endif
 
 ////DEFINES
+#extension GL_ARB_viewport_array : enable
 #include "Helpers.fxh"
 
 // w_h_height.xy contains inverse size of source texture (1/w, 1/h), i.e. one texel shift to the upper (DX)/lower (OpenGL) left texel. Since OpenGL has upside down textures it leads to a different texel if not sampled on both sides
@@ -16,6 +17,23 @@ precision highp float;
 // . for AA techniques, w_h_height.z keeps source texture width, w_h_height.w is a boolean set to 1 when depth is available
 // . for parallax stereo, w_h_height.z keeps source texture height, w_h_height.w keeps the 3D offset
 uniform vec4 w_h_height;
+
+////VERTEX
+layout(location=0) in vec3 vPosition;
+layout(location=1) in vec2 tc;
+
+// Pixel perfect coordinates of corresponding sample from source texture (tex_fb_filtered/tex_fb_unfiltered/tex_mirror/...)
+out vec2 tex0_gs;
+out int eye_gs;
+
+////GEOMETRY
+
+layout(triangles) in;
+layout(triangle_strip, max_vertices = 3) out;
+
+in int eye_gs[];
+in vec2 tex0_gs[];
+out vec2 tex0;
 
 ////FRAGMENT
 uniform vec2 AO_scale_timeblur;
@@ -191,55 +209,53 @@ float3 FBColorGrade(float3 color)
 
 #include "SSR_GL.fxh"
 
+
+//-----------------------------------------------------------------------------
+// Vertex shaders
+//-----------------------------------------------------------------------------
+
 ////vs_main_no_trafo
-
-layout(location=0) in vec3 vPosition;
-layout(location=1) in vec2 tc;
-
-// Pixel perfect coordinates of corresponding sample from source texture (tex_fb_filtered/tex_fb_unfiltered/tex_mirror/...)
-out vec2 tex0;
-
 void main()
 { 
    // OpenGL texture coordinates are centered on texel center (0,0 is first texel center) so no offset. Rendering is bottom up with regards to DirectX though
    gl_Position = float4(vPosition.x, -vPosition.y,0.0,1.0);
-   tex0 = tc;
+   //tex0_gs = tc;
+   tex0_gs = toScreenSpaceUV(tc, gl_InstanceID);
+   eye_gs = gl_InstanceID;
 }
 
 ////vs_main_no_trafo_subpixel
-
-layout(location=0) in vec3 vPosition;
-layout(location=1) in vec2 tc;
-
-// Pixel perfect coordinates of corresponding sample from source texture (tex_fb_filtered/tex_fb_unfiltered/tex_mirror/...)
-out vec2 tex0;
-
 void main()
 { 
    // OpenGL texture coordinates are centered on texel center (0,0 is first texel center) so no offset. Rendering is bottom up with regards to DirectX though
    gl_Position = float4(vPosition.x, -vPosition.y,0.0,1.0);
    // Here we apply an offset to sample in between the samples for filtering
-   tex0 = tc + 0.5 * w_h_height.xy;
+   //tex0_gs = tc + 0.5 * w_h_height.xy;
+   tex0_gs = toScreenSpaceUV(tc + 0.5 * w_h_height.xy, gl_InstanceID);
+   eye_gs = gl_InstanceID;
 }
 
-////vs_main_no_trafo_zoomed
 
-layout(location=0) in vec3 vPosition;
-layout(location=1) in vec2 tc;
+//-----------------------------------------------------------------------------
+// Geometry shaders
+//-----------------------------------------------------------------------------
 
-// Pixel perfect coordinates of corresponding sample from source texture (tex_fb_filtered/tex_fb_unfiltered/tex_mirror/...)
-out vec2 tex0;
-
+////gs_main
 void main()
-{ 
-   // OpenGL texture coordinates are centered on texel center (0,0 is first texel center) so no offset. Rendering is bottom up with regards to DirectX though
-   gl_Position = float4(vPosition.x * 2.0, -vPosition.y * 2.0,0.0,1.0);
-   tex0 = tc;
+{
+   gl_ViewportIndex = eye_gs[0];
+   for (int i=0;i<gl_in.length();i++) {
+      gl_Position = gl_in[i].gl_Position;
+      tex0 = tex0_gs[i];
+      EmitVertex();
+   }
+   EndPrimitive();
 }
 
-//
-// PS functions
-//
+
+//-----------------------------------------------------------------------------
+// Fragment shaders
+//-----------------------------------------------------------------------------
 
 ////ps_main_fb_tonemap
 
@@ -780,54 +796,55 @@ void main()
 
 ////TECHNIQUES
 
-//normals:P0:vs_main_no_trafo():ps_main_normals()
-AO:P0:vs_main_no_trafo():ps_main_ao()
-//stereo:P0:vs_main_no_trafo():ps_main_stereo()
-NFAA:P0:vs_main_no_trafo():ps_main_nfaa()
-DLAA_edge:P0:vs_main_no_trafo():ps_main_dlaa_edge()
-DLAA:P0:vs_main_no_trafo():ps_main_dlaa()
-FXAA1:P0:vs_main_no_trafo():ps_main_fxaa1()
-FXAA2:P0:vs_main_no_trafo():ps_main_fxaa2()
-FXAA3:P0:vs_main_no_trafo():ps_main_fxaa3()
-fb_tonemap:P0:vs_main_no_trafo_subpixel():ps_main_fb_tonemap()
-fb_bloom:P0:vs_main_no_trafo():ps_main_fb_bloom()
-fb_AO:P0:vs_main_no_trafo_subpixel():ps_main_fb_AO()
-fb_tonemap_AO:P0:vs_main_no_trafo_subpixel():ps_main_fb_tonemap_AO()
-fb_tonemap_AO_static:P0:vs_main_no_trafo_subpixel():ps_main_fb_tonemap_AO_static()
+//normals:P0:vs_main_no_trafo():gs_main():ps_main_normals()
+AO:P0:vs_main_no_trafo():gs_main():ps_main_ao()
+//stereo:P0:vs_main_no_trafo():gs_main():ps_main_stereo()
+NFAA:P0:vs_main_no_trafo():gs_main():ps_main_nfaa()
+DLAA_edge:P0:vs_main_no_trafo():gs_main():ps_main_dlaa_edge()
+DLAA:P0:vs_main_no_trafo():gs_main():ps_main_dlaa()
+FXAA1:P0:vs_main_no_trafo():gs_main():ps_main_fxaa1()
+FXAA2:P0:vs_main_no_trafo():gs_main():ps_main_fxaa2()
+FXAA3:P0:vs_main_no_trafo():gs_main():ps_main_fxaa3()
+fb_tonemap:P0:vs_main_no_trafo_subpixel():gs_main():ps_main_fb_tonemap()
+fb_bloom:P0:vs_main_no_trafo():gs_main():ps_main_fb_bloom()
+fb_AO:P0:vs_main_no_trafo_subpixel():gs_main():ps_main_fb_AO()
+fb_tonemap_AO:P0:vs_main_no_trafo_subpixel():gs_main():ps_main_fb_tonemap_AO()
+fb_tonemap_AO_static:P0:vs_main_no_trafo_subpixel():gs_main():ps_main_fb_tonemap_AO_static()
 
-fb_tonemap_no_filterRGB:P0:vs_main_no_trafo():ps_main_fb_tonemap_no_filterRGB()
-fb_tonemap_no_filterRG:P0:vs_main_no_trafo():ps_main_fb_tonemap_no_filterRG()
-fb_tonemap_no_filterR:P0:vs_main_no_trafo():ps_main_fb_tonemap_no_filterR()
-fb_tonemap_AO_no_filter:P0:vs_main_no_trafo():ps_main_fb_tonemap_AO_no_filter()
+fb_tonemap_no_filterRGB:P0:vs_main_no_trafo():gs_main():ps_main_fb_tonemap_no_filterRGB()
+fb_tonemap_no_filterRG:P0:vs_main_no_trafo():gs_main():ps_main_fb_tonemap_no_filterRG()
+fb_tonemap_no_filterR:P0:vs_main_no_trafo():gs_main():ps_main_fb_tonemap_no_filterR()
+fb_tonemap_AO_no_filter:P0:vs_main_no_trafo():gs_main():ps_main_fb_tonemap_AO_no_filter()
 
 //!! SRGBWriteEnable = true
-fb_tonemap_AO_no_filter_static:P0:vs_main_no_trafo():ps_main_fb_tonemap_AO_no_filter_static()
+fb_tonemap_AO_no_filter_static:P0:vs_main_no_trafo():gs_main():ps_main_fb_tonemap_AO_no_filter_static()
 
 // All Bloom variants:
-fb_blur_horiz7x7:P0:vs_main_no_trafo():ps_main_fb_blur_horiz7x7()
-fb_blur_vert7x7:P0:vs_main_no_trafo():ps_main_fb_blur_vert7x7()
-fb_blur_horiz9x9:P0:vs_main_no_trafo():ps_main_fb_blur_horiz9x9()
-fb_blur_vert9x9:P0:vs_main_no_trafo():ps_main_fb_blur_vert9x9()
-//fb_blur_horiz9x9_4:P0:vs_main_no_trafo():ps_main_fb_blur_horiz9x9_4()
-//fb_blur_vert9x9_4:P0:vs_main_no_trafo():ps_main_fb_blur_vert9x9_4()
-fb_blur_horiz11x11:P0:vs_main_no_trafo():ps_main_fb_blur_horiz11x11()
-fb_blur_vert11x11:P0:vs_main_no_trafo():ps_main_fb_blur_vert11x11()
-fb_blur_horiz13x13:P0:vs_main_no_trafo():ps_main_fb_blur_horiz13x13()
-fb_blur_vert13x13:P0:vs_main_no_trafo():ps_main_fb_blur_vert13x13()
-fb_blur_horiz15x15:P0:vs_main_no_trafo():ps_main_fb_blur_horiz15x15()
-fb_blur_vert15x15:P0:vs_main_no_trafo():ps_main_fb_blur_vert15x15()
-fb_blur_horiz19x19:P0:vs_main_no_trafo():ps_main_fb_blur_horiz19x19()
-fb_blur_vert19x19:P0:vs_main_no_trafo():ps_main_fb_blur_vert19x19()
-//fb_blur_horiz19x19h:P0:vs_main_no_trafo():ps_main_fb_blur_horiz19x19h()
-//fb_blur_vert19x19h:P0:vs_main_no_trafo():ps_main_fb_blur_vert19x19h()
-fb_blur_horiz23x23:P0:vs_main_no_trafo():ps_main_fb_blur_horiz23x23()
-fb_blur_vert23x23:P0:vs_main_no_trafo():ps_main_fb_blur_vert23x23()
-fb_blur_horiz27x27:P0:vs_main_no_trafo():ps_main_fb_blur_horiz27x27()
-fb_blur_vert27x27:P0:vs_main_no_trafo():ps_main_fb_blur_vert27x27()
-fb_blur_horiz39x39:P0:vs_main_no_trafo():ps_main_fb_blur_horiz39x39()
-fb_blur_vert39x39:P0:vs_main_no_trafo():ps_main_fb_blur_vert39x39()
-fb_mirror:P0:vs_main_no_trafo():ps_main_fb_mirror()
-CAS:P0:vs_main_no_trafo():ps_main_CAS()
-BilateralSharp_CAS:P0:vs_main_no_trafo():ps_main_BilateralSharp_CAS()
-SSReflection:P0:vs_main_no_trafo():ps_main_fb_ss_refl()
-irradiance:P0:vs_main_no_trafo():ps_main_fb_irradiance()
+fb_blur_horiz7x7:P0:vs_main_no_trafo():gs_main():ps_main_fb_blur_horiz7x7()
+fb_blur_vert7x7:P0:vs_main_no_trafo():gs_main():ps_main_fb_blur_vert7x7()
+fb_blur_horiz9x9:P0:vs_main_no_trafo():gs_main():ps_main_fb_blur_horiz9x9()
+fb_blur_vert9x9:P0:vs_main_no_trafo():gs_main():ps_main_fb_blur_vert9x9()
+//fb_blur_horiz9x9_4:P0:vs_main_no_trafo():gs_main():ps_main_fb_blur_horiz9x9_4()
+//fb_blur_vert9x9_4:P0:vs_main_no_trafo():gs_main():ps_main_fb_blur_vert9x9_4()
+fb_blur_horiz11x11:P0:vs_main_no_trafo():gs_main():ps_main_fb_blur_horiz11x11()
+fb_blur_vert11x11:P0:vs_main_no_trafo():gs_main():ps_main_fb_blur_vert11x11()
+fb_blur_horiz13x13:P0:vs_main_no_trafo():gs_main():ps_main_fb_blur_horiz13x13()
+fb_blur_vert13x13:P0:vs_main_no_trafo():gs_main():ps_main_fb_blur_vert13x13()
+fb_blur_horiz15x15:P0:vs_main_no_trafo():gs_main():ps_main_fb_blur_horiz15x15()
+fb_blur_vert15x15:P0:vs_main_no_trafo():gs_main():ps_main_fb_blur_vert15x15()
+fb_blur_horiz19x19:P0:vs_main_no_trafo():gs_main():ps_main_fb_blur_horiz19x19()
+fb_blur_vert19x19:P0:vs_main_no_trafo():gs_main():ps_main_fb_blur_vert19x19()
+//fb_blur_horiz19x19h:P0:vs_main_no_trafo():gs_main():ps_main_fb_blur_horiz19x19h()
+//fb_blur_vert19x19h:P0:vs_main_no_trafo():gs_main():ps_main_fb_blur_vert19x19h()
+fb_blur_horiz23x23:P0:vs_main_no_trafo():gs_main():ps_main_fb_blur_horiz23x23()
+fb_blur_vert23x23:P0:vs_main_no_trafo():gs_main():ps_main_fb_blur_vert23x23()
+fb_blur_horiz27x27:P0:vs_main_no_trafo():gs_main():ps_main_fb_blur_horiz27x27()
+fb_blur_vert27x27:P0:vs_main_no_trafo():gs_main():ps_main_fb_blur_vert27x27()
+fb_blur_horiz39x39:P0:vs_main_no_trafo():gs_main():ps_main_fb_blur_horiz39x39()
+fb_blur_vert39x39:P0:vs_main_no_trafo():gs_main():ps_main_fb_blur_vert39x39()
+fb_mirror:P0:vs_main_no_trafo():gs_main():ps_main_fb_mirror()
+CAS:P0:vs_main_no_trafo():gs_main():ps_main_CAS()
+BilateralSharp_CAS:P0:vs_main_no_trafo():gs_main():ps_main_BilateralSharp_CAS()
+SSReflection:P0:vs_main_no_trafo():gs_main():ps_main_fb_ss_refl()
+irradiance:P0:vs_main_no_trafo():gs_main():ps_main_fb_irradiance()
+

@@ -18,7 +18,7 @@ public:
    RenderTarget(RenderDevice* const rd, const RenderTargetType type, const string& name, const int width, const int height, const colorFormat format, bool with_depth, int nMSAASamples, StereoMode stereo, const char* failureMessage, RenderTarget* sharedDepth = nullptr);
    ~RenderTarget();
 
-   void Activate(const bool ignoreStereo = false);
+   void Activate();
    static RenderTarget* GetCurrentRenderTarget();
 
    Sampler* GetColorSampler() { return m_color_sampler; }
@@ -64,7 +64,6 @@ private:
    static RenderTarget* current_render_target;
 
 #ifdef ENABLE_SDL
-   static int m_current_stereo_mode;
    GLuint m_framebuffer;
    GLuint m_color_tex;
    GLuint m_depth_tex;
