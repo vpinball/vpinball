@@ -3,9 +3,8 @@
 #include "RenderCommand.h"
 #include "RenderDevice.h"
 
-RenderPass::RenderPass(const string& name, RenderTarget* const rt, const bool ignoreStereo)
+RenderPass::RenderPass(const string& name, RenderTarget* const rt)
    : m_rt(rt)
-   , m_ignoreStereo(ignoreStereo)
    , m_name(name)
 {
 }
@@ -16,10 +15,9 @@ RenderPass::~RenderPass()
       delete item;
 }
 
-void RenderPass::Reset(const string& name, RenderTarget* const rt, const bool ignoreStereo)
+void RenderPass::Reset(const string& name, RenderTarget* const rt)
 {
    m_rt = rt;
-   m_ignoreStereo = ignoreStereo;
    m_name = name;
    m_depthReadback = false;
    m_sortKey = 0;
@@ -212,7 +210,7 @@ void RenderPass::Execute(const bool log)
       else
          stable_sort(m_commands.begin(), m_commands.end(), sortFunc);
 
-      m_rt->Activate(m_ignoreStereo);
+      m_rt->Activate();
 
       for (RenderCommand* cmd : m_commands)
          cmd->Execute(log);

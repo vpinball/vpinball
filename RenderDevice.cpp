@@ -970,7 +970,7 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
 
    // alloc buffer for screen space fake reflection rendering
    if (m_ssRefl)
-      m_pReflectionBufferTexture = new RenderTarget(this, RenderTarget::RT_DEFAULT, "ReflectionBuffer"s, m_width_aa, m_height_aa, render_format, false, 1, STEREO_OFF, "Fatal Error: unable to create reflection buffer!");
+      m_pReflectionBufferTexture = new RenderTarget(this, RenderTarget::RT_DEFAULT, "ReflectionBuffer"s, m_width_aa, m_height_aa, render_format, false, 1, m_stereo3D, "Fatal Error: unable to create reflection buffer!");
 
    // alloc bloom tex at 1/4 x 1/4 res (allows for simple HQ downscale of clipped input while saving memory)
    m_pBloomBufferTexture = new RenderTarget(this, RenderTarget::RT_DEFAULT, "BloomBuffer1"s, m_width / 4, m_height / 4, render_format, false, 1, m_stereo3D, "Fatal Error: unable to create bloom buffer!");
@@ -1084,7 +1084,7 @@ RenderTarget* RenderDevice::GetPostProcessRenderTarget1()
    {
       // Buffers for post-processing (postprocess is done at scene resolution, on a LDR render target without MSAA nor full scene supersampling)
       const colorFormat pp_format = GetBackBufferTexture()->GetColorFormat() == RGBA10 ? colorFormat::RGBA10 : colorFormat::RGBA8;
-      m_pPostProcessRenderTarget1 = new RenderTarget(this, RenderTarget::RT_DEFAULT, "PostProcess1"s, m_width, m_height, pp_format, false, 1, STEREO_OFF, "Fatal Error: unable to create stereo3D/post-processing AA/sharpen buffer!");
+      m_pPostProcessRenderTarget1 = new RenderTarget(this, RenderTarget::RT_DEFAULT, "PostProcess1"s, m_width, m_height, pp_format, false, 1, m_stereo3D, "Fatal Error: unable to create stereo3D/post-processing AA/sharpen buffer!");
    }
    return m_pPostProcessRenderTarget1;
 }
@@ -1110,7 +1110,7 @@ RenderTarget* RenderDevice::GetAORenderTarget(int idx)
    // Lazily creates AO render target since this can be enabled during play from script
    if (m_pAORenderTarget1 == nullptr)
    {
-      m_pAORenderTarget1 = new RenderTarget(this, RenderTarget::RT_DEFAULT, "AO1"s, m_width, m_height, colorFormat::GREY8, false, 1, STEREO_OFF,
+      m_pAORenderTarget1 = new RenderTarget(this, RenderTarget::RT_DEFAULT, "AO1"s, m_width, m_height, colorFormat::GREY8, false, 1, m_stereo3D,
          "Unable to create AO buffers!\r\nPlease disable Ambient Occlusion.\r\nOr try to (un)set \"Alternative Depth Buffer processing\" in the video options!");
       m_pAORenderTarget2 = m_pAORenderTarget1->Duplicate("AO2"s);
 
@@ -1694,7 +1694,7 @@ void RenderDevice::SetRenderTarget(const string& name, RenderTarget* rt, bool ig
    }
    else if (m_currentPass == nullptr || rt != m_currentPass->m_rt)
    {
-      m_currentPass = m_renderFrame.AddPass(name, rt, ignoreStereo);
+      m_currentPass = m_renderFrame.AddPass(name, rt);
       if (rt->m_lastRenderPass != nullptr)
          m_currentPass->AddPrecursor(rt->m_lastRenderPass);
       rt->m_lastRenderPass = m_currentPass;

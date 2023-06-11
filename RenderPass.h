@@ -6,9 +6,9 @@ class RenderCommand;
 class RenderPass final
 {
 public:
-   RenderPass(const string& name, RenderTarget* const rt, const bool ignoreStereo = false);
+   RenderPass(const string& name, RenderTarget* const rt);
    ~RenderPass();
-   void Reset(const string& name, RenderTarget* const rt, const bool ignoreStereo = false);
+   void Reset(const string& name, RenderTarget* const rt);
 
    void AddPrecursor(RenderPass* dependency);
    void Sort(vector<RenderPass*>& sortedPasses);
@@ -23,7 +23,6 @@ public:
    bool m_depthReadback = false;
 
 private:
-   bool m_ignoreStereo;
    int m_sortKey = 0;
    vector<RenderCommand*> m_commands;
    vector<RenderPass*> m_dependencies; // List of render passes that must have been performed before executing this pass

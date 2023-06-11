@@ -134,6 +134,7 @@ void RenderCommand::Execute(const bool log)
       m_shader->m_state->CopyTo(false, m_shaderState, m_shaderTechnique);
       m_shader->Begin();
       m_rd->m_curDrawCalls++;
+      int instanceCount = RenderTarget::GetCurrentRenderTarget()->GetStereo() == STEREO_OFF ? 1 : 2;
       switch (m_command)
       {
       case RC_DRAW_QUAD_PT:
@@ -145,7 +146,10 @@ void RenderCommand::Execute(const bool log)
             memcpy(bufvb, m_vertices, 4 * sizeof(Vertex3D_TexelOnly));
             m_rd->m_quadPTDynMeshBuffer->m_vb->unlock();
             m_rd->m_quadPTDynMeshBuffer->bind();
-            glDrawArrays(RenderDevice::PrimitiveTypes::TRIANGLESTRIP, m_rd->m_quadPTDynMeshBuffer->m_vb->GetVertexOffset(), 4);
+            if (instanceCount > 1)
+               glDrawArraysInstanced(RenderDevice::PrimitiveTypes::TRIANGLESTRIP, m_rd->m_quadPTDynMeshBuffer->m_vb->GetVertexOffset(), 4, instanceCount);
+            else
+               glDrawArrays(RenderDevice::PrimitiveTypes::TRIANGLESTRIP, m_rd->m_quadPTDynMeshBuffer->m_vb->GetVertexOffset(), 4);
          #else
             // having a VB and lock/copying stuff each time is slower on DX9 :/ (is it still true ? looks overly complicated for a very marginal benefit)
             if (m_rd->m_currentVertexDeclaration != m_rd->m_pVertexTexelDeclaration)
@@ -169,7 +173,10 @@ void RenderCommand::Execute(const bool log)
          memcpy(bufvb, m_vertices, 4 * sizeof(Vertex3D_NoTex2));
          m_rd->m_quadPNTDynMeshBuffer->m_vb->unlock();
          m_rd->m_quadPNTDynMeshBuffer->bind();
-         glDrawArrays(RenderDevice::PrimitiveTypes::TRIANGLESTRIP, m_rd->m_quadPNTDynMeshBuffer->m_vb->GetVertexOffset(), 4);
+         if (instanceCount > 1)
+            glDrawArraysInstanced(RenderDevice::PrimitiveTypes::TRIANGLESTRIP, m_rd->m_quadPNTDynMeshBuffer->m_vb->GetVertexOffset(), 4, instanceCount);
+         else
+            glDrawArrays(RenderDevice::PrimitiveTypes::TRIANGLESTRIP, m_rd->m_quadPNTDynMeshBuffer->m_vb->GetVertexOffset(), 4);
          #else
          // having a VB and lock/copying stuff each time is slower on DX9 :/ (is it still true ? looks overly complicated for a very marginal benefit)
          if (m_rd->m_currentVertexDeclaration != m_rd->m_pVertexNormalTexelDeclaration)
@@ -205,7 +212,10 @@ void RenderCommand::Execute(const bool log)
          {
             #ifdef ENABLE_SDL
             assert(0 <= m_mb->m_vb->GetVertexOffset() && m_mb->m_vb->GetVertexOffset() + m_indicesCount <= m_mb->m_vb->GetSharedBuffer()->GetCount());
-            glDrawArrays(m_primitiveType, m_mb->m_vb->GetVertexOffset(), m_indicesCount);
+            if (instanceCount > 1)
+               glDrawArraysInstanced(m_primitiveType, m_mb->m_vb->GetVertexOffset(), m_indicesCount, instanceCount);
+            else
+               glDrawArrays(m_primitiveType, m_mb->m_vb->GetVertexOffset(), m_indicesCount);
             #else
             CHECKD3D(m_rd->GetCoreDevice()->DrawPrimitive((D3DPRIMITIVETYPE)m_primitiveType, m_mb->m_vb->GetVertexOffset(), np));
             #endif
@@ -232,20 +242,24 @@ void RenderCommand::Execute(const bool log)
             #endif
             if (vertexOffset == 0)
             {
-               //glDrawElements(m_primitiveType, m_indicesCount, indexType, (void*)(intptr_t)indexOffset);
-               glDrawRangeElements(m_primitiveType, 
-                  m_mb->m_vb->GetVertexOffset(), m_mb->m_vb->GetVertexOffset() + m_mb->m_vb->m_count, 
-                  m_indicesCount, indexType, (void*)(intptr_t)indexOffset);
+               if (instanceCount > 1)
+                  glDrawElementsInstanced(m_primitiveType, m_indicesCount, indexType, (void*)(intptr_t)indexOffset, instanceCount);
+               else
+                  glDrawRangeElements(m_primitiveType, 
+                     m_mb->m_vb->GetVertexOffset(), m_mb->m_vb->GetVertexOffset() + m_mb->m_vb->m_count, 
+                     m_indicesCount, indexType, (void*)(intptr_t)indexOffset);
             }
             else
             {
                #if defined(__OPENGLES__)
                assert(false); // OpenGL ES does not support offseted vertices. The buffers must be built accordingly
                #else
-               //glDrawElementsBaseVertex(m_primitiveType, m_indicesCount, indexType, (void*)(intptr_t)indexOffset, vertexOffset);
-               glDrawRangeElementsBaseVertex(m_primitiveType, 
-                  m_mb->m_vb->GetVertexOffset(), m_mb->m_vb->GetVertexOffset() + m_mb->m_vb->m_count, 
-                  m_indicesCount, indexType, (void*)(intptr_t)indexOffset, vertexOffset);
+               if (instanceCount > 1)
+                  glDrawElementsInstancedBaseVertex(m_primitiveType, m_indicesCount, indexType, (void*)(intptr_t)indexOffset, vertexOffset, instanceCount);
+               else
+                  glDrawRangeElementsBaseVertex(m_primitiveType, 
+                     m_mb->m_vb->GetVertexOffset(), m_mb->m_vb->GetVertexOffset() + m_mb->m_vb->m_count, 
+                     m_indicesCount, indexType, (void*)(intptr_t)indexOffset, vertexOffset);
                #endif
             }
             #else

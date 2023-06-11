@@ -12,7 +12,7 @@ public:
    RenderFrame(RenderDevice* renderDevice);
    ~RenderFrame();
 
-   RenderPass* AddPass(const string& name, RenderTarget* const rt, const bool ignoreStereo);
+   RenderPass* AddPass(const string& name, RenderTarget* const rt);
    void Execute(const bool log = false);
 
    RenderCommand* NewCommand();

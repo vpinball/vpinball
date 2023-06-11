@@ -24,15 +24,14 @@ layout(std140) uniform ballMatrixBlock {
 
 uniform vec4 clip_plane; // Clip plane defined in table coordinate system
 
+out int eye_gs;
+
 ////GEOMETRY
 #extension GL_ARB_viewport_array : enable
 layout(triangles) in;
 layout(triangle_strip, max_vertices = 3) out;
-#if (N_EYES == 1)
-   layout(invocations = 1) in;
-#else
-   layout(invocations = 2) in;
-#endif
+
+in int eye_gs[];
 
 ////FRAGMENT
 
@@ -87,6 +86,8 @@ void main()
 	worldPos_t0y_gs = float4(p,tex0.y);
 
     gl_ClipDistance[0] = dot(vec4(pos.xyz, 1.0), clip_plane);
+
+    eye_gs = gl_InstanceID;
 }
 
 ////vsBallTrail
@@ -101,6 +102,7 @@ void main()
 {
 	gl_Position = vec4(vPosition, 1.0);
 	tex0_alpha_gs = vec3(tex0, vNormal.x); //!! abuses normal for now
+    eye_gs = gl_InstanceID;
 }
 
 ////gsBall
@@ -113,9 +115,9 @@ out vec4 worldPos_t0y;
 
 void main()
 {
-	gl_ViewportIndex = gl_InvocationID;
+    gl_ViewportIndex = eye_gs[0];
 	for (int i=0;i<gl_in.length();i++) {
-		gl_Position = (matWorldViewProj[gl_InvocationID]*gl_in[i].gl_Position);
+		gl_Position = (matWorldViewProj[eye_gs[i]]*gl_in[i].gl_Position);
         gl_ClipDistance[0] = gl_in[i].gl_ClipDistance[0];
 		normal_t0x = normal_t0x_gs[i];
 		worldPos_t0y = worldPos_t0y_gs[i];
@@ -131,9 +133,9 @@ out vec3 tex0_alpha;
 
 void main()
 {
-	gl_ViewportIndex = gl_InvocationID;
+    gl_ViewportIndex = eye_gs[0];
 	for (int i=0;i<gl_in.length();i++) {
-		gl_Position = (matWorldViewProj[gl_InvocationID]*gl_in[i].gl_Position);
+		gl_Position = (matWorldViewProj[eye_gs[i]]*gl_in[i].gl_Position);
 		tex0_alpha = tex0_alpha_gs[i];
 		EmitVertex();
 	}

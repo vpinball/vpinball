@@ -10,10 +10,6 @@
 #include "inc/nvapi/nvapi.h"
 #endif
 
-#ifdef ENABLE_SDL
-int RenderTarget::m_current_stereo_mode = -1;
-#endif
-
 RenderTarget* RenderTarget::current_render_target = nullptr;
 RenderTarget* RenderTarget::GetCurrentRenderTarget() { return current_render_target; }
 
@@ -399,19 +395,18 @@ void RenderTarget::CopyTo(RenderTarget* dest, const bool copyColor, const bool c
 #endif
 }
 
-void RenderTarget::Activate(const bool ignoreStereo)
+void RenderTarget::Activate()
 {
 #ifdef ENABLE_SDL
-   if (current_render_target == this && m_current_stereo_mode == (ignoreStereo ? STEREO_OFF : m_stereo))
+   if (current_render_target == this)
       return;
-   m_current_stereo_mode = ignoreStereo ? STEREO_OFF : m_stereo;
    static GLfloat viewPorts[] = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
    if (m_color_sampler)
       m_color_sampler->Unbind();
    if (m_depth_sampler)
       m_depth_sampler->Unbind();
    glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer);
-   switch (ignoreStereo ? STEREO_OFF : m_stereo)
+   switch (m_stereo)
    {
    case STEREO_OFF:
       glViewport(0, 0, m_width, m_height);
