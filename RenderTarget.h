@@ -18,9 +18,11 @@ public:
    RenderTarget(RenderDevice* const rd, const RenderTargetType type, const string& name, const int width, const int height, const colorFormat format, bool with_depth, int nMSAASamples, StereoMode stereo, const char* failureMessage, RenderTarget* sharedDepth = nullptr);
    ~RenderTarget();
 
-   void Activate();
+   void Activate(const int layer = -1);
    static RenderTarget* GetCurrentRenderTarget();
+   static int GetCurrentRenderLayer();
 
+   int GetNLayers() { return m_stereo == STEREO_OFF ? 1 : 2; }
    Sampler* GetColorSampler() { return m_color_sampler; }
    void UpdateDepthSampler(bool insideBeginEnd);
    Sampler* GetDepthSampler() { return m_depth_sampler; }
@@ -37,6 +39,7 @@ public:
    bool IsMSAA() const { return m_nMSAASamples > 1; }
    bool HasDepth() const { return m_has_depth; }
    colorFormat GetColorFormat() const { return m_format; }
+   RenderDevice* GetRenderDevice() const { return m_rd; }
 
 #ifdef ENABLE_SDL
    GLuint GetCoreFrameBuffer() const { return m_framebuffer; }
@@ -62,6 +65,7 @@ private:
    Sampler* m_depth_sampler;
 
    static RenderTarget* current_render_target;
+   static int current_render_layer;
 
 #ifdef ENABLE_SDL
    GLuint m_framebuffer;

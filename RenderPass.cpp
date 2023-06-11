@@ -210,10 +210,36 @@ void RenderPass::Execute(const bool log)
       else
          stable_sort(m_commands.begin(), m_commands.end(), sortFunc);
 
-      m_rt->Activate();
-
-      for (RenderCommand* cmd : m_commands)
-         cmd->Execute(log);
+      int nLayers = m_rt->GetNLayers();
+      if (nLayers == 1 || m_rt->GetRenderDevice()->SupportLayeredRendering())
+      {
+         m_rt->Activate();
+         for (RenderCommand* cmd : m_commands)
+         {
+            #ifdef ENABLE_SDL // Layered rendering is not yet implemented for DirectX
+            Shader::ShaderState* state = cmd->GetShaderState();
+            if (state)
+               state->SetInt(SHADER_layer, 0);
+            #endif
+            cmd->Execute(log);
+         }
+      }
+      else
+      {
+         for (int layer = 0; layer < nLayers; layer++)
+         {
+            m_rt->Activate(layer);
+            for (RenderCommand* cmd : m_commands)
+            {
+               #ifdef ENABLE_SDL // Layered rendering is not yet implemented for DirectX
+               Shader::ShaderState* state = cmd->GetShaderState();
+               if (state)
+                  state->SetInt(SHADER_layer, layer);
+               #endif
+               cmd->Execute(log);
+            }
+         }
+      }
 
       if (m_depthReadback)
          m_rt->UpdateDepthSampler(true);

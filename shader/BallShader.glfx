@@ -21,8 +21,12 @@ layout(std140) uniform ballMatrixBlock {
 };
 
 ////VERTEX
+layout(location=0) in vec3 vPosition;
+layout(location=1) in vec3 vNormal;
+layout(location=2) in vec2 tex0;
 
 uniform vec4 clip_plane; // Clip plane defined in table coordinate system
+uniform int layer; // Layer being rendered (set to 0 is using layered rendering, that is to say rendering multiple layers using instanced rendering)
 
 out int eye_gs;
 
@@ -60,11 +64,6 @@ uniform bool  disableLighting;
 out vec4 color;
 
 ////vsBall
-
-layout(location=0) in vec3 vPosition;
-layout(location=1) in vec3 vNormal;
-layout(location=2) in vec2 tex0;
-
 out vec4 normal_t0x_gs;
 out vec4 worldPos_t0y_gs;
 
@@ -87,22 +86,17 @@ void main()
 
     gl_ClipDistance[0] = dot(vec4(pos.xyz, 1.0), clip_plane);
 
-    eye_gs = gl_InstanceID;
+    eye_gs = gl_InstanceID + layer;
 }
 
 ////vsBallTrail
-
-layout(location=0) in vec3 vPosition;
-layout(location=1) in vec3 vNormal;
-layout(location=2) in vec2 tex0;
-
 out vec3 tex0_alpha_gs;
 
 void main()
 {
 	gl_Position = vec4(vPosition, 1.0);
 	tex0_alpha_gs = vec3(tex0, vNormal.x); //!! abuses normal for now
-    eye_gs = gl_InstanceID;
+    eye_gs = gl_InstanceID + layer;
 }
 
 ////gsBall

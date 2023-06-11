@@ -19,6 +19,7 @@ public:
    bool IsDrawMeshCommand() const { return m_command == RC_DRAW_MESH; }
    bool IsDrawLiveUICommand() const { return m_command == RC_DRAW_LIVEUI; }
    inline RenderState GetRenderState() const { return m_renderState; }
+   inline Shader::ShaderState* GetShaderState() const { return m_shaderState; }
    inline ShaderTechniques GetShaderTechnique() const { return m_shaderTechnique; }
    inline MeshBuffer* GetMeshBuffer() const { return m_mb; }
    inline float GetDepth() const { return m_depth; }

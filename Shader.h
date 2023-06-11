@@ -159,6 +159,7 @@ enum ShaderUniformType
 enum ShaderUniforms
 {
    // Shared uniforms
+   SHADER_UNIFORM(SUT_Int, layer, 1),
    SHADER_UNIFORM(SUT_Float, alphaTestValue, 1),
    SHADER_UNIFORM(SUT_Float4x4, matProj, 1), // +1 Matrix for stereo
    SHADER_UNIFORM(SUT_Float4x4, matWorldViewProj, 1), // +1 Matrix for stereo

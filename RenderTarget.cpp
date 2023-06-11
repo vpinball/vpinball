@@ -13,6 +13,9 @@
 RenderTarget* RenderTarget::current_render_target = nullptr;
 RenderTarget* RenderTarget::GetCurrentRenderTarget() { return current_render_target; }
 
+int RenderTarget::current_render_layer = 0; // For layered render targets (stereo, cubemaps,...)
+int RenderTarget::GetCurrentRenderLayer() { return current_render_layer; }
+
 RenderTarget::RenderTarget(RenderDevice* const rd, const int width, const int height, const colorFormat format)
    : m_name("BackBuffer"s)
    , m_is_back_buffer(true)
@@ -395,12 +398,17 @@ void RenderTarget::CopyTo(RenderTarget* dest, const bool copyColor, const bool c
 #endif
 }
 
-void RenderTarget::Activate()
+void RenderTarget::Activate(const int layer)
 {
-#ifdef ENABLE_SDL
-   if (current_render_target == this)
+   if (current_render_target == this && current_render_layer == layer)
       return;
-   static GLfloat viewPorts[] = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
+   current_render_target = this;
+   current_render_layer = layer;
+
+#ifdef ENABLE_SDL
+   static GLfloat viewPorts[] = {
+      0.0f, 0.0f, 0.0f, 0.0f, 
+      0.0f, 0.0f, 0.0f, 0.0f };
    if (m_color_sampler)
       m_color_sampler->Unbind();
    if (m_depth_sampler)
@@ -408,28 +416,32 @@ void RenderTarget::Activate()
    glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer);
    switch (m_stereo)
    {
-   case STEREO_OFF:
-      glViewport(0, 0, m_width, m_height);
+   case STEREO_OFF: // Default: render to full render target (single viewport)
+      viewPorts[2] = (float)m_width;
+      viewPorts[3] = (float)m_height;
       break;
-   case STEREO_TB: // Render left eye in the upper part, and right eye in the lower part
+   case STEREO_TB: // Top/Bottom: Render left eye in the upper part, and right eye in the lower part
    case STEREO_INT:
    case STEREO_FLIPPED_INT:
-      glViewport(0, 0, m_width, m_height / 2); // Set default viewport width/height values of all viewports before we define the array or we get undefined behaviour in shader (flickering viewports).
-      viewPorts[2] = viewPorts[6] = (float)m_width;
-      viewPorts[3] = viewPorts[7] = (float)(m_height * 0.5);
-      viewPorts[4] = 0.0f;
-      viewPorts[5] = (float)(m_height * 0.5);
-      glViewportArrayv(0, 2, viewPorts);
+      viewPorts[2] = viewPorts[6] = (float) m_width;
+      viewPorts[3] = viewPorts[5] = viewPorts[7] = (float)(m_height * 0.5);
       break;
-   default: //For all other stereo mode, render left eye in the left part, and right eye in the right part
-      glViewport(0, 0, m_width / 2, m_height); // Set default viewport width/height values of all viewports before we define the array or we get undefined behaviour in shader (flickering viewports).
-      viewPorts[2] = viewPorts[6] = (float)(m_width * 0.5);
-      viewPorts[3] = viewPorts[7] = (float)m_height;
-      viewPorts[4] = (float)(m_width * 0.5);
-      viewPorts[5] = 0.0f;
-      glViewportArrayv(0, 2, viewPorts);
+   default: // Side by side: For all other stereo mode, render left eye in the left part, and right eye in the right part
+      viewPorts[2] = viewPorts[4] = viewPorts[6] = (float)(m_width * 0.5);
+      viewPorts[3] = viewPorts[7] = (float) m_height;
       break;
    }
+
+   // Either bind all layers for instanced rendering or the only requested one for normal rendering (one pass per layer)
+   if (layer == -1)
+   {
+      // Set default viewport width/height values of all viewports before we define the array or we get undefined behaviour in shader (flickering viewports).
+      glViewport((GLint)viewPorts[0], (GLint)viewPorts[1], (GLsizei)viewPorts[2], (GLsizei)viewPorts[3]);
+      glViewportArrayv(0, 2, viewPorts);
+   }
+   else
+      glViewport((GLint)viewPorts[layer * 4], (GLint)viewPorts[layer * 4 + 1], (GLsizei)viewPorts[layer * 4 + 2], (GLsizei)viewPorts[layer * 4 + 3]);
+
 #else
    static IDirect3DSurface9* currentColorSurface = nullptr;
    if (currentColorSurface != m_color_surface)
@@ -444,5 +456,4 @@ void RenderTarget::Activate()
       CHECKD3D(m_rd->GetCoreDevice()->SetDepthStencilSurface(m_depth_surface));
    }
 #endif
-   current_render_target = this;
 }

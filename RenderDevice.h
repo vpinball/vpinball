@@ -128,6 +128,17 @@ public:
 
    bool SetMaximumPreRenderedFrames(const DWORD frames);
 
+   bool SupportLayeredRendering() const
+   {
+      #ifdef ENABLE_SDL // OpenGL
+      // TODO remove geometry shader, and only support layered rendering on driver supporting ARB_shader_viewport_layer_array (all GPU starting GTX950+),
+      // the performance impact will be positive for normal rendering, limited for VR/stereo and these old GPU are not really able to render in VR/Stereo
+      return true;
+      #else // DirectX 9
+      return false;
+      #endif
+   }
+
    RenderTarget* GetMSAABackBufferTexture() const { return m_pOffscreenMSAABackBufferTexture; } // Main render target, may be MSAA enabled and not suited for sampling, also may have stereo output (2 viewports)
    void ResolveMSAA(); // Resolve MSAA back buffer texture to be sample  from back buffer texture
    RenderTarget* GetBackBufferTexture() const { return m_pOffscreenBackBufferTexture; } // Main render target, with MSAA resolved if any, also may have stereo output (2 viewports)

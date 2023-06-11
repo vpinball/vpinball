@@ -18,15 +18,15 @@ precision highp float;
 uniform mat4 matWorldViewProj[N_EYES];
 
 ////VERTEX
-
 layout(location=0) in vec3 vPosition;
 layout(location=1) in vec3 vNormal;
 layout(location=2) in vec2 tc;
 
+uniform vec4 clip_plane; // Clip plane defined in table coordinate system
+uniform int layer; // Layer being rendered (set to 0 is using layered rendering, that is to say rendering multiple layers using instanced rendering)
+
 out vec2 tex0_gs;
 out int eye_gs;
-
-uniform vec4 clip_plane; // Clip plane defined in table coordinate system
 
 ////GEOMETRY
 #extension GL_ARB_viewport_array : enable
@@ -64,7 +64,7 @@ void main()
    gl_Position = vec4(vPosition, 1.0);
    gl_ClipDistance[0] = dot(vec4(vPosition, 1.0), clip_plane);
    tex0_gs = tc;
-   eye_gs = gl_InstanceID;
+   eye_gs = gl_InstanceID + layer;
 }
 
 ////gs_simple_main

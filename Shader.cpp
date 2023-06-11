@@ -155,6 +155,7 @@ string Shader::GetTechniqueName(ShaderTechniques technique)
 #define SHADER_SAMPLER(name, tex_name, default_clampu, default_clampv, default_filter) { SUT_Sampler, #name, 1, #tex_name, default_clampu, default_clampv, default_filter }
 Shader::ShaderUniform Shader::shaderUniformNames[SHADER_UNIFORM_COUNT] {
    // Shared uniforms
+   SHADER_UNIFORM(SUT_Int, layer, 1),
    SHADER_UNIFORM(SUT_Float, alphaTestValue, 1),
    SHADER_UNIFORM(SUT_Float4x4, matProj, 1), // +1 Matrix for stereo
    SHADER_UNIFORM(SUT_Float4x4, matWorldViewProj, 1), // +1 Matrix for stereo
@@ -1185,7 +1186,7 @@ Shader::ShaderTechnique* Shader::compileGLShader(const ShaderTechniques techniqu
                m_uniforms[technique].push_back(uniformIndex);
                auto uniform = shaderUniformNames[uniformIndex];
                assert(uniform.type != SUT_Bool || type == GL_BOOL);
-               assert(uniform.type != SUT_Int); // Unused so unimplemented
+               assert(uniform.type != SUT_Int || type == GL_INT);
                assert(uniform.type != SUT_Float || type == GL_FLOAT);
                assert(uniform.type != SUT_Float2 || type == GL_FLOAT_VEC2);
                assert(uniform.type != SUT_Float3 || type == GL_FLOAT_VEC3);

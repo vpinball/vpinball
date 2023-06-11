@@ -3989,7 +3989,7 @@ void Player::Render()
    {
       // copy static buffers to back buffer including z buffer
       m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pin3d.m_pddsStatic);
-      m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(m_pin3d.m_pddsStatic, m_pin3d.m_pd3dPrimaryDevice->GetMSAABackBufferTexture()); // cannot be called inside BeginScene -> EndScene cycle
+      m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(m_pin3d.m_pddsStatic, m_pin3d.m_pd3dPrimaryDevice->GetMSAABackBufferTexture());
    }
    const U64 clearTiming = usec() - usecTimeStamp;
 
