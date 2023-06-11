@@ -224,22 +224,22 @@ void main()
     const float3 r = reflect(V, N);
 
     float3 ballImageColor;
+    const float edge = dot(V, r);
+    // edge falloff to reduce aliasing on edges (picks smaller mipmap -> more blur)
+    const float lod = (edge > 0.6) ? edge*(6.0*1.0/0.4)-(6.0*0.6/0.4) : 0.0;
     BRANCH if (%PARAM0%) // equirectangularMap
     { // Equirectangular Map Reflections
 	  // trafo back to world for lookup into world space envmap
 	  // matView is always an orthonormal matrix, so no need to normalize after transform
 	  const float3 rv = /*normalize*/((float4(-r,0.0) * matView).xyz);
       const float2 uv = ray_to_equirectangular_uv(rv);
-      ballImageColor = texture(tex_ball_color, uv).xyz;
+      ballImageColor = textureLod(tex_ball_color, uv, lod).xyz;
     }
     else
     { // Spherical Map Reflections
       // calculate the intermediate value for the final texture coords. found here http://www.ozone3d.net/tutorials/glsl_texturing_p04.php
       const float m = (1.0 - r.z > 0.) ? 0.3535533905932737622 * rsqrt(1.0 - r.z) : 0.; // 0.353...=0.5/sqrt(2)
       const float2 uv = float2(0.5 - m * r.x, 0.5 - m * r.y);
-      const float edge = dot(V, r);
-      // edge falloff to reduce aliasing on edges (picks smaller mipmap -> more blur)
-      const float lod = (edge > 0.6) ? edge*(6.0*1.0/0.4)-(6.0*0.6/0.4) : 0.0;
       ballImageColor = textureLod(tex_ball_color, uv, lod).xyz;
     }
 
