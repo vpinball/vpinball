@@ -1714,7 +1714,7 @@ void Player::InitStatic()
          // Rendering is done to the static render target then accumulated to accumulationSurface
          // We use the framebuffer mirror shader which copies a weighted version of the bound texture
          m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(accumulationSurface);
-         m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("PreRender Accumulate"s, accumulationSurface, true);
+         m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("PreRender Accumulate"s, accumulationSurface);
          m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderRT);
          m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
          m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::SRCBLEND, RenderState::ONE);
@@ -3118,7 +3118,7 @@ void Player::Bloom()
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTextureNull(SHADER_tex_fb_filtered);
 
       // switch to 'bloom' output buffer to collect clipped framebuffer values
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("Bloom Cut Off"s, m_pin3d.m_pd3dPrimaryDevice->GetBloomBufferTexture(), true);
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("Bloom Cut Off"s, m_pin3d.m_pd3dPrimaryDevice->GetBloomBufferTexture());
       m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture());
 
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetColorSampler());
@@ -3158,7 +3158,7 @@ void Player::StereoFXAA(RenderTarget* renderedRT, const bool stereo, const bool 
       outputRT = SMAA                   ? m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture() : // SMAA use 3 passes, all of them using the initial render, so we reuse the back buffer for the first
          (DLAA || sharpen || pp_stereo) ? m_pin3d.m_pd3dPrimaryDevice->GetPostProcessRenderTarget(renderedRT)
                                         : m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget(SMAA ? "SMAA Color/Edge Detection"s : "Post Process AA Pass 1"s, outputRT, true);
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget(SMAA ? "SMAA Color/Edge Detection"s : "Post Process AA Pass 1"s, outputRT);
       m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, renderedRT->GetColorSampler());
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, renderedRT->GetColorSampler());
@@ -3194,7 +3194,7 @@ void Player::StereoFXAA(RenderTarget* renderedRT, const bool stereo, const bool 
          outputRT = SMAA                 ? m_pin3d.m_pd3dPrimaryDevice->GetPostProcessRenderTarget2() : // SMAA use 3 passes, so we have a special processing instead of RT ping pong
                     sharpen || pp_stereo ? m_pin3d.m_pd3dPrimaryDevice->GetPostProcessRenderTarget(renderedRT)
                                          : m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
-         m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget(SMAA ? "SMAA Blend weight calculation"s : "Post Process AA Pass 2"s, outputRT, true);
+         m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget(SMAA ? "SMAA Blend weight calculation"s : "Post Process AA Pass 2"s, outputRT);
          m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SMAA ? SHADER_edgesTex : SHADER_tex_fb_filtered, renderedRT->GetColorSampler());
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(SMAA ? SHADER_TECHNIQUE_SMAA_BlendWeightCalculation : SHADER_TECHNIQUE_DLAA);
@@ -3205,7 +3205,7 @@ void Player::StereoFXAA(RenderTarget* renderedRT, const bool stereo, const bool 
          {
             outputRT = sharpen || pp_stereo ? m_pin3d.m_pd3dPrimaryDevice->GetPostProcessRenderTarget(renderedRT)
                                             : m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
-            m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("SMAA Neigborhood blending"s, outputRT, true);
+            m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("SMAA Neigborhood blending"s, outputRT);
             m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
             m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_blendTex, renderedRT->GetColorSampler());
             m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_SMAA_NeighborhoodBlending);
@@ -3222,7 +3222,7 @@ void Player::StereoFXAA(RenderTarget* renderedRT, const bool stereo, const bool 
       assert(renderedRT != m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer());
       outputRT = pp_stereo ? m_pin3d.m_pd3dPrimaryDevice->GetPostProcessRenderTarget(renderedRT)
                            : m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("Sharpen"s, outputRT, true);
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("Sharpen"s, outputRT);
       m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
       m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture());
 
@@ -3691,7 +3691,7 @@ void Player::PrepareVideoBuffersAO()
       ouputRT = m_pin3d.m_pd3dPrimaryDevice->GetPostProcessRenderTarget1();
    else
       ouputRT = m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("Tonemap/Dither/ColorGrade"s, ouputRT, true);
+   m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("Tonemap/Dither/ColorGrade"s, ouputRT);
    m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT, true);
    m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pin3d.m_pd3dPrimaryDevice->GetBloomBufferTexture());
    m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pin3d.m_pd3dPrimaryDevice->GetAORenderTarget(1));
