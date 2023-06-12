@@ -15,6 +15,7 @@ set(CMAKE_C_STANDARD 99)
 
 add_compile_definitions(
    ENABLE_INI_SETTINGS
+   ONLY_USE_BASS
 )
 
 add_compile_options(
