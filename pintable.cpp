@@ -498,24 +498,24 @@ STDMETHODIMP ScriptGlobalTable::get_TablesDirectory(BSTR *pVal)
 STDMETHODIMP ScriptGlobalTable::get_MusicDirectory(VARIANT pSubDir, BSTR *pVal)
 {
    // Optional sub directory parameter must be either missing or a string
-   if (pSubDir.vt != VT_ERROR && pSubDir.vt != VT_BSTR)
+   if (V_VT(&pSubDir) != VT_EMPTY && V_VT(&pSubDir) != VT_BSTR)
       return S_FALSE;
 
-   string endPath = pSubDir.vt == VT_ERROR ? ("music"s + PATH_SEPARATOR_CHAR) : ("music"s + PATH_SEPARATOR_CHAR + MakeString(pSubDir.bstrVal) + PATH_SEPARATOR_CHAR);
-   string szPath = m_vpinball->m_szMyPath + endPath;
+   string endPath = V_VT(&pSubDir) == VT_EMPTY ? ("") : (MakeString(V_BSTR(&pSubDir)) + PATH_SEPARATOR_CHAR);
+   string szPath = m_vpinball->m_szMyPath + "music"s + PATH_SEPARATOR_CHAR + endPath;
    if (!DirExists(szPath))
    {
-      szPath = m_vpinball->m_currentTablePath + endPath;
+      szPath = m_vpinball->m_currentTablePath + "music"s + PATH_SEPARATOR_CHAR + endPath;
       if (!DirExists(szPath))
       {
-         szPath = PATH_MUSIC;
+         szPath = PATH_MUSIC + endPath;
          if (!DirExists(szPath))
             return S_FALSE;
       }
    }
    const WCHAR *const wzPath = MakeWide(szPath);
    *pVal = SysAllocString(wzPath);
-   delete [] wzPath;
+   delete[] wzPath;
 
    return S_OK;
 }
