@@ -153,7 +153,7 @@ void RenderCommand::Execute(const bool log)
    case RC_DRAW_QUAD_PNT:
    case RC_DRAW_MESH:
    {
-      int instanceCount = m_rd->SupportLayeredRendering() ? RenderTarget::GetCurrentRenderTarget()->GetNLayers() : 1;
+      int instanceCount = m_rd->SupportLayeredRendering() ? RenderTarget::GetCurrentRenderTarget()->m_nLayers : 1;
       m_renderState.Apply(m_rd);
       m_shader->SetTechnique(m_shaderTechnique);
       m_shader->m_state->CopyTo(false, m_shaderState, m_shaderTechnique);

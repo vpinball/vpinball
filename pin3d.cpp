@@ -516,8 +516,7 @@ HRESULT Pin3D::InitPin3D(const bool fullScreen, const int width, const int heigh
    const int envTexHeight = min(envTex->m_pdsBuffer->height(), 256u) / 8;
    const int envTexWidth = envTexHeight * 2;
    const colorFormat rad_format = envTex->m_pdsBuffer->m_format == BaseTexture::RGB_FP32 ? colorFormat::RGBA32F : colorFormat::RGBA16F;
-   m_envRadianceTexture = new RenderTarget(m_pd3dPrimaryDevice, RenderTarget::RenderTargetType::RT_DEFAULT, "Irradiance"s, envTexWidth, envTexHeight, rad_format, false, 1, STEREO_OFF,
-      "Failed to create irradiance render target");
+   m_envRadianceTexture = new RenderTarget(m_pd3dPrimaryDevice, RenderTarget::RT_DEFAULT, "Irradiance"s, envTexWidth, envTexHeight, rad_format, false, 1, "Failed to create irradiance render target");
    m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_irradiance);
    m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, envTex);
    m_pd3dPrimaryDevice->SetRenderTarget("Env Irradiance PreCalc"s, m_envRadianceTexture);

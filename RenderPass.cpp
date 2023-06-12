@@ -210,8 +210,7 @@ void RenderPass::Execute(const bool log)
       else
          stable_sort(m_commands.begin(), m_commands.end(), sortFunc);
 
-      int nLayers = m_rt->GetNLayers();
-      if (nLayers == 1 || m_rt->GetRenderDevice()->SupportLayeredRendering())
+      if (m_rt->m_nLayers == 1 || m_rt->GetRenderDevice()->SupportLayeredRendering())
       {
          m_rt->Activate();
          for (RenderCommand* cmd : m_commands)
@@ -226,7 +225,7 @@ void RenderPass::Execute(const bool log)
       }
       else
       {
-         for (int layer = 0; layer < nLayers; layer++)
+         for (int layer = 0; layer < m_rt->m_nLayers; layer++)
          {
             m_rt->Activate(layer);
             for (RenderCommand* cmd : m_commands)
