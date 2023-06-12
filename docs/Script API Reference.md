@@ -141,7 +141,7 @@ DMDColoredPixels = myDMDdata
 
 - `UserDirectory(string)` - returns path to user directory, e.g. C:\Visual Pinball\user
 - `TablesDirectory(string)` - returns path to tables directory, e.g. C:\Visual Pinball\tables
-- `MusicDirectory(string)` - returns path to music directory, e.g. C:\Visual Pinball\music
+- `MusicDirectory(optional string, string)` - returns path to music directory, e.g. C:\Visual Pinball\music, eventually appending the provided sub directory
 - `ScriptsDirectory(string)` - returns path to scripts directory, e.g. C:\Visual Pinball\scripts
 - `PlatformOS(string)` - returns OS that VPX is running on, e.g. windows,linux,android,macos,ios,tvos
 - `PlatformCPU(string)` - returns CPU that VPX is running on, e.g. x86 or arm

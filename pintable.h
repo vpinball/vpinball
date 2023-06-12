@@ -887,7 +887,7 @@ public:
 #endif
    STDMETHOD(get_UserDirectory)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(get_TablesDirectory)(/*[out, retval]*/ BSTR *pVal);
-   STDMETHOD(get_MusicDirectory)(/*[out, retval]*/ BSTR *pVal);
+   STDMETHOD(get_MusicDirectory)(/*[optional][in]*/ VARIANT pSubDir, /*[out, retval]*/ BSTR *pVal);
    STDMETHOD(get_ScriptsDirectory)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(get_PlatformOS)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(get_PlatformCPU)(/*[out, retval]*/ BSTR *pVal);
