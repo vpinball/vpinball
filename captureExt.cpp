@@ -10,7 +10,8 @@
 // default Windows implementation.
 // 2023.05.13: copy/pasted the DXGI initial implementation back and reenabled it for user testing
 // 2023.06.09: disabled the VPVR code again since VR users are experienceing DXGI errors with it...
-#define USE_DXGI 0
+// 2023.06.12: moved back one more time to DXGI since GDI path nulls out the player's texdmd breakign embedded DMD in desktop...
+#define USE_DXGI 1
 
 #if defined(ENABLE_SDL) && !USE_DXGI
 class Capture

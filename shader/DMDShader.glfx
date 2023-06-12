@@ -18,7 +18,7 @@ uniform mat4 matWorldViewProj[N_EYES];
 //!! split into pure sprite & pure DMD?
 
 ////VERTEX
-uniform int layer; // Layer being rendered (set to 0 is using layered rendering, that is to say rendering multiple layers using instanced rendering)
+uniform int layer; // Layer being rendered (set to 0 if using layered rendering, that is to say rendering multiple layers using instanced rendering)
 
 out int eye_gs;
 
