@@ -20,11 +20,11 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const int width, const int he
    : m_name("BackBuffer"s)
    , m_is_back_buffer(true)
    , m_type(RT_DEFAULT)
+   , m_nLayers(1)
    , m_rd(rd)
    , m_format(format)
    , m_width(width)
    , m_height(height)
-   , m_stereo(STEREO_OFF)
    , m_nMSAASamples(1)
    , m_has_depth(false)
    , m_shared_depth(false)
@@ -46,15 +46,15 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const int width, const int he
 #endif
 }
 
-RenderTarget::RenderTarget(RenderDevice* const rd, const RenderTargetType type, const string& name, const int width, const int height, const colorFormat format, bool with_depth, int nMSAASamples, StereoMode stereo, const char* failureMessage, RenderTarget* sharedDepth)
+RenderTarget::RenderTarget(RenderDevice* const rd, const RenderTargetType type, const string& name, const int width, const int height, const colorFormat format, bool with_depth, int nMSAASamples, const char* failureMessage, RenderTarget* sharedDepth)
    : m_name(name)
    , m_is_back_buffer(false)
    , m_type(type)
+   , m_nLayers(type == RT_DEFAULT ? 1 : type == RT_CUBEMAP ? 6 : 2)
    , m_rd(rd)
    , m_format(format)
    , m_width(width)
    , m_height(height)
-   , m_stereo(stereo)
    , m_nMSAASamples(nMSAASamples)
    , m_has_depth(with_depth)
    , m_shared_depth(with_depth && (sharedDepth != nullptr))
@@ -330,7 +330,7 @@ void RenderTarget::UpdateDepthSampler(bool insideBeginEnd)
 RenderTarget* RenderTarget::Duplicate(const string& name, const bool shareDepthSurface)
 {
    assert(!m_is_back_buffer);
-   return new RenderTarget(m_rd, m_type, name, m_width, m_height, m_format, m_has_depth, m_nMSAASamples, m_stereo, "Failed to duplicate render target", shareDepthSurface ? this : nullptr);
+   return new RenderTarget(m_rd, m_type, name, m_width, m_height, m_format, m_has_depth, m_nMSAASamples, "Failed to duplicate render target", shareDepthSurface ? this : nullptr);
 }
 
 void RenderTarget::CopyTo(RenderTarget* dest, const bool copyColor, const bool copyDepth,
@@ -414,21 +414,19 @@ void RenderTarget::Activate(const int layer)
    if (m_depth_sampler)
       m_depth_sampler->Unbind();
    glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer);
-   switch (m_stereo)
+   switch (m_type)
    {
-   case STEREO_OFF: // Default: render to full render target (single viewport)
-      viewPorts[2] = (float)m_width;
-      viewPorts[3] = (float)m_height;
+   case RT_STEREO_SBS: // Side by side: render left eye in the left part, and right eye in the right part
+      viewPorts[2] = viewPorts[6] = (float)m_width;
+      viewPorts[3] = viewPorts[5] = viewPorts[7] = (float)(m_height * 0.5);
       break;
-   case STEREO_TB: // Top/Bottom: Render left eye in the upper part, and right eye in the lower part
-   case STEREO_INT:
-   case STEREO_FLIPPED_INT:
+   case RT_STEREO_TB: // Top/Bottom: render left eye in the upper part, and right eye in the lower part
       viewPorts[2] = viewPorts[6] = (float) m_width;
       viewPorts[3] = viewPorts[5] = viewPorts[7] = (float)(m_height * 0.5);
       break;
-   default: // Side by side: For all other stereo mode, render left eye in the left part, and right eye in the right part
-      viewPorts[2] = viewPorts[4] = viewPorts[6] = (float)(m_width * 0.5);
-      viewPorts[3] = viewPorts[7] = (float) m_height;
+   default: // Default: render to full render target (single viewport)
+      viewPorts[2] = (float)m_width;
+      viewPorts[3] = (float)m_height;
       break;
    }
 
