@@ -3308,7 +3308,7 @@ void Player::StereoFXAA(RenderTarget* renderedRT, const bool stereo, const bool 
       // DirectX doesn't support 'real' stereo, instead of performing 2 renders from each eyes, it fakes stereo using a postprocess parallax filter
       assert(renderedRT != m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer());
       outputRT = m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("Stereo"s, outputRT, true);
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("Stereo"s, outputRT);
       m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
       m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture(), true);
 
