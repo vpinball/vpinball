@@ -495,12 +495,17 @@ STDMETHODIMP ScriptGlobalTable::get_TablesDirectory(BSTR *pVal)
    return S_OK;
 }
 
-STDMETHODIMP ScriptGlobalTable::get_MusicDirectory(BSTR *pVal)
+STDMETHODIMP ScriptGlobalTable::get_MusicDirectory(VARIANT pSubDir, BSTR *pVal)
 {
-   string szPath = m_vpinball->m_szMyPath + "music" + PATH_SEPARATOR_CHAR;
+   // Optional sub directory parameter must be either missing or a string
+   if (pSubDir.vt != VT_ERROR && pSubDir.vt != VT_BSTR)
+      return S_FALSE;
+
+   string endPath = pSubDir.vt == VT_ERROR ? ("music"s + PATH_SEPARATOR_CHAR) : ("music"s + PATH_SEPARATOR_CHAR + MakeString(pSubDir.bstrVal) + PATH_SEPARATOR_CHAR);
+   string szPath = m_vpinball->m_szMyPath + endPath;
    if (!DirExists(szPath))
    {
-      szPath = m_vpinball->m_currentTablePath + "music" + PATH_SEPARATOR_CHAR;
+      szPath = m_vpinball->m_currentTablePath + endPath;
       if (!DirExists(szPath))
       {
          szPath = PATH_MUSIC;
