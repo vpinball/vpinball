@@ -4363,11 +4363,9 @@ void Player::DrawStatics()
    // - Counter clockwise culling
    // - Write all channels (RGBA + Depth)
    #endif
-   for (size_t i = 0; i < m_ptable->m_vedit.size(); i++)
+   for (Hitable *hitable : m_vhitables)
    {
-      Hitable *const ph = m_ptable->m_vedit[i]->GetIHitable();
-      if (ph)
-         ph->RenderStatic();
+      hitable->RenderStatic();
       #ifdef DEBUG
       m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(true, live_state);
       assert(initial_state.m_state == live_state.m_state);

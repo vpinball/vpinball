@@ -92,8 +92,12 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const RenderTargetType type, 
    tex_unit->sampler = nullptr;
    glActiveTexture(GL_TEXTURE0 + tex_unit->unit);
 
-   const unsigned int target = nMSAASamples > 1 ? (type == RT_DEFAULT ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D_MULTISAMPLE_ARRAY)
-                                                 : (type == RT_DEFAULT ? GL_TEXTURE_2D : type == RT_STEREO ? GL_TEXTURE_2D_ARRAY : GL_TEXTURE_CUBE_MAP);
+   const unsigned int target = 
+      nMSAASamples > 1 ? ((type == RT_DEFAULT || type == RT_STEREO_SBS || type == RT_STEREO_TB) ? GL_TEXTURE_2D_MULTISAMPLE 
+                                                                                                : GL_TEXTURE_2D_MULTISAMPLE_ARRAY)
+                       : ((type == RT_DEFAULT || type == RT_STEREO_SBS || type == RT_STEREO_TB) ? GL_TEXTURE_2D 
+                                                                            : type == RT_STEREO ? GL_TEXTURE_2D_ARRAY 
+                                                                                                : GL_TEXTURE_CUBE_MAP);
 
    if (nMSAASamples > 1)
    {
@@ -120,8 +124,14 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const RenderTargetType type, 
       glBindTexture(target, m_color_tex);
       switch (m_type)
       {
-      case RT_DEFAULT: glTexImage2D(target, 0, format, width, height, 0, col_format, col_type, nullptr); break;
-      case RT_STEREO: glTexImage3D(target, 0, format, width, height, 2, 0, col_format, col_type, nullptr); break;
+      case RT_DEFAULT:
+      case RT_STEREO_SBS:
+      case RT_STEREO_TB:
+         glTexImage2D(target, 0, format, width, height, 0, col_format, col_type, nullptr);
+         break;
+      case RT_STEREO: 
+         glTexImage3D(target, 0, format, width, height, 2, 0, col_format, col_type, nullptr);
+         break;
       case RT_CUBEMAP:
          for (int i = 0; i < 6; i++)
             glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, format, width, height, 0, col_format, col_type, nullptr);
@@ -143,8 +153,14 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const RenderTargetType type, 
             #endif
             switch (m_type)
             {
-            case RT_DEFAULT: glTexImage2D(target, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, depth_type, nullptr); break;
-            case RT_STEREO: glTexImage3D(target, 0, GL_DEPTH_COMPONENT, width, height, 2, 0, GL_DEPTH_COMPONENT, depth_type, nullptr); break;
+            case RT_DEFAULT:
+            case RT_STEREO_SBS:
+            case RT_STEREO_TB:
+               glTexImage2D(target, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, depth_type, nullptr);
+               break;
+            case RT_STEREO: 
+               glTexImage3D(target, 0, GL_DEPTH_COMPONENT, width, height, 2, 0, GL_DEPTH_COMPONENT, depth_type, nullptr);
+               break;
             case RT_CUBEMAP:
                for (int i = 0; i < 6; i++)
                   glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, depth_type, nullptr);
@@ -417,8 +433,8 @@ void RenderTarget::Activate(const int layer)
    switch (m_type)
    {
    case RT_STEREO_SBS: // Side by side: render left eye in the left part, and right eye in the right part
-      viewPorts[2] = viewPorts[6] = (float)m_width;
-      viewPorts[3] = viewPorts[5] = viewPorts[7] = (float)(m_height * 0.5);
+      viewPorts[2] = viewPorts[4] = viewPorts[6] = (float)(m_width * 0.5);
+      viewPorts[3] = viewPorts[7] = (float)m_height;
       break;
    case RT_STEREO_TB: // Top/Bottom: render left eye in the upper part, and right eye in the lower part
       viewPorts[2] = viewPorts[6] = (float) m_width;
