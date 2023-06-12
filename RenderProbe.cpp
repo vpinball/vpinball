@@ -280,7 +280,7 @@ void RenderProbe::PreRenderStaticReflectionProbe()
 
       // Rendering is done to the static render target then accumulated to accumulationSurface
       // We use the framebuffer mirror shader which copies a weighted version of the bound texture
-      p3dDevice->SetRenderTarget("PreRender Accumulate Reflection"s, accumulationSurface, true);
+      p3dDevice->SetRenderTarget("PreRender Accumulate Reflection"s, accumulationSurface);
       p3dDevice->AddRenderTargetDependency(m_prerenderRT);
       p3dDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
       p3dDevice->SetRenderState(RenderState::SRCBLEND, RenderState::ONE);

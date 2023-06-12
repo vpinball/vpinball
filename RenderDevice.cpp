@@ -1709,7 +1709,7 @@ void RenderDevice::FlushRenderFrame()
    m_logNextFrame = false;
 }
 
-void RenderDevice::SetRenderTarget(const string& name, RenderTarget* rt, bool ignoreStereo)
+void RenderDevice::SetRenderTarget(const string& name, RenderTarget* rt)
 {
    if (rt == nullptr)
    {
@@ -1862,7 +1862,7 @@ void RenderDevice::DrawGaussianBlur(RenderTarget* source, RenderTarget* tmp, Ren
    SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
    {
       FBShader->SetTextureNull(SHADER_tex_fb_filtered);
-      SetRenderTarget("Horizontal Blur"s, tmp, true); // switch to temporary output buffer for horizontal phase of gaussian blur
+      SetRenderTarget("Horizontal Blur"s, tmp); // switch to temporary output buffer for horizontal phase of gaussian blur
       AddRenderTargetDependency(source);
       FBShader->SetTexture(SHADER_tex_fb_filtered, source->GetColorSampler());
       FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / source->GetWidth()), (float)(1.0 / source->GetHeight()), 1.0f, 1.0f);
@@ -1871,7 +1871,7 @@ void RenderDevice::DrawGaussianBlur(RenderTarget* source, RenderTarget* tmp, Ren
    }
    {
       FBShader->SetTextureNull(SHADER_tex_fb_filtered);
-      SetRenderTarget("Vertical Blur"s, dest, true); // switch to output buffer for vertical phase of gaussian blur
+      SetRenderTarget("Vertical Blur"s, dest); // switch to output buffer for vertical phase of gaussian blur
       AddRenderTargetDependency(tmp);
       FBShader->SetTexture(SHADER_tex_fb_filtered, tmp->GetColorSampler());
       FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / tmp->GetWidth()), (float)(1.0 / tmp->GetHeight()), 1.0f, 1.0f);

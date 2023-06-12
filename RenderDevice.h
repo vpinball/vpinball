@@ -108,7 +108,7 @@ public:
    void CreateDevice(int &refreshrate, UINT adapterIndex = D3DADAPTER_DEFAULT);
    bool LoadShaders();
 
-   void SetRenderTarget(const string& passName, RenderTarget* rt, bool ignoreStereo = false);
+   void SetRenderTarget(const string& passName, RenderTarget* rt);
    void AddRenderTargetDependency(RenderTarget* rt, const bool needDepth = false);
    void Clear(const DWORD flags, const D3DCOLOR color, const D3DVALUE z, const DWORD stencil);
    void BlitRenderTarget(RenderTarget* source, RenderTarget* destination, const bool copyColor = true, const bool copyDepth = true,  
