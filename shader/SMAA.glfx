@@ -28,7 +28,13 @@
  * SOFTWARE.
  */
 //Modified for Visual pinball
- 
+
+////DEFINES
+#extension GL_ARB_viewport_array : enable
+#include "Helpers.fxh"
+#undef lerp
+#undef saturate
+
 #define SMAA_PRESET_HIGH
 //#define SMAA_USE_DEPTH
 //#define SMAA_USE_STENCIL
@@ -88,56 +94,133 @@ uniform sampler2D tex_fb_filtered; // Framebuffer (filtered)
 
 out vec4 color;
 
-////GLSL_SMAAEdgeDetectionVS
+
+//-----------------------------------------------------------------------------
+// Vertex shaders
+//-----------------------------------------------------------------------------
+
+////VERTEX
+
+uniform int layer; // Layer being rendered (set to 0 if using layered rendering, that is to say rendering multiple layers using instanced rendering)
 
 layout(location=0) in vec3 vPosition;
 layout(location=1) in vec2 tc;
 
-out vec2 texcoord;
-out vec4[3] offset;
+out vec2 texcoord_gs;
+out int eye_gs;
+
+////GLSL_SMAAEdgeDetectionVS
+out vec4[3] offset_gs;
 
 void main()
 {
     gl_Position = vec4(vPosition.x,-vPosition.y,0.0,1.0);
-    texcoord = tc;
-    SMAAEdgeDetectionVS(texcoord, offset);
+    texcoord_gs = toScreenSpaceUV(tc, gl_InstanceID + layer);
+    SMAAEdgeDetectionVS(texcoord_gs, offset_gs);
+    eye_gs = gl_InstanceID + layer;
 }
 
 ////GLSL_SMAABlendingWeightCalculationVS
-
-layout(location=0) in vec3 vPosition;
-layout(location=1) in vec2 tc;
-
-out vec2 texcoord;
-out vec4[3] offset;
-out vec2 pixcoord;
+out vec4[3] offset_gs;
+out vec2 pixcoord_gs;
 
 void main()
 {
     gl_Position = vec4(vPosition.x,-vPosition.y,0.0,1.0);
-    texcoord = tc;
-    SMAABlendingWeightCalculationVS(texcoord, pixcoord, offset);
+    texcoord_gs = toScreenSpaceUV(tc, gl_InstanceID + layer);
+    SMAABlendingWeightCalculationVS(texcoord_gs, pixcoord_gs, offset_gs);
+    eye_gs = gl_InstanceID + layer;
 }
 
 ////GLSL_SMAANeighborhoodBlendingVS
-
-layout(location=0) in vec3 vPosition;
-layout(location=1) in vec2 tc;
-
-out vec2 texcoord;
-out vec4 offset;
+out vec4 offset_gs;
 
 void main()
 {
     gl_Position = vec4(vPosition.x,-vPosition.y,0.0,1.0);
     // use this in the last pass to zoom on the slingshot in order to easily check antialiasing
     // gl_Position = vec4(vPosition.x * 4.0 + 0.5, -vPosition.y * 4.0 + 0.75,0.0,1.0);
-    texcoord = tc;
-    SMAANeighborhoodBlendingVS(texcoord, offset);
+    texcoord_gs = toScreenSpaceUV(tc, gl_InstanceID + layer);
+    SMAANeighborhoodBlendingVS(texcoord_gs, offset_gs);
     // Reverse Y offset to account for texture orientation
-    offset.y *= -1.;
-    offset.w *= -1.;
+    offset_gs.y *= -1.;
+    offset_gs.w *= -1.;
+    eye_gs = gl_InstanceID + layer;
 }
+
+
+//-----------------------------------------------------------------------------
+// Geometry shaders
+//-----------------------------------------------------------------------------
+
+////GEOMETRY
+layout(triangles) in;
+layout(triangle_strip, max_vertices = 3) out;
+
+in int eye_gs[];
+
+in vec2 texcoord_gs[];
+out vec2 texcoord;
+
+////GLSL_SMAAEdgeDetectionGS
+in vec4[3] offset_gs[];
+out vec4[3] offset;
+
+void main()
+{
+   gl_ViewportIndex = eye_gs[0];
+   for (int i=0;i<gl_in.length();i++) {
+      gl_Position = gl_in[i].gl_Position;
+      texcoord = texcoord_gs[i];
+      offset[0] = offset_gs[0][i];
+      offset[1] = offset_gs[1][i];
+      offset[2] = offset_gs[2][i];
+      EmitVertex();
+   }
+   EndPrimitive();
+}
+
+////GLSL_SMAABlendingWeightCalculationGS
+in vec4[3] offset_gs[];
+in vec2 pixcoord_gs[];
+out vec4[3] offset;
+out vec2 pixcoord;
+
+void main()
+{
+   gl_ViewportIndex = eye_gs[0];
+   for (int i=0;i<gl_in.length();i++) {
+      gl_Position = gl_in[i].gl_Position;
+      texcoord = texcoord_gs[i];
+      offset[0] = offset_gs[0][i];
+      offset[1] = offset_gs[1][i];
+      offset[2] = offset_gs[2][i];
+      pixcoord = pixcoord_gs[i];
+      EmitVertex();
+   }
+   EndPrimitive();
+}
+
+////GLSL_SMAANeighborhoodBlendingGS
+in vec4 offset_gs[];
+out vec4 offset;
+
+void main()
+{
+   gl_ViewportIndex = eye_gs[0];
+   for (int i=0;i<gl_in.length();i++) {
+      gl_Position = gl_in[i].gl_Position;
+      texcoord = texcoord_gs[i];
+      offset = offset_gs[i];
+      EmitVertex();
+   }
+   EndPrimitive();
+}
+
+
+//-----------------------------------------------------------------------------
+// Fragment shaders
+//-----------------------------------------------------------------------------
 
 ////GLSL_SMAAColorEdgeDetectionPS
 
@@ -172,7 +255,7 @@ void main()
 
 ////TECHNIQUES
 
-//technique SMAA_LumaEdgeDetection:P0:GLSL_SMAAEdgeDetectionVS():GLSL_SMAALumaEdgeDetectionPS()
-SMAA_ColorEdgeDetection:P0:GLSL_SMAAEdgeDetectionVS():GLSL_SMAAColorEdgeDetectionPS()
-SMAA_BlendWeightCalculation:P0:GLSL_SMAABlendingWeightCalculationVS():GLSL_SMAABlendingWeightCalculationPS()
-SMAA_NeighborhoodBlending:P0:GLSL_SMAANeighborhoodBlendingVS():GLSL_SMAANeighborhoodBlendingPS()
+//technique SMAA_LumaEdgeDetection:P0:GLSL_SMAAEdgeDetectionVS():GLSL_SMAAEdgeDetectionGS():GLSL_SMAALumaEdgeDetectionPS()
+SMAA_ColorEdgeDetection:P0:GLSL_SMAAEdgeDetectionVS():GLSL_SMAAEdgeDetectionGS():GLSL_SMAAColorEdgeDetectionPS()
+SMAA_BlendWeightCalculation:P0:GLSL_SMAABlendingWeightCalculationVS():GLSL_SMAABlendingWeightCalculationGS():GLSL_SMAABlendingWeightCalculationPS()
+SMAA_NeighborhoodBlending:P0:GLSL_SMAANeighborhoodBlendingVS():GLSL_SMAANeighborhoodBlendingGS():GLSL_SMAANeighborhoodBlendingPS()
