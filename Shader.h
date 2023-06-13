@@ -386,6 +386,8 @@ public:
       {
          assert(GetCurrentShader() == nullptr);
          assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
+         if (m_shader->m_stateOffsets[uniformName] == -1)
+            return; // FIXME layer uniform may be stripped out by compiler (since it is only used for stereo)
          assert(m_shader->m_stateOffsets[uniformName] != -1);
          assert(shaderUniformNames[uniformName].type == SUT_Int);
          assert(shaderUniformNames[uniformName].count == 1);
@@ -527,6 +529,7 @@ private:
    ShaderTechnique* m_techniques[SHADER_TECHNIQUE_COUNT];
    string m_shaderPath = ""s;
 
+   bool UseGeometryShader() const;
    bool parseFile(const string& fileNameRoot, const string& fileName, int level, robin_hood::unordered_map<string, string>& values, const string& parentMode);
    string analyzeFunction(const string& shaderCodeName, const string& technique, const string& functionName, const robin_hood::unordered_map<string, string>& values);
    ShaderTechnique* compileGLShader(const ShaderTechniques technique, const string& fileNameRoot, const string& shaderCodeName, const string& vertex, const string& geometry, const string& fragment);

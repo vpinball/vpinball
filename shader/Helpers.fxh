@@ -48,7 +48,7 @@
 #define BRANCH
 #define UNROLL
 
-// For the time being, stereo SamplerComparisonState being done by rendering to 2 viewports inside a single layer render target
+// For the time being, stereo is being done by rendering to 2 viewports inside a single layer render target instead of rendering to one layer per eye
 #if (N_EYES == 1)
 // Sampling from a normal screen space texture
 float2 toScreenSpaceUV(float2 uvIn, int eye) { return uvIn; }
@@ -58,6 +58,26 @@ float2 toScreenSpaceUV(float2 uvIn, int eye) { return float2(uvIn.x, 0.5 * (uvIn
 #else
 // Sampling from a horizontal stereo screen space texture
 float2 toScreenSpaceUV(float2 uvIn, int eye) { return float2(0.5 * (uvIn.x + eye), uvIn.y); }
+#endif
+
+#if USE_GEOMETRY_SHADER
+#define VS_OUT(typ, name) out typ name##_gs;
+#define VS_OUT_NOPERSP_NOGEOM(typ, name)
+#define VS_OUT_EYE() out int eye_gs;
+#define VS_VARYING(var, val) var##_gs = val;
+#define VS_VARYING_NOGEOM(var, val)
+#define VS_POSITION(val_vs, val_gs) gl_Position = val_gs;
+#define VS_EYE() int eye_vs = gl_InstanceID + layer; eye_gs = eye_vs;
+
+#else
+#define VS_OUT(typ, name) out typ name;
+#define VS_OUT_NOPERSP_NOGEOM(typ, name) noperspective out typ name;
+#define VS_OUT_EYE() flat out float eye;
+#define VS_VARYING(var, val) var = val;
+#define VS_VARYING_NOGEOM(var, val) var = val;
+#define VS_POSITION(val_vs, val_gs) gl_Position = val_vs;
+#define VS_EYE() int eye_vs = gl_InstanceID + layer; eye = float(eye_vs);
+
 #endif
 
 

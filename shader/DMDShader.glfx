@@ -20,7 +20,7 @@ uniform mat4 matWorldViewProj[N_EYES];
 ////VERTEX
 uniform int layer; // Layer being rendered (set to 0 if using layered rendering, that is to say rendering multiple layers using instanced rendering)
 
-out int eye_gs;
+VS_OUT_EYE();
 
 ////GEOMETRY
 #extension GL_ARB_viewport_array : enable
@@ -46,13 +46,14 @@ layout(location=0) in vec3 vPosition;
 layout(location=1) in vec3 vNormal;
 layout(location=2) in vec2 tc;
 
-out vec2 tex0_gs;
+VS_OUT(vec2, tex0);
 
 void main()
 {
-   gl_Position = float4(vPosition, 1.0);
-   tex0_gs = tc;
-   eye_gs = gl_InstanceID + layer;
+   float4 pos = vec4(vPosition, 1.0);
+   VS_EYE();
+   VS_POSITION(pos, pos);
+   VS_VARYING(tex0, tc);
 }
 
 ////vs_simple_world
@@ -61,16 +62,17 @@ layout(location=0) in vec3 vPosition;
 layout(location=1) in vec3 vNormal;
 layout(location=2) in vec2 tc;
 
-out vec2 tex0_gs;
+VS_OUT(vec2, tex0);
 
 uniform vec4 clip_plane; // Clip plane defined in table coordinate system
 
 void main()
 {
-   gl_Position = float4(vPosition, 1.0);
-   gl_ClipDistance[0] = dot(vec4(vPosition, 1.0), clip_plane);
-   tex0_gs = tc;
-   eye_gs = gl_InstanceID + layer;
+   float4 pos = vec4(vPosition, 1.0);
+   VS_EYE();
+   VS_POSITION(matWorldViewProj[eye_vs] * pos, pos);
+   VS_VARYING(tex0, tc);
+   gl_ClipDistance[0] = dot(pos, clip_plane);
 }
 
 ////gs_simple_main

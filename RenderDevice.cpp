@@ -935,14 +935,19 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    delete surf;
 
    // Retrieve a reference to the back buffer.
-   int back_buffer_width, back_buffer_height;
+   int backBufferWidth, backBufferHeight;
+   RenderTarget::RenderTargetType backBufferType;
 #ifdef ENABLE_SDL
-   SDL_GL_GetDrawableSize(m_sdl_playfieldHwnd, &back_buffer_width, &back_buffer_height);
+   SDL_GL_GetDrawableSize(m_sdl_playfieldHwnd, &backBufferWidth, &backBufferHeight);
+   backBufferType = m_stereo3D == STEREO_SBS ? RenderTarget::RT_STEREO_SBS
+                  : m_stereo3D == STEREO_TB  ? RenderTarget::RT_STEREO_TB
+                                             : RenderTarget::RT_DEFAULT
 #else
-   back_buffer_width = m_width;
-   back_buffer_height = m_height;
+   backBufferWidth = m_width;
+   backBufferHeight = m_height;
+   backBufferType = RenderTarget::RT_DEFAULT;
 #endif
-   m_pBackBuffer = new RenderTarget(this, back_buffer_width, back_buffer_height, back_buffer_format);
+   m_pBackBuffer = new RenderTarget(this, backBufferType, backBufferWidth, backBufferHeight, back_buffer_format);
 
 #ifdef ENABLE_SDL
    const colorFormat render_format = ((m_BWrendering == 1) ? colorFormat::RG16F : ((m_BWrendering == 2) ? colorFormat::RED16F : colorFormat::RGB16F));
@@ -977,7 +982,7 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
       rtType = RenderTarget::RT_STEREO_SBS;
       break;
    }
-   
+
    #else
    // For the time being DirectX 9 does not support any fancy stereo
    rtType = RenderTarget::RT_DEFAULT;

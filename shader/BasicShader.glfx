@@ -28,7 +28,8 @@ layout(location=0) in vec3 vPosition;
 uniform vec4 clip_plane; // Clip plane defined in table coordinate system
 uniform int layer; // Layer being rendered (set to 0 is using layered rendering, that is to say rendering multiple layers using instanced rendering)
 
-out int eye_gs;
+VS_OUT_EYE();
+
 
 ////GEOMETRY
 #extension GL_ARB_viewport_array : enable
@@ -37,6 +38,7 @@ layout(triangles) in;
 layout(triangle_strip, max_vertices = 3) out;
 
 in int eye_gs[];
+
 
 ////FRAGMENT
 // Early-Z-test implementation:
@@ -191,23 +193,27 @@ float3 compute_refraction(const float3 pos, const float2 screenSpace, const floa
 layout(location=1) in vec3 vNormal;
 layout(location=2) in vec2 tc;
 
-out vec2 tex01_gs;
-out vec3 tablePos_gs;
-out vec3 worldPos_gs;
-out vec3 normal_gs;
+VS_OUT(vec2, tex01);
+VS_OUT_NOPERSP_NOGEOM(vec2, tex03);
+VS_OUT(vec3, tablePos);
+VS_OUT(vec3, worldPos);
+VS_OUT(vec3, normal);
 
 void main()
 {
-   float4 vPosition4 = float4(vPosition,1.0);
-   gl_Position = vPosition4;
-   tablePos_gs = (matWorld*vPosition4).xyz;
-   gl_ClipDistance[0] = dot(vec4(tablePos_gs, 1.0), clip_plane);
-   tex01_gs = tc;
+   float4 pos = float4(vPosition, 1.0);
+   float3 table_pos = (matWorld * pos).xyz;
+
+   VS_EYE();
+   VS_POSITION(matWorldViewProj[eye_vs] * pos, pos);
+   VS_VARYING(tablePos, table_pos);
+   VS_VARYING(tex01, tc);
+   VS_VARYING_NOGEOM(tex03, toScreenSpaceUV(0.5 * (gl_Position.xy / gl_Position.w) + vec2(0.5), eye_vs));
    // trafo all into worldview space (as most of the weird trafos happen in view, world is identity so far)
-   worldPos_gs = (matWorldView*vPosition4).xyz;
+   VS_VARYING(worldPos, (matWorldView * pos).xyz);
    // Needs to use a 'normal' matrix, and to normalize since we allow non uniform stretching, therefore matWorldView is not orthonormal
-   normal_gs = normalize((matWorldViewInverseTranspose*vNormal).xyz);
-   eye_gs = gl_InstanceID + layer;
+   VS_VARYING(normal, normalize((matWorldViewInverseTranspose*vNormal).xyz));
+   gl_ClipDistance[0] = dot(vec4(table_pos, 1.0), clip_plane);
 }
 
 ////vs_notex_main
@@ -215,75 +221,88 @@ void main()
 layout(location=1) in vec3 vNormal;
 layout(location=2) in vec2 tc;
 
-out vec3 tablePos_gs;
-out vec3 worldPos_gs;
-out vec3 normal_gs;
+VS_OUT_NOPERSP_NOGEOM(vec2, tex03);
+VS_OUT(vec3, tablePos);
+VS_OUT(vec3, worldPos);
+VS_OUT(vec3, normal);
 
 void main()
 {
-   float4 vPosition4 = float4(vPosition,1.0);
-   gl_Position = vPosition4;
-   tablePos_gs = (matWorld*vPosition4).xyz;
-   gl_ClipDistance[0] = dot(vec4(tablePos_gs, 1.0), clip_plane);
-   worldPos_gs = (matWorldView*vPosition4).xyz;
+   float4 pos = float4(vPosition, 1.0);
+   float3 table_pos = (matWorld * pos).xyz;
+
+   VS_EYE();
+   VS_POSITION(matWorldViewProj[eye_vs] * pos, pos);
+   VS_VARYING(tablePos, table_pos);
+   VS_VARYING_NOGEOM(tex03, toScreenSpaceUV(0.5 * (gl_Position.xy / gl_Position.w) + vec2(0.5), eye_vs));
+   // trafo all into worldview space (as most of the weird trafos happen in view, world is identity so far)
+   VS_VARYING(worldPos, (matWorldView * pos).xyz);
    // Needs to use a 'normal' matrix, and to normalize since we allow non uniform stretching, therefore matWorldView is not orthonormal
-   normal_gs = normalize((matWorldViewInverseTranspose*vNormal).xyz);
-   eye_gs = gl_InstanceID + layer;
+   VS_VARYING(normal, normalize((matWorldViewInverseTranspose*vNormal).xyz));
+   gl_ClipDistance[0] = dot(vec4(table_pos, 1.0), clip_plane);
 }
 
 ////vs_depth_only_main_without_texture
 
 void main()
 { 
-   float4 vPosition4 = float4(vPosition,1.0);
-   gl_Position = vPosition4;
-   gl_ClipDistance[0] = dot(vec4((matWorld*vPosition4).xyz, 1.0), clip_plane);
-   eye_gs = gl_InstanceID + layer;
+   float4 pos = float4(vPosition, 1.0);
+   float3 table_pos = (matWorld * pos).xyz;
+
+   VS_EYE();
+   VS_POSITION(matWorldViewProj[eye_vs] * pos, pos);
+   gl_ClipDistance[0] = dot(vec4(table_pos, 1.0), clip_plane);
 }
 
 ////vs_depth_only_main_with_texture
 
 layout(location=2) in vec2 tc;
 
-out vec2 tex0_gs;
+VS_OUT(vec2, tex0);
 
 void main()
 {
-   float4 vPosition4 = float4(vPosition,1.0);
-   gl_Position = vPosition4;
-   gl_ClipDistance[0] = dot(vec4((matWorld*vPosition4).xyz, 1.0), clip_plane);
-   tex0_gs = tc;
-   eye_gs = gl_InstanceID + layer;
+   float4 pos = float4(vPosition, 1.0);
+   float3 table_pos = (matWorld * pos).xyz;
+
+   VS_EYE();
+   VS_POSITION(matWorldViewProj[eye_vs] * pos, pos);
+   VS_VARYING(tex0, tc);
+   gl_ClipDistance[0] = dot(vec4(table_pos, 1.0), clip_plane);
 }
 
 ////vs_main_unshaded_without_texture_shadow
 
-out vec3 tablePos_gs;
+VS_OUT(vec3, tablePos);
 
 void main()
 { 
-   float4 vPosition4 = float4(vPosition,1.0);
-   gl_Position = vPosition4;
-   tablePos_gs = (matWorld*vPosition4).xyz;
-   gl_ClipDistance[0] = dot(vec4(tablePos_gs, 1.0), clip_plane);
-   eye_gs = gl_InstanceID + layer;
+   float4 pos = float4(vPosition, 1.0);
+   float3 table_pos = (matWorld * pos).xyz;
+
+   VS_EYE();
+   VS_POSITION(matWorldViewProj[eye_vs] * pos, pos);
+   VS_VARYING(tablePos, table_pos);
+   gl_ClipDistance[0] = dot(vec4(table_pos, 1.0), clip_plane);
 }
 
 ////vs_main_unshaded_with_texture_shadow
 
 layout(location=2) in vec2 tc;
 
-out vec3 tablePos_gs;
-out vec2 tex0_gs;
+VS_OUT(vec3, tablePos);
+VS_OUT(vec2, tex0);
 
 void main()
 {
-   float4 vPosition4 = float4(vPosition,1.0);
-   gl_Position = vPosition4;
-   tablePos_gs = (matWorld*vPosition4).xyz;
-   gl_ClipDistance[0] = dot(vec4(tablePos_gs, 1.0), clip_plane);
-   tex0_gs = tc;
-   eye_gs = gl_InstanceID + layer;
+   float4 pos = float4(vPosition, 1.0);
+   float3 table_pos = (matWorld * pos).xyz;
+
+   VS_EYE();
+   VS_POSITION(matWorldViewProj[eye_vs] * pos, pos);
+   VS_VARYING(tablePos, table_pos);
+   VS_VARYING(tex0, tc);
+   gl_ClipDistance[0] = dot(vec4(table_pos, 1.0), clip_plane);
 }
 
 
@@ -719,20 +738,28 @@ void main() {
 in vec3 vNormal;
 in vec2 tc;
 
-out float3 tablePos_gs;
-out vec3 worldPos_gs;
-out vec3 normal_gs;
-out vec2 tex03_gs;
+uniform float fKickerScale;
+
+VS_OUT(float3, tablePos);
+VS_OUT(vec3, worldPos);
+VS_OUT(vec3, normal);
+VS_OUT_NOPERSP_NOGEOM(vec2, tex03);
 
 void main() {
-   float4 vPosition4 = float4(vPosition,1.0);
-   gl_Position = vPosition4;
-   tablePos_gs = (matWorld * vPosition4).xyz;
-   float4 bulbPos = matWorldViewProj[0] * vPosition4;
-   tex03_gs = bulbPos.xy/bulbPos.w;
-   worldPos_gs = (matWorldView * vPosition4).xyz;
-   normal_gs = normalize((matWorldViewInverseTranspose*vNormal).xyz);
+   float4 pos = float4(vPosition, 1.0);
+   float3 table_pos = (matWorld * pos).xyz;
+
+   VS_EYE();
+   VS_POSITION(float4((matWorldViewProj[eye_vs] * pos).xyw, (matWorldViewProj[eye_vs] * float4(pos.x, pos.y, pos.z - 30.0 * fKickerScale, 1.0)).z), pos);
+   VS_VARYING(tablePos, table_pos);
+   VS_VARYING_NOGEOM(tex03, toScreenSpaceUV(0.5 * (gl_Position.xy / gl_Position.w) + vec2(0.5), eye_vs));
+   // trafo all into worldview space (as most of the weird trafos happen in view, world is identity so far)
+   VS_VARYING(worldPos, (matWorldView * pos).xyz);
+   // Needs to use a 'normal' matrix, and to normalize since we allow non uniform stretching, therefore matWorldView is not orthonormal
+   VS_VARYING(normal, normalize((matWorldViewInverseTranspose*vNormal).xyz));
+   gl_ClipDistance[0] = dot(vec4(table_pos, 1.0), clip_plane);
 }
+
 
 //------------------------------------
 // Techniques

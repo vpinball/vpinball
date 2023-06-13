@@ -28,8 +28,6 @@ layout(location=2) in vec2 tex0;
 uniform vec4 clip_plane; // Clip plane defined in table coordinate system
 uniform int layer; // Layer being rendered (set to 0 is using layered rendering, that is to say rendering multiple layers using instanced rendering)
 
-out int eye_gs;
-
 ////GEOMETRY
 #extension GL_ARB_viewport_array : enable
 layout(triangles) in;
@@ -64,8 +62,9 @@ uniform bool  disableLighting;
 out vec4 color;
 
 ////vsBall
-out vec4 normal_t0x_gs;
-out vec4 worldPos_t0y_gs;
+VS_OUT(vec4, normal_t0x);
+VS_OUT(vec4, worldPos_t0y);
+VS_OUT_EYE();
 
 void main()
 {
@@ -80,23 +79,24 @@ void main()
 
 	const float3 p = (matWorldView * pos).xyz;
 
-	gl_Position = pos;
-	normal_t0x_gs = float4(normal,tex0.x);
-	worldPos_t0y_gs = float4(p,tex0.y);
-
+    VS_EYE();
+    VS_POSITION(matWorldViewProj[eye_vs] * pos, pos);
+    VS_VARYING(normal_t0x, float4(normal,tex0.x));
+    VS_VARYING(worldPos_t0y, float4(p,tex0.y));
     gl_ClipDistance[0] = dot(vec4(pos.xyz, 1.0), clip_plane);
-
-    eye_gs = gl_InstanceID + layer;
 }
 
 ////vsBallTrail
-out vec3 tex0_alpha_gs;
+VS_OUT(vec3, tex0_alpha);
+VS_OUT_EYE();
 
 void main()
 {
-	gl_Position = vec4(vPosition, 1.0);
-	tex0_alpha_gs = vec3(tex0, vNormal.x); //!! abuses normal for now
-    eye_gs = gl_InstanceID + layer;
+	float4 pos = vec4(vPosition, 1.0);
+    VS_EYE();
+    VS_POSITION(matWorldViewProj[eye_vs] * pos, pos);
+    VS_VARYING(tex0_alpha, float3(tex0, vNormal.x)); //!! abuses normal for now
+    gl_ClipDistance[0] = dot(vec4(pos.xyz, 1.0), clip_plane);
 }
 
 ////gsBall

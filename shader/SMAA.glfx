@@ -106,46 +106,59 @@ uniform int layer; // Layer being rendered (set to 0 if using layered rendering,
 layout(location=0) in vec3 vPosition;
 layout(location=1) in vec2 tc;
 
-out vec2 texcoord_gs;
-out int eye_gs;
+VS_OUT(vec2, texcoord);
+VS_OUT_EYE();
 
 ////GLSL_SMAAEdgeDetectionVS
-out vec4[3] offset_gs;
+VS_OUT(vec4[3], offset);
 
 void main()
 {
-    gl_Position = vec4(vPosition.x,-vPosition.y,0.0,1.0);
-    texcoord_gs = toScreenSpaceUV(tc, gl_InstanceID + layer);
+    VS_EYE();
+    VS_POSITION(vec4(vPosition.x,-vPosition.y,0.0,1.0), vec4(vPosition.x,-vPosition.y,0.0,1.0));
+    VS_VARYING(texcoord, toScreenSpaceUV(tc, eye_vs));
+    #if USE_GEOMETRY_SHADER
     SMAAEdgeDetectionVS(texcoord_gs, offset_gs);
-    eye_gs = gl_InstanceID + layer;
+    #else
+    SMAAEdgeDetectionVS(texcoord, offset);
+    #endif
 }
 
 ////GLSL_SMAABlendingWeightCalculationVS
-out vec4[3] offset_gs;
-out vec2 pixcoord_gs;
+VS_OUT(vec4[3], offset);
+VS_OUT(vec2, pixcoord);
 
 void main()
 {
-    gl_Position = vec4(vPosition.x,-vPosition.y,0.0,1.0);
-    texcoord_gs = toScreenSpaceUV(tc, gl_InstanceID + layer);
+    VS_EYE();
+    VS_POSITION(vec4(vPosition.x,-vPosition.y,0.0,1.0), vec4(vPosition.x,-vPosition.y,0.0,1.0));
+    VS_VARYING(texcoord, toScreenSpaceUV(tc, eye_vs));
+    #if USE_GEOMETRY_SHADER
     SMAABlendingWeightCalculationVS(texcoord_gs, pixcoord_gs, offset_gs);
-    eye_gs = gl_InstanceID + layer;
+    #else
+    SMAABlendingWeightCalculationVS(texcoord, pixcoord, offset);
+    #endif
 }
 
 ////GLSL_SMAANeighborhoodBlendingVS
-out vec4 offset_gs;
+VS_OUT(vec4, offset);
 
 void main()
 {
-    gl_Position = vec4(vPosition.x,-vPosition.y,0.0,1.0);
-    // use this in the last pass to zoom on the slingshot in order to easily check antialiasing
-    // gl_Position = vec4(vPosition.x * 4.0 + 0.5, -vPosition.y * 4.0 + 0.75,0.0,1.0);
-    texcoord_gs = toScreenSpaceUV(tc, gl_InstanceID + layer);
+    VS_EYE();
+    VS_POSITION(vec4(vPosition.x,-vPosition.y,0.0,1.0), vec4(vPosition.x,-vPosition.y,0.0,1.0));
+    VS_VARYING(texcoord, toScreenSpaceUV(tc, eye_vs));
+    #if USE_GEOMETRY_SHADER
     SMAANeighborhoodBlendingVS(texcoord_gs, offset_gs);
     // Reverse Y offset to account for texture orientation
     offset_gs.y *= -1.;
     offset_gs.w *= -1.;
-    eye_gs = gl_InstanceID + layer;
+    #else
+    SMAANeighborhoodBlendingVS(texcoord, offset);
+    // Reverse Y offset to account for texture orientation
+    offset.y *= -1.;
+    offset.w *= -1.;
+    #endif
 }
 
 

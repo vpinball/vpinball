@@ -920,6 +920,12 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
 ///////////////////////////////////////////////////////////////////////////////
 // OpenGL specific implementation
 
+bool Shader::UseGeometryShader() const
+{
+   // TODO we could (should) move the viewport/layer index from geometry to vertex shader and simplify all of this (a few hardware do not support it but they wan fallback to multi pass rendering)
+   return m_renderDevice->m_stereo3D != STEREO_OFF;
+}
+
 //parse a file. Is called recursively for includes
 bool Shader::parseFile(const string& fileNameRoot, const string& fileName, int level, robin_hood::unordered_map<string, string> &values, const string& parentMode) {
    if (level > 16) {//Can be increased, but looks very much like an infinite recursion.
@@ -946,6 +952,10 @@ bool Shader::parseFile(const string& fileNameRoot, const string& fileName, int l
             if (newMode == "DEFINES") {
                currentElement.append("#define GLSL\n");
                currentElement.append("\n");
+               if (UseGeometryShader())
+                  currentElement.append("#define USE_GEOMETRY_SHADER 1\n"s);
+               else
+                  currentElement.append("#define USE_GEOMETRY_SHADER 0\n"s);
                if (m_renderDevice->m_stereo3D == STEREO_OFF)
                {
                   currentElement.append("#define N_EYES 1\n"s);
@@ -1033,7 +1043,7 @@ Shader::ShaderTechnique* Shader::compileGLShader(const ShaderTechniques techniqu
       success = false;
    }
    //Geometry Shader
-   if (success && geometry.length()>0) {
+   if (success && geometry.length()>0 && UseGeometryShader()) {
       geometrySource = new GLchar[geometry.length() + 1];
       memcpy((void*)geometrySource, geometry.c_str(), geometry.length());
       geometrySource[geometry.length()] = 0;
