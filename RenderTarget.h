@@ -16,7 +16,7 @@ public:
       RT_CUBEMAP // Render target to a cubemap texture (6 layers)
    };
 
-   RenderTarget(RenderDevice* const rd, const int width, const int height, const colorFormat format); // Default output render target
+   RenderTarget(RenderDevice* const rd, const RenderTargetType type, const int width, const int height, const colorFormat format); // Default output render target
    RenderTarget(RenderDevice* const rd, const RenderTargetType type, const string& name, const int width, const int height, const colorFormat format, bool with_depth, int nMSAASamples, const char* failureMessage, RenderTarget* sharedDepth = nullptr);
    ~RenderTarget();
 

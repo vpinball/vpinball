@@ -16,11 +16,11 @@ RenderTarget* RenderTarget::GetCurrentRenderTarget() { return current_render_tar
 int RenderTarget::current_render_layer = 0; // For layered render targets (stereo, cubemaps,...)
 int RenderTarget::GetCurrentRenderLayer() { return current_render_layer; }
 
-RenderTarget::RenderTarget(RenderDevice* const rd, const int width, const int height, const colorFormat format)
+RenderTarget::RenderTarget(RenderDevice* const rd, const RenderTargetType type, const int width, const int height, const colorFormat format)
    : m_name("BackBuffer"s)
    , m_is_back_buffer(true)
-   , m_type(RT_DEFAULT)
-   , m_nLayers(1)
+   , m_type(type)
+   , m_nLayers(type == RT_DEFAULT ? 1 : type == RT_CUBEMAP ? 6 : 2)
    , m_rd(rd)
    , m_format(format)
    , m_width(width)
@@ -29,6 +29,8 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const int width, const int he
    , m_has_depth(false)
    , m_shared_depth(false)
 {
+   assert(type == RT_DEFAULT || type == RT_STEREO_SBS || type == RT_STEREO_TB); // Only allow non layered types for back buffer
+
    m_color_sampler = nullptr;
    m_depth_sampler = nullptr;
 #ifdef ENABLE_SDL
@@ -422,7 +424,7 @@ void RenderTarget::Activate(const int layer)
    current_render_layer = layer;
 
 #ifdef ENABLE_SDL
-   static GLfloat viewPorts[] = {
+   GLfloat viewPorts[] = {
       0.0f, 0.0f, 0.0f, 0.0f, 
       0.0f, 0.0f, 0.0f, 0.0f };
    if (m_color_sampler)
