@@ -939,9 +939,7 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    RenderTarget::RenderTargetType backBufferType;
 #ifdef ENABLE_SDL
    SDL_GL_GetDrawableSize(m_sdl_playfieldHwnd, &backBufferWidth, &backBufferHeight);
-   backBufferType = m_stereo3D == STEREO_SBS ? RenderTarget::RT_STEREO_SBS
-                  : m_stereo3D == STEREO_TB  ? RenderTarget::RT_STEREO_TB
-                                             : RenderTarget::RT_DEFAULT
+   backBufferType = m_stereo3D == STEREO_SBS ? RenderTarget::RT_STEREO_SBS : m_stereo3D == STEREO_TB ? RenderTarget::RT_STEREO_TB : RenderTarget::RT_DEFAULT;
 #else
    backBufferWidth = m_width;
    backBufferHeight = m_height;
