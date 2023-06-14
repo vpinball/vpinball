@@ -72,7 +72,7 @@ void main()
    VS_EYE();
    VS_POSITION(matWorldViewProj[eye_vs] * pos, pos);
    VS_VARYING(tex0, tc);
-   gl_ClipDistance[0] = dot(pos, clip_plane);
+   VS_CLIP_DISTANCE(pos);
 }
 
 ////gs_simple_main

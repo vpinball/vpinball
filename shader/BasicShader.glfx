@@ -213,7 +213,7 @@ void main()
    VS_VARYING(worldPos, (matWorldView * pos).xyz);
    // Needs to use a 'normal' matrix, and to normalize since we allow non uniform stretching, therefore matWorldView is not orthonormal
    VS_VARYING(normal, normalize((matWorldViewInverseTranspose*vNormal).xyz));
-   gl_ClipDistance[0] = dot(vec4(table_pos, 1.0), clip_plane);
+   VS_CLIP_DISTANCE(vec4(table_pos.xyz, 1.0));
 }
 
 ////vs_notex_main
@@ -239,7 +239,7 @@ void main()
    VS_VARYING(worldPos, (matWorldView * pos).xyz);
    // Needs to use a 'normal' matrix, and to normalize since we allow non uniform stretching, therefore matWorldView is not orthonormal
    VS_VARYING(normal, normalize((matWorldViewInverseTranspose*vNormal).xyz));
-   gl_ClipDistance[0] = dot(vec4(table_pos, 1.0), clip_plane);
+   VS_CLIP_DISTANCE(vec4(table_pos.xyz, 1.0));
 }
 
 ////vs_depth_only_main_without_texture
@@ -251,7 +251,7 @@ void main()
 
    VS_EYE();
    VS_POSITION(matWorldViewProj[eye_vs] * pos, pos);
-   gl_ClipDistance[0] = dot(vec4(table_pos, 1.0), clip_plane);
+   VS_CLIP_DISTANCE(vec4(table_pos.xyz, 1.0));
 }
 
 ////vs_depth_only_main_with_texture
@@ -268,7 +268,7 @@ void main()
    VS_EYE();
    VS_POSITION(matWorldViewProj[eye_vs] * pos, pos);
    VS_VARYING(tex0, tc);
-   gl_ClipDistance[0] = dot(vec4(table_pos, 1.0), clip_plane);
+   VS_CLIP_DISTANCE(vec4(table_pos.xyz, 1.0));
 }
 
 ////vs_main_unshaded_without_texture_shadow
@@ -283,7 +283,7 @@ void main()
    VS_EYE();
    VS_POSITION(matWorldViewProj[eye_vs] * pos, pos);
    VS_VARYING(tablePos, table_pos);
-   gl_ClipDistance[0] = dot(vec4(table_pos, 1.0), clip_plane);
+   VS_CLIP_DISTANCE(vec4(table_pos.xyz, 1.0));
 }
 
 ////vs_main_unshaded_with_texture_shadow
@@ -302,7 +302,7 @@ void main()
    VS_POSITION(matWorldViewProj[eye_vs] * pos, pos);
    VS_VARYING(tablePos, table_pos);
    VS_VARYING(tex0, tc);
-   gl_ClipDistance[0] = dot(vec4(table_pos, 1.0), clip_plane);
+   VS_CLIP_DISTANCE(vec4(table_pos.xyz, 1.0));
 }
 
 
@@ -757,7 +757,7 @@ void main() {
    VS_VARYING(worldPos, (matWorldView * pos).xyz);
    // Needs to use a 'normal' matrix, and to normalize since we allow non uniform stretching, therefore matWorldView is not orthonormal
    VS_VARYING(normal, normalize((matWorldViewInverseTranspose*vNormal).xyz));
-   gl_ClipDistance[0] = dot(vec4(table_pos, 1.0), clip_plane);
+   VS_CLIP_DISTANCE(vec4(table_pos.xyz, 1.0));
 }
 
 

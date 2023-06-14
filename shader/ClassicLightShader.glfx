@@ -49,7 +49,7 @@ void main()
    // No need to use a dedicated 'normal' matrix and normalize since the matWorldView is orthonormal (world is identity and view is always orthonormal) and we normalize in fragment shader
    //VS_VARYING(normal, normalize((matWorldViewInverseTranspose * vNormal).xyz));
    VS_VARYING(normal, (matWorldView * float4(vNormal, 0.0)).xyz);
-   gl_ClipDistance[0] = dot(vec4(table_pos, 1.0), clip_plane);
+   VS_CLIP_DISTANCE(vec4(table_pos.xyz, 1.0));
 }
 
 ////gs_light_main

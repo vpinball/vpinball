@@ -26,6 +26,7 @@ uniform vec4 clip_plane; // Clip plane defined in table coordinate system
 uniform int layer; // Layer being rendered (set to 0 is using layered rendering, that is to say rendering multiple layers using instanced rendering)
 
 VS_OUT(vec2, tex0);
+VS_OUT(vec3, tablePos);
 VS_OUT_EYE();
 
 
@@ -64,10 +65,13 @@ out vec4 color;
 void main()
 {
    float4 pos = vec4(vPosition, 1.0);
+   float3 table_pos = pos.xyz;
+
    VS_EYE();
    VS_POSITION(matWorldViewProj[eye_vs] * pos, pos);
+   VS_VARYING(tablePos, table_pos);
    VS_VARYING(tex0, tc);
-   gl_ClipDistance[0] = dot(pos, clip_plane);
+   VS_CLIP_DISTANCE(pos);
 }
 
 ////gs_simple_main

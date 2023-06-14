@@ -3,10 +3,17 @@
 ////GLOBAL
 #ifdef GLSL
 
-#ifdef SHADER_GLES30
+#ifdef SHADER_GLES30 // OpenGL ES (for standalone builds)
 #define FLT_MIN_VALUE 0.00006103515625
+precision highp float;
+#define noperspective
+#define flat
+#define VS_CLIP_DISTANCE(pos) 
+
 #else
 #define FLT_MIN_VALUE 0.0000001
+#define VS_CLIP_DISTANCE(pos) gl_ClipDistance[0] = dot(pos, clip_plane)
+
 #endif
 
 //HLSL to GLSL helpers
@@ -61,22 +68,22 @@ float2 toScreenSpaceUV(float2 uvIn, int eye) { return float2(0.5 * (uvIn.x + eye
 #endif
 
 #if USE_GEOMETRY_SHADER
-#define VS_OUT(typ, name) out typ name##_gs;
+#define VS_OUT(typ, name) out typ name##_gs
 #define VS_OUT_NOPERSP_NOGEOM(typ, name)
-#define VS_OUT_EYE() out int eye_gs;
-#define VS_VARYING(var, val) var##_gs = val;
+#define VS_OUT_EYE() out int eye_gs
+#define VS_VARYING(var, val) var##_gs = val
 #define VS_VARYING_NOGEOM(var, val)
-#define VS_POSITION(val_vs, val_gs) gl_Position = val_gs;
-#define VS_EYE() int eye_vs = gl_InstanceID + layer; eye_gs = eye_vs;
+#define VS_POSITION(val_vs, val_gs) gl_Position = val_gs
+#define VS_EYE() int eye_vs = gl_InstanceID + layer; eye_gs = eye_vs
 
 #else
-#define VS_OUT(typ, name) out typ name;
-#define VS_OUT_NOPERSP_NOGEOM(typ, name) noperspective out typ name;
-#define VS_OUT_EYE() flat out float eye;
-#define VS_VARYING(var, val) var = val;
-#define VS_VARYING_NOGEOM(var, val) var = val;
-#define VS_POSITION(val_vs, val_gs) gl_Position = val_vs;
-#define VS_EYE() int eye_vs = gl_InstanceID + layer; eye = float(eye_vs);
+#define VS_OUT(typ, name) out typ name
+#define VS_OUT_NOPERSP_NOGEOM(typ, name) noperspective out typ name
+#define VS_OUT_EYE() flat out float eye
+#define VS_VARYING(var, val) var = val
+#define VS_VARYING_NOGEOM(var, val) var = val
+#define VS_POSITION(val_vs, val_gs) gl_Position = val_vs
+#define VS_EYE() int eye_vs = gl_InstanceID + layer; eye = float(eye_vs)
 
 #endif
 
