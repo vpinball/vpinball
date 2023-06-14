@@ -147,12 +147,7 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const RenderTargetType type, 
          {
             glGenTextures(1, &m_depth_tex);
             glBindTexture(target, m_depth_tex);
-            #ifdef __OPENGLES__
             const GLuint depth_type = GL_UNSIGNED_SHORT;
-            #else
-            // VR room need larger depth buffer
-            const GLuint depth_type = GL_FLOAT;
-            #endif
             switch (m_type)
             {
             case RT_DEFAULT:
