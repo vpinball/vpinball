@@ -50,7 +50,7 @@ void main()
    VS_EYE();
    VS_POSITION(matWorldViewProj[eye_vs] * pos, pos);
    VS_VARYING(tablePos, vPosition);
-   gl_ClipDistance[0] = dot(vec4(pos.xyz, 1.0), clip_plane);
+   VS_CLIP_DISTANCE(vec4(pos.xyz, 1.0));
 }
 
 
