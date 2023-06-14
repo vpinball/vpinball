@@ -32,7 +32,6 @@ add_compile_definitions(
    ENABLE_SDL
    ENABLE_XINPUT
    USE_DINPUT8
-   ONLY_USE_BASS
 )
 
 add_compile_options(
