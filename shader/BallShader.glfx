@@ -83,7 +83,7 @@ void main()
     VS_POSITION(matWorldViewProj[eye_vs] * pos, pos);
     VS_VARYING(normal_t0x, float4(normal,tex0.x));
     VS_VARYING(worldPos_t0y, float4(p,tex0.y));
-    VS_CLIP_DISTANCE(vec4(pos.xyz, 1.0));
+    VS_CLIP_DISTANCE(pos);
 }
 
 ////vsBallTrail
@@ -96,7 +96,7 @@ void main()
     VS_EYE();
     VS_POSITION(matWorldViewProj[eye_vs] * pos, pos);
     VS_VARYING(tex0_alpha, float3(tex0, vNormal.x)); //!! abuses normal for now
-    VS_CLIP_DISTANCE(vec4(pos.xyz, 1.0));
+    VS_CLIP_DISTANCE(pos);
 }
 
 ////gsBall
