@@ -433,19 +433,21 @@ HRESULT Pin3D::InitPrimary(const bool fullScreen, const int colordepth, int &ref
       return E_FAIL;
    }
 
-   if (m_stereo3D == STEREO_VR)
-   { // VR mode renders to a double widthed render target => pin3d viewport is the halh of the render buffer
+   #ifndef ENABLE_SDL
+   if (m_stereo3D == STEREO_SBS)
+   {
+      // Side by side needs to fit the 2 views along the width, so each view is half the total width
       m_viewPort.Width = m_pd3dPrimaryDevice->m_width / 2;
       m_viewPort.Height = m_pd3dPrimaryDevice->m_height;
    }
-#ifdef ENABLE_SDL
-   else if (m_stereo3D >= STEREO_ANAGLYPH_RC && m_stereo3D <= STEREO_ANAGLYPH_AB)
-   { // Anaglyph mode renders to a double widthed render target => pin3d viewport is the halh of the render buffer
-      m_viewPort.Width = m_pd3dPrimaryDevice->m_width / 2;
-      m_viewPort.Height = m_pd3dPrimaryDevice->m_height;
+   else if (m_stereo3D == STEREO_TB || m_stereo3D == STEREO_INT || m_stereo3D == STEREO_FLIPPED_INT)
+   {
+      // Top/Bottom (and interlaced) needs to fit the 2 views along the height, so each view is half the total height
+      m_viewPort.Width = m_pd3dPrimaryDevice->m_width;
+      m_viewPort.Height = m_pd3dPrimaryDevice->m_height / 2;
    }
-#endif
    else
+   #endif
    { // Use the effective size of the created device's window (should be the same as the requested)
       m_viewPort.Width = m_pd3dPrimaryDevice->m_width;
       m_viewPort.Height = m_pd3dPrimaryDevice->m_height;
