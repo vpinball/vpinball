@@ -525,7 +525,10 @@
 //-----------------------------------------------------------------------------
 // Porting Functions
 
+#define SMAASampleLevelZero(tex, coord) texNoLod(tex, coord)
+
 #if defined(SMAA_HLSL_3)
+#define SMAAStereoTexture2D(tex) sampler2D tex
 #define SMAATexture2D(tex) sampler2D tex
 #define SMAATexturePass2D(tex) tex
 #define SMAAStereoSampleLevelZero(tex, coord) tex2Dlod(tex, float4(coord, 0.0, 0.0))
@@ -537,6 +540,7 @@
 #define SMAA_FLATTEN [flatten]
 #define SMAA_BRANCH [branch]
 #endif
+
 #if defined(SMAA_HLSL_4) || defined(SMAA_HLSL_4_1)
 SamplerState LinearSampler { Filter = MIN_MAG_LINEAR_MIP_POINT; AddressU = Clamp; AddressV = Clamp; };
 SamplerState PointSampler { Filter = MIN_MAG_MIP_POINT; AddressU = Clamp; AddressV = Clamp; };
@@ -557,6 +561,7 @@ SamplerState PointSampler { Filter = MIN_MAG_MIP_POINT; AddressU = Clamp; Addres
 #define SMAAGather(tex, coord) tex.Gather(LinearSampler, coord, 0)
 #endif
 #endif
+
 #if defined(SMAA_GLSL_2) || defined(SMAA_GLSL_ES2) || defined(SMAA_GLSL_3) || defined(SMAA_GLSL_4)
 #if defined(SMAA_GLSL_2) || defined(SMAA_GLSL_ES2)
 #define SMAAStereoSampleLevelZero(tex, coord) texStereoNoLod(tex, coord)
@@ -576,7 +581,6 @@ SamplerState PointSampler { Filter = MIN_MAG_MIP_POINT; AddressU = Clamp; Addres
 #define SMAAStereoTexture2D(tex) samplerStereo tex
 #define SMAATexture2D(tex) sampler2D tex
 #define SMAATexturePass2D(tex) tex
-#define SMAASampleLevelZero(tex, coord) texNoLod(tex, coord)
 #define SMAA_FLATTEN
 #define SMAA_BRANCH
 #define lerp(a, b, t) mix(a, b, t)

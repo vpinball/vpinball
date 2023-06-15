@@ -970,7 +970,7 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    SurfaceType rtType = m_stereo3D == STEREO_OFF ? SurfaceType::RT_DEFAULT : SurfaceType::RT_STEREO;
    #else
    // For the time being DirectX 9 does not support any fancy stereo
-   SurfaceType rtType = RenderTarget::RT_DEFAULT;
+   SurfaceType rtType = SurfaceType::RT_DEFAULT;
    #endif
    
    m_pOffscreenMSAABackBufferTexture = new RenderTarget(this, rtType, "OffscreenMSAABackBuffer"s, m_width_aa, m_height_aa, render_format, true, nMSAASamples, "Fatal Error: unable to create render buffer!");
