@@ -113,7 +113,7 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
       trans.SetTranslation(pos.x, pos.y, pos.z);
       rotx.SetRotateX(inc); // Player head inclination (0 is looking straight to playfield)
       lookat = trans * rotx;
-      matView = layback * lookat * rotz * projTrans * coords;
+      matView = layback * lookat * rotz * coords;
    }
    else
    {
@@ -121,7 +121,7 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
       trans.SetTranslation(-mViewX + cam.x - 0.5f * table->m_right, -mViewY + cam.y - table->m_bottom, -mViewZ + cam.z);
       rotx.SetRotateX(inc); // Player head inclination (0 is looking straight to playfield)
       lookat = trans * rotx;
-      matView = lookat * rotz * projTrans * coords;
+      matView = lookat * rotz * coords;
    }
 
    // Compute near/far plane
@@ -149,7 +149,7 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
    case VLM_WINDOW:
    {
       // Fit camera to adjusted table bounds
-      Matrix3D fit = lookat * rotz * projTrans * coords * Matrix3D::MatrixPerspectiveFovLH(90.f, 1.f, zNear, zFar);
+      Matrix3D fit = lookat * rotz * coords * Matrix3D::MatrixPerspectiveFovLH(90.f, 1.f, zNear, zFar) * projTrans;
       Vertex3Ds tl = fit.MultiplyVector(Vertex3Ds(table->m_left - mWindowTopXOfs, table->m_top - mWindowTopYOfs, mWindowTopZOfs));
       Vertex3Ds tr = fit.MultiplyVector(Vertex3Ds(table->m_right + mWindowTopXOfs, table->m_top - mWindowTopYOfs, mWindowTopZOfs));
       Vertex3Ds bl = fit.MultiplyVector(Vertex3Ds(table->m_left - mWindowBottomXOfs, table->m_bottom + mWindowBottomYOfs, mWindowBottomZOfs));
@@ -169,7 +169,7 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
    }
 
    matView = lookat;
-   matProj[0] = rotz * projTrans * coords * proj;
+   matProj[0] = rotz * coords * proj * projTrans;
 
    // Apply layback
    // To be backward compatible while having a well behaving view matrix, we compute a view without the layback (which is meaningful with regards to what was used before).
