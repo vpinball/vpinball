@@ -1818,6 +1818,33 @@ void Player::InitStatic()
       m_pin3d.m_pd3dPrimaryDevice->ReleaseAORenderTargets();
    }
 
+   if (m_MSAASamples > 1)
+   {
+      // Render one frame with MSAA to keep MSAA depth (this adds MSAA to the overlapping parts between statics & dynamics)
+      RenderTarget* renderRT = m_pin3d.m_pd3dPrimaryDevice->GetMSAABackBufferTexture()->Duplicate("MSAAPreRender"s);
+      m_pin3d.InitLayout();
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("PreRender MSAA Background"s, renderRT);
+      m_pin3d.DrawBackground();
+      m_pin3d.m_pd3dPrimaryDevice->FlushRenderFrame();
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("PreRender MSAA Scene"s, renderRT);
+      RenderState initial_state;
+      m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(true, initial_state);
+      for (size_t i = 0; i < m_ptable->m_vrenderprobe.size(); ++i)
+         m_ptable->m_vrenderprobe[i]->MarkDirty();
+      UpdateBasicShaderMatrix();
+      DrawStatics();
+      m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(false, initial_state);
+      m_pin3d.m_pd3dPrimaryDevice->FlushRenderFrame();
+      // Copy supersampled color buffer
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("PreRender Combine Color"s, renderRT);
+      m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(m_pin3d.m_pddsStatic, renderRT, true, false);
+      m_pin3d.m_pd3dPrimaryDevice->FlushRenderFrame();
+      // Replace with this new MSAA pre render
+      RenderTarget *initialPreRender = m_pin3d.m_pddsStatic;
+      m_pin3d.m_pddsStatic = renderRT;
+      delete initialPreRender;
+   }
+
    g_pvp->ProfileLog("Reflection Probe PreRender Start"s);
 
    for (size_t i = 0; i < m_ptable->m_vrenderprobe.size(); i++)
