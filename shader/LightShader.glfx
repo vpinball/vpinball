@@ -1,11 +1,6 @@
 ////GLOBAL
 #version 400
 
-#ifdef SHADER_GLES30
-precision highp float;
-#define noperspective
-#endif
-
 ////DEFINES
 #include "Helpers.fxh"
 
@@ -24,7 +19,6 @@ VS_OUT_EYE();
 
 
 ////GEOMETRY
-#extension GL_ARB_viewport_array : enable
 layout(triangles) in;
 layout(triangle_strip, max_vertices = 3) out;
 
@@ -57,7 +51,7 @@ void main()
 ////gs_lightbulb_main
 void main()
 {
-    gl_ViewportIndex = eye_gs[0];
+    gl_Layer = eye_gs[0];
     for (int i=0;i<gl_in.length();i++) {
         gl_Position = matWorldViewProj[eye_gs[i]]*gl_in[i].gl_Position;
         //Disabled since this would move backdrop lights behind other backdrop parts (rendered at z = 0), this could be readded with a max at 0, but I don't get why we would need this type of hack

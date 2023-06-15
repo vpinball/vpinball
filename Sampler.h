@@ -23,6 +23,13 @@ enum SamplerAddressMode : unsigned int
    SA_UNDEFINED, // Used for undefined default values
 };
 
+enum SurfaceType
+{
+   RT_DEFAULT, // Default single layer surface
+   RT_STEREO, // Texture array with 2 layers
+   RT_CUBEMAP // Cubemap texture (6 layers)
+};
+
 class Sampler;
 struct SamplerBinding
 {
@@ -39,8 +46,9 @@ class Sampler
 public:
    Sampler(RenderDevice* rd, BaseTexture* const surf, const bool force_linear_rgb, const SamplerAddressMode clampu = SA_UNDEFINED, const SamplerAddressMode clampv = SA_UNDEFINED, const SamplerFilter filter = SF_UNDEFINED);
 #ifdef ENABLE_SDL
-   Sampler(RenderDevice* rd, GLuint glTexture, bool ownTexture, bool force_linear_rgb, const SamplerAddressMode clampu = SA_UNDEFINED, const SamplerAddressMode clampv = SA_UNDEFINED, const SamplerFilter filter = SF_UNDEFINED);
+   Sampler(RenderDevice* rd, SurfaceType type, GLuint glTexture, bool ownTexture, bool force_linear_rgb, const SamplerAddressMode clampu = SA_UNDEFINED, const SamplerAddressMode clampv = SA_UNDEFINED, const SamplerFilter filter = SF_UNDEFINED);
    GLuint GetCoreTexture() const { return m_texture; }
+   GLenum GetCoreTarget() const { return m_texTarget; }
 #else
    Sampler(RenderDevice* rd, IDirect3DTexture9* dx9Texture, bool ownTexture, bool force_linear_rgb, const SamplerAddressMode clampu = SA_UNDEFINED, const SamplerAddressMode clampv = SA_UNDEFINED, const SamplerFilter filter = SF_UNDEFINED);
    IDirect3DTexture9* GetCoreTexture() { return m_texture;  }
@@ -62,6 +70,7 @@ public:
 
    bool m_dirty;
    robin_hood::unordered_set<SamplerBinding*> m_bindings;
+   const SurfaceType m_type;
 
 private:
    bool m_ownTexture;
@@ -74,6 +83,7 @@ private:
    SamplerFilter m_filter;
 
 #ifdef ENABLE_SDL
+   GLenum m_texTarget = 0;
    GLuint m_texture = 0;
    GLuint CreateTexture(unsigned int Width, unsigned int Height, unsigned int Levels, colorFormat Format, void* data, int stereo);
 #else

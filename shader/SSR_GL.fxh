@@ -2,23 +2,21 @@
 
 // uses tex_fb_filtered, tex_fb_unfiltered, tex_ao_dither & tex_depth & w_h_height.xy
 
-in vec2 tex0;
-
 uniform float4 SSR_bumpHeight_fresnelRefl_scale_FS;
 
-float3 approx_bump_normal(const float2 coords, const float2 offs, const float scale, const float sharpness)
+float3 approx_bump_normal(const float2 coords, const float2 offs, const float scale, const float sharpness, const float eye)
 {
     const float3 lumw = float3(0.212655,0.715158,0.072187);
 
-    const float lpx = dot(texNoLod(tex_fb_filtered, float2(coords.x+offs.x,coords.y)).xyz, lumw);
-    const float lmx = dot(texNoLod(tex_fb_filtered, float2(coords.x-offs.x,coords.y)).xyz, lumw);
-    const float lpy = dot(texNoLod(tex_fb_filtered, float2(coords.x,coords.y+offs.y)).xyz, lumw);
-    const float lmy = dot(texNoLod(tex_fb_filtered, float2(coords.x,coords.y-offs.y)).xyz, lumw);
+    const float lpx = dot(texStereoNoLod(tex_fb_filtered, float2(coords.x+offs.x,coords.y)).xyz, lumw);
+    const float lmx = dot(texStereoNoLod(tex_fb_filtered, float2(coords.x - offs.x, coords.y)).xyz, lumw);
+    const float lpy = dot(texStereoNoLod(tex_fb_filtered, float2(coords.x, coords.y + offs.y)).xyz, lumw);
+    const float lmy = dot(texStereoNoLod(tex_fb_filtered, float2(coords.x, coords.y - offs.y)).xyz, lumw);
 
-    const float dpx = texNoLod(tex_depth, float2(coords.x + offs.x, coords.y)).x;
-    const float dmx = texNoLod(tex_depth, float2(coords.x - offs.x, coords.y)).x;
-    const float dpy = texNoLod(tex_depth, float2(coords.x, coords.y + offs.y)).x;
-    const float dmy = texNoLod(tex_depth, float2(coords.x, coords.y - offs.y)).x;
+    const float dpx = texStereoNoLod(tex_depth, float2(coords.x + offs.x, coords.y)).x;
+    const float dmx = texStereoNoLod(tex_depth, float2(coords.x - offs.x, coords.y)).x;
+    const float dpy = texStereoNoLod(tex_depth, float2(coords.x, coords.y + offs.y)).x;
+    const float dmy = texStereoNoLod(tex_depth, float2(coords.x, coords.y - offs.y)).x;
 
     const float2 xymult = max(1.0 - float2(abs(dmx - dpx), abs(dmy - dpy)) * sharpness, 0.0);
 
@@ -34,17 +32,17 @@ void main()
 {
 	const float2 u = tex0;
 
-	const float3 color0 = texNoLod(tex_fb_unfiltered, u).xyz; // original pixel
+    const float3 color0 = texStereoNoLod(tex_fb_unfiltered, u).xyz; // original pixel
 
-	const float depth0 = texNoLod(tex_depth, u).x;
+    const float depth0 = texStereoNoLod(tex_depth, u).x;
 	BRANCH if((depth0 == 1.0) || (depth0 == 0.0)) //!!! early out if depth too large (=BG) or too small (=DMD,etc -> retweak render options (depth write on), otherwise also screwup with stereo)
 	{
 		color = float4(color0, 1.0);
 		return;
 	}
 
-	const float3 normal = normalize(get_nonunit_normal(depth0,u));
-	float3 normal_b = approx_bump_normal(u, 0.01 * w_h_height.xy / depth0, depth0 / (0.05*depth0 + 0.0001), 1000.0); //!! magic
+	const float3 normal = normalize(get_nonunit_normal(depth0, u, eye));
+	float3 normal_b = approx_bump_normal(u, 0.01 * w_h_height.xy / depth0, depth0 / (0.05*depth0 + 0.0001), 1000.0, eye); //!! magic
 	       normal_b = normalize(float3(normal.xy*normal_b.z + normal_b.xy*normal.z, normal.z*normal_b.z));
 	       normal_b = normalize(lerp(normal,normal_b, SSR_bumpHeight_fresnelRefl_scale_FS.x * normal_fade_factor(normal))); // have less impact of fake bump normals on playfield, etc
 
@@ -78,7 +76,7 @@ void main()
 	UNROLL for(int i=1; i</*=*/samples; i++) //!! due to jitter
 	{
 		const float2 offs = u + (float(i)+ushift)*offsMul; //!! jitter per pixel (uses blue noise tex)
-		const float3 color = texNoLod(tex_fb_filtered, offs).xyz;
+        const float3 color = texStereoNoLod(tex_fb_filtered, offs).xyz;
 
 		/*BRANCH if(i==1) // necessary special case as compiler warns/'optimizes' sqrt below into rqsrt?!
 		{

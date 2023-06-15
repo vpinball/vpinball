@@ -16,11 +16,11 @@ RenderTarget* RenderTarget::GetCurrentRenderTarget() { return current_render_tar
 int RenderTarget::current_render_layer = 0; // For layered render targets (stereo, cubemaps,...)
 int RenderTarget::GetCurrentRenderLayer() { return current_render_layer; }
 
-RenderTarget::RenderTarget(RenderDevice* const rd, const RenderTargetType type, const int width, const int height, const colorFormat format)
+RenderTarget::RenderTarget(RenderDevice* const rd, const int width, const int height, const colorFormat format)
    : m_name("BackBuffer"s)
    , m_is_back_buffer(true)
-   , m_type(type)
-   , m_nLayers(type == RT_DEFAULT ? 1 : type == RT_CUBEMAP ? 6 : 2)
+   , m_type(SurfaceType::RT_DEFAULT)
+   , m_nLayers(1)
    , m_rd(rd)
    , m_format(format)
    , m_width(width)
@@ -29,14 +29,13 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const RenderTargetType type, 
    , m_has_depth(false)
    , m_shared_depth(false)
 {
-   assert(type == RT_DEFAULT || type == RT_STEREO_SBS || type == RT_STEREO_TB); // Only allow non layered types for back buffer
-
    m_color_sampler = nullptr;
    m_depth_sampler = nullptr;
 #ifdef ENABLE_SDL
    glGetIntegerv(GL_FRAMEBUFFER_BINDING, (GLint*)&m_framebuffer); // Not sure about this (taken from VPVR original implementation). Doesn't the back buffer always bind to 0 on OpenGL ?
    m_color_tex = 0;
    m_depth_tex = 0;
+   m_texTarget = GL_TEXTURE_2D;
 #else
    HRESULT hr = m_rd->GetCoreDevice()->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &m_color_surface);
    if (FAILED(hr))
@@ -48,7 +47,7 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const RenderTargetType type, 
 #endif
 }
 
-RenderTarget::RenderTarget(RenderDevice* const rd, const RenderTargetType type, const string& name, const int width, const int height, const colorFormat format, bool with_depth, int nMSAASamples, const char* failureMessage, RenderTarget* sharedDepth)
+RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const string& name, const int width, const int height, const colorFormat format, bool with_depth, int nMSAASamples, const char* failureMessage, RenderTarget* sharedDepth)
    : m_name(name)
    , m_is_back_buffer(false)
    , m_type(type)
@@ -84,6 +83,13 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const RenderTargetType type, 
       m_depth_sampler = sharedDepth->m_depth_sampler;
    }
 
+   if (GLAD_GL_VERSION_4_3)
+   {
+      std::stringstream info;
+      info << "Create FrameBuffer '" << m_name << "'";
+      glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, info.str().c_str());
+   }
+
    glGenFramebuffers(1, &m_framebuffer);
    glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer);
 
@@ -94,85 +100,107 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const RenderTargetType type, 
    tex_unit->sampler = nullptr;
    glActiveTexture(GL_TEXTURE0 + tex_unit->unit);
 
-   const unsigned int target = 
-      nMSAASamples > 1 ? ((type == RT_DEFAULT || type == RT_STEREO_SBS || type == RT_STEREO_TB) ? GL_TEXTURE_2D_MULTISAMPLE 
-                                                                                                : GL_TEXTURE_2D_MULTISAMPLE_ARRAY)
-                       : ((type == RT_DEFAULT || type == RT_STEREO_SBS || type == RT_STEREO_TB) ? GL_TEXTURE_2D 
-                                                                            : type == RT_STEREO ? GL_TEXTURE_2D_ARRAY 
-                                                                                                : GL_TEXTURE_CUBE_MAP);
+   m_texTarget = nMSAASamples > 1 ? ((type == RT_DEFAULT) ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D_MULTISAMPLE_ARRAY)
+                                  : ((type == RT_DEFAULT) ? GL_TEXTURE_2D : type == RT_STEREO ? GL_TEXTURE_2D_ARRAY : GL_TEXTURE_CUBE_MAP);
 
    if (nMSAASamples > 1)
    {
       glGenTextures(1, &m_color_tex);
-      glBindTexture(target, m_color_tex);
-      glTexImage2DMultisample(target, nMSAASamples, format, width, height, GL_TRUE);
-      glBindTexture(target, 0);
-      glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_color_tex, 0);
-      if (with_depth)
-      {
-         if (!m_shared_depth)
-         {
-            glGenRenderbuffers(1, &m_depth_tex);
-            glBindRenderbuffer(GL_RENDERBUFFER, m_depth_tex);
-            glRenderbufferStorageMultisample(GL_RENDERBUFFER, nMSAASamples, GL_DEPTH_COMPONENT, width, height);
-            glBindRenderbuffer(GL_RENDERBUFFER, 0);
-         }
-         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_depth_tex);
-      }
-   }
-   else
-   {
-      glGenTextures(1, &m_color_tex);
-      glBindTexture(target, m_color_tex);
+      glBindTexture(m_texTarget, m_color_tex);
+      glTexParameteri(m_texTarget, GL_TEXTURE_BASE_LEVEL, 0);
+      glTexParameteri(m_texTarget, GL_TEXTURE_MAX_LEVEL, 0);
       switch (m_type)
       {
-      case RT_DEFAULT:
-      case RT_STEREO_SBS:
-      case RT_STEREO_TB:
-         glTexImage2D(target, 0, format, width, height, 0, col_format, col_type, nullptr);
-         break;
-      case RT_STEREO: 
-         glTexImage3D(target, 0, format, width, height, 2, 0, col_format, col_type, nullptr);
-         break;
-      case RT_CUBEMAP:
-         for (int i = 0; i < 6; i++)
-            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, format, width, height, 0, col_format, col_type, nullptr);
-         break;
+      case RT_DEFAULT: glTexImage2DMultisample(m_texTarget, nMSAASamples, format, width, height, GL_FALSE); break;
+      case RT_STEREO: glTexImage3DMultisample(m_texTarget, nMSAASamples, format, width, height, 2, GL_FALSE); break;
+      case RT_CUBEMAP: assert(false); break;
       }
-      glTexParameteri(target, GL_TEXTURE_MAX_LEVEL, 0);
+      glBindTexture(m_texTarget, 0);
       glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_color_tex, 0);
       if (with_depth)
       {
          if (!m_shared_depth)
          {
             glGenTextures(1, &m_depth_tex);
-            glBindTexture(target, m_depth_tex);
-            const GLuint depth_type = GL_UNSIGNED_SHORT;
+            glBindTexture(m_texTarget, m_depth_tex);
+            glTexParameteri(m_texTarget, GL_TEXTURE_BASE_LEVEL, 0);
+            glTexParameteri(m_texTarget, GL_TEXTURE_MAX_LEVEL, 0);
             switch (m_type)
             {
-            case RT_DEFAULT:
-            case RT_STEREO_SBS:
-            case RT_STEREO_TB:
-               glTexImage2D(target, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, depth_type, nullptr);
-               break;
-            case RT_STEREO: 
-               glTexImage3D(target, 0, GL_DEPTH_COMPONENT, width, height, 2, 0, GL_DEPTH_COMPONENT, depth_type, nullptr);
-               break;
-            case RT_CUBEMAP:
-               for (int i = 0; i < 6; i++)
-                  glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, depth_type, nullptr);
-               break;
+            case RT_DEFAULT: glTexImage2DMultisample(m_texTarget, nMSAASamples, GL_DEPTH_COMPONENT, width, height, GL_FALSE); break;
+            case RT_STEREO: glTexImage3DMultisample(m_texTarget, nMSAASamples, GL_DEPTH_COMPONENT, width, height, 2, GL_FALSE); break;
+            case RT_CUBEMAP: assert(false); break;
             }
+            glBindTexture(m_texTarget, 0);
          }
          glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_depth_tex, 0);
       }
    }
-
+   else
+   {
+      glGenTextures(1, &m_color_tex);
+      glBindTexture(m_texTarget, m_color_tex);
+      glTexParameteri(m_texTarget, GL_TEXTURE_BASE_LEVEL, 0);
+      glTexParameteri(m_texTarget, GL_TEXTURE_MAX_LEVEL, 0);
+      switch (m_type)
+      {
+      case RT_DEFAULT: glTexImage2D(m_texTarget, 0, format, width, height, 0, col_format, col_type, nullptr); break;
+      case RT_STEREO: glTexImage3D(m_texTarget, 0, format, width, height, 2, 0, col_format, col_type, nullptr); break;
+      case RT_CUBEMAP:
+         for (int i = 0; i < 6; i++)
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, format, width, height, 0, col_format, col_type, nullptr);
+         break;
+      }
+      glTexParameteri(m_texTarget, GL_TEXTURE_MAX_LEVEL, 0);
+      glBindTexture(m_texTarget, 0);
+      glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_color_tex, 0);
+      if (with_depth)
+      {
+         if (!m_shared_depth)
+         {
+            glGenTextures(1, &m_depth_tex);
+            glBindTexture(m_texTarget, m_depth_tex);
+            glTexParameteri(m_texTarget, GL_TEXTURE_BASE_LEVEL, 0);
+            glTexParameteri(m_texTarget, GL_TEXTURE_MAX_LEVEL, 0);
+            switch (m_type)
+            {
+            case RT_DEFAULT: glTexImage2D(m_texTarget, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, nullptr); break;
+            case RT_STEREO: glTexImage3D(m_texTarget, 0, GL_DEPTH_COMPONENT, width, height, 2, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, nullptr); break;
+            case RT_CUBEMAP:
+               for (int i = 0; i < 6; i++)
+                  glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, nullptr);
+               break;
+            }
+            glBindTexture(m_texTarget, 0);
+         }
+         glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_depth_tex, 0);
+      }
+   }
    if (GLAD_GL_VERSION_4_3)
       glObjectLabel(GL_FRAMEBUFFER, m_framebuffer, (GLsizei) name.length(), name.c_str());
 
    constexpr GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
    glDrawBuffers(1, DrawBuffers);
+
+   // Create a anciliary FBOs to be able to blit (especially resolve MSAA) from/to the other layers
+   if (m_nLayers > 1)
+   {
+      glGenFramebuffers(m_nLayers, m_framebuffer_layers);
+      for (int i = 0; i < m_nLayers; i++)
+      {
+         glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer_layers[i]);
+         glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_color_tex, 0, i);
+         if (with_depth)
+            glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_depth_tex, 0, i);
+         glDrawBuffers(1, DrawBuffers);
+         if (GLAD_GL_VERSION_4_3)
+         {
+            string layer_name = name + ".Layer" + std::to_string(i);
+            glObjectLabel(GL_FRAMEBUFFER, m_framebuffer_layers[i], (GLsizei)layer_name.length(), layer_name.c_str());
+         }
+      }
+      glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer);
+   }
 
    const int status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
    if (status != GL_FRAMEBUFFER_COMPLETE)
@@ -202,7 +230,7 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const RenderTargetType type, 
 
    if (nMSAASamples == 1)
    {
-      m_color_sampler = new Sampler(m_rd, m_color_tex, false, true);
+      m_color_sampler = new Sampler(m_rd, m_type, m_color_tex, false, true);
       m_color_sampler->SetName(name + ".Color");
       if (with_depth)
       {
@@ -210,15 +238,24 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const RenderTargetType type, 
             m_depth_sampler = sharedDepth->GetDepthSampler();
          else
          {
-            m_depth_sampler = new Sampler(m_rd, m_depth_tex, false, true);
+            m_depth_sampler = new Sampler(m_rd, m_type, m_depth_tex, false, true);
             m_depth_sampler->SetName(name + ".Depth");
          }
       }
+   }
+   else if (GLAD_GL_VERSION_4_3)
+   {
+      glObjectLabel(GL_TEXTURE, m_color_tex, (GLsizei)(name + ".Color").length(), (name + ".Color").c_str());
+      if (with_depth && !m_shared_depth)
+         glObjectLabel(GL_TEXTURE, m_depth_tex, (GLsizei)(name + ".Depth").length(), (name + ".Depth").c_str());
    }
 
    glClearDepthf(1.0f);
    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+   if (GLAD_GL_VERSION_4_3)
+      glPopDebugGroup();
 
 #else
    assert(m_type == RT_DEFAULT); // Layered rendering is not yet supported by the DX9 backend
@@ -282,19 +319,12 @@ RenderTarget::~RenderTarget()
    if (!m_shared_depth)
       delete m_depth_sampler;
 #ifdef ENABLE_SDL
-   if (m_nMSAASamples > 1)
-   {
-      glDeleteRenderbuffers(1, &m_color_tex);
-      if (m_depth_tex && !m_shared_depth)
-         glDeleteRenderbuffers(1, &m_depth_tex);
-   }
-   else
-   {
-      glDeleteTextures(1, &m_color_tex);
-      if (m_depth_tex && !m_shared_depth)
-         glDeleteTextures(1, &m_depth_tex);
-   }
+   glDeleteTextures(1, &m_color_tex);
+   if (m_depth_tex && !m_shared_depth)
+      glDeleteTextures(1, &m_depth_tex);
    glDeleteFramebuffers(1, &m_framebuffer);
+   if (m_nLayers > 1)
+      glDeleteFramebuffers(m_nLayers, m_framebuffer_layers);
 #else
    // Texture share its refcount with surface, it must be decremented, but it won't be 0 until surface is also released
    SAFE_RELEASE_NO_RCC(m_color_tex);
@@ -348,57 +378,42 @@ RenderTarget* RenderTarget::Duplicate(const string& name, const bool shareDepthS
 
 void RenderTarget::CopyTo(RenderTarget* dest, const bool copyColor, const bool copyDepth,
    const int x1, const int y1, const int w1, const int h1,
-   const int x2, const int y2, const int w2, const int h2)
+   const int x2, const int y2, const int w2, const int h2, 
+   const int srcLayer, const int dstLayer)
 {
-   int px1 = x1 == -1 ? 0 : x1, py1 = y1 == -1 ? 0 : y1;
+   int px1 = x1 == -1 ? 0 : x1, py1 = y1 == -1 ? 0 : y1, pz1 = srcLayer == -1 ? 0 : srcLayer;
    int pw1 = w1 == -1 ? GetWidth() : w1, ph1 = h1 == -1 ? GetHeight() : h1;
-   int px2 = x2 == -1 ? 0 : x2, py2 = y2 == -1 ? 0 : y2;
+   int px2 = x2 == -1 ? 0 : x2, py2 = y2 == -1 ? 0 : y2, pz2 = dstLayer == -1 ? 0 : dstLayer;
    int pw2 = w2 == -1 ? dest->GetWidth() : w2, ph2 = h2 == -1 ? dest->GetHeight() : h2;
+   int nLayers = srcLayer == -1 ? m_nLayers : 1;
+   assert(pw1 == pw2 && ph1 == ph2); // we do not support scaling
+   assert(srcLayer != -1 || dstLayer != -1 || m_nLayers == dest->m_nLayers); // Either we copy a single layer or the full set in which case they must match
 #ifdef ENABLE_SDL
-   if (w1 == w2 && h1 == h2)
+   int bitmask = (copyColor ? GL_COLOR_BUFFER_BIT : 0) | (m_has_depth && dest->m_has_depth && copyDepth ? GL_DEPTH_BUFFER_BIT : 0);
+   #ifndef __OPENGLES__
+   if (GLAD_GL_VERSION_4_3 && m_texTarget == dest->m_texTarget)
    {
-      int bitmask = (copyColor ? GL_COLOR_BUFFER_BIT : 0) | (m_has_depth && dest->m_has_depth && copyDepth ? GL_DEPTH_BUFFER_BIT : 0);
-#ifndef __OPENGLES__
-      if (GLAD_GL_VERSION_4_5)
-         glBlitNamedFramebuffer(GetCoreFrameBuffer(), dest->GetCoreFrameBuffer(), px1, py1, px1 + pw1, py1 + ph1, px2, py2, px2 + pw2, py2 + ph2, bitmask, GL_NEAREST);
-      else
-#endif
-      {
-         glBindFramebuffer(GL_READ_FRAMEBUFFER, GetCoreFrameBuffer());
-         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dest->GetCoreFrameBuffer());
-         glBlitFramebuffer(px1, py1, px1 + pw1, py1 + ph1, px2, py2, px2 + pw2, py2 + ph2, bitmask, GL_NEAREST);
-      }
+      // No MSAA resolution => glCopyImageSubData is more efficient and supports all configurations (copying one layer to another, all of them,...)
+      if (copyColor)
+         glCopyImageSubData(m_color_tex, m_texTarget, 0, px1, py1, pz1, dest->m_color_tex, dest->m_texTarget, 0, px2, py2, pz2, pw1, ph1, nLayers);
+      if (copyDepth)
+         glCopyImageSubData(m_depth_tex, m_texTarget, 0, px1, py1, pz1, dest->m_depth_tex, dest->m_texTarget, 0, px2, py2, pz2, pw1, ph1, nLayers);
    }
    else
+   #endif
    {
-      if (copyColor)
+      // OpenGl ES or MSAA resolve => We need glBlitFramebuffer. It will perform MSAA resolution but it will only copy the first layer
+      // Therefore we need to use anciliary FBOs with only the wanted layer bound to them to perform all of the wanted blit
+      for (int i = 0; i < nLayers; i++)
       {
-#ifndef __OPENGLES__
-         if (GLAD_GL_VERSION_4_5)
-            glBlitNamedFramebuffer(GetCoreFrameBuffer(), dest->GetCoreFrameBuffer(), px1, py1, px1 + pw1, py1 + ph1, px2, py2, px2 + pw2, py2 + ph2, GL_COLOR_BUFFER_BIT, GL_LINEAR);
-         else
-#endif
-         {
-            glBindFramebuffer(GL_READ_FRAMEBUFFER, GetCoreFrameBuffer());
-            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dest->GetCoreFrameBuffer());
-            glBlitFramebuffer(px1, py1, px1 + pw1, py1 + ph1, px2, py2, px2 + pw2, py2 + ph2, GL_COLOR_BUFFER_BIT, GL_LINEAR);
-         }
+         glBindFramebuffer(GL_READ_FRAMEBUFFER, m_framebuffer_layers[pz1 + i]);
+         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dest->m_framebuffer_layers[pz2 + i]);
+         glBlitFramebuffer(px1, py1, px1 + pw1, py1 + ph1, px2, py2, px2 + pw2, py2 + ph2, bitmask, GL_NEAREST);
       }
-      if (m_has_depth && dest->m_has_depth && copyDepth)
-      {
-#ifndef __OPENGLES__
-         if (GLAD_GL_VERSION_4_5)
-            glBlitNamedFramebuffer(GetCoreFrameBuffer(), dest->GetCoreFrameBuffer(), px1, py1, px1 + pw1, py1 + ph1, px2, py2, px2 + pw2, py2 + ph2, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-         else
-#endif
-         {
-            glBindFramebuffer(GL_READ_FRAMEBUFFER, GetCoreFrameBuffer());
-            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dest->GetCoreFrameBuffer());
-            glBlitFramebuffer(px1, py1, px1 + pw1, py1 + ph1, px2, py2, px2 + pw2, py2 + ph2, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-         }
-      }
+      glBindFramebuffer(GL_FRAMEBUFFER, current_render_target->m_framebuffer);
    }
 #else
+   assert(srcLayer == -1); // Layered rendering is not supported for DirectX 9
    if (copyColor)
    {
       CHECKD3D(m_rd->GetCoreDevice()->StretchRect(m_color_surface, nullptr, dest->m_color_surface, nullptr, w1 == w2 && h1 == h2 ? D3DTEXF_NONE : D3DTEXF_LINEAR));
@@ -417,41 +432,16 @@ void RenderTarget::Activate(const int layer)
       return;
    current_render_target = this;
    current_render_layer = layer;
-
+   
 #ifdef ENABLE_SDL
-   GLfloat viewPorts[] = {
-      0.0f, 0.0f, 0.0f, 0.0f, 
-      0.0f, 0.0f, 0.0f, 0.0f };
    if (m_color_sampler)
       m_color_sampler->Unbind();
    if (m_depth_sampler)
       m_depth_sampler->Unbind();
    glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer);
-   switch (m_type)
-   {
-   case RT_STEREO_SBS: // Side by side: render left eye in the left part, and right eye in the right part
-      viewPorts[2] = viewPorts[4] = viewPorts[6] = (float)(m_width * 0.5);
-      viewPorts[3] = viewPorts[7] = (float)m_height;
-      break;
-   case RT_STEREO_TB: // Top/Bottom: render left eye in the upper part, and right eye in the lower part
-      viewPorts[2] = viewPorts[6] = (float) m_width;
-      viewPorts[3] = viewPorts[5] = viewPorts[7] = (float)(m_height * 0.5);
-      break;
-   default: // Default: render to full render target (single viewport)
-      viewPorts[2] = (float)m_width;
-      viewPorts[3] = (float)m_height;
-      break;
-   }
-
-   // Either bind all layers for instanced rendering or the only requested one for normal rendering (one pass per layer)
-   if (layer == -1)
-   {
-      // Set default viewport width/height values of all viewports before we define the array or we get undefined behaviour in shader (flickering viewports).
-      glViewport((GLint)viewPorts[0], (GLint)viewPorts[1], (GLsizei)viewPorts[2], (GLsizei)viewPorts[3]);
-      glViewportArrayv(0, 2, viewPorts);
-   }
-   else
-      glViewport((GLint)viewPorts[layer * 4], (GLint)viewPorts[layer * 4 + 1], (GLsizei)viewPorts[layer * 4 + 2], (GLsizei)viewPorts[layer * 4 + 3]);
+   glViewport(0, 0, m_width, m_height);
+   // FIXME Either bind all layers for instanced rendering or the only requested one for normal rendering (one pass per layer)
+   // if (layer == -1) else 
 
 #else
    static IDirect3DSurface9* currentColorSurface = nullptr;

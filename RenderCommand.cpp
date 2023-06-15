@@ -56,18 +56,7 @@ void RenderCommand::Execute(const bool log)
             const float a = (float)((m_clearARGB & 0xff000000) >> 24) / 255.0f;
             glClearColor(r, g, b, a);
          }
-
-         // Use scissor to avoid clearing the complete screen (to be removed when layered rendering will be done to a texture array instead of viewports in the same render target)
-         if (RenderTarget::GetCurrentRenderLayer() != -1)
-         {
-            GLint viewport[4];
-            glEnable(GL_SCISSOR_TEST);
-            glGetIntegerv(GL_VIEWPORT, viewport);
-            glScissor(viewport[0], viewport[1], viewport[2], viewport[3]);
-         }
          glClear(m_clearFlags);
-         if (RenderTarget::GetCurrentRenderLayer() != -1)
-            glDisable(GL_SCISSOR_TEST);
       #else
       CHECKD3D(m_rd->GetCoreDevice()->Clear(0, nullptr, m_clearFlags, m_clearARGB, z, stencil));
       #endif
@@ -78,32 +67,17 @@ void RenderCommand::Execute(const bool log)
    {
       if (log)
          PLOGI << "> Copy " << m_copyFrom->m_name << " => " << m_copyTo->m_name;
-
       // Original VPX code state that on DirectX 9 StretchRect must not be called between BeginScene/EndScene.
       // This does not seem to appear in Microsoft's docs and I could not find any glitch.
       #ifndef ENABLE_SDL
       //CHECKD3D(m_rd->GetCoreDevice()->EndScene());
       #endif
-      #ifdef ENABLE_SDL
-      if (RenderTarget::GetCurrentRenderLayer() != -1)
-      {
-         GLint viewport[4];
-         glEnable(GL_SCISSOR_TEST);
-         glGetIntegerv(GL_VIEWPORT, viewport);
-         glScissor(viewport[0], viewport[1], viewport[2], viewport[3]);
-      }
-      #endif
       m_copyFrom->CopyTo(m_copyTo, m_copyColor, m_copyDepth,
          (int) m_copySrcRect.x, (int) m_copySrcRect.y, (int) m_copySrcRect.z, (int) m_copySrcRect.w, 
-         (int) m_copyDstRect.x, (int) m_copyDstRect.y, (int) m_copyDstRect.z, (int) m_copyDstRect.w);
-      #ifdef ENABLE_SDL
-      if (RenderTarget::GetCurrentRenderLayer() != -1)
-         glDisable(GL_SCISSOR_TEST);
-      #endif
+         (int) m_copyDstRect.x, (int) m_copyDstRect.y, (int) m_copyDstRect.z, (int) m_copyDstRect.w, m_copySrcLayer);
       #ifndef ENABLE_SDL
       //CHECKD3D(m_rd->GetCoreDevice()->BeginScene());
       #endif
-      
       break;
    }
 
@@ -341,9 +315,8 @@ void RenderCommand::SetClear(DWORD clearFlags, DWORD clearARGB)
       m_renderState.SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
 }
 
-void RenderCommand::SetCopy(RenderTarget* from, RenderTarget* to, bool color, bool depth,
-   const int x1, const int y1, const int w1, const int h1,
-   const int x2, const int y2, const int w2, const int h2)
+void RenderCommand::SetCopy(RenderTarget* from, RenderTarget* to, bool color, bool depth, const int x1, const int y1, const int w1, const int h1, const int x2, const int y2, const int w2,
+   const int h2, const int srcLayer, const int dstLayer)
 {
    m_command = Command::RC_COPY;
    m_copyFrom = from;
@@ -352,6 +325,8 @@ void RenderCommand::SetCopy(RenderTarget* from, RenderTarget* to, bool color, bo
    m_copyDepth = depth;
    m_copySrcRect = vec4((const float)x1, (const float)y1, (const float)w1, (const float)h1);
    m_copyDstRect = vec4((const float)x2, (const float)y2, (const float)w2, (const float)h2);
+   m_copySrcLayer = srcLayer;
+   m_copyDstLayer = dstLayer;
 }
 
 void RenderCommand::SetSubmitVR(RenderTarget* from)

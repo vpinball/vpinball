@@ -1,5 +1,5 @@
 ////GLOBAL
-#version 400
+#version 430
 /**
  * Copyright (C) 2013 Jorge Jimenez (jorge@iryoku.com)
  * Copyright (C) 2013 Jose I. Echevarria (joseignacioechevarria@gmail.com)
@@ -30,7 +30,6 @@
 //Modified for Visual pinball
 
 ////DEFINES
-#extension GL_ARB_viewport_array : enable
 #include "Helpers.fxh"
 #undef lerp
 #undef saturate
@@ -68,27 +67,33 @@ uniform vec4 w_h_height;
 #define SMAA_CORNER_ROUNDING cornerRounding
 #endif
 
+
+////VERTEX
 // And include our header (identical for HLSL/GLSL)!
+#define SMAA_INCLUDE_VS 1
+#define SMAA_INCLUDE_PS 0
 #include "SMAA.fxh"
 
 ////FRAGMENT
+// And include our header (identical for HLSL/GLSL)!
+#define SMAA_INCLUDE_VS 0
+#define SMAA_INCLUDE_PS 1
+#include "SMAA.fxh"
 
 /**
  * Input vars and textures.
  */
 
 
-uniform sampler2D edgesTex;
-uniform sampler2D blendTex;
 
 uniform sampler2D areaTex;
 uniform sampler2D searchTex;
 
-uniform sampler2D tex_fb_filtered; // Framebuffer (filtered)
-
+uniform samplerStereo edgesTex;
+uniform samplerStereo blendTex;
+uniform samplerStereo tex_fb_filtered; // Framebuffer (filtered)
 //uniform sampler2D colorTex;
 #define colorTex tex_fb_filtered //!! misses SRGB, also see SMAA_NeighborhoodBlending()
-
 //uniform sampler2D colorGammaTex;
 #define colorGammaTex tex_fb_filtered //!! misses MipFilter
 
@@ -116,7 +121,7 @@ void main()
 {
     VS_EYE();
     VS_POSITION(vec4(vPosition.x,-vPosition.y,0.0,1.0), vec4(vPosition.x,-vPosition.y,0.0,1.0));
-    VS_VARYING(texcoord, toScreenSpaceUV(tc, eye_vs));
+    VS_VARYING(texcoord, tc);
     #if USE_GEOMETRY_SHADER
     SMAAEdgeDetectionVS(texcoord_gs, offset_gs);
     #else
@@ -132,7 +137,7 @@ void main()
 {
     VS_EYE();
     VS_POSITION(vec4(vPosition.x,-vPosition.y,0.0,1.0), vec4(vPosition.x,-vPosition.y,0.0,1.0));
-    VS_VARYING(texcoord, toScreenSpaceUV(tc, eye_vs));
+    VS_VARYING(texcoord, tc);
     #if USE_GEOMETRY_SHADER
     SMAABlendingWeightCalculationVS(texcoord_gs, pixcoord_gs, offset_gs);
     #else
@@ -147,7 +152,7 @@ void main()
 {
     VS_EYE();
     VS_POSITION(vec4(vPosition.x,-vPosition.y,0.0,1.0), vec4(vPosition.x,-vPosition.y,0.0,1.0));
-    VS_VARYING(texcoord, toScreenSpaceUV(tc, eye_vs));
+    VS_VARYING(texcoord, tc);
     #if USE_GEOMETRY_SHADER
     SMAANeighborhoodBlendingVS(texcoord_gs, offset_gs);
     // Reverse Y offset to account for texture orientation
@@ -181,7 +186,7 @@ out vec4[3] offset;
 
 void main()
 {
-   gl_ViewportIndex = eye_gs[0];
+   gl_Layer = eye_gs[0];
    for (int i=0;i<gl_in.length();i++) {
       gl_Position = gl_in[i].gl_Position;
       texcoord = texcoord_gs[i];
@@ -201,7 +206,7 @@ out vec2 pixcoord;
 
 void main()
 {
-   gl_ViewportIndex = eye_gs[0];
+   gl_Layer = eye_gs[0];
    for (int i=0;i<gl_in.length();i++) {
       gl_Position = gl_in[i].gl_Position;
       texcoord = texcoord_gs[i];
@@ -220,7 +225,7 @@ out vec4 offset;
 
 void main()
 {
-   gl_ViewportIndex = eye_gs[0];
+   gl_Layer = eye_gs[0];
    for (int i=0;i<gl_in.length();i++) {
       gl_Position = gl_in[i].gl_Position;
       texcoord = texcoord_gs[i];

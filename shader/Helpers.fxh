@@ -55,16 +55,22 @@ precision highp float;
 #define BRANCH
 #define UNROLL
 
-// For the time being, stereo is being done by rendering to 2 viewports inside a single layer render target instead of rendering to one layer per eye
 #if (N_EYES == 1)
-// Sampling from a normal screen space texture
-float2 toScreenSpaceUV(float2 uvIn, int eye) { return uvIn; }
-#elif VERTICAL_STEREO
-// Sampling from a vertical stereo screen space texture
-float2 toScreenSpaceUV(float2 uvIn, int eye) { return float2(uvIn.x, 0.5 * (uvIn.y + eye)); }
+#define samplerStereo sampler2D
+#define texStereo(tex, pos) texture(tex, pos)
+#define texStereolod(tex, pos) textureLod(tex, (pos).xy, (pos).w)
+#define texStereoNoLod(tex, pos) textureLod(tex, pos, 0.)
+#define texStereoOffset(tex, pos, offset) textureOffset(tex, pos, offset)
+#define texStereoOffsetNoLod(tex, pos, offset) textureLodOffset(tex, pos, 0.0, offset)
+#define texStereoGather(tex, pos) textureGather(tex, pos)
 #else
-// Sampling from a horizontal stereo screen space texture
-float2 toScreenSpaceUV(float2 uvIn, int eye) { return float2(0.5 * (uvIn.x + eye), uvIn.y); }
+#define samplerStereo sampler2DArray
+#define texStereo(tex, pos) texture(tex, vec3(vec2(pos).x, vec2(pos).y, gl_Layer))
+#define texStereolod(tex, pos) textureLod(tex, vec3((pos).x, (pos).y, gl_Layer), (pos).w)
+#define texStereoNoLod(tex, pos) textureLod(tex, vec3((pos).x, (pos).y, gl_Layer), 0.)
+#define texStereoOffset(tex, pos, offset) textureOffset(tex, vec3((pos).x, (pos).y, gl_Layer), offset)
+#define texStereoOffsetNoLod(tex, pos, offset) textureLodOffset(tex, vec3((pos).x, (pos).y, gl_Layer), 0.0, offset)
+#define texStereoGather(tex, pos) textureGather(tex, vec3((pos).x, (pos).y, gl_Layer))
 #endif
 
 #if USE_GEOMETRY_SHADER

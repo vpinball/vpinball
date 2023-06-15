@@ -3062,7 +3062,7 @@ void Player::RenderDynamics()
       DrawStatics();
 
    DrawDynamics(false);
-
+   
    m_pin3d.m_pd3dPrimaryDevice->basicShader->SetTextureNull(SHADER_tex_base_transmission); // need to reset the bulb light texture, as its used as render target for bloom again
 
    m_pin3d.m_pd3dPrimaryDevice->SetRenderStateDepthBias(0.0f); //!! paranoia set of old state, remove as soon as sure that no other code still relies on that legacy set
@@ -3136,12 +3136,10 @@ void Player::Bloom()
 
 void Player::StereoFXAA(RenderTarget* renderedRT, const bool stereo, const bool SMAA, const bool DLAA, const bool NFAA, const bool FXAA1, const bool FXAA2, const bool FXAA3, const unsigned int sharpen, const bool depth_available) //!! SMAA, luma sharpen, dither?
 {
-#ifdef ENABLE_SDL
-   const bool pp_stereo = stereo && m_stereo3D != STEREO_TB && m_stereo3D != STEREO_SBS;
-#else
+   const bool pp_stereo = stereo;
+#ifndef ENABLE_SDL
    // Stereo is not supported together with post processed AA on DX9 except for top/bottom or side by side
    assert(!stereo || m_stereo3D == STEREO_TB || m_stereo3D == STEREO_SBS || (!SMAA && !DLAA && !NFAA && !FXAA1 && !FXAA2 && !FXAA3));
-   const bool pp_stereo = stereo;
 #endif
    RenderTarget *outputRT = nullptr;
 
@@ -3251,28 +3249,31 @@ void Player::StereoFXAA(RenderTarget* renderedRT, const bool stereo, const bool 
       {
          #ifdef ENABLE_VR
          assert(renderedRT != m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer());
-         int w = renderedRT->GetWidth() / 2, h = renderedRT->GetHeight();
+         int w = renderedRT->GetWidth(), h = renderedRT->GetHeight();
          
          RenderTarget *leftTexture = m_pin3d.m_pd3dPrimaryDevice->GetOffscreenVR(0);
          m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("Left Eye"s, leftTexture);
          m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
-         m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, leftTexture, true, false, 0, 0, w, h);
+         m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, leftTexture, true, false, 0, 0, w, h, 0, 0, w, h, 0, 0);
 
          RenderTarget *rightTexture = m_pin3d.m_pd3dPrimaryDevice->GetOffscreenVR(1);
          m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("Right Eye"s, rightTexture);
          m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
-         m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, rightTexture, true, false, w, 0, w, h);
+         m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, rightTexture, true, false, 0, 0, w, h, 0, 0, w, h, 1, 0);
 
          m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("VR Preview"s, m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer());
          m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
          m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(leftTexture);
          m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(rightTexture);
          if (m_vrPreview == VRPREVIEW_LEFT)
-            m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer(), true, false, 0, 0, w, h);
+            m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer(), true, false, 0, 0, w, h, 0, 0, w, h, 0, 0);
          else if (m_vrPreview == VRPREVIEW_RIGHT)
-            m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer(), true, false, w, 0, w, h);
+            m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer(), true, false, 0, 0, w, h, 0, 0, w, h, 1, 0);
          else if (m_vrPreview == VRPREVIEW_BOTH)
-            m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer(), true, false);
+         {
+            m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer(), true, false, 0, 0, w, h, 0, 0, w, h, 0, 0);
+            m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer(), true, false, 0, 0, w, h, w, 0, w, h, 1, 0);
+         }
 
          m_pin3d.m_pd3dPrimaryDevice->SubmitVR(renderedRT);
          #endif
@@ -3289,19 +3290,22 @@ void Player::StereoFXAA(RenderTarget* renderedRT, const bool stereo, const bool 
          m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
          m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pin3d.m_pd3dPrimaryDevice->StereoShader);
       }
-      else if (m_stereo3D == STEREO_INT || m_stereo3D == STEREO_FLIPPED_INT)
+      else if (m_stereo3D != STEREO_OFF)
       {
-         // Interlaced, handled in shader
+         // Interlaced, side by side or top/bottom, handled in shader
          assert(renderedRT != m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer());
-         m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetTechnique(m_stereo3D == STEREO_INT ? SHADER_TECHNIQUE_stereo_Int : SHADER_TECHNIQUE_stereo_Flipped_Int);
+         m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetTechnique(m_stereo3D == STEREO_SBS ? SHADER_TECHNIQUE_stereo_SBS 
+                                                               : m_stereo3D == STEREO_TB  ? SHADER_TECHNIQUE_stereo_TB
+                                                               : m_stereo3D == STEREO_INT ? SHADER_TECHNIQUE_stereo_Int 
+                                                               :                            SHADER_TECHNIQUE_stereo_Flipped_Int);
          m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetTexture(SHADER_tex_stereo_fb, renderedRT->GetColorSampler());
-         m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("Stereo Interleaved"s, m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer());
+         m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("Stereo"s, m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer());
          m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
          m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pin3d.m_pd3dPrimaryDevice->StereoShader);
       }
       else
       {
-         // STEREO_OFF, STEREO_TB: top bottom, STEREO_SBS: side by side : nothing to do
+         // STEREO_OFF: nothing to do
          assert(renderedRT == m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer());
       }
 #else
@@ -3491,12 +3495,7 @@ void Player::PrepareVideoBuffersNormal()
    }
 
    // switch to output buffer (main output frame buffer, or a temporary one for postprocessing)
-#ifdef ENABLE_SDL
-   // On OpenGL, simple stereo is rendered directly through multiple viewport/geometry shader feature without needing postprocessing
-   if (SMAA || DLAA || NFAA || FXAA1 || FXAA2 || FXAA3 || sharpen || (stereo && !(m_stereo3D == STEREO_OFF || m_stereo3D == STEREO_TB || m_stereo3D == STEREO_SBS)))
-#else
    if (SMAA || DLAA || NFAA || FXAA1 || FXAA2 || FXAA3 || sharpen || stereo)
-#endif
       outputRT = m_pin3d.m_pd3dPrimaryDevice->GetPostProcessRenderTarget1();
    else
       outputRT = m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
@@ -3682,12 +3681,7 @@ void Player::PrepareVideoBuffersAO()
    m_pin3d.m_pd3dPrimaryDevice->SwapAORenderTargets();
 
    // switch to output buffer (main output frame buffer, or a temporary one for postprocessing)
-#ifdef ENABLE_SDL
-   // On OpenGL, simple stereo is rendered directly through multiple viewport/geometry shader feature without needing postprocessing
-   if (SMAA || DLAA || NFAA || FXAA1 || FXAA2 || FXAA3 || sharpen || (stereo && !(m_stereo3D == STEREO_OFF || m_stereo3D == STEREO_TB || m_stereo3D == STEREO_SBS)))
-#else
    if (SMAA || DLAA || NFAA || FXAA1 || FXAA2 || FXAA3 || sharpen || stereo)
-#endif
       ouputRT = m_pin3d.m_pd3dPrimaryDevice->GetPostProcessRenderTarget1();
    else
       ouputRT = m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();

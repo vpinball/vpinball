@@ -128,6 +128,8 @@ const string Shader::shaderTechniqueNames[SHADER_TECHNIQUE_COUNT]
    SHADER_TECHNIQUE(SMAA_BlendWeightCalculation),
    SHADER_TECHNIQUE(SMAA_NeighborhoodBlending),
    SHADER_TECHNIQUE(stereo),
+   SHADER_TECHNIQUE(stereo_SBS),
+   SHADER_TECHNIQUE(stereo_TB),
    SHADER_TECHNIQUE(stereo_Int),
    SHADER_TECHNIQUE(stereo_Flipped_Int),
    SHADER_TECHNIQUE(stereo_anaglyph),
@@ -261,8 +263,7 @@ Shader::ShaderUniform Shader::shaderUniformNames[SHADER_UNIFORM_COUNT] {
    SHADER_UNIFORM(SUT_Float4, ms_zpd_ya_td, 1), // Anaglyph Stereo
    SHADER_UNIFORM(SUT_Float2, Anaglyph_DeSaturation_Contrast, 1), // Anaglyph Stereo
    #ifdef ENABLE_SDL // OpenGL
-   SHADER_UNIFORM(SUT_Float, eye, 1), // For stereo shader
-   SHADER_SAMPLER(tex_stereo_fb, Undefined, SA_CLAMP, SA_CLAMP, SF_NONE), // Stereo shader (combine the 2 rendered eyes into a single one)
+   SHADER_SAMPLER(tex_stereo_fb, Undefined, SA_REPEAT, SA_REPEAT, SF_NONE), // Stereo shader (combine the 2 rendered eyes into a single one)
    #endif
 };
 #undef SHADER_UNIFORM
@@ -731,7 +732,13 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
          tex_unit->clamp_v = clampv;
          texel->m_bindings.insert(tex_unit);
          glActiveTexture(GL_TEXTURE0 + tex_unit->unit);
-         glBindTexture(GL_TEXTURE_2D, texel->GetCoreTexture());
+         switch (texel->m_type)
+         {
+         case RT_DEFAULT: glBindTexture(GL_TEXTURE_2D, texel->GetCoreTexture()); break;
+         case RT_STEREO: glBindTexture(GL_TEXTURE_2D_ARRAY, texel->GetCoreTexture()); break;
+         case RT_CUBEMAP: glBindTexture(GL_TEXTURE_CUBE_MAP, texel->GetCoreTexture()); break;
+         default: assert(false);
+         }
          m_renderDevice->m_curTextureChanges++;
          m_renderDevice->SetSamplerState(tex_unit->unit, filter, clampu, clampv);
       }
@@ -960,22 +967,16 @@ bool Shader::parseFile(const string& fileNameRoot, const string& fileName, int l
                {
                   currentElement.append("#define N_EYES 1\n"s);
                   currentElement.append("#define ENABLE_VR 0\n"s);
-                  currentElement.append("#define VERTICAL_STEREO 0\n"s);
                }
                else if (m_renderDevice->m_stereo3D == STEREO_VR)
                {
                   currentElement.append("#define N_EYES 2\n"s);
                   currentElement.append("#define ENABLE_VR 1\n"s);
-                  currentElement.append("#define VERTICAL_STEREO 0\n"s);
                }
                else
                {
                   currentElement.append("#define N_EYES 2\n"s);
                   currentElement.append("#define ENABLE_VR 0\n"s);
-                  if (m_renderDevice->m_stereo3D == STEREO_TB || m_renderDevice->m_stereo3D == STEREO_INT || m_renderDevice->m_stereo3D == STEREO_FLIPPED_INT)
-                     currentElement.append("#define VERTICAL_STEREO 1\n"s);
-                  else
-                     currentElement.append("#define VERTICAL_STEREO 0\n"s);
                }
             } else if (newMode != currentMode) {
                values[currentMode] = currentElement;
@@ -1036,7 +1037,7 @@ Shader::ShaderTechnique* Shader::compileGLShader(const ShaderTechniques techniqu
 
       glGetShaderInfoLog(vertexShader, maxLength, &maxLength, errorText);
       PLOGE << shaderCodeName << ": Vertex Shader compilation failed with: " << errorText;
-      char msg[2048];
+      char msg[16384];
       sprintf_s(msg, sizeof(msg), "Fatal Error: Vertex Shader compilation of %s:%s failed!\n\n%s", fileNameRoot.c_str(), shaderCodeName.c_str(),errorText);
       ReportError(msg, -1, __FILE__, __LINE__);
       free(errorText);
@@ -1122,6 +1123,7 @@ Shader::ShaderTechnique* Shader::compileGLShader(const ShaderTechniques techniqu
          /* Notice that glGetProgramInfoLog, not glGetShaderInfoLog. */
          glGetProgramInfoLog(shaderprogram, maxLength, &maxLength, errorText);
          PLOGE << shaderCodeName << ": Linking Shader failed with: " << errorText;
+         ReportError(errorText, -1, __FILE__, __LINE__);
          free(errorText);
          success = false;
       }
@@ -1206,7 +1208,7 @@ Shader::ShaderTechnique* Shader::compileGLShader(const ShaderTechniques techniqu
                assert(uniform.type != SUT_Float4x3 || type == GL_FLOAT_MAT4); // FIXME this should be GL_FLOAT_MAT4x3 or GL_FLOAT_MAT3x4 => fix orientation uniform in gl shader
                assert(uniform.type != SUT_Float4x4 || type == GL_FLOAT_MAT4);
                assert(uniform.type != SUT_DataBlock); // Unused so unimplemented
-               assert(uniform.type != SUT_Sampler || type == GL_SAMPLER_2D);
+               assert(uniform.type != SUT_Sampler || type == GL_SAMPLER_2D || type == GL_SAMPLER_2D_ARRAY);
                assert(uniform.count == size);
                shader->uniform_desc[uniformIndex].uniform = uniform;
                shader->uniform_desc[uniformIndex].location = location;
@@ -1350,7 +1352,7 @@ bool Shader::Load(const std::string& name, const BYTE* code, unsigned int codeSi
                else
                {
                   char msg[128];
-                  sprintf_s(msg, sizeof(msg), "Fatal Error: Shader compilation failed for %s!", m_shaderCodeName.c_str());
+                  sprintf_s(msg, sizeof(msg), "Fatal Error: Compilation failed for technique %s of %s!", shaderTechniqueNames[technique].c_str(), m_shaderCodeName.c_str());
                   ReportError(msg, -1, __FILE__, __LINE__);
                   return false;
                }
