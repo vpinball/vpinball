@@ -1,11 +1,6 @@
 ////GLOBAL
 #version 430
 
-#ifdef SHADER_GLES30
-precision highp float;
-#define noperspective
-#endif
-
 ////DEFINES
 #define NUM_BALL_LIGHTS 8
 
@@ -29,7 +24,6 @@ uniform vec4 clip_plane; // Clip plane defined in table coordinate system
 uniform int layer; // Layer being rendered (set to 0 is using layered rendering, that is to say rendering multiple layers using instanced rendering)
 
 ////GEOMETRY
-#extension GL_ARB_viewport_array : enable
 layout(triangles) in;
 layout(triangle_strip, max_vertices = 3) out;
 
@@ -72,7 +66,7 @@ void main()
 	float4 pos = vec4(vPosition, 1.0);
 	pos.xyz = (orientation * pos).xyz;
 
-	// apply spinning to the normals too to get the sphere mapping effect
+    // apply spinning to the normals too to get the sphere mapping effect
 	const float3 nspin = (orientation * vec4(vNormal,0.0)).xyz;
     // Needs to use a 'normal' matrix, and to normalize since we allow non uniform stretching, therefore matWorldView is not orthonormal
 	const float3 normal = normalize((vec4(nspin, 0.0) * matWorldViewInverse).xyz); // actually: mul(vec4(nspin,0.), matWorldViewInverseTranspose), but optimized to save one matrix
@@ -109,7 +103,7 @@ out vec4 worldPos_t0y;
 
 void main()
 {
-    gl_ViewportIndex = eye_gs[0];
+    gl_Layer = eye_gs[0];
 	for (int i=0;i<gl_in.length();i++) {
 		gl_Position = (matWorldViewProj[eye_gs[i]]*gl_in[i].gl_Position);
         gl_ClipDistance[0] = gl_in[i].gl_ClipDistance[0];
@@ -127,7 +121,7 @@ out vec3 tex0_alpha;
 
 void main()
 {
-    gl_ViewportIndex = eye_gs[0];
+    gl_Layer = eye_gs[0];
 	for (int i=0;i<gl_in.length();i++) {
 		gl_Position = (matWorldViewProj[eye_gs[i]]*gl_in[i].gl_Position);
 		tex0_alpha = tex0_alpha_gs[i];

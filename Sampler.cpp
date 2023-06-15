@@ -2,17 +2,19 @@
 #include "Sampler.h"
 #include "RenderDevice.h"
 
-Sampler::Sampler(RenderDevice* rd, BaseTexture* const surf, const bool force_linear_rgb, const SamplerAddressMode clampu, const SamplerAddressMode clampv, const SamplerFilter filter)
+Sampler::Sampler(RenderDevice* rd, BaseTexture* const surf, const bool force_linear_rgb, const SamplerAddressMode clampu, const SamplerAddressMode clampv, const SamplerFilter filter) : 
+   m_type(SurfaceType::RT_DEFAULT), 
+   m_rd(rd),
+   m_dirty(false),
+   m_ownTexture(true),
+   m_width(surf->width()),
+   m_height(surf->height()),
+   m_clampu(clampu),
+   m_clampv(clampv),
+   m_filter(filter)
 {
-   m_rd = rd;
-   m_dirty = false;
-   m_ownTexture = true;
-   m_width = surf->width();
-   m_height = surf->height();
-   m_clampu = clampu;
-   m_clampv = clampv;
-   m_filter = filter;
 #ifdef ENABLE_SDL
+   m_texTarget = GL_TEXTURE_2D;
    colorFormat format;
    if (surf->m_format == BaseTexture::SRGBA)
       format = colorFormat::SRGBA;
@@ -65,30 +67,39 @@ Sampler::Sampler(RenderDevice* rd, BaseTexture* const surf, const bool force_lin
 }
 
 #ifdef ENABLE_SDL
-Sampler::Sampler(RenderDevice* rd, GLuint glTexture, bool ownTexture, bool force_linear_rgb, const SamplerAddressMode clampu, const SamplerAddressMode clampv, const SamplerFilter filter)
+Sampler::Sampler(RenderDevice* rd, SurfaceType type, GLuint glTexture, bool ownTexture, bool force_linear_rgb, const SamplerAddressMode clampu, const SamplerAddressMode clampv, const SamplerFilter filter)
+   : m_type(type)
+   , m_rd(rd)
+   , m_dirty(false)
+   , m_ownTexture(ownTexture)
+   , m_clampu(clampu)
+   , m_clampv(clampv)
+   , m_filter(filter)
 {
-   m_rd = rd;
-   m_dirty = false;
-   m_ownTexture = ownTexture;
-   m_clampu = clampu;
-   m_clampv = clampv;
-   m_filter = filter;
-   glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &m_width);
-   glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &m_height);
+   switch (m_type)
+   {
+   case RT_DEFAULT: m_texTarget = GL_TEXTURE_2D; break;
+   case RT_STEREO: m_texTarget = GL_TEXTURE_2D_ARRAY; break;
+   case RT_CUBEMAP: m_texTarget = GL_TEXTURE_CUBE_MAP; break;
+   default: assert(false);
+   }
+   glGetTexLevelParameteriv(m_texTarget, 0, GL_TEXTURE_WIDTH, &m_width);
+   glGetTexLevelParameteriv(m_texTarget, 0, GL_TEXTURE_HEIGHT, &m_height);
    int internal_format;
-   glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_INTERNAL_FORMAT, &internal_format);
+   glGetTexLevelParameteriv(m_texTarget, 0, GL_TEXTURE_INTERNAL_FORMAT, &internal_format);
    m_isLinear = !((internal_format == SRGB) || (internal_format == SRGBA) || (internal_format == SDXT5) || (internal_format == SBC7)) || force_linear_rgb;
    m_texture = glTexture;
 }
 #else
 Sampler::Sampler(RenderDevice* rd, IDirect3DTexture9* dx9Texture, bool ownTexture, bool force_linear_rgb, const SamplerAddressMode clampu, const SamplerAddressMode clampv, const SamplerFilter filter)
+   : m_type(SurfaceType::RT_DEFAULT)
+   , m_rd(rd)
+   , m_dirty(false)
+   , m_ownTexture(ownTexture)
+   , m_clampu(clampu)
+   , m_clampv(clampv)
+   , m_filter(filter)
 {
-   m_rd = rd;
-   m_dirty = false;
-   m_ownTexture = ownTexture;
-   m_clampu = clampu;
-   m_clampv = clampv;
-   m_filter = filter;
    D3DSURFACE_DESC desc;
    dx9Texture->GetLevelDesc(0, &desc);
    m_width = desc.Width;
@@ -117,7 +128,7 @@ void Sampler::Unbind()
    {
       binding->sampler = nullptr;
       glActiveTexture(GL_TEXTURE0 + binding->unit);
-      glBindTexture(GL_TEXTURE_2D, 0);
+      glBindTexture(m_texTarget, 0);
    }
    m_bindings.clear();
 #endif
@@ -164,11 +175,11 @@ void Sampler::UpdateTexture(BaseTexture* const surf, const bool force_linear_rgb
    tex_unit->sampler = nullptr;
    glActiveTexture(GL_TEXTURE0 + tex_unit->unit);
 
-   glBindTexture(GL_TEXTURE_2D, m_texture);
+   glBindTexture(m_texTarget, m_texture);
    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-   glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, surf->width(), surf->height(), col_format, col_type, surf->data());
-   glGenerateMipmap(GL_TEXTURE_2D); // Generate mip-maps
-   glBindTexture(GL_TEXTURE_2D, 0);
+   glTexSubImage2D(m_texTarget, 0, 0, 0, surf->width(), surf->height(), col_format, col_type, surf->data());
+   glGenerateMipmap(m_texTarget); // Generate mip-maps
+   glBindTexture(m_texTarget, 0);
 #else
    colorFormat texformat;
    IDirect3DTexture9* sysTex = CreateSystemTexture(surf, force_linear_rgb, texformat);
@@ -218,30 +229,30 @@ GLuint Sampler::CreateTexture(unsigned int Width, unsigned int Height, unsigned 
 
    GLuint texture;
    glGenTextures(1, &texture);
-   glBindTexture(GL_TEXTURE_2D, texture);
+   glBindTexture(m_texTarget, texture);
 
    if (Format == GREY8)
    { //Hack so that GL_RED behaves as GL_GREY
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_R, GL_RED);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_G, GL_RED);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_B, GL_RED);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_A, GL_ALPHA);
+      glTexParameteri(m_texTarget, GL_TEXTURE_SWIZZLE_R, GL_RED);
+      glTexParameteri(m_texTarget, GL_TEXTURE_SWIZZLE_G, GL_RED);
+      glTexParameteri(m_texTarget, GL_TEXTURE_SWIZZLE_B, GL_RED);
+      glTexParameteri(m_texTarget, GL_TEXTURE_SWIZZLE_A, GL_ALPHA);
       Format = RGB8;
    }
    else if (Format == GREY_ALPHA)
    { //Hack so that GL_RG behaves as GL_GREY_ALPHA
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_R, GL_RED);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_G, GL_RED);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_B, GL_RED);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_A, GL_GREEN);
+      glTexParameteri(m_texTarget, GL_TEXTURE_SWIZZLE_R, GL_RED);
+      glTexParameteri(m_texTarget, GL_TEXTURE_SWIZZLE_G, GL_RED);
+      glTexParameteri(m_texTarget, GL_TEXTURE_SWIZZLE_B, GL_RED);
+      glTexParameteri(m_texTarget, GL_TEXTURE_SWIZZLE_A, GL_GREEN);
       Format = RGB8;
    }
    else
    { //Default
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_R, GL_RED);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_G, GL_GREEN);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_B, GL_BLUE);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_A, GL_ALPHA);
+      glTexParameteri(m_texTarget, GL_TEXTURE_SWIZZLE_R, GL_RED);
+      glTexParameteri(m_texTarget, GL_TEXTURE_SWIZZLE_G, GL_GREEN);
+      glTexParameteri(m_texTarget, GL_TEXTURE_SWIZZLE_B, GL_BLUE);
+      glTexParameteri(m_texTarget, GL_TEXTURE_SWIZZLE_A, GL_ALPHA);
    }
 
    colorFormat comp_format = Format;
@@ -266,7 +277,7 @@ GLuint Sampler::CreateTexture(unsigned int Width, unsigned int Height, unsigned 
 #ifndef __OPENGLES__
    if (m_rd->getGLVersion() >= 403)
 #endif
-      glTexStorage2D(GL_TEXTURE_2D, num_mips, comp_format, Width, Height);
+      glTexStorage2D(m_texTarget, num_mips, comp_format, Width, Height);
 #ifndef __OPENGLES__
    else
    { // should never be triggered nowadays
@@ -274,7 +285,7 @@ GLuint Sampler::CreateTexture(unsigned int Width, unsigned int Height, unsigned 
       GLsizei h = Height;
       for (int i = 0; i < num_mips; i++)
       {
-         glTexImage2D(GL_TEXTURE_2D, i, comp_format, w, h, 0, col_format, col_type, nullptr);
+         glTexImage2D(m_texTarget, i, comp_format, w, h, 0, col_format, col_type, nullptr);
          w = max(1, (w / 2));
          h = max(1, (h / 2));
       }
@@ -286,8 +297,8 @@ GLuint Sampler::CreateTexture(unsigned int Width, unsigned int Height, unsigned 
       glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
       // This line causes a false GLIntercept error log on OpenGL >= 403 since the image is initialized through TexStorage and not TexImage (expected by GLIntercept)
       // InterceptImage::SetImageDirtyPost - Flagging an image as dirty when it is not ready/init?
-      glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, Width, Height, col_format, col_type, data);
-      glGenerateMipmap(GL_TEXTURE_2D); // Generate mip-maps, when using TexStorage will generate same amount as specified in TexStorage, otherwise good idea to limit by GL_TEXTURE_MAX_LEVEL
+      glTexSubImage2D(m_texTarget, 0, 0, 0, Width, Height, col_format, col_type, data);
+      glGenerateMipmap(m_texTarget); // Generate mip-maps, when using TexStorage will generate same amount as specified in TexStorage, otherwise good idea to limit by GL_TEXTURE_MAX_LEVEL
    }
    return texture;
 }

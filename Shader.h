@@ -123,6 +123,8 @@ enum ShaderTechniques
    SHADER_TECHNIQUE(SMAA_BlendWeightCalculation),
    SHADER_TECHNIQUE(SMAA_NeighborhoodBlending),
    SHADER_TECHNIQUE(stereo),
+   SHADER_TECHNIQUE(stereo_SBS),
+   SHADER_TECHNIQUE(stereo_TB),
    SHADER_TECHNIQUE(stereo_Int),
    SHADER_TECHNIQUE(stereo_Flipped_Int),
    SHADER_TECHNIQUE(stereo_anaglyph),
@@ -265,8 +267,7 @@ enum ShaderUniforms
    SHADER_UNIFORM(SUT_Float4, ms_zpd_ya_td, 1), // Anaglyph Stereo
    SHADER_UNIFORM(SUT_Float2, Anaglyph_DeSaturation_Contrast, 1), // Anaglyph Stereo
    #ifdef ENABLE_SDL // OpenGL
-   SHADER_UNIFORM(SUT_Float, eye, 1), // For stereo shader
-   SHADER_SAMPLER(tex_stereo_fb, Undefined, SA_CLAMP, SA_CLAMP, SF_NONE), // Stereo shader (combine the 2 rendered eyes into a single one)
+   SHADER_SAMPLER(tex_stereo_fb, Undefined, SA_REPEAT, SA_REPEAT, SF_NONE), // Stereo shader (combine the 2 rendered eyes into a single one)
    #endif
 
    SHADER_UNIFORM_COUNT,

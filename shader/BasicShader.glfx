@@ -1,11 +1,6 @@
 ////GLOBAL
 #version 430
 
-#ifdef SHADER_GLES30
-precision highp float;
-#define noperspective
-#endif
-
 ////DEFINES
 #include "Helpers.fxh"
 
@@ -32,8 +27,6 @@ VS_OUT_EYE();
 
 
 ////GEOMETRY
-#extension GL_ARB_viewport_array : enable
-
 layout(triangles) in;
 layout(triangle_strip, max_vertices = 3) out;
 
@@ -54,11 +47,11 @@ layout(depth_unchanged) out float gl_FragDepth;
 uniform sampler2D tex_base_color; // base texture
 uniform sampler2D tex_env; // envmap
 uniform sampler2D tex_diffuse_env; // envmap radiance
-uniform sampler2D tex_base_transmission; // bulb light buffer
+uniform samplerStereo tex_base_transmission; // bulb light buffer
 uniform sampler2D tex_base_normalmap; // normal map
-uniform sampler2D tex_reflection; // reflections
-uniform sampler2D tex_refraction; // refractions
-uniform sampler2D tex_probe_depth; // depth probe
+uniform samplerStereo tex_reflection; // reflections
+uniform samplerStereo tex_refraction; // refractions
+uniform samplerStereo tex_probe_depth; // depth probe
 
 uniform bool objectSpaceNormalMap;
 
@@ -129,13 +122,13 @@ float3 normal_map(const float3 N, const float3 V, const float2 uv)
 
 // Compute reflections from reflection probe (screen space coordinates)
 // This is a simplified reflection model where reflected light is added instead of being mixed according to the fresnel coefficient (stronger reflection hiding the object's color at grazing angles)
-float3 compute_reflection(const float2 screenSpace, const float3 N)
+float3 compute_reflection(const float2 screenSpace, const float3 N, const float eye)
 {
    // Only apply to faces pointing in the direction of the probe (normal = [0,0,-1])
    // the smoothstep values are *magic* values taken from visual tests
    // dot(mirrorNormal, N) does not really needs to be done per pixel and could be moved to the vertx shader
    // Offset by half a texel to use GPU filtering for some blur
-   return smoothstep(0.5, 0.9, dot(mirrorNormal, N)) * mirrorFactor * tex2D(tex_reflection, screenSpace + 0.5 * w_h_height.xy).rgb;
+   return smoothstep(0.5, 0.9, dot(mirrorNormal, N)) * mirrorFactor * texStereo(tex_reflection, screenSpace + 0.5 * w_h_height.xy).rgb;
 }
 
 // Compute refractions from screen space probe
@@ -148,16 +141,9 @@ float3 compute_refraction(const float3 pos, const float2 screenSpace, const floa
    const float4 proj = matProj[int(eye)] * float4(refracted_pos, 1.0);
 
    float2 uv = float2(0.5, 0.5) + proj.xy * (0.5 / proj.w);
-   #if (N_EYES == 2)
-      #if VERTICAL_STEREO
-         uv.xy = vec2(uv.x, 0.5 * (uv.y + eye)); // Sampling from a vertical stereo screen space texture
-      #else
-         uv.xy = vec2(0.5 * (uv.x + eye), uv.y); // Sampling from a horizontal stereo screen space texture
-      #endif
-   #endif
 
    // Check if the sample position is behind the object pos. If not take don't perform refraction as it would lead to refract things above us (so reflect)
-   const float d = tex2D(tex_probe_depth, uv).x;
+   const float d = texStereo(tex_probe_depth, uv).x;
    if (d < gl_FragCoord.z)
       uv = screenSpace;
 
@@ -176,7 +162,7 @@ float3 compute_refraction(const float3 pos, const float2 screenSpace, const floa
    if (length(R) < 0.5) // invalid refraction state (no refraction, shown as green for debugging)
       return float3(0.0, 1.0, 0.0);*/
 
-   return refractionTint.rgb * tex2D(tex_refraction, uv).rgb;
+   return refractionTint.rgb * texStereo(tex_refraction, uv).rgb;
 }
 
 //------------------------------------
@@ -194,7 +180,6 @@ layout(location=1) in vec3 vNormal;
 layout(location=2) in vec2 tc;
 
 VS_OUT(vec2, tex01);
-VS_OUT_NOPERSP_NOGEOM(vec2, tex03);
 VS_OUT(vec3, tablePos);
 VS_OUT(vec3, worldPos);
 VS_OUT(vec3, normal);
@@ -208,7 +193,6 @@ void main()
    VS_POSITION(matWorldViewProj[eye_vs] * pos, pos);
    VS_VARYING(tablePos, table_pos);
    VS_VARYING(tex01, tc);
-   VS_VARYING_NOGEOM(tex03, toScreenSpaceUV(0.5 * (gl_Position.xy / gl_Position.w) + vec2(0.5), eye_vs));
    // trafo all into worldview space (as most of the weird trafos happen in view, world is identity so far)
    VS_VARYING(worldPos, (matWorldView * pos).xyz);
    // Needs to use a 'normal' matrix, and to normalize since we allow non uniform stretching, therefore matWorldView is not orthonormal
@@ -221,7 +205,6 @@ void main()
 layout(location=1) in vec3 vNormal;
 layout(location=2) in vec2 tc;
 
-VS_OUT_NOPERSP_NOGEOM(vec2, tex03);
 VS_OUT(vec3, tablePos);
 VS_OUT(vec3, worldPos);
 VS_OUT(vec3, normal);
@@ -234,7 +217,6 @@ void main()
    VS_EYE();
    VS_POSITION(matWorldViewProj[eye_vs] * pos, pos);
    VS_VARYING(tablePos, table_pos);
-   VS_VARYING_NOGEOM(tex03, toScreenSpaceUV(0.5 * (gl_Position.xy / gl_Position.w) + vec2(0.5), eye_vs));
    // trafo all into worldview space (as most of the weird trafos happen in view, world is identity so far)
    VS_VARYING(worldPos, (matWorldView * pos).xyz);
    // Needs to use a 'normal' matrix, and to normalize since we allow non uniform stretching, therefore matWorldView is not orthonormal
@@ -316,8 +298,6 @@ void main()
 in vec2 tex01_gs[];
 out vec2 tex01;
 
-noperspective out vec2 tex03;
-
 in vec3 worldPos_gs[];
 out vec3 worldPos;
 
@@ -331,12 +311,11 @@ flat out float eye;
 
 void main()
 {
-   gl_ViewportIndex = eye_gs[0];
+   gl_Layer = eye_gs[0];
    for (int i=0; i<gl_in.length(); i++) {
       gl_Position = matWorldViewProj[eye_gs[i]] * gl_in[i].gl_Position;
       gl_ClipDistance[0] = gl_in[i].gl_ClipDistance[0];
       tex01 = tex01_gs[i];
-      tex03 = toScreenSpaceUV(0.5 * (gl_Position.xy / gl_Position.w) + vec2(0.5), eye_gs[i]);
       tablePos = tablePos_gs[i];
       worldPos = worldPos_gs[i];
       normal = normal_gs[i];
@@ -348,8 +327,6 @@ void main()
 
 ////gs_notex_main
 
-noperspective out vec2 tex03;
-
 in vec3 worldPos_gs[];
 out vec3 worldPos;
 
@@ -363,11 +340,10 @@ flat out float eye;
 
 void main()
 {
-   gl_ViewportIndex = eye_gs[0];
+   gl_Layer = eye_gs[0];
    for (int i=0;i<gl_in.length();i++) {
       gl_Position = matWorldViewProj[eye_gs[i]] * gl_in[i].gl_Position;
       gl_ClipDistance[0] = gl_in[i].gl_ClipDistance[0];
-      tex03 = toScreenSpaceUV(0.5 * (gl_Position.xy / gl_Position.w) + vec2(0.5), eye_gs[i]);
       tablePos = tablePos_gs[i];
       worldPos = worldPos_gs[i];
       normal = normal_gs[i];
@@ -378,8 +354,6 @@ void main()
 }
 
 ////gs_kicker_main
-
-noperspective out vec2 tex03;
 
 in vec3 worldPos_gs[];
 out vec3 worldPos;
@@ -394,14 +368,13 @@ uniform float fKickerScale;
 
 void main()
 {
-   gl_ViewportIndex = eye_gs[0];
+   gl_Layer = eye_gs[0];
    for (int i=0;i<gl_in.length();i++) {
       float4 P2 = gl_in[i].gl_Position;
       P2.z -= 30.0 * fKickerScale;
       gl_Position.xyw = (matWorldViewProj[eye_gs[i]] * gl_in[i].gl_Position).xyw;
       gl_Position.z = (matWorldViewProj[eye_gs[i]] * P2).z;
       gl_ClipDistance[0] = gl_in[i].gl_ClipDistance[0];
-      tex03 = toScreenSpaceUV(0.5 * (gl_Position.xy / gl_Position.w) + vec2(0.5), eye_gs[i]);
       tablePos = tablePos_gs[i];
       worldPos = worldPos_gs[i];
       normal = normal_gs[i];
@@ -414,7 +387,7 @@ void main()
 
 void main()
 {
-   gl_ViewportIndex = eye_gs[0];
+   gl_Layer = eye_gs[0];
    for (int i=0;i<gl_in.length();i++) {
       gl_Position = matWorldViewProj[eye_gs[i]] * gl_in[i].gl_Position;
       gl_ClipDistance[0] = gl_in[i].gl_ClipDistance[0];
@@ -430,7 +403,7 @@ out vec2 tex0;
 
 void main()
 {
-   gl_ViewportIndex = eye_gs[0];
+   gl_Layer = eye_gs[0];
    for (int i=0;i<gl_in.length();i++) {
       gl_Position = matWorldViewProj[eye_gs[i]] * gl_in[i].gl_Position;
       gl_ClipDistance[0] = gl_in[i].gl_ClipDistance[0];
@@ -447,7 +420,7 @@ out float3 tablePos;
 
 void main()
 {
-   gl_ViewportIndex = eye_gs[0];
+   gl_Layer = eye_gs[0];
    for (int i=0;i<gl_in.length();i++) {
       gl_Position = (matWorldViewProj[eye_gs[i]] * gl_in[i].gl_Position);
       gl_ClipDistance[0] = gl_in[i].gl_ClipDistance[0];
@@ -466,7 +439,7 @@ out vec2 tex0;
 
 void main()
 {
-   gl_ViewportIndex = eye_gs[0];
+   gl_Layer = eye_gs[0];
    for (int i=0;i<gl_in.length();i++) {
       gl_Position = (matWorldViewProj[eye_gs[i]] * gl_in[i].gl_Position);
       gl_ClipDistance[0] = gl_in[i].gl_ClipDistance[0];
@@ -485,7 +458,6 @@ void main()
 
 ////ps_main_notex
 
-noperspective in vec2 tex03;
 in vec3 worldPos;
 in vec3 tablePos;
 in vec3 normal;
@@ -512,7 +484,7 @@ void main() {
 
       if (fDisableLighting_top_below.y < 1.0)
          // add light from "below" from user-flagged bulb lights, pre-rendered/blurred in previous renderpass //!! sqrt = magic
-         color.xyz += mix(sqrt(diffuse)*texNoLod(tex_base_transmission, tex03).rgb*color.a, float3(0.), fDisableLighting_top_below.y); //!! depend on normal of light (unknown though) vs geom normal, too?
+         color.xyz += mix(sqrt(diffuse)*texStereoNoLod(tex_base_transmission, gl_FragCoord.xy * w_h_height.xy).rgb*color.a, float3(0.), fDisableLighting_top_below.y); //!! depend on normal of light (unknown though) vs geom normal, too?
    }
 
    BRANCH if (lightCenter_doShadow.w != 0.)
@@ -524,12 +496,12 @@ void main() {
    }
 
    BRANCH if (doReflections)
-      color.rgb += compute_reflection(tex03.xy, N);
+      color.rgb += compute_reflection(gl_FragCoord.xy * w_h_height.xy, N, eye);
 
    BRANCH if (doRefractions)
    {
       // alpha channel is the transparency of the object, tinting is supported even if alpha is 0 by applying a tint color
-      color.rgb = lerp(compute_refraction(worldPos.xyz, tex03, N, V, eye), color.rgb, cBase_Alpha.a);
+      color.rgb = lerp(compute_refraction(worldPos.xyz, gl_FragCoord.xy * w_h_height.xy, N, V, eye), color.rgb, cBase_Alpha.a);
       color.a = 1.0;
    }
 
@@ -539,7 +511,6 @@ void main() {
 ////ps_main_texture
 
 in vec2 tex01;
-noperspective in vec2 tex03;
 in vec3 worldPos;
 in vec3 tablePos;
 in vec3 normal;
@@ -578,7 +549,7 @@ void main() {
 
       if (fDisableLighting_top_below.y < 1.0)
          // add light from "below" from user-flagged bulb lights, pre-rendered/blurred in previous renderpass //!! sqrt = magic
-         color.xyz += lerp(sqrt(diffuse)*texNoLod(tex_base_transmission, tex03).rgb*color.a, float3(0.), fDisableLighting_top_below.y); //!! depend on normal of light (unknown though) vs geom normal, too?
+         color.xyz += lerp(sqrt(diffuse)*texStereoNoLod(tex_base_transmission, gl_FragCoord.xy * w_h_height.xy).rgb*color.a, float3(0.), fDisableLighting_top_below.y); //!! depend on normal of light (unknown though) vs geom normal, too?
    }
 
    BRANCH if (lightCenter_doShadow.w != 0.)
@@ -590,12 +561,12 @@ void main() {
    }
 
    BRANCH if (doReflections)
-      color.rgb += compute_reflection(tex03, N);
+      color.rgb += compute_reflection(gl_FragCoord.xy * w_h_height.xy, N, eye);
 
    BRANCH if (doRefractions)
    {
       // alpha channel is the transparency of the object, tinting is supported even if alpha is 0 by applying a tint color (not from main texture since these are different informations (reflected/refracted color))
-      color.rgb = lerp(compute_refraction(worldPos, tex03, N, V, eye), color.rgb, color.a);
+      color.rgb = lerp(compute_refraction(worldPos, gl_FragCoord.xy * w_h_height.xy, N, V, eye), color.rgb, color.a);
       color.a = 1.0;
    }
 
@@ -606,13 +577,13 @@ void main() {
 ////ps_main_reflection_only_without_texture
 
 in vec2 tex01;
-noperspective in vec2 tex03;
 in vec3 worldPos;
 in vec3 normal;
+flat in float eye;
 
 void main() {
    float3 N = normalize(normal);
-   color.rgb = compute_reflection(tex03, N);
+   color.rgb = compute_reflection(gl_FragCoord.xy * w_h_height.xy, N, eye);
    color.a = 1.0;
    color *= staticColor_Alpha;
 }
@@ -621,9 +592,9 @@ void main() {
 ////ps_main_reflection_only_with_texture
 
 in vec2 tex01;
-noperspective in vec2 tex03;
 in vec3 worldPos;
 in vec3 normal;
+flat in float eye;
 
 void main() {
    float4 result;
@@ -636,7 +607,7 @@ void main() {
    result.a *= cBase_Alpha.a;
 
    float3 N = normalize(normal);
-   result.rgb = compute_reflection(tex03, N);
+   result.rgb = compute_reflection(gl_FragCoord.xy * w_h_height.xy, N, eye);
 
    BRANCH if (cBase_Alpha.a < 1.0 && result.a < 1.0)
    {
@@ -743,7 +714,6 @@ uniform float fKickerScale;
 VS_OUT(float3, tablePos);
 VS_OUT(vec3, worldPos);
 VS_OUT(vec3, normal);
-VS_OUT_NOPERSP_NOGEOM(vec2, tex03);
 
 void main() {
    float4 pos = float4(vPosition, 1.0);
@@ -752,7 +722,6 @@ void main() {
    VS_EYE();
    VS_POSITION(float4((matWorldViewProj[eye_vs] * pos).xyw, (matWorldViewProj[eye_vs] * float4(pos.x, pos.y, pos.z - 30.0 * fKickerScale, 1.0)).z), pos);
    VS_VARYING(tablePos, table_pos);
-   VS_VARYING_NOGEOM(tex03, toScreenSpaceUV(0.5 * (gl_Position.xy / gl_Position.w) + vec2(0.5), eye_vs));
    // trafo all into worldview space (as most of the weird trafos happen in view, world is identity so far)
    VS_VARYING(worldPos, (matWorldView * pos).xyz);
    // Needs to use a 'normal' matrix, and to normalize since we allow non uniform stretching, therefore matWorldView is not orthonormal

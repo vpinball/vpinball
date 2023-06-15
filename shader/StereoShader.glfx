@@ -107,7 +107,7 @@ out vec2 tex0;
 
 ////FRAGMENT
 
-uniform sampler2D  tex_stereo_fb; // Render buffer with the 2 eyes side by side for anaglyph, top/bottom for interlaced
+uniform sampler2DArray  tex_stereo_fb; // Render buffer with the 2 eyes
 
 in vec2 tex0;
 
@@ -121,26 +121,42 @@ void main()
    tex0 = float2(tc.x, 1.0-tc.y);
 }
 
+////ps_main_tb
+
+void main()
+{
+   color = textureLod(tex_stereo_fb, vec3(tex0.x, tex0.y * 2.0, tex0.y < 0.5 ? 0.0 : 1.0), 0.);
+}
+
+////ps_main_sbs
+
+void main()
+{
+   color = textureLod(tex_stereo_fb, vec3(tex0.x * 2.0, tex0.y, tex0.x < 0.5 ? 0.0 : 1.0), 0.);
+}
+
 ////ps_main_int
 
 void main()
 {
-   color = tex2D(tex_stereo_fb, float2(tex0.x,0.5*tex0.y + ((frac(gl_FragCoord.y*0.5) < 0.5) ? 0.0 : 0.5)));
+   // FIXME this cause an unwanted filtering
+   color = textureLod(tex_stereo_fb, vec3(tex0.x, tex0.y, frac(gl_FragCoord.y*0.5) < 0.5 ? 0.0 : 1.0), 0.);
 }
 
 ////ps_main_flipped_int
 
 void main()
 {
-   color = tex2D(tex_stereo_fb, float2(tex0.x,0.5*tex0.y + ((frac(gl_FragCoord.y*0.5) < 0.5) ? 0.5 : 0.0)));
+   // FIXME this cause an unwanted filtering
+   color = textureLod(tex_stereo_fb, vec3(tex0.x, tex0.y, frac(gl_FragCoord.y*0.5) < 0.5 ? 1.0 : 0.0), 0.);
 }
 
 ////ps_main_stereo_anaglyph
 
 void main()
 {
-	const float3 lcol = tex2D(tex_stereo_fb, float2(0.5*tex0.x,tex0.y)).rgb;
-	const float3 rcol = tex2D(tex_stereo_fb, float2(0.5*tex0.x+0.5,tex0.y)).rgb;
+	const float3 lcol = textureLod(tex_stereo_fb, vec3(tex0.x, tex0.y, 0.), 0.).xyz;
+	const float3 rcol = textureLod(tex_stereo_fb, vec3(tex0.x, tex0.y, 1.), 0.).xyz;
 	const float3 l = (ms_zpd_ya_td.w > 11.0) ? rcol : lcol; // > 11.0 means: flip the eye color
 	const float3 r = (ms_zpd_ya_td.w > 11.0) ? lcol : rcol; // > 11.0 means: flip the eye color
 	color = float4(anaglyph(l, r), 1.0);
@@ -149,6 +165,8 @@ void main()
 
 ////TECHNIQUES
 
+stereo_SBS:P0:vs_main_no_trafo():ps_main_sbs()
+stereo_TB:P0:vs_main_no_trafo():ps_main_tb()
 stereo_Int:P0:vs_main_no_trafo():ps_main_int()
 stereo_Flipped_Int:P0:vs_main_no_trafo():ps_main_flipped_int()
 stereo_anaglyph:P0:vs_main_no_trafo():ps_main_stereo_anaglyph()

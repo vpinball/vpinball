@@ -9,7 +9,6 @@
 ////VERTEX
 
 ////GEOMETRY
-// #extension GL_ARB_viewport_array : enable
 // layout(triangles) in;
 // layout(triangle_strip, max_vertices = 3) out;
 
@@ -68,7 +67,7 @@ out vec3 normal;
 
 void main()
 {
-    gl_ViewportIndex = eye_gs[0];
+    gl_Layer = eye_gs[0];
     for (int i=0;i<gl_in.length();i++)
     {
         gl_Position = matWorldViewProj[eye_gs[i]]*gl_in[i].gl_Position;

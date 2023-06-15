@@ -1,11 +1,6 @@
 ////GLOBAL
 #version 410
 
-#ifdef SHADER_GLES30
-precision highp float;
-#define noperspective
-#endif
-
 ////DEFINES
 #include "Helpers.fxh"
 
@@ -21,10 +16,9 @@ uniform mat4 matWorldViewProj[N_EYES];
 ////VERTEX
 uniform int layer; // Layer being rendered (set to 0 is using layered rendering, that is to say rendering multiple layers using instanced rendering)
 
-out int eye_gs;
+VS_OUT_EYE();
 
 ////GEOMETRY
-#extension GL_ARB_viewport_array : enable
 layout(triangles) in;
 layout(triangle_strip, max_vertices = 3) out;
 
@@ -47,13 +41,14 @@ layout(location=0) in vec3 vPosition;
 layout(location=1) in vec3 vNormal;
 layout(location=2) in vec2 tc;
 
-out vec2 tex0_gs;
+VS_OUT(vec2, tex0);
 
 void main()
 {
-   gl_Position = float4(vPosition.x*backBoxSize.z+backBoxSize.x, 0.0, vPosition.y*backBoxSize.w+backBoxSize.y, 1.0);
-   tex0_gs = tc;
-   eye_gs = gl_InstanceID + layer;
+   float4 pos = float4(vPosition.x*backBoxSize.z+backBoxSize.x, 0.0, vPosition.y*backBoxSize.w+backBoxSize.y, 1.0);
+   VS_EYE();
+   VS_POSITION(pos, pos);
+   VS_VARYING(tex0, tc);
 }
 
 ////vs_simple_world
@@ -62,13 +57,17 @@ layout(location=0) in vec3 vPosition;
 layout(location=1) in vec3 vNormal;
 layout(location=2) in vec2 tc;
 
-out vec2 tex0_gs;
+VS_OUT(vec2, tex0);
+
+uniform vec4 clip_plane; // Clip plane defined in table coordinate system
 
 void main()
 {
-   gl_Position = float4(vPosition, 1.0);
-   tex0_gs = tc;
-   eye_gs = gl_InstanceID + layer;
+   float4 pos = float4(vPosition, 1.0);
+   VS_EYE();
+   VS_POSITION(matWorldViewProj[eye_vs] * pos, pos);
+   VS_VARYING(tex0, tc);
+   VS_CLIP_DISTANCE(pos);
 }
 
 ////gs_simple
@@ -78,9 +77,10 @@ out vec2 tex0;
 
 void main()
 {
-   gl_ViewportIndex = eye_gs[0];
+   gl_Layer = eye_gs[0];
    for (int i=0;i<gl_in.length();i++) {
       gl_Position = matWorldViewProj[eye_gs[i]]*gl_in[i].gl_Position;
+      gl_ClipDistance[0] = gl_in[i].gl_ClipDistance[0];
       tex0 = tex0_gs[i];
       EmitVertex();
    }

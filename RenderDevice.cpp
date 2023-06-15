@@ -163,7 +163,7 @@ void ReportFatalError(const HRESULT hr, const char *file, const int line)
 
 void ReportError(const char *errorText, const HRESULT hr, const char *file, const int line)
 {
-   char msg[4096];
+   char msg[16384];
 #ifdef ENABLE_SDL
    sprintf_s(msg, sizeof(msg), "GL Error 0x%0002X %s in %s:%d\n%s", hr, glErrorToString(hr), file, line, errorText);
    ShowError(msg);
@@ -662,10 +662,15 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    }
    else 
 #endif
-   if (m_stereo3D >= STEREO_ANAGLYPH_RC && m_stereo3D <= STEREO_ANAGLYPH_AB)
+   if (m_stereo3D == STEREO_SBS)
    {
-      // For anaglyph stereo mode, we need to double the width since the 2 eye images are mixed by colors, each being at the resolution of the output.
-      m_width = m_width * 2;
+      // Side by side needs to fit the 2 views along the width, so each view is half the total width
+      m_width = m_width / 2;
+   }
+   else if (m_stereo3D == STEREO_TB || m_stereo3D == STEREO_INT || m_stereo3D == STEREO_FLIPPED_INT)
+   {
+      // Top/Bottom (and interlaced) needs to fit the 2 views along the height, so each view is half the total height
+      m_height = m_height / 2;
    }
 
    if (m_stereo3D == STEREO_VR || m_vsync > refreshrate)
@@ -936,16 +941,13 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
 
    // Retrieve a reference to the back buffer.
    int backBufferWidth, backBufferHeight;
-   RenderTarget::RenderTargetType backBufferType;
 #ifdef ENABLE_SDL
    SDL_GL_GetDrawableSize(m_sdl_playfieldHwnd, &backBufferWidth, &backBufferHeight);
-   backBufferType = m_stereo3D == STEREO_SBS ? RenderTarget::RT_STEREO_SBS : m_stereo3D == STEREO_TB ? RenderTarget::RT_STEREO_TB : RenderTarget::RT_DEFAULT;
 #else
    backBufferWidth = m_width;
    backBufferHeight = m_height;
-   backBufferType = RenderTarget::RT_DEFAULT;
 #endif
-   m_pBackBuffer = new RenderTarget(this, backBufferType, backBufferWidth, backBufferHeight, back_buffer_format);
+   m_pBackBuffer = new RenderTarget(this, backBufferWidth, backBufferHeight, back_buffer_format);
 
 #ifdef ENABLE_SDL
    const colorFormat render_format = ((m_BWrendering == 1) ? colorFormat::RG16F : ((m_BWrendering == 2) ? colorFormat::RED16F : colorFormat::RGB16F));
@@ -964,28 +966,13 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    nMSAASamples = min(maxSamples, nMSAASamples);
 #endif
 
-   RenderTarget::RenderTargetType rtType;
    #ifdef ENABLE_SDL
-   switch (m_stereo3D)
-   {
-   case STEREO_OFF: // Default: render to full render target (single viewport)
-      rtType = RenderTarget::RT_DEFAULT;
-      break;
-   case STEREO_TB: // Top/Bottom: Render left eye in the upper part, and right eye in the lower part
-   case STEREO_INT:
-   case STEREO_FLIPPED_INT:
-      rtType = RenderTarget::RT_STEREO_TB;
-      break;
-   default: // Side by side: For all other stereo mode, render left eye in the left part, and right eye in the right part
-      rtType = RenderTarget::RT_STEREO_SBS;
-      break;
-   }
-
+   SurfaceType rtType = m_stereo3D == STEREO_OFF ? SurfaceType::RT_DEFAULT : SurfaceType::RT_STEREO;
    #else
    // For the time being DirectX 9 does not support any fancy stereo
-   rtType = RenderTarget::RT_DEFAULT;
+   SurfaceType rtType = RenderTarget::RT_DEFAULT;
    #endif
-
+   
    m_pOffscreenMSAABackBufferTexture = new RenderTarget(this, rtType, "OffscreenMSAABackBuffer"s, m_width_aa, m_height_aa, render_format, true, nMSAASamples, "Fatal Error: unable to create render buffer!");
 
    // If we are doing MSAA we need a texture with the same dimensions as the Back Buffer to resolve the end result to, can also use it for Post-AA
@@ -1022,8 +1009,8 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
          renderBufferFormatVR = RGBA8;
          break;
       }
-      m_pOffscreenVRLeft = new RenderTarget(this, RenderTarget::RT_DEFAULT, "VRLeft"s, m_width / 2, m_height, renderBufferFormatVR, false, 1, "Fatal Error: unable to create left eye buffer!");
-      m_pOffscreenVRRight = new RenderTarget(this, RenderTarget::RT_DEFAULT, "VRRight"s, m_width / 2, m_height, renderBufferFormatVR, false, 1, "Fatal Error: unable to create right eye buffer!");
+      m_pOffscreenVRLeft = new RenderTarget(this, SurfaceType::RT_DEFAULT, "VRLeft"s, m_width, m_height, renderBufferFormatVR, false, 1, "Fatal Error: unable to create left eye buffer!");
+      m_pOffscreenVRRight = new RenderTarget(this, SurfaceType::RT_DEFAULT, "VRRight"s, m_width, m_height, renderBufferFormatVR, false, 1, "Fatal Error: unable to create right eye buffer!");
    }
    #endif
 
@@ -1501,7 +1488,7 @@ void RenderDevice::UploadAndSetSMAATextures()
    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, AREATEX_WIDTH, AREATEX_HEIGHT, GL_RG, GL_UNSIGNED_BYTE, (void*)areaTexBytes);
    glGenerateMipmap(GL_TEXTURE_2D); // Generate mip-maps, when using TexStorage will generate same amount as specified in TexStorage, otherwise good idea to limit by GL_TEXTURE_MAX_LEVEL
-   m_SMAAareaTexture = new Sampler(this, glTexture, true, true, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_BILINEAR);
+   m_SMAAareaTexture = new Sampler(this, SurfaceType::RT_DEFAULT, glTexture, true, true, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_BILINEAR);
    m_SMAAareaTexture->SetName("SMAA Area"s);
 #else
    {
@@ -1744,14 +1731,13 @@ void RenderDevice::Clear(const DWORD flags, const D3DCOLOR color, const D3DVALUE
    m_currentPass->Submit(cmd);
 }
 
-void RenderDevice::BlitRenderTarget(RenderTarget* source, RenderTarget* destination, bool copyColor, bool copyDepth,
-   const int x1, const int y1, const int w1, const int h1,
-   const int x2, const int y2, const int w2, const int h2)
+void RenderDevice::BlitRenderTarget(RenderTarget* source, RenderTarget* destination, bool copyColor, bool copyDepth, const int x1, const int y1, const int w1, const int h1, const int x2,
+   const int y2, const int w2, const int h2, const int srcLayer, const int dstLayer)
 {
    assert(m_currentPass->m_rt == destination); // We must be on a render pass targeted at the destination for correct render pass sorting
    AddRenderTargetDependency(source);
    RenderCommand* cmd = m_renderFrame.NewCommand();
-   cmd->SetCopy(source, destination, copyColor, copyDepth, x1, y1, w1, h1, x2, y2, w2, h2);
+   cmd->SetCopy(source, destination, copyColor, copyDepth, x1, y1, w1, h1, x2, y2, w2, h2, srcLayer, dstLayer);
    m_currentPass->Submit(cmd);
 }
 
@@ -2010,7 +1996,7 @@ void RenderDevice::InitVR() {
       // - Set "enable": true in default.vrsettings from C:\Program Files (x86)\Steam\steamapps\common\SteamVR\drivers\null\resources\settings
       // - Add "activateMultipleDrivers" : true, "forcedDriver" : "null", to "steamvr" section of steamvr.vrsettings from C :\Program Files(x86)\Steam\config
       uint32_t eye_width = 1080, eye_height = 1200; // Oculus Rift resolution
-      m_width = eye_width * 2;
+      m_width = eye_width;
       m_height = eye_height;
       for (int i = 0; i < 2; i++)
       {
@@ -2023,7 +2009,7 @@ void RenderDevice::InitVR() {
    {
       uint32_t eye_width, eye_height;
       m_pHMD->GetRecommendedRenderTargetSize(&eye_width, &eye_height);
-      m_width = eye_width * 2;
+      m_width = eye_width;
       m_height = eye_height;
       vr::HmdMatrix34_t left_eye_pos = m_pHMD->GetEyeToHeadTransform(vr::Eye_Left);
       vr::HmdMatrix34_t right_eye_pos = m_pHMD->GetEyeToHeadTransform(vr::Eye_Right);

@@ -7,17 +7,8 @@ class RenderPass;
 class RenderTarget final
 {
 public:
-   enum RenderTargetType
-   {
-      RT_DEFAULT, // Default single layer render target
-      RT_STEREO,  // Render target to a texture array with 2 layers
-      RT_STEREO_SBS, // Render target to a texture with 2 views side by side
-      RT_STEREO_TB, // Render target to a texture with 2 views the one above the other
-      RT_CUBEMAP // Render target to a cubemap texture (6 layers)
-   };
-
-   RenderTarget(RenderDevice* const rd, const RenderTargetType type, const int width, const int height, const colorFormat format); // Default output render target
-   RenderTarget(RenderDevice* const rd, const RenderTargetType type, const string& name, const int width, const int height, const colorFormat format, bool with_depth, int nMSAASamples, const char* failureMessage, RenderTarget* sharedDepth = nullptr);
+   RenderTarget(RenderDevice* const rd, const int width, const int height, const colorFormat format); // Default output render target
+   RenderTarget(RenderDevice* const rd, const SurfaceType type, const string& name, const int width, const int height, const colorFormat format, bool with_depth, int nMSAASamples, const char* failureMessage, RenderTarget* sharedDepth = nullptr);
    ~RenderTarget();
 
    void Activate(const int layer = -1);
@@ -31,7 +22,8 @@ public:
    RenderTarget* Duplicate(const string& name, const bool shareDepthSurface = false);
    void CopyTo(RenderTarget* dest, const bool copyColor = true, const bool copyDepth = true, 
       const int x1 = -1, const int y1 = -1, const int w1 = -1, const int h1 = -1,
-      const int x2 = -1, const int y2 = -1, const int w2 = -1, const int h2 = -1);
+      const int x2 = -1, const int y2 = -1, const int w2 = -1, const int h2 = -1,
+      const int srcLayer = -1, const int dstLayer = -1);
 
    void SetSize(const int w, const int h) { assert(m_is_back_buffer); m_width = w; m_height = h; }
    int GetWidth() const { return m_width; }
@@ -48,7 +40,7 @@ public:
 #endif
 
    const string m_name;
-   const RenderTargetType m_type;
+   const SurfaceType m_type;
    const int m_nLayers;
 
    RenderPass* m_lastRenderPass = nullptr;
@@ -70,8 +62,10 @@ private:
 
 #ifdef ENABLE_SDL
    GLuint m_framebuffer;
+   GLenum m_texTarget = 0;
    GLuint m_color_tex;
    GLuint m_depth_tex;
+   GLuint m_framebuffer_layers[6];
 #else
    bool m_use_alternate_depth;
    IDirect3DSurface9* m_color_surface;

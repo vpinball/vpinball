@@ -1,13 +1,7 @@
 ////GLOBAL
 #version 450 core
 
-#ifdef SHADER_GLES30
-precision highp float;
-#define noperspective
-#endif
-
 ////DEFINES
-#extension GL_ARB_viewport_array : enable
 #include "Helpers.fxh"
 
 // w_h_height.xy contains inverse size of source texture (1/w, 1/h), i.e. one texel shift to the upper (DX)/lower (OpenGL) left texel. Since OpenGL has upside down textures it leads to a different texel if not sampled on both sides
@@ -46,15 +40,17 @@ uniform bool color_grade;
 uniform bool do_dither;
 uniform bool do_bloom;
 
-uniform sampler2D tex_fb_filtered;   // Framebuffer (filtered)
-uniform sampler2D tex_fb_unfiltered; // Framebuffer (unfiltered)
-uniform sampler2D tex_bloom;         // Bloom
-uniform sampler2D tex_ao;            // AO Result (also used as input from the previous frame when computing AO)
-uniform sampler2D tex_depth;         // Depth
+uniform samplerStereo tex_fb_filtered;   // Framebuffer (filtered)
+uniform samplerStereo tex_fb_unfiltered; // Framebuffer (unfiltered)
+uniform samplerStereo tex_bloom;         // Bloom
+uniform samplerStereo tex_ao;            // AO Result (also used as input from the previous frame when computing AO)
+uniform samplerStereo tex_depth;         // Depth
 uniform sampler2D tex_color_lut;     // Color grade LUT
 uniform sampler2D tex_ao_dither;     // AO dither
-uniform sampler2D tex_normals;       // Normals
+uniform samplerStereo tex_normals;       // Normals
 
+in float2 tex0;
+flat in float eye;
 
 out vec4 color;
 
@@ -224,17 +220,17 @@ void main()
    // OpenGL texture coordinates are centered on texel center (0,0 is first texel center) so no offset. Rendering is bottom up with regards to DirectX though
    VS_EYE();
    VS_POSITION(float4(vPosition.x, -vPosition.y, 0.0, 1.0), float4(vPosition.x, -vPosition.y, 0.0, 1.0));
-   VS_VARYING(tex0, toScreenSpaceUV(tc, gl_InstanceID + layer));
+   VS_VARYING(tex0, tc);
 }
 
 ////vs_main_no_trafo_subpixel
 void main()
-{ 
+{
    // OpenGL texture coordinates are centered on texel center (0,0 is first texel center) so no offset. Rendering is bottom up with regards to DirectX though
    VS_EYE();
    VS_POSITION(float4(vPosition.x, -vPosition.y, 0.0, 1.0), float4(vPosition.x, -vPosition.y, 0.0, 1.0));
    // Here we apply an offset to sample in between the samples for filtering
-   VS_VARYING(tex0, toScreenSpaceUV(tc + 0.5 * w_h_height.xy, gl_InstanceID + layer));
+   VS_VARYING(tex0, tc + 0.5 * w_h_height.xy);
 }
 
 
@@ -243,12 +239,14 @@ void main()
 //-----------------------------------------------------------------------------
 
 ////gs_main
+flat out float eye;
 void main()
 {
-   gl_ViewportIndex = eye_gs[0];
+   gl_Layer = eye_gs[0];
    for (int i=0;i<gl_in.length();i++) {
       gl_Position = gl_in[i].gl_Position;
       tex0 = tex0_gs[i];
+      eye = eye_gs[i];
       EmitVertex();
    }
    EndPrimitive();
@@ -261,23 +259,19 @@ void main()
 
 ////ps_main_fb_tonemap
 
-in vec2 tex0;
-
 void main()
 {
-   //!! const float depth0 = texNoLod(tex_depth, u).x;
+   //!! const float depth0 = texStereoNoLod(tex_depth, u).x;
    //!! if((depth0 == 1.0) || (depth0 == 0.0)) //!! early out if depth too large (=BG) or too small (=DMD,etc -> retweak render options (depth write on), otherwise also screwup with stereo)
-   //!!   return float4(texNoLod(tex_fb_filtered, tex0).xyz, 1.0);
+   //!!   return float4(texStereoNoLod(tex_fb_filtered, tex0).xyz, 1.0);
 
-   float3 result = FBToneMap(texNoLod(tex_fb_filtered, tex0).xyz);
+   float3 result = FBToneMap(texStereoNoLod(tex_fb_filtered, tex0).xyz);
    BRANCH if (do_bloom)
-      result += texNoLod(tex_bloom, tex0).xyz; //!! offset?
+      result += texStereoNoLod(tex_bloom, tex0).xyz; //!! offset?
    color = float4(FBColorGrade(FBGamma(saturate(FBDither(result, tex0)))), 1.0);
 }
 
 ////ps_main_fb_bloom
-
-in vec2 tex0;
 
 // For reference, see https://catlikecoding.com/unity/tutorials/advanced-rendering/bloom/
 float3 bloom_cutoff(const float3 c)
@@ -297,121 +291,103 @@ float3 bloom_cutoff(const float3 c)
 void main()
 {
     // collect clipped contribution of the 4x4 texels (via box blur, NOT gaussian, as this is wrong) from original FB
-    const float3 result = (texNoLod(tex_fb_filtered, tex0 - w_h_height.xy).xyz
-                        +  texNoLod(tex_fb_filtered, tex0 + w_h_height.xy).xyz
-                        +  texNoLod(tex_fb_filtered, tex0 + float2(w_h_height.x,-w_h_height.y)).xyz
-                        +  texNoLod(tex_fb_filtered, tex0 + float2(-w_h_height.x,w_h_height.y)).xyz)*0.25; //!! offset for useAA?
+    const float3 result = (texStereoNoLod(tex_fb_filtered, tex0 - w_h_height.xy).xyz
+                        +  texStereoNoLod(tex_fb_filtered, tex0 + w_h_height.xy).xyz
+                        +  texStereoNoLod(tex_fb_filtered, tex0 + float2(w_h_height.x,-w_h_height.y)).xyz
+                        +  texStereoNoLod(tex_fb_filtered, tex0 + float2(-w_h_height.x,w_h_height.y)).xyz)*0.25; //!! offset for useAA?
     color = float4(max(bloom_cutoff(FBToneMap(result)), float3(0.0)) * w_h_height.z, 1.0);
 }
 
 ////ps_main_fb_AO
 
-in vec2 tex0;
-
 void main()
 {
-   float result = texNoLod(tex_ao, tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
+   float result = texStereoNoLod(tex_ao, tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
    result = FBGamma(saturate(result));
    color = float4(result,result,result, 1.0);
 }
 
 ////ps_main_fb_tonemap_AO
 
-in vec2 tex0;
-
 void main()
 {
    // tex0 is pixel perfect sampling which here means between the pixels resulting from supersampling (for 2x, it's in the middle of the 2 texels)
-   float3 result = FBToneMap(texNoLod(tex_fb_filtered, tex0).xyz) // moving AO before tonemap does not really change the look
-                           * texNoLod(tex_ao,          tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
+   float3 result = FBToneMap(texStereoNoLod(tex_fb_filtered, tex0).xyz) // moving AO before tonemap does not really change the look
+                           * texStereoNoLod(tex_ao,          tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
    BRANCH if (do_bloom)
-      result += texNoLod(tex_bloom, tex0).xyz;
+      result += texStereoNoLod(tex_bloom, tex0).xyz;
    color = float4(FBColorGrade(FBGamma(saturate(result))), 1.0);
 }
 
 ////ps_main_fb_tonemap_AO_static
 
-in vec2 tex0;
-
 void main()
 {
    // tex0 is pixel perfect sampling which here means between the pixels resulting from supersampling (for 2x, it's in the middle of the 2 texels)
-   const float3 result = texNoLod(tex_fb_filtered, tex0).xyz // moving AO before tonemap does not really change the look
-                       * texNoLod(tex_ao,          tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
+   const float3 result = texStereoNoLod(tex_fb_filtered, tex0).xyz // moving AO before tonemap does not really change the look
+                       * texStereoNoLod(tex_ao,          tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
    color = float4(result, 1.0);
 }
 
 ////ps_main_fb_tonemap_no_filter
 
-in vec2 tex0;
-
 void main()
 {
-   float3 result = FBToneMap(texNoLod(tex_fb_unfiltered, tex0).xyz);
+   float3 result = FBToneMap(texStereoNoLod(tex_fb_unfiltered, tex0).xyz);
    BRANCH if (do_bloom)
-      result += texNoLod(tex_bloom, tex0).xyz;
+      result += texStereoNoLod(tex_bloom, tex0).xyz;
    color = float4(/*FBDither(*/FBColorGrade(FBGamma(saturate(result))),/*tex0*w_h_height.zw),*/ 1.0);
 }
 
 ////ps_main_fb_tonemap_no_filterRGB
 
-in vec2 tex0;
-
 void main()
 {
-   float3 result = FBToneMap(texNoLod(tex_fb_unfiltered, tex0).xyz);
+   float3 result = FBToneMap(texStereoNoLod(tex_fb_unfiltered, tex0).xyz);
    BRANCH if (do_bloom)
-      result += texNoLod(tex_bloom, tex0).xyz;
+      result += texStereoNoLod(tex_bloom, tex0).xyz;
    color = float4(FBColorGrade(FBGamma(saturate(FBDither(result, tex0)))), 1.0);
 }
 
 ////ps_main_fb_tonemap_no_filterRG
 
-in vec2 tex0;
-
 void main()
 {
-   float2 result = FBToneMap(texNoLod(tex_fb_unfiltered, tex0).xy);
+   float2 result = FBToneMap(texStereoNoLod(tex_fb_unfiltered, tex0).xy);
    BRANCH if (do_bloom)
-      result += texNoLod(tex_bloom, tex0).xy;
+      result += texStereoNoLod(tex_bloom, tex0).xy;
    const float rg = /*FBColorGrade*/(FBGamma(saturate(dot(FBDither(result, tex0), float2(0.176204+0.0108109*0.5,0.812985+0.0108109*0.5)))));
    color = float4(rg,rg,rg,1.0);
 }
 
 ////ps_main_fb_tonemap_no_filterR
 
-in vec2 tex0;
-
 void main()
 {
-   float result = FBToneMap(texNoLod(tex_fb_unfiltered, tex0).x);
+   float result = FBToneMap(texStereoNoLod(tex_fb_unfiltered, tex0).x);
    BRANCH if (do_bloom)
-      result += texNoLod(tex_bloom, tex0).x;
+      result += texStereoNoLod(tex_bloom, tex0).x;
    const float gray = /*FBColorGrade*/(FBGamma(saturate(FBDither(result, tex0))));
    color = float4(gray,gray,gray,1.0);
 }
 
 ////ps_main_fb_tonemap_AO_no_filter
 
-in vec2 tex0;
-
 void main()
 {
-   float3 result = FBToneMap(texNoLod(tex_fb_unfiltered, tex0).rgb) // moving AO before tonemap does not really change the look
-                           * texNoLod(tex_ao,            tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
+   float3 result = FBToneMap(texStereoNoLod(tex_fb_unfiltered, tex0).rgb) // moving AO before tonemap does not really change the look
+                           * texStereoNoLod(tex_ao,            tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
    BRANCH if (do_bloom)
-      result += texNoLod(tex_bloom, tex0).rgb; 
+      result += texStereoNoLod(tex_bloom, tex0).rgb; 
    color = float4(FBColorGrade(FBGamma(saturate(FBDither(result, tex0)))), 1.0);
 }
 
 ////ps_main_fb_tonemap_AO_no_filter_static
 
-in vec2 tex0;
-
 void main()
 {
-   const float3 result = texNoLod(tex_fb_unfiltered, tex0).rgb
-                       * texNoLod(tex_ao,            tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
+   const float3 result = texStereoNoLod(tex_fb_unfiltered, tex0).rgb
+                       * texStereoNoLod(tex_ao,            tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
    color = float4(result, 1.0);
 }
 
@@ -424,169 +400,157 @@ void main()
 
 ////ps_main_fb_blur_horiz7x7
 
-in vec2 tex0;
 void main()
 {
    const float offset7x7[2] = float[]( 0.53473, 2.05896 ); //no center!
    const float weight7x7[2] = float[]( 0.45134, 0.04866 ); //no center!
    float3 result = float3(0.0, 0.0, 0.0);
    UNROLL for(int i = 0; i < 2; ++i)
-      result += (texNoLod(tex_fb_filtered, tex0+float2(w_h_height.x*offset7x7[i],0.0)).xyz
-                +texNoLod(tex_fb_filtered, tex0-float2(w_h_height.x*offset7x7[i],0.0)).xyz)*weight7x7[i];
+      result += (texStereoNoLod(tex_fb_filtered, tex0+float2(w_h_height.x*offset7x7[i],0.0)).xyz
+                +texStereoNoLod(tex_fb_filtered, tex0-float2(w_h_height.x*offset7x7[i],0.0)).xyz)*weight7x7[i];
    color = float4(result, 1.0);
 }
 
 ////ps_main_fb_blur_vert7x7
 
-in vec2 tex0;
 void main()
 {
    const float offset7x7[2] = float[]( 0.53473, 2.05896 ); //no center!
    const float weight7x7[2] = float[]( 0.45134, 0.04866 ); //no center!
    float3 result = float3(0.0, 0.0, 0.0);
    UNROLL for(int i = 0; i < 2; ++i)
-      result += (texNoLod(tex_fb_filtered, tex0+float2(0.0,w_h_height.y*offset7x7[i])).xyz
-                +texNoLod(tex_fb_filtered, tex0-float2(0.0,w_h_height.y*offset7x7[i])).xyz)*weight7x7[i];
+      result += (texStereoNoLod(tex_fb_filtered, tex0+float2(0.0,w_h_height.y*offset7x7[i])).xyz
+                +texStereoNoLod(tex_fb_filtered, tex0-float2(0.0,w_h_height.y*offset7x7[i])).xyz)*weight7x7[i];
    color = float4(result, 1.0);
 }
 
 ////ps_main_fb_blur_horiz9x9
 
-in vec2 tex0;
 void main()
 {
    const float offset9x9[3] = float[]( 0.0, 1.3846153846153846, 3.2307692307692304 );
    const float weight9x9[3] = float[]( 0.22697126013264554, 0.31613854089904203, 0.070253009088676 );
-   float3 result = texNoLod(tex_fb_filtered, tex0).xyz*weight9x9[0];
+   float3 result = texStereoNoLod(tex_fb_filtered, tex0).xyz*weight9x9[0];
    UNROLL for(int i = 1; i < 3; ++i)
-      result += (texNoLod(tex_fb_filtered, tex0+float2(w_h_height.x*offset9x9[i],0.0)).xyz
-                +texNoLod(tex_fb_filtered, tex0-float2(w_h_height.x*offset9x9[i],0.0)).xyz)*weight9x9[i];
+      result += (texStereoNoLod(tex_fb_filtered, tex0+float2(w_h_height.x*offset9x9[i],0.0)).xyz
+                +texStereoNoLod(tex_fb_filtered, tex0-float2(w_h_height.x*offset9x9[i],0.0)).xyz)*weight9x9[i];
    color = float4(result, 1.0);
 }
 
 ////ps_main_fb_blur_vert9x9
 
-in vec2 tex0;
 void main()
 {
    const float offset9x9[3] = float[]( 0.0, 1.3846153846153846, 3.2307692307692304 );
    const float weight9x9[3] = float[]( 0.22697126013264554, 0.31613854089904203, 0.070253009088676 );
-   float3 result = texNoLod(tex_fb_unfiltered, tex0).xyz*weight9x9[0];
+   float3 result = texStereoNoLod(tex_fb_unfiltered, tex0).xyz*weight9x9[0];
    UNROLL for(int i = 1; i < 3; ++i)
-      result += (texNoLod(tex_fb_filtered, tex0+float2(0.0,w_h_height.y*offset9x9[i])).xyz
-                +texNoLod(tex_fb_filtered, tex0-float2(0.0,w_h_height.y*offset9x9[i])).xyz)*weight9x9[i];
+      result += (texStereoNoLod(tex_fb_filtered, tex0+float2(0.0,w_h_height.y*offset9x9[i])).xyz
+                +texStereoNoLod(tex_fb_filtered, tex0-float2(0.0,w_h_height.y*offset9x9[i])).xyz)*weight9x9[i];
    color = float4(result, 1.0);
 }
 
 ////ps_main_fb_blur_horiz11x11
 
-in vec2 tex0;
 void main()
 {
    const float offset11x11[3] = float[]( 0.62195, 2.27357, 4.14706 ); //no center!
    const float weight11x11[3] = float[]( 0.32993, 0.15722, 0.01285 ); //no center!
    float3 result = float3(0.0, 0.0, 0.0);
    UNROLL for(int i = 0; i < 3; ++i)
-      result += (texNoLod(tex_fb_filtered, tex0+float2(w_h_height.x*offset11x11[i],0.0)).xyz
-                +texNoLod(tex_fb_filtered, tex0-float2(w_h_height.x*offset11x11[i],0.0)).xyz)*weight11x11[i];
+      result += (texStereoNoLod(tex_fb_filtered, tex0+float2(w_h_height.x*offset11x11[i],0.0)).xyz
+                +texStereoNoLod(tex_fb_filtered, tex0-float2(w_h_height.x*offset11x11[i],0.0)).xyz)*weight11x11[i];
    color = float4(result, 1.0);
 }
 
 ////ps_main_fb_blur_vert11x11
 
-in vec2 tex0;
 void main()
 {
    const float offset11x11[3] = float[]( 0.62195, 2.27357, 4.14706 ); //no center!
    const float weight11x11[3] = float[]( 0.32993, 0.15722, 0.01285 ); //no center!
    float3 result = float3(0.0, 0.0, 0.0);
    UNROLL for(int i = 0; i < 3; ++i)
-      result += (texNoLod(tex_fb_filtered, tex0+float2(0.0,w_h_height.y*offset11x11[i])).xyz
-                +texNoLod(tex_fb_filtered, tex0-float2(0.0,w_h_height.y*offset11x11[i])).xyz)*weight11x11[i];
+      result += (texStereoNoLod(tex_fb_filtered, tex0+float2(0.0,w_h_height.y*offset11x11[i])).xyz
+                +texStereoNoLod(tex_fb_filtered, tex0-float2(0.0,w_h_height.y*offset11x11[i])).xyz)*weight11x11[i];
    color = float4(result, 1.0);
 }
 
 ////ps_main_fb_blur_horiz13x13
 
-in vec2 tex0;
 void main()
 {
    const float offset13x13[4] = float[]( 0.0, 1.4117647058823528, 3.2941176470588234, 5.176470588235294 );
    const float weight13x13[4] = float[]( 0.1964795505549364, 0.2969024319496817, 0.09446895562035326, 0.010381203914324535 );
-   float3 result = texNoLod(tex_fb_filtered, tex0).xyz*weight13x13[0];
+   float3 result = texStereoNoLod(tex_fb_filtered, tex0).xyz*weight13x13[0];
    UNROLL for(int i = 1; i < 4; ++i)
-      result += (texNoLod(tex_fb_filtered, tex0+float2(w_h_height.x*offset13x13[i],0.0)).xyz
-                +texNoLod(tex_fb_filtered, tex0-float2(w_h_height.x*offset13x13[i],0.0)).xyz)*weight13x13[i];
+      result += (texStereoNoLod(tex_fb_filtered, tex0+float2(w_h_height.x*offset13x13[i],0.0)).xyz
+                +texStereoNoLod(tex_fb_filtered, tex0-float2(w_h_height.x*offset13x13[i],0.0)).xyz)*weight13x13[i];
    color = float4(result, 1.0);
 }
 
 ////ps_main_fb_blur_vert13x13
 
-in vec2 tex0;
 void main()
 {
    const float offset13x13[4] = float[]( 0.0, 1.4117647058823528, 3.2941176470588234, 5.176470588235294 );
    const float weight13x13[4] = float[]( 0.1964795505549364, 0.2969024319496817, 0.09446895562035326, 0.010381203914324535 );
-   float3 result = texNoLod(tex_fb_filtered, tex0).xyz*weight13x13[0];
+   float3 result = texStereoNoLod(tex_fb_filtered, tex0).xyz*weight13x13[0];
    UNROLL for(int i = 1; i < 4; ++i)
-      result += (texNoLod(tex_fb_filtered, tex0+float2(0.0,w_h_height.y*offset13x13[i])).xyz
-                +texNoLod(tex_fb_filtered, tex0-float2(0.0,w_h_height.y*offset13x13[i])).xyz)*weight13x13[i];
+      result += (texStereoNoLod(tex_fb_filtered, tex0+float2(0.0,w_h_height.y*offset13x13[i])).xyz
+                +texStereoNoLod(tex_fb_filtered, tex0-float2(0.0,w_h_height.y*offset13x13[i])).xyz)*weight13x13[i];
    color = float4(result, 1.0);
 }
 
 ////ps_main_fb_blur_horiz15x15
 
-in vec2 tex0;
 void main()
 {
    const float offset15x15[4] = float[]( 0.64417, 2.37795, 4.28970, 6.21493 ); //no center!
    const float weight15x15[4] = float[]( 0.25044, 0.19233, 0.05095, 0.00628 ); //no center!
    float3 result = float3(0.0, 0.0, 0.0);
    UNROLL for(int i = 0; i < 4; ++i)
-      result += (texNoLod(tex_fb_filtered, tex0+float2(w_h_height.x*offset15x15[i],0.0)).xyz
-                +texNoLod(tex_fb_filtered, tex0-float2(w_h_height.x*offset15x15[i],0.0)).xyz)*weight15x15[i];
+      result += (texStereoNoLod(tex_fb_filtered, tex0+float2(w_h_height.x*offset15x15[i],0.0)).xyz
+                +texStereoNoLod(tex_fb_filtered, tex0-float2(w_h_height.x*offset15x15[i],0.0)).xyz)*weight15x15[i];
    color = float4(result, 1.0);
 }
 
 ////ps_main_fb_blur_vert15x15
 
-in vec2 tex0;
 void main()
 {
    const float offset15x15[4] = float[]( 0.64417, 2.37795, 4.28970, 6.21493 ); //no center!
    const float weight15x15[4] = float[]( 0.25044, 0.19233, 0.05095, 0.00628 ); //no center!
    float3 result = float3(0.0, 0.0, 0.0);
    UNROLL for(int i = 0; i < 4; ++i)
-      result += (texNoLod(tex_fb_filtered, tex0+float2(0.0,w_h_height.y*offset15x15[i])).xyz
-                +texNoLod(tex_fb_filtered, tex0-float2(0.0,w_h_height.y*offset15x15[i])).xyz)*weight15x15[i];
+      result += (texStereoNoLod(tex_fb_filtered, tex0+float2(0.0,w_h_height.y*offset15x15[i])).xyz
+                +texStereoNoLod(tex_fb_filtered, tex0-float2(0.0,w_h_height.y*offset15x15[i])).xyz)*weight15x15[i];
    color = float4(result, 1.0);
 }
 
 ////ps_main_fb_blur_horiz19x19
 
-in vec2 tex0;
 void main()
 {
    const float offset19x19[5] = float[]( 0.65323, 2.42572, 4.36847, 6.31470, 8.26547 ); //no center!
    const float weight19x19[5] = float[]( 0.19923, 0.18937, 0.08396, 0.02337, 0.00408 ); //no center!
    float3 result = float3(0.0, 0.0, 0.0);
    UNROLL for(int i = 0; i < 5; ++i)
-      result += (texNoLod(tex_fb_filtered, tex0+float2(w_h_height.x*offset19x19[i],0.0)).xyz
-                +texNoLod(tex_fb_filtered, tex0-float2(w_h_height.x*offset19x19[i],0.0)).xyz)*weight19x19[i];
+      result += (texStereoNoLod(tex_fb_filtered, tex0+float2(w_h_height.x*offset19x19[i],0.0)).xyz
+                +texStereoNoLod(tex_fb_filtered, tex0-float2(w_h_height.x*offset19x19[i],0.0)).xyz)*weight19x19[i];
    color = float4(result, 1.0);
 }
 
 ////ps_main_fb_blur_vert19x19
 
-in vec2 tex0;
 void main()
 {
    const float offset19x19[5] = float[]( 0.65323, 2.42572, 4.36847, 6.31470, 8.26547 ); //no center!
    const float weight19x19[5] = float[]( 0.19923, 0.18937, 0.08396, 0.02337, 0.00408 ); //no center!
    float3 result = float3(0.0, 0.0, 0.0);
    UNROLL for(int i = 0; i < 5; ++i)
-      result += (texNoLod(tex_fb_filtered, tex0+float2(0.0,w_h_height.y*offset19x19[i])).xyz
-                +texNoLod(tex_fb_filtered, tex0-float2(0.0,w_h_height.y*offset19x19[i])).xyz)*weight19x19[i];
+      result += (texStereoNoLod(tex_fb_filtered, tex0+float2(0.0,w_h_height.y*offset19x19[i])).xyz
+                +texStereoNoLod(tex_fb_filtered, tex0-float2(0.0,w_h_height.y*offset19x19[i])).xyz)*weight19x19[i];
    color = float4(result, 1.0);
 }
 
@@ -601,35 +565,32 @@ void main()
 //!! would be smoothest fadeout on edges:
 ////ps_main_fb_blur_horiz19x19h
 
-in vec2 tex0;
 void main()
 {
    const float offset19x19h[5] = float[]( 0.63918, 2.35282, 4.25124, 6.17117, 8.11278 ); //no center!
    const float weight19x19h[5] = float[]( 0.27233, 0.18690, 0.03767, 0.00301, 0.00009 ); //no center!
    float3 result = float3(0.0, 0.0, 0.0);
    UNROLL for(int i = 0; i < 5; ++i)
-      result += (texNoLod(tex_fb_filtered, tex0+float2(w_h_height.x*offset19x19h[i],0.0)).xyz
-                +texNoLod(tex_fb_filtered, tex0-float2(w_h_height.x*offset19x19h[i],0.0)).xyz)*weight19x19h[i];
+      result += (texStereoNoLod(tex_fb_filtered, tex0+float2(w_h_height.x*offset19x19h[i],0.0)).xyz
+                +texStereoNoLod(tex_fb_filtered, tex0-float2(w_h_height.x*offset19x19h[i],0.0)).xyz)*weight19x19h[i];
    color = float4(result, 1.0);
 }
 
 ////ps_main_fb_blur_vert19x19h
 
-in vec2 tex0;
 void main()
 {
    const float offset19x19h[5] = float[]( 0.63918, 2.35282, 4.25124, 6.17117, 8.11278 ); //no center!
    const float weight19x19h[5] = float[]( 0.27233, 0.18690, 0.03767, 0.00301, 0.00009 ); //no center!
    float3 result = float3(0.0, 0.0, 0.0);
    UNROLL for(int i = 0; i < 5; ++i)
-      result += (texNoLod(tex_fb_filtered, tex0+float2(0.0,w_h_height.y*offset19x19h[i])).xyz
-                +texNoLod(tex_fb_filtered, tex0-float2(0.0,w_h_height.y*offset19x19h[i])).xyz)*weight19x19h[i];
+      result += (texStereoNoLod(tex_fb_filtered, tex0+float2(0.0,w_h_height.y*offset19x19h[i])).xyz
+                +texStereoNoLod(tex_fb_filtered, tex0-float2(0.0,w_h_height.y*offset19x19h[i])).xyz)*weight19x19h[i];
    color = float4(result, 1.0);
 }
 
 ////ps_main_fb_blur_horiz23x23
 
-in vec2 tex0;
 void main()
 {
    // smoother fadeout on edges
@@ -641,14 +602,13 @@ void main()
    );
    float3 result = float3(0.0, 0.0, 0.0);
    UNROLL for(int i = 0; i < 6; ++i)
-      result += (texNoLod(tex_fb_filtered, tex0+float2(w_h_height.x*offset23x23[i],0.0)).xyz
-                +texNoLod(tex_fb_filtered, tex0-float2(w_h_height.x*offset23x23[i],0.0)).xyz)*weight23x23[i];
+      result += (texStereoNoLod(tex_fb_filtered, tex0+float2(w_h_height.x*offset23x23[i],0.0)).xyz
+                +texStereoNoLod(tex_fb_filtered, tex0-float2(w_h_height.x*offset23x23[i],0.0)).xyz)*weight23x23[i];
    color = float4(result, 1.0);
 }
 
 ////ps_main_fb_blur_vert23x23
 
-in vec2 tex0;
 void main()
 {
    // smoother fadeout on edges
@@ -660,14 +620,13 @@ void main()
    );
    float3 result = float3(0.0, 0.0, 0.0);
    UNROLL for(int i = 0; i < 6; ++i)
-      result += (texNoLod(tex_fb_filtered, tex0+float2(0.0,w_h_height.y*offset23x23[i])).xyz
-                +texNoLod(tex_fb_filtered, tex0-float2(0.0,w_h_height.y*offset23x23[i])).xyz)*weight23x23[i];
+      result += (texStereoNoLod(tex_fb_filtered, tex0+float2(0.0,w_h_height.y*offset23x23[i])).xyz
+                +texStereoNoLod(tex_fb_filtered, tex0-float2(0.0,w_h_height.y*offset23x23[i])).xyz)*weight23x23[i];
    color = float4(result, 1.0);
 }
 
 ////ps_main_fb_blur_horiz27x27
 
-in vec2 tex0;
 void main()
 {
    // 'h'-versions:  (smoother fadeout on edges)
@@ -682,14 +641,13 @@ void main()
    //const float weight27x27[7] = float[] ( 0.14096, 0.15932, 0.10714, 0.05743, 0.02454, 0.00835, 0.00227 );   //no center!
    float3 result = float3(0.0, 0.0, 0.0);
    UNROLL for(int i = 0; i < 7; ++i)
-      result += (texNoLod(tex_fb_filtered, tex0+float2(w_h_height.x*offset27x27[i],0.0)).xyz
-                +texNoLod(tex_fb_filtered, tex0-float2(w_h_height.x*offset27x27[i],0.0)).xyz)*weight27x27[i];
+      result += (texStereoNoLod(tex_fb_filtered, tex0+float2(w_h_height.x*offset27x27[i],0.0)).xyz
+                +texStereoNoLod(tex_fb_filtered, tex0-float2(w_h_height.x*offset27x27[i],0.0)).xyz)*weight27x27[i];
    color = float4(result, 1.0);
 }
 
 ////ps_main_fb_blur_vert27x27
 
-in vec2 tex0;
 void main()
 {
    // 'h'-versions:  (smoother fadeout on edges)
@@ -704,14 +662,13 @@ void main()
    //const float weight27x27[7] = float[] ( 0.14096, 0.15932, 0.10714, 0.05743, 0.02454, 0.00835, 0.00227 );   //no center!
    float3 result = float3(0.0, 0.0, 0.0);
    UNROLL for(int i = 0; i < 7; ++i)
-      result += (texNoLod(tex_fb_filtered, tex0+float2(0.0,w_h_height.y*offset27x27[i])).xyz
-                +texNoLod(tex_fb_filtered, tex0-float2(0.0,w_h_height.y*offset27x27[i])).xyz)*weight27x27[i];
+      result += (texStereoNoLod(tex_fb_filtered, tex0+float2(0.0,w_h_height.y*offset27x27[i])).xyz
+                +texStereoNoLod(tex_fb_filtered, tex0-float2(0.0,w_h_height.y*offset27x27[i])).xyz)*weight27x27[i];
    color = float4(result, 1.0);
 }
 
 ////ps_main_fb_blur_horiz39x39
 
-in vec2 tex0;
 void main()
 {
    // smoother fadeout on edges
@@ -723,14 +680,13 @@ void main()
                                          /*0.09721, 0.11993, 0.09955, 0.07429, 0.04984, 0.03006, 0.01630, 0.00795, 0.00348, 0.00137*/ ); //no center!
    float3 result = float3(0.0, 0.0, 0.0);
    UNROLL for(int i = 0; i < 10; ++i)
-      result += (texNoLod(tex_fb_filtered, tex0+float2(w_h_height.x*offset39x39[i],0.0)).xyz
-                +texNoLod(tex_fb_filtered, tex0-float2(w_h_height.x*offset39x39[i],0.0)).xyz)*weight39x39[i];
+      result += (texStereoNoLod(tex_fb_filtered, tex0+float2(w_h_height.x*offset39x39[i],0.0)).xyz
+                +texStereoNoLod(tex_fb_filtered, tex0-float2(w_h_height.x*offset39x39[i],0.0)).xyz)*weight39x39[i];
    color = float4(result, 1.0);
 }
 
 ////ps_main_fb_blur_vert39x39
 
-in vec2 tex0;
 void main()
 {
    const float offset39x39[10] = float[] ( 0.66063, 2.46625, 4.43946, 6.41301, 8.38706, 10.36173, 12.33715, 14.31341, 16.29062, 18.26884
@@ -741,23 +697,22 @@ void main()
                                          /*0.09721, 0.11993, 0.09955, 0.07429, 0.04984, 0.03006, 0.01630, 0.00795, 0.00348, 0.00137*/ ); //no center!
    float3 result = float3(0.0, 0.0, 0.0);
    UNROLL for(int i = 0; i < 10; ++i)
-      result += (texNoLod(tex_fb_filtered, tex0+float2(0.0,w_h_height.y*offset39x39[i])).xyz
-                +texNoLod(tex_fb_filtered, tex0-float2(0.0,w_h_height.y*offset39x39[i])).xyz)*weight39x39[i];
+      result += (texStereoNoLod(tex_fb_filtered, tex0+float2(0.0,w_h_height.y*offset39x39[i])).xyz
+                +texStereoNoLod(tex_fb_filtered, tex0-float2(0.0,w_h_height.y*offset39x39[i])).xyz)*weight39x39[i];
    color = float4(result, 1.0);
 }
 
 ////ps_main_fb_mirror
 
-in vec2 tex0;
 void main()
 {
-   color = float4(texture(tex_fb_unfiltered, tex0).rgb * (1. / w_h_height.z), 1.0);
+   color = float4(texStereo(tex_fb_unfiltered, tex0).rgb * (1. / w_h_height.z), 1.0);
 }
 
 
 ////ps_main_fb_irradiance
 
-in vec2 tex0;
+uniform sampler2D tex_env; // envmap
 
 // Compute Van der Corput radical inverse
 // See: http://holger.dammertz.org/stuff/notes_HammersleyOnHemisphere.html
@@ -790,7 +745,7 @@ void main()
       const float2 u = float2(float(i) * InvNumSamples, frac(float(i) * g));
       const float3 Li = rotate_to_vector_upper(cos_hemisphere_sample(u), N);
 	  const float2 uv = ray_to_equirectangular_uv(Li);
-      irradiance += texNoLod(tex_fb_unfiltered, uv).rgb * InvNumSamples;
+      irradiance += texNoLod(tex_env, uv).rgb * InvNumSamples;
    }
    color = float4(irradiance, 1.0);
 }
