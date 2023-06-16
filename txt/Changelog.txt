@@ -25,7 +25,7 @@ FEATURES:
   - super-sampling based anti-aliasing can now be adjusted with a slider from 0.5 (downsampling) up to 2.
     The factor describes the scaling in X and Y direction, so 2 increases the overall pixel-count by a factor of 4.
 
-  - the new OpenGL pipeline has full support for GPU multisample antialiasing (MSAA) which goods very good results for a fairly low performance cost
+  - the new OpenGL pipeline in addition has full support for GPU multisample antialiasing (MSAA) which offers very good results for a fairly low performance overhead compared to super-sampling
 
   - splitted the video settings into the 'old' 2D based video settings menu and a new VR settings menu.
     Also different registry entries are used to store the various settings like stereo mode, display, resolution, postprocessing etc. separately.
