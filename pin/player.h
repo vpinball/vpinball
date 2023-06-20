@@ -342,35 +342,13 @@ public:
    virtual LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 
 private:
-   void InitBallShader();
    void InitKeys();
-
-   void InitStatic();
-
-   void UpdatePhysics();
-
-   void DrawBulbLightBuffer();
-   void Bloom();
-   void SSRefl();
-   void StereoFXAA(RenderTarget* renderedRT, const bool stereo, const bool SMAA, const bool DLAA, const bool NFAA, const bool FXAA1, const bool FXAA2, const bool FXAA3, const unsigned int sharpen, const bool depth_available);
-
-   void PrepareVideoBuffersNormal();
-   void PrepareVideoBuffersAO();
-   void FlipVideoBuffers(const bool vsync);
-
-   void PhysicsSimulateCycle(float dtime);
-
-   void DrawBalls();
 
 public:
    void LockForegroundWindow(const bool enable);
-   void Render();
-   void RenderDynamics();
+   void OnIdle();
 
    string GetPerfInfo();
-
-   void DrawStatics();
-   void DrawDynamics(bool onlyBalls);
 
    Ball *CreateBall(const float x, const float y, const float z, const float vx, const float vy, const float vz, const float radius = 25.0f, const float mass = 1.0f);
    void DestroyBall(Ball *pball);
@@ -386,81 +364,24 @@ public:
    void RecomputePauseState();
    void RecomputePseudoPauseState();
 
+#pragma region Physics
+private:
+   void UpdatePhysics();
+   void PhysicsSimulateCycle(float dtime);
    void NudgeUpdate();
    void FilterNudge();
+   #ifdef UNUSED_TILT
+   int NudgeGetTilt(); // returns non-zero when appropriate to set the tilt switch
+   #endif
+   void MechPlungerUpdate();
+
+public:
    void NudgeX(const int x, const int joyidx);
    void NudgeY(const int y, const int joyidx);
-#ifdef UNUSED_TILT
-   int  NudgeGetTilt(); // returns non-zero when appropriate to set the tilt switch
-#endif
-
-   void MechPlungerUpdate();
    void MechPlungerIn(const int z);
-
    void SetGravity(float slopeDeg, float strength);
 
-#ifdef PLAYBACK
-   float ParseLog(LARGE_INTEGER *pli1, LARGE_INTEGER *pli2);
-#endif
-
-   void DMDdraw(const float DMDposx, const float DMDposy, const float DMDwidth, const float DMDheight, const COLORREF DMDcolor, const float intensity);
-   void Spritedraw(const float posx, const float posy, const float width, const float height, const COLORREF color, Texture* const tex, const float intensity, const bool backdrop=false);
-   void Spritedraw(const float posx, const float posy, const float width, const float height, const COLORREF color, Sampler* const tex, const float intensity, const bool backdrop=false);
-
-#ifdef ENABLE_SDL
-   SDL_Window  *m_sdl_playfieldHwnd;
-#endif
-
-   MeshBuffer *m_ballMeshBuffer = nullptr;
-   MeshBuffer *m_ballTrailMeshBuffer = nullptr;
-   bool m_antiStretchBall;
-
-   void EnableStaticPrePass(const bool use_prepass) { if (m_dynamicMode == use_prepass) { m_dynamicMode = !use_prepass; InitStatic(); } }
-
-   bool m_dynamicMode;
-   bool m_cameraMode;
-   enum BackdropSetting
-   {
-      BS_ViewMode, BS_LookAt, BS_FOV, BS_Layback, BS_ViewHOfs, BS_ViewVOfs, BS_XYScale, BS_XScale, BS_YScale, BS_XOffset, BS_YOffset, BS_ZOffset,
-      BS_WndTopXOfs, BS_WndTopYOfs, BS_WndTopZOfs, BS_WndBottomXOfs, BS_WndBottomYOfs, BS_WndBottomZOfs,
-      BS_LightEmissionScale, BS_LightRange, BS_LightHeight, BS_EnvEmissionScale, BS_EyeSeparation, BS_AnaglyphDesat, BS_AnaglyphContrast,
-   };
-   static constexpr Player::BackdropSetting mLegacyViewSettings[] = {
-      BS_ViewMode, BS_LookAt, BS_FOV, BS_Layback, BS_XYScale, BS_XScale, BS_YScale, BS_XOffset, BS_YOffset, BS_ZOffset,
-      BS_LightEmissionScale, BS_LightRange, BS_LightHeight, BS_EnvEmissionScale, BS_EyeSeparation, BS_AnaglyphDesat, BS_AnaglyphContrast,
-   };
-   static constexpr Player::BackdropSetting mCameraViewSettings[] = {
-      BS_ViewMode, BS_FOV, BS_ViewHOfs, BS_ViewVOfs, BS_XYScale, BS_XScale, BS_YScale, BS_LookAt, BS_XOffset, BS_YOffset, BS_ZOffset,
-      BS_LightEmissionScale, BS_LightRange, BS_LightHeight, BS_EnvEmissionScale, BS_EyeSeparation, BS_AnaglyphDesat, BS_AnaglyphContrast,
-   };
-   static constexpr Player::BackdropSetting mWindowViewSettings[] = {
-      BS_ViewMode, BS_ViewHOfs, BS_ViewVOfs, BS_XYScale, BS_XScale, BS_YScale, BS_XOffset, BS_YOffset, BS_ZOffset, 
-      BS_WndTopXOfs, BS_WndTopYOfs, BS_WndTopZOfs, BS_WndBottomXOfs, BS_WndBottomYOfs, BS_WndBottomZOfs,
-      BS_LightEmissionScale, BS_LightRange, BS_LightHeight, BS_EnvEmissionScale, BS_EyeSeparation, BS_AnaglyphDesat, BS_AnaglyphContrast,
-   };
-   BackdropSetting m_backdropSettingActive = BS_ViewMode;
-   PinTable * const m_pEditorTable; // The untouched version of the table, as it is in the editor (The Player needs it to interact with the UI)
-   PinTable * const m_ptable; // The played table, which can be modified by the script
-
-   Pin3D m_pin3d;
-
-   U32 m_time_msec;          // current physics time
-   U32 m_last_frame_time_msec; // used for non-physics controlled animations to update once per-frame only, aligned with m_time_msec
-
-   Ball *m_pactiveball;      // ball the script user can get with ActiveBall
-   Ball *m_pactiveballDebug; // ball the debugger will use as Activeball when firing events
-   Ball *m_pactiveballBC;    // ball that the ball control UI will use
-   Vertex3Ds *m_pBCTarget;   // if non-null, the target location for the ball to roll towards
-
-   vector<Ball*> m_vball;
-   vector<HitFlipper*> m_vFlippers;
-
-   vector<HitTimer*> m_vht;
-   vector<TimerOnOff> m_changed_vht; // stores all en/disable changes to the m_vht timer list, to avoid problems with timers dis/enabling themselves
-
    Vertex3Ds m_gravity;
-
-   PinInput m_pininput;
 
    Vertex2D m_Nudge;
 
@@ -481,19 +402,152 @@ public:
    Vertex2D m_legacyNudgeBack;
    int m_legacyNudgeTime;
 
-   EnumAssignKeys m_rgKeys[eCKeys]; //Player's key assignments
+   bool m_swap_ball_collision_handling; // Swaps the order of ball-ball collision handling around each physics cycle (in regard to the RLC comment block in quadtree.cpp (hopefully ;)))
 
-   HWND m_hwndDebugOutput;
+#ifdef DEBUGPHYSICS
+   U32 c_hitcnts;
+   U32 c_collisioncnt;
+   U32 c_contactcnt;
+#ifdef C_DYNAMIC
+   U32 c_staticcnt;
+#endif
+   U32 c_embedcnts;
+   U32 c_timesearch;
 
-   vector<CLSID*> m_controlclsidsafe; // ActiveX control types which have already been okayed as being safe
+   U32 c_kDObjects;
+   U32 c_kDNextlevels;
+   U32 c_quadObjects;
+   U32 c_quadNextlevels;
 
-   int m_sleeptime;          // time to sleep during each frame - can help side threads like vpinmame, but most likely outdated
-   int m_minphyslooptime;    // minimum physics loop processing time in usec (0-1000), effort to reduce input latency (mainly useful if vsync is enabled, too)
+   U32 c_traversed;
+   U32 c_tested;
+   U32 c_deepTested;
+#endif
 
-   float m_globalEmissionScale;
+   U32 m_movedPlunger; // has plunger moved, must have moved at least three times
+   U32 m_LastPlungerHit; // The last time the plunger was in contact (at least the vicinity) of the ball.
+   float m_curMechPlungerPos;
+
+   // Physics stats
+   U32 m_phys_iterations;
+   U64 m_phys_total_iterations;
+   U32 m_phys_max_iterations;
+   U32 m_phys_max;
+   U64 m_count; // Number of frames included in the total variant of the counters
+
+   bool m_recordContacts; // flag for DoHitTest()
+   vector<CollisionEvent> m_contacts;
+
+#ifndef LOG
+private:
+#endif
+   vector<MoverObject *> m_vmover; // moving objects for physics simulation
+#ifdef LOG
+private:
+#endif
+   vector<HitObject *> m_vho;
+
+   vector<Ball *> m_vballDelete; // Balls to free at the end of the frame
+
+   /*HitKD*/ HitQuadtree m_hitoctree;
+
+   vector<HitObject *> m_vdebugho;
+   HitQuadtree m_debugoctree;
+
+   vector<HitObject *> m_vho_dynamic;
+#ifdef USE_EMBREE
+   HitQuadtree m_hitoctree_dynamic; // should be generated from scratch each time something changes
+#else
+   HitKD m_hitoctree_dynamic; // should be generated from scratch each time something changes
+#endif
+
+   float m_NudgeShake; // whether to shake the screen during nudges and how much
+
+   HitPlane m_hitPlayfield; // HitPlanes cannot be part of octree (infinite size)
+   HitPlane m_hitTopGlass;
+
+   U64 m_StartTime_usec;
+   U64 m_curPhysicsFrameTime; // Time when the last frame was drawn
+   U64 m_nextPhysicsFrameTime; // time at which the next physics update should be
+   U64 m_lastFlipTime;
+
+   // all Hitables obtained from the table's list of Editables
+   vector<Hitable *> m_vhitables;
+
+   int2 m_curAccel[PININ_JOYMXCNT];
+
+   int m_curPlunger;
+#pragma endregion
+
+
+#ifdef PLAYBACK
+public:
+   float ParseLog(LARGE_INTEGER *pli1, LARGE_INTEGER *pli2);
+
+private:
+   bool m_playback;
+   FILE *m_fplaylog;
+#endif
+
+
+#pragma region Rendering
+private:
+   void InitShader();
+   void InitBallShader();
+   void InitStatic();
+
+   void DrawBulbLightBuffer();
+   void RenderDynamics();
+   void DrawBalls();
+   void Bloom();
+   void SSRefl();
+   void PrepareVideoBuffersNormal();
+   void PrepareVideoBuffersAO();
+   void StereoFXAA(RenderTarget* renderedRT, const bool stereo, const bool SMAA, const bool DLAA, const bool NFAA, const bool FXAA1, const bool FXAA2, const bool FXAA3, const unsigned int sharpen, const bool depth_available);
+   void FlipVideoBuffers(const bool vsync);
+
+   FrameQueueLimiter m_limiter;
+
+   void SetScreenOffset(const float x, const float y); // set render offset in screen coordinates, e.g., for the nudge shake
+
+   void CalcBallAspectRatio();
+   void GetBallAspectRatio(const Ball *const pball, Vertex2D &stretch, const float zHeight);
+   //void DrawBallReflection(Ball *pball, const float zheight, const bool lowDetailBall);
+
+   Vertex2D m_BallStretch;
+   Vertex2D m_ScreenOffset; // for screen shake effect during nudge
+
+   MeshBuffer *m_ballMeshBuffer = nullptr;
+   MeshBuffer *m_ballTrailMeshBuffer = nullptr;
+   bool m_antiStretchBall;
 
    int m_VSync; // targeted refresh rate in Hz, if larger refresh rate it will limit FPS by uSleep() //!! currently does not work adaptively as it would require IDirect3DDevice9Ex which is not supported on WinXP
    int m_maxPrerenderedFrames;
+
+   bool m_trailForBalls;
+   bool m_disableLightingForBalls;
+
+public:
+   void DrawStatics();
+   void DrawDynamics(bool onlyBalls);
+   void DMDdraw(const float DMDposx, const float DMDposy, const float DMDwidth, const float DMDheight, const COLORREF DMDcolor, const float intensity);
+   void Spritedraw(const float posx, const float posy, const float width, const float height, const COLORREF color, Texture* const tex, const float intensity, const bool backdrop=false);
+   void Spritedraw(const float posx, const float posy, const float width, const float height, const COLORREF color, Sampler* const tex, const float intensity, const bool backdrop=false);
+
+   void UpdateBasicShaderMatrix(const Matrix3D &objectTrafo = Matrix3D::MatrixIdentity());
+   void UpdateBallShaderMatrix();
+
+   void EnableStaticPrePass(const bool use_prepass) { if (m_dynamicMode == use_prepass) { m_dynamicMode = !use_prepass; InitStatic(); } }
+
+   #ifdef ENABLE_SDL
+   SDL_Window  *m_sdl_playfieldHwnd;
+   #endif
+
+   bool m_dynamicMode;
+   bool m_cameraMode;
+
+   float m_globalEmissionScale;
+
    int m_FXAA;    // =FXAASettings
    int m_sharpen; // 0=off, 1=CAS, 2=bilateral CAS
    int m_MSAASamples;
@@ -523,212 +577,9 @@ public:
    bool m_bloomOff;
    bool m_ditherOff;
 
-   bool m_PlayMusic;
-   bool m_PlaySound;
-   int m_MusicVolume;
-   int m_SoundVolume;
-
-   AudioPlayer *m_audio;
-
-   int m_lastcursorx, m_lastcursory; // used for the dumb task of seeing if the mouse has really moved when we get a WM_MOUSEMOVE message
-
-   int m_LastKnownGoodCounter;
-   int m_ModalRefCount;
-
-   enum CloseState
-   {
-      CS_PLAYING = 0, // Normal state
-      CS_USER_INPUT = 1, // Open UI to let user choose between debugger, quit,...
-      CS_STOP_PLAY = 2, // Stop play and get back to editor, if started without user input (minimized) then close the application
-      CS_CLOSE_APP = 3, // Close the application and get back to operating system
-      CS_FORCE_STOP = 4 // Force close the application and get back to operating system
-   };
-   CloseState m_closing = CS_PLAYING;
-   bool m_showDebugger;
-
-   bool m_showWindowedCaption;
-
-   bool m_trailForBalls;
-   bool m_disableLightingForBalls;
-
-   bool m_throwBalls;
-   bool m_ballControl;
-   int  m_debugBallSize;
-   float m_debugBallMass;
-
-   bool m_detectScriptHang;
-   bool m_noTimeCorrect;                // Used so the frame after debugging does not do normal time correction
-
-   bool m_debugMode;
-
-   bool m_debugBalls;                   // Draw balls in the foreground via 'O' key
-
-   bool m_swap_ball_collision_handling; // Swaps the order of ball-ball collision handling around each physics cycle (in regard to the RLC comment block in quadtree.cpp (hopefully ;)))
-
-#ifdef DEBUGPHYSICS
-   U32 c_hitcnts;
-   U32 c_collisioncnt;
-   U32 c_contactcnt;
-#ifdef C_DYNAMIC
-   U32 c_staticcnt;
-#endif
-   U32 c_embedcnts;
-   U32 c_timesearch;
-
-   U32 c_kDObjects;
-   U32 c_kDNextlevels;
-   U32 c_quadObjects;
-   U32 c_quadNextlevels;
-
-   U32 c_traversed;
-   U32 c_tested;
-   U32 c_deepTested;
-#endif
-
-#ifdef DEBUG_BALL_SPIN
-   MeshBuffer *m_ballDebugPoints = nullptr;
-#endif
-   U32 m_movedPlunger;            // has plunger moved, must have moved at least three times
-   U32 m_LastPlungerHit;          // The last time the plunger was in contact (at least the vicinity) of the ball.
-   float m_curMechPlungerPos;
-
-   int m_wnd_width, m_wnd_height; // Window height (requested size before creation, effective size after) which is not directly linked to the render size
-
-   int m_screenwidth, m_screenheight, m_refreshrate;
-   bool m_fullScreen;
-
-   bool m_touchregion_pressed[MAX_TOUCHREGION]; // status for each touch region to avoid multitouch double triggers (true = finger on, false = finger off)
-
-   bool m_drawCursor;
-   bool m_gameWindowActive;
-   bool m_userDebugPaused;
-   bool m_debugWindowActive;
-   Primitive *m_implicitPlayfieldMesh = nullptr;
-   bool m_recordContacts;         // flag for DoHitTest()
-   vector< CollisionEvent > m_contacts;
-
-   int2 m_dmd;
-   BaseTexture* m_texdmd;
-   BaseTexture* m_texPUP = nullptr;
-
-   unsigned int m_overall_frames; // amount of rendered frames since start
-
-#ifndef LOG
-private:
-#endif
-   vector<MoverObject*> m_vmover; // moving objects for physics simulation
-#ifdef LOG
-private:
-#endif
-   vector<HitObject*> m_vho;
-
-   vector<Ball*> m_vballDelete;   // Balls to free at the end of the frame
-
-   /*HitKD*/HitQuadtree m_hitoctree;
-
-   vector<HitObject*> m_vdebugho;
-   HitQuadtree m_debugoctree;
-
-   vector<HitObject*> m_vho_dynamic;
-#ifdef USE_EMBREE
-   HitQuadtree m_hitoctree_dynamic; // should be generated from scratch each time something changes
-#else
-   HitKD m_hitoctree_dynamic;     // should be generated from scratch each time something changes
-#endif
-
-   HitPlane m_hitPlayfield;       // HitPlanes cannot be part of octree (infinite size)
-   HitPlane m_hitTopGlass;
-
-   U64 m_StartTime_usec;
-   U64 m_curPhysicsFrameTime;     // Time when the last frame was drawn
-   U64 m_nextPhysicsFrameTime;    // time at which the next physics update should be
-   U64 m_lastFlipTime;
-
-   // all Hitables obtained from the table's list of Editables
-   vector< Hitable* > m_vhitables;
-
-   int2 m_curAccel[PININ_JOYMXCNT];
-
-#ifdef PLAYBACK
-   bool m_playback;
-   FILE *m_fplaylog;
-#endif
-
-   Vertex2D m_BallStretch;
-
-   float m_NudgeShake;         // whether to shake the screen during nudges and how much
-   Vertex2D m_ScreenOffset;    // for screen shake effect during nudge
-
-   int m_curPlunger;
-
-   //HANDLE m_hSongCompletionEvent;
-
-   int m_pauseRefCount;
-
-   bool m_pseudoPause;      // Nothing is moving, but we're still redrawing
-
-public:
-   LiveUI *m_liveUI = nullptr;
-
-   bool m_supportsTouch; // Display is a touchscreen?
-   bool m_showTouchMessage;
-
-   U32 m_phys_iterations;
-
-   // all kinds of stats tracking, incl. FPS measurement
-   U64 m_count; // Number of frames included in the total variant of the counters
-   int m_lastMaxChangeTime; // Used to update counters every seconds
-   float m_fps; // Average number of frames per second, updated once per second
-   U64 m_phys_total_iterations;
-   U32 m_phys_max_iterations;
-   U32 m_phys_max;
-   U32 m_script_max;
-
-private:
-   FrameQueueLimiter m_limiter;
-
-   // only called from ctor
-   HRESULT Init();
-   // only called from dtor
-   void Shutdown();
-
-   void SetScreenOffset(const float x, const float y);     // set render offset in screen coordinates, e.g., for the nudge shake
-
-public:
-   InfoMode m_infoMode = IF_NONE;
-   unsigned int m_infoProbeIndex = 0;
-
-   void InitFPS();
-   bool ShowFPSonly() const;
-   bool ShowStats() const;
-   InfoMode GetInfoMode() const;
-   ProfilingMode GetProfilingMode() const;
-
-private:
-   void InitShader();
-   void CalcBallAspectRatio();
-   void GetBallAspectRatio(const Ball * const pball, Vertex2D &stretch, const float zHeight);
-   //void DrawBallReflection(Ball *pball, const float zheight, const bool lowDetailBall);
-
-public:
-   void StopPlayer();
-
-   void UpdateBasicShaderMatrix(const Matrix3D& objectTrafo = Matrix3D::MatrixIdentity());
-   void UpdateBackdropSettings(const bool up);
-   void UpdateBallShaderMatrix();
-
-#ifdef STEPPING
-   U32 m_pauseTimeTarget;
-   volatile bool m_pause;
-   bool m_step;
-#endif
+   Pin3D m_pin3d;
 
    bool m_scaleFX_DMD;
-   bool m_capExtDMD;
-   bool m_capPUP;
-
-   bool m_toogle_DTFS;
-
    enum RenderMask : unsigned int
    {
       DEFAULT = 0,
@@ -743,5 +594,174 @@ public:
    bool m_overwriteBallImages;
    Texture *m_ballImage;
    Texture *m_decalImage;
+
+   bool m_toogle_DTFS;
+#pragma endregion
+
+
+#pragma region UI
+public:
+   enum BackdropSetting
+   {
+      BS_ViewMode, BS_LookAt, BS_FOV, BS_Layback, BS_ViewHOfs, BS_ViewVOfs, BS_XYScale, BS_XScale, BS_YScale, BS_XOffset, BS_YOffset, BS_ZOffset,
+      BS_WndTopXOfs, BS_WndTopYOfs, BS_WndTopZOfs, BS_WndBottomXOfs, BS_WndBottomYOfs, BS_WndBottomZOfs,
+      BS_LightEmissionScale, BS_LightRange, BS_LightHeight, BS_EnvEmissionScale, BS_EyeSeparation, BS_AnaglyphDesat, BS_AnaglyphContrast,
+   };
+   static constexpr Player::BackdropSetting mLegacyViewSettings[] = {
+      BS_ViewMode, BS_LookAt, BS_FOV, BS_Layback, BS_XYScale, BS_XScale, BS_YScale, BS_XOffset, BS_YOffset, BS_ZOffset,
+      BS_LightEmissionScale, BS_LightRange, BS_LightHeight, BS_EnvEmissionScale, BS_EyeSeparation, BS_AnaglyphDesat, BS_AnaglyphContrast,
+   };
+   static constexpr Player::BackdropSetting mCameraViewSettings[] = {
+      BS_ViewMode, BS_FOV, BS_ViewHOfs, BS_ViewVOfs, BS_XYScale, BS_XScale, BS_YScale, BS_LookAt, BS_XOffset, BS_YOffset, BS_ZOffset,
+      BS_LightEmissionScale, BS_LightRange, BS_LightHeight, BS_EnvEmissionScale, BS_EyeSeparation, BS_AnaglyphDesat, BS_AnaglyphContrast,
+   };
+   static constexpr Player::BackdropSetting mWindowViewSettings[] = {
+      BS_ViewMode, BS_ViewHOfs, BS_ViewVOfs, BS_XYScale, BS_XScale, BS_YScale, BS_XOffset, BS_YOffset, BS_ZOffset, 
+      BS_WndTopXOfs, BS_WndTopYOfs, BS_WndTopZOfs, BS_WndBottomXOfs, BS_WndBottomYOfs, BS_WndBottomZOfs,
+      BS_LightEmissionScale, BS_LightRange, BS_LightHeight, BS_EnvEmissionScale, BS_EyeSeparation, BS_AnaglyphDesat, BS_AnaglyphContrast,
+   };
+   BackdropSetting m_backdropSettingActive = BS_ViewMode;
+
+   void UpdateBackdropSettings(const bool up);
+
+   InfoMode m_infoMode = IF_NONE;
+   unsigned int m_infoProbeIndex = 0;
+
+   void InitFPS();
+   bool ShowFPSonly() const;
+   bool ShowStats() const;
+   InfoMode GetInfoMode() const;
+   ProfilingMode GetProfilingMode() const;
+
+   LiveUI *m_liveUI = nullptr;
+
+#pragma endregion
+
+
+   PinTable * const m_pEditorTable; // The untouched version of the table, as it is in the editor (The Player needs it to interact with the UI)
+   PinTable * const m_ptable; // The played table, which can be modified by the script
+
+   U32 m_time_msec;          // current physics time
+   U32 m_last_frame_time_msec; // used for non-physics controlled animations to update once per-frame only, aligned with m_time_msec
+
+   Ball *m_pactiveball;      // ball the script user can get with ActiveBall
+   Ball *m_pactiveballDebug; // ball the debugger will use as Activeball when firing events
+   Ball *m_pactiveballBC;    // ball that the ball control UI will use
+   Vertex3Ds *m_pBCTarget;   // if non-null, the target location for the ball to roll towards
+
+   vector<Ball*> m_vball;
+   vector<HitFlipper*> m_vFlippers;
+
+   vector<HitTimer*> m_vht;
+   vector<TimerOnOff> m_changed_vht; // stores all en/disable changes to the m_vht timer list, to avoid problems with timers dis/enabling themselves
+
+#pragma region Input
+public:
+   PinInput m_pininput;
+   EnumAssignKeys m_rgKeys[eCKeys]; //Player's key assignments
+   int m_lastcursorx, m_lastcursory; // used for the dumb task of seeing if the mouse has really moved when we get a WM_MOUSEMOVE message
+#pragma endregion
+
+
+#pragma region Audio
+public:
+   bool m_PlayMusic;
+   bool m_PlaySound;
+   int m_MusicVolume;
+   int m_SoundVolume;
+   AudioPlayer *m_audio;
+#pragma endregion
+
+   vector<CLSID*> m_controlclsidsafe; // ActiveX control types which have already been okayed as being safe
+
+   int m_sleeptime;          // time to sleep during each frame - can help side threads like vpinmame, but most likely outdated
+   int m_minphyslooptime;    // minimum physics loop processing time in usec (0-1000), effort to reduce input latency (mainly useful if vsync is enabled, too)
+
+   int m_LastKnownGoodCounter;
+   int m_ModalRefCount;
+
+   enum CloseState
+   {
+      CS_PLAYING = 0, // Normal state
+      CS_USER_INPUT = 1, // Open UI to let user choose between debugger, quit,...
+      CS_STOP_PLAY = 2, // Stop play and get back to editor, if started without user input (minimized) then close the application
+      CS_CLOSE_APP = 3, // Close the application and get back to operating system
+      CS_FORCE_STOP = 4 // Force close the application and get back to operating system
+   };
+   CloseState m_closing = CS_PLAYING;
+
+   HWND m_hwndDebugOutput;
+   bool m_showDebugger;
+
+   bool m_showWindowedCaption;
+
+   bool m_throwBalls;
+   bool m_ballControl;
+   int  m_debugBallSize;
+   float m_debugBallMass;
+
+   bool m_detectScriptHang;
+   bool m_noTimeCorrect;                // Used so the frame after debugging does not do normal time correction
+
+   bool m_debugMode;
+
+   bool m_debugBalls;                   // Draw balls in the foreground via 'O' key
+   #ifdef DEBUG_BALL_SPIN
+   MeshBuffer *m_ballDebugPoints = nullptr;
+   #endif
+
+   int m_wnd_width, m_wnd_height; // Window height (requested size before creation, effective size after) which is not directly linked to the render size
+
+   int m_screenwidth, m_screenheight, m_refreshrate;
+   bool m_fullScreen;
+
+   bool m_touchregion_pressed[MAX_TOUCHREGION]; // status for each touch region to avoid multitouch double triggers (true = finger on, false = finger off)
+
+   bool m_drawCursor;
+   bool m_gameWindowActive;
+   bool m_userDebugPaused;
+   bool m_debugWindowActive;
+   Primitive *m_implicitPlayfieldMesh = nullptr;
+
+   bool m_capExtDMD;
+   int2 m_dmd;
+   BaseTexture* m_texdmd;
+
+   bool m_capPUP;
+   BaseTexture *m_texPUP = nullptr;
+
+   unsigned int m_overall_frames; // amount of rendered frames since start
+
+private:
+   //HANDLE m_hSongCompletionEvent;
+
+   int m_pauseRefCount;
+
+   bool m_pseudoPause;      // Nothing is moving, but we're still redrawing
+
+public:
+   bool m_supportsTouch; // Display is a touchscreen?
+   bool m_showTouchMessage;
+
+   // all kinds of stats tracking, incl. FPS measurement
+   int m_lastMaxChangeTime; // Used to update counters every seconds
+   float m_fps; // Average number of frames per second, updated once per second
+   U32 m_script_max;
+
+private:
+   // only called from ctor
+   HRESULT Init();
+   // only called from dtor
+   void Shutdown();
+
+public:
+   void StopPlayer();
+
+#ifdef STEPPING
+   U32 m_pauseTimeTarget;
+   volatile bool m_pause;
+   bool m_step;
+#endif
+
    DebuggerDialog m_debuggerDialog;
 };
