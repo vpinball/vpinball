@@ -1410,27 +1410,28 @@ void VPinball::MainMsgLoop()
             g_pvp->m_ptableActive->HandleLoadFailure();
          }
       }
+      else if (g_pplayer)
+      {
+         // Let player do its job on idle
+         g_pplayer->OnIdle();
+      }
+      else if (m_table_played_via_SelectTableOnStart && !g_pplayer)
+      {
+         // If player has been closed in the meantime, check if we should display the file open dialog again to select/play the next table
+
+         // first close the current table
+         CComObject<PinTable> *const pt = GetActiveTable();
+         if (pt)
+            CloseTable(pt);
+         // then select the new one, and if one was selected, play it
+         m_table_played_via_SelectTableOnStart = LoadFile(false);
+         if (m_table_played_via_SelectTableOnStart)
+            DoPlay(false);
+      }
       else
       {
-         if (g_pplayer)
-            g_pplayer->Render(); // always render on idle
-         else
-         {
-            // if player has been closed in the meantime, check if we should display the file open dialog again to select/play the next table
-            if (m_table_played_via_SelectTableOnStart && !g_pplayer)
-            {
-               // first close the current table
-               CComObject<PinTable>* const pt = GetActiveTable();
-               if (pt)
-                  CloseTable(pt);
-               // then select the new one, and if one was selected, play it
-               m_table_played_via_SelectTableOnStart = LoadFile(false);
-               if (m_table_played_via_SelectTableOnStart)
-                  DoPlay(false);
-            }
-
-            WaitMessage(); // otherwise wait for input
-         }
+         // Otherwise wait for input
+         WaitMessage(); 
       }
    }
 }

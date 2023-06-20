@@ -2002,6 +2002,15 @@ void Player::CalcBallAspectRatio()
    }
 }
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Physics engine
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+#pragma region Physics
+
 void Player::NudgeX(const int x, const int joyidx)
 {
    int v = x;
@@ -2877,6 +2886,18 @@ void Player::UpdatePhysics()
    g_frameProfiler.ExitProfileSection();
 }
 
+#pragma endregion
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// Rendering engine
+//
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+#pragma region Rendering
+
 void Player::DMDdraw(const float DMDposx, const float DMDposy, const float DMDwidth, const float DMDheight, const COLORREF DMDcolor, const float intensity)
 {
    if (m_texdmd)
@@ -3367,6 +3388,10 @@ void Player::StereoFXAA(RenderTarget* renderedRT, const bool stereo, const bool 
 #endif
    }
 }
+
+#pragma endregion
+
+
 
 string Player::GetPerfInfo()
 {
@@ -3933,7 +3958,7 @@ void Player::LockForegroundWindow(const bool enable)
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-void Player::Render()
+void Player::OnIdle()
 {
    // Collect stats from previous frame and starts profiling a new frame
    g_frameProfiler.NewFrame();
@@ -3941,12 +3966,6 @@ void Player::Render()
    // Rendering outputs to m_pd3dPrimaryDevice->GetBackBufferTexture(). If MSAA is used, it is resolved as part of the rendering (i.e. this surface is NOT the MSAA rneder surface but its resolved copy)
    // Then it is tonemapped/bloom/dither/... to m_pd3dPrimaryDevice->GetPostProcessRenderTarget1() if needed for postprocessing (sharpen, FXAA,...), or directly to the main output framebuffer otherwise
    // The optional postprocessing is done from m_pd3dPrimaryDevice->GetPostProcessRenderTarget1() to the main output framebuffer
-
-   // In pause mode: input, physics, animation and audio are not processed but rendering is still performed. This allows to modify properties (transform, visibility,..) using the debugger and get direct feedback
-   const U64 startRenderUsec = usec();
-
-   if (!m_pause)
-      m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(startRenderUsec / 1000)); // trigger key events mainly for VPM<->VP roundtrip
 
    // Kill the profiler so that it does not affect performance => FIXME move to player
    if (m_infoMode != IF_PROFILING)
@@ -3963,10 +3982,15 @@ void Player::Render()
       }
    }
 
+   const U64 startRenderUsec = usec();
+
+   // In pause mode: input, physics, animation and audio are not processed but rendering is still performed. This allows to modify properties (transform, visibility,..) using the debugger and get direct feedback
+   if (!m_pause)
+      m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(startRenderUsec / 1000)); // trigger key events mainly for VPM<->VP roundtrip
+
    if (m_sleeptime > 0)
    {
       Sleep(m_sleeptime - 1);
-
       if (!m_pause)
          m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(startRenderUsec / 1000)); // trigger key events mainly for VPM<->VP roundtrip
    }
@@ -3989,30 +4013,7 @@ void Player::Render()
    c_deepTested = 0;
 #endif
 
-#ifdef ENABLE_SDL
-   // Trigger captures
-   if (m_capExtDMD)
-      captureExternalDMD();
-   if (m_capPUP)
-      capturePUP();
-#endif
-
    m_LastKnownGoodCounter++;
-
-   U64 usecTimeStamp = usec(); // Time stamp for render command collect timing
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("Render Scene"s, m_pin3d.m_pd3dPrimaryDevice->GetMSAABackBufferTexture());
-   if (m_stereo3D == STEREO_VR || GetInfoMode() == IF_DYNAMIC_ONLY)
-   {
-      // For VR start from a clear render
-      m_pin3d.m_pd3dPrimaryDevice->Clear(clearType::TARGET | clearType::ZBUFFER, 0, 1.0f, 0L);
-   }
-   else
-   {
-      // copy static buffers to back buffer including z buffer
-      m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pin3d.m_pddsStatic);
-      m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(m_pin3d.m_pddsStatic, m_pin3d.m_pd3dPrimaryDevice->GetMSAABackBufferTexture());
-   }
-   const U64 clearTiming = usec() - usecTimeStamp;
 
    // Physics/Timer updates, done at the last moment, especially to handle key input (VP<->VPM roundtrip) and animation triggers
    if (!m_pause && m_minphyslooptime == 0) // (vsync) latency reduction code not active? -> Do Physics Updates here
@@ -4043,7 +4044,27 @@ void Player::Render()
    if (GetProfilingMode() == PF_ENABLED)
       m_pin3d.m_gpu_profiler.BeginFrame(m_pin3d.m_pd3dPrimaryDevice->GetCoreDevice());
 #endif
-   usecTimeStamp = usec() - clearTiming; // Time stamp for render command collect timing (adjusted to include the initial clear/blit but this shoumd be neglictable)
+
+#ifdef ENABLE_SDL
+   // Trigger captures
+   if (m_capExtDMD)
+      captureExternalDMD();
+   if (m_capPUP)
+      capturePUP();
+#endif
+
+   m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("Render Scene"s, m_pin3d.m_pd3dPrimaryDevice->GetMSAABackBufferTexture());
+   if (m_stereo3D == STEREO_VR || GetInfoMode() == IF_DYNAMIC_ONLY)
+   {
+      // For VR start from a clear render
+      m_pin3d.m_pd3dPrimaryDevice->Clear(clearType::TARGET | clearType::ZBUFFER, 0, 1.0f, 0L);
+   }
+   else
+   {
+      // copy static buffers to back buffer including z buffer
+      m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pin3d.m_pddsStatic);
+      m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(m_pin3d.m_pddsStatic, m_pin3d.m_pd3dPrimaryDevice->GetMSAABackBufferTexture());
+   }
 
    // Update camera point of view
    #ifdef ENABLE_VR
@@ -4092,7 +4113,6 @@ void Player::Render()
       m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(startRenderUsec / 1000)); // trigger key events mainly for VPM<->VP rountrip
    }
 
-   usecTimeStamp = usec();
    int localvsync = (m_ptable->m_TableAdaptiveVSync == -1) ? m_VSync : m_ptable->m_TableAdaptiveVSync;
    if (localvsync > m_refreshrate) // cannot sync, just limit to selected framerate
       localvsync = 0;
