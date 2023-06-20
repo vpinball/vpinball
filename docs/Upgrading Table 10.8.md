@@ -170,9 +170,14 @@ Depth Masking should be disabled for transparent primitive if:
 - these are used to render fake/approximate shadows,
 - these have visible self overlapping parts (plastic ramps, in conjunction with the option to render backfacing faces).
 
-![Before](img/Upgrade10.8-DepthMaskBefore.png)
-![After](img/Upgrade10.8-DepthMaskAfter.png)
+![Before](img/Upgrade10.8-DepthMaskBefore.webp)
+![After](img/Upgrade10.8-DepthMaskAfter.webp)
 
 Left shows an (exaggerated) ambient occlusion artefact due to depth masking. Right is the same with depth masking disabled.
+
+![Before](img/Upgrade10.8-DepthMask.webp)
+![After](img/Upgrade10.8-NoDepthMask.webp)
+
+Left shows the ramp from VPW's Last Action Hero in 10.7 while right shows it with the mask option disabled.
 
 <sub><sup>[Informations applicable to version 10.8 Beta]</sup></sub>
