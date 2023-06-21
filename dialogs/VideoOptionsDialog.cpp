@@ -61,7 +61,7 @@ void VideoOptionsDialog::ResetVideoPreferences(const unsigned int profile) // 0 
    SendMessage(GetDlgItem(IDC_GLOBAL_REFLECTION_CHECK).GetHwnd(), BM_SETCHECK, profile != 1 ? BST_CHECKED : BST_UNCHECKED, 0);
    SendMessage(GetDlgItem(IDC_GLOBAL_TRAIL_CHECK).GetHwnd(), BM_SETCHECK, true ? BST_CHECKED : BST_UNCHECKED, 0);
    SendMessage(GetDlgItem(IDC_GLOBAL_DISABLE_LIGHTING_BALLS).GetHwnd(), BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
-   SetDlgItemInt(IDC_ADAPTIVE_VSYNC, 0, FALSE);
+   SetDlgItemInt(IDC_MAX_FPS, 0, FALSE);
    SetDlgItemInt(IDC_MAX_PRE_FRAMES, 0, FALSE);
 
    if(profile == 0)
@@ -252,6 +252,9 @@ void VideoOptionsDialog::FillVideoModesList(const vector<VideoMode>& modes, cons
 }
 
 
+// Declared in RenderDevice. Desktop composition may only be disabled on WIndows Vista & 7
+bool IsWindowsVistaOr7();
+
 BOOL VideoOptionsDialog::OnInitDialog()
 {
    const HWND hwndDlg = GetHwnd();
@@ -265,7 +268,8 @@ BOOL VideoOptionsDialog::OnInitDialog()
       AddToolTip("This saves memory on your graphics card but harms quality of the textures.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_TEX_COMPRESS).GetHwnd());
       AddToolTip("Disable Windows Desktop Composition (only works on Windows Vista and Windows 7 systems).\r\nMay reduce lag and improve performance on some setups.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_DISABLE_DWM).GetHwnd());
       AddToolTip("Activate this if you have issues using an Intel graphics chip.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_SOFTWARE_VP).GetHwnd());
-      AddToolTip("1-activates VSYNC for every frame (avoids tearing)\r\n2-adaptive VSYNC, waits only for fast frames (e.g. over 60fps)\r\nor set it to e.g. 60 or 120 to limit the fps to that value (energy saving/less heat)", hwndDlg, toolTipHwnd, GetDlgItem(IDC_ADAPTIVE_VSYNC).GetHwnd());
+      AddToolTip("None: no synchronization\r\nVSYNC: Synchronize on video sync which avoids video tearing but has high input latency\r\nAdaptive: synchronize on video sync except for late frame (below target FPS), also has high input latency\r\nFrame pacing, targets real time simulation with low input/video latency (also dynamically adjust framerate)", hwndDlg, toolTipHwnd, GetDlgItem(IDC_VIDEO_SYNC_MODE).GetHwnd());
+      AddToolTip("Limit the fps to the given value (energy saving/less heat, framerate stability), 0 will disable it", hwndDlg, toolTipHwnd, GetDlgItem(IDC_MAX_FPS).GetHwnd());
       AddToolTip("Leave at 0 if you have enabled 'Low Latency' or 'Anti Lag' settings in the graphics driver.\r\nOtherwise experiment with 1 or 2 for a chance of lag reduction at the price of a bit of framerate.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_MAX_PRE_FRAMES).GetHwnd());
       AddToolTip("If played in cabinet mode and you get an egg shaped ball activate this.\r\nFor screen ratios other than 16:9 you may have to adjust the offsets.\r\nNormally you have to set the Y offset (around 1.5) but you have to experiment.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_StretchMonitor).GetHwnd());
       AddToolTip("Changes the visual effect/screen shaking when nudging the table.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_NUDGE_STRENGTH).GetHwnd());
@@ -313,11 +317,34 @@ BOOL VideoOptionsDialog::OnInitDialog()
    const bool disableLighting = LoadValueWithDefault(regKey[RegName::Player], "DisableLightingForBalls"s, false);
    SendMessage(GetDlgItem(IDC_GLOBAL_DISABLE_LIGHTING_BALLS).GetHwnd(), BM_SETCHECK, disableLighting ? BST_CHECKED : BST_UNCHECKED, 0);
 
-   const int vsync = LoadValueWithDefault(regKey[RegName::Player], "AdaptiveVSync"s, 0);
-   SetDlgItemInt(IDC_ADAPTIVE_VSYNC, vsync, FALSE);
+   int maxFPS = LoadValueWithDefault(regKey[RegName::Player], "MaxFramerate"s, -1);
+   VideoSyncMode syncMode = (VideoSyncMode)LoadValueWithDefault(regKey[RegName::Player], "SyncMode"s, VSM_INVALID);
+   if (maxFPS < 0 || syncMode == VideoSyncMode::VSM_INVALID)
+   {
+      const int vsync = LoadValueWithDefault(regKey[RegName::Player], "AdaptiveVSync"s, 0);
+      switch (vsync)
+      {
+      case 0: maxFPS = 0; syncMode = VideoSyncMode::VSM_NONE; break;
+      case 1: maxFPS = 0; syncMode = VideoSyncMode::VSM_VSYNC; break;
+      case 2: maxFPS = 0; syncMode = VideoSyncMode::VSM_ADAPTIVE_VSYNC; break;
+      default: maxFPS = vsync; syncMode = VideoSyncMode::VSM_ADAPTIVE_VSYNC; break;
+      }
+   }
+   SetDlgItemInt(IDC_MAX_FPS, maxFPS, FALSE);
+   HWND hwnd = GetDlgItem(IDC_VIDEO_SYNC_MODE).GetHwnd();
+   SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "No Sync");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Vertical Sync");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Adaptive Sync");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Frame Pacing");
+   SendMessage(hwnd, CB_SETCURSEL, syncMode, 0);
+   SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 
    const int maxPrerenderedFrames = LoadValueWithDefault(regKey[RegName::Player], "MaxPrerenderedFrames"s, 0);
    SetDlgItemInt(IDC_MAX_PRE_FRAMES, maxPrerenderedFrames, FALSE);
+   #ifdef ENABLE_SDL
+   GetDlgItem(IDC_MAX_PRE_FRAMES).EnableWindow(false); // OpenGL does not support this option
+   #endif
 
    char tmp[256];
 
@@ -341,7 +368,7 @@ BOOL VideoOptionsDialog::OnInitDialog()
    sprintf_s(tmp, sizeof(tmp), "%f", nudgeStrength);
    SetDlgItemText(IDC_NUDGE_STRENGTH, tmp);
 
-   HWND hwnd = GetDlgItem(IDC_SUPER_SAMPLING_COMBO).GetHwnd();
+   hwnd = GetDlgItem(IDC_SUPER_SAMPLING_COMBO).GetHwnd();
    SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
    for (size_t i = 0; i < AAfactorCount; ++i)
       SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) AAfactorNames[i]);
@@ -505,6 +532,7 @@ BOOL VideoOptionsDialog::OnInitDialog()
    SetDlgItemText(IDC_3D_STEREO_DESATURATION, tmp);
 
    const bool disableDWM = LoadValueWithDefault(regKey[RegName::Player], "DisableDWM"s, false);
+   GetDlgItem(IDC_DISABLE_DWM).EnableWindow(IsWindowsVistaOr7());
    SendMessage(GetDlgItem(IDC_DISABLE_DWM).GetHwnd(), BM_SETCHECK, disableDWM ? BST_CHECKED : BST_UNCHECKED, 0);
    GetDlgItem(IDC_DISABLE_DWM).EnableWindow(IsWindowsVistaOr7()); // DWM may not be disabled on Windows 8+
 
@@ -887,8 +915,13 @@ void VideoOptionsDialog::OnOK()
    const bool disableLighting = (SendMessage(GetDlgItem(IDC_GLOBAL_DISABLE_LIGHTING_BALLS).GetHwnd(), BM_GETCHECK, 0, 0) != 0);
    SaveValue(regKey[RegName::Player], "DisableLightingForBalls"s, disableLighting);
 
-   const int vsync = GetDlgItemInt(IDC_ADAPTIVE_VSYNC, nothing, TRUE);
-   SaveValue(regKey[RegName::Player], "AdaptiveVSync"s, vsync);
+   const int maxFPS = GetDlgItemInt(IDC_MAX_FPS, nothing, TRUE);
+   SaveValue(regKey[RegName::Player], "MaxFramerate"s, maxFPS);
+
+   LRESULT syncMode = SendMessage(GetDlgItem(IDC_VIDEO_SYNC_MODE).GetHwnd(), CB_GETCURSEL, 0, 0);
+   if (syncMode == LB_ERR)
+      syncMode = VideoSyncMode::VSM_FRAME_PACING;
+   SaveValue(regKey[RegName::Player], "SyncMode"s, (int)syncMode);
 
    const int maxPrerenderedFrames = GetDlgItemInt(IDC_MAX_PRE_FRAMES, nothing, TRUE);
    SaveValue(regKey[RegName::Player], "MaxPrerenderedFrames"s, maxPrerenderedFrames);

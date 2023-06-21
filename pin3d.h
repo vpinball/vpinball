@@ -89,6 +89,7 @@ private:
    mutable Vertex3Ds m_viewVec;
 };
 
+enum VideoSyncMode;
 
 class Pin3D
 {
@@ -96,7 +97,8 @@ public:
    Pin3D();
    ~Pin3D();
 
-   HRESULT InitPin3D(const bool fullScreen, const int width, const int height, const int colordepth, int &refreshrate, const int VSync, const float AAfactor, const StereoMode stereo3D, const unsigned int FXAA, const bool sharpen, const bool ss_refl);
+   HRESULT InitPin3D(const bool fullScreen, const int width, const int height, const int colordepth, int &refreshrate, const VideoSyncMode syncMode, 
+      const int maxFrameRate, const float AAfactor, const StereoMode stereo3D, const unsigned int FXAA, const bool sharpen, const bool ss_refl);
 
    void InitLayout(const float xpixoff = 0.f, const float ypixoff = 0.f);
 
@@ -121,7 +123,8 @@ private:
    void InitRenderState(RenderDevice * const pd3dDevice);
    void InitPrimaryRenderState();
    void InitSecondaryRenderState();
-   HRESULT InitPrimary(const bool fullScreen, const int colordepth, int &refreshrate, const int VSync, const float AAfactor, const StereoMode stereo3D, const unsigned int FXAA, const bool sharpen, const bool ss_refl);
+   HRESULT InitPrimary(const bool fullScreen, const int colordepth, int& refreshrate, const VideoSyncMode syncMode, const int maxFrameRate, const float AAfactor, const StereoMode stereo3D,
+      const unsigned int FXAA, const bool sharpen, const bool ss_refl);
 
    StereoMode m_stereo3D;
 

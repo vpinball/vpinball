@@ -81,172 +81,174 @@ void RenderPass::Submit(RenderCommand* command)
    m_commands.push_back(command);
 }
 
-void RenderPass::Execute(const bool log)
+bool RenderPass::Execute(const bool log)
 {
-   if (!m_commands.empty())
+   m_rt->m_lastRenderPass = nullptr;
+   if (m_commands.empty())
+      return false;
+
+   #ifdef ENABLE_SDL
+   if (GLAD_GL_VERSION_4_3)
    {
-      #ifdef ENABLE_SDL
-      if (GLAD_GL_VERSION_4_3)
-      {
-         std::stringstream passName;
-         passName << m_name << " [RT=" << m_rt->m_name << "]";
-         glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, passName.str().c_str());
-      }
-      #endif
+      std::stringstream passName;
+      passName << m_name << " [RT=" << m_rt->m_name << "]";
+      glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, passName.str().c_str());
+   }
+   #endif
 
-      /*
-      Before 10.8, render command were not buffered and processed in the following order (* is optional static prepass):
-	      - Playfield *
-	      - Static render,  not decals * => Unsorted
-	      - Static render decals * => Unsorted
-	      - Dynamic render Opaque, not DMD => Unsorted (front to back, state changes,...)
-	      - Dynamic render Opaque DMD => Unsorted (front to back, state changes,...), only used by Flasher DMD
-	      - Balls
-	      - Dynamic render Transparent, not DMD => Sorted back to front
-	      - Dynamic render Transparent DMD => Sorted back to front, unused feature (none of the parts are simultaneously IsDMD and IsTransparent)
-      Note that:
-         - Kickers are rendered with a "pass always" depth test
-         - Transparent parts do write to depth buffer (they can be used as masks)
-         - Depth sorting is not done based on view vector but on depth bias and absolute z coordinate
+   /*
+   Before 10.8, render command were not buffered and processed in the following order (* is optional static prepass):
+	   - Playfield *
+	   - Static render,  not decals * => Unsorted
+	   - Static render decals * => Unsorted
+	   - Dynamic render Opaque, not DMD => Unsorted (front to back, state changes,...)
+	   - Dynamic render Opaque DMD => Unsorted (front to back, state changes,...), only used by Flasher DMD
+	   - Balls
+	   - Dynamic render Transparent, not DMD => Sorted back to front
+	   - Dynamic render Transparent DMD => Sorted back to front, unused feature (none of the parts are simultaneously IsDMD and IsTransparent)
+   Note that:
+      - Kickers are rendered with a "pass always" depth test
+      - Transparent parts do write to depth buffer (they can be used as masks)
+      - Depth sorting is not done based on view vector but on depth bias and absolute z coordinate
 
-      For 10.8, the render command sorting has been designed to ensure backward compatibility:
-         - Identify transparent parts in a backward compatible way (using IsTransparent, and not according to real 'transparency' state as evaluated from depth & blend state)
-         - Sort render commands with the following constraints:
-            . Draw kickers first (at least before balls)
-            . Draw playfield of old tables before other parts. Old table's PF command is opaque with a very high depth bias (this is enforced when loading the table, see pintable.cpp)
-            . Sort opaque parts together based on efficiency (state, real view depth, whatever...)
-            . Draw flasher DMD after opaques and before transparents (they are marked as transparent with a depthbias shifted by -10000 to ensure this, see flasher.cpp)
-            . Use existing sorting of transparent parts (based on absolute z and depthbias)
-            . TODO Sort "deferred draw light render commands" after opaque and before transparents
-            . TODO Group draw call of each refraction probe together (after the first part, based on default sorting)
-      */
-      struct
+   For 10.8, the render command sorting has been designed to ensure backward compatibility:
+      - Identify transparent parts in a backward compatible way (using IsTransparent, and not according to real 'transparency' state as evaluated from depth & blend state)
+      - Sort render commands with the following constraints:
+         . Draw kickers first (at least before balls)
+         . Draw playfield of old tables before other parts. Old table's PF command is opaque with a very high depth bias (this is enforced when loading the table, see pintable.cpp)
+         . Sort opaque parts together based on efficiency (state, real view depth, whatever...)
+         . Draw flasher DMD after opaques and before transparents (they are marked as transparent with a depthbias shifted by -10000 to ensure this, see flasher.cpp)
+         . Use existing sorting of transparent parts (based on absolute z and depthbias)
+         . TODO Sort "deferred draw light render commands" after opaque and before transparents
+         . TODO Group draw call of each refraction probe together (after the first part, based on default sorting)
+   */
+   struct
+   {
+      inline bool operator()(const RenderCommand* r1, const RenderCommand* r2) const
       {
-         inline bool operator()(const RenderCommand* r1, const RenderCommand* r2) const
+         // Move Clear/Copy command at the beginning of the pass
+         if (!r1->IsDrawCommand())
+            return true;
+         if (!r2->IsDrawCommand())
+            return false;
+
+         // Move LiveUI command at the end of the pass
+         if (r1->IsDrawLiveUICommand())
+            return false;
+         if (r2->IsDrawLiveUICommand())
+            return true;
+
+         // Move kickers before other draw calls.
+         // Kickers disable depth test to be visible through playfield. This would make them to be rendered after opaques, but since they hack depth, they need to be rendered before balls
+         // > The right fix would be to remove the kicker hack (use stencil masking, alpha punch or CSG on playfield), this would also solve rendering kicker in VR
+         if (r1->GetShaderTechnique() == SHADER_TECHNIQUE_kickerBoolean || r1->GetShaderTechnique() == SHADER_TECHNIQUE_kickerBoolean_isMetal)
+            return true;
+         if (r2->GetShaderTechnique() == SHADER_TECHNIQUE_kickerBoolean || r2->GetShaderTechnique() == SHADER_TECHNIQUE_kickerBoolean_isMetal)
+            return false;
+            
+         // At least one transparent item (identify by legacy transparency flag): render them after opaque ones
+         const bool transparent1 = r1->IsTransparent();
+         const bool transparent2 = r2->IsTransparent();
+         if (transparent1)
          {
-            // Move Clear/Copy command at the beginning of the pass
-            if (!r1->IsDrawCommand())
-               return true;
-            if (!r2->IsDrawCommand())
-               return false;
-
-            // Move LiveUI command at the end of the pass
-            if (r1->IsDrawLiveUICommand())
-               return false;
-            if (r2->IsDrawLiveUICommand())
-               return true;
-
-            // Move kickers before other draw calls.
-            // Kickers disable depth test to be visible through playfield. This would make them to be rendered after opaques, but since they hack depth, they need to be rendered before balls
-            // > The right fix would be to remove the kicker hack (use stencil masking, alpha punch or CSG on playfield), this would also solve rendering kicker in VR
-            if (r1->GetShaderTechnique() == SHADER_TECHNIQUE_kickerBoolean || r1->GetShaderTechnique() == SHADER_TECHNIQUE_kickerBoolean_isMetal)
-               return true;
-            if (r2->GetShaderTechnique() == SHADER_TECHNIQUE_kickerBoolean || r2->GetShaderTechnique() == SHADER_TECHNIQUE_kickerBoolean_isMetal)
-               return false;
-            
-            // At least one transparent item (identify by legacy transparency flag): render them after opaque ones
-            const bool transparent1 = r1->IsTransparent();
-            const bool transparent2 = r2->IsTransparent();
-            if (transparent1)
-            {
-               if (transparent2)
-               {
-                  // Both transparent: sorted back to front since their rendering depends on the framebuffer (keep submission order if same depth)
-                  if (r1->GetDepth() == r2->GetDepth())
-                     return false;
-                  return r1->GetDepth() > r2->GetDepth();
-               }
-               return false;
-            }
             if (transparent2)
-               return true;
-            
-            // At this point, both commands are draw commands of opaque items
-            
-            // HACKY: if marked with a very high depthbias, render them first. This is needed to avoid breaking playfield rendering of old table 
-            // since before 10.8, playfield was always rendered before all other parts, with alpha testing and depth writing.
-            if (r1->GetDepth() != r2->GetDepth() && fabsf(r1->GetDepth() - r2->GetDepth()) > 50000.f)
-               return r1->GetDepth() > r2->GetDepth(); // Back to front
-
-            // Sort by shader to limit the number of shader changes
-            if (r1->GetShaderTechnique() != r2->GetShaderTechnique())
             {
-               // TODO sort by minimum depth of the technique
-               /* if (m_min_depth[r1->technique] == m_min_depth[r2->technique])
-                  return r1->technique < r2->technique;
-               else
-                  return m_min_depth[r1->technique] < m_min_depth[r2->technique];*/
-               return r1->GetShaderTechnique() > r2->GetShaderTechnique();
+               // Both transparent: sorted back to front since their rendering depends on the framebuffer (keep submission order if same depth)
+               if (r1->GetDepth() == r2->GetDepth())
+                  return false;
+               return r1->GetDepth() > r2->GetDepth();
             }
-
-            // Sort front to back to limit overdraw, limiting the number of processed fragment thanks to early depth test
-            if (r1->GetDepth() != r2->GetDepth())
-               return r1->GetDepth() < r2->GetDepth(); // Front to back
-
-            // Sort by mesh buffer id, to limit buffer switching
-            if (r1->IsDrawMeshCommand() && r2->IsDrawMeshCommand())
-            {
-               const unsigned int mbS1 = r1->GetMeshBuffer()->GetSortKey();
-               const unsigned int mbS2 = r2->GetMeshBuffer()->GetSortKey();
-               if (mbS1 != mbS2)
-               {
-                  return mbS1 < mbS2;
-               }
-            }
-
-            // Sort by render state ot limit the amount of state changes
-            return r1->GetRenderState().m_state < r2->GetRenderState().m_state;
+            return false;
          }
-      } sortFunc;
+         if (transparent2)
+            return true;
+            
+         // At this point, both commands are draw commands of opaque items
+            
+         // HACKY: if marked with a very high depthbias, render them first. This is needed to avoid breaking playfield rendering of old table 
+         // since before 10.8, playfield was always rendered before all other parts, with alpha testing and depth writing.
+         if (r1->GetDepth() != r2->GetDepth() && fabsf(r1->GetDepth() - r2->GetDepth()) > 50000.f)
+            return r1->GetDepth() > r2->GetDepth(); // Back to front
 
-      // stable sort is needed since we don't want to change the order of blended draw calls between frames
-      if (log)
-      {
-         const U64 start = usec();
-         stable_sort(m_commands.begin(), m_commands.end(), sortFunc);
-         PLOGI << "Pass '" << m_name << "' [RT=" << m_rt->m_name << ", " << m_commands.size() << " commands, sort: " << std::fixed << std::setw(8) << std::setprecision(3) << (usec() - start)
-               << "us]";
+         // Sort by shader to limit the number of shader changes
+         if (r1->GetShaderTechnique() != r2->GetShaderTechnique())
+         {
+            // TODO sort by minimum depth of the technique
+            /* if (m_min_depth[r1->technique] == m_min_depth[r2->technique])
+               return r1->technique < r2->technique;
+            else
+               return m_min_depth[r1->technique] < m_min_depth[r2->technique];*/
+            return r1->GetShaderTechnique() > r2->GetShaderTechnique();
+         }
+
+         // Sort front to back to limit overdraw, limiting the number of processed fragment thanks to early depth test
+         if (r1->GetDepth() != r2->GetDepth())
+            return r1->GetDepth() < r2->GetDepth(); // Front to back
+
+         // Sort by mesh buffer id, to limit buffer switching
+         if (r1->IsDrawMeshCommand() && r2->IsDrawMeshCommand())
+         {
+            const unsigned int mbS1 = r1->GetMeshBuffer()->GetSortKey();
+            const unsigned int mbS2 = r2->GetMeshBuffer()->GetSortKey();
+            if (mbS1 != mbS2)
+            {
+               return mbS1 < mbS2;
+            }
+         }
+
+         // Sort by render state ot limit the amount of state changes
+         return r1->GetRenderState().m_state < r2->GetRenderState().m_state;
       }
-      else
-         stable_sort(m_commands.begin(), m_commands.end(), sortFunc);
+   } sortFunc;
 
-      if (m_rt->m_nLayers == 1 || m_rt->GetRenderDevice()->SupportLayeredRendering())
+   // stable sort is needed since we don't want to change the order of blended draw calls between frames
+   if (log)
+   {
+      const U64 start = usec();
+      stable_sort(m_commands.begin(), m_commands.end(), sortFunc);
+      PLOGI << "Pass '" << m_name << "' [RT=" << m_rt->m_name << ", " << m_commands.size() << " commands, sort: " << std::fixed << std::setw(8) << std::setprecision(3) << (usec() - start)
+            << "us]";
+   }
+   else
+      stable_sort(m_commands.begin(), m_commands.end(), sortFunc);
+
+   if (m_rt->m_nLayers == 1 || m_rt->GetRenderDevice()->SupportLayeredRendering())
+   {
+      m_rt->Activate();
+      for (RenderCommand* cmd : m_commands)
       {
-         m_rt->Activate();
+         #ifdef ENABLE_SDL // Layered rendering is not yet implemented for DirectX
+         Shader::ShaderState* state = cmd->GetShaderState();
+         if (state)
+            state->SetInt(SHADER_layer, 0);
+         #endif
+         cmd->Execute(log);
+      }
+   }
+   else
+   {
+      for (int layer = 0; layer < m_rt->m_nLayers; layer++)
+      {
+         m_rt->Activate(layer);
          for (RenderCommand* cmd : m_commands)
          {
             #ifdef ENABLE_SDL // Layered rendering is not yet implemented for DirectX
             Shader::ShaderState* state = cmd->GetShaderState();
             if (state)
-               state->SetInt(SHADER_layer, 0);
+               state->SetInt(SHADER_layer, layer);
             #endif
             cmd->Execute(log);
          }
       }
-      else
-      {
-         for (int layer = 0; layer < m_rt->m_nLayers; layer++)
-         {
-            m_rt->Activate(layer);
-            for (RenderCommand* cmd : m_commands)
-            {
-               #ifdef ENABLE_SDL // Layered rendering is not yet implemented for DirectX
-               Shader::ShaderState* state = cmd->GetShaderState();
-               if (state)
-                  state->SetInt(SHADER_layer, layer);
-               #endif
-               cmd->Execute(log);
-            }
-         }
-      }
-
-      if (m_depthReadback)
-         m_rt->UpdateDepthSampler(true);
-
-      #ifdef ENABLE_SDL
-      if (GLAD_GL_VERSION_4_3)
-         glPopDebugGroup();
-      #endif
    }
-   m_rt->m_lastRenderPass = nullptr;
+
+   if (m_depthReadback)
+      m_rt->UpdateDepthSampler(true);
+
+   #ifdef ENABLE_SDL
+   if (GLAD_GL_VERSION_4_3)
+      glPopDebugGroup();
+   #endif
+
+   return true;
 }

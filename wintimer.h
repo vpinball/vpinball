@@ -106,15 +106,15 @@ public:
    // (approximately) 1 second sliding average
    double GetSlidingAvg(ProfileSection section) const
    {
-      unsigned int pos = m_profileIndex;
+      unsigned int pos = (m_profileIndex + N_SAMPLES - 1) % N_SAMPLES; // Start from last frame
       unsigned int elapsed = 0u;
       unsigned int sum = 0u;
       unsigned int count = 0u;
       for (unsigned int i = 0u; i < N_SAMPLES; i++)
       {
-         count++;
-         if (count > m_frameIndex)
+         if (count >= m_frameIndex)
             break;
+         count++;
          pos = (pos + N_SAMPLES - 1) % N_SAMPLES;
          sum += m_profileData[pos][section];
          elapsed += m_profileData[pos][ProfileSection::PROFILE_FRAME];

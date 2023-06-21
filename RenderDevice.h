@@ -1,5 +1,7 @@
 #pragma once
 
+#include <thread>
+
 #include "inc/robin_hood.h"
 #include "typedefs3D.h"
 
@@ -69,6 +71,7 @@ int getPrimaryDisplay();
 
 class Shader;
 class ModelViewProj;
+enum VideoSyncMode;
 
 class RenderDevice final
 {
@@ -84,8 +87,8 @@ public:
       LINESTRIP = GL_LINE_STRIP
    };
 
-   SDL_Window* m_sdl_playfieldHwnd;
-   SDL_GLContext m_sdl_context;
+   SDL_Window* m_sdl_playfieldHwnd = nullptr;
+   SDL_GLContext m_sdl_context = nullptr;
 #else
    enum PrimitiveTypes
    {
@@ -104,7 +107,8 @@ public:
       TRANSFORMSTATE_PROJECTION
    };
 
-   RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, int VSync, const float AAfactor, const StereoMode stereo3D, const unsigned int FXAA, const bool sharpen, const bool ss_refl, const bool useNvidiaApi, const bool disable_dwm, const int BWrendering);
+   RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, const VideoSyncMode syncMode, const int maxFrameRate, const float AAfactor,
+      const StereoMode stereo3D, const unsigned int FXAA, const bool sharpen, const bool ss_refl, const bool useNvidiaApi, const bool disable_dwm, const int BWrendering);
    ~RenderDevice();
    void CreateDevice(int &refreshrate, UINT adapterIndex = D3DADAPTER_DEFAULT);
    bool LoadShaders();
@@ -126,7 +130,8 @@ public:
    void LogNextFrame() { m_logNextFrame = true; }
    bool IsLogNextFrame() const { return m_logNextFrame; }
    void FlushRenderFrame();
-   void Flip(const bool vsync);
+   void Flip(const int vsync);
+   bool HasAsyncFlip() const;
 
    bool SetMaximumPreRenderedFrames(const DWORD frames);
 
@@ -222,19 +227,20 @@ public:
 
    HWND getHwnd() const { return m_windowHwnd; }
 
-   HWND         m_windowHwnd;
-   int          m_width;  // Width of the render buffer (not the window width, for example for stereo the render width is doubled, or for VR, the size depends on the headset)
-   int          m_height; // Height of the render buffer
-   bool         m_fullscreen;
-   int          m_colorDepth;
-   int          m_vsync;
-   StereoMode   m_stereo3D;
-   float        m_AAfactor;
-   bool         m_ssRefl;
-   bool         m_disableDwm;
-   bool         m_sharpen;
-   unsigned int m_FXAA;
-   int          m_BWrendering;
+   HWND          m_windowHwnd;
+   int           m_width;  // Width of the render buffer (not the window width, for example for stereo the render width is doubled, or for VR, the size depends on the headset)
+   int           m_height; // Height of the render buffer
+   bool          m_fullscreen;
+   int           m_colorDepth;
+   VideoSyncMode m_videoSyncMode;
+   int           m_maxFrameRate;
+   StereoMode    m_stereo3D;
+   float         m_AAfactor;
+   bool          m_ssRefl;
+   bool          m_disableDwm;
+   bool          m_sharpen;
+   unsigned int  m_FXAA;
+   int           m_BWrendering;
 
 private:
    void UploadAndSetSMAATextures();
@@ -246,10 +252,8 @@ public:
 
 private:
 #ifndef ENABLE_SDL
-#ifdef USE_D3D9EX
    IDirect3D9Ex* m_pD3DEx;
    IDirect3DDevice9Ex* m_pD3DDeviceEx;
-#endif
    IDirect3D9* m_pD3D;
    IDirect3DDevice9* m_pD3DDevice;
 #endif
@@ -294,6 +298,11 @@ public:
 private:
    bool m_dwm_was_enabled;
    bool m_dwm_enabled;
+   bool m_present_vsync;
+
+public:
+   void VSyncThread();
+   U64 m_lastVSyncUs = 0;
 
 public:
    MeshBuffer* m_quadMeshBuffer = nullptr;       // internal vb for rendering quads

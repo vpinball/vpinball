@@ -180,7 +180,8 @@ Player::Player(const bool cameraMode, PinTable *const editor_table, PinTable *co
       m_ss_refl = LoadValueWithDefault(regKey[RegName::PlayerVR], "SSRefl"s, false);
       m_scaleFX_DMD = LoadValueWithDefault(regKey[RegName::PlayerVR], "ScaleFXDMD"s, false);
       m_bloomOff = LoadValueWithDefault(regKey[RegName::PlayerVR], "ForceBloomOff"s, false);
-      m_VSync = 0; //Disable VSync for VR
+      m_videoSyncMode = VideoSyncMode::VSM_NONE; // Disable VSync for VR (sync is performed by the OpenVR runtime)
+      m_maxFramerate = 0; 
    }
    else
 #endif
@@ -204,7 +205,19 @@ Player::Player(const bool cameraMode, PinTable *const editor_table, PinTable *co
       m_stereo3DY = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DYAxis"s, false);
       m_scaleFX_DMD = LoadValueWithDefault(regKey[RegName::Player], "ScaleFXDMD"s, false);
       m_bloomOff = LoadValueWithDefault(regKey[RegName::Player], "ForceBloomOff"s, false);
-      m_VSync = LoadValueWithDefault(regKey[RegName::Player], "AdaptiveVSync"s, 0);
+      m_maxFramerate = LoadValueWithDefault(regKey[RegName::Player], "MaxFramerate"s, -1);
+      m_videoSyncMode = (VideoSyncMode)LoadValueWithDefault(regKey[RegName::Player], "SyncMode"s, VSM_INVALID);
+      if (m_maxFramerate < 0 || m_videoSyncMode == VideoSyncMode::VSM_INVALID)
+      {
+         const int vsync = LoadValueWithDefault(regKey[RegName::Player], "AdaptiveVSync"s, 0);
+         switch (vsync)
+         {
+         case 0: m_maxFramerate = 0; m_videoSyncMode = VideoSyncMode::VSM_NONE; break;
+         case 1: m_maxFramerate = 0; m_videoSyncMode = VideoSyncMode::VSM_VSYNC; break;
+         case 2: m_maxFramerate = 0; m_videoSyncMode = VideoSyncMode::VSM_ADAPTIVE_VSYNC; break;
+         default: m_maxFramerate = vsync; m_videoSyncMode = VideoSyncMode::VSM_ADAPTIVE_VSYNC; break;
+         }
+      }
    }
 
    m_headTracking = LoadValueWithDefault(regKey[RegName::Player], "BAMheadTracking"s, false);
@@ -1140,8 +1153,18 @@ HRESULT Player::Init()
 
    //
 
-   const int vsync = (m_ptable->m_TableAdaptiveVSync == -1) ? m_VSync : m_ptable->m_TableAdaptiveVSync;
-
+   int maxFPS = m_maxFramerate;
+   VideoSyncMode syncMode = m_videoSyncMode;
+   if (m_ptable->m_TableAdaptiveVSync != -1)
+   {
+      switch (m_ptable->m_TableAdaptiveVSync)
+      {
+      case 0: maxFPS = m_refreshrate; syncMode = VideoSyncMode::VSM_NONE; break;
+      case 1: maxFPS = m_refreshrate; syncMode = VideoSyncMode::VSM_VSYNC; break;
+      case 2: maxFPS = m_refreshrate; syncMode = VideoSyncMode::VSM_ADAPTIVE_VSYNC; break;
+      default: maxFPS = m_ptable->m_TableAdaptiveVSync; syncMode = m_ptable->m_TableAdaptiveVSync > m_refreshrate ? VideoSyncMode::VSM_NONE : VideoSyncMode::VSM_ADAPTIVE_VSYNC; break;
+      }
+   }
    const float aaFactor = m_ptable->m_useAA == -1 ? m_AAfactor : m_ptable->m_useAA == 1 ? 2.0f : 1.0f;
    const unsigned int FXAA = (m_ptable->m_useFXAA == -1) ? m_FXAA : m_ptable->m_useFXAA;
    const bool ss_refl = (m_ss_refl && (m_ptable->m_useSSR == -1)) || (m_ptable->m_useSSR == 1);
@@ -1152,7 +1175,7 @@ HRESULT Player::Init()
 
    // colordepth & refreshrate are only defined if fullscreen is true.
    // width and height may be modified during initialization (for example for VR, they are adapted to the headset resolution)
-   const HRESULT hr = m_pin3d.InitPin3D(m_fullScreen, m_wnd_width, m_wnd_height, colordepth, m_refreshrate, vsync, aaFactor, m_stereo3D, FXAA, !!m_sharpen, ss_refl);
+   const HRESULT hr = m_pin3d.InitPin3D(m_fullScreen, m_wnd_width, m_wnd_height, colordepth, m_refreshrate, syncMode, maxFPS, aaFactor, m_stereo3D, FXAA, !!m_sharpen, ss_refl);
    if (hr != S_OK)
    {
       char szFoo[64];
@@ -1626,6 +1649,12 @@ HRESULT Player::Init()
 
    // 0 means disable limiting of draw-ahead queue
    m_limiter.Init(m_pin3d.m_pd3dPrimaryDevice, m_maxPrerenderedFrames);
+
+   if (m_videoSyncMode == VideoSyncMode::VSM_FRAME_PACING && !m_pin3d.m_pd3dPrimaryDevice->HasAsyncFlip())
+   {
+      PLOGE << "Frame pacing sync mode needs Windows 8+ for which VPX supports asynchronous frame syncing";
+      ShowError("Frame pacing sync mode needs Windows 8+ for which VPX supports asynchronous frame syncing.\r\nYou should select another synchronization mode fropm the video setting dialog.");
+   }
 
    // Broadcast a message to notify front-ends that it is 
    // time to reveal the playfield. 
@@ -2391,8 +2420,9 @@ void Player::SetGravity(float slopeDeg, float strength)
 
 void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this time
 {
-   int StaticCnts = STATICCNTS;    // maximum number of static counts
+   // PLOGD << "Cycle " << dtime;
 
+   int StaticCnts = STATICCNTS; // maximum number of static counts
    // it's okay to have this code outside of the inner loop, as the ball hitrects already include the maximum distance they can travel in that timespan
    m_hitoctree_dynamic.Update();
 
@@ -3647,20 +3677,6 @@ void Player::PrepareVideoBuffersNormal()
    m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderState::CULL_CCW);
 }
 
-void Player::FlipVideoBuffers(const bool vsync)
-{
-   // display frame
-   g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_GPU_FLIP);
-   m_pin3d.m_pd3dPrimaryDevice->Flip(vsync);
-   g_frameProfiler.ExitProfileSection();
-   
-   // switch to texture output buffer again
-   m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTextureNull(SHADER_tex_fb_filtered);
-   m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTextureNull(SHADER_tex_fb_unfiltered);
-
-   m_lastFlipTime = usec();
-}
-
 void Player::PrepareVideoBuffersAO()
 {
    const bool useAA = ((m_AAfactor != 1.0f) && (m_ptable->m_useAA == -1)) || (m_ptable->m_useAA == 1);
@@ -3960,48 +3976,227 @@ void Player::LockForegroundWindow(const bool enable)
 
 void Player::OnIdle()
 {
-   // Collect stats from previous frame and starts profiling a new frame
-   g_frameProfiler.NewFrame();
+   if (m_videoSyncMode == VideoSyncMode::VSM_FRAME_PACING)
+   {
+      // The main loop try to perform constant input/physics cycle at a 1ms pace while feeding the GPU command queue at a stable rate, without multithreading.
+      // These 2 tasks are designed as follows:
+      // - Input/Phyics: acquire then process input (eventually executing script event that will trigger PinMame controller), then allow
+      //   physics to catch up to the real machine time. The aim is to run at real time speed since PinMame controller does so and requires
+      //   its input to be done the same way, and some flipper tricks depends a lot on precise timings.
+      // - Rendering: it is performed in 3 steps:
+      //   . Collect (C): update table (animation, per frame timers), build a render (R) command sequence (ideally without any GPU interaction, not yet implemented as such)
+      //   . Submit  (S): Feed all commands to the GPU command queue
+      //   . Finish  (F): Schedule frame presentation at the right time, perform per frame tasks
+      //
+      // The overall sequence looks like this (input/physics is not shown and is done as frequently as possible on the CPU, frames alternate upper/lower case):
+      // Display ......v.......V.......v.......V......
+      // CPU     CSS....Fcss....fCSS....Fcss....fCSS..
+      // GPU     .RRRRRRR.rrrrrrr.RRRRRRR.rrrrrrr.RRRR
+      // It shows that we aim at always having one frame prepared before the next VBlank. This implies a 1 frame latency but allows
+      // to keep the GPU mostly always busy with lower stutter risk (missing a frame, not rendering a point in time at the right time).
+      //
+      // If the system if high end and the table not too demanding, it may looks like this:
+      // Display ......v.......V.......v.......V......
+      // CPU     CS.....Fcs.....fCS.....Fcs.....fCS...
+      // GPU     .RRR.....rrr.....RRR.....rrr.....RRR.
+      // In these situations, to lower input-render latency, we could delay the frame start instead of starting directly after submitting 
+      // previous frame. This is not implemented for the time being.
+      //
+      // On the opposite, if the table is too demanding, the VBlank will be ignored and the rendering would try to catch up:
+      // Display ......V...X...V....x..V.....X.V.....xV.......VX.....Vx......V.X....
+      // CPU     CCSSS..Fccssss.fCCSSSSSFccssssssFCCSSSSSFccssssssFCCSSSSSFccssssssf
+      // GPU     ..RRRRRRRRRrrrrrrrrrRRRRRRRRRrrrrrrrrRRRRRRRRRrrrrrrrrRRRRRRRRRrrrr
+      // It shows that after the first few frames, the CPU will hit a blocking call when submitting to the GPU render queue (longer submit phase).
+      // This would defeat the design since during the blocking call, the CPU is stalled and VPX's input/physics will lag behind PinMame.
+      // It also shows that since frame arrive late, they are pushed to the display out of sync. Wether they will wait for the next VBlank or 
+      // not (causing tearing) depends on the user setup (DWM, fullscreen,...).
+      // 
+      // What we do is adjust the target frame length based on averaged previous frame length (sliding average searching to get back to 
+      // refresh rate). On the following diagram, it is shown as some 'W' for additional wait during which input/physics is still processed.
+      // Display ......V...X...V.....x.V.......VX.....V..x....V....X.V.......Vx.....
+      // CPU     CCSSS..WWFccsss..wwfCCSSS..WWFccsss..wwfCCSSS..WWFccsss..wwfCCSSSS.
+      // GPU     ..RRRRRRRRR.rrrrrrrrr.RRRRRRRRR.rrrrrrrrr.RRRRRRRRR.rrrrrrrrr.RRRRR
+      // This also allows, if selected (not shown), to only use multiple of the refresh rate to enforce that frames are in sync with VBlank.
 
+      constexpr bool debugLog = false;
+
+      const int refreshLength = (int)(1000000ul / m_refreshrate);
+      bool doPhysics = !m_pause;
+
+      // Render frame following these: Prepare / Submit to GPU / Present frame when monitor is ready to display a new frame and GPU has finished rendering (not for DX9)
+      switch (m_mainLoopPhase)
+      {
+      case 0:
+      {
+         g_frameProfiler.NewFrame();
+         PLOGI_IF(debugLog) << "Frame Collect [Last frame length: " << ((double)g_frameProfiler.GetPrev(FrameProfiler::PROFILE_FRAME) / 1000.0) << "ms] at " << usec();
+         PrepareFrame();
+         m_mainLoopPhase = 1;
+      }
+      break;
+
+      case 1:
+      {
+         PLOGI_IF(debugLog) << "Frame Submit at " << usec();
+         SubmitFrame();
+         m_mainLoopPhase = 2;
+      }
+      break;
+
+      case 2:
+      {
+         static bool waitedForVBlank = true, waitedForFPS = true;
+
+         // Wait for at least one VBlank after last frame submission (adaptive sync)
+         if (m_stereo3D != STEREO_VR && m_overall_frames > 1 && m_pin3d.m_pd3dPrimaryDevice->m_lastVSyncUs == 0)
+         {
+            waitedForVBlank = true;
+            break;
+         }
+
+         // If we are not able to keep up with the refresh rate, target a slower frame rate, still trying to catch up but in a smooth way, 
+         // by 2ms step which is just an empirical magic number to stabilize quickly without loosing too much input/physics cycles. This 
+         // works but needs a few stutter frames before stabilizing.
+         const U64 now = usec();
+         const int averageFrameLength = (int)(1e6 / m_fps);
+         const int localvsync = (m_ptable->m_TableAdaptiveVSync < 2) ? m_maxFramerate : m_ptable->m_TableAdaptiveVSync;
+         const int targetFrameLength = clamp(averageFrameLength - 2000, localvsync <= 2 ? 0 : (1000000ull / localvsync), 5 * refreshLength);
+         const U64 minFrameTick = m_lastPresentFrameTick + targetFrameLength;
+         if (m_stereo3D != STEREO_VR && m_overall_frames > 100 && now < minFrameTick)
+         {
+            waitedForFPS = true;
+            break;
+         }
+
+         m_lastPresentFrameTick = now;
+         PLOGI_IF(debugLog) << "Frame Finish at " << now 
+            << ", Waited for VBlank: " << waitedForVBlank
+            << ", Waited for FPS: " << waitedForFPS
+            << ", Target frame length: " << (targetFrameLength/1000.0) 
+            << "ms, Average frame length: " << (averageFrameLength / 1000.0) << "ms";
+         m_pin3d.m_pd3dPrimaryDevice->m_lastVSyncUs = 0;
+         g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_GPU_FLIP);
+         m_pin3d.m_pd3dPrimaryDevice->Flip(2);
+         g_frameProfiler.ExitProfileSection();
+         FinishFrame();
+         waitedForVBlank = waitedForFPS = false;
+         m_mainLoopPhase = 0;
+      }
+      break;
+
+      default: assert(false);
+      }
+
+      // Update physics. Do it continuously for lower latency between input <-> controler/physics (avoid catching up once per frame)
+      if (doPhysics && m_closing == CS_PLAYING)
+      {
+         // Trigger key events before processing physics, also allows to sync with VPM
+         m_pininput.ProcessKeys(/*sim_msec,*/ -(int)msec());
+         UpdatePhysics();
+         PLOGI_IF(debugLog && m_phys_iterations > 0) << "Input/Physics done (" << m_phys_iterations << " iterations)";
+      }
+   }
+   else
+   {
+      // Legacy main loop performs the frame as a single block. This leads to having the input <-> physics stall between frames increasing 
+      // the latency and causing syncing problems with PinMame (which runs realtime and expects realtime inputs, especially for video modes
+      // with repeated buttons presses like for Black Rose "Walk the Plank Vide Mode" or Lethal Weapon 3 "Battle Video Mode")
+      // This also leads to filling up the GPU render queue leading to a few frame latency, depending on driver setup (hence the use of a limiter).
+       
+      // Collect stats from previous frame and starts profiling a new frame
+      g_frameProfiler.NewFrame();
+
+      // In pause mode: input, physics, animation and audio are not processed but rendering is still performed. This allows to modify properties (transform, visibility,..) using the debugger and get direct feedback
+      if (!m_pause)
+         m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(m_startFrameTick / 1000)); // trigger key events mainly for VPM<->VP roundtrip
+
+      if (m_sleeptime > 0)
+      {
+         Sleep(m_sleeptime - 1);
+         if (!m_pause)
+         m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(m_startFrameTick / 1000)); // trigger key events mainly for VPM<->VP roundtrip
+      }
+
+      // Physics/Timer updates, done at the last moment, especially to handle key input (VP<->VPM roundtrip) and animation triggers
+      if (!m_pause && m_minphyslooptime == 0) // (vsync) latency reduction code not active? -> Do Physics Updates here
+         UpdatePhysics();
+
+      PrepareFrame();
+
+      SubmitFrame();
+
+      // (Optionally) force queue flushing of the driver. Can be used to artifically limit latency on DX9 (depends on OS/GFXboard/driver if still useful nowadays). This must be done after submiting render commands
+      m_limiter.Execute(m_pin3d.m_pd3dPrimaryDevice);
+
+      // DJRobX's crazy latency-reduction code active? Insert some Physics updates before vsync'ing
+      if (!m_pause && m_minphyslooptime > 0)
+      {
+         UpdatePhysics();
+         m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(m_startFrameTick / 1000)); // trigger key events mainly for VPM<->VP rountrip
+      }
+
+      // Present & VSync
+      int maxFPS = m_maxFramerate;
+      VideoSyncMode syncMode = m_videoSyncMode;
+      if (m_ptable->m_TableAdaptiveVSync != -1)
+      {
+         switch (m_ptable->m_TableAdaptiveVSync)
+         {
+         case 0: maxFPS = m_refreshrate; syncMode = VideoSyncMode::VSM_NONE; break;
+         case 1: maxFPS = m_refreshrate; syncMode = VideoSyncMode::VSM_VSYNC; break;
+         case 2: maxFPS = m_refreshrate; syncMode = VideoSyncMode::VSM_ADAPTIVE_VSYNC; break;
+         default: maxFPS = m_ptable->m_TableAdaptiveVSync; syncMode = m_ptable->m_TableAdaptiveVSync > m_refreshrate ? VideoSyncMode::VSM_NONE : VideoSyncMode::VSM_ADAPTIVE_VSYNC; break;
+         }
+      }
+      bool vsync;
+      switch (syncMode)
+      {
+      case VideoSyncMode::VSM_NONE: vsync = false; break;
+      case VideoSyncMode::VSM_VSYNC: vsync = true; break;
+      case VideoSyncMode::VSM_ADAPTIVE_VSYNC: vsync = m_fps > maxFPS * ADAPT_VSYNC_FACTOR; break; // Adaptive sync (only sync if running faster than requested frame rate)
+      default: assert(false);
+      }
+      g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_GPU_FLIP);
+      m_pin3d.m_pd3dPrimaryDevice->Flip(vsync ? 1 : 0);
+      g_frameProfiler.ExitProfileSection();
+
+      FinishFrame();
+
+      if (m_closing == CS_PLAYING)
+      {
+         // limit framerate if requested by user (refresh rate lower than display refresh rate)
+         if (m_stereo3D != STEREO_VR && maxFPS > 2)
+         {
+            const U64 timeForFrame = usec() - m_startFrameTick;
+            if (timeForFrame < 1000000ull / maxFPS)
+            {
+               g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_SLEEP);
+               uSleep(1000000ull / maxFPS - timeForFrame);
+               g_frameProfiler.ExitProfileSection();
+            }
+         }
+      }
+   }
+}
+
+void Player::PrepareFrame()
+{
    // Rendering outputs to m_pd3dPrimaryDevice->GetBackBufferTexture(). If MSAA is used, it is resolved as part of the rendering (i.e. this surface is NOT the MSAA rneder surface but its resolved copy)
    // Then it is tonemapped/bloom/dither/... to m_pd3dPrimaryDevice->GetPostProcessRenderTarget1() if needed for postprocessing (sharpen, FXAA,...), or directly to the main output framebuffer otherwise
    // The optional postprocessing is done from m_pd3dPrimaryDevice->GetPostProcessRenderTarget1() to the main output framebuffer
 
-   // Kill the profiler so that it does not affect performance => FIXME move to player
-   if (m_infoMode != IF_PROFILING)
-      m_pin3d.m_gpu_profiler.Shutdown();
+   m_overall_frames++;
+   m_LastKnownGoodCounter++;
+   m_startFrameTick = usec();
 
-   // Try to bring PinMAME window back on top
-   if (m_overall_frames < 10)
-   {
-      const HWND hVPMWnd = FindWindow("MAME", nullptr);
-      if (hVPMWnd != nullptr)
-      {
-         if (::IsWindowVisible(hVPMWnd))
-            ::SetWindowPos(hVPMWnd, HWND_TOPMOST, 0, 0, 0, 0, (SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW | SWP_NOACTIVATE)); // in some strange cases the VPinMAME window is not on top, so enforce it
-      }
-   }
-
-   const U64 startRenderUsec = usec();
-
-   // In pause mode: input, physics, animation and audio are not processed but rendering is still performed. This allows to modify properties (transform, visibility,..) using the debugger and get direct feedback
-   if (!m_pause)
-      m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(startRenderUsec / 1000)); // trigger key events mainly for VPM<->VP roundtrip
-
-   if (m_sleeptime > 0)
-   {
-      Sleep(m_sleeptime - 1);
-      if (!m_pause)
-         m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(startRenderUsec / 1000)); // trigger key events mainly for VPM<->VP roundtrip
-   }
-
-#ifdef DEBUGPHYSICS
+   // Reset per frame debug counters
+   #ifdef DEBUGPHYSICS
    c_hitcnts = 0;
    c_collisioncnt = 0;
    c_contactcnt = 0;
-#ifdef C_DYNAMIC
+   #ifdef C_DYNAMIC
    c_staticcnt = 0;
-#endif
+   #endif
    c_embedcnts = 0;
    c_timesearch = 0;
 
@@ -4011,15 +4206,7 @@ void Player::OnIdle()
    c_traversed = 0;
    c_tested = 0;
    c_deepTested = 0;
-#endif
-
-   m_LastKnownGoodCounter++;
-
-   // Physics/Timer updates, done at the last moment, especially to handle key input (VP<->VPM roundtrip) and animation triggers
-   if (!m_pause && m_minphyslooptime == 0) // (vsync) latency reduction code not active? -> Do Physics Updates here
-      UpdatePhysics();
-
-   m_overall_frames++;
+   #endif
 
    // Update all non-physics-controlled animated parts (e.g. primitives, reels, gates, lights, bumper-skirts, hittargets, etc)
    if (!m_pause)
@@ -4040,19 +4227,16 @@ void Player::OnIdle()
       if (pht->m_interval < 0)
          pht->m_pfe->FireGroupEvent(DISPID_TimerEvents_Timer);
 
+   // Kill the profiler so that it does not affect performance => FIXME move to player
+   if (m_infoMode != IF_PROFILING)
+      m_pin3d.m_gpu_profiler.Shutdown();
+
 #ifndef ENABLE_SDL
    if (GetProfilingMode() == PF_ENABLED)
       m_pin3d.m_gpu_profiler.BeginFrame(m_pin3d.m_pd3dPrimaryDevice->GetCoreDevice());
 #endif
 
-#ifdef ENABLE_SDL
-   // Trigger captures
-   if (m_capExtDMD)
-      captureExternalDMD();
-   if (m_capPUP)
-      capturePUP();
-#endif
-
+   g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_GPU_COLLECT);
    m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("Render Scene"s, m_pin3d.m_pd3dPrimaryDevice->GetMSAABackBufferTexture());
    if (m_stereo3D == STEREO_VR || GetInfoMode() == IF_DYNAMIC_ONLY)
    {
@@ -4084,52 +4268,46 @@ void Player::OnIdle()
    // Resolve MSAA buffer to a normal one (noop if not using MSAA), allowing sampling it for postprocessing
    m_pin3d.m_pd3dPrimaryDevice->ResolveMSAA();
 
-   m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(startRenderUsec / 1000)); // trigger key events mainly for VPM<->VP roundtrip
+   if (!m_pause && (m_videoSyncMode != VideoSyncMode::VSM_FRAME_PACING))
+      m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(m_startFrameTick / 1000)); // trigger key events mainly for VPM<->VP roundtrip
 
    // Check if we should turn animate the plunger light.
    hid_set_output(HID_OUTPUT_PLUNGER, ((m_time_msec - m_LastPlungerHit) < 512) && ((m_time_msec & 512) > 0));
 
-   g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_GPU_COLLECT);
    if (GetAOMode() == 2)
       PrepareVideoBuffersAO();
    else
       PrepareVideoBuffersNormal();
    g_frameProfiler.ExitProfileSection();
 
+   // LiveUI is not included in stats since it would not be part of the render frame time when debug display is off
    m_liveUI->Update();
    m_pin3d.m_pd3dPrimaryDevice->RenderLiveUI();
+}
 
+void Player::SubmitFrame()
+{
+   // Submit to GPU render queue
    g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_GPU_SUBMIT);
    m_pin3d.m_pd3dPrimaryDevice->FlushRenderFrame();
    g_frameProfiler.ExitProfileSection();
 
-   // (Optionally) force queue flushing of the driver. Can be used to artifically limit latency on DX9 (depends on OS/GFXboard/driver if still useful nowadays). This must be done after submiting render commands
-   m_limiter.Execute(m_pin3d.m_pd3dPrimaryDevice);
-
-   // DJRobX's crazy latency-reduction code active? Insert some Physics updates before vsync'ing
-   if (!m_pause && m_minphyslooptime > 0)
-   {
-      UpdatePhysics();
-      m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(startRenderUsec / 1000)); // trigger key events mainly for VPM<->VP rountrip
-   }
-
-   int localvsync = (m_ptable->m_TableAdaptiveVSync == -1) ? m_VSync : m_ptable->m_TableAdaptiveVSync;
-   if (localvsync > m_refreshrate) // cannot sync, just limit to selected framerate
-      localvsync = 0;
+   // Trigger captures
    #ifdef ENABLE_SDL
-   else if (localvsync == 2) // adaptive sync to refresh rate handled by SDL_GL_SetSwapInterval
-      localvsync = 0;
+   if (m_capExtDMD)
+      captureExternalDMD();
+   if (m_capPUP)
+      capturePUP();
    #endif
-   else if (localvsync > 1) // adaptive sync to refresh rate
-      localvsync = m_refreshrate;
+}
 
-   bool vsync = false;
-   if (localvsync > 0)
-      if (localvsync != 1) // do nothing for 1, as already enforced during device set
-         if (m_fps > localvsync*ADAPT_VSYNC_FACTOR)
-            vsync = true;
+void Player::FinishFrame()
+{
+   // switch to texture output buffer again
+   m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTextureNull(SHADER_tex_fb_filtered);
+   m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTextureNull(SHADER_tex_fb_unfiltered);
 
-   FlipVideoBuffers(vsync);
+   m_lastFlipTime = usec();
 
    if (GetProfilingMode() != PF_DISABLED)
       m_pin3d.m_gpu_profiler.EndFrame();
@@ -4175,8 +4353,8 @@ void Player::OnIdle()
 
    m_pactiveball = old_pactiveball;
 #else
-   if (!m_pause)
-      m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(startRenderUsec / 1000)); // trigger key events mainly for VPM<->VP rountrip
+   if (!m_pause && (m_videoSyncMode != VideoSyncMode::VSM_FRAME_PACING))
+      m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(m_startFrameTick / 1000)); // trigger key events mainly for VPM<->VP rountrip
 #endif
 
    // Update music stream
@@ -4190,16 +4368,8 @@ void Player::OnIdle()
       }
    }
 
-   for (size_t i = 0; i < m_vballDelete.size(); i++)
-   {
-      const Ball * const pball = m_vballDelete[i];
-      delete pball->m_d.m_vpVolObjs;
-      delete pball;
-   }
-
-   m_vballDelete.clear();
-
-#ifdef STEPPING
+   // Pause after performing a simulation step
+   #ifdef STEPPING
    if ((m_pauseTimeTarget > 0) && (m_pauseTimeTarget <= m_time_msec))
    {
       m_pauseTimeTarget = 0;
@@ -4208,20 +4378,16 @@ void Player::OnIdle()
       if(m_debuggerDialog.IsWindow())
         m_debuggerDialog.SendMessage(RECOMPUTEBUTTONCHECK, 0, 0);
    }
-#endif
+   #endif
 
-   // limit framerate if requested by user (vsync Hz higher than refreshrate of gfxcard/monitor)
-   localvsync = (m_ptable->m_TableAdaptiveVSync == -1) ? m_VSync : m_ptable->m_TableAdaptiveVSync;
-   if (m_stereo3D != STEREO_VR && localvsync > m_refreshrate)
+   // Memory clean up for balls that may have been destroyed from scripts
+   for (size_t i = 0; i < m_vballDelete.size(); i++)
    {
-      const U64 timeForFrame = usec() - startRenderUsec;
-      if (timeForFrame < 1000000ull / localvsync)
-      {
-        g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_SLEEP);
-         uSleep(1000000ull / localvsync - timeForFrame);
-         g_frameProfiler.ExitProfileSection();
-      }
+      const Ball *const pball = m_vballDelete[i];
+      delete pball->m_d.m_vpVolObjs;
+      delete pball;
    }
+   m_vballDelete.clear();
 
    // Crash back to the editor
    if (m_ptable->m_pcv->m_scriptError)
@@ -4286,7 +4452,20 @@ void Player::OnIdle()
 
       EndDialog( g_pvp->GetHwnd(), ID_DEBUGWINDOW );
    }
+
+   // Try to bring PinMAME window back on top
+   if (m_overall_frames < 10)
+   {
+      const HWND hVPMWnd = FindWindow("MAME", nullptr);
+      if (hVPMWnd != nullptr)
+      {
+         if (::IsWindowVisible(hVPMWnd))
+            ::SetWindowPos(
+               hVPMWnd, HWND_TOPMOST, 0, 0, 0, 0, (SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW | SWP_NOACTIVATE)); // in some strange cases the VPinMAME window is not on top, so enforce it
+      }
+   }
 }
+
 
 void Player::PauseMusic()
 {

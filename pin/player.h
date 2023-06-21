@@ -175,6 +175,15 @@ enum ProfilingMode
    PF_ENABLED,
 };
 
+enum VideoSyncMode
+{
+   VSM_NONE,
+   VSM_VSYNC,
+   VSM_ADAPTIVE_VSYNC,
+   VSM_FRAME_PACING,
+   VSM_INVALID
+};
+
 #ifndef ENABLE_SDL
 // Note: Nowadays the original code seems to be counter-productive, so we use the official
 // pre-rendered frame mechanism instead where possible
@@ -346,7 +355,6 @@ private:
 
 public:
    void LockForegroundWindow(const bool enable);
-   void OnIdle();
 
    string GetPerfInfo();
 
@@ -363,6 +371,16 @@ public:
 
    void RecomputePauseState();
    void RecomputePseudoPauseState();
+
+#pragma region Main Loop
+   void OnIdle();
+
+   VideoSyncMode m_videoSyncMode = VideoSyncMode::VSM_FRAME_PACING;
+   int m_maxFramerate = 0; // targeted refresh rate in Hz, if larger refresh rate it will limit FPS by uSleep() //!! currently does not work adaptively as it would require IDirect3DDevice9Ex which is not supported on WinXP
+   int m_mainLoopPhase = 0;
+   U64 m_lastPresentFrameTick = 0;
+   
+#pragma endregion
 
 #pragma region Physics
 private:
@@ -496,6 +514,10 @@ private:
    void InitBallShader();
    void InitStatic();
 
+   void PrepareFrame();
+   void SubmitFrame();
+   void FinishFrame();
+
    void DrawBulbLightBuffer();
    void RenderDynamics();
    void DrawBalls();
@@ -504,7 +526,6 @@ private:
    void PrepareVideoBuffersNormal();
    void PrepareVideoBuffersAO();
    void StereoFXAA(RenderTarget* renderedRT, const bool stereo, const bool SMAA, const bool DLAA, const bool NFAA, const bool FXAA1, const bool FXAA2, const bool FXAA3, const unsigned int sharpen, const bool depth_available);
-   void FlipVideoBuffers(const bool vsync);
 
    FrameQueueLimiter m_limiter;
 
@@ -521,11 +542,12 @@ private:
    MeshBuffer *m_ballTrailMeshBuffer = nullptr;
    bool m_antiStretchBall;
 
-   int m_VSync; // targeted refresh rate in Hz, if larger refresh rate it will limit FPS by uSleep() //!! currently does not work adaptively as it would require IDirect3DDevice9Ex which is not supported on WinXP
    int m_maxPrerenderedFrames;
 
    bool m_trailForBalls;
    bool m_disableLightingForBalls;
+
+   U64 m_startFrameTick; // System time in us when render frame was started (beginning of frame animation then collect,...)
 
 public:
    void DrawStatics();
