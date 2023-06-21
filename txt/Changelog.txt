@@ -124,6 +124,18 @@ FEATURES:
 
 - the script is started and the Init events are now called *before* the static parts are prerendered. This allows a table script to adjust static parts properties on startup.
 
+- Video synchronization and target frame rate are now 2 separate settings and a new video synchronization mode for low latency input/physics/rendering has been added. The choice are:
+  - None: no synhronization, just run as fast as possible. Unless with a very powerful system, this should lead to some input latency (due to lack of input syncing) and render latency 
+    (due to flooding the GPU frame queue). It used to be 'Adaptive Sync: 0'
+  - VSync: synchronize on the display vertical blank signal. This can limit stutters but will lead high input latency. It used to be 'Adaptive Sync: 1'
+  - Adaptive VSync: same as vsync but when a frame is late (miss the refresh rate), it is displayed immediatly. This should reduce stutters but has the same input latency. It used to be 'Adaptive Sync: 2'
+  - Frame Pacing: *NEW* Only available on Windows 8 and later, VPX will try to run the input & physics simulation continuously in real time instead of once per frame. This lowers 
+    the input latency especially at lower frame rate. This also allows to have the input synchronized to VPinMame when using it, fixing some syncrhonization bugs like in video mode 
+	with fast button presses (Lethal Weapon, Black Rose,...). The render loop will try to produce exactly one frame per vertical blank to limit frame latency due to stacking more 
+	frames that are displayed later on. On not powerful enough computer, it will try to find an adequate framerate for this, eventually needing a few frame to stabilize.
+  The target frame rate is now a separate setting. If defined, it will lead VPX to perform its own synchronization trying to achieve the requested frame rate. The synchronization settings still applies
+  (therefore a frame rate higher than the refresh rate needs the 'None' synchronization mode to be satisfied).
+
 FIXES:
 
 - timers with a -1 interval are always fired after physics and animation, but before rendering, allowing the script to update visual parts accordingly without any visual lag.

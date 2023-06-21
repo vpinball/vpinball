@@ -770,6 +770,7 @@
 #define IDC_ABOUT_VERSION               463
 #define IDC_GLOBAL_PF_REFLECTION        463
 #define DISPID_PluFrames                464
+#define IDC_VIDEO_SYNC_MODE             464
 #define DISPID_Width                    465
 #define DISPID_ZAdjust                  466
 #define DISPID_RodDiam                  467
@@ -856,6 +857,7 @@
 #define IDC_3D_STEREO_OFS               543
 #define IDC_3D_STEREO_Y                 544
 #define IDC_ADAPTIVE_VSYNC              545
+#define IDC_MAX_FPS                     545
 #define IDC_STATIC_SOUNDDEVICE          546
 #define IDC_DISPLAY_ID                  546
 #define IDD_PROPTABLE_PHYSICS2          547

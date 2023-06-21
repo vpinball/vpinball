@@ -56,10 +56,10 @@ RenderCommand* RenderFrame::NewCommand()
    }
 }
 
-void RenderFrame::Execute(const bool log)
+bool RenderFrame::Execute(const bool log)
 {
    if (m_passes.empty())
-      return;
+      return false;
 
    // Save render/shader states
    if (m_basicShaderState == nullptr)
@@ -101,9 +101,10 @@ void RenderFrame::Execute(const bool log)
    #ifndef ENABLE_SDL
    CHECKD3D(m_rd->GetCoreDevice()->BeginScene());
    #endif
+   bool rendered = false;
    for (RenderPass* pass : sortedPasses)
    {
-      pass->Execute(log);
+      rendered |= pass->Execute(log);
       if (m_commandPool.size() < 1024)
          pass->RecycleCommands(m_commandPool);
    }
@@ -121,4 +122,6 @@ void RenderFrame::Execute(const bool log)
    m_rd->flasherShader->m_state->CopyTo(false, m_flasherShaderState);
    m_rd->lightShader->m_state->CopyTo(false, m_lightShaderState);
    m_rd->m_ballShader->m_state->CopyTo(false, m_ballShaderState);
+
+   return rendered;
 }

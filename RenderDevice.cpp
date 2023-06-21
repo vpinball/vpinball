@@ -1,6 +1,7 @@
 #include "stdafx.h"
 
 #include <DxErr.h>
+#include <future>
 
 // Undefine this if you want to debug VR mode without a VR headset
 //#define VR_PREVIEW_TEST
@@ -476,9 +477,8 @@ int getPrimaryDisplay()
 ////////////////////////////////////////////////////////////////////
 
 #ifndef ENABLE_SDL
-#ifdef USE_D3D9EX
- typedef HRESULT(WINAPI *pD3DC9Ex)(UINT SDKVersion, IDirect3D9Ex**);
- static pD3DC9Ex mDirect3DCreate9Ex = nullptr;
+typedef HRESULT(WINAPI *pD3DC9Ex)(UINT SDKVersion, IDirect3D9Ex**);
+static pD3DC9Ex mDirect3DCreate9Ex = nullptr;
 #endif
 
 #define DWM_EC_DISABLECOMPOSITION         0
@@ -489,11 +489,10 @@ typedef HRESULT(STDAPICALLTYPE *pDF)();
 static pDF mDwmFlush = nullptr;
 typedef HRESULT(STDAPICALLTYPE *pDEC)(UINT uCompositionAction);
 static pDEC mDwmEnableComposition = nullptr;
-#endif
 
-RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, int VSync, const float AAfactor, const StereoMode stereo3D, const unsigned int FXAA, const bool sharpen, const bool ss_refl, const bool useNvidiaApi, const bool disable_dwm, const int BWrendering)
+RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, const VideoSyncMode syncMode, const int maxFrameRate,    const float AAfactor, const StereoMode stereo3D, const unsigned int FXAA, const bool sharpen, const bool ss_refl, const bool useNvidiaApi, const bool disable_dwm, const int BWrendering)
     : m_windowHwnd(hwnd), m_width(width), m_height(height), m_fullscreen(fullscreen), 
-      m_colorDepth(colordepth), m_vsync(VSync), m_AAfactor(AAfactor), m_stereo3D(stereo3D),
+      m_colorDepth(colordepth), m_videoSyncMode(syncMode), m_maxFrameRate(maxFrameRate), m_AAfactor(AAfactor), m_stereo3D(stereo3D),
       m_ssRefl(ss_refl), m_disableDwm(disable_dwm), m_sharpen(sharpen), m_FXAA(FXAA), m_BWrendering(BWrendering), m_texMan(*this), m_renderFrame(this)
 {
 #ifdef ENABLE_SDL
@@ -505,6 +504,7 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
     m_useNvidiaApi = useNvidiaApi;
     m_INTZ_support = false;
     NVAPIinit = false;
+#endif
 
     mDwmIsCompositionEnabled = (pDICE)GetProcAddress(GetModuleHandle(TEXT("dwmapi.dll")), "DwmIsCompositionEnabled"); //!! remove as soon as win xp support dropped and use static link
     mDwmEnableComposition = (pDEC)GetProcAddress(GetModuleHandle(TEXT("dwmapi.dll")), "DwmEnableComposition"); //!! remove as soon as win xp support dropped and use static link
@@ -527,10 +527,9 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
         m_dwm_was_enabled = false;
         m_dwm_enabled = false;
     }
-#endif
 }
 
-void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
+void RenderDevice::CreateDevice(int& refreshrate, UINT adapterIndex)
 {
    assert(g_pplayer != nullptr); // Player must be created to give access to the output window
    colorFormat back_buffer_format;
@@ -562,7 +561,7 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    case SDL_PIXELFORMAT_ABGR8888: back_buffer_format = colorFormat::RGBA8; break;
    case SDL_PIXELFORMAT_RGBX8888: back_buffer_format = colorFormat::RGBA8; break;
 #endif
-   default: 
+   default:
    {
       ShowError("Invalid Output format: "s.append(std::to_string(mode.format).c_str()));
       exit(-1);
@@ -582,9 +581,11 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    SDL_GL_MakeCurrent(m_sdl_playfieldHwnd, m_sdl_context);
 
 #ifndef __OPENGLES__
-   if (!gladLoadGLLoader(SDL_GL_GetProcAddress)) {
+   if (!gladLoadGLLoader(SDL_GL_GetProcAddress))
+   {
 #else
-   if (!gladLoadGLES2((GLADloadfunc) SDL_GL_GetProcAddress)) {
+   if (!gladLoadGLES2((GLADloadfunc)SDL_GL_GetProcAddress))
+   {
 #endif
       ShowError("Glad failed");
       exit(-1);
@@ -604,21 +605,23 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    glGetIntegerv(GL_MAJOR_VERSION, &gl_majorVersion);
    glGetIntegerv(GL_MINOR_VERSION, &gl_minorVersion);
 
-   if (gl_majorVersion < 3 || (gl_majorVersion == 3 && gl_minorVersion < 2)) {
+   if (gl_majorVersion < 3 || (gl_majorVersion == 3 && gl_minorVersion < 2))
+   {
       char errorMsg[256];
       sprintf_s(errorMsg, sizeof(errorMsg), "Your graphics card only supports OpenGL %d.%d, but VPVR requires OpenGL 3.2 or newer.", gl_majorVersion, gl_minorVersion);
       ShowError(errorMsg);
       exit(-1);
    }
 
-   m_GLversion = gl_majorVersion*100 + gl_minorVersion;
+   m_GLversion = gl_majorVersion * 100 + gl_minorVersion;
 
    // Enable debugging layer of OpenGL
 #ifdef _DEBUG
 #ifndef __OPENGLES__
    glEnable(GL_DEBUG_OUTPUT); // on its own is the 'fast' version
    //glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS); // callback is in sync with errors, so a breakpoint can be placed on the callback in order to get a stacktrace for the GL error
-   if (glad_glDebugMessageCallback) {
+   if (glad_glDebugMessageCallback)
+   {
       glDebugMessageCallback(GLDebugMessageCallback, nullptr);
    }
 #endif
@@ -654,9 +657,9 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
       // Initialize VR, this will also override the render buffer size (m_width, m_height) to account for HMD render size and render the 2 eyes simultaneously
       InitVR();
    }
-   else 
+   else
 #endif
-   if (m_stereo3D == STEREO_SBS)
+      if (m_stereo3D == STEREO_SBS)
    {
       // Side by side needs to fit the 2 views along the width, so each view is half the total width
       m_width = m_width / 2;
@@ -667,9 +670,9 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
       m_height = m_height / 2;
    }
 
-   if (m_stereo3D == STEREO_VR || m_vsync > refreshrate)
-      m_vsync = 0;
-   SDL_GL_SetSwapInterval(m_vsync == 2 ? -1 : !!m_vsync); // 0 for immediate updates, 1 for updates synchronized with the vertical retrace, -1 for adaptive vsync
+   m_present_vsync = m_videoSyncMode == VideoSyncMode::VSM_VSYNC;
+   // 0 for immediate updates, 1 for updates synchronized with the vertical retrace, -1 for adaptive vsync
+   SDL_GL_SetSwapInterval(m_present_vsync ? 1 : 0);
 
    m_maxaniso = 0;
    glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &m_maxaniso);
@@ -693,127 +696,138 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    SetRenderState(RenderState::ZFUNC, RenderState::Z_LESSEQUAL);
 
 #else
-   ///////////////////////////////////
-   // DirectX 9 device initialization
+    ///////////////////////////////////
+    // DirectX 9 device initialization
+
+    m_pD3DEx = nullptr;
+    m_pD3DDeviceEx = nullptr;
 
 #ifdef USE_D3D9EX
-   m_pD3DEx = nullptr;
-   m_pD3DDeviceEx = nullptr;
+    mDirect3DCreate9Ex = (pD3DC9Ex)GetProcAddress(GetModuleHandle(TEXT("d3d9.dll")), "Direct3DCreate9Ex"); //!! remove as soon as win xp support dropped and use static link
+    if (mDirect3DCreate9Ex)
+    {
+        const HRESULT hr = mDirect3DCreate9Ex(D3D_SDK_VERSION, &m_pD3DEx);
+        if (FAILED(hr) || (m_pD3DEx == nullptr))
+        {
+            ShowError("Could not create D3D9Ex object.");
+            throw 0;
+        }
+        m_pD3DEx->QueryInterface(__uuidof(IDirect3D9), reinterpret_cast<void**>(&m_pD3D));
+    }
+    else
+#endif
+    {
+        m_pD3D = Direct3DCreate9(D3D_SDK_VERSION);
+        if (m_pD3D == nullptr)
+        {
+            ShowError("Could not create D3D9 object.");
+            throw 0;
+        }
+    }
 
-   mDirect3DCreate9Ex = (pD3DC9Ex)GetProcAddress(GetModuleHandle(TEXT("d3d9.dll")), "Direct3DCreate9Ex"); //!! remove as soon as win xp support dropped and use static link
-   if (mDirect3DCreate9Ex)
+    m_adapter = m_pD3D->GetAdapterCount() > adapterIndex ? adapterIndex : 0;
+
+    D3DDEVTYPE devtype = D3DDEVTYPE_HAL;
+
+    // Look for 'NVIDIA PerfHUD' adapter
+    // If it is present, override default settings
+    // This only takes effect if run under NVPerfHud, otherwise does nothing
+    for (UINT adapter = 0; adapter < m_pD3D->GetAdapterCount(); adapter++)
+    {
+        D3DADAPTER_IDENTIFIER9 Identifier;
+        m_pD3D->GetAdapterIdentifier(adapter, 0, &Identifier);
+        if (strstr(Identifier.Description, "PerfHUD") != 0)
+        {
+            m_adapter = adapter;
+            devtype = D3DDEVTYPE_REF;
+            break;
+        }
+    }
+
+    D3DCAPS9 caps;
+    m_pD3D->GetDeviceCaps(m_adapter, devtype, &caps);
+
+    // check which parameters can be used for anisotropic filter
+    m_mag_aniso = (caps.TextureFilterCaps & D3DPTFILTERCAPS_MAGFANISOTROPIC) != 0;
+    m_maxaniso = caps.MaxAnisotropy;
+    memset(m_bound_filter, 0xCC, TEXTURESET_STATE_CACHE_SIZE * sizeof(SamplerFilter));
+    memset(m_bound_clampu, 0xCC, TEXTURESET_STATE_CACHE_SIZE * sizeof(SamplerAddressMode));
+    memset(m_bound_clampv, 0xCC, TEXTURESET_STATE_CACHE_SIZE * sizeof(SamplerAddressMode));
+
+    if (((caps.TextureCaps & D3DPTEXTURECAPS_NONPOW2CONDITIONAL) != 0) || ((caps.TextureCaps & D3DPTEXTURECAPS_POW2) != 0))
+        ShowError("D3D device does only support power of 2 textures");
+
+    //if (caps.NumSimultaneousRTs < 2)
+    //   ShowError("D3D device doesn't support multiple render targets!");
+
+    bool video10bit = LoadValueWithDefault(regKey[RegName::Player], "Render10Bit"s, false);
+
+    if (!m_fullscreen && video10bit)
+    {
+        ShowError("10Bit-Monitor support requires 'Force exclusive Fullscreen Mode' to be also enabled!");
+        video10bit = false;
+    }
+
+    // get the current display format
+    D3DFORMAT format;
+    if (!m_fullscreen)
+    {
+        D3DDISPLAYMODE mode;
+        CHECKD3D(m_pD3D->GetAdapterDisplayMode(m_adapter, &mode));
+        format = mode.Format;
+        refreshrate = mode.RefreshRate;
+    }
+    else
+    {
+        format = (D3DFORMAT)(video10bit ? colorFormat::RGBA10 : ((m_colorDepth == 16) ? colorFormat::RGB5 : colorFormat::RGB8));
+    }
+    switch (format)
+    {
+    case D3DFMT_R5G6B5: back_buffer_format = colorFormat::RGB5; break;
+    case D3DFMT_X8R8G8B8: back_buffer_format = colorFormat::RGB8; break;
+    case D3DFMT_A8R8G8B8: back_buffer_format = colorFormat::RGBA8; break;
+    case D3DFMT_A2R10G10B10: back_buffer_format = colorFormat::RGBA10; break;
+    default:
+    {
+        ShowError("Invalid Output format: "s.append(std::to_string(format)));
+        exit(-1);
+    }
+    }
+
+    // limit vsync rate to actual refresh rate, otherwise special handling in renderloop
+    if (m_maxFrameRate > refreshrate)
+        m_videoSyncMode = VideoSyncMode::VSM_NONE;
+
+    D3DPRESENT_PARAMETERS params;
+    params.BackBufferWidth = m_width;
+    params.BackBufferHeight = m_height;
+    params.BackBufferFormat = format;
+    params.BackBufferCount = 1;
+    params.MultiSampleType = /*useAA ? D3DMULTISAMPLE_4_SAMPLES :*/ D3DMULTISAMPLE_NONE; // D3DMULTISAMPLE_NONMASKABLE? //!! useAA now uses super sampling/offscreen render
+    params.MultiSampleQuality = 0; // if D3DMULTISAMPLE_NONMASKABLE then set to > 0
+    params.SwapEffect = m_pD3DEx ? D3DSWAPEFFECT_FLIPEX : D3DSWAPEFFECT_DISCARD;
+    params.hDeviceWindow = m_windowHwnd;
+    params.Windowed = !m_fullscreen;
+    params.EnableAutoDepthStencil = FALSE;
+    params.AutoDepthStencilFormat = D3DFMT_UNKNOWN; // ignored
+    params.Flags = /*fullscreen ? D3DPRESENTFLAG_LOCKABLE_BACKBUFFER :*/ /*(stereo3D ?*/ 0 /*: D3DPRESENTFLAG_DISCARD_DEPTHSTENCIL)*/
+       ; // D3DPRESENTFLAG_LOCKABLE_BACKBUFFER only needed for SetDialogBoxMode() below, but makes rendering slower on some systems :/
+    params.FullScreen_RefreshRateInHz = m_fullscreen ? refreshrate : 0;
+   if (m_pD3DEx)
    {
-      const HRESULT hr = mDirect3DCreate9Ex(D3D_SDK_VERSION, &m_pD3DEx);
-      if (FAILED(hr) || (m_pD3DEx == nullptr))
-      {
-         ShowError("Could not create D3D9Ex object.");
-         throw 0;
-      }
-      m_pD3DEx->QueryInterface(__uuidof(IDirect3D9), reinterpret_cast<void **>(&m_pD3D));
+      if (m_videoSyncMode == VideoSyncMode::VSM_VSYNC)
+         params.PresentationInterval = D3DPRESENT_INTERVAL_ONE;
+      else // Use immediate for no vsync or adaptative sync
+         params.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
    }
    else
-#endif
    {
-      m_pD3D = Direct3DCreate9(D3D_SDK_VERSION);
-      if (m_pD3D == nullptr)
-      {
-         ShowError("Could not create D3D9 object.");
-         throw 0;
-      }
+      if (m_videoSyncMode != VideoSyncMode::VSM_NONE)
+         params.PresentationInterval = D3DPRESENT_INTERVAL_ONE;
+      else
+         params.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
    }
-
-   m_adapter = m_pD3D->GetAdapterCount() > adapterIndex ? adapterIndex : 0;
-
-   D3DDEVTYPE devtype = D3DDEVTYPE_HAL;
-
-   // Look for 'NVIDIA PerfHUD' adapter
-   // If it is present, override default settings
-   // This only takes effect if run under NVPerfHud, otherwise does nothing
-   for (UINT adapter = 0; adapter < m_pD3D->GetAdapterCount(); adapter++)
-   {
-      D3DADAPTER_IDENTIFIER9 Identifier;
-      m_pD3D->GetAdapterIdentifier(adapter, 0, &Identifier);
-      if (strstr(Identifier.Description, "PerfHUD") != 0)
-      {
-         m_adapter = adapter;
-         devtype = D3DDEVTYPE_REF;
-         break;
-      }
-   }
-
-   D3DCAPS9 caps;
-   m_pD3D->GetDeviceCaps(m_adapter, devtype, &caps);
-
-   // check which parameters can be used for anisotropic filter
-   m_mag_aniso = (caps.TextureFilterCaps & D3DPTFILTERCAPS_MAGFANISOTROPIC) != 0;
-   m_maxaniso = caps.MaxAnisotropy;
-   memset(m_bound_filter, 0xCC, TEXTURESET_STATE_CACHE_SIZE * sizeof(SamplerFilter));
-   memset(m_bound_clampu, 0xCC, TEXTURESET_STATE_CACHE_SIZE * sizeof(SamplerAddressMode));
-   memset(m_bound_clampv, 0xCC, TEXTURESET_STATE_CACHE_SIZE * sizeof(SamplerAddressMode));
-
-   if (((caps.TextureCaps & D3DPTEXTURECAPS_NONPOW2CONDITIONAL) != 0) || ((caps.TextureCaps & D3DPTEXTURECAPS_POW2) != 0))
-      ShowError("D3D device does only support power of 2 textures");
-
-   //if (caps.NumSimultaneousRTs < 2)
-   //   ShowError("D3D device doesn't support multiple render targets!");
-
-   bool video10bit = LoadValueWithDefault(regKey[RegName::Player], "Render10Bit"s, false);
-
-   if (!m_fullscreen && video10bit)
-   {
-      ShowError("10Bit-Monitor support requires 'Force exclusive Fullscreen Mode' to be also enabled!");
-      video10bit = false;
-   }
-
-   // get the current display format
-   D3DFORMAT format;
-   if (!m_fullscreen)
-   {
-      D3DDISPLAYMODE mode;
-      CHECKD3D(m_pD3D->GetAdapterDisplayMode(m_adapter, &mode));
-      format = mode.Format;
-      refreshrate = mode.RefreshRate;
-   }
-   else
-   {
-      format = (D3DFORMAT)(video10bit ? colorFormat::RGBA10 : ((m_colorDepth == 16) ? colorFormat::RGB5 : colorFormat::RGB8));
-   }
-   switch (format)
-   {
-   case D3DFMT_R5G6B5: back_buffer_format = colorFormat::RGB5; break;
-   case D3DFMT_X8R8G8B8: back_buffer_format = colorFormat::RGB8; break;
-   case D3DFMT_A8R8G8B8: back_buffer_format = colorFormat::RGBA8; break;
-   case D3DFMT_A2R10G10B10: back_buffer_format = colorFormat::RGBA10; break;
-   default:
-   {
-      ShowError("Invalid Output format: "s.append(std::to_string(format)));
-      exit(-1);
-   }
-   }
-
-   // limit vsync rate to actual refresh rate, otherwise special handling in renderloop
-   if (m_vsync > refreshrate)
-      m_vsync = 0;
-
-   D3DPRESENT_PARAMETERS params;
-   params.BackBufferWidth = m_width;
-   params.BackBufferHeight = m_height;
-   params.BackBufferFormat = format;
-   params.BackBufferCount = 1;
-   params.MultiSampleType = /*useAA ? D3DMULTISAMPLE_4_SAMPLES :*/ D3DMULTISAMPLE_NONE; // D3DMULTISAMPLE_NONMASKABLE? //!! useAA now uses super sampling/offscreen render
-   params.MultiSampleQuality = 0; // if D3DMULTISAMPLE_NONMASKABLE then set to > 0
-   params.SwapEffect = D3DSWAPEFFECT_DISCARD;  // FLIP ?
-   params.hDeviceWindow = m_windowHwnd;
-   params.Windowed = !m_fullscreen;
-   params.EnableAutoDepthStencil = FALSE;
-   params.AutoDepthStencilFormat = D3DFMT_UNKNOWN;      // ignored
-   params.Flags = /*fullscreen ? D3DPRESENTFLAG_LOCKABLE_BACKBUFFER :*/ /*(stereo3D ?*/ 0 /*: D3DPRESENTFLAG_DISCARD_DEPTHSTENCIL)*/; // D3DPRESENTFLAG_LOCKABLE_BACKBUFFER only needed for SetDialogBoxMode() below, but makes rendering slower on some systems :/
-   params.FullScreen_RefreshRateInHz = m_fullscreen ? refreshrate : 0;
-#ifdef USE_D3D9EX
-   params.PresentationInterval = (m_pD3DEx && (m_vsync != 1)) ? D3DPRESENT_INTERVAL_IMMEDIATE : (!!m_vsync ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE); //!! or have a special mode to force normal vsync?
-#else
-   params.PresentationInterval = !!m_vsync ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE;
-#endif
+   m_present_vsync = params.PresentationInterval == D3DPRESENT_INTERVAL_ONE;
 
    // check if our HDR texture format supports/does sRGB conversion on texture reads, which must NOT be the case as we always set SRGBTexture=true independent of the format!
    HRESULT hr = m_pD3D->CheckDeviceFormat(m_adapter, devtype, params.BackBufferFormat, D3DUSAGE_QUERY_SRGBREAD, D3DRTYPE_TEXTURE, (D3DFORMAT)colorFormat::RGBA32F);
@@ -858,7 +872,6 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
 
    // Create the D3D device. This optionally goes to the proper fullscreen mode.
    // It also creates the default swap chain (front and back buffer).
-#ifdef USE_D3D9EX
    if (m_pD3DEx)
    {
       D3DDISPLAYMODEEX mode;
@@ -900,7 +913,6 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
       refreshrate = mode.RefreshRate;
    }
    else
-#endif
    {
       hr = m_pD3D->CreateDevice(
          m_adapter,
@@ -1155,32 +1167,6 @@ bool RenderDevice::DepthBufferReadBackAvailable()
 #endif
 }
 
-#ifdef _DEBUG
-#ifdef ENABLE_SDL
-static void CheckForGLLeak()
-{
-   //TODO
-}
-#else
-static void CheckForD3DLeak(IDirect3DDevice9* d3d)
-{
-   IDirect3DSwapChain9 *swapChain;
-   CHECKD3D(d3d->GetSwapChain(0, &swapChain));
-
-   D3DPRESENT_PARAMETERS pp;
-   CHECKD3D(swapChain->GetPresentParameters(&pp));
-   SAFE_RELEASE(swapChain);
-
-   // idea: device can't be reset if there are still allocated resources
-   HRESULT hr = d3d->Reset(&pp);
-   if (FAILED(hr))
-   {
-       g_pvp->MessageBox("WARNING! Direct3D resource leak detected!", "Visual Pinball", MB_ICONWARNING);
-   }
-}
-#endif
-#endif
-
 
 void RenderDevice::FreeShader()
 {
@@ -1285,14 +1271,27 @@ RenderDevice::~RenderDevice()
    delete m_SMAAsearchTexture;
 
 #ifndef ENABLE_SDL
+
+   // Check for resource leak on debug builds
 #ifdef _DEBUG
-   CheckForD3DLeak(m_pD3DDevice);
+   IDirect3DSwapChain9* swapChain;
+   CHECKD3D(m_pD3DDevice->GetSwapChain(0, &swapChain));
+
+   D3DPRESENT_PARAMETERS pp;
+   CHECKD3D(swapChain->GetPresentParameters(&pp));
+   SAFE_RELEASE(swapChain);
+   pp.SwapEffect = D3DSWAPEFFECT_DISCARD;
+
+   // idea: device can't be reset if there are still allocated resources
+   HRESULT hr = m_pD3DDevice->Reset(&pp);
+   if (FAILED(hr))
+   {
+      g_pvp->MessageBox("WARNING! Direct3D resource leak detected!", "Visual Pinball", MB_ICONWARNING);
+   }
 #endif
 
-#ifdef USE_D3D9EX
    //!! if (m_pD3DDeviceEx == m_pD3DDevice) m_pD3DDevice = nullptr; //!! needed for Caligula if m_adapter > 0 ?? weird!! BUT MESSES UP FULLSCREEN EXIT (=hangs)
    SAFE_RELEASE_NO_RCC(m_pD3DDeviceEx);
-#endif
 #ifdef DEBUG_REFCOUNT_TRIGGER
    SAFE_RELEASE(m_pD3DDevice);
 #else
@@ -1303,9 +1302,7 @@ RenderDevice::~RenderDevice()
       CHECKNVAPI(NvAPI_Unload());
    NVAPIinit = false;
 #endif
-#ifdef USE_D3D9EX
    SAFE_RELEASE_NO_RCC(m_pD3DEx);
-#endif
 #ifdef DEBUG_REFCOUNT_TRIGGER
    SAFE_RELEASE(m_pD3D);
 #else
@@ -1366,7 +1363,7 @@ RenderDevice::~RenderDevice()
 
 bool RenderDevice::SetMaximumPreRenderedFrames(const DWORD frames)
 {
-#ifdef USE_D3D9EX
+#ifndef ENABLE_SDL
    if (m_pD3DEx && frames > 0 && frames <= 20) // frames can range from 1 to 20, 0 resets to default DX
    {
       CHECKD3D(m_pD3DDeviceEx->SetMaximumFrameLatency(frames));
@@ -1377,43 +1374,78 @@ bool RenderDevice::SetMaximumPreRenderedFrames(const DWORD frames)
       return false;
 }
 
-void RenderDevice::Flip(const bool vsync)
+void RenderDevice::VSyncThread()
+{
+   mDwmFlush();
+   U64 now = usec();
+   static U64 lastUs = 0;
+   m_lastVSyncUs = now;
+   //PLOGD_(PLOG_NO_DBG_OUT_INSTANCE_ID) << "VSYNC " << ((double)(now - lastUs) / 1000.0) << "ms";
+   lastUs = now;
+}
+
+bool RenderDevice::HasAsyncFlip() const
+{
+   return !m_present_vsync && m_dwm_enabled && mDwmFlush;
+}
+
+// Flip the front & back buffer perofrming vertical sync depending on vsync:
+// . 0 => No sync (schedule and immediate flip which will be performed as soon as the GPU as finished rendering)
+// . 1 => Vertical Sync
+// . 2 => Asynchronous Vertical Sync
+void RenderDevice::Flip(const int vsync)
 {
    FlushRenderFrame();
 
-#ifdef ENABLE_SDL
-   SDL_GL_SwapWindow(m_sdl_playfieldHwnd);
-#ifdef ENABLE_VR
-   //glFlush();
-   //glFinish();
+   #ifdef ENABLE_SDL
+   glFlush(); // Enqueue render commands from CPU to GPU (does not block)
+   #endif
+
+   // VBlank synchronization:
+   // - DWM is always disabled for Windows XP, it can be either on or off for Windows Vista/7, it is always enabled for Windows 8+
+   // - Windows XP does not offer any way to sync beside the present parameter on device creation, so this is enforced there and the vsync parameter will be ignored here
+   // 
+   // The implementation used here rely on blocking calls that will delay the input/physics update (they catchup afterward). Therefore it should be avoided 
+   // since it will break some pinmame video modes (since input events will be fast forwarded, the controller missing somes like in Lethal Weapon 3 fight) 
+   // and make the gameplay (input lag, input-physics sync, input-controller sync) to depend on the framerate.
+   //
+   // Since we are doing immediate flip, Sync must be done before requesting the flip (since it is expected to be perfomed as soon as the GPU command
+   // queue is empty, which should be satisfied after the VBlank wait we enforce) but when the DWM is enabled, it will ensure this for us and what we 
+   // actually want is to block until it has presented the frame. Therefore, the DWMflush must be done after requesting a frame 'Present'.
+
+#ifndef ENABLE_SDL
+   if ((vsync == 1 || vsync == 2) && !m_present_vsync && !m_dwm_enabled && m_pD3DDeviceEx) // Windows Vista/7 path when DWM is disabled, or exclusive fullscreen without DWM (pre-windows 10)
+      m_pD3DDeviceEx->WaitForVBlank(0);
 #endif
-   //!! misses vsync handling (e.g. manually trigger vsync)
+
+   // Schedule frame submission. Note that these calls may or may not block depending on the device configuration and the state of its frame queue.
+   // To ensure non blocking calls, we need to schedule frames at a pace adjusted to the actual render speed (to avoid filling up the queue, leading to the present call to wait for a free slot).
+#ifdef ENABLE_SDL
+   if ((vsync != 1) && m_present_vsync)
+   { // Force an immediate swap
+      SDL_GL_SetSwapInterval(0);
+      SDL_GL_SwapWindow(m_sdl_playfieldHwnd);
+      SDL_GL_SetSwapInterval(1);
+   }
+   else
+      SDL_GL_SwapWindow(m_sdl_playfieldHwnd);
 #else
-
-   bool dwm = false;
-   if (vsync) // xp does neither have d3dex nor dwm, so vsync will always be specified during device set
-      dwm = m_dwm_enabled;
-
-#ifdef USE_D3D9EX
-   if (m_pD3DEx && vsync && !dwm)
+   if (m_pD3DDeviceEx)
    {
-      m_pD3DDeviceEx->WaitForVBlank(0); //!! does not seem to work on win8?? -> may depend on desktop compositing and the like
-      /*D3DRASTER_STATUS r;
-      CHECKD3D(m_pD3DDevice->GetRasterStatus(0, &r)); // usually not supported, also only for pure devices?!
-
-      while (!r.InVBlank)
-      {
-      uSleep(10);
-      m_pD3DDevice->GetRasterStatus(0, &r);
-      }*/
+      CHECKD3D(m_pD3DDeviceEx->PresentEx(nullptr, nullptr, nullptr, nullptr, (vsync != 1) && m_present_vsync ? D3DPRESENT_FORCEIMMEDIATE : 0));
+   }
+   else // Legacy Windows XP
+   {
+      CHECKD3D(m_pD3DDevice->Present(nullptr, nullptr, nullptr, nullptr));
    }
 #endif
 
-   CHECKD3D(m_pD3DDevice->Present(nullptr, nullptr, nullptr, nullptr)); //!! could use D3DPRESENT_DONOTWAIT and do some physics work meanwhile??
+   if (!m_present_vsync && m_dwm_enabled && mDwmFlush) // Windows 8+ non exclusive fullscreen (and Vista/7 with DWM enabled)
+      if (vsync == 1)
+         mDwmFlush(); // Flush all commands submited by this process including the 'Present' command. This actually sync to the vertical blank
+      else if (vsync == 2)
+         std::thread(&RenderDevice::VSyncThread, this).detach(); // Reuse thread (we always at most one running at a time)?
 
-   if (mDwmFlush && vsync && dwm)
-      mDwmFlush(); //!! also above present?? (internet sources are not clear about order)
-#endif
    // reset performance counters
    m_frameDrawCalls = m_curDrawCalls;
    m_curDrawCalls = 0;
@@ -1688,7 +1720,7 @@ void RenderDevice::SetClipPlane(const vec4 &plane)
 
 void RenderDevice::FlushRenderFrame()
 {
-   m_renderFrame.Execute(m_logNextFrame);
+   bool rendered = m_renderFrame.Execute(m_logNextFrame);
    m_currentPass = nullptr;
    m_logNextFrame = false;
 }

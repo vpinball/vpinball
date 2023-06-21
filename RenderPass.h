@@ -14,7 +14,7 @@ public:
    void Sort(vector<RenderPass*>& sortedPasses);
    
    void Submit(RenderCommand* command);
-   void Execute(const bool log = false);
+   bool Execute(const bool log = false);
 
    void RecycleCommands(std::vector<RenderCommand*>& commandPool);
 
