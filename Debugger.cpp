@@ -26,6 +26,7 @@ BOOL DebuggerDialog::OnInitDialog()
     m_hBallControlCheck = ::GetDlgItem(GetHwnd(), IDC_BALL_CONTROL);
     AttachItem(IDC_THROW_BALL_SIZE_EDIT2, m_ballSizeEdit);
     AttachItem(IDC_THROW_BALL_MASS_EDIT2, m_ballMassEdit);
+    AttachItem(IDC_EDITSIZE, m_notesEdit);
 
     const CRect rcMain = GetParent().GetWindowRect();
     const CRect rcDialog = GetWindowRect();
@@ -68,7 +69,6 @@ BOOL DebuggerDialog::OnInitDialog()
     m_ballMassEdit.SetWindowText(f2sz(g_pplayer->m_debugBallMass).c_str());
 
     m_resizer.Initialize(*this, rcDialog);
-    AttachItem(IDC_EDITSIZE, m_notesEdit);
     m_resizer.AddChild(m_notesEdit.GetHwnd(), CResizer::bottomright, RD_STRETCH_HEIGHT | RD_STRETCH_WIDTH);
     m_resizer.AddChild(g_pplayer->m_hwndDebugOutput, CResizer::bottomright, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
     m_resizer.AddChild(GetDlgItem(IDC_GUIDE1).GetHwnd(), CResizer::topleft, 0);
