@@ -70,7 +70,7 @@ HRESULT Light::Init(PinTable * const ptable, const float x, const float y, const
    InitShape();
 
    m_lockedByLS = false;
-   m_inPlayState = m_d.m_state;
+   m_inPlayState = clampLightState(m_d.m_state);
    m_d.m_visible = true;
 
    return InitVBA(fTrue, 0, nullptr);
@@ -960,7 +960,7 @@ HRESULT Light::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, 
    m_ptable = ptable;
 
    m_lockedByLS = false;
-   m_inPlayState = m_d.m_state;
+   m_inPlayState = clampLightState(m_d.m_state);
 
    br.Load();
    return S_OK;
@@ -979,12 +979,13 @@ bool Light::LoadToken(const int id, BiffReader * const pbr)
    {
       int state;
       pbr->GetInt(state);
-      m_inPlayState = m_d.m_state = (float)state;
+      m_inPlayState = m_d.m_state = (float)clampLightState(state);
       break;
    }
    case FID(STTF):
    {
       pbr->GetFloat(m_d.m_state);
+      m_d.m_state = clampLightState(m_d.m_state);
       m_inPlayState = m_d.m_state;
       break;
    }
@@ -1176,6 +1177,7 @@ STDMETHODIMP Light::get_State(float *pVal)
       *pVal = m_inPlayState;
    else
       *pVal = m_d.m_state; //the LS needs the old m_d.m_state and not the current one, m_fLockedByLS is true if under the light is under control of the LS
+   *pVal = clampLightState(*pVal);
    return S_OK;
 }
 
