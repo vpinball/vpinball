@@ -596,6 +596,9 @@ target_link_directories(vpinball PUBLIC
 )
 
 target_link_libraries(vpinball
+   d3d9.lib
+   d3dx9.lib
+   dxerr.lib
    comctl32.lib
    FreeImage.lib
    dxguid.lib

@@ -37,12 +37,9 @@
 GLuint RenderDevice::m_samplerStateCache[3 * 3 * 5];
 
 #else // DirectX 9
-#pragma comment(lib, "d3d9.lib")        // TODO: put into build system
-#pragma comment(lib, "d3dx9.lib")       // TODO: put into build system
 #if _MSC_VER >= 1900
  #pragma comment(lib, "legacy_stdio_definitions.lib") //dxerr.lib needs this
 #endif
-#pragma comment(lib, "dxerr.lib")       // TODO: put into build system
 
 static bool IsWindowsVistaOr7()
 {
