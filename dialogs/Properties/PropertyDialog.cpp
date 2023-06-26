@@ -97,6 +97,8 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect> &pvsel)
     m_backglassView = g_pvp->m_backglassView;
     m_isPlayfieldMesh = false;
 
+    memset(m_tabs, 0, sizeof(m_tabs));
+
     switch (psel->GetItemType())
     {
     case eItemTable:
@@ -638,8 +640,8 @@ BOOL PropertyDialog::OnInitDialog()
     AttachItem(IDC_STATIC_ELEMENT_TYPE, m_elementTypeName);
     m_multipleElementsStatic.ShowWindow(SW_HIDE);
 
-    //set minimize size of the resizer at which scrollbars are shown when going under width=200 and height=610
-    m_resizer.Initialize(*this, CRect(0, 0, 200, 610)); 
+    //set minimize size of the resizer at which scrollbars are shown when going under the given size
+    m_resizer.Initialize(*this, CRect(0, 0, 200, 800)); 
     m_resizer.AddChild(m_elementTypeName, CResizer::topcenter, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_nameEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_multipleElementsStatic, CResizer::topleft, RD_STRETCH_WIDTH);
