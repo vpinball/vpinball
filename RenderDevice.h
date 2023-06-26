@@ -37,6 +37,7 @@ void ReportError(const char *errorText, const HRESULT hr, const char *file, cons
 #define CHECKD3D(s) { s; }
 #endif
 
+bool IsWindowsVistaOr7();
 bool IsWindows10_1803orAbove();
 
 struct VideoMode

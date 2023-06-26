@@ -41,31 +41,6 @@ GLuint RenderDevice::m_samplerStateCache[3 * 3 * 5];
  #pragma comment(lib, "legacy_stdio_definitions.lib") //dxerr.lib needs this
 #endif
 
-static bool IsWindowsVistaOr7()
-{
-   OSVERSIONINFOEXW osvi = { sizeof(osvi), 0, 0, 0, 0,{ 0 }, 0, 0, 0, 0, 0 };
-   const DWORDLONG dwlConditionMask = //VerSetConditionMask(
-      VerSetConditionMask(
-         VerSetConditionMask(
-            0, VER_MAJORVERSION, VER_EQUAL),
-         VER_MINORVERSION, VER_EQUAL)/*,
-      VER_SERVICEPACKMAJOR, VER_GREATER_EQUAL)*/;
-   osvi.dwMajorVersion = HIBYTE(_WIN32_WINNT_VISTA);
-   osvi.dwMinorVersion = LOBYTE(_WIN32_WINNT_VISTA);
-   //osvi.wServicePackMajor = 0;
-
-   const bool vista = VerifyVersionInfoW(&osvi, VER_MAJORVERSION | VER_MINORVERSION /*| VER_SERVICEPACKMAJOR*/, dwlConditionMask) != FALSE;
-
-   OSVERSIONINFOEXW osvi2 = { sizeof(osvi), 0, 0, 0, 0,{ 0 }, 0, 0, 0, 0, 0 };
-   osvi2.dwMajorVersion = HIBYTE(_WIN32_WINNT_WIN7);
-   osvi2.dwMinorVersion = LOBYTE(_WIN32_WINNT_WIN7);
-   //osvi2.wServicePackMajor = 0;
-
-   const bool win7 = VerifyVersionInfoW(&osvi2, VER_MAJORVERSION | VER_MINORVERSION /*| VER_SERVICEPACKMAJOR*/, dwlConditionMask) != FALSE;
-
-   return vista || win7;
-}
-
 constexpr D3DVERTEXELEMENT9 VertexTexelElement[] =
 {
    { 0, 0 * sizeof(float), D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },  // pos
@@ -80,7 +55,6 @@ constexpr D3DVERTEXELEMENT9 VertexNormalTexelElement[] =
    { 0, 6 * sizeof(float), D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },  // tex0
    D3DDECL_END()
 };
-
 #endif
 
 typedef HRESULT(STDAPICALLTYPE *pRGV)(LPOSVERSIONINFOEXW osi);
@@ -106,6 +80,29 @@ bool IsWindows10_1803orAbove()
    }
 
    return false;
+}
+
+static bool IsWindowsVistaOr7()
+{
+   OSVERSIONINFOEXW osvi = { sizeof(osvi), 0, 0, 0, 0, { 0 }, 0, 0, 0, 0, 0 };
+   const DWORDLONG dwlConditionMask = //VerSetConditionMask(
+      VerSetConditionMask(VerSetConditionMask(0, VER_MAJORVERSION, VER_EQUAL), VER_MINORVERSION, VER_EQUAL) /*,
+      VER_SERVICEPACKMAJOR, VER_GREATER_EQUAL)*/
+      ;
+   osvi.dwMajorVersion = HIBYTE(_WIN32_WINNT_VISTA);
+   osvi.dwMinorVersion = LOBYTE(_WIN32_WINNT_VISTA);
+   //osvi.wServicePackMajor = 0;
+
+   const bool vista = VerifyVersionInfoW(&osvi, VER_MAJORVERSION | VER_MINORVERSION /*| VER_SERVICEPACKMAJOR*/, dwlConditionMask) != FALSE;
+
+   OSVERSIONINFOEXW osvi2 = { sizeof(osvi), 0, 0, 0, 0, { 0 }, 0, 0, 0, 0, 0 };
+   osvi2.dwMajorVersion = HIBYTE(_WIN32_WINNT_WIN7);
+   osvi2.dwMinorVersion = LOBYTE(_WIN32_WINNT_WIN7);
+   //osvi2.wServicePackMajor = 0;
+
+   const bool win7 = VerifyVersionInfoW(&osvi2, VER_MAJORVERSION | VER_MINORVERSION /*| VER_SERVICEPACKMAJOR*/, dwlConditionMask) != FALSE;
+
+   return vista || win7;
 }
 
 static unsigned int ComputePrimitiveCount(const RenderDevice::PrimitiveTypes type, const int vertexCount)

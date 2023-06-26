@@ -506,6 +506,7 @@ BOOL VideoOptionsDialog::OnInitDialog()
 
    const bool disableDWM = LoadValueWithDefault(regKey[RegName::Player], "DisableDWM"s, false);
    SendMessage(GetDlgItem(IDC_DISABLE_DWM).GetHwnd(), BM_SETCHECK, disableDWM ? BST_CHECKED : BST_UNCHECKED, 0);
+   GetDlgItem(IDC_DISABLE_DWM).EnableWindow(IsWindowsVistaOr7()); // DWM may not be disabled on Windows 8+
 
    const bool nvidiaApi = LoadValueWithDefault(regKey[RegName::Player], "UseNVidiaAPI"s, false);
    SendMessage(GetDlgItem(IDC_USE_NVIDIA_API_CHECK).GetHwnd(), BM_SETCHECK, nvidiaApi ? BST_CHECKED : BST_UNCHECKED, 0);
