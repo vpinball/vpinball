@@ -82,7 +82,7 @@ bool IsWindows10_1803orAbove()
    return false;
 }
 
-static bool IsWindowsVistaOr7()
+bool IsWindowsVistaOr7()
 {
    OSVERSIONINFOEXW osvi = { sizeof(osvi), 0, 0, 0, 0, { 0 }, 0, 0, 0, 0, 0 };
    const DWORDLONG dwlConditionMask = //VerSetConditionMask(
