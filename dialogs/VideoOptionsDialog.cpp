@@ -321,9 +321,10 @@ BOOL VideoOptionsDialog::OnInitDialog()
    VideoSyncMode syncMode = (VideoSyncMode)LoadValueWithDefault(regKey[RegName::Player], "SyncMode"s, VSM_INVALID);
    if (maxFPS < 0 || syncMode == VideoSyncMode::VSM_INVALID)
    {
-      const int vsync = LoadValueWithDefault(regKey[RegName::Player], "AdaptiveVSync"s, 0);
+      const int vsync = LoadValueWithDefault(regKey[RegName::Player], "AdaptiveVSync"s, -1);
       switch (vsync)
       {
+      case -1: maxFPS = 0; syncMode = VideoSyncMode::VSM_FRAME_PACING; break;
       case 0: maxFPS = 0; syncMode = VideoSyncMode::VSM_NONE; break;
       case 1: maxFPS = 0; syncMode = VideoSyncMode::VSM_VSYNC; break;
       case 2: maxFPS = 0; syncMode = VideoSyncMode::VSM_ADAPTIVE_VSYNC; break;
