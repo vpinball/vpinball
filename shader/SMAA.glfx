@@ -112,14 +112,14 @@ layout(location=0) in vec3 vPosition;
 layout(location=1) in vec2 tc;
 
 VS_OUT(vec2, texcoord);
-VS_OUT_EYE();
+VS_OUT_EYE;
 
 ////GLSL_SMAAEdgeDetectionVS
 VS_OUT(vec4[3], offset);
 
 void main()
 {
-    VS_EYE();
+    VS_EYE;
     VS_POSITION(vec4(vPosition.x,-vPosition.y,0.0,1.0), vec4(vPosition.x,-vPosition.y,0.0,1.0));
     VS_VARYING(texcoord, tc);
     #if USE_GEOMETRY_SHADER
@@ -135,7 +135,7 @@ VS_OUT(vec2, pixcoord);
 
 void main()
 {
-    VS_EYE();
+    VS_EYE;
     VS_POSITION(vec4(vPosition.x,-vPosition.y,0.0,1.0), vec4(vPosition.x,-vPosition.y,0.0,1.0));
     VS_VARYING(texcoord, tc);
     #if USE_GEOMETRY_SHADER
@@ -150,7 +150,7 @@ VS_OUT(vec4, offset);
 
 void main()
 {
-    VS_EYE();
+    VS_EYE;
     VS_POSITION(vec4(vPosition.x,-vPosition.y,0.0,1.0), vec4(vPosition.x,-vPosition.y,0.0,1.0));
     VS_VARYING(texcoord, tc);
     #if USE_GEOMETRY_SHADER

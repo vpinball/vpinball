@@ -76,20 +76,20 @@ precision highp float;
 #if USE_GEOMETRY_SHADER
 #define VS_OUT(typ, name) out typ name##_gs
 #define VS_OUT_NOPERSP_NOGEOM(typ, name)
-#define VS_OUT_EYE() out int eye_gs
+#define VS_OUT_EYE out int eye_gs
 #define VS_VARYING(var, val) var##_gs = val
 #define VS_VARYING_NOGEOM(var, val)
 #define VS_POSITION(val_vs, val_gs) gl_Position = val_gs
-#define VS_EYE() int eye_vs = gl_InstanceID + layer; eye_gs = eye_vs
+#define VS_EYE int eye_vs = gl_InstanceID + layer; eye_gs = eye_vs
 
 #else
 #define VS_OUT(typ, name) out typ name
 #define VS_OUT_NOPERSP_NOGEOM(typ, name) noperspective out typ name
-#define VS_OUT_EYE() flat out float eye
+#define VS_OUT_EYE flat out float eye
 #define VS_VARYING(var, val) var = val
 #define VS_VARYING_NOGEOM(var, val) var = val
 #define VS_POSITION(val_vs, val_gs) gl_Position = val_vs
-#define VS_EYE() int eye_vs = gl_InstanceID + layer; eye = float(eye_vs)
+#define VS_EYE int eye_vs = gl_InstanceID + layer; eye = float(eye_vs)
 
 #endif
 

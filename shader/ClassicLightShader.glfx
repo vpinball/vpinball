@@ -39,7 +39,7 @@ void main()
    float4 pos = float4(vPosition, 1.0);
    float3 table_pos = (matWorld * pos).xyz;
 
-   VS_EYE();
+   VS_EYE;
    VS_POSITION(matWorldViewProj[eye_vs] * pos, pos);
    VS_VARYING(tablePos, table_pos);
    VS_VARYING(tex0, tc);

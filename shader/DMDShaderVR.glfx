@@ -16,7 +16,7 @@ uniform mat4 matWorldViewProj[N_EYES];
 ////VERTEX
 uniform int layer; // Layer being rendered (set to 0 is using layered rendering, that is to say rendering multiple layers using instanced rendering)
 
-VS_OUT_EYE();
+VS_OUT_EYE;
 
 ////GEOMETRY
 layout(triangles) in;
@@ -46,7 +46,7 @@ VS_OUT(vec2, tex0);
 void main()
 {
    float4 pos = float4(vPosition.x*backBoxSize.z+backBoxSize.x, 0.0, vPosition.y*backBoxSize.w+backBoxSize.y, 1.0);
-   VS_EYE();
+   VS_EYE;
    VS_POSITION(pos, pos);
    VS_VARYING(tex0, tc);
 }
@@ -64,7 +64,7 @@ uniform vec4 clip_plane; // Clip plane defined in table coordinate system
 void main()
 {
    float4 pos = float4(vPosition, 1.0);
-   VS_EYE();
+   VS_EYE;
    VS_POSITION(matWorldViewProj[eye_vs] * pos, pos);
    VS_VARYING(tex0, tc);
    VS_CLIP_DISTANCE(pos);

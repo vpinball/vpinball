@@ -23,7 +23,7 @@ layout(location=0) in vec3 vPosition;
 uniform vec4 clip_plane; // Clip plane defined in table coordinate system
 uniform int layer; // Layer being rendered (set to 0 is using layered rendering, that is to say rendering multiple layers using instanced rendering)
 
-VS_OUT_EYE();
+VS_OUT_EYE;
 
 
 ////GEOMETRY
@@ -189,7 +189,7 @@ void main()
    float4 pos = float4(vPosition, 1.0);
    float3 table_pos = (matWorld * pos).xyz;
 
-   VS_EYE();
+   VS_EYE;
    VS_POSITION(matWorldViewProj[eye_vs] * pos, pos);
    VS_VARYING(tablePos, table_pos);
    VS_VARYING(tex01, tc);
@@ -214,7 +214,7 @@ void main()
    float4 pos = float4(vPosition, 1.0);
    float3 table_pos = (matWorld * pos).xyz;
 
-   VS_EYE();
+   VS_EYE;
    VS_POSITION(matWorldViewProj[eye_vs] * pos, pos);
    VS_VARYING(tablePos, table_pos);
    // trafo all into worldview space (as most of the weird trafos happen in view, world is identity so far)
@@ -231,7 +231,7 @@ void main()
    float4 pos = float4(vPosition, 1.0);
    float3 table_pos = (matWorld * pos).xyz;
 
-   VS_EYE();
+   VS_EYE;
    VS_POSITION(matWorldViewProj[eye_vs] * pos, pos);
    VS_CLIP_DISTANCE(vec4(table_pos.xyz, 1.0));
 }
@@ -247,7 +247,7 @@ void main()
    float4 pos = float4(vPosition, 1.0);
    float3 table_pos = (matWorld * pos).xyz;
 
-   VS_EYE();
+   VS_EYE;
    VS_POSITION(matWorldViewProj[eye_vs] * pos, pos);
    VS_VARYING(tex0, tc);
    VS_CLIP_DISTANCE(vec4(table_pos.xyz, 1.0));
@@ -262,7 +262,7 @@ void main()
    float4 pos = float4(vPosition, 1.0);
    float3 table_pos = (matWorld * pos).xyz;
 
-   VS_EYE();
+   VS_EYE;
    VS_POSITION(matWorldViewProj[eye_vs] * pos, pos);
    VS_VARYING(tablePos, table_pos);
    VS_CLIP_DISTANCE(vec4(table_pos.xyz, 1.0));
@@ -280,7 +280,7 @@ void main()
    float4 pos = float4(vPosition, 1.0);
    float3 table_pos = (matWorld * pos).xyz;
 
-   VS_EYE();
+   VS_EYE;
    VS_POSITION(matWorldViewProj[eye_vs] * pos, pos);
    VS_VARYING(tablePos, table_pos);
    VS_VARYING(tex0, tc);
@@ -719,7 +719,7 @@ void main() {
    float4 pos = float4(vPosition, 1.0);
    float3 table_pos = (matWorld * pos).xyz;
 
-   VS_EYE();
+   VS_EYE;
    VS_POSITION(float4((matWorldViewProj[eye_vs] * pos).xyw, (matWorldViewProj[eye_vs] * float4(pos.x, pos.y, pos.z - 30.0 * fKickerScale, 1.0)).z), pos);
    VS_VARYING(tablePos, table_pos);
    // trafo all into worldview space (as most of the weird trafos happen in view, world is identity so far)

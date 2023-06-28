@@ -796,6 +796,9 @@ The following methods only applies to mesh primitives with an animation sequence
 
 - `OnBallBallCollision(ball1, ball2, velocity)`
 
+### Events
+- `MusicDone()` - Called when the played music has ended.
+
 
 -------------------------------------------------------------------------------
 ## Target
@@ -832,7 +835,7 @@ The following methods only applies to mesh primitives with an animation sequence
 | UserValue | any | can store any user defined value for re-use later-on
 
 ### Events
-Animate() - Called when the visual properties of the reel are animated
+- `Animate()` - Called when the visual properties of the reel are animated
 
 
 -------------------------------------------------------------------------------
