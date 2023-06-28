@@ -1472,8 +1472,12 @@ void RenderDevice::Flip(const int vsync)
    // queue is empty, which should be satisfied after the VBlank wait we enforce) but when the DWM is enabled, it will ensure this for us and what we 
    // actually want is to block until it has presented the frame. Therefore, the DWMflush must be done after requesting a frame 'Present'.
 
-#ifndef ENABLE_SDL
-   if ((vsync == 1) && !m_present_vsync && !m_dwm_enabled && m_pD3DDeviceEx) // Windows Vista/7 path when DWM is disabled, or exclusive fullscreen without DWM (pre-windows 10)
+   // Windows Vista/7 path when DWM is disabled, or exclusive fullscreen without DWM (pre-windows 10)
+#ifdef ENABLE_SDL
+   if ((vsync == 1) && !m_present_vsync && !m_dwm_enabled && m_DXGIOutput)
+      m_DXGIOutput->WaitForVBlank();
+#else
+   if ((vsync == 1) && !m_present_vsync && !m_dwm_enabled && m_pD3DDeviceEx)
       m_pD3DDeviceEx->WaitForVBlank(0);
 #endif
 
@@ -1487,8 +1491,17 @@ void RenderDevice::Flip(const int vsync)
       SDL_GL_SwapWindow(m_sdl_playfieldHwnd);
       SDL_GL_SetSwapInterval(1);
    }
-   else
+   else if ((vsync == 1) && !m_present_vsync && m_DXGIOutput == nullptr && mDwmFlush == nullptr)
+   { // Use swap interval since neither the desktop compositor or DXGI can be used
+      SDL_GL_SetSwapInterval(1);
       SDL_GL_SwapWindow(m_sdl_playfieldHwnd);
+      SDL_GL_SetSwapInterval(0);
+   }
+   else
+   {
+      SDL_GL_SwapWindow(m_sdl_playfieldHwnd);
+   }
+
 #else
    if (m_pD3DDeviceEx)
    {

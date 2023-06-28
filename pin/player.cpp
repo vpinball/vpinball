@@ -209,9 +209,10 @@ Player::Player(const bool cameraMode, PinTable *const editor_table, PinTable *co
       m_videoSyncMode = (VideoSyncMode)LoadValueWithDefault(regKey[RegName::Player], "SyncMode"s, VSM_INVALID);
       if (m_maxFramerate < 0 || m_videoSyncMode == VideoSyncMode::VSM_INVALID)
       {
-         const int vsync = LoadValueWithDefault(regKey[RegName::Player], "AdaptiveVSync"s, 0);
+         const int vsync = LoadValueWithDefault(regKey[RegName::Player], "AdaptiveVSync"s, -1);
          switch (vsync)
          {
+         case -1: m_maxFramerate = 0; m_videoSyncMode = VideoSyncMode::VSM_FRAME_PACING; break;
          case 0: m_maxFramerate = 0; m_videoSyncMode = VideoSyncMode::VSM_NONE; break;
          case 1: m_maxFramerate = 0; m_videoSyncMode = VideoSyncMode::VSM_VSYNC; break;
          case 2: m_maxFramerate = 0; m_videoSyncMode = VideoSyncMode::VSM_ADAPTIVE_VSYNC; break;
