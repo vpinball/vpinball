@@ -1650,12 +1650,6 @@ HRESULT Player::Init()
    // 0 means disable limiting of draw-ahead queue
    m_limiter.Init(m_pin3d.m_pd3dPrimaryDevice, m_maxPrerenderedFrames);
 
-   if (m_videoSyncMode == VideoSyncMode::VSM_FRAME_PACING && !m_pin3d.m_pd3dPrimaryDevice->HasAsyncFlip())
-   {
-      PLOGE << "Frame pacing sync mode needs Windows 8+ for which VPX supports asynchronous frame syncing";
-      ShowError("Frame pacing sync mode needs Windows 8+ for which VPX supports asynchronous frame syncing.\r\nYou should select another synchronization mode from the video setting dialog.");
-   }
-
    // Broadcast a message to notify front-ends that it is 
    // time to reveal the playfield. 
    UINT nMsgID = RegisterWindowMessage(_T("VPTableStart"));
@@ -4020,9 +4014,6 @@ void Player::OnIdle()
 
       constexpr bool debugLog = false;
 
-      const int refreshLength = (int)(1000000ul / m_refreshrate);
-      bool doPhysics = !m_pause;
-
       // Render frame following these: Prepare / Submit to GPU / Present frame when monitor is ready to display a new frame and GPU has finished rendering (not for DX9)
       switch (m_mainLoopPhase)
       {
@@ -4060,6 +4051,7 @@ void Player::OnIdle()
          const U64 now = usec();
          const int averageFrameLength = (int)(1e6 / m_fps);
          const int localvsync = (m_ptable->m_TableAdaptiveVSync < 2) ? m_maxFramerate : m_ptable->m_TableAdaptiveVSync;
+		 const int refreshLength = (int)(1000000ul / m_refreshrate);
          const int targetFrameLength = clamp(averageFrameLength - 2000, localvsync <= 2 ? 0 : (1000000ull / localvsync), 5 * refreshLength);
          const U64 minFrameTick = m_lastPresentFrameTick + targetFrameLength;
          if (m_stereo3D != STEREO_VR && m_overall_frames > 100 && now < minFrameTick)
@@ -4088,7 +4080,7 @@ void Player::OnIdle()
       }
 
       // Update physics. Do it continuously for lower latency between input <-> controler/physics (avoid catching up once per frame)
-      if (doPhysics && m_closing == CS_PLAYING)
+      if (m_closing == CS_PLAYING && !m_pause)
       {
          // Trigger key events before processing physics, also allows to sync with VPM
          m_pininput.ProcessKeys(/*sim_msec,*/ -(int)msec());
@@ -4188,6 +4180,7 @@ void Player::PrepareFrame()
    m_overall_frames++;
    m_LastKnownGoodCounter++;
    m_startFrameTick = usec();
+   g_frameProfiler.OnPrepare();
 
    // Reset per frame debug counters
    #ifdef DEBUGPHYSICS

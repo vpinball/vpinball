@@ -47,6 +47,15 @@ enum StereoMode
    STEREO_VR = 19, // Hardware VR set (not supported by DX9)
 };
 
+enum VideoSyncMode
+{
+   VSM_NONE,
+   VSM_VSYNC,
+   VSM_ADAPTIVE_VSYNC,
+   VSM_FRAME_PACING,
+   VSM_INVALID
+};
+
 #ifdef ENABLE_SDL
 
 #define MAX_DEVICE_IDENTIFIER_STRING 512

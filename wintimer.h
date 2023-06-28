@@ -25,23 +25,32 @@ class FrameProfiler
 public:
    enum ProfileSection
    {
-      PROFILE_FRAME, // Overall frame length
-      PROFILE_MISC, // Everything not covered below
-      PROFILE_SCRIPT, // Time spent in script (all events)
-      PROFILE_PHYSICS, // Time spent in the physics simulation
+	  // Sections of a frame. Sum of the following sections should give the same as PROFILE_FRAME
+      PROFILE_MISC,        // Everything not covered below
+      PROFILE_SCRIPT,      // Time spent in script (all events)
+      PROFILE_PHYSICS,     // Time spent in the physics simulation
       PROFILE_GPU_COLLECT, // Time spent to build the render frame
-      PROFILE_GPU_SUBMIT, // Time spent to submit the render frame to the GPU
-      PROFILE_GPU_FLIP, // Time spent flipping the swap chain (flush the GPU render queue)
-      PROFILE_SLEEP, // Time spent sleeping per frame (for synchronization)
-      PROFILE_CUSTOM1, // Use in conjunction with PROFILE_FUNCTION to perform custom profiling
-      PROFILE_CUSTOM2, // Use in conjunction with PROFILE_FUNCTION to perform custom profiling
-      PROFILE_CUSTOM3, // Use in conjunction with PROFILE_FUNCTION to perform custom profiling
-      PROFILE_COUNT
+      PROFILE_GPU_SUBMIT,  // Time spent to submit the render frame to the GPU
+      PROFILE_GPU_FLIP,    // Time spent flipping the swap chain (flush the GPU render queue)
+      PROFILE_SLEEP,       // Time spent sleeping per frame (for synchronization)
+      PROFILE_CUSTOM1,     // Use in conjunction with PROFILE_FUNCTION to perform custom profiling of sub sections of frames
+      PROFILE_CUSTOM2,     // Use in conjunction with PROFILE_FUNCTION to perform custom profiling of sub sections of frames
+      PROFILE_CUSTOM3,     // Use in conjunction with PROFILE_FUNCTION to perform custom profiling of sub sections of frames
+	  // Dedicated counters
+      PROFILE_FRAME,             // Overall frame length
+	  PROFILE_INPUT_POLL_PERIOD, // Time spent between 2 input processings.
+	  PROFILE_INPUT_TO_PRESENT,  // Time spent between the last input taen in account in a frame to the presentation of this frame
+	                             // The overall game lag is the sum of this lag with the present to display lag obtained using PresentMon tool
+	  PROFILE_COUNT
    };
 
    void Reset()
    { 
       m_frameIndex = -1;
+      m_processInputCount = 0;
+      m_processInputTimeStamp = 0;
+      m_prepareCount = 0;
+      m_prepareTimeStamp = 0;
       for (int i = 0; i < PROFILE_COUNT; i++)
       {
          m_profileMinData[i] = ~0u;
@@ -96,16 +105,47 @@ public:
       SetProfileSection(m_profileSectionStack[m_profileSectionStackPos]);
    }
 
-   unsigned int Get(ProfileSection section) const { return m_profileData[m_profileIndex][section]; }
-   unsigned int GetPrev(ProfileSection section) const { return m_profileData[(m_profileIndex + N_SAMPLES - 1) % N_SAMPLES][section]; }
-   unsigned int GetMin(ProfileSection section) const { return m_profileMinData[section]; }
-   unsigned int GetMax(ProfileSection section) const { return m_profileMaxData[section]; }
-   double GetAvg(ProfileSection section) const { return m_frameIndex <= 0 ? 0. : ((double)m_profileTotalData[section] / (double)m_frameIndex); }
-   double GetRatio(ProfileSection section) const { return m_profileTotalData[ProfileSection::PROFILE_FRAME] == 0 ? 0. : ((double)m_profileTotalData[section] / (double)m_profileTotalData[ProfileSection::PROFILE_FRAME]); }
-
+   unsigned int Get(ProfileSection section) const
+   {
+      return section == PROFILE_INPUT_POLL_PERIOD ? m_profileData[m_processInputIndex][PROFILE_INPUT_POLL_PERIOD]
+	       : section == PROFILE_INPUT_TO_PRESENT  ? m_profileData[m_prepareIndex][PROFILE_INPUT_TO_PRESENT]
+			                                      : m_profileData[m_profileIndex][section];
+   }
+   
+   unsigned int GetPrev(ProfileSection section) const
+   {
+      return section == PROFILE_INPUT_POLL_PERIOD ? m_profileData[(m_processInputIndex + N_SAMPLES - 1) % N_SAMPLES][PROFILE_INPUT_POLL_PERIOD]
+	       : section == PROFILE_INPUT_TO_PRESENT  ? m_profileData[(m_prepareIndex + N_SAMPLES - 1) % N_SAMPLES][PROFILE_INPUT_TO_PRESENT]
+			                                      : m_profileData[(m_profileIndex + N_SAMPLES - 1) % N_SAMPLES][section];
+   }
+   
+   unsigned int GetMin(ProfileSection section) const
+   {
+      return m_profileMinData[section];
+   }
+   
+   unsigned int GetMax(ProfileSection section) const
+   {
+      return m_profileMaxData[section];
+   }
+   
+   double GetAvg(ProfileSection section) const
+   {
+      return section == PROFILE_INPUT_POLL_PERIOD ? (m_processInputCount <= 0 ? 0. : ((double)m_profileTotalData[PROFILE_INPUT_POLL_PERIOD] / (double)m_processInputCount))
+	       : section == PROFILE_INPUT_TO_PRESENT  ? (m_prepareCount <= 0 ? 0. : ((double)m_profileTotalData[PROFILE_INPUT_TO_PRESENT] / (double)m_prepareCount))
+			                                      : (m_frameIndex <= 0 ? 0. : ((double)m_profileTotalData[section] / (double)m_frameIndex));
+   }
+   
+   double GetRatio(ProfileSection section) const
+   {
+	  assert(section <= PROFILE_FRAME); // Unimplemented and not meaningful for other sections 
+	  return m_profileTotalData[ProfileSection::PROFILE_FRAME] == 0 ? 0. : ((double)m_profileTotalData[section] / (double)m_profileTotalData[ProfileSection::PROFILE_FRAME]);
+   }
+   
    // (approximately) 1 second sliding average
    double GetSlidingAvg(ProfileSection section) const
    {
+	  assert(section <= PROFILE_FRAME); // Unimplemented and not really meaningful for other sections 
       unsigned int pos = (m_profileIndex + N_SAMPLES - 1) % N_SAMPLES; // Start from last frame
       unsigned int elapsed = 0u;
       unsigned int sum = 0u;
@@ -123,26 +163,71 @@ public:
       }
       return count == 0 ? 0. : (double)sum / (double)count;
    }
+   
+   void OnProcessInput()
+   {
+      unsigned long long ts = usec();
+      if (m_processInputTimeStamp != 0)
+      {
+         unsigned int elapsed = (unsigned int)(ts - m_processInputTimeStamp);
+         m_profileData[m_processInputIndex][PROFILE_INPUT_POLL_PERIOD] = elapsed;
+         m_profileMinData[PROFILE_INPUT_POLL_PERIOD] = min(m_profileMinData[PROFILE_INPUT_POLL_PERIOD], elapsed);
+         m_profileMaxData[PROFILE_INPUT_POLL_PERIOD] = max(m_profileMaxData[PROFILE_INPUT_POLL_PERIOD], elapsed);
+         m_profileTotalData[PROFILE_INPUT_POLL_PERIOD] += elapsed;
+         m_processInputIndex = (m_processInputIndex + 1) % N_SAMPLES;
+         m_processInputCount++;
+      }
+	   m_processInputTimeStamp = ts;
+   }
+   
+   void OnPrepare()
+   {
+	   m_prepareTimeStamp = m_processInputTimeStamp;
+   }
+   
+   void OnPresent()
+   {
+      if (m_prepareTimeStamp == 0)
+         return;
+      unsigned int elapsed = (unsigned int) (usec() - m_prepareTimeStamp);
+      m_profileData[m_prepareIndex][PROFILE_INPUT_TO_PRESENT] = elapsed;
+      m_profileMinData[PROFILE_INPUT_TO_PRESENT] = min(m_profileMinData[PROFILE_INPUT_TO_PRESENT], elapsed);
+      m_profileMaxData[PROFILE_INPUT_TO_PRESENT] = max(m_profileMaxData[PROFILE_INPUT_TO_PRESENT], elapsed);
+      m_profileTotalData[PROFILE_INPUT_TO_PRESENT] += elapsed;
+      m_prepareIndex = (m_prepareIndex + 1) % N_SAMPLES;
+      m_prepareCount++;
+   }
 
 private:
    constexpr static unsigned int N_SAMPLES = 1000; // Number of samples to store. Must be kept quite high to be able to do a 1s sliding average (so at 1000FPS, needs 100 samples)
    constexpr static unsigned int STACK_SIZE = 100;
 
-   unsigned long long m_profileTimeStamp;
-
+   // Frame profiling (seque,ce of section)
    unsigned int m_profileIndex = 0;
-   unsigned int m_profileData[N_SAMPLES][PROFILE_COUNT];
-
-   unsigned int m_frameIndex = -1;
-   unsigned long long m_frameTimeStamp;
-
-   unsigned int m_profileMaxData[PROFILE_COUNT];
-   unsigned int m_profileMinData[PROFILE_COUNT];
-   unsigned int m_profileTotalData[PROFILE_COUNT];
-
+   unsigned long long m_profileTimeStamp;
    int m_profileSectionStackPos = 0;
    ProfileSection m_profileSectionStack[STACK_SIZE];
    ProfileSection m_profileSection = PROFILE_MISC;
+
+   // Overall frame
+   unsigned int m_frameIndex = -1;
+   unsigned long long m_frameTimeStamp;
+
+   // Input lag
+   unsigned int m_processInputIndex = 0;
+   unsigned int m_processInputCount = 0;
+   unsigned long long m_processInputTimeStamp;
+   
+   // Present lag
+   unsigned int m_prepareIndex = 0;
+   unsigned int m_prepareCount = 0;
+   unsigned long long m_prepareTimeStamp;
+
+   // Raw data
+   unsigned int m_profileData[N_SAMPLES][PROFILE_COUNT];
+   unsigned int m_profileMaxData[PROFILE_COUNT];
+   unsigned int m_profileMinData[PROFILE_COUNT];
+   unsigned int m_profileTotalData[PROFILE_COUNT];
 };
 
 extern FrameProfiler g_frameProfiler;

@@ -1,7 +1,7 @@
 #include "stdafx.h"
 
 #include <DxErr.h>
-#include <future>
+#include <thread>
 
 // Undefine this if you want to debug VR mode without a VR headset
 //#define VR_PREVIEW_TEST
@@ -1059,6 +1059,60 @@ void RenderDevice::CreateDevice(int& refreshrate, UINT adapterIndex)
    m_current_renderstate.m_state = (~m_renderstate.m_state) & ((1 << 21) - 1);
    m_current_renderstate.m_depthBias = m_renderstate.m_depthBias - 1.0f;
    ApplyRenderStates();
+   
+   // Ensure we have a VSync source for frame pacing
+   bool hasVSync = false;
+   hasVSync |= m_dwm_enabled && mDwmFlush; // Desktop compositor VSync source
+   #ifndef ENABLE_SDL
+   hasVSync |= m_pD3DDeviceEx != nullptr; // D3D9Ex VSync source
+   #endif
+   #ifdef ENABLE_SDL
+   // DXGI VSync source (Windows 7+, only used in OpenGL build)
+   if (m_videoSyncMode == VideoSyncMode::VSM_FRAME_PACING && !hasVSync)
+   {
+      IDXGIFactory1* factory = nullptr;
+      HRESULT hr = CreateDXGIFactory1(__uuidof(IDXGIFactory1), (void**)(&factory));
+      if (SUCCEEDED(hr))
+      {
+         int px, py;
+         SDL_GetWindowPosition(m_sdl_playfieldHwnd, &px, &py);
+         POINT pt;
+         pt.x = px;
+         pt.y = py;
+         UINT adapterIndex = 0;
+         IDXGIAdapter1* adapter = nullptr;
+         DXGI_OUTPUT_DESC outputdesc;
+         while (!hasVSync && DXGI_ERROR_NOT_FOUND != factory->EnumAdapters1(adapterIndex, &adapter))
+         {
+            adapterIndex++;
+            if (adapter)
+            {
+               UINT outputIndex = 0;
+               while (!hasVSync && DXGI_ERROR_NOT_FOUND != adapter->EnumOutputs(outputIndex, &m_DXGIOutput))
+               {
+                  outputIndex++;
+                  if (m_DXGIOutput)
+                  {
+                     hr = m_DXGIOutput->GetDesc(&outputdesc);
+                     if (hr == S_OK && PtInRect(&outputdesc.DesktopCoordinates, pt))
+                        hasVSync = true;
+                     else
+                        SAFE_RELEASE(m_DXGIOutput);
+                  }
+               }
+               if (!hasVSync)
+                  SAFE_RELEASE(adapter);
+            }
+         }
+      }
+   }
+   #endif
+   if (m_videoSyncMode == VideoSyncMode::VSM_FRAME_PACING && !hasVSync)
+   {
+	   // This may happen on some old config where D3D9ex is not available (XP/Vista/7) and DWM is disabled
+      ShowError("Failed to create the synchronization device.\r\nSynchronization switched to adaptive sync.");
+      m_videoSyncMode = VideoSyncMode::VSM_ADAPTIVE_VSYNC;
+   }
 }
 
 bool RenderDevice::LoadShaders()
@@ -1318,6 +1372,7 @@ RenderDevice::~RenderDevice()
    if (m_dwm_was_enabled)
       mDwmEnableComposition(DWM_EC_ENABLECOMPOSITION);
 #else
+   SAFE_RELEASE(m_DXGIOutput);
    for (auto binding : m_samplerBindings)
       delete binding;
    m_samplerBindings.clear();
@@ -1376,21 +1431,25 @@ bool RenderDevice::SetMaximumPreRenderedFrames(const DWORD frames)
 
 void RenderDevice::VSyncThread()
 {
-   mDwmFlush();
+   if (m_dwm_enabled && mDwmFlush)
+      mDwmFlush();
+#ifdef ENABLE_SDL
+   else if (m_DXGIOutput)
+      m_DXGIOutput->WaitForVBlank();
+#else
+   // When DWM is disabled (Windows Vista/7), exclusive fullscreen without DWM (pre-windows 10), special Windows builds with DWM stripped out (Ghost Spectre Windows 10)
+   else if (m_pD3DDeviceEx) 
+      m_pD3DDeviceEx->WaitForVBlank(0);
+#endif
    U64 now = usec();
-   static U64 lastUs = 0;
    m_lastVSyncUs = now;
+   //static U64 lastUs = 0;
    //PLOGD_(PLOG_NO_DBG_OUT_INSTANCE_ID) << "VSYNC " << ((double)(now - lastUs) / 1000.0) << "ms";
-   lastUs = now;
+   //lastUs = now;
 }
 
-bool RenderDevice::HasAsyncFlip() const
-{
-   return !m_present_vsync && m_dwm_enabled && mDwmFlush;
-}
-
-// Flip the front & back buffer performing vertical sync depending on vsync:
-// . 0 => No sync (schedule and immediate flip which will be performed as soon as the GPU has finished rendering)
+// Flip the front & back buffer perofrming vertical sync depending on vsync:
+// . 0 => No sync (schedule and immediate flip which will be performed as soon as the GPU as finished rendering)
 // . 1 => Vertical Sync
 // . 2 => Asynchronous Vertical Sync
 void RenderDevice::Flip(const int vsync)
@@ -1405,21 +1464,22 @@ void RenderDevice::Flip(const int vsync)
    // - DWM is always disabled for Windows XP, it can be either on or off for Windows Vista/7, it is always enabled for Windows 8+
    // - Windows XP does not offer any way to sync beside the present parameter on device creation, so this is enforced there and the vsync parameter will be ignored here
    // 
-   // The implementation used here relies on blocking calls that will delay the input/physics update (they catchup afterward). Therefore it should be avoided
-   // since it will break some PinMAME video modes (since input events will be fast forwarded, the controller will be missing some like in the Lethal Weapon 3 fist fight)
-   // and makes the gameplay (input lag, input-physics sync, input-controller sync) dependent on the framerate.
+   // The implementation used here rely on blocking calls that will delay the input/physics update (they catchup afterward). Therefore it should be avoided 
+   // since it will break some pinmame video modes (since input events will be fast forwarded, the controller missing somes like in Lethal Weapon 3 fight) 
+   // and make the gameplay (input lag, input-physics sync, input-controller sync) to depend on the framerate.
    //
    // Since we are doing immediate flip, Sync must be done before requesting the flip (since it is expected to be perfomed as soon as the GPU command
    // queue is empty, which should be satisfied after the VBlank wait we enforce) but when the DWM is enabled, it will ensure this for us and what we 
    // actually want is to block until it has presented the frame. Therefore, the DWMflush must be done after requesting a frame 'Present'.
 
 #ifndef ENABLE_SDL
-   if ((vsync == 1 || vsync == 2) && !m_present_vsync && !m_dwm_enabled && m_pD3DDeviceEx) // Windows Vista/7 path when DWM is disabled, or exclusive fullscreen without DWM (pre-windows 10)
+   if ((vsync == 1) && !m_present_vsync && !m_dwm_enabled && m_pD3DDeviceEx) // Windows Vista/7 path when DWM is disabled, or exclusive fullscreen without DWM (pre-windows 10)
       m_pD3DDeviceEx->WaitForVBlank(0);
 #endif
 
    // Schedule frame submission. Note that these calls may or may not block depending on the device configuration and the state of its frame queue.
    // To ensure non blocking calls, we need to schedule frames at a pace adjusted to the actual render speed (to avoid filling up the queue, leading to the present call to wait for a free slot).
+   g_frameProfiler.OnPresent();
 #ifdef ENABLE_SDL
    if ((vsync != 1) && m_present_vsync)
    { // Force an immediate swap
@@ -1440,11 +1500,12 @@ void RenderDevice::Flip(const int vsync)
    }
 #endif
 
-   if (!m_present_vsync && m_dwm_enabled && mDwmFlush) // Windows 8+ non exclusive fullscreen (and Vista/7 with DWM enabled)
-      if (vsync == 1)
-         mDwmFlush(); // Flush all commands submited by this process including the 'Present' command. This actually sync to the vertical blank
-      else if (vsync == 2)
-         std::thread(&RenderDevice::VSyncThread, this).detach(); // Reuse thread (we always at most one running at a time)?
+   if ((vsync == 1) && !m_present_vsync && m_dwm_enabled && mDwmFlush) // Windows 8+ non exclusive fullscreen (and Vista/7 with DWM enabled)
+      mDwmFlush(); // Flush all commands submited by this process including the 'Present' command. This actually sync to the vertical blank
+   
+   // Async VBlank synchronization. We always do it after frame submission which is not perfect.
+   if (vsync == 2)
+      std::thread(&RenderDevice::VSyncThread, this).detach(); // Reuse thread (we always at most one running at a time)?
 
    // reset performance counters
    m_frameDrawCalls = m_curDrawCalls;

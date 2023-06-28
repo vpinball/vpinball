@@ -1949,6 +1949,7 @@ void LiveUI::UpdateRendererInspectionModal()
          m_player->m_infoProbeIndex = pass_selection - 100;
       }
       ImGui::NewLine();
+	  
       // Main frame timing table
       if (ImGui::BeginTable("Timings", 6, ImGuiTableFlags_Borders))
       {
@@ -1988,12 +1989,36 @@ void LiveUI::UpdateRendererInspectionModal()
          #undef PROF_ROW
 
          ImGui::EndTable();
-
-         ImGui::Text("Press F11 to reset average timings");
-         if (ImGui::IsKeyPressed(dikToImGuiKeys[m_player->m_rgKeys[eFrameCount]]))
-            m_player->InitFPS();
          ImGui::NewLine();
       }
+	  
+      // Latency timing table
+      if (ImGui::BeginTable("Latencies", 5, ImGuiTableFlags_Borders))
+      {
+         const U32 period = g_frameProfiler.GetPrev(FrameProfiler::PROFILE_FRAME);
+         ImGui::TableSetupColumn("##Cat", ImGuiTableColumnFlags_WidthFixed);
+         ImGui::TableSetupColumn("Min", ImGuiTableColumnFlags_WidthFixed);
+         ImGui::TableSetupColumn("Max", ImGuiTableColumnFlags_WidthFixed);
+         ImGui::TableSetupColumn("Avg", ImGuiTableColumnFlags_WidthFixed);
+         ImGui::TableSetupColumn("Informations", ImGuiTableColumnFlags_WidthStretch);
+         ImGui::TableHeadersRow();
+         #define PROF_ROW(name, section, info) \
+         ImGui::TableNextColumn(); ImGui::Text(name); \
+         ImGui::TableNextColumn(); ImGui::Text("%4.1fms", g_frameProfiler.GetMin(section) * 1e-3); \
+         ImGui::TableNextColumn(); ImGui::Text("%4.1fms", g_frameProfiler.GetMax(section) * 1e-3); \
+         ImGui::TableNextColumn(); ImGui::Text("%4.1fms", g_frameProfiler.GetAvg(section) * 1e-3); \
+         ImGui::TableNextColumn(); ImGui::Text(info);
+         PROF_ROW("Input to Script lag", FrameProfiler::PROFILE_INPUT_POLL_PERIOD, "")
+         PROF_ROW("Input to Present lag", FrameProfiler::PROFILE_INPUT_TO_PRESENT, "Use PresentMon for Present to Display lag")
+         #undef PROF_ROW
+         ImGui::EndTable();
+         ImGui::NewLine();
+      }
+
+	  ImGui::Text("Press F11 to reset min/max/average timings");
+	  if (ImGui::IsKeyPressed(dikToImGuiKeys[m_player->m_rgKeys[eFrameCount]]))
+		 m_player->InitFPS();
+	  
       // Other detailled informations
       ImGui::Text(m_player->GetPerfInfo().c_str());
 

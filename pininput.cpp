@@ -1906,6 +1906,7 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
 void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // last one is negative if only key events should be fired
 {
    if (!g_pplayer || !g_pplayer->m_ptable) return; // only if player is running
+   g_frameProfiler.OnProcessInput();
 
    if (curr_time_msec >= 0)
    {
