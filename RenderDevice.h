@@ -242,15 +242,13 @@ public:
    unsigned int  m_FXAA;
    int           m_BWrendering;
 
-private:
-   void UploadAndSetSMAATextures();
-
-public:
    Sampler* m_SMAAsearchTexture = nullptr;
    Sampler* m_SMAAareaTexture = nullptr;
    Sampler* m_nullTexture = nullptr;
 
 private:
+   void UploadAndSetSMAATextures();
+
 #ifndef ENABLE_SDL
    IDirect3D9Ex* m_pD3DEx;
    IDirect3DDevice9Ex* m_pD3DDeviceEx;
@@ -291,25 +289,21 @@ private:
    SamplerAddressMode m_bound_clampv[TEXTURESET_STATE_CACHE_SIZE];
 #endif
 
-public:
-   bool m_autogen_mipmap;
-   bool m_compress_textures;
-
-private:
    bool m_dwm_was_enabled;
    bool m_dwm_enabled;
    bool m_present_vsync;
 
 public:
+   bool m_autogen_mipmap;
+   bool m_compress_textures;
+
    void VSyncThread();
    U64 m_lastVSyncUs = 0;
 
-public:
    MeshBuffer* m_quadMeshBuffer = nullptr;       // internal vb for rendering quads
    MeshBuffer* m_quadPNTDynMeshBuffer = nullptr; // internal vb for rendering dynamic quads (position/normal/texture)
    MeshBuffer* m_quadPTDynMeshBuffer = nullptr;  // internal vb for rendering dynamic quads (position/texture)
 
-public:
 #ifndef ENABLE_SDL
    bool m_useNvidiaApi;
    bool m_INTZ_support;
