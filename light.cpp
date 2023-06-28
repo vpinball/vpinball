@@ -979,7 +979,7 @@ bool Light::LoadToken(const int id, BiffReader * const pbr)
    {
       int state;
       pbr->GetInt(state);
-      m_inPlayState = m_d.m_state = (float)clampLightState(state);
+      m_inPlayState = m_d.m_state = clampLightState((float)state);
       break;
    }
    case FID(STTF):
