@@ -20,7 +20,7 @@ uniform int layer; // Layer being rendered (set to 0 if using layered rendering,
 
 // Pixel perfect coordinates of corresponding sample from source texture (tex_fb_filtered/tex_fb_unfiltered/tex_mirror/...)
 VS_OUT(vec2, tex0);
-VS_OUT_EYE();
+VS_OUT_EYE;
 
 
 ////GEOMETRY
@@ -218,7 +218,7 @@ float3 FBColorGrade(float3 color)
 void main()
 { 
    // OpenGL texture coordinates are centered on texel center (0,0 is first texel center) so no offset. Rendering is bottom up with regards to DirectX though
-   VS_EYE();
+   VS_EYE;
    VS_POSITION(float4(vPosition.x, -vPosition.y, 0.0, 1.0), float4(vPosition.x, -vPosition.y, 0.0, 1.0));
    VS_VARYING(tex0, tc);
 }
@@ -227,7 +227,7 @@ void main()
 void main()
 {
    // OpenGL texture coordinates are centered on texel center (0,0 is first texel center) so no offset. Rendering is bottom up with regards to DirectX though
-   VS_EYE();
+   VS_EYE;
    VS_POSITION(float4(vPosition.x, -vPosition.y, 0.0, 1.0), float4(vPosition.x, -vPosition.y, 0.0, 1.0));
    // Here we apply an offset to sample in between the samples for filtering
    VS_VARYING(tex0, tc + 0.5 * w_h_height.xy);

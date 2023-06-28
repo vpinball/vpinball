@@ -58,7 +58,7 @@ out vec4 color;
 ////vsBall
 VS_OUT(vec4, normal_t0x);
 VS_OUT(vec4, worldPos_t0y);
-VS_OUT_EYE();
+VS_OUT_EYE;
 
 void main()
 {
@@ -73,7 +73,7 @@ void main()
 
 	const float3 p = (matWorldView * pos).xyz;
 
-    VS_EYE();
+    VS_EYE;
     VS_POSITION(matWorldViewProj[eye_vs] * pos, pos);
     VS_VARYING(normal_t0x, float4(normal,tex0.x));
     VS_VARYING(worldPos_t0y, float4(p,tex0.y));
@@ -82,12 +82,12 @@ void main()
 
 ////vsBallTrail
 VS_OUT(vec3, tex0_alpha);
-VS_OUT_EYE();
+VS_OUT_EYE;
 
 void main()
 {
 	float4 pos = vec4(vPosition, 1.0);
-    VS_EYE();
+    VS_EYE;
     VS_POSITION(matWorldViewProj[eye_vs] * pos, pos);
     VS_VARYING(tex0_alpha, float3(tex0, vNormal.x)); //!! abuses normal for now
     VS_CLIP_DISTANCE(pos);

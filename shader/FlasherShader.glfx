@@ -22,7 +22,7 @@ uniform int layer; // Layer being rendered (set to 0 is using layered rendering,
 
 VS_OUT(vec2, tex0);
 VS_OUT(vec3, tablePos);
-VS_OUT_EYE();
+VS_OUT_EYE;
 
 
 ////GEOMETRY
@@ -61,7 +61,7 @@ void main()
    float4 pos = vec4(vPosition, 1.0);
    float3 table_pos = pos.xyz;
 
-   VS_EYE();
+   VS_EYE;
    VS_POSITION(matWorldViewProj[eye_vs] * pos, pos);
    VS_VARYING(tablePos, table_pos);
    VS_VARYING(tex0, tc);

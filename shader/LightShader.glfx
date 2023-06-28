@@ -15,7 +15,7 @@ uniform vec4 clip_plane; // Clip plane defined in table coordinate system
 uniform int layer; // Layer being rendered (set to 0 is using layered rendering, that is to say rendering multiple layers using instanced rendering)
 
 VS_OUT(vec3, tablePos);
-VS_OUT_EYE();
+VS_OUT_EYE;
 
 
 ////GEOMETRY
@@ -41,7 +41,7 @@ out vec4 color;
 void main()
 {
    float4 pos = vec4(vPosition, 1.0);
-   VS_EYE();
+   VS_EYE;
    VS_POSITION(matWorldViewProj[eye_vs] * pos, pos);
    VS_VARYING(tablePos, vPosition);
    VS_CLIP_DISTANCE(pos);
