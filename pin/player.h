@@ -175,15 +175,6 @@ enum ProfilingMode
    PF_ENABLED,
 };
 
-enum VideoSyncMode
-{
-   VSM_NONE,
-   VSM_VSYNC,
-   VSM_ADAPTIVE_VSYNC,
-   VSM_FRAME_PACING,
-   VSM_INVALID
-};
-
 #ifndef ENABLE_SDL
 // Note: Nowadays the original code seems to be counter-productive, so we use the official
 // pre-rendered frame mechanism instead where possible

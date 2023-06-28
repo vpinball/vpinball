@@ -1,7 +1,5 @@
 #pragma once
 
-#include <thread>
-
 #include "inc/robin_hood.h"
 #include "typedefs3D.h"
 
@@ -19,6 +17,10 @@
 
 #ifdef ENABLE_VR
 #include <openvr.h>
+#endif
+
+#ifdef ENABLE_SDL
+#include <d3d11.h> // Used to get a VSync source when DWM is not available
 #endif
 
 #ifndef ENABLE_SDL
@@ -71,7 +73,6 @@ int getPrimaryDisplay();
 
 class Shader;
 class ModelViewProj;
-enum VideoSyncMode;
 
 class RenderDevice final
 {
@@ -89,6 +90,8 @@ public:
 
    SDL_Window* m_sdl_playfieldHwnd = nullptr;
    SDL_GLContext m_sdl_context = nullptr;
+   IDXGIOutput* m_DXGIOutput = nullptr;
+   
 #else
    enum PrimitiveTypes
    {
@@ -131,7 +134,6 @@ public:
    bool IsLogNextFrame() const { return m_logNextFrame; }
    void FlushRenderFrame();
    void Flip(const int vsync);
-   bool HasAsyncFlip() const;
 
    bool SetMaximumPreRenderedFrames(const DWORD frames);
 
@@ -242,13 +244,15 @@ public:
    unsigned int  m_FXAA;
    int           m_BWrendering;
 
+private:
+   void UploadAndSetSMAATextures();
+
+public:
    Sampler* m_SMAAsearchTexture = nullptr;
    Sampler* m_SMAAareaTexture = nullptr;
    Sampler* m_nullTexture = nullptr;
 
 private:
-   void UploadAndSetSMAATextures();
-
 #ifndef ENABLE_SDL
    IDirect3D9Ex* m_pD3DEx;
    IDirect3DDevice9Ex* m_pD3DDeviceEx;
@@ -289,21 +293,25 @@ private:
    SamplerAddressMode m_bound_clampv[TEXTURESET_STATE_CACHE_SIZE];
 #endif
 
+public:
+   bool m_autogen_mipmap;
+   bool m_compress_textures;
+
+private:
    bool m_dwm_was_enabled;
    bool m_dwm_enabled;
    bool m_present_vsync;
 
 public:
-   bool m_autogen_mipmap;
-   bool m_compress_textures;
-
    void VSyncThread();
    U64 m_lastVSyncUs = 0;
 
+public:
    MeshBuffer* m_quadMeshBuffer = nullptr;       // internal vb for rendering quads
    MeshBuffer* m_quadPNTDynMeshBuffer = nullptr; // internal vb for rendering dynamic quads (position/normal/texture)
    MeshBuffer* m_quadPTDynMeshBuffer = nullptr;  // internal vb for rendering dynamic quads (position/texture)
 
+public:
 #ifndef ENABLE_SDL
    bool m_useNvidiaApi;
    bool m_INTZ_support;

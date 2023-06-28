@@ -89,8 +89,6 @@ private:
    mutable Vertex3Ds m_viewVec;
 };
 
-enum VideoSyncMode;
-
 class Pin3D
 {
 public:
