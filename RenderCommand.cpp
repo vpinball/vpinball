@@ -88,6 +88,8 @@ void RenderCommand::Execute(const bool log)
       #if defined(ENABLE_VR) && defined(ENABLE_SDL)
       if (m_rd->IsVRReady())
       {
+         g_frameProfiler.OnPresent();
+
          RenderTarget* leftTexture = m_rd->GetOffscreenVR(0);
          vr::Texture_t leftEyeTexture = { (void*)(__int64)leftTexture->GetColorSampler()->GetCoreTexture(), vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
          vr::EVRCompositorError errorLeft = vr::VRCompositor()->Submit(vr::Eye_Left, &leftEyeTexture);

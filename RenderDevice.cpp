@@ -1483,7 +1483,8 @@ void RenderDevice::Flip(const int vsync)
 
    // Schedule frame submission. Note that these calls may or may not block depending on the device configuration and the state of its frame queue.
    // To ensure non blocking calls, we need to schedule frames at a pace adjusted to the actual render speed (to avoid filling up the queue, leading to the present call to wait for a free slot).
-   g_frameProfiler.OnPresent();
+   if (m_stereo3D != STEREO_VR)
+      g_frameProfiler.OnPresent();
 #ifdef ENABLE_SDL
    if ((vsync != 1) && m_present_vsync)
    { // Force an immediate swap
