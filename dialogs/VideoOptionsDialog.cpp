@@ -252,7 +252,7 @@ void VideoOptionsDialog::FillVideoModesList(const vector<VideoMode>& modes, cons
 }
 
 
-// Declared in RenderDevice. Desktop composition may only be disabled on WIndows Vista & 7
+// Declared in RenderDevice. Desktop composition may only be disabled on Windows Vista & 7
 bool IsWindowsVistaOr7();
 
 BOOL VideoOptionsDialog::OnInitDialog()
@@ -268,7 +268,7 @@ BOOL VideoOptionsDialog::OnInitDialog()
       AddToolTip("This saves memory on your graphics card but harms quality of the textures.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_TEX_COMPRESS).GetHwnd());
       AddToolTip("Disable Windows Desktop Composition (only works on Windows Vista and Windows 7 systems).\r\nMay reduce lag and improve performance on some setups.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_DISABLE_DWM).GetHwnd());
       AddToolTip("Activate this if you have issues using an Intel graphics chip.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_SOFTWARE_VP).GetHwnd());
-      AddToolTip("None: no synchronization\r\nVSYNC: Synchronize on video sync which avoids video tearing but has high input latency\r\nAdaptive: synchronize on video sync except for late frame (below target FPS), also has high input latency\r\nFrame pacing, targets real time simulation with low input/video latency (also dynamically adjust framerate)", hwndDlg, toolTipHwnd, GetDlgItem(IDC_VIDEO_SYNC_MODE).GetHwnd());
+      AddToolTip("None: no synchronization\r\nVSYNC: Synchronize on video sync which avoids video tearing but has high input latency\r\nAdaptive: synchronize on video sync except for late frames (below target FPS), also has high input latency\r\nFrame pacing, targets real time simulation with low input/video latency (also dynamically adjusts framerate)", hwndDlg, toolTipHwnd, GetDlgItem(IDC_VIDEO_SYNC_MODE).GetHwnd());
       AddToolTip("Limit the fps to the given value (energy saving/less heat, framerate stability), 0 will disable it", hwndDlg, toolTipHwnd, GetDlgItem(IDC_MAX_FPS).GetHwnd());
       AddToolTip("Leave at 0 if you have enabled 'Low Latency' or 'Anti Lag' settings in the graphics driver.\r\nOtherwise experiment with 1 or 2 for a chance of lag reduction at the price of a bit of framerate.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_MAX_PRE_FRAMES).GetHwnd());
       AddToolTip("If played in cabinet mode and you get an egg shaped ball activate this.\r\nFor screen ratios other than 16:9 you may have to adjust the offsets.\r\nNormally you have to set the Y offset (around 1.5) but you have to experiment.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_StretchMonitor).GetHwnd());

@@ -16,7 +16,7 @@ Beside these eventually needed updates, 10.8 offers new features that can be lev
 5. [Reflections](#reflections)
 6. [Better light fading](better-light-fading)
 7. [Simplified scripting](#simplified-scripting)
-8. [Better statics](#better-statics)
+8. [Better static parts](#better-static-parts)
 9. [Additional DMD](additional-dmd)
 10. [Primitive Depth Masking](primitive-depth-masking)
 
@@ -136,8 +136,8 @@ End Sub
 Custom fading of lights and flashers can also be largely simplified by using the new [light fading](#better-light-fading), leveraging the new 'lightmap' property of flashers and/or using the 'Animate' event, thus reducing the performance impact of the script (which can lead to e.g. microstutter on some systems otherwise).
 
 
-## Better Statics
-VPX 10.8 allows the script to update properties of 'static' parts during initialization, that is to say in the main script part and in the 'Init' events of the table and its parts. This can be leveraged to adjust visiblity of static parts depending on the display setup (e.g. VR vs cab vs desktop vs FSS) or user-selected options.
+## Better Static Parts
+VPX 10.8 allows the script to update the properties of 'static' parts during initialization and preprocessing, so within the main script part and in all the 'Init' events of the table and its parts. This can for example be leveraged to adjust the visibility of static parts depending on the display setup (e.g. VR vs cab vs desktop vs FSS) or user-selected options.
 
 For example:
 ```
@@ -173,11 +173,11 @@ Depth Masking should be disabled for transparent primitive if:
 ![Before](img/Upgrade10.8-DepthMaskBefore.webp)
 ![After](img/Upgrade10.8-DepthMaskAfter.webp)
 
-Left shows an (exaggerated) ambient occlusion artefact due to depth masking. Right is the same with depth masking disabled.
+Left image shows an (exaggerated) ambient occlusion artefact due to depth masking. Right image shows the same, but with depth masking disabled.
 
 ![Before](img/Upgrade10.8-DepthMask.webp)
 ![After](img/Upgrade10.8-NoDepthMask.webp)
 
-Left shows the ramp from VPW's Last Action Hero in 10.7 while right shows it with the mask option disabled.
+Left image shows the ramp from VPW's Last Action Hero in 10.7, while the right image shows it with the mask option disabled.
 
 <sub><sup>[Informations applicable to version 10.8 Beta]</sup></sub>

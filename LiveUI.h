@@ -116,7 +116,7 @@ private:
 
    // Outliner
    float m_outliner_width = 0.0f;
-   string m_outlinerFilter = ""s;
+   string m_outlinerFilter;
    bool m_outlinerSelectLiveTab = true;
    bool IsOutlinerFiltered(const string& name);
 

@@ -1389,8 +1389,8 @@ bool RenderDevice::HasAsyncFlip() const
    return !m_present_vsync && m_dwm_enabled && mDwmFlush;
 }
 
-// Flip the front & back buffer perofrming vertical sync depending on vsync:
-// . 0 => No sync (schedule and immediate flip which will be performed as soon as the GPU as finished rendering)
+// Flip the front & back buffer performing vertical sync depending on vsync:
+// . 0 => No sync (schedule and immediate flip which will be performed as soon as the GPU has finished rendering)
 // . 1 => Vertical Sync
 // . 2 => Asynchronous Vertical Sync
 void RenderDevice::Flip(const int vsync)
@@ -1405,9 +1405,9 @@ void RenderDevice::Flip(const int vsync)
    // - DWM is always disabled for Windows XP, it can be either on or off for Windows Vista/7, it is always enabled for Windows 8+
    // - Windows XP does not offer any way to sync beside the present parameter on device creation, so this is enforced there and the vsync parameter will be ignored here
    // 
-   // The implementation used here rely on blocking calls that will delay the input/physics update (they catchup afterward). Therefore it should be avoided 
-   // since it will break some pinmame video modes (since input events will be fast forwarded, the controller missing somes like in Lethal Weapon 3 fight) 
-   // and make the gameplay (input lag, input-physics sync, input-controller sync) to depend on the framerate.
+   // The implementation used here relies on blocking calls that will delay the input/physics update (they catchup afterward). Therefore it should be avoided
+   // since it will break some PinMAME video modes (since input events will be fast forwarded, the controller will be missing some like in the Lethal Weapon 3 fist fight)
+   // and makes the gameplay (input lag, input-physics sync, input-controller sync) dependent on the framerate.
    //
    // Since we are doing immediate flip, Sync must be done before requesting the flip (since it is expected to be perfomed as soon as the GPU command
    // queue is empty, which should be satisfied after the VBlank wait we enforce) but when the DWM is enabled, it will ensure this for us and what we 

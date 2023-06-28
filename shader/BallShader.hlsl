@@ -236,11 +236,11 @@ float4 psBall( const in vout IN, uniform bool equirectangularMap, uniform bool d
    float3 ballImageColor;
    const float edge = dot(V, r);
    // edge falloff to reduce aliasing on edges (picks smaller mipmap -> more blur)
-   const float lod = (edge > 0.6) ? edge * (6.0 * 1.0 / 0.4) - (6.0 * 0.6 / 0.4) : 0.0;
+   const float lod = (edge > 0.6) ? edge*(6.0*1.0/0.4)-(6.0*0.6/0.4) : 0.0;
    BRANCH if (equirectangularMap)
    {  // Equirectangular Map Reflections
-	  // trafo back to world for lookup into world space envmap 
-	  // matView is always an orthonormal matrix, so no need to normalize after transform
+      // trafo back to world for lookup into world space envmap 
+      // matView is always an orthonormal matrix, so no need to normalize after transform
       const float3 rv = /*normalize*/(mul(matView, -r).xyz);
       const float2 uv = ray_to_equirectangular_uv(rv);
       ballImageColor = tex2Dlod(tex_ball_color, float4(uv, 0., lod)).rgb;

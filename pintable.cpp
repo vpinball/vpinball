@@ -4832,7 +4832,7 @@ void PinTable::ComputeNearFarPlane(const Matrix3D &matWorldView, const float sca
       {
          Vertex3Ds p = v;
          matWorldView.TransformVec3(p);
-         if (p.z > 0.0)
+         if (p.z > 0.0f)
          {
             // Clip points behind the viewer (VR room have a lot of these)
             zNear = min(zNear, p.z);

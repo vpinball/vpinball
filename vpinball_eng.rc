@@ -398,6 +398,9 @@ BEGIN
     EDITTEXT        IDC_DN_LATITUDE,232,134,36,12,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Longitude",IDC_STATIC,271,136,35,10
     EDITTEXT        IDC_DN_LONGITUDE,306,134,36,12,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Synchronization mode",IDC_STATIC,163,165,80,10
+    COMBOBOX        IDC_VIDEO_SYNC_MODE,249,163,92,100,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Input/Physics/Video Synchronization",IDC_STATIC,155,153,193,51
     LTEXT           "Maximum Framerate",IDC_STATIC,162,178,75,10
     EDITTEXT        IDC_MAX_FPS,321,176,20,12,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Maximum pre-rendered Frames",IDC_STATIC,162,191,120,8
@@ -437,9 +440,6 @@ BEGIN
     LTEXT           "(Cabinet/Rotated Screen usage)",IDC_STATIC,24,121,121,8
     GROUPBOX        "Fullscreen",IDC_STATIC,158,268,183,43
     LTEXT           "(post-processed Anti-Aliasing)",IDC_STATIC,29,208,101,8
-    LTEXT           "Synchronization mode",IDC_STATIC,163,165,80,10
-    COMBOBOX        IDC_VIDEO_SYNC_MODE,249,163,92,100,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Input/Physics/Video Synchronization",IDC_STATIC,155,153,193,51
 END
 
 IDD_FONTDIALOG DIALOG 0, 0, 316, 167
@@ -1758,6 +1758,7 @@ BEGIN
     CONTROL         "Reflection Enabled",IDC_REFLECT_ENABLED_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,82,76,10
     CONTROL         "Render backfacing transparent",IDC_PRIMITIVE_ENABLE_BACKFACES,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,92,115,10
+    LTEXT           "Triangles (slower, but accurate)",IDC_STATIC5,17,104,102,9
     CONTROL         "Hide parts behind",IDC_PRIMITIVE_ENABLE_DEPTH_MASK,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,102,115,10
     CONTROL         "Additive Blend",IDC_ADDBLEND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,112,61,10

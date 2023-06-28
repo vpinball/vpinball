@@ -1653,7 +1653,7 @@ HRESULT Player::Init()
    if (m_videoSyncMode == VideoSyncMode::VSM_FRAME_PACING && !m_pin3d.m_pd3dPrimaryDevice->HasAsyncFlip())
    {
       PLOGE << "Frame pacing sync mode needs Windows 8+ for which VPX supports asynchronous frame syncing";
-      ShowError("Frame pacing sync mode needs Windows 8+ for which VPX supports asynchronous frame syncing.\r\nYou should select another synchronization mode fropm the video setting dialog.");
+      ShowError("Frame pacing sync mode needs Windows 8+ for which VPX supports asynchronous frame syncing.\r\nYou should select another synchronization mode from the video setting dialog.");
    }
 
    // Broadcast a message to notify front-ends that it is 
@@ -3978,11 +3978,11 @@ void Player::OnIdle()
 {
    if (m_videoSyncMode == VideoSyncMode::VSM_FRAME_PACING)
    {
-      // The main loop try to perform constant input/physics cycle at a 1ms pace while feeding the GPU command queue at a stable rate, without multithreading.
+      // The main loop tries to perform a constant input/physics cycle at a 1ms pace while feeding the GPU command queue at a stable rate, without multithreading.
       // These 2 tasks are designed as follows:
-      // - Input/Phyics: acquire then process input (eventually executing script event that will trigger PinMame controller), then allow
-      //   physics to catch up to the real machine time. The aim is to run at real time speed since PinMame controller does so and requires
-      //   its input to be done the same way, and some flipper tricks depends a lot on precise timings.
+      // - Input/Phyics: acquire, then process input (executing script events that will trigger the PinMAME controller), then allow
+      //   physics to catch up to the real machine time. The aim is to run at real time speed since the PinMAME controller does so and requires
+      //   its input to be done the same way, and some flipper tricks depend a lot on precise timings.
       // - Rendering: it is performed in 3 steps:
       //   . Collect (C): update table (animation, per frame timers), build a render (R) command sequence (ideally without any GPU interaction, not yet implemented as such)
       //   . Submit  (S): Feed all commands to the GPU command queue
@@ -3995,28 +3995,28 @@ void Player::OnIdle()
       // It shows that we aim at always having one frame prepared before the next VBlank. This implies a 1 frame latency but allows
       // to keep the GPU mostly always busy with lower stutter risk (missing a frame, not rendering a point in time at the right time).
       //
-      // If the system if high end and the table not too demanding, it may looks like this:
+      // If the system is high end and the table not too demanding, it may look like this:
       // Display ......v.......V.......v.......V......
       // CPU     CS.....Fcs.....fCS.....Fcs.....fCS...
       // GPU     .RRR.....rrr.....RRR.....rrr.....RRR.
       // In these situations, to lower input-render latency, we could delay the frame start instead of starting directly after submitting 
-      // previous frame. This is not implemented for the time being.
+      // the previous frame. This is not implemented for the time being.
       //
       // On the opposite, if the table is too demanding, the VBlank will be ignored and the rendering would try to catch up:
       // Display ......V...X...V....x..V.....X.V.....xV.......VX.....Vx......V.X....
       // CPU     CCSSS..Fccssss.fCCSSSSSFccssssssFCCSSSSSFccssssssFCCSSSSSFccssssssf
       // GPU     ..RRRRRRRRRrrrrrrrrrRRRRRRRRRrrrrrrrrRRRRRRRRRrrrrrrrrRRRRRRRRRrrrr
       // It shows that after the first few frames, the CPU will hit a blocking call when submitting to the GPU render queue (longer submit phase).
-      // This would defeat the design since during the blocking call, the CPU is stalled and VPX's input/physics will lag behind PinMame.
-      // It also shows that since frame arrive late, they are pushed to the display out of sync. Wether they will wait for the next VBlank or 
+      // This would defeat the design since during the blocking call, the CPU is stalled and VPX's input/physics will lag behind PinMAME.
+      // It also shows that since frames arrive late, they are pushed to the display out of sync. Wether they will wait for the next VBlank or 
       // not (causing tearing) depends on the user setup (DWM, fullscreen,...).
-      // 
+      //
       // What we do is adjust the target frame length based on averaged previous frame length (sliding average searching to get back to 
       // refresh rate). On the following diagram, it is shown as some 'W' for additional wait during which input/physics is still processed.
       // Display ......V...X...V.....x.V.......VX.....V..x....V....X.V.......Vx.....
       // CPU     CCSSS..WWFccsss..wwfCCSSS..WWFccsss..wwfCCSSS..WWFccsss..wwfCCSSSS.
       // GPU     ..RRRRRRRRR.rrrrrrrrr.RRRRRRRRR.rrrrrrrrr.RRRRRRRRR.rrrrrrrrr.RRRRR
-      // This also allows, if selected (not shown), to only use multiple of the refresh rate to enforce that frames are in sync with VBlank.
+      // This also allows, if selected (not shown), to only use multiples of the refresh rate to enforce that frames are in sync with VBlank.
 
       constexpr bool debugLog = false;
 
@@ -4055,7 +4055,7 @@ void Player::OnIdle()
          }
 
          // If we are not able to keep up with the refresh rate, target a slower frame rate, still trying to catch up but in a smooth way, 
-         // by 2ms step which is just an empirical magic number to stabilize quickly without loosing too much input/physics cycles. This 
+         // by a 2ms step which is just an empirical magic number to stabilize quickly without loosing too much input/physics cycles. This 
          // works but needs a few stutter frames before stabilizing.
          const U64 now = usec();
          const int averageFrameLength = (int)(1e6 / m_fps);
@@ -4099,10 +4099,10 @@ void Player::OnIdle()
    else
    {
       // Legacy main loop performs the frame as a single block. This leads to having the input <-> physics stall between frames increasing 
-      // the latency and causing syncing problems with PinMame (which runs realtime and expects realtime inputs, especially for video modes
-      // with repeated buttons presses like for Black Rose "Walk the Plank Vide Mode" or Lethal Weapon 3 "Battle Video Mode")
+      // the latency and causing syncing problems with PinMAME (which runs in realtime and expects realtime inputs, especially for video modes
+      // with repeated button presses like Black Rose's "Walk the Plank Video Mode" or Lethal Weapon 3's "Battle Video Mode")
       // This also leads to filling up the GPU render queue leading to a few frame latency, depending on driver setup (hence the use of a limiter).
-       
+
       // Collect stats from previous frame and starts profiling a new frame
       g_frameProfiler.NewFrame();
 

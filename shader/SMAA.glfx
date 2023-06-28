@@ -156,13 +156,13 @@ void main()
     #if USE_GEOMETRY_SHADER
     SMAANeighborhoodBlendingVS(texcoord_gs, offset_gs);
     // Reverse Y offset to account for texture orientation
-    offset_gs.y *= -1.;
-    offset_gs.w *= -1.;
+    offset_gs.y = -offset_gs.y;
+    offset_gs.w = -offset_gs.w;
     #else
     SMAANeighborhoodBlendingVS(texcoord, offset);
     // Reverse Y offset to account for texture orientation
-    offset.y *= -1.;
-    offset.w *= -1.;
+    offset.y = -offset.y;
+    offset.w = -offset.w;
     #endif
 }
 

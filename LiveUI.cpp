@@ -2361,9 +2361,9 @@ void LiveUI::BallProperties(bool is_live)
 
 void LiveUI::MaterialProperties(bool is_live)
 {
-   Material *const live_material = (Material *)(m_selection.is_live ? m_selection.editable : m_live_table->m_startupToLive[m_selection.editable]);
+   Material * const live_material = (Material *)(m_selection.is_live ? m_selection.editable : m_live_table->m_startupToLive[m_selection.editable]);
    Material * const startup_material = (Material *)(m_selection.is_live ? m_live_table->m_liveToStartup[m_selection.editable] : m_selection.editable);
-   Material *const material = (is_live ? live_material : startup_material);
+   Material * const material = (is_live ? live_material : startup_material);
    HelpTextCentered("Material");
    string name = ((Material *)m_selection.editable)->m_szName;
    ImGui::BeginDisabled(is_live); // Editing the name of a live item can break the script
@@ -2377,7 +2377,7 @@ void LiveUI::MaterialProperties(bool is_live)
    ImGui::Separator();
    if (ImGui::CollapsingHeader("Visual", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
    {
-	   const string matType[] = { "Default"s, "Metal"s };
+      static const string matType[] = { "Default"s, "Metal"s };
       PropCombo("Type", m_table, is_live, startup_material ? (int *)&(startup_material->m_type) : nullptr, live_material ? (int *)&(live_material->m_type) : nullptr, 3, matType);
       if (material != nullptr)
       {

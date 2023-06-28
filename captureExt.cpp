@@ -6,10 +6,10 @@
 // - one based on DXGI capture which should have better performance.
 // (See for reference implementation: https://github.com/microsoft/Windows-classic-samples/blob/main/Samples/DXGIDesktopDuplication/cpp/DuplicationManager.cpp)
 // The initial implementation of the DXGI (https://github.com/vpinball/vpvr/blob/master/captureExt.cpp) was known to work well. Somewhere in the evolution
-// path, bugs were introduced and it is not stable as it used to be. Due to lack of time, this lead to implement and defaults to the the leff efficient
+// path, bugs were introduced and it is not stable as it used to be. Due to lack of time, this lead to implement and defaults to the less efficient
 // default Windows implementation.
 // 2023.05.13: copy/pasted the DXGI initial implementation back and reenabled it for user testing
-// 2023.06.09: disabled the VPVR code again since VR users are experienceing DXGI errors with it...
+// 2023.06.09: disabled the VPVR code again since VR users are experiencing DXGI errors with it...
 // 2023.06.12: moved back one more time to DXGI since GDI path nulls out the player's texdmd breakign embedded DMD in desktop...
 #define USE_DXGI 1
 

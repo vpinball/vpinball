@@ -122,19 +122,20 @@ FEATURES:
 - Add an option to primitives to toggle 'depth masking', which is otherwise used during rendering to hide all parts behind the primitive. If unchecked, the primitive will not hide parts behind it and it will also not be visible to ambient occlusion.
   For example, this is needed to employ primitives to render user/fake shadows without breaking ambient occlusion, or for transparents part with self overlapping parts like plastic ramps.
 
-- the script is started and the Init events are now called *before* the static parts are prerendered. This allows a table script to adjust static parts properties on startup.
+- as the script is initially started, the Init events are now called *before* the static parts are prerendered.
+  This allows a table script to adjust the properties of static parts during startup.
 
-- Video synchronization and target frame rate are now 2 separate settings and a new video synchronization mode for low latency input/physics/rendering has been added. The choice are:
-  - None: no synhronization, just run as fast as possible. Unless with a very powerful system, this should lead to some input latency (due to lack of input syncing) and render latency 
-    (due to flooding the GPU frame queue). It used to be 'Adaptive Sync: 0'
-  - VSync: synchronize on the display vertical blank signal. This can limit stutters but will lead high input latency. It used to be 'Adaptive Sync: 1'
-  - Adaptive VSync: same as vsync but when a frame is late (miss the refresh rate), it is displayed immediatly. This should reduce stutters but has the same input latency. It used to be 'Adaptive Sync: 2'
-  - Frame Pacing: *NEW* Only available on Windows 8 and later, VPX will try to run the input & physics simulation continuously in real time instead of once per frame. This lowers 
-    the input latency especially at lower frame rate. This also allows to have the input synchronized to VPinMame when using it, fixing some syncrhonization bugs like in video mode 
-	with fast button presses (Lethal Weapon, Black Rose,...). The render loop will try to produce exactly one frame per vertical blank to limit frame latency due to stacking more 
-	frames that are displayed later on. On not powerful enough computer, it will try to find an adequate framerate for this, eventually needing a few frame to stabilize.
-  The target frame rate is now a separate setting. If defined, it will lead VPX to perform its own synchronization trying to achieve the requested frame rate. The synchronization settings still applies
-  (therefore a frame rate higher than the refresh rate needs the 'None' synchronization mode to be satisfied).
+- Video synchronization and target frame rate are now 2 separate settings and a new video synchronization mode for low latency input/physics/rendering has been added. The choices are:
+  - None: no synchronization, VPX just runs as fast as possible. Unless when playing on a very powerful system, this should lead to some input latency (due to lack of input syncing) and render latency 
+          (due to flooding the GPU frame queue). This setting used to be 'Adaptive Sync: 0'
+  - VSync: synchronize on the display vertical blank signal. This can limit stutters and avoids tearing, but will lead to high input latency. This used to be 'Adaptive Sync: 1'
+  - Adaptive VSync: same as 'VSync', but when a frame is late (=missing the refresh rate), it is displayed immediately. This should reduce stutters but features the same input latency. This used to be 'Adaptive Sync: 2'
+  - Frame Pacing: *NEW* Only available on Windows 8 and later, VPX will try to run the input & physics simulation continuously in real time instead of only once per frame. This lowers 
+                  the input latency, especially at lower frame rates. This also allows to have the input synchronized to PinMAME when enabling it, fixing some synchronization bugs like in video modes
+                  with fast button presses (Lethal Weapon, Black Rose,...). The render loop will try to produce exactly one frame per vertical blank to limit frame latency due to stacking more 
+                  frames that are displayed later on. On a not-so-powerful-enough computer, it will try to find an adequate framerate for this, needing a few frames to stabilize.
+  Due to these changes, the target frame rate is now a separate setting. If defined, it will lead VPX to perform its own synchronization, trying to achieve the requested frame rate. The listed synchronization settings still apply.
+  Therefore, selecting a frame rate that is higher than the monitor refresh rate requires the use of the 'None' synchronization mode!
 
 FIXES:
 
