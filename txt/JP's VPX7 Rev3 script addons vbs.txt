@@ -1,6 +1,8 @@
-'JP's VPX7 Rev2 Physics
-'Only 2 changes are needed for the physics: the flippers and the rolling sound with the ball speed limit.
-'Included also my versions of the PlaySoundAt and PlaySoundAtBall which include volume and pitch changes to the sounds according to the ball speed.
+'JP's VPX7 Rev3 Physics
+'Only 2 changes are needed in the script for the physics: the flippers and the rolling sound with the ball speed limit. The rest of the changes are done by setting the right material for each object.
+'I Included here also my versions of the PlaySoundAt and PlaySoundAtBall which include volume and pitch changes to the sounds according to the ball speed to give some variations on the sounds, based on the ball speed and some random too.
+' The ball rolling sub should be called from a reatime timer, this is a fast timer, with an interval about 10 is good.
+' The ball rolling sub also includes a ball shadow, made of flashers, and grouped topgether in a collection, called aBallShadow. Take a look at any of my VP7 tables.
 
 '*******************
 '  Flipper Subs
@@ -13,9 +15,12 @@ Sub SolLFlipper(Enabled)
     If Enabled Then
         PlaySoundAt SoundFX("fx_flipperup", DOFFlippers), LeftFlipper
         LeftFlipper.RotateToEnd
+        LeftFlipperOn = 1
     Else
         PlaySoundAt SoundFX("fx_flipperdown", DOFFlippers), LeftFlipper
         LeftFlipper.RotateToStart
+        LeftFlipperOn = 0
+
     End If
 End Sub
 
@@ -23,9 +28,11 @@ Sub SolRFlipper(Enabled)
     If Enabled Then
         PlaySoundAt SoundFX("fx_flipperup", DOFFlippers), RightFlipper
         RightFlipper.RotateToEnd
+        RightFlipperOn = 1
     Else
         PlaySoundAt SoundFX("fx_flipperdown", DOFFlippers), RightFlipper
         RightFlipper.RotateToStart
+        RightFlipperOn = 0
     End If
 End Sub
 
@@ -37,16 +44,17 @@ Sub RightFlipper_Collide(parm)
     PlaySound "fx_rubber_flipper", 0, parm / 60, pan(ActiveBall), 0.2, 0, 0, 0, AudioFade(ActiveBall)
 End Sub
 
-'**********************************************
-'    Flipper adjustments - enable tricks
-'             by JLouLouLou
-'**********************************************
+'*********************************************************
+' Real Time Flipper adjustments - by JLouLouLou & JPSalas
+'        (to enable flipper tricks) 
+'*********************************************************
 
 Dim FlipperPower
 Dim FlipperElasticity
-Dim EOSTorque, EOSAngle
 Dim SOSTorque, SOSAngle
-Dim FullStrokeEOS_Torque
+Dim FullStrokeEOS_Torque, LiveStrokeEOS_Torque
+Dim LeftFlipperOn
+Dim RightFlipperOn
 
 Dim LLiveCatchTimer
 Dim RLiveCatchTimer
@@ -54,57 +62,73 @@ Dim LiveCatchSensivity
 
 FlipperPower = 5000
 FlipperElasticity = 0.85
-EOSTorque = 0.2
-EOSAngle = 6
+FullStrokeEOS_Torque = 0.3 	' EOS Torque when flipper hold up ( EOS Coil is fully charged. Ampere increase due to flipper can't move or when it pushed back when "On". EOS Coil have more power )
+LiveStrokeEOS_Torque = 0.2	' EOS Torque when flipper rotate to end ( When flipper move, EOS coil have less Ampere due to flipper can freely move. EOS Coil have less power )
+
+LeftFlipper.EOSTorqueAngle = 10
+RightFlipper.EOSTorqueAngle = 10
+
 SOSTorque = 0.1
 SOSAngle = 6
-FullStrokeEOS_Torque = 0.5
-LiveCatchSensivity = 25 'adjust as you prefer
+
+LiveCatchSensivity = 10
+
 LLiveCatchTimer = 0
 RLiveCatchTimer = 0
 
-Sub RealTimeFast_Timer 'flipper's tricks timer
-    'Flipper Stroke Routine
-    If LeftFlipper.CurrentAngle => LeftFlipper.StartAngle - SOSAngle Then LeftFlipper.Strength = FlipperPower * SOSTorque:End If                                                       'Start of Stroke for Tap pass and Tap shoot
-    If LeftFlipper.CurrentAngle < LeftFlipper.StartAngle - SOSAngle and LeftFlipper.CurrentAngle > LeftFlipper.EndAngle + EOSAngle Then LeftFlipper.Strength = FlipperPower:End If      'Full Stroke
-    If LeftFlipper.CurrentAngle < LeftFlipper.EndAngle + EOSAngle and LeftFlipper.CurrentAngle > LeftFlipper.EndAngle Then LeftFlipper.Strength = FlipperPower * EOSTorque:End If       'EOS Stroke
-    If LeftFlipper.CurrentAngle = LeftFlipper.EndAngle Then LeftFlipper.Strength = FlipperPower * FullStrokeEOS_Torque:End If                                                           'Bunny Bump Remover
+LeftFlipper.TimerInterval = 1
+LeftFlipper.TimerEnabled = 1
 
-    If RightFlipper.CurrentAngle <= RightFlipper.StartAngle + SOSAngle Then RightFlipper.Strength = FlipperPower * SOSTorque:End If                                                     'Start of Stroke for Tap pass and Tap shoot
-    If RightFlipper.CurrentAngle > RightFlipper.StartAngle + SOSAngle and RightFlipper.CurrentAngle < RightFlipper.EndAngle - EOSAngle Then RightFlipper.Strength = FlipperPower:End If 'Full Stroke
-    If RightFlipper.CurrentAngle > RightFlipper.EndAngle - EOSAngle and RightFlipper.CurrentAngle < RightFlipper.EndAngle Then RightFlipper.Strength = FlipperPower * EOSTorque:End If  'EOS Stroke
-    If RightFlipper.CurrentAngle = RightFlipper.EndAngle Then RightFlipper.Strength = FlipperPower * FullStrokeEOS_Torque:End If                                                        'Bunny Bump Remover
+Sub LeftFlipper_Timer 'flipper's tricks timer
+'Start Of Stroke Flipper Stroke Routine : Start of Stroke for Tap pass and Tap shoot
+    If LeftFlipper.CurrentAngle >= LeftFlipper.StartAngle - SOSAngle Then LeftFlipper.Strength = FlipperPower * SOSTorque else LeftFlipper.Strength = FlipperPower : End If
+ 
+'End Of Stroke Routine : Livecatch and Emply/Full-Charged EOS
+	If LeftFlipperOn = 1 Then
+		If LeftFlipper.CurrentAngle = LeftFlipper.EndAngle then
+			LeftFlipper.EOSTorque = FullStrokeEOS_Torque
+			LLiveCatchTimer = LLiveCatchTimer + 1
+			If LLiveCatchTimer < LiveCatchSensivity Then
+				LeftFlipper.Elasticity = 0
+			Else
+				LeftFlipper.Elasticity = FlipperElasticity
+				LLiveCatchTimer = LiveCatchSensivity
+			End If
+		End If
+	Else
+		LeftFlipper.Elasticity = FlipperElasticity
+		LeftFlipper.EOSTorque = LiveStrokeEOS_Torque
+		LLiveCatchTimer = 0
+	End If
+	
 
-    'Live Catch Routine
-    If LeftFlipper.CurrentAngle <= LeftFlipper.EndAngle + EOSAngle and LeftFlipper.CurrentAngle => LeftFlipper.EndAngle Then
-        LLiveCatchTimer = LLiveCatchTimer + 1
-        If LLiveCatchTimer < LiveCatchSensivity Then
-            LeftFlipper.Elasticity = 0.2
-        Else
-            LeftFlipper.Elasticity = FlipperElasticity
-            LLiveCatchTimer = LiveCatchSensivity
-        End If
-    Else
-        LLiveCatchTimer = 0
-    End If
-    If RightFlipper.CurrentAngle => RightFlipper.EndAngle - EOSAngle and RightFlipper.CurrentAngle <= RightFlipper.EndAngle Then
-        RLiveCatchTimer = RLiveCatchTimer + 1
-        If RLiveCatchTimer < LiveCatchSensivity Then
-            RightFlipper.Elasticity = 0.2
-        Else
-            RightFlipper.Elasticity = FlipperElasticity
-            RLiveCatchTimer = LiveCatchSensivity
-        End If
-    Else
-        RLiveCatchTimer = 0
-    End If
+'Start Of Stroke Flipper Stroke Routine : Start of Stroke for Tap pass and Tap shoot
+    If RightFlipper.CurrentAngle <= RightFlipper.StartAngle + SOSAngle Then RightFlipper.Strength = FlipperPower * SOSTorque else RightFlipper.Strength = FlipperPower : End If
+ 
+'End Of Stroke Routine : Livecatch and Emply/Full-Charged EOS
+ 	If RightFlipperOn = 1 Then
+		If RightFlipper.CurrentAngle = RightFlipper.EndAngle Then
+			RightFlipper.EOSTorque = FullStrokeEOS_Torque
+			RLiveCatchTimer = RLiveCatchTimer + 1
+			If RLiveCatchTimer < LiveCatchSensivity Then
+				RightFlipper.Elasticity = 0
+			Else
+				RightFlipper.Elasticity = FlipperElasticity
+				RLiveCatchTimer = LiveCatchSensivity
+			End If
+		End If
+	Else
+		RightFlipper.Elasticity = FlipperElasticity
+		RightFlipper.EOSTorque = LiveStrokeEOS_Torque
+		RLiveCatchTimer = 0
+	End If
+
 End Sub
 
 
 
-
 '***************************************************************
-'             Supporting Ball & Sound Functions v3.0
+'             Supporting Ball & Sound Functions v4.0
 '  includes random pitch in PlaySoundAt and PlaySoundAtBall
 '***************************************************************
 
@@ -159,14 +183,15 @@ Function RndNbr(n) 'returns a random number between 1 and n
 End Function
 
 
-'****************************************************
-'   JP's VPX7 Rolling Sounds + Ballshadow
-'   uses a collection of shadows, aBallShadow
-'   limits the ball speed using the maxvel constant
-'****************************************************
+'***********************************
+'   JP's VP10 Rolling Sounds v4.0
+'   JP's Ball Shadows
+'   JP's Ball Speed Control
+'   Rothbauer's dropping sounds
+'***********************************
 
-Const tnob = 19   'total number of balls, 20 balls, from 0 to 19
-Const lob = 0     'number of locked balls
+Const tnob = 19   'total number of balls
+Const lob = 2     'number of locked balls
 Const maxvel = 45 'max ball velocity
 ReDim rolling(tnob)
 InitRolling
@@ -178,7 +203,8 @@ Sub InitRolling
     Next
 End Sub
 
-Sub RollingUpdate()
+Sub RollingUpdate() 'call this routine from any realtime timer you may have, running at an interval of 10 is good.
+
     Dim BOT, b, ballpitch, ballvol, speedfactorx, speedfactory
     BOT = GetBalls
 
@@ -186,24 +212,26 @@ Sub RollingUpdate()
     For b = UBound(BOT) + 1 to tnob
         rolling(b) = False
         StopSound("fx_ballrolling" & b)
-        aBallShadow(b).Y = 3000
+        aBallShadow(b).Y = 2100 'under the apron 'may differ from table to table
     Next
 
     ' exit the sub if no balls on the table
     If UBound(BOT) = lob - 1 Then Exit Sub 'there no extra balls on this table
 
-    ' play the rolling sound for each ball and draw the shadow
+    ' draw the ball shadow
     For b = lob to UBound(BOT)
         aBallShadow(b).X = BOT(b).X
         aBallShadow(b).Y = BOT(b).Y
+        aBallShadow(b).Height = BOT(b).Z - Ballsize / 2 + 1
 
-        If BallVel(BOT(b))> 1 Then
-            If BOT(b).z <30 Then
+    'play the rolling sound for each ball
+        If BallVel(BOT(b)) > 1 Then
+            If BOT(b).z < 30 Then
                 ballpitch = Pitch(BOT(b))
                 ballvol = Vol(BOT(b))
             Else
                 ballpitch = Pitch(BOT(b)) + 25000 'increase the pitch on a ramp
-                ballvol = Vol(BOT(b)) * 10
+                ballvol = Vol(BOT(b)) * 5
             End If
             rolling(b) = True
             PlaySound("fx_ballrolling" & b), -1, ballvol, Pan(BOT(b)), 0, ballpitch, 1, 0, AudioFade(BOT(b))
@@ -215,7 +243,7 @@ Sub RollingUpdate()
         End If
 
         ' rothbauerw's Dropping Sounds
-        If BOT(b).VelZ <-1 and BOT(b).z <55 and BOT(b).z> 27 Then 'height adjust for ball drop sounds
+        If BOT(b).VelZ < -1 and BOT(b).z < 55 and BOT(b).z > 27 Then 'height adjust for ball drop sounds
             PlaySound "fx_balldrop", 0, ABS(BOT(b).velz) / 17, Pan(BOT(b)), 0, Pitch(BOT(b)), 1, 0, AudioFade(BOT(b))
         End If
 
@@ -223,14 +251,22 @@ Sub RollingUpdate()
         If BOT(b).VelX AND BOT(b).VelY <> 0 Then
             speedfactorx = ABS(maxvel / BOT(b).VelX)
             speedfactory = ABS(maxvel / BOT(b).VelY)
-            If speedfactorx <1 Then
+            If speedfactorx < 1 Then
                 BOT(b).VelX = BOT(b).VelX * speedfactorx
                 BOT(b).VelY = BOT(b).VelY * speedfactorx
             End If
-            If speedfactory <1 Then
+            If speedfactory < 1 Then
                 BOT(b).VelX = BOT(b).VelX * speedfactory
                 BOT(b).VelY = BOT(b).VelY * speedfactory
             End If
         End If
     Next
+End Sub
+
+'**********************
+' Ball Collision Sound
+'**********************
+
+Sub OnBallBallCollision(ball1, ball2, velocity)
+    PlaySound("fx_collide"), 0, Csng(velocity) ^2 / 2000, Pan(ball1), 0, Pitch(ball1), 0, 0, AudioFade(ball1)
 End Sub

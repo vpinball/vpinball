@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <physics>
-	<name>Attack from Mars v4 - test</name>
+	<name>Attack from Mars v4_physics_test2</name>
 	<table>
 		<gravityConstant>0.981000</gravityConstant>
 		<contactFriction>0.025000</contactFriction>
@@ -11,8 +11,8 @@
 	</table>
 	<flipper>
 		<speed>1.000000</speed>
-		<strength>4600.000000</strength>
-		<elasticity>0.800000</elasticity>
+		<strength>3600.000000</strength>
+		<elasticity>0.850000</elasticity>
 		<scatter>0.000000</scatter>
 		<eosTorque>1.000000</eosTorque>
 		<eosTorqueAngle>0.000000</eosTorqueAngle>
