@@ -670,9 +670,9 @@ void RenderDevice::CreateDevice(int& refreshrate, UINT adapterIndex)
       m_height = m_height / 2;
    }
 
-   m_present_vsync = m_videoSyncMode == VideoSyncMode::VSM_VSYNC;
+   m_present_vsync = m_videoSyncMode == VideoSyncMode::VSM_VSYNC || m_videoSyncMode == VideoSyncMode::VSM_ADAPTIVE_VSYNC;
    // 0 for immediate updates, 1 for updates synchronized with the vertical retrace, -1 for adaptive vsync
-   SDL_GL_SetSwapInterval(m_present_vsync ? 1 : 0);
+   SDL_GL_SetSwapInterval(m_videoSyncMode == VideoSyncMode::VSM_VSYNC ? 1 : (m_videoSyncMode == VideoSyncMode::VSM_ADAPTIVE_VSYNC) ? -1 : 0);
 
    m_maxaniso = 0;
    glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &m_maxaniso);
@@ -803,8 +803,8 @@ void RenderDevice::CreateDevice(int& refreshrate, UINT adapterIndex)
     params.BackBufferHeight = m_height;
     params.BackBufferFormat = format;
     params.BackBufferCount = 1;
-    params.MultiSampleType = /*useAA ? D3DMULTISAMPLE_4_SAMPLES :*/ D3DMULTISAMPLE_NONE; // D3DMULTISAMPLE_NONMASKABLE? //!! useAA now uses super sampling/offscreen render
-    params.MultiSampleQuality = 0; // if D3DMULTISAMPLE_NONMASKABLE then set to > 0
+    params.MultiSampleType = D3DMULTISAMPLE_NONE;
+    params.MultiSampleQuality = 0;
     params.SwapEffect = m_pD3DEx ? D3DSWAPEFFECT_FLIPEX : D3DSWAPEFFECT_DISCARD;
     params.hDeviceWindow = m_windowHwnd;
     params.Windowed = !m_fullscreen;
@@ -813,21 +813,8 @@ void RenderDevice::CreateDevice(int& refreshrate, UINT adapterIndex)
     params.Flags = /*fullscreen ? D3DPRESENTFLAG_LOCKABLE_BACKBUFFER :*/ /*(stereo3D ?*/ 0 /*: D3DPRESENTFLAG_DISCARD_DEPTHSTENCIL)*/
        ; // D3DPRESENTFLAG_LOCKABLE_BACKBUFFER only needed for SetDialogBoxMode() below, but makes rendering slower on some systems :/
     params.FullScreen_RefreshRateInHz = m_fullscreen ? refreshrate : 0;
-   if (m_pD3DEx)
-   {
-      if (m_videoSyncMode == VideoSyncMode::VSM_VSYNC)
-         params.PresentationInterval = D3DPRESENT_INTERVAL_ONE;
-      else // Use immediate for no vsync or adaptative sync
-         params.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
-   }
-   else
-   {
-      if (m_videoSyncMode != VideoSyncMode::VSM_NONE)
-         params.PresentationInterval = D3DPRESENT_INTERVAL_ONE;
-      else
-         params.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
-   }
-   m_present_vsync = params.PresentationInterval == D3DPRESENT_INTERVAL_ONE;
+    params.PresentationInterval = m_videoSyncMode == VideoSyncMode::VSM_VSYNC ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE;
+    m_present_vsync = params.PresentationInterval == D3DPRESENT_INTERVAL_ONE;
 
    // check if our HDR texture format supports/does sRGB conversion on texture reads, which must NOT be the case as we always set SRGBTexture=true independent of the format!
    HRESULT hr = m_pD3D->CheckDeviceFormat(m_adapter, devtype, params.BackBufferFormat, D3DUSAGE_QUERY_SRGBREAD, D3DRTYPE_TEXTURE, (D3DFORMAT)colorFormat::RGBA32F);
@@ -1472,7 +1459,7 @@ void RenderDevice::Flip(const int vsync)
    // queue is empty, which should be satisfied after the VBlank wait we enforce) but when the DWM is enabled, it will ensure this for us and what we 
    // actually want is to block until it has presented the frame. Therefore, the DWMflush must be done after requesting a frame 'Present'.
 
-   // Windows Vista/7 path when DWM is disabled, or exclusive fullscreen without DWM (pre-windows 10)
+   // Windows Vista/7 path when DWM is disabled, or exclusive fullscreen without DWM (pre-windows 10), or stripped down Windows 10 without DWM (Ghost Spectre)
 #ifdef ENABLE_SDL
    if ((vsync == 1) && !m_present_vsync && !m_dwm_enabled && m_DXGIOutput)
       m_DXGIOutput->WaitForVBlank();
