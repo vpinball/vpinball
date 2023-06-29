@@ -4038,10 +4038,11 @@ void Player::OnIdle()
       case 2:
       {
          static bool waitedForVBlank = true, waitedForFPS = true;
-         const int localvsync = (m_ptable->m_TableAdaptiveVSync < 2) ? m_maxFramerate : m_ptable->m_TableAdaptiveVSync;
+         const int targetFPS = (m_ptable->m_TableAdaptiveVSync > 2) ? m_ptable->m_TableAdaptiveVSync : (m_maxFramerate == 0 ? m_refreshrate : m_maxFramerate);
+         const bool customSync = targetFPS != 0 && (abs(targetFPS - m_refreshrate) > 1);
 
          // Wait for at least one VBlank after last frame submission (adaptive sync), only if the target framerate is undefined or slower than the refresh rate
-         if (m_stereo3D != STEREO_VR && m_overall_frames > 1 && m_pin3d.m_pd3dPrimaryDevice->m_lastVSyncUs == 0 && (localvsync <= 2 || localvsync <= m_refreshrate))
+         if (m_stereo3D != STEREO_VR && m_overall_frames > 1 && m_pin3d.m_pd3dPrimaryDevice->m_lastVSyncUs == 0 && !customSync)
          {
             waitedForVBlank = true;
             break;
@@ -4053,7 +4054,7 @@ void Player::OnIdle()
          const U64 now = usec();
          const int averageFrameLength = (int)(1e6 / m_fps);
          const int refreshLength = (int)(1000000ul / m_refreshrate);
-         const int targetFrameLength = clamp(averageFrameLength - 2000, localvsync <= 2 ? 0 : (1000000ull / localvsync), 5 * refreshLength);
+         const int targetFrameLength = clamp(averageFrameLength - 2000, customSync ? (1000000ull / targetFPS) : 0, 5 * refreshLength);
          const U64 minFrameTick = m_lastPresentFrameTick + targetFrameLength;
          if (m_stereo3D != STEREO_VR && m_overall_frames > 100 && now < minFrameTick)
          {
@@ -4074,6 +4075,8 @@ void Player::OnIdle()
          FinishFrame();
          waitedForVBlank = waitedForFPS = false;
          m_mainLoopPhase = 0;
+         if (m_closing != CS_PLAYING)
+            return;
       }
       break;
 
@@ -4081,7 +4084,7 @@ void Player::OnIdle()
       }
 
       // Update physics. Do it continuously for lower latency between input <-> controler/physics (avoid catching up once per frame)
-      if (m_closing == CS_PLAYING && !m_pause)
+      if (!m_pause)
       {
          // Trigger key events before processing physics, also allows to sync with VPM
          m_pininput.ProcessKeys(/*sim_msec,*/ -(int)msec());
@@ -4129,16 +4132,16 @@ void Player::OnIdle()
       }
 
       // Present & VSync
-      int maxFPS = m_maxFramerate == 0 ? m_refreshrate : m_maxFramerate;
+      int targetFPS = m_maxFramerate == 0 ? m_refreshrate : m_maxFramerate;
       VideoSyncMode syncMode = m_videoSyncMode;
       if (m_ptable->m_TableAdaptiveVSync != -1)
       {
          switch (m_ptable->m_TableAdaptiveVSync)
          {
-         case 0: maxFPS = m_refreshrate; syncMode = VideoSyncMode::VSM_NONE; break;
-         case 1: maxFPS = m_refreshrate; syncMode = VideoSyncMode::VSM_VSYNC; break;
-         case 2: maxFPS = m_refreshrate; syncMode = VideoSyncMode::VSM_ADAPTIVE_VSYNC; break;
-         default: maxFPS = m_ptable->m_TableAdaptiveVSync; syncMode = m_ptable->m_TableAdaptiveVSync > m_refreshrate ? VideoSyncMode::VSM_NONE : VideoSyncMode::VSM_ADAPTIVE_VSYNC; break;
+         case 0: targetFPS = m_refreshrate; syncMode = VideoSyncMode::VSM_NONE; break;
+         case 1: targetFPS = m_refreshrate; syncMode = VideoSyncMode::VSM_VSYNC; break;
+         case 2: targetFPS = m_refreshrate; syncMode = VideoSyncMode::VSM_ADAPTIVE_VSYNC; break;
+         default: targetFPS = m_ptable->m_TableAdaptiveVSync; syncMode = m_ptable->m_TableAdaptiveVSync > m_refreshrate ? VideoSyncMode::VSM_NONE : VideoSyncMode::VSM_ADAPTIVE_VSYNC; break;
          }
       }
       bool vsync;
@@ -4146,7 +4149,7 @@ void Player::OnIdle()
       {
       case VideoSyncMode::VSM_NONE: vsync = false; break;
       case VideoSyncMode::VSM_VSYNC: vsync = true; break;
-      case VideoSyncMode::VSM_ADAPTIVE_VSYNC: vsync = m_fps > maxFPS * ADAPT_VSYNC_FACTOR; break; // Adaptive sync (only sync if running faster than requested frame rate)
+      case VideoSyncMode::VSM_ADAPTIVE_VSYNC: vsync = m_fps > targetFPS * ADAPT_VSYNC_FACTOR; break; // Adaptive sync (only sync if running faster than requested frame rate)
       default: assert(false);
       }
       g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_GPU_FLIP);
@@ -4154,19 +4157,20 @@ void Player::OnIdle()
       g_frameProfiler.ExitProfileSection();
 
       FinishFrame();
+      if (m_closing != CS_PLAYING)
+         return;
 
-      if (m_closing == CS_PLAYING)
+      // Adjust framerate if requested by user (i.e. not using a synchronization mode with the default display refresh rate)
+      const bool onlyVSync = (syncMode != VideoSyncMode::VSM_NONE) && (targetFPS == 0 || (abs(targetFPS - m_refreshrate) <= 1));
+      if (m_stereo3D != STEREO_VR && !onlyVSync)
       {
-         // limit framerate if requested by user (refresh rate lower than display refresh rate)
-         if (m_stereo3D != STEREO_VR && maxFPS > 2)
+         const int timeForFrame = (int)(usec() - m_startFrameTick);
+         const int targetTime = 1000000 / targetFPS;
+         if (timeForFrame < targetTime)
          {
-            const U64 timeForFrame = usec() - m_startFrameTick;
-            if (timeForFrame < 1000000ull / maxFPS)
-            {
-               g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_SLEEP);
-               uSleep(1000000ull / maxFPS - timeForFrame);
-               g_frameProfiler.ExitProfileSection();
-            }
+            g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_SLEEP);
+            uSleep(targetTime - timeForFrame);
+            g_frameProfiler.ExitProfileSection();
          }
       }
    }
