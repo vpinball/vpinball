@@ -4038,9 +4038,10 @@ void Player::OnIdle()
       case 2:
       {
          static bool waitedForVBlank = true, waitedForFPS = true;
+         const int localvsync = (m_ptable->m_TableAdaptiveVSync < 2) ? m_maxFramerate : m_ptable->m_TableAdaptiveVSync;
 
-         // Wait for at least one VBlank after last frame submission (adaptive sync)
-         if (m_stereo3D != STEREO_VR && m_overall_frames > 1 && m_pin3d.m_pd3dPrimaryDevice->m_lastVSyncUs == 0)
+         // Wait for at least one VBlank after last frame submission (adaptive sync), only if the target framerate is undefined or slower than the refresh rate
+         if (m_stereo3D != STEREO_VR && m_overall_frames > 1 && m_pin3d.m_pd3dPrimaryDevice->m_lastVSyncUs == 0 && (localvsync <= 2 || localvsync <= m_refreshrate))
          {
             waitedForVBlank = true;
             break;
@@ -4051,8 +4052,7 @@ void Player::OnIdle()
          // works but needs a few stutter frames before stabilizing.
          const U64 now = usec();
          const int averageFrameLength = (int)(1e6 / m_fps);
-         const int localvsync = (m_ptable->m_TableAdaptiveVSync < 2) ? m_maxFramerate : m_ptable->m_TableAdaptiveVSync;
-		 const int refreshLength = (int)(1000000ul / m_refreshrate);
+         const int refreshLength = (int)(1000000ul / m_refreshrate);
          const int targetFrameLength = clamp(averageFrameLength - 2000, localvsync <= 2 ? 0 : (1000000ull / localvsync), 5 * refreshLength);
          const U64 minFrameTick = m_lastPresentFrameTick + targetFrameLength;
          if (m_stereo3D != STEREO_VR && m_overall_frames > 100 && now < minFrameTick)
@@ -4107,7 +4107,7 @@ void Player::OnIdle()
       {
          Sleep(m_sleeptime - 1);
          if (!m_pause)
-         m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(m_startFrameTick / 1000)); // trigger key events mainly for VPM<->VP roundtrip
+            m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(m_startFrameTick / 1000)); // trigger key events mainly for VPM<->VP roundtrip
       }
 
       // Physics/Timer updates, done at the last moment, especially to handle key input (VP<->VPM roundtrip) and animation triggers
@@ -4129,7 +4129,7 @@ void Player::OnIdle()
       }
 
       // Present & VSync
-      int maxFPS = m_maxFramerate;
+      int maxFPS = m_maxFramerate == 0 ? m_refreshrate : m_maxFramerate;
       VideoSyncMode syncMode = m_videoSyncMode;
       if (m_ptable->m_TableAdaptiveVSync != -1)
       {
