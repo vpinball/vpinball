@@ -91,7 +91,8 @@ public:
    SDL_Window* m_sdl_playfieldHwnd = nullptr;
    SDL_GLContext m_sdl_context = nullptr;
    IDXGIOutput* m_DXGIOutput = nullptr;
-   
+   int m_swapInterval;
+
 #else
    enum PrimitiveTypes
    {
@@ -133,7 +134,15 @@ public:
    void LogNextFrame() { m_logNextFrame = true; }
    bool IsLogNextFrame() const { return m_logNextFrame; }
    void FlushRenderFrame();
-   void Flip(const int vsync);
+   void Flip(const int flipSchedule, const int waitForVSync);
+   bool SupportsDynamicFlipSchedule() const
+   {
+      #ifdef ENABLE_SDL // OpenGL
+	  return true;
+	  #else // DirectX 9
+	  return m_pD3DDeviceEx != nullptr;
+	  #endif
+   }
 
    bool SetMaximumPreRenderedFrames(const DWORD frames);
 
@@ -300,18 +309,16 @@ public:
 private:
    bool m_dwm_was_enabled;
    bool m_dwm_enabled;
-   bool m_present_vsync;
+
+   void WaitForVSync();
 
 public:
-   void VSyncThread();
    U64 m_lastVSyncUs = 0;
 
-public:
    MeshBuffer* m_quadMeshBuffer = nullptr;       // internal vb for rendering quads
    MeshBuffer* m_quadPNTDynMeshBuffer = nullptr; // internal vb for rendering dynamic quads (position/normal/texture)
    MeshBuffer* m_quadPTDynMeshBuffer = nullptr;  // internal vb for rendering dynamic quads (position/texture)
 
-public:
 #ifndef ENABLE_SDL
    bool m_useNvidiaApi;
    bool m_INTZ_support;
@@ -326,6 +333,7 @@ public:
    unsigned int m_curTechniqueChanges = 0, m_frameTechniqueChanges = 0;
    unsigned int m_curTextureUpdates = 0, m_frameTextureUpdates = 0;
    unsigned int m_curLockCalls = 0, m_frameLockCalls = 0;
+   unsigned int m_curDrawnTriangles = 0, m_frameDrawnTriangles = 0;
 
    Shader *basicShader = nullptr;
    Shader *DMDShader = nullptr;
@@ -336,10 +344,7 @@ public:
    #define classicLightShader basicShader
    Shader* m_ballShader = nullptr;
 
-   //Shader* m_curShader; // for caching
-
    TextureManager m_texMan;
-
 
    RenderTarget* GetCurrentRenderTarget() { return m_currentPass == nullptr ? nullptr : m_currentPass->m_rt; }
 
@@ -348,13 +353,8 @@ private :
    RenderPass* m_currentPass = nullptr;
 
 public:
-#ifdef ENABLE_SDL
-   std::vector<SamplerBinding*> m_samplerBindings;
-#endif
-
-   unsigned int m_curDrawnTriangles, m_frameDrawnTriangles;
-
 #if defined(ENABLE_SDL) // OpenGL
+   std::vector<SamplerBinding*> m_samplerBindings;
    GLuint m_curVAO = 0;
    
 #else // DirectX9

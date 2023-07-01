@@ -594,8 +594,9 @@ void Player::CreateWnd(HWND parent /* = 0 */)
    }
    else
    {
-      if (cs.cx == displayWidth && cs.cy == displayHeight)
-         flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+	  //Do not apply this flag as it would break displaying DMD overlay window
+      //if (cs.cx == displayWidth && cs.cy == displayHeight)
+      //   flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
       m_sdl_playfieldHwnd = SDL_CreateWindow(cs.lpszName, cs.x, cs.y, cs.cx, cs.cy, flags);
    }
 
@@ -709,7 +710,10 @@ void Player::Shutdown()
 #ifdef ENABLE_SDL
    Detach();
 #endif
-   captureStop();
+   StopCaptures();
+#ifdef ENABLE_SDL
+   g_DXGIRegistry.ReleaseAll();
+#endif
 
    while (ShowCursor(FALSE) >= 0) ;
    while(ShowCursor(TRUE) < 0) ;
@@ -1576,6 +1580,13 @@ HRESULT Player::Init()
    delete m_ballTrailMeshBuffer;
    VertexBuffer* ballTrailVertexBuffer = new VertexBuffer(m_pin3d.m_pd3dPrimaryDevice, (MAX_BALL_TRAIL_POS - 2) * 2 + 4, nullptr, true);
    m_ballTrailMeshBuffer = new MeshBuffer(L"Ball.Trail"s, ballTrailVertexBuffer);
+
+   #ifdef ENABLE_SDL
+   if (m_capExtDMD)
+      StartDMDCapture();
+   if (m_capPUP)
+      StartPUPCapture();
+   #endif
 
    m_pEditorTable->m_progressDialog.SetName("Starting Game Scripts..."s);
    PLOGI << "Starting script"; // For profiling
@@ -2933,10 +2944,11 @@ void Player::DMDdraw(const float DMDposx, const float DMDposy, const float DMDwi
       float h = DMDheight;
       RenderState initial_state;
       m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(true, initial_state);
+      const bool isExternalDMD = HasDMDCapture();
 
 #ifdef ENABLE_SDL
       // If DMD capture is enabled check if external DMD exists and update m_texdmd with captured data (for capturing UltraDMD+P-ROC DMD)
-      m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetTechnique(m_capExtDMD ? SHADER_TECHNIQUE_basic_DMD_ext : SHADER_TECHNIQUE_basic_DMD); //!! DMD_UPSCALE ?? -> should just work
+      m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetTechnique(isExternalDMD ? SHADER_TECHNIQUE_basic_DMD_ext : SHADER_TECHNIQUE_basic_DMD); //!! DMD_UPSCALE ?? -> should just work
 
       if (m_pin3d.m_backGlass)
       {
@@ -2973,7 +2985,7 @@ void Player::DMDdraw(const float DMDposx, const float DMDposy, const float DMDwi
 #endif
       m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetVector(SHADER_vRes_Alpha_time, &r);
 
-      m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetTexture(SHADER_tex_dmd, m_texdmd, SF_NONE, SA_CLAMP, SA_CLAMP);
+      m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetTexture(SHADER_tex_dmd, m_texdmd, isExternalDMD ? SF_TRILINEAR : SF_NONE, SA_CLAMP, SA_CLAMP);
 
       m_pin3d.m_pd3dPrimaryDevice->DrawTexturedQuad(m_pin3d.m_pd3dPrimaryDevice->DMDShader, vertices);
 
@@ -4039,10 +4051,11 @@ void Player::OnIdle()
       {
          static bool waitedForVBlank = true, waitedForFPS = true;
          const int targetFPS = (m_ptable->m_TableAdaptiveVSync > 2) ? m_ptable->m_TableAdaptiveVSync : (m_maxFramerate == 0 ? m_refreshrate : m_maxFramerate);
-         const bool customSync = targetFPS != 0 && (abs(targetFPS - m_refreshrate) > 1);
+         const bool customSync = targetFPS != 0 && (abs(targetFPS - m_refreshrate) > 1); // Needs custom synchronization beside base vertical blank
+         const bool skipVSync = customSync && (targetFPS > m_refreshrate); // Targeting a frame rate above refresh rate, so don't sync on vertical blank
 
          // Wait for at least one VBlank after last frame submission (adaptive sync), only if the target framerate is undefined or slower than the refresh rate
-         if (m_stereo3D != STEREO_VR && m_overall_frames > 1 && m_pin3d.m_pd3dPrimaryDevice->m_lastVSyncUs == 0 && !customSync)
+         if (m_stereo3D != STEREO_VR && m_overall_frames > 1 && m_pin3d.m_pd3dPrimaryDevice->m_lastVSyncUs == 0 && !skipVSync)
          {
             waitedForVBlank = true;
             break;
@@ -4070,7 +4083,11 @@ void Player::OnIdle()
             << "ms, Average frame length: " << (averageFrameLength / 1000.0) << "ms";
          m_pin3d.m_pd3dPrimaryDevice->m_lastVSyncUs = 0;
          g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_GPU_FLIP);
-         m_pin3d.m_pd3dPrimaryDevice->Flip(2);
+         #ifdef ENABLE_SDL
+         m_pin3d.m_pd3dPrimaryDevice->Flip(skipVSync ? 0 : 2, 2); // Adaptive flip schedule (except for high custom framerate) with asynchronous VBlank notification
+         #else
+         m_pin3d.m_pd3dPrimaryDevice->Flip(0, 2); // DirectX 9 does not support adaptive sync so we emulate it on the application side (which is not as good since this is an averaged implementation, not performed at the driver level, in sync with GPU render queue)
+         #endif
          g_frameProfiler.ExitProfileSection();
          FinishFrame();
          waitedForVBlank = waitedForFPS = false;
@@ -4132,37 +4149,54 @@ void Player::OnIdle()
       }
 
       // Present & VSync
-      int targetFPS = m_maxFramerate == 0 ? m_refreshrate : m_maxFramerate;
+      int targetFPS = m_maxFramerate;
       VideoSyncMode syncMode = m_videoSyncMode;
       if (m_ptable->m_TableAdaptiveVSync != -1)
       {
          switch (m_ptable->m_TableAdaptiveVSync)
          {
-         case 0: targetFPS = m_refreshrate; syncMode = VideoSyncMode::VSM_NONE; break;
-         case 1: targetFPS = m_refreshrate; syncMode = VideoSyncMode::VSM_VSYNC; break;
-         case 2: targetFPS = m_refreshrate; syncMode = VideoSyncMode::VSM_ADAPTIVE_VSYNC; break;
+         case 0: targetFPS = 0; syncMode = VideoSyncMode::VSM_NONE; break;
+         case 1: targetFPS = min(targetFPS, m_refreshrate); syncMode = VideoSyncMode::VSM_VSYNC; break;
+         case 2: targetFPS = min(targetFPS, m_refreshrate); syncMode = VideoSyncMode::VSM_ADAPTIVE_VSYNC; break;
          default: targetFPS = m_ptable->m_TableAdaptiveVSync; syncMode = m_ptable->m_TableAdaptiveVSync > m_refreshrate ? VideoSyncMode::VSM_NONE : VideoSyncMode::VSM_ADAPTIVE_VSYNC; break;
          }
       }
-      bool vsync;
+      int flipSchedule, waitForVSync;
       switch (syncMode)
       {
-      case VideoSyncMode::VSM_NONE: vsync = false; break;
-      case VideoSyncMode::VSM_VSYNC: vsync = true; break;
-      case VideoSyncMode::VSM_ADAPTIVE_VSYNC: vsync = m_fps > targetFPS * ADAPT_VSYNC_FACTOR; break; // Adaptive sync (only sync if running faster than requested frame rate)
+      case VideoSyncMode::VSM_NONE: flipSchedule = 0; waitForVSync = 0; break;
+      case VideoSyncMode::VSM_VSYNC: flipSchedule = 1; waitForVSync = 0; break;
+      case VideoSyncMode::VSM_ADAPTIVE_VSYNC: // Adaptive sync (only sync if running faster than refresh rate)
+	      #ifdef ENABLE_SDL // OpenGL supports native adaptive sync
+		   flipSchedule = 2;
+		   waitForVSync = 0;
+		   #else // DirectX 9 does not support native adaptive sync, so we must perform it at the application level
+         targetFPS = min(m_refreshrate, targetFPS == 0 ? m_refreshrate : targetFPS);
+		   if (m_pin3d.m_pd3dPrimaryDevice->SupportsDynamicFlipSchedule())
+		   { // New in 10.8: we use the ability of D3D9Ex to change flip scheduling on the fly instead of doing custom vsync synchronization
+		      flipSchedule = m_fps > targetFPS * ADAPT_VSYNC_FACTOR ? 1 : 0;
+		      waitForVSync = 0; 
+		   }
+		   else
+		   { // Base DX9 does not support changing the flip schedule on the fly, so we set it to immediate and do our one vsync synchronization
+		      flipSchedule = 0;
+		      waitForVSync = m_fps > targetFPS * ADAPT_VSYNC_FACTOR ? 1 : 0;
+		   }
+		   #endif
+         break;
       default: assert(false);
       }
       g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_GPU_FLIP);
-      m_pin3d.m_pd3dPrimaryDevice->Flip(vsync ? 1 : 0);
+      m_pin3d.m_pd3dPrimaryDevice->Flip(flipSchedule, waitForVSync);
       g_frameProfiler.ExitProfileSection();
 
       FinishFrame();
       if (m_closing != CS_PLAYING)
          return;
 
-      // Adjust framerate if requested by user (i.e. not using a synchronization mode with the default display refresh rate)
-      const bool onlyVSync = (syncMode != VideoSyncMode::VSM_NONE) && (targetFPS == 0 || (abs(targetFPS - m_refreshrate) <= 1));
-      if (m_stereo3D != STEREO_VR && !onlyVSync)
+      // Adjust framerate if requested by user (i.e. not using a synchronization mode that will lead to blocking calls aligned to the display refresh rate)
+      const bool onlyVSync = syncMode != VideoSyncMode::VSM_NONE && targetFPS == m_refreshrate;
+      if (m_stereo3D != STEREO_VR && !onlyVSync && targetFPS != 0)
       {
          const int timeForFrame = (int)(usec() - m_startFrameTick);
          const int targetTime = 1000000 / targetFPS;
@@ -4292,10 +4326,7 @@ void Player::SubmitFrame()
 
    // Trigger captures
    #ifdef ENABLE_SDL
-   if (m_capExtDMD)
-      captureExternalDMD();
-   if (m_capPUP)
-      capturePUP();
+   UpdateExtCaptures();
    #endif
 }
 

@@ -1331,7 +1331,7 @@ void Flasher::RenderDynamic()
        pd3dDevice->DMDShader->SetVector(SHADER_vRes_Alpha_time, &r);
 
        // If we're capturing Freezy DMD switch to ext technique to avoid incorrect colorization
-       if (captureExternalDMD())
+       if (HasDMDCapture())
           pd3dDevice->DMDShader->SetTechnique(SHADER_TECHNIQUE_basic_DMD_world_ext);
 
        if (texdmd != nullptr)

@@ -975,7 +975,7 @@ STDMETHODIMP ScriptGlobalTable::put_DMDHeight(int pVal)
 
 STDMETHODIMP ScriptGlobalTable::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as input //!! use 64bit instead of 8bit to reduce overhead??
 {
-   if (captureExternalDMD()) // If DMD capture is enabled check if external DMD exists
+   if (HasDMDCapture()) // If DMD capture is enabled check if external DMD exists
       return S_OK;
 
    SAFEARRAY *psa = V_ARRAY(&pVal);
@@ -1022,7 +1022,7 @@ STDMETHODIMP ScriptGlobalTable::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as
 
 STDMETHODIMP ScriptGlobalTable::put_DMDColoredPixels(VARIANT pVal) //!! assumes VT_UI4 as input //!! use 64bit instead of 32bit to reduce overhead??
 {
-   if (captureExternalDMD()) // If DMD capture is enabled check if external DMD exists
+   if (HasDMDCapture()) // If DMD capture is enabled check if external DMD exists
       return S_OK;
 
 	SAFEARRAY *psa = V_ARRAY(&pVal);
