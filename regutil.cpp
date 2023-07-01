@@ -10,16 +10,21 @@
 
 #ifdef ENABLE_INI_SETTINGS // INI file
 #include "inc/mINI/ini.h"
-mINI::INIStructure ini;
 
-void InitRegistry(const string &path)
+mINI::INIStructure ini;
+bool hasIniOverride = false;
+mINI::INIStructure iniOverride;
+string iniOverridePath;
+
+static bool LoadIni(const string &path, mINI::INIStructure &ini, const bool loadDefault)
 {
    mINI::INIFile file(path);
    if (file.read(ini))
    {
       PLOGI << "Settings file was loaded from '" << path << "'";
+	  return true;
    }
-   else
+   else if (loadDefault)
    {
       PLOGI << "Settings file was not found at '" << path << "' creating a default one";
 #ifdef WIN32
@@ -50,7 +55,7 @@ void InitRegistry(const string &path)
          HKEY hk;
          LONG res = RegOpenKeyEx(HKEY_CURRENT_USER, regpath.c_str(), 0, KEY_READ, &hk);
          if (res != ERROR_SUCCESS)
-            return;
+            return false;
 
          for (DWORD Index = 0;; ++Index)
          {
@@ -115,13 +120,42 @@ void InitRegistry(const string &path)
          RegCloseKey(hk);
       }
 #endif
+      return true;
    }
+   else
+   {
+      PLOGI << "Settings file was not found at '" << path << "'";
+	  return false;
+   }
+}
+
+void InitRegistry(const string &path)
+{
+   PLOGI << "Using INI file settings";
+   ini.clear();
+   LoadIni(path, ini, true);
+}
+
+void InitRegistryOverride(const string &path)
+{
+   PLOGI << "Using INI file settings override from: " << path;
+   iniOverride.clear();
+   iniOverridePath = path;  
+   hasIniOverride = LoadIni(path, iniOverride, false);
 }
 
 void SaveRegistry(const string &path)
 {
-   mINI::INIFile file(path);
-   file.write(ini, true);
+   if (hasIniOverride)
+   {
+      mINI::INIFile file(iniOverridePath);
+      file.write(iniOverride, true);
+   }
+   else
+   {
+      mINI::INIFile file(path);
+      file.write(ini, true);
+   }
 }
 
 #elif defined(ENABLE_XML_SETTINGS) // (legacy) XML file
@@ -224,8 +258,14 @@ void SaveRegistry(const string &path)
    myFile.close();
 }
 
+void InitRegistryOverride(const string &path)
+{
+   PLOGE << "Registry override is not supported when using XML file settings";
+}
+
 void InitRegistry(const string &path)
 {
+   PLOGI << "Using XML file settings";
    std::stringstream buffer;
    std::ifstream myFile(path);
    if (myFile.is_open() && myFile.good())
@@ -291,7 +331,16 @@ void InitRegistry(const string &path)
 }
 
 #else // Windows Registry
-void InitRegistry(const string &path) {}
+void InitRegistry(const string &path)
+{
+   PLOGI << "Using Windows registry settings";
+}
+
+void InitRegistryOverride(const string &path)
+{
+   PLOGE << "Registry override is not supported when using Windows registry settings";
+}
+
 void SaveRegistry(const string &path) {}
 
 #endif
@@ -375,9 +424,11 @@ static HRESULT LoadValue(const string &szKey, const string &szValue, DWORD &type
    }
 
 #ifdef ENABLE_INI_SETTINGS
-   if (ini[szKey].has(szValue))
+   bool hasInIni = ini[szKey].has(szValue);
+   bool hasInIniOverride = hasIniOverride && iniOverride.has(szKey) && iniOverride[szKey].has(szValue);
+   if (hasInIni || hasInIniOverride)
    {
-      string value = ini[szKey][szValue];
+      string value = hasInIniOverride ? iniOverride[szKey][szValue] : ini[szKey][szValue];
       if (value.length() == 0)
       {
          // Value is empty (just a marker for text formatting), consider it as undefined
@@ -475,7 +526,6 @@ static HRESULT LoadValue(const string &szKey, const string &szValue, DWORD &type
 #endif
 }
 
-
 int LoadValueWithDefault(const string &szKey, const string &szValue, const int def)
 {
    int val;
@@ -522,7 +572,16 @@ static HRESULT SaveValue(const string &szKey, const string &szValue, const DWORD
       assert(!"Bad RegKey");
       return E_FAIL;
    }
-   ini[szKey][szValue] = copy;
+   if (hasIniOverride)
+   {
+	  // only save if already present in override, or if different from default ini (so it really is an override)
+	  bool save = ini[szKey].has(szValue) && (ini[szKey][szValue] != std::string(copy));
+	  save |= iniOverride.has(szKey) && iniOverride[szKey].has(szValue);
+	  if (save)
+         iniOverride[szKey][szValue] = copy;
+   }
+   else
+      ini[szKey][szValue] = copy;
    delete[] copy;
    return S_OK;
 
@@ -575,7 +634,7 @@ static HRESULT SaveValue(const string &szKey, const string &szValue, const DWORD
    vnode->SetText(copy);
    return S_OK;
 
-#else
+#else // Windows Registry
 
    string szPath(szKey == regKey[RegName::Controller] ? VP_REGKEY_GENERAL : VP_REGKEY);
    szPath += szKey;
@@ -624,6 +683,39 @@ HRESULT SaveValue(const string &szKey, const string &szValue, const string& val)
    return SaveValue(szKey, szValue, REG_SZ, val.c_str(), (DWORD)val.length());
 }
 
+#ifdef ENABLE_INI_SETTINGS // INI file
+HRESULT DeleteValue(const string &szKey, const string &szValue)
+{
+   bool success = false;
+   if (hasIniOverride && iniOverride.has(szKey) && iniOverride[szKey].has(szValue))
+	  success = iniOverride[szKey].remove(szValue);
+   else
+	  success = ini[szKey].remove(szValue);
+   return success ? S_OK : E_FAIL;
+}
+
+HRESULT DeleteSubKey(const string &szKey)
+{
+   bool success = false;
+   if (hasIniOverride && iniOverride.has(szKey))
+	  success = iniOverride.remove(szKey);
+   else
+	  success = ini.remove(szKey);
+   return success ? S_OK : E_FAIL;
+}
+
+#elif defined(ENABLE_XML_SETTINGS) // (legacy) XML file
+HRESULT DeleteValue(const string &szKey, const string &szValue)
+{
+   return S_OK;
+}
+
+HRESULT DeleteSubKey(const string &szKey)
+{
+   return S_OK;
+}
+
+#else // Windows Registry
 HRESULT DeleteValue(const string &szKey, const string &szValue)
 {
    string szPath(szKey == regKey[RegName::Controller] ? VP_REGKEY_GENERAL : VP_REGKEY);
@@ -724,3 +816,4 @@ HRESULT DeleteSubKey(const string &szKey)
 
    return RegDelnodeRecurse(HKEY_CURRENT_USER, szDelKey);
 }
+#endif
