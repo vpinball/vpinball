@@ -207,7 +207,7 @@ Player::Player(const bool cameraMode, PinTable *const editor_table, PinTable *co
       m_bloomOff = LoadValueWithDefault(regKey[RegName::Player], "ForceBloomOff"s, false);
       m_maxFramerate = LoadValueWithDefault(regKey[RegName::Player], "MaxFramerate"s, -1);
       m_videoSyncMode = (VideoSyncMode)LoadValueWithDefault(regKey[RegName::Player], "SyncMode"s, VSM_INVALID);
-      if (m_maxFramerate < 0 || m_videoSyncMode == VideoSyncMode::VSM_INVALID)
+      if (m_maxFramerate < 0 && m_videoSyncMode == VideoSyncMode::VSM_INVALID)
       {
          const int vsync = LoadValueWithDefault(regKey[RegName::Player], "AdaptiveVSync"s, -1);
          switch (vsync)
@@ -219,6 +219,10 @@ Player::Player(const bool cameraMode, PinTable *const editor_table, PinTable *co
          default: m_maxFramerate = vsync; m_videoSyncMode = VideoSyncMode::VSM_ADAPTIVE_VSYNC; break;
          }
       }
+      if (m_maxFramerate < 0)
+         m_maxFramerate = 0;
+      if (m_videoSyncMode == VideoSyncMode::VSM_INVALID)
+         m_videoSyncMode = VideoSyncMode::VSM_FRAME_PACING;
    }
 
    m_headTracking = LoadValueWithDefault(regKey[RegName::Player], "BAMheadTracking"s, false);

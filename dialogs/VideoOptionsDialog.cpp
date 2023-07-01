@@ -319,7 +319,7 @@ BOOL VideoOptionsDialog::OnInitDialog()
 
    int maxFPS = LoadValueWithDefault(regKey[RegName::Player], "MaxFramerate"s, -1);
    VideoSyncMode syncMode = (VideoSyncMode)LoadValueWithDefault(regKey[RegName::Player], "SyncMode"s, VSM_INVALID);
-   if (maxFPS < 0 || syncMode == VideoSyncMode::VSM_INVALID)
+   if (maxFPS < 0 && syncMode == VideoSyncMode::VSM_INVALID)
    {
       const int vsync = LoadValueWithDefault(regKey[RegName::Player], "AdaptiveVSync"s, -1);
       switch (vsync)
@@ -331,6 +331,10 @@ BOOL VideoOptionsDialog::OnInitDialog()
       default: maxFPS = vsync; syncMode = VideoSyncMode::VSM_ADAPTIVE_VSYNC; break;
       }
    }
+   if (maxFPS < 0)
+      maxFPS = 0;
+   if (syncMode == VideoSyncMode::VSM_INVALID)
+      syncMode = VideoSyncMode::VSM_FRAME_PACING;
    SetDlgItemInt(IDC_MAX_FPS, maxFPS, FALSE);
    HWND hwnd = GetDlgItem(IDC_VIDEO_SYNC_MODE).GetHwnd();
    SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
