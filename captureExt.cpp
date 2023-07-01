@@ -8,12 +8,12 @@ ExtCaptureManager g_ExtCaptureManager;
 
 void StartDMDCapture()
 {
-   const vector<string> dmdlist = { "Virtual DMD", "pygame", "PUPSCREEN1", "formDMD", "PUPSCREEN5" };
+   static const vector<string> dmdlist = { "Virtual DMD"s, "pygame"s, "PUPSCREEN1"s, "formDMD"s, "PUPSCREEN5"s };
    g_ExtCaptureManager.StartCapture("DMD"s, &g_pplayer->m_texdmd, dmdlist);
 }
 void StartPUPCapture()
 {
-   const vector<string> b2slist = { "PUPSCREEN2", "Form1" /* Old B2S */, "B2S Backglass Server", "B2S Background", "B2S DMD" };
+   static const vector<string> b2slist = { "PUPSCREEN2"s, "Form1"s /* Old B2S */, "B2S Backglass Server"s, "B2S Background"s, "B2S DMD"s };
    g_ExtCaptureManager.StartCapture("Backglass"s, &g_pplayer->m_texPUP, b2slist);
 }
 void UpdateExtCaptures() { g_ExtCaptureManager.Update(); }
@@ -217,7 +217,7 @@ void ExtCaptureManager::UpdateThread()
          hr = duplication->m_duplication->GetFrameDirtyRects(BufSize, reinterpret_cast<RECT*>(duplication->m_metaDataBuffer), &BufSize);
          if (SUCCEEDED(hr))
          {
-            const RECT* r = (RECT*)duplication->m_metaDataBuffer;
+            const RECT* const r = (RECT*)duplication->m_metaDataBuffer;
             for (size_t i = 0; i < BufSize / sizeof(RECT); ++i, ++r)
                for (Capture* capture : m_captures)
                {
@@ -381,6 +381,7 @@ void ExtCaptureManager::UpdateThread()
 }
 
 #else
+
 void StartDMDCapture() { }
 void StartPUPCapture() { }
 void UpdateExtCaptures() { }

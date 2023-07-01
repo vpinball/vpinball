@@ -62,16 +62,16 @@ VS_OUT_EYE;
 
 void main()
 {
-	// apply spinning and move the ball to it's actual position
-	float4 pos = vec4(vPosition, 1.0);
-	pos.xyz = (orientation * pos).xyz;
+    // apply spinning and move the ball to it's actual position
+    float4 pos = vec4(vPosition, 1.0);
+    pos.xyz = (orientation * pos).xyz;
 
     // apply spinning to the normals too to get the sphere mapping effect
-	const float3 nspin = (orientation * vec4(vNormal,0.0)).xyz;
+    const float3 nspin = (orientation * vec4(vNormal,0.0)).xyz;
     // Needs to use a 'normal' matrix, and to normalize since we allow non uniform stretching, therefore matWorldView is not orthonormal
-	const float3 normal = normalize((vec4(nspin, 0.0) * matWorldViewInverse).xyz); // actually: mul(vec4(nspin,0.), matWorldViewInverseTranspose), but optimized to save one matrix
+    const float3 normal = normalize((vec4(nspin, 0.0) * matWorldViewInverse).xyz); // actually: mul(vec4(nspin,0.), matWorldViewInverseTranspose), but optimized to save one matrix
 
-	const float3 p = (matWorldView * pos).xyz;
+    const float3 p = (matWorldView * pos).xyz;
 
     VS_EYE;
     VS_POSITION(matWorldViewProj[eye_vs] * pos, pos);
@@ -86,7 +86,7 @@ VS_OUT_EYE;
 
 void main()
 {
-	float4 pos = vec4(vPosition, 1.0);
+    float4 pos = vec4(vPosition, 1.0);
     VS_EYE;
     VS_POSITION(matWorldViewProj[eye_vs] * pos, pos);
     VS_VARYING(tex0_alpha, float3(tex0, vNormal.x)); //!! abuses normal for now
@@ -104,14 +104,14 @@ out vec4 worldPos_t0y;
 void main()
 {
     gl_Layer = eye_gs[0];
-	for (int i=0;i<gl_in.length();i++) {
-		gl_Position = (matWorldViewProj[eye_gs[i]]*gl_in[i].gl_Position);
+    for (int i=0;i<gl_in.length();i++) {
+        gl_Position = (matWorldViewProj[eye_gs[i]]*gl_in[i].gl_Position);
         gl_ClipDistance[0] = gl_in[i].gl_ClipDistance[0];
-		normal_t0x = normal_t0x_gs[i];
-		worldPos_t0y = worldPos_t0y_gs[i];
-		EmitVertex();
-	}
-	EndPrimitive();
+        normal_t0x = normal_t0x_gs[i];
+        worldPos_t0y = worldPos_t0y_gs[i];
+        EmitVertex();
+    }
+    EndPrimitive();
 }
 
 ////gsBallTrail
@@ -122,12 +122,12 @@ out vec3 tex0_alpha;
 void main()
 {
     gl_Layer = eye_gs[0];
-	for (int i=0;i<gl_in.length();i++) {
-		gl_Position = (matWorldViewProj[eye_gs[i]]*gl_in[i].gl_Position);
-		tex0_alpha = tex0_alpha_gs[i];
-		EmitVertex();
-	}
-	EndPrimitive();
+    for (int i=0;i<gl_in.length();i++) {
+        gl_Position = (matWorldViewProj[eye_gs[i]]*gl_in[i].gl_Position);
+        tex0_alpha = tex0_alpha_gs[i];
+        EmitVertex();
+    }
+    EndPrimitive();
 }
 
 ////FRAGMENT
@@ -223,9 +223,9 @@ void main()
     const float lod = (edge > 0.6) ? edge*(6.0*1.0/0.4)-(6.0*0.6/0.4) : 0.0;
     BRANCH if (%PARAM0%) // equirectangularMap
     { // Equirectangular Map Reflections
-	  // trafo back to world for lookup into world space envmap
-	  // matView is always an orthonormal matrix, so no need to normalize after transform
-	  const float3 rv = /*normalize*/((float4(-r,0.0) * matView).xyz);
+      // trafo back to world for lookup into world space envmap
+      // matView is always an orthonormal matrix, so no need to normalize after transform
+      const float3 rv = /*normalize*/((float4(-r,0.0) * matView).xyz);
       const float2 uv = ray_to_equirectangular_uv(rv);
       ballImageColor = textureLod(tex_ball_color, uv, lod).xyz;
     }
@@ -304,8 +304,8 @@ void main()
     if(!%PARAM1%)
        specular *= float3(1.,1.,1.)-decalColor; // see above
 
-   color.xyz = ballLightLoop(worldPos_t0y.xyz, N, V, diffuse, glossy, specular, 1.0, false);
-   color.a = cBase_Alpha.a;
+    color.xyz = ballLightLoop(worldPos_t0y.xyz, N, V, diffuse, glossy, specular, 1.0, false);
+    color.a = cBase_Alpha.a;
 }
 
 #if 0
