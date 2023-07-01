@@ -370,7 +370,9 @@ public:
    int m_maxFramerate = 0; // targeted refresh rate in Hz, if larger refresh rate it will limit FPS by uSleep() //!! currently does not work adaptively as it would require IDirect3DDevice9Ex which is not supported on WinXP
    int m_mainLoopPhase = 0;
    U64 m_lastPresentFrameTick = 0;
-   
+   bool m_lastFrameSyncOnVBlank;
+   bool m_lastFrameSyncOnFPS;
+
 #pragma endregion
 
 #pragma region Physics

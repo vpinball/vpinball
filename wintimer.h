@@ -138,14 +138,14 @@ public:
    
    double GetRatio(ProfileSection section) const
    {
-	  assert(section <= PROFILE_FRAME); // Unimplemented and not meaningful for other sections 
-	  return m_profileTotalData[ProfileSection::PROFILE_FRAME] == 0 ? 0. : ((double)m_profileTotalData[section] / (double)m_profileTotalData[ProfileSection::PROFILE_FRAME]);
+	   assert(section <= PROFILE_FRAME); // Unimplemented and not meaningful for other sections 
+	   return m_profileTotalData[ProfileSection::PROFILE_FRAME] == 0 ? 0. : ((double)m_profileTotalData[section] / (double)m_profileTotalData[ProfileSection::PROFILE_FRAME]);
    }
    
-   // (approximately) 1 second sliding average
+   // (approximately) 1 second sliding average of frame sections
    double GetSlidingAvg(ProfileSection section) const
    {
-	  assert(section <= PROFILE_FRAME); // Unimplemented and not really meaningful for other sections 
+      assert(section <= PROFILE_FRAME); // Unimplemented and not really meaningful for other sections
       unsigned int pos = (m_profileIndex + N_SAMPLES - 1) % N_SAMPLES; // Start from last frame
       unsigned int elapsed = 0u;
       unsigned int sum = 0u;
@@ -162,6 +162,31 @@ public:
             break;
       }
       return count == 0 ? 0. : (double)sum / (double)count;
+   }
+
+   double GetSlidingInputLag(const bool isMax) const
+   {
+      unsigned int pos = (m_processInputIndex + N_SAMPLES - 1) % N_SAMPLES; // Start from last frame
+      unsigned int latency = 0u;
+      unsigned int sum = 0u;
+      unsigned int count = 0u;
+      for (unsigned int i = 0u; i < N_SAMPLES; i++)
+      {
+         count++;
+         pos = (pos + N_SAMPLES - 1) % N_SAMPLES;
+         unsigned int period = m_profileData[pos][PROFILE_INPUT_POLL_PERIOD];
+         sum += period;
+         if (isMax)
+            latency = max(latency, period);
+         else
+            latency += period * period / 2;
+         if (sum >= 1000000u) // end of 1s sliding average
+            break;
+      }
+      if (isMax)
+         return latency;
+      else
+         return sum <= 0 ? 0. : (double) latency / (double) sum;
    }
    
    void OnProcessInput()
