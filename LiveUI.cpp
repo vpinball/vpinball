@@ -857,28 +857,38 @@ void LiveUI::Update()
    if (m_show_fps > 0)
    {
       // Display simple FPS window
-      constexpr ImGuiWindowFlags window_flags
-         = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
+      static float height = 50.f;
+      constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
       ImGui::SetNextWindowBgAlpha(0.75f);
-      ImGui::SetNextWindowPos(ImVec2(10, 10 + m_menubar_height + m_toolbar_height));
+      ImGui::SetNextWindowPos(ImVec2(10, io.DisplaySize.y - 10 - height)); //10 + m_menubar_height + m_toolbar_height));
+      if (m_player->m_videoSyncMode == VideoSyncMode::VSM_FRAME_PACING && m_player->m_lastFrameSyncOnFPS)
+         ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.f, 0.f, 0.75f, 1.f)); // Running at app regulated speed (not hardware)
+      else if (m_player->m_videoSyncMode == VideoSyncMode::VSM_FRAME_PACING && !m_player->m_lastFrameSyncOnVBlank)
+         ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.75f, 0.f, 0.f, 1.f)); // Running slower than expected
       ImGui::Begin("FPS", nullptr, window_flags);
-      ImGui::Text("FPS: %.1f (%.1f %5.1fms avg)", 1e6 / g_frameProfiler.GetPrev(FrameProfiler::PROFILE_FRAME), 1e6 / g_frameProfiler.GetAvg(FrameProfiler::PROFILE_FRAME),
-         1e-3 * g_frameProfiler.GetAvg(FrameProfiler::PROFILE_FRAME));
+      double frameLength = g_frameProfiler.GetSlidingAvg(FrameProfiler::PROFILE_FRAME);
+      ImGui::Text("Render: %5.1ffps %4.1fms (%4.1fms)\nLatency: %4.1fms (%4.1fms max)",
+         1e6 / frameLength, 1e-3 * frameLength, 1e-3 * g_frameProfiler.GetPrev(FrameProfiler::PROFILE_FRAME),
+         1e-3 * g_frameProfiler.GetSlidingInputLag(false), 1e-3 * g_frameProfiler.GetSlidingInputLag(true));
+      height = ImGui::GetWindowHeight();
       ImGui::End();
+      if (m_player->m_videoSyncMode == VideoSyncMode::VSM_FRAME_PACING && m_player->m_lastFrameSyncOnFPS)
+         ImGui::PopStyleColor();
+      else if (m_player->m_videoSyncMode == VideoSyncMode::VSM_FRAME_PACING && !m_player->m_lastFrameSyncOnVBlank)
+         ImGui::PopStyleColor();
    }
    if (m_show_fps == 2)
    {
       // Display FPS window with plots
-      constexpr ImGuiWindowFlags window_flags
-         = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
+      constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
       ImGui::SetNextWindowSize(ImVec2(530, 500));
-      ImGui::SetNextWindowPos(ImVec2((float)(m_player->m_wnd_width - 530 - 10), 10 + m_menubar_height + m_toolbar_height));
+      ImGui::SetNextWindowPos(ImVec2((float)(m_player->m_wnd_width - 530 - 10), io.DisplaySize.y - 10 - 500)); //10 + m_menubar_height + m_toolbar_height));
       ImGui::Begin("Plots", nullptr, window_flags);
       //!! This example assumes 60 FPS. Higher FPS requires larger buffer size.
       static ScrollingData sdata1, sdata2, sdata3, sdata4, sdata5, sdata6;
       //static RollingData   rdata1, rdata2;
       static double t = 0.;
-      t += ImGui::GetIO().DeltaTime;
+      t += io.DeltaTime;
 
       sdata6.AddPoint((float)t, float(1e-3 * g_frameProfiler.GetPrev(FrameProfiler::PROFILE_SCRIPT)) * 1.f);
       sdata5.AddPoint((float)t, sdata5.GetLast().y * 0.95f + sdata6.GetLast().y * 0.05f);
@@ -2086,6 +2096,7 @@ void LiveUI::UpdateMainSplashModal()
          m_table->SetNonUndoableDirty(eSaveDirty);
       }
 
+      ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
       // Resume: click on the button, or press escape key (react on key released, otherwise, it would immediatly reopen the UI)
       if (ImGui::Button("Resume Game", size) || (enableKeyboardShortcuts && ((ImGui::IsKeyReleased(dikToImGuiKeys[m_player->m_rgKeys[eEscape]]) && !m_disable_esc))))
       {
@@ -2093,6 +2104,7 @@ void LiveUI::UpdateMainSplashModal()
          ExitEditMode();
          HideUI();
       }
+      ImGui::SetItemDefaultFocus();
       if (ImGui::Button("Adjust Camera", size))
       {
          ImGui::CloseCurrentPopup();

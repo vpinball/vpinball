@@ -4079,6 +4079,8 @@ void Player::OnIdle()
             break;
          }
 
+         m_lastFrameSyncOnVBlank = waitedForVBlank;
+         m_lastFrameSyncOnFPS = waitedForFPS;
          m_lastPresentFrameTick = now;
          PLOGI_IF(debugLog) << "Frame Finish at " << now 
             << ", Waited for VBlank: " << waitedForVBlank
