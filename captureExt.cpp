@@ -217,7 +217,7 @@ void ExtCaptureManager::UpdateThread()
          hr = duplication->m_duplication->GetFrameDirtyRects(BufSize, reinterpret_cast<RECT*>(duplication->m_metaDataBuffer), &BufSize);
          if (SUCCEEDED(hr))
          {
-            const RECT* const r = (RECT*)duplication->m_metaDataBuffer;
+            const RECT* r = (RECT*)duplication->m_metaDataBuffer;
             for (size_t i = 0; i < BufSize / sizeof(RECT); ++i, ++r)
                for (Capture* capture : m_captures)
                {

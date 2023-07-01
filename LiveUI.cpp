@@ -94,7 +94,7 @@ public:
    ImVec2 GetLast()
    {
       if (Data.empty())
-         return ImVec2(0.f, 0.f);
+         return ImVec2{ 0.f, 0.f };
       else if (Data.size() < MaxSize || Offset == 0)
          return Data.back();
       else
@@ -477,8 +477,8 @@ template <class T> static std::vector<T> SortedCaseInsensitive(std::vector<T>& l
          string str1 = map(a), str2 = map(b);
          for (string::const_iterator c1 = str1.begin(), c2 = str2.begin(); c1 != str1.end() && c2 != str2.end(); ++c1, ++c2)
          {
-            auto cl1 = tolower(static_cast<unsigned char>(*c1));
-            auto cl2 = tolower(static_cast<unsigned char>(*c2));
+            const auto cl1 = tolower(static_cast<unsigned char>(*c1));
+            const auto cl2 = tolower(static_cast<unsigned char>(*c2));
             if (cl1 > cl2)
                return false;
             if (cl1 < cl2)
@@ -513,7 +513,7 @@ static void HelpTextCentered(const std::string& text)
 
 static void HelpSplash(const std::string &text, int rotation)
 {
-   ImVec2 win_size = ImGui::GetIO().DisplaySize;
+   const ImVec2 win_size = ImGui::GetIO().DisplaySize;
 
    vector<string> lines;
    ImVec2 text_size(0, 0);
@@ -542,7 +542,7 @@ static void HelpSplash(const std::string &text, int rotation)
       if (lineSize.x > text_size.x)
          text_size.x = lineSize.x;
 
-      text_size.y += (std::count(line.begin(), line.end(), '\n') + 1) * ImGui::GetTextLineHeightWithSpacing();
+      text_size.y += (float)(std::count(line.begin(), line.end(), '\n') + 1) * ImGui::GetTextLineHeightWithSpacing();
 
       textEnd = nextLineTextEnd;
 
@@ -560,9 +560,9 @@ static void HelpSplash(const std::string &text, int rotation)
    ImGui::SetNextWindowSize(ImVec2(text_size.x, text_size.y));
    ImGui::Begin("ToolTip", nullptr, window_flags);
    ImGui::SetCursorPosY(padding / 4);
-   for (string line : lines)
+   for (const string& line : lines)
    {
-      ImVec2 lineSize = font->CalcTextSizeA(font->FontSize, FLT_MAX, 0.0f, line.c_str());
+      const ImVec2 lineSize = font->CalcTextSizeA(font->FontSize, FLT_MAX, 0.0f, line.c_str());
       ImGui::SetCursorPosX(((text_size.x - lineSize.x) / 2));
       ImGui::Text(line.c_str());
    }
@@ -638,7 +638,7 @@ LiveUI::LiveUI(RenderDevice *const rd)
    // Editor camera position. We use a right handed system for easy ImGuizmo integration while VPX renderer is left handed, so reverse X axis
    m_orthoCam = true;
    m_camDistance = m_live_table->m_bottom * 0.7f;
-   const bool isPerspective = false;
+   constexpr bool isPerspective = false;
    constexpr float viewWidth = 10.f; // for orthographic
    constexpr float camYAngle = 165.f * float(M_PI / 180.);
    constexpr float camXAngle = 32.f * float(M_PI / 180.);
@@ -807,7 +807,7 @@ void LiveUI::Update()
       {
          ImGui::EndFrame();
          ImGuiIO &io = ImGui::GetIO();
-         float tmp = io.DisplaySize.x;
+         const float tmp = io.DisplaySize.x;
          io.DisplaySize.x = io.DisplaySize.y;
          io.DisplaySize.y = tmp;
          ImGui::NewFrame();
@@ -815,7 +815,7 @@ void LiveUI::Update()
    }
    ImGuizmo::SetOrthographic(m_orthoCam);
    ImGuizmo::BeginFrame();
-   ImGuiIO &io = ImGui::GetIO();
+   const ImGuiIO &io = ImGui::GetIO();
    ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
    ImGui::PushFont(m_baseFont);
 
@@ -866,7 +866,7 @@ void LiveUI::Update()
       else if (m_player->m_videoSyncMode == VideoSyncMode::VSM_FRAME_PACING && !m_player->m_lastFrameSyncOnVBlank)
          ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.75f, 0.f, 0.f, 1.f)); // Running slower than expected
       ImGui::Begin("FPS", nullptr, window_flags);
-      double frameLength = g_frameProfiler.GetSlidingAvg(FrameProfiler::PROFILE_FRAME);
+      const double frameLength = g_frameProfiler.GetSlidingAvg(FrameProfiler::PROFILE_FRAME);
       ImGui::Text("Render: %5.1ffps %4.1fms (%4.1fms)\nLatency: %4.1fms (%4.1fms max)",
          1e6 / frameLength, 1e-3 * frameLength, 1e-3 * g_frameProfiler.GetPrev(FrameProfiler::PROFILE_FRAME),
          1e-3 * g_frameProfiler.GetSlidingInputLag(false), 1e-3 * g_frameProfiler.GetSlidingInputLag(true));
@@ -969,7 +969,7 @@ void LiveUI::UpdateCameraModeUI()
    ViewSetup &viewSetup = table->mViewSetups[vsId];
    const bool isLegacy = viewSetup.mMode == VLM_LEGACY;
    const bool isCamera = viewSetup.mMode == VLM_CAMERA;
-   const bool isWindow = viewSetup.mMode == VLM_WINDOW;
+   //const bool isWindow = viewSetup.mMode == VLM_WINDOW;
 
    const bool isStereo = m_player->m_stereo3Denabled && m_player->m_stereo3D != STEREO_OFF && m_player->m_stereo3D != STEREO_VR;
    const bool isAnaglyph = isStereo && m_player->m_stereo3D >= STEREO_ANAGLYPH_RC && m_player->m_stereo3D <= STEREO_ANAGLYPH_AB;
@@ -1090,7 +1090,7 @@ void LiveUI::UpdateCameraModeUI()
       infos.push_back("Nudge key:   Rotate table orientation"s);
       infos.push_back("Arrows & Left Alt Key:   Navigate around"s);
    }
-   const int info = ((int)((usec() - m_StartTime_usec) / 2e6)) % infos.size();
+   const int info = ((int)((usec() - m_StartTime_usec) / 2e6)) % (int)infos.size();
    HelpTextCentered(infos[info]);
 
    ImGui::End();
@@ -1412,7 +1412,7 @@ void LiveUI::UpdateMainUI()
             m_orthoCam = true;
             Matrix3D view(m_camView);
             view.Invert();
-            const vec3 up = view.GetOrthoNormalUp(), dir = view.GetOrthoNormalDir(), pos = view.GetOrthoNormalPos();
+            const vec3 /*up = view.GetOrthoNormalUp(),*/ dir = view.GetOrthoNormalDir(), pos = view.GetOrthoNormalPos();
             const vec3 camTarget = pos - dir * m_camDistance;
             const vec3 newUp(0.f, -1.f, 0.f);
             const vec3 newDir(0.f, 0.f, ImGui::GetIO().KeyCtrl ? 1.f : -1.f);
@@ -1426,7 +1426,7 @@ void LiveUI::UpdateMainUI()
             m_orthoCam = true;
             Matrix3D view(m_camView);
             view.Invert();
-            const vec3 up = view.GetOrthoNormalUp(), dir = view.GetOrthoNormalDir(), pos = view.GetOrthoNormalPos();
+            const vec3 /*up = view.GetOrthoNormalUp(),*/ dir = view.GetOrthoNormalDir(), pos = view.GetOrthoNormalPos();
             const vec3 camTarget = pos - dir * m_camDistance;
             const vec3 newUp(0.f, 0.f, -1.f);
             const vec3 newDir(0.f, ImGui::GetIO().KeyCtrl ? -1.f : 1.f, 0.f);
@@ -1440,7 +1440,7 @@ void LiveUI::UpdateMainUI()
             m_orthoCam = true;
             Matrix3D view(m_camView);
             view.Invert();
-            const vec3 up = view.GetOrthoNormalUp(), dir = view.GetOrthoNormalDir(), pos = view.GetOrthoNormalPos();
+            const vec3 /*up = view.GetOrthoNormalUp(),*/ dir = view.GetOrthoNormalDir(), pos = view.GetOrthoNormalPos();
             const vec3 camTarget = pos - dir * m_camDistance;
             const vec3 newUp(0.f, 0.f, -1.f);
             const vec3 newDir(ImGui::GetIO().KeyCtrl ? 1.f : -1.f, 0.f, 0.f);
@@ -1549,7 +1549,7 @@ bool LiveUI::GetSelectionTransform(Matrix3D& transform)
    return false;
 }
 
-void LiveUI::SetSelectionTransform(Matrix3D &newTransform, bool clearPosition, bool clearScale, bool clearRotation)
+void LiveUI::SetSelectionTransform(const Matrix3D &newTransform, bool clearPosition, bool clearScale, bool clearRotation)
 {
    Matrix3D transform = newTransform;
    const Vertex3Ds right(transform._11, transform._12, transform._13);
@@ -1578,7 +1578,7 @@ void LiveUI::SetSelectionTransform(Matrix3D &newTransform, bool clearPosition, b
 
    // Derived from https://learnopencv.com/rotation-matrix-to-euler-angles/
    float rotX, rotY, rotZ;
-   float sy = sqrtf(transform._11 * transform._11 + transform._21 * transform._21);
+   const float sy = sqrtf(transform._11 * transform._11 + transform._21 * transform._21);
    if (sy > 1e-6f)
    {
       rotX = -RADTOANG(atan2f(transform._32, transform._33));
@@ -2139,7 +2139,7 @@ void LiveUI::UpdateMainSplashModal()
       }
       const ImVec2 pos = ImGui::GetWindowPos();
       ImVec2 max = ImGui::GetWindowSize();
-      bool hovered = ImGui::IsWindowHovered();
+      const bool hovered = ImGui::IsWindowHovered();
       ImGui::EndPopup();
 
       if (popup_headtracking)

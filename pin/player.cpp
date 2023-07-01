@@ -2677,7 +2677,7 @@ void Player::UpdatePhysics()
    U64 delta_frame = 0;
    if (m_minphyslooptime > 0 && m_lastFlipTime > 0)
    {
-      // We want the physics loops to sync up to the the frames, not
+      // We want the physics loops to sync up to the frames, not
       // the post-render period, as that can cause some judder.
       delta_frame = initial_time_usec - m_lastFlipTime;
       initial_time_usec -= delta_frame;

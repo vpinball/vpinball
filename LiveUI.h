@@ -149,7 +149,7 @@ private:
    ImGuizmo::OPERATION m_gizmoOperation = ImGuizmo::NONE;
    ImGuizmo::MODE m_gizmoMode = ImGuizmo::WORLD;
    bool GetSelectionTransform(Matrix3D& transform);
-   void SetSelectionTransform(Matrix3D& transform, bool clearPosition = false, bool clearScale = false, bool clearRotation = false);
+   void SetSelectionTransform(const Matrix3D& transform, bool clearPosition = false, bool clearScale = false, bool clearRotation = false);
 
    // Editor camera
    bool m_useEditorCam = false;

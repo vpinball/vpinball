@@ -823,7 +823,7 @@ void RenderDevice::CreateDevice(int& refreshrate, UINT adapterIndex)
    if (m_pD3DEx) // Defer to Present call since this setting can be dynamically changed by the script, and D3D9Ex supports overriding to immediate presentation scheduling
       params.PresentationInterval = D3DPRESENT_INTERVAL_ONE;
    else // If the app setting is VSync and the table syncmode is changed by the script, this will break
-	   params.PresentationInterval = m_videoSyncMode == VideoSyncMode::VSM_VSYNC ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE;
+      params.PresentationInterval = m_videoSyncMode == VideoSyncMode::VSM_VSYNC ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE;
 
    // check if our HDR texture format supports/does sRGB conversion on texture reads, which must NOT be the case as we always set SRGBTexture=true independent of the format!
    HRESULT hr = m_pD3D->CheckDeviceFormat(m_adapter, devtype, params.BackBufferFormat, D3DUSAGE_QUERY_SRGBREAD, D3DRTYPE_TEXTURE, (D3DFORMAT)colorFormat::RGBA32F);
@@ -1066,7 +1066,7 @@ void RenderDevice::CreateDevice(int& refreshrate, UINT adapterIndex)
    // DXGI VSync source (Windows 7+, only used in OpenGL build)
    if (m_videoSyncMode == VideoSyncMode::VSM_FRAME_PACING && !hasVSync)
    {
-	   DXGIRegistry::Output* out = g_DXGIRegistry.GetForWindow(m_windowHwnd);
+      DXGIRegistry::Output* out = g_DXGIRegistry.GetForWindow(m_windowHwnd);
       if (out != nullptr)
          m_DXGIOutput = out->m_Output;
       hasVSync = m_DXGIOutput != nullptr;
@@ -1074,7 +1074,7 @@ void RenderDevice::CreateDevice(int& refreshrate, UINT adapterIndex)
    #endif
    if (m_videoSyncMode == VideoSyncMode::VSM_FRAME_PACING && !hasVSync)
    {
-	   // This may happen on some old config where D3D9ex is not available (XP/Vista/7) and DWM is disabled
+      // This may happen on some old config where D3D9ex is not available (XP/Vista/7) and DWM is disabled
       ShowError("Failed to create the synchronization device.\r\nSynchronization switched to adaptive sync.");
       PLOGE << "Failed to create the synchronization device for frame pacing. Synchronization switched to adaptive sync.";
       m_videoSyncMode = VideoSyncMode::VSM_ADAPTIVE_VSYNC;
@@ -1414,11 +1414,11 @@ void RenderDevice::WaitForVSync()
 }
 
 // Schedule frame presentation (usually by flipping the front & back buffer)
-// flipSchedule: 0=immediate, 1=on next VSync, 2=on next VSync unless this is a late frame (a vsync has already happened since last flip), only supported for OpenGL
+// flipSchedule: 0=immediate, 1=on next VSync, 2=on next VSync, unless this is a late frame (=a VSync has already happened since last flip), only supported in OpenGL
 // waitForVSync: 0=No wait, 1=Wait for VSync, 2=Asynchronous VSync (non blocking, simply updating m_lastVSyncUs when done)
 void RenderDevice::Flip(const int flipSchedule, const int waitForVSync)
 {
-   // The calls below may or may not block depending on the device configuration and the state of its frame queue. The driver may also
+   // The calls below may or may not block, depending on the device configuration and the state of its frame queue. The driver may also
    // block on the first draw call that needs to access a backbuffer when they are all waiting to be presented. To ensure non blocking 
    // calls, we need to schedule frames at a pace adjusted to the actual render speed (to avoid filling up the queue, leading to subsequent call to wait).
    //
@@ -1454,11 +1454,11 @@ void RenderDevice::Flip(const int flipSchedule, const int waitForVSync)
 #endif
 
    // Finally perform VBlank synchronization if requested
-   // - DWM is always disabled for Windows XP, it can be either on or off for Windows Vista/7, it is always enabled for Windows 8+ except on stripped down version of Windows like Ghost Spectre
+   // - DWM is always disabled for Windows XP, it can be either on or off for Windows Vista/7, it is always enabled for Windows 8+ except on stripped down versions of Windows like Ghost Spectre
    // - Windows XP does not offer any way to sync beside the present parameter on device creation, so this is enforced there and the vsync parameter will be ignored here
-   //   (note that the present parameter does not directly sync: it schedules the flip on vsync, leading to the GPU to block on another render call, since no backbuffer is available for drawing then)
+   //   (note that the present parameter does not directly sync: it schedules the flip on vsync, leading the GPU to block on another render call, since no backbuffer is available for drawing then)
    if (waitForVSync == 1)
-	  WaitForVSync();
+      WaitForVSync();
    else if (waitForVSync == 2) // Async VBlank synchronization
       std::thread(&RenderDevice::WaitForVSync, this).detach(); // Reuse thread ? (we always at most one running at a time)
 
