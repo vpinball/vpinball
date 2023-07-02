@@ -1738,7 +1738,8 @@ void RenderDevice::FlushRenderFrame()
 {
    bool rendered = m_renderFrame.Execute(m_logNextFrame);
    m_currentPass = nullptr;
-   m_logNextFrame = false;
+   if (rendered)
+      m_logNextFrame = false;
 }
 
 void RenderDevice::SetRenderTarget(const string& name, RenderTarget* rt)
