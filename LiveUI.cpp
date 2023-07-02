@@ -1090,7 +1090,7 @@ void LiveUI::UpdateCameraModeUI()
       infos.push_back("Nudge key:   Rotate table orientation"s);
       infos.push_back("Arrows & Left Alt Key:   Navigate around"s);
    }
-   const int info = ((int)((usec() - m_StartTime_usec) / 2e6)) % (int)infos.size();
+   const int info = (((int)((usec() - m_StartTime_usec) / 2000000ull)))  % (int)infos.size();
    HelpTextCentered(infos[info]);
 
    ImGui::End();
