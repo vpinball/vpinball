@@ -4053,7 +4053,6 @@ void Player::OnIdle()
 
       case 2:
       {
-         static bool waitedForVBlank = true, waitedForFPS = true;
          const int targetFPS = (m_ptable->m_TableAdaptiveVSync > 2) ? m_ptable->m_TableAdaptiveVSync : (m_maxFramerate == 0 ? m_refreshrate : m_maxFramerate);
          const bool customSync = targetFPS != 0 && (abs(targetFPS - m_refreshrate) > 1); // Needs custom synchronization beside base vertical blank
          const bool skipVSync = customSync && (targetFPS > m_refreshrate); // Targeting a frame rate above refresh rate, so don't sync on vertical blank
@@ -4061,7 +4060,7 @@ void Player::OnIdle()
          // Wait for at least one VBlank after last frame submission (adaptive sync), only if the target framerate is undefined or slower than the refresh rate
          if (m_stereo3D != STEREO_VR && m_overall_frames > 1 && m_pin3d.m_pd3dPrimaryDevice->m_lastVSyncUs == 0 && !skipVSync)
          {
-            waitedForVBlank = true;
+            m_curFrameSyncOnVBlank = true;
             break;
          }
 
@@ -4069,34 +4068,50 @@ void Player::OnIdle()
          // by a 2ms step which is just an empirical magic number to stabilize quickly without loosing too much input/physics cycles. This 
          // works but needs a few stutter frames before stabilizing.
          const U64 now = usec();
-         const int averageFrameLength = (int)(1e6 / m_fps);
          const int refreshLength = (int)(1000000ul / m_refreshrate);
-         const int targetFrameLength = clamp(averageFrameLength - 2000, customSync ? (1000000ull / targetFPS) : 0, 5 * refreshLength);
+         // const int averageFrameLength = (int)(1e6 / m_fps); // not used as it does not stabilize fast enough and give too much weight to big stutters
+         const int averageFrameLength = (int)g_frameProfiler.GetAvgFrameLength(refreshLength);
+         const int minimumFrameLength = customSync ? (1000000ull / targetFPS) : 0;
+         const int maximumFrameLength = 5 * refreshLength;
+         const int targetFrameLength = clamp(averageFrameLength - 2000, min(minimumFrameLength, maximumFrameLength), maximumFrameLength);
          const U64 minFrameTick = m_lastPresentFrameTick + targetFrameLength;
          if (m_stereo3D != STEREO_VR && m_overall_frames > 100 && now < minFrameTick)
          {
-            waitedForFPS = true;
+            m_curFrameSyncOnFPS = true;
             break;
          }
 
-         m_lastFrameSyncOnVBlank = waitedForVBlank;
-         m_lastFrameSyncOnFPS = waitedForFPS;
+         // If the frame pacing goes out of sync, the CPU will be synchronized by the GPU through blocking calls. This is what we want to avoid
+         // since these blocking calls are the root cause of the input lag. Here we detect this (which seems to happens very seldomly) situations 
+         // and add a vsync to get back on sync.
+         if (!skipVSync && !m_resyncOnVBlank && m_overall_frames > 100 && !m_curFrameSyncOnVBlank && !m_curFrameSyncOnFPS && abs(averageFrameLength - refreshLength) < 1000) // magic 1ms timer precision
+         {
+            m_resyncOnVBlank = true;
+            m_pin3d.m_pd3dPrimaryDevice->m_lastVSyncUs = 0;
+            m_pin3d.m_pd3dPrimaryDevice->WaitForVSync(true);
+            break;
+         }
+         m_resyncOnVBlank = false;
+
+         m_lastFrameSyncOnVBlank = m_curFrameSyncOnVBlank;
+         m_lastFrameSyncOnFPS = m_curFrameSyncOnFPS;
          m_lastPresentFrameTick = now;
          PLOGI_IF(debugLog) << "Frame Finish at " << now 
-            << ", Waited for VBlank: " << waitedForVBlank
-            << ", Waited for FPS: " << waitedForFPS
+            << ", Waited for VBlank: " << m_curFrameSyncOnVBlank
+            << ", Waited for FPS: " << m_curFrameSyncOnFPS
             << ", Target frame length: " << (targetFrameLength/1000.0) 
             << "ms, Average frame length: " << (averageFrameLength / 1000.0) << "ms";
          m_pin3d.m_pd3dPrimaryDevice->m_lastVSyncUs = 0;
          g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_GPU_FLIP);
          #ifdef ENABLE_SDL
-         m_pin3d.m_pd3dPrimaryDevice->Flip(skipVSync ? 0 : 2, 2); // Adaptive flip schedule (except for high custom framerate) with asynchronous VBlank notification
+         m_pin3d.m_pd3dPrimaryDevice->Flip(skipVSync ? 0 : 2); // Adaptive flip schedule (except for high custom framerate) with asynchronous VBlank notification
          #else
-         m_pin3d.m_pd3dPrimaryDevice->Flip(0, 2); // DirectX 9 does not support adaptive sync so we emulate it on the application side (which is not as good since this is an averaged implementation, not performed at the driver level, in sync with GPU render queue)
+         m_pin3d.m_pd3dPrimaryDevice->Flip(0); // DirectX 9 does not support adaptive sync so we emulate it on the application side (which is not as good since this is an averaged implementation, not performed at the driver level, in sync with GPU render queue)
          #endif
+         m_pin3d.m_pd3dPrimaryDevice->WaitForVSync(true);
          g_frameProfiler.ExitProfileSection();
          FinishFrame();
-         waitedForVBlank = waitedForFPS = false;
+         m_curFrameSyncOnVBlank = m_curFrameSyncOnFPS = false;
          m_mainLoopPhase = 0;
          if (m_closing != CS_PLAYING)
             return;
@@ -4167,33 +4182,34 @@ void Player::OnIdle()
          default: targetFPS = m_ptable->m_TableAdaptiveVSync; syncMode = m_ptable->m_TableAdaptiveVSync > m_refreshrate ? VideoSyncMode::VSM_NONE : VideoSyncMode::VSM_ADAPTIVE_VSYNC; break;
          }
       }
-      int flipSchedule, waitForVSync;
+      int flipSchedule;
+      bool waitForVSync = false;
       switch (syncMode)
       {
-      case VideoSyncMode::VSM_NONE: flipSchedule = 0; waitForVSync = 0; break;
-      case VideoSyncMode::VSM_VSYNC: flipSchedule = 1; waitForVSync = 0; break;
+      case VideoSyncMode::VSM_NONE: flipSchedule = 0; break;
+      case VideoSyncMode::VSM_VSYNC: flipSchedule = 1; break;
       case VideoSyncMode::VSM_ADAPTIVE_VSYNC: // Adaptive sync (only sync if running faster than refresh rate)
 	      #ifdef ENABLE_SDL // OpenGL supports native adaptive sync
 		   flipSchedule = 2;
-		   waitForVSync = 0;
-		   #else // DirectX 9 does not support native adaptive sync, so we must perform it at the application level
+		   #else // DirectX 9 does not support native adaptive sync, so we must emulate it at the application level
          targetFPS = min(m_refreshrate, targetFPS == 0 ? m_refreshrate : targetFPS);
 		   if (m_pin3d.m_pd3dPrimaryDevice->SupportsDynamicFlipSchedule())
 		   { // New in 10.8: we use the ability of D3D9Ex to change flip scheduling on the fly instead of doing custom vsync synchronization
 		      flipSchedule = m_fps > targetFPS * ADAPT_VSYNC_FACTOR ? 1 : 0;
-		      waitForVSync = 0; 
 		   }
 		   else
 		   { // Base DX9 does not support changing the flip schedule on the fly, so we set it to immediate and do our one vsync synchronization
 		      flipSchedule = 0;
-		      waitForVSync = m_fps > targetFPS * ADAPT_VSYNC_FACTOR ? 1 : 0;
+		      waitForVSync = m_fps > targetFPS * ADAPT_VSYNC_FACTOR;
 		   }
 		   #endif
          break;
       default: assert(false);
       }
       g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_GPU_FLIP);
-      m_pin3d.m_pd3dPrimaryDevice->Flip(flipSchedule, waitForVSync);
+      m_pin3d.m_pd3dPrimaryDevice->Flip(flipSchedule);
+      if (waitForVSync)
+         m_pin3d.m_pd3dPrimaryDevice->WaitForVSync(false);
       g_frameProfiler.ExitProfileSection();
 
       FinishFrame();

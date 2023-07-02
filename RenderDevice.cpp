@@ -1394,35 +1394,44 @@ bool RenderDevice::SetMaximumPreRenderedFrames(const DWORD frames)
       return false;
 }
 
-void RenderDevice::WaitForVSync()
+void RenderDevice::WaitForVSync(const bool asynchronous)
 {
-   if (m_dwm_enabled && mDwmFlush)
-      mDwmFlush(); // Flush all commands submited by this process including the 'Present' command. This actually sync to the vertical blank
-   #ifdef ENABLE_SDL
-   else if (m_DXGIOutput)
-      m_DXGIOutput->WaitForVBlank();
-   #else
-   // When DWM is disabled (Windows Vista/7), exclusive fullscreen without DWM (pre-windows 10), special Windows builds with DWM stripped out (Ghost Spectre Windows 10)
-   else if (m_pD3DDeviceEx) 
-      m_pD3DDeviceEx->WaitForVBlank(0);
-   #endif
-   U64 now = usec();
-   m_lastVSyncUs = now;
-   //static U64 lastUs = 0;
-   //PLOGD_(PLOG_NO_DBG_OUT_INSTANCE_ID) << "VSYNC " << ((double)(now - lastUs) / 1000.0) << "ms";
-   //lastUs = now;
+   // - DWM is always disabled for Windows XP, it can be either on or off for Windows Vista/7, it is always enabled for Windows 8+ except on stripped down versions of Windows like Ghost Spectre
+   // - Windows XP does not offer any way to sync beside the present parameter on device creation, so this is enforced there and the vsync parameter will be ignored here
+   //   (note that the present parameter does not directly sync: it schedules the flip on vsync, leading the GPU to block on another render call, since no backbuffer is available for drawing then)
+   auto lambda = [this]()
+   {
+      if (m_dwm_enabled && mDwmFlush)
+         mDwmFlush(); // Flush all commands submited by this process including the 'Present' command. This actually sync to the vertical blank
+      #ifdef ENABLE_SDL
+      else if (m_DXGIOutput)
+         m_DXGIOutput->WaitForVBlank();
+      #else
+      // When DWM is disabled (Windows Vista/7), exclusive fullscreen without DWM (pre-windows 10), special Windows builds with DWM stripped out (Ghost Spectre Windows 10)
+      else if (m_pD3DDeviceEx)
+         m_pD3DDeviceEx->WaitForVBlank(0);
+      #endif
+      const U64 now = usec();
+      m_lastVSyncUs = now;
+      //static U64 lastUs = 0;
+      //PLOGD_(PLOG_NO_DBG_OUT_INSTANCE_ID) << "VSYNC " << ((double)(now - lastUs) / 1000.0) << "ms";
+      //lastUs = now;
+   };
+   if (asynchronous)
+      std::thread(lambda).detach(); // Reuse thread ? (we always at most one running at a time)
+   else
+      lambda();
 }
 
 // Schedule frame presentation (usually by flipping the front & back buffer)
 // flipSchedule: 0=immediate, 1=on next VSync, 2=on next VSync, unless this is a late frame (=a VSync has already happened since last flip), only supported in OpenGL
-// waitForVSync: 0=No wait, 1=Wait for VSync, 2=Asynchronous VSync (non blocking, simply updating m_lastVSyncUs when done)
-void RenderDevice::Flip(const int flipSchedule, const int waitForVSync)
+void RenderDevice::Flip(const int flipSchedule)
 {
    // The calls below may or may not block, depending on the device configuration and the state of its frame queue. The driver may also
    // block on the first draw call that needs to access a backbuffer when they are all waiting to be presented. To ensure non blocking 
    // calls, we need to schedule frames at a pace adjusted to the actual render speed (to avoid filling up the queue, leading to subsequent call to wait).
    //
-   // This matters ans should be avoided since these blocking calls will delay the input/physics update (they catchup afterward) and that 
+   // This matters and should be avoided since these blocking calls will delay the input/physics update (they catchup afterward) and that 
    // it will break some pinmame video modes (since input events will be fast forwarded, the controller missing somes like in Lethal 
    // Weapon 3 fight) and make the gameplay (input lag, input-physics sync, input-controller sync) to depend on the framerate.
 
@@ -1452,15 +1461,6 @@ void RenderDevice::Flip(const int flipSchedule, const int waitForVSync)
       CHECKD3D(m_pD3DDevice->Present(nullptr, nullptr, nullptr, nullptr));
    }
 #endif
-
-   // Finally perform VBlank synchronization if requested
-   // - DWM is always disabled for Windows XP, it can be either on or off for Windows Vista/7, it is always enabled for Windows 8+ except on stripped down versions of Windows like Ghost Spectre
-   // - Windows XP does not offer any way to sync beside the present parameter on device creation, so this is enforced there and the vsync parameter will be ignored here
-   //   (note that the present parameter does not directly sync: it schedules the flip on vsync, leading the GPU to block on another render call, since no backbuffer is available for drawing then)
-   if (waitForVSync == 1)
-      WaitForVSync();
-   else if (waitForVSync == 2) // Async VBlank synchronization
-      std::thread(&RenderDevice::WaitForVSync, this).detach(); // Reuse thread ? (we always at most one running at a time)
 
    // reset performance counters
    m_frameDrawCalls = m_curDrawCalls;
