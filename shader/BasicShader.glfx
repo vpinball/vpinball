@@ -720,7 +720,12 @@ void main() {
    float3 table_pos = (matWorld * pos).xyz;
 
    VS_EYE;
-   VS_POSITION(float4((matWorldViewProj[eye_vs] * pos).xyw, (matWorldViewProj[eye_vs] * float4(pos.x, pos.y, pos.z - 30.0 * fKickerScale, 1.0)).z), pos);
+   #if USE_GEOMETRY_SHADER
+   gl_Position = pos;
+   #else
+   gl_Position = matWorldViewProj[eye_vs] * pos;
+   gl_Position.z = (matWorldViewProj[eye_vs] * float4(pos.x, pos.y, pos.z - 30.0 * fKickerScale, 1.0)).z;
+   #endif
    VS_VARYING(tablePos, table_pos);
    // trafo all into worldview space (as most of the weird trafos happen in view, world is identity so far)
    VS_VARYING(worldPos, (matWorldView * pos).xyz);
