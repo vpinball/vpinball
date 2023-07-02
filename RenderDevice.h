@@ -134,7 +134,7 @@ public:
    void LogNextFrame() { m_logNextFrame = true; }
    bool IsLogNextFrame() const { return m_logNextFrame; }
    void FlushRenderFrame();
-   void Flip(const int flipSchedule, const int waitForVSync);
+   void Flip(const int flipSchedule);
    bool SupportsDynamicFlipSchedule() const
    {
       #ifdef ENABLE_SDL // OpenGL
@@ -143,6 +143,7 @@ public:
 	  return m_pD3DDeviceEx != nullptr;
 	  #endif
    }
+   void WaitForVSync(const bool asynchronous);
 
    bool SetMaximumPreRenderedFrames(const DWORD frames);
 
@@ -309,8 +310,6 @@ public:
 private:
    bool m_dwm_was_enabled;
    bool m_dwm_enabled;
-
-   void WaitForVSync();
 
 public:
    U64 m_lastVSyncUs = 0;

@@ -155,13 +155,30 @@ public:
          if (count >= m_frameIndex)
             break;
          count++;
-         pos = (pos + N_SAMPLES - 1) % N_SAMPLES;
          sum += m_profileData[pos][section];
          elapsed += m_profileData[pos][ProfileSection::PROFILE_FRAME];
          if (elapsed >= 1000000u) // end of 1s sliding average
             break;
+         pos = (pos + N_SAMPLES - 1) % N_SAMPLES;
       }
       return count == 0 ? 0. : (double)sum / (double)count;
+   }
+
+   double GetAvgFrameLength(unsigned int defaultFrameLength) const
+   {
+      unsigned int pos = (m_profileIndex + N_SAMPLES - 1) % N_SAMPLES; // Start from last frame
+      unsigned int sum = 0u;
+      unsigned int count = 0u;
+      constexpr unsigned int navg = 5;
+      for (unsigned int i = 0u; i < navg; i++)
+      {
+         if (count >= m_frameIndex)
+            break;
+         count++;
+         sum += m_profileData[pos][ProfileSection::PROFILE_FRAME];
+         pos = (pos + N_SAMPLES - 1) % N_SAMPLES;
+      }
+      return ((count < navg ? (navg - count) : 0) * (double)defaultFrameLength + (double)sum) / (double)navg;
    }
 
    double GetSlidingInputLag(const bool isMax) const

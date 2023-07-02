@@ -372,6 +372,9 @@ public:
    U64 m_lastPresentFrameTick = 0;
    bool m_lastFrameSyncOnVBlank;
    bool m_lastFrameSyncOnFPS;
+   bool m_curFrameSyncOnVBlank = false;
+   bool m_curFrameSyncOnFPS = false;
+   bool m_resyncOnVBlank = false;
 
 #pragma endregion
 
