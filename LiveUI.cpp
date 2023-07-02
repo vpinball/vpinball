@@ -2071,7 +2071,15 @@ void LiveUI::UpdateMainSplashModal()
       ImGui::SetNextWindowPos(ImVec2(0, 0));
       ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
       ImGui::Begin("Table Info", nullptr, window_flags);
-      HelpTextCentered(info.str());
+      // Remove eventual escape characters in the table info string
+      string str = info.str();
+      size_t start_pos = 0;
+      while ((start_pos = str.find("%", start_pos)) != std::string::npos)
+      {
+         str.replace(start_pos, 1, "%%");
+         start_pos += 2;
+      }
+      HelpTextCentered(str);
       ImGui::End();
    }
 
