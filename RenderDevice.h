@@ -91,7 +91,6 @@ public:
    SDL_Window* m_sdl_playfieldHwnd = nullptr;
    SDL_GLContext m_sdl_context = nullptr;
    IDXGIOutput* m_DXGIOutput = nullptr;
-   int m_swapInterval;
 
 #else
    enum PrimitiveTypes
@@ -111,7 +110,7 @@ public:
       TRANSFORMSTATE_PROJECTION
    };
 
-   RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, const VideoSyncMode syncMode, const int maxFrameRate, const float AAfactor,
+   RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, const VideoSyncMode syncMode, const float AAfactor,
       const StereoMode stereo3D, const unsigned int FXAA, const bool sharpen, const bool ss_refl, const bool useNvidiaApi, const bool disable_dwm, const int BWrendering);
    ~RenderDevice();
    void CreateDevice(int &refreshrate, UINT adapterIndex = D3DADAPTER_DEFAULT);
@@ -134,15 +133,7 @@ public:
    void LogNextFrame() { m_logNextFrame = true; }
    bool IsLogNextFrame() const { return m_logNextFrame; }
    void FlushRenderFrame();
-   void Flip(const int flipSchedule);
-   bool SupportsDynamicFlipSchedule() const
-   {
-      #ifdef ENABLE_SDL // OpenGL
-	  return true;
-	  #else // DirectX 9
-	  return m_pD3DDeviceEx != nullptr;
-	  #endif
-   }
+   void Flip();
    void WaitForVSync(const bool asynchronous);
 
    bool SetMaximumPreRenderedFrames(const DWORD frames);
@@ -245,7 +236,6 @@ public:
    bool          m_fullscreen;
    int           m_colorDepth;
    VideoSyncMode m_videoSyncMode;
-   int           m_maxFrameRate;
    StereoMode    m_stereo3D;
    float         m_AAfactor;
    bool          m_ssRefl;

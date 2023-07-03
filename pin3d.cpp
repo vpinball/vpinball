@@ -415,7 +415,7 @@ BaseTexture* EnvmapPrecalc(const Texture* envTex, const unsigned int rad_env_xre
    return radTex;
 }
 
-HRESULT Pin3D::InitPrimary(const bool fullScreen, const int colordepth, int& refreshrate, const VideoSyncMode syncMode, const int maxFrameRate, const float AAfactor,
+HRESULT Pin3D::InitPrimary(const bool fullScreen, const int colordepth, int& refreshrate, const VideoSyncMode syncMode, const float AAfactor,
    const StereoMode stereo3D, const unsigned int FXAA, const bool sharpen, const bool ss_refl)
 {
    const int display = g_pvp->m_primaryDisplay ? 0 : LoadValueWithDefault(regKey[RegName::Player], "Display"s, 0);
@@ -426,7 +426,7 @@ HRESULT Pin3D::InitPrimary(const bool fullScreen, const int colordepth, int& ref
       if (display == dispConf->display)
          adapter = dispConf->adapter;
 
-   m_pd3dPrimaryDevice = new RenderDevice(g_pplayer->GetHwnd(), m_viewPort.Width, m_viewPort.Height, fullScreen, colordepth, syncMode, maxFrameRate, AAfactor, stereo3D, FXAA, sharpen, ss_refl,
+   m_pd3dPrimaryDevice = new RenderDevice(g_pplayer->GetHwnd(), m_viewPort.Width, m_viewPort.Height, fullScreen, colordepth, syncMode, AAfactor, stereo3D, FXAA, sharpen, ss_refl,
       g_pplayer->m_useNvidiaApi, g_pplayer->m_disableDWM, g_pplayer->m_BWrendering);
    try {
       m_pd3dPrimaryDevice->CreateDevice(refreshrate, adapter);
@@ -475,7 +475,7 @@ HRESULT Pin3D::InitPrimary(const bool fullScreen, const int colordepth, int& ref
 }
 
 HRESULT Pin3D::InitPin3D(const bool fullScreen, const int width, const int height, const int colordepth, int& refreshrate, const VideoSyncMode syncMode,
-   const int maxFrameRate, const float AAfactor, const StereoMode stereo3D, const unsigned int FXAA, const bool sharpen, const bool ss_refl)
+   const float AAfactor, const StereoMode stereo3D, const unsigned int FXAA, const bool sharpen, const bool ss_refl)
 {
    m_stereo3D = stereo3D;
    m_mvp = new ModelViewProj(m_stereo3D == STEREO_OFF ? 1 : 2);
@@ -489,7 +489,7 @@ HRESULT Pin3D::InitPin3D(const bool fullScreen, const int width, const int heigh
    m_viewPort.MinZ = 0.0f;
    m_viewPort.MaxZ = 1.0f;
 
-   if (FAILED(InitPrimary(fullScreen, colordepth, refreshrate, syncMode, maxFrameRate, AAfactor, stereo3D, FXAA, sharpen, ss_refl)))
+   if (FAILED(InitPrimary(fullScreen, colordepth, refreshrate, syncMode, AAfactor, stereo3D, FXAA, sharpen, ss_refl)))
       return E_FAIL;
 
    m_pd3dSecondaryDevice = m_pd3dPrimaryDevice; //!! for now, there is no secondary device :/

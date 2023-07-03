@@ -223,6 +223,16 @@ Player::Player(const bool cameraMode, PinTable *const editor_table, PinTable *co
          m_maxFramerate = 0;
       if (m_videoSyncMode == VideoSyncMode::VSM_INVALID)
          m_videoSyncMode = VideoSyncMode::VSM_FRAME_PACING;
+      if (m_ptable->m_TableAdaptiveVSync != -1)
+      {
+         switch (m_ptable->m_TableAdaptiveVSync)
+         {
+         case 0: m_maxFramerate = 0; m_videoSyncMode = VideoSyncMode::VSM_NONE; break;
+         case 1: m_maxFramerate = 0; m_videoSyncMode = VideoSyncMode::VSM_VSYNC; break;
+         case 2: m_maxFramerate = 0; m_videoSyncMode = VideoSyncMode::VSM_ADAPTIVE_VSYNC; break;
+         default: m_maxFramerate = m_ptable->m_TableAdaptiveVSync; m_videoSyncMode = VideoSyncMode::VSM_ADAPTIVE_VSYNC; break;
+         }
+      }
    }
 
    m_headTracking = LoadValueWithDefault(regKey[RegName::Player], "BAMheadTracking"s, false);
@@ -1162,18 +1172,6 @@ HRESULT Player::Init()
 
    //
 
-   int maxFPS = m_maxFramerate;
-   VideoSyncMode syncMode = m_videoSyncMode;
-   if (m_ptable->m_TableAdaptiveVSync != -1)
-   {
-      switch (m_ptable->m_TableAdaptiveVSync)
-      {
-      case 0: maxFPS = m_refreshrate; syncMode = VideoSyncMode::VSM_NONE; break;
-      case 1: maxFPS = m_refreshrate; syncMode = VideoSyncMode::VSM_VSYNC; break;
-      case 2: maxFPS = m_refreshrate; syncMode = VideoSyncMode::VSM_ADAPTIVE_VSYNC; break;
-      default: maxFPS = m_ptable->m_TableAdaptiveVSync; syncMode = m_ptable->m_TableAdaptiveVSync > m_refreshrate ? VideoSyncMode::VSM_NONE : VideoSyncMode::VSM_ADAPTIVE_VSYNC; break;
-      }
-   }
    const float aaFactor = m_ptable->m_useAA == -1 ? m_AAfactor : m_ptable->m_useAA == 1 ? 2.0f : 1.0f;
    const unsigned int FXAA = (m_ptable->m_useFXAA == -1) ? m_FXAA : m_ptable->m_useFXAA;
    const bool ss_refl = (m_ss_refl && (m_ptable->m_useSSR == -1)) || (m_ptable->m_useSSR == 1);
@@ -1184,7 +1182,7 @@ HRESULT Player::Init()
 
    // colordepth & refreshrate are only defined if fullscreen is true.
    // width and height may be modified during initialization (for example for VR, they are adapted to the headset resolution)
-   const HRESULT hr = m_pin3d.InitPin3D(m_fullScreen, m_wnd_width, m_wnd_height, colordepth, m_refreshrate, syncMode, maxFPS, aaFactor, m_stereo3D, FXAA, !!m_sharpen, ss_refl);
+   const HRESULT hr = m_pin3d.InitPin3D(m_fullScreen, m_wnd_width, m_wnd_height, colordepth, m_refreshrate, m_videoSyncMode, aaFactor, m_stereo3D, FXAA, !!m_sharpen, ss_refl);
    if (hr != S_OK)
    {
       char szFoo[64];
@@ -1192,6 +1190,7 @@ HRESULT Player::Init()
       ShowError(szFoo);
       return hr;
    }
+   m_maxFramerate = m_maxFramerate == 0 ? m_refreshrate : min(m_maxFramerate, m_refreshrate);
 
 #ifdef ENABLE_SDL
    if (m_stereo3D == STEREO_VR)
@@ -4053,12 +4052,8 @@ void Player::OnIdle()
 
       case 2:
       {
-         const int targetFPS = (m_ptable->m_TableAdaptiveVSync > 2) ? m_ptable->m_TableAdaptiveVSync : (m_maxFramerate == 0 ? m_refreshrate : m_maxFramerate);
-         const bool customSync = targetFPS != 0 && (abs(targetFPS - m_refreshrate) > 1); // Needs custom synchronization beside base vertical blank
-         const bool skipVSync = customSync && (targetFPS > m_refreshrate); // Targeting a frame rate above refresh rate, so don't sync on vertical blank
-
-         // Wait for at least one VBlank after last frame submission (adaptive sync), only if the target framerate is undefined or slower than the refresh rate
-         if (m_stereo3D != STEREO_VR && m_overall_frames > 1 && m_pin3d.m_pd3dPrimaryDevice->m_lastVSyncUs == 0 && !skipVSync)
+         // Wait for at least one VBlank after last frame submission (adaptive sync)
+         if (m_stereo3D != STEREO_VR && m_overall_frames > 1 && m_pin3d.m_pd3dPrimaryDevice->m_lastVSyncUs == 0)
          {
             m_curFrameSyncOnVBlank = true;
             break;
@@ -4067,11 +4062,11 @@ void Player::OnIdle()
          // If we are not able to keep up with the refresh rate, target a slower frame rate, still trying to catch up but in a smooth way, 
          // by a 2ms step which is just an empirical magic number to stabilize quickly without loosing too much input/physics cycles. This 
          // works but needs a few stutter frames before stabilizing.
+         // const int averageFrameLength = (int)(1e6 / m_fps); // not used as it does not stabilize fast enough and give too much weight to big stutters
          const U64 now = usec();
          const int refreshLength = (int)(1000000ul / m_refreshrate);
-         // const int averageFrameLength = (int)(1e6 / m_fps); // not used as it does not stabilize fast enough and give too much weight to big stutters
-         const int averageFrameLength = (int)g_frameProfiler.GetAvgFrameLength(refreshLength);
-         const int minimumFrameLength = customSync ? (1000000ull / targetFPS) : 0;
+         const int averageFrameLength = refreshLength; // Disable custom throttling since it is not satisfying, when the computer can not keep up the pace, this will lead to CPU/GPU blocking call defeating the aim of frame pacing, but at least be will still have the clean adaptive sync
+         const int minimumFrameLength = m_maxFramerate != m_refreshrate ? (1000000ull / m_maxFramerate) : 0;
          const int maximumFrameLength = 5 * refreshLength;
          const int targetFrameLength = clamp(averageFrameLength - 2000, min(minimumFrameLength, maximumFrameLength), maximumFrameLength);
          const U64 minFrameTick = m_lastPresentFrameTick + targetFrameLength;
@@ -4080,18 +4075,6 @@ void Player::OnIdle()
             m_curFrameSyncOnFPS = true;
             break;
          }
-
-         // If the frame pacing goes out of sync, the CPU will be synchronized by the GPU through blocking calls. This is what we want to avoid
-         // since these blocking calls are the root cause of the input lag. Here we detect this (which seems to happens very seldomly) situations 
-         // and add a vsync to get back on sync.
-         if (!skipVSync && !m_resyncOnVBlank && m_overall_frames > 100 && !m_curFrameSyncOnVBlank && !m_curFrameSyncOnFPS && abs(averageFrameLength - refreshLength) < 1000) // magic 1ms timer precision
-         {
-            m_resyncOnVBlank = true;
-            m_pin3d.m_pd3dPrimaryDevice->m_lastVSyncUs = 0;
-            m_pin3d.m_pd3dPrimaryDevice->WaitForVSync(true);
-            break;
-         }
-         m_resyncOnVBlank = false;
 
          m_lastFrameSyncOnVBlank = m_curFrameSyncOnVBlank;
          m_lastFrameSyncOnFPS = m_curFrameSyncOnFPS;
@@ -4103,11 +4086,7 @@ void Player::OnIdle()
             << "ms, Average frame length: " << (averageFrameLength / 1000.0) << "ms";
          m_pin3d.m_pd3dPrimaryDevice->m_lastVSyncUs = 0;
          g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_GPU_FLIP);
-         #ifdef ENABLE_SDL
-         m_pin3d.m_pd3dPrimaryDevice->Flip(skipVSync ? 0 : 2); // Adaptive flip schedule (except for high custom framerate) with asynchronous VBlank notification
-         #else
-         m_pin3d.m_pd3dPrimaryDevice->Flip(0); // DirectX 9 does not support adaptive sync so we emulate it on the application side (which is not as good since this is an averaged implementation, not performed at the driver level, in sync with GPU render queue)
-         #endif
+         m_pin3d.m_pd3dPrimaryDevice->Flip();
          m_pin3d.m_pd3dPrimaryDevice->WaitForVSync(true);
          g_frameProfiler.ExitProfileSection();
          FinishFrame();
@@ -4170,46 +4149,12 @@ void Player::OnIdle()
       }
 
       // Present & VSync
-      int targetFPS = m_maxFramerate;
-      VideoSyncMode syncMode = m_videoSyncMode;
-      if (m_ptable->m_TableAdaptiveVSync != -1)
-      {
-         switch (m_ptable->m_TableAdaptiveVSync)
-         {
-         case 0: targetFPS = 0; syncMode = VideoSyncMode::VSM_NONE; break;
-         case 1: targetFPS = min(targetFPS, m_refreshrate); syncMode = VideoSyncMode::VSM_VSYNC; break;
-         case 2: targetFPS = min(targetFPS, m_refreshrate); syncMode = VideoSyncMode::VSM_ADAPTIVE_VSYNC; break;
-         default: targetFPS = m_ptable->m_TableAdaptiveVSync; syncMode = m_ptable->m_TableAdaptiveVSync > m_refreshrate ? VideoSyncMode::VSM_NONE : VideoSyncMode::VSM_ADAPTIVE_VSYNC; break;
-         }
-      }
-      int flipSchedule;
-      bool waitForVSync = false;
-      switch (syncMode)
-      {
-      case VideoSyncMode::VSM_NONE: flipSchedule = 0; break;
-      case VideoSyncMode::VSM_VSYNC: flipSchedule = 1; break;
-      case VideoSyncMode::VSM_ADAPTIVE_VSYNC: // Adaptive sync (only sync if running faster than refresh rate)
-	      #ifdef ENABLE_SDL // OpenGL supports native adaptive sync
-		   flipSchedule = 2;
-		   #else // DirectX 9 does not support native adaptive sync, so we must emulate it at the application level
-         targetFPS = min(m_refreshrate, targetFPS == 0 ? m_refreshrate : targetFPS);
-		   if (m_pin3d.m_pd3dPrimaryDevice->SupportsDynamicFlipSchedule())
-		   { // New in 10.8: we use the ability of D3D9Ex to change flip scheduling on the fly instead of doing custom vsync synchronization
-		      flipSchedule = m_fps > targetFPS * ADAPT_VSYNC_FACTOR ? 1 : 0;
-		   }
-		   else
-		   { // Base DX9 does not support changing the flip schedule on the fly, so we set it to immediate and do our one vsync synchronization
-		      flipSchedule = 0;
-		      waitForVSync = m_fps > targetFPS * ADAPT_VSYNC_FACTOR;
-		   }
-		   #endif
-         break;
-      default: assert(false);
-      }
       g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_GPU_FLIP);
-      m_pin3d.m_pd3dPrimaryDevice->Flip(flipSchedule);
-      if (waitForVSync)
+      m_pin3d.m_pd3dPrimaryDevice->Flip();
+      #ifndef ENABLE_SDL // DirectX 9 does not support native adaptive sync, so we must emulate it at the application level
+      if (m_videoSyncMode == VideoSyncMode::VSM_ADAPTIVE_VSYNC && m_fps > m_maxFramerate * ADAPT_VSYNC_FACTOR)
          m_pin3d.m_pd3dPrimaryDevice->WaitForVSync(false);
+      #endif
       g_frameProfiler.ExitProfileSection();
 
       FinishFrame();
@@ -4217,11 +4162,11 @@ void Player::OnIdle()
          return;
 
       // Adjust framerate if requested by user (i.e. not using a synchronization mode that will lead to blocking calls aligned to the display refresh rate)
-      const bool onlyVSync = syncMode != VideoSyncMode::VSM_NONE && targetFPS == m_refreshrate;
-      if (m_stereo3D != STEREO_VR && !onlyVSync && targetFPS != 0)
+      const bool onlyVSync = m_videoSyncMode != VideoSyncMode::VSM_NONE && m_maxFramerate == m_refreshrate;
+      if (m_stereo3D != STEREO_VR && !onlyVSync)
       {
          const int timeForFrame = (int)(usec() - m_startFrameTick);
-         const int targetTime = 1000000 / targetFPS;
+         const int targetTime = 1000000 / m_maxFramerate;
          if (timeForFrame < targetTime)
          {
             g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_SLEEP);

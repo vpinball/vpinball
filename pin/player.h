@@ -374,7 +374,6 @@ public:
    bool m_lastFrameSyncOnFPS;
    bool m_curFrameSyncOnVBlank = false;
    bool m_curFrameSyncOnFPS = false;
-   bool m_resyncOnVBlank = false;
 
 #pragma endregion
 
