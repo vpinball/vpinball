@@ -609,7 +609,7 @@ public:
          _Module.RevokeClassObjects();
          Sleep(THREADS_PAUSE); //wait for any threads to finish
 
-         SaveRegistry(szIniFileName);
+         SaveRegistry();
       }
       return 0;
    }

@@ -54,9 +54,9 @@ static const string regKey[RegName::Num] =
    };
 
 
-void SaveRegistry(const string &path);
 void InitRegistry(const string &path);
 void InitRegistryOverride(const string &path);
+void SaveRegistry();
 
 
 HRESULT LoadValue(const string &szKey, const string &zValue, string &buffer);

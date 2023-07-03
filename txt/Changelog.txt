@@ -98,6 +98,7 @@ FEATURES:
   - settings are the same and can be shared between Windows version of VPX and the standalone version (Linux, Mac, Android, iOS, Raspberry,...),
   - allow to see all the available settings at once (not so easy before, since there are a few hundreds of them),
   - allow easier collaboration by being able to share the setting file with bug reports.
+  If a file with the exact same name as the one of the table file but with '.ini' extension is found along the table file, it will be used as a setting override for the table.
 
 - the application is now fully 'DPI aware'. This means that one can use multiple monitors at different DPI settings.
   This may require to adjust the position of windows on existing installs.
