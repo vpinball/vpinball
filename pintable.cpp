@@ -10486,6 +10486,11 @@ LRESULT PinTableMDI::OnMDIActivate(UINT msg, WPARAM wparam, LPARAM lparam)
 {
    //wparam holds HWND of the MDI frame that is about to be deactivated
    //lparam holds HWND of the MDI frame that is about to be activated
+   if (GetHwnd() == (HWND)wparam)
+   {
+      SaveRegistry();
+      InitRegistryOverride("");
+   }
    if(GetHwnd()==(HWND)lparam)
    {
       if (g_pvp->GetLayersDocker() != nullptr)
@@ -10494,6 +10499,9 @@ LRESULT PinTableMDI::OnMDIActivate(UINT msg, WPARAM wparam, LPARAM lparam)
          g_pvp->GetLayersDocker()->GetContainLayers()->GetLayersDialog()->UpdateLayerList();
          g_pvp->SetPropSel(m_table->m_vmultisel);
       }
+      m_vpinball->m_currentTablePath = PathFromFilename(m_table->m_szFileName);
+      string szFileNameAuto = m_vpinball->m_currentTablePath + m_table->m_szTitle + ".ini";
+      InitRegistryOverride(szFileNameAuto);
    }
    return CMDIChild::OnMDIActivate(msg, wparam, lparam);
 }

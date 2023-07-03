@@ -14,6 +14,7 @@
 mINI::INIStructure ini;
 bool hasIniOverride = false;
 mINI::INIStructure iniOverride;
+string iniPath;
 string iniOverridePath;
 
 static bool LoadIni(const string &path, mINI::INIStructure &ini, const bool loadDefault)
@@ -22,7 +23,7 @@ static bool LoadIni(const string &path, mINI::INIStructure &ini, const bool load
    if (file.read(ini))
    {
       PLOGI << "Settings file was loaded from '" << path << "'";
-	  return true;
+	   return true;
    }
    else if (loadDefault)
    {
@@ -125,14 +126,15 @@ static bool LoadIni(const string &path, mINI::INIStructure &ini, const bool load
    else
    {
       PLOGI << "Settings file was not found at '" << path << "'";
-	  return false;
+	   return false;
    }
 }
 
 void InitRegistry(const string &path)
 {
-   PLOGI << "Using INI file settings";
+   PLOGI << "Using INI file settings from: " << path;
    ini.clear();
+   iniPath = path;
    LoadIni(path, ini, true);
 }
 
@@ -144,7 +146,7 @@ void InitRegistryOverride(const string &path)
    hasIniOverride = LoadIni(path, iniOverride, false);
 }
 
-void SaveRegistry(const string &path)
+void SaveRegistry()
 {
    if (hasIniOverride)
    {
@@ -153,7 +155,7 @@ void SaveRegistry(const string &path)
    }
    else
    {
-      mINI::INIFile file(path);
+      mINI::INIFile file(iniPath);
       file.write(ini, true);
    }
 }
@@ -248,12 +250,12 @@ static void InitXMLnodeFromRegistry(tinyxml2::XMLElement *const node, const stri
    RegCloseKey(hk);
 }
 
-void SaveRegistry(const string &path)
+void SaveRegistry()
 {
    tinyxml2::XMLPrinter prn;
    xmlDoc.Print(&prn);
 
-   std::ofstream myFile(path);
+   std::ofstream myFile(iniPath);
    myFile << prn.CStr();
    myFile.close();
 }
@@ -266,6 +268,7 @@ void InitRegistryOverride(const string &path)
 void InitRegistry(const string &path)
 {
    PLOGI << "Using XML file settings";
+   iniPath = path;
    std::stringstream buffer;
    std::ifstream myFile(path);
    if (myFile.is_open() && myFile.good())
@@ -341,7 +344,7 @@ void InitRegistryOverride(const string &path)
    PLOGE << "Registry override is not supported when using Windows registry settings";
 }
 
-void SaveRegistry(const string &path) {}
+void SaveRegistry() {}
 
 #endif
 
