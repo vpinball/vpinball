@@ -4059,31 +4059,25 @@ void Player::OnIdle()
             break;
          }
 
-         // If we are not able to keep up with the refresh rate, target a slower frame rate, still trying to catch up but in a smooth way, 
-         // by a 2ms step which is just an empirical magic number to stabilize quickly without loosing too much input/physics cycles. This 
-         // works but needs a few stutter frames before stabilizing.
-         // const int averageFrameLength = (int)(1e6 / m_fps); // not used as it does not stabilize fast enough and give too much weight to big stutters
+         // If the user asked to sync on a lower frame rate th n the refresh rate, then wait for it
          const U64 now = usec();
-         const int refreshLength = (int)(1000000ul / m_refreshrate);
-         const int averageFrameLength = refreshLength; // Disable custom throttling since it is not satisfying, when the computer can not keep up the pace, this will lead to CPU/GPU blocking call defeating the aim of frame pacing, but at least be will still have the clean adaptive sync
-         const int minimumFrameLength = m_maxFramerate != m_refreshrate ? (1000000ull / m_maxFramerate) : 0;
-         const int maximumFrameLength = 5 * refreshLength;
-         const int targetFrameLength = clamp(averageFrameLength - 2000, min(minimumFrameLength, maximumFrameLength), maximumFrameLength);
-         const U64 minFrameTick = m_lastPresentFrameTick + targetFrameLength;
-         if (m_stereo3D != STEREO_VR && m_overall_frames > 100 && now < minFrameTick)
+         if (m_stereo3D != STEREO_VR && m_overall_frames > 100 && m_maxFramerate != m_refreshrate)
          {
-            m_curFrameSyncOnFPS = true;
-            break;
+            const int refreshLength = (int)(1000000ul / m_refreshrate);
+            const int minimumFrameLength = 1000000ull / m_maxFramerate;
+            const int maximumFrameLength = 5 * refreshLength;
+            const int targetFrameLength = clamp(refreshLength - 2000, min(minimumFrameLength, maximumFrameLength), maximumFrameLength);
+            if (now < m_lastPresentFrameTick + targetFrameLength)
+            {
+               m_curFrameSyncOnFPS = true;
+               break;
+            }
          }
 
          m_lastFrameSyncOnVBlank = m_curFrameSyncOnVBlank;
          m_lastFrameSyncOnFPS = m_curFrameSyncOnFPS;
          m_lastPresentFrameTick = now;
-         PLOGI_IF(debugLog) << "Frame Finish at " << now 
-            << ", Waited for VBlank: " << m_curFrameSyncOnVBlank
-            << ", Waited for FPS: " << m_curFrameSyncOnFPS
-            << ", Target frame length: " << (targetFrameLength/1000.0) 
-            << "ms, Average frame length: " << (averageFrameLength / 1000.0) << "ms";
+         PLOGI_IF(debugLog) << "Frame Finish at " << now << ", Waited for VBlank: " << m_curFrameSyncOnVBlank << ", Waited for FPS: " << m_curFrameSyncOnFPS;
          m_pin3d.m_pd3dPrimaryDevice->m_lastVSyncUs = 0;
          g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_GPU_FLIP);
          m_pin3d.m_pd3dPrimaryDevice->Flip();
