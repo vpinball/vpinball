@@ -1190,7 +1190,7 @@ HRESULT Player::Init()
       ShowError(szFoo);
       return hr;
    }
-   m_maxFramerate = m_maxFramerate == 0 ? m_refreshrate : min(m_maxFramerate, m_refreshrate);
+   m_maxFramerate = (m_videoSyncMode != VideoSyncMode::VSM_NONE && m_maxFramerate == 0) ? m_refreshrate : min(m_maxFramerate, m_refreshrate);
 
 #ifdef ENABLE_SDL
    if (m_stereo3D == STEREO_VR)
@@ -4157,7 +4157,7 @@ void Player::OnIdle()
 
       // Adjust framerate if requested by user (i.e. not using a synchronization mode that will lead to blocking calls aligned to the display refresh rate)
       const bool onlyVSync = m_videoSyncMode != VideoSyncMode::VSM_NONE && m_maxFramerate == m_refreshrate;
-      if (m_stereo3D != STEREO_VR && !onlyVSync)
+      if (m_stereo3D != STEREO_VR && !onlyVSync && m_maxFramerate != 0)
       {
          const int timeForFrame = (int)(usec() - m_startFrameTick);
          const int targetTime = 1000000 / m_maxFramerate;
