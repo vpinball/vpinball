@@ -491,9 +491,9 @@ static pDF mDwmFlush = nullptr;
 typedef HRESULT(STDAPICALLTYPE *pDEC)(UINT uCompositionAction);
 static pDEC mDwmEnableComposition = nullptr;
 
-RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, const VideoSyncMode syncMode, const int maxFrameRate,    const float AAfactor, const StereoMode stereo3D, const unsigned int FXAA, const bool sharpen, const bool ss_refl, const bool useNvidiaApi, const bool disable_dwm, const int BWrendering)
+RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, const VideoSyncMode syncMode, const float AAfactor, const StereoMode stereo3D, const unsigned int FXAA, const bool sharpen, const bool ss_refl, const bool useNvidiaApi, const bool disable_dwm, const int BWrendering)
     : m_windowHwnd(hwnd), m_width(width), m_height(height), m_fullscreen(fullscreen), 
-      m_colorDepth(colordepth), m_videoSyncMode(syncMode), m_maxFrameRate(maxFrameRate), m_AAfactor(AAfactor), m_stereo3D(stereo3D),
+      m_colorDepth(colordepth), m_videoSyncMode(syncMode), m_AAfactor(AAfactor), m_stereo3D(stereo3D),
       m_ssRefl(ss_refl), m_disableDwm(disable_dwm), m_sharpen(sharpen), m_FXAA(FXAA), m_BWrendering(BWrendering), m_texMan(*this), m_renderFrame(this)
 {
 #ifdef ENABLE_SDL
@@ -674,12 +674,11 @@ void RenderDevice::CreateDevice(int& refreshrate, UINT adapterIndex)
    // Flip scheduling: 0 for immediate, 1 for synchronized with the vertical retrace, -1 for adaptive vsync (i.e. synchronized on vsync except for late frame)
    switch (m_videoSyncMode)
    {
-   case VideoSyncMode::VSM_NONE: m_swapInterval = 0; break;
-   case VideoSyncMode::VSM_VSYNC: m_swapInterval = 1; break;
-   case VideoSyncMode::VSM_ADAPTIVE_VSYNC: m_swapInterval = -1; break;
-   case VideoSyncMode::VSM_FRAME_PACING: m_swapInterval = -1; break;
+   case VideoSyncMode::VSM_NONE: SDL_GL_SetSwapInterval(0); break;
+   case VideoSyncMode::VSM_VSYNC: SDL_GL_SetSwapInterval(1); break;
+   case VideoSyncMode::VSM_ADAPTIVE_VSYNC: SDL_GL_SetSwapInterval(-1); break;
+   case VideoSyncMode::VSM_FRAME_PACING: SDL_GL_SetSwapInterval(-1); break;
    }
-   SDL_GL_SetSwapInterval(m_swapInterval);
 
    m_maxaniso = 0;
    glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &m_maxaniso);
@@ -801,10 +800,6 @@ void RenderDevice::CreateDevice(int& refreshrate, UINT adapterIndex)
     }
     }
 
-    // limit vsync rate to actual refresh rate, otherwise special handling in renderloop
-    if (m_maxFrameRate > refreshrate)
-        m_videoSyncMode = VideoSyncMode::VSM_NONE;
-
     D3DPRESENT_PARAMETERS params;
     params.BackBufferWidth = m_width;
     params.BackBufferHeight = m_height;
@@ -812,7 +807,7 @@ void RenderDevice::CreateDevice(int& refreshrate, UINT adapterIndex)
     params.BackBufferCount = 1;
     params.MultiSampleType = D3DMULTISAMPLE_NONE;
     params.MultiSampleQuality = 0;
-    params.SwapEffect = m_pD3DEx ? D3DSWAPEFFECT_FLIPEX : D3DSWAPEFFECT_DISCARD;
+    params.SwapEffect = D3DSWAPEFFECT_DISCARD;
     params.hDeviceWindow = m_windowHwnd;
     params.Windowed = !m_fullscreen;
     params.EnableAutoDepthStencil = FALSE;
@@ -820,10 +815,7 @@ void RenderDevice::CreateDevice(int& refreshrate, UINT adapterIndex)
     params.Flags = /*fullscreen ? D3DPRESENTFLAG_LOCKABLE_BACKBUFFER :*/ /*(stereo3D ?*/ 0 /*: D3DPRESENTFLAG_DISCARD_DEPTHSTENCIL)*/
        ; // D3DPRESENTFLAG_LOCKABLE_BACKBUFFER only needed for SetDialogBoxMode() below, but makes rendering slower on some systems :/
     params.FullScreen_RefreshRateInHz = m_fullscreen ? refreshrate : 0;
-   if (m_pD3DEx) // Defer to Present call since this setting can be dynamically changed by the script, and D3D9Ex supports overriding to immediate presentation scheduling
-      params.PresentationInterval = D3DPRESENT_INTERVAL_ONE;
-   else // If the app setting is VSync and the table syncmode is changed by the script, this will break
-      params.PresentationInterval = m_videoSyncMode == VideoSyncMode::VSM_VSYNC ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE;
+    params.PresentationInterval = m_videoSyncMode == VideoSyncMode::VSM_VSYNC ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE;
 
    // check if our HDR texture format supports/does sRGB conversion on texture reads, which must NOT be the case as we always set SRGBTexture=true independent of the format!
    HRESULT hr = m_pD3D->CheckDeviceFormat(m_adapter, devtype, params.BackBufferFormat, D3DUSAGE_QUERY_SRGBREAD, D3DRTYPE_TEXTURE, (D3DFORMAT)colorFormat::RGBA32F);
@@ -1424,8 +1416,7 @@ void RenderDevice::WaitForVSync(const bool asynchronous)
 }
 
 // Schedule frame presentation (usually by flipping the front & back buffer)
-// flipSchedule: 0=immediate, 1=on next VSync, 2=on next VSync, unless this is a late frame (=a VSync has already happened since last flip), only supported in OpenGL
-void RenderDevice::Flip(const int flipSchedule)
+void RenderDevice::Flip()
 {
    // The calls below may or may not block, depending on the device configuration and the state of its frame queue. The driver may also
    // block on the first draw call that needs to access a backbuffer when they are all waiting to be presented. To ensure non blocking 
@@ -1441,26 +1432,12 @@ void RenderDevice::Flip(const int flipSchedule)
    // Schedule frame presentation (non blocking call, simply queueing the present in the driver's render queue with a schedule for execution)
    if (m_stereo3D != STEREO_VR)
       g_frameProfiler.OnPresent();
-#ifdef ENABLE_SDL
-   const int swapInterval = flipSchedule == 2 ? -1 : flipSchedule;
-   if (m_swapInterval != swapInterval)
-   {
-      SDL_GL_SetSwapInterval(swapInterval);
-	  m_swapInterval = swapInterval;
-   }
+   #ifdef ENABLE_SDL
    glFlush(); // Enqueue render commands from CPU to GPU (does not block)
    SDL_GL_SwapWindow(m_sdl_playfieldHwnd);
-#else
-   assert(flipSchedule != 2); // DirectX9 does not support natively adaptive sync
-   if (m_pD3DDeviceEx)
-   {
-      CHECKD3D(m_pD3DDeviceEx->PresentEx(nullptr, nullptr, nullptr, nullptr, flipSchedule == 0 ? D3DPRESENT_FORCEIMMEDIATE : 0));
-   }
-   else // Legacy Windows XP, not supporting overriding the present scheduling option on the fly
-   {
-      CHECKD3D(m_pD3DDevice->Present(nullptr, nullptr, nullptr, nullptr));
-   }
-#endif
+   #else
+   CHECKD3D(m_pD3DDevice->Present(nullptr, nullptr, nullptr, nullptr));
+   #endif
 
    // reset performance counters
    m_frameDrawCalls = m_curDrawCalls;
