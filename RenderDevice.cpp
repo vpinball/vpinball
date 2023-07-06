@@ -1050,18 +1050,30 @@ void RenderDevice::CreateDevice(int& refreshrate, UINT adapterIndex)
    
    // Ensure we have a VSync source for frame pacing
    bool hasVSync = false;
-   hasVSync |= m_dwm_enabled && mDwmFlush; // Desktop compositor VSync source
+   if (m_dwm_enabled && mDwmFlush)
+   {
+      PLOGI << "VSync source set to Desktop compositor (DwmFlush)";
+      hasVSync = true;
+   }
    #ifndef ENABLE_SDL
-   hasVSync |= m_pD3DDeviceEx != nullptr; // D3D9Ex VSync source
+   else if (m_pD3DDeviceEx != nullptr)
+   {
+      PLOGI << "VSync source set to DX9Ex WaitForBlank";
+      hasVSync = true;
+   }
    #endif
    #ifdef ENABLE_SDL
    // DXGI VSync source (Windows 7+, only used in OpenGL build)
-   if (m_videoSyncMode == VideoSyncMode::VSM_FRAME_PACING && !hasVSync)
+   else if (m_videoSyncMode == VideoSyncMode::VSM_FRAME_PACING)
    {
       DXGIRegistry::Output* out = g_DXGIRegistry.GetForWindow(m_windowHwnd);
       if (out != nullptr)
          m_DXGIOutput = out->m_Output;
-      hasVSync = m_DXGIOutput != nullptr;
+      if (m_DXGIOutput != nullptr)
+      {
+	      PLOGI << "VSync source set to DXGI WaitForBlank";
+         hasVSync = true;
+      }
    }
    #endif
    if (m_videoSyncMode == VideoSyncMode::VSM_FRAME_PACING && !hasVSync)
@@ -1393,16 +1405,17 @@ void RenderDevice::WaitForVSync(const bool asynchronous)
    //   (note that the present parameter does not directly sync: it schedules the flip on vsync, leading the GPU to block on another render call, since no backbuffer is available for drawing then)
    auto lambda = [this]()
    {
-      if (m_dwm_enabled && mDwmFlush)
+      if (m_dwm_enabled && mDwmFlush != nullptr)
          mDwmFlush(); // Flush all commands submited by this process including the 'Present' command. This actually sync to the vertical blank
       #ifdef ENABLE_SDL
-      else if (m_DXGIOutput)
+      else if (m_DXGIOutput != nullptr)
          m_DXGIOutput->WaitForVBlank();
       #else
       // When DWM is disabled (Windows Vista/7), exclusive fullscreen without DWM (pre-windows 10), special Windows builds with DWM stripped out (Ghost Spectre Windows 10)
-      else if (m_pD3DDeviceEx)
+      else if (m_pD3DDeviceEx != nullptr)
          m_pD3DDeviceEx->WaitForVBlank(0);
       #endif
+      m_vsyncCount++;
       const U64 now = usec();
       m_lastVSyncUs = now;
       //static U64 lastUs = 0;
@@ -1429,11 +1442,10 @@ void RenderDevice::Flip()
    // Ensure that all commands have been submitted to the CPU, then pushed to the GPU
    FlushRenderFrame();
 
-   // Schedule frame presentation (non blocking call, simply queueing the present in the driver's render queue with a schedule for execution)
+   // Schedule frame presentation (non blocking call, simply queueing the present command in the driver's render queue with a schedule for execution)
    if (m_stereo3D != STEREO_VR)
       g_frameProfiler.OnPresent();
    #ifdef ENABLE_SDL
-   glFlush(); // Enqueue render commands from CPU to GPU (does not block)
    SDL_GL_SwapWindow(m_sdl_playfieldHwnd);
    #else
    CHECKD3D(m_pD3DDevice->Present(nullptr, nullptr, nullptr, nullptr));
@@ -1716,7 +1728,12 @@ void RenderDevice::FlushRenderFrame()
    bool rendered = m_renderFrame.Execute(m_logNextFrame);
    m_currentPass = nullptr;
    if (rendered)
+   {
       m_logNextFrame = false;
+      #ifdef ENABLE_SDL
+      glFlush(); // Push command queue to the GPU without blocking (tells the GPU that the render queue is ready to be executed)
+      #endif
+   }
 }
 
 void RenderDevice::SetRenderTarget(const string& name, RenderTarget* rt)
