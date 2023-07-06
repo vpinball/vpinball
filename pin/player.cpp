@@ -1190,7 +1190,9 @@ HRESULT Player::Init()
       ShowError(szFoo);
       return hr;
    }
+   m_pin3d.m_pd3dPrimaryDevice->m_vsyncCount = 1;
    m_maxFramerate = (m_videoSyncMode != VideoSyncMode::VSM_NONE && m_maxFramerate == 0) ? m_refreshrate : min(m_maxFramerate, m_refreshrate);
+   PLOGI << "Synchronization mode: " << m_videoSyncMode << " with maximum FPS: " << m_maxFramerate << ", display FPS: " << m_refreshrate;
 
 #ifdef ENABLE_SDL
    if (m_stereo3D == STEREO_VR)
@@ -3986,6 +3988,8 @@ void Player::LockForegroundWindow(const bool enable)
 
 void Player::OnIdle()
 {
+   assert(m_stereo3D != STEREO_VR || (m_videoSyncMode == VideoSyncMode::VSM_NONE && m_maxFramerate == 0)); // Stereo must be run unthrotlled to let OpenVR set the frame pace according to the head set
+
    if (m_videoSyncMode == VideoSyncMode::VSM_FRAME_PACING)
    {
       // The main loop tries to perform a constant input/physics cycle at a 1ms pace while feeding the GPU command queue at a stable rate, without multithreading.
@@ -4027,7 +4031,6 @@ void Player::OnIdle()
       // CPU     CCSSS..WWFccsss..wwfCCSSS..WWFccsss..wwfCCSSS..WWFccsss..wwfCCSSSS.
       // GPU     ..RRRRRRRRR.rrrrrrrrr.RRRRRRRRR.rrrrrrrrr.RRRRRRRRR.rrrrrrrrr.RRRRR
       // This also allows, if selected (not shown), to only use multiples of the refresh rate to enforce that frames are in sync with VBlank.
-
       constexpr bool debugLog = false;
 
       // Render frame following these: Prepare / Submit to GPU / Present frame when monitor is ready to display a new frame and GPU has finished rendering (not for DX9)
@@ -4046,6 +4049,7 @@ void Player::OnIdle()
       {
          PLOGI_IF(debugLog) << "Frame Submit at " << usec();
          SubmitFrame();
+         g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_SLEEP);
          m_mainLoopPhase = 2;
       }
       break;
@@ -4053,16 +4057,16 @@ void Player::OnIdle()
       case 2:
       {
          // Wait for at least one VBlank after last frame submission (adaptive sync)
-         if (m_stereo3D != STEREO_VR && m_overall_frames > 1 && m_pin3d.m_pd3dPrimaryDevice->m_lastVSyncUs == 0)
+         if (m_pin3d.m_pd3dPrimaryDevice->m_vsyncCount == 0)
          {
             m_curFrameSyncOnVBlank = true;
             break;
          }
 
-         // If the user asked to sync on a lower frame rate th n the refresh rate, then wait for it
-         const U64 now = usec();
-         if (m_stereo3D != STEREO_VR && m_overall_frames > 100 && m_maxFramerate != m_refreshrate)
+         // If the user asked to sync on a lower frame rate than the refresh rate, then wait for it
+         if (m_maxFramerate != m_refreshrate)
          {
+            const U64 now = usec();
             const int refreshLength = (int)(1000000ul / m_refreshrate);
             const int minimumFrameLength = 1000000ull / m_maxFramerate;
             const int maximumFrameLength = 5 * refreshLength;
@@ -4072,13 +4076,15 @@ void Player::OnIdle()
                m_curFrameSyncOnFPS = true;
                break;
             }
+            m_lastPresentFrameTick = now;
          }
 
+         // Schedule frame presentation, ask for an asynchronous VBlank, start preparing next frame
          m_lastFrameSyncOnVBlank = m_curFrameSyncOnVBlank;
          m_lastFrameSyncOnFPS = m_curFrameSyncOnFPS;
-         m_lastPresentFrameTick = now;
-         PLOGI_IF(debugLog) << "Frame Finish at " << now << ", Waited for VBlank: " << m_curFrameSyncOnVBlank << ", Waited for FPS: " << m_curFrameSyncOnFPS;
-         m_pin3d.m_pd3dPrimaryDevice->m_lastVSyncUs = 0;
+         PLOGI_IF(debugLog) << "Frame Scheduled at " << usec() << ", Waited for VBlank: " << m_curFrameSyncOnVBlank << ", Waited for FPS: " << m_curFrameSyncOnFPS;
+         m_pin3d.m_pd3dPrimaryDevice->m_vsyncCount = 0;
+         g_frameProfiler.ExitProfileSection(); // Out of Sleep section
          g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_GPU_FLIP);
          m_pin3d.m_pd3dPrimaryDevice->Flip();
          m_pin3d.m_pd3dPrimaryDevice->WaitForVSync(true);
@@ -4156,8 +4162,8 @@ void Player::OnIdle()
          return;
 
       // Adjust framerate if requested by user (i.e. not using a synchronization mode that will lead to blocking calls aligned to the display refresh rate)
-      const bool onlyVSync = m_videoSyncMode != VideoSyncMode::VSM_NONE && m_maxFramerate == m_refreshrate;
-      if (m_stereo3D != STEREO_VR && !onlyVSync && m_maxFramerate != 0)
+      if (m_maxFramerate != 0 // User has requested a target FPS
+	   && (m_videoSyncMode == VideoSyncMode::VSM_NONE || m_maxFramerate != m_refreshrate)) // The synchronization is not already performed by the VSYNC
       {
          const int timeForFrame = (int)(usec() - m_startFrameTick);
          const int targetTime = 1000000 / m_maxFramerate;

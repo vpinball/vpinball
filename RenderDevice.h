@@ -303,6 +303,7 @@ private:
 
 public:
    U64 m_lastVSyncUs = 0;
+   unsigned int m_vsyncCount = 0;
 
    MeshBuffer* m_quadMeshBuffer = nullptr;       // internal vb for rendering quads
    MeshBuffer* m_quadPNTDynMeshBuffer = nullptr; // internal vb for rendering dynamic quads (position/normal/texture)

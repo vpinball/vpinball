@@ -26,7 +26,7 @@ public:
       IDXGIAdapter1*          m_Adapter     = nullptr;
       IDXGIOutput*            m_Output      = nullptr;
       IDXGIOutput1*           m_Output1     = nullptr;
-      IDXGIOutput5*           m_Output5     = nullptr;
+      //IDXGIOutput5*           m_Output5     = nullptr;
       DXGI_OUTPUT_DESC        m_OutputDesc;
    };
    
@@ -66,6 +66,8 @@ public:
          &dev->m_D3DDevice,        /* OUT: the ID3D11Device object. */
          &dev->m_D3DFeatureLevel,  /* OUT: the selected feature level. */
          &dev->m_D3DContext);      /* OUT: the ID3D11DeviceContext that represents the above features. */
+      
+      PLOGI << "Direct3D11 device created for adapter '" << adapterDesc.Description << "'";
 	  
 	   m_devices.push_back(dev);
 	   return dev;
@@ -118,13 +120,14 @@ public:
 	  
 	   if (!found)
 	   {
+         PLOGE << "Failed to create find DXGI output for the requested window";
 		   delete out;
 		   return nullptr;
 	   }
 	  
 	   // Query later API version of the interface to have access to duplication methods
       out->m_Output->QueryInterface(__uuidof(IDXGIOutput1), (void**)&out->m_Output1);
-      out->m_Output->QueryInterface(__uuidof(IDXGIOutput5), (void**)&out->m_Output5);
+      //out->m_Output->QueryInterface(__uuidof(IDXGIOutput5), (void**)&out->m_Output5);
 
       m_outputs.push_back(out);
       PLOGI << "DXGI output was created for output '" << out->m_OutputDesc.DeviceName << "' on adapter #" << adapterIndex;
