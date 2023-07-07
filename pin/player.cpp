@@ -1587,10 +1587,13 @@ HRESULT Player::Init()
    m_ballTrailMeshBuffer = new MeshBuffer(L"Ball.Trail"s, ballTrailVertexBuffer);
 
    #ifdef ENABLE_SDL
-   if (m_capExtDMD)
-      StartDMDCapture();
-   if (m_capPUP)
-      StartPUPCapture();
+   if (m_stereo3D == STEREO_VR)
+   {
+      if (m_capExtDMD)
+         StartDMDCapture();
+      if (m_capPUP)
+         StartPUPCapture();
+   }
    #endif
 
    m_pEditorTable->m_progressDialog.SetName("Starting Game Scripts..."s);
@@ -4293,7 +4296,8 @@ void Player::SubmitFrame()
 
    // Trigger captures
    #ifdef ENABLE_SDL
-   UpdateExtCaptures();
+   if (m_stereo3D == STEREO_VR)
+      UpdateExtCaptures();
    #endif
 }
 

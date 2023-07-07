@@ -75,12 +75,11 @@ void ExtCaptureManager::Stop()
 
 void ExtCaptureManager::Update()
 {
-   //OutputDebugString("lock Upd\n");
-   m_captureMutex.lock();
    for (Capture* capture : m_captures)
    {
       if (capture->m_state == CS_Texture)
       {
+         const std::lock_guard<std::mutex> guard(m_captureMutex);
          if (*capture->m_targetTexture != nullptr)
          {
             g_pplayer->m_pin3d.m_pd3dPrimaryDevice->m_texMan.UnloadTexture(*capture->m_targetTexture);
@@ -94,12 +93,11 @@ void ExtCaptureManager::Update()
       }
       else if (capture->m_state == CS_Capturing && capture->m_updated)
       {
+         // We do not lock wait on the update thread when pushing the update information to the texture manager to limit the performance impact
          capture->m_updated = false;
          g_pplayer->m_pin3d.m_pd3dPrimaryDevice->m_texMan.SetDirty(*capture->m_targetTexture);
       }
    }
-   //OutputDebugString("Unlock Upd\n");
-   m_captureMutex.unlock();
 
    //OutputDebugString("Signal Upd\n");
    m_updateCV.notify_one();
@@ -113,133 +111,8 @@ void ExtCaptureManager::UpdateThread()
    {
       //OutputDebugString("Lock UpdThread\n");
       m_captureMutex.lock();
-      // Perform the monitor captures
-      for (Duplication* duplication : m_duplications)
-      {
-         duplication->m_srcData = nullptr;
-         IDXGIResource* desktop_resource = nullptr;
-         ID3D11Texture2D* tex = nullptr;
-         DXGI_OUTDUPL_FRAME_INFO frame_info;
-         HRESULT hr = duplication->m_duplication->AcquireNextFrame(2500, &frame_info, &desktop_resource);
-         if (DXGI_ERROR_ACCESS_LOST == hr)
-         {
-            ShowError("Capture: Received DXGI_ERROR_ACCESS_LOST.");
-         }
-         else if (DXGI_ERROR_WAIT_TIMEOUT == hr)
-         {
-            ShowError("Capture: Received DXGI_ERROR_WAIT_TIMEOUT.");
-         }
-         else if (DXGI_ERROR_INVALID_CALL == hr)
-         {
-            ShowError("Capture: Received DXGI_ERROR_INVALID_CALL.");
-         }
-         else if (S_OK == hr)
-         {
-            //printf("Yay we got a frame.\n");
-            hr = desktop_resource->QueryInterface(__uuidof(ID3D11Texture2D), (void**)&tex);
-            if (S_OK != hr)
-            {
-               ShowError("Capture: Failed to query the ID3D11Texture2D interface on IDXGIResource.");
-               exit(EXIT_FAILURE);
-            }
-            DXGI_MAPPED_RECT mapped_rect;
-            hr = duplication->m_duplication->MapDesktopSurface(&mapped_rect);
-            if (S_OK == hr)
-            {
-               //printf("We got access to the desktop surface\n");
-               hr = duplication->m_duplication->UnMapDesktopSurface();
-               if (S_OK != hr)
-               {
-                  ShowError("Capture: Failed to unmap the desktop surface after successfully mapping it.");
-               }
-            }
-            else if (DXGI_ERROR_UNSUPPORTED == hr)
-            {
-               duplication->m_device->m_D3DContext->CopyResource(duplication->m_stagingTex, tex);
-               D3D11_MAPPED_SUBRESOURCE map;
-               const HRESULT map_result = duplication->m_device->m_D3DContext->Map(duplication->m_stagingTex, 0, D3D11_MAP_READ, 0, &map);
-               if (S_OK == map_result)
-               {
-                  //printf("Mapped the staging tex; we can access the data now.\n");
-                  //printf("RowPitch: %u, DepthPitch: %u, %02X, %02X, %02X\n", map.RowPitch, map.DepthPitch, data[0], data[1], data[2]);
-                  duplication->m_srcData = (unsigned char*)map.pData;
-                  duplication->m_pitch = map.RowPitch;
-               }
-               else
-               {
-                  ShowError("Capture: Failed to map the staging tex. Cannot access the pixels.");
-               }
-               duplication->m_device->m_D3DContext->Unmap(duplication->m_stagingTex, 0);
-            }
-            else if (DXGI_ERROR_INVALID_CALL == hr)
-            {
-               ShowError("Capture: MapDesktopSurface returned DXGI_ERROR_INVALID_CALL.");
-            }
-            else if (DXGI_ERROR_ACCESS_LOST == hr)
-            {
-               ShowError("Capture: MapDesktopSurface returned DXGI_ERROR_ACCESS_LOST.");
-            }
-            else if (E_INVALIDARG == hr)
-            {
-               ShowError("Capture: MapDesktopSurface returned E_INVALIDARG.");
-            }
-            else
-            {
-               ShowError("Capture: MapDesktopSurface returned an unknown error.");
-            }
-         }
 
-         // Get move & dirty rectangles and marked corresponding captures as dirty
-         UINT BufSize = frame_info.TotalMetadataBufferSize;
-         if (duplication->m_metaDataBufferSize < BufSize)
-         {
-            delete[] duplication->m_metaDataBuffer;
-            duplication->m_metaDataBuffer = new char[BufSize];
-            duplication->m_metaDataBufferSize = BufSize;
-         }
-         hr = duplication->m_duplication->GetFrameMoveRects(BufSize, reinterpret_cast<DXGI_OUTDUPL_MOVE_RECT*>(duplication->m_metaDataBuffer), &BufSize);
-         if (SUCCEEDED(hr))
-         {
-            DXGI_OUTDUPL_MOVE_RECT* pmr = (DXGI_OUTDUPL_MOVE_RECT*)duplication->m_metaDataBuffer;
-            for (size_t i = 0; i < BufSize / sizeof(DXGI_OUTDUPL_MOVE_RECT); i++, pmr++)
-            {
-               for (Capture* capture : m_captures)
-               {
-                  const int capleft = capture->m_dispLeft, captop = capture->m_dispTop;
-                  const int capright = capture->m_dispLeft + capture->m_width;
-                  const int capbottom = capture->m_dispTop + capture->m_height;
-                  if (pmr->DestinationRect.left < capright && pmr->DestinationRect.right > capleft && pmr->DestinationRect.top < capbottom && pmr->DestinationRect.bottom > captop)
-                     capture->m_dirty = true;
-               }
-            }
-         }
-         BufSize = frame_info.TotalMetadataBufferSize;
-         hr = duplication->m_duplication->GetFrameDirtyRects(BufSize, reinterpret_cast<RECT*>(duplication->m_metaDataBuffer), &BufSize);
-         if (SUCCEEDED(hr))
-         {
-            const RECT* r = (RECT*)duplication->m_metaDataBuffer;
-            for (size_t i = 0; i < BufSize / sizeof(RECT); ++i, ++r)
-               for (Capture* capture : m_captures)
-               {
-                  const int capleft = capture->m_dispLeft, captop = capture->m_dispTop;
-                  const int capright = capture->m_dispLeft + capture->m_width;
-                  const int capbottom = capture->m_dispTop + capture->m_height;
-                  if (r->left < capright && r->right > capleft && r->top < capbottom && r->bottom > captop)
-                     capture->m_dirty = true;
-               }
-         }
-
-         // Clean up
-         SAFE_RELEASE(tex);
-         SAFE_RELEASE(desktop_resource);
-         hr = duplication->m_duplication->ReleaseFrame(); // We must release the frame.
-         if (S_OK != hr)
-         {
-            // std::cout << "FAILED TO RELEASE " << hr << std::endl;
-         }
-      }
-
-      // Initialize (search for windows, create output duplication) or copy captured data to the capture texture
+      // search for windows and create output duplication if needed
       for (Capture* capture : m_captures)
       {
          if (capture->m_state == CS_Searching)
@@ -344,7 +217,7 @@ void ExtCaptureManager::UpdateThread()
             BITMAPINFO info;
             info.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
             info.bmiHeader.biWidth = capture->m_width;
-            info.bmiHeader.biHeight = -capture->m_height;
+            info.bmiHeader.biHeight = -(int)capture->m_height;
             info.bmiHeader.biPlanes = 1;
             info.bmiHeader.biBitCount = (WORD)BitsPerPixel;
             info.bmiHeader.biCompression = BI_RGB;
@@ -352,21 +225,161 @@ void ExtCaptureManager::UpdateThread()
 
             capture->m_state = CS_Texture;
          }
-         else if (capture->m_state == CS_Capturing && capture->m_dirty)
+      }
+
+      // Perform the monitor captures
+      for (Duplication* duplication : m_duplications)
+      {
+         if (duplication->m_failed)
+            continue;
+
+         bool desktopIsMapped = false;
+         bool stagingTexIsMapped = false;
+         BYTE* srcData = nullptr;
+         int pitch = 0;
+         IDXGIResource* desktop_resource = nullptr;
+         DXGI_OUTDUPL_FRAME_INFO frame_info;
+         HRESULT hr = duplication->m_duplication->AcquireNextFrame(2500, &frame_info, &desktop_resource);
+         if (FAILED(hr))
          {
-            capture->m_dirty = false;
-            capture->m_updated = true;
-            const uint8_t* __restrict sptr = reinterpret_cast<uint8_t*>(capture->m_duplication->m_srcData) + capture->m_duplication->m_pitch * capture->m_dispTop;
-            uint8_t* __restrict ddptr = (uint8_t*)capture->m_data;
-            for (int h = 0; h < capture->m_height; ++h)
+            _com_error err(hr);
+            std::basic_stringstream<TCHAR> ss;
+            ss << "Capture failed with error message: " << err.ErrorMessage();
+            ShowError(ss.str().c_str());
+         }
+         else
+         {
+            DXGI_MAPPED_RECT mapped_rect;
+            hr = duplication->m_duplication->MapDesktopSurface(&mapped_rect);
+            if (hr == S_OK)
             {
-               // Copy acquired frame, swapping red and blue channel
-               copy_bgra_rgba<false>((unsigned int*)ddptr, (const unsigned int*)sptr + capture->m_dispLeft, capture->m_width);
-               sptr += capture->m_duplication->m_pitch;
-               ddptr += capture->m_width * 4;
+               desktopIsMapped = true;
+               srcData = (BYTE*)mapped_rect.pBits;
+               pitch = mapped_rect.Pitch;
+            }
+            else if (hr == DXGI_ERROR_UNSUPPORTED) // Can not perform a direct desktop resource mapping: we need to copy it from the GPU to a system memory texture
+            {
+               ID3D11Texture2D* tex = nullptr;
+               hr = desktop_resource->QueryInterface(__uuidof(ID3D11Texture2D), (void**)&tex);
+               if (FAILED(hr))
+               {
+                  ShowError("Capture: Failed to query the ID3D11Texture2D interface on IDXGIResource.");
+                  exit(EXIT_FAILURE);
+               }
+               D3D11_BOX srcBox;
+               srcBox.front = srcBox.right = srcBox.bottom = 0;
+               srcBox.back = 1;
+               srcBox.left = srcBox.top = UINT32_MAX;
+               for (Capture* capture : m_captures)
+                  if (capture->m_duplication == duplication)
+                  {
+                     srcBox.left = capture->m_dispLeft;
+                     srcBox.right = capture->m_dispLeft + capture->m_width;
+                     srcBox.top = capture->m_dispTop;
+                     srcBox.bottom = capture->m_dispTop + capture->m_height;
+                     duplication->m_device->m_D3DContext->CopySubresourceRegion(duplication->m_stagingTex, 0, capture->m_dispLeft, capture->m_dispTop, 0, tex, 0, &srcBox);
+                     //srcBox.left = min(srcBox.left, capture->m_dispLeft);
+                     //srcBox.right = max(srcBox.right, capture->m_dispLeft + capture->m_width);
+                     //srcBox.top = min(srcBox.top, capture->m_dispTop);
+                     //srcBox.bottom = max(srcBox.bottom, capture->m_dispTop + capture->m_height);
+                  }
+               //duplication->m_device->m_D3DContext->CopySubresourceRegion(duplication->m_stagingTex, 0, srcBox.left, srcBox.top, 0, tex, 0, &srcBox);
+               //duplication->m_device->m_D3DContext->CopyResource(duplication->m_stagingTex, tex);
+               SAFE_RELEASE(tex);
+               D3D11_MAPPED_SUBRESOURCE map;
+               hr = duplication->m_device->m_D3DContext->Map(duplication->m_stagingTex, 0, D3D11_MAP_READ, 0, &map);
+               if (SUCCEEDED(hr))
+               {
+                  stagingTexIsMapped = true;
+                  srcData = (BYTE*)map.pData;
+                  pitch = map.RowPitch;
+               }
+               else
+               {
+                  ShowError("Capture: Failed to map the staging tex. Cannot access the pixels.");
+               }
+            }
+            else
+            {
+               _com_error err(hr);
+               std::basic_stringstream<TCHAR> ss;
+               ss << "MapDesktopSurface failed with error message: " << err.ErrorMessage();
+               ShowError(ss.str().c_str());
             }
          }
+
+         if (srcData != nullptr)
+         {
+            // Get move & dirty rectangles and mark corresponding captures as dirty
+            UINT BufSize = frame_info.TotalMetadataBufferSize;
+            if (duplication->m_metaDataBufferSize < BufSize)
+            {
+               delete[] duplication->m_metaDataBuffer;
+               duplication->m_metaDataBuffer = new BYTE[BufSize];
+               duplication->m_metaDataBufferSize = BufSize;
+            }
+            hr = duplication->m_duplication->GetFrameMoveRects(BufSize, reinterpret_cast<DXGI_OUTDUPL_MOVE_RECT*>(duplication->m_metaDataBuffer), &BufSize);
+            if (SUCCEEDED(hr))
+            {
+               DXGI_OUTDUPL_MOVE_RECT* pmr = (DXGI_OUTDUPL_MOVE_RECT*)duplication->m_metaDataBuffer;
+               for (size_t i = 0; i < BufSize / sizeof(DXGI_OUTDUPL_MOVE_RECT); i++, pmr++)
+               {
+                  for (Capture* capture : m_captures)
+                  {
+                     const int capleft = capture->m_dispLeft, captop = capture->m_dispTop;
+                     const int capright = capture->m_dispLeft + capture->m_width;
+                     const int capbottom = capture->m_dispTop + capture->m_height;
+                     if (capture->m_duplication == duplication && pmr->DestinationRect.left < capright && pmr->DestinationRect.right > capleft && pmr->DestinationRect.top < capbottom
+                        && pmr->DestinationRect.bottom > captop)
+                        capture->m_dirty = true;
+                  }
+               }
+            }
+            BufSize = frame_info.TotalMetadataBufferSize;
+            hr = duplication->m_duplication->GetFrameDirtyRects(BufSize, reinterpret_cast<RECT*>(duplication->m_metaDataBuffer), &BufSize);
+            if (SUCCEEDED(hr))
+            {
+               const RECT* r = (RECT*)duplication->m_metaDataBuffer;
+               for (size_t i = 0; i < BufSize / sizeof(RECT); ++i, ++r)
+                  for (Capture* capture : m_captures)
+                  {
+                     const int capleft = capture->m_dispLeft, captop = capture->m_dispTop;
+                     const int capright = capture->m_dispLeft + capture->m_width;
+                     const int capbottom = capture->m_dispTop + capture->m_height;
+                     if (capture->m_duplication == duplication && r->left < capright && r->right > capleft && r->top < capbottom && r->bottom > captop)
+                        capture->m_dirty = true;
+                  }
+            }
+
+            // Upload data to target (system) textures, they will be uploaded back to the GPU by the texture manager (this is a fairly unefficient implementation)
+            for (Capture* capture : m_captures)
+            {
+               if (capture->m_duplication == duplication && capture->m_state == CS_Capturing && capture->m_dirty)
+               {
+                  capture->m_dirty = false;
+                  capture->m_updated = true;
+                  const uint8_t* __restrict sptr = reinterpret_cast<uint8_t*>(srcData) + pitch * capture->m_dispTop;
+                  uint8_t* __restrict ddptr = (uint8_t*)capture->m_data;
+                  for (unsigned int h = 0; h < capture->m_height; ++h)
+                  {
+                     // Copy acquired frame, swapping red and blue channel
+                     copy_bgra_rgba<false>((unsigned int*)ddptr, (const unsigned int*)sptr + capture->m_dispLeft, capture->m_width);
+                     sptr += pitch;
+                     ddptr += capture->m_width * 4;
+                  }
+               }
+            }
+         }
+
+         // Clean up
+         if (desktopIsMapped)
+            duplication->m_duplication->UnMapDesktopSurface();
+         else if (stagingTexIsMapped)
+            duplication->m_device->m_D3DContext->Unmap(duplication->m_stagingTex, 0);
+         SAFE_RELEASE(desktop_resource);
+         duplication->m_duplication->ReleaseFrame();
       }
+
       //OutputDebugString("Unlock UpdThread\n");
       m_captureMutex.unlock();
 
