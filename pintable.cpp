@@ -2141,6 +2141,13 @@ void PinTable::Play(const bool cameraMode)
    dst->m_bottom = src->m_bottom;
    dst->m_BG_enable_FSS = src->m_BG_enable_FSS;
    dst->m_overridePhysics = src->m_overridePhysics;
+   dst->m_fOverrideGravityConstant = src->m_fOverrideGravityConstant;
+   dst->m_fOverrideContactFriction = src->m_fOverrideContactFriction;
+   dst->m_fOverrideElasticity = src->m_fOverrideElasticity;
+   dst->m_fOverrideElasticityFalloff = src->m_fOverrideElasticityFalloff;
+   dst->m_fOverrideScatterAngle = src->m_fOverrideScatterAngle;
+   dst->m_fOverrideMinSlope = src->m_fOverrideMinSlope;
+   dst->m_fOverrideMaxSlope = src->m_fOverrideMaxSlope;
    dst->m_overridePhysicsFlipper = src->m_overridePhysicsFlipper;
    dst->m_Gravity = src->m_Gravity;
    dst->m_friction = src->m_friction;
@@ -2208,7 +2215,7 @@ void PinTable::Play(const bool cameraMode)
    dst->m_useAA = src->m_useAA;
    memcpy(dst->m_wzName, src->m_wzName, MAXNAMEBUFFER * sizeof(src->m_wzName[0]));
 
-   dst->m_Light[0].emission = m_Light[0].emission;
+   dst->m_Light[0].emission = src->m_Light[0].emission;
 
    dst->m_BG_current_set = src->m_BG_current_set;
    dst->m_currentBackglassMode = src->m_currentBackglassMode;
@@ -2342,30 +2349,29 @@ void PinTable::Play(const bool cameraMode)
 
       // parse the (optional) override-physics-sets that can be set globally
       float fOverrideContactScatterAngle;
-      if (m_overridePhysics)
+      if (live_table->m_overridePhysics)
       {
-         live_table->m_fOverrideGravityConstant = LoadValueWithDefault(regKey[RegName::Player], "TablePhysicsGravityConstant" + std::to_string(m_overridePhysics - 1), DEFAULT_TABLE_GRAVITY);
-         live_table->m_fOverrideGravityConstant *= GRAVITYCONST;
-         live_table->m_fOverrideContactFriction = LoadValueWithDefault(regKey[RegName::Player], "TablePhysicsContactFriction"+std::to_string(m_overridePhysics - 1), DEFAULT_TABLE_CONTACTFRICTION);
-         live_table->m_fOverrideElasticity = LoadValueWithDefault(regKey[RegName::Player], "TablePhysicsElasticity" + std::to_string(m_overridePhysics - 1), DEFAULT_TABLE_ELASTICITY);
-         live_table->m_fOverrideElasticityFalloff = LoadValueWithDefault(regKey[RegName::Player], "TablePhysicsElasticityFalloff"+std::to_string(m_overridePhysics - 1), DEFAULT_TABLE_ELASTICITY_FALLOFF);
-         live_table->m_fOverrideScatterAngle = LoadValueWithDefault(regKey[RegName::Player], "TablePhysicsScatterAngle" + std::to_string(m_overridePhysics - 1), DEFAULT_TABLE_PFSCATTERANGLE);
-         fOverrideContactScatterAngle = LoadValueWithDefault(regKey[RegName::Player], "TablePhysicsContactScatterAngle"+std::to_string(m_overridePhysics - 1), DEFAULT_TABLE_SCATTERANGLE);
-         live_table->m_fOverrideMinSlope = LoadValueWithDefault(regKey[RegName::Player], "TablePhysicsMinSlope" + std::to_string(m_overridePhysics - 1), DEFAULT_TABLE_MIN_SLOPE);
-         live_table->m_fOverrideMaxSlope = LoadValueWithDefault(regKey[RegName::Player], "TablePhysicsMaxSlope" + std::to_string(m_overridePhysics - 1), DEFAULT_TABLE_MAX_SLOPE);
+         live_table->m_fOverrideGravityConstant = GRAVITYCONST * LoadValueWithDefault(regKey[RegName::Player], "TablePhysicsGravityConstant" + std::to_string(live_table->m_overridePhysics - 1), DEFAULT_TABLE_GRAVITY);
+         live_table->m_fOverrideContactFriction = LoadValueWithDefault(regKey[RegName::Player], "TablePhysicsContactFriction"+std::to_string(live_table->m_overridePhysics - 1), DEFAULT_TABLE_CONTACTFRICTION);
+         live_table->m_fOverrideElasticity = LoadValueWithDefault(regKey[RegName::Player], "TablePhysicsElasticity" + std::to_string(live_table->m_overridePhysics - 1), DEFAULT_TABLE_ELASTICITY);
+         live_table->m_fOverrideElasticityFalloff = LoadValueWithDefault(regKey[RegName::Player], "TablePhysicsElasticityFalloff"+std::to_string(live_table->m_overridePhysics - 1), DEFAULT_TABLE_ELASTICITY_FALLOFF);
+         live_table->m_fOverrideScatterAngle = LoadValueWithDefault(regKey[RegName::Player], "TablePhysicsScatterAngle" + std::to_string(live_table->m_overridePhysics - 1), DEFAULT_TABLE_PFSCATTERANGLE);
+         fOverrideContactScatterAngle = LoadValueWithDefault(regKey[RegName::Player], "TablePhysicsContactScatterAngle"+std::to_string(live_table->m_overridePhysics - 1), DEFAULT_TABLE_SCATTERANGLE);
+         live_table->m_fOverrideMinSlope = LoadValueWithDefault(regKey[RegName::Player], "TablePhysicsMinSlope" + std::to_string(live_table->m_overridePhysics - 1), DEFAULT_TABLE_MIN_SLOPE);
+         live_table->m_fOverrideMaxSlope = LoadValueWithDefault(regKey[RegName::Player], "TablePhysicsMaxSlope" + std::to_string(live_table->m_overridePhysics - 1), DEFAULT_TABLE_MAX_SLOPE);
       }
 
-      c_hardScatter = ANGTORAD(m_overridePhysics ? fOverrideContactScatterAngle : m_defaultScatter);
+      c_hardScatter = ANGTORAD(live_table->m_overridePhysics ? fOverrideContactScatterAngle : live_table->m_defaultScatter);
 
       // create Player and init that one
 
       PLOGI << "Creating main window"; // For profiling
       g_pplayer = new Player(cameraMode, this, live_table);
       g_pplayer->CreateWnd();
-      const float minSlope = (m_overridePhysics ? m_fOverrideMinSlope : m_angletiltMin);
-      const float maxSlope = (m_overridePhysics ? m_fOverrideMaxSlope : m_angletiltMax);
-      const float slope = minSlope + (maxSlope - minSlope) * m_globalDifficulty;
-      g_pplayer->SetGravity(slope, m_overridePhysics ? m_fOverrideGravityConstant : m_Gravity);
+      const float minSlope = (live_table->m_overridePhysics ? live_table->m_fOverrideMinSlope : live_table->m_angletiltMin);
+      const float maxSlope = (live_table->m_overridePhysics ? live_table->m_fOverrideMaxSlope : live_table->m_angletiltMax);
+      const float slope = minSlope + (maxSlope - minSlope) * live_table->m_globalDifficulty;
+      g_pplayer->SetGravity(slope, live_table->m_overridePhysics ? live_table->m_fOverrideGravityConstant : live_table->m_Gravity);
 
       m_vpinball->ToggleToolbar();
    }
