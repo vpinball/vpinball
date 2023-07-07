@@ -230,7 +230,8 @@ bool SaveFile(const std::wstring& path, const void* data, SIZE_T size)
    if (hFile == INVALID_HANDLE_VALUE)
       return false;
 
-   if (WriteFile(hFile, data, (DWORD)size, NULL, NULL) == FALSE)
+   DWORD written = 0;
+   if (WriteFile(hFile, data, (DWORD)size, &written, NULL) == FALSE)
    {
       err = GetLastError();
       return false;
