@@ -27,7 +27,11 @@ void RenderPass::Reset(const string& name, RenderTarget* const rt)
 
 void RenderPass::RecycleCommands(std::vector<RenderCommand*>& commandPool)
 {
-   commandPool.insert(commandPool.end(), m_commands.begin(), m_commands.end());
+   if (commandPool.size() < 1024)
+      commandPool.insert(commandPool.end(), m_commands.begin(), m_commands.end());
+   else
+      for (RenderCommand* cmd : m_commands)
+         delete cmd;
    m_commands.clear();
 }
 
