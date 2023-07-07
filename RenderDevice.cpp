@@ -677,7 +677,7 @@ void RenderDevice::CreateDevice(int& refreshrate, UINT adapterIndex)
    case VideoSyncMode::VSM_NONE: SDL_GL_SetSwapInterval(0); break;
    case VideoSyncMode::VSM_VSYNC: SDL_GL_SetSwapInterval(1); break;
    case VideoSyncMode::VSM_ADAPTIVE_VSYNC: SDL_GL_SetSwapInterval(-1); break;
-   case VideoSyncMode::VSM_FRAME_PACING: SDL_GL_SetSwapInterval(-1); break;
+   case VideoSyncMode::VSM_FRAME_PACING: SDL_GL_SetSwapInterval(0); break;
    }
 
    m_maxaniso = 0;
@@ -1728,12 +1728,7 @@ void RenderDevice::FlushRenderFrame()
    bool rendered = m_renderFrame.Execute(m_logNextFrame);
    m_currentPass = nullptr;
    if (rendered)
-   {
       m_logNextFrame = false;
-      #ifdef ENABLE_SDL
-      glFlush(); // Push command queue to the GPU without blocking (tells the GPU that the render queue is ready to be executed)
-      #endif
-   }
 }
 
 void RenderDevice::SetRenderTarget(const string& name, RenderTarget* rt)
