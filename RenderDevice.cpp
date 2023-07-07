@@ -1082,6 +1082,9 @@ void RenderDevice::CreateDevice(int& refreshrate, UINT adapterIndex)
       ShowError("Failed to create the synchronization device.\r\nSynchronization switched to adaptive sync.");
       PLOGE << "Failed to create the synchronization device for frame pacing. Synchronization switched to adaptive sync.";
       m_videoSyncMode = VideoSyncMode::VSM_ADAPTIVE_VSYNC;
+      #ifdef ENABLE_SDL
+      SDL_GL_SetSwapInterval(-1);
+      #endif
    }
 }
 
