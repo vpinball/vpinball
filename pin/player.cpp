@@ -5376,6 +5376,10 @@ void Player::StopPlayer()
    m_pEditorTable->EnableWindow();
 
    LockForegroundWindow(false);
+
+   // Close app on player stop
+   if (g_pvp->m_open_minimized && g_pvp->m_disable_pause_menu)
+      SendMessage(g_pvp->GetHwnd(), WM_COMMAND, ID_FILE_EXIT, NULL);
 }
 
 #ifdef PLAYBACK
