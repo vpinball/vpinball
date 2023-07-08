@@ -134,7 +134,11 @@ Player::Player(const bool cameraMode, PinTable *const editor_table, PinTable *co
    m_global3DDesaturation = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DDesaturation"s, 0.f);
    m_disableDWM = LoadValueWithDefault(regKey[RegName::Player], "DisableDWM"s, false);
    m_useNvidiaApi = LoadValueWithDefault(regKey[RegName::Player], "UseNVidiaAPI"s, false);
+   #ifdef ENABLE_SDL
+   m_ditherOff = false;
+   #else
    m_ditherOff = LoadValueWithDefault(regKey[RegName::Player], "Render10Bit"s, false); // if rendering at 10bit output resolution, disable dithering
+   #endif
    m_BWrendering = LoadValueWithDefault(regKey[RegName::Player], "BWRendering"s, 0);
    m_detectScriptHang = LoadValueWithDefault(regKey[RegName::Player], "DetectHang"s, false);
    const int pfr = LoadValueWithDefault(regKey[useVR ? RegName::PlayerVR : RegName::Player], "PFReflection"s, -1);
@@ -528,7 +532,7 @@ void Player::CreateWnd(HWND parent /* = 0 */)
    PreCreate(cs);
 
    const int colordepth = m_stereo3D == STEREO_VR ? 32 : LoadValueWithDefault(regKey[RegName::Player], "ColorDepth"s, 32);
-   const bool video10bit = m_stereo3D == STEREO_VR ? false : LoadValueWithDefault(regKey[RegName::Player], "Render10Bit"s, false);
+   const bool video10bit = false; // Unsupported m_stereo3D == STEREO_VR ? false : LoadValueWithDefault(regKey[RegName::Player], "Render10Bit"s, false);
    int channelDepth = video10bit ? 10 : ((colordepth == 16) ? 5 : 8);
    // We only set bit depth for fullscreen desktop modes (otherwise, use the desktop bit depth)
    if (m_fullScreen)
@@ -608,11 +612,13 @@ void Player::CreateWnd(HWND parent /* = 0 */)
    }
    else
    {
-	  //Do not apply this flag as it would break displaying DMD overlay window
-      //if (cs.cx == displayWidth && cs.cy == displayHeight)
-      //   flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+      if (cs.cx == displayWidth && cs.cy == displayHeight)
+         flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
       m_sdl_playfieldHwnd = SDL_CreateWindow(cs.lpszName, cs.x, cs.y, cs.cx, cs.cy, flags);
    }
+   SDL_DisplayMode mode;
+   SDL_GetWindowDisplayMode(m_sdl_playfieldHwnd, &mode);
+   PLOGI << "SDL display mode: " << mode.w << "x" << mode.h << " " << mode.refresh_rate << "Hz " << SDL_GetPixelFormatName(mode.format);
 
    SDL_SysWMinfo wmInfo;
    SDL_VERSION(&wmInfo.version);
@@ -630,6 +636,7 @@ void Player::CreateWnd(HWND parent /* = 0 */)
       else
          SDL_ShowWindow(m_sdl_playfieldHwnd);
    }
+
 #else
    Create();
 #endif // ENABLE_SDL

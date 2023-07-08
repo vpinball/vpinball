@@ -36,6 +36,11 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const int width, const int he
    m_color_tex = 0;
    m_depth_tex = 0;
    m_texTarget = GL_TEXTURE_2D;
+   int rSize, gSize, bSize;
+   SDL_GL_GetAttribute(SDL_GL_RED_SIZE, &rSize);
+   SDL_GL_GetAttribute(SDL_GL_GREEN_SIZE, &gSize);
+   SDL_GL_GetAttribute(SDL_GL_BLUE_SIZE, &bSize);
+   PLOGI << "Backbuffer channel size: " << rSize << ", " << gSize << ", " << bSize;
 #else
    HRESULT hr = m_rd->GetCoreDevice()->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &m_color_surface);
    if (FAILED(hr))
