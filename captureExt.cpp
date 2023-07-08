@@ -87,6 +87,18 @@ void ExtCaptureManager::Update()
             *capture->m_targetTexture = nullptr;
          }
          // Sleaze alert! - ec creates a HBitmap, but we hijack ec's data pointer to dump its data directly into VP's texture
+         const HDC all_screen = GetDC(nullptr);
+         const int BitsPerPixel = GetDeviceCaps(all_screen, BITSPIXEL);
+         const HDC hdc2 = CreateCompatibleDC(all_screen);
+         BITMAPINFO info;
+         info.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+         info.bmiHeader.biWidth = capture->m_width;
+         info.bmiHeader.biHeight = -(int)capture->m_height;
+         info.bmiHeader.biPlanes = 1;
+         info.bmiHeader.biBitCount = (WORD)BitsPerPixel;
+         info.bmiHeader.biCompression = BI_RGB;
+         capture->m_hBitmap = CreateDIBSection(hdc2, &info, DIB_RGB_COLORS, (void**)&capture->m_data, 0, 0);
+
          *capture->m_targetTexture = BaseTexture::CreateFromHBitmap(capture->m_hBitmap);
          capture->m_data = (*capture->m_targetTexture)->data();
          capture->m_state = CS_Capturing;
@@ -202,28 +214,6 @@ void ExtCaptureManager::UpdateThread()
                capture->m_state = CS_Failure;
                continue;
             }
-
-            // Gather information for this specific window capture and create a DIB for the data
-            RECT inputRect;
-            GetWindowRect(capture->m_window, &inputRect);
-            capture->m_dispLeft = inputRect.left - output->m_OutputDesc.DesktopCoordinates.left;
-            capture->m_dispTop = inputRect.top - output->m_OutputDesc.DesktopCoordinates.top;
-            capture->m_width = inputRect.right - inputRect.left;
-            capture->m_height = inputRect.bottom - inputRect.top;
-
-            const HDC all_screen = GetDC(nullptr);
-            const int BitsPerPixel = GetDeviceCaps(all_screen, BITSPIXEL);
-            const HDC hdc2 = CreateCompatibleDC(all_screen);
-            BITMAPINFO info;
-            info.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-            info.bmiHeader.biWidth = capture->m_width;
-            info.bmiHeader.biHeight = -(int)capture->m_height;
-            info.bmiHeader.biPlanes = 1;
-            info.bmiHeader.biBitCount = (WORD)BitsPerPixel;
-            info.bmiHeader.biCompression = BI_RGB;
-            capture->m_hBitmap = CreateDIBSection(hdc2, &info, DIB_RGB_COLORS, (void**)&capture->m_data, 0, 0);
-
-            capture->m_state = CS_Texture;
          }
       }
 
@@ -270,21 +260,28 @@ void ExtCaptureManager::UpdateThread()
                srcBox.front = srcBox.right = srcBox.bottom = 0;
                srcBox.back = 1;
                srcBox.left = srcBox.top = UINT32_MAX;
+               UINT outWidth = duplication->m_output->m_OutputDesc.DesktopCoordinates.right - duplication->m_output->m_OutputDesc.DesktopCoordinates.left;
+               UINT outHeight = duplication->m_output->m_OutputDesc.DesktopCoordinates.bottom - duplication->m_output->m_OutputDesc.DesktopCoordinates.top;
                for (Capture* capture : m_captures)
+               {
                   if (capture->m_duplication == duplication)
                   {
+                     RECT inputRect;
+                     GetWindowRect(capture->m_window, &inputRect);
+                     UINT oldWidth = capture->m_width, oldHeight = capture->m_height;
+                     capture->m_width = inputRect.right - inputRect.left;
+                     capture->m_height = inputRect.bottom - inputRect.top;
+                     capture->m_dispLeft = clamp(inputRect.left - duplication->m_output->m_OutputDesc.DesktopCoordinates.left, 0l, outWidth - capture->m_width);
+                     capture->m_dispTop = clamp(inputRect.top - duplication->m_output->m_OutputDesc.DesktopCoordinates.top, 0l, outHeight - capture->m_height);
+                     if (oldWidth != capture->m_width || oldHeight != capture->m_height)
+                        capture->m_state = CS_Texture;
                      srcBox.left = capture->m_dispLeft;
                      srcBox.right = capture->m_dispLeft + capture->m_width;
                      srcBox.top = capture->m_dispTop;
                      srcBox.bottom = capture->m_dispTop + capture->m_height;
                      duplication->m_device->m_D3DContext->CopySubresourceRegion(duplication->m_stagingTex, 0, capture->m_dispLeft, capture->m_dispTop, 0, tex, 0, &srcBox);
-                     //srcBox.left = min(srcBox.left, capture->m_dispLeft);
-                     //srcBox.right = max(srcBox.right, capture->m_dispLeft + capture->m_width);
-                     //srcBox.top = min(srcBox.top, capture->m_dispTop);
-                     //srcBox.bottom = max(srcBox.bottom, capture->m_dispTop + capture->m_height);
                   }
-               //duplication->m_device->m_D3DContext->CopySubresourceRegion(duplication->m_stagingTex, 0, srcBox.left, srcBox.top, 0, tex, 0, &srcBox);
-               //duplication->m_device->m_D3DContext->CopyResource(duplication->m_stagingTex, tex);
+               }
                SAFE_RELEASE(tex);
                D3D11_MAPPED_SUBRESOURCE map;
                hr = duplication->m_device->m_D3DContext->Map(duplication->m_stagingTex, 0, D3D11_MAP_READ, 0, &map);
@@ -296,7 +293,7 @@ void ExtCaptureManager::UpdateThread()
                }
                else
                {
-                  ShowError("Capture: Failed to map the staging tex. Cannot access the pixels.");
+                  PLOGE << "Capture: Failed to map the staging tex. Cannot access the pixels.";
                }
             }
             else
