@@ -56,6 +56,7 @@ public:
 	   }
 	  
 	   Device* dev = new Device();
+      dev->m_Adapter = adapter;
       HRESULT hr = D3D11CreateDevice(adapter, /* Adapter: The adapter (video card) we want to use. We may use NULL to pick the default adapter. */
          D3D_DRIVER_TYPE_UNKNOWN,  /* DriverType: We use the GPU as backing device. */
          nullptr,                  /* Software: we're using a D3D_DRIVER_TYPE_HARDWARE so it's not applicaple. */
