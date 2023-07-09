@@ -116,8 +116,10 @@ public:
    void CreateDevice(int &refreshrate, UINT adapterIndex = D3DADAPTER_DEFAULT);
    bool LoadShaders();
 
-   void SetRenderTarget(const string& passName, RenderTarget* rt);
+   const RenderPass* GetCurrentPass() const { return m_currentPass; }
+   void SetRenderTarget(const string& passName, RenderTarget* rt, const bool useRTContent = true);
    void AddRenderTargetDependency(RenderTarget* rt, const bool needDepth = false);
+   void AddRenderTargetDependencyOnNextRenderCommand(RenderTarget* rt);
    void Clear(const DWORD flags, const D3DCOLOR color, const D3DVALUE z, const DWORD stencil);
    void BlitRenderTarget(RenderTarget* source, RenderTarget* destination, const bool copyColor = true, const bool copyDepth = true,  
       const int x1 = -1, const int y1 = -1, const int w1 = -1, const int h1 = -1,
@@ -336,11 +338,10 @@ public:
 
    TextureManager m_texMan;
 
-   RenderTarget* GetCurrentRenderTarget() { return m_currentPass == nullptr ? nullptr : m_currentPass->m_rt; }
-
 private :
    RenderFrame m_renderFrame;
    RenderPass* m_currentPass = nullptr;
+   RenderPass* m_nextRenderCommandDependency = nullptr;
 
 public:
 #if defined(ENABLE_SDL) // OpenGL

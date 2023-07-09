@@ -1175,10 +1175,10 @@ void RenderDevice::ResolveMSAA()
 { 
    if (m_pOffscreenMSAABackBufferTexture != m_pOffscreenBackBufferTexture)
    {
-      RenderTarget* initial_rt = GetCurrentRenderTarget();
+      const RenderPass* initial_rt = GetCurrentPass();
       SetRenderTarget("Resolve MSAA"s, m_pOffscreenBackBufferTexture);
       BlitRenderTarget(m_pOffscreenMSAABackBufferTexture, m_pOffscreenBackBufferTexture, true, true);
-      SetRenderTarget(""s, initial_rt);
+      SetRenderTarget(initial_rt->m_name, initial_rt->m_rt);
    }
 }
 
@@ -1734,7 +1734,7 @@ void RenderDevice::FlushRenderFrame()
       m_logNextFrame = false;
 }
 
-void RenderDevice::SetRenderTarget(const string& name, RenderTarget* rt)
+void RenderDevice::SetRenderTarget(const string& name, RenderTarget* rt, const bool useRTContent)
 {
    if (rt == nullptr)
    {
@@ -1743,7 +1743,7 @@ void RenderDevice::SetRenderTarget(const string& name, RenderTarget* rt)
    else if (m_currentPass == nullptr || rt != m_currentPass->m_rt)
    {
       m_currentPass = m_renderFrame.AddPass(name, rt);
-      if (rt->m_lastRenderPass != nullptr)
+      if (useRTContent && rt->m_lastRenderPass != nullptr)
          m_currentPass->AddPrecursor(rt->m_lastRenderPass);
       rt->m_lastRenderPass = m_currentPass;
    }
@@ -1758,11 +1758,19 @@ void RenderDevice::AddRenderTargetDependency(RenderTarget* rt, const bool needDe
    }
 }
 
+void RenderDevice::AddRenderTargetDependencyOnNextRenderCommand(RenderTarget* rt)
+{
+   assert(m_nextRenderCommandDependency == nullptr); // Only one dependency can be added on a render command
+   m_nextRenderCommandDependency = rt->m_lastRenderPass;
+}
+
 void RenderDevice::Clear(const DWORD flags, const D3DCOLOR color, const D3DVALUE z, const DWORD stencil)
 {
    ApplyRenderStates();
    RenderCommand* cmd = m_renderFrame.NewCommand();
    cmd->SetClear(flags, color);
+   cmd->m_dependency = m_nextRenderCommandDependency;
+   m_nextRenderCommandDependency = nullptr;
    m_currentPass->Submit(cmd);
 }
 
@@ -1773,6 +1781,8 @@ void RenderDevice::BlitRenderTarget(RenderTarget* source, RenderTarget* destinat
    AddRenderTargetDependency(source);
    RenderCommand* cmd = m_renderFrame.NewCommand();
    cmd->SetCopy(source, destination, copyColor, copyDepth, x1, y1, w1, h1, x2, y2, w2, h2, srcLayer, dstLayer);
+   cmd->m_dependency = m_nextRenderCommandDependency;
+   m_nextRenderCommandDependency = nullptr;
    m_currentPass->Submit(cmd);
 }
 
@@ -1781,6 +1791,8 @@ void RenderDevice::SubmitVR(RenderTarget* source)
    AddRenderTargetDependency(source);
    RenderCommand* cmd = m_renderFrame.NewCommand();
    cmd->SetSubmitVR(source);
+   cmd->m_dependency = m_nextRenderCommandDependency;
+   m_nextRenderCommandDependency = nullptr;
    m_currentPass->Submit(cmd);
 }
 
@@ -1788,6 +1800,8 @@ void RenderDevice::RenderLiveUI()
 {
    RenderCommand* cmd = m_renderFrame.NewCommand();
    cmd->SetRenderLiveUI();
+   cmd->m_dependency = m_nextRenderCommandDependency;
+   m_nextRenderCommandDependency = nullptr;
    m_currentPass->Submit(cmd);
 }
 
@@ -1797,6 +1811,8 @@ void RenderDevice::DrawTexturedQuad(Shader* shader, const Vertex3D_TexelOnly* ve
    ApplyRenderStates();
    RenderCommand* cmd = m_renderFrame.NewCommand();
    cmd->SetDrawTexturedQuad(shader, vertices);
+   cmd->m_dependency = m_nextRenderCommandDependency;
+   m_nextRenderCommandDependency = nullptr;
    m_currentPass->Submit(cmd);
 }
 
@@ -1806,6 +1822,8 @@ void RenderDevice::DrawTexturedQuad(Shader* shader, const Vertex3D_NoTex2* verti
    ApplyRenderStates();
    RenderCommand* cmd = m_renderFrame.NewCommand();
    cmd->SetDrawTexturedQuad(shader, vertices);
+   cmd->m_dependency = m_nextRenderCommandDependency;
+   m_nextRenderCommandDependency = nullptr;
    m_currentPass->Submit(cmd);
 }
 
@@ -1825,6 +1843,8 @@ void RenderDevice::DrawMesh(Shader* shader, const bool isTransparent, const Vert
    //float depth = isTransparent ? g_pplayer->IsRenderPass(Player::REFLECTION_PASS) ? depthBias + center.z : depthBias - center.z
    //                            : depthBias + (m_viewVec.x * center.x + m_viewVec.y * center.y + m_viewVec.z * center.z);
    cmd->SetDrawMesh(shader, mb, type, startIndice, indexCount, isTransparent, depth);
+   cmd->m_dependency = m_nextRenderCommandDependency;
+   m_nextRenderCommandDependency = nullptr;
    m_currentPass->Submit(cmd);
 }
 
@@ -1877,7 +1897,7 @@ void RenderDevice::DrawGaussianBlur(RenderTarget* source, RenderTarget* tmp, Ren
       tech_v = SHADER_TECHNIQUE_fb_blur_vert39x39;
    }
 
-   RenderTarget* initial_rt = GetCurrentRenderTarget();
+   const RenderPass* initial_rt = GetCurrentPass();
    RenderState initial_state;
    CopyRenderStates(true, initial_state);
    SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
@@ -1886,7 +1906,7 @@ void RenderDevice::DrawGaussianBlur(RenderTarget* source, RenderTarget* tmp, Ren
    SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
    {
       FBShader->SetTextureNull(SHADER_tex_fb_filtered);
-      SetRenderTarget("Horizontal Blur"s, tmp); // switch to temporary output buffer for horizontal phase of gaussian blur
+      SetRenderTarget("Horizontal Blur"s, tmp, false); // switch to temporary output buffer for horizontal phase of gaussian blur
       AddRenderTargetDependency(source);
       FBShader->SetTexture(SHADER_tex_fb_filtered, source->GetColorSampler());
       FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / source->GetWidth()), (float)(1.0 / source->GetHeight()), 1.0f, 1.0f);
@@ -1895,7 +1915,8 @@ void RenderDevice::DrawGaussianBlur(RenderTarget* source, RenderTarget* tmp, Ren
    }
    {
       FBShader->SetTextureNull(SHADER_tex_fb_filtered);
-      SetRenderTarget("Vertical Blur"s, dest); // switch to output buffer for vertical phase of gaussian blur
+      SetRenderTarget("Vertical Blur"s, dest, false); // switch to output buffer for vertical phase of gaussian blur
+      m_currentPass->Reset("Vertical Blur"s, dest); // reset to avoid dependency on self
       AddRenderTargetDependency(tmp);
       FBShader->SetTexture(SHADER_tex_fb_filtered, tmp->GetColorSampler());
       FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / tmp->GetWidth()), (float)(1.0 / tmp->GetHeight()), 1.0f, 1.0f);
@@ -1903,7 +1924,7 @@ void RenderDevice::DrawGaussianBlur(RenderTarget* source, RenderTarget* tmp, Ren
       DrawFullscreenTexturedQuad(FBShader);
    }
    CopyRenderStates(false, initial_state);
-   SetRenderTarget(""s, initial_rt);
+   SetRenderTarget(initial_rt->m_name, initial_rt->m_rt);
 }
 
 void RenderDevice::SetMainTextureDefaultFiltering(const SamplerFilter filter)
