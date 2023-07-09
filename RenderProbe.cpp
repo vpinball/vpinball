@@ -273,8 +273,7 @@ void RenderProbe::PreRenderStaticReflectionProbe()
 
       RenderState initial_state;
       p3dDevice->CopyRenderStates(true, initial_state);
-      p3dDevice->SetRenderTarget("PreRender Reflection"s, m_prerenderRT);
-      p3dDevice->AddRenderTargetDependency(accumulationSurface);
+      p3dDevice->SetRenderTarget("PreRender Reflection"s, m_prerenderRT, false);
       p3dDevice->Clear(clearType::TARGET | clearType::ZBUFFER, 0, 1.0f, 0L);
       DoRenderReflectionProbe(true, false, false);
       p3dDevice->CopyRenderStates(false, initial_state);
