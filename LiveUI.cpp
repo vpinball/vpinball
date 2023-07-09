@@ -1946,10 +1946,9 @@ void LiveUI::UpdateRendererInspectionModal()
       ImGui::RadioButton("Transmitted light pass", &pass_selection, IF_LIGHT_BUFFER_ONLY);
       if (m_player->GetAOMode() != 0)
          ImGui::RadioButton("Ambient Occlusion pass", &pass_selection, IF_AO_ONLY);
-      for (size_t i = 0; i < 2 * m_table->m_vrenderprobe.size(); i++)
+      for (size_t i = 0; i < m_table->m_vrenderprobe.size(); i++)
       {
-         string name = m_table->m_vrenderprobe[i >> 1]->GetName() + ((i & 1) == 0 ? " - Static pass" : " - Dynamic pass");
-         ImGui::RadioButton(name.c_str(), &pass_selection, 100 + (int) i);
+         ImGui::RadioButton(m_table->m_vrenderprobe[i]->GetName().c_str(), &pass_selection, 100 + (int)i);
       }
       if (pass_selection < 100)
          m_player->m_infoMode = (InfoMode)pass_selection;

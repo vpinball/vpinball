@@ -1263,11 +1263,11 @@ void Primitive::RenderObject()
       pinf = SF_ANISOTROPIC;
    }
 
-   // Request probes before setting up state
+   // Request probes before setting up state since this can trigger a renderprobe update which modifies the render state
    RenderProbe * const refraction_probe = m_ptable->GetRenderProbe(m_d.m_szRefractionProbe);
    RenderTarget * const refractions = refraction_probe ? refraction_probe->GetProbe(g_pplayer->IsRenderPass(Player::STATIC_PREPASS)) : nullptr;
-   RenderProbe *reflection_probe = m_d.m_reflectionStrength <= 0 ? nullptr : m_ptable->GetRenderProbe(m_d.m_szReflectionProbe);
-   RenderTarget *reflections = reflection_probe ? reflection_probe->GetProbe(g_pplayer->IsRenderPass(Player::STATIC_PREPASS)) : nullptr;
+   RenderProbe * const reflection_probe = m_d.m_reflectionStrength <= 0 ? nullptr : m_ptable->GetRenderProbe(m_d.m_szReflectionProbe);
+   RenderTarget * const reflections = reflection_probe ? reflection_probe->GetProbe(g_pplayer->IsRenderPass(Player::STATIC_PREPASS)) : nullptr;
 
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
 
@@ -1347,7 +1347,6 @@ void Primitive::RenderObject()
       // Setup for applying refractions from screen space probe
       if (refractions)
       {
-         pd3dDevice->AddRenderTargetDependency(refractions);
          const vec4 color = convertColor(mat->m_cRefractionTint, m_d.m_refractionThickness);
          pd3dDevice->basicShader->SetVector(SHADER_refractionTint_thickness, &color);
          pd3dDevice->basicShader->SetTexture(SHADER_tex_refraction, refractions->GetColorSampler());
@@ -1391,6 +1390,8 @@ void Primitive::RenderObject()
       }
       else
       {
+         if (refractions != nullptr && !is_reflection_only_pass)
+            pd3dDevice->AddRenderTargetDependencyOnNextRenderCommand(refractions); // Add a renderpass dependency on the render command (instead of in the renderframe) for the pass to be sorted with the command
          pd3dDevice->basicShader->SetTechniqueMaterial(pin ? SHADER_TECHNIQUE_basic_with_texture : SHADER_TECHNIQUE_basic_without_texture, mat, nMap, reflections, refractions);
       }
 
@@ -1460,7 +1461,7 @@ void Primitive::RenderSetup()
       return;
 
    const char* const szT = MakeChar(m_wzName);
-   PLOGD_IF(m_d.m_staticRendering && m_d.m_disableLightingBelow != 1.0f) << "Primitive '" << szT << "' is set as static rendering with lighting from below not disabled. The back lighting will not be performed.";
+   PLOGD_IF(m_d.m_staticRendering && m_d.m_disableLightingBelow != 1.0f && m_d.m_visible) << "Primitive '" << szT << "' is set as static rendering with lighting from below not disabled. The back lighting will not be performed.";
    delete[] szT;
 
    m_lightmap = m_ptable->GetLight(m_d.m_szLightmap);

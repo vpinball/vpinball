@@ -185,17 +185,17 @@ void RenderProbe::ApplyRoughness(RenderTarget* probe, const int roughness)
 void RenderProbe::RenderScreenSpaceTransparency(const bool is_static)
 {
    RenderDevice* const p3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-   RenderTarget* const previousRT = p3dDevice->GetCurrentRenderTarget();
+   const RenderPass* const previousRT = p3dDevice->GetCurrentPass();
    if (m_dynamicRT == nullptr)
    {
       const int downscale = GetRoughnessDownscale(m_roughness);
       const int w = p3dDevice->GetBackBufferTexture()->GetWidth() / downscale, h = p3dDevice->GetBackBufferTexture()->GetHeight() / downscale;
-      m_dynamicRT = new RenderTarget(p3dDevice, p3dDevice->GetBackBufferTexture()->m_type, "RefractionProbe"s, w, h, p3dDevice->GetBackBufferTexture()->GetColorFormat(), true, 1, "Failed to create refraction render target", nullptr);
+      m_dynamicRT = new RenderTarget(p3dDevice, p3dDevice->GetBackBufferTexture()->m_type, m_name, w, h, p3dDevice->GetBackBufferTexture()->GetColorFormat(), true, 1, "Failed to create refraction render target", nullptr);
    }
-   p3dDevice->SetRenderTarget("Refraction"s, m_dynamicRT);
+   p3dDevice->SetRenderTarget(m_name, m_dynamicRT, false);
    p3dDevice->BlitRenderTarget(p3dDevice->GetMSAABackBufferTexture(), m_dynamicRT, true, true);
    ApplyRoughness(m_dynamicRT, m_roughness);
-   p3dDevice->SetRenderTarget(""s, previousRT);
+   p3dDevice->SetRenderTarget(previousRT->m_name, previousRT->m_rt);
 }
 
 
@@ -234,13 +234,14 @@ void RenderProbe::PreRenderStaticReflectionProbe()
       return;
 
    RenderDevice* const p3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-   RenderTarget* const previousRT = p3dDevice->GetCurrentRenderTarget();
+   const RenderPass* previousRT = p3dDevice->GetCurrentPass();
 
    if (m_prerenderRT == nullptr)
    {
       const int downscale = GetRoughnessDownscale(m_roughness);
       const int w = p3dDevice->GetBackBufferTexture()->GetWidth() / downscale, h = p3dDevice->GetBackBufferTexture()->GetHeight() / downscale;
-      m_prerenderRT = new RenderTarget(p3dDevice, p3dDevice->GetBackBufferTexture()->m_type, "StaticReflProbe"s, w, h, p3dDevice->GetBackBufferTexture()->GetColorFormat(), true, 1, "Failed to create plane reflection static render target", nullptr);
+      m_prerenderRT = new RenderTarget(p3dDevice, p3dDevice->GetBackBufferTexture()->m_type, m_name + ".Stat"s, w, h, p3dDevice->GetBackBufferTexture()->GetColorFormat(), true, 1,
+         "Failed to create plane reflection static render target", nullptr);
    }
 
    RenderTarget* accumulationSurface = m_prerenderRT->Duplicate("Accumulation"s);
@@ -308,7 +309,10 @@ void RenderProbe::PreRenderStaticReflectionProbe()
    p3dDevice->BlitRenderTarget(accumulationSurface, m_prerenderRT, true, false);
    p3dDevice->FlushRenderFrame(); // Execute before destroying the render target
    delete accumulationSurface;
-   p3dDevice->SetRenderTarget(""s, previousRT);
+   if (previousRT)
+      p3dDevice->SetRenderTarget(previousRT->m_name, previousRT->m_rt);
+   else
+      p3dDevice->SetRenderTarget(""s, nullptr);
 
    // if rendering static/with heavy oversampling, re-enable the aniso/trilinear filter now for the normal rendering
    const bool forceAniso = LoadValueWithDefault(regKey[RegName::Player], "ForceAnisotropicFiltering"s, true);
@@ -326,14 +330,14 @@ void RenderProbe::RenderReflectionProbe(const bool is_static)
    assert(!g_pplayer->IsRenderPass(Player::REFLECTION_PASS));
 
    RenderDevice* const p3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-   RenderTarget* const previousRT = p3dDevice->GetCurrentRenderTarget();
+   const RenderPass* const previousRT = p3dDevice->GetCurrentPass();
 
    // Prepare to render into the reflection back buffer
    if (m_dynamicRT == nullptr)
    {
       const int downscale = GetRoughnessDownscale(m_roughness);
       const int w = p3dDevice->GetBackBufferTexture()->GetWidth() / downscale, h = p3dDevice->GetBackBufferTexture()->GetHeight() / downscale;
-      m_dynamicRT = new RenderTarget(p3dDevice, p3dDevice->GetBackBufferTexture()->m_type, "DynamicReflProbe"s, w, h, p3dDevice->GetBackBufferTexture()->GetColorFormat(), true, 1,
+      m_dynamicRT = new RenderTarget(p3dDevice, p3dDevice->GetBackBufferTexture()->m_type, m_name + ".Dyn"s, w, h, p3dDevice->GetBackBufferTexture()->GetColorFormat(), true, 1,
          "Failed to create plane reflection dynamic render target", nullptr);
    }
    p3dDevice->SetRenderTarget(m_name, m_dynamicRT);
@@ -347,9 +351,9 @@ void RenderProbe::RenderReflectionProbe(const bool is_static)
    const bool render_dynamic = !is_static && (mode >= REFL_STATIC_N_DYNAMIC);
    DoRenderReflectionProbe(render_static, render_balls, render_dynamic);
 
-   ApplyRoughness(p3dDevice->GetCurrentRenderTarget(), m_roughness);
+   ApplyRoughness(p3dDevice->GetCurrentPass()->m_rt, m_roughness);
 
-   p3dDevice->SetRenderTarget(""s, previousRT);
+   p3dDevice->SetRenderTarget(previousRT->m_name, previousRT->m_rt);
 }
 
 void RenderProbe::DoRenderReflectionProbe(const bool render_static, const bool render_balls, const bool render_dynamic)

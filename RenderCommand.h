@@ -37,6 +37,8 @@ public:
    void SetDrawTexturedQuad(Shader* shader, const Vertex3D_TexelOnly* vertices);
    void SetDrawTexturedQuad(Shader* shader, const Vertex3D_NoTex2* vertices);
 
+   RenderPass* m_dependency;
+
 private:
    enum Command
    {

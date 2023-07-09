@@ -21,6 +21,7 @@ void RenderPass::Reset(const string& name, RenderTarget* const rt)
    m_name = name;
    m_depthReadback = false;
    m_sortKey = 0;
+   m_updated = false;
    m_commands.clear();
    m_dependencies.clear();
 }
@@ -41,7 +42,21 @@ void RenderPass::AddPrecursor(RenderPass* dependency)
    m_dependencies.push_back(dependency);
 }
 
-void RenderPass::Sort(vector<RenderPass*>& sortedPasses)
+void RenderPass::UpdateDependency(RenderTarget* target, RenderPass* newDependency)
+{
+   if (m_updated)
+      return;
+   m_updated = true;
+   for (std::vector<RenderPass*>::iterator it = m_dependencies.begin(); it != m_dependencies.end(); ++it)
+   {
+      if ((*it)->m_rt == target)
+         *it = newDependency;
+      else
+         (*it)->UpdateDependency(target, newDependency);
+   }
+}
+
+void RenderPass::SortPasses(vector<RenderPass*>& sortedPasses, vector<RenderPass*>& allPasses)
 {
    // Perform a depth first sort down the precursor list, grouping by render target
    if (m_sortKey == 2) // Already processed
@@ -54,52 +69,43 @@ void RenderPass::Sort(vector<RenderPass*>& sortedPasses)
       if (me == nullptr && dependency->m_rt == m_rt)
          me = dependency;
       else
-         dependency->Sort(sortedPasses);
+         dependency->SortPasses(sortedPasses, allPasses);
    }
    if (me) // Process pass on the same render target after others to allow merging
-      me->Sort(sortedPasses);
+      me->SortPasses(sortedPasses, allPasses);
    m_sortKey = 2;
    if (!sortedPasses.empty() && sortedPasses.back()->m_rt == m_rt)
    {
       // Merge passes
-      sortedPasses.back()->m_depthReadback |= m_depthReadback;
-      sortedPasses.back()->m_commands.insert(sortedPasses.back()->m_commands.end(), m_commands.begin(), m_commands.end());
+      RenderPass* mergedPass = sortedPasses.back();
+      for (RenderPass* pass : allPasses)
+      {
+         if (pass == this)
+            RemoveFromVector(pass->m_dependencies, mergedPass);
+         else
+            std::replace(pass->m_dependencies.begin(), pass->m_dependencies.end(), this, mergedPass);
+      }
+      mergedPass->m_depthReadback |= m_depthReadback;
+      mergedPass->m_commands.insert(mergedPass->m_commands.end(), m_commands.begin(), m_commands.end());
+      mergedPass->m_dependencies.insert(mergedPass->m_dependencies.end(), m_dependencies.begin(), m_dependencies.end());
       m_commands.clear();
    }
-   else
+   else /* if (m_commands.size() > 0) */
    {
       // Add passes
       sortedPasses.push_back(this);
    }
+   /* else
+   {
+      for (RenderPass* pass : allPasses)
+      {
+
+      }
+   }*/
 }
 
-void RenderPass::Submit(RenderCommand* command)
+void RenderPass::SortCommands()
 {
-   if (command->IsFullClear(m_rt->HasDepth()))
-   {
-      for (RenderCommand* cmd : m_commands)
-         delete cmd;
-      m_commands.clear();
-      // FIXME remove dependencies on this render target (but not on others)
-   }
-   m_commands.push_back(command);
-}
-
-bool RenderPass::Execute(const bool log)
-{
-   m_rt->m_lastRenderPass = nullptr;
-   if (m_commands.empty())
-      return false;
-
-   #ifdef ENABLE_SDL
-   if (GLAD_GL_VERSION_4_3)
-   {
-      std::stringstream passName;
-      passName << m_name << " [RT=" << m_rt->m_name << "]";
-      glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, passName.str().c_str());
-   }
-   #endif
-
    /*
    Before 10.8, render command were not buffered and processed in the following order (* is optional static prepass):
 	   - Playfield *
@@ -206,15 +212,50 @@ bool RenderPass::Execute(const bool log)
    } sortFunc;
 
    // stable sort is needed since we don't want to change the order of blended draw calls between frames
+   stable_sort(m_commands.begin(), m_commands.end(), sortFunc);
+}
+
+void RenderPass::Submit(RenderCommand* command)
+{
+   if (command->IsFullClear(m_rt->HasDepth()))
+   {
+      for (RenderCommand* cmd : m_commands)
+         delete cmd;
+      m_commands.clear();
+      // FIXME remove dependencies on this render target (but not on others)
+   }
+   m_commands.push_back(command);
+}
+
+bool RenderPass::Execute(const bool log)
+{
+   m_rt->m_lastRenderPass = nullptr;
+   if (m_commands.empty())
+      return false;
+
+   #ifdef ENABLE_SDL
+   if (GLAD_GL_VERSION_4_3)
+   {
+      std::stringstream passName;
+      passName << m_name << " [RT=" << m_rt->m_name << "]";
+      glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, passName.str().c_str());
+   }
+   #endif
    if (log)
    {
-      const U64 start = usec();
-      stable_sort(m_commands.begin(), m_commands.end(), sortFunc);
-      PLOGI << "Pass '" << m_name << "' [RT=" << m_rt->m_name << ", " << m_commands.size() << " commands, sort: " << std::fixed << std::setw(8) << std::setprecision(3) << (usec() - start)
-            << "us]";
+      std::stringstream ss;
+      ss << "Pass '" << m_name << "' [RT=" << m_rt->m_name << ", " << m_commands.size() << " commands, Dependencies:";
+      bool first = true;
+      for (RenderPass* dep : m_dependencies)
+      {
+         if (!first)
+            ss << ", ";
+         first = false;
+         ss << dep->m_name;
+      }
+      ss << "]";
+      PLOGI << ss.str();
    }
-   else
-      stable_sort(m_commands.begin(), m_commands.end(), sortFunc);
 
    if (m_rt->m_nLayers == 1 || m_rt->GetRenderDevice()->SupportLayeredRendering())
    {
