@@ -229,8 +229,13 @@ void ExtCaptureManager::UpdateThread()
          int pitch = 0;
          IDXGIResource* desktop_resource = nullptr;
          DXGI_OUTDUPL_FRAME_INFO frame_info;
-         HRESULT hr = duplication->m_duplication->AcquireNextFrame(2500, &frame_info, &desktop_resource);
-         if (FAILED(hr))
+         HRESULT hr = duplication->m_duplication->AcquireNextFrame(0, &frame_info, &desktop_resource);
+         if (hr == DXGI_ERROR_WAIT_TIMEOUT)
+         {
+            // No new frame available, just skip (we use a 0ms timeout to peek for a new frame on each update, keeping previous capture texture data if none)
+            continue;
+         }
+         else if (FAILED(hr))
          {
             _com_error err(hr);
             std::basic_stringstream<TCHAR> ss;
