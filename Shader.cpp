@@ -311,8 +311,6 @@ Shader::Shader(RenderDevice* renderDevice, const std::string& src1, const std::s
       -FLT_MAX, -FLT_MAX, 0xCCCCCCCC)
    , m_renderDevice(renderDevice)
 {
-   currentFlasherColor = vec4(-FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
-
    #ifdef ENABLE_SDL
    if (renderDevice->m_stereo3D != STEREO_OFF)
    {
@@ -550,17 +548,6 @@ void Shader::SetMaterial(const Material* const mat, const bool has_alpha)
 void Shader::SetAlphaTestValue(const float value)
 {
    SetFloat(SHADER_alphaTestValue, value);
-}
-
-void Shader::SetFlasherColorAlpha(const vec4& color)
-{
-   currentFlasherColor = color;
-   SetVector(SHADER_staticColor_Alpha, &color);
-}
-
-vec4 Shader::GetCurrentFlasherColorAlpha() const
-{
-   return currentFlasherColor;
 }
 
 void Shader::SetFlasherData(const vec4& c1, const vec4& c2)

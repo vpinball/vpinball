@@ -1116,7 +1116,7 @@ bool RenderDevice::LoadShaders()
 
    // Initialize uniform to default value
    basicShader->SetVector(SHADER_w_h_height, (float)(1.0 / (double)GetMSAABackBufferTexture()->GetWidth()), (float)(1.0 / (double)GetMSAABackBufferTexture()->GetHeight()), 0.0f, 0.0f);
-   basicShader->SetFlasherColorAlpha(vec4(1.0f, 1.0f, 1.0f, 1.0f)); // No tinting
+   basicShader->SetVector(SHADER_staticColor_Alpha, 1.0f, 1.0f, 1.0f, 1.0f); // No tinting
    DMDShader->SetFloat(SHADER_alphaTestValue, 1.0f); // No alpha clipping
    FBShader->SetTexture(SHADER_areaTex, m_SMAAareaTexture);
    FBShader->SetTexture(SHADER_searchTex, m_SMAAsearchTexture);

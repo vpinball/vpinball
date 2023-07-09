@@ -318,8 +318,6 @@ public:
 
    void SetMaterial(const Material * const mat, const bool has_alpha = true);
    void SetAlphaTestValue(const float value);
-   void SetFlasherColorAlpha(const vec4& color);
-   vec4 GetCurrentFlasherColorAlpha() const;
    void SetFlasherData(const vec4& c1, const vec4& c2);
    void SetLightColorIntensity(const vec4& color);
    void SetLightColor2FalloffPower(const vec4& color);
@@ -509,7 +507,6 @@ private:
    
    // caches:
    Material currentMaterial;
-   vec4 currentFlasherColor; // all flasher only-data
 
 #ifdef ENABLE_SDL // OpenGL
    ShaderState* m_boundState[SHADER_TECHNIQUE_COUNT]; // The state currently applied to the backend (per technique for OpenGL)
