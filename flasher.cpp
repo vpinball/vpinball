@@ -1356,7 +1356,7 @@ void Flasher::RenderDynamic()
        Texture * const pinA = m_ptable->GetImage(m_d.m_szImageA);
        Texture * const pinB = m_ptable->GetImage(m_d.m_szImageB);
 
-       pd3dDevice->flasherShader->SetFlasherColorAlpha(color);
+       pd3dDevice->flasherShader->SetVector(SHADER_staticColor_Alpha, &color);
 
        vec4 flasherData(-1.f, -1.f, (float)m_d.m_filter, m_d.m_addBlend ? 1.f : 0.f);
        pd3dDevice->flasherShader->SetTechnique(SHADER_TECHNIQUE_basic_noLight);

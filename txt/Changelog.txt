@@ -139,6 +139,8 @@ FEATURES:
   Due to these changes, the target frame rate is now a separate setting. If defined, it will lead VPX to perform its own synchronization, trying to achieve the requested frame rate.
   The synchronization settings still apply. Therefore, selecting a frame rate that is higher than the monitor refresh rate requires the use of the 'None' synchronization mode!
 
+- Additive blended primitives are now rendered 'unshaded', that is to say without any material/lighting applied (same as flashers), this is more natural and allows some performance optimizations
+
 FIXES:
 
 - timers with a -1 interval are always fired after physics and animation, but before rendering, allowing the script to update visual parts accordingly without any visual lag.

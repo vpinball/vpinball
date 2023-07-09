@@ -29,7 +29,21 @@ void PrimitiveVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
         Primitive *const prim = (Primitive*)m_pvsel->ElementAt(i);
 
         if (dispid == IDC_ADDBLEND || dispid == -1)
+        {
             PropertyDialog::SetCheckboxState(m_hAdditiveBlendCheck, prim->m_d.m_addBlend);
+            // Disable/Enable all ignored properties when using unshaded additive blending
+            ::EnableWindow(m_normalMapCombo, !prim->m_d.m_addBlend);
+            ::EnableWindow(m_materialCombo, !prim->m_d.m_addBlend);
+            ::EnableWindow(m_reflectionCombo, !prim->m_d.m_addBlend);
+            ::EnableWindow(m_reflectionAmountEdit, !prim->m_d.m_addBlend);
+            ::EnableWindow(m_refractionCombo, !prim->m_d.m_addBlend);
+            ::EnableWindow(m_refractionThicknessEdit, !prim->m_d.m_addBlend);
+            ::EnableWindow(m_hObjectSpaceCheck, !prim->m_d.m_addBlend);
+            ::EnableWindow(m_hRenderBackfacingCheck, !prim->m_d.m_addBlend);
+            ::EnableWindow(m_hDepthMaskWriteCheck, !prim->m_d.m_addBlend);
+            ::EnableWindow(m_disableLightingEdit, !prim->m_d.m_addBlend);
+            ::EnableWindow(m_disableLightFromBelowEdit, !prim->m_d.m_addBlend);
+        }
         if (dispid == IDC_DISPLAY_TEXTURE_CHECKBOX || dispid == -1)
             PropertyDialog::SetCheckboxState(m_hDisplayImageCheck, prim->m_d.m_displayTexture);
         if (dispid == IDC_DRAW_TEXTURES_SIDES_CHECK || dispid == -1)
@@ -39,9 +53,18 @@ void PrimitiveVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
         if (dispid == IDC_PRIMITIVE_ENABLE_BACKFACES || dispid == -1)
             PropertyDialog::SetCheckboxState(m_hRenderBackfacingCheck, prim->m_d.m_backfacesEnabled);
         if (dispid == IDC_PRIMITIVE_ENABLE_DEPTH_MASK || dispid == -1)
+        {
             PropertyDialog::SetCheckboxState(m_hDepthMaskWriteCheck, prim->m_d.m_useDepthMask);
+            // Render backface is only applied when depth mask is used (no culling otherwise)
+            ::EnableWindow(m_hRenderBackfacingCheck, prim->m_d.m_useDepthMask);
+            GetDlgItem(IDC_STATIC5).EnableWindow(prim->m_d.m_useDepthMask);
+        }
         if (dispid == IDC_STATIC_RENDERING_CHECK || dispid == -1)
+        {
             PropertyDialog::SetCheckboxState(m_hStaticRenderingCheck, prim->m_d.m_staticRendering);
+            // Disable 'disable from light from below' for static part to avoid confusing the user
+            m_disableLightFromBelowEdit.EnableWindow(!prim->m_d.m_staticRendering);
+        }
         if (dispid == IDC_ALPHA_EDIT || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_opacityAmountEdit, prim->m_d.m_alpha);
         if (dispid == IDC_DEPTH_BIAS || dispid == -1)
@@ -76,10 +99,6 @@ void PrimitiveVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
            m_baseImageCombo->EnableWindow(!prim->IsPlayfield());
         if (m_baseMaterialCombo && (dispid == IDC_MATERIAL_COMBO || dispid == -1))
            m_baseMaterialCombo->EnableWindow(!prim->IsPlayfield());
-
-        // Disable 'disable from light from below' for static part to avoid confusing the user
-        if (dispid == IDC_BLEND_DISABLE_LIGHTING_FROM_BELOW || dispid == -1)
-           m_disableLightFromBelowEdit.EnableWindow(!prim->m_d.m_staticRendering);
 
         UpdateBaseVisuals(prim, &prim->m_d, dispid);
         //only show the first element on multi-select
@@ -325,7 +344,7 @@ BOOL PrimitiveVisualsProperty::OnInitDialog()
     m_resizer.AddChild(GetDlgItem(IDC_STATIC11), CResizer::topleft, 0);
     m_resizer.AddChild(m_disableLightFromBelowEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC12), CResizer::topleft, 0);
-    m_resizer.AddChild(m_colorButton, CResizer::topleft, 0);
+    m_resizer.AddChild(m_colorButton, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC13), CResizer::topleft, 0);
     m_resizer.AddChild(m_opacityAmountEdit, CResizer::topright, RD_STRETCH_WIDTH);
 
