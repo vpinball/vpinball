@@ -79,10 +79,6 @@ float3 FresnelSchlick(const float3 spec, const float LdotH, const float edge)
 
 float3 DoPointLight(const float3 pos, const float3 N, const float3 V, const float3 diffuse, const float3 glossy, const float edge, const float glossyPower, const int i, const bool is_metal) 
 { 
-   // early out here or maybe we can add more material elements without lighting later?
-   BRANCH if (fDisableLighting_top_below.x == 1.0)
-      return diffuse;
-
    //!! do in vertex shader?! or completely before?!
    //const float3 lightDir = mul_w1(lightPos[i].xyz, matView) - pos;
    const float3 lightDir = (matView * float4(lightPos[i].xyz, 1.0)).xyz - pos;
@@ -176,7 +172,9 @@ float3 lightLoop(const float3 pos, float3 N, const float3 V, float3 diffuse, flo
    // 1st Layer
    BRANCH if ((!is_metal && (diffuseMax > 0.0)) || (glossyMax > 0.0))
    {
-      for (int i = 0; i < iLightPointNum; i++)
+      BRANCH if (fDisableLighting_top_below.x == 1.0)
+         color += iLightPointNum * diffuse; // Old bug kept for backward compatibility: when lighting is disabled, it results to applying it twice
+      else for (int i = 0; i < iLightPointNum; i++)
          color += DoPointLight(pos, N, V, diffuse, glossy, edge, Roughness_WrapL_Edge_Thickness.x, i, is_metal); // no clearcoat needed as only pointlights so far
    }
 
