@@ -469,14 +469,11 @@ void main() {
    const float3 specular = cClearcoat_EdgeAlpha.xyz*0.08;
    const float  edge     = is_metal ? 1.0 : Roughness_WrapL_Edge_Thickness.z;
 
-   const float3 V = normalize(-worldPos);
+   const float3 V = normalize(/*camera=0,0,0,1*/-worldPos); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
    const float3 N = normalize(normal);
-
    //color = float4((N+1.0)*0.5,1.0); return; // visualize normals
 
-   color = float4(
-      lightLoop(worldPos, N, V, diffuse, glossy, specular, edge, true, is_metal), //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
-      cBase_Alpha.a);
+   color = float4(lightLoop(worldPos, N, V, diffuse, glossy, specular, edge, true, is_metal), cBase_Alpha.a);
 
    BRANCH if (cBase_Alpha.a < 1.0)
    {
@@ -522,28 +519,23 @@ void main() {
    if (pixel.a <= alphaTestValue)
       discard;           //stop the pixel shader if alpha test should reject pixel
 
+   pixel.a *= cBase_Alpha.a;
    if (fDisableLighting_top_below.x < 1.0) // if there is lighting applied, make sure to clamp the values (as it could be coming from a HDR tex)
       pixel.xyz = clamp(pixel.xyz, float3(0.0,0.0,0.0), float3(1.0,1.0,1.0));
-
-   const float3 t = pixel.xyz;
-
-   const float3 diffuse  = t*cBase_Alpha.xyz;
-   const float3 glossy   = is_metal ? diffuse : (t*cGlossy_ImageLerp.w + (1.0-cGlossy_ImageLerp.w))*cGlossy_ImageLerp.xyz*0.08; //!! use AO for glossy? specular?
-   const float3 specular = cClearcoat_EdgeAlpha.xyz*0.08;
+   const float3 diffuse  = pixel.xyz * cBase_Alpha.xyz;
+   const float3 glossy   = is_metal ? diffuse : (pixel.xyz * cGlossy_ImageLerp.w + (1.0-cGlossy_ImageLerp.w)) * cGlossy_ImageLerp.xyz * 0.08; //!! use AO for glossy? specular?
+   const float3 specular = cClearcoat_EdgeAlpha.xyz * 0.08;
    const float  edge     = is_metal ? 1.0 : Roughness_WrapL_Edge_Thickness.z;
 
-   const float3 V = normalize(-worldPos);
+   const float3 V = normalize(/*camera=0,0,0,1*/-worldPos);
    float3 N = normalize(normal);
-
    BRANCH if (doNormalMapping)
       N = normal_map(N, normalize(worldPos), tex01);
-
    //!! color = float4((N+1.0)*0.5,1.0); return; // visualize normals
 
-   color.rgb = lightLoop(worldPos, N, V, diffuse, glossy, specular, edge, !doNormalMapping, is_metal);
-   color.a = saturate(pixel.a * cBase_Alpha.a);
+   color = float4(lightLoop(worldPos, N, V, diffuse, glossy, specular, edge, !doNormalMapping, is_metal), pixel.a);
 
-   BRANCH if (cBase_Alpha.a < 1.0 && color.a < 1.0)
+   BRANCH if (color.a < 1.0)
    {
       color.a = GeometricOpacity(dot(N,V),color.a,cClearcoat_EdgeAlpha.w,Roughness_WrapL_Edge_Thickness.w);
 

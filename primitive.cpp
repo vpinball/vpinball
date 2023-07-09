@@ -1345,6 +1345,7 @@ void Primitive::RenderObject()
       pd3dDevice->basicShader->SetVector(SHADER_refractionTint_thickness, &color);
       pd3dDevice->basicShader->SetTexture(SHADER_tex_refraction, refractions->GetColorSampler());
       pd3dDevice->basicShader->SetTexture(SHADER_tex_probe_depth, refractions->GetDepthSampler());
+      pd3dDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
    }
 
    // Check if this primitive is used as a lightmap and should be convoluted with the light shadows
