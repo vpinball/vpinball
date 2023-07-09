@@ -93,8 +93,9 @@ FEATURES:
 
 - the settings are now stored in a file named 'VPinballX.ini' located in the standard Windows location for application data: %AppData%/VPinballX/
   This file will be automatically created and initialized from existing settings if found in Windows registry. This change was made to:
+  - allow per table settings,
   - allow easier edition (manually or by a third party application),
-  - allow to use different settings on a single computer by specifying a custom ini file on the command line (see CommandLineParameters.txt),
+  - allow to use different settings by specifying a custom ini file on the command line (see CommandLineParameters.txt),
   - settings are the same and can be shared between Windows version of VPX and the standalone version (Linux, Mac, Android, iOS, Raspberry,...),
   - allow to see all the available settings at once (not so easy before, since there are a few hundreds of them),
   - allow easier collaboration by being able to share the setting file with bug reports.
@@ -130,13 +131,13 @@ FEATURES:
   - None: no synchronization, VPX just runs as fast as possible. Unless when playing on a very powerful system, this should lead to some input latency (due to lack of input syncing) and render latency 
           (due to flooding the GPU frame queue). This setting used to be 'Adaptive Sync: 0'
   - VSync: synchronize on the display vertical blank signal. This can limit stutters and avoids tearing, but will lead to high input latency. This used to be 'Adaptive Sync: 1'
-  - Adaptive VSync: same as 'VSync', but when a frame is late (=missing the refresh rate), it is displayed immediately. This should reduce stutters but features the same input latency. This used to be 'Adaptive Sync: 2'
-  - Frame Pacing: *NEW* Only available on Windows 8 and later, VPX will try to run the input & physics simulation continuously in real time instead of only once per frame. This lowers 
-                  the input latency, especially at lower frame rates. This also allows to have the input synchronized to PinMAME when enabling it, fixing some synchronization bugs like in video modes
-                  with fast button presses (Lethal Weapon, Black Rose,...). The render loop will try to produce exactly one frame per vertical blank to limit frame latency due to stacking more 
-                  frames that are displayed later on. On a not-so-powerful-enough computer, it will try to find an adequate framerate for this, needing a few frames to stabilize.
-  Due to these changes, the target frame rate is now a separate setting. If defined, it will lead VPX to perform its own synchronization, trying to achieve the requested frame rate. The listed synchronization settings still apply.
-  Therefore, selecting a frame rate that is higher than the monitor refresh rate requires the use of the 'None' synchronization mode!
+  - Adaptive VSync: same as 'VSync', but when a frame is late (=missing the refresh rate), it is displayed immediately. This should reduce stutters but features the same input latency.
+    DirectX 9 version use software synchronization while OpenGL use hardware (driver) synchronization which should give slightly better results. This used to be 'Adaptive Sync: 2'
+  - Frame Pacing: *NEW* VPX will try to run the input & physics simulation continuously in real time instead of only once per frame. This lowers the input latency, especially when the
+    computer is powerful enough to run at the monitor refresh rate. This also allows to have the input synchronized to PinMAME when enabling it, fixing some synchronization bugs like in 
+	video modes with fast button presses (Lethal Weapon, Black Rose,...).
+  Due to these changes, the target frame rate is now a separate setting. If defined, it will lead VPX to perform its own synchronization, trying to achieve the requested frame rate.
+  The synchronization settings still apply. Therefore, selecting a frame rate that is higher than the monitor refresh rate requires the use of the 'None' synchronization mode!
 
 FIXES:
 
