@@ -136,10 +136,14 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
    case VLM_CAMERA:
    {
       const float ymax = zNear * tanf(0.5f * ANGTORAD(FOV));
+      const float ymin = -ymax;
       const float xmax = ymax * aspect;
-      const float xspan = xmax / mViewportScaleX;
-      const float yspan = ymax / mViewportScaleY;
-      proj.SetPerspectiveOffCenterLH(-xspan, xspan, -yspan, yspan, zNear, zFar);
+      const float xmin = -xmax;
+      const float xcenter = 0.5f * (xmin + xmax) + zNear * 0.01f * (mViewVOfs * sinf(rotation) - mViewHOfs * cosf(rotation));
+      const float ycenter = 0.5f * (ymin + ymax) + zNear * 0.01f * (mViewVOfs * cosf(rotation) + mViewHOfs * sinf(rotation));
+      const float xspan = 0.5f * (xmax - xmin) / mViewportScaleX;
+      const float yspan = 0.5f * (ymax - ymin) / mViewportScaleY;
+      proj.SetPerspectiveOffCenterLH(xcenter - xspan, xcenter + xspan, ycenter - yspan, ycenter + yspan, zNear, zFar);
       break;
    }
    case VLM_WINDOW:
