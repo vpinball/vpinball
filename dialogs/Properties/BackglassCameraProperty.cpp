@@ -18,6 +18,8 @@ BackglassCameraProperty::BackglassCameraProperty(const VectorProtected<ISelect> 
     m_xScaleEdit.SetDialog(this);
     m_yScaleEdit.SetDialog(this);
     m_zScaleEdit.SetDialog(this);
+    m_xViewOffsetEdit.SetDialog(this);
+    m_yViewOffsetEdit.SetDialog(this);
     m_xOffsetEdit.SetDialog(this);
     m_yOffsetEdit.SetDialog(this);
     m_zOffsetEdit.SetDialog(this);
@@ -67,6 +69,10 @@ void BackglassCameraProperty::UpdateVisuals(const int dispid/*=-1*/)
       PropertyDialog::SetFloatTextbox(m_yScaleEdit, viewSetup.mViewportScaleY);
    if (dispid == IDC_TABLE_SCALEZ || dispid == -1)
       PropertyDialog::SetFloatTextbox(m_zScaleEdit, table->m_BG_scalez[table->m_currentBackglassMode]);
+   if (dispid == IDC_X_OFFSET_EDIT2 || dispid == -1)
+      PropertyDialog::SetFloatTextbox(m_xViewOffsetEdit, viewSetup.mViewHOfs);
+   if (dispid == IDC_Y_OFFSET_EDIT2 || dispid == -1)
+      PropertyDialog::SetFloatTextbox(m_yViewOffsetEdit, viewSetup.mViewVOfs);
    if (dispid == IDC_X_OFFSET_EDIT || dispid == -1)
       PropertyDialog::SetFloatTextbox(m_xOffsetEdit, viewSetup.mViewX);
    if (dispid == IDC_Y_OFFSET_EDIT || dispid == -1)
@@ -104,6 +110,8 @@ void BackglassCameraProperty::UpdateProperties(const int dispid)
       case IDC_X_OFFSET_EDIT: CHECK_UPDATE_ITEM(viewSetup.mViewX, PropertyDialog::GetFloatTextbox(m_xOffsetEdit), table); break;
       case IDC_Y_OFFSET_EDIT: CHECK_UPDATE_ITEM(viewSetup.mViewY, PropertyDialog::GetFloatTextbox(m_yOffsetEdit), table); break;
       case IDC_Z_OFFSET_EDIT: CHECK_UPDATE_ITEM(viewSetup.mViewZ, PropertyDialog::GetFloatTextbox(m_zOffsetEdit), table); break;
+      case IDC_X_OFFSET_EDIT2: CHECK_UPDATE_ITEM(viewSetup.mViewHOfs, PropertyDialog::GetFloatTextbox(m_xViewOffsetEdit), table); break;
+      case IDC_Y_OFFSET_EDIT2: CHECK_UPDATE_ITEM(viewSetup.mViewVOfs, PropertyDialog::GetFloatTextbox(m_yViewOffsetEdit), table); break;
 
       default: break;
    }
@@ -124,6 +132,8 @@ BOOL BackglassCameraProperty::OnInitDialog()
     m_xScaleEdit.AttachItem(IDC_X_SCALE_EDIT);
     m_yScaleEdit.AttachItem(IDC_Y_SCALE_EDIT);
     m_zScaleEdit.AttachItem(IDC_TABLE_SCALEZ);
+    m_xViewOffsetEdit.AttachItem(IDC_X_OFFSET_EDIT2);
+    m_yViewOffsetEdit.AttachItem(IDC_Y_OFFSET_EDIT2);
     m_xOffsetEdit.AttachItem(IDC_X_OFFSET_EDIT);
     m_yOffsetEdit.AttachItem(IDC_Y_OFFSET_EDIT);
     m_zOffsetEdit.AttachItem(IDC_Z_OFFSET_EDIT);
@@ -150,6 +160,7 @@ BOOL BackglassCameraProperty::OnInitDialog()
     m_resizer.AddChild(GetDlgItem(IDC_STATIC23), CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC24), CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC25), CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC26), CResizer::topleft, RD_STRETCH_WIDTH);
     // Controls
     m_resizer.AddChild(m_hFssModeCheck, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_hTestDesktopCheck, CResizer::topleft, RD_STRETCH_WIDTH);
@@ -162,6 +173,8 @@ BOOL BackglassCameraProperty::OnInitDialog()
     m_resizer.AddChild(m_xScaleEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_yScaleEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_zScaleEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_xViewOffsetEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_yViewOffsetEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_xOffsetEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_yOffsetEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_zOffsetEdit, CResizer::topleft, RD_STRETCH_WIDTH);
