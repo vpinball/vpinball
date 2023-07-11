@@ -67,7 +67,7 @@ float GeometricOpacity(const float NdotV, const float alpha, const float blendin
     //new version (COD/IW, t = thickness), t = 0.05 roughly corresponds to above version
     const float x = abs(NdotV); // flip normal in case of wrong orientation (backside lighting)
     const float g = blending - blending * ( x / (x * (1.0 - t) + t) ); // Smith-Schlick G
-    return lerp(alpha, 1.0, g); // fake opacity lerp to ‘shadowed’
+    return lerp(alpha, 1.0, g); // fake opacity lerp to 'shadowed'
 }
 
 float3 FresnelSchlick(const float3 spec, const float LdotH, const float edge)
@@ -173,7 +173,7 @@ float3 lightLoop(const float3 pos, float3 N, const float3 V, float3 diffuse, flo
    BRANCH if ((!is_metal && (diffuseMax > 0.0)) || (glossyMax > 0.0))
    {
       BRANCH if (fDisableLighting_top_below.x == 1.0)
-         color += iLightPointNum * diffuse; // Old bug kept for backward compatibility: when lighting is disabled, it results to applying it twice
+         color += float(iLightPointNum) * diffuse; // Old bug kept for backward compatibility: when lighting is disabled, it results to applying it twice
       else for (int i = 0; i < iLightPointNum; i++)
          color += DoPointLight(pos, N, V, diffuse, glossy, edge, Roughness_WrapL_Edge_Thickness.x, i, is_metal); // no clearcoat needed as only pointlights so far
    }
