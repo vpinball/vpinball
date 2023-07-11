@@ -115,7 +115,7 @@ float3 normal_map(const float3 N, const float3 V, const float2 uv)
    BRANCH if (objectSpaceNormalMap)
    {
       tn.z = -tn.z; // this matches the object space, +X +Y +Z, export/baking in Blender with our trafo setup
-      return normalize((inverse(matView) * vec4(tn,0.0)).xyz);
+      return normalize((matWorldViewInverseTranspose * tn).xyz);
    } else // tangent space
       return normalize((tn * TBN_trafo(N, V, uv)).xyz);  // !! The order of tn, and TBN_trainfo matters here?  Ship on FishTales gets blown out if you reverse them 
 }
@@ -530,7 +530,7 @@ void main() {
    const float3 V = normalize(/*camera=0,0,0,1*/-worldPos);
    float3 N = normalize(normal);
    BRANCH if (doNormalMapping)
-      N = normal_map(N, normalize(worldPos), tex01);
+      N = normal_map(N, V, tex01);
    //!! color = float4((N+1.0)*0.5,1.0); return; // visualize normals
 
    color = float4(lightLoop(worldPos, N, V, diffuse, glossy, specular, edge, !doNormalMapping, is_metal), pixel.a);
