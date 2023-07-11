@@ -28,6 +28,8 @@ private:
     EditBox         m_xScaleEdit;
     EditBox         m_yScaleEdit;
     EditBox         m_zScaleEdit;
+    EditBox         m_xViewOffsetEdit;
+    EditBox         m_yViewOffsetEdit;
     EditBox         m_xOffsetEdit;
     EditBox         m_yOffsetEdit;
     EditBox         m_zOffsetEdit;

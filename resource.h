@@ -115,7 +115,9 @@
 #define IDC_FOV_EDIT                    105
 #define IDS_TB_PLAY                     106
 #define IDC_DRAW_TEXTURES_SIDES_CHECK   106
+#define IDC_X_OFFSET_EDIT2              106
 #define IDC_KICKER_ORIENTATION_EDIT     107
+#define IDC_Y_OFFSET_EDIT2              107
 #define IDC_TABLE_SCALEZ                108
 #define ID_ASSIGN_TO_CURRENT_LAYER      108
 #define IDR_FLIPPER                     108
