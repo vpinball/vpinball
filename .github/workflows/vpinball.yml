@@ -111,7 +111,11 @@ jobs:
 #          ./upx/upx.exe --best --lzma build/${{ matrix.config }}/VPinballX.exe
       - run: |
           mkdir tmp 
-          cp build/${{ matrix.config }}/VPinballX.* tmp
+          if [[ "${{ matrix.platform }}" == "win-x64" ]]; then
+            cp build/${{ matrix.config }}/VPinballX64.exe tmp
+          else
+            cp build/${{ matrix.config }}/VPinballX.exe tmp
+          fi
           cp dll/${{ matrix.bass }} tmp
           cp dll/${{ matrix.free-image }} tmp
           cp dll/${{ matrix.sci-lexer-vp }} tmp
