@@ -51,7 +51,7 @@ __forceinline double force_add_in_order(const double a, const double b, const do
     return _mm_cvtsd_f64(_mm_add_sd(_mm_add_sd(_mm_set_sd(a), _mm_set_sd(b)),_mm_set_sd(c)));
 }
 #else
-#pragma
+#pragma message ("Warning: No precise divide")
 #define precise_divide(a,b) ((a)/(b)) //!!
 #endif
 

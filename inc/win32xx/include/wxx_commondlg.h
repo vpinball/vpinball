@@ -1,12 +1,12 @@
-// Win32++   Version 9.1
-// Release Date: 26th September 2022
+// Win32++   Version 9.3
+// Release Date: 5th June 2023
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2022  David Nash
+// Copyright (c) 2005-2023  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -902,10 +902,8 @@ namespace Win32xx
     // Override this function to provide custom handling of share violations.
     // Normally, this function is not needed because the framework provides
     // default checking of share violations and displays a message box if a
-    // share violation occurs. The path of the file on which the share
-    // violation occurred is pathName. To disable share violation checking,
-    // use the bitwise OR operator to combine the flag OFN_SHAREAWARE with
-    // m_OFN.Flags.
+    // share violation occurs. To disable share violation checking, use the
+    // bitwise OR operator to combine the flag OFN_SHAREAWARE with m_OFN.Flags.
 
     // Return one of the following values to indicate how the dialog box
     // should handle the sharing violation.
@@ -914,10 +912,8 @@ namespace Win32xx
     //                    The application is responsible for displaying a warning message.
     // OFN_SHAREWARN    - Reject the file name and displays a warning message
     //                    (the same result as if there were no hook procedure).
-    inline LRESULT CFileDialog::OnShareViolation(LPCTSTR pathName)
+    inline LRESULT CFileDialog::OnShareViolation(LPCTSTR)
     {
-        UNREFERENCED_PARAMETER(pathName);
-
         return OFN_SHAREWARN; // default:
     }
 

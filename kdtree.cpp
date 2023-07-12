@@ -69,7 +69,7 @@ void HitKD::Finalize()
 
 HitKDNode* HitKD::AllocTwoNodes()
 {
-   if ((m_num_nodes + 1) >= m_nodes.size())        // space for two more nodes?
+   if ((m_num_nodes + 1) >= (unsigned)m_nodes.size())        // space for two more nodes?
       return nullptr;
    else
    {

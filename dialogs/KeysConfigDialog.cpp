@@ -2,7 +2,7 @@
 #include "resource.h"
 #include "KeysConfigDialog.h"
 
-static constexpr char rgszKeyName[][10] = {
+static char rgszKeyName[][10] = {
     "",
     "Escape", //DIK_ESCAPE          0x01
     "1", //DIK_1               0x02
@@ -263,6 +263,23 @@ LRESULT CALLBACK MyKeyButtonProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 KeysConfigDialog::KeysConfigDialog() : CDialog(IDD_KEYS)
 {
+   // Adjust keyboard translation to user keyboard layout
+   HKL layout = GetKeyboardLayout(0);
+   BYTE State[256];
+   // Translate for a default keyboard state
+   //if (GetKeyboardState(State) != FALSE)
+   memset(State, 0, sizeof(State));
+   State[VK_CAPITAL] = 1; // Get CAPS LOCK variant of the key
+   for (int scancode = 0x00; scancode <= 0xDD; scancode++)
+   {
+      BYTE result[2];
+      UINT vk = MapVirtualKeyEx(scancode, 1, layout);
+      if (rgszKeyName[scancode][1] == 0 && ToAsciiEx(vk, scancode, State, (LPWORD)result, 0, layout) == 1)
+      {
+         rgszKeyName[scancode][0] = (char) result[0];
+         rgszKeyName[scancode][1] = 0;
+      }
+   }
 }
 
 void KeysConfigDialog::AddToolTip(char *text, HWND parentHwnd, HWND toolTipHwnd, HWND controlHwnd)

@@ -1,12 +1,12 @@
-// Win32++   Version 9.1
-// Release Date: 26th September 2022
+// Win32++   Version 9.3
+// Release Date: 5th June 2023
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2022  David Nash
+// Copyright (c) 2005-2023  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -89,6 +89,7 @@ namespace Win32xx
         BOOL UseThemes;         // TRUE if themes are used
         COLORREF clrBkgnd1;     // Color 1 for statusbar background
         COLORREF clrBkgnd2;     // Color 2 for statusbar background
+        COLORREF clrText;       // Text Color
     };
 
 
@@ -111,7 +112,7 @@ namespace Win32xx
         // Test if Windows version is XP or greater
         if (GetWinVersion() >= 2501)
         {
-            HMODULE module = ::LoadLibrary(_T("uxtheme.dll"));
+            HMODULE module = ::GetModuleHandle(_T("uxtheme.dll"));
 
             if (module != 0)
             {
@@ -125,7 +126,6 @@ namespace Win32xx
                         IsAeroThemed = TRUE;
                     }
                 }
-                ::FreeLibrary(module);
             }
         }
 
@@ -140,7 +140,7 @@ namespace Win32xx
         // Test if Windows version is XP or greater
         if (GetWinVersion() >= 2501)
         {
-            HMODULE theme = ::LoadLibrary(_T("uxtheme.dll"));
+            HMODULE theme = ::GetModuleHandle(_T("uxtheme.dll"));
             if (theme != 0)
             {
                 // Declare pointers to functions
@@ -155,7 +155,6 @@ namespace Win32xx
                         isXPThemed = (GetComCtlVersion() >= 600);
                     }
                 }
-                ::FreeLibrary(theme);
             }
         }
 

@@ -1,12 +1,12 @@
-// Win32++   Version 9.1
-// Release Date: 26th September 2022
+// Win32++   Version 9.3
+// Release Date: 5th June 2023
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2022  David Nash
+// Copyright (c) 2005-2023  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -82,6 +82,7 @@ namespace Win32xx
         virtual void    OnDestroy();
         virtual LRESULT OnDockActivated(UINT msg, WPARAM wparam, LPARAM lparam);
         virtual LRESULT OnDockDestroyed(UINT msg, WPARAM wparam, LPARAM lparam);
+        virtual LRESULT OnDpiChanged(UINT msg, WPARAM wparam, LPARAM lparam);
         virtual LRESULT OnMouseActivate(UINT msg, WPARAM wparam, LPARAM lparam);
         virtual LRESULT OnNotify(WPARAM wparam, LPARAM lparam);
         virtual LRESULT OnSysColorChange(UINT msg, WPARAM wparam, LPARAM lparam);
@@ -140,8 +141,8 @@ namespace Win32xx
         GetDockClient().Create(GetHwnd());
         GetView().Create(GetDockClient());
 
-        // Set the caption height based on text height
-        SetCaptionHeight( MAX(20, GetTextHeight() + 5) );
+        // Set the caption height based on text height.
+        SetDefaultCaptionHeight();
         return CFrameT<CDocker>::OnCreate(cs);
     }
 
@@ -164,6 +165,27 @@ namespace Win32xx
         return CDocker::OnDockDestroyed(msg, wparam, lparam);
     }
 
+    // Called when the effective dots per inch (dpi) for a window has changed.
+    // This occurs when:
+    //  - The window is moved to a new monitor that has a different DPI.
+    //  - The DPI of the monitor hosting the window changes.
+    inline LRESULT CDockFrame::OnDpiChanged(UINT msg, WPARAM wparam, LPARAM lparam)
+    {
+        // Lock window updates to render the DPI changes smoothly.
+        LockWindowUpdate();
+
+        CFrameT<CDocker>::OnDpiChanged(msg, wparam, lparam);
+        SetDefaultCaptionHeight();
+        DpiUpdateDockerSizes();
+        RecalcDockLayout();
+
+        // Unlock the window updates.
+        UnlockWindowUpdate();
+
+        return 0;
+    }
+
+    // Called when the cursor is in an inactive window and the user presses a mouse button.
     inline LRESULT CDockFrame::OnMouseActivate(UINT msg, WPARAM wparam, LPARAM lparam)
     {
         return CDocker::OnMouseActivate(msg, wparam, lparam);
@@ -198,6 +220,7 @@ namespace Win32xx
         switch (msg)
         {
         case WM_ACTIVATE:           return OnActivate(msg, wparam, lparam);
+        case WM_DPICHANGED:         return OnDpiChanged(msg, wparam, lparam);
         case WM_MOUSEACTIVATE:      return OnMouseActivate(msg, wparam, lparam);
         case WM_SYSCOLORCHANGE:     return OnSysColorChange(msg, wparam, lparam);
 
@@ -205,8 +228,7 @@ namespace Win32xx
         case UWM_DOCKACTIVATE:      return OnDockActivated(msg, wparam, lparam);
         case UWM_DOCKDESTROYED:     return OnDockDestroyed(msg, wparam, lparam);
         case UWM_GETCDOCKER:        return reinterpret_cast<LRESULT>(this);
-
-        } // switch msg
+        }
 
         return CFrameT<CDocker>::WndProcDefault(msg, wparam, lparam);
     }

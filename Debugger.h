@@ -53,11 +53,11 @@ public:
     BOOL IsSubDialogMessage(MSG& msg) const;
 
 protected:
-    virtual BOOL OnInitDialog() override;
-    virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam) override;
-    virtual void OnClose() override;
-    virtual LRESULT OnNotify(WPARAM wparam, LPARAM lparam) override;
-    virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
+    BOOL OnInitDialog() override;
+    BOOL OnCommand(WPARAM wParam, LPARAM lParam) override;
+    void OnClose() override;
+    LRESULT OnNotify(WPARAM wparam, LPARAM lparam) override;
+    INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 
 private:
     CButton m_playButton;

@@ -25,7 +25,8 @@ public:
     }
     virtual void UpdateProperties(const int dispid) = 0;
     virtual void UpdateVisuals(const int dispid=-1) = 0;
-    virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam) override
+
+    BOOL OnCommand(WPARAM wParam, LPARAM lParam) override
     {
         UNREFERENCED_PARAMETER(lParam);
         const int dispID = LOWORD(wParam);
@@ -127,12 +128,14 @@ class TimerProperty: public BasePropertyDialog
 {
 public:
     TimerProperty(const VectorProtected<ISelect> *pvsel);
-    virtual void UpdateProperties(const int dispid);
-    virtual void UpdateVisuals(const int dispid=-1);
+    void UpdateProperties(const int dispid) override;
+    void UpdateVisuals(const int dispid=-1) override;
+
 protected:
-    virtual BOOL OnInitDialog();
-    virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
-    virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
+    BOOL OnInitDialog() override;
+    BOOL OnCommand(WPARAM wParam, LPARAM lParam) override;
+    INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
+
 private:
     EditBox m_timerIntervalEdit;
     EditBox m_userValueEdit;
@@ -144,9 +147,7 @@ private:
 class ColorButton: public CButton
 {
 public:
-    ColorButton() : m_color(0)
-    {
-    }
+    ColorButton() : m_color(0) {}
     ~ColorButton(){}
     
     void SetColor(const COLORREF color)
@@ -169,7 +170,7 @@ public:
         // draw in the button text
         dc.DrawText(GetWindowText(), -1, rect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
         // get the current state of the button
-        UINT state = lpDrawItemStruct->itemState;
+        const UINT state = lpDrawItemStruct->itemState;
         dc.DrawEdge(rect, (state & ODS_SELECTED) ? EDGE_SUNKEN : EDGE_RAISED, BF_RECT); // if pressed draw sunken, otherwise raised face
         // draw the focus rectangle, a dotted rectangle just inside the
         // button rectangle when the button has the focus.
@@ -222,7 +223,7 @@ public:
    PropertyTab() : m_activePage(0), m_activeTabText("")
    {}
 
-   virtual LRESULT OnTCNSelChange(LPNMHDR pNMHDR)
+   LRESULT OnTCNSelChange(LPNMHDR pNMHDR) override
    {
       m_activePage = GetCurSel();
       m_activeTabText = GetTabText(m_activePage);
@@ -320,10 +321,10 @@ public:
     virtual LRESULT OnMouseActivate(UINT msg, WPARAM wparam, LPARAM lparam);
 
 protected:
-    virtual BOOL OnInitDialog();
-    virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
-    virtual INT_PTR DialogProc(UINT msg, WPARAM wparam, LPARAM lparam);
-    virtual void OnClose();
+    BOOL OnInitDialog() override;
+    BOOL OnCommand(WPARAM wParam, LPARAM lParam) override;
+    INT_PTR DialogProc(UINT msg, WPARAM wparam, LPARAM lparam) override;
+    void OnClose() override;
 
 private:
     PropertyTab  m_tab;
@@ -407,9 +408,8 @@ class CContainProperties: public CDockContainer
 {
 public:
     CContainProperties();
-    ~CContainProperties()
-    {
-    }
+    ~CContainProperties() {}
+
     PropertyDialog *GetPropertyDialog()
     {
         return &m_propertyDialog;
@@ -423,10 +423,8 @@ class CDockProperty: public CDocker
 {
 public:
     CDockProperty();
+    virtual ~CDockProperty() {}
 
-    virtual ~CDockProperty()
-    {
-    }
     virtual void OnClose();
 
     CContainProperties *GetContainProperties()

@@ -3,7 +3,7 @@ IMPORTANT NOTE:
 
 As of October 2020, we, the Visual Pinball team, are working on replacing
 the inherited 'old MAME'-like license (listed directly below) by
-the GPLv3+ License (see end of this file).
+the GPLv3+ License (listed at the very end of this file).
 
 Each source file/snippet that is already under GPLv3+ will have its
 very first line marked with
@@ -20,7 +20,7 @@ Unless otherwise explicitly stated (e.g. external libraries/code),
 all code in Visual Pinball is released under the following license
 (derived from the MAME license):
 
-Copyright Randy Davis and the Visual Pinball team
+Copyright Randy Davis and the Visual Pinball development team and contributors
 All rights reserved.
 
 Redistribution and use of this code or any derivative works are permitted

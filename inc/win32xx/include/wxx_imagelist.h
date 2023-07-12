@@ -1,12 +1,12 @@
-// Win32++   Version 9.1
-// Release Date: 26th September 2022
+// Win32++   Version 9.3
+// Release Date: 5th June 2023
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2022  David Nash
+// Copyright (c) 2005-2023  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -87,6 +87,7 @@ namespace Win32xx
 
 
         // Operations
+        int Add(HBITMAP bitmap) const;
         int Add(HBITMAP bitmap, HBITMAP mask) const;
         int Add(HBITMAP bitmap, COLORREF mask) const;
         int Add(HICON icon) const;
@@ -127,6 +128,7 @@ namespace Win32xx
 
     private:
         void AddToMap() const;
+        void Assign(HIMAGELIST images);
         void Release();
         BOOL RemoveFromMap() const;
 
@@ -153,6 +155,7 @@ namespace Win32xx
     //       Both objects manipulate the one HIMAGELIST.
     inline CImageList::CImageList(const CImageList& rhs)
     {
+        CThreadLock mapLock(GetApp()->m_gdiLock);
         m_pData = rhs.m_pData;
         InterlockedIncrement(&m_pData->count);
     }
@@ -162,6 +165,7 @@ namespace Win32xx
     {
         if (this != &rhs)
         {
+            CThreadLock mapLock(GetApp()->m_gdiLock);
             InterlockedIncrement(&rhs.m_pData->count);
             Release();
             m_pData = rhs.m_pData;
@@ -184,40 +188,23 @@ namespace Win32xx
     inline void CImageList::AddToMap() const
     {
         assert(m_pData->images);
-
         GetApp()->AddCImlData(m_pData->images, m_pData);
     }
 
-    inline BOOL CImageList::RemoveFromMap() const
+    // Adds an image or images to an image list.
+    // Refer to ImageList_Add in the Windows API documentation for more information.
+    inline int CImageList::Add(HBITMAP bitmap) const
     {
-        BOOL success = FALSE;
-
-        CWinApp* pApp = CWinApp::SetnGetThis();
-        if (pApp != NULL)          // Is the CWinApp object still valid?
-        {
-            // Allocate an iterator for our CImageList data
-            std::map<HIMAGELIST, CIml_Data*, CompareHIMAGELIST>::iterator m;
-
-            CThreadLock mapLock(pApp->m_wndLock);
-            m = pApp->m_mapCImlData.find(m_pData->images);
-            if (m != pApp->m_mapCImlData.end())
-            {
-                // Erase the CImageList data entry from the map
-                pApp->m_mapCImlData.erase(m);
-                success = TRUE;
-            }
-        }
-
-        return success;
+        assert(m_pData);
+        assert(m_pData->images);
+        return ImageList_Add(m_pData->images, bitmap, 0);
     }
 
     // Adds an image or images to an image list, generating a mask from the specified bitmap.
-    // The mask parameter can be 0.
     // Refer to ImageList_Add in the Windows API documentation for more information.
     inline int CImageList::Add(HBITMAP bitmap, HBITMAP mask) const
     {
         assert(m_pData);
-
         assert (m_pData->images);
         return ImageList_Add(m_pData->images, bitmap, mask );
     }
@@ -227,7 +214,6 @@ namespace Win32xx
     inline int CImageList::Add(HBITMAP bitmap, COLORREF mask) const
     {
         assert(m_pData);
-
         assert (m_pData->images);
         return ImageList_AddMasked(m_pData->images, bitmap, mask);
     }
@@ -237,7 +223,6 @@ namespace Win32xx
     inline int CImageList::Add(HICON icon) const
     {
         assert(m_pData);
-
         assert (m_pData->images);
 
         // Append the icon to the image list
@@ -286,12 +271,19 @@ namespace Win32xx
         }
     }
 
+    // Attach and own the specfied imagelist.
+    inline void CImageList::Assign(HIMAGELIST images)
+    {
+        CThreadLock mapLock(GetApp()->m_gdiLock);
+        Attach(images);
+        m_pData->isManagedHiml = true;
+    }
+
     // Begins dragging an image.
     // Refer to ImageList_BeginDrag in the Windows API documentation for more information.
     inline BOOL CImageList::BeginDrag(int image, CPoint hotSpot) const
     {
         assert(m_pData);
-
         assert(m_pData->images);
         return ImageList_BeginDrag(m_pData->images, image, hotSpot.x, hotSpot.y);
     }
@@ -302,7 +294,6 @@ namespace Win32xx
     inline BOOL CImageList::Copy(int Dest, int Src, UINT flags /*= ILCF_MOVE*/) const
     {
         assert(m_pData);
-
         assert(m_pData->images);
         return ImageList_Copy(*this, Dest, *this, Src, flags);
     }
@@ -328,8 +319,7 @@ namespace Win32xx
         if (images == 0)
             throw CResourceException(GetApp()->MsgImageList());
 
-        Attach(images);
-        m_pData->isManagedHiml = true;
+        Assign(images);
 
         return (images != 0) ? TRUE : FALSE;
     }
@@ -363,8 +353,7 @@ namespace Win32xx
         if (images == 0)
             throw CResourceException(GetApp()->MsgImageList());
 
-        Attach(images);
-        m_pData->isManagedHiml = true;
+        Assign(images);
 
         return (images != 0) ? TRUE : FALSE;
     }
@@ -379,8 +368,7 @@ namespace Win32xx
         if (copyImages == 0)
             throw CResourceException(GetApp()->MsgImageList());
 
-        Attach(copyImages);
-        m_pData->isManagedHiml = true;
+        Assign(copyImages);
 
         return (copyImages != 0) ? TRUE : FALSE;
     }
@@ -401,6 +389,7 @@ namespace Win32xx
     // The framework will delete the HIMAGELIST automatically if required.
     inline HIMAGELIST CImageList::Detach()
     {
+        CThreadLock mapLock(GetApp()->m_gdiLock);
         assert(m_pData);
 
         HIMAGELIST images = m_pData->images;
@@ -570,13 +559,10 @@ namespace Win32xx
     // Refer to ImageList_Read in the Windows API documentation for more information.
     inline void CImageList::Read(LPSTREAM pStream)
     {
-        assert(m_pData->images);
         HIMAGELIST images =  ImageList_Read(pStream);
-
         if (images)
         {
-            m_pData->isManagedHiml = true;
-            Attach(images);
+            Assign(images);
         }
     }
 
@@ -586,6 +572,30 @@ namespace Win32xx
     {
         assert(m_pData->images);
         return ImageList_Remove(m_pData->images, image);
+    }
+
+    // Removes the HIMAGELIST and CImageList pointer from the HIMAGELIST map
+    inline BOOL CImageList::RemoveFromMap() const
+    {
+        BOOL success = FALSE;
+
+        CWinApp* pApp = CWinApp::SetnGetThis();
+        if (pApp != NULL)          // Is the CWinApp object still valid?
+        {
+            // Allocate an iterator for our CImageList data
+            std::map<HIMAGELIST, CIml_Data*, CompareHIMAGELIST>::iterator m;
+
+            CThreadLock mapLock(pApp->m_wndLock);
+            m = pApp->m_mapCImlData.find(m_pData->images);
+            if (m != pApp->m_mapCImlData.end())
+            {
+                // Erase the CImageList data entry from the map
+                pApp->m_mapCImlData.erase(m);
+                success = TRUE;
+            }
+        }
+
+        return success;
     }
 
     // Replaces an image in an image list with a new image.
@@ -628,13 +638,13 @@ namespace Win32xx
     inline BOOL CImageList::SetDragCursorImage(int drag, int dxHotspot, int dyHotspot) const
     {
         assert(m_pData->images);
-
         return ImageList_SetDragCursorImage(*this, drag, dxHotspot, dyHotspot);
     }
 
     // Retrieves the image list's handle.
     inline CImageList::operator HIMAGELIST () const
     {
+        CThreadLock mapLock(GetApp()->m_gdiLock);
         return m_pData->images;
     }
 
@@ -642,8 +652,9 @@ namespace Win32xx
     // Destroys m_pData if the reference count is zero.
     inline void CImageList::Release()
     {
+        if (CWinApp::SetnGetThis())
+            CThreadLock mapLock(GetApp()->m_gdiLock);
         assert(m_pData);
-        CThreadLock mapLock(GetApp()->m_wndLock);
 
         if (InterlockedDecrement(&m_pData->count) == 0)
         {
@@ -665,7 +676,6 @@ namespace Win32xx
     // Creates a gray scale image list from the specified color image list.
     inline BOOL CImageList::CreateDisabledImageList(HIMAGELIST normalImages)
     {
-        assert(m_pData->images == 0);
         assert(normalImages);
 
         int count = ImageList_GetImageCount(normalImages);

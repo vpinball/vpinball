@@ -1,12 +1,12 @@
-// Win32++   Version 9.1
-// Release Date: 26th September 2022
+// Win32++   Version 9.3
+// Release Date: 5th June 2023
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2022  David Nash
+// Copyright (c) 2005-2023  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -204,7 +204,7 @@ namespace Win32xx
     private:
         CMDIFrameT(const CMDIFrameT&);              // Disable copy construction
         CMDIFrameT& operator = (const CMDIFrameT&); // Disable assignment operator
-        void AppendMDIMenu(CMenu menuWindow);
+        void UpdateMDIMenu(CMenu menuWindow);
 
         std::vector<MDIChildPtr> m_mdiChildren;
         CMDIClient<CWnd> m_mdiClient;
@@ -270,10 +270,10 @@ namespace Win32xx
         return pMDIChild;
     }
 
-    // Adds the additional menu items the the "Window" submenu when
-    // MDI child windows are created.
+    // Updates the menu items the the "Window" submenu when
+    // MDI child windows are created or destroyed.
     template <class T>
-    inline void CMDIFrameT<T>::AppendMDIMenu(CMenu windowMenu)
+    inline void CMDIFrameT<T>::UpdateMDIMenu(CMenu windowMenu)
     {
         if (!windowMenu.GetHandle())
             return;
@@ -329,7 +329,8 @@ namespace Win32xx
                     ++window;
                 }
                 else if (9 == window)
-                // For the 10th MDI child, add this menu item and return
+                // For the 10th MDI child, add this menu item and return.
+                // The MDIClient creates a dialog when this menu entry is selected.
                 {
                     windowMenu.AppendMenu(MF_STRING, IDW_FIRSTCHILD + UINT_PTR(window), _T("&Windows..."));
                     return;
@@ -375,8 +376,8 @@ namespace Win32xx
                         if (icon == 0)
                             icon = GetApp()->LoadStandardIcon(IDI_APPLICATION);
 
-                        int cx = ::GetSystemMetrics(SM_CXSMICON);
-                        int cy = ::GetSystemMetrics(SM_CYSMICON);
+                        int cx = ::GetSystemMetrics(SM_CXSMICON) * GetWindowDpi(*this) / GetWindowDpi(HWND_DESKTOP);
+                        int cy = ::GetSystemMetrics(SM_CYSMICON) * GetWindowDpi(*this) / GetWindowDpi(HWND_DESKTOP);
                         int y = 1 + (pMenubar->GetWindowRect().Height() - cy) / 2;
                         int x = (rc.Width() - cx) / 2;
                         drawDC.DrawIconEx(x, y, icon, cx, cy, 0, 0, DI_NORMAL);
@@ -765,11 +766,15 @@ namespace Win32xx
                 {
                     if (T::GetMenuBar().IsWindow())
                     {
-                        AppendMDIMenu(menuWindow);
+                        // Update the popup Window menu.
+                        UpdateMDIMenu(menuWindow);
+
+                        // Update the menubar.
                         T::GetMenuBar().SetupMenuBar(menu);
                     }
                     else
                     {
+                        // Updates the MDI frame's menu adding the MDI children
                         WPARAM wparam = reinterpret_cast<WPARAM>(menu.GetHandle());
                         LPARAM lparam = reinterpret_cast<LPARAM>(menuWindow.GetHandle());
                         GetMDIClient().SendMessage(WM_MDISETMENU, wparam, lparam);
@@ -963,7 +968,7 @@ namespace Win32xx
         pParent->RedrawWindow(RDW_INVALIDATE | RDW_ALLCHILDREN);
 
         // Ensure bits revealed by round corners (XP themes) are redrawn
-        VERIFY(SetWindowPos(0, 0, 0, 0, 0, SWP_NOMOVE|SWP_NOSIZE|SWP_FRAMECHANGED));
+        VERIFY(SetWindowPos(HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE|SWP_NOSIZE|SWP_FRAMECHANGED));
 
         return GetHwnd();
     }

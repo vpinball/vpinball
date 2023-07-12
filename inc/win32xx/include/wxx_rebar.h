@@ -1,12 +1,12 @@
-// Win32++   Version 9.1
-// Release Date: 26th September 2022
+// Win32++   Version 9.3
+// Release Date: 5th June 2023
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2022  David Nash
+// Copyright (c) 2005-2023  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -510,8 +510,8 @@ namespace Win32xx
         UINT cx = static_cast<UINT>(size.cx);
         UINT cy = static_cast<UINT>(size.cy);
         GetBandInfo(band, rbbi);
-        rbbi.cx         = cx + 2;
-        rbbi.cxMinChild = cx + 2;
+        rbbi.cx         = cx;
+        rbbi.cxMinChild = cx;
         rbbi.cyMinChild = cy;
         rbbi.cyMaxChild = cy;
 

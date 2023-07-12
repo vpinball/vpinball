@@ -42,7 +42,11 @@ float3 cos_hemisphere_sample(const float2 t) // u,v in [0..1), returns y-up
 {
 	const float phi = t.y * (2.0*3.1415926535897932384626433832795);
 	const float cosTheta = sqrt(1.0 - t.x);
-	const float sinTheta = sqrt(t.x);
+	float sinTheta;
+	if(t.x == 0.) // necessary as DX9 HLSL seems to generate 1./rsqrt
+		sinTheta = 0.;
+	else
+		sinTheta = sqrt(t.x);
 	float sp,cp;
 	sincos(phi,sp,cp);
 	return float3(cp * sinTheta, cosTheta, sp * sinTheta);

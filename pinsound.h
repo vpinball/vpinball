@@ -17,8 +17,7 @@ struct DSAudioDevice
       guid = nullptr;
    }
    ~DSAudioDevice() {
-      if (guid)
-         delete guid;
+      delete guid;
    }
 };
 

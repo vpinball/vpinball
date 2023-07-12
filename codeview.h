@@ -130,22 +130,22 @@ public:
 
    STDMETHOD(OnScriptError)(IActiveScriptError *pscripterror);
 
-   STDMETHOD(GetLCID)(LCID *plcid)
+   STDMETHOD(GetLCID)(LCID *plcid) override
    {
       *plcid = 9; return S_OK;
    }
 
-   STDMETHOD(GetDocVersionString)(BSTR *pbstrVersion)
+   STDMETHOD(GetDocVersionString)(BSTR *pbstrVersion) override
    {
       *pbstrVersion = SysAllocString(L""); return S_OK;
    }
 
-   STDMETHOD(OnScriptTerminate)(const VARIANT *pvr, const EXCEPINFO *pei)
+   STDMETHOD(OnScriptTerminate)(const VARIANT *pvr, const EXCEPINFO *pei) override
    {
       return S_OK;
    }
 
-   STDMETHOD(OnStateChange)(SCRIPTSTATE ssScriptState)
+   STDMETHOD(OnStateChange)(SCRIPTSTATE ssScriptState) override
    {
       return S_OK;
    }
@@ -154,12 +154,12 @@ public:
 
    STDMETHODIMP OnLeaveScript();
 
-   STDMETHODIMP GetWindow(HWND *phwnd)
+   STDMETHODIMP GetWindow(HWND *phwnd) override
    {
       *phwnd = GetDesktopWindow(); return S_OK; //!! ?
    }
 
-   STDMETHODIMP EnableModeless(BOOL)
+   STDMETHODIMP EnableModeless(BOOL) override
    {
       return S_OK;
    }
@@ -513,7 +513,7 @@ private:
 
 // general string helpers:
 
-__forceinline bool IsWhitespace(const char ch)
+constexpr __forceinline bool IsWhitespace(const char ch)
 {
    return (ch == ' ' || ch == 9/*tab*/);
 }

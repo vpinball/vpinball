@@ -1,12 +1,12 @@
-// Win32++   Version 9.1
-// Release Date: 26th September 2022
+// Win32++   Version 9.3
+// Release Date: 5th June 2023
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2022  David Nash
+// Copyright (c) 2005-2023  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -159,7 +159,8 @@ namespace Win32xx
         BOOL    Undo() const;
 
     protected:
-        void    PreRegisterClass(WNDCLASS& wc);
+        virtual void PreCreate(CREATESTRUCT& cs);
+        virtual void PreRegisterClass(WNDCLASS& wc);
 
     private:
         CRichEdit(const CRichEdit&);              // Disable copy construction
@@ -190,17 +191,21 @@ namespace Win32xx
         // Windows 2000 Includes Rich Edit 3.0 with a Rich Edit 1.0 emulator.
         // Windows XP   Includes Rich Edit 4.1, and Rich Edit 3.0 with a Rich Edit 1.0 emulator.
 
+        CString system;
+        ::GetSystemDirectory(system.GetBuffer(MAX_PATH), MAX_PATH);
+        system.ReleaseBuffer();
+
         // Load RichEdit version 1.0
-        m_rich1 = LoadLibrary(_T("riched32.dll"));
+        m_rich1 = ::LoadLibrary(system + _T("\\riched32.dll"));
 
         if (m_rich1 == 0)
             throw CNotSupportedException(GetApp()->MsgRichEditDll());
 
         // Load RichEdit version 2.0 or 3.0 (for Win98 and above)
-        m_rich2 = LoadLibrary(_T("riched20.dll"));
+        m_rich2 = ::LoadLibrary(system + _T("\\riched20.dll"));
 
         // Load RichEdit version 4.1 (for WinXP and above)
-        m_rich4_1 = LoadLibrary(_T("Msftedit.dll"));
+        m_rich4_1 = ::LoadLibrary(system + _T("\\Msftedit.dll"));
     }
 
     inline CRichEdit::~CRichEdit()
@@ -214,6 +219,12 @@ namespace Win32xx
 
         if (m_rich4_1)
             ::FreeLibrary(m_rich4_1);
+    }
+
+    // Set the default window styles.
+    inline void CRichEdit::PreCreate(CREATESTRUCT& cs)
+    {
+        cs.style = WS_CHILD | WS_VISIBLE | ES_MULTILINE;
     }
 
     // Set the window class
@@ -230,7 +241,6 @@ namespace Win32xx
             wc.lpszClassName = MSFTEDIT_CLASS;
 #endif
 
-        wc.style = ES_MULTILINE | WS_VISIBLE | WS_CHILD | WS_BORDER | WS_TABSTOP;
     }
 
     // Adds text to the end of the document

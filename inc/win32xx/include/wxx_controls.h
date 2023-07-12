@@ -1,12 +1,12 @@
-// Win32++   Version 9.1
-// Release Date: 26th September 2022
+// Win32++   Version 9.3
+// Release Date: 5th June 2023
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2022  David Nash
+// Copyright (c) 2005-2023  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -2337,7 +2337,7 @@ namespace Win32xx
     // Sets the CREATESTRUCT parameters before the control is created.
     inline void CSpinButton::PreCreate(CREATESTRUCT& cs)
     {
-        cs.style = WS_CHILD | WS_VISIBLE | WS_BORDER | WS_VISIBLE | UDS_SETBUDDYINT;
+        cs.style = WS_CHILD | WS_VISIBLE | WS_BORDER | UDS_SETBUDDYINT;
     }
 
     // Sets the WNDCLASS parameters before the control is created.

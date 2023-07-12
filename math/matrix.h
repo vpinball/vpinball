@@ -6,7 +6,7 @@
 #ifdef ENABLE_SDL
 class Matrix3D;
 
-class D3DXMATRIX {
+class alignas(16) D3DXMATRIX {
 public:
    union {
       struct {
@@ -27,7 +27,7 @@ public:
 };
 
 #define D3DMATRIX D3DXMATRIX
-class vec4 final {
+class alignas(16) vec4 final {
 public:
    union {
       struct {
@@ -335,6 +335,7 @@ public:
          _mm_storeu_ps((&matrixT._11)+i, r);
       }
 #else
+#pragma message ("Warning: No SSE matrix mul")
       for (int i = 0; i < 4; ++i)
          for (int l = 0; l < 4; ++l)
             matrixT.m[i][l] = (m[0][l] * mult.m[i][0]) + (m[1][l] * mult.m[i][1]) + (m[2][l] * mult.m[i][2]) + (m[3][l] * mult.m[i][3]);
@@ -359,6 +360,7 @@ public:
          _mm_storeu_ps((&matrixT._11)+i, r);
       }
 #else
+#pragma message ("Warning: No SSE matrix mul")
       for (int i = 0; i < 4; ++i)
          for (int l = 0; l < 4; ++l)
             matrixT.m[i][l] = (mult.m[0][l] * m[i][0]) + (mult.m[1][l] * m[i][1]) + (mult.m[2][l] * m[i][2]) + (mult.m[3][l] * m[i][3]);

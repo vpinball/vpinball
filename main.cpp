@@ -221,7 +221,7 @@ public:
       _CrtDumpMemoryLeaks();
 #endif
    }
-   virtual BOOL InitInstance() 
+   BOOL InitInstance() override
    { 
 #ifdef CRASH_HANDLER
       rde::CrashHandler::Init();
@@ -545,7 +545,7 @@ public:
        }
    }
 
-   virtual int Run()
+   int Run() override
    {
       if (run)
       {

@@ -635,7 +635,6 @@ void LayerTreeView::SetAllItemStates(const bool checked)
    TVITEM tvItem = {};
    tvItem.mask = TVIF_PARAM;
 
-   HTREEITEM item = GetChild(hRootItem);
    vector<HTREEITEM> children = GetAllLayerItems();
    for (const HTREEITEM child : children)
    {

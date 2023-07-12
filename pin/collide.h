@@ -154,10 +154,10 @@ public:
       CalcNormal();
    }
 
-   virtual float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const override;
-   virtual int GetType() const override { return eLineSeg; }
-   virtual void Collide(const CollisionEvent& coll) override;
-   virtual void CalcHitBBox() override;
+   float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const override;
+   int GetType() const override { return eLineSeg; }
+   void Collide(const CollisionEvent& coll) override;
+   void CalcHitBBox() override;
 
    float HitTestBasic(const BallS& ball, const float dtime, CollisionEvent& coll, const bool direction, const bool lateral, const bool rigid) const;
    void CalcNormal(); // and also does update length!

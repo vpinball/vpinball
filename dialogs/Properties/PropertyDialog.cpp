@@ -95,6 +95,9 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect> &pvsel)
 
     int activePage = m_tab.m_activePage;
     m_backglassView = g_pvp->m_backglassView;
+
+    memset(m_tabs, 0, sizeof(m_tabs));
+
     switch (psel->GetItemType())
     {
     case eItemTable:
@@ -411,7 +414,7 @@ void PropertyDialog::DeleteAllTabs()
 
 void PropertyDialog::UpdateTextureComboBox(const vector<Texture *>& contentList, const CComboBox &combo, const string &selectName)
 {
-    bool need_reset = combo.GetCount() != contentList.size() + 1; // Not the same number of items
+    bool need_reset = combo.GetCount() != (int)contentList.size() + 1; // Not the same number of items
     need_reset |= combo.FindStringExact(1, selectName.c_str()) == CB_ERR; // Selection is not part of combo
     if (!need_reset)
     {
@@ -436,7 +439,7 @@ void PropertyDialog::UpdateTextureComboBox(const vector<Texture *>& contentList,
 
 void PropertyDialog::UpdateMaterialComboBox(const vector<Material *>& contentList, const CComboBox &combo, const string &selectName)
 {
-    bool need_reset = combo.GetCount() != contentList.size() + 1; // Not the same number of items
+    bool need_reset = combo.GetCount() != (int)contentList.size() + 1; // Not the same number of items
     need_reset |= combo.FindStringExact(1, selectName.c_str()) == CB_ERR; // Selection is not part of combo
     if (!need_reset)
     {
@@ -685,7 +688,7 @@ BOOL PropertyDialog::IsSubDialogMessage(MSG &msg) const
             if (msg.message == WM_KEYDOWN && msg.wParam == VK_ESCAPE)
             {
                const CString className = GetFocus().GetClassName();
-               // filter ESC-key otherwise the VPX will enter an endless event loop!?
+               // filter ESC-key otherwise VPX will enter an endless event loop!?
                if (className == "Edit" || className == "msctls_trackbar32" || className=="Button")
                   return TRUE;
             }
@@ -748,13 +751,15 @@ void TimerProperty::UpdateProperties(const int dispid)
 {
     for (int i = 0; i < m_pvsel->size(); i++)
     {
-        if (m_pvsel->ElementAt(i) == nullptr)
+        ISelect* const el = m_pvsel->ElementAt(i);
+        if (el == nullptr)
             continue;
-        switch (m_pvsel->ElementAt(i)->GetItemType())
+
+        switch (el->GetItemType())
         {
             case eItemSurface:
             {
-                Surface * const wall = (Surface *)m_pvsel->ElementAt(i);
+                Surface * const wall = (Surface *)el;
                 wall->m_d.m_tdr.m_TimerInterval = PropertyDialog::GetIntTextbox(m_timerIntervalEdit);
 
                 /*TODO: uservalue is missing due to VARIANT handling*/
@@ -764,7 +769,7 @@ void TimerProperty::UpdateProperties(const int dispid)
             }
             case eItemLight:
             {
-                Light * const light = (Light *)m_pvsel->ElementAt(i);
+                Light * const light = (Light *)el;
                 light->m_d.m_tdr.m_TimerInterval = PropertyDialog::GetIntTextbox(m_timerIntervalEdit);
 
                 /*TODO: uservalue is missing due to VARIANT handling*/
@@ -774,7 +779,7 @@ void TimerProperty::UpdateProperties(const int dispid)
             }
             case eItemFlasher:
             {
-                Flasher * const flash = (Flasher *)m_pvsel->ElementAt(i);
+                Flasher * const flash = (Flasher *)el;
                 flash->m_d.m_tdr.m_TimerInterval = PropertyDialog::GetIntTextbox(m_timerIntervalEdit);
 
                 /*TODO: uservalue is missing due to VARIANT handling*/
@@ -784,7 +789,7 @@ void TimerProperty::UpdateProperties(const int dispid)
             }
             case eItemRubber:
             {
-                Rubber * const rubber = (Rubber *)m_pvsel->ElementAt(i);
+                Rubber * const rubber = (Rubber *)el;
                 rubber->m_d.m_tdr.m_TimerInterval = PropertyDialog::GetIntTextbox(m_timerIntervalEdit);
 
                 /*TODO: uservalue is missing due to VARIANT handling*/
@@ -794,7 +799,7 @@ void TimerProperty::UpdateProperties(const int dispid)
             }
             case eItemBumper:
             {
-                Bumper * const bumper = (Bumper *)m_pvsel->ElementAt(i);
+                Bumper * const bumper = (Bumper *)el;
                 bumper->m_d.m_tdr.m_TimerInterval = PropertyDialog::GetIntTextbox(m_timerIntervalEdit);
 
                 /*TODO: uservalue is missing due to VARIANT handling*/
@@ -804,7 +809,7 @@ void TimerProperty::UpdateProperties(const int dispid)
             }
             case eItemPlunger:
             {
-                Plunger * const plunger = (Plunger *)m_pvsel->ElementAt(i);
+                Plunger * const plunger = (Plunger *)el;
                 plunger->m_d.m_tdr.m_TimerInterval = PropertyDialog::GetIntTextbox(m_timerIntervalEdit);
 
                 /*TODO: uservalue is missing due to VARIANT handling*/
@@ -814,7 +819,7 @@ void TimerProperty::UpdateProperties(const int dispid)
             }
             case eItemSpinner:
             {
-                Spinner * const spinner = (Spinner *)m_pvsel->ElementAt(i);
+                Spinner * const spinner = (Spinner *)el;
                 spinner->m_d.m_tdr.m_TimerInterval = PropertyDialog::GetIntTextbox(m_timerIntervalEdit);
 
                 /*TODO: uservalue is missing due to VARIANT handling*/
@@ -824,7 +829,7 @@ void TimerProperty::UpdateProperties(const int dispid)
             }
             case eItemTimer:
             {
-                Timer * const timer = (Timer *)m_pvsel->ElementAt(i);
+                Timer * const timer = (Timer *)el;
                 timer->m_d.m_tdr.m_TimerInterval = PropertyDialog::GetIntTextbox(m_timerIntervalEdit);
 
                 /*TODO: uservalue is missing due to VARIANT handling*/
@@ -834,7 +839,7 @@ void TimerProperty::UpdateProperties(const int dispid)
             }
             case eItemHitTarget:
             {
-                HitTarget * const target= (HitTarget *)m_pvsel->ElementAt(i);
+                HitTarget * const target= (HitTarget *)el;
                 target->m_d.m_tdr.m_TimerInterval = PropertyDialog::GetIntTextbox(m_timerIntervalEdit);
 
                 /*TODO: uservalue is missing due to VARIANT handling*/
@@ -844,7 +849,7 @@ void TimerProperty::UpdateProperties(const int dispid)
             }
             case eItemTrigger:
             {
-                Trigger * const trigger = (Trigger *)m_pvsel->ElementAt(i);
+                Trigger * const trigger = (Trigger *)el;
                 trigger->m_d.m_tdr.m_TimerInterval = PropertyDialog::GetIntTextbox(m_timerIntervalEdit);
 
                 /*TODO: uservalue is missing due to VARIANT handling*/
@@ -854,7 +859,7 @@ void TimerProperty::UpdateProperties(const int dispid)
             }
             case eItemKicker:
             {
-                Kicker * const kicker = (Kicker *)m_pvsel->ElementAt(i);
+                Kicker * const kicker = (Kicker *)el;
                 kicker->m_d.m_tdr.m_TimerInterval = PropertyDialog::GetIntTextbox(m_timerIntervalEdit);
 
                 /*TODO: uservalue is missing due to VARIANT handling*/
@@ -864,7 +869,7 @@ void TimerProperty::UpdateProperties(const int dispid)
             }
             case eItemRamp:
             {
-                Ramp * const ramp = (Ramp *)m_pvsel->ElementAt(i);
+                Ramp * const ramp = (Ramp *)el;
                 ramp->m_d.m_tdr.m_TimerInterval = PropertyDialog::GetIntTextbox(m_timerIntervalEdit);
 
                 /*TODO: uservalue is missing due to VARIANT handling*/
@@ -874,7 +879,7 @@ void TimerProperty::UpdateProperties(const int dispid)
             }
             case eItemFlipper:
             {
-                Flipper * const flipper = (Flipper *)m_pvsel->ElementAt(i);
+                Flipper * const flipper = (Flipper *)el;
                 flipper->m_d.m_tdr.m_TimerInterval = PropertyDialog::GetIntTextbox(m_timerIntervalEdit);
 
                 /*TODO: uservalue is missing due to VARIANT handling*/
@@ -884,7 +889,7 @@ void TimerProperty::UpdateProperties(const int dispid)
             }
             case eItemGate:
             {
-                Gate * const gate = (Gate *)m_pvsel->ElementAt(i);
+                Gate * const gate = (Gate *)el;
                 gate->m_d.m_tdr.m_TimerInterval = PropertyDialog::GetIntTextbox(m_timerIntervalEdit);
 
                 /*TODO: uservalue is missing due to VARIANT handling*/
@@ -894,7 +899,7 @@ void TimerProperty::UpdateProperties(const int dispid)
             }
             case eItemTextbox:
             {
-                Textbox * const text = (Textbox *)m_pvsel->ElementAt(i);
+                Textbox * const text = (Textbox *)el;
                 text->m_d.m_tdr.m_TimerInterval = PropertyDialog::GetIntTextbox(m_timerIntervalEdit);
 
                 /*TODO: uservalue is missing due to VARIANT handling*/
@@ -904,7 +909,7 @@ void TimerProperty::UpdateProperties(const int dispid)
             }
             case eItemDispReel:
             {
-                DispReel * const reel = (DispReel *)m_pvsel->ElementAt(i);
+                DispReel * const reel = (DispReel *)el;
                 reel->m_d.m_tdr.m_TimerInterval = PropertyDialog::GetIntTextbox(m_timerIntervalEdit);
 
                 /*TODO: uservalue is missing due to VARIANT handling*/
@@ -914,7 +919,7 @@ void TimerProperty::UpdateProperties(const int dispid)
             }
             case eItemLightSeq:
             {
-                LightSeq * const lightseq = (LightSeq *)m_pvsel->ElementAt(i);
+                LightSeq * const lightseq = (LightSeq *)el;
                 lightseq->m_d.m_tdr.m_TimerInterval = PropertyDialog::GetIntTextbox(m_timerIntervalEdit);
 
                 /*TODO: uservalue is missing due to VARIANT handling*/
@@ -933,13 +938,15 @@ void TimerProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
     for (int i = 0; i < m_pvsel->size(); i++)
     {
-        if (m_pvsel->ElementAt(i) == nullptr)
+        ISelect* const el = m_pvsel->ElementAt(i);
+        if (el == nullptr)
             continue;
-        switch (m_pvsel->ElementAt(i)->GetItemType())
+
+        switch (el->GetItemType())
         {
             case eItemSurface:
             {
-                const Surface * const wall = (Surface *)m_pvsel->ElementAt(i);
+                const Surface * const wall = (Surface *)el;
                 PropertyDialog::SetIntTextbox(m_timerIntervalEdit, wall->m_d.m_tdr.m_TimerInterval);
 
                 /*TODO: uservalue is missing due to VARIANT handling*/
@@ -948,7 +955,7 @@ void TimerProperty::UpdateVisuals(const int dispid/*=-1*/)
             }
             case eItemLight:
             {
-                const Light * const light = (Light *)m_pvsel->ElementAt(i);
+                const Light * const light = (Light *)el;
                 PropertyDialog::SetIntTextbox(m_timerIntervalEdit, light->m_d.m_tdr.m_TimerInterval);
 
                 /*TODO: uservalue is missing due to VARIANT handling*/
@@ -957,7 +964,7 @@ void TimerProperty::UpdateVisuals(const int dispid/*=-1*/)
             }
             case eItemFlasher:
             {
-                const Flasher * const flash = (Flasher *)m_pvsel->ElementAt(i);
+                const Flasher * const flash = (Flasher *)el;
                 PropertyDialog::SetIntTextbox(m_timerIntervalEdit, flash->m_d.m_tdr.m_TimerInterval);
 
                 /*TODO: uservalue is missing due to VARIANT handling*/
@@ -966,7 +973,7 @@ void TimerProperty::UpdateVisuals(const int dispid/*=-1*/)
             }
             case eItemRubber:
             {
-                const Rubber * const rubber = (Rubber *)m_pvsel->ElementAt(i);
+                const Rubber * const rubber = (Rubber *)el;
                 PropertyDialog::SetIntTextbox(m_timerIntervalEdit, rubber->m_d.m_tdr.m_TimerInterval);
 
                 /*TODO: uservalue is missing due to VARIANT handling*/
@@ -975,7 +982,7 @@ void TimerProperty::UpdateVisuals(const int dispid/*=-1*/)
             }
             case eItemBumper:
             {
-                const Bumper * const bumper = (Bumper *)m_pvsel->ElementAt(i);
+                const Bumper * const bumper = (Bumper *)el;
                 PropertyDialog::SetIntTextbox(m_timerIntervalEdit, bumper->m_d.m_tdr.m_TimerInterval);
 
                 /*TODO: uservalue is missing due to VARIANT handling*/
@@ -984,7 +991,7 @@ void TimerProperty::UpdateVisuals(const int dispid/*=-1*/)
             }
             case eItemPlunger:
             {
-                const Plunger * const plunger = (Plunger *)m_pvsel->ElementAt(i);
+                const Plunger * const plunger = (Plunger *)el;
                 PropertyDialog::SetIntTextbox(m_timerIntervalEdit, plunger->m_d.m_tdr.m_TimerInterval);
 
                 /*TODO: uservalue is missing due to VARIANT handling*/
@@ -993,7 +1000,7 @@ void TimerProperty::UpdateVisuals(const int dispid/*=-1*/)
             }
             case eItemSpinner:
             {
-                const Spinner * const spinner = (Spinner *)m_pvsel->ElementAt(i);
+                const Spinner * const spinner = (Spinner *)el;
                 PropertyDialog::SetIntTextbox(m_timerIntervalEdit, spinner->m_d.m_tdr.m_TimerInterval);
 
                 /*TODO: uservalue is missing due to VARIANT handling*/
@@ -1002,7 +1009,7 @@ void TimerProperty::UpdateVisuals(const int dispid/*=-1*/)
             }
             case eItemTimer:
             {
-                const Timer * const timer = (Timer *)m_pvsel->ElementAt(i);
+                const Timer * const timer = (Timer *)el;
                 PropertyDialog::SetIntTextbox(m_timerIntervalEdit, timer->m_d.m_tdr.m_TimerInterval);
 
                 /*TODO: uservalue is missing due to VARIANT handling*/
@@ -1011,7 +1018,7 @@ void TimerProperty::UpdateVisuals(const int dispid/*=-1*/)
             }
             case eItemHitTarget:
             {
-                const HitTarget * const target = (HitTarget *)m_pvsel->ElementAt(i);
+                const HitTarget * const target = (HitTarget *)el;
                 PropertyDialog::SetIntTextbox(m_timerIntervalEdit, target->m_d.m_tdr.m_TimerInterval);
 
                 /*TODO: uservalue is missing due to VARIANT handling*/
@@ -1020,7 +1027,7 @@ void TimerProperty::UpdateVisuals(const int dispid/*=-1*/)
             }
             case eItemTrigger:
             {
-                const Trigger * const trigger = (Trigger *)m_pvsel->ElementAt(i);
+                const Trigger * const trigger = (Trigger *)el;
                 PropertyDialog::SetIntTextbox(m_timerIntervalEdit, trigger->m_d.m_tdr.m_TimerInterval);
 
                 /*TODO: uservalue is missing due to VARIANT handling*/
@@ -1029,7 +1036,7 @@ void TimerProperty::UpdateVisuals(const int dispid/*=-1*/)
             }
             case eItemKicker:
             {
-                const Kicker * const kicker = (Kicker *)m_pvsel->ElementAt(i);
+                const Kicker * const kicker = (Kicker *)el;
                 PropertyDialog::SetIntTextbox(m_timerIntervalEdit, kicker->m_d.m_tdr.m_TimerInterval);
 
                 /*TODO: uservalue is missing due to VARIANT handling*/
@@ -1038,7 +1045,7 @@ void TimerProperty::UpdateVisuals(const int dispid/*=-1*/)
             }
             case eItemRamp:
             {
-                const Ramp * const ramp = (Ramp *)m_pvsel->ElementAt(i);
+                const Ramp * const ramp = (Ramp *)el;
                 PropertyDialog::SetIntTextbox(m_timerIntervalEdit, ramp->m_d.m_tdr.m_TimerInterval);
 
                 /*TODO: uservalue is missing due to VARIANT handling*/
@@ -1047,7 +1054,7 @@ void TimerProperty::UpdateVisuals(const int dispid/*=-1*/)
             }
             case eItemFlipper:
             {
-                const Flipper * const flipper = (Flipper *)m_pvsel->ElementAt(i);
+                const Flipper * const flipper = (Flipper *)el;
                 PropertyDialog::SetIntTextbox(m_timerIntervalEdit, flipper->m_d.m_tdr.m_TimerInterval);
 
                 /*TODO: uservalue is missing due to VARIANT handling*/
@@ -1056,7 +1063,7 @@ void TimerProperty::UpdateVisuals(const int dispid/*=-1*/)
             }
             case eItemGate:
             {
-                const Gate * const gate = (Gate *)m_pvsel->ElementAt(i);
+                const Gate * const gate = (Gate *)el;
                 PropertyDialog::SetIntTextbox(m_timerIntervalEdit, gate->m_d.m_tdr.m_TimerInterval);
 
                 /*TODO: uservalue is missing due to VARIANT handling*/
@@ -1065,7 +1072,7 @@ void TimerProperty::UpdateVisuals(const int dispid/*=-1*/)
             }
             case eItemTextbox:
             {
-                const Textbox * const text = (Textbox *)m_pvsel->ElementAt(i);
+                const Textbox * const text = (Textbox *)el;
                 PropertyDialog::SetIntTextbox(m_timerIntervalEdit, text->m_d.m_tdr.m_TimerInterval);
 
                 /*TODO: uservalue is missing due to VARIANT handling*/
@@ -1074,7 +1081,7 @@ void TimerProperty::UpdateVisuals(const int dispid/*=-1*/)
             }
             case eItemDispReel:
             {
-                const DispReel * const reel = (DispReel *)m_pvsel->ElementAt(i);
+                const DispReel * const reel = (DispReel *)el;
                 PropertyDialog::SetIntTextbox(m_timerIntervalEdit, reel->m_d.m_tdr.m_TimerInterval);
 
                 /*TODO: uservalue is missing due to VARIANT handling*/
@@ -1083,7 +1090,7 @@ void TimerProperty::UpdateVisuals(const int dispid/*=-1*/)
             }
             case eItemLightSeq:
             {
-                const LightSeq * const lightseq = (LightSeq *)m_pvsel->ElementAt(i);
+                const LightSeq * const lightseq = (LightSeq *)el;
                 PropertyDialog::SetIntTextbox(m_timerIntervalEdit, lightseq->m_d.m_tdr.m_TimerInterval);
 
                 /*TODO: uservalue is missing due to VARIANT handling*/

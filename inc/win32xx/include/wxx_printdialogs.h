@@ -1,12 +1,12 @@
-// Win32++   Version 9.1
-// Release Date: 26th September 2022
+// Win32++   Version 9.3
+// Release Date: 5th June 2023
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2022  David Nash
+// Copyright (c) 2005-2023  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -49,7 +49,7 @@
 ////////////////////////////////////////////////////////////////////
 // wxx_printdialogs.h
 // Declaration of the CPrintDialog and CPageSetupDialog class, along
-// with the CGlobalLock template class.
+// with the CGlobalLock class template.
 
 // CPrintDialog displays the Print dialog which allows the user to
 // select the printer to use.
@@ -105,7 +105,7 @@ namespace Win32xx
 
 
     //////////////////////////////////////
-    // CGlobaLock is a template class used to provide a self unlocking
+    // CGlobaLock is a class template used to provide a self unlocking
     // object to global memory. It is used to provide convenient access
     // to the memory provided by hDevMode and hDevNames handles.
     // The framework uses this class to eliminate the need to manually

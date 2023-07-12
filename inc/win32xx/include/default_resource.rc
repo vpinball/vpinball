@@ -22,7 +22,7 @@ IDW_MAIN MENU
 BEGIN
     POPUP "&File"
     BEGIN
-        MENUITEM "New &View",                   IDM_FILE_NEWVIEW
+        MENUITEM "New\tCtrl+N",                 IDM_FILE_NEW
         MENUITEM SEPARATOR
         MENUITEM "Recent Files",                IDW_FILE_MRU_FILE1, GRAYED
         MENUITEM SEPARATOR
@@ -31,7 +31,7 @@ BEGIN
     POPUP "&Edit"
     BEGIN
         MENUITEM "Undo\tCtrl+Z",                IDM_EDIT_UNDO
-        MENUITEM "Redo\tShift+Ctrl+Z",          IDM_EDIT_REDO
+        MENUITEM "Redo\tCtrl+Y",                IDM_EDIT_REDO
         MENUITEM SEPARATOR
         MENUITEM "Cut\tCtrl+X",                 IDM_EDIT_CUT
         MENUITEM "Copy\tCtrl+C",                IDM_EDIT_COPY
@@ -108,7 +108,7 @@ IDW_MAIN                 BITMAP                  "res/toolbar.bmp"
 // Dialog
 //
 
-// Help ABout Dialog
+// Help About Dialog
 IDW_ABOUT DIALOGEX 0, 0, 186, 90
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION |
     WS_SYSMENU
@@ -121,17 +121,16 @@ BEGIN
 END
 
 // Print Preview Dialog
-IDW_PRINTPREVIEW DIALOGEX 0, 0, 309, 178
-STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_CLIPCHILDREN
-EXSTYLE WS_EX_CLIENTEDGE
-FONT 8, "MS Shell Dlg", 400, 0
+103 DIALOGEX 0, 0, 309, 178
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_BORDER
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    CONTROL         "",IDW_PREVIEWPANE,"PreviewPane",0x0,0,18,309,159
-    PUSHBUTTON      "",IDW_PREVIEWCLOSE,246,2,50,14
-    PUSHBUTTON      "",IDW_PREVIEWPRINT,4,2,50,14
-    PUSHBUTTON      "",IDW_PREVIEWSETUP,55,2,50,14
-    PUSHBUTTON      "",IDW_PREVIEWPREV,125,2,50,14
-    PUSHBUTTON      "",IDW_PREVIEWNEXT,176,2,50,14
+    PUSHBUTTON      "",96,246,2,50,14
+    PUSHBUTTON      "",92,4,2,50,14
+    PUSHBUTTON      "",93,55,2,50,14
+    PUSHBUTTON      "",94,125,2,50,14
+    PUSHBUTTON      "",95,176,2,50,14
+    CONTROL         "",97,"PreviewPane",WS_TABSTOP,0,18,309,160
 END
 
 
@@ -150,7 +149,7 @@ BEGIN
     "X",            IDM_EDIT_CUT,           VIRTKEY, CONTROL, NOINVERT
     "V",            IDM_EDIT_PASTE,         VIRTKEY, CONTROL, NOINVERT
     "Z",            IDM_EDIT_UNDO,          VIRTKEY, CONTROL, NOINVERT
-    "Y",            IDM_EDIT_REDO,          VIRTKEY, SHIFT, CONTROL, NOINVERT
+    "Y",            IDM_EDIT_REDO,          VIRTKEY, CONTROL, NOINVERT
 END
 
 

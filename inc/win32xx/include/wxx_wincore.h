@@ -1,12 +1,12 @@
-// Win32++   Version 9.1
-// Release Date: 26th September 2022
+// Win32++   Version 9.3
+// Release Date: 5th June 2023
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2022  David Nash
+// Copyright (c) 2005-2023  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -100,6 +100,185 @@ int APIENTRY WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 namespace Win32xx
 {
+
+    ////////////////////////////////////////
+    // Global Functions
+    //
+
+    // Returns the path to the AppData folder. Returns an empty CString if
+    // the Operating System doesn't support the use of an AppData folder.
+    // The AppData folder is available in Windows 2000 and above.
+    inline CString GetAppDataPath()
+    {
+        CString appData;
+
+        CString system;
+        ::GetSystemDirectory(system.GetBuffer(MAX_PATH), MAX_PATH);
+        system.ReleaseBuffer();
+
+        HMODULE shell = ::LoadLibrary(system + _T("\\Shell32.dll"));
+        if (shell)
+        {
+            typedef HRESULT WINAPI MYPROC(HWND, int, HANDLE, DWORD, LPTSTR);
+
+            // Get the function pointer of the SHGetFolderPath function
+#ifdef UNICODE
+            MYPROC* pSHGetFolderPath = reinterpret_cast<MYPROC*>(
+                reinterpret_cast<void*>(::GetProcAddress(shell, "SHGetFolderPathW")));
+#else
+            MYPROC* pSHGetFolderPath = reinterpret_cast<MYPROC*>(
+                reinterpret_cast<void*>(::GetProcAddress(shell, "SHGetFolderPathA")));
+#endif
+
+#ifndef CSIDL_APPDATA
+#define CSIDL_APPDATA     0x001a
+#define CSIDL_PERSONAL    0x0005 /* My Documents */
+#endif
+
+#ifndef CSIDL_FLAG_CREATE
+#define CSIDL_FLAG_CREATE 0x8000
+#endif
+
+            if (pSHGetFolderPath)
+            {
+                // Call the SHGetFolderPath function to retrieve the AppData folder
+                pSHGetFolderPath(NULL, CSIDL_APPDATA | CSIDL_FLAG_CREATE, NULL, 0, appData.GetBuffer(MAX_PATH));
+                appData.ReleaseBuffer();
+            }
+
+            // If we can't get the AppData folder, get the MyDocuments folder instead
+            if (appData.IsEmpty())
+            {
+                typedef HRESULT WINAPI GETSPECIALPATH(HWND, LPTSTR, int, BOOL);
+
+#ifdef UNICODE
+                GETSPECIALPATH* pGetSpecialPath = reinterpret_cast<GETSPECIALPATH*>(
+                    reinterpret_cast<void*>(::GetProcAddress(shell, "SHGetSpecialFolderPathW")));
+#else
+                GETSPECIALPATH* pGetSpecialPath = reinterpret_cast<GETSPECIALPATH*>(
+                    reinterpret_cast<void*>(::GetProcAddress(shell, "SHGetSpecialFolderPathA")));
+#endif
+
+                if (pGetSpecialPath)
+                {
+                    // Call the SHGetSpecialFolderPath function to retrieve the MyDocuments folder
+                    pGetSpecialPath(NULL, appData.GetBuffer(MAX_PATH), CSIDL_PERSONAL, TRUE);
+                    appData.ReleaseBuffer();
+                }
+            }
+
+            ::FreeLibrary(shell);
+        }
+
+        return appData;
+    }
+
+    // Retrieves the command line arguments and stores them in a vector of CString.
+    // Similar to CommandLineToArgvW, but supports all versions of Windows,
+    // supports ANSI and Unicode, and doesn't require the user to use LocalFree.
+    inline std::vector<CString> GetCommandLineArgs()
+    {
+        std::vector<CString> commandLineArgs;
+        CString commandLine = GetCommandLine();
+        int index = 0;
+        int endPos = 0;
+
+        while (index < commandLine.GetLength())
+        {
+            // Is the argument quoted?
+            bool isQuoted = (commandLine[index] == _T('\"'));
+
+            if (isQuoted)
+            {
+                // Find the terminating token (quote followed by space)
+                endPos = commandLine.Find(_T("\" "), index);
+                if (endPos == -1) endPos = commandLine.GetLength() - 1;
+
+                // Store the argument in the CStringT vector without the quotes.
+                CString s;
+                if (endPos - index < 2)
+                    s = _T("\"\"");     // "" for a single quote or double quote argument
+                else
+                    s = commandLine.Mid(index + 1, endPos - index - 1);
+
+                commandLineArgs.push_back(s);
+                index = endPos + 2;
+            }
+            else
+            {
+                // Find the terminating token (space character).
+                endPos = commandLine.Find(_T(' '), index);
+                if (endPos == -1) endPos = commandLine.GetLength();
+
+                // Store the argument in the CStringT vector.
+                CString s = commandLine.Mid(index, endPos - index);
+                commandLineArgs.push_back(s);
+                index = endPos + 1;
+            }
+
+            // skip excess space characters
+            while (index < commandLine.GetLength() && commandLine[index] == _T(' '))
+                index++;
+        }
+
+        // CommandLineArgs is a vector of CStringT.
+        return commandLineArgs;
+    }
+
+    // Retrieves the DPI of the window if the specified handle is a valid
+    // window, or the DPI of the desktop window otherwise.
+    // Use GetWindowDPI(HWND_DESKTOP) to retrieve the DPI of the desktop window.
+    inline int GetWindowDpi(HWND hWnd)
+    {
+        // Retrieve desktop's dpi as a fallback.
+        CClientDC desktopDC(HWND_DESKTOP);
+        int dpi = GetDeviceCaps(desktopDC, LOGPIXELSX);
+
+        // Retrieve the window's dpi if we can.
+        typedef UINT WINAPI GETDPIFORWINDOW(HWND);
+        HMODULE user = GetModuleHandle(_T("user32.dll"));
+        if (user && ::IsWindow(hWnd))
+        {
+            GETDPIFORWINDOW* pGetDpiForWindow =
+                reinterpret_cast<GETDPIFORWINDOW*>(GetProcAddress(user, "GetDpiForWindow"));
+            if (pGetDpiForWindow)
+            {
+                dpi = static_cast<int>(pGetDpiForWindow(hWnd));
+            }
+        }
+
+        return dpi;
+    }
+
+    // Scales the specified bitmap up by the specified scale factor.
+    // Bitmap sizes can usually be multiplied by an integer value without
+    // losing visual quality.
+    inline CBitmap ScaleUpBitmap(CBitmap bitmap, int scale)
+    {
+        assert(bitmap.GetHandle() != 0);
+        assert(scale != 0);
+
+        // Get the size of the bitmap.
+        CSize size = bitmap.GetSize();
+        int newWidth = size.cx * scale;
+        int newHeight = size.cy * scale;
+
+        // Create the device contexts.
+        CClientDC clientDC(HWND_DESKTOP);
+        CMemDC newImageDC(clientDC);
+        CMemDC imageDC(clientDC);
+
+        // Create and select the bitmaps.
+        newImageDC.CreateCompatibleBitmap(clientDC, newWidth, newHeight);
+        imageDC.SelectObject(bitmap);
+
+        // Stretch the bitmap to the new size.
+        newImageDC.SetStretchBltMode(COLORONCOLOR);
+        newImageDC.StretchBlt(0, 0, newWidth, newHeight, imageDC, 0, 0,
+            size.cx, size.cy, SRCCOPY);
+
+        return newImageDC.DetachBitmap();
+    }
 
     ////////////////////////////////////////
     // Definitions for the CWnd class
@@ -208,21 +387,21 @@ namespace Win32xx
             parentRect = desktopRect;
 
         // Import the GetMonitorInfo and MonitorFromWindow functions.
-        typedef BOOL(WINAPI* LPGMI)(HMONITOR hMonitor, LPMONITORINFO lpmi);
-        typedef HMONITOR(WINAPI* LPMFW)(HWND hwnd, DWORD flags);
-        LPMFW pfnMonitorFromWindow = 0;
-        HMODULE hUser32 = LoadLibrary(_T("USER32.DLL"));
-        LPGMI pfnGetMonitorInfo = 0;
+        typedef BOOL WINAPI GETMONITORINFO(HMONITOR, LPMONITORINFO);
+        typedef HMONITOR WINAPI MONITORFROMWINDOW(HWND, DWORD);
+        MONITORFROMWINDOW* pfnMonitorFromWindow = NULL;
+        HMODULE hUser32 = ::GetModuleHandle(_T("user32.dll"));
+        GETMONITORINFO* pfnGetMonitorInfo = NULL;
         if (hUser32)
         {
 
-            pfnMonitorFromWindow = reinterpret_cast<LPMFW>(
+            pfnMonitorFromWindow = reinterpret_cast<MONITORFROMWINDOW*>(
                 reinterpret_cast<void*>(::GetProcAddress(hUser32, "MonitorFromWindow")));
   #ifdef UNICODE
-            pfnGetMonitorInfo = reinterpret_cast<LPGMI>(
+            pfnGetMonitorInfo = reinterpret_cast<GETMONITORINFO*>(
                 reinterpret_cast<void*>(::GetProcAddress(hUser32, "GetMonitorInfoW")));
   #else
-            pfnGetMonitorInfo = reinterpret_cast<LPGMI>(
+            pfnGetMonitorInfo = reinterpret_cast<GETMONITORINFO*>(
                 reinterpret_cast<void*>(::GetProcAddress(hUser32, "GetMonitorInfoA")));
   #endif
 
@@ -241,8 +420,6 @@ namespace Win32xx
                         parentRect = mi.rcWork;
                 }
             }
-
-            ::FreeLibrary(hUser32);
         }
 
         // Calculate point to center the dialog over the portion of parent window on this monitor.
@@ -256,7 +433,7 @@ namespace Win32xx
         y = (y < desktopRect.top) ? desktopRect.top: y;
         y = (y > desktopRect.bottom - rc.Height())? desktopRect.bottom - rc.Height() : y;
 
-        VERIFY(SetWindowPos(0, x, y, 0, 0, SWP_NOSIZE));
+        VERIFY(SetWindowPos(HWND_TOP, x, y, 0, 0, SWP_NOSIZE));
     }
 
     // Returns the CWnd to its default state.
@@ -488,7 +665,57 @@ namespace Win32xx
         // dx.DDX_Check(IDC_CHECK_C,        m_checkC);
     }
 
-    // Pass messages on to the appropriate default window procedure
+    // Scales the specified font to the DPI reported by GetWindowDPI.
+    inline CFont CWnd::DpiScaleFont(CFont font, int pointSize) const
+    {
+        int dpi = GetWindowDpi(*this);
+        LOGFONT logfont = font.GetLogFont();
+        logfont.lfHeight = -MulDiv(pointSize, dpi, POINTS_PER_INCH);
+        CFont dpiFont(logfont);
+
+        return dpiFont;
+    }
+
+    // Scales the specified int to the DPI reported by GetWindowDPI.
+    inline int CWnd::DpiScaleInt(int value) const
+    {
+        int dpi = GetWindowDpi(*this);
+        int dpiValue = MulDiv(value, dpi, USER_DEFAULT_SCREEN_DPI);
+
+        return dpiValue;
+    }
+
+   // Scales the specified logfont to the DPI reported by GetWindowDPI.
+   inline LOGFONT CWnd::DpiScaleLogfont(LOGFONT logfont, int pointSize) const
+    {
+        int dpi = GetWindowDpi(*this);
+        logfont.lfHeight = -MulDiv(pointSize, dpi, POINTS_PER_INCH);
+
+        return logfont;
+    }
+
+    // Scales the specified rect to the DPI reported by GetWindowDPI.
+    inline CRect CWnd::DpiScaleRect(RECT rc) const
+    {
+        int dpi = GetWindowDpi(*this);
+        int left = MulDiv(rc.left, dpi, USER_DEFAULT_SCREEN_DPI);
+        int top = MulDiv(rc.top, dpi, USER_DEFAULT_SCREEN_DPI);
+        int bottom = MulDiv(rc.bottom, dpi, USER_DEFAULT_SCREEN_DPI);
+        int right = MulDiv(rc.right, dpi, USER_DEFAULT_SCREEN_DPI);
+
+        return CRect(left, top, right, bottom);
+    }
+
+    // Scales up the specified bitmap to the DPI reported by GetWindowDPI.
+    inline CBitmap CWnd::DpiScaleUpBitmap(CBitmap bitmap) const
+    {
+        int dpi = GetWindowDpi(*this);
+        int scale = MAX(1, dpi / USER_DEFAULT_SCREEN_DPI);
+
+        return ScaleUpBitmap(bitmap, scale);
+    }
+
+    // Pass messages on to the appropriate default window procedure.
     // CMDIChild and CMDIFrame override this function.
     inline LRESULT CWnd::FinalWindowProc(UINT msg, WPARAM wparam, LPARAM lparam)
     {
@@ -508,7 +735,7 @@ namespace Win32xx
         // Load the User32 DLL
         typedef HWND WINAPI GETANCESTOR(HWND, UINT);
         GETANCESTOR* pfnGetAncestor = NULL;
-        HMODULE user32 = ::LoadLibrary(_T("USER32.DLL"));
+        HMODULE user32 = ::GetModuleHandle(_T("user32.dll"));
 
         if (user32 != 0)
         {
@@ -518,8 +745,6 @@ namespace Win32xx
 
             if (pfnGetAncestor)
                 wnd = (*pfnGetAncestor)(*this, flags);
-
-            ::FreeLibrary(user32);
         }
 
         if (!pfnGetAncestor)
@@ -717,6 +942,10 @@ namespace Win32xx
     // WM_CTLCOLORSCROLLBAR, WM_CTLCOLORSTATIC, WM_CHARTOITEM,  WM_VKEYTOITEM,
     // WM_HSCROLL, WM_VSCROLL, WM_DRAWITEM, WM_MEASUREITEM, WM_DELETEITEM,
     // WM_COMPAREITEM, WM_PARENTNOTIFY.
+    //
+    // Note: The WM_DRAWITEM, WM_MEASUREITEM, WM_DELETEITEM and WM_COMPAREITEM
+    //   messages require the window to have a control ID in order to be reflected.
+    //   Use SetWindowLongPtr(GWLP_ID, id) to set a control ID if required.
     inline LRESULT CWnd::OnMessageReflect(UINT, WPARAM, LPARAM)
     {
         // This function processes those special messages (see above) sent
@@ -913,8 +1142,8 @@ namespace Win32xx
         assert(IsWindow());
 
         // Large icon sizes
-        int cxIcon = ::GetSystemMetrics(SM_CXICON);
-        int cyIcon = ::GetSystemMetrics(SM_CYICON);
+        int cxIcon = ::GetSystemMetrics(SM_CXICON) * GetWindowDpi(*this) / GetWindowDpi(HWND_DESKTOP);
+        int cyIcon = ::GetSystemMetrics(SM_CYICON) * GetWindowDpi(*this) / GetWindowDpi(HWND_DESKTOP);
 
         HICON icon = reinterpret_cast<HICON>(GetApp()->LoadImage(iconID, IMAGE_ICON, cxIcon, cyIcon, LR_SHARED));
 
@@ -932,8 +1161,8 @@ namespace Win32xx
         assert(IsWindow());
 
         // Small icon sizes
-        int cxIcon = ::GetSystemMetrics(SM_CXSMICON);
-        int cyIcon = ::GetSystemMetrics(SM_CYSMICON);
+        int cxIcon = ::GetSystemMetrics(SM_CXSMICON) * GetWindowDpi(*this) / GetWindowDpi(HWND_DESKTOP);
+        int cyIcon = ::GetSystemMetrics(SM_CYSMICON) * GetWindowDpi(*this) / GetWindowDpi(HWND_DESKTOP);
 
         HICON icon = reinterpret_cast<HICON>(GetApp()->LoadImage(iconID, IMAGE_ICON, cxIcon, cyIcon, LR_SHARED));
 
@@ -1819,7 +2048,7 @@ namespace Win32xx
     {
         // Microsoft's IsWindowVisible is buggy, so we do it like this
         assert(IsWindow());
-        return (GetWindowLongPtr(GWL_STYLE) & WS_VISIBLE) != 0;
+        return (GetStyle() & WS_VISIBLE) != 0;
     }
 
     // The IsZoomed function determines whether the window is maximized.
@@ -2295,9 +2524,12 @@ namespace Win32xx
     {
         assert(IsWindow());
         int iResult = ::SetWindowRgn(*this, rgn, redraw);
-        CRgn region(rgn);
-        if (iResult != 0)
-            region.Detach();   // The system owns the region now
+        if (rgn != 0)
+        {
+            CRgn region(rgn);
+            if (iResult != 0)
+                region.Detach();   // The system owns the region now.
+        }
 
         return iResult;
     }
@@ -2318,17 +2550,14 @@ namespace Win32xx
     inline HRESULT CWnd::SetWindowTheme(LPCWSTR subAppName, LPCWSTR subIdList) const
     {
         HRESULT result = E_NOTIMPL;
-
-        HMODULE theme = ::LoadLibrary(_T("uxtheme.dll"));
+        HMODULE theme = ::GetModuleHandle(_T("uxtheme.dll"));
         if (theme != 0)
         {
-            typedef HRESULT (__stdcall *PFNSETWINDOWTHEME)(HWND wnd, LPCWSTR subAppName, LPCWSTR subIdList);
-            PFNSETWINDOWTHEME pfn = reinterpret_cast<PFNSETWINDOWTHEME>(
-                reinterpret_cast<void*>(GetProcAddress(theme, "SetWindowTheme")));
+            typedef HRESULT WINAPI SETWINDOWTHEME(HWND, LPCWSTR, LPCWSTR);
+            SETWINDOWTHEME* pfn = reinterpret_cast<SETWINDOWTHEME*>(
+                reinterpret_cast<void*>(::GetProcAddress(theme, "SetWindowTheme")));
 
             result = pfn(*this, subAppName, subIdList);
-
-            ::FreeLibrary(theme);
         }
 
         return result;
@@ -2379,7 +2608,7 @@ namespace Win32xx
     // Enables drawing in the window. Only one window can be locked at a time.
     // Use LockWindowUpdate to disable drawing in the window.
     // Refer to LockWindowUpdate in the Windows API documentation for more information.
-    inline BOOL CWnd::UnLockWindowUpdate() const
+    inline BOOL CWnd::UnlockWindowUpdate() const
     {
         assert(IsWindow());
         return ::LockWindowUpdate(0);
@@ -2439,231 +2668,7 @@ namespace Win32xx
     #endif
 
 
-    /////////////////////////////////////////////////////////
-    // Definitions of CString functions that require CWinApp
-    //
 
-    // Appends formatted data to the CStringT content.
-    template <class T>
-    inline void CStringT<T>::AppendFormat(UINT formatID, ...)
-    {
-        CStringT str1;
-        CStringT str2;
-
-        if (str1.LoadString(formatID))
-        {
-            va_list args;
-            va_start(args, formatID);
-            str2.FormatV(str1.c_str(), args);
-            va_end(args);
-
-            m_str.append(str2);
-        }
-    }
-
-    // Formats the string as sprintf does.
-    template <class T>
-    inline void CStringT<T>::Format(UINT id, ...)
-    {
-        CStringT str;
-        if (str.LoadString(id))
-        {
-            va_list args;
-            va_start(args, id);
-            FormatV(str.c_str(), args);
-            va_end(args);
-        }
-    }
-
-    // Loads the string from a Windows resource.
-    template <>
-    inline bool CStringT<CHAR>::LoadString(UINT id)
-    {
-        assert (GetApp());            // throws a CNotSupportedException on failure.
-
-        int startSize = 64;
-        CHAR* pTCharArray = 0;
-        std::vector<CHAR> vString;
-        int chars = startSize;
-
-        Empty();
-
-        // Increase the size of our array in a loop until we load the entire string
-        // The ANSI and _UNICODE versions of LoadString behave differently. This technique works for both.
-        while (startSize -1 <= chars )
-        {
-            startSize = startSize * 4;
-            vString.assign(size_t(startSize)+1, 0);
-            pTCharArray = &vString.front();
-            chars = ::LoadStringA (GetApp()->GetResourceHandle(), id, pTCharArray, startSize);
-        }
-
-        if (chars > 0)
-            m_str.assign(pTCharArray);
-
-        return (chars != 0);
-    }
-
-    // Loads the string from a Windows resource.
-    // Refer to LoadString in the Windows API documentation for more information.
-    template <>
-    inline bool CStringT<WCHAR>::LoadString(UINT id)
-    {
-        assert (GetApp());
-
-        int startSize = 64;
-        WCHAR* pTCharArray = 0;
-        std::vector<WCHAR> vString;
-        int chars = startSize;
-
-        Empty();
-
-        // Increase the size of our array in a loop until we load the entire string
-        // The ANSI and _UNICODE versions of LoadString behave differently.
-        // This technique works for both.
-        while (startSize -1 <= chars )
-        {
-            startSize = startSize * 4;
-            vString.assign(size_t(startSize)+1, 0);
-            pTCharArray = &vString.front();
-            chars = ::LoadStringW (GetApp()->GetResourceHandle(), id, pTCharArray, startSize);
-        }
-
-        if (chars > 0)
-            m_str.assign(pTCharArray);
-
-        return (chars != 0);
-    }
-
-    ////////////////////////////////////////
-    // Global Functions
-    //
-
-    // Returns the path to the AppData folder. Returns an empty CString if
-    // the Operating System doesn't support the use of an AppData folder.
-    // The AppData folder is available in Windows 2000 and above.
-    inline CString GetAppDataPath()
-    {
-        CString AppData;
-
-        HMODULE hShell = ::LoadLibrary(_T("Shell32.dll"));
-        if (hShell)
-        {
-            typedef HRESULT(WINAPI * MYPROC)(HWND, int, HANDLE, DWORD, LPTSTR);
-
-            // Get the function pointer of the SHGetFolderPath function
-#ifdef UNICODE
-            MYPROC pSHGetFolderPath = reinterpret_cast<MYPROC>(
-                reinterpret_cast<void*>(GetProcAddress(hShell, "SHGetFolderPathW")));
-#else
-            MYPROC pSHGetFolderPath = reinterpret_cast<MYPROC>(
-                reinterpret_cast<void*>(GetProcAddress(hShell, "SHGetFolderPathA")));
-#endif
-
-#ifndef CSIDL_APPDATA
-  #define CSIDL_APPDATA     0x001a
-  #define CSIDL_PERSONAL    0x0005 /* My Documents */
-#endif
-
-#ifndef CSIDL_FLAG_CREATE
-  #define CSIDL_FLAG_CREATE 0x8000
-#endif
-
-            if (pSHGetFolderPath)
-            {
-                // Call the SHGetFolderPath function to retrieve the AppData folder
-                pSHGetFolderPath(NULL, CSIDL_APPDATA | CSIDL_FLAG_CREATE, NULL, 0, AppData.GetBuffer(MAX_PATH));
-                AppData.ReleaseBuffer();
-            }
-
-            // If we can't get the AppData folder, get the MyDocuments folder instead
-            if (AppData.IsEmpty())
-            {
-                typedef HRESULT(WINAPI * GETSPECIALPATH)(HWND, LPTSTR, int, BOOL);
-
-#ifdef UNICODE
-                GETSPECIALPATH pGetSpecialPath = reinterpret_cast<GETSPECIALPATH>(
-                    reinterpret_cast<void*>(GetProcAddress(hShell, "SHGetSpecialFolderPathW")));
-#else
-                GETSPECIALPATH pGetSpecialPath = reinterpret_cast<GETSPECIALPATH>(
-                    reinterpret_cast<void*>(GetProcAddress(hShell, "SHGetSpecialFolderPathA")));
-#endif
-
-                if (pGetSpecialPath)
-                {
-                    // Call the SHGetSpecialFolderPath function to retrieve the MyDocuments folder
-                    pGetSpecialPath(NULL, AppData.GetBuffer(MAX_PATH), CSIDL_PERSONAL, TRUE);
-                    AppData.ReleaseBuffer();
-                }
-            }
-
-            ::FreeLibrary(hShell);
-        }
-
-        return AppData;
-    }
-
-    // Retrieves the command line arguments and stores them in a vector of CString.
-    // Similar to CommandLineToArgvW, but supports all versions of Windows,
-    // supports ANSI and Unicode, and doesn't require the user to use LocalFree.
-    inline std::vector<CString> GetCommandLineArgs()
-    {
-        std::vector<CString> CommandLineArgs;
-        CString CommandLine = GetCommandLine();
-        int index = 0;
-        int endPos = 0;
-
-        while (index < CommandLine.GetLength())
-        {
-            // Is the argument quoted?
-            bool isQuoted = (CommandLine[index] == _T('\"'));
-
-            if (isQuoted)
-            {
-                // Find the terminating token (quote followed by space)
-                endPos = CommandLine.Find(_T("\" "), index);
-                if (endPos == -1) endPos = CommandLine.GetLength() - 1;
-
-                // Store the argument in the CStringT vector without the quotes.
-                CString s;
-                if (endPos - index < 2)
-                    s = _T("\"\"");     // "" for a single quote or double quote argument
-                else
-                    s = CommandLine.Mid(index + 1, endPos - index - 1);
-
-                CommandLineArgs.push_back(s);
-                index = endPos + 2;
-            }
-            else
-            {
-                // Find the terminating token (space character).
-                endPos = CommandLine.Find(_T(' '), index);
-                if (endPos == -1) endPos = CommandLine.GetLength();
-
-                // Store the argument in the CStringT vector.
-                CString s = CommandLine.Mid(index, endPos - index);
-                CommandLineArgs.push_back(s);
-                index = endPos + 1;
-            }
-
-            // skip excess space characters
-            while (index < CommandLine.GetLength() && CommandLine[index] == _T(' '))
-                index++;
-        }
-
-        // CommandLineArgs is a vector of CStringT.
-        return CommandLineArgs;
-    }
-
-    // Returns a CString containing the specified string resource.
-    // Returns an empty string if the string resource is not defined.
-    // Refer to LoadString in the Windows API documentation for more information.
-    inline CString LoadString(UINT id)
-    {
-        CString str;
-        str.LoadString(id);
-        return str;
-    }
 
 }
 

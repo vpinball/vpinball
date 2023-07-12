@@ -11,7 +11,7 @@
 #endif
 
 #include <windows.h>
-#include <MMSystem.h>
+#include <mmsystem.h>
 
 #ifndef ENABLE_SDL
  #ifdef USE_DINPUT8
@@ -24,7 +24,7 @@
  #ifdef _DEBUG
   #define D3D_DEBUG_INFO
  #endif
- #include "minid3d9.h"
+ #include "inc/minid3d9.h"
 #endif
 
 #include <dsound.h>
