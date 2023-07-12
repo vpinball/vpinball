@@ -501,7 +501,7 @@ STDMETHODIMP ScriptGlobalTable::get_MusicDirectory(VARIANT pSubDir, BSTR *pVal)
    if (V_VT(&pSubDir) != VT_EMPTY && V_VT(&pSubDir) != VT_BSTR)
       return S_FALSE;
 
-   string endPath = V_VT(&pSubDir) == VT_EMPTY ? ("") : (MakeString(V_BSTR(&pSubDir)) + PATH_SEPARATOR_CHAR);
+   string endPath = V_VT(&pSubDir) == VT_EMPTY ? string() : (MakeString(V_BSTR(&pSubDir)) + PATH_SEPARATOR_CHAR);
    string szPath = m_vpinball->m_szMyPath + "music"s + PATH_SEPARATOR_CHAR + endPath;
    if (!DirExists(szPath))
    {
@@ -10495,7 +10495,7 @@ LRESULT PinTableMDI::OnMDIActivate(UINT msg, WPARAM wparam, LPARAM lparam)
    if (GetHwnd() == (HWND)wparam)
    {
       SaveRegistry();
-      InitRegistryOverride("");
+      InitRegistryOverride(string());
    }
    if(GetHwnd()==(HWND)lparam)
    {
@@ -10506,7 +10506,7 @@ LRESULT PinTableMDI::OnMDIActivate(UINT msg, WPARAM wparam, LPARAM lparam)
          g_pvp->SetPropSel(m_table->m_vmultisel);
       }
       m_vpinball->m_currentTablePath = PathFromFilename(m_table->m_szFileName);
-      string szFileNameAuto = m_vpinball->m_currentTablePath + m_table->m_szTitle + ".ini";
+      const string szFileNameAuto = m_vpinball->m_currentTablePath + m_table->m_szTitle + ".ini";
       InitRegistryOverride(szFileNameAuto);
    }
    return CMDIChild::OnMDIActivate(msg, wparam, lparam);

@@ -532,7 +532,7 @@ void Player::CreateWnd(HWND parent /* = 0 */)
    PreCreate(cs);
 
    const int colordepth = m_stereo3D == STEREO_VR ? 32 : LoadValueWithDefault(regKey[RegName::Player], "ColorDepth"s, 32);
-   const bool video10bit = false; // Unsupported m_stereo3D == STEREO_VR ? false : LoadValueWithDefault(regKey[RegName::Player], "Render10Bit"s, false);
+   constexpr bool video10bit = false; //!! Unsupported   m_stereo3D == STEREO_VR ? false : LoadValueWithDefault(regKey[RegName::Player], "Render10Bit"s, false);
    int channelDepth = video10bit ? 10 : ((colordepth == 16) ? 5 : 8);
    // We only set bit depth for fullscreen desktop modes (otherwise, use the desktop bit depth)
    if (m_fullScreen)
@@ -4177,7 +4177,7 @@ void Player::OnIdle()
 
       // Adjust framerate if requested by user (i.e. not using a synchronization mode that will lead to blocking calls aligned to the display refresh rate)
       if (m_maxFramerate != 0 // User has requested a target FPS
-	   && (m_videoSyncMode == VideoSyncMode::VSM_NONE || m_maxFramerate != m_refreshrate)) // The synchronization is not already performed by the VSYNC
+      && (m_videoSyncMode == VideoSyncMode::VSM_NONE || m_maxFramerate != m_refreshrate)) // The synchronization is not already performed by the VSYNC
       {
          const int timeForFrame = (int)(usec() - m_startFrameTick);
          const int targetTime = 1000000 / m_maxFramerate;

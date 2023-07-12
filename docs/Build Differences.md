@@ -10,7 +10,7 @@ This is the original flavor of VPX which has been developped during the last 20+
 It runs on all Windows builds starting from Windows XP and is the reference build.
 
 The following features are only offered by the DirectX 9 version:
-- 10 bit rendering (note that VPX does not support HDR output, this limit the gradient banding effects but does not change the brightness range)
+- 10 bit rendering (note that VPX does not support HDR output, so this limits the gradient banding effects but does not change the brightness range)
 - Requesting a maximum frame latency to be honored by the GPU driver.
 
 ## OpenGL
@@ -24,6 +24,6 @@ The following features are only offered by the OpenGL version:
 - Enhanced texture compression (gives more performance with lower quality impact).
 
 ## Standalone player
-The standalone player is a preliminary build meant to allow playing VPX tables on a large set of platforms.
+The standalone player is a preliminary build meant to allow playing VPX tables on a large set of platforms, but without the windows UI.
 
 <sub><sup>[Informations applicable to version 10.8 Beta]</sup></sub>
