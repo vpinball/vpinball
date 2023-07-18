@@ -2814,22 +2814,33 @@ void LiveUI::PropVec3(const char *label, IEditable *undo_obj, bool is_live, floa
    PROP_HELPER_END
 }
 
-void LiveUI::PropVec3(const char *label, IEditable *undo_obj, bool is_live, float *startup_v, float *live_v, const char *format, ImGuiInputTextFlags flags, OnVec3PropChange chg_callback)
+void LiveUI::PropVec3(const char *label, IEditable *undo_obj, bool is_live, float *startup_v2, float *live_v2, const char *format, ImGuiInputTextFlags flags, OnVec3PropChange chg_callback)
 {
-   PROP_HELPER_BEGIN(float)
-   vec3 v1(v[0], v[1], v[2]);
-   if (ImGui::InputFloat3(label, v, format, flags))
+   Vertex3Ds startV, liveV;
+   Vertex3Ds *startup_v = nullptr, *live_v = nullptr;
+   if (startup_v2)
    {
-      if (chg_callback)
-      {
-         vec3 v2(v[0], v[1], v[2]);
-         chg_callback(is_live, v1, v2);
-      }
-      if (!is_live)
-         m_table->SetNonUndoableDirty(eSaveDirty);
+      startup_v = &startV;
+      startV.Set(startup_v2[0], startup_v2[1], startup_v2[2]);
    }
-   PROP_HELPER_SYNC(float)
-   PROP_HELPER_END
+   if (live_v2)
+   {
+      live_v = &liveV;
+      liveV.Set(live_v2[0], live_v2[1], live_v2[2]);
+   }
+   PropVec3(label, undo_obj, is_live, startup_v, live_v, format, flags, chg_callback);
+   if (startup_v2)
+   {
+      startup_v2[0] = startV.x;
+      startup_v2[1] = startV.y;
+      startup_v2[2] = startV.z;
+   }
+   if (live_v2)
+   {
+      live_v2[0] = liveV.x;
+      live_v2[1] = liveV.y;
+      live_v2[2] = liveV.z;
+   }
 }
 
 void LiveUI::PropVec3(const char *label, IEditable *undo_obj, bool is_live, Vertex3Ds *startup_v, Vertex3Ds *live_v, const char *format, ImGuiInputTextFlags flags, OnVec3PropChange chg_callback)
@@ -2838,9 +2849,7 @@ void LiveUI::PropVec3(const char *label, IEditable *undo_obj, bool is_live, Vert
    float col[3] = { v->x, v->y, v->z };
    if (ImGui::InputFloat3(label, col, format, flags))
    {
-      v->x = col[0];
-      v->y = col[1];
-      v->z = col[2];
+      v->Set(col[0], col[1], col[2]);
       if (chg_callback)
       {
          vec3 v1(prev_v.x, prev_v.y, prev_v.z), v2(v->x, v->y, v->z);
