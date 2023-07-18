@@ -3053,7 +3053,7 @@ STDMETHODIMP Primitive::put_DisplayTexture(VARIANT_BOOL newVal)
 
 STDMETHODIMP Primitive::PlayAnim(float startFrame, float speed)
 {
-   if (!m_mesh.m_animationFrames.empty())
+   if (!m_mesh.m_animationFrames.empty() && !m_d.m_staticRendering)
    {
       if ((size_t)startFrame >= m_mesh.m_animationFrames.size())
          startFrame = 0.0f;
@@ -3074,7 +3074,7 @@ STDMETHODIMP Primitive::PlayAnim(float startFrame, float speed)
 
 STDMETHODIMP Primitive::PlayAnimEndless(float speed)
 {
-   if (!m_mesh.m_animationFrames.empty())
+   if (!m_mesh.m_animationFrames.empty() && !m_d.m_staticRendering)
    {
       if (speed < 0.0f) speed = -speed;
 
@@ -3099,7 +3099,7 @@ STDMETHODIMP Primitive::StopAnim()
 
 STDMETHODIMP Primitive::ContinueAnim(float speed)
 {
-   if (m_currentFrame > 0.0f)
+   if (m_currentFrame > 0.0f && !m_d.m_staticRendering)
    {
       if (speed < 0.0f) speed = -speed;
 
@@ -3114,7 +3114,7 @@ STDMETHODIMP Primitive::ContinueAnim(float speed)
 
 STDMETHODIMP Primitive::ShowFrame(float frame)
 {
-   if (!m_mesh.m_animationFrames.empty() && frame >= 0.f)
+   if (!m_mesh.m_animationFrames.empty() && frame >= 0.f && !m_d.m_staticRendering)
    {
       if ((size_t)frame >= m_mesh.m_animationFrames.size())
          frame = (float)(m_mesh.m_animationFrames.size() - 1);
