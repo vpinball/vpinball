@@ -1740,7 +1740,7 @@ void RenderDevice::SetRenderTarget(const string& name, RenderTarget* rt, const b
    {
       m_currentPass = nullptr;
    }
-   else if (m_currentPass == nullptr || rt != m_currentPass->m_rt)
+   else if (m_currentPass == nullptr || !useRTContent || rt != m_currentPass->m_rt)
    {
       m_currentPass = m_renderFrame.AddPass(name, rt);
       if (useRTContent && rt->m_lastRenderPass != nullptr)
