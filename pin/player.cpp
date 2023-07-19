@@ -1703,7 +1703,7 @@ void Player::InitStatic()
    if (m_stereo3D == STEREO_VR)
       return;
 
-   const RenderPass *prevRT = m_pin3d.m_pd3dPrimaryDevice->GetCurrentPass();
+   m_pin3d.m_pd3dPrimaryDevice->FlushRenderFrame();
    m_render_mask |= STATIC_PREPASS;
 
    // The code will fail if the static render target is MSAA (the copy operation we are performing is not allowed)
@@ -1763,18 +1763,15 @@ void Player::InitStatic()
 
          // Rendering is done to the static render target then accumulated to accumulationSurface
          // We use the framebuffer mirror shader which copies a weighted version of the bound texture
-         m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(accumulationSurface);
          m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("PreRender Accumulate"s, accumulationSurface);
          m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderRT);
-         m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
+         m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ALPHABLENDENABLE, iter == STATIC_PRERENDER_ITERATIONS - 1 ? RenderState::RS_FALSE : RenderState::RS_TRUE);
          m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::SRCBLEND, RenderState::ONE);
          m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::DESTBLEND, RenderState::ONE);
          m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_ADD);
          m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
          m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
          m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderState::CULL_NONE);
-         if (iter == STATIC_PRERENDER_ITERATIONS - 1)
-            m_pin3d.m_pd3dPrimaryDevice->Clear(clearType::TARGET, 0, 1.0f, 0L);
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_fb_mirror);
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, 
             (float)(1.0 / (double)renderRT->GetWidth()), (float)(1.0 / (double)renderRT->GetHeight()),
@@ -1794,7 +1791,7 @@ void Player::InitStatic()
    if (accumulationSurface)
    {
       // copy back weighted antialiased color result to the static render target, keeping depth untouched
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("PreRender Store"s, renderRT, false);
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("PreRender Store"s, renderRT);
       m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(accumulationSurface, renderRT, true, false);
       m_pin3d.m_pd3dPrimaryDevice->FlushRenderFrame(); // Execute before destroying the render target
       delete accumulationSurface;
@@ -1811,7 +1808,7 @@ void Player::InitStatic()
    {
       const bool useAA = ((m_AAfactor != 1.0f) && (m_ptable->m_useAA == -1)) || (m_ptable->m_useAA == 1);
 
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("PreRender AO Save Depth"s, m_pin3d.m_pddsStatic, false);
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("PreRender AO Save Depth"s, m_pin3d.m_pddsStatic);
       m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderRT, m_pin3d.m_pddsStatic, false, true);
 
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
@@ -1845,7 +1842,7 @@ void Player::InitStatic()
 
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTextureNull(SHADER_tex_depth);
 
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("PreRender AO tonemap"s, m_pin3d.m_pddsStatic, false);
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("PreRender AO tonemap"s, m_pin3d.m_pddsStatic);
       m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderRT);
       m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pin3d.m_pd3dPrimaryDevice->GetAORenderTarget(1));
 
@@ -1908,10 +1905,7 @@ void Player::InitStatic()
    g_pvp->ProfileLog("Static PreRender End"s);
    
    m_render_mask &= ~STATIC_PREPASS;
-   if (prevRT)
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget(prevRT->m_name, prevRT->m_rt);
-   else
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget(""s, nullptr);
+   m_pin3d.m_pd3dPrimaryDevice->FlushRenderFrame();
 }
 
 Ball *Player::CreateBall(const float x, const float y, const float z, const float vx, const float vy, const float vz, const float radius, const float mass)
@@ -4295,6 +4289,7 @@ void Player::PrepareFrame()
 
    // LiveUI is not included in stats since it would not be part of the render frame time when debug display is off
    m_liveUI->Update();
+   m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("ImGui"s, m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer());
    m_pin3d.m_pd3dPrimaryDevice->RenderLiveUI();
 }
 
