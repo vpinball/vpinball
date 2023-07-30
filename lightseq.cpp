@@ -653,7 +653,7 @@ STDMETHODIMP LightSeq::StopPlay()
    return S_OK;
 }
 
-void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, long Repeat, long Pause)
+void LightSeq::SetupTracers(const SequencerState Animation, int TailLength, int Repeat, int Pause)
 {
    bool inverse = false;
 
