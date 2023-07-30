@@ -770,9 +770,8 @@ HRESULT Decal::InitPostLoad()
 
 void Decal::EnsureSize()
 {
-   if (((m_d.m_sizingtype != AutoSize) ||
-      (m_d.m_decaltype == DecalImage)) && (m_d.m_sizingtype != AutoWidth) ||
-      ((m_d.m_decaltype == DecalText) && m_d.m_sztext.empty()))
+   if ((((m_d.m_sizingtype != AutoSize) || (m_d.m_decaltype == DecalImage)) && (m_d.m_sizingtype != AutoWidth)) ||
+       ((m_d.m_decaltype == DecalText) && m_d.m_sztext.empty()))
    {
       m_realwidth = m_d.m_width;
       m_realheight = m_d.m_height;
