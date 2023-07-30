@@ -319,17 +319,6 @@ void VROptionsDialog::AddToolTip(const char * const text, HWND parentHwnd, HWND 
 
 void VROptionsDialog::ResetVideoPreferences()
 {
-   const HWND hwndDlg = GetHwnd();
-   const HWND toolTipHwnd = CreateWindowEx(NULL, TOOLTIPS_CLASS, NULL, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, hwndDlg, NULL, g_pvp->theInstance, NULL);
-   if (toolTipHwnd)
-   {
-      SendMessage(toolTipHwnd, TTM_SETMAXTIPWIDTH, 0, 180);
-      HWND controlHwnd = GetDlgItem(IDC_CAP_EXTDMD).GetHwnd();
-      AddToolTip((LPSTR) "Attempt to capture External DMD window such as Freezy, UltraDMD or P-ROC.\r\n\r\nFor Freezy DmdDevice.ini need to have 'stayontop = true'.", hwndDlg, toolTipHwnd, controlHwnd);
-      controlHwnd = GetDlgItem(IDC_CAP_PUP).GetHwnd();
-      AddToolTip((LPSTR) "Attempt to capture PUP player window and display it as a Backglass in VR.", hwndDlg, toolTipHwnd, controlHwnd);
-   }
-
    char tmp[256];
    constexpr float nudgeStrength = 2e-2f;
    sprintf_s(tmp, sizeof(tmp), "%f", nudgeStrength);
@@ -340,13 +329,31 @@ void VROptionsDialog::ResetVideoPreferences()
    SendMessage(GetDlgItem(IDC_MSAA_COMBO).GetHwnd(), TBM_SETPOS, TRUE, 1);
    SetDlgItemText(IDC_MSAA_LABEL, "MSAA Samples: Disabled");
 
-   SendMessage(GetDlgItem(IDC_DYNAMIC_AO).GetHwnd(), BM_SETCHECK, BST_UNCHECKED, 0);
-   SendMessage(GetDlgItem(IDC_ENABLE_AO).GetHwnd(), BM_SETCHECK, BST_UNCHECKED, 0);
+   SendMessage(GetDlgItem(IDC_DYNAMIC_AO).GetHwnd(), BM_SETCHECK, BST_CHECKED, 0);
+   SendMessage(GetDlgItem(IDC_ENABLE_AO).GetHwnd(), BM_SETCHECK, BST_CHECKED, 0);
    SendMessage(GetDlgItem(IDC_GLOBAL_SSREFLECTION_CHECK).GetHwnd(), BM_SETCHECK, BST_UNCHECKED, 0);
+
+   SendMessage(GetDlgItem(IDC_GLOBAL_PF_REFLECTION).GetHwnd(), CB_SETCURSEL, 2, 0);
 
    SendMessage(GetDlgItem(IDC_POST_PROCESS_COMBO).GetHwnd(), CB_SETCURSEL, 0, 0);
    SendMessage(GetDlgItem(IDC_SHARPEN_COMBO).GetHwnd(), CB_SETCURSEL, 0, 0);
    SendMessage(GetDlgItem(IDC_SCALE_FX_DMD).GetHwnd(), BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
+
+   SendMessage(GetDlgItem(IDC_VR_PREVIEW).GetHwnd(), CB_SETCURSEL, VRPREVIEW_LEFT, 0);
+
+   constexpr bool scaleToFixedWidth = false;
+   oldScaleValue = scaleToFixedWidth;
+   SendMessage(GetDlgItem(IDC_SCALE_TO_CM).GetHwnd(), BM_SETCHECK, scaleToFixedWidth ? BST_CHECKED : BST_UNCHECKED, 0);
+
+   scaleRelative = 1.0f;
+   scaleAbsolute = 55.0f;
+
+   sprintf_s(tmp, sizeof(tmp), scaleToFixedWidth ? "%0.1f" : "%0.3f", scaleToFixedWidth ? scaleAbsolute : scaleRelative);
+   SetDlgItemText(IDC_VR_SCALE, tmp);
+
+   constexpr float vrNearPlane = 5.0f;
+   sprintf_s(tmp, sizeof(tmp), "%0.1f", vrNearPlane);
+   SetDlgItemText(IDC_NEAR_PLANE, tmp);
 
    constexpr float vrSlope = 6.5f;
    sprintf_s(tmp, sizeof(tmp), "%0.1f", vrSlope);
@@ -374,20 +381,8 @@ void VROptionsDialog::ResetVideoPreferences()
    SendMessage(GetDlgItem(IDC_DMD_SOURCE).GetHwnd(), CB_SETCURSEL, 1, 0);
    SendMessage(GetDlgItem(IDC_BG_SOURCE).GetHwnd(), CB_SETCURSEL, 1, 0);
 
-   SendMessage(GetDlgItem(IDC_VR_PREVIEW).GetHwnd(), CB_SETCURSEL, 0, 0);
-
-   constexpr bool scaleToFixedWidth = false;
-   oldScaleValue = scaleToFixedWidth;
-   SendMessage(GetDlgItem(IDC_SCALE_TO_CM).GetHwnd(), BM_SETCHECK, scaleToFixedWidth ? BST_CHECKED : BST_UNCHECKED, 0);
-
-   scaleRelative = 1.0f;
-   scaleAbsolute = 55.0f;
-   sprintf_s(tmp, sizeof(tmp), scaleToFixedWidth ? "%0.1f" : "%0.3f", scaleToFixedWidth ? scaleAbsolute : scaleRelative);
-   SetDlgItemText(IDC_VR_SCALE, tmp);
-
-   constexpr float vrNearPlane = 5.0f;
-   sprintf_s(tmp, sizeof(tmp), "%0.1f", vrNearPlane);
-   SetDlgItemText(IDC_NEAR_PLANE, tmp);
+   SendMessage(GetDlgItem(IDC_CAP_EXTDMD).GetHwnd(), BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
+   SendMessage(GetDlgItem(IDC_CAP_PUP).GetHwnd(), BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
 
    //AMD Debug
    SendMessage(GetDlgItem(IDC_COMBO_TEXTURE).GetHwnd(), CB_SETCURSEL, 1, 0);
@@ -401,21 +396,24 @@ BOOL VROptionsDialog::OnInitDialog()
    {
       SendMessage(toolTipHwnd, TTM_SETMAXTIPWIDTH, 0, 180);
       AddToolTip("Forces the bloom filter to be always off. Only for very low-end graphics cards.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_BLOOM_OFF).GetHwnd());
-      AddToolTip("Disable Autodetect if Visual Pinball does not start up.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_TURN_VR_ON).GetHwnd());
-      AddToolTip("What sources should be used for DMD?\nOnly internal supplied by script/Text Label/Flasher\nScreenreader (see screenreader.ini)\nFrom Shared Memory API", hwndDlg, toolTipHwnd, GetDlgItem(IDC_DMD_SOURCE).GetHwnd());
+      AddToolTip("Disable VR auto-detection, e.g. if Visual Pinball refuses to start up.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_TURN_VR_ON).GetHwnd());
+      AddToolTip("What sources should be used for DMD?\nOnly internally supplied via Script/Text Label/Flasher\nScreenreader (see screenreader.ini)\nFrom Shared Memory API", hwndDlg, toolTipHwnd, GetDlgItem(IDC_DMD_SOURCE).GetHwnd());
       AddToolTip("What sources should be used for Backglass?\nOnly internal background\nTry to open a directb2s file\ndirectb2s file dialog\nScreenreader (see screenreader.ini)\nFrom Shared Memory API", hwndDlg, toolTipHwnd, GetDlgItem(IDC_BG_SOURCE).GetHwnd());
       AddToolTip("Changes the visual effect/screen shaking when nudging the table.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_NUDGE_STRENGTH).GetHwnd());
       AddToolTip("Activate this to enable dynamic Ambient Occlusion.\r\n\r\nThis slows down performance, but enables contact shadows for dynamic objects.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_DYNAMIC_AO).GetHwnd());
       AddToolTip("Activate this to enable Ambient Occlusion.\r\nThis enables contact shadows between objects.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_ENABLE_AO).GetHwnd());
       AddToolTip("Enables post-processed Anti-Aliasing.\r\n\r\nThese settings can make the image quality a bit smoother at cost of performance and a slight blurring.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_POST_PROCESS_COMBO).GetHwnd());
       AddToolTip("Enables post-processed Sharpening of the image.\r\n'Bilateral CAS' is recommended,\nbut will harm performance on low-end graphics cards.\r\n'CAS' is less aggressive and faster, but also rather subtle.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_SHARPEN_COMBO).GetHwnd());
-      AddToolTip("Select which eye(s) to be displayed on the computer screen.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_VR_PREVIEW).GetHwnd());
+      AddToolTip("Select which VR-output/eye(s) to be displayed on the computer screen.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_VR_PREVIEW).GetHwnd());
       AddToolTip("Enables brute-force Up/Downsampling.\r\n\r\nThis delivers very good quality but has a significant impact on performance.\r\n\r\n2.0 means twice the resolution to be handled while rendering.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_SUPER_SAMPLING_COMBO).GetHwnd());
-      AddToolTip("Set the amount of MSAA samples.\r\n\r\nMSAA can help reduce geometry aliasing in VR at the cost of performance and GPU memory.\r\n\r\nThis can really help improve image quality when not using supersampling.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_MSAA_COMBO).GetHwnd());
-      AddToolTip("Enables post-processed reflections on all objects (beside the playfield).", hwndDlg, toolTipHwnd, GetDlgItem(IDC_GLOBAL_SSREFLECTION_CHECK).GetHwnd());
-      AddToolTip("Enables playfield reflections.\r\n\r\n'Dynamic' is recommended and will give the best result but may harm performance.\r\n\r\n'Static Only' has no performance cost except in VR.\r\n\r\nOther options are trade-off between quality and performance.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_GLOBAL_PF_REFLECTION).GetHwnd());
+      AddToolTip("Set the amount of MSAA samples.\r\n\r\nMSAA can help reduce geometry aliasing in VR at the cost of performance and GPU memory.\r\n\r\nThis can improve image quality if not using supersampling.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_MSAA_COMBO).GetHwnd());
+      AddToolTip("Enables post-processed reflections on all objects (besides the playfield).", hwndDlg, toolTipHwnd, GetDlgItem(IDC_GLOBAL_SSREFLECTION_CHECK).GetHwnd());
+      AddToolTip("Enables playfield reflections.\r\n\r\n'Dynamic' is recommended and will give the best results, but may harm performance.\r\n\r\n'Static Only' has no performance cost (except for VR rendering).\r\n\r\nOther options feature different trade-offs between quality and performance.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_GLOBAL_PF_REFLECTION).GetHwnd());
       //AMD Debug
       AddToolTip("Pixel format for VR Rendering.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_COMBO_TEXTURE).GetHwnd());
+
+      AddToolTip("Attempt to capture an external DMD window such as Freezy/DMDext, UltraDMD or P-ROC.\r\n\r\nFor Freezy/DMDext the DmdDevice.ini needs to set 'stayontop = true'.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_CAP_EXTDMD).GetHwnd());
+      AddToolTip("Attempt to capture the PUP player window and display it as a Backglass in VR.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_CAP_PUP).GetHwnd());
    }
 
    char tmp[256];
@@ -491,6 +489,7 @@ BOOL VROptionsDialog::OnInitDialog()
 
    const int fxaa = LoadValueWithDefault(regKey[RegName::PlayerVR], "FXAA"s, LoadValueWithDefault(regKey[RegName::Player], "FXAA"s, 0));
    hwnd = GetDlgItem(IDC_POST_PROCESS_COMBO).GetHwnd();
+   SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Disabled");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Fast FXAA");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Standard FXAA");
@@ -499,24 +498,29 @@ BOOL VROptionsDialog::OnInitDialog()
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Standard DLAA");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Quality SMAA");
    SendMessage(hwnd, CB_SETCURSEL, fxaa, 0);
+   SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 
    const int sharpen = LoadValueWithDefault(regKey[RegName::PlayerVR], "Sharpen"s, 0);
    hwnd = GetDlgItem(IDC_SHARPEN_COMBO).GetHwnd();
+   SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Disabled");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "CAS");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Bilateral CAS");
    SendMessage(hwnd, CB_SETCURSEL, sharpen, 0);
+   SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 
    const bool scaleFX_DMD = LoadValueWithDefault(regKey[RegName::PlayerVR], "ScaleFXDMD"s, LoadValueWithDefault(regKey[RegName::Player], "ScaleFXDMD"s, false));
    SendMessage(GetDlgItem(IDC_SCALE_FX_DMD).GetHwnd(), BM_SETCHECK, scaleFX_DMD ? BST_CHECKED : BST_UNCHECKED, 0);
 
    const VRPreviewMode vrPreview = (VRPreviewMode)LoadValueWithDefault(regKey[RegName::PlayerVR], "VRPreview"s, VRPREVIEW_LEFT);
    hwnd = GetDlgItem(IDC_VR_PREVIEW).GetHwnd();
+   SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Disabled");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Left Eye");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Right Eye");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Both Eyes");
    SendMessage(hwnd, CB_SETCURSEL, (int)vrPreview, 0);
+   SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 
    const bool scaleToFixedWidth = LoadValueWithDefault(regKey[RegName::PlayerVR], "scaleToFixedWidth"s, false);
    oldScaleValue = scaleToFixedWidth;
@@ -556,37 +560,49 @@ BOOL VROptionsDialog::OnInitDialog()
    SendMessage(GetDlgItem(IDC_BLOOM_OFF).GetHwnd(), BM_SETCHECK, bloomOff ? BST_CHECKED : BST_UNCHECKED, 0);
 
    const int askToTurnOn = LoadValueWithDefault(regKey[RegName::PlayerVR], "AskToTurnOn"s, 1);
-   SendMessage(GetDlgItem(IDC_TURN_VR_ON).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"VR enabled");
-   SendMessage(GetDlgItem(IDC_TURN_VR_ON).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"VR autodetect");
-   SendMessage(GetDlgItem(IDC_TURN_VR_ON).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"VR disabled");
-   SendMessage(GetDlgItem(IDC_TURN_VR_ON).GetHwnd(), CB_SETCURSEL, askToTurnOn, 0);
+   hwnd = GetDlgItem(IDC_TURN_VR_ON).GetHwnd();
+   SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"VR enabled");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"VR autodetect");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"VR disabled");
+   SendMessage(hwnd, CB_SETCURSEL, askToTurnOn, 0);
+   SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 
    const int DMDsource = LoadValueWithDefault(regKey[RegName::PlayerVR], "DMDsource"s, 1); // Unimplemented for the time being
-   SendMessage(GetDlgItem(IDC_DMD_SOURCE).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Internal Text/Flasher (via vbscript)");
-   SendMessage(GetDlgItem(IDC_DMD_SOURCE).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Screenreader");
-   SendMessage(GetDlgItem(IDC_DMD_SOURCE).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"SharedMemory API");
-   SendMessage(GetDlgItem(IDC_DMD_SOURCE).GetHwnd(), CB_SETCURSEL, DMDsource, 0);
+   hwnd = GetDlgItem(IDC_DMD_SOURCE).GetHwnd();
+   SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Internal Text/Flasher (via vbscript)");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Screenreader");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"SharedMemory API");
+   SendMessage(hwnd, CB_SETCURSEL, DMDsource, 0);
+   SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
+
+   const int BGsource = LoadValueWithDefault(regKey[RegName::PlayerVR], "BGsource"s, 1); // Unimplemented for the time being
+   hwnd = GetDlgItem(IDC_BG_SOURCE).GetHwnd();
+   SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Default table background");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"directb2s File (auto only)");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"directb2s File");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"SharedMemory API");
+   SendMessage(hwnd, CB_SETCURSEL, BGsource, 0);
+   SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 
    bool on = LoadValueWithDefault(regKey[RegName::Player], "CaptureExternalDMD"s, false);
    ::SendMessage(GetDlgItem(IDC_CAP_EXTDMD).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
-
-   const int BGsource = LoadValueWithDefault(regKey[RegName::PlayerVR], "BGsource"s, 1); // Unimplemented for the time being
-   SendMessage(GetDlgItem(IDC_BG_SOURCE).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Default table background");
-   SendMessage(GetDlgItem(IDC_BG_SOURCE).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"directb2s File (auto only)");
-   SendMessage(GetDlgItem(IDC_BG_SOURCE).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"directb2s File");
-   SendMessage(GetDlgItem(IDC_BG_SOURCE).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"SharedMemory API");
-   SendMessage(GetDlgItem(IDC_BG_SOURCE).GetHwnd(), CB_SETCURSEL, BGsource, 0);
 
    on = LoadValueWithDefault(regKey[RegName::Player], "CapturePUP"s, false);
    ::SendMessage(GetDlgItem(IDC_CAP_PUP).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
    //AMD Debugging
-   SendMessage(GetDlgItem(IDC_COMBO_TEXTURE).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"RGB 8");
-   SendMessage(GetDlgItem(IDC_COMBO_TEXTURE).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"RGBA 8 (Recommended)");
-   SendMessage(GetDlgItem(IDC_COMBO_TEXTURE).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"RGB 16F");
-   SendMessage(GetDlgItem(IDC_COMBO_TEXTURE).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"RGBA 16F");
    const int textureModeVR = LoadValueWithDefault(regKey[RegName::PlayerVR], "EyeFBFormat"s, 1);
-   SendMessage(GetDlgItem(IDC_COMBO_TEXTURE).GetHwnd(), CB_SETCURSEL, textureModeVR, 0);
+   hwnd = GetDlgItem(IDC_COMBO_TEXTURE).GetHwnd();
+   SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"RGB 8");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"RGBA 8 (Recommended)");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"RGB 16F");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"RGBA 16F");
+   SendMessage(hwnd, CB_SETCURSEL, textureModeVR, 0);
+   SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 
    int key;
    for (unsigned int i = eTableRecenter; i <= eTableDown; ++i)
