@@ -25,8 +25,8 @@ static inline float eq_brightness(const DWORD AD, const DWORD BD)
     return 1.f - (float)abs((int)AD - (int)BD) * (float)(1.0 / 100.);
 }
 
-static const double SFX_CLR = 0.35;
-static const float SFX_THR = (float)(1.0 - SFX_CLR);
+constexpr double SFX_CLR = 0.35;
+constexpr float SFX_THR = (float)(1.0 - SFX_CLR);
 
 // corner strength
 static inline Vertex4D str(const Vertex4D &crn, const Vertex4D &ort) {
@@ -174,10 +174,10 @@ void upscale(DWORD * const data, const int2 &res, const bool is_brightness_data)
 
             // inject strength without creating new contradictions
             bool4 res;
-            res.x = jx.z || !(jx.y || jx.w) && (jSx.z != 0.f && (jx.x || jSx.x + jSx.z > jSx.y + jSx.w));
-            res.y = jy.w || !(jy.z || jy.x) && (jSy.w != 0.f && (jy.y || jSy.y + jSy.w > jSy.x + jSy.z));
-            res.z = jz.x || !(jz.w || jz.y) && (jSz.x != 0.f && (jz.z || jSz.x + jSz.z > jSz.y + jSz.w));
-            res.w = jw.y || !(jw.x || jw.z) && (jSw.y != 0.f && (jw.w || jSw.y + jSw.w > jSw.x + jSw.z));
+            res.x = jx.z || (!(jx.y || jx.w) && (jSx.z != 0.f) && (jx.x || (jSx.x + jSx.z > jSx.y + jSx.w)));
+            res.y = jy.w || (!(jy.z || jy.x) && (jSy.w != 0.f) && (jy.y || (jSy.y + jSy.w > jSy.x + jSy.z)));
+            res.z = jz.x || (!(jz.w || jz.y) && (jSz.x != 0.f) && (jz.z || (jSz.x + jSz.z > jSz.y + jSz.w)));
+            res.w = jw.y || (!(jw.x || jw.z) && (jSw.y != 0.f) && (jw.w || (jSw.y + jSw.w > jSw.x + jSw.z)));
 
             // single pixel & end of line detection
             res.x = res.x && (jx.z || !(res.w && res.y));
@@ -205,7 +205,7 @@ void upscale(DWORD * const data, const int2 &res, const bool is_brightness_data)
         }
     }
 
-    unsigned int* metric_tmp = (unsigned int*)&(metric[0].x);
+    unsigned int* metric_tmp = (unsigned int*)metric.data();
 
     o = 0;
     for (unsigned int j = 0; j < yres; ++j)
@@ -271,22 +271,22 @@ void upscale(DWORD * const data, const int2 &res, const bool is_brightness_data)
             const bool2 lvl6w = bool2(lvl5z.y && (D1h.z && D1h.w), lvl5w.x && (H1v.x && H1v.w));
 
             // subpixels - 0 = E, 1 = D, 2 = D0, 3 = F, 4 = F0, 5 = B, 6 = B0, 7 = H, 8 = H0
-            const unsigned int crn_x = (Ec.x && Eo.x || lvl3x.x && Eo.y || lvl4x.x && Do.x || lvl6x.x && Fo.y) ? 5 : (Ec.x || lvl3x.y && !Eo.w || lvl4x.y && !Bo.x || lvl6x.y && !Ho.w) ? 1 : lvl3x.x ? 3 : lvl3x.y ? 7 : lvl4x.x ? 2 : lvl4x.y ? 6 : lvl6x.x ? 4 : lvl6x.y ? 8 : 0;
-            const unsigned int crn_y = (Ec.y && Eo.y || lvl3y.x && Eo.x || lvl4y.x && Fo.y || lvl6y.x && Do.x) ? 5 : (Ec.y || lvl3y.y && !Eo.z || lvl4y.y && !Bo.y || lvl6y.y && !Ho.z) ? 3 : lvl3y.x ? 1 : lvl3y.y ? 7 : lvl4y.x ? 4 : lvl4y.y ? 6 : lvl6y.x ? 2 : lvl6y.y ? 8 : 0;
-            const unsigned int crn_z = (Ec.z && Eo.z || lvl3z.x && Eo.w || lvl4z.x && Fo.z || lvl6z.x && Do.w) ? 7 : (Ec.z || lvl3z.y && !Eo.y || lvl4z.y && !Ho.z || lvl6z.y && !Bo.y) ? 3 : lvl3z.x ? 1 : lvl3z.y ? 5 : lvl4z.x ? 4 : lvl4z.y ? 8 : lvl6z.x ? 2 : lvl6z.y ? 6 : 0;
-            const unsigned int crn_w = (Ec.w && Eo.w || lvl3w.x && Eo.z || lvl4w.x && Do.w || lvl6w.x && Fo.z) ? 7 : (Ec.w || lvl3w.y && !Eo.x || lvl4w.y && !Ho.w || lvl6w.y && !Bo.x) ? 1 : lvl3w.x ? 3 : lvl3w.y ? 5 : lvl4w.x ? 2 : lvl4w.y ? 8 : lvl6w.x ? 4 : lvl6w.y ? 6 : 0;
+            const unsigned int crn_x = ((Ec.x && Eo.x) || (lvl3x.x && Eo.y) || (lvl4x.x && Do.x) || (lvl6x.x && Fo.y)) ? 5 : (Ec.x || (lvl3x.y && !Eo.w) || (lvl4x.y && !Bo.x) || (lvl6x.y && !Ho.w)) ? 1 : lvl3x.x ? 3 : lvl3x.y ? 7 : lvl4x.x ? 2 : lvl4x.y ? 6 : lvl6x.x ? 4 : lvl6x.y ? 8 : 0;
+            const unsigned int crn_y = ((Ec.y && Eo.y) || (lvl3y.x && Eo.x) || (lvl4y.x && Fo.y) || (lvl6y.x && Do.x)) ? 5 : (Ec.y || (lvl3y.y && !Eo.z) || (lvl4y.y && !Bo.y) || (lvl6y.y && !Ho.z)) ? 3 : lvl3y.x ? 1 : lvl3y.y ? 7 : lvl4y.x ? 4 : lvl4y.y ? 6 : lvl6y.x ? 2 : lvl6y.y ? 8 : 0;
+            const unsigned int crn_z = ((Ec.z && Eo.z) || (lvl3z.x && Eo.w) || (lvl4z.x && Fo.z) || (lvl6z.x && Do.w)) ? 7 : (Ec.z || (lvl3z.y && !Eo.y) || (lvl4z.y && !Ho.z) || (lvl6z.y && !Bo.y)) ? 3 : lvl3z.x ? 1 : lvl3z.y ? 5 : lvl4z.x ? 4 : lvl4z.y ? 8 : lvl6z.x ? 2 : lvl6z.y ? 6 : 0;
+            const unsigned int crn_w = ((Ec.w && Eo.w) || (lvl3w.x && Eo.z) || (lvl4w.x && Do.w) || (lvl6w.x && Fo.z)) ? 7 : (Ec.w || (lvl3w.y && !Eo.x) || (lvl4w.y && !Ho.w) || (lvl6w.y && !Bo.x)) ? 1 : lvl3w.x ? 3 : lvl3w.y ? 5 : lvl4w.x ? 2 : lvl4w.y ? 8 : lvl6w.x ? 4 : lvl6w.y ? 6 : 0;
 
-            const unsigned int mid_x = (lvl2x.x &&  Eo.x || lvl2x.y &&  Eo.y || lvl5x.x &&  Do.x || lvl5x.y &&  Fo.y) ? 5 : lvl2x.x ? 1 : lvl2x.y ? 3 : lvl5x.x ? 2 : lvl5x.y ? 4 : (Ec.x && Dc.z && Ec.y && Fc.w) ? (Eo.x ? Eo.y ? 5 : 3 : 1) : 0;
-            const unsigned int mid_y = (lvl2y.x && !Eo.y || lvl2y.y && !Eo.z || lvl5y.x && !Bo.y || lvl5y.y && !Ho.z) ? 3 : lvl2y.x ? 5 : lvl2y.y ? 7 : lvl5y.x ? 6 : lvl5y.y ? 8 : (Ec.y && Bc.w && Ec.z && Hc.x) ? (!Eo.y ? !Eo.z ? 3 : 7 : 5) : 0;
-            const unsigned int mid_z = (lvl2z.x &&  Eo.w || lvl2z.y &&  Eo.z || lvl5z.x &&  Do.w || lvl5z.y &&  Fo.z) ? 7 : lvl2z.x ? 1 : lvl2z.y ? 3 : lvl5z.x ? 2 : lvl5z.y ? 4 : (Ec.z && Fc.x && Ec.w && Dc.y) ? (Eo.z ? Eo.w ? 7 : 1 : 3) : 0;
-            const unsigned int mid_w = (lvl2w.x && !Eo.x || lvl2w.y && !Eo.w || lvl5w.x && !Bo.x || lvl5w.y && !Ho.w) ? 1 : lvl2w.x ? 5 : lvl2w.y ? 7 : lvl5w.x ? 6 : lvl5w.y ? 8 : (Ec.w && Hc.y && Ec.x && Bc.z) ? (!Eo.w ? !Eo.x ? 1 : 5 : 7) : 0;
+            const unsigned int mid_x = ((lvl2x.x &&  Eo.x) || (lvl2x.y &&  Eo.y) || (lvl5x.x &&  Do.x) || (lvl5x.y &&  Fo.y)) ? 5 : lvl2x.x ? 1 : lvl2x.y ? 3 : lvl5x.x ? 2 : lvl5x.y ? 4 : (Ec.x && Dc.z && Ec.y && Fc.w) ? ( Eo.x ?  Eo.y ? 5 : 3 : 1) : 0;
+            const unsigned int mid_y = ((lvl2y.x && !Eo.y) || (lvl2y.y && !Eo.z) || (lvl5y.x && !Bo.y) || (lvl5y.y && !Ho.z)) ? 3 : lvl2y.x ? 5 : lvl2y.y ? 7 : lvl5y.x ? 6 : lvl5y.y ? 8 : (Ec.y && Bc.w && Ec.z && Hc.x) ? (!Eo.y ? !Eo.z ? 3 : 7 : 5) : 0;
+            const unsigned int mid_z = ((lvl2z.x &&  Eo.w) || (lvl2z.y &&  Eo.z) || (lvl5z.x &&  Do.w) || (lvl5z.y &&  Fo.z)) ? 7 : lvl2z.x ? 1 : lvl2z.y ? 3 : lvl5z.x ? 2 : lvl5z.y ? 4 : (Ec.z && Fc.x && Ec.w && Dc.y) ? ( Eo.z ?  Eo.w ? 7 : 1 : 3) : 0;
+            const unsigned int mid_w = ((lvl2w.x && !Eo.x) || (lvl2w.y && !Eo.w) || (lvl5w.x && !Bo.x) || (lvl5w.y && !Ho.w)) ? 1 : lvl2w.x ? 5 : lvl2w.y ? 7 : lvl5w.x ? 6 : lvl5w.y ? 8 : (Ec.w && Hc.y && Ec.x && Bc.z) ? (!Eo.w ? !Eo.x ? 1 : 5 : 7) : 0;
 
             // ouput
             metric_tmp[o] = crn_x | (crn_y << 4) | (crn_z << 8) | (crn_w << 12) | (mid_x << 16) | (mid_y << 20) | (mid_z << 24) | (mid_w << 28);
         }
     }
 
-    memcpy(&g_or[0], data, xres*yres * sizeof(DWORD));
+    memcpy(g_or.data(), data, xres*yres * sizeof(DWORD));
 
     o = 0;
     for (unsigned int j = 0; j < yres; ++j)
