@@ -1178,9 +1178,9 @@ void PinInput::autostart(const U32 msecs, const U32 retry_msecs, const U32 curr_
       started())
       return;
 
-   if ((m_firedautostart > 0) &&				   // Initialized.
+   if ((m_firedautostart > 0) &&				    // Initialized.
       (m_as_down == 1) &&						   // Start button is down.
-      ((curr_time_msec - m_firedautostart) > 100)) // Start button has been down for at least 0.10 seconds.
+       ((curr_time_msec - m_firedautostart) > 100)) // Start button has been down for at least 0.10 seconds.
    {
       // Release start.
       m_firedautostart = curr_time_msec;
@@ -1193,9 +1193,9 @@ void PinInput::autostart(const U32 msecs, const U32 retry_msecs, const U32 curr_
    }
 
    // Logic to do "autostart"
-   if ((m_as_down == 0) &&																			  // Start button is up.
-      (((m_as_didonce == 1) && !started() && ((curr_time_msec - m_firedautostart) > retry_msecs))) || // Not started and last attempt was at least AutoStartRetry seconds ago.
-      ((m_as_didonce == 0) && ((curr_time_msec - m_firedautostart) > msecs)))						  // Never attempted and autostart time has elapsed.
+   if ((m_as_down == 0) &&                                                                            // Start button is up.
+       (((m_as_didonce == 1) && !started() && ((curr_time_msec - m_firedautostart) > retry_msecs)) || // Not started and last attempt was at least AutoStartRetry seconds ago.
+        ((m_as_didonce == 0)               && ((curr_time_msec - m_firedautostart) > msecs))))        // Never attempted and autostart time has elapsed.
    {
       // Press start.
       m_firedautostart = curr_time_msec;
