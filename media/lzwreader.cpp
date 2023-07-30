@@ -395,9 +395,9 @@ int LZWReader::get_byte()
    if (m_cfilebuffer == FILE_BUF_SIZE)
    {
       m_cfilebuffer = 0;
-      //ULONG read = 0;
-      m_readahead = 0;
-      m_pstm->Read(m_pfilebufferbytes, FILE_BUF_SIZE, &m_readahead);
+      ULONG readahead = 0;
+      m_pstm->Read(m_pfilebufferbytes, FILE_BUF_SIZE, &readahead);
+      m_readahead = readahead;
    }
 
    return m_pfilebufferbytes[m_cfilebuffer];
