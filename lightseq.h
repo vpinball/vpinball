@@ -16,16 +16,16 @@ public:
    Vertex2D      m_v;
    Vertex2D      m_vCenter;
    std::basic_string<WCHAR> m_wzCollection;
-   long          m_updateinterval;
+   int           m_updateinterval;
    TimerDataRoot m_tdr;
 };
 
 struct LightSeqQueueData {
    SequencerState Animation;
-   long           TailLength;
-   long           Repeat;
-   long           Pause;
-   long           UpdateRate;
+   int            TailLength;
+   int            Repeat;
+   int            Pause;
+   int            UpdateRate;
 };
 
 struct LightSeqQueue {
@@ -135,10 +135,10 @@ private:
    short          *m_pgridData;
    LightSeqQueue  m_queue;
    SequencerState m_playAnimation;
-   long           m_tailLength;
-   long           m_pauseValue;
-   long           m_replayCount;
-   long           m_updateRate;
+   int            m_tailLength;
+   int            m_pauseValue;
+   int            m_replayCount;
+   int            m_updateRate;
    bool           m_playInProgress;
    bool           m_pauseInProgress;
 
@@ -179,8 +179,8 @@ public:
        m_GridYCenterAdjust = abs(m_lightSeqGridHeight / 2 - (int)m_GridYCenter);
    }
 
-   long     GetUpdateInterval() const { return m_d.m_updateinterval; }
-   void     SetUpdateInterval(const long value) { m_d.m_updateinterval = max((long)1, value); }
+   int      GetUpdateInterval() const { return m_d.m_updateinterval; }
+   void     SetUpdateInterval(const int value) { m_d.m_updateinterval = max(1, value); }
 
    LightSeq *CopyForPlay(PinTable *live_table);
 
@@ -189,7 +189,7 @@ public:
 private:
    PinTable *m_ptable;
 
-   void     SetupTracers(const SequencerState Animation, long TailLength, long Repeat, long Pause);
+   void     SetupTracers(const SequencerState Animation, int TailLength, int Repeat, int Pause);
    bool     ProcessTracer(_tracer * const pTracer, const LightState State);
    void     SetAllLightsToState(const LightState State);
    void     SetElementToState(const int index, const LightState State);

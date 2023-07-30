@@ -118,21 +118,21 @@ public:
 
    void WriteRegDefaults() final;
 
-   long GetAlpha() const
+   int GetAlpha() const
    {
       return m_d.m_alpha;
    }
-   void SetAlpha(const long value)
+   void SetAlpha(const int value)
    {
-      m_d.m_alpha = max(value,(long)0);
+      m_d.m_alpha = max(value,0);
    }
-   long GetFilterAmount() const
+   int GetFilterAmount() const
    {
       return m_d.m_filterAmount;
    }
-   void SetFilterAmount(const long value)
+   void SetFilterAmount(const int value)
    {
-      m_d.m_filterAmount = max(value,(long)0);
+      m_d.m_filterAmount = max(value,0);
    }
 
    //BaseTexture* GetVideoCap(const string& szName);

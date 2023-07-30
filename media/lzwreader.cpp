@@ -89,7 +89,7 @@ LZWReader::~LZWReader()
 //IMPORT int bad_code_count;
 
 
-LONG code_mask[13] = {
+int code_mask[13] = {
    0,
    0x0001, 0x0003,
    0x0007, 0x000F,
@@ -119,7 +119,7 @@ short LZWReader::init_exp(int size)
  */
 int LZWReader::get_next_code()
 {
-   unsigned long ret;
+   unsigned int ret;
 
    if (nbits_left == 0)
    {
@@ -391,7 +391,6 @@ short LZWReader::Decoder()
  */
 int LZWReader::get_byte()
 {
-
    ++m_cfilebuffer;
    if (m_cfilebuffer == FILE_BUF_SIZE)
    {

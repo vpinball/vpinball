@@ -105,8 +105,8 @@ public:
 
    int mouseX;
    int mouseY;
-   long mouseDX;
-   long mouseDY;
+   int mouseDX;
+   int mouseDY;
    bool leftMouseButtonDown;
    bool rightMouseButtonDown;
    bool middleMouseButtonDown;
@@ -138,15 +138,15 @@ private:
 
    U32 m_firedautostart;
 
-   int m_pressed_start;
-
    U32 m_first_stamp;
    U32 m_exit_stamp;
 
-   int m_as_down;
-   int m_as_didonce;
+   bool m_pressed_start;
 
-   int m_tilt_updown;
+   bool m_as_down;
+   bool m_as_didonce;
+
+   bool m_tilt_updown;
 
    DIDEVICEOBJECTDATA m_diq[MAX_KEYQUEUE_SIZE]; // circular queue of direct input events
 

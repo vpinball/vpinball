@@ -7,9 +7,9 @@ struct Plumb
    F32 x, y;
    F32 vx, vy;
 
-   int tilted;
    F32 tiltsens;
    F32 nudgesens;
+   bool tilted;
 };
 
 static Plumb gPlumb;
@@ -76,7 +76,7 @@ void plumb_update(const U32 curr_time_msec, const float getx, const float gety) 
       if (gPlumb.tiltsens > 0.0f)
       {
          // Flag that we tilted.
-         gPlumb.tilted = 1;
+         gPlumb.tilted = true;
       }
    }
 
@@ -115,15 +115,15 @@ void plumb_update(const U32 curr_time_msec, const float getx, const float gety) 
 }
 
 
-int plumb_tilted()
+bool plumb_tilted()
 {
    if (gPlumb.tilted)
    {
-      gPlumb.tilted = 0;
-      return 1;
+      gPlumb.tilted = false;
+      return true;
    }
 
-   return 0;
+   return false;
 }
 
 #ifdef DEBUG_PLUMB
@@ -132,10 +132,10 @@ void draw_transparent_box( F32 sx, F32 sy, const F32 x, const F32 y, const U32 c
    sx *= ((float) g_pplayer->m_pin3d.m_dwRenderHeight)*(float)(1.0/600.0);
    sy *= ((float) g_pplayer->m_pin3d.m_dwRenderWidth )*(float)(1.0/800.0);
 
-   const DWORD r = (color             ) >> 24;
-   const DWORD g = (color & 0x00ff0000) >> 16;
-   const DWORD b = (color & 0x0000ff00) >>  8;
-   const DWORD a = (color & 0x000000ff)      ;
+   const DWORD r = (color              ) >> 24;
+   const DWORD g = (color & 0x00ff0000u) >> 16;
+   const DWORD b = (color & 0x0000ff00u) >>  8;
+   const DWORD a = (color & 0x000000ffu)      ;
    const DWORD col = (a << 24) | (r << 16) | (g << 8) | b;
 
    g_pplayer->m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE);
@@ -153,15 +153,13 @@ F32 sPlumbPos[2] = { 300, 100 };
 void plumb_draw()
 {
 #ifdef DEBUG_PLUMB
-   const F32 ac = 0.75f; // aspect ratio correction
+   constexpr F32 ac = 0.75f; // aspect ratio correction
 
    //RenderStateType	RestoreRenderState;
    //TextureStateType	RestoreTextureState;
-   D3DMATRIX			RestoreWorldMatrix;
-   HRESULT				ReturnCode;
 
    // Save the current transformation state.
-   RestoreWorldMatrix = g_pplayer->m_pin3d.GetMVP().GetModel(); 
+   const D3DMATRIX RestoreWorldMatrix = g_pplayer->m_pin3d.GetMVP().GetModel(); 
    // Save the current render state.
    //Display_GetRenderState(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, &(RestoreRenderState));
    // Save the current texture state.
@@ -170,22 +168,22 @@ void plumb_draw()
    static const D3DMATRIX WorldMatrix(1.0f,0.0f,0.0f,0.0f,0.0f,1.0f,0.0f,0.0f,0.0f,0.0f,1.0f,0.0f,0.0f,0.0f,0.0f,1.0f);
    g_pplayer->m_pin3d.m_pd3dPrimaryDevice->SetTransform ( D3DTRANSFORMSTATE_WORLD, (LPD3DMATRIX)&WorldMatrix ); 
 
-   F32 x = sPlumbPos[0];
-   F32 y = sPlumbPos[1];
+   const F32 x = sPlumbPos[0];
+   const F32 y = sPlumbPos[1];
 
-   draw_transparent_box( 5, 5, x, y, 0xffffffff );
-   draw_transparent_box( 3, 3, x, y, 0x000000ff );
-   draw_transparent_box( 3, 3, x+GetNudgeY()*100.0f, y+ac*(-(GetNudgeX()))*100.0f, 0xffffffff );
+   draw_transparent_box( 5, 5, x, y, 0xffffffffu );
+   draw_transparent_box( 3, 3, x, y, 0x000000ffu );
+   draw_transparent_box( 3, 3, x+GetNudgeY()*100.0f, y-ac*GetNudgeX()*100.0f, 0xffffffffu );
 
-   draw_transparent_box( 5, 5, x, y, 0xffffffff );
-   draw_transparent_box( 3, 3, x, y, 0x000000ff );
-   draw_transparent_box( 3, 3, x+gPlumb.y*100.0f, y+ac*(-(gPlumb.x))*100.0f, 0xffffffff );
+   draw_transparent_box( 5, 5, x, y, 0xffffffffu );
+   draw_transparent_box( 3, 3, x, y, 0x000000ffu );
+   draw_transparent_box( 3, 3, x+gPlumb.y*100.0f, y-ac*gPlumb.x*100.0f, 0xffffffffu );
 
    // Restore the render states.
    //Display_SetRenderState(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, &(RestoreRenderState));
    // Restore the texture state.
    //Display_SetTextureState(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, &(RestoreTextureState));
    // Restore the transformation state.
-   ReturnCode = g_pplayer->m_pin3d.m_pd3dPrimaryDevice->SetTransform ( D3DTRANSFORMSTATE_WORLD, &RestoreWorldMatrix ); 
+   const HRESULT ReturnCode = g_pplayer->m_pin3d.m_pd3dPrimaryDevice->SetTransform ( D3DTRANSFORMSTATE_WORLD, &RestoreWorldMatrix ); 
 #endif
 }

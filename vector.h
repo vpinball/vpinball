@@ -60,7 +60,7 @@ public:
 
     ~VectorProtected()
     {
-       unsigned long counter = 0;
+       unsigned int counter = 0;
        //try to enter the critical section. If it's used by another thread try again up to 1 second
        while ((TryEnterCriticalSection((LPCRITICAL_SECTION)&m_CriticalSection) == 0) && (counter < 10))
        {

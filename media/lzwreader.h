@@ -55,5 +55,5 @@ private:
    int m_height;
    int m_linesleft;
 
-   ULONG m_readahead; // How many bytes we read into our buffer
+   unsigned int m_readahead; // How many bytes we read into our buffer
 };

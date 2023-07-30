@@ -23,7 +23,7 @@ static bool LoadIni(const string &path, mINI::INIStructure &ini, const bool load
    if (file.read(ini))
    {
       PLOGI << "Settings file was loaded from '" << path << "'";
-	   return true;
+      return true;
    }
    else if (loadDefault)
    {
@@ -54,7 +54,7 @@ static bool LoadIni(const string &path, mINI::INIStructure &ini, const bool load
          regpath += regKey[j];
 
          HKEY hk;
-         LONG res = RegOpenKeyEx(HKEY_CURRENT_USER, regpath.c_str(), 0, KEY_READ, &hk);
+         LSTATUS res = RegOpenKeyEx(HKEY_CURRENT_USER, regpath.c_str(), 0, KEY_READ, &hk);
          if (res != ERROR_SUCCESS)
             return false;
 
@@ -126,7 +126,7 @@ static bool LoadIni(const string &path, mINI::INIStructure &ini, const bool load
    else
    {
       PLOGI << "Settings file was not found at '" << path << "'";
-	   return false;
+      return false;
    }
 }
 
@@ -174,7 +174,7 @@ static string xmlContent;
 static void InitXMLnodeFromRegistry(tinyxml2::XMLElement *const node, const string &szPath)
 {
    HKEY hk;
-   LONG res = RegOpenKeyEx(HKEY_CURRENT_USER, szPath.c_str(), 0, KEY_READ, &hk);
+   LSTATUS res = RegOpenKeyEx(HKEY_CURRENT_USER, szPath.c_str(), 0, KEY_READ, &hk);
    if (res != ERROR_SUCCESS)
       return;
 
@@ -743,7 +743,7 @@ static HRESULT RegDelnodeRecurse(const HKEY hKeyRoot, char lpSubKey[MAX_PATH * 2
    // First, see if we can delete the key without having
    // to recurse.
 
-   LONG lResult = RegDeleteKey(hKeyRoot, lpSubKey);
+   LSTATUS lResult = RegDeleteKey(hKeyRoot, lpSubKey);
 
    if (lResult == ERROR_SUCCESS || lResult == ERROR_FILE_NOT_FOUND)
       return S_OK;

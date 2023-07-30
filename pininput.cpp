@@ -100,7 +100,7 @@ PinInput::PinInput()
 
    m_firedautostart = 0;
 
-   m_pressed_start = 0;
+   m_pressed_start = false;
 
    m_enableMouseInPlayer = true;
    m_enableCameraModeFlyAround = false;
@@ -114,10 +114,10 @@ PinInput::PinInput()
    m_exit_stamp = 0;
    m_first_stamp = msec();
 
-   m_as_down = 0;
-   m_as_didonce = 0;
+   m_as_down = false;
+   m_as_didonce = false;
 
-   m_tilt_updown = DISPID_GameEvents_KeyUp;
+   m_tilt_updown = false;
 
    m_linearPlunger = false;
 
@@ -1160,7 +1160,7 @@ int PinInput::started()
 
    if (!g_pplayer->m_vball.empty())
    {
-      m_pressed_start = 1;
+      m_pressed_start = true;
       return 1;
    }
    else
@@ -1178,13 +1178,13 @@ void PinInput::autostart(const U32 msecs, const U32 retry_msecs, const U32 curr_
       started())
       return;
 
-   if ((m_firedautostart > 0) &&				    // Initialized.
-      (m_as_down == 1) &&						   // Start button is down.
+   if ((m_firedautostart > 0) &&                    // Initialized.
+       m_as_down &&                                 // Start button is down.
        ((curr_time_msec - m_firedautostart) > 100)) // Start button has been down for at least 0.10 seconds.
    {
       // Release start.
       m_firedautostart = curr_time_msec;
-      m_as_down = 0;
+      m_as_down = false;
       FireKeyEvent(DISPID_GameEvents_KeyUp, g_pplayer->m_rgKeys[eStartGameKey]);
 
 #ifdef _DEBUG
@@ -1193,14 +1193,14 @@ void PinInput::autostart(const U32 msecs, const U32 retry_msecs, const U32 curr_
    }
 
    // Logic to do "autostart"
-   if ((m_as_down == 0) &&                                                                            // Start button is up.
-       (((m_as_didonce == 1) && !started() && ((curr_time_msec - m_firedautostart) > retry_msecs)) || // Not started and last attempt was at least AutoStartRetry seconds ago.
-        ((m_as_didonce == 0)               && ((curr_time_msec - m_firedautostart) > msecs))))        // Never attempted and autostart time has elapsed.
+   if (!m_as_down &&                                                                            // Start button is up.
+       (( m_as_didonce && !started() && ((curr_time_msec - m_firedautostart) > retry_msecs)) || // Not started and last attempt was at least AutoStartRetry seconds ago.
+        (!m_as_didonce               && ((curr_time_msec - m_firedautostart) > msecs))))        // Never attempted and autostart time has elapsed.
    {
       // Press start.
       m_firedautostart = curr_time_msec;
-      m_as_down = 1;
-      m_as_didonce = 1;
+      m_as_down = true;
+      m_as_didonce = true;
       FireKeyEvent(DISPID_GameEvents_KeyDown, g_pplayer->m_rgKeys[eStartGameKey]);
 
 #ifdef _DEBUG
@@ -1227,11 +1227,11 @@ void PinInput::tilt_update()
 {
    if (!g_pplayer) return;
 
-   const int tmp = m_tilt_updown;
-   m_tilt_updown = plumb_tilted() ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp;
+   const bool tmp = m_tilt_updown;
+   m_tilt_updown = plumb_tilted();
 
    if (m_tilt_updown != tmp)
-      FireKeyEvent(m_tilt_updown, g_pplayer->m_rgKeys[eCenterTiltKey]);
+      FireKeyEvent(m_tilt_updown ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, g_pplayer->m_rgKeys[eCenterTiltKey]);
 }
 
 void PinInput::ProcessCameraKeys(const DIDEVICEOBJECTDATA * __restrict input)
@@ -1322,7 +1322,7 @@ void PinInput::Joy(const unsigned int n, const int updown, const bool start)
    {
       if (start)
       {
-         m_pressed_start = n;
+         m_pressed_start = true;
          FireKeyEvent(updown, g_pplayer->m_rgKeys[eStartGameKey]);
       }
    }
@@ -1574,7 +1574,7 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
             {
                 if (start)
                 {
-                    m_pressed_start = 1;
+                    m_pressed_start = true;
                     FireKeyEvent(updown, g_pplayer->m_rgKeys[eStartGameKey]);
                 }
             }
@@ -1614,7 +1614,7 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
             { // Check if we can allow the start (table is done initializing).
                 if (start)
                 {
-                    m_pressed_start = 1;
+                    m_pressed_start = true;
                     FireKeyEvent(updown, g_pplayer->m_rgKeys[eStartGameKey]);
                 }
             }

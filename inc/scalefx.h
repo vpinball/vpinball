@@ -12,10 +12,10 @@ static inline float eq_col1(const DWORD AD, const DWORD BD)
 #if 0
 static inline float eq_col2(const DWORD e1, const DWORD e2) //!! test vs above, should be the same?
 {
-    const long rmean = ((long)(e1 & 255) + (long)(e2 & 255)) / 2;
-    const long r = (long)(e1 & 255) - (long)(e2 & 255);
-    const long g = (long)((e1 >> 8) & 255) - (long)((e2 >> 8) & 255);
-    const long b = (long)((e1 >> 16) & 255) - (long)((e2 >> 16) & 255);
+    const int rmean = ((int)(e1 & 255) + (int)(e2 & 255)) / 2;
+    const int r = (int)(e1 & 255) - (int)(e2 & 255);
+    const int g = (int)((e1 >> 8) & 255) - (int)((e2 >> 8) & 255);
+    const int b = (int)((e1 >> 16) & 255) - (int)((e2 >> 16) & 255);
     return 1.f - sqrtf((float)((((512 + rmean)*r*r) >> 8) + 4 * g*g + (((767 - rmean)*b*b) >> 8)));
 }
 #endif
