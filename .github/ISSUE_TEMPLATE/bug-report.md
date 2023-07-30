@@ -17,6 +17,8 @@ Steps to reproduce the behavior:
 3. Scroll down to '....'
 4. See error
 
+If the bug appears when playing a specific table, give a link to a place where the exact version of the table file can be downloaded.
+
 **Expected behavior**
 A clear and concise description of what you expected to happen.
 
@@ -31,6 +33,7 @@ If it's about a crash, please attach `crash.dmp` as well.
  - Windows version
  - GPU and video settings if applicable
  - If this bug report is for VPX 10.8+, please join your setting file (locate 'VPinballX.ini' in '%AppData%\VPinballX', either zip it or change its extension to '.log', then drag'n drop it here)
- 
+ - If this bug report is for VPX 10.8+, please enable log in your settingd and join your log file
+
 **Additional context**
 Add any other context about the problem here.
