@@ -15,6 +15,7 @@
 
 #include "stdafx.h"
 #include "imgui.h"
+#ifndef IMGUI_DISABLE
 #include "imgui_impl_win32.h"
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
@@ -860,3 +861,5 @@ float ImGui_ImplWin32_GetDpiScaleForHwnd(void* hwnd)
 }
 */
 //---------------------------------------------------------------------------------------------------------
+
+#endif // #ifndef IMGUI_DISABLE

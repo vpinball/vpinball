@@ -12,6 +12,12 @@
 #include "imgui.h"
 #include "imgui_stdlib.h"
 
+// Clang warnings with -Weverything
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wsign-conversion"    // warning: implicit conversion changes signedness
+#endif
+
 struct InputTextCallback_UserData
 {
     std::string*            Str;
@@ -75,3 +81,7 @@ bool ImGui::InputTextWithHint(const char* label, const char* hint, std::string* 
     cb_user_data.ChainCallbackUserData = user_data;
     return InputTextWithHint(label, hint, (char*)str->c_str(), str->capacity() + 1, flags, InputTextCallback, &cb_user_data);
 }
+
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
