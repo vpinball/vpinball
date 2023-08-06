@@ -1,5 +1,6 @@
-New in 3.61 (Update by vbousquet)
+New in 3.61 (Update by vbousquet, wiesshund)
 - Setup PinMameTimer to be a controller sync timer (interval = -2)
+- Added s11_grand_lizard.vbs
 
 New in 3.60 (Update by toxie, wiesshund)
 - Added solarwars.vbs (based on peyper.vbs)
