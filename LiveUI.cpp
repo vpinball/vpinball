@@ -571,11 +571,11 @@ static void HelpSplash(const std::string &text, int rotation)
 
 static void HelpEditableHeader(bool is_live, IEditable *editable, IEditable *live_editable)
 {
-   string title;
    IEditable *notnull_editable = editable ? editable : live_editable;
    IEditable *select_editable = is_live ? live_editable : editable;
    if (notnull_editable == nullptr)
       return;
+   string title;
    switch (notnull_editable->GetItemType())
    {
    // Missing: eItemLightCenter, eItemDragPoint, eItemCollection
@@ -766,7 +766,7 @@ void LiveUI::OpenMainUI()
    {
       while (ShowCursor(FALSE)>=0) ;
       while (ShowCursor(TRUE)<0) ;
-      m_ShowUI = false;
+      m_ShowUI = true;
       m_ShowSplashModal = true;
       m_OpenUITime = msec();
       PausePlayer(true);
@@ -2070,7 +2070,7 @@ void LiveUI::UpdateMainSplashModal()
       ImGui::SetNextWindowPos(ImVec2(0, 0));
       ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
       ImGui::Begin("Table Info", nullptr, window_flags);
-      // Remove eventual escape characters in the table info string
+      // Remove optional escape characters in the table info string
       string str = info.str();
       size_t start_pos = 0;
       while ((start_pos = str.find("%", start_pos)) != std::string::npos)
