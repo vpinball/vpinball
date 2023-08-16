@@ -903,6 +903,8 @@ public:
    STDMETHOD(get_LeftTiltKey)(/*[out, retval]*/ long *pVal);
    STDMETHOD(get_RightFlipperKey)(/*[out, retval]*/ long *pVal);
    STDMETHOD(get_LeftFlipperKey)(/*[out, retval]*/ long *pVal);
+   STDMETHOD(get_StagedRightFlipperKey)(/*[out, retval]*/ long *pVal);
+   STDMETHOD(get_StagedLeftFlipperKey)(/*[out, retval]*/ long *pVal);
 
    STDMETHOD(put_DMDWidth)(/*[in]*/ int pVal);
    STDMETHOD(put_DMDHeight)(/*[in]*/ int pVal);

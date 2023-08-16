@@ -262,6 +262,20 @@ STDMETHODIMP ScriptGlobalTable::get_RightFlipperKey(long *pVal)
    return S_OK;
 }
 
+STDMETHODIMP ScriptGlobalTable::get_StagedLeftFlipperKey(long *pVal)
+{
+   *pVal = g_pplayer->m_rgKeys[eStagedLeftFlipperKey];
+
+   return S_OK;
+}
+
+STDMETHODIMP ScriptGlobalTable::get_StagedRightFlipperKey(long *pVal)
+{
+   *pVal = g_pplayer->m_rgKeys[eStagedRightFlipperKey];
+
+   return S_OK;
+}
+
 STDMETHODIMP ScriptGlobalTable::get_LeftTiltKey(long *pVal)
 {
    *pVal = g_pplayer->m_rgKeys[eLeftTiltKey];

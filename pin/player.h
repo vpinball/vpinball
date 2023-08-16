@@ -26,6 +26,8 @@ enum EnumAssignKeys
 {
    eLeftFlipperKey,
    eRightFlipperKey,
+   eStagedLeftFlipperKey,
+   eStagedRightFlipperKey,
    eLeftTiltKey,
    eRightTiltKey,
    eCenterTiltKey,
@@ -78,6 +80,8 @@ static EnumAssignKeys touchkeymap[MAX_TOUCHREGION] = {
 static const char* regkey_string[eCKeys] = {
    "LFlipKey",
    "RFlipKey",
+   "StagedLFlipKey",
+   "StagedRFlipKey",
    "LTiltKey",
    "RTiltKey",
    "CTiltKey",
@@ -104,6 +108,8 @@ static const char* regkey_string[eCKeys] = {
 static constexpr int regkey_defdik[eCKeys] = {
    DIK_LSHIFT,
    DIK_RSHIFT,
+   DIK_LWIN,
+   DIK_RALT,
    DIK_Z,
    DIK_SLASH,
    DIK_SPACE,
@@ -130,6 +136,8 @@ static constexpr int regkey_defdik[eCKeys] = {
 static constexpr int regkey_idc[eCKeys] = {
    IDC_LEFTFLIPPER,
    IDC_RIGHTFLIPPER,
+   IDC_STAGEDLEFTFLIPPER,
+   IDC_STAGEDRIGHTFLIPPER,
    IDC_LEFTTILT,
    IDC_RIGHTTILT,
    IDC_CENTERTILT,
@@ -699,8 +707,8 @@ public:
 
    enum CloseState
    {
-      CS_PLAYING = 0, // Normal state
-      CS_USER_INPUT = 1, // Open UI to let user choose between debugger, quit,...
+      CS_PLAYING = 0,   // Normal state
+      CS_USER_INPUT = 1,// Open UI to let user choose between debugger, quit,...
       CS_STOP_PLAY = 2, // Stop play and get back to editor, if started without user input (minimized) then close the application
       CS_CLOSE_APP = 3, // Close the application and get back to operating system
       CS_FORCE_STOP = 4 // Force close the application and get back to operating system
@@ -754,7 +762,7 @@ private:
 
    int m_pauseRefCount;
 
-   bool m_pseudoPause;      // Nothing is moving, but we're still redrawing
+   bool m_pseudoPause;   // Nothing is moving, but we're still redrawing
 
 public:
    bool m_supportsTouch; // Display is a touchscreen?
@@ -762,7 +770,7 @@ public:
 
    // all kinds of stats tracking, incl. FPS measurement
    int m_lastMaxChangeTime; // Used to update counters every seconds
-   float m_fps; // Average number of frames per second, updated once per second
+   float m_fps;             // Average number of frames per second, updated once per second
    U32 m_script_max;
 
 private:

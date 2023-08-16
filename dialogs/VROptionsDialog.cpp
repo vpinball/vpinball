@@ -901,9 +901,9 @@ void VROptionsDialog::OnOK()
    selected = ::SendMessage(GetDlgItem(IDC_CAP_PUP).GetHwnd(), BM_GETCHECK, 0, 0) != 0;
    SaveValue(regKey[RegName::Player], "CapturePUP"s, selected);
 
-   SetValue(IDC_JOYTABLERECENTER, regKey[RegName::Player], "JoyTableRecenterKey");
-   SetValue(IDC_JOYTABLEUP, regKey[RegName::Player], "JoyTableUpKey");
-   SetValue(IDC_JOYTABLEDOWN, regKey[RegName::Player], "JoyTableDownKey");
+   SetValue(IDC_JOYTABLERECENTER, regKey[RegName::Player], "JoyTableRecenterKey"s);
+   SetValue(IDC_JOYTABLEUP, regKey[RegName::Player], "JoyTableUpKey"s);
+   SetValue(IDC_JOYTABLEDOWN, regKey[RegName::Player], "JoyTableDownKey"s);
 
     for (unsigned int i = eTableRecenter; i <= eTableDown; ++i) if (regkey_idc[i] != -1)
     {

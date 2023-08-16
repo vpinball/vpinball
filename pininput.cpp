@@ -65,6 +65,8 @@ PinInput::PinInput()
    m_disable_esc = false;
    m_joylflipkey = 0;
    m_joyrflipkey = 0;
+   m_joystagedlflipkey = 0;
+   m_joystagedrflipkey = 0;
    m_joylmagnasave = 0;
    m_joyrmagnasave = 0;
    m_joyplungerkey = 0;
@@ -149,6 +151,8 @@ void PinInput::LoadSettings()
    m_disable_esc = LoadValueWithDefault(regKey[RegName::Player], "DisableESC"s, m_disable_esc);
    m_joylflipkey = LoadValueWithDefault(regKey[RegName::Player], "JoyLFlipKey"s, m_joylflipkey);
    m_joyrflipkey = LoadValueWithDefault(regKey[RegName::Player], "JoyRFlipKey"s, m_joyrflipkey);
+   m_joystagedlflipkey = LoadValueWithDefault(regKey[RegName::Player], "JoyStagedLFlipKey"s, m_joystagedlflipkey);
+   m_joystagedrflipkey = LoadValueWithDefault(regKey[RegName::Player], "JoyStagedRFlipKey"s, m_joystagedrflipkey);
    m_joyplungerkey = LoadValueWithDefault(regKey[RegName::Player], "JoyPlungerKey"s, m_joyplungerkey);
    m_joyaddcreditkey = LoadValueWithDefault(regKey[RegName::Player], "JoyAddCreditKey"s, m_joyaddcreditkey);
    m_joyaddcreditkey2 = LoadValueWithDefault(regKey[RegName::Player], "JoyAddCredit2Key"s, m_joyaddcreditkey2);
@@ -851,7 +855,7 @@ void PinInput::Init(const HWND hwnd)
    newStickyKeys.dwFlags = 0;
    SystemParametersInfo(SPI_SETSTICKYKEYS, sizeof(STICKYKEYS), &newStickyKeys, SPIF_SENDCHANGE);
 
-   for (int i = 0; i < 4; i++)
+   for (int i = 0; i < 6; i++)
       m_keyPressedState[i] = false;
    m_nextKeyPressedTime = 0;
    uShockType = 0;
@@ -975,6 +979,8 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
       // Swap left & right input.
       if (keycode == g_pplayer->m_rgKeys[eLeftFlipperKey]) keycode = g_pplayer->m_rgKeys[eRightFlipperKey];
       else if (keycode == g_pplayer->m_rgKeys[eRightFlipperKey]) keycode = g_pplayer->m_rgKeys[eLeftFlipperKey];
+      else if (keycode == g_pplayer->m_rgKeys[eStagedLeftFlipperKey]) keycode = g_pplayer->m_rgKeys[eStagedRightFlipperKey];
+      else if (keycode == g_pplayer->m_rgKeys[eStagedRightFlipperKey]) keycode = g_pplayer->m_rgKeys[eStagedLeftFlipperKey];
       else if (keycode == g_pplayer->m_rgKeys[eLeftMagnaSave]) keycode = g_pplayer->m_rgKeys[eRightMagnaSave];
       else if (keycode == g_pplayer->m_rgKeys[eRightMagnaSave]) keycode = g_pplayer->m_rgKeys[eLeftMagnaSave];
       else if (keycode == DIK_LSHIFT) keycode = DIK_RSHIFT;
@@ -1140,7 +1146,8 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
          g_pplayer->m_pBCTarget = nullptr;
       }
 
-      if ((keycode == g_pplayer->m_rgKeys[eLeftFlipperKey] || keycode == g_pplayer->m_rgKeys[eRightFlipperKey]) && dispid == DISPID_GameEvents_KeyDown)
+      if ((keycode == g_pplayer->m_rgKeys[eLeftFlipperKey] || keycode == g_pplayer->m_rgKeys[eRightFlipperKey] || keycode == g_pplayer->m_rgKeys[eStagedLeftFlipperKey] || keycode == g_pplayer->m_rgKeys[eStagedRightFlipperKey])
+          && dispid == DISPID_GameEvents_KeyDown)
          g_pplayer->m_pininput.PlayRumble(0.f, 0.2f, 150);
 
       // Mixer volume only
@@ -1310,6 +1317,8 @@ void PinInput::Joy(const unsigned int n, const int updown, const bool start)
 {
    if (m_joylflipkey == n)      FireKeyEvent(updown, g_pplayer->m_rgKeys[eLeftFlipperKey]);
    if (m_joyrflipkey == n)      FireKeyEvent(updown, g_pplayer->m_rgKeys[eRightFlipperKey]);
+   if (m_joystagedlflipkey == n)FireKeyEvent(updown, g_pplayer->m_rgKeys[eStagedLeftFlipperKey]);
+   if (m_joystagedrflipkey == n)FireKeyEvent(updown, g_pplayer->m_rgKeys[eStagedRightFlipperKey]);
    if (m_joyplungerkey == n)    FireKeyEvent(updown, g_pplayer->m_rgKeys[ePlungerKey]);
    if (m_joyaddcreditkey == n)  FireKeyEvent(updown, g_pplayer->m_rgKeys[eAddCreditKey]);
    if (m_joyaddcreditkey2 == n) FireKeyEvent(updown, g_pplayer->m_rgKeys[eAddCreditKey2]);
@@ -1996,7 +2005,7 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
             ProcessBallControl(input);
          else
          {
-            if (input->dwOfs == 1 && m_joylflipkey==25)
+            if (input->dwOfs == 1 && m_joylflipkey == 25)
                FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[eLeftFlipperKey]);
             if (input->dwOfs == 2 && m_joyrflipkey == 26)
                FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[eRightFlipperKey]);

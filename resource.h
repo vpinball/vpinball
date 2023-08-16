@@ -357,8 +357,10 @@
 #define IDD_KEYS                        261
 #define IDC_LEFTFLIPPERBUTTON           262
 #define IDD_TRANSLATE                   262
+#define IDC_STAGEDLEFTFLIPPERBUTTON     263
 #define IDC_RIGHTFLIPPERBUTTON          264
 #define IDB_LOGO                        264
+#define IDC_STAGEDRIGHTFLIPPERBUTTON    265
 #define IDC_LEFTTILTBUTTON              266
 #define IDI_TABLE                       266
 #define IDR_SCRIPTMENU                  267
@@ -452,6 +454,7 @@
 #define IDC_NEW                         305
 #define IDC_CREATEFROMSELECTION         306
 #define IDC_NAME                        307
+#define IDC_STAGEDLEFTFLIPPER           308
 #define IDC_OUTLIST                     309
 #define IDC_INLIST                      310
 #define IDC_FIRE                        311
@@ -471,6 +474,7 @@
 #define IDC_ENABLE_LOGGING              320
 #define IDC_DRAW_LIGHTCENTERS2          321
 #define IDC_ENABLE_SCRIPT_LOGGING       321
+#define IDC_STAGEDRIGHTFLIPPER          322
 #define IDD_PROPWALL_VISUALS            330
 #define IDD_PROPWALL_PHYSICS            331
 #define IDD_PROPGATE_VISUALS            333
@@ -973,6 +977,8 @@
 #define INI_FILE                        670
 #define IDR_DEFAULT_INI                 671
 #define EXR_FILE                        672
+#define IDC_JOYSTAGEDLFLIPCOMBO         673
+#define IDC_JOYSTAGEDRFLIPCOMBO         674
 #define IDC_CVP_BUT_CANCEL              701
 #define IDC_CVP_BUT_OK                  702
 #define IDC_CVP_BUT_COL_COMPS           703
@@ -1411,7 +1417,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        673
+#define _APS_NEXT_RESOURCE_VALUE        675
 #define _APS_NEXT_COMMAND_VALUE         4028
 #define _APS_NEXT_CONTROL_VALUE         911
 #define _APS_NEXT_SYMED_VALUE           188
