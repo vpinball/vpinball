@@ -1274,7 +1274,7 @@ void Primitive::RenderObject()
    const bool depthMask = m_d.m_useDepthMask && !m_d.m_addBlend;
 
    pd3dDevice->SetRenderStateDepthBias(0.f);
-   pd3dDevice->SetRenderStateCulling(m_d.m_backfacesEnabled && mat->m_bOpacityActive ? (depthMask ? RenderState::CULL_CW : RenderState::CULL_NONE) : RenderState::CULL_CCW);
+   pd3dDevice->SetRenderStateCulling(depthMask ? ((m_d.m_backfacesEnabled && mat->m_bOpacityActive) ? RenderState::CULL_CW : RenderState::CULL_CCW) : RenderState::CULL_NONE);
 
    if (m_d.m_disableLightingTop != 0.f || m_d.m_disableLightingBelow != 0.f)
       // Force disable light from below for objects marked as static since there is no light from below during pre-render pass (to get the same result in dynamic mode & static mode)
@@ -1401,8 +1401,7 @@ void Primitive::RenderObject()
    }
 
    // also draw the back of the primitive faces
-   // FIXME why do we do this after rendering front face: back face should be rendered before front face, no ?
-   if (m_d.m_backfacesEnabled && mat->m_bOpacityActive && depthMask)
+   if (depthMask && m_d.m_backfacesEnabled && mat->m_bOpacityActive)
    {
       pd3dDevice->SetRenderStateCulling(RenderState::CULL_CCW);
       pd3dDevice->DrawMesh(pd3dDevice->basicShader, mat->m_bOpacityActive /* IsTransparent() */, m_d.m_vPosition, m_d.m_depthBias, 
