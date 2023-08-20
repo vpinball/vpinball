@@ -1106,13 +1106,13 @@ void LiveUI::PausePlayer(bool pause)
 void LiveUI::EnterEditMode()
 {
    m_player->EnableStaticPrePass(false);
-   m_player->m_cameraMode = false;
+   m_player->SetCameraMode(false);
 }
 
 void LiveUI::ExitEditMode()
 {
    m_player->EnableStaticPrePass(!m_old_player_dynamic_mode);
-   m_player->m_cameraMode = m_old_player_camera_mode;
+   m_player->SetCameraMode(m_old_player_camera_mode);
    SetupImGuiStyle(1.0f);
    m_useEditorCam = false;
    m_pin3d->InitLayout();
@@ -1928,7 +1928,7 @@ void LiveUI::UpdateHeadTrackingModal()
 void LiveUI::UpdateRendererInspectionModal()
 {
    m_player->EnableStaticPrePass(!m_old_player_dynamic_mode);
-   m_player->m_cameraMode = m_old_player_camera_mode;
+   m_player->SetCameraMode(m_old_player_camera_mode);
    m_useEditorCam = false;
    m_pin3d->InitLayout();
 
@@ -2090,7 +2090,7 @@ void LiveUI::UpdateMainSplashModal()
       // If displaying the main splash popup, save user changes and exit camera mode started from it
       if (m_player->m_cameraMode && !m_old_player_camera_mode && m_live_table != nullptr && m_table != nullptr)
       {
-         m_player->m_cameraMode = m_old_player_camera_mode;
+         m_player->SetCameraMode(m_old_player_camera_mode);
          const PinTable * const __restrict src = m_live_table;
          PinTable * const __restrict dst = m_table;
          dst->m_3DmaxSeparation = src->m_3DmaxSeparation;
@@ -2118,7 +2118,7 @@ void LiveUI::UpdateMainSplashModal()
          m_ShowUI = false;
          m_ShowSplashModal = false;
          EnterEditMode();
-         m_player->m_cameraMode = true;
+         m_player->SetCameraMode(true);
       }
       bool popup_headtracking = false;
       if (m_player->m_headTracking && ImGui::Button("Adjust Headtracking", size))
