@@ -142,7 +142,7 @@ private:
    bool m_RendererInspection = false;
    bool m_disable_esc = false; // Option for keyboard shortcuts
    U32 m_OpenUITime = 0; // Used to delay keyboard shortcut
-   U64 m_StartTime_usec = 0; // Used for timed splash overlays
+   U64 m_StartTime_msec = 0; // Used for timed splash overlays
    int m_show_fps = 0; // 0=disabled / 1=FPS / 2=FPS+dynamic plot
 
    // 3D editor
