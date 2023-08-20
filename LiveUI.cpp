@@ -615,7 +615,7 @@ static void HelpEditableHeader(bool is_live, IEditable *editable, IEditable *liv
 LiveUI::LiveUI(RenderDevice *const rd)
    : m_rd(rd)
 {
-   m_StartTime_usec = usec();
+   m_StartTime_msec = msec();
    m_app = g_pvp;
    m_player = g_pplayer;
    m_table = g_pplayer->m_pEditorTable;
@@ -837,14 +837,14 @@ void LiveUI::Update()
          else
          {
             // Info tooltips
-            const U64 curr_usec = usec();
-            if (g_pplayer->m_closing == Player::CS_PLAYING
-               && (g_pplayer->m_stereo3D != STEREO_OFF && g_pplayer->m_stereo3D != STEREO_VR && !g_pplayer->m_stereo3Denabled
-               && (curr_usec < m_StartTime_usec + (U64)4e+6))) // show for max. 4 seconds
+            const U64 curr_msec = msec();
+            if (g_pplayer->m_closing == Player::CS_PLAYING && g_pplayer->m_stereo3D != STEREO_OFF 
+               && g_pplayer->m_stereo3D != STEREO_VR && !g_pplayer->m_stereo3Denabled
+               && (curr_msec < m_StartTime_msec + 4000ull)) // show for max. 4 seconds
                HelpSplash("3D Stereo is enabled but currently toggled off, press F10 to toggle 3D Stereo on", m_rotate);
             //!! visualize with real buttons or at least the areas?? Add extra buttons?
             else if (g_pplayer->m_closing == Player::CS_PLAYING && g_pplayer->m_supportsTouch && g_pplayer->m_showTouchMessage
-               && (curr_usec < m_StartTime_usec + (U64)12e+6)) // show for max. 12 seconds
+               && (curr_msec < m_StartTime_msec + 12000ull)) // show for max. 12 seconds
                HelpSplash("You can use Touch controls on this display: bottom left area to Start Game, bottom right area to use the Plunger\n"
                           "lower left/right for Flippers, upper left/right for Magna buttons, top left for Credits and (hold) top right to Exit",
                   m_rotate);
@@ -1090,7 +1090,7 @@ void LiveUI::UpdateCameraModeUI()
       infos.push_back("Nudge key:   Rotate table orientation"s);
       infos.push_back("Arrows & Left Alt Key:   Navigate around"s);
    }
-   const int info = (((int)((usec() - m_StartTime_usec) / 2000000ull)))  % (int)infos.size();
+   const int info = (((int)((msec() - m_StartTime_msec) / 2000ull)))  % (int)infos.size();
    HelpTextCentered(infos[info]);
 
    ImGui::End();

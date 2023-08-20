@@ -1280,8 +1280,6 @@ HRESULT Player::Init()
 
    m_pin3d.InitLayout();
 
-   m_liveUI = new LiveUI(m_pin3d.m_pd3dPrimaryDevice);
-
    const float minSlope = (m_ptable->m_overridePhysics ? m_ptable->m_fOverrideMinSlope : m_ptable->m_angletiltMin);
    const float maxSlope = (m_ptable->m_overridePhysics ? m_ptable->m_fOverrideMaxSlope : m_ptable->m_angletiltMax);
    const float slope = minSlope + (maxSlope - minSlope) * m_ptable->m_globalDifficulty;
@@ -1641,6 +1639,8 @@ HRESULT Player::Init()
    m_StartTime_usec = usec();
    m_curPhysicsFrameTime = m_StartTime_usec;
    m_nextPhysicsFrameTime = m_curPhysicsFrameTime + PHYSICS_STEPTIME;
+
+   m_liveUI = new LiveUI(m_pin3d.m_pd3dPrimaryDevice);
 
 #ifdef PLAYBACK
    if (m_playback)
