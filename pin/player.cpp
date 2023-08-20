@@ -726,6 +726,29 @@ void Player::OnInitialUpdate()
         throw 0; //!! have a more specific code (that is catched in the VPinball PeekMessageA loop)?!
 }
 
+void Player::SetCameraMode(const bool mode)
+{
+    if (m_cameraMode && !mode)
+    {
+        // Save edited camera & environment to editor's table
+        PinTable *src = m_ptable, *dst = m_pEditorTable;
+        dst->m_3DmaxSeparation = src->m_3DmaxSeparation;
+        dst->m_global3DMaxSeparation = src->m_global3DMaxSeparation;
+        dst->m_lightEmissionScale = src->m_lightEmissionScale;
+        dst->m_lightRange = src->m_lightRange;
+        dst->m_lightHeight = src->m_lightHeight;
+        dst->m_envEmissionScale = src->m_envEmissionScale;
+        for (int i = 0; i < 3; i++)
+        {
+         dst->mViewSetups[i] = src->mViewSetups[i];
+         dst->m_BG_scalez[i] = src->m_BG_scalez[i];
+         dst->m_BG_image[i] = src->m_BG_image[i];
+        }
+        m_pEditorTable->SetNonUndoableDirty(eSaveDirty);
+    }
+    m_cameraMode = mode;
+}
+
 void Player::Shutdown()
 {
 #ifdef ENABLE_SDL
@@ -752,24 +775,7 @@ void Player::Shutdown()
       }
    }
 
-   if (m_cameraMode)
-   {
-      // Save edited camera & environment to editor's table
-      PinTable *src = m_ptable, *dst = m_pEditorTable;
-      dst->m_3DmaxSeparation = src->m_3DmaxSeparation;
-      dst->m_global3DMaxSeparation = src->m_global3DMaxSeparation;
-      dst->m_lightEmissionScale = src->m_lightEmissionScale;
-      dst->m_lightRange = src->m_lightRange;
-      dst->m_lightHeight = src->m_lightHeight;
-      dst->m_envEmissionScale = src->m_envEmissionScale;
-      for (int i = 0; i < 3; i++)
-      {
-         dst->mViewSetups[i] = src->mViewSetups[i];
-         dst->m_BG_scalez[i] = src->m_BG_scalez[i];
-         dst->m_BG_image[i] = src->m_BG_image[i];
-      }
-      m_pEditorTable->SetNonUndoableDirty(eSaveDirty);
-   }
+   SetCameraMode(false); // To save edited camera & enviornment
 
    m_pininput.UnInit();
 

@@ -570,6 +570,7 @@ public:
 
    bool m_dynamicMode;
    bool m_cameraMode;
+   void SetCameraMode(const bool mode);
 
    float m_globalEmissionScale;
 
