@@ -2842,7 +2842,7 @@ void Player::UpdatePhysics()
       Ball * const old_pactiveball = m_pactiveball;
       m_pactiveball = nullptr; // No ball is the active ball for timers/key events
 
-      if (g_frameProfiler.Get(FrameProfiler::PROFILE_SCRIPT) <= 1000 * MAX_TIMERS_MSEC_OVERALL) // if overall script time per frame exceeded, skip
+      if (m_videoSyncMode == VideoSyncMode::VSM_FRAME_PACING || g_frameProfiler.Get(FrameProfiler::PROFILE_SCRIPT) <= 1000 * MAX_TIMERS_MSEC_OVERALL) // if overall script time per frame exceeded, skip
       {
          const unsigned int p_timeCur = (unsigned int)((m_curPhysicsFrameTime - m_StartTime_usec) / 1000); // milliseconds
 
@@ -2859,8 +2859,9 @@ void Player::UpdatePhysics()
                //Timer1.Enabled = False
                //Timer1.Interval = 1000
                //Timer1.Enabled = True
-               if (curnextfire == pht->m_nextfire)
-                  pht->m_nextfire += pht->m_interval;
+               if (curnextfire == pht->m_nextfire && pht->m_interval > 0)
+                  while (pht->m_nextfire <= p_timeCur)
+                     pht->m_nextfire += pht->m_interval;
             }
          }
          g_frameProfiler.ExitProfileSection();
