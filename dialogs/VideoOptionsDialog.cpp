@@ -317,6 +317,8 @@ BOOL VideoOptionsDialog::OnInitDialog()
    SendMessage(GetDlgItem(IDC_GLOBAL_DISABLE_LIGHTING_BALLS).GetHwnd(), BM_SETCHECK, disableLighting ? BST_CHECKED : BST_UNCHECKED, 0);
 
    int maxFPS = LoadValueWithDefault(regKey[RegName::Player], "MaxFramerate"s, -1);
+   if(maxFPS > 0 && maxFPS <= 24) // at least 24 fps
+      maxFPS = 24;
    VideoSyncMode syncMode = (VideoSyncMode)LoadValueWithDefault(regKey[RegName::Player], "SyncMode"s, VSM_INVALID);
    if (maxFPS < 0 && syncMode == VideoSyncMode::VSM_INVALID)
    {
