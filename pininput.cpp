@@ -1910,7 +1910,7 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
             ProcessBallControl(input);
          else
          {
-            if (input->dwOfs == 1 && m_joylflipkey==25)
+            if (input->dwOfs == 1 && m_joylflipkey == 25)
                FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[eLeftFlipperKey]);
             if (input->dwOfs == 2 && m_joyrflipkey == 26)
                FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[eRightFlipperKey]);

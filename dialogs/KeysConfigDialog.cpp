@@ -254,7 +254,7 @@ WNDPROC g_ButtonProc;
 LRESULT CALLBACK MyKeyButtonProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     if (uMsg == WM_GETDLGCODE)
-        // Eat all acceleratable messges
+        // Eat all acceleratable messages
         return (DLGC_WANTARROWS | DLGC_WANTTAB | DLGC_WANTALLKEYS | DLGC_WANTCHARS);
     else
         return CallWindowProc(g_ButtonProc, hwnd, uMsg, wParam, lParam);
@@ -554,7 +554,7 @@ BOOL KeysConfigDialog::OnInitDialog()
         const HRESULT hr = LoadValue(regKey[RegName::Player], regkey_string[i], key);
         if (hr != S_OK || key > 0xdd)
             key = regkey_defdik[i];
-        const HWND hwndControl = GetDlgItem(regkey_idc[i]);
+        const HWND hwndControl = GetDlgItem(regkey_idc[i]).GetHwnd();
         ::SetWindowText(hwndControl, rgszKeyName[key]);
         ::SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
     }
@@ -562,28 +562,28 @@ BOOL KeysConfigDialog::OnInitDialog()
     HRESULT hr = LoadValue(regKey[RegName::Player], "JoyCustom1Key"s, key);
     if (hr != S_OK || key > 0xdd)
         key = DIK_UP;
-    HWND hwndControl = GetDlgItem(IDC_JOYCUSTOM1);
+    HWND hwndControl = GetDlgItem(IDC_JOYCUSTOM1).GetHwnd();
     ::SetWindowText(hwndControl, rgszKeyName[key]);
     ::SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
 
     hr = LoadValue(regKey[RegName::Player], "JoyCustom2Key"s, key);
     if (hr != S_OK || key > 0xdd)
         key = DIK_DOWN;
-    hwndControl = GetDlgItem(IDC_JOYCUSTOM2);
+    hwndControl = GetDlgItem(IDC_JOYCUSTOM2).GetHwnd();
     ::SetWindowText(hwndControl, rgszKeyName[key]);
     ::SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
 
     hr = LoadValue(regKey[RegName::Player], "JoyCustom3Key"s, key);
     if (hr != S_OK || key > 0xdd)
         key = DIK_LEFT;
-    hwndControl = GetDlgItem(IDC_JOYCUSTOM3);
+    hwndControl = GetDlgItem(IDC_JOYCUSTOM3).GetHwnd();
     ::SetWindowText(hwndControl, rgszKeyName[key]);
     ::SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
 
     hr = LoadValue(regKey[RegName::Player], "JoyCustom4Key"s, key);
     if (hr != S_OK || key > 0xdd)
         key = DIK_RIGHT;
-    hwndControl = GetDlgItem(IDC_JOYCUSTOM4);
+    hwndControl = GetDlgItem(IDC_JOYCUSTOM4).GetHwnd();
     ::SetWindowText(hwndControl, rgszKeyName[key]);
     ::SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
 
@@ -951,27 +951,19 @@ void KeysConfigDialog::OnOK()
     int newvalue;
     BOOL nothing;
 
-    newvalue = GetDlgItemInt(IDC_LRAXISGAIN, nothing, TRUE);
-    if (newvalue < 0) { newvalue = 0; }
+    newvalue = max((int)GetDlgItemInt(IDC_LRAXISGAIN, nothing, TRUE), 0);
     SaveValueInt(regKey[RegName::Player], "PBWAccelGainX"s, newvalue);
 
-    newvalue = GetDlgItemInt(IDC_UDAXISGAIN, nothing, TRUE);
-    if (newvalue < 0) { newvalue = 0; }
+    newvalue = max((int)GetDlgItemInt(IDC_UDAXISGAIN, nothing, TRUE), 0);
     SaveValueInt(regKey[RegName::Player], "PBWAccelGainY"s, newvalue);
 
-    newvalue = GetDlgItemInt(IDC_DEADZONEAMT, nothing, TRUE);
-    if (newvalue < 0) { newvalue = 0; }
-    if (newvalue > 100) { newvalue = 100; }
+    newvalue = clamp((int)GetDlgItemInt(IDC_DEADZONEAMT, nothing, TRUE), 0, 100);
     SaveValueInt(regKey[RegName::Player], "DeadZone"s, newvalue);
 
-    newvalue = GetDlgItemInt(IDC_XMAX_EDIT, nothing, TRUE);
-    if (newvalue < 0) { newvalue = 0; }
-    if (newvalue > 100) { newvalue = 100; }
+    newvalue = clamp((int)GetDlgItemInt(IDC_XMAX_EDIT, nothing, TRUE), 0, 100);
     SaveValueInt(regKey[RegName::Player], "PBWAccelMaxX"s, newvalue);
 
-    newvalue = GetDlgItemInt(IDC_YMAX_EDIT, nothing, TRUE);
-    if (newvalue < 0) { newvalue = 0; }
-    if (newvalue > 100) { newvalue = 100; }
+    newvalue = clamp((int)GetDlgItemInt(IDC_YMAX_EDIT, nothing, TRUE), 0, 100);
     SaveValueInt(regKey[RegName::Player], "PBWAccelMaxY"s, newvalue);
 
     selected = ::SendMessage(GetDlgItem(IDC_DefaultLayout).GetHwnd(), BM_GETCHECK, 0, 0);
@@ -1007,9 +999,7 @@ void KeysConfigDialog::OnOK()
     const bool tscb = (::SendMessage(GetDlgItem(IDC_CBGLOBALTILT).GetHwnd(), BM_GETCHECK, 0, 0) != 0);
     SaveValueBool(regKey[RegName::Player], "TiltSensCB"s, tscb);
 
-    newvalue = GetDlgItemInt(IDC_GLOBALTILT, nothing, TRUE);
-    if (newvalue < 0) { newvalue = 0; }
-    if (newvalue > 1000) { newvalue = 1000; }
+    newvalue = clamp((int)GetDlgItemInt(IDC_GLOBALTILT, nothing, TRUE), 0, 1000);
     SaveValueInt(regKey[RegName::Player], "TiltSensValue"s, newvalue);
     if (tscb)
         SaveValueInt(regKey[RegName::Player], "TiltSensitivity"s, newvalue);
@@ -1027,10 +1017,15 @@ void KeysConfigDialog::OnOK()
         SaveValueInt(regKey[RegName::Player], regkey_string[i], (int)key);
     }
 
-    SetValue(IDC_JOYCUSTOM1, regKey[RegName::Player], "JoyCustom1Key"s);
-    SetValue(IDC_JOYCUSTOM2, regKey[RegName::Player], "JoyCustom2Key"s);
-    SetValue(IDC_JOYCUSTOM3, regKey[RegName::Player], "JoyCustom3Key"s);
-    SetValue(IDC_JOYCUSTOM4, regKey[RegName::Player], "JoyCustom4Key"s);
+    size_t key = ::GetWindowLongPtr(GetDlgItem(IDC_JOYCUSTOM1).GetHwnd(), GWLP_USERDATA);
+    SaveValueInt(regKey[RegName::Player], "JoyCustom1Key"s, (int)key);
+    key = ::GetWindowLongPtr(GetDlgItem(IDC_JOYCUSTOM2).GetHwnd(), GWLP_USERDATA);
+    SaveValueInt(regKey[RegName::Player], "JoyCustom2Key"s, (int)key);
+    key = ::GetWindowLongPtr(GetDlgItem(IDC_JOYCUSTOM3).GetHwnd(), GWLP_USERDATA);
+    SaveValueInt(regKey[RegName::Player], "JoyCustom3Key"s, (int)key);
+    key = ::GetWindowLongPtr(GetDlgItem(IDC_JOYCUSTOM4).GetHwnd(), GWLP_USERDATA);
+    SaveValueInt(regKey[RegName::Player], "JoyCustom4Key"s, (int)key);
+
     SetValue(IDC_DOF_CONTACTORS, regKey[RegName::Controller], "DOFContactors"s);
     SetValue(IDC_DOF_KNOCKER, regKey[RegName::Controller], "DOFKnocker"s);
     SetValue(IDC_DOF_CHIMES, regKey[RegName::Controller], "DOFChimes"s);
