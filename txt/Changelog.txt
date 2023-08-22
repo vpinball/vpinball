@@ -153,6 +153,8 @@ FIXES:
 
 - fix wrong keyboard characters in dialogs for non QWERTY keyboards
 
+- fix saving of custom keys for joypad input
+
 - fix some problems with playing sounds via BASS: pitch/frequency change and loop/restart should now be matching the 'old' player
 
 - reflections now work in the interactive camera/light editing mode (F6) as well
@@ -218,6 +220,8 @@ FIXES:
 - fix crash on tables with weird table info
 
 - fix potential multi-threading screw-up when loading textures
+
+- fix saving of custom keys for joypad input
 
 - see Scripts.txt for the actual usage and "documentation" of the scripts that come with VPX
 
