@@ -210,6 +210,8 @@ Player::Player(const bool cameraMode, PinTable *const editor_table, PinTable *co
       m_scaleFX_DMD = LoadValueWithDefault(regKey[RegName::Player], "ScaleFXDMD"s, false);
       m_bloomOff = LoadValueWithDefault(regKey[RegName::Player], "ForceBloomOff"s, false);
       m_maxFramerate = LoadValueWithDefault(regKey[RegName::Player], "MaxFramerate"s, -1);
+      if(m_maxFramerate > 0 && m_maxFramerate < 24) // at least 24 fps
+         m_maxFramerate = 24;
       m_videoSyncMode = (VideoSyncMode)LoadValueWithDefault(regKey[RegName::Player], "SyncMode"s, VSM_INVALID);
       if (m_maxFramerate < 0 && m_videoSyncMode == VideoSyncMode::VSM_INVALID)
       {
