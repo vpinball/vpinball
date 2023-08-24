@@ -555,7 +555,7 @@ void Light::RenderDynamic()
       //pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  RenderDevice::SRC_ALPHA);  // add the lightcontribution
       pd3dDevice->SetRenderState(RenderState::DESTBLEND, RenderState::INVSRC_COLOR); // but also modulate the light first with the underlying elements by (1+lightcontribution, e.g. a very crude approximation of real lighting)
       pd3dDevice->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_REVSUBTRACT);
-      shader->SetFloat(SHADER_blend_modulate_vs_add, !g_pplayer->IsRenderPass(Player::LIGHT_BUFFER) ? min(max(m_d.m_modulate_vs_add, 0.00001f), 0.9999f) : 0.00001f); // avoid 0, as it disables the blend and avoid 1 as it looks not good with day->night changes // in the separate bulb light render stage only enable additive
+      shader->SetFloat(SHADER_blend_modulate_vs_add, !g_pplayer->IsRenderPass(Player::LIGHT_BUFFER) ? clamp(m_d.m_modulate_vs_add, 0.00001f, 0.9999f) : 0.00001f); // avoid 0, as it disables the blend and avoid 1 as it looks not good with day->night changes // in the separate bulb light render stage only enable additive
       shader->SetTechnique(m_d.m_shadows == ShadowMode::RAYTRACED_BALL_SHADOWS ? SHADER_TECHNIQUE_bulb_light_with_ball_shadows : SHADER_TECHNIQUE_bulb_light);
    }
 
@@ -605,8 +605,7 @@ void Light::RenderDynamic()
 
    Vertex3Ds pos0(0.f, 0.f, 0.f);
    Vertex3Ds haloPos(m_boundingSphereCenter.x, m_boundingSphereCenter.y, m_surfaceHeight);
-   pd3dDevice->DrawMesh(shader, IsTransparent(), m_backglass ? pos0 : haloPos, m_backglass ? 0.f : m_d.m_depthBias, m_customMoverMeshBuffer, RenderDevice::TRIANGLELIST, 0,
-      m_customMoverIndexNum);
+   pd3dDevice->DrawMesh(shader, IsTransparent(), m_backglass ? pos0 : haloPos, m_backglass ? 0.f : m_d.m_depthBias, m_customMoverMeshBuffer, RenderDevice::TRIANGLELIST, 0, m_customMoverIndexNum);
 
    // Restore state
    if (m_backglass)
