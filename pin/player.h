@@ -524,10 +524,9 @@ private:
    void DrawBulbLightBuffer();
    void RenderDynamics();
    void DrawBalls();
+   void PrepareVideoBuffers(const bool useAO);
    void Bloom();
    void SSRefl();
-   void PrepareVideoBuffersNormal();
-   void PrepareVideoBuffersAO();
    void StereoFXAA(RenderTarget* renderedRT, const bool stereo, const bool SMAA, const bool DLAA, const bool NFAA, const bool FXAA1, const bool FXAA2, const bool FXAA3, const unsigned int sharpen, const bool depth_available);
 
    FrameQueueLimiter m_limiter;
