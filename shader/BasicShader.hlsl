@@ -380,7 +380,7 @@ float4 ps_main_texture(const in VS_OUTPUT IN, float2 screenSpace : VPOS, uniform
 
    float4 result = float4(lightLoop(IN.worldPos, N, V, diffuse, glossy, specular, edge, !doNormalMapping, is_metal), pixel.a);
 
-   BRANCH if (result.a < 1.0)
+   BRANCH if (cBase_Alpha.a < 1.0 && result.a < 1.0)
    {
       result.a = GeometricOpacity(dot(N,V),result.a,cClearcoat_EdgeAlpha.w,Roughness_WrapL_Edge_Thickness.w);
 
