@@ -535,7 +535,7 @@ void main() {
 
    color = float4(lightLoop(worldPos, N, V, diffuse, glossy, specular, edge, !doNormalMapping, is_metal), pixel.a);
 
-   BRANCH if (color.a < 1.0)
+   BRANCH if (cBase_Alpha.a < 1.0 && color.a < 1.0)
    {
       color.a = GeometricOpacity(dot(N,V),color.a,cClearcoat_EdgeAlpha.w,Roughness_WrapL_Edge_Thickness.w);
 
