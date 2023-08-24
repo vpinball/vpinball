@@ -426,7 +426,7 @@ void Light::RenderDynamic()
    Texture *offTexel = nullptr;
 
    // early out all lights with no contribution
-   const vec4 lightColor2_falloff_power = convertColor(m_d.m_color2, m_d.m_falloff_power);
+   vec4 lightColor2_falloff_power = convertColor(m_d.m_color2, m_d.m_falloff_power);
    vec4 lightColor_intensity = convertColor(m_d.m_color);
    if (m_d.m_BulbLight ||
       (!m_d.m_BulbLight && (m_surfaceTexture == (offTexel = m_ptable->GetImage(m_d.m_szImage))) && (offTexel != nullptr) && !m_backglass && !m_d.m_imageMode)) // assumes/requires that the light in this kind of state is basically -exactly- the same as the static/(un)lit playfield/surface and accompanying image
@@ -436,6 +436,20 @@ void Light::RenderDynamic()
       if (lightColor_intensity.x == 0.f && lightColor_intensity.y == 0.f && lightColor_intensity.z == 0.f &&
          lightColor2_falloff_power.x == 0.f && lightColor2_falloff_power.y == 0.f && lightColor2_falloff_power.z == 0.f)
          return;
+   }
+
+   // Tint color based on filament temperature
+   if (m_d.m_fader == FADER_INCANDESCENT)
+   {
+      float tint2700[3], tint[3];
+      bulb_filament_temperature_to_tint(2700, tint2700);
+      bulb_filament_temperature_to_tint(m_currentFilamentTemperature, tint);
+      lightColor_intensity.x *= tint[0] / tint2700[0];
+      lightColor_intensity.y *= tint[1] / tint2700[1];
+      lightColor_intensity.z *= tint[2] / tint2700[2];
+      lightColor2_falloff_power.x *= tint[0] / tint2700[0];
+      lightColor2_falloff_power.y *= tint[1] / tint2700[1];
+      lightColor2_falloff_power.z *= tint[2] / tint2700[2];
    }
 
    RenderDevice *const pd3dDevice = m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;

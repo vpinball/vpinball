@@ -13,6 +13,7 @@
 
 void bulb_init();
 double bulb_filament_temperature_to_emission(const double T);
+void bulb_filament_temperature_to_tint(const double T, float* linear_RGB);
 double bulb_emission_to_filament_temperature(const double p);
 double bulb_cool_down_factor(const int bulb, const double T);
 double bulb_cool_down(const int bulb, double T, double duration);

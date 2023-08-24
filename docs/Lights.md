@@ -15,7 +15,7 @@ Their opacity will then be modulated by the light intensity ratio.
 
 ## Fading
 When a light is switched on or off, it fades up and down. VPX is able to simulate 3 behaviors:
-- Incandescent bulb, for which a complete physical model is used, simulating the bulb's filament temperature (which can also be accessed from script, for example for dynamic tinting),
+- Incandescent bulb, for which a complete physical model is used, simulating the bulb's filament temperature (which can also be accessed from script) and tinting the light's color accordingly (no tint at full power, turning slightly red when cooling down),
 - LED bulb, which switches instantaneously to the requested state (no fading),
 - Linear, which performs a simple linear interpolation using the selected speed.
 

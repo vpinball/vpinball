@@ -33,6 +33,28 @@ static bulb_tLampCharacteristics bulbs[BULB_MAX] = {
    { 0.000007413493071564570, 0.000001709095572478890, 1.51222718202281000 }, // #89 Bulb characteristics (13V, 580mA, 7.54W, 75.4lm)
 };
 
+// Linear RGB tint of a blackbody for temperatures ranging from 1500 to 3000K. The values are normalized for a relative luminance of 1.
+// These values were evaluated using Blender's blackbody implementation, then normalized using the standard relative luminance formula (see https://en.wikipedia.org/wiki/Relative_luminance)
+// We use a minimum channel value at 0.000001 to avoid divide by 0 in client application.
+static float temperatureToTint[3 * 16] = {
+   3.253114, 0.431191, 0.000001,
+   3.074210, 0.484372, 0.000001,
+   2.914679, 0.531794, 0.000001,
+   2.769808, 0.574859, 0.000001,
+   2.643605, 0.612374, 0.000001,
+   2.523686, 0.645953, 0.020487,
+   2.414433, 0.676211, 0.042456,
+   2.316033, 0.703137, 0.065485,
+   2.225598, 0.727599, 0.089456,
+   2.144543, 0.749200, 0.114156,
+   2.070389, 0.768694, 0.139412,
+   1.997974, 0.787618, 0.165180,
+   1.935725, 0.803465, 0.191508,
+   1.876871, 0.818242, 0.218429,
+   1.821461, 0.832006, 0.245241,
+   1.772554, 0.843853, 0.271900 
+};
+
 /*-------------------------------
 /  Initialize all pre-computed LUTs
 /-------------------------------*/
@@ -92,6 +114,36 @@ double bulb_filament_temperature_to_emission(const double T)
    // double alpha = T - lower_T;
    // return (1.0 - alpha) * locals.t_to_p[lower_T - 1500] + alpha * locals.t_to_p[upper_T - 1500];
 }
+
+/*-------------------------------
+// Returns linear RGB tint for a given filament temperature. The values are normalized for a perceived luminance of 1.
+/-------------------------------*/
+void bulb_filament_temperature_to_tint(const double T, float* linear_RGB)
+{
+   if (T < 1500.0)
+   {
+      linear_RGB[0] = temperatureToTint[0];
+      linear_RGB[1] = temperatureToTint[1];
+      linear_RGB[2] = temperatureToTint[2];
+   }
+   else if (T >= 2999.0)
+   {
+      linear_RGB[0] = temperatureToTint[15 * 3 + 0];
+      linear_RGB[1] = temperatureToTint[15 * 3 + 1];
+      linear_RGB[2] = temperatureToTint[15 * 3 + 2];
+   }
+   else
+   {
+      // Linear interpolation between the precomputed values
+      float t_ref = (float) ((T - 1500.0f) / 100.0f);
+      int lower_T = (int)t_ref, upper_T = (int)(t_ref + 0.5);
+      float alpha = t_ref - lower_T;
+      linear_RGB[0] = (1.0f - alpha) * temperatureToTint[lower_T * 3 + 0] + alpha * temperatureToTint[upper_T * 3 + 0];
+      linear_RGB[1] = (1.0f - alpha) * temperatureToTint[lower_T * 3 + 1] + alpha * temperatureToTint[upper_T * 3 + 1];
+      linear_RGB[2] = (1.0f - alpha) * temperatureToTint[lower_T * 3 + 2] + alpha * temperatureToTint[upper_T * 3 + 2];
+   }
+}
+
 
 /*-------------------------------
 /  Returns filament temperature for a given visible emission power normalized for a an emission power of 1.0 at 2700K
