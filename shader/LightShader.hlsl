@@ -34,7 +34,7 @@ float4 PS_BulbLight(const in VS_LIGHTBULB_OUTPUT IN) : COLOR
    const float3 light_dir = IN.tablePos - lightCenter_maxRange.xyz;
    const float light_dist = length(light_dir);
    const float len = light_dist * lightCenter_maxRange.w;
-   const float atten = pow(1.0 - saturate(len), lightColor2_falloff_power.w);
+   const float atten = pow(max(1.0 - len, 0.0001), lightColor2_falloff_power.w);
    const float3 lcolor = lerp(lightColor2_falloff_power.xyz, lightColor_intensity.xyz, sqrt(len));
    const float3 color = lcolor * (-blend_modulate_vs_add * atten * lightColor_intensity.w); // negative as it will be blended with '1.0-thisvalue' (the 1.0 is needed to modulate the underlying elements correctly, but not wanted for the term below)
    return float4(color, 1.0 / blend_modulate_vs_add - 1.0); //saturate(atten*lightColor_intensity.w));
@@ -47,7 +47,7 @@ float4 PS_BulbLight_with_ball_shadows(const in VS_LIGHTBULB_OUTPUT IN) : COLOR
    const float3 light_dir = IN.tablePos - lightCenter_maxRange.xyz;
    const float light_dist = length(light_dir);
    const float len = light_dist * lightCenter_maxRange.w;
-   const float atten = pow(1.0 - saturate(len), lightColor2_falloff_power.w);
+   const float atten = pow(max(1.0 - len, 0.0001), lightColor2_falloff_power.w);
    const float3 lcolor = lerp(lightColor2_falloff_power.xyz, lightColor_intensity.xyz, sqrt(len));
    const float shadow = get_light_ball_shadow(lightCenter_maxRange.xyz, light_dir, light_dist);
    const float3 color = lcolor * (-blend_modulate_vs_add * atten * lightColor_intensity.w * shadow); // negative as it will be blended with '1.0-thisvalue' (the 1.0 is needed to modulate the underlying elements correctly, but not wanted for the term below)
