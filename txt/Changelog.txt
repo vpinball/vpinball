@@ -141,6 +141,8 @@ FEATURES:
 
 - Additive blended primitives are now rendered 'unshaded', so without any material/lighting applied (same as flashers), this is more natural and allows for some performance optimizations
 
+Additional docs explaining all these new features with images are provided in the docs folder of the project: https://github.com/vpinball/vpinball/tree/master/docs
+
 FIXES:
 
 - timers with a -1 interval are always fired after physics and animation, but before rendering, allowing the script to update visual parts accordingly without any visual lag.
