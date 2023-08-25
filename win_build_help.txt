@@ -1,0 +1,55 @@
+WIN_BUILD HELP
+--------------
+USAGE: build_win [/?] [PRJ:<PROJECT>] [PLA:<PLATFORM>] [GEN:<GENERATOR #>] [BLD:<Y|ES|/N|O>] [CFG:<R|ELEASE/D|EBUG>]
+
+NOTES
+-----
+- Arguments and parameters are not case sensitive
+- With the exception of HELP (/?), arguments are not order-dependent
+- Not all arguments are required.  If an argument is not provided, the
+  corresponding default values will be used:
+    PRJ: ALL
+    PLA: WIN32
+    GEN: 9 ("Visual Studio 15 2017")
+    BLD: YES
+    CFG: DEBUG
+
+ARGUMENT/PARAM REFERENCE
+------------------------
+/?: Output help information.  Must be the first argument
+
+PRJ: Sets the project file(s) to be generated.
+     ALL         : Generates all project files. See project descriptions below
+                   for output path of the generated project files
+     VPINBALL    : Generates the "vpinball" project.  Files will be created
+                   in <VPINBALL_ROOT>/build/vpinball/<PLATFORM>
+     VPINBALLGL  : Generates the "vpinball_gl" project.  Files will be created
+                   in <VPINBALL_ROOT>/build/vpinball_gl/<PLATFORM>
+                 
+PLA: Sets build platform and architecture for building
+     Win32: Generate with support for Windows x86 platform
+     x64  : Generate with support for Windows x64 platform
+
+GEN: Sets the CMake generator to use for project generation, referenced by
+     number.  Available choices are:
+     [0]  = "Visual Studio 6"
+     [1]  = "Visual Studio 7"
+     [2]  = "Visual Studio 7 .NET 2003"
+     [3]  = "Visual Studio 8 2005"
+     [4]  = "Visual Studio 9 2008
+     [5]  = "Visual Studio 10 2010"
+     [6]  = "Visual Studio 11 2012"
+     [7]  = "Visual Studio 12 2013"
+     [8]  = "Visual Studio 14 2015"
+     [9]  = "Visual Studio 15 2017"
+     [10] = "Visual Studio 16 2019"
+     [11] = "Visual Studio 17 2022"
+     
+BLD: Sets preference to compile and link the generated project(s)
+     Y|ES: Compile and link generated project(s). See (PRJ:) for
+            information on output path of build artifacts
+     N|O : Generate project files only.  Do not compile/link
+    
+CFG: Sets preference for build type
+     D|EBUG   : Build non-optimized artifacts for debugging and testing
+     R|ELEASE : Build optimized artifacts for deployment
