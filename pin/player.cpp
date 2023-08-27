@@ -4320,25 +4320,15 @@ void Player::FinishFrame()
       exit(-9999); 
 
    // Promote stop play to close application if started minimized without user interaction
-   if (m_closing == CS_STOP_PLAY && g_pvp->m_open_minimized && g_pvp->m_disable_pause_menu)
+   if (m_closing == CS_STOP_PLAY && g_pvp->m_open_minimized)
       m_closing = CS_CLOSE_APP;
 
-   // Close player back to editor
-   if (m_closing == CS_STOP_PLAY)
+   // Close player (moving back to editor or to system is handled after player has been closed in StopPlayer)
+   if (m_closing == CS_STOP_PLAY || m_closing == CS_CLOSE_APP)
    {
       PauseMusic();
       // Stop playing (send close window message)
       SendMessage(WM_CLOSE, 0, 0);
-      return;
-   }
-
-   // Close application
-   if (m_closing == CS_CLOSE_APP)
-   {
-      PauseMusic();
-      while (ShowCursor(FALSE) >= 0) ;
-      while(ShowCursor(TRUE) < 0) ;
-      SendMessage(g_pvp->GetHwnd(), WM_COMMAND, ID_FILE_EXIT, NULL);
       return;
    }
 
@@ -5278,9 +5268,14 @@ void Player::StopPlayer()
 
    LockForegroundWindow(false);
 
-   // Close app on player stop
-   if (g_pvp->m_open_minimized && g_pvp->m_disable_pause_menu)
+   // Close application after player stop
+   if (m_closing == CS_CLOSE_APP)
+   {
+      while (ShowCursor(FALSE) >= 0);
+      while (ShowCursor(TRUE) < 0);
       SendMessage(g_pvp->GetHwnd(), WM_COMMAND, ID_FILE_EXIT, NULL);
+      return;
+   }
 }
 
 #ifdef PLAYBACK
