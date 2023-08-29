@@ -15,13 +15,6 @@ enum ViewLayoutMode : int
    VLM_WINDOW  // Position viewer relative to the bottom center of the table, use an oblique surface (re)projection (needs some postprocess to avoid distortion)
 };
 
-enum StereoEyeMode : int
-{
-   SEM_PARRALEL, // Eyes are usual projection, shifted sideway
-   SEM_OFFAXIS,  // Eyes are offcenter projection, shifted sideway but adjusted to cover the same render frame
-   SEM_TOEIN     // Eyes are adjusted to look to the same 'look at' point (converging)
-};
-
 class ViewSetup final
 {
 public:

@@ -16,9 +16,9 @@ public:
    void SetView(const Matrix3D& view) { MarkDirty(view, m_matView); m_matView = view; }
    void SetProj(const unsigned int index, const Matrix3D& proj) { MarkDirty(proj, m_matProj[index]); m_matProj[index] = proj; }
 
-   const Matrix3D& GetModel() const { Update(); return m_matModel; }
-   const Matrix3D& GetView() const { Update(); return m_matView; }
-   const Matrix3D& GetProj(const unsigned int eye) const { Update(); return m_matProj[eye]; }
+   const Matrix3D& GetModel() const { return m_matModel; }
+   const Matrix3D& GetView() const { return m_matView; }
+   const Matrix3D& GetProj(const unsigned int eye) const { return m_matProj[eye]; }
    const Matrix3D& GetModelView() const { Update(); return m_matModelView; }
    const Matrix3D& GetModelViewInverse() const { Update(); return m_matModelViewInverse; }
    const Matrix3D& GetModelViewInverseTranspose() const { Update(); return m_matModelViewInverseTranspose; }
