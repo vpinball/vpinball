@@ -1,7 +1,9 @@
 //
 // Lights
 //
-#pragma warning(once : 3571) // only output 'pow(f, e) will not work for negative f, use abs(f) or conditionally handle negative values if you expect them' once
+
+// only output 'pow(f, e) will not work for negative f, use abs(f) or conditionally handle negative values if you expect them' once
+#pragma warning(once : 3571)
 
 #define NUM_LIGHTS 2
 
@@ -22,9 +24,9 @@ uniform vec4 ballLightEmission[iLightPointBallsNum];
 #endif
 
 #else // HLSL
-struct CLight 
-{ 
-   float3 vPos; 
+struct CLight
+{
+   float3 vPos;
    float3 vEmission;
 };
 #if iLightPointBallsNum == iLightPointNum // basic shader

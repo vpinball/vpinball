@@ -91,7 +91,7 @@ float GeometricOpacity(const float NdotV, const float alpha, const float blendin
     //new version (COD/IW, t = thickness), t = 0.05 roughly corresponds to above version
     const float x = abs(NdotV); // flip normal in case of wrong orientation (backside lighting)
     const float g = blending - blending * ( x / (x * (1.0 - t) + t) ); // Smith-Schlick G
-    return lerp(alpha, 1.0, g); // fake opacity lerp to ‘shadowed’
+    return lerp(alpha, 1.0, g); // fake opacity lerp to 'shadowed'
 }
 
 float3 FresnelSchlick(const float3 spec, const float LdotH, const float edge)
