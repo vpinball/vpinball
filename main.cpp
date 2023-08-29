@@ -568,6 +568,9 @@ public:
                PLOGI << "Loading table from command line option: " << szTableFileName;
                m_vpinball.LoadFileName(szTableFileName, !play);
                m_vpinball.m_table_played_via_command_line = play;
+               loadFileResult = m_vpinball.m_ptableActive != nullptr;
+               if (!loadFileResult && g_pvp->m_open_minimized)
+                  m_vpinball.QuitPlayer(Player::CloseState::CS_CLOSE_APP);
            }
            else
            {
