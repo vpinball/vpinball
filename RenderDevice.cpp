@@ -491,9 +491,9 @@ static pDF mDwmFlush = nullptr;
 typedef HRESULT(STDAPICALLTYPE *pDEC)(UINT uCompositionAction);
 static pDEC mDwmEnableComposition = nullptr;
 
-RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, const VideoSyncMode syncMode, const float AAfactor, const StereoMode stereo3D, const unsigned int FXAA, const bool sharpen, const bool ss_refl, const bool useNvidiaApi, const bool disable_dwm, const int BWrendering)
+RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, const float AAfactor, const StereoMode stereo3D, const unsigned int FXAA, const bool sharpen, const bool ss_refl, const bool useNvidiaApi, const bool disable_dwm, const int BWrendering)
     : m_windowHwnd(hwnd), m_width(width), m_height(height), m_fullscreen(fullscreen), 
-      m_colorDepth(colordepth), m_videoSyncMode(syncMode), m_AAfactor(AAfactor), m_stereo3D(stereo3D),
+      m_colorDepth(colordepth), m_AAfactor(AAfactor), m_stereo3D(stereo3D),
       m_ssRefl(ss_refl), m_disableDwm(disable_dwm), m_sharpen(sharpen), m_FXAA(FXAA), m_BWrendering(BWrendering), m_texMan(*this), m_renderFrame(this)
 {
 #ifdef ENABLE_SDL
@@ -530,7 +530,7 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
     }
 }
 
-void RenderDevice::CreateDevice(int& refreshrate, UINT adapterIndex)
+void RenderDevice::CreateDevice(int& refreshrate, VideoSyncMode& syncMode, UINT adapterIndex)
 {
    assert(g_pplayer != nullptr); // Player must be created to give access to the output window
    colorFormat back_buffer_format;
@@ -672,7 +672,7 @@ void RenderDevice::CreateDevice(int& refreshrate, UINT adapterIndex)
    }
 
    // Flip scheduling: 0 for immediate, 1 for synchronized with the vertical retrace, -1 for adaptive vsync (i.e. synchronized on vsync except for late frame)
-   switch (m_videoSyncMode)
+   switch (syncMode)
    {
    case VideoSyncMode::VSM_NONE: SDL_GL_SetSwapInterval(0); break;
    case VideoSyncMode::VSM_VSYNC: SDL_GL_SetSwapInterval(1); break;
@@ -1064,7 +1064,7 @@ void RenderDevice::CreateDevice(int& refreshrate, UINT adapterIndex)
    #endif
    #ifdef ENABLE_SDL
    // DXGI VSync source (Windows 7+, only used in OpenGL build)
-   else if (m_videoSyncMode == VideoSyncMode::VSM_FRAME_PACING)
+   else if (syncMode == VideoSyncMode::VSM_FRAME_PACING)
    {
       DXGIRegistry::Output* out = g_DXGIRegistry.GetForWindow(m_windowHwnd);
       if (out != nullptr)
@@ -1076,12 +1076,12 @@ void RenderDevice::CreateDevice(int& refreshrate, UINT adapterIndex)
       }
    }
    #endif
-   if (m_videoSyncMode == VideoSyncMode::VSM_FRAME_PACING && !hasVSync)
+   if (syncMode == VideoSyncMode::VSM_FRAME_PACING && !hasVSync)
    {
       // This may happen on some old config where D3D9ex is not available (XP/Vista/7) and DWM is disabled
       ShowError("Failed to create the synchronization device.\r\nSynchronization switched to adaptive sync.");
       PLOGE << "Failed to create the synchronization device for frame pacing. Synchronization switched to adaptive sync.";
-      m_videoSyncMode = VideoSyncMode::VSM_ADAPTIVE_VSYNC;
+      syncMode = VideoSyncMode::VSM_ADAPTIVE_VSYNC;
       #ifdef ENABLE_SDL
       SDL_GL_SetSwapInterval(-1);
       #endif
