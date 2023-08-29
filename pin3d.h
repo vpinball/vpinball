@@ -95,7 +95,7 @@ public:
    Pin3D();
    ~Pin3D();
 
-   HRESULT InitPin3D(const bool fullScreen, const int width, const int height, const int colordepth, int &refreshrate, const VideoSyncMode syncMode, 
+   HRESULT InitPin3D(const bool fullScreen, const int width, const int height, const int colordepth, int &refreshrate, VideoSyncMode& syncMode, 
       const float AAfactor, const StereoMode stereo3D, const unsigned int FXAA, const bool sharpen, const bool ss_refl);
 
    void InitLayout(const float xpixoff = 0.f, const float ypixoff = 0.f);
@@ -121,7 +121,7 @@ private:
    void InitRenderState(RenderDevice * const pd3dDevice);
    void InitPrimaryRenderState();
    void InitSecondaryRenderState();
-   HRESULT InitPrimary(const bool fullScreen, const int colordepth, int& refreshrate, const VideoSyncMode syncMode, const float AAfactor, const StereoMode stereo3D,
+   HRESULT InitPrimary(const bool fullScreen, const int colordepth, int& refreshrate, VideoSyncMode& syncMode, const float AAfactor, const StereoMode stereo3D,
       const unsigned int FXAA, const bool sharpen, const bool ss_refl);
 
    StereoMode m_stereo3D;

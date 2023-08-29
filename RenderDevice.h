@@ -110,10 +110,10 @@ public:
       TRANSFORMSTATE_PROJECTION
    };
 
-   RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, const VideoSyncMode syncMode, const float AAfactor,
+   RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, const float AAfactor,
       const StereoMode stereo3D, const unsigned int FXAA, const bool sharpen, const bool ss_refl, const bool useNvidiaApi, const bool disable_dwm, const int BWrendering);
    ~RenderDevice();
-   void CreateDevice(int &refreshrate, UINT adapterIndex = D3DADAPTER_DEFAULT);
+   void CreateDevice(int& refreshrate, VideoSyncMode& syncMode, UINT adapterIndex = D3DADAPTER_DEFAULT);
    bool LoadShaders();
 
    const RenderPass* GetCurrentPass() const { return m_currentPass; }
@@ -237,7 +237,6 @@ public:
    int           m_height; // Height of the render buffer
    bool          m_fullscreen;
    int           m_colorDepth;
-   VideoSyncMode m_videoSyncMode;
    StereoMode    m_stereo3D;
    float         m_AAfactor;
    bool          m_ssRefl;
