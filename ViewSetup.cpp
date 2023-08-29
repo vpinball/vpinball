@@ -12,14 +12,8 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
    const float rotation = ANGTORAD(mViewportRotation);
    const float FOV = (mFOV < 1.0f) ? 1.0f : mFOV; // Can't have a real zero FOV, but this will look almost the same
    const bool isLegacy = layoutMode == VLM_LEGACY;
-   //const bool isCamera = layoutMode == VLM_CAMERA;
-   //const bool isWindow = layoutMode == VLM_WINDOW;
    const float aspect = (float)((double)viewportWidth / (double)viewportHeight);
    float camx = cam.x, camy = cam.y, camz = cam.z;
-   // For 'Window' mode, we can either have a perspective projection parallel to the screen then reprojected to a view aligned,
-   // or a perspective projection aligned to the view which is then perspective corrected. Both implementations are kept for reference.
-   // For the time being, the reprojection postprocess step is not implemented so only screen aligned gives acceptable (distorted) results.
-   constexpr bool isWndScreenAligned = true;
    
    // View angle inclination against playfield. 0 is straight up the playfield.
    float inc;
@@ -27,8 +21,7 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
    {
    case VLM_LEGACY: inc = ANGTORAD(mLookAt) + cam_inc; break;
    case VLM_CAMERA: inc = -M_PIf + atan2f(-mViewY + cam.y - (mLookAt / 100.0f) * table->m_bottom, -mViewZ + cam.z); break;
-   case VLM_WINDOW: inc = isWndScreenAligned ? atan2f(mWindowTopZOfs - mWindowBottomZOfs, table->m_bottom) // Screen angle, relative to playfield
-                                             : (-M_PIf + atan2f(-mViewY + cam.y - (mLookAt / 100.0f) * table->m_bottom, -mViewZ + cam.z)); break;
+   case VLM_WINDOW: inc = atan2f(mWindowTopZOfs - mWindowBottomZOfs, table->m_bottom); break;
    }
 
    if (isLegacy && table->m_BG_enable_FSS)
@@ -82,20 +75,23 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
    //
    // This seems ok for 'camera' mode since the view is orthonormal (it transforms normals and points without changing their length or relative angle).
 
-   Matrix3D matWorld, matView, matProj[2];
+   Matrix3D matWorld;
    matWorld.SetIdentity();
+   mvp.SetModel(matWorld);
 
-   Matrix3D coords, lookat, rotz, proj, projTrans, layback;
+   Matrix3D coords, lookat, rotz, proj, projTrans, layback, matView;
    projTrans.SetTranslation((float)((double)xpixoff / (double)viewportWidth), (float)((double)ypixoff / (double)viewportHeight), 0.f); // in-pixel offset for manual oversampling
    coords.SetScaling(isLegacy ? mViewportScaleX : 1.f, isLegacy ? -mViewportScaleY : -1.f, -1.f); // Stretch viewport, also revert Y and Z axis to convert to D3D coordinate system
    rotz.SetRotateZ(rotation); // Viewport rotation
-   layback.SetIdentity(); // Layback to skew the view backward
-   layback._32 = -tanf(0.5f * ANGTORAD(mLayback));
 
    // Compute translation
-   // Also setup matView (complete matrix stack excepted projection) to be able to compute near and far plane
+   // Also setup a dedicated matView (complete matrix stack excepted projection) to be able to compute near and far plane
    if (isLegacy)
    {
+      // Layback to skew the view backward
+      layback.SetIdentity();
+      layback._32 = -tanf(0.5f * ANGTORAD(mLayback));
+
       // Collect part bounds, to fit the legacy mode camera
       vector<Vertex3Ds> vvertex3D;
       for (IEditable* editable : table->m_vedit)
@@ -113,7 +109,7 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
       trans.SetTranslation(pos.x, pos.y, pos.z);
       rotx.SetRotateX(inc); // Player head inclination (0 is looking straight to playfield)
       lookat = trans * rotx;
-      matView = layback * lookat * rotz * coords;
+      matView = layback * trans * rotx * rotz * coords;
    }
    else
    {
@@ -121,29 +117,32 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
       trans.SetTranslation(-mViewX + cam.x - 0.5f * table->m_right, -mViewY + cam.y - table->m_bottom, -mViewZ + cam.z);
       rotx.SetRotateX(inc); // Player head inclination (0 is looking straight to playfield)
       lookat = trans * rotx;
-      matView = lookat * rotz * coords;
+      matView = trans * rotx * rotz * coords;
    }
 
-   // Compute near/far plane
+   // Compute frustrum Z bounds (near/far plane)
    float zNear, zFar;
-   table->ComputeNearFarPlane(matWorld * matView, 1.f, zNear, zFar);
+   table->ComputeNearFarPlane(matView, 1.f, zNear, zFar);
 
+   // Compute frustrum X/Y bounds
+   float xcenter, ycenter, xspan, yspan;
    switch (layoutMode)
    {
    case VLM_LEGACY:
-      proj.SetPerspectiveFovLH(FOV, aspect, zNear, zFar);
+   {
+      xcenter = 0.0f;
+      ycenter = 0.0f;
+      yspan = zNear * tanf(0.5f * ANGTORAD(FOV));
+      xspan = yspan * aspect;
       break;
+   }
    case VLM_CAMERA:
    {
       const float ymax = zNear * tanf(0.5f * ANGTORAD(FOV));
-      const float ymin = -ymax;
-      const float xmax = ymax * aspect;
-      const float xmin = -xmax;
-      const float xcenter = 0.5f * (xmin + xmax) + zNear * 0.01f * (mViewVOfs * sinf(rotation) - mViewHOfs * cosf(rotation));
-      const float ycenter = 0.5f * (ymin + ymax) + zNear * 0.01f * (mViewVOfs * cosf(rotation) + mViewHOfs * sinf(rotation));
-      const float xspan = 0.5f * (xmax - xmin) / mViewportScaleX;
-      const float yspan = 0.5f * (ymax - ymin) / mViewportScaleY;
-      proj.SetPerspectiveOffCenterLH(xcenter - xspan, xcenter + xspan, ycenter - yspan, ycenter + yspan, zNear, zFar);
+      xcenter = zNear * 0.01f * (mViewVOfs * sinf(rotation) - mViewHOfs * cosf(rotation));
+      ycenter = zNear * 0.01f * (mViewVOfs * cosf(rotation) + mViewHOfs * sinf(rotation));
+      yspan = ymax          / mViewportScaleY;
+      xspan = ymax * aspect / mViewportScaleX;
       break;
    }
    case VLM_WINDOW:
@@ -159,91 +158,66 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
       const float xmax = zNear * max(br.x, max(bl.x, max(tl.x, tr.x)));
       const float xmin = zNear * min(br.x, min(bl.x, min(tl.x, tr.x)));
       const float ar = (xmax - xmin) / (ymax - ymin);
-      const float xcenter = 0.5f * (xmin + xmax) + zNear * 0.01f * (mViewVOfs * sinf(rotation) - mViewHOfs * cosf(rotation));
-      const float ycenter = 0.5f * (ymin + ymax) + zNear * 0.01f * (mViewVOfs * cosf(rotation) + mViewHOfs * sinf(rotation));
-      const float xspan = (aspect / ar) * 0.5f * (xmax - xmin) / mViewportScaleX;
-      const float yspan =                 0.5f * (ymax - ymin) / mViewportScaleY;
-      proj.SetPerspectiveOffCenterLH(xcenter - xspan, xcenter + xspan, ycenter - yspan, ycenter + yspan, zNear, zFar);
+      xcenter = 0.5f * (xmin + xmax) + zNear * 0.01f * (mViewVOfs * sinf(rotation) - mViewHOfs * cosf(rotation));
+      ycenter = 0.5f * (ymin + ymax) + zNear * 0.01f * (mViewVOfs * cosf(rotation) + mViewHOfs * sinf(rotation));
+      xspan = (aspect / ar) * 0.5f * (xmax - xmin) / mViewportScaleX;
+      yspan =                 0.5f * (ymax - ymin) / mViewportScaleY;
       break;
    }
    }
 
-   matView = lookat;
-   matProj[0] = rotz * coords * proj * projTrans;
+   // Define the view matrix. This matrix MUST be orthonormal (orthogonal axis with a unit length) or shading will be broken
+   mvp.SetView(lookat);
 
-   // Apply layback
-   // To be backward compatible while having a well behaving view matrix, we compute a view without the layback (which is meaningful with regards to what was used before).
-   // We use it for rendering computation. It is reverted by the projection matrix which then apply the old transformation, including layback.
-   if (isLegacy && fabsf(mLayback) > 0.1f)
-   {
-      Matrix3D invView(matView);
-      invView.Invert();
-      matProj[0] = (invView * layback * matView) * matProj[0];
-   }
-
+   // Define the projection matrices
    if (stereo)
    {
-      // Create eye projection matrices for real stereo (not VR but anaglyph,...)
+      // Stereo mode needs an offcentered projection along the eye axis. Parallax shifted, or toe-in camera are incorrect and 
+      // should not be used (See 'Gaze-coupled Perspective for Enhanced Human-Machine Interfaces in Aeronautics' for an explanation)
+
       // 63mm is the average distance between eyes (varies from 54 to 74mm between adults, 43 to 58mm for children)
-      const float stereo3DMS = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DEyeSeparation"s, 63.0f);
-      const float halfEyeDist = 0.5f * MMTOVPU(stereo3DMS);
-      Matrix3D invView(matView);
-      invView.Invert();
+      const float eyeSeparation = MMTOVPU(LoadValueWithDefault(regKey[RegName::Player], "Stereo3DEyeSeparation"s, 63.0f));
+
+      // Z where the stereo separation is 0:
+      // - for cabinet (window) mode, we use the orthogonal distance to the screen (window)
+      // - for camera mode, we use zNear since it is fitted to the nearest object
+      // This way, we don't have negative parallax (objects closer than projection plane) and all the artefact they may cause
+      const float zNullSeparation = layoutMode == VLM_WINDOW ? (mViewZ - mWindowBottomZOfs + mViewY * tan(inc)) : zNear;
+      const float ofs = 0.5f * eyeSeparation * zNear / zNullSeparation;
+      const float xOfs = ofs * cosf(rotation);
+      const float yOfs = ofs * sinf(rotation);
+
       // Compute the view orthonormal basis
-      Matrix3D baseCoords;
-      baseCoords.SetScaling(1.f, -1.f, -1.f);
-      const Matrix3D baseView = baseCoords * invView;
-      const vec3 right = baseView.GetOrthoNormalRight();
-      const vec3 up = baseView.GetOrthoNormalUp();
-      const vec3 dir = baseView.GetOrthoNormalDir();
-      const vec3 pos = baseView.GetOrthoNormalPos();
-      constexpr StereoEyeMode stereoEyeMode = SEM_TOEIN;
-      switch (stereoEyeMode)
-      {
-      case SEM_PARRALEL:
-      {
-         Matrix3D eyeShift;
-         eyeShift.SetTranslation(halfEyeDist * right); // Right
-         matProj[1] = eyeShift * matProj[0];
-         eyeShift.SetTranslation(-halfEyeDist * right); // Left
-         matProj[0] = eyeShift * matProj[0];
-         break;
-      }
-      case SEM_OFFAXIS:
-      {
-         Matrix3D eyeShift;
-         eyeShift.SetTranslation(halfEyeDist * right); // Right
-         matProj[1] = eyeShift * matProj[0];
-         eyeShift.SetTranslation(-halfEyeDist * right); // Left
-         matProj[0] = eyeShift * matProj[0];
-         assert(false); // Missing projection correction
-         break;
-      }
-      case SEM_TOEIN:
-      {
-         // Default is to look at the ball (playfield level = 0 + ball radius = 50)
-         const float camDistance = (50.f - pos.z) / dir.z;
-         // Clamp it to a reasonable range, a normal viewing distance being around 80cm between view focus (table) and viewer (depends a lot on the player size & position)
-         constexpr float minCamDistance = CMTOVPU(30.f);
-         constexpr float maxCamDistance = CMTOVPU(200.f);
-         const vec3 at = pos + dir * clamp(camDistance, minCamDistance, maxCamDistance);
-         Matrix3D toein_lookat = Matrix3D::MatrixLookAtLH(pos + (halfEyeDist * right), at, up); // Apply offset & rotation to the right eye projection
-         matProj[1] = invView * toein_lookat * baseCoords * matProj[0];
-         toein_lookat = Matrix3D::MatrixLookAtLH(pos + (-halfEyeDist * right), at, up); // Apply offset & rotation to the left eye projection
-         matProj[0] = invView * toein_lookat * baseCoords * matProj[0];
-         break;
-      }
-      default:
-         assert(false); // Unsupported stereo eye mode
-         matProj[1] = matProj[0];
-         break;
-      }
+      Matrix3D eyeShift, invView(mvp.GetView());
+      const vec3 right = invView.GetOrthoNormalRight();
+
+      // Left eye
+      eyeShift.SetTranslation(0.5f * eyeSeparation * right);
+      proj.SetPerspectiveOffCenterLH(xcenter - xspan + xOfs, xcenter + xspan + xOfs, ycenter - yspan - yOfs, ycenter + yspan - yOfs, zNear, zFar);
+      mvp.SetProj(0, eyeShift * rotz * coords * proj * projTrans);
+
+      // Right eye
+      eyeShift.SetTranslation(-0.5f * eyeSeparation * right);
+      proj.SetPerspectiveOffCenterLH(xcenter - xspan - xOfs, xcenter + xspan - xOfs, ycenter - yspan + yOfs, ycenter + yspan + yOfs, zNear, zFar);
+      mvp.SetProj(1, eyeShift * rotz * coords * proj * projTrans);
+   }
+   else
+   {
+      proj.SetPerspectiveOffCenterLH(xcenter - xspan, xcenter + xspan, ycenter - yspan, ycenter + yspan, zNear, zFar);
+      mvp.SetProj(0, rotz * coords * proj * projTrans);
    }
 
-   mvp.SetModel(matWorld);
-   mvp.SetView(matView);
-   for (unsigned int eye = 0; eye < mvp.m_nEyes; eye++)
-      mvp.SetProj(eye, matProj[eye]);
+   // Apply layback
+   if (isLegacy && fabsf(mLayback) > 0.1f)
+   {
+      // To be backward compatible while having a well behaving view matrix, we compute a view without the layback (which is meaningful with regards to what was used before).
+      // We use it for rendering computation. It is reverted by the projection matrix which then apply the old transformation, including layback.
+      Matrix3D invView(mvp.GetView());
+      invView.Invert();
+      mvp.SetProj(0, (invView * layback * matView) * mvp.GetProj(0));
+      if (stereo) // Real stereo is not really supported for legacy camera mode (it used to be only fake parallax stereo)
+         mvp.SetProj(1, (invView * layback * matView) * mvp.GetProj(1));
+   }
 }
 
 
