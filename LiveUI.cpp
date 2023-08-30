@@ -1046,7 +1046,7 @@ void LiveUI::UpdateCameraModeUI()
             break;
          }
          case Player::BS_AnaglyphDesat: CM_ROW("Anaglyph desaturation", "%.0f", 100.f * m_player->m_global3DDesaturation, "%%"); break;
-         case Player::BS_AnaglyphContrast: CM_ROW("Anaglyph contrast", "%.0f", 100.f * m_player->m_global3DContrast, "%%"); break;
+         case Player::BS_AnaglyphBrightness: CM_ROW("Anaglyph brightness", "%.0f", 100.f * m_player->m_global3DBrightness, "%%"); break;
          }
          if (settings[i] == m_player->m_backdropSettingActive
             || (m_player->m_backdropSettingActive == Player::BS_XYScale && (settings[i] == Player::BS_XScale || settings[i] == Player::BS_YScale)))

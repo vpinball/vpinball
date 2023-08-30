@@ -131,9 +131,9 @@ void VideoOptionsDialog::ResetVideoPreferences(const unsigned int profile) // 0 
    constexpr float stereo3DZPD = 0.5f;
    sprintf_s(tmp, sizeof(tmp), "%f", stereo3DZPD);
    SetDlgItemText(IDC_3D_STEREO_ZPD, tmp);
-   constexpr float stereo3DContrast = 1.0f;
-   sprintf_s(tmp, sizeof(tmp), "%f", stereo3DContrast);
-   SetDlgItemText(IDC_3D_STEREO_CONTRAST, tmp);
+   constexpr float stereo3DBrightness = 1.0f;
+   sprintf_s(tmp, sizeof(tmp), "%f", stereo3DBrightness);
+   SetDlgItemText(IDC_3D_STEREO_BRIGHTNESS, tmp);
    constexpr float stereo3DDesaturation = 0.0f;
    sprintf_s(tmp, sizeof(tmp), "%f", stereo3DDesaturation);
    SetDlgItemText(IDC_3D_STEREO_DESATURATION, tmp);
@@ -529,9 +529,9 @@ BOOL VideoOptionsDialog::OnInitDialog()
    const bool bamHeadtracking = LoadValueWithDefault(regKey[RegName::Player], "BAMheadTracking"s, false);
    SendMessage(GetDlgItem(IDC_HEADTRACKING).GetHwnd(), BM_SETCHECK, bamHeadtracking ? BST_CHECKED : BST_UNCHECKED, 0);
 
-   const float stereo3DContrast = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DContrast"s, 1.0f);
-   sprintf_s(tmp, sizeof(tmp), "%f", stereo3DContrast);
-   SetDlgItemText(IDC_3D_STEREO_CONTRAST, tmp);
+   const float stereo3DBrightness = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DBrightness"s, 1.0f);
+   sprintf_s(tmp, sizeof(tmp), "%f", stereo3DBrightness);
+   SetDlgItemText(IDC_3D_STEREO_BRIGHTNESS, tmp);
 
    const float stereo3DDesaturation = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DDesaturation"s, 0.0f);
    sprintf_s(tmp, sizeof(tmp), "%f", stereo3DDesaturation);
@@ -877,6 +877,43 @@ BOOL VideoOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
          GetDlgItem(IDC_DYNAMIC_AO).EnableWindow(checked ? TRUE : FALSE);
          break;
       }
+      case IDC_3D_STEREO:
+      {
+         LRESULT stereo3D = SendMessage(GetDlgItem(IDC_3D_STEREO).GetHwnd(), CB_GETCURSEL, 0, 0);
+         if (stereo3D == LB_ERR)
+            stereo3D = STEREO_OFF;
+         if (stereo3D == STEREO_OFF)
+         {
+            GetDlgItem(IDC_3D_STEREO_Y).EnableWindow(false);
+            GetDlgItem(IDC_3D_STEREO_OFS).EnableWindow(false);
+            GetDlgItem(IDC_3D_STEREO_ZPD).EnableWindow(false);
+            GetDlgItem(IDC_3D_STEREO_MS).EnableWindow(false);
+            GetDlgItem(IDC_3D_STEREO_BRIGHTNESS).EnableWindow(false);
+            GetDlgItem(IDC_3D_STEREO_DESATURATION).EnableWindow(false);
+         }
+         else if (stereo3D < STEREO_ANAGLYPH_RC)
+         {
+            #ifndef ENABLE_SDL
+            GetDlgItem(IDC_3D_STEREO_Y).EnableWindow(true);
+            GetDlgItem(IDC_3D_STEREO_OFS).EnableWindow(true);
+            GetDlgItem(IDC_3D_STEREO_ZPD).EnableWindow(true);
+            #endif
+            GetDlgItem(IDC_3D_STEREO_MS).EnableWindow(true);
+            GetDlgItem(IDC_3D_STEREO_BRIGHTNESS).EnableWindow(false);
+            GetDlgItem(IDC_3D_STEREO_DESATURATION).EnableWindow(false);
+         }
+         else // Anaglyph
+         {
+            #ifndef ENABLE_SDL
+            GetDlgItem(IDC_3D_STEREO_Y).EnableWindow(true);
+            GetDlgItem(IDC_3D_STEREO_OFS).EnableWindow(true);
+            GetDlgItem(IDC_3D_STEREO_ZPD).EnableWindow(true);
+            #endif
+            GetDlgItem(IDC_3D_STEREO_MS).EnableWindow(true);
+            GetDlgItem(IDC_3D_STEREO_BRIGHTNESS).EnableWindow(true);
+            GetDlgItem(IDC_3D_STEREO_DESATURATION).EnableWindow(true);
+         }
+      }
       default:
          return FALSE;
    }
@@ -1011,7 +1048,7 @@ void VideoOptionsDialog::OnOK()
    SaveValue(regKey[RegName::Player], "Stereo3DMaxSeparation"s, GetDlgItemText(IDC_3D_STEREO_MS).c_str());
    #endif
    SaveValue(regKey[RegName::Player], "Stereo3DZPD"s, GetDlgItemText(IDC_3D_STEREO_ZPD).c_str());
-   SaveValue(regKey[RegName::Player], "Stereo3DContrast"s, GetDlgItemText(IDC_3D_STEREO_CONTRAST).c_str());
+   SaveValue(regKey[RegName::Player], "Stereo3DBrightness"s, GetDlgItemText(IDC_3D_STEREO_BRIGHTNESS).c_str());
    SaveValue(regKey[RegName::Player], "Stereo3DDesaturation"s, GetDlgItemText(IDC_3D_STEREO_DESATURATION).c_str());
 
    const bool bamHeadtracking = (SendMessage(GetDlgItem(IDC_HEADTRACKING).GetHwnd(), BM_GETCHECK, 0, 0) != 0);
