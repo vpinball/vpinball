@@ -215,9 +215,9 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
       // We use it for rendering computation. It is reverted by the projection matrix which then apply the old transformation, including layback.
       Matrix3D invView(mvp.GetView());
       invView.Invert();
-      mvp.SetProj(0, (invView * layback * matView) * mvp.GetProj(0));
+      mvp.SetProj(0, (invView * layback * mvp.GetView()) * mvp.GetProj(0));
       if (stereo) // Real stereo is not really supported for legacy camera mode (it used to be only fake parallax stereo)
-         mvp.SetProj(1, (invView * layback * matView) * mvp.GetProj(1));
+         mvp.SetProj(1, (invView * layback * mvp.GetView()) * mvp.GetProj(1));
    }
 }
 
