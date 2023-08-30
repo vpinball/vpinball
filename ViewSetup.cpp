@@ -180,9 +180,10 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
 
       // Z where the stereo separation is 0:
       // - for cabinet (window) mode, we use the orthogonal distance to the screen (window)
-      // - for camera mode, we use zNear since it is fitted to the nearest object
+      // - for camera mode, we place the 0 depth line on the lower third of the playfield
       // This way, we don't have negative parallax (objects closer than projection plane) and all the artefact they may cause
-      const float zNullSeparation = layoutMode == VLM_WINDOW ? (mViewZ - mWindowBottomZOfs + mViewY * tan(inc)) : zNear;
+      const float zNullSeparation = layoutMode == VLM_WINDOW ? (mViewZ - mWindowBottomZOfs + mViewY * tan(inc))
+                                                             : -lookat.MultiplyVector(Vertex3Ds(0.5f * (table->m_left + table->m_right), table->m_bottom * 0.66f /* For flipper bats: 1800.f / 2150.f*/, 0.f)).z;
       const float ofs = 0.5f * eyeSeparation * zNear / zNullSeparation;
       const float xOfs = ofs * cosf(rotation);
       const float yOfs = ofs * sinf(rotation);
