@@ -261,7 +261,7 @@ Shader::ShaderUniform Shader::shaderUniformNames[SHADER_UNIFORM_COUNT] {
    SHADER_SAMPLER(areaTex, areaTex2D, SA_CLAMP, SA_CLAMP, SF_TRILINEAR), // SMAA
    SHADER_SAMPLER(searchTex, searchTex2D, SA_CLAMP, SA_CLAMP, SF_NONE), // SMAA
    SHADER_UNIFORM(SUT_Float4, ms_zpd_ya_td, 1), // Anaglyph Stereo
-   SHADER_UNIFORM(SUT_Float2, Anaglyph_DeSaturation_Contrast, 1), // Anaglyph Stereo
+   SHADER_UNIFORM(SUT_Float2, Anaglyph_DeSaturation_Brightness, 1), // Anaglyph Stereo
    #ifdef ENABLE_SDL // OpenGL
    SHADER_SAMPLER(tex_stereo_fb, Undefined, SA_REPEAT, SA_REPEAT, SF_NONE), // Stereo shader (combine the 2 rendered eyes into a single one)
    #endif

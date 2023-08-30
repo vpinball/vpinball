@@ -1193,7 +1193,7 @@
 #define IDC_COMBO_RUMBLE                876
 #define IDC_LABEL_RUMBLE                877
 #define IDC_RESET_WINDOW_POS            878
-#define IDC_3D_STEREO_CONTRAST          879
+#define IDC_3D_STEREO_BRIGHTNESS          879
 #define IDC_3D_STEREO_DESATURATION      880
 #define IDC_GLOBAL_DISABLE_LIGHTING_BALLS 881
 #define IDC_POST_PROCESS_AA_LABEL       882

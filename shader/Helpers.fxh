@@ -377,6 +377,8 @@ float3 FBGamma(const float3 color)
 #define FBGamma // uses hardware support via D3DRS_SRGBWRITEENABLE
 #endif
 
+#define Luminance(linearRGB) dot(linearRGB, float3(0.212655,0.715158,0.072187))
+
 float FBToneMap(const float l)
 {
     return l * ((l*BURN_HIGHLIGHTS + 1.0) / (l + 1.0)); // overflow is handled by bloom
