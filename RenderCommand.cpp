@@ -121,7 +121,18 @@ void RenderCommand::Execute(const bool log)
    {
       if (log)
          PLOGI << "> Draw LiveUI";
-      g_pplayer->m_liveUI->Render();
+      RenderTarget* rt = RenderTarget::GetCurrentRenderTarget();
+      if (rt->m_nLayers > 1 && rt->GetRenderDevice()->SupportLayeredRendering())
+      {
+         for (int layer = 0; layer < rt->m_nLayers; layer++)
+         {
+            rt->Activate(layer);
+            g_pplayer->m_liveUI->Render();
+         }
+         rt->Activate();
+      }
+      else
+         g_pplayer->m_liveUI->Render();
       break;
    }
 
