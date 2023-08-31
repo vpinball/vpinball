@@ -470,6 +470,13 @@ public:
       return result;
    }
 
+   static Matrix3D MatrixScale(float sx, float sy, float sz)
+   {
+      Matrix3D result;
+      result.SetScaling(sx, sy, sz);
+      return result;
+   }
+
    static Matrix3D MatrixLookAtLH(const vec3& eye, const vec3& at, const vec3& up)
    {
       Matrix3D result;
