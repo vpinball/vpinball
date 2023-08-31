@@ -6189,7 +6189,7 @@ void PinTable::ExportBackdropPOV(const string& filename)
       POV_FIELD("PhysicsSet", m_overridePhysics);
       POV_FIELD("IncludeFlipperPhysics", m_overridePhysicsFlipper ? 1 : 0);
       POV_FIELD("SoundVolume", GetTableSoundVolume());
-      POV_FIELD("SoundVMusicVolumeolume", GetTableMusicVolume());
+      POV_FIELD("MusicVolume", GetTableMusicVolume());
       root->InsertEndChild(view);
 
       xmlDoc.InsertEndChild(xmlDoc.NewDeclaration());
