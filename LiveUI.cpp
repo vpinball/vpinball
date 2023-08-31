@@ -1460,36 +1460,9 @@ void LiveUI::UpdateMainUI()
       YAxis.SetScaling(1.f, -1.f, 1.f);
       const Matrix3D view = RH2LH * m_camView * YAxis;
       const Matrix3D proj = YAxis * m_camProj;
-
       m_pin3d->GetMVP().SetView(view);
-
-      #ifdef ENABLE_SDL
-      if (m_player->m_stereo3D != STEREO_OFF && m_player->m_stereo3D != STEREO_VR)
-      {
-         // Create eye projection matrices for real stereo (not VR but anaglyph,...)
-         // 63mm is the average distance between eyes (varies from 54 to 74mm between adults, 43 to 58mm for children), 50 VPUnit is 1.25 inches
-         const float stereo3DMS = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DEyeSeparation"s, 63.0f);
-         const float halfEyeDist = 0.5f * (stereo3DMS / 25.4f) * (float)(50. / 1.25);
-         Matrix3D invView(m_camView);
-         invView.Invert();
-         const vec3 right = invView.GetOrthoNormalRight();
-         const vec3 up = invView.GetOrthoNormalUp();
-         const vec3 dir = invView.GetOrthoNormalDir();
-         const vec3 pos = invView.GetOrthoNormalPos();
-         const vec3 at = pos + dir * m_camDistance;
-         Matrix3D lookat = Matrix3D::MatrixLookAtLH(pos + (-halfEyeDist * right), at, up);
-         const Matrix3D leftEye = invView * lookat * proj;
-         lookat = Matrix3D::MatrixLookAtLH(pos + (halfEyeDist * right), at, up);
-         const Matrix3D rightEye = invView * lookat * proj;
-         m_pin3d->GetMVP().SetProj(0, leftEye);
-         m_pin3d->GetMVP().SetProj(1, rightEye);
-      }
-      else
-      #endif
-      {
-         m_pin3d->GetMVP().SetProj(0, proj);
-         m_pin3d->GetMVP().SetProj(1, proj);
-      }
+      m_pin3d->GetMVP().SetProj(0, proj);
+      m_pin3d->GetMVP().SetProj(1, proj);
    }
    else
    {
@@ -2134,7 +2107,10 @@ void LiveUI::UpdateMainSplashModal()
          ImGui::CloseCurrentPopup();
          m_ShowUI = true;
          m_ShowSplashModal = false;
-         m_useEditorCam = true;
+         m_useEditorCam = false;
+         m_orthoCam = false;
+         // Try to setup editor camera to match the used one, but only mostly since the LiveUI does not have some view setup features like off-center, ...
+         m_camView = Matrix3D::MatrixScale(1.f, 1.f, -1.f) * m_pin3d->GetMVP().GetView() * Matrix3D::MatrixScale(1.f, -1.f, 1.f);
          EnterEditMode();
       }
       // Quit: click on the button, or press exit button
