@@ -25,27 +25,33 @@ enum deviceNumber {
 
 enum StereoMode
 {
-   STEREO_OFF = 0, // Disabled
-   STEREO_TB = 1, // TB (Top / Bottom)
-   STEREO_INT = 2, // Interlaced (e.g. LG TVs)
-   STEREO_FLIPPED_INT = 3, // Flipped Interlaced (e.g. LG TVs)
-   STEREO_SBS = 4, // SBS (Side by Side)
-   STEREO_ANAGLYPH_RC = 5, // Anaglyph Red/Cyan
-   STEREO_ANAGLYPH_GM = 6, // Anaglyph Green/Magenta
-   STEREO_ANAGLYPH_DUBOIS_RC = 7, // Anaglyph Dubois Red/Cyan
-   STEREO_ANAGLYPH_DUBOIS_GM = 8, // Anaglyph Dubois Green/Magenta
-   STEREO_ANAGLYPH_DEGHOSTED_RC = 9, // Anaglyph Deghosted Red/Cyan
-   STEREO_ANAGLYPH_DEGHOSTED_GM = 10, // Anaglyph Deghosted Green/Magenta
-   STEREO_ANAGLYPH_BA = 11, // Anaglyph Blue/Amber
-   STEREO_ANAGLYPH_CR = 12, // Anaglyph Cyan/Red
-   STEREO_ANAGLYPH_MR, // Anaglyph Magenta/Green
-   STEREO_ANAGLYPH_DUBOIS_CR = 14, // Anaglyph Dubois Cyan/Red
-   STEREO_ANAGLYPH_DUBOIS_MG = 15, // Anaglyph Dubois Magenta/Green
-   STEREO_ANAGLYPH_DEGHOSTED_CR = 16, // Anaglyph Deghosted Cyan/Red
-   STEREO_ANAGLYPH_DEGHOSTED_MG = 17, // Anaglyph Deghosted Magenta/Green
-   STEREO_ANAGLYPH_AB = 18, // Anaglyph Amber/Blue
-   STEREO_VR = 19, // Hardware VR set (not supported by DX9)
+   STEREO_OFF                   =  0, // Disabled
+   STEREO_TB                    =  1, // TB (Top / Bottom)
+   STEREO_INT                   =  2, // Interlaced (e.g. LG TVs)
+   STEREO_FLIPPED_INT           =  3, // Flipped Interlaced (e.g. LG TVs)
+   STEREO_SBS                   =  4, // SBS (Side by Side)
+   STEREO_ANAGLYPH_RC           =  5, // Anaglyph Red/Cyan
+   STEREO_ANAGLYPH_DUBOIS_RC    =  6, // Anaglyph Red/Cyan with Dubois filter
+   STEREO_ANAGLYPH_DEGHOSTED_RC =  7, // Anaglyph Red/Cyan with deghosting filter
+   STEREO_ANAGLYPH_CR           =  8, // Anaglyph Cyan/Red
+   STEREO_ANAGLYPH_DUBOIS_CR    =  9, // Anaglyph Cyan/Red with Dubois filter
+   STEREO_ANAGLYPH_DEGHOSTED_CR = 10, // Anaglyph Cyan/Red with deghosting filter
+   STEREO_ANAGLYPH_GM           = 11, // Anaglyph Green/Magenta
+   STEREO_ANAGLYPH_DUBOIS_GM    = 12, // Anaglyph Green/Magenta with Dubois filter
+   STEREO_ANAGLYPH_DEGHOSTED_GM = 13, // Anaglyph Green/Magenta with deghosting filter
+   STEREO_ANAGLYPH_MG           = 14, // Anaglyph Magenta/Green
+   STEREO_ANAGLYPH_DUBOIS_MG    = 15, // Anaglyph Magenta/Green with Dubois filter
+   STEREO_ANAGLYPH_DEGHOSTED_MG = 16, // Anaglyph Magenta/Green with deghosting filter
+   STEREO_ANAGLYPH_BA           = 17, // Anaglyph Blue/Amber
+   STEREO_ANAGLYPH_DUBOIS_BA    = 18, // Anaglyph Blue/Amber with Dubois filter
+   STEREO_ANAGLYPH_DEGHOSTED_BA = 19, // Anaglyph Blue/Amber with deghosting filter
+   STEREO_ANAGLYPH_AB           = 20, // Anaglyph Amber/Blue
+   STEREO_ANAGLYPH_DUBOIS_AB    = 21, // Anaglyph Amber/Blue with Dubois filter
+   STEREO_ANAGLYPH_DEGHOSTED_AB = 22, // Anaglyph Amber/Blue with deghosting filter
+   STEREO_VR                    = 23, // Hardware VR set (not supported by DX9)
 };
+#define Is3DTVStereoMode(stereo)     (STEREO_TB <= stereo && stereo <= STEREO_SBS)
+#define IsAnaglyphStereoMode(stereo) (STEREO_ANAGLYPH_RC <= stereo && stereo <= STEREO_ANAGLYPH_DEGHOSTED_AB)
 
 enum VideoSyncMode
 {

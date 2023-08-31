@@ -134,8 +134,8 @@ void VideoOptionsDialog::ResetVideoPreferences(const unsigned int profile) // 0 
    constexpr float stereo3DBrightness = 1.0f;
    sprintf_s(tmp, sizeof(tmp), "%f", stereo3DBrightness);
    SetDlgItemText(IDC_3D_STEREO_BRIGHTNESS, tmp);
-   constexpr float stereo3DDesaturation = 0.0f;
-   sprintf_s(tmp, sizeof(tmp), "%f", stereo3DDesaturation);
+   constexpr float stereo3DSaturation = 1.0f;
+   sprintf_s(tmp, sizeof(tmp), "%f", stereo3DSaturation);
    SetDlgItemText(IDC_3D_STEREO_DESATURATION, tmp);
    SendMessage(GetDlgItem(IDC_USE_NVIDIA_API_CHECK).GetHwnd(), BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
    }
@@ -475,24 +475,28 @@ BOOL VideoOptionsDialog::OnInitDialog()
    hwnd = GetDlgItem(IDC_3D_STEREO).GetHwnd();
    SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Disabled");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"TB (Top / Bottom)");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Top / Bottom");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Interlaced (e.g. LG TVs)");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Flipped Interlaced (e.g. LG TVs)");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"SBS (Side by Side)");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Side by Side");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Anaglyph Red/Cyan");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Anaglyph Red/Cyan Dubois");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Anaglyph Red/Cyan Deghosted");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Anaglyph Green/Magenta");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Anaglyph Dubois Red/Cyan");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Anaglyph Dubois Green/Magenta");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Anaglyph Deghosted Red/Cyan");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Anaglyph Deghosted Green/Magenta");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Anaglyph Green/Magenta Dubois");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Anaglyph Green/Magenta Deghosted");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Anaglyph Blue/Amber");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Anaglyph Blue/Amber Dubois");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Anaglyph Blue/Amber Deghosted");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Anaglyph Cyan/Red");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Anaglyph Cyan/Red Dubois");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Anaglyph Cyan/Red Deghosted");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Anaglyph Magenta/Green");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Anaglyph Dubois Cyan/Red");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Anaglyph Dubois Magenta/Green");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Anaglyph Deghosted Cyan/Red");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Anaglyph Deghosted Magenta/Green");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Anaglyph Magenta/Green Dubois");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Anaglyph Magenta/Green Deghosted");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Anaglyph Amber/Blue");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Anaglyph Amber/Blue Dubois");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Anaglyph Amber/Blue Deghosted");
    SendMessage(hwnd, CB_SETCURSEL, stereo3D, 0);
    SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 
@@ -533,8 +537,8 @@ BOOL VideoOptionsDialog::OnInitDialog()
    sprintf_s(tmp, sizeof(tmp), "%f", stereo3DBrightness);
    SetDlgItemText(IDC_3D_STEREO_BRIGHTNESS, tmp);
 
-   const float stereo3DDesaturation = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DDesaturation"s, 0.0f);
-   sprintf_s(tmp, sizeof(tmp), "%f", stereo3DDesaturation);
+   const float stereo3DSaturation = LoadValueWithDefault(regKey[RegName::Player], "stereo3DSaturation"s, 1.0f);
+   sprintf_s(tmp, sizeof(tmp), "%f", stereo3DSaturation);
    SetDlgItemText(IDC_3D_STEREO_DESATURATION, tmp);
 
    const bool disableDWM = LoadValueWithDefault(regKey[RegName::Player], "DisableDWM"s, false);
@@ -891,7 +895,7 @@ BOOL VideoOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             GetDlgItem(IDC_3D_STEREO_BRIGHTNESS).EnableWindow(false);
             GetDlgItem(IDC_3D_STEREO_DESATURATION).EnableWindow(false);
          }
-         else if (stereo3D < STEREO_ANAGLYPH_RC)
+         else if (Is3DTVStereoMode(stereo3D))
          {
             #ifndef ENABLE_SDL
             GetDlgItem(IDC_3D_STEREO_Y).EnableWindow(true);
@@ -902,7 +906,7 @@ BOOL VideoOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             GetDlgItem(IDC_3D_STEREO_BRIGHTNESS).EnableWindow(false);
             GetDlgItem(IDC_3D_STEREO_DESATURATION).EnableWindow(false);
          }
-         else // Anaglyph
+         else if (IsAnaglyphStereoMode(stereo3D))
          {
             #ifndef ENABLE_SDL
             GetDlgItem(IDC_3D_STEREO_Y).EnableWindow(true);
@@ -1049,7 +1053,7 @@ void VideoOptionsDialog::OnOK()
    #endif
    SaveValue(regKey[RegName::Player], "Stereo3DZPD"s, GetDlgItemText(IDC_3D_STEREO_ZPD).c_str());
    SaveValue(regKey[RegName::Player], "Stereo3DBrightness"s, GetDlgItemText(IDC_3D_STEREO_BRIGHTNESS).c_str());
-   SaveValue(regKey[RegName::Player], "Stereo3DDesaturation"s, GetDlgItemText(IDC_3D_STEREO_DESATURATION).c_str());
+   SaveValue(regKey[RegName::Player], "Stereo3DSaturation"s, GetDlgItemText(IDC_3D_STEREO_DESATURATION).c_str());
 
    const bool bamHeadtracking = (SendMessage(GetDlgItem(IDC_HEADTRACKING).GetHwnd(), BM_GETCHECK, 0, 0) != 0);
    SaveValue(regKey[RegName::Player], "BAMheadTracking"s, bamHeadtracking);

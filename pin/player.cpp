@@ -130,8 +130,10 @@ Player::Player(const bool cameraMode, PinTable *const editor_table, PinTable *co
    m_stereo3D = (StereoMode)LoadValueWithDefault(regKey[RegName::Player], "Stereo3D"s, (int)STEREO_OFF);
    m_stereo3Denabled = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DEnabled"s, (m_stereo3D != STEREO_OFF));
    m_stereo3DY = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DYAxis"s, false);
-   m_global3DBrightness = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DBrightness"s, 1.0f);
-   m_global3DDesaturation = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DDesaturation"s, 0.f);
+   m_anaglyphBrightness = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DBrightness"s, 1.0f);
+   m_anaglyphSaturation = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DSaturation"s, 1.f);
+   m_anaglyphLeftEyeContrast = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DLeftContrast"s, 1.0f);
+   m_anaglyphRightEyeContrast = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DRightContrast"s, 1.0f);
    m_disableDWM = LoadValueWithDefault(regKey[RegName::Player], "DisableDWM"s, false);
    m_useNvidiaApi = LoadValueWithDefault(regKey[RegName::Player], "UseNVidiaAPI"s, false);
    #ifdef ENABLE_SDL
@@ -205,8 +207,6 @@ Player::Player(const bool cameraMode, PinTable *const editor_table, PinTable *co
       m_dynamicAO = LoadValueWithDefault(regKey[RegName::Player], "DynamicAO"s, true);
       m_disableAO = LoadValueWithDefault(regKey[RegName::Player], "DisableAO"s, false);
       m_ss_refl = LoadValueWithDefault(regKey[RegName::Player], "SSRefl"s, false);
-      m_stereo3Denabled = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DEnabled"s, (m_stereo3D != STEREO_OFF));
-      m_stereo3DY = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DYAxis"s, false);
       m_scaleFX_DMD = LoadValueWithDefault(regKey[RegName::Player], "ScaleFXDMD"s, false);
       m_bloomOff = LoadValueWithDefault(regKey[RegName::Player], "ForceBloomOff"s, false);
       m_maxFramerate = LoadValueWithDefault(regKey[RegName::Player], "MaxFramerate"s, -1);
@@ -3390,7 +3390,7 @@ void Player::StereoFXAA(RenderTarget* renderedRT, const bool stereo, const bool 
          m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetTechnique(SHADER_TECHNIQUE_stereo_anaglyph);
          m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetTexture(SHADER_tex_stereo_fb, renderedRT->GetColorSampler());
          m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetVector(SHADER_ms_zpd_ya_td, m_ptable->GetMaxSeparation(), m_ptable->GetZPD(), m_stereo3DY ? 1.0f : 0.0f, (float)m_stereo3D);
-         m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetVector(SHADER_Anaglyph_DeSaturation_Brightness, m_global3DDesaturation, 1.f + m_global3DBrightness, 0.f, 0.f);
+         m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetVector(SHADER_Anaglyph_Saturation_Brightness_EyeContrast, m_anaglyphSaturation, 1.f + m_anaglyphBrightness, m_anaglyphLeftEyeContrast, m_anaglyphRightEyeContrast);
          m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("Stereo Anaglyph"s, m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer(), false);
          m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
          m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pin3d.m_pd3dPrimaryDevice->StereoShader);
@@ -3436,7 +3436,7 @@ void Player::StereoFXAA(RenderTarget* renderedRT, const bool stereo, const bool 
          SHADER_w_h_height, (float)(1.0 / renderedRT->GetWidth()), (float)(1.0 / renderedRT->GetHeight()), (float)renderedRT->GetHeight(), m_ptable->Get3DOffset());
 
       if (is_anaglyph)
-         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_Anaglyph_DeSaturation_Brightness, m_global3DDesaturation, 1.f + m_global3DBrightness, 0.f, 0.f);
+         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_Anaglyph_Saturation_Brightness_EyeContrast, m_anaglyphSaturation, 1.f + m_anaglyphBrightness, m_anaglyphLeftEyeContrast, m_anaglyphRightEyeContrast);
 
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(is_anaglyph ? SHADER_TECHNIQUE_stereo_anaglyph : SHADER_TECHNIQUE_stereo);
 
@@ -3790,43 +3790,6 @@ void Player::UpdateBackdropSettings(const bool up)
    case BS_WndBottomXOfs: viewSetup.mWindowBottomXOfs += 5.f * thesign; break;
    case BS_WndBottomYOfs: viewSetup.mWindowBottomYOfs += 5.f * thesign; break;
    case BS_WndBottomZOfs: viewSetup.mWindowBottomZOfs += 5.f * thesign; break;
-
-   // Stereo view settings
-   case BS_EyeSeparation:
-   {
-      #ifdef ENABLE_SDL
-      float stereo3DEyeSep = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DEyeSeparation"s, 63.0f);
-      stereo3DEyeSep = clamp(stereo3DEyeSep + thesign * 5.0f, 0.f, 1000.f);
-      SaveValue(regKey[RegName::Player], "Stereo3DEyeSeparation"s, stereo3DEyeSep);
-      #else
-      if (m_ptable->m_overwriteGlobalStereo3D)
-      {
-         m_ptable->m_3DmaxSeparation += thesign * 0.0025f;
-         if (m_ptable->m_3DmaxSeparation < 0.f)
-            m_ptable->m_3DmaxSeparation = 0.f;
-      }
-      else
-      {
-         m_ptable->m_global3DMaxSeparation += thesign * 0.0025f;
-         if (m_ptable->m_global3DMaxSeparation < 0.f)
-            m_ptable->m_global3DMaxSeparation = 0.f;
-         SaveValue(regKey[RegName::Player], "Stereo3DMaxSeparation"s, m_ptable->m_global3DMaxSeparation);
-      }
-      #endif
-      break;
-   }
-   case BS_AnaglyphDesat:
-   {
-      m_global3DDesaturation = clamp(m_global3DDesaturation + thesign * 0.05f, 0.f, 1.f);
-      SaveValue(regKey[RegName::Player], "Stereo3DDesaturation"s, m_global3DDesaturation);
-      break;
-   }
-   case BS_AnaglyphBrightness:
-   {
-      m_global3DBrightness = clamp(m_global3DBrightness + thesign * 0.05f, -1.f, 3.f);
-      SaveValue(regKey[RegName::Player], "Stereo3DBrightness"s, m_global3DBrightness);
-      break;
-   }
 
    // Scene lighting settings
    case BS_LightEmissionScale:

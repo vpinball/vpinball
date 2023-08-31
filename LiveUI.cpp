@@ -972,10 +972,8 @@ void LiveUI::UpdateCameraModeUI()
    //const bool isWindow = viewSetup.mMode == VLM_WINDOW;
 
    const bool isStereo = m_player->m_stereo3Denabled && m_player->m_stereo3D != STEREO_OFF && m_player->m_stereo3D != STEREO_VR;
-   const bool isAnaglyph = isStereo && m_player->m_stereo3D >= STEREO_ANAGLYPH_RC && m_player->m_stereo3D <= STEREO_ANAGLYPH_AB;
    const Player::BackdropSetting *settings = isLegacy ? Player::mLegacyViewSettings : isCamera ? Player::mCameraViewSettings : Player::mWindowViewSettings;
    int nSettings = (isLegacy ? sizeof(Player::mLegacyViewSettings) : isCamera ? sizeof(Player::mCameraViewSettings) : sizeof(Player::mWindowViewSettings)) / sizeof(Player::BackdropSetting);
-   nSettings = isAnaglyph ? nSettings : isStereo ? (nSettings - 2) : (nSettings - 3);
    if (ImGui::BeginTable("Camera", 3, /* ImGuiTableFlags_Borders */ 0))
    {
       static float vWidth = 50.f;
@@ -1033,20 +1031,6 @@ void LiveUI::UpdateCameraModeUI()
          case Player::BS_LightRange: CM_ROW("Light Range", "%.0f", VPUTOCM(table->m_lightRange), "cm"); break;
          case Player::BS_LightHeight: CM_ROW("Light Height", "%.0f", VPUTOCM(table->m_lightHeight), "cm"); CM_SKIP_LINE; break;
          case Player::BS_EnvEmissionScale: CM_ROW("Environment Emission", "%.1f", 100.f * table->m_envEmissionScale, "%%"); break;
-
-         // Stereo eye and anaglyph setup
-         case Player::BS_EyeSeparation:
-         {
-            CM_SKIP_LINE;
-            #ifdef ENABLE_SDL
-            CM_ROW("Eye distance", "%.0f", LoadValueWithDefault(regKey[RegName::Player], "Stereo3DEyeSeparation"s, 63.0f), "mm");
-            #else
-            CM_ROW(m_table->m_overwriteGlobalStereo3D ? "Max Separation [Table setting]" : "Max Separation [Application setting]", "%.3f", table->GetMaxSeparation(), "");
-            #endif
-            break;
-         }
-         case Player::BS_AnaglyphDesat: CM_ROW("Anaglyph desaturation", "%.0f", 100.f * m_player->m_global3DDesaturation, "%%"); break;
-         case Player::BS_AnaglyphBrightness: CM_ROW("Anaglyph brightness", "%.0f", 100.f * m_player->m_global3DBrightness, "%%"); break;
          }
          if (settings[i] == m_player->m_backdropSettingActive
             || (m_player->m_backdropSettingActive == Player::BS_XYScale && (settings[i] == Player::BS_XScale || settings[i] == Player::BS_YScale)))
@@ -1145,6 +1129,7 @@ void LiveUI::UpdateMainUI()
    showFullUI &= !m_RendererInspection;
    showFullUI &= !m_player->m_cameraMode;
    showFullUI &= !ImGui::IsPopupOpen(ID_BAM_SETTINGS);
+   showFullUI &= !ImGui::IsPopupOpen(ID_VIDEO_SETTINGS);
    showFullUI &= !m_flyMode;
 
    if (showFullUI)
@@ -1876,19 +1861,113 @@ void LiveUI::UpdateVideoOptionsModal()
    bool p_open = true;
    if (ImGui::BeginPopupModal(ID_VIDEO_SETTINGS, &p_open, ImGuiWindowFlags_AlwaysAutoResize))
    {
-      if (ImGui::Checkbox("Force Bloom filter off", &m_player->m_bloomOff))
-         SaveValue(regKey[m_player->m_stereo3D == STEREO_VR ? RegName::PlayerVR : RegName::Player], "ForceBloomOff"s, m_player->m_bloomOff);
-      if (m_table->m_useFXAA == -1)
+      if (ImGui::CollapsingHeader("Anti-Aliasing", ImGuiTreeNodeFlags_DefaultOpen))
       {
-         const char *postprocessed_aa_items[] = { "Disabled", "Fast FXAA", "Standard FXAA", "Quality FXAA", "Fast NFAA", "Standard DLAA", "Quality SMAA" };
-         if (ImGui::Combo("Postprocessed AA", &m_player->m_FXAA, postprocessed_aa_items, IM_ARRAYSIZE(postprocessed_aa_items)))
-            SaveValue(regKey[m_player->m_stereo3D == STEREO_VR ? RegName::PlayerVR : RegName::Player], "FXAA"s, m_player->m_FXAA);
+         if (m_table->m_useFXAA == -1)
+         {
+            const char *postprocessed_aa_items[] = { "Disabled", "Fast FXAA", "Standard FXAA", "Quality FXAA", "Fast NFAA", "Standard DLAA", "Quality SMAA" };
+            if (ImGui::Combo("Postprocessed AA", &m_player->m_FXAA, postprocessed_aa_items, IM_ARRAYSIZE(postprocessed_aa_items)))
+               SaveValue(regKey[m_player->m_stereo3D == STEREO_VR ? RegName::PlayerVR : RegName::Player], "FXAA"s, m_player->m_FXAA);
+         }
+         const char *sharpen_items[] = { "Disabled", "CAS", "Bilateral CAS" };
+         if (ImGui::Combo("Sharpen", &m_player->m_sharpen, sharpen_items, IM_ARRAYSIZE(sharpen_items)))
+            SaveValue(regKey[m_player->m_stereo3D == STEREO_VR ? RegName::PlayerVR : RegName::Player], "Sharpen"s, m_player->m_sharpen);
       }
-      const char *sharpen_items[] = { "Disabled", "CAS", "Bilateral CAS" };
-      if (ImGui::Combo("Sharpen", &m_player->m_sharpen, sharpen_items, IM_ARRAYSIZE(sharpen_items)))
-         SaveValue(regKey[m_player->m_stereo3D == STEREO_VR ? RegName::PlayerVR : RegName::Player], "Sharpen"s, m_player->m_sharpen);
-      if (ImGui::Checkbox("Enable stereo rendering", &m_player->m_stereo3Denabled))
-         SaveValue(regKey[RegName::Player], "Stereo3DEnabled"s, m_player->m_stereo3Denabled);
+      
+      if (ImGui::CollapsingHeader("Performance & Troubleshooting", ImGuiTreeNodeFlags_DefaultOpen))
+      {
+         if (ImGui::Checkbox("Force Bloom filter off", &m_player->m_bloomOff))
+            SaveValue(regKey[m_player->m_stereo3D == STEREO_VR ? RegName::PlayerVR : RegName::Player], "ForceBloomOff"s, m_player->m_bloomOff);
+      }
+      
+      if (m_player->m_stereo3D != STEREO_VR && ImGui::CollapsingHeader("3D Stereo Output", ImGuiTreeNodeFlags_DefaultOpen))
+      {
+         if (ImGui::Checkbox("Enable stereo rendering", &m_player->m_stereo3Denabled))
+            SaveValue(regKey[RegName::Player], "Stereo3DEnabled"s, m_player->m_stereo3Denabled);
+         if (m_player->m_stereo3Denabled)
+         {
+            bool modeChanged = false;
+            const char *stereo_output_items[] = { "Disabled", "3D TV", "Anaglyph" };
+            int stereo_mode = m_player->m_stereo3D == STEREO_OFF ? 0 : Is3DTVStereoMode(m_player->m_stereo3D) ? 1 : 2;
+            int tv_mode = Is3DTVStereoMode(m_player->m_stereo3D) ? (int) m_player->m_stereo3D - STEREO_TB : 0;
+            int anaglyph_mode = IsAnaglyphStereoMode(m_player->m_stereo3D) ? ((int)m_player->m_stereo3D - STEREO_ANAGLYPH_RC) / 3 : 0;
+            int anaglyph_filter = IsAnaglyphStereoMode(m_player->m_stereo3D) ? ((int)m_player->m_stereo3D - STEREO_ANAGLYPH_RC) % 3 : 0;
+            if (ImGui::Combo("Stereo Output", &stereo_mode, stereo_output_items, IM_ARRAYSIZE(stereo_output_items)))
+               modeChanged = true;
+            if (stereo_mode != 0) // Stereo settings
+            {
+               #ifdef ENABLE_SDL
+               float stereo3DEyeSep = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DEyeSeparation"s, 63.0f);
+               if (ImGui::InputFloat("Eye Separation", &stereo3DEyeSep))
+                  SaveValue(regKey[RegName::Player], "Stereo3DEyeSeparation"s, stereo3DEyeSep);
+               #else
+               if (ImGui::Checkbox("Use Y axis", &m_player->m_stereo3DY))
+                  SaveValue(regKey[RegName::Player], "Stereo3DYAxis"s, m_player->m_stereo3DY);
+               // FIXME legacy stereo is somewhat cumbersome since the table can override the user settings
+               // m_ptable->GetZPD(),
+
+               // Stereo eye and anaglyph setup
+               /* case Player::BS_EyeSeparation:
+               {
+                  CM_SKIP_LINE;
+                  #ifdef ENABLE_SDL
+                  CM_ROW("Eye distance", "%.0f", LoadValueWithDefault(regKey[RegName::Player], "Stereo3DEyeSeparation"s, 63.0f), "mm");
+                  #else
+                  CM_ROW(m_table->m_overwriteGlobalStereo3D ? "Max Separation [Table setting]" : "Max Separation [Application setting]", "%.3f", table->GetMaxSeparation(), "");
+                  #endif
+                  break;
+               }
+               if (m_ptable->m_overwriteGlobalStereo3D)
+                  m_ptable->m_3DmaxSeparation
+               else
+               {
+                  m_ptable->m_global3DMaxSeparation
+                  SaveValue(regKey[RegName::Player], "Stereo3DMaxSeparation"s, m_ptable->m_global3DMaxSeparation);
+               }
+               if (ImGui::InputFloat("Max Separation", &tmp))
+                  stereo_output = stereo_output; // FIXME 
+               if (ImGui::InputFloat("Depth offset", &tmp))
+                  stereo_output = stereo_output; // FIXME 
+               if (ImGui::InputFloat("Zero Point Distance", &tmp))
+                  stereo_output = stereo_output; // FIXME */
+               #endif
+            }
+            if (stereo_mode == 1) // 3D TV
+            {
+               const char *tv_mode_items[] = { "Top / Bottom", "Interlaced", "Flipped Interlaced", "Side by Side" };
+               if (ImGui::Combo("TV type", &tv_mode, tv_mode_items, IM_ARRAYSIZE(tv_mode_items)))
+                  modeChanged = true;
+            }
+            else if (stereo_mode == 2) // Anaglyph
+            {
+               const char *glass_color_items[] = { "Red/Cyan", "Cyan/Red", "Green/Magenta", "Magenta/Green", "Blue/Amber", "Amber/Blue" };
+               if (ImGui::Combo("Glasses colors", &anaglyph_mode, glass_color_items, IM_ARRAYSIZE(glass_color_items)))
+                  modeChanged = true;
+               const char *filter_items[] = { "None", "Dubois", "Deghost" };
+               if (ImGui::Combo("Filter", &anaglyph_filter, filter_items, IM_ARRAYSIZE(filter_items)))
+                  modeChanged = true;
+               if (ImGui::InputFloat("Anaglyph Saturation", &m_player->m_anaglyphSaturation, 0.01f, 0.1f))
+                  SaveValue(regKey[RegName::Player], "Stereo3DSaturation"s, m_player->m_anaglyphSaturation);
+               if (ImGui::InputFloat("Anaglyph Brightness", &m_player->m_anaglyphBrightness, 0.01f, 0.1f))
+                  SaveValue(regKey[RegName::Player], "Stereo3DBrightness"s, m_player->m_anaglyphBrightness);
+               if (ImGui::InputFloat("Anaglyph Left Eye Contrast", &m_player->m_anaglyphLeftEyeContrast, 0.01f, 0.1f))
+                  SaveValue(regKey[RegName::Player], "Stereo3DLeftContrast"s, m_player->m_anaglyphBrightness);
+               if (ImGui::InputFloat("Anaglyph Right Eye Contrast", &m_player->m_anaglyphRightEyeContrast, 0.01f, 0.1f))
+                  SaveValue(regKey[RegName::Player], "Stereo3DRightContrast"s, m_player->m_anaglyphRightEyeContrast);
+            }
+            if (modeChanged)
+            {
+               StereoMode mode = STEREO_OFF;
+               if (stereo_mode == 1)
+                  mode = (StereoMode)(STEREO_TB + tv_mode);
+               if (stereo_mode == 2)
+                  mode = (StereoMode)(STEREO_ANAGLYPH_RC + anaglyph_mode * 3 + anaglyph_filter);
+               SaveValue(regKey[RegName::Player], "Stereo3D"s, (int) mode);
+               if (m_player->m_stereo3D != STEREO_OFF && mode != STEREO_OFF) // TODO allow live switching stereo on/off
+                  m_player->m_stereo3D = mode;
+            }
+         }
+      }
       ImGui::EndPopup();
    }
 }
