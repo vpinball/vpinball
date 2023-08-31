@@ -3343,7 +3343,14 @@ void Player::StereoFXAA(RenderTarget* renderedRT, const bool stereo, const bool 
       renderedRT = outputRT;
    }
 
-   // Third step: apply stereo
+   // LiveUI is not included in stats since it would not be part of the render frame time when debug display is off
+   g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_MISC);
+   m_liveUI->Update();
+   m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("ImGui"s, renderedRT);
+   m_pin3d.m_pd3dPrimaryDevice->RenderLiveUI();
+   g_frameProfiler.ExitProfileSection();
+
+   // Final step: apply stereo
 
    if (stereo)
    {
@@ -4151,11 +4158,6 @@ void Player::PrepareFrame()
    PrepareVideoBuffers(GetAOMode() == 2);
 
    g_frameProfiler.ExitProfileSection();
-
-   // LiveUI is not included in stats since it would not be part of the render frame time when debug display is off
-   m_liveUI->Update();
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("ImGui"s, m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer());
-   m_pin3d.m_pd3dPrimaryDevice->RenderLiveUI();
 }
 
 void Player::SubmitFrame()
