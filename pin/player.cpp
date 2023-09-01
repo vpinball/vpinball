@@ -3389,7 +3389,7 @@ void Player::StereoFXAA(RenderTarget* renderedRT, const bool stereo, const bool 
          m_pin3d.m_pd3dPrimaryDevice->SubmitVR(renderedRT);
          #endif
       }
-      else if (m_stereo3D >= STEREO_ANAGLYPH_RC && m_stereo3D <= STEREO_ANAGLYPH_AB)
+      else if (IsAnaglyphStereoMode(m_stereo3D))
       {
          // Anaglyph
          assert(renderedRT != m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer());
@@ -3401,7 +3401,7 @@ void Player::StereoFXAA(RenderTarget* renderedRT, const bool stereo, const bool 
          m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
          m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pin3d.m_pd3dPrimaryDevice->StereoShader);
       }
-      else if (m_stereo3D != STEREO_OFF)
+      else if (Is3DTVStereoMode(m_stereo3D))
       {
          // Interlaced, side by side or top/bottom, handled in shader
          assert(renderedRT != m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer());
