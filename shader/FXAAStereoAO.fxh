@@ -272,13 +272,32 @@ float3 anaglyph(const float3 L, const float3 R)
 	float3 LMAlin = saturate(Anaglyph_Saturation_Brightness_EyeContrast.y * lerp(Luminance(Llin), Llin, Anaglyph_Saturation_Brightness_EyeContrast.x));
 	float3 RMAlin = saturate(Anaglyph_Saturation_Brightness_EyeContrast.y * lerp(Luminance(Rlin), Rlin, Anaglyph_Saturation_Brightness_EyeContrast.x));
 
+	// No filter
+	BRANCH if (STEREO_MODE == ANAGLYPH_RED_CYAN || STEREO_MODE == ANAGLYPH_CYAN_RED) // Anaglyph 3D Red/Cyan
+	{
+		return FBGamma(float3(0.5 + Anaglyph_Saturation_Brightness_EyeContrast.z * (LMAlin.r - 0.5),
+		                      0.5 + Anaglyph_Saturation_Brightness_EyeContrast.w * (RMAlin.g - 0.5),
+							  0.5 + Anaglyph_Saturation_Brightness_EyeContrast.w * (RMAlin.b - 0.5)));
+	}
+	BRANCH if (STEREO_MODE == ANAGLYPH_GREEN_MAGENTA || STEREO_MODE == ANAGLYPH_MAGENTA_GREEN) // Anaglyph 3D Green/Magenta
+	{
+		return FBGamma(float3(0.5 + Anaglyph_Saturation_Brightness_EyeContrast.w * (RMAlin.r - 0.5),
+		                      0.5 + Anaglyph_Saturation_Brightness_EyeContrast.z * (LMAlin.g - 0.5),
+							  0.5 + Anaglyph_Saturation_Brightness_EyeContrast.w * (RMAlin.b - 0.5)));
+	}
+	BRANCH if (STEREO_MODE == ANAGLYPH_BLUE_AMBER || STEREO_MODE == ANAGLYPH_AMBER_BLUE) // Anaglyph 3D Green/Magenta
+	{
+		return FBGamma(float3(0.5 + Anaglyph_Saturation_Brightness_EyeContrast.w * (RMAlin.r - 0.5),
+		                      0.5 + Anaglyph_Saturation_Brightness_EyeContrast.w * (RMAlin.g - 0.5),
+							  0.5 + Anaglyph_Saturation_Brightness_EyeContrast.z * (LMAlin.b - 0.5)));
+	}
+	
 	// Dubois cross channel filters
 	BRANCH if (STEREO_MODE == ANAGLYPH_RED_CYAN_DUBOIS || STEREO_MODE == ANAGLYPH_CYAN_RED_DUBOIS) // Anaglyph 3D Dubois Red/Cyan
 	{
 		// Dubois matrices are given in sRGB space
-		// The per eye contrast used here is more simple since we need to apply it uniformely to all channels before applying Dubois filter
-		const float3 LMA = FBGamma(Anaglyph_Saturation_Brightness_EyeContrast.z * LMAlin);
-		const float3 RMA = FBGamma(Anaglyph_Saturation_Brightness_EyeContrast.w * RMAlin);
+		const float3 LMA = FBGamma(0.5 + Anaglyph_Saturation_Brightness_EyeContrast.z * (LMAlin - 0.5));
+		const float3 RMA = FBGamma(0.5 + Anaglyph_Saturation_Brightness_EyeContrast.w * (RMAlin - 0.5));
 		const float r = dot(LMA, float3( 0.437,  0.449,  0.164)) + dot(RMA, float3(-0.011, -0.032, -0.007));
 		const float g = dot(LMA, float3(-0.062, -0.062, -0.024)) + dot(RMA, float3( 0.377,  0.761,  0.009));
 		const float b = dot(LMA, float3(-0.048, -0.050, -0.017)) + dot(RMA, float3(-0.026, -0.093,  1.234));
@@ -287,9 +306,8 @@ float3 anaglyph(const float3 L, const float3 R)
 	BRANCH if (STEREO_MODE == ANAGLYPH_GREEN_MAGENTA_DUBOIS || STEREO_MODE == ANAGLYPH_MAGENTA_GREEN_DUBOIS) // Anaglyph 3D Dubois Green/Magenta
 	{
 		// Dubois matrices are given in sRGB space
-		// The per eye contrast used here is more simple since we need to apply it uniformely to all channels before applying Dubois filter
-		const float3 LMA = FBGamma(Anaglyph_Saturation_Brightness_EyeContrast.z * LMAlin);
-		const float3 RMA = FBGamma(Anaglyph_Saturation_Brightness_EyeContrast.w * RMAlin);
+		const float3 LMA = FBGamma(0.5 + Anaglyph_Saturation_Brightness_EyeContrast.z * (LMAlin - 0.5));
+		const float3 RMA = FBGamma(0.5 + Anaglyph_Saturation_Brightness_EyeContrast.w * (RMAlin - 0.5));
 		const float r = dot(LMA, float3(-0.062, -0.158, -0.039)) + dot(RMA, float3( 0.529,  0.705, 0.024));
 		const float g = dot(LMA, float3( 0.284,  0.668,  0.143)) + dot(RMA, float3(-0.016, -0.015, 0.065));
 		const float b = dot(LMA, float3(-0.015, -0.027,  0.021)) + dot(RMA, float3( 0.009,  0.075, 0.937));
@@ -298,108 +316,73 @@ float3 anaglyph(const float3 L, const float3 R)
 	BRANCH if (STEREO_MODE == ANAGLYPH_BLUE_AMBER_DUBOIS || STEREO_MODE == ANAGLYPH_AMBER_BLUE_DUBOIS) // Anaglyph 3D Dubois Blue/Amber
 	{
 		// Dubois matrices are given in sRGB space
-		// The per eye contrast used here is more simple since we need to apply it uniformely to all channels before applying Dubois filter
-		const float3 LMA = FBGamma(Anaglyph_Saturation_Brightness_EyeContrast.z * LMAlin);
-		const float3 RMA = FBGamma(Anaglyph_Saturation_Brightness_EyeContrast.w * RMAlin);
+		const float3 LMA = FBGamma(0.5 + Anaglyph_Saturation_Brightness_EyeContrast.z * (LMAlin - 0.5));
+		const float3 RMA = FBGamma(0.5 + Anaglyph_Saturation_Brightness_EyeContrast.w * (RMAlin - 0.5));
 		const float r = dot(LMA, float3( 1.062, -0.205, 0.299)) + dot(RMA, float3(-0.016, -0.123, -0.017));
 		const float g = dot(LMA, float3(-0.026,  0.908, 0.068)) + dot(RMA, float3( 0.006,  0.062, -0.017));
 		const float b = dot(LMA, float3(-0.038, -0.173, 0.022)) + dot(RMA, float3( 0.094,  0.185,  0.911));
 		return saturate(float3(r, g, b));
 	}
 
-	// Apply per eye contrast (it only depends on the glasses filter colors)
-	// We use the implementation proposed by John Einselen which only apply contrast to the channels corresponding to the glasses filters
+	// Deghost filter
 	float3 image;
-	BRANCH if (STEREO_MODE == ANAGLYPH_RED_CYAN // Red/Cyan
-	        || STEREO_MODE == ANAGLYPH_RED_CYAN_DEGHOST
-	        || STEREO_MODE == ANAGLYPH_CYAN_RED
-	        || STEREO_MODE == ANAGLYPH_CYAN_RED_DEGHOST)
+	BRANCH if (STEREO_MODE == ANAGLYPH_RED_CYAN_DEGHOST || STEREO_MODE == ANAGLYPH_CYAN_RED_DEGHOST) // Anaglyph 3D Deghosted Red/Cyan
 	{
 		// Left eye
 		const float LOne = Anaglyph_Saturation_Brightness_EyeContrast.z*0.45;
 		float3 accum = saturate(LMAlin * float3(LOne, (1.0-LOne)*0.5, (1.0-LOne)*0.5));
-		LMAlin.r = /*pow(*/ accum.r+accum.g+accum.b /*, 1.00)*/;
+		image.r = /*pow(*/ accum.r+accum.g+accum.b /*, 1.00)*/;
 		
 		// Right eye
 		const float ROne = Anaglyph_Saturation_Brightness_EyeContrast.w;
 		accum = saturate(RMAlin * float3(1.0-ROne, ROne, ROne));
-		RMAlin.g = pow(accum.r+accum.g, 1.15);
-		RMAlin.b = pow(accum.r+accum.b, 1.15);
-		
-		image = float3(LMAlin.r, RMAlin.g, RMAlin.b);
+		image.g = pow(accum.r+accum.g, 1.15);
+		image.b = pow(accum.r+accum.b, 1.15);
+
+		// Filters (very limited impact)
+		const float DeGhost = 0.06 * 0.1;
+		return saturate(FBGamma(float3(dot(image, float3(1.0 + DeGhost* 1.00,       DeGhost*-0.50,       DeGhost*-0.50)),
+		                               dot(image, float3(      DeGhost*-0.25, 1.0 + DeGhost* 0.50,       DeGhost*-0.25)),
+		                               dot(image, float3(      DeGhost*-0.25,       DeGhost*-0.25, 1.0 + DeGhost* 0.50)))));
 	}
-	BRANCH if (STEREO_MODE == ANAGLYPH_GREEN_MAGENTA // Green/Magenta
-	        || STEREO_MODE == ANAGLYPH_GREEN_MAGENTA_DEGHOST
-	        || STEREO_MODE == ANAGLYPH_MAGENTA_GREEN
-	        || STEREO_MODE == ANAGLYPH_MAGENTA_GREEN_DEGHOST)
+	BRANCH if (STEREO_MODE == ANAGLYPH_GREEN_MAGENTA_DEGHOST || STEREO_MODE == ANAGLYPH_MAGENTA_GREEN_DEGHOST) // Anaglyph 3D Deghosted Green/Magenta
 	{
 		// Left eye
 		const float LOne = Anaglyph_Saturation_Brightness_EyeContrast.z;
 		float3 accum = saturate(LMAlin * float3((1.0-LOne)*0.5, LOne, (1.0-LOne)*0.5));
-		LMAlin.g = pow(accum.r+accum.g+accum.b, 1.05);
+		image.g = pow(accum.r+accum.g+accum.b, 1.05);
 
 		// Right eye
 		const float ROne = Anaglyph_Saturation_Brightness_EyeContrast.w*0.8;
 		accum = saturate(RMAlin * float3(ROne, 1.0-ROne, ROne));
-		RMAlin.r = pow(accum.r+accum.g, 1.15);
-		RMAlin.b = pow(accum.g+accum.b, 1.15);
+		image.r = pow(accum.r+accum.g, 1.15);
+		image.b = pow(accum.g+accum.b, 1.15);
 
-		image = float3(LMAlin.r, RMAlin.g, LMAlin.b);
-	}
-	BRANCH if (STEREO_MODE == ANAGLYPH_BLUE_AMBER // Blue/Amber
-	        || STEREO_MODE == ANAGLYPH_BLUE_AMBER_DEGHOST
-	        || STEREO_MODE == ANAGLYPH_AMBER_BLUE
-	        || STEREO_MODE == ANAGLYPH_AMBER_BLUE_DEGHOST)
-	{
-		const float LOne = Anaglyph_Saturation_Brightness_EyeContrast.z * 0.45;
-		const float ROne = Anaglyph_Saturation_Brightness_EyeContrast.w;
-	
-		// Left eye
-		float3 accum = saturate(LMAlin * float3(ROne, ROne, 1.0-ROne));
-		LMAlin.r = pow(accum.r+accum.b, 1.05);
-		LMAlin.g = pow(accum.g+accum.b, 1.10);
-		
-		// Right eye
-		accum = saturate(RMAlin * float3((1.0-LOne)*0.5, (1.0-LOne)*0.5, LOne));
-		RMAlin.b = /*pow(*/accum.r+accum.g+accum.b/*, 1.0)*/;
-
-		image = float3(LMAlin.r, LMAlin.g, RMAlin.b);
-	}
-	
-	// Apply filter
-	BRANCH if (STEREO_MODE == ANAGLYPH_RED_CYAN || STEREO_MODE == ANAGLYPH_CYAN_RED) // Anaglyph 3D Red/Cyan
-	{
-		return FBGamma(image);
-	}
-	BRANCH if (STEREO_MODE == ANAGLYPH_GREEN_MAGENTA || STEREO_MODE == ANAGLYPH_MAGENTA_GREEN) // Anaglyph 3D Green/Magenta
-	{
-		return FBGamma(image);
-	}
-	BRANCH if (STEREO_MODE == ANAGLYPH_BLUE_AMBER || STEREO_MODE == ANAGLYPH_AMBER_BLUE) // Anaglyph 3D Green/Magenta
-	{
-		return FBGamma(image);
-	}
-	BRANCH if (STEREO_MODE == ANAGLYPH_RED_CYAN_DEGHOST || STEREO_MODE == ANAGLYPH_CYAN_RED_DEGHOST) // Anaglyph 3D Deghosted Red/Cyan
-	{
-		const float DeGhost = 0.06 * 0.1;
-		return saturate(FBGamma(float3(dot(image, float3(1.0 + DeGhost      ,       DeGhost*-0.5 ,       DeGhost*-0.5 )),
-		                               dot(image, float3(      DeGhost*-0.25, 1.0 + DeGhost* 0.5 ,       DeGhost*-0.25)),
-		                               dot(image, float3(      DeGhost*-0.25,       DeGhost*-0.25, 1.0 + DeGhost* 0.5 )))));
-	}
-	BRANCH if (STEREO_MODE == ANAGLYPH_GREEN_MAGENTA_DEGHOST || STEREO_MODE == ANAGLYPH_MAGENTA_GREEN_DEGHOST) // Anaglyph 3D Deghosted Green/Magenta
-	{
+		// Filters (very limited impact)
 		const float DeGhost = 0.06 * 0.275;
-		return saturate(FBGamma(float3(dot(image, float3(1.0 + DeGhost* 0.5 ,       DeGhost*-0.25,       DeGhost*-0.25)),
-		                               dot(image, float3(      DeGhost*-0.5 , 1.0 + DeGhost* 0.25,       DeGhost*-0.5 )),
-		                               dot(image, float3(      DeGhost*-0.25,       DeGhost*-0.25, 1.0 + DeGhost* 0.5 )))));
+		return saturate(FBGamma(float3(dot(image, float3(1.0 + DeGhost* 0.50,       DeGhost*-0.25,       DeGhost*-0.25)),
+		                               dot(image, float3(      DeGhost*-0.50, 1.0 + DeGhost* 0.25,       DeGhost*-0.50)),
+		                               dot(image, float3(      DeGhost*-0.25,       DeGhost*-0.25, 1.0 + DeGhost* 0.50)))));
 	}
 	BRANCH if (STEREO_MODE == ANAGLYPH_BLUE_AMBER_DEGHOST || STEREO_MODE == ANAGLYPH_AMBER_BLUE_DEGHOST) // Anaglyph 3D Blue/Amber
 	{
+		// Left eye
+		const float LOne = Anaglyph_Saturation_Brightness_EyeContrast.z * 0.45;
+		float3 accum = saturate(LMAlin * float3((1.0-LOne)*0.5, (1.0-LOne)*0.5, LOne));
+		image.b = /*pow(*/accum.r+accum.g+accum.b/*, 1.0)*/;
+		
+		// Right eye
+		const float ROne = Anaglyph_Saturation_Brightness_EyeContrast.w;
+		accum = saturate(RMAlin * float3(ROne, ROne, 1.0-ROne));
+		image.r = pow(accum.r+accum.b, 1.05);
+		image.g = pow(accum.g+accum.b, 1.10);
+
+		// Filters (very limited impact)
 		const float DeGhost = 0.06 * 0.275;
 		image.b = lerp(pow(image.b,(DeGhost*0.15)+1.0), 1.0-pow(abs(1.0-image.b),(DeGhost*0.15)+1.0), image.b);
-		return saturate(FBGamma(float3(dot(image, float3(1.0 + DeGhost* 1.5 ,       DeGhost*-0.75,       DeGhost*-0.75)),
-		                               dot(image, float3(      DeGhost*-0.75, 1.0 + DeGhost* 1.5 ,       DeGhost*-0.75)),
-		                               dot(image, float3(      DeGhost*-1.5 ,       DeGhost*-1.5 , 1.0 + DeGhost* 3.0 )))));
+		return saturate(FBGamma(float3(dot(image, float3(1.0 + DeGhost* 1.50,       DeGhost*-0.75,       DeGhost*-0.75)),
+		                               dot(image, float3(      DeGhost*-0.75, 1.0 + DeGhost* 1.50,       DeGhost*-0.75)),
+		                               dot(image, float3(      DeGhost*-1.50,       DeGhost*-1.50, 1.0 + DeGhost* 3.00)))));
 	}
 	
 	// Testing mode
