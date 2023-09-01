@@ -1000,8 +1000,8 @@ void LiveUI::UpdateCameraModeUI()
          case Player::BS_ViewMode: CM_ROW("View Layout Mode:", "%s", isLegacy ? "Legacy" : isCamera ? "Camera" : "Window", ""); CM_SKIP_LINE; break;
 
          // Viewport
-         case Player::BS_XScale: CM_ROW("Viewport X Stretch", "%.1f", 100.f * viewSetup.mViewportScaleX, "%%"); break;
-         case Player::BS_YScale: CM_ROW("Viewport Y Stretch", "%.1f", 100.f * viewSetup.mViewportScaleY, "%%"); CM_SKIP_LINE; break;
+         case Player::BS_XScale: CM_ROW("Viewport X Stretch", "%.1f", 100.f * viewSetup.mSceneScaleX, "%%"); break;
+         case Player::BS_YScale: CM_ROW("Viewport Y Stretch", "%.1f", 100.f * viewSetup.mSceneScaleY, "%%"); CM_SKIP_LINE; break;
 
          // Player position
          case Player::BS_LookAt: 
@@ -2149,7 +2149,6 @@ void LiveUI::UpdateMainSplashModal()
          for (int i = 0; i < 3; i++)
          {
             dst->mViewSetups[i] = src->mViewSetups[i];
-            dst->m_BG_scalez[i] = src->m_BG_scalez[i];
             dst->m_BG_image[i] = src->m_BG_image[i];
          }
          m_table->SetNonUndoableDirty(eSaveDirty);
@@ -2349,10 +2348,10 @@ void LiveUI::CameraProperties(bool is_live)
       PropFloat("Z Offset", m_table, is_live, &(m_table->mViewSetups[vsId].mViewZ), m_live_table ? &(m_live_table->mViewSetups[vsId].mViewZ) : nullptr, 10.0f, 50.0f, "%.0f");
       // Viewport
       PropFloat("Rotation", m_table, true, &(m_table->mViewSetups[vsId].mViewportRotation), m_live_table ? &(m_live_table->mViewSetups[vsId].mViewportRotation) : nullptr, 90.f, 90.0f, "%.0f");
-      PropFloat("X Scale", m_table, is_live, &(m_table->mViewSetups[vsId].mViewportScaleX), m_live_table ? &(m_live_table->mViewSetups[vsId].mViewportScaleX) : nullptr, 0.002f, 0.01f);
-      PropFloat("Y Scale", m_table, is_live, &(m_table->mViewSetups[vsId].mViewportScaleY), m_live_table ? &(m_live_table->mViewSetups[vsId].mViewportScaleY) : nullptr, 0.002f, 0.01f);
-      // Legacy tweak
-      PropFloat("Z Scale", m_table, is_live, &(m_table->m_BG_scalez[m_selection.camera]), m_live_table ? &(m_live_table->m_BG_scalez[m_selection.camera]) : nullptr, 0.002f, 0.01f);
+      // Scene scale
+      PropFloat("X Scale", m_table, is_live, &(m_table->mViewSetups[vsId].mSceneScaleX), m_live_table ? &(m_live_table->mViewSetups[vsId].mSceneScaleX) : nullptr, 0.002f, 0.01f);
+      PropFloat("Y Scale", m_table, is_live, &(m_table->mViewSetups[vsId].mSceneScaleY), m_live_table ? &(m_live_table->mViewSetups[vsId].mSceneScaleY) : nullptr, 0.002f, 0.01f);
+      PropFloat("Z Scale", m_table, is_live, &(m_table->mViewSetups[vsId].mSceneScaleZ), m_live_table ? &(m_live_table->mViewSetups[vsId].mSceneScaleZ) : nullptr, 0.002f, 0.01f);
       ImGui::EndTable();
    }
    ImGui::Separator();

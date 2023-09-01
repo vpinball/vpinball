@@ -64,11 +64,11 @@ void BackglassCameraProperty::UpdateVisuals(const int dispid/*=-1*/)
    if (dispid == IDC_XY_ROTATION_EDIT || dispid == -1)
       PropertyDialog::SetFloatTextbox(m_xyRotationEdit, viewSetup.mViewportRotation);
    if (dispid == IDC_X_SCALE_EDIT || dispid == -1)
-      PropertyDialog::SetFloatTextbox(m_xScaleEdit, viewSetup.mViewportScaleX);
+      PropertyDialog::SetFloatTextbox(m_xScaleEdit, viewSetup.mSceneScaleX);
    if (dispid == IDC_Y_SCALE_EDIT || dispid == -1)
-      PropertyDialog::SetFloatTextbox(m_yScaleEdit, viewSetup.mViewportScaleY);
+      PropertyDialog::SetFloatTextbox(m_yScaleEdit, viewSetup.mSceneScaleY);
    if (dispid == IDC_TABLE_SCALEZ || dispid == -1)
-      PropertyDialog::SetFloatTextbox(m_zScaleEdit, table->m_BG_scalez[table->m_currentBackglassMode]);
+      PropertyDialog::SetFloatTextbox(m_zScaleEdit, viewSetup.mSceneScaleZ);
    if (dispid == IDC_X_OFFSET_EDIT2 || dispid == -1)
       PropertyDialog::SetFloatTextbox(m_xViewOffsetEdit, viewSetup.mViewHOfs);
    if (dispid == IDC_Y_OFFSET_EDIT2 || dispid == -1)
@@ -104,9 +104,9 @@ void BackglassCameraProperty::UpdateProperties(const int dispid)
             CHECK_UPDATE_ITEM(viewSetup.mLookAt, PropertyDialog::GetFloatTextbox(m_laybackEdit), table);
          break;
       case IDC_XY_ROTATION_EDIT: CHECK_UPDATE_ITEM(viewSetup.mViewportRotation, PropertyDialog::GetFloatTextbox(m_xyRotationEdit), table); break;
-      case IDC_X_SCALE_EDIT: CHECK_UPDATE_ITEM(viewSetup.mViewportScaleX, PropertyDialog::GetFloatTextbox(m_xScaleEdit), table); break;
-      case IDC_Y_SCALE_EDIT: CHECK_UPDATE_ITEM(viewSetup.mViewportScaleY, PropertyDialog::GetFloatTextbox(m_yScaleEdit), table); break;
-      case IDC_TABLE_SCALEZ: CHECK_UPDATE_ITEM(table->m_BG_scalez[table->m_currentBackglassMode], PropertyDialog::GetFloatTextbox(m_zScaleEdit), table); break;
+      case IDC_X_SCALE_EDIT: CHECK_UPDATE_ITEM(viewSetup.mSceneScaleX, PropertyDialog::GetFloatTextbox(m_xScaleEdit), table); break;
+      case IDC_Y_SCALE_EDIT: CHECK_UPDATE_ITEM(viewSetup.mSceneScaleY, PropertyDialog::GetFloatTextbox(m_yScaleEdit), table); break;
+      case IDC_TABLE_SCALEZ: CHECK_UPDATE_ITEM(viewSetup.mSceneScaleZ, PropertyDialog::GetFloatTextbox(m_zScaleEdit), table); break;
       case IDC_X_OFFSET_EDIT: CHECK_UPDATE_ITEM(viewSetup.mViewX, PropertyDialog::GetFloatTextbox(m_xOffsetEdit), table); break;
       case IDC_Y_OFFSET_EDIT: CHECK_UPDATE_ITEM(viewSetup.mViewY, PropertyDialog::GetFloatTextbox(m_yOffsetEdit), table); break;
       case IDC_Z_OFFSET_EDIT: CHECK_UPDATE_ITEM(viewSetup.mViewZ, PropertyDialog::GetFloatTextbox(m_zOffsetEdit), table); break;

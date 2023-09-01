@@ -29,6 +29,9 @@ private:
 public:
    ViewLayoutMode mMode = VLM_LEGACY;
 
+   // Overall scene scale
+   float mSceneScaleZ = 1.0f;
+
    // View position (relative to table bounds for legacy mode, relative to the bottom center of the table for others)
    float mViewX = 0.f;
    float mViewY = CMTOVPU(20.f);
@@ -37,8 +40,8 @@ public:
 
    // Viewport adjustments
    float mViewportRotation = 0.f;
-   float mViewportScaleX = 1.0f;
-   float mViewportScaleY = 1.0f;
+   float mSceneScaleX = 1.0f;
+   float mSceneScaleY = 1.0f;
 
    // View properties
    float mFOV = 45.0f; // Camera & Legacy: Field of view, in degrees

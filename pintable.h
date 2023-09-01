@@ -612,7 +612,6 @@ public:
 
    ViewSetupID m_BG_current_set;
    ViewSetup mViewSetups[NUM_BG_SETS];
-   float m_BG_scalez[NUM_BG_SETS];
    string m_BG_image[NUM_BG_SETS];
 
    bool m_BG_enable_FSS;
