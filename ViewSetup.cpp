@@ -79,9 +79,8 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
    matWorld.SetIdentity();
    mvp.SetModel(matWorld);
 
-   Matrix3D coords, lookat, rotz, proj, projTrans, layback, matView;
+   Matrix3D scale, coords, lookat, rotz, proj, projTrans, layback, matView;
    projTrans.SetTranslation((float)((double)xpixoff / (double)viewportWidth), (float)((double)ypixoff / (double)viewportHeight), 0.f); // in-pixel offset for manual oversampling
-   coords.SetScaling(isLegacy ? mSceneScaleX : 1.f, isLegacy ? -mSceneScaleY : -1.f, -1.f); // Stretch viewport, also revert Y and Z axis to convert to D3D coordinate system
    rotz.SetRotateZ(rotation); // Viewport rotation
 
    // Compute translation
@@ -91,6 +90,10 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
       // Layback to skew the view backward
       layback.SetIdentity();
       layback._32 = -tanf(0.5f * ANGTORAD(mLayback));
+
+       // Revert Y and Z axis to convert to D3D coordinate system and perform scaling as a last step
+      scale.SetIdentity();
+      coords.SetScaling(mSceneScaleX, -mSceneScaleY, -mSceneScaleZ);
 
       // Collect part bounds, to fit the legacy mode camera
       vector<Vertex3Ds> vvertex3D;
@@ -109,15 +112,19 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
       trans.SetTranslation(pos.x, pos.y, pos.z);
       rotx.SetRotateX(inc); // Player head inclination (0 is looking straight to playfield)
       lookat = trans * rotx;
-      matView = layback * trans * rotx * rotz * coords;
+      matView = layback * scale * trans * rotx * rotz * coords;
    }
    else
    {
       Matrix3D trans, rotx;
+      scale = Matrix3D::MatrixTranslate(-0.5f * table->m_right, -0.5f * table->m_bottom, 0.f) 
+            * Matrix3D::MatrixScale(mSceneScaleX, mSceneScaleY, mSceneScaleZ)
+            * Matrix3D::MatrixTranslate(0.5f * table->m_right, 0.5f * table->m_bottom, 0.f); // Global scene scale (using bottom center of the playfield as origin)
       trans.SetTranslation(-mViewX + cam.x - 0.5f * table->m_right, -mViewY + cam.y - table->m_bottom, -mViewZ + cam.z);
       rotx.SetRotateX(inc); // Player head inclination (0 is looking straight to playfield)
+      coords.SetScaling(1.f, -1.f, -1.f); // Revert Y and Z axis to convert to D3D coordinate system
       lookat = trans * rotx;
-      matView = trans * rotx * rotz * coords;
+      matView = scale * trans * rotx * rotz * coords;
    }
 
    // Compute frustrum Z bounds (near/far plane)
@@ -141,14 +148,15 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
       const float ymax = zNear * tanf(0.5f * ANGTORAD(FOV));
       xcenter = zNear * 0.01f * (mViewVOfs * sinf(rotation) - mViewHOfs * cosf(rotation));
       ycenter = zNear * 0.01f * (mViewVOfs * cosf(rotation) + mViewHOfs * sinf(rotation));
-      yspan = ymax          / mSceneScaleY;
-      xspan = ymax * aspect / mSceneScaleX;
+      yspan = ymax         ;
+      xspan = ymax * aspect;
       break;
    }
    case VLM_WINDOW:
    {
       // Fit camera to adjusted table bounds
-      Matrix3D fit = lookat * rotz * coords * Matrix3D::MatrixPerspectiveFovLH(90.f, 1.f, zNear, zFar) * projTrans;
+      // We do not apply the scene scale since we want to fit the scaled version of the table as if it was the normal version (otherwise it would reverse the scaling during the fitting)
+      Matrix3D fit = lookat * rotz * Matrix3D::MatrixScale(1.f, -1.f, -1.f) * Matrix3D::MatrixPerspectiveFovLH(90.f, 1.f, zNear, zFar) * projTrans;
       Vertex3Ds tl = fit.MultiplyVector(Vertex3Ds(table->m_left - mWindowTopXOfs, table->m_top - mWindowTopYOfs, mWindowTopZOfs));
       Vertex3Ds tr = fit.MultiplyVector(Vertex3Ds(table->m_right + mWindowTopXOfs, table->m_top - mWindowTopYOfs, mWindowTopZOfs));
       Vertex3Ds bl = fit.MultiplyVector(Vertex3Ds(table->m_left - mWindowBottomXOfs, table->m_bottom + mWindowBottomYOfs, mWindowBottomZOfs));
@@ -160,14 +168,19 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
       const float ar = (xmax - xmin) / (ymax - ymin);
       xcenter = 0.5f * (xmin + xmax) + zNear * 0.01f * (mViewVOfs * sinf(rotation) - mViewHOfs * cosf(rotation));
       ycenter = 0.5f * (ymin + ymax) + zNear * 0.01f * (mViewVOfs * cosf(rotation) + mViewHOfs * sinf(rotation));
-      xspan = (aspect / ar) * 0.5f * (xmax - xmin) / mSceneScaleX;
-      yspan =                 0.5f * (ymax - ymin) / mSceneScaleY;
+      xspan = (aspect / ar) * 0.5f * (xmax - xmin);
+      yspan =                 0.5f * (ymax - ymin);
       break;
    }
    }
 
    // Define the view matrix. This matrix MUST be orthonormal (orthogonal axis with a unit length) or shading will be broken
    mvp.SetView(lookat);
+
+   // Apply non uniform scene scaling after shading, in the projection matrix
+   Matrix3D invLookAt(lookat);
+   invLookAt.Invert();
+   scale = invLookAt * scale * lookat;
 
    // Define the projection matrices
    if (stereo)
@@ -195,17 +208,17 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
       // Left eye
       eyeShift.SetTranslation(0.5f * eyeSeparation * right);
       proj.SetPerspectiveOffCenterLH(xcenter - xspan + xOfs, xcenter + xspan + xOfs, ycenter - yspan - yOfs, ycenter + yspan - yOfs, zNear, zFar);
-      mvp.SetProj(0, eyeShift * rotz * coords * proj * projTrans);
+      mvp.SetProj(0, scale * eyeShift * rotz * coords * proj * projTrans);
 
       // Right eye
       eyeShift.SetTranslation(-0.5f * eyeSeparation * right);
       proj.SetPerspectiveOffCenterLH(xcenter - xspan - xOfs, xcenter + xspan - xOfs, ycenter - yspan + yOfs, ycenter + yspan + yOfs, zNear, zFar);
-      mvp.SetProj(1, eyeShift * rotz * coords * proj * projTrans);
+      mvp.SetProj(1, scale * eyeShift * rotz * coords * proj * projTrans);
    }
    else
    {
       proj.SetPerspectiveOffCenterLH(xcenter - xspan, xcenter + xspan, ycenter - yspan, ycenter + yspan, zNear, zFar);
-      mvp.SetProj(0, rotz * coords * proj * projTrans);
+      mvp.SetProj(0, scale * rotz * coords * proj * projTrans);
    }
 
    // Apply layback

@@ -993,15 +993,16 @@ void LiveUI::UpdateCameraModeUI()
       for (int i = 0; i < nSettings; i++)
       {
          if (settings[i] == m_player->m_backdropSettingActive 
-            || (m_player->m_backdropSettingActive == Player::BS_XYScale && (settings[i] == Player::BS_XScale || settings[i] == Player::BS_YScale)))
+            || (m_player->m_backdropSettingActive == Player::BS_XYZScale && (settings[i] == Player::BS_XScale || settings[i] == Player::BS_YScale || settings[i] == Player::BS_ZScale)))
             ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
          switch (settings[i])
          {
          case Player::BS_ViewMode: CM_ROW("View Layout Mode:", "%s", isLegacy ? "Legacy" : isCamera ? "Camera" : "Window", ""); CM_SKIP_LINE; break;
 
-         // Viewport
-         case Player::BS_XScale: CM_ROW("Viewport X Stretch", "%.1f", 100.f * viewSetup.mSceneScaleX, "%%"); break;
-         case Player::BS_YScale: CM_ROW("Viewport Y Stretch", "%.1f", 100.f * viewSetup.mSceneScaleY, "%%"); CM_SKIP_LINE; break;
+         // Scene scale
+         case Player::BS_XScale: CM_ROW("Table X Scale", "%.1f", 100.f * viewSetup.mSceneScaleX, "%%"); break;
+         case Player::BS_YScale: CM_ROW("Table Y Scale", "%.1f", 100.f * viewSetup.mSceneScaleY, "%%"); break;
+         case Player::BS_ZScale: CM_ROW("Table Z Scale", "%.1f", 100.f * viewSetup.mSceneScaleZ, "%%"); CM_SKIP_LINE; break;
 
          // Player position
          case Player::BS_LookAt: 
@@ -1033,7 +1034,7 @@ void LiveUI::UpdateCameraModeUI()
          case Player::BS_EnvEmissionScale: CM_ROW("Environment Emission", "%.1f", 100.f * table->m_envEmissionScale, "%%"); break;
          }
          if (settings[i] == m_player->m_backdropSettingActive
-            || (m_player->m_backdropSettingActive == Player::BS_XYScale && (settings[i] == Player::BS_XScale || settings[i] == Player::BS_YScale)))
+            || (m_player->m_backdropSettingActive == Player::BS_XYZScale && (settings[i] == Player::BS_XScale || settings[i] == Player::BS_YScale || settings[i] == Player::BS_ZScale)))
             ImGui::PopStyleColor();
       }
       #undef CM_ROW

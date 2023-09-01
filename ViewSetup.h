@@ -24,7 +24,7 @@ public:
       const vec3& cam = vec3(0.f, 0.f, 0.f), const float cam_inc = 0.f, const float xpixoff = 0.f, const float ypixoff = 0.f);
 
 private:
-   vec3 FitCameraToVertices(const vector<Vertex3Ds>& pvvertex3D, const float aspect, const float rotation, const float inclination, const float FOV, const float xlatez, const float layback);
+   static vec3 FitCameraToVertices(const vector<Vertex3Ds>& pvvertex3D, const float aspect, const float rotation, const float inclination, const float FOV, const float xlatez, const float layback);
 
 public:
    ViewLayoutMode mMode = VLM_LEGACY;

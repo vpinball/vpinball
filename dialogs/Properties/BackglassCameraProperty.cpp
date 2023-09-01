@@ -160,7 +160,6 @@ BOOL BackglassCameraProperty::OnInitDialog()
     m_resizer.AddChild(GetDlgItem(IDC_STATIC23), CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC24), CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC25), CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC26), CResizer::topleft, RD_STRETCH_WIDTH);
     // Controls
     m_resizer.AddChild(m_hFssModeCheck, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_hTestDesktopCheck, CResizer::topleft, RD_STRETCH_WIDTH);
