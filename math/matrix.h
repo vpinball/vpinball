@@ -477,6 +477,13 @@ public:
       return result;
    }
 
+   static Matrix3D MatrixTranslate(float x, float y, float z)
+   {
+      Matrix3D result;
+      result.SetTranslation(x, y, z);
+      return result;
+   }
+
    static Matrix3D MatrixLookAtLH(const vec3& eye, const vec3& at, const vec3& up)
    {
       Matrix3D result;
