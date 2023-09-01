@@ -369,7 +369,7 @@ void Bumper::UpdateSkirt(const bool doCalculation)
       vert = rMatrix.MultiplyVector(vert);
       buf[i].x = vert.x*scalexy + m_d.m_vCenter.x;
       buf[i].y = vert.y*scalexy + m_d.m_vCenter.y;
-      buf[i].z = vert.z*(m_d.m_heightScale*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]) + (m_baseHeight+5.0f);
+      buf[i].z = vert.z*m_d.m_heightScale + (m_baseHeight+5.0f);
 
       vert = Vertex3Ds(bumperSocket[i].nx, bumperSocket[i].ny, bumperSocket[i].nz);
       vert = rMatrix.MultiplyVectorNoTranslate(vert);
@@ -460,7 +460,7 @@ void Bumper::ExportMesh(ObjLoader& loader)
    char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
    WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), nullptr, nullptr);
 
-   m_baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+   m_baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
    m_fullMatrix.SetRotateZ(ANGTORAD(m_d.m_orientation));
 
    if (m_d.m_baseVisible)
@@ -536,7 +536,7 @@ void Bumper::GenerateBaseMesh(Vertex3D_NoTex2 *buf)
       vert = m_fullMatrix.MultiplyVector(vert);
       buf[i].x = vert.x*scalexy + m_d.m_vCenter.x;
       buf[i].y = vert.y*scalexy + m_d.m_vCenter.y;
-      buf[i].z = vert.z*(m_d.m_heightScale*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]) + m_baseHeight;
+      buf[i].z = vert.z*m_d.m_heightScale + m_baseHeight;
 
       vert = Vertex3Ds(bumperBase[i].nx, bumperBase[i].ny, bumperBase[i].nz);
       vert = m_fullMatrix.MultiplyVectorNoTranslate(vert);
@@ -558,7 +558,7 @@ void Bumper::GenerateSocketMesh(Vertex3D_NoTex2 *buf)
       vert = m_fullMatrix.MultiplyVector(vert);
       buf[i].x = vert.x*scalexy + m_d.m_vCenter.x;
       buf[i].y = vert.y*scalexy + m_d.m_vCenter.y;
-      buf[i].z = vert.z*(m_d.m_heightScale*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]) + (m_baseHeight+5.0f);
+      buf[i].z = vert.z*m_d.m_heightScale + (m_baseHeight+5.0f);
 
       vert = Vertex3Ds(bumperSocket[i].nx, bumperSocket[i].ny, bumperSocket[i].nz);
       vert = m_fullMatrix.MultiplyVectorNoTranslate(vert);
@@ -580,7 +580,7 @@ void Bumper::GenerateRingMesh(Vertex3D_NoTex2 *buf)
       vert = m_fullMatrix.MultiplyVector(vert);
       buf[i].x = vert.x*scalexy + m_d.m_vCenter.x;
       buf[i].y = vert.y*scalexy + m_d.m_vCenter.y;
-      buf[i].z = vert.z*(m_d.m_heightScale*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]) + m_baseHeight;
+      buf[i].z = vert.z*m_d.m_heightScale + m_baseHeight;
 
       vert = Vertex3Ds(bumperRing[i].nx, bumperRing[i].ny, bumperRing[i].nz);
       vert = m_fullMatrix.MultiplyVectorNoTranslate(vert);
@@ -602,7 +602,7 @@ void Bumper::GenerateCapMesh(Vertex3D_NoTex2 *buf)
       vert = m_fullMatrix.MultiplyVector(vert);
       buf[i].x = vert.x*scalexy + m_d.m_vCenter.x;
       buf[i].y = vert.y*scalexy + m_d.m_vCenter.y;
-      buf[i].z = (vert.z*m_d.m_heightScale + m_d.m_heightScale)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_baseHeight;
+      buf[i].z = (vert.z*m_d.m_heightScale + m_d.m_heightScale) + m_baseHeight;
 
       vert = Vertex3Ds(bumperCap[i].nx, bumperCap[i].ny, bumperCap[i].nz);
       vert = m_fullMatrix.MultiplyVectorNoTranslate(vert);
@@ -620,7 +620,7 @@ void Bumper::GenerateCapMesh(Vertex3D_NoTex2 *buf)
 
 void Bumper::RenderSetup()
 {
-   m_baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+   m_baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
    m_fullMatrix.SetRotateZ(ANGTORAD(m_d.m_orientation));
    if (m_d.m_baseVisible)
@@ -688,7 +688,7 @@ void Bumper::UpdateAnimation(const float diff_time_msec)
 
    // Ring animation
    {
-      const float limit = m_d.m_ringDropOffset + (m_d.m_heightScale * 0.5f) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+      const float limit = m_d.m_ringDropOffset + (m_d.m_heightScale * 0.5f);
 
       if (state == 1)
       {
@@ -698,7 +698,7 @@ void Bumper::UpdateAnimation(const float diff_time_msec)
 
       if (m_ringAnimate)
       {
-         float step = m_d.m_ringSpeed * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+         float step = m_d.m_ringSpeed;
          if (m_ringDown)
               step = -step;
          const float old_bumperanim_ringAnimOffset = m_pbumperhitcircle->m_bumperanim_ringAnimOffset;

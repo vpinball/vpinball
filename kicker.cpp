@@ -174,7 +174,7 @@ void Kicker::GetTimers(vector<HitTimer*> &pvht)
 
 void Kicker::GetHitShapes(vector<HitObject*> &pvho)
 {
-   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
    KickerHitCircle * const phitcircle = new KickerHitCircle(m_d.m_vCenter, m_d.m_radius *
       (m_d.m_legacyMode ? (m_d.m_fallThrough ? 0.75f :
@@ -192,7 +192,7 @@ void Kicker::GetHitShapes(vector<HitObject*> &pvho)
          Vertex3Ds vpos = Vertex3Ds(kickerHitMesh[t].x, kickerHitMesh[t].y, kickerHitMesh[t].z);
          vpos.x = vpos.x*rad + m_d.m_vCenter.x;
          vpos.y = vpos.y*rad + m_d.m_vCenter.y;
-         vpos.z = vpos.z*rad * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + height;
+         vpos.z = vpos.z*rad + height;
          m_hitMesh[t] = vpos;
       }
    }
@@ -245,7 +245,7 @@ void Kicker::ExportMesh(ObjLoader& loader)
 
    char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
    WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), nullptr, nullptr);
-   m_baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+   m_baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
    int num_vertices;
    int num_indices;
@@ -374,7 +374,7 @@ void Kicker::GenerateMesh(Vertex3D_NoTex2 *const buf)
 
       buf[i].x = vert.x*m_d.m_radius + m_d.m_vCenter.x;
       buf[i].y = vert.y*m_d.m_radius + m_d.m_vCenter.y;
-      buf[i].z = vert.z*m_d.m_radius*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_baseHeight;
+      buf[i].z = vert.z*m_d.m_radius + m_baseHeight;
       vert = Vertex3Ds(vertices[i].nx, vertices[i].ny, vertices[i].nz);
       vert = fullMatrix.MultiplyVectorNoTranslate(vert);
       buf[i].nx = vert.x;
@@ -390,7 +390,7 @@ void Kicker::RenderSetup()
    if (m_d.m_kickertype == KickerInvisible)
       return;
 
-   m_baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+   m_baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
 //
 // license:GPLv3+
@@ -413,7 +413,7 @@ void Kicker::RenderSetup()
       {
          buf[i].x = kickerPlate[i].x*rad + m_d.m_vCenter.x;
          buf[i].y = kickerPlate[i].y*rad + m_d.m_vCenter.y;
-         buf[i].z = kickerPlate[i].z*rad*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_baseHeight;
+         buf[i].z = kickerPlate[i].z*rad + m_baseHeight;
          buf[i].nx = kickerPlate[i].nx;
          buf[i].ny = kickerPlate[i].ny;
          buf[i].nz = kickerPlate[i].nz;
@@ -541,7 +541,7 @@ void Kicker::RenderDynamic()
       pd3dDevice->basicShader->SetMaterial(mat);
 
       pd3dDevice->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_kickerBoolean, mat);
-      pd3dDevice->basicShader->SetFloat(SHADER_fKickerScale, m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]);
+      pd3dDevice->basicShader->SetFloat(SHADER_fKickerScale, 1.f);
       pd3dDevice->SetRenderState(RenderState::ZFUNC, RenderState::Z_ALWAYS);
 
       Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight);

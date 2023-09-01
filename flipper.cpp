@@ -812,7 +812,7 @@ void Flipper::GenerateBaseMesh(Vertex3D_NoTex2 *buf)
       Vertex3Ds vert = fullMatrix.MultiplyVector(Vertex3Ds(temp[i].x, temp[i].y, temp[i].z));
       buf[i].x = vert.x;
       buf[i].y = vert.y;
-      buf[i].z = vert.z*m_d.m_height*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + height;
+      buf[i].z = vert.z*m_d.m_height + height;
 
       vert = fullMatrix.MultiplyVectorNoTranslate(Vertex3Ds(flipperBaseMesh[i].nx, flipperBaseMesh[i].ny, flipperBaseMesh[i].nz));
       buf[i].nx = vert.x;
@@ -846,7 +846,7 @@ void Flipper::GenerateBaseMesh(Vertex3D_NoTex2 *buf)
          Vertex3Ds vert = fullMatrix.MultiplyVector(Vertex3Ds(temp[i].x, temp[i].y, temp[i].z));
          buf[i + flipperBaseVertices].x = vert.x;
          buf[i + flipperBaseVertices].y = vert.y;
-         buf[i + flipperBaseVertices].z = vert.z*m_d.m_rubberwidth*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + (height + m_d.m_rubberheight);
+         buf[i + flipperBaseVertices].z = vert.z*m_d.m_rubberwidth + (height + m_d.m_rubberheight);
 
          vert = fullMatrix.MultiplyVectorNoTranslate(Vertex3Ds(flipperBaseMesh[i].nx, flipperBaseMesh[i].ny, flipperBaseMesh[i].nz));
          buf[i + flipperBaseVertices].nx = vert.x;

@@ -2376,7 +2376,7 @@ void Ramp::GenerateRampMesh(Vertex3D_NoTex2 **meshBuf)
       Vertex3D_NoTex2 * const rgv3D = m_vertBuffer + i * 2;
       rgv3D[0].x = rgvLocal[i].x;
       rgv3D[0].y = rgvLocal[i].y;
-      rgv3D[0].z = rgheight[i] * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+      rgv3D[0].z = rgheight[i];
 
       rgv3D[1].x = rgvLocal[m_rampVertex * 2 - i - 1].x;
       rgv3D[1].y = rgvLocal[m_rampVertex * 2 - i - 1].y;
@@ -2459,7 +2459,7 @@ void Ramp::GenerateRampMesh(Vertex3D_NoTex2 **meshBuf)
 
          rgv3D[1].x = rgvLocal[i].x;
          rgv3D[1].y = rgvLocal[i].y;
-         rgv3D[1].z = (rgheight[i] + m_d.m_rightwallheightvisible)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+         rgv3D[1].z = rgheight[i] + m_d.m_rightwallheightvisible;
 
          if (pin && m_d.m_imageWalls)
          {
@@ -2494,11 +2494,11 @@ void Ramp::GenerateRampMesh(Vertex3D_NoTex2 **meshBuf)
          Vertex3D_NoTex2 * const rgv3D = m_vertBuffer + i * 2;
          rgv3D[0].x = rgvLocal[m_rampVertex * 2 - i - 1].x;
          rgv3D[0].y = rgvLocal[m_rampVertex * 2 - i - 1].y;
-         rgv3D[0].z = rgheight[i] * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+         rgv3D[0].z = rgheight[i];
 
          rgv3D[1].x = rgv3D[0].x;
          rgv3D[1].y = rgv3D[0].y;
-         rgv3D[1].z = (rgheight[i] + m_d.m_leftwallheightvisible)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+         rgv3D[1].z = rgheight[i] + m_d.m_leftwallheightvisible;
 
          if (pin && m_d.m_imageWalls)
          {

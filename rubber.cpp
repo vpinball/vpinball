@@ -516,7 +516,7 @@ float Rubber::GetSurfaceHeight(float x, float y) const
        zheight = (startlength / totallength) * m_d.m_height;
     }
 
-    return zheight*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+    return zheight;
 }
 #endif
 
@@ -1498,12 +1498,10 @@ void Rubber::UpdateRubber(const bool updateVB, const float height)
    Matrix3D vertMatrix;
    tempMat.SetTranslation(-m_middlePoint.x, -m_middlePoint.y, -m_middlePoint.z);
    fullMatrix.Multiply(tempMat, vertMatrix);
-   tempMat.SetScaling(1.f, 1.f, m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]);
-   tempMat.Multiply(vertMatrix, vertMatrix);
    if (height == m_d.m_hitHeight)   // do not z-scale the hit mesh
       tempMat.SetTranslation(m_middlePoint.x, m_middlePoint.y, height + m_ptable->m_tableheight);
    else
-      tempMat.SetTranslation(m_middlePoint.x, m_middlePoint.y, height*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_ptable->m_tableheight);
+      tempMat.SetTranslation(m_middlePoint.x, m_middlePoint.y, height + m_ptable->m_tableheight);
    tempMat.Multiply(vertMatrix, vertMatrix);
 
    Vertex3D_NoTex2 *buf;

@@ -262,7 +262,7 @@ void Spinner::ExportMesh(ObjLoader& loader)
    vector<Vertex3D_NoTex2> transformedVertices;
    vector<HitObject*> dummyHitObj;
 
-   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
    m_posZ = height + m_d.m_height;
 
    GetHitShapes(dummyHitObj);
@@ -282,7 +282,7 @@ void Spinner::ExportMesh(ObjLoader& loader)
          vert = m_fullMatrix.MultiplyVector(vert);
          transformedVertices[i].x = vert.x*m_d.m_length + m_d.m_vCenter.x;
          transformedVertices[i].y = vert.y*m_d.m_length + m_d.m_vCenter.y;
-         transformedVertices[i].z = vert.z*m_d.m_length*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_posZ;
+         transformedVertices[i].z = vert.z*m_d.m_length + m_posZ;
 
          vert = Vertex3Ds(spinnerBracket[i].nx, spinnerBracket[i].ny, spinnerBracket[i].nz);
          vert = m_fullMatrix.MultiplyVectorNoTranslate(vert);
@@ -345,7 +345,7 @@ void Spinner::UpdatePlate(Vertex3D_NoTex2 * const vertBuffer)
       vert = fullMatrix.MultiplyVector(vert);
       buf[i].x = vert.x*m_d.m_length + m_d.m_vCenter.x;
       buf[i].y = vert.y*m_d.m_length + m_d.m_vCenter.y;
-      buf[i].z = vert.z*m_d.m_length*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_posZ;
+      buf[i].z = vert.z*m_d.m_length + m_posZ;
 
       vert = Vertex3Ds(spinnerPlate[i].nx, spinnerPlate[i].ny, spinnerPlate[i].nz);
       vert = fullMatrix.MultiplyVectorNoTranslate(vert);
@@ -408,7 +408,7 @@ void Spinner::RenderSetup()
    if (!m_d.m_visible)
       return;
 
-   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
    m_posZ = height + m_d.m_height;
 
    delete m_bracketMeshBuffer;
@@ -426,7 +426,7 @@ void Spinner::RenderSetup()
       vert = m_fullMatrix.MultiplyVector(vert);
       buf[i].x = vert.x*m_d.m_length + m_d.m_vCenter.x;
       buf[i].y = vert.y*m_d.m_length + m_d.m_vCenter.y;
-      buf[i].z = vert.z*m_d.m_length*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_posZ;
+      buf[i].z = vert.z*m_d.m_length + m_posZ;
 
       vert = Vertex3Ds(spinnerBracket[i].nx, spinnerBracket[i].ny, spinnerBracket[i].nz);
       vert = m_fullMatrix.MultiplyVectorNoTranslate(vert);

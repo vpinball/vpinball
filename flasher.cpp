@@ -310,7 +310,7 @@ void Flasher::EndPlay()
 
 void Flasher::UpdateMesh()
 {
-   const float height = (m_d.m_height + m_ptable->m_tableheight)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+   const float height = m_d.m_height + m_ptable->m_tableheight;
    const float movx = m_minx + (m_maxx - m_minx)*0.5f;
    const float movy = m_miny + (m_maxy - m_miny)*0.5f;
 

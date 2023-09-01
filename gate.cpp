@@ -407,9 +407,9 @@ void Gate::RenderObject()
       tempMat.Multiply(fullMatrix, fullMatrix);
 
       Matrix3D vertMatrix;
-      tempMat.SetScaling(m_d.m_length, m_d.m_length, m_d.m_length * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]);
+      tempMat.SetScaling(m_d.m_length, m_d.m_length, m_d.m_length);
       tempMat.Multiply(fullMatrix, vertMatrix);
-      tempMat.SetTranslation(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_height * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_baseHeight);
+      tempMat.SetTranslation(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_height + m_baseHeight);
       tempMat.Multiply(vertMatrix, vertMatrix);
 
       Vertex3D_NoTex2 *buf;
@@ -475,7 +475,7 @@ void Gate::ExportMesh(ObjLoader& loader)
 {
    char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
    WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), nullptr, nullptr);
-   m_baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+   m_baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
    if (m_d.m_showBracket)
    {
@@ -517,7 +517,7 @@ void Gate::GenerateBracketMesh(Vertex3D_NoTex2 *buf)
       vert = fullMatrix.MultiplyVector(vert);
       buf[i].x = vert.x*m_d.m_length + m_d.m_vCenter.x;
       buf[i].y = vert.y*m_d.m_length + m_d.m_vCenter.y;
-      buf[i].z = vert.z*m_d.m_length*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + (m_d.m_height*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_baseHeight);
+      buf[i].z = vert.z*m_d.m_length + m_d.m_height + m_baseHeight;
 
       vert = Vertex3Ds(gateBracket[i].nx, gateBracket[i].ny, gateBracket[i].nz);
       vert = fullMatrix.MultiplyVectorNoTranslate(vert);
@@ -540,7 +540,7 @@ void Gate::GenerateWireMesh(Vertex3D_NoTex2 *buf)
       vert = fullMatrix.MultiplyVector(vert);
       buf[i].x = vert.x*m_d.m_length + m_d.m_vCenter.x;
       buf[i].y = vert.y*m_d.m_length + m_d.m_vCenter.y;
-      buf[i].z = vert.z*m_d.m_length*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + (m_d.m_height*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_baseHeight);
+      buf[i].z = vert.z*m_d.m_length + m_d.m_height + m_baseHeight;
 
       vert = Vertex3Ds(m_vertices[i].nx, m_vertices[i].ny, m_vertices[i].nz);
       vert = fullMatrix.MultiplyVectorNoTranslate(vert);
@@ -557,7 +557,7 @@ void Gate::RenderSetup()
    IndexBuffer *bracketIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, gateBracketNumIndices, gateBracketIndices);
    VertexBuffer *bracketVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, gateBracketNumVertices);
    SetGateType(m_d.m_type);
-   m_baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+   m_baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
    Vertex3D_NoTex2 *buf;
    bracketVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
    GenerateBracketMesh(buf);

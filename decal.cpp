@@ -450,7 +450,7 @@ void Decal::RenderSetup()
    
    PreRenderText();
 
-   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
    float leading, descent; // For fonts
    if (m_d.m_decaltype != DecalImage)
@@ -530,7 +530,7 @@ void Decal::RenderSetup()
 
 float Decal::GetDepth(const Vertex3Ds& viewDir) const
 {
-   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
    return !m_backglass ? (viewDir.x * m_d.m_vCenter.x + viewDir.y * m_d.m_vCenter.y + viewDir.z*height) : 0.f;
 }
 
@@ -540,7 +540,7 @@ void Decal::UpdateBounds()
       m_boundingSphereCenter.Set(0.f, 0.f, 0.f);
    else
    {
-      const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+      const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
       m_boundingSphereCenter.Set(m_d.m_vCenter.x, m_d.m_vCenter.y, height);
    }
 }
