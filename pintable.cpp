@@ -1333,9 +1333,6 @@ PinTable::PinTable()
    //if (m_BG_enable_FSS)
    //   m_currentBackglassMode = FULL_SINGLE_SCREEN;
 
-   for (int i = 0; i < NUM_BG_SETS; ++i)
-      m_BG_scalez[i] = 1.0f;
-
    CComObject<CodeViewer>::CreateInstance(&m_pcv);
    m_pcv->AddRef();
    m_pcv->Init((IScriptableHost*)this);
@@ -1647,7 +1644,6 @@ void PinTable::InitTablePostLoad()
       if (mViewSetups[i].mFOV == FLT_MAX) // old table, copy FS and/or FSS settings over from old DT setting
       {
          mViewSetups[i] = mViewSetups[BG_DESKTOP];
-         m_BG_scalez[i] = m_BG_scalez[BG_DESKTOP];
          if (m_BG_image[i].empty() && i == BG_FSS) // copy image over for FSS mode
             m_BG_image[i] = m_BG_image[BG_DESKTOP];
       }
@@ -2237,7 +2233,6 @@ void PinTable::Play(const bool cameraMode)
    for (int i = 0; i < 3; i++)
    {
       dst->mViewSetups[i] = src->mViewSetups[i];
-      dst->m_BG_scalez[i] = src->m_BG_scalez[i];
       dst->m_BG_image[i] = src->m_BG_image[i];
    }
    for (size_t i = 0; i < src->m_materials.size(); i++)
@@ -3416,9 +3411,9 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
       bw.WriteFloat(vsFields[i][5], mViewSetups[i].mViewX);
       bw.WriteFloat(vsFields[i][6], mViewSetups[i].mViewY);
       bw.WriteFloat(vsFields[i][7], mViewSetups[i].mViewZ);
-      bw.WriteFloat(vsFields[i][8], mViewSetups[i].mViewportScaleX);
-      bw.WriteFloat(vsFields[i][9], mViewSetups[i].mViewportScaleY);
-      bw.WriteFloat(vsFields[i][10], m_BG_scalez[0]);
+      bw.WriteFloat(vsFields[i][8], mViewSetups[i].mSceneScaleX);
+      bw.WriteFloat(vsFields[i][9], mViewSetups[i].mSceneScaleY);
+      bw.WriteFloat(vsFields[i][10], mViewSetups[i].mSceneScaleZ);
       bw.WriteFloat(vsFields[i][11], mViewSetups[i].mViewHOfs);
       bw.WriteFloat(vsFields[i][12], mViewSetups[i].mViewVOfs);
       bw.WriteFloat(vsFields[i][13], mViewSetups[i].mWindowTopXOfs);
@@ -4190,9 +4185,9 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    case FID(LAYB): pbr->GetFloat(mViewSetups[BG_DESKTOP].mLayback); break;
    case FID(INCL): pbr->GetFloat(mViewSetups[BG_DESKTOP].mLookAt); break;
    case FID(FOVX): pbr->GetFloat(mViewSetups[BG_DESKTOP].mFOV); break;
-   case FID(SCLX): pbr->GetFloat(mViewSetups[BG_DESKTOP].mViewportScaleX); break;
-   case FID(SCLY): pbr->GetFloat(mViewSetups[BG_DESKTOP].mViewportScaleY); break;
-   case FID(SCLZ): pbr->GetFloat(m_BG_scalez[BG_DESKTOP]); break;
+   case FID(SCLX): pbr->GetFloat(mViewSetups[BG_DESKTOP].mSceneScaleX); break;
+   case FID(SCLY): pbr->GetFloat(mViewSetups[BG_DESKTOP].mSceneScaleY); break;
+   case FID(SCLZ): pbr->GetFloat(mViewSetups[BG_DESKTOP].mSceneScaleZ); break;
    case FID(XLTX): pbr->GetFloat(mViewSetups[BG_DESKTOP].mViewX); break;
    case FID(XLTY): pbr->GetFloat(mViewSetups[BG_DESKTOP].mViewY); break;
    case FID(XLTZ): pbr->GetFloat(mViewSetups[BG_DESKTOP].mViewZ); break;
@@ -4209,9 +4204,9 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    case FID(LAYF): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mLayback); break;
    case FID(INCF): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mLookAt); break;
    case FID(FOVF): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mFOV); break;
-   case FID(SCFX): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mViewportScaleX); break;
-   case FID(SCFY): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mViewportScaleY); break;
-   case FID(SCFZ): pbr->GetFloat(m_BG_scalez[BG_FULLSCREEN]); break;
+   case FID(SCFX): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mSceneScaleX); break;
+   case FID(SCFY): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mSceneScaleY); break;
+   case FID(SCFZ): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mSceneScaleZ); break;
    case FID(XLFX): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mViewX); break;
    case FID(XLFY): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mViewY); break;
    case FID(XLFZ): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mViewZ); break;
@@ -4228,9 +4223,9 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    case FID(LAFS): pbr->GetFloat(mViewSetups[BG_FSS].mLayback); break;
    case FID(INFS): pbr->GetFloat(mViewSetups[BG_FSS].mLookAt); break;
    case FID(FOFS): pbr->GetFloat(mViewSetups[BG_FSS].mFOV); break;
-   case FID(SCXS): pbr->GetFloat(mViewSetups[BG_FSS].mViewportScaleX); break;
-   case FID(SCYS): pbr->GetFloat(mViewSetups[BG_FSS].mViewportScaleY); break;
-   case FID(SCZS): pbr->GetFloat(m_BG_scalez[BG_FSS]); break;
+   case FID(SCXS): pbr->GetFloat(mViewSetups[BG_FSS].mSceneScaleX); break;
+   case FID(SCYS): pbr->GetFloat(mViewSetups[BG_FSS].mSceneScaleY); break;
+   case FID(SCZS): pbr->GetFloat(mViewSetups[BG_FSS].mSceneScaleZ); break;
    case FID(XLXS): pbr->GetFloat(mViewSetups[BG_FSS].mViewX); break;
    case FID(XLYS): pbr->GetFloat(mViewSetups[BG_FSS].mViewY); break;
    case FID(XLZS): pbr->GetFloat(mViewSetups[BG_FSS].mViewZ); break;
@@ -6003,9 +5998,9 @@ void PinTable::ImportBackdropPOV(const string& filename)
          POV_FIELD("layback", "%f", mViewSetups[i].mLayback);
          POV_FIELD("lookat", "%f", mViewSetups[i].mLookAt);
          POV_FIELD("rotation", "%f", mViewSetups[i].mViewportRotation);
-         POV_FIELD("xscale", "%f", mViewSetups[i].mViewportScaleX);
-         POV_FIELD("yscale", "%f", mViewSetups[i].mViewportScaleY);
-         POV_FIELD("zscale", "%f", m_BG_scalez[i]);
+         POV_FIELD("xscale", "%f", mViewSetups[i].mSceneScaleX);
+         POV_FIELD("yscale", "%f", mViewSetups[i].mSceneScaleY);
+         POV_FIELD("zscale", "%f", mViewSetups[i].mSceneScaleZ);
          POV_FIELD("xoffset", "%f", mViewSetups[i].mViewX);
          POV_FIELD("yoffset", "%f", mViewSetups[i].mViewY);
          POV_FIELD("zoffset", "%f", mViewSetups[i].mViewZ);
@@ -6155,9 +6150,9 @@ void PinTable::ExportBackdropPOV(const string& filename)
          POV_FIELD("layback", mViewSetups[i].mLayback);
          POV_FIELD("lookat", mViewSetups[i].mLookAt);
          POV_FIELD("rotation", mViewSetups[i].mViewportRotation);
-         POV_FIELD("xscale", mViewSetups[i].mViewportScaleX);
-         POV_FIELD("yscale", mViewSetups[i].mViewportScaleY);
-         POV_FIELD("zscale", m_BG_scalez[i]);
+         POV_FIELD("xscale", mViewSetups[i].mSceneScaleX);
+         POV_FIELD("yscale", mViewSetups[i].mSceneScaleY);
+         POV_FIELD("zscale", mViewSetups[i].mSceneScaleZ);
          POV_FIELD("xoffset", mViewSetups[i].mViewX);
          POV_FIELD("yoffset", mViewSetups[i].mViewY);
          POV_FIELD("zoffset", mViewSetups[i].mViewZ);
@@ -9206,7 +9201,7 @@ STDMETHODIMP PinTable::put_Rotation(float newVal)
 
 STDMETHODIMP PinTable::get_Scalex(float *pVal)
 {
-   *pVal = mViewSetups[m_currentBackglassMode].mViewportScaleX;
+   *pVal = mViewSetups[m_currentBackglassMode].mSceneScaleX;
 
    return S_OK;
 }
@@ -9214,7 +9209,7 @@ STDMETHODIMP PinTable::get_Scalex(float *pVal)
 STDMETHODIMP PinTable::put_Scalex(float newVal)
 {
    STARTUNDO
-   mViewSetups[m_currentBackglassMode].mViewportScaleX = newVal;
+   mViewSetups[m_currentBackglassMode].mSceneScaleX = newVal;
    STOPUNDO
 
    return S_OK;
@@ -9222,7 +9217,7 @@ STDMETHODIMP PinTable::put_Scalex(float newVal)
 
 STDMETHODIMP PinTable::get_Scaley(float *pVal)
 {
-   *pVal = mViewSetups[m_currentBackglassMode].mViewportScaleY;
+   *pVal = mViewSetups[m_currentBackglassMode].mSceneScaleY;
 
    return S_OK;
 }
@@ -9230,7 +9225,7 @@ STDMETHODIMP PinTable::get_Scaley(float *pVal)
 STDMETHODIMP PinTable::put_Scaley(float newVal)
 {
    STARTUNDO
-   mViewSetups[m_currentBackglassMode].mViewportScaleY = newVal;
+   mViewSetups[m_currentBackglassMode].mSceneScaleY = newVal;
    STOPUNDO
 
    return S_OK;
@@ -9238,7 +9233,7 @@ STDMETHODIMP PinTable::put_Scaley(float newVal)
 
 STDMETHODIMP PinTable::get_Scalez(float *pVal)
 {
-   *pVal = m_BG_scalez[m_currentBackglassMode];
+   *pVal = mViewSetups[m_currentBackglassMode].mSceneScaleZ;
 
    return S_OK;
 }
@@ -9246,7 +9241,7 @@ STDMETHODIMP PinTable::get_Scalez(float *pVal)
 STDMETHODIMP PinTable::put_Scalez(float newVal)
 {
    STARTUNDO
-   m_BG_scalez[m_currentBackglassMode] = newVal;
+   mViewSetups[m_currentBackglassMode].mSceneScaleZ = newVal;
    STOPUNDO
 
    return S_OK;

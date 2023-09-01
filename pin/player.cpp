@@ -743,7 +743,6 @@ void Player::SetCameraMode(const bool mode)
         for (int i = 0; i < 3; i++)
         {
          dst->mViewSetups[i] = src->mViewSetups[i];
-         dst->m_BG_scalez[i] = src->m_BG_scalez[i];
          dst->m_BG_image[i] = src->m_BG_image[i];
         }
         m_pEditorTable->SetNonUndoableDirty(eSaveDirty);
@@ -1997,8 +1996,8 @@ void Player::CalcBallAspectRatio()
    const float ballAspecRatioOffsetY = LoadValueWithDefault(regKey[RegName::Player], "BallCorrectionY"s, 0.f);
 
    const ViewSetup &viewSetup = m_ptable->mViewSetups[m_ptable->m_BG_current_set];
-   const float scalebackX = (viewSetup.mViewportScaleX != 0.0f) ? ((viewSetup.mViewportScaleX + viewSetup.mViewportScaleY) * 0.5f) / viewSetup.mViewportScaleX : 1.0f;
-   const float scalebackY = (viewSetup.mViewportScaleY != 0.0f) ? ((viewSetup.mViewportScaleX + viewSetup.mViewportScaleY) * 0.5f) / viewSetup.mViewportScaleY : 1.0f;
+   const float scalebackX = (viewSetup.mSceneScaleX != 0.0f) ? ((viewSetup.mSceneScaleX + viewSetup.mSceneScaleY) * 0.5f) / viewSetup.mSceneScaleX : 1.0f;
+   const float scalebackY = (viewSetup.mSceneScaleY != 0.0f) ? ((viewSetup.mSceneScaleX + viewSetup.mSceneScaleY) * 0.5f) / viewSetup.mSceneScaleY : 1.0f;
 
    const float c = sinf(ANGTORAD(fmodf(viewSetup.mViewportRotation + 90.0f, 180.0f)));
    const float s = sinf(ANGTORAD(fmodf(viewSetup.mViewportRotation, 180.0f)));
@@ -3785,9 +3784,9 @@ void Player::UpdateBackdropSettings(const bool up)
    case BS_Layback: viewSetup.mLayback += 0.5f * thesign; break;
    case BS_ViewHOfs: viewSetup.mViewHOfs += 0.5f * thesign; break;
    case BS_ViewVOfs: viewSetup.mViewVOfs += 0.5f * thesign; break;
-   case BS_XYScale: viewSetup.mViewportScaleX += 0.01f * thesign; viewSetup.mViewportScaleY += 0.01f * thesign; CalcBallAspectRatio(); break;
-   case BS_XScale: viewSetup.mViewportScaleX += 0.01f * thesign; CalcBallAspectRatio(); break;
-   case BS_YScale: viewSetup.mViewportScaleY += 0.01f * thesign; CalcBallAspectRatio(); break;
+   case BS_XYScale: viewSetup.mSceneScaleX += 0.01f * thesign; viewSetup.mSceneScaleY += 0.01f * thesign; CalcBallAspectRatio(); break;
+   case BS_XScale: viewSetup.mSceneScaleX += 0.01f * thesign; CalcBallAspectRatio(); break;
+   case BS_YScale: viewSetup.mSceneScaleY += 0.01f * thesign; CalcBallAspectRatio(); break;
    case BS_XOffset: viewSetup.mViewX += 5.f * thesign; break;
    case BS_YOffset: viewSetup.mViewY += 5.f * thesign; break;
    case BS_ZOffset: viewSetup.mViewZ += 50.f * thesign; break;

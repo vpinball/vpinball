@@ -81,7 +81,7 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
 
    Matrix3D coords, lookat, rotz, proj, projTrans, layback, matView;
    projTrans.SetTranslation((float)((double)xpixoff / (double)viewportWidth), (float)((double)ypixoff / (double)viewportHeight), 0.f); // in-pixel offset for manual oversampling
-   coords.SetScaling(isLegacy ? mViewportScaleX : 1.f, isLegacy ? -mViewportScaleY : -1.f, -1.f); // Stretch viewport, also revert Y and Z axis to convert to D3D coordinate system
+   coords.SetScaling(isLegacy ? mSceneScaleX : 1.f, isLegacy ? -mSceneScaleY : -1.f, -1.f); // Stretch viewport, also revert Y and Z axis to convert to D3D coordinate system
    rotz.SetRotateZ(rotation); // Viewport rotation
 
    // Compute translation
@@ -141,8 +141,8 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
       const float ymax = zNear * tanf(0.5f * ANGTORAD(FOV));
       xcenter = zNear * 0.01f * (mViewVOfs * sinf(rotation) - mViewHOfs * cosf(rotation));
       ycenter = zNear * 0.01f * (mViewVOfs * cosf(rotation) + mViewHOfs * sinf(rotation));
-      yspan = ymax          / mViewportScaleY;
-      xspan = ymax * aspect / mViewportScaleX;
+      yspan = ymax          / mSceneScaleY;
+      xspan = ymax * aspect / mSceneScaleX;
       break;
    }
    case VLM_WINDOW:
@@ -160,8 +160,8 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
       const float ar = (xmax - xmin) / (ymax - ymin);
       xcenter = 0.5f * (xmin + xmax) + zNear * 0.01f * (mViewVOfs * sinf(rotation) - mViewHOfs * cosf(rotation));
       ycenter = 0.5f * (ymin + ymax) + zNear * 0.01f * (mViewVOfs * cosf(rotation) + mViewHOfs * sinf(rotation));
-      xspan = (aspect / ar) * 0.5f * (xmax - xmin) / mViewportScaleX;
-      yspan =                 0.5f * (ymax - ymin) / mViewportScaleY;
+      xspan = (aspect / ar) * 0.5f * (xmax - xmin) / mSceneScaleX;
+      yspan =                 0.5f * (ymax - ymin) / mSceneScaleY;
       break;
    }
    }

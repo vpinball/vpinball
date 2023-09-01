@@ -1039,7 +1039,6 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
          ViewSetupID id = table->m_BG_current_set;
          ViewSetup &viewSetup = table->mViewSetups[id];
          // Default player position (90cm above, 30 cm away)
-         table->m_BG_scalez[id] = 1.f;
          if (viewSetup.mViewportRotation != 0.f && viewSetup.mViewportRotation != 90.f && viewSetup.mViewportRotation != 180.f && viewSetup.mViewportRotation != 270.f)
             viewSetup.mViewportRotation = 0.f;
          const bool portrait = g_pplayer->m_wnd_width < g_pplayer->m_wnd_height;
@@ -1054,8 +1053,9 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
                viewSetup.mViewX = CMTOVPU(LoadValueWithDefault(regKey[RegName::DefaultCamera], "DesktopCamX"s, 0.f));
                viewSetup.mViewY = CMTOVPU(LoadValueWithDefault(regKey[RegName::DefaultCamera], "DesktopCamY"s, 20.f));
                viewSetup.mViewZ = CMTOVPU(LoadValueWithDefault(regKey[RegName::DefaultCamera], "DesktopCamZ"s, 70.f));
-               viewSetup.mViewportScaleX = LoadValueWithDefault(regKey[RegName::DefaultCamera], "DesktopScaleX"s, 1.f);
-               viewSetup.mViewportScaleY = LoadValueWithDefault(regKey[RegName::DefaultCamera], "DesktopScaleY"s, 1.f);
+               viewSetup.mSceneScaleX = LoadValueWithDefault(regKey[RegName::DefaultCamera], "DesktopScaleX"s, 1.f);
+               viewSetup.mSceneScaleY = LoadValueWithDefault(regKey[RegName::DefaultCamera], "DesktopScaleY"s, 1.f);
+               viewSetup.mSceneScaleZ = LoadValueWithDefault(regKey[RegName::DefaultCamera], "DesktopScaleZ"s, 1.f);
                viewSetup.mFOV = LoadValueWithDefault(regKey[RegName::DefaultCamera], "DesktopFov"s, 50.f);
                viewSetup.mLookAt = LoadValueWithDefault(regKey[RegName::DefaultCamera], "DesktopLookAt"s, 25.0f);
                viewSetup.mViewVOfs = LoadValueWithDefault(regKey[RegName::DefaultCamera], "DesktopViewVOfs"s, 14.f);
@@ -1066,8 +1066,9 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
                viewSetup.mViewX = CMTOVPU(LoadValueWithDefault(regKey[RegName::DefaultCamera], "FSSCamX"s, 0.f));
                viewSetup.mViewY = CMTOVPU(LoadValueWithDefault(regKey[RegName::DefaultCamera], "FSSCamY"s, 20.f));
                viewSetup.mViewZ = CMTOVPU(LoadValueWithDefault(regKey[RegName::DefaultCamera], "FSSCamZ"s, 70.f));
-               viewSetup.mViewportScaleX = LoadValueWithDefault(regKey[RegName::DefaultCamera], "FSSScaleX"s, 1.f);
-               viewSetup.mViewportScaleY = LoadValueWithDefault(regKey[RegName::DefaultCamera], "FSSScaleY"s, 1.f);
+               viewSetup.mSceneScaleX = LoadValueWithDefault(regKey[RegName::DefaultCamera], "FSSScaleX"s, 1.f);
+               viewSetup.mSceneScaleY = LoadValueWithDefault(regKey[RegName::DefaultCamera], "FSSScaleY"s, 1.f);
+               viewSetup.mSceneScaleZ = LoadValueWithDefault(regKey[RegName::DefaultCamera], "FSSScaleZ"s, 1.f);
                viewSetup.mFOV = LoadValueWithDefault(regKey[RegName::DefaultCamera], "FSSFov"s, 77.f);
                viewSetup.mLookAt = LoadValueWithDefault(regKey[RegName::DefaultCamera], "FSSLookAt"s, 50.0f);
                viewSetup.mViewVOfs = LoadValueWithDefault(regKey[RegName::DefaultCamera], "FSSViewVOfs"s, 22.f);
@@ -1079,8 +1080,9 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
             viewSetup.mViewX = CMTOVPU(LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetCamX"s, 0.f));
             viewSetup.mViewY = CMTOVPU(LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetCamY"s, 20.f));
             viewSetup.mViewZ = CMTOVPU(LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetCamZ"s, 80.f));
-            viewSetup.mViewportScaleX = LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetScaleX"s, 1.2f);
-            viewSetup.mViewportScaleY = LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetScaleY"s, 1.2f);
+            viewSetup.mSceneScaleX = LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetScaleX"s, 1.2f);
+            viewSetup.mSceneScaleY = LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetScaleY"s, 1.2f);
+            viewSetup.mSceneScaleZ = LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetScaleZ"s, 1.f);
             viewSetup.mFOV = LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetFov"s, 77.f);
             viewSetup.mLookAt = LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetLookAt"s, 25.0f);
             viewSetup.mViewVOfs = LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetViewVOfs"s, 0.f);
@@ -1102,7 +1104,6 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
             const PinTable * const __restrict src = g_pplayer->m_pEditorTable;
             PinTable * const __restrict dst = g_pplayer->m_ptable;
             dst->mViewSetups[id] = src->mViewSetups[id];
-            dst->m_BG_scalez[id] = src->m_BG_scalez[id];
             dst->m_lightHeight = src->m_lightHeight;
             dst->m_lightRange = src->m_lightRange;
             dst->m_lightEmissionScale = src->m_lightEmissionScale;
