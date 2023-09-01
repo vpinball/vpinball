@@ -398,7 +398,7 @@ void Light::RenderBulbMesh()
    mat.m_cClearcoat = 0xFFFFFF;
    pd3dDevice->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, mat);
    pd3dDevice->basicShader->SetMaterial(&mat, false);
-   Vertex3Ds bulbPos(m_boundingSphereCenter.x, m_boundingSphereCenter.y, m_boundingSphereCenter.z + m_d.m_height * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]);
+   Vertex3Ds bulbPos(m_boundingSphereCenter.x, m_boundingSphereCenter.y, m_boundingSphereCenter.z + m_d.m_height);
    pd3dDevice->DrawMesh(pd3dDevice->basicShader, IsTransparent(), bulbPos, m_d.m_depthBias, m_bulbLightMeshBuffer, RenderDevice::TRIANGLELIST, 0, bulbLightNumFaces);
 
    pd3dDevice->CopyRenderStates(false, initial_state);
@@ -506,7 +506,7 @@ void Light::RenderDynamic()
       pd3dDevice->lightShader->SetLightColorIntensity(lightColor_intensity);
       pd3dDevice->lightShader->SetFloat(SHADER_blend_modulate_vs_add, 0.00001f); // additive, but avoid full 0, as it disables the blend
 
-      Vertex3Ds bulbPos(m_boundingSphereCenter.x, m_boundingSphereCenter.y, m_boundingSphereCenter.z + m_d.m_height * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]);
+      Vertex3Ds bulbPos(m_boundingSphereCenter.x, m_boundingSphereCenter.y, m_boundingSphereCenter.z + m_d.m_height);
       if (m_bulbLightMeshBuffer) // FIXME will be null if started without a bulb, then activated from the LiveUI. Prevent the crash. WOuld be nicer to actually build the buffer if needed
          pd3dDevice->DrawMesh(pd3dDevice->lightShader, IsTransparent(), bulbPos, m_d.m_depthBias, m_bulbLightMeshBuffer, RenderDevice::TRIANGLELIST, 0, bulbLightNumFaces);
 
@@ -672,7 +672,7 @@ void Light::UpdateCustomMoverVBuffer()
    float height = m_initSurfaceHeight;
    if (m_d.m_BulbLight)
    {
-      height += m_d.m_bulbHaloHeight*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+      height += m_d.m_bulbHaloHeight;
       m_surfaceHeight = height;
    }
 
@@ -734,7 +734,7 @@ void Light::RenderSetup()
    m_iblinkframe = 0;
    m_updateBulbLightHeight = false;
 
-   m_initSurfaceHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+   m_initSurfaceHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
    m_surfaceMaterial = m_ptable->GetSurfaceMaterial(m_d.m_szSurface);
    m_surfaceTexture = m_ptable->GetSurfaceImage(m_d.m_szSurface);
 
@@ -754,7 +754,7 @@ void Light::RenderSetup()
    if (m_d.m_showBulbMesh)
    {
       // 28.f is the distance between the light (emitting point) and the bulb base (bulb mesh origin)
-      const float bulb_z = m_surfaceHeight + (m_d.m_height - 28.f) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+      const float bulb_z = m_surfaceHeight + (m_d.m_height - 28.f);
 
       delete m_bulbLightMeshBuffer;
       IndexBuffer* bulbLightIndexBuffer = new IndexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bulbLightNumFaces, bulbLightIndices);
@@ -767,7 +767,7 @@ void Light::RenderSetup()
       {
          buf[i].x = bulbLight[i].x*m_d.m_meshRadius + m_d.m_vCenter.x;
          buf[i].y = bulbLight[i].y*m_d.m_meshRadius + m_d.m_vCenter.y;
-         buf[i].z = bulbLight[i].z*m_d.m_meshRadius*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + bulb_z;
+         buf[i].z = bulbLight[i].z*m_d.m_meshRadius + bulb_z;
          buf[i].nx = bulbLight[i].nx;
          buf[i].ny = bulbLight[i].ny;
          buf[i].nz = bulbLight[i].nz;
@@ -786,7 +786,7 @@ void Light::RenderSetup()
       {
          buf[i].x = bulbSocket[i].x*m_d.m_meshRadius + m_d.m_vCenter.x;
          buf[i].y = bulbSocket[i].y*m_d.m_meshRadius + m_d.m_vCenter.y;
-         buf[i].z = bulbSocket[i].z*m_d.m_meshRadius*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + bulb_z;
+         buf[i].z = bulbSocket[i].z*m_d.m_meshRadius + bulb_z;
          buf[i].nx = bulbSocket[i].nx;
          buf[i].ny = bulbSocket[i].ny;
          buf[i].nz = bulbSocket[i].nz;

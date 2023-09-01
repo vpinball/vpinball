@@ -716,9 +716,7 @@ void Primitive::RecalculateMatrices()
 
    m_fullMatrix = Smatrix;
    RTmatrix.Multiply(m_fullMatrix, m_fullMatrix);
-   Tmatrix.Multiply(m_fullMatrix, m_fullMatrix);        // m_fullMatrix = Smatrix * RTmatrix * Tmatrix
-   Smatrix.SetScaling(1.0f, 1.0f, m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]);
-   Smatrix.Multiply(m_fullMatrix, m_fullMatrix);
+   Tmatrix.Multiply(m_fullMatrix, m_fullMatrix);        // m_fullMatrix = RTmatrix * Tmatrix
 }
 
 //

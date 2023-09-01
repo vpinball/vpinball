@@ -525,7 +525,7 @@ void Trigger::UpdateAnimation(const float diff_time_msec)
       default:            animLimit = 32.0f; break;
    }
 
-   const float limit = animLimit*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+   const float limit = animLimit;
 
    if (m_hitEvent)
    {
@@ -546,7 +546,7 @@ void Trigger::UpdateAnimation(const float diff_time_msec)
 
    if (m_doAnimation)
    {
-      float step = diff_time_msec*m_d.m_animSpeed*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+      float step = diff_time_msec*m_d.m_animSpeed;
       if (m_moveDown)
          step = -step;
       m_animHeightOffset += step;
@@ -684,7 +684,7 @@ void Trigger::ExportMesh(ObjLoader& loader)
 
 void Trigger::GenerateMesh()
 {
-   const float baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+   const float baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
    const Vertex3D_NoTex2 *verts;
    float zoffset = (m_d.m_shape == TriggerButton) ? 5.0f : 0.0f;
    if (m_d.m_shape == TriggerWireC) zoffset = -19.0f;
@@ -768,13 +768,13 @@ void Trigger::GenerateMesh()
       {
          m_triggerVertices[i].x = (vert.x*m_d.m_radius) + m_d.m_vCenter.x;
          m_triggerVertices[i].y = (vert.y*m_d.m_radius) + m_d.m_vCenter.y;
-         m_triggerVertices[i].z = (vert.z*m_d.m_radius*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]) + baseHeight+zoffset;
+         m_triggerVertices[i].z = (vert.z*m_d.m_radius) + baseHeight+zoffset;
       }
       else 
       {
          m_triggerVertices[i].x = (vert.x*m_d.m_scaleX) + m_d.m_vCenter.x;
          m_triggerVertices[i].y = (vert.y*m_d.m_scaleY) + m_d.m_vCenter.y;
-         m_triggerVertices[i].z = (vert.z*1.0f*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]) + baseHeight+zoffset;
+         m_triggerVertices[i].z = (vert.z*1.0f) + baseHeight+zoffset;
       }
 
       vert = Vertex3Ds(verts[i].nx, verts[i].ny, verts[i].nz);

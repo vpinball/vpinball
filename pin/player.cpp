@@ -4553,14 +4553,6 @@ void Player::DrawBalls()
                      );
       m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetVector(SHADER_invTableRes_playfield_height_reflection, &phr);
 
-      if ((zheight > maxz) || (pball->m_d.m_pos.z < minz))
-      {
-         // scaling the ball height by the z scale value results in a flying ball over the playfield/ramp
-         // by reducing it with 0.96f (a factor found by trial'n error) the ball is on the ramp again
-         if (m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] != 1.0f)
-            zheight *= (m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] * 0.96f);
-      }
-
       // collect the x nearest lights that can reflect on balls
       Light* light_nearest[MAX_BALL_LIGHT_SOURCES];
       search_for_nearest(pball, lights, light_nearest);

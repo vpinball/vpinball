@@ -130,7 +130,7 @@ public:
    void PutCenter(const Vertex2D& pv) final { PutPointCenter(pv); }
    Vertex2D GetPointCenter() const final;
    void PutPointCenter(const Vertex2D& pv) final;
-   float GetCurrentHeight() const { return m_backglass ? 0.0f : m_initSurfaceHeight + m_d.m_height * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]; }
+   float GetCurrentHeight() const { return m_backglass ? 0.0f : m_initSurfaceHeight + m_d.m_height; }
 
    bool IsTransparent() const final { return m_d.m_BulbLight || (m_surfaceMaterial && m_surfaceMaterial->m_bOpacityActive); }
    bool RenderToLightBuffer() const final { return m_d.m_BulbLight && (m_d.m_transmissionScale > 0.f) && !m_backglass; }

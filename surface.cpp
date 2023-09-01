@@ -545,7 +545,7 @@ void Surface::EndPlay()
 void Surface::UpdateBounds()
 {
    const Vertex2D center2D = GetPointCenter();
-   m_boundingSphereCenter.Set(center2D.x, center2D.y, m_d.m_heighttop * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]);
+   m_boundingSphereCenter.Set(center2D.x, center2D.y, m_d.m_heighttop);
 }
 
 void Surface::MoveOffset(const float dx, const float dy)
@@ -795,9 +795,6 @@ void Surface::ExportMesh(ObjLoader& loader)
    const float oldBottomHeight = m_d.m_heightbottom;
    const float oldTopHeight = m_d.m_heighttop;
 
-   m_d.m_heightbottom *= m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
-   m_d.m_heighttop *= m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
-
    vector<Vertex3D_NoTex2> topBuf;
    vector<Vertex3D_NoTex2> sideBuf;
    vector<WORD> topBottomIndices;
@@ -971,8 +968,6 @@ void Surface::RenderSetup()
    
    UpdateBounds();
 
-   m_d.m_heightbottom *= m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
-   m_d.m_heighttop *= m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
    if (!m_vlinesling.empty())
       PrepareSlingshots();
 
