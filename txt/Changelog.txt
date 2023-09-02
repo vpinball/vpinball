@@ -111,6 +111,14 @@ FEATURES:
   - support a new 'window' mode, designed for pincab users, where the screen is not orthogonal to the viewer, requiring an adjusted projection.
 - change camera mode buttons to match the ones when starting VPX with -povedit (Start = Export POV, Credit = Reset/Quit, Plunger = Defaults)
 
+- stereo rendering has been rewritten:
+  - use new projections which are well-designed for stereo rendering (same as for VR, no more parallel or toe-in with artefacts)
+  - compute exact depth informations when using the new 'window' POV mode (note that you should have the same X/Y/Z scene scale to get good results)
+  - add complete support for amber/blue & blue/amber glasses
+  - allow to adjust image brightness and per eye contrast
+  - add all stereo settings to the Live Editor to get live feedback (in the Live Editor > Preferences > Video Settings dialog)
+  Note that the DirectX flavor of VPX does not support real stereo rendering. The OpenGL flavor should be preferred when using stereo (at the cost of some performance requirements)
+
 - the ball texture can now be set as either a spherical map (the default, like it used to be before 10.8), or as an equirectangular map. Equirectangular maps
   are also used already for the environment lighting. The benefit of using them is that the reflections are view dependent and that they can match
   the table environment lighting image for full consistency between the lighting and reflections.
