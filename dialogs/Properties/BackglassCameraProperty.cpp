@@ -43,12 +43,14 @@ void BackglassCameraProperty::UpdateVisuals(const int dispid/*=-1*/)
       PropertyDialog::UpdateComboBox(m_modeList, m_modeCombo, m_modeList[viewSetup.mMode]);
       bool isLegacy = viewSetup.mMode == VLM_LEGACY;
       bool isWindow = viewSetup.mMode == VLM_WINDOW;
-      GetDlgItem(IDC_STATIC4 ).SetWindowText(isLegacy ? "Layback" : "Look At");
+      GetDlgItem(IDC_STATIC2 ).SetWindowText(isLegacy ? "Inclination" : "Look At");
       GetDlgItem(IDC_STATIC9 ).SetWindowText(isLegacy ? "X Offset" : "X Position");
       GetDlgItem(IDC_STATIC10).SetWindowText(isLegacy ? "Y Offset" : "Y Position");
       GetDlgItem(IDC_STATIC11).SetWindowText(isLegacy ? "Z Offset" : "Z Position");
-      GetDlgItem(IDC_STATIC3 ).ShowWindow(isWindow ? 0 : 1);
-      GetDlgItem(IDC_FOV_EDIT).ShowWindow(isWindow ? 0 : 1);
+      GetDlgItem(IDC_STATIC3 ).ShowWindow(isWindow ? 0 : 1); // FOV label
+      GetDlgItem(IDC_FOV_EDIT).ShowWindow(isWindow ? 0 : 1); // FOV edit
+      GetDlgItem(IDC_STATIC4).ShowWindow(isLegacy ? 1 : 0); // Layback label
+      GetDlgItem(IDC_LAYBACK_EDIT).ShowWindow(isLegacy ? 1 : 0); // Layback edit
    }
    if (dispid == IDC_BG_COMBOBOX || dispid == -1)
       PropertyDialog::UpdateComboBox(m_viewList, m_viewCombo, m_viewList[table->m_currentBackglassMode]);
@@ -57,10 +59,7 @@ void BackglassCameraProperty::UpdateVisuals(const int dispid/*=-1*/)
    if (dispid == IDC_FOV_EDIT || dispid == -1)
       PropertyDialog::SetFloatTextbox(m_fovEdit, viewSetup.mFOV);
    if (dispid == IDC_LAYBACK_EDIT || dispid == -1)
-      if (viewSetup.mMode == VLM_LEGACY)
-         PropertyDialog::SetFloatTextbox(m_laybackEdit, viewSetup.mLayback);
-      else
-         PropertyDialog::SetFloatTextbox(m_laybackEdit, viewSetup.mLookAt);
+      PropertyDialog::SetFloatTextbox(m_laybackEdit, viewSetup.mLayback);
    if (dispid == IDC_XY_ROTATION_EDIT || dispid == -1)
       PropertyDialog::SetFloatTextbox(m_xyRotationEdit, viewSetup.mViewportRotation);
    if (dispid == IDC_X_SCALE_EDIT || dispid == -1)
