@@ -19,7 +19,7 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
    if (mMode == VLM_WINDOW)
    {
       quadrant = ((int)mViewportRotation) - (((int)mViewportRotation) / 360) * 360;
-      quadrant = (quadrant < 0 ? quadrant + 360 : quadrant) / 90; // 0 / 90 / 180 / 270
+      quadrant = (viewportWidth < viewportHeight ? 0 : 3) + (quadrant < 0 ? quadrant + 360 : quadrant) / 90; // 0 / 90 / 180 / 270
       rotation = ANGTORAD(quadrant * 90);
    }
    else

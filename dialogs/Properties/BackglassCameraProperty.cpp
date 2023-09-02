@@ -47,7 +47,8 @@ void BackglassCameraProperty::UpdateVisuals(const int dispid/*=-1*/)
       GetDlgItem(IDC_STATIC9 ).SetWindowText(isLegacy ? "X Offset" : "X Position");
       GetDlgItem(IDC_STATIC10).SetWindowText(isLegacy ? "Y Offset" : "Y Position");
       GetDlgItem(IDC_STATIC11).SetWindowText(isLegacy ? "Z Offset" : "Z Position");
-      GetDlgItem(IDC_STATIC3 ).ShowWindow(isWindow ? 0 : 1); // FOV label
+      GetDlgItem(IDC_STATIC5 ).SetWindowText(isWindow ? "Rot. Offset" : "Rotation");
+      GetDlgItem(IDC_STATIC3).ShowWindow(isWindow ? 0 : 1); // FOV label
       GetDlgItem(IDC_FOV_EDIT).ShowWindow(isWindow ? 0 : 1); // FOV edit
       GetDlgItem(IDC_STATIC4).ShowWindow(isLegacy ? 1 : 0); // Layback label
       GetDlgItem(IDC_LAYBACK_EDIT).ShowWindow(isLegacy ? 1 : 0); // Layback edit
