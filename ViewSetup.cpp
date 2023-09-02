@@ -8,13 +8,25 @@ ViewSetup::ViewSetup()
 void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth, const int viewportHeight, const bool stereo, ModelViewProj& mvp, const vec3& cam, const float cam_inc,
    const float xpixoff, const float ypixoff)
 {
-   const ViewLayoutMode layoutMode = mMode;
-   const float rotation = ANGTORAD(mViewportRotation);
    const float FOV = (mFOV < 1.0f) ? 1.0f : mFOV; // Can't have a real zero FOV, but this will look almost the same
-   const bool isLegacy = layoutMode == VLM_LEGACY;
+   const bool isLegacy = mMode == VLM_LEGACY;
    const float aspect = (float)((double)viewportWidth / (double)viewportHeight);
    float camx = cam.x, camy = cam.y, camz = cam.z;
    
+   // Viewport rotation. Window mode does not support free rotation (since we fit the table to the screen)
+   float rotation;
+   int quadrant;
+   if (mMode == VLM_WINDOW)
+   {
+      quadrant = ((int)mViewportRotation) - (((int)mViewportRotation) / 360) * 360;
+      quadrant = (quadrant < 0 ? quadrant + 360 : quadrant) / 90; // 0 / 90 / 180 / 270
+      rotation = ANGTORAD(quadrant * 90);
+   }
+   else
+   {
+      rotation = ANGTORAD(mViewportRotation);
+   }
+
    // View angle inclination against playfield. 0 is straight up the playfield.
    float inc;
    switch (mMode)
@@ -133,7 +145,7 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
 
    // Compute frustrum X/Y bounds
    float xcenter, ycenter, xspan, yspan;
-   switch (layoutMode)
+   switch (mMode)
    {
    case VLM_LEGACY:
    {
@@ -156,7 +168,8 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
    {
       // Fit camera to adjusted table bounds
       // We do not apply the scene scale since we want to fit the scaled version of the table as if it was the normal version (otherwise it would reverse the scaling during the fitting)
-      Matrix3D fit = lookat * rotz * Matrix3D::MatrixScale(1.f, -1.f, -1.f) * Matrix3D::MatrixPerspectiveFovLH(90.f, 1.f, zNear, zFar) * projTrans;
+      // For fitting, we use a vertical FOV of 90°, leading to a yspan of 1, and an aspect ratio of 1, also leading to a xspan of 1
+      Matrix3D fit = lookat * rotz * Matrix3D::MatrixScale(1.f, -1.f, -1.f) * Matrix3D::MatrixPerspectiveFovLH(90.f, 1.0f, zNear, zFar) * projTrans;
       Vertex3Ds tl = fit.MultiplyVector(Vertex3Ds(table->m_left - mWindowTopXOfs, table->m_top - mWindowTopYOfs, mWindowTopZOfs));
       Vertex3Ds tr = fit.MultiplyVector(Vertex3Ds(table->m_right + mWindowTopXOfs, table->m_top - mWindowTopYOfs, mWindowTopZOfs));
       Vertex3Ds bl = fit.MultiplyVector(Vertex3Ds(table->m_left - mWindowBottomXOfs, table->m_bottom + mWindowBottomYOfs, mWindowBottomZOfs));
@@ -165,11 +178,18 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
       const float ymin = zNear * min(br.y, min(bl.y, min(tl.y, tr.y)));
       const float xmax = zNear * max(br.x, max(bl.x, max(tl.x, tr.x)));
       const float xmin = zNear * min(br.x, min(bl.x, min(tl.x, tr.x)));
-      const float ar = (xmax - xmin) / (ymax - ymin);
       xcenter = 0.5f * (xmin + xmax) + zNear * 0.01f * (mViewVOfs * sinf(rotation) - mViewHOfs * cosf(rotation));
       ycenter = 0.5f * (ymin + ymax) + zNear * 0.01f * (mViewVOfs * cosf(rotation) + mViewHOfs * sinf(rotation));
-      xspan = (aspect / ar) * 0.5f * (xmax - xmin);
-      yspan =                 0.5f * (ymax - ymin);
+      if ((quadrant & 1) == 0) // 0 & 180
+      {
+         yspan = 0.5f * (ymax - ymin);
+         xspan = yspan * aspect;
+      }
+      else // 90 & 270
+      {
+         xspan = 0.5f * (xmax - xmin);
+         yspan = xspan / aspect;
+      }
       break;
    }
    }
@@ -195,7 +215,7 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
       // - for cabinet (window) mode, we use the orthogonal distance to the screen (window)
       // - for camera mode, we place the 0 depth line on the lower third of the playfield
       // This way, we don't have negative parallax (objects closer than projection plane) and all the artefact they may cause
-      const float zNullSeparation = layoutMode == VLM_WINDOW ? (mViewZ - mWindowBottomZOfs + mViewY * tan(inc))
+      const float zNullSeparation = mMode == VLM_WINDOW ? (mViewZ - mWindowBottomZOfs + mViewY * tan(inc))
                                                              : -lookat.MultiplyVector(Vertex3Ds(0.5f * (table->m_left + table->m_right), table->m_bottom * 0.66f /* For flipper bats: 1800.f / 2150.f*/, 0.f)).z;
       const float ofs = 0.5f * eyeSeparation * zNear / zNullSeparation;
       const float xOfs = ofs * cosf(rotation);
