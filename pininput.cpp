@@ -1038,15 +1038,12 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
          PinTable* const table = g_pplayer->m_ptable;
          ViewSetupID id = table->m_BG_current_set;
          ViewSetup &viewSetup = table->mViewSetups[id];
-         // Default player position (90cm above, 30 cm away)
-         if (viewSetup.mViewportRotation != 0.f && viewSetup.mViewportRotation != 90.f && viewSetup.mViewportRotation != 180.f && viewSetup.mViewportRotation != 270.f)
-            viewSetup.mViewportRotation = 0.f;
+         viewSetup.mViewportRotation = 0.f;
          const bool portrait = g_pplayer->m_wnd_width < g_pplayer->m_wnd_height;
          switch (id)
          {
          case BG_DESKTOP:
          case BG_FSS:
-            viewSetup.mViewportRotation = 0.f;
             if (id == BG_DESKTOP && !portrait)
             { // Desktop
                viewSetup.mMode = (ViewLayoutMode)LoadValueWithDefault(regKey[RegName::DefaultCamera], "DesktopMode"s, VLM_CAMERA);
@@ -1075,7 +1072,6 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
             }
             break;
          case BG_FULLSCREEN:
-            viewSetup.mViewportRotation = portrait ? 0.f : 270.f;
             viewSetup.mMode = (ViewLayoutMode) LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetMode"s, VLM_WINDOW);
             viewSetup.mViewX = CMTOVPU(LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetCamX"s, 0.f));
             viewSetup.mViewY = CMTOVPU(LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetCamY"s, 20.f));
