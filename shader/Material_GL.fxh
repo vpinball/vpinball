@@ -168,6 +168,7 @@ float3 lightLoop(const float3 pos, float3 N, const float3 V, float3 diffuse, flo
       N = -N;
       NdotV = -NdotV;
    }
+   NdotV = min(NdotV, 1.0); // For some reason I don't get, N (which is normalized) dot V (which is also normalized) lead to value exceeding 1.0 then causing overflow
 
    float3 color = float3(0.0, 0.0, 0.0);
 
