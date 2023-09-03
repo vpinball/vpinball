@@ -1640,21 +1640,24 @@ void LiveUI::UpdateOutlinerUI()
                {
                   m_selection = cam0;
                   m_useEditorCam = false;
-                  table->m_BG_current_set = BG_DESKTOP;
+                  table->m_BG_override = BG_DESKTOP;
+                  table->UpdateCurrentBGSet();
                }
                Selection cam1(Selection::SelectionType::S_CAMERA, is_live, 1);
                if (ImGui::Selectable("Cabinet", m_selection == cam1))
                {
                   m_selection = cam1;
                   m_useEditorCam = false;
-                  table->m_BG_current_set = BG_FULLSCREEN;
+                  table->m_BG_override = BG_FULLSCREEN;
+                  table->UpdateCurrentBGSet();
                }
                Selection cam2(Selection::SelectionType::S_CAMERA, is_live, 2);
                if (ImGui::Selectable("Full Single Screen", m_selection == cam2))
                {
                   m_selection = cam2;
                   m_useEditorCam = false;
-                  table->m_BG_current_set = BG_FSS;
+                  table->m_BG_override = BG_FSS;
+                  table->UpdateCurrentBGSet();
                }
                ImGui::TreePop();
             }

@@ -88,8 +88,6 @@ Player::Player(const bool cameraMode, PinTable *const editor_table, PinTable *co
    m_pauseRefCount = 0;
    m_noTimeCorrect = false;
 
-   m_toogle_DTFS = false;
-
    m_render_mask = DEFAULT;
 
    m_throwBalls = false;
@@ -768,16 +766,6 @@ void Player::Shutdown()
 
    SetCameraMode(false); // To save edited camera & environment
 
-   if (m_toogle_DTFS && m_ptable->m_BG_current_set != BG_FSS)
-   {
-      switch (m_ptable->m_BG_current_set)
-      {
-      case BG_DESKTOP: m_ptable->m_BG_current_set = BG_FSS; break;
-      case BG_FSS: m_ptable->m_BG_current_set = BG_DESKTOP; break;
-      default: break;
-      }
-   }
-
    m_pininput.UnInit();
 
    delete m_ballMeshBuffer;
@@ -1269,15 +1257,14 @@ HRESULT Player::Init()
        ((GetAsyncKeyState(VK_LSHIFT) & 0x8000)
        || ((lflip != ~0u) && (GetAsyncKeyState(lflip) & 0x8000))))
    {
-      m_toogle_DTFS = true;
       switch (m_ptable->m_BG_current_set)
       {
-      case BG_DESKTOP: m_ptable->m_BG_current_set = BG_FSS; break;
-      case BG_FSS: m_ptable->m_BG_current_set = BG_DESKTOP; break;
+      case BG_DESKTOP: m_ptable->m_BG_override = BG_FSS; break;
+      case BG_FSS: m_ptable->m_BG_override = BG_DESKTOP; break;
+      default: break;
       }
+      m_ptable->UpdateCurrentBGSet();
    }
-   else
-       m_toogle_DTFS = false;
 
    m_pin3d.InitLayout();
 

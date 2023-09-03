@@ -8,9 +8,16 @@ BackglassCameraProperty::BackglassCameraProperty(const VectorProtected<ISelect> 
     m_viewList.push_back("Desktop (DT)");
     m_viewList.push_back("Fullscreen (FS)");
     m_viewList.push_back("Full Single Screen (FSS)");
+    m_viewCombo.SetDialog(this);
     m_modeList.push_back("Legacy");
     m_modeList.push_back("Camera");
     m_modeList.push_back("Window");
+    m_modeCombo.SetDialog(this);
+    m_testOverrideCombo.SetDialog(this);
+    m_overrideList.push_back("Test Desktop");
+    m_overrideList.push_back("Test Cabinet");
+    m_overrideList.push_back("Test FSS");
+    m_overrideList.push_back("Disabled");
     m_inclinationEdit.SetDialog(this);
     m_fovEdit.SetDialog(this);
     m_laybackEdit.SetDialog(this);
@@ -23,8 +30,6 @@ BackglassCameraProperty::BackglassCameraProperty(const VectorProtected<ISelect> 
     m_xOffsetEdit.SetDialog(this);
     m_yOffsetEdit.SetDialog(this);
     m_zOffsetEdit.SetDialog(this);
-    m_viewCombo.SetDialog(this);
-    m_modeCombo.SetDialog(this);
 }
 
 void BackglassCameraProperty::UpdateVisuals(const int dispid/*=-1*/)
@@ -35,9 +40,11 @@ void BackglassCameraProperty::UpdateVisuals(const int dispid/*=-1*/)
 
    ViewSetup &viewSetup = table->mViewSetups[table->m_currentBackglassMode];
    if (dispid == IDC_BG_FSS || dispid == -1)
-      PropertyDialog::SetCheckboxState(m_hFssModeCheck, table->GetShowFSS());
+      PropertyDialog::SetCheckboxState(m_hFssModeCheck, table->IsFSSEnabled());
    if (dispid == IDC_BG_TEST_DESKTOP_CHECK || dispid == -1)
-      PropertyDialog::SetCheckboxState(m_hTestDesktopCheck, table->GetShowDT());
+   {
+      PropertyDialog::UpdateComboBox(m_overrideList, m_testOverrideCombo, m_overrideList[table->m_BG_override]);
+   }
    if (dispid == IDC_CAMERA_LAYOUT_MODE || dispid == -1)
    {
       PropertyDialog::UpdateComboBox(m_modeList, m_modeCombo, m_modeList[viewSetup.mMode]);
@@ -90,10 +97,9 @@ void BackglassCameraProperty::UpdateProperties(const int dispid)
    ViewSetup &viewSetup = table->mViewSetups[table->m_currentBackglassMode];
    switch (dispid)
    {
-      case IDC_BG_FSS: CHECK_UPDATE_VALUE_SETTER(table->SetShowFSS, table->GetShowFSS, PropertyDialog::GetCheckboxState, m_hFssModeCheck, table); break;
-      case IDC_BG_TEST_DESKTOP_CHECK: CHECK_UPDATE_VALUE_SETTER(table->SetShowDT, table->GetShowDT, PropertyDialog::GetCheckboxState, m_hTestDesktopCheck, table); break;
+      case IDC_BG_FSS: CHECK_UPDATE_VALUE_SETTER(table->EnableFSS, table->IsFSSEnabled, PropertyDialog::GetCheckboxState, m_hFssModeCheck, table); table->UpdateCurrentBGSet(); break;
+      case IDC_BG_OVERRIDE_COMBO: CHECK_UPDATE_ITEM(table->m_BG_override, (ViewSetupID)PropertyDialog::GetComboBoxIndex(m_testOverrideCombo, m_overrideList), table); table->UpdateCurrentBGSet(); break;
       case IDC_BG_COMBOBOX: CHECK_UPDATE_ITEM(table->m_currentBackglassMode, (ViewSetupID) PropertyDialog::GetComboBoxIndex(m_viewCombo, m_viewList), table); break;
-
       case IDC_CAMERA_LAYOUT_MODE: CHECK_UPDATE_ITEM(viewSetup.mMode, (ViewLayoutMode)PropertyDialog::GetComboBoxIndex(m_modeCombo, m_modeList), table); break;
       case IDC_INCLINATION_EDIT: CHECK_UPDATE_ITEM(viewSetup.mLookAt, PropertyDialog::GetFloatTextbox(m_inclinationEdit), table); break;
       case IDC_FOV_EDIT: CHECK_UPDATE_ITEM(viewSetup.mFOV, PropertyDialog::GetFloatTextbox(m_fovEdit), table); break;
@@ -122,7 +128,7 @@ void BackglassCameraProperty::UpdateProperties(const int dispid)
 BOOL BackglassCameraProperty::OnInitDialog()
 {
     m_hFssModeCheck = ::GetDlgItem(GetHwnd(), IDC_BG_FSS);
-    m_hTestDesktopCheck = ::GetDlgItem(GetHwnd(), IDC_BG_TEST_DESKTOP_CHECK);
+    m_testOverrideCombo.AttachItem(IDC_BG_OVERRIDE_COMBO);
     m_viewCombo.AttachItem(IDC_BG_COMBOBOX);
     m_modeCombo.AttachItem(IDC_CAMERA_LAYOUT_MODE);
     m_inclinationEdit.AttachItem(IDC_INCLINATION_EDIT);
@@ -162,7 +168,7 @@ BOOL BackglassCameraProperty::OnInitDialog()
     m_resizer.AddChild(GetDlgItem(IDC_STATIC25), CResizer::topleft, RD_STRETCH_WIDTH);
     // Controls
     m_resizer.AddChild(m_hFssModeCheck, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_hTestDesktopCheck, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_testOverrideCombo, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_viewCombo, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_modeCombo, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_inclinationEdit, CResizer::topleft, RD_STRETCH_WIDTH);

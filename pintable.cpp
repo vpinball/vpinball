@@ -791,39 +791,17 @@ STDMETHODIMP ScriptGlobalTable::get_NightDay(int *pVal)
    return S_OK;
 }
 
-/*STDMETHODIMP ScriptGlobalTable::put_ShowDT(int pVal)
-{
-   if (g_pplayer)
-      m_pt->m_BG_current_set = (!!newVal) ? 0 : 1;
-   return S_OK;
-}*/
-
 STDMETHODIMP ScriptGlobalTable::get_ShowDT(VARIANT_BOOL *pVal)
 {
-   if (g_pplayer)
-      *pVal = FTOVB(m_pt->m_BG_current_set == BG_DESKTOP || m_pt->m_BG_current_set == BG_FSS); // DT & FSS
+   *pVal = FTOVB(m_pt->m_BG_current_set == BG_DESKTOP || m_pt->m_BG_current_set == BG_FSS); // DT & FSS
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_ShowFSS(VARIANT_BOOL *pVal)
 {
-   *pVal = FTOVB(m_pt->m_BG_enable_FSS); //*pVal = FTOVB(m_pt->m_BG_current_set == 2);
-
+   *pVal = FTOVB(m_pt->m_BG_current_set == BG_FSS);
    return S_OK;
 }
-
-/*STDMETHODIMP PinTable::put_ShowFSS(VARIANT_BOOL newVal)
-{
-   STARTUNDO
-   m_BG_enable_FSS = VBTOb(newVal);
-   if (m_BG_enable_FSS)
-      m_BG_current_set = FULL_SINGLE_SCREEN;
-   else
-      LoadValue(regKey[RegName::Player], "BGSet"s, m_BG_current_set);
-   STOPUNDO
-
-   return S_OK;
-}*/
 
 STDMETHODIMP ScriptGlobalTable::UpdateMaterial(BSTR pVal, float wrapLighting, float roughness, float glossyImageLerp, float thickness, float edge, float edgeAlpha, float opacity,
    OLE_COLOR base, OLE_COLOR glossy, OLE_COLOR clearcoat, VARIANT_BOOL isMetal, VARIANT_BOOL opacityActive,
@@ -1326,12 +1304,9 @@ PinTable::PinTable()
    m_glassheight = 210;
    m_tableheight = 0;
 
-   m_BG_current_set = (ViewSetupID)LoadValueWithDefault(regKey[RegName::Player], "BGSet"s, (int)BG_DESKTOP);
-   m_currentBackglassMode = m_BG_current_set;
-
    m_BG_enable_FSS = false;
-   //if (m_BG_enable_FSS)
-   //   m_currentBackglassMode = FULL_SINGLE_SCREEN;
+   UpdateCurrentBGSet();
+   m_currentBackglassMode = m_BG_current_set;
 
    CComObject<CodeViewer>::CreateInstance(&m_pcv);
    m_pcv->AddRef();
@@ -1993,7 +1968,7 @@ void PinTable::Render3DProjection(Sur * const psur)
 
    // dummy coordinate system for backdrop view
    ModelViewProj mvp;
-   mViewSetups[m_BG_current_set].ComputeMVP(this, EDITOR_BG_WIDTH, EDITOR_BG_HEIGHT, false, mvp);
+   mViewSetups[m_currentBackglassMode].ComputeMVP(this, EDITOR_BG_WIDTH, EDITOR_BG_HEIGHT, false, mvp);
 
    Vertex3Ds rgvIn[8];
    rgvIn[0].x = m_left;  rgvIn[0].y = m_top;    rgvIn[0].z = 50.0f;
@@ -2149,7 +2124,6 @@ void PinTable::Play(const bool cameraMode)
    dst->m_top = src->m_top;
    dst->m_right = src->m_right;
    dst->m_bottom = src->m_bottom;
-   dst->m_BG_enable_FSS = src->m_BG_enable_FSS;
    dst->m_overridePhysics = src->m_overridePhysics;
    dst->m_fOverrideGravityConstant = src->m_fOverrideGravityConstant;
    dst->m_fOverrideContactFriction = src->m_fOverrideContactFriction;
@@ -2227,6 +2201,8 @@ void PinTable::Play(const bool cameraMode)
 
    dst->m_Light[0].emission = src->m_Light[0].emission;
 
+   dst->m_BG_enable_FSS = src->m_BG_enable_FSS;
+   dst->m_BG_override = src->m_BG_override;
    dst->m_BG_current_set = src->m_BG_current_set;
    dst->m_currentBackglassMode = src->m_currentBackglassMode;
    dst->m_3DmaxSeparation = src->m_3DmaxSeparation;
@@ -4237,13 +4213,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    case FID(WBX2): pbr->GetFloat(mViewSetups[BG_FSS].mWindowBottomXOfs); break;
    case FID(WBY2): pbr->GetFloat(mViewSetups[BG_FSS].mWindowBottomYOfs); break;
    case FID(WBZ2): pbr->GetFloat(mViewSetups[BG_FSS].mWindowBottomZOfs); break;
-   case FID(EFSS):
-   {
-      pbr->GetBool(m_BG_enable_FSS);
-      if (m_BG_enable_FSS)
-         m_BG_current_set = BG_FSS; //!! FSS
-      break;
-   }
+   case FID(EFSS): { pbr->GetBool(m_BG_enable_FSS); UpdateCurrentBGSet(); break; }
    //case FID(VERS): pbr->GetString(szVersion); break;
    case FID(ORRP): pbr->GetInt(m_overridePhysics); break;
    case FID(ORPF): pbr->GetBool(m_overridePhysicsFlipper); break;
@@ -8807,36 +8777,37 @@ STDMETHODIMP PinTable::put_BackdropImageApplyNightDay(VARIANT_BOOL newVal)
    return S_OK;
 }
 
-bool PinTable::GetShowFSS() const
+bool PinTable::IsFSSEnabled() const
 {
    return m_BG_enable_FSS;
 }
 
-void PinTable::SetShowFSS(const bool enable)
+void PinTable::EnableFSS(const bool enable)
 {
    m_BG_enable_FSS = enable;
-   if (m_BG_enable_FSS)
-      m_BG_current_set = BG_FSS;
+   UpdateCurrentBGSet();
+}
+
+void PinTable::UpdateCurrentBGSet()
+{
+   if (m_BG_override != BG_INVALID)
+      m_BG_current_set = m_BG_override;
    else
    {
       int setup;
       LoadValue(regKey[RegName::Player], "BGSet"s, setup);
-      m_BG_current_set = (ViewSetupID)setup;
+      switch (setup)
+      {
+      case 0: m_BG_current_set = m_BG_enable_FSS ? BG_FSS : BG_DESKTOP; break; // Desktop mode (FSS if table supports it, usual dekstop otherwise)
+      case 1: m_BG_current_set = BG_FULLSCREEN; break; // Cabinet mode
+      case 2: m_BG_current_set = BG_DESKTOP; break; // Desktop mode with FSS disabled (forced desktop)
+      }
    }
 }
 
 STDMETHODIMP PinTable::get_ShowFSS(VARIANT_BOOL *pVal)
 {
-   *pVal = FTOVB(GetShowFSS()); //*pVal = FTOVB(m_BG_current_set == 2);
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_ShowFSS(VARIANT_BOOL newVal)
-{
-   STARTUNDO
-   SetShowFSS(VBTOb(newVal));
-   STOPUNDO
+   *pVal = FTOVB(IsFSSEnabled());
 
    return S_OK;
 }
@@ -9959,30 +9930,9 @@ STDMETHODIMP PinTable::put_EnableDecals(VARIANT_BOOL newVal)
    return S_OK;
 }
 
-bool PinTable::GetShowDT() const
-{
-    return m_BG_current_set == BG_DESKTOP || m_BG_current_set == BG_FSS;
-}
-
-void PinTable::SetShowDT(const bool enable)
-{
-    m_BG_current_set = enable ? (m_BG_enable_FSS ? BG_FSS : BG_DESKTOP) : BG_FULLSCREEN;
-}
-
 STDMETHODIMP PinTable::get_ShowDT(VARIANT_BOOL *pVal)
 {
-   *pVal = FTOVB(GetShowDT()); // DT & FSS
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_ShowDT(VARIANT_BOOL newVal)
-{
-   //STARTUNDO // not saved/just a simple toggle, so do not trigger undo
-   SetShowDT(VBTOb(newVal));
-   //STOPUNDO
-
-   SetDirtyDraw();
+   *pVal = FTOVB(m_BG_current_set == BG_DESKTOP || m_BG_current_set == BG_FSS); // DT & FSS
 
    return S_OK;
 }

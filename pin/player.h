@@ -621,8 +621,6 @@ public:
    bool m_overwriteBallImages;
    Texture *m_ballImage;
    Texture *m_decalImage;
-
-   bool m_toogle_DTFS;
 #pragma endregion
 
 
