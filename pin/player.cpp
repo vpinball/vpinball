@@ -1986,7 +1986,8 @@ void Player::CalcBallAspectRatio()
    const float scalebackX = (viewSetup.mSceneScaleX != 0.0f) ? ((viewSetup.mSceneScaleX + viewSetup.mSceneScaleY) * 0.5f) / viewSetup.mSceneScaleX : 1.0f;
    const float scalebackY = (viewSetup.mSceneScaleY != 0.0f) ? ((viewSetup.mSceneScaleX + viewSetup.mSceneScaleY) * 0.5f) / viewSetup.mSceneScaleY : 1.0f;
 
-   const float rotation = viewSetup.GetRotation(m_pin3d.m_pd3dPrimaryDevice->m_width, m_pin3d.m_pd3dPrimaryDevice->m_height);
+   const float rotation = viewSetup.GetRotation(m_wnd_width, m_wnd_height); // FIXME We use the window size since this is called before creating the device (which is a bit wrong)
+      // m_pin3d.m_pd3dPrimaryDevice->m_width, m_pin3d.m_pd3dPrimaryDevice->m_height);
    const float c = sinf(ANGTORAD(fmodf(rotation + 90.0f, 180.0f)));
    const float s = sinf(ANGTORAD(fmodf(rotation, 180.0f)));
    m_BallStretch = Vertex2D(scalebackX * c + scalebackY * s, scalebackY * c + scalebackX * s);
