@@ -884,7 +884,7 @@ void LiveUI::Update()
       // Display FPS window with plots
       constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
       ImGui::SetNextWindowSize(ImVec2(530, 500));
-      ImGui::SetNextWindowPos(ImVec2((float)(m_player->m_wnd_width - 530 - 10), io.DisplaySize.y - 10 - 500)); //10 + m_menubar_height + m_toolbar_height));
+      ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x - 530 - 10, io.DisplaySize.y - 10 - 500)); //10 + m_menubar_height + m_toolbar_height));
       ImGui::Begin("Plots", nullptr, window_flags);
       //!! This example assumes 60 FPS. Higher FPS requires larger buffer size.
       static ScrollingData sdata1, sdata2, sdata3, sdata4, sdata5, sdata6;
