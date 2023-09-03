@@ -766,6 +766,8 @@ void Player::Shutdown()
    delete m_liveUI;
    m_liveUI = nullptr;
 
+   SetCameraMode(false); // To save edited camera & environment
+
    if (m_toogle_DTFS && m_ptable->m_BG_current_set != BG_FSS)
    {
       switch (m_ptable->m_BG_current_set)
@@ -775,8 +777,6 @@ void Player::Shutdown()
       default: break;
       }
    }
-
-   SetCameraMode(false); // To save edited camera & enviornment
 
    m_pininput.UnInit();
 
