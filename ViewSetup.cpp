@@ -11,7 +11,7 @@ float ViewSetup::GetRotation(const int viewportWidth, const int viewportHeight) 
    {
       int rotation;
       rotation = ((int)mViewportRotation) - (((int)mViewportRotation) / 360) * 360;
-      return ((viewportWidth < viewportHeight ? 0 : 3) * 90 + (rotation < 0 ? rotation + 360 : rotation)) % 360; // 0 / 90 / 180 / 270
+      return (float) (((viewportWidth < viewportHeight ? 0 : 3) * 90 + (rotation < 0 ? rotation + 360 : rotation)) % 360); // 0 / 90 / 180 / 270
    }
    else
    {

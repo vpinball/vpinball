@@ -627,7 +627,6 @@
 #define IDI_TEXTBOX                     392
 #define IDR_Flasher                     393
 #define IDI_REEL                        393
-#define IDC_GLOBAL_REFLECTION_CHECK     394
 #define IDC_ENABLE_OFF_LIGHTING         394
 #define IDC_ENABLE_RAMP_LIGHTING        394
 #define IDC_ENABLE_AA                   394
