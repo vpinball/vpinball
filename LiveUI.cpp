@@ -1005,6 +1005,7 @@ void LiveUI::UpdateCameraModeUI()
          case Player::BS_ViewMode: CM_ROW("View Layout Mode:", "%s", isLegacy ? "Legacy" : isCamera ? "Camera" : "Window", ""); CM_SKIP_LINE; break;
 
          // Scene scale
+         case Player::BS_XYZScale: break;
          case Player::BS_XScale: CM_ROW("Table X Scale", "%.1f", 100.f * viewSetup.mSceneScaleX, "%%"); break;
          case Player::BS_YScale: CM_ROW("Table Y Scale", "%.1f", 100.f * viewSetup.mSceneScaleY, "%%"); break;
          case Player::BS_ZScale: CM_ROW("Table Z Scale", "%.1f", 100.f * viewSetup.mSceneScaleZ, "%%"); CM_SKIP_LINE; break;

@@ -634,7 +634,7 @@ BOOL VideoOptionsDialog::OnInitDialog()
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "21: 9 [Portrait]");
    SendMessage(hwnd, CB_SETCURSEL, 0, 0);
    for (int i = 1; i < sizeof(arFactors) / sizeof(arFactors[0]); i++)
-      if (heightcur == (int)(arFactors[i] * widthcur))
+      if (heightcur == (int)(widthcur / arFactors[i]))
          SendMessage(hwnd, CB_SETCURSEL, i, 0);
    SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 
@@ -805,12 +805,13 @@ BOOL VideoOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
          GetDlgItem(IDC_10BIT_VIDEO).ShowWindow(fullscreen ? 1 : 0);
          // Window settings
          GetDlgItem(IDC_AR_LABEL).ShowWindow(fullscreen ? 0 : 1);
-         GetDlgItem(IDC_AR_EDIT).ShowWindow(fullscreen ? 0 : 1);
+         GetDlgItem(IDC_AR_COMBO).ShowWindow(fullscreen ? 0 : 1);
          GetDlgItem(IDC_WIDTH_LABEL).ShowWindow(fullscreen ? 0 : 1);
          GetDlgItem(IDC_WIDTH_EDIT).ShowWindow(fullscreen ? 0 : 1);
          GetDlgItem(IDC_HEIGHT_LABEL).ShowWindow(fullscreen ? 0 : 1);
          GetDlgItem(IDC_HEIGHT_EDIT).ShowWindow(fullscreen ? 0 : 1);
          GetDlgItem(IDC_RESET_WINDOW).ShowWindow(fullscreen ? 0 : 1);
+         break;
       }
       case IDC_DISPLAY_ID:
       {
@@ -818,6 +819,22 @@ BOOL VideoOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 
          // TODO clamp user width/height to display size ?
          // TODO select aspect ratio according to display ?
+         break;
+      }
+      case IDC_SIZELIST:
+      {
+         const bool fullscreen = SendMessage(GetDlgItem(IDC_EXCLUSIVE_FULLSCREEN).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED;
+         if (fullscreen)
+         {
+            const size_t index = SendMessage(GetDlgItem(IDC_SIZELIST).GetHwnd(), LB_GETCURSEL, 0, 0);
+            const VideoMode* const pvm = &m_allVideoModes[index];
+            SetDlgItemInt(IDC_WIDTH_EDIT, pvm->width, FALSE);
+            SetDlgItemInt(IDC_HEIGHT_EDIT, pvm->height, FALSE);
+            SendMessage(GetDlgItem(IDC_AR_COMBO).GetHwnd(), CB_SETCURSEL, 0, 0);
+            for (int i = 1; i < sizeof(arFactors) / sizeof(arFactors[0]); i++)
+               if (pvm->height == (int)(pvm->width / arFactors[i]))
+                  SendMessage(GetDlgItem(IDC_AR_COMBO).GetHwnd(), CB_SETCURSEL, i, 0);
+         }
          break;
       }
       case IDC_AR_COMBO:
@@ -905,8 +922,10 @@ void VideoOptionsDialog::OnOK()
       if (arMode > 0)
          height = (int)(width / arFactors[arMode]);
       if (width > 0 && height > 0)
+      {
          SaveValue(regKey[RegName::Player], "Width"s, width);
          SaveValue(regKey[RegName::Player], "Height"s, height);
+      }
    }
 
    const bool video10bit = (SendMessage(GetDlgItem(IDC_10BIT_VIDEO).GetHwnd(), BM_GETCHECK, 0, 0) != 0);
