@@ -425,7 +425,7 @@ BOOL VideoOptionsDialog::OnInitDialog()
 
    hwnd = GetDlgItem(IDC_MAX_REFLECTION_COMBO).GetHwnd();
    SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Disabled");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Disable Reflections");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Balls Only");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Static Only");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Static & Balls");

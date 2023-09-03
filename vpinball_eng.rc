@@ -398,7 +398,7 @@ BEGIN
     EDITTEXT        IDC_CORRECTION_X,273,68,40,12,ES_AUTOHSCROLL
     LTEXT           "Y",IDC_STATIC,263,84,8,8
     EDITTEXT        IDC_CORRECTION_Y,273,82,40,12,ES_AUTOHSCROLL
-    GROUPBOX        "Miscelaneous Features",IDC_STATIC,154,106,193,75
+    GROUPBOX        "Miscellaneous Features",IDC_STATIC,154,106,193,75
     LTEXT           "Visual Nudge Strength",IDC_STATIC,162,115,128,10
     EDITTEXT        IDC_NUDGE_STRENGTH,306,114,35,12,ES_RIGHT | ES_AUTOHSCROLL
     CONTROL         "Additional Screen Space Reflections",IDC_GLOBAL_SSREFLECTION_CHECK,
@@ -429,9 +429,9 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,300,150,10
     CONTROL         "Force Bloom Filter off (performance)",IDC_BLOOM_OFF,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,313,127,10
-    CONTROL         "Alternative Depth Buffer processing",IDC_USE_NVIDIA_API_CHECK,
+    CONTROL         "Use Alternative Depth Buffer processing",IDC_USE_NVIDIA_API_CHECK,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,326,127,10
-    CONTROL         "Software Vertex processing",IDC_SOFTWARE_VP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,339,104,10
+    CONTROL         "Use Software Vertex processing",IDC_SOFTWARE_VP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,339,104,10
     LTEXT           "Elements Detail Level (decrease = performance)",IDC_STATIC,162,351,156,8
     CONTROL         "",IDC_ARASlider,"msctls_trackbar32",TBS_AUTOTICKS | TBS_TOP | WS_TABSTOP,155,359,191,10
     PUSHBUTTON      "Reset to Defaults",IDC_DEFAULTS,154,378,61,14
