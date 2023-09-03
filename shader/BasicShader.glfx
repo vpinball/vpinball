@@ -364,14 +364,12 @@ out vec3 normal;
 in vec3 tablePos_gs[];
 out float3 tablePos;
 
-uniform float fKickerScale;
-
 void main()
 {
    gl_Layer = eye_gs[0];
    for (int i=0;i<gl_in.length();i++) {
       float4 P2 = gl_in[i].gl_Position;
-      P2.z -= 30.0 * fKickerScale;
+      P2.z -= 30.0;
       gl_Position.xyw = (matWorldViewProj[eye_gs[i]] * gl_in[i].gl_Position).xyw;
       gl_Position.z = (matWorldViewProj[eye_gs[i]] * P2).z;
       gl_ClipDistance[0] = gl_in[i].gl_ClipDistance[0];
@@ -701,8 +699,6 @@ void main() {
 in vec3 vNormal;
 in vec2 tc;
 
-uniform float fKickerScale;
-
 VS_OUT(float3, tablePos);
 VS_OUT(vec3, worldPos);
 VS_OUT(vec3, normal);
@@ -716,7 +712,7 @@ void main() {
    gl_Position = pos;
    #else
    gl_Position = matWorldViewProj[eye_vs] * pos;
-   gl_Position.z = (matWorldViewProj[eye_vs] * float4(pos.x, pos.y, pos.z - 30.0 * fKickerScale, 1.0)).z;
+   gl_Position.z = (matWorldViewProj[eye_vs] * float4(pos.x, pos.y, pos.z - 30.0, 1.0)).z;
    #endif
    VS_VARYING(tablePos, table_pos);
    // trafo all into worldview space (as most of the weird trafos happen in view, world is identity so far)

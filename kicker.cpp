@@ -541,7 +541,6 @@ void Kicker::RenderDynamic()
       pd3dDevice->basicShader->SetMaterial(mat);
 
       pd3dDevice->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_kickerBoolean, mat);
-      pd3dDevice->basicShader->SetFloat(SHADER_fKickerScale, 1.f);
       pd3dDevice->SetRenderState(RenderState::ZFUNC, RenderState::Z_ALWAYS);
 
       Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight);
