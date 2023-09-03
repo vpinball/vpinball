@@ -1223,7 +1223,6 @@
 #define IDC_REFLECT_ENABLED_CHECK       910
 #define IDC_WINDOWED                    911
 #define IDC_EXCLUSIVE_FULLSCREEN        912
-#define IDC_AR_EDIT                     913
 #define IDC_AR_COMBO                    913
 #define IDC_AR_LABEL                    914
 #define IDC_WIDTH_LABEL                 915
