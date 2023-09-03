@@ -801,12 +801,12 @@ void LiveUI::Update()
       m_rotate = 0;
    else
    {
-      // If we are only showing overlays, apply main camera rotation
-      m_rotate = ((int)(g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].mViewportRotation / 90.0f)) & 3;
+      // If we are only showing overlays (no mouse interaction), apply main camera rotation
+      ImGuiIO &io = ImGui::GetIO();
+      m_rotate = (int)(g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].GetRotation((int)io.DisplaySize.x, (int)io.DisplaySize.y) / 90.0f);
       if (m_rotate == 1 || m_rotate == 3)
       {
          ImGui::EndFrame();
-         ImGuiIO &io = ImGui::GetIO();
          const float tmp = io.DisplaySize.x;
          io.DisplaySize.x = io.DisplaySize.y;
          io.DisplaySize.y = tmp;
@@ -829,7 +829,9 @@ void LiveUI::Update()
       // Info overlays: this is not a normal UI aligned to the monitor orientation but an overlay used when playing, 
       // therefore it is rotated like the playfield to face the user and only displays for right angles
       ImGui::PushFont(m_overlayFont);
-      if ((float)m_rotate * 90.0f == g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].mViewportRotation)
+      if ((float)m_rotate * 90.0f
+         == g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].GetRotation(
+            g_pplayer->m_pin3d.m_pd3dPrimaryDevice->m_width, g_pplayer->m_pin3d.m_pd3dPrimaryDevice->m_height))
       {
          if (g_pplayer->m_cameraMode)
             // Camera mode info text
