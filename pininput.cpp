@@ -1073,14 +1073,13 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
             break;
          case BG_FULLSCREEN:
             viewSetup.mMode = (ViewLayoutMode) LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetMode"s, VLM_WINDOW);
-            viewSetup.mViewX = CMTOVPU(LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetCamX"s, 0.f));
-            viewSetup.mViewY = CMTOVPU(LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetCamY"s, 20.f));
-            viewSetup.mViewZ = CMTOVPU(LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetCamZ"s, 80.f));
+            viewSetup.mViewX = CMTOVPU(LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetCamX"s,   0.f));
+            viewSetup.mViewY = CMTOVPU(LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetCamY"s, - 1.f)); // Measured from real players. Highly depends on size and playing position (between -10 to 5)
+            viewSetup.mViewZ = CMTOVPU(LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetCamZ"s,  67.f)); // Measured from real players. Highly depends on size and playing position (between 55 to 80)
             float tableScale = 952.f / (table->m_right - table->m_left); // Default scale is for the usual 20.25" wide playfield, so adjust it
             viewSetup.mSceneScaleX = LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetScaleX"s, 1.2f) * tableScale;
             viewSetup.mSceneScaleY = LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetScaleY"s, 1.2f) * tableScale;
             viewSetup.mSceneScaleZ = LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetScaleZ"s, 1.2f) * tableScale;
-            viewSetup.mFOV = LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetFov"s, 77.f);
             viewSetup.mLookAt = LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetLookAt"s, 25.0f);
             viewSetup.mViewVOfs = LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetViewVOfs"s, 0.f);
             break;
