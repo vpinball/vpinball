@@ -5,6 +5,7 @@ enum ViewSetupID
    BG_DESKTOP = 0,
    BG_FULLSCREEN = 1,
    BG_FSS = 2,
+   BG_INVALID = 3,
    NUM_BG_SETS
 };
 

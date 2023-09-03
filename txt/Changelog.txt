@@ -111,6 +111,12 @@ FEATURES:
   - support a new 'window' mode, designed for pincab users, where the screen is not orthogonal to the viewer, requiring an adjusted projection.
 - change camera mode buttons to match the ones when starting VPX with -povedit (Start = Export POV, Credit = Reset/Quit, Plunger = Defaults)
 
+- change view mode selection settings, you can choose between:
+  - Desktop & FSS: automatically selects one of the 2 depending if the table has enabled FSS (because it includes a backglass)
+  - Cabinet: use the cabinet view setup (also named 'Fullscreen')
+  - Desktop: use the desktop view setup (never use the FSS settings, even for tables including a backglass)
+  The UI also allows table authot to quickly switch between these mode from the camera property pane.
+
 - stereo rendering has been rewritten:
   - use new projections which are well-designed for stereo rendering (same as for VR, no more parallel or toe-in with artefacts)
   - compute exact depth informations when using the new 'window' POV mode (note that you should have the same X/Y/Z scene scale to get good results)

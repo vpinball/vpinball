@@ -18,7 +18,7 @@ protected:
 
 private:
     HWND            m_hFssModeCheck;
-    HWND            m_hTestDesktopCheck;
+    ComboBox        m_testOverrideCombo;
     ComboBox        m_viewCombo;
     ComboBox        m_modeCombo;
     EditBox         m_inclinationEdit;
@@ -35,6 +35,7 @@ private:
     EditBox         m_zOffsetEdit;
     vector<string>  m_viewList;
     vector<string>  m_modeList;
+    vector<string>  m_overrideList;
 };
 
 #endif // !H_BACKGLASS_CAMERA_PROPERTY

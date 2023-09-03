@@ -253,9 +253,7 @@ public:
    STDMETHOD(get_EnableEMReels)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_EnableEMReels)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_ShowDT)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-   STDMETHOD(put_ShowDT)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_ShowFSS)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-   STDMETHOD(put_ShowFSS)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_ReflectElementsOnPlayfield)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_ReflectElementsOnPlayfield)(/*[in]*/ VARIANT_BOOL newVal);
 
@@ -610,12 +608,12 @@ public:
    float m_global3DOffset;
    float m_defaultBulbIntensityScaleOnBall;
 
-   ViewSetupID m_BG_current_set;
+   bool m_BG_enable_FSS; // Flag telling if this table supports Full Single Screen POV (defaults is to use it in desktop mode if available)
+   ViewSetupID m_BG_override = BG_INVALID; // Allow to easily override the POV for testing (not persisted)
+   ViewSetupID m_BG_current_set; // Cache of the active view setup ID (depends on table but also on application settings and user overriding it)
    ViewSetup mViewSetups[NUM_BG_SETS];
    string m_BG_image[NUM_BG_SETS];
-
-   bool m_BG_enable_FSS;
-   ViewSetupID m_currentBackglassMode;
+   ViewSetupID m_currentBackglassMode; // POV shown in the UI (not persisted)
 
    float m_angletiltMax;
    float m_angletiltMin;
@@ -809,10 +807,11 @@ public:
    void Set3DOffset(const float value);
    void SetZPD(const float value);
    void SetMaxSeparation(const float value);
-   bool GetShowDT() const;
-   void SetShowDT(const bool enable);
-   bool GetShowFSS() const;
-   void SetShowFSS(const bool enable);
+   bool IsFSSEnabled() const;
+   void EnableFSS(const bool enable);
+   ViewSetupID GetViewSetupOverride() const { return m_BG_override; }
+   void SetViewSetupOverride(const ViewSetupID v) { m_BG_override = v; UpdateCurrentBGSet(); }
+   void UpdateCurrentBGSet();
    void PutGlobalAlphaAcc(const bool enable);
    int GetBallTrailStrength() const;
    void SetBallTrailStrength(const int value);
@@ -917,10 +916,8 @@ public:
    //STDMETHOD(put_NightDay)(/*[in]*/ int newVal);
 
    STDMETHOD(get_ShowDT)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-   //STDMETHOD(put_ShowDT)(/*[in]*/ VARIANT_BOOL newVal);
 
    STDMETHOD(get_ShowFSS)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-   //STDMETHOD(put_ShowFSS)(/*[in]*/ VARIANT_BOOL newVal);
 
    STDMETHOD(PlaySound)(BSTR bstr, long LoopCount, float volume, float pan, float randompitch, long pitch, VARIANT_BOOL usesame, VARIANT_BOOL restart, float front_rear_fade);
    STDMETHOD(FireKnocker)(/*[in]*/ int Count);
