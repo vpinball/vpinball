@@ -503,8 +503,6 @@ float4 ps_main_bg_decal_texture(const in VS_OUTPUT IN) : COLOR
 //------------------------------------------
 // Kicker boolean vertex shader
 
-const float fKickerScale;
-
 VS_NOTEX_OUTPUT vs_kicker (const in float4 vPosition : POSITION0,
                            const in float3 vNormal   : NORMAL0,
                            const in float2 tc        : TEXCOORD0)
@@ -519,7 +517,7 @@ VS_NOTEX_OUTPUT vs_kicker (const in float4 vPosition : POSITION0,
    Out.normal = N;
    // Offset projected position to always render kicker depth "above" playfield (legacy behavior that breaks VR use of the table, was needed since playfield transparency and under playfield objects used to be unsupported)
    float4 P2 = vPosition;
-   P2.z -= 30.0*fKickerScale;
+   P2.z -= 30.0;
    Out.pos.z = mul(P2, matWorldViewProj).z;
    return Out;
 }
