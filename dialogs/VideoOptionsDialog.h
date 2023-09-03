@@ -8,7 +8,6 @@ public:
 
 protected:
    virtual BOOL OnInitDialog();
-   virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
    virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
    virtual void OnOK();
    virtual void OnClose();
@@ -16,9 +15,11 @@ protected:
 private:
    void AddToolTip(const char * const text, HWND parentHwnd, HWND toolTipHwnd, HWND controlHwnd);
    void ResetVideoPreferences(const unsigned int profile); // 0 = default, 1 = lowend PC, 2 = highend PC
-   void FillVideoModesList(const vector<VideoMode>& modes, const VideoMode* curSelMode = nullptr);
+   void UpdateFullscreenModesList();
+   void UpdateDisplayHeightFromWidth();
 
-   vector<VideoMode> allVideoModes;
+   vector<VideoMode> m_allVideoModes;
+   int m_initialMaxTexDim;
 };
 
 #endif 

@@ -2,8 +2,9 @@
 #include "resource.h"
 #include "VideoOptionsDialog.h"
 
-#define GET_WINDOW_MODES		WM_USER+100
-#define GET_FULLSCREENMODES		WM_USER+101
+
+// Declared in RenderDevice. Desktop composition may only be disabled on Windows Vista & 7
+bool IsWindowsVistaOr7();
 
 // factor is applied to width and to height, so 2.0f increases pixel count by 4. Additional values can be added.
 constexpr float AAfactors[] = { 0.5f, 0.75f, 1.0f, 1.25f, (float)(4.0/3.0), 1.5f, 1.75f, 2.0f };
@@ -13,6 +14,9 @@ constexpr int AAfactorCount = 8;
 constexpr int MSAASamplesOpts[] = { 1, 4, 6, 8 };
 constexpr LPCSTR MSAASampleNames[] = { "Disabled", "4 Samples", "6 Samples", "8 Samples" };
 constexpr int MSAASampleCount = 4;
+
+constexpr float arFactors[] = { 0.f, 4.f/3.f, 16.f/10.f, 16.f/9.f, 21.f/10.f, 21.f/9.f, 3.f/4.f, 10.f/16.f, 9.f/16.f, 10.f/21.f, 9.f/21.f };
+
 
 static size_t getBestMatchingAAfactorIndex(float f)
 {
@@ -45,13 +49,13 @@ void VideoOptionsDialog::ResetVideoPreferences(const unsigned int profile) // 0 
 {
    if(profile == 0)
    {
-   const bool fullscreen = IsWindows10_1803orAbove();
-   SendMessage(GetDlgItem(IDC_FULLSCREEN).GetHwnd(), BM_SETCHECK, fullscreen ? BST_CHECKED : BST_UNCHECKED, 0);
-   SendMessage(GetHwnd(), fullscreen ? GET_FULLSCREENMODES : GET_WINDOW_MODES, 0, 0);
+      const bool fullscreen = IsWindows10_1803orAbove();
+      SendMessage(GetDlgItem(IDC_EXCLUSIVE_FULLSCREEN).GetHwnd(), BM_SETCHECK, fullscreen ? BST_CHECKED : BST_UNCHECKED, 0);
+      SendMessage(GetDlgItem(IDC_WINDOWED).GetHwnd(), BM_SETCHECK, fullscreen ? BST_UNCHECKED : BST_CHECKED, 0);
    }
    if(profile < 2)
    {
-   SendMessage(GetDlgItem(IDC_10BIT_VIDEO).GetHwnd(), BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
+      SendMessage(GetDlgItem(IDC_10BIT_VIDEO).GetHwnd(), BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
    }
 
    SendMessage(GetDlgItem(IDC_Tex3072).GetHwnd(), BM_SETCHECK, BST_UNCHECKED, 0);
@@ -162,9 +166,25 @@ void VideoOptionsDialog::ResetVideoPreferences(const unsigned int profile) // 0 
    }
 }
 
-void VideoOptionsDialog::FillVideoModesList(const vector<VideoMode>& modes, const VideoMode* curSelMode)
+void VideoOptionsDialog::UpdateFullscreenModesList()
 {
    const HWND hwndList = GetDlgItem(IDC_SIZELIST).GetHwnd();
+   const int display = (int)SendMessage(GetDlgItem(IDC_DISPLAY_ID).GetHwnd(), CB_GETCURSEL, 0, 0);
+   vector<VideoMode> modes;
+   EnumerateDisplayModes(display, modes);
+   int screenwidth, screenheight, x, y;
+   getDisplaySetupByID(display, x, y, screenwidth, screenheight);
+
+   const int depthcur = LoadValueWithDefault(regKey[RegName::Player], "ColorDepth"s, 32);
+   const int refreshrate = LoadValueWithDefault(regKey[RegName::Player], "RefreshRate"s, 0);
+   const int widthcur = LoadValueWithDefault(regKey[RegName::Player], "Width"s, -1);
+   const int heightcur = LoadValueWithDefault(regKey[RegName::Player], "Height"s, -1);
+   VideoMode curSelMode;
+   curSelMode.width = widthcur;
+   curSelMode.height = heightcur;
+   curSelMode.depth = depthcur;
+   curSelMode.refreshrate = refreshrate;
+
    SendMessage(hwndList, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
    SendMessage(hwndList, LB_RESETCONTENT, 0, 0);
    SendMessage(hwndList, LB_INITSTORAGE, modes.size(), modes.size() * 128); // *128 is artificial
@@ -172,10 +192,6 @@ void VideoOptionsDialog::FillVideoModesList(const vector<VideoMode>& modes, cons
    int bestMatch = 0; // to find closest matching res
    int bestMatchingPoints = 0; // dto.
 
-   int screenwidth, screenheight;
-   int x, y;
-   const int display = (int)SendMessage(GetDlgItem(IDC_DISPLAY_ID).GetHwnd(), CB_GETCURSEL, 0, 0);
-   getDisplaySetupByID(display, x, y, screenwidth, screenheight);
 
    for (size_t i = 0; i < modes.size(); ++i)
    {
@@ -231,28 +247,24 @@ void VideoOptionsDialog::FillVideoModesList(const vector<VideoMode>& modes, cons
          sprintf_s(szT, sizeof(szT), "%d x %d (%d:%d %s)", modes[i].width, modes[i].height /*,modes[i].depth*/, portrait ? fy : fx, portrait ? fx : fy, portrait ? "Portrait" : "Landscape");
 
       SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)szT);
-      if (curSelMode) {
-         int matchingPoints = 0;
-         if (modes[i].width == curSelMode->width) matchingPoints += 100;
-         if (modes[i].height == curSelMode->height) matchingPoints += 100;
-         if (modes[i].depth == curSelMode->depth) matchingPoints += 50;
-         if (modes[i].refreshrate == curSelMode->refreshrate) matchingPoints += 10;
-         if (modes[i].width == screenwidth) matchingPoints += 3;
-         if (modes[i].height == screenheight) matchingPoints += 3;
-         if (modes[i].refreshrate == DEFAULT_PLAYER_FS_REFRESHRATE) matchingPoints += 1;
-         if (matchingPoints > bestMatchingPoints) {
-            bestMatch = (int)i;
-            bestMatchingPoints = matchingPoints;
-         }
+      int matchingPoints = 0;
+      if (modes[i].width == curSelMode.width) matchingPoints += 100;
+      if (modes[i].height == curSelMode.height) matchingPoints += 100;
+      if (modes[i].depth == curSelMode.depth) matchingPoints += 50;
+      if (modes[i].refreshrate == curSelMode.refreshrate) matchingPoints += 10;
+      if (modes[i].width == screenwidth) matchingPoints += 3;
+      if (modes[i].height == screenheight) matchingPoints += 3;
+      if (modes[i].refreshrate == DEFAULT_PLAYER_FS_REFRESHRATE) matchingPoints += 1;
+      if (matchingPoints > bestMatchingPoints) {
+         bestMatch = (int)i;
+         bestMatchingPoints = matchingPoints;
       }
    }
    SendMessage(hwndList, LB_SETCURSEL, bestMatch, 0);
+   if (SendMessage(hwndList, LB_GETCURSEL, 0, 0) == -1)
+      SendMessage(hwndList, LB_SETCURSEL, 0, 0);
    SendMessage(hwndList, WM_SETREDRAW, TRUE, 0);
 }
-
-
-// Declared in RenderDevice. Desktop composition may only be disabled on Windows Vista & 7
-bool IsWindowsVistaOr7();
 
 BOOL VideoOptionsDialog::OnInitDialog()
 {
@@ -281,12 +293,9 @@ BOOL VideoOptionsDialog::OnInitDialog()
       AddToolTip("Activate this to enable 3D Stereo output using the requested format.\r\nSwitch on/off during play with the F10 key.\r\nThis requires that your TV can display 3D Stereo, and respective 3D glasses.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_3D_STEREO).GetHwnd());
       AddToolTip("Switches 3D Stereo effect to use the Y Axis.\r\nThis should usually be selected for Cabinets/rotated displays.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_3D_STEREO_Y).GetHwnd());
       if (IsWindows10_1803orAbove())
-      {
-         GetDlgItem(IDC_FULLSCREEN).SetWindowText("Force exclusive Fullscreen Mode");
-         AddToolTip("Enforces exclusive Fullscreen Mode.\r\nEnforcing exclusive FS can slightly reduce input lag.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_FULLSCREEN).GetHwnd());
-      }
+         AddToolTip("Enforces exclusive Fullscreen Mode.\r\nEnforcing exclusive FS can slightly reduce input lag.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_EXCLUSIVE_FULLSCREEN).GetHwnd());
       else
-         AddToolTip("Enforces exclusive Fullscreen Mode.\r\nDo not enable if you require to see the VPinMAME or B2S windows for example.\r\nEnforcing exclusive FS can slightly reduce input lag though.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_FULLSCREEN).GetHwnd());
+         AddToolTip("Enforces exclusive Fullscreen Mode.\r\nDo not enable if you require to see the VPinMAME or B2S windows for example.\r\nEnforcing exclusive FS can slightly reduce input lag though.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_EXCLUSIVE_FULLSCREEN).GetHwnd());
       AddToolTip("Enforces 10Bit (WCG) rendering.\r\nRequires a corresponding 10Bit output capable graphics card and monitor.\r\nAlso requires to have exclusive fullscreen mode enforced (for now).", hwndDlg, toolTipHwnd, GetDlgItem(IDC_10BIT_VIDEO).GetHwnd());
       AddToolTip("Switches all tables to use the respective Cabinet display setup.\r\nAlso useful if a 270 degree rotated Desktop monitor is used.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_BG_SET).GetHwnd());
       AddToolTip("Enables post-processed Anti-Aliasing.\r\nThis delivers smoother images, at the cost of slight blurring.\r\n'Quality FXAA' and 'Quality SMAA' are recommended and lead to less artifacts,\nbut will harm performance on low-end graphics cards.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_POST_PROCESS_COMBO).GetHwnd());
@@ -300,15 +309,20 @@ BOOL VideoOptionsDialog::OnInitDialog()
       AddToolTip("Enables playfield reflections.\r\n\r\n'Dynamic' is recommended and will give the best results, but may harm performance.\r\n\r\n'Static Only' has no performance cost (except for VR rendering).\r\n\r\nOther options feature different trade-offs between quality and performance.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_GLOBAL_PF_REFLECTION).GetHwnd());
    }
 
-   const int maxTexDim = LoadValueWithDefault(regKey[RegName::Player], "MaxTexDimension"s, 0); // default: Don't resize textures
-   switch (maxTexDim)
-   {
-      case 3072:SendMessage(GetDlgItem(IDC_Tex3072).GetHwnd(), BM_SETCHECK, BST_CHECKED, 0);      break;
-      case 512: // legacy, map to 1024 nowadays
-      case 1024:SendMessage(GetDlgItem(IDC_Tex1024).GetHwnd(), BM_SETCHECK, BST_CHECKED, 0);      break;
-      case 2048:SendMessage(GetDlgItem(IDC_Tex2048).GetHwnd(), BM_SETCHECK, BST_CHECKED, 0);      break;
-      default:	SendMessage(GetDlgItem(IDC_TexUnlimited).GetHwnd(), BM_SETCHECK, BST_CHECKED, 0); break;
-   }
+   m_initialMaxTexDim = LoadValueWithDefault(regKey[RegName::Player], "MaxTexDimension"s, 0);
+   const int maxTexDim = ((1023 + m_initialMaxTexDim) / 1024) - 1;
+   HWND hwnd = GetDlgItem(IDC_MAX_TEXTURE_COMBO).GetHwnd();
+   SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "1024");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "2048");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "3172");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "4096");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "5120");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "6144");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "7168");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Unlimited");
+   SendMessage(hwnd, CB_SETCURSEL, maxTexDim < 0 ? 7 : maxTexDim, 0);
+   SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 
    const bool trail = LoadValueWithDefault(regKey[RegName::Player], "BallTrail"s, true);
    SendMessage(GetDlgItem(IDC_GLOBAL_TRAIL_CHECK).GetHwnd(), BM_SETCHECK, trail ? BST_CHECKED : BST_UNCHECKED, 0);
@@ -337,7 +351,7 @@ BOOL VideoOptionsDialog::OnInitDialog()
    if (syncMode == VideoSyncMode::VSM_INVALID)
       syncMode = VideoSyncMode::VSM_FRAME_PACING;
    SetDlgItemInt(IDC_MAX_FPS, maxFPS, FALSE);
-   HWND hwnd = GetDlgItem(IDC_VIDEO_SYNC_MODE).GetHwnd();
+   hwnd = GetDlgItem(IDC_VIDEO_SYNC_MODE).GetHwnd();
    SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "No Sync");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Vertical Sync");
@@ -588,8 +602,34 @@ BOOL VideoOptionsDialog::OnInitDialog()
    SendMessage(hwnd, CB_SETCURSEL, display, 0);
 
    const bool fullscreen = LoadValueWithDefault(regKey[RegName::Player], "FullScreen"s, IsWindows10_1803orAbove());
-   SendMessage(hwndDlg, fullscreen ? GET_FULLSCREENMODES : GET_WINDOW_MODES, 0, 0);
-   SendMessage(GetDlgItem(IDC_FULLSCREEN).GetHwnd(), BM_SETCHECK, fullscreen ? BST_CHECKED : BST_UNCHECKED, 0);
+   SendMessage(GetDlgItem(fullscreen ? IDC_EXCLUSIVE_FULLSCREEN : IDC_WINDOWED).GetHwnd(), BM_SETCHECK, BST_CHECKED, 0);
+   OnCommand(IDC_EXCLUSIVE_FULLSCREEN, 0L); // Force UI update
+
+   const int widthcur = LoadValueWithDefault(regKey[RegName::Player], "Width"s, -1);
+   const int heightcur = LoadValueWithDefault(regKey[RegName::Player], "Height"s, -1);
+   SetDlgItemInt(IDC_WIDTH_EDIT, widthcur, FALSE);
+   SetDlgItemInt(IDC_HEIGHT_EDIT, heightcur, FALSE);
+
+   hwnd = GetDlgItem(IDC_AR_COMBO).GetHwnd();
+   SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Free");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) " 4: 3 [Landscape]");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "16:10 [Landscape]");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "16: 9 [Landscape]");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "21:10 [Landscape]");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "21: 9 [Landscape]");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) " 4: 3 [Portrait]");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "16:10 [Portrait]");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "16: 9 [Portrait]");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "21:10 [Portrait]");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "21: 9 [Portrait]");
+   SendMessage(hwnd, CB_SETCURSEL, 0, 0);
+   for (int i = 1; i < sizeof(arFactors) / sizeof(arFactors[0]); i++)
+      if (heightcur == (int)(arFactors[i] * widthcur))
+         SendMessage(hwnd, CB_SETCURSEL, i, 0);
+   SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
+
+   UpdateDisplayHeightFromWidth();
 
    const int alphaRampsAccuracy = LoadValueWithDefault(regKey[RegName::Player], "AlphaRampAccuracy"s, 10);
    const HWND hwndARASlider = GetDlgItem(IDC_ARASlider).GetHwnd();
@@ -653,139 +693,17 @@ BOOL VideoOptionsDialog::OnInitDialog()
    return TRUE;
 }
 
-INT_PTR VideoOptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
+void VideoOptionsDialog::UpdateDisplayHeightFromWidth()
 {
-   switch (uMsg)
+   LRESULT arMode = SendMessage(GetDlgItem(IDC_AR_COMBO).GetHwnd(), CB_GETCURSEL, 0, 0);
+   if (arMode == LB_ERR)
+      arMode = 0;
+   GetDlgItem(IDC_HEIGHT_EDIT).EnableWindow(arMode == 0);
+   if (arMode > 0)
    {
-      case GET_WINDOW_MODES:
-      {
-         size_t indx = -1;
-
-         const HWND hwndList = GetDlgItem(IDC_SIZELIST).GetHwnd();
-         //SendMessage(hwndList, LB_RESETCONTENT, 0, 0);
-         //indx = SendMessage(hwndList, LB_GETCURSEL, 0L, 0L);
-         //if (indx == LB_ERR)
-         //  indx = 0;
-
-         const int display = (int)SendMessage(GetDlgItem(IDC_DISPLAY_ID).GetHwnd(), CB_GETCURSEL, 0, 0);
-         int screenwidth, screenheight;
-         int x, y;
-         getDisplaySetupByID(display, x, y, screenwidth, screenheight);
-
-         const int widthcur  = LoadValueWithDefault(regKey[RegName::Player], "Width"s, DEFAULT_PLAYER_WIDTH);
-         const int heightcur = LoadValueWithDefault(regKey[RegName::Player], "Height"s, widthcur * 9 / 16);
-
-         allVideoModes.clear();
-
-         // test video modes first on list
-
-         // add some (windowed) portrait play modes
-
-         // 16:10 aspect ratio resolutions: 1280*800, 1440*900, 1680*1050, 1920*1200 and 2560*1600
-         // 16:9 aspect ratio resolutions:  1280*720, 1366*768, 1600*900, 1920*1080, 2560*1440 and 3840*2160
-         // 21:9 aspect ratio resolutions:  3440*1440,2560*1080
-         // 21:10 aspect ratio resolution:  3840*1600
-         // 4:3  aspect ratio resolutions:  1280*1024
-         constexpr unsigned int num_portrait_modes = 33;
-         static constexpr int portrait_modes_width[num_portrait_modes] =  {431, 505, 720, 768, 606, 864, 600, 720, 768, 960,1024, 768, 768, 800,1050, 808, 900, 900,1050,1200,1050,1080,1200,1536,1212,1080,1440,1440,1600,1920,2048,1600,2160};
-         static constexpr int portrait_modes_height[num_portrait_modes] = {768, 900,1024,1024,1080,1152,1280,1280,1280,1280,1280,1360,1366,1280,1400,1440,1440,1600,1600,1600,1680,1920,1920,2048,2160,2560,2560,3440,2560,2560,2560,3840,3840};
-
-         for (unsigned int i = 0; i < num_portrait_modes; ++i)
-            if ((portrait_modes_width[i] <= screenwidth) && (portrait_modes_height[i] <= screenheight)
-                && ((portrait_modes_width[i] != screenwidth) || (portrait_modes_height[i] != screenheight))) // windowed fullscreen is added to the end separately
-            {
-               VideoMode mode;
-               mode.width = portrait_modes_width[i];
-               mode.height = portrait_modes_height[i];
-               mode.depth = 0;
-               mode.refreshrate = 0;
-
-               if (heightcur > widthcur)
-                  if ((portrait_modes_width[i] == widthcur) && (portrait_modes_height[i] == heightcur))
-                     indx = allVideoModes.size();
-               allVideoModes.push_back(mode);
-            }
-
-         // add landscape play modes
-         static constexpr int rgwindowsize[] = { 640, 720, 800, 912, 1024, 1152, 1280, 1360, 1366, 1400, 1440, 1600, 1680, 1920, 2048, 2560, 3440, 3840, 4096, 5120, 6400, 7680, 8192, 11520, 15360 };
-
-         for (size_t i = 0; i < sizeof(rgwindowsize)/sizeof(int) * 5; ++i)
-         {
-            const int xsize = rgwindowsize[i/5];
-            
-            int mulx = 1, divy = 1;
-            switch (i%5)
-            {
-               case 0: mulx = 3;  divy = 4;  break;
-               case 1: mulx = 9;  divy = 16; break;
-               case 2: mulx = 10; divy = 16; break;
-               case 3: mulx = 9;  divy = 21; break;
-               case 4: mulx = 10; divy = 21; break;
-            }
-
-            const int ysize = xsize * mulx / divy;
-
-            if ((xsize <= screenwidth) && (ysize <= screenheight)
-                && ((xsize != screenwidth) || (ysize != screenheight))) // windowed fullscreen is added to the end separately
-            {
-               if ((xsize == widthcur) && (ysize == heightcur))
-                  indx = allVideoModes.size();
-
-               VideoMode mode;
-               mode.width = xsize;
-               mode.height = ysize;
-               mode.depth = 0;
-               mode.refreshrate = 0;
-
-               allVideoModes.push_back(mode);
-            }
-         }
-
-         FillVideoModesList(allVideoModes);
-
-         // add windowed fullscreen mode at the end
-         VideoMode mode;
-         mode.width = screenwidth;
-         mode.height = screenheight;
-         mode.depth = 0;
-         mode.refreshrate = 0;
-
-         char szT[128];
-         sprintf_s(szT, sizeof(szT), "%d x %d (Windowed Fullscreen)", mode.width, mode.height);
-         SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)szT);
-         if (indx == -1 || (mode.width == widthcur && mode.height == heightcur))
-            indx = allVideoModes.size();
-         allVideoModes.push_back(mode);
-
-         SendMessage(hwndList, LB_SETCURSEL, (indx != -1) ? indx : 0, 0);
-         break;
-      } // end case GET_WINDOW_MODES
-      case GET_FULLSCREENMODES:
-      {
-         const HWND hwndList = GetDlgItem(IDC_SIZELIST).GetHwnd();
-         const int display = (int)SendMessage(GetDlgItem(IDC_DISPLAY_ID).GetHwnd(), CB_GETCURSEL, 0, 0);
-         EnumerateDisplayModes(display, allVideoModes);
-
-         const int depthcur    = LoadValueWithDefault(regKey[RegName::Player], "ColorDepth"s, 32);
-         const int refreshrate = LoadValueWithDefault(regKey[RegName::Player], "RefreshRate"s, 0);
-         const int widthcur    = LoadValueWithDefault(regKey[RegName::Player], "Width"s, -1);
-         const int heightcur   = LoadValueWithDefault(regKey[RegName::Player], "Height"s, -1);
-
-         VideoMode curSelMode;
-         curSelMode.width = widthcur;
-         curSelMode.height = heightcur;
-         curSelMode.depth = depthcur;
-         curSelMode.refreshrate = refreshrate;
-
-         FillVideoModesList(allVideoModes, &curSelMode);
-
-         if (SendMessage(hwndList, LB_GETCURSEL, 0, 0) == -1)
-            SendMessage(hwndList, LB_SETCURSEL, 0, 0);
-         break;
-      }
+      int width = GetDlgItemInt(IDC_WIDTH_EDIT, false);
+      SetDlgItemInt(IDC_HEIGHT_EDIT, (int)(width / arFactors[arMode]), FALSE);
    }
-
-   return DialogProcDefault(uMsg, wParam, lParam);
 }
 
 BOOL VideoOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
@@ -868,11 +786,35 @@ BOOL VideoOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 
          break;
       }
-      case IDC_DISPLAY_ID:
-      case IDC_FULLSCREEN:
+      case IDC_WINDOWED:
+      case IDC_EXCLUSIVE_FULLSCREEN:
       {
-         const size_t checked = SendDlgItemMessage(IDC_FULLSCREEN, BM_GETCHECK, 0, 0);
-         SendMessage(checked ? GET_FULLSCREENMODES : GET_WINDOW_MODES, 0, 0);
+         const bool fullscreen = SendMessage(GetDlgItem(IDC_EXCLUSIVE_FULLSCREEN).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED;
+         // Fullscreen settings
+         GetDlgItem(IDC_SIZELIST).ShowWindow(fullscreen ? 1 : 0);
+         GetDlgItem(IDC_DISABLE_DWM).ShowWindow(fullscreen ? 1 : 0);
+         GetDlgItem(IDC_10BIT_VIDEO).ShowWindow(fullscreen ? 1 : 0);
+         // Window settings
+         GetDlgItem(IDC_AR_LABEL).ShowWindow(fullscreen ? 0 : 1);
+         GetDlgItem(IDC_AR_EDIT).ShowWindow(fullscreen ? 0 : 1);
+         GetDlgItem(IDC_WIDTH_LABEL).ShowWindow(fullscreen ? 0 : 1);
+         GetDlgItem(IDC_WIDTH_EDIT).ShowWindow(fullscreen ? 0 : 1);
+         GetDlgItem(IDC_HEIGHT_LABEL).ShowWindow(fullscreen ? 0 : 1);
+         GetDlgItem(IDC_HEIGHT_EDIT).ShowWindow(fullscreen ? 0 : 1);
+         GetDlgItem(IDC_RESET_WINDOW).ShowWindow(fullscreen ? 0 : 1);
+      }
+      case IDC_DISPLAY_ID:
+      {
+         UpdateFullscreenModesList();
+
+         // TODO clamp user width/height to display size ?
+         // TODO select aspect ratio according to display ?
+         break;
+      }
+      case IDC_AR_COMBO:
+      case IDC_WIDTH_EDIT:
+      {
+         UpdateDisplayHeightFromWidth();
          break;
       }
       case IDC_ENABLE_AO:
@@ -928,33 +870,46 @@ void VideoOptionsDialog::OnOK()
 {
    BOOL nothing = 0;
 
-   const bool fullscreen = (SendMessage(GetDlgItem(IDC_FULLSCREEN).GetHwnd(), BM_GETCHECK, 0, 0) != 0);
-   SaveValue(regKey[RegName::Player], "FullScreen"s, fullscreen);
-
-   const size_t index = SendMessage(GetDlgItem(IDC_SIZELIST).GetHwnd(), LB_GETCURSEL, 0, 0);
-   const VideoMode* const pvm = &allVideoModes[index];
-   SaveValue(regKey[RegName::Player], "Width"s, pvm->width);
-   SaveValue(regKey[RegName::Player], "Height"s, pvm->height);
-   if (fullscreen)
-   {
-      SaveValue(regKey[RegName::Player], "ColorDepth"s, pvm->depth);
-      SaveValue(regKey[RegName::Player], "RefreshRate"s, pvm->refreshrate);
-   }
    const size_t display = SendMessage(GetDlgItem(IDC_DISPLAY_ID).GetHwnd(), CB_GETCURSEL, 0, 0);
    SaveValue(regKey[RegName::Player], "Display"s, (int)display);
+   const bool fullscreen = SendMessage(GetDlgItem(IDC_EXCLUSIVE_FULLSCREEN).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED;
+   SaveValue(regKey[RegName::Player], "FullScreen"s, fullscreen);
+   if (fullscreen)
+   {
+      const size_t index = SendMessage(GetDlgItem(IDC_SIZELIST).GetHwnd(), LB_GETCURSEL, 0, 0);
+      const VideoMode* const pvm = &m_allVideoModes[index];
+      SaveValue(regKey[RegName::Player], "Width"s, pvm->width);
+      SaveValue(regKey[RegName::Player], "Height"s, pvm->height);
+      if (fullscreen)
+      {
+         SaveValue(regKey[RegName::Player], "ColorDepth"s, pvm->depth);
+         SaveValue(regKey[RegName::Player], "RefreshRate"s, pvm->refreshrate);
+      }
+   }
+   else
+   {
+      LRESULT arMode = SendMessage(GetDlgItem(IDC_AR_COMBO).GetHwnd(), CB_GETCURSEL, 0, 0);
+      if (arMode == LB_ERR)
+         arMode = 0;
+      int width = GetDlgItemInt(IDC_WIDTH_EDIT, false);
+      int height = GetDlgItemInt(IDC_HEIGHT_EDIT, false);
+      if (arMode > 0)
+         height = (int)(width / arFactors[arMode]);
+      if (width > 0 && height > 0)
+         SaveValue(regKey[RegName::Player], "Width"s, width);
+         SaveValue(regKey[RegName::Player], "Height"s, height);
+   }
 
    const bool video10bit = (SendMessage(GetDlgItem(IDC_10BIT_VIDEO).GetHwnd(), BM_GETCHECK, 0, 0) != 0);
    SaveValue(regKey[RegName::Player], "Render10Bit"s, video10bit);
 
-   //const HWND maxTexDimUnlimited = GetDlgItem(hwndDlg, IDC_TexUnlimited);
-   int maxTexDim = 0;
-   if (SendMessage(GetDlgItem(IDC_Tex3072).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED)
-      maxTexDim = 3072;
-   if (SendMessage(GetDlgItem(IDC_Tex1024).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED)
-      maxTexDim = 1024;
-   if (SendMessage(GetDlgItem(IDC_Tex2048).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED)
-      maxTexDim = 2048;
-   SaveValue(regKey[RegName::Player], "MaxTexDimension"s, maxTexDim);
+   LRESULT maxTexDim = SendMessage(GetDlgItem(IDC_MAX_TEXTURE_COMBO).GetHwnd(), CB_GETCURSEL, 0, 0);
+   if (maxTexDim == LB_ERR)
+      maxTexDim = 7;
+   maxTexDim = maxTexDim == 7 ? 0 : (1024 * (maxTexDim + 1));
+   SaveValue(regKey[RegName::Player], "MaxTexDimension"s, (int) maxTexDim);
+   if (m_initialMaxTexDim != maxTexDim)
+      MessageBox("You have changed the maximum texture size.\n\nThis change will only take effect after reloading the tables.", "Reload tables", MB_ICONWARNING);
 
    const bool trail = (SendMessage(GetDlgItem(IDC_GLOBAL_TRAIL_CHECK).GetHwnd(), BM_GETCHECK, 0, 0) != 0);
    SaveValue(regKey[RegName::Player], "BallTrail"s, trail);
