@@ -5,6 +5,21 @@ ViewSetup::ViewSetup()
 {
 }
 
+float ViewSetup::GetRotation(const int viewportWidth, const int viewportHeight) const
+{
+   if (mMode == VLM_WINDOW)
+   {
+      int rotation;
+      rotation = ((int)mViewportRotation) - (((int)mViewportRotation) / 360) * 360;
+      return ((viewportWidth < viewportHeight ? 0 : 3) * 90 + (rotation < 0 ? rotation + 360 : rotation)) % 360; // 0 / 90 / 180 / 270
+   }
+   else
+   {
+      float rot = fmod(mViewportRotation, 360.f);
+      return rot < 0.f ? (rot + 360.f) : rot;
+   }
+}
+
 void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth, const int viewportHeight, const bool stereo, ModelViewProj& mvp, const vec3& cam, const float cam_inc,
    const float xpixoff, const float ypixoff)
 {

@@ -1254,7 +1254,7 @@ HRESULT Player::Init()
       || ((lflip != ~0u) && (rflip != ~0u) && (GetAsyncKeyState(lflip) & 0x8000) && (GetAsyncKeyState(rflip) & 0x8000)))
    {
       m_ptable->m_tblMirrorEnabled = true;
-      int rotation = ((int)(g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].mViewportRotation) / 90) % 4;
+      int rotation = (int)(g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].GetRotation(m_pin3d.m_pd3dPrimaryDevice->m_width, m_pin3d.m_pd3dPrimaryDevice->m_height)) / 90;
       m_pin3d.GetMVP().SetFlip(rotation == 0 || rotation == 2 ? ModelViewProj::FLIPX : ModelViewProj::FLIPY);
    }
    else
@@ -1999,8 +1999,9 @@ void Player::CalcBallAspectRatio()
    const float scalebackX = (viewSetup.mSceneScaleX != 0.0f) ? ((viewSetup.mSceneScaleX + viewSetup.mSceneScaleY) * 0.5f) / viewSetup.mSceneScaleX : 1.0f;
    const float scalebackY = (viewSetup.mSceneScaleY != 0.0f) ? ((viewSetup.mSceneScaleX + viewSetup.mSceneScaleY) * 0.5f) / viewSetup.mSceneScaleY : 1.0f;
 
-   const float c = sinf(ANGTORAD(fmodf(viewSetup.mViewportRotation + 90.0f, 180.0f)));
-   const float s = sinf(ANGTORAD(fmodf(viewSetup.mViewportRotation, 180.0f)));
+   const float rotation = viewSetup.GetRotation(m_pin3d.m_pd3dPrimaryDevice->m_width, m_pin3d.m_pd3dPrimaryDevice->m_height);
+   const float c = sinf(ANGTORAD(fmodf(rotation + 90.0f, 180.0f)));
+   const float s = sinf(ANGTORAD(fmodf(rotation, 180.0f)));
    m_BallStretch = Vertex2D(scalebackX * c + scalebackY * s, scalebackY * c + scalebackX * s);
    m_antiStretchBall = false;
 
@@ -3195,7 +3196,7 @@ void Player::SSRefl()
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height,
       (float)(1.0 / m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetWidth()), (float)(1.0 / m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetHeight()), 1.0f /*radical_inverse(m_overall_frames%2048)*/, 1.0f);
 
-   const float rotation = fmodf(m_ptable->mViewSetups[m_ptable->m_BG_current_set].mViewportRotation, 360.f);
+   const float rotation = m_ptable->mViewSetups[m_ptable->m_BG_current_set].GetRotation(m_pin3d.m_pd3dPrimaryDevice->m_width, m_pin3d.m_pd3dPrimaryDevice->m_height);
    const vec4 SSR_bumpHeight_fresnelRefl_scale_FS(0.3f, 0.3f, m_ptable->m_SSRScale, rotation);
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_SSR_bumpHeight_fresnelRefl_scale_FS, &SSR_bumpHeight_fresnelRefl_scale_FS);
 
@@ -3761,9 +3762,10 @@ void Player::PrepareVideoBuffers(const bool useAO)
 
 void Player::SetScreenOffset(const float x, const float y)
 {
-   const float rotation = fmodf(m_ptable->mViewSetups[m_ptable->m_BG_current_set].mViewportRotation, 360.f);
-   m_ScreenOffset.x = (rotation != 0.0f ? -y : x);
-   m_ScreenOffset.y = (rotation != 0.0f ?  x : y);
+   const float rotation = ANGTORAD(m_ptable->mViewSetups[m_ptable->m_BG_current_set].GetRotation(m_pin3d.m_pd3dPrimaryDevice->m_width, m_pin3d.m_pd3dPrimaryDevice->m_height));
+   const float c = cosf(-rotation), s = sinf(-rotation);
+   m_ScreenOffset.x = x * c - y * s;
+   m_ScreenOffset.y = x * s + y * c;
 }
 
 void Player::UpdateBackdropSettings(const bool up)
@@ -4635,7 +4637,7 @@ void Player::DrawBalls()
 
       // ************************* draw the ball itself ****************************
       Vertex2D stretch;
-      if (m_antiStretchBall && m_ptable->mViewSetups[m_ptable->m_BG_current_set].mViewportRotation != 0.0f)
+      if (m_antiStretchBall && m_ptable->mViewSetups[m_ptable->m_BG_current_set].GetRotation(m_pin3d.m_pd3dPrimaryDevice->m_width, m_pin3d.m_pd3dPrimaryDevice->m_height) != 0.0f)
          GetBallAspectRatio(pball, stretch, zheight);
       else
          stretch = m_BallStretch;
@@ -5088,7 +5090,9 @@ LRESULT Player::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             {
                 ScreenToClient(pointerInfo.ptPixelLocation);
                 for (unsigned int i = 0; i < MAX_TOUCHREGION; ++i)
-                    if ((m_touchregion_pressed[i] != (uMsg == WM_POINTERDOWN)) && Intersect(touchregion[i], m_wnd_width, m_wnd_height, pointerInfo.ptPixelLocation, fmodf(m_ptable->mViewSetups[m_ptable->m_BG_current_set].mViewportRotation, 360.0f) != 0.f))
+               if ((m_touchregion_pressed[i] != (uMsg == WM_POINTERDOWN))
+                  && Intersect(touchregion[i], m_wnd_width, m_wnd_height, pointerInfo.ptPixelLocation,
+                     m_ptable->mViewSetups[m_ptable->m_BG_current_set].GetRotation(m_pin3d.m_pd3dPrimaryDevice->m_width, m_pin3d.m_pd3dPrimaryDevice->m_height) != 0.f))
                     {
                         m_touchregion_pressed[i] = (uMsg == WM_POINTERDOWN);
 
