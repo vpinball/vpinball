@@ -92,10 +92,11 @@ void VideoOptionsDialog::ResetVideoPreferences(const unsigned int profile) // 0 
    SendMessage(GetDlgItem(IDC_MSAA_COMBO).GetHwnd(), TBM_SETPOS, TRUE, 1);
 
    SendMessage(GetDlgItem(IDC_DYNAMIC_DN).GetHwnd(), BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
-   SendMessage(GetDlgItem(IDC_DYNAMIC_AO).GetHwnd(), BM_SETCHECK, profile == 2 ? BST_CHECKED : BST_UNCHECKED, 0);
-   SendMessage(GetDlgItem(IDC_ENABLE_AO).GetHwnd(), BM_SETCHECK, true ? BST_CHECKED : BST_UNCHECKED, 0);
+   
+   SendMessage(GetDlgItem(IDC_MAX_AO_COMBO).GetHwnd(), CB_SETCURSEL,profile == 2 ? 2 : 1, 0);
+
    SendMessage(GetDlgItem(IDC_GLOBAL_SSREFLECTION_CHECK).GetHwnd(), BM_SETCHECK, profile == 2 ? BST_CHECKED : BST_UNCHECKED, 0);
-   SendMessage(GetDlgItem(IDC_GLOBAL_PF_REFLECTION).GetHwnd(), CB_SETCURSEL,
+   SendMessage(GetDlgItem(IDC_MAX_REFLECTION_COMBO).GetHwnd(), CB_SETCURSEL,
       profile == 0 ? RenderProbe::REFL_STATIC_N_DYNAMIC : (profile == 2 ? RenderProbe::REFL_DYNAMIC : RenderProbe::REFL_STATIC_N_BALLS), 0);
 
    if (profile == 0)
@@ -287,9 +288,7 @@ BOOL VideoOptionsDialog::OnInitDialog()
       AddToolTip("Activate this to switch the table brightness automatically based on your PC date,clock and location.\r\nThis requires to fill in geographic coordinates for your PCs location to work correctly.\r\nYou may use openstreetmap.org for example to get these in the correct format.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_DYNAMIC_DN).GetHwnd());
       AddToolTip("In decimal degrees (-90..90, North positive)", hwndDlg, toolTipHwnd, GetDlgItem(IDC_DN_LATITUDE).GetHwnd());
       AddToolTip("In decimal degrees (-180..180, East positive)", hwndDlg, toolTipHwnd, GetDlgItem(IDC_DN_LONGITUDE).GetHwnd());
-      AddToolTip("Activate this to enable dynamic Ambient Occlusion.\r\nThis slows down performance, but enables contact shadows for dynamic objects.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_DYNAMIC_AO).GetHwnd());
-      AddToolTip("Activate this to enhance the texture filtering.\r\nThis slows down performance only a bit (on most systems), but increases quality tremendously.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_FORCE_ANISO).GetHwnd());
-      AddToolTip("Activate this to enable Ambient Occlusion.\r\nThis enables contact shadows between objects.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_ENABLE_AO).GetHwnd());
+      
       AddToolTip("Activate this to enable 3D Stereo output using the requested format.\r\nSwitch on/off during play with the F10 key.\r\nThis requires that your TV can display 3D Stereo, and respective 3D glasses.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_3D_STEREO).GetHwnd());
       AddToolTip("Switches 3D Stereo effect to use the Y Axis.\r\nThis should usually be selected for Cabinets/rotated displays.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_3D_STEREO_Y).GetHwnd());
       if (IsWindows10_1803orAbove())
@@ -305,8 +304,11 @@ BOOL VideoOptionsDialog::OnInitDialog()
       AddToolTip("When checked, it overwrites the ball image/decal image(s) for every table.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_OVERWRITE_BALL_IMAGE_CHECK).GetHwnd());
       AddToolTip("Select Display for Video output.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_DISPLAY_ID).GetHwnd());
       AddToolTip("Enables BAM Headtracking. See https://www.ravarcade.pl for details.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_HEADTRACKING).GetHwnd());
-      AddToolTip("Enables post-processed reflections on all objects (besides the playfield).", hwndDlg, toolTipHwnd, GetDlgItem(IDC_GLOBAL_SSREFLECTION_CHECK).GetHwnd());
-      AddToolTip("Enables playfield reflections.\r\n\r\n'Dynamic' is recommended and will give the best results, but may harm performance.\r\n\r\n'Static Only' has no performance cost (except for VR rendering).\r\n\r\nOther options feature different trade-offs between quality and performance.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_GLOBAL_PF_REFLECTION).GetHwnd());
+      AddToolTip("Enables additional post-processed reflections on all objects (besides the playfield).", hwndDlg, toolTipHwnd, GetDlgItem(IDC_GLOBAL_SSREFLECTION_CHECK).GetHwnd());
+
+      AddToolTip("Limit the quality of reflections for better performance.\r\n\r\n'Dynamic' is recommended and will give the best results, but may harm performance.\r\n\r\n'Static Only' has no performance cost (except for VR rendering).\r\n\r\nOther options feature different trade-offs between quality and performance.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_MAX_REFLECTION_COMBO).GetHwnd());
+      AddToolTip("Limit the quality of ambient occlusion for better performance.\r\nDynamic is the better with contact shadows for dynamic objects but higher performance requirements.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_MAX_AO_COMBO).GetHwnd());
+      AddToolTip("Activate this to enhance the texture filtering.\r\nThis slows down performance only a bit (on most systems), but increases quality tremendously.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_FORCE_ANISO).GetHwnd());
    }
 
    m_initialMaxTexDim = LoadValueWithDefault(regKey[RegName::Player], "MaxTexDimension"s, 0);
@@ -408,17 +410,20 @@ BOOL VideoOptionsDialog::OnInitDialog()
    const int useDN = LoadValueWithDefault(regKey[RegName::Player], "DynamicDayNight"s, 0);
    SendMessage(GetDlgItem(IDC_DYNAMIC_DN).GetHwnd(), BM_SETCHECK, (useDN != 0) ? BST_CHECKED : BST_UNCHECKED, 0);
 
-   bool useAO = LoadValueWithDefault(regKey[RegName::Player], "DynamicAO"s, true);
-   SendMessage(GetDlgItem(IDC_DYNAMIC_AO).GetHwnd(), BM_SETCHECK, useAO ? BST_CHECKED : BST_UNCHECKED, 0);
-
-   useAO = LoadValueWithDefault(regKey[RegName::Player], "DisableAO"s, false);
-   SendMessage(GetDlgItem(IDC_ENABLE_AO).GetHwnd(), BM_SETCHECK, useAO ? BST_UNCHECKED : BST_CHECKED, 0); // inverted logic
-   GetDlgItem(IDC_DYNAMIC_AO).EnableWindow(!useAO);
+   const bool useAO = LoadValueWithDefault(regKey[RegName::Player], "DisableAO"s, false);
+   const bool dynAO = LoadValueWithDefault(regKey[RegName::Player], "DynamicAO"s, true);
+   hwnd = GetDlgItem(IDC_MAX_AO_COMBO).GetHwnd();
+   SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Disable AO");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Static AO");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Dynamic AO");
+   SendMessage(hwnd, CB_SETCURSEL, !useAO ? 0 : dynAO ? 2 : 1, 0);
+   SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 
    const bool ssreflection = LoadValueWithDefault(regKey[RegName::Player], "SSRefl"s, false);
    SendMessage(GetDlgItem(IDC_GLOBAL_SSREFLECTION_CHECK).GetHwnd(), BM_SETCHECK, ssreflection ? BST_CHECKED : BST_UNCHECKED, 0);
 
-   hwnd = GetDlgItem(IDC_GLOBAL_PF_REFLECTION).GetHwnd();
+   hwnd = GetDlgItem(IDC_MAX_REFLECTION_COMBO).GetHwnd();
    SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Disabled");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Balls Only");
@@ -427,18 +432,18 @@ BOOL VideoOptionsDialog::OnInitDialog()
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Static & Unsynced Dynamic");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Dynamic");
    int pfr = LoadValueWithDefault(regKey[RegName::Player], "PFReflection"s, -1);
-   RenderProbe::ReflectionMode pfReflection;
+   RenderProbe::ReflectionMode maxReflection;
    if (pfr != -1)
-      pfReflection = (RenderProbe::ReflectionMode)pfr;
+      maxReflection = (RenderProbe::ReflectionMode)pfr;
    else
    {
-      pfReflection = RenderProbe::REFL_STATIC;
+      maxReflection = RenderProbe::REFL_STATIC;
       if (LoadValueWithDefault(regKey[RegName::Player], "BallReflection"s, true))
-         pfReflection = RenderProbe::REFL_STATIC_N_BALLS;
+         maxReflection = RenderProbe::REFL_STATIC_N_BALLS;
       if (LoadValueWithDefault(regKey[RegName::Player], "PFRefl"s, true))
-         pfReflection = RenderProbe::REFL_STATIC_N_DYNAMIC;
+         maxReflection = RenderProbe::REFL_STATIC_N_DYNAMIC;
    }
-   SendMessage(hwnd, CB_SETCURSEL, pfReflection, 0);
+   SendMessage(hwnd, CB_SETCURSEL, maxReflection, 0);
    SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 
    const bool overwiteBallImage = LoadValueWithDefault(regKey[RegName::Player], "OverwriteBallImage"s, false);
@@ -966,16 +971,16 @@ void VideoOptionsDialog::OnOK()
    const bool useDN = (SendMessage(GetDlgItem(IDC_DYNAMIC_DN).GetHwnd(), BM_GETCHECK, 0, 0) != 0);
    SaveValue(regKey[RegName::Player], "DynamicDayNight"s, useDN);
 
-   bool useAO = (SendMessage(GetDlgItem(IDC_DYNAMIC_AO).GetHwnd(), BM_GETCHECK, 0, 0) != 0);
-   SaveValue(regKey[RegName::Player], "DynamicAO"s, useAO);
+   LRESULT maxAOMode = SendMessage(GetDlgItem(IDC_MAX_AO_COMBO).GetHwnd(), CB_GETCURSEL, 0, 0);
+   if (maxAOMode == LB_ERR)
+      maxAOMode = 2;
+   SaveValue(regKey[RegName::Player], "DisableAO"s, maxAOMode == 0);
+   SaveValue(regKey[RegName::Player], "DynamicAO"s, maxAOMode == 2);
 
-   useAO = SendMessage(GetDlgItem(IDC_ENABLE_AO).GetHwnd(), BM_GETCHECK, 0, 0) ? false : true; // inverted logic
-   SaveValue(regKey[RegName::Player], "DisableAO"s, useAO);
-
-   LRESULT pfReflectionMode = SendMessage(GetDlgItem(IDC_GLOBAL_PF_REFLECTION).GetHwnd(), CB_GETCURSEL, 0, 0);
-   if (pfReflectionMode == LB_ERR)
-      pfReflectionMode = RenderProbe::REFL_STATIC;
-   SaveValue(regKey[RegName::Player], "PFReflection"s, (int)pfReflectionMode);
+   LRESULT maxReflectionMode = SendMessage(GetDlgItem(IDC_MAX_REFLECTION_COMBO).GetHwnd(), CB_GETCURSEL, 0, 0);
+   if (maxReflectionMode == LB_ERR)
+      maxReflectionMode = RenderProbe::REFL_STATIC;
+   SaveValue(regKey[RegName::Player], "PFReflection"s, (int)maxReflectionMode);
 
    const bool ssreflection = (SendMessage(GetDlgItem(IDC_GLOBAL_SSREFLECTION_CHECK).GetHwnd(), BM_GETCHECK, 0, 0) != 0);
    SaveValue(regKey[RegName::Player], "SSRefl"s, ssreflection);
@@ -1029,13 +1034,6 @@ void VideoOptionsDialog::OnOK()
    if (SendMessage(GetDlgItem(IDC_StretchMonitor).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED)
       ballStretchMode = 2;
    SaveValue(regKey[RegName::Player], "BallStretchMode"s, ballStretchMode);
-
-   // get selected Monitors
-   // Monitors: 4:3, 16:9, 16:10, 21:10, 21:9
-   /*size_t selected = SendMessage(GetDlgItem(IDC_MonitorCombo).GetHwnd(), CB_GETCURSEL, 0, 0);
-   if (selected == LB_ERR)
-      selected = 1; // assume a 16:9 Monitor as standard
-   SaveValue(regKey[RegName::Player], "BallStretchMonitor"s, (int)selected);*/
 
    const bool overwriteEnabled = IsDlgButtonChecked(IDC_OVERWRITE_BALL_IMAGE_CHECK) == BST_CHECKED;
    if (overwriteEnabled)

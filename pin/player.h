@@ -582,7 +582,7 @@ public:
    bool m_disableAO;
    int GetAOMode(); // 0=Off, 1=Static, 2=Dynamic
 
-   RenderProbe::ReflectionMode m_pfReflectionMode;
+   RenderProbe::ReflectionMode m_maxReflectionMode;
    bool m_ss_refl;
 
    bool m_useNvidiaApi;

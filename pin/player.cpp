@@ -143,31 +143,31 @@ Player::Player(const bool cameraMode, PinTable *const editor_table, PinTable *co
    #endif
    m_BWrendering = LoadValueWithDefault(regKey[RegName::Player], "BWRendering"s, 0);
    m_detectScriptHang = LoadValueWithDefault(regKey[RegName::Player], "DetectHang"s, false);
-   const int pfr = LoadValueWithDefault(regKey[useVR ? RegName::PlayerVR : RegName::Player], "PFReflection"s, -1);
-   if (pfr != -1)
-      m_pfReflectionMode = (RenderProbe::ReflectionMode)pfr;
+   const int maxReflection = LoadValueWithDefault(regKey[useVR ? RegName::PlayerVR : RegName::Player], "PFReflection"s, -1);
+   if (maxReflection != -1)
+      m_maxReflectionMode = (RenderProbe::ReflectionMode)maxReflection;
    else
    {
-      m_pfReflectionMode = RenderProbe::REFL_STATIC;
+      m_maxReflectionMode = RenderProbe::REFL_STATIC;
       if (LoadValueWithDefault(regKey[useVR ? RegName::PlayerVR : RegName::Player], "BallReflection"s, true))
-         m_pfReflectionMode = RenderProbe::REFL_STATIC_N_BALLS;
+         m_maxReflectionMode = RenderProbe::REFL_STATIC_N_BALLS;
       if (LoadValueWithDefault(regKey[useVR ? RegName::PlayerVR : RegName::Player], "PFRefl"s, true))
-         m_pfReflectionMode = RenderProbe::REFL_STATIC_N_DYNAMIC;
+         m_maxReflectionMode = RenderProbe::REFL_STATIC_N_DYNAMIC;
    }
    // Apply table specific overrides
    if (!m_ptable->m_reflectElementsOnPlayfield)
-      m_pfReflectionMode = RenderProbe::REFL_NONE;
-   if (m_ptable->m_useReflectionForBalls == 0 && m_pfReflectionMode == RenderProbe::REFL_BALLS)
-      m_pfReflectionMode = RenderProbe::REFL_NONE;
-   if (m_ptable->m_useReflectionForBalls == 0 && m_pfReflectionMode == RenderProbe::REFL_STATIC_N_BALLS)
-      m_pfReflectionMode = RenderProbe::REFL_STATIC;
-   if (m_ptable->m_useReflectionForBalls == 1 && m_pfReflectionMode == RenderProbe::REFL_NONE)
-      m_pfReflectionMode = RenderProbe::REFL_BALLS;
-   if (m_ptable->m_useReflectionForBalls == 1 && m_pfReflectionMode == RenderProbe::REFL_STATIC)
-      m_pfReflectionMode = RenderProbe::REFL_STATIC_N_BALLS;
+      m_maxReflectionMode = RenderProbe::REFL_NONE;
+   if (m_ptable->m_useReflectionForBalls == 0 && m_maxReflectionMode == RenderProbe::REFL_BALLS)
+      m_maxReflectionMode = RenderProbe::REFL_NONE;
+   if (m_ptable->m_useReflectionForBalls == 0 && m_maxReflectionMode == RenderProbe::REFL_STATIC_N_BALLS)
+      m_maxReflectionMode = RenderProbe::REFL_STATIC;
+   if (m_ptable->m_useReflectionForBalls == 1 && m_maxReflectionMode == RenderProbe::REFL_NONE)
+      m_maxReflectionMode = RenderProbe::REFL_BALLS;
+   if (m_ptable->m_useReflectionForBalls == 1 && m_maxReflectionMode == RenderProbe::REFL_STATIC)
+      m_maxReflectionMode = RenderProbe::REFL_STATIC_N_BALLS;
    // For dynamic mode, static reflections are not available so adapt the mode
-   if (m_dynamicMode && m_pfReflectionMode >= RenderProbe::REFL_STATIC)
-      m_pfReflectionMode = RenderProbe::REFL_DYNAMIC;
+   if (m_dynamicMode && m_maxReflectionMode >= RenderProbe::REFL_STATIC)
+      m_maxReflectionMode = RenderProbe::REFL_DYNAMIC;
 
 #ifdef ENABLE_VR
    m_vrPreview = (VRPreviewMode)LoadValueWithDefault(regKey[RegName::PlayerVR], "VRPreview"s, (int)VRPREVIEW_LEFT);
@@ -1360,7 +1360,7 @@ HRESULT Player::Init()
    {
       vec4 plane = vec4(0.f, 0.f, 1.f, m_ptable->m_tableheight);
       pf_reflection_probe->SetReflectionPlane(plane);
-      pf_reflection_probe->SetReflectionMode(m_pfReflectionMode);
+      pf_reflection_probe->SetReflectionMode(m_maxReflectionMode);
       pf_reflection_probe->SetReflectionNoLightmaps(true);
    }
 
