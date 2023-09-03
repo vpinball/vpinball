@@ -703,9 +703,10 @@ void LiveUI::Render()
    // For the time being, the UI is only available inside a running player
    if (g_pplayer == nullptr || g_pplayer->m_closing != Player::CS_PLAYING)
       return;
-   if (m_rotate != 0)
+   if (m_rotate != 0 && !m_rotation_callback_added)
    {
       // We hack into ImGui renderer for the simple tooltips that must be displayed facing the user
+      m_rotation_callback_added = true; // Only add it once per frame
       ImGui::GetBackgroundDrawList()->AddCallback(
          [](const ImDrawList *parent_list, const ImDrawCmd *cmd)
          {
@@ -787,7 +788,9 @@ void LiveUI::Update()
    // For the time being, the UI is only available inside a running player
    if (m_player == nullptr || m_player->m_closing != Player::CS_PLAYING)
       return;
-   
+
+   m_rotation_callback_added = false;
+
 #ifdef ENABLE_SDL
    ImGui_ImplOpenGL3_NewFrame();
 #else

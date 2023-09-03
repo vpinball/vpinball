@@ -126,6 +126,7 @@ private:
 
    // Rendering
    RenderDevice* const m_rd;
+   bool m_rotation_callback_added = false;
    int m_rotate = 0;
    float m_dpi = 1.0f;
    ImFont *m_baseFont = nullptr;
