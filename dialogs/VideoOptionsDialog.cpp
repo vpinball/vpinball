@@ -52,17 +52,14 @@ void VideoOptionsDialog::ResetVideoPreferences(const unsigned int profile) // 0 
       const bool fullscreen = IsWindows10_1803orAbove();
       SendMessage(GetDlgItem(IDC_EXCLUSIVE_FULLSCREEN).GetHwnd(), BM_SETCHECK, fullscreen ? BST_CHECKED : BST_UNCHECKED, 0);
       SendMessage(GetDlgItem(IDC_WINDOWED).GetHwnd(), BM_SETCHECK, fullscreen ? BST_UNCHECKED : BST_CHECKED, 0);
+      OnCommand(IDC_EXCLUSIVE_FULLSCREEN, 0L); // Force UI update
    }
    if(profile < 2)
    {
       SendMessage(GetDlgItem(IDC_10BIT_VIDEO).GetHwnd(), BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
    }
 
-   SendMessage(GetDlgItem(IDC_Tex3072).GetHwnd(), BM_SETCHECK, BST_UNCHECKED, 0);
-   SendMessage(GetDlgItem(IDC_Tex1024).GetHwnd(), BM_SETCHECK, BST_UNCHECKED, 0);
-   SendMessage(GetDlgItem(IDC_Tex2048).GetHwnd(), BM_SETCHECK, profile == 1 ? BST_CHECKED : BST_UNCHECKED, 0);
-   SendMessage(GetDlgItem(IDC_TexUnlimited).GetHwnd(), BM_SETCHECK, profile != 1 ? BST_CHECKED : BST_UNCHECKED, 0);
-   SendMessage(GetDlgItem(IDC_GLOBAL_REFLECTION_CHECK).GetHwnd(), BM_SETCHECK, profile != 1 ? BST_CHECKED : BST_UNCHECKED, 0);
+   SendMessage(GetDlgItem(IDC_MAX_TEXTURE_COMBO).GetHwnd(), CB_SETCURSEL, 7, 0);
    SendMessage(GetDlgItem(IDC_GLOBAL_TRAIL_CHECK).GetHwnd(), BM_SETCHECK, true ? BST_CHECKED : BST_UNCHECKED, 0);
    SendMessage(GetDlgItem(IDC_GLOBAL_DISABLE_LIGHTING_BALLS).GetHwnd(), BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
    SetDlgItemInt(IDC_MAX_FPS, 0, FALSE);
@@ -70,22 +67,22 @@ void VideoOptionsDialog::ResetVideoPreferences(const unsigned int profile) // 0 
 
    if(profile == 0)
    {
-   constexpr float ballAspecRatioOffsetX = 0.0f;
-   char tmp[256];
-   sprintf_s(tmp, sizeof(tmp), "%f", ballAspecRatioOffsetX);
-   SetDlgItemText(IDC_CORRECTION_X, tmp);
-   constexpr float ballAspecRatioOffsetY = 0.0f;
-   sprintf_s(tmp, sizeof(tmp), "%f", ballAspecRatioOffsetY);
-   SetDlgItemText(IDC_CORRECTION_Y, tmp);
-   constexpr float latitude = 52.52f;
-   sprintf_s(tmp, sizeof(tmp), "%f", latitude);
-   SetDlgItemText(IDC_DN_LATITUDE, tmp);
-   constexpr float longitude = 13.37f;
-   sprintf_s(tmp, sizeof(tmp), "%f", longitude);
-   SetDlgItemText(IDC_DN_LONGITUDE, tmp);
-   constexpr float nudgeStrength = 2e-2f;
-   sprintf_s(tmp, sizeof(tmp), "%f", nudgeStrength);
-   SetDlgItemText(IDC_NUDGE_STRENGTH, tmp);
+      constexpr float ballAspecRatioOffsetX = 0.0f;
+      char tmp[256];
+      sprintf_s(tmp, sizeof(tmp), "%f", ballAspecRatioOffsetX);
+      SetDlgItemText(IDC_CORRECTION_X, tmp);
+      constexpr float ballAspecRatioOffsetY = 0.0f;
+      sprintf_s(tmp, sizeof(tmp), "%f", ballAspecRatioOffsetY);
+      SetDlgItemText(IDC_CORRECTION_Y, tmp);
+      constexpr float latitude = 52.52f;
+      sprintf_s(tmp, sizeof(tmp), "%f", latitude);
+      SetDlgItemText(IDC_DN_LATITUDE, tmp);
+      constexpr float longitude = 13.37f;
+      sprintf_s(tmp, sizeof(tmp), "%f", longitude);
+      SetDlgItemText(IDC_DN_LONGITUDE, tmp);
+      constexpr float nudgeStrength = 2e-2f;
+      sprintf_s(tmp, sizeof(tmp), "%f", nudgeStrength);
+      SetDlgItemText(IDC_NUDGE_STRENGTH, tmp);
    }
 
    SendMessage(GetDlgItem(IDC_SUPER_SAMPLING_COMBO).GetHwnd(), TBM_SETPOS, TRUE, getBestMatchingAAfactorIndex(1.0f));
@@ -96,21 +93,20 @@ void VideoOptionsDialog::ResetVideoPreferences(const unsigned int profile) // 0 
    SendMessage(GetDlgItem(IDC_MAX_AO_COMBO).GetHwnd(), CB_SETCURSEL,profile == 2 ? 2 : 1, 0);
 
    SendMessage(GetDlgItem(IDC_GLOBAL_SSREFLECTION_CHECK).GetHwnd(), BM_SETCHECK, profile == 2 ? BST_CHECKED : BST_UNCHECKED, 0);
-   SendMessage(GetDlgItem(IDC_MAX_REFLECTION_COMBO).GetHwnd(), CB_SETCURSEL,
-      profile == 0 ? RenderProbe::REFL_STATIC_N_DYNAMIC : (profile == 2 ? RenderProbe::REFL_DYNAMIC : RenderProbe::REFL_STATIC_N_BALLS), 0);
+   SendMessage(GetDlgItem(IDC_MAX_REFLECTION_COMBO).GetHwnd(), CB_SETCURSEL, profile == 1 ? RenderProbe::REFL_STATIC_N_BALLS : RenderProbe::REFL_DYNAMIC, 0);
 
    if (profile == 0)
    {
-   SendMessage(GetDlgItem(IDC_OVERWRITE_BALL_IMAGE_CHECK).GetHwnd(), BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
-   SetDlgItemText(IDC_BALL_IMAGE_EDIT, "");
-   SetDlgItemText(IDC_BALL_DECAL_EDIT, "");
-   if (true)
-   {
-      ::EnableWindow(GetDlgItem(IDC_BROWSE_BALL_IMAGE).GetHwnd(), FALSE);
-      ::EnableWindow(GetDlgItem(IDC_BROWSE_BALL_DECAL).GetHwnd(), FALSE);
-      ::EnableWindow(GetDlgItem(IDC_BALL_IMAGE_EDIT).GetHwnd(), FALSE);
-      ::EnableWindow(GetDlgItem(IDC_BALL_DECAL_EDIT).GetHwnd(), FALSE);
-   }
+      SendMessage(GetDlgItem(IDC_OVERWRITE_BALL_IMAGE_CHECK).GetHwnd(), BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
+      SetDlgItemText(IDC_BALL_IMAGE_EDIT, "");
+      SetDlgItemText(IDC_BALL_DECAL_EDIT, "");
+      if (true)
+      {
+         ::EnableWindow(GetDlgItem(IDC_BROWSE_BALL_IMAGE).GetHwnd(), FALSE);
+         ::EnableWindow(GetDlgItem(IDC_BROWSE_BALL_DECAL).GetHwnd(), FALSE);
+         ::EnableWindow(GetDlgItem(IDC_BALL_IMAGE_EDIT).GetHwnd(), FALSE);
+         ::EnableWindow(GetDlgItem(IDC_BALL_DECAL_EDIT).GetHwnd(), FALSE);
+      }
    }
 
    SendMessage(GetDlgItem(IDC_POST_PROCESS_COMBO).GetHwnd(), CB_SETCURSEL, profile == 1 ? Disabled : (profile == 2 ? Quality_FXAA : Standard_FXAA), 0);
@@ -119,37 +115,37 @@ void VideoOptionsDialog::ResetVideoPreferences(const unsigned int profile) // 0 
 
    if (profile == 0)
    {
-   SendMessage(GetDlgItem(IDC_BG_SET).GetHwnd(), BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
-   SendMessage(GetDlgItem(IDC_3D_STEREO).GetHwnd(), CB_SETCURSEL, 0, 0);
-   SendMessage(GetDlgItem(IDC_3D_STEREO_Y).GetHwnd(), BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
-   constexpr float stereo3DOfs = 0.0f;
-   char tmp[256];
-   sprintf_s(tmp, sizeof(tmp), "%f", stereo3DOfs);
-   SetDlgItemText(IDC_3D_STEREO_OFS, tmp);
-   #ifdef ENABLE_SDL
-   constexpr float stereo3DMS = 63.0f; // Eye separation
-   #else
-   constexpr float stereo3DMS = 0.03f; // Parallax separation factor
-   #endif
-   sprintf_s(tmp, sizeof(tmp), "%f", stereo3DMS);
-   SetDlgItemText(IDC_3D_STEREO_MS, tmp);
-   constexpr float stereo3DZPD = 0.5f;
-   sprintf_s(tmp, sizeof(tmp), "%f", stereo3DZPD);
-   SetDlgItemText(IDC_3D_STEREO_ZPD, tmp);
-   constexpr float stereo3DBrightness = 1.0f;
-   sprintf_s(tmp, sizeof(tmp), "%f", stereo3DBrightness);
-   SetDlgItemText(IDC_3D_STEREO_BRIGHTNESS, tmp);
-   constexpr float stereo3DSaturation = 1.0f;
-   sprintf_s(tmp, sizeof(tmp), "%f", stereo3DSaturation);
-   SetDlgItemText(IDC_3D_STEREO_DESATURATION, tmp);
-   SendMessage(GetDlgItem(IDC_USE_NVIDIA_API_CHECK).GetHwnd(), BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
+      SendMessage(GetDlgItem(IDC_BG_SET).GetHwnd(), BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
+      SendMessage(GetDlgItem(IDC_3D_STEREO).GetHwnd(), CB_SETCURSEL, 0, 0);
+      SendMessage(GetDlgItem(IDC_3D_STEREO_Y).GetHwnd(), BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
+      constexpr float stereo3DOfs = 0.0f;
+      char tmp[256];
+      sprintf_s(tmp, sizeof(tmp), "%f", stereo3DOfs);
+      SetDlgItemText(IDC_3D_STEREO_OFS, tmp);
+      #ifdef ENABLE_SDL
+      constexpr float stereo3DMS = 63.0f; // Eye separation
+      #else
+      constexpr float stereo3DMS = 0.03f; // Parallax separation factor
+      #endif
+      sprintf_s(tmp, sizeof(tmp), "%f", stereo3DMS);
+      SetDlgItemText(IDC_3D_STEREO_MS, tmp);
+      constexpr float stereo3DZPD = 0.5f;
+      sprintf_s(tmp, sizeof(tmp), "%f", stereo3DZPD);
+      SetDlgItemText(IDC_3D_STEREO_ZPD, tmp);
+      constexpr float stereo3DBrightness = 1.0f;
+      sprintf_s(tmp, sizeof(tmp), "%f", stereo3DBrightness);
+      SetDlgItemText(IDC_3D_STEREO_BRIGHTNESS, tmp);
+      constexpr float stereo3DSaturation = 1.0f;
+      sprintf_s(tmp, sizeof(tmp), "%f", stereo3DSaturation);
+      SetDlgItemText(IDC_3D_STEREO_DESATURATION, tmp);
+      SendMessage(GetDlgItem(IDC_USE_NVIDIA_API_CHECK).GetHwnd(), BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
    }
 
    SendMessage(GetDlgItem(IDC_BLOOM_OFF).GetHwnd(), BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
 
    if (profile == 0)
    {
-   SendMessage(GetDlgItem(IDC_DISABLE_DWM).GetHwnd(), BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
+      SendMessage(GetDlgItem(IDC_DISABLE_DWM).GetHwnd(), BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
    }
 
    SendMessage(GetDlgItem(IDC_FORCE_ANISO).GetHwnd(), BM_SETCHECK, profile != 1 ? BST_CHECKED : BST_UNCHECKED, 0);
@@ -159,11 +155,11 @@ void VideoOptionsDialog::ResetVideoPreferences(const unsigned int profile) // 0 
 
    if (profile == 0)
    {
-   SendMessage(GetDlgItem(IDC_StretchYes).GetHwnd(), BM_SETCHECK, BST_UNCHECKED, 0);
-   SendMessage(GetDlgItem(IDC_StretchMonitor).GetHwnd(), BM_SETCHECK, BST_UNCHECKED, 0);
-   SendMessage(GetDlgItem(IDC_StretchNo).GetHwnd(), BM_SETCHECK, BST_CHECKED, 0);
-   //SendMessage(GetDlgItem(IDC_MonitorCombo).GetHwnd(), CB_SETCURSEL, 1, 0);
-   SendMessage(GetDlgItem(IDC_DISPLAY_ID).GetHwnd(), CB_SETCURSEL, 0, 0);
+      SendMessage(GetDlgItem(IDC_StretchYes).GetHwnd(), BM_SETCHECK, BST_UNCHECKED, 0);
+      SendMessage(GetDlgItem(IDC_StretchMonitor).GetHwnd(), BM_SETCHECK, BST_UNCHECKED, 0);
+      SendMessage(GetDlgItem(IDC_StretchNo).GetHwnd(), BM_SETCHECK, BST_CHECKED, 0);
+      //SendMessage(GetDlgItem(IDC_MonitorCombo).GetHwnd(), CB_SETCURSEL, 1, 0);
+      SendMessage(GetDlgItem(IDC_DISPLAY_ID).GetHwnd(), CB_SETCURSEL, 0, 0);
    }
 }
 
@@ -171,8 +167,7 @@ void VideoOptionsDialog::UpdateFullscreenModesList()
 {
    const HWND hwndList = GetDlgItem(IDC_SIZELIST).GetHwnd();
    const int display = (int)SendMessage(GetDlgItem(IDC_DISPLAY_ID).GetHwnd(), CB_GETCURSEL, 0, 0);
-   vector<VideoMode> modes;
-   EnumerateDisplayModes(display, modes);
+   EnumerateDisplayModes(display, m_allVideoModes);
    int screenwidth, screenheight, x, y;
    getDisplaySetupByID(display, x, y, screenwidth, screenheight);
 
@@ -188,15 +183,15 @@ void VideoOptionsDialog::UpdateFullscreenModesList()
 
    SendMessage(hwndList, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
    SendMessage(hwndList, LB_RESETCONTENT, 0, 0);
-   SendMessage(hwndList, LB_INITSTORAGE, modes.size(), modes.size() * 128); // *128 is artificial
+   SendMessage(hwndList, LB_INITSTORAGE, m_allVideoModes.size(), m_allVideoModes.size() * 128); // *128 is artificial
 
    int bestMatch = 0; // to find closest matching res
    int bestMatchingPoints = 0; // dto.
 
 
-   for (size_t i = 0; i < modes.size(); ++i)
+   for (size_t i = 0; i < m_allVideoModes.size(); ++i)
    {
-      double aspect = (double)modes[i].width / (double)modes[i].height;
+      double aspect = (double)m_allVideoModes[i].width / (double)m_allVideoModes[i].height;
       const bool portrait = (aspect < 1.);
       if (portrait)
          aspect = 1./aspect;
@@ -242,20 +237,22 @@ void VideoOptionsDialog::UpdateFullscreenModesList()
       }
 
       char szT[128];
-      if (modes[i].depth) // i.e. is this windowed or not
-         sprintf_s(szT, sizeof(szT), "%d x %d (%dHz %d:%d)", modes[i].width, modes[i].height, /*modes[i].depth,*/ modes[i].refreshrate, portrait ? fy : fx, portrait ? fx : fy);
+      if (m_allVideoModes[i].depth) // i.e. is this windowed or not
+         sprintf_s(szT, sizeof(szT), "%d x %d (%dHz %d:%d)", m_allVideoModes[i].width, m_allVideoModes[i].height, /*m_allVideoModes[i].depth,*/ m_allVideoModes[i].refreshrate,
+            portrait ? fy : fx, portrait ? fx : fy);
       else
-         sprintf_s(szT, sizeof(szT), "%d x %d (%d:%d %s)", modes[i].width, modes[i].height /*,modes[i].depth*/, portrait ? fy : fx, portrait ? fx : fy, portrait ? "Portrait" : "Landscape");
+         sprintf_s(szT, sizeof(szT), "%d x %d (%d:%d %s)", m_allVideoModes[i].width, m_allVideoModes[i].height /*,m_allVideoModes[i].depth*/, portrait ? fy : fx, portrait ? fx : fy,
+            portrait ? "Portrait" : "Landscape");
 
       SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)szT);
       int matchingPoints = 0;
-      if (modes[i].width == curSelMode.width) matchingPoints += 100;
-      if (modes[i].height == curSelMode.height) matchingPoints += 100;
-      if (modes[i].depth == curSelMode.depth) matchingPoints += 50;
-      if (modes[i].refreshrate == curSelMode.refreshrate) matchingPoints += 10;
-      if (modes[i].width == screenwidth) matchingPoints += 3;
-      if (modes[i].height == screenheight) matchingPoints += 3;
-      if (modes[i].refreshrate == DEFAULT_PLAYER_FS_REFRESHRATE) matchingPoints += 1;
+      if (m_allVideoModes[i].width == curSelMode.width) matchingPoints += 100;
+      if (m_allVideoModes[i].height == curSelMode.height) matchingPoints += 100;
+      if (m_allVideoModes[i].depth == curSelMode.depth) matchingPoints += 50;
+      if (m_allVideoModes[i].refreshrate == curSelMode.refreshrate) matchingPoints += 10;
+      if (m_allVideoModes[i].width == screenwidth) matchingPoints += 3;
+      if (m_allVideoModes[i].height == screenheight) matchingPoints += 3;
+      if (m_allVideoModes[i].refreshrate == DEFAULT_PLAYER_FS_REFRESHRATE) matchingPoints += 1;
       if (matchingPoints > bestMatchingPoints) {
          bestMatch = (int)i;
          bestMatchingPoints = matchingPoints;
