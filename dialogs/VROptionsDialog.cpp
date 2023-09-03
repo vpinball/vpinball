@@ -470,21 +470,21 @@ BOOL VROptionsDialog::OnInitDialog()
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Balls Only");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Dynamic");
    int pfr = LoadValueWithDefault(regKey[RegName::PlayerVR], "PFReflection"s, -1);
-   RenderProbe::ReflectionMode pfReflection;
+   RenderProbe::ReflectionMode maxReflection;
    if (pfr != -1)
-      pfReflection = (RenderProbe::ReflectionMode)pfr;
+      maxReflection = (RenderProbe::ReflectionMode)pfr;
    else
    {
-      pfReflection = RenderProbe::REFL_NONE;
+      maxReflection = RenderProbe::REFL_NONE;
       if (LoadValueWithDefault(regKey[RegName::PlayerVR], "BallReflection"s, true))
-         pfReflection = RenderProbe::REFL_BALLS;
+         maxReflection = RenderProbe::REFL_BALLS;
       if (LoadValueWithDefault(regKey[RegName::PlayerVR], "PFRefl"s, true))
-         pfReflection = RenderProbe::REFL_DYNAMIC;
+         maxReflection = RenderProbe::REFL_DYNAMIC;
    }
-   if (pfReflection == RenderProbe::REFL_DYNAMIC)
+   if (maxReflection == RenderProbe::REFL_DYNAMIC)
       SendMessage(hwnd, CB_SETCURSEL, 2, 0);
    else
-      SendMessage(hwnd, CB_SETCURSEL, pfReflection, 0);
+      SendMessage(hwnd, CB_SETCURSEL, maxReflection, 0);
    SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 
    const int fxaa = LoadValueWithDefault(regKey[RegName::PlayerVR], "FXAA"s, LoadValueWithDefault(regKey[RegName::Player], "FXAA"s, 0));
@@ -848,12 +848,12 @@ void VROptionsDialog::OnOK()
    const bool ssreflection = SendMessage(GetDlgItem(IDC_GLOBAL_SSREFLECTION_CHECK).GetHwnd(), BM_GETCHECK, 0, 0) != 0;
    SaveValue(regKey[RegName::PlayerVR], "SSRefl"s, ssreflection);
 
-   LRESULT pfReflectionMode = SendMessage(GetDlgItem(IDC_GLOBAL_PF_REFLECTION).GetHwnd(), CB_GETCURSEL, 0, 0);
-   if (pfReflectionMode == LB_ERR)
-      pfReflectionMode = RenderProbe::REFL_NONE;
-   if (pfReflectionMode == 2)
-      pfReflectionMode = RenderProbe::REFL_DYNAMIC;
-   SaveValue(regKey[RegName::PlayerVR], "PFReflection"s, (int)pfReflectionMode);
+   LRESULT maxReflection = SendMessage(GetDlgItem(IDC_GLOBAL_PF_REFLECTION).GetHwnd(), CB_GETCURSEL, 0, 0);
+   if (maxReflection == LB_ERR)
+      maxReflection = RenderProbe::REFL_NONE;
+   if (maxReflection == 2)
+      maxReflection = RenderProbe::REFL_DYNAMIC;
+   SaveValue(regKey[RegName::PlayerVR], "PFReflection"s, (int)maxReflection);
 
    //AMD Debugging
    const size_t textureModeVR = SendMessage(GetDlgItem(IDC_COMBO_TEXTURE).GetHwnd(), CB_GETCURSEL, 0, 0);

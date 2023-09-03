@@ -376,70 +376,67 @@ BEGIN
     EDITTEXT        IDC_3D_STEREO_OFS,104,382,40,12,ES_RIGHT | ES_AUTOHSCROLL
     CONTROL         "Use Y-Axis (Cabinet/Rotated Screen)",IDC_3D_STEREO_Y,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,395,134,10
-    GROUPBOX        "Reflections",IDC_STATIC,232,10,114,38
-    LTEXT           "Playfield",IDC_STATIC,236,22,33,10
-    COMBOBOX        IDC_GLOBAL_PF_REFLECTION,269,20,73,100,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Screen Space Reflections",IDC_GLOBAL_SSREFLECTION_CHECK,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,236,34,97,10
-    GROUPBOX        "Ambient Occlusion",IDC_STATIC,156,9,72,38
-    CONTROL         "Enable",IDC_ENABLE_AO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,161,20,65,10
-    CONTROL         "Dynamic",IDC_DYNAMIC_AO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,161,31,53,10
     COMBOBOX        IDC_3D_STEREO,11,315,133,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Ball Rendering",IDC_STATIC,154,50,94,98
-    CONTROL         "Ball Trails/Motion Blur",IDC_GLOBAL_TRAIL_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,159,60,86,10
+    GROUPBOX        "Ball Rendering",IDC_STATIC,154,6,94,98
+    CONTROL         "Ball Trails/Motion Blur",IDC_GLOBAL_TRAIL_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,159,16,86,10
     CONTROL         "Overwrite Ball Image",IDC_OVERWRITE_BALL_IMAGE_CHECK,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,159,71,81,10
-    PUSHBUTTON      "...",IDC_BROWSE_BALL_IMAGE,227,93,17,12
-    EDITTEXT        IDC_BALL_IMAGE_EDIT,159,93,65,12,ES_AUTOHSCROLL
-    LTEXT           "Ball Image",IDC_STATIC,159,85,34,8
-    PUSHBUTTON      "...",IDC_BROWSE_BALL_DECAL,227,117,17,12
-    EDITTEXT        IDC_BALL_DECAL_EDIT,159,117,65,12,ES_AUTOHSCROLL
-    LTEXT           "Ball Decal",IDC_STATIC,159,109,33,8
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,159,27,81,10
+    PUSHBUTTON      "...",IDC_BROWSE_BALL_IMAGE,227,49,17,12
+    EDITTEXT        IDC_BALL_IMAGE_EDIT,159,49,65,12,ES_AUTOHSCROLL
+    LTEXT           "Ball Image",IDC_STATIC,159,41,34,8
+    PUSHBUTTON      "...",IDC_BROWSE_BALL_DECAL,227,73,17,12
+    EDITTEXT        IDC_BALL_DECAL_EDIT,159,73,65,12,ES_AUTOHSCROLL
+    LTEXT           "Ball Decal",IDC_STATIC,159,65,33,8
     CONTROL         "Disable Lighting",IDC_GLOBAL_DISABLE_LIGHTING_BALLS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,159,133,86,10
-    GROUPBOX        "Ball Aspect Ratio",IDC_STATIC,251,50,95,98
-    CONTROL         "Stretch Ball with Table",IDC_StretchNo,"Button",BS_AUTORADIOBUTTON | WS_GROUP,254,64,83,10
-    CONTROL         "Don't stretch the Ball",IDC_StretchYes,"Button",BS_AUTORADIOBUTTON,254,75,81,10
-    CONTROL         "Cabinet anti-stretch the ball",IDC_StretchMonitor,
-                    "Button",BS_AUTORADIOBUTTON,254,86,91,10
-    GROUPBOX        "Aspect Ratio Offset",IDC_STATIC,256,101,85,42
-    LTEXT           "X",IDC_STATIC,263,114,8,8
-    EDITTEXT        IDC_CORRECTION_X,273,112,40,12,ES_AUTOHSCROLL
-    LTEXT           "Y",IDC_STATIC,263,128,8,8
-    EDITTEXT        IDC_CORRECTION_Y,273,126,40,12,ES_AUTOHSCROLL
-    CONTROL         "BAM Headtracking",IDC_HEADTRACKING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,154,152,73,10
-    LTEXT           "Visual Nudge Strength",IDC_STATIC,231,153,71,12
-    EDITTEXT        IDC_NUDGE_STRENGTH,306,152,36,12,ES_RIGHT | ES_AUTOHSCROLL
-    GROUPBOX        "Automatic Night->Day cycle",IDC_STATIC,154,166,193,28
-    CONTROL         "Enable",IDC_DYNAMIC_DN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,160,178,36,10
-    LTEXT           "Latitude",IDC_STATIC,200,179,31,10
-    EDITTEXT        IDC_DN_LATITUDE,232,177,36,12,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Longitude",IDC_STATIC,271,179,35,10
-    EDITTEXT        IDC_DN_LONGITUDE,306,177,36,12,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Synchronization mode",IDC_STATIC,162,208,80,10
-    COMBOBOX        IDC_VIDEO_SYNC_MODE,249,206,92,100,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Input / Physics / Video Synchronization",IDC_STATIC,155,196,193,51
-    LTEXT           "Maximum Framerate",IDC_STATIC,162,221,75,10
-    EDITTEXT        IDC_MAX_FPS,321,219,20,12,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Maximum pre-rendered Frames",IDC_STATIC,162,234,120,8
-    EDITTEXT        IDC_MAX_PRE_FRAMES,321,232,20,12,ES_RIGHT | ES_AUTOHSCROLL
-    GROUPBOX        "Performance and Troubleshooting",IDC_STATIC,154,251,193,106
-    CONTROL         "Texture Compression (performance)",IDC_TEX_COMPRESS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,262,124,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,159,89,86,10
+    GROUPBOX        "Ball Aspect Ratio",IDC_STATIC,251,6,95,98
+    CONTROL         "Stretch Ball with Table",IDC_StretchNo,"Button",BS_AUTORADIOBUTTON | WS_GROUP,254,20,83,10
+    CONTROL         "Don't stretch the Ball",IDC_StretchYes,"Button",BS_AUTORADIOBUTTON,254,31,81,10
+    CONTROL         "Cabinet anti-stretch",IDC_StretchMonitor,"Button",BS_AUTORADIOBUTTON,254,42,91,10
+    GROUPBOX        "Aspect Ratio Offset",IDC_STATIC,256,57,85,42
+    LTEXT           "X",IDC_STATIC,263,70,8,8
+    EDITTEXT        IDC_CORRECTION_X,273,68,40,12,ES_AUTOHSCROLL
+    LTEXT           "Y",IDC_STATIC,263,84,8,8
+    EDITTEXT        IDC_CORRECTION_Y,273,82,40,12,ES_AUTOHSCROLL
+    GROUPBOX        "Miscelaneous Features",IDC_STATIC,154,106,193,75
+    LTEXT           "Visual Nudge Strength",IDC_STATIC,162,115,128,10
+    EDITTEXT        IDC_NUDGE_STRENGTH,306,114,35,12,ES_RIGHT | ES_AUTOHSCROLL
+    CONTROL         "Additional Screen Space Reflections",IDC_GLOBAL_SSREFLECTION_CHECK,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,160,128,181,10
+    CONTROL         "BAM Headtracking",IDC_HEADTRACKING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,160,141,182,10
+    CONTROL         "Enable automatic Day->Night cycle",IDC_DYNAMIC_DN,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,160,154,181,10
+    LTEXT           "Latitude",IDC_STATIC,187,167,35,10
+    EDITTEXT        IDC_DN_LATITUDE,222,166,36,12,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Longitude",IDC_STATIC,268,167,35,10
+    EDITTEXT        IDC_DN_LONGITUDE,306,166,36,12,ES_RIGHT | ES_AUTOHSCROLL
+    GROUPBOX        "Input / Physics / Video Synchronization",IDC_STATIC,155,183,193,51
+    LTEXT           "Synchronization mode",IDC_STATIC,162,195,80,10
+    COMBOBOX        IDC_VIDEO_SYNC_MODE,249,193,92,100,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Maximum Framerate",IDC_STATIC,162,208,75,10
+    EDITTEXT        IDC_MAX_FPS,321,206,20,12,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Maximum pre-rendered Frames",IDC_STATIC,162,221,120,8
+    EDITTEXT        IDC_MAX_PRE_FRAMES,321,219,20,12,ES_RIGHT | ES_AUTOHSCROLL
+    GROUPBOX        "Performance and Troubleshooting",IDC_STATIC,154,236,193,138
+    LTEXT           "Max. Ambient Occlusion",IDC_STATIC,162,248,97,10
+    COMBOBOX        IDC_MAX_AO_COMBO,268,247,73,100,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Max. Reflection Mode",IDC_STATIC,162,261,97,10
+    COMBOBOX        IDC_MAX_REFLECTION_COMBO,268,260,73,100,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Max. Texture Dimension",IDC_STATIC,162,274,97,10
+    COMBOBOX        IDC_MAX_TEXTURE_COMBO,268,273,73,59,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Compress Texture (performance)",IDC_TEX_COMPRESS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,287,124,10
     CONTROL         "Force Anisotropic Texture Filtering (quality)",IDC_FORCE_ANISO,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,272,150,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,300,150,10
     CONTROL         "Force Bloom Filter off (performance)",IDC_BLOOM_OFF,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,282,127,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,313,127,10
     CONTROL         "Alternative Depth Buffer processing",IDC_USE_NVIDIA_API_CHECK,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,292,127,10
-    CONTROL         "Software Vertex processing",IDC_SOFTWARE_VP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,302,104,10
-    LTEXT           "Max Texture Dimension",IDC_STATIC,162,315,97,10
-    COMBOBOX        IDC_MAX_TEXTURE_COMBO,281,313,60,59,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Elements Detail Level (decrease = performance)",IDC_STATIC,162,329,156,8
-    CONTROL         "",IDC_ARASlider,"msctls_trackbar32",TBS_AUTOTICKS | TBS_TOP | WS_TABSTOP,155,337,191,18
-    PUSHBUTTON      "Reset to Defaults",IDC_DEFAULTS,154,361,61,14
-    PUSHBUTTON      "Set for LowEnd PC",IDC_DEFAULTS_LOW,216,361,65,14
-    PUSHBUTTON      "Set for HighEnd PC",IDC_DEFAULTS_HIGH,282,361,65,14
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,326,127,10
+    CONTROL         "Software Vertex processing",IDC_SOFTWARE_VP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,339,104,10
+    LTEXT           "Elements Detail Level (decrease = performance)",IDC_STATIC,162,351,156,8
+    CONTROL         "",IDC_ARASlider,"msctls_trackbar32",TBS_AUTOTICKS | TBS_TOP | WS_TABSTOP,155,359,191,10
+    PUSHBUTTON      "Reset to Defaults",IDC_DEFAULTS,154,378,61,14
+    PUSHBUTTON      "Set for LowEnd PC",IDC_DEFAULTS_LOW,216,378,65,14
+    PUSHBUTTON      "Set for HighEnd PC",IDC_DEFAULTS_HIGH,282,378,65,14
     DEFPUSHBUTTON   "OK",IDOK,245,396,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,297,396,50,14
 END
