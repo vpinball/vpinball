@@ -8794,8 +8794,7 @@ void PinTable::UpdateCurrentBGSet()
       m_BG_current_set = m_BG_override;
    else
    {
-      int setup;
-      LoadValue(regKey[RegName::Player], "BGSet"s, setup);
+      const int setup = LoadValueWithDefault(regKey[RegName::Player], "BGSet"s, 0);
       switch (setup)
       {
       case 0: m_BG_current_set = m_BG_enable_FSS ? BG_FSS : BG_DESKTOP; break; // Desktop mode (FSS if table supports it, usual dekstop otherwise)

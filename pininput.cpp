@@ -1072,6 +1072,7 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
             }
             break;
          case BG_FULLSCREEN:
+         {
             viewSetup.mMode = (ViewLayoutMode) LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetMode"s, VLM_WINDOW);
             viewSetup.mViewX = CMTOVPU(LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetCamX"s,   0.f));
             viewSetup.mViewY = CMTOVPU(LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetCamY"s, - 1.f)); // Measured from real players. Highly depends on size and playing position (between -10 to 5)
@@ -1083,6 +1084,8 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
             viewSetup.mLookAt = LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetLookAt"s, 25.0f);
             viewSetup.mViewVOfs = LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetViewVOfs"s, 0.f);
             break;
+         }
+         case BG_INVALID: assert(false); break;
          }
          g_pplayer->m_pin3d.m_cam.x = 0.f;
          g_pplayer->m_pin3d.m_cam.y = 0.f;
