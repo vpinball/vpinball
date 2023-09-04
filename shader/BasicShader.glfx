@@ -110,14 +110,15 @@ mat3 TBN_trafo(const float3 N, const float3 V, const float2 uv)
 
 float3 normal_map(const float3 N, const float3 V, const float2 uv)
 {
-   float3 tn = texture(tex_base_normalmap, uv).xyz * (255./127.) - (128./127.); // Note that Blender apparently does export tangent space normalmaps for Z (Blue) at full range, so 0..255 -> 0..1, which misses an option for here!
-
+   const float3 tn = texture(tex_base_normalmap, uv).xyz * (255./127.) - (128./127.);
    BRANCH if (objectSpaceNormalMap)
-   {
-      tn.z = -tn.z; // this matches the object space, +X +Y +Z, export/baking in Blender with our trafo setup
-      return normalize((matWorldViewInverseTranspose * tn).xyz);
-   } else // tangent space
-      return normalize((tn * TBN_trafo(N, V, uv)).xyz);  // !! The order of tn, and TBN_trainfo matters here?  Ship on FishTales gets blown out if you reverse them 
+   { // Object space: this matches the object space, +X +Y +Z, export/baking in Blender with our trafo setup
+      return normalize((matWorldViewInverseTranspose * float3(tn.x, tn.y, -tn.z)).xyz);
+   }
+   else
+   { // Tangent space
+      return normalize((TBN_trafo(N, V, uv) * tn).xyz);
+   }
 }
 
 // Compute reflections from reflection probe (screen space coordinates)
@@ -469,13 +470,12 @@ void main() {
 
    const float3 V = normalize(/*camera=0,0,0,1*/-worldPos); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
    const float3 N = normalize(normal);
-   //color = float4((N+1.0)*0.5,1.0); return; // visualize normals
 
    color = float4(lightLoop(worldPos, N, V, diffuse, glossy, specular, edge, true, is_metal), cBase_Alpha.a);
 
-   BRANCH if (cBase_Alpha.a < 1.0)
+   BRANCH if (color.a < 1.0) // We may not opacify if we already are opaque
    {
-      color.a = GeometricOpacity(dot(N,V), color.a,cClearcoat_EdgeAlpha.w,Roughness_WrapL_Edge_Thickness.w);
+      color.a = GeometricOpacity(dot(N,V), color.a, cClearcoat_EdgeAlpha.w, Roughness_WrapL_Edge_Thickness.w);
 
       if (fDisableLighting_top_below.y < 1.0)
          // add light from "below" from user-flagged bulb lights, pre-rendered/blurred in previous renderpass //!! sqrt = magic
@@ -519,7 +519,7 @@ void main() {
 
    pixel.a *= cBase_Alpha.a;
    if (fDisableLighting_top_below.x < 1.0) // if there is lighting applied, make sure to clamp the values (as it could be coming from a HDR tex)
-      pixel.xyz = clamp(pixel.xyz, float3(0.0,0.0,0.0), float3(1.0,1.0,1.0));
+      pixel.xyz = saturate(pixel.xyz);
    const float3 diffuse  = pixel.xyz * cBase_Alpha.xyz;
    const float3 glossy   = is_metal ? diffuse : (pixel.xyz * cGlossy_ImageLerp.w + (1.0-cGlossy_ImageLerp.w)) * cGlossy_ImageLerp.xyz * 0.08; //!! use AO for glossy? specular?
    const float3 specular = cClearcoat_EdgeAlpha.xyz * 0.08;
@@ -529,13 +529,12 @@ void main() {
    float3 N = normalize(normal);
    BRANCH if (doNormalMapping)
       N = normal_map(N, V, tex01);
-   //!! color = float4((N+1.0)*0.5,1.0); return; // visualize normals
 
    color = float4(lightLoop(worldPos, N, V, diffuse, glossy, specular, edge, !doNormalMapping, is_metal), pixel.a);
 
-   BRANCH if (cBase_Alpha.a < 1.0 && color.a < 1.0)
+   BRANCH if (color.a < 1.0) // We may not opacify if we already are opaque
    {
-      color.a = GeometricOpacity(dot(N,V),color.a,cClearcoat_EdgeAlpha.w,Roughness_WrapL_Edge_Thickness.w);
+      color.a = GeometricOpacity(dot(N,V), color.a, cClearcoat_EdgeAlpha.w, Roughness_WrapL_Edge_Thickness.w);
 
       if (fDisableLighting_top_below.y < 1.0)
          // add light from "below" from user-flagged bulb lights, pre-rendered/blurred in previous renderpass //!! sqrt = magic
@@ -549,6 +548,9 @@ void main() {
       const float shadow = get_light_ball_shadow(lightCenter_doShadow.xyz, light_dir, light_dist);
       color.rgb *= shadow;
    }
+
+   // visualize normals for debugging
+   // color.rgb = color.rgb * 0.0001 + 0.5 + 0.5 * N.rgb;
 
    BRANCH if (doReflections)
       color.rgb += compute_reflection(gl_FragCoord.xy * w_h_height.xy, N, eye);
@@ -587,25 +589,24 @@ in vec3 normal;
 flat in float eye;
 
 void main() {
-   float4 result;
+   color.a = tex2D(tex_base_color, tex01).a;
 
-   result.a = tex2D(tex_base_color, tex01).a;
-
-   if (result.a <= alphaTestValue)
+   if (color.a <= alphaTestValue)
       discard;           //stop the pixel shader if alpha test should reject pixel
 
-   result.a *= cBase_Alpha.a;
+   color.a *= cBase_Alpha.a;
 
    float3 N = normalize(normal);
-   result.rgb = compute_reflection(gl_FragCoord.xy * w_h_height.xy, N, eye);
+   color.rgb = compute_reflection(gl_FragCoord.xy * w_h_height.xy, N, eye);
 
-   BRANCH if (cBase_Alpha.a < 1.0 && result.a < 1.0)
+   // Maybe overkill for just the additive reflections
+   BRANCH if (color.a < 1.0)
    {
       const float3 V = normalize(/*camera=0,0,0,1*/ -worldPos);
-      result.a = GeometricOpacity(dot(N, V), result.a, cClearcoat_EdgeAlpha.w, Roughness_WrapL_Edge_Thickness.w);
+      color.a = GeometricOpacity(dot(N, V), color.a, cClearcoat_EdgeAlpha.w, Roughness_WrapL_Edge_Thickness.w);
    }
 
-   color = result * staticColor_Alpha;
+   color = color * staticColor_Alpha;
 }
 
 

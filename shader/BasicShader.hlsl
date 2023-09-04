@@ -178,17 +178,18 @@ float3x3 TBN_trafo(const float3 N, const float3 V, const float2 uv, const float3
 
 float3 normal_map(const float3 N, const float3 V, const float2 uv)
 {
-   float3 tn = tex2D(tex_base_normalmap, uv).xyz * (255./127.) - (128./127.); // Note that Blender apparently does export tangent space normalmaps for Z (Blue) at full range, so 0..255 -> 0..1, which misses an option for here!
-
    const float3 dpx = ddx(V); //!! these 2 are declared here instead of TBN_trafo() to workaround a compiler quirk
    const float3 dpy = ddy(V);
 
+   const float3 tn = tex2D(tex_base_normalmap, uv).xyz * (255. / 127.) - (128. / 127.);
    BRANCH if (objectSpaceNormalMap)
-   {
-      tn.z = -tn.z; // this matches the object space, +X +Y +Z, export/baking in Blender with our trafo setup
-      return normalize( mul(tn, matWorldViewInverseTranspose).xyz );
-   } else // tangent space
-      return normalize( mul(TBN_trafo(N, V, uv, dpx, dpy), tn) );
+   { // Object space: this matches the object space, +X +Y +Z, export/baking in Blender with our trafo setup
+      return normalize(mul(float3(tn.x, tn.y, -tn.z), matWorldViewInverseTranspose).xyz);
+   }
+   else
+   { // Tangent space
+      return normalize(mul(tn, TBN_trafo(N, V, uv, dpx, dpy)));
+   }
 }
 
 // Compute reflections from reflection probe (screen space coordinates)
@@ -324,17 +325,16 @@ float4 ps_main(const in VS_NOTEX_OUTPUT IN, float2 screenSpace : VPOS, uniform b
 
    const float3 V = normalize( /*camera=0,0,0,1*/-IN.worldPos); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
    const float3 N = normalize(IN.normal);
-   //return float4((N+1.0)*0.5,1.0); // visualize normals
 
-   float4 result = float4(lightLoop(IN.worldPos.xyz, N, V, diffuse, glossy, specular, edge, true, is_metal), cBase_Alpha.a);
+   float4 color = float4(lightLoop(IN.worldPos.xyz, N, V, diffuse, glossy, specular, edge, true, is_metal), cBase_Alpha.a);
 
-   BRANCH if (cBase_Alpha.a < 1.0)
+   BRANCH if (color.a < 1.0)
    {
-      result.a = GeometricOpacity(dot(N,V),result.a,cClearcoat_EdgeAlpha.w,Roughness_WrapL_Edge_Thickness.w);
+      color.a = GeometricOpacity(dot(N,V), color.a, cClearcoat_EdgeAlpha.w, Roughness_WrapL_Edge_Thickness.w);
 
       if (fDisableLighting_top_below.y < 1.0)
          // add light from "below" from user-flagged bulb lights, pre-rendered/blurred in previous renderpass //!! sqrt = magic
-         result.rgb += lerp(sqrt(diffuse)*texNoLod(tex_base_transmission, screenSpace * w_h_height.xy).rgb*result.a, 0., fDisableLighting_top_below.y); //!! depend on normal of light (unknown though) vs geom normal, too?
+         color.rgb += lerp(sqrt(diffuse)*texNoLod(tex_base_transmission, screenSpace * w_h_height.xy).rgb*color.a, 0., fDisableLighting_top_below.y); //!! depend on normal of light (unknown though) vs geom normal, too?
    }
 
    BRANCH if (lightCenter_doShadow.w != 0.)
@@ -342,20 +342,20 @@ float4 ps_main(const in VS_NOTEX_OUTPUT IN, float2 screenSpace : VPOS, uniform b
       const float3 light_dir = IN.tablePos.xyz - lightCenter_doShadow.xyz;
       const float light_dist = length(light_dir);
       const float shadow = get_light_ball_shadow(lightCenter_doShadow.xyz, light_dir, light_dist);
-      result.rgb *= shadow;
+      color.rgb *= shadow;
    }
 
    BRANCH if (doReflections)
-      result.rgb += compute_reflection(screenSpace * w_h_height.xy, N);
+      color.rgb += compute_reflection(screenSpace * w_h_height.xy, N);
 
    BRANCH if (doRefractions)
    {
       // alpha channel is the transparency of the object, tinting is supported even if alpha is 0 by applying a tint color
-      result.rgb = lerp(compute_refraction(IN.worldPos.xyz, screenSpace * w_h_height.xy, N, V), result.rgb, cBase_Alpha.a);
-      result.a = 1.0;
+      color.rgb = lerp(compute_refraction(IN.worldPos.xyz, screenSpace * w_h_height.xy, N, V), color.rgb, cBase_Alpha.a);
+      color.a = 1.0;
    }
 
-   return result * staticColor_Alpha;
+   return color * staticColor_Alpha;
 }
 
 float4 ps_main_texture(const in VS_OUTPUT IN, float2 screenSpace : VPOS, uniform bool is_metal, uniform bool doNormalMapping, uniform bool doReflections, uniform bool doRefractions) : COLOR
@@ -376,17 +376,16 @@ float4 ps_main_texture(const in VS_OUTPUT IN, float2 screenSpace : VPOS, uniform
    float3 N = normalize(IN.normal);
    BRANCH if (doNormalMapping)
       N = normal_map(N, V, IN.tex0);
-   //!! return float4((N+1.0)*0.5,1.0); // visualize normals
+   
+   float4 color = float4(lightLoop(IN.worldPos, N, V, diffuse, glossy, specular, edge, !doNormalMapping, is_metal), pixel.a);
 
-   float4 result = float4(lightLoop(IN.worldPos, N, V, diffuse, glossy, specular, edge, !doNormalMapping, is_metal), pixel.a);
-
-   BRANCH if (cBase_Alpha.a < 1.0 && result.a < 1.0)
+   BRANCH if (color.a < 1.0) // We may not opacify if we already are opaque
    {
-      result.a = GeometricOpacity(dot(N,V),result.a,cClearcoat_EdgeAlpha.w,Roughness_WrapL_Edge_Thickness.w);
+      color.a = GeometricOpacity(dot(N,V), color.a,cClearcoat_EdgeAlpha.w,Roughness_WrapL_Edge_Thickness.w);
 
       if (fDisableLighting_top_below.y < 1.0)
          // add light from "below" from user-flagged bulb lights, pre-rendered/blurred in previous renderpass //!! sqrt = magic
-         result.rgb += lerp(sqrt(diffuse)*texNoLod(tex_base_transmission, screenSpace * w_h_height.xy).rgb*result.a, 0., fDisableLighting_top_below.y); //!! depend on normal of light (unknown though) vs geom normal, too?
+         color.rgb += lerp(sqrt(diffuse)*texNoLod(tex_base_transmission, screenSpace * w_h_height.xy).rgb*color.a, 0., fDisableLighting_top_below.y); //!! depend on normal of light (unknown though) vs geom normal, too?
    }
 
    BRANCH if (lightCenter_doShadow.w != 0.)
@@ -394,52 +393,55 @@ float4 ps_main_texture(const in VS_OUTPUT IN, float2 screenSpace : VPOS, uniform
       const float3 light_dir = IN.tablePos.xyz - lightCenter_doShadow.xyz;
       const float light_dist = length(light_dir);
       const float shadow = get_light_ball_shadow(lightCenter_doShadow.xyz, light_dir, light_dist);
-      result.rgb *= shadow;
+      color.rgb *= shadow;
    }
 
+   // visualize normals for debugging
+   // color.rgb = color.rgb * 0.0001 + 0.5 + 0.5 * N.rgb;
+
    BRANCH if (doReflections)
-      result.rgb += compute_reflection(screenSpace * w_h_height.xy, N);
+      color.rgb += compute_reflection(screenSpace * w_h_height.xy, N);
 
    BRANCH if (doRefractions)
    {
       // alpha channel is the transparency of the object, tinting is supported even if alpha is 0 by applying a tint color (not from main texture since these are different informations (reflected/refracted color))
-      result.rgb = lerp(compute_refraction(IN.worldPos, screenSpace * w_h_height.xy, N, V), result.rgb, result.a);
-      result.a = 1.0;
+      color.rgb = lerp(compute_refraction(IN.worldPos, screenSpace * w_h_height.xy, N, V), color.rgb, color.a);
+      color.a = 1.0;
    }
 
-   return result * staticColor_Alpha;
+   return color * staticColor_Alpha;
 }
 
 float4 ps_main_reflection_only_without_texture(const in VS_NOTEX_OUTPUT IN, float2 screenSpace : VPOS) : COLOR
 {
-   float4 result;
+   float4 color;
    const float3 N = normalize(IN.normal);
-   result.rgb = compute_reflection(screenSpace * w_h_height.xy, N);
-   result.a = 1.0;
-   return result * staticColor_Alpha;
+   color.rgb = compute_reflection(screenSpace * w_h_height.xy, N);
+   color.a = 1.0;
+   return color * staticColor_Alpha;
 }
 
 float4 ps_main_reflection_only_with_texture(const in VS_OUTPUT IN, float2 screenSpace : VPOS) : COLOR
 {
-   float4 result;
+   float4 color;
 
-   result.a = tex2D(tex_base_color, IN.tex0).a;
+   color.a = tex2D(tex_base_color, IN.tex0).a;
 
-   clip(result.a <= alphaTestValue ? -1 : 1); // stop the pixel shader if alpha test should reject pixel
+   clip(color.a <= alphaTestValue ? -1 : 1); // stop the pixel shader if alpha test should reject pixel
 
-   result.a *= cBase_Alpha.a;
+   color.a *= cBase_Alpha.a;
 
    float3 N = normalize(IN.normal);
-   result.rgb = compute_reflection(screenSpace * w_h_height.xy, N);
+   color.rgb = compute_reflection(screenSpace * w_h_height.xy, N);
 
    // Maybe overkill for just the additive reflections
-   BRANCH if (cBase_Alpha.a < 1.0 && result.a < 1.0)
+   BRANCH if (color.a < 1.0)
    {
       const float3 V = normalize(/*camera=0,0,0,1*/ -IN.worldPos);
-      result.a = GeometricOpacity(dot(N, V), result.a, cClearcoat_EdgeAlpha.w, Roughness_WrapL_Edge_Thickness.w);
+      color.a = GeometricOpacity(dot(N, V), color.a, cClearcoat_EdgeAlpha.w, Roughness_WrapL_Edge_Thickness.w);
    }
 
-   return result * staticColor_Alpha;
+   return color * staticColor_Alpha;
 }
 
 float4 ps_main_depth_only_without_texture(const in VS_DEPTH_ONLY_NOTEX_OUTPUT IN) : COLOR
