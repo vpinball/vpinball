@@ -83,14 +83,17 @@ const float4 Roughness_WrapL_Edge_Thickness; // wrap in [0..1] for rim/wrap ligh
 // Material Helper Functions
 //
 
-float GeometricOpacity(const float NdotV, const float alpha, const float blending, const float t)
+// Lower alpha on border of geometry
+// - blending: amount of effect (0=no darkening, 1=full darkening)
+// - thickness: thickness (0=no darkening, 1=darkening linear with N.V dot product)
+float GeometricOpacity(const float NdotV, const float alpha, const float blending, const float thickness)
 {
     //old version without thickness
     //return lerp(alpha, 1.0, blending*pow(1.0-abs(NdotV),5)); // fresnel for falloff towards silhouette
 
-    //new version (COD/IW, t = thickness), t = 0.05 roughly corresponds to above version
+    //new version (COD/IW, t = thickness), thickness = 0.05 roughly corresponds to above version
     const float x = abs(NdotV); // flip normal in case of wrong orientation (backside lighting)
-    const float g = blending - blending * ( x / (x * (1.0 - t) + t) ); // Smith-Schlick G
+    const float g = blending * (1.0 - (x / (x * (1.0 - thickness) + thickness))); // Smith-Schlick G
     return lerp(alpha, 1.0, g); // fake opacity lerp to 'shadowed'
 }
 
@@ -103,7 +106,8 @@ float3 FresnelSchlick(const float3 spec, const float LdotH, const float edge)
 
 float3 DoPointLight(const float3 pos, const float3 N, const float3 V, const float3 diffuse, const float3 glossy, const float edge, const float glossyPower, const int i, const bool is_metal) 
 { 
-   const float3 lightDir = mul_w1(lights[i].vPos, matView) - pos; //!! do in vertex shader?! or completely before?!
+   //!! do in vertex shader?! or completely before?!
+   const float3 lightDir = mul_w1(lights[i].vPos, matView) - pos;
    const float3 L = normalize(lightDir);
    const float NdotL = dot(N, L);
    float3 Out = float3(0.0,0.0,0.0);
@@ -165,16 +169,35 @@ float3 DoEnvmap2ndLayer(const float3 color1stLayer, const float3 pos, const floa
    return lerp(color1stLayer, env*fenvEmissionScale_TexWidth.x, w); // weight (optional) lower diffuse/glossy layer with clearcoat/specular
 }
 
-float3 lightLoop(const float3 pos, float3 N, const float3 V, float3 diffuse, float3 glossy, const float3 specular, const float edge, const bool fix_normal_orientation, const bool is_metal) // input vectors (N,V) are normalized for BRDF evals
+float3 lightLoop(const float3 pos, float3 N, const float3 V, float3 diffuse, float3 glossy, const float3 specular, const float edge, const bool backside_lighting, const bool is_metal) // input vectors (N,V) are normalized for BRDF evals
 {
+   float3 color = float3(0.0, 0.0, 0.0);
+   
+   float NdotV = dot(N,V);
+   if (NdotV < 0.0)
+   {
+       // Flip normal in case for backside lighting.
+       // Currently disabled if normal mapping active, for that case we should actually clamp the normal with respect to V instead (see f.e. 'view-dependant shading normal adaptation')
+	   // TODO: why ? we can face backside lighting situations with normal mapping as well (for example a plastic ramp with both sides rendered and reflecting light) ?
+	   if (backside_lighting)
+	   {
+          N = -N;
+          NdotV = -NdotV;
+	   }
+	   else
+	   {
+		  return color;
+	   }
+   }
+   NdotV = min(NdotV, 1.0); // For some reason I don't get, N (which is normalized) dot V (which is also normalized) may lead to value exceeding 1.0 then causing invalid results (in FresnelSchlick, negative pow)
+
    // normalize BRDF layer inputs //!! use diffuse = (1-glossy)*diffuse instead?
    const float diffuseMax = max(diffuse.x,max(diffuse.y,diffuse.z));
    const float glossyMax = max(glossy.x,max(glossy.y,glossy.z));
    const float specularMax = max(specular.x,max(specular.y,specular.z)); //!! not needed as 2nd layer only so far
    const float sum = diffuseMax + glossyMax /*+ specularMax*/;
    // energy conservation:
-   if (sum > 1.0
-       && fDisableLighting_top_below.x < 1.0) // but allow overly bright contribution if lighting is disabled
+   if (sum > 1.0 && fDisableLighting_top_below.x < 1.0) // but allow overly bright contribution if lighting is disabled
    {
       const float invsum = 1.0/sum;
       diffuse  *= invsum;
@@ -182,34 +205,24 @@ float3 lightLoop(const float3 pos, float3 N, const float3 V, float3 diffuse, flo
       //specular *= invsum;
    }
 
-   float NdotV = dot(N,V);
-   if (fix_normal_orientation && (NdotV < 0.0)) // flip normal in case of wrong orientation? (backside lighting), currently disabled if normal mapping active, for that case we should actually clamp the normal with respect to V instead (see f.e. 'view-dependant shading normal adaptation')
-   {
-      N = -N;
-      NdotV = -NdotV;
-   }
-   NdotV = min(NdotV, 1.0); // For some reason I don't get, N (which is normalized) dot V (which is also normalized) lead to value exceeding 1.0 then causing overflow
-
-   float3 color = float3(0.0, 0.0, 0.0);
-
    // 1st Layer
    BRANCH if ((!is_metal && (diffuseMax > 0.0)) || (glossyMax > 0.0))
    {
       BRANCH if (fDisableLighting_top_below.x == 1.0)
-         color += iLightPointNum * diffuse; // Old bug kept for backward compatibility: when lighting is disabled, it results to applying it twice
+         color += float(iLightPointNum) * diffuse; // Old bug kept for backward compatibility: when lighting is disabled, it results to applying it twice
       else for (int i = 0; i < iLightPointNum; i++)
          color += DoPointLight(pos, N, V, diffuse, glossy, edge, Roughness_WrapL_Edge_Thickness.x, i, is_metal); // no clearcoat needed as only pointlights so far
    }
 
    BRANCH if (!is_metal && (diffuseMax > 0.0))
-	  // trafo back to world for lookup into world space envmap 
+	  // trafo back to world for lookup into world space envmap // actually: mul(float4(N,0.0), matViewInverseInverseTranspose), but optimized to save one matrix
 	  // matView is always an orthonormal matrix, so no need to normalize after transform
       color += DoEnvmapDiffuse(/*normalize*/(mul(matView, N).xyz), diffuse); // actually: mul(float4(N,0.0), matViewInverseInverseTranspose), but optimized to save one matrix
 
    BRANCH if ((glossyMax > 0.0) || (specularMax > 0.0))
    {
-	   float3 R = (2.0*NdotV)*N - V; // reflect(-V,n);
-	   // trafo back to world for lookup into world space envmap 
+	   float3 R = (2.0*NdotV)*N - V; // reflect(-V,N);
+	   // trafo back to world for lookup into world space envmap // actually: mul(float4(R,0.0), matViewInverseInverseTranspose), but optimized to save one matrix
 	   // matView is always an orthonormal matrix, so no need to normalize after transform
 	   R = /*normalize*/(mul(matView, R).xyz); // actually: mul(float4(R,0.0), matViewInverseInverseTranspose), but optimized to save one matrix
 
