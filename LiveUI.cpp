@@ -1961,7 +1961,7 @@ void LiveUI::UpdateVideoOptionsModal()
                if (ImGui::InputFloat("Anaglyph Brightness", &m_player->m_anaglyphBrightness, 0.01f, 0.1f))
                   SaveValue(regKey[RegName::Player], "Stereo3DBrightness"s, m_player->m_anaglyphBrightness);
                if (ImGui::InputFloat("Anaglyph Left Eye Contrast", &m_player->m_anaglyphLeftEyeContrast, 0.01f, 0.1f))
-                  SaveValue(regKey[RegName::Player], "Stereo3DLeftContrast"s, m_player->m_anaglyphBrightness);
+                  SaveValue(regKey[RegName::Player], "Stereo3DLeftContrast"s, m_player->m_anaglyphLeftEyeContrast);
                if (ImGui::InputFloat("Anaglyph Right Eye Contrast", &m_player->m_anaglyphRightEyeContrast, 0.01f, 0.1f))
                   SaveValue(regKey[RegName::Player], "Stereo3DRightContrast"s, m_player->m_anaglyphRightEyeContrast);
             }
