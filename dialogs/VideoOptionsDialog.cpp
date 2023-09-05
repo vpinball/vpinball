@@ -167,6 +167,8 @@ void VideoOptionsDialog::UpdateFullscreenModesList()
 {
    const HWND hwndList = GetDlgItem(IDC_SIZELIST).GetHwnd();
    const int display = (int)SendMessage(GetDlgItem(IDC_DISPLAY_ID).GetHwnd(), CB_GETCURSEL, 0, 0);
+   if (display < 0)
+      return;
    EnumerateDisplayModes(display, m_allVideoModes);
    int screenwidth, screenheight, x, y;
    getDisplaySetupByID(display, x, y, screenwidth, screenheight);
@@ -407,14 +409,14 @@ BOOL VideoOptionsDialog::OnInitDialog()
    const int useDN = LoadValueWithDefault(regKey[RegName::Player], "DynamicDayNight"s, 0);
    SendMessage(GetDlgItem(IDC_DYNAMIC_DN).GetHwnd(), BM_SETCHECK, (useDN != 0) ? BST_CHECKED : BST_UNCHECKED, 0);
 
-   const bool useAO = LoadValueWithDefault(regKey[RegName::Player], "DisableAO"s, false);
+   const bool disableAO = LoadValueWithDefault(regKey[RegName::Player], "DisableAO"s, false);
    const bool dynAO = LoadValueWithDefault(regKey[RegName::Player], "DynamicAO"s, true);
    hwnd = GetDlgItem(IDC_MAX_AO_COMBO).GetHwnd();
    SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Disable AO");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Static AO");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Dynamic AO");
-   SendMessage(hwnd, CB_SETCURSEL, !useAO ? 0 : dynAO ? 2 : 1, 0);
+   SendMessage(hwnd, CB_SETCURSEL, disableAO ? 0 : dynAO ? 2 : 1, 0);
    SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 
    const bool ssreflection = LoadValueWithDefault(regKey[RegName::Player], "SSRefl"s, false);
