@@ -30,4 +30,5 @@ private:
    Shader::ShaderState* m_flasherShaderState = nullptr;
    Shader::ShaderState* m_lightShaderState = nullptr;
    Shader::ShaderState* m_ballShaderState = nullptr;
+   Shader::ShaderState* m_stereoShaderState = nullptr;
 };

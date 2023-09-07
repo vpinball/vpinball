@@ -122,12 +122,12 @@ enum ShaderTechniques
    SHADER_TECHNIQUE(SMAA_ColorEdgeDetection),
    SHADER_TECHNIQUE(SMAA_BlendWeightCalculation),
    SHADER_TECHNIQUE(SMAA_NeighborhoodBlending),
-   SHADER_TECHNIQUE(stereo),
    SHADER_TECHNIQUE(stereo_SBS),
    SHADER_TECHNIQUE(stereo_TB),
    SHADER_TECHNIQUE(stereo_Int),
    SHADER_TECHNIQUE(stereo_Flipped_Int),
-   SHADER_TECHNIQUE(stereo_anaglyph),
+   SHADER_TECHNIQUE(Stereo_LinearAnaglyph),
+   SHADER_TECHNIQUE(Stereo_DeghostAnaglyph),
    SHADER_TECHNIQUE(irradiance),
    SHADER_TECHNIQUE_COUNT,
    SHADER_TECHNIQUE_INVALID
@@ -174,14 +174,14 @@ enum ShaderUniforms
    SHADER_UNIFORM(SUT_Float4x4, matWorldView, 1),
    SHADER_UNIFORM(SUT_Float4x3, matWorldViewInverse, 1),
    SHADER_UNIFORM(SUT_Float3x4, matWorldViewInverseTranspose, 1),
-   #endif
+#endif
    SHADER_UNIFORM(SUT_Float4, lightCenter_doShadow, 1), // Basic & Flasher (for ball shadows)
    SHADER_UNIFORM(SUT_Float4v, balls, 8), // Basic & Flasher (for ball shadows)
    SHADER_UNIFORM(SUT_Float4, staticColor_Alpha, 1), // Basic & Flasher
    SHADER_UNIFORM(SUT_Float4, w_h_height, 1), // Post process & Basic (for screen space reflection/refraction)
 
-   // Shared material for Ball, Basic and Classic light shaders
-   #ifdef ENABLE_SDL // OpenGL
+// Shared material for Ball, Basic and Classic light shaders
+#ifdef ENABLE_SDL // OpenGL
    SHADER_UNIFORM(SUT_Float4, clip_plane, 1),
    SHADER_UNIFORM(SUT_Float4v, basicLightEmission, 2),
    SHADER_UNIFORM(SUT_Float4v, basicLightPos, 2),
@@ -189,10 +189,10 @@ enum ShaderUniforms
    SHADER_UNIFORM(SUT_Float4v, ballLightPos, 10),
    SHADER_UNIFORM(SUT_Bool, is_metal, 1), // OpenGL only [managed by DirectX Effect framework on DirectX]
    SHADER_UNIFORM(SUT_Bool, doNormalMapping, 1), // OpenGL only [managed by DirectX Effect framework on DirectX]
-   #else // DirectX 9
+#else // DirectX 9
    SHADER_UNIFORM(SUT_Float4v, basicPackedLights, 3),
    SHADER_UNIFORM(SUT_Float4v, ballPackedLights, 15),
-   #endif
+#endif
    SHADER_UNIFORM(SUT_Float4, Roughness_WrapL_Edge_Thickness, 1),
    SHADER_UNIFORM(SUT_Float4, cBase_Alpha, 1),
    SHADER_UNIFORM(SUT_Float2, fDisableLighting_top_below, 1),
@@ -204,9 +204,9 @@ enum ShaderUniforms
    // Basic Shader
    SHADER_UNIFORM(SUT_Float4, cClearcoat_EdgeAlpha, 1),
    SHADER_UNIFORM(SUT_Float4, cGlossy_ImageLerp, 1),
-   #ifdef ENABLE_SDL // OpenGL
+#ifdef ENABLE_SDL // OpenGL
    SHADER_UNIFORM(SUT_Bool, doRefractions, 1),
-   #endif
+#endif
    SHADER_UNIFORM(SUT_Float4, refractionTint_thickness, 1),
    SHADER_UNIFORM(SUT_Float4, mirrorNormal_factor, 1),
    SHADER_UNIFORM(SUT_Bool, objectSpaceNormalMap, 1),
@@ -263,11 +263,15 @@ enum ShaderUniforms
    SHADER_SAMPLER(blendTex, blendTex2D, SA_CLAMP, SA_CLAMP, SF_TRILINEAR), // SMAA
    SHADER_SAMPLER(areaTex, areaTex2D, SA_CLAMP, SA_CLAMP, SF_TRILINEAR), // SMAA
    SHADER_SAMPLER(searchTex, searchTex2D, SA_CLAMP, SA_CLAMP, SF_NONE), // SMAA
-   SHADER_UNIFORM(SUT_Float4, ms_zpd_ya_td, 1), // Anaglyph Stereo
-   SHADER_UNIFORM(SUT_Float4, Anaglyph_Saturation_Brightness_EyeContrast, 1), // Anaglyph Stereo
-   #ifdef ENABLE_SDL // OpenGL
-   SHADER_SAMPLER(tex_stereo_fb, Undefined, SA_REPEAT, SA_REPEAT, SF_NONE), // Stereo shader (combine the 2 rendered eyes into a single one)
-   #endif
+
+   // Stereo Shader
+   SHADER_SAMPLER(tex_stereo_fb, Texture0, SA_REPEAT, SA_REPEAT, SF_NONE), // Framebuffer (unfiltered)
+   SHADER_SAMPLER(tex_stereo_depth, Texture4, SA_REPEAT, SA_REPEAT, SF_NONE), // Depth
+   SHADER_UNIFORM(SUT_Float4, Stereo_MS_ZPD_YAxis, 1), // Stereo (analgyph and 3DTV)
+   SHADER_UNIFORM(SUT_Float4x4, Stereo_LeftMat, 1), // Anaglyph Stereo
+   SHADER_UNIFORM(SUT_Float4x4, Stereo_RightMat, 1), // Anaglyph Stereo
+   SHADER_UNIFORM(SUT_Float4, Stereo_DeghostGamma, 1), // Anaglyph Stereo
+   SHADER_UNIFORM(SUT_Float4x4, Stereo_DeghostFilter, 1), // Anaglyph Stereo
 
    SHADER_UNIFORM_COUNT,
    SHADER_UNIFORM_INVALID

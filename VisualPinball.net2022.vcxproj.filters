@@ -763,6 +763,9 @@
     <None Include="res\BallEnv.exr">
       <Filter>res</Filter>
     </None>
+    <None Include="shader\Stereo.fxh">
+      <Filter>shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="inc">
@@ -1697,6 +1700,9 @@
       <Filter>shaders</Filter>
     </FxCompile>
     <FxCompile Include="shader\ClassicLightShader.hlsl">
+      <Filter>shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\StereoShader.hlsl">
       <Filter>shaders</Filter>
     </FxCompile>
   </ItemGroup>

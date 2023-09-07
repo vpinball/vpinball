@@ -997,32 +997,34 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
       g_pplayer->m_pin3d.m_pd3dPrimaryDevice->tableDown();
    else
 #endif
+
+   if (keycode == g_pplayer->m_rgKeys[eLeftFlipperKey] && dispid == DISPID_GameEvents_KeyDown)
+      m_keyPressedState[eLeftFlipperKey] = true;
+   else if (keycode == g_pplayer->m_rgKeys[eRightFlipperKey] && dispid == DISPID_GameEvents_KeyDown)
+      m_keyPressedState[eRightFlipperKey] = true;
+   else if (keycode == g_pplayer->m_rgKeys[eLeftTiltKey] && dispid == DISPID_GameEvents_KeyDown)
+      m_keyPressedState[eLeftTiltKey] = true;
+   else if (keycode == g_pplayer->m_rgKeys[eRightTiltKey] && dispid == DISPID_GameEvents_KeyDown)
+      m_keyPressedState[eRightTiltKey] = true;
+   else if (keycode == g_pplayer->m_rgKeys[eLeftFlipperKey] && dispid == DISPID_GameEvents_KeyUp)
+      m_keyPressedState[eLeftFlipperKey] = false;
+   else if (keycode == g_pplayer->m_rgKeys[eRightFlipperKey] && dispid == DISPID_GameEvents_KeyUp)
+      m_keyPressedState[eRightFlipperKey] = false;
+   else if (keycode == g_pplayer->m_rgKeys[eLeftTiltKey] && dispid == DISPID_GameEvents_KeyUp)
+      m_keyPressedState[eLeftTiltKey] = false;
+   else if (keycode == g_pplayer->m_rgKeys[eRightTiltKey] && dispid == DISPID_GameEvents_KeyUp)
+      m_keyPressedState[eRightTiltKey] = false;
+      
    if (g_pplayer->m_cameraMode)
    {
-      m_keyPressedState[eLeftFlipperKey] = false;
-      m_keyPressedState[eRightFlipperKey] = false;
-      m_keyPressedState[eLeftTiltKey] = false;
-      m_keyPressedState[eRightTiltKey] = false;
       if (keycode == g_pplayer->m_rgKeys[eLeftFlipperKey] && dispid == DISPID_GameEvents_KeyDown)
-      {
          g_pplayer->UpdateBackdropSettings(false);
-         m_keyPressedState[eLeftFlipperKey] = true;
-      }
       else if (keycode == g_pplayer->m_rgKeys[eRightFlipperKey] && dispid == DISPID_GameEvents_KeyDown)
-      {
          g_pplayer->UpdateBackdropSettings(true);
-         m_keyPressedState[eRightFlipperKey] = true;
-      }
       else if (keycode == g_pplayer->m_rgKeys[eLeftTiltKey] && dispid == DISPID_GameEvents_KeyDown && m_enableCameraModeFlyAround)
-      {
          g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].mViewportRotation -= 1.0f;
-         m_keyPressedState[eLeftTiltKey] = true;
-      }
       else if (keycode == g_pplayer->m_rgKeys[eRightTiltKey] && dispid == DISPID_GameEvents_KeyDown && m_enableCameraModeFlyAround)
-      {
          g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].mViewportRotation += 1.0f;
-         m_keyPressedState[eRightTiltKey] = true;
-      }
       else if (keycode == g_pplayer->m_rgKeys[eStartGameKey] && dispid == DISPID_GameEvents_KeyDown)
       {
          // Export POV file
@@ -1115,15 +1117,12 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
       else if ((keycode == g_pplayer->m_rgKeys[eRightMagnaSave] || keycode == g_pplayer->m_rgKeys[eLeftMagnaSave]) && dispid == DISPID_GameEvents_KeyDown)
       {
          ViewSetup& viewSetup = g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set];
-         bool isStereo = g_pplayer->m_stereo3Denabled && g_pplayer->m_stereo3D != STEREO_OFF && g_pplayer->m_stereo3D != STEREO_VR;
-         bool isAnaglyph = isStereo && g_pplayer->m_stereo3D >= STEREO_ANAGLYPH_RC && g_pplayer->m_stereo3D <= STEREO_ANAGLYPH_AB;
          const Player::BackdropSetting *settings = viewSetup.mMode == VLM_LEGACY ? Player::mLegacyViewSettings
                                                  : viewSetup.mMode == VLM_CAMERA ? Player::mCameraViewSettings
                                                                                  : Player::mWindowViewSettings; 
          int nSettings = (viewSetup.mMode == VLM_LEGACY        ? sizeof(Player::mLegacyViewSettings)
                                : viewSetup.mMode == VLM_CAMERA ? sizeof(Player::mCameraViewSettings)
                                                                : sizeof(Player::mWindowViewSettings))/ sizeof(Player::BackdropSetting);
-         nSettings = isAnaglyph ? nSettings : isStereo ? (nSettings - 2) : (nSettings - 3);
          for (int i = 0; i < nSettings; i++)
             if (settings[i] == g_pplayer->m_backdropSettingActive)
             {
@@ -1982,13 +1981,10 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
                g_pplayer->UpdateBackdropSettings(false);
             if (m_keyPressedState[eRightFlipperKey] && g_pplayer->m_backdropSettingActive != Player::BS_ViewMode)
                g_pplayer->UpdateBackdropSettings(true);
-            if (m_enableCameraModeFlyAround)
-            {
-               if (m_keyPressedState[eLeftTiltKey])
-                  g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].mViewportRotation -= 1.0f;
-               if (m_keyPressedState[eRightTiltKey])
-                  g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].mViewportRotation += 1.0f;
-            }
+            if (m_keyPressedState[eLeftTiltKey] && m_enableCameraModeFlyAround)
+               g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].mViewportRotation -= 1.0f;
+            if (m_keyPressedState[eRightTiltKey] && m_enableCameraModeFlyAround)
+               g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].mViewportRotation += 1.0f;
          }
          return;
       }
@@ -2030,8 +2026,48 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
          {
             if ((input->dwData & 0x80) != 0)
             {
-               g_pplayer->m_stereo3Denabled = !g_pplayer->m_stereo3Denabled;
+               if (IsAnaglyphStereoMode(g_pplayer->m_stereo3D))
+               {
+                  // Select next glasses or toggle stereo on/off
+                  int glassesIndex = g_pplayer->m_stereo3D - STEREO_ANAGLYPH_1;
+                  const int dir = (m_keyPressedState[eLeftFlipperKey] || m_keyPressedState[eRightFlipperKey]) ? -1 : 1;
+                  if (!g_pplayer->m_stereo3Denabled && glassesIndex != 0)
+                     g_pplayer->m_stereo3Denabled = true;
+                  else
+                  {
+                     // Loop back with shift pressed
+                     if (!g_pplayer->m_stereo3Denabled && glassesIndex <= 0 && dir == -1)
+                     {
+                        g_pplayer->m_stereo3Denabled = true;
+                        glassesIndex = 9;
+                     }
+                     else if (g_pplayer->m_stereo3Denabled && glassesIndex <= 0 && dir == -1)
+                     {
+                        g_pplayer->m_stereo3Denabled = false;
+                     }
+                     // Loop forward
+                     else if (!g_pplayer->m_stereo3Denabled)
+                     {
+                        g_pplayer->m_stereo3Denabled = true;
+                     }
+                     else if (glassesIndex >= 9)
+                     {
+                        glassesIndex = 0;
+                        g_pplayer->m_stereo3Denabled = false;
+                     }
+                     else
+                        glassesIndex += dir;
+                     g_pplayer->m_stereo3D = (StereoMode)(STEREO_ANAGLYPH_1 + glassesIndex);
+                  }
+               }
+               else if (Is3DTVStereoMode(g_pplayer->m_stereo3D))
+               {
+                  // Toggle stereo on/off
+                  g_pplayer->m_stereo3Denabled = !g_pplayer->m_stereo3Denabled;
+               }
                SaveValue(regKey[RegName::Player], "Stereo3DEnabled"s, g_pplayer->m_stereo3Denabled);
+               g_pplayer->m_pin3d.InitLayout();
+               g_pplayer->UpdateStereoShaderState(true);
             }
          }
          else if (input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eDBGBalls])

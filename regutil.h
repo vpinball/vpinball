@@ -61,6 +61,7 @@ void SaveRegistry();
 
 HRESULT LoadValue(const string &szKey, const string &zValue, string &buffer);
 HRESULT LoadValue(const string &szKey, const string &szValue, void* const szbuffer, const DWORD size);
+HRESULT LoadValueWithDefault(const string &szKey, const string &zValue, string &buffer, const string& def);
 
 HRESULT LoadValue(const string &szKey, const string &szValue, float &pfloat);
 float   LoadValueWithDefault(const string &szKey, const string &szValue, const float def); 

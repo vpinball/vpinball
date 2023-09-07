@@ -23,6 +23,7 @@ RenderFrame::~RenderFrame()
    delete m_flasherShaderState;
    delete m_lightShaderState;
    delete m_ballShaderState;
+   delete m_stereoShaderState;
 }
 
 RenderPass* RenderFrame::AddPass(const string& name, RenderTarget* const rt)
@@ -70,6 +71,7 @@ bool RenderFrame::Execute(const bool log)
       m_flasherShaderState = new Shader::ShaderState(m_rd->flasherShader);
       m_lightShaderState = new Shader::ShaderState(m_rd->lightShader);
       m_ballShaderState = new Shader::ShaderState(m_rd->m_ballShader);
+      m_stereoShaderState = new Shader::ShaderState(m_rd->StereoShader);
    }
    RenderState prevState;
    m_rd->CopyRenderStates(true, prevState);
@@ -79,6 +81,7 @@ bool RenderFrame::Execute(const bool log)
    m_rd->flasherShader->m_state->CopyTo(true, m_flasherShaderState);
    m_rd->lightShader->m_state->CopyTo(true, m_lightShaderState);
    m_rd->m_ballShader->m_state->CopyTo(true, m_ballShaderState);
+   m_rd->StereoShader->m_state->CopyTo(true, m_stereoShaderState);
 
    // Clear last render pass to avoid cross frame references
    for (RenderPass* pass : m_passes)
@@ -175,6 +178,7 @@ bool RenderFrame::Execute(const bool log)
    m_rd->flasherShader->m_state->CopyTo(false, m_flasherShaderState);
    m_rd->lightShader->m_state->CopyTo(false, m_lightShaderState);
    m_rd->m_ballShader->m_state->CopyTo(false, m_ballShaderState);
+   m_rd->StereoShader->m_state->CopyTo(false, m_stereoShaderState);
 
    return rendered;
 }

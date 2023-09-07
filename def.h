@@ -48,6 +48,12 @@ __forceinline T clamp(const T x, const T mn, const T mx)
    return max(min(x,mx),mn);
 }
 
+template <typename T>
+__forceinline T lerp(const T x1, const T x2, const float alpha)
+{
+   return (1.f - alpha) * x1 + alpha * x2;
+}
+
 __forceinline int clamp(const int x, const int mn, const int mx)
 {
    if (x < mn) return mn; else if (x > mx) return mx; else return x;

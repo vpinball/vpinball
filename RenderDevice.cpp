@@ -31,6 +31,7 @@
 #include "FBShader.h"
 #include "FlasherShader.h"
 #include "LightShader.h"
+#include "StereoShader.h"
 #include "BallShader.h"
 #endif
 
@@ -1096,8 +1097,7 @@ bool RenderDevice::LoadShaders()
    FBShader = new Shader(this, "FBShader.glfx"s, "SMAA.glfx"s);
    flasherShader = new Shader(this, "FlasherShader.glfx"s);
    lightShader = new Shader(this, "LightShader.glfx"s);
-   if (m_stereo3D != STEREO_OFF)
-      StereoShader = new Shader(this, "StereoShader.glfx"s);
+   StereoShader = new Shader(this, "StereoShader.glfx"s);
    m_ballShader = new Shader(this, "BallShader.glfx"s);
 #else // DirectX 9
    basicShader = new Shader(this, "BasicShader.hlsl"s, g_basicShaderCode, sizeof(g_basicShaderCode));
@@ -1105,10 +1105,11 @@ bool RenderDevice::LoadShaders()
    FBShader = new Shader(this, "FBShader.hlsl"s, g_FBShaderCode, sizeof(g_FBShaderCode));
    flasherShader = new Shader(this, "FlasherShader.hlsl"s, g_flasherShaderCode, sizeof(g_flasherShaderCode));
    lightShader = new Shader(this, "LightShader.hlsl"s, g_lightShaderCode, sizeof(g_lightShaderCode));
+   StereoShader = new Shader(this, "StereoShader.hlsl", g_stereoShaderCode, sizeof(g_stereoShaderCode));
    m_ballShader = new Shader(this, "BallShader.hlsl"s, g_ballShaderCode, sizeof(g_ballShaderCode));
 #endif
 
-   if (basicShader->HasError() || DMDShader->HasError() || FBShader->HasError() || flasherShader->HasError() || lightShader->HasError() || (StereoShader != nullptr && StereoShader->HasError()))
+   if (basicShader->HasError() || DMDShader->HasError() || FBShader->HasError() || flasherShader->HasError() || lightShader->HasError() || StereoShader->HasError())
    {
       ReportError("Fatal Error: shader compilation failed!", -1, __FILE__, __LINE__);
       return false;
@@ -1231,7 +1232,6 @@ void RenderDevice::FreeShader()
    #ifdef ENABLE_SDL
    if (StereoShader)
    {
-      StereoShader->SetTextureNull(SHADER_tex_stereo_fb);
       delete StereoShader;
       StereoShader = nullptr;
    }

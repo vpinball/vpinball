@@ -1,114 +1,111 @@
+////GLOBAL
+
 //**************************************************************************
 // GLSL defines to support common shader code
-////GLOBAL
 #ifdef GLSL
+    #ifdef SHADER_GLES30 // OpenGL ES (for standalone builds)
+        #define FLT_MIN_VALUE 0.00006103515625
+        precision highp float;
+        #define noperspective
+        #define flat
+        #define VS_CLIP_DISTANCE(pos) 
+    #else
+        #define FLT_MIN_VALUE 0.0000001
+        #define VS_CLIP_DISTANCE(pos) gl_ClipDistance[0] = dot(pos, clip_plane)
+    #endif
 
-#ifdef SHADER_GLES30 // OpenGL ES (for standalone builds)
-#define FLT_MIN_VALUE 0.00006103515625
-precision highp float;
-#define noperspective
-#define flat
-#define VS_CLIP_DISTANCE(pos) 
+    //HLSL to GLSL helpers
+    #define clip(x) {if (x<0) {discard;}}
+    #define ddx(x) dFdx(x)
+    #define ddy(x) dFdy(x)
+    #define lerp(x,y,s) mix(x,y,s)
+    #define saturate(x) clamp(x,0.0,1.0)
+    #define any(x) (dot(x,x)>0.0005)
+    #define sincos(phi,sp,cp) {sp=sin(phi);cp=cos(phi);}
+    #define frac(x) fract(x)
+    #define rsqrt(x) inversesqrt(x)
+    #define rcp(x) (1.0/(x))
 
-#else
-#define FLT_MIN_VALUE 0.0000001
-#define VS_CLIP_DISTANCE(pos) gl_ClipDistance[0] = dot(pos, clip_plane)
+    #define mul(vecIn, MatIn) ((MatIn)*(vecIn))
 
-#endif
+    #define tex2Dlod(sampler, v) textureLod(sampler, (v).xy,(v).w)
+    #define tex2D(sampler, v) texture(sampler, v)
 
-//HLSL to GLSL helpers
-#define clip(x) {if (x<0) {discard;}}
-#define ddx(x) dFdx(x)
-#define ddy(x) dFdy(x)
-#define lerp(x,y,s) mix(x,y,s)
-#define saturate(x) clamp(x,0.0,1.0)
-#define any(x) (dot(x,x)>0.0005)
-#define sincos(phi,sp,cp) {sp=sin(phi);cp=cos(phi);}
-#define frac(x) fract(x)
-#define rsqrt(x) inversesqrt(x)
-#define rcp(x) (1.0/(x))
+    #define const
+    #define UNIFORM uniform
 
-#define mul(vecIn, MatIn) ((MatIn)*(vecIn))
+    #define float4 vec4
+    #define float3 vec3
+    #define float2 vec2
 
-#define tex2Dlod(sampler, v) textureLod(sampler, (v).xy,(v).w)
-#define tex2D(sampler, v) texture(sampler, v)
+    #define float4x4 mat4
+    #define float3x3 mat3
+    #define float2x2 mat2
 
-#define const
+    #define float4x3 mat4x3
+    #define float3x4 mat3x4
 
-#define float4 vec4
-#define float3 vec3
-#define float2 vec2
+    #define to_float3x3 mat3
 
-#define float4x4 mat4
-#define float3x3 mat3
-#define float2x2 mat2
+    //Not working :-(
+    //vec4 pow(vec4 b, float e) {return pow(b,vec4(e));}
+    //vec3 pow(vec3 b, float e) {return pow(b,vec3(e));}
+    //vec2 pow(vec2 b, float e) {return pow(b,vec2(e));}
 
-#define float4x3 mat4x3
-#define float3x4 mat3x4
+    #define texNoLod(tex, pos) textureLod(tex, pos, 0.)
+    #define BRANCH
+    #define UNROLL
 
-//Not working :-(
-//vec4 pow(vec4 b, float e) {return pow(b,vec4(e));}
-//vec3 pow(vec3 b, float e) {return pow(b,vec3(e));}
-//vec2 pow(vec2 b, float e) {return pow(b,vec2(e));}
+    #if (N_EYES == 1)
+        #define samplerStereo sampler2D
+        #define texStereo(tex, pos) texture(tex, pos)
+        #define texStereolod(tex, pos) textureLod(tex, (pos).xy, (pos).w)
+        #define texStereoNoLod(tex, pos) textureLod(tex, pos, 0.)
+        #define texStereoOffset(tex, pos, offset) textureOffset(tex, pos, offset)
+        #define texStereoOffsetNoLod(tex, pos, offset) textureLodOffset(tex, pos, 0.0, offset)
+        #define texStereoGather(tex, pos) textureGather(tex, pos)
+    #else
+        #define samplerStereo sampler2DArray
+        #define texStereo(tex, pos) texture(tex, vec3(vec2(pos).x, vec2(pos).y, gl_Layer))
+        #define texStereolod(tex, pos) textureLod(tex, vec3((pos).x, (pos).y, gl_Layer), (pos).w)
+        #define texStereoNoLod(tex, pos) textureLod(tex, vec3((pos).x, (pos).y, gl_Layer), 0.)
+        #define texStereoOffset(tex, pos, offset) textureOffset(tex, vec3((pos).x, (pos).y, gl_Layer), offset)
+        #define texStereoOffsetNoLod(tex, pos, offset) textureLodOffset(tex, vec3((pos).x, (pos).y, gl_Layer), 0.0, offset)
+        #define texStereoGather(tex, pos) textureGather(tex, vec3((pos).x, (pos).y, gl_Layer))
+    #endif
 
-#define texNoLod(tex, pos) textureLod(tex, pos, 0.)
-#define BRANCH
-#define UNROLL
-
-#if (N_EYES == 1)
-#define samplerStereo sampler2D
-#define texStereo(tex, pos) texture(tex, pos)
-#define texStereolod(tex, pos) textureLod(tex, (pos).xy, (pos).w)
-#define texStereoNoLod(tex, pos) textureLod(tex, pos, 0.)
-#define texStereoOffset(tex, pos, offset) textureOffset(tex, pos, offset)
-#define texStereoOffsetNoLod(tex, pos, offset) textureLodOffset(tex, pos, 0.0, offset)
-#define texStereoGather(tex, pos) textureGather(tex, pos)
-#else
-#define samplerStereo sampler2DArray
-#define texStereo(tex, pos) texture(tex, vec3(vec2(pos).x, vec2(pos).y, gl_Layer))
-#define texStereolod(tex, pos) textureLod(tex, vec3((pos).x, (pos).y, gl_Layer), (pos).w)
-#define texStereoNoLod(tex, pos) textureLod(tex, vec3((pos).x, (pos).y, gl_Layer), 0.)
-#define texStereoOffset(tex, pos, offset) textureOffset(tex, vec3((pos).x, (pos).y, gl_Layer), offset)
-#define texStereoOffsetNoLod(tex, pos, offset) textureLodOffset(tex, vec3((pos).x, (pos).y, gl_Layer), 0.0, offset)
-#define texStereoGather(tex, pos) textureGather(tex, vec3((pos).x, (pos).y, gl_Layer))
-#endif
-
-#if USE_GEOMETRY_SHADER
-#define VS_OUT(typ, name) out typ name##_gs
-#define VS_OUT_NOPERSP_NOGEOM(typ, name)
-#define VS_OUT_EYE out int eye_gs
-#define VS_VARYING(var, val) var##_gs = val
-#define VS_VARYING_NOGEOM(var, val)
-#define VS_POSITION(val_vs, val_gs) gl_Position = val_gs
-#define VS_EYE int eye_vs = gl_InstanceID + layer; eye_gs = eye_vs
-
-#else
-#define VS_OUT(typ, name) out typ name
-#define VS_OUT_NOPERSP_NOGEOM(typ, name) noperspective out typ name
-#define VS_OUT_EYE flat out float eye
-#define VS_VARYING(var, val) var = val
-#define VS_VARYING_NOGEOM(var, val) var = val
-#define VS_POSITION(val_vs, val_gs) gl_Position = val_vs
-#define VS_EYE int eye_vs = gl_InstanceID + layer; eye = float(eye_vs)
-
-#endif
-
-
+    #if USE_GEOMETRY_SHADER
+        #define VS_OUT(typ, name) out typ name##_gs
+        #define VS_OUT_NOPERSP_NOGEOM(typ, name)
+        #define VS_OUT_EYE out int eye_gs
+        #define VS_VARYING(var, val) var##_gs = val
+        #define VS_VARYING_NOGEOM(var, val)
+        #define VS_POSITION(val_vs, val_gs) gl_Position = val_gs
+        #define VS_EYE int eye_vs = gl_InstanceID + layer; eye_gs = eye_vs
+    #else
+        #define VS_OUT(typ, name) out typ name
+        #define VS_OUT_NOPERSP_NOGEOM(typ, name) noperspective out typ name
+        #define VS_OUT_EYE flat out float eye
+        #define VS_VARYING(var, val) var = val
+        #define VS_VARYING_NOGEOM(var, val) var = val
+        #define VS_POSITION(val_vs, val_gs) gl_Position = val_vs
+        #define VS_EYE int eye_vs = gl_InstanceID + layer; eye = float(eye_vs)
+    #endif
 
 //**************************************************************************
 // HLSL defines to support common shader code
 #else
-#define HLSL
+    #define HLSL
+    // disable warning 'pow(f, e) will not work for negative f, use abs(f) or conditionally handle negative values if you expect them' as it is fairly common and not actionable.
+    #pragma warning(disable : 3571)
 
-// disable warning 'pow(f, e) will not work for negative f, use abs(f) or conditionally handle negative values if you expect them' as it is fairly common and not actionable.
-#pragma warning(disable : 3571)
-
-#define FLT_MIN_VALUE 0.0000001
-
-#define texNoLod(tex, pos) tex2Dlod(tex, float4(pos, 0., 0.))
-#define BRANCH [branch]
-#define UNROLL [unroll]
-
+    #define N_EYES 1
+    #define FLT_MIN_VALUE 0.0000001
+    #define texNoLod(tex, pos) tex2Dlod(tex, float4(pos, 0., 0.))
+    #define BRANCH [branch]
+    #define UNROLL [unroll]
+    #define UNIFORM const
+    #define to_float3x3 (float3x3)
 #endif
 
 

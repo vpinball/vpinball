@@ -83,6 +83,13 @@ set_source_files_properties(shader/LightShader.hlsl PROPERTIES
    VS_SHADER_ENTRYPOINT lightShaderCode 
 )
 
+set_source_files_properties(shader/StereoShader.hlsl PROPERTIES
+   VS_SHADER_TYPE Effect
+   VS_SHADER_MODEL 2.0
+   VS_SHADER_OUTPUT_HEADER_FILE "${CMAKE_CURRENT_BINARY_DIR}/$(IntDir)/shader/%(Filename).h"
+   VS_SHADER_ENTRYPOINT stereoShaderCode 
+)
+
 add_executable(vpinball WIN32
    backGlass.cpp
    backGlass.h
@@ -548,6 +555,7 @@ add_executable(vpinball WIN32
    shader/FBShader.hlsl
    shader/FlasherShader.hlsl
    shader/LightShader.hlsl
+   shader/StereoShader.hlsl
 
    res/ball.rgs
    res/bumper.rgs

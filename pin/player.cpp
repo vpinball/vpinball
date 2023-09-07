@@ -131,17 +131,14 @@ Player::Player(const bool cameraMode, PinTable *const editor_table, PinTable *co
    m_disableLightingForBalls = LoadValueWithDefault(regKey[RegName::Player], "DisableLightingForBalls"s, false);
    m_stereo3D = (StereoMode)LoadValueWithDefault(regKey[RegName::Player], "Stereo3D"s, (int)STEREO_OFF);
    m_stereo3Denabled = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DEnabled"s, (m_stereo3D != STEREO_OFF));
-   m_stereo3DY = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DYAxis"s, false);
-   m_anaglyphBrightness = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DBrightness"s, 1.0f);
-   m_anaglyphSaturation = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DSaturation"s, 1.f);
-   m_anaglyphLeftEyeContrast = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DLeftContrast"s, 1.0f);
-   m_anaglyphRightEyeContrast = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DRightContrast"s, 1.0f);
    m_disableDWM = LoadValueWithDefault(regKey[RegName::Player], "DisableDWM"s, false);
    m_useNvidiaApi = LoadValueWithDefault(regKey[RegName::Player], "UseNVidiaAPI"s, false);
    #ifdef ENABLE_SDL
    m_ditherOff = false;
+   m_stereo3DfakeStereo = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DFake"s, false);
    #else
    m_ditherOff = LoadValueWithDefault(regKey[RegName::Player], "Render10Bit"s, false); // if rendering at 10bit output resolution, disable dithering
+   m_stereo3DfakeStereo = true;
    #endif
    m_BWrendering = LoadValueWithDefault(regKey[RegName::Player], "BWRendering"s, 0);
    m_detectScriptHang = LoadValueWithDefault(regKey[RegName::Player], "DetectHang"s, false);
@@ -1038,7 +1035,7 @@ void Player::UpdateBasicShaderMatrix(const Matrix3D& objectTrafo)
    matrices.matWorldViewInverseTranspose = m_pin3d.GetMVP().GetModelViewInverseTranspose();
 
 #ifdef ENABLE_SDL // OpenGL
-   const int nEyes = m_stereo3D != STEREO_OFF ? 2 : 1;
+   const int nEyes = m_pin3d.m_pd3dPrimaryDevice->m_stereo3D != STEREO_OFF ? 2 : 1;
    for (int eye = 0; eye < nEyes; eye++)
       matrices.matWorldViewProj[eye] = m_pin3d.GetMVP().GetModelViewProj(eye);
    m_pin3d.m_pd3dPrimaryDevice->flasherShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0].m[0][0], nEyes);
@@ -1057,6 +1054,259 @@ void Player::UpdateBasicShaderMatrix(const Matrix3D& objectTrafo)
    m_pin3d.m_pd3dPrimaryDevice->lightShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0]);
    m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0]);
 #endif
+}
+
+bool Player::UpdateStereoShaderState(const bool fitRequired)
+{
+   bool fitted = true;
+
+   if (m_stereo3DfakeStereo)
+   {
+      // FIXME compute max separation and zero point depth for fake stereo corresponding to the ones of the real stereo, remove these from settings and table properties
+      // The problem with the legacy parameter is that both depends on the camera and do not match any physicaly correct measure. Authors tweak it but it will break at the
+      // next depth buffer change (due to difference between rendering API or for example if we switch to reversed or infinite buffer for better precision, ...)
+      // The idea would be (to be checked against shader implementation and ViewSetup projection maths):
+      // - Max separation is the separation of a point with a very high depth (compute it from eye separation which is physically measures, and near/far planes)
+      // - ZPD is the depth at which separation is 0 (compute it from the zNullSeparation in ViewSetup)
+      /*ModelViewProj stereoMVP;
+      m_ptable->mViewSetups[m_ptable->m_BG_current_set].ComputeMVP(m_ptable, m_pin3d.m_viewPort.Width, m_pin3d.m_viewPort.Height, true, stereoMVP);
+      RECT viewport { 0, 0, (LONG)m_pin3d.m_viewPort.Width, (LONG)m_pin3d.m_viewPort.Height };
+      vec3 deepPt(0.f, 0.f, 0.f); // = 5000.f * stereoMVP.GetModelViewInverse().GetOrthoNormalDir();
+      Vertex2D projLeft, projRight;
+      stereoMVP.GetModelViewProj(0).TransformVertices(&deepPt, nullptr, 1, &projLeft, viewport);
+      stereoMVP.GetModelViewProj(1).TransformVertices(&deepPt, nullptr, 1, &projRight, viewport);*/
+      const float eyeSeparation = m_ptable->GetMaxSeparation();
+      const float zpd = m_ptable->GetZPD();
+      const bool swapAxis = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DYAxis"s, false); // Swap X/Y axis
+      m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetVector(SHADER_Stereo_MS_ZPD_YAxis, eyeSeparation, zpd, swapAxis ? 1.0f : 0.0f, 0.0f);
+   }
+   
+   RenderTarget *renderedRT = m_pin3d.m_pd3dPrimaryDevice->GetPostProcessRenderTarget1();
+   #ifdef ENABLE_SDL
+   if (m_stereo3DfakeStereo) // OpenGL strip down this uniform which is only needed for interlaced mode on DirectX 9
+   #endif
+   m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetVector(SHADER_w_h_height, (float)(1.0 / renderedRT->GetWidth()), (float)(1.0 / renderedRT->GetHeight()), (float)renderedRT->GetHeight(), m_ptable->Get3DOffset());
+
+   if (IsAnaglyphStereoMode(m_stereo3D))
+   {
+      // Global anaglyph settings
+      const float anaglyphBrightness = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DBrightness"s, 1.0f);
+      const float anaglyphSaturation = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DSaturation"s, 1.f);
+      const float anaglyphLeftEyeContrast = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DLeftContrast"s, 1.0f);
+      const float anaglyphRightEyeContrast = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DRightContrast"s, 1.0f);
+
+      // Glasses settings
+      const int glasses = clamp(m_stereo3D - STEREO_ANAGLYPH_1 + 1, 1, 10);
+      const int filter = LoadValueWithDefault(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glasses)).append("Filter"s), 0);
+      const vec3 defaultColors[] = {
+         /* RC */ vec3(0.95f, 0.19f, 0.07f), vec3(0.06f, 0.92f, 0.28f),
+         /* GM */ vec3(0.06f, 0.96f, 0.09f), vec3(0.61f, 0.16f, 0.66f),
+         /* BA */ vec3(0.05f, 0.16f, 0.96f), vec3(0.61f, 0.66f, 0.09f),
+         /* CR */ vec3(0.06f, 0.92f, 0.28f), vec3(0.95f, 0.19f, 0.07f),
+         /* MG */ vec3(0.61f, 0.16f, 0.66f), vec3(0.06f, 0.96f, 0.09f),
+         /* AB */ vec3(0.61f, 0.66f, 0.09f), vec3(0.05f, 0.16f, 0.96f),
+         /* RC */ vec3(0.95f, 0.19f, 0.07f), vec3(0.06f, 0.92f, 0.28f),
+         /* RC */ vec3(0.95f, 0.19f, 0.07f), vec3(0.06f, 0.92f, 0.28f),
+         /* RC */ vec3(0.95f, 0.19f, 0.07f), vec3(0.06f, 0.92f, 0.28f),
+         /* RC */ vec3(0.95f, 0.19f, 0.07f), vec3(0.06f, 0.92f, 0.28f),
+      };
+      const vec3 leftCal (LoadValueWithDefault(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glasses)).append("LeftRed"s),    defaultColors[(glasses-1)*2].x),
+                          LoadValueWithDefault(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glasses)).append("LeftGreen"s),  defaultColors[(glasses-1)*2].y),
+                          LoadValueWithDefault(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glasses)).append("LeftBlue"s),   defaultColors[(glasses-1)*2].z));
+      const vec3 rightCal(LoadValueWithDefault(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glasses)).append("RightRed"s),   defaultColors[(glasses-1)*2+1].x),
+                          LoadValueWithDefault(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glasses)).append("RightGreen"s), defaultColors[(glasses-1)*2+1].y),
+                          LoadValueWithDefault(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glasses)).append("RightBlue"s),  defaultColors[(glasses-1)*2+1].z));
+
+      // Fit model to calibration data
+      // For the sake of simplicity, we just use random tests around the 5 defining constants.
+      // This can be fairly slow but is only performed once when glasses calibration is performed (or cached value lost).
+      // To avoid making the app unresponsive, the search for a good fit can be spread across multiple frames leading to visible glitches.
+      // TODO this could be solved far more efficiently by a clean Gauss Newton RMS fitting algorithm
+      float gamma, bestRMS = FLT_MAX;
+      vec3 leftCalp, rightCalp;
+      leftCalp.x = LoadValueWithDefault(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glasses)).append("FittedLeftRed"s), 1.0f);
+      leftCalp.y = LoadValueWithDefault(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glasses)).append("FittedLeftGreen"s), 1.0f);
+      leftCalp.z = 1.f - leftCalp.x - leftCalp.y;
+      rightCalp.x = LoadValueWithDefault(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glasses)).append("FittedRightRed"s), 1.0f);
+      rightCalp.y = LoadValueWithDefault(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glasses)).append("FittedRightGreen"s), 1.0f);
+      rightCalp.z = 1.f - rightCalp.x - rightCalp.y;
+      gamma = LoadValueWithDefault(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glasses)).append("FittedGamma"s), 1.0f);
+      bestRMS = powf(powf(leftCalp.x,  1.f/gamma) - leftCal.x,  2.f) + powf(powf(leftCalp.y,  1.f/gamma) - leftCal.y,  2.f) + powf(powf(leftCalp.z,  1.f/gamma) - leftCal.z,  2.f)
+              + powf(powf(rightCalp.x, 1.f/gamma) - rightCal.x, 2.f) + powf(powf(rightCalp.y, 1.f/gamma) - rightCal.y, 2.f) + powf(powf(rightCalp.z, 1.f/gamma) - rightCal.z, 2.f);
+      constexpr float minRMSThreshold = 0.001f; // Target threshold (searched if idle, but does not alert and accept lower values)
+      constexpr float maxRMSThreshold = 0.01f;  // Minimum threshold (search until satisfied, alert if not reached)
+      const float rmsThreshold = fitRequired ? maxRMSThreshold : minRMSThreshold;
+      if (bestRMS >= rmsThreshold)
+      {
+         // This is not enough iteration and may need a few frames before finding a satisfying solution, but this keeps the app responsive
+         int nIter = fitRequired ? 1000000 : 10000;
+         for (int i = 0; i < nIter; i++) 
+         {
+            float invg = 1.f / (0.5f + 2.f * rand_mt_01());
+            float al = rand_mt_01(), bl = (1.f - al) * rand_mt_01(), cl = 1.f - al - bl;
+            float ar = rand_mt_01(), br = (1.f - ar) * rand_mt_01(), cr = 1.f - ar - br;
+            float rms = powf(powf(al, invg) - leftCal.x,  2.f) + powf(powf(bl, invg) - leftCal.y,  2.f) + powf(powf(cl, invg) - leftCal.z,  2.f)
+                      + powf(powf(ar, invg) - rightCal.x, 2.f) + powf(powf(br, invg) - rightCal.y, 2.f) + powf(powf(cr, invg) - rightCal.z, 2.f);
+            if (rms < bestRMS)
+            {
+               bestRMS = rms;
+               gamma = 1.f / invg;
+               leftCalp = vec3(al, bl, cl);
+               rightCalp = vec3(ar, br, cr);
+               if (bestRMS < rmsThreshold)
+                  break;
+            }
+         }
+         SaveValue(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glasses)).append("FittedLeftRed"s), leftCalp.x);
+         SaveValue(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glasses)).append("FittedLeftGreen"s), leftCalp.y);
+         SaveValue(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glasses)).append("FittedRightRed"s), rightCalp.x);
+         SaveValue(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glasses)).append("FittedRightGreen"s), rightCalp.y);
+         SaveValue(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glasses)).append("FittedGamma"s), gamma);
+         fitted = bestRMS < maxRMSThreshold;
+      }
+      
+      // Identify glasses colors (compute normalized luminance filters, and identify the monochromatic eye with its color)
+      vec3 leftFilter (leftCalp.x  / 0.2126f, leftCalp.y  / 0.7152f, leftCalp.z  / 0.0722f);
+      vec3 rightFilter(rightCalp.x / 0.2126f, rightCalp.y / 0.7152f, rightCalp.z / 0.0722f);
+      leftFilter  = leftFilter  / max(max(leftFilter.x,  leftFilter.y ),  leftFilter.z);
+      rightFilter = rightFilter / max(max(rightFilter.x, rightFilter.y), rightFilter.z);
+      const float leftSecondHigher  = (leftFilter.y > leftFilter.x && leftFilter.x > leftFilter.z) ? leftFilter.x : (leftFilter.y < leftFilter.x && leftFilter.x < leftFilter.z) ? leftFilter.x : 
+                                      (leftFilter.x > leftFilter.y && leftFilter.y > leftFilter.z) ? leftFilter.y : (leftFilter.x < leftFilter.y && leftFilter.y < leftFilter.z) ? leftFilter.y : 
+                                      (leftFilter.x > leftFilter.z && leftFilter.z > leftFilter.y) ? leftFilter.z : (leftFilter.x < leftFilter.z && leftFilter.z < leftFilter.y) ? leftFilter.z : -1.f;
+      const float rightSecondHigher  = (rightFilter.y > rightFilter.x && rightFilter.x > rightFilter.z) ? rightFilter.x : (rightFilter.y < rightFilter.x && rightFilter.x < rightFilter.z) ? rightFilter.x : 
+                                       (rightFilter.x > rightFilter.y && rightFilter.y > rightFilter.z) ? rightFilter.y : (rightFilter.x < rightFilter.y && rightFilter.y < rightFilter.z) ? rightFilter.y : 
+                                       (rightFilter.x > rightFilter.z && rightFilter.z > rightFilter.y) ? rightFilter.z : (rightFilter.x < rightFilter.z && rightFilter.z < rightFilter.y) ? rightFilter.z : -1.f;
+      assert(leftSecondHigher != -1.f && rightSecondHigher != -1.f);
+      bool reversedColors = leftSecondHigher > rightSecondHigher; // Monochromatic (red/green/blue) is supposed to be on the left eye
+      const vec3 monoFilter = reversedColors ? rightFilter : leftFilter;
+      const enum AnaglypColors {RED_CYAN, GREEN_MAGENTA, BLUE_AMBER} colors = (monoFilter.x > monoFilter.y && monoFilter.x > monoFilter.z) ? RED_CYAN : (monoFilter.y > monoFilter.z) ? GREEN_MAGENTA : BLUE_AMBER;
+      
+      Matrix3D left, right;
+      if (filter == 0)
+      {
+         // Compose anaglyph base on measured luminance of display/filter/user by calibration
+         // see https://www.visus.uni-stuttgart.de/en/research/computer-graphics/anaglyph-stereo/anaglyph-stereo-without-ghosting/
+         const vec3 monoCal = reversedColors ? rightCalp : leftCalp;
+         const vec3 biCal = reversedColors ? leftCalp : rightCalp;
+         const vec3 biFilter = reversedColors ? leftFilter : rightFilter;
+         const float secondHigher = max(leftSecondHigher, rightSecondHigher);
+         const vec3 chromacity((biFilter.x == secondHigher) ? 1.f : (biFilter.x == 1.f) ? -1.f : 0.f,
+                               (biFilter.y == secondHigher) ? 1.f : (biFilter.y == 1.f) ? -1.f : 0.f,
+                               (biFilter.z == secondHigher) ? 1.f : (biFilter.z == 1.f) ? -1.f : 0.f);
+         Matrix3D matYYC2RGB;
+         matYYC2RGB.SetIdentity();
+         matYYC2RGB.m[0][0] = monoCal.x;
+         matYYC2RGB.m[0][1] = monoCal.y;
+         matYYC2RGB.m[0][2] = monoCal.z;
+         matYYC2RGB.m[1][0] = biCal.x;
+         matYYC2RGB.m[1][1] = biCal.y;
+         matYYC2RGB.m[1][2] = biCal.z;
+         matYYC2RGB.m[2][0] = chromacity.x;
+         matYYC2RGB.m[2][1] = chromacity.y;
+         matYYC2RGB.m[2][2] = chromacity.z;
+         matYYC2RGB.Invert();
+         float halfTone = 1.f; // 0.f will result in half color anaglyph
+         const vec3 rgbLuminance(0.2126f, 0.7152f, 0.0722f);
+         const vec3 leftLuminance = lerp(rgbLuminance, monoCal, halfTone);
+         const vec3 rightLuminance = lerp(rgbLuminance, biCal, halfTone);
+         const Matrix3D matLeft2YYC(leftLuminance.x, leftLuminance.y, leftLuminance.z, 0.f, /**/ 0.f, 0.f, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
+         const Matrix3D matRight2YYC(0.f, 0.f, 0.f, 0.f, /**/ rightLuminance.x, rightLuminance.y, rightLuminance.z, 0.f, /**/ chromacity.x, chromacity.y, chromacity.z, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
+         left = matYYC2RGB * matLeft2YYC;
+         right = matYYC2RGB * matRight2YYC;
+      }
+      else if (filter == 1)
+      {
+         // Compose anaglyph by applying John Einselen's contrast and deghosting method
+         // see http://iaian7.com/quartz/AnaglyphCompositing & vectorform.com
+         Matrix3D deghost;
+         const float contrast = 1.f; 
+         if (colors == RED_CYAN)
+         {
+            const float a = 0.45f * contrast, b = 0.5f * (1.f - a);
+            left  = Matrix3D(  a,   b,   b, 0.f, /**/ 0.f, 0.f, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
+            const float c = 1.00f * contrast, d = 1.f - c;
+            right = Matrix3D(0.f, 0.f, 0.f, 0.f, /**/   d,   c, 0.f, 0.f, /**/   d, 0.f,   c, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
+            m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetVector(SHADER_Stereo_DeghostGamma, 1.00f, 1.15f, 1.15f, 0.00f);
+            const float e = 0.06f * 0.1f;
+            deghost = Matrix3D(1.f + e, -0.5f*e, -0.5f*e, 0.f, /**/ -0.25f*e, 1.f + 0.5f*e, -0.25f*e, 0.f, /**/ -0.25f*e, -0.25f*e, 1.f + 0.5f*e, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
+         }
+         else if (colors == GREEN_MAGENTA)
+         {
+            const float a = 1.00f * contrast, b = 0.5f * (1.f - a);
+            left  = Matrix3D(0.f, 0.f, 0.f, 0.f, /**/   b,   a,   b, 0.f, /**/ 0.f, 0.f, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
+            const float c = 0.80f * contrast, d = 1.f - c;
+            right = Matrix3D(  c,   d, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 0.f, /**/ 0.f,   d,   c, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
+            m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetVector(SHADER_Stereo_DeghostGamma, 1.15f, 1.05f, 1.15f, 0.00f);
+            const float e = 0.06f * 0.275f;
+            deghost = Matrix3D(1.f + 0.5f*e, -0.25f*e, -0.25f*e, 0.f, /**/ -0.5f*e, 1.f + 0.25f*e, -0.5f*e, 0.f, /**/ -0.25f*e, -0.25f*e, 1.f + 0.5f*e, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
+         }
+         else if (colors == BLUE_AMBER)
+         {
+            const float a = 0.45f * contrast, b = 0.5f * (1.f - a);
+            left  = Matrix3D(0.f, 0.f, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 0.f, /**/   b,   b,   a, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
+            const float c = 1.00f * contrast, d = 1.f - c;
+            right = Matrix3D(  c, 0.f,   d, 0.f, /**/ 0.f,   c,   d, 0.f, /**/ 0.f, 0.f, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
+            m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetVector(SHADER_Stereo_DeghostGamma, 1.05f, 1.10f, 1.00f, 0.00f);
+            const float e = 0.06f * 0.275f;
+            deghost = Matrix3D(1.f + 1.5f*e, -0.75f*e, -0.75f*e, 0.f, /**/ -0.75f*e, 1.f + 1.5f*e, -0.75f*e, 0.f, /**/ -1.5f*e, -1.5f*e, 1.f + 3.f*e, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
+         }
+         deghost.Transpose();
+         m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetMatrix(SHADER_Stereo_DeghostFilter, &deghost);
+      }
+      else if (filter == 2)
+      {
+         // Compose anaglyph by applying Dubois filter (pre-fitted filters on theoretical display / glasses / viewer set)
+         // see https://www.site.uottawa.ca/~edubois/anaglyph/
+         if (colors == RED_CYAN)
+         {
+            left  = Matrix3D( 0.437f,  0.449f,  0.164f, 0.f, /**/ -0.062f, -0.062f, -0.024f, 0.f, /**/ -0.048f, -0.050f, -0.017f, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
+            right = Matrix3D(-0.011f, -0.032f, -0.007f, 0.f, /**/  0.377f,  0.761f,  0.009f, 0.f, /**/ -0.026f, -0.093f,  1.234f, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
+         }
+         else if (colors == GREEN_MAGENTA)
+         {
+            left  = Matrix3D(-0.062f, -0.158f, -0.039f, 0.f, /**/  0.284f,  0.668f, 0.143f, 0.f, /**/ -0.015f, -0.027f, 0.021f, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
+            right = Matrix3D( 0.529f,  0.705f,  0.024f, 0.f, /**/ -0.016f, -0.015f, 0.065f, 0.f, /**/  0.009f,  0.075f, 0.937f, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
+         }
+         else if (colors == BLUE_AMBER)
+         {
+            left  = Matrix3D( 1.062f, -0.205f,  0.299f, 0.f, /**/ -0.026f, 0.908f, 0.068f, 0.f, /**/ -0.038f, -0.173f, 0.022f, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
+            right = Matrix3D(-0.016f, -0.123f, -0.017f, 0.f, /**/ 0.006f, 0.062f, -0.017f, 0.f, /**/  0.094f,  0.185f, 0.911f, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
+         }
+      }
+      else if (filter == 3)
+      {
+         // Basic anaglyph supposing a perfect display / filter / viewer set
+         if (colors == RED_CYAN)
+         {
+            left  = Matrix3D(1.f, 0.f, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
+            right = Matrix3D(0.f, 0.f, 0.f, 0.f, /**/ 0.f, 1.f, 0.f, 0.f, /**/ 0.f, 0.f, 1.f, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
+         }
+         else if (colors == GREEN_MAGENTA)
+         {
+            left  = Matrix3D(0.f, 0.f, 0.f, 0.f, /**/ 0.f, 1.f, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
+            right = Matrix3D(1.f, 0.f, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 0.f, /**/ 0.f, 0.f, 1.f, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
+         }
+         else if (colors == BLUE_AMBER)
+         {
+            left  = Matrix3D(0.f, 0.f, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 0.f, /**/ 1.f, 0.f, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
+            right = Matrix3D(1.f, 0.f, 0.f, 0.f, /**/ 0.f, 1.f, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
+         }
+      }
+      
+      // Common parameters for all anaglyph composition filters
+      const Matrix3D matLeftContrast = Matrix3D::MatrixTranslate(-0.5f, -0.5f, -0.5f) * Matrix3D::MatrixScale(reversedColors ? anaglyphRightEyeContrast : anaglyphLeftEyeContrast) * Matrix3D::MatrixTranslate(0.5f, 0.5f, 0.5f);
+      const Matrix3D matRightContrast = Matrix3D::MatrixTranslate(-0.5f, -0.5f, -0.5f) * Matrix3D::MatrixScale(reversedColors ? anaglyphLeftEyeContrast : anaglyphRightEyeContrast) * Matrix3D::MatrixTranslate(0.5f, 0.5f, 0.5f);
+      const Matrix3D matGrayscale = Matrix3D(0.212655f, 0.715158f, 0.072187f, 0.f, /**/ 0.212655f, 0.715158f, 0.072187f, 0.f, /**/ 0.212655f, 0.715158f, 0.072187f, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
+      const Matrix3D matSaturation = Matrix3D::MatrixScale(1.f - anaglyphSaturation) * matGrayscale + Matrix3D::MatrixScale(anaglyphSaturation);
+      const Matrix3D matBrightness = Matrix3D::MatrixScale(anaglyphBrightness); 
+      left = matBrightness * matLeftContrast * left * matSaturation;
+      right = matBrightness * matRightContrast * right * matSaturation;
+      left.Transpose();
+      right.Transpose();
+      m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetMatrix(reversedColors ? SHADER_Stereo_RightMat : SHADER_Stereo_LeftMat, &left);
+      m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetMatrix(reversedColors ? SHADER_Stereo_LeftMat : SHADER_Stereo_RightMat, &right);
+   }
+   return fitted;
 }
 
 void Player::InitShader()
@@ -1085,7 +1335,7 @@ void Player::UpdateBallShaderMatrix()
    matrices.matWorldView = m_pin3d.GetMVP().GetModelView();
    matrices.matWorldViewInverse = m_pin3d.GetMVP().GetModelViewInverse();
 #ifdef ENABLE_SDL
-   const int nEyes = m_stereo3D != STEREO_OFF ? 2 : 1;
+   const int nEyes = m_pin3d.m_pd3dPrimaryDevice->m_stereo3D != STEREO_OFF ? 2 : 1;
    for (int eye = 0; eye < nEyes; eye++)
       matrices.matWorldViewProj[eye] = m_pin3d.GetMVP().GetModelViewProj(eye);
    m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetUniformBlock(SHADER_ballMatrixBlock, &matrices.matView.m[0][0]);
@@ -1188,7 +1438,7 @@ HRESULT Player::Init()
 
    // colordepth & refreshrate are only defined if fullscreen is true.
    // width and height may be modified during initialization (for example for VR, they are adapted to the headset resolution)
-   const HRESULT hr = m_pin3d.InitPin3D(m_fullScreen, m_wnd_width, m_wnd_height, colordepth, m_refreshrate, m_videoSyncMode, aaFactor, m_stereo3D, FXAA, !!m_sharpen, ss_refl);
+   const HRESULT hr = m_pin3d.InitPin3D(m_fullScreen, m_wnd_width, m_wnd_height, colordepth, m_refreshrate, m_videoSyncMode, aaFactor, m_stereo3DfakeStereo ? STEREO_OFF : m_stereo3D, FXAA, !!m_sharpen, ss_refl);
    if (hr != S_OK)
    {
       char szFoo[64];
@@ -1628,6 +1878,10 @@ HRESULT Player::Init()
    if (m_playback)
       m_fplaylog = fopen("c:\\badlog.txt", "r");
 #endif
+
+   // Initialize stereo rendering
+   if (!UpdateStereoShaderState(true))
+      MessageBox("The anaglyph stereo calibration failed.\nYou will likely experience incorrect rendering.\nPlease go to 'Live Editor > Preferences > Video Options'\nand reset or restart your glasses calibration.", "Invalid Anaglyph Stereo", MB_ICONWARNING);
 
    wintimer_init();
    m_StartTime_usec = usec();
@@ -3124,7 +3378,7 @@ void Player::RenderDynamics()
    // Setup the projection matrices used for refraction
    Matrix3D matProj[2];
    #ifdef ENABLE_SDL
-   const int nEyes = m_stereo3D != STEREO_OFF ? 2 : 1;
+   const int nEyes = m_pin3d.m_pd3dPrimaryDevice->m_stereo3D != STEREO_OFF ? 2 : 1;
    for (int eye = 0; eye < nEyes; eye++)
       matProj[eye] = m_pin3d.GetMVP().GetProj(eye);
    m_pin3d.m_pd3dPrimaryDevice->basicShader->SetMatrix(SHADER_matProj, &matProj[0], nEyes);
@@ -3339,15 +3593,7 @@ void Player::StereoFXAA(RenderTarget* renderedRT, const bool stereo, const bool 
       renderedRT = outputRT;
    }
 
-   // LiveUI is not included in stats since it would not be part of the render frame time when debug display is off
-   g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_MISC);
-   m_liveUI->Update();
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("ImGui"s, renderedRT);
-   m_pin3d.m_pd3dPrimaryDevice->RenderLiveUI();
-   g_frameProfiler.ExitProfileSection();
-
-   // Final step: apply stereo
-
+   // Third step: apply stereo
    if (stereo)
    {
 #ifdef ENABLE_SDL
@@ -3355,6 +3601,13 @@ void Player::StereoFXAA(RenderTarget* renderedRT, const bool stereo, const bool 
       // For VR, copy each eye to the HMD texture and render the wanted preview if activated
       if (m_stereo3D == STEREO_VR)
       {
+         // Render LiveUI in headset for VR
+         g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_MISC);
+         m_liveUI->Update();
+         m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("ImGui"s, renderedRT);
+         m_pin3d.m_pd3dPrimaryDevice->RenderLiveUI();
+         g_frameProfiler.ExitProfileSection();
+
          #ifdef ENABLE_VR
          assert(renderedRT != m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer());
          int w = renderedRT->GetWidth(), h = renderedRT->GetHeight();
@@ -3386,29 +3639,34 @@ void Player::StereoFXAA(RenderTarget* renderedRT, const bool stereo, const bool 
          m_pin3d.m_pd3dPrimaryDevice->SubmitVR(renderedRT);
          #endif
       }
-      else if (IsAnaglyphStereoMode(m_stereo3D))
+      else 
+#endif
+      if (IsAnaglyphStereoMode(m_stereo3D) || Is3DTVStereoMode(m_stereo3D))
       {
-         // Anaglyph
+         // Anaglyph and 3DTV
          assert(renderedRT != m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer());
-         m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetTechnique(SHADER_TECHNIQUE_stereo_anaglyph);
-         m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetTexture(SHADER_tex_stereo_fb, renderedRT->GetColorSampler());
-         m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetVector(SHADER_ms_zpd_ya_td, m_ptable->GetMaxSeparation(), m_ptable->GetZPD(), m_stereo3DY ? 1.0f : 0.0f, (float)m_stereo3D);
-         m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetVector(SHADER_Anaglyph_Saturation_Brightness_EyeContrast, m_anaglyphSaturation, 1.f + m_anaglyphBrightness, m_anaglyphLeftEyeContrast, m_anaglyphRightEyeContrast);
+         // TODO blur the lesser eye for better anaglyph rendering
          m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("Stereo Anaglyph"s, m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer(), false);
          m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
-         m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pin3d.m_pd3dPrimaryDevice->StereoShader);
-      }
-      else if (Is3DTVStereoMode(m_stereo3D))
-      {
-         // Interlaced, side by side or top/bottom, handled in shader
-         assert(renderedRT != m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer());
-         m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetTechnique(m_stereo3D == STEREO_SBS ? SHADER_TECHNIQUE_stereo_SBS 
-                                                               : m_stereo3D == STEREO_TB  ? SHADER_TECHNIQUE_stereo_TB
-                                                               : m_stereo3D == STEREO_INT ? SHADER_TECHNIQUE_stereo_Int 
-                                                               :                            SHADER_TECHNIQUE_stereo_Flipped_Int);
+         if (m_stereo3DfakeStereo)
+         {
+            m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture(), true);
+            m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetTexture(SHADER_tex_stereo_depth, m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetDepthSampler());
+         }
+         if (IsAnaglyphStereoMode(m_stereo3D))
+         {
+            const int glasses = clamp(m_stereo3D - STEREO_ANAGLYPH_1 + 1, 1, 10);
+            const int filter = LoadValueWithDefault(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glasses)).append("Filter"s), 0);
+            m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetTechnique(filter == 1 ? SHADER_TECHNIQUE_Stereo_DeghostAnaglyph : SHADER_TECHNIQUE_Stereo_LinearAnaglyph);
+         }
+         else
+         {
+            m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetTechnique(m_stereo3D == STEREO_SBS ? SHADER_TECHNIQUE_stereo_SBS 
+                                                                  : m_stereo3D == STEREO_TB  ? SHADER_TECHNIQUE_stereo_TB
+                                                                  : m_stereo3D == STEREO_INT ? SHADER_TECHNIQUE_stereo_Int 
+                                                                  :                            SHADER_TECHNIQUE_stereo_Flipped_Int);
+         }
          m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetTexture(SHADER_tex_stereo_fb, renderedRT->GetColorSampler());
-         m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("Stereo"s, m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer(), false);
-         m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
          m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pin3d.m_pd3dPrimaryDevice->StereoShader);
       }
       else
@@ -3416,36 +3674,16 @@ void Player::StereoFXAA(RenderTarget* renderedRT, const bool stereo, const bool 
          // STEREO_OFF: nothing to do
          assert(renderedRT == m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer());
       }
-#else
-      // DirectX doesn't support 'real' stereo, instead of performing 2 renders from each eyes, it fakes stereo using a postprocess parallax filter
-      assert(renderedRT != m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer());
-      outputRT = m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("Stereo"s, outputRT, false);
-      m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
-      m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture(), true);
+   }
 
-      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, renderedRT->GetColorSampler());
-      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, renderedRT->GetColorSampler());
-      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_depth, m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetDepthSampler());
-
-      const bool is_anaglyph = m_stereo3D >= STEREO_ANAGLYPH_RC && m_stereo3D <= STEREO_ANAGLYPH_AB;
-      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_ms_zpd_ya_td, 
-         m_ptable->GetMaxSeparation(),
-         m_ptable->GetZPD(),
-         m_stereo3DY ? 1.0f : 0.0f,
-         is_anaglyph ? (float)m_stereo3D : ((m_stereo3D == STEREO_SBS) ? 2.0f : (m_stereo3D == STEREO_TB) ? 1.0f : ((m_stereo3D == STEREO_INT) ? 0.0f : 0.5f)));
-
-      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(
-         SHADER_w_h_height, (float)(1.0 / renderedRT->GetWidth()), (float)(1.0 / renderedRT->GetHeight()), (float)renderedRT->GetHeight(), m_ptable->Get3DOffset());
-
-      if (is_anaglyph)
-         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_Anaglyph_Saturation_Brightness_EyeContrast, m_anaglyphSaturation, 1.f + m_anaglyphBrightness, m_anaglyphLeftEyeContrast, m_anaglyphRightEyeContrast);
-
-      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(is_anaglyph ? SHADER_TECHNIQUE_stereo_anaglyph : SHADER_TECHNIQUE_stereo);
-
-      m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pin3d.m_pd3dPrimaryDevice->FBShader);
-      renderedRT = outputRT;
-#endif
+   if (!stereo || m_stereo3D != STEREO_VR)
+   {
+      // Render LiveUI after tonemapping and stereo, otherwise it would break the calibration process
+      g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_MISC);
+      m_liveUI->Update();
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("ImGui"s, m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer());
+      m_pin3d.m_pd3dPrimaryDevice->RenderLiveUI();
+      g_frameProfiler.ExitProfileSection();
    }
 }
 
