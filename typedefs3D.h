@@ -30,28 +30,20 @@ enum StereoMode
    STEREO_INT                   =  2, // Interlaced (e.g. LG TVs)
    STEREO_FLIPPED_INT           =  3, // Flipped Interlaced (e.g. LG TVs)
    STEREO_SBS                   =  4, // SBS (Side by Side)
-   STEREO_ANAGLYPH_RC           =  5, // Anaglyph Red/Cyan
-   STEREO_ANAGLYPH_DUBOIS_RC    =  6, // Anaglyph Red/Cyan with Dubois filter
-   STEREO_ANAGLYPH_DEGHOSTED_RC =  7, // Anaglyph Red/Cyan with deghosting filter
-   STEREO_ANAGLYPH_CR           =  8, // Anaglyph Cyan/Red
-   STEREO_ANAGLYPH_DUBOIS_CR    =  9, // Anaglyph Cyan/Red with Dubois filter
-   STEREO_ANAGLYPH_DEGHOSTED_CR = 10, // Anaglyph Cyan/Red with deghosting filter
-   STEREO_ANAGLYPH_GM           = 11, // Anaglyph Green/Magenta
-   STEREO_ANAGLYPH_DUBOIS_GM    = 12, // Anaglyph Green/Magenta with Dubois filter
-   STEREO_ANAGLYPH_DEGHOSTED_GM = 13, // Anaglyph Green/Magenta with deghosting filter
-   STEREO_ANAGLYPH_MG           = 14, // Anaglyph Magenta/Green
-   STEREO_ANAGLYPH_DUBOIS_MG    = 15, // Anaglyph Magenta/Green with Dubois filter
-   STEREO_ANAGLYPH_DEGHOSTED_MG = 16, // Anaglyph Magenta/Green with deghosting filter
-   STEREO_ANAGLYPH_BA           = 17, // Anaglyph Blue/Amber
-   STEREO_ANAGLYPH_DUBOIS_BA    = 18, // Anaglyph Blue/Amber with Dubois filter
-   STEREO_ANAGLYPH_DEGHOSTED_BA = 19, // Anaglyph Blue/Amber with deghosting filter
-   STEREO_ANAGLYPH_AB           = 20, // Anaglyph Amber/Blue
-   STEREO_ANAGLYPH_DUBOIS_AB    = 21, // Anaglyph Amber/Blue with Dubois filter
-   STEREO_ANAGLYPH_DEGHOSTED_AB = 22, // Anaglyph Amber/Blue with deghosting filter
-   STEREO_VR                    = 23, // Hardware VR set (not supported by DX9)
+   STEREO_ANAGLYPH_1            =  5, // Anaglyph Glasses Set (Defaults to Red/Cyan)
+   STEREO_ANAGLYPH_2            =  6, // Anaglyph Glasses Set (Defaults to Green/Magenta)
+   STEREO_ANAGLYPH_3            =  7, // Anaglyph Glasses Set (Defaults to Blue/Amber)
+   STEREO_ANAGLYPH_4            =  8, // Anaglyph Glasses Set (Defaults to Cyan/Red)
+   STEREO_ANAGLYPH_5            =  9, // Anaglyph Glasses Set (Defaults to Magenta/Green)
+   STEREO_ANAGLYPH_6            = 10, // Anaglyph Glasses Set (Defaults to Amber/Blue)
+   STEREO_ANAGLYPH_7            = 11, // Anaglyph Glasses Set
+   STEREO_ANAGLYPH_8            = 12, // Anaglyph Glasses Set
+   STEREO_ANAGLYPH_9            = 13, // Anaglyph Glasses Set
+   STEREO_ANAGLYPH_10           = 14, // Anaglyph Glasses Set
+   STEREO_VR                    = 15, // Hardware VR set (not supported by DX9)
 };
 #define Is3DTVStereoMode(stereo)     (STEREO_TB <= stereo && stereo <= STEREO_SBS)
-#define IsAnaglyphStereoMode(stereo) (STEREO_ANAGLYPH_RC <= stereo && stereo <= STEREO_ANAGLYPH_DEGHOSTED_AB)
+#define IsAnaglyphStereoMode(stereo) (STEREO_ANAGLYPH_1 <= stereo && stereo <= STEREO_ANAGLYPH_10)
 
 enum VideoSyncMode
 {

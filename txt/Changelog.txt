@@ -120,6 +120,13 @@ FEATURES:
 - stereo rendering has been rewritten:
   - use new projections which are well-designed for stereo rendering (same as for VR, no more parallel or toe-in with artefacts)
   - compute exact depth informations when using the new 'window' POV mode (note that you should have the same X/Y/Z scene scale to get good results)
+  - add support for fake stereo to OpenGL (like DirectX): real stereo is way better but needs a more powerful setup
+  - add 'Luminance' filter mode which creates anaglyph based on real display/glasses/viewer calibration. The calibration is only possible from the new Live Editor.
+    This new mode adapts to any glasses based on user calibration. It is especially useful when glasses are not conforming standard filter colors, on HDR display or 
+	for (partly) color blinded people. The calibration is performed from the new 'Live Editor' in the Live Editor > Preferences > Video Settings dialog. It consists
+	of measuring the perceived luminance of your display through your glasses and eyes. To do so, the viewer adjust the luminance of a reference image showing 2 faces
+	until he finds the point where the most proeminent faces changes side.
+  - Additionally to toggling stereo on/off, F10 shortcut also circles through the anaglyph glasses settings, Flipper Key + F10 circles backward
   - add complete support for amber/blue & blue/amber glasses
   - allow to adjust image brightness and per eye contrast
   - add all stereo settings to the Live Editor to get live feedback (in the Live Editor > Preferences > Video Settings dialog)

@@ -1259,7 +1259,12 @@ STDMETHODIMP ScriptGlobalTable::GetSerialDevices(VARIANT *pVal)
 
 STDMETHODIMP ScriptGlobalTable::get_RenderingMode(int *pVal)
 {
-   *pVal = (g_pplayer->m_stereo3D == STEREO_VR) ? 2 : (((g_pplayer->m_stereo3D != 0) && g_pplayer->m_stereo3Denabled) ? 1 : 0); // 0 = Normal 2D, 1 = Stereo 3D, 2 = VR
+   if (g_pplayer->m_stereo3D == STEREO_VR)
+      *pVal = 2; // VR
+   else if ((g_pplayer->m_stereo3D != STEREO_OFF) && g_pplayer->m_stereo3Denabled)
+      *pVal = 1; // Stereo 3D (3DTV or anaglyph)
+   else
+      *pVal = 0; // 2D
    return S_OK;
 }
 
@@ -2369,10 +2374,13 @@ void PinTable::Play(const bool cameraMode)
 
 void PinTable::OnPlayerStopped()
 {
-   assert(g_pplayer != nullptr && g_pplayer->m_pEditorTable == this);
-   // The running player has stopped, get back to editing this table which is the one the player was started for
-   delete g_pplayer;
-   g_pplayer = nullptr;
+   if (g_pplayer != nullptr)
+   { // If startup fails, player will be null
+      assert(g_pplayer != nullptr && g_pplayer->m_pEditorTable == this);
+      // The running player has stopped, get back to editing this table which is the one the player was started for
+      delete g_pplayer;
+      g_pplayer = nullptr;
+   }
    m_vpinball->ToggleToolbar();
    mixer_shutdown();
    hid_shutdown();
@@ -2385,7 +2393,11 @@ void PinTable::OnPlayerStopped()
 
 void PinTable::StopPlaying()
 {
-   assert(g_pplayer != nullptr && g_pplayer->m_ptable == this);
+   // May happen if startup failed
+   if (g_pplayer == nullptr)
+      return;
+
+   assert(g_pplayer == nullptr || g_pplayer->m_ptable == this);
    // called on a live table instance, before Player instance gets deleted (during Player's destructor)
 
    // Unhook script connections

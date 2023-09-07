@@ -32,6 +32,7 @@ private:
    void UpdateMainSplashModal();
    void UpdateAudioOptionsModal();
    void UpdateVideoOptionsModal();
+   void UpdateAnaglyphCalibrationModal();
    void UpdateRendererInspectionModal();
    void UpdateHeadTrackingModal();
 

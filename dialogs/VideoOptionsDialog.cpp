@@ -122,12 +122,9 @@ void VideoOptionsDialog::ResetVideoPreferences(const unsigned int profile) // 0 
       char tmp[256];
       sprintf_s(tmp, sizeof(tmp), "%f", stereo3DOfs);
       SetDlgItemText(IDC_3D_STEREO_OFS, tmp);
-      #ifdef ENABLE_SDL
-      constexpr float stereo3DMS = 63.0f; // Eye separation
-      #else
-      constexpr float stereo3DMS = 0.03f; // Parallax separation factor
-      #endif
-      sprintf_s(tmp, sizeof(tmp), "%f", stereo3DMS);
+      sprintf_s(tmp, sizeof(tmp), "%f", 63.0f);
+      SetDlgItemText(IDC_3D_STEREO_ES, tmp);
+      sprintf_s(tmp, sizeof(tmp), "%f", 0.03f);
       SetDlgItemText(IDC_3D_STEREO_MS, tmp);
       constexpr float stereo3DZPD = 0.5f;
       sprintf_s(tmp, sizeof(tmp), "%f", stereo3DZPD);
@@ -158,7 +155,6 @@ void VideoOptionsDialog::ResetVideoPreferences(const unsigned int profile) // 0 
       SendMessage(GetDlgItem(IDC_StretchYes).GetHwnd(), BM_SETCHECK, BST_UNCHECKED, 0);
       SendMessage(GetDlgItem(IDC_StretchMonitor).GetHwnd(), BM_SETCHECK, BST_UNCHECKED, 0);
       SendMessage(GetDlgItem(IDC_StretchNo).GetHwnd(), BM_SETCHECK, BST_CHECKED, 0);
-      //SendMessage(GetDlgItem(IDC_MonitorCombo).GetHwnd(), CB_SETCURSEL, 1, 0);
       SendMessage(GetDlgItem(IDC_DISPLAY_ID).GetHwnd(), CB_SETCURSEL, 0, 0);
    }
 }
@@ -496,6 +492,14 @@ BOOL VideoOptionsDialog::OnInitDialog()
    SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
    SendMessage(GetDlgItem(IDC_BG_SET).GetHwnd(), BM_SETCHECK, (bgset != 0) ? BST_CHECKED : BST_UNCHECKED, 0);
 
+   bool fakeStereo = true;
+   #ifdef ENABLE_SDL
+   fakeStereo = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DFake"s, false);
+   #else
+   ::EnableWindow(GetDlgItem(IDC_FAKE_STEREO).GetHwnd(), FALSE);
+   #endif
+   SendMessage(GetDlgItem(IDC_FAKE_STEREO).GetHwnd(), BM_SETCHECK, fakeStereo ? BST_CHECKED : BST_UNCHECKED, 0);
+
    const int stereo3D = LoadValueWithDefault(regKey[RegName::Player], "Stereo3D"s, 0);
    hwnd = GetDlgItem(IDC_3D_STEREO).GetHwnd();
    SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
@@ -504,26 +508,25 @@ BOOL VideoOptionsDialog::OnInitDialog()
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Interlaced (e.g. LG TVs)");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Flipped Interlaced (e.g. LG TVs)");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Side by Side");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Anaglyph Red/Cyan");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Anaglyph Red/Cyan Dubois");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Anaglyph Red/Cyan Deghosted");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Anaglyph Cyan/Red");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Anaglyph Cyan/Red Dubois");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Anaglyph Cyan/Red Deghosted");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Anaglyph Green/Magenta");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Anaglyph Green/Magenta Dubois");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Anaglyph Green/Magenta Deghosted");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Anaglyph Magenta/Green");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Anaglyph Magenta/Green Dubois");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Anaglyph Magenta/Green Deghosted");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Anaglyph Blue/Amber");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Anaglyph Blue/Amber Dubois");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Anaglyph Blue/Amber Deghosted");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Anaglyph Amber/Blue");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Anaglyph Amber/Blue Dubois");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Anaglyph Amber/Blue Deghosted");
+   string name[10];
+   string defaultNames[] = { "Red/Cyan", "Green/Magenta", "Blue/Amber", "Cyan/Red", "Magenta/Green", "Amber/Blue", "Custom 1", "Custom 2", "Custom 3", "Custom 4", };
+   for (int i = 0; i < 10; i++)
+      if (FAILED(LoadValue(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(i + 1)).append("Name"s), name[i])))
+         name[i] = defaultNames[i];
+   for (int i = 0; i < 10; i++)
+      SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)name[i].c_str());
    SendMessage(hwnd, CB_SETCURSEL, stereo3D, 0);
    SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
+
+   hwnd = GetDlgItem(IDC_3D_STEREO_ANAGLYPH_FILTER).GetHwnd();
+   SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Luminance");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Deghost");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Dubois");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "None");
+   SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
+
+   OnCommand(IDC_3D_STEREO, 0L); // Force UI update
 
    const bool stereo3DY = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DYAxis"s, false);
    SendMessage(GetDlgItem(IDC_3D_STEREO_Y).GetHwnd(), BM_SETCHECK, stereo3DY ? BST_CHECKED : BST_UNCHECKED, 0);
@@ -532,24 +535,12 @@ BOOL VideoOptionsDialog::OnInitDialog()
    sprintf_s(tmp, sizeof(tmp), "%f", stereo3DOfs);
    SetDlgItemText(IDC_3D_STEREO_OFS, tmp);
 
-   #ifdef ENABLE_SDL
-   const float stereo3DMS = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DEyeSeparation"s, 63.0f);
-   SetDlgItemText(IDC_3D_STEREO_MS_LABEL, "Eye Separation (mm)");
-   GetDlgItem(IDC_3D_STEREO_Y).EnableWindow(false);
-   GetDlgItem(IDC_3D_STEREO_OFS).EnableWindow(false);
-   GetDlgItem(IDC_3D_STEREO_ZPD).EnableWindow(false);
-   // Completely hide parallax settings to avoid confusing user
-   GetDlgItem(IDC_3D_STEREO_Y).ShowWindow(false);
-   GetDlgItem(IDC_3D_STEREO_OFS_LABEL).ShowWindow(false);
-   GetDlgItem(IDC_3D_STEREO_OFS).ShowWindow(false);
-   GetDlgItem(IDC_3D_STEREO_ZPD_LABEL).ShowWindow(false);
-   GetDlgItem(IDC_3D_STEREO_ZPD).ShowWindow(false);
-   #else
    const float stereo3DMS = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DMaxSeparation"s, 0.03f);
-   SetDlgItemText(IDC_3D_STEREO_MS_LABEL, "Parallax Separation");
-   #endif
+   const float stereo3DES = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DEyeSeparation"s, 63.0f);
    sprintf_s(tmp, sizeof(tmp), "%f", stereo3DMS);
    SetDlgItemText(IDC_3D_STEREO_MS, tmp);
+   sprintf_s(tmp, sizeof(tmp), "%f", stereo3DES);
+   SetDlgItemText(IDC_3D_STEREO_ES, tmp);
 
    const float stereo3DZPD = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DZPD"s, 0.5f);
    sprintf_s(tmp, sizeof(tmp), "%f", stereo3DZPD);
@@ -659,22 +650,6 @@ BOOL VideoOptionsDialog::OnInitDialog()
       case 1:  SendMessage(GetDlgItem(IDC_StretchYes).GetHwnd(), BM_SETCHECK, BST_CHECKED, 0);     break;
       case 2:  SendMessage(GetDlgItem(IDC_StretchMonitor).GetHwnd(), BM_SETCHECK, BST_CHECKED, 0); break;
    }
-
-   // set selected Monitors
-   // Monitors: 4:3, 16:9, 16:10, 21:10, 21:9
-   /*const int selected = LoadValueWithDefault(regKey[RegName::Player], "BallStretchMonitor"s, 1); // assume 16:9 as standard
-   HWND hwnd = GetDlgItem(IDC_MonitorCombo).GetHwnd();
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"4:3");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"16:9");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"16:10");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"21:10");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"3:4 (R)");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"9:16 (R)");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"10:16 (R)");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"10:21 (R)");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"9:21 (R)");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"21:9");
-   SendMessage(hwnd, CB_SETCURSEL, selected, 0);*/
 
 // Disable unsupported features in UI
 #ifdef ENABLE_SDL
@@ -852,40 +827,62 @@ BOOL VideoOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
          break;
       }
       case IDC_3D_STEREO:
+      case IDC_FAKE_STEREO:
       {
          LRESULT stereo3D = SendMessage(GetDlgItem(IDC_3D_STEREO).GetHwnd(), CB_GETCURSEL, 0, 0);
+         bool fakeStereo = true;
+         #ifdef ENABLE_SDL
+         fakeStereo = SendDlgItemMessage(IDC_FAKE_STEREO, BM_GETCHECK, 0, 0);
+         #endif
+         SetDlgItemText(IDC_3D_STEREO_MS_LABEL, fakeStereo ? "Parallax Separation" : "Eye Separation (mm)");
          if (stereo3D == LB_ERR)
             stereo3D = STEREO_OFF;
          if (stereo3D == STEREO_OFF)
          {
+            GetDlgItem(IDC_FAKE_STEREO).EnableWindow(false);
             GetDlgItem(IDC_3D_STEREO_Y).EnableWindow(false);
             GetDlgItem(IDC_3D_STEREO_OFS).EnableWindow(false);
             GetDlgItem(IDC_3D_STEREO_ZPD).EnableWindow(false);
             GetDlgItem(IDC_3D_STEREO_MS).EnableWindow(false);
+            GetDlgItem(IDC_3D_STEREO_ES).EnableWindow(false);
             GetDlgItem(IDC_3D_STEREO_BRIGHTNESS).EnableWindow(false);
             GetDlgItem(IDC_3D_STEREO_DESATURATION).EnableWindow(false);
+            GetDlgItem(IDC_3D_STEREO_ANAGLYPH_FILTER).EnableWindow(false);
          }
          else if (Is3DTVStereoMode(stereo3D))
          {
-            #ifndef ENABLE_SDL
-            GetDlgItem(IDC_3D_STEREO_Y).EnableWindow(true);
-            GetDlgItem(IDC_3D_STEREO_OFS).EnableWindow(true);
-            GetDlgItem(IDC_3D_STEREO_ZPD).EnableWindow(true);
+            #ifdef ENABLE_SDL
+            GetDlgItem(IDC_FAKE_STEREO).EnableWindow(true);
             #endif
-            GetDlgItem(IDC_3D_STEREO_MS).EnableWindow(true);
+            GetDlgItem(IDC_3D_STEREO_Y).EnableWindow(fakeStereo);
+            GetDlgItem(IDC_3D_STEREO_OFS).EnableWindow(fakeStereo);
+            GetDlgItem(IDC_3D_STEREO_ZPD).EnableWindow(fakeStereo);
+            GetDlgItem(IDC_3D_STEREO_MS).ShowWindow(fakeStereo);
+            GetDlgItem(IDC_3D_STEREO_ES).ShowWindow(!fakeStereo);
+            GetDlgItem(IDC_3D_STEREO_MS).EnableWindow(fakeStereo);
+            GetDlgItem(IDC_3D_STEREO_ES).EnableWindow(!fakeStereo);
             GetDlgItem(IDC_3D_STEREO_BRIGHTNESS).EnableWindow(false);
             GetDlgItem(IDC_3D_STEREO_DESATURATION).EnableWindow(false);
+            GetDlgItem(IDC_3D_STEREO_ANAGLYPH_FILTER).EnableWindow(false);
          }
          else if (IsAnaglyphStereoMode(stereo3D))
          {
-            #ifndef ENABLE_SDL
-            GetDlgItem(IDC_3D_STEREO_Y).EnableWindow(true);
-            GetDlgItem(IDC_3D_STEREO_OFS).EnableWindow(true);
-            GetDlgItem(IDC_3D_STEREO_ZPD).EnableWindow(true);
+            #ifdef ENABLE_SDL
+            GetDlgItem(IDC_FAKE_STEREO).EnableWindow(true);
             #endif
-            GetDlgItem(IDC_3D_STEREO_MS).EnableWindow(true);
+            GetDlgItem(IDC_3D_STEREO_Y).EnableWindow(fakeStereo);
+            GetDlgItem(IDC_3D_STEREO_OFS).EnableWindow(fakeStereo);
+            GetDlgItem(IDC_3D_STEREO_ZPD).EnableWindow(fakeStereo);
+            GetDlgItem(IDC_3D_STEREO_MS).ShowWindow(fakeStereo);
+            GetDlgItem(IDC_3D_STEREO_ES).ShowWindow(!fakeStereo);
+            GetDlgItem(IDC_3D_STEREO_MS).EnableWindow(fakeStereo);
+            GetDlgItem(IDC_3D_STEREO_ES).EnableWindow(!fakeStereo);
             GetDlgItem(IDC_3D_STEREO_BRIGHTNESS).EnableWindow(true);
             GetDlgItem(IDC_3D_STEREO_DESATURATION).EnableWindow(true);
+            GetDlgItem(IDC_3D_STEREO_ANAGLYPH_FILTER).EnableWindow(true);
+            int glassesIndex = stereo3D - STEREO_ANAGLYPH_1;
+            int anaglyphFilter = LoadValueWithDefault(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glassesIndex + 1)).append("Filter"s), 0);
+            SendMessage(GetDlgItem(IDC_3D_STEREO_ANAGLYPH_FILTER), CB_SETCURSEL, anaglyphFilter, 0);
          }
       }
       default:
@@ -1013,15 +1010,6 @@ void VideoOptionsDialog::OnOK()
    const bool ssreflection = (SendMessage(GetDlgItem(IDC_GLOBAL_SSREFLECTION_CHECK).GetHwnd(), BM_GETCHECK, 0, 0) != 0);
    SaveValue(regKey[RegName::Player], "SSRefl"s, ssreflection);
 
-   LRESULT stereo3D = SendMessage(GetDlgItem(IDC_3D_STEREO).GetHwnd(), CB_GETCURSEL, 0, 0);
-   if (stereo3D == LB_ERR)
-      stereo3D = STEREO_OFF;
-   SaveValue(regKey[RegName::Player], "Stereo3D"s, (int)stereo3D);
-   SaveValue(regKey[RegName::Player], "Stereo3DEnabled"s, (int)stereo3D);
-
-   const bool stereo3DY = (SendMessage(GetDlgItem(IDC_3D_STEREO_Y).GetHwnd(), BM_GETCHECK, 0, 0) != 0);
-   SaveValue(regKey[RegName::Player], "Stereo3DYAxis"s, stereo3DY);
-
    const bool forceAniso = (SendMessage(GetDlgItem(IDC_FORCE_ANISO).GetHwnd(), BM_GETCHECK, 0, 0) != 0);
    SaveValue(regKey[RegName::Player], "ForceAnisotropicFiltering"s, forceAniso);
 
@@ -1033,15 +1021,33 @@ void VideoOptionsDialog::OnOK()
 
    const size_t alphaRampsAccuracy = SendMessage(GetDlgItem(IDC_ARASlider).GetHwnd(), TBM_GETPOS, 0, 0);
    SaveValue(regKey[RegName::Player], "AlphaRampAccuracy"s, (int)alphaRampsAccuracy);
+
+   LRESULT stereo3D = SendMessage(GetDlgItem(IDC_3D_STEREO).GetHwnd(), CB_GETCURSEL, 0, 0);
+   if (stereo3D == LB_ERR)
+      stereo3D = STEREO_OFF;
+   SaveValue(regKey[RegName::Player], "Stereo3D"s, (int)stereo3D);
+   SaveValue(regKey[RegName::Player], "Stereo3DEnabled"s, (int)stereo3D);
+   const bool stereo3DY = (SendMessage(GetDlgItem(IDC_3D_STEREO_Y).GetHwnd(), BM_GETCHECK, 0, 0) != 0);
+   SaveValue(regKey[RegName::Player], "Stereo3DYAxis"s, stereo3DY);
    SaveValue(regKey[RegName::Player], "Stereo3DOffset"s, GetDlgItemText(IDC_3D_STEREO_OFS).c_str());
+   bool fakeStereo = true;
    #ifdef ENABLE_SDL
-   SaveValue(regKey[RegName::Player], "Stereo3DEyeSeparation"s, GetDlgItemText(IDC_3D_STEREO_MS).c_str());
-   #else
-   SaveValue(regKey[RegName::Player], "Stereo3DMaxSeparation"s, GetDlgItemText(IDC_3D_STEREO_MS).c_str());
+   fakeStereo = SendDlgItemMessage(IDC_FAKE_STEREO, BM_GETCHECK, 0, 0);
+   SaveValue(regKey[RegName::Player], "Stereo3DFake"s, fakeStereo);
    #endif
+   SaveValue(regKey[RegName::Player], "Stereo3DMaxSeparation"s, GetDlgItemText(IDC_3D_STEREO_MS).c_str());
+   SaveValue(regKey[RegName::Player], "Stereo3DEyeSeparation"s, GetDlgItemText(IDC_3D_STEREO_ES).c_str());
    SaveValue(regKey[RegName::Player], "Stereo3DZPD"s, GetDlgItemText(IDC_3D_STEREO_ZPD).c_str());
    SaveValue(regKey[RegName::Player], "Stereo3DBrightness"s, GetDlgItemText(IDC_3D_STEREO_BRIGHTNESS).c_str());
    SaveValue(regKey[RegName::Player], "Stereo3DSaturation"s, GetDlgItemText(IDC_3D_STEREO_DESATURATION).c_str());
+   if (IsAnaglyphStereoMode(stereo3D))
+   {
+      int glassesIndex = stereo3D - STEREO_ANAGLYPH_1;
+      LRESULT anaglyphFilter = SendMessage(GetDlgItem(IDC_3D_STEREO_ANAGLYPH_FILTER).GetHwnd(), CB_GETCURSEL, 0, 0);
+      if (anaglyphFilter == LB_ERR)
+         anaglyphFilter = 0;
+      SaveValue(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glassesIndex + 1)).append("Filter"s), (int) anaglyphFilter);
+   }
 
    const bool bamHeadtracking = (SendMessage(GetDlgItem(IDC_HEADTRACKING).GetHwnd(), BM_GETCHECK, 0, 0) != 0);
    SaveValue(regKey[RegName::Player], "BAMheadTracking"s, bamHeadtracking);

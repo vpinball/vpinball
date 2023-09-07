@@ -710,6 +710,7 @@
 #define IDC_HALO_EDIT                   429
 #define IDC_ENABLE_NUDGE_FILTER         430
 #define IDAPPLY                         430
+#define IDC_3D_STEREO_ES                430
 #define IDC_BULB_MODULATE_VS_ADD        431
 #define IDC_CHECK1                      431
 #define IDC_GROUP_CHECK                 431
@@ -869,7 +870,9 @@
 #define IDC_STATIC_SOUNDDEVICE2         547
 #define IDD_PROPTABLE_PHYSICS           547
 #define IDC_3D_VR_ORIENTATION           547
+#define IDC_FAKE_STEREO                 547
 #define IDC_VR_OFFSET_X                 548
+#define IDC_3D_STEREO_ANAGLYPH_FILTER   548
 #define IDS_DIMENSIONSSLOPE             549
 #define IDD_PROPFLASHER_VISUALS         549
 #define IDC_VR_OFFSET_Y                 549

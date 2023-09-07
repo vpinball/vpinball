@@ -570,7 +570,6 @@ void Light::RenderDynamic()
 
    if (m_backglass)
    {
-      const int eyes = g_pplayer->m_stereo3D != STEREO_OFF ? 2 : 1;
       Matrix3D matWorldViewProj[2]; // MVP to move from back buffer space (0..w, 0..h) to clip space (-1..1, -1..1)
       matWorldViewProj[0].SetIdentity();
       matWorldViewProj[0]._11 = 2.0f / (float)pd3dDevice->GetBackBufferTexture()->GetWidth();
@@ -580,6 +579,7 @@ void Light::RenderDynamic()
       #ifdef ENABLE_SDL
       if (shader == pd3dDevice->lightShader)
       {
+         const int eyes = pd3dDevice->GetCurrentRenderTarget()->m_nLayers;
          if (eyes > 1)
             memcpy(&matWorldViewProj[1], &matWorldViewProj[0], 4 * 4 * sizeof(float));
          shader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj[0].m[0][0], eyes);

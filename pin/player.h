@@ -588,16 +588,14 @@ public:
    bool m_useNvidiaApi;
    bool m_disableDWM;
 
-   bool m_stereo3Denabled;
-   bool m_stereo3DY;
    StereoMode m_stereo3D;
+   bool m_stereo3DfakeStereo;
+   bool m_stereo3Denabled;
+   bool UpdateStereoShaderState(const bool fitRequired);
+
    VRPreviewMode m_vrPreview;
 
    bool m_headTracking;
-   float m_anaglyphBrightness;
-   float m_anaglyphSaturation;
-   float m_anaglyphLeftEyeContrast;
-   float m_anaglyphRightEyeContrast;
 
    int m_BWrendering; // 0=off, 1=Black&White from RedGreen, 2=B&W from Red only
 

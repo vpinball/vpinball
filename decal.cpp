@@ -613,7 +613,6 @@ void Decal::RenderObject()
 
    if (m_backglass)
    {
-      const int eyes = g_pplayer->m_stereo3D != STEREO_OFF ? 2 : 1;
       Matrix3D matWorldViewProj; // MVP to move from back buffer space (0..w, 0..h) to clip space (-1..1, -1..1)
       matWorldViewProj.SetIdentity();
       matWorldViewProj._11 = 2.0f / (float)pd3dDevice->GetBackBufferTexture()->GetWidth();

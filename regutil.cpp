@@ -548,6 +548,13 @@ bool LoadValueWithDefault(const string &szKey, const string &szValue, const bool
    return !!LoadValueWithDefault(szKey, szValue, (int)def);
 }
 
+string LoadValueWithDefault(const string &szKey, const string &szValue, const string &def)
+{
+   string val;
+   const HRESULT hr = LoadValue(szKey, szValue, val);
+   return SUCCEEDED(hr) ? val : def;
+}
+
 //
 
 static HRESULT SaveValue(const string &szKey, const string &szValue, const DWORD type, const void *pvalue, const DWORD size)

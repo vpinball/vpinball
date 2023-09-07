@@ -127,12 +127,12 @@ const string Shader::shaderTechniqueNames[SHADER_TECHNIQUE_COUNT]
    SHADER_TECHNIQUE(SMAA_ColorEdgeDetection),
    SHADER_TECHNIQUE(SMAA_BlendWeightCalculation),
    SHADER_TECHNIQUE(SMAA_NeighborhoodBlending),
-   SHADER_TECHNIQUE(stereo),
    SHADER_TECHNIQUE(stereo_SBS),
    SHADER_TECHNIQUE(stereo_TB),
    SHADER_TECHNIQUE(stereo_Int),
    SHADER_TECHNIQUE(stereo_Flipped_Int),
-   SHADER_TECHNIQUE(stereo_anaglyph),
+   SHADER_TECHNIQUE(Stereo_LinearAnaglyph),
+   SHADER_TECHNIQUE(Stereo_DeghostAnaglyph),
    SHADER_TECHNIQUE(irradiance),
 };
 #undef SHADER_TECHNIQUE
@@ -259,11 +259,15 @@ Shader::ShaderUniform Shader::shaderUniformNames[SHADER_UNIFORM_COUNT] {
    SHADER_SAMPLER(blendTex, blendTex2D, SA_CLAMP, SA_CLAMP, SF_TRILINEAR), // SMAA
    SHADER_SAMPLER(areaTex, areaTex2D, SA_CLAMP, SA_CLAMP, SF_TRILINEAR), // SMAA
    SHADER_SAMPLER(searchTex, searchTex2D, SA_CLAMP, SA_CLAMP, SF_NONE), // SMAA
-   SHADER_UNIFORM(SUT_Float4, ms_zpd_ya_td, 1), // Anaglyph Stereo
-   SHADER_UNIFORM(SUT_Float4, Anaglyph_Saturation_Brightness_EyeContrast, 1), // Anaglyph Stereo
-   #ifdef ENABLE_SDL // OpenGL
-   SHADER_SAMPLER(tex_stereo_fb, Undefined, SA_REPEAT, SA_REPEAT, SF_NONE), // Stereo shader (combine the 2 rendered eyes into a single one)
-   #endif
+
+   // Stereo Shader
+   SHADER_SAMPLER(tex_stereo_fb, Texture0, SA_REPEAT, SA_REPEAT, SF_NONE), // Framebuffer (unfiltered)
+   SHADER_SAMPLER(tex_stereo_depth, Texture4, SA_REPEAT, SA_REPEAT, SF_NONE), // Depth
+   SHADER_UNIFORM(SUT_Float4, Stereo_MS_ZPD_YAxis, 1), // Stereo (analgyph and 3DTV)
+   SHADER_UNIFORM(SUT_Float4x4, Stereo_LeftMat, 1), // Anaglyph Stereo
+   SHADER_UNIFORM(SUT_Float4x4, Stereo_RightMat, 1), // Anaglyph Stereo
+   SHADER_UNIFORM(SUT_Float4, Stereo_DeghostGamma, 1), // Anaglyph Stereo
+   SHADER_UNIFORM(SUT_Float4x4, Stereo_DeghostFilter, 1), // Anaglyph Stereo
 };
 #undef SHADER_UNIFORM
 #undef SHADER_SAMPLER
@@ -1268,6 +1272,7 @@ bool Shader::Load(const std::string& name, const BYTE* code, unsigned int codeSi
    robin_hood::unordered_map<string, string> values;
    const bool parsing = parseFile(m_shaderCodeName, m_shaderCodeName, 0, values, "GLOBAL");
    if (!parsing) {
+      m_hasError = true;
       PLOGE << "Parsing failed";
       char msg[128];
       sprintf_s(msg, sizeof(msg), "Fatal Error: Shader parsing of %s failed!", m_shaderCodeName.c_str());
@@ -1311,6 +1316,7 @@ bool Shader::Load(const std::string& name, const BYTE* code, unsigned int codeSi
             ShaderTechniques technique = getTechniqueByName(element[0]);
             if (technique == SHADER_TECHNIQUE_INVALID)
             {
+               m_hasError = true;
                PLOGI << "Unexpected technique skipped: " << element[0];
             }
             else
@@ -1337,6 +1343,7 @@ bool Shader::Load(const std::string& name, const BYTE* code, unsigned int codeSi
                }
                else
                {
+                  m_hasError = true;
                   char msg[128];
                   sprintf_s(msg, sizeof(msg), "Fatal Error: Compilation failed for technique %s of %s!", shaderTechniqueNames[technique].c_str(), m_shaderCodeName.c_str());
                   ReportError(msg, -1, __FILE__, __LINE__);
@@ -1348,6 +1355,7 @@ bool Shader::Load(const std::string& name, const BYTE* code, unsigned int codeSi
       PLOGI << "Compiled successfully " << std::to_string(tecCount) << " shaders.";
    }
    else {
+      m_hasError = true;
       PLOGE << "No techniques found.";
       char msg[128];
       sprintf_s(msg, sizeof(msg), "Fatal Error: No shader techniques found in %s!", m_shaderCodeName.c_str());
