@@ -265,7 +265,7 @@ float3 lightLoop(const float3 pos, float3 N, const float3 V, float3 diffuse, flo
         color += glossy * envTex * fenvEmissionScale_TexWidth.x;
 
       // Envmap2ndLayer
-      if(fix_normal_orientation && specularMax > 0.0)
+      if(backside_lighting && specularMax > 0.0)
       {
         const float3 w = FresnelSchlick(specular, NdotV, Roughness_WrapL_Edge_Thickness.z);
         color = mix(color, envTex * fenvEmissionScale_TexWidth.x, w);
