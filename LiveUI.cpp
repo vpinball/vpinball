@@ -2070,7 +2070,7 @@ void LiveUI::UpdateAnaglyphCalibrationModal()
       if (calibrationStep == -1)
       {
          calibrationStep = 0; 
-         calibrationBrightness = LoadValueWithDefault(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glassesIndex)).append(fields[calibrationStep]), defaultAnaglyphColors[glassesIndex*2-2].x);
+         calibrationBrightness = LoadValueWithDefault(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glassesIndex + 1)).append(fields[calibrationStep]), defaultAnaglyphColors[glassesIndex*2-2].x);
       }
       if (ImGui::IsKeyPressed(ImGuiKey::ImGuiKey_LeftCtrl))
       {
@@ -2084,9 +2084,9 @@ void LiveUI::UpdateAnaglyphCalibrationModal()
          else
          {
             calibrationStep--;
-            vec3 defColor = defaultAnaglyphColors[(glassesIndex - 1) * 2 + (calibrationStep > 2 ? 1 : 0)];
+            vec3 defColor = defaultAnaglyphColors[glassesIndex * 2 + (calibrationStep > 2 ? 1 : 0)];
             float defChannel = (calibrationStep % 3) == 0 ? defColor.x : (calibrationStep % 3) == 1 ? defColor.y : defColor.z;
-            calibrationBrightness = LoadValueWithDefault(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glassesIndex)).append(fields[calibrationStep]), defChannel);
+            calibrationBrightness = LoadValueWithDefault(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glassesIndex + 1)).append(fields[calibrationStep]), defChannel);
          }
       }
       else if (ImGui::IsKeyPressed(ImGuiKey::ImGuiKey_RightCtrl))
@@ -2101,20 +2101,20 @@ void LiveUI::UpdateAnaglyphCalibrationModal()
          else
          {
             calibrationStep++;
-            vec3 defColor = defaultAnaglyphColors[(glassesIndex - 1) * 2 + (calibrationStep > 2 ? 1 : 0)];
+            vec3 defColor = defaultAnaglyphColors[glassesIndex * 2 + (calibrationStep > 2 ? 1 : 0)];
             float defChannel = (calibrationStep % 3) == 0 ? defColor.x : (calibrationStep % 3) == 1 ? defColor.y : defColor.z;
-            calibrationBrightness = LoadValueWithDefault(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glassesIndex)).append(fields[calibrationStep]), defChannel);
+            calibrationBrightness = LoadValueWithDefault(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glassesIndex + 1)).append(fields[calibrationStep]), defChannel);
          }
       }
       else if (ImGui::IsKeyPressed(ImGuiKey::ImGuiKey_LeftShift))
       {
          calibrationBrightness = clamp(calibrationBrightness - 0.01f, 0.f, 1.f);
-         SaveValue(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glassesIndex)).append(fields[calibrationStep]), calibrationBrightness);
+         SaveValue(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glassesIndex + 1)).append(fields[calibrationStep]), calibrationBrightness);
       }
       else if (ImGui::IsKeyPressed(ImGuiKey::ImGuiKey_RightShift))
       {
          calibrationBrightness = clamp(calibrationBrightness + 0.01f, 0.f, 1.f);
-         SaveValue(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glassesIndex)).append(fields[calibrationStep]), calibrationBrightness);
+         SaveValue(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glassesIndex + 1)).append(fields[calibrationStep]), calibrationBrightness);
       }
 
       ImGui::PushFont(m_overlayFont);
