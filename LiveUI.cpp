@@ -815,6 +815,7 @@ void LiveUI::Update()
    ImGui_ImplWin32_NewFrame();
 
    ImGui::NewFrame();
+   ImGui::GetIO().ConfigFlags &= ~ImGuiConfigFlags_NavEnableKeyboard; // We use it for main splash popup, but needs it to be disabled to allow keyboard shortcuts
    const bool isInteractiveUI = m_ShowUI || m_ShowSplashModal || ImGui::IsPopupOpen(ID_BAM_SETTINGS);
    if (isInteractiveUI)
       m_rotate = 0;
