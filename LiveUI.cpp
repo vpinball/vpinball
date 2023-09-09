@@ -523,7 +523,7 @@ static void HelpTextCentered(const std::string& text)
 
    ImGui::SameLine(text_indentation);
    ImGui::PushTextWrapPos(win_size.x - text_indentation);
-   ImGui::TextWrapped(text.c_str());
+   ImGui::TextWrapped("%s", text.c_str());
    ImGui::PopTextWrapPos();
 }
 
@@ -580,7 +580,7 @@ static void HelpSplash(const std::string &text, int rotation)
    {
       const ImVec2 lineSize = font->CalcTextSizeA(font->FontSize, FLT_MAX, 0.0f, line.c_str());
       ImGui::SetCursorPosX(((text_size.x - lineSize.x) / 2));
-      ImGui::Text(line.c_str());
+      ImGui::Text("%s", line.c_str());
    }
    ImGui::End();
 }
@@ -1014,11 +1014,11 @@ void LiveUI::UpdateCameraModeUI()
       #define CM_ROW(label, format, value, unit) \
       { \
          char buf[1024]; snprintf(buf, 1024, format, value); \
-         ImGui::TableNextColumn(); ImGui::Text(label); ImGui::TableNextColumn(); \
+         ImGui::TableNextColumn(); ImGui::Text("%s",label); ImGui::TableNextColumn(); \
          float textWidth = ImGui::CalcTextSize(buf).x; \
          vWidth = max(vWidth, textWidth); \
          if (textWidth < vWidth) ImGui::SameLine(vWidth - textWidth); \
-         ImGui::Text(buf); ImGui::TableNextColumn(); ImGui::Text(unit); ImGui::TableNextRow();\
+         ImGui::Text("%s",buf); ImGui::TableNextColumn(); ImGui::Text("%s",unit); ImGui::TableNextRow();\
       }
       #define CM_SKIP_LINE {ImGui::TableNextColumn(); ImGui::Dummy(ImVec2(0.f, m_dpi * 3.f)); ImGui::TableNextRow();}
       for (int i = 0; i < nSettings; i++)
@@ -2243,7 +2243,7 @@ void LiveUI::UpdateRendererInspectionModal()
          ImGui::TableHeadersRow();
 
          #define PROF_ROW(name, section) \
-         ImGui::TableNextColumn(); ImGui::Text(name); \
+         ImGui::TableNextColumn(); ImGui::Text("%s",name); \
          ImGui::TableNextColumn(); ImGui::Text("%4.1fms", g_frameProfiler.GetPrev(section) * 1e-3); \
          ImGui::TableNextColumn(); ImGui::Text("%4.1f%%", g_frameProfiler.GetPrev(section) * 100.0 / period); \
          ImGui::TableNextColumn(); ImGui::Text("%4.1fms", g_frameProfiler.GetAvg(section) * 1e-3); \
@@ -2283,11 +2283,11 @@ void LiveUI::UpdateRendererInspectionModal()
          ImGui::TableSetupColumn("Informations", ImGuiTableColumnFlags_WidthStretch);
          ImGui::TableHeadersRow();
          #define PROF_ROW(name, section, info) \
-         ImGui::TableNextColumn(); ImGui::Text(name); \
+         ImGui::TableNextColumn(); ImGui::Text("%s", name); \
          ImGui::TableNextColumn(); ImGui::Text("%4.1fms", g_frameProfiler.GetMin(section) * 1e-3); \
          ImGui::TableNextColumn(); ImGui::Text("%4.1fms", g_frameProfiler.GetMax(section) * 1e-3); \
          ImGui::TableNextColumn(); ImGui::Text("%4.1fms", g_frameProfiler.GetAvg(section) * 1e-3); \
-         ImGui::TableNextColumn(); ImGui::Text(info);
+         ImGui::TableNextColumn(); ImGui::Text("%s", info);
          PROF_ROW("Input to Script lag", FrameProfiler::PROFILE_INPUT_POLL_PERIOD, "")
          PROF_ROW("Input to Present lag", FrameProfiler::PROFILE_INPUT_TO_PRESENT, "Use PresentMon for Present to Display lag")
          #undef PROF_ROW
@@ -2295,12 +2295,12 @@ void LiveUI::UpdateRendererInspectionModal()
          ImGui::NewLine();
       }
 
-	  ImGui::Text("Press F11 to reset min/max/average timings");
-	  if (ImGui::IsKeyPressed(dikToImGuiKeys[m_player->m_rgKeys[eFrameCount]]))
-		 m_player->InitFPS();
-	  
+	   ImGui::Text("Press F11 to reset min/max/average timings");
+	   if (ImGui::IsKeyPressed(dikToImGuiKeys[m_player->m_rgKeys[eFrameCount]]))
+		   m_player->InitFPS();
+	   
       // Other detailled informations
-      ImGui::Text(m_player->GetPerfInfo().c_str());
+      ImGui::Text("%s", m_player->GetPerfInfo().c_str());
 
       ImGui::End();
    }
@@ -2981,7 +2981,7 @@ void LiveUI::PropSeparator(const char *label)
    PROP_TABLE_SETUP
    ImGui::TableNextColumn();
    if (label)
-      ImGui::Text(label);
+      ImGui::Text("%s", label);
    ImGui::TableNextColumn();
 }
 
