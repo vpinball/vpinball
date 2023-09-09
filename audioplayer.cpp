@@ -181,3 +181,102 @@ void AudioPlayer::MusicVolume(const float volume)
       BASS_ChannelSetAttribute(m_stream, BASS_ATTRIB_VOL, volume);
    }
 }
+
+bool AudioPlayer::SetMusicFile(const string& szFileName)
+{
+   if (m_stream)
+      MusicClose();
+
+   m_stream = BASS_StreamCreateFile(FALSE, szFileName.c_str(), 0, 0, 0);
+
+   if (m_stream == 0) {
+      const int code = BASS_ErrorGetCode();
+      string message;
+      BASS_ErrorMapCode(code, message);
+      g_pvp->MessageBox(("BASS music/sound library cannot load \"" + szFileName + "\" (error " + std::to_string(code) + ": " + message + ')').c_str(), "Error", MB_ICONERROR);
+      return false;
+   }
+
+   return true;
+}
+
+void AudioPlayer::MusicPlay()
+{
+   if (m_stream) {
+      if(bass_BG_idx != -1 && bass_STD_idx != bass_BG_idx) BASS_SetDevice(bass_BG_idx);
+
+      BASS_ChannelPlay(m_stream, 0);
+   }
+}
+
+void AudioPlayer::MusicStop()
+{
+   if (m_stream) {
+      if(bass_BG_idx != -1 && bass_STD_idx != bass_BG_idx) BASS_SetDevice(bass_BG_idx);
+
+      BASS_ChannelStop(m_stream);
+   }
+}
+
+void AudioPlayer::MusicClose()
+{
+   if (m_stream) {
+      if (bass_BG_idx != -1 && bass_STD_idx != bass_BG_idx) BASS_SetDevice(bass_BG_idx);
+
+      BASS_ChannelStop(m_stream);
+      BASS_StreamFree(m_stream);
+
+      m_stream = 0;
+   }
+}
+
+double AudioPlayer::GetMusicPosition()
+{
+   if (m_stream) {
+      if(bass_BG_idx != -1 && bass_STD_idx != bass_BG_idx) BASS_SetDevice(bass_BG_idx);
+
+      return BASS_ChannelBytes2Seconds(m_stream, BASS_ChannelGetPosition(m_stream, BASS_POS_BYTE));
+   }
+
+   return -1;
+}
+
+void AudioPlayer::SetMusicPosition(double seconds)
+{
+   if (m_stream) {
+      if(bass_BG_idx != -1 && bass_STD_idx != bass_BG_idx) BASS_SetDevice(bass_BG_idx);
+
+      BASS_ChannelSetPosition(m_stream, BASS_ChannelSeconds2Bytes(m_stream, seconds), BASS_POS_BYTE);
+   }
+}
+
+bool AudioPlayer::StreamInit(DWORD frequency, int channels, const float volume)
+{
+   if (bass_BG_idx != -1 && bass_STD_idx != bass_BG_idx) BASS_SetDevice(bass_BG_idx);
+
+   m_stream = BASS_StreamCreate( frequency, channels, 0, STREAMPROC_PUSH, 0 );
+
+   if (m_stream == 0) {
+      const int code = BASS_ErrorGetCode();
+      string message;
+      BASS_ErrorMapCode(code, message);
+      g_pvp->MessageBox(("BASS music/sound library cannot play stream (error " + std::to_string(code) + ": " + message + ')').c_str(), "Error", MB_ICONERROR);
+      return false;
+   }
+
+   BASS_ChannelSetAttribute(m_stream, BASS_ATTRIB_VOL, volume);
+   BASS_ChannelPlay(m_stream, 0);
+
+   return true;
+}
+
+void AudioPlayer::StreamUpdate(void* buffer, DWORD length) 
+{
+   if (m_stream)
+      BASS_StreamPutData(m_stream, buffer, length);
+}
+
+void AudioPlayer::StreamVolume(const float volume)
+{
+   MusicVolume(volume);
+}

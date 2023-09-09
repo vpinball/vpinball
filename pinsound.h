@@ -221,21 +221,21 @@ public:
 
 	void ClearStoppedCopiedWavs()
 	{
-	   size_t i = 0;
-	   while (i < m_copiedwav.size())
-	   {
-		  const PinDirectSoundWavCopy * const ppsc = m_copiedwav[i];
-		  DWORD status;
-		  ppsc->m_pDSBuffer->GetStatus(&status);
-		  if (!(status & DSBSTATUS_PLAYING)) // sound is done, we can throw it away now
-		  {
-			 ppsc->m_pDSBuffer->Release();
-			 m_copiedwav.erase(m_copiedwav.begin() + i);
-			 delete ppsc;
-		  }
-		  else
-			 i++;
-	   }
+		size_t i = 0;
+		while (i < m_copiedwav.size())
+		{
+			const PinDirectSoundWavCopy * const ppsc = m_copiedwav[i];
+			DWORD status;
+			ppsc->m_pDSBuffer->GetStatus(&status);
+			if (!(status & DSBSTATUS_PLAYING)) // sound is done, we can throw it away now
+			{
+				ppsc->m_pDSBuffer->Release();
+				m_copiedwav.erase(m_copiedwav.begin() + i);
+				delete ppsc;
+			}
+			else
+				i++;
+		}
 	}
 
 	void Play(PinSound * const pps, const float volume, const float randompitch, const int pitch, const float pan, const float front_rear_fade, const int loopcount, const bool usesame, const bool restart)
@@ -244,7 +244,13 @@ public:
 
 		if (!pps->IsWav())
 		{
-			pps->Play(volume, randompitch, pitch, pan, front_rear_fade, flags, restart);
+#ifdef ONLY_USE_BASS
+			if (pps->IsWav2())
+				pps->Play(volume, randompitch, pitch, pan, front_rear_fade, flags, (!usesame) ? true : restart);
+			else
+#endif
+				pps->Play(volume, randompitch, pitch, pan, front_rear_fade, flags, restart);
+
 			return;
 		}
 

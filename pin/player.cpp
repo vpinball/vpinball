@@ -6,7 +6,9 @@
 
 #include "inc/BAM/BAMView.h"
 
+#ifdef _MSC_VER
 #include "imgui/imgui_impl_win32.h"
+#endif
 
 #include <algorithm>
 #include <ctime>
@@ -18,7 +20,9 @@
 #include "typedefs3D.h"
 #include "captureExt.h"
 #include "../math/bluenoise.h"
+#ifdef _MSC_VER
 #include "../inc/winsdk/legacy_touch.h"
+#endif
 #include "inc/tinyxml2/tinyxml2.h"
 
 #if __cplusplus >= 202002L && !defined(__clang__)
@@ -1227,8 +1231,10 @@ HRESULT Player::Init()
    // Set the output frame buffer size to the size of the window output
    m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer()->SetSize(m_wnd_width, m_wnd_height);
 
+#ifdef _MSC_VER
    if (m_fullScreen)
       SetWindowPos(nullptr, 0, 0, m_wnd_width, m_wnd_height, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE);
+#endif
 
    PLOGI << "Initializing inputs & implicit objects"; // For profiling
 
@@ -1673,8 +1679,10 @@ HRESULT Player::Init()
 
    // Broadcast a message to notify front-ends that it is 
    // time to reveal the playfield. 
+#ifdef _MSC_VER
    UINT nMsgID = RegisterWindowMessage(_T("VPTableStart"));
    ::PostMessage(HWND_BROADCAST, nMsgID, NULL, NULL);
+#endif
 
    return S_OK;
 }
