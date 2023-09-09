@@ -838,37 +838,41 @@ void LiveUI::Update()
    ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
    ImGui::PushFont(m_baseFont);
 
-   if (isInteractiveUI)
+   // Display notification (except when script has an unligned rotation)
+   const U32 tick = msec();
+   float notifY = io.DisplaySize.y * 0.5f;
+   const bool showNotifications = ((float)m_rotate * 90.0f == m_player->m_ptable->mViewSetups[m_player->m_ptable->m_BG_current_set].GetRotation(m_player->m_pin3d.m_pd3dPrimaryDevice->m_width, m_player->m_pin3d.m_pd3dPrimaryDevice->m_height));
+   ImGui::PushFont(m_overlayFont);
+   for (int i = m_notifications.size() - 1; i >= 0; i--)
    {
-      // Main UI
+      if (tick > m_notifications[i].disappearTick)
+      {
+         m_notifications.erase(m_notifications.begin() + i);
+      }
+      else if (showNotifications)
+      {
+         ImFont *const font = ImGui::GetFont();
+         ImVec2 textSize = font->CalcTextSizeA(font->FontSize, FLT_MAX, 0.0f, m_notifications[i].message.c_str()) + ImVec2(30.f, 30.f);
+         constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
+         ImGui::SetNextWindowBgAlpha(0.35f);
+         ImGui::SetNextWindowPos(ImVec2((io.DisplaySize.x - textSize.x) / 2, notifY));
+         ImGui::SetNextWindowSize(textSize);
+         ImGui::Begin("Notification"s.append(std::to_string(i)).c_str(), nullptr, window_flags);
+         ImGui::Text(m_notifications[i].message.c_str());
+         ImGui::End();
+         notifY += textSize.y + 10.f;
+      }
+   }
+   ImGui::PopFont();
+
+   if (isInteractiveUI)
+   { // Main UI
       UpdateMainUI();
    }
-   else
-   {
-      // Info overlays: this is not a normal UI aligned to the monitor orientation but an overlay used when playing, 
-      // therefore it is rotated like the playfield to face the user and only displays for right angles
+   else if (m_player->m_cameraMode && showNotifications)
+   { // Camera UI
       ImGui::PushFont(m_overlayFont);
-      if ((float)m_rotate * 90.0f == m_player->m_ptable->mViewSetups[m_player->m_ptable->m_BG_current_set].GetRotation(m_player->m_pin3d.m_pd3dPrimaryDevice->m_width, m_player->m_pin3d.m_pd3dPrimaryDevice->m_height))
-      {
-         if (m_player->m_cameraMode)
-            // Camera mode info text
-            UpdateCameraModeUI();
-         else
-         {
-            // Info tooltips
-            const U64 curr_msec = msec();
-            if (m_player->m_closing == Player::CS_PLAYING && m_player->m_stereo3D != STEREO_OFF 
-               && m_player->m_stereo3D != STEREO_VR && !m_player->m_stereo3Denabled
-               && (curr_msec < m_StartTime_msec + 4000ull)) // show for max. 4 seconds
-               HelpSplash("3D Stereo is enabled but currently toggled off, press F10 to toggle 3D Stereo on", m_rotate);
-            //!! visualize with real buttons or at least the areas?? Add extra buttons?
-            else if (m_player->m_closing == Player::CS_PLAYING && m_player->m_supportsTouch && m_player->m_showTouchMessage
-               && (curr_msec < m_StartTime_msec + 12000ull)) // show for max. 12 seconds
-               HelpSplash("You can use Touch controls on this display: bottom left area to Start Game, bottom right area to use the Plunger\n"
-                          "lower left/right for Flippers, upper left/right for Magna buttons, top left for Credits and (hold) top right to Exit",
-                  m_rotate);
-         }
-      }
+      UpdateCameraModeUI();
       ImGui::PopFont();
    }
 
@@ -2164,7 +2168,7 @@ void LiveUI::UpdateAnaglyphCalibrationModal()
       CENTERED_TEXT(y + 5 * line_height, calibrationStep == 0 ? "Use Left Control to exit calibration" : "Use Left Control to move to previous step");
       CENTERED_TEXT(y + 6 * line_height, calibrationStep == 5 ? "Use Right Control to exit calibration" : "Use Right Control to move to next step");
       CENTERED_TEXT(y + 7 * line_height, "Use Left/Right Shift to adjust square brightness");
-      CENTERED_TEXT(y + 8 * line_height, "Find the equilibrium where the most bright squares change or merge");
+      CENTERED_TEXT(y + 8 * line_height, "Find the equilibrium where the most bright face change (or merge)");
       ImGui::PopFont();
       ImGui::EndPopup();
       #undef CENTERED_TEXT

@@ -18,6 +18,7 @@ public:
    bool IsOpened() const { return m_ShowUI || m_ShowSplashModal; }
    void OpenMainUI();
    void ToggleFPS();
+   void PushNotification(const string &message, const U32 lengthMs) { m_notifications.push_back(Notification(message, msec() + lengthMs)); }
 
 private:
    // Interactive Camera Mode
@@ -124,6 +125,14 @@ private:
    // Properties
    float m_properties_width = 0.0f;
    bool m_propertiesSelectLiveTab = true;
+
+   // Notifications
+   struct Notification
+   {
+      string message;
+      U32 disappearTick;
+   };
+   vector<Notification> m_notifications;
 
    // Rendering
    RenderDevice* const m_rd;
