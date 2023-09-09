@@ -2032,31 +2032,41 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
                   int glassesIndex = g_pplayer->m_stereo3D - STEREO_ANAGLYPH_1;
                   const int dir = (m_keyPressedState[eLeftFlipperKey] || m_keyPressedState[eRightFlipperKey]) ? -1 : 1;
                   if (!g_pplayer->m_stereo3Denabled && glassesIndex != 0)
+                  {
+                     g_pplayer->m_liveUI->PushNotification("Stereo enabled"s, 2000);
                      g_pplayer->m_stereo3Denabled = true;
+                  }
                   else
                   {
                      // Loop back with shift pressed
                      if (!g_pplayer->m_stereo3Denabled && glassesIndex <= 0 && dir == -1)
                      {
+                        g_pplayer->m_liveUI->PushNotification("Stereo enabled, profile #10 activated"s, 2000);
                         g_pplayer->m_stereo3Denabled = true;
                         glassesIndex = 9;
                      }
                      else if (g_pplayer->m_stereo3Denabled && glassesIndex <= 0 && dir == -1)
                      {
+                        g_pplayer->m_liveUI->PushNotification("Stereo disabled"s, 2000);
                         g_pplayer->m_stereo3Denabled = false;
                      }
                      // Loop forward
                      else if (!g_pplayer->m_stereo3Denabled)
                      {
+                        g_pplayer->m_liveUI->PushNotification("Stereo enabled, profile #1 activated"s, 2000);
                         g_pplayer->m_stereo3Denabled = true;
                      }
                      else if (glassesIndex >= 9)
                      {
+                        g_pplayer->m_liveUI->PushNotification("Stereo disabled"s, 2000);
                         glassesIndex = 0;
                         g_pplayer->m_stereo3Denabled = false;
                      }
                      else
+                     {
                         glassesIndex += dir;
+                        g_pplayer->m_liveUI->PushNotification("Stereo profile #"s.append(std::to_string(glassesIndex)).append(" activated"s), 2000);
+                     }
                      g_pplayer->m_stereo3D = (StereoMode)(STEREO_ANAGLYPH_1 + glassesIndex);
                   }
                }

@@ -1938,6 +1938,13 @@ HRESULT Player::Init()
    ::PostMessage(HWND_BROADCAST, nMsgID, NULL, NULL);
 #endif
 
+   // Popup notification on startup
+   if (m_stereo3D != STEREO_OFF && m_stereo3D != STEREO_VR && !m_stereo3Denabled)
+      m_liveUI->PushNotification("3D Stereo is enabled but currently toggled off, press F10 to toggle 3D Stereo on", 4000);
+   if (m_supportsTouch && m_showTouchMessage) //!! visualize with real buttons or at least the areas?? Add extra buttons?
+      m_liveUI->PushNotification("You can use Touch controls on this display: bottom left area to Start Game, bottom right area to use the Plunger\n"
+                                 "lower left/right for Flippers, upper left/right for Magna buttons, top left for Credits and (hold) top right to Exit", 12000);
+
    return S_OK;
 }
 
