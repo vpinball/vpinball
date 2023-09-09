@@ -997,7 +997,6 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="res\BallEnv.exr" />
     <None Include="res\Default VPinballX.ini" />
     <None Include="shader\SMAA.fxh" />
     <None Include="shader\BallShader.glfx" />
@@ -1073,6 +1072,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <Image Include="res\AOdither.bmp" />
     <Image Include="res\assign.ico" />
     <Image Include="res\backglass.ico" />
+    <Image Include="res\BallEnv.exr" />
     <Image Include="res\bumper.ico" />
     <Image Include="res\bumperbase.bmp" />
     <Image Include="res\bumperCap.bmp" />

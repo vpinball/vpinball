@@ -303,11 +303,11 @@
       <Filter>dialogs</Filter>
     </ClCompile>
     <ClCompile Include="bulb.cpp" />
-    <ClCompile Include="inc\BAM\BAMView.cpp">
-      <Filter>inc\BAM</Filter>
-    </ClCompile>
     <ClCompile Include="inc\tinyxml2\tinyxml2.cpp">
       <Filter>inc\tinyxml2</Filter>
+    </ClCompile>
+    <ClCompile Include="inc\BAM\BAMView.cpp">
+      <Filter>inc\BAM</Filter>
     </ClCompile>
     <ClCompile Include="LiveUI.cpp" />
     <ClCompile Include="imgui\imgui_stdlib.cpp">
@@ -760,7 +760,12 @@
     <None Include="shader\SMAA.hlsl">
       <Filter>shaders</Filter>
     </None>
-    <None Include="res\Default VPinballX.ini" />
+    <None Include="res\Default VPinballX.ini">
+      <Filter>res</Filter>
+    </None>
+    <None Include="shader\Stereo.fxh">
+      <Filter>shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="inc">
@@ -1641,6 +1646,9 @@
     <ClInclude Include="bulb.h">
       <Filter>headers</Filter>
     </ClInclude>
+    <ClInclude Include="inc\tinyxml2\tinyxml2.h">
+      <Filter>inc\tinyxml2</Filter>
+    </ClInclude>
     <ClInclude Include="inc\BAM\BAM_Tracker.h">
       <Filter>inc\BAM</Filter>
     </ClInclude>
@@ -1649,9 +1657,6 @@
     </ClInclude>
     <ClInclude Include="inc\BAM\BAMView.h">
       <Filter>inc\BAM</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\tinyxml2\tinyxml2.h">
-      <Filter>inc\tinyxml2</Filter>
     </ClInclude>
     <ClInclude Include="LiveUI.h">
       <Filter>headers</Filter>
@@ -1692,6 +1697,9 @@
       <Filter>shaders</Filter>
     </FxCompile>
     <FxCompile Include="shader\ClassicLightShader.hlsl">
+      <Filter>shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\StereoShader.hlsl">
       <Filter>shaders</Filter>
     </FxCompile>
   </ItemGroup>

@@ -833,7 +833,11 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="LiveUI.cpp" />
     <ClCompile Include="math\math.cpp" />
     <ClCompile Include="MemoryStatus.cpp" />
+    <ClCompile Include="RenderCommand.cpp" />
+    <ClCompile Include="RenderFrame.cpp" />
+    <ClCompile Include="RenderPass.cpp" />
     <ClCompile Include="RenderProbe.cpp" />
+    <ClCompile Include="RenderState.cpp" />
     <ClCompile Include="RenderTarget.cpp" />
     <ClCompile Include="rubber.cpp" />
     <ClCompile Include="hash.cpp" />
@@ -886,10 +890,6 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="ramp.cpp" />
     <ClCompile Include="regutil.cpp" />
     <ClCompile Include="RenderDevice.cpp" />
-    <ClCompile Include="RenderCommand.cpp" />
-    <ClCompile Include="RenderFrame.cpp" />
-    <ClCompile Include="RenderPass.cpp" />
-    <ClCompile Include="RenderState.cpp" />
     <ClCompile Include="Sampler.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="slintf.cpp" />
@@ -992,6 +992,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <None Include="shader\Material_GL.fxh" />
     <None Include="shader\SMAA.glfx" />
     <None Include="shader\SSR_GL.fxh" />
+    <None Include="shader\Stereo.fxh" />
     <None Include="shader\StereoShader.glfx" />
     <None Include="res\ball.rgs" />
     <None Include="res\blankTable.vpx" />
@@ -1378,8 +1379,8 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="RenderDevice.h" />
     <ClInclude Include="RenderFrame.h" />
     <ClInclude Include="RenderPass.h" />
-    <ClInclude Include="RenderState.h" />
     <ClInclude Include="RenderProbe.h" />
+    <ClInclude Include="RenderState.h" />
     <ClInclude Include="RenderTarget.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="rubber.h" />
@@ -1734,6 +1735,60 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_GL|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_GL|x64'">true</ExcludedFromBuild>
     </FxCompile>
+    <FxCompile Include="shader\StereoShader.hlsl">
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">shader\%(Filename).h</HeaderFileOutput>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release_GL|Win32'">shader\%(Filename).h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release_GL|Win32'">
+      </ObjectFileOutput>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">stereoShaderCode</EntryPointName>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release_GL|Win32'">stereoShaderCode</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Effect</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release_GL|Win32'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">2.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release_GL|Win32'">2.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Effect</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug_GL|Win32'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">2.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug_GL|Win32'">2.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug_GL|Win32'">
+      </ObjectFileOutput>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">stereoShaderCode</EntryPointName>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug_GL|Win32'">stereoShaderCode</EntryPointName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">shader\%(Filename).h</HeaderFileOutput>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug_GL|Win32'">shader\%(Filename).h</HeaderFileOutput>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">stereoShaderCode</EntryPointName>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug_GL|x64'">stereoShaderCode</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Effect</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug_GL|x64'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">2.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug_GL|x64'">2.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">stereoShaderCode</EntryPointName>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release_GL|x64'">stereoShaderCode</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Effect</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release_GL|x64'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">2.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release_GL|x64'">2.0</ShaderModel>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">shader\%(Filename).h</HeaderFileOutput>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug_GL|x64'">shader\%(Filename).h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug_GL|x64'">
+      </ObjectFileOutput>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">shader\%(Filename).h</HeaderFileOutput>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release_GL|x64'">shader\%(Filename).h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release_GL|x64'">
+      </ObjectFileOutput>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_GL|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_GL|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_GL|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_GL|x64'">true</ExcludedFromBuild>
+    </FxCompile>
     <FxCompile Include="shader\ClassicLightShader.hlsl">
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">shader\%(Filename).h</HeaderFileOutput>
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release_GL|Win32'">shader\%(Filename).h</HeaderFileOutput>
@@ -1755,19 +1810,10 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       </ObjectFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug_GL|Win32'">
       </ObjectFileOutput>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_GL|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_GL|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">true</ExcludedFromBuild>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">classicLightShaderCode</EntryPointName>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug_GL|Win32'">classicLightShaderCode</EntryPointName>
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">shader\%(Filename).h</HeaderFileOutput>
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug_GL|Win32'">shader\%(Filename).h</HeaderFileOutput>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_GL|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_GL|x64'">true</ExcludedFromBuild>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">classicLightShaderCode</EntryPointName>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug_GL|x64'">classicLightShaderCode</EntryPointName>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Effect</ShaderType>
@@ -1792,6 +1838,11 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       </ObjectFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release_GL|x64'">
       </ObjectFileOutput>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_GL|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_GL|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_GL|x64'">true</ExcludedFromBuild>

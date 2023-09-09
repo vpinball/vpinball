@@ -380,6 +380,9 @@
     <Image Include="res\AOdither.bmp">
       <Filter>res</Filter>
     </Image>
+    <Image Include="res\BallEnv.exr">
+      <Filter>res</Filter>
+    </Image>
     <Image Include="res\chevron.bmp">
       <Filter>res</Filter>
     </Image>
@@ -758,9 +761,6 @@
       <Filter>shaders</Filter>
     </None>
     <None Include="res\Default VPinballX.ini">
-      <Filter>res</Filter>
-    </None>
-    <None Include="res\BallEnv.exr">
       <Filter>res</Filter>
     </None>
     <None Include="shader\Stereo.fxh">
