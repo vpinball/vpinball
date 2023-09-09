@@ -799,6 +799,13 @@ void LiveUI::ToggleFPS()
       m_player->InitFPS();
 }
 
+void LiveUI::ResetCameraFromPlayer()
+{
+   // Try to setup editor camera to match the used one, but only mostly since the LiveUI does not have some view setup features like off-center, ...
+   m_camView = Matrix3D::MatrixScale(1.f, 1.f, -1.f) * m_pin3d->GetMVP().GetView() * Matrix3D::MatrixScale(1.f, -1.f, 1.f);
+}
+
+
 void LiveUI::Update()
 {
    // For the time being, the UI is only available inside a running player
@@ -1303,8 +1310,9 @@ void LiveUI::UpdateMainUI()
    if (!ImGui::GetIO().WantCaptureMouse)
    {
       // Zoom in/out with mouse wheel
-      if (m_useEditorCam && ImGui::GetIO().MouseWheel != 0)
+      if (ImGui::GetIO().MouseWheel != 0)
       {
+         m_useEditorCam = true;
          Matrix3D view(m_camView);
          view.Invert();
          const vec3 up = view.GetOrthoNormalUp(), dir = view.GetOrthoNormalDir(), pos = view.GetOrthoNormalPos();
@@ -1315,17 +1323,17 @@ void LiveUI::UpdateMainUI()
       }
 
       // Pan mouse
-      if (m_useEditorCam && ImGui::IsMouseDown(ImGuiMouseButton_Middle))
+      if (ImGui::IsMouseDown(ImGuiMouseButton_Middle))
       {
          const ImVec2 drag = ImGui::GetMouseDragDelta(ImGuiMouseButton_Middle);
          ImGui::ResetMouseDragDelta(ImGuiMouseButton_Middle);
-         m_useEditorCam = true;
          Matrix3D view(m_camView);
          view.Invert();
          const vec3 right = view.GetOrthoNormalRight(), up = view.GetOrthoNormalUp(), dir = view.GetOrthoNormalDir(), pos = view.GetOrthoNormalPos();
          vec3 camTarget = pos - dir * m_camDistance;
          if (ImGui::GetIO().KeyShift)
          {
+            m_useEditorCam = true;
             camTarget = camTarget - right * drag.x + up * drag.y;
             m_camView.SetLookAtRH(pos - right * drag.x + up * drag.y, camTarget, up);
          }
@@ -1397,6 +1405,13 @@ void LiveUI::UpdateMainUI()
                m_gizmoOperation = ImGuizmo::ROTATE;
                m_gizmoMode = m_gizmoOperation == ImGuizmo::ROTATE ? (m_gizmoMode == ImGuizmo::LOCAL ? ImGuizmo::WORLD : ImGuizmo::LOCAL) : ImGuizmo::WORLD;
             }
+         }
+         else if (ImGui::IsKeyPressed(ImGuiKey_Keypad0))
+         {
+            // Editor toggle play camera / editor camera
+            m_useEditorCam = !m_useEditorCam;
+            if (m_useEditorCam)
+               ResetCameraFromPlayer();
          }
          else if (ImGui::IsKeyPressed(ImGuiKey_Keypad5))
          {
@@ -2391,8 +2406,7 @@ void LiveUI::UpdateMainSplashModal()
          m_ShowSplashModal = false;
          m_useEditorCam = false;
          m_orthoCam = false;
-         // Try to setup editor camera to match the used one, but only mostly since the LiveUI does not have some view setup features like off-center, ...
-         m_camView = Matrix3D::MatrixScale(1.f, 1.f, -1.f) * m_pin3d->GetMVP().GetView() * Matrix3D::MatrixScale(1.f, -1.f, 1.f);
+         ResetCameraFromPlayer();
          EnterEditMode();
       }
       // Quit: click on the button, or press exit button
