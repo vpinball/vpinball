@@ -73,6 +73,7 @@ private:
    void PausePlayer(bool pause);
    void EnterEditMode();
    void ExitEditMode();
+   void ResetCameraFromPlayer();
 
    // UI Context
    VPinball *m_app;
