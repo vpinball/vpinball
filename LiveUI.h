@@ -130,8 +130,9 @@ private:
    // Notifications
    struct Notification
    {
-      const string message;
-      const U32 disappearTick;
+      string message;
+      U32 disappearTick;
+      Notification() {}
       Notification(const string& msg, const U32 tick)  : message(msg), disappearTick(tick) {}
    };
    vector<Notification> m_notifications;
