@@ -1030,14 +1030,20 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
          // Export POV file
          string szPOVFilename = g_pplayer->m_ptable->m_szFileName;
          if (ReplaceExtensionFromFilename(szPOVFilename, "pov"s))
+         {
             g_pplayer->m_ptable->ExportBackdropPOV(szPOVFilename);
+            g_pplayer->m_liveUI->PushNotification("POV exported to "s.append(szPOVFilename), 5000);
+         }
+         else
+            g_pplayer->m_liveUI->PushNotification("Failed to export POV"s, 12000);
          if (g_pvp->m_povEdit)
             g_pvp->QuitPlayer(Player::CloseState::CS_CLOSE_APP);
       }
       else if (keycode == g_pplayer->m_rgKeys[ePlungerKey])
       {
          // Reset to default values
-         PinTable* const table = g_pplayer->m_ptable;
+         g_pplayer->m_liveUI->PushNotification("POV reseted to default values"s, 5000);
+         PinTable *const table = g_pplayer->m_ptable;
          ViewSetupID id = table->m_BG_current_set;
          ViewSetup &viewSetup = table->mViewSetups[id];
          viewSetup.mViewportRotation = 0.f;
@@ -1101,6 +1107,7 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
          else
          {
             // Reset POV: copy from startup table to the live one
+            g_pplayer->m_liveUI->PushNotification("POV reseted to startup values"s, 5000);
             ViewSetupID id = g_pplayer->m_ptable->m_BG_current_set;
             const PinTable * const __restrict src = g_pplayer->m_pEditorTable;
             PinTable * const __restrict dst = g_pplayer->m_ptable;
