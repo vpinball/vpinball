@@ -1954,7 +1954,7 @@ void LiveUI::UpdateVideoOptionsModal()
                if (m_player->m_stereo3DfakeStereo)
                {
                   float stereo3DEyeSep = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DMaxSeparation"s, 0.03f);
-                  if (ImGui::InputFloat("Max Separation", &stereo3DEyeSep), 0.001f, 0.01f, "%.3f")
+                  if (ImGui::InputFloat("Max Separation", &stereo3DEyeSep, 0.001f, 0.01f, "%.3f"))
                      SaveValue(regKey[RegName::Player], "Stereo3DMaxSeparation"s, (float)stereo3DEyeSep);
                   bool stereo3DY = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DYAxis"s, false);
                   if (ImGui::Checkbox("Use Y axis", &stereo3DY))
@@ -1963,7 +1963,7 @@ void LiveUI::UpdateVideoOptionsModal()
                else
                {
                   int stereo3DEyeSep = (int)LoadValueWithDefault(regKey[RegName::Player], "Stereo3DEyeSeparation"s, 63.0f);
-                  if (ImGui::InputInt("Eye Separation (mm)", &stereo3DEyeSep), 1, 5)
+                  if (ImGui::InputInt("Eye Separation (mm)", &stereo3DEyeSep, 1, 5))
                      SaveValue(regKey[RegName::Player], "Stereo3DEyeSeparation"s, (float)stereo3DEyeSep);
                }
             }

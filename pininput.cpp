@@ -1093,7 +1093,9 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
             viewSetup.mViewVOfs = LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetViewVOfs"s, 0.f);
             break;
          }
-         case BG_INVALID: assert(false); break;
+         case BG_INVALID:
+         case NUM_BG_SETS:
+            assert(false); break;
          }
          g_pplayer->m_pin3d.m_cam.x = 0.f;
          g_pplayer->m_pin3d.m_cam.y = 0.f;
