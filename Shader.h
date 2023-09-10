@@ -128,6 +128,7 @@ enum ShaderTechniques
    SHADER_TECHNIQUE(stereo_Flipped_Int),
    SHADER_TECHNIQUE(Stereo_LinearAnaglyph),
    SHADER_TECHNIQUE(Stereo_DeghostAnaglyph),
+   SHADER_TECHNIQUE(Stereo_DynDesatAnaglyph),
    SHADER_TECHNIQUE(irradiance),
    SHADER_TECHNIQUE_COUNT,
    SHADER_TECHNIQUE_INVALID
@@ -272,6 +273,8 @@ enum ShaderUniforms
    SHADER_UNIFORM(SUT_Float4x4, Stereo_RightMat, 1), // Anaglyph Stereo
    SHADER_UNIFORM(SUT_Float4, Stereo_DeghostGamma, 1), // Anaglyph Stereo
    SHADER_UNIFORM(SUT_Float4x4, Stereo_DeghostFilter, 1), // Anaglyph Stereo
+   SHADER_UNIFORM(SUT_Float4, Stereo_LeftLuminance, 1), // Anaglyph Stereo
+   SHADER_UNIFORM(SUT_Float4, Stereo_RightLuminance, 1), // Anaglyph Stereo
 
    SHADER_UNIFORM_COUNT,
    SHADER_UNIFORM_INVALID

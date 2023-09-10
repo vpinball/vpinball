@@ -80,12 +80,35 @@ void gatherLeftRightColors(float2 u, out float3 lcol, out float3 rcol)
 UNIFORM float4x4 Stereo_LeftMat;
 UNIFORM float4x4 Stereo_RightMat;
 
+// Perform dynamic desaturation based on filter colors for limited retinal rivalry
+// I did find quite a lot of papers regarding reducing ghosting but nearly nothing regarding limiting retinal rivalry in real time.
+// So I designed this little trick: retinal rivalry happens when something is seen by one eye and not the other. In turn,
+// this happens when a color passes through only one of the eye filter (for example full saturated red, 100% passing through left 
+// and 0% through right). The trick is to desaturate this color in order to have it pass through both filters (at least a little to 
+// satisfy the viewer brain and allow it to merge the 2 images, solving the retinal rivalry). This is done dynamically based on the
+// perceived luminance difference (obtained through the filter calibration) to limit the desaturation color lost.
+// lCol/rCol are expected to be in sRGB color space
+UNIFORM float4 Stereo_LeftLuminance;
+UNIFORM float4 Stereo_RightLuminance;
+void DynamicDesatAnaglyph(const float3 lCol, const float3 rCol, out float3 lDesatCol, out float3 rDesatCol)
+{
+	float leftLum  = dot(lCol, Stereo_LeftLuminance.xyz);
+	float rightLum = dot(rCol, Stereo_RightLuminance.xyz);
+    float desat = pow(abs(leftLum - rightLum), 0.5);
+    #ifdef GLSL
+	lDesatCol = lerp(lCol, float3(Luminance(lCol)), desat);
+	rDesatCol = lerp(rCol, float3(Luminance(rCol)), desat);
+    #else
+    lDesatCol = lerp(lCol,        Luminance(lCol) , desat);
+    rDesatCol = lerp(rCol,        Luminance(rCol) , desat);
+    #endif
+}
+
 // Compose anaglyph linearly from stereo colors
 // see naive filters (full channel filter)
 // see https://www.site.uottawa.ca/~edubois/anaglyph/
 // see https://www.visus.uni-stuttgart.de/en/research/computer-graphics/anaglyph-stereo/anaglyph-stereo-without-ghosting/
 // lCol/rCol are expected to be in sRGB color space
-
 float3 LinearAnaglyph(const float3 lCol, const float3 rCol)
 {
     const float3 color = (mul(float4(lCol, 1.), Stereo_LeftMat) + mul(float4(rCol, 1.), Stereo_RightMat)).rgb;
@@ -96,10 +119,8 @@ float3 LinearAnaglyph(const float3 lCol, const float3 rCol)
 // Compose anaglyph by applying John Einselen's contrast and deghosting method
 // see http://iaian7.com/quartz/AnaglyphCompositing & vectorform.com
 // lCol/rCol are expected to be in sRGB color space
-
 UNIFORM float4 Stereo_DeghostGamma; // Gamma adjustment (depending on glasses)
 UNIFORM float4x4 Stereo_DeghostFilter; // Cross eye deghosting filter (depending on glasses)
-
 float3 DeghostAnaglyph(const float3 lCol, const float3 rCol)
 {
     const float3 color = (mul(float4(lCol, 1.), Stereo_LeftMat) + mul(float4(rCol, 1.), Stereo_RightMat)).rgb;

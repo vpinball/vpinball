@@ -1097,7 +1097,7 @@ bool Player::UpdateStereoShaderState(const bool fitRequired)
 
       // Glasses settings
       const int glasses = clamp(m_stereo3D - STEREO_ANAGLYPH_1 + 1, 1, 10);
-      const int filter = LoadValueWithDefault(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glasses)).append("Filter"s), 0);
+      const int filter = LoadValueWithDefault(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glasses)).append("Filter"s), 4);
       const vec3 defaultColors[] = {
          /* RC */ vec3(0.95f, 0.19f, 0.07f), vec3(0.06f, 0.92f, 0.28f),
          /* GM */ vec3(0.06f, 0.96f, 0.09f), vec3(0.61f, 0.16f, 0.66f),
@@ -1182,7 +1182,7 @@ bool Player::UpdateStereoShaderState(const bool fitRequired)
       const enum AnaglypColors {RED_CYAN, GREEN_MAGENTA, BLUE_AMBER} colors = (monoFilter.x > monoFilter.y && monoFilter.x > monoFilter.z) ? RED_CYAN : (monoFilter.y > monoFilter.z) ? GREEN_MAGENTA : BLUE_AMBER;
       
       Matrix3D left, right;
-      if (filter == 0)
+      if (filter == 3 || filter == 4)
       {
          // Compose anaglyph base on measured luminance of display/filter/user by calibration
          // see https://www.visus.uni-stuttgart.de/en/research/computer-graphics/anaglyph-stereo/anaglyph-stereo-without-ghosting/
@@ -1213,8 +1213,10 @@ bool Player::UpdateStereoShaderState(const bool fitRequired)
          const Matrix3D matRight2YYC(0.f, 0.f, 0.f, 0.f, /**/ rightLuminance.x, rightLuminance.y, rightLuminance.z, 0.f, /**/ chromacity.x, chromacity.y, chromacity.z, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
          left = matYYC2RGB * matLeft2YYC;
          right = matYYC2RGB * matRight2YYC;
+         m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetVector(SHADER_Stereo_LeftLuminance,  leftLuminance.x,  leftLuminance.y,  leftLuminance.z, 0.00f);
+         m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetVector(SHADER_Stereo_RightLuminance, rightLuminance.x, rightLuminance.y, rightLuminance.z, 0.00f);
       }
-      else if (filter == 1)
+      else if (filter == 2)
       {
          // Compose anaglyph by applying John Einselen's contrast and deghosting method
          // see http://iaian7.com/quartz/AnaglyphCompositing & vectorform.com
@@ -1253,7 +1255,7 @@ bool Player::UpdateStereoShaderState(const bool fitRequired)
          deghost.Transpose();
          m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetMatrix(SHADER_Stereo_DeghostFilter, &deghost);
       }
-      else if (filter == 2)
+      else if (filter == 1)
       {
          // Compose anaglyph by applying Dubois filter (pre-fitted filters on theoretical display / glasses / viewer set)
          // see https://www.site.uottawa.ca/~edubois/anaglyph/
@@ -1273,7 +1275,7 @@ bool Player::UpdateStereoShaderState(const bool fitRequired)
             right = Matrix3D(-0.016f, -0.123f, -0.017f, 0.f, /**/ 0.006f, 0.062f, -0.017f, 0.f, /**/  0.094f,  0.185f, 0.911f, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
          }
       }
-      else if (filter == 3)
+      else if (filter == 0)
       {
          // Basic anaglyph supposing a perfect display / filter / viewer set
          if (colors == RED_CYAN)
@@ -3663,8 +3665,10 @@ void Player::StereoFXAA(RenderTarget* renderedRT, const bool stereo, const bool 
          if (IsAnaglyphStereoMode(m_stereo3D))
          {
             const int glasses = clamp(m_stereo3D - STEREO_ANAGLYPH_1 + 1, 1, 10);
-            const int filter = LoadValueWithDefault(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glasses)).append("Filter"s), 0);
-            m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetTechnique(filter == 1 ? SHADER_TECHNIQUE_Stereo_DeghostAnaglyph : SHADER_TECHNIQUE_Stereo_LinearAnaglyph);
+            const int filter = LoadValueWithDefault(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glasses)).append("Filter"s), 4);
+            m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetTechnique(filter == 4 ? SHADER_TECHNIQUE_Stereo_DynDesatAnaglyph 
+                                                                  : filter == 2 ? SHADER_TECHNIQUE_Stereo_DeghostAnaglyph 
+                                                                                : SHADER_TECHNIQUE_Stereo_LinearAnaglyph);
          }
          else
          {

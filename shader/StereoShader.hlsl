@@ -84,6 +84,15 @@ float4 ps_main_stereo_deghost_anaglyph(const in VS_OUTPUT_2D IN) : COLOR
     return float4(DeghostAnaglyph(lCol, rCol), 1.0);
 }
 
+float4 ps_main_stereo_dyndesat_anaglyph(const in VS_OUTPUT_2D IN) : COLOR
+{
+    float3 lCol, rCol, lColDesat, rColDesat;
+    gatherLeftRightColors(IN.tex0, lCol, rCol);
+    DynamicDesatAnaglyph(lCol, rCol, lColDesat, rColDesat);
+    return float4(LinearAnaglyph(lColDesat, rColDesat), 1.0);
+}
+
+
 
 ////TECHNIQUES
 
@@ -93,3 +102,4 @@ technique stereo_Int { pass P0 { VertexShader = compile vs_3_0 vs_main_no_trafo(
 technique stereo_Flipped_Int { pass P0 { VertexShader = compile vs_3_0 vs_main_no_trafo(); PixelShader = compile ps_3_0 ps_main_flipped_int(); } }
 technique Stereo_LinearAnaglyph { pass P0 { VertexShader = compile vs_3_0 vs_main_no_trafo(); PixelShader = compile ps_3_0 ps_main_stereo_linear_anaglyph(); } }
 technique Stereo_DeghostAnaglyph { pass P0 { VertexShader = compile vs_3_0 vs_main_no_trafo(); PixelShader = compile ps_3_0 ps_main_stereo_deghost_anaglyph(); } }
+technique Stereo_DynDesatAnaglyph { pass P0 { VertexShader = compile vs_3_0 vs_main_no_trafo(); PixelShader = compile ps_3_0 ps_main_stereo_dyndesat_anaglyph(); } }
