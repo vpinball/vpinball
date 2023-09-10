@@ -171,17 +171,19 @@ float3 DoEnvmap2ndLayer(const float3 color1stLayer, const float3 pos, const floa
 
 // ////////////////////////////////////////////////////////////////////////////
 // Apply lighting from the environment and the 2 scene lights
-// - Lighting is not fully PBR since the specualr, glossy and diffuse are added without limiting the energy between layers to the one not reflected by the previous layer.
-// - Apply the 2 points lights to the diffuse (Lambert with rim/wrap) and glossy (Ashikhmin/Blinn) components, clearcoat (a.k.a. specular) is not applied.
-//   Light energy is tweaked in order to have ranged lights instead of the physical 1/d² energy
-//   These lighting can be 'disabled' in fact replacing it by the 2 times the diffuse color (backward compatibility bug)
-// - Apply the environment lighting with diffuse, glossy and cleacoat (named specular) layers.
-//   Glossy is performed with a somewhat crude approximation for the BRDF and for the roughness parameter.
-// - Backside (normal pointing away) is lighted as well as front facing (needed since quite a lot of tables have wrong normal, or for transparents with 2 pass rendering)
+// - Lighting is kinda PBR since glossy and diffuse are normalized, and the 2nd layer (specular/clearcoat) is 'blended' via Fresnel
+// - Apply the 2 points lights to the diffuse (Lambert with optional rim/wrap) and glossy (Ashikhmin/Blinn) components, clearcoat (a.k.a. specular) is not applied (as point lights).
+//   Light energy can be tweaked in order to have ranged lights instead of the physical 1/d² energy
+//   This lighting can be 'disabled', in fact replacing it by 2 times the diffuse color (backwards compatibility bug)
+// - Apply the environment lighting with diffuse, glossy and a specular/clearcoat layer
+//   Diffuse is applied via a precomputed/'filtered' version of the envmap.
+//   Glossy is performed with a very crude approximation of the BRDF and the roughness parameter (simple mip-mapping of the envmap).
+//   Specular just does a plain lookup in the envmap.
+// - Backside (normal pointing away) is lighted as well as front facing (needed since quite a lot of tables feature wrong normals, or for transparents with 2 pass rendering)
 float3 lightLoop(const float3 pos, float3 N, const float3 V, float3 diffuse, float3 glossy, const float3 specular, const float edge, const bool is_metal) // input vectors (N,V) are normalized for BRDF evals
 {
    float3 color = float3(0.0, 0.0, 0.0);
-   
+
    float NdotV = dot(N,V);
    if (NdotV < 0.0)
    {
@@ -217,8 +219,8 @@ float3 lightLoop(const float3 pos, float3 N, const float3 V, float3 diffuse, flo
 
    // Environment IBL
    BRANCH if (!is_metal && (diffuseMax > 0.0))
-	  // trafo back to world for lookup into world space envmap // actually: mul(float4(N,0.0), matViewInverseInverseTranspose), but optimized to save one matrix
-	  // matView is always an orthonormal matrix, so no need to normalize after transform
+      // trafo back to world for lookup into world space envmap // actually: mul(float4(N,0.0), matViewInverseInverseTranspose), but optimized to save one matrix
+      // matView is always an orthonormal matrix, so no need to normalize after transform
       color += DoEnvmapDiffuse(/*normalize*/(mul(matView, N).xyz), diffuse); // actually: mul(float4(N,0.0), matViewInverseInverseTranspose), but optimized to save one matrix
    BRANCH if ((glossyMax > 0.0) || (specularMax > 0.0))
    {
