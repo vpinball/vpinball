@@ -326,7 +326,7 @@ float4 ps_main(const in VS_NOTEX_OUTPUT IN, float2 screenSpace : VPOS, uniform b
    const float3 V = normalize( /*camera=0,0,0,1*/-IN.worldPos); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
    const float3 N = normalize(IN.normal);
 
-   float4 color = float4(lightLoop(IN.worldPos.xyz, N, V, diffuse, glossy, specular, edge, true, is_metal), cBase_Alpha.a);
+   float4 color = float4(lightLoop(IN.worldPos.xyz, N, V, diffuse, glossy, specular, edge, is_metal), cBase_Alpha.a);
 
    BRANCH if (color.a < 1.0)
    {
@@ -377,7 +377,7 @@ float4 ps_main_texture(const in VS_OUTPUT IN, float2 screenSpace : VPOS, uniform
    BRANCH if (doNormalMapping)
       N = normal_map(N, V, IN.tex0);
    
-   float4 color = float4(lightLoop(IN.worldPos, N, V, diffuse, glossy, specular, edge, !doNormalMapping, is_metal), pixel.a);
+   float4 color = float4(lightLoop(IN.worldPos, N, V, diffuse, glossy, specular, edge, is_metal), pixel.a);
 
    BRANCH if (color.a < 1.0) // We may not opacify if we already are opaque
    {
