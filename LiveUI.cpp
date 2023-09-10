@@ -2016,8 +2016,8 @@ void LiveUI::UpdateVideoOptionsModal()
                }
                if (ImGui::InputText("Name", &name[glassesIndex]))
                   SaveValue(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glassesIndex + 1)).append("Name"s), name[glassesIndex]);
-               const char *filter_items[] = { "Luminance", "Deghost", "Dubois", "None" };
-               int anaglyphFilter = LoadValueWithDefault(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glassesIndex + 1)).append("Filter"s), 0);
+               const char *filter_items[] = { "None", "Dubois", "Deghost", "Luminance", "Dyn. Desat.", };
+               int anaglyphFilter = LoadValueWithDefault(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glassesIndex + 1)).append("Filter"s), 4);
                if (ImGui::Combo("Filter", &anaglyphFilter, filter_items, IM_ARRAYSIZE(filter_items)))
                   SaveValue(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glassesIndex + 1)).append("Filter"s), anaglyphFilter);
                // Global anaglyph settings

@@ -520,10 +520,11 @@ BOOL VideoOptionsDialog::OnInitDialog()
 
    hwnd = GetDlgItem(IDC_3D_STEREO_ANAGLYPH_FILTER).GetHwnd();
    SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Luminance");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Deghost");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Dubois");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "None");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Dubois");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Deghost");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Luminance");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Dyn. Desat.");
    SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 
    OnCommand(IDC_3D_STEREO, 0L); // Force UI update
@@ -881,7 +882,7 @@ BOOL VideoOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             GetDlgItem(IDC_3D_STEREO_DESATURATION).EnableWindow(true);
             GetDlgItem(IDC_3D_STEREO_ANAGLYPH_FILTER).EnableWindow(true);
             int glassesIndex = stereo3D - STEREO_ANAGLYPH_1;
-            int anaglyphFilter = LoadValueWithDefault(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glassesIndex + 1)).append("Filter"s), 0);
+            int anaglyphFilter = LoadValueWithDefault(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glassesIndex + 1)).append("Filter"s), 4);
             SendMessage(GetDlgItem(IDC_3D_STEREO_ANAGLYPH_FILTER), CB_SETCURSEL, anaglyphFilter, 0);
          }
       }
@@ -1045,7 +1046,7 @@ void VideoOptionsDialog::OnOK()
       int glassesIndex = stereo3D - STEREO_ANAGLYPH_1;
       LRESULT anaglyphFilter = SendMessage(GetDlgItem(IDC_3D_STEREO_ANAGLYPH_FILTER).GetHwnd(), CB_GETCURSEL, 0, 0);
       if (anaglyphFilter == LB_ERR)
-         anaglyphFilter = 0;
+         anaglyphFilter = 4;
       SaveValue(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glassesIndex + 1)).append("Filter"s), (int) anaglyphFilter);
    }
 

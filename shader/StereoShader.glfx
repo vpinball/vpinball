@@ -77,6 +77,16 @@ void main()
 }
 
 
+////ps_main_stereo_dyndesat_anaglyph
+void main()
+{
+   float3 lCol, rCol, lColDesat, rColDesat;
+   gatherLeftRightColors(tex0, lCol, rCol);
+   DynamicDesatAnaglyph(lCol, rCol, lColDesat, rColDesat);
+   color = float4(LinearAnaglyph(lColDesat, rColDesat), 1.0);
+}
+
+
 ////TECHNIQUES
 
 stereo_SBS:P0:vs_main_no_trafo():ps_main_sbs()
@@ -85,3 +95,4 @@ stereo_Int:P0:vs_main_no_trafo():ps_main_int()
 stereo_Flipped_Int:P0:vs_main_no_trafo():ps_main_flipped_int()
 Stereo_LinearAnaglyph:P0:vs_main_no_trafo():ps_main_stereo_linear_anaglyph()
 Stereo_DeghostAnaglyph:P0:vs_main_no_trafo():ps_main_stereo_deghost_anaglyph()
+Stereo_DynDesatAnaglyph:P0:vs_main_no_trafo():ps_main_stereo_dyndesat_anaglyph()
