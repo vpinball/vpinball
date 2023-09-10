@@ -94,7 +94,8 @@ void DynamicDesatAnaglyph(const float3 lCol, const float3 rCol, out float3 lDesa
 {
 	float leftLum  = dot(lCol, Stereo_LeftLuminance.xyz);
 	float rightLum = dot(rCol, Stereo_RightLuminance.xyz);
-    float desat = pow(abs(leftLum - rightLum), 0.5);
+    // float desat = pow(abs(leftLum - rightLum), 0.5); // less retinal rivalry and ghosting at the price of less colors
+    float desat = abs(leftLum - rightLum);
     #ifdef GLSL
 	lDesatCol = lerp(lCol, float3(Luminance(lCol)), desat);
 	rDesatCol = lerp(rCol, float3(Luminance(rCol)), desat);
