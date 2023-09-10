@@ -2021,16 +2021,16 @@ void LiveUI::UpdateVideoOptionsModal()
                if (ImGui::Combo("Filter", &anaglyphFilter, filter_items, IM_ARRAYSIZE(filter_items)))
                   SaveValue(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glassesIndex + 1)).append("Filter"s), anaglyphFilter);
                // Global anaglyph settings
-               float anaglyphSaturation = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DSaturation"s, 63.0f);
+               float anaglyphSaturation = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DSaturation"s, 1.f);
                if (ImGui::InputFloat("Saturation", &anaglyphSaturation, 0.01f, 0.1f))
                   SaveValue(regKey[RegName::Player], "Stereo3DSaturation"s, anaglyphSaturation);
-               float anaglyphBrightness = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DBrightness"s, 63.0f);
+               float anaglyphBrightness = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DBrightness"s, 1.f);
                if (ImGui::InputFloat("Brightness", &anaglyphBrightness, 0.01f, 0.1f))
                   SaveValue(regKey[RegName::Player], "Stereo3DBrightness"s, anaglyphBrightness);
-               float anaglyphLeftEyeContrast = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DLeftContrast"s, 63.0f);
+               float anaglyphLeftEyeContrast = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DLeftContrast"s, 1.f);
                if (ImGui::InputFloat("Left Eye Contrast", &anaglyphLeftEyeContrast, 0.01f, 0.1f))
                   SaveValue(regKey[RegName::Player], "Stereo3DLeftContrast"s, anaglyphLeftEyeContrast);
-               float anaglyphRightEyeContrast = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DRightContrast"s, 63.0f);
+               float anaglyphRightEyeContrast = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DRightContrast"s, 1.f);
                if (ImGui::InputFloat("Right Eye Contrast", &anaglyphRightEyeContrast, 0.01f, 0.1f))
                   SaveValue(regKey[RegName::Player], "Stereo3DRightContrast"s, anaglyphRightEyeContrast);
             }
@@ -2183,8 +2183,8 @@ void LiveUI::UpdateAnaglyphCalibrationModal()
       CENTERED_TEXT(y + 3 * line_height, calibrationStep < 3 ? "Close your right eye" : "Close your left eye");
       CENTERED_TEXT(y + 5 * line_height, calibrationStep == 0 ? "Use Left Control to exit calibration" : "Use Left Control to move to previous step");
       CENTERED_TEXT(y + 6 * line_height, calibrationStep == 5 ? "Use Right Control to exit calibration" : "Use Right Control to move to next step");
-      CENTERED_TEXT(y + 7 * line_height, "Use Left/Right Shift to adjust square brightness");
-      CENTERED_TEXT(y + 8 * line_height, "Find the equilibrium where the most bright face change (or merge)");
+      CENTERED_TEXT(y + 7 * line_height, "Use Left/Right Shift to adjust face brightness until");
+      CENTERED_TEXT(y + 8 * line_height, "your eye does not favor or focus one face over the other.");
       ImGui::PopFont();
       ImGui::EndPopup();
       #undef CENTERED_TEXT
