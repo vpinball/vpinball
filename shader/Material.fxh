@@ -227,47 +227,10 @@ float3 lightLoop(const float3 pos, float3 N, const float3 V, float3 diffuse, flo
 	   // matView is always an orthonormal matrix, so no need to normalize after transform
 	   R = /*normalize*/(mul(matView, R).xyz); // actually: mul(float4(R,0.0), matViewInverseInverseTranspose), but optimized to save one matrix
 	   const float2 Ruv = ray_to_equirectangular_uv(R);
-#if !ENABLE_VR
 	   if (glossyMax > 0.0)
 		  color += DoEnvmapGlossy(N, V, Ruv, glossy, Roughness_WrapL_Edge_Thickness.x);
 	   if (specularMax > 0.0)
 		  color = DoEnvmap2ndLayer(color, pos, N, V, NdotV, Ruv, specular);
-#else
-      // Abuse mipmaps to reduce shimmering in VR
-      float4 colorMip;
-      if (is_metal)
-      {
-         // Use low-res mipmap for metallic objects to reduce shimmering in VR
-         // Closer objects we query the lod and add 2 to make it a bit blurrier but always at least 6.0
-         // Far away objects we get smallest lod and divide by 1.6 which is a good trade-off between "metallic enough" and "low shimmer"
-         float mipLevel = min(textureQueryLod(tex_env, Ruv).y+2.0, textureQueryLevels(tex_env)/1.6);
-         if (mipLevel < 6.0)
-            mipLevel = 6.0;
-         colorMip = textureLod(tex_env, Ruv, mipLevel);
-      }
-      else
-      {
-         // For non-metallic objects we use different values
-         //colorMip = texture(tex_env, Ruv);
-         float mipLevel = min(textureQueryLod(tex_env, Ruv).y, textureQueryLevels(tex_env)/2);
-         if (mipLevel < 4.0)
-            mipLevel = 4.0;
-         colorMip = textureLod(tex_env, Ruv, mipLevel);
-      }
-
-      const float3 envTex = colorMip.rgb;
-
-      // EnvmapGlossy
-      if(glossyMax > 0.0)
-        color += glossy * envTex * fenvEmissionScale_TexWidth.x;
-
-      // Envmap2ndLayer
-      if(specularMax > 0.0)
-      {
-        const float3 w = FresnelSchlick(specular, NdotV, Roughness_WrapL_Edge_Thickness.z);
-        color = mix(color, envTex * fenvEmissionScale_TexWidth.x, w);
-      }
-#endif
    }
 
    return /*Gamma(ToneMap(*/color/*))*/;
