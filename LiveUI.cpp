@@ -1128,11 +1128,11 @@ void LiveUI::EnterEditMode()
 
 void LiveUI::ExitEditMode()
 {
-   m_player->EnableStaticPrePass(!m_old_player_dynamic_mode);
-   m_player->SetCameraMode(m_old_player_camera_mode);
    SetupImGuiStyle(1.0f);
    m_useEditorCam = false;
    m_pin3d->InitLayout();
+   m_player->EnableStaticPrePass(!m_old_player_dynamic_mode);
+   m_player->SetCameraMode(m_old_player_camera_mode);
 }
 
 void LiveUI::HideUI()
