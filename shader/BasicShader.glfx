@@ -423,6 +423,7 @@ void main()
    for (int i=0;i<gl_in.length();i++) {
       gl_Position = (matWorldViewProj[eye_gs[i]] * gl_in[i].gl_Position);
       gl_ClipDistance[0] = gl_in[i].gl_ClipDistance[0];
+      tablePos = tablePos_gs[i];
       EmitVertex();
    }
    EndPrimitive();
@@ -442,6 +443,7 @@ void main()
    for (int i=0;i<gl_in.length();i++) {
       gl_Position = (matWorldViewProj[eye_gs[i]] * gl_in[i].gl_Position);
       gl_ClipDistance[0] = gl_in[i].gl_ClipDistance[0];
+      tablePos = tablePos_gs[i];
       tex0 = tex0_gs[i];
       EmitVertex();
    }
