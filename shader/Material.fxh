@@ -169,7 +169,16 @@ float3 DoEnvmap2ndLayer(const float3 color1stLayer, const float3 pos, const floa
    return lerp(color1stLayer, env*fenvEmissionScale_TexWidth.x, w); // weight (optional) lower diffuse/glossy layer with clearcoat/specular
 }
 
-float3 lightLoop(const float3 pos, float3 N, const float3 V, float3 diffuse, float3 glossy, const float3 specular, const float edge, const bool backside_lighting, const bool is_metal) // input vectors (N,V) are normalized for BRDF evals
+// ////////////////////////////////////////////////////////////////////////////
+// Apply lighting from the environment and the 2 scene lights
+// - Lighting is not fully PBR since the specualr, glossy and diffuse are added without limiting the energy between layers to the one not reflected by the previous layer.
+// - Apply the 2 points lights to the diffuse (Lambert with rim/wrap) and glossy (Ashikhmin/Blinn) components, clearcoat (a.k.a. specular) is not applied.
+//   Light energy is tweaked in order to have ranged lights instead of the physical 1/d² energy
+//   These lighting can be 'disabled' in fact replacing it by the 2 times the diffuse color (backward compatibility bug)
+// - Apply the environment lighting with diffuse, glossy and cleacoat (named specular) layers.
+//   Glossy is performed with a somewhat crude approximation for the BRDF and for the roughness parameter.
+// - Backside (normal pointing away) is lighted as well as front facing (needed since quite a lot of tables have wrong normal, or for transparents with 2 pass rendering)
+float3 lightLoop(const float3 pos, float3 N, const float3 V, float3 diffuse, float3 glossy, const float3 specular, const float edge, const bool is_metal) // input vectors (N,V) are normalized for BRDF evals
 {
    float3 color = float3(0.0, 0.0, 0.0);
    
@@ -177,17 +186,9 @@ float3 lightLoop(const float3 pos, float3 N, const float3 V, float3 diffuse, flo
    if (NdotV < 0.0)
    {
        // Flip normal in case for backside lighting.
-       // Currently disabled if normal mapping active, for that case we should actually clamp the normal with respect to V instead (see f.e. 'view-dependant shading normal adaptation')
-	   // TODO: why ? we can face backside lighting situations with normal mapping as well (for example a plastic ramp with both sides rendered and reflecting light) ?
-	   if (backside_lighting)
-	   {
-          N = -N;
-          NdotV = -NdotV;
-	   }
-	   else
-	   {
-		  return color;
-	   }
+       // Before 10.8, this was disabled when using normal mapping, but since tables are not all well behaving, this caused artefacts (for example Cirqus Voltaire vs Monster Bash), so this is now always performed.
+       N = -N;
+       NdotV = -NdotV;
    }
    NdotV = min(NdotV, 1.0); // For some reason I don't get, N (which is normalized) dot V (which is also normalized) may lead to value exceeding 1.0 then causing invalid results (in FresnelSchlick, negative pow)
 
@@ -205,7 +206,7 @@ float3 lightLoop(const float3 pos, float3 N, const float3 V, float3 diffuse, flo
       //specular *= invsum;
    }
 
-   // 1st Layer
+   // Scene point lights
    BRANCH if ((!is_metal && (diffuseMax > 0.0)) || (glossyMax > 0.0))
    {
       BRANCH if (fDisableLighting_top_below.x == 1.0)
@@ -214,25 +215,21 @@ float3 lightLoop(const float3 pos, float3 N, const float3 V, float3 diffuse, flo
          color += DoPointLight(pos, N, V, diffuse, glossy, edge, Roughness_WrapL_Edge_Thickness.x, i, is_metal); // no clearcoat needed as only pointlights so far
    }
 
+   // Environment IBL
    BRANCH if (!is_metal && (diffuseMax > 0.0))
 	  // trafo back to world for lookup into world space envmap // actually: mul(float4(N,0.0), matViewInverseInverseTranspose), but optimized to save one matrix
 	  // matView is always an orthonormal matrix, so no need to normalize after transform
       color += DoEnvmapDiffuse(/*normalize*/(mul(matView, N).xyz), diffuse); // actually: mul(float4(N,0.0), matViewInverseInverseTranspose), but optimized to save one matrix
-
    BRANCH if ((glossyMax > 0.0) || (specularMax > 0.0))
    {
 	   float3 R = (2.0*NdotV)*N - V; // reflect(-V,N);
 	   // trafo back to world for lookup into world space envmap // actually: mul(float4(R,0.0), matViewInverseInverseTranspose), but optimized to save one matrix
 	   // matView is always an orthonormal matrix, so no need to normalize after transform
 	   R = /*normalize*/(mul(matView, R).xyz); // actually: mul(float4(R,0.0), matViewInverseInverseTranspose), but optimized to save one matrix
-
 	   const float2 Ruv = ray_to_equirectangular_uv(R);
-
 #if !ENABLE_VR
 	   if (glossyMax > 0.0)
 		  color += DoEnvmapGlossy(N, V, Ruv, glossy, Roughness_WrapL_Edge_Thickness.x);
-
-	   // 2nd Layer
 	   if (specularMax > 0.0)
 		  color = DoEnvmap2ndLayer(color, pos, N, V, NdotV, Ruv, specular);
 #else
@@ -265,7 +262,7 @@ float3 lightLoop(const float3 pos, float3 N, const float3 V, float3 diffuse, flo
         color += glossy * envTex * fenvEmissionScale_TexWidth.x;
 
       // Envmap2ndLayer
-      if(backside_lighting && specularMax > 0.0)
+      if(specularMax > 0.0)
       {
         const float3 w = FresnelSchlick(specular, NdotV, Roughness_WrapL_Edge_Thickness.z);
         color = mix(color, envTex * fenvEmissionScale_TexWidth.x, w);

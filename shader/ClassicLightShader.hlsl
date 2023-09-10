@@ -65,7 +65,7 @@ float4 PS_LightWithTexel(const in VS_LIGHT_OUTPUT IN, uniform bool is_metal) : C
         const float3 specular = cClearcoat_EdgeAlpha.xyz*0.08;
         const float  edge     = is_metal ? 1.0 : Roughness_WrapL_Edge_Thickness.z;
 
-        color.xyz = lightLoop(IN.worldPos, normalize(IN.normal), normalize(/*camera=0,0,0,1*/-IN.worldPos), diffuse, glossy, specular, edge, true, is_metal); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
+        color.xyz = lightLoop(IN.worldPos, normalize(IN.normal), normalize(/*camera=0,0,0,1*/-IN.worldPos), diffuse, glossy, specular, edge, is_metal); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
         color.a = pixel.a;
     }
     color.a *= cBase_Alpha.a;
@@ -107,7 +107,7 @@ float4 PS_LightWithoutTexel(const in VS_LIGHT_OUTPUT IN, uniform bool is_metal) 
         const float3 specular = cClearcoat_EdgeAlpha.xyz*0.08;
         const float  edge     = is_metal ? 1.0 : Roughness_WrapL_Edge_Thickness.z;
 
-        color.xyz = lightLoop(IN.worldPos, normalize(IN.normal), normalize(/*camera=0,0,0,1*/-IN.worldPos), diffuse, glossy, specular, edge, true, is_metal); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
+        color.xyz = lightLoop(IN.worldPos, normalize(IN.normal), normalize(/*camera=0,0,0,1*/-IN.worldPos), diffuse, glossy, specular, edge, is_metal); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
     }
     color.a = cBase_Alpha.a;
     
