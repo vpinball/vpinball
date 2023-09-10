@@ -3612,7 +3612,6 @@ void Player::StereoFXAA(RenderTarget* renderedRT, const bool stereo, const bool 
       {
          // Render LiveUI in headset for VR
          g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_MISC);
-         m_liveUI->Update();
          m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("ImGui"s, renderedRT);
          m_pin3d.m_pd3dPrimaryDevice->RenderLiveUI();
          g_frameProfiler.ExitProfileSection();
@@ -3691,7 +3690,6 @@ void Player::StereoFXAA(RenderTarget* renderedRT, const bool stereo, const bool 
    {
       // Render LiveUI after tonemapping and stereo, otherwise it would break the calibration process
       g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_MISC);
-      m_liveUI->Update();
       m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("ImGui"s, m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer());
       m_pin3d.m_pd3dPrimaryDevice->RenderLiveUI();
       g_frameProfiler.ExitProfileSection();
@@ -4401,6 +4399,10 @@ void Player::PrepareFrame()
 
    // Check if we should turn animate the plunger light.
    hid_set_output(HID_OUTPUT_PLUNGER, ((m_time_msec - m_LastPlungerHit) < 512) && ((m_time_msec & 512) > 0));
+
+   g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_MISC);
+   m_liveUI->Update();
+   g_frameProfiler.ExitProfileSection();
 
    PrepareVideoBuffers(GetAOMode() == 2);
 
