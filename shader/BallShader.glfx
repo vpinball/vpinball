@@ -285,14 +285,14 @@ void main()
     }
     else
     {
-       //!! hack to get some lighting on reflection sample, but only diffuse, the rest is not setup correctly anyhow
-       playfieldColor = PFlightLoop(playfield_hit, playfield_normal, playfieldColor);
+        //!! hack to get some lighting on reflection sample, but only diffuse, the rest is not setup correctly anyhow
+        playfieldColor = PFlightLoop(playfield_hit, playfield_normal, playfieldColor);
 
-       //!! magic falloff & weight the rest in from the ballImage
-       // Before 10.8, used to be: const float weight = NdotR*NdotR; 
-       // const float weight = 1.0 / (1.0 + max(0.0, t - 12.5) * 0.01);
-       const float weight = smoothstep(t, 0.0, 25.0);
-       playfieldColor = lerp(playfieldColor, ballImageColor, weight);
+        //!! magic falloff & weight the rest in from the ballImage
+        // Before 10.8, used to be: const float weight = NdotR*NdotR; 
+        // const float weight = 1.0 / (1.0 + max(0.0, t - 12.5) * 0.01);
+        const float weight = smoothstep(t, 0.0, 25.0);
+        playfieldColor = lerp(playfieldColor, ballImageColor, weight);
     }
 
     float3 diffuse = cBase_Alpha.xyz*0.075;
@@ -303,7 +303,7 @@ void main()
     const float3 glossy = max(diffuse*2.0, float3(0.1,0.1,0.1)); //!! meh
     float3 specular = playfieldColor*cBase_Alpha.xyz; //!! meh, too, as only added in ballLightLoop anyhow
 
-    if(!%PARAM1%)
+    if(!%PARAM1%) // decalMode
        specular *= float3(1.,1.,1.)-decalColor; // see above
 
     color.xyz = ballLightLoop(worldPos_t0y.xyz, N, V, diffuse, glossy, specular, 1.0, false);

@@ -151,7 +151,7 @@ voutTrail vsBallTrail( const in vin IN )
 
 //------------------------------------
 
-float3 ballLightLoop(const float3 pos, float3 N, float3 V, float3 diffuse, float3 glossy, const float3 specular, const float edge, const bool is_metal)
+float3 ballLightLoop(const float3 pos, const float3 N, const float3 V, float3 diffuse, float3 glossy, const float3 specular, const float edge, const bool is_metal)
 {
    // N and V must be already normalized by the caller
    // N = normalize(N);
@@ -178,7 +178,7 @@ float3 ballLightLoop(const float3 pos, float3 N, float3 V, float3 diffuse, float
    BRANCH if((!is_metal && (diffuseMax > 0.0)) || (glossyMax > 0.0))
    {
       BRANCH if (fDisableLighting_top_below.x == 1.0)
-         color += iLightPointNum * diffuse; // Old bug kept for backward compatibility: when lighting is disabled, it results to applying it twice
+         color += float(iLightPointNum) * diffuse; // Old bug kept for backward compatibility: when lighting is disabled, it results to applying it twice
       else for(int i = 0; i < iLightPointBallsNum; i++)  
          color += DoPointLight(pos, N, V, diffuse, glossy, edge, Roughness_WrapL_Edge_Thickness.x, i, is_metal); // no clearcoat needed as only pointlights so far
    }
@@ -194,7 +194,8 @@ float3 ballLightLoop(const float3 pos, float3 N, float3 V, float3 diffuse, float
 
 float3 PFDoPointLight(const float3 pos, const float3 N, const float3 diffuse, const int i) 
 {
-   const float3 lightDir = mul_w1(lights[i].vPos, matView) - pos; //!! do in vertex shader?! or completely before?!
+   //!! do in vertex shader?! or completely before?!
+   const float3 lightDir = mul_w1(lights[i].vPos, matView) - pos;
    const float3 L = normalize(lightDir);
    const float NdotL = dot(N, L);
    // compute diffuse color (lambert)
@@ -235,28 +236,29 @@ float4 psBall( const in vout IN, uniform bool equirectangularMap, uniform bool d
     const float3 N = normalize(IN.normal_t0x.xyz);
     const float3 r = reflect(V, N);
 
-   float3 ballImageColor;
-   const float edge = dot(V, r);
-   // edge falloff to reduce aliasing on edges (picks smaller mipmap -> more blur)
-   const float lod = (edge > 0.6) ? edge*(6.0*1.0/0.4)-(6.0*0.6/0.4) : 0.0;
-   BRANCH if (equirectangularMap)
-   {  // Equirectangular Map Reflections
-      // trafo back to world for lookup into world space envmap 
+    float3 ballImageColor;
+    const float edge = dot(V, r);
+    // edge falloff to reduce aliasing on edges (picks smaller mipmap -> more blur)
+    const float lod = (edge > 0.6) ? edge*(6.0*1.0/0.4)-(6.0*0.6/0.4) : 0.0;
+    BRANCH if (equirectangularMap)
+    { // Equirectangular Map Reflections
+      // trafo back to world for lookup into world space envmap
       // matView is always an orthonormal matrix, so no need to normalize after transform
       const float3 rv = /*normalize*/(mul(matView, -r).xyz);
       const float2 uv = ray_to_equirectangular_uv(rv);
       ballImageColor = tex2Dlod(tex_ball_color, float4(uv, 0., lod)).rgb;
-   }
-   else
-   {  // Spherical Map Reflections
+    }
+    else
+    { // Spherical Map Reflections
       // calculate the intermediate value for the final texture coords. found here http://www.ozone3d.net/tutorials/glsl_texturing_p04.php
       const float m = (1.0 - r.z > 0.) ? 0.3535533905932737622 * rsqrt(1.0 - r.z) : 0.; // 0.353...=0.5/sqrt(2)
       const float2 uv = float2(0.5 - m * r.x, 0.5 - m * r.y);
       ballImageColor = tex2Dlod(tex_ball_color, float4(uv, 0., lod)).rgb;
-   }
+    }
 
     const float4 decalColorT = tex2D(tex_ball_decal, float2(IN.normal_t0x.w, IN.worldPos_t0y.w));
     float3 decalColor = decalColorT.rgb;
+
     if (!decalMode)
     {
        // decal texture is an alpha scratch texture and must be added to the ball texture
@@ -281,36 +283,38 @@ float4 psBall( const in vout IN, uniform bool equirectangularMap, uniform bool d
     const float3 playfield_normal = float3(matWorldView._31, matWorldView._32, matWorldView._33);
     const float NdotR = dot(playfield_normal,r);
 
-   const float3 playfield_p0 = mul_w1(float3(/*playfield_pos=*/0.,0.,invTableRes_playfield_height_reflection.z), matWorldView);
-   const float t = dot(playfield_normal, IN.worldPos_t0y.xyz - playfield_p0) / NdotR;
-   const float3 playfield_hit = IN.worldPos_t0y.xyz - t * r;
-   const float2 uv = mul_w1(playfield_hit, matWorldViewInverse).xy * invTableRes_playfield_height_reflection.xy;
+    const float3 playfield_p0 = mul_w1(float3(/*playfield_pos=*/0.,0.,invTableRes_playfield_height_reflection.z), matWorldView);
+    const float t = dot(playfield_normal, IN.worldPos_t0y.xyz - playfield_p0) / NdotR;
+    const float3 playfield_hit = IN.worldPos_t0y.xyz - t * r;
+    const float2 uv = mul_w1(playfield_hit, matWorldViewInverse).xy * invTableRes_playfield_height_reflection.xy;
 
-   // This will break with custom playfield texture coordinates (like Flupper's TOTAN and many others)
-   // => Rather use screen space sample from previous frame (it will include the lighting/shadowing but also the ball itself, and would need to account for viewer movement) ?
-   float3 playfieldColor = tex2D(tex_ball_playfield, uv).xyz * invTableRes_playfield_height_reflection.w;
-   BRANCH if (NdotR <= 0. || t < 0.)
-   {
-      // t < 0.0 may happen in some situation where ball intersects the playfield (like in kicker)
-      playfieldColor = ballImageColor;
-   }
-   else
-   {
-      //!! hack to get some lighting on reflection sample, but only diffuse, the rest is not setup correctly anyhow
-      playfieldColor = PFlightLoop(playfield_hit, playfield_normal, playfieldColor);
+    // This will break with custom playfield texture coordinates (like Flupper's TOTAN and many others)
+    // => Rather use screen space sample from previous frame (it will include the lighting/shadowing but also the ball itself, and would need to account for viewer movement) ?
+    float3 playfieldColor = tex2D(tex_ball_playfield, uv).xyz * invTableRes_playfield_height_reflection.w;
+    BRANCH if (NdotR <= 0. || t < 0.)
+    {
+        // t < 0.0 may happen in some situation where ball intersects the playfield (like in kicker)
+        playfieldColor = ballImageColor;
+    }
+    else
+    {
+        //!! hack to get some lighting on reflection sample, but only diffuse, the rest is not setup correctly anyhow
+        playfieldColor = PFlightLoop(playfield_hit, playfield_normal, playfieldColor);
 
-      //!! magic falloff & weight the rest in from the ballImage
-      // Before 10.8, used to be: const float weight = NdotR*NdotR; 
-      // const float weight = 1.0 / (1.0 + max(0.0, t - 12.5) * 0.01);
-      const float weight = smoothstep(t, 0.0, 25.0);
-      playfieldColor = lerp(playfieldColor, ballImageColor, weight);
-   }
+        //!! magic falloff & weight the rest in from the ballImage
+        // Before 10.8, used to be: const float weight = NdotR*NdotR; 
+        // const float weight = 1.0 / (1.0 + max(0.0, t - 12.5) * 0.01);
+        const float weight = smoothstep(t, 0.0, 25.0);
+        playfieldColor = lerp(playfieldColor, ballImageColor, weight);
+    }
 
     float3 diffuse = cBase_Alpha.xyz*0.075;
+
     if(!decalMode)
        diffuse *= decalColor; // scratches make the material more rough
     const float3 glossy = max(diffuse*2.0, float3(0.1,0.1,0.1)); //!! meh
     float3 specular = playfieldColor*cBase_Alpha.xyz; //!! meh, too, as only added in ballLightLoop anyhow
+
     if(!decalMode)
        specular *= float3(1.,1.,1.)-decalColor; // see above
 
@@ -347,7 +351,7 @@ float4 psBallTrail( in voutTrail IN ) : COLOR
 technique RenderBall
 {
 	pass p0 
-	{		
+	{
 		vertexshader = compile vs_3_0 vsBall();
 		pixelshader  = compile ps_3_0 psBall(true, false);
 	}
@@ -355,29 +359,29 @@ technique RenderBall
 
 technique RenderBall_DecalMode
 {
-   pass p0
-   {
-      vertexshader = compile vs_3_0 vsBall();
-      pixelshader  = compile ps_3_0 psBall(true, true);
-   }
+	pass p0
+	{
+		vertexshader = compile vs_3_0 vsBall();
+		pixelshader  = compile ps_3_0 psBall(true, true);
+	}
 }
 
 technique RenderBall_SphericalMap
 {
-   pass p0
-   {
-      vertexshader = compile vs_3_0 vsBall();
-      pixelshader = compile ps_3_0 psBall(false, false);
-   }
+	pass p0
+	{
+		vertexshader = compile vs_3_0 vsBall();
+		pixelshader = compile ps_3_0 psBall(false, false);
+	}
 }
 
 technique RenderBall_SphericalMap_DecalMode
 {
-   pass p0
-   {
-      vertexshader = compile vs_3_0 vsBall();
-      pixelshader = compile ps_3_0 psBall(false, true);
-   }
+	pass p0
+	{
+		vertexshader = compile vs_3_0 vsBall();
+		pixelshader = compile ps_3_0 psBall(false, true);
+	}
 }
 
 /*technique RenderBallReflection

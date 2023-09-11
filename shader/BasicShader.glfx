@@ -481,7 +481,7 @@ void main() {
 
       if (fDisableLighting_top_below.y < 1.0)
          // add light from "below" from user-flagged bulb lights, pre-rendered/blurred in previous renderpass //!! sqrt = magic
-         color.xyz += mix(sqrt(diffuse)*texStereoNoLod(tex_base_transmission, gl_FragCoord.xy * w_h_height.xy).rgb*color.a, float3(0.), fDisableLighting_top_below.y); //!! depend on normal of light (unknown though) vs geom normal, too?
+         color.rgb += lerp(sqrt(diffuse)*texStereoNoLod(tex_base_transmission, gl_FragCoord.xy * w_h_height.xy).rgb*color.a, float3(0.), fDisableLighting_top_below.y); //!! depend on normal of light (unknown though) vs geom normal, too?
    }
 
    BRANCH if (lightCenter_doShadow.w != 0.)
@@ -540,7 +540,7 @@ void main() {
 
       if (fDisableLighting_top_below.y < 1.0)
          // add light from "below" from user-flagged bulb lights, pre-rendered/blurred in previous renderpass //!! sqrt = magic
-         color.xyz += lerp(sqrt(diffuse)*texStereoNoLod(tex_base_transmission, gl_FragCoord.xy * w_h_height.xy).rgb*color.a, float3(0.), fDisableLighting_top_below.y); //!! depend on normal of light (unknown though) vs geom normal, too?
+         color.rgb += lerp(sqrt(diffuse)*texStereoNoLod(tex_base_transmission, gl_FragCoord.xy * w_h_height.xy).rgb*color.a, float3(0.), fDisableLighting_top_below.y); //!! depend on normal of light (unknown though) vs geom normal, too?
    }
 
    BRANCH if (lightCenter_doShadow.w != 0.)
@@ -576,7 +576,7 @@ in vec3 normal;
 flat in float eye;
 
 void main() {
-   float3 N = normalize(normal);
+   const float3 N = normalize(normal);
    color.rgb = compute_reflection(gl_FragCoord.xy * w_h_height.xy, N, eye);
    color.a = 1.0;
    color *= staticColor_Alpha;
@@ -608,7 +608,7 @@ void main() {
       color.a = GeometricOpacity(dot(N, V), color.a, cClearcoat_EdgeAlpha.w, Roughness_WrapL_Edge_Thickness.w);
    }
 
-   color = color * staticColor_Alpha;
+   color *= staticColor_Alpha;
 }
 
 

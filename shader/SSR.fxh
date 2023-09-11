@@ -48,7 +48,7 @@ float4 ps_main_fb_ss_refl(in VS_OUTPUT_2D IN) : COLOR
 	                     * sqr(normal_fade_factor(normal_b/*normal*/)); // avoid reflections on playfield, etc
 
 #if 0 // test code
-    return float4(0.,sqr(normal_fade_factor(normal_b/*normal*/)),0., 1.0);
+	return float4(0.,sqr(normal_fade_factor(normal_b/*normal*/)),0., 1.0);
 #endif
 
 	BRANCH if(fresnel < 0.01) //!! early out if contribution too low

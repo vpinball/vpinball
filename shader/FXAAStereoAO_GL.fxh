@@ -22,9 +22,9 @@ float2 hash(const float2 gridcell)
 
 float3 get_nonunit_normal(const float depth0, const float2 u, const float eye) // use neighboring pixels // quite some tex access by this
 {
-   const float depth1 = texStereoNoLod(tex_depth, float2(u.x, u.y + w_h_height.y)).x;
-   const float depth2 = texStereoNoLod(tex_depth, float2(u.x + w_h_height.x, u.y)).x;
-   return float3(w_h_height.y * (depth2 - depth0), (depth1 - depth0) * w_h_height.x, w_h_height.y * w_h_height.x); //!!
+	const float depth1 = texStereoNoLod(tex_depth, float2(u.x, u.y + w_h_height.y)).x;
+	const float depth2 = texStereoNoLod(tex_depth, float2(u.x + w_h_height.x, u.y)).x;
+	return float3(w_h_height.y * (depth2 - depth0), (depth1 - depth0) * w_h_height.x, w_h_height.y * w_h_height.x); //!!
 }
 
 //float3 sphere_sample(const float2 t)
@@ -461,18 +461,18 @@ void main()
    }
 
    // short edges
-    const float4 sampleHorizNeg0 = sampleOffseta(u, float2(-1.5, 0.0), eye);
-    const float4 sampleHorizPos0 = sampleOffseta(u, float2(1.5, 0.0), eye);
-    const float4 sampleVertNeg0 = sampleOffseta(u, float2(0.0, -1.5), eye);
-    const float4 sampleVertPos0 = sampleOffseta(u, float2(0.0, 1.5), eye);
+   const float4 sampleHorizNeg0  = sampleOffseta(u, float2(-1.5,  0.0), eye);
+   const float4 sampleHorizPos0  = sampleOffseta(u, float2( 1.5,  0.0), eye);
+   const float4 sampleVertNeg0   = sampleOffseta(u, float2( 0.0, -1.5), eye);
+   const float4 sampleVertPos0   = sampleOffseta(u, float2( 0.0,  1.5), eye);
 
    const float3 sumHoriz         = sampleHorizNeg0.xyz + sampleHorizPos0.xyz;
    const float3 sumVert          = sampleVertNeg0.xyz  + sampleVertPos0.xyz;
 
-    const float3 sampleLeft = sampleOffset(u, float2(-1.0, 0.0), eye);
-    const float3 sampleRight = sampleOffset(u, float2(1.0, 0.0), eye);
-    const float3 sampleTop = sampleOffset(u, float2(0.0, -1.0), eye);
-    const float3 sampleDown = sampleOffset(u, float2(0.0, 1.0), eye);
+   const float3 sampleLeft       = sampleOffset(u, float2(-1.0,  0.0), eye);
+   const float3 sampleRight      = sampleOffset(u, float2( 1.0,  0.0), eye);
+   const float3 sampleTop        = sampleOffset(u, float2( 0.0, -1.0), eye);
+   const float3 sampleDown       = sampleOffset(u, float2( 0.0,  1.0), eye);
 
    const float3 diffToCenterHoriz= abs((sampleLeft+sampleRight) * 0.5 - sampleCenter.xyz); //!! was sumHoriz instead of l&r
    const float3 diffToCenterVert = abs((sampleTop+sampleDown) * 0.5 - sampleCenter.xyz); //!! was sumVert instead of t&d
@@ -496,19 +496,19 @@ void main()
    aaResult                      = lerp( aaResult,         avgVert,  blurAmountHoriz * 0.5); //!! magic sharpen
 
    // long edges
-    const float4 sampleVertNeg1 = sampleOffseta(u, float2(0.0, -3.5), eye);
-    const float4 sampleVertNeg15 = sampleOffseta(u, float2(0.0, -5.5), eye);
-    const float4 sampleVertNeg2 = sampleOffseta(u, float2(0.0, -7.5), eye);
-    const float4 sampleVertPos1 = sampleOffseta(u, float2(0.0, 3.5), eye);
-    const float4 sampleVertPos15 = sampleOffseta(u, float2(0.0, 5.5), eye);
-    const float4 sampleVertPos2 = sampleOffseta(u, float2(0.0, 7.5), eye);
+   const float4 sampleVertNeg1   = sampleOffseta(u, float2(0.0, -3.5), eye);
+   const float4 sampleVertNeg15  = sampleOffseta(u, float2(0.0, -5.5), eye);
+   const float4 sampleVertNeg2   = sampleOffseta(u, float2(0.0, -7.5), eye);
+   const float4 sampleVertPos1   = sampleOffseta(u, float2(0.0,  3.5), eye);
+   const float4 sampleVertPos15  = sampleOffseta(u, float2(0.0,  5.5), eye);
+   const float4 sampleVertPos2   = sampleOffseta(u, float2(0.0,  7.5), eye);
 
-    const float4 sampleHorizNeg1 = sampleOffseta(u, float2(-3.5, 0.0), eye);
-    const float4 sampleHorizNeg15 = sampleOffseta(u, float2(-5.5, 0.0), eye);
-    const float4 sampleHorizNeg2 = sampleOffseta(u, float2(-7.5, 0.0), eye);
-    const float4 sampleHorizPos1 = sampleOffseta(u, float2(3.5, 0.0), eye);
-    const float4 sampleHorizPos15 = sampleOffseta(u, float2(5.5, 0.0), eye);
-    const float4 sampleHorizPos2 = sampleOffseta(u, float2(7.5, 0.0), eye);
+   const float4 sampleHorizNeg1  = sampleOffseta(u, float2(-3.5, 0.0), eye);
+   const float4 sampleHorizNeg15 = sampleOffseta(u, float2(-5.5, 0.0), eye);
+   const float4 sampleHorizNeg2  = sampleOffseta(u, float2(-7.5, 0.0), eye);
+   const float4 sampleHorizPos1  = sampleOffseta(u, float2( 3.5, 0.0), eye);
+   const float4 sampleHorizPos15 = sampleOffseta(u, float2( 5.5, 0.0), eye);
+   const float4 sampleHorizPos2  = sampleOffseta(u, float2( 7.5, 0.0), eye);
 
    const float pass1EdgeAvgHoriz = saturate(( sampleHorizNeg2.a + sampleHorizNeg1.a + sampleHorizNeg15.a + sampleHorizNeg0.a + sampleHorizPos0.a + sampleHorizPos1.a + sampleHorizPos15.a + sampleHorizPos2.a ) * (2.0 / 8.0) - 1.0);
    const float pass1EdgeAvgVert  = saturate(( sampleVertNeg2.a  + sampleVertNeg1.a + sampleVertNeg15.a  + sampleVertNeg0.a  + sampleVertPos0.a + sampleVertPos1.a + sampleVertPos15.a  + sampleVertPos2.a  ) * (2.0 / 8.0) - 1.0);
@@ -637,13 +637,13 @@ void main()
 
 	const float2 offs = w_h_height.xy;
 	const float lumaNW = luma(texStereoNoLod(tex_fb_unfiltered, u - offs).xyz);
-	const float lumaN = luma(texStereoNoLod(tex_fb_unfiltered, u - float2(0.0,offs.y)).xyz);
+	float lumaN = luma(texStereoNoLod(tex_fb_unfiltered, u - float2(0.0,offs.y)).xyz);
 	const float lumaNE = luma(texStereoNoLod(tex_fb_unfiltered, u - float2(-offs.x,offs.y)).xyz);
 	const float lumaW = luma(texStereoNoLod(tex_fb_unfiltered, u - float2(offs.x,0.0)).xyz);
 	const float lumaM = luma(rgbyM);
 	const float lumaE = luma(texStereoNoLod(tex_fb_unfiltered, u + float2(offs.x,0.0)).xyz);
 	const float lumaSW = luma(texStereoNoLod(tex_fb_unfiltered, u + float2(-offs.x,offs.y)).xyz);
-	const float lumaS = luma(texStereoNoLod(tex_fb_unfiltered, u + float2(0.0,offs.y)).xyz);
+	float lumaS = luma(texStereoNoLod(tex_fb_unfiltered, u + float2(0.0,offs.y)).xyz);
 	const float lumaSE = luma(texStereoNoLod(tex_fb_unfiltered, u + offs).xyz);
 	const float maxSM = max(lumaS, lumaM);
 	const float minSM = min(lumaS, lumaM);

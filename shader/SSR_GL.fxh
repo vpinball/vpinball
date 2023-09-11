@@ -9,9 +9,9 @@ float3 approx_bump_normal(const float2 coords, const float2 offs, const float sc
     const float3 lumw = float3(0.212655,0.715158,0.072187);
 
     const float lpx = dot(texStereoNoLod(tex_fb_filtered, float2(coords.x+offs.x,coords.y)).xyz, lumw);
-    const float lmx = dot(texStereoNoLod(tex_fb_filtered, float2(coords.x - offs.x, coords.y)).xyz, lumw);
-    const float lpy = dot(texStereoNoLod(tex_fb_filtered, float2(coords.x, coords.y + offs.y)).xyz, lumw);
-    const float lmy = dot(texStereoNoLod(tex_fb_filtered, float2(coords.x, coords.y - offs.y)).xyz, lumw);
+    const float lmx = dot(texStereoNoLod(tex_fb_filtered, float2(coords.x-offs.x,coords.y)).xyz, lumw);
+    const float lpy = dot(texStereoNoLod(tex_fb_filtered, float2(coords.x,coords.y+offs.y)).xyz, lumw);
+    const float lmy = dot(texStereoNoLod(tex_fb_filtered, float2(coords.x,coords.y-offs.y)).xyz, lumw);
 
     const float dpx = texStereoNoLod(tex_depth, float2(coords.x + offs.x, coords.y)).x;
     const float dmx = texStereoNoLod(tex_depth, float2(coords.x - offs.x, coords.y)).x;
@@ -32,9 +32,9 @@ void main()
 {
 	const float2 u = tex0;
 
-    const float3 color0 = texStereoNoLod(tex_fb_unfiltered, u).xyz; // original pixel
+	const float3 color0 = texStereoNoLod(tex_fb_unfiltered, u).xyz; // original pixel
 
-    const float depth0 = texStereoNoLod(tex_depth, u).x;
+	const float depth0 = texStereoNoLod(tex_depth, u).x;
 	BRANCH if((depth0 == 1.0) || (depth0 == 0.0)) //!!! early out if depth too large (=BG) or too small (=DMD,etc -> retweak render options (depth write on), otherwise also screwup with stereo)
 	{
 		color = float4(color0, 1.0);
@@ -76,7 +76,7 @@ void main()
 	UNROLL for(int i=1; i</*=*/samples; i++) //!! due to jitter
 	{
 		const float2 offs = u + (float(i)+ushift)*offsMul; //!! jitter per pixel (uses blue noise tex)
-        const float3 color = texStereoNoLod(tex_fb_filtered, offs).xyz;
+		const float3 color = texStereoNoLod(tex_fb_filtered, offs).xyz;
 
 		/*BRANCH if(i==1) // necessary special case as compiler warns/'optimizes' sqrt below into rqsrt?!
 		{

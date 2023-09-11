@@ -45,51 +45,51 @@ VS_OUTPUT_2D vs_main_no_trafo (const in float4 vPosition  : POSITION0,
 
 float4 ps_main_tb(const in VS_OUTPUT_2D IN) : COLOR
 {
-    return float4(gatherEyeColor(float2(IN.tex0.x, IN.tex0.y * 2.0), IN.tex0.y < 0.5), 1.0);
+   return float4(gatherEyeColor(float2(IN.tex0.x, IN.tex0.y * 2.0), IN.tex0.y < 0.5), 1.0);
 }
 
 
 float4 ps_main_sbs(const in VS_OUTPUT_2D IN) : COLOR
 {
-    return float4(gatherEyeColor(float2(IN.tex0.x * 2.0, IN.tex0.y), IN.tex0.x < 0.5), 1.0);
+   return float4(gatherEyeColor(float2(IN.tex0.x * 2.0, IN.tex0.y), IN.tex0.x < 0.5), 1.0);
 }
 
 
 float4 ps_main_int(const in VS_OUTPUT_2D IN) : COLOR
 {
-    const int y = w_h_height.z * IN.tex0.y;
-    return float4(gatherEyeColor(IN.tex0, ((y + 1) / 2 == y / 2)), 1.0); //last check actually means (y&1)
+   const int y = w_h_height.z * IN.tex0.y;
+   return float4(gatherEyeColor(IN.tex0, ((y + 1) / 2 == y / 2)), 1.0); //last check actually means (y&1)
 }
 
 
 float4 ps_main_flipped_int(const in VS_OUTPUT_2D IN) : COLOR
 {
-    const int y = w_h_height.z * IN.tex0.y;
-    return float4(gatherEyeColor(IN.tex0, ((y + 1) / 2 != y / 2)), 1.0); //last check actually means (y&1)
+   const int y = w_h_height.z * IN.tex0.y;
+   return float4(gatherEyeColor(IN.tex0, ((y + 1) / 2 != y / 2)), 1.0); //last check actually means (y&1)
 }
 
 
 float4 ps_main_stereo_linear_anaglyph(const in VS_OUTPUT_2D IN) : COLOR
 {
-    float3 lCol, rCol;
-    gatherLeftRightColors(IN.tex0, lCol, rCol);
-    return float4(LinearAnaglyph(lCol, rCol), 1.0);
+   float3 lCol, rCol;
+   gatherLeftRightColors(IN.tex0, lCol, rCol);
+   return float4(LinearAnaglyph(lCol, rCol), 1.0);
 }
 
 
 float4 ps_main_stereo_deghost_anaglyph(const in VS_OUTPUT_2D IN) : COLOR
 {
-    float3 lCol, rCol;
-    gatherLeftRightColors(IN.tex0, lCol, rCol);
-    return float4(DeghostAnaglyph(lCol, rCol), 1.0);
+   float3 lCol, rCol;
+   gatherLeftRightColors(IN.tex0, lCol, rCol);
+   return float4(DeghostAnaglyph(lCol, rCol), 1.0);
 }
 
 float4 ps_main_stereo_dyndesat_anaglyph(const in VS_OUTPUT_2D IN) : COLOR
 {
-    float3 lCol, rCol, lColDesat, rColDesat;
-    gatherLeftRightColors(IN.tex0, lCol, rCol);
-    DynamicDesatAnaglyph(lCol, rCol, lColDesat, rColDesat);
-    return float4(LinearAnaglyph(lColDesat, rColDesat), 1.0);
+   float3 lCol, rCol, lColDesat, rColDesat;
+   gatherLeftRightColors(IN.tex0, lCol, rCol);
+   DynamicDesatAnaglyph(lCol, rCol, lColDesat, rColDesat);
+   return float4(LinearAnaglyph(lColDesat, rColDesat), 1.0);
 }
 
 
