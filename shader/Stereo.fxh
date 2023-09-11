@@ -81,28 +81,49 @@ UNIFORM float4x4 Stereo_LeftMat;
 UNIFORM float4x4 Stereo_RightMat;
 
 // Perform dynamic desaturation based on filter colors for limited retinal rivalry
-// I did find quite a lot of papers regarding reducing ghosting but nearly nothing regarding limiting retinal rivalry in real time.
-// So I designed this little trick: retinal rivalry happens when something is seen by one eye and not the other. In turn,
-// this happens when a color passes through only one of the eye filter (for example full saturated red, 100% passing through left 
-// and 0% through right). The trick is to desaturate this color in order to have it pass through both filters (at least a little to 
-// satisfy the viewer brain and allow it to merge the 2 images, solving the retinal rivalry). This is done dynamically based on the
-// perceived luminance difference (obtained through the filter calibration) to limit the desaturation color lost.
-// lCol/rCol are expected to be in sRGB color space
+// Retinal rivalry happens when something is seen by one eye and not the other. In turn, this happens when a color passes through 
+// only one of the eye filter (for example full saturated red, 100% passing through left and 0% through right). The trick is to 
+// identify this situation by applying the filters to incoming colors and if needed adjust the colors to allow them to pass the 2 
+// filters instead of 1 (at least a little to satisfy the viewer brain and allow it to merge the 2 images, solving the retinal 
+// rivalry). There are two ways to do this:
+// - desaturation of the incoming colors (turn to gray), accounting for the loss of perceived luminance (Helmholtz–Kohlrausch effect)
+// - hue shifting which allows to keep saturated colors, but not the right ones (tested but without generally satisfying results).
 UNIFORM float4 Stereo_LeftLuminance;
 UNIFORM float4 Stereo_RightLuminance;
+
+/*float3 HueShift(float3 color, float dhue)
+{
+    float s = sin(dhue);
+    float c = cos(dhue);
+    return (color * c) + (color * s) * mat3(
+		float3(0.167444, 0.329213, -0.496657),
+		float3(-0.327948, 0.035669, 0.292279),
+		float3(1.250268, -1.047561, -0.202707)
+	) + dot(float3(0.299, 0.587, 0.114), color) * (1.0 - c);
+}*/
+
+// lCol/rCol are expected to be in sRGB color space
 void DynamicDesatAnaglyph(const float3 lCol, const float3 rCol, out float3 lDesatCol, out float3 rDesatCol)
 {
-	float leftLum  = dot(lCol, Stereo_LeftLuminance.xyz);
-	float rightLum = dot(rCol, Stereo_RightLuminance.xyz);
-    // float desat = pow(abs(leftLum - rightLum), 0.5); // less retinal rivalry and ghosting at the price of less colors
-    float desat = abs(leftLum - rightLum);
-    #ifdef GLSL
-	lDesatCol = lerp(lCol, float3(Luminance(lCol)), desat);
-	rDesatCol = lerp(rCol, float3(Luminance(rCol)), desat);
-    #else
-    lDesatCol = lerp(lCol,        Luminance(lCol) , desat);
-    rDesatCol = lerp(rCol,        Luminance(rCol) , desat);
-    #endif
+    const float left2LeftLum = dot(pow(lCol, float3(Stereo_LeftLuminance.w, Stereo_LeftLuminance.w, Stereo_LeftLuminance.w)), Stereo_LeftLuminance.xyz);
+    const float left2RightLum = dot(pow(lCol, float3(Stereo_LeftLuminance.w, Stereo_LeftLuminance.w, Stereo_LeftLuminance.w)), Stereo_RightLuminance.xyz);
+    const float right2LeftLum = dot(pow(rCol, float3(Stereo_LeftLuminance.w, Stereo_LeftLuminance.w, Stereo_LeftLuminance.w)), Stereo_LeftLuminance.xyz);
+    const float right2RightLum = dot(pow(rCol, float3(Stereo_LeftLuminance.w, Stereo_LeftLuminance.w, Stereo_LeftLuminance.w)), Stereo_RightLuminance.xyz);
+    const float leftLum = left2LeftLum + left2RightLum;
+    const float rightLum = right2LeftLum + right2RightLum;
+    const float leftDesat = pow(saturate(abs((left2LeftLum - left2RightLum) / (leftLum + 0.0001))), 3);
+    const float rightDesat = pow(saturate(abs((right2LeftLum - right2RightLum) / (rightLum + 0.0001))), 3);
+#ifdef GLSL
+	lDesatCol = lerp(lCol, float3(leftLum), leftDesat);
+	rDesatCol = lerp(rCol, float3(rightLum), rightDesat);
+#else
+    lDesatCol = lerp(lCol, leftLum, leftDesat);
+    rDesatCol = lerp(rCol, rightLum, rightDesat);
+#endif
+	//lDesatCol = HueShift(lDesatCol, -leftDesat  * PI * 120. / 180.);
+	//rDesatCol = HueShift(rDesatCol, -rightDesat * PI * 120. / 180.);
+	//lDesatCol = HueShift(lCol, -leftDesat  * PI * 120. / 180.);
+	//rDesatCol = HueShift(rCol, -rightDesat * PI * 120. / 180.);
 }
 
 // Compose anaglyph linearly from stereo colors
