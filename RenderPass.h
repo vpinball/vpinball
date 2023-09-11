@@ -15,13 +15,13 @@ public:
 
    void SortPasses(vector<RenderPass*>& sortedPasses, vector<RenderPass*>& allPasses);
    void SortCommands();
-   
+
    void Submit(RenderCommand* command);
    bool Execute(const bool log = false);
 
    void RecycleCommands(std::vector<RenderCommand*>& commandPool);
 
-   unsigned int GetCommandCount() const { return m_commands.size(); }
+   unsigned int GetCommandCount() const { return (unsigned int)m_commands.size(); }
 
    RenderTarget* m_rt;
    string m_name;

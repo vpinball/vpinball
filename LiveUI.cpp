@@ -32,7 +32,7 @@
 
 // Default anaglyph color
 // FIXME move this to a central place (this is duplicated in player.cpp)
-const vec3 defaultAnaglyphColors[] = {
+static const vec3 defaultAnaglyphColors[] = {
    /* RC */ vec3(0.95f, 0.19f, 0.07f), vec3(0.06f, 0.92f, 0.28f),
    /* GM */ vec3(0.06f, 0.96f, 0.09f), vec3(0.61f, 0.16f, 0.66f),
    /* BA */ vec3(0.05f, 0.16f, 0.96f), vec3(0.61f, 0.66f, 0.09f),
@@ -846,12 +846,12 @@ void LiveUI::Update()
    ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
    ImGui::PushFont(m_baseFont);
 
-   // Display notification (except when script has an unligned rotation)
+   // Display notification (except when script has an unaligned rotation)
    const U32 tick = msec();
    float notifY = io.DisplaySize.y * 0.5f;
    const bool showNotifications = ((float)m_rotate * 90.0f == m_player->m_ptable->mViewSetups[m_player->m_ptable->m_BG_current_set].GetRotation(m_player->m_pin3d.m_pd3dPrimaryDevice->m_width, m_player->m_pin3d.m_pd3dPrimaryDevice->m_height));
    ImGui::PushFont(m_overlayFont);
-   for (int i = m_notifications.size() - 1; i >= 0; i--)
+   for (int i = (int)m_notifications.size() - 1; i >= 0; i--)
    {
       if (tick > m_notifications[i].disappearTick)
       {
@@ -1976,9 +1976,9 @@ void LiveUI::UpdateVideoOptionsModal()
             else if (stereo_mode == 2) // Anaglyph
             {
                // Glasses settings
-               string name[10];
-               string defaultNames[] = { "Red/Cyan", "Green/Magenta", "Blue/Amber", "Cyan/Red", "Magenta/Green", "Amber/Blue", "Custom 1", "Custom 2", "Custom 3", "Custom 4", };
-               for (int i = 0; i < 10; i++)
+               static const string defaultNames[] = { "Red/Cyan"s, "Green/Magenta"s, "Blue/Amber"s, "Cyan/Red"s, "Magenta/Green"s, "Amber/Blue"s, "Custom 1"s, "Custom 2"s, "Custom 3"s, "Custom 4"s };
+               string name[std::size(defaultNames)];
+               for (size_t i = 0; i < std::size(defaultNames); i++)
                   if (FAILED(LoadValue(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(i + 1)).append("Name"s), name[i])))
                      name[i] = defaultNames[i];
                const char *glasses_items[] = { name[0].c_str(),name[1].c_str(),name[2].c_str(),name[3].c_str(),name[4].c_str(),name[5].c_str(),name[6].c_str(),name[7].c_str(),name[8].c_str(),name[9].c_str(), };
@@ -2007,16 +2007,16 @@ void LiveUI::UpdateVideoOptionsModal()
                if (ImGui::Button("Reset to default"))
                {
                   SaveValue(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glassesIndex + 1)).append("Name"s), defaultNames[glassesIndex]);
-                  SaveValue(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glassesIndex + 1)).append("LeftRed"), defaultAnaglyphColors[glassesIndex * 2].x);
-                  SaveValue(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glassesIndex + 1)).append("LeftGreen"), defaultAnaglyphColors[glassesIndex * 2].y);
-                  SaveValue(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glassesIndex + 1)).append("LeftBlue"), defaultAnaglyphColors[glassesIndex * 2].z);
-                  SaveValue(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glassesIndex + 1)).append("RightRed"), defaultAnaglyphColors[glassesIndex * 2 + 1].x);
-                  SaveValue(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glassesIndex + 1)).append("RightGreen"), defaultAnaglyphColors[glassesIndex * 2 + 1].y);
-                  SaveValue(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glassesIndex + 1)).append("RightBlue"), defaultAnaglyphColors[glassesIndex * 2 + 1].z);
+                  SaveValue(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glassesIndex + 1)).append("LeftRed"s), defaultAnaglyphColors[glassesIndex * 2].x);
+                  SaveValue(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glassesIndex + 1)).append("LeftGreen"s), defaultAnaglyphColors[glassesIndex * 2].y);
+                  SaveValue(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glassesIndex + 1)).append("LeftBlue"s), defaultAnaglyphColors[glassesIndex * 2].z);
+                  SaveValue(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glassesIndex + 1)).append("RightRed"s), defaultAnaglyphColors[glassesIndex * 2 + 1].x);
+                  SaveValue(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glassesIndex + 1)).append("RightGreen"s), defaultAnaglyphColors[glassesIndex * 2 + 1].y);
+                  SaveValue(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glassesIndex + 1)).append("RightBlue"s), defaultAnaglyphColors[glassesIndex * 2 + 1].z);
                }
                if (ImGui::InputText("Name", &name[glassesIndex]))
                   SaveValue(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glassesIndex + 1)).append("Name"s), name[glassesIndex]);
-               const char *filter_items[] = { "None", "Dubois", "Deghost", "Luminance", "Dyn. Desat.", };
+               static const char *filter_items[] = { "None", "Dubois", "Deghost", "Luminance", "Dyn. Desat.", };
                int anaglyphFilter = LoadValueWithDefault(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glassesIndex + 1)).append("Filter"s), 4);
                if (ImGui::Combo("Filter", &anaglyphFilter, filter_items, IM_ARRAYSIZE(filter_items)))
                   SaveValue(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glassesIndex + 1)).append("Filter"s), anaglyphFilter);
@@ -2065,7 +2065,7 @@ void LiveUI::UpdateAnaglyphCalibrationModal()
    {
       static int calibrationStep = -1;
       static float calibrationBrightness = 0.5f;
-      const string fields[] = { "LeftRed"s, "LeftGreen"s, "LeftBlue"s, "RightRed"s, "RightGreen"s, "RightBlue"s, };
+      static const string fields[] = { "LeftRed"s, "LeftGreen"s, "LeftBlue"s, "RightRed"s, "RightGreen"s, "RightBlue"s, };
       // use the right setting for the selected glasses (corresponding to their name)
       if (calibrationStep == -1)
       {
@@ -2137,8 +2137,8 @@ void LiveUI::UpdateAnaglyphCalibrationModal()
          }
       }*/
       // Perform calibration using a human face, see https://people.cs.uchicago.edu/~glk/pubs/pdf/Kindlmann-FaceBasedLuminanceMatching-VIS-2002.pdf
-      constexpr int faceLength[] = {9, 4, 7, 5, 5, 4, 4, 5, 4, 4, 4, 5, 4};
-      constexpr ImVec2 face[] = {
+      static constexpr int faceLength[] = {9, 4, 7, 5, 5, 4, 4, 5, 4, 4, 4, 5, 4};
+      static constexpr ImVec2 face[] = {
          ImVec2( 96.5f, 86.9f), ImVec2( 17.6f,-48.1f), ImVec2(  7.5f, -1.3f), ImVec2( 13.1f, -0.8f), ImVec2( 19.8f,  0.3f), ImVec2(22.5f,  1.6f), ImVec2(-14.2f,51.9f), ImVec2(-25.7f,14.2f), ImVec2(-16.8f,1.1f),
          ImVec2(176.9f, 38.5f), ImVec2( 37.7f, 25.7f), ImVec2( -7.8f, 33.7f), ImVec2(-44.1f, -7.5f),
          ImVec2(120.3f,105.6f), ImVec2(-14.7f, 39.8f), ImVec2( -1.3f, 13.6f), ImVec2( 16.6f,  1.3f), ImVec2( 24.6f,-35.0f), ImVec2( 0.8f,-15.5f), ImVec2( -9.1f,-5.3f),
@@ -2178,7 +2178,7 @@ void LiveUI::UpdateAnaglyphCalibrationModal()
       float y = win_size.y * 0.5f + t + line_height;
       string step_info = "Anaglyph glasses calibration step #"s.append(std::to_string(calibrationStep + 1)).append("/6");
       CENTERED_TEXT(y + 0 * line_height, step_info.c_str());
-      step_info = (calibrationStep < 3 ? "Left eye's "s : "Right eye's "s).append((calibrationStep % 3) == 0 ? "red": (calibrationStep % 3) == 1 ? "green": "blue").append(" perceived luminance: ").append(std::to_string((int)(calibrationBrightness * 100.f))).append("%%");
+      step_info = (calibrationStep < 3 ? "Left eye's "s : "Right eye's "s).append((calibrationStep % 3) == 0 ? "red"s : (calibrationStep % 3) == 1 ? "green"s : "blue"s).append(" perceived luminance: "s).append(std::to_string((int)(calibrationBrightness * 100.f))).append("%%"s);
       CENTERED_TEXT(y + 1 * line_height, step_info.c_str());
       CENTERED_TEXT(y + 3 * line_height, calibrationStep < 3 ? "Close your right eye" : "Close your left eye");
       CENTERED_TEXT(y + 5 * line_height, calibrationStep == 0 ? "Use Left Control to exit calibration" : "Use Left Control to move to previous step");

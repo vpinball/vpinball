@@ -1098,7 +1098,7 @@ bool Player::UpdateStereoShaderState(const bool fitRequired)
       // Glasses settings
       const int glasses = clamp(m_stereo3D - STEREO_ANAGLYPH_1 + 1, 1, 10);
       const int filter = LoadValueWithDefault(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glasses)).append("Filter"s), 4);
-      const vec3 defaultColors[] = {
+      static const vec3 defaultColors[] = {
          /* RC */ vec3(0.95f, 0.19f, 0.07f), vec3(0.06f, 0.92f, 0.28f),
          /* GM */ vec3(0.06f, 0.96f, 0.09f), vec3(0.61f, 0.16f, 0.66f),
          /* BA */ vec3(0.05f, 0.16f, 0.96f), vec3(0.61f, 0.66f, 0.09f),
@@ -1221,7 +1221,7 @@ bool Player::UpdateStereoShaderState(const bool fitRequired)
          // Compose anaglyph by applying John Einselen's contrast and deghosting method
          // see http://iaian7.com/quartz/AnaglyphCompositing & vectorform.com
          Matrix3D deghost;
-         const float contrast = 1.f; 
+         constexpr float contrast = 1.f; 
          if (colors == RED_CYAN)
          {
             const float a = 0.45f * contrast, b = 0.5f * (1.f - a);
@@ -1229,7 +1229,7 @@ bool Player::UpdateStereoShaderState(const bool fitRequired)
             const float c = 1.00f * contrast, d = 1.f - c;
             right = Matrix3D(0.f, 0.f, 0.f, 0.f, /**/   d,   c, 0.f, 0.f, /**/   d, 0.f,   c, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
             m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetVector(SHADER_Stereo_DeghostGamma, 1.00f, 1.15f, 1.15f, 0.00f);
-            const float e = 0.06f * 0.1f;
+            constexpr float e = 0.06f * 0.1f;
             deghost = Matrix3D(1.f + e, -0.5f*e, -0.5f*e, 0.f, /**/ -0.25f*e, 1.f + 0.5f*e, -0.25f*e, 0.f, /**/ -0.25f*e, -0.25f*e, 1.f + 0.5f*e, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
          }
          else if (colors == GREEN_MAGENTA)
@@ -1239,7 +1239,7 @@ bool Player::UpdateStereoShaderState(const bool fitRequired)
             const float c = 0.80f * contrast, d = 1.f - c;
             right = Matrix3D(  c,   d, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 0.f, /**/ 0.f,   d,   c, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
             m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetVector(SHADER_Stereo_DeghostGamma, 1.15f, 1.05f, 1.15f, 0.00f);
-            const float e = 0.06f * 0.275f;
+            constexpr float e = 0.06f * 0.275f;
             deghost = Matrix3D(1.f + 0.5f*e, -0.25f*e, -0.25f*e, 0.f, /**/ -0.5f*e, 1.f + 0.25f*e, -0.5f*e, 0.f, /**/ -0.25f*e, -0.25f*e, 1.f + 0.5f*e, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
          }
          else if (colors == BLUE_AMBER)
@@ -1249,7 +1249,7 @@ bool Player::UpdateStereoShaderState(const bool fitRequired)
             const float c = 1.00f * contrast, d = 1.f - c;
             right = Matrix3D(  c, 0.f,   d, 0.f, /**/ 0.f,   c,   d, 0.f, /**/ 0.f, 0.f, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
             m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetVector(SHADER_Stereo_DeghostGamma, 1.05f, 1.10f, 1.00f, 0.00f);
-            const float e = 0.06f * 0.275f;
+            constexpr float e = 0.06f * 0.275f;
             deghost = Matrix3D(1.f + 1.5f*e, -0.75f*e, -0.75f*e, 0.f, /**/ -0.75f*e, 1.f + 1.5f*e, -0.75f*e, 0.f, /**/ -1.5f*e, -1.5f*e, 1.f + 3.f*e, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
          }
          deghost.Transpose();
@@ -1942,10 +1942,10 @@ HRESULT Player::Init()
 
    // Popup notification on startup
    if (m_stereo3D != STEREO_OFF && m_stereo3D != STEREO_VR && !m_stereo3Denabled)
-      m_liveUI->PushNotification("3D Stereo is enabled but currently toggled off, press F10 to toggle 3D Stereo on", 4000);
+      m_liveUI->PushNotification("3D Stereo is enabled but currently toggled off, press F10 to toggle 3D Stereo on"s, 4000);
    if (m_supportsTouch && m_showTouchMessage) //!! visualize with real buttons or at least the areas?? Add extra buttons?
       m_liveUI->PushNotification("You can use Touch controls on this display: bottom left area to Start Game, bottom right area to use the Plunger\n"
-                                 "lower left/right for Flippers, upper left/right for Magna buttons, top left for Credits and (hold) top right to Exit", 12000);
+                                 "lower left/right for Flippers, upper left/right for Magna buttons, top left for Credits and (hold) top right to Exit"s, 12000);
 
    return S_OK;
 }

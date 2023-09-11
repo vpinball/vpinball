@@ -508,12 +508,12 @@ BOOL VideoOptionsDialog::OnInitDialog()
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Interlaced (e.g. LG TVs)");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Flipped Interlaced (e.g. LG TVs)");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Side by Side");
-   string name[10];
-   string defaultNames[] = { "Red/Cyan", "Green/Magenta", "Blue/Amber", "Cyan/Red", "Magenta/Green", "Amber/Blue", "Custom 1", "Custom 2", "Custom 3", "Custom 4", };
-   for (int i = 0; i < 10; i++)
+   static const string defaultNames[] = { "Red/Cyan"s, "Green/Magenta"s, "Blue/Amber"s, "Cyan/Red"s, "Magenta/Green"s, "Amber/Blue"s, "Custom 1"s, "Custom 2"s, "Custom 3"s, "Custom 4"s };
+   string name[std::size(defaultNames)];
+   for (size_t i = 0; i < std::size(defaultNames); i++)
       if (FAILED(LoadValue(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(i + 1)).append("Name"s), name[i])))
          name[i] = defaultNames[i];
-   for (int i = 0; i < 10; i++)
+   for (size_t i = 0; i < std::size(defaultNames); i++)
       SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)name[i].c_str());
    SendMessage(hwnd, CB_SETCURSEL, stereo3D, 0);
    SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
@@ -881,7 +881,7 @@ BOOL VideoOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             GetDlgItem(IDC_3D_STEREO_BRIGHTNESS).EnableWindow(true);
             GetDlgItem(IDC_3D_STEREO_DESATURATION).EnableWindow(true);
             GetDlgItem(IDC_3D_STEREO_ANAGLYPH_FILTER).EnableWindow(true);
-            int glassesIndex = stereo3D - STEREO_ANAGLYPH_1;
+            LRESULT glassesIndex = stereo3D - STEREO_ANAGLYPH_1;
             int anaglyphFilter = LoadValueWithDefault(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glassesIndex + 1)).append("Filter"s), 4);
             SendMessage(GetDlgItem(IDC_3D_STEREO_ANAGLYPH_FILTER), CB_SETCURSEL, anaglyphFilter, 0);
          }
@@ -1043,7 +1043,7 @@ void VideoOptionsDialog::OnOK()
    SaveValue(regKey[RegName::Player], "Stereo3DSaturation"s, GetDlgItemText(IDC_3D_STEREO_DESATURATION).c_str());
    if (IsAnaglyphStereoMode(stereo3D))
    {
-      int glassesIndex = stereo3D - STEREO_ANAGLYPH_1;
+      LRESULT glassesIndex = stereo3D - STEREO_ANAGLYPH_1;
       LRESULT anaglyphFilter = SendMessage(GetDlgItem(IDC_3D_STEREO_ANAGLYPH_FILTER).GetHwnd(), CB_GETCURSEL, 0, 0);
       if (anaglyphFilter == LB_ERR)
          anaglyphFilter = 4;

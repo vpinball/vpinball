@@ -1042,7 +1042,7 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
       else if (keycode == g_pplayer->m_rgKeys[ePlungerKey])
       {
          // Reset to default values
-         g_pplayer->m_liveUI->PushNotification("POV reseted to default values"s, 5000);
+         g_pplayer->m_liveUI->PushNotification("POV reset to default values"s, 5000);
          PinTable *const table = g_pplayer->m_ptable;
          ViewSetupID id = table->m_BG_current_set;
          ViewSetup &viewSetup = table->mViewSetups[id];
@@ -2079,10 +2079,10 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
                      if (g_pplayer->m_stereo3Denabled)
                      {
                         string name;
-                        string defaultNames[] = { "Red/Cyan", "Green/Magenta", "Blue/Amber", "Cyan/Red", "Magenta/Green", "Amber/Blue", "Custom 1", "Custom 2", "Custom 3", "Custom 4", };
+                        static const string defaultNames[] = { "Red/Cyan"s, "Green/Magenta"s, "Blue/Amber"s, "Cyan/Red"s, "Magenta/Green"s, "Amber/Blue"s, "Custom 1"s, "Custom 2"s, "Custom 3"s, "Custom 4"s };
                         if (FAILED(LoadValue(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glassesIndex)).append("Name"s), name)))
                            name = defaultNames[glassesIndex];
-                        g_pplayer->m_liveUI->PushNotification("Profile #"s.append(std::to_string(glassesIndex)).append(" '").append(name).append("' activated"), 2000);
+                        g_pplayer->m_liveUI->PushNotification("Profile #"s.append(std::to_string(glassesIndex)).append(" '"s).append(name).append("' activated"s), 2000);
                      }
                   }
                }
