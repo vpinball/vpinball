@@ -2,8 +2,4 @@ Renderer known issues:
 
 *) textboxes don't work properly, especially for high resolutions/scales
 *) text decals don't work?
-*) stereo 3D is only working soso since the tweaks to the depth buffer range, also does not seem to work with alternate depth processing path
-*) 4xMSAA flickers, thus disabled
-*) textures aren't preloaded, can lead to stutter in some cases
-*) adaptive vsync always falls back to normal vsync on XP and is hacky implemented on newer windows versions
 *) lost devices aren't handled properly (real fullscreen issue only)

@@ -661,7 +661,7 @@ void HitTarget::UpdateAnimation(const float diff_time_msec)
         if (m_moveAnimation)
         {
             float step = m_d.m_dropSpeed;
-            const float limit = 13.0f;
+            constexpr float limit = 13.0f;
             if (!m_moveDown)
                 step = -step;
             m_moveAnimationOffset += step*diff_time_msec;

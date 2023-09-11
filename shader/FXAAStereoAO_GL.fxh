@@ -449,12 +449,12 @@ void main()
 
 void main()
 {
-	const float2 u = tex0;
+   const float2 u = tex0;
 
-    const float4 sampleCenter = sampleOffseta(u, float2(0.0, 0.0), eye);
+   const float4 sampleCenter = sampleOffseta(u, float2(0.0, 0.0), eye);
 
-	const float depth0 = texStereoNoLod(tex_depth, u).x;
-	BRANCH if ((w_h_height.w == 1.0) && ((depth0 == 1.0) || (depth0 == 0.0))) // early out if depth too large (=BG) or too small (=DMD,etc)
+   const float depth0 = texStereoNoLod(tex_depth, u).x;
+   BRANCH if ((w_h_height.w == 1.0) && ((depth0 == 1.0) || (depth0 == 0.0))) // early out if depth too large (=BG) or too small (=DMD,etc)
    {
       color = float4(sampleCenter.xyz, 1.0);
       return;
@@ -513,8 +513,8 @@ void main()
    const float pass1EdgeAvgHoriz = saturate(( sampleHorizNeg2.a + sampleHorizNeg1.a + sampleHorizNeg15.a + sampleHorizNeg0.a + sampleHorizPos0.a + sampleHorizPos1.a + sampleHorizPos15.a + sampleHorizPos2.a ) * (2.0 / 8.0) - 1.0);
    const float pass1EdgeAvgVert  = saturate(( sampleVertNeg2.a  + sampleVertNeg1.a + sampleVertNeg15.a  + sampleVertNeg0.a  + sampleVertPos0.a + sampleVertPos1.a + sampleVertPos15.a  + sampleVertPos2.a  ) * (2.0 / 8.0) - 1.0);
 
-	BRANCH if(abs(pass1EdgeAvgHoriz - pass1EdgeAvgVert) > 0.2) //!! magic
-	{
+   BRANCH if(abs(pass1EdgeAvgHoriz - pass1EdgeAvgVert) > 0.2) //!! magic
+   {
         const float valueHorizLong = avg(sampleHorizNeg2.xyz + sampleHorizNeg1.xyz + sampleHorizNeg15.xyz + sampleHorizNeg0.xyz + sampleHorizPos0.xyz + sampleHorizPos1.xyz + sampleHorizPos15.xyz + sampleHorizPos2.xyz) * (1.0/8.0);
         const float valueVertLong  = avg(sampleVertNeg2.xyz  + sampleVertNeg1.xyz + sampleVertNeg15.xyz + sampleVertNeg0.xyz  + sampleVertPos0.xyz + sampleVertPos1.xyz + sampleVertPos15.xyz + sampleVertPos2.xyz) * (1.0/8.0);
 
@@ -540,10 +540,10 @@ void main()
         aaResult                   = lerp( aaResult, longBlurHoriz, pass1EdgeAvgHoriz * 0.5); //!! magic
 
         //test: return float4(aaResult,1.);
-	}
-	//test: return float4(0,0,0,1);
+   }
+   //test: return float4(0,0,0,1);
 
-	color =  /*test: float4(sampleCenter.a,sampleCenter.a,sampleCenter.a,1.0);*/ float4(aaResult, 1.0);
+   color = /*test: float4(sampleCenter.a,sampleCenter.a,sampleCenter.a,1.0);*/ float4(aaResult, 1.0);
 }
 
 ////FRAGMENT

@@ -313,7 +313,7 @@ bool ISelect::LoadToken(const int id, BiffReader * const pbr)
        {
           int tmp;
           pbr->GetInt(tmp);
-          m_oldLayerIndex = (char)tmp;
+          m_oldLayerIndex = (unsigned char)tmp;
           break;
        }
        case FID(LANR):

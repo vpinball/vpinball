@@ -525,8 +525,6 @@ void Trigger::UpdateAnimation(const float diff_time_msec)
       default:            animLimit = 32.0f; break;
    }
 
-   const float limit = animLimit;
-
    if (m_hitEvent)
    {
       m_doAnimation = true;
@@ -540,7 +538,7 @@ void Trigger::UpdateAnimation(const float diff_time_msec)
       m_doAnimation = true;
       m_unhitEvent = false;
       m_hitEvent = false;
-      m_animHeightOffset = limit;
+      m_animHeightOffset = animLimit;
       m_moveDown = false;
    }
 
@@ -553,9 +551,9 @@ void Trigger::UpdateAnimation(const float diff_time_msec)
 
       if (m_moveDown)
       {
-         if (m_animHeightOffset <= -limit)
+         if (m_animHeightOffset <= -animLimit)
          {
-            m_animHeightOffset = -limit;
+            m_animHeightOffset = -animLimit;
             m_doAnimation = false;
             m_moveDown = false;
          }

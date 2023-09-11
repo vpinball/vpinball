@@ -15,7 +15,7 @@ float ViewSetup::GetRotation(const int viewportWidth, const int viewportHeight) 
    }
    else
    {
-      float rot = fmod(mViewportRotation, 360.f);
+      float rot = fmodf(mViewportRotation, 360.f);
       return rot < 0.f ? (rot + 360.f) : rot;
    }
 }
@@ -175,7 +175,7 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
       const float ymax = zNear * tanf(0.5f * ANGTORAD(FOV));
       xcenter = zNear * 0.01f * (mViewVOfs * sinf(rotation) - mViewHOfs * cosf(rotation));
       ycenter = zNear * 0.01f * (mViewVOfs * cosf(rotation) + mViewHOfs * sinf(rotation));
-      yspan = ymax         ;
+      yspan = ymax;
       xspan = ymax * aspect;
       break;
    }
@@ -230,7 +230,7 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
       // - for cabinet (window) mode, we use the orthogonal distance to the screen (window)
       // - for camera mode, we place the 0 depth line on the lower third of the playfield
       // This way, we don't have negative parallax (objects closer than projection plane) and all the artefact they may cause
-      const float zNullSeparation = mMode == VLM_WINDOW ? (mViewZ - mWindowBottomZOfs + mViewY * tan(inc))
+      const float zNullSeparation = mMode == VLM_WINDOW ? (mViewZ - mWindowBottomZOfs + mViewY * tanf(inc))
                                                              : -lookat.MultiplyVector(Vertex3Ds(0.5f * (table->m_left + table->m_right), table->m_bottom * 0.66f /* For flipper bats: 1800.f / 2150.f*/, 0.f)).z;
       const float ofs = 0.5f * eyeSeparation * zNear / zNullSeparation;
       const float xOfs = ofs * cosf(rotation);

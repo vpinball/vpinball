@@ -20,8 +20,8 @@ float2 hash(const float2 gridcell)
 
 float3 get_nonunit_normal(const float depth0, const float2 u) // use neighboring pixels // quite some tex access by this
 {
-   const float depth1 = texNoLod(tex_depth, float2(u.x, u.y + w_h_height.y)).x;
-   const float depth2 = texNoLod(tex_depth, float2(u.x + w_h_height.x, u.y)).x;
+	const float depth1 = texNoLod(tex_depth, float2(u.x, u.y + w_h_height.y)).x;
+	const float depth2 = texNoLod(tex_depth, float2(u.x + w_h_height.x, u.y)).x;
 	return float3(w_h_height.y * (depth2 - depth0), (depth1 - depth0) * w_h_height.x, w_h_height.y * w_h_height.x); //!!
 }
 

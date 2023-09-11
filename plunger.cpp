@@ -339,7 +339,7 @@ void Plunger::RenderSetup()
    float springRadius = 0.0f;
    constexpr float springMinSpacing = 2.2f;
    float rody = beginy + m_d.m_height;
-   const float zScale = 1.f;
+   constexpr float zScale = 1.f;
 
    // note the number of cells in the source image
    int srcCells = m_d.m_animFrames;

@@ -368,11 +368,11 @@ BEGIN
     COMBOBOX        IDC_3D_STEREO,11,300,133,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Anaglyph Filter",IDC_STATIC,12,314,62,10
     COMBOBOX        IDC_3D_STEREO_ANAGLYPH_FILTER,79,313,65,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Anaglyph Brightness",IDC_STATIC,12,327,74,10
+    LTEXT           "Anaglyph Brightness",IDC_STATIC,12,327,87,10
     EDITTEXT        IDC_3D_STEREO_BRIGHTNESS,104,326,40,12,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Anaglyph Desaturation",IDC_STATIC,12,340,74,10
+    LTEXT           "Anaglyph Desaturation",IDC_STATIC,12,340,87,10
     EDITTEXT        IDC_3D_STEREO_DESATURATION,104,339,40,12,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Separation",IDC_3D_STEREO_MS_LABEL,12,353,80,10
+    LTEXT           "Separation",IDC_3D_STEREO_MS_LABEL,12,353,87,10
     EDITTEXT        IDC_3D_STEREO_ES,104,352,40,12,ES_RIGHT | ES_AUTOHSCROLL
     EDITTEXT        IDC_3D_STEREO_MS,104,352,40,12,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "ZPD",IDC_3D_STEREO_ZPD_LABEL,12,366,50,10
@@ -417,9 +417,9 @@ BEGIN
     GROUPBOX        "Input / Physics / Video Synchronization",IDC_STATIC,155,183,193,51
     LTEXT           "Synchronization mode",IDC_STATIC,162,195,80,10
     COMBOBOX        IDC_VIDEO_SYNC_MODE,249,193,92,100,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Maximum Framerate",IDC_STATIC,162,208,75,10
+    LTEXT           "Maximum Framerate",IDC_STATIC,162,208,87,10
     EDITTEXT        IDC_MAX_FPS,321,206,20,12,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Maximum pre-rendered Frames",IDC_STATIC,162,221,120,8
+    LTEXT           "Maximum pre-rendered Frames",IDC_STATIC,162,221,153,8
     EDITTEXT        IDC_MAX_PRE_FRAMES,321,219,20,12,ES_RIGHT | ES_AUTOHSCROLL
     GROUPBOX        "Performance and Troubleshooting",IDC_STATIC,154,236,193,138
     LTEXT           "Max. Ambient Occlusion",IDC_STATIC,162,248,97,10
@@ -428,15 +428,15 @@ BEGIN
     COMBOBOX        IDC_MAX_REFLECTION_COMBO,268,260,73,100,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Max. Texture Dimension",IDC_STATIC,162,274,97,10
     COMBOBOX        IDC_MAX_TEXTURE_COMBO,268,273,73,59,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Compress Texture (performance)",IDC_TEX_COMPRESS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,287,124,10
+    CONTROL         "Compress Textures (performance)",IDC_TEX_COMPRESS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,287,179,10
     CONTROL         "Force Anisotropic Texture Filtering (quality)",IDC_FORCE_ANISO,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,300,150,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,300,179,10
     CONTROL         "Force Bloom Filter off (performance)",IDC_BLOOM_OFF,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,313,127,10
-    CONTROL         "Use Alternative Depth Buffer processing",IDC_USE_NVIDIA_API_CHECK,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,326,127,10
-    CONTROL         "Use Software Vertex processing",IDC_SOFTWARE_VP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,339,104,10
-    LTEXT           "Elements Detail Level (decrease = performance)",IDC_STATIC,162,351,156,8
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,313,179,10
+    CONTROL         "Use Alternative Depth Buffer processing (legacy)",IDC_USE_NVIDIA_API_CHECK,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,326,179,10
+    CONTROL         "Use Software Vertex processing (legacy)",IDC_SOFTWARE_VP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,339,178,10
+    LTEXT           "Elements Detail Level (decrease = performance)",IDC_STATIC,162,351,179,8
     CONTROL         "",IDC_ARASlider,"msctls_trackbar32",TBS_AUTOTICKS | TBS_TOP | WS_TABSTOP,155,359,191,10
     PUSHBUTTON      "Reset to Defaults",IDC_DEFAULTS,154,378,61,14
     PUSHBUTTON      "Set for LowEnd PC",IDC_DEFAULTS_LOW,216,378,65,14
@@ -3953,7 +3953,7 @@ BEGIN
     IDS_STEP                "Step"
 END
 
-#endif    // Anglais (�tats-Unis) resources
+#endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
