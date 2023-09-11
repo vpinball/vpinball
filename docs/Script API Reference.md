@@ -744,7 +744,6 @@ The following methods only applies to mesh primitives with an animation sequence
 | *OverridePhysics | int |  overrides the table physics settings with pre defined settings defined under Preferences -> Physics Options. You can define up to 8 different physics settings for the table and the flippers. Save them to one of the 8 slots and by assigning the slot number to this OverridePhysics it overrides these settings. default=0 (means use table settings)
 | | | |
 | PhysicsLoopTime | int | the meaning of this has changed starting with 9.2.1: it specifies the maximum number of iterations spent in the physics update. by setting it f.e. to 1, the rendered frame updates will -always- match the physics updates, everything above 1 allows for multiple physics updates per frame (2, 3 or 4 can be good values for this, as it slows down the physics temporarily if the FPS drop below 50, 33 or 25 in these cases). default=-1 (which means infinite updates allowed)
-| YieldTime | int | time in milliseconds to sleep during each frame - can help side threads like vpinmame. default=0
 | | | |
 | BallImage | string |  
 | BallFrontDecal | string |  image of the ball front decal

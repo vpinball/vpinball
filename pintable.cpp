@@ -9375,6 +9375,7 @@ STDMETHODIMP PinTable::put_EnvironmentImage(BSTR newVal)
    return S_OK;
 }
 
+// deprecated
 STDMETHODIMP PinTable::get_YieldTime(long *pVal)
 {
    if (!g_pplayer)
@@ -9383,21 +9384,16 @@ STDMETHODIMP PinTable::get_YieldTime(long *pVal)
       return E_FAIL;
    }
    else
-      *pVal = g_pplayer->m_sleeptime;
+      *pVal = 0;
 
    return S_OK;
 }
 
+// deprecated
 STDMETHODIMP PinTable::put_YieldTime(long newVal)
 {
    if (!g_pplayer)
       return E_FAIL;
-   else
-   {
-      g_pplayer->m_sleeptime = newVal;
-      if (g_pplayer->m_sleeptime > 1000)
-         g_pplayer->m_sleeptime = 1000;
-   }
 
    return S_OK;
 }

@@ -19,6 +19,7 @@ Changelog:
 - add support for multiple custom DMDs by adding DMDWidth/DMDHeight/DMDPixels/DMDColoredPixels to flashers. The flasher will use the provided data if any, or defaults to the table data (captured or directly defined)
 - add Shadows property to Light element
 - add EnableDepthMask to the primitive element
+- YieldTime will now do nothing anymore
 
 10.7.4:
 - add Setting property to the globals
@@ -278,7 +279,6 @@ DefaultScatter(float) - default=0, overrides all elements that have scatter angl
 PhysicsLoopTime(int) - the meaning of this has changed starting with 9.2.1: it specifies the maximum number of iterations spent in the physics update.
                        by setting it f.e. to 1, the rendered frame updates will -always- match the physics updates, everything above 1 allows for multiple physics updates per frame
                        (2, 3 or 4 can be good values for this, as it slows down the physics temporarily if the FPS drop below 50, 33 or 25 in these cases). default=-1 (which means infinite updates allowed)
-YieldTime(int) - time in milliseconds to sleep during each frame - can help side threads like vpinmame. default=0
 
 BallImage(string) 
 BallFrontDecal(string) - image of the ball front decal

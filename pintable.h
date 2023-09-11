@@ -97,7 +97,9 @@ class PinTable : public CWnd,
 public:
    STDMETHOD(get_BallFrontDecal)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(put_BallFrontDecal)(/*[in]*/ BSTR newVal);
+   // deprecated
    STDMETHOD(get_YieldTime)(/*[out, retval]*/ long *pVal);
+   // deprecated
    STDMETHOD(put_YieldTime)(/*[in]*/ long newVal);
    STDMETHOD(get_BallImage)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(put_BallImage)(/*[in]*/ BSTR newVal);

@@ -107,8 +107,6 @@ Player::Player(const bool cameraMode, PinTable *const editor_table, PinTable *co
    for (int i = 0; i < PININ_JOYMXCNT; ++i)
       m_curAccel[i] = int2(0,0);
 
-   m_sleeptime = 0;
-
    m_audio = nullptr;
    m_pactiveball = nullptr;
 
@@ -4249,13 +4247,6 @@ void Player::OnIdle()
       // In pause mode: input, physics, animation and audio are not processed but rendering is still performed. This allows to modify properties (transform, visibility,..) using the debugger and get direct feedback
       if (!m_pause)
          m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(m_startFrameTick / 1000)); // trigger key events mainly for VPM<->VP roundtrip
-
-      if (m_sleeptime > 0)
-      {
-         Sleep(m_sleeptime - 1);
-         if (!m_pause)
-            m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(m_startFrameTick / 1000)); // trigger key events mainly for VPM<->VP roundtrip
-      }
 
       // Physics/Timer updates, done at the last moment, especially to handle key input (VP<->VPM roundtrip) and animation triggers
       if (!m_pause && m_minphyslooptime == 0) // (vsync) latency reduction code not active? -> Do Physics Updates here
