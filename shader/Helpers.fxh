@@ -102,6 +102,7 @@
     #define N_EYES 1
     #define FLT_MIN_VALUE 0.0000001
     #define texNoLod(tex, pos) tex2Dlod(tex, float4(pos, 0., 0.))
+    #define texStereoNoLod(tex, pos) texNoLod(tex, pos)
     #define BRANCH [branch]
     #define UNROLL [unroll]
     #define UNIFORM const
