@@ -1211,8 +1211,8 @@ bool Player::UpdateStereoShaderState(const bool fitRequired)
          const Matrix3D matRight2YYC(0.f, 0.f, 0.f, 0.f, /**/ rightLuminance.x, rightLuminance.y, rightLuminance.z, 0.f, /**/ chromacity.x, chromacity.y, chromacity.z, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
          left = matYYC2RGB * matLeft2YYC;
          right = matYYC2RGB * matRight2YYC;
-         m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetVector(SHADER_Stereo_LeftLuminance, leftLuminance.x, leftLuminance.y, leftLuminance.z, gamma);
-         m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetVector(SHADER_Stereo_RightLuminance, rightLuminance.x, rightLuminance.y, rightLuminance.z, gamma);
+         m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetVector(SHADER_Stereo_LeftLuminance_Gamma, leftLuminance.x, leftLuminance.y, leftLuminance.z, gamma);
+         m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetVector(SHADER_Stereo_RightLuminance, rightLuminance.x, rightLuminance.y, rightLuminance.z, 0.0f);
       }
       else if (filter == 2)
       {

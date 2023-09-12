@@ -269,7 +269,7 @@ Shader::ShaderUniform Shader::shaderUniformNames[SHADER_UNIFORM_COUNT] {
    SHADER_UNIFORM(SUT_Float4x4, Stereo_RightMat, 1), // Anaglyph Stereo
    SHADER_UNIFORM(SUT_Float4, Stereo_DeghostGamma, 1), // Anaglyph Stereo
    SHADER_UNIFORM(SUT_Float4x4, Stereo_DeghostFilter, 1), // Anaglyph Stereo
-   SHADER_UNIFORM(SUT_Float4, Stereo_LeftLuminance, 1), // Anaglyph Stereo
+   SHADER_UNIFORM(SUT_Float4, Stereo_LeftLuminance_Gamma, 1), // Anaglyph Stereo
    SHADER_UNIFORM(SUT_Float4, Stereo_RightLuminance, 1), // Anaglyph Stereo
 };
 #undef SHADER_UNIFORM

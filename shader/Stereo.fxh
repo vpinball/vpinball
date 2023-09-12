@@ -88,7 +88,7 @@ UNIFORM float4x4 Stereo_RightMat;
 // rivalry). There are two ways to do this:
 // - desaturation of the incoming colors (turn to gray), accounting for the loss of perceived luminance (Helmholtz–Kohlrausch effect)
 // - hue shifting which allows to keep saturated colors, but not the right ones (tested but without generally satisfying results).
-UNIFORM float4 Stereo_LeftLuminance;
+UNIFORM float4 Stereo_LeftLuminance_Gamma;
 UNIFORM float4 Stereo_RightLuminance;
 
 /*float3 HueShift(float3 color, float dhue)
@@ -96,34 +96,37 @@ UNIFORM float4 Stereo_RightLuminance;
     float s = sin(dhue);
     float c = cos(dhue);
     return (color * c) + (color * s) * mat3(
-		float3(0.167444, 0.329213, -0.496657),
-		float3(-0.327948, 0.035669, 0.292279),
-		float3(1.250268, -1.047561, -0.202707)
-	) + dot(float3(0.299, 0.587, 0.114), color) * (1.0 - c);
+        float3(0.167444, 0.329213, -0.496657),
+        float3(-0.327948, 0.035669, 0.292279),
+        float3(1.250268, -1.047561, -0.202707)
+    ) + dot(float3(0.299, 0.587, 0.114), color) * (1.0 - c);
 }*/
 
 // lCol/rCol are expected to be in sRGB color space
 void DynamicDesatAnaglyph(const float3 lCol, const float3 rCol, out float3 lDesatCol, out float3 rDesatCol)
 {
-    const float left2LeftLum = dot(pow(lCol, float3(Stereo_LeftLuminance.w, Stereo_LeftLuminance.w, Stereo_LeftLuminance.w)), Stereo_LeftLuminance.xyz);
-    const float left2RightLum = dot(pow(lCol, float3(Stereo_LeftLuminance.w, Stereo_LeftLuminance.w, Stereo_LeftLuminance.w)), Stereo_RightLuminance.xyz);
-    const float right2LeftLum = dot(pow(rCol, float3(Stereo_LeftLuminance.w, Stereo_LeftLuminance.w, Stereo_LeftLuminance.w)), Stereo_LeftLuminance.xyz);
-    const float right2RightLum = dot(pow(rCol, float3(Stereo_LeftLuminance.w, Stereo_LeftLuminance.w, Stereo_LeftLuminance.w)), Stereo_RightLuminance.xyz);
+    const float left2LeftLum = dot(pow(lCol, float3(Stereo_LeftLuminance_Gamma.w, Stereo_LeftLuminance_Gamma.w, Stereo_LeftLuminance_Gamma.w)), Stereo_LeftLuminance_Gamma.xyz);
+    const float left2RightLum = dot(pow(lCol, float3(Stereo_LeftLuminance_Gamma.w, Stereo_LeftLuminance_Gamma.w, Stereo_LeftLuminance_Gamma.w)), Stereo_RightLuminance.xyz);
+    const float right2LeftLum = dot(pow(rCol, float3(Stereo_LeftLuminance_Gamma.w, Stereo_LeftLuminance_Gamma.w, Stereo_LeftLuminance_Gamma.w)), Stereo_LeftLuminance_Gamma.xyz);
+    const float right2RightLum = dot(pow(rCol, float3(Stereo_LeftLuminance_Gamma.w, Stereo_LeftLuminance_Gamma.w, Stereo_LeftLuminance_Gamma.w)), Stereo_RightLuminance.xyz);
     const float leftLum = left2LeftLum + left2RightLum;
     const float rightLum = right2LeftLum + right2RightLum;
-    const float leftDesat = pow(saturate(abs((left2LeftLum - left2RightLum) / (leftLum + 0.0001))), 3);
-    const float rightDesat = pow(saturate(abs((right2LeftLum - right2RightLum) / (rightLum + 0.0001))), 3);
+    const float leftLumRatio = abs((left2LeftLum - left2RightLum) / (leftLum + 0.0001));
+    const float rightLumRatio = abs((right2LeftLum - right2RightLum) / (rightLum + 0.0001));
+    const float leftDesat = pow(leftLumRatio, 3.0);
+    const float rightDesat = pow(rightLumRatio, 3.0);
 #ifdef GLSL
-	lDesatCol = lerp(lCol, float3(leftLum), leftDesat);
-	rDesatCol = lerp(rCol, float3(rightLum), rightDesat);
+    lDesatCol = lerp(lCol, float3(leftLum), leftDesat);
+    rDesatCol = lerp(rCol, float3(rightLum), rightDesat);
 #else
     lDesatCol = lerp(lCol, leftLum, leftDesat);
     rDesatCol = lerp(rCol, rightLum, rightDesat);
 #endif
-	//lDesatCol = HueShift(lDesatCol, -leftDesat  * PI * 120. / 180.);
-	//rDesatCol = HueShift(rDesatCol, -rightDesat * PI * 120. / 180.);
-	//lDesatCol = HueShift(lCol, -leftDesat  * PI * 120. / 180.);
-	//rDesatCol = HueShift(rCol, -rightDesat * PI * 120. / 180.);
+    // Hue shift experiments for which no function that would work with any table was found
+    //lDesatCol = HueShift(lDesatCol, -leftDesat  * PI * 120. / 180.);
+    //rDesatCol = HueShift(rDesatCol, -rightDesat * PI * 120. / 180.);
+    //lDesatCol = HueShift(lCol, -leftDesat  * PI * 120. / 180.);
+    //rDesatCol = HueShift(rCol, -rightDesat * PI * 120. / 180.);
 }
 
 // Compose anaglyph linearly from stereo colors
