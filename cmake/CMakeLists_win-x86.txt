@@ -17,24 +17,8 @@ add_compile_definitions(
    ENABLE_INI_SETTINGS
 )
 
-add_compile_options(
-   $<$<CONFIG:RELEASE>:/Ob2>
-   $<$<CONFIG:RELEASE>:/O2>
-   $<$<CONFIG:RELEASE>:/Oi>
-   $<$<CONFIG:RELEASE>:/arch:SSE2>
-   $<$<CONFIG:RELEASE>:/fp:fast>
-   $<$<CONFIG:RELEASE>:/fp:except->
-   $<$<CONFIG:RELEASE>:/Ot>
-   $<$<CONFIG:RELEASE>:/GF>
-   $<$<CONFIG:RELEASE>:/GS->
-   $<$<CONFIG:RELEASE>:/Gy>
-   $<$<CONFIG:RELEASE>:/GR->
-   $<$<CONFIG:RELEASE>:/Oy>
-   $<$<CONFIG:RELEASE>:/GT>
-   $<$<CONFIG:RELEASE>:/GL>
-   $<$<CONFIG:RELEASE>:/w44005>
-   /Zc:__cplusplus
-   /std:c++20
+set_source_files_properties(
+   inc/miniz/miniz.c PROPERTIES LANGUAGE CXX
 )
 
 set_source_files_properties(
@@ -280,8 +264,11 @@ add_executable(vpinball WIN32
    inc/Sci_Position.h
    inc/stb_image.h
    inc/ThreadPool.h
+   inc/mINI/ini.h
    inc/tinyxml2/tinyxml2.cpp
    inc/tinyxml2/tinyxml2.h
+   inc/miniz/miniz.c
+   inc/miniz/miniz.h
    inc/win32xx/include/wxx_appcore.h
    inc/win32xx/include/wxx_appcore0.h
    inc/win32xx/include/wxx_archive.h
@@ -586,7 +573,6 @@ target_include_directories(vpinball PUBLIC
    ${CMAKE_CURRENT_SOURCE_DIR}
    ${CMAKE_CURRENT_BINARY_DIR}/$(IntDir)
    ${CMAKE_CURRENT_BINARY_DIR}/$(IntDir)/shader
-   inc
    inc/win32xx/include
    dialogs
    media
@@ -596,6 +582,13 @@ target_include_directories(vpinball PUBLIC
 
 target_precompile_headers(vpinball PUBLIC
    stdafx.h
+)
+
+set(OPT_COMMON /Ob2 /O2 /Oi /arch:SSE2 /fp:fast /fp:except- /Ot /GF /GS- /Gy /GR- /Oy /GT /GL /w44005 /Zc:__cplusplus /std:c++20)
+
+target_compile_options(vpinball PUBLIC
+   $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:CXX>:${OPT_COMMON}>>
+   $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C>:${OPT_COMMON}>>
 )
 
 target_link_directories(vpinball PUBLIC 
@@ -636,7 +629,6 @@ set_target_properties(vpinball PROPERTIES
 )
 
 add_custom_command(TARGET vpinball POST_BUILD
-   COMMAND "${CMAKE_COMMAND}" -E make_directory "$<TARGET_FILE_DIR:vpinball>/user"
    COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/scripts" "$<TARGET_FILE_DIR:vpinball>/scripts"
    COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/tables" "$<TARGET_FILE_DIR:vpinball>/tables"
    COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/txt" "$<TARGET_FILE_DIR:vpinball>/docs"

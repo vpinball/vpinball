@@ -1,0 +1,75 @@
+# Configuration for iPhone OS, making static libs
+# this will generate both iPhone (arm) and iPhoneSimulator (i386) libs
+
+include Makefile.srcs
+
+CFLAGS = -std=c99 -g -O2 -Wall -Wmissing-prototypes -ffast-math -fno-strict-aliasing -D__ANSI__ -emit-llvm -Wno-c++11-narrowing -Wno-implicit-function-declaration
+CXXFLAGS = -std=gnu++14 -stdlib=libc++ -D__ANSI__ -emit-llvm -Wno-c++11-narrowing -Wno-implicit-function-declaration -fvisibility-inlines-hidden
+
+ARCH_X64 = x64
+ARCH_ARM64 = arm64
+
+PLATFORM_DEVELOPER_BIN_DIR = $(shell xcode-select -print-path)/Toolchains/XcodeDefault.xctoolchain/usr/bin
+
+SDKROOT = $(shell xcode-select -print-path)/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk
+$(info VAR is $(SDKROOT))
+
+EXTRA_CFLAGS_X64 += -arch $(ARCH_X64) -pipe -mdynamic-no-pic -fvisibility=hidden $(INCLUDE) -isysroot $(SDKROOT) -DDISABLE_PERF_MEASUREMENT -DPNG_ARM_NEON_OPT=0
+
+# Xcode complains about the -mdynamic-no-pic with an Apple Mach-O Linker Warning, so removed
+EXTRA_CFLAGS_ARM64 += -arch $(ARCH_ARM64) -pipe -fvisibility=hidden $(INCLUDE) -isysroot $(SDKROOT) -DDISABLE_PERF_MEASUREMENT -DPNG_ARM_NEON_OPT=0
+
+CC = $(PLATFORM_DEVELOPER_BIN_DIR)/clang
+CXX = $(PLATFORM_DEVELOPER_BIN_DIR)/clang++
+LIBTOOL = $(PLATFORM_DEVELOPER_BIN_DIR)/libtool
+
+CFLAGS_X64 = $(CFLAGS) $(EXTRA_CFLAGS_X64)
+CXXFLAGS_X64 += $(EXTRA_CFLAGS_X64) $(CXXFLAGS)
+
+CFLAGS_ARM64 = $(CFLAGS) $(EXTRA_CFLAGS_ARM64)
+CXXFLAGS_ARM64 += $(EXTRA_CFLAGS_ARM64) $(CXXFLAGS)
+
+TARGET = freeimage
+STATICLIB_X64 = lib$(TARGET)-$(ARCH_X64)-simulator.a
+STATICLIB_ARM64 = lib$(TARGET)-$(ARCH_ARM64).a
+HEADER = Source/FreeImage.h
+
+.SUFFIXES: .o-X64-$(ARCH_X64) .o-$(ARCH_ARM64)
+MODULES_ARM = $(SRCS:.c=.o-$(ARCH_ARM64))
+MODULES_ARM := $(MODULES_ARM:.cpp=.o-$(ARCH_ARM64))
+MODULES_X64 = $(SRCS:.c=.o-X64-$(ARCH_X64))
+MODULES_X64 := $(MODULES_X64:.cpp=.o-X64-$(ARCH_X64))
+
+default: all
+
+all: dist
+
+dist: FreeImage
+	mkdir -p Dist
+	cp *.a Dist/
+	cp Source/FreeImage.h Dist/
+
+#FreeImage: $(STATICLIB_X64) $(STATICLIB_ARM64)
+FreeImage: $(STATICLIB_ARM64)
+
+$(STATICLIB_X64): $(MODULES_X64)
+	$(LIBTOOL) -arch_only $(ARCH_X64) -o $@ $(MODULES_X64)
+
+.c.o-X64-$(ARCH_X64):
+	$(CC) $(CFLAGS_X64) -c $< -o $@
+
+.cpp.o-X64-$(ARCH_X64):
+	$(CXX) $(CXXFLAGS_X64) -c $< -o $@
+
+
+$(STATICLIB_ARM64): $(MODULES_ARM)
+	$(LIBTOOL) -arch_only $(ARCH_ARM64) -o $@ $(MODULES_ARM)
+
+.c.o-$(ARCH_ARM64):
+	$(CC) $(CFLAGS_ARM64) -c $< -o $@
+
+.cpp.o-$(ARCH_ARM64):
+	$(CXX) $(CXXFLAGS_ARM64) -c $< -o $@
+
+clean:
+	rm -f core Dist/*.* u2dtmp* $(MODULES_X64) $(MODULES_ARM) $(STATICLIB_X64) $(STATICLIB_ARM64)

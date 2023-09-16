@@ -229,8 +229,10 @@ void IEditable::SetName(const string& name)
     // first update name in the codeview before updating it in the element itself
     pt->m_pcv->ReplaceName(GetScriptable(), namePtr);
     lstrcpynW(GetScriptable()->m_wzName, namePtr, sizeof(GetScriptable()->m_wzName)/sizeof(GetScriptable()->m_wzName[0]));
+#ifndef __STANDALONE__
     g_pvp->GetLayersListDialog()->UpdateElement(this);
     g_pvp->SetPropSel(GetPTable()->m_vmultisel);
+#endif
     STOPUNDO
 }
 

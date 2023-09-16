@@ -1,0 +1,64 @@
+diff --git a/Source/LibJXR/image/decode/segdec.c b/Source/LibJXR/image/decode/segdec.c
+index 1299458..c59fe09 100644
+--- a/Source/LibJXR/image/decode/segdec.c
++++ b/Source/LibJXR/image/decode/segdec.c
+@@ -26,6 +26,11 @@
+ //
+ //*@@@---@@@@******************************************************************
+ 
++#ifdef __APPLE__
++    #include <libkern/OSByteOrder.h>
++    #define _byteswap_ulong(x) _OSSwapInt32
++#endif
++
+ #include "strcodec.h"
+ #include "decode.h"
+ 
+diff --git a/Source/LibJXR/jxrgluelib/JXRGlueJxr.c b/Source/LibJXR/jxrgluelib/JXRGlueJxr.c
+index 2bf085a..23733fe 100644
+--- a/Source/LibJXR/jxrgluelib/JXRGlueJxr.c
++++ b/Source/LibJXR/jxrgluelib/JXRGlueJxr.c
+@@ -26,6 +26,11 @@
+ // POSSIBILITY OF SUCH DAMAGE.
+ //
+ //*@@@---@@@@******************************************************************
++
++#ifdef __APPLE__
++    #include <wchar.h>
++#endif
++
+ #include <limits.h>
+ #include <JXRGlue.h>
+ 
+diff --git a/Source/ZLib/gzguts.h b/Source/ZLib/gzguts.h
+index 990a4d2..3cf035e 100644
+--- a/Source/ZLib/gzguts.h
++++ b/Source/ZLib/gzguts.h
+@@ -3,6 +3,10 @@
+  * For conditions of distribution and use, see copyright notice in zlib.h
+  */
+ 
++#ifdef __APPLE__
++    #include <unistd.h>
++#endif
++
+ #ifdef _LARGEFILE64_SOURCE
+ #  ifndef _LARGEFILE_SOURCE
+ #    define _LARGEFILE_SOURCE 1
+diff --git a/Source/ZLib/gzlib.c b/Source/ZLib/gzlib.c
+index 4105e6a..77feaaf 100644
+--- a/Source/ZLib/gzlib.c
++++ b/Source/ZLib/gzlib.c
+@@ -15,6 +15,12 @@
+ #endif
+ #endif
+ 
++#ifdef __APPLE__
++    #define _LARGEFILE64_SOURCE     /* See feature_test_macros(7) */
++    #include <sys/types.h>
++    #include <unistd.h>
++#endif
++
+ /* Local functions */
+ local void gz_reset OF((gz_statep));
+ local gzFile gz_open OF((const void *, int, const char *));

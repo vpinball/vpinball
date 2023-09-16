@@ -1,0 +1,670 @@
+cmake_minimum_required(VERSION 3.26)
+
+file(READ vpversion.h version)
+string(REGEX MATCH "VP_VERSION_MAJOR[ ]+([0-9]+)" _tmp ${version})
+set(VERSION_MAJOR "${CMAKE_MATCH_1}")
+string(REGEX MATCH "VP_VERSION_MINOR[ ]+([0-9]+)" _tmp ${version})
+set(VERSION_MINOR "${CMAKE_MATCH_1}")
+string(REGEX MATCH "VP_VERSION_REV[ ]+([0-9]+)" _tmp ${version})
+set(VERSION_REV "${CMAKE_MATCH_1}")
+
+project(vpinball VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}")
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_C_STANDARD 99)
+set(CMAKE_OSX_ARCHITECTURES x86_64)
+
+add_library(glad
+   inc/glad/src/gl.c
+)
+
+target_include_directories(glad PUBLIC
+   inc/glad/include
+)
+
+find_package(BISON 3.8.2 REQUIRED)
+bison_target(vbsparser ${CMAKE_SOURCE_DIR}/standalone/inc/wine/dlls/vbscript/parser.y ${CMAKE_SOURCE_DIR}/standalone/inc/wine/dlls/vbscript/parser.tab.c 
+	     DEFINES_FILE ${CMAKE_SOURCE_DIR}/standalone/inc/wine/dlls/vbscript/parser.tab.h)
+
+add_compile_definitions(
+   __STANDALONE__
+  
+   ENABLE_SDL
+   ENABLE_SDL_INPUT
+   ENABLE_INI_SETTINGS
+
+   __WINESRC__
+   WINE_UNICODE_NATIVE
+
+   WINE_NO_TRACE_MSGS
+   WINE_NO_DEBUG_MSGS
+)
+
+add_definitions( 
+   "-D__forceinline=__attribute__((always_inline)) inline" 
+)
+
+add_executable(vpinball
+   backGlass.cpp
+   backGlass.h
+   bulb.cpp
+   bulb.h
+   codeviewedit.cpp
+   codeviewedit.h
+   flasher.cpp
+   flasher.h
+   hittarget.cpp
+   hittarget.h
+   imgui/imconfig.h
+   imgui/imgui.cpp
+   imgui/imgui.h
+   imgui/imgui_draw.cpp
+   imgui/imgui_impl_opengl3.cpp
+   imgui/imgui_impl_opengl3.h
+   imgui/imgui_impl_sdl2.cpp
+   imgui/imgui_impl_sdl2.h
+   imgui/imgui_stdlib.cpp
+   imgui/imgui_stdlib.h
+   imgui/imgui_tables.cpp
+   imgui/imgui_widgets.cpp
+   imgui/imgui_internal.h
+   imgui/ImGuizmo.cpp
+   imgui/ImGuizmo.h
+   imgui/implot/implot.cpp
+   imgui/implot/implot.h
+   imgui/implot/implot_items.cpp
+   imgui/implot/implot_internal.h
+   inc/gpuprofiler.cpp
+   inc/gpuprofiler.h
+   inc/progmesh.cpp
+   inc/progmesh.h
+   inc/ThreadPool.h
+   inc/mINI/ini.h
+   inc/tinyxml2/tinyxml2.cpp
+   inc/tinyxml2/tinyxml2.h
+   inc/miniz/miniz.c
+   inc/miniz/miniz.h   
+   inc/robin_hood.h
+   IndexBuffer.cpp
+   IndexBuffer.h
+   MeshBuffer.cpp
+   MeshBuffer.h
+   math/bbox.h
+   math/math.cpp
+   math/math.h
+   math/matrix.cpp
+   math/matrix.h
+   math/vector.h
+   media/fileio.cpp
+   media/fileio.h
+   media/lzwreader.cpp
+   media/lzwreader.h
+   media/lzwwriter.cpp
+   media/lzwwriter.h
+   kdtree.cpp
+   kdtree.h
+   objloader.cpp
+   objloader.h
+   pin/ball.cpp
+   pin/ball.h
+   pin/collide.cpp
+   pin/collide.h
+   pin/collideex.cpp
+   pin/collideex.h
+   pin/hitflipper.cpp
+   pin/hitflipper.h
+   pin/hitplunger.cpp
+   pin/hitplunger.h
+   pin/player.cpp
+   pin/player.h
+   ballex.cpp
+   ballex.h
+   bumper.cpp
+   bumper.h
+   codeview.cpp
+   codeview.h
+   decal.cpp
+   decal.h
+   def.cpp
+   def.h
+   dispid.h
+   dispreel.cpp
+   dispreel.h
+   disputil.cpp
+   disputil.h
+   dragpoint.cpp
+   dragpoint.h
+   editablereg.h
+   eventproxy.h
+   extern.cpp
+   extern.h
+   flipper.cpp
+   flipper.h
+   hid.cpp
+   hid.h
+   gate.cpp
+   gate.h
+   hitrectsur.cpp
+   hitrectsur.h
+   hitsur.cpp
+   hitsur.h
+   idebug.h
+   ieditable.cpp
+   ieditable.h
+   iselect.cpp
+   iselect.h
+   kicker.cpp
+   kicker.h
+   light.cpp
+   light.h
+   lightseq.cpp
+   lightseq.h
+   LiveUI.cpp
+   LiveUI.h
+   Material.h
+   mesh.cpp
+   mesh.h
+   meshes/ballMesh.h
+   meshes/bulbLightMesh.h
+   meshes/bulbSocketMesh.h
+   meshes/bumperBaseMesh.h
+   meshes/bumperCapMesh.h
+   meshes/bumperRingMesh.h
+   meshes/bumperSocketMesh.h
+   meshes/dropTargetT2Mesh.h
+   meshes/dropTargetT3Mesh.h
+   meshes/dropTargetT4Mesh.h
+   meshes/flipperBase.h
+   meshes/gateBracketMesh.h
+   meshes/gateLongPlateMesh.h
+   meshes/gatePlateMesh.h
+   meshes/gateWireMesh.h
+   meshes/gateWireRectangleMesh.h
+   meshes/hitTargetFatRectangleMesh.h
+   meshes/hitTargetFatSquareMesh.h
+   meshes/hitTargetRectangleMesh.h
+   meshes/hitTargetRoundMesh.h
+   meshes/hitTargetT1SlimMesh.h
+   meshes/hitTargetT2SlimMesh.h
+   meshes/kickerCupMesh.h
+   meshes/kickerHitMesh.h
+   meshes/kickerHoleMesh.h
+   meshes/kickerSimpleHoleMesh.h
+   meshes/spinnerBracketMesh.h
+   meshes/spinnerPlateMesh.h
+   meshes/triggerSimpleMesh.h
+   meshes/triggerStarMesh.h
+   mixer.cpp
+   mixer.h
+   physconst.h
+   pin3d.cpp
+   pin3d.h
+   pinbinary.cpp
+   pinbinary.h
+   pininput.cpp
+   pininput.h
+   pinsound.cpp
+   pinsound.h
+   pintable.cpp
+   pintable.h
+   pinundo.cpp
+   pinundo.h
+   plumb.cpp
+   plumb.h
+   plunger.cpp
+   plunger.h
+   primitive.cpp
+   primitive.h
+   quadtree.cpp
+   quadtree.h
+   ramp.cpp
+   ramp.h
+   regutil.cpp
+   regutil.h
+   RenderDevice.cpp
+   RenderDevice.h
+   RenderCommand.cpp
+   RenderCommand.h
+   RenderFrame.cpp
+   RenderFrame.h
+   RenderPass.cpp
+   RenderPass.h
+   RenderProbe.cpp
+   RenderProbe.h
+   RenderState.cpp
+   RenderState.h
+   RenderTarget.cpp
+   RenderTarget.h
+   Sampler.cpp
+   Sampler.h
+   rubber.cpp
+   rubber.h
+   Shader.cpp
+   Shader.h
+   spinner.cpp
+   spinner.h
+   surface.cpp
+   surface.h
+   textbox.cpp
+   textbox.h
+   Texture.cpp
+   Texture.h
+   TextureManager.cpp
+   TextureManager.h
+   timer.cpp
+   timer.h
+   trigger.cpp
+   trigger.h
+   variant.cpp
+   variant.h
+   vector.h
+   vectorsort.h
+   main.h
+   main.cpp
+   VertexBuffer.cpp
+   VertexBuffer.h
+   ViewSetup.cpp
+   ViewSetup.h
+   vpinball.cpp
+   wintimer.cpp
+   wintimer.h
+
+   typedefs3D.h
+
+   vpinball_h.h
+   standalone/vpinball_standalone_i.c
+   standalone/vpinball_standalone_i.h
+   standalone/vpinball_standalone_i_proxy.cpp
+
+   audioplayer.cpp
+   audioplayer.h
+
+   standalone/inc/webserver/mongoose.c
+   standalone/inc/webserver/mongoose.h
+   standalone/inc/webserver/WebServer.cpp
+   standalone/inc/webserver/WebServer.h
+
+   standalone/inc/alphanumeric/AlphaNumeric.h
+   standalone/inc/alphanumeric/AlphaNumeric.cpp
+
+   standalone/inc/zedmd/ZeDMDUtil.cpp
+   standalone/inc/zedmd/ZeDMDUtil.h
+
+   standalone/inc/serum/Serum.cpp
+   standalone/inc/serum/Serum.h
+
+   standalone/inc/pole/pole.cpp
+
+   standalone/PoleStream.cpp
+   standalone/PoleStorage.cpp
+
+   standalone/inc/vpinmame/VPinMAMEController.cpp
+   standalone/inc/vpinmame/VPinMAMEController.h
+   standalone/inc/vpinmame/VPinMAMEControllerSettings.cpp
+   standalone/inc/vpinmame/VPinMAMEControllerSettings.h
+   standalone/inc/vpinmame/VPinMAMEGame.cpp
+   standalone/inc/vpinmame/VPinMAMEGame.h
+   standalone/inc/vpinmame/VPinMAMEGames.cpp
+   standalone/inc/vpinmame/VPinMAMEGames.h
+   standalone/inc/vpinmame/VPinMAMEGameSettings.cpp
+   standalone/inc/vpinmame/VPinMAMEGameSettings.h
+   standalone/inc/vpinmame/VPinMAMERom.cpp
+   standalone/inc/vpinmame/VPinMAMERom.h
+   standalone/inc/vpinmame/VPinMAMERoms.cpp
+   standalone/inc/vpinmame/VPinMAMERoms.h
+   standalone/inc/vpinmame/vpinmame_i_proxy.cpp
+   standalone/inc/vpinmame/vpinmame_i.c
+   standalone/inc/vpinmame/vpinmame_i.h
+
+   standalone/inc/wmp/WMPCore.cpp
+   standalone/inc/wmp/WMPCore.h
+   standalone/inc/wmp/WMPControls.cpp
+   standalone/inc/wmp/WMPControls.h
+   standalone/inc/wmp/WMPSettings.cpp
+   standalone/inc/wmp/WMPSettings.h
+   standalone/inc/wmp/wmp_i_proxy.cpp
+   standalone/inc/wmp/wmp_i.c
+   standalone/inc/wmp/wmp_i.h
+
+   standalone/inc/ultradmd/UltraDMDDMDObject.cpp
+   standalone/inc/ultradmd/UltraDMDDMDObject.h
+   standalone/inc/ultradmd/ultradmd_i_proxy.cpp
+   standalone/inc/ultradmd/ultradmd_i.c
+   standalone/inc/ultradmd/ultradmd_i.h
+
+   standalone/inc/flexdmd/actions/ActionFactory.cpp
+   standalone/inc/flexdmd/actions/ActionFactory.h
+   standalone/inc/flexdmd/actions/Action.cpp
+   standalone/inc/flexdmd/actions/Action.h
+   standalone/inc/flexdmd/actions/RepeatAction.cpp
+   standalone/inc/flexdmd/actions/RepeatAction.h
+   standalone/inc/flexdmd/actions/SequenceAction.cpp
+   standalone/inc/flexdmd/actions/SequenceAction.h
+   standalone/inc/flexdmd/actions/ParallelAction.cpp
+   standalone/inc/flexdmd/actions/ParallelAction.h
+   standalone/inc/flexdmd/actions/ShowAction.cpp
+   standalone/inc/flexdmd/actions/ShowAction.h
+   standalone/inc/flexdmd/actions/BlinkAction.cpp
+   standalone/inc/flexdmd/actions/BlinkAction.h
+   standalone/inc/flexdmd/actions/AddToAction.cpp
+   standalone/inc/flexdmd/actions/AddToAction.h
+   standalone/inc/flexdmd/actions/RemoveFromParentAction.cpp
+   standalone/inc/flexdmd/actions/RemoveFromParentAction.h
+   standalone/inc/flexdmd/actions/AddChildAction.cpp
+   standalone/inc/flexdmd/actions/AddChildAction.h
+   standalone/inc/flexdmd/actions/SeekAction.cpp
+   standalone/inc/flexdmd/actions/SeekAction.h
+   standalone/inc/flexdmd/actions/WaitAction.cpp
+   standalone/inc/flexdmd/actions/WaitAction.h
+   standalone/inc/flexdmd/actions/DelayedAction.cpp
+   standalone/inc/flexdmd/actions/DelayedAction.h
+   standalone/inc/flexdmd/actions/TweenAction.cpp
+   standalone/inc/flexdmd/actions/TweenAction.h
+   standalone/inc/flexdmd/actions/MoveToAction.cpp
+   standalone/inc/flexdmd/actions/MoveToAction.h
+   standalone/inc/flexdmd/actors/Actor.cpp
+   standalone/inc/flexdmd/actors/Actor.h
+   standalone/inc/flexdmd/actors/AnimatedActor.cpp
+   standalone/inc/flexdmd/actors/AnimatedActor.h
+   standalone/inc/flexdmd/actors/ImageSequence.cpp
+   standalone/inc/flexdmd/actors/ImageSequence.h
+   standalone/inc/flexdmd/actors/GIFImage.cpp
+   standalone/inc/flexdmd/actors/GIFImage.h
+   standalone/inc/flexdmd/actors/Frame.cpp
+   standalone/inc/flexdmd/actors/Frame.h
+   standalone/inc/flexdmd/actors/FadeOverlay.cpp
+   standalone/inc/flexdmd/actors/FadeOverlay.h
+   standalone/inc/flexdmd/actors/Group.cpp
+   standalone/inc/flexdmd/actors/Group.h
+   standalone/inc/flexdmd/actors/Image.cpp
+   standalone/inc/flexdmd/actors/Image.h
+   standalone/inc/flexdmd/actors/Label.cpp
+   standalone/inc/flexdmd/actors/Label.h
+   standalone/inc/flexdmd/actors/Video.cpp
+   standalone/inc/flexdmd/actors/Video.h
+   standalone/inc/flexdmd/filters/BitmapFilter.cpp
+   standalone/inc/flexdmd/filters/BitmapFilter.h
+   standalone/inc/flexdmd/filters/RegionFilter.cpp
+   standalone/inc/flexdmd/filters/RegionFilter.h
+   standalone/inc/flexdmd/filters/PadFilter.cpp
+   standalone/inc/flexdmd/filters/PadFilter.h
+   standalone/inc/flexdmd/filters/DotFilter.cpp
+   standalone/inc/flexdmd/filters/DotFilter.h
+   standalone/inc/flexdmd/filters/AdditiveFilter.cpp
+   standalone/inc/flexdmd/filters/AdditiveFilter.h
+   standalone/inc/flexdmd/FlexDMD.cpp
+   standalone/inc/flexdmd/FlexDMD.h
+   standalone/inc/flexdmd/AssetSrc.cpp
+   standalone/inc/flexdmd/AssetSrc.h
+   standalone/inc/flexdmd/AssetManager.cpp
+   standalone/inc/flexdmd/AssetManager.h
+   standalone/inc/flexdmd/Bitmap.cpp
+   standalone/inc/flexdmd/Bitmap.h
+   standalone/inc/flexdmd/actors/Font.cpp
+   standalone/inc/flexdmd/actors/Font.h
+   standalone/inc/flexdmd/Graphics.cpp
+   standalone/inc/flexdmd/Graphics.h
+   standalone/inc/flexdmd/Layout.cpp
+   standalone/inc/flexdmd/Layout.h
+   standalone/inc/flexdmd/UltraDMD.cpp
+   standalone/inc/flexdmd/UltraDMD.h
+   standalone/inc/flexdmd/FontDef.cpp
+   standalone/inc/flexdmd/FontDef.h
+   standalone/inc/flexdmd/ImageSequenceDef.cpp
+   standalone/inc/flexdmd/ImageSequenceDef.h
+   standalone/inc/flexdmd/VideoDef.cpp
+   standalone/inc/flexdmd/VideoDef.h
+   standalone/inc/flexdmd/actors/ScoreBoard.cpp
+   standalone/inc/flexdmd/actors/ScoreBoard.h
+   standalone/inc/flexdmd/scenes/AnimationType.h
+   standalone/inc/flexdmd/scenes/Scene.cpp
+   standalone/inc/flexdmd/scenes/Scene.h
+   standalone/inc/flexdmd/scenes/Sequence.cpp
+   standalone/inc/flexdmd/scenes/Sequence.h
+   standalone/inc/flexdmd/scenes/SingleLineScene.cpp
+   standalone/inc/flexdmd/scenes/SingleLineScene.h
+   standalone/inc/flexdmd/scenes/TwoLineScene.cpp
+   standalone/inc/flexdmd/scenes/TwoLineScene.h
+   standalone/inc/flexdmd/scenes/BackgroundScene.cpp
+   standalone/inc/flexdmd/scenes/BackgroundScene.h
+   standalone/inc/flexdmd/scenes/ScrollingCreditsScene.cpp
+   standalone/inc/flexdmd/scenes/ScrollingCreditsScene.h
+   standalone/inc/flexdmd/flexudmd_i_proxy.cpp
+   standalone/inc/flexdmd/flexudmd_i.c
+   standalone/inc/flexdmd/flexudmd_i.h
+   standalone/inc/flexdmd/flexdmd_i_proxy.cpp
+   standalone/inc/flexdmd/flexdmd_i.c
+   standalone/inc/flexdmd/flexdmd_i.h
+   standalone/inc/flexdmd/bmfonts/BitmapFont.cpp
+   standalone/inc/flexdmd/bmfonts/BitmapFont.h
+   standalone/inc/flexdmd/bmfonts/Character.cpp
+   standalone/inc/flexdmd/bmfonts/Character.h
+   standalone/inc/flexdmd/bmfonts/Kerning.cpp
+   standalone/inc/flexdmd/bmfonts/Kerning.h
+   standalone/inc/flexdmd/bmfonts/Page.cpp
+   standalone/inc/flexdmd/bmfonts/Page.h
+
+   standalone/inc/b2s/classes/AnimationInfo.cpp
+   standalone/inc/b2s/classes/AnimationInfo.h
+   standalone/inc/b2s/classes/B2SAnimation.cpp
+   standalone/inc/b2s/classes/B2SAnimation.h
+   standalone/inc/b2s/classes/B2SCollectData.cpp
+   standalone/inc/b2s/classes/B2SCollectData.h
+   standalone/inc/b2s/classes/B2SData.cpp
+   standalone/inc/b2s/classes/B2SData.h
+   standalone/inc/b2s/classes/B2SPlayer.cpp
+   standalone/inc/b2s/classes/B2SPlayer.h
+   standalone/inc/b2s/classes/B2SScreen.cpp
+   standalone/inc/b2s/classes/B2SScreen.h
+   standalone/inc/b2s/classes/B2SSettings.cpp
+   standalone/inc/b2s/classes/B2SSettings.h
+   standalone/inc/b2s/classes/B2SReelDisplay.cpp
+   standalone/inc/b2s/classes/B2SReelDisplay.h
+   standalone/inc/b2s/classes/CollectData.cpp
+   standalone/inc/b2s/classes/CollectData.h
+   standalone/inc/b2s/classes/ControlInfo.cpp
+   standalone/inc/b2s/classes/ControlInfo.h
+   standalone/inc/b2s/classes/LEDAreaInfo.cpp
+   standalone/inc/b2s/classes/LEDAreaInfo.h
+   standalone/inc/b2s/classes/LEDDisplayDigitLocation.cpp
+   standalone/inc/b2s/classes/LEDDisplayDigitLocation.h
+   standalone/inc/b2s/classes/Sound.cpp
+   standalone/inc/b2s/classes/Sound.h
+   standalone/inc/b2s/classes/Timer.cpp
+   standalone/inc/b2s/classes/Timer.h
+   standalone/inc/b2s/collections/AnimationCollection.cpp
+   standalone/inc/b2s/collections/AnimationCollection.h
+   standalone/inc/b2s/collections/ControlCollection.cpp
+   standalone/inc/b2s/collections/ControlCollection.h
+   standalone/inc/b2s/collections/GenericDictionaryIgnoreCase.cpp
+   standalone/inc/b2s/collections/GenericDictionaryIgnoreCase.h
+   standalone/inc/b2s/collections/ZOrderCollection.cpp
+   standalone/inc/b2s/collections/ZOrderCollection.h
+   standalone/inc/b2s/collections/IlluminationGroupCollection.cpp
+   standalone/inc/b2s/collections/IlluminationGroupCollection.h
+   standalone/inc/b2s/collections/ReelDisplayReelBoxCollection.cpp
+   standalone/inc/b2s/collections/ReelDisplayReelBoxCollection.h
+   standalone/inc/b2s/collections/ReelBoxCollection.cpp
+   standalone/inc/b2s/collections/ReelBoxCollection.h
+   standalone/inc/b2s/collections/PictureBoxCollection.cpp
+   standalone/inc/b2s/collections/PictureBoxCollection.h
+   standalone/inc/b2s/controls/B2SBaseBox.cpp
+   standalone/inc/b2s/controls/B2SBaseBox.h
+   standalone/inc/b2s/controls/B2SLEDBox.cpp
+   standalone/inc/b2s/controls/B2SLEDBox.h
+   standalone/inc/b2s/controls/B2SPictureBox.cpp
+   standalone/inc/b2s/controls/B2SPictureBox.h
+   standalone/inc/b2s/controls/B2SReelBox.cpp
+   standalone/inc/b2s/controls/B2SReelBox.h
+   standalone/inc/b2s/controls/Control.cpp
+   standalone/inc/b2s/controls/Control.h
+   standalone/inc/b2s/dream7/Dream7Display.cpp
+   standalone/inc/b2s/dream7/Dream7Display.h
+   standalone/inc/b2s/forms/FormBackglass.cpp
+   standalone/inc/b2s/forms/FormBackglass.h
+   standalone/inc/b2s/forms/FormDMD.cpp
+   standalone/inc/b2s/forms/FormDMD.h
+   standalone/inc/b2s/Server.cpp
+   standalone/inc/b2s/Server.h
+   standalone/inc/b2s/b2s_i_proxy.cpp
+   standalone/inc/b2s/b2s_i.c
+   standalone/inc/b2s/b2s_i.h
+
+   standalone/inc/pup/PinUpPlayerPinDisplay.cpp
+   standalone/inc/pup/PinUpPlayerPinDisplay.h
+   standalone/inc/pup/PinUpPlayerPlaylist.cpp
+   standalone/inc/pup/PinUpPlayerPlaylist.h
+   standalone/inc/pup/PinUpPlayerTrigger.cpp
+   standalone/inc/pup/PinUpPlayerTrigger.h
+   standalone/inc/pup/PinUpPlayerScreen.cpp
+   standalone/inc/pup/PinUpPlayerScreen.h
+   standalone/inc/pup/PinUpPlayerUtils.cpp
+   standalone/inc/pup/PinUpPlayerUtils.h
+   standalone/inc/pup/pinupplayer_i_proxy.cpp
+   standalone/inc/pup/pinupplayer_i.c
+   standalone/inc/pup/pinupplayer_i.h
+
+   standalone/inc/wine/dlls/atl/atl.c
+
+   standalone/inc/wine/dlls/oleaut32/oleaut.c
+   standalone/inc/wine/dlls/oleaut32/variant.c
+   standalone/inc/wine/dlls/oleaut32/varformat.c
+   standalone/inc/wine/dlls/oleaut32/vartype.c
+   standalone/inc/wine/dlls/oleaut32/safearray.c
+
+   standalone/inc/wine/dlls/vbscript/compile.c
+   standalone/inc/wine/dlls/vbscript/global.c
+   standalone/inc/wine/dlls/vbscript/interp.c
+   standalone/inc/wine/dlls/vbscript/lex.c
+   standalone/inc/wine/dlls/vbscript/regexp.c
+   standalone/inc/wine/dlls/vbscript/utils.c
+   standalone/inc/wine/dlls/vbscript/vbdisp.c
+   standalone/inc/wine/dlls/vbscript/vbregexp.c
+   standalone/inc/wine/dlls/vbscript/vbscript.c
+   standalone/inc/wine/dlls/vbscript/vbscript_main.c
+   standalone/inc/wine/dlls/vbscript/parser.tab.c
+
+   standalone/inc/wine/dlls/scrrun/dictionary.c
+   standalone/inc/wine/dlls/scrrun/filesystem.c
+   standalone/inc/wine/dlls/scrrun/scrrun.c
+
+   standalone/inc/wine/dlls/kernelbase/locale.c
+
+   standalone/inc/wine/wine.c
+)
+
+target_include_directories(vpinball PUBLIC
+   ${CMAKE_SOURCE_DIR}/standalone/macos-x64/external/include
+   ${CMAKE_SOURCE_DIR}/standalone/macos-x64/external/include/SDL2
+   ${CMAKE_SOURCE_DIR}
+   inc/tinyxml2
+   standalone/inc/pole
+   standalone/inc/wine/include
+   standalone/inc/wine/dlls/atl
+   standalone/inc/wine/dlls/vbscript
+   standalone/inc/wine/dlls/oleaut32
+   standalone/inc/wine/dlls/kernelbase
+   media
+   pin
+)
+
+target_precompile_headers(vpinball PUBLIC
+)
+
+target_compile_options(vpinball PUBLIC
+   -fvisibility=hidden
+   -Wno-inconsistent-missing-override
+   -Wno-missing-exception-spec
+   $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
+      -fdenormal-fp-math=preserve-sign
+      -freciprocal-math
+      -fassociative-math
+      -fapprox-func
+      -fno-math-errno
+      -fno-trapping-math
+      -ffp-contract=off
+      -Wno-shorten-64-to-32>
+   $<$<CXX_COMPILER_ID:GNU>:
+      -ffast-math
+      -ffp-contract=off>
+)
+
+target_link_directories(vpinball PUBLIC
+   "${CMAKE_SOURCE_DIR}/standalone/macos-x64/external/lib"
+)
+
+target_link_libraries(vpinball PUBLIC
+   glad
+   SDL2
+   SDL2_image
+   SDL2_ttf
+   FreeImage
+   bass
+   pinmame
+   zedmd
+   serum
+   iconv
+   c++
+   "-framework Metal"
+   "-framework Foundation"
+   "-framework AppKit"
+   "-framework CoreHaptics"
+   "-framework IOKit"
+   "-framework GameController"
+   "-framework CoreVideo"
+   "-framework AudioToolbox"
+   "-framework CoreAudio"
+   "-framework ForceFeedback"
+   "-framework Carbon"
+)
+
+set_target_properties(vpinball PROPERTIES
+   RUNTIME_OUTPUT_NAME "VPinballX_GL"
+   SKIP_BUILD_RPATH TRUE
+   LINK_FLAGS "-Wl,-rpath,@executable_path"
+)
+
+add_custom_command(TARGET vpinball POST_BUILD
+   COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/scripts" "$<TARGET_FILE_DIR:vpinball>/scripts"
+   COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/tables" "$<TARGET_FILE_DIR:vpinball>/tables"
+   COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/txt" "$<TARGET_FILE_DIR:vpinball>/docs"
+
+   COMMAND "${CMAKE_COMMAND}" -E make_directory "$<TARGET_FILE_DIR:vpinball>/shader"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/BasicShader.glfx" "$<TARGET_FILE_DIR:vpinball>/shader"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/DMDShader.glfx" "$<TARGET_FILE_DIR:vpinball>/shader"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/FBShader.glfx" "$<TARGET_FILE_DIR:vpinball>/shader"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/SMAA.glfx" "$<TARGET_FILE_DIR:vpinball>/shader"  
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/FlasherShader.glfx" "$<TARGET_FILE_DIR:vpinball>/shader"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/LightShader.glfx" "$<TARGET_FILE_DIR:vpinball>/shader"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/BallShader.glfx" "$<TARGET_FILE_DIR:vpinball>/shader"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/ClassicLightShader.glfx" "$<TARGET_FILE_DIR:vpinball>/shader"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/StereoShader.glfx" "$<TARGET_FILE_DIR:vpinball>/shader"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/Helpers.fxh" "$<TARGET_FILE_DIR:vpinball>/shader"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/Material_GL.fxh" "$<TARGET_FILE_DIR:vpinball>/shader"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/BallShadows.fxh" "$<TARGET_FILE_DIR:vpinball>/shader"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/SMAA.fxh" "$<TARGET_FILE_DIR:vpinball>/shader"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/FXAAStereoAO_GL.fxh" "$<TARGET_FILE_DIR:vpinball>/shader"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/SSR_GL.fxh" "$<TARGET_FILE_DIR:vpinball>/shader"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/Stereo.fxh" "$<TARGET_FILE_DIR:vpinball>/shader"
+
+   COMMAND "${CMAKE_COMMAND}" -E make_directory "$<TARGET_FILE_DIR:vpinball>/res"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/res/Default VPinballX.ini" "$<TARGET_FILE_DIR:vpinball>/res"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/res/exampleTable.vpx" "$<TARGET_FILE_DIR:vpinball>/res"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/res/vpx.html" "$<TARGET_FILE_DIR:vpinball>/res"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/res/bumperbase.bmp" "$<TARGET_FILE_DIR:vpinball>/res"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/res/bumperskirt.bmp" "$<TARGET_FILE_DIR:vpinball>/res"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/res/bumperring.bmp" "$<TARGET_FILE_DIR:vpinball>/res"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/res/bumperCap.bmp" "$<TARGET_FILE_DIR:vpinball>/res"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/res/kickerCup.bmp" "$<TARGET_FILE_DIR:vpinball>/res"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/res/kickerWilliams.bmp" "$<TARGET_FILE_DIR:vpinball>/res"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/res/kickerGottlieb.bmp" "$<TARGET_FILE_DIR:vpinball>/res"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/res/kickerT1.bmp" "$<TARGET_FILE_DIR:vpinball>/res"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/res/kickerHoleWood.bmp" "$<TARGET_FILE_DIR:vpinball>/res"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/res/BallEnv.exr" "$<TARGET_FILE_DIR:vpinball>/res"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/res/AOdither.bmp" "$<TARGET_FILE_DIR:vpinball>/res"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/res/envmap.bmp" "$<TARGET_FILE_DIR:vpinball>/res"
+
+   COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/standalone/inc/flexdmd/resources" "$<TARGET_FILE_DIR:vpinball>/flexdmd"
+
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/macos-x64/external/lib/libbass.dylib" "$<TARGET_FILE_DIR:vpinball>"
+)

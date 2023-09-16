@@ -1,0 +1,122 @@
+name: vpinball-sbc
+on:
+  push:
+
+env:
+  VERSION_START_SHA: ea558e7417f6f06fe567d34f0e33792a141b8e64
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  version:
+    name: Version
+    runs-on: ubuntu-latest
+    outputs:
+      revision: ${{ steps.version.outputs.revision }}
+      sha7: ${{ steps.version.outputs.sha7 }}
+      tag: ${{ steps.version.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - id: version
+        run: |
+          VERSION_MAJOR=$(grep -Eo "VP_VERSION_MAJOR\s+[0-9]+" vpversion.h | grep -Eo "[0-9]+")
+          VERSION_MINOR=$(grep -Eo "VP_VERSION_MINOR\s+[0-9]+" vpversion.h | grep -Eo "[0-9]+")
+          VERSION_REV=$(grep -Eo "VP_VERSION_REV\s+[0-9]+" vpversion.h | grep -Eo "[0-9]+")
+          REVISION=$(git rev-list ${{ env.VERSION_START_SHA }}..HEAD --count)
+          SHA7="${GITHUB_SHA::7}"
+          TAG="${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}-${REVISION}-${SHA7}"
+          echo "revision=${REVISION}" >> $GITHUB_OUTPUT
+          echo "sha7=${SHA7}" >> $GITHUB_OUTPUT
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
+
+  build-gl-rpi:
+    name: Build VPinballX_GL-${{ matrix.config }}-rpi-aarch64
+    runs-on: ubuntu-22.04
+    needs: [ version ]
+    strategy:
+      fail-fast: false
+      matrix:
+        config: [ Release ]  
+    steps:
+      - uses: actions/checkout@v3
+      - uses: pguyot/arm-runner-action@v2
+        id: arm_runner_make
+        with:
+          base_image: raspios_lite_arm64:latest
+          image_additional_mb: 4096
+          cpu: cortex-a53
+          cpu_info: cpuinfo/raspberrypi_zero2_w_arm64
+          copy_repository_path: /opt/vpinball
+          copy_artifact_path: tmp
+          commands: |
+            apt-get update -y --allow-releaseinfo-change
+            apt-get install --no-install-recommends -y pkg-config cmake bison zlib1g-dev libdrm-dev libgbm-dev libgles2-mesa libgles2-mesa-dev libudev-dev
+            perl -i -pe"s/0/${{ needs.version.outputs.revision }}/g" git_version.h
+            perl -i -pe"s/unknown/${{ needs.version.outputs.sha7 }}/g" git_version.h
+            cd standalone/rpi
+            ./external.sh
+            cd ../..
+            cp standalone/cmake/CMakeLists_gl-rpi-aarch64.txt CMakeLists.txt
+            cmake -DCMAKE_BUILD_TYPE=${{ matrix.config }} -B build/${{ matrix.config }}
+            cmake --build build/${{ matrix.config }}
+            mkdir tmp
+            cp build/${{ matrix.config }}/VPinballX_GL tmp
+            cp build/${{ matrix.config }}/*.so tmp
+            cp build/${{ matrix.config }}/*.so.* tmp
+            cp -r build/${{ matrix.config }}/res tmp
+            cp -r build/${{ matrix.config }}/shader tmp
+            cp -r build/${{ matrix.config }}/scripts tmp
+            cp -r build/${{ matrix.config }}/tables tmp
+            cp -r build/${{ matrix.config }}/docs tmp
+      - uses: actions/upload-artifact@v3
+        with:
+          name: VPinballX_GL-${{ needs.version.outputs.tag }}-${{ matrix.config }}-rpi-aarch64
+          path: tmp
+
+  build-gl-rk3588:
+    name: Build VPinballX_GL-${{ matrix.config }}-rk3588-aarch64
+    runs-on: ubuntu-22.04
+    needs: [ version ]
+    strategy:
+      fail-fast: false
+      matrix:
+        config: [ Release ]  
+    steps:
+      - uses: actions/checkout@v3
+      - uses: pguyot/arm-runner-action@v2
+        id: arm_runner_make
+        with:
+          base_image: raspios_lite_arm64:latest
+          image_additional_mb: 4096
+          cpu: cortex-a53
+          cpu_info: cpuinfo/raspberrypi_zero2_w_arm64
+          copy_repository_path: /opt/vpinball
+          copy_artifact_path: tmp
+          commands: |
+            apt-get update -y --allow-releaseinfo-change
+            apt-get install --no-install-recommends -y pkg-config cmake bison zlib1g-dev libdrm-dev libgbm-dev libgles2-mesa libgles2-mesa-dev libudev-dev
+            perl -i -pe"s/0/${{ needs.version.outputs.revision }}/g" git_version.h
+            perl -i -pe"s/unknown/${{ needs.version.outputs.sha7 }}/g" git_version.h
+            cd standalone/rk3588
+            ./external.sh
+            cd ../..
+            cp standalone/cmake/CMakeLists_gl-rk3588-aarch64.txt CMakeLists.txt
+            cmake -DCMAKE_BUILD_TYPE=${{ matrix.config }} -B build/${{ matrix.config }}
+            cmake --build build/${{ matrix.config }}
+            mkdir tmp
+            cp build/${{ matrix.config }}/VPinballX_GL tmp
+            cp build/${{ matrix.config }}/*.so tmp
+            cp build/${{ matrix.config }}/*.so.* tmp
+            cp -r build/${{ matrix.config }}/res tmp
+            cp -r build/${{ matrix.config }}/shader tmp
+            cp -r build/${{ matrix.config }}/scripts tmp
+            cp -r build/${{ matrix.config }}/tables tmp
+            cp -r build/${{ matrix.config }}/docs tmp
+      - uses: actions/upload-artifact@v3
+        with:
+          name: VPinballX_GL-${{ needs.version.outputs.tag }}-${{ matrix.config }}-rk3588-aarch64
+          path: tmp

@@ -64,7 +64,7 @@ void SharedVertexBuffer::Upload()
          glBufferData(GL_ARRAY_BUFFER, size, data, m_isStatic ? GL_STATIC_DRAW : GL_DYNAMIC_DRAW);
       }
       free(data);
-      #else ENABLE_SDL // DirectX 9
+      #else // DirectX 9
       CHECKD3D(m_vb->Unlock());
       #endif
    }
@@ -129,8 +129,6 @@ VertexBuffer::VertexBuffer(RenderDevice* rd, const unsigned int vertexCount, con
    , m_isStatic(!isDynamic)
    , m_size(fvfToSize(fvf) * vertexCount)
 {
-   #ifndef __OPENGLES__
-   // Disabled since OpenGL ES does not support glDrawElementsBaseVertex, but now that we remap the indices when creating the index buffer it should be good
    for (SharedVertexBuffer* block : pendingSharedBuffers)
    {
       if (block->m_format == fvf && block->m_isStatic == m_isStatic && block->GetCount() + vertexCount <= 65535)
@@ -139,7 +137,6 @@ VertexBuffer::VertexBuffer(RenderDevice* rd, const unsigned int vertexCount, con
          break;
       }
    }
-   #endif
    if (m_sharedBuffer == nullptr)
    {
       m_sharedBuffer = new SharedVertexBuffer(fvf, m_isStatic);

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.18)
+cmake_minimum_required(VERSION 3.26)
 
 file(READ vpversion.h version)
 string(REGEX MATCH "VP_VERSION_MAJOR[ ]+([0-9]+)" _tmp ${version})
@@ -13,13 +13,12 @@ project(vpinball VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}")
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_C_STANDARD 99)
 
-add_library(glad 
-   inc/glad/glad.h 
-   inc/glad/glad.c
+add_library(glad
+   inc/glad/src/gl.c
 )
 
-target_include_directories(glad PUBLIC 
-   inc
+target_include_directories(glad PUBLIC
+   inc/glad/include
 )
 
 set_target_properties(glad PROPERTIES
@@ -34,21 +33,8 @@ add_compile_definitions(
    USE_DINPUT8
 )
 
-add_compile_options(
-   $<$<CONFIG:RELEASE>:/Ob2>
-   $<$<CONFIG:RELEASE>:/O2>
-   $<$<CONFIG:RELEASE>:/Oi>
-   $<$<CONFIG:RELEASE>:/fp:fast>
-   $<$<CONFIG:RELEASE>:/fp:except->
-   $<$<CONFIG:RELEASE>:/Ot>
-   $<$<CONFIG:RELEASE>:/GF>
-   $<$<CONFIG:RELEASE>:/GS->
-   $<$<CONFIG:RELEASE>:/Gy>
-   $<$<CONFIG:RELEASE>:/GR->
-   $<$<CONFIG:RELEASE>:/Oy>
-   $<$<CONFIG:RELEASE>:/GT>
-   $<$<CONFIG:RELEASE>:/GL>
-   $<$<CONFIG:RELEASE>:/w44005>
+set_source_files_properties(
+   inc/miniz/miniz.c PROPERTIES LANGUAGE CXX
 )
 
 set_source_files_properties(
@@ -245,6 +231,8 @@ add_executable(vpinball WIN32
    inc/Sci_Position.h
    inc/stb_image.h
    inc/ThreadPool.h
+   inc/miniz/miniz.c
+   inc/miniz/miniz.h
    inc/tinyxml2/tinyxml2.cpp
    inc/tinyxml2/tinyxml2.h
    inc/win32xx/include/wxx_appcore.h
@@ -553,6 +541,13 @@ target_precompile_headers(vpinball PUBLIC
    stdafx.h
 )
 
+set(OPT_COMMON /Ob2 /O2 /Oi /fp:fast /fp:except- /Ot /GF /GS- /Gy /GR- /Oy /GT /GL /w44005 /Zc:__cplusplus /std:c++20)
+
+target_compile_options(vpinball PUBLIC
+   $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:CXX>:${OPT_COMMON}>>
+   $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C>:${OPT_COMMON}>>
+)
+
 target_link_directories(vpinball PUBLIC 
    $ENV{DXSDK_DIR}/Lib/x64
    lib/x64
@@ -595,7 +590,6 @@ set_target_properties(vpinball PROPERTIES
 )
 
 add_custom_command(TARGET vpinball POST_BUILD
-   COMMAND "${CMAKE_COMMAND}" -E make_directory "$<TARGET_FILE_DIR:vpinball>/user"
    COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/scripts" "$<TARGET_FILE_DIR:vpinball>/scripts"
    COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/tables" "$<TARGET_FILE_DIR:vpinball>/tables"
    COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/shader" "$<TARGET_FILE_DIR:vpinball>/shader"

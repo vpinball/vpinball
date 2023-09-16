@@ -71,7 +71,7 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
    m_color_sampler = nullptr;
    m_depth_sampler = nullptr;
 #ifdef ENABLE_SDL
-   const GLuint col_type = ((format == RGBA32F) || (format == RGB32F)) ? GL_FLOAT : ((format == RGBA16F) || (format == RGB16F)) ? GL_HALF_FLOAT : GL_UNSIGNED_BYTE;
+   const GLuint col_type = ((format == RGBA32F) || (format == RGB32F)) ? GL_FLOAT : ((format == RGB16F) || (format == RGBA16F)) ? GL_HALF_FLOAT : GL_UNSIGNED_BYTE;
    const GLuint col_format = ((format == GREY8) || (format == RED16F))                                                                                                      ? GL_RED
       : ((format == GREY_ALPHA) || (format == RG16F))                                                                                                                       ? GL_RG
       : ((format == RGB) || (format == RGB8) || (format == SRGB) || (format == SRGB8) || (format == RGB5) || (format == RGB10) || (format == RGB16F) || (format == RGB32F)) ? GL_RGB
@@ -88,12 +88,14 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
       m_depth_sampler = sharedDepth->m_depth_sampler;
    }
 
+#ifndef __OPENGLES__
    if (GLAD_GL_VERSION_4_3)
    {
       std::stringstream info;
       info << "Create FrameBuffer '" << m_name << "'";
       glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, info.str().c_str());
    }
+#endif
 
    glGenFramebuffers(1, &m_framebuffer);
    glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer);
@@ -105,11 +107,16 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
    tex_unit->sampler = nullptr;
    glActiveTexture(GL_TEXTURE0 + tex_unit->unit);
 
+#ifndef __OPENGLES__
    m_texTarget = nMSAASamples > 1 ? ((type == RT_DEFAULT) ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D_MULTISAMPLE_ARRAY)
                                   : ((type == RT_DEFAULT) ? GL_TEXTURE_2D : type == RT_STEREO ? GL_TEXTURE_2D_ARRAY : GL_TEXTURE_CUBE_MAP);
+#else
+   m_texTarget = (type == RT_DEFAULT ? GL_TEXTURE_2D : type == RT_STEREO ? GL_TEXTURE_2D_ARRAY : GL_TEXTURE_CUBE_MAP);
+#endif
 
    if (nMSAASamples > 1)
    {
+#ifndef __OPENGLES__
       glGenTextures(1, &m_color_tex);
       glBindTexture(m_texTarget, m_color_tex);
       glTexParameteri(m_texTarget, GL_TEXTURE_BASE_LEVEL, 0);
@@ -121,7 +128,11 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
       case RT_CUBEMAP: assert(false); break;
       }
       glBindTexture(m_texTarget, 0);
+#ifndef __OPENGLES__
       glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_color_tex, 0);
+#else
+      glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_color_tex, 0);
+#endif
       if (with_depth)
       {
          if (!m_shared_depth)
@@ -140,6 +151,7 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
          }
          glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_depth_tex, 0);
       }
+#endif
    }
    else
    {
@@ -158,13 +170,21 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
       }
       glTexParameteri(m_texTarget, GL_TEXTURE_MAX_LEVEL, 0);
       glBindTexture(m_texTarget, 0);
+#ifndef __OPENGLES__
       glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_color_tex, 0);
+#else
+      glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_color_tex, 0);
+#endif
       if (with_depth)
       {
          if (!m_shared_depth)
          {
-            #if defined(__STANDALONE__)
+            #ifdef __STANDALONE__
+            #ifndef __OPENGLES__
             GLint internalFormat = GL_FLOAT; // Needed for BloodMachine table on standalone (waiting for the table to be updated and remove its hacky turbo insert)
+            #else
+            GLint internalFormat = GL_UNSIGNED_SHORT;
+            #endif
             #else
             GLint internalFormat = GL_UNSIGNED_SHORT;
             #endif
@@ -174,7 +194,11 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
             glTexParameteri(m_texTarget, GL_TEXTURE_MAX_LEVEL, 0);
             switch (m_type)
             {
+#ifndef __OPENGLES__
             case RT_DEFAULT: glTexImage2D(m_texTarget, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, internalFormat, nullptr); break;
+#else
+            case RT_DEFAULT: glTexImage2D(m_texTarget, 0, GL_DEPTH_COMPONENT16, width, height, 0, GL_DEPTH_COMPONENT, internalFormat, nullptr); break;
+#endif
             case RT_STEREO: glTexImage3D(m_texTarget, 0, GL_DEPTH_COMPONENT, width, height, 2, 0, GL_DEPTH_COMPONENT, internalFormat, nullptr); break;
             case RT_CUBEMAP:
                for (int i = 0; i < 6; i++)
@@ -183,11 +207,17 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
             }
             glBindTexture(m_texTarget, 0);
          }
+#ifndef __OPENGLES__
          glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_depth_tex, 0);
+#else
+         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_depth_tex, 0);
+#endif
       }
    }
+#ifndef __OPENGLES__
    if (GLAD_GL_VERSION_4_3)
       glObjectLabel(GL_FRAMEBUFFER, m_framebuffer, (GLsizei) name.length(), name.c_str());
+#endif
 
    constexpr GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
    glDrawBuffers(1, DrawBuffers);
@@ -203,11 +233,13 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
          if (with_depth)
             glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_depth_tex, 0, i);
          glDrawBuffers(1, DrawBuffers);
+#ifndef __OPENGLES__
          if (GLAD_GL_VERSION_4_3)
          {
             string layer_name = name + ".Layer" + std::to_string(i);
             glObjectLabel(GL_FRAMEBUFFER, m_framebuffer_layers[i], (GLsizei)layer_name.length(), layer_name.c_str());
          }
+#endif
       }
       glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer);
    }
@@ -233,8 +265,14 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
 #endif
       default: errorCode = "unknown"; break;
       }
-      sprintf_s(msg, sizeof(msg), "glCheckFramebufferStatus returned 0x%0002X %s", glCheckFramebufferStatus(m_framebuffer), errorCode);
+      sprintf_s(msg, sizeof(msg), "glCheckFramebufferStatus returned 0x%08X %s", glCheckFramebufferStatus(m_framebuffer), errorCode);
       ShowError(msg);
+
+#ifndef __OPENGLES__
+      PLOGI.printf("failed - message=%s (rd=%p, width=%d, height=%d, colorFormat=%d, with_depth=%d, nMSAASamples=%d)",
+              failureMessage, rd, width, height, format, with_depth, nMSAASamples);
+#endif
+
       exit(-1);
    }
 
@@ -253,19 +291,23 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
          }
       }
    }
+#ifndef __OPENGLES__
    else if (GLAD_GL_VERSION_4_3)
    {
       glObjectLabel(GL_TEXTURE, m_color_tex, (GLsizei)(name + ".Color").length(), (name + ".Color").c_str());
       if (with_depth && !m_shared_depth)
          glObjectLabel(GL_TEXTURE, m_depth_tex, (GLsizei)(name + ".Depth").length(), (name + ".Depth").c_str());
    }
+#endif
 
    glClearDepthf(1.0f);
    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+#ifndef __OPENGLES__
    if (GLAD_GL_VERSION_4_3)
       glPopDebugGroup();
+#endif
 
 #else
    assert(m_type == RT_DEFAULT); // Layered rendering is not yet supported by the DX9 backend

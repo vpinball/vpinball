@@ -5,8 +5,11 @@
 #if !defined(AFX_VPINBALL_H__4D32616D_55B5_4FE0_87D9_3D4CB0BE3C76__INCLUDED_)
 #define AFX_VPINBALL_H__4D32616D_55B5_4FE0_87D9_3D4CB0BE3C76__INCLUDED_
 
+#ifndef __STANDALONE__
 #include <wxx_dockframe.h>
+#endif
 #include "RenderDevice.h"
+#ifndef __STANDALONE__
 #include "ImageDialog.h"
 #include "SoundDialog.h"
 #include "EditorOptionsDialog.h"
@@ -27,6 +30,11 @@
 #include "Properties/PropertyDialog.h"
 #ifdef ENABLE_SDL
 #include "VROptionsDialog.h"
+#endif
+#endif
+
+#ifdef __STANDALONE__
+#include "standalone/inc/webserver/WebServer.h"
 #endif
 
 class PinTable;
@@ -163,7 +171,9 @@ public:
        }
     }
 
+#ifndef __STANDALONE__
     SendMessage(m_hwndStatusBar, SB_SETTEXT, 5 | 0, (size_t)textBuf.c_str());
+#endif
    }
 
    bool OpenFileDialog(const string& initDir, vector<string>& filename, const char* const fileFilter, const char* const defaultExt, const DWORD flags, const string& windowTitle = string());
@@ -224,7 +234,7 @@ public:
    wstring m_wzMyPath;
    string m_szMyPrefPath;
    string m_currentTablePath;
-
+   
    int m_autosaveTime;
 
    Material m_dummyMaterial;
@@ -249,6 +259,12 @@ public:
 
    HBITMAP m_hbmInPlayMode;
 
+#ifdef __STANDALONE__
+   WebServer m_webServer;
+
+   void Shutdown();
+#endif
+
 protected:
    virtual void PreCreate(CREATESTRUCT& cs);
    virtual void PreRegisterClass(WNDCLASS& wc);
@@ -261,7 +277,9 @@ protected:
    virtual LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
    virtual LRESULT OnMDIActivated(UINT msg, WPARAM wparam, LPARAM lparam);
    virtual LRESULT OnMDIDestroyed(UINT msg, WPARAM wparam, LPARAM lparam);
+#ifndef __STANDALONE__
    virtual CDocker *NewDockerFromID(int id);
+#endif
 
 private:
 
