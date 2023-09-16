@@ -142,13 +142,13 @@ FEATURES:
 - a new folder named 'Cache' was added to VPX's main directory for caching data to improve performance. For the time being, it is used to store the list of textures which are used 
   by each table during play. This allows for preloading of the needed textures when a table is started, limiting stutters during play.
 
-- Add an option to primitives to toggle 'depth masking', which is otherwise used during rendering to hide all parts behind the primitive. If unchecked, the primitive will not hide parts behind it and it will also not be visible to ambient occlusion.
+- add an option to primitives to toggle 'depth masking', which is otherwise used during rendering to hide all parts behind the primitive. If unchecked, the primitive will not hide parts behind it and it will also not be visible to ambient occlusion.
   For example, this is needed to employ primitives to render user/fake shadows without breaking ambient occlusion, or for transparents part with self overlapping parts like plastic ramps.
 
 - as the script is initially started, the Init events are now called *before* the static parts are prerendered.
   This allows a table script to adjust the properties of static parts during startup.
 
-- Video synchronization and target frame rate are now 2 separate settings and a new video synchronization mode for low latency input/physics/rendering has been added. The choices are:
+- video synchronization and target frame rate are now 2 separate settings and a new video synchronization mode for low latency input/physics/rendering has been added. The choices are:
   - None: no synchronization, VPX just runs as fast as possible. Unless when playing on a very powerful system, this should lead to some input latency (due to lack of input syncing) and render latency 
           (due to flooding the GPU frame queue). This setting used to be 'Adaptive Sync: 0'
   - VSync: synchronize on the display vertical blank signal. This can limit stutters and avoids tearing, but will lead to high input latency. This used to be mode 'Adaptive Sync: 1'
@@ -160,7 +160,9 @@ FEATURES:
   Due to these changes, the target frame rate is now a separate setting. If defined, it will lead VPX to perform its own synchronization, trying to achieve the requested frame rate.
   The synchronization settings still apply. Therefore, selecting a frame rate that is higher than the monitor refresh rate requires the use of the 'None' synchronization mode!
 
-- Additive blended primitives are now rendered 'unshaded', so without any material/lighting applied (same as flashers), this is more natural and allows for some performance optimizations
+- additive blended primitives are now rendered 'unshaded', so without any material/lighting applied (same as flashers), this is more natural and allows for some performance optimizations
+
+- add staged left/right flipper key configuration to the preferences
 
 Additional docs explaining all these new features with images are provided in the docs folder of the project: https://github.com/vpinball/vpinball/tree/master/docs
 
