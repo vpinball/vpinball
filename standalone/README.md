@@ -326,7 +326,7 @@ The joystick is currently mapped to an XBox controller layout.
 | Left Flipper | `Left Shoulder` |
 | Right Flipper | `Right Shoulder` |
 | Center Tilt | `D-pad Up` |
-| Left Title | `D-pad Left` |
+| Left Tilt | `D-pad Left` |
 | Right Tilt | `D-pad Right` |
 | Plunger | `D-pad Down` |
 | Add Credit | `A` |
