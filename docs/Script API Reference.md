@@ -47,24 +47,27 @@ As for coding light sequences for original tables, please check this helper app:
 | | | |
 | *NightDay | int | 0..100 value set in the UI (by the user) that defines if its night or day, so that the script can tweak table elements based on that value |
 | | | |
-| *LeftFlipperKey | | |
-| *RightFlipperKey | | |
-| *LeftTiltKey | | |
-| *RightTiltKey | | |
-| *CenterTiltKey | | |
-| *PlungerKey | | |
-| *StartGameKey | | |
-| *AddCreditKey | | |
-| *AddCreditKey2 | | |
-| *LeftMagnaSave | | |
-| *RightMagnaSave | | |
-| *LockbarKey | | |
+| *LeftFlipperKey | int | |
+| *RightFlipperKey | int | |
+| *StagedLeftFlipperKey | int | |
+| *StagedRightFlipperKey | int | |
+| *LeftTiltKey | int | |
+| *RightTiltKey | int | |
+| *CenterTiltKey | int | |
+| *PlungerKey | int | |
+| *StartGameKey | int | |
+| *AddCreditKey | int | |
+| *AddCreditKey2 | int | |
+| *LeftMagnaSave | int | |
+| *RightMagnaSave | int | |
+| *LockbarKey | int | |
+| *JoyCustomKey(int index) | int | 1..4 to get the custom key mappings |
 | | | |
 | *ActiveBall | Ball | returns the current ball |
 | *ActiveTable | Table | returns the currently played table element |
 | | | |
-| *ShowDT | bool |  Desktop mode enabled (true) or Rotated Fullscreen mode enabled (false) |
-| *ShowFSS | bool |  Extended Backglass mode enabled (true) or not (false) |
+| *ShowDT | bool | Desktop mode enabled (true) or Rotated Fullscreen mode enabled (false) |
+| *ShowFSS | bool | Extended Backglass mode enabled (true) or not (false) |
 | | | |
 | *WindowWidth | int | get width of rendering window/fullscreen |
 | *WindowHeight | int | get height of rendering window/fullscreen |
