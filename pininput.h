@@ -23,15 +23,15 @@
 #error Note that MAX_KEYQUEUE_SIZE must be power of 2
 #endif
 
-#define USHOCKTYPE_PBWIZARD		1
-#define USHOCKTYPE_ULTRACADE	2
-#define USHOCKTYPE_SIDEWINDER	3
-#define USHOCKTYPE_VIRTUAPIN	4
-#define USHOCKTYPE_GENERIC		5
+#define USHOCKTYPE_PBWIZARD   1
+#define USHOCKTYPE_ULTRACADE  2
+#define USHOCKTYPE_SIDEWINDER 3
+#define USHOCKTYPE_VIRTUAPIN  4
+#define USHOCKTYPE_GENERIC    5
 
-#define APP_KEYBOARD 0
+#define APP_KEYBOARD   0
 #define APP_JOYSTICKMN 1
-#define APP_MOUSE 2
+#define APP_MOUSE      2
 
 // handle multiple joysticks, APP_JOYSTICKMN..APP_JOYSTICKMX
 #define PININ_JOYMXCNT 4
@@ -61,11 +61,6 @@ public:
 
    void PushQueue(DIDEVICEOBJECTDATA * const data, const unsigned int app_data/*, const U32 curr_time_msec*/);
    const DIDEVICEOBJECTDATA *GetTail(/*const U32 curr_sim_msec*/);
-
-   void autostart(const U32 msecs, const U32 retry_msecs, const U32 curr_time_msec);
-   void button_exit(const U32 msecs, const U32 curr_time_msec);
-
-   void tilt_update();
 
    void ProcessCameraKeys(const DIDEVICEOBJECTDATA * __restrict input);
    void ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec);
@@ -103,26 +98,29 @@ public:
    int m_num_joy;
    int uShockType;
 
-   int mouseX;
-   int mouseY;
-   int mouseDX;
-   int mouseDY;
-   bool leftMouseButtonDown;
-   bool rightMouseButtonDown;
-   bool middleMouseButtonDown;
-   BYTE oldMouseButtonState[3];
+   bool m_mixerKeyDown;
+   bool m_mixerKeyUp;
+
    bool m_linearPlunger;
    bool m_plunger_retract; // enable 1s retract phase for button/key plunger
    bool m_enable_nudge_filter; // enable new nudge filtering code
 
+   int m_joycustom1key, m_joycustom2key, m_joycustom3key, m_joycustom4key;
+
 private:
-   int started();
+   int Started();
+
+   void Autostart(const U32 msecs, const U32 retry_msecs, const U32 curr_time_msec);
+   void ButtonExit(const U32 msecs, const U32 curr_time_msec);
+
+   void TiltUpdate();
+
    void Joy(const unsigned int n, const int updown, const bool start);
 
-   void handleInputDI(DIDEVICEOBJECTDATA *didod);
-   void handleInputXI(DIDEVICEOBJECTDATA *didod);
-   void handleInputSDL(DIDEVICEOBJECTDATA *didod);
-   void handleInputIGC(DIDEVICEOBJECTDATA *didod);
+   void HandleInputDI(DIDEVICEOBJECTDATA *didod);
+   void HandleInputXI(DIDEVICEOBJECTDATA *didod);
+   void HandleInputSDL(DIDEVICEOBJECTDATA *didod);
+   void HandleInputIGC(DIDEVICEOBJECTDATA *didod);
 
 #ifdef USE_DINPUT8
 #ifdef USE_DINPUT_FOR_KEYBOARD
@@ -135,6 +133,15 @@ private:
 #endif
    LPDIRECTINPUTDEVICE m_pMouse;
 #endif
+
+   int m_mouseX;
+   int m_mouseY;
+   int m_mouseDX;
+   int m_mouseDY;
+   bool m_leftMouseButtonDown;
+   bool m_rightMouseButtonDown;
+   bool m_middleMouseButtonDown;
+   BYTE m_oldMouseButtonState[3];
 
    U32 m_firedautostart;
 
@@ -150,7 +157,7 @@ private:
 
    DIDEVICEOBJECTDATA m_diq[MAX_KEYQUEUE_SIZE]; // circular queue of direct input events
 
-   STICKYKEYS m_StartupStickyKeys;
+   STICKYKEYS m_startupStickyKeys;
 
    int m_head; // head==tail means empty, (head+1)%MAX_KEYQUEUE_SIZE == tail means full
 
@@ -160,7 +167,7 @@ private:
    int m_joylflipkey, m_joyrflipkey, m_joystagedlflipkey, m_joystagedrflipkey, m_joylmagnasave, m_joyrmagnasave, m_joyplungerkey, m_joystartgamekey, m_joyexitgamekey, m_joyaddcreditkey;
    int m_joyaddcreditkey2, m_joyframecount, m_joyvolumeup, m_joyvolumedown, m_joylefttilt, m_joycentertilt, m_joyrighttilt, m_joypmbuyin;
    int m_joypmcoin3, m_joypmcoin4, m_joypmcoindoor, m_joypmcancel, m_joypmdown, m_joypmup, m_joypmenter, m_joydebugballs, m_joydebugger, m_joylockbar, m_joymechtilt;
-   int m_joycustom1, m_joycustom1key, m_joycustom2, m_joycustom2key, m_joycustom3, m_joycustom3key, m_joycustom4, m_joycustom4key;
+   int m_joycustom1, m_joycustom2, m_joycustom3, m_joycustom4;
    int m_joytablerecenter, m_joytableup, m_joytabledown;
    int m_deadz;
    bool m_override_default_buttons, m_plunger_reverse, m_disable_esc, m_lr_axis_reverse, m_ud_axis_reverse;

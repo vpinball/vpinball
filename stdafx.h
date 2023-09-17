@@ -95,7 +95,7 @@
 
 #define LAST_OPENED_TABLE_COUNT 8
 
-#define MAX_CUSTOM_PARAM_INDEX  10
+#define MAX_CUSTOM_PARAM_INDEX  9
 
 #define MAX_OPEN_TABLES         9
 

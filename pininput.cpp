@@ -16,10 +16,8 @@
 #define DIJOFS_RX           offsetof(DIJOYSTATE, lRx)
 #define DIJOFS_RY           offsetof(DIJOYSTATE, lRy)
 #define DIJOFS_RZ           offsetof(DIJOYSTATE, lRz)
-#define DIJOFS_SLIDER(n)   (offsetof(DIJOYSTATE, rglSlider) + \
-                                                        (n) * sizeof(LONG))
-#define DIJOFS_POV(n)      (offsetof(DIJOYSTATE, rgdwPOV) + \
-                                                        (n) * sizeof(DWORD))
+#define DIJOFS_SLIDER(n)   (offsetof(DIJOYSTATE, rglSlider) + (n) * sizeof(LONG))
+#define DIJOFS_POV(n)      (offsetof(DIJOYSTATE, rgdwPOV) + (n) * sizeof(DWORD))
 #define DIJOFS_BUTTON(n)   (offsetof(DIJOYSTATE, rgbButtons) + (n))
 // end
 
@@ -27,8 +25,6 @@
 #define INPUT_BUFFER_SIZE MAX_KEYQUEUE_SIZE
 #define BALLCONTROL_DOUBLECLICK_THRESHOLD_USEC (500 * 1000)
 
-extern bool gMixerKeyDown;
-extern bool gMixerKeyUp;
 
 PinInput::PinInput()
 {
@@ -40,9 +36,9 @@ PinInput::PinInput()
 #endif
    m_pMouse = nullptr;
 
-   leftMouseButtonDown = false;
-   rightMouseButtonDown = false;
-   middleMouseButtonDown = false;
+   m_leftMouseButtonDown = false;
+   m_rightMouseButtonDown = false;
+   m_middleMouseButtonDown = false;
 
    m_head = m_tail = 0;
 
@@ -123,8 +119,8 @@ PinInput::PinInput()
 
    m_linearPlunger = false;
 
-   gMixerKeyDown = false;
-   gMixerKeyUp = false;
+   m_mixerKeyDown = false;
+   m_mixerKeyUp = false;
 }
 
 PinInput::~PinInput()
@@ -433,67 +429,67 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
          {
             if (g_pplayer->m_throwBalls || g_pplayer->m_ballControl) // debug ball throw functionality
             {
-               if ((mouseState.rgbButtons[0] & 0x80) && !leftMouseButtonDown && !rightMouseButtonDown && !middleMouseButtonDown)
+               if ((mouseState.rgbButtons[0] & 0x80) && !m_leftMouseButtonDown && !m_rightMouseButtonDown && !m_middleMouseButtonDown)
                {
                   POINT curPos;
                   GetCursorPos(&curPos);
-                  mouseX = curPos.x;
-                  mouseY = curPos.y;
-                  leftMouseButtonDown = true;
+                  m_mouseX = curPos.x;
+                  m_mouseY = curPos.y;
+                  m_leftMouseButtonDown = true;
                }
-               if (!(mouseState.rgbButtons[0] & 0x80) && leftMouseButtonDown && !rightMouseButtonDown && !middleMouseButtonDown)
+               if (!(mouseState.rgbButtons[0] & 0x80) && m_leftMouseButtonDown && !m_rightMouseButtonDown && !m_middleMouseButtonDown)
                {
                   POINT curPos;
                   GetCursorPos(&curPos);
-                  mouseDX = curPos.x - mouseX;
-                  mouseDY = curPos.y - mouseY;
+                  m_mouseDX = curPos.x - m_mouseX;
+                  m_mouseDY = curPos.y - m_mouseY;
                   didod[0].dwData = 1;
                   PushQueue(didod, APP_MOUSE);
-                  leftMouseButtonDown = false;
+                  m_leftMouseButtonDown = false;
                }
-               if ((mouseState.rgbButtons[1] & 0x80) && !rightMouseButtonDown && !leftMouseButtonDown && !middleMouseButtonDown)
+               if ((mouseState.rgbButtons[1] & 0x80) && !m_rightMouseButtonDown && !m_leftMouseButtonDown && !m_middleMouseButtonDown)
                {
                   POINT curPos;
                   GetCursorPos(&curPos);
-                  mouseX = curPos.x;
-                  mouseY = curPos.y;
-                  rightMouseButtonDown = true;
+                  m_mouseX = curPos.x;
+                  m_mouseY = curPos.y;
+                  m_rightMouseButtonDown = true;
                }
-               if (!(mouseState.rgbButtons[1] & 0x80) && !leftMouseButtonDown && rightMouseButtonDown && !middleMouseButtonDown)
+               if (!(mouseState.rgbButtons[1] & 0x80) && !m_leftMouseButtonDown && m_rightMouseButtonDown && !m_middleMouseButtonDown)
                {
                   POINT curPos;
                   GetCursorPos(&curPos);
-                  mouseDX = curPos.x - mouseX;
-                  mouseDY = curPos.y - mouseY;
+                  m_mouseDX = curPos.x - m_mouseX;
+                  m_mouseDY = curPos.y - m_mouseY;
                   didod[0].dwData = 2;
                   PushQueue(didod, APP_MOUSE);
-                  rightMouseButtonDown = false;
+                  m_rightMouseButtonDown = false;
                }
-               if ((mouseState.rgbButtons[2] & 0x80) && !rightMouseButtonDown && !leftMouseButtonDown && !middleMouseButtonDown)
+               if ((mouseState.rgbButtons[2] & 0x80) && !m_rightMouseButtonDown && !m_leftMouseButtonDown && !m_middleMouseButtonDown)
                {
                   POINT curPos;
                   GetCursorPos(&curPos);
-                  mouseX = curPos.x;
-                  mouseY = curPos.y;
-                  middleMouseButtonDown = true;
+                  m_mouseX = curPos.x;
+                  m_mouseY = curPos.y;
+                  m_middleMouseButtonDown = true;
                }
-               if (!(mouseState.rgbButtons[2] & 0x80) && !rightMouseButtonDown && !leftMouseButtonDown && middleMouseButtonDown)
+               if (!(mouseState.rgbButtons[2] & 0x80) && !m_rightMouseButtonDown && !m_leftMouseButtonDown && m_middleMouseButtonDown)
                {
                   POINT curPos;
                   GetCursorPos(&curPos);
-                  mouseDX = curPos.x - mouseX;
-                  mouseDY = curPos.y - mouseY;
+                  m_mouseDX = curPos.x - m_mouseX;
+                  m_mouseDY = curPos.y - m_mouseY;
                   didod[0].dwData = 3;
                   PushQueue(didod, APP_MOUSE);
-                  middleMouseButtonDown = false;
+                  m_middleMouseButtonDown = false;
                }
-               if (g_pplayer->m_ballControl && !g_pplayer->m_throwBalls && leftMouseButtonDown && !rightMouseButtonDown && !middleMouseButtonDown)
+               if (g_pplayer->m_ballControl && !g_pplayer->m_throwBalls && m_leftMouseButtonDown && !m_rightMouseButtonDown && !m_middleMouseButtonDown)
                {
                   POINT curPos;
                   GetCursorPos(&curPos);
                   didod[0].dwData = 4;
-                  mouseX = curPos.x;
-                  mouseY = curPos.y;
+                  m_mouseX = curPos.x;
+                  m_mouseY = curPos.y;
                   PushQueue(didod, APP_MOUSE);
                }
 
@@ -502,13 +498,13 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
             {
                for (DWORD i = 0; i < 3; i++)
                {
-                  if (oldMouseButtonState[i] != mouseState.rgbButtons[i])
+                  if (m_oldMouseButtonState[i] != mouseState.rgbButtons[i])
                   {
                      didod[i].dwData = mouseState.rgbButtons[i];
                      didod[i].dwOfs = i + 1;
                      didod[i].dwSequence = APP_MOUSE;
                      PushQueue(&didod[i], APP_MOUSE);
-                     oldMouseButtonState[i] = mouseState.rgbButtons[i];
+                     m_oldMouseButtonState[i] = mouseState.rgbButtons[i];
                   }
                }
 
@@ -520,22 +516,22 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
    // same for joysticks 
    switch (m_inputApi) {
    case 1:
-      handleInputXI(didod);
+      HandleInputXI(didod);
       break;
    case 2:
-      handleInputSDL(didod);
+      HandleInputSDL(didod);
       break;
    case 3:
-      handleInputIGC(didod);
+      HandleInputIGC(didod);
       break;
    case 0:
    default:
-      handleInputDI(didod);
+      HandleInputDI(didod);
       break;
    }
 }
 
-void PinInput::handleInputDI(DIDEVICEOBJECTDATA *didod)
+void PinInput::HandleInputDI(DIDEVICEOBJECTDATA *didod)
 {
    for (int k = 0; k < m_num_joy; ++k)
    {
@@ -563,7 +559,7 @@ void PinInput::handleInputDI(DIDEVICEOBJECTDATA *didod)
    }
 }
 
-void PinInput::handleInputXI(DIDEVICEOBJECTDATA *didod)
+void PinInput::HandleInputXI(DIDEVICEOBJECTDATA *didod)
 {
 #ifdef ENABLE_XINPUT
    typedef struct {
@@ -605,7 +601,7 @@ void PinInput::handleInputXI(DIDEVICEOBJECTDATA *didod)
       m_num_joy = 0;
    }
    if (m_rumbleRunning && m_inputDeviceXI >= 0) {
-      DWORD now = timeGetTime();
+      const DWORD now = timeGetTime();
       if (m_rumbleOffTime <= now || m_rumbleOffTime - now > 65535) {
          m_rumbleRunning = false;
          XINPUT_VIBRATION vibration = {};
@@ -669,7 +665,7 @@ void PinInput::handleInputXI(DIDEVICEOBJECTDATA *didod)
 #endif
 }
 
-void PinInput::handleInputSDL(DIDEVICEOBJECTDATA *didod)
+void PinInput::HandleInputSDL(DIDEVICEOBJECTDATA *didod)
 {
 #ifdef ENABLE_SDL_INPUT
    static constexpr DWORD axes[] = { DIJOFS_X, DIJOFS_Y, DIJOFS_RX, DIJOFS_RY, DIJOFS_Z , DIJOFS_RZ };
@@ -748,7 +744,7 @@ void PinInput::handleInputSDL(DIDEVICEOBJECTDATA *didod)
 #endif
 }
 
-void PinInput::handleInputIGC(DIDEVICEOBJECTDATA *didod)
+void PinInput::HandleInputIGC(DIDEVICEOBJECTDATA *didod)
 {
 #ifdef ENABLE_IGAMECONTROLLER
 #endif
@@ -846,8 +842,8 @@ void PinInput::Init(const HWND hwnd)
    /* Disable Sticky Keys */
 
    // get the current state
-   m_StartupStickyKeys.cbSize = sizeof(STICKYKEYS);
-   SystemParametersInfo(SPI_GETSTICKYKEYS, sizeof(STICKYKEYS), &m_StartupStickyKeys, 0);
+   m_startupStickyKeys.cbSize = sizeof(STICKYKEYS);
+   SystemParametersInfo(SPI_GETSTICKYKEYS, sizeof(STICKYKEYS), &m_startupStickyKeys, 0);
 
    // turn it all OFF
    STICKYKEYS newStickyKeys = {};
@@ -913,8 +909,8 @@ void PinInput::Init(const HWND hwnd)
 #endif
    }
 
-   gMixerKeyDown = false;
-   gMixerKeyUp = false;
+   m_mixerKeyDown = false;
+   m_mixerKeyUp = false;
 }
 
 
@@ -945,7 +941,7 @@ void PinInput::UnInit()
    }
 
    // restore the state of the sticky keys
-   SystemParametersInfo(SPI_SETSTICKYKEYS, sizeof(STICKYKEYS), &m_StartupStickyKeys, SPIF_SENDCHANGE);
+   SystemParametersInfo(SPI_SETSTICKYKEYS, sizeof(STICKYKEYS), &m_startupStickyKeys, SPIF_SENDCHANGE);
 
    //
    // DirectInput:
@@ -1085,7 +1081,7 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
             viewSetup.mViewX = CMTOVPU(LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetCamX"s,   0.f));
             viewSetup.mViewY = CMTOVPU(LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetCamY"s, - 1.f)); // Measured from real players. Highly depends on size and playing position (between -10 to 5)
             viewSetup.mViewZ = CMTOVPU(LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetCamZ"s,  67.f)); // Measured from real players. Highly depends on size and playing position (between 55 to 80)
-            float tableScale = 952.f / (table->m_right - table->m_left); // Default scale is for the usual 20.25" wide playfield, so adjust it
+            const float tableScale = 952.f / (table->m_right - table->m_left); // Default scale is for the usual 20.25" wide playfield, so adjust it
             viewSetup.mSceneScaleX = LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetScaleX"s, 1.2f) * tableScale;
             viewSetup.mSceneScaleY = LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetScaleY"s, 1.2f) * tableScale;
             viewSetup.mSceneScaleZ = LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetScaleZ"s, 1.2f) * tableScale;
@@ -1097,9 +1093,7 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
          case NUM_BG_SETS:
             assert(false); break;
          }
-         g_pplayer->m_pin3d.m_cam.x = 0.f;
-         g_pplayer->m_pin3d.m_cam.y = 0.f;
-         g_pplayer->m_pin3d.m_cam.z = 0.f;
+         g_pplayer->m_pin3d.m_cam = Vertex3Ds(0.f,0.f,0.f);
       }
       else if (keycode == g_pplayer->m_rgKeys[eAddCreditKey])
       {
@@ -1159,15 +1153,15 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
          g_pplayer->m_pininput.PlayRumble(0.f, 0.2f, 150);
 
       // Mixer volume only
-      gMixerKeyDown = (keycode == g_pplayer->m_rgKeys[eVolumeDown] && dispid == DISPID_GameEvents_KeyDown);
-      gMixerKeyUp   = (keycode == g_pplayer->m_rgKeys[eVolumeUp]   && dispid == DISPID_GameEvents_KeyDown);
+      m_mixerKeyDown = (keycode == g_pplayer->m_rgKeys[eVolumeDown] && dispid == DISPID_GameEvents_KeyDown);
+      m_mixerKeyUp   = (keycode == g_pplayer->m_rgKeys[eVolumeUp]   && dispid == DISPID_GameEvents_KeyDown);
 
       g_pplayer->m_ptable->FireKeyEvent(dispid, keycode);
    }
 }
 
 // Returns true if the table has started at least 1 player.
-int PinInput::started()
+int PinInput::Started()
 {
    // Was the start button pressed?
    if (m_pressed_start)
@@ -1182,15 +1176,15 @@ int PinInput::started()
       return 0;
 }
 
-void PinInput::autostart(const U32 msecs, const U32 retry_msecs, const U32 curr_time_msec)
+void PinInput::Autostart(const U32 msecs, const U32 retry_msecs, const U32 curr_time_msec)
 {
-   //	if (!g_pvp->m_open_minimized)
-   //		return;
+   //if (!g_pvp->m_open_minimized)
+   //   return;
 
    // Make sure we have a player.
    if (!g_pplayer ||
       // Check if we already started.
-      started())
+      Started())
       return;
 
    if ((m_firedautostart > 0) &&                    // Initialized.
@@ -1209,7 +1203,7 @@ void PinInput::autostart(const U32 msecs, const U32 retry_msecs, const U32 curr_
 
    // Logic to do "autostart"
    if (!m_as_down &&                                                                            // Start button is up.
-       (( m_as_didonce && !started() && ((curr_time_msec - m_firedautostart) > retry_msecs)) || // Not started and last attempt was at least AutoStartRetry seconds ago.
+       (( m_as_didonce && !Started() && ((curr_time_msec - m_firedautostart) > retry_msecs)) || // Not started and last attempt was at least AutoStartRetry seconds ago.
         (!m_as_didonce               && ((curr_time_msec - m_firedautostart) > msecs))))        // Never attempted and autostart time has elapsed.
    {
       // Press start.
@@ -1224,7 +1218,7 @@ void PinInput::autostart(const U32 msecs, const U32 retry_msecs, const U32 curr_
    }
 }
 
-void PinInput::button_exit(const U32 msecs, const U32 curr_time_msec)
+void PinInput::ButtonExit(const U32 msecs, const U32 curr_time_msec)
 {
    // Don't allow button exit until after game has been running for 1 second.
    if (curr_time_msec - m_first_stamp < 1000)
@@ -1238,7 +1232,7 @@ void PinInput::button_exit(const U32 msecs, const U32 curr_time_msec)
    }
 }
 
-void PinInput::tilt_update()
+void PinInput::TiltUpdate()
 {
    if (!g_pplayer) return;
 
@@ -1380,7 +1374,7 @@ void PinInput::ProcessBallControl(const DIDEVICEOBJECTDATA * __restrict input)
 {
 	if (input->dwData == 1 || input->dwData == 3 || input->dwData == 4)
 	{
-		POINT point = { mouseX, mouseY };
+		POINT point = { m_mouseX, m_mouseY };
 		ScreenToClient(m_hwnd, &point);
 		delete g_pplayer->m_pBCTarget;
 		g_pplayer->m_pBCTarget = new Vertex3Ds(g_pplayer->m_pin3d.Get3DPointFrom2D(point));
@@ -1413,12 +1407,12 @@ void PinInput::ProcessThrowBalls(const DIDEVICEOBJECTDATA * __restrict input)
 {
    if (input->dwData == 1 || input->dwData == 3)
    {
-      POINT point = { mouseX, mouseY };
+      POINT point = { m_mouseX, m_mouseY };
       ScreenToClient(m_hwnd, &point);
       const Vertex3Ds vertex = g_pplayer->m_pin3d.Get3DPointFrom2D(point);
 
-      float vx = (float)mouseDX*0.1f;
-      float vy = (float)mouseDY*0.1f;
+      float vx = (float)m_mouseDX*0.1f;
+      float vy = (float)m_mouseDY*0.1f;
       const float radangle = ANGTORAD(g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].mViewportRotation);
       const float sn = sinf(radangle);
       const float cs = cosf(radangle);
@@ -1478,7 +1472,7 @@ void PinInput::ProcessThrowBalls(const DIDEVICEOBJECTDATA * __restrict input)
     }
     else if (input->dwData == 2)
     {
-        POINT point = { mouseX, mouseY };
+        POINT point = { m_mouseX, m_mouseY };
         ScreenToClient(m_hwnd, &point);
         const Vertex3Ds vertex = g_pplayer->m_pin3d.Get3DPointFrom2D(point);
 
@@ -1504,7 +1498,7 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
     if (input->dwOfs >= DIJOFS_BUTTON0 && input->dwOfs <= DIJOFS_BUTTON31)
     {
         const int updown = (input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp;
-        const bool start = ((curr_time_msec - m_firedautostart) > g_pplayer->m_ptable->m_tblAutoStart) || m_pressed_start || started();
+        const bool start = ((curr_time_msec - m_firedautostart) > g_pplayer->m_ptable->m_tblAutoStart) || m_pressed_start || Started();
         if (input->dwOfs == DIJOFS_BUTTON0)
         {
             if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && !m_override_default_buttons) // plunge
@@ -1566,8 +1560,8 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
         else if (input->dwOfs == DIJOFS_BUTTON7)
         {
             if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && !m_override_default_buttons && !m_disable_esc) // exit
-            {	// Check if we have started a game yet.
-                if (started() || !g_pplayer->m_ptable->m_tblAutoStartEnabled)
+            {   // Check if we have started a game yet.
+                if (Started() || !g_pplayer->m_ptable->m_tblAutoStartEnabled)
                 {
                     if (DISPID_GameEvents_KeyDown == updown)
                     {
@@ -1649,7 +1643,7 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
         {
             if ((uShockType == USHOCKTYPE_ULTRACADE) && !m_override_default_buttons) // exit
             {
-                if (started() || !g_pplayer->m_ptable->m_tblAutoStartEnabled) // Check if we have started a game yet.
+                if (Started() || !g_pplayer->m_ptable->m_tblAutoStartEnabled) // Check if we have started a game yet.
                 {
                     if (DISPID_GameEvents_KeyDown == updown)
                     {
@@ -1699,7 +1693,7 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
         int deadu = (int)input->dwData;
         if (((deadu <= 0) && (deadu >= -m_deadz)) || ((deadu >= 0) && (deadu <= m_deadz)))
             deadu = 0;
-        if ((deadu<0) && (deadu < -m_deadz))
+        if ((deadu < 0) && (deadu < -m_deadz))
             deadu += m_deadz;
         if ((deadu > 0) && (deadu>m_deadz))
             deadu -= m_deadz;
@@ -1930,12 +1924,12 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
       // Check if autostart is enabled.
       if (g_pplayer->m_ptable->m_tblAutoStartEnabled)
          // Update autostart.
-         autostart(g_pplayer->m_ptable->m_tblAutoStart, g_pplayer->m_ptable->m_tblAutoStartRetry, curr_time_msec);
+         Autostart(g_pplayer->m_ptable->m_tblAutoStart, g_pplayer->m_ptable->m_tblAutoStartRetry, curr_time_msec);
 
-      button_exit(g_pplayer->m_ptable->m_tblExitConfirm, curr_time_msec);
+      ButtonExit(g_pplayer->m_ptable->m_tblExitConfirm, curr_time_msec);
 
       // Update tilt.
-      tilt_update();
+      TiltUpdate();
    }
    else
       curr_time_msec = -curr_time_msec; // due to special encoding to not do the stuff above
@@ -2050,7 +2044,6 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
                      // Loop back with shift pressed
                      if (!g_pplayer->m_stereo3Denabled && glassesIndex <= 0 && dir == -1)
                      {
-
                         g_pplayer->m_stereo3Denabled = true;
                         glassesIndex = 9;
                      }
@@ -2103,7 +2096,7 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
          }
          else if (input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eDebugger])
          {
-             if (started() || !g_pplayer->m_ptable->m_tblAutoStartEnabled)
+             if (Started() || !g_pplayer->m_ptable->m_tblAutoStartEnabled)
              {
                  if ((input->dwData & 0x80) != 0)
                  { //on key down only
@@ -2120,14 +2113,14 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
          else if (((input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eEscape]) && !m_disable_esc) || (input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eExitGame]))
          {
             // Check if we have started a game yet, and do not trigger if the UI is already opened (keyboard is handled in it)
-            if (!g_pplayer->m_liveUI->IsOpened() && (started() || !g_pplayer->m_ptable->m_tblAutoStartEnabled))
+            if (!g_pplayer->m_liveUI->IsOpened() && (Started() || !g_pplayer->m_ptable->m_tblAutoStartEnabled))
             {
                if (input->dwData & 0x80) { //on key down only
                   m_first_stamp = curr_time_msec;
                   m_exit_stamp = curr_time_msec;
                }
                else
-               { //on key up only
+               {  //on key up only
                   // Open UI on key up since a long press should not trigger the UI (direct exit from the app)
                   g_pplayer->m_closing = Player::CS_USER_INPUT;
                   m_exit_stamp = 0;

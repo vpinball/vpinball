@@ -151,7 +151,7 @@ STDMETHODIMP ScriptGlobalTable::NudgeSensorStatus(VARIANT *XNudge, VARIANT *YNud
 {
 	CComVariant(m_pt->m_tblNudgeRead.x).Detach(XNudge);
 	CComVariant(m_pt->m_tblNudgeRead.y).Detach(YNudge);
-    m_pt->m_tblNudgeRead = Vertex2D(0.f,0.f);
+	m_pt->m_tblNudgeRead = Vertex2D(0.f,0.f);
 
 	return S_OK;
 }
@@ -160,7 +160,7 @@ STDMETHODIMP ScriptGlobalTable::NudgeTiltStatus(VARIANT *XPlumb, VARIANT *YPlumb
 {
 	CComVariant(m_pt->m_tblNudgePlumb.x).Detach(XPlumb);
 	CComVariant(m_pt->m_tblNudgePlumb.y).Detach(YPlumb);
-    m_pt->m_tblNudgePlumb = Vertex2D(0.f,0.f);
+	m_pt->m_tblNudgePlumb = Vertex2D(0.f,0.f);
 	CComVariant(m_pt->m_tblNudgeReadTilt).Detach(Tilt);
 	m_pt->m_tblNudgeReadTilt = 0.0f;
 
@@ -360,6 +360,20 @@ STDMETHODIMP ScriptGlobalTable::get_LockbarKey(long *pVal)
    return S_OK;
 }
 
+STDMETHODIMP ScriptGlobalTable::get_JoyCustomKey(long index, long *pVal)
+{
+   switch (index)
+   {
+   case 1: *pVal = g_pplayer->m_pininput.m_joycustom1key; break;
+   case 2: *pVal = g_pplayer->m_pininput.m_joycustom2key; break;
+   case 3: *pVal = g_pplayer->m_pininput.m_joycustom3key; break;
+   case 4: *pVal = g_pplayer->m_pininput.m_joycustom4key; break;
+   default: return E_FAIL;
+   }
+
+   return S_OK;
+}
+
 bool ScriptGlobalTable::GetTextFileFromDirectory(const string& szfilename, const string& dirname, BSTR *pContents)
 {
    string szPath;
@@ -411,7 +425,7 @@ bool ScriptGlobalTable::GetTextFileFromDirectory(const string& szfilename, const
 
 STDMETHODIMP ScriptGlobalTable::GetCustomParam(long index, BSTR *param)
 {
-    if (index <= 0 || index >= MAX_CUSTOM_PARAM_INDEX)
+    if (index <= 0 || index > MAX_CUSTOM_PARAM_INDEX)
         return E_FAIL;
 
     *param = SysAllocString(m_vpinball->m_customParameters[index-1]);

@@ -8,11 +8,8 @@ static DWORD m_dwMinimum;
 static DWORD m_dwMaximum;
 static DWORD m_dwVolumeControlID;
 static int nmixers;
-static F32 gMixerVolume;
-static U32 gMixerVolumeStamp = 0;
-// used extern in pininput:
-bool gMixerKeyDown;
-bool gMixerKeyUp;
+static F32 m_mixerVolume;
+static U32 m_mixerVolumeStamp = 0;
 
 constexpr F32 volume_adjustment_bar_pos[2] = { (float)(15.0 / 1000.0), (float)(500.0 / 1000.0) };
 constexpr F32 volume_adjustment_bar_big_size[2] = { (float)(20.0 / 1000.0), (float)(4.0 / 1000.0) };
@@ -122,12 +119,12 @@ void mixer_get_volume()
    }
 
    if (m_dwMaximum > m_dwMinimum)
-      gMixerVolume = sqrtf((F32)(mxcdVolume.dwValue - m_dwMinimum) / (F32)(m_dwMaximum - m_dwMinimum));
+      m_mixerVolume = sqrtf((F32)(mxcdVolume.dwValue - m_dwMinimum) / (F32)(m_dwMaximum - m_dwMinimum));
 
    if (g_pplayer->m_ptable->m_tblVolmod != 0.0f)
-      gMixerVolume /= g_pplayer->m_ptable->m_tblVolmod;
+      m_mixerVolume /= g_pplayer->m_ptable->m_tblVolmod;
    else
-      gMixerVolume = 0.01f; // mute is impossible
+      m_mixerVolume = 0.01f; // mute is impossible
 }
 
 void mixer_update()
@@ -138,24 +135,24 @@ void mixer_update()
    constexpr F32 delta = (F32)(1.0 / 500.0);
 
    float vol;
-   if (gMixerKeyDown)
-       vol = gMixerVolume - delta;
-   else if (gMixerKeyUp)
-       vol = gMixerVolume + delta;
+   if (g_pplayer->m_pininput.m_mixerKeyDown)
+       vol = m_mixerVolume - delta;
+   else if (g_pplayer->m_pininput.m_mixerKeyUp)
+       vol = m_mixerVolume + delta;
    else
        return;
 
    if (vol < 0.01f) vol = 0.01f; //hardcap minimum
    if (vol > 1.0f) vol = 1.0f;   //hardcap maximum
 
-   gMixerVolumeStamp = g_pplayer->m_time_msec;
+   m_mixerVolumeStamp = g_pplayer->m_time_msec;
 
-   if (vol == gMixerVolume)
+   if (vol == m_mixerVolume)
        return;
 
-   gMixerVolume = vol;
+   m_mixerVolume = vol;
 
-   F32 modded_volume = gMixerVolume * g_pplayer->m_ptable->m_tblVolmod;
+   F32 modded_volume = m_mixerVolume * g_pplayer->m_ptable->m_tblVolmod;
 
    if (modded_volume < 0.01f)
       modded_volume = 0.01f; //hardcap minimum
@@ -184,15 +181,15 @@ void mixer_update()
 
 void mixer_draw()
 {
-   if (!gMixerVolumeStamp)
+   if (!m_mixerVolumeStamp)
       return;
 
-   F32 fade = 1.0f - (F32)(g_pplayer->m_time_msec - gMixerVolumeStamp) * 0.001f;
+   F32 fade = 1.0f - (F32)(g_pplayer->m_time_msec - m_mixerVolumeStamp) * 0.001f;
    if (fade > 1.0f)
       fade = 1.0f;
    if (fade <= 0.0f)
    {
-      gMixerVolumeStamp = 0;
+      m_mixerVolumeStamp = 0;
       return;
    }
 
@@ -213,7 +210,7 @@ void mixer_draw()
    {
       U32 color;
       F32 size[2];
-      if (vol > gMixerVolume)
+      if (vol > m_mixerVolume)
       {
          size[0] = volume_adjustment_bar_small_size[0];
          size[1] = volume_adjustment_bar_small_size[1];
@@ -238,7 +235,7 @@ void mixer_draw()
       const float fY = 1.0f - (volume_adjustment_bar_pos[1] + size[1] + y);
 
       // Set the color.
-      /*		// Draw the tick mark.  (Reversed x and y to match coordinate system of front end.)
+      /*// Draw the tick mark.  (Reversed x and y to match coordinate system of front end.)
             g_pplayer->Spritedraw( (cabMode ? fX : fY) - (float)(1.0/1000.0), (cabMode ? fY : fX) - (float)(1.0/1000.0),
             (cabMode ? size[0] : size[1]) + (float)(2.0/1000.0), (cabMode ? size[1] : size[0]) + (float)(2.0/1000.0),
             drop_color,

@@ -91,7 +91,7 @@ UNIFORM float4x4 Stereo_RightMat;
 UNIFORM float4 Stereo_LeftLuminance_Gamma;
 UNIFORM float4 Stereo_RightLuminance;
 
-/*float3 HueShift(float3 color, float dhue)
+/*float3 HueShift(const float3 color, const float dhue)
 {
     float s = sin(dhue);
     float c = cos(dhue);

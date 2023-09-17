@@ -115,7 +115,7 @@ FEATURES:
   - Desktop & FSS: automatically selects one of the 2 depending if the table has enabled FSS (because it includes a backglass)
   - Cabinet: use the cabinet view setup (also named 'Fullscreen')
   - Desktop: use the desktop view setup (never use the FSS settings, even for tables including a backglass)
-  The UI also allows table authot to quickly switch between these mode from the camera property pane.
+  The UI also allows table authors to quickly switch between these mode from the camera property pane.
 
 - stereo rendering has been rewritten:
   - use new projections which are well-designed for stereo rendering (same as for VR, no more parallel or toe-in with artefacts)
@@ -123,11 +123,11 @@ FEATURES:
   - add support for fake stereo to OpenGL (like DirectX): real stereo is way better but needs a more powerful setup
   - add 'Luminance' filter mode which creates anaglyph based on real display/glasses/viewer calibration. The calibration is only possible from the new Live Editor.
     This new mode adapts to any glasses based on user calibration. It is especially useful when glasses are not conforming standard filter colors, on HDR display or 
-	for (partly) color blinded people. The calibration is performed from the new 'Live Editor' in the Live Editor > Preferences > Video Settings dialog. It consists
-	of measuring the perceived luminance of your display through your glasses and eyes. To do so, the viewer adjust the luminance of a reference image showing 2 faces
-	until he finds the point where the most proeminent faces changes side.
+    for (partially) color blinded people. The calibration is performed from the new 'Live Editor' in the Live Editor > Preferences > Video Settings dialog. It consists
+    of measuring the perceived luminance of your display through your glasses and eyes. To do so, the viewer adjusts the luminance of a reference image showing 2 faces
+    until it finds the point where the most prominent faces change sides.
   - Additionally to toggling stereo on/off, F10 shortcut also circles through the anaglyph glasses settings, Flipper Key + F10 circles backward
-  - add complete support for amber/blue & blue/amber glasses
+  - add complete support for anaglyph amber/blue & blue/amber glasses
   - allow to adjust image brightness and per eye contrast
   - add all stereo settings to the Live Editor to get live feedback (in the Live Editor > Preferences > Video Settings dialog)
   Note that the DirectX flavor of VPX does not support real stereo rendering. The OpenGL flavor should be preferred when using stereo (at the cost of some performance requirements)

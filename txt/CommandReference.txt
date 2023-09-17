@@ -9,7 +9,7 @@ As for coding light sequences for original tables, please check this helper app:
 
 Changelog:
 10.8.0:
-- add StagedLeftFlipperKey and StagedRightFlipperKey
+- add StagedLeftFlipperKey, StagedRightFlipperKey and JoyCustomKey
 - add TablesDirectory, MusicDirectory, ScriptsDirectory, PlatformOS, PlatformCPU, PlatformBits and ShowCursor to the globals
 - add Animate event to Bumper, Light, Flipper, Gate, Spinner, Trigger, Targets and EMReel. This event is called when the object's visual properties are animated, in order to easily sync with custom visuals
 - add CurrentAnimOffset to the Trigger and Target elements
@@ -140,6 +140,7 @@ Variables
 *LeftMagnaSave
 *RightMagnaSave
 *LockbarKey
+*JoyCustomKey(index) - 1..4 to get the custom key mappings
 
 *ActiveBall - returns the current ball
 *ActiveTable - returns the currently played table element

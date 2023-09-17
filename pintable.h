@@ -869,7 +869,7 @@ public:
    STDMETHOD(EndModal)();
    STDMETHOD(BeginModal)();
    STDMETHOD(GetTextFile)(BSTR FileName, /*[out, retval]*/ BSTR *pContents);
-   STDMETHOD(GetCustomParam)(long index, /*[out, retval]*/ BSTR *param);
+   STDMETHOD(GetCustomParam)(/*[in]*/ long index, /*[out, retval]*/ BSTR *param);
    STDMETHOD(get_Setting)(BSTR Section, BSTR SettingName, /*[out, retval]*/ BSTR *param);
    STDMETHOD(get_GameTime)(/*[out, retval]*/ long *pVal);
    STDMETHOD(get_SystemTime)(/*[out, retval]*/ long *pVal);
@@ -937,6 +937,7 @@ public:
    STDMETHOD(get_RightMagnaSave)(/*[out, retval]*/ long *pVal);
    STDMETHOD(get_ExitGame)(/*[out, retval]*/ long *pVal);
    STDMETHOD(get_LockbarKey)(/*[out, retval]*/ long *pVal);
+   STDMETHOD(get_JoyCustomKey)(/*[in]*/ long index, /*[out, retval]*/ long *pVal);
 
    STDMETHOD(GetBalls)(/*[out, retval]*/ LPSAFEARRAY *pVal);
    STDMETHOD(GetElements)(/*[out, retval]*/ LPSAFEARRAY *pVal);
