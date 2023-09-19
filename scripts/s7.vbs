@@ -55,7 +55,7 @@ Private Sub s7ShowDips
 		Set vpmDips = New cvpmDips
 		With vpmDips
 			.AddForm  80, 60, "DIP Switches"
-			.AddFrame 0,0, 60,"Sound", 0,_
+			.AddFrame 0, 0, 60, "Sound", 0,_
 			   Array("DIP 1",&H00000001,"DIP 2",&H00000002)
 			.AddFrame 0,45, 60,"Game", 0,_
 			   Array("DIP M8",&H00000100,"DIP M7",&H00000200,"DIP M6",&H00000400,"DIP M5",&H00000800,_

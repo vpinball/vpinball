@@ -56,7 +56,7 @@ Private Sub s4ShowDips
 		Set vpmDips = New cvpmDips
 		With vpmDips
 			.AddForm  80, 290, "DIP Switches"
-			.AddFrame  0,0, 100,"Sound", 0,_
+			.AddFrame  0, 0, 100,"Sound", 0,_
 			  Array("Dip 1",&H00000001,"Synth Sound",&H00000002)
 			.AddFrame  0,50, 100,"Function / Data", 0,_
 				Array("DIP F8 (1)" ,&H00000100,"DIP F7 (2)",&H00000200,"DIP F6 (4)",&H00000400,"DIP F5 (8)",&H00000800,_

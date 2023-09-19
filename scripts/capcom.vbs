@@ -42,7 +42,7 @@ vpmSystemHelp = "Capcom keys" & vbNewLine &_
   vpmKeyName(keyInsertCoin4)  & vbTab & "Insert Coin #4" & vbNewLine &_
   vpmKeyName(keySlamDoorHit)  & vbTab & "Slam Tilt"
 
-' Option Menu (No Dips)
+' Options Menu (No Dips)
 Private Sub CapcomShowDips
 	If Not IsObject(vpmDips) Then ' First time
 		Set vpmDips = New cvpmDips

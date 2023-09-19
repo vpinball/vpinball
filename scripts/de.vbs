@@ -1,4 +1,4 @@
-'Last Updated in VBS V3.61
+'Last Updated in VBS v3.61
 
 Option Explicit
 LoadCore
@@ -44,7 +44,7 @@ vpmSystemHelp = "Data East keys:" & vbNewLine &_
   vpmKeyName(keyGreen)        & vbTab & "Green button"   & vbNewLine &_
   vpmKeyName(keySlamDoorHit)  & vbTab & "Slam Tilt"
 
-' Option Menu / Dip Menu
+' Dip Switch / Options Menu
 Private Sub deShowDips
 	If Not IsObject(vpmDips) Then ' First time
 		Set vpmDips = New cvpmDips
@@ -85,10 +85,10 @@ Function vpmKeyDown(ByVal keycode)
 			Case keyGreen        .Switch(swGreen)        = Not .Switch(swGreen)
 			Case keyBlack        .Switch(swBlack)        = True
 			Case keySlamDoorHit  .Switch(swSlamTilt)     = True
-			Case keyBangBack     vpmNudge.DoNudge 0, 6
-			Case LeftTiltKey     vpmNudge.DoNudge 75, 2
+			Case keyBangBack     vpmNudge.DoNudge   0, 6
+			Case LeftTiltKey     vpmNudge.DoNudge  75, 2
 			Case RightTiltKey    vpmNudge.DoNudge 285, 2
-			Case CenterTiltKey   vpmNudge.DoNudge 0, 2
+			Case CenterTiltKey   vpmNudge.DoNudge   0, 2
 			Case keyVPMVolume    vpmVol
 			Case Else            vpmKeyDown = False
 		End Select

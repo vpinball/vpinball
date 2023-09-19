@@ -14,6 +14,7 @@ Private Sub LoadCore
 		ExecuteGlobal GetTextFile("VPMKeys.vbs") : If Err Then MsgBox "Can't open ""vpmkeys.vbs""" : Exit Sub
 	End If
 End Sub
+
 '-------------------------
 ' Spinball Data
 '-------------------------
@@ -42,13 +43,13 @@ vpmSystemHelp = "Spinball MPUx00 keys:" & vbNewLine &_
   vpmKeyName(keyCPUDiag)     & vbTab & "Cpu Diagnostic" & vbNewLine &_
   vpmKeyName(keySlamDoorHit) & vbTab & "Slam Tilt"
 
-'Dip Switch / Options Menu
+' Dip Switch / Options Menu
 Private Sub InderShowDips
 	If Not IsObject(vpmDips) Then ' First time
 		Set vpmDips = New cvpmDips
 		With vpmDips
 			.AddForm 150, 245, "DIP switches"
-			.AddFrame 0,0, 60, "", 0,_
+			.AddFrame 0, 0, 60, "", 0,_
 			  Array("DIP  1",&H00000001,"DIP  2",&H00000002,"DIP  3",&H00000004,"DIP  4",&H00000008,_
 			        "DIP  5",&H00000010,"DIP  6",&H00000020,"DIP  7",&H00000040,"DIP  8",32768,_
 			        "DIP  9",&H00000100,"DIP 10",&H00000200,"DIP 11",&H00000400,"DIP 12",&H00000800,_

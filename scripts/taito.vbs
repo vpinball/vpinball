@@ -62,10 +62,10 @@ Private Sub TaitoShowDips
 	If Not IsObject(vpmDips) Then ' First time
 		Set vpmDips = New cvpmDips
 		With vpmDips
-	  	.AddForm  80, 0, "DIP Switches"
-        	.AddFrame  0,0, 180,"Dip Format in Adjust Mode ( |B| |A| )", 0,_
-	    		Array("CH0  A(1)",&H1, "CH1  A(2)",&H2, "CH2  A(4)",&H4, "CH3  A(8)",&H8,_
-	        		  "CH4  B(1)",&H10,"CH5  B(2)",&H20,"CH6  B(4)",&H40,"CH7  B(8)",&H80)
+		.AddForm 80, 0, "DIP Switches"
+			.AddFrame  0,0, 180,"Dip Format in Adjust Mode ( |B| |A| )", 0,_
+				Array("CH0  A(1)",&H1, "CH1  A(2)",&H2, "CH2  A(4)",&H4, "CH3  A(8)",&H8,_
+				      "CH4  B(1)",&H10,"CH5  B(2)",&H20,"CH6  B(4)",&H40,"CH7  B(8)",&H80)
 		End With
 	End If
 	vpmDips.ViewDips
@@ -87,7 +87,7 @@ Function vpmKeyDown(ByVal keycode)
 			Case keyInsertCoin2  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin1'" : Playsound SCoin
 			Case keyInsertCoin3  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin1'" : Playsound SCoin
 			Case StartGameKey    .Switch(swStartButton)   = True
-			Case keyUp	         .Switch(swDiagnostics)   = Not .Switch(swDiagnostics)
+			Case keyUp           .Switch(swDiagnostics)   = Not .Switch(swDiagnostics)
 			Case keyHiScoreReset .Switch(swStatistics)    = Not .Switch(swStatistics)
 			Case keySelfTest     .Switch(swService)       = Not .Switch(swService)
 			Case keyDown         .Switch(swAdjustments)   = Not .Switch(swAdjustments)
@@ -123,8 +123,8 @@ Function vpmKeyUp(ByVal keycode)
 			Case keyShowOpts     .Pause = True : vpmShowOptions : .Pause = False
 			Case keyShowKeys     .Pause = True : vpmShowHelp : .Pause = False
 			Case keyShowDips     If IsObject(vpmShowDips) Then .Pause = True : vpmShowDips : .Pause = False
-			Case keyConfigurations .Switch(swConfigurations)= False
-			Case keyEnter        .Switch(swEnter)         = False
+			Case keyConfigurations .Switch(swConfigurations) = False
+			Case keyEnter        .Switch(swEnter)            = False
 			Case keyAddBall      .Pause = True : vpmAddBall  : .Pause = False
 			Case keyReset        .Stop : BeginModal : .Run : vpmTimer.Reset : EndModal
 			Case keyFrame        .LockDisplay = Not .LockDisplay

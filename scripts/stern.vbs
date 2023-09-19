@@ -44,13 +44,13 @@ vpmSystemHelp = "Stern MPUx00 keys:" & vbNewLine &_
   vpmKeyName(keySoundDiag)   & vbTab & "Sound Diagnostic" & vbNewLine &_
   vpmKeyName(keySlamDoorHit) & vbTab & "Slam Tilt"
 
-'Dip Switch / Options Menu
+' Dip Switch / Options Menu
 Private Sub sternShowDips
 	If Not IsObject(vpmDips) Then ' First time
 		Set vpmDips = New cvpmDips
 		With vpmDips
 			.AddForm 150, 245, "DIP Switches"
-			.AddFrame 0,0, 60, "", 0,_
+			.AddFrame 0, 0, 60, "", 0,_
 			  Array("DIP  1",&H00000001,"DIP  2",&H00000002,"DIP  3",&H00000004,"DIP  4",&H00000008,_
 			        "DIP  5",&H00000010,"DIP  6",&H00000020,"DIP  7",&H00000040,"DIP  8",&H00000080,_
 			        "DIP  9",&H00000100,"DIP 10",&H00000200,"DIP 11",&H00000400,"DIP 12",&H00000800,_

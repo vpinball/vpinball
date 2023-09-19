@@ -1,6 +1,7 @@
 'Last Updated in VBS v3.61
 
 'Zaccaria generation 2 machines only
+
 Option Explicit
 LoadCore
 Private Sub LoadCore
@@ -44,14 +45,13 @@ vpmSystemHelp = "Zaccaria keys:" & vbNewLine &_
   vpmKeyName(keyAdvance)     & vbTab & "Return Test"    & vbNewLine &_
   vpmKeyName(keySlamDoorHit) & vbTab & "Slam Tilt"
 
-' Option Menu / Dip Menu
-
+' Dip Switch / Options Menu
 Private Sub zac2ShowDips
 	If Not IsObject(vpmDips) Then ' First time
 		Set vpmDips = New cvpmDips
 		With vpmDips
 			.AddForm 150, 245, "DIP Switches"
-			.AddFrame  0,0,60,"", 0,Array("DIP  1",&H00000001,"DIP  2",&H00000002,"DIP  3",&H00000004,"DIP  4",&H00000008)
+			.AddFrame 0, 0, 60,"", 0,Array("DIP  1",&H00000001,"DIP  2",&H00000002,"DIP  3",&H00000004,"DIP  4",&H00000008)
 		End With
 	End If
 	vpmDips.ViewDips
@@ -83,8 +83,8 @@ Function vpmKeyDown(ByVal keycode)
 			Case keyInsertCoin2  vpmTimer.PulseSw swCoin2 : Playsound SCoin
 			Case keyInsertCoin3  vpmTimer.PulseSw swCoin3 : Playsound SCoin
 			Case keyInsertCoin4  vpmTimer.PulseSw swCreditService ': Playsound SCoin
-			Case StartGameKey    Controller.Switch(swStartButton)=1
-			Case keySlamDoorHit  Controller.Switch(swSlamTilt)=1
+			Case StartGameKey    .Switch(swStartButton) = True
+			Case keySlamDoorHit  .Switch(swSlamTilt)    = True
 			Case keySelfTest     vpmTimer.PulseSw swAdvanceTest
 			Case keyAdvance      vpmTimer.PulseSw swReturnTest
 			Case keyBangBack     vpmNudge.DoNudge   0, 6
@@ -117,12 +117,12 @@ Function vpmKeyUp(ByVal keycode)
 				End If
 			Case keyStagedFlipperL vpmFlips.FlipUL False : If cSingleLFlip Or Err Then .Switch(swULFlip) = False
 			Case keyStagedFlipperR vpmFlips.FlipUR False : If cSingleRFlip Or Err Then .Switch(swURFlip) = False
-			Case StartGameKey    Controller.Switch(swStartButton)=0
-			Case keySlamDoorHit  Controller.Switch(swSlamTilt)=0
+			Case StartGameKey    .Switch(swStartButton) = False
+			Case keySlamDoorHit  .Switch(swSlamTilt)    = False
 			Case keyShowOpts     .Pause = True : vpmShowOptions : .Pause = False
 			Case keyShowKeys     .Pause = True : vpmShowHelp : .Pause = False
 			Case keyAddBall      .Pause = True : vpmAddBall  : .Pause = False
-			Case keyShowDips     If IsObject(vpmShowDips) Then .Pause = True: vpmShowDips : .Pause = False
+			Case keyShowDips     If IsObject(vpmShowDips) Then .Pause = True : vpmShowDips : .Pause = False
 			Case keyReset        .Stop : BeginModal : .Run : vpmTimer.Reset : EndModal
 			Case keyFrame        .LockDisplay = Not .LockDisplay
 			Case keyDoubleSize   .DoubleSize  = Not .DoubleSize

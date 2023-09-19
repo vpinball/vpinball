@@ -46,7 +46,7 @@ vpmSystemHelp = "GamePlan keys:" & vbNewLine &_
   vpmKeyName(keySoundDiag)   & vbTab & "Sound Diagnostic" & vbNewLine &_
   vpmKeyName(keySlamDoorHit) & vbTab & "Slam Tilt"
 
-' Dip Switch / Option Menu
+' Dip Switch / Options Menu
 Private Sub gpShowDips
 	If Not IsObject(vpmDips) Then ' First time
 		Set vpmDips = New cvpmDips

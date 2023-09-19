@@ -36,7 +36,7 @@ Const swLLFlip      = 116
 Const swURFlip      = 115
 Const swULFlip      = 117
 
-' Help window
+' Help Window
 vpmSystemHelp = "Alvin G keys" & vbNewLine &_
   vpmKeyName(keyInsertCoin1)  & vbTab & "Insert Coin #1" & vbNewLine &_
   vpmKeyName(keyInsertCoin2)  & vbTab & "Insert Coin #2" & vbNewLine &_
@@ -48,7 +48,7 @@ vpmSystemHelp = "Alvin G keys" & vbNewLine &_
   vpmKeyName(keyEnter)        & vbTab & "Volume -"		 & vbNewLine &_
   vpmKeyName(keySlamDoorHit)  & vbTab & "Slam Tilt"
 
-'Option Menu (No Dips)
+' Options Menu (No Dips)
 Private Sub AlvinGShowDips
 	If Not IsObject(vpmDips) Then ' First time
 		Set vpmDips = New cvpmDips
@@ -61,7 +61,6 @@ Private Sub AlvinGShowDips
 End Sub
 Set vpmShowDips = GetRef("AlvinGShowDips")
 Private vpmDips
-
 
 ' Keyboard handlers
 Function vpmKeyDown(ByVal keycode)

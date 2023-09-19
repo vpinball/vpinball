@@ -42,7 +42,7 @@ vpmSystemHelp = "Hankin keys:" & vbNewLine &_
   vpmKeyName(keySoundDiag)   & vbTab & "Sound Diagnostic" & vbNewLine &_
   vpmKeyName(keySlamDoorHit) & vbTab & "Slam Tilt"
 
-' Dips Switch / Options Menu
+' Dip Switch / Options Menu
 Private Sub HankinShowDips
 	If Not IsObject(vpmDips) Then ' First time
 		Set vpmDips = New cvpmDips
@@ -80,7 +80,6 @@ Function vpmKeyDown(ByVal keycode)
 	On Error Resume Next
 	vpmKeyDown = True ' Assume we handle the key
 	With Controller
-		Select Case keycode
 		Select Case keycode
 			Case LeftFlipperKey
 				.Switch(swLLFlip) = True : vpmKeyDown = False : vpmFlips.FlipL True

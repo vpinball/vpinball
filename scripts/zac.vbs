@@ -38,20 +38,19 @@ vpmSystemHelp = "Zaccaria keys:" & vbNewLine &_
   vpmKeyName(keySelfTest)    & vbTab & "Advance Test"   & vbNewLine &_
   vpmKeyName(keyAdvance)     & vbTab & "Return Test"
 
-' Option Menu / Dip Menu
+' Dip Switch / Options Menu
 Private Sub zacShowDips
 	If Not IsObject(vpmDips) Then ' First time
 		Set vpmDips = New cvpmDips
 		With vpmDips
-	  	.AddForm  80, 0, "Option Menu"
-		.AddLabel 0,0,250,20,"No Options In This Table At This Time"
+			.AddForm 80, 0, "Option Menu"
+			.AddLabel 0,0,250,20,"No Options In This Table At This Time"
 		End With
 	End If
 	vpmDips.ViewDips
 End Sub
 Set vpmShowDips = GetRef("zacShowDips")
 Private vpmDips
-
 
 ' Keyboard handlers
 Function vpmKeyDown(ByVal keycode)

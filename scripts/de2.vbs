@@ -44,7 +44,7 @@ vpmSystemHelp = "Data East keys:" & vbNewLine &_
   vpmKeyName(keyGreen)        & vbTab & "Green button"   & vbNewLine &_
   vpmKeyName(keySlamDoorHit)  & vbTab & "Slam Tilt"
 
-' Option Menu / Dip Menu
+' Dip Switch / Options Menu
 Private Sub de2ShowDips
 	If Not IsObject(vpmDips) Then ' First time
 		Set vpmDips = New cvpmDips
@@ -88,7 +88,7 @@ Function vpmKeyDown(ByVal keycode)
 			Case keyBangBack     vpmNudge.DoNudge 0, 6
 			Case LeftTiltKey     vpmNudge.DoNudge 75, 2
 			Case RightTiltKey    vpmNudge.DoNudge 285, 2
-			Case CenterTiltKey   vpmNudge.DoNudge 0, 2
+			Case CenterTiltKey   vpmNudge.DoNudge   0, 2
 			Case keyVPMVolume    vpmVol
 			Case Else            vpmKeyDown = False
 		End Select

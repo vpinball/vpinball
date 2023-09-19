@@ -19,7 +19,7 @@ End Sub
 '-------------------------
 ' Flipper Solenoid
 Const GameOnSolenoid = 17
-' Cabinet Switches
+' Cabinet switches
 Const swTest        = 00
 Const swCoin1       = 01
 Const swCoin2       = 02
@@ -32,7 +32,7 @@ Const swLLFlip      = 84
 Const swURFlip      = 81
 Const swULFlip      = 83
 
-' Help window
+' Help Window
 vpmSystemHelp = "Gottlieb System 1 keys" & vbNewLine &_
   vpmKeyName(keyInsertCoin1)  & vbTab & "Insert Coin #1" & vbNewLine &_
   vpmKeyName(keyInsertCoin2)  & vbTab & "Insert Coin #2" & vbNewLine &_
@@ -87,10 +87,10 @@ Function vpmKeyDown(ByVal keycode)
 			Case StartGameKey    .Switch(swStartButton) = True
 			Case keySelfTest     .Switch(swTest)        = True
 			Case keySlamDoorHit  .Switch(swSlamTilt)    = True
-			Case keyBangBack     vpmNudge.DoNudge   0,6
-			Case LeftTiltKey     vpmNudge.DoNudge  75,2
-			Case RightTiltKey    vpmNudge.DoNudge 285,2
-			Case CenterTiltKey   vpmNudge.DoNudge   0,2
+			Case keyBangBack     vpmNudge.DoNudge   0, 6
+			Case LeftTiltKey     vpmNudge.DoNudge  75, 2
+			Case RightTiltKey    vpmNudge.DoNudge 285, 2
+			Case CenterTiltKey   vpmNudge.DoNudge   0, 2
 			Case keyVPMVolume    vpmVol
 			Case keyCPUDiag      .Switch(swSwitch25)    = True
 			Case Else            vpmKeyDown = False
@@ -128,7 +128,7 @@ Function vpmKeyUp(ByVal keycode)
 			Case keyReset        .Stop : BeginModal : .Run : vpmTimer.Reset : EndModal
 			Case keyFrame        .LockDisplay = Not .LockDisplay
 			Case keyDoubleSize   .DoubleSize  = Not .DoubleSize
-			case keyCPUDiag		 .Switch(swSwitch25)	= False
+			case keyCPUDiag		 .Switch(swSwitch25)    = False
 			Case Else            vpmKeyUp = False
 		End Select
 	End With

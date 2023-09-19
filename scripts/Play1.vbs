@@ -41,11 +41,11 @@ vpmSystemHelp = "Playmatic System 1 keys:" & vbNewLine &_
   vpmKeyName(keyInsertCoin3) & vbTab & "Insert Coin #3" & vbNewLine &_
   vpmKeyName(keySelfTest)    & vbTab & "Self Test"      & vbNewLine &_
   vpmKeyName(keySlamDoorHit) & vbTab & "Slam Tilt"      & vbNewLine &_
-  vpmKeyName(keyDown) & vbTab & "Replay Level 1"        & vbNewLine &_
-  vpmKeyName(keyUp) & vbTab & "Replay Level 2"          & vbNewLine &_
-  vpmKeyName(keyEnter) & vbTab & "Replay Level 3"
+  vpmKeyName(keyDown)        & vbTab & "Replay Level 1" & vbNewLine &_
+  vpmKeyName(keyUp)          & vbTab & "Replay Level 2" & vbNewLine &_
+  vpmKeyName(keyEnter)       & vbTab & "Replay Level 3"
 
-'Dip Switch / Options Menu
+' Dip Switch / Options Menu
 Private Sub play1ShowDips
 	If Not IsObject(vpmDips) Then ' First time
 		Set vpmDips = New cvpmDips

@@ -1,4 +1,4 @@
-'Last Updated in VBS V3.61
+'Last Updated in VBS v3.61
 
 Option Explicit
 LoadCore
@@ -65,7 +65,7 @@ vpmSystemHelp = "Bally 6803 keys:" & vbNewLine &_
   vpmKeyName(keyKPGame)      & vbTab & "Keypad Game"      & vbNewLine &_
   vpmKeyName(keySlamDoorHit) & vbTab & "Slam Tilt"
 
-' Option / Dip Menu
+' Dip Switch / Options Menu
 Private Sub Bally6803ShowDips
 	If Not IsObject(vpmDips) Then ' First time
 		Set vpmDips = New cvpmDips

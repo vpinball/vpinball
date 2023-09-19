@@ -35,7 +35,7 @@ Const swURFlip       = 103
 Const swULFlip       = 105
 
 ' Help Window
-  vpmSystemHelp = "Playmatic System 2 keys:" & vbNewLine &_
+vpmSystemHelp = "Playmatic System 2 keys:" & vbNewLine &_
   vpmKeyName(keyInsertCoin1) & vbTab & "Insert Coin #1" & vbNewLine &_
   vpmKeyName(keyInsertCoin2) & vbTab & "Insert Coin #2" & vbNewLine &_
   vpmKeyName(keyInsertCoin3) & vbTab & "Insert Coin #3" & vbNewLine &_

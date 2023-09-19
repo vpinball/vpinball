@@ -39,15 +39,15 @@ Const UseSolenoids = 2
 
 ' Help Window
 vpmSystemHelp = "Sega keys:" & vbNewLine &_
-  vpmKeyName(keyInsertCoin1)  & vbTab & "Insert Coin #1"   & vbNewLine &_
-  vpmKeyName(keyInsertCoin2)  & vbTab & "Insert Coin #2"   & vbNewLine &_
-  vpmKeyName(keyInsertCoin3)  & vbTab & "Insert Coin #3"   & vbNewLine &_
-  vpmKeyName(keyBlack)        & vbTab & "Black"            & vbNewLine &_
-  vpmKeyName(keyGreen)        & vbTab & "Green"            & vbNewLine &_
-  vpmKeyName(keyRed)          & vbTab & "Red"              & vbNewLine &_
+  vpmKeyName(keyInsertCoin1)  & vbTab & "Insert Coin #1" & vbNewLine &_
+  vpmKeyName(keyInsertCoin2)  & vbTab & "Insert Coin #2" & vbNewLine &_
+  vpmKeyName(keyInsertCoin3)  & vbTab & "Insert Coin #3" & vbNewLine &_
+  vpmKeyName(keyBlack)        & vbTab & "Black"          & vbNewLine &_
+  vpmKeyName(keyGreen)        & vbTab & "Green"          & vbNewLine &_
+  vpmKeyName(keyRed)          & vbTab & "Red"            & vbNewLine &_
   vpmKeyName(keySlamDoorHit)  & vbTab & "Slam Tilt"
 
-'Dip Switch / Options Menu
+' Dip Switch / Options Menu
 Private Sub sega2ShowDips
 	If Not IsObject(vpmDips) Then ' First time
 		Set vpmDips = New cvpmDips
@@ -65,6 +65,7 @@ Private Sub sega2ShowDips
 End Sub
 Set vpmShowDips = GetRef("sega2ShowDips")
 Private vpmDips
+
 ' Keyboard handlers
 Function vpmKeyDown(ByVal keycode)
 	On Error Resume Next
@@ -81,10 +82,10 @@ Function vpmKeyDown(ByVal keycode)
 			Case keyGreen        .Switch(swGreen)        = True
 			Case keyRed          .Switch(swRed)          = True
 			Case keySlamDoorHit  .Switch(swSlamTilt)     = True
-			Case keyBangBack     vpmNudge.DoNudge 0, 6
-			Case LeftTiltKey     vpmNudge.DoNudge 75, 2
+			Case keyBangBack     vpmNudge.DoNudge   0, 6
+			Case LeftTiltKey     vpmNudge.DoNudge  75, 2
 			Case RightTiltKey    vpmNudge.DoNudge 285, 2
-			Case CenterTiltKey   vpmNudge.DoNudge 0, 2
+			Case CenterTiltKey   vpmNudge.DoNudge   0, 2
 			Case keyVPMVolume    vpmVol
 			Case Else            vpmKeyDown = False
 		End Select
