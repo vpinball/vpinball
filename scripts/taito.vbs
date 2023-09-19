@@ -48,14 +48,14 @@ Const swLLFlip         = 119
 vpmSystemHelp = "Taito keys:"& vbNewLine &_
   vpmKeyName(keyInsertCoin1) & vbTab & "Insert Coin #1" & vbNewLine &_
   vpmKeyName(keyInsertCoin2) & vbTab & "Insert Coin #2" & vbNewLine &_
-  vpmKeyName(keyHiScoreReset)& vbTab & "Statistics"	    & vbNewLine &_
+  vpmKeyName(keyHiScoreReset)& vbTab & "Statistics"     & vbNewLine &_
   vpmKeyName(keySelfTest)    & vbTab & "Service Menu"   & vbNewLine &_
   vpmKeyName(keyDown)        & vbTab & "Adjustments"    & vbNewLine &_
-  vpmKeyName(KeyUp)	         & vbTab & "Diagnostics"    & vbNewLine &_
-  vpmKeyName(keyEnter)	     & vbTab & "Enter"          & vbNewLine &_
+  vpmKeyName(KeyUp)          & vbTab & "Diagnostics"    & vbNewLine &_
+  vpmKeyName(keyEnter)       & vbTab & "Enter"          & vbNewLine &_
   vpmKeyName(keyConfigurations) & vbTab & "Configurations" & vbNewLine &_
   vpmKeyName(keySoundDiag)   & vbTab & "Sound Diagnostics" & vbNewLine &_
-  vpmKeyName(keyCoinDoor)    & vbTab & "Coin Door"	    & vbNewLine &_
+  vpmKeyName(keyCoinDoor)    & vbTab & "Coin Door"      & vbNewLine &_
   vpmKeyName(keymasterenter) & vbTab & "Coin Box Door"
 
 Private Sub TaitoShowDips
@@ -79,8 +79,8 @@ Function vpmKeyDown(ByVal keycode)
 	vpmKeyDown = True ' assume we handle the key
 	With Controller
 		Select Case keycode
-			Case LeftFlipperKey  .Switch(swLLFlip) = True : vpmKeyDown = False :  vpmFlips.FlipL True : if keycode = keyStagedFlipperL then vpmFlips.FlipUL True
-			Case RightFlipperKey .Switch(swLRFlip) = True : vpmKeyDown = False :  vpmFlips.FlipR True : if keycode = keyStagedFlipperR then vpmFlips.FlipUR True
+			Case LeftFlipperKey  .Switch(swLLFlip) = True : vpmKeyDown = False : vpmFlips.FlipL True : if keycode = keyStagedFlipperL then vpmFlips.FlipUL True
+			Case RightFlipperKey .Switch(swLRFlip) = True : vpmKeyDown = False : vpmFlips.FlipR True : if keycode = keyStagedFlipperR then vpmFlips.FlipUR True
 			Case keyStagedFlipperL vpmFlips.FlipUL True
 			Case keyStagedFlipperR vpmFlips.FlipUR True
 			Case keyInsertCoin1  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin1'" : Playsound SCoin
@@ -113,8 +113,8 @@ Function vpmKeyUp(ByVal keycode)
 	vpmKeyUp = True ' assume we handle the key
 	With Controller
 		Select Case keycode
-			Case LeftFlipperKey  .Switch(swLLFlip) = False : vpmKeyUp = False :  vpmFlips.FlipL False : if keycode = keyStagedFlipperL then vpmFlips.FlipUL False
-			Case RightFlipperKey .Switch(swLRFlip) = False : vpmKeyUp = False :  vpmFlips.FlipR False : if keycode = keyStagedFlipperR then vpmFlips.FlipUR False
+			Case LeftFlipperKey  .Switch(swLLFlip) = False : vpmKeyUp = False : vpmFlips.FlipL False : if keycode = keyStagedFlipperL then vpmFlips.FlipUL False
+			Case RightFlipperKey .Switch(swLRFlip) = False : vpmKeyUp = False : vpmFlips.FlipR False : if keycode = keyStagedFlipperR then vpmFlips.FlipUR False
 			Case keyStagedFlipperL vpmFlips.FlipUL False
 			Case keyStagedFlipperR vpmFlips.FlipUR False
 			Case StartGameKey    .Switch(swStartButton)   = False

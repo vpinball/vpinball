@@ -35,7 +35,7 @@ Const swULFlip      = 147
 
 
 ' Help Window
-vpmSystemHelp = "Gottlieb System 3 keys" & vbNewLine &_
+vpmSystemHelp = "Gottlieb System 3 keys:" & vbNewLine &_
   vpmKeyName(keyInsertCoin1)  & vbTab & "Insert Coin #1" & vbNewLine &_
   vpmKeyName(keyInsertCoin2)  & vbTab & "Insert Coin #2" & vbNewLine &_
   vpmKeyName(keyInsertCoin3)  & vbTab & "Insert Coin #3" & vbNewLine &_

@@ -33,7 +33,7 @@ Const swURFlip      = 81
 Const swULFlip      = 83
 
 ' Help Window
-vpmSystemHelp = "Gottlieb System 1 keys" & vbNewLine &_
+vpmSystemHelp = "Gottlieb System 1 keys:" & vbNewLine &_
   vpmKeyName(keyInsertCoin1)  & vbTab & "Insert Coin #1" & vbNewLine &_
   vpmKeyName(keyInsertCoin2)  & vbTab & "Insert Coin #2" & vbNewLine &_
   vpmKeyName(keySelfTest)     & vbTab & "Test"           & vbNewLine &_
