@@ -351,7 +351,7 @@ int getDisplayList(vector<DisplayConfig>& displays)
 {
    displays.clear();
 
-#if defined(ENABLE_SDL) && defined(WIN32)
+#if defined(ENABLE_SDL) && defined(_WIN32)
    // Windows and SDL order of display enumeration do not match, therefore the display identifier will not match between DX and OpenGL version
    // SDL2 display identifier do not match the id of the native Windows settings
    // SDL2 does not offer a way to get the adapter (i.e. Graphics Card) associated with a display (i.e. Monitor) so we use the monitor name for both
@@ -399,7 +399,7 @@ int getDisplayList(vector<DisplayConfig>& displays)
          displayConf.left = displayBounds.x;
          displayConf.width = displayBounds.w;
          displayConf.height = displayBounds.h;
-         string devicename = "\\\\.\\DISPLAY"s.append(std::to_string(i));
+         const string devicename = "\\\\.\\DISPLAY"s.append(std::to_string(i));
          strncpy_s(displayConf.DeviceName, devicename.c_str(), CCHDEVICENAME - 1);
          strncpy_s(displayConf.GPU_Name, SDL_GetDisplayName(displayConf.display), MAX_DEVICE_IDENTIFIER_STRING - 1);
          displays.push_back(displayConf);

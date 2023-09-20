@@ -196,7 +196,7 @@ void VPinball::GetMyPath()
 
 void VPinball::GetMyPrefPath()
 {
-#ifdef WIN32
+#ifdef _WIN32
    // Use standard Windows AppData directory (to avoid requesting write permissions, and behave correctly for Windows restore,...)
    // That would look something like: C:\Users\bob\AppData\Roaming\VPinballX\ 
    m_szMyPrefPath = string(GetAppDataPath()) + PATH_SEPARATOR_CHAR + "VPinballX"s + PATH_SEPARATOR_CHAR;

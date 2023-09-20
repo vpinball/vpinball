@@ -28,7 +28,7 @@ static bool LoadIni(const string &path, mINI::INIStructure &ini, const bool load
    else if (loadDefault)
    {
       PLOGI << "Settings file was not found at '" << path << "' creating a default one";
-#ifdef WIN32
+#ifdef _WIN32
       // Load failed: initialize from a default setting file
       HMODULE handle = ::GetModuleHandle(NULL);
       HRSRC rc = ::FindResource(handle, MAKEINTRESOURCE(IDR_DEFAULT_INI), MAKEINTRESOURCE(INI_FILE));

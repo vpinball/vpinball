@@ -1,6 +1,8 @@
 #pragma once
 
+#ifdef _WIN32
 #define ENABLE_XINPUT
+#endif
 
 #ifdef ENABLE_XINPUT
 #include <XInput.h>
@@ -10,6 +12,7 @@
 #ifdef ENABLE_SDL_INPUT //!! test
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_gamecontroller.h>
+//#define ENABLE_SDL_GAMECONTROLLER //!! test
 #endif
 
 #ifdef ENABLE_IGAMECONTROLLER //!! not implemented yet
@@ -32,6 +35,7 @@
 #define APP_KEYBOARD   0
 #define APP_JOYSTICKMN 1
 #define APP_MOUSE      2
+#define APP_TOUCH      3
 
 // handle multiple joysticks, APP_JOYSTICKMN..APP_JOYSTICKMX
 #define PININ_JOYMXCNT 4
@@ -44,7 +48,9 @@
 #define APP_JOYSTICKMX (APP_JOYSTICKMN + PININ_JOYMXCNT -1)
 #define APP_JOYSTICK(n) (APP_JOYSTICKMN + (n))
 
+#ifdef _WIN32
 #define USE_DINPUT_FOR_KEYBOARD // can lead to less input lag maybe on some systems if disabled, but can miss input if key is only pressed very very quickly and/or FPS are low
+#endif
 
 class PinInput
 {
@@ -77,12 +83,14 @@ public:
 
    void GetInputDeviceData(/*const U32 curr_time_msec*/);
 
+#ifdef _WIN32
 #ifdef USE_DINPUT8
    LPDIRECTINPUT8       m_pDI;
    LPDIRECTINPUTDEVICE8 m_pJoystick[PININ_JOYMXCNT];
 #else
    LPDIRECTINPUT        m_pDI;
    LPDIRECTINPUTDEVICE  m_pJoystick[PININ_JOYMXCNT];
+#endif
 #endif
 
    HWND m_hwnd;
@@ -122,6 +130,7 @@ private:
    void HandleInputSDL(DIDEVICEOBJECTDATA *didod);
    void HandleInputIGC(DIDEVICEOBJECTDATA *didod);
 
+#ifdef _WIN32
 #ifdef USE_DINPUT8
 #ifdef USE_DINPUT_FOR_KEYBOARD
    LPDIRECTINPUTDEVICE8 m_pKeyboard;
@@ -132,6 +141,7 @@ private:
    LPDIRECTINPUTDEVICE m_pKeyboard;
 #endif
    LPDIRECTINPUTDEVICE m_pMouse;
+#endif
 #endif
 
    int m_mouseX;
@@ -157,7 +167,9 @@ private:
 
    DIDEVICEOBJECTDATA m_diq[MAX_KEYQUEUE_SIZE]; // circular queue of direct input events
 
+#ifdef _WIN32
    STICKYKEYS m_startupStickyKeys;
+#endif
 
    int m_head; // head==tail means empty, (head+1)%MAX_KEYQUEUE_SIZE == tail means full
 
@@ -183,21 +195,29 @@ private:
    int m_inputApi;   // 0=DirectInput 1=XInput, 2=SDL, 3=IGamecontroller
    int m_rumbleMode; // 0=Off, 1=Table only, 2=Generic only, 3=Table with generic as fallback
 
+#ifdef _WIN32
 #ifdef ENABLE_XINPUT
    int m_inputDeviceXI;
    XINPUT_STATE m_inputDeviceXIstate;
    DWORD m_rumbleOffTime;
    bool m_rumbleRunning;
 #endif
+#endif
 #ifdef ENABLE_SDL_INPUT
+#ifndef ENABLE_SDL_GAMECONTROLLER
    SDL_Joystick* m_inputDeviceSDL;
    SDL_Haptic* m_rumbleDeviceSDL;
+#else
+   SDL_GameController* m_gameController;
+   void SetupSDLGameController();
+#endif
 #endif
 #ifdef ENABLE_IGAMECONTROLLER
 #endif
 };
 
 #define VK_TO_DIK_SIZE 105
+#ifdef _WIN32
 static constexpr unsigned char VK_TO_DIK[VK_TO_DIK_SIZE][2] =
 {
    { VK_BACK, DIK_BACK },
@@ -325,3 +345,4 @@ inline unsigned int get_dik(const unsigned int vk)
 
    return ~0u;
 }
+#endif
