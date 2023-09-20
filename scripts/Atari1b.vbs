@@ -15,6 +15,7 @@ Private Sub LoadCore
 		ExecuteGlobal GetTextFile("VPMKeys.vbs") : If Err Then MsgBox "Can't open ""vpmkeys.vbs""" : Exit Sub
 	End If
 End Sub
+
 '-------------------------
 ' Atari Data
 '-------------------------
@@ -35,7 +36,7 @@ Const swLLFlip       = 84
 vpmSystemHelp = "Atari keys:" & vbNewLine &_
   vpmKeyName(keyInsertCoin1) & vbTab & "Insert Coin #1"   & vbNewLine &_
   vpmKeyName(keyInsertCoin2) & vbTab & "Insert Coin #2"   & vbNewLine &_
-  vpmKeyName(keySlamDoorHit) & vbTab & "Slam Tilt" 	  & vbNewLine &_
+  vpmKeyName(keySlamDoorHit) & vbTab & "Slam Tilt"        & vbNewLine &_
   vpmKeyName(keySelfTest)    & vbTab & "Self Test"
 
 ' Dip Switch / Options Menu
@@ -43,11 +44,11 @@ Private Sub atariShowDips
 	If Not IsObject(vpmDips) Then ' First time
 		Set vpmDips = New cvpmDips
 		With vpmDips
-			.AddForm 200,300,"Atari generation 1 switches"
-			.AddFrame 0,0,80,"DIP switches",0,_
+			.AddForm 200, 300, "Atari generation 1 switches"
+			.AddFrame 0, 0, 80, "DIP switches", 0,_
 			  Array("SW1-1",&H00000800,"SW1-2",&H00000400,"SW1-3",&H00000200,"SW1-4",&H00000100,_
 			        "SW1-5",32768,"SW1-6",&H00004000,"SW1-7",&H00002000,"SW1-8",&H00001000,_
-				"SW2-1",&H00000008,"SW2-2",&H00000004,"SW2-3",&H00000002,"SW2-4",&H00000001,_
+			        "SW2-1",&H00000008,"SW2-2",&H00000004,"SW2-3",&H00000002,"SW2-4",&H00000001,_
 			        "SW2-5",&H00000080,"SW2-6",&H00000040,"SW2-7",&H00000020,"SW2-8",&H00000010)
 			.AddFrame 100,0,80,"Rotary switch",&H000F0000,_
 			  Array("setting 0",0,"setting 1",&H00010000,"setting 2",&H00020000,"setting 3",&H00030000,_
@@ -67,8 +68,8 @@ Function vpmKeyDown(ByVal keycode)
 	vpmKeyDown = True ' Assume we handle the key
 	With Controller
 		Select Case keycode
-			Case LeftFlipperKey  .Switch(swLLFlip) = True : vpmKeyDown = False :  vpmFlips.FlipL True : if keycode = keyStagedFlipperL then vpmFlips.FlipUL True
-			Case RightFlipperKey .Switch(swLRFlip) = True : vpmKeyDown = False :  vpmFlips.FlipR True : if keycode = keyStagedFlipperR then vpmFlips.FlipUR True
+			Case LeftFlipperKey  .Switch(swLLFlip) = True : vpmKeyDown = False : vpmFlips.FlipL True : if keycode = keyStagedFlipperL then vpmFlips.FlipUL True
+			Case RightFlipperKey .Switch(swLRFlip) = True : vpmKeyDown = False : vpmFlips.FlipR True : if keycode = keyStagedFlipperR then vpmFlips.FlipUR True
 			Case keyStagedFlipperL vpmFlips.FlipUL True
 			Case keyStagedFlipperR vpmFlips.FlipUR True
 			Case keyInsertCoin1  .Switch(swCoin1) = True: Playsound SCoin
@@ -93,8 +94,8 @@ Function vpmKeyUp(ByVal keycode)
 	vpmKeyUp = True ' Assume we handle the key
 	With Controller
 		Select Case keycode
-			Case LeftFlipperKey  .Switch(swLLFlip) = False : vpmKeyUp = False :  vpmFlips.FlipL False : if keycode = keyStagedFlipperL then vpmFlips.FlipUL False
-			Case RightFlipperKey .Switch(swLRFlip) = False : vpmKeyUp = False :  vpmFlips.FlipR False : if keycode = keyStagedFlipperR then vpmFlips.FlipUR False
+			Case LeftFlipperKey  .Switch(swLLFlip) = False : vpmKeyUp = False : vpmFlips.FlipL False : if keycode = keyStagedFlipperL then vpmFlips.FlipUL False
+			Case RightFlipperKey .Switch(swLRFlip) = False : vpmKeyUp = False : vpmFlips.FlipR False : if keycode = keyStagedFlipperR then vpmFlips.FlipUR False
 			Case keyStagedFlipperL vpmFlips.FlipUL False
 			Case keyStagedFlipperR vpmFlips.FlipUR False
 			Case keyInsertCoin1  .Switch(swCoin1) = False

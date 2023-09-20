@@ -47,7 +47,7 @@ vpmSystemHelp = "Sega/Stern Whitestar keys:" & vbNewLine &_
   vpmKeyName(keyRed)          & vbTab & "Red"            & vbNewLine &_
   vpmKeyName(keySlamDoorHit)  & vbTab & "Slam Tilt"
 
-'Dip Switch / Options Menu
+' Dip Switch / Options Menu
 Private Sub segaShowDips
 	If Not IsObject(vpmDips) Then ' First time
 		Set vpmDips = New cvpmDips
@@ -65,6 +65,7 @@ Private Sub segaShowDips
 End Sub
 Set vpmShowDips = GetRef("segaShowDips")
 Private vpmDips
+
 ' Keyboard handlers
 Function vpmKeyDown(ByVal keycode)
 	On Error Resume Next
@@ -94,10 +95,10 @@ Function vpmKeyDown(ByVal keycode)
 			Case keyGreen        .Switch(swGreen)        = True
 			Case keyRed          .Switch(swRed)          = True
 			Case keySlamDoorHit  .Switch(swSlamTilt)     = True
-			Case keyBangBack     vpmNudge.DoNudge 0, 6
-			Case LeftTiltKey     vpmNudge.DoNudge 75, 2
+			Case keyBangBack     vpmNudge.DoNudge   0, 6
+			Case LeftTiltKey     vpmNudge.DoNudge  75, 2
 			Case RightTiltKey    vpmNudge.DoNudge 285, 2
-			Case CenterTiltKey   vpmNudge.DoNudge 0, 2
+			Case CenterTiltKey   vpmNudge.DoNudge   0, 2
 			Case keyVPMVolume    vpmVol
 			Case Else            vpmKeyDown = False
 		End Select

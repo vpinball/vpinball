@@ -36,7 +36,7 @@ Const swLLFlip      = 116
 Const swURFlip      = 115
 Const swULFlip      = 117
 
-' Help window
+' Help Window
 vpmSystemHelp = "Alvin G keys" & vbNewLine &_
   vpmKeyName(keyInsertCoin1)  & vbTab & "Insert Coin #1" & vbNewLine &_
   vpmKeyName(keyInsertCoin2)  & vbTab & "Insert Coin #2" & vbNewLine &_
@@ -48,7 +48,7 @@ vpmSystemHelp = "Alvin G keys" & vbNewLine &_
   vpmKeyName(keyEnter)        & vbTab & "Volume -"		 & vbNewLine &_
   vpmKeyName(keySlamDoorHit)  & vbTab & "Slam Tilt"
 
-'Option Menu (No Dips)
+' Options Menu (No Dips)
 Private Sub AlvinGShowDips
 	If Not IsObject(vpmDips) Then ' First time
 		Set vpmDips = New cvpmDips
@@ -61,7 +61,6 @@ Private Sub AlvinGShowDips
 End Sub
 Set vpmShowDips = GetRef("AlvinGShowDips")
 Private vpmDips
-
 
 ' Keyboard handlers
 Function vpmKeyDown(ByVal keycode)
@@ -93,10 +92,10 @@ Function vpmKeyDown(ByVal keycode)
 			Case keyUp           .Switch(swVolUp)       = True
 			Case keyEnter        .Switch(swVolDn)       = True
 			Case keySlamDoorHit  .Switch(swSlamTilt)    = True
-			Case keyBangBack     vpmNudge.DoNudge   0,6
-			Case LeftTiltKey     vpmNudge.DoNudge  75,2
-			Case RightTiltKey    vpmNudge.DoNudge 285,2
-			Case CenterTiltKey   vpmNudge.DoNudge   0,2
+			Case keyBangBack     vpmNudge.DoNudge   0, 6
+			Case LeftTiltKey     vpmNudge.DoNudge  75, 2
+			Case RightTiltKey    vpmNudge.DoNudge 285, 2
+			Case CenterTiltKey   vpmNudge.DoNudge   0, 2
 			Case keyVPMVolume    vpmVol
 			Case Else            vpmKeyDown = False
 		End Select

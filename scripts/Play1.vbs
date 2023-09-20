@@ -41,11 +41,11 @@ vpmSystemHelp = "Playmatic System 1 keys:" & vbNewLine &_
   vpmKeyName(keyInsertCoin3) & vbTab & "Insert Coin #3" & vbNewLine &_
   vpmKeyName(keySelfTest)    & vbTab & "Self Test"      & vbNewLine &_
   vpmKeyName(keySlamDoorHit) & vbTab & "Slam Tilt"      & vbNewLine &_
-  vpmKeyName(keyDown) & vbTab & "Replay Level 1"        & vbNewLine &_
-  vpmKeyName(keyUp) & vbTab & "Replay Level 2"          & vbNewLine &_
-  vpmKeyName(keyEnter) & vbTab & "Replay Level 3"
+  vpmKeyName(keyDown)        & vbTab & "Replay Level 1" & vbNewLine &_
+  vpmKeyName(keyUp)          & vbTab & "Replay Level 2" & vbNewLine &_
+  vpmKeyName(keyEnter)       & vbTab & "Replay Level 3"
 
-'Dip Switch / Options Menu
+' Dip Switch / Options Menu
 Private Sub play1ShowDips
 	If Not IsObject(vpmDips) Then ' First time
 		Set vpmDips = New cvpmDips
@@ -74,8 +74,8 @@ Function vpmKeyDown(ByVal keycode)
 	vpmKeyDown = True ' Assume we handle the key
 	With Controller
 		Select Case keycode
-			Case LeftFlipperKey  .Switch(swLLFlip) = True : vpmKeyDown = False :  vpmFlips.FlipL True : if keycode = keyStagedFlipperL then vpmFlips.FlipUL True
-			Case RightFlipperKey .Switch(swLRFlip) = True : vpmKeyDown = False :  vpmFlips.FlipR True : if keycode = keyStagedFlipperR then vpmFlips.FlipUR True
+			Case LeftFlipperKey  .Switch(swLLFlip) = True : vpmKeyDown = False : vpmFlips.FlipL True : if keycode = keyStagedFlipperL then vpmFlips.FlipUL True
+			Case RightFlipperKey .Switch(swLRFlip) = True : vpmKeyDown = False : vpmFlips.FlipR True : if keycode = keyStagedFlipperR then vpmFlips.FlipUR True
 			Case keyStagedFlipperL vpmFlips.FlipUL True
 			Case keyStagedFlipperR vpmFlips.FlipUR True
 			Case keyInsertCoin1  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin1'" : Playsound SCoin
@@ -103,8 +103,8 @@ Function vpmKeyUp(ByVal keycode)
 	vpmKeyUp = True ' Assume we handle the key
 	With Controller
 		Select Case keycode
-			Case LeftFlipperKey  .Switch(swLLFlip) = False : vpmKeyUp = False :  vpmFlips.FlipL False : if keycode = keyStagedFlipperL then vpmFlips.FlipUL False
-			Case RightFlipperKey .Switch(swLRFlip) = False : vpmKeyUp = False :  vpmFlips.FlipR False : if keycode = keyStagedFlipperR then vpmFlips.FlipUR False
+			Case LeftFlipperKey  .Switch(swLLFlip) = False : vpmKeyUp = False : vpmFlips.FlipL False : if keycode = keyStagedFlipperL then vpmFlips.FlipUL False
+			Case RightFlipperKey .Switch(swLRFlip) = False : vpmKeyUp = False : vpmFlips.FlipR False : if keycode = keyStagedFlipperR then vpmFlips.FlipUR False
 			Case keyStagedFlipperL vpmFlips.FlipUL False
 			Case keyStagedFlipperR vpmFlips.FlipUR False
 			Case StartGameKey    .Switch(swStartButton) = False

@@ -34,8 +34,8 @@ Const swURFlip      = 145
 Const swULFlip      = 147
 
 
-' Help window
-vpmSystemHelp = "Gottlieb System 3 keys" & vbNewLine &_
+' Help Window
+vpmSystemHelp = "Gottlieb System 3 keys:" & vbNewLine &_
   vpmKeyName(keyInsertCoin1)  & vbTab & "Insert Coin #1" & vbNewLine &_
   vpmKeyName(keyInsertCoin2)  & vbTab & "Insert Coin #2" & vbNewLine &_
   vpmKeyName(keyInsertCoin3)  & vbTab & "Insert Coin #3" & vbNewLine &_
@@ -43,7 +43,7 @@ vpmSystemHelp = "Gottlieb System 3 keys" & vbNewLine &_
   vpmKeyName(keySelfTest)     & vbTab & "Diagnostic"     & vbNewLine &_
   vpmKeyName(keySlamDoorHit)  & vbTab & "Slam Tilt"
 
-' Option Menu (No Dips)
+' Options Menu (No Dips)
 Private Sub gts3ShowDips
 	If Not IsObject(vpmDips) Then ' First time
 		Set vpmDips = New cvpmDips
@@ -84,10 +84,10 @@ Function vpmKeyDown(ByVal keycode)
 			Case StartGameKey    .Switch(swStartButton) = True
 			Case keySelfTest     .Switch(swDiagnostic)  = True
 			Case keySlamDoorHit  .Switch(swSlamTilt)    = True
-			Case keyBangBack     vpmNudge.DoNudge   0,6
-			Case LeftTiltKey     vpmNudge.DoNudge  75,2
-			Case RightTiltKey    vpmNudge.DoNudge 285,2
-			Case CenterTiltKey   vpmNudge.DoNudge   0,2
+			Case keyBangBack     vpmNudge.DoNudge   0, 6
+			Case LeftTiltKey     vpmNudge.DoNudge  75, 2
+			Case RightTiltKey    vpmNudge.DoNudge 285, 2
+			Case CenterTiltKey   vpmNudge.DoNudge   0, 2
 			Case keyVPMVolume    vpmVol
 			Case Else            vpmKeyDown = False
 		End Select
