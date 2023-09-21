@@ -1081,6 +1081,8 @@ void VideoOptionsDialog::OnOK()
    else
       SaveValue(regKey[RegName::Player], "OverwriteBallImage"s, false);
 
+   SaveRegistry();
+
    CDialog::OnOK();
 }
 
