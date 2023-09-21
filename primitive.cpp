@@ -1306,16 +1306,16 @@ void Primitive::RenderObject()
       pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, pin, pinf, SA_REPEAT, SA_REPEAT);
       pd3dDevice->basicShader->SetTexture(SHADER_tex_base_normalmap, nMap, SF_UNDEFINED, SA_REPEAT, SA_REPEAT, true);
       pd3dDevice->basicShader->SetBool(SHADER_objectSpaceNormalMap, m_d.m_objectSpaceNormalMap);
-      pd3dDevice->basicShader->SetMaterial(mat, pin->has_alpha());
+      pd3dDevice->basicShader->SetMaterial(mat, pin->has_alpha() || m_d.m_alpha != 100.f);
    }
    else if (pin)
    {
       pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, pin, pinf, SA_REPEAT, SA_REPEAT);
-      pd3dDevice->basicShader->SetMaterial(mat, pin->has_alpha());
+      pd3dDevice->basicShader->SetMaterial(mat, pin->has_alpha() || m_d.m_alpha != 100.f);
    }
    else
    {
-      pd3dDevice->basicShader->SetMaterial(mat, false);
+      pd3dDevice->basicShader->SetMaterial(mat, m_d.m_alpha != 100.f);
    }
 
    // set transform
