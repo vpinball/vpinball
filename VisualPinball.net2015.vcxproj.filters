@@ -279,11 +279,11 @@
     <ClCompile Include="dialogs\NotesDialog.cpp">
       <Filter>dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="dialogs\ScriptErrorDialog.cpp">
-      <Filter>dialogs</Filter>
-    </ClCompile>
     <ClCompile Include="imgui\imgui_tables.cpp">
       <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="dialogs\ScriptErrorDialog.cpp">
+      <Filter>dialogs</Filter>
     </ClCompile>
     <ClCompile Include="inc\serial.cpp">
       <Filter>inc</Filter>
@@ -748,16 +748,16 @@
     <None Include="shader\SSR_GL.fxh">
       <Filter>shaders</Filter>
     </None>
-    <None Include="shader\SMAA.glfx">
-      <Filter>shaders</Filter>
-    </None>
     <None Include="shader\Material_GL.fxh">
       <Filter>shaders</Filter>
     </None>
     <None Include="shader\LightShader.glfx">
       <Filter>shaders</Filter>
     </None>
-    <None Include="shader\SMAA.hlsl">
+    <None Include="shader\SMAA.glfx">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shader\SMAA.fxh">
       <Filter>shaders</Filter>
     </None>
     <None Include="res\Default VPinballX.ini">
