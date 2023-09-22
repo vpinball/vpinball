@@ -194,6 +194,54 @@ void SetupLogger();
 
 robin_hood::unordered_map<ItemTypeEnum, EditableInfo> EditableRegistry::m_map;
 
+static const string options[] = { // keep in sync with option_names!
+   "h"s,
+   "Help"s,
+   "?"s,
+   "UnregServer"s,
+   "RegServer"s,
+   "DisableTrueFullscreen"s,
+   "EnableTrueFullscreen"s,
+   "Minimized"s,
+   "ExtMinimized"s,
+   "Primary"s,
+   "GLES"s,
+   "LessCPUthreads"s,
+   "Edit"s,
+   "Play"s,
+   "PovEdit"s,
+   "Pov"s,
+   "ExtractVBS"s,
+   "Ini"s
+}; // + c1..c9
+enum option_names
+{
+   OPTION_H,
+   OPTION_HELP,
+   OPTION_QMARK,
+   OPTION_UNREGSERVER,
+   OPTION_REGSERVER,
+   OPTION_DISABLETRUEFULLSCREEN,
+   OPTION_ENABLETRUEFULLSCREEN,
+   OPTION_MINIMIZED,
+   OPTION_EXTMINIMIZED,
+   OPTION_PRIMARY,
+   OPTION_GLES,
+   OPTION_LESSCPUTHREADS,
+   OPTION_EDIT,
+   OPTION_PLAY,
+   OPTION_POVEDIT,
+   OPTION_POV,
+   OPTION_EXTRACTVBS,
+   OPTION_INI
+};
+
+static bool compare_option(const char *const arg, const option_names option)
+{
+   return ((lstrcmpi(arg, ('-'+options[option]).c_str()) == 0) ||
+           (lstrcmpi(arg, ('/'+options[option]).c_str()) == 0));
+}
+
 class VPApp : public CWinApp
 {
 private:
@@ -276,7 +324,7 @@ public:
       bgles = false;
 
       szTableFileName.clear();
-      
+
       // Default ini path (can be overriden from command line)
       szIniFileName = m_vpinball.m_szMyPrefPath + "VPinballX.ini"s;
 
@@ -285,24 +333,47 @@ public:
 
       for (int i = 0; i < nArgs; ++i)
       {
-         if (lstrcmpi(szArglist[i], _T("-h")) == 0 || lstrcmpi(szArglist[i], _T("/h")) == 0
-            || lstrcmpi(szArglist[i], _T("-Help")) == 0 || lstrcmpi(szArglist[i], _T("/Help")) == 0
-            || lstrcmpi(szArglist[i], _T("-?")) == 0 || lstrcmpi(szArglist[i], _T("/?")) == 0)
+         bool valid_param = false;
+         for (size_t i2 = 0; i2 < std::size(options); ++i2)
          {
-            m_vpinball.MessageBox("-UnregServer  Unregister VP functions\n-RegServer  Register VP functions\n\n-DisableTrueFullscreen  Force-disable True Fullscreen setting\n-EnableTrueFullscreen  Force-enable True Fullscreen setting\n-Minimized  Start VP in the 'invisible' minimized window mode\n-ExtMinimized  Start VP in the 'invisible' minimized window mode, but with enabled Pause Menu\n-Primary  Force VP to render on the Primary/Pixel(0,0) Monitor\n\n-GLES [value]  Overrides the global emission scale (day/night setting, value range: 0.115..0.925)\n\n-LessCPUthreads  Limit the amount of parallel execution\n\n-Edit [filename]  Load file into VP\n-Play [filename]  Load and play file\n-PovEdit [filename]  Load and run file in camera mode, then export new pov on exit\n-Pov [filename]  Load, export pov and close\n-ExtractVBS [filename]  Load, export table script and close\n-Ini [filename] Use a custom settings file instead of loading it from the default location\n-c1 [customparam] .. -c9 [customparam]  Custom user parameters that can be accessed in the script via GetCustomParam(X)",
-                 "Visual Pinball Usage", MB_OK);
-            //run = false;
-            exit(0);
+            if (compare_option(szArglist[i], (option_names)i2))
+            {
+               valid_param = true;
+               break;
+            }
+         }
+         if (!valid_param) for (char t = '1'; t <= '9'; ++t)
+         {
+            if ((lstrcmpi(szArglist[i], ("-c"s+t).c_str()) == 0) || (lstrcmpi(szArglist[i], ("/c"s+t).c_str()) == 0))
+            {
+               valid_param = true;
+               break;
+            }
          }
 
          //
 
-         if (lstrcmpi(szArglist[i], _T("-LessCPUthreads")) == 0 || lstrcmpi(szArglist[i], _T("/LessCPUthreads")) == 0)
+         if (!valid_param
+            || compare_option(szArglist[i], OPTION_H)
+            || compare_option(szArglist[i], OPTION_HELP)
+            || compare_option(szArglist[i], OPTION_QMARK))
+         {
+            string output = "-UnregServer  Unregister VP functions\n-RegServer  Register VP functions\n\n-DisableTrueFullscreen  Force-disable True Fullscreen setting\n-EnableTrueFullscreen  Force-enable True Fullscreen setting\n-Minimized  Start VP in the 'invisible' minimized window mode\n-ExtMinimized  Start VP in the 'invisible' minimized window mode, but with enabled Pause Menu\n-Primary  Force VP to render on the Primary/Pixel(0,0) Monitor\n\n-GLES [value]  Overrides the global emission scale (day/night setting, value range: 0.115..0.925)\n\n-LessCPUthreads  Limit the amount of parallel execution\n\n-Edit [filename]  Load file into VP\n-Play [filename]  Load and play file\n-PovEdit [filename]  Load and run file in camera mode, then export new pov on exit\n-Pov [filename]  Load, export pov and close\n-ExtractVBS [filename]  Load, export table script and close\n-Ini [filename] Use a custom settings file instead of loading it from the default location\n-c1 [customparam] .. -c9 [customparam]  Custom user parameters that can be accessed in the script via GetCustomParam(X)"s;
+            if (!valid_param)
+                output = "Invalid Parameter "s + szArglist[i] + "\n\nValid Parameters are:\n\n" + output;
+            m_vpinball.MessageBox(output.c_str(), "Visual Pinball Usage", valid_param ? MB_OK : MB_ICONERROR);
+            //run = false;
+            exit(valid_param ? 0 : 1);
+         }
+
+         //
+
+         if (compare_option(szArglist[i], OPTION_LESSCPUTHREADS))
              m_vpinball.m_logicalNumberOfProcessors = max(min(m_vpinball.m_logicalNumberOfProcessors, 2), m_vpinball.m_logicalNumberOfProcessors/4); // only use 1/4th the threads, but at least 2 (if there are 2)
 
          //
 
-         if (lstrcmpi(szArglist[i], _T("-UnregServer")) == 0 || lstrcmpi(szArglist[i], _T("/UnregServer")) == 0)
+         if (compare_option(szArglist[i], OPTION_UNREGSERVER))
          {
             _Module.UpdateRegistryFromResource(IDR_VPINBALL, FALSE);
             const HRESULT ret = _Module.UnregisterServer(TRUE);
@@ -311,7 +382,7 @@ public:
             run = false;
             break;
          }
-         if (lstrcmpi(szArglist[i], _T("-RegServer")) == 0 || lstrcmpi(szArglist[i], _T("/RegServer")) == 0)
+         if (compare_option(szArglist[i], OPTION_REGSERVER))
          {
             _Module.UpdateRegistryFromResource(IDR_VPINBALL, TRUE);
             const HRESULT ret = _Module.RegisterServer(TRUE);
@@ -323,12 +394,12 @@ public:
 
          //
 
-         if (lstrcmpi(szArglist[i], _T("-DisableTrueFullscreen")) == 0 || lstrcmpi(szArglist[i], _T("/DisableTrueFullscreen")) == 0)
+         if (compare_option(szArglist[i], OPTION_DISABLETRUEFULLSCREEN))
          {
              m_vpinball.m_disEnableTrueFullscreen = 0;
              continue;
          }
-         if (lstrcmpi(szArglist[i], _T("-EnableTrueFullscreen")) == 0 || lstrcmpi(szArglist[i], _T("/EnableTrueFullscreen")) == 0)
+         if (compare_option(szArglist[i], OPTION_ENABLETRUEFULLSCREEN))
          {
              m_vpinball.m_disEnableTrueFullscreen = 1;
              continue;
@@ -338,11 +409,9 @@ public:
 
          bool useCustomParams = false;
          int customIdx = 1;
-         for (char t = '1'; t <= '9'; t++)
+         for (char t = '1'; t <= '9'; ++t)
          {
-             const char cmdTemp1[4] = {'-','c',t,0};
-             const char cmdTemp2[4] = {'/','c',t,0};
-             if (lstrcmpi(szArglist[i], cmdTemp1) == 0 || lstrcmpi(szArglist[i], cmdTemp2) == 0)
+             if (lstrcmpi(szArglist[i], ("-c"s+t).c_str()) == 0 || lstrcmpi(szArglist[i], ("/c"s+t).c_str()) == 0)
              {
                  useCustomParams = true;
                  break;
@@ -364,34 +433,34 @@ public:
 
          //
 
-         const bool minimized = (lstrcmpi(szArglist[i], _T("-Minimized")) == 0 || lstrcmpi(szArglist[i], _T("/Minimized")) == 0);
+         const bool minimized = compare_option(szArglist[i], OPTION_MINIMIZED);
          if (minimized)
          {
              m_vpinball.m_open_minimized = true;
              m_vpinball.m_disable_pause_menu = true;
          }
 
-         const bool ext_minimized = (lstrcmpi(szArglist[i], _T("-ExtMinimized")) == 0 || lstrcmpi(szArglist[i], _T("/ExtMinimized")) == 0);
+         const bool ext_minimized = compare_option(szArglist[i], OPTION_EXTMINIMIZED);
          if (ext_minimized)
              m_vpinball.m_open_minimized = true;
 
-         const bool editfile = (lstrcmpi(szArglist[i], _T("-Edit")) == 0 || lstrcmpi(szArglist[i], _T("/Edit")) == 0);
-         const bool playfile = (lstrcmpi(szArglist[i], _T("-Play")) == 0 || lstrcmpi(szArglist[i], _T("/Play")) == 0);
+         const bool editfile = compare_option(szArglist[i], OPTION_EDIT);
+         const bool playfile = compare_option(szArglist[i], OPTION_PLAY);
 
-         const bool gles = (lstrcmpi(szArglist[i], _T("-GLES")) == 0 || lstrcmpi(szArglist[i], _T("/GLES")) == 0);
+         const bool gles = compare_option(szArglist[i], OPTION_GLES);
 
-         const bool primaryDisplay = (lstrcmpi(szArglist[i], _T("-Primary")) == 0 || lstrcmpi(szArglist[i], _T("/Primary")) == 0);
+         const bool primaryDisplay = compare_option(szArglist[i], OPTION_PRIMARY);
          if (primaryDisplay)
              m_vpinball.m_primaryDisplay = true;
 
-         const bool povEdit  = (lstrcmpi(szArglist[i], _T("-PovEdit")) == 0 || lstrcmpi(szArglist[i], _T("/PovEdit")) == 0);
+         const bool povEdit = compare_option(szArglist[i], OPTION_POVEDIT);
          if (povEdit)
              m_vpinball.m_povEdit = true;
 
-         const bool extractpov = (lstrcmpi(szArglist[i], _T("-Pov")) == 0 || lstrcmpi(szArglist[i], _T("/Pov")) == 0);
-         const bool extractscript = (lstrcmpi(szArglist[i], _T("-ExtractVBS")) == 0 || lstrcmpi(szArglist[i], _T("/ExtractVBS")) == 0);
+         const bool extractpov = compare_option(szArglist[i], OPTION_POV);
+         const bool extractscript = compare_option(szArglist[i], OPTION_EXTRACTVBS);
 
-         const bool ini = (lstrcmpi(szArglist[i], _T("-Ini")) == 0 || lstrcmpi(szArglist[i], _T("/Ini")) == 0);
+         const bool ini = compare_option(szArglist[i], OPTION_INI);
 
          // global emission scale parameter handling
          if (gles && (i + 1 < nArgs))
@@ -406,7 +475,7 @@ public:
             bgles = true;
          }
 
-         // user specified ini  handling
+         // user specified ini handling
          if (ini && (i + 1 < nArgs))
          {
             // Remove leading - or /
@@ -500,12 +569,12 @@ public:
                // if failed, register only for current user
                hr = RegisterTypeLibForUser(ptl, wszFileName, nullptr);
                if (!SUCCEEDED(hr))
-                  m_vpinball.MessageBox("Could not register type library. Try running Visual Pinball as administrator.", "Error", MB_ICONWARNING);
+                  m_vpinball.MessageBox("Could not register type library. Try running Visual Pinball as administrator.", "Error", MB_ICONERROR);
             }
             ptl->Release();
          }
          else
-            m_vpinball.MessageBox("Could not load type library.", "Error", MB_ICONSTOP);
+            m_vpinball.MessageBox("Could not load type library.", "Error", MB_ICONERROR);
       }
 
       InitVPX();
