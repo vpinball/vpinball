@@ -7,6 +7,7 @@
    3. [Live User Interface](LiveUI.md)
    4. [View setup](<View Setup.md>)
    5. [Lights](Lights.md)
+   6. [Stereo rendering](Stereo.md)
 2. Scripting
    1. [API Reference](<Script API Reference.md>)
 3. Upgrading to new version
