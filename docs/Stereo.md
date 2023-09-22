@@ -40,7 +40,7 @@ To improve rendering and limit the aforementioned drawbacks, VPX uses filters wh
 - "Dyn.Desat" a.k.a. "Luminance with Dynamic Desaturation": this filter is an improved version of the "Luminance" filter adding dynamic desaturation to avoid retinal rivalry. Retinal rivalry happens when an eye perceive an object the other don't, making the merging difficult/impossible to the brain. The solution applied here is to dynamically desaturate the parts of the image where this problem arise. For example, a pure red cube may not be seen through perfect red/cyan glasses without facing retinal rivalry since the right eye would filter it completely. In this situation, the filter will partly desaturate the red cube into a brown cube to solve the problem.
 
 | Filter    | Calibration | Ghosting | Retinal Rivalry | Brightness | Colors |
-| --------- | ---- | ---- | ---- | ---- | ---- | ---- |
+| --------- | ----------- | -------- | --------------- | ---------- | ------ |
 | None      | No<sup>(1)</sup> | High | High | Low | Good |
 | Dubois    | No<sup>(1)</sup> | Low | Moderate | Medium | Bad |
 | Deghost   | No<sup>(1)</sup> | Low | Moderate | Medium | Medium |
