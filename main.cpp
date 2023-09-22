@@ -331,7 +331,7 @@ public:
       int nArgs;
       LPSTR *szArglist = CommandLineToArgvA(GetCommandLine(), &nArgs);
 
-      for (int i = 0; i < nArgs; ++i)
+      for (int i = 1; i < nArgs; ++i) // skip szArglist[0], contains executable name
       {
          bool valid_param = false;
          for (size_t i2 = 0; i2 < std::size(options); ++i2)
