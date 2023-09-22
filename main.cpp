@@ -194,7 +194,7 @@ void SetupLogger();
 
 robin_hood::unordered_map<ItemTypeEnum, EditableInfo> EditableRegistry::m_map;
 
-static const string options[] = { // keep in sync with option_names!
+static const string options[] = { // keep in sync with option_names & option_descs!
    "h"s,
    "Help"s,
    "?"s,
@@ -214,6 +214,27 @@ static const string options[] = { // keep in sync with option_names!
    "ExtractVBS"s,
    "Ini"s
 }; // + c1..c9
+static const string option_descs[] =
+{
+   string(),
+   string(),
+   string(),
+   "Unregister VP functions"s,
+   "Register VP functions"s,
+   "Force-disable True Fullscreen setting"s,
+   "Force-enable True Fullscreen setting"s,
+   "Start VP in the 'invisible' minimized window mode"s,
+   "Start VP in the 'invisible' minimized window mode, but with enabled Pause Menu"s,
+   "Force VP to render on the Primary/Pixel(0,0) Monitor"s,
+   "[value]  Overrides the global emission scale (day/night setting, value range: 0.115..0.925)"s,
+   "Limit the amount of parallel execution"s,
+   "[filename]  Load file into VP"s,
+   "[filename]  Load and play file"s,
+   "[filename]  Load and run file in live editing mode, then export new pov on exit"s,
+   "[filename]  Load, export pov and close"s,
+   "[filename]  Load, export table script and close"s,
+   "[filename]  Use a custom settings file instead of loading it from the default location"s
+};
 enum option_names
 {
    OPTION_H,
@@ -358,7 +379,22 @@ public:
             || compare_option(szArglist[i], OPTION_HELP)
             || compare_option(szArglist[i], OPTION_QMARK))
          {
-            string output = "-UnregServer  Unregister VP functions\n-RegServer  Register VP functions\n\n-DisableTrueFullscreen  Force-disable True Fullscreen setting\n-EnableTrueFullscreen  Force-enable True Fullscreen setting\n-Minimized  Start VP in the 'invisible' minimized window mode\n-ExtMinimized  Start VP in the 'invisible' minimized window mode, but with enabled Pause Menu\n-Primary  Force VP to render on the Primary/Pixel(0,0) Monitor\n\n-GLES [value]  Overrides the global emission scale (day/night setting, value range: 0.115..0.925)\n\n-LessCPUthreads  Limit the amount of parallel execution\n\n-Edit [filename]  Load file into VP\n-Play [filename]  Load and play file\n-PovEdit [filename]  Load and run file in camera mode, then export new pov on exit\n-Pov [filename]  Load, export pov and close\n-ExtractVBS [filename]  Load, export table script and close\n-Ini [filename] Use a custom settings file instead of loading it from the default location\n-c1 [customparam] .. -c9 [customparam]  Custom user parameters that can be accessed in the script via GetCustomParam(X)"s;
+            string output = '-'    +options[OPTION_UNREGSERVER]+          "  "+option_descs[OPTION_UNREGSERVER]+
+                            "\n-"  +options[OPTION_REGSERVER]+            "  "+option_descs[OPTION_REGSERVER]+
+                            "\n\n-"+options[OPTION_DISABLETRUEFULLSCREEN]+"  "+option_descs[OPTION_DISABLETRUEFULLSCREEN]+
+                            "\n-"  +options[OPTION_ENABLETRUEFULLSCREEN]+ "  "+option_descs[OPTION_ENABLETRUEFULLSCREEN]+
+                            "\n-"  +options[OPTION_MINIMIZED]+            "  "+option_descs[OPTION_MINIMIZED]+
+                            "\n-"  +options[OPTION_EXTMINIMIZED]+         "  "+option_descs[OPTION_EXTMINIMIZED]+
+                            "\n-"  +options[OPTION_PRIMARY]+              "  "+option_descs[OPTION_PRIMARY]+
+                            "\n\n-"+options[OPTION_GLES]+                 ' '+ option_descs[OPTION_GLES]+
+                            "\n\n-"+options[OPTION_LESSCPUTHREADS]+       "  "+option_descs[OPTION_LESSCPUTHREADS]+
+                            "\n\n-"+options[OPTION_EDIT]+                 ' '+ option_descs[OPTION_EDIT]+
+                            "\n-"  +options[OPTION_PLAY]+                 ' '+ option_descs[OPTION_PLAY]+
+                            "\n-"  +options[OPTION_POVEDIT]+              ' '+ option_descs[OPTION_POVEDIT]+
+                            "\n-"  +options[OPTION_POV]+                  ' '+ option_descs[OPTION_POV]+
+                            "\n-"  +options[OPTION_EXTRACTVBS]+           ' '+ option_descs[OPTION_EXTRACTVBS]+
+                            "\n-"  +options[OPTION_INI]+                  ' '+ option_descs[OPTION_INI]+
+                            "\n-c1 [customparam] .. -c9 [customparam]  Custom user parameters that can be accessed in the script via GetCustomParam(X)";
             if (!valid_param)
                 output = "Invalid Parameter "s + szArglist[i] + "\n\nValid Parameters are:\n\n" + output;
             m_vpinball.MessageBox(output.c_str(), "Visual Pinball Usage", valid_param ? MB_OK : MB_ICONERROR);
