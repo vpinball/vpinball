@@ -844,7 +844,7 @@ void PinInput::PlayRumble(const float lowFrequencySpeed, const float highFrequen
          SDL_HapticRumblePlay(m_rumbleDeviceSDL, saturate(max(lowFrequencySpeed, highFrequencySpeed)), ms_duration); //!! meh
 #else
       if (m_gameController && SDL_GameControllerHasRumble(m_gameController))
-         SDL_GameControllerRumble(m_gameController, (saturate(lowFrequencySpeed) * 65535.f), (saturate(highFrequencySpeed) * 65535.f), ms_duration);
+         SDL_GameControllerRumble(m_gameController, (Uint16)(saturate(lowFrequencySpeed) * 65535.f), (Uint16)(saturate(highFrequencySpeed) * 65535.f), ms_duration);
 #endif
 #endif
       break;

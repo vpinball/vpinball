@@ -4019,6 +4019,14 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 
             for (size_t i = 0; i < m_vedit.size(); ++i)
             {
+               if (m_vedit[i]->GetItemType() == ItemTypeEnum::eItemPrimitive && (((Primitive *)m_vedit[i])->m_d.m_disableLightingBelow != 1.0f))
+               {
+                  Primitive *const prim = (Primitive *)m_vedit[i];
+                  // Before 10.8 alpha channel of texture was discarded if material transparency was 1, in turn leading to disabling lighting from below.
+                  Material* mat = GetMaterial(prim->m_d.m_szMaterial);
+                  if (mat && (!mat->m_bOpacityActive || mat->m_fOpacity == 1.0f))
+                     prim->m_d.m_disableLightingBelow = 1.0f;
+               }
                if (m_vedit[i]->GetItemType() == ItemTypeEnum::eItemPrimitive && (((Primitive *)m_vedit[i])->IsPlayfield()))
                {
                   Primitive* const prim = (Primitive *)m_vedit[i];

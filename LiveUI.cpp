@@ -1137,6 +1137,7 @@ void LiveUI::ExitEditMode()
 
 void LiveUI::HideUI()
 { 
+   SaveRegistry();
    m_ShowSplashModal = false;
    m_ShowUI = false;
    m_flyMode = false;
