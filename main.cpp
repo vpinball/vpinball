@@ -355,7 +355,9 @@ public:
       for (int i = 1; i < nArgs; ++i) // skip szArglist[0], contains executable name
       {
          bool valid_param = false;
-         for (size_t i2 = 0; i2 < std::size(options); ++i2)
+         if ((szArglist[i][0] != '-') && (szArglist[i][0] != '/')) // ignore stuff (directories) that is passed in via frontends
+            valid_param = true;
+         if (!valid_param) for (size_t i2 = 0; i2 < std::size(options); ++i2)
          {
             if (compare_option(szArglist[i], (option_names)i2))
             {
