@@ -1164,9 +1164,9 @@ bool Player::UpdateStereoShaderState(const bool fitRequired)
       }
       
       // Identify glasses colors (compute normalized luminance filters, and identify the monochromatic eye with its color)
-      vec3 leftFilter (leftCalp.x  / 0.2126f, leftCalp.y  / 0.7152f, leftCalp.z  / 0.0722f);
-      vec3 rightFilter(rightCalp.x / 0.2126f, rightCalp.y / 0.7152f, rightCalp.z / 0.0722f);
-      leftFilter  = leftFilter  / max(max(leftFilter.x,  leftFilter.y ),  leftFilter.z);
+      vec3 leftFilter(leftCalp);
+      vec3 rightFilter(rightCalp);
+      leftFilter = leftFilter / max(max(leftFilter.x, leftFilter.y), leftFilter.z);
       rightFilter = rightFilter / max(max(rightFilter.x, rightFilter.y), rightFilter.z);
       const float leftSecondHigher  = (leftFilter.y > leftFilter.x && leftFilter.x > leftFilter.z) ? leftFilter.x : (leftFilter.y < leftFilter.x && leftFilter.x < leftFilter.z) ? leftFilter.x : 
                                       (leftFilter.x > leftFilter.y && leftFilter.y > leftFilter.z) ? leftFilter.y : (leftFilter.x < leftFilter.y && leftFilter.y < leftFilter.z) ? leftFilter.y : 
@@ -1177,8 +1177,11 @@ bool Player::UpdateStereoShaderState(const bool fitRequired)
       assert(leftSecondHigher != -1.f && rightSecondHigher != -1.f);
       bool reversedColors = leftSecondHigher > rightSecondHigher; // Monochromatic (red/green/blue) is supposed to be on the left eye
       const vec3 monoFilter = reversedColors ? rightFilter : leftFilter;
-      const enum AnaglypColors {RED_CYAN, GREEN_MAGENTA, BLUE_AMBER} colors = (monoFilter.x > monoFilter.y && monoFilter.x > monoFilter.z) ? RED_CYAN : (monoFilter.y > monoFilter.z) ? GREEN_MAGENTA : BLUE_AMBER;
-      
+      const enum AnaglypColors { RED_CYAN, GREEN_MAGENTA, BLUE_AMBER } colors
+         = (monoFilter.x > monoFilter.y && monoFilter.x > monoFilter.z) ? RED_CYAN
+         : (monoFilter.y > monoFilter.x && monoFilter.y > monoFilter.z) ? GREEN_MAGENTA
+                                                                        : BLUE_AMBER;
+
       Matrix3D left, right;
       if (filter == 3 || filter == 4)
       {
@@ -1188,9 +1191,13 @@ bool Player::UpdateStereoShaderState(const bool fitRequired)
          const vec3 biCal = reversedColors ? leftCalp : rightCalp;
          const vec3 biFilter = reversedColors ? leftFilter : rightFilter;
          const float secondHigher = max(leftSecondHigher, rightSecondHigher);
-         const vec3 chromacity((biFilter.x == secondHigher) ? 1.f : (biFilter.x == 1.f) ? -1.f : 0.f,
-                               (biFilter.y == secondHigher) ? 1.f : (biFilter.y == 1.f) ? -1.f : 0.f,
-                               (biFilter.z == secondHigher) ? 1.f : (biFilter.z == 1.f) ? -1.f : 0.f);
+         vec3 chromacity;
+         switch (colors)
+         {
+         case RED_CYAN:      chromacity = vec3( 0.f, 1.f, -1.f); break;
+         case GREEN_MAGENTA: chromacity = vec3( 1.f, 0.f, -1.f); break;
+         case BLUE_AMBER:    chromacity = vec3(-1.f, 1.f,  0.f); break;
+         }
          Matrix3D matYYC2RGB;
          matYYC2RGB.SetIdentity();
          matYYC2RGB.m[0][0] = monoCal.x;
