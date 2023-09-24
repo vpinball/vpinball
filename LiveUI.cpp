@@ -2021,11 +2021,11 @@ void LiveUI::UpdateVideoOptionsModal()
                ImGui::SameLine();
                ImGui::Text(reversedColors ? colors == RED_CYAN ? "Cyan/Red" : colors == GREEN_MAGENTA ? "Magenta/Green" : "Amber/Blue"
                                           : colors == RED_CYAN ? "Red/Cyan" : colors == GREEN_MAGENTA ? "Green/Magenta" : "Blue/Amber");
-               ImGui::SameLine();
                #ifdef DEBUG
-               float gamma = LoadValueWithDefault(regKey[RegName::Player], prefKey + "FittedGamma"s, 1.0f);
-               ImGui::Text("Gamma %3.2f  [%s]", gamma, anaglyphFittingInProgress ? "Fitting in progress" : "Fitted, improving...");
+               ImGui::SameLine();
+               ImGui::Text("Gamma %3.2f", LoadValueWithDefault(regKey[RegName::Player], prefKey + "FittedGamma"s, 1.0f));
                #endif
+               ImGui::SameLine();
                ImGui::Text(anaglyphFittingInProgress ? "[Fitting in progress]" : "[Fitted, improving...]");
                if (ImGui::Button("Calibrate Glasses"))
                   popup_anaglyph_calibration = true;
