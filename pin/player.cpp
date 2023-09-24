@@ -4721,13 +4721,10 @@ void Player::DrawBalls()
    RenderState initial_state;
    m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(true, initial_state);
 
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderStateDepthBias(0.0f);
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_ADD);
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderState::CULL_CCW);
-
-   if (m_debugBalls)
-      // Set the render state to something that will always display.
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
+   RenderState default_state;
+   m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(false, default_state);
+   // Set the render state to something that will always display.
+   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ZENABLE, m_debugBalls ? RenderState::RS_FALSE : RenderState::RS_TRUE);
 
    // collect all lights that can reflect on balls (currently only bulbs and if flag set to do so)
    vector<Light*> lights;
@@ -4737,9 +4734,6 @@ void Player::DrawBalls()
       if (item && item->GetItemType() == eItemLight && ((Light *)item)->m_d.m_showReflectionOnBall)
          lights.push_back((Light *)item);
    }
-
-   //m_pin3d.m_pd3dPrimaryDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP);
-   //m_pin3d.m_pd3dPrimaryDevice->SetTextureFilter(0, TEXTURE_MODE_TRILINEAR);
 
    const Material * const playfield_mat = m_ptable->GetMaterial(m_ptable->m_playfieldMaterial);
    const vec4 playfield_cBaseF = convertColor(playfield_mat->m_cBase);
@@ -4770,7 +4764,6 @@ void Player::DrawBalls()
 
       const float inv_tablewidth = 1.0f / (m_ptable->m_right - m_ptable->m_left);
       const float inv_tableheight = 1.0f / (m_ptable->m_bottom - m_ptable->m_top);
-      //const float inclination = ANGTORAD(m_ptable->m_inclination);
       const vec4 phr(inv_tablewidth, inv_tableheight, m_ptable->m_tableheight,
                      m_ptable->m_ballPlayfieldReflectionStrength*pball->m_playfieldReflectionStrength
                      *playfield_avg_diffuse //!! hack: multiply average diffuse from playfield onto strength, as only diffuse lighting is used for reflection
@@ -4867,6 +4860,17 @@ void Player::DrawBalls()
 
       const vec4 diffuse = convertColor(pball->m_color, 1.0f);
       m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetVector(SHADER_cBase_Alpha, &diffuse);
+      if (diffuse.a < 1.0)
+      {
+         m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
+         m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);
+         m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::DESTBLEND, RenderState::INVSRC_ALPHA);
+         m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_ADD);
+      }
+      else
+      {
+         m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
+      }
 
       Matrix3D scale, trans, m3D_full;
       Matrix3D rot(pball->m_orientation.m_d[0][0], pball->m_orientation.m_d[1][0], pball->m_orientation.m_d[2][0], 0.0f,
@@ -5008,7 +5012,7 @@ void Player::DrawBalls()
          }
       }
 
-#if defined(DEBUG_BALL_SPIN) && !defined(ENABLE_SDL)        // draw debug points for visualizing ball rotation
+      #if defined(DEBUG_BALL_SPIN) && !defined(ENABLE_SDL)        // draw debug points for visualizing ball rotation
       if (ShowStats() && !ShowFPSonly())
       {
          // set transform
@@ -5032,15 +5036,8 @@ void Player::DrawBalls()
          // reset transform
          m_pin3d.GetMVP().SetModel(matOrig);
       }
-#endif
-
+      #endif
    }   // end loop over all balls
-
-   //m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE); //!! not necessary anymore
-
-   // Set the render state to something that will always display.
-   if (m_debugBalls)
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_TRUE);
 
    m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(false, initial_state);
 }
