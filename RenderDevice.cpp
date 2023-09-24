@@ -1475,62 +1475,74 @@ void RenderDevice::Flip()
 
 void RenderDevice::UploadAndSetSMAATextures()
 {
-   BaseTexture* searchBaseTex = new BaseTexture(SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, BaseTexture::BW);
+   // FIXME use standard BaseTexture / Sampler code instead
+   /* BaseTexture* searchBaseTex = new BaseTexture(SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, BaseTexture::BW);
    memcpy(searchBaseTex->data(), searchTexBytes, SEARCHTEX_SIZE);
    m_SMAAsearchTexture = new Sampler(this, searchBaseTex, true, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_NONE);
    m_SMAAsearchTexture->SetName("SMAA Search"s);
-   delete searchBaseTex;
+   delete searchBaseTex;*/
 
-   // FIXME use standard BaseTexture / Sampler code instead
 #ifdef ENABLE_SDL
-   // Update bind cache
    auto tex_unit = m_samplerBindings.back();
    if (tex_unit->sampler != nullptr)
       tex_unit->sampler->m_bindings.erase(tex_unit);
    tex_unit->sampler = nullptr;
    glActiveTexture(GL_TEXTURE0 + tex_unit->unit);
+   GLuint glTexture[2];
+   glGenTextures(2, glTexture);
 
-   GLuint glTexture;
-   glGenTextures(1, &glTexture);
-   glBindTexture(GL_TEXTURE_2D, glTexture);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_R, GL_RED);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_G, GL_RED);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_B, GL_RED);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_A, GL_GREEN);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-   int num_mips = (int)std::log2(float(max(AREATEX_WIDTH, AREATEX_HEIGHT))) + 1;
-#ifndef __OPENGLES__
-   if (m_GLversion >= 403)
-#endif
-      glTexStorage2D(GL_TEXTURE_2D, num_mips, RGB8, AREATEX_WIDTH, AREATEX_HEIGHT);
-#ifndef __OPENGLES__
-   else
-   { // should never be triggered nowadays
-      GLsizei w = AREATEX_WIDTH;
-      GLsizei h = AREATEX_HEIGHT;
-      for (int i = 0; i < num_mips; i++)
-      {
-         glTexImage2D(GL_TEXTURE_2D, i, RGB8, w, h, 0, GL_RG, GL_UNSIGNED_BYTE, nullptr);
-         w = max(1, (w / 2));
-         h = max(1, (h / 2));
-      }
-   }
-#endif
+   glBindTexture(GL_TEXTURE_2D, glTexture[0]);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+   glTexStorage2D(GL_TEXTURE_2D, 1, GL_R8, SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT);
+   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+   glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, GL_RED, GL_UNSIGNED_BYTE, (void*)searchTexBytes);
+   m_SMAAsearchTexture = new Sampler(this, SurfaceType::RT_DEFAULT, glTexture[0], true, true, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_NONE);
+   m_SMAAsearchTexture->SetName("SMAA Search"s);
+
+   glBindTexture(GL_TEXTURE_2D, glTexture[1]);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+   glTexStorage2D(GL_TEXTURE_2D, 1, GL_RG8, AREATEX_WIDTH, AREATEX_HEIGHT);
    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, AREATEX_WIDTH, AREATEX_HEIGHT, GL_RG, GL_UNSIGNED_BYTE, (void*)areaTexBytes);
-   glGenerateMipmap(GL_TEXTURE_2D); // Generate mip-maps, when using TexStorage will generate same amount as specified in TexStorage, otherwise good idea to limit by GL_TEXTURE_MAX_LEVEL
-   m_SMAAareaTexture = new Sampler(this, SurfaceType::RT_DEFAULT, glTexture, true, true, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_BILINEAR);
+   m_SMAAareaTexture = new Sampler(this, SurfaceType::RT_DEFAULT, glTexture[1], true, true, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_BILINEAR);
    m_SMAAareaTexture->SetName("SMAA Area"s);
+
 #else
    {
       IDirect3DTexture9 *sysTex, *tex;
-      HRESULT hr = m_pD3DDevice->CreateTexture(AREATEX_WIDTH, AREATEX_HEIGHT, 0, 0, (D3DFORMAT)colorFormat::GREYA8, (D3DPOOL)memoryPool::SYSTEM, &sysTex, nullptr);
+      HRESULT hr = m_pD3DDevice->CreateTexture(SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, 0, 0, D3DFMT_L8, D3DPOOL_SYSTEMMEM, &sysTex, nullptr);
       if (FAILED(hr))
          ReportError("Fatal Error: unable to create texture!", hr, __FILE__, __LINE__);
-      hr = m_pD3DDevice->CreateTexture(AREATEX_WIDTH, AREATEX_HEIGHT, 0, 0, (D3DFORMAT)colorFormat::GREYA8, (D3DPOOL)memoryPool::DEFAULT, &tex, nullptr);
+      hr = m_pD3DDevice->CreateTexture(SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, 0, 0, D3DFMT_L8, D3DPOOL_DEFAULT, &tex, nullptr);
+      if (FAILED(hr))
+         ReportError("Fatal Error: out of VRAM!", hr, __FILE__, __LINE__);
+
+      //!! use D3DXLoadSurfaceFromMemory
+      D3DLOCKED_RECT locked;
+      CHECKD3D(sysTex->LockRect(0, &locked, nullptr, 0));
+      void* const pdest = locked.pBits;
+      const void* const psrc = searchTexBytes;
+      memcpy(pdest, psrc, SEARCHTEX_SIZE);
+      CHECKD3D(sysTex->UnlockRect(0));
+
+      CHECKD3D(m_pD3DDevice->UpdateTexture(sysTex, tex));
+      SAFE_RELEASE(sysTex);
+
+      m_SMAAsearchTexture = new Sampler(this, tex, true, true);
+      m_SMAAsearchTexture->SetName("SMAA Search"s);
+   }
+   {
+      IDirect3DTexture9 *sysTex, *tex;
+      HRESULT hr = m_pD3DDevice->CreateTexture(AREATEX_WIDTH, AREATEX_HEIGHT, 0, 0, D3DFMT_A8L8, D3DPOOL_SYSTEMMEM, &sysTex, nullptr);
+      if (FAILED(hr))
+         ReportError("Fatal Error: unable to create texture!", hr, __FILE__, __LINE__);
+      hr = m_pD3DDevice->CreateTexture(AREATEX_WIDTH, AREATEX_HEIGHT, 0, 0, D3DFMT_A8L8, D3DPOOL_DEFAULT, &tex, nullptr);
       if (FAILED(hr))
          ReportError("Fatal Error: out of VRAM!", hr, __FILE__, __LINE__);
 
