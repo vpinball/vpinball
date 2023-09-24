@@ -3631,7 +3631,6 @@ void Player::PrepareVideoBuffers()
    const bool ss_refl = (((m_ss_refl && (m_ptable->m_useSSR == -1)) || (m_ptable->m_useSSR == 1)) && m_pin3d.m_pd3dPrimaryDevice->DepthBufferReadBackAvailable() && m_ptable->m_SSRScale > 0.f);
    const unsigned int sharpen = PostProcAA ? m_sharpen : 0;
    const bool useAO = GetAOMode() == 2;
-   const bool depth_available = useAO;
 
    RenderTarget *renderedRT = m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture();
    RenderTarget *outputRT = nullptr;
@@ -3808,84 +3807,96 @@ void Player::PrepareVideoBuffers()
    assert(renderedRT == m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer() || renderedRT == m_pin3d.m_pd3dPrimaryDevice->GetPostProcessRenderTarget1());
 
    // Perform post processed anti aliasing
-   if (SMAA || DLAA || NFAA || FXAA1 || FXAA2 || FXAA3)
+   if (NFAA || FXAA1 || FXAA2 || FXAA3)
    {
       assert(renderedRT == m_pin3d.m_pd3dPrimaryDevice->GetPostProcessRenderTarget1());
-      outputRT = SMAA                ? m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture() : // SMAA use 3 passes, all of them using the initial render, so we reuse the back buffer for the first
-         (DLAA || sharpen || stereo) ? m_pin3d.m_pd3dPrimaryDevice->GetPostProcessRenderTarget(renderedRT)
-                                     : m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
+      outputRT = (sharpen || stereo) ? m_pin3d.m_pd3dPrimaryDevice->GetPostProcessRenderTarget(renderedRT) : m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
       m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget(SMAA ? "SMAA Color/Edge Detection"s : "Post Process AA Pass 1"s, outputRT, false);
       m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, renderedRT->GetColorSampler());
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, renderedRT->GetColorSampler());
-      if (depth_available) // Depth is always taken from the MSAA resolved render buffer
-      {
-         if (outputRT != m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()) // We can not add this dependency for SMAA since it would create a (wrong) circular dependency
-            m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture());
-         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_depth, m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetDepthSampler());
-      }
-      else
-         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTextureNull(SHADER_tex_depth);
-      if (SMAA)
-      {
-         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_areaTex, m_pin3d.m_pd3dPrimaryDevice->m_SMAAareaTexture);
-         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_searchTex, m_pin3d.m_pd3dPrimaryDevice->m_SMAAsearchTexture);
-         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(
-            SHADER_w_h_height, (float)(1.0 / renderedRT->GetWidth()), (float)(1.0 / renderedRT->GetHeight()), (float)renderedRT->GetWidth(), (float)renderedRT->GetHeight());
-      }
-      else
-         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / renderedRT->GetWidth()), (float)(1.0 / renderedRT->GetHeight()), 
-            (float)renderedRT->GetWidth(), depth_available ? 1.f : 0.f);
-      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(SMAA  ? SHADER_TECHNIQUE_SMAA_ColorEdgeDetection :
-                                                         (DLAA  ? SHADER_TECHNIQUE_DLAA_edge :
-                                                         (NFAA  ? SHADER_TECHNIQUE_NFAA :
-                                                         (FXAA3 ? SHADER_TECHNIQUE_FXAA3 :
-                                                         (FXAA2 ? SHADER_TECHNIQUE_FXAA2 :
-                                                                  SHADER_TECHNIQUE_FXAA1)))));
+      m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture(), true); // Depth is always taken from the MSAA resolved render buffer
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_depth, m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetDepthSampler());
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / renderedRT->GetWidth()), (float)(1.0 / renderedRT->GetHeight()), (float)renderedRT->GetWidth(), 1.f);
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(NFAA  ? SHADER_TECHNIQUE_NFAA : FXAA3 ? SHADER_TECHNIQUE_FXAA3 : FXAA2 ? SHADER_TECHNIQUE_FXAA2 : SHADER_TECHNIQUE_FXAA1);
+      m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pin3d.m_pd3dPrimaryDevice->FBShader);
+      renderedRT = outputRT;
+   }
+   else if (DLAA)
+   {
+      assert(renderedRT == m_pin3d.m_pd3dPrimaryDevice->GetPostProcessRenderTarget1());
+      // First pass detect edges and write it to alpha channel (keeping RGB)
+      outputRT = m_pin3d.m_pd3dPrimaryDevice->GetPostProcessRenderTarget(renderedRT);
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("DLAA Edge Detection"s, outputRT, false);
+      m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, renderedRT->GetColorSampler());
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, renderedRT->GetColorSampler());
+      m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture(), true); // Depth is always taken from the MSAA resolved render buffer
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_depth, m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetDepthSampler());
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / renderedRT->GetWidth()), (float)(1.0 / renderedRT->GetHeight()), (float)renderedRT->GetWidth(), 1.f);
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_DLAA_edge);
       m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pin3d.m_pd3dPrimaryDevice->FBShader);
       renderedRT = outputRT;
 
-      if (SMAA || DLAA) // actual SMAA/DLAA filtering pass, above only edge detection
-      {
-         outputRT = SMAA              ? m_pin3d.m_pd3dPrimaryDevice->GetPostProcessRenderTarget2() : // SMAA use 3 passes, so we have a special processing instead of RT ping pong
-                    sharpen || stereo ? m_pin3d.m_pd3dPrimaryDevice->GetPostProcessRenderTarget(renderedRT)
-                                      : m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
-         m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget(SMAA ? "SMAA Blend weight calculation"s : "Post Process AA Pass 2"s, outputRT, false);
-         m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
-         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SMAA ? SHADER_edgesTex : SHADER_tex_fb_filtered, renderedRT->GetColorSampler());
-         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(SMAA ? SHADER_TECHNIQUE_SMAA_BlendWeightCalculation : SHADER_TECHNIQUE_DLAA);
-         m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pin3d.m_pd3dPrimaryDevice->FBShader);
-         renderedRT = outputRT;
+      // Second pass: use edge detection from first pass (alpha channel) and RGB colors for actual filtering
+      outputRT = sharpen || stereo ? m_pin3d.m_pd3dPrimaryDevice->GetPostProcessRenderTarget(renderedRT) : m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("DLAA Neigborhood blending"s, outputRT, false);
+      m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, renderedRT->GetColorSampler());
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, renderedRT->GetColorSampler());
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_DLAA);
+      m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pin3d.m_pd3dPrimaryDevice->FBShader);
+      renderedRT = outputRT;
+   }
+   else if (SMAA)
+   {
+      assert(renderedRT == m_pin3d.m_pd3dPrimaryDevice->GetPostProcessRenderTarget1());
+      // SMAA use 3 passes, all of them using the initial render, so since tonemap use postprocess RT 1, we use the back buffer and post process RT 2
+      RenderTarget *sourceRT = renderedRT;
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, sourceRT->GetColorSampler());
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, sourceRT->GetColorSampler());
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_areaTex, m_pin3d.m_pd3dPrimaryDevice->m_SMAAareaTexture);
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_searchTex, m_pin3d.m_pd3dPrimaryDevice->m_SMAAsearchTexture);
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / sourceRT->GetWidth()), (float)(1.0 / sourceRT->GetHeight()), (float)sourceRT->GetWidth(), (float)sourceRT->GetHeight());
 
-         if (SMAA)
-         {
-            outputRT = sharpen || stereo ? m_pin3d.m_pd3dPrimaryDevice->GetPostProcessRenderTarget(renderedRT)
-                                         : m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
-            m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("SMAA Neigborhood blending"s, outputRT, false);
-            m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
-            m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_blendTex, renderedRT->GetColorSampler());
-            m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_SMAA_NeighborhoodBlending);
-            m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pin3d.m_pd3dPrimaryDevice->FBShader);
-            renderedRT = outputRT;
-         }
-      }
+      outputRT = m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture();
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("SMAA Color/Edge Detection"s, outputRT, false);
+      m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(sourceRT); // PostProcess RT 1
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_SMAA_ColorEdgeDetection);
+      m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pin3d.m_pd3dPrimaryDevice->FBShader);
+      renderedRT = outputRT;
+
+      outputRT = m_pin3d.m_pd3dPrimaryDevice->GetPostProcessRenderTarget(sourceRT);
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("SMAA Blend weight calculation"s, outputRT, false);
+      m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(sourceRT); // PostProcess RT 1
+      m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT); // BackBuffer RT
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_edgesTex, renderedRT->GetColorSampler());
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_SMAA_BlendWeightCalculation);
+      m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pin3d.m_pd3dPrimaryDevice->FBShader);
+      renderedRT = outputRT;
+
+      outputRT = sharpen || stereo ? m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture() : m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("SMAA Neigborhood blending"s, outputRT, false);
+      m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(sourceRT); // PostProcess RT 1
+      m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT); // PostProcess RT 2
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_blendTex, renderedRT->GetColorSampler());
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_SMAA_NeighborhoodBlending);
+      m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pin3d.m_pd3dPrimaryDevice->FBShader);
+      renderedRT = outputRT;
    }
 
    // Performs sharpening
    if (sharpen)
    {
-      assert(renderedRT != m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer());
-      outputRT = stereo ? m_pin3d.m_pd3dPrimaryDevice->GetPostProcessRenderTarget(renderedRT)
-                        : m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
+      assert(renderedRT != m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer()); // At this point, renderedRT may be PP1, PP2 or backbuffer
+      outputRT = stereo ? m_pin3d.m_pd3dPrimaryDevice->GetPostProcessRenderTarget(renderedRT) : m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
       m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("Sharpen"s, outputRT, false);
       m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
-      m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture());
+      m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture(), true); // Depth is always taken from the MSAA resolved render buffer
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, renderedRT->GetColorSampler());
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, renderedRT->GetColorSampler());
-      if (depth_available) // Depth is always taken from the MSAA resolved render buffer
-         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_depth, m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetDepthSampler());
-      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(
-         SHADER_w_h_height, (float)(1.0 / renderedRT->GetWidth()), (float)(1.0 / renderedRT->GetHeight()), (float)renderedRT->GetWidth(), depth_available ? 1.f : 0.f);
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_depth, m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetDepthSampler());
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / renderedRT->GetWidth()), (float)(1.0 / renderedRT->GetHeight()), (float)renderedRT->GetWidth(), 1.f);
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique((sharpen == 1) ? SHADER_TECHNIQUE_CAS : SHADER_TECHNIQUE_BilateralSharp_CAS);
       m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pin3d.m_pd3dPrimaryDevice->FBShader);
       renderedRT = outputRT;
@@ -4850,7 +4861,7 @@ void Player::DrawBalls()
 
       const vec4 diffuse = convertColor(pball->m_color, 1.0f);
       m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetVector(SHADER_cBase_Alpha, &diffuse);
-      if (diffuse.a < 1.0)
+      if (diffuse.w < 1.0)
       {
          m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
          m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);
