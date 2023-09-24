@@ -4722,9 +4722,6 @@ void Player::DrawBalls()
    m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(true, initial_state);
 
    RenderState default_state;
-   m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(false, default_state);
-   // Set the render state to something that will always display.
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ZENABLE, m_debugBalls ? RenderState::RS_FALSE : RenderState::RS_TRUE);
 
    // collect all lights that can reflect on balls (currently only bulbs and if flag set to do so)
    vector<Light*> lights;
@@ -4741,7 +4738,7 @@ void Player::DrawBalls()
 
    for (size_t i = 0; i < m_vball.size(); i++)
    {
-      Ball * const pball = m_vball[i];
+      Ball *const pball = m_vball[i];
 
       if (!pball->m_visible)
          continue;
@@ -4762,6 +4759,10 @@ void Player::DrawBalls()
             continue;
       }
 
+      m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(false, default_state);
+      // Set the render state to something that will always display for debug mode
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ZENABLE, m_debugBalls ? RenderState::RS_FALSE : RenderState::RS_TRUE);
+
       const float inv_tablewidth = 1.0f / (m_ptable->m_right - m_ptable->m_left);
       const float inv_tableheight = 1.0f / (m_ptable->m_bottom - m_ptable->m_top);
       const vec4 phr(inv_tablewidth, inv_tableheight, m_ptable->m_tableheight,
@@ -4774,17 +4775,12 @@ void Player::DrawBalls()
       // collect the x nearest lights that can reflect on balls
       Light* light_nearest[MAX_BALL_LIGHT_SOURCES];
       search_for_nearest(pball, lights, light_nearest);
-
-      vec4 emission = convertColor(m_ptable->m_Light[0].emission);
-      emission.x *= m_ptable->m_lightEmissionScale * m_globalEmissionScale;
-      emission.y *= m_ptable->m_lightEmissionScale * m_globalEmissionScale;
-      emission.z *= m_ptable->m_lightEmissionScale * m_globalEmissionScale;
-
-#ifdef ENABLE_SDL
+      #ifdef ENABLE_SDL
       float lightPos[MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES][4] = { 0.0f, 0.0f, 0.0f, 0.0f };
       float lightEmission[MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES][4] = { 0.0f, 0.0f, 0.0f, 0.0f };
       float *pLightPos = (float *)lightPos, *pLightEm = (float *)lightEmission;
-#else
+      const int lightStride = 4, lightOfs = 0;
+      #else
       struct CLight
       {
          float vPos[3];
@@ -4792,26 +4788,21 @@ void Player::DrawBalls()
       };
       CLight l[MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES];
       float *pLightPos = (float *)l, *pLightEm = (float *)l;
-#endif
-
+      const int lightStride = 6, lightOfs = 3;
+      #endif
+      vec4 emission = convertColor(m_ptable->m_Light[0].emission);
+      emission.x *= m_ptable->m_lightEmissionScale * m_globalEmissionScale;
+      emission.y *= m_ptable->m_lightEmissionScale * m_globalEmissionScale;
+      emission.z *= m_ptable->m_lightEmissionScale * m_globalEmissionScale;
       for (unsigned int i2 = 0; i2 < MAX_LIGHT_SOURCES; ++i2)
       {
-#ifdef ENABLE_SDL
-         const int pPos = i2 * 4, pEm = pPos;
-#else
-         const int pPos = i2 * 6, pEm = pPos + 3;
-#endif
+         const int pPos = i2 * lightStride, pEm = pPos + lightOfs;
          memcpy(&pLightPos[pPos], &m_ptable->m_Light[i2].pos, sizeof(float) * 3);
          memcpy(&pLightEm[pEm], &emission, sizeof(float) * 3);
       }
-
       for (unsigned int light_i = 0; light_i < MAX_BALL_LIGHT_SOURCES; ++light_i)
       {
-#ifdef ENABLE_SDL
-         const int pPos = (light_i + MAX_LIGHT_SOURCES) * 4, pEm = pPos;
-#else
-         const int pPos = (light_i + MAX_LIGHT_SOURCES) * 6, pEm = pPos + 3;
-#endif
+         const int pPos = (light_i + MAX_LIGHT_SOURCES) * lightStride, pEm = pPos + lightOfs;
          if (light_nearest[light_i] != nullptr)
          {
             pLightPos[pPos + 0] = light_nearest[light_i]->m_d.m_vCenter.x;
@@ -4833,13 +4824,12 @@ void Player::DrawBalls()
             pLightEm[pEm + 2] = 0.0f;
          }
       }
-
-#ifdef ENABLE_SDL
+      #ifdef ENABLE_SDL
       m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetFloat4v(SHADER_ballLightPos, (vec4 *)lightPos, MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES);
       m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetFloat4v(SHADER_ballLightEmission, (vec4 *)lightEmission, MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES);
-#else
+      #else
       m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetFloat4v(SHADER_ballPackedLights, (vec4 *)l, sizeof(CLight) * (MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES) / (4 * sizeof(float)));
-#endif
+      #endif
 
       // now for a weird hack: make material more rough, depending on how near the nearest lightsource is, to 'emulate' the area of the bulbs (as VP only features point lights so far)
       float Roughness = 0.8f;
@@ -4917,9 +4907,16 @@ void Player::DrawBalls()
       if ((!g_pplayer->IsRenderPass(Player::REFLECTION_PASS)) && // do not render trails in reflection pass
          ((m_trailForBalls && (m_ptable->m_useTrailForBalls == -1)) || (m_ptable->m_useTrailForBalls == 1)))
       {
-         Vertex3D_NoTex2 rgv3D_all[MAX_BALL_TRAIL_POS * 2];
-         unsigned int num_rgv3D = 0;
+         m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(false, default_state);
+         m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
+         m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
+         m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);
+         m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::DESTBLEND, RenderState::INVSRC_ALPHA);
+         m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_ADD);
+         m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetTechnique(SHADER_TECHNIQUE_RenderBallTrail);
 
+         Vertex3D_NoTex2 vertices[MAX_BALL_TRAIL_POS * 2];
+         unsigned int nVertices = 0;
          for (int i2 = 0; i2 < MAX_BALL_TRAIL_POS - 1; ++i2)
          {
             int i3 = pball->m_ringcounter_oldpos / (10000 / PHYSICS_STEPTIME) - 1 - i2;
@@ -4928,87 +4925,77 @@ void Player::DrawBalls()
             int io = i3 - 1;
             if (io < 0)
                io += MAX_BALL_TRAIL_POS;
+            if ((pball->m_oldpos[i3].x == FLT_MAX) && (pball->m_oldpos[io].x == FLT_MAX))
+               continue; // No position data => discard
 
-            if ((pball->m_oldpos[i3].x != FLT_MAX) && (pball->m_oldpos[io].x != FLT_MAX)) // only if already initialized
-            {
-               Vertex3Ds vec(pball->m_oldpos[io].x - pball->m_oldpos[i3].x, pball->m_oldpos[io].y - pball->m_oldpos[i3].y, pball->m_oldpos[io].z - pball->m_oldpos[i3].z);
-               const float bc = m_ptable->m_ballTrailStrength * powf(1.f - 1.f / max(vec.Length(), 1.0f), 64.0f); //!! 64=magic alpha falloff
-               const float r = min(pball->m_d.m_radius*0.9f, 2.0f*pball->m_d.m_radius / powf((float)(i2 + 2), 0.6f)); //!! consts are for magic radius falloff
+            Vertex3Ds vec(pball->m_oldpos[io].x - pball->m_oldpos[i3].x, pball->m_oldpos[io].y - pball->m_oldpos[i3].y, pball->m_oldpos[io].z - pball->m_oldpos[i3].z);
+            const float ls = vec.LengthSquared();
+            if (ls <= 1e-3)
+               continue; // Too small => discard
 
-               if (bc > 0.f && r > FLT_MIN)
-               {
-                  float ls = vec.LengthSquared();
-                  if (ls > 1e-5)
-                  {
-                     vec *= 1.0f / sqrtf(ls);
-                     const Vertex3Ds up(0.f, 0.f, 1.f);
-                     const Vertex3Ds n = CrossProduct(vec, up) * r;
+            const float length = sqrtf(ls);
+            const float bc = m_ptable->m_ballTrailStrength * powf(1.f - 1.f / max(length, 1.0f), 64.0f); //!! 64=magic alpha falloff
+            const float r = min(pball->m_d.m_radius*0.9f, 2.0f*pball->m_d.m_radius / powf((float)(i2 + 2), 0.6f)); //!! consts are for magic radius falloff
+            if (bc <= 0.f && r <= 1e-3)
+               continue; // Fully faded out or radius too small => discard
 
-                     Vertex3D_NoTex2 rgv3D[4];
-                     rgv3D[0].x = pball->m_oldpos[i3].x - n.x;
-                     rgv3D[0].y = pball->m_oldpos[i3].y - n.y;
-                     rgv3D[0].z = pball->m_oldpos[i3].z - n.z;
-                     rgv3D[1].x = pball->m_oldpos[i3].x + n.x;
-                     rgv3D[1].y = pball->m_oldpos[i3].y + n.y;
-                     rgv3D[1].z = pball->m_oldpos[i3].z + n.z;
-                     rgv3D[2].x = pball->m_oldpos[io].x + n.x;
-                     rgv3D[2].y = pball->m_oldpos[io].y + n.y;
-                     rgv3D[2].z = pball->m_oldpos[io].z + n.z;
-                     rgv3D[3].x = pball->m_oldpos[io].x - n.x;
-                     rgv3D[3].y = pball->m_oldpos[io].y - n.y;
-                     rgv3D[3].z = pball->m_oldpos[io].z - n.z;
+            vec *= 1.0f / sqrtf(ls);
+            const Vertex3Ds up(0.f, 0.f, 1.f); // TODO Should be camera axis instead of fixed vertical
+            const Vertex3Ds n = CrossProduct(vec, up) * r;
 
-                     rgv3D[0].nx = rgv3D[1].nx = rgv3D[2].nx = rgv3D[3].nx = bc; //!! abuses normal for now for the color/alpha
+            Vertex3D_NoTex2 quadVertices[4];
+            quadVertices[0].x = pball->m_oldpos[i3].x - n.x;
+            quadVertices[0].y = pball->m_oldpos[i3].y - n.y;
+            quadVertices[0].z = pball->m_oldpos[i3].z - n.z;
+            quadVertices[1].x = pball->m_oldpos[i3].x + n.x;
+            quadVertices[1].y = pball->m_oldpos[i3].y + n.y;
+            quadVertices[1].z = pball->m_oldpos[i3].z + n.z;
+            quadVertices[2].x = pball->m_oldpos[io].x + n.x;
+            quadVertices[2].y = pball->m_oldpos[io].y + n.y;
+            quadVertices[2].z = pball->m_oldpos[io].z + n.z;
+            quadVertices[3].x = pball->m_oldpos[io].x - n.x;
+            quadVertices[3].y = pball->m_oldpos[io].y - n.y;
+            quadVertices[3].z = pball->m_oldpos[io].z - n.z;
 
-                     rgv3D[0].tu = 0.5f + (float)(i2) * (float)(1.0 / (2.0 * (MAX_BALL_TRAIL_POS - 1)));
-                     rgv3D[0].tv = 0.f;
-                     rgv3D[1].tu = rgv3D[0].tu;
-                     rgv3D[1].tv = 1.f;
-                     rgv3D[2].tu = 0.5f + (float)(i2 + 1) * (float)(1.0 / (2.0 * (MAX_BALL_TRAIL_POS - 1)));
-                     rgv3D[2].tv = 1.f;
-                     rgv3D[3].tu = rgv3D[2].tu;
-                     rgv3D[3].tv = 0.f;
+            quadVertices[0].nx = quadVertices[1].nx = quadVertices[2].nx = quadVertices[3].nx = bc; //!! abuses normal for now for the color/alpha
 
-                     if (num_rgv3D == 0)
-                     {
-                        rgv3D_all[0] = rgv3D[0];
-                        rgv3D_all[1] = rgv3D[1];
-                        rgv3D_all[2] = rgv3D[3];
-                        rgv3D_all[3] = rgv3D[2];
-                     }
-                     else
-                     {
-                        rgv3D_all[num_rgv3D - 2].x = (rgv3D[0].x + rgv3D_all[num_rgv3D - 2].x) * 0.5f;
-                        rgv3D_all[num_rgv3D - 2].y = (rgv3D[0].y + rgv3D_all[num_rgv3D - 2].y) * 0.5f;
-                        rgv3D_all[num_rgv3D - 2].z = (rgv3D[0].z + rgv3D_all[num_rgv3D - 2].z) * 0.5f;
-                        rgv3D_all[num_rgv3D - 1].x = (rgv3D[1].x + rgv3D_all[num_rgv3D - 1].x) * 0.5f;
-                        rgv3D_all[num_rgv3D - 1].y = (rgv3D[1].y + rgv3D_all[num_rgv3D - 1].y) * 0.5f;
-                        rgv3D_all[num_rgv3D - 1].z = (rgv3D[1].z + rgv3D_all[num_rgv3D - 1].z) * 0.5f;
-                        rgv3D_all[num_rgv3D] = rgv3D[3];
-                        rgv3D_all[num_rgv3D + 1] = rgv3D[2];
-                     }
+            quadVertices[0].tu = 0.5f + (float)(i2) * (float)(1.0 / (2.0 * (MAX_BALL_TRAIL_POS - 1)));
+            quadVertices[0].tv = 0.f;
+            quadVertices[1].tu = quadVertices[0].tu;
+            quadVertices[1].tv = 1.f;
+            quadVertices[2].tu = 0.5f + (float)(i2 + 1) * (float)(1.0 / (2.0 * (MAX_BALL_TRAIL_POS - 1)));
+            quadVertices[2].tv = 1.f;
+            quadVertices[3].tu = quadVertices[2].tu;
+            quadVertices[3].tv = 0.f;
 
-                     if (num_rgv3D == 0)
-                        num_rgv3D += 4;
-                     else
-                        num_rgv3D += 2;
-                  }
-               }
+            if (nVertices == 0)
+            { // First quad: just commit it
+               vertices[0] = quadVertices[0];
+               vertices[1] = quadVertices[1];
+               vertices[2] = quadVertices[3];
+               vertices[3] = quadVertices[2];
+               nVertices += 4;
+            }
+            else
+            { // Following quads: blend with the previous points
+               vertices[nVertices - 2].x = (quadVertices[0].x + vertices[nVertices - 2].x) * 0.5f;
+               vertices[nVertices - 2].y = (quadVertices[0].y + vertices[nVertices - 2].y) * 0.5f;
+               vertices[nVertices - 2].z = (quadVertices[0].z + vertices[nVertices - 2].z) * 0.5f;
+               vertices[nVertices - 1].x = (quadVertices[1].x + vertices[nVertices - 1].x) * 0.5f;
+               vertices[nVertices - 1].y = (quadVertices[1].y + vertices[nVertices - 1].y) * 0.5f;
+               vertices[nVertices - 1].z = (quadVertices[1].z + vertices[nVertices - 1].z) * 0.5f;
+               vertices[nVertices    ] =    quadVertices[3];
+               vertices[nVertices + 1] =    quadVertices[2];
+               nVertices += 2;
             }
          }
-
-         if (num_rgv3D > 0)
+         if (nVertices > 0)
          {
             Vertex3D_NoTex2 *bufvb;
             m_ballTrailMeshBuffer->m_vb->lock(0, 0, (void **)&bufvb, VertexBuffer::DISCARDCONTENTS);
-            memcpy(bufvb,rgv3D_all,num_rgv3D*sizeof(Vertex3D_NoTex2));
+            memcpy(bufvb, vertices, nVertices * sizeof(Vertex3D_NoTex2));
             m_ballTrailMeshBuffer->m_vb->unlock();
-
-            m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
-            m_pin3d.EnableAlphaBlend(false);
-
-            m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetTechnique(SHADER_TECHNIQUE_RenderBallTrail);
-            m_pin3d.m_pd3dPrimaryDevice->DrawMesh(m_pin3d.m_pd3dPrimaryDevice->m_ballShader, true, pos, 0.f, m_ballTrailMeshBuffer, RenderDevice::TRIANGLESTRIP, 0, num_rgv3D);
+            m_pin3d.m_pd3dPrimaryDevice->DrawMesh(m_pin3d.m_pd3dPrimaryDevice->m_ballShader, true, pos, 0.f, m_ballTrailMeshBuffer, RenderDevice::TRIANGLESTRIP, 0, nVertices);
          }
       }
 
