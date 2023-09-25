@@ -212,7 +212,8 @@ static const string options[] = { // keep in sync with option_names & option_des
    "PovEdit"s,
    "Pov"s,
    "ExtractVBS"s,
-   "Ini"s
+   "Ini"s,
+   "exit"s // (ab)used by frontend, not handled by us
 }; // + c1..c9
 static const string option_descs[] =
 {
@@ -233,7 +234,8 @@ static const string option_descs[] =
    "[filename]  Load and run file in live editing mode, then export new pov on exit"s,
    "[filename]  Load, export pov and close"s,
    "[filename]  Load, export table script and close"s,
-   "[filename]  Use a custom settings file instead of loading it from the default location"s
+   "[filename]  Use a custom settings file instead of loading it from the default location"s,
+   string()
 };
 enum option_names
 {
@@ -254,7 +256,8 @@ enum option_names
    OPTION_POVEDIT,
    OPTION_POV,
    OPTION_EXTRACTVBS,
-   OPTION_INI
+   OPTION_INI,
+...OPTION_FRONTEND_EXIT
 };
 
 static bool compare_option(const char *const arg, const option_names option)
