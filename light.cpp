@@ -753,8 +753,9 @@ void Light::RenderSetup()
 
    if (m_d.m_showBulbMesh)
    {
-      // 28.f is the distance between the light (emitting point) and the bulb base (bulb mesh origin)
-      const float bulb_z = m_surfaceHeight + (m_d.m_height - 28.f);
+      // Bulb is always rendered at surface level which correspond to the base of the glass
+      // Note: the distance between the light (emitting point) and the bulb base (bulb mesh origin) is 28 for a bulb with a radius of 20
+      const float bulb_z = m_surfaceHeight;
 
       delete m_bulbLightMeshBuffer;
       IndexBuffer* bulbLightIndexBuffer = new IndexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bulbLightNumFaces, bulbLightIndices);

@@ -4046,9 +4046,9 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
                   Light* const light = (Light *)m_vedit[i];
                   // Before 10.8, lights would never be reflected
                   light->m_d.m_reflectionEnabled = false;
-                  // Before 10.8, lights did not have a z coordinate (light emission point)
-                  // Before 10.8, bulb mesh was rendered at surface level (28 VP units below light emission point)
-                  light->m_d.m_height = light->m_d.m_BulbLight ? light->m_d.m_showBulbMesh ? 28.f : light->m_d.m_bulbHaloHeight : 0.0f;
+                  // Before 10.8, lights did not have a z coordinate for the light emission point: classic lights where renderer at surface+0.1, bulb light at surface+halo height+0.1
+                  // This needs to be preserved to avoid changing the light falloff curve, so we set up with the same definition (the 0.1 offset on z axis being applied when rendering to avoid z fighting)
+                  light->m_d.m_height = light->m_d.m_BulbLight ? light->m_d.m_bulbHaloHeight : 0.0f;
                   if (!light->m_d.m_BulbLight)
                   {
                      // Before 10.8, classic light could not have a bulb mesh so force it off
