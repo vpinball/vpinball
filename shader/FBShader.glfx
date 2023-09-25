@@ -45,8 +45,8 @@ uniform samplerStereo tex_fb_unfiltered; // Framebuffer (unfiltered)
 uniform samplerStereo tex_bloom;         // Bloom
 uniform samplerStereo tex_ao;            // AO Result (also used as input from the previous frame when computing AO)
 uniform samplerStereo tex_depth;         // Depth
-uniform sampler2D tex_color_lut;     // Color grade LUT
-uniform sampler2D tex_ao_dither;     // AO dither
+uniform sampler2D tex_color_lut;         // Color grade LUT
+uniform sampler2D tex_ao_dither;         // AO dither
 uniform samplerStereo tex_normals;       // Normals
 
 in float2 tex0;
@@ -316,7 +316,7 @@ void main()
                            * texStereoNoLod(tex_ao,          tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
    BRANCH if (do_bloom)
       result += texStereoNoLod(tex_bloom, tex0).xyz;
-   color = float4(FBColorGrade(FBGamma(saturate(result))), 1.0);
+   color = float4(FBColorGrade(FBGamma(saturate(FBDither(result, tex0)))), 1.0);
 }
 
 ////ps_main_fb_tonemap_AO_static
@@ -327,16 +327,6 @@ void main()
    const float3 result = texStereoNoLod(tex_fb_filtered, tex0).xyz // moving AO before tonemap does not really change the look
                        * texStereoNoLod(tex_ao,          tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
    color = float4(result, 1.0);
-}
-
-////ps_main_fb_tonemap_no_filter
-
-void main()
-{
-   float3 result = FBToneMap(texStereoNoLod(tex_fb_unfiltered, tex0).xyz);
-   BRANCH if (do_bloom)
-      result += texStereoNoLod(tex_bloom, tex0).xyz;
-   color = float4(/*FBDither(*/FBColorGrade(FBGamma(saturate(result))),/*tex0*w_h_height.zw),*/ 1.0);
 }
 
 ////ps_main_fb_tonemap_no_filterRGB

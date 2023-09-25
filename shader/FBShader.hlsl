@@ -330,7 +330,7 @@ float4 ps_main_fb_bloom(const in VS_OUTPUT_2D IN) : COLOR
                         +  texNoLod(tex_fb_filtered, IN.tex0 + w_h_height.xy).xyz
                         +  texNoLod(tex_fb_filtered, IN.tex0 + float2(w_h_height.x,-w_h_height.y)).xyz
                         +  texNoLod(tex_fb_filtered, IN.tex0 + float2(-w_h_height.x,w_h_height.y)).xyz)*0.25; //!! offset for useAA?
-    return float4(bloom_cutoff(FBToneMap(result)) * w_h_height.z, 1.0);
+    return float4(max(bloom_cutoff(FBToneMap(result)), float3(0.0)) * w_h_height.z, 1.0);
 }
 
 float4 ps_main_fb_AO(const in VS_OUTPUT_2D IN) : COLOR
@@ -714,14 +714,14 @@ float4 ps_main_fb_irradiance(const in VS_OUTPUT_2D IN) : COLOR
    const float3 N = float3(sin(theta) * cos(phi), sin(theta) * sin(phi), cos(theta));
 
    // Monte Carlo integration of hemispherical radiance -> irradiance
-   const int NumSamples = 65536; // Limit to 65536, will fail on macOS Metal otherwise
+   const int NumSamples = 65536; // Limit to 32768 or 65536, will fail on macOS Metal otherwise
    const float InvNumSamples = 1.0 / float(NumSamples);
-   const float g = 25962.0 / float(NumSamples); // 25962 = matching rank-1 generator constant for 65536 samples
+   const float g = 25962.0 / float(NumSamples); // 25962 = matching rank-1 generator constant for 65536 samples, 15936 for 32768 samples
    float3 irradiance = float3(0., 0., 0.);
    [unroll(1)] for (int i=0; i<NumSamples; ++i) {
       const float2 u = float2(float(i) * InvNumSamples, frac(float(i) * g));
       const float3 Li = rotate_to_vector_upper(cos_hemisphere_sample(u), N);
-	  const float2 uv = ray_to_equirectangular_uv(Li);
+      const float2 uv = ray_to_equirectangular_uv(Li);
       irradiance += texNoLod(tex_fb_unfiltered, uv).rgb * InvNumSamples;
    }
    return float4(irradiance, 1.0);
@@ -824,11 +824,11 @@ technique fb_bloom
 
 technique fb_AO
 {
-	pass P0
-	{
-		VertexShader = compile vs_3_0 vs_main_no_trafo_subpixel();
-		PixelShader  = compile ps_3_0 ps_main_fb_AO();
-	}
+   pass P0
+   {
+      VertexShader = compile vs_3_0 vs_main_no_trafo_subpixel();
+      PixelShader  = compile ps_3_0 ps_main_fb_AO();
+   }
 }
 
 technique fb_tonemap_AO
@@ -842,11 +842,11 @@ technique fb_tonemap_AO
 
 technique fb_tonemap_AO_static
 {
-	pass P0
-	{
-		VertexShader = compile vs_3_0 vs_main_no_trafo_subpixel();
-		PixelShader  = compile ps_3_0 ps_main_fb_tonemap_AO_static();
-	}
+   pass P0
+   {
+      VertexShader = compile vs_3_0 vs_main_no_trafo_subpixel();
+      PixelShader  = compile ps_3_0 ps_main_fb_tonemap_AO_static();
+   }
 }
 
 technique fb_tonemap_no_filterRGB
@@ -889,11 +889,11 @@ technique fb_tonemap_AO_no_filter
 
 technique fb_tonemap_AO_no_filter_static
 {
-	pass P0
-	{
-		VertexShader = compile vs_3_0 vs_main_no_trafo();
-		PixelShader  = compile ps_3_0 ps_main_fb_tonemap_AO_no_filter_static();
-	}
+   pass P0
+   {
+      VertexShader = compile vs_3_0 vs_main_no_trafo();
+      PixelShader  = compile ps_3_0 ps_main_fb_tonemap_AO_no_filter_static();
+   }
 }
 
 // All Bloom variants:
