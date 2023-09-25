@@ -202,7 +202,7 @@ static FRect3D ExtendBoundsAtPosition(FRect3D bounds, const Vertex2D& center, co
 
 static FRect3D ExtendBoundsAtExtreme(const FRect3D& aabb, const Vertex2D& c, const float length, const float endRadius, const float startRadius, const float startAngle, const float endAngle, const float angle)
 {
-   if (startAngle < angle && endAngle > angle || endAngle < angle && startAngle > angle)
+   if ((startAngle < angle && endAngle > angle) || (endAngle < angle && startAngle > angle))
       // extend front side
       return ExtendBoundsAtPosition(aabb, c, length, endRadius, angle);
    else

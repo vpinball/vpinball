@@ -205,7 +205,7 @@ void upscale(DWORD * const data, const int2 &res, const bool is_brightness_data)
         }
     }
 
-    unsigned int* metric_tmp = (unsigned int*)&(metric[0].x);
+    unsigned int* metric_tmp = (unsigned int*)metric.data();
 
     o = 0;
     for (unsigned int j = 0; j < yres; ++j)
@@ -286,7 +286,7 @@ void upscale(DWORD * const data, const int2 &res, const bool is_brightness_data)
         }
     }
 
-    memcpy(&g_or[0], data, xres*yres * sizeof(DWORD));
+    memcpy(g_or.data(), data, xres*yres * sizeof(DWORD));
 
     o = 0;
     for (unsigned int j = 0; j < yres; ++j)
