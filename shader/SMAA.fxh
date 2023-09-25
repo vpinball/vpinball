@@ -745,7 +745,8 @@ float2 SMAALumaEdgeDetectionPS(float2 texcoord,
 
     // Then discard if there is no edge:
     SMAA_BRANCH
-    if (dot(edges, float2(1.0, 1.0)) == 0.0)
+    //if (dot(edges, float2(1.0, 1.0)) == 0.0)
+    if(edges.x == -edges.y)
 #ifdef SMAA_USE_STENCIL
         discard;
 #else
@@ -812,7 +813,8 @@ float2 SMAAColorEdgeDetectionPS(float2 texcoord,
 
     // Then discard if there is no edge:
     SMAA_BRANCH
-    if (dot(edges, float2(1.0, 1.0)) == 0.0)
+    //if (dot(edges, float2(1.0, 1.0)) == 0.0)
+    if(edges.x == -edges.y)
 #ifdef SMAA_USE_STENCIL
         discard;
 #else
@@ -863,7 +865,8 @@ float2 SMAADepthEdgeDetectionPS(float2 texcoord,
     float2 delta = abs(neighbours.xx - float2(neighbours.y, neighbours.z));
     float2 edges = step(SMAA_DEPTH_THRESHOLD, delta);
 
-    if (dot(edges, float2(1.0, 1.0)) == 0.0)
+    //if (dot(edges, float2(1.0, 1.0)) == 0.0)
+    if(edges.x == -edges.y)
 #ifdef SMAA_USE_STENCIL
         discard;
 #else
@@ -1316,7 +1319,7 @@ float4 SMAANeighborhoodBlendingPS(float2 texcoord,
 
     // Is there any blending weight with a value greater than 0.0?
     SMAA_BRANCH
-    if (dot(a, float4(1.0, 1.0, 1.0, 1.0)) <= 1e-5) {
+    if (dot(a, float4(1.0, 1.0, 1.0, 1.0)) <= 0.00006103515625) { // changed from original source due to possible fp16 usage
         float4 color = SMAAStereoSampleLevelZero(colorTex, texcoord);
 
         #if SMAA_REPROJECTION
@@ -1339,6 +1342,8 @@ float4 SMAANeighborhoodBlendingPS(float2 texcoord,
 
         // Calculate the texture coordinates:
         float4 blendingCoord = mad(blendingOffset, float4(SMAA_RT_METRICS.xy, -SMAA_RT_METRICS.xy), texcoord.xyxy);
+
+        //if(dot(blendingOffset, 1) < 0.01) discard; // Marty optimization
 
         // We exploit bilinear filtering to mix current pixel with the chosen
         // neighbor:
