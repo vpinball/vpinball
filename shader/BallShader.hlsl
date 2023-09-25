@@ -95,22 +95,22 @@ struct voutTrail
 
 vout vsBall( const in vin IN )
 {
-	// apply spinning and move the ball to it's actual position
-	float4 pos = IN.position;
-	pos.xyz = mul_w1(pos.xyz, orientation);
+    // apply spinning and move the ball to it's actual position
+    float4 pos = IN.position;
+    pos.xyz = mul_w1(pos.xyz, orientation);
 
-	// apply spinning to the normals too to get the sphere mapping effect
-	const float3 nspin = mul_w0(IN.normal, orientation);
-   // Needs to use a 'normal' matrix, and to normalize since we allow non uniform stretching, therefore matWorldView is not orthonormal
-	const float3 normal = normalize(mul(matWorldViewInverse, nspin).xyz); // actually: mul(float4(nspin,0.), matWorldViewInverseTranspose), but optimized to save one matrix
+    // apply spinning to the normals too to get the sphere mapping effect
+    const float3 nspin = mul_w0(IN.normal, orientation);
+    // Needs to use a 'normal' matrix, and to normalize since we allow non uniform stretching, therefore matWorldView is not orthonormal
+    const float3 normal = normalize(mul(matWorldViewInverse, nspin).xyz); // actually: mul(float4(nspin,0.), matWorldViewInverseTranspose), but optimized to save one matrix
 
-	const float3 p = mul_w1(pos.xyz, matWorldView);
+    const float3 p = mul_w1(pos.xyz, matWorldView);
 
-	vout OUT;
-	OUT.position = mul(pos, matWorldViewProj);
-	OUT.normal_t0x = float4(normal,IN.tex0.x);
-	OUT.worldPos_t0y = float4(p,IN.tex0.y);
-	return OUT;
+    vout OUT;
+    OUT.position = mul(pos, matWorldViewProj);
+    OUT.normal_t0x = float4(normal,IN.tex0.x);
+    OUT.worldPos_t0y = float4(p,IN.tex0.y);
+    return OUT;
 }
 
 #if 0
@@ -142,11 +142,11 @@ voutReflection vsBallReflection( const in vin IN )
 
 voutTrail vsBallTrail( const in vin IN )
 {
-	voutTrail OUT;
-	OUT.position = mul(IN.position, matWorldViewProj);
-	OUT.tex0_alpha = float3(IN.tex0, IN.normal.x); //!! abuses normal for now
+    voutTrail OUT;
+    OUT.position = mul(IN.position, matWorldViewProj);
+    OUT.tex0_alpha = float3(IN.tex0, IN.normal.x); //!! abuses normal for now
 
-	return OUT;
+    return OUT;
 }
 
 //------------------------------------
@@ -290,7 +290,7 @@ float4 psBall( const in vout IN, uniform bool equirectangularMap, uniform bool d
 
     // This will break with custom playfield texture coordinates (like Flupper's TOTAN and many others)
     // => Rather use screen space sample from previous frame (it will include the lighting/shadowing but also the ball itself, and would need to account for viewer movement) ?
-    float3 playfieldColor = tex2D(tex_ball_playfield, uv).xyz * invTableRes_playfield_height_reflection.w;
+    float3 playfieldColor = tex2D(tex_ball_playfield, uv).rgb * invTableRes_playfield_height_reflection.w;
     BRANCH if (NdotR <= 0. || t < 0.)
     {
         // t < 0.0 may happen in some situation where ball intersects the playfield (like in kicker)
@@ -308,18 +308,18 @@ float4 psBall( const in vout IN, uniform bool equirectangularMap, uniform bool d
         playfieldColor = lerp(playfieldColor, ballImageColor, weight);
     }
 
-    float3 diffuse = cBase_Alpha.xyz*0.075;
+    float3 diffuse = cBase_Alpha.rgb*0.075;
 
     if(!decalMode)
        diffuse *= decalColor; // scratches make the material more rough
     const float3 glossy = max(diffuse*2.0, float3(0.1,0.1,0.1)); //!! meh
-    float3 specular = playfieldColor*cBase_Alpha.xyz; //!! meh, too, as only added in ballLightLoop anyhow
+    float3 specular = playfieldColor*cBase_Alpha.rgb; //!! meh, too, as only added in ballLightLoop anyhow
 
     if(!decalMode)
        specular *= float3(1.,1.,1.)-decalColor; // see above
 
     float4 result;
-    result.xyz = ballLightLoop(IN.worldPos_t0y.xyz, N, V, diffuse, glossy, specular, 1.0, false);
+    result.rgb = ballLightLoop(IN.worldPos_t0y.xyz, N, V, diffuse, glossy, specular, 1.0, false);
     result.a = cBase_Alpha.a;
     return result;
 }
@@ -328,8 +328,8 @@ float4 psBall( const in vout IN, uniform bool equirectangularMap, uniform bool d
 float4 psBallReflection( const in voutReflection IN ) : COLOR
 {
    const float2 envTex = float2(IN.r.x*0.5 + 0.5, IN.r.y*0.5 + 0.5);
-   float3 ballImageColor = tex2D(tex_ball_color, envTex).xyz;
-   ballImageColor = (cBase_Alpha.xyz*(0.075*0.25) + ballImageColor)*fenvEmissionScale_TexWidth.x; //!! just add the ballcolor in, this is a whacky reflection anyhow
+   float3 ballImageColor = tex2D(tex_ball_color, envTex).rgb;
+   ballImageColor = (cBase_Alpha.rgb*(0.075*0.25) + ballImageColor)*fenvEmissionScale_TexWidth.x; //!! just add the ballcolor in, this is a whacky reflection anyhow
    float alpha = saturate((IN.tex0.y - position_radius.y) / position_radius.w);
    alpha = (alpha*alpha)*(alpha*alpha)*reflection_ball_playfield;
    return float4(ballImageColor,alpha);
@@ -338,11 +338,11 @@ float4 psBallReflection( const in voutReflection IN ) : COLOR
 
 float4 psBallTrail( in voutTrail IN ) : COLOR
 {
-   const float3 ballImageColor = tex2D(tex_ball_color, IN.tex0_alpha.xy).xyz;
+   const float3 ballImageColor = tex2D(tex_ball_color, IN.tex0_alpha.xy).rgb;
    if (disableLighting)
       return float4(ballImageColor, IN.tex0_alpha.z);
    else
-      return float4((cBase_Alpha.xyz*(0.075*0.25) + ballImageColor)*fenvEmissionScale_TexWidth.x, IN.tex0_alpha.z); //!! just add the ballcolor in, this is a whacky trail anyhow
+      return float4((cBase_Alpha.rgb*(0.075*0.25) + ballImageColor)*fenvEmissionScale_TexWidth.x, IN.tex0_alpha.z); //!! just add the ballcolor in, this is a whacky trail anyhow
 }
 
 //------------------------------------

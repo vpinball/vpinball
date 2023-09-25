@@ -338,6 +338,7 @@ void main()
 			return;
 		}
 	}
+
 #ifdef NFAA_USE_COLOR // edges from color
 	float2 Vectors = findContrastByColor(u, filterSpread, eye);
 #else
@@ -371,7 +372,7 @@ void main()
 	const float3 o_Color = (Scene0 + Scene1 + Scene2 + Scene3 + Scene4) * 0.2;
 #endif
 
-		color = float4(o_Color, 1.0);
+	color = float4(o_Color, 1.0);
 }
 
 // DLAA approximation
@@ -419,15 +420,14 @@ void main()
    const float2 u = tex0;
 
    const float4 sampleCenter = sampleOffseta(u, float2(0.0, 0.0), eye);
-
    BRANCH if(w_h_height.w == 1.0 /*&& sampleCenter.a == 0.0*/) // depth buffer available? /*AND no edge here? -> ignored because of performance*/
    {
       const float depth0 = texStereoNoLod(tex_depth, u).x;
       BRANCH if((depth0 == 1.0) || (depth0 == 0.0)) // early out if depth too large (=BG) or too small (=DMD,etc)
       {
-	     color = float4(sampleCenter.xyz, 1.0);
-		 return;
-	  }
+         color = float4(sampleCenter.xyz, 1.0);
+         return;
+      }
    }
 
    // short edges

@@ -110,7 +110,7 @@ float4 PS_LightWithoutTexel(const in VS_LIGHT_OUTPUT IN, uniform bool is_metal) 
         color.xyz = lightLoop(IN.worldPos, normalize(IN.normal), normalize(/*camera=0,0,0,1*/-IN.worldPos), diffuse, glossy, specular, edge, is_metal); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
     }
     color.a = cBase_Alpha.a;
-    
+
     return color+result;
 }
 

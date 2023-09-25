@@ -213,8 +213,7 @@ in vec2 tex0;
 
 void main()
 {
-   float4 rgba = texture(tex_dmd, tex0);
-   color.rgb = rgba.rgb;
+   color.rgb = texture(tex_dmd, tex0).rgb;
    color.a = vRes_Alpha_time.z;
 }
 

@@ -187,7 +187,7 @@ float3 PFDoPointLight(const float3 pos, const float3 N, const float3 diffuse, co
    float fAtten = saturate(1.0 - sqrl_lightDir*sqrl_lightDir/(cAmbient_LightRange.w*cAmbient_LightRange.w*cAmbient_LightRange.w*cAmbient_LightRange.w)); //!! pre-mult/invert cAmbient_LightRange.w?
    fAtten = fAtten*fAtten/(sqrl_lightDir + 1.0);
 
-   return Out * lightEmission[i].xyz * fAtten;
+   return Out * lightEmission[i].rgb * fAtten;
 }
 
 float3 PFlightLoop(const float3 pos, const float3 N, const float3 diffuse)
@@ -229,18 +229,18 @@ void main()
       // matView is always an orthonormal matrix, so no need to normalize after transform
       const float3 rv = /*normalize*/((float4(-r,0.0) * matView).xyz);
       const float2 uv = ray_to_equirectangular_uv(rv);
-      ballImageColor = textureLod(tex_ball_color, uv, lod).xyz;
+      ballImageColor = textureLod(tex_ball_color, uv, lod).rgb;
     }
     else
     { // Spherical Map Reflections
       // calculate the intermediate value for the final texture coords. found here http://www.ozone3d.net/tutorials/glsl_texturing_p04.php
       const float m = (1.0 - r.z > 0.) ? 0.3535533905932737622 * rsqrt(1.0 - r.z) : 0.; // 0.353...=0.5/sqrt(2)
       const float2 uv = float2(0.5 - m * r.x, 0.5 - m * r.y);
-      ballImageColor = textureLod(tex_ball_color, uv, lod).xyz;
+      ballImageColor = textureLod(tex_ball_color, uv, lod).rgb;
     }
 
     const float4 decalColorT = texture(tex_ball_decal, float2(normal_t0x.w, worldPos_t0y.w));
-    float3 decalColor = decalColorT.xyz;
+    float3 decalColor = decalColorT.rgb;
 
     if (!%PARAM1%) // decalMode
     {
@@ -277,7 +277,7 @@ void main()
 
     // This will break with custom playfield texture coordinates (like Flupper's TOTAN and many others)
     // => Rather use screen space sample from previous frame (it will include the lighting/shadowing but also the ball itself, and would need to account for viewer movement) ?
-    float3 playfieldColor = tex2D(tex_ball_playfield, uv).xyz * invTableRes_playfield_height_reflection.w;
+    float3 playfieldColor = tex2D(tex_ball_playfield, uv).rgb * invTableRes_playfield_height_reflection.w;
     BRANCH if (NdotR <= 0. || t < 0.)
     {
         // t < 0.0 may happen in some situation where ball intersects the playfield (like in kicker)
@@ -295,18 +295,18 @@ void main()
         playfieldColor = lerp(playfieldColor, ballImageColor, weight);
     }
 
-    float3 diffuse = cBase_Alpha.xyz*0.075;
+    float3 diffuse = cBase_Alpha.rgb*0.075;
 
     if(!%PARAM1%) // decalMode
        diffuse *= decalColor; // scratches make the material more rough
 
     const float3 glossy = max(diffuse*2.0, float3(0.1,0.1,0.1)); //!! meh
-    float3 specular = playfieldColor*cBase_Alpha.xyz; //!! meh, too, as only added in ballLightLoop anyhow
+    float3 specular = playfieldColor*cBase_Alpha.rgb; //!! meh, too, as only added in ballLightLoop anyhow
 
     if(!%PARAM1%) // decalMode
        specular *= float3(1.,1.,1.)-decalColor; // see above
 
-    color.xyz = ballLightLoop(worldPos_t0y.xyz, N, V, diffuse, glossy, specular, 1.0, false);
+    color.rgb = ballLightLoop(worldPos_t0y.xyz, N, V, diffuse, glossy, specular, 1.0, false);
     color.a = cBase_Alpha.a;
 }
 
@@ -314,8 +314,8 @@ void main()
 float4 psBallReflection( const in voutReflection IN ) : COLOR
 {
    const float2 envTex = float2(r.x*0.5 + 0.5, r.y*0.5 + 0.5);
-   float3 ballImageColor = texture(tex_ball_color, envTex).xyz;
-   ballImageColor = (cBase_Alpha.xyz*(0.075*0.25) + ballImageColor)*fenvEmissionScale_TexWidth.x; //!! just add the ballcolor in, this is a whacky reflection anyhow
+   float3 ballImageColor = texture(tex_ball_color, envTex).rgb;
+   ballImageColor = (cBase_Alpha.rgb*(0.075*0.25) + ballImageColor)*fenvEmissionScale_TexWidth.x; //!! just add the ballcolor in, this is a whacky reflection anyhow
    float alpha = saturate((tex0.y - position_radius.y) / position_radius.w);
    alpha = (alpha*alpha)*(alpha*alpha)*reflection_ball_playfield;
    color = float4(ballImageColor,alpha);
@@ -328,11 +328,11 @@ in vec3 tex0_alpha;
 
 void main()
 {
-   const float3 ballImageColor = texture(tex_ball_color, tex0_alpha.xy).xyz;
+   const float3 ballImageColor = texture(tex_ball_color, tex0_alpha.xy).rgb;
    if (disableLighting)
       color = float4(ballImageColor, tex0_alpha.z);
    else
-      color = float4((cBase_Alpha.xyz*(0.075*0.25) + ballImageColor)*fenvEmissionScale_TexWidth.x, tex0_alpha.z); //!! just add the ballcolor in, this is a whacky trail anyhow
+      color = float4((cBase_Alpha.rgb*(0.075*0.25) + ballImageColor)*fenvEmissionScale_TexWidth.x, tex0_alpha.z); //!! just add the ballcolor in, this is a whacky trail anyhow
 }
 
 //------------------------------------

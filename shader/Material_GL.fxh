@@ -114,7 +114,7 @@ float3 DoPointLight(const float3 pos, const float3 N, const float3 V, const floa
    if (!is_metal)
        ambient += diffuse;
 
-   const float3 result = Out * lightEmission[i].xyz * fAtten + ambient * cAmbient_LightRange.xyz;
+   const float3 result = Out * lightEmission[i].rgb * fAtten + ambient * cAmbient_LightRange.xyz;
    if (fDisableLighting_top_below.x != 0.0)
        return lerp(result,diffuse,fDisableLighting_top_below.x);
    else

@@ -14,7 +14,7 @@ uniform mat4 matWorldViewProj[N_EYES];
 //!! split into pure sprite & pure DMD?
 
 ////VERTEX
-uniform int layer; // Layer being rendered (set to 0 is using layered rendering, that is to say rendering multiple layers using instanced rendering)
+uniform int layer; // Layer being rendered (set to 0 if using layered rendering, that is to say rendering multiple layers using instanced rendering)
 
 VS_OUT_EYE;
 
@@ -101,29 +101,29 @@ void main()
    float2 ddys = dFdy(tex0) * 0.4;
 
    // brute force oversampling of DMD-texture and especially the dot-function (using 25 samples)
-    float3 color2 = float3(0., 0., 0.);
-    UNROLL for (int j = -2; j <= 2; ++j)
-    {
-        float2 uvj = tex0 + float(j) * ddys;
-        UNROLL for (int i = -2; i <= 2; ++i)
-        {
-            const float2 uv = uvj + float(i) * ddxs;
+   float3 color2 = float3(0., 0., 0.);
+   UNROLL for (int j = -2; j <= 2; ++j)
+   {
+      float2 uvj = tex0 + float(j) * ddys;
+      UNROLL for (int i = -2; i <= 2; ++i)
+      {
+         const float2 uv = uvj + float(i) * ddxs;
 
-            const float4 rgba = texture(tex_dmd, uv); //!! lots of tex access by doing this all the time, but (tex) cache should be able to catch all of it
-            color.rgb = vColor_Intensity.xyz * vColor_Intensity.w; //!! create function that resembles LUT from VPM?
-            if (rgba.a != 0.0)
-                color.rgb *= rgba.rgb;
-            else
-                color.rgb *= rgba.r * (255.9 / 100.);
+         const float4 rgba = texture(tex_dmd, uv); //!! lots of tex access by doing this all the time, but (tex) cache should be able to catch all of it
+         color.rgb = vColor_Intensity.xyz * vColor_Intensity.w; //!! create function that resembles LUT from VPM?
+         if (rgba.a != 0.0)
+            color.rgb *= rgba.rgb;
+         else
+            color.rgb *= rgba.r * (255.9 / 100.);
 
-            // simulate dot within the sampled texel
-            const float2 dist = frac(uv*vRes_Alpha_time.xy) * 2.2 - 1.1;
-            const float d = dist.x * dist.x + dist.y * dist.y;
+         // simulate dot within the sampled texel
+         const float2 dist = frac(uv*vRes_Alpha_time.xy)*2.2 - 1.1;
+         const float d = dist.x*dist.x + dist.y*dist.y;
 
-            color2 += color.rgb * smoothstep(0., 1., 1.0 - d * d);
-        }
-    }
-    color2 *= 1. / 25.;
+         color2 += color.rgb * smoothstep(0., 1., 1.0 - d * d);
+      }
+   }
+   color2 *= 1. / 25.;
 
    /*float3 colorg = float3(0,0,0);
    UNROLL for(int j = -1; j <= 1; ++j)
@@ -144,8 +144,7 @@ in vec2 tex0;
 
 void main()
 {
-   float4 rgba = texture(tex_dmd, tex0); //!! lots of tex access by doing this all the time, but (tex) cache should be able to catch all of it
-   color.rgb = rgba.rgb;
+   color.rgb = texture(tex_dmd, tex0).rgb; //!! lots of tex access by doing this all the time, but (tex) cache should be able to catch all of it
    color.a = vRes_Alpha_time.z;
 }
 
@@ -158,7 +157,7 @@ void main()
    const float4 l = texture(tex_sprite, tex0);
    if (l.a < alphaTestValue)
       discard; //stop the pixel shader if alpha test should reject pixel to avoid writing to the depth buffer
-   color = float4(InvToneMap(InvGamma(l.xyz * vColor_Intensity.xyz * vColor_Intensity.w)), l.w); //!! meh, this sucks a bit performance-wise, but how to avoid this when doing fullscreen-tonemap/gamma without stencil and depth read?
+   color = float4(InvToneMap(/*InvGamma*/(l.xyz * vColor_Intensity.xyz * vColor_Intensity.w)), l.w); //!! meh, this sucks a bit performance-wise, but how to avoid this when doing fullscreen-tonemap/gamma without stencil and depth read?
 }
 
 ////ps_main_noDMD_notex

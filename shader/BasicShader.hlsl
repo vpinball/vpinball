@@ -376,12 +376,12 @@ float4 ps_main_texture(const in VS_OUTPUT IN, float2 screenSpace : VPOS, uniform
    float3 N = normalize(IN.normal);
    BRANCH if (doNormalMapping)
       N = normal_map(N, V, IN.tex0);
-   
+
    float4 color = float4(lightLoop(IN.worldPos, N, V, diffuse, glossy, specular, edge, is_metal), pixel.a);
 
    BRANCH if (color.a < 1.0) // We may not opacify if we already are opaque
    {
-      color.a = GeometricOpacity(dot(N,V), color.a,cClearcoat_EdgeAlpha.w,Roughness_WrapL_Edge_Thickness.w);
+      color.a = GeometricOpacity(dot(N,V), color.a, cClearcoat_EdgeAlpha.w, Roughness_WrapL_Edge_Thickness.w);
 
       if (fDisableLighting_top_below.y < 1.0)
          // add light from "below" from user-flagged bulb lights, pre-rendered/blurred in previous renderpass //!! sqrt = magic

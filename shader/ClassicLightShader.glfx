@@ -107,7 +107,7 @@ void main()
         color.xyz = lightLoop(worldPos, normalize(normal), normalize(/*camera=0,0,0,1*/-worldPos), diffuse, glossy, specular, edge, is_metal); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
         color.a = pixel.a;
     }
-    color.a = saturate(color.a * cBase_Alpha.a);
+    color.a *= cBase_Alpha.a;
 
     BRANCH if (lightColor_intensity.w != 0.0)
     {
@@ -152,7 +152,7 @@ void main()
 
         color.xyz = lightLoop(worldPos, normalize(normal), normalize(/*camera=0,0,0,1*/-worldPos), diffuse, glossy, specular, edge, is_metal); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
     }
-    color.a = saturate(cBase_Alpha.a);
+    color.a = cBase_Alpha.a;
 
     color += result;
 }

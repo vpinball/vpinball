@@ -676,7 +676,7 @@ void main() {
 // BG-Decal
 
 void main() {
-   color = float4(InvToneMap(cBase_Alpha.xyz), saturate(cBase_Alpha.a));
+   color = float4(InvToneMap(cBase_Alpha.xyz), cBase_Alpha.a);
 }
 
 ////ps_main_bg_decal_texture
@@ -688,7 +688,7 @@ void main() {
 
    //if (pixel.a <= alphaTestValue) discard;
 
-   pixel.a = saturate(pixel.a * cBase_Alpha.a);
+   pixel.a *= cBase_Alpha.a;
 
    color = float4(InvToneMap(pixel.xyz*cBase_Alpha.xyz), pixel.a);
 }

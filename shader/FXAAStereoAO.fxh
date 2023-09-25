@@ -368,12 +368,12 @@ float4 ps_main_nfaa(const in VS_OUTPUT_2D IN) : COLOR
 
 // DLAA approximation
 
-float3 sampleOffset(const float2 u, const float2 pixelOffset )
+float3 sampleOffset(const float2 u, const float2 pixelOffset)
 {
    return texStereoNoLod(tex_fb_filtered, u + pixelOffset * w_h_height.xy).xyz;
 }
 
-float4 sampleOffseta(const float2 u, const float2 pixelOffset )
+float4 sampleOffseta(const float2 u, const float2 pixelOffset)
 {
    return texStereoNoLod(tex_fb_filtered, u + pixelOffset * w_h_height.xy);
 }
