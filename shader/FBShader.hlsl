@@ -330,7 +330,7 @@ float4 ps_main_fb_bloom(const in VS_OUTPUT_2D IN) : COLOR
                         +  texNoLod(tex_fb_filtered, IN.tex0 + w_h_height.xy).xyz
                         +  texNoLod(tex_fb_filtered, IN.tex0 + float2(w_h_height.x,-w_h_height.y)).xyz
                         +  texNoLod(tex_fb_filtered, IN.tex0 + float2(-w_h_height.x,w_h_height.y)).xyz)*0.25; //!! offset for useAA?
-    return float4(max(bloom_cutoff(FBToneMap(result)), float3(0.0)) * w_h_height.z, 1.0);
+    return float4(max(bloom_cutoff(FBToneMap(result)), float3(0.,0.,0.)) * w_h_height.z, 1.0);
 }
 
 float4 ps_main_fb_AO(const in VS_OUTPUT_2D IN) : COLOR

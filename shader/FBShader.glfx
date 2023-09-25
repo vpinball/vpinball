@@ -295,7 +295,7 @@ void main()
                         +  texStereoNoLod(tex_fb_filtered, tex0 + w_h_height.xy).xyz
                         +  texStereoNoLod(tex_fb_filtered, tex0 + float2(w_h_height.x,-w_h_height.y)).xyz
                         +  texStereoNoLod(tex_fb_filtered, tex0 + float2(-w_h_height.x,w_h_height.y)).xyz)*0.25; //!! offset for useAA?
-    color = float4(max(bloom_cutoff(FBToneMap(result)), float3(0.0)) * w_h_height.z, 1.0);
+    color = float4(max(bloom_cutoff(FBToneMap(result)), float3(0.,0.,0.)) * w_h_height.z, 1.0);
 }
 
 ////ps_main_fb_AO
