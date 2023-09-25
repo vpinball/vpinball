@@ -152,9 +152,10 @@ public:
       #endif
    }
 
-   RenderTarget* GetMSAABackBufferTexture() const { return m_pOffscreenMSAABackBufferTexture; } // Main render target, may be MSAA enabled and not suited for sampling, also may have stereo output (2 viewports)
+   RenderTarget* GetMSAABackBufferTexture() const { return m_pOffscreenMSAABackBufferTexture ? m_pOffscreenMSAABackBufferTexture : m_pOffscreenBackBufferTexture1; } // Main render target, may be MSAA enabled and not suited for sampling, also may have stereo output (2 viewports)
    void ResolveMSAA(); // Resolve MSAA back buffer texture to be sample  from back buffer texture
-   RenderTarget* GetBackBufferTexture() const { return m_pOffscreenBackBufferTexture; } // Main render target, with MSAA resolved if any, also may have stereo output (2 viewports)
+   RenderTarget* GetBackBufferTexture() const { return m_pOffscreenBackBufferTexture1; } // Main render target, with MSAA resolved if any, also may have stereo output (2 viewports)
+   RenderTarget* GetPreviousBackBufferTexture() const { return m_pOffscreenBackBufferTexture2; } // Same as back buffer but for previous frame
    RenderTarget* GetPostProcessRenderTarget1();
    RenderTarget* GetPostProcessRenderTarget2();
    RenderTarget* GetPostProcessRenderTarget(RenderTarget* renderedRT);
@@ -163,6 +164,7 @@ public:
    RenderTarget* GetBloomBufferTexture() const { return m_pBloomBufferTexture; }
    RenderTarget* GetBloomTmpBufferTexture() const { return m_pBloomTmpBufferTexture; }
    RenderTarget* GetAORenderTarget(int idx);
+   void SwapBackBufferRenderTargets();
    void SwapAORenderTargets();
    void ReleaseAORenderTargets() { delete m_pAORenderTarget1; m_pAORenderTarget1 = nullptr; delete m_pAORenderTarget2; m_pAORenderTarget2 = nullptr; }
    RenderTarget* GetOutputBackBuffer() const { return m_pBackBuffer; } // The screen render target (the only one which is not stereo when doing stereo rendering)
@@ -265,7 +267,8 @@ private:
    RenderTarget* m_pBackBuffer = nullptr;
 
    RenderTarget* m_pOffscreenMSAABackBufferTexture = nullptr;
-   RenderTarget* m_pOffscreenBackBufferTexture = nullptr;
+   RenderTarget* m_pOffscreenBackBufferTexture1 = nullptr;
+   RenderTarget* m_pOffscreenBackBufferTexture2 = nullptr;
    RenderTarget* m_pPostProcessRenderTarget1 = nullptr;
    RenderTarget* m_pPostProcessRenderTarget2 = nullptr;
    RenderTarget* m_pOffscreenVRLeft = nullptr;

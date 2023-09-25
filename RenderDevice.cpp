@@ -968,13 +968,15 @@ void RenderDevice::CreateDevice(int& refreshrate, VideoSyncMode& syncMode, UINT 
    SurfaceType rtType = SurfaceType::RT_DEFAULT;
    #endif
    
-   m_pOffscreenMSAABackBufferTexture = new RenderTarget(this, rtType, "OffscreenMSAABackBuffer"s, m_width_aa, m_height_aa, render_format, true, nMSAASamples, "Fatal Error: unable to create render buffer!");
+   // MSAA render target which is resolved to the non MSAA render target
+   if (nMSAASamples > 1) 
+      m_pOffscreenMSAABackBufferTexture = new RenderTarget(this, rtType, "MSAABackBuffer"s, m_width_aa, m_height_aa, render_format, true, nMSAASamples, "Fatal Error: unable to create MSAA render buffer!");
 
-   // If we are doing MSAA we need a texture with the same dimensions as the Back Buffer to resolve the end result to, can also use it for Post-AA
-   if (nMSAASamples > 1)
-      m_pOffscreenBackBufferTexture = new RenderTarget(this, rtType, "OffscreenBackBuffer"s, m_width_aa, m_height_aa, render_format, true, 1, "Fatal Error: unable to create MSAA resolve buffer!");
-   else
-      m_pOffscreenBackBufferTexture = m_pOffscreenMSAABackBufferTexture;
+   // Either the main render target for non MSAA, or the buffer where the MSAA render is resolved
+   m_pOffscreenBackBufferTexture1 = new RenderTarget(this, rtType, "BackBuffer1"s, m_width_aa, m_height_aa, render_format, true, 1, "Fatal Error: unable to create offscreen back buffer");
+
+   // Second render target to swap, allowing to read previous frame render for ball reflection and motion blur
+   m_pOffscreenBackBufferTexture2 = m_pOffscreenBackBufferTexture1->Duplicate("BackBuffer2"s, true);
 
    // alloc buffer for screen space fake reflection rendering
    if (m_ssRefl)
@@ -1131,7 +1133,7 @@ RenderTarget* RenderDevice::GetPostProcessRenderTarget1()
    {
       // Buffers for post-processing (postprocess is done at scene resolution, on a LDR render target without MSAA nor full scene supersampling)
       const colorFormat pp_format = GetBackBufferTexture()->GetColorFormat() == RGBA10 ? colorFormat::RGBA10 : colorFormat::RGBA8;
-      m_pPostProcessRenderTarget1 = new RenderTarget(this, m_pOffscreenBackBufferTexture->m_type, "PostProcess1"s, m_width, m_height, pp_format, false, 1, "Fatal Error: unable to create stereo3D/post-processing AA/sharpen buffer!");
+      m_pPostProcessRenderTarget1 = new RenderTarget(this, m_pOffscreenBackBufferTexture1->m_type, "PostProcess1"s, m_width, m_height, pp_format, false, 1, "Fatal Error: unable to create stereo3D/post-processing AA/sharpen buffer!");
    }
    return m_pPostProcessRenderTarget1;
 }
@@ -1157,7 +1159,7 @@ RenderTarget* RenderDevice::GetAORenderTarget(int idx)
    // Lazily creates AO render target since this can be enabled during play from script
    if (m_pAORenderTarget1 == nullptr)
    {
-      m_pAORenderTarget1 = new RenderTarget(this, m_pOffscreenBackBufferTexture->m_type, "AO1"s, m_width, m_height, colorFormat::GREY8, false, 1,
+      m_pAORenderTarget1 = new RenderTarget(this, m_pOffscreenBackBufferTexture1->m_type, "AO1"s, m_width, m_height, colorFormat::GREY8, false, 1,
          "Unable to create AO buffers!\r\nPlease disable Ambient Occlusion.\r\nOr try to (un)set \"Alternative Depth Buffer processing\" in the video options!");
       m_pAORenderTarget2 = m_pAORenderTarget1->Duplicate("AO2"s);
 
@@ -1165,7 +1167,14 @@ RenderTarget* RenderDevice::GetAORenderTarget(int idx)
    return idx == 0 ? m_pAORenderTarget1 : m_pAORenderTarget2;
 }
 
-void RenderDevice::SwapAORenderTargets() 
+void RenderDevice::SwapBackBufferRenderTargets()
+{
+   RenderTarget* tmp = m_pOffscreenBackBufferTexture1;
+   m_pOffscreenBackBufferTexture1 = m_pOffscreenBackBufferTexture2;
+   m_pOffscreenBackBufferTexture2 = tmp;
+}
+
+void RenderDevice::SwapAORenderTargets()
 {
    RenderTarget* tmpAO = m_pAORenderTarget1;
    m_pAORenderTarget1 = m_pAORenderTarget2;
@@ -1173,12 +1182,12 @@ void RenderDevice::SwapAORenderTargets()
 }
 
 void RenderDevice::ResolveMSAA()
-{ 
-   if (m_pOffscreenMSAABackBufferTexture != m_pOffscreenBackBufferTexture)
+{
+   if (m_pOffscreenMSAABackBufferTexture)
    {
       const RenderPass* initial_rt = GetCurrentPass();
-      SetRenderTarget("Resolve MSAA"s, m_pOffscreenBackBufferTexture);
-      BlitRenderTarget(m_pOffscreenMSAABackBufferTexture, m_pOffscreenBackBufferTexture, true, true);
+      SetRenderTarget("Resolve MSAA"s, m_pOffscreenBackBufferTexture1);
+      BlitRenderTarget(m_pOffscreenMSAABackBufferTexture, m_pOffscreenBackBufferTexture1, true, true);
       SetRenderTarget(initial_rt->m_name, initial_rt->m_rt);
    }
 }
@@ -1280,7 +1289,8 @@ RenderDevice::~RenderDevice()
    FreeShader();
 
    m_texMan.UnloadAll();
-   delete m_pOffscreenBackBufferTexture;
+   delete m_pOffscreenBackBufferTexture1;
+   delete m_pOffscreenBackBufferTexture2;
    delete m_pPostProcessRenderTarget1;
    delete m_pPostProcessRenderTarget2;
    delete m_pReflectionBufferTexture;

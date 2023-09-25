@@ -1367,9 +1367,9 @@ void Player::InitBallShader()
    const vec4 rwem(exp2f(10.0f * Roughness + 1.0f), 0.f, 1.f, 0.05f);
    m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetVector(SHADER_Roughness_WrapL_Edge_Thickness, &rwem);
 
-   Texture * const playfield = m_ptable->GetImage(m_ptable->m_image);
+   /*Texture * const playfield = m_ptable->GetImage(m_ptable->m_image);
    if (playfield)
-      m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetTexture(SHADER_tex_ball_playfield, playfield);
+      m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetTexture(SHADER_tex_ball_playfield, playfield);*/
 
    const bool lowDetailBall = (m_ptable->GetDetailLevel() < 10);
    delete m_ballMeshBuffer;
@@ -3396,9 +3396,11 @@ void Player::RenderDynamics()
    for (int eye = 0; eye < nEyes; eye++)
       matProj[eye] = m_pin3d.GetMVP().GetProj(eye);
    m_pin3d.m_pd3dPrimaryDevice->basicShader->SetMatrix(SHADER_matProj, &matProj[0], nEyes);
+   m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetMatrix(SHADER_matProj, &matProj[0], nEyes);
    #else
    matProj[0] = m_pin3d.GetMVP().GetProj(0);
    m_pin3d.m_pd3dPrimaryDevice->basicShader->SetMatrix(SHADER_matProj, &matProj[0]);
+   m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetMatrix(SHADER_matProj, &matProj[0]);
    #endif
 
    // Update ball pos uniforms
@@ -3859,7 +3861,7 @@ void Player::PrepareVideoBuffers()
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_searchTex, m_pin3d.m_pd3dPrimaryDevice->m_SMAAsearchTexture);
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / sourceRT->GetWidth()), (float)(1.0 / sourceRT->GetHeight()), (float)sourceRT->GetWidth(), (float)sourceRT->GetHeight());
 
-      outputRT = m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture();
+      outputRT = m_pin3d.m_pd3dPrimaryDevice->GetPreviousBackBufferTexture(); // We don't need it anymore, so use it as a third postprocess buffer
       m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("SMAA Color/Edge Detection"s, outputRT, false);
       m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(sourceRT); // PostProcess RT 1
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_SMAA_ColorEdgeDetection);
@@ -3875,7 +3877,7 @@ void Player::PrepareVideoBuffers()
       m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pin3d.m_pd3dPrimaryDevice->FBShader);
       renderedRT = outputRT;
 
-      outputRT = sharpen || stereo ? m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture() : m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
+      outputRT = sharpen || stereo ? m_pin3d.m_pd3dPrimaryDevice->GetPreviousBackBufferTexture() : m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
       m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("SMAA Neigborhood blending"s, outputRT, false);
       m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(sourceRT); // PostProcess RT 1
       m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT); // PostProcess RT 2
@@ -4350,6 +4352,7 @@ void Player::PrepareFrame()
 #endif
 
    g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_GPU_COLLECT);
+   m_pin3d.m_pd3dPrimaryDevice->SwapBackBufferRenderTargets(); // Keep previous render as a reflection probe for ball reflection and for hires motion blur
    m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("Render Scene"s, m_pin3d.m_pd3dPrimaryDevice->GetMSAABackBufferTexture());
    if (m_stereo3D == STEREO_VR || GetInfoMode() == IF_DYNAMIC_ONLY)
    {
@@ -4747,6 +4750,10 @@ void Player::DrawBalls()
    const vec4 playfield_cBaseF = convertColor(playfield_mat->m_cBase);
    const float playfield_avg_diffuse = playfield_cBaseF.x*0.176204f + playfield_cBaseF.y*0.812985f + playfield_cBaseF.z*0.0108109f;
 
+   // We don't need to set the dependency on the previous frame render as this would be a cross frame dependency which does not have any meaning since dependencies are resolved per frame
+   // m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pin3d.m_pd3dPrimaryDevice->GetPreviousBackBufferTexture());
+   m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetTexture(SHADER_tex_ball_playfield, m_pin3d.m_pd3dPrimaryDevice->GetPreviousBackBufferTexture()->GetColorSampler());
+   
    for (size_t i = 0; i < m_vball.size(); i++)
    {
       Ball *const pball = m_vball[i];
