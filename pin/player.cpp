@@ -4861,7 +4861,7 @@ void Player::DrawBalls()
 
       const vec4 diffuse = convertColor(pball->m_color, 1.0f);
       m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetVector(SHADER_cBase_Alpha, &diffuse);
-      if (diffuse.w < 1.0)
+      if (diffuse.w < 1.0f)
       {
          m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
          m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);
@@ -4941,13 +4941,13 @@ void Player::DrawBalls()
 
             Vertex3Ds vec(pball->m_oldpos[io].x - pball->m_oldpos[i3].x, pball->m_oldpos[io].y - pball->m_oldpos[i3].y, pball->m_oldpos[io].z - pball->m_oldpos[i3].z);
             const float ls = vec.LengthSquared();
-            if (ls <= 1e-3)
+            if (ls <= 1e-3f)
                continue; // Too small => discard
 
             const float length = sqrtf(ls);
             const float bc = m_ptable->m_ballTrailStrength * powf(1.f - 1.f / max(length, 1.0f), 64.0f); //!! 64=magic alpha falloff
             const float r = min(pball->m_d.m_radius*0.9f, 2.0f*pball->m_d.m_radius / powf((float)(i2 + 2), 0.6f)); //!! consts are for magic radius falloff
-            if (bc <= 0.f && r <= 1e-3)
+            if (bc <= 0.f && r <= 1e-3f)
                continue; // Fully faded out or radius too small => discard
 
             vec *= 1.0f / sqrtf(ls);

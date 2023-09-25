@@ -1105,7 +1105,7 @@ bool RenderDevice::LoadShaders()
    FBShader = new Shader(this, "FBShader.hlsl"s, g_FBShaderCode, sizeof(g_FBShaderCode));
    flasherShader = new Shader(this, "FlasherShader.hlsl"s, g_flasherShaderCode, sizeof(g_flasherShaderCode));
    lightShader = new Shader(this, "LightShader.hlsl"s, g_lightShaderCode, sizeof(g_lightShaderCode));
-   StereoShader = new Shader(this, "StereoShader.hlsl", g_stereoShaderCode, sizeof(g_stereoShaderCode));
+   StereoShader = new Shader(this, "StereoShader.hlsl"s, g_stereoShaderCode, sizeof(g_stereoShaderCode));
    m_ballShader = new Shader(this, "BallShader.hlsl"s, g_ballShaderCode, sizeof(g_ballShaderCode));
 #endif
 
@@ -1505,8 +1505,8 @@ void RenderDevice::UploadAndSetSMAATextures()
    glBindTexture(GL_TEXTURE_2D, glTexture[1]);
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RG8, AREATEX_WIDTH, AREATEX_HEIGHT);
    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, AREATEX_WIDTH, AREATEX_HEIGHT, GL_RG, GL_UNSIGNED_BYTE, (void*)areaTexBytes);
