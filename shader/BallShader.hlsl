@@ -11,6 +11,7 @@ const float4x4 matWorldView     : WORLDVIEW;
 const float4x3 matWorldViewInverse;
 //const float4x4 matWorldViewInverseTranspose; // matWorldViewInverse used instead and multiplied from other side
 const float4x3 matView;
+const float4x4 matProj;
 //const float4x4 matViewInverseInverseTranspose; // matView used instead and multiplied from other side
 
 texture  Texture0; // base texture
@@ -286,11 +287,17 @@ float4 psBall( const in vout IN, uniform bool equirectangularMap, uniform bool d
     const float3 playfield_p0 = mul_w1(float3(/*playfield_pos=*/0.,0.,invTableRes_playfield_height_reflection.z), matWorldView);
     const float t = dot(playfield_normal, IN.worldPos_t0y.xyz - playfield_p0) / NdotR;
     const float3 playfield_hit = IN.worldPos_t0y.xyz - t * r;
-    const float2 uv = mul_w1(playfield_hit, matWorldViewInverse).xy * invTableRes_playfield_height_reflection.xy;
 
     // This will break with custom playfield texture coordinates (like Flupper's TOTAN and many others)
     // => Rather use screen space sample from previous frame (it will include the lighting/shadowing but also the ball itself, and would need to account for viewer movement) ?
-    float3 playfieldColor = tex2D(tex_ball_playfield, uv).rgb * invTableRes_playfield_height_reflection.w;
+    //const float2 uv = mul_w1(playfield_hit, matWorldViewInverse).xy * invTableRes_playfield_height_reflection.xy;
+    //float3 playfieldColor = tex2D(tex_ball_playfield, uv).rgb * invTableRes_playfield_height_reflection.w;
+	// New implementation: use previous frame as a reflection probe instead of computing a simplified render (this is faster and more accurate, support playfield mesh, lighting,... but there can be artefacts, with self reflection,...)
+	// TODO use previous frame projection instead of the one of the current frame to limit reflection distortion (still this is minimal)
+    const float4 proj = mul(float4(playfield_hit, 1.0), matProj);
+    float2 uvp = float2(0.5, 0.5) + float2(proj.x, -proj.y) * (0.5 / proj.w);
+    float3 playfieldColor = saturate(tex2D(tex_ball_playfield, uvp).rgb) * invTableRes_playfield_height_reflection.w;
+    
     BRANCH if (NdotR <= 0. || t < 0.)
     {
         // t < 0.0 may happen in some situation where ball intersects the playfield (like in kicker)
@@ -299,7 +306,7 @@ float4 psBall( const in vout IN, uniform bool equirectangularMap, uniform bool d
     else
     {
         //!! hack to get some lighting on reflection sample, but only diffuse, the rest is not setup correctly anyhow
-        playfieldColor = PFlightLoop(playfield_hit, playfield_normal, playfieldColor);
+        // playfieldColor = PFlightLoop(playfield_hit, playfield_normal, playfieldColor);
 
         //!! magic falloff & weight the rest in from the ballImage
         // Before 10.8, used to be: const float weight = NdotR*NdotR; 
