@@ -257,7 +257,7 @@ enum option_names
    OPTION_POV,
    OPTION_EXTRACTVBS,
    OPTION_INI,
-...OPTION_FRONTEND_EXIT
+   OPTION_FRONTEND_EXIT
 };
 
 static bool compare_option(const char *const arg, const option_names option)
