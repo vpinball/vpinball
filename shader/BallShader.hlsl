@@ -136,18 +136,11 @@ float3 ballLightLoop(const float3 pos, const float3 N, const float3 V, float3 di
       //specular *= invsum;
    }
 
-   //if(dot(N,V) < 0.0) //!! flip normal in case of wrong orientation? (backside lighting)
-   //   N = -N;
-
    float3 color = float3(0.0, 0.0, 0.0);
 
    BRANCH if((!is_metal && (diffuseMax > 0.0)) || (glossyMax > 0.0))
-   {
-      BRANCH if (fDisableLighting_top_below.x == 1.0)
-         color += float(iLightPointNum) * diffuse; // Old bug kept for backward compatibility: when lighting is disabled, it results to applying it twice
-      else for(int i = 0; i < iLightPointBallsNum; i++)  
+      for(int i = 0; i < iLightPointBallsNum; i++)  
          color += DoPointLight(pos, N, V, diffuse, glossy, edge, Roughness_WrapL_Edge_Thickness.x, i, is_metal); // no clearcoat needed as only pointlights so far
-   }
 
    BRANCH if(!is_metal && (diffuseMax > 0.0))
       color += DoEnvmapDiffuse(normalize(mul(matView, N).xyz), diffuse); // trafo back to world for lookup into world space envmap // actually: mul(float4(N, 0.0), matViewInverseInverseTranspose)
@@ -164,7 +157,7 @@ float3 ballLightLoop(const float3 pos, const float3 N, const float3 V, float3 di
 
 float4 psBall( const in vout IN, uniform bool equirectangularMap, uniform bool decalMode ) : COLOR
 {
-    const float3 V = normalize( /*camera=0,0,0,1*/-IN.worldPos_t0y.xyz);
+    const float3 V = normalize(/*camera=0,0,0,1*/-IN.worldPos_t0y.xyz);
     const float3 N = normalize(IN.normal_t0x.xyz);
     const float3 R = reflect(V, N);
 
