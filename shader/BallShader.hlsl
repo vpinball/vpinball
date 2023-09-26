@@ -288,7 +288,7 @@ float4 psBall( const in vout IN, uniform bool equirectangularMap, uniform bool d
     const float t = dot(playfield_normal, IN.worldPos_t0y.xyz - playfield_p0) / NdotR;
 
     float3 playfieldColor;
-    BRANCH if (NdotR <= 0. || t < 0.)
+    /*BRANCH*/ if (NdotR <= 0. || t < 0.)
     {
         // t < 0.0 may happen in some situation where ball intersects the playfield (like in kicker)
         playfieldColor = ballImageColor;
