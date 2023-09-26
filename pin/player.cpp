@@ -4890,7 +4890,10 @@ void Player::DrawBalls()
       m3D_full = rot * scale * trans;
       m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetMatrix(SHADER_orientation, &m3D_full);
 
-      m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetBool(SHADER_disableLighting, m_disableLightingForBalls);
+      m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetVector(SHADER_w_h_disableLighting, 
+         1.5f / m_pin3d.m_pd3dPrimaryDevice->GetPreviousBackBufferTexture()->GetWidth(), // UV Offset for sampling reflections
+         1.5f / m_pin3d.m_pd3dPrimaryDevice->GetPreviousBackBufferTexture()->GetHeight(),
+         m_disableLightingForBalls ? 1.f : 0.f, 0.f);
 
       bool sphericalMapping;
       if (!pball->m_pinballEnv)
