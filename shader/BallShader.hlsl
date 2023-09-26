@@ -55,8 +55,8 @@ sampler2D tex_ball_playfield : TEXUNIT4 = sampler_state // playfield
 
 const float4x3 orientation;
 const float4   invTableRes_playfield_height_reflection;
-const bool     disableLighting;
-//const float    reflection_ball_playfield;
+const float4   w_h_disableLighting;
+#define disableLighting (w_h_disableLighting.z != 0.)
 
 //------------------------------------
 
@@ -74,14 +74,6 @@ struct vout
     float4 position    : POSITION0;
     float4 normal_t0x  : TEXCOORD0; // tex0 is stored in w of float4s
     float4 worldPos_t0y: TEXCOORD1;
-};
-
-//vertex to pixel shader structure
-struct voutReflection
-{
-    float4 position    : POSITION0;
-    float2 tex0        : TEXCOORD0;
-    float3 r           : TEXCOORD1;
 };
 
 //vertex to pixel shader structure
@@ -113,33 +105,6 @@ vout vsBall( const in vin IN )
     OUT.worldPos_t0y = float4(p,IN.tex0.y);
     return OUT;
 }
-
-#if 0
-voutReflection vsBallReflection( const in vin IN )
-{
-	// apply spinning and move the ball to it's actual position
-	float4 pos = IN.position;
-	pos.xyz = mul_w1(pos.xyz, orientation);
-
-	// this is not a 100% ball reflection on the table due to the quirky camera setup
-	// the ball is moved a bit down and rendered again
-	pos.y += position_radius.w*(2.0*0.35);
-	pos.z = pos.z*0.5 - 10.0;
-
-	const float3 p = mul_w1(pos.xyz, matWorldView);
-
-	const float3 nspin = mul_w0(IN.normal, orientation);
-	const float3 normal = normalize(mul(matWorldViewInverse, nspin).xyz); // actually: mul(float4(nspin,0.), matWorldViewInverseTranspose), but optimized to save one matrix
-
-	const float3 r = reflect(normalize(/*camera=0,0,0,1*/-p), normal);
-
-	voutReflection OUT;
-	OUT.position = mul(pos, matWorldViewProj);
-	OUT.tex0	 = pos.xy;
-	OUT.r		 = r;
-	return OUT;
-}
-#endif
 
 voutTrail vsBallTrail( const in vin IN )
 {
@@ -193,40 +158,6 @@ float3 ballLightLoop(const float3 pos, const float3 N, const float3 V, float3 di
    return color;
 }
 
-float3 PFDoPointLight(const float3 pos, const float3 N, const float3 diffuse, const int i) 
-{
-   //!! do in vertex shader?! or completely before?!
-   const float3 lightDir = mul_w1(lights[i].vPos, matView) - pos;
-   const float3 L = normalize(lightDir);
-   const float NdotL = dot(N, L);
-   // compute diffuse color (lambert)
-   const float3 Out = (NdotL > 0.0) ? diffuse * NdotL : float3(0.0,0.0,0.0);
-
-   const float sqrl_lightDir = dot(lightDir,lightDir); // tweaked falloff to have ranged lightsources
-   float fAtten = saturate(1.0 - sqrl_lightDir*sqrl_lightDir/(cAmbient_LightRange.w*cAmbient_LightRange.w*cAmbient_LightRange.w*cAmbient_LightRange.w)); //!! pre-mult/invert cAmbient_LightRange.w?
-   fAtten = fAtten*fAtten/(sqrl_lightDir + 1.0);
-
-   return Out * lights[i].vEmission * fAtten;
-}
-
-float3 PFlightLoop(const float3 pos, const float3 N, const float3 diffuse)
-{
-   const float diffuseMax = max(diffuse.x,max(diffuse.y,diffuse.z));
-
-   float3 color = float3(0.0,0.0,0.0);
-
-   BRANCH if (diffuseMax > 0.0)
-   {
-      for (int i = 0; i < iLightPointNum; i++)
-         color += PFDoPointLight(pos, N, diffuse, i);
-
-      color += DoEnvmapDiffuse(float3(0.,0.,1.), diffuse); // directly wire world space playfield normal
-   }
-
-   return color;
-}
-
-
 
 //------------------------------------
 // PIXEL SHADER
@@ -235,25 +166,25 @@ float4 psBall( const in vout IN, uniform bool equirectangularMap, uniform bool d
 {
     const float3 V = normalize( /*camera=0,0,0,1*/-IN.worldPos_t0y.xyz);
     const float3 N = normalize(IN.normal_t0x.xyz);
-    const float3 r = reflect(V, N);
+    const float3 R = reflect(V, N);
 
     float3 ballImageColor;
-    const float edge = dot(V, r);
+    const float edge = dot(V, R);
     // edge falloff to reduce aliasing on edges (picks smaller mipmap -> more blur)
     const float lod = (edge > 0.6) ? edge*(6.0*1.0/0.4)-(6.0*0.6/0.4) : 0.0;
     BRANCH if (equirectangularMap)
     { // Equirectangular Map Reflections
       // trafo back to world for lookup into world space envmap
       // matView is always an orthonormal matrix, so no need to normalize after transform
-      const float3 rv = /*normalize*/(mul(matView, -r).xyz);
+      const float3 rv = /*normalize*/(mul(matView, -R).xyz);
       const float2 uv = ray_to_equirectangular_uv(rv);
       ballImageColor = tex2Dlod(tex_ball_color, float4(uv, 0., lod)).rgb;
     }
     else
     { // Spherical Map Reflections
       // calculate the intermediate value for the final texture coords. found here http://www.ozone3d.net/tutorials/glsl_texturing_p04.php
-      const float m = (1.0 - r.z > 0.) ? 0.3535533905932737622 * rsqrt(1.0 - r.z) : 0.; // 0.353...=0.5/sqrt(2)
-      const float2 uv = float2(0.5 - m * r.x, 0.5 - m * r.y);
+      const float m = (1.0 - R.z > 0.) ? 0.3535533905932737622 * rsqrt(1.0 - R.z) : 0.; // 0.353...=0.5/sqrt(2)
+      const float2 uv = float2(0.5 - m * R.x, 0.5 - m * R.y);
       ballImageColor = tex2Dlod(tex_ball_color, float4(uv, 0., lod)).rgb;
     }
 
@@ -282,69 +213,56 @@ float4 psBall( const in vout IN, uniform bool equirectangularMap, uniform bool d
     //const float3 playfield_normal = normalize(mul(matWorldViewInverse, float3(0.,0.,1.)).xyz); //!! normalize necessary? // actually: mul(float4(0.,0.,1.,0.), matWorldViewInverseTranspose), but optimized to save one matrix
     //const float3 playfield_normal = mul(float4(0.0, 0.0, 1.0, 0.0), matWorldView).xyz;
     const float3 playfield_normal = float3(matWorldView._31, matWorldView._32, matWorldView._33);
-    const float NdotR = dot(playfield_normal,r);
+    const float NdotR = dot(playfield_normal, R);
 
     const float3 playfield_p0 = mul_w1(float3(/*playfield_pos=*/0.,0.,invTableRes_playfield_height_reflection.z), matWorldView);
     const float t = dot(playfield_normal, IN.worldPos_t0y.xyz - playfield_p0) / NdotR;
+    const float3 playfield_hit = IN.worldPos_t0y.xyz - t * R;
 
-    float3 playfieldColor;
-    /*BRANCH*/ if (NdotR <= 0. || t < 0.)
-    {
-        // t < 0.0 may happen in some situation where ball intersects the playfield (like in kicker)
-        playfieldColor = ballImageColor;
-    }
-    else
-    {
-        const float3 playfield_hit = IN.worldPos_t0y.xyz - t*r;
+	// New implementation: use previous frame as a reflection probe instead of computing a simplified render (this is faster and more accurate, support playfield mesh, lighting,... but there can be artefacts, with self reflection,...)
+	// TODO use previous frame projection instead of the one of the current frame to limit reflection distortion (still this is minimal)
+    const float4 proj = mul(float4(playfield_hit, 1.0), matProj);
+    const float2 uvp = float2(0.5, 0.5) + float2(proj.x, -proj.y) * (0.5 / proj.w);
+	const float3 playfieldColor = saturate(0.25 * (
+		  tex2D(tex_ball_playfield, uvp + float2(w_h_disableLighting.x, 0.)).rgb
+		+ tex2D(tex_ball_playfield, uvp - float2(w_h_disableLighting.x, 0.)).rgb
+		+ tex2D(tex_ball_playfield, uvp + float2(0., w_h_disableLighting.y)).rgb
+		+ tex2D(tex_ball_playfield, uvp - float2(0., w_h_disableLighting.y)).rgb
+	) * invTableRes_playfield_height_reflection.w); // a bit of supersampling, not strictly needed, but a bit better and not that costly
 
-        // Old code, but this will break with custom playfield texture coordinates (like Flupper's TOTAN and many others)
-        // => Rather use screen space sample from previous frame (it will include the lighting/shadowing but also the ball itself, and would need to account for viewer movement) ?
-        //const float2 uv = mul_w1(playfield_hit, matWorldViewInverse).xy * invTableRes_playfield_height_reflection.xy;
-        //playfieldColor = tex2D(tex_ball_playfield, uv).rgb * invTableRes_playfield_height_reflection.w;
-        //!! hack to get some lighting on reflection sample, but only diffuse, the rest is not setup correctly anyhow
-        //playfieldColor = PFlightLoop(playfield_hit, playfield_normal, playfieldColor);
-
-        // New implementation: use previous frame as a reflection probe instead of computing a simplified render (this is faster and more accurate, support playfield mesh, lighting,... but there can be artefacts, with self reflection,...)
-        // TODO use previous frame projection instead of the one of the current frame to limit reflection distortion (still this is minimal)
-        const float4 proj = mul(float4(playfield_hit, 1.0), matProj);
-        const float2 uvp = float2(0.5, 0.5) + float2(proj.x, -proj.y) * (0.5 / proj.w);
-        playfieldColor = saturate(tex2D(tex_ball_playfield, uvp).rgb) * invTableRes_playfield_height_reflection.w;
-
-        //!! magic falloff & weight the rest in from the ballImage
-        // Before 10.8, used to be: const float weight = NdotR*NdotR; 
-        // const float weight = 1.0 / (1.0 + max(0.0, t - 12.5) * 0.01);
-        const float weight = smoothstep(t, 0.0, 25.0);
-        playfieldColor = lerp(playfieldColor, ballImageColor, weight);
-    }
+	float weight;
+	if (NdotR <= 0.)
+		// Reversed reflection => discard
+		weight = 0.;
+    // we don't clamp sampling outside the playfield (costly and no real visual impact)
+	// const float2 uv = (matWorldViewInverse * float4(playfield_hit, 1.0)).xy * invTableRes_playfield_height_reflection.xy;
+	// else if (uv.x < 0.1 && uv.y < 0.1 && uv.x > 0.9 && uv.y > 0.9)
+	//	weight = 0.;
+	else if (uvp.x < 0. || uvp.x > 1. || uvp.y < 0. || uvp.y > 1.)
+		// outside of previous render => discard (we could use sampling techniques to optimize a bit)
+		weight = 0.;
+	else if (t <= 0.)
+		// t < 0.0 may happen in some situation where ball intersects the playfield and the reflected point is inside the ball (like in kicker)
+		weight = 0.;
+	else
+		// Default: magic falloff between playfield (down) and environment (up)
+		weight = NdotR * NdotR;
+    ballImageColor = lerp(ballImageColor, playfieldColor, weight);
 
     float3 diffuse = cBase_Alpha.rgb*0.075;
-
     if(!decalMode)
        diffuse *= decalColor; // scratches make the material more rough
 
     const float3 glossy = max(diffuse*2.0, float3(0.1,0.1,0.1)); //!! meh
-    float3 specular = playfieldColor*cBase_Alpha.rgb; //!! meh, too, as only added in ballLightLoop anyhow
-
+    float3 specular = ballImageColor * cBase_Alpha.rgb; //!! meh, too, as only added in ballLightLoop anyhow
     if(!decalMode)
        specular *= float3(1.,1.,1.)-decalColor; // see above
 
-    float4 result;
-    result.rgb = ballLightLoop(IN.worldPos_t0y.xyz, N, V, diffuse, glossy, specular, 1.0, false);
-    result.a = cBase_Alpha.a;
-    return result;
+    float4 color;
+    color.rgb = ballLightLoop(IN.worldPos_t0y.xyz, N, V, diffuse, glossy, specular, 1.0, false);
+    color.a = cBase_Alpha.a;
+    return color;
 }
-
-#if 0
-float4 psBallReflection( const in voutReflection IN ) : COLOR
-{
-   const float2 envTex = float2(IN.r.x*0.5 + 0.5, IN.r.y*0.5 + 0.5);
-   float3 ballImageColor = tex2D(tex_ball_color, envTex).rgb;
-   ballImageColor = (cBase_Alpha.rgb*(0.075*0.25) + ballImageColor)*fenvEmissionScale_TexWidth.x; //!! just add the ballcolor in, this is a whacky reflection anyhow
-   float alpha = saturate((IN.tex0.y - position_radius.y) / position_radius.w);
-   alpha = (alpha*alpha)*(alpha*alpha)*reflection_ball_playfield;
-   return float4(ballImageColor,alpha);
-}
-#endif
 
 float4 psBallTrail( in voutTrail IN ) : COLOR
 {
@@ -393,15 +311,6 @@ technique RenderBall_SphericalMap_DecalMode
 		pixelshader = compile ps_3_0 psBall(false, true);
 	}
 }
-
-/*technique RenderBallReflection
-{
-	pass p0
-	{
-		vertexshader = compile vs_3_0 vsBallReflection();
-		pixelshader  = compile ps_3_0 psBallReflection();
-	}
-}*/
 
 technique RenderBallTrail
 {
