@@ -304,6 +304,9 @@ BOOL VideoOptionsDialog::OnInitDialog()
       AddToolTip("Limit the quality of reflections for better performance.\r\n\r\n'Dynamic' is recommended and will give the best results, but may harm performance.\r\n\r\n'Static Only' has no performance cost (except for VR rendering).\r\n\r\nOther options feature different trade-offs between quality and performance.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_MAX_REFLECTION_COMBO).GetHwnd());
       AddToolTip("Limit the quality of ambient occlusion for better performance.\r\nDynamic is the better with contact shadows for dynamic objects but higher performance requirements.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_MAX_AO_COMBO).GetHwnd());
       AddToolTip("Activate this to enhance the texture filtering.\r\nThis slows down performance only a bit (on most systems), but increases quality tremendously.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_FORCE_ANISO).GetHwnd());
+
+      AddToolTip("Physical width of the display area of the screen in centimeters.\r\n\r\nThis is needed to get correct size when using 'Window' mode for the camera.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_SCREEN_WIDTH).GetHwnd());
+      AddToolTip("Physical height of the display area of the screen in centimeters.\r\n\r\nThis is needed to get correct size when using 'Window' mode for the camera.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_SCREEN_HEIGHT).GetHwnd());
    }
 
    m_initialMaxTexDim = LoadValueWithDefault(regKey[RegName::Player], "MaxTexDimension"s, 0);
@@ -634,6 +637,13 @@ BOOL VideoOptionsDialog::OnInitDialog()
 
    UpdateDisplayHeightFromWidth();
 
+   const float screenWidth = LoadValueWithDefault(regKey[RegName::Player], "ScreenWidth"s, 1.0f);
+   sprintf_s(tmp, sizeof(tmp), "%f", screenWidth);
+   SetDlgItemText(IDC_SCREEN_WIDTH, tmp);
+   const float screenHeight = LoadValueWithDefault(regKey[RegName::Player], "ScreenHeight"s, 1.0f);
+   sprintf_s(tmp, sizeof(tmp), "%f", screenHeight);
+   SetDlgItemText(IDC_SCREEN_HEIGHT, tmp);
+
    const int alphaRampsAccuracy = LoadValueWithDefault(regKey[RegName::Player], "AlphaRampAccuracy"s, 10);
    const HWND hwndARASlider = GetDlgItem(IDC_ARASlider).GetHwnd();
    SendMessage(hwndARASlider, TBM_SETRANGE, fTrue, MAKELONG(0, 10));
@@ -927,6 +937,9 @@ void VideoOptionsDialog::OnOK()
          SaveValue(regKey[RegName::Player], "Height"s, height);
       }
    }
+
+   SaveValue(regKey[RegName::Player], "ScreenWidth"s, GetDlgItemText(IDC_SCREEN_WIDTH).c_str());
+   SaveValue(regKey[RegName::Player], "ScreenHeight"s, GetDlgItemText(IDC_SCREEN_HEIGHT).c_str());
 
    const bool video10bit = (SendMessage(GetDlgItem(IDC_10BIT_VIDEO).GetHwnd(), BM_GETCHECK, 0, 0) != 0);
    SaveValue(regKey[RegName::Player], "Render10Bit"s, video10bit);
