@@ -4746,10 +4746,6 @@ void Player::DrawBalls()
          lights.push_back((Light *)item);
    }
 
-   const Material * const playfield_mat = m_ptable->GetMaterial(m_ptable->m_playfieldMaterial);
-   const vec4 playfield_cBaseF = convertColor(playfield_mat->m_cBase);
-   const float playfield_avg_diffuse = playfield_cBaseF.x*0.176204f + playfield_cBaseF.y*0.812985f + playfield_cBaseF.z*0.0108109f;
-
    // We don't need to set the dependency on the previous frame render as this would be a cross frame dependency which does not have any meaning since dependencies are resolved per frame
    // m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pin3d.m_pd3dPrimaryDevice->GetPreviousBackBufferTexture());
    m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetTexture(SHADER_tex_ball_playfield, m_pin3d.m_pd3dPrimaryDevice->GetPreviousBackBufferTexture()->GetColorSampler());
@@ -4781,14 +4777,9 @@ void Player::DrawBalls()
       // Set the render state to something that will always display for debug mode
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ZENABLE, m_debugBalls ? RenderState::RS_FALSE : RenderState::RS_TRUE);
 
-      const float inv_tablewidth = 1.0f / (m_ptable->m_right - m_ptable->m_left);
-      const float inv_tableheight = 1.0f / (m_ptable->m_bottom - m_ptable->m_top);
-      const vec4 phr(inv_tablewidth, inv_tableheight, m_ptable->m_tableheight,
-                     m_ptable->m_ballPlayfieldReflectionStrength*pball->m_playfieldReflectionStrength
-                     *playfield_avg_diffuse //!! hack: multiply average diffuse from playfield onto strength, as only diffuse lighting is used for reflection
-                     *0.5f                  //!! additional magic correction factor due to everything being wrong in the earlier reflection/lighting implementation
-                     );
-      m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetVector(SHADER_invTableRes_playfield_height_reflection, &phr);
+      m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetVector(SHADER_invTableRes_playfield_height_reflection, 
+         1.0f / (m_ptable->m_right - m_ptable->m_left), 1.0f / (m_ptable->m_bottom - m_ptable->m_top), 
+         m_ptable->m_tableheight, m_ptable->m_ballPlayfieldReflectionStrength * pball->m_playfieldReflectionStrength);
 
       // collect the x nearest lights that can reflect on balls
       Light* light_nearest[MAX_BALL_LIGHT_SOURCES];
