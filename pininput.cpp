@@ -2158,9 +2158,9 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
                      {
                         string name;
                         static const string defaultNames[] = { "Red/Cyan"s, "Green/Magenta"s, "Blue/Amber"s, "Cyan/Red"s, "Magenta/Green"s, "Amber/Blue"s, "Custom 1"s, "Custom 2"s, "Custom 3"s, "Custom 4"s };
-                        if (FAILED(LoadValue(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glassesIndex)).append("Name"s), name)))
+                        if (FAILED(LoadValue(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glassesIndex + 1)).append("Name"s), name)))
                            name = defaultNames[glassesIndex];
-                        g_pplayer->m_liveUI->PushNotification("Profile #"s.append(std::to_string(glassesIndex)).append(" '"s).append(name).append("' activated"s), 2000);
+                        g_pplayer->m_liveUI->PushNotification("Profile #"s.append(std::to_string(glassesIndex + 1)).append(" '"s).append(name).append("' activated"s), 2000);
                      }
                   }
                }
