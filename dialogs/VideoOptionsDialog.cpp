@@ -305,8 +305,8 @@ BOOL VideoOptionsDialog::OnInitDialog()
       AddToolTip("Limit the quality of ambient occlusion for better performance.\r\nDynamic is the better with contact shadows for dynamic objects but higher performance requirements.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_MAX_AO_COMBO).GetHwnd());
       AddToolTip("Activate this to enhance the texture filtering.\r\nThis slows down performance only a bit (on most systems), but increases quality tremendously.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_FORCE_ANISO).GetHwnd());
 
-      AddToolTip("Physical width of the display area of the screen in centimeters.\r\n\r\nThis is needed to get correct size when using 'Window' mode for the camera.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_SCREEN_WIDTH).GetHwnd());
-      AddToolTip("Physical height of the display area of the screen in centimeters.\r\n\r\nThis is needed to get correct size when using 'Window' mode for the camera.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_SCREEN_HEIGHT).GetHwnd());
+      AddToolTip("Physical width of the display area of the screen in centimeters, in landscape orientation (width > height).\r\n\r\nThis is needed to get correct size when using 'Window' mode for the camera.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_SCREEN_WIDTH).GetHwnd());
+      AddToolTip("Physical height of the display area of the screen in centimeters, in landscape orientation (width > height).\r\n\r\nThis is needed to get correct size when using 'Window' mode for the camera.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_SCREEN_HEIGHT).GetHwnd());
    }
 
    m_initialMaxTexDim = LoadValueWithDefault(regKey[RegName::Player], "MaxTexDimension"s, 0);
@@ -637,10 +637,10 @@ BOOL VideoOptionsDialog::OnInitDialog()
 
    UpdateDisplayHeightFromWidth();
 
-   const float screenWidth = LoadValueWithDefault(regKey[RegName::Player], "ScreenWidth"s, 1.0f);
+   const float screenWidth = LoadValueWithDefault(regKey[RegName::Player], "ScreenWidth"s, 0.0f);
    sprintf_s(tmp, sizeof(tmp), "%f", screenWidth);
    SetDlgItemText(IDC_SCREEN_WIDTH, tmp);
-   const float screenHeight = LoadValueWithDefault(regKey[RegName::Player], "ScreenHeight"s, 1.0f);
+   const float screenHeight = LoadValueWithDefault(regKey[RegName::Player], "ScreenHeight"s, 0.0f);
    sprintf_s(tmp, sizeof(tmp), "%f", screenHeight);
    SetDlgItemText(IDC_SCREEN_HEIGHT, tmp);
 

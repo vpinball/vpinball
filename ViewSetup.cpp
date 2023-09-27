@@ -48,7 +48,7 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
    {
    case VLM_LEGACY: inc = ANGTORAD(mLookAt) + cam_inc; break;
    case VLM_CAMERA: inc = -M_PIf + atan2f(-mViewY + cam.y - (mLookAt / 100.0f) * table->m_bottom, -mViewZ + cam.z); break;
-   case VLM_WINDOW: inc = atan2f(mWindowTopZOfs - mWindowBottomZOfs, table->m_bottom); break;
+   case VLM_WINDOW: inc = atan2f(mSceneScaleZ * (mWindowTopZOfs - mWindowBottomZOfs), mSceneScaleY * table->m_bottom); break;
    }
 
    if (isLegacy && table->m_BG_enable_FSS)
@@ -143,11 +143,20 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
    }
    else
    {
+      float realToVirtual = 1.f;
       Matrix3D trans, rotx;
-      scale = Matrix3D::MatrixTranslate(-0.5f * table->m_right, -0.5f * table->m_bottom, 0.f) 
-            * Matrix3D::MatrixScale(mSceneScaleX, mSceneScaleY, mSceneScaleZ)
-            * Matrix3D::MatrixTranslate(0.5f * table->m_right, 0.5f * table->m_bottom, 0.f); // Global scene scale (using bottom center of the playfield as origin)
-      trans.SetTranslation(-mViewX + cam.x - 0.5f * table->m_right, -mViewY + cam.y - table->m_bottom, -mViewZ + cam.z);
+      if (mMode == VLM_WINDOW)
+      {
+         const float screenHeight = LoadValueWithDefault(regKey[RegName::Player], "ScreenWidth"s, 0.0f); // Physical width is the height in window mode
+         realToVirtual = screenHeight <= 1.f ? 1.f : (mSceneScaleY * VPUTOCM(table->m_bottom) / cos(inc)) / screenHeight; // Ratio between screen height in virtual world to real world screen height
+      }
+      // Scale is made relative to the virtual to real world scale in order to have get real world size rendering when scale is 100%
+      scale = Matrix3D::MatrixTranslate(-0.5f * table->m_right, -0.5f * table->m_bottom, 0.f)
+         * Matrix3D::MatrixScale(mSceneScaleX * realToVirtual, mSceneScaleY * realToVirtual, mSceneScaleZ * realToVirtual)
+         * Matrix3D::MatrixTranslate(0.5f * table->m_right, 0.5f * table->m_bottom, 0.f); // Global scene scale (using bottom center of the playfield as origin)
+      // mView is in real world scale (it depends on the actual display size), so we need to apply the scale factor to apply it in the virtual world unit
+      // I'm still a bit unsure of this and this would need some more thought (and testing with an accurate headtracker).
+      trans.SetTranslation(-mViewX * realToVirtual + cam.x - 0.5f * table->m_right, -mViewY * realToVirtual + cam.y - table->m_bottom, -mViewZ * realToVirtual + cam.z);
       rotx.SetRotateX(inc); // Player head inclination (0 is looking straight to playfield)
       coords.SetScaling(1.f, -1.f, -1.f); // Revert Y and Z axis to convert to D3D coordinate system
       lookat = trans * rotx;
