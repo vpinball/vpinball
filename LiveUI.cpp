@@ -1021,6 +1021,14 @@ void LiveUI::UpdateCameraModeUI()
          ImGui::Text("%s",buf); ImGui::TableNextColumn(); ImGui::Text("%s",unit); ImGui::TableNextRow();\
       }
       #define CM_SKIP_LINE {ImGui::TableNextColumn(); ImGui::Dummy(ImVec2(0.f, m_dpi * 3.f)); ImGui::TableNextRow();}
+      float realToVirtual = 1.f;
+      if (viewSetup.mMode == VLM_WINDOW)
+      {
+         const float screenHeight = LoadValueWithDefault(regKey[RegName::Player], "ScreenWidth"s, 0.0f); // Physical width is the height in window mode
+         const float inc = atan2f(viewSetup.mSceneScaleZ * (viewSetup.mWindowTopZOfs - viewSetup.mWindowBottomZOfs), viewSetup.mSceneScaleY * table->m_bottom);
+         realToVirtual = screenHeight <= 1.f ? 1.f : (VPUTOCM(table->m_bottom) / cos(inc)) / screenHeight; // Ratio between screen height in virtual world to real world screen height
+      }
+
       for (int i = 0; i < nSettings; i++)
       {
          if (settings[i] == m_player->m_backdropSettingActive 
@@ -1032,9 +1040,9 @@ void LiveUI::UpdateCameraModeUI()
 
          // Scene scale
          case Player::BS_XYZScale: break;
-         case Player::BS_XScale: CM_ROW("Table X Scale", "%.1f", 100.f * viewSetup.mSceneScaleX, "%%"); break;
-         case Player::BS_YScale: CM_ROW("Table Y Scale", "%.1f", 100.f * viewSetup.mSceneScaleY, "%%"); break;
-         case Player::BS_ZScale: CM_ROW("Table Z Scale", "%.1f", 100.f * viewSetup.mSceneScaleZ, "%%"); CM_SKIP_LINE; break;
+         case Player::BS_XScale: CM_ROW("Table X Scale", "%.1f", 100.f * viewSetup.mSceneScaleX / realToVirtual, "%%"); break;
+         case Player::BS_YScale: CM_ROW("Table Y Scale", "%.1f", 100.f * viewSetup.mSceneScaleY / realToVirtual, "%%"); break;
+         case Player::BS_ZScale: CM_ROW("Table Z Scale", "%.1f", 100.f * viewSetup.mSceneScaleZ / realToVirtual, "%%"); CM_SKIP_LINE; break;
 
          // Player position
          case Player::BS_LookAt: 

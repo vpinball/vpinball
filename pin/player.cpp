@@ -4033,7 +4033,7 @@ void Player::UpdateBackdropSettings(const bool up)
    case BS_ZScale: viewSetup.mSceneScaleZ += 0.01f * thesign; CalcBallAspectRatio(); break;
    case BS_XOffset: viewSetup.mViewX += 5.f * thesign; break;
    case BS_YOffset: viewSetup.mViewY += 5.f * thesign; break;
-   case BS_ZOffset: viewSetup.mViewZ += 50.f * thesign; break;
+   case BS_ZOffset: viewSetup.mViewZ += (viewSetup.mMode == VLM_LEGACY ? 50.f : 5.f) * thesign; break;
    case BS_WndTopZOfs: viewSetup.mWindowTopZOfs += 5.f * thesign; break;
    case BS_WndBottomZOfs: viewSetup.mWindowBottomZOfs += 5.f * thesign; break;
 
