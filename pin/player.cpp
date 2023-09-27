@@ -4032,11 +4032,7 @@ void Player::UpdateBackdropSettings(const bool up)
    case BS_XOffset: viewSetup.mViewX += 5.f * thesign; break;
    case BS_YOffset: viewSetup.mViewY += 5.f * thesign; break;
    case BS_ZOffset: viewSetup.mViewZ += 50.f * thesign; break;
-   case BS_WndTopXOfs: viewSetup.mWindowTopXOfs += 5.f * thesign; break;
-   case BS_WndTopYOfs: viewSetup.mWindowTopYOfs += 5.f * thesign; break;
    case BS_WndTopZOfs: viewSetup.mWindowTopZOfs += 5.f * thesign; break;
-   case BS_WndBottomXOfs: viewSetup.mWindowBottomXOfs += 5.f * thesign; break;
-   case BS_WndBottomYOfs: viewSetup.mWindowBottomYOfs += 5.f * thesign; break;
    case BS_WndBottomZOfs: viewSetup.mWindowBottomZOfs += 5.f * thesign; break;
 
    // Scene lighting settings
