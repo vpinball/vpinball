@@ -181,14 +181,15 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
    }
    case VLM_WINDOW:
    {
-      // Fit camera to adjusted table bounds
+      // Fit camera to adjusted table bounds, along vertical axis
       // We do not apply the scene scale since we want to fit the scaled version of the table as if it was the normal version (otherwise it would reverse the scaling during the fitting)
       // For fitting, we use a vertical FOV of 90°, leading to a yspan of 1, and an aspect ratio of 1, also leading to a xspan of 1
       Matrix3D fit = lookat * rotz * Matrix3D::MatrixScale(1.f, -1.f, -1.f) * Matrix3D::MatrixPerspectiveFovLH(90.f, 1.0f, zNear, zFar) * projTrans;
-      Vertex3Ds tl = fit.MultiplyVector(Vertex3Ds(table->m_left, table->m_top, mWindowTopZOfs));
-      Vertex3Ds tr = fit.MultiplyVector(Vertex3Ds(table->m_right, table->m_top, mWindowTopZOfs));
-      Vertex3Ds bl = fit.MultiplyVector(Vertex3Ds(table->m_left, table->m_bottom, mWindowBottomZOfs));
-      Vertex3Ds br = fit.MultiplyVector(Vertex3Ds(table->m_right, table->m_bottom, mWindowBottomZOfs));
+      const float xCenter = 0.5f * (table->m_left + table->m_right);
+      Vertex3Ds tl = fit.MultiplyVector(Vertex3Ds(xCenter, table->m_top, mWindowTopZOfs));
+      Vertex3Ds tr = fit.MultiplyVector(Vertex3Ds(xCenter, table->m_top, mWindowTopZOfs));
+      Vertex3Ds bl = fit.MultiplyVector(Vertex3Ds(xCenter, table->m_bottom, mWindowBottomZOfs));
+      Vertex3Ds br = fit.MultiplyVector(Vertex3Ds(xCenter, table->m_bottom, mWindowBottomZOfs));
       const float ymax = zNear * max(br.y, max(bl.y, max(tl.y, tr.y)));
       const float ymin = zNear * min(br.y, min(bl.y, min(tl.y, tr.y)));
       const float xmax = zNear * max(br.x, max(bl.x, max(tl.x, tr.x)));
