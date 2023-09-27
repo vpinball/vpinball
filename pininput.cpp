@@ -1476,7 +1476,7 @@ void PinInput::ProcessBallControl(const DIDEVICEOBJECTDATA * __restrict input)
 				{
 					pBall->m_d.m_pos.x = g_pplayer->m_pBCTarget->x;
 					pBall->m_d.m_pos.y = g_pplayer->m_pBCTarget->y;
-					pBall->m_d.m_pos.z = g_pplayer->m_ptable->m_glassheight;
+					pBall->m_d.m_pos.z = g_pplayer->m_ptable->m_glassTopHeight;
 
 					pBall->m_d.m_vel.x = 0.0f;
 					pBall->m_d.m_vel.y = 0.0f;
@@ -1549,7 +1549,7 @@ void PinInput::ProcessThrowBalls(const DIDEVICEOBJECTDATA * __restrict input)
 			}
 			if (!ballGrabbed)
 			{
-				const float z = (input->dwData == 3) ? g_pplayer->m_ptable->m_glassheight : g_pplayer->m_ptable->m_tableheight;
+				const float z = (input->dwData == 3) ? g_pplayer->m_ptable->m_glassTopHeight : g_pplayer->m_ptable->m_tableheight;
 				Ball * const pball = g_pplayer->CreateBall(vertex.x, vertex.y, z, vx, vy, 0, (float)g_pplayer->m_debugBallSize*0.5f, g_pplayer->m_debugBallMass);
 				pball->m_pballex->AddRef();
 			}

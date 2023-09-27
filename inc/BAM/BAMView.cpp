@@ -117,7 +117,7 @@ static void _createProjectionAndViewMatrix(float* const __restrict P, float* con
    int rotation = static_cast<int>(g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].GetRotation(resolutionWidth, resolutionHeight) / 90.0f);
    const float tableLength = t->m_bottom;
    const float tableWidth = t->m_right;
-   const float tableGlass = t->m_glassheight;
+   const float tableGlass = t->m_glassTopHeight;
    rotation = (rotation + settings.rotation) % 4;
 
    // Data from config file (Settings):

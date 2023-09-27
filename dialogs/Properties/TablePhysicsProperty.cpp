@@ -15,6 +15,7 @@ TablePhysicsProperty::TablePhysicsProperty(const VectorProtected<ISelect> *pvsel
     m_mechPlungerAdjEdit.SetDialog(this);
     m_tableWidthEdit.SetDialog(this);
     m_tableHeightEdit.SetDialog(this);
+    m_bottomGlassHeightEdit.SetDialog(this);
     m_topGlassHeightEdit.SetDialog(this);
     m_tableFieldHeightEdit.SetDialog(this);
     m_minSlopeEdit.SetDialog(this);
@@ -51,8 +52,10 @@ void TablePhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
         PropertyDialog::SetFloatTextbox(m_tableWidthEdit, table->GetTableWidth());
     if (dispid == IDC_TABLE_HEIGHT_EDIT || dispid == -1)
         PropertyDialog::SetFloatTextbox(m_tableHeightEdit, table->GetHeight());
-    if (dispid == IDC_TABLE_GLASS_HEIGHT_EDIT || dispid == -1)
-        PropertyDialog::SetFloatTextbox(m_topGlassHeightEdit, table->m_glassheight);
+    if (dispid == IDC_TABLE_GLASS_BOTTOM_HEIGHT_EDIT || dispid == -1)
+        PropertyDialog::SetFloatTextbox(m_bottomGlassHeightEdit, table->m_glassBottomHeight);
+    if (dispid == IDC_TABLE_GLASS_TOP_HEIGHT_EDIT || dispid == -1)
+        PropertyDialog::SetFloatTextbox(m_topGlassHeightEdit, table->m_glassTopHeight);
     if (dispid == IDC_TABLE_FIELD_HEIGHT_EDIT || dispid == -1)
         PropertyDialog::SetFloatTextbox(m_tableFieldHeightEdit, table->m_tableheight);
     if (dispid == IDC_MIN_DIFFICULTY_EDIT || dispid == -1)
@@ -105,8 +108,11 @@ void TablePhysicsProperty::UpdateProperties(const int dispid)
         case IDC_TABLE_HEIGHT_EDIT:
             CHECK_UPDATE_VALUE_SETTER(table->SetHeight, table->GetHeight, PropertyDialog::GetFloatTextbox, m_tableHeightEdit, table);
             break;
-        case IDC_TABLE_GLASS_HEIGHT_EDIT:
-            CHECK_UPDATE_ITEM(table->m_glassheight, PropertyDialog::GetFloatTextbox(m_topGlassHeightEdit), table);
+        case IDC_TABLE_GLASS_BOTTOM_HEIGHT_EDIT:
+            CHECK_UPDATE_ITEM(table->m_glassBottomHeight, PropertyDialog::GetFloatTextbox(m_bottomGlassHeightEdit), table);
+            break;
+        case IDC_TABLE_GLASS_TOP_HEIGHT_EDIT:
+            CHECK_UPDATE_ITEM(table->m_glassTopHeight, PropertyDialog::GetFloatTextbox(m_topGlassHeightEdit), table);
             break;
         case IDC_TABLE_FIELD_HEIGHT_EDIT:
             CHECK_UPDATE_ITEM(table->m_tableheight, PropertyDialog::GetFloatTextbox(m_tableFieldHeightEdit), table);
@@ -140,7 +146,8 @@ BOOL TablePhysicsProperty::OnInitDialog()
     m_mechPlungerAdjEdit.AttachItem(IDC_MECH_PLUNGER_ADJ_EDIT);
     m_tableWidthEdit.AttachItem(IDC_TABLE_WIDTH_EDIT);
     m_tableHeightEdit.AttachItem(IDC_TABLE_HEIGHT_EDIT);
-    m_topGlassHeightEdit.AttachItem(IDC_TABLE_GLASS_HEIGHT_EDIT);
+    m_bottomGlassHeightEdit.AttachItem(IDC_TABLE_GLASS_BOTTOM_HEIGHT_EDIT);
+    m_topGlassHeightEdit.AttachItem(IDC_TABLE_GLASS_TOP_HEIGHT_EDIT);
     m_tableFieldHeightEdit.AttachItem(IDC_TABLE_FIELD_HEIGHT_EDIT);
     m_minSlopeEdit.AttachItem(IDC_MIN_DIFFICULTY_EDIT);
     m_maxSlopeEdit.AttachItem(IDC_MAX_DIFFICULTY_EDIT);
@@ -177,6 +184,7 @@ BOOL TablePhysicsProperty::OnInitDialog()
     m_resizer.AddChild(m_mechPlungerAdjEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_tableWidthEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_tableHeightEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_bottomGlassHeightEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_topGlassHeightEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_tableFieldHeightEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_minSlopeEdit, CResizer::topleft, RD_STRETCH_WIDTH);

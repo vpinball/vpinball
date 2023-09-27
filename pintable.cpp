@@ -1320,7 +1320,7 @@ PinTable::PinTable()
    m_right = 0.0f;
    m_bottom = 0.0f;
 
-   m_glassheight = 210;
+   m_glassTopHeight = m_glassBottomHeight = 210;
    m_tableheight = 0;
 
    m_BG_enable_FSS = false;
@@ -1542,7 +1542,7 @@ void PinTable::InitBuiltinTable(const size_t tableId)
    StgOpenStorageOnILockBytes(pilb, nullptr, STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE, nullptr, 0, &pis);
    pilb->Release();	// free pilb and hcopiedmem
 
-   m_glassheight = 210;
+   m_glassTopHeight = m_glassBottomHeight = 210;
    m_tableheight = 0;
 
    for (int i = 0; i < 16; i++)
@@ -1991,12 +1991,12 @@ void PinTable::Render3DProjection(Sur * const psur)
 
    Vertex3Ds rgvIn[8];
    rgvIn[0].x = m_left;  rgvIn[0].y = m_top;    rgvIn[0].z = 50.0f;
-   rgvIn[1].x = m_left;  rgvIn[1].y = m_top;    rgvIn[1].z = m_glassheight;
-   rgvIn[2].x = m_right; rgvIn[2].y = m_top;    rgvIn[2].z = m_glassheight;
+   rgvIn[1].x = m_left;  rgvIn[1].y = m_top;    rgvIn[1].z = m_glassTopHeight;
+   rgvIn[2].x = m_right; rgvIn[2].y = m_top;    rgvIn[2].z = m_glassTopHeight;
    rgvIn[3].x = m_right; rgvIn[3].y = m_top;    rgvIn[3].z = 50.0f;
    rgvIn[4].x = m_right; rgvIn[4].y = m_bottom; rgvIn[4].z = 50.0f;
-   rgvIn[5].x = m_right; rgvIn[5].y = m_bottom; rgvIn[5].z = 0.0f;
-   rgvIn[6].x = m_left;  rgvIn[6].y = m_bottom; rgvIn[6].z = 0.0f;
+   rgvIn[5].x = m_right; rgvIn[5].y = m_bottom; rgvIn[5].z = m_glassBottomHeight;
+   rgvIn[6].x = m_left;  rgvIn[6].y = m_bottom; rgvIn[6].z = m_glassBottomHeight;
    rgvIn[7].x = m_left;  rgvIn[7].y = m_bottom; rgvIn[7].z = 50.0f;
 
    Vertex2D rgvOut[8];
@@ -2181,7 +2181,8 @@ void PinTable::Play(const bool cameraMode)
    dst->m_notesText = src->m_notesText;
    dst->m_szScreenShot = src->m_szScreenShot;
    dst->m_backdrop = src->m_backdrop;
-   dst->m_glassheight = src->m_glassheight;
+   dst->m_glassBottomHeight = src->m_glassBottomHeight;
+   dst->m_glassTopHeight = src->m_glassTopHeight;
    dst->m_tableheight = src->m_tableheight;
    dst->m_playfieldMaterial = src->m_playfieldMaterial;
    dst->m_colorbackdrop = src->m_colorbackdrop;
@@ -3469,7 +3470,8 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
 
    bw.WriteBool(FID(FBCK), m_backdrop);
 
-   bw.WriteFloat(FID(GLAS), m_glassheight);
+   bw.WriteFloat(FID(GLAS), m_glassTopHeight);
+   bw.WriteFloat(FID(GLAB), m_glassBottomHeight);
    bw.WriteFloat(FID(TBLH), m_tableheight);
 
    bw.WriteString(FID(PLMA), m_playfieldMaterial);
@@ -4005,6 +4007,9 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 
          if (loadfileversion < 1080) 
          {
+            // Glass was horizontal before 10.8
+            m_glassBottomHeight = m_glassTopHeight;
+
             // reflections were hardcoded without render probe before 10.8.0
             RenderProbe* const pf_reflections = new RenderProbe();
             pf_reflections->SetName(PLAYFIELD_REFLECTION_RENDERPROBE_NAME);
@@ -4274,7 +4279,8 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    case FID(OGST): pbr->GetBool(m_overwriteGlobalStereo3D); break;
    case FID(SLPX): pbr->GetFloat(m_angletiltMax); break;
    case FID(SLOP): pbr->GetFloat(m_angletiltMin); break;
-   case FID(GLAS): pbr->GetFloat(m_glassheight); break;
+   case FID(GLAS): pbr->GetFloat(m_glassTopHeight); break;
+   case FID(GLAB): pbr->GetFloat(m_glassBottomHeight); break;
    case FID(TBLH): pbr->GetFloat(m_tableheight); break;
    case FID(IMAG): pbr->GetString(m_image); break;
    case FID(BLIM): pbr->GetString(m_ballImage); break;
@@ -4818,7 +4824,7 @@ FRect3D PinTable::GetBoundingBox() const
    bbox.top = m_top;
    bbox.bottom = m_bottom;
    bbox.zlow = m_tableheight;
-   bbox.zhigh = m_glassheight;
+   bbox.zhigh = m_glassTopHeight;
    return bbox;
 }
 
@@ -8202,7 +8208,7 @@ STDMETHODIMP PinTable::put_DisplayBackdrop(VARIANT_BOOL newVal)
 
 STDMETHODIMP PinTable::get_GlassHeight(float *pVal)
 {
-   *pVal = m_glassheight;
+   *pVal = m_glassTopHeight;
 
    return S_OK;
 }
@@ -8210,7 +8216,7 @@ STDMETHODIMP PinTable::get_GlassHeight(float *pVal)
 STDMETHODIMP PinTable::put_GlassHeight(float newVal)
 {
    STARTUNDO
-   m_glassheight = newVal;
+   m_glassTopHeight = newVal;
    STOPUNDO
 
    return S_OK;
