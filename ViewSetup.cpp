@@ -193,7 +193,7 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
       // Fit camera to adjusted table bounds, along vertical axis
       // We do not apply the scene scale since we want to fit the scaled version of the table as if it was the normal version (otherwise it would reverse the scaling during the fitting)
       // For fitting, we use a vertical FOV of 90°, leading to a yspan of 1, and an aspect ratio of 1, also leading to a xspan of 1
-      Matrix3D fit = lookat * rotz * Matrix3D::MatrixScale(1.f, -1.f, -1.f) * Matrix3D::MatrixPerspectiveFovLH(90.f, 1.0f, zNear, zFar) * projTrans;
+      Matrix3D fit = lookat * rotz * Matrix3D::MatrixScale(1.f, -1.f, -1.f) * Matrix3D::MatrixPerspectiveFovLH(90.f, 1.0f, zNear, zFar);
       const float xCenter = 0.5f * (table->m_left + table->m_right);
       Vertex3Ds tl = fit.MultiplyVector(Vertex3Ds(xCenter, table->m_top, mWindowTopZOfs));
       Vertex3Ds tr = fit.MultiplyVector(Vertex3Ds(xCenter, table->m_top, mWindowTopZOfs));
