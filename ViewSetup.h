@@ -52,10 +52,6 @@ public:
    float mViewVOfs = 0.0f; // Camera & Window: vertical frustrum offset
 
    // Magic Window mode properties
-   float mWindowTopXOfs = 0.0f; // Upper window border offset from left and right table bounds
-   float mWindowTopYOfs = 0.0f; // Upper window border Y coordinate, relative to table top
    float mWindowTopZOfs = CMTOVPU(20.0f); // Upper window border Z coordinate, relative to table playfield Z
-   float mWindowBottomXOfs = 0.0f; // Lower window border offset from left and right table bounds
-   float mWindowBottomYOfs = 0.0f; // Lower window border Y coordinate, relative to table bottom
    float mWindowBottomZOfs = CMTOVPU(7.5f); // Lower window border Z coordinate, relative to table playfield Z
 };

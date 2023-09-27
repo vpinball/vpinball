@@ -1052,11 +1052,7 @@ void LiveUI::UpdateCameraModeUI()
          case Player::BS_Layback: CM_ROW("Layback", "%.1f", viewSetup.mLayback, ""); CM_SKIP_LINE; break;
          case Player::BS_ViewHOfs: CM_ROW("Horizontal Offset", "%.1f", viewSetup.mViewHOfs, ""); break;
          case Player::BS_ViewVOfs: CM_ROW("Vertical Offset", "%.1f", viewSetup.mViewVOfs, ""); CM_SKIP_LINE; break;
-         case Player::BS_WndTopXOfs: CM_ROW("Window Top X Ofs.", "%.1f", VPUTOCM(viewSetup.mWindowTopXOfs), "cm"); break;
-         case Player::BS_WndTopYOfs: CM_ROW("Window Top Y Ofs.", "%.1f", VPUTOCM(viewSetup.mWindowTopYOfs), "cm"); break;
          case Player::BS_WndTopZOfs: CM_ROW("Window Top Z Ofs.", "%.1f", VPUTOCM(viewSetup.mWindowTopZOfs), "cm"); break;
-         case Player::BS_WndBottomXOfs: CM_ROW("Window Bottom X Ofs.", "%.1f", VPUTOCM(viewSetup.mWindowBottomXOfs), "cm"); break;
-         case Player::BS_WndBottomYOfs: CM_ROW("Window Bottom Y Ofs.", "%.1f", VPUTOCM(viewSetup.mWindowBottomYOfs), "cm"); break;
          case Player::BS_WndBottomZOfs: CM_ROW("Window Bottom Z Ofs.", "%.1f", VPUTOCM(viewSetup.mWindowBottomZOfs), "cm"); CM_SKIP_LINE; break;
 
          // Scene lighting

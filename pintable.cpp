@@ -3418,11 +3418,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
       bw.WriteFloat(vsFields[i][10], mViewSetups[i].mSceneScaleZ);
       bw.WriteFloat(vsFields[i][11], mViewSetups[i].mViewHOfs);
       bw.WriteFloat(vsFields[i][12], mViewSetups[i].mViewVOfs);
-      bw.WriteFloat(vsFields[i][13], mViewSetups[i].mWindowTopXOfs);
-      bw.WriteFloat(vsFields[i][14], mViewSetups[i].mWindowTopYOfs);
       bw.WriteFloat(vsFields[i][15], mViewSetups[i].mWindowTopZOfs);
-      bw.WriteFloat(vsFields[i][16], mViewSetups[i].mWindowBottomXOfs);
-      bw.WriteFloat(vsFields[i][17], mViewSetups[i].mWindowBottomYOfs);
       bw.WriteFloat(vsFields[i][18], mViewSetups[i].mWindowBottomZOfs);
    }
 
@@ -4203,11 +4199,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    case FID(XLTZ): pbr->GetFloat(mViewSetups[BG_DESKTOP].mViewZ); break;
    case FID(HOF0): pbr->GetFloat(mViewSetups[BG_DESKTOP].mViewHOfs); break;
    case FID(VOF0): pbr->GetFloat(mViewSetups[BG_DESKTOP].mViewVOfs); break;
-   case FID(WTX0): pbr->GetFloat(mViewSetups[BG_DESKTOP].mWindowTopXOfs); break;
-   case FID(WTY0): pbr->GetFloat(mViewSetups[BG_DESKTOP].mWindowTopYOfs); break;
    case FID(WTZ0): pbr->GetFloat(mViewSetups[BG_DESKTOP].mWindowTopZOfs); break;
-   case FID(WBX0): pbr->GetFloat(mViewSetups[BG_DESKTOP].mWindowBottomXOfs); break;
-   case FID(WBY0): pbr->GetFloat(mViewSetups[BG_DESKTOP].mWindowBottomYOfs); break;
    case FID(WBZ0): pbr->GetFloat(mViewSetups[BG_DESKTOP].mWindowBottomZOfs); break;
    case FID(VSM1): pbr->GetInt(&mViewSetups[BG_FULLSCREEN].mMode); break;
    case FID(ROTF): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mViewportRotation); break;
@@ -4222,11 +4214,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    case FID(XLFZ): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mViewZ); break;
    case FID(HOF1): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mViewHOfs); break;
    case FID(VOF1): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mViewVOfs); break;
-   case FID(WTX1): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mWindowTopXOfs); break;
-   case FID(WTY1): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mWindowTopYOfs); break;
    case FID(WTZ1): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mWindowTopZOfs); break;
-   case FID(WBX1): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mWindowBottomXOfs); break;
-   case FID(WBY1): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mWindowBottomYOfs); break;
    case FID(WBZ1): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mWindowBottomZOfs); break;
    case FID(VSM2): pbr->GetInt(&mViewSetups[BG_FSS].mMode); break;
    case FID(ROFS): pbr->GetFloat(mViewSetups[BG_FSS].mViewportRotation); break;
@@ -4241,11 +4229,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    case FID(XLZS): pbr->GetFloat(mViewSetups[BG_FSS].mViewZ); break;
    case FID(HOF2): pbr->GetFloat(mViewSetups[BG_FSS].mViewHOfs); break;
    case FID(VOF2): pbr->GetFloat(mViewSetups[BG_FSS].mViewVOfs); break;
-   case FID(WTX2): pbr->GetFloat(mViewSetups[BG_FSS].mWindowTopXOfs); break;
-   case FID(WTY2): pbr->GetFloat(mViewSetups[BG_FSS].mWindowTopYOfs); break;
    case FID(WTZ2): pbr->GetFloat(mViewSetups[BG_FSS].mWindowTopZOfs); break;
-   case FID(WBX2): pbr->GetFloat(mViewSetups[BG_FSS].mWindowBottomXOfs); break;
-   case FID(WBY2): pbr->GetFloat(mViewSetups[BG_FSS].mWindowBottomYOfs); break;
    case FID(WBZ2): pbr->GetFloat(mViewSetups[BG_FSS].mWindowBottomZOfs); break;
    case FID(EFSS): { pbr->GetBool(m_BG_enable_FSS); UpdateCurrentBGSet(); break; }
    //case FID(VERS): pbr->GetString(szVersion); break;
@@ -6012,11 +5996,7 @@ void PinTable::ImportBackdropPOV(const string& filename)
          POV_FIELD("LayoutMode", "%i", mViewSetups[i].mMode);
          POV_FIELD("ViewHOfs", "%f", mViewSetups[i].mViewHOfs);
          POV_FIELD("ViewVOfs", "%f", mViewSetups[i].mViewVOfs);
-         POV_FIELD("WindowTopXOfs", "%f", mViewSetups[i].mWindowTopXOfs);
-         POV_FIELD("WindowTopYOfs", "%f", mViewSetups[i].mWindowTopYOfs);
          POV_FIELD("WindowTopZOfs", "%f", mViewSetups[i].mWindowTopZOfs);
-         POV_FIELD("WindowBottomXOfs", "%f", mViewSetups[i].mWindowBottomXOfs);
-         POV_FIELD("WindowBottomYOfs", "%f", mViewSetups[i].mWindowBottomYOfs);
          POV_FIELD("WindowBottomZOfs", "%f", mViewSetups[i].mWindowBottomZOfs);
       }
 
@@ -6162,11 +6142,7 @@ void PinTable::ExportBackdropPOV(const string& filename)
          POV_FIELD("zoffset", mViewSetups[i].mViewZ);
          POV_FIELD("ViewHOfs", mViewSetups[i].mViewHOfs);
          POV_FIELD("ViewVOfs", mViewSetups[i].mViewVOfs);
-         POV_FIELD("WindowTopXOfs", mViewSetups[i].mWindowTopXOfs);
-         POV_FIELD("WindowTopYOfs", mViewSetups[i].mWindowTopYOfs);
          POV_FIELD("WindowTopZOfs", mViewSetups[i].mWindowTopZOfs);
-         POV_FIELD("WindowBottomXOfs", mViewSetups[i].mWindowBottomXOfs);
-         POV_FIELD("WindowBottomYOfs", mViewSetups[i].mWindowBottomYOfs);
          POV_FIELD("WindowBottomZOfs", mViewSetups[i].mWindowBottomZOfs);
          root->InsertEndChild(view);
       }
