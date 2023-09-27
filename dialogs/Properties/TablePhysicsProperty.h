@@ -32,6 +32,7 @@ private:
     EditBox m_mechPlungerAdjEdit;
     EditBox m_tableWidthEdit;
     EditBox m_tableHeightEdit;
+    EditBox m_bottomGlassHeightEdit;
     EditBox m_topGlassHeightEdit;
     EditBox m_tableFieldHeightEdit;
     EditBox m_minSlopeEdit;

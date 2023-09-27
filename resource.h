@@ -16,12 +16,13 @@
 #define IDC_PULL_SPEED                  3
 #define IDC_PULL_SPEED_EDIT             3
 #define IDC_TEXTBOX_TEXT_EDIT           3
-#define IDC_TABLE_GLASS_HEIGHT_EDIT     3
+#define IDC_TABLE_GLASS_BOTTOM_HEIGHT_EDIT 3
 #define DISPID_Gate_Rotation            4
 #define DISPID_Textbox_Font             4
 #define DISPID_POSITION_Z               4
 #define IDC_RELEASE_SPEED_EDIT          4
 #define IDC_RUBBER_THICKNESS_EDIT       4
+#define IDC_TABLE_GLASS_TOP_HEIGHT_EDIT 4
 #define DISPID_SIZE_X                   5
 #define IDC_REEL_WIDTH_EDIT             5
 #define DISPID_Surface_SideColor        6

@@ -938,17 +938,17 @@ void Player::RecomputePseudoPauseState()
 void Player::AddCabinetBoundingHitShapes()
 {
    // simple outer borders:
-   m_vho.push_back(new LineSeg(Vertex2D(m_ptable->m_right, m_ptable->m_top),    Vertex2D(m_ptable->m_right, m_ptable->m_bottom), m_ptable->m_tableheight, m_ptable->m_glassheight));
-   m_vho.push_back(new LineSeg(Vertex2D(m_ptable->m_left,  m_ptable->m_bottom), Vertex2D(m_ptable->m_left,  m_ptable->m_top),    m_ptable->m_tableheight, m_ptable->m_glassheight));
-   m_vho.push_back(new LineSeg(Vertex2D(m_ptable->m_right, m_ptable->m_bottom), Vertex2D(m_ptable->m_left,  m_ptable->m_bottom), m_ptable->m_tableheight, m_ptable->m_glassheight));
-   m_vho.push_back(new LineSeg(Vertex2D(m_ptable->m_left,  m_ptable->m_top),    Vertex2D(m_ptable->m_right, m_ptable->m_top),    m_ptable->m_tableheight, m_ptable->m_glassheight));
+   m_vho.push_back(new LineSeg(Vertex2D(m_ptable->m_right, m_ptable->m_top),    Vertex2D(m_ptable->m_right, m_ptable->m_bottom), m_ptable->m_tableheight, m_ptable->m_glassTopHeight));
+   m_vho.push_back(new LineSeg(Vertex2D(m_ptable->m_left,  m_ptable->m_bottom), Vertex2D(m_ptable->m_left,  m_ptable->m_top),    m_ptable->m_tableheight, m_ptable->m_glassBottomHeight));
+   m_vho.push_back(new LineSeg(Vertex2D(m_ptable->m_right, m_ptable->m_bottom), Vertex2D(m_ptable->m_left,  m_ptable->m_bottom), m_ptable->m_tableheight, m_ptable->m_glassBottomHeight));
+   m_vho.push_back(new LineSeg(Vertex2D(m_ptable->m_left,  m_ptable->m_top),    Vertex2D(m_ptable->m_right, m_ptable->m_top),    m_ptable->m_tableheight, m_ptable->m_glassTopHeight));
 
    // glass:
    Vertex3Ds * const rgv3D = new Vertex3Ds[4];
-   rgv3D[0] = Vertex3Ds(m_ptable->m_left, m_ptable->m_top, m_ptable->m_glassheight);
-   rgv3D[1] = Vertex3Ds(m_ptable->m_right, m_ptable->m_top, m_ptable->m_glassheight);
-   rgv3D[2] = Vertex3Ds(m_ptable->m_right, m_ptable->m_bottom, m_ptable->m_glassheight);
-   rgv3D[3] = Vertex3Ds(m_ptable->m_left, m_ptable->m_bottom, m_ptable->m_glassheight);
+   rgv3D[0] = Vertex3Ds(m_ptable->m_left, m_ptable->m_top, m_ptable->m_glassTopHeight);
+   rgv3D[1] = Vertex3Ds(m_ptable->m_right, m_ptable->m_top, m_ptable->m_glassTopHeight);
+   rgv3D[2] = Vertex3Ds(m_ptable->m_right, m_ptable->m_bottom, m_ptable->m_glassBottomHeight);
+   rgv3D[3] = Vertex3Ds(m_ptable->m_left, m_ptable->m_bottom, m_ptable->m_glassBottomHeight);
    m_vho.push_back(new Hit3DPoly(rgv3D, 4)); //!!
 
    /*
@@ -974,7 +974,9 @@ void Player::AddCabinetBoundingHitShapes()
    m_hitPlayfield.m_scatter = ANGTORAD(m_ptable->m_overridePhysics ? m_ptable->m_fOverrideScatterAngle : m_ptable->m_scatter);
 
    // glass:
-   m_hitTopGlass = HitPlane(Vertex3Ds(0, 0, -1), m_ptable->m_glassheight);
+   Vertex3Ds glassNormal(0, m_ptable->m_bottom - m_ptable->m_top, m_ptable->m_glassTopHeight - m_ptable->m_glassBottomHeight);
+   glassNormal.Normalize();
+   m_hitTopGlass = HitPlane(Vertex3Ds(0, -glassNormal.z, -glassNormal.y), m_ptable->m_glassTopHeight);
    m_hitTopGlass.m_elasticity = 0.2f;
 }
 
