@@ -4355,7 +4355,6 @@ void Player::PrepareFrame()
 #endif
 
    g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_GPU_COLLECT);
-   m_pin3d.m_pd3dPrimaryDevice->SwapBackBufferRenderTargets(); // Keep previous render as a reflection probe for ball reflection and for hires motion blur
    m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("Render Scene"s, m_pin3d.m_pd3dPrimaryDevice->GetMSAABackBufferTexture());
    if (m_stereo3D == STEREO_VR || GetInfoMode() == IF_DYNAMIC_ONLY)
    {
@@ -4407,6 +4406,7 @@ void Player::SubmitFrame()
    // Submit to GPU render queue
    g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_GPU_SUBMIT);
    m_pin3d.m_pd3dPrimaryDevice->FlushRenderFrame();
+   m_pin3d.m_pd3dPrimaryDevice->SwapBackBufferRenderTargets(); // Keep previous render as a reflection probe for ball reflection and for hires motion blur
    g_frameProfiler.ExitProfileSection();
 
    // Trigger captures
@@ -4820,7 +4820,7 @@ void Player::DrawBalls()
          {
             pLightPos[pPos + 0] = light_nearest[light_i]->m_d.m_vCenter.x;
             pLightPos[pPos + 1] = light_nearest[light_i]->m_d.m_vCenter.y;
-            pLightPos[pPos + 2] = light_nearest[light_i]->m_d.m_meshRadius + light_nearest[light_i]->m_surfaceHeight; //!! z pos
+            pLightPos[pPos + 2] = light_nearest[light_i]->GetCurrentHeight();
             const float c = map_bulblight_to_emission(light_nearest[light_i]) * pball->m_bulb_intensity_scale;
             const vec4 color = convertColor(light_nearest[light_i]->m_d.m_color);
             pLightEm[pEm + 0] = color.x * c;
