@@ -25,6 +25,8 @@ layout(location=2) in vec2 tex0;
 uniform vec4 clip_plane; // Clip plane defined in table coordinate system
 uniform int layer; // Layer being rendered (set to 0 is using layered rendering, that is to say rendering multiple layers using instanced rendering)
 
+VS_OUT_EYE;
+
 ////GEOMETRY
 layout(triangles) in;
 layout(triangle_strip, max_vertices = 3) out;
@@ -42,7 +44,7 @@ layout(depth_unchanged) out float gl_FragDepth;
 #endif
 
 uniform sampler2D tex_ball_color; // base texture
-uniform sampler2D tex_ball_playfield; // playfield
+uniform samplerStereo tex_ball_playfield; // playfield
 uniform sampler2D tex_ball_decal; // ball decal
 
 uniform sampler2D tex_env; // envmap
@@ -59,7 +61,6 @@ out vec4 color;
 ////vsBall
 VS_OUT(vec4, normal_t0x);
 VS_OUT(vec4, worldPos_t0y);
-VS_OUT_EYE;
 
 void main()
 {
@@ -83,7 +84,6 @@ void main()
 
 ////vsBallTrail
 VS_OUT(vec3, tex0_alpha);
-VS_OUT_EYE;
 
 void main()
 {
@@ -243,10 +243,10 @@ void main()
 	const float4 proj = matProj[int(eye)] * float4(playfield_hit, 1.0);
 	const float2 uvp = float2(0.5, 0.5) + proj.xy * (0.5 / proj.w);
 	const float3 playfieldColor = saturate(0.25 * (
-		  tex2D(tex_ball_playfield, uvp + float2(w_h_disableLighting.x, 0.)).rgb
-		+ tex2D(tex_ball_playfield, uvp - float2(w_h_disableLighting.x, 0.)).rgb
-		+ tex2D(tex_ball_playfield, uvp + float2(0., w_h_disableLighting.y)).rgb
-		+ tex2D(tex_ball_playfield, uvp - float2(0., w_h_disableLighting.y)).rgb
+		  texStereo(tex_ball_playfield, uvp + float2(w_h_disableLighting.x, 0.)).rgb
+		+ texStereo(tex_ball_playfield, uvp - float2(w_h_disableLighting.x, 0.)).rgb
+		+ texStereo(tex_ball_playfield, uvp + float2(0., w_h_disableLighting.y)).rgb
+		+ texStereo(tex_ball_playfield, uvp - float2(0., w_h_disableLighting.y)).rgb
 	) * invTableRes_playfield_height_reflection.w); // a bit of supersampling, not strictly needed, but a bit better and not that costly
 
 	float weight;
