@@ -135,8 +135,8 @@ FEATURES:
 - the ball texture can now be set as either a spherical map (the default, like it used to be before 10.8), or as an equirectangular map. Equirectangular maps
   are also used already for the environment lighting. The benefit of using them is that the reflections are view dependent and that they can match
   the table environment lighting image for full consistency between the lighting and reflections.
-- the ball is now shaded using the previous frame for computing the reflections of the playfield on the ball. This allow to have correct reflection of the playfield on balls
-  when using a playfield_mesh, to reflect the inserts and all the shading/lighting applied (no more need to enable ball reflection for insert light unless you want some extra reflected light).
+- the ball is now shaded using the previous frame for computing the reflections of the playfield on the ball. This allows to have correct reflections of the playfield on balls
+  when using a playfield_mesh, to reflect the inserts and all the full shading/lighting applied (so no more need to enable ball reflections for insert lights unless you want some extra reflected light).
 
 - timers with a -1 interval used to be ran 1 or 2 times per frame (depending on user latency reduction setting). They now are always ran once per frame only.
   timers with a -2 interval are now considered as controller sync timers and will be ran as many time per frame as needed, depending on user settings.
@@ -165,6 +165,8 @@ FEATURES:
 - additive blended primitives are now rendered 'unshaded', so without any material/lighting applied (same as flashers), this is more natural and allows for some performance optimizations
 
 - add staged left/right flipper key configuration to the preferences
+
+- when renaming a surface/wall, ask if all elements (lights, etc) that reference the surface name should also use this new name
 
 Additional docs explaining all these new features with images are provided in the docs folder of the project: https://github.com/vpinball/vpinball/tree/master/docs
 
