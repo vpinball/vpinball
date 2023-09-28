@@ -224,11 +224,11 @@ void RenderCommand::Execute(const bool log)
             #ifdef ENABLE_SDL
             assert(0 <= m_mb->m_vb->GetVertexOffset() && m_mb->m_vb->GetVertexOffset() + m_indicesCount <= m_mb->m_vb->GetSharedBuffer()->GetCount());
             if (instanceCount > 1)
-               glDrawArraysInstanced(m_primitiveType, m_mb->m_vb->GetVertexOffset(), m_indicesCount, instanceCount);
+               glDrawArraysInstanced(m_primitiveType, m_mb->m_vb->GetVertexOffset() + m_startIndice, m_indicesCount, instanceCount);
             else
-               glDrawArrays(m_primitiveType, m_mb->m_vb->GetVertexOffset(), m_indicesCount);
+               glDrawArrays(m_primitiveType, m_mb->m_vb->GetVertexOffset() + m_startIndice, m_indicesCount);
             #else
-            CHECKD3D(m_rd->GetCoreDevice()->DrawPrimitive((D3DPRIMITIVETYPE)m_primitiveType, m_mb->m_vb->GetVertexOffset(), np));
+            CHECKD3D(m_rd->GetCoreDevice()->DrawPrimitive((D3DPRIMITIVETYPE)m_primitiveType, m_mb->m_vb->GetVertexOffset() + m_startIndice, np));
             #endif
          }
          else
