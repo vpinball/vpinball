@@ -1851,7 +1851,8 @@ HRESULT Player::Init()
 
    assert(m_ballTrailMeshBuffer == nullptr);
    delete m_ballTrailMeshBuffer;
-   VertexBuffer* ballTrailVertexBuffer = new VertexBuffer(m_pin3d.m_pd3dPrimaryDevice, (MAX_BALL_TRAIL_POS - 2) * 2 + 4, nullptr, true);
+   // Support up to 64 balls, that should be sufficient
+   VertexBuffer* ballTrailVertexBuffer = new VertexBuffer(m_pin3d.m_pd3dPrimaryDevice, 64 * (MAX_BALL_TRAIL_POS - 2) * 2 + 4, nullptr, true);
    m_ballTrailMeshBuffer = new MeshBuffer(L"Ball.Trail"s, ballTrailVertexBuffer);
 
    #ifdef ENABLE_SDL
@@ -4752,6 +4753,7 @@ void Player::DrawBalls()
    // m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pin3d.m_pd3dPrimaryDevice->GetPreviousBackBufferTexture());
    m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetTexture(SHADER_tex_ball_playfield, m_pin3d.m_pd3dPrimaryDevice->GetPreviousBackBufferTexture()->GetColorSampler());
    
+   int ballTrailPos = 0;
    for (size_t i = 0; i < m_vball.size(); i++)
    {
       Ball *const pball = m_vball[i];
@@ -5003,13 +5005,14 @@ void Player::DrawBalls()
                nVertices += 2;
             }
          }
-         if (nVertices > 0)
+         if (nVertices > 0 && ballTrailPos + nVertices <= m_ballTrailMeshBuffer->m_vb->m_count)
          {
             Vertex3D_NoTex2 *bufvb;
-            m_ballTrailMeshBuffer->m_vb->lock(0, 0, (void **)&bufvb, VertexBuffer::DISCARDCONTENTS);
+            m_ballTrailMeshBuffer->m_vb->lock(ballTrailPos * sizeof(Vertex3D_NoTex2), nVertices * sizeof(Vertex3D_NoTex2), (void **)&bufvb, VertexBuffer::DISCARDCONTENTS);
             memcpy(bufvb, vertices, nVertices * sizeof(Vertex3D_NoTex2));
             m_ballTrailMeshBuffer->m_vb->unlock();
-            m_pin3d.m_pd3dPrimaryDevice->DrawMesh(m_pin3d.m_pd3dPrimaryDevice->m_ballShader, true, pos, 0.f, m_ballTrailMeshBuffer, RenderDevice::TRIANGLESTRIP, 0, nVertices);
+            m_pin3d.m_pd3dPrimaryDevice->DrawMesh(m_pin3d.m_pd3dPrimaryDevice->m_ballShader, true, pos, 0.f, m_ballTrailMeshBuffer, RenderDevice::TRIANGLESTRIP, ballTrailPos, nVertices);
+            ballTrailPos += nVertices;
          }
       }
 
