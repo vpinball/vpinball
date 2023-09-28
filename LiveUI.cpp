@@ -1021,14 +1021,7 @@ void LiveUI::UpdateCameraModeUI()
          ImGui::Text("%s",buf); ImGui::TableNextColumn(); ImGui::Text("%s",unit); ImGui::TableNextRow();\
       }
       #define CM_SKIP_LINE {ImGui::TableNextColumn(); ImGui::Dummy(ImVec2(0.f, m_dpi * 3.f)); ImGui::TableNextRow();}
-      float realToVirtual = 1.f;
-      if (viewSetup.mMode == VLM_WINDOW)
-      {
-         const float screenHeight = LoadValueWithDefault(regKey[RegName::Player], "ScreenWidth"s, 0.0f); // Physical width is the height in window mode
-         const float inc = atan2f(viewSetup.mSceneScaleZ * (viewSetup.mWindowTopZOfs - viewSetup.mWindowBottomZOfs), viewSetup.mSceneScaleY * table->m_bottom);
-         realToVirtual = screenHeight <= 1.f ? 1.f : (VPUTOCM(table->m_bottom) / cos(inc)) / screenHeight; // Ratio between screen height in virtual world to real world screen height
-      }
-
+      const float realToVirtual = viewSetup.GetRealToVirtualScale(table);
       for (int i = 0; i < nSettings; i++)
       {
          if (settings[i] == m_player->m_backdropSettingActive 
@@ -1040,16 +1033,16 @@ void LiveUI::UpdateCameraModeUI()
 
          // Scene scale
          case Player::BS_XYZScale: break;
-         case Player::BS_XScale: CM_ROW("Table X Scale", "%.1f", 100.f * viewSetup.mSceneScaleX / realToVirtual, "%%"); break;
-         case Player::BS_YScale: CM_ROW("Table Y Scale", "%.1f", 100.f * viewSetup.mSceneScaleY / realToVirtual, "%%"); break;
-         case Player::BS_ZScale: CM_ROW("Table Z Scale", "%.1f", 100.f * viewSetup.mSceneScaleZ / realToVirtual, "%%"); CM_SKIP_LINE; break;
+         case Player::BS_XScale: CM_ROW("Table X Scale", "%.1f", 100.f * viewSetup.mSceneScaleX / realToVirtual, "%"); break;
+         case Player::BS_YScale: CM_ROW("Table Y Scale", "%.1f", 100.f * viewSetup.mSceneScaleY / realToVirtual, "%"); break;
+         case Player::BS_ZScale: CM_ROW("Table Z Scale", "%.1f", 100.f * viewSetup.mSceneScaleZ / realToVirtual, "%"); CM_SKIP_LINE; break;
 
          // Player position
          case Player::BS_LookAt: 
             if (isLegacy)
                { CM_ROW("Inclination", "%.1f", viewSetup.mLookAt, "deg"); }
             else
-               { CM_ROW("Look at", "%.1f", viewSetup.mLookAt, "%%"); }
+               { CM_ROW("Look at", "%.1f", viewSetup.mLookAt, "%"); }
             break;
          case Player::BS_XOffset: CM_ROW(isLegacy ? "X Offset" : "Player X", "%.1f", VPUTOCM(viewSetup.mViewX), "cm"); break;
          case Player::BS_YOffset: CM_ROW(isLegacy ? "Y Offset" : "Player Y", "%.1f", VPUTOCM(viewSetup.mViewY), "cm"); break;
@@ -1067,7 +1060,7 @@ void LiveUI::UpdateCameraModeUI()
          case Player::BS_LightEmissionScale: CM_ROW("Light Emission Scale", "%.0f", table->m_lightEmissionScale, ""); break;
          case Player::BS_LightRange: CM_ROW("Light Range", "%.0f", VPUTOCM(table->m_lightRange), "cm"); break;
          case Player::BS_LightHeight: CM_ROW("Light Height", "%.0f", VPUTOCM(table->m_lightHeight), "cm"); CM_SKIP_LINE; break;
-         case Player::BS_EnvEmissionScale: CM_ROW("Environment Emission", "%.1f", 100.f * table->m_envEmissionScale, "%%"); break;
+         case Player::BS_EnvEmissionScale: CM_ROW("Environment Emission", "%.1f", 100.f * table->m_envEmissionScale, "%"); break;
          }
          if (settings[i] == m_player->m_backdropSettingActive
             || (m_player->m_backdropSettingActive == Player::BS_XYZScale && (settings[i] == Player::BS_XScale || settings[i] == Player::BS_YScale || settings[i] == Player::BS_ZScale)))
@@ -1089,6 +1082,30 @@ void LiveUI::UpdateCameraModeUI()
          VPUTOCM(pos.x - 0.5f * m_player->m_ptable->m_right), 
          VPUTOCM(pos.y - m_player->m_ptable->m_bottom), 
          VPUTOCM(pos.z), viewSetup.mViewportRotation);
+   }
+   
+   if (viewSetup.mMode == VLM_WINDOW)
+   {
+      if (LoadValueWithDefault(regKey[RegName::Player], "ScreenWidth"s, 0.0f) <= 1.f)
+      {
+         ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 0, 0, 255));
+         ImGui::NewLine();
+         ImGui::NewLine();
+         ImGui::Text("You are using 'Window' mode but haven't defined your display physical size.");
+         ImGui::Text("This will break the overall scale as well as the stereo rendering.");
+         ImGui::NewLine();
+         ImGui::PopStyleColor();
+      }
+      if (abs(viewSetup.mSceneScaleY - viewSetup.mSceneScaleZ) > 0.01f)
+      {
+         ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 0, 0, 255));
+         ImGui::NewLine();
+         ImGui::NewLine();
+         ImGui::Text("You are using 'Window' mode with different Y/Z scales.");
+         ImGui::Text("This will break the overall scale as well as the stereo rendering.");
+         ImGui::NewLine();
+         ImGui::PopStyleColor();
+      }
    }
 
    ImGui::NewLine();
@@ -2005,7 +2022,7 @@ void LiveUI::UpdateVideoOptionsModal()
                const float rightSecondHigher  = (rightFilter.y > rightFilter.x && rightFilter.x > rightFilter.z) ? rightFilter.x : (rightFilter.y < rightFilter.x && rightFilter.x < rightFilter.z) ? rightFilter.x : 
                                                 (rightFilter.x > rightFilter.y && rightFilter.y > rightFilter.z) ? rightFilter.y : (rightFilter.x < rightFilter.y && rightFilter.y < rightFilter.z) ? rightFilter.y : 
                                                 (rightFilter.x > rightFilter.z && rightFilter.z > rightFilter.y) ? rightFilter.z : (rightFilter.x < rightFilter.z && rightFilter.z < rightFilter.y) ? rightFilter.z : -1.f;
-               assert(leftSecondHigher != -1.f && rightSecondHigher != -1.f);
+               // assert(leftSecondHigher != -1.f && rightSecondHigher != -1.f); // This may happen when fitting is degenerated or simply we do not have any fitted value
                bool reversedColors = leftSecondHigher > rightSecondHigher; // Monochromatic (red/green/blue) is supposed to be on the left eye
                const vec3 monoFilter = reversedColors ? rightFilter : leftFilter;
                const enum AnaglypColors { RED_CYAN, GREEN_MAGENTA, BLUE_AMBER } colors
@@ -2399,15 +2416,7 @@ void LiveUI::UpdateMainSplashModal()
       ImGui::SetNextWindowPos(ImVec2(0, 0));
       ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
       ImGui::Begin("Table Info", nullptr, window_flags);
-      // Remove optional escape characters in the table info string
-      string str = info.str();
-      size_t start_pos = 0;
-      while ((start_pos = str.find("%", start_pos)) != std::string::npos)
-      {
-         str.replace(start_pos, 1, "%%");
-         start_pos += 2;
-      }
-      HelpTextCentered(str);
+      HelpTextCentered(info.str());
       ImGui::End();
    }
 
