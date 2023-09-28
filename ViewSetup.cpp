@@ -20,6 +20,18 @@ float ViewSetup::GetRotation(const int viewportWidth, const int viewportHeight) 
    }
 }
 
+float ViewSetup::GetRealToVirtualScale(const PinTable* const table) const
+{
+   if (mMode == VLM_WINDOW)
+   {
+      const float screenHeight = LoadValueWithDefault(regKey[RegName::Player], "ScreenWidth"s, 0.0f); // Physical width (always measured in landscape orientation) is the height in window mode
+      const float inc = atan2f(mSceneScaleZ * (mWindowTopZOfs - mWindowBottomZOfs), mSceneScaleY * table->m_bottom);
+      return screenHeight <= 1.f ? 1.f : (VPUTOCM(table->m_bottom) / cos(inc)) / screenHeight; // Ratio between screen height in virtual world to real world screen height
+   }
+   else
+      return 1.f;
+}
+
 void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth, const int viewportHeight, const bool stereo, ModelViewProj& mvp, const vec3& cam, const float cam_inc,
    const float xpixoff, const float ypixoff)
 {
@@ -27,6 +39,9 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
    const bool isLegacy = mMode == VLM_LEGACY;
    const float aspect = (float)((double)viewportWidth / (double)viewportHeight);
    float camx = cam.x, camy = cam.y, camz = cam.z;
+
+   // Scale to convert a value expressed in the player 'real' world to our virtual world (where the geometry is defined)
+   float realToVirtual = GetRealToVirtualScale(table);
    
    // Viewport rotation. Window mode does not support free rotation (since we fit the table to the screen)
    float rotation;
@@ -143,13 +158,7 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
    }
    else
    {
-      float realToVirtual = 1.f;
       Matrix3D trans, rotx;
-      if (mMode == VLM_WINDOW)
-      {
-         const float screenHeight = LoadValueWithDefault(regKey[RegName::Player], "ScreenWidth"s, 0.0f); // Physical width is the height in window mode
-         realToVirtual = screenHeight <= 1.f ? 1.f : (VPUTOCM(table->m_bottom) / cos(inc)) / screenHeight; // Ratio between screen height in virtual world to real world screen height
-      }
       // Scale is not relative to the 'virtual to real world scale' in order to avoid each user needing to scale the table for his own screen size
       scale = Matrix3D::MatrixTranslate(-0.5f * table->m_right, -0.5f * table->m_bottom, 0.f)
          * Matrix3D::MatrixScale(mSceneScaleX, mSceneScaleY, mSceneScaleZ)
@@ -234,14 +243,14 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
       // should not be used (See 'Gaze-coupled Perspective for Enhanced Human-Machine Interfaces in Aeronautics' for an explanation)
 
       // 63mm is the average distance between eyes (varies from 54 to 74mm between adults, 43 to 58mm for children)
-      const float eyeSeparation = MMTOVPU(LoadValueWithDefault(regKey[RegName::Player], "Stereo3DEyeSeparation"s, 63.0f));
+      const float eyeSeparation = realToVirtual * MMTOVPU(LoadValueWithDefault(regKey[RegName::Player], "Stereo3DEyeSeparation"s, 63.0f));
 
       // Z where the stereo separation is 0:
       // - for cabinet (window) mode, we use the orthogonal distance to the screen (window)
       // - for camera mode, we place the 0 depth line on the lower third of the playfield
       // This way, we don't have negative parallax (objects closer than projection plane) and all the artefact they may cause
-      const float zNullSeparation = mMode == VLM_WINDOW ? (mViewZ - mWindowBottomZOfs + mViewY * tanf(inc))
-                                                             : -lookat.MultiplyVector(Vertex3Ds(0.5f * (table->m_left + table->m_right), table->m_bottom * 0.66f /* For flipper bats: 1800.f / 2150.f*/, 0.f)).z;
+      const float zNullSeparation = mMode == VLM_WINDOW ? (mViewZ * realToVirtual - mWindowBottomZOfs + mViewY * realToVirtual * tanf(inc))
+                                                        : -lookat.MultiplyVector(Vertex3Ds(0.5f * (table->m_left + table->m_right), table->m_bottom * 0.66f /* For flipper bats: 1800.f / 2150.f*/, 0.f)).z;
       const float ofs = 0.5f * eyeSeparation * zNear / zNullSeparation;
       const float xOfs = ofs * cosf(rotation);
       const float yOfs = ofs * sinf(rotation);
