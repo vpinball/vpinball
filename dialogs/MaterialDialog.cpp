@@ -345,7 +345,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             int sel = ListView_GetNextItem(m_hMaterialList, -1, LVNI_SELECTED);
             if (sel == -1)
                break;
-
+            vector<Material *> toDuplicate;
             while (sel != -1)
             {
                LVITEM lvitem;
@@ -353,11 +353,14 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                lvitem.iItem = sel;
                lvitem.iSubItem = 0;
                ListView_GetItem(m_hMaterialList, &lvitem);
-               Material * const pNewMat = new Material((Material*)lvitem.lParam);
+               toDuplicate.push_back((Material *)lvitem.lParam);
+               sel = ListView_GetNextItem(m_hMaterialList, sel, LVNI_SELECTED);
+            }
+            for (Material* mat : toDuplicate)
+            {
+               Material *const pNewMat = new Material(mat);
                pt->AddMaterial(pNewMat);
                pt->AddListMaterial(m_hMaterialList, pNewMat);
-
-               sel = ListView_GetNextItem(m_hMaterialList, sel, LVNI_SELECTED);
             }
             pt->SetNonUndoableDirty(eSaveDirty);
             pt->UpdatePropertyMaterialList();
