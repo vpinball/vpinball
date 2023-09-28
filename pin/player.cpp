@@ -639,6 +639,10 @@ void Player::CreateWnd(HWND parent /* = 0 */)
 #else
    Create();
 #endif // ENABLE_SDL
+
+   // Create the table window object.
+   // FIXME This should not be needed but the table object is also a CWnd and if not properly created, the destructor may crash...
+   m_ptable->Create(*this);
 }
 
 void Player::OnInitialUpdate()
