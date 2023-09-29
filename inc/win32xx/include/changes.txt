@@ -1,3 +1,35 @@
+Version 9.4
+===========
+This version adds support for the Microsoft Edge browser.
+The EdgeBrower and EdgeBrowserEx samples have been added. These samples
+demonstrate how to use the Microsoft Edge WebView2 control in a Win32++
+application.
+
+New Features and Enhancements
+-----------------------------
+* Added the EdgeBrowser sample. This sample uses the Microsoft Edge
+  WebView2 control to render the Microsoft Edge browser in a window. It
+  demonstrates a simple way to render a Microsoft Edge browser in a view
+  window.
+
+* Added the EdgeBrowserEx sample. This sample uses the Microsoft Edge WebView2
+  control to display tabs and render the Microsoft Edge browser within those
+  tabs. This sample also demonstrates features such as managing favourites
+  and browser history.
+
+* Updated CDC. CDC::SelectObject now keeps the selected object in scope. There
+  is no longer any need to select the old object back into the device context
+  when SelectObject is used.
+
+Changes in Detail
+-----------------
+Modified CDC::SelectObject(HBITMAP bitmap)                returns CBitmap
+Modified CDC::SelectObject(HBRUSH brush)                  returns CBrush
+Modified CDC::SelectObject(HFONT font)                    returns CFont
+Modified CDC::SelectObject(HPEN pen)                      returns CPen
+Modified CDC::SelectPalette                               returns CPalette
+
+
 Version 9.3
 ===========
 This version improves the support for high resolution monitors by automatically
@@ -50,7 +82,7 @@ New Features and Enhancements
 
 About high resolution monitor support
 -------------------------------------
-Modern monitors can now use scaling factors of 400% or more. Applications which
+Modern monitors can now use scaling factors of 400% or more. Applications that
 look good with scaling factors of 100% or 150% may not look good at higher
 scaling factors. It will often be necessary to adjust the image-list for
 list-view and tree-view controls and adjust the fonts used by other windows
@@ -68,7 +100,7 @@ The GetWindowDpi function retrieves the window's current DPI. We can also
 call GetWindowDpi(HWND_DESKTOP) to retrieve the system DPI, and the desktop's
 DPI when per monitor dpi awareness is enabled.
 
-The various DpiScaleXXX functions take values which are appropriate for a 
+The various DpiScaleXXX functions take values that are appropriate for a 
 a scaling factor of 100% and scale them up to the appropriate values for
 the current window's Dots Per Inch (DPI).
 
@@ -385,7 +417,7 @@ New Features and Enhancements
 -----------------------------
 * Added CPrintDialogEx.
   - The CPrintDialogEx class uses PrintDlgEx to display a property sheet
-    which allows the user to select the printer to use.
+    that allows the user to select the printer to use.
     Requires Windows 2000 or newer ( WINVER >= 0500 ).
 
  * Updated CDC.
@@ -707,7 +739,7 @@ New Features and Enhancements
    provide a print preview.
 
 * Added CRibbonDockFrame.
-   This class adds docking to a frame window which supports the Ribbon UI.
+   This class adds docking to a frame window that supports the Ribbon UI.
    A RibbonDockFrame sample has been added to demonstrate CRibbonDockFrame.
 
 * Updated CString

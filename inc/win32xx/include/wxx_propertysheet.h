@@ -1,5 +1,5 @@
-// Win32++   Version 9.3
-// Release Date: 5th June 2023
+// Win32++   Version 9.4
+// Release Date: 25th September 2023
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -42,7 +42,7 @@
 
 // These classes add support for property sheets to Win32++. A property sheet
 // will have one or more property pages. These pages are much like dialogs
-// which are presented within a tabbed dialog or within a wizard. The data
+// that are presented within a tabbed dialog or within a wizard. The data
 // on a property page can be validated before the next page is presented.
 // Property sheets have three modes of use: Modal, Modeless, and Wizard.
 //

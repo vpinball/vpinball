@@ -1,5 +1,5 @@
-// Win32++   Version 9.3
-// Release Date: 5th June 2023
+// Win32++   Version 9.4
+// Release Date: 25th September 2023
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -1142,7 +1142,7 @@ namespace Win32xx
     }
 
     // This function is called when a CUserException is caught while
-    // validating the value in a control. This is a virtual function which can
+    // validating the value in a control. This is a virtual function that can
     // be overridden as required.
     inline void CDataExchange::Fail(LPCTSTR message) const
     {

@@ -1,5 +1,5 @@
-// Win32++   Version 9.3
-// Release Date: 5th June 2023
+// Win32++   Version 9.4
+// Release Date: 25th September 2023
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -350,7 +350,7 @@ namespace Win32xx
                 m_pData = new CMenu_Data;
             }
 
-            if (menu)
+            if (menu!= 0)
             {
                 // Add the menu to this CMenu
                 CMenu_Data* pCMenuData = GetApp()->GetCMenuData(menu);
@@ -621,7 +621,7 @@ namespace Win32xx
     {
         assert(m_pData);
         assert(IsMenu(m_pData->menu));
-        assert(string != 0);
+        assert(string != NULL);
 
         return ::GetMenuString(m_pData->menu, idOrPos, string, maxCount, flags);
     }

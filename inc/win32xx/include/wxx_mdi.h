@@ -1,5 +1,5 @@
-// Win32++   Version 9.3
-// Release Date: 5th June 2023
+// Win32++   Version 9.4
+// Release Date: 25th September 2023
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -63,8 +63,8 @@
 //    frame.
 //
 // 5) CMDIDockFrame: This clas inherits from CMDIFrameT<CDockFrame>. It provides
-//    a MDI frame which supports docking. Inherit your CMainFrame from CMDIDockFrame
-//    to create a MDI frame which supports docking.
+//    a MDI frame that supports docking. Inherit your CMainFrame from CMDIDockFrame
+//    to create a MDI frame that supports docking.
 
 // Use the MDIFrame generic application as the starting point for your own MDI
 // frame applications.

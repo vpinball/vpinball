@@ -1,5 +1,5 @@
-// Win32++   Version 9.3
-// Release Date: 5th June 2023
+// Win32++   Version 9.4
+// Release Date: 25th September 2023
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -92,7 +92,6 @@ namespace Win32xx
     const int DS_NO_CLOSE            = 0x00400; // Prevent closing of a docker while docked
     const int DS_NO_UNDOCK           = 0x00800; // Prevent manual undocking of a docker
     const int DS_CLIENTEDGE          = 0x01000; // Has a 3D border when docked
-    const int DS_NO_FIXED_RESIZE     = 0x02000; // Perform a proportional resize instead of a fixed size resize on dock children
     const int DS_DOCKED_CONTAINER    = 0x04000; // Dock a container within a container
     const int DS_DOCKED_LEFTMOST     = 0x10000; // Leftmost outer docking
     const int DS_DOCKED_RIGHTMOST    = 0x20000; // Rightmost outer docking
@@ -287,9 +286,9 @@ namespace Win32xx
     //
     // The docker class also provides the following windows
     //  * A dock client window with provides the caption for the docker.
-    //  * A splitter bar which allows dockers to be resized.
-    //  * Dock targets which are used to facilitate docking.
-    //  * Dock hint windows which display a blue tint over area which will
+    //  * A splitter bar that allows dockers to be resized.
+    //  * Dock targets that are used to facilitate docking.
+    //  * Dock hint windows that display a blue tint over area which will
     //    be covered if the docker is docked.
     class CDocker : public CWnd
     {
@@ -331,7 +330,7 @@ namespace Win32xx
             int m_dockBarWidth;
         };
 
-        // A nested class for the window inside a CDocker which includes all of this docked client.
+        // A nested class for the window inside a CDocker that includes all of this docked client.
         // It's the remaining part of the CDocker that doesn't belong to the CDocker's children.
         // The docker's view window is a child window of CDockClient.
         class CDockClient : public CWnd
@@ -352,6 +351,7 @@ namespace Win32xx
             void SetView(CWnd& view);
 
         protected:
+            virtual int     OnCreate(CREATESTRUCT&);
             virtual LRESULT OnLButtonDown(UINT msg, WPARAM wparam, LPARAM lparam);
             virtual LRESULT OnLButtonUp(UINT msg, WPARAM wparam, LPARAM lparam);
             virtual LRESULT OnMouseMove(UINT msg, WPARAM wparam, LPARAM lparam);
@@ -625,9 +625,9 @@ namespace Win32xx
         void CloseAllTargets();
         void DockOuter(CDocker* pDocker, DWORD dockStyle);
         void DrawAllCaptions();
-        void ConvertToChild(HWND hWndParent);
+        void ConvertToChild(HWND parent);
         void ConvertToPopup(const RECT& rc, BOOL showUndocked);
-        int  GetMonitorDpi(HWND hWnd);
+        int  GetMonitorDpi(HWND wnd);
         void MoveDockChildren(CDocker* pDockTarget);
         void PromoteFirstChild();
         void RecalcDockChildLayout(CRect& rc);
@@ -672,7 +672,6 @@ namespace Win32xx
         int m_newDpi;
         int m_oldDpi;
         DWORD m_dockZone;
-        double m_dockSizeRatio;
         DWORD m_dockStyle;
         HWND m_dockUnderPoint;
         CPoint m_dockPoint;
@@ -949,8 +948,8 @@ namespace Win32xx
                     CFont marlett;
                     marlett.CreatePointFont(100, _T("Marlett"));
                     drawDC.SetBkMode(TRANSPARENT);
-                    marlett = DpiScaleFont(marlett, 10);
-                    drawDC.SelectObject(marlett);
+                    LOGFONT lf = DpiScaleLogfont(marlett.GetLogFont(), 10);
+                    drawDC.CreateFontIndirect(lf);
 
                     COLORREF grey(RGB(232, 228, 220));
                     COLORREF black(RGB(0, 0, 0));
@@ -1110,6 +1109,16 @@ namespace Win32xx
         }
 
         return FinalWindowProc(msg, wparam, lparam);
+    }
+
+    inline int CDocker::CDockClient::OnCreate(CREATESTRUCT&)
+    {
+        assert(m_pDocker);
+        assert(m_pDocker->IsWindow());
+
+        // Save the initial DPI when the docker is created.
+        m_pDocker->m_oldDpi = GetWindowDpi(*m_pDocker);
+        return 0;
     }
 
     inline LRESULT CDocker::CDockClient::OnLButtonDown(UINT msg, WPARAM wparam, LPARAM lparam)
@@ -2100,7 +2109,7 @@ namespace Win32xx
                     m_isBlockMove(FALSE), m_isUndocking(FALSE), m_isClosing(FALSE),
                     m_isDragging(FALSE), m_dockStartSize(0), m_dockID(0), m_ncHeight(0),
                     m_newDpi(USER_DEFAULT_SCREEN_DPI), m_oldDpi(USER_DEFAULT_SCREEN_DPI),
-                    m_dockZone(0), m_dockSizeRatio(1.0), m_dockStyle(0), m_dockUnderPoint(0)
+                    m_dockZone(0), m_dockStyle(0), m_dockUnderPoint(0)
     {
         // Assume this docker is the DockAncestor for now.
         SetDockBar(m_dockBar);
@@ -2342,8 +2351,6 @@ namespace Win32xx
             int barWidth = pDocker->GetBarWidth();
             if (pDocker->m_dockStartSize >= (width - barWidth))
                 pDocker->SetDockSize(MAX(width/2 - barWidth, barWidth));
-
-            pDocker->m_dockSizeRatio = static_cast<double>(pDocker->m_dockStartSize) / static_cast<double>(GetWindowRect().Width());
         }
         else
         {
@@ -2351,8 +2358,6 @@ namespace Win32xx
             int barWidth = pDocker->GetBarWidth();
             if (pDocker->m_dockStartSize >= (height - barWidth))
                 pDocker->SetDockSize(MAX(height/2 - barWidth, barWidth));
-
-            pDocker->m_dockSizeRatio = static_cast<double>(pDocker->m_dockStartSize) / static_cast<double>(GetWindowRect().Height());
         }
 
         // Redraw the docked windows
@@ -2365,6 +2370,7 @@ namespace Win32xx
                 pDocker->GetView().SetFocus();
 
             GetTopmostDocker()->SetRedraw(FALSE);
+            pDocker->SetDefaultCaptionHeight();
             RecalcDockLayout();
             GetTopmostDocker()->SetRedraw(TRUE);
             GetTopmostDocker()->RedrawWindow();
@@ -2451,10 +2457,6 @@ namespace Win32xx
         pDocker->SetParent(*GetDockAncestor());
         pDocker->GetDockBar().SetParent(*GetDockAncestor());
 
-        double dockStartSize = static_cast<double>(pDocker->m_dockStartSize);
-        double ancestorHeight = static_cast<double>(GetDockAncestor()->GetWindowRect().Height());
-        double ancestorWidth = static_cast<double>(GetDockAncestor()->GetWindowRect().Width());
-
         // Limit the docked size to half the parent's size if it won't fit inside parent.
         if (((dockStyle & 0xF)  == DS_DOCKED_LEFT) || ((dockStyle &0xF)  == DS_DOCKED_RIGHT))
         {
@@ -2462,8 +2464,6 @@ namespace Win32xx
             int barWidth = pDocker->GetBarWidth();
             if (pDocker->m_dockStartSize >= (width - barWidth))
                 pDocker->SetDockSize(MAX(width/2 - barWidth, barWidth));
-
-            pDocker->m_dockSizeRatio = dockStartSize / ancestorWidth;
         }
         else
         {
@@ -2471,8 +2471,6 @@ namespace Win32xx
             int barWidth = pDocker->GetBarWidth();
             if (pDocker->m_dockStartSize >= (height - barWidth))
                 pDocker->SetDockSize(MAX(height/2 - barWidth, barWidth));
-
-            pDocker->m_dockSizeRatio = dockStartSize / ancestorHeight;
         }
 
         // Redraw the docked windows.
@@ -2502,14 +2500,15 @@ namespace Win32xx
         std::vector<CDocker*>::iterator it;
         for (it = v.begin(); it != v.end(); ++it)
         {
-            if ((*it)->IsWindow())
+            if ((*it)->IsWindow() && ((*it)->GetTopmostDocker() == this))
             {
                 // Reset the docker size.
-                int size = (*it)->GetDockSize();
+                int size = ((*it)->GetDockSize() * GetWindowDpi(*GetTopmostDocker())) / GetTopmostDocker()->m_oldDpi;
                 (*it)->SetDockSize(size);
             }
         }
 
+        GetTopmostDocker()->m_oldDpi = GetWindowDpi(*GetTopmostDocker());
         RecalcDockLayout();
     }
 
@@ -2534,7 +2533,7 @@ namespace Win32xx
 
         CPoint pt = pThis->m_dockPoint;
 
-        // Update hWndTop if the DockAncestor is a child of the top level window.
+        // Update top if the DockAncestor is a child of the top level window.
         if (::IsChild(top, pThis->GetDockAncestor()->GetHwnd()))
             top = pThis->GetDockAncestor()->GetHwnd();
 
@@ -2650,26 +2649,13 @@ namespace Win32xx
     // Note: This function returns 0 if the docker has the DS_DOCKED_CONTAINER style.
     inline int CDocker::GetDockSize() const
     {
-        CRect parent;
-        if (GetDockParent())
-            parent = GetDockParent()->GetWindowRect();
-        else
-            parent = GetDockAncestor()->GetWindowRect();
 
-        double dockSize = 0;
-        if ((GetDockStyle() & DS_DOCKED_LEFT) || (GetDockStyle() & DS_DOCKED_RIGHT))
-            dockSize = parent.Width()*m_dockSizeRatio;
-        else if ((GetDockStyle() & DS_DOCKED_TOP) || (GetDockStyle() & DS_DOCKED_BOTTOM))
-            dockSize = parent.Height()*m_dockSizeRatio;
-        else if ((GetDockStyle() & DS_DOCKED_CONTAINER))
-            dockSize = 0;
-
-        return static_cast<int>(dockSize);
+        return m_dockStartSize;
     }
 
     // Retrieves the Docker whose view window contains the specified point.
     // Used when dragging undocked dockers over other dockers to provide
-    // the docker which needs to display the dock targets and dock hints.
+    // the docker that needs to display the dock targets and dock hints.
     inline CDocker* CDocker::GetDockUnderDragPoint(POINT pt)
     {
         // Step 1: Find the top level Docker under the point
@@ -2712,7 +2698,7 @@ namespace Win32xx
     // the same value as the GetWindowDpi function, but not when the user
     // changes DPI settings manually and a WM_SETTINGCHANGE message is sent.
     // This function uses the GetDpiForMonitor function.
-    inline int CDocker::GetMonitorDpi(HWND hWnd)
+    inline int CDocker::GetMonitorDpi(HWND wnd)
     {
         // Retrieve desktop's dpi as a fallback.
         CClientDC desktopDC(HWND_DESKTOP);
@@ -2729,7 +2715,7 @@ namespace Win32xx
                 reinterpret_cast<GETDPIFORMONITOR*>(GetProcAddress(shcore, "GetDpiForMonitor"));
             if (pGetDpiForMonitor)
             {
-                HMONITOR hMonitor = MonitorFromWindow(hWnd, MONITOR_DEFAULTTOPRIMARY);
+                HMONITOR hMonitor = MonitorFromWindow(wnd, MONITOR_DEFAULTTOPRIMARY);
                 UINT dpiX;
                 UINT dpiY;
                 HRESULT hr = pGetDpiForMonitor(hMonitor, 0, &dpiX, &dpiY);
@@ -2739,10 +2725,6 @@ namespace Win32xx
                 }
             }
         }
-
-#else
-
-        return GetWindowDpi(hWnd);
 
 #endif // MONITOR_DEFAULTTOPRIMARY
 
@@ -3408,7 +3390,7 @@ namespace Win32xx
         return 0;
     }
 
-    // Called in response to a WM_DPICHANGED message which is sent to a top-level
+    // Called in response to a WM_DPICHANGED message that is sent to a top-level
     // window when the DPI changes.
     // Only top-level windows receive a WM_DPICHANGED message, so this message is
     // handled when an undocked docker is moved between monitors.
@@ -3421,30 +3403,6 @@ namespace Win32xx
             SetWindowPos(HWND_TOP, *prc, SWP_SHOWWINDOW);
             SetRedraw(FALSE);
 
-            std::vector<DockPtr> v = GetAllDockChildren();
-            std::vector<DockPtr>::iterator it;
-            for (it = v.begin(); it != v.end(); ++it)
-            {
-                if ((*it)->IsWindow() && IsChildOfDocker((*it)->GetHwnd()))
-                {
-                    // Adjust the dock caption height.
-                    (*it)->SetDefaultCaptionHeight();
-
-                    // Recalculate the docker size.
-                    if ((*it)->GetDockBar().IsWindow() && (*it)->m_pDockParent != NULL)
-                    {
-                        DRAGPOS dp;
-                        ZeroMemory(&dp, sizeof(dp));
-                        dp.dockZone = (*it)->GetDockStyle();
-                        dp.pDocker = (*it).get();
-                        CRect rc = (*it)->GetDockBar().GetWindowRect();
-                        CPoint pt((rc.left + rc.right) / 2, (rc.top + rc.bottom) / 2);
-                        dp.pos = pt;
-                        ResizeDockers(&dp);
-                    }
-                }
-            }
-
             RecalcDockLayout();
 
             SetRedraw(TRUE);
@@ -3454,7 +3412,7 @@ namespace Win32xx
         return 0;
     }
 
-    // Called in response to a WM_DPICHANGED_BEFOREPARENT message which is sent to child
+    // Called in response to a WM_DPICHANGED_BEFOREPARENT message that is sent to child
     // windows after a DPI change. A WM_DPICHANGED_BEFOREPARENT is only received when the
     // application is DPI_AWARENESS_PER_MONITOR_AWARE.
     inline LRESULT CDocker::OnDpiChangedBeforeParent(UINT, WPARAM, LPARAM)
@@ -3465,7 +3423,6 @@ namespace Win32xx
         if (GetDockAncestor() != GetTopmostDocker())
         {
             m_dockStartSize = m_dockStartSize * GetTopmostDocker()->m_newDpi / GetTopmostDocker()->m_oldDpi;
-            m_dockSizeRatio = 1.0;
         }
         RecalcDockLayout();
 
@@ -3550,32 +3507,40 @@ namespace Win32xx
     // setting or when policy settings (including display settings) have changed.
     inline LRESULT CDocker::OnSettingChange(UINT, WPARAM, LPARAM)
     {
-        SetRedraw(FALSE);
-        int newDPI = GetMonitorDpi(*this);
-        int oldDPI = GetWindowDpi(*this);
-
-        CRect rc = GetWindowRect();
-        int width = (rc.Width() * newDPI) / oldDPI;
-        int height = (rc.Height() * newDPI) / oldDPI;
-        rc.right = rc.left + width;
-        rc.bottom = rc.top + height;
-        SetWindowPos(HWND_TOP, rc, SWP_FRAMECHANGED | SWP_SHOWWINDOW);
-
-        std::vector<DockPtr> v = GetAllDockChildren();
-        std::vector<DockPtr>::iterator it;
-        for (it = v.begin(); it != v.end(); ++it)
+        if (this == GetTopmostDocker())
         {
-            if ((*it)->IsWindow() && IsChildOfDocker((*it)->GetHwnd()))
+            SetRedraw(FALSE);
+            int newDPI = GetMonitorDpi(*this);
+            int oldDPI = GetWindowDpi(*this);
+
+            if (newDPI != oldDPI)
             {
-                int size = ((*it)->m_dockStartSize * newDPI) / oldDPI;
-                (*it)->SetDockSize(size);
+                m_newDpi = newDPI;
+                m_oldDpi = newDPI;
+
+                std::vector<DockPtr> v = GetAllDockChildren();
+                std::vector<DockPtr>::iterator it;
+                for (it = v.begin(); it != v.end(); ++it)
+                {
+                    if ((*it)->IsWindow() && IsChildOfDocker((*it)->GetHwnd()))
+                    {
+                        int size = ((*it)->m_dockStartSize * newDPI) / oldDPI;
+                        (*it)->SetDockSize(size);
+                    }
+                }
+
+                CRect rc = GetWindowRect();
+                int width = (rc.Width() * newDPI) / oldDPI;
+                int height = (rc.Height() * newDPI) / oldDPI;
+                rc.right = rc.left + width;
+                rc.bottom = rc.top + height;
+                SetWindowPos(HWND_TOP, rc, SWP_FRAMECHANGED | SWP_SHOWWINDOW);
             }
+
+            RecalcDockLayout();
+            SetRedraw(TRUE);
+            RedrawWindow();
         }
-
-        RecalcDockLayout();
-        SetRedraw(TRUE);
-        RedrawWindow();
-
         return 0;
     }
 
@@ -3743,7 +3708,6 @@ namespace Win32xx
             pDockFirstChild = m_dockChildren[0];
             pDockFirstChild->m_dockStyle = (pDockFirstChild->m_dockStyle & 0xFFFFFFF0) | (m_dockStyle & 0xF);
             pDockFirstChild->m_dockStartSize = m_dockStartSize;
-            pDockFirstChild->m_dockSizeRatio = m_dockSizeRatio;
 
             if (m_pDockParent)
             {
@@ -3805,9 +3769,6 @@ namespace Win32xx
             switch ((*iter)->GetDockStyle() & 0xF)
             {
             case DS_DOCKED_LEFT:
-                if ((*iter)->GetDockStyle() & DS_NO_FIXED_RESIZE)
-                    dockSize = MIN((*iter)->m_dockSizeRatio*(GetWindowRect().Width()), rcChild.Width());
-
                 if (isRTL)
                 {
                     rcChild.left = rcChild.right - static_cast<int>(dockSize);
@@ -3822,9 +3783,6 @@ namespace Win32xx
                 }
                 break;
             case DS_DOCKED_RIGHT:
-                if ((*iter)->GetDockStyle() & DS_NO_FIXED_RESIZE)
-                    dockSize = MIN((*iter)->m_dockSizeRatio*(GetWindowRect().Width()), rcChild.Width());
-
                 if (isRTL)
                 {
                     rcChild.right = rcChild.left + static_cast<int>(dockSize);
@@ -3840,17 +3798,11 @@ namespace Win32xx
 
                 break;
             case DS_DOCKED_TOP:
-                if ((*iter)->GetDockStyle() & DS_NO_FIXED_RESIZE)
-                    dockSize = MIN((*iter)->m_dockSizeRatio*(GetWindowRect().Height()), rcChild.Height());
-
                 rcChild.bottom = rcChild.top + static_cast<int>(dockSize);
                 rcChild.bottom = MAX(rcChild.bottom, rc.top + minSize);
                 rcChild.bottom = MIN(rcChild.bottom, rc.bottom - minSize);
                 break;
             case DS_DOCKED_BOTTOM:
-                if ((*iter)->GetDockStyle() & DS_NO_FIXED_RESIZE)
-                    dockSize = MIN((*iter)->m_dockSizeRatio*(GetWindowRect().Height()), rcChild.Height());
-
                 rcChild.top = rcChild.bottom - static_cast<int>(dockSize);
                 rcChild.top = MIN(rcChild.top, rc.bottom - minSize);
                 rcChild.top = MAX(rcChild.top, rc.top + minSize);
@@ -3944,15 +3896,10 @@ namespace Win32xx
         int dockSize;
 
         BOOL isRTL = false;
+
 #ifdef WS_EX_LAYOUTRTL
         isRTL = ((GetExStyle() & WS_EX_LAYOUTRTL)) != 0;
 #endif
-
-        CRect rcDockParent = pDocker->m_pDockParent->GetWindowRect();
-
-        double dockStartSize = static_cast<double>(pDocker->m_dockStartSize);
-        double parentWidth = static_cast<double>(rcDockParent.Width());
-        double parentHeight = static_cast<double>(rcDockParent.Height());
 
         switch (pDocker->GetDockStyle() & 0xF)
         {
@@ -3961,7 +3908,6 @@ namespace Win32xx
             else     dockSize = MAX(pt.x, barWidth / 2) - rcDock.left - (barWidth / 2);
 
             dockSize = MAX(-barWidth, dockSize);
-            pDocker->m_dockSizeRatio = dockStartSize / parentWidth;
             pDocker->SetDockSize(dockSize);
             break;
         case DS_DOCKED_RIGHT:
@@ -3969,19 +3915,16 @@ namespace Win32xx
             else      dockSize = rcDock.right - MAX(pt.x, barWidth / 2) - (barWidth / 2);
 
             dockSize = MAX(-barWidth, dockSize);
-            pDocker->m_dockSizeRatio = dockStartSize / parentWidth;
             pDocker->SetDockSize(dockSize);
             break;
         case DS_DOCKED_TOP:
             dockSize = MAX(pt.y, barWidth / 2) - rcDock.top - (barWidth / 2);
             dockSize = MAX(-barWidth, dockSize);
-            pDocker->m_dockSizeRatio = dockStartSize / parentHeight;
             pDocker->SetDockSize(dockSize);
             break;
         case DS_DOCKED_BOTTOM:
             dockSize = rcDock.bottom - MAX(pt.y, barWidth / 2) - (barWidth / 2);
             dockSize = MAX(-barWidth, dockSize);
-            pDocker->m_dockSizeRatio = dockStartSize / parentHeight;
             pDocker->SetDockSize(dockSize);
             break;
         }
@@ -4069,19 +4012,6 @@ namespace Win32xx
                 // Fill the DockInfo vector with the docking information.
                 for (iter = sortedDockers.begin(); iter != sortedDockers.end(); ++iter)
                 {
-                    // Recalculate the docker size.
-                    if ((*iter)->GetDockBar().IsWindow() && (*iter)->m_pDockParent != NULL)
-                    {
-                        DRAGPOS dp;
-                        ZeroMemory(&dp, sizeof(dp));
-                        dp.dockZone = (*iter)->GetDockStyle();
-                        dp.pDocker = *iter;
-                        CRect rc = (*iter)->GetDockBar().GetWindowRect();
-                        CPoint pt((rc.left + rc.right)/2, (rc.top + rc.bottom)/2);
-                        dp.pos = pt;
-                        ResizeDockers(&dp);
-                    }
-
                     DockInfo di;
                     ZeroMemory(&di, sizeof(di));
                     if (! (*iter)->IsWindow())
@@ -4234,40 +4164,15 @@ namespace Win32xx
     // Sets the size of a docked docker
     inline void CDocker::SetDockSize(int dockSize)
     {
-        if (IsDocked())
-        {
-            assert (m_pDockParent);
-            if (!m_pDockParent)  return;
-
-            CRect rc = m_pDockParent->GetWindowRect();
-            switch (GetDockStyle() & 0xF)
-            {
-            case DS_DOCKED_LEFT:
-            case DS_DOCKED_RIGHT:
-                m_dockStartSize = MIN(dockSize,rc.Width());
-                m_dockSizeRatio = static_cast<double>(m_dockStartSize) / static_cast<double>(rc.Width());
-                break;
-            case DS_DOCKED_TOP:
-            case DS_DOCKED_BOTTOM:
-                m_dockStartSize = MIN(dockSize,rc.Height());
-                m_dockSizeRatio = static_cast<double>(m_dockStartSize) / static_cast<double>(rc.Height());
-                break;
-            }
-
-            RecalcDockLayout();
-        }
-        else
-        {
-            m_dockStartSize = dockSize;
-            m_dockSizeRatio = 1.0;
-        }
+        m_dockStartSize = dockSize;
+        RecalcDockLayout();
     }
 
     // Sets the docker's style from one or more of the following:
     // DS_DOCKED_LEFT,DS_DOCKED_RIGHT, DS_DOCKED_TOP, DS_DOCKED_BOTTOM,
     // DS_NO_DOCKCHILD_LEFT, DS_NO_DOCKCHILD_RIGHT, DS_NO_DOCKCHILD_TOP,
     // DS_NO_DOCKCHILD_BOTTOM, DS_NO_RESIZE, DS_NO_CAPTION, DS_NO_CLOSE,
-    // DS_NO_UNDOCK, DS_CLIENTEDGE, DS_NO_FIXED_RESIZE, DS_DOCKED_CONTAINER,
+    // DS_NO_UNDOCK, DS_CLIENTEDGE, DS_DOCKED_CONTAINER,
     // DS_DOCKED_LEFTMOST, DS_DOCKED_RIGHTMOST, DS_DOCKED_TOPMOST,
     // DS_DOCKED_BOTTOMMOST.
     inline void CDocker::SetDockStyle(DWORD dockStyle)
@@ -4511,7 +4416,6 @@ namespace Win32xx
                 pDockUndockedFrom = pDockNew;
                 pDockNew->m_dockStyle       = pDockOld->m_dockStyle;
                 pDockNew->m_dockStartSize   = pDockOld->m_dockStartSize;
-                pDockNew->m_dockSizeRatio   = pDockOld->m_dockSizeRatio;
                 if (pDockOld->IsDocked())
                 {
                     pDockNew->m_pDockParent     = pDockOld->m_pDockParent;
@@ -4581,7 +4485,7 @@ namespace Win32xx
         pDocker->BringWindowToTop();
     }
 
-    // A diagnostic routine which verifies the integrity of the docking layout.
+    // A diagnostic routine that verifies the integrity of the docking layout.
     inline BOOL CDocker::VerifyDockers()
     {
         BOOL Verified = TRUE;
@@ -4993,7 +4897,7 @@ namespace Win32xx
         }
     }
 
-    // Called in response to a WM_DPICHANGED_BEFOREPARENT message which is sent to child
+    // Called in response to a WM_DPICHANGED_BEFOREPARENT message that is sent to child
     // windows after a DPI change. A WM_DPICHANGED_BEFOREPARENT is only received when the
     // application is DPI_AWARENESS_PER_MONITOR_AWARE.
     inline LRESULT CDockContainer::OnDpiChangedBeforeParent(UINT, WPARAM, LPARAM)

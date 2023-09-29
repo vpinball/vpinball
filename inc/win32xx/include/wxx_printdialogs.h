@@ -1,5 +1,5 @@
-// Win32++   Version 9.3
-// Release Date: 5th June 2023
+// Win32++   Version 9.4
+// Release Date: 25th September 2023
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -51,10 +51,10 @@
 // Declaration of the CPrintDialog and CPageSetupDialog class, along
 // with the CGlobalLock class template.
 
-// CPrintDialog displays the Print dialog which allows the user to
+// CPrintDialog displays the Print dialog, which allows the user to
 // select the printer to use.
 
-// CPageSetupDialog displays the PageSetup dialog which allows the user
+// CPageSetupDialog displays the PageSetup dialog, which allows the user
 // to select the page settings.
 
 // The CPrintDialog and CPageSetupDialog classes share global memory
@@ -99,9 +99,9 @@ namespace Win32xx
     ///////////////////////////////////////////////////////////////////
     // Acknowledgement:
     //  CGlobalLock is based on code by Rob Caldecott
-    //  See:  https://www.codeproject.com/Articles/16692/WebControls/
+    //  See:  https://www.codeproject.com/Articles/16692/A-Template-Wrapper-for-GlobalLock
     //
-    //////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////
 
 
     //////////////////////////////////////
@@ -221,7 +221,7 @@ namespace Win32xx
 
     //////////////////////////////////////////////////////////////////////
     // A set of typedefs to simplify the use of CGlobalLock.
-    // These provide self unlocking objects which can be used for pointers
+    // These provide self unlocking objects that can be used for pointers
     // to global memory. Using these typedefs eliminate the need to manually
     // lock or unlock the global memory handles.
     // Note: In the examples below, hDevMode and hDevNames can be either a raw

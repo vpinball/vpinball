@@ -1,5 +1,5 @@
-// Win32++   Version 9.3
-// Release Date: 5th June 2023
+// Win32++   Version 9.4
+// Release Date: 25th September 2023
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -272,7 +272,7 @@ namespace Win32xx
             int border = 10;
             CRect rcClient = GetClientRect();
 
-            double ratio = double(bm.bmHeight) / double(bm.bmWidth);
+            double ratio = static_cast<double>(bm.bmHeight) / static_cast<double>(bm.bmWidth);
             int previewWidth;
             int previewHeight;
 

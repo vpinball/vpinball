@@ -1,5 +1,5 @@
-// Win32++   Version 9.3
-// Release Date: 5th June 2023
+// Win32++   Version 9.4
+// Release Date: 25th September 2023
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -62,7 +62,7 @@ namespace Win32xx
     class CBitmap;
 
     ///////////////////////////////////////
-    // The CImageList class which provides the functionality of image lists.
+    // The CImageList class that provides the functionality of image lists.
     // An image list is a collection of images of the same size, each of
     // which can be referred to by its index.
     class CImageList
@@ -252,7 +252,7 @@ namespace Win32xx
                 m_pData = new CIml_Data;
             }
 
-            if (images)
+            if (images != 0)
             {
                 // Add the image list to this CImageList
                 CIml_Data* pCImlData = GetApp()->GetCImlData(images);
@@ -700,7 +700,7 @@ namespace Win32xx
                 COLORREF mask = RGB(200, 200, 200);
                 if (GetDeviceCaps(DesktopDC, BITSPIXEL) < 24)
                 {
-                    HPALETTE hPal = reinterpret_cast<HPALETTE>(GetCurrentObject(DesktopDC, OBJ_PAL));
+                    HPALETTE hPal = static_cast<HPALETTE>(GetCurrentObject(DesktopDC, OBJ_PAL));
                     UINT index = GetNearestPaletteIndex(hPal, mask);
                     if (index != CLR_INVALID)
                         mask = PALETTEINDEX(index);

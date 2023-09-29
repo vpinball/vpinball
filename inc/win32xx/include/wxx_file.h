@@ -1,5 +1,5 @@
-// Win32++   Version 9.3
-// Release Date: 5th June 2023
+// Win32++   Version 9.4
+// Release Date: 25th September 2023
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -282,7 +282,7 @@ namespace Win32xx
         return result;
     }
 
-    // Returns the current value of the file pointer, which can be used in subsequent calls to Seek.
+    // Returns the current value of the file pointer that can be used in subsequent calls to Seek.
     // Refer to SetFilePointer in the Windows API documentation for more information.
     inline ULONGLONG CFile::GetPosition() const
     {

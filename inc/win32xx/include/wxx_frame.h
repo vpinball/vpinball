@@ -1,5 +1,5 @@
-// Win32++   Version 9.3
-// Release Date: 5th June 2023
+// Win32++   Version 9.4
+// Release Date: 25th September 2023
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -344,7 +344,7 @@ namespace Win32xx
         HACCEL m_accel;                     // handle to the frame's accelerator table (used by MDI without MDI child)
         CWnd* m_pView;                      // pointer to the View CWnd object
         UINT m_maxMRU;                      // maximum number of MRU entries
-        HWND m_oldFocus;                    // The window which had focus prior to the app's deactivation
+        HWND m_oldFocus;                    // The window that had focus prior to the app's deactivation
         HHOOK m_kbdHook;                    // Keyboard hook.
 
         CMenuMetrics m_menuMetrics;         // The MenuMetrics object
@@ -659,7 +659,7 @@ namespace Win32xx
 
         GetToolBar().AddButton(id, isEnabled, image);
 
-        if (text != 0)
+        if (text != NULL)
             GetToolBar().SetButtonText(id, text);
     }
 
@@ -737,7 +737,7 @@ namespace Win32xx
         LPNMTBCUSTOMDRAW lpNMCustomDraw = (LPNMTBCUSTOMDRAW)pNMHDR;
         CMenuBar* pMenubar = reinterpret_cast<CMenuBar*>
                              (::SendMessage(pNMHDR->hwndFrom, UWM_GETCMENUBAR, 0, 0));
-        assert(pMenubar != 0);
+        assert(pMenubar != NULL);
 
         switch (lpNMCustomDraw->nmcd.dwDrawStage)
         {
@@ -789,7 +789,7 @@ namespace Win32xx
 
                     // Draw highlight text.
                     CFont font = pMenubar->GetFont();
-                    CFont oldFont = drawDC.SelectObject(font);
+                    drawDC.SelectObject(font);
 
                     rc.bottom += 1;
                     drawDC.SetBkMode(TRANSPARENT);
@@ -801,7 +801,6 @@ namespace Win32xx
                         format &= ~DT_HIDEPREFIX;
 
                     drawDC.DrawText(str, str.GetLength(), rc, format);
-                    drawDC.SelectObject(oldFont);
 
                     return CDRF_SKIPDEFAULT;  // No further drawing
                 }
@@ -1311,7 +1310,7 @@ namespace Win32xx
         // Turn on 'hide prefix' style for mouse navigation.
         CMenuBar* pMenubar = reinterpret_cast<CMenuBar*>
                              (::SendMessage(pDrawItem->hwndItem, UWM_GETCMENUBAR, 0, 0));
-        if (pMenubar != 0)
+        if (pMenubar != NULL)
         {
             if (!m_altKeyPressed && !pMenubar->IsAltMode())
                 format |= DT_HIDEPREFIX;
@@ -1904,7 +1903,7 @@ namespace Win32xx
 
         if (LOWORD(wparam) == WA_INACTIVE)
         {
-            // Save the hwnd of the window which currently has focus.
+            // Save the hwnd of the window that currently has focus.
             // This must be CFrame window itself or a child window.
             if (!T::IsIconic()) m_oldFocus = ::GetFocus();
 
@@ -2064,7 +2063,7 @@ namespace Win32xx
         ::PostQuitMessage(0);   // Terminates the application.
     }
 
-    // Called in response to a WM_DPICHANGED message which is sent to a top-level
+    // Called in response to a WM_DPICHANGED message that is sent to a top-level
     // window when the DPI changes. Only top-level windows receive a WM_DPICHANGED message.
     template <class T>
     inline LRESULT CFrameT<T>::OnDpiChanged(UINT, WPARAM, LPARAM lparam)
@@ -2585,7 +2584,7 @@ namespace Win32xx
             menu.GetMenuItemInfo(position, mii, TRUE);
 
             MenuItemData* pItemData = reinterpret_cast<MenuItemData*>(mii.dwItemData);
-            if (pItemData != 0)
+            if (pItemData != NULL)
             {
                 mii.fType = pItemData->mii.fType;
                 mii.dwTypeData = const_cast<LPTSTR>(pItemData->itemText.c_str());

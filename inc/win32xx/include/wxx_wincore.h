@@ -1,5 +1,5 @@
-// Win32++   Version 9.3
-// Release Date: 5th June 2023
+// Win32++   Version 9.4
+// Release Date: 25th September 2023
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -228,7 +228,7 @@ namespace Win32xx
     // Retrieves the DPI of the window if the specified handle is a valid
     // window, or the DPI of the desktop window otherwise.
     // Use GetWindowDPI(HWND_DESKTOP) to retrieve the DPI of the desktop window.
-    inline int GetWindowDpi(HWND hWnd)
+    inline int GetWindowDpi(HWND wnd)
     {
         // Retrieve desktop's dpi as a fallback.
         CClientDC desktopDC(HWND_DESKTOP);
@@ -237,13 +237,13 @@ namespace Win32xx
         // Retrieve the window's dpi if we can.
         typedef UINT WINAPI GETDPIFORWINDOW(HWND);
         HMODULE user = GetModuleHandle(_T("user32.dll"));
-        if (user && ::IsWindow(hWnd))
+        if (user && ::IsWindow(wnd))
         {
             GETDPIFORWINDOW* pGetDpiForWindow =
                 reinterpret_cast<GETDPIFORWINDOW*>(GetProcAddress(user, "GetDpiForWindow"));
             if (pGetDpiForWindow)
             {
-                dpi = static_cast<int>(pGetDpiForWindow(hWnd));
+                dpi = static_cast<int>(pGetDpiForWindow(wnd));
             }
         }
 
@@ -539,7 +539,7 @@ namespace Win32xx
         WNDCLASS wc;
         ZeroMemory(&wc, sizeof(wc));
         wc.lpszClassName = classString;
-        wc.hbrBackground = reinterpret_cast<HBRUSH>(::GetStockObject(WHITE_BRUSH));
+        wc.hbrBackground = static_cast<HBRUSH>(::GetStockObject(WHITE_BRUSH));
         wc.hCursor       = ::LoadCursor(0, IDC_ARROW);
 
         // Register the window class (if not already registered).
@@ -1063,7 +1063,7 @@ namespace Win32xx
         // 1) The lpszClassName must be set for this function to take effect.
         // 2) No other defaults are set, so the following settings might prove useful
         //     wc.hCursor = ::LoadCursor(0, IDC_ARROW);
-        //     wc.hbrBackground = reinterpret_cast<HBRUSH>(::GetStockObject(WHITE_BRUSH));
+        //     wc.hbrBackground = static_cast<HBRUSH>(::GetStockObject(WHITE_BRUSH));
         //     wc.icon = ::LoadIcon(0, IDI_APPLICATION);
         // 3) The styles that can be set here are WNDCLASS styles. These are a different
         //     set of styles to those set by CREATESTRUCT (used in PreCreate).
@@ -1071,7 +1071,7 @@ namespace Win32xx
     }
 
     // Override this function if your class requires input messages to be
-    // translated before normal processing. Function which translate messages
+    // translated before normal processing. Functions which translate messages
     // include TranslateAccelerator, TranslateMDISysAccel and IsDialogMessage.
     // Return TRUE if the message is translated.
     inline BOOL CWnd::PreTranslateMessage(MSG&)
@@ -2253,7 +2253,7 @@ namespace Win32xx
     //              This parameter may be NULL.
     // flags:       Specifies flags that control scrolling.This parameter can be one of the following values.
     //   SW_ERASE:          Erases the newly invalidated region when specified with the SW_INVALIDATE flag.
-    //   SW_INVALIDATE:     Invalidates the region identified by the hrgnUpdate parameter after scrolling.
+    //   SW_INVALIDATE:     Invalidates the region identified by the update parameter after scrolling.
     //   SW_SCROLLCHILDREN: Scrolls all child windows that intersect the rectangle pointed to by the prcScroll parameter.
     //   SW_SMOOTHSCROLL:   Scrolls using smooth scrolling.
     // Refer to ScrollWindowEx in the Windows API documentation for more information.

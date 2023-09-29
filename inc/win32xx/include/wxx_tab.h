@@ -1,5 +1,5 @@
-// Win32++   Version 9.3
-// Release Date: 5th June 2023
+// Win32++   Version 9.4
+// Release Date: 25th September 2023
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -380,7 +380,7 @@ namespace Win32xx
     // Adds a tab along with the specified view window.
     // The framework assumes ownership of the CWnd pointer provided,
     // and deletes the CWnd object when the tab is removed or destroyed.
-    // Returns a pointer to the view window which was supplied.
+    // Returns a pointer to the view window that was supplied.
     // Use RemoveTabPage to remove the tab and page added in this manner.
     inline CWnd* CTab::AddTabPage(CWnd* pView, LPCTSTR tabText, HICON icon, int tabID)
     {
@@ -462,8 +462,8 @@ namespace Win32xx
             CFont marlett;
             marlett.CreatePointFont(100, _T("Marlett"));
             dc.SetBkMode(TRANSPARENT);
-            marlett = DpiScaleFont(marlett, 10);
-            dc.SelectObject(marlett);
+            LOGFONT lf = DpiScaleLogfont(marlett.GetLogFont(), 10);
+            dc.CreateFontIndirect(lf);
 
             COLORREF grey(RGB(232, 228, 220));
             COLORREF black(RGB(0, 0, 0));
@@ -534,8 +534,8 @@ namespace Win32xx
             CFont marlett;
             marlett.CreatePointFont(100, _T("Marlett"));
             dc.SetBkMode(TRANSPARENT);
-            marlett = DpiScaleFont(marlett, 10);
-            dc.SelectObject(marlett);
+            LOGFONT lf = DpiScaleLogfont(marlett.GetLogFont(), 10);
+            dc.CreateFontIndirect(lf);
 
             COLORREF grey(RGB(232, 228, 220));
             COLORREF black(RGB(0, 0, 0));
@@ -574,7 +574,7 @@ namespace Win32xx
 
             }
 
-            if (GetWinVersion() > 2501)
+            if (GetWinVersion() >= 3000)
                 rcList.OffsetRect(1, -1);
 
             // Draw the down arrow button.
@@ -1118,7 +1118,7 @@ namespace Win32xx
         return FinalWindowProc(msg, wparam, lparam);
     }
 
-    // Called in response to a WM_DPICHANGED_BEFOREPARENT message which is sent to child
+    // Called in response to a WM_DPICHANGED_BEFOREPARENT message that is sent to child
     // windows after a DPI change. A WM_DPICHANGED_BEFOREPARENT is only received when the
     // application is DPI_AWARENESS_PER_MONITOR_AWARE.
     inline LRESULT CTab::OnDpiChangedBeforeParent(UINT, WPARAM, LPARAM)
@@ -1508,7 +1508,7 @@ namespace Win32xx
         DrawListButton(dc);
     }
 
-    // Definition of a dialog template which displays a List Box.
+    // Definition of a dialog template that displays a List Box.
     inline void CTab::ShowListDialog()
     {
         // Display the modal dialog. The dialog is defined in the dialog template rather
@@ -2131,7 +2131,7 @@ namespace Win32xx
         return TRUE;
     }
 
-    // Called in response to a WM_DPICHANGED_BEFOREPARENT message which is sent to child
+    // Called in response to a WM_DPICHANGED_BEFOREPARENT message that is sent to child
     // windows after a DPI change. A WM_DPICHANGED_BEFOREPARENT is only received when the
     // application is DPI_AWARENESS_PER_MONITOR_AWARE.
     inline LRESULT CTabbedMDI::OnDpiChangedBeforeParent(UINT, WPARAM, LPARAM)

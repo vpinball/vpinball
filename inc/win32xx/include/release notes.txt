@@ -69,12 +69,18 @@ Win32++ code has the following features
  * Tabbed MDIs
  * Print preview support.
 
-Frames produced by Win32++ include the following:
+Frames produced by Win32++ typically have the following:
  * Rebar
  * Menubar
- * Toolbar
+ * Toolbar with tooltips
  * Status bar
- * Tool tips
+
+Frames also support the following optional features
+* Themes
+* Docking
+* Ribbons
+* MDI frames
+* Dark mode
 
 About the file downloads
 ------------------------
@@ -85,10 +91,14 @@ The file download from Sourceforge includes the following:
  * A collection of sample applications
 
 The sample applications include:
- * Browser - An Internet browser application with an event sink.
- * CommonDialogs - a Demo of windows common dialogs, such as File/Save
+ * Animation - An example of an animation control in a dialog.
+ * Browser - An internet browser application with an event sink.
+ * Browser - An internet browser application with an event sink using ATL.
+ * CommonDialogs - a Demo of windows common dialogs, such as File/Save.
+ * Console - A console application with CString support.
  * ContextHelp - Shows how to incorporate context help into an application.
  * CustomControl - Shows how to put a web browser in a custom control for use in a dialog.
+ * DarkModeFrame - Demonstrate a frame application with dark mode support.
  * DateTime - A demo of a Date/time dialog for displaying and changing the time
  * DDXDemo - Demonstrates Dialog Data Exchange and validation.
  * Dialog - An example of a simple dialog application.
@@ -96,19 +106,25 @@ The sample applications include:
  * DialogDemo - An interactive dialog application demonstrating slider controls and progress bars.
  * DialogResizing - An example of a resizable dialog.
  * DialogTab - A dialog application with a tab control.
+ * DialogTemplate - An application that extracts the dialog template array from a dialog.
+ * Direct2D - Demonstrates the use of Direct2D in an application.
  * DirectX9 - A simple DirectX application.
  * DirectX11 - A simple DirectX application using DirectX 11.
  * DLL - Shows how to run Win32++ from within a DLL
  * Dock - An example of a simple docking application.
- * DockContainer - An example of a docking application which incorporates containers.
+ * DockContainer - An example of a docking application that incorporates containers.
  * DockTabbedMDI - An example of a docking application with containers and a tabbed MDI.
  * DoubleBuffer - Demonstrates how to implement double buffering for window drawing.
+ * EdgeBrowser - Demonstrate displaying a Microsoft Edge browser in a window.
+ * EdgeBrowserEx - Demonstrates displaying a tabbed Microsoft Edge browser.
  * Explorer - A Windows Explorer-like application.
- * FastGDI - An application which demonstrates direct manipulation of a bitmap's color.
+ * FastGDI - An application that demonstrates direct manipulation of a bitmap's color.
  * FormDocView - An example of a modeless dialog within a frame. Uses Doc/View architecture.
  * Frame - A simple frame application that stores settings in the registry.
+ * FrameEx - A simple frame application that uses PNG image resources.
  * GDIPlus - Demonstrates how to use GDI+ with Win32++.
  * INIFrame - A simple frame application that stores settings in an INI file.
+ * ListView - Demonstrates a listview control with text editing and sorting.
  * MDIDockFrame - Combines docking with a MDI frame.
  * MDIFrame - A simple MDI frame application.
  * MDIFrameDemo - Demonstrates some additional features of MDI frames.
@@ -116,28 +132,34 @@ The sample applications include:
  * MetaFile  - Demonstrates how to create and display an enhanced metafile.
  * MovieShow - This program manages a video library.
  * NetClient - Demonstrates a network chat client.
+ * NetClientAsync - Demonstrates a network chat client using async sockets.
  * NetServer - Demonstrates a network chat server.
+ * NetServerAsync - Demonstrates a network chat server using async sockets.
  * NetSimple - Simple client and server network programs.
  * Notepad - A simple text editor with printing.
  * Performance - Measures Win32++'s message handling speed.
  * Picture - A simple picture rendering application.
  * PrintPreview - Extends the Notepad sample by adding a print preview.
+ * PrintDialogEx - A text editor with printing that uses CPrintDialogEx.
  * PropertySheets - A demonstration of property sheets.
  * RebarDemo - Demonstrates the how to add a second ReBar to a frame application.
  * RibbonDockFrame - Demonstrates how to use a ribbon with a Docking Frame.
  * RibbonFrame - Demonstrates how to use the Windows 7 ribbon with a frame.
+ * RibbonMDIFrame - Demonstrates how to use the Windows 7 ribbon with a MDI frame.
  * RibbonSimple - Demonstrates how to use the Windows 7 ribbon with a simple window.
  * RoundWindow - Demonstrates how to use Win32++ to create a round window.
  * Scribble - A simple drawing application.
  * ScrollTextFile - displays a text file in a scrollable window.
  * Simple - Creates a simple window.
  * Splitter - Demonstrates how to use dockers to create splitter windows.
- * StatusBar - Demonstrates various things which can be done with the status bar.
+ * StatusBar - Demonstrates various things that can be done with the status bar.
  * TabDemo - Demonstrates the use of a CTab control in a frame.
  * TaskDialog - Demonstrates the use of task dialogs (available on Vista and above).
  * Themes - Demonstrates how to customize the colours for rebar and toolbar controls.
  * Threads - Demonstrates multi-threaded Windows.
  * TimeDemo - Demonstrates various uses of the CTime class.
+ * TitleBar - Demonstrates how to customize the color of a caption for a window.
+ * TitleBarFrame - Demonstrates how to customize the color of a caption for a frame.
  * ToolBarDemo - Demonstrates how to customize a toolbar.
  * Tray - Demonstrates how to "minimize" an application to the system tray.
  * WinPlot - Plots a function specified by the user.

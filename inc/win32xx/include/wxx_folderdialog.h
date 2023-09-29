@@ -1,5 +1,5 @@
-// Win32++   Version 9.3
-// Release Date: 5th June 2023
+// Win32++   Version 9.4
+// Release Date: 25th September 2023
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -144,7 +144,7 @@
 namespace Win32xx
 {
     ////////////////////////////////////////////////////////
-    // CFolderDialog manages a dialog box which allows users
+    // CFolderDialog manages a dialog box that allows users
     // to select a folder.
     class CFolderDialog : public CDialog
     {

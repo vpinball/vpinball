@@ -24,6 +24,7 @@ txt       | A text file
 xml       | An Extensible Markup Language file (defines the ribbon UI)
 hlsl      | Holds High Level Shading Language (HLSL), for DirectX
 fx        | An effect file, for DirectX
+nsi       | A NSIS (Nullsoft Scriptable Install System) script.
 
 Supported Compilers and Integrated Development Environments (IDEs)
 ==================================================================
@@ -62,7 +63,7 @@ compilers:
 * MinGW GNU compiler
 * Visual C++ Toolkit 2003
 
-Dev-C++ is an IDE which supports the MinGW GNU compiler
+Dev-C++ is an IDE that supports the MinGW GNU compiler
 
 Supported Operating Systems
 ===========================
@@ -72,42 +73,41 @@ The programs compiled with Win32++ can run on the following operating systems:
 * WinME
 * Windows NT 4
 * Windows 2000
-* Windows XP
+* Windows XP x32
 * Windows XP x64
-* Windows Vista
+* Windows Vista x32
 * Windows Vista x64
-* Windows 7
+* Windows 7 x32
 * Windows 7 x64
-* Windows 8
-* Windows 8 x 64
-* Windows 8.1
-* Windows 8.1 x 64
-* Windows 10
-* Windows 10 x 64
-* Windows 11 x 64
-* Windows Server 2003
+* Windows 8 x32
+* Windows 8 x64
+* Windows 8.1 x32
+* Windows 8.1 x64
+* Windows 10 x32
+* Windows 10 x64
+* Windows 11
+* Windows Server 2003 x32
 * Windows Server 2003 x64
-* Windows Server 2008
+* Windows Server 2008 x32
 * Windows Server 2008 x64
 * Windows Server 2012
 * Windows Server 2016
 * Windows Server 2019
 * Windows Server 2022
 
-Note: Programs compiled with Visual Studio 2008 and Visual Studio 2008
-Express will not run on Win32 operating systems earlier than Windows 2000.
-
 Win32++ is Unicode compliant and can therefore be used to develop Unicode
 applications. Users are advised that older operating systems (namely Win95,
 Win98 and WinME) will require code to be compiled as ANSI, as they
-don't support Unicode applications.
+don't support Unicode applications. 
 
-Win32++ supports 64bit compilers, and can be used to develop 64bit code.
+Code compiled with the more modern versions of visual studio may not run
+older operating systems. 64bit code only runs on 64bit operating systems.
+32bit code runs on both 32bit and 64bit operating systems.
 
 Directory Structure
 ===================
 When extracting the files from the zip archive, be sure to preserve the
-directory structure. The directory structure will typically look like this:
+directory structure. The directory structure will look like this:
 
 .\help
 .\include
@@ -115,9 +115,8 @@ directory structure. The directory structure will typically look like this:
 .\samples
 .\tools
 .\tutorials
-.\WCE samples
 
-The files which form the Win32++ library are contained in the include
+The files that form the Win32++ library are contained in the include
 folder.
 
 Help

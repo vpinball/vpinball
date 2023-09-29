@@ -1,5 +1,5 @@
-// Win32++   Version 9.3
-// Release Date: 5th June 2023
+// Win32++   Version 9.4
+// Release Date: 25th September 2023
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -653,7 +653,7 @@ namespace Win32xx
 
 #ifdef GetAddrInfo
 
-        if (m_pfnGetAddrInfo != 0 && m_pfnFreeAddrInfo != 0)
+        if (m_pfnGetAddrInfo != NULL && m_pfnFreeAddrInfo != NULL)
             isIPV6Supported = TRUE;
 
 #endif
@@ -834,7 +834,7 @@ namespace Win32xx
 
     }
 
-    // This function starts the thread which monitors the socket for events.
+    // This function starts the thread that monitors the socket for events.
     inline void CSocket::StartEvents()
     {
         StopEvents();   // Ensure the thread isn't already running

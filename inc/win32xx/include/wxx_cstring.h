@@ -1,5 +1,5 @@
-// Win32++   Version 9.3
-// Release Date: 5th June 2023
+// Win32++   Version 9.4
+// Release Date: 25th September 2023
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -57,7 +57,7 @@
 //    is no need for functions like LockBuffer and UnLockBuffer.
 //
 // 3) The Format functions only accepts POD (Plain Old Data) arguments. It does not
-//    accept arguments which are class or struct objects. In particular it does not
+//    accept arguments that are class or struct objects. In particular it does not
 //    accept CString objects, unless these are cast to LPCTSTR.
 //    This is demonstrates valid and invalid usage:
 //      CString string1(_T("Hello World"));
@@ -474,7 +474,7 @@ namespace Win32xx
     template <class T>
     inline bool CStringT<T>::operator == (const T* text) const
     {
-        assert(text != 0);
+        assert(text != NULL);
         return (Compare(text) == 0);
     }
 
@@ -490,7 +490,7 @@ namespace Win32xx
     template <class T>
     inline bool CStringT<T>::operator != (const T* text) const
     {
-        assert(text != 0);
+        assert(text != NULL);
         return Compare(text) != 0;
     }
 
@@ -600,7 +600,7 @@ namespace Win32xx
     template <>
     inline int CStringT<CHAR>::Collate(const CHAR* text) const
     {
-        assert(text != 0);
+        assert(text != NULL);
         int res = ::CompareStringA(LOCALE_USER_DEFAULT, 0, m_str.c_str(), -1, text, -1);
 
         assert(res);
@@ -614,7 +614,7 @@ namespace Win32xx
     template <>
     inline int CStringT<WCHAR>::Collate(const WCHAR* text) const
     {
-        assert(text != 0);
+        assert(text != NULL);
         int res = ::CompareStringW(LOCALE_USER_DEFAULT, 0, m_str.c_str(), -1, text, -1);
 
         assert(res);
@@ -628,7 +628,7 @@ namespace Win32xx
     template <>
     inline int CStringT<CHAR>::CollateNoCase(const CHAR* text) const
     {
-        assert(text != 0);
+        assert(text != NULL);
         int res = ::CompareStringA(LOCALE_USER_DEFAULT, NORM_IGNORECASE, m_str.c_str(), -1, text, -1);
 
         assert(res);
@@ -642,7 +642,7 @@ namespace Win32xx
     template <>
     inline int CStringT<WCHAR>::CollateNoCase(const WCHAR* text) const
     {
-        assert(text != 0);
+        assert(text != NULL);
         int res = ::CompareStringW(LOCALE_USER_DEFAULT, NORM_IGNORECASE, m_str.c_str(), -1, text, -1);
 
         assert(res);
@@ -656,7 +656,7 @@ namespace Win32xx
     template <>
     inline int CStringT<CHAR>::Compare(const CHAR* text) const
     {
-        assert(text != 0);
+        assert(text != NULL);
         return ::lstrcmpA(m_str.c_str(), text);
     }
 
@@ -664,7 +664,7 @@ namespace Win32xx
     template <>
     inline int CStringT<WCHAR>::Compare(const WCHAR* text) const
     {
-        assert(text != 0);
+        assert(text != NULL);
         return ::lstrcmpW(m_str.c_str(), text);
     }
 
@@ -672,7 +672,7 @@ namespace Win32xx
     template <>
     inline int CStringT<CHAR>::CompareNoCase(const CHAR* text) const
     {
-        assert(text != 0);
+        assert(text != NULL);
         return ::lstrcmpiA(m_str.c_str(), text);
     }
 
@@ -680,7 +680,7 @@ namespace Win32xx
     template <>
     inline int CStringT<WCHAR>::CompareNoCase(const WCHAR* text) const
     {
-        assert(text != 0);
+        assert(text != NULL);
         return ::lstrcmpiW(m_str.c_str(), text);
     }
 
@@ -718,7 +718,7 @@ namespace Win32xx
     template <class T>
     inline int CStringT<T>::Find(const T* text, int index /* = 0 */) const
     {
-        assert(text != 0);
+        assert(text != NULL);
         assert(index >= 0);
 
         size_t s = m_str.find(text, static_cast<size_t>(index));
@@ -729,7 +729,7 @@ namespace Win32xx
     template <class T>
     inline int CStringT<T>::FindOneOf(const T* text) const
     {
-        assert(text != 0);
+        assert(text != NULL);
 
         size_t s = m_str.find_first_of(text);
         return static_cast<int>(s);
@@ -861,7 +861,7 @@ namespace Win32xx
     }
 
     // Creates a buffer of minBufLength characters (+1 extra for NULL termination) and returns
-    // a pointer to this buffer. This buffer can be used by any function which accepts a LPTSTR.
+    // a pointer to this buffer. This buffer can be used by any function that accepts a LPTSTR.
     // Care must be taken not to exceed the length of the buffer. Use ReleaseBuffer to safely
     // copy this buffer back to the CStringT object.
     // Note: The buffer uses a vector. Vectors are required to be contiguous in memory under
@@ -1114,7 +1114,7 @@ namespace Win32xx
     template <class T>
     inline int CStringT<T>::Remove(const T* text)
     {
-        assert(text != 0);
+        assert(text != NULL);
 
         int count = 0;
         size_t pos = 0;
@@ -1201,7 +1201,7 @@ namespace Win32xx
     template <class T>
     inline int CStringT<T>::ReverseFind(const T* text, int end /* = -1 */) const
     {
-        assert(text != 0);
+        assert(text != NULL);
         if (!text) return -1;
 
         if (lstrlenT(text) == 1)

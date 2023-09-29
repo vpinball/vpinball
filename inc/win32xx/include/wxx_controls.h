@@ -1,5 +1,5 @@
-// Win32++   Version 9.3
-// Release Date: 5th June 2023
+// Win32++   Version 9.4
+// Release Date: 25th September 2023
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -2413,8 +2413,8 @@ namespace Win32xx
     }
 
     // Registers a tool with a ToolTip control.
-    // control specifies the window which triggers the tooltip.
-    // toolRect specifies the part of the window which triggers the tooltip.
+    // control specifies the window that triggers the tooltip.
+    // toolRect specifies the part of the window that triggers the tooltip.
     // textID specifies the ID of the text resource.
     // id is a user defined ID. It is required if the control has multiple tooltips.
     // Refer to TTM_ADDTOOL in the Windows API documentation for more information.
@@ -2430,7 +2430,7 @@ namespace Win32xx
     }
 
     // Registers a tool with a ToolTip control.
-    // control specifies the window which triggers the tooltip.
+    // control specifies the window that triggers the tooltip.
     // textID specifies the ID of the text resource
     // Refer to TTM_ADDTOOL in the Windows API documentation for more information.
     inline BOOL CToolTip::AddTool(HWND control, UINT textID) const
@@ -2445,8 +2445,8 @@ namespace Win32xx
     }
 
     // Registers a tool with a ToolTip control.
-    // control specifies the window which triggers the tooltip.
-    // toolRect specifies the part of the window which triggers the tooltip.
+    // control specifies the window that triggers the tooltip.
+    // toolRect specifies the part of the window that triggers the tooltip.
     // If text contains the value LPSTR_TEXTCALLBACK, TTN_NEEDTEXT notification
     // messages are sent to the parent window.
     // id is a user defined ID. It is required if the control has multiple tooltips.
@@ -2462,7 +2462,7 @@ namespace Win32xx
     }
 
     // Registers a tool with a ToolTip control.
-    // control specifies the window which triggers the tooltip.
+    // control specifies the window that triggers the tooltip.
     // If text contains the value LPSTR_TEXTCALLBACK, TTN_NEEDTEXT notification
     // messages are sent to the parent window.
     // Refer to TTM_ADDTOOL in the Windows API documentation for more information.

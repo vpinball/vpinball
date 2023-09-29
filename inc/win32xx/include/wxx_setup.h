@@ -1,5 +1,5 @@
-// Win32++   Version 9.3
-// Release Date: 5th June 2023
+// Win32++   Version 9.4
+// Release Date: 25th September 2023
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -157,7 +157,7 @@ using namespace Win32xx;
 #define MIN(a,b)        (((a) < (b)) ? (a) : (b))
 
 // Version macro
-#define _WIN32XX_VER 0x0930     // Win32++ version 9.3.0
+#define _WIN32XX_VER 0x0940     // Win32++ version 9.4.0
 
 // Define the TRACE Macro.
 // In debug mode, TRACE send text to the debug/output pane, or an external debugger
@@ -419,8 +419,8 @@ namespace Win32xx
     // Copies an ANSI string from src to dst.
     inline void StrCopyA(char* dst, const char* src, size_t dst_size)
     {
-        assert(dst != 0);
-        assert(src != 0);
+        assert(dst != NULL);
+        assert(src != NULL);
         assert(dst_size != 0);
 
         if (dst && src && dst_size != 0)
@@ -444,8 +444,8 @@ namespace Win32xx
     // Copies a wide string from src to dst.
     inline void StrCopyW(wchar_t* dst, const wchar_t* src, size_t dst_size)
     {
-        assert(dst != 0);
-        assert(src != 0);
+        assert(dst != NULL);
+        assert(src != NULL);
         assert(dst_size != 0);
 
         if (dst && src && dst_size != 0)

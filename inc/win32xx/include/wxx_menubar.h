@@ -1,5 +1,5 @@
-// Win32++   Version 9.3
-// Release Date: 5th June 2023
+// Win32++   Version 9.4
+// Release Date: 25th September 2023
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -136,7 +136,7 @@ namespace Win32xx
         HMENU m_popupMenu;      // handle to the popup menu
         HMENU m_selMenu;        // handle to the cascaded popup menu
         HMENU m_topMenu;        // handle to the top level menu
-        HWND  m_prevFocus;      // handle to window which had focus
+        HWND  m_prevFocus;      // handle to window that had focus
         CRect m_mdiRect[3];     // array of CRect for MDI buttons
         int   m_hotItem;        // hot item
         CPoint m_oldMousePos;   // old Mouse position
@@ -245,8 +245,8 @@ namespace Win32xx
             CFont marlett;
             marlett.CreatePointFont(100, _T("Marlett"));
             drawDC.SetBkMode(TRANSPARENT);
-            marlett = DpiScaleFont(marlett, 10);
-            drawDC.SelectObject(marlett);
+            LOGFONT lf = DpiScaleLogfont(marlett.GetLogFont(), 10);
+            drawDC.CreateFontIndirect(lf);
 
             COLORREF grey(GetSysColor(COLOR_BTNFACE));
             COLORREF black(RGB(0, 0, 0));

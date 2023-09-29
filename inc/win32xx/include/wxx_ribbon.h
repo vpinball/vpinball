@@ -1,5 +1,5 @@
-// Win32++   Version 9.3
-// Release Date: 5th June 2023
+// Win32++   Version 9.4
+// Release Date: 25th September 2023
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -173,7 +173,7 @@ namespace Win32xx
     };
 
     ////////////////////////////////////////////////////
-    // CRibbonDockFrame manages a frame which supports the
+    // CRibbonDockFrame manages a frame that supports the
     // ribbon user interface and docking.
     class CRibbonDockFrame : public CRibbonFrameT<CDockFrame>
     {
@@ -187,7 +187,7 @@ namespace Win32xx
     };
 
     //////////////////////////////////////////////////////////////
-    // CRibbonMDIFrame manages a frame which supports the Multiple
+    // CRibbonMDIFrame manages a frame that supports the Multiple
     // Document Interface (MDI) and the Ribbon user interface.
     class CRibbonMDIFrame : public CRibbonFrameT<CMDIFrame>
     {
@@ -201,7 +201,7 @@ namespace Win32xx
     };
 
     ////////////////////////////////////////////////////////////////
-    // CRibbonMDIDockFrame manages a frame which supports the
+    // CRibbonMDIDockFrame manages a frame that supports the
     // Multiple Document Interface (MDI), the Ribbon user interface,
     // and docking.
     class CRibbonMDIDockFrame : public CRibbonFrameT<CMDIDockFrame>

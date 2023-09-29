@@ -1,5 +1,5 @@
-// Win32++   Version 9.3
-// Release Date: 5th June 2023
+// Win32++   Version 9.4
+// Release Date: 25th September 2023
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -96,7 +96,7 @@ namespace Win32xx
 
 
     //////////////////////////////////////////////////////////////////
-    // Provides a frame which supports the Multiple Document Interface
+    // Provides a frame that supports the Multiple Document Interface
     // (MDI) and docking. It also manages the creation and position
     // of child windows, such as the menubar, toolbar, and statusbar.
     class CMDIDockFrame : public CMDIFrameT<CDockFrame>

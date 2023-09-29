@@ -1,5 +1,5 @@
-// Win32++   Version 9.3
-// Release Date: 5th June 2023
+// Win32++   Version 9.4
+// Release Date: 25th September 2023
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -61,7 +61,7 @@
 namespace Win32xx
 {
     ////////////////////////////////////////////////////////////////////////
-    // This class implements a COM container which hosts an ActiveX control,
+    // This class implements a COM container that hosts an ActiveX control,
     // such as internet explorer.
     class CAXHost : public IOleInPlaceFrame, public IOleClientSite,
                     public IOleInPlaceSite, public IOleControlSite,
@@ -383,7 +383,7 @@ namespace Win32xx
     }
 
     // Maps a single member and an optional set of argument names to
-    // a corresponding set of integer DISPIDs, which can be used on
+    // a corresponding set of integer DISPIDs, that can be used on
     // subsequent calls to IDispatch::Invoke.
     inline STDMETHODIMP CAXHost::GetIDsOfNames(REFIID, OLECHAR**, unsigned int, LCID, DISPID* pID)
     {
@@ -391,14 +391,14 @@ namespace Win32xx
         return DISP_E_UNKNOWNNAME;
     }
 
-    // Retrieves an embedded object's moniker, which the caller
+    // Retrieves an embedded object's moniker, that the caller
     // can use to link to the object.
     inline STDMETHODIMP CAXHost::GetMoniker(DWORD, DWORD, LPMONIKER*)
     {
         return E_NOTIMPL;
     }
 
-    // Retrieves the type information for an object, which can then
+    // Retrieves the type information for an object, that can then
     // be used to get the type information for the IDispatch interface.
     inline STDMETHODIMP CAXHost::GetTypeInfo(unsigned int, LCID, ITypeInfo**)
     {

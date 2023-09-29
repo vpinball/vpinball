@@ -1,5 +1,5 @@
-// Win32++   Version 9.3
-// Release Date: 5th June 2023
+// Win32++   Version 9.4
+// Release Date: 25th September 2023
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -40,7 +40,7 @@
 // wxx_printdialogex.h
 // Declaration of the CPrintDialogEx class.
 
-// CPrintDialogEx displays the Print dialog which allows the user to
+// CPrintDialogEx displays the Print dialog, which allows the user to
 // select the printer to use.
 
 // The CPrintDialogEx class stores its global memory in CWinApp.

@@ -1,5 +1,5 @@
-// Win32++   Version 9.3
-// Release Date: 5th June 2023
+// Win32++   Version 9.4
+// Release Date: 25th September 2023
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -177,7 +177,7 @@ namespace Win32xx
         enum Alignment { topleft, topright, bottomleft, bottomright, center, leftcenter, rightcenter, topcenter, bottomcenter };
 
         CResizer() : m_parent(0), m_xScrollPos(0), m_yScrollPos(0),
-                     m_currentDpi(USER_DEFAULT_SCREEN_DPI)
+                     m_currentDpi(USER_DEFAULT_SCREEN_DPI), m_initDpi(USER_DEFAULT_SCREEN_DPI)
                      {}
         virtual ~CResizer() {}
 
@@ -196,8 +196,7 @@ namespace Win32xx
         struct ResizeData
         {
             ResizeData() : corner(topleft), isFixedWidth(false), isFixedHeight(false), wnd(0) {}
-            CRect initRect;
-            CRect oldRect;
+            CRect childRect;
             Alignment corner;
             bool isFixedWidth;
             bool isFixedHeight;
@@ -221,6 +220,7 @@ namespace Win32xx
         int m_xScrollPos;
         int m_yScrollPos;
         int m_currentDpi;
+        int m_initDpi;
     };
 
 }
@@ -812,10 +812,10 @@ namespace Win32xx
         rd.corner = corner;
         rd.isFixedWidth  = !(style & RD_STRETCH_WIDTH);
         rd.isFixedHeight = !(style & RD_STRETCH_HEIGHT);
-        CRect initRect;
-        VERIFY(::GetWindowRect(wnd, &initRect));
-        ::MapWindowPoints(0, m_parent, (LPPOINT)&initRect, 2);
-        rd.initRect = initRect;
+        CRect childRect;
+        VERIFY(::GetWindowRect(wnd, &childRect));
+        ::MapWindowPoints(0, m_parent, (LPPOINT)&childRect, 2);
+        rd.childRect = childRect;
         rd.wnd = wnd;
 
         std::vector<ResizeData>::iterator iter;
@@ -903,8 +903,10 @@ namespace Win32xx
 
         ScaleRect(m_minRect, scale);
         ScaleRect(m_maxRect, scale);
+
+        m_currentDpi = dpi;
+        m_initDpi = dpi;
         RecalcLayout();
-        m_currentDpi = GetWindowDpi(m_parent);
     }
 
     // Called to perform horizontal scrolling.
@@ -1067,6 +1069,9 @@ namespace Win32xx
             currentRect.bottom = MIN(currentRect.Height(), m_maxRect.Height() );
         }
 
+        int dpi = GetWindowDpi(m_parent);
+        double scale = (double)dpi / double(m_initDpi);
+
         // Declare an iterator to step through the vector
         std::vector<ResizeData>::iterator iter;
 
@@ -1080,78 +1085,76 @@ namespace Win32xx
             int width  = 0;
             int height = 0;
 
+            CRect childRect = (*iter).childRect;
+            ScaleRect(childRect, scale);
+
             // Calculate the new size and position of the child window
             switch( (*iter).corner )
             {
             case topleft:      // Positions top left
-                width  = (*iter).isFixedWidth?  (*iter).initRect.Width()  : (*iter).initRect.Width()  - m_initRect.Width() + currentRect.Width();
-                height = (*iter).isFixedHeight? (*iter).initRect.Height() : (*iter).initRect.Height() - m_initRect.Height() + currentRect.Height();
-                left   = (*iter).initRect.left;
-                top    = (*iter).initRect.top;
+                width  = (*iter).isFixedWidth? childRect.Width()  : childRect.Width()  - m_initRect.Width() + currentRect.Width();
+                height = (*iter).isFixedHeight? childRect.Height() : childRect.Height() - m_initRect.Height() + currentRect.Height();
+                left   = childRect.left;
+                top    = childRect.top;
                 break;
             case topright:     // Positions top right
-                width  = (*iter).isFixedWidth?  (*iter).initRect.Width()  : (*iter).initRect.Width()  - m_initRect.Width() + currentRect.Width();
-                height = (*iter).isFixedHeight? (*iter).initRect.Height() : (*iter).initRect.Height() - m_initRect.Height() + currentRect.Height();
-                left   = (*iter).initRect.right - width - m_initRect.Width() + currentRect.Width();
-                top    = (*iter).initRect.top;
+                width  = (*iter).isFixedWidth? childRect.Width()  : childRect.Width()  - m_initRect.Width() + currentRect.Width();
+                height = (*iter).isFixedHeight? childRect.Height() : childRect.Height() - m_initRect.Height() + currentRect.Height();
+                left   = childRect.right - width - m_initRect.Width() + currentRect.Width();
+                top    = childRect.top;
                 break;
             case bottomleft:   // Positions bottom left
-                width  = (*iter).isFixedWidth?  (*iter).initRect.Width()  : (*iter).initRect.Width()  - m_initRect.Width() + currentRect.Width();
-                height = (*iter).isFixedHeight? (*iter).initRect.Height() : (*iter).initRect.Height() - m_initRect.Height() + currentRect.Height();
-                left   = (*iter).initRect.left;
-                top    = (*iter).initRect.bottom - height - m_initRect.Height() + currentRect.Height();
+                width  = (*iter).isFixedWidth? childRect.Width()  : childRect.Width()  - m_initRect.Width() + currentRect.Width();
+                height = (*iter).isFixedHeight? childRect.Height() : childRect.Height() - m_initRect.Height() + currentRect.Height();
+                left   = childRect.left;
+                top    = childRect.bottom - height - m_initRect.Height() + currentRect.Height();
                 break;
             case bottomright:  // Positions bottom right
-                width  = (*iter).isFixedWidth?  (*iter).initRect.Width()  : (*iter).initRect.Width()  - m_initRect.Width() + currentRect.Width();
-                height = (*iter).isFixedHeight? (*iter).initRect.Height() : (*iter).initRect.Height() - m_initRect.Height() + currentRect.Height();
-                left   = (*iter).initRect.right   - width - m_initRect.Width() + currentRect.Width();
-                top    = (*iter).initRect.bottom  - height - m_initRect.Height() + currentRect.Height();
+                width  = (*iter).isFixedWidth? childRect.Width()  : childRect.Width()  - m_initRect.Width() + currentRect.Width();
+                height = (*iter).isFixedHeight? childRect.Height() : childRect.Height() - m_initRect.Height() + currentRect.Height();
+                left   = childRect.right   - width - m_initRect.Width() + currentRect.Width();
+                top    = childRect.bottom  - height - m_initRect.Height() + currentRect.Height();
                 break;
             case center:       // Positions proportionally
-                width  = (*iter).isFixedWidth ? (*iter).initRect.Width() : ((*iter).initRect.Width() * currentRect.Width()) / m_initRect.Width();
-                height = (*iter).isFixedHeight ? (*iter).initRect.Height() : ((*iter).initRect.Height() * currentRect.Height()) / m_initRect.Height();
-                left   = ((*iter).initRect.left * currentRect.Width()) / m_initRect.Width();
-                top    = ((*iter).initRect.top * currentRect.Height()) / m_initRect.Height();
+                width  = (*iter).isFixedWidth ? childRect.Width() : (childRect.Width() * currentRect.Width()) / m_initRect.Width();
+                height = (*iter).isFixedHeight ? childRect.Height() : (childRect.Height() * currentRect.Height()) / m_initRect.Height();
+                left   = (childRect.left * currentRect.Width()) / m_initRect.Width();
+                top    = (childRect.top * currentRect.Height()) / m_initRect.Height();
                 break;
             case leftcenter:   // Positions proportionally along the left side
-                width  = (*iter).isFixedWidth ? (*iter).initRect.Width() : (*iter).initRect.Width() - m_initRect.Width() + currentRect.Width();
-                height = (*iter).isFixedHeight ? (*iter).initRect.Height() : ((*iter).initRect.Height() * currentRect.Height()) / m_initRect.Height();
-                left   = (*iter).initRect.left;
-                top    = ((*iter).initRect.top * currentRect.Height()) / m_initRect.Height();
+                width  = (*iter).isFixedWidth ? childRect.Width() : childRect.Width() - m_initRect.Width() + currentRect.Width();
+                height = (*iter).isFixedHeight ? childRect.Height() : (childRect.Height() * currentRect.Height()) / m_initRect.Height();
+                left   = childRect.left;
+                top    = (childRect.top * currentRect.Height()) / m_initRect.Height();
                 break;
             case rightcenter:  // Positions proportionally along the right side
-                width  = (*iter).isFixedWidth ? (*iter).initRect.Width() : (*iter).initRect.Width() - m_initRect.Width() + currentRect.Width();
-                height = (*iter).isFixedHeight ? (*iter).initRect.Height() : ((*iter).initRect.Height() * currentRect.Height()) / m_initRect.Height();
-                left   = (*iter).initRect.right - width - m_initRect.Width() + currentRect.Width();
-                top    = ((*iter).initRect.top * currentRect.Height()) / m_initRect.Height();
+                width  = (*iter).isFixedWidth ? childRect.Width() : childRect.Width() - m_initRect.Width() + currentRect.Width();
+                height = (*iter).isFixedHeight ? childRect.Height() : (childRect.Height() * currentRect.Height()) / m_initRect.Height();
+                left   = childRect.right - width - m_initRect.Width() + currentRect.Width();
+                top    = (childRect.top * currentRect.Height()) / m_initRect.Height();
                 break;
             case topcenter:    // Positions proportionally along the top side
-                width  = (*iter).isFixedWidth ? (*iter).initRect.Width() : ((*iter).initRect.Width() * currentRect.Width()) /  m_initRect.Width();
-                height = (*iter).isFixedHeight ? (*iter).initRect.Height() : (*iter).initRect.Height() - m_initRect.Height() + currentRect.Height();
-                left   = ((*iter).initRect.left * currentRect.Width()) / m_initRect.Width();
-                top    = (*iter).initRect.top;
+                width  = (*iter).isFixedWidth ? childRect.Width() : (childRect.Width() * currentRect.Width()) /  m_initRect.Width();
+                height = (*iter).isFixedHeight ? childRect.Height() : childRect.Height() - m_initRect.Height() + currentRect.Height();
+                left   = (childRect.left * currentRect.Width()) / m_initRect.Width();
+                top    = childRect.top;
                 break;
             case bottomcenter: // Positions proportionally along the bottom side
-                width  = (*iter).isFixedWidth ? (*iter).initRect.Width() : ((*iter).initRect.Width() * currentRect.Width()) / m_initRect.Width();
-                height = (*iter).isFixedHeight ? (*iter).initRect.Height() : (*iter).initRect.Height() - m_initRect.Height() + currentRect.Height();
-                left   = ((*iter).initRect.left * currentRect.Width()) / m_initRect.Width();
-                top    = (*iter).initRect.bottom - height - m_initRect.Height() + currentRect.Height();
+                width  = (*iter).isFixedWidth ? childRect.Width() : (childRect.Width() * currentRect.Width()) / m_initRect.Width();
+                height = (*iter).isFixedHeight ? childRect.Height() : childRect.Height() - m_initRect.Height() + currentRect.Height();
+                left   = (childRect.left * currentRect.Width()) / m_initRect.Width();
+                top    = childRect.bottom - height - m_initRect.Height() + currentRect.Height();
                 break;
             }
 
             // Determine the position of the child window.
             CRect rc(left - m_xScrollPos, top - m_yScrollPos, left + width - m_xScrollPos, top + height - m_yScrollPos);
-            if ( rc != (*iter).oldRect)
-            {
-                // Note: The tab order of the dialog's controls is determined by the order
-                //       they are specified in the resource script (resource.rc).
 
-                // Store the window's new position. Repositioning happens later.
-                hdwp = ::DeferWindowPos(hdwp, (*iter).wnd, 0, rc.left, rc.top, rc.Width(), rc.Height(), SWP_NOZORDER|SWP_NOCOPYBITS);
+            // Note: The tab order of the dialog's controls is determined by the order
+            //       they are specified in the resource script (resource.rc).
 
-                (*iter).oldRect = rc;
-            }
-
+            // Store the window's new position. Repositioning happens later.
+            hdwp = ::DeferWindowPos(hdwp, (*iter).wnd, 0, rc.left, rc.top, rc.Width(), rc.Height(), SWP_NOZORDER|SWP_NOCOPYBITS);
         }
 
         // Reposition all the child windows simultaneously.
@@ -1172,19 +1175,6 @@ namespace Win32xx
         ScaleRect(m_initRect, scale);
         ScaleRect(m_minRect, scale);
         ScaleRect(m_maxRect, scale);
-
-        std::vector<ResizeData>::iterator i;
-        for (i = m_resizeData.begin(); i != m_resizeData.end(); ++i)
-        {
-            ScaleRect((*i).oldRect, scale);
-        }
-
-        RecalcLayout();
-
-        for (i = m_resizeData.begin(); i != m_resizeData.end(); ++i)
-        {
-            ScaleRect((*i).initRect, scale);
-        }
 
         RecalcLayout();
         m_currentDpi = dpi;
