@@ -200,7 +200,7 @@ void TextboxVisualsProperty::UpdateProperties(const int dispid)
                     text->m_pIFont->Release();
                     // create the new one
                     OleCreateFontIndirect(&fd, IID_IFont, (void **)&text->m_pIFont);
-                    text->m_d.m_fontsize = (float)((-font.lfHeight * 72) / GetDeviceCaps(g_pvp->GetDC(), LOGPIXELSY));
+                    text->m_d.m_fontsize = (float)((abs(font.lfHeight) * 72) / GetDeviceCaps(g_pvp->GetDC(), LOGPIXELSY));
                     CY size;
                     size.int64 = (LONGLONG)(text->m_d.m_fontsize * 10000.0f);
                     text->m_pIFont->put_Size(size);

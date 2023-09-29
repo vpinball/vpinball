@@ -138,10 +138,10 @@ private:
 public:
    CGpuProfiler m_gpu_profiler;
 
-   RenderDevice* m_pd3dPrimaryDevice;
-   RenderDevice* m_pd3dSecondaryDevice;
+   RenderDevice* m_pd3dPrimaryDevice = nullptr;
+   RenderDevice* m_pd3dSecondaryDevice = nullptr;
 
-   RenderTarget* m_pddsStatic;
+   RenderTarget* m_pddsStatic = nullptr;
 
    Texture m_pinballEnvTexture; // loaded from Resources
    Texture m_builtinEnvTexture; // loaded from Resources
