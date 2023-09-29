@@ -1984,6 +1984,8 @@ void Player::InitStatic()
    m_render_mask |= STATIC_PREPASS;
 
    // The code will fail if the static render target is MSAA (the copy operation we are performing is not allowed)
+   delete m_pin3d.m_pddsStatic;
+   m_pin3d.m_pddsStatic = m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->Duplicate("StaticPreRender"s);
    assert(!m_pin3d.m_pddsStatic->IsMSAA());
    
    RenderTarget *accumulationSurface = m_dynamicMode ? nullptr : m_pin3d.m_pddsStatic->Duplicate("Accumulation"s);
