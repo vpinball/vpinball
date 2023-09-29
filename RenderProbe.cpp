@@ -189,8 +189,8 @@ void RenderProbe::RenderScreenSpaceTransparency(const bool is_static)
    if (m_dynamicRT == nullptr)
    {
       const int downscale = GetRoughnessDownscale(m_roughness);
-      const int w = p3dDevice->GetBackBufferTexture()->GetWidth() / downscale, h = p3dDevice->GetBackBufferTexture()->GetHeight() / downscale;
-      m_dynamicRT = new RenderTarget(p3dDevice, p3dDevice->GetBackBufferTexture()->m_type, m_name, w, h, p3dDevice->GetBackBufferTexture()->GetColorFormat(), true, 1, "Failed to create refraction render target", nullptr);
+      const int w = p3dDevice->GetMSAABackBufferTexture()->GetWidth() / downscale, h = p3dDevice->GetMSAABackBufferTexture()->GetHeight() / downscale;
+      m_dynamicRT = new RenderTarget(p3dDevice, p3dDevice->GetMSAABackBufferTexture()->m_type, m_name, w, h, p3dDevice->GetMSAABackBufferTexture()->GetColorFormat(), true, 1, "Failed to create refraction render target", nullptr);
    }
    p3dDevice->SetRenderTarget(m_name, m_dynamicRT, false);
    p3dDevice->BlitRenderTarget(p3dDevice->GetMSAABackBufferTexture(), m_dynamicRT, true, true);
@@ -239,8 +239,8 @@ void RenderProbe::PreRenderStaticReflectionProbe()
    if (m_prerenderRT == nullptr)
    {
       const int downscale = GetRoughnessDownscale(m_roughness);
-      const int w = p3dDevice->GetBackBufferTexture()->GetWidth() / downscale, h = p3dDevice->GetBackBufferTexture()->GetHeight() / downscale;
-      m_prerenderRT = new RenderTarget(p3dDevice, p3dDevice->GetBackBufferTexture()->m_type, m_name + ".Stat"s, w, h, p3dDevice->GetBackBufferTexture()->GetColorFormat(), true, 1,
+      const int w = p3dDevice->GetMSAABackBufferTexture()->GetWidth() / downscale, h = p3dDevice->GetMSAABackBufferTexture()->GetHeight() / downscale;
+      m_prerenderRT = new RenderTarget(p3dDevice, p3dDevice->GetMSAABackBufferTexture()->m_type, m_name + ".Stat"s, w, h, p3dDevice->GetMSAABackBufferTexture()->GetColorFormat(), true, 1,
          "Failed to create plane reflection static render target", nullptr);
    }
 
@@ -335,8 +335,8 @@ void RenderProbe::RenderReflectionProbe(const bool is_static)
    if (m_dynamicRT == nullptr)
    {
       const int downscale = GetRoughnessDownscale(m_roughness);
-      const int w = p3dDevice->GetBackBufferTexture()->GetWidth() / downscale, h = p3dDevice->GetBackBufferTexture()->GetHeight() / downscale;
-      m_dynamicRT = new RenderTarget(p3dDevice, p3dDevice->GetBackBufferTexture()->m_type, m_name + ".Dyn"s, w, h, p3dDevice->GetBackBufferTexture()->GetColorFormat(), true, 1,
+      const int w = p3dDevice->GetMSAABackBufferTexture()->GetWidth() / downscale, h = p3dDevice->GetMSAABackBufferTexture()->GetHeight() / downscale;
+      m_dynamicRT = new RenderTarget(p3dDevice, p3dDevice->GetMSAABackBufferTexture()->m_type, m_name + ".Dyn"s, w, h, p3dDevice->GetMSAABackBufferTexture()->GetColorFormat(), true, 1,
          "Failed to create plane reflection dynamic render target", nullptr);
    }
    p3dDevice->SetRenderTarget(m_name, m_dynamicRT);

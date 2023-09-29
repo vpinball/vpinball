@@ -615,9 +615,9 @@ void Decal::RenderObject()
    {
       Matrix3D matWorldViewProj; // MVP to move from back buffer space (0..w, 0..h) to clip space (-1..1, -1..1)
       matWorldViewProj.SetIdentity();
-      matWorldViewProj._11 = 2.0f / (float)pd3dDevice->GetBackBufferTexture()->GetWidth();
+      matWorldViewProj._11 = 2.0f / (float)pd3dDevice->GetMSAABackBufferTexture()->GetWidth();
       matWorldViewProj._41 = -1.0f;
-      matWorldViewProj._22 = -2.0f / (float)pd3dDevice->GetBackBufferTexture()->GetHeight();
+      matWorldViewProj._22 = -2.0f / (float)pd3dDevice->GetMSAABackBufferTexture()->GetHeight();
       matWorldViewProj._42 = 1.0f;
       #ifdef ENABLE_SDL
       struct
