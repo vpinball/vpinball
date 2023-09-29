@@ -572,9 +572,9 @@ void Light::RenderDynamic()
    {
       Matrix3D matWorldViewProj[2]; // MVP to move from back buffer space (0..w, 0..h) to clip space (-1..1, -1..1)
       matWorldViewProj[0].SetIdentity();
-      matWorldViewProj[0]._11 = 2.0f / (float)pd3dDevice->GetBackBufferTexture()->GetWidth();
+      matWorldViewProj[0]._11 = 2.0f / (float)pd3dDevice->GetMSAABackBufferTexture()->GetWidth();
       matWorldViewProj[0]._41 = -1.0f;
-      matWorldViewProj[0]._22 = -2.0f / (float)pd3dDevice->GetBackBufferTexture()->GetHeight();
+      matWorldViewProj[0]._22 = -2.0f / (float)pd3dDevice->GetMSAABackBufferTexture()->GetHeight();
       matWorldViewProj[0]._42 = 1.0f;
       #ifdef ENABLE_SDL
       if (shader == pd3dDevice->lightShader)
