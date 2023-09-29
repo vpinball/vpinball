@@ -243,7 +243,8 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
       // should not be used (See 'Gaze-coupled Perspective for Enhanced Human-Machine Interfaces in Aeronautics' for an explanation)
 
       // 63mm is the average distance between eyes (varies from 54 to 74mm between adults, 43 to 58mm for children)
-      const float eyeSeparation = realToVirtual * MMTOVPU(LoadValueWithDefault(regKey[RegName::Player], "Stereo3DEyeSeparation"s, 63.0f));
+      // We do not convert this real world value to the virtual world since what we want is to play in a scaled world to a scaled table, but with our eyes at their real world scale
+      const float eyeSeparation = MMTOVPU(LoadValueWithDefault(regKey[RegName::Player], "Stereo3DEyeSeparation"s, 63.0f));
 
       // Z where the stereo separation is 0:
       // - for cabinet (window) mode, we use the orthogonal distance to the screen (window)
