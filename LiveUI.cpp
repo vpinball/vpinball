@@ -2143,7 +2143,7 @@ void LiveUI::UpdateAnaglyphCalibrationModal()
             calibrationStep--;
             vec3 defColor = defaultAnaglyphColors[glassesIndex * 2 + (calibrationStep > 2 ? 1 : 0)];
             float defChannel = (calibrationStep % 3) == 0 ? defColor.x : (calibrationStep % 3) == 1 ? defColor.y : defColor.z;
-            calibrationBrightness = LoadValueWithDefault(regKey[RegName::Player], prefKey + std::to_string(glassesIndex + 1).append(fields[calibrationStep]), defChannel);
+            calibrationBrightness = LoadValueWithDefault(regKey[RegName::Player], prefKey + fields[calibrationStep], defChannel);
          }
       }
       else if (ImGui::IsKeyPressed(ImGuiKey::ImGuiKey_RightCtrl))
