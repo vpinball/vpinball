@@ -252,7 +252,7 @@ void Decal::GetTextSize(int * const px, int * const py)
    constexpr int alignment = DT_LEFT;
 
    const CClientDC clientDC(nullptr);
-   const HFONT hFontOld = clientDC.SelectObject(hFont);
+   const CFont hFontOld = clientDC.SelectObject(hFont);
 
    TEXTMETRIC tm;
    clientDC.GetTextMetrics(tm);
@@ -304,7 +304,7 @@ void Decal::PreRenderText()
 
    const CClientDC clientDC(nullptr);
 
-   HFONT hFontOld = clientDC.SelectObject(hFont);
+   CFont hFontOld = clientDC.SelectObject(hFont);
 
    TEXTMETRIC tm;
    clientDC.GetTextMetrics(tm);
@@ -369,8 +369,8 @@ void Decal::PreRenderText()
    assert(hbm);
 
    CDC dc;
-   /*const HDC hdc =*/ dc.CreateCompatibleDC(nullptr);
-   const HBITMAP oldBmp = dc.SelectObject(hbm);
+   dc.CreateCompatibleDC(nullptr);
+   const CBitmap oldBmp = dc.SelectObject(hbm);
 
    dc.SelectObject(reinterpret_cast<HBRUSH>(dc.GetStockObject(WHITE_BRUSH)));
    dc.PatBlt(0, 0, rcOut.right, rcOut.bottom, PATCOPY);

@@ -1889,7 +1889,7 @@ void PinTable::UIRenderPass2(Sur * const psur)
          {
             CDC dc;
             dc.CreateCompatibleDC(nullptr);
-            const HBITMAP hbmOld = dc.SelectObject(ppi->m_hbmGDIVersion);
+            const CBitmap hbmOld = dc.SelectObject(ppi->m_hbmGDIVersion);
 
             psur->Image(frect.left, frect.top, frect.right, frect.bottom, dc.GetHDC(), ppi->m_width, ppi->m_height);
 
@@ -2041,7 +2041,7 @@ void PinTable::Paint(HDC hdc)
    CDC dc;
    dc.CreateCompatibleDC(hdc);
 
-   const HBITMAP hbmOld = dc.SelectObject(m_hbmOffScreen);
+   const CBitmap hbmOld = dc.SelectObject(m_hbmOffScreen);
 
    if (m_dirtyDraw)
    {

@@ -141,8 +141,8 @@ void PaintSur::PolygonImage(const vector<RenderVertex> &rgv, HBITMAP hbm, const 
    try
    {
    CDC dc;
-   const HDC hdcNew = dc.CreateCompatibleDC(m_hdc);
-   const HBITMAP hbmOld = dc.SelectObject(hbm);
+   dc.CreateCompatibleDC(m_hdc);
+   const CBitmap hbmOld = dc.SelectObject(hbm);
 
    vector<POINT> rgpt(rgv.size());
    for (size_t i = 0; i < rgv.size(); i++)
@@ -157,7 +157,7 @@ void PaintSur::PolygonImage(const vector<RenderVertex> &rgv, HBITMAP hbm, const 
       SelectClipRgn(m_hdc, hrgn);
 
       constexpr BLENDFUNCTION blendf = { AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
-      AlphaBlend(m_hdc, ix, iy, ix2 - ix, iy2 - iy, hdcNew, 0, 0, bitmapwidth, bitmapheight, blendf);
+      AlphaBlend(m_hdc, ix, iy, ix2 - ix, iy2 - iy, dc.GetHDC(), 0, 0, bitmapwidth, bitmapheight, blendf);
 
       SelectClipRgn(m_hdc, nullptr);
       DeleteObject(hrgn);
@@ -165,7 +165,7 @@ void PaintSur::PolygonImage(const vector<RenderVertex> &rgv, HBITMAP hbm, const 
    else // do XOR trick for masking (draw image, draw black polygon, draw image again, and the XOR will do an implicit mask op)
    {
       SetStretchBltMode(m_hdc, HALFTONE); // somehow enables filtering
-      StretchBlt(m_hdc, ix, iy, ix2 - ix, iy2 - iy, hdcNew, 0, 0, bitmapwidth, bitmapheight, SRCINVERT);
+      StretchBlt(m_hdc, ix, iy, ix2 - ix, iy2 - iy, dc.GetHDC(), 0, 0, bitmapwidth, bitmapheight, SRCINVERT);
 
       SelectObject(m_hdc, GetStockObject(BLACK_BRUSH));
       SelectObject(m_hdc, GetStockObject(NULL_PEN));
@@ -173,7 +173,7 @@ void PaintSur::PolygonImage(const vector<RenderVertex> &rgv, HBITMAP hbm, const 
       ::Polygon(m_hdc, rgpt.data(), (int)rgv.size());
 
       SetStretchBltMode(m_hdc, HALFTONE); // somehow enables filtering
-      StretchBlt(m_hdc, ix, iy, ix2 - ix, iy2 - iy, hdcNew, 0, 0, bitmapwidth, bitmapheight, SRCINVERT);
+      StretchBlt(m_hdc, ix, iy, ix2 - ix, iy2 - iy, dc.GetHDC(), 0, 0, bitmapwidth, bitmapheight, SRCINVERT);
    }
 
    dc.SelectObject(hbmOld);
