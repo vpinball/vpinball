@@ -4034,15 +4034,15 @@ void Player::UpdateBackdropSettings(const bool up)
    case BS_Layback: viewSetup.mLayback += 0.5f * thesign; break;
    case BS_ViewHOfs: viewSetup.mViewHOfs += 0.5f * thesign; break;
    case BS_ViewVOfs: viewSetup.mViewVOfs += 0.5f * thesign; break;
-   case BS_XYZScale: viewSetup.mSceneScaleX += 0.01f * thesign; viewSetup.mSceneScaleY += 0.01f * thesign; viewSetup.mSceneScaleZ += 0.01f * thesign; CalcBallAspectRatio(); break;
-   case BS_XScale: viewSetup.mSceneScaleX += 0.01f * thesign; CalcBallAspectRatio(); break;
-   case BS_YScale: viewSetup.mSceneScaleY += 0.01f * thesign; CalcBallAspectRatio(); break;
-   case BS_ZScale: viewSetup.mSceneScaleZ += 0.01f * thesign; CalcBallAspectRatio(); break;
+   case BS_XYZScale: viewSetup.mSceneScaleX += 0.0025f * thesign; viewSetup.mSceneScaleY += 0.0025f * thesign; viewSetup.mSceneScaleZ += 0.0025f * thesign; CalcBallAspectRatio(); break;
+   case BS_XScale: viewSetup.mSceneScaleX += 0.0025f * thesign; CalcBallAspectRatio(); break;
+   case BS_YScale: viewSetup.mSceneScaleY += 0.0025f * thesign; CalcBallAspectRatio(); break;
+   case BS_ZScale: viewSetup.mSceneScaleZ += 0.0025f * thesign; CalcBallAspectRatio(); break;
    case BS_XOffset: viewSetup.mViewX += 5.f * thesign; break;
    case BS_YOffset: viewSetup.mViewY += 5.f * thesign; break;
    case BS_ZOffset: viewSetup.mViewZ += (viewSetup.mMode == VLM_LEGACY ? 50.f : 5.f) * thesign; break;
-   case BS_WndTopZOfs: viewSetup.mWindowTopZOfs += 5.f * thesign; break;
-   case BS_WndBottomZOfs: viewSetup.mWindowBottomZOfs += 5.f * thesign; break;
+   case BS_WndTopZOfs: viewSetup.mWindowTopZOfs += 1.f * thesign; break;
+   case BS_WndBottomZOfs: viewSetup.mWindowBottomZOfs += 1.f * thesign; break;
 
    // Scene lighting settings
    case BS_LightEmissionScale:
