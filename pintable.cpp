@@ -1888,10 +1888,10 @@ void PinTable::UIRenderPass2(Sur * const psur)
          if (ppi->m_hbmGDIVersion)
          {
             CDC dc;
-            const HDC hdcNew = dc.CreateCompatibleDC(nullptr);
+            dc.CreateCompatibleDC(nullptr);
             const HBITMAP hbmOld = dc.SelectObject(ppi->m_hbmGDIVersion);
 
-            psur->Image(frect.left, frect.top, frect.right, frect.bottom, hdcNew, ppi->m_width, ppi->m_height);
+            psur->Image(frect.left, frect.top, frect.right, frect.bottom, dc.GetHDC(), ppi->m_width, ppi->m_height);
 
             dc.SelectObject(hbmOld);
          }
@@ -2039,7 +2039,7 @@ void PinTable::Paint(HDC hdc)
    }
 
    CDC dc;
-   const HDC hdc2 = dc.CreateCompatibleDC(hdc);
+   dc.CreateCompatibleDC(hdc);
 
    const HBITMAP hbmOld = dc.SelectObject(m_hbmOffScreen);
 
@@ -2051,7 +2051,7 @@ void PinTable::Paint(HDC hdc)
       delete psur;
    }
 
-   BitBlt(hdc, rc.left, rc.top, rc.right, rc.bottom, hdc2, 0, 0, SRCCOPY);
+   BitBlt(hdc, rc.left, rc.top, rc.right, rc.bottom, dc.GetHDC(), 0, 0, SRCCOPY);
 
    dc.SelectObject(hbmOld);
 
@@ -5788,13 +5788,13 @@ void PinTable::ExportBlueprint()
    WriteFile(hfile, &bmi, sizeof(BITMAPINFOHEADER), &foo, nullptr);
 #endif
 
-   CDC dc(nullptr);
-   const HDC hdc2 = dc.CreateCompatibleDC(nullptr);
+   CDC dc;
+   dc.CreateCompatibleDC(nullptr);
    char *pbits;
    dc.CreateDIBSection(dc.GetHDC(), &bmi, DIB_RGB_COLORS, (void **)&pbits, nullptr, 0);
 
    {
-   PaintSur psur(hdc2, (float)bmwidth / tablewidth, tablewidth*0.5f, tableheight*0.5f, bmwidth, bmheight, nullptr);
+   PaintSur psur(dc.GetHDC(), (float)bmwidth / tablewidth, tablewidth*0.5f, tableheight*0.5f, bmwidth, bmheight, nullptr);
 
    dc.SelectObject(reinterpret_cast<HBRUSH>(dc.GetStockObject(WHITE_BRUSH)));
    dc.PatBlt(0, 0, bmwidth, bmheight, PATCOPY);
