@@ -2152,15 +2152,18 @@ void Player::InitStatic()
       m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("PreRender MSAA Background"s, renderRT, false);
       m_pin3d.DrawBackground();
       m_pin3d.m_pd3dPrimaryDevice->FlushRenderFrame();
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("PreRender MSAA Scene"s, renderRT);
-      RenderState initial_state;
-      m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(true, initial_state);
-      for (size_t i = 0; i < m_ptable->m_vrenderprobe.size(); ++i)
-         m_ptable->m_vrenderprobe[i]->MarkDirty();
-      UpdateBasicShaderMatrix();
-      DrawStatics();
-      m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(false, initial_state);
-      m_pin3d.m_pd3dPrimaryDevice->FlushRenderFrame();
+      if (!m_dynamicMode)
+      {
+         m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("PreRender MSAA Scene"s, renderRT);
+         RenderState initial_state;
+         m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(true, initial_state);
+         for (size_t i = 0; i < m_ptable->m_vrenderprobe.size(); ++i)
+            m_ptable->m_vrenderprobe[i]->MarkDirty();
+         UpdateBasicShaderMatrix();
+         DrawStatics();
+         m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(false, initial_state);
+         m_pin3d.m_pd3dPrimaryDevice->FlushRenderFrame();
+      }
       // Copy supersampled color buffer
       m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("PreRender Combine Color"s, renderRT);
       m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(m_pin3d.m_pddsStatic, renderRT, true, false);
