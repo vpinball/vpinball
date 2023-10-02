@@ -1000,7 +1000,7 @@ void LiveUI::UpdateCameraModeUI()
    ViewSetup &viewSetup = table->mViewSetups[vsId];
    const bool isLegacy = viewSetup.mMode == VLM_LEGACY;
    const bool isCamera = viewSetup.mMode == VLM_CAMERA;
-   //const bool isWindow = viewSetup.mMode == VLM_WINDOW;
+   const bool isWindow = viewSetup.mMode == VLM_WINDOW;
 
    const bool isStereo = m_player->m_stereo3Denabled && m_player->m_stereo3D != STEREO_OFF && m_player->m_stereo3D != STEREO_VR;
    const Player::BackdropSetting *settings = isLegacy ? Player::mLegacyViewSettings : isCamera ? Player::mCameraViewSettings : Player::mWindowViewSettings;
@@ -1051,8 +1051,8 @@ void LiveUI::UpdateCameraModeUI()
          // View settings
          case Player::BS_FOV: CM_ROW("Field Of View (overall scale)", "%.1f", viewSetup.mFOV, "deg"); break;
          case Player::BS_Layback: CM_ROW("Layback", "%.1f", viewSetup.mLayback, ""); CM_SKIP_LINE; break;
-         case Player::BS_ViewHOfs: CM_ROW("Horizontal Offset", "%.1f", viewSetup.mViewHOfs, ""); break;
-         case Player::BS_ViewVOfs: CM_ROW("Vertical Offset", "%.1f", viewSetup.mViewVOfs, ""); CM_SKIP_LINE; break;
+         case Player::BS_ViewHOfs: CM_ROW("Horizontal Offset", "%.1f", viewSetup.mViewHOfs, isWindow ? "cm" : ""); break;
+         case Player::BS_ViewVOfs: CM_ROW("Vertical Offset", "%.1f", viewSetup.mViewVOfs, isWindow ? "cm" : ""); CM_SKIP_LINE; break;
          case Player::BS_WndTopZOfs: CM_ROW("Window Top Z Ofs.", "%.1f", VPUTOCM(viewSetup.mWindowTopZOfs), "cm"); break;
          case Player::BS_WndBottomZOfs: CM_ROW("Window Bottom Z Ofs.", "%.1f", VPUTOCM(viewSetup.mWindowBottomZOfs), "cm"); CM_SKIP_LINE; break;
 
@@ -1084,7 +1084,7 @@ void LiveUI::UpdateCameraModeUI()
          VPUTOCM(pos.z), viewSetup.mViewportRotation);
    }
    
-   if (viewSetup.mMode == VLM_WINDOW)
+   if (isWindow)
    {
       if (LoadValueWithDefault(regKey[RegName::Player], "ScreenWidth"s, 0.0f) <= 1.f)
       {
