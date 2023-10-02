@@ -50,9 +50,9 @@ void RenderCommand::Execute(const bool log)
          if (clear_color != m_clearARGB)
          {
             clear_color = m_clearARGB;
-            const float r = (float)(m_clearARGB & 0xff) / 255.0f;
+            const float b = (float)(m_clearARGB & 0xff) / 255.0f;
             const float g = (float)((m_clearARGB & 0xff00) >> 8) / 255.0f;
-            const float b = (float)((m_clearARGB & 0xff0000) >> 16) / 255.0f;
+            const float r = (float)((m_clearARGB & 0xff0000) >> 16) / 255.0f;
             const float a = (float)((m_clearARGB & 0xff000000) >> 24) / 255.0f;
             glClearColor(r, g, b, a);
          }
