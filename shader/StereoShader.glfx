@@ -68,6 +68,15 @@ void main()
 }
 
 
+////ps_main_stereo_gamma_anaglyph
+void main()
+{
+   float3 lCol, rCol;
+   gatherLeftRightColors(tex0, lCol, rCol);
+   color = float4(LinearGammaAnaglyph(lCol, rCol), 1.0);
+}
+
+
 ////ps_main_stereo_deghost_anaglyph
 void main()
 {
@@ -94,5 +103,6 @@ stereo_TB:P0:vs_main_no_trafo():ps_main_tb()
 stereo_Int:P0:vs_main_no_trafo():ps_main_int()
 stereo_Flipped_Int:P0:vs_main_no_trafo():ps_main_flipped_int()
 Stereo_LinearAnaglyph:P0:vs_main_no_trafo():ps_main_stereo_linear_anaglyph()
+Stereo_GammaAnaglyph:P0:vs_main_no_trafo():ps_main_stereo_gamma_anaglyph()
 Stereo_DeghostAnaglyph:P0:vs_main_no_trafo():ps_main_stereo_deghost_anaglyph()
 Stereo_DynDesatAnaglyph:P0:vs_main_no_trafo():ps_main_stereo_dyndesat_anaglyph()

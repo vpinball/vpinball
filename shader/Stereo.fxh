@@ -122,22 +122,36 @@ void DynamicDesatAnaglyph(const float3 lCol, const float3 rCol, out float3 lDesa
     lDesatCol = lerp(lCol, leftLum, leftDesat);
     rDesatCol = lerp(rCol, rightLum, rightDesat);
 #endif
-    // Hue shift experiments for which no function that would work with any table was found
+    // Hue shift experiments for which no function that would look good with any table was found
     //lDesatCol = HueShift(lDesatCol, -leftDesat  * PI * 120. / 180.);
     //rDesatCol = HueShift(rDesatCol, -rightDesat * PI * 120. / 180.);
     //lDesatCol = HueShift(lCol, -leftDesat  * PI * 120. / 180.);
     //rDesatCol = HueShift(rCol, -rightDesat * PI * 120. / 180.);
 }
 
-// Compose anaglyph linearly from stereo colors
+// Compose anaglyph linearly from stereo colors, applying in linear RGB space
 // see naive filters (full channel filter)
 // see https://www.site.uottawa.ca/~edubois/anaglyph/
 // see https://www.visus.uni-stuttgart.de/en/research/computer-graphics/anaglyph-stereo/anaglyph-stereo-without-ghosting/
 // lCol/rCol are expected to be in sRGB color space
 float3 LinearAnaglyph(const float3 lCol, const float3 rCol)
 {
-    const float3 color = (mul(float4(lCol, 1.), Stereo_LeftMat) + mul(float4(rCol, 1.), Stereo_RightMat)).rgb;
-    return saturate(color);
+    const float3 color = (mul(float4(InvGamma(lCol), 1.), Stereo_LeftMat) + mul(float4(InvGamma(rCol), 1.), Stereo_RightMat)).rgb;
+    // Uncomment to vizualize parts that should exhibit ghosting (clamping should always result in ghosting)
+	//if (color.r < 0.0 || color.g < 0.0 || color.b < 0.0 || color.r > 1.0 || color.g > 1.0 || color.b > 1.0)
+	//	color = vec3(0.0);
+    return FBGamma(color);
+}
+
+
+// Compose anaglyph linearly from stereo colors, applying in sRGB space
+// see naive filters (full channel filter)
+// see https://www.site.uottawa.ca/~edubois/anaglyph/
+// see https://www.visus.uni-stuttgart.de/en/research/computer-graphics/anaglyph-stereo/anaglyph-stereo-without-ghosting/
+// lCol/rCol are expected to be in sRGB color space
+float3 LinearGammaAnaglyph(const float3 lCol, const float3 rCol)
+{
+    return (mul(float4(lCol, 1.), Stereo_LeftMat) + mul(float4(rCol, 1.), Stereo_RightMat)).rgb;
 }
 
 
@@ -148,6 +162,6 @@ UNIFORM float4 Stereo_DeghostGamma; // Gamma adjustment (depending on glasses)
 UNIFORM float4x4 Stereo_DeghostFilter; // Cross eye deghosting filter (depending on glasses)
 float3 DeghostAnaglyph(const float3 lCol, const float3 rCol)
 {
-    const float3 color = (mul(float4(lCol, 1.), Stereo_LeftMat) + mul(float4(rCol, 1.), Stereo_RightMat)).rgb;
-    return saturate(mul(pow(color, Stereo_DeghostGamma.rgb), to_float3x3(Stereo_DeghostFilter)));
+    const float3 color = LinearGammaAnaglyph(lCol, rCol);
+    return mul(pow(color, Stereo_DeghostGamma.rgb), to_float3x3(Stereo_DeghostFilter));
 }
