@@ -1127,16 +1127,16 @@ bool Player::UpdateStereoShaderState(const bool fitRequired)
       // To avoid making the app unresponsive, the search for a good fit can be spread across multiple frames leading to visible glitches.
       // TODO this could be solved far more efficiently by a clean Gauss Newton RMS fitting algorithm
       float gamma, bestRMS = FLT_MAX;
-      vec3 leftCalp, rightCalp;
-      leftCalp.x = LoadValueWithDefault(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glasses)).append("FittedLeftRed"s), 1.0f);
-      leftCalp.y = LoadValueWithDefault(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glasses)).append("FittedLeftGreen"s), 1.0f);
-      leftCalp.z = 1.f - leftCalp.x - leftCalp.y;
-      rightCalp.x = LoadValueWithDefault(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glasses)).append("FittedRightRed"s), 1.0f);
-      rightCalp.y = LoadValueWithDefault(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glasses)).append("FittedRightGreen"s), 1.0f);
-      rightCalp.z = 1.f - rightCalp.x - rightCalp.y;
+      vec3 rgb2Yl, rgb2Yr;
+      rgb2Yl.x = LoadValueWithDefault(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glasses)).append("FittedLeftRed"s), 1.0f);
+      rgb2Yl.y = LoadValueWithDefault(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glasses)).append("FittedLeftGreen"s), 1.0f);
+      rgb2Yl.z = 1.f - rgb2Yl.x - rgb2Yl.y;
+      rgb2Yr.x = LoadValueWithDefault(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glasses)).append("FittedRightRed"s), 1.0f);
+      rgb2Yr.y = LoadValueWithDefault(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glasses)).append("FittedRightGreen"s), 1.0f);
+      rgb2Yr.z = 1.f - rgb2Yr.x - rgb2Yr.y;
       gamma = LoadValueWithDefault(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glasses)).append("FittedGamma"s), 1.0f);
-      bestRMS = powf(powf(leftCalp.x,  1.f/gamma) - leftCal.x,  2.f) + powf(powf(leftCalp.y,  1.f/gamma) - leftCal.y,  2.f) + powf(powf(leftCalp.z,  1.f/gamma) - leftCal.z,  2.f)
-              + powf(powf(rightCalp.x, 1.f/gamma) - rightCal.x, 2.f) + powf(powf(rightCalp.y, 1.f/gamma) - rightCal.y, 2.f) + powf(powf(rightCalp.z, 1.f/gamma) - rightCal.z, 2.f);
+      bestRMS = powf(powf(rgb2Yl.x, 1.f/gamma) - leftCal.x,  2.f) + powf(powf(rgb2Yl.y, 1.f/gamma) - leftCal.y,  2.f) + powf(powf(rgb2Yl.z, 1.f/gamma) - leftCal.z,  2.f)
+              + powf(powf(rgb2Yr.x, 1.f/gamma) - rightCal.x, 2.f) + powf(powf(rgb2Yr.y, 1.f/gamma) - rightCal.y, 2.f) + powf(powf(rgb2Yr.z, 1.f/gamma) - rightCal.z, 2.f);
       constexpr float minRMSThreshold = 0.001f; // Target threshold (searched if idle, but does not alert and accept lower values)
       constexpr float maxRMSThreshold = 0.01f;  // Minimum threshold (search until satisfied, alert if not reached)
       const float rmsThreshold = fitRequired ? maxRMSThreshold : minRMSThreshold;
@@ -1155,77 +1155,80 @@ bool Player::UpdateStereoShaderState(const bool fitRequired)
             {
                bestRMS = rms;
                gamma = 1.f / invg;
-               leftCalp = vec3(al, bl, cl);
-               rightCalp = vec3(ar, br, cr);
+               rgb2Yl = vec3(al, bl, cl);
+               rgb2Yr = vec3(ar, br, cr);
                if (bestRMS < rmsThreshold)
                   break;
             }
          }
-         SaveValue(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glasses)).append("FittedLeftRed"s), leftCalp.x);
-         SaveValue(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glasses)).append("FittedLeftGreen"s), leftCalp.y);
-         SaveValue(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glasses)).append("FittedRightRed"s), rightCalp.x);
-         SaveValue(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glasses)).append("FittedRightGreen"s), rightCalp.y);
+         SaveValue(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glasses)).append("FittedLeftRed"s), rgb2Yl.x);
+         SaveValue(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glasses)).append("FittedLeftGreen"s), rgb2Yl.y);
+         SaveValue(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glasses)).append("FittedRightRed"s), rgb2Yr.x);
+         SaveValue(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glasses)).append("FittedRightGreen"s), rgb2Yr.y);
          SaveValue(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glasses)).append("FittedGamma"s), gamma);
          fitted = bestRMS < maxRMSThreshold;
       }
-      
-      // Identify glasses colors (compute normalized luminance filters, and identify the monochromatic eye with its color)
-      vec3 leftFilter(leftCalp);
-      vec3 rightFilter(rightCalp);
-      leftFilter = leftFilter / max(max(leftFilter.x, leftFilter.y), leftFilter.z);
-      rightFilter = rightFilter / max(max(rightFilter.x, rightFilter.y), rightFilter.z);
-      const float leftSecondHigher  = (leftFilter.y > leftFilter.x && leftFilter.x > leftFilter.z) ? leftFilter.x : (leftFilter.y < leftFilter.x && leftFilter.x < leftFilter.z) ? leftFilter.x : 
-                                      (leftFilter.x > leftFilter.y && leftFilter.y > leftFilter.z) ? leftFilter.y : (leftFilter.x < leftFilter.y && leftFilter.y < leftFilter.z) ? leftFilter.y : 
-                                      (leftFilter.x > leftFilter.z && leftFilter.z > leftFilter.y) ? leftFilter.z : (leftFilter.x < leftFilter.z && leftFilter.z < leftFilter.y) ? leftFilter.z : -1.f;
-      const float rightSecondHigher  = (rightFilter.y > rightFilter.x && rightFilter.x > rightFilter.z) ? rightFilter.x : (rightFilter.y < rightFilter.x && rightFilter.x < rightFilter.z) ? rightFilter.x : 
-                                       (rightFilter.x > rightFilter.y && rightFilter.y > rightFilter.z) ? rightFilter.y : (rightFilter.x < rightFilter.y && rightFilter.y < rightFilter.z) ? rightFilter.y : 
-                                       (rightFilter.x > rightFilter.z && rightFilter.z > rightFilter.y) ? rightFilter.z : (rightFilter.x < rightFilter.z && rightFilter.z < rightFilter.y) ? rightFilter.z : -1.f;
-      assert(leftSecondHigher != -1.f && rightSecondHigher != -1.f);
+
+      // Normalize Y(white) = 1.
+      rgb2Yl = rgb2Yl / (rgb2Yl.x + rgb2Yl.y + rgb2Yl.z);
+      rgb2Yr = rgb2Yr / (rgb2Yr.x + rgb2Yr.y + rgb2Yr.z);
+
+      // Identify glasses colors (identify the monochromatic eye with its color from the luminance calibration)
+      vec3 eyeL(rgb2Yl.x / 0.2126f, rgb2Yl.y / 0.7152f, rgb2Yl.z / 0.0722f);
+      vec3 eyeR(rgb2Yr.x / 0.2126f, rgb2Yr.y / 0.7152f, rgb2Yr.z / 0.0722f);
+      eyeL = eyeL / max(max(eyeL.x, eyeL.y), eyeL.z);
+      eyeR = eyeR / max(max(eyeR.x, eyeR.y), eyeR.z);
+      const float leftSecondHigher   = (eyeL.y > eyeL.x && eyeL.x > eyeL.z) ? eyeL.x : (eyeL.y < eyeL.x && eyeL.x < eyeL.z) ? eyeL.x : 
+                                       (eyeL.x > eyeL.y && eyeL.y > eyeL.z) ? eyeL.y : (eyeL.x < eyeL.y && eyeL.y < eyeL.z) ? eyeL.y : 
+                                       (eyeL.x > eyeL.z && eyeL.z > eyeL.y) ? eyeL.z : (eyeL.x < eyeL.z && eyeL.z < eyeL.y) ? eyeL.z : -1.f;
+      const float rightSecondHigher  = (eyeR.y > eyeR.x && eyeR.x > eyeR.z) ? eyeR.x : (eyeR.y < eyeR.x && eyeR.x < eyeR.z) ? eyeR.x : 
+                                       (eyeR.x > eyeR.y && eyeR.y > eyeR.z) ? eyeR.y : (eyeR.x < eyeR.y && eyeR.y < eyeR.z) ? eyeR.y : 
+                                       (eyeR.x > eyeR.z && eyeR.z > eyeR.y) ? eyeR.z : (eyeR.x < eyeR.z && eyeR.z < eyeR.y) ? eyeR.z : -1.f;
       bool reversedColors = leftSecondHigher > rightSecondHigher; // Monochromatic (red/green/blue) is supposed to be on the left eye
-      const vec3 monoFilter = reversedColors ? rightFilter : leftFilter;
-      const enum AnaglypColors { RED_CYAN, GREEN_MAGENTA, BLUE_AMBER } colors
-         = (monoFilter.x > monoFilter.y && monoFilter.x > monoFilter.z) ? RED_CYAN
-         : (monoFilter.y > monoFilter.x && monoFilter.y > monoFilter.z) ? GREEN_MAGENTA
-                                                                        : BLUE_AMBER;
+      const vec3 eyeMono = reversedColors ? eyeR : eyeL;
+      const enum AnaglypColors { RED_CYAN, GREEN_MAGENTA, BLUE_AMBER } colors = (eyeMono.x > eyeMono.y && eyeMono.x > eyeMono.z) ? RED_CYAN
+                                                                              : (eyeMono.y > eyeMono.x && eyeMono.y > eyeMono.z) ? GREEN_MAGENTA
+                                                                                                                                 : BLUE_AMBER;
 
       Matrix3D left, right;
       if (filter == 3 || filter == 4)
       {
          // Compose anaglyph base on measured luminance of display/filter/user by calibration
          // see https://www.visus.uni-stuttgart.de/en/research/computer-graphics/anaglyph-stereo/anaglyph-stereo-without-ghosting/
-         const vec3 monoCal = reversedColors ? rightCalp : leftCalp;
-         const vec3 biCal = reversedColors ? leftCalp : rightCalp;
-         const vec3 biFilter = reversedColors ? leftFilter : rightFilter;
-         const float secondHigher = max(leftSecondHigher, rightSecondHigher);
          vec3 chromacity;
          switch (colors)
          {
-         case RED_CYAN:      chromacity = vec3( 0.f, 1.f, -1.f); break;
-         case GREEN_MAGENTA: chromacity = vec3( 1.f, 0.f, -1.f); break;
-         case BLUE_AMBER:    chromacity = vec3(-1.f, 1.f,  0.f); break;
+         case RED_CYAN: chromacity = vec3(0.f, 1.f, -1.f); break;
+         case GREEN_MAGENTA: chromacity = vec3(-1.f, 0.f, 1.f); break;
+         case BLUE_AMBER: chromacity = vec3(-1.f, 1.f, 0.f); break;
+         }
+         if (reversedColors)
+         {
+            vec3 tmp = rgb2Yl;
+            rgb2Yl = rgb2Yr;
+            rgb2Yr = tmp;
          }
          Matrix3D matYYC2RGB;
          matYYC2RGB.SetIdentity();
-         matYYC2RGB.m[0][0] = monoCal.x;
-         matYYC2RGB.m[0][1] = monoCal.y;
-         matYYC2RGB.m[0][2] = monoCal.z;
-         matYYC2RGB.m[1][0] = biCal.x;
-         matYYC2RGB.m[1][1] = biCal.y;
-         matYYC2RGB.m[1][2] = biCal.z;
+         matYYC2RGB.m[0][0] = rgb2Yl.x;
+         matYYC2RGB.m[0][1] = rgb2Yl.y;
+         matYYC2RGB.m[0][2] = rgb2Yl.z;
+         matYYC2RGB.m[1][0] = rgb2Yr.x;
+         matYYC2RGB.m[1][1] = rgb2Yr.y;
+         matYYC2RGB.m[1][2] = rgb2Yr.z;
          matYYC2RGB.m[2][0] = chromacity.x;
          matYYC2RGB.m[2][1] = chromacity.y;
          matYYC2RGB.m[2][2] = chromacity.z;
          matYYC2RGB.Invert();
-         float halfTone = 1.f; // 0.f will result in half color anaglyph
-         const vec3 rgbLuminance(0.2126f, 0.7152f, 0.0722f);
-         const vec3 leftLuminance = lerp(rgbLuminance, monoCal, halfTone);
-         const vec3 rightLuminance = lerp(rgbLuminance, biCal, halfTone);
-         const Matrix3D matLeft2YYC(leftLuminance.x, leftLuminance.y, leftLuminance.z, 0.f, /**/ 0.f, 0.f, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
-         const Matrix3D matRight2YYC(0.f, 0.f, 0.f, 0.f, /**/ rightLuminance.x, rightLuminance.y, rightLuminance.z, 0.f, /**/ chromacity.x, chromacity.y, chromacity.z, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
+         Matrix3D matLeft2YYC, matRight2YYC;
+         matLeft2YYC = Matrix3D(rgb2Yl.x, rgb2Yl.y, rgb2Yl.z, 0.f, /**/ 0.f, 0.f, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
+         matRight2YYC = Matrix3D(0.f, 0.f, 0.f, 0.f, /**/ rgb2Yr.x, rgb2Yr.y, rgb2Yr.z, 0.f, /**/ chromacity.x, chromacity.y, chromacity.z, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
          left = matYYC2RGB * matLeft2YYC;
          right = matYYC2RGB * matRight2YYC;
-         m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetVector(SHADER_Stereo_LeftLuminance_Gamma, 0.5f * leftLuminance.x, 0.5f * leftLuminance.y, 0.5f * leftLuminance.z, gamma);
-         m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetVector(SHADER_Stereo_RightLuminance, 0.5f * rightLuminance.x, 0.5f * rightLuminance.y, 0.5f * rightLuminance.z, 0.0f);
+
+         // Used by the dynamic desaturation filter to identify colors that would be seen by only one eye
+         m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetVector(SHADER_Stereo_LeftLuminance_Gamma, 0.5f * rgb2Yl.x, 0.5f * rgb2Yl.y, 0.5f * rgb2Yl.z, gamma);
+         m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetVector(SHADER_Stereo_RightLuminance, 0.5f * rgb2Yr.x, 0.5f * rgb2Yr.y, 0.5f * rgb2Yr.z, 0.0f);
       }
       else if (filter == 2)
       {
@@ -1288,7 +1291,7 @@ bool Player::UpdateStereoShaderState(const bool fitRequired)
       }
       else if (filter == 0)
       {
-         // Basic anaglyph supposing a perfect display / filter / viewer set
+         // Basic anaglyph composition (only for reference, all other filters will always perform better)
          if (colors == RED_CYAN)
          {
             left  = Matrix3D(1.f, 0.f, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
@@ -1316,6 +1319,34 @@ bool Player::UpdateStereoShaderState(const bool fitRequired)
       right = matBrightness * matRightContrast * right * matSaturation;
       left.Transpose();
       right.Transpose();
+
+      // Adjust colors before processing in order to avoid needing to clamp after applying anaglyph matrices (since clamping always results in ghosting)
+      // FIXME this is not yet exposed to the UI (remove eye contrats in favor of this)
+      const float deghostStrength = 0.f;
+      float minCoef = 0.f, maxCoef = 1.f;
+      for (int j = 0; j < 3; j++)
+      {
+         float rowMin = 0.f, rowMax = 0.f;
+         for (int i = 0; i < 3; i++)
+         {
+            if (left.m[i][j] < 0)
+               rowMin += left.m[i][j];
+            else
+               rowMax += left.m[i][j];
+            if (right.m[i][j] < 0)
+               rowMin += right.m[i][j];
+            else
+               rowMax += right.m[i][j];
+         }
+         minCoef = min(minCoef, rowMin);
+         maxCoef = max(maxCoef, rowMax);
+      }
+      const float contrast = 1.f / (maxCoef - minCoef);
+      const float offset = -lerp(0.f, contrast * minCoef, deghostStrength);
+      const Matrix3D matDeghost = Matrix3D::MatrixTranslate(offset, offset, offset) * Matrix3D::MatrixScale(lerp(1.f, contrast, deghostStrength));
+      left = matDeghost * left;
+      right = matDeghost * right;
+
       m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetMatrix(reversedColors ? SHADER_Stereo_RightMat : SHADER_Stereo_LeftMat, &left);
       m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetMatrix(reversedColors ? SHADER_Stereo_LeftMat : SHADER_Stereo_RightMat, &right);
    }
@@ -3978,6 +4009,7 @@ void Player::PrepareVideoBuffers()
             const int filter = LoadValueWithDefault(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(glasses)).append("Filter"s), 4);
             m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetTechnique(filter == 4 ? SHADER_TECHNIQUE_Stereo_DynDesatAnaglyph 
                                                                   : filter == 2 ? SHADER_TECHNIQUE_Stereo_DeghostAnaglyph 
+                                                                  : filter == 1 ? SHADER_TECHNIQUE_Stereo_GammaAnaglyph 
                                                                                 : SHADER_TECHNIQUE_Stereo_LinearAnaglyph);
          }
          else
