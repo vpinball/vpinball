@@ -198,6 +198,89 @@ public:
 // Ported at: VisualPinball.Engine/Math/Matrix2D.cs
 //
 
+   void Transpose()
+   {
+      Matrix3 tmp;
+      for (int i = 0; i < 3; ++i)
+      {
+         tmp.m_d[0][i] = m_d[i][0];
+         tmp.m_d[1][i] = m_d[i][1];
+         tmp.m_d[2][i] = m_d[i][2];
+      }
+      *this = tmp;
+   }
+
+   void Invert()
+   {
+      int ipvt[4] = { 0, 1, 2 };
+
+      for (int k = 0; k < 3; ++k)
+      {
+         float temp = 0.f;
+         int l = k;
+         for (int i = k; i < 3; ++i)
+         {
+            const float d = fabsf(m_d[k][i]);
+            if (d > temp)
+            {
+               temp = d;
+               l = i;
+            }
+         }
+         if (l != k)
+         {
+            const int tmp = ipvt[k];
+            ipvt[k] = ipvt[l];
+            ipvt[l] = tmp;
+            for (int j = 0; j < 3; ++j)
+            {
+               temp = m_d[j][k];
+               m_d[j][k] = m_d[j][l];
+               m_d[j][l] = temp;
+            }
+         }
+         const float d = 1.0f / m_d[k][k];
+         for (int j = 0; j < k; ++j)
+         {
+            const float c = m_d[j][k] * d;
+            for (int i = 0; i < 3; ++i)
+               m_d[j][i] -= m_d[k][i] * c;
+            m_d[j][k] = c;
+         }
+         for (int j = k + 1; j < 3; ++j)
+         {
+            const float c = m_d[j][k] * d;
+            for (int i = 0; i < 3; ++i)
+               m_d[j][i] -= m_d[k][i] * c;
+            m_d[j][k] = c;
+         }
+         for (int i = 0; i < 3; ++i)
+            m_d[k][i] = -m_d[k][i] * d;
+         m_d[k][k] = d;
+      }
+
+      Matrix3 mat3D;
+      mat3D.m_d[ipvt[0]][0] = m_d[0][0];
+      mat3D.m_d[ipvt[0]][1] = m_d[0][1];
+      mat3D.m_d[ipvt[0]][2] = m_d[0][2];
+      mat3D.m_d[ipvt[1]][0] = m_d[1][0];
+      mat3D.m_d[ipvt[1]][1] = m_d[1][1];
+      mat3D.m_d[ipvt[1]][2] = m_d[1][2];
+      mat3D.m_d[ipvt[2]][0] = m_d[2][0];
+      mat3D.m_d[ipvt[2]][1] = m_d[2][1];
+      mat3D.m_d[ipvt[2]][2] = m_d[2][2];
+
+      m_d[0][0] = mat3D.m_d[0][0];
+      m_d[0][1] = mat3D.m_d[0][1];
+      m_d[0][2] = mat3D.m_d[0][2];
+      m_d[1][0] = mat3D.m_d[1][0];
+      m_d[1][1] = mat3D.m_d[1][1];
+      m_d[1][2] = mat3D.m_d[1][2];
+      m_d[2][0] = mat3D.m_d[2][0];
+      m_d[2][1] = mat3D.m_d[2][1];
+      m_d[2][2] = mat3D.m_d[2][2];
+   }
+
    // Create matrix for rotating around an arbitrary vector
    // NB: axis must be normalized
    // NB: this actually rotates by -angle in right-handed coordinates
