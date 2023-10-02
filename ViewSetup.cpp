@@ -202,28 +202,28 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
       // Fit camera to adjusted table bounds, along vertical axis
       // We do not apply the scene scale since we want to fit the scaled version of the table as if it was the normal version (otherwise it would reverse the scaling during the fitting)
       // For fitting, we use a vertical FOV of 90°, leading to a yspan of 1, and an aspect ratio of 1, also leading to a xspan of 1
-      Matrix3D fit = lookat * rotz * Matrix3D::MatrixScale(1.f, -1.f, -1.f) * Matrix3D::MatrixPerspectiveFovLH(90.f, 1.0f, zNear, zFar);
-      const float xCenter = 0.5f * (table->m_left + table->m_right);
-      Vertex3Ds tl = fit.MultiplyVector(Vertex3Ds(xCenter, table->m_top, mWindowTopZOfs));
-      Vertex3Ds tr = fit.MultiplyVector(Vertex3Ds(xCenter, table->m_top, mWindowTopZOfs));
-      Vertex3Ds bl = fit.MultiplyVector(Vertex3Ds(xCenter, table->m_bottom, mWindowBottomZOfs));
-      Vertex3Ds br = fit.MultiplyVector(Vertex3Ds(xCenter, table->m_bottom, mWindowBottomZOfs));
-      const float ymax = zNear * max(br.y, max(bl.y, max(tl.y, tr.y)));
-      const float ymin = zNear * min(br.y, min(bl.y, min(tl.y, tr.y)));
-      const float xmax = zNear * max(br.x, max(bl.x, max(tl.x, tr.x)));
-      const float xmin = zNear * min(br.x, min(bl.x, min(tl.x, tr.x)));
-      xcenter = 0.5f * (xmin + xmax) + zNear * 0.01f * (mViewVOfs * sinf(rotation) - mViewHOfs * cosf(rotation));
-      ycenter = 0.5f * (ymin + ymax) + zNear * 0.01f * (mViewVOfs * cosf(rotation) + mViewHOfs * sinf(rotation));
+      const Matrix3D fit = lookat * rotz * Matrix3D::MatrixScale(1.f, -1.f, -1.f) * Matrix3D::MatrixPerspectiveFovLH(90.f, 1.0f, zNear, zFar);
+      const float centerAxis = 0.5f * (table->m_left + table->m_right);
+      const Vertex3Ds top = fit.MultiplyVector(Vertex3Ds(centerAxis, table->m_top, mWindowTopZOfs));
+      const Vertex3Ds bottom = fit.MultiplyVector(Vertex3Ds(centerAxis, table->m_bottom, mWindowBottomZOfs));
+      const float xmin = zNear * min(bottom.x, top.x), xmax = zNear * max(bottom.x, top.x);
+      const float ymin = zNear * min(bottom.y, top.y), ymax = zNear * max(bottom.y, top.y);
+      const float screenHeight = LoadValueWithDefault(regKey[RegName::Player], "ScreenWidth"s, 0.0f); // Physical width (always measured in landscape orientation) is the height in window mode
+      float offsetScale;
       if ((quadrant & 1) == 0) // 0 & 180
       {
+         offsetScale = screenHeight <= 1.f ? 1.f : ((ymax - ymin) / (screenHeight * realToVirtual / mSceneScaleY));
          yspan = 0.5f * (ymax - ymin);
          xspan = yspan * aspect;
       }
       else // 90 & 270
       {
+         offsetScale = screenHeight <= 1.f ? 1.f : ((xmax - xmin) / (screenHeight * realToVirtual / mSceneScaleY));
          xspan = 0.5f * (xmax - xmin);
          yspan = xspan / aspect;
       }
+      xcenter = 0.5f * (xmin + xmax) + offsetScale * (mViewVOfs * sinf(rotation) - mViewHOfs * cosf(rotation));
+      ycenter = 0.5f * (ymin + ymax) + offsetScale * (mViewVOfs * cosf(rotation) + mViewHOfs * sinf(rotation));
       break;
    }
    }

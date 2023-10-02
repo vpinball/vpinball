@@ -4035,8 +4035,8 @@ void Player::UpdateBackdropSettings(const bool up)
    case BS_LookAt: viewSetup.mLookAt += 0.5f * thesign; break;
    case BS_FOV: viewSetup.mFOV += 0.5f * thesign; break;
    case BS_Layback: viewSetup.mLayback += 0.5f * thesign; break;
-   case BS_ViewHOfs: viewSetup.mViewHOfs += 0.5f * thesign; break;
-   case BS_ViewVOfs: viewSetup.mViewVOfs += 0.5f * thesign; break;
+   case BS_ViewHOfs: viewSetup.mViewHOfs += (viewSetup.mMode == VLM_WINDOW ? 0.1f : 0.5f) * thesign; break;
+   case BS_ViewVOfs: viewSetup.mViewVOfs += (viewSetup.mMode == VLM_WINDOW ? 0.1f : 0.5f) * thesign; break;
    case BS_XYZScale: viewSetup.mSceneScaleX += 0.0025f * thesign; viewSetup.mSceneScaleY += 0.0025f * thesign; viewSetup.mSceneScaleZ += 0.0025f * thesign; CalcBallAspectRatio(); break;
    case BS_XScale: viewSetup.mSceneScaleX += 0.0025f * thesign; CalcBallAspectRatio(); break;
    case BS_YScale: viewSetup.mSceneScaleY += 0.0025f * thesign; CalcBallAspectRatio(); break;
