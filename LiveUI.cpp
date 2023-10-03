@@ -1034,7 +1034,7 @@ void LiveUI::UpdateCameraModeUI()
          // Scene scale
          case Player::BS_XYZScale: break;
          case Player::BS_XScale: CM_ROW("Table X Scale", "%.1f", 100.f * viewSetup.mSceneScaleX / realToVirtual, "%"); break;
-         case Player::BS_YScale: CM_ROW("Table Y Scale", "%.1f", 100.f * viewSetup.mSceneScaleY / realToVirtual, "%"); break;
+         case Player::BS_YScale: CM_ROW(isWindow ? "Table YZ Scale" : "Table Y Scale", "%.1f", 100.f * viewSetup.mSceneScaleY / realToVirtual, "%"); break;
          case Player::BS_ZScale: CM_ROW("Table Z Scale", "%.1f", 100.f * viewSetup.mSceneScaleZ / realToVirtual, "%"); CM_SKIP_LINE; break;
 
          // Player position
@@ -1044,9 +1044,9 @@ void LiveUI::UpdateCameraModeUI()
             else
                { CM_ROW("Look at", "%.1f", viewSetup.mLookAt, "%"); }
             break;
-         case Player::BS_XOffset: CM_ROW(isLegacy ? "X Offset" : "Player X", "%.1f", VPUTOCM(viewSetup.mViewX), "cm"); break;
-         case Player::BS_YOffset: CM_ROW(isLegacy ? "Y Offset" : "Player Y", "%.1f", VPUTOCM(viewSetup.mViewY), "cm"); break;
-         case Player::BS_ZOffset: CM_ROW(isLegacy ? "Z Offset" : "Player Z", "%.1f", VPUTOCM(viewSetup.mViewZ), "cm"); CM_SKIP_LINE; break;
+         case Player::BS_XOffset: CM_ROW(isLegacy ? "X Offset" : isCamera ? "Player X" : "Global Player X", "%.1f", isWindow ? LoadValueWithDefault(regKey[RegName::Player], "ScreenPlayerX"s, 0.0f) : VPUTOCM(viewSetup.mViewX), "cm"); break;
+         case Player::BS_YOffset: CM_ROW(isLegacy ? "Y Offset" : isCamera ? "Player Y" : "Global Player Y", "%.1f", isWindow ? LoadValueWithDefault(regKey[RegName::Player], "ScreenPlayerY"s, 0.0f) : VPUTOCM(viewSetup.mViewY), "cm"); break;
+         case Player::BS_ZOffset: CM_ROW(isLegacy ? "Z Offset" : isCamera ? "Player Z" : "Global Player Z", "%.1f", isWindow ? LoadValueWithDefault(regKey[RegName::Player], "ScreenPlayerZ"s, 70.0f) : VPUTOCM(viewSetup.mViewZ), "cm"); CM_SKIP_LINE; break;
 
          // View settings
          case Player::BS_FOV: CM_ROW("Field Of View (overall scale)", "%.1f", viewSetup.mFOV, "deg"); break;
@@ -1086,22 +1086,14 @@ void LiveUI::UpdateCameraModeUI()
    
    if (isWindow)
    {
+      ImGui::NewLine();
+      ImGui::Text("Camera at X: %.1fcm Y: %.1fcm Z: %.1fcm", VPUTOCM(viewSetup.mViewX), VPUTOCM(viewSetup.mViewY), VPUTOCM(viewSetup.mViewZ));
       if (LoadValueWithDefault(regKey[RegName::Player], "ScreenWidth"s, 0.0f) <= 1.f)
       {
          ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 0, 0, 255));
          ImGui::NewLine();
          ImGui::NewLine();
          ImGui::Text("You are using 'Window' mode but haven't defined your display physical size.");
-         ImGui::Text("This will break the overall scale as well as the stereo rendering.");
-         ImGui::NewLine();
-         ImGui::PopStyleColor();
-      }
-      if (abs(viewSetup.mSceneScaleY - viewSetup.mSceneScaleZ) > 0.01f)
-      {
-         ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 0, 0, 255));
-         ImGui::NewLine();
-         ImGui::NewLine();
-         ImGui::Text("You are using 'Window' mode with different Y/Z scales.");
          ImGui::Text("This will break the overall scale as well as the stereo rendering.");
          ImGui::NewLine();
          ImGui::PopStyleColor();

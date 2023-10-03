@@ -55,8 +55,19 @@ void BackglassCameraProperty::UpdateVisuals(const int dispid/*=-1*/)
       GetDlgItem(IDC_STATIC10).SetWindowText(isLegacy ? "Y Offset" : "Y Position");
       GetDlgItem(IDC_STATIC11).SetWindowText(isLegacy ? "Z Offset" : "Z Position");
       GetDlgItem(IDC_STATIC5 ).SetWindowText(isWindow ? "Rot. Offset" : "Rotation");
+      GetDlgItem(IDC_STATIC7 ).SetWindowText(isWindow ? "&Y/Z Scale" : "&Y Scale");
+      GetDlgItem(IDC_STATIC2).ShowWindow(isWindow ? 0 : 1); // LookAt label
+      GetDlgItem(IDC_INCLINATION_EDIT).ShowWindow(isWindow ? 0 : 1); // LookAt edit
       GetDlgItem(IDC_STATIC3).ShowWindow(isWindow ? 0 : 1); // FOV label
       GetDlgItem(IDC_FOV_EDIT).ShowWindow(isWindow ? 0 : 1); // FOV edit
+      GetDlgItem(IDC_STATIC9).ShowWindow(isWindow ? 0 : 1); // Player X label
+      GetDlgItem(IDC_X_OFFSET_EDIT).ShowWindow(isWindow ? 0 : 1); // Player X edit
+      GetDlgItem(IDC_STATIC10).ShowWindow(isWindow ? 0 : 1); // Player Y label
+      GetDlgItem(IDC_Y_OFFSET_EDIT).ShowWindow(isWindow ? 0 : 1); // Player Y edit
+      GetDlgItem(IDC_STATIC11).ShowWindow(isWindow ? 0 : 1); // Player Z label
+      GetDlgItem(IDC_Z_OFFSET_EDIT).ShowWindow(isWindow ? 0 : 1); // Player Z edit
+      GetDlgItem(IDC_STATIC8).ShowWindow(isWindow ? 0 : 1); // Z Scale label
+      GetDlgItem(IDC_TABLE_SCALEZ).ShowWindow(isWindow ? 0 : 1); // Z Scale edit
       GetDlgItem(IDC_STATIC4).ShowWindow(isLegacy ? 1 : 0); // Layback label
       GetDlgItem(IDC_LAYBACK_EDIT).ShowWindow(isLegacy ? 1 : 0); // Layback edit
    }

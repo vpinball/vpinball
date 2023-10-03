@@ -643,6 +643,18 @@ BOOL VideoOptionsDialog::OnInitDialog()
    const float screenHeight = LoadValueWithDefault(regKey[RegName::Player], "ScreenHeight"s, 0.0f);
    sprintf_s(tmp, sizeof(tmp), "%f", screenHeight);
    SetDlgItemText(IDC_SCREEN_HEIGHT, tmp);
+   const float screenInclination = LoadValueWithDefault(regKey[RegName::Player], "ScreenInclination"s, 0.0f);
+   sprintf_s(tmp, sizeof(tmp), "%f", screenInclination);
+   SetDlgItemText(IDC_SCREEN_INCLINATION, tmp);
+   const float screenPlayerX = LoadValueWithDefault(regKey[RegName::Player], "ScreenPlayerX"s, 0.0f);
+   sprintf_s(tmp, sizeof(tmp), "%f", screenPlayerX);
+   SetDlgItemText(IDC_SCREEN_PLAYERX, tmp);
+   const float screenPlayerY = LoadValueWithDefault(regKey[RegName::Player], "ScreenPlayerY"s, 0.0f);
+   sprintf_s(tmp, sizeof(tmp), "%f", screenPlayerY);
+   SetDlgItemText(IDC_SCREEN_PLAYERY, tmp);
+   const float screenPlayerZ = LoadValueWithDefault(regKey[RegName::Player], "ScreenPlayerZ"s, 70.0f);
+   sprintf_s(tmp, sizeof(tmp), "%f", screenPlayerZ);
+   SetDlgItemText(IDC_SCREEN_PLAYERZ, tmp);
 
    const int alphaRampsAccuracy = LoadValueWithDefault(regKey[RegName::Player], "AlphaRampAccuracy"s, 10);
    const HWND hwndARASlider = GetDlgItem(IDC_ARASlider).GetHwnd();
@@ -940,6 +952,10 @@ void VideoOptionsDialog::OnOK()
 
    SaveValue(regKey[RegName::Player], "ScreenWidth"s, GetDlgItemText(IDC_SCREEN_WIDTH).c_str());
    SaveValue(regKey[RegName::Player], "ScreenHeight"s, GetDlgItemText(IDC_SCREEN_HEIGHT).c_str());
+   SaveValue(regKey[RegName::Player], "ScreenInclination"s, GetDlgItemText(IDC_SCREEN_INCLINATION).c_str());
+   SaveValue(regKey[RegName::Player], "ScreenPlayerX"s, GetDlgItemText(IDC_SCREEN_PLAYERX).c_str());
+   SaveValue(regKey[RegName::Player], "ScreenPlayerY"s, GetDlgItemText(IDC_SCREEN_PLAYERY).c_str());
+   SaveValue(regKey[RegName::Player], "ScreenPlayerZ"s, GetDlgItemText(IDC_SCREEN_PLAYERZ).c_str());
 
    const bool video10bit = (SendMessage(GetDlgItem(IDC_10BIT_VIDEO).GetHwnd(), BM_GETCHECK, 0, 0) != 0);
    SaveValue(regKey[RegName::Player], "Render10Bit"s, video10bit);

@@ -4055,6 +4055,7 @@ void Player::UpdateBackdropSettings(const bool up)
 {
    const float thesign = !up ? -0.2f : 0.2f;
    ViewSetup &viewSetup = m_ptable->mViewSetups[m_ptable->m_BG_current_set];
+   const bool isWindow = viewSetup.mMode == VLM_WINDOW;
    switch (m_backdropSettingActive)
    {
    // View setup settings
@@ -4067,17 +4068,17 @@ void Player::UpdateBackdropSettings(const bool up)
    case BS_LookAt: viewSetup.mLookAt += 0.5f * thesign; break;
    case BS_FOV: viewSetup.mFOV += 0.5f * thesign; break;
    case BS_Layback: viewSetup.mLayback += 0.5f * thesign; break;
-   case BS_ViewHOfs: viewSetup.mViewHOfs += (viewSetup.mMode == VLM_WINDOW ? 0.1f : 0.5f) * thesign; break;
-   case BS_ViewVOfs: viewSetup.mViewVOfs += (viewSetup.mMode == VLM_WINDOW ? 0.1f : 0.5f) * thesign; break;
+   case BS_ViewHOfs: viewSetup.mViewHOfs += (isWindow ? 0.1f : 0.5f) * thesign; break;
+   case BS_ViewVOfs: viewSetup.mViewVOfs += (isWindow ? 0.1f : 0.5f) * thesign; break;
    case BS_XYZScale: viewSetup.mSceneScaleX += 0.0025f * thesign; viewSetup.mSceneScaleY += 0.0025f * thesign; viewSetup.mSceneScaleZ += 0.0025f * thesign; CalcBallAspectRatio(); break;
    case BS_XScale: viewSetup.mSceneScaleX += 0.0025f * thesign; CalcBallAspectRatio(); break;
    case BS_YScale: viewSetup.mSceneScaleY += 0.0025f * thesign; CalcBallAspectRatio(); break;
    case BS_ZScale: viewSetup.mSceneScaleZ += 0.0025f * thesign; CalcBallAspectRatio(); break;
-   case BS_XOffset: viewSetup.mViewX += 5.f * thesign; break;
-   case BS_YOffset: viewSetup.mViewY += 5.f * thesign; break;
-   case BS_ZOffset: viewSetup.mViewZ += (viewSetup.mMode == VLM_LEGACY ? 50.f : 5.f) * thesign; break;
-   case BS_WndTopZOfs: viewSetup.mWindowTopZOfs += 1.f * thesign; break;
-   case BS_WndBottomZOfs: viewSetup.mWindowBottomZOfs += 1.f * thesign; break;
+   case BS_XOffset: if (isWindow) SaveValue(regKey[RegName::Player], "ScreenPlayerX"s, LoadValueWithDefault(regKey[RegName::Player], "ScreenPlayerX"s, 0.0f) + 0.25f * thesign); else viewSetup.mViewX += 5.f * thesign; break;
+   case BS_YOffset: if (isWindow) SaveValue(regKey[RegName::Player], "ScreenPlayerY"s, LoadValueWithDefault(regKey[RegName::Player], "ScreenPlayerY"s, 0.0f) + 0.25f * thesign); else viewSetup.mViewY += 5.f * thesign; break;
+   case BS_ZOffset: if (isWindow) SaveValue(regKey[RegName::Player], "ScreenPlayerZ"s, LoadValueWithDefault(regKey[RegName::Player], "ScreenPlayerZ"s, 70.0f) + 0.25f * thesign); else viewSetup.mViewZ += (viewSetup.mMode == VLM_LEGACY ? 50.f : 5.f) * thesign; break;
+   case BS_WndTopZOfs: viewSetup.mWindowTopZOfs += 5.f * thesign; break;
+   case BS_WndBottomZOfs: viewSetup.mWindowBottomZOfs += 5.f * thesign; break;
 
    // Scene lighting settings
    case BS_LightEmissionScale:
