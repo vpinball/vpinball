@@ -638,8 +638,8 @@ public:
       BS_LightEmissionScale, BS_LightRange, BS_LightHeight, BS_EnvEmissionScale
    };
    static constexpr Player::BackdropSetting mWindowViewSettings[] = {
-      BS_ViewMode, BS_ViewHOfs, BS_ViewVOfs, BS_XYZScale, BS_XScale, BS_YScale, BS_ZScale, BS_XOffset, BS_YOffset, BS_ZOffset, 
-      BS_WndTopZOfs, BS_WndBottomZOfs,
+      BS_ViewMode, BS_ViewHOfs, BS_ViewVOfs, BS_XYZScale, BS_XScale, BS_YScale, /* BS_ZScale,*/ 
+      BS_WndTopZOfs, BS_WndBottomZOfs, BS_XOffset, BS_YOffset, BS_ZOffset, 
       BS_LightEmissionScale, BS_LightRange, BS_LightHeight, BS_EnvEmissionScale
    };
    BackdropSetting m_backdropSettingActive = BS_ViewMode;

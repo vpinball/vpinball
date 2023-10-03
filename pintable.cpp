@@ -1987,6 +1987,8 @@ void PinTable::Render3DProjection(Sur * const psur)
 
    // dummy coordinate system for backdrop view
    ModelViewProj mvp;
+   if (mViewSetups[m_currentBackglassMode].mMode == VLM_WINDOW)
+      mViewSetups[m_currentBackglassMode].SetWindowModeFromAppSettings(this);
    mViewSetups[m_currentBackglassMode].ComputeMVP(this, EDITOR_BG_WIDTH, EDITOR_BG_HEIGHT, false, mvp);
 
    Vertex3Ds rgvIn[8];

@@ -782,9 +782,13 @@
 #define DISPID_Width                    465
 #define IDC_SCREEN_HEIGHT               465
 #define DISPID_ZAdjust                  466
+#define IDC_SCREEN_INCLINATION          466
 #define DISPID_RodDiam                  467
+#define IDC_SCREEN_PLAYERX              467
 #define DISPID_RingDiam                 468
+#define IDC_SCREEN_PLAYERY              468
 #define DISPID_RingThickness            469
+#define IDC_SCREEN_PLAYERZ              469
 #define DISPID_SpringDiam               470
 #define DISPID_TipShape                 471
 #define DISPID_SpringGauge              472

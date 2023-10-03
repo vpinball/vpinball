@@ -1120,10 +1120,9 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
          if (g_pvp->m_povEdit)
             g_pvp->QuitPlayer(Player::CloseState::CS_CLOSE_APP);
       }
-      else if (keycode == g_pplayer->m_rgKeys[ePlungerKey])
+      else if (keycode == g_pplayer->m_rgKeys[ePlungerKey] && dispid == DISPID_GameEvents_KeyDown)
       {
          // Reset to default values
-         g_pplayer->m_liveUI->PushNotification("POV reset to default values"s, 5000);
          PinTable *const table = g_pplayer->m_ptable;
          ViewSetupID id = table->m_BG_current_set;
          ViewSetup &viewSetup = table->mViewSetups[id];
@@ -1133,6 +1132,7 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
          {
          case BG_DESKTOP:
          case BG_FSS:
+            g_pplayer->m_liveUI->PushNotification("POV reseted to default values"s, 5000);
             if (id == BG_DESKTOP && !portrait)
             { // Desktop
                viewSetup.mMode = (ViewLayoutMode)LoadValueWithDefault(regKey[RegName::DefaultCamera], "DesktopMode"s, VLM_CAMERA);
@@ -1162,16 +1162,23 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
             break;
          case BG_FULLSCREEN:
          {
-            viewSetup.mMode = (ViewLayoutMode) LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetMode"s, VLM_WINDOW);
-            viewSetup.mViewX = CMTOVPU(LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetCamX"s,   0.f));
-            viewSetup.mViewY = CMTOVPU(LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetCamY"s, - 1.f)); // Measured from real players. Highly depends on size and playing position (between -10 to 5)
-            viewSetup.mViewZ = CMTOVPU(LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetCamZ"s,  67.f)); // Measured from real players. Highly depends on size and playing position (between 55 to 80)
-            const float tableScale = 952.f / (table->m_right - table->m_left); // Default scale is for the usual 20.25" wide playfield, so adjust it
-            viewSetup.mSceneScaleX = LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetScaleX"s, 1.2f) * tableScale;
-            viewSetup.mSceneScaleY = LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetScaleY"s, 1.2f) * tableScale;
-            viewSetup.mSceneScaleZ = LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetScaleZ"s, 1.2f) * tableScale;
-            viewSetup.mLookAt = LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetLookAt"s, 25.0f);
-            viewSetup.mViewVOfs = LoadValueWithDefault(regKey[RegName::DefaultCamera], "CabinetViewVOfs"s, 0.f);
+            const float screenWidth = LoadValueWithDefault(regKey[RegName::Player], "ScreenWidth"s, 0.0f);
+            const float screenHeight = LoadValueWithDefault(regKey[RegName::Player], "ScreenHeight"s, 0.0f);
+            if (screenWidth <= 1.f || screenHeight <= 1.f)
+            {
+               g_pplayer->m_liveUI->PushNotification("You must setup your screen size before using Window mode"s, 5000);
+            }
+            else
+            {
+               const float scale = (screenHeight / table->m_right) * (table->m_bottom / screenWidth);
+               const bool isFitted = (viewSetup.mViewHOfs == 0.f) && (viewSetup.mViewVOfs == CMTOVPU(-2.8f)) && (viewSetup.mSceneScaleX == scale) && (viewSetup.mSceneScaleY == 1.f);
+               viewSetup.mMode = VLM_WINDOW;
+               viewSetup.mViewHOfs = 0.f;
+               viewSetup.mViewVOfs = isFitted ? 0.f : -2.8f;
+               viewSetup.mSceneScaleX = scale;
+               viewSetup.mSceneScaleY = isFitted ? 1.f : scale;
+               g_pplayer->m_liveUI->PushNotification(isFitted ? "POV reseted to default values (no stretching)"s : "POV reseted to default values (stretch to fit)"s, 5000);
+            }
             break;
          }
          case BG_INVALID:

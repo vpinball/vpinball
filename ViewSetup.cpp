@@ -5,6 +5,47 @@ ViewSetup::ViewSetup()
 {
 }
 
+// Update the view setup from the application settings and table property for window mode.
+// - window position is relative to table playfield/glass (usually in between, likely at the glass position)
+// - player position is defined in the app settings relatively from the bottom center of the screen (to avoid depending on a specific table)
+void ViewSetup::SetWindowModeFromAppSettings(const PinTable* const table)
+{
+   float realToVirtual = GetRealToVirtualScale(table);
+   vec3 playerPos(CMTOVPU(LoadValueWithDefault(regKey[RegName::Player], "ScreenPlayerX"s, 0.0f)),
+                  CMTOVPU(LoadValueWithDefault(regKey[RegName::Player], "ScreenPlayerY"s, 0.0f)),
+                  CMTOVPU(LoadValueWithDefault(regKey[RegName::Player], "ScreenPlayerZ"s, 70.0f)));
+   float inclination = LoadValueWithDefault(regKey[RegName::Player], "ScreenInclination"s, 0.0f);
+   float screenBotZ = GetWindowBottomZOFfset(table);
+   float screenTopZ = GetWindowTopZOFfset(table);
+   Matrix3D rotx; // Rotate by the angle between playfield and real world horizontal (scale on Y and Z axis are not equal and can be ignored)
+   //rotx.SetRotateX(atan2f(mSceneScaleZ * (screenTopZ - screenBotZ), mSceneScaleY * table->m_bottom) - ANGTORAD(inclination));
+   rotx.SetRotateX(atan2f(screenTopZ - screenBotZ, table->m_bottom) - ANGTORAD(inclination));
+   rotx.TransformVec3(playerPos);
+   mViewX = playerPos.x;
+   mViewY = playerPos.y;
+   mViewZ = playerPos.z + 0.f * screenBotZ / realToVirtual;
+}
+
+float ViewSetup::GetWindowTopZOFfset(const PinTable* const table) const
+{
+   // FIXME to be replaced by a relative position between playfield and table glass
+   if (mMode == VLM_WINDOW)
+      return mWindowTopZOfs;
+   else
+      return 0.f;
+}
+
+float ViewSetup::GetWindowBottomZOFfset(const PinTable* const table) const
+{
+   // FIXME to be replaced by a relative position between playfield and table glass
+   // result is in the table coordinate system (so, usually between 0 and table->bottomglassheight)
+   if (mMode == VLM_WINDOW)
+      return mWindowBottomZOfs;
+   else
+      return 0.f;
+}
+
+
 float ViewSetup::GetRotation(const int viewportWidth, const int viewportHeight) const
 {
    if (mMode == VLM_WINDOW)
@@ -24,8 +65,10 @@ float ViewSetup::GetRealToVirtualScale(const PinTable* const table) const
 {
    if (mMode == VLM_WINDOW)
    {
+      float windowBotZ = GetWindowBottomZOFfset(table), windowTopZ = GetWindowTopZOFfset(table);
       const float screenHeight = LoadValueWithDefault(regKey[RegName::Player], "ScreenWidth"s, 0.0f); // Physical width (always measured in landscape orientation) is the height in window mode
-      const float inc = atan2f(mSceneScaleZ * (mWindowTopZOfs - mWindowBottomZOfs), mSceneScaleY * table->m_bottom);
+      // const float inc = atan2f(mSceneScaleZ * (windowTopZ - windowBotZ), mSceneScaleY * table->m_bottom);
+      const float inc = atan2f(windowTopZ - windowBotZ, table->m_bottom);
       return screenHeight <= 1.f ? 1.f : (VPUTOCM(table->m_bottom) / cos(inc)) / screenHeight; // Ratio between screen height in virtual world to real world screen height
    }
    else
@@ -37,8 +80,10 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
 {
    const float FOV = (mFOV < 1.0f) ? 1.0f : mFOV; // Can't have a real zero FOV, but this will look almost the same
    const bool isLegacy = mMode == VLM_LEGACY;
+   const bool isWindow = mMode == VLM_WINDOW;
    const float aspect = (float)((double)viewportWidth / (double)viewportHeight);
    float camx = cam.x, camy = cam.y, camz = cam.z;
+   float windowBotZ = GetWindowBottomZOFfset(table), windowTopZ = GetWindowTopZOFfset(table);
 
    // Scale to convert a value expressed in the player 'real' world to our virtual world (where the geometry is defined)
    float realToVirtual = GetRealToVirtualScale(table);
@@ -46,7 +91,7 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
    // Viewport rotation. Window mode does not support free rotation (since we fit the table to the screen)
    float rotation;
    int quadrant;
-   if (mMode == VLM_WINDOW)
+   if (isWindow)
    {
       quadrant = ((int)mViewportRotation) - (((int)mViewportRotation) / 360) * 360;
       quadrant = (viewportWidth < viewportHeight ? 0 : 3) + (quadrant < 0 ? quadrant + 360 : quadrant) / 90; // 0 / 90 / 180 / 270
@@ -63,7 +108,8 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
    {
    case VLM_LEGACY: inc = ANGTORAD(mLookAt) + cam_inc; break;
    case VLM_CAMERA: inc = -M_PIf + atan2f(-mViewY + cam.y - (mLookAt / 100.0f) * table->m_bottom, -mViewZ + cam.z); break;
-   case VLM_WINDOW: inc = atan2f(mSceneScaleZ * (mWindowTopZOfs - mWindowBottomZOfs), mSceneScaleY * table->m_bottom); break;
+   //case VLM_WINDOW: inc = atan2f(mSceneScaleZ * (windowTopZ - windowBotZ), mSceneScaleY * table->m_bottom); break;
+   case VLM_WINDOW: inc = atan2f(windowTopZ - windowBotZ, table->m_bottom); break;
    }
 
    if (isLegacy && table->m_BG_enable_FSS)
@@ -160,12 +206,14 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
    {
       Matrix3D trans, rotx;
       // Scale is not relative to the 'virtual to real world scale' in order to avoid each user needing to scale the table for his own screen size
-      scale = Matrix3D::MatrixTranslate(-0.5f * table->m_right, -0.5f * table->m_bottom, 0.f)
-         * Matrix3D::MatrixScale(mSceneScaleX, mSceneScaleY, mSceneScaleZ)
-         * Matrix3D::MatrixTranslate(0.5f * table->m_right, 0.5f * table->m_bottom, 0.f); // Global scene scale (using bottom center of the playfield as origin)
+      scale = Matrix3D::MatrixTranslate(-0.5f * table->m_right, -0.5f * table->m_bottom, -windowBotZ)
+         // * Matrix3D::MatrixScale(mSceneScaleX, mSceneScaleY, isWindow ? mSceneScaleY : mSceneScaleZ)
+         * Matrix3D::MatrixScale(mSceneScaleX / realToVirtual, mSceneScaleY / realToVirtual, isWindow ? mSceneScaleY / realToVirtual : mSceneScaleZ)
+         * Matrix3D::MatrixTranslate(0.5f * table->m_right, 0.5f * table->m_bottom, windowBotZ); // Global scene scale (using bottom center of the playfield as origin)
       // mView is in real world scale (it depends on the actual display size), so we need to apply the scale factor to apply it in the virtual world unit
       // I'm still a bit unsure of this and this would need some more thought (and testing with an accurate headtracker).
-      trans.SetTranslation(-mViewX * realToVirtual + cam.x - 0.5f * table->m_right, -mViewY * realToVirtual + cam.y - table->m_bottom, -mViewZ * realToVirtual + cam.z);
+      //trans.SetTranslation(-mViewX * realToVirtual + cam.x - 0.5f * table->m_right, -mViewY * realToVirtual + cam.y - table->m_bottom, -mViewZ * realToVirtual + cam.z);
+      trans.SetTranslation(-mViewX + cam.x - 0.5f * table->m_right, -mViewY + cam.y - table->m_bottom, -mViewZ + cam.z);
       rotx.SetRotateX(inc); // Player head inclination (0 is looking straight to playfield)
       coords.SetScaling(1.f, -1.f, -1.f); // Revert Y and Z axis to convert to D3D coordinate system
       lookat = trans * rotx;
@@ -200,12 +248,15 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
    case VLM_WINDOW:
    {
       // Fit camera to adjusted table bounds, along vertical axis
-      // We do not apply the scene scale since we want to fit the scaled version of the table as if it was the normal version (otherwise it would reverse the scaling during the fitting)
-      // For fitting, we use a vertical FOV of 90°, leading to a yspan of 1, and an aspect ratio of 1, also leading to a xspan of 1
-      const Matrix3D fit = lookat * rotz * Matrix3D::MatrixScale(1.f, -1.f, -1.f) * Matrix3D::MatrixPerspectiveFovLH(90.f, 1.0f, zNear, zFar);
+      const Matrix3D fit = 
+           Matrix3D::MatrixTranslate(-0.5f * table->m_right, -0.5f * table->m_bottom, -windowBotZ) // Center of scaling
+         * Matrix3D::MatrixScale(1.f / realToVirtual) // We do not apply the scene scale since we want to fit the scaled version of the table as if it was the normal version (otherwise it would reverse the scaling during the fitting)
+         * Matrix3D::MatrixTranslate(0.5f * table->m_right, 0.5f * table->m_bottom, windowBotZ) // Reverse center of scaling
+         * lookat * rotz * Matrix3D::MatrixScale(1.f, -1.f, -1.f) // Camera pos and inclination, vieport rotation
+         * Matrix3D::MatrixPerspectiveFovLH(90.f, 1.0f, zNear, zFar); // For fitting, we use a vertical FOV of 90°, leading to a yspan of 2, and an aspect ratio of 1, also leading to a xspan of 2
       const float centerAxis = 0.5f * (table->m_left + table->m_right);
-      const Vertex3Ds top = fit.MultiplyVector(Vertex3Ds(centerAxis, table->m_top, mWindowTopZOfs));
-      const Vertex3Ds bottom = fit.MultiplyVector(Vertex3Ds(centerAxis, table->m_bottom, mWindowBottomZOfs));
+      const Vertex3Ds top = fit.MultiplyVector(Vertex3Ds(centerAxis, table->m_top, windowTopZ));
+      const Vertex3Ds bottom = fit.MultiplyVector(Vertex3Ds(centerAxis, table->m_bottom, windowBotZ));
       const float xmin = zNear * min(bottom.x, top.x), xmax = zNear * max(bottom.x, top.x);
       const float ymin = zNear * min(bottom.y, top.y), ymax = zNear * max(bottom.y, top.y);
       const float screenHeight = LoadValueWithDefault(regKey[RegName::Player], "ScreenWidth"s, 0.0f); // Physical width (always measured in landscape orientation) is the height in window mode
@@ -250,7 +301,7 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
       // - for cabinet (window) mode, we use the orthogonal distance to the screen (window)
       // - for camera mode, we place the 0 depth line on the lower third of the playfield
       // This way, we don't have negative parallax (objects closer than projection plane) and all the artefact they may cause
-      const float zNullSeparation = mMode == VLM_WINDOW ? (mViewZ * realToVirtual - mWindowBottomZOfs + mViewY * realToVirtual * tanf(inc))
+      const float zNullSeparation = mMode == VLM_WINDOW ? (mViewZ * realToVirtual - windowBotZ + mViewY * realToVirtual * tanf(inc))
                                                         : -lookat.MultiplyVector(Vertex3Ds(0.5f * (table->m_left + table->m_right), table->m_bottom * 0.66f /* For flipper bats: 1800.f / 2150.f*/, 0.f)).z;
       const float ofs = 0.5f * eyeSeparation * zNear / zNullSeparation;
       const float xOfs = ofs * cosf(rotation);

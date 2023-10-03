@@ -693,6 +693,8 @@ void Pin3D::InitLayout(const float xpixoff, const float ypixoff)
    #else
    bool stereo = false;
    #endif
+   if (viewSetup.mMode == VLM_WINDOW)
+      viewSetup.SetWindowModeFromAppSettings(g_pplayer->m_ptable);
    viewSetup.ComputeMVP(g_pplayer->m_ptable, m_viewPort.Width, m_viewPort.Height, stereo, *m_mvp, vec3(m_cam.x, m_cam.y, m_cam.z), m_inc, xpixoff, ypixoff);
    InitLights();
 }

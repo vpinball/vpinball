@@ -13,7 +13,7 @@ enum ViewLayoutMode : int
 {
    VLM_LEGACY = 0,   // All tables before 10.8 used a viewer position relative to a fitting of a set of bounding vertices (not all parts) with a standard perspective projection skewed by a layback angle
    VLM_CAMERA,       // Position viewer relative to the bottom center of the table, use a standard camera perspective projection, replace layback by a frustrum offset
-   VLM_WINDOW  // Position viewer relative to the bottom center of the table, use an oblique surface (re)projection (needs some postprocess to avoid distortion)
+   VLM_WINDOW        // Position viewer relative to the bottom center of the screen, use an oblique surface (re)projection (would need some postprocess to limit distortion)
 };
 
 class ViewSetup final
@@ -21,6 +21,9 @@ class ViewSetup final
 public:
    ViewSetup();
 
+   void SetWindowModeFromAppSettings(const PinTable* const table);
+   float GetWindowTopZOFfset(const PinTable* const table) const;
+   float GetWindowBottomZOFfset(const PinTable* const table) const;
    float GetRealToVirtualScale(const PinTable* const table) const;
    float GetRotation(const int viewportWidth, const int viewportHeight) const;
    void ComputeMVP(const PinTable* const table, const int viewportWidth, const int viewportHeight, const bool stereo, ModelViewProj& mvp, 
@@ -33,18 +36,24 @@ public:
    ViewLayoutMode mMode = VLM_LEGACY;
 
    // Overall scene scale
+   float mSceneScaleX = 1.0f;
+   float mSceneScaleY = 1.0f;
    float mSceneScaleZ = 1.0f;
 
-   // View position (relative to table bounds for legacy mode, relative to the bottom center of the table for others)
+   // View position:
+   // - relative to table bounds for legacy mode
+   // - relative to the bottom center of the table for camera and window mode
    float mViewX = 0.f;
    float mViewY = CMTOVPU(20.f);
    float mViewZ = CMTOVPU(70.f);
-   float mLookAt = 0.25f; // Look at expressed as a camera inclination for legacy, or a percent of the table height, starting from bottom (0.25 is around top of slingshots)
+
+   // Look At (Camera & Legacy only):
+   // - expressed ad a camera inclination for legacy mode, 
+   // - expressed as a look at toward a percent of the table height, starting from bottom (0.25 is around top of slingshots) for camera mode,
+   float mLookAt = 0.25f;
 
    // Viewport adjustments
    float mViewportRotation = 0.f;
-   float mSceneScaleX = 1.0f;
-   float mSceneScaleY = 1.0f;
 
    // View properties
    float mFOV = 45.0f; // Camera & Legacy: Field of view, in degrees
@@ -53,6 +62,7 @@ public:
    float mViewVOfs = 0.0f; // Camera & Window: vertical frustrum offset
 
    // Magic Window mode properties
+   // FIXME to be replaced by a relative position between playfield and table glass
    float mWindowTopZOfs = CMTOVPU(20.0f); // Upper window border Z coordinate, relative to table playfield Z
    float mWindowBottomZOfs = CMTOVPU(7.5f); // Lower window border Z coordinate, relative to table playfield Z
 };
