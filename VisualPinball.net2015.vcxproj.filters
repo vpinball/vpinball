@@ -73,11 +73,11 @@
     <ClCompile Include="CrashHandler.cpp" />
     <ClCompile Include="MemoryStatus.cpp" />
     <ClCompile Include="StackTrace.cpp" />
-    <ClCompile Include="inc\progmesh.cpp">
+    <ClCompile Include="third-party\include\progmesh.cpp">
       <Filter>inc</Filter>
     </ClCompile>
     <ClCompile Include="codeviewedit.cpp" />
-    <ClCompile Include="inc\miniz.c">
+    <ClCompile Include="third-party\include\miniz.c">
       <Filter>inc</Filter>
     </ClCompile>
     <ClCompile Include="Debugger.cpp" />
@@ -123,7 +123,7 @@
     <ClCompile Include="dialogs\KeysConfigDialog.cpp">
       <Filter>dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="inc\gpuprofiler.cpp">
+    <ClCompile Include="third-party\include\gpuprofiler.cpp">
       <Filter>inc</Filter>
     </ClCompile>
     <ClCompile Include="dialogs\ToolbarDialog.cpp">
@@ -285,7 +285,7 @@
     <ClCompile Include="dialogs\ScriptErrorDialog.cpp">
       <Filter>dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="inc\serial.cpp">
+    <ClCompile Include="third-party\include\serial.cpp">
       <Filter>inc</Filter>
     </ClCompile>
     <ClCompile Include="backGlass.cpp" />
@@ -293,7 +293,7 @@
     <ClCompile Include="imgui\imgui_impl_opengl3.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
-    <ClCompile Include="inc\glad\glad.c">
+    <ClCompile Include="third-party\include\glad\glad.c">
       <Filter>inc</Filter>
     </ClCompile>
     <ClCompile Include="dialogs\VROptionsDialog.cpp">
@@ -303,10 +303,10 @@
       <Filter>dialogs</Filter>
     </ClCompile>
     <ClCompile Include="bulb.cpp" />
-    <ClCompile Include="inc\tinyxml2\tinyxml2.cpp">
+    <ClCompile Include="third-party\include\tinyxml2\tinyxml2.cpp">
       <Filter>inc\tinyxml2</Filter>
     </ClCompile>
-    <ClCompile Include="inc\BAM\BAMView.cpp">
+    <ClCompile Include="third-party\include\BAM\BAMView.cpp">
       <Filter>inc\BAM</Filter>
     </ClCompile>
     <ClCompile Include="LiveUI.cpp" />
@@ -812,49 +812,49 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="inc\freeimage.h">
+    <ClInclude Include="third-party\include\freeimage.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="inc\hidpi.h">
+    <ClInclude Include="third-party\include\hidpi.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="inc\hidsdi.h">
+    <ClInclude Include="third-party\include\hidsdi.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="inc\hidusage.h">
+    <ClInclude Include="third-party\include\hidusage.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="inc\nvapi\nvapi.h">
+    <ClInclude Include="third-party\include\nvapi\nvapi.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="inc\nvapi\nvapi_lite_common.h">
+    <ClInclude Include="third-party\include\nvapi\nvapi_lite_common.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="inc\nvapi\nvapi_lite_d3dext.h">
+    <ClInclude Include="third-party\include\nvapi\nvapi_lite_d3dext.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="inc\nvapi\nvapi_lite_salend.h">
+    <ClInclude Include="third-party\include\nvapi\nvapi_lite_salend.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="inc\nvapi\nvapi_lite_salstart.h">
+    <ClInclude Include="third-party\include\nvapi\nvapi_lite_salstart.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="inc\nvapi\nvapi_lite_sli.h">
+    <ClInclude Include="third-party\include\nvapi\nvapi_lite_sli.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="inc\nvapi\nvapi_lite_stereo.h">
+    <ClInclude Include="third-party\include\nvapi\nvapi_lite_stereo.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="inc\nvapi\nvapi_lite_surround.h">
+    <ClInclude Include="third-party\include\nvapi\nvapi_lite_surround.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="inc\scilexer.h">
+    <ClInclude Include="third-party\include\scilexer.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="inc\scintilla.h">
+    <ClInclude Include="third-party\include\scintilla.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="inc\ThreadPool.h">
+    <ClInclude Include="third-party\include\ThreadPool.h">
       <Filter>inc</Filter>
     </ClInclude>
     <ClInclude Include="ballex.h">
@@ -1082,7 +1082,7 @@
     <ClInclude Include="pin\ball.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="inc\bass.h">
+    <ClInclude Include="third-party\include\bass.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="math\bbox.h">
@@ -1136,16 +1136,16 @@
     <ClInclude Include="codeviewedit.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="inc\Sci_Position.h">
+    <ClInclude Include="third-party\include\Sci_Position.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="inc\forsyth.h">
+    <ClInclude Include="third-party\include\forsyth.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="inc\progmesh.h">
+    <ClInclude Include="third-party\include\progmesh.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="inc\progmesh_vecmatquat_minimal.h">
+    <ClInclude Include="third-party\include\progmesh_vecmatquat_minimal.h">
       <Filter>inc</Filter>
     </ClInclude>
     <ClInclude Include="meshes\ballMesh.h">
@@ -1235,145 +1235,145 @@
     <ClInclude Include="meshes\hitTargetT2SlimMesh.h">
       <Filter>meshes</Filter>
     </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_appcore.h">
+    <ClInclude Include="third-party\include\win32xx\include\wxx_appcore.h">
       <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_appcore0.h">
+    <ClInclude Include="third-party\include\win32xx\include\wxx_appcore0.h">
       <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_archive.h">
+    <ClInclude Include="third-party\include\win32xx\include\wxx_archive.h">
       <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_commondlg.h">
+    <ClInclude Include="third-party\include\win32xx\include\wxx_commondlg.h">
       <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_controls.h">
+    <ClInclude Include="third-party\include\win32xx\include\wxx_controls.h">
       <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_cstring.h">
+    <ClInclude Include="third-party\include\win32xx\include\wxx_cstring.h">
       <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_ddx.h">
+    <ClInclude Include="third-party\include\win32xx\include\wxx_ddx.h">
       <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_dialog.h">
+    <ClInclude Include="third-party\include\win32xx\include\wxx_dialog.h">
       <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_dockframe.h">
+    <ClInclude Include="third-party\include\win32xx\include\wxx_dockframe.h">
       <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_docking.h">
+    <ClInclude Include="third-party\include\win32xx\include\wxx_docking.h">
       <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_exception.h">
+    <ClInclude Include="third-party\include\win32xx\include\wxx_exception.h">
       <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_file.h">
+    <ClInclude Include="third-party\include\win32xx\include\wxx_file.h">
       <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_filefind.h">
+    <ClInclude Include="third-party\include\win32xx\include\wxx_filefind.h">
       <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_folderdialog.h">
+    <ClInclude Include="third-party\include\win32xx\include\wxx_folderdialog.h">
       <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_frame.h">
+    <ClInclude Include="third-party\include\win32xx\include\wxx_frame.h">
       <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_gdi.h">
+    <ClInclude Include="third-party\include\win32xx\include\wxx_gdi.h">
       <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_imagelist.h">
+    <ClInclude Include="third-party\include\win32xx\include\wxx_imagelist.h">
       <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_listview.h">
+    <ClInclude Include="third-party\include\win32xx\include\wxx_listview.h">
       <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_mdi.h">
+    <ClInclude Include="third-party\include\win32xx\include\wxx_mdi.h">
       <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_menu.h">
+    <ClInclude Include="third-party\include\win32xx\include\wxx_menu.h">
       <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_menubar.h">
+    <ClInclude Include="third-party\include\win32xx\include\wxx_menubar.h">
       <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_metafile.h">
+    <ClInclude Include="third-party\include\win32xx\include\wxx_metafile.h">
       <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_mutex.h">
+    <ClInclude Include="third-party\include\win32xx\include\wxx_mutex.h">
       <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_printdialogs.h">
+    <ClInclude Include="third-party\include\win32xx\include\wxx_printdialogs.h">
       <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_propertysheet.h">
+    <ClInclude Include="third-party\include\win32xx\include\wxx_propertysheet.h">
       <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_rebar.h">
+    <ClInclude Include="third-party\include\win32xx\include\wxx_rebar.h">
       <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_rect.h">
+    <ClInclude Include="third-party\include\win32xx\include\wxx_rect.h">
       <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_regkey.h">
+    <ClInclude Include="third-party\include\win32xx\include\wxx_regkey.h">
       <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_ribbon.h">
+    <ClInclude Include="third-party\include\win32xx\include\wxx_ribbon.h">
       <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_richedit.h">
+    <ClInclude Include="third-party\include\win32xx\include\wxx_richedit.h">
       <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_scrollview.h">
+    <ClInclude Include="third-party\include\win32xx\include\wxx_scrollview.h">
       <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_shared_ptr.h">
+    <ClInclude Include="third-party\include\win32xx\include\wxx_shared_ptr.h">
       <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_socket.h">
+    <ClInclude Include="third-party\include\win32xx\include\wxx_socket.h">
       <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_statusbar.h">
+    <ClInclude Include="third-party\include\win32xx\include\wxx_statusbar.h">
       <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_stdcontrols.h">
+    <ClInclude Include="third-party\include\win32xx\include\wxx_stdcontrols.h">
       <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_tab.h">
+    <ClInclude Include="third-party\include\win32xx\include\wxx_tab.h">
       <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_taskdialog.h">
+    <ClInclude Include="third-party\include\win32xx\include\wxx_taskdialog.h">
       <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_textconv.h">
+    <ClInclude Include="third-party\include\win32xx\include\wxx_textconv.h">
       <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_themes.h">
+    <ClInclude Include="third-party\include\win32xx\include\wxx_themes.h">
       <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_time.h">
+    <ClInclude Include="third-party\include\win32xx\include\wxx_time.h">
       <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_toolbar.h">
+    <ClInclude Include="third-party\include\win32xx\include\wxx_toolbar.h">
       <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_treeview.h">
+    <ClInclude Include="third-party\include\win32xx\include\wxx_treeview.h">
       <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_wceframe.h">
+    <ClInclude Include="third-party\include\win32xx\include\wxx_wceframe.h">
       <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_wcestddef.h">
+    <ClInclude Include="third-party\include\win32xx\include\wxx_wcestddef.h">
       <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_webbrowser.h">
+    <ClInclude Include="third-party\include\win32xx\include\wxx_webbrowser.h">
       <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_wincore.h">
+    <ClInclude Include="third-party\include\win32xx\include\wxx_wincore.h">
       <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_wincore0.h">
+    <ClInclude Include="third-party\include\win32xx\include\wxx_wincore0.h">
       <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
     <ClInclude Include="Dialogs\AboutDialog.h">
@@ -1421,10 +1421,10 @@
     <ClInclude Include="meshes\kickerSimpleHoleMesh.h">
       <Filter>meshes</Filter>
     </ClInclude>
-    <ClInclude Include="inc\gpuprofiler.h">
+    <ClInclude Include="third-party\include\gpuprofiler.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="inc\stb_image.h">
+    <ClInclude Include="third-party\include\stb_image.h">
       <Filter>inc</Filter>
     </ClInclude>
     <ClInclude Include="dialogs\ToolbarDialog.h">
@@ -1586,16 +1586,16 @@
     <ClInclude Include="dialogs\ScriptErrorDialog.h">
       <Filter>dialogs</Filter>
     </ClInclude>
-    <ClInclude Include="inc\win32xx\include\default_resource.h">
+    <ClInclude Include="third-party\include\win32xx\include\default_resource.h">
       <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_preview.h">
+    <ClInclude Include="third-party\include\win32xx\include\wxx_preview.h">
       <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_printdialogex.h">
+    <ClInclude Include="third-party\include\win32xx\include\wxx_printdialogex.h">
       <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
-    <ClInclude Include="inc\serial.h">
+    <ClInclude Include="third-party\include\serial.h">
       <Filter>inc</Filter>
     </ClInclude>
     <ClInclude Include="IndexBuffer.h">
@@ -1628,7 +1628,7 @@
     <ClInclude Include="captureExt.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="inc\glad\glad.h">
+    <ClInclude Include="third-party\include\glad\glad.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="imgui\imgui_impl_opengl3.h">
@@ -1649,16 +1649,16 @@
     <ClInclude Include="bulb.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="inc\tinyxml2\tinyxml2.h">
+    <ClInclude Include="third-party\include\tinyxml2\tinyxml2.h">
       <Filter>inc\tinyxml2</Filter>
     </ClInclude>
-    <ClInclude Include="inc\BAM\BAM_Tracker.h">
+    <ClInclude Include="third-party\include\BAM\BAM_Tracker.h">
       <Filter>inc\BAM</Filter>
     </ClInclude>
-    <ClInclude Include="inc\BAM\BAM_ViewPortSetup.h">
+    <ClInclude Include="third-party\include\BAM\BAM_ViewPortSetup.h">
       <Filter>inc\BAM</Filter>
     </ClInclude>
-    <ClInclude Include="inc\BAM\BAMView.h">
+    <ClInclude Include="third-party\include\BAM\BAMView.h">
       <Filter>inc\BAM</Filter>
     </ClInclude>
     <ClInclude Include="LiveUI.h">

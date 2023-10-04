@@ -1,6 +1,6 @@
 #pragma once
 
-#include "inc/gpuprofiler.h"
+#include "gpuprofiler.h"
 #include "RenderDevice.h"
 #include "Texture.h"
 #include "backGlass.h"

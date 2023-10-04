@@ -9,7 +9,7 @@
 //#include "Dwmapi.h" // use when we get rid of XP at some point, get rid of the manual dll loads in here then
 
 #ifndef DISABLE_FORCE_NVIDIA_OPTIMUS
-#include "inc/nvapi/nvapi.h"
+#include "nvapi/nvapi.h"
 #endif
 
 #include "RenderDevice.h"

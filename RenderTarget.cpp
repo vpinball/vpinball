@@ -7,7 +7,7 @@
 #endif
 
 #ifndef DISABLE_FORCE_NVIDIA_OPTIMUS
-#include "inc/nvapi/nvapi.h"
+#include "nvapi/nvapi.h"
 #endif
 
 RenderTarget* RenderTarget::current_render_target = nullptr;

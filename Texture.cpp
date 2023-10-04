@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Texture.h"
 
-#include "inc/freeimage.h"
+#include "freeimage.h"
 
 #include "math/math.h"
 
@@ -9,7 +9,7 @@
 #define STBI_ONLY_JPEG // only use the SSE2-JPG path from stbi, as all others are not faster than FreeImage //!! can remove stbi again if at some point FreeImage incorporates libjpeg-turbo or something similar
 #define STBI_NO_STDIO
 #define STBI_NO_FAILURE_STRINGS
-#include "inc/stb_image.h"
+#include "stb_image.h"
 
 BaseTexture::BaseTexture(const unsigned int w, const unsigned int h, const Format format)
    : m_width(w)

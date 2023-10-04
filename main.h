@@ -24,7 +24,7 @@
  #ifdef _DEBUG
   #define D3D_DEBUG_INFO
  #endif
- #include "inc/minid3d9.h"
+ #include "minid3d9.h"
 #endif
 
 #include <dsound.h>
@@ -68,7 +68,7 @@
  #include <xmmintrin.h>
 #elif (defined(_M_ARM) || defined(_M_ARM64) || defined(__arm__) || defined(__arm64__) || defined(__aarch64__)) && (!defined(__ARM_ARCH) || __ARM_ARCH >= 7) && (!defined(_MSC_VER) || defined(__clang__)) //!! disable sse2neon if MSVC&non-clang
  #define ENABLE_SSE_OPTIMIZATIONS
- #include "inc/sse2neon.h"
+ #include "sse2neon.h"
 #endif
 
 #include <vector>

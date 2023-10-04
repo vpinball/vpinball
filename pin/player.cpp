@@ -4,7 +4,7 @@
 #include <SDL2/SDL_syswm.h>
 #endif
 
-#include "inc/BAM/BAMView.h"
+#include "BAM/BAMView.h"
 
 #ifdef _MSC_VER
 #include "imgui/imgui_impl_win32.h"
@@ -21,9 +21,9 @@
 #include "captureExt.h"
 #include "../math/bluenoise.h"
 #ifdef _MSC_VER
-#include "../inc/winsdk/legacy_touch.h"
+#include "winsdk/legacy_touch.h"
 #endif
-#include "inc/tinyxml2/tinyxml2.h"
+#include "tinyxml2/tinyxml2.h"
 
 #if __cplusplus >= 202002L && !defined(__clang__)
 #define stable_sort std::ranges::stable_sort

@@ -7,7 +7,7 @@
 #include "backGlass.h"
 #ifdef ENABLE_VR
 #include <fstream>
-#include "inc/tinyxml2/tinyxml2.h"
+#include "tinyxml2/tinyxml2.h"
 #endif
 
 //#define WRITE_BACKGLASS_IMAGES

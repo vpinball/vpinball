@@ -5,16 +5,16 @@
 #include <algorithm>
 #include <atlsafe.h>
 #include "objloader.h"
-#include "inc/tinyxml2/tinyxml2.h"
+#include "tinyxml2/tinyxml2.h"
 #include <fstream>
 #include <sstream>
 #include "Shader.h"
 #include "captureExt.h"
-#include "inc/freeimage.h"
-#include "inc/ThreadPool.h"
-#include "inc/scalefx.h"
+#include "freeimage.h"
+#include "ThreadPool.h"
+#include "scalefx.h"
 
-#include "inc/serial.h"
+#include "serial.h"
 static serial Serial;
 
 #define HASHLENGTH 16

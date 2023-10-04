@@ -733,9 +733,9 @@ public:
 // Note: There are quite a lot of applications doing this, but I think this may hide an incorrect OpenGL call somewhere
 // that the threaded optimization of NVIDIA drivers ends up to crash. This would be good to find the root cause, if any.
 
-#include "inc/nvapi/nvapi.h"
-#include "inc/nvapi/NvApiDriverSettings.h"
-#include "inc/nvapi/NvApiDriverSettings.c"
+#include "nvapi/nvapi.h"
+#include "nvapi/NvApiDriverSettings.h"
+#include "nvapi/NvApiDriverSettings.c"
 
 enum NvThreadOptimization
 {

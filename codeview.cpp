@@ -1,6 +1,6 @@
 #include "stdafx.h"
 
-#include "inc/scilexer.h"
+#include "scilexer.h"
 
 #include <initguid.h>
 #include <DbgProp.h>
