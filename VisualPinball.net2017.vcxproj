@@ -238,7 +238,7 @@
     <Link>
       <AdditionalDependencies>d3d9.lib;d3dx9.lib;dxerr.lib;comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;bass.lib;imm32.lib;setupapi.lib;hid.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x86;.\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x86;.\third-party\build-libs\windows-x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>
       </IgnoreAllDefaultLibraries>
       <IgnoreSpecificDefaultLibraries>LIBC;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
@@ -298,7 +298,7 @@
     <Link>
       <AdditionalDependencies>SDL2.lib;SDL2_ttf.lib;SDL2main.lib;opengl32.lib;openvr_api.lib;comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;bass.lib;imm32.lib;setupapi.lib;hid.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x86;.\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x86;.\third-party\build-libs\windows-x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>
       </IgnoreAllDefaultLibraries>
       <IgnoreSpecificDefaultLibraries>LIBC;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
@@ -360,7 +360,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <Link>
       <AdditionalDependencies>d3d9.lib;d3dx9.lib;dxerr.lib;comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;bass.lib;imm32.lib;setupapi.lib;hid.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x64;.\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x64;.\third-party\build-libs\windows-x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <IgnoreSpecificDefaultLibraries>LIBC;LIBCMT;LIBCD;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -419,7 +419,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <Link>
       <AdditionalDependencies>SDL2.lib;SDL2_ttf.lib;SDL2main.lib;opengl32.lib;openvr_api.lib;comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;bass.lib;imm32.lib;setupapi.lib;hid.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x64;.\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x64;.\third-party\build-libs\windows-x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <IgnoreSpecificDefaultLibraries>LIBC;LIBCMT;LIBCD;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -622,7 +622,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <Link>
       <AdditionalDependencies>d3d9.lib;d3dx9.lib;dxerr.lib;comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;bass.lib;imm32.lib;setupapi.lib;hid.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x64;.\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x64;.\third-party\build-libs\windows-x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>LIBC;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -691,7 +691,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <Link>
       <AdditionalDependencies>SDL2.lib;SDL2_ttf.lib;SDL2main.lib;opengl32.lib;openvr_api.lib;comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;bass.lib;imm32.lib;setupapi.lib;hid.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x64;.\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x64;.\third-party\build-libs\windows-x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>LIBC;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
