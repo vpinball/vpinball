@@ -600,7 +600,7 @@ target_precompile_headers(vpinball PUBLIC
 
 target_link_directories(vpinball PUBLIC 
    $ENV{DXSDK_DIR}/Lib/x86
-   lib
+   third-party/build-libs/windows-x86
 )
 
 target_link_libraries(vpinball
