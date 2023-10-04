@@ -1861,13 +1861,13 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     </ContentWithTargetPath>
   </ItemGroup>
   <ItemGroup>
-    <ContentWithTargetPath Include="dll\*.dll" Condition="'$(Platform)'=='Win32'">
+    <ContentWithTargetPath Include="third-party\runtime-libs\windows-x86\*.dll" Condition="'$(Platform)'=='Win32'">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <TargetPath>%(Filename)%(Extension)</TargetPath>
     </ContentWithTargetPath>
   </ItemGroup>
   <ItemGroup>
-    <ContentWithTargetPath Include="dll\x64\*.dll" Condition="'$(Platform)'=='x64'">
+    <ContentWithTargetPath Include="third-party\runtime-libs\windows-x64\*.dll" Condition="'$(Platform)'=='x64'">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <TargetPath>%(Filename)%(Extension)</TargetPath>
     </ContentWithTargetPath>
