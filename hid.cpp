@@ -6,7 +6,7 @@
 
 extern "C" {
 #include "setupapi.h"
-#include "inc/hidsdi.h"
+#include "hidsdi.h"
 }
 
 HANDLE connectToIthUSBHIDDevice(DWORD deviceIndex)

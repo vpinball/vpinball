@@ -2,8 +2,8 @@
 #include "RenderDevice.h"
 #include "Shader.h"
 #include "math/math.h"
-#include "inc/ThreadPool.h"
-#include "inc/BAM/BAMView.h"
+#include "ThreadPool.h"
+#include "BAM/BAMView.h"
 
 Pin3D::Pin3D()
 {

@@ -1,0 +1,125 @@
+Generic Information about Win32++ Projects
+==========================================
+The various directories may contain the following types of files:
+
+Extension | Description
+----------+------------
+cbp       | A project file used by CodeBlocks
+dsp       | A project file used by Visual Studio 6
+dsw       | A project file used by Visual Studio 6
+sln       | A project file used by Visual Studio 2003 and above
+vcproj    | A project file used by Visual Studio 2003, VS2005 or VS2008
+vcxproj   | A project file used by Visual Studio 2010 and above
+filters   | An additional project file used by Visual Studio 2010 and above
+dev       | A project file used by Dev-C++
+cpp       | A C++ source file
+h         | A C++ header file
+rc        | A C++ resource script file
+jpg       | A jpeg resource file
+ico       | An icon resource file
+bmp       | A bitmap resource file
+cur       | A cursor resource file
+manifest  | A manifest resource file
+txt       | A text file
+xml       | An Extensible Markup Language file (defines the ribbon UI)
+hlsl      | Holds High Level Shading Language (HLSL), for DirectX
+fx        | An effect file, for DirectX
+nsi       | A NSIS (Nullsoft Scriptable Install System) script.
+
+Supported Compilers and Integrated Development Environments (IDEs)
+==================================================================
+Win32++ supports the following:
+* Borland Compiler Version 5.5
+* CodeBlocks
+* Dev-C++
+* MinGW GCC Compiler
+* MinGW GCC x64 Compiler
+* Visual Studio 6
+* Visual Studio.net 2003
+* Visual C++ Toolkit 2003
+* Visual Studio 2005
+* Visual Studio 2005 Express
+* Visual Studio 2008
+* Visual Studio 2008 Express
+* Visual Studio 2010
+* Visual Studio 2010 Express
+* Visual Studio 2012
+* Visual Studio 2012 Express
+* Visual Studio 2013
+* Visual Studio 2013 Express
+* Visual Studio 2013 Community
+* Visual Studio 2015
+* Visual Studio 2015 Community
+* Visual Studio 2017
+* Visual Studio 2017 Community
+* Visual Studio 2019
+* Visual Studio 2019 Community
+* Visual Studio 2022
+* Visual Studio 2022 Community
+
+CodeBlocks is an IDE. The project files are configured for the following
+compilers:
+* Borland Compiler Version 5.5
+* MinGW GNU compiler
+* Visual C++ Toolkit 2003
+
+Dev-C++ is an IDE that supports the MinGW GNU compiler
+
+Supported Operating Systems
+===========================
+The programs compiled with Win32++ can run on the following operating systems:
+* Win95 (all versions, with or without Internet Explorer 4 installed)
+* Win98 (both versions)
+* WinME
+* Windows NT 4
+* Windows 2000
+* Windows XP x32
+* Windows XP x64
+* Windows Vista x32
+* Windows Vista x64
+* Windows 7 x32
+* Windows 7 x64
+* Windows 8 x32
+* Windows 8 x64
+* Windows 8.1 x32
+* Windows 8.1 x64
+* Windows 10 x32
+* Windows 10 x64
+* Windows 11
+* Windows Server 2003 x32
+* Windows Server 2003 x64
+* Windows Server 2008 x32
+* Windows Server 2008 x64
+* Windows Server 2012
+* Windows Server 2016
+* Windows Server 2019
+* Windows Server 2022
+
+Win32++ is Unicode compliant and can therefore be used to develop Unicode
+applications. Users are advised that older operating systems (namely Win95,
+Win98 and WinME) will require code to be compiled as ANSI, as they
+don't support Unicode applications. 
+
+Code compiled with the more modern versions of visual studio may not run
+older operating systems. 64bit code only runs on 64bit operating systems.
+32bit code runs on both 32bit and 64bit operating systems.
+
+Directory Structure
+===================
+When extracting the files from the zip archive, be sure to preserve the
+directory structure. The directory structure will look like this:
+
+.\help
+.\include
+.\output
+.\samples
+.\tools
+.\tutorials
+
+The files that form the Win32++ library are contained in the include
+folder.
+
+Help
+====
+Refer to the documentation that ships with Win32++ in the help folder
+for more information on using Win32++.

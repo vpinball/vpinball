@@ -4,9 +4,9 @@
 
 #include "Shader.h"
 
-#include "inc/fonts/DroidSans.h"
-#include "inc/fonts/IconsForkAwesome.h"
-#include "inc/fonts/ForkAwesome.h"
+#include "fonts/DroidSans.h"
+#include "fonts/IconsForkAwesome.h"
+#include "fonts/ForkAwesome.h"
 
 #include "imgui/imgui.h"
 #include "imgui/imgui_internal.h" // Needed for FindRenderedTextEnd in HelpSplash (should be adapted when this function will refactored in ImGui)
@@ -28,7 +28,7 @@
 #define sort std::sort
 #endif
 
-#include "inc/BAM/BAMView.h"
+#include "BAM/BAMView.h"
 
 // Default anaglyph color
 // FIXME move this to a central place (this is duplicated in player.cpp)

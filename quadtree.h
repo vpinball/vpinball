@@ -6,7 +6,7 @@
 
 //#define USE_EMBREE //!! experimental, but working, collision detection replacement for our quad and kd-tree //!! picking in debug mode so far not implemented though
 #ifdef USE_EMBREE
- #include "inc/embree3/rtcore.h"
+ #include "embree3/rtcore.h"
 #endif
 
 class HitQuadtree final

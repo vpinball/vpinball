@@ -6,7 +6,7 @@
 #include <atlcom.h>
 #include "codeviewedit.h"
 #include "ScriptErrorDialog.h"
-#include "inc/scintilla.h"
+#include "scintilla.h"
 
 #define MAX_FIND_LENGTH 81
 #define MAX_LINE_LENGTH 2048

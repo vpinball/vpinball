@@ -6,7 +6,7 @@
 #define AFX_RUBBER_H__B0715DC0_002F_11E4_9191_0800200C9A66__INCLUDED_
 
 #include "resource.h"       // main symbols
-#include "inc/robin_hood.h"
+#include "robin_hood.h"
 
 class RubberData final : public BaseProperty
 {

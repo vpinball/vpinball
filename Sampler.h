@@ -1,6 +1,6 @@
 #pragma once
 
-#include "inc/robin_hood.h"
+#include "robin_hood.h"
 #include "typedefs3D.h"
 
 class RenderDevice;
