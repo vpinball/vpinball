@@ -57,7 +57,12 @@ public:
    PinDirectSoundWavCopy(class PinSound * const pOriginal);
 
 protected:
-   void StopInternal() { m_pDSBuffer->Stop(); }
+   void StopInternal()
+   {
+#ifndef __STANDALONE__
+      m_pDSBuffer->Stop();
+#endif
+   }
 
 public:
    void PlayInternal(const float volume, const float randompitch, const int pitch, const float pan, const float front_rear_fade, const int flags, const bool restart);
@@ -191,6 +196,7 @@ public:
 
 	void StopCopiedWav(const char* const szName)
 	{
+#ifndef __STANDALONE__
 		for (size_t i = 0; i < m_copiedwav.size(); i++)
 		{
 			const PinDirectSoundWavCopy * const ppsc = m_copiedwav[i];
@@ -200,16 +206,20 @@ public:
 				break;
 			}
 		}
+#endif
 	}
 
 	void StopCopiedWavs()
 	{
+#ifndef __STANDALONE__
 		for (size_t i = 0; i < m_copiedwav.size(); i++)
 			m_copiedwav[i]->m_pDSBuffer->Stop();
+#endif
 	}
 
 	void StopAndClearCopiedWavs()
 	{
+#ifndef __STANDALONE__
 		for (size_t i = 0; i < m_copiedwav.size(); i++)
 		{
 			m_copiedwav[i]->m_pDSBuffer->Stop();
@@ -217,11 +227,13 @@ public:
 			delete m_copiedwav[i];
 		}
 		m_copiedwav.clear();
+#endif
 	}
 
 	void ClearStoppedCopiedWavs()
 	{
 		size_t i = 0;
+#ifndef __STANDALONE__
 		while (i < m_copiedwav.size())
 		{
 			const PinDirectSoundWavCopy * const ppsc = m_copiedwav[i];
@@ -236,6 +248,7 @@ public:
 			else
 				i++;
 		}
+#endif
 	}
 
 	void Play(PinSound * const pps, const float volume, const float randompitch, const int pitch, const float pan, const float front_rear_fade, const int loopcount, const bool usesame, const bool restart)
@@ -254,6 +267,7 @@ public:
 			return;
 		}
 
+#ifndef __STANDALONE__
 		ClearStoppedCopiedWavs();
 
 		PinDirectSoundWavCopy * ppsc = nullptr;
@@ -287,6 +301,7 @@ public:
 
 			pps->Play(volume, randompitch, pitch, pan, front_rear_fade, flags, restart);
 		}
+#endif
 	}
 
 	PinSound *LoadFile(const string& strFileName);
@@ -297,5 +312,16 @@ private:
 
 	vector< PinDirectSoundWavCopy* > m_copiedwav; // copied sounds currently playing
 };
+
+#ifdef __STANDALONE__
+struct AudioDevice
+{
+	int id;
+	const char name[MAX_DEVICE_IDENTIFIER_STRING];
+	bool enabled;
+};
+
+void EnumerateAudioDevices(vector<AudioDevice>& devices);
+#endif
 
 #endif // !defined(AFX_PINSOUND_H__61491D0B_9950_480C_B453_911B3A2CDB8E__INCLUDED_)

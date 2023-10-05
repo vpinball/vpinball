@@ -1,0 +1,60 @@
+#!/bin/bash
+
+VPX_PATH="/Users/jmillard/vpinball/build"
+TABLES_PATH="/Users/jmillard/tables"
+
+SAVEIFS=$IFS
+IFS=$(echo -en "\n\b")
+
+insert_game() {
+    local element="$1"
+
+    local index=0
+    while [[ $index -lt ${#games[@]} && "${games[index]##*/}" < "${1##*/}" ]]; do
+        ((index++))
+    done
+
+    for ((i=${#games[@]}; i > index; i--)); do
+        games[i]=${games[i-1]}
+    done
+
+    games[index]=$element
+}
+
+while :; do
+   games=()
+
+   for file in `find "$TABLES_PATH" -type f -name "*.vpx"`
+   do
+      insert_game "$file"
+   done
+
+   games=("$VPX_PATH/res/exampleTable.vpx" "${games[@]}")
+
+   printf "\nTables:\n\n"
+
+   for index in "${!games[@]}"; do
+      printf "%s\t%s\n" "$index" "${games[$index]##*/}"
+   done
+
+   printf "\nTable number (Q to quit)? "
+   read game_no
+
+   if [[ "$game_no" != "Q" ]] && [ "$game_no" != "q" ]; then
+      if [[ "$*" == *"-extractvbs"* ]]; then
+         ${VPX_PATH}/VPinballX_GL -extractvbs "${games[$game_no]}"
+      elif [[ "$*" == *"-povedit"* ]]; then
+         ${VPX_PATH}/VPinballX_GL -DisableTrueFullscreen -povedit "${games[$game_no]}"
+      elif [[ "$*" == *"-pov"* ]]; then
+         ${VPX_PATH}/VPinballX_GL -pov "${games[$game_no]}"
+      elif [[ "$*" == *"-fullscreen"* ]]; then
+         ${VPX_PATH}/VPinballX_GL -play "${games[$game_no]}"
+      else
+         ${VPX_PATH}/VPinballX_GL -DisableTrueFullscreen -play "${games[$game_no]}"
+      fi
+   else
+      exit
+   fi
+done
+
+IFS=$SAVEIFS

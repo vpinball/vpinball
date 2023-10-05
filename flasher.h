@@ -49,6 +49,13 @@ class Flasher :
    public IFireEvents,
    public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
 {
+#ifdef __STANDALONE__
+public:
+   STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);
+   STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
+   STDMETHOD(GetDocumentation)(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
+   virtual HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) override;
+#endif
 public:
    Flasher();
    virtual ~Flasher();
@@ -95,6 +102,10 @@ public:
    void DoCommand(int icmd, int x, int y) final;
 
    void AddPoint(int x, int y, const bool smooth) final;
+
+#ifdef __STANDALONE__
+   void UpdatePoint(int index, int x, int y);
+#endif
 
    bool IsTransparent() const final { return !m_d.m_isDMD; }
    float GetDepth(const Vertex3Ds& viewDir) const final

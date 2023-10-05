@@ -120,19 +120,35 @@ static bool LoadIni(const string &path, mINI::INIStructure &ini, const bool load
          }
          RegCloseKey(hk);
       }
+#else
+#ifdef __STANDALONE__
+   string resource = g_pvp->m_szMyPath + "res" + PATH_SEPARATOR_CHAR + "Default VPinballX.ini";
+   std::ifstream sourceFile(resource);
+   if (sourceFile.is_open()) {
+      std::ofstream defaultFile(path);
+      if (defaultFile.is_open()) {
+         defaultFile << sourceFile.rdbuf();
+         defaultFile.close();
+      }
+      sourceFile.close();
+   }
+   if (!file.read(ini)) {
+      PLOGE << "Loading of default settings file failed";
+   }
+#endif
 #endif
       return true;
    }
    else
    {
-      PLOGI << "Settings file was not found at '" << path << "'";
+      PLOGI << "Settings file was not found at: " << path;
       return false;
    }
 }
 
 void InitRegistry(const string &path)
 {
-   PLOGI << "Using INI file settings from: " << path;
+   PLOGI << "Using settings file from: " << path;
    ini.clear();
    iniPath = path;
    LoadIni(path, ini, true);
@@ -140,7 +156,7 @@ void InitRegistry(const string &path)
 
 void InitRegistryOverride(const string &path)
 {
-   PLOGI << "Using INI file settings override from: " << path;
+   PLOGI << "Using settings override file from: " << path;
    iniOverride.clear();
    iniOverridePath = path;  
    hasIniOverride = LoadIni(path, iniOverride, false);
@@ -152,11 +168,13 @@ void SaveRegistry()
    {
       mINI::INIFile file(iniOverridePath);
       file.write(iniOverride, true);
+      PLOGI << "Settings file was saved to: " << iniOverridePath;
    }
    else
    {
       mINI::INIFile file(iniPath);
       file.write(ini, true);
+      PLOGI << "Settings file was saved to: " << iniPath;
    }
 }
 
@@ -168,11 +186,13 @@ void SaveRegistry()
 
 static tinyxml2::XMLDocument xmlDoc;
 static tinyxml2::XMLElement *xmlNode[RegName::Num] = {};
+
 static string xmlContent;
 
 // if ini does not exist yet, loop over reg values of each subkey and fill all in
 static void InitXMLnodeFromRegistry(tinyxml2::XMLElement *const node, const string &szPath)
 {
+#ifndef __STANDALONE__
    HKEY hk;
    LSTATUS res = RegOpenKeyEx(HKEY_CURRENT_USER, szPath.c_str(), 0, KEY_READ, &hk);
    if (res != ERROR_SUCCESS)
@@ -248,6 +268,7 @@ static void InitXMLnodeFromRegistry(tinyxml2::XMLElement *const node, const stri
    }
 
    RegCloseKey(hk);
+#endif
 }
 
 void SaveRegistry()
@@ -529,6 +550,13 @@ static HRESULT LoadValue(const string &szKey, const string &szValue, DWORD &type
 #endif
 }
 
+string LoadValueWithDefault(const string &szKey, const string &szValue, const string def)
+{
+   string val;
+   const HRESULT hr = LoadValue(szKey, szValue, val);
+   return SUCCEEDED(hr) ? val : def;
+}
+
 int LoadValueWithDefault(const string &szKey, const string &szValue, const int def)
 {
    int val;
@@ -728,6 +756,7 @@ HRESULT DeleteSubKey(const string &szKey)
 #else // Windows Registry
 HRESULT DeleteValue(const string &szKey, const string &szValue)
 {
+#ifndef __STANDALONE__
    string szPath(szKey == regKey[RegName::Controller] ? VP_REGKEY_GENERAL : VP_REGKEY);
    szPath += szKey;
 
@@ -743,8 +772,12 @@ HRESULT DeleteValue(const string &szKey, const string &szValue)
       return S_OK; // It is a success if you want to delete something that doesn't exist.
 
    return (RetVal == ERROR_SUCCESS) ? S_OK : E_FAIL;
+#else
+   return S_OK;
+#endif
 }
 
+#ifndef __STANDALONE__
 static HRESULT RegDelnodeRecurse(const HKEY hKeyRoot, char lpSubKey[MAX_PATH * 2])
 {
    // First, see if we can delete the key without having
@@ -815,9 +848,11 @@ static HRESULT RegDelnodeRecurse(const HKEY hKeyRoot, char lpSubKey[MAX_PATH * 2
 
    return (lResult == ERROR_SUCCESS) ? S_OK : E_FAIL;
 }
+#endif
 
 HRESULT DeleteSubKey(const string &szKey)
 {
+#ifndef __STANDALONE__
    string szPath(szKey == regKey[RegName::Controller] ? VP_REGKEY_GENERAL : VP_REGKEY);
    szPath += szKey;
 
@@ -825,5 +860,8 @@ HRESULT DeleteSubKey(const string &szKey)
    strcpy_s(szDelKey, MAX_PATH * 2, szPath.c_str());
 
    return RegDelnodeRecurse(HKEY_CURRENT_USER, szDelKey);
+#else
+   return E_FAIL;
+#endif
 }
 #endif

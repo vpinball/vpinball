@@ -16,14 +16,14 @@ Sampler::Sampler(RenderDevice* rd, BaseTexture* const surf, const bool force_lin
 #ifdef ENABLE_SDL
    m_texTarget = GL_TEXTURE_2D;
    colorFormat format;
-   if (surf->m_format == BaseTexture::SRGBA)
-      format = colorFormat::SRGBA;
+   if (surf->m_format == BaseTexture::RGB)
+      format = colorFormat::RGB;
    else if (surf->m_format == BaseTexture::RGBA)
       format = colorFormat::RGBA;
    else if (surf->m_format == BaseTexture::SRGB)
       format = colorFormat::SRGB;
-   else if (surf->m_format == BaseTexture::RGB)
-      format = colorFormat::RGB;
+   else if (surf->m_format == BaseTexture::SRGBA)
+      format = colorFormat::SRGBA;
    else if (surf->m_format == BaseTexture::RGB_FP16)
       format = colorFormat::RGB16F;
    else if (surf->m_format == BaseTexture::RGBA_FP16)
@@ -83,10 +83,19 @@ Sampler::Sampler(RenderDevice* rd, SurfaceType type, GLuint glTexture, bool ownT
    case RT_CUBEMAP: m_texTarget = GL_TEXTURE_CUBE_MAP; break;
    default: assert(false);
    }
+#ifndef __OPENGLES__
    glGetTexLevelParameteriv(m_texTarget, 0, GL_TEXTURE_WIDTH, &m_width);
    glGetTexLevelParameteriv(m_texTarget, 0, GL_TEXTURE_HEIGHT, &m_height);
+#else
+   m_width = 0;
+   m_height = 0;
+#endif
    int internal_format;
+#ifndef __OPENGLES__
    glGetTexLevelParameteriv(m_texTarget, 0, GL_TEXTURE_INTERNAL_FORMAT, &internal_format);
+#else
+   internal_format = SRGBA;
+#endif
    m_isLinear = !((internal_format == SRGB) || (internal_format == SRGBA) || (internal_format == SDXT5) || (internal_format == SBC7)) || force_linear_rgb;
    m_texture = glTexture;
 }
@@ -138,14 +147,14 @@ void Sampler::UpdateTexture(BaseTexture* const surf, const bool force_linear_rgb
 {
 #ifdef ENABLE_SDL
    colorFormat format;
-   if (surf->m_format == BaseTexture::RGBA)
-      format = colorFormat::RGBA;
-   else if (surf->m_format == BaseTexture::SRGBA)
-      format = colorFormat::SRGBA;
-   else if (surf->m_format == BaseTexture::RGB)
+   if (surf->m_format == BaseTexture::RGB)
       format = colorFormat::RGB;
+   else if (surf->m_format == BaseTexture::RGBA)
+      format = colorFormat::RGBA;
    else if (surf->m_format == BaseTexture::SRGB)
       format = colorFormat::SRGB;
+   else if (surf->m_format == BaseTexture::SRGBA)
+      format = colorFormat::SRGBA;
    else if (surf->m_format == BaseTexture::RGB_FP16)
       format = colorFormat::RGB16F;
    else if (surf->m_format == BaseTexture::RGBA_FP16)
@@ -163,7 +172,7 @@ void Sampler::UpdateTexture(BaseTexture* const surf, const bool force_linear_rgb
       else if (format == colorFormat::SRGBA)
          format = colorFormat::RGBA;
    }
-   const GLuint col_type = ((format == RGBA32F) || (format == RGB32F)) ? GL_FLOAT : ((format == RGBA16F) || (format == RGB16F)) ? GL_HALF_FLOAT : GL_UNSIGNED_BYTE;
+   const GLuint col_type = ((format == RGBA32F) || (format == RGB32F)) ? GL_FLOAT : ((format == RGB16F) || (format == RGBA16F)) ? GL_HALF_FLOAT : GL_UNSIGNED_BYTE;
    const GLuint col_format = ((format == GREY8) || (format == RED16F))                                                                                                      ? GL_RED
       : ((format == GREY_ALPHA) || (format == RG16F))                                                                                                                       ? GL_RG
       : ((format == RGB) || (format == RGB8) || (format == SRGB) || (format == SRGB8) || (format == RGB5) || (format == RGB10) || (format == RGB16F) || (format == RGB32F)) ? GL_RGB
@@ -203,15 +212,17 @@ void Sampler::SetFilter(const SamplerFilter filter)
 void Sampler::SetName(const string& name)
 {
    #ifdef ENABLE_SDL
+#ifndef __OPENGLES__
    if (GLAD_GL_VERSION_4_3)
       glObjectLabel(GL_TEXTURE, m_texture, (GLsizei) name.length(), name.c_str());
+#endif
    #endif
 }
 
 #ifdef ENABLE_SDL
 GLuint Sampler::CreateTexture(unsigned int Width, unsigned int Height, unsigned int Levels, colorFormat Format, void* data, int stereo)
 {
-   const GLuint col_type = ((Format == RGBA32F) || (Format == RGB32F)) ? GL_FLOAT : ((Format == RGBA16F) || (Format == RGB16F)) ? GL_HALF_FLOAT : GL_UNSIGNED_BYTE;
+   const GLuint col_type = ((Format == RGBA32F) || (Format == RGB32F)) ? GL_FLOAT : ((Format == RGB16F) || (Format == RGBA16F)) ? GL_HALF_FLOAT : GL_UNSIGNED_BYTE;
    const GLuint col_format = ((Format == GREY8) || (Format == RED16F))                                                                                                      ? GL_RED
       : ((Format == GREY_ALPHA) || (Format == RG16F))                                                                                                                       ? GL_RG
       : ((Format == RGB) || (Format == RGB8) || (Format == SRGB) || (Format == SRGB8) || (Format == RGB5) || (Format == RGB10) || (Format == RGB16F) || (Format == RGB32F)) ? GL_RGB
@@ -290,6 +301,12 @@ GLuint Sampler::CreateTexture(unsigned int Width, unsigned int Height, unsigned 
          h = max(1, (h / 2));
       }
    }
+#else
+   PLOGD.printf("col_is_linear=%d, comp_format: %s (0x%04x), col_format=%s (0x%04x), col_type=%s (0x%04x)",
+          col_is_linear, 
+          gl_to_string(comp_format), comp_format,
+          gl_to_string(col_format), col_format,
+          gl_to_string(col_type), col_type);
 #endif
 
    if (data)

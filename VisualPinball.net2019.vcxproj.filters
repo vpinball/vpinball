@@ -77,7 +77,7 @@
       <Filter>inc</Filter>
     </ClCompile>
     <ClCompile Include="codeviewedit.cpp" />
-    <ClCompile Include="third-party\include\miniz.c">
+    <ClCompile Include="third-party\include\miniz\miniz.c">
       <Filter>inc</Filter>
     </ClCompile>
     <ClCompile Include="Debugger.cpp" />
@@ -293,7 +293,7 @@
     <ClCompile Include="imgui\imgui_impl_opengl3.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
-    <ClCompile Include="third-party\include\glad\glad.c">
+    <ClCompile Include="third-party\include\glad\gl.c">
       <Filter>inc</Filter>
     </ClCompile>
     <ClCompile Include="dialogs\VROptionsDialog.cpp">
@@ -1628,7 +1628,7 @@
     <ClInclude Include="captureExt.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="third-party\include\glad\glad.h">
+    <ClInclude Include="third-party\include\glad\gl.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="imgui\imgui_impl_opengl3.h">

@@ -1,0 +1,86 @@
+# Configuration for iPhone OS, making static libs
+# this will generate both iPhone (arm) and iPhoneSimulator (i386) libs
+
+include Makefile.srcs
+
+CFLAGS = -std=c99 -g -O2 -Wall -Wmissing-prototypes -ffast-math -fno-strict-aliasing -D__ANSI__ -emit-llvm -Wno-c++11-narrowing -Wno-implicit-function-declaration
+CXXFLAGS = -std=gnu++14 -stdlib=libc++ -D__ANSI__ -emit-llvm -Wno-c++11-narrowing -Wno-implicit-function-declaration -fvisibility-inlines-hidden
+
+IPHONEOS_DEPLOYMENT_TARGET = 9.3
+MACOSX_DEPLOYMENT_TARGET = 10.7
+
+PLATFORM_SIM = iPhoneSimulator
+PLATFORM_PHONE = iPhoneOS
+
+ARCH_SIM = arm64
+ARCH_PHONE = arm64
+
+PLATFORM_DEVELOPER_BIN_DIR = $(shell xcode-select -print-path)/Toolchains/XcodeDefault.xctoolchain/usr/bin
+
+SDKROOT_SIM = $(shell xcode-select -print-path)/Platforms/$(PLATFORM_SIM).platform/Developer/SDKs/$(PLATFORM_SIM)$(IPHONEOS_SDK).sdk
+$(info VAR is $(SDKROOT_SIM))
+
+SDKROOT_PHONE = $(shell xcode-select -print-path)/Platforms/$(PLATFORM_PHONE).platform/Developer/SDKs/$(PLATFORM_PHONE)$(IPHONEOS_SDK).sdk
+$(info VAR is $(SDKROOT_PHONE))
+
+EXTRA_CFLAGS_SIM += -arch $(ARCH_SIM) -pipe -mdynamic-no-pic -fvisibility=hidden $(INCLUDE) -isysroot $(SDKROOT_SIM) -DDISABLE_PERF_MEASUREMENT -DPNG_ARM_NEON_OPT=0
+EXTRA_CFLAGS_SIM += -miphonesimulator-version-min=$(IPHONEOS_DEPLOYMENT_TARGET)
+
+# Xcode complains about the -mdynamic-no-pic with an Apple Mach-O Linker Warning, so removed
+EXTRA_CFLAGS_PHONE += -arch $(ARCH_PHONE) -pipe -fvisibility=hidden $(INCLUDE) -isysroot $(SDKROOT_PHONE) -DDISABLE_PERF_MEASUREMENT -DPNG_ARM_NEON_OPT=0
+EXTRA_CFLAGS_PHONE += -miphoneos-version-min=$(IPHONEOS_DEPLOYMENT_TARGET)
+
+CC = $(PLATFORM_DEVELOPER_BIN_DIR)/clang
+CXX = $(PLATFORM_DEVELOPER_BIN_DIR)/clang++
+LIBTOOL = $(PLATFORM_DEVELOPER_BIN_DIR)/libtool
+
+CFLAGS_SIM = $(CFLAGS) $(EXTRA_CFLAGS_SIM)
+CXXFLAGS_SIM += $(EXTRA_CFLAGS_SIM) $(CXXFLAGS)
+
+CFLAGS_PHONE = $(CFLAGS) $(EXTRA_CFLAGS_PHONE)
+CXXFLAGS_PHONE += $(EXTRA_CFLAGS_PHONE) $(CXXFLAGS)
+
+TARGET = freeimage
+STATICLIB_SIM = lib$(TARGET)-$(ARCH_SIM)-simulator.a
+STATICLIB_PHONE = lib$(TARGET)-$(ARCH_PHONE).a
+HEADER = Source/FreeImage.h
+
+.SUFFIXES: .o-SIM-$(ARCH_SIM) .o-$(ARCH_PHONE)
+MODULES_ARM = $(SRCS:.c=.o-$(ARCH_PHONE))
+MODULES_ARM := $(MODULES_ARM:.cpp=.o-$(ARCH_PHONE))
+MODULES_SIM = $(SRCS:.c=.o-SIM-$(ARCH_SIM))
+MODULES_SIM := $(MODULES_SIM:.cpp=.o-SIM-$(ARCH_SIM))
+
+default: all
+
+all: dist
+
+dist: FreeImage
+	mkdir -p Dist
+	cp *.a Dist/
+	cp Source/FreeImage.h Dist/
+
+#FreeImage: $(STATICLIB_SIM) $(STATICLIB_PHONE)
+FreeImage: $(STATICLIB_PHONE)
+
+$(STATICLIB_SIM): $(MODULES_SIM)
+	$(LIBTOOL) -arch_only $(ARCH_SIM) -o $@ $(MODULES_SIM)
+
+.c.o-SIM-$(ARCH_SIM):
+	$(CC) $(CFLAGS_SIM) -c $< -o $@
+
+.cpp.o-SIM-$(ARCH_SIM):
+	$(CXX) $(CXXFLAGS_SIM) -c $< -o $@
+
+
+$(STATICLIB_PHONE): $(MODULES_ARM)
+	$(LIBTOOL) -arch_only $(ARCH_PHONE) -o $@ $(MODULES_ARM)
+
+.c.o-$(ARCH_PHONE):
+	$(CC) $(CFLAGS_PHONE) -c $< -o $@
+
+.cpp.o-$(ARCH_PHONE):
+	$(CXX) $(CXXFLAGS_PHONE) -c $< -o $@
+
+clean:
+	rm -f core Dist/*.* u2dtmp* $(MODULES_SIM) $(MODULES_ARM) $(STATICLIB_SIM) $(STATICLIB_PHONE)

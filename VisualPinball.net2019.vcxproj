@@ -814,7 +814,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="imgui\ImGuizmo.cpp" />
     <ClCompile Include="imgui\imgui_stdlib.cpp" />
     <ClCompile Include="third-party\include\BAM\BAMView.cpp" />
-    <ClCompile Include="third-party\include\glad\glad.c">
+    <ClCompile Include="third-party\include\glad\gl.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
@@ -842,7 +842,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="imgui\implot\implot.cpp" />
     <ClCompile Include="imgui\implot\implot_items.cpp" />
     <ClCompile Include="third-party\include\gpuprofiler.cpp" />
-    <ClCompile Include="third-party\include\miniz.c">
+    <ClCompile Include="third-party\include\miniz\miniz.c">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="third-party\include\progmesh.cpp" />

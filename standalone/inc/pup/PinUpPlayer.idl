@@ -1,0 +1,227 @@
+// Generated .IDL file (by the OLE/COM Object Viewer)
+// 
+// typelib filename: <could not determine filename>
+
+import "oaidl.idl";
+import "ocidl.idl";
+
+[
+  uuid(D50F2477-84E8-4CED-9409-3735CA67FDE3),
+  version(1.0),
+  helpstring("TopperVideoX Library")
+]
+library PinUpPlayer
+{
+    // TLib : OLE Automation : {00020430-0000-0000-C000-000000000046}
+    importlib("stdole2.tlb");
+
+    // Forward declare all types defined in this typelib
+    interface IPinDisplay;
+
+    [
+      odl,
+      uuid(7A2CCC8D-6AED-43BE-8EBD-4D2CD802F4CE),
+      version(1.0),
+      helpstring("Dispatch interface for PinUpPlayer Object"),
+      dual,
+      oleautomation
+    ]
+    interface IPinDisplay : IDispatch {
+        [id(0x000000c9)]
+        HRESULT Init(
+                        [in] long ScreenNum, 
+                        [in] BSTR RootDir);
+        [id(0x000000ca)]
+        HRESULT playlistadd(
+                        [in] long ScreenNum, 
+                        [in] BSTR folder, 
+                        [in] long sort, 
+                        [in] long restSeconds);
+        [id(0x000000cb)]
+        HRESULT playlistplay(
+                        [in] long ScreenNum, 
+                        [in] BSTR playlist);
+        [id(0x000000cc)]
+        HRESULT playlistplayex(
+                        [in] long ScreenNum, 
+                        [in] BSTR playlist, 
+                        [in] BSTR playfilename, 
+                        [in] long volume, 
+                        [in] long forceplay);
+        [id(0x000000cd)]
+        HRESULT play(
+                        [in] long ScreenNum, 
+                        [in] BSTR playlist, 
+                        [in] BSTR playfilename);
+        [id(0x000000ce)]
+        HRESULT setWidth(
+                        [in] long ScreenNum, 
+                        [in] long width);
+        [id(0x000000cf)]
+        HRESULT setHeight(
+                        [in] long ScreenNum, 
+                        [in] long Height);
+        [id(0x000000d0)]
+        HRESULT setPosX(
+                        [in] long ScreenNum, 
+                        [in] long Posx);
+        [id(0x000000d1)]
+        HRESULT setPosY(
+                        [in] long ScreenNum, 
+                        [in] long PosY);
+        [id(0x000000d2)]
+        HRESULT setAspect(
+                        [in] long ScreenNum, 
+                        [in] long aspectWide, 
+                        [in] long aspectHigh);
+        [id(0x000000d3)]
+        HRESULT setVolume(
+                        [in] long ScreenNum, 
+                        [in] long vol);
+        [id(0x000000d4)]
+        HRESULT playpause([in] long ScreenNum);
+        [id(0x000000d5)]
+        HRESULT playresume([in] long ScreenNum);
+        [id(0x000000d6)]
+        HRESULT playstop([in] long ScreenNum);
+        [id(0x000000d8)]
+        HRESULT CloseApp();
+        [id(0x000000d7), propget]
+        HRESULT isPlaying(
+                        [in] long ScreenNum, 
+                        [out, retval] long* Value);
+        [id(0x000000d7), propput]
+        HRESULT isPlaying(
+                        [in] long ScreenNum, 
+                        [in] long Value);
+        [id(0x000000d9)]
+        HRESULT SetLength(
+                        [in] long ScreenNum, 
+                        [in] long StopSecs);
+        [id(0x000000da)]
+        HRESULT SetLoop(
+                        [in] long ScreenNum, 
+                        [in] long LoopState);
+        [id(0x000000db)]
+        HRESULT SetBackGround(
+                        [in] long ScreenNum, 
+                        [in] long Mode);
+        [id(0x000000dc)]
+        HRESULT BlockPlay(
+                        [in] long ScreenNum, 
+                        [in] long Mode);
+        [id(0x000000dd)]
+        HRESULT SetScreen([in] long ScreenNum);
+        [id(0x000000de)]
+        HRESULT SetScreenEx(
+                        [in] long ScreenNum, 
+                        [in] long xpos, 
+                        [in] long ypos, 
+                        [in] long swidth, 
+                        [in] long sheight, 
+                        [in] long popup);
+        [id(0x000000df), propget]
+        HRESULT SN([out, retval] long* Value);
+        [id(0x000000df), propput]
+        HRESULT SN([in] long Value);
+        [id(0x000000e0)]
+        HRESULT B2SData(
+                        [in] BSTR tIndex, 
+                        [in] int Value);
+        [id(0x000000e1), propget]
+        HRESULT B2SFilter([out, retval] BSTR* Value);
+        [id(0x000000e1), propput]
+        HRESULT B2SFilter([in] BSTR Value);
+        [id(0x000000e2)]
+        HRESULT Show([in] long ScreenNum);
+        [id(0x000000e3)]
+        HRESULT Hide([in] long ScreenNum);
+        [id(0x000000e4)]
+        HRESULT B2SInit(
+                        [in] BSTR TName, 
+                        [in] BSTR RomName);
+        [id(0x000000e5)]
+        HRESULT SendMSG([in] BSTR cMSG);
+        [id(0x000000e6)]
+        HRESULT LabelNew(
+                        [in] long ScreenNum, 
+                        [in] BSTR LabelName, 
+                        [in] BSTR FontName, 
+                        [in] long Size, 
+                        [in] long Color, 
+                        [in] long Angle, 
+                        [in] long xAlign, 
+                        [in] long yAlign, 
+                        [in] long xMargin, 
+                        [in] long yMargin, 
+                        [in] long PageNum, 
+                        [in] long Visible);
+        [id(0x000000e7)]
+        HRESULT LabelSet(
+                        [in] long ScreenNum, 
+                        [in] BSTR LabelName, 
+                        [in] BSTR Caption, 
+                        [in] long Visible, 
+                        [in] BSTR Special);
+        [id(0x000000e8)]
+        HRESULT LabelSetEx();
+        [id(0x000000e9)]
+        HRESULT LabelShowPage(
+                        [in] long ScreenNum, 
+                        [in] long PageNum, 
+                        [in] long Seconds, 
+                        [in] BSTR Special);
+        [id(0x000000ea)]
+        HRESULT LabelInit([in] long ScreenNum);
+        [id(0x000000eb), propget]
+        HRESULT GetGame([out, retval] BSTR* Value);
+        [id(0x000000eb), propput]
+        HRESULT GetGame([in] BSTR Value);
+        [id(0x000000ec), propget]
+        HRESULT GetRoot([out, retval] BSTR* Value);
+        [id(0x000000ec), propput]
+        HRESULT GetRoot([in] BSTR Value);
+        [id(0x000000ed)]
+        HRESULT SoundAdd(
+                        [in] BSTR sname, 
+                        [in] BSTR fname, 
+                        [in] long svol, 
+                        [in] double sX, 
+                        [in] double sy, 
+                        [in] BSTR SP);
+        [id(0x000000ee)]
+        HRESULT SoundPlay([in] BSTR sname);
+        [id(0x000000ef)]
+        HRESULT PuPSound(
+                        [in] BSTR sname, 
+                        [in] long sX, 
+                        [in] long sy, 
+                        [in] long sz, 
+                        [in] long vol, 
+                        [in] BSTR SP);
+        [id(0x000000f0)]
+        HRESULT InitPuPMenu([in] long Param1);
+        [id(0x000000f1), propget]
+        HRESULT B2SDisplays([out, retval] BSTR* Value);
+        [id(0x000000f2)]
+        HRESULT setVolumeCurrent(
+                        [in] long ScreenNum, 
+                        [in] long vol);
+        [id(0x000000f3), propget]
+        HRESULT GameUpdate(
+                        [in] BSTR GameTitle, 
+                        [in] long Func, 
+                        [in] long FuncData, 
+                        [in] BSTR Extra, 
+                        [out, retval] long* Value);
+    };
+
+    [
+      uuid(88919FAC-00B2-4AA8-B1C7-52AD65C476D3),
+      version(1.0),
+      helpstring("PinUP Player Com Object")
+    ]
+    coclass PinDisplay {
+        [default] interface IPinDisplay;
+    };
+};

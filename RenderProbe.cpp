@@ -370,7 +370,9 @@ void RenderProbe::DoRenderReflectionProbe(const bool render_static, const bool r
    Vertex3Ds n(m_reflection_plane.x, m_reflection_plane.y, m_reflection_plane.z);
    n.Normalize();
    vec4 clip_plane(n.x, n.y, n.z, m_reflection_plane.w);
+#ifndef __OPENGLES__
    p3dDevice->SetClipPlane(clip_plane);
+#endif
    p3dDevice->SetRenderState(RenderState::CLIPPLANEENABLE, RenderState::RS_TRUE);
 
    p3dDevice->SetRenderStateCulling(RenderState::CULL_CCW); // re-init/thrash cache entry due to the hacky nature of the table mirroring

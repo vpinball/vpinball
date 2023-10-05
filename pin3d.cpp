@@ -3,7 +3,9 @@
 #include "Shader.h"
 #include "math/math.h"
 #include "ThreadPool.h"
+#ifndef __STANDALONE__
 #include "BAM/BAMView.h"
+#endif
 
 Pin3D::Pin3D()
 {
@@ -458,7 +460,9 @@ HRESULT Pin3D::InitPrimary(const bool fullScreen, const int colordepth, int& ref
    if (!m_pd3dPrimaryDevice->LoadShaders())
       return E_FAIL;
 
+#ifndef __STANDALONE__
    BAMView::init();
+#endif
 
    const bool compressTextures = LoadValueWithDefault(regKey[RegName::Player], "CompressTextures"s, false);
    m_pd3dPrimaryDevice->CompressTextures(compressTextures);
@@ -495,6 +499,7 @@ HRESULT Pin3D::InitPin3D(const bool fullScreen, const int width, const int heigh
    else
       m_backGlass = nullptr;
 
+#ifndef __STANDALONE__
    // This used to be a spheremap BMP, upgraded in 10.8 for an equirectangular HDR env map
    //m_pinballEnvTexture.CreateFromResource(IDB_BALL);
    HMODULE handle = ::GetModuleHandle(NULL);
@@ -505,15 +510,25 @@ HRESULT Pin3D::InitPin3D(const bool fullScreen, const int width, const int heigh
    m_pinballEnvTexture.LoadFromMemory(data, size);
 
    m_aoDitherTexture.CreateFromResource(IDB_AO_DITHER);
+#else
+   m_pinballEnvTexture.CreateFromResource("BallEnv.exr");
+   m_aoDitherTexture.CreateFromResource("AOdither.bmp");
+#endif
 
    m_envTexture = g_pplayer->m_ptable->GetImage(g_pplayer->m_ptable->m_envImage);
+
+#ifndef __STANDALONE__
    m_builtinEnvTexture.CreateFromResource(IDB_ENV);
+#else
+   m_builtinEnvTexture.CreateFromResource("envmap.bmp");
+#endif
    #ifdef ENABLE_SDL // OpenGL
    PLOGI << "Computing environment map radiance"; // For profiling
    g_pvp->ProfileLog("EnvmapPrecalc Start"s);
    Texture* const envTex = m_envTexture ? m_envTexture : &m_builtinEnvTexture;
    const int envTexHeight = min(envTex->m_pdsBuffer->height(), 256u) / 8;
    const int envTexWidth = envTexHeight * 2;
+#ifndef __OPENGLES__
    const colorFormat rad_format = envTex->m_pdsBuffer->m_format == BaseTexture::RGB_FP32 ? colorFormat::RGBA32F : colorFormat::RGBA16F;
    m_envRadianceTexture = new RenderTarget(m_pd3dPrimaryDevice, SurfaceType::RT_DEFAULT, "Irradiance"s, envTexWidth, envTexHeight, rad_format, false, 1, "Failed to create irradiance render target");
    m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_irradiance);
@@ -523,6 +538,12 @@ HRESULT Pin3D::InitPin3D(const bool fullScreen, const int width, const int heigh
    m_pd3dPrimaryDevice->FlushRenderFrame();
    m_pd3dPrimaryDevice->basicShader->SetTexture(SHADER_tex_diffuse_env, m_envRadianceTexture->GetColorSampler());
    m_pd3dPrimaryDevice->m_ballShader->SetTexture(SHADER_tex_diffuse_env, m_envRadianceTexture->GetColorSampler());
+#else
+   m_envRadianceTexture = EnvmapPrecalc(envTex, envTexWidth, envTexHeight);
+   m_pd3dPrimaryDevice->m_texMan.SetDirty(m_envRadianceTexture);
+   m_pd3dPrimaryDevice->basicShader->SetTexture(SHADER_tex_diffuse_env, m_envRadianceTexture);
+   m_pd3dPrimaryDevice->m_ballShader->SetTexture(SHADER_tex_diffuse_env, m_envRadianceTexture);
+#endif
    #else // DirectX 9
    // DirectX 9 does not support bitwise operation in shader, so radical_inverse is not implemented and therefore we use the slow CPU path instead of GPU
    const Texture* const envTex = m_envTexture ? m_envTexture : &m_builtinEnvTexture;
@@ -738,7 +759,9 @@ void Pin3D::UpdateBAMHeadTracking()
 {
    Matrix3D m_matView;
    Matrix3D m_matProj[2];
+#ifndef __STANDALONE__
    BAMView::createProjectionAndViewMatrix(&m_matProj[0]._11, &m_matView._11);
+#endif
    m_mvp->SetView(m_matView);
    for (unsigned int eye = 0; eye < m_mvp->m_nEyes; eye++)
       m_mvp->SetProj(eye, m_matProj[eye]);
