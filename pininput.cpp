@@ -1171,13 +1171,13 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
             else
             {
                const float scale = (screenHeight / table->m_right) * (table->m_bottom / screenWidth);
-               const bool isFitted = (viewSetup.mViewHOfs == 0.f) && (viewSetup.mViewVOfs == CMTOVPU(-2.8f)) && (viewSetup.mSceneScaleX == scale) && (viewSetup.mSceneScaleY == 1.f);
+               const bool isFitted = (viewSetup.mViewHOfs == 0.f) && (viewSetup.mViewVOfs == -2.8f) && (viewSetup.mSceneScaleY == scale) && (viewSetup.mSceneScaleX == scale);
                viewSetup.mMode = VLM_WINDOW;
                viewSetup.mViewHOfs = 0.f;
                viewSetup.mViewVOfs = isFitted ? 0.f : -2.8f;
                viewSetup.mSceneScaleX = scale;
                viewSetup.mSceneScaleY = isFitted ? 1.f : scale;
-               g_pplayer->m_liveUI->PushNotification(isFitted ? "POV reseted to default values (no stretching)"s : "POV reseted to default values (stretch to fit)"s, 5000);
+               g_pplayer->m_liveUI->PushNotification(isFitted ? "POV reseted to default values (stretch to fit)"s : "POV reseted to default values (no stretching)"s, 5000);
             }
             break;
          }
