@@ -54,8 +54,9 @@ void Anaglyph::SetupShader(Shader* shader)
    shader->SetMatrix(m_reversedColorPair ? SHADER_Stereo_LeftMat : SHADER_Stereo_RightMat, &m_rgb2AnaglyphRight);
    
    // Used by the dynamic desaturation filter to identify colors that would be seen by only one eye
-   shader->SetVector(SHADER_Stereo_LeftLuminance_Gamma, 0.5f * m_rgb2Yl.x, 0.5f * m_rgb2Yl.y, 0.5f * m_rgb2Yl.z, m_sRGBDisplay ? -1.f : m_displayGamma);
-   shader->SetVector(SHADER_Stereo_RightLuminance_DynDesat, 0.5f * m_rgb2Yr.x, 0.5f * m_rgb2Yr.y, 0.5f * m_rgb2Yr.z, m_dynDesatLevel);
+   const float scale = 0.25f * 0.5f; // 0.5 is because we sum the contribution of the 2 eyes, 0.25 is magic adjusted from real play
+   shader->SetVector(SHADER_Stereo_LeftLuminance_Gamma, scale * m_rgb2Yl.x, scale * m_rgb2Yl.y, scale * m_rgb2Yl.z, m_sRGBDisplay ? -1.f : m_displayGamma);
+   shader->SetVector(SHADER_Stereo_RightLuminance_DynDesat, scale * m_rgb2Yr.x, scale * m_rgb2Yr.y, scale * m_rgb2Yr.z, m_dynDesatLevel);
 
    // Used by Deghost filter
    shader->SetVector(SHADER_Stereo_DeghostGamma, m_deghostGamma.x, m_deghostGamma.y, m_deghostGamma.z, 0.00f);
