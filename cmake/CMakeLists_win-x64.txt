@@ -544,6 +544,9 @@ add_executable(vpinball WIN32
    worker.h
    audioplayer.cpp
    audioplayer.h
+   
+   src/renderer/Anaglyph.cpp
+   src/renderer/Anaglyph.h
 
    vpinball.rc
    vpinball.idl
@@ -590,6 +593,7 @@ target_include_directories(vpinball PUBLIC
    dialogs
    media
    pin
+   src
    shader
 )
 
