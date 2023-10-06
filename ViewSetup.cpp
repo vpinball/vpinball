@@ -17,13 +17,13 @@ void ViewSetup::SetWindowModeFromAppSettings(const PinTable* const table)
    float inclination = LoadValueWithDefault(regKey[RegName::Player], "ScreenInclination"s, 0.0f);
    float screenBotZ = GetWindowBottomZOFfset(table);
    float screenTopZ = GetWindowTopZOFfset(table);
-   Matrix3D rotx; // Rotate by the angle between playfield and real world horizontal (scale on Y and Z axis are not equal and can be ignored)
+   Matrix3D rotx; // Rotate by the angle between playfield and real world horizontal (scale on Y and Z axis are equal and can be ignored)
    //rotx.SetRotateX(atan2f(mSceneScaleZ * (screenTopZ - screenBotZ), mSceneScaleY * table->m_bottom) - ANGTORAD(inclination));
    rotx.SetRotateX(atan2f(screenTopZ - screenBotZ, table->m_bottom) - ANGTORAD(inclination));
    rotx.TransformVec3(playerPos);
    mViewX = playerPos.x;
    mViewY = playerPos.y;
-   mViewZ = playerPos.z + 0.f * screenBotZ / realToVirtual;
+   mViewZ = playerPos.z + screenBotZ * mSceneScaleY / realToVirtual;
 }
 
 float ViewSetup::GetWindowTopZOFfset(const PinTable* const table) const
@@ -204,15 +204,13 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
    }
    else
    {
+      // The transform are applied in this order: scale, then translation, then X rotation (aka inclination)
       Matrix3D trans, rotx;
-      // Scale is not relative to the 'virtual to real world scale' in order to avoid each user needing to scale the table for his own screen size
+      // Scale transform table model into a scaled version, at real world scale: therefore transformations applied afterward are in 'real world scale' (user scale)
       scale = Matrix3D::MatrixTranslate(-0.5f * table->m_right, -0.5f * table->m_bottom, -windowBotZ)
-         // * Matrix3D::MatrixScale(mSceneScaleX, mSceneScaleY, isWindow ? mSceneScaleY : mSceneScaleZ)
          * Matrix3D::MatrixScale(mSceneScaleX / realToVirtual, mSceneScaleY / realToVirtual, isWindow ? mSceneScaleY / realToVirtual : mSceneScaleZ)
          * Matrix3D::MatrixTranslate(0.5f * table->m_right, 0.5f * table->m_bottom, windowBotZ); // Global scene scale (using bottom center of the playfield as origin)
-      // mView is in real world scale (it depends on the actual display size), so we need to apply the scale factor to apply it in the virtual world unit
-      // I'm still a bit unsure of this and this would need some more thought (and testing with an accurate headtracker).
-      //trans.SetTranslation(-mViewX * realToVirtual + cam.x - 0.5f * table->m_right, -mViewY * realToVirtual + cam.y - table->m_bottom, -mViewZ * realToVirtual + cam.z);
+      // mView is in real world scale (like the actual display size), it is applied after scale which scale the table to the user's real world scale
       trans.SetTranslation(-mViewX + cam.x - 0.5f * table->m_right, -mViewY + cam.y - table->m_bottom, -mViewZ + cam.z);
       rotx.SetRotateX(inc); // Player head inclination (0 is looking straight to playfield)
       coords.SetScaling(1.f, -1.f, -1.f); // Revert Y and Z axis to convert to D3D coordinate system
@@ -292,6 +290,7 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
    {
       // Stereo mode needs an offcentered projection along the eye axis. Parallax shifted, or toe-in camera are incorrect and 
       // should not be used (See 'Gaze-coupled Perspective for Enhanced Human-Machine Interfaces in Aeronautics' for an explanation)
+      // Since the table is scaled to 'real world units' (that is to say same scale as the user measures), we directly use the user settings for IPD,.. without any scaling
 
       // 63mm is the average distance between eyes (varies from 54 to 74mm between adults, 43 to 58mm for children)
       const float eyeSeparation = MMTOVPU(LoadValueWithDefault(regKey[RegName::Player], "Stereo3DEyeSeparation"s, 63.0f));
@@ -300,7 +299,7 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
       // - for cabinet (window) mode, we use the orthogonal distance to the screen (window)
       // - for camera mode, we place the 0 depth line on the lower third of the playfield
       // This way, we don't have negative parallax (objects closer than projection plane) and all the artefact they may cause
-      const float zNullSeparation = mMode == VLM_WINDOW ? mViewZ - windowBotZ + mViewY * tanf(inc)
+      const float zNullSeparation = mMode == VLM_WINDOW ? (mViewZ - windowBotZ) * cosf(inc) + mViewY * sinf(inc)
                                                         : -lookat.MultiplyVector(Vertex3Ds(0.5f * (table->m_left + table->m_right), table->m_bottom * 0.66f /* For flipper bats: 1800.f / 2150.f*/, 0.f)).z;
       const float ofs = 0.5f * eyeSeparation * zNear / zNullSeparation;
       const float xOfs = ofs * cosf(rotation);
