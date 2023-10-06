@@ -3,6 +3,7 @@
 #include "LiveUI.h"
 
 #include "Shader.h"
+#include "renderer/Anaglyph.h"
 
 #include "fonts/DroidSans.h"
 #include "fonts/IconsForkAwesome.h"
@@ -29,21 +30,6 @@
 #endif
 
 #include "BAM/BAMView.h"
-
-// Default anaglyph color
-// FIXME move this to a central place (this is duplicated in player.cpp)
-static const vec3 defaultAnaglyphColors[] = {
-   /* RC */ vec3(0.95f, 0.19f, 0.07f), vec3(0.06f, 0.92f, 0.28f),
-   /* GM */ vec3(0.06f, 0.96f, 0.09f), vec3(0.61f, 0.16f, 0.66f),
-   /* BA */ vec3(0.05f, 0.16f, 0.96f), vec3(0.61f, 0.66f, 0.09f),
-   /* CR */ vec3(0.06f, 0.92f, 0.28f), vec3(0.95f, 0.19f, 0.07f),
-   /* MG */ vec3(0.61f, 0.16f, 0.66f), vec3(0.06f, 0.96f, 0.09f),
-   /* AB */ vec3(0.61f, 0.66f, 0.09f), vec3(0.05f, 0.16f, 0.96f),
-   /* RC */ vec3(0.95f, 0.19f, 0.07f), vec3(0.06f, 0.92f, 0.28f),
-   /* RC */ vec3(0.95f, 0.19f, 0.07f), vec3(0.06f, 0.92f, 0.28f),
-   /* RC */ vec3(0.95f, 0.19f, 0.07f), vec3(0.06f, 0.92f, 0.28f),
-   /* RC */ vec3(0.95f, 0.19f, 0.07f), vec3(0.06f, 0.92f, 0.28f),
-};
 
 // Titles (used as Ids) of modal dialogs
 #define ID_MODAL_SPLASH "In Game UI"
@@ -1948,7 +1934,7 @@ void LiveUI::UpdateVideoOptionsModal()
             SaveValue(regKey[RegName::Player], "Stereo3DEnabled"s, m_player->m_stereo3Denabled);
          if (m_player->m_stereo3Denabled)
          {
-            bool anaglyphFittingInProgress = !m_player->UpdateStereoShaderState(false);
+            m_player->UpdateStereoShaderState();
             bool modeChanged = false;
             const char *stereo_output_items[] = { "Disabled", "3D TV", "Anaglyph" };
             int stereo_mode = m_player->m_stereo3D == STEREO_OFF ? 0 : Is3DTVStereoMode(m_player->m_stereo3D) ? 1 : 2;
@@ -1989,81 +1975,6 @@ void LiveUI::UpdateVideoOptionsModal()
             }
             else if (stereo_mode == 2) // Anaglyph
             {
-               // Glasses settings
-               static const string defaultNames[] = { "Red/Cyan"s, "Green/Magenta"s, "Blue/Amber"s, "Cyan/Red"s, "Magenta/Green"s, "Amber/Blue"s, "Custom 1"s, "Custom 2"s, "Custom 3"s, "Custom 4"s };
-               string name[std::size(defaultNames)];
-               for (size_t i = 0; i < std::size(defaultNames); i++)
-                  if (FAILED(LoadValue(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(i + 1)).append("Name"s), name[i])))
-                     name[i] = defaultNames[i];
-               const char *glasses_items[] = { name[0].c_str(),name[1].c_str(),name[2].c_str(),name[3].c_str(),name[4].c_str(),name[5].c_str(),name[6].c_str(),name[7].c_str(),name[8].c_str(),name[9].c_str(), };
-               if (ImGui::Combo("Glasses", &glassesIndex, glasses_items, IM_ARRAYSIZE(glasses_items)))
-                  modeChanged = true;
-               vec3 leftFilter, rightFilter;
-               const string prefKey = "Anaglyph"s.append(std::to_string(glassesIndex + 1));
-               leftFilter.x = LoadValueWithDefault(regKey[RegName::Player], prefKey + "FittedLeftRed"s, 1.0f);
-               leftFilter.y = LoadValueWithDefault(regKey[RegName::Player], prefKey + "FittedLeftGreen"s, 1.0f);
-               leftFilter.z = 1.f - leftFilter.x - leftFilter.y;
-               rightFilter.x = LoadValueWithDefault(regKey[RegName::Player], prefKey + "FittedRightRed"s, 1.0f);
-               rightFilter.y = LoadValueWithDefault(regKey[RegName::Player], prefKey + "FittedRightGreen"s, 1.0f);
-               rightFilter.z = 1.f - rightFilter.x - rightFilter.y;
-               leftFilter = leftFilter / max(max(leftFilter.x, leftFilter.y), leftFilter.z);
-               rightFilter = rightFilter / max(max(rightFilter.x, rightFilter.y), rightFilter.z);
-               const float leftSecondHigher  = (leftFilter.y > leftFilter.x && leftFilter.x > leftFilter.z) ? leftFilter.x : (leftFilter.y < leftFilter.x && leftFilter.x < leftFilter.z) ? leftFilter.x : 
-                                               (leftFilter.x > leftFilter.y && leftFilter.y > leftFilter.z) ? leftFilter.y : (leftFilter.x < leftFilter.y && leftFilter.y < leftFilter.z) ? leftFilter.y : 
-                                               (leftFilter.x > leftFilter.z && leftFilter.z > leftFilter.y) ? leftFilter.z : (leftFilter.x < leftFilter.z && leftFilter.z < leftFilter.y) ? leftFilter.z : -1.f;
-               const float rightSecondHigher  = (rightFilter.y > rightFilter.x && rightFilter.x > rightFilter.z) ? rightFilter.x : (rightFilter.y < rightFilter.x && rightFilter.x < rightFilter.z) ? rightFilter.x : 
-                                                (rightFilter.x > rightFilter.y && rightFilter.y > rightFilter.z) ? rightFilter.y : (rightFilter.x < rightFilter.y && rightFilter.y < rightFilter.z) ? rightFilter.y : 
-                                                (rightFilter.x > rightFilter.z && rightFilter.z > rightFilter.y) ? rightFilter.z : (rightFilter.x < rightFilter.z && rightFilter.z < rightFilter.y) ? rightFilter.z : -1.f;
-               // assert(leftSecondHigher != -1.f && rightSecondHigher != -1.f); // This may happen when fitting is degenerated or simply we do not have any fitted value
-               bool reversedColors = leftSecondHigher > rightSecondHigher; // Monochromatic (red/green/blue) is supposed to be on the left eye
-               const vec3 monoFilter = reversedColors ? rightFilter : leftFilter;
-               const enum AnaglypColors { RED_CYAN, GREEN_MAGENTA, BLUE_AMBER } colors
-                  = (monoFilter.x > monoFilter.y && monoFilter.x > monoFilter.z) ? RED_CYAN
-                  : (monoFilter.y > monoFilter.x && monoFilter.y > monoFilter.z) ? GREEN_MAGENTA
-                                                                                 : BLUE_AMBER;
-               
-               ImVec4 leftColor(LoadValueWithDefault(regKey[RegName::Player], prefKey + "LeftRed"s, defaultAnaglyphColors[glassesIndex * 2].x),
-                                LoadValueWithDefault(regKey[RegName::Player], prefKey + "LeftGreen"s, defaultAnaglyphColors[glassesIndex * 2].y),
-                                LoadValueWithDefault(regKey[RegName::Player], prefKey + "LeftBlue"s, defaultAnaglyphColors[glassesIndex * 2].z), 1.f);
-               ImVec4 rightColor(LoadValueWithDefault(regKey[RegName::Player], prefKey + "RightRed"s, defaultAnaglyphColors[glassesIndex * 2 + 1].x),
-                                 LoadValueWithDefault(regKey[RegName::Player], prefKey + "RightGreen"s, defaultAnaglyphColors[glassesIndex * 2 + 1].y),
-                                 LoadValueWithDefault(regKey[RegName::Player], prefKey + "RightBlue"s, defaultAnaglyphColors[glassesIndex * 2 + 1].z), 1.f);
-               ImGui::ColorButton("LeftFilter", leftColor, ImGuiColorEditFlags_NoAlpha);
-               ImGui::SameLine();
-               ImGui::ColorButton("RightFilter", rightColor, ImGuiColorEditFlags_NoAlpha);
-               ImGui::SameLine();
-               ImGui::Text(reversedColors ? colors == RED_CYAN ? "Cyan/Red" : colors == GREEN_MAGENTA ? "Magenta/Green" : "Amber/Blue"
-                                          : colors == RED_CYAN ? "Red/Cyan" : colors == GREEN_MAGENTA ? "Green/Magenta" : "Blue/Amber");
-               #ifdef DEBUG
-               ImGui::SameLine();
-               ImGui::Text("Gamma %3.2f", LoadValueWithDefault(regKey[RegName::Player], prefKey + "FittedGamma"s, 1.0f));
-               #endif
-               ImGui::SameLine();
-               ImGui::Text(anaglyphFittingInProgress ? "[Fitting in progress]" : "[Fitted, improving...]");
-               if (ImGui::Button("Calibrate Glasses"))
-                  popup_anaglyph_calibration = true;
-               ImGui::SameLine();
-               if (ImGui::Button("Reset to default"))
-               {
-                  SaveValue(regKey[RegName::Player], prefKey + "Name"s, defaultNames[glassesIndex]);
-                  SaveValue(regKey[RegName::Player], prefKey + "LeftRed"s, defaultAnaglyphColors[glassesIndex * 2].x);
-                  SaveValue(regKey[RegName::Player], prefKey + "LeftGreen"s, defaultAnaglyphColors[glassesIndex * 2].y);
-                  SaveValue(regKey[RegName::Player], prefKey + "LeftBlue"s, defaultAnaglyphColors[glassesIndex * 2].z);
-                  SaveValue(regKey[RegName::Player], prefKey + "RightRed"s, defaultAnaglyphColors[glassesIndex * 2 + 1].x);
-                  SaveValue(regKey[RegName::Player], prefKey + "RightGreen"s, defaultAnaglyphColors[glassesIndex * 2 + 1].y);
-                  SaveValue(regKey[RegName::Player], prefKey + "RightBlue"s, defaultAnaglyphColors[glassesIndex * 2 + 1].z);
-                  DeleteValue(regKey[RegName::Player], prefKey + "FittedLeftRed"s);
-                  DeleteValue(regKey[RegName::Player], prefKey + "FittedLeftGreen"s);
-                  DeleteValue(regKey[RegName::Player], prefKey + "FittedRightRed"s);
-                  DeleteValue(regKey[RegName::Player], prefKey + "FittedRightGreen"s);
-                  DeleteValue(regKey[RegName::Player], prefKey + "FittedGamma"s);
-               }
-               if (ImGui::InputText("Name", &name[glassesIndex]))
-                  SaveValue(regKey[RegName::Player], prefKey + "Name"s, name[glassesIndex]);
-               static const char *filter_items[] = { "None", "Dubois", "Deghost", "Luminance", "Dyn. Desat.", };
-               int anaglyphFilter = LoadValueWithDefault(regKey[RegName::Player], prefKey + "Filter"s, 4);
-               if (ImGui::Combo("Filter", &anaglyphFilter, filter_items, IM_ARRAYSIZE(filter_items)))
-                  SaveValue(regKey[RegName::Player], prefKey + "Filter"s, anaglyphFilter);
                // Global anaglyph settings
                float anaglyphSaturation = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DSaturation"s, 1.f);
                if (ImGui::InputFloat("Saturation", &anaglyphSaturation, 0.01f, 0.1f))
@@ -2077,6 +1988,59 @@ void LiveUI::UpdateVideoOptionsModal()
                float anaglyphRightEyeContrast = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DRightContrast"s, 1.f);
                if (ImGui::InputFloat("Right Eye Contrast", &anaglyphRightEyeContrast, 0.01f, 0.1f))
                   SaveValue(regKey[RegName::Player], "Stereo3DRightContrast"s, anaglyphRightEyeContrast);
+
+               // Glasses settings
+               static const string defaultNames[] = { "Red/Cyan"s, "Green/Magenta"s, "Blue/Amber"s, "Cyan/Red"s, "Magenta/Green"s, "Amber/Blue"s, "Custom 1"s, "Custom 2"s, "Custom 3"s, "Custom 4"s };
+               string name[std::size(defaultNames)];
+               for (size_t i = 0; i < std::size(defaultNames); i++)
+                  if (FAILED(LoadValue(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(i + 1)).append("Name"s), name[i])))
+                     name[i] = defaultNames[i];
+               const char *glasses_items[] = { name[0].c_str(),name[1].c_str(),name[2].c_str(),name[3].c_str(),name[4].c_str(),name[5].c_str(),name[6].c_str(),name[7].c_str(),name[8].c_str(),name[9].c_str(), };
+               if (ImGui::Combo("Glasses", &glassesIndex, glasses_items, IM_ARRAYSIZE(glasses_items)))
+                  modeChanged = true;
+               const string prefKey = "Anaglyph"s.append(std::to_string(glassesIndex + 1));
+
+               if (ImGui::InputText("Name", &name[glassesIndex]))
+                  SaveValue(regKey[RegName::Player], prefKey + "Name"s, name[glassesIndex]);
+               static const char *filter_items[] = { "None", "Dubois", "Luminance", "Deghost" };
+               int anaglyphFilter = LoadValueWithDefault(regKey[RegName::Player], prefKey + "Filter"s, 4);
+               if (ImGui::Combo("Filter", &anaglyphFilter, filter_items, IM_ARRAYSIZE(filter_items)))
+                  SaveValue(regKey[RegName::Player], prefKey + "Filter"s, anaglyphFilter);
+               float anaglyphDynDesat = LoadValueWithDefault(regKey[RegName::Player], prefKey + "DynDesat"s, 1.f);
+               if (ImGui::InputFloat("Dyn. Desaturation", &anaglyphDynDesat, 0.01f, 0.1f))
+                  SaveValue(regKey[RegName::Player], prefKey + "DynDesat"s, anaglyphDynDesat);
+               float anaglyphDeghost = LoadValueWithDefault(regKey[RegName::Player], prefKey + "Deghost"s, 0.f);
+               if (ImGui::InputFloat("Deghost", &anaglyphDeghost, 0.01f, 0.1f))
+                  SaveValue(regKey[RegName::Player], prefKey + "Deghost"s, anaglyphDeghost);
+               bool srgbDisplay = LoadValueWithDefault(regKey[RegName::Player], prefKey + "sRGB"s, true);
+               if (ImGui::Checkbox("Calibrated sRGB Display", &srgbDisplay))
+                  SaveValue(regKey[RegName::Player], prefKey + "sRGB"s, srgbDisplay);
+
+               Anaglyph anaglyph;
+               anaglyph.LoadSetupFromRegistry(glassesIndex);
+               const vec3 eyeL = anaglyph.GetLeftEyeColor(), eyeR = anaglyph.GetRightEyeColor();
+               Anaglyph::AnaglyphPair colors = anaglyph.GetColorPair();
+               ImGui::ColorButton("LeftFilter", ImVec4(eyeL.x, eyeL.y, eyeL.z, 1.f), ImGuiColorEditFlags_NoAlpha);
+               ImGui::SameLine();
+               ImGui::ColorButton("RightFilter", ImVec4(eyeR.x, eyeR.y, eyeR.z, 1.f), ImGuiColorEditFlags_NoAlpha);
+               ImGui::SameLine();
+               ImGui::Text(anaglyph.IsReversedColorPair() ? colors == Anaglyph::RED_CYAN ? "Cyan/Red" : colors == Anaglyph::GREEN_MAGENTA ? "Magenta/Green" : "Amber/Blue"
+                                                          : colors == Anaglyph::RED_CYAN ? "Red/Cyan" : colors == Anaglyph::GREEN_MAGENTA ? "Green/Magenta" : "Blue/Amber");
+               ImGui::SameLine();
+               ImGui::Text("Gamma %3.2f", anaglyph.GetDisplayGamma());
+               if (ImGui::Button("Calibrate Glasses"))
+                  popup_anaglyph_calibration = true;
+               ImGui::SameLine();
+               if (ImGui::Button("Reset to default"))
+               {
+                  DeleteValue(regKey[RegName::Player], prefKey + "Name"s);
+                  DeleteValue(regKey[RegName::Player], prefKey + "LeftRed"s);
+                  DeleteValue(regKey[RegName::Player], prefKey + "LeftGreen"s);
+                  DeleteValue(regKey[RegName::Player], prefKey + "LeftBlue"s);
+                  DeleteValue(regKey[RegName::Player], prefKey + "RightRed"s);
+                  DeleteValue(regKey[RegName::Player], prefKey + "RightGreen"s);
+                  DeleteValue(regKey[RegName::Player], prefKey + "RightBlue"s);
+               }
             }
             if (modeChanged)
             {
@@ -2108,7 +2072,7 @@ void LiveUI::UpdateAnaglyphCalibrationModal()
    ImGui::PushStyleColor(ImGuiCol_PopupBg, ImVec4(0.f, 0.f, 0.f, backgroundOpacity));
    if (ImGui::BeginPopupModal(ID_ANAGLYPH_CALIBRATION, nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiNextWindowDataFlags_HasBgAlpha))
    {
-      bool anaglyphFittingInProgress = !m_player->UpdateStereoShaderState(false);
+      m_player->UpdateStereoShaderState();
       const string prefKey = "Anaglyph"s.append(std::to_string(glassesIndex + 1));
       static int calibrationStep = -1;
       static float calibrationBrightness = 0.5f;
@@ -2117,7 +2081,7 @@ void LiveUI::UpdateAnaglyphCalibrationModal()
       if (calibrationStep == -1)
       {
          calibrationStep = 0; 
-         calibrationBrightness = LoadValueWithDefault(regKey[RegName::Player], prefKey + fields[calibrationStep], defaultAnaglyphColors[glassesIndex * 2 - 2].x);
+         calibrationBrightness = LoadValueWithDefault(regKey[RegName::Player], prefKey + fields[calibrationStep], 0.f);
       }
       if (ImGui::IsKeyPressed(ImGuiKey::ImGuiKey_LeftCtrl))
       {
@@ -2133,9 +2097,7 @@ void LiveUI::UpdateAnaglyphCalibrationModal()
          else
          {
             calibrationStep--;
-            vec3 defColor = defaultAnaglyphColors[glassesIndex * 2 + (calibrationStep > 2 ? 1 : 0)];
-            float defChannel = (calibrationStep % 3) == 0 ? defColor.x : (calibrationStep % 3) == 1 ? defColor.y : defColor.z;
-            calibrationBrightness = LoadValueWithDefault(regKey[RegName::Player], prefKey + fields[calibrationStep], defChannel);
+            calibrationBrightness = LoadValueWithDefault(regKey[RegName::Player], prefKey + fields[calibrationStep], 0.f);
          }
       }
       else if (ImGui::IsKeyPressed(ImGuiKey::ImGuiKey_RightCtrl))
@@ -2152,30 +2114,18 @@ void LiveUI::UpdateAnaglyphCalibrationModal()
          else
          {
             calibrationStep++;
-            vec3 defColor = defaultAnaglyphColors[glassesIndex * 2 + (calibrationStep > 2 ? 1 : 0)];
-            float defChannel = (calibrationStep % 3) == 0 ? defColor.x : (calibrationStep % 3) == 1 ? defColor.y : defColor.z;
-            calibrationBrightness = LoadValueWithDefault(regKey[RegName::Player], prefKey + fields[calibrationStep], defChannel);
+            calibrationBrightness = LoadValueWithDefault(regKey[RegName::Player], prefKey + fields[calibrationStep], 0.f);
          }
       }
       else if (ImGui::IsKeyPressed(ImGuiKey::ImGuiKey_LeftShift))
       {
          calibrationBrightness = clamp(calibrationBrightness - 0.01f, 0.f, 1.f);
          SaveValue(regKey[RegName::Player], prefKey + fields[calibrationStep], calibrationBrightness);
-         DeleteValue(regKey[RegName::Player], prefKey + "FittedLeftRed"s);
-         DeleteValue(regKey[RegName::Player], prefKey + "FittedLeftGreen"s);
-         DeleteValue(regKey[RegName::Player], prefKey + "FittedRightRed"s);
-         DeleteValue(regKey[RegName::Player], prefKey + "FittedRightGreen"s);
-         DeleteValue(regKey[RegName::Player], prefKey + "FittedGamma"s);
       }
       else if (ImGui::IsKeyPressed(ImGuiKey::ImGuiKey_RightShift))
       {
          calibrationBrightness = clamp(calibrationBrightness + 0.01f, 0.f, 1.f);
          SaveValue(regKey[RegName::Player], prefKey + fields[calibrationStep], calibrationBrightness);
-         DeleteValue(regKey[RegName::Player], prefKey + "FittedLeftRed"s);
-         DeleteValue(regKey[RegName::Player], prefKey + "FittedLeftGreen"s);
-         DeleteValue(regKey[RegName::Player], prefKey + "FittedRightRed"s);
-         DeleteValue(regKey[RegName::Player], prefKey + "FittedRightGreen"s);
-         DeleteValue(regKey[RegName::Player], prefKey + "FittedGamma"s);
       }
 
       ImGui::PushFont(m_overlayFont);
