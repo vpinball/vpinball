@@ -358,6 +358,9 @@
     <ClCompile Include="ViewSetup.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
+    <ClCompile Include="src\renderer\Anaglyph.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc">
@@ -1674,6 +1677,9 @@
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="RenderPass.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\renderer\Anaglyph.h">
       <Filter>headers</Filter>
     </ClInclude>
   </ItemGroup>

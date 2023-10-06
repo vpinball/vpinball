@@ -2178,7 +2178,7 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
                }
                SaveValue(regKey[RegName::Player], "Stereo3DEnabled"s, g_pplayer->m_stereo3Denabled);
                g_pplayer->m_pin3d.InitLayout();
-               g_pplayer->UpdateStereoShaderState(true);
+               g_pplayer->UpdateStereoShaderState();
             }
          }
          else if (input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eDBGBalls])

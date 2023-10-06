@@ -590,7 +590,7 @@ public:
    StereoMode m_stereo3D;
    bool m_stereo3DfakeStereo;
    bool m_stereo3Denabled;
-   bool UpdateStereoShaderState(const bool fitRequired);
+   void UpdateStereoShaderState();
 
    VRPreviewMode m_vrPreview;
 
