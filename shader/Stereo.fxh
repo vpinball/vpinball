@@ -102,7 +102,7 @@ UNIFORM float4 Stereo_RightLuminance_DynDesat;
     ) + dot(float3(0.299, 0.587, 0.114), color) * (1.0 - c);
 }*/
 
-// lCol/rCol are expected to be in sRGB color space
+// lCol/rCol are expected to be in linear color space
 void DynamicDesatAnaglyph(const float3 lCol, const float3 rCol, out float3 lDesatCol, out float3 rDesatCol)
 {
     const float left2LeftLum = dot(lCol, Stereo_LeftLuminance_Gamma.xyz);
@@ -111,10 +111,8 @@ void DynamicDesatAnaglyph(const float3 lCol, const float3 rCol, out float3 lDesa
     const float right2RightLum = dot(rCol, Stereo_RightLuminance_DynDesat.xyz);
     const float leftLum = left2LeftLum + left2RightLum;
     const float rightLum = right2LeftLum + right2RightLum;
-    const float leftLumRatio = abs((left2LeftLum - left2RightLum) / (leftLum + 0.0001));
-    const float rightLumRatio = abs((right2LeftLum - right2RightLum) / (rightLum + 0.0001));
-    const float leftDesat = Stereo_RightLuminance_DynDesat.w * pow(leftLumRatio, 3.0);
-    const float rightDesat = Stereo_RightLuminance_DynDesat.w * pow(rightLumRatio, 3.0);
+    const float leftDesat = Stereo_RightLuminance_DynDesat.w * abs((left2LeftLum - left2RightLum) / (leftLum + 0.0001));
+    const float rightDesat = Stereo_RightLuminance_DynDesat.w * abs((right2LeftLum - right2RightLum) / (rightLum + 0.0001));
 #ifdef GLSL
     lDesatCol = lerp(lCol, float3(leftLum), leftDesat);
     rDesatCol = lerp(rCol, float3(rightLum), rightDesat);
