@@ -2,7 +2,7 @@
 
 #ifdef ENABLE_SDL
 #ifndef __OPENGLES__
- #include <glad/glad.h>
+ #include <glad/gl.h>
 #else
  #include <glad/gles2.h>
 #endif
