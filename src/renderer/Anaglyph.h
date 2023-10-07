@@ -23,18 +23,20 @@ public:
 
    void LoadSetupFromRegistry(const int set);
    void SetLuminanceCalibration(const vec3& leftLum, const vec3& rightLum);
+   void SetPhotoCalibration(const Matrix3& display, const Matrix3& leftFilter, const Matrix3& rightFilter);
    void SetupShader(Shader* shader);
 
    float GetDisplayGamma() const { return m_displayGamma; }
    AnaglyphPair GetColorPair() const { return m_colorPair; }
    bool IsReversedColorPair() const { return m_reversedColorPair; }
-   const vec3& GetLeftEyeColor() const { return m_leftEyeColor; }
-   const vec3& GetRightEyeColor() const { return m_rightEyeColor; }
+   const vec3& GetLeftEyeColor(const bool linear) const { return linear ? m_leftEyeColor : Gamma(m_leftEyeColor); }
+   const vec3& GetRightEyeColor(const bool linear) const {return linear ? m_rightEyeColor : Gamma(m_rightEyeColor); }
 
 private:
    void Update();
-   vec3 Gamma(const vec3& rgb);
-   vec3 InvGamma(const vec3& rgb);
+   vec3 Gamma(const vec3& rgb) const;
+   vec3 InvGamma(const vec3& rgb) const;
+   vec3 LinearRGBtoXYZ(const vec3& linearRGB) const;
 
 private:
    // User settings
