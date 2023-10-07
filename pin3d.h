@@ -1,8 +1,8 @@
 #pragma once
 
 #include "gpuprofiler.h"
-#include "RenderDevice.h"
-#include "Texture.h"
+#include "renderer/RenderDevice.h"
+#include "renderer/Texture.h"
 #include "backGlass.h"
 
 class ModelViewProj

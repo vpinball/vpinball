@@ -8,7 +8,7 @@
 #include "miniz/miniz.h"
 #include "progmesh.h"
 #include "ThreadPool.h"
-#include "Shader.h"
+#include "renderer/Shader.h"
 
 ThreadPool *g_pPrimitiveDecompressThreadPool = nullptr;
 

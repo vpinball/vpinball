@@ -16,7 +16,7 @@
 #include <sstream>
 #include <filesystem>
 #include "../meshes/ballMesh.h"
-#include "Shader.h"
+#include "renderer/Shader.h"
 #include "renderer/Anaglyph.h"
 #include "typedefs3D.h"
 #include "captureExt.h"

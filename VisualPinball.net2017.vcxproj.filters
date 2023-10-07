@@ -58,7 +58,7 @@
     <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="src/parts/surface.cpp" />
     <ClCompile Include="src/parts/textbox.cpp" />
-    <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="src/renderer/Texture.cpp" />
     <ClCompile Include="src/parts/timer.cpp" />
     <ClCompile Include="src/parts/trigger.cpp" />
     <ClCompile Include="variant.cpp" />
@@ -316,46 +316,46 @@
     <ClCompile Include="imgui\ImGuizmo.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
-    <ClCompile Include="RenderCommand.cpp">
+    <ClCompile Include="src/renderer/RenderCommand.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
-    <ClCompile Include="RenderDevice.cpp">
+    <ClCompile Include="src/renderer/RenderDevice.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
-    <ClCompile Include="RenderFrame.cpp">
+    <ClCompile Include="src/renderer/RenderFrame.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
-    <ClCompile Include="RenderPass.cpp">
+    <ClCompile Include="src/renderer/RenderPass.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
-    <ClCompile Include="RenderProbe.cpp">
+    <ClCompile Include="src/renderer/RenderProbe.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
-    <ClCompile Include="RenderState.cpp">
+    <ClCompile Include="src/renderer/RenderState.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
-    <ClCompile Include="RenderTarget.cpp">
+    <ClCompile Include="src/renderer/RenderTarget.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
-    <ClCompile Include="IndexBuffer.cpp">
+    <ClCompile Include="src/renderer/IndexBuffer.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
-    <ClCompile Include="MeshBuffer.cpp">
+    <ClCompile Include="src/renderer/MeshBuffer.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
-    <ClCompile Include="TextureManager.cpp">
+    <ClCompile Include="src/renderer/TextureManager.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
-    <ClCompile Include="Sampler.cpp">
+    <ClCompile Include="src/renderer/Sampler.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
-    <ClCompile Include="Shader.cpp">
+    <ClCompile Include="src/renderer/Shader.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
-    <ClCompile Include="VertexBuffer.cpp">
+    <ClCompile Include="src/renderer/VertexBuffer.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
-    <ClCompile Include="ViewSetup.cpp">
+    <ClCompile Include="src/renderer/ViewSetup.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\renderer\Anaglyph.cpp">
@@ -688,16 +688,16 @@
     <None Include="res\wall.cur">
       <Filter>res</Filter>
     </None>
-    <None Include="shader\FXAAStereoAO.fxh">
+    <None Include="src/renderer/Shader\FXAAStereoAO.fxh">
       <Filter>shaders</Filter>
     </None>
-    <None Include="shader\Helpers.fxh">
+    <None Include="src/renderer/Shader\Helpers.fxh">
       <Filter>shaders</Filter>
     </None>
-    <None Include="shader\Material.fxh">
+    <None Include="src/renderer/Shader\Material.fxh">
       <Filter>shaders</Filter>
     </None>
-    <None Include="shader\SSR.fxh">
+    <None Include="src/renderer/Shader\SSR.fxh">
       <Filter>shaders</Filter>
     </None>
     <None Include="res\blankTable.vpx">
@@ -718,55 +718,55 @@
     <None Include="res\lightSeqTable.vpx">
       <Filter>res</Filter>
     </None>
-    <None Include="shader\BasicShader.glfx">
+    <None Include="src/renderer/Shader\BasicShader.glfx">
       <Filter>shaders</Filter>
     </None>
-    <None Include="shader\BallShader.glfx">
+    <None Include="src/renderer/Shader\BallShader.glfx">
       <Filter>shaders</Filter>
     </None>
-    <None Include="shader\BallShadows.fxh">
+    <None Include="src/renderer/Shader\BallShadows.fxh">
       <Filter>shaders</Filter>
     </None>
-    <None Include="shader\ClassicLightShader.glfx">
+    <None Include="src/renderer/Shader\ClassicLightShader.glfx">
       <Filter>shaders</Filter>
     </None>
-    <None Include="shader\DMDShader.glfx">
+    <None Include="src/renderer/Shader\DMDShader.glfx">
       <Filter>shaders</Filter>
     </None>
-    <None Include="shader\DMDShaderVR.glfx">
+    <None Include="src/renderer/Shader\DMDShaderVR.glfx">
       <Filter>shaders</Filter>
     </None>
-    <None Include="shader\FBShader.glfx">
+    <None Include="src/renderer/Shader\FBShader.glfx">
       <Filter>shaders</Filter>
     </None>
-    <None Include="shader\FlasherShader.glfx">
+    <None Include="src/renderer/Shader\FlasherShader.glfx">
       <Filter>shaders</Filter>
     </None>
-    <None Include="shader\FXAAStereoAO_GL.fxh">
+    <None Include="src/renderer/Shader\FXAAStereoAO_GL.fxh">
       <Filter>shaders</Filter>
     </None>
-    <None Include="shader\StereoShader.glfx">
+    <None Include="src/renderer/Shader\StereoShader.glfx">
       <Filter>shaders</Filter>
     </None>
-    <None Include="shader\SSR_GL.fxh">
+    <None Include="src/renderer/Shader\SSR_GL.fxh">
       <Filter>shaders</Filter>
     </None>
-    <None Include="shader\Material_GL.fxh">
+    <None Include="src/renderer/Shader\Material_GL.fxh">
       <Filter>shaders</Filter>
     </None>
-    <None Include="shader\LightShader.glfx">
+    <None Include="src/renderer/Shader\LightShader.glfx">
       <Filter>shaders</Filter>
     </None>
-    <None Include="shader\SMAA.glfx">
+    <None Include="src/renderer/Shader\SMAA.glfx">
       <Filter>shaders</Filter>
     </None>
-    <None Include="shader\SMAA.fxh">
+    <None Include="src/renderer/Shader\SMAA.fxh">
       <Filter>shaders</Filter>
     </None>
     <None Include="res\Default VPinballX.ini">
       <Filter>res</Filter>
     </None>
-    <None Include="shader\Stereo.fxh">
+    <None Include="src/renderer/Shader\Stereo.fxh">
       <Filter>shaders</Filter>
     </None>
   </ItemGroup>
@@ -780,7 +780,7 @@
     <Filter Include="res">
       <UniqueIdentifier>{2553b092-dac2-4b2a-9c0c-35d589c67b37}</UniqueIdentifier>
     </Filter>
-    <Filter Include="shaders">
+    <Filter Include="src/renderer/Shaders">
       <UniqueIdentifier>{67a3c1e1-f7b5-45a4-ba1a-453f61d1e6d9}</UniqueIdentifier>
     </Filter>
     <Filter Include="meshes">
@@ -1001,10 +1001,10 @@
     <ClInclude Include="regutil.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="RenderDevice.h">
+    <ClInclude Include="src/renderer/RenderDevice.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="RenderState.h">
+    <ClInclude Include="src/renderer/RenderState.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
@@ -1031,7 +1031,7 @@
     <ClInclude Include="src/parts/textbox.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="Texture.h">
+    <ClInclude Include="src/renderer/Texture.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="src/parts/timer.h">
@@ -1598,28 +1598,28 @@
     <ClInclude Include="third-party\include\serial.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="IndexBuffer.h">
+    <ClInclude Include="src/renderer/IndexBuffer.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="MeshBuffer.h">
+    <ClInclude Include="src/renderer/MeshBuffer.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="Shader.h">
+    <ClInclude Include="src/renderer/Shader.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="VertexBuffer.h">
+    <ClInclude Include="src/renderer/VertexBuffer.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="ViewSetup.h">
+    <ClInclude Include="src/renderer/ViewSetup.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="TextureManager.h">
+    <ClInclude Include="src/renderer/TextureManager.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="RenderTarget.h">
+    <ClInclude Include="src/renderer/RenderTarget.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="Sampler.h">
+    <ClInclude Include="src/renderer/Sampler.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="backGlass.h">
@@ -1640,7 +1640,7 @@
     <ClInclude Include="dialogs\VROptionsDialog.h">
       <Filter>dialogs</Filter>
     </ClInclude>
-    <ClInclude Include="RenderProbe.h">
+    <ClInclude Include="src/renderer/RenderProbe.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="dialogs\RenderProbeDialog.h">
@@ -1670,13 +1670,13 @@
     <ClInclude Include="imgui\ImGuizmo.h">
       <Filter>imgui</Filter>
     </ClInclude>
-    <ClInclude Include="RenderCommand.h">
+    <ClInclude Include="src/renderer/RenderCommand.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="RenderFrame.h">
+    <ClInclude Include="src/renderer/RenderFrame.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="RenderPass.h">
+    <ClInclude Include="src/renderer/RenderPass.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="src\renderer\Anaglyph.h">
@@ -1684,28 +1684,28 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="shader\BallShader.hlsl">
+    <FxCompile Include="Shader\BallShader.hlsl">
       <Filter>shaders</Filter>
     </FxCompile>
-    <FxCompile Include="shader\BasicShader.hlsl">
+    <FxCompile Include="Shader\BasicShader.hlsl">
       <Filter>shaders</Filter>
     </FxCompile>
-    <FxCompile Include="shader\DMDShader.hlsl">
+    <FxCompile Include="Shader\DMDShader.hlsl">
       <Filter>shaders</Filter>
     </FxCompile>
-    <FxCompile Include="shader\FBShader.hlsl">
+    <FxCompile Include="Shader\FBShader.hlsl">
       <Filter>shaders</Filter>
     </FxCompile>
-    <FxCompile Include="shader\FlasherShader.hlsl">
+    <FxCompile Include="Shader\FlasherShader.hlsl">
       <Filter>shaders</Filter>
     </FxCompile>
-    <FxCompile Include="shader\LightShader.hlsl">
+    <FxCompile Include="Shader\LightShader.hlsl">
       <Filter>shaders</Filter>
     </FxCompile>
-    <FxCompile Include="shader\ClassicLightShader.hlsl">
+    <FxCompile Include="Shader\ClassicLightShader.hlsl">
       <Filter>shaders</Filter>
     </FxCompile>
-    <FxCompile Include="shader\StereoShader.hlsl">
+    <FxCompile Include="Shader\StereoShader.hlsl">
       <Filter>shaders</Filter>
     </FxCompile>
   </ItemGroup>

@@ -856,17 +856,17 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="third-party\include\progmesh.cpp" />
     <ClCompile Include="third-party\include\serial.cpp" />
     <ClCompile Include="third-party\include\tinyxml2\tinyxml2.cpp" />
-    <ClCompile Include="IndexBuffer.cpp" />
-    <ClCompile Include="MeshBuffer.cpp" />
+    <ClCompile Include="src/renderer/IndexBuffer.cpp" />
+    <ClCompile Include="src/renderer/MeshBuffer.cpp" />
     <ClCompile Include="LiveUI.cpp" />
     <ClCompile Include="math\math.cpp" />
     <ClCompile Include="MemoryStatus.cpp" />
-    <ClCompile Include="RenderCommand.cpp" />
-    <ClCompile Include="RenderFrame.cpp" />
-    <ClCompile Include="RenderPass.cpp" />
-    <ClCompile Include="RenderProbe.cpp" />
-    <ClCompile Include="RenderState.cpp" />
-    <ClCompile Include="RenderTarget.cpp" />
+    <ClCompile Include="src/renderer/RenderCommand.cpp" />
+    <ClCompile Include="src/renderer/RenderFrame.cpp" />
+    <ClCompile Include="src/renderer/RenderPass.cpp" />
+    <ClCompile Include="src/renderer/RenderProbe.cpp" />
+    <ClCompile Include="src/renderer/RenderState.cpp" />
+    <ClCompile Include="src/renderer/RenderTarget.cpp" />
     <ClCompile Include="src/parts/rubber.cpp" />
     <ClCompile Include="hash.cpp" />
     <ClCompile Include="kdtree.cpp" />
@@ -917,9 +917,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="quadtree.cpp" />
     <ClCompile Include="src/parts/ramp.cpp" />
     <ClCompile Include="regutil.cpp" />
-    <ClCompile Include="RenderDevice.cpp" />
-    <ClCompile Include="Sampler.cpp" />
-    <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="src/renderer/RenderDevice.cpp" />
+    <ClCompile Include="src/renderer/Sampler.cpp" />
+    <ClCompile Include="src/renderer/Shader.cpp" />
     <ClCompile Include="slintf.cpp" />
     <ClCompile Include="src/parts/spinner.cpp" />
     <ClCompile Include="StackTrace.cpp" />
@@ -935,14 +935,14 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     </ClCompile>
     <ClCompile Include="src/parts/surface.cpp" />
     <ClCompile Include="src/parts/textbox.cpp" />
-    <ClCompile Include="Texture.cpp" />
-    <ClCompile Include="TextureManager.cpp" />
+    <ClCompile Include="src/renderer/Texture.cpp" />
+    <ClCompile Include="src/renderer/TextureManager.cpp" />
     <ClCompile Include="src/parts/timer.cpp" />
     <ClCompile Include="src/parts/trigger.cpp" />
     <ClCompile Include="variant.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="VertexBuffer.cpp" />
-    <ClCompile Include="ViewSetup.cpp" />
+    <ClCompile Include="src/renderer/VertexBuffer.cpp" />
+    <ClCompile Include="src/renderer/ViewSetup.cpp" />
     <ClCompile Include="vpinball.cpp" />
     <ClCompile Include="media\wavread.cpp" />
     <ClCompile Include="wintimer.cpp" />
@@ -1006,22 +1006,22 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
   </ItemGroup>
   <ItemGroup>
     <None Include="res\Default VPinballX.ini" />
-    <None Include="shader\SMAA.fxh" />
-    <None Include="shader\BallShader.glfx" />
-    <None Include="shader\BallShadows.fxh" />
-    <None Include="shader\BasicShader.glfx" />
-    <None Include="shader\ClassicLightShader.glfx" />
-    <None Include="shader\DMDShader.glfx" />
-    <None Include="shader\DMDShaderVR.glfx" />
-    <None Include="shader\FBShader.glfx" />
-    <None Include="shader\FlasherShader.glfx" />
-    <None Include="shader\FXAAStereoAO_GL.fxh" />
-    <None Include="shader\LightShader.glfx" />
-    <None Include="shader\Material_GL.fxh" />
-    <None Include="shader\SMAA.glfx" />
-    <None Include="shader\SSR_GL.fxh" />
-    <None Include="shader\Stereo.fxh" />
-    <None Include="shader\StereoShader.glfx" />
+    <None Include="src/renderer/Shader\SMAA.fxh" />
+    <None Include="src/renderer/Shader\BallShader.glfx" />
+    <None Include="src/renderer/Shader\BallShadows.fxh" />
+    <None Include="src/renderer/Shader\BasicShader.glfx" />
+    <None Include="src/renderer/Shader\ClassicLightShader.glfx" />
+    <None Include="src/renderer/Shader\DMDShader.glfx" />
+    <None Include="src/renderer/Shader\DMDShaderVR.glfx" />
+    <None Include="src/renderer/Shader\FBShader.glfx" />
+    <None Include="src/renderer/Shader\FlasherShader.glfx" />
+    <None Include="src/renderer/Shader\FXAAStereoAO_GL.fxh" />
+    <None Include="src/renderer/Shader\LightShader.glfx" />
+    <None Include="src/renderer/Shader\Material_GL.fxh" />
+    <None Include="src/renderer/Shader\SMAA.glfx" />
+    <None Include="src/renderer/Shader\SSR_GL.fxh" />
+    <None Include="src/renderer/Shader\Stereo.fxh" />
+    <None Include="src/renderer/Shader\StereoShader.glfx" />
     <None Include="res\ball.rgs" />
     <None Include="res\blankTable.vpx" />
     <None Include="res\bumper.rgs" />
@@ -1070,10 +1070,10 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <None Include="res\trigger.rgs" />
     <None Include="res\vpinball.rgs" />
     <None Include="res\light.cur" />
-    <None Include="shader\FXAAStereoAO.fxh" />
-    <None Include="shader\Helpers.fxh" />
-    <None Include="shader\Material.fxh" />
-    <None Include="shader\SSR.fxh" />
+    <None Include="src/renderer/Shader\FXAAStereoAO.fxh" />
+    <None Include="src/renderer/Shader\Helpers.fxh" />
+    <None Include="src/renderer/Shader\Material.fxh" />
+    <None Include="src/renderer/Shader\SSR.fxh" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\add.ico" />
@@ -1329,8 +1329,8 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="third-party\include\win32xx\include\wxx_webbrowser.h" />
     <ClInclude Include="third-party\include\win32xx\include\wxx_wincore.h" />
     <ClInclude Include="third-party\include\win32xx\include\wxx_wincore0.h" />
-    <ClInclude Include="IndexBuffer.h" />
-    <ClInclude Include="MeshBuffer.h" />
+    <ClInclude Include="src/renderer/IndexBuffer.h" />
+    <ClInclude Include="src/renderer/MeshBuffer.h" />
     <ClInclude Include="iselect.h" />
     <ClInclude Include="kdtree.h" />
     <ClInclude Include="src/parts/kicker.h" />
@@ -1404,17 +1404,17 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="quadtree.h" />
     <ClInclude Include="src/parts/ramp.h" />
     <ClInclude Include="regutil.h" />
-    <ClInclude Include="RenderCommand.h" />
-    <ClInclude Include="RenderDevice.h" />
-    <ClInclude Include="RenderFrame.h" />
-    <ClInclude Include="RenderPass.h" />
-    <ClInclude Include="RenderProbe.h" />
-    <ClInclude Include="RenderState.h" />
-    <ClInclude Include="RenderTarget.h" />
+    <ClInclude Include="src/renderer/RenderCommand.h" />
+    <ClInclude Include="src/renderer/RenderDevice.h" />
+    <ClInclude Include="src/renderer/RenderFrame.h" />
+    <ClInclude Include="src/renderer/RenderPass.h" />
+    <ClInclude Include="src/renderer/RenderProbe.h" />
+    <ClInclude Include="src/renderer/RenderState.h" />
+    <ClInclude Include="src/renderer/RenderTarget.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="src/parts/rubber.h" />
-    <ClInclude Include="Sampler.h" />
-    <ClInclude Include="Shader.h" />
+    <ClInclude Include="src/renderer/Sampler.h" />
+    <ClInclude Include="src/renderer/Shader.h" />
     <ClInclude Include="slintf.h" />
     <ClInclude Include="src/parts/spinner.h" />
     <ClInclude Include="StackTrace.h" />
@@ -1422,16 +1422,16 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="sur.h" />
     <ClInclude Include="src/parts/surface.h" />
     <ClInclude Include="src/parts/textbox.h" />
-    <ClInclude Include="Texture.h" />
-    <ClInclude Include="TextureManager.h" />
+    <ClInclude Include="src/renderer/Texture.h" />
+    <ClInclude Include="src/renderer/TextureManager.h" />
     <ClInclude Include="src/parts/timer.h" />
     <ClInclude Include="trace.h" />
     <ClInclude Include="src/parts/trigger.h" />
     <ClInclude Include="variant.h" />
     <ClInclude Include="vector.h" />
     <ClInclude Include="vectorsort.h" />
-    <ClInclude Include="VertexBuffer.h" />
-    <ClInclude Include="ViewSetup.h" />
+    <ClInclude Include="src/renderer/VertexBuffer.h" />
+    <ClInclude Include="src/renderer/ViewSetup.h" />
     <ClInclude Include="vpinball_h.h" />
     <ClInclude Include="vpinball.h" />
     <ClInclude Include="vpversion.h" />
@@ -1440,7 +1440,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="audioplayer.h" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="shader\BallShader.hlsl">
+    <FxCompile Include="Shader\BallShader.hlsl">
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">ballShaderCode</EntryPointName>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release_GL|Win32'">ballShaderCode</EntryPointName>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Effect</ShaderType>
@@ -1494,7 +1494,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_GL|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_GL|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="shader\BasicShader.hlsl">
+    <FxCompile Include="Shader\BasicShader.hlsl">
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">shader\%(Filename).h</HeaderFileOutput>
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release_GL|Win32'">shader\%(Filename).h</HeaderFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -1548,7 +1548,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_GL|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_GL|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="shader\DMDShader.hlsl">
+    <FxCompile Include="Shader\DMDShader.hlsl">
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">shader\%(Filename).h</HeaderFileOutput>
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release_GL|Win32'">shader\%(Filename).h</HeaderFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -1602,7 +1602,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_GL|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_GL|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="shader\FBShader.hlsl">
+    <FxCompile Include="Shader\FBShader.hlsl">
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">shader\%(Filename).h</HeaderFileOutput>
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release_GL|Win32'">shader\%(Filename).h</HeaderFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -1656,7 +1656,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_GL|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_GL|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="shader\FlasherShader.hlsl">
+    <FxCompile Include="Shader\FlasherShader.hlsl">
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">shader\%(Filename).h</HeaderFileOutput>
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release_GL|Win32'">shader\%(Filename).h</HeaderFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -1710,7 +1710,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_GL|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_GL|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="shader\LightShader.hlsl">
+    <FxCompile Include="Shader\LightShader.hlsl">
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">shader\%(Filename).h</HeaderFileOutput>
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release_GL|Win32'">shader\%(Filename).h</HeaderFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -1764,7 +1764,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_GL|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_GL|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="shader\StereoShader.hlsl">
+    <FxCompile Include="Shader\StereoShader.hlsl">
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">shader\%(Filename).h</HeaderFileOutput>
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release_GL|Win32'">shader\%(Filename).h</HeaderFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -1818,7 +1818,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_GL|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_GL|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="shader\ClassicLightShader.hlsl">
+    <FxCompile Include="Shader\ClassicLightShader.hlsl">
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">shader\%(Filename).h</HeaderFileOutput>
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release_GL|Win32'">shader\%(Filename).h</HeaderFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -1897,7 +1897,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     </ContentWithTargetPath>
   </ItemGroup>
   <ItemGroup>
-    <ContentWithTargetPath Include="shader\**">
+    <ContentWithTargetPath Include="src/renderer/Shader\**">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <TargetPath>shader\%(RecursiveDir)\%(Filename)%(Extension)</TargetPath>
     </ContentWithTargetPath>

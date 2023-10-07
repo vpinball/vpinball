@@ -2,7 +2,7 @@
 
 #include "LiveUI.h"
 
-#include "Shader.h"
+#include "renderer/Shader.h"
 #include "renderer/Anaglyph.h"
 
 #include "fonts/DroidSans.h"

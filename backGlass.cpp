@@ -1,8 +1,8 @@
 #include "stdafx.h"
 
 #include "backGlass.h"
-#include "RenderDevice.h"
-#include "Shader.h"
+#include "renderer/RenderDevice.h"
+#include "renderer/Shader.h"
 #include "captureExt.h"
 #include "backGlass.h"
 #ifdef ENABLE_VR
