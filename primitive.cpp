@@ -5,7 +5,7 @@
 #include "stdafx.h" 
 #include "forsyth.h"
 #include "objloader.h"
-#include "miniz.c"
+#include "miniz/miniz.h"
 #include "progmesh.h"
 #include "ThreadPool.h"
 #include "Shader.h"

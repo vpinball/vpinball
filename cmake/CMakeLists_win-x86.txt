@@ -38,6 +38,10 @@ add_compile_options(
 )
 
 set_source_files_properties(
+   third-party/include/miniz/miniz.c PROPERTIES LANGUAGE CXX
+)
+
+set_source_files_properties(
    vpinball.rc LANGUAGE RC
 )
 
@@ -282,6 +286,8 @@ add_executable(vpinball WIN32
    third-party/include/ThreadPool.h
    third-party/include/tinyxml2/tinyxml2.cpp
    third-party/include/tinyxml2/tinyxml2.h
+   third-party/include/miniz/miniz.c
+   third-party/include/miniz/miniz.h
    third-party/include/win32xx/include/wxx_appcore.h
    third-party/include/win32xx/include/wxx_appcore0.h
    third-party/include/win32xx/include/wxx_archive.h

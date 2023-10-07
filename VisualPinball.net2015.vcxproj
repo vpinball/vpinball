@@ -215,7 +215,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>.\;$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include;dialogs;src;shader;third-party\include;pin;media;third-party\include\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include;dialogs;src;shader;third-party\include;third-party\include\glad\include;pin;media;third-party\include\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>ENABLE_INI_SETTINGS;COR_ENABLE_PROFILING;WIN32;_DEBUG;_WINDOWS;MYDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -277,7 +277,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>.\;$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include;dialogs;src;shader;third-party\include;pin;media;third-party\include\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include;dialogs;src;shader;third-party\include;third-party\include\glad\include;pin;media;third-party\include\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>ENABLE_INI_SETTINGS;ENABLE_SDL_INPUT;ENABLE_SDL;COR_ENABLE_PROFILING;WIN32;_DEBUG;_WINDOWS;MYDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -344,7 +344,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>.\;$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include;dialogs;src;shader;third-party\include;pin;media;third-party\include\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include;dialogs;src;shader;third-party\include;third-party\include\glad\include;pin;media;third-party\include\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>ENABLE_INI_SETTINGS;COR_ENABLE_PROFILING;WIN32;_DEBUG;_WINDOWS;MYDEBUG;DEBUGPHYSICS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -403,7 +403,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>.\;$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include;dialogs;src;shader;third-party\include;pin;media;third-party\include\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include;dialogs;src;shader;third-party\include;third-party\include\glad\include;pin;media;third-party\include\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>ENABLE_INI_SETTINGS;ENABLE_SDL_INPUT;ENABLE_SDL;COR_ENABLE_PROFILING;WIN32;_DEBUG;_WINDOWS;MYDEBUG;DEBUGPHYSICS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -465,7 +465,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>.\;$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include;dialogs;src;shader;third-party\include;pin;media;third-party\include\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include;dialogs;src;shader;third-party\include;third-party\include\glad\include;pin;media;third-party\include\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>ENABLE_INI_SETTINGS;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -527,7 +527,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>.\;$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include;dialogs;src;shader;third-party\include;pin;media;third-party\include\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include;dialogs;src;shader;third-party\include;third-party\include\glad\include;pin;media;third-party\include\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>ENABLE_INI_SETTINGS;ENABLE_SDL_INPUT;ENABLE_SDL;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -598,7 +598,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>.\;$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include;dialogs;src;shader;third-party\include;pin;media;third-party\include\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include;dialogs;src;shader;third-party\include;third-party\include\glad\include;pin;media;third-party\include\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>ENABLE_INI_SETTINGS;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -667,7 +667,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>.\;$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include;dialogs;src;shader;third-party\include;pin;media;third-party\include\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include;dialogs;src;shader;third-party\include;third-party\include\glad\include;pin;media;third-party\include\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>ENABLE_INI_SETTINGS;ENABLE_SDL_INPUT;ENABLE_SDL;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -799,7 +799,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="imgui\ImGuizmo.cpp" />
     <ClCompile Include="imgui\imgui_stdlib.cpp" />
     <ClCompile Include="third-party\include\BAM\BAMView.cpp" />
-    <ClCompile Include="third-party\include\glad\glad.c">
+    <ClCompile Include="third-party\include\glad\src\gl.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
@@ -827,8 +827,15 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="imgui\implot\implot.cpp" />
     <ClCompile Include="imgui\implot\implot_items.cpp" />
     <ClCompile Include="third-party\include\gpuprofiler.cpp" />
-    <ClCompile Include="third-party\include\miniz.c">
-      <ExcludedFromBuild>true</ExcludedFromBuild>
+    <ClCompile Include="third-party\include\miniz\miniz.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release_GL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug_GL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release_GL|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug_GL|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="third-party\include\progmesh.cpp" />
     <ClCompile Include="third-party\include\serial.cpp" />
@@ -1233,7 +1240,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="third-party\include\bass.h" />
     <ClInclude Include="third-party\include\forsyth.h" />
     <ClInclude Include="third-party\include\freeimage.h" />
-    <ClInclude Include="third-party\include\glad\glad.h" />
+    <ClInclude Include="third-party\include\glad\include\glad\gl.h" />
     <ClInclude Include="third-party\include\gpuprofiler.h" />
     <ClInclude Include="third-party\include\hidpi.h" />
     <ClInclude Include="third-party\include\hidsdi.h" />

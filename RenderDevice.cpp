@@ -583,12 +583,11 @@ void RenderDevice::CreateDevice(int& refreshrate, VideoSyncMode& syncMode, UINT 
    SDL_GL_MakeCurrent(m_sdl_playfieldHwnd, m_sdl_context);
 
 #ifndef __OPENGLES__
-   if (!gladLoadGLLoader(SDL_GL_GetProcAddress))
-   {
+   if (!gladLoadGL((GLADloadfunc)SDL_GL_GetProcAddress))
 #else
    if (!gladLoadGLES2((GLADloadfunc)SDL_GL_GetProcAddress))
-   {
 #endif
+   {
       ShowError("Glad failed");
       exit(-1);
    }
