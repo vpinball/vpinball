@@ -1,39 +1,39 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="flasher.cpp" />
-    <ClCompile Include="rubber.cpp" />
+    <ClCompile Include="src/parts/flasher.cpp" />
+    <ClCompile Include="src/parts/rubber.cpp" />
     <ClCompile Include="hash.cpp" />
     <ClCompile Include="kdtree.cpp" />
     <ClCompile Include="math\matrix.cpp" />
     <ClCompile Include="objloader.cpp" />
     <ClCompile Include="Pin\ball.cpp" />
     <ClCompile Include="ballex.cpp" />
-    <ClCompile Include="bumper.cpp" />
+    <ClCompile Include="src/parts/bumper.cpp" />
     <ClCompile Include="codeview.cpp" />
     <ClCompile Include="Pin\collide.cpp" />
     <ClCompile Include="Pin\collideex.cpp" />
-    <ClCompile Include="decal.cpp" />
+    <ClCompile Include="src/parts/decal.cpp" />
     <ClCompile Include="def.cpp" />
-    <ClCompile Include="dispreel.cpp" />
+    <ClCompile Include="src/parts/dispreel.cpp" />
     <ClCompile Include="disputil.cpp" />
     <ClCompile Include="dragpoint.cpp" />
     <ClCompile Include="eventproxy.cpp" />
     <ClCompile Include="extern.cpp" />
     <ClCompile Include="Media\fileio.cpp" />
-    <ClCompile Include="flipper.cpp" />
-    <ClCompile Include="gate.cpp" />
+    <ClCompile Include="src/parts/flipper.cpp" />
+    <ClCompile Include="src/parts/gate.cpp" />
     <ClCompile Include="hid.cpp" />
     <ClCompile Include="Pin\hitflipper.cpp" />
     <ClCompile Include="Pin\hitplunger.cpp" />
     <ClCompile Include="hitrectsur.cpp" />
     <ClCompile Include="hitsur.cpp" />
-    <ClCompile Include="hittarget.cpp" />
+    <ClCompile Include="src/parts/hittarget.cpp" />
     <ClCompile Include="ieditable.cpp" />
     <ClCompile Include="iselect.cpp" />
-    <ClCompile Include="kicker.cpp" />
-    <ClCompile Include="light.cpp" />
-    <ClCompile Include="lightseq.cpp" />
+    <ClCompile Include="src/parts/kicker.cpp" />
+    <ClCompile Include="src/parts/light.cpp" />
+    <ClCompile Include="src/parts/lightseq.cpp" />
     <ClCompile Include="Media\lzwreader.cpp" />
     <ClCompile Include="Media\lzwwriter.cpp" />
     <ClCompile Include="memutil.cpp" />
@@ -44,23 +44,23 @@
     <ClCompile Include="pinbinary.cpp" />
     <ClCompile Include="pininput.cpp" />
     <ClCompile Include="pinsound.cpp" />
-    <ClCompile Include="pintable.cpp" />
+    <ClCompile Include="src/parts/pintable.cpp" />
     <ClCompile Include="pinundo.cpp" />
     <ClCompile Include="Pin\player.cpp" />
     <ClCompile Include="plumb.cpp" />
-    <ClCompile Include="plunger.cpp" />
-    <ClCompile Include="primitive.cpp" />
+    <ClCompile Include="src/parts/plunger.cpp" />
+    <ClCompile Include="src/parts/primitive.cpp" />
     <ClCompile Include="quadtree.cpp" />
-    <ClCompile Include="ramp.cpp" />
+    <ClCompile Include="src/parts/ramp.cpp" />
     <ClCompile Include="regutil.cpp" />
     <ClCompile Include="slintf.cpp" />
-    <ClCompile Include="spinner.cpp" />
+    <ClCompile Include="src/parts/spinner.cpp" />
     <ClCompile Include="stdafx.cpp" />
-    <ClCompile Include="surface.cpp" />
-    <ClCompile Include="textbox.cpp" />
+    <ClCompile Include="src/parts/surface.cpp" />
+    <ClCompile Include="src/parts/textbox.cpp" />
     <ClCompile Include="Texture.cpp" />
-    <ClCompile Include="timer.cpp" />
-    <ClCompile Include="trigger.cpp" />
+    <ClCompile Include="src/parts/timer.cpp" />
+    <ClCompile Include="src/parts/trigger.cpp" />
     <ClCompile Include="variant.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="vpinball.cpp" />
@@ -863,13 +863,13 @@
     <ClInclude Include="ballex.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="bumper.h">
+    <ClInclude Include="src/parts/bumper.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="codeview.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="decal.h">
+    <ClInclude Include="src/parts/decal.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="def.h">
@@ -878,7 +878,7 @@
     <ClInclude Include="dispid.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="dispreel.h">
+    <ClInclude Include="src/parts/dispreel.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="disputil.h">
@@ -896,13 +896,13 @@
     <ClInclude Include="extern.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="flasher.h">
+    <ClInclude Include="src/parts/flasher.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="flipper.h">
+    <ClInclude Include="src/parts/flipper.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="gate.h">
+    <ClInclude Include="src/parts/gate.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="hash.h">
@@ -920,7 +920,7 @@
     <ClInclude Include="hitsur.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="hittarget.h">
+    <ClInclude Include="src/parts/hittarget.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="idebug.h">
@@ -935,13 +935,13 @@
     <ClInclude Include="kdtree.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="kicker.h">
+    <ClInclude Include="src/parts/kicker.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="light.h">
+    <ClInclude Include="src/parts/light.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="lightseq.h">
+    <ClInclude Include="src/parts/lightseq.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="main.h">
@@ -977,7 +977,7 @@
     <ClInclude Include="pinsound.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="pintable.h">
+    <ClInclude Include="src/parts/pintable.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="pinundo.h">
@@ -986,16 +986,16 @@
     <ClInclude Include="plumb.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="plunger.h">
+    <ClInclude Include="src/parts/plunger.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="primitive.h">
+    <ClInclude Include="src/parts/primitive.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="quadtree.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="ramp.h">
+    <ClInclude Include="src/parts/ramp.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="regutil.h">
@@ -1010,13 +1010,13 @@
     <ClInclude Include="resource.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="rubber.h">
+    <ClInclude Include="src/parts/rubber.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="slintf.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="spinner.h">
+    <ClInclude Include="src/parts/spinner.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="stdafx.h">
@@ -1025,22 +1025,22 @@
     <ClInclude Include="sur.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="surface.h">
+    <ClInclude Include="src/parts/surface.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="textbox.h">
+    <ClInclude Include="src/parts/textbox.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="Texture.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="timer.h">
+    <ClInclude Include="src/parts/timer.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="trace.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="trigger.h">
+    <ClInclude Include="src/parts/trigger.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="variant.h">
