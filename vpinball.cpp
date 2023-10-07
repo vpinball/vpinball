@@ -1436,6 +1436,12 @@ void VPinball::MainMsgLoop()
          if (m_table_played_via_SelectTableOnStart)
             DoPlay(false);
       }
+      else if (m_open_minimized && !g_pplayer)
+      {
+         // If started to play and for whatever reason (end of play, frontend closing the player window, failed loading,...)
+         // we do not have a player, just close back to system.
+         SendMessage(g_pvp->GetHwnd(), WM_COMMAND, ID_FILE_EXIT, NULL);
+      }
       else
       {
          // Otherwise wait for input
@@ -1513,6 +1519,9 @@ void VPinball::OnClose()
 {
    CComObject<PinTable> * const ptable = GetActiveTable();
    m_closing = true;
+
+   while (ShowCursor(FALSE) >= 0);
+   while (ShowCursor(TRUE) < 0);
 
    if (ptable)
       while (ptable->m_savingActive)
