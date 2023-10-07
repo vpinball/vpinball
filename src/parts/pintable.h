@@ -10,8 +10,8 @@
 #include <atomic>
 #include "hash.h"
 #include "SearchSelectDialog.h"
-#include "RenderProbe.h"
-#include "ViewSetup.h"
+#include "renderer/RenderProbe.h"
+#include "renderer/ViewSetup.h"
 
 #define VIEW_PLAYFIELD 1
 #define VIEW_BACKGLASS 2

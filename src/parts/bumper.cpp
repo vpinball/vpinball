@@ -4,9 +4,9 @@
 #include "meshes/bumperRingMesh.h"
 #include "meshes/bumperCapMesh.h"
 #include "meshes/bumperSocketMesh.h"
-#include "Shader.h"
-#include "IndexBuffer.h"
-#include "VertexBuffer.h"
+#include "renderer/Shader.h"
+#include "renderer/IndexBuffer.h"
+#include "renderer/VertexBuffer.h"
 
 Bumper::Bumper()
 {

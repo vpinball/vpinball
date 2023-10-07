@@ -4,7 +4,7 @@
 #pragma once
 
 #include "Material.h"
-#include "Texture.h"
+#include "renderer/Texture.h"
 
 /*
  * Compute coefficients for a cubic polynomial

@@ -196,10 +196,6 @@ add_executable(vpinball WIN32
    dialogs/VideoOptionsDialog.cpp
    dialogs/VideoOptionsDialog.h
 
-   IndexBuffer.cpp
-   IndexBuffer.h
-   MeshBuffer.cpp
-   MeshBuffer.h
    math/bbox.h
    math/math.cpp
    math/math.h
@@ -323,35 +319,13 @@ add_executable(vpinball WIN32
    quadtree.h
    regutil.cpp
    regutil.h
-   RenderDevice.cpp
-   RenderDevice.h
-   RenderCommand.cpp
-   RenderCommand.h
-   RenderFrame.cpp
-   RenderFrame.h
-   RenderPass.cpp
-   RenderPass.h
-   RenderProbe.cpp
-   RenderProbe.h
-   RenderState.cpp
-   RenderState.h
-   RenderTarget.cpp
-   RenderTarget.h
    resource.h
-   Sampler.cpp
-   Sampler.h
-   Shader.cpp
-   Shader.h
    slintf.cpp
    slintf.h
    StackTrace.cpp
    StackTrace.h
    stdafx.cpp
    stdafx.h
-   Texture.cpp
-   Texture.h
-   TextureManager.cpp
-   TextureManager.h
    trace.h
    variant.cpp
    variant.h
@@ -359,10 +333,6 @@ add_executable(vpinball WIN32
    vectorsort.h
    main.cpp
    main.h
-   VertexBuffer.cpp
-   VertexBuffer.h
-   ViewSetup.cpp
-   ViewSetup.h
    vpinball.cpp
    vpinball_h.h
    vpversion.h
@@ -416,6 +386,36 @@ add_executable(vpinball WIN32
 
    src/renderer/Anaglyph.cpp
    src/renderer/Anaglyph.h
+   src/renderer/IndexBuffer.cpp
+   src/renderer/IndexBuffer.h
+   src/renderer/MeshBuffer.cpp
+   src/renderer/MeshBuffer.h
+   src/renderer/RenderDevice.cpp
+   src/renderer/RenderDevice.h
+   src/renderer/RenderCommand.cpp
+   src/renderer/RenderCommand.h
+   src/renderer/RenderFrame.cpp
+   src/renderer/RenderFrame.h
+   src/renderer/RenderPass.cpp
+   src/renderer/RenderPass.h
+   src/renderer/RenderProbe.cpp
+   src/renderer/RenderProbe.h
+   src/renderer/RenderState.cpp
+   src/renderer/RenderState.h
+   src/renderer/RenderTarget.cpp
+   src/renderer/RenderTarget.h
+   src/renderer/Sampler.cpp
+   src/renderer/Sampler.h
+   src/renderer/Shader.cpp
+   src/renderer/Shader.h
+   src/renderer/Texture.cpp
+   src/renderer/Texture.h
+   src/renderer/TextureManager.cpp
+   src/renderer/TextureManager.h
+   src/renderer/VertexBuffer.cpp
+   src/renderer/VertexBuffer.h
+   src/renderer/ViewSetup.cpp
+   src/renderer/ViewSetup.h
 
    vpinball.rc
    vpinball.idl

@@ -8,7 +8,7 @@
 #include "tinyxml2/tinyxml2.h"
 #include <fstream>
 #include <sstream>
-#include "Shader.h"
+#include "renderer/Shader.h"
 #include "captureExt.h"
 #include "freeimage.h"
 #include "ThreadPool.h"

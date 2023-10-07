@@ -1,6 +1,6 @@
 #include "stdafx.h"
-#include "RenderDevice.h"
-#include "Shader.h"
+#include "renderer/RenderDevice.h"
+#include "renderer/Shader.h"
 #include "math/math.h"
 #include "ThreadPool.h"
 #include "BAM/BAMView.h"

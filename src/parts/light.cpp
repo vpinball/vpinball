@@ -1,9 +1,9 @@
 #include "stdafx.h"
 #include "meshes/bulbLightMesh.h"
 #include "meshes/bulbSocketMesh.h"
-#include "Shader.h"
-#include "IndexBuffer.h"
-#include "VertexBuffer.h"
+#include "renderer/Shader.h"
+#include "renderer/IndexBuffer.h"
+#include "renderer/VertexBuffer.h"
 #include "bulb.h"
 
 // Light state can be either a float between 0...1, or 2 for the blinking state.
