@@ -525,9 +525,8 @@ BOOL VideoOptionsDialog::OnInitDialog()
    SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "None");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Dubois");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Deghost");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Luminance");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Dyn. Desat.");
+   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Deghost");
    SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 
    OnCommand(IDC_3D_STEREO, 0L); // Force UI update

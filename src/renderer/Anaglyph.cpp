@@ -39,7 +39,7 @@ void Anaglyph::LoadSetupFromRegistry(const int glassesSet)
    rightLum.x = LoadValueWithDefault(regKey[RegName::Player], prefKey + "RightRed"s, -1.f);
    rightLum.y = LoadValueWithDefault(regKey[RegName::Player], prefKey + "RightGreen"s, -1.f);
    rightLum.z = LoadValueWithDefault(regKey[RegName::Player], prefKey + "RightBlue"s, -1.f);
-   if (leftLum.x < 0 || leftLum.y < 0 || leftLum.z || rightLum.x < 0 || rightLum.y < 0 || rightLum.z < 0)
+   if (leftLum.x < 0 || leftLum.y < 0 || leftLum.z < 0 || rightLum.x < 0 || rightLum.y < 0 || rightLum.z < 0)
       SetLuminanceCalibration(defaultColors[glassesSet * 2], defaultColors[glassesSet * 2 + 1]);
    else
       SetLuminanceCalibration(leftLum, rightLum);
@@ -71,7 +71,7 @@ void Anaglyph::SetupShader(Shader* shader)
       shader->SetTechnique(m_sRGBDisplay ? SHADER_TECHNIQUE_Stereo_sRGBAnaglyph : SHADER_TECHNIQUE_Stereo_GammaAnaglyph);
 }
 
-vec3 Anaglyph::Gamma(const vec3& rgb)
+vec3 Anaglyph::Gamma(const vec3& rgb) const
 {
    #define sRGB(x) ((x <= 0.0031308f) ? (12.92f * x) : (1.055f * powf(x, 1.0f / 2.4f) - 0.055f))
    if (m_sRGBDisplay)
@@ -81,7 +81,7 @@ vec3 Anaglyph::Gamma(const vec3& rgb)
    #undef sRGB
 }
 
-vec3 Anaglyph::InvGamma(const vec3& rgb)
+vec3 Anaglyph::InvGamma(const vec3& rgb) const
 {
    #define InvsRGB(x) ((x <= 0.04045f) ? (x * (1.0f / 12.92f)) : (powf(x * (1.0f / 1.055f) + (0.055f / 1.055f), 2.4f)))
    if (m_sRGBDisplay)
@@ -89,6 +89,15 @@ vec3 Anaglyph::InvGamma(const vec3& rgb)
    else
       return vec3(powf(rgb.x, m_displayGamma), powf(rgb.y, m_displayGamma), powf(rgb.z, m_displayGamma));
    #undef InvsRGB
+}
+
+vec3 Anaglyph::LinearRGBtoXYZ(const vec3& linearRGB) const
+{
+   vec3 xyz;
+   xyz.x = 0.4124564f * linearRGB.x + 0.3575761f * linearRGB.y + 0.1804375f * linearRGB.z;
+   xyz.y = 0.2126729f * linearRGB.x + 0.7151522f * linearRGB.y + 0.0721750f * linearRGB.z;
+   xyz.z = 0.0193339f * linearRGB.x + 0.1191920f * linearRGB.y + 0.9503041f * linearRGB.z;
+   return xyz;
 }
 
 void Anaglyph::SetLuminanceCalibration(const vec3& leftLum, const vec3& rightLum)
@@ -122,34 +131,177 @@ void Anaglyph::SetLuminanceCalibration(const vec3& leftLum, const vec3& rightLum
    // Therefore the following vectors should have x+y+z = 1, this is enforced to account for calibration errors
    m_rgb2Yl = InvGamma(leftLum);
    m_rgb2Yr = InvGamma(rightLum);
-   m_rgb2Yl = m_rgb2Yl / (m_rgb2Yl.x + m_rgb2Yl.y + m_rgb2Yl.z);
-   m_rgb2Yr = m_rgb2Yr / (m_rgb2Yr.x + m_rgb2Yr.y + m_rgb2Yr.z);
 
-   // Evaluate filter tints
-   vec3 eyeL(m_rgb2Yl.x / 0.2126f, m_rgb2Yl.y / 0.7152f, m_rgb2Yl.z / 0.0722f);
-   vec3 eyeR(m_rgb2Yr.x / 0.2126f, m_rgb2Yr.y / 0.7152f, m_rgb2Yr.z / 0.0722f);
-   eyeL = eyeL / max(max(eyeL.x, eyeL.y), eyeL.z);
-   eyeR = eyeR / max(max(eyeR.x, eyeR.y), eyeR.z);
-   m_leftEyeColor = eyeL;
-   m_rightEyeColor = eyeR;
+   Update();
+}
 
-   // Identify the bichromatic eye with its color from the luminance calibration: it is the one with the higher second channel
-   const float leftSecondHigher   = (eyeL.y > eyeL.x && eyeL.x > eyeL.z) ? eyeL.x : (eyeL.y < eyeL.x && eyeL.x < eyeL.z) ? eyeL.x : 
-                                    (eyeL.x > eyeL.y && eyeL.y > eyeL.z) ? eyeL.y : (eyeL.x < eyeL.y && eyeL.y < eyeL.z) ? eyeL.y : 
-                                    (eyeL.x > eyeL.z && eyeL.z > eyeL.y) ? eyeL.z : (eyeL.x < eyeL.z && eyeL.z < eyeL.y) ? eyeL.z : -1.f;
-   const float rightSecondHigher  = (eyeR.y > eyeR.x && eyeR.x > eyeR.z) ? eyeR.x : (eyeR.y < eyeR.x && eyeR.x < eyeR.z) ? eyeR.x : 
-                                    (eyeR.x > eyeR.y && eyeR.y > eyeR.z) ? eyeR.y : (eyeR.x < eyeR.y && eyeR.y < eyeR.z) ? eyeR.y : 
-                                    (eyeR.x > eyeR.z && eyeR.z > eyeR.y) ? eyeR.z : (eyeR.x < eyeR.z && eyeR.z < eyeR.y) ? eyeR.z : -1.f;
-   m_reversedColorPair = leftSecondHigher > rightSecondHigher; // Monochromatic (red/green/blue) is supposed to be on the left eye
-   const vec3 eyeMono = m_reversedColorPair ? eyeR : eyeL;
-   m_colorPair = (eyeMono.x > eyeMono.y && eyeMono.x > eyeMono.z) ? RED_CYAN
-               : (eyeMono.y > eyeMono.x && eyeMono.y > eyeMono.z) ? GREEN_MAGENTA
-                                                                  : BLUE_AMBER;
+void Anaglyph::SetPhotoCalibration(const Matrix3& display, const Matrix3& leftFilter, const Matrix3& rightFilter)
+{
+   // Use a complete calibration made of matrices transforming an input linear RGB color to its perceived CIE 
+   // XYZ color thourhg the display/filter pairs or directly through the display. These matrices can be obtained 
+   // using dedicated hardware or simply using a digital camera, taking a photo of RGB stripes (directly and 
+   // through the filters) and getting the linear RGB from this photo. If using a digital camera, the camera 
+   // processing will modify the result leading to an incorrect calibration. Therefore, a single shot for all 
+   // 3 filters should be made for the value to be consistent together (still modified by the camera DSP for 
+   // exposure, color balance,... but at least they can be used together).
+
+   // This process is somewhat difficult and highly depends on its understanding and the digital camera settings.
+   // So far, it is not used in the application, but only kept for future reference (or to be used to prepare better
+   // filters since the ones in Dubois paper were made with old CRT display with a fairly different emission spectrum
+   // from nowadays LCD or OLED displays). Another point to look at if using this method is that it is made to 
+   // work with a sRGB calibrated display but modern HDR display can have a fairly different gamma curve.
+
+   #if 0
+   // Matrix that transform a linear RGB color to its XYZ projection by the display
+   /*vec3 displayRed = LinearRGBtoXYZ(vec3(0.8330f, 0.0054f, 0.0284f)); // Personal Iiyama LCD screen
+   vec3 displayGreen = LinearRGBtoXYZ(vec3(0.0024f, 0.7637f, 0.1603f));
+   vec3 displayBlue = LinearRGBtoXYZ(vec3(0.0103f, 0.0002f, 0.7630f)); //*/
+   vec3 displayRed = LinearRGBtoXYZ(vec3(0.9471f, 0.0673f, 0.0731f)); // Personal Iiyama LCD screen v2
+   vec3 displayGreen = LinearRGBtoXYZ(vec3(0.1083f, 0.9408f, 0.1663f));
+   vec3 displayBlue = LinearRGBtoXYZ(vec3(0.0383f, 0.0158f, 0.8950f)); //*/
+   /*vec3 displayRed = vec3(0.4641f, 0.2597f, 0.03357f); // Eric Dubois values (Sony Trinitron CRT display)
+   vec3 displayGreen = vec3(0.3055f, 0.6592f, 0.1421f);
+   vec3 displayBlue = vec3(0.1808f, 0.0811f, 0.9109f); //*/
+   Matrix3 display = Matrix3(
+      displayRed.x, displayGreen.x, displayBlue.x, 
+      displayRed.y, displayGreen.y, displayBlue.y, 
+      displayRed.z, displayGreen.z, displayBlue.z
+   );
+   // Matrix that transform a linear RGB color to its XYZ projection by the display through the left filter
+   /*vec3 leftRed = LinearRGBtoXYZ(vec3(0.8617, 0.0127, 0.0367)); // Aviator Anachrome
+   vec3 leftGreen = LinearRGBtoXYZ(vec3(0.2366, 0.0167, 0.0025));
+   vec3 leftBlue = LinearRGBtoXYZ(vec3(0.0084, 0.0008, 0.0074)); //*/
+   vec3 leftRed = LinearRGBtoXYZ(vec3(0.8041, 0.0090, 0.0181)); // Aviator Anachrome v2
+   vec3 leftGreen = LinearRGBtoXYZ(vec3(0.0755, 0.0084, 0.0034));
+   vec3 leftBlue = LinearRGBtoXYZ(vec3(0.0293, 0.0027, 0.0067)); //*/
+   /* vec3 leftRed = LinearRGBtoXYZ(vec3(0.8561f, 0.0026f, 0.0500f)); // Trioviz Inficolor (not anaglyph)
+   vec3 leftGreen = LinearRGBtoXYZ(vec3(0.1827f, 0.1562f, 0.1148f));
+   vec3 leftBlue = LinearRGBtoXYZ(vec3(0.0097f, 0.0002f, 0.7355f)); //*/
+   /*vec3 leftRed = vec3(0.3185f, 0.1501f, 0.0007f); // Eric Dubois values (Roscolux Red/Cyan filter)
+   vec3 leftGreen = vec3(0.0769f, 0.0767f, 0.0020f);
+   vec3 leftBlue = vec3(0.0109f, 0.0056f, 0.0156f); //*/
+   Matrix3 leftFilter = Matrix3(
+      leftRed.x, leftGreen.x, leftBlue.x,
+      leftRed.y, leftGreen.y, leftBlue.y,
+      leftRed.z, leftGreen.z, leftBlue.z
+   );
+   // Matrix that transform a linear RGB color to its XYZ projection by the display through the right filter
+   /*vec3 rightRed = LinearRGBtoXYZ(vec3(0.4626, 0.0198, 0.0528)); // Aviator Anachrome
+   vec3 rightGreen = LinearRGBtoXYZ(vec3(0.0003, 0.7942, 0.3183));
+   vec3 rightBlue = LinearRGBtoXYZ(vec3(0.0019, 0.0100, 0.6646)); //*/
+   vec3 rightRed = LinearRGBtoXYZ(vec3(0.2353, 0.0348, 0.0462)); // Aviator Anachrome v2
+   vec3 rightGreen = LinearRGBtoXYZ(vec3(0.0033, 0.5900, 0.1430));
+   vec3 rightBlue = LinearRGBtoXYZ(vec3(0.0069, 0.0045, 0.4385)); //*/
+   /*vec3 rightRed = LinearRGBtoXYZ(vec3(0.5470f, 0.0229f, 0.0210f)); // Trioviz Inficolor (not truly anaglyph since both eyes see most of the colors)
+   vec3 rightGreen = LinearRGBtoXYZ(vec3(0.0005f, 0.8109f, 0.2163f));
+   vec3 rightBlue = LinearRGBtoXYZ(vec3(0.0011f, 0.0031f, 0.3776f)); //*/
+   /*vec3 rightRed = vec3(0.0174f, 0.0184f, 0.0286f); // Eric Dubois values (Roscolux Red/Cyan filter)
+   vec3 rightGreen = vec3(0.0484f, 0.1807f, 0.0991f);
+   vec3 rightBlue = vec3(0.1402f, 0.0458f, 0.7662f);//*/
+   Matrix3 rightFilter = Matrix3(
+      rightRed.x, rightGreen.x, rightBlue.x, 
+      rightRed.y, rightGreen.y, rightBlue.y, 
+      rightRed.z, rightGreen.z, rightBlue.z
+   );
+   #endif
+
+   // For the perceived luminance filter approach, we only use the Y coordinate (luminance) of the display through filter transmission matrices
+   m_rgb2Yl = vec3(leftFilter._21, leftFilter._22, leftFilter._23);
+   m_rgb2Yr = vec3(rightFilter._21, rightFilter._22, rightFilter._23);
+
+   // For Dubois filter, we perform the proposed projection in the paper from our calibration data (matrices have the same name as in the paper)
+   float dMat[6 * 6]; // D matrix is the 6x6 display transmission made from [[C, 0][0, C]]
+   memset(dMat, 0, 6 * 6 * sizeof(float));
+   for (int i = 0; i < 3; i++)
+      for (int j = 0; j < 3; j++)
+         dMat[j + i * 6] = display.m_d[i][j];
+   for (int i = 0; i < 3; i++)
+      for (int j = 0; j < 3; j++)
+         dMat[(j + 3) + (i + 3) * 6] = display.m_d[i][j];
+   float rMat[3 * 6]; // R matrix made from left and right transmission matrices
+   memcpy(&rMat[0], &leftFilter._11, 3 * 3 * sizeof(float));
+   memcpy(&rMat[3 * 3], &rightFilter._11, 3 * 3 * sizeof(float));
+   Matrix3 bMat;
+   bMat.Identity(0.f); // B = transpose(R) x R
+   for (int i = 0; i < 3; i++)
+      for (int j = 0; j < 3; j++)
+         for (int k = 0; k < 6; k++)
+            bMat.m_d[i][j] += rMat[i + k * 3] * rMat[j + k * 3];
+   bMat.Invert(); // B = inverse(B)
+   float b2Mat[3 * 6]; // B2 = B x transpose(R)
+   memset(b2Mat, 0, 3 * 6 * sizeof(float));
+   for (int i = 0; i < 3; i++)
+      for (int j = 0; j < 6; j++)
+         for (int k = 0; k < 3; k++)
+            b2Mat[j + i * 6] += bMat.m_d[i][k] * rMat[k + j * 3];
+   float b3Mat[3 * 6]; // B3 = B2 x D
+   memset(b3Mat, 0, 3 * 6 * sizeof(float));
+   for (int i = 0; i < 3; i++)
+      for (int j = 0; j < 6; j++)
+         for (int k = 0; k < 6; k++)
+            b3Mat[j + i * 6] += b2Mat[k + i * 6] * dMat[j + k * 6];
+   float rowNorm[3]; // Sum of each row for matrix normalization
+   memset(rowNorm, 0, 3 * sizeof(float));
+   for (int i = 0; i < 3; i++)
+      for (int j = 0; j < 6; j++)
+         rowNorm[i] += b3Mat[j + i * 6];
+   for (int i = 0; i < 3; i++) // B3 = normalized(B3)
+      for (int j = 0; j < 6; j++)
+         b3Mat[j + i * 6] /= rowNorm[i];
+   // Derive left/right matrices from the resulting [3x6] matrix
+   m_rgb2AnaglyphLeft.SetIdentity();
+   m_rgb2AnaglyphRight.SetIdentity();
+   for (int i = 0; i < 3; i++)
+      for (int j = 0; j < 3; j++)
+      {
+         m_rgb2AnaglyphLeft.m[i][j] = b3Mat[j + i * 6];
+         m_rgb2AnaglyphRight.m[i][j] = b3Mat[(j + 3) + i * 6];
+      }
+
+   // This will overwrite the Dubois matrix and needs to be reworked if using full calibration
    Update();
 }
 
 void Anaglyph::Update()
 {
+   // Enforce luminance model property to account for calibration error (Y(white) = 1)
+   m_rgb2Yl = m_rgb2Yl / (m_rgb2Yl.x + m_rgb2Yl.y + m_rgb2Yl.z);
+   m_rgb2Yr = m_rgb2Yr / (m_rgb2Yr.x + m_rgb2Yr.y + m_rgb2Yr.z);
+
+   // Evaluate filter tints (for UI display)
+   m_leftEyeColor = vec3(m_rgb2Yl.x / 0.2126f, m_rgb2Yl.y / 0.7152f, m_rgb2Yl.z / 0.0722f);
+   m_rightEyeColor = vec3(m_rgb2Yr.x / 0.2126f, m_rgb2Yr.y / 0.7152f, m_rgb2Yr.z / 0.0722f);
+   m_leftEyeColor = m_leftEyeColor / max(max(m_leftEyeColor.x, m_leftEyeColor.y), m_leftEyeColor.z);
+   m_rightEyeColor = m_rightEyeColor / max(max(m_rightEyeColor.x, m_rightEyeColor.y), m_rightEyeColor.z);
+
+   // Identify the bichromatic eye with its color from the luminance calibration.
+   //vec3 eyeL(m_rgb2Yl), eyeR(m_rgb2Yr); // Both will work. I'm not sure which one is the correct approach here
+   vec3 eyeL(m_leftEyeColor), eyeR(m_rightEyeColor);
+   #define vecChannel(v, c) (c == 0 ? v.x : c == 1 ? v.y : v.z)
+   float maxLeft = 0.f, maxRight = 0.f;
+   int mainLeft = -1, mainRight = -1;
+   for (int i = 0; i < 3; i++)
+   {
+      if (vecChannel(eyeL, i) > maxLeft) { maxLeft = vecChannel(eyeL, i); mainLeft = i; }
+      if (vecChannel(eyeR, i) > maxRight) { maxRight = vecChannel(eyeR, i); mainRight = i; }
+   }
+   if (mainLeft == mainRight)
+   {
+      // Non anaglyph glasses with the same main channel for the 2 eyes
+      PLOGI << "Invalid anaglyph calibration: both eyes have the same main color channel";
+      m_reversedColorPair = false;
+      m_colorPair = RED_CYAN;
+   }
+   else
+   {
+      // The bichromatic is the one with the higher luminance value of the channel which is not the main of any of the eyes
+      int lesser = ((1 << mainLeft) | (1 << mainRight)) ^ 0x7;
+      lesser = (int) log2(lesser & -lesser); // Return the position of the first bit which is the unused channel
+      m_reversedColorPair = vecChannel(eyeL, lesser) > vecChannel(eyeR, lesser);
+      m_colorPair = (AnaglyphPair)(m_reversedColorPair ? mainRight : mainLeft);
+   }
+   #undef vecChannel
+
    switch (m_filter)
    {
    case NONE:

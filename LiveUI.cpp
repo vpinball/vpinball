@@ -2018,7 +2018,7 @@ void LiveUI::UpdateVideoOptionsModal()
 
                Anaglyph anaglyph;
                anaglyph.LoadSetupFromRegistry(glassesIndex);
-               const vec3 eyeL = anaglyph.GetLeftEyeColor(), eyeR = anaglyph.GetRightEyeColor();
+               const vec3 eyeL = anaglyph.GetLeftEyeColor(false), eyeR = anaglyph.GetRightEyeColor(false);
                Anaglyph::AnaglyphPair colors = anaglyph.GetColorPair();
                ImGui::ColorButton("LeftFilter", ImVec4(eyeL.x, eyeL.y, eyeL.z, 1.f), ImGuiColorEditFlags_NoAlpha);
                ImGui::SameLine();
