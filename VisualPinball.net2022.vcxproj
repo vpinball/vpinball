@@ -1006,22 +1006,22 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
   </ItemGroup>
   <ItemGroup>
     <None Include="res\Default VPinballX.ini" />
-    <None Include="src/renderer/Shader\SMAA.fxh" />
-    <None Include="src/renderer/Shader\BallShader.glfx" />
-    <None Include="src/renderer/Shader\BallShadows.fxh" />
-    <None Include="src/renderer/Shader\BasicShader.glfx" />
-    <None Include="src/renderer/Shader\ClassicLightShader.glfx" />
-    <None Include="src/renderer/Shader\DMDShader.glfx" />
-    <None Include="src/renderer/Shader\DMDShaderVR.glfx" />
-    <None Include="src/renderer/Shader\FBShader.glfx" />
-    <None Include="src/renderer/Shader\FlasherShader.glfx" />
-    <None Include="src/renderer/Shader\FXAAStereoAO_GL.fxh" />
-    <None Include="src/renderer/Shader\LightShader.glfx" />
-    <None Include="src/renderer/Shader\Material_GL.fxh" />
-    <None Include="src/renderer/Shader\SMAA.glfx" />
-    <None Include="src/renderer/Shader\SSR_GL.fxh" />
-    <None Include="src/renderer/Shader\Stereo.fxh" />
-    <None Include="src/renderer/Shader\StereoShader.glfx" />
+    <None Include="Shader\SMAA.fxh" />
+    <None Include="Shader\BallShader.glfx" />
+    <None Include="Shader\BallShadows.fxh" />
+    <None Include="Shader\BasicShader.glfx" />
+    <None Include="Shader\ClassicLightShader.glfx" />
+    <None Include="Shader\DMDShader.glfx" />
+    <None Include="Shader\DMDShaderVR.glfx" />
+    <None Include="Shader\FBShader.glfx" />
+    <None Include="Shader\FlasherShader.glfx" />
+    <None Include="Shader\FXAAStereoAO_GL.fxh" />
+    <None Include="Shader\LightShader.glfx" />
+    <None Include="Shader\Material_GL.fxh" />
+    <None Include="Shader\SMAA.glfx" />
+    <None Include="Shader\SSR_GL.fxh" />
+    <None Include="Shader\Stereo.fxh" />
+    <None Include="Shader\StereoShader.glfx" />
     <None Include="res\ball.rgs" />
     <None Include="res\blankTable.vpx" />
     <None Include="res\bumper.rgs" />
@@ -1070,10 +1070,10 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <None Include="res\trigger.rgs" />
     <None Include="res\vpinball.rgs" />
     <None Include="res\light.cur" />
-    <None Include="src/renderer/Shader\FXAAStereoAO.fxh" />
-    <None Include="src/renderer/Shader\Helpers.fxh" />
-    <None Include="src/renderer/Shader\Material.fxh" />
-    <None Include="src/renderer/Shader\SSR.fxh" />
+    <None Include="Shader\FXAAStereoAO.fxh" />
+    <None Include="Shader\Helpers.fxh" />
+    <None Include="Shader\Material.fxh" />
+    <None Include="Shader\SSR.fxh" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\add.ico" />
@@ -1897,7 +1897,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     </ContentWithTargetPath>
   </ItemGroup>
   <ItemGroup>
-    <ContentWithTargetPath Include="src/renderer/Shader\**">
+    <ContentWithTargetPath Include="Shader\**">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <TargetPath>shader\%(RecursiveDir)\%(Filename)%(Extension)</TargetPath>
     </ContentWithTargetPath>
