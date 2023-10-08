@@ -16,7 +16,7 @@ protected:
 private:
    void AddToolTip(const char * const text, HWND parentHwnd, HWND toolTipHwnd, HWND controlHwnd);
    void ResetVideoPreferences();
-   void SetValue(int nID, const string& regKey, const string& regValue);
+   void SetValue(int nID, const Settings::Section& srction, const string& key);
    void StartTimer(int nID);
 };
 

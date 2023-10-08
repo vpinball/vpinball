@@ -16,7 +16,7 @@ protected:
 private:
     void AddToolTip(char *text, HWND parentHwnd, HWND toolTipHwnd, HWND controlHwnd);
     HWND GetItemHwnd(int nID);
-    void SetValue(int nID, const string& regKey, const string& regValue);
+    void SetValue(int nID, const Settings::Section& section, const string& key);
     void StartTimer(int nID);
 };
 #endif

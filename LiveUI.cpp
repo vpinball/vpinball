@@ -624,7 +624,7 @@ LiveUI::LiveUI(RenderDevice *const rd)
    m_live_table = m_player->m_ptable;
    m_pininput = &(m_player->m_pininput);
    m_pin3d = &(m_player->m_pin3d);
-   m_disable_esc = LoadValueWithDefault(regKey[RegName::Player], "DisableESC"s, m_disable_esc);
+   m_disable_esc = m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "DisableESC"s, m_disable_esc);
    m_old_player_dynamic_mode = m_player->m_dynamicMode;
    m_old_player_camera_mode = m_player->m_cameraMode;
 
@@ -1030,9 +1030,9 @@ void LiveUI::UpdateCameraModeUI()
             else
                { CM_ROW("Look at", "%.1f", viewSetup.mLookAt, "%"); }
             break;
-         case Player::BS_XOffset: CM_ROW(isLegacy ? "X Offset" : isCamera ? "Player X" : "Global Player X", "%.1f", isWindow ? LoadValueWithDefault(regKey[RegName::Player], "ScreenPlayerX"s, 0.0f) : VPUTOCM(viewSetup.mViewX), "cm"); break;
-         case Player::BS_YOffset: CM_ROW(isLegacy ? "Y Offset" : isCamera ? "Player Y" : "Global Player Y", "%.1f", isWindow ? LoadValueWithDefault(regKey[RegName::Player], "ScreenPlayerY"s, 0.0f) : VPUTOCM(viewSetup.mViewY), "cm"); break;
-         case Player::BS_ZOffset: CM_ROW(isLegacy ? "Z Offset" : isCamera ? "Player Z" : "Global Player Z", "%.1f", isWindow ? LoadValueWithDefault(regKey[RegName::Player], "ScreenPlayerZ"s, 70.0f) : VPUTOCM(viewSetup.mViewZ), "cm"); CM_SKIP_LINE; break;
+         case Player::BS_XOffset: CM_ROW(isLegacy ? "X Offset" : isCamera ? "Player X" : "Global Player X", "%.1f", isWindow ? g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerX"s, 0.0f) : VPUTOCM(viewSetup.mViewX), "cm"); break;
+         case Player::BS_YOffset: CM_ROW(isLegacy ? "Y Offset" : isCamera ? "Player Y" : "Global Player Y", "%.1f", isWindow ? g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerY"s, 0.0f) : VPUTOCM(viewSetup.mViewY), "cm"); break;
+         case Player::BS_ZOffset: CM_ROW(isLegacy ? "Z Offset" : isCamera ? "Player Z" : "Global Player Z", "%.1f", isWindow ? g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerZ"s, 70.0f) : VPUTOCM(viewSetup.mViewZ), "cm"); CM_SKIP_LINE; break;
 
          // View settings
          case Player::BS_FOV: CM_ROW("Field Of View (overall scale)", "%.1f", viewSetup.mFOV, "deg"); break;
@@ -1074,7 +1074,7 @@ void LiveUI::UpdateCameraModeUI()
    {
       ImGui::NewLine();
       ImGui::Text("Camera at X: %.1fcm Y: %.1fcm Z: %.1fcm", VPUTOCM(viewSetup.mViewX), VPUTOCM(viewSetup.mViewY), VPUTOCM(viewSetup.mViewZ));
-      if (LoadValueWithDefault(regKey[RegName::Player], "ScreenWidth"s, 0.0f) <= 1.f)
+      if (m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenWidth"s, 0.0f) <= 1.f)
       {
          ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 0, 0, 255));
          ImGui::NewLine();
@@ -1101,7 +1101,7 @@ void LiveUI::UpdateCameraModeUI()
    }
    infos.push_back("Flipper keys:   Adjust highlighted value"s);
    infos.push_back("Magna save keys:   Previous/Next option"s);
-   if (LoadValueWithDefault(regKey[RegName::Player], "EnableCameraModeFlyAround"s, false))
+   if (m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "EnableCameraModeFlyAround"s, false))
    {
       infos.push_back("Nudge key:   Rotate table orientation"s);
       infos.push_back("Arrows & Left Alt Key:   Navigate around"s);
@@ -1136,7 +1136,7 @@ void LiveUI::ExitEditMode()
 
 void LiveUI::HideUI()
 { 
-   SaveRegistry();
+   g_pvp->m_settings.Save();
    m_ShowSplashModal = false;
    m_ShowUI = false;
    m_flyMode = false;
@@ -1871,31 +1871,31 @@ void LiveUI::UpdateAudioOptionsModal()
    bool p_open = true;
    if (ImGui::BeginPopupModal(ID_AUDIO_SETTINGS, &p_open, ImGuiWindowFlags_AlwaysAutoResize))
    {
-      bool fsound = LoadValueWithDefault(regKey[RegName::Player], "PlayMusic"s, true);
+      bool fsound = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "PlayMusic"s, true);
       if (ImGui::Checkbox("Enable music", &fsound))
       {
-         SaveValue(regKey[RegName::Player], "PlayMusic"s, fsound);
+         g_pvp->m_settings.SaveValue(Settings::Player, "PlayMusic"s, fsound);
          m_player->m_PlayMusic = fsound;
       }
 
-      int volume = LoadValueWithDefault(regKey[RegName::Player], "MusicVolume"s, 100);
+      int volume = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "MusicVolume"s, 100);
       if (ImGui::SliderInt("Music Volume", &volume, 0, 100))
       {
-         SaveValue(regKey[RegName::Player], "MusicVolume"s, volume);
+         g_pvp->m_settings.SaveValue(Settings::Player, "MusicVolume"s, volume);
          m_player->m_MusicVolume = volume;
       }
 
-      fsound = LoadValueWithDefault(regKey[RegName::Player], "PlaySound"s, true);
+      fsound = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "PlaySound"s, true);
       if (ImGui::Checkbox("Enable sound", &fsound))
       {
-         SaveValue(regKey[RegName::Player], "PlaySound"s, fsound);
+         g_pvp->m_settings.SaveValue(Settings::Player, "PlaySound"s, fsound);
          m_player->m_PlaySound = fsound;
       }
 
-      volume = LoadValueWithDefault(regKey[RegName::Player], "SoundVolume"s, 100);
+      volume = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "SoundVolume"s, 100);
       if (ImGui::SliderInt("Sound Volume", &volume, 0, 100))
       {
-         SaveValue(regKey[RegName::Player], "SoundVolume"s, volume);
+         g_pvp->m_settings.SaveValue(Settings::Player, "SoundVolume"s, volume);
          m_player->m_SoundVolume = volume;
       }
 
@@ -1915,23 +1915,23 @@ void LiveUI::UpdateVideoOptionsModal()
          {
             const char *postprocessed_aa_items[] = { "Disabled", "Fast FXAA", "Standard FXAA", "Quality FXAA", "Fast NFAA", "Standard DLAA", "Quality SMAA" };
             if (ImGui::Combo("Postprocessed AA", &m_player->m_FXAA, postprocessed_aa_items, IM_ARRAYSIZE(postprocessed_aa_items)))
-               SaveValue(regKey[m_player->m_stereo3D == STEREO_VR ? RegName::PlayerVR : RegName::Player], "FXAA"s, m_player->m_FXAA);
+               g_pvp->m_settings.SaveValue(m_player->m_stereo3D == STEREO_VR ? Settings::PlayerVR : Settings::Player, "FXAA"s, m_player->m_FXAA);
          }
          const char *sharpen_items[] = { "Disabled", "CAS", "Bilateral CAS" };
          if (ImGui::Combo("Sharpen", &m_player->m_sharpen, sharpen_items, IM_ARRAYSIZE(sharpen_items)))
-            SaveValue(regKey[m_player->m_stereo3D == STEREO_VR ? RegName::PlayerVR : RegName::Player], "Sharpen"s, m_player->m_sharpen);
+            g_pvp->m_settings.SaveValue(m_player->m_stereo3D == STEREO_VR ? Settings::PlayerVR : Settings::Player, "Sharpen"s, m_player->m_sharpen);
       }
       
       if (ImGui::CollapsingHeader("Performance & Troubleshooting", ImGuiTreeNodeFlags_DefaultOpen))
       {
          if (ImGui::Checkbox("Force Bloom filter off", &m_player->m_bloomOff))
-            SaveValue(regKey[m_player->m_stereo3D == STEREO_VR ? RegName::PlayerVR : RegName::Player], "ForceBloomOff"s, m_player->m_bloomOff);
+            g_pvp->m_settings.SaveValue(m_player->m_stereo3D == STEREO_VR ? Settings::PlayerVR : Settings::Player, "ForceBloomOff"s, m_player->m_bloomOff);
       }
       
       if (m_player->m_stereo3D != STEREO_VR && ImGui::CollapsingHeader("3D Stereo Output", ImGuiTreeNodeFlags_DefaultOpen))
       {
          if (ImGui::Checkbox("Enable stereo rendering", &m_player->m_stereo3Denabled))
-            SaveValue(regKey[RegName::Player], "Stereo3DEnabled"s, m_player->m_stereo3Denabled);
+            g_pvp->m_settings.SaveValue(Settings::Player, "Stereo3DEnabled"s, m_player->m_stereo3Denabled);
          if (m_player->m_stereo3Denabled)
          {
             m_player->UpdateStereoShaderState();
@@ -1953,18 +1953,18 @@ void LiveUI::UpdateVideoOptionsModal()
                ImGui::PopItemFlag();
                if (m_player->m_stereo3DfakeStereo)
                {
-                  float stereo3DEyeSep = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DMaxSeparation"s, 0.03f);
+                  float stereo3DEyeSep = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DMaxSeparation"s, 0.03f);
                   if (ImGui::InputFloat("Max Separation", &stereo3DEyeSep, 0.001f, 0.01f, "%.3f"))
-                     SaveValue(regKey[RegName::Player], "Stereo3DMaxSeparation"s, (float)stereo3DEyeSep);
-                  bool stereo3DY = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DYAxis"s, false);
+                     g_pvp->m_settings.SaveValue(Settings::Player, "Stereo3DMaxSeparation"s, (float)stereo3DEyeSep);
+                  bool stereo3DY = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DYAxis"s, false);
                   if (ImGui::Checkbox("Use Y axis", &stereo3DY))
-                     SaveValue(regKey[RegName::Player], "Stereo3DYAxis"s, stereo3DY);
+                     g_pvp->m_settings.SaveValue(Settings::Player, "Stereo3DYAxis"s, stereo3DY);
                }
                else
                {
-                  int stereo3DEyeSep = (int)LoadValueWithDefault(regKey[RegName::Player], "Stereo3DEyeSeparation"s, 63.0f);
+                  int stereo3DEyeSep = (int)g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DEyeSeparation"s, 63.0f);
                   if (ImGui::InputInt("Eye Separation (mm)", &stereo3DEyeSep, 1, 5))
-                     SaveValue(regKey[RegName::Player], "Stereo3DEyeSeparation"s, (float)stereo3DEyeSep);
+                     g_pvp->m_settings.SaveValue(Settings::Player, "Stereo3DEyeSeparation"s, (float)stereo3DEyeSep);
                }
             }
             if (stereo_mode == 1) // 3D TV
@@ -1976,24 +1976,24 @@ void LiveUI::UpdateVideoOptionsModal()
             else if (stereo_mode == 2) // Anaglyph
             {
                // Global anaglyph settings
-               float anaglyphSaturation = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DSaturation"s, 1.f);
+               float anaglyphSaturation = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DSaturation"s, 1.f);
                if (ImGui::InputFloat("Saturation", &anaglyphSaturation, 0.01f, 0.1f))
-                  SaveValue(regKey[RegName::Player], "Stereo3DSaturation"s, anaglyphSaturation);
-               float anaglyphBrightness = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DBrightness"s, 1.f);
+                  g_pvp->m_settings.SaveValue(Settings::Player, "Stereo3DSaturation"s, anaglyphSaturation);
+               float anaglyphBrightness = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DBrightness"s, 1.f);
                if (ImGui::InputFloat("Brightness", &anaglyphBrightness, 0.01f, 0.1f))
-                  SaveValue(regKey[RegName::Player], "Stereo3DBrightness"s, anaglyphBrightness);
-               float anaglyphLeftEyeContrast = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DLeftContrast"s, 1.f);
+                  g_pvp->m_settings.SaveValue(Settings::Player, "Stereo3DBrightness"s, anaglyphBrightness);
+               float anaglyphLeftEyeContrast = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DLeftContrast"s, 1.f);
                if (ImGui::InputFloat("Left Eye Contrast", &anaglyphLeftEyeContrast, 0.01f, 0.1f))
-                  SaveValue(regKey[RegName::Player], "Stereo3DLeftContrast"s, anaglyphLeftEyeContrast);
-               float anaglyphRightEyeContrast = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DRightContrast"s, 1.f);
+                  g_pvp->m_settings.SaveValue(Settings::Player, "Stereo3DLeftContrast"s, anaglyphLeftEyeContrast);
+               float anaglyphRightEyeContrast = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DRightContrast"s, 1.f);
                if (ImGui::InputFloat("Right Eye Contrast", &anaglyphRightEyeContrast, 0.01f, 0.1f))
-                  SaveValue(regKey[RegName::Player], "Stereo3DRightContrast"s, anaglyphRightEyeContrast);
+                  g_pvp->m_settings.SaveValue(Settings::Player, "Stereo3DRightContrast"s, anaglyphRightEyeContrast);
 
                // Glasses settings
                static const string defaultNames[] = { "Red/Cyan"s, "Green/Magenta"s, "Blue/Amber"s, "Cyan/Red"s, "Magenta/Green"s, "Amber/Blue"s, "Custom 1"s, "Custom 2"s, "Custom 3"s, "Custom 4"s };
                string name[std::size(defaultNames)];
                for (size_t i = 0; i < std::size(defaultNames); i++)
-                  if (FAILED(LoadValue(regKey[RegName::Player], "Anaglyph"s.append(std::to_string(i + 1)).append("Name"s), name[i])))
+                  if (!g_pvp->m_settings.LoadValue(Settings::Player, "Anaglyph"s.append(std::to_string(i + 1)).append("Name"s), name[i]))
                      name[i] = defaultNames[i];
                const char *glasses_items[] = { name[0].c_str(),name[1].c_str(),name[2].c_str(),name[3].c_str(),name[4].c_str(),name[5].c_str(),name[6].c_str(),name[7].c_str(),name[8].c_str(),name[9].c_str(), };
                if (ImGui::Combo("Glasses", &glassesIndex, glasses_items, IM_ARRAYSIZE(glasses_items)))
@@ -2001,20 +2001,20 @@ void LiveUI::UpdateVideoOptionsModal()
                const string prefKey = "Anaglyph"s.append(std::to_string(glassesIndex + 1));
 
                if (ImGui::InputText("Name", &name[glassesIndex]))
-                  SaveValue(regKey[RegName::Player], prefKey + "Name"s, name[glassesIndex]);
+                  g_pvp->m_settings.SaveValue(Settings::Player, prefKey + "Name"s, name[glassesIndex]);
                static const char *filter_items[] = { "None", "Dubois", "Luminance", "Deghost" };
-               int anaglyphFilter = LoadValueWithDefault(regKey[RegName::Player], prefKey + "Filter"s, 4);
+               int anaglyphFilter = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, prefKey + "Filter"s, 4);
                if (ImGui::Combo("Filter", &anaglyphFilter, filter_items, IM_ARRAYSIZE(filter_items)))
-                  SaveValue(regKey[RegName::Player], prefKey + "Filter"s, anaglyphFilter);
-               float anaglyphDynDesat = LoadValueWithDefault(regKey[RegName::Player], prefKey + "DynDesat"s, 1.f);
+                  g_pvp->m_settings.SaveValue(Settings::Player, prefKey + "Filter"s, anaglyphFilter);
+               float anaglyphDynDesat = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, prefKey + "DynDesat"s, 1.f);
                if (ImGui::InputFloat("Dyn. Desaturation", &anaglyphDynDesat, 0.01f, 0.1f))
-                  SaveValue(regKey[RegName::Player], prefKey + "DynDesat"s, anaglyphDynDesat);
-               float anaglyphDeghost = LoadValueWithDefault(regKey[RegName::Player], prefKey + "Deghost"s, 0.f);
+                  g_pvp->m_settings.SaveValue(Settings::Player, prefKey + "DynDesat"s, anaglyphDynDesat);
+               float anaglyphDeghost = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, prefKey + "Deghost"s, 0.f);
                if (ImGui::InputFloat("Deghost", &anaglyphDeghost, 0.01f, 0.1f))
-                  SaveValue(regKey[RegName::Player], prefKey + "Deghost"s, anaglyphDeghost);
-               bool srgbDisplay = LoadValueWithDefault(regKey[RegName::Player], prefKey + "sRGB"s, true);
+                  g_pvp->m_settings.SaveValue(Settings::Player, prefKey + "Deghost"s, anaglyphDeghost);
+               bool srgbDisplay = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, prefKey + "sRGB"s, true);
                if (ImGui::Checkbox("Calibrated sRGB Display", &srgbDisplay))
-                  SaveValue(regKey[RegName::Player], prefKey + "sRGB"s, srgbDisplay);
+                  g_pvp->m_settings.SaveValue(Settings::Player, prefKey + "sRGB"s, srgbDisplay);
 
                Anaglyph anaglyph;
                anaglyph.LoadSetupFromRegistry(glassesIndex);
@@ -2033,13 +2033,13 @@ void LiveUI::UpdateVideoOptionsModal()
                ImGui::SameLine();
                if (ImGui::Button("Reset to default"))
                {
-                  DeleteValue(regKey[RegName::Player], prefKey + "Name"s);
-                  DeleteValue(regKey[RegName::Player], prefKey + "LeftRed"s);
-                  DeleteValue(regKey[RegName::Player], prefKey + "LeftGreen"s);
-                  DeleteValue(regKey[RegName::Player], prefKey + "LeftBlue"s);
-                  DeleteValue(regKey[RegName::Player], prefKey + "RightRed"s);
-                  DeleteValue(regKey[RegName::Player], prefKey + "RightGreen"s);
-                  DeleteValue(regKey[RegName::Player], prefKey + "RightBlue"s);
+                  g_pvp->m_settings.DeleteValue(Settings::Player, prefKey + "Name"s);
+                  g_pvp->m_settings.DeleteValue(Settings::Player, prefKey + "LeftRed"s);
+                  g_pvp->m_settings.DeleteValue(Settings::Player, prefKey + "LeftGreen"s);
+                  g_pvp->m_settings.DeleteValue(Settings::Player, prefKey + "LeftBlue"s);
+                  g_pvp->m_settings.DeleteValue(Settings::Player, prefKey + "RightRed"s);
+                  g_pvp->m_settings.DeleteValue(Settings::Player, prefKey + "RightGreen"s);
+                  g_pvp->m_settings.DeleteValue(Settings::Player, prefKey + "RightBlue"s);
                }
             }
             if (modeChanged)
@@ -2049,7 +2049,7 @@ void LiveUI::UpdateVideoOptionsModal()
                   mode = (StereoMode)(STEREO_TB + tv_mode);
                if (stereo_mode == 2)
                   mode = (StereoMode)(STEREO_ANAGLYPH_1 + glassesIndex);
-               SaveValue(regKey[RegName::Player], "Stereo3D"s, (int) mode);
+               g_pvp->m_settings.SaveValue(Settings::Player, "Stereo3D"s, (int) mode);
                if (m_player->m_stereo3D != STEREO_OFF && mode != STEREO_OFF) // TODO allow live switching stereo on/off
                   m_player->m_stereo3D = mode;
             }
@@ -2057,7 +2057,7 @@ void LiveUI::UpdateVideoOptionsModal()
       }
       ImGui::EndPopup();
    }
-   if (popup_anaglyph_calibration && IsAnaglyphStereoMode(LoadValueWithDefault(regKey[RegName::Player], "Stereo3D"s, 0)))
+   if (popup_anaglyph_calibration && IsAnaglyphStereoMode(g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3D"s, 0)))
       ImGui::OpenPopup(ID_ANAGLYPH_CALIBRATION);
 }
 
@@ -2081,7 +2081,7 @@ void LiveUI::UpdateAnaglyphCalibrationModal()
       if (calibrationStep == -1)
       {
          calibrationStep = 0; 
-         calibrationBrightness = LoadValueWithDefault(regKey[RegName::Player], prefKey + fields[calibrationStep], 0.f);
+         calibrationBrightness = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, prefKey + fields[calibrationStep], 0.f);
       }
       if (ImGui::IsKeyPressed(ImGuiKey::ImGuiKey_LeftCtrl))
       {
@@ -2097,7 +2097,7 @@ void LiveUI::UpdateAnaglyphCalibrationModal()
          else
          {
             calibrationStep--;
-            calibrationBrightness = LoadValueWithDefault(regKey[RegName::Player], prefKey + fields[calibrationStep], 0.f);
+            calibrationBrightness = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, prefKey + fields[calibrationStep], 0.f);
          }
       }
       else if (ImGui::IsKeyPressed(ImGuiKey::ImGuiKey_RightCtrl))
@@ -2114,18 +2114,18 @@ void LiveUI::UpdateAnaglyphCalibrationModal()
          else
          {
             calibrationStep++;
-            calibrationBrightness = LoadValueWithDefault(regKey[RegName::Player], prefKey + fields[calibrationStep], 0.f);
+            calibrationBrightness = m_live_table->m_settings.LoadValueWithDefault(Settings::Player, prefKey + fields[calibrationStep], 0.f);
          }
       }
       else if (ImGui::IsKeyPressed(ImGuiKey::ImGuiKey_LeftShift))
       {
          calibrationBrightness = clamp(calibrationBrightness - 0.01f, 0.f, 1.f);
-         SaveValue(regKey[RegName::Player], prefKey + fields[calibrationStep], calibrationBrightness);
+         g_pvp->m_settings.SaveValue(Settings::Player, prefKey + fields[calibrationStep], calibrationBrightness);
       }
       else if (ImGui::IsKeyPressed(ImGuiKey::ImGuiKey_RightShift))
       {
          calibrationBrightness = clamp(calibrationBrightness + 0.01f, 0.f, 1.f);
-         SaveValue(regKey[RegName::Player], prefKey + fields[calibrationStep], calibrationBrightness);
+         g_pvp->m_settings.SaveValue(Settings::Player, prefKey + fields[calibrationStep], calibrationBrightness);
       }
 
       ImGui::PushFont(m_overlayFont);
@@ -2455,8 +2455,8 @@ void LiveUI::UpdateMainSplashModal()
             y = rect.top + (int)drag.y;
             m_player->SetWindowPos(nullptr, x, y, m_player->m_wnd_width, m_player->m_wnd_height, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
 #endif
-            SaveValue((m_player->m_stereo3D == STEREO_VR) ? regKey[RegName::PlayerVR] : regKey[RegName::Player], "WindowPosX"s, x);
-            SaveValue((m_player->m_stereo3D == STEREO_VR) ? regKey[RegName::PlayerVR] : regKey[RegName::Player], "WindowPosY"s, y);
+            g_pvp->m_settings.SaveValue((m_player->m_stereo3D == STEREO_VR) ? Settings::PlayerVR : Settings::Player, "WindowPosX"s, x);
+            g_pvp->m_settings.SaveValue((m_player->m_stereo3D == STEREO_VR) ? Settings::PlayerVR : Settings::Player, "WindowPosY"s, y);
          }
       }
       else

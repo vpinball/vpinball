@@ -317,8 +317,6 @@ add_executable(vpinball WIN32
    plumb.h
    quadtree.cpp
    quadtree.h
-   regutil.cpp
-   regutil.h
    resource.h
    slintf.cpp
    slintf.h
@@ -343,6 +341,9 @@ add_executable(vpinball WIN32
    audioplayer.cpp
    audioplayer.h
    
+   src/core/Settings.cpp
+   src/core/Settings.h
+
    src/parts/bumper.cpp
    src/parts/bumper.h
    src/parts/decal.cpp

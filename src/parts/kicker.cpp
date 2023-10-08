@@ -54,51 +54,47 @@ HRESULT Kicker::Init(PinTable * const ptable, const float x, const float y, cons
 
 void Kicker::SetDefaults(const bool fromMouseClick)
 {
-#define regKey regKey[RegName::DefaultPropsKicker]
+#define regKey Settings::DefaultPropsKicker
 
-   m_d.m_radius = fromMouseClick ? LoadValueWithDefault(regKey, "Radius"s, 25.f) : 25.f;
-   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueWithDefault(regKey, "TimerEnabled"s, false) : false;
-   m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueWithDefault(regKey, "TimerInterval"s, 100) : 100;
-   m_d.m_enabled = fromMouseClick ? LoadValueWithDefault(regKey, "Enabled"s, true) : true;
-   m_d.m_hitAccuracy = fromMouseClick ? LoadValueWithDefault(regKey, "HitAccuracy"s, 0.5f) : 0.5f;
-   m_d.m_hit_height = fromMouseClick ? LoadValueWithDefault(regKey, "HitHeight"s, 35.0f) : 35.0f;
-   m_d.m_orientation = fromMouseClick ? LoadValueWithDefault(regKey, "Orientation"s, 0.f) : 0.f;
+   m_d.m_radius = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Radius"s, 25.f) : 25.f;
+   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "TimerEnabled"s, false) : false;
+   m_d.m_tdr.m_TimerInterval = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "TimerInterval"s, 100) : 100;
+   m_d.m_enabled = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Enabled"s, true) : true;
+   m_d.m_hitAccuracy = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "HitAccuracy"s, 0.5f) : 0.5f;
+   m_d.m_hit_height = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "HitHeight"s, 35.0f) : 35.0f;
+   m_d.m_orientation = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Orientation"s, 0.f) : 0.f;
 
    SetDefaultPhysics(fromMouseClick);
 
-   const HRESULT hr = LoadValue(regKey, "Surface"s, m_d.m_szSurface);
-   if ((hr != S_OK) || !fromMouseClick)
+   const bool hr = g_pvp->m_settings.LoadValue(regKey, "Surface"s, m_d.m_szSurface);
+   if (!hr || !fromMouseClick)
       m_d.m_szSurface.clear();
 
-   m_d.m_kickertype = fromMouseClick ? (KickerType)LoadValueWithDefault(regKey, "KickerType"s, (int)KickerHole) : KickerHole;
+   m_d.m_kickertype = fromMouseClick ? (KickerType)g_pvp->m_settings.LoadValueWithDefault(regKey, "KickerType"s, (int)KickerHole) : KickerHole;
    //legacy handling:
    if (m_d.m_kickertype > KickerCup2)
       m_d.m_kickertype = KickerInvisible;
 
-   m_d.m_fallThrough = fromMouseClick ? LoadValueWithDefault(regKey, "FallThrough"s, false) : false;
-   m_d.m_legacyMode = fromMouseClick ? LoadValueWithDefault(regKey, "Legacy"s, true) : true;
+   m_d.m_fallThrough = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "FallThrough"s, false) : false;
+   m_d.m_legacyMode = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Legacy"s, true) : true;
 
 #undef regKey
 }
 
 void Kicker::WriteRegDefaults()
 {
-#define regKey regKey[RegName::DefaultPropsKicker]
-
-   SaveValue(regKey, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
-   SaveValue(regKey, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
-   SaveValue(regKey, "Enabled"s, m_d.m_enabled);
-   SaveValue(regKey, "HitAccuracy"s, m_d.m_hitAccuracy);
-   SaveValue(regKey, "HitHeight"s, m_d.m_hit_height);
-   SaveValue(regKey, "Orientation"s, m_d.m_orientation);
-   SaveValue(regKey, "Radius"s, m_d.m_radius);
-   SaveValue(regKey, "Scatter"s, m_d.m_scatter);
-   SaveValue(regKey, "KickerType"s, m_d.m_kickertype);
-   SaveValue(regKey, "Surface"s, m_d.m_szSurface);
-   SaveValue(regKey, "FallThrough"s, m_d.m_fallThrough);
-   SaveValue(regKey, "Legacy"s, m_d.m_legacyMode);
-
-#undef regKey
+   g_pvp->m_settings.SaveValue(Settings::DefaultPropsKicker, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
+   g_pvp->m_settings.SaveValue(Settings::DefaultPropsKicker, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
+   g_pvp->m_settings.SaveValue(Settings::DefaultPropsKicker, "Enabled"s, m_d.m_enabled);
+   g_pvp->m_settings.SaveValue(Settings::DefaultPropsKicker, "HitAccuracy"s, m_d.m_hitAccuracy);
+   g_pvp->m_settings.SaveValue(Settings::DefaultPropsKicker, "HitHeight"s, m_d.m_hit_height);
+   g_pvp->m_settings.SaveValue(Settings::DefaultPropsKicker, "Orientation"s, m_d.m_orientation);
+   g_pvp->m_settings.SaveValue(Settings::DefaultPropsKicker, "Radius"s, m_d.m_radius);
+   g_pvp->m_settings.SaveValue(Settings::DefaultPropsKicker, "Scatter"s, m_d.m_scatter);
+   g_pvp->m_settings.SaveValue(Settings::DefaultPropsKicker, "KickerType"s, m_d.m_kickertype);
+   g_pvp->m_settings.SaveValue(Settings::DefaultPropsKicker, "Surface"s, m_d.m_szSurface);
+   g_pvp->m_settings.SaveValue(Settings::DefaultPropsKicker, "FallThrough"s, m_d.m_fallThrough);
+   g_pvp->m_settings.SaveValue(Settings::DefaultPropsKicker, "Legacy"s, m_d.m_legacyMode);
 }
 
 void Kicker::UIRenderPass1(Sur * const psur)
@@ -516,7 +512,7 @@ void Kicker::RenderSetup()
 
 void Kicker::SetDefaultPhysics(const bool fromMouseClick)
 {
-   m_d.m_scatter = fromMouseClick ? LoadValueWithDefault(regKey[RegName::DefaultPropsKicker], "Scatter"s, 0.f) : 0.f;
+   m_d.m_scatter = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultPropsKicker, "Scatter"s, 0.f) : 0.f;
 }
 
 void Kicker::RenderDynamic()

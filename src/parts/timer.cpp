@@ -29,14 +29,14 @@ HRESULT Timer::Init(PinTable * const ptable, const float x, const float y, const
 
 void Timer::SetDefaults(const bool fromMouseClick)
 {
-   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueWithDefault(regKey[RegName::DefaultPropsTimer], "TimerEnabled"s, true) : true;
-   m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueWithDefault(regKey[RegName::DefaultPropsTimer], "TimerInterval"s, 100) : 100;
+   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultPropsTimer, "TimerEnabled"s, true) : true;
+   m_d.m_tdr.m_TimerInterval = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultPropsTimer, "TimerInterval"s, 100) : 100;
 }
 
 void Timer::WriteRegDefaults()
 {
-   SaveValue(regKey[RegName::DefaultPropsTimer], "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
-   SaveValue(regKey[RegName::DefaultPropsTimer], "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
+   g_pvp->m_settings.SaveValue(Settings::DefaultPropsTimer, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
+   g_pvp->m_settings.SaveValue(Settings::DefaultPropsTimer, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
 }
 
 void Timer::SetObjectPos()

@@ -178,26 +178,26 @@ HRESULT Trigger::Init(PinTable * const ptable, const float x, const float y, con
 
 void Trigger::SetDefaults(const bool fromMouseClick)
 {
-#define regKey regKey[RegName::DefaultPropsTrigger]
+#define regKey Settings::DefaultPropsTrigger
 
-   m_d.m_radius = fromMouseClick ? LoadValueWithDefault(regKey, "Radius"s, 25.0f) : 25.0f;
-   m_d.m_rotation = fromMouseClick ? LoadValueWithDefault(regKey, "Rotation"s, 0.f) : 0.f;
-   m_d.m_wireThickness = fromMouseClick ? LoadValueWithDefault(regKey, "WireThickness"s, 0.f) : 0.f;
-   m_d.m_scaleX = fromMouseClick ? LoadValueWithDefault(regKey, "ScaleX"s, 1.f) : 1.f;
-   m_d.m_scaleY = fromMouseClick ? LoadValueWithDefault(regKey, "ScaleY"s, 1.f) : 1.f;
-   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueWithDefault(regKey, "TimerEnabled"s, false) : false;
-   m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueWithDefault(regKey, "TimerInterval"s, 100) : 100;
-   m_d.m_enabled = fromMouseClick ? LoadValueWithDefault(regKey, "Enabled"s, true) : true;
-   m_d.m_visible = fromMouseClick ? LoadValueWithDefault(regKey, "Visible"s, true) : true;
-   m_d.m_hit_height = fromMouseClick ? LoadValueWithDefault(regKey, "HitHeight"s, 50.f) : 50.f;
-   m_d.m_shape = fromMouseClick ? (TriggerShape)LoadValueWithDefault(regKey, "Shape"s, (int)TriggerWireA) : TriggerWireA;
+   m_d.m_radius = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Radius"s, 25.0f) : 25.0f;
+   m_d.m_rotation = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Rotation"s, 0.f) : 0.f;
+   m_d.m_wireThickness = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "WireThickness"s, 0.f) : 0.f;
+   m_d.m_scaleX = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "ScaleX"s, 1.f) : 1.f;
+   m_d.m_scaleY = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "ScaleY"s, 1.f) : 1.f;
+   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "TimerEnabled"s, false) : false;
+   m_d.m_tdr.m_TimerInterval = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "TimerInterval"s, 100) : 100;
+   m_d.m_enabled = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Enabled"s, true) : true;
+   m_d.m_visible = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Visible"s, true) : true;
+   m_d.m_hit_height = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "HitHeight"s, 50.f) : 50.f;
+   m_d.m_shape = fromMouseClick ? (TriggerShape)g_pvp->m_settings.LoadValueWithDefault(regKey, "Shape"s, (int)TriggerWireA) : TriggerWireA;
 
-   const HRESULT hr = LoadValue(regKey, "Surface"s, m_d.m_szSurface);
-   if ((hr != S_OK) || !fromMouseClick)
+   const bool hr = g_pvp->m_settings.LoadValue(regKey, "Surface"s, m_d.m_szSurface);
+   if (!hr || !fromMouseClick)
       m_d.m_szSurface.clear();
 
-   m_d.m_animSpeed = fromMouseClick ? LoadValueWithDefault(regKey, "AnimSpeed"s, 1.f) : 1.f;
-   m_d.m_reflectionEnabled = fromMouseClick ? LoadValueWithDefault(regKey, "ReflectionEnabled"s, true) : true;
+   m_d.m_animSpeed = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "AnimSpeed"s, 1.f) : 1.f;
+   m_d.m_reflectionEnabled = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "ReflectionEnabled"s, true) : true;
 
 #undef regKey
 }
@@ -1060,22 +1060,22 @@ void Trigger::ClearForOverwrite()
 
 void Trigger::WriteRegDefaults()
 {
-#define regKey regKey[RegName::DefaultPropsTrigger]
+#define regKey Settings::DefaultPropsTrigger
 
-   SaveValue(regKey, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
-   SaveValue(regKey, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
-   SaveValue(regKey, "Enabled"s, m_d.m_enabled);
-   SaveValue(regKey, "Visible"s, m_d.m_visible);
-   SaveValue(regKey, "HitHeight"s, m_d.m_hit_height);
-   SaveValue(regKey, "Radius"s, m_d.m_radius);
-   SaveValue(regKey, "Rotation"s, m_d.m_rotation);
-   SaveValue(regKey, "WireThickness"s, m_d.m_wireThickness);
-   SaveValue(regKey, "ScaleX"s, m_d.m_scaleX);
-   SaveValue(regKey, "ScaleY"s, m_d.m_scaleY);
-   SaveValue(regKey, "Shape"s, m_d.m_shape);
-   SaveValue(regKey, "Surface"s, m_d.m_szSurface);
-   SaveValue(regKey, "AnimSpeed"s, m_d.m_animSpeed);
-   SaveValue(regKey, "ReflectionEnabled"s, m_d.m_reflectionEnabled);
+   g_pvp->m_settings.SaveValue(regKey, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
+   g_pvp->m_settings.SaveValue(regKey, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
+   g_pvp->m_settings.SaveValue(regKey, "Enabled"s, m_d.m_enabled);
+   g_pvp->m_settings.SaveValue(regKey, "Visible"s, m_d.m_visible);
+   g_pvp->m_settings.SaveValue(regKey, "HitHeight"s, m_d.m_hit_height);
+   g_pvp->m_settings.SaveValue(regKey, "Radius"s, m_d.m_radius);
+   g_pvp->m_settings.SaveValue(regKey, "Rotation"s, m_d.m_rotation);
+   g_pvp->m_settings.SaveValue(regKey, "WireThickness"s, m_d.m_wireThickness);
+   g_pvp->m_settings.SaveValue(regKey, "ScaleX"s, m_d.m_scaleX);
+   g_pvp->m_settings.SaveValue(regKey, "ScaleY"s, m_d.m_scaleY);
+   g_pvp->m_settings.SaveValue(regKey, "Shape"s, m_d.m_shape);
+   g_pvp->m_settings.SaveValue(regKey, "Surface"s, m_d.m_szSurface);
+   g_pvp->m_settings.SaveValue(regKey, "AnimSpeed"s, m_d.m_animSpeed);
+   g_pvp->m_settings.SaveValue(regKey, "ReflectionEnabled"s, m_d.m_reflectionEnabled);
 
 #undef regKey
 }

@@ -5,6 +5,8 @@
 #if !defined(AFX_PINSOUND_H__61491D0B_9950_480C_B453_911B3A2CDB8E__INCLUDED_)
 #define AFX_PINSOUND_H__61491D0B_9950_480C_B453_911B3A2CDB8E__INCLUDED_
 
+#include "core/Settings.h"
+
 void BASS_ErrorMapCode(const int code, string& text);
 
 struct DSAudioDevice
@@ -156,11 +158,11 @@ public:
 	AudioMusicPlayer() : m_pbackglassds(nullptr) {}
 	~AudioMusicPlayer() { if (m_pbackglassds != &m_pds) delete m_pbackglassds; }
 
-	void InitPinDirectSound(const HWND hwnd)
+	void InitPinDirectSound(const Settings& settings, const HWND hwnd)
 	{
-		const int DSidx1 = LoadValueWithDefault(regKey[RegName::Player], "SoundDevice"s, 0);
-		const int DSidx2 = LoadValueWithDefault(regKey[RegName::Player], "SoundDeviceBG"s, 0);
-		const SoundConfigTypes SoundMode3D = (SoundConfigTypes)LoadValueWithDefault(regKey[RegName::Player], "Sound3D"s, (int)SNDCFG_SND3D2CH);
+      const int DSidx1 = settings.LoadValueWithDefault(Settings::Player, "SoundDevice"s, 0);
+      const int DSidx2 = settings.LoadValueWithDefault(Settings::Player, "SoundDeviceBG"s, 0);
+		const SoundConfigTypes SoundMode3D = (SoundConfigTypes)settings.LoadValueWithDefault(Settings::Player, "Sound3D"s, (int)SNDCFG_SND3D2CH);
 
 		m_pds.InitDirectSound(hwnd, false);
 		// If these are the same device, and we are not in 3d mode, just point the backglass device to the main one.
@@ -176,12 +178,12 @@ public:
 		}
 	}
 
-	void ReInitPinDirectSound(const HWND hwnd)
+	void ReInitPinDirectSound(const Settings& settings, const HWND hwnd)
 	{
 		if (m_pbackglassds != &m_pds)
 			delete m_pbackglassds;
 
-		InitPinDirectSound(hwnd);
+		InitPinDirectSound(settings, hwnd);
 	}
 
 	PinDirectSound* GetPinDirectSound(const SoundOutTypes outputTarget)

@@ -5,16 +5,16 @@ ViewSetup::ViewSetup()
 {
 }
 
-// Update the view setup from the application settings and table property for window mode.
+// Update the view setup from the application/table settings and table property for window mode.
 // - window position is relative to table playfield/glass (usually in between, likely at the glass position)
 // - player position is defined in the app settings relatively from the bottom center of the screen (to avoid depending on a specific table)
-void ViewSetup::SetWindowModeFromAppSettings(const PinTable* const table)
+void ViewSetup::SetWindowModeFromSettings(const PinTable* const table)
 {
    float realToVirtual = GetRealToVirtualScale(table);
-   vec3 playerPos(CMTOVPU(LoadValueWithDefault(regKey[RegName::Player], "ScreenPlayerX"s, 0.0f)),
-                  CMTOVPU(LoadValueWithDefault(regKey[RegName::Player], "ScreenPlayerY"s, 0.0f)),
-                  CMTOVPU(LoadValueWithDefault(regKey[RegName::Player], "ScreenPlayerZ"s, 70.0f)));
-   float inclination = LoadValueWithDefault(regKey[RegName::Player], "ScreenInclination"s, 0.0f);
+   vec3 playerPos(CMTOVPU(table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerX"s, 0.0f)),
+                  CMTOVPU(table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerY"s, 0.0f)),
+                  CMTOVPU(table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerZ"s, 70.0f)));
+   float inclination = table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenInclination"s, 0.0f);
    float screenBotZ = GetWindowBottomZOFfset(table);
    float screenTopZ = GetWindowTopZOFfset(table);
    Matrix3D rotx; // Rotate by the angle between playfield and real world horizontal (scale on Y and Z axis are equal and can be ignored)
@@ -66,7 +66,7 @@ float ViewSetup::GetRealToVirtualScale(const PinTable* const table) const
    if (mMode == VLM_WINDOW)
    {
       float windowBotZ = GetWindowBottomZOFfset(table), windowTopZ = GetWindowTopZOFfset(table);
-      const float screenHeight = LoadValueWithDefault(regKey[RegName::Player], "ScreenWidth"s, 0.0f); // Physical width (always measured in landscape orientation) is the height in window mode
+      const float screenHeight = table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenWidth"s, 0.0f); // Physical width (always measured in landscape orientation) is the height in window mode
       // const float inc = atan2f(mSceneScaleZ * (windowTopZ - windowBotZ), mSceneScaleY * table->m_bottom);
       const float inc = atan2f(windowTopZ - windowBotZ, table->m_bottom);
       return screenHeight <= 1.f ? 1.f : (VPUTOCM(table->m_bottom) / cos(inc)) / screenHeight; // Ratio between screen height in virtual world to real world screen height
@@ -257,7 +257,7 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
       const Vertex3Ds bottom = fit.MultiplyVector(Vertex3Ds(centerAxis, table->m_bottom, windowBotZ));
       const float xmin = zNear * min(bottom.x, top.x), xmax = zNear * max(bottom.x, top.x);
       const float ymin = zNear * min(bottom.y, top.y), ymax = zNear * max(bottom.y, top.y);
-      const float screenHeight = LoadValueWithDefault(regKey[RegName::Player], "ScreenWidth"s, 0.0f); // Physical width (always measured in landscape orientation) is the height in window mode
+      const float screenHeight = table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenWidth"s, 0.0f); // Physical width (always measured in landscape orientation) is the height in window mode
       float offsetScale;
       if ((quadrant & 1) == 0) // 0 & 180
       {
@@ -293,7 +293,7 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
       // Since the table is scaled to 'real world units' (that is to say same scale as the user measures), we directly use the user settings for IPD,.. without any scaling
 
       // 63mm is the average distance between eyes (varies from 54 to 74mm between adults, 43 to 58mm for children)
-      const float eyeSeparation = MMTOVPU(LoadValueWithDefault(regKey[RegName::Player], "Stereo3DEyeSeparation"s, 63.0f));
+      const float eyeSeparation = MMTOVPU(table->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DEyeSeparation"s, 63.0f));
 
       // Z where the stereo separation is 0:
       // - for cabinet (window) mode, we use the orthogonal distance to the screen (window)

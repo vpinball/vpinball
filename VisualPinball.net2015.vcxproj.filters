@@ -52,7 +52,7 @@
     <ClCompile Include="src/parts/primitive.cpp" />
     <ClCompile Include="quadtree.cpp" />
     <ClCompile Include="src/parts/ramp.cpp" />
-    <ClCompile Include="regutil.cpp" />
+    <ClCompile Include="src/core/Settings.cpp" />
     <ClCompile Include="slintf.cpp" />
     <ClCompile Include="src/parts/spinner.cpp" />
     <ClCompile Include="stdafx.cpp" />
@@ -998,7 +998,7 @@
     <ClInclude Include="src/parts/ramp.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="regutil.h">
+    <ClInclude Include="src/core/Settings.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="RenderDevice.h">

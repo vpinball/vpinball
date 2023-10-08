@@ -582,6 +582,8 @@ public:
    string m_szFileName;
    string m_szTitle;
 
+   Settings m_settings; // Settings for this table (apply table overrides above application settings)
+
    bool m_isLiveInstance = false; // true for live shallow copy of a table
    robin_hood::unordered_map<void *, void *> m_startupToLive; // For live table, maps back and forth to startup table editable parts, materials,...
    robin_hood::unordered_map<void *, void *> m_liveToStartup;

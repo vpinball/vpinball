@@ -7,11 +7,13 @@ Anaglyph::Anaglyph()
 
 void Anaglyph::LoadSetupFromRegistry(const int glassesSet)
 {
+   const PinTable* table = g_pplayer->m_ptable;
+
    // Common settings for all anaglyph sets
-   m_brightness = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DBrightness"s, 1.0f);
-   m_saturation = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DSaturation"s, 1.f);
-   m_leftEyeContrast = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DLeftContrast"s, 1.0f);
-   m_rightEyeContrast = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DRightContrast"s, 1.0f);
+   m_brightness = table->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DBrightness"s, 1.0f);
+   m_saturation = table->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DSaturation"s, 1.f);
+   m_leftEyeContrast = table->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DLeftContrast"s, 1.0f);
+   m_rightEyeContrast = table->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DRightContrast"s, 1.0f);
 
    // Default (partial) calibration
    static const vec3 defaultColors[] = {
@@ -29,16 +31,16 @@ void Anaglyph::LoadSetupFromRegistry(const int glassesSet)
 
    const string prefKey = "Anaglyph"s.append(std::to_string(glassesSet + 1));
    vec3 leftLum, rightLum;
-   m_filter = (Filter)LoadValueWithDefault(regKey[RegName::Player], prefKey + "Filter"s, 2);
-   m_sRGBDisplay = LoadValueWithDefault(regKey[RegName::Player], prefKey + "sRGB"s, true);
-   m_dynDesatLevel = LoadValueWithDefault(regKey[RegName::Player], prefKey + "DynDesat"s, 1.f);
-   m_deghostLevel = LoadValueWithDefault(regKey[RegName::Player], prefKey + "Deghost"s, 0.f);
-   leftLum.x = LoadValueWithDefault(regKey[RegName::Player], prefKey + "LeftRed"s, -1.f);
-   leftLum.y = LoadValueWithDefault(regKey[RegName::Player], prefKey + "LeftGreen"s, -1.f);
-   leftLum.z = LoadValueWithDefault(regKey[RegName::Player], prefKey + "LeftBlue"s, -1.f);
-   rightLum.x = LoadValueWithDefault(regKey[RegName::Player], prefKey + "RightRed"s, -1.f);
-   rightLum.y = LoadValueWithDefault(regKey[RegName::Player], prefKey + "RightGreen"s, -1.f);
-   rightLum.z = LoadValueWithDefault(regKey[RegName::Player], prefKey + "RightBlue"s, -1.f);
+   m_filter = (Filter)table->m_settings.LoadValueWithDefault(Settings::Player, prefKey + "Filter"s, 2);
+   m_sRGBDisplay = table->m_settings.LoadValueWithDefault(Settings::Player, prefKey + "sRGB"s, true);
+   m_dynDesatLevel = table->m_settings.LoadValueWithDefault(Settings::Player, prefKey + "DynDesat"s, 1.f);
+   m_deghostLevel = table->m_settings.LoadValueWithDefault(Settings::Player, prefKey + "Deghost"s, 0.f);
+   leftLum.x = table->m_settings.LoadValueWithDefault(Settings::Player, prefKey + "LeftRed"s, -1.f);
+   leftLum.y = table->m_settings.LoadValueWithDefault(Settings::Player, prefKey + "LeftGreen"s, -1.f);
+   leftLum.z = table->m_settings.LoadValueWithDefault(Settings::Player, prefKey + "LeftBlue"s, -1.f);
+   rightLum.x = table->m_settings.LoadValueWithDefault(Settings::Player, prefKey + "RightRed"s, -1.f);
+   rightLum.y = table->m_settings.LoadValueWithDefault(Settings::Player, prefKey + "RightGreen"s, -1.f);
+   rightLum.z = table->m_settings.LoadValueWithDefault(Settings::Player, prefKey + "RightBlue"s, -1.f);
    if (leftLum.x < 0 || leftLum.y < 0 || leftLum.z < 0 || rightLum.x < 0 || rightLum.y < 0 || rightLum.z < 0)
       SetLuminanceCalibration(defaultColors[glassesSet * 2], defaultColors[glassesSet * 2 + 1]);
    else

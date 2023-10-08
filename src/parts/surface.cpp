@@ -50,8 +50,8 @@ HRESULT Surface::Init(PinTable * const ptable, const float x, const float y, con
    m_ptable = ptable;
    m_isWall = true;
 
-   const float width  = fromMouseClick ? LoadValueWithDefault(regKey[RegName::DefaultPropsWall], "Width"s,  50.f) : 50.f;
-   const float length = fromMouseClick ? LoadValueWithDefault(regKey[RegName::DefaultPropsWall], "Length"s, 50.f) : 50.f;
+   const float width  = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultPropsWall, "Width"s,  50.f) : 50.f;
+   const float length = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultPropsWall, "Length"s, 50.f) : 50.f;
 
    CComObject<DragPoint> *pdp;
    CComObject<DragPoint>::CreateInstance(&pdp);
@@ -90,34 +90,34 @@ HRESULT Surface::Init(PinTable * const ptable, const float x, const float y, con
 
 void Surface::WriteRegDefaults()
 {
-#define strKeyName (m_isWall ? regKey[RegName::DefaultPropsWall] : regKey[RegName::DefaultPropsTarget])
+#define strKeyName (m_isWall ? Settings::DefaultPropsWall : Settings::DefaultPropsTarget)
 
-   SaveValue(strKeyName, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
-   SaveValue(strKeyName, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
-   SaveValue(strKeyName, "HitEvent"s, m_d.m_hitEvent);
-   SaveValue(strKeyName, "HitThreshold"s, m_d.m_threshold);
-   SaveValue(strKeyName, "SlingshotThreshold"s, m_d.m_slingshot_threshold);
-   SaveValue(strKeyName, "TopImage"s, m_d.m_szImage);
-   SaveValue(strKeyName, "SideImage"s, m_d.m_szSideImage);
-   SaveValue(strKeyName, "Droppable"s, m_d.m_droppable);
-   SaveValue(strKeyName, "Flipbook"s, m_d.m_flipbook);
-   SaveValue(strKeyName, "IsBottomSolid"s, m_d.m_isBottomSolid);
-   SaveValue(strKeyName, "HeightBottom"s, m_d.m_heightbottom);
-   SaveValue(strKeyName, "HeightTop"s, m_d.m_heighttop);
-   SaveValue(strKeyName, "DisplayTexture"s, m_d.m_displayTexture);
-   SaveValue(strKeyName, "SlingshotForce"s, m_d.m_slingshotforce);
-   SaveValue(strKeyName, "SlingshotAnimation"s, m_d.m_slingshotAnimation);
-   SaveValue(strKeyName, "Elasticity"s, m_d.m_elasticity);
-   SaveValue(strKeyName, "ElasticityFallOff"s, m_d.m_elasticityFalloff);
-   SaveValue(strKeyName, "Friction"s, m_d.m_friction);
-   SaveValue(strKeyName, "Scatter"s, m_d.m_scatter);
-   SaveValue(strKeyName, "Visible"s, m_d.m_topBottomVisible);
-   SaveValue(strKeyName, "SideVisible"s, m_d.m_sideVisible);
-   SaveValue(strKeyName, "Collidable"s, m_d.m_collidable);
+   g_pvp->m_settings.SaveValue(strKeyName, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
+   g_pvp->m_settings.SaveValue(strKeyName, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
+   g_pvp->m_settings.SaveValue(strKeyName, "HitEvent"s, m_d.m_hitEvent);
+   g_pvp->m_settings.SaveValue(strKeyName, "HitThreshold"s, m_d.m_threshold);
+   g_pvp->m_settings.SaveValue(strKeyName, "SlingshotThreshold"s, m_d.m_slingshot_threshold);
+   g_pvp->m_settings.SaveValue(strKeyName, "TopImage"s, m_d.m_szImage);
+   g_pvp->m_settings.SaveValue(strKeyName, "SideImage"s, m_d.m_szSideImage);
+   g_pvp->m_settings.SaveValue(strKeyName, "Droppable"s, m_d.m_droppable);
+   g_pvp->m_settings.SaveValue(strKeyName, "Flipbook"s, m_d.m_flipbook);
+   g_pvp->m_settings.SaveValue(strKeyName, "IsBottomSolid"s, m_d.m_isBottomSolid);
+   g_pvp->m_settings.SaveValue(strKeyName, "HeightBottom"s, m_d.m_heightbottom);
+   g_pvp->m_settings.SaveValue(strKeyName, "HeightTop"s, m_d.m_heighttop);
+   g_pvp->m_settings.SaveValue(strKeyName, "DisplayTexture"s, m_d.m_displayTexture);
+   g_pvp->m_settings.SaveValue(strKeyName, "SlingshotForce"s, m_d.m_slingshotforce);
+   g_pvp->m_settings.SaveValue(strKeyName, "SlingshotAnimation"s, m_d.m_slingshotAnimation);
+   g_pvp->m_settings.SaveValue(strKeyName, "Elasticity"s, m_d.m_elasticity);
+   g_pvp->m_settings.SaveValue(strKeyName, "ElasticityFallOff"s, m_d.m_elasticityFalloff);
+   g_pvp->m_settings.SaveValue(strKeyName, "Friction"s, m_d.m_friction);
+   g_pvp->m_settings.SaveValue(strKeyName, "Scatter"s, m_d.m_scatter);
+   g_pvp->m_settings.SaveValue(strKeyName, "Visible"s, m_d.m_topBottomVisible);
+   g_pvp->m_settings.SaveValue(strKeyName, "SideVisible"s, m_d.m_sideVisible);
+   g_pvp->m_settings.SaveValue(strKeyName, "Collidable"s, m_d.m_collidable);
    const int tmp = quantizeUnsigned<8>(clamp(m_d.m_disableLightingTop, 0.f, 1.f));
-   SaveValue(strKeyName, "DisableLighting"s, (tmp == 1) ? 0 : tmp); // backwards compatible saving
-   SaveValue(strKeyName, "DisableLightingBelow"s, m_d.m_disableLightingBelow);
-   SaveValue(strKeyName, "ReflectionEnabled"s, m_d.m_reflectionEnabled);
+   g_pvp->m_settings.SaveValue(strKeyName, "DisableLighting"s, (tmp == 1) ? 0 : tmp); // backwards compatible saving
+   g_pvp->m_settings.SaveValue(strKeyName, "DisableLightingBelow"s, m_d.m_disableLightingBelow);
+   g_pvp->m_settings.SaveValue(strKeyName, "ReflectionEnabled"s, m_d.m_reflectionEnabled);
 
 #undef strKeyName
 }
@@ -125,13 +125,13 @@ void Surface::WriteRegDefaults()
 #if 0
 HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float y, const bool fromMouseClick)
 {
-#define strKeyName regKey[RegName::DefaultPropsTarget]
+#define strKeyName Settings::DefaultPropsTarget
 
    m_ptable = ptable;
    m_isWall = false;
 
-   const float width = fromMouseClick ? LoadValueWithDefault(strKeyName, "Width"s, 30.f) : 30.f;
-   const float length = fromMouseClick ? LoadValueWithDefault(strKeyName, "Length"s, 6.f) : 6.f;
+   const float width = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Width"s, 30.f) : 30.f;
+   const float length = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Length"s, 6.f) : 6.f;
 
    CComObject<DragPoint> *pdp;
    CComObject<DragPoint>::CreateInstance(&pdp);
@@ -169,39 +169,39 @@ HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float 
    //SetDefaults();
    //Set seperate defaults for targets (SetDefaults sets the Wall defaults)
 
-   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueWithDefault(strKeyName, "TimerEnabled"s, false) : false;
-   m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueWithDefault(strKeyName, "TimerInterval"s, 100) : 100;
-   m_d.m_hitEvent = fromMouseClick ? LoadValueWithDefault(strKeyName, "HitEvent"s, true) : true;
-   m_d.m_threshold = fromMouseClick ? LoadValueWithDefault(strKeyName, "HitThreshold"s, 2.0f) : 2.0f;
-   m_d.m_slingshot_threshold = fromMouseClick ? LoadValueWithDefault(strKeyName, "SlingshotThreshold"s, 0.0f) : 0.0f;
+   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "TimerEnabled"s, false) : false;
+   m_d.m_tdr.m_TimerInterval = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "TimerInterval"s, 100) : 100;
+   m_d.m_hitEvent = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "HitEvent"s, true) : true;
+   m_d.m_threshold = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "HitThreshold"s, 2.0f) : 2.0f;
+   m_d.m_slingshot_threshold = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "SlingshotThreshold"s, 0.0f) : 0.0f;
    m_d.m_inner = true; //!! Deprecated, do not use anymore
 
-   HRESULT hr = LoadValue(strKeyName, "TopImage"s, m_d.m_szImage);
-   if ((hr != S_OK) || !fromMouseClick)
+   bool hr = g_pvp->m_settings.LoadValue(strKeyName, "TopImage"s, m_d.m_szImage);
+   if (!hr || !fromMouseClick)
       m_d.m_szImage.clear();
 
-   hr = LoadValue(strKeyName, "SideImage"s, m_d.m_szSideImage);
-   if ((hr != S_OK) || !fromMouseClick)
+   hr = g_pvp->m_settings.LoadValue(strKeyName, "SideImage"s, m_d.m_szSideImage);
+   if (!hr || !fromMouseClick)
       m_d.m_szSideImage.clear();
 
-   m_d.m_droppable = fromMouseClick ? LoadValueWithDefault(strKeyName, "Droppable"s, false) : false;
-   m_d.m_flipbook = fromMouseClick ? LoadValueWithDefault(strKeyName, "Flipbook"s, false) : false;
-   m_d.m_isBottomSolid = fromMouseClick ? LoadValueWithDefault(strKeyName, "IsBottomSolid"s, true) : false;
+   m_d.m_droppable = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Droppable"s, false) : false;
+   m_d.m_flipbook = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Flipbook"s, false) : false;
+   m_d.m_isBottomSolid = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "IsBottomSolid"s, true) : false;
 
-   m_d.m_heightbottom = fromMouseClick ? LoadValueWithDefault(strKeyName, "HeightBottom"s, 0.0f) : 0.0f;
-   m_d.m_heighttop = fromMouseClick ? LoadValueWithDefault(strKeyName, "HeightTop"s, 50.0f) : 50.0f;
+   m_d.m_heightbottom = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "HeightBottom"s, 0.0f) : 0.0f;
+   m_d.m_heighttop = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "HeightTop"s, 50.0f) : 50.0f;
 
-   m_d.m_displayTexture = fromMouseClick ? LoadValueWithDefault(strKeyName, "DisplayTexture"s, false) : false;
-   m_d.m_slingshotforce = fromMouseClick ? LoadValueWithDefault(strKeyName, "SlingshotForce"s, 80.0f) : 80.0f;
-   m_d.m_slingshotAnimation = fromMouseClick ? LoadValueWithDefault(strKeyName, "SlingshotAnimation"s, true) : true;
+   m_d.m_displayTexture = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "DisplayTexture"s, false) : false;
+   m_d.m_slingshotforce = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "SlingshotForce"s, 80.0f) : 80.0f;
+   m_d.m_slingshotAnimation = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "SlingshotAnimation"s, true) : true;
 
-   m_d.m_elasticity = fromMouseClick ? LoadValueWithDefault(strKeyName, "Elasticity"s, 0.3f) : 0.3f;
-   m_d.m_friction = fromMouseClick ? LoadValueWithDefault(strKeyName, "Friction"s, 0.3f) : 0.3f;
-   m_d.m_scatter = fromMouseClick ? LoadValueWithDefault(strKeyName, "Scatter"s, 0.f) : 0.f;
+   m_d.m_elasticity = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Elasticity"s, 0.3f) : 0.3f;
+   m_d.m_friction = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Friction"s, 0.3f) : 0.3f;
+   m_d.m_scatter = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Scatter"s, 0.f) : 0.f;
 
-   m_d.m_topBottomVisible = fromMouseClick ? LoadValueWithDefault(strKeyName, "Visible"s, true) : true;
-   m_d.m_sideVisible = fromMouseClick ? LoadValueWithDefault(strKeyName, "SideVisible"s, true) : true;
-   m_d.m_collidable = fromMouseClick ? LoadValueWithDefault(strKeyName, "Collidable"s, true) : true;
+   m_d.m_topBottomVisible = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Visible"s, true) : true;
+   m_d.m_sideVisible = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "SideVisible"s, true) : true;
+   m_d.m_collidable = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Collidable"s, true) : true;
 
    return InitVBA(fTrue, 0, nullptr);
 }
@@ -209,42 +209,42 @@ HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float 
 
 void Surface::SetDefaults(const bool fromMouseClick)
 {
-#define strKeyName regKey[RegName::DefaultPropsWall]
+#define strKeyName Settings::DefaultPropsWall
 
-   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueWithDefault(strKeyName, "TimerEnabled"s, false) : false;
-   m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueWithDefault(strKeyName, "TimerInterval"s, 100) : 100;
-   m_d.m_hitEvent = fromMouseClick ? LoadValueWithDefault(strKeyName, "HitEvent"s, false) : false;
-   m_d.m_threshold = fromMouseClick ? LoadValueWithDefault(strKeyName, "HitThreshold"s, 2.0f) : 2.0f;
-   m_d.m_slingshot_threshold = fromMouseClick ? LoadValueWithDefault(strKeyName, "SlingshotThreshold"s, 0.0f) : 0.0f;
+   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "TimerEnabled"s, false) : false;
+   m_d.m_tdr.m_TimerInterval = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "TimerInterval"s, 100) : 100;
+   m_d.m_hitEvent = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "HitEvent"s, false) : false;
+   m_d.m_threshold = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "HitThreshold"s, 2.0f) : 2.0f;
+   m_d.m_slingshot_threshold = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "SlingshotThreshold"s, 0.0f) : 0.0f;
    m_d.m_inner = true; //!! Deprecated, do not use anymore
 
-   HRESULT hr = LoadValue(strKeyName, "TopImage"s, m_d.m_szImage);
-   if ((hr != S_OK) || !fromMouseClick)
+   bool hr = g_pvp->m_settings.LoadValue(strKeyName, "TopImage"s, m_d.m_szImage);
+   if (!hr || !fromMouseClick)
       m_d.m_szImage.clear();
 
-   hr = LoadValue(strKeyName, "SideImage"s, m_d.m_szSideImage);
-   if ((hr != S_OK) || !fromMouseClick)
+   hr = g_pvp->m_settings.LoadValue(strKeyName, "SideImage"s, m_d.m_szSideImage);
+   if (!hr || !fromMouseClick)
       m_d.m_szSideImage.clear();
 
-   m_d.m_droppable = fromMouseClick ? LoadValueWithDefault(strKeyName, "Droppable"s, false) : false;
-   m_d.m_flipbook = fromMouseClick ? LoadValueWithDefault(strKeyName, "Flipbook"s, false) : false;
-   m_d.m_isBottomSolid = fromMouseClick ? LoadValueWithDefault(strKeyName, "IsBottomSolid"s, true) : false;
+   m_d.m_droppable = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Droppable"s, false) : false;
+   m_d.m_flipbook = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Flipbook"s, false) : false;
+   m_d.m_isBottomSolid = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "IsBottomSolid"s, true) : false;
 
-   m_d.m_heightbottom = fromMouseClick ? LoadValueWithDefault(strKeyName, "HeightBottom"s, 0.0f) : 0.0f;
-   m_d.m_heighttop = fromMouseClick ? LoadValueWithDefault(strKeyName, "HeightTop"s, 50.0f) : 50.0f;
+   m_d.m_heightbottom = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "HeightBottom"s, 0.0f) : 0.0f;
+   m_d.m_heighttop = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "HeightTop"s, 50.0f) : 50.0f;
 
-   m_d.m_displayTexture = fromMouseClick ? LoadValueWithDefault(strKeyName, "DisplayTexture"s, false) : false;
-   m_d.m_slingshotforce = fromMouseClick ? LoadValueWithDefault(strKeyName, "SlingshotForce"s, 80.0f) : 80.0f;
-   m_d.m_slingshotAnimation = fromMouseClick ? LoadValueWithDefault(strKeyName, "SlingshotAnimation"s, true) : true;
+   m_d.m_displayTexture = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "DisplayTexture"s, false) : false;
+   m_d.m_slingshotforce = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "SlingshotForce"s, 80.0f) : 80.0f;
+   m_d.m_slingshotAnimation = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "SlingshotAnimation"s, true) : true;
 
    SetDefaultPhysics(fromMouseClick);
 
-   m_d.m_topBottomVisible = fromMouseClick ? LoadValueWithDefault(strKeyName, "Visible"s, true) : true;
-   m_d.m_sideVisible = fromMouseClick ? LoadValueWithDefault(strKeyName, "SideVisible"s, true) : true;
-   m_d.m_collidable = fromMouseClick ? LoadValueWithDefault(strKeyName, "Collidable"s, true) : true;
-   m_d.m_disableLightingTop = dequantizeUnsigned<8>(fromMouseClick ? LoadValueWithDefault(strKeyName, "DisableLighting"s, 0) : 0); // stored as uchar for backward compatibility
-   m_d.m_disableLightingBelow = fromMouseClick ? LoadValueWithDefault(strKeyName, "DisableLightingBelow"s, 0.f) : 0.f;
-   m_d.m_reflectionEnabled = fromMouseClick ? LoadValueWithDefault(strKeyName, "ReflectionEnabled"s, true) : true;
+   m_d.m_topBottomVisible = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Visible"s, true) : true;
+   m_d.m_sideVisible = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "SideVisible"s, true) : true;
+   m_d.m_collidable = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Collidable"s, true) : true;
+   m_d.m_disableLightingTop = dequantizeUnsigned<8>(fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "DisableLighting"s, 0) : 0); // stored as uchar for backward compatibility
+   m_d.m_disableLightingBelow = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "DisableLightingBelow"s, 0.f) : 0.f;
+   m_d.m_reflectionEnabled = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "ReflectionEnabled"s, true) : true;
 
 #undef strKeyName
 }
@@ -1982,12 +1982,12 @@ STDMETHODIMP Surface::PlaySlingshotHit()
 
 void Surface::SetDefaultPhysics(const bool fromMouseClick)
 {
-#define strKeyName regKey[RegName::DefaultPropsWall]
+#define strKeyName Settings::DefaultPropsWall
 
-   m_d.m_elasticity = fromMouseClick ? LoadValueWithDefault(strKeyName, "Elasticity"s, 0.3f) : 0.3f;
-   m_d.m_elasticityFalloff = fromMouseClick ? LoadValueWithDefault(strKeyName, "ElasticityFallOff"s, 0.0f) : 0.0f;
-   m_d.m_friction = fromMouseClick ? LoadValueWithDefault(strKeyName, "Friction"s, 0.3f) : 0.3f;
-   m_d.m_scatter = fromMouseClick ? LoadValueWithDefault(strKeyName, "Scatter"s, 0.f) : 0.f;
+   m_d.m_elasticity = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Elasticity"s, 0.3f) : 0.3f;
+   m_d.m_elasticityFalloff = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "ElasticityFallOff"s, 0.0f) : 0.0f;
+   m_d.m_friction = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Friction"s, 0.3f) : 0.3f;
+   m_d.m_scatter = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Scatter"s, 0.f) : 0.f;
 
 #undef strKeyName
 }

@@ -115,71 +115,71 @@ HRESULT Flipper::Init(PinTable * const ptable, const float x, const float y, con
 
 void Flipper::SetDefaults(const bool fromMouseClick)
 {
-#define regKey regKey[RegName::DefaultPropsFlipper]
+#define regKey Settings::DefaultPropsFlipper
 
    SetDefaultPhysics(fromMouseClick);
 
-   m_d.m_StartAngle = fromMouseClick ? LoadValueWithDefault(regKey, "StartAngle"s, 121.f) : 121.f;
-   m_d.m_EndAngle = fromMouseClick ? LoadValueWithDefault(regKey, "EndAngle"s, 70.f) : 70.f;
-   m_d.m_BaseRadius = fromMouseClick ? LoadValueWithDefault(regKey, "BaseRadius"s, 21.5f) : 21.5f; // 15
-   m_d.m_EndRadius = fromMouseClick ? LoadValueWithDefault(regKey, "EndRadius"s, 13.f) : 13.f; // 6
-   m_d.m_FlipperRadiusMax = fromMouseClick ? LoadValueWithDefault(regKey, "Length"s, 130.f) : 130.f; // 80
-   m_d.m_FlipperRadiusMin = fromMouseClick ? LoadValueWithDefault(regKey, "MaxDifLength"s, 0.f) : 0.f;
+   m_d.m_StartAngle = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "StartAngle"s, 121.f) : 121.f;
+   m_d.m_EndAngle = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "EndAngle"s, 70.f) : 70.f;
+   m_d.m_BaseRadius = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "BaseRadius"s, 21.5f) : 21.5f; // 15
+   m_d.m_EndRadius = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "EndRadius"s, 13.f) : 13.f; // 6
+   m_d.m_FlipperRadiusMax = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Length"s, 130.f) : 130.f; // 80
+   m_d.m_FlipperRadiusMin = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "MaxDifLength"s, 0.f) : 0.f;
 
    m_d.m_FlipperRadius = m_d.m_FlipperRadiusMax;
 
-   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueWithDefault(regKey, "TimerEnabled"s, false) : false;
-   m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueWithDefault(regKey, "TimerInterval"s, 100) : 100;
-   m_d.m_color = fromMouseClick ? LoadValueWithDefault(regKey, "Color"s, (int)RGB(255,255,255)) : RGB(255,255,255);
-   m_d.m_rubbercolor = fromMouseClick ? LoadValueWithDefault(regKey, "RubberColor"s, (int)RGB(128,50,50)) : RGB(128,50,50);
+   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "TimerEnabled"s, false) : false;
+   m_d.m_tdr.m_TimerInterval = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "TimerInterval"s, 100) : 100;
+   m_d.m_color = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Color"s, (int)RGB(255,255,255)) : RGB(255,255,255);
+   m_d.m_rubbercolor = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "RubberColor"s, (int)RGB(128,50,50)) : RGB(128,50,50);
 
-   const HRESULT hr = LoadValue(regKey, "Surface"s, m_d.m_szSurface);
-   if ((hr != S_OK) || !fromMouseClick)
+   const bool hr = g_pvp->m_settings.LoadValue(regKey, "Surface"s, m_d.m_szSurface);
+   if (!hr || !fromMouseClick)
       m_d.m_szSurface.clear();
 
-   m_d.m_height = fromMouseClick ? LoadValueWithDefault(regKey, "Height"s, 50.f) : 50.f;
-   m_d.m_rubberthickness = fromMouseClick ? LoadValueWithDefault(regKey, "RubberThickness"s, 7.f) : 7.f;
-   m_d.m_rubberheight = fromMouseClick ? LoadValueWithDefault(regKey, "RubberHeight"s, 19.f) : 19.f;
-   m_d.m_rubberwidth = fromMouseClick ? LoadValueWithDefault(regKey, "RubberWidth"s, 24.f) : 24.f;
-   m_d.m_visible = fromMouseClick ? LoadValueWithDefault(regKey, "Visible"s, true) : true;
-   m_d.m_enabled = fromMouseClick ? LoadValueWithDefault(regKey, "Enabled"s, true) : true;
-   m_d.m_reflectionEnabled = fromMouseClick ? LoadValueWithDefault(regKey, "ReflectionEnabled"s, true) : true;
+   m_d.m_height = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Height"s, 50.f) : 50.f;
+   m_d.m_rubberthickness = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "RubberThickness"s, 7.f) : 7.f;
+   m_d.m_rubberheight = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "RubberHeight"s, 19.f) : 19.f;
+   m_d.m_rubberwidth = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "RubberWidth"s, 24.f) : 24.f;
+   m_d.m_visible = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Visible"s, true) : true;
+   m_d.m_enabled = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Enabled"s, true) : true;
+   m_d.m_reflectionEnabled = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "ReflectionEnabled"s, true) : true;
 
 #undef regKey
 }
 
 void Flipper::WriteRegDefaults()
 {
-#define regKey regKey[RegName::DefaultPropsFlipper]
+#define regKey Settings::DefaultPropsFlipper
 
-   SaveValue(regKey, "Scatter"s, m_d.m_scatter);
-   SaveValue(regKey, "Strength"s, m_d.m_strength);
-   SaveValue(regKey, "EOSTorque"s, m_d.m_torqueDamping);
-   SaveValue(regKey, "EOSTorqueAngle"s, m_d.m_torqueDampingAngle);
-   SaveValue(regKey, "StartAngle"s, m_d.m_StartAngle);
-   SaveValue(regKey, "EndAngle"s, m_d.m_EndAngle);
-   SaveValue(regKey, "BaseRadius"s, m_d.m_BaseRadius);
-   SaveValue(regKey, "EndRadius"s, m_d.m_EndRadius);
-   SaveValue(regKey, "MaxDifLength"s, m_d.m_FlipperRadiusMin);
-   SaveValue(regKey, "ReturnStrength"s, m_d.m_return);
-   SaveValue(regKey, "Length"s, m_d.m_FlipperRadiusMax);
-   SaveValue(regKey, "Mass"s, m_d.m_mass);
-   SaveValue(regKey, "Elasticity"s, m_d.m_elasticity);
-   SaveValue(regKey, "ElasticityFalloff"s, m_d.m_elasticityFalloff);
-   SaveValue(regKey, "Friction"s, m_d.m_friction);
-   SaveValue(regKey, "RampUp"s, m_d.m_rampUp);
-   SaveValue(regKey, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
-   SaveValue(regKey, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
-   SaveValue(regKey, "Color"s, (int)m_d.m_color);
-   SaveValue(regKey, "RubberColor"s, (int)m_d.m_rubbercolor);
-   SaveValue(regKey, "Surface"s, m_d.m_szSurface);
-   SaveValue(regKey, "Height"s, m_d.m_height);
-   SaveValue(regKey, "RubberThickness"s, m_d.m_rubberthickness);
-   SaveValue(regKey, "RubberHeight"s, m_d.m_rubberheight);
-   SaveValue(regKey, "RubberWidth"s, m_d.m_rubberwidth);
-   SaveValue(regKey, "Visible"s, m_d.m_visible);
-   SaveValue(regKey, "Enabled"s, m_d.m_enabled);
-   SaveValue(regKey, "ReflectionEnabled"s, m_d.m_reflectionEnabled);
+   g_pvp->m_settings.SaveValue(regKey, "Scatter"s, m_d.m_scatter);
+   g_pvp->m_settings.SaveValue(regKey, "Strength"s, m_d.m_strength);
+   g_pvp->m_settings.SaveValue(regKey, "EOSTorque"s, m_d.m_torqueDamping);
+   g_pvp->m_settings.SaveValue(regKey, "EOSTorqueAngle"s, m_d.m_torqueDampingAngle);
+   g_pvp->m_settings.SaveValue(regKey, "StartAngle"s, m_d.m_StartAngle);
+   g_pvp->m_settings.SaveValue(regKey, "EndAngle"s, m_d.m_EndAngle);
+   g_pvp->m_settings.SaveValue(regKey, "BaseRadius"s, m_d.m_BaseRadius);
+   g_pvp->m_settings.SaveValue(regKey, "EndRadius"s, m_d.m_EndRadius);
+   g_pvp->m_settings.SaveValue(regKey, "MaxDifLength"s, m_d.m_FlipperRadiusMin);
+   g_pvp->m_settings.SaveValue(regKey, "ReturnStrength"s, m_d.m_return);
+   g_pvp->m_settings.SaveValue(regKey, "Length"s, m_d.m_FlipperRadiusMax);
+   g_pvp->m_settings.SaveValue(regKey, "Mass"s, m_d.m_mass);
+   g_pvp->m_settings.SaveValue(regKey, "Elasticity"s, m_d.m_elasticity);
+   g_pvp->m_settings.SaveValue(regKey, "ElasticityFalloff"s, m_d.m_elasticityFalloff);
+   g_pvp->m_settings.SaveValue(regKey, "Friction"s, m_d.m_friction);
+   g_pvp->m_settings.SaveValue(regKey, "RampUp"s, m_d.m_rampUp);
+   g_pvp->m_settings.SaveValue(regKey, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
+   g_pvp->m_settings.SaveValue(regKey, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
+   g_pvp->m_settings.SaveValue(regKey, "Color"s, (int)m_d.m_color);
+   g_pvp->m_settings.SaveValue(regKey, "RubberColor"s, (int)m_d.m_rubbercolor);
+   g_pvp->m_settings.SaveValue(regKey, "Surface"s, m_d.m_szSurface);
+   g_pvp->m_settings.SaveValue(regKey, "Height"s, m_d.m_height);
+   g_pvp->m_settings.SaveValue(regKey, "RubberThickness"s, m_d.m_rubberthickness);
+   g_pvp->m_settings.SaveValue(regKey, "RubberHeight"s, m_d.m_rubberheight);
+   g_pvp->m_settings.SaveValue(regKey, "RubberWidth"s, m_d.m_rubberwidth);
+   g_pvp->m_settings.SaveValue(regKey, "Visible"s, m_d.m_visible);
+   g_pvp->m_settings.SaveValue(regKey, "Enabled"s, m_d.m_enabled);
+   g_pvp->m_settings.SaveValue(regKey, "ReflectionEnabled"s, m_d.m_reflectionEnabled);
 
 #undef regKey
 }
@@ -206,43 +206,43 @@ void Flipper::UpdatePhysicsSettings()
    {
       const int idx = m_d.m_OverridePhysics ? (m_d.m_OverridePhysics-1) : (m_ptable->m_overridePhysics-1);
 
-      m_d.m_OverrideMass = LoadValueWithDefault(regKey[RegName::Player], "FlipperPhysicsMass" + std::to_string(idx), 1.f);
+      m_d.m_OverrideMass = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "FlipperPhysicsMass" + std::to_string(idx), 1.f);
       if (m_d.m_OverrideMass < 0.0f)
          m_d.m_OverrideMass = m_d.m_mass;
 
-      m_d.m_OverrideStrength = LoadValueWithDefault(regKey[RegName::Player], "FlipperPhysicsStrength" + std::to_string(idx), 2200.f);
+      m_d.m_OverrideStrength = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "FlipperPhysicsStrength" + std::to_string(idx), 2200.f);
       if (m_d.m_OverrideStrength < 0.0f)
          m_d.m_OverrideStrength = m_d.m_strength;
 
-      m_d.m_OverrideElasticity = LoadValueWithDefault(regKey[RegName::Player], "FlipperPhysicsElasticity" + std::to_string(idx), 0.8f);
+      m_d.m_OverrideElasticity = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "FlipperPhysicsElasticity" + std::to_string(idx), 0.8f);
       if (m_d.m_OverrideElasticity < 0.0f)
          m_d.m_OverrideElasticity = m_d.m_elasticity;
 
-      m_d.m_OverrideScatterAngle = LoadValueWithDefault(regKey[RegName::Player], "FlipperPhysicsScatter" + std::to_string(idx), 0.f);
+      m_d.m_OverrideScatterAngle = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "FlipperPhysicsScatter" + std::to_string(idx), 0.f);
       if (m_d.m_OverrideScatterAngle < 0.0f)
          m_d.m_OverrideScatterAngle = m_d.m_scatter;
 
-      m_d.m_OverrideReturnStrength = LoadValueWithDefault(regKey[RegName::Player], "FlipperPhysicsReturnStrength" + std::to_string(idx), 0.058f);
+      m_d.m_OverrideReturnStrength = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "FlipperPhysicsReturnStrength" + std::to_string(idx), 0.058f);
       if (m_d.m_OverrideReturnStrength < 0.0f)
          m_d.m_OverrideReturnStrength = m_d.m_return;
 
-      m_d.m_OverrideElasticityFalloff = LoadValueWithDefault(regKey[RegName::Player], "FlipperPhysicsElasticityFalloff" + std::to_string(idx), 0.43f);
+      m_d.m_OverrideElasticityFalloff = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "FlipperPhysicsElasticityFalloff" + std::to_string(idx), 0.43f);
       if (m_d.m_OverrideElasticityFalloff < 0.0f)
          m_d.m_OverrideElasticityFalloff = m_d.m_elasticityFalloff;
 
-      m_d.m_OverrideFriction = LoadValueWithDefault(regKey[RegName::Player], "FlipperPhysicsFriction" + std::to_string(idx), 0.6f);
+      m_d.m_OverrideFriction = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "FlipperPhysicsFriction" + std::to_string(idx), 0.6f);
       if (m_d.m_OverrideFriction < 0.0f)
          m_d.m_OverrideFriction = m_d.m_friction;
 
-      m_d.m_OverrideCoilRampUp = LoadValueWithDefault(regKey[RegName::Player], "FlipperPhysicsCoilRampUp" + std::to_string(idx), 3.f);
+      m_d.m_OverrideCoilRampUp = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "FlipperPhysicsCoilRampUp" + std::to_string(idx), 3.f);
       if (m_d.m_OverrideCoilRampUp < 0.0f)
          m_d.m_OverrideCoilRampUp = m_d.m_rampUp;
 
-      m_d.m_OverrideTorqueDamping = LoadValueWithDefault(regKey[RegName::Player], "FlipperPhysicsEOSTorque" + std::to_string(idx), 0.75f);
+      m_d.m_OverrideTorqueDamping = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "FlipperPhysicsEOSTorque" + std::to_string(idx), 0.75f);
       if (m_d.m_OverrideTorqueDamping < 0.0f)
          m_d.m_OverrideTorqueDamping = m_d.m_torqueDamping;
 
-      m_d.m_OverrideTorqueDampingAngle = LoadValueWithDefault(regKey[RegName::Player], "FlipperPhysicsEOSTorqueAngle" + std::to_string(idx), 6.f);
+      m_d.m_OverrideTorqueDampingAngle = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "FlipperPhysicsEOSTorqueAngle" + std::to_string(idx), 6.f);
       if (m_d.m_OverrideTorqueDampingAngle < 0.0f)
          m_d.m_OverrideTorqueDampingAngle = m_d.m_torqueDampingAngle;
    }
@@ -527,27 +527,27 @@ void Flipper::PutCenter(const Vertex2D& pv)
 
 void Flipper::SetDefaultPhysics(const bool fromMouseClick)
 {
-#define regKey regKey[RegName::DefaultPropsFlipper]
+#define regKey Settings::DefaultPropsFlipper
 
-   m_d.m_scatter = fromMouseClick ? LoadValueWithDefault(regKey, "Scatter"s, 0.f) : 0.f;
-   m_d.m_strength = fromMouseClick ? LoadValueWithDefault(regKey, "Strength"s, 2200.f) : 2200.f;
-   m_d.m_torqueDamping = fromMouseClick ? LoadValueWithDefault(regKey, "EOSTorque"s, 0.75f) : 0.75f;
-   m_d.m_torqueDampingAngle = fromMouseClick ? LoadValueWithDefault(regKey, "EOSTorqueAngle"s, 6.f) : 6.f;
+   m_d.m_scatter = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Scatter"s, 0.f) : 0.f;
+   m_d.m_strength = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Strength"s, 2200.f) : 2200.f;
+   m_d.m_torqueDamping = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "EOSTorque"s, 0.75f) : 0.75f;
+   m_d.m_torqueDampingAngle = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "EOSTorqueAngle"s, 6.f) : 6.f;
 
    //m_d.m_angleEOS = 0;
 
-   m_d.m_return = fromMouseClick ? LoadValueWithDefault(regKey, "ReturnStrength"s, 0.058f) : 0.058f;
+   m_d.m_return = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "ReturnStrength"s, 0.058f) : 0.058f;
 
    float fTmp;
-   HRESULT hr = LoadValue(regKey, "Mass", fTmp);
-   if (hr != S_OK)
-      hr = LoadValue(regKey, "Speed", fTmp); // previously Mass was called Speed, deprecated!
-   m_d.m_mass = (hr == S_OK) && fromMouseClick ? fTmp : 1.0f;
+   bool hr = g_pvp->m_settings.LoadValue(regKey, "Mass", fTmp);
+   if (!hr)
+      hr = g_pvp->m_settings.LoadValue(regKey, "Speed", fTmp); // previously Mass was called Speed, deprecated!
+   m_d.m_mass = hr && fromMouseClick ? fTmp : 1.0f;
 
-   m_d.m_elasticity = fromMouseClick ? LoadValueWithDefault(regKey, "Elasticity"s, 0.8f) : 0.8f;
-   m_d.m_elasticityFalloff = fromMouseClick ? LoadValueWithDefault(regKey, "ElasticityFalloff"s, 0.43f) : 0.43f;
-   m_d.m_friction = fromMouseClick ? LoadValueWithDefault(regKey, "Friction"s, 0.6f) : 0.6f;
-   m_d.m_rampUp = fromMouseClick ? LoadValueWithDefault(regKey, "RampUp"s, 3.0f) : 3.0f;
+   m_d.m_elasticity = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Elasticity"s, 0.8f) : 0.8f;
+   m_d.m_elasticityFalloff = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "ElasticityFalloff"s, 0.43f) : 0.43f;
+   m_d.m_friction = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Friction"s, 0.6f) : 0.6f;
+   m_d.m_rampUp = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "RampUp"s, 3.0f) : 3.0f;
 
    m_d.m_OverridePhysics = 0;
 

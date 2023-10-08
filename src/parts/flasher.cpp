@@ -101,63 +101,63 @@ HRESULT Flasher::Init(PinTable * const ptable, const float x, const float y, con
 
 void Flasher::SetDefaults(const bool fromMouseClick)
 {
-#define regKey regKey[RegName::DefaultPropsFlasher]
+#define regKey Settings::DefaultPropsFlasher
 
-   m_d.m_height = fromMouseClick ? LoadValueWithDefault(regKey, "Height"s, 50.f) : 50.f;
-   m_d.m_rotX = fromMouseClick ? LoadValueWithDefault(regKey, "RotX"s, 0.f) : 0.f;
-   m_d.m_rotY = fromMouseClick ? LoadValueWithDefault(regKey, "RotY"s, 0.f) : 0.f;
-   m_d.m_rotZ = fromMouseClick ? LoadValueWithDefault(regKey, "RotZ"s, 0.f) : 0.f;
-   m_d.m_color = fromMouseClick ? LoadValueWithDefault(regKey, "Color"s, (int)RGB(50,200,50)) : RGB(50,200,50);
-   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueWithDefault(regKey, "TimerEnabled"s, false) : false;
-   m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueWithDefault(regKey, "TimerInterval"s, 100) : 100;
+   m_d.m_height = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Height"s, 50.f) : 50.f;
+   m_d.m_rotX = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "RotX"s, 0.f) : 0.f;
+   m_d.m_rotY = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "RotY"s, 0.f) : 0.f;
+   m_d.m_rotZ = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "RotZ"s, 0.f) : 0.f;
+   m_d.m_color = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Color"s, (int)RGB(50,200,50)) : RGB(50,200,50);
+   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "TimerEnabled"s, false) : false;
+   m_d.m_tdr.m_TimerInterval = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "TimerInterval"s, 100) : 100;
 
-   HRESULT hr = LoadValue(regKey, "ImageA"s, m_d.m_szImageA);
-   if ((hr != S_OK) || !fromMouseClick)
+   bool hr = g_pvp->m_settings.LoadValue(regKey, "ImageA"s, m_d.m_szImageA);
+   if (!hr || !fromMouseClick)
       m_d.m_szImageA.clear();
 
-   hr = LoadValue(regKey, "ImageB"s, m_d.m_szImageB);
-   if ((hr != S_OK) || !fromMouseClick)
+   hr = g_pvp->m_settings.LoadValue(regKey, "ImageB"s, m_d.m_szImageB);
+   if (!hr || !fromMouseClick)
       m_d.m_szImageB.clear();
 
-   m_d.m_alpha = fromMouseClick ? LoadValueWithDefault(regKey, "Opacity"s, 100) : 100;
+   m_d.m_alpha = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Opacity"s, 100) : 100;
 
    m_d.m_intensity_scale = 1.0f;
 
-   m_d.m_modulate_vs_add = fromMouseClick ? LoadValueWithDefault(regKey, "ModulateVsAdd"s, 0.9f) : 0.9f;
-   m_d.m_filterAmount = fromMouseClick ? LoadValueWithDefault(regKey, "FilterAmount"s, 100) : 100;
-   m_d.m_isVisible = fromMouseClick ? LoadValueWithDefault(regKey, "Visible"s, true) : true;
+   m_d.m_modulate_vs_add = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "ModulateVsAdd"s, 0.9f) : 0.9f;
+   m_d.m_filterAmount = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "FilterAmount"s, 100) : 100;
+   m_d.m_isVisible = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Visible"s, true) : true;
    m_inPlayState = m_d.m_isVisible;
-   m_d.m_addBlend = fromMouseClick ? LoadValueWithDefault(regKey, "AddBlend"s, false) : false;
-   m_d.m_isDMD = fromMouseClick ? LoadValueWithDefault(regKey, "DMD"s, false) : false;
-   m_d.m_displayTexture = fromMouseClick ? LoadValueWithDefault(regKey, "DisplayTexture"s, false) : false;
-   m_d.m_imagealignment = fromMouseClick ? (RampImageAlignment)LoadValueWithDefault(regKey, "ImageMode"s, (int)ImageModeWrap) : ImageModeWrap;
-   m_d.m_filter = fromMouseClick ? (Filters)LoadValueWithDefault(regKey, "Filter"s, (int)Filter_Overlay) : Filter_Overlay;
+   m_d.m_addBlend = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "AddBlend"s, false) : false;
+   m_d.m_isDMD = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "DMD"s, false) : false;
+   m_d.m_displayTexture = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "DisplayTexture"s, false) : false;
+   m_d.m_imagealignment = fromMouseClick ? (RampImageAlignment)g_pvp->m_settings.LoadValueWithDefault(regKey, "ImageMode"s, (int)ImageModeWrap) : ImageModeWrap;
+   m_d.m_filter = fromMouseClick ? (Filters)g_pvp->m_settings.LoadValueWithDefault(regKey, "Filter"s, (int)Filter_Overlay) : Filter_Overlay;
 
 #undef regKey
 }
 
 void Flasher::WriteRegDefaults()
 {
-#define regKey regKey[RegName::DefaultPropsFlasher]
+#define regKey Settings::DefaultPropsFlasher
 
-   SaveValue(regKey, "Height"s, m_d.m_height);
-   SaveValue(regKey, "RotX"s, m_d.m_rotX);
-   SaveValue(regKey, "RotY"s, m_d.m_rotY);
-   SaveValue(regKey, "RotZ"s, m_d.m_rotZ);
-   SaveValue(regKey, "Color"s, (int)m_d.m_color);
-   SaveValue(regKey, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
-   SaveValue(regKey, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
-   SaveValue(regKey, "ImageA"s, m_d.m_szImageA);
-   SaveValue(regKey, "ImageB"s, m_d.m_szImageB);
-   SaveValue(regKey, "Alpha"s, m_d.m_alpha);
-   SaveValue(regKey, "ModulateVsAdd"s, m_d.m_modulate_vs_add);
-   SaveValue(regKey, "Visible"s, m_d.m_isVisible);
-   SaveValue(regKey, "DisplayTexture"s, m_d.m_displayTexture);
-   SaveValue(regKey, "AddBlend"s, m_d.m_addBlend);
-   SaveValue(regKey, "DMD"s, m_d.m_isDMD);
-   SaveValue(regKey, "ImageMode"s, (int)m_d.m_imagealignment);
-   SaveValue(regKey, "Filter"s, m_d.m_filter);
-   SaveValue(regKey, "FilterAmount"s, (int)m_d.m_filterAmount);
+   g_pvp->m_settings.SaveValue(regKey, "Height"s, m_d.m_height);
+   g_pvp->m_settings.SaveValue(regKey, "RotX"s, m_d.m_rotX);
+   g_pvp->m_settings.SaveValue(regKey, "RotY"s, m_d.m_rotY);
+   g_pvp->m_settings.SaveValue(regKey, "RotZ"s, m_d.m_rotZ);
+   g_pvp->m_settings.SaveValue(regKey, "Color"s, (int)m_d.m_color);
+   g_pvp->m_settings.SaveValue(regKey, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
+   g_pvp->m_settings.SaveValue(regKey, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
+   g_pvp->m_settings.SaveValue(regKey, "ImageA"s, m_d.m_szImageA);
+   g_pvp->m_settings.SaveValue(regKey, "ImageB"s, m_d.m_szImageB);
+   g_pvp->m_settings.SaveValue(regKey, "Alpha"s, m_d.m_alpha);
+   g_pvp->m_settings.SaveValue(regKey, "ModulateVsAdd"s, m_d.m_modulate_vs_add);
+   g_pvp->m_settings.SaveValue(regKey, "Visible"s, m_d.m_isVisible);
+   g_pvp->m_settings.SaveValue(regKey, "DisplayTexture"s, m_d.m_displayTexture);
+   g_pvp->m_settings.SaveValue(regKey, "AddBlend"s, m_d.m_addBlend);
+   g_pvp->m_settings.SaveValue(regKey, "DMD"s, m_d.m_isDMD);
+   g_pvp->m_settings.SaveValue(regKey, "ImageMode"s, (int)m_d.m_imagealignment);
+   g_pvp->m_settings.SaveValue(regKey, "Filter"s, m_d.m_filter);
+   g_pvp->m_settings.SaveValue(regKey, "FilterAmount"s, (int)m_d.m_filterAmount);
 
 #undef regKey
 }

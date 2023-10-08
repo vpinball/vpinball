@@ -42,7 +42,7 @@ HRESULT Rubber::Init(PinTable * const ptable, const float x, const float y, cons
    m_ptable = ptable;
    m_d.m_visible = true;
 
-   //float length = 0.5f * LoadValueWithDefault(regKey[RegName::DefaultPropsRubber], "Length"s, 400.0f);
+   //float length = 0.5f * LoadValueWithDefault(Settings::DefaultPropsRubber, "Length"s, 400.0f);
 
    for (int i = 8; i > 0; i--)
    {
@@ -68,60 +68,60 @@ HRESULT Rubber::Init(PinTable * const ptable, const float x, const float y, cons
 
 void Rubber::SetDefaults(const bool fromMouseClick)
 {
-#define strKeyName regKey[RegName::DefaultPropsRubber]
+#define strKeyName Settings::DefaultPropsRubber
 
-   m_d.m_height = fromMouseClick ? LoadValueWithDefault(strKeyName, "Height"s, 25.0f) : 25.0f;
-   m_d.m_thickness = fromMouseClick ? LoadValueWithDefault(strKeyName, "Thickness"s, 8) : 8;
+   m_d.m_height = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Height"s, 25.0f) : 25.0f;
+   m_d.m_thickness = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Thickness"s, 8) : 8;
 
-   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueWithDefault(strKeyName, "TimerEnabled"s, false) : false;
-   m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueWithDefault(strKeyName, "TimerInterval"s, 100) : 100;
+   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "TimerEnabled"s, false) : false;
+   m_d.m_tdr.m_TimerInterval = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "TimerInterval"s, 100) : 100;
 
-   const HRESULT hr = LoadValue(strKeyName, "Image"s, m_d.m_szImage);
-   if ((hr != S_OK) || !fromMouseClick)
+   const bool hr = g_pvp->m_settings.LoadValue(strKeyName, "Image"s, m_d.m_szImage);
+   if (!hr || !fromMouseClick)
       m_d.m_szImage.clear();
 
-   m_d.m_hitEvent = fromMouseClick ? LoadValueWithDefault(strKeyName, "HitEvent"s, false) : false;
+   m_d.m_hitEvent = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "HitEvent"s, false) : false;
 
    SetDefaultPhysics(fromMouseClick);
 
-   m_d.m_visible = fromMouseClick ? LoadValueWithDefault(strKeyName, "Visible"s, true) : true;
-   m_d.m_collidable = fromMouseClick ? LoadValueWithDefault(strKeyName, "Collidable"s, true) : true;
+   m_d.m_visible = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Visible"s, true) : true;
+   m_d.m_collidable = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Collidable"s, true) : true;
 
-   m_d.m_staticRendering = fromMouseClick ? LoadValueWithDefault(strKeyName, "EnableStaticRendering"s, true) : true;
-   m_d.m_showInEditor = fromMouseClick ? LoadValueWithDefault(strKeyName, "EnableShowInEditor"s, false) : false;
+   m_d.m_staticRendering = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "EnableStaticRendering"s, true) : true;
+   m_d.m_showInEditor = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "EnableShowInEditor"s, false) : false;
 
-   m_d.m_rotX = fromMouseClick ? LoadValueWithDefault(strKeyName, "RotX"s, 0.0f) : 0.0f;
-   m_d.m_rotY = fromMouseClick ? LoadValueWithDefault(strKeyName, "RotY"s, 0.0f) : 0.0f;
-   m_d.m_rotZ = fromMouseClick ? LoadValueWithDefault(strKeyName, "RotZ"s, 0.0f) : 0.0f;
+   m_d.m_rotX = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "RotX"s, 0.0f) : 0.0f;
+   m_d.m_rotY = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "RotY"s, 0.0f) : 0.0f;
+   m_d.m_rotZ = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "RotZ"s, 0.0f) : 0.0f;
 
-   m_d.m_reflectionEnabled = fromMouseClick ? LoadValueWithDefault(strKeyName, "ReflectionEnabled"s, true) : true;
+   m_d.m_reflectionEnabled = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "ReflectionEnabled"s, true) : true;
 
 #undef strKeyName
 }
 
 void Rubber::WriteRegDefaults()
 {
-#define strKeyName regKey[RegName::DefaultPropsRubber]
+#define strKeyName Settings::DefaultPropsRubber
 
-   SaveValue(strKeyName, "Height"s, m_d.m_height);
-   SaveValue(strKeyName, "HitHeight"s, m_d.m_hitHeight);
-   SaveValue(strKeyName, "Thickness"s, m_d.m_thickness);
-   SaveValue(strKeyName, "HitEvent"s, m_d.m_hitEvent);
-   SaveValue(strKeyName, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
-   SaveValue(strKeyName, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
-   SaveValue(strKeyName, "Image"s, m_d.m_szImage);
-   SaveValue(strKeyName, "Elasticity"s, m_d.m_elasticity);
-   SaveValue(strKeyName, "ElasticityFalloff"s, m_d.m_elasticityFalloff);
-   SaveValue(strKeyName, "Friction"s, m_d.m_friction);
-   SaveValue(strKeyName, "Scatter"s, m_d.m_scatter);
-   SaveValue(strKeyName, "Collidable"s, m_d.m_collidable);
-   SaveValue(strKeyName, "Visible"s, m_d.m_visible);
-   SaveValue(strKeyName, "EnableStaticRendering"s, m_d.m_staticRendering);
-   SaveValue(strKeyName, "EnableShowInEditor"s, m_d.m_showInEditor);
-   SaveValue(strKeyName, "RotX"s, m_d.m_rotX);
-   SaveValue(strKeyName, "RotY"s, m_d.m_rotY);
-   SaveValue(strKeyName, "RotZ"s, m_d.m_rotZ);
-   SaveValue(strKeyName, "ReflectionEnabled"s, m_d.m_reflectionEnabled);
+   g_pvp->m_settings.SaveValue(strKeyName, "Height"s, m_d.m_height);
+   g_pvp->m_settings.SaveValue(strKeyName, "HitHeight"s, m_d.m_hitHeight);
+   g_pvp->m_settings.SaveValue(strKeyName, "Thickness"s, m_d.m_thickness);
+   g_pvp->m_settings.SaveValue(strKeyName, "HitEvent"s, m_d.m_hitEvent);
+   g_pvp->m_settings.SaveValue(strKeyName, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
+   g_pvp->m_settings.SaveValue(strKeyName, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
+   g_pvp->m_settings.SaveValue(strKeyName, "Image"s, m_d.m_szImage);
+   g_pvp->m_settings.SaveValue(strKeyName, "Elasticity"s, m_d.m_elasticity);
+   g_pvp->m_settings.SaveValue(strKeyName, "ElasticityFalloff"s, m_d.m_elasticityFalloff);
+   g_pvp->m_settings.SaveValue(strKeyName, "Friction"s, m_d.m_friction);
+   g_pvp->m_settings.SaveValue(strKeyName, "Scatter"s, m_d.m_scatter);
+   g_pvp->m_settings.SaveValue(strKeyName, "Collidable"s, m_d.m_collidable);
+   g_pvp->m_settings.SaveValue(strKeyName, "Visible"s, m_d.m_visible);
+   g_pvp->m_settings.SaveValue(strKeyName, "EnableStaticRendering"s, m_d.m_staticRendering);
+   g_pvp->m_settings.SaveValue(strKeyName, "EnableShowInEditor"s, m_d.m_showInEditor);
+   g_pvp->m_settings.SaveValue(strKeyName, "RotX"s, m_d.m_rotX);
+   g_pvp->m_settings.SaveValue(strKeyName, "RotY"s, m_d.m_rotY);
+   g_pvp->m_settings.SaveValue(strKeyName, "RotZ"s, m_d.m_rotZ);
+   g_pvp->m_settings.SaveValue(strKeyName, "ReflectionEnabled"s, m_d.m_reflectionEnabled);
 
 #undef strKeyName
 }
@@ -1536,13 +1536,13 @@ void Rubber::UpdateRubber(const bool updateVB, const float height)
 
 void Rubber::SetDefaultPhysics(const bool fromMouseClick)
 {
-#define strKeyName regKey[RegName::DefaultPropsRubber]
+#define strKeyName Settings::DefaultPropsRubber
 
-   m_d.m_elasticity = fromMouseClick ? LoadValueWithDefault(strKeyName, "Elasticity"s, 0.8f) : 0.8f;
-   m_d.m_elasticityFalloff = fromMouseClick ? LoadValueWithDefault(strKeyName, "ElasticityFalloff"s, 0.3f) : 0.3f;
-   m_d.m_friction = fromMouseClick ? LoadValueWithDefault(strKeyName, "Friction"s, 0.6f) : 0.6f;
-   m_d.m_scatter = fromMouseClick ? LoadValueWithDefault(strKeyName, "Scatter"s, 5.f) : 5.f;
-   m_d.m_hitHeight = fromMouseClick ? LoadValueWithDefault(strKeyName, "HitHeight"s, 25.0f) : 25.0f;
+   m_d.m_elasticity = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Elasticity"s, 0.8f) : 0.8f;
+   m_d.m_elasticityFalloff = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "ElasticityFalloff"s, 0.3f) : 0.3f;
+   m_d.m_friction = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Friction"s, 0.6f) : 0.6f;
+   m_d.m_scatter = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Scatter"s, 5.f) : 5.f;
+   m_d.m_hitHeight = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "HitHeight"s, 25.0f) : 25.0f;
 
 #undef strKeyName
 }

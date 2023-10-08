@@ -293,8 +293,8 @@ void CollectionManagerDialog::OnCancel()
 
 void CollectionManagerDialog::LoadPosition()
 {
-    const int x = LoadValueWithDefault(regKey[RegName::Editor], "CollectionMngPosX"s, 0);
-    const int y = LoadValueWithDefault(regKey[RegName::Editor], "CollectionMngPosY"s, 0);
+    const int x = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "CollectionMngPosX"s, 0);
+    const int y = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "CollectionMngPosY"s, 0);
 
     SetWindowPos(nullptr, x, y, 0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
 }
@@ -302,8 +302,8 @@ void CollectionManagerDialog::LoadPosition()
 void CollectionManagerDialog::SavePosition()
 {
     const CRect rect = GetWindowRect();
-    SaveValue(regKey[RegName::Editor], "CollectionMngPosX"s, (int)rect.left);
-    SaveValue(regKey[RegName::Editor], "CollectionMngPosY"s, (int)rect.top);
+    g_pvp->m_settings.SaveValue(Settings::Editor, "CollectionMngPosX"s, (int)rect.left);
+    g_pvp->m_settings.SaveValue(Settings::Editor, "CollectionMngPosY"s, (int)rect.top);
 }
 
 //######################################## Collection Dialog ########################################
