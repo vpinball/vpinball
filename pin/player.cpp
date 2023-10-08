@@ -580,6 +580,9 @@ void Player::CreateWnd(HWND parent /* = 0 */)
    cs.y = SDL_WINDOWPOS_CENTERED_DISPLAY(adapter);
 #endif
 
+   // Prevent from being top most, to allow DMD, B2S,... to be over the VPX window
+   SDL_SetHint(SDL_HINT_ALLOW_TOPMOST, "0");
+
    if (m_fullScreen)
    {
       m_sdl_playfieldHwnd = SDL_CreateWindow(cs.lpszName, displayX, displayY, displayWidth, displayHeight, flags | SDL_WINDOW_FULLSCREEN);
@@ -603,8 +606,9 @@ void Player::CreateWnd(HWND parent /* = 0 */)
    }
    else
    {
-      if (cs.cx == displayWidth && cs.cy == displayHeight)
-         flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+      // Don't ask fullscreen desktop as it will likely cause issue with overlaying DMD, B2S, Pup,... above VPX
+      //if (cs.cx == displayWidth && cs.cy == displayHeight)
+      //   flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
       m_sdl_playfieldHwnd = SDL_CreateWindow(cs.lpszName, cs.x, cs.y, cs.cx, cs.cy, flags);
    }
    SDL_DisplayMode mode;
@@ -4386,12 +4390,7 @@ void Player::FinishFrame()
 
    // Close player (moving back to editor or to system is handled after player has been closed)
    if (m_closing == CS_STOP_PLAY || m_closing == CS_CLOSE_APP)
-   {
-      PauseMusic();
-      // Stop playing (send close window message)
-      if (IsWindow()) SendMessage(WM_CLOSE, 0, 0);
-      return;
-   }
+      PostMessage(WM_CLOSE, 0, 0);
 
    // Open debugger window
    if (m_showDebugger && !g_pvp->m_disable_pause_menu)
