@@ -769,10 +769,10 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
 
 void SearchSelectDialog::LoadPosition()
 {
-   const int x = LoadValueWithDefault(regKey[RegName::Editor], "SearchSelectPosX"s, 0);
-   const int y = LoadValueWithDefault(regKey[RegName::Editor], "SearchSelectPosY"s, 0);
-   const int w = LoadValueWithDefault(regKey[RegName::Editor], "SearchSelectWidth"s, 650);
-   const int h = LoadValueWithDefault(regKey[RegName::Editor], "SearchSelectHeight"s, 400);
+   const int x = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "SearchSelectPosX"s, 0);
+   const int y = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "SearchSelectPosY"s, 0);
+   const int w = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "SearchSelectWidth"s, 650);
+   const int h = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "SearchSelectHeight"s, 400);
 
    SetWindowPos(nullptr, x, y, w, h, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE);
 }
@@ -780,10 +780,10 @@ void SearchSelectDialog::LoadPosition()
 void SearchSelectDialog::SavePosition()
 {
    const CRect rect = GetWindowRect();
-   SaveValue(regKey[RegName::Editor], "SearchSelectPosX"s, (int)rect.left);
-   SaveValue(regKey[RegName::Editor], "SearchSelectPosY"s, (int)rect.top);
+   g_pvp->m_settings.SaveValue(Settings::Editor, "SearchSelectPosX"s, (int)rect.left);
+   g_pvp->m_settings.SaveValue(Settings::Editor, "SearchSelectPosY"s, (int)rect.top);
    const int w = rect.right - rect.left;
-   SaveValue(regKey[RegName::Editor], "SearchSelectWidth"s, w);
+   g_pvp->m_settings.SaveValue(Settings::Editor, "SearchSelectWidth"s, w);
    const int h = rect.bottom - rect.top;
-   SaveValue(regKey[RegName::Editor], "SearchSelectHeight"s, h);
+   g_pvp->m_settings.SaveValue(Settings::Editor, "SearchSelectHeight"s, h);
 }

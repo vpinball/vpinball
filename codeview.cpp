@@ -697,12 +697,12 @@ void CodeViewer::SetVisible(const bool visible)
    if (!visible && !m_minimized)
    {
       const CRect rc = GetWindowRect();
-      SaveValue(regKey[RegName::Editor], "CodeViewPosX"s, (int)rc.left);
-      SaveValue(regKey[RegName::Editor], "CodeViewPosY"s, (int)rc.top);
+      g_pvp->m_settings.SaveValue(Settings::Editor, "CodeViewPosX"s, (int)rc.left);
+      g_pvp->m_settings.SaveValue(Settings::Editor, "CodeViewPosY"s, (int)rc.top);
       const int w = rc.right - rc.left;
-      SaveValue(regKey[RegName::Editor], "CodeViewPosWidth"s, w);
+      g_pvp->m_settings.SaveValue(Settings::Editor, "CodeViewPosWidth"s, w);
       const int h = rc.bottom - rc.top;
-      SaveValue(regKey[RegName::Editor], "CodeViewPosHeight"s, h);
+      g_pvp->m_settings.SaveValue(Settings::Editor, "CodeViewPosHeight"s, h);
    }
 
    if (m_hwndFind && !visible)
@@ -726,10 +726,10 @@ void CodeViewer::SetVisible(const bool visible)
    {
 	   if (!m_visible)
 	   {
-		   const int x = LoadValueWithDefault(regKey[RegName::Editor], "CodeViewPosX"s, 0);
-		   const int y = LoadValueWithDefault(regKey[RegName::Editor], "CodeViewPosY"s, 0);
-		   const int w = LoadValueWithDefault(regKey[RegName::Editor], "CodeViewPosWidth"s, 640);
-		   const int h = LoadValueWithDefault(regKey[RegName::Editor], "CodeViewPosHeight"s, 490);
+		   const int x = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "CodeViewPosX"s, 0);
+         const int y = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "CodeViewPosY"s, 0);
+         const int w = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "CodeViewPosWidth"s, 640);
+         const int h = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "CodeViewPosHeight"s, 490);
 		   SetWindowPos(HWND_TOP, x, y, w, h, SWP_NOMOVE | SWP_NOSIZE);
 	   }
 	   SetForegroundWindow();
@@ -760,26 +760,26 @@ void CodeViewer::SetCaption(const string& szCaption)
 
 void CodeViewer::UpdatePrefsfromReg()
 {
-   m_bgColor = LoadValueWithDefault(regKey[RegName::CVEdit], "BackGroundColor"s, (int)RGB(255,255,255));
-   m_bgSelColor = LoadValueWithDefault(regKey[RegName::CVEdit], "BackGroundSelectionColor"s, (int)RGB(192,192,192));
-   m_displayAutoComplete = LoadValueWithDefault(regKey[RegName::CVEdit], "DisplayAutoComplete"s, true);
-   m_displayAutoCompleteLength = LoadValueWithDefault(regKey[RegName::CVEdit], "DisplayAutoCompleteAfter"s, 1);
-   m_dwellDisplay = LoadValueWithDefault(regKey[RegName::CVEdit], "DwellDisplay"s, true);
-   m_dwellHelp = LoadValueWithDefault(regKey[RegName::CVEdit], "DwellHelp"s, true);
-   m_dwellDisplayTime = LoadValueWithDefault(regKey[RegName::CVEdit], "DwellDisplayTime"s, 700);
+   m_bgColor = g_pvp->m_settings.LoadValueWithDefault(Settings::CVEdit, "BackGroundColor"s, (int)RGB(255,255,255));
+   m_bgSelColor = g_pvp->m_settings.LoadValueWithDefault(Settings::CVEdit, "BackGroundSelectionColor"s, (int)RGB(192,192,192));
+   m_displayAutoComplete = g_pvp->m_settings.LoadValueWithDefault(Settings::CVEdit, "DisplayAutoComplete"s, true);
+   m_displayAutoCompleteLength = g_pvp->m_settings.LoadValueWithDefault(Settings::CVEdit, "DisplayAutoCompleteAfter"s, 1);
+   m_dwellDisplay = g_pvp->m_settings.LoadValueWithDefault(Settings::CVEdit, "DwellDisplay"s, true);
+   m_dwellHelp = g_pvp->m_settings.LoadValueWithDefault(Settings::CVEdit, "DwellHelp"s, true);
+   m_dwellDisplayTime = g_pvp->m_settings.LoadValueWithDefault(Settings::CVEdit, "DwellDisplayTime"s, 700);
    for (size_t i = 0; i < m_lPrefsList->size(); ++i)
       m_lPrefsList->at(i)->GetPrefsFromReg();
 }
 
 void CodeViewer::UpdateRegWithPrefs()
 {
-   SaveValue(regKey[RegName::CVEdit], "BackGroundColor"s, (int)m_bgColor);
-   SaveValue(regKey[RegName::CVEdit], "BackGroundSelectionColor"s, (int)m_bgSelColor);
-   SaveValue(regKey[RegName::CVEdit], "DisplayAutoComplete"s, m_displayAutoComplete);
-   SaveValue(regKey[RegName::CVEdit], "DisplayAutoCompleteAfter"s, m_displayAutoCompleteLength);
-   SaveValue(regKey[RegName::CVEdit], "DwellDisplay"s, m_dwellDisplay);
-   SaveValue(regKey[RegName::CVEdit], "DwellHelp"s, m_dwellHelp);
-   SaveValue(regKey[RegName::CVEdit], "DwellDisplayTime"s, m_dwellDisplayTime);
+   g_pvp->m_settings.SaveValue(Settings::CVEdit, "BackGroundColor"s, (int)m_bgColor);
+   g_pvp->m_settings.SaveValue(Settings::CVEdit, "BackGroundSelectionColor"s, (int)m_bgSelColor);
+   g_pvp->m_settings.SaveValue(Settings::CVEdit, "DisplayAutoComplete"s, m_displayAutoComplete);
+   g_pvp->m_settings.SaveValue(Settings::CVEdit, "DisplayAutoCompleteAfter"s, m_displayAutoCompleteLength);
+   g_pvp->m_settings.SaveValue(Settings::CVEdit, "DwellDisplay"s, m_dwellDisplay);
+   g_pvp->m_settings.SaveValue(Settings::CVEdit, "DwellHelp"s, m_dwellHelp);
+   g_pvp->m_settings.SaveValue(Settings::CVEdit, "DwellDisplayTime"s, m_dwellDisplayTime);
    for (size_t i = 0; i < m_lPrefsList->size(); i++)
       m_lPrefsList->at(i)->SetPrefsToReg();
 }
@@ -2541,10 +2541,10 @@ size_t CodeViewer::SureFind(const string &LineIn, const string &ToFind)
 
 void CodeViewer::PreCreate(CREATESTRUCT& cs)
 {
-    const int x = LoadValueWithDefault(regKey[RegName::Editor], "CodeViewPosX"s, 0);
-    const int y = LoadValueWithDefault(regKey[RegName::Editor], "CodeViewPosY"s, 0);
-    const int w = LoadValueWithDefault(regKey[RegName::Editor], "CodeViewPosWidth"s, 640);
-    const int h = LoadValueWithDefault(regKey[RegName::Editor], "CodeViewPosHeight"s, 490);
+    const int x = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "CodeViewPosX"s, 0);
+    const int y = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "CodeViewPosY"s, 0);
+    const int w = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "CodeViewPosWidth"s, 640);
+    const int h = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "CodeViewPosHeight"s, 490);
 
     cs.x = x;
     cs.y = y;
@@ -3004,10 +3004,7 @@ void CodeViewer::ParseVPCore()
 
 	searchPaths.push_back(PATH_SCRIPTS + "core.vbs"); // default script path
 
-	string szLoadDir;
-	const HRESULT hr = LoadValue(regKey[RegName::RecentDir], "LoadDir"s, szLoadDir); // last known load dir path
-	if (hr != S_OK)
-		szLoadDir = PATH_TABLES;
+	string szLoadDir = g_pvp->m_settings.LoadValueWithDefault(Settings::RecentDir, "LoadDir"s, PATH_TABLES); // last known load dir path
 	searchPaths.push_back(szLoadDir + "core.vbs");
 
 	FILE* fCore = nullptr;
@@ -3449,8 +3446,8 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 				pcv->m_lPrefsList->at(i)->GetPrefsFromReg();
 				pcv->m_lPrefsList->at(i)->SetCheckBox(hwndDlg);
 			}
-			pcv->m_bgColor = LoadValueWithDefault(regKey[RegName::CVEdit], "BackGroundColor"s, (int)RGB(255, 255, 255));
-			pcv->m_bgSelColor = LoadValueWithDefault(regKey[RegName::CVEdit], "BackGroundSelectionColor"s, (int)RGB(192, 192, 192));
+			pcv->m_bgColor = g_pvp->m_settings.LoadValueWithDefault(Settings::CVEdit, "BackGroundColor"s, (int)RGB(255, 255, 255));
+			pcv->m_bgSelColor = g_pvp->m_settings.LoadValueWithDefault(Settings::CVEdit, "BackGroundSelectionColor"s, (int)RGB(192, 192, 192));
 			pcv->UpdateScinFromPrefs();
 			SNDMSG(GetDlgItem(hwndDlg, IDC_CVP_CHKBOX_SHOWAUTOCOMPLETE), BM_SETCHECK, pcv->m_displayAutoComplete ? BST_CHECKED : BST_UNCHECKED, 0L);
 			SNDMSG(GetDlgItem(hwndDlg, IDC_CVP_CHKBOX_DISPLAYDWELL), BM_SETCHECK, pcv->m_dwellDisplay ? BST_CHECKED : BST_UNCHECKED, 0L);
@@ -3502,19 +3499,19 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 				case IDC_CVP_CHKBOX_DISPLAYDWELL:
 				{
 					pcv->m_dwellDisplay = !!IsDlgButtonChecked(hwndDlg, IDC_CVP_CHKBOX_DISPLAYDWELL);
-					SaveValue(regKey[RegName::CVEdit], "DwellDisplay"s, pcv->m_dwellDisplay);
+					g_pvp->m_settings.SaveValue(Settings::CVEdit, "DwellDisplay"s, pcv->m_dwellDisplay);
 				}
 				break;
 				case IDC_CVP_CHKBOX_HELPWITHDWELL:
 				{
 					pcv->m_dwellHelp = !!IsDlgButtonChecked(hwndDlg, IDC_CVP_CHKBOX_HELPWITHDWELL);
-					SaveValue(regKey[RegName::CVEdit], "DwellHelp"s, pcv->m_dwellHelp);
+               g_pvp->m_settings.SaveValue(Settings::CVEdit, "DwellHelp"s, pcv->m_dwellHelp);
 				}
 				break;
 				case IDC_CVP_CHKBOX_SHOWAUTOCOMPLETE:
 				{
 					pcv->m_displayAutoComplete = !!IsDlgButtonChecked(hwndDlg, IDC_CVP_CHKBOX_SHOWAUTOCOMPLETE);
-					SaveValue(regKey[RegName::CVEdit], "DisplayAutoComplete"s, pcv->m_displayAutoComplete);
+               g_pvp->m_settings.SaveValue(Settings::CVEdit, "DisplayAutoComplete"s, pcv->m_displayAutoComplete);
 				}
 				break;
 				case IDC_CVP_BUT_COL_BACKGROUND:
@@ -3734,7 +3731,7 @@ Collection::Collection()
    m_fireEvents = false;
    m_stopSingleEvents = false;
 
-   m_groupElements = LoadValueWithDefault(regKey[RegName::Editor], "GroupElementsInCollection"s, true);
+   m_groupElements = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "GroupElementsInCollection"s, true);
 }
 
 STDMETHODIMP Collection::get_Name(BSTR *pVal)
@@ -3926,8 +3923,8 @@ void DebuggerModule::Init(CodeViewer * const pcv)
 
 STDMETHODIMP DebuggerModule::Print(VARIANT *pvar)
 {
-   const bool enableLog = LoadValueWithDefault(regKey[RegName::Editor], "EnableLog"s, false);
-   const bool logScript = enableLog && LoadValueWithDefault(regKey[RegName::Editor], "LogScriptOutput"s, true);
+   const bool enableLog = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "EnableLog"s, false);
+   const bool logScript = enableLog && g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "LogScriptOutput"s, true);
 
    if (V_VT(pvar) == VT_EMPTY || V_VT(pvar) == VT_NULL || V_VT(pvar) == VT_ERROR)
    {

@@ -25,8 +25,8 @@ HRESULT Textbox::Init(PinTable * const ptable, const float x, const float y, con
 {
    m_ptable = ptable;
 
-   const float width  = LoadValueWithDefault(regKey[RegName::DefaultPropsTextBox], "Width"s, 100.0f);
-   const float height = LoadValueWithDefault(regKey[RegName::DefaultPropsTextBox], "Height"s, 50.0f);
+   const float width  = g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultPropsTextBox, "Width"s, 100.0f);
+   const float height = g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultPropsTextBox, "Height"s, 50.0f);
 
    m_d.m_v1.x = x;
    m_d.m_v1.y = y;
@@ -40,7 +40,7 @@ HRESULT Textbox::Init(PinTable * const ptable, const float x, const float y, con
 
 void Textbox::SetDefaults(const bool fromMouseClick)
 {
-#define regKey regKey[RegName::DefaultPropsTextBox]
+#define regKey Settings::DefaultPropsTextBox
 
    //Textbox is always located on backdrop
    m_backglass = true;
@@ -72,22 +72,22 @@ void Textbox::SetDefaults(const bool fromMouseClick)
    }
    else
    {
-      m_d.m_backcolor = LoadValueWithDefault(regKey, "BackColor"s, (int)RGB(0, 0, 0));
-      m_d.m_fontcolor = LoadValueWithDefault(regKey, "FontColor"s, (int)RGB(255, 255, 255));
-      m_d.m_intensity_scale = LoadValueWithDefault(regKey, "IntensityScale"s, 1.0f);
-      m_d.m_tdr.m_TimerEnabled = LoadValueWithDefault(regKey, "TimerEnabled"s, false) ? true : false;
-      m_d.m_tdr.m_TimerInterval = LoadValueWithDefault(regKey, "TimerInterval"s, 100);
-      m_d.m_talign = (TextAlignment)LoadValueWithDefault(regKey, "TextAlignment"s, (int)TextAlignRight);
-      m_d.m_transparent = LoadValueWithDefault(regKey, "Transparent"s, false);
-      m_d.m_isDMD = LoadValueWithDefault(regKey, "DMD"s, false);
+      m_d.m_backcolor = g_pvp->m_settings.LoadValueWithDefault(regKey, "BackColor"s, (int)RGB(0, 0, 0));
+      m_d.m_fontcolor = g_pvp->m_settings.LoadValueWithDefault(regKey, "FontColor"s, (int)RGB(255, 255, 255));
+      m_d.m_intensity_scale = g_pvp->m_settings.LoadValueWithDefault(regKey, "IntensityScale"s, 1.0f);
+      m_d.m_tdr.m_TimerEnabled = g_pvp->m_settings.LoadValueWithDefault(regKey, "TimerEnabled"s, false) ? true : false;
+      m_d.m_tdr.m_TimerInterval = g_pvp->m_settings.LoadValueWithDefault(regKey, "TimerInterval"s, 100);
+      m_d.m_talign = (TextAlignment)g_pvp->m_settings.LoadValueWithDefault(regKey, "TextAlignment"s, (int)TextAlignRight);
+      m_d.m_transparent = g_pvp->m_settings.LoadValueWithDefault(regKey, "Transparent"s, false);
+      m_d.m_isDMD = g_pvp->m_settings.LoadValueWithDefault(regKey, "DMD"s, false);
 
-      m_d.m_fontsize = LoadValueWithDefault(regKey, "FontSize"s, 14.25f);
+      m_d.m_fontsize = g_pvp->m_settings.LoadValueWithDefault(regKey, "FontSize"s, 14.25f);
       fd.cySize.int64 = (LONGLONG)(m_d.m_fontsize * 10000.0f);
 
       string tmp;
-      HRESULT hr;
-      hr = LoadValue(regKey, "FontName"s, tmp);
-      if (hr != S_OK)
+      bool hr;
+      hr = g_pvp->m_settings.LoadValue(regKey, "FontName"s, tmp);
+      if (!hr)
          fd.lpstrName = (LPOLESTR)(L"Arial");
       else
       {
@@ -99,14 +99,14 @@ void Textbox::SetDefaults(const bool fromMouseClick)
          free_lpstrName = true;
       }
 
-      fd.sWeight = LoadValueWithDefault(regKey, "FontWeight"s, (int)FW_NORMAL);
-      fd.sCharset = LoadValueWithDefault(regKey, "FontCharSet"s, 0);
-      fd.fItalic = LoadValueWithDefault(regKey, "FontItalic"s, 0);
-      fd.fUnderline = LoadValueWithDefault(regKey, "FontUnderline"s, 0);
-      fd.fStrikethrough = LoadValueWithDefault(regKey, "FontStrikeThrough"s, 0);
+      fd.sWeight = g_pvp->m_settings.LoadValueWithDefault(regKey, "FontWeight"s, (int)FW_NORMAL);
+      fd.sCharset = g_pvp->m_settings.LoadValueWithDefault(regKey, "FontCharSet"s, 0);
+      fd.fItalic = g_pvp->m_settings.LoadValueWithDefault(regKey, "FontItalic"s, 0);
+      fd.fUnderline = g_pvp->m_settings.LoadValueWithDefault(regKey, "FontUnderline"s, 0);
+      fd.fStrikethrough = g_pvp->m_settings.LoadValueWithDefault(regKey, "FontStrikeThrough"s, 0);
 
-      hr = LoadValue(regKey, "Text"s, m_d.m_sztext);
-      if (hr != S_OK)
+      hr = g_pvp->m_settings.LoadValue(regKey, "Text"s, m_d.m_sztext);
+      if (!hr)
          m_d.m_sztext.clear();
    }
 
@@ -121,14 +121,14 @@ void Textbox::SetDefaults(const bool fromMouseClick)
 
 void Textbox::WriteRegDefaults()
 {
-#define regKey regKey[RegName::DefaultPropsTextBox]
+#define regKey Settings::DefaultPropsTextBox
 
-   SaveValue(regKey, "BackColor"s, (int)m_d.m_backcolor);
-   SaveValue(regKey, "FontColor"s, (int)m_d.m_fontcolor);
-   SaveValue(regKey, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
-   SaveValue(regKey, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
-   SaveValue(regKey, "Transparent"s, m_d.m_transparent);
-   SaveValue(regKey, "DMD"s, m_d.m_isDMD);
+   g_pvp->m_settings.SaveValue(regKey, "BackColor"s, (int)m_d.m_backcolor);
+   g_pvp->m_settings.SaveValue(regKey, "FontColor"s, (int)m_d.m_fontcolor);
+   g_pvp->m_settings.SaveValue(regKey, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
+   g_pvp->m_settings.SaveValue(regKey, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
+   g_pvp->m_settings.SaveValue(regKey, "Transparent"s, m_d.m_transparent);
+   g_pvp->m_settings.SaveValue(regKey, "DMD"s, m_d.m_isDMD);
 
    FONTDESC fd;
    fd.cbSizeofstruct = sizeof(FONTDESC);
@@ -141,21 +141,21 @@ void Textbox::WriteRegDefaults()
    m_pIFont->get_Strikethrough(&fd.fStrikethrough);
 
    const float fTmp = (float)(fd.cySize.int64 / 10000.0);
-   SaveValue(regKey, "FontSize"s, fTmp);
+   g_pvp->m_settings.SaveValue(regKey, "FontSize"s, fTmp);
    const size_t charCnt = wcslen(fd.lpstrName) + 1;
    char * const strTmp = new char[2 * charCnt];
    WideCharToMultiByteNull(CP_ACP, 0, fd.lpstrName, -1, strTmp, (int)(2 * charCnt), nullptr, nullptr);
-   SaveValue(regKey, "FontName"s, strTmp);
+   g_pvp->m_settings.SaveValue(regKey, "FontName"s, strTmp);
    delete[] strTmp;
    const int weight = fd.sWeight;
    const int charset = fd.sCharset;
-   SaveValue(regKey, "FontWeight"s, weight);
-   SaveValue(regKey, "FontCharSet"s, charset);
-   SaveValue(regKey, "FontItalic"s, fd.fItalic);
-   SaveValue(regKey, "FontUnderline"s, fd.fUnderline);
-   SaveValue(regKey, "FontStrikeThrough"s, fd.fStrikethrough);
+   g_pvp->m_settings.SaveValue(regKey, "FontWeight"s, weight);
+   g_pvp->m_settings.SaveValue(regKey, "FontCharSet"s, charset);
+   g_pvp->m_settings.SaveValue(regKey, "FontItalic"s, fd.fItalic);
+   g_pvp->m_settings.SaveValue(regKey, "FontUnderline"s, fd.fUnderline);
+   g_pvp->m_settings.SaveValue(regKey, "FontStrikeThrough"s, fd.fStrikethrough);
 
-   SaveValue(regKey, "Text"s, m_d.m_sztext);
+   g_pvp->m_settings.SaveValue(regKey, "Text"s, m_d.m_sztext);
 
 #undef regKey
 }

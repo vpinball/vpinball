@@ -63,6 +63,7 @@ Player::Player(const bool cameraMode, PinTable *const editor_table, PinTable *co
    , m_ptable(live_table)
 {
    m_dynamicMode = m_cameraMode; // We can move the camera => disable static pre-rendering
+   m_pininput.LoadSettings(m_ptable->m_settings);
 
 #if !(defined(_M_IX86) || defined(_M_X64) || defined(_M_AMD64) || defined(__i386__) || defined(__i386) || defined(__i486__) || defined(__i486) || defined(i386) || defined(__ia64__) || defined(__x86_64__))
  #pragma message ( "Warning: No CPU float ignore denorm implemented" )
@@ -114,42 +115,42 @@ Player::Player(const bool cameraMode, PinTable *const editor_table, PinTable *co
    m_curPlunger = JOYRANGEMN - 1;
 
 #ifdef ENABLE_VR
-   const int vrDetectionMode = LoadValueWithDefault(regKey[RegName::PlayerVR], "AskToTurnOn"s, 0);
+   const int vrDetectionMode = m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "AskToTurnOn"s, 0);
    bool useVR = vrDetectionMode == 2 /* VR Disabled */  ? false : RenderDevice::isVRinstalled();
    if (useVR && (vrDetectionMode == 1 /* VR Autodetect => ask to turn on and adapt accordingly */) && !RenderDevice::isVRturnedOn())
       useVR = g_pvp->MessageBox("VR headset detected but SteamVR is not running.\n\nTurn VR on?", "VR Headset Detected", MB_YESNO) == IDYES;
-   m_capExtDMD = LoadValueWithDefault(regKey[RegName::Player], "CaptureExternalDMD"s, false);
-   m_capPUP = LoadValueWithDefault(regKey[RegName::Player], "CapturePUP"s, false);
+   m_capExtDMD = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "CaptureExternalDMD"s, false);
+   m_capPUP = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "CapturePUP"s, false);
 #else
    bool useVR = false;
    m_capExtDMD = false;
    m_capPUP = false;
 #endif
 
-   m_trailForBalls = LoadValueWithDefault(regKey[RegName::Player], "BallTrail"s, true);
-   m_disableLightingForBalls = LoadValueWithDefault(regKey[RegName::Player], "DisableLightingForBalls"s, false);
-   m_stereo3D = (StereoMode)LoadValueWithDefault(regKey[RegName::Player], "Stereo3D"s, (int)STEREO_OFF);
-   m_stereo3Denabled = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DEnabled"s, (m_stereo3D != STEREO_OFF));
-   m_disableDWM = LoadValueWithDefault(regKey[RegName::Player], "DisableDWM"s, false);
-   m_useNvidiaApi = LoadValueWithDefault(regKey[RegName::Player], "UseNVidiaAPI"s, false);
+   m_trailForBalls = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "BallTrail"s, true);
+   m_disableLightingForBalls = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "DisableLightingForBalls"s, false);
+   m_stereo3D = (StereoMode)m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3D"s, (int)STEREO_OFF);
+   m_stereo3Denabled = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DEnabled"s, (m_stereo3D != STEREO_OFF));
+   m_disableDWM = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "DisableDWM"s, false);
+   m_useNvidiaApi = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "UseNVidiaAPI"s, false);
    #ifdef ENABLE_SDL
    m_ditherOff = false;
-   m_stereo3DfakeStereo = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DFake"s, false);
+   m_stereo3DfakeStereo = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DFake"s, false);
    #else
-   m_ditherOff = LoadValueWithDefault(regKey[RegName::Player], "Render10Bit"s, false); // if rendering at 10bit output resolution, disable dithering
+   m_ditherOff = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Render10Bit"s, false); // if rendering at 10bit output resolution, disable dithering
    m_stereo3DfakeStereo = true;
    #endif
-   m_BWrendering = LoadValueWithDefault(regKey[RegName::Player], "BWRendering"s, 0);
-   m_detectScriptHang = LoadValueWithDefault(regKey[RegName::Player], "DetectHang"s, false);
-   const int maxReflection = LoadValueWithDefault(regKey[useVR ? RegName::PlayerVR : RegName::Player], "PFReflection"s, -1);
+   m_BWrendering = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "BWRendering"s, 0);
+   m_detectScriptHang = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "DetectHang"s, false);
+   const int maxReflection = m_ptable->m_settings.LoadValueWithDefault(useVR ? Settings::PlayerVR : Settings::Player, "PFReflection"s, -1);
    if (maxReflection != -1)
       m_maxReflectionMode = (RenderProbe::ReflectionMode)maxReflection;
    else
    {
       m_maxReflectionMode = RenderProbe::REFL_STATIC;
-      if (LoadValueWithDefault(regKey[useVR ? RegName::PlayerVR : RegName::Player], "BallReflection"s, true))
+      if (m_ptable->m_settings.LoadValueWithDefault(useVR ? Settings::PlayerVR : Settings::Player, "BallReflection"s, true))
          m_maxReflectionMode = RenderProbe::REFL_STATIC_N_BALLS;
-      if (LoadValueWithDefault(regKey[useVR ? RegName::PlayerVR : RegName::Player], "PFRefl"s, true))
+      if (m_ptable->m_settings.LoadValueWithDefault(useVR ? Settings::PlayerVR : Settings::Player, "PFRefl"s, true))
          m_maxReflectionMode = RenderProbe::REFL_STATIC_N_DYNAMIC;
    }
    // Apply table specific overrides
@@ -168,52 +169,52 @@ Player::Player(const bool cameraMode, PinTable *const editor_table, PinTable *co
       m_maxReflectionMode = RenderProbe::REFL_DYNAMIC;
 
 #ifdef ENABLE_VR
-   m_vrPreview = (VRPreviewMode)LoadValueWithDefault(regKey[RegName::PlayerVR], "VRPreview"s, (int)VRPREVIEW_LEFT);
+   m_vrPreview = (VRPreviewMode)m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "VRPreview"s, (int)VRPREVIEW_LEFT);
    if (useVR)
    {
       m_stereo3D = STEREO_VR;
       m_dynamicMode = true; // VR mode => camera will be dynamic, disable static pre-rendering
       m_maxPrerenderedFrames = 0;
-      m_NudgeShake = LoadValueWithDefault(regKey[RegName::PlayerVR], "NudgeStrength"s, 2e-2f);
-      m_sharpen = LoadValueWithDefault(regKey[RegName::PlayerVR], "Sharpen"s, 0);
-      m_FXAA = LoadValueWithDefault(regKey[RegName::PlayerVR], "FXAA"s, (int)Disabled);
-      m_MSAASamples = LoadValueWithDefault(regKey[RegName::PlayerVR], "MSAASamples"s, 1);
-      m_AAfactor = LoadValueWithDefault(regKey[RegName::PlayerVR], "AAFactor"s, LoadValueWithDefault(regKey[RegName::Player], "USEAA"s, false) ? 2.0f : 1.0f);
-      m_dynamicAO = LoadValueWithDefault(regKey[RegName::PlayerVR], "DynamicAO"s, true);
-      m_disableAO = LoadValueWithDefault(regKey[RegName::PlayerVR], "DisableAO"s, false);
-      m_ss_refl = LoadValueWithDefault(regKey[RegName::PlayerVR], "SSRefl"s, false);
-      m_scaleFX_DMD = LoadValueWithDefault(regKey[RegName::PlayerVR], "ScaleFXDMD"s, false);
-      m_bloomOff = LoadValueWithDefault(regKey[RegName::PlayerVR], "ForceBloomOff"s, false);
+      m_NudgeShake = m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "NudgeStrength"s, 2e-2f);
+      m_sharpen = m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "Sharpen"s, 0);
+      m_FXAA = m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "FXAA"s, (int)Disabled);
+      m_MSAASamples = m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "MSAASamples"s, 1);
+      m_AAfactor = m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "AAFactor"s, m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "USEAA"s, false) ? 2.0f : 1.0f);
+      m_dynamicAO = m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "DynamicAO"s, true);
+      m_disableAO = m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "DisableAO"s, false);
+      m_ss_refl = m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "SSRefl"s, false);
+      m_scaleFX_DMD = m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "ScaleFXDMD"s, false);
+      m_bloomOff = m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "ForceBloomOff"s, false);
       m_videoSyncMode = VideoSyncMode::VSM_NONE; // Disable VSync for VR (sync is performed by the OpenVR runtime)
       m_maxFramerate = 0; 
    }
    else
 #endif
    {
-      m_stereo3D = (StereoMode)LoadValueWithDefault(regKey[RegName::Player], "Stereo3D"s, (int)STEREO_OFF);
-      m_maxPrerenderedFrames = LoadValueWithDefault(regKey[RegName::Player], "MaxPrerenderedFrames"s, 0);
-      m_NudgeShake = LoadValueWithDefault(regKey[RegName::Player], "NudgeStrength"s, 2e-2f);
-      m_sharpen = LoadValueWithDefault(regKey[RegName::Player], "Sharpen"s, 0);
-      m_FXAA = LoadValueWithDefault(regKey[RegName::Player], "FXAA"s, (int)Disabled);
+      m_stereo3D = (StereoMode)m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3D"s, (int)STEREO_OFF);
+      m_maxPrerenderedFrames = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "MaxPrerenderedFrames"s, 0);
+      m_NudgeShake = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "NudgeStrength"s, 2e-2f);
+      m_sharpen = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Sharpen"s, 0);
+      m_FXAA = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "FXAA"s, (int)Disabled);
 #ifdef ENABLE_SDL
-      m_MSAASamples = LoadValueWithDefault(regKey[RegName::Player], "MSAASamples"s, 1);
+      m_MSAASamples = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "MSAASamples"s, 1);
 #else
       // Sadly DX9 does not support resolving an MSAA depth buffer, making MSAA implementation complex for it. So just disable for now
       m_MSAASamples = 1;
 #endif
-      m_AAfactor = LoadValueWithDefault(regKey[RegName::Player], "AAFactor"s, LoadValueWithDefault(regKey[RegName::Player], "USEAA"s, false) ? 2.0f : 1.0f);
-      m_dynamicAO = LoadValueWithDefault(regKey[RegName::Player], "DynamicAO"s, true);
-      m_disableAO = LoadValueWithDefault(regKey[RegName::Player], "DisableAO"s, false);
-      m_ss_refl = LoadValueWithDefault(regKey[RegName::Player], "SSRefl"s, false);
-      m_scaleFX_DMD = LoadValueWithDefault(regKey[RegName::Player], "ScaleFXDMD"s, false);
-      m_bloomOff = LoadValueWithDefault(regKey[RegName::Player], "ForceBloomOff"s, false);
-      m_maxFramerate = LoadValueWithDefault(regKey[RegName::Player], "MaxFramerate"s, -1);
+      m_AAfactor = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "AAFactor"s, m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "USEAA"s, false) ? 2.0f : 1.0f);
+      m_dynamicAO = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "DynamicAO"s, true);
+      m_disableAO = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "DisableAO"s, false);
+      m_ss_refl = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "SSRefl"s, false);
+      m_scaleFX_DMD = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "ScaleFXDMD"s, false);
+      m_bloomOff = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "ForceBloomOff"s, false);
+      m_maxFramerate = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "MaxFramerate"s, -1);
       if(m_maxFramerate > 0 && m_maxFramerate < 24) // at least 24 fps
          m_maxFramerate = 24;
-      m_videoSyncMode = (VideoSyncMode)LoadValueWithDefault(regKey[RegName::Player], "SyncMode"s, VSM_INVALID);
+      m_videoSyncMode = (VideoSyncMode)m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "SyncMode"s, VSM_INVALID);
       if (m_maxFramerate < 0 && m_videoSyncMode == VideoSyncMode::VSM_INVALID)
       {
-         const int vsync = LoadValueWithDefault(regKey[RegName::Player], "AdaptiveVSync"s, -1);
+         const int vsync = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "AdaptiveVSync"s, -1);
          switch (vsync)
          {
          case -1: m_maxFramerate = 0; m_videoSyncMode = VideoSyncMode::VSM_FRAME_PACING; break;
@@ -239,28 +240,28 @@ Player::Player(const bool cameraMode, PinTable *const editor_table, PinTable *co
       }
    }
 
-   m_headTracking = LoadValueWithDefault(regKey[RegName::Player], "BAMheadTracking"s, false);
+   m_headTracking = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "BAMheadTracking"s, false);
    m_dynamicMode |= m_headTracking; // disable static pre-rendering when head tracking is activated
 
    m_ballImage = nullptr;
    m_decalImage = nullptr;
 
-   m_overwriteBallImages = LoadValueWithDefault(regKey[RegName::Player], "OverwriteBallImage"s, false);
-   m_minphyslooptime = min(LoadValueWithDefault(regKey[RegName::Player], "MinPhysLoopTime"s, 0), 1000);
+   m_overwriteBallImages = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "OverwriteBallImage"s, false);
+   m_minphyslooptime = min(m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "MinPhysLoopTime"s, 0), 1000);
 
    if (m_overwriteBallImages)
    {
        string imageName;
-       HRESULT hr = LoadValue(regKey[RegName::Player], "BallImage"s, imageName);
-       if (hr == S_OK)
+       bool hr = m_ptable->m_settings.LoadValue(Settings::Player, "BallImage"s, imageName);
+       if (hr)
        {
            BaseTexture * const tex = BaseTexture::CreateFromFile(imageName);
 
            if (tex != nullptr)
                m_ballImage = new Texture(tex);
        }
-       hr = LoadValue(regKey[RegName::Player], "DecalImage"s, imageName);
-       if (hr == S_OK)
+       hr = m_ptable->m_settings.LoadValue(Settings::Player, "DecalImage"s, imageName);
+       if (hr)
        {
            BaseTexture * const tex = BaseTexture::CreateFromFile(imageName);
 
@@ -269,13 +270,13 @@ Player::Player(const bool cameraMode, PinTable *const editor_table, PinTable *co
        }
    }
 
-   m_throwBalls = LoadValueWithDefault(regKey[RegName::Editor], "ThrowBallsAlwaysOn"s, false);
-   m_ballControl = LoadValueWithDefault(regKey[RegName::Editor], "BallControlAlwaysOn"s, false);
-   m_debugBallSize = LoadValueWithDefault(regKey[RegName::Editor], "ThrowBallSize"s, 50);
-   m_debugBallMass = LoadValueWithDefault(regKey[RegName::Editor], "ThrowBallMass"s, 1.0f);
+   m_throwBalls = m_ptable->m_settings.LoadValueWithDefault(Settings::Editor, "ThrowBallsAlwaysOn"s, false);
+   m_ballControl = m_ptable->m_settings.LoadValueWithDefault(Settings::Editor, "BallControlAlwaysOn"s, false);
+   m_debugBallSize = m_ptable->m_settings.LoadValueWithDefault(Settings::Editor, "ThrowBallSize"s, 50);
+   m_debugBallMass = m_ptable->m_settings.LoadValueWithDefault(Settings::Editor, "ThrowBallMass"s, 1.0f);
 
-   const int numberOfTimesToShowTouchMessage = LoadValueWithDefault(regKey[RegName::Player], "NumberOfTimesToShowTouchMessage"s, 10);
-   SaveValue(regKey[RegName::Player], "NumberOfTimesToShowTouchMessage"s, max(numberOfTimesToShowTouchMessage - 1, 0));
+   const int numberOfTimesToShowTouchMessage = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "NumberOfTimesToShowTouchMessage"s, 10);
+   g_pvp->m_settings.SaveValue(Settings::Player, "NumberOfTimesToShowTouchMessage"s, max(numberOfTimesToShowTouchMessage - 1, 0));
    m_showTouchMessage = (numberOfTimesToShowTouchMessage != 0);
 
    m_showWindowedCaption = false;
@@ -369,7 +370,7 @@ void Player::PreRegisterClass(WNDCLASS& wc)
 
 void Player::PreCreate(CREATESTRUCT& cs)
 {
-    m_fullScreen = LoadValueWithDefault(regKey[RegName::Player], "FullScreen"s, IsWindows10_1803orAbove());
+    m_fullScreen = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "FullScreen"s, IsWindows10_1803orAbove());
 
     // command line override
     if (g_pvp->m_disEnableTrueFullscreen == 0)
@@ -377,14 +378,14 @@ void Player::PreCreate(CREATESTRUCT& cs)
     else if (g_pvp->m_disEnableTrueFullscreen == 1)
         m_fullScreen = true;
 
-    int display = LoadValueWithDefault(regKey[RegName::Player], "Display"s, -1);
+    int display = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Display"s, -1);
     if (display >= getNumberOfDisplays() || g_pvp->m_primaryDisplay)
         display = -1; // force primary monitor
     int x, y;
     getDisplaySetupByID(display, x, y, m_screenwidth, m_screenheight);
 
-    m_wnd_width = LoadValueWithDefault(regKey[RegName::Player], "Width"s, m_fullScreen ? -1 : DEFAULT_PLAYER_WIDTH);
-    m_wnd_height = LoadValueWithDefault(regKey[RegName::Player], "Height"s, m_wnd_width * 9 / 16);
+    m_wnd_width = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Width"s, m_fullScreen ? -1 : DEFAULT_PLAYER_WIDTH);
+    m_wnd_height = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Height"s, m_wnd_width * 9 / 16);
     if (m_wnd_width <= 0)
     {
        m_wnd_width = m_screenwidth;
@@ -405,7 +406,7 @@ void Player::PreCreate(CREATESTRUCT& cs)
       y = 0;
       m_screenwidth = m_wnd_width;
       m_screenheight = m_wnd_height;
-      m_refreshrate = LoadValueWithDefault(regKey[RegName::Player], "RefreshRate"s, 0);
+      m_refreshrate = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "RefreshRate"s, 0);
    }
    else
    {
@@ -431,8 +432,8 @@ void Player::PreCreate(CREATESTRUCT& cs)
         // is this a non-fullscreen window? -> get previously saved window position
         if ((m_wnd_height != m_screenheight) || (m_wnd_width != m_screenwidth))
         {
-            const int xn = LoadValueWithDefault(regKey[RegName::Player], "WindowPosX"s, x); //!! does this handle multi-display correctly like this?
-            const int yn = LoadValueWithDefault(regKey[RegName::Player], "WindowPosY"s, y);
+            const int xn = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "WindowPosX"s, x); //!! does this handle multi-display correctly like this?
+            const int yn = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "WindowPosY"s, y);
 
             RECT r;
             r.left = xn;
@@ -522,8 +523,8 @@ void Player::CreateWnd(HWND parent /* = 0 */)
    // Allow the CREATESTRUCT parameters to be modified.
    PreCreate(cs);
 
-   const int colordepth = m_stereo3D == STEREO_VR ? 32 : LoadValueWithDefault(regKey[RegName::Player], "ColorDepth"s, 32);
-   constexpr bool video10bit = false; //!! Unsupported   m_stereo3D == STEREO_VR ? false : LoadValueWithDefault(regKey[RegName::Player], "Render10Bit"s, false);
+   const int colordepth = m_stereo3D == STEREO_VR ? 32 : m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "ColorDepth"s, 32);
+   constexpr bool video10bit = false; //!! Unsupported   m_stereo3D == STEREO_VR ? false : LoadValueWithDefault(Settings::Player, "Render10Bit"s, false);
    int channelDepth = video10bit ? 10 : ((colordepth == 16) ? 5 : 8);
    // We only set bit depth for fullscreen desktop modes (otherwise, use the desktop bit depth)
    if (m_fullScreen)
@@ -556,7 +557,7 @@ void Player::CreateWnd(HWND parent /* = 0 */)
 
    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-   const int display = g_pvp->m_primaryDisplay ? 0 : LoadValueWithDefault(regKey[RegName::Player], "Display"s, 0);
+   const int display = g_pvp->m_primaryDisplay ? 0 : m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Display"s, 0);
    vector<DisplayConfig> displays;
    getDisplayList(displays);
    int adapter = 0;
@@ -571,7 +572,7 @@ void Player::CreateWnd(HWND parent /* = 0 */)
 #ifdef _MSC_VER
    flags |= SDL_WINDOW_BORDERLESS | SDL_WINDOW_HIDDEN | SDL_WINDOW_ALLOW_HIGHDPI;
 #elif defined(__APPLE__) && !TARGET_OS_TV
-   if (LoadValueWithDefault(regKey[RegName::Player], "HighDPI"s, true))
+   if (LoadValueWithDefault(Settings::Player, "HighDPI"s, true))
       flags |= SDL_WINDOW_ALLOW_HIGHDPI;
 #endif
 
@@ -757,7 +758,7 @@ void Player::Shutdown()
 
     // Save list of used textures to avoid stuttering in next play
     string szVPXFile = g_pvp->m_currentTablePath + m_ptable->m_szTitle + ".vpx";
-    if ((LoadValueWithDefault(regKey[RegName::Player], "CacheMode"s, 1) > 0) && FileExists(szVPXFile))
+    if ((m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "CacheMode"s, 1) > 0) && FileExists(szVPXFile))
     {
         string dir = g_pvp->m_szMyPath + "Cache" + PATH_SEPARATOR_CHAR + m_ptable->m_szTitle + PATH_SEPARATOR_CHAR;
         std::filesystem::create_directories(std::filesystem::path(dir));
@@ -1083,8 +1084,8 @@ void Player::InitKeys()
    for(unsigned int i = 0; i < eCKeys; ++i)
    {
       int key;
-      const HRESULT hr = LoadValue(regKey[RegName::Player], regkey_string[i], key);
-      if (hr != S_OK || key > 0xdd)
+      const bool hr = m_ptable->m_settings.LoadValue(Settings::Player, regkey_string[i], key);
+      if (!hr || key > 0xdd)
           key = regkey_defdik[i];
       m_rgKeys[i] = (EnumAssignKeys)key;
    }
@@ -1169,7 +1170,7 @@ void Player::UpdateStereoShaderState()
       stereoMVP.GetModelViewProj(1).TransformVertices(&deepPt, nullptr, 1, &projRight, viewport);*/
       const float eyeSeparation = m_ptable->GetMaxSeparation();
       const float zpd = m_ptable->GetZPD();
-      const bool swapAxis = LoadValueWithDefault(regKey[RegName::Player], "Stereo3DYAxis"s, false); // Swap X/Y axis
+      const bool swapAxis = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DYAxis"s, false); // Swap X/Y axis
       m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetVector(SHADER_Stereo_MS_ZPD_YAxis, eyeSeparation, zpd, swapAxis ? 1.0f : 0.0f, 0.0f);
    }
    
@@ -1268,13 +1269,13 @@ HRESULT Player::Init()
 
    InitKeys();
 
-   m_PlayMusic = LoadValueWithDefault(regKey[RegName::Player], "PlayMusic"s, true);
-   m_PlaySound = LoadValueWithDefault(regKey[RegName::Player], "PlaySound"s, true);
-   m_MusicVolume = LoadValueWithDefault(regKey[RegName::Player], "MusicVolume"s, 100);
-   m_SoundVolume = LoadValueWithDefault(regKey[RegName::Player], "SoundVolume"s, 100);
+   m_PlayMusic = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "PlayMusic"s, true);
+   m_PlaySound = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "PlaySound"s, true);
+   m_MusicVolume = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "MusicVolume"s, 100);
+   m_SoundVolume = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "SoundVolume"s, 100);
 
    //
-   const bool dynamicDayNight = LoadValueWithDefault(regKey[RegName::Player], "DynamicDayNight"s, false);
+   const bool dynamicDayNight = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "DynamicDayNight"s, false);
 
    if(dynamicDayNight && !m_ptable->m_overwriteGlobalDayNight && !g_pvp->m_bgles)
    {
@@ -1283,8 +1284,8 @@ HRESULT Player::Init()
        tm local_hour;
        localtime_s(&local_hour, &hour_machine);
 
-       const float lat = LoadValueWithDefault(regKey[RegName::Player], "Latitude"s, 52.52f);
-       const float lon = LoadValueWithDefault(regKey[RegName::Player], "Longitude"s, 13.37f);
+       const float lat = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Latitude"s, 52.52f);
+       const float lon = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Longitude"s, 13.37f);
 
        const double rlat = lat * (M_PI / 180.);
        const double rlong = lon * (M_PI / 180.);
@@ -1310,7 +1311,7 @@ HRESULT Player::Init()
    const unsigned int FXAA = (m_ptable->m_useFXAA == -1) ? m_FXAA : m_ptable->m_useFXAA;
    const bool ss_refl = (m_ss_refl && (m_ptable->m_useSSR == -1)) || (m_ptable->m_useSSR == 1);
 
-   const int colordepth = LoadValueWithDefault(regKey[RegName::Player], "ColorDepth"s, 32);
+   const int colordepth = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "ColorDepth"s, 32);
 
    PLOGI << "Initializing renderer (global states & resources)"; // For profiling
 
@@ -1380,7 +1381,7 @@ HRESULT Player::Init()
       m_pin3d.GetMVP().SetFlip(rotation == 0 || rotation == 2 ? ModelViewProj::FLIPX : ModelViewProj::FLIPY);
    }
    else
-      m_ptable->m_tblMirrorEnabled = LoadValueWithDefault(regKey[RegName::Player], "mirror"s, false);
+      m_ptable->m_tblMirrorEnabled = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "mirror"s, false);
 
    m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderState::CULL_NONE); // re-init/thrash cache entry due to the hacky nature of the table mirroring
    m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderState::CULL_CCW);
@@ -1414,8 +1415,8 @@ HRESULT Player::Init()
 
    m_legacyNudgeTime = 0;
 
-   m_legacyNudge = LoadValueWithDefault(regKey[RegName::Player], "EnableLegacyNudge"s, false);
-   m_legacyNudgeStrength = LoadValueWithDefault(regKey[RegName::Player], "LegacyNudgeStrength"s, 1.f);
+   m_legacyNudge = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "EnableLegacyNudge"s, false);
+   m_legacyNudgeStrength = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "LegacyNudgeStrength"s, 1.f);
 
    m_legacyNudgeBack = Vertex2D(0.f,0.f);
 
@@ -1595,7 +1596,7 @@ HRESULT Player::Init()
    m_pEditorTable->m_progressDialog.SetProgress(50);
    m_pEditorTable->m_progressDialog.SetName("Loading Textures..."s);
 
-   if (LoadValueWithDefault(regKey[RegName::Player], "CacheMode"s, 1) > 0)
+   if (m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "CacheMode"s, 1) > 0)
    {
       try {
          string dir = g_pvp->m_szMyPath + "Cache" + PATH_SEPARATOR_CHAR + m_ptable->m_szTitle + PATH_SEPARATOR_CHAR;
@@ -1681,7 +1682,7 @@ HRESULT Player::Init()
    m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
 
    // Setup anisotropic filtering
-   const bool forceAniso = LoadValueWithDefault(regKey[RegName::Player], "ForceAnisotropicFiltering"s, true);
+   const bool forceAniso = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "ForceAnisotropicFiltering"s, true);
    m_pin3d.m_pd3dPrimaryDevice->SetMainTextureDefaultFiltering(forceAniso ? SF_ANISOTROPIC : SF_TRILINEAR);
 
 #ifdef DEBUG_BALL_SPIN
@@ -1941,7 +1942,7 @@ void Player::InitStatic()
    }
 
    // if rendering static/with heavy oversampling, re-enable the aniso/trilinear filter now for the normal rendering
-   const bool forceAniso = LoadValueWithDefault(regKey[RegName::Player], "ForceAnisotropicFiltering"s, true);
+   const bool forceAniso = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "ForceAnisotropicFiltering"s, true);
    m_pin3d.m_pd3dPrimaryDevice->SetMainTextureDefaultFiltering(forceAniso ? SF_ANISOTROPIC : SF_TRILINEAR);
 
    g_pvp->ProfileLog("AO PreRender Start"s);
@@ -2124,15 +2125,15 @@ void Player::DestroyBall(Ball *pball)
 
 void Player::CalcBallAspectRatio()
 {
-   const int ballStretchMode = LoadValueWithDefault(regKey[RegName::Player], "BallStretchMode"s, 0);
+   const int ballStretchMode = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "BallStretchMode"s, 0);
    if (ballStretchMode == 0)
    {
       m_BallStretch = Vertex2D(1.0f, 1.0f);
       return;
    }
 
-   const float ballAspecRatioOffsetX = LoadValueWithDefault(regKey[RegName::Player], "BallCorrectionX"s, 0.f);
-   const float ballAspecRatioOffsetY = LoadValueWithDefault(regKey[RegName::Player], "BallCorrectionY"s, 0.f);
+   const float ballAspecRatioOffsetX = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "BallCorrectionX"s, 0.f);
+   const float ballAspecRatioOffsetY = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "BallCorrectionY"s, 0.f);
 
    const ViewSetup &viewSetup = m_ptable->mViewSetups[m_ptable->m_BG_current_set];
    const float scalebackX = (viewSetup.mSceneScaleX != 0.0f) ? ((viewSetup.mSceneScaleX + viewSetup.mSceneScaleY) * 0.5f) / viewSetup.mSceneScaleX : 1.0f;
@@ -3898,9 +3899,9 @@ void Player::UpdateBackdropSettings(const bool up)
    case BS_XScale: viewSetup.mSceneScaleX += 0.0025f * thesign; CalcBallAspectRatio(); break;
    case BS_YScale: viewSetup.mSceneScaleY += 0.0025f * thesign; CalcBallAspectRatio(); break;
    case BS_ZScale: viewSetup.mSceneScaleZ += 0.0025f * thesign; CalcBallAspectRatio(); break;
-   case BS_XOffset: if (isWindow) SaveValue(regKey[RegName::Player], "ScreenPlayerX"s, LoadValueWithDefault(regKey[RegName::Player], "ScreenPlayerX"s, 0.0f) + 0.25f * thesign); else viewSetup.mViewX += 5.f * thesign; break;
-   case BS_YOffset: if (isWindow) SaveValue(regKey[RegName::Player], "ScreenPlayerY"s, LoadValueWithDefault(regKey[RegName::Player], "ScreenPlayerY"s, 0.0f) + 0.25f * thesign); else viewSetup.mViewY += 5.f * thesign; break;
-   case BS_ZOffset: if (isWindow) SaveValue(regKey[RegName::Player], "ScreenPlayerZ"s, LoadValueWithDefault(regKey[RegName::Player], "ScreenPlayerZ"s, 70.0f) + 0.25f * thesign); else viewSetup.mViewZ += (viewSetup.mMode == VLM_LEGACY ? 50.f : 5.f) * thesign; break;
+   case BS_XOffset: if (isWindow) g_pvp->m_settings.SaveValue(Settings::Player, "ScreenPlayerX"s, m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerX"s, 0.0f) + 0.25f * thesign); else viewSetup.mViewX += 5.f * thesign; break;
+   case BS_YOffset: if (isWindow) g_pvp->m_settings.SaveValue(Settings::Player, "ScreenPlayerY"s, m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerY"s, 0.0f) + 0.25f * thesign); else viewSetup.mViewY += 5.f * thesign; break;
+   case BS_ZOffset: if (isWindow) g_pvp->m_settings.SaveValue(Settings::Player, "ScreenPlayerZ"s, m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerZ"s, 70.0f) + 0.25f * thesign); else viewSetup.mViewZ += (viewSetup.mMode == VLM_LEGACY ? 50.f : 5.f) * thesign; break;
    case BS_WndTopZOfs: viewSetup.mWindowTopZOfs += 5.f * thesign; break;
    case BS_WndBottomZOfs: viewSetup.mWindowBottomZOfs += 5.f * thesign; break;
 

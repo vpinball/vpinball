@@ -56,7 +56,7 @@ class PinInput
 {
 public:
    PinInput();
-   void LoadSettings();
+   void LoadSettings(const Settings& settings);
    ~PinInput();
 
    void Init(const HWND hwnd);

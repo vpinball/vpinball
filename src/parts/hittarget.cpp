@@ -151,83 +151,83 @@ HRESULT HitTarget::Init(PinTable * const ptable, const float x, const float y, c
 
 void HitTarget::SetDefaults(const bool fromMouseClick)
 {
-#define strKeyName regKey[RegName::DefaultPropsHitTarget]
+#define strKeyName Settings::DefaultPropsHitTarget
 
-   m_d.m_legacy = fromMouseClick ? LoadValueWithDefault(strKeyName, "LegacyMode"s, false) : false;
-   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueWithDefault(strKeyName, "TimerEnabled"s, false) : false;
-   m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueWithDefault(strKeyName, "TimerInterval"s, 100) : 100;
-   m_d.m_hitEvent = fromMouseClick ? LoadValueWithDefault(strKeyName, "HitEvent"s, true) : true;
-   m_d.m_visible = fromMouseClick ? LoadValueWithDefault(strKeyName, "Visible"s, true) : true;
-   m_d.m_isDropped = fromMouseClick ? LoadValueWithDefault(strKeyName, "IsDropped"s, false) : false;
+   m_d.m_legacy = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "LegacyMode"s, false) : false;
+   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "TimerEnabled"s, false) : false;
+   m_d.m_tdr.m_TimerInterval = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "TimerInterval"s, 100) : 100;
+   m_d.m_hitEvent = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "HitEvent"s, true) : true;
+   m_d.m_visible = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Visible"s, true) : true;
+   m_d.m_isDropped = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "IsDropped"s, false) : false;
 
    // Position (X and Y is already set by the click of the user)
-   m_d.m_vPosition.z = fromMouseClick ? LoadValueWithDefault(strKeyName, "Position_Z"s, 0.0f) : 0.0f;
+   m_d.m_vPosition.z = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Position_Z"s, 0.0f) : 0.0f;
 
    // Size
-   m_d.m_vSize.x = fromMouseClick ? LoadValueWithDefault(strKeyName, "ScaleX"s, 32.0f) : 32.0f;
-   m_d.m_vSize.y = fromMouseClick ? LoadValueWithDefault(strKeyName, "ScaleY"s, 32.0f) : 32.0f;
-   m_d.m_vSize.z = fromMouseClick ? LoadValueWithDefault(strKeyName, "ScaleZ"s, 32.0f) : 32.0f;
+   m_d.m_vSize.x = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "ScaleX"s, 32.0f) : 32.0f;
+   m_d.m_vSize.y = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "ScaleY"s, 32.0f) : 32.0f;
+   m_d.m_vSize.z = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "ScaleZ"s, 32.0f) : 32.0f;
 
    // Rotation and Transposition
-   m_d.m_rotZ = fromMouseClick ? LoadValueWithDefault(strKeyName, "Orientation"s, 0.0f) : 0.0f;
+   m_d.m_rotZ = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Orientation"s, 0.0f) : 0.0f;
 
-   const HRESULT hr = LoadValue(strKeyName, "Image"s, m_d.m_szImage);
-   if ((hr != S_OK) && fromMouseClick)
+   const bool hr = g_pvp->m_settings.LoadValue(strKeyName, "Image"s, m_d.m_szImage);
+   if (!hr && fromMouseClick)
       m_d.m_szImage.clear();
 
-   m_d.m_targetType = fromMouseClick ? (TargetType)LoadValueWithDefault(strKeyName, "TargetType"s, (int)DropTargetSimple) : DropTargetSimple;
-   m_d.m_threshold = fromMouseClick ? LoadValueWithDefault(strKeyName, "HitThreshold"s, 2.0f) : 2.0f;
+   m_d.m_targetType = fromMouseClick ? (TargetType)g_pvp->m_settings.LoadValueWithDefault(strKeyName, "TargetType"s, (int)DropTargetSimple) : DropTargetSimple;
+   m_d.m_threshold = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "HitThreshold"s, 2.0f) : 2.0f;
    if (m_d.m_targetType == DropTargetBeveled || m_d.m_targetType == DropTargetSimple || m_d.m_targetType == DropTargetFlatSimple)
-       m_d.m_dropSpeed = fromMouseClick ? LoadValueWithDefault(strKeyName, "DropSpeed"s, 0.5f) : 0.5f;
+       m_d.m_dropSpeed = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "DropSpeed"s, 0.5f) : 0.5f;
    else
-       m_d.m_dropSpeed = fromMouseClick ? LoadValueWithDefault(strKeyName, "DropSpeed"s, 0.2f) : 0.2f;
+       m_d.m_dropSpeed = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "DropSpeed"s, 0.2f) : 0.2f;
 
    SetDefaultPhysics(fromMouseClick);
 
-   m_d.m_collidable = fromMouseClick ? LoadValueWithDefault(strKeyName, "Collidable"s, true) : true;
-   m_d.m_disableLightingTop = dequantizeUnsigned<8>(fromMouseClick ? LoadValueWithDefault(strKeyName, "DisableLighting"s, 0) : 0); // stored as uchar for backward compatibility
-   m_d.m_disableLightingBelow = fromMouseClick ? LoadValueWithDefault(strKeyName, "DisableLightingBelow"s, 0.f) : 0.f;
-   m_d.m_reflectionEnabled = fromMouseClick ? LoadValueWithDefault(strKeyName, "ReflectionEnabled"s, true) : true;
-   m_d.m_raiseDelay = fromMouseClick ? LoadValueWithDefault(strKeyName, "RaiseDelay"s, 100) : 100;
+   m_d.m_collidable = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Collidable"s, true) : true;
+   m_d.m_disableLightingTop = dequantizeUnsigned<8>(fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "DisableLighting"s, 0) : 0); // stored as uchar for backward compatibility
+   m_d.m_disableLightingBelow = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "DisableLightingBelow"s, 0.f) : 0.f;
+   m_d.m_reflectionEnabled = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "ReflectionEnabled"s, true) : true;
+   m_d.m_raiseDelay = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "RaiseDelay"s, 100) : 100;
 
 #undef strKeyName
 }
 
 void HitTarget::WriteRegDefaults()
 {
-#define strKeyName regKey[RegName::DefaultPropsHitTarget]
+#define strKeyName Settings::DefaultPropsHitTarget
 
-   SaveValue(strKeyName, "LegacyMode"s, m_d.m_legacy);
-   SaveValue(strKeyName, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
-   SaveValue(strKeyName, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
-   SaveValue(strKeyName, "Visible"s, m_d.m_visible);
-   SaveValue(strKeyName, "IsDropped"s, m_d.m_isDropped);
+   g_pvp->m_settings.SaveValue(strKeyName, "LegacyMode"s, m_d.m_legacy);
+   g_pvp->m_settings.SaveValue(strKeyName, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
+   g_pvp->m_settings.SaveValue(strKeyName, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
+   g_pvp->m_settings.SaveValue(strKeyName, "Visible"s, m_d.m_visible);
+   g_pvp->m_settings.SaveValue(strKeyName, "IsDropped"s, m_d.m_isDropped);
 
-   SaveValue(strKeyName, "Position_Z"s, m_d.m_vPosition.z);
-   SaveValue(strKeyName, "DropSpeed"s, m_d.m_dropSpeed);
+   g_pvp->m_settings.SaveValue(strKeyName, "Position_Z"s, m_d.m_vPosition.z);
+   g_pvp->m_settings.SaveValue(strKeyName, "DropSpeed"s, m_d.m_dropSpeed);
 
-   SaveValue(strKeyName, "ScaleX"s, m_d.m_vSize.x);
-   SaveValue(strKeyName, "ScaleY"s, m_d.m_vSize.y);
-   SaveValue(strKeyName, "ScaleZ"s, m_d.m_vSize.z);
+   g_pvp->m_settings.SaveValue(strKeyName, "ScaleX"s, m_d.m_vSize.x);
+   g_pvp->m_settings.SaveValue(strKeyName, "ScaleY"s, m_d.m_vSize.y);
+   g_pvp->m_settings.SaveValue(strKeyName, "ScaleZ"s, m_d.m_vSize.z);
 
-   SaveValue(strKeyName, "Orientation"s, m_d.m_rotZ);
+   g_pvp->m_settings.SaveValue(strKeyName, "Orientation"s, m_d.m_rotZ);
 
-   SaveValue(strKeyName, "Image"s, m_d.m_szImage);
-   SaveValue(strKeyName, "HitEvent"s, m_d.m_hitEvent);
-   SaveValue(strKeyName, "HitThreshold"s, m_d.m_threshold);
-   SaveValue(strKeyName, "Elasticity"s, m_d.m_elasticity);
-   SaveValue(strKeyName, "ElasticityFalloff"s, m_d.m_elasticityFalloff);
-   SaveValue(strKeyName, "Friction"s, m_d.m_friction);
-   SaveValue(strKeyName, "Scatter"s, m_d.m_scatter);
+   g_pvp->m_settings.SaveValue(strKeyName, "Image"s, m_d.m_szImage);
+   g_pvp->m_settings.SaveValue(strKeyName, "HitEvent"s, m_d.m_hitEvent);
+   g_pvp->m_settings.SaveValue(strKeyName, "HitThreshold"s, m_d.m_threshold);
+   g_pvp->m_settings.SaveValue(strKeyName, "Elasticity"s, m_d.m_elasticity);
+   g_pvp->m_settings.SaveValue(strKeyName, "ElasticityFalloff"s, m_d.m_elasticityFalloff);
+   g_pvp->m_settings.SaveValue(strKeyName, "Friction"s, m_d.m_friction);
+   g_pvp->m_settings.SaveValue(strKeyName, "Scatter"s, m_d.m_scatter);
 
-   SaveValue(strKeyName, "TargetType"s, m_d.m_targetType);
+   g_pvp->m_settings.SaveValue(strKeyName, "TargetType"s, m_d.m_targetType);
 
-   SaveValue(strKeyName, "Collidable"s, m_d.m_collidable);
+   g_pvp->m_settings.SaveValue(strKeyName, "Collidable"s, m_d.m_collidable);
    const int tmp = quantizeUnsigned<8>(clamp(m_d.m_disableLightingTop, 0.f, 1.f));
-   SaveValue(strKeyName, "DisableLighting"s, (tmp == 1) ? 0 : tmp); // backwards compatible saving
-   SaveValue(strKeyName, "DisableLightingBelow"s, m_d.m_disableLightingBelow);
-   SaveValue(strKeyName, "ReflectionEnabled"s, m_d.m_reflectionEnabled);
-   SaveValue(strKeyName, "RaiseDelay"s, m_d.m_raiseDelay);
+   g_pvp->m_settings.SaveValue(strKeyName, "DisableLighting"s, (tmp == 1) ? 0 : tmp); // backwards compatible saving
+   g_pvp->m_settings.SaveValue(strKeyName, "DisableLightingBelow"s, m_d.m_disableLightingBelow);
+   g_pvp->m_settings.SaveValue(strKeyName, "ReflectionEnabled"s, m_d.m_reflectionEnabled);
+   g_pvp->m_settings.SaveValue(strKeyName, "RaiseDelay"s, m_d.m_raiseDelay);
 
 #undef strKeyName
 }
@@ -1312,12 +1312,12 @@ STDMETHODIMP HitTarget::put_ReflectionEnabled(VARIANT_BOOL newVal)
 
 void HitTarget::SetDefaultPhysics(const bool fromMouseClick)
 {
-#define strKeyName regKey[RegName::DefaultPropsHitTarget]
+#define strKeyName Settings::DefaultPropsHitTarget
 
-   m_d.m_elasticity = fromMouseClick ? LoadValueWithDefault(strKeyName, "Elasticity"s, 0.35f) : 0.35f;
-   m_d.m_elasticityFalloff = fromMouseClick ? LoadValueWithDefault(strKeyName, "ElasticityFalloff"s, 0.5f) : 0.5f;
-   m_d.m_friction = fromMouseClick ? LoadValueWithDefault(strKeyName, "Friction"s, 0.2f) : 0.2f;
-   m_d.m_scatter = fromMouseClick ? LoadValueWithDefault(strKeyName, "Scatter"s, 5.f) : 5.f;
+   m_d.m_elasticity = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Elasticity"s, 0.35f) : 0.35f;
+   m_d.m_elasticityFalloff = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "ElasticityFalloff"s, 0.5f) : 0.5f;
+   m_d.m_friction = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Friction"s, 0.2f) : 0.2f;
+   m_d.m_scatter = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Scatter"s, 5.f) : 5.f;
 
 #undef strKeyName
 }

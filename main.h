@@ -141,7 +141,7 @@ using std::vector;
 #include "vector.h"
 #include "vectorsort.h"
 #include "vpinball.h"
-#include "regutil.h"
+#include "core/Settings.h"
 
 #include "idebug.h"
 

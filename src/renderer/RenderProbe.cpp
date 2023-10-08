@@ -314,7 +314,7 @@ void RenderProbe::PreRenderStaticReflectionProbe()
       p3dDevice->SetRenderTarget(""s, nullptr);
 
    // if rendering static/with heavy oversampling, re-enable the aniso/trilinear filter now for the normal rendering
-   const bool forceAniso = LoadValueWithDefault(regKey[RegName::Player], "ForceAnisotropicFiltering"s, true);
+   const bool forceAniso = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "ForceAnisotropicFiltering"s, true);
    p3dDevice->SetMainTextureDefaultFiltering(forceAniso ? SF_ANISOTROPIC : SF_TRILINEAR);
 }
 

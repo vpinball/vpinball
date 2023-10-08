@@ -418,7 +418,7 @@ BaseTexture* EnvmapPrecalc(const Texture* envTex, const unsigned int rad_env_xre
 HRESULT Pin3D::InitPrimary(const bool fullScreen, const int colordepth, int& refreshrate, VideoSyncMode& syncMode, const float AAfactor,
    const StereoMode stereo3D, const unsigned int FXAA, const bool sharpen, const bool ss_refl)
 {
-   const int display = g_pvp->m_primaryDisplay ? 0 : LoadValueWithDefault(regKey[RegName::Player], "Display"s, 0);
+   const int display = g_pvp->m_primaryDisplay ? 0 : g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Display"s, 0);
    vector<DisplayConfig> displays;
    getDisplayList(displays);
    int adapter = 0;
@@ -460,7 +460,7 @@ HRESULT Pin3D::InitPrimary(const bool fullScreen, const int colordepth, int& ref
 
    BAMView::init();
 
-   const bool compressTextures = LoadValueWithDefault(regKey[RegName::Player], "CompressTextures"s, false);
+   const bool compressTextures = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "CompressTextures"s, false);
    m_pd3dPrimaryDevice->CompressTextures(compressTextures);
 
    m_pd3dPrimaryDevice->SetViewport(&m_viewPort);
@@ -694,7 +694,7 @@ void Pin3D::InitLayout(const float xpixoff, const float ypixoff)
    bool stereo = false;
    #endif
    if (viewSetup.mMode == VLM_WINDOW)
-      viewSetup.SetWindowModeFromAppSettings(g_pplayer->m_ptable);
+      viewSetup.SetWindowModeFromSettings(g_pplayer->m_ptable);
    viewSetup.ComputeMVP(g_pplayer->m_ptable, m_viewPort.Width, m_viewPort.Height, stereo, *m_mvp, vec3(m_cam.x, m_cam.y, m_cam.z), m_inc, xpixoff, ypixoff);
    InitLights();
 }

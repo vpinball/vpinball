@@ -286,29 +286,29 @@ void VPinball::InitTools()
 ///</summary>
 void VPinball::InitRegValues()
 {
-   const int deadz = LoadValueWithDefault(regKey[RegName::Player], "DeadZone"s, 0);
-   SaveValue(regKey[RegName::Player], "DeadZone"s, deadz);
+   const int deadz = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "DeadZone"s, 0);
+   g_pvp->m_settings.SaveValue(Settings::Player, "DeadZone"s, deadz);
 
-   m_alwaysDrawDragPoints = LoadValueWithDefault(regKey[RegName::Editor], "ShowDragPoints"s, false);
-   m_alwaysDrawLightCenters = LoadValueWithDefault(regKey[RegName::Editor], "DrawLightCenters"s, false);
-   m_gridSize = LoadValueWithDefault(regKey[RegName::Editor], "GridSize"s, 50);
+   m_alwaysDrawDragPoints = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "ShowDragPoints"s, false);
+   m_alwaysDrawLightCenters = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "DrawLightCenters"s, false);
+   m_gridSize = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "GridSize"s, 50);
 
-   const bool autoSave = LoadValueWithDefault(regKey[RegName::Editor], "AutoSaveOn"s, true);
+   const bool autoSave = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "AutoSaveOn"s, true);
    if (autoSave)
    {
-      m_autosaveTime = LoadValueWithDefault(regKey[RegName::Editor], "AutoSaveTime"s, AUTOSAVE_DEFAULT_TIME);
+      m_autosaveTime = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "AutoSaveTime"s, AUTOSAVE_DEFAULT_TIME);
       SetAutoSaveMinutes(m_autosaveTime);
    }
    else
       m_autosaveTime = -1;
 
-   m_securitylevel = LoadValueWithDefault(regKey[RegName::Player], "SecurityLevel"s, DEFAULT_SECURITY_LEVEL);
+   m_securitylevel = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "SecurityLevel"s, DEFAULT_SECURITY_LEVEL);
 
-   m_dummyMaterial.m_cBase = LoadValueWithDefault(regKey[RegName::Editor], "DefaultMaterialColor"s, 0xB469FF);
-   m_elemSelectColor = LoadValueWithDefault(regKey[RegName::Editor], "ElementSelectColor"s, 0x00FF0000);
-   m_elemSelectLockedColor = LoadValueWithDefault(regKey[RegName::Editor], "ElementSelectLockedColor"s, 0x00A7726D);
-   m_backgroundColor = LoadValueWithDefault(regKey[RegName::Editor], "BackgroundColor"s, 0x008D8D8D);
-   m_fillColor = LoadValueWithDefault(regKey[RegName::Editor], "FillColor"s, 0x00B1CFB3);
+   m_dummyMaterial.m_cBase = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "DefaultMaterialColor"s, 0xB469FF);
+   m_elemSelectColor = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "ElementSelectColor"s, 0x00FF0000);
+   m_elemSelectLockedColor = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "ElementSelectLockedColor"s, 0x00A7726D);
+   m_backgroundColor = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "BackgroundColor"s, 0x008D8D8D);
+   m_fillColor = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "FillColor"s, 0x00B1CFB3);
 
    if (m_securitylevel < eSecurityNone || m_securitylevel > eSecurityNoControls)
       m_securitylevel = eSecurityNoControls;
@@ -318,13 +318,13 @@ void VPinball::InitRegValues()
    for (int i = 0; i < LAST_OPENED_TABLE_COUNT; i++)
    {
       string szTableName;
-      if (LoadValue(regKey[RegName::RecentDir], "TableFileName" + std::to_string(i), szTableName) == S_OK)
+      if (g_pvp->m_settings.LoadValue(Settings::RecentDir, "TableFileName" + std::to_string(i), szTableName))
          m_recentTableList.push_back(szTableName);
       else
          break;
    }
 
-   m_convertToUnit = LoadValueWithDefault(regKey[RegName::Editor], "Units"s, 0);
+   m_convertToUnit = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "Units"s, 0);
 }
 
 void VPinball::AddMDITable(PinTableMDI* mdiTable) 
@@ -442,8 +442,9 @@ void VPinball::ResetAllDockers()
 {
    const bool createNotes = m_dockNotes != nullptr;
    CloseAllDockers();
-   DeleteSubKey("Editor\\Dock Windows"s); // Old Win32xx
-   DeleteSubKey("Editor\\Dock Settings"s);// Win32xx 9+
+   // FIXME these are Windows only registry key. Move to g_pvp->m_settings. ?
+   // DeleteSubKey("Editor\\Dock Windows"s); // Old Win32xx
+   // DeleteSubKey("Editor\\Dock Settings"s);// Win32xx 9+
    CreateDocker();
    if (createNotes)
       GetDefaultNotesDocker();
@@ -943,7 +944,7 @@ void VPinball::ReInitSound()
       for (size_t j = 0; j < ptT->m_vsound.size(); j++)
          ptT->m_vsound[j]->UnInitialize();
    }
-   m_ps.ReInitPinDirectSound(GetHwnd());
+   m_ps.ReInitPinDirectSound(m_settings, GetHwnd());
    for (size_t i = 0; i < m_vtable.size(); i++)
    {
       const PinTable * const ptT = m_vtable[i];
@@ -969,10 +970,7 @@ void VPinball::DoPlay(const bool _cameraMode)
 
 bool VPinball::LoadFile(const bool updateEditor)
 {
-   string szInitialDir;
-   HRESULT hr = LoadValue(regKey[RegName::RecentDir], "LoadDir"s, szInitialDir);
-   if (hr != S_OK)
-      szInitialDir = PATH_TABLES;
+   string szInitialDir = g_pvp->m_settings.LoadValueWithDefault(Settings::RecentDir, "LoadDir"s, PATH_TABLES);
 
    vector<string> szFileName;
    if (!OpenFileDialog(szInitialDir, szFileName, "Visual Pinball Tables (*.vpx)\0*.vpx\0Old Visual Pinball Tables(*.vpt)\0*.vpt\0", "vpx", 0,
@@ -981,7 +979,7 @@ bool VPinball::LoadFile(const bool updateEditor)
 
    const size_t index = szFileName[0].find_last_of(PATH_SEPARATOR_CHAR);
    if (index != string::npos)
-      hr = SaveValue(regKey[RegName::RecentDir], "LoadDir"s, szFileName[0].substr(0, index));
+      g_pvp->m_settings.SaveValue(Settings::RecentDir, "LoadDir"s, szFileName[0].substr(0, index));
 
    LoadFileName(szFileName[0], updateEditor);
 
@@ -1073,7 +1071,7 @@ void VPinball::LoadFileName(const string& szFileName, const bool updateEditor)
       }
 
       // get the load path from the filename
-      SaveValue(regKey[RegName::RecentDir], "LoadDir"s, m_currentTablePath);
+      g_pvp->m_settings.SaveValue(Settings::RecentDir, "LoadDir"s, m_currentTablePath);
 
       // make sure the load directory is the active directory
       SetCurrentDirectory(m_currentTablePath.c_str());
@@ -1252,7 +1250,7 @@ void VPinball::UpdateRecentFileList(const string& szfilename)
       {
          m_recentTableList.push_back(tableName);
          // write entry to the registry
-         SaveValue(regKey[RegName::RecentDir], "TableFileName" + std::to_string(i), tableName);
+         g_pvp->m_settings.SaveValue(Settings::RecentDir, "TableFileName" + std::to_string(i), tableName);
 
          if (++i == LAST_OPENED_TABLE_COUNT)
             break;
@@ -1538,12 +1536,12 @@ void VPinball::OnClose()
 
       if (GetWindowPlacement(winpl))
       {
-         SaveValue(regKey[RegName::Editor], "WindowLeft"s, (int)winpl.rcNormalPosition.left);
-         SaveValue(regKey[RegName::Editor], "WindowTop"s, (int)winpl.rcNormalPosition.top);
-         SaveValue(regKey[RegName::Editor], "WindowRight"s, (int)winpl.rcNormalPosition.right);
-         SaveValue(regKey[RegName::Editor], "WindowBottom"s, (int)winpl.rcNormalPosition.bottom);
+         g_pvp->m_settings.SaveValue(Settings::Editor, "WindowLeft"s, (int)winpl.rcNormalPosition.left);
+         g_pvp->m_settings.SaveValue(Settings::Editor, "WindowTop"s, (int)winpl.rcNormalPosition.top);
+         g_pvp->m_settings.SaveValue(Settings::Editor, "WindowRight"s, (int)winpl.rcNormalPosition.right);
+         g_pvp->m_settings.SaveValue(Settings::Editor, "WindowBottom"s, (int)winpl.rcNormalPosition.bottom);
 
-         SaveValue(regKey[RegName::Editor], "WindowMaximized"s, !!IsZoomed());
+         g_pvp->m_settings.SaveValue(Settings::Editor, "WindowMaximized"s, !!IsZoomed());
       }
       if (!m_open_minimized) // otherwise the window/dock settings are screwed up and have to be manually restored each time
          SaveDockRegistrySettings(DOCKER_REGISTRY_KEY);
@@ -1627,7 +1625,7 @@ void VPinball::OnInitialUpdate()
 
    SendMessage(WM_SIZE, 0, 0);	        // Make our window relay itself out
 
-   m_ps.InitPinDirectSound(GetHwnd());
+   m_ps.InitPinDirectSound(m_settings, GetHwnd());
 
    m_backglassView = false;            // we are viewing Pinfield and not the backglass at first
 
@@ -1636,14 +1634,14 @@ void VPinball::OnInitialUpdate()
    int left, top, right, bottom;
    BOOL maximized;
 
-   const HRESULT hrleft = LoadValue(regKey[RegName::Editor], "WindowLeft"s, left);
-   const HRESULT hrtop = LoadValue(regKey[RegName::Editor], "WindowTop"s, top);
-   const HRESULT hrright = LoadValue(regKey[RegName::Editor], "WindowRight"s, right);
-   const HRESULT hrbottom = LoadValue(regKey[RegName::Editor], "WindowBottom"s, bottom);
+   const bool hrleft = g_pvp->m_settings.LoadValue(Settings::Editor, "WindowLeft"s, left);
+   const bool hrtop = g_pvp->m_settings.LoadValue(Settings::Editor, "WindowTop"s, top);
+   const bool hrright = g_pvp->m_settings.LoadValue(Settings::Editor, "WindowRight"s, right);
+   const bool hrbottom = g_pvp->m_settings.LoadValue(Settings::Editor, "WindowBottom"s, bottom);
 
-   const HRESULT hrmax = LoadValue(regKey[RegName::Editor], "WindowMaximized"s, maximized);
+   const bool hrmax = g_pvp->m_settings.LoadValue(Settings::Editor, "WindowMaximized"s, maximized);
 
-   if (hrleft == S_OK && hrtop == S_OK && hrright == S_OK && hrbottom == S_OK)
+   if (hrleft && hrtop && hrright && hrbottom)
    {
       WINDOWPLACEMENT winpl = {};
       winpl.length = sizeof(WINDOWPLACEMENT);
@@ -1927,7 +1925,7 @@ INT_PTR CALLBACK SecurityOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
          (rcMain.bottom + rcMain.top) / 2 - (rcDlg.bottom - rcDlg.top) / 2,
          0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE/* | SWP_NOMOVE*/);
 
-      int security = LoadValueWithDefault(regKey[RegName::Player], "SecurityLevel"s, DEFAULT_SECURITY_LEVEL);
+      int security = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "SecurityLevel"s, DEFAULT_SECURITY_LEVEL);
       if (security < 0 || security > 4)
          security = 0;
 
@@ -1935,7 +1933,7 @@ INT_PTR CALLBACK SecurityOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
 
       SendMessage(GetDlgItem(hwndDlg, buttonid), BM_SETCHECK, BST_CHECKED, 0);
 
-      const bool hangdetect = LoadValueWithDefault(regKey[RegName::Player], "DetectHang"s, false);
+      const bool hangdetect = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "DetectHang"s, false);
       SendMessage(GetDlgItem(hwndDlg, IDC_HANGDETECT), BM_SETCHECK, hangdetect ? BST_CHECKED : BST_UNCHECKED, 0);
 
       return TRUE;
@@ -1955,11 +1953,11 @@ INT_PTR CALLBACK SecurityOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
             {
                const size_t checked = SendMessage(GetDlgItem(hwndDlg, rgDlgIDFromSecurityLevel[i]), BM_GETCHECK, 0, 0);
                if (checked == BST_CHECKED)
-                  SaveValue(regKey[RegName::Player], "SecurityLevel"s, i);
+                  g_pvp->m_settings.SaveValue(Settings::Player, "SecurityLevel"s, i);
             }
 
             const bool hangdetect = (SendMessage(GetDlgItem(hwndDlg, IDC_HANGDETECT), BM_GETCHECK, 0, 0) != 0);
-            SaveValue(regKey[RegName::Player], "DetectHang"s, hangdetect);
+            g_pvp->m_settings.SaveValue(Settings::Player, "DetectHang"s, hangdetect);
 
             EndDialog(hwndDlg, TRUE);
          }
@@ -2031,17 +2029,14 @@ INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 
          case IDC_IMPORT:
          {
-            string szInitialDir;
-            const HRESULT hr = LoadValue(regKey[RegName::RecentDir], "FontDir"s, szInitialDir);
-            if (hr != S_OK)
-               szInitialDir = PATH_TABLES;
+            string szInitialDir = g_pvp->m_settings.LoadValueWithDefault(Settings::RecentDir, "FontDir"s, PATH_TABLES);
 
             vector<string> szFileName;
             if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Font Files (*.ttf)\0*.ttf\0", "ttf", 0))
             {
                const size_t index = szFileName[0].find_last_of(PATH_SEPARATOR_CHAR);
                if (index != string::npos)
-                  SaveValue(regKey[RegName::RecentDir], "FontDir"s, szFileName[0].substr(0, index));
+                  g_pvp->m_settings.SaveValue(Settings::RecentDir, "FontDir"s, szFileName[0].substr(0, index));
 
                pt->ImportFont(GetDlgItem(hwndDlg, IDC_SOUNDLIST), szFileName[0]);
             }
@@ -2220,7 +2215,7 @@ void VPinball::ToggleScriptEditor()
    CComObject<PinTable> * const ptCur = GetActiveTable();
    if (ptCur)
    {
-      const bool alwaysViewScript = LoadValueWithDefault(regKey[RegName::Editor], "AlwaysViewScript"s, false);
+      const bool alwaysViewScript = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "AlwaysViewScript"s, false);
 
       ptCur->m_pcv->SetVisible(alwaysViewScript || !(ptCur->m_pcv->m_visible && !ptCur->m_pcv->m_minimized));
 
@@ -2277,7 +2272,7 @@ void VPinball::SetViewSolidOutline(size_t viewId)
       GetMenu().CheckMenuItem(ID_VIEW_OUTLINE, MF_BYCOMMAND | (ptCur->RenderSolid() ? MF_UNCHECKED : MF_CHECKED));
 
       ptCur->SetDirtyDraw();
-      SaveValue(regKey[RegName::Editor], "RenderSolid"s, ptCur->m_renderSolid);
+      g_pvp->m_settings.SaveValue(Settings::Editor, "RenderSolid"s, ptCur->m_renderSolid);
    }
 }
 

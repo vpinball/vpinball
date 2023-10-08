@@ -21,7 +21,7 @@ class ViewSetup final
 public:
    ViewSetup();
 
-   void SetWindowModeFromAppSettings(const PinTable* const table);
+   void SetWindowModeFromSettings(const PinTable* const table);
    float GetWindowTopZOFfset(const PinTable* const table) const;
    float GetWindowBottomZOFfset(const PinTable* const table) const;
    float GetRealToVirtualScale(const PinTable* const table) const;

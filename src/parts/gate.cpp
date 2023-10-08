@@ -98,28 +98,28 @@ HRESULT Gate::Init(PinTable * const ptable, const float x, const float y, const 
 
 void Gate::SetDefaults(const bool fromMouseClick)
 {
-#define regKey regKey[RegName::DefaultPropsGate]
+#define regKey Settings::DefaultPropsGate
 
-   m_d.m_length = fromMouseClick ? LoadValueWithDefault(regKey, "Length"s, 100.f) : 100.f;
-   m_d.m_height = fromMouseClick ? LoadValueWithDefault(regKey, "Height"s, 50.f) : 50.f;
-   m_d.m_rotation = fromMouseClick ? LoadValueWithDefault(regKey, "Rotation"s, -90.f) : -90.f;
-   m_d.m_showBracket = fromMouseClick ? LoadValueWithDefault(regKey, "ShowBracket"s, true) : true;
-   m_d.m_type = fromMouseClick ? (GateType)LoadValueWithDefault(regKey, "GateType"s, (int)GateWireW) : GateWireW;
-   m_d.m_collidable = fromMouseClick ? LoadValueWithDefault(regKey, "Collidable"s, true) : true;
-   m_d.m_angleMin = fromMouseClick ? LoadValueWithDefault(regKey, "AngleMin"s, 0.f) : 0.f;
-   m_d.m_angleMax = fromMouseClick ? LoadValueWithDefault(regKey, "AngleMax"s, (float)(M_PI / 2.0)) : (float)(M_PI / 2.0);
-   m_d.m_visible = fromMouseClick ? LoadValueWithDefault(regKey, "Visible"s, true) : true;
-   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueWithDefault(regKey, "TimerEnabled"s, false) : false;
-   m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueWithDefault(regKey, "TimerInterval"s, 100) : 100;
+   m_d.m_length = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Length"s, 100.f) : 100.f;
+   m_d.m_height = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Height"s, 50.f) : 50.f;
+   m_d.m_rotation = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Rotation"s, -90.f) : -90.f;
+   m_d.m_showBracket = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "ShowBracket"s, true) : true;
+   m_d.m_type = fromMouseClick ? (GateType)g_pvp->m_settings.LoadValueWithDefault(regKey, "GateType"s, (int)GateWireW) : GateWireW;
+   m_d.m_collidable = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Collidable"s, true) : true;
+   m_d.m_angleMin = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "AngleMin"s, 0.f) : 0.f;
+   m_d.m_angleMax = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "AngleMax"s, (float)(M_PI / 2.0)) : (float)(M_PI / 2.0);
+   m_d.m_visible = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Visible"s, true) : true;
+   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "TimerEnabled"s, false) : false;
+   m_d.m_tdr.m_TimerInterval = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "TimerInterval"s, 100) : 100;
 
-   const HRESULT hr = LoadValue(regKey, "Surface"s, m_d.m_szSurface);
-   if ((hr != S_OK) || !fromMouseClick)
+   const bool hr = g_pvp->m_settings.LoadValue(regKey, "Surface"s, m_d.m_szSurface);
+   if (!hr || !fromMouseClick)
       m_d.m_szSurface.clear();
 
    SetDefaultPhysics(fromMouseClick);
 
-   m_d.m_twoWay = fromMouseClick ? LoadValueWithDefault(regKey, "TwoWay"s, true) : true;
-   m_d.m_reflectionEnabled = fromMouseClick ? LoadValueWithDefault(regKey, "ReflectionEnabled"s, true) : true;
+   m_d.m_twoWay = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "TwoWay"s, true) : true;
+   m_d.m_reflectionEnabled = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "ReflectionEnabled"s, true) : true;
 
 #undef regKey
 }
@@ -127,26 +127,26 @@ void Gate::SetDefaults(const bool fromMouseClick)
 
 void Gate::WriteRegDefaults()
 {
-#define regKey regKey[RegName::DefaultPropsGate]
+#define regKey Settings::DefaultPropsGate
 
-   SaveValue(regKey, "Length"s, m_d.m_length);
-   SaveValue(regKey, "Height"s, m_d.m_height);
-   SaveValue(regKey, "Rotation"s, m_d.m_rotation);
-   SaveValue(regKey, "ShowBracket"s, m_d.m_showBracket);
-   SaveValue(regKey, "Collidable"s, m_d.m_collidable);
-   SaveValue(regKey, "AngleMin"s, m_d.m_angleMin);
-   SaveValue(regKey, "AngleMax"s, m_d.m_angleMax);
-   SaveValue(regKey, "Visible"s, m_d.m_visible);
-   SaveValue(regKey, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
-   SaveValue(regKey, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
-   SaveValue(regKey, "Surface"s, m_d.m_szSurface);
-   SaveValue(regKey, "Elasticity"s, m_d.m_elasticity);
-   SaveValue(regKey, "Friction"s, m_d.m_friction);
-   SaveValue(regKey, "Scatter"s, m_d.m_scatter);
-   SaveValue(regKey, "GravityFactor"s, m_d.m_gravityfactor);
-   SaveValue(regKey, "TwoWay"s, m_d.m_twoWay);
-   SaveValue(regKey, "ReflectionEnabled"s, m_d.m_reflectionEnabled);
-   SaveValue(regKey, "GateType"s, m_d.m_type);
+   g_pvp->m_settings.SaveValue(regKey, "Length"s, m_d.m_length);
+   g_pvp->m_settings.SaveValue(regKey, "Height"s, m_d.m_height);
+   g_pvp->m_settings.SaveValue(regKey, "Rotation"s, m_d.m_rotation);
+   g_pvp->m_settings.SaveValue(regKey, "ShowBracket"s, m_d.m_showBracket);
+   g_pvp->m_settings.SaveValue(regKey, "Collidable"s, m_d.m_collidable);
+   g_pvp->m_settings.SaveValue(regKey, "AngleMin"s, m_d.m_angleMin);
+   g_pvp->m_settings.SaveValue(regKey, "AngleMax"s, m_d.m_angleMax);
+   g_pvp->m_settings.SaveValue(regKey, "Visible"s, m_d.m_visible);
+   g_pvp->m_settings.SaveValue(regKey, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
+   g_pvp->m_settings.SaveValue(regKey, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
+   g_pvp->m_settings.SaveValue(regKey, "Surface"s, m_d.m_szSurface);
+   g_pvp->m_settings.SaveValue(regKey, "Elasticity"s, m_d.m_elasticity);
+   g_pvp->m_settings.SaveValue(regKey, "Friction"s, m_d.m_friction);
+   g_pvp->m_settings.SaveValue(regKey, "Scatter"s, m_d.m_scatter);
+   g_pvp->m_settings.SaveValue(regKey, "GravityFactor"s, m_d.m_gravityfactor);
+   g_pvp->m_settings.SaveValue(regKey, "TwoWay"s, m_d.m_twoWay);
+   g_pvp->m_settings.SaveValue(regKey, "ReflectionEnabled"s, m_d.m_reflectionEnabled);
+   g_pvp->m_settings.SaveValue(regKey, "GateType"s, m_d.m_type);
 
 #undef regKey
 }
@@ -286,13 +286,13 @@ void Gate::UIRenderPass2(Sur * const psur)
 
 void Gate::SetDefaultPhysics(const bool fromMouseClick)
 {
-#define regKey regKey[RegName::DefaultPropsGate]
+#define regKey Settings::DefaultPropsGate
 
-   m_d.m_elasticity = fromMouseClick ? LoadValueWithDefault(regKey, "Elasticity"s, 0.3f) : 0.3f;
-   m_d.m_friction = fromMouseClick ? LoadValueWithDefault(regKey, "Friction"s, 0.02f) : 0.02f;
-   m_d.m_damping = fromMouseClick ? LoadValueWithDefault(regKey, "AntiFriction"s, 0.985f) : 0.985f;
-   m_d.m_scatter = fromMouseClick ? LoadValueWithDefault(regKey, "Scatter"s, 0.f) : 0.f;
-   m_d.m_gravityfactor = fromMouseClick ? LoadValueWithDefault(regKey, "GravityFactor"s, 0.25f) : 0.25f;
+   m_d.m_elasticity = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Elasticity"s, 0.3f) : 0.3f;
+   m_d.m_friction = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Friction"s, 0.02f) : 0.02f;
+   m_d.m_damping = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "AntiFriction"s, 0.985f) : 0.985f;
+   m_d.m_scatter = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Scatter"s, 0.f) : 0.f;
+   m_d.m_gravityfactor = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "GravityFactor"s, 0.25f) : 0.25f;
 
 #undef regKey
 }

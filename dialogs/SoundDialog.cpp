@@ -252,17 +252,14 @@ void SoundDialog::Import()
    if (pt == nullptr)
       return;
 
-   string szInitialDir;
-   HRESULT hr = LoadValue(regKey[RegName::RecentDir], "SoundDir"s, szInitialDir);
-   if (hr != S_OK)
-      szInitialDir = PATH_TABLES;
+   string szInitialDir = g_pvp->m_settings.LoadValueWithDefault(Settings::RecentDir, "SoundDir"s, PATH_TABLES);
 
    vector<string> szFileName;
    if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Sound Files (.wav/.ogg/.mp3)\0*.wav;*.ogg;*.mp3\0", "mp3", OFN_EXPLORER | OFN_ALLOWMULTISELECT))
    {
       const size_t index = szFileName[0].find_last_of(PATH_SEPARATOR_CHAR);
       if (index != string::npos)
-         hr = SaveValue(regKey[RegName::RecentDir], "SoundDir"s, szFileName[0].substr(0, index));
+         g_pvp->m_settings.SaveValue(Settings::RecentDir, "SoundDir"s, szFileName[0].substr(0, index));
 
       for (const string &file : szFileName)
          pt->ImportSound(hSoundList, file);
@@ -324,10 +321,7 @@ void SoundDialog::ReImportFrom()
         const int ans = MessageBox( ls.m_szbuffer/*"Are you sure you want to replace this sound with a new one?"*/, "Confirm Reimport", MB_YESNO | MB_DEFBUTTON2 );
         if (ans == IDYES)
         {
-            string szInitialDir;
-            HRESULT hr = LoadValue(regKey[RegName::RecentDir], "SoundDir"s, szInitialDir);
-            if (hr != S_OK)
-                szInitialDir = PATH_TABLES;
+            string szInitialDir = g_pvp->m_settings.LoadValueWithDefault(Settings::RecentDir, "SoundDir"s, PATH_TABLES);
 
             vector<string> szFileName;
             if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Sound Files (.wav/.ogg/.mp3)\0*.wav;*.ogg;*.mp3\0", "mp3", 0))
@@ -344,7 +338,7 @@ void SoundDialog::ReImportFrom()
 
                 const size_t index = szFileName[0].find_last_of(PATH_SEPARATOR_CHAR);
                 if (index != string::npos)
-                   hr = SaveValue(regKey[RegName::RecentDir], "SoundDir"s, szFileName[0].substr(0, index));
+                   g_pvp->m_settings.SaveValue(Settings::RecentDir, "SoundDir"s, szFileName[0].substr(0, index));
 
                 pt->SetNonUndoableDirty( eSaveDirty );
             }
@@ -403,10 +397,7 @@ void SoundDialog::Export()
             ofn.nMaxFile = sizeof(filename);
             ofn.lpstrDefExt = "mp3";
 
-            string initDir;
-            const HRESULT hr = LoadValue(regKey[RegName::RecentDir], "SoundDir"s, initDir);
-            if (hr != S_OK)
-               initDir = PATH_TABLES;
+            string initDir = g_pvp->m_settings.LoadValueWithDefault(Settings::RecentDir, "SoundDir"s, PATH_TABLES);
 
             ofn.lpstrInitialDir = initDir.c_str();
             //ofn.lpstrTitle = "SAVE AS";
@@ -465,7 +456,7 @@ void SoundDialog::Export()
                     pps = (PinSound *)lvitem.lParam;
                 }
 
-                SaveValue(regKey[RegName::RecentDir], "SoundDir"s, pathName);
+                g_pvp->m_settings.SaveValue(Settings::RecentDir, "SoundDir"s, pathName);
             }
         }
     }
@@ -584,8 +575,8 @@ void SoundDialog::DeleteSound()
 
 void SoundDialog::LoadPosition()
 {
-    const int x = LoadValueWithDefault(regKey[RegName::Editor], "SoundMngPosX"s, 0);
-    const int y = LoadValueWithDefault(regKey[RegName::Editor], "SoundMngPosY"s, 0);
+    const int x = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "SoundMngPosX"s, 0);
+    const int y = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "SoundMngPosY"s, 0);
 
     SetWindowPos( nullptr, x, y, 0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE );
 }
@@ -593,8 +584,8 @@ void SoundDialog::LoadPosition()
 void SoundDialog::SavePosition()
 {
     const CRect rect = GetWindowRect();
-    SaveValue(regKey[RegName::Editor], "SoundMngPosX"s, (int)rect.left);
-    SaveValue(regKey[RegName::Editor], "SoundMngPosY"s, (int)rect.top);
+    g_pvp->m_settings.SaveValue(Settings::Editor, "SoundMngPosX"s, (int)rect.left);
+    g_pvp->m_settings.SaveValue(Settings::Editor, "SoundMngPosY"s, (int)rect.top);
 }
 
 

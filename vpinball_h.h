@@ -6,6 +6,7 @@
 #define AFX_VPINBALL_H__4D32616D_55B5_4FE0_87D9_3D4CB0BE3C76__INCLUDED_
 
 #include <wxx_dockframe.h>
+#include "core/Settings.h"
 #include "renderer/RenderDevice.h"
 #include "ImageDialog.h"
 #include "SoundDialog.h"
@@ -233,6 +234,9 @@ public:
    COLORREF m_backgroundColor;
    COLORREF m_fillColor;
    Vertex2D m_mouseCursorPosition;
+
+   // overall app settings
+   Settings m_settings;
 
    // command line parameters
    int m_disEnableTrueFullscreen;

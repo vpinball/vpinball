@@ -190,7 +190,7 @@ PCHAR* CommandLineToArgvA(PCHAR CmdLine, int* _argc)
    return argv;
 }
 
-void SetupLogger();
+void SetupLogger(const bool enable);
 
 robin_hood::unordered_map<ItemTypeEnum, EditableInfo> EditableRegistry::m_map;
 
@@ -582,13 +582,13 @@ public:
 
       free(szArglist);
 
-      InitRegistry(szIniFileName);
-
-      SetupLogger();
+      m_vpinball.m_settings.LoadFromFile(szIniFileName, true);
+      
+      SetupLogger(m_vpinball.m_settings.LoadValueWithDefault(Settings::Editor, "EnableLog"s, false));
       PLOGI << "Starting VPX...";
 
       // Start VP with file dialog open and then also playing that one?
-      const bool stos = LoadValueWithDefault(regKey[RegName::Editor], "SelectTableOnStart"s, true);
+      const bool stos = m_vpinball.m_settings.LoadValueWithDefault(Settings::Editor, "SelectTableOnStart"s, true);
       if (stos)
       {
          file = true;
@@ -679,13 +679,13 @@ public:
                m_vpinball.LoadFileName(szTableFileName, !play);
                m_vpinball.m_table_played_via_command_line = play;
                loadFileResult = m_vpinball.m_ptableActive != nullptr;
-               if (!loadFileResult && g_pvp->m_open_minimized)
+               if (!loadFileResult && m_vpinball.m_open_minimized)
                   m_vpinball.QuitPlayer(Player::CloseState::CS_CLOSE_APP);
            }
            else
            {
                loadFileResult = m_vpinball.LoadFile(!play);
-               m_vpinball.m_table_played_via_SelectTableOnStart = LoadValueWithDefault(regKey[RegName::Editor], "SelectTableOnPlayerClose"s, true) ? loadFileResult : false;
+               m_vpinball.m_table_played_via_SelectTableOnStart = m_vpinball.m_settings.LoadValueWithDefault(Settings::Editor, "SelectTableOnPlayerClose"s, true) ? loadFileResult : false;
            }
 
            if (extractScript && loadFileResult)
@@ -715,14 +715,14 @@ public:
          // VBA APC handles message loop (bastards)
          m_vpinball.MainMsgLoop();
 
+         m_vpinball.m_settings.Save();
+
          m_vpinball.Release();
 
          DestroyAcceleratorTable(g_haccel);
 
          _Module.RevokeClassObjects();
          Sleep(THREADS_PAUSE); //wait for any threads to finish
-
-         SaveRegistry();
       }
       return 0;
    }
@@ -874,10 +874,10 @@ public:
    }
 };
 
-void SetupLogger()
+void SetupLogger(const bool enable)
 {
    plog::Severity maxLogSeverity = plog::none;
-   if (LoadValueWithDefault(regKey[RegName::Editor], "EnableLog"s, false))
+   if (enable)
    {
       static bool initialized = false;
       if (!initialized)

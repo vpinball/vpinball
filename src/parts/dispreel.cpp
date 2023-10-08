@@ -34,59 +34,59 @@ HRESULT DispReel::Init(PinTable * const ptable, const float x, const float y, co
 //
 void DispReel::SetDefaults(const bool fromMouseClick)
 {
-#define regKey regKey[RegName::DefaultPropsEMReel]
+#define regKey Settings::DefaultPropsEMReel
 
    // object is only available on the backglass
    m_backglass = true;
 
    // set all the Data defaults
-   HRESULT hr;
-   hr = LoadValue(regKey, "Image"s, m_d.m_szImage);
-   if ((hr != S_OK) || !fromMouseClick)
+   bool hr;
+   hr = g_pvp->m_settings.LoadValue(regKey, "Image"s, m_d.m_szImage);
+   if (!hr || !fromMouseClick)
       m_d.m_szImage.clear();
 
-   hr = LoadValue(regKey, "Sound"s, m_d.m_szSound);
-   if ((hr != S_OK) || !fromMouseClick)
+   hr = g_pvp->m_settings.LoadValue(regKey, "Sound"s, m_d.m_szSound);
+   if (!hr || !fromMouseClick)
       m_d.m_szSound.clear();
 
-   m_d.m_useImageGrid = fromMouseClick ? LoadValueWithDefault(regKey, "UseImageGrid"s, false) : false;
-   m_d.m_visible = fromMouseClick ? LoadValueWithDefault(regKey, "Visible"s, true) : true;
-   m_d.m_imagesPerGridRow = fromMouseClick ? LoadValueWithDefault(regKey, "ImagesPerRow"s, 1) : 1;
-   m_d.m_transparent = fromMouseClick ? LoadValueWithDefault(regKey, "Transparent"s, false) : false;
-   m_d.m_reelcount = fromMouseClick ? LoadValueWithDefault(regKey, "ReelCount"s, 5) : 5;
-   m_d.m_width = fromMouseClick ? LoadValueWithDefault(regKey, "Width"s, 30.0f) : 30.0f;
-   m_d.m_height = fromMouseClick ? LoadValueWithDefault(regKey, "Height"s, 40.0f) : 40.0f;
-   m_d.m_reelspacing = fromMouseClick ? LoadValueWithDefault(regKey, "ReelSpacing"s, 4.0f) : 4.0f;
-   m_d.m_motorsteps = fromMouseClick ? (int)LoadValueWithDefault(regKey, "MotorSteps"s, 2.f) : 2;
-   m_d.m_digitrange = fromMouseClick ? LoadValueWithDefault(regKey, "DigitRange"s, 9) : 9;
-   m_d.m_updateinterval = fromMouseClick ? LoadValueWithDefault(regKey, "UpdateInterval"s, 50) : 50;
-   m_d.m_backcolor = fromMouseClick ? LoadValueWithDefault(regKey, "BackColor"s, (int)RGB(64, 64, 64)) : RGB(64, 64, 64);
-   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueWithDefault(regKey, "TimerEnabled"s, false) : false;
-   m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueWithDefault(regKey, "TimerInterval"s, 100) : 100;
+   m_d.m_useImageGrid = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "UseImageGrid"s, false) : false;
+   m_d.m_visible = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Visible"s, true) : true;
+   m_d.m_imagesPerGridRow = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "ImagesPerRow"s, 1) : 1;
+   m_d.m_transparent = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Transparent"s, false) : false;
+   m_d.m_reelcount = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "ReelCount"s, 5) : 5;
+   m_d.m_width = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Width"s, 30.0f) : 30.0f;
+   m_d.m_height = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Height"s, 40.0f) : 40.0f;
+   m_d.m_reelspacing = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "ReelSpacing"s, 4.0f) : 4.0f;
+   m_d.m_motorsteps = fromMouseClick ? (int)g_pvp->m_settings.LoadValueWithDefault(regKey, "MotorSteps"s, 2.f) : 2;
+   m_d.m_digitrange = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "DigitRange"s, 9) : 9;
+   m_d.m_updateinterval = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "UpdateInterval"s, 50) : 50;
+   m_d.m_backcolor = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "BackColor"s, (int)RGB(64, 64, 64)) : RGB(64, 64, 64);
+   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "TimerEnabled"s, false) : false;
+   m_d.m_tdr.m_TimerInterval = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "TimerInterval"s, 100) : 100;
 
 #undef regKey
 }
 
 void DispReel::WriteRegDefaults()
 {
-#define regKey regKey[RegName::DefaultPropsEMReel]
+#define regKey Settings::DefaultPropsEMReel
 
-   SaveValue(regKey, "Image"s, m_d.m_szImage);
-   SaveValue(regKey, "Sound"s, m_d.m_szSound);
-   SaveValue(regKey, "UseImageGrid"s, m_d.m_useImageGrid);
-   SaveValue(regKey, "Visible"s, m_d.m_visible);
-   SaveValue(regKey, "ImagesPerRow"s, m_d.m_imagesPerGridRow);
-   SaveValue(regKey, "Transparent"s, m_d.m_transparent);
-   SaveValue(regKey, "ReelCount"s, m_d.m_reelcount);
-   SaveValue(regKey, "Width"s, m_d.m_width);
-   SaveValue(regKey, "Height"s, m_d.m_height);
-   SaveValue(regKey, "ReelSpacing"s, m_d.m_reelspacing);
-   SaveValue(regKey, "MotorSteps"s, (float)m_d.m_motorsteps);
-   SaveValue(regKey, "DigitRange"s, m_d.m_digitrange);
-   SaveValue(regKey, "UpdateInterval"s, m_d.m_updateinterval);
-   SaveValue(regKey, "BackColor"s, (int)m_d.m_backcolor);
-   SaveValue(regKey, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
-   SaveValue(regKey, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
+   g_pvp->m_settings.SaveValue(regKey, "Image"s, m_d.m_szImage);
+   g_pvp->m_settings.SaveValue(regKey, "Sound"s, m_d.m_szSound);
+   g_pvp->m_settings.SaveValue(regKey, "UseImageGrid"s, m_d.m_useImageGrid);
+   g_pvp->m_settings.SaveValue(regKey, "Visible"s, m_d.m_visible);
+   g_pvp->m_settings.SaveValue(regKey, "ImagesPerRow"s, m_d.m_imagesPerGridRow);
+   g_pvp->m_settings.SaveValue(regKey, "Transparent"s, m_d.m_transparent);
+   g_pvp->m_settings.SaveValue(regKey, "ReelCount"s, m_d.m_reelcount);
+   g_pvp->m_settings.SaveValue(regKey, "Width"s, m_d.m_width);
+   g_pvp->m_settings.SaveValue(regKey, "Height"s, m_d.m_height);
+   g_pvp->m_settings.SaveValue(regKey, "ReelSpacing"s, m_d.m_reelspacing);
+   g_pvp->m_settings.SaveValue(regKey, "MotorSteps"s, (float)m_d.m_motorsteps);
+   g_pvp->m_settings.SaveValue(regKey, "DigitRange"s, m_d.m_digitrange);
+   g_pvp->m_settings.SaveValue(regKey, "UpdateInterval"s, m_d.m_updateinterval);
+   g_pvp->m_settings.SaveValue(regKey, "BackColor"s, (int)m_d.m_backcolor);
+   g_pvp->m_settings.SaveValue(regKey, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
+   g_pvp->m_settings.SaveValue(regKey, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
 
 #undef regKey
 }

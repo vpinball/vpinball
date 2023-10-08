@@ -1,83 +1,92 @@
 #pragma once
 
-class RegName // do not change order/values in here unless you know what you're doing
+#include "mINI/ini.h"
+
+// This class holds the settings registry.
+// A setting registry can have a parent, in which case, missing settings will be looked for in the parent.
+// This is used to allow overriding part of the settings while still using the base application value.
+class Settings
 {
 public:
-   // "Controller" is top level (to share data with VP9)
-   static constexpr unsigned int Controller = 0;
+   Settings(const Settings* parent = nullptr);
 
-   // All below is under the "VP10"-top level
+   bool LoadFromFile(const string &path, const bool createDefault);
+   void SaveToFile(const string &path);
+   void Save();
 
-   // UI and Player stuff
-   static constexpr unsigned int Editor = 1;
-   static constexpr unsigned int Player = 2;
-   static constexpr unsigned int PlayerVR = 3;
-   static constexpr unsigned int RecentDir = 4;
-   static constexpr unsigned int Version = 5;
-   static constexpr unsigned int CVEdit = 6;
-
-   // Optional user defaults for each element
-   static constexpr unsigned int DefaultPropsBumper = 7;
-   static constexpr unsigned int DefaultPropsDecal = 8;
-   static constexpr unsigned int DefaultPropsEMReel = 9;
-   static constexpr unsigned int DefaultPropsFlasher = 10;
-   static constexpr unsigned int DefaultPropsFlipper = 11;
-   static constexpr unsigned int DefaultPropsGate = 12;
-   static constexpr unsigned int DefaultPropsHitTarget = 13;
-   static constexpr unsigned int DefaultPropsKicker = 14;
-   static constexpr unsigned int DefaultPropsLight = 15;
-   static constexpr unsigned int DefaultPropsLightSequence = 16;
-   static constexpr unsigned int DefaultPropsPlunger = 17;
-   static constexpr unsigned int DefaultPropsPrimitive = 18;
-   static constexpr unsigned int DefaultPropsRamp = 19;
-   static constexpr unsigned int DefaultPropsRubber = 20;
-   static constexpr unsigned int DefaultPropsSpinner = 21;
-   static constexpr unsigned int DefaultPropsWall = 22;
-   static constexpr unsigned int DefaultPropsTarget = 23;
-   static constexpr unsigned int DefaultPropsTextBox = 24;
-   static constexpr unsigned int DefaultPropsTimer = 25;
-   static constexpr unsigned int DefaultPropsTrigger = 26;
-
-   static constexpr unsigned int DefaultCamera = 27;
-
-   static constexpr unsigned int Num = 28;
-};
-
-static const string regKey[RegName::Num] =
+   enum Section
    {
-      "Controller"s, "Editor"s, "Player"s, "PlayerVR"s, "RecentDir"s, "Version"s, "CVEdit"s,
-      "DefaultProps\\Bumper"s, "DefaultProps\\Decal"s, "DefaultProps\\EMReel"s, "DefaultProps\\Flasher"s, "DefaultProps\\Flipper"s,
-      "DefaultProps\\Gate"s, "DefaultProps\\HitTarget"s, "DefaultProps\\Kicker"s, "DefaultProps\\Light"s, "DefaultProps\\LightSequence"s,
-      "DefaultProps\\Plunger"s, "DefaultProps\\Primitive"s, "DefaultProps\\Ramp"s, "DefaultProps\\Rubber"s, "DefaultProps\\Spinner"s,
-      "DefaultProps\\Wall"s, "DefaultProps\\Target"s, "DefaultProps\\TextBox"s, "DefaultProps\\Timer"s, "DefaultProps\\Trigger"s,
-      "Defaults\\Camera"s
+      Controller,
+
+      // UI and Player stuff
+      Editor,
+      Player,
+      PlayerVR,
+      RecentDir,
+      Version,
+      CVEdit,
+
+      // Optional user defaults for each element
+      DefaultPropsBumper,
+      DefaultPropsDecal,
+      DefaultPropsEMReel,
+      DefaultPropsFlasher,
+      DefaultPropsFlipper,
+      DefaultPropsGate,
+      DefaultPropsHitTarget,
+      DefaultPropsKicker,
+      DefaultPropsLight,
+      DefaultPropsLightSequence,
+      DefaultPropsPlunger,
+      DefaultPropsPrimitive,
+      DefaultPropsRamp,
+      DefaultPropsRubber,
+      DefaultPropsSpinner,
+      DefaultPropsWall,
+      DefaultPropsTarget,
+      DefaultPropsTextBox,
+      DefaultPropsTimer,
+      DefaultPropsTrigger,
+      DefaultCamera,
+
+      Count
    };
 
+   static Section GetSection(const string& szName);
 
-void InitRegistry(const string &path);
-void InitRegistryOverride(const string &path);
-void SaveRegistry();
+   bool LoadValue(const Section &section, const string &key, string &buffer) const;
+   bool LoadValue(const Section &section, const string &key, void *const szbuffer, const DWORD size) const;
+   bool LoadValue(const Section &section, const string &key, float &pfloat) const;
+   bool LoadValue(const Section &section, const string &key, int &pint) const;
+   bool LoadValue(const Section &section, const string &key, unsigned int &pint) const;
 
+   bool LoadValueWithDefault(const Section &section, const string &key, string &buffer, const string &def) const;
+   float LoadValueWithDefault(const Section &section, const string &key, const float def) const;
+   int LoadValueWithDefault(const Section &section, const string &key, const int def) const;
+   bool LoadValueWithDefault(const Section &section, const string &key, const bool def) const;
+   string LoadValueWithDefault(const Section &section, const string &key, const string &def) const;
 
-HRESULT LoadValue(const string &szKey, const string &zValue, string &buffer);
-HRESULT LoadValue(const string &szKey, const string &szValue, void* const szbuffer, const DWORD size);
-HRESULT LoadValueWithDefault(const string &szKey, const string &zValue, string &buffer, const string& def);
+   bool SaveValue(const Section &section, const string &key, const char *val);
+   bool SaveValue(const Section &section, const string &key, const string &val);
+   bool SaveValue(const Section &section, const string &key, const float val);
+   bool SaveValue(const Section &section, const string &key, const int val);
+   bool SaveValue(const Section &section, const string &key, const bool val);
 
-HRESULT LoadValue(const string &szKey, const string &szValue, float &pfloat);
-float   LoadValueWithDefault(const string &szKey, const string &szValue, const float def); 
+   bool DeleteValue(const Section &section, const string &key, const bool& deleteFromParent = false);
+   bool DeleteSubKey(const Section &section, const bool &deleteFromParent = false);
 
-HRESULT LoadValue(const string &szKey, const string &szValue, int &pint);
-HRESULT LoadValue(const string &szKey, const string &szValue, unsigned int &pint);
-int     LoadValueWithDefault(const string &szKey, const string &szValue, const int def);
+private:
+   enum DataType
+   {
+      DT_SZ, // char*, 0 terminated
+      DT_DWORD,
+      DT_ERROR
+   };
 
-bool    LoadValueWithDefault(const string &szKey, const string &szValue, const bool def);
-
-
-HRESULT SaveValue(const string &szKey, const string &szValue, const char *val);
-HRESULT SaveValue(const string &szKey, const string &szValue, const string &val);
-HRESULT SaveValue(const string &szKey, const string &szValue, const float val);
-HRESULT SaveValue(const string &szKey, const string &szValue, const int val);
-HRESULT SaveValue(const string &szKey, const string &szValue, const bool val);
-
-HRESULT DeleteValue(const string &szKey, const string &szValue);
-HRESULT DeleteSubKey(const string &szKey);
+   bool LoadValue(const Section &section, const string &key, DataType &type, void *pvalue, DWORD size) const;
+   bool SaveValue(const Section &section, const string &key, const DataType type, const void *pvalue, const DWORD size);
+   
+   string m_iniPath;
+   mINI::INIStructure m_ini;
+   const Settings *m_parent;
+};

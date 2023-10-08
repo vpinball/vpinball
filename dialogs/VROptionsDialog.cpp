@@ -418,11 +418,11 @@ BOOL VROptionsDialog::OnInitDialog()
 
    char tmp[256];
 
-   const float nudgeStrength = LoadValueWithDefault(regKey[RegName::PlayerVR], "NudgeStrength"s, LoadValueWithDefault(regKey[RegName::Player], "NudgeStrength"s, 2e-2f));
+   const float nudgeStrength = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "NudgeStrength"s, g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "NudgeStrength"s, 2e-2f));
    sprintf_s(tmp, sizeof(tmp), "%f", nudgeStrength);
    SetDlgItemText(IDC_NUDGE_STRENGTH, tmp);
 
-   const float AAfactor = LoadValueWithDefault(regKey[RegName::PlayerVR], "AAFactor", LoadValueWithDefault(regKey[RegName::Player], "USEAA"s, false) ? 1.5f : 1.0f);
+   const float AAfactor = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "AAFactor", g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "USEAA"s, false) ? 1.5f : 1.0f);
    const HWND hwndSSSlider = GetDlgItem(IDC_SUPER_SAMPLING_COMBO).GetHwnd();
    SendMessage(hwndSSSlider, TBM_SETRANGE, fTrue, MAKELONG(0, AAfactorCount - 1));
    SendMessage(hwndSSSlider, TBM_SETTICFREQ, 1, 0);
@@ -434,7 +434,7 @@ BOOL VROptionsDialog::OnInitDialog()
    sprintf_s(SSText, sizeof(SSText), "Supersampling Factor: %.2f", AAfactor);
    SetDlgItemText(IDC_SUPER_SAMPLING_LABEL, SSText);
 
-   const int MSAASamples = LoadValueWithDefault(regKey[RegName::PlayerVR], "MSAASamples"s, 1);
+   const int MSAASamples = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "MSAASamples"s, 1);
    const auto CurrMSAAPos = std::find(MSAASamplesOpts, MSAASamplesOpts + (sizeof(MSAASamplesOpts) / sizeof(MSAASamplesOpts[0])), MSAASamples);
    const HWND hwndMSAASlider = GetDlgItem(IDC_MSAA_COMBO).GetHwnd();
    SendMessage(hwndMSAASlider, TBM_SETRANGE, fTrue, MAKELONG(0, MSAASampleCount - 1));
@@ -454,14 +454,14 @@ BOOL VROptionsDialog::OnInitDialog()
    }
    SetDlgItemText(IDC_MSAA_LABEL, MSAAText);
 
-   bool useAO = LoadValueWithDefault(regKey[RegName::PlayerVR], "DynamicAO"s, LoadValueWithDefault(regKey[RegName::Player], "DynamicAO", true));
+   bool useAO = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "DynamicAO"s, g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "DynamicAO", true));
    SendMessage(GetDlgItem(IDC_DYNAMIC_AO).GetHwnd(), BM_SETCHECK, useAO ? BST_CHECKED : BST_UNCHECKED, 0);
 
-   useAO = LoadValueWithDefault(regKey[RegName::PlayerVR], "DisableAO"s, LoadValueWithDefault(regKey[RegName::Player], "DisableAO"s, false));
+   useAO = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "DisableAO"s, g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "DisableAO"s, false));
    SendMessage(GetDlgItem(IDC_ENABLE_AO).GetHwnd(), BM_SETCHECK, useAO ? BST_UNCHECKED : BST_CHECKED, 0); // inverted logic
    GetDlgItem(IDC_DYNAMIC_AO).EnableWindow(!useAO);
 
-   const bool ssreflection = LoadValueWithDefault(regKey[RegName::PlayerVR], "SSRefl"s, LoadValueWithDefault(regKey[RegName::Player], "SSRefl"s, false));
+   const bool ssreflection = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "SSRefl"s, g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "SSRefl"s, false));
    SendMessage(GetDlgItem(IDC_GLOBAL_SSREFLECTION_CHECK).GetHwnd(), BM_SETCHECK, ssreflection ? BST_CHECKED : BST_UNCHECKED, 0);
 
    HWND hwnd = GetDlgItem(IDC_GLOBAL_PF_REFLECTION).GetHwnd();
@@ -469,16 +469,16 @@ BOOL VROptionsDialog::OnInitDialog()
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Disabled");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Balls Only");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Dynamic");
-   int pfr = LoadValueWithDefault(regKey[RegName::PlayerVR], "PFReflection"s, -1);
+   int pfr = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "PFReflection"s, -1);
    RenderProbe::ReflectionMode maxReflection;
    if (pfr != -1)
       maxReflection = (RenderProbe::ReflectionMode)pfr;
    else
    {
       maxReflection = RenderProbe::REFL_NONE;
-      if (LoadValueWithDefault(regKey[RegName::PlayerVR], "BallReflection"s, true))
+      if (g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "BallReflection"s, true))
          maxReflection = RenderProbe::REFL_BALLS;
-      if (LoadValueWithDefault(regKey[RegName::PlayerVR], "PFRefl"s, true))
+      if (g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "PFRefl"s, true))
          maxReflection = RenderProbe::REFL_DYNAMIC;
    }
    if (maxReflection == RenderProbe::REFL_DYNAMIC)
@@ -487,7 +487,7 @@ BOOL VROptionsDialog::OnInitDialog()
       SendMessage(hwnd, CB_SETCURSEL, maxReflection, 0);
    SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 
-   const int fxaa = LoadValueWithDefault(regKey[RegName::PlayerVR], "FXAA"s, LoadValueWithDefault(regKey[RegName::Player], "FXAA"s, 0));
+   const int fxaa = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "FXAA"s, g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "FXAA"s, 0));
    hwnd = GetDlgItem(IDC_POST_PROCESS_COMBO).GetHwnd();
    SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Disabled");
@@ -500,7 +500,7 @@ BOOL VROptionsDialog::OnInitDialog()
    SendMessage(hwnd, CB_SETCURSEL, fxaa, 0);
    SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 
-   const int sharpen = LoadValueWithDefault(regKey[RegName::PlayerVR], "Sharpen"s, 0);
+   const int sharpen = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "Sharpen"s, 0);
    hwnd = GetDlgItem(IDC_SHARPEN_COMBO).GetHwnd();
    SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Disabled");
@@ -509,10 +509,10 @@ BOOL VROptionsDialog::OnInitDialog()
    SendMessage(hwnd, CB_SETCURSEL, sharpen, 0);
    SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 
-   const bool scaleFX_DMD = LoadValueWithDefault(regKey[RegName::PlayerVR], "ScaleFXDMD"s, LoadValueWithDefault(regKey[RegName::Player], "ScaleFXDMD"s, false));
+   const bool scaleFX_DMD = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "ScaleFXDMD"s, g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "ScaleFXDMD"s, false));
    SendMessage(GetDlgItem(IDC_SCALE_FX_DMD).GetHwnd(), BM_SETCHECK, scaleFX_DMD ? BST_CHECKED : BST_UNCHECKED, 0);
 
-   const VRPreviewMode vrPreview = (VRPreviewMode)LoadValueWithDefault(regKey[RegName::PlayerVR], "VRPreview"s, VRPREVIEW_LEFT);
+   const VRPreviewMode vrPreview = (VRPreviewMode)g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "VRPreview"s, VRPREVIEW_LEFT);
    hwnd = GetDlgItem(IDC_VR_PREVIEW).GetHwnd();
    SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Disabled");
@@ -522,44 +522,44 @@ BOOL VROptionsDialog::OnInitDialog()
    SendMessage(hwnd, CB_SETCURSEL, (int)vrPreview, 0);
    SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 
-   const bool scaleToFixedWidth = LoadValueWithDefault(regKey[RegName::PlayerVR], "scaleToFixedWidth"s, false);
+   const bool scaleToFixedWidth = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "scaleToFixedWidth"s, false);
    oldScaleValue = scaleToFixedWidth;
    SendMessage(GetDlgItem(IDC_SCALE_TO_CM).GetHwnd(), BM_SETCHECK, scaleToFixedWidth ? BST_CHECKED : BST_UNCHECKED, 0);
 
-   scaleRelative = LoadValueWithDefault(regKey[RegName::PlayerVR], "scaleRelative"s, 1.0f);
-   scaleAbsolute = LoadValueWithDefault(regKey[RegName::PlayerVR], "scaleAbsolute"s, 55.0f);
+   scaleRelative = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "scaleRelative"s, 1.0f);
+   scaleAbsolute = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "scaleAbsolute"s, 55.0f);
 
    sprintf_s(tmp, sizeof(tmp), scaleToFixedWidth ? "%0.1f" : "%0.3f", scaleToFixedWidth ? scaleAbsolute : scaleRelative);
    SetDlgItemText(IDC_VR_SCALE, tmp);
 
-   const float vrNearPlane = LoadValueWithDefault(regKey[RegName::PlayerVR], "nearPlane"s, 5.0f);
+   const float vrNearPlane = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "nearPlane"s, 5.0f);
    sprintf_s(tmp, sizeof(tmp), "%0.1f", vrNearPlane);
    SetDlgItemText(IDC_NEAR_PLANE, tmp);
 
-   const float vrSlope = LoadValueWithDefault(regKey[RegName::PlayerVR], "Slope"s, 6.5f);
+   const float vrSlope = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "Slope"s, 6.5f);
    sprintf_s(tmp, sizeof(tmp), "%0.2f", vrSlope);
    SetDlgItemText(IDC_VR_SLOPE, tmp);
 
-   const float vrOrientation = LoadValueWithDefault(regKey[RegName::PlayerVR], "Orientation"s, 0.0f);
+   const float vrOrientation = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "Orientation"s, 0.0f);
    sprintf_s(tmp, sizeof(tmp), "%0.1f", vrOrientation);
    SetDlgItemText(IDC_3D_VR_ORIENTATION, tmp);
 
-   const float vrX = LoadValueWithDefault(regKey[RegName::PlayerVR], "TableX"s, 0.0f);
+   const float vrX = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "TableX"s, 0.0f);
    sprintf_s(tmp, sizeof(tmp), "%0.1f", vrX);
    SetDlgItemText(IDC_VR_OFFSET_X, tmp);
 
-   const float vrY = LoadValueWithDefault(regKey[RegName::PlayerVR], "TableY"s, 0.0f);
+   const float vrY = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "TableY"s, 0.0f);
    sprintf_s(tmp, sizeof(tmp), "%0.1f", vrY);
    SetDlgItemText(IDC_VR_OFFSET_Y, tmp);
 
-   const float vrZ = LoadValueWithDefault(regKey[RegName::PlayerVR], "TableZ"s, 80.0f);
+   const float vrZ = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "TableZ"s, 80.0f);
    sprintf_s(tmp, sizeof(tmp), "%0.1f", vrZ);
    SetDlgItemText(IDC_VR_OFFSET_Z, tmp);
 
-   const bool bloomOff = LoadValueWithDefault(regKey[RegName::PlayerVR], "ForceBloomOff"s, LoadValueWithDefault(regKey[RegName::Player], "ForceBloomOff"s, false));
+   const bool bloomOff = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "ForceBloomOff"s, g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "ForceBloomOff"s, false));
    SendMessage(GetDlgItem(IDC_BLOOM_OFF).GetHwnd(), BM_SETCHECK, bloomOff ? BST_CHECKED : BST_UNCHECKED, 0);
 
-   const int askToTurnOn = LoadValueWithDefault(regKey[RegName::PlayerVR], "AskToTurnOn"s, 1);
+   const int askToTurnOn = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "AskToTurnOn"s, 1);
    hwnd = GetDlgItem(IDC_TURN_VR_ON).GetHwnd();
    SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"VR enabled");
@@ -568,7 +568,7 @@ BOOL VROptionsDialog::OnInitDialog()
    SendMessage(hwnd, CB_SETCURSEL, askToTurnOn, 0);
    SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 
-   const int DMDsource = LoadValueWithDefault(regKey[RegName::PlayerVR], "DMDsource"s, 1); // Unimplemented for the time being
+   const int DMDsource = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "DMDsource"s, 1); // Unimplemented for the time being
    hwnd = GetDlgItem(IDC_DMD_SOURCE).GetHwnd();
    SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Internal Text/Flasher (via vbscript)");
@@ -577,7 +577,7 @@ BOOL VROptionsDialog::OnInitDialog()
    SendMessage(hwnd, CB_SETCURSEL, DMDsource, 0);
    SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 
-   const int BGsource = LoadValueWithDefault(regKey[RegName::PlayerVR], "BGsource"s, 1); // Unimplemented for the time being
+   const int BGsource = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "BGsource"s, 1); // Unimplemented for the time being
    hwnd = GetDlgItem(IDC_BG_SOURCE).GetHwnd();
    SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Default table background");
@@ -587,14 +587,14 @@ BOOL VROptionsDialog::OnInitDialog()
    SendMessage(hwnd, CB_SETCURSEL, BGsource, 0);
    SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 
-   bool on = LoadValueWithDefault(regKey[RegName::Player], "CaptureExternalDMD"s, false);
+   bool on = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "CaptureExternalDMD"s, false);
    ::SendMessage(GetDlgItem(IDC_CAP_EXTDMD).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
-   on = LoadValueWithDefault(regKey[RegName::Player], "CapturePUP"s, false);
+   on = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "CapturePUP"s, false);
    ::SendMessage(GetDlgItem(IDC_CAP_PUP).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
    //AMD Debugging
-   const int textureModeVR = LoadValueWithDefault(regKey[RegName::PlayerVR], "EyeFBFormat"s, 1);
+   const int textureModeVR = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "EyeFBFormat"s, 1);
    hwnd = GetDlgItem(IDC_COMBO_TEXTURE).GetHwnd();
    SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"RGB 8");
@@ -608,8 +608,8 @@ BOOL VROptionsDialog::OnInitDialog()
    for (unsigned int i = eTableRecenter; i <= eTableDown; ++i)
       if (regkey_idc[i] != -1)
       {
-         const HRESULT hr = LoadValue(regKey[RegName::Player], regkey_string[i], key);
-         if (hr != S_OK || key > 0xdd)
+         const bool hr = g_pvp->m_settings.LoadValue(Settings::Player, regkey_string[i], key);
+         if (!hr || key > 0xdd)
             key = regkey_defdik[i];
          const HWND hwndControl = GetDlgItem(regkey_idc[i]);
          ::SetWindowText(hwndControl, rgszKeyName[key]);
@@ -618,16 +618,16 @@ BOOL VROptionsDialog::OnInitDialog()
 
    for (unsigned int i = 0; i < 3; ++i)
    {
-      HRESULT hr;
+      bool hr;
       int item, selected;
       switch (i)
       {
-      case 0: hr = LoadValue(regKey[RegName::Player], "JoyTableRecenterKey"s, selected); item = IDC_JOYTABLERECENTER; break;
-      case 1: hr = LoadValue(regKey[RegName::Player], "JoyTableUpKey"s, selected); item = IDC_JOYTABLEUP; break;
-      case 2: hr = LoadValue(regKey[RegName::Player], "JoyTableDownKey"s, selected); item = IDC_JOYTABLEDOWN; break;
+      case 0: hr = g_pvp->m_settings.LoadValue(Settings::Player, "JoyTableRecenterKey"s, selected); item = IDC_JOYTABLERECENTER; break;
+      case 1: hr = g_pvp->m_settings.LoadValue(Settings::Player, "JoyTableUpKey"s, selected); item = IDC_JOYTABLEUP; break;
+      case 2: hr = g_pvp->m_settings.LoadValue(Settings::Player, "JoyTableDownKey"s, selected); item = IDC_JOYTABLEDOWN; break;
       }
       
-      if (hr != S_OK)
+      if (!hr)
          selected = 0; // assume no assignment as standard
 
       const HWND hwnd = GetDlgItem(item).GetHwnd();
@@ -704,8 +704,8 @@ INT_PTR VROptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          if (key < 0xDD) // Key mapping
          {
             int key_esc;
-            const HRESULT hr = LoadValue(regKey[RegName::Player], "EscapeKey"s, key_esc);
-            if (hr != S_OK || key_esc > 0xdd)
+            const bool hr = g_pvp->m_settings.LoadValue(Settings::Player, "EscapeKey"s, key_esc);
+            if (!hr || key_esc > 0xdd)
                key_esc = DIK_ESCAPE;
 
             if (key == key_esc)
@@ -816,99 +816,99 @@ BOOL VROptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 
 void VROptionsDialog::OnOK()
 {
-   SaveValue(regKey[RegName::PlayerVR], "NudgeStrength"s, GetDlgItemText(IDC_NUDGE_STRENGTH).c_str());
+   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "NudgeStrength"s, GetDlgItemText(IDC_NUDGE_STRENGTH).c_str());
 
    LRESULT fxaa = SendMessage(GetDlgItem(IDC_POST_PROCESS_COMBO).GetHwnd(), CB_GETCURSEL, 0, 0);
    if (fxaa == LB_ERR)
       fxaa = 0;
-   SaveValue(regKey[RegName::PlayerVR], "FXAA"s, (int)fxaa);
+   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "FXAA"s, (int)fxaa);
 
    LRESULT sharpen = SendMessage(GetDlgItem(IDC_SHARPEN_COMBO).GetHwnd(), CB_GETCURSEL, 0, 0);
    if (sharpen == LB_ERR)
       sharpen = 0;
-   SaveValue(regKey[RegName::PlayerVR], "Sharpen"s, (int)sharpen);
+   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "Sharpen"s, (int)sharpen);
 
    const bool scaleFX_DMD = SendMessage(GetDlgItem(IDC_SCALE_FX_DMD).GetHwnd(), BM_GETCHECK, 0, 0) != 0;
-   SaveValue(regKey[RegName::PlayerVR], "ScaleFXDMD"s, scaleFX_DMD);
+   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "ScaleFXDMD"s, scaleFX_DMD);
 
    const size_t AAfactorIndex = SendMessage(GetDlgItem(IDC_SUPER_SAMPLING_COMBO).GetHwnd(), TBM_GETPOS, 0, 0);
    const float AAfactor = (AAfactorIndex < AAfactorCount) ? AAfactors[AAfactorIndex] : 1.0f;
-   SaveValue(regKey[RegName::PlayerVR], "AAFactor"s, AAfactor);
+   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "AAFactor"s, AAfactor);
 
    const size_t MSAASamplesIndex = SendMessage(GetDlgItem(IDC_MSAA_COMBO).GetHwnd(), TBM_GETPOS, 0, 0);
    const int MSAASamples = (MSAASamplesIndex < MSAASampleCount) ? MSAASamplesOpts[MSAASamplesIndex] : 1;
-   SaveValue(regKey[RegName::PlayerVR], "MSAASamples"s, MSAASamples);
+   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "MSAASamples"s, MSAASamples);
 
    bool useAO = SendMessage(GetDlgItem(IDC_DYNAMIC_AO).GetHwnd(), BM_GETCHECK, 0, 0) != 0;
-   SaveValue(regKey[RegName::PlayerVR], "DynamicAO"s, useAO);
+   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "DynamicAO"s, useAO);
 
    useAO = SendMessage(GetDlgItem(IDC_ENABLE_AO).GetHwnd(), BM_GETCHECK, 0, 0) ? false : true; // inverted logic
-   SaveValue(regKey[RegName::PlayerVR], "DisableAO"s, useAO);
+   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "DisableAO"s, useAO);
 
    const bool ssreflection = SendMessage(GetDlgItem(IDC_GLOBAL_SSREFLECTION_CHECK).GetHwnd(), BM_GETCHECK, 0, 0) != 0;
-   SaveValue(regKey[RegName::PlayerVR], "SSRefl"s, ssreflection);
+   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "SSRefl"s, ssreflection);
 
    LRESULT maxReflection = SendMessage(GetDlgItem(IDC_GLOBAL_PF_REFLECTION).GetHwnd(), CB_GETCURSEL, 0, 0);
    if (maxReflection == LB_ERR)
       maxReflection = RenderProbe::REFL_NONE;
    if (maxReflection == 2)
       maxReflection = RenderProbe::REFL_DYNAMIC;
-   SaveValue(regKey[RegName::PlayerVR], "PFReflection"s, (int)maxReflection);
+   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "PFReflection"s, (int)maxReflection);
 
    //AMD Debugging
    const size_t textureModeVR = SendMessage(GetDlgItem(IDC_COMBO_TEXTURE).GetHwnd(), CB_GETCURSEL, 0, 0);
-   SaveValue(regKey[RegName::PlayerVR], "EyeFBFormat"s, (int)textureModeVR);
+   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "EyeFBFormat"s, (int)textureModeVR);
 
    LRESULT vrPreview = SendMessage(GetDlgItem(IDC_VR_PREVIEW).GetHwnd(), CB_GETCURSEL, 0, 0);
    if (vrPreview == LB_ERR)
       vrPreview = VRPREVIEW_LEFT;
-   SaveValue(regKey[RegName::PlayerVR], "VRPreview"s, (int)vrPreview);
+   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "VRPreview"s, (int)vrPreview);
 
    const bool scaleToFixedWidth = SendMessage(GetDlgItem(IDC_SCALE_TO_CM).GetHwnd(), BM_GETCHECK, 0, 0) != 0;
-   SaveValue(regKey[RegName::PlayerVR], "scaleToFixedWidth"s, scaleToFixedWidth);
+   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "scaleToFixedWidth"s, scaleToFixedWidth);
 
-   SaveValue(regKey[RegName::PlayerVR], scaleToFixedWidth ? "scaleAbsolute"s : "scaleRelative"s, GetDlgItemText(IDC_VR_SCALE).c_str());
-   //SaveValue(regKey[RegName::PlayerVR], scaleToFixedWidth ? "scaleRelative"s : "scaleAbsolute"s, scaleToFixedWidth ? scaleRelative : scaleAbsolute); //Also update hidden value?
+   g_pvp->m_settings.SaveValue(Settings::PlayerVR, scaleToFixedWidth ? "scaleAbsolute"s : "scaleRelative"s, GetDlgItemText(IDC_VR_SCALE).c_str());
+   //g_pvp->m_settings.SaveValue(Settings::PlayerVR, scaleToFixedWidth ? "scaleRelative"s : "scaleAbsolute"s, scaleToFixedWidth ? scaleRelative : scaleAbsolute); //Also update hidden value?
 
-   SaveValue(regKey[RegName::PlayerVR], "nearPlane"s, GetDlgItemText(IDC_NEAR_PLANE).c_str());
+   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "nearPlane"s, GetDlgItemText(IDC_NEAR_PLANE).c_str());
 
    //For compatibility keep these in Player instead of PlayerVR
-   SaveValue(regKey[RegName::PlayerVR], "Slope"s, GetDlgItemText(IDC_VR_SLOPE).c_str());
+   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "Slope"s, GetDlgItemText(IDC_VR_SLOPE).c_str());
 
-   SaveValue(regKey[RegName::PlayerVR], "Orientation"s, GetDlgItemText(IDC_3D_VR_ORIENTATION).c_str());
+   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "Orientation"s, GetDlgItemText(IDC_3D_VR_ORIENTATION).c_str());
 
-   SaveValue(regKey[RegName::PlayerVR], "TableX"s, GetDlgItemText(IDC_VR_OFFSET_X).c_str());
+   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "TableX"s, GetDlgItemText(IDC_VR_OFFSET_X).c_str());
 
-   SaveValue(regKey[RegName::PlayerVR], "TableY"s, GetDlgItemText(IDC_VR_OFFSET_Y).c_str());
+   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "TableY"s, GetDlgItemText(IDC_VR_OFFSET_Y).c_str());
 
-   SaveValue(regKey[RegName::PlayerVR], "TableZ"s, GetDlgItemText(IDC_VR_OFFSET_Z).c_str());
+   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "TableZ"s, GetDlgItemText(IDC_VR_OFFSET_Z).c_str());
 
    const bool bloomOff = SendMessage(GetDlgItem(IDC_BLOOM_OFF).GetHwnd(), BM_GETCHECK, 0, 0) != 0;
-   SaveValue(regKey[RegName::PlayerVR], "ForceBloomOff"s, bloomOff);
+   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "ForceBloomOff"s, bloomOff);
 
    const size_t askToTurnOn = SendMessage(GetDlgItem(IDC_TURN_VR_ON).GetHwnd(), CB_GETCURSEL, 0, 0);
-   SaveValue(regKey[RegName::PlayerVR], "AskToTurnOn"s, (int)askToTurnOn);
+   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "AskToTurnOn"s, (int)askToTurnOn);
 
    const size_t dmdSource = SendMessage(GetDlgItem(IDC_DMD_SOURCE).GetHwnd(), CB_GETCURSEL, 0, 0);
-   SaveValue(regKey[RegName::PlayerVR], "DMDsource"s, (int)dmdSource);
+   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "DMDsource"s, (int)dmdSource);
 
    const size_t bgSource = SendMessage(GetDlgItem(IDC_BG_SOURCE).GetHwnd(), CB_GETCURSEL, 0, 0);
-   SaveValue(regKey[RegName::PlayerVR], "BGsource"s, (int)bgSource);
+   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "BGsource"s, (int)bgSource);
 
    bool selected = ::SendMessage(GetDlgItem(IDC_CAP_EXTDMD).GetHwnd(), BM_GETCHECK, 0, 0) != 0;
-   SaveValue(regKey[RegName::Player], "CaptureExternalDMD"s, selected);
+   g_pvp->m_settings.SaveValue(Settings::Player, "CaptureExternalDMD"s, selected);
 
    selected = ::SendMessage(GetDlgItem(IDC_CAP_PUP).GetHwnd(), BM_GETCHECK, 0, 0) != 0;
-   SaveValue(regKey[RegName::Player], "CapturePUP"s, selected);
+   g_pvp->m_settings.SaveValue(Settings::Player, "CapturePUP"s, selected);
 
-   SetValue(IDC_JOYTABLERECENTER, regKey[RegName::Player], "JoyTableRecenterKey"s);
-   SetValue(IDC_JOYTABLEUP, regKey[RegName::Player], "JoyTableUpKey"s);
-   SetValue(IDC_JOYTABLEDOWN, regKey[RegName::Player], "JoyTableDownKey"s);
+   SetValue(IDC_JOYTABLERECENTER, Settings::Player, "JoyTableRecenterKey"s);
+   SetValue(IDC_JOYTABLEUP, Settings::Player, "JoyTableUpKey"s);
+   SetValue(IDC_JOYTABLEDOWN, Settings::Player, "JoyTableDownKey"s);
 
     for (unsigned int i = eTableRecenter; i <= eTableDown; ++i) if (regkey_idc[i] != -1)
     {
         const size_t key = ::GetWindowLongPtr(GetDlgItem(regkey_idc[i]).GetHwnd(), GWLP_USERDATA);
-        SaveValue(regKey[RegName::Player], regkey_string[i], (int)key);
+        g_pvp->m_settings.SaveValue(Settings::Player, regkey_string[i], (int)key);
     }
 
    CDialog::OnOK();
@@ -926,12 +926,12 @@ void VROptionsDialog::OnDestroy()
    CDialog::OnDestroy();
 }
 
-void VROptionsDialog::SetValue(int nID, const string& regKey, const string& regValue)
+void VROptionsDialog::SetValue(int nID, const Settings::Section& section, const string& key)
 {
    LRESULT selected = ::SendMessage(GetDlgItem(nID).GetHwnd(), CB_GETCURSEL, 0, 0);
    if (selected == LB_ERR)
       selected = 2; // assume both as standard
-   SaveValue(regKey, regValue, (int)selected);
+   g_pvp->m_settings.SaveValue(section, key, (int)selected);
 }
 
 void VROptionsDialog::StartTimer(int nID)
