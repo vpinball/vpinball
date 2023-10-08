@@ -347,23 +347,14 @@ Player::Player(const bool cameraMode, PinTable *const editor_table, PinTable *co
 
 Player::~Player()
 {
-    if (m_ballImage)
-    {
-       delete m_ballImage;
-       m_ballImage = nullptr;
-    }
-    if (m_decalImage)
-    {
-       delete m_decalImage;
-       m_decalImage = nullptr;
-    }
-    if (m_pBCTarget)
-    {
-       delete m_pBCTarget;
-       m_pBCTarget = nullptr;
-    }
-    m_ptable->StopPlaying();
-    delete m_ptable;
+   delete m_ballImage;
+   m_ballImage = nullptr;
+   delete m_decalImage;
+   m_decalImage = nullptr;
+   delete m_pBCTarget;
+   m_pBCTarget = nullptr;
+   m_ptable->StopPlaying();
+   delete m_ptable;
 }
 
 void Player::PreRegisterClass(WNDCLASS& wc)
@@ -754,10 +745,81 @@ void Player::SetCameraMode(const bool mode)
 
 void Player::Shutdown()
 {
-#ifdef ENABLE_SDL
-   Detach();
-#endif
-   StopCaptures();
+    // In Windows 10 1803, there may be a significant lag waiting for WM_DESTROY (msg sent by the delete call below) if script is not closed first.
+    // signal the script that the game is now exited to allow any cleanup
+    m_ptable->FireVoidEvent(DISPID_GameEvents_Exit);
+    if (m_detectScriptHang)
+        g_pvp->PostWorkToWorkerThread(HANG_SNOOP_STOP, NULL);
+
+    // Save list of used textures to avoid stuttering in next play
+    string szVPXFile = g_pvp->m_currentTablePath + m_ptable->m_szTitle + ".vpx";
+    if ((LoadValueWithDefault(regKey[RegName::Player], "CacheMode"s, 1) > 0) && FileExists(szVPXFile))
+    {
+        string dir = g_pvp->m_szMyPath + "Cache" + PATH_SEPARATOR_CHAR + m_ptable->m_szTitle + PATH_SEPARATOR_CHAR;
+        std::filesystem::create_directories(std::filesystem::path(dir));
+
+        std::map<string, bool> prevPreRenderOnly;
+        if (m_dynamicMode && FileExists(dir + "used_textures.xml"))
+        {
+         std::ifstream myFile(dir + "used_textures.xml");
+         std::stringstream buffer;
+         buffer << myFile.rdbuf();
+         myFile.close();
+         auto xml = buffer.str();
+         tinyxml2::XMLDocument xmlDoc;
+         if (xmlDoc.Parse(xml.c_str()) == tinyxml2::XML_SUCCESS)
+         {
+            auto root = xmlDoc.FirstChildElement("textures");
+            for (auto node = root->FirstChildElement("texture"); node != nullptr; node = node->NextSiblingElement())
+            {
+               bool preRenderOnly = false;
+               const char *name = node->GetText();
+               if (node->QueryBoolAttribute("prerender", &preRenderOnly) == tinyxml2::XML_SUCCESS)
+                  prevPreRenderOnly[name] = preRenderOnly;
+            }
+         }
+        }
+
+        tinyxml2::XMLDocument xmlDoc;
+        tinyxml2::XMLElement *root = xmlDoc.NewElement("textures");
+        xmlDoc.InsertEndChild(xmlDoc.NewDeclaration());
+        xmlDoc.InsertEndChild(root);
+        vector<BaseTexture *> textures = m_pin3d.m_pd3dPrimaryDevice->m_texMan.GetLoadedTextures();
+        for (BaseTexture *memtex : textures)
+        {
+         for (Texture *image : g_pplayer->m_ptable->m_vimage)
+         {
+            if (image->m_pdsBuffer == memtex)
+            {
+               tinyxml2::XMLElement *node = xmlDoc.NewElement("texture");
+               node->SetText(image->m_szName.c_str());
+               node->SetAttribute("filter", (int)m_pin3d.m_pd3dPrimaryDevice->m_texMan.GetFilter(memtex));
+               node->SetAttribute("clampu", (int)m_pin3d.m_pd3dPrimaryDevice->m_texMan.GetClampU(memtex));
+               node->SetAttribute("clampv", (int)m_pin3d.m_pd3dPrimaryDevice->m_texMan.GetClampV(memtex));
+               node->SetAttribute("linear", m_pin3d.m_pd3dPrimaryDevice->m_texMan.IsLinearRGB(memtex));
+               bool preRenderOnly = m_dynamicMode ? (prevPreRenderOnly.find(image->m_szName) != prevPreRenderOnly.end() ? prevPreRenderOnly[image->m_szName] : true)
+                                                  : m_pin3d.m_pd3dPrimaryDevice->m_texMan.IsPreRenderOnly(memtex);
+               node->SetAttribute("prerender", preRenderOnly);
+               root->InsertEndChild(node);
+               break;
+            }
+         }
+        }
+        tinyxml2::XMLPrinter prn;
+        xmlDoc.Print(&prn);
+
+        std::ofstream myfile(dir + "used_textures.xml");
+        myfile << prn.CStr();
+        myfile.close();
+    }
+
+    if (m_audio)
+        m_audio->MusicPause();
+
+    mixer_shutdown();
+    hid_shutdown();
+
+    StopCaptures();
 #ifdef ENABLE_SDL
    g_DXGIRegistry.ReleaseAll();
 #endif
@@ -774,22 +836,16 @@ void Player::Shutdown()
 
    delete m_ballMeshBuffer;
    m_ballMeshBuffer = nullptr;
-#ifdef DEBUG_BALL_SPIN
+   #ifdef DEBUG_BALL_SPIN
    delete m_ballDebugPoints;
    m_ballDebugPoints = nullptr;
-#endif
+   #endif
    delete m_ballTrailMeshBuffer;
    m_ballTrailMeshBuffer = nullptr;
-   if (m_ballImage)
-   {
-       delete m_ballImage;
-       m_ballImage = nullptr;
-   }
-   if (m_decalImage)
-   {
-       delete m_decalImage;
-       m_decalImage = nullptr;
-   }
+   delete m_ballImage;
+   m_ballImage = nullptr;
+   delete m_decalImage;
+   m_decalImage = nullptr;
 
    m_limiter.Shutdown();
 
@@ -865,6 +921,35 @@ void Player::Shutdown()
    m_changed_vht.clear();
 
    restore_win_timer_resolution();
+
+   LockForegroundWindow(false);
+
+   // Reactivate edited table
+   g_pvp->GetPropertiesDocker()->EnableWindow();
+   g_pvp->GetLayersDocker()->EnableWindow();
+   g_pvp->GetToolbarDocker()->EnableWindow();
+   if (g_pvp->GetNotesDocker() != nullptr)
+      g_pvp->GetNotesDocker()->EnableWindow();
+   g_pvp->ToggleToolbar();
+   g_pvp->ShowWindow(SW_SHOW);
+   g_pvp->SetForegroundWindow();
+   m_pEditorTable->EnableWindow();
+   m_pEditorTable->SetFocus();
+   m_pEditorTable->SetActiveWindow();
+   m_pEditorTable->SetDirtyDraw();
+   m_pEditorTable->BeginAutoSaveCounter();
+
+   // Copy before deleting to process after player has been closed/deleted
+   CloseState closing = m_closing;
+
+   // Destroy this player
+   assert(g_pplayer == this);
+   delete g_pplayer; // Win32xx call Window destroy for us from destructor, don't call it directly or it will crash due to dual destruction
+   g_pplayer = nullptr;
+
+   // Close application if requested
+   if (closing == CS_CLOSE_APP)
+      g_pvp->PostMessage(WM_CLOSE, 0, 0);
 }
 
 void Player::InitFPS()
@@ -4299,12 +4384,12 @@ void Player::FinishFrame()
    if (m_closing == CS_FORCE_STOP)
       exit(-9999); 
 
-   // Close player (moving back to editor or to system is handled after player has been closed in StopPlayer)
+   // Close player (moving back to editor or to system is handled after player has been closed)
    if (m_closing == CS_STOP_PLAY || m_closing == CS_CLOSE_APP)
    {
       PauseMusic();
       // Stop playing (send close window message)
-      SendMessage(WM_CLOSE, 0, 0);
+      if (IsWindow()) SendMessage(WM_CLOSE, 0, 0);
       return;
    }
 
@@ -4531,7 +4616,8 @@ void Player::DrawBalls()
          continue;
 
       // calculate/adapt height of ball
-      float zheight = (!pball->m_d.m_frozen) ? pball->m_d.m_pos.z : (pball->m_d.m_pos.z - pball->m_d.m_radius);
+      //float zheight = (!pball->m_d.m_frozen) ? pball->m_d.m_pos.z : (pball->m_d.m_pos.z - pball->m_d.m_radius);
+      float zheight = pball->m_d.m_pos.z;
 
       const float maxz = (pball->m_d.m_radius + m_ptable->m_tableheight) + 3.0f;
       const float minz = (pball->m_d.m_radius + m_ptable->m_tableheight) - 0.1f;
@@ -4542,8 +4628,9 @@ void Player::DrawBalls()
          if (!pball->m_reflectionEnabled)
             continue;
          // Don't draw reflection if the ball is not on the playfield (e.g. on a ramp/kicker), except if explicitely asked too
-         if (!pball->m_forceReflection && ((zheight > maxz) || pball->m_d.m_frozen || (pball->m_d.m_pos.z < minz)))
-            continue;
+         // if (!pball->m_forceReflection && ((zheight > maxz) || pball->m_d.m_frozen || (pball->m_d.m_pos.z < minz)))
+         if (!pball->m_forceReflection && ((zheight > maxz) || (pball->m_d.m_pos.z < minz)))
+               continue;
       }
 
       m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(false, default_state);
@@ -4997,18 +5084,6 @@ LRESULT Player::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         mixer_get_volume();
         break;
 
-    case WM_CLOSE:
-    {
-        // In Windows 10 1803, there may be a significant lag waiting for WM_DESTROY if script is not closed first.   
-        StopPlayer();
-        break;
-    }
-    case WM_DESTROY:
-    {
-        Shutdown();
-        m_pEditorTable->OnPlayerStopped();
-        return 0;
-    }
     case WM_KEYDOWN:
         m_drawCursor = false;
         SetCursor(nullptr);
@@ -5140,91 +5215,6 @@ LRESULT Player::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     }
 
     return WndProcDefault(uMsg, wParam, lParam);
-}
-
-void Player::StopPlayer()
-{
-   string szVPXFile = g_pvp->m_currentTablePath + m_ptable->m_szTitle + ".vpx";
-   if ((LoadValueWithDefault(regKey[RegName::Player], "CacheMode"s, 1) > 0) && FileExists(szVPXFile))
-   {
-      string dir = g_pvp->m_szMyPath + "Cache" + PATH_SEPARATOR_CHAR + m_ptable->m_szTitle + PATH_SEPARATOR_CHAR;
-      std::filesystem::create_directories(std::filesystem::path(dir));
-
-      std::map<string, bool> prevPreRenderOnly;
-      if (m_dynamicMode && FileExists(dir + "used_textures.xml"))
-      {
-         std::ifstream myFile(dir + "used_textures.xml");
-         std::stringstream buffer;
-         buffer << myFile.rdbuf();
-         myFile.close();
-         auto xml = buffer.str();
-         tinyxml2::XMLDocument xmlDoc;
-         if (xmlDoc.Parse(xml.c_str()) == tinyxml2::XML_SUCCESS)
-         {
-            auto root = xmlDoc.FirstChildElement("textures");
-            for (auto node = root->FirstChildElement("texture"); node != nullptr; node = node->NextSiblingElement())
-            {
-               bool preRenderOnly = false;
-               const char *name = node->GetText();
-               if (node->QueryBoolAttribute("prerender", &preRenderOnly) == tinyxml2::XML_SUCCESS)
-                  prevPreRenderOnly[name] = preRenderOnly;
-            }
-         }
-      }
-
-      tinyxml2::XMLDocument xmlDoc;
-      tinyxml2::XMLElement* root = xmlDoc.NewElement("textures");
-      xmlDoc.InsertEndChild(xmlDoc.NewDeclaration());
-      xmlDoc.InsertEndChild(root);
-      vector<BaseTexture *> textures = m_pin3d.m_pd3dPrimaryDevice->m_texMan.GetLoadedTextures();
-      for (BaseTexture *memtex : textures)
-      {
-            for (Texture *image : g_pplayer->m_ptable->m_vimage)
-            {
-               if (image->m_pdsBuffer == memtex)
-               {
-                  tinyxml2::XMLElement* node = xmlDoc.NewElement("texture");
-                  node->SetText(image->m_szName.c_str());
-                  node->SetAttribute("filter", (int)m_pin3d.m_pd3dPrimaryDevice->m_texMan.GetFilter(memtex));
-                  node->SetAttribute("clampu", (int)m_pin3d.m_pd3dPrimaryDevice->m_texMan.GetClampU(memtex));
-                  node->SetAttribute("clampv", (int)m_pin3d.m_pd3dPrimaryDevice->m_texMan.GetClampV(memtex));
-                  node->SetAttribute("linear", m_pin3d.m_pd3dPrimaryDevice->m_texMan.IsLinearRGB(memtex));
-                  bool preRenderOnly = m_dynamicMode ? (prevPreRenderOnly.find(image->m_szName) != prevPreRenderOnly.end() ? prevPreRenderOnly[image->m_szName] : true)
-                                                     : m_pin3d.m_pd3dPrimaryDevice->m_texMan.IsPreRenderOnly(memtex);
-                  node->SetAttribute("prerender", preRenderOnly);
-                  root->InsertEndChild(node);
-                  break;
-               }
-            }
-      }
-      tinyxml2::XMLPrinter prn;
-      xmlDoc.Print(&prn);
-
-      std::ofstream myfile(dir + "used_textures.xml");
-      myfile << prn.CStr();
-      myfile.close();
-   }
-
-   if (m_audio)
-      m_audio->MusicPause();
-
-   // signal the script that the game is now exited to allow any cleanup
-   m_ptable->FireVoidEvent(DISPID_GameEvents_Exit);
-   if (m_detectScriptHang)
-      g_pvp->PostWorkToWorkerThread(HANG_SNOOP_STOP, NULL);
-
-   g_pvp->GetPropertiesDocker()->EnableWindow();
-   g_pvp->GetLayersDocker()->EnableWindow();
-   g_pvp->GetToolbarDocker()->EnableWindow();
-   if(g_pvp->GetNotesDocker()!=nullptr)
-      g_pvp->GetNotesDocker()->EnableWindow();
-   m_pEditorTable->EnableWindow();
-
-   LockForegroundWindow(false);
-
-   // Close application if requested
-   if (m_closing == CS_CLOSE_APP)
-      SendMessage(g_pvp->GetHwnd(), WM_COMMAND, ID_FILE_EXIT, NULL);
 }
 
 #ifdef PLAYBACK

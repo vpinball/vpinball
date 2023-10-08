@@ -2389,33 +2389,10 @@ void PinTable::Play(const bool cameraMode)
    }
 }
 
-void PinTable::OnPlayerStopped()
-{
-   if (g_pplayer != nullptr)
-   { // If startup fails, player will be null
-      assert(g_pplayer != nullptr && g_pplayer->m_pEditorTable == this);
-      // The running player has stopped, get back to editing this table which is the one the player was started for
-      delete g_pplayer;
-      g_pplayer = nullptr;
-   }
-   m_vpinball->ToggleToolbar();
-   mixer_shutdown();
-   hid_shutdown();
-   m_vpinball->ShowWindow(SW_SHOW);
-   m_vpinball->SetForegroundWindow();
-   SetFocus();
-   SetActiveWindow();
-   SetDirtyDraw();
-}
-
+// Called on the live table when playing ends (normally or when startup failed)
 void PinTable::StopPlaying()
 {
-   // May happen if startup failed
-   if (g_pplayer == nullptr)
-      return;
-
    assert(g_pplayer == nullptr || g_pplayer->m_ptable == this);
-   // called on a live table instance, before Player instance gets deleted (during Player's destructor)
 
    // Unhook script connections
    //m_pcv->m_pScript->SetScriptState(SCRIPTSTATE_INITIALIZED);
@@ -2433,8 +2410,6 @@ void PinTable::StopPlaying()
    m_materialMap.clear();
    m_lightMap.clear();
    m_renderprobeMap.clear();
-
-   BeginAutoSaveCounter();
 
    PLOGI << "Ending Play mode [table: " << m_szTableName << "]";
 }

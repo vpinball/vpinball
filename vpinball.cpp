@@ -1440,7 +1440,7 @@ void VPinball::MainMsgLoop()
       {
          // If started to play and for whatever reason (end of play, frontend closing the player window, failed loading,...)
          // we do not have a player, just close back to system.
-         SendMessage(g_pvp->GetHwnd(), WM_COMMAND, ID_FILE_EXIT, NULL);
+         PostMessage(WM_CLOSE, 0, 0);
       }
       else
       {
