@@ -1911,12 +1911,9 @@ void LiveUI::UpdateVideoOptionsModal()
    {
       if (ImGui::CollapsingHeader("Anti-Aliasing", ImGuiTreeNodeFlags_DefaultOpen))
       {
-         if (m_table->m_useFXAA == -1)
-         {
-            const char *postprocessed_aa_items[] = { "Disabled", "Fast FXAA", "Standard FXAA", "Quality FXAA", "Fast NFAA", "Standard DLAA", "Quality SMAA" };
-            if (ImGui::Combo("Postprocessed AA", &m_player->m_FXAA, postprocessed_aa_items, IM_ARRAYSIZE(postprocessed_aa_items)))
-               g_pvp->m_settings.SaveValue(m_player->m_stereo3D == STEREO_VR ? Settings::PlayerVR : Settings::Player, "FXAA"s, m_player->m_FXAA);
-         }
+         const char *postprocessed_aa_items[] = { "Disabled", "Fast FXAA", "Standard FXAA", "Quality FXAA", "Fast NFAA", "Standard DLAA", "Quality SMAA" };
+         if (ImGui::Combo("Postprocessed AA", &m_player->m_FXAA, postprocessed_aa_items, IM_ARRAYSIZE(postprocessed_aa_items)))
+            g_pvp->m_settings.SaveValue(m_player->m_stereo3D == STEREO_VR ? Settings::PlayerVR : Settings::Player, "FXAA"s, m_player->m_FXAA);
          const char *sharpen_items[] = { "Disabled", "CAS", "Bilateral CAS" };
          if (ImGui::Combo("Sharpen", &m_player->m_sharpen, sharpen_items, IM_ARRAYSIZE(sharpen_items)))
             g_pvp->m_settings.SaveValue(m_player->m_stereo3D == STEREO_VR ? Settings::PlayerVR : Settings::Player, "Sharpen"s, m_player->m_sharpen);

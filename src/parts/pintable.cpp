@@ -2213,7 +2213,6 @@ void PinTable::Play(const bool cameraMode)
    dst->m_grid = src->m_grid;
    dst->m_reflectElementsOnPlayfield = src->m_reflectElementsOnPlayfield;
    dst->m_useAA = src->m_useAA;
-   dst->m_useFXAA = src->m_useFXAA;
    dst->m_useAO = src->m_useAO;
    dst->m_useSSR = src->m_useSSR;
    dst->m_bloom_strength = src->m_bloom_strength;
@@ -3486,7 +3485,6 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
    bw.WriteBool(FID(REOP), m_reflectElementsOnPlayfield);
 
    bw.WriteInt(FID(UAAL), m_useAA);
-   bw.WriteInt(FID(UFXA), m_useFXAA);
    bw.WriteInt(FID(UAOC), m_useAO);
    bw.WriteInt(FID(USSR), m_useSSR);
    bw.WriteFloat(FID(BLST), m_bloom_strength);
@@ -4125,7 +4123,6 @@ void PinTable::SetLoadDefaults()
    m_ballPlayfieldReflectionStrength = 1.f;
 
    m_useAA = -1;
-   m_useFXAA = -1;
    m_useAO = -1;
    m_useSSR = -1;
 
@@ -4310,7 +4307,15 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    case FID(UAAL): pbr->GetInt(m_useAA); break;
    case FID(UAOC): pbr->GetInt(m_useAO); break;
    case FID(USSR): pbr->GetInt(m_useSSR); break;
-   case FID(UFXA): pbr->GetInt(m_useFXAA); break;
+   case FID(UFXA):
+   {
+      // Before 10.8, users tweaks were stored in the table file (now moved to a user ini file)
+      int fxaa;
+      pbr->GetInt(fxaa);
+      if (fxaa != -1)
+         m_settings.SaveValue(Settings::Player, "FXAA"s, fxaa);
+      break;
+   }
    case FID(BLST): pbr->GetFloat(m_bloom_strength); break;
    case FID(BCLR): pbr->GetInt(m_colorbackdrop); break;
    case FID(SECB): pbr->GetStruct(&m_protectionData, sizeof(ProtectionData)); break;
@@ -5980,7 +5985,17 @@ void PinTable::ImportBackdropPOV(const string& filename)
       {
          int boolTmp = -1;
          POV_FIELD("SSAA", "%i", m_useAA);
-         POV_FIELD("postprocAA", "%i", m_useFXAA);
+         // POV_FIELD("postprocAA", "%i", m_useFXAA);
+         {
+            auto node = section->FirstChildElement("postprocAA");
+            if (node != nullptr)
+            {
+               int useFXAA;
+               sscanf_s(node->GetText(), "%i", &useFXAA);
+               if (useFXAA > -1)
+                  m_settings.SaveValue(Settings::Player, "FXAA"s, useFXAA);
+            }
+         }
          POV_FIELD("ingameAO", "%i", m_useAO);
          POV_FIELD("ScSpReflect", "%i", m_useSSR);
          POV_FIELD("FPSLimiter", "%i", m_TableAdaptiveVSync);
@@ -6124,8 +6139,8 @@ void PinTable::ExportBackdropPOV(const string& filename)
 
       auto view = xmlDoc.NewElement("customsettings");
       POV_FIELD("SSAA", m_useAA);
-      POV_FIELD("postprocAA", m_useFXAA);
       POV_FIELD("ingameAO", m_useAA);
+      POV_FIELD("postprocAA", m_settings.HasValue(Settings::Player, "FXAA"s) ? m_settings.LoadValueWithDefault(Settings::Player, "FXAA"s, (int)Standard_FXAA) : -1);
       POV_FIELD("ScSpReflect", m_useSSR);
       POV_FIELD("FPSLimiter", m_TableAdaptiveVSync);
       POV_FIELD("OverwriteDetailsLevel", m_overwriteGlobalDetailLevel ? 1 : 0);
@@ -9421,15 +9436,23 @@ STDMETHODIMP PinTable::put_EnableAO(UserDefaultOnOff newVal)
 
 STDMETHODIMP PinTable::get_EnableFXAA(FXAASettings *pVal)
 {
-   *pVal = (FXAASettings)m_useFXAA;
+   // See put_EnableFXAA, not sure why we keep this
+   if (m_settings.HasValue(Settings::Player, "FXAA"s))
+      *pVal = (FXAASettings)m_settings.LoadValueWithDefault(Settings::Player, "FXAA"s, (int)Standard_FXAA);
+   else
+      *pVal = FXAASettings::Defaults;
 
    return S_OK;
 }
 
 STDMETHODIMP PinTable::put_EnableFXAA(FXAASettings newVal)
 {
+   // TODO I don't really get why we would expose the FXAA to script, undo is wrong too, it also may create an unwanted ini (did the caller wanted to change the app or the table setting ? is this used by someone ?)
    STARTUNDO
-   m_useFXAA = (int)newVal;
+   if (newVal == FXAASettings::Defaults)
+      m_settings.DeleteValue(Settings::Player, "FXAA"s);
+   else
+      m_settings.SaveValue(Settings::Player, "FXAA"s, (int)newVal);
    STOPUNDO
 
    return S_OK;

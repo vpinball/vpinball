@@ -18,7 +18,6 @@ protected:
 
 private:
     ComboBox    m_SSAACombo;
-    ComboBox    m_postProcAACombo;
     ComboBox    m_inGameAOCombo;
     ComboBox    m_ScreenReflectionCombo;
     ComboBox    m_ballReflectionCombo;
