@@ -1633,8 +1633,6 @@ void PinTable::InitTablePostLoad()
 {
    ProfileLog("InitTablePostLoad"s);
 
-   g_pvp->m_ptableActive = (CComObject<PinTable> *)this;
-
    for (unsigned int i = 1; i < NUM_BG_SETS; ++i)
       if (mViewSetups[i].mFOV == FLT_MAX) // old table, copy FS and/or FSS settings over from old DT setting
       {
@@ -5410,14 +5408,6 @@ LRESULT PinTable::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         case WM_SETCURSOR:
             SetMouseCursor();
-            return FinalWindowProc(uMsg, wParam, lParam);
-        case WM_MOUSEACTIVATE:
-        case WM_ACTIVATE:
-            if (LOWORD(wParam) != WA_INACTIVE)
-            {
-               if (g_pvp->m_ptableActive != (CComObject<PinTable>*)this)
-                  g_pvp->m_ptableActive = (CComObject<PinTable>*)this;
-            }
             return FinalWindowProc(uMsg, wParam, lParam);
         case WM_PAINT:
         {
@@ -10438,10 +10428,13 @@ LRESULT PinTableMDI::OnMDIActivate(UINT msg, WPARAM wparam, LPARAM lparam)
 {
    //wparam holds HWND of the MDI frame that is about to be deactivated
    //lparam holds HWND of the MDI frame that is about to be activated
-    if ((GetHwnd() == (HWND)wparam) && m_table->m_szFileName != "")
+   if ((GetHwnd() == (HWND)wparam) && m_table->m_szFileName != "")
    {
-      const string szFileNameAuto = PathFromFilename(m_table->m_szFileName) + m_table->m_szTitle + ".ini";
-      m_table->m_settings.SaveToFile(szFileNameAuto);
+      const string szFileNameAuto = PathFromFilename(m_table->m_szFileName) + m_table->m_szTitle;
+      if (FileExists(szFileNameAuto + ".vpx"))
+         m_table->m_settings.SaveToFile(szFileNameAuto + ".ini");
+      if (g_pvp->m_ptableActive == m_table)
+         g_pvp->m_ptableActive = nullptr;
    }
    if(GetHwnd()==(HWND)lparam)
    {
@@ -10454,6 +10447,8 @@ LRESULT PinTableMDI::OnMDIActivate(UINT msg, WPARAM wparam, LPARAM lparam)
       m_vpinball->m_currentTablePath = PathFromFilename(m_table->m_szFileName);
       const string szFileNameAuto = m_vpinball->m_currentTablePath + m_table->m_szTitle + ".ini";
       m_table->m_settings.LoadFromFile(szFileNameAuto, false);
+      if (g_pvp->m_ptableActive != m_table)
+         g_pvp->m_ptableActive = m_table;
    }
    return CMDIChild::OnMDIActivate(msg, wparam, lparam);
 }
