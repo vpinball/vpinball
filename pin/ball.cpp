@@ -14,7 +14,7 @@ Ball::Ball()
    m_pinballEnv = nullptr;
    m_pinballDecal = nullptr;
    m_lastEventPos.x = m_lastEventPos.y = m_lastEventPos.z = -10000.0f; // last pos is far far away
-   m_d.m_frozen = false;
+   m_d.m_lockedInKicker = false;
    m_color = RGB(255, 255, 255);
 #ifdef C_DYNAMIC
    m_dynamic = C_DYNAMIC; // assume dynamic
@@ -50,7 +50,7 @@ void Ball::Init(const float mass)
 
    m_mover.m_pball = this;
 
-   m_d.m_frozen = false;
+   m_d.m_lockedInKicker = false;
 
    m_playfieldReflectionStrength = 1.0f;
    m_reflectionEnabled = true;
@@ -313,7 +313,7 @@ void Ball::Collide(const CollisionEvent& coll)
    // (but if we are frozen, there won't be a second collision event, so deal with it now!)
    if (((g_pplayer->m_swap_ball_collision_handling && pball >= this) ||
       (!g_pplayer->m_swap_ball_collision_handling && pball <= this)) &&
-      !m_d.m_frozen)
+      !m_d.m_lockedInKicker)
       return;
 
    // target ball to object ball delta velocity
@@ -342,13 +342,13 @@ void Ball::Collide(const CollisionEvent& coll)
    {
       if (edist > C_DISP_LIMIT)
          edist = C_DISP_LIMIT;		// crossing ramps, delta noise
-      if (!m_d.m_frozen) edist *= 0.5f;	// if the hitten ball is not frozen
+      if (!m_d.m_lockedInKicker) edist *= 0.5f;	// if the hitten ball is not frozen
       pball->m_d.m_pos += edist * vnormal;// push along norm, back to free area
       // use the norm, but is not correct, but cheaply handled
    }
 
    edist = -C_DISP_GAIN * m_coll.m_hitdistance;	// noisy value .... needs investigation
-   if (!m_d.m_frozen && edist > 1.0e-4f)
+   if (!m_d.m_lockedInKicker && edist > 1.0e-4f)
    {
       if (edist > C_DISP_LIMIT)
          edist = C_DISP_LIMIT; // crossing ramps, delta noise
@@ -357,11 +357,11 @@ void Ball::Collide(const CollisionEvent& coll)
    }
 #endif
 
-   const float myInvMass = m_d.m_frozen ? 0.0f : 1.0f/m_d.m_mass; // frozen ball has infinite mass
+   const float myInvMass = m_d.m_lockedInKicker ? 0.0f : 1.0f/m_d.m_mass; // frozen ball has infinite mass
    const float pballInvMass = 1.0f/pball->m_d.m_mass; //!! do same frozen mass thing for that one?
    const float impulse = -(float)(1.0 + 0.8) * dot / (myInvMass + pballInvMass); // resitution = 0.8
 
-   if (!m_d.m_frozen)
+   if (!m_d.m_lockedInKicker)
    {
       m_d.m_vel -= (impulse * myInvMass) * vnormal;
 #ifdef C_DYNAMIC
@@ -510,7 +510,7 @@ void BallMoverObject::UpdateDisplacements(const float dtime)
 
 void Ball::UpdateDisplacements(const float dtime)
 {
-   if (!m_d.m_frozen)
+   if (!m_d.m_lockedInKicker)
    {
       const Vertex3Ds ds = dtime * m_d.m_vel;
       m_d.m_pos += ds;
@@ -537,7 +537,7 @@ void BallMoverObject::UpdateVelocities()
 
 void Ball::UpdateVelocities()
 {
-   if (!m_d.m_frozen)  // Gravity
+   if (!m_d.m_lockedInKicker)  // Gravity
    {
       if (g_pplayer->m_ballControl && this == g_pplayer->m_pactiveballBC && g_pplayer->m_pBCTarget != nullptr)
       {

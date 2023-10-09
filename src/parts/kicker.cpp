@@ -808,7 +808,7 @@ STDMETHODIMP Kicker::KickXYZ(float angle, float speed, float inclination, float 
       m_phitkickercircle->m_pball->m_d.m_vel.x =  sinf(anglerad) * speed;
       m_phitkickercircle->m_pball->m_d.m_vel.y = -cosf(anglerad) * speed;
       m_phitkickercircle->m_pball->m_d.m_vel.z = speedz;
-      m_phitkickercircle->m_pball->m_d.m_frozen = false;
+      m_phitkickercircle->m_pball->m_d.m_lockedInKicker = false;
 #ifdef C_DYNAMIC
       m_phitkickercircle->m_pball->m_dynamic = C_DYNAMIC;
 #endif
@@ -1230,8 +1230,8 @@ void KickerHitCircle::DoCollide(Ball * const pball, const Vertex3Ds& hitnormal, 
 
          if (hitEvent)
          {
-            pball->m_d.m_frozen = !m_pkicker->m_d.m_fallThrough;
-            if (pball->m_d.m_frozen)
+            pball->m_d.m_lockedInKicker = !m_pkicker->m_d.m_fallThrough;
+            if (pball->m_d.m_lockedInKicker)
             {
                pball->m_d.m_vpVolObjs->push_back(m_obj);		// add kicker to ball's volume set
                m_pball = pball;
@@ -1245,7 +1245,7 @@ void KickerHitCircle::DoCollide(Ball * const pball, const Vertex3Ds& hitnormal, 
             if (!newBall)
                m_pkicker->FireGroupEvent(DISPID_HitEvents_Hit);
 
-            if (pball->m_d.m_frozen || m_pkicker->m_d.m_fallThrough)	// script may have unfrozen the ball
+            if (pball->m_d.m_lockedInKicker || m_pkicker->m_d.m_fallThrough)	// script may have unfrozen the ball
             {
                // if ball falls through hole, we fake the collision algo by changing the ball height
                // in HitTestBasicRadius() the z-position of the ball is checked if it is >= to the hit cylinder

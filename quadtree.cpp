@@ -622,7 +622,7 @@ void EmbreeCollideBalls(void* const userPtr, RTCCollision* const collisions, con
       Ball* const ball = (*vpc->ball)[collisions[i].primID1];
       const HitObject* const ho = (*vpc->vho)[collisions[i].primID0];
    
-      if (!ball->m_d.m_frozen
+      if (!ball->m_d.m_lockedInKicker
 #ifdef C_DYNAMIC
           && ball->m_dynamic > 0
 #endif

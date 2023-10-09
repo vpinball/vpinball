@@ -2615,7 +2615,7 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 
 #ifdef USE_EMBREE
       for (size_t i = 0; i < m_vball.size(); i++)
-         if (!m_vball[i]->m_d.m_frozen
+         if (!m_vball[i]->m_d.m_lockedInKicker
 #ifdef C_DYNAMIC
              && m_vball[i]->m_dynamic > 0
 #endif
@@ -2636,7 +2636,7 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
       {
          Ball * const pball = m_vball[i];
 
-         if (!pball->m_d.m_frozen
+         if (!pball->m_d.m_lockedInKicker
 #ifdef C_DYNAMIC
              && pball->m_dynamic > 0
 #endif
@@ -4616,8 +4616,7 @@ void Player::DrawBalls()
          continue;
 
       // calculate/adapt height of ball
-      //float zheight = (!pball->m_d.m_frozen) ? pball->m_d.m_pos.z : (pball->m_d.m_pos.z - pball->m_d.m_radius);
-      float zheight = pball->m_d.m_pos.z;
+      float zheight = (!pball->m_d.m_lockedInKicker) ? pball->m_d.m_pos.z : (pball->m_d.m_pos.z - pball->m_d.m_radius);
 
       const float maxz = (pball->m_d.m_radius + m_ptable->m_tableheight) + 3.0f;
       const float minz = (pball->m_d.m_radius + m_ptable->m_tableheight) - 0.1f;
@@ -4628,8 +4627,7 @@ void Player::DrawBalls()
          if (!pball->m_reflectionEnabled)
             continue;
          // Don't draw reflection if the ball is not on the playfield (e.g. on a ramp/kicker), except if explicitely asked too
-         // if (!pball->m_forceReflection && ((zheight > maxz) || pball->m_d.m_frozen || (pball->m_d.m_pos.z < minz)))
-         if (!pball->m_forceReflection && ((zheight > maxz) || (pball->m_d.m_pos.z < minz)))
+         if (!pball->m_forceReflection && ((zheight > maxz) || pball->m_d.m_lockedInKicker || (pball->m_d.m_pos.z < minz)))
                continue;
       }
 
