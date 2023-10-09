@@ -32,9 +32,15 @@ AudioPlayer::AudioPlayer()
       const SoundConfigTypes SoundMode3D = (SoundConfigTypes)g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "Sound3D"s, (int)SNDCFG_SND3D2CH);
       const int DS_STD_idx = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "SoundDevice"s,   -1);
       const int DS_BG_idx  = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "SoundDeviceBG"s, -1);
+#ifndef __STANDALONE__
       bass_STD_idx = -1;
       bass_BG_idx  = -1;
+#else
+      bass_STD_idx = DS_STD_idx;
+      bass_BG_idx  = DS_BG_idx;
+#endif
 
+#ifndef __STANDALONE__
       for(unsigned int idx = 0; idx < 2; ++idx)
       {
       const int DSidx = (idx == 0) ? DS_STD_idx : DS_BG_idx;
@@ -65,6 +71,7 @@ AudioPlayer::AudioPlayer()
           }
       }
       }
+#endif
 
       //BASS_SetConfig(/*BASS_CONFIG_THREAD |*/ BASS_CONFIG_FLOATDSP, fTrue);
 
@@ -142,18 +149,24 @@ bool AudioPlayer::MusicInit(const string& szFileName, const float volume)
 {
    if (bass_BG_idx != -1 && bass_STD_idx != bass_BG_idx) BASS_SetDevice(bass_BG_idx);
 
+#ifndef __STANDALONE__
+   string filename = szFileName;
+#else
+   string filename = normalize_path_separators(szFileName);
+#endif
+
    for (int i = 0; i < 5; ++i)
    {
-      string fileName;
+      string path;
       switch (i)
       {
-      case 0: fileName = szFileName; break;
-      case 1: fileName = g_pvp->m_szMyPath + "music" + PATH_SEPARATOR_CHAR + szFileName; break;
-      case 2: fileName = g_pvp->m_currentTablePath + szFileName; break;
-      case 3: fileName = g_pvp->m_currentTablePath + "music" + PATH_SEPARATOR_CHAR + szFileName; break;
-      case 4: fileName = PATH_MUSIC + szFileName; break;
+      case 0: path = filename; break;
+      case 1: path = g_pvp->m_szMyPath + "music" + PATH_SEPARATOR_CHAR + filename; break;
+      case 2: path = g_pvp->m_currentTablePath + filename; break;
+      case 3: path = g_pvp->m_currentTablePath + "music" + PATH_SEPARATOR_CHAR + filename; break;
+      case 4: path = PATH_MUSIC + filename; break;
       }
-      m_stream = BASS_StreamCreateFile(FALSE, fileName.c_str(), 0, 0, /*BASS_SAMPLE_LOOP*/0); //!! ?
+      m_stream = BASS_StreamCreateFile(FALSE, path.c_str(), 0, 0, /*BASS_SAMPLE_LOOP*/0); //!! ?
       if (m_stream != 0)
          break;
    }
@@ -163,7 +176,7 @@ bool AudioPlayer::MusicInit(const string& szFileName, const float volume)
       const int code = BASS_ErrorGetCode();
       string bla;
       BASS_ErrorMapCode(code, bla);
-      g_pvp->MessageBox(("BASS music/sound library cannot load \"" + szFileName + "\" (error " + std::to_string(code) + ": " + bla + ')').c_str(), "Error", MB_ICONERROR);
+      g_pvp->MessageBox(("BASS music/sound library cannot load \"" + filename + "\" (error " + std::to_string(code) + ": " + bla + ')').c_str(), "Error", MB_ICONERROR);
       return false;
    }
 

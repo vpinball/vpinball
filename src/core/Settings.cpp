@@ -6,7 +6,7 @@
 
 static const string regKey[Settings::Count] =
    {
-      "Controller"s, "Editor"s, "Player"s, "PlayerVR"s, "RecentDir"s, "Version"s, "CVEdit"s,
+      "Controller"s, "Editor"s, "Standalone"s, "Player"s, "PlayerVR"s, "RecentDir"s, "Version"s, "CVEdit"s,
       "DefaultProps\\Bumper"s, "DefaultProps\\Decal"s, "DefaultProps\\EMReel"s, "DefaultProps\\Flasher"s, "DefaultProps\\Flipper"s,
       "DefaultProps\\Gate"s, "DefaultProps\\HitTarget"s, "DefaultProps\\Kicker"s, "DefaultProps\\Light"s, "DefaultProps\\LightSequence"s,
       "DefaultProps\\Plunger"s, "DefaultProps\\Primitive"s, "DefaultProps\\Ramp"s, "DefaultProps\\Rubber"s, "DefaultProps\\Spinner"s,
@@ -133,6 +133,22 @@ bool Settings::LoadFromFile(const string& path, const bool createDefault)
          }
          RegCloseKey(hk);
       }
+#else
+#ifdef __STANDALONE__
+   string resource = g_pvp->m_szMyPath + "res" + PATH_SEPARATOR_CHAR + "Default VPinballX.ini";
+   std::ifstream sourceFile(resource);
+   if (sourceFile.is_open()) {
+      std::ofstream defaultFile(path);
+      if (defaultFile.is_open()) {
+         defaultFile << sourceFile.rdbuf();
+         defaultFile.close();
+      }
+      sourceFile.close();
+   }
+   if (!file.read(m_ini)) {
+      PLOGE << "Loading of default settings file failed";
+   }
+#endif
 #endif
       return true;
    }

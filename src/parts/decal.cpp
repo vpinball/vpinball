@@ -33,7 +33,9 @@ Decal *Decal::CopyForPlay(PinTable *live_table)
    STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(Decal, live_table)
    dst->m_backglass = m_backglass;
    dst->m_pIFont = m_pIFont;
+#ifndef __STANDALONE__
    dst->m_pIFont->AddRef();
+#endif
    dst->EnsureSize();
    return dst;
 }
@@ -82,6 +84,7 @@ void Decal::SetDefaults(const bool fromMouseClick)
 
    if (!m_pIFont)
    {
+#ifndef __STANDALONE__
       FONTDESC fd;
       fd.cbSizeofstruct = sizeof(FONTDESC);
 
@@ -108,6 +111,7 @@ void Decal::SetDefaults(const bool fromMouseClick)
       fd.fStrikethrough = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "FontStrikeThrough"s, false) : false;
 
       OleCreateFontIndirect(&fd, IID_IFont, (void **)&m_pIFont);
+#endif
    }
 
 #undef regKey
@@ -144,6 +148,7 @@ void Decal::WriteRegDefaults()
 
    if (m_pIFont)
    {
+#ifndef __STANDALONE__
       FONTDESC fd;
       fd.cbSizeofstruct = sizeof(FONTDESC);
       m_pIFont->get_Size(&fd.cySize);
@@ -169,6 +174,7 @@ void Decal::WriteRegDefaults()
       g_pvp->m_settings.SaveValue(regKey, "FontItalic"s, fd.fItalic);
       g_pvp->m_settings.SaveValue(regKey, "FontUnderline"s, fd.fUnderline);
       g_pvp->m_settings.SaveValue(regKey, "FontStrikeThrough"s, fd.fStrikethrough);
+#endif
    }
 
 #undef regKey
@@ -247,6 +253,7 @@ void Decal::GetTimers(vector<HitTimer*> &pvht)
 
 void Decal::GetTextSize(int * const px, int * const py)
 {
+#ifndef __STANDALONE__
    const int len = (int)m_d.m_sztext.length();
    const HFONT hFont = GetFont();
    constexpr int alignment = DT_LEFT;
@@ -290,6 +297,7 @@ void Decal::GetTextSize(int * const px, int * const py)
    clientDC.SelectObject(hFontOld);
 
    DeleteObject(hFont);
+#endif
 }
 
 void Decal::PreRenderText()
@@ -297,6 +305,7 @@ void Decal::PreRenderText()
    if (m_d.m_decaltype != DecalText)
       return;
 
+#ifndef __STANDALONE__
    RECT rcOut = { };
    const int len = (int)m_d.m_sztext.length();
    const HFONT hFont = GetFont();
@@ -408,6 +417,7 @@ void Decal::PreRenderText()
    dc.SelectObject(oldBmp);
    DeleteObject(hFont);
    DeleteObject(hbm);
+#endif
 }
 
 void Decal::GetHitShapes(vector<HitObject*> &pvho)
@@ -692,9 +702,11 @@ HRESULT Decal::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveFor
    ISelect::SaveData(pstm, hcrypthash);
 
    bw.WriteTag(FID(FONT));
+#ifndef __STANDALONE__
    IPersistStream * ips;
    m_pIFont->QueryInterface(IID_IPersistStream, (void **)&ips);
    ips->Save(pstm, TRUE);
+#endif
 
    bw.WriteTag(FID(ENDB));
 
@@ -734,6 +746,7 @@ bool Decal::LoadToken(const int id, BiffReader * const pbr)
    case FID(BGLS): pbr->GetBool(m_backglass); break;
    case FID(FONT):
    {
+#ifndef __STANDALONE__
       if (!m_pIFont)
       {
          FONTDESC fd;
@@ -753,6 +766,19 @@ bool Decal::LoadToken(const int id, BiffReader * const pbr)
 
       ips->Load(pbr->m_pistream);
 
+#else
+      // https://github.com/freezy/VisualPinball.Engine/blob/master/VisualPinball.Engine/VPT/Font.cs#L25
+
+      char data[255];
+
+      ULONG read;
+      pbr->ReadBytes(data, 3, &read);
+      pbr->ReadBytes(data, 1, &read); // Italic
+      pbr->ReadBytes(data, 2, &read); // Weight
+      pbr->ReadBytes(data, 4, &read); // Size
+      pbr->ReadBytes(data, 1, &read); // nameLen
+      pbr->ReadBytes(data, (int)data[0], &read); // name
+#endif
       break;
    }
    default: ISelect::LoadToken(id, pbr); break;
@@ -782,7 +808,9 @@ void Decal::EnsureSize()
       GetTextSize(&sizex, &sizey);
 
       CY cy;
+ #ifndef __STANDALONE__
       m_pIFont->get_Size(&cy);
+ #endif
 
       double rh = (double)cy.Lo * (1.0 / 2545.0);
 
@@ -806,7 +834,9 @@ void Decal::EnsureSize()
       else
       {
          CY cy;
+#ifndef __STANDALONE__
          m_pIFont->get_Size(&cy);
+#endif
 
          int sizex, sizey;
          GetTextSize(&sizex, &sizey);
@@ -830,6 +860,7 @@ void Decal::EnsureSize()
 
 HFONT Decal::GetFont()
 {
+#ifndef __STANDALONE__
    LOGFONT lf = {};
    lf.lfHeight = -72;
    lf.lfCharSet = DEFAULT_CHARSET;
@@ -852,6 +883,9 @@ HFONT Decal::GetFont()
    const HFONT hFont = CreateFontIndirect(&lf);
 
    return hFont;
+#else
+   return 0L;
+#endif
 }
 
 STDMETHODIMP Decal::get_Rotation(float *pVal)

@@ -13,12 +13,23 @@
 
 #define  SET_CRT_DEBUG_FIELD(a)   _CrtSetDbgFlag((a) | _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG))
 
+#ifndef __STANDALONE__
 #include "vpinball_i.c"
+#endif
 
 #include <locale>
 #include <codecvt>
 
-#include "plog/Initializers/RollingFileInitializer.h"
+#include <plog/Init.h>
+#include <plog/Formatters/TxtFormatter.h>
+#include <plog/Appenders/RollingFileAppender.h>
+#ifdef __STANDALONE__
+#ifndef __ANDROID__
+#include <plog/Appenders/ColorConsoleAppender.h>
+#else
+#include <plog/Appenders/AndroidAppender.h>
+#endif
+#endif
 
 #ifdef CRASH_HANDLER
 extern "C" int __cdecl _purecall()
@@ -50,6 +61,7 @@ extern "C" int __cdecl _purecall()
 }
 #endif
 
+#ifndef __STANDALONE__
 #ifndef DISABLE_FORCE_NVIDIA_OPTIMUS
 extern "C" {
    __declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
@@ -189,6 +201,12 @@ PCHAR* CommandLineToArgvA(PCHAR CmdLine, int* _argc)
    (*_argc) = argc;
    return argv;
 }
+#endif
+
+#ifdef __STANDALONE__
+int g_argc;
+char **g_argv;
+#endif
 
 void SetupLogger(const bool enable);
 
@@ -214,6 +232,12 @@ static const string options[] = { // keep in sync with option_names & option_des
    "ExtractVBS"s,
    "Ini"s,
    "exit"s // (ab)used by frontend, not handled by us
+#ifdef __STANDALONE__
+   ,
+   "PrefPath"s,
+   "listres"s,
+   "listsnd"s
+#endif
 }; // + c1..c9
 static const string option_descs[] =
 {
@@ -236,6 +260,12 @@ static const string option_descs[] =
    "[filename]  Load, export table script and close"s,
    "[filename]  Use a custom settings file instead of loading it from the default location"s,
    string()
+#ifdef __STANDALONE__
+   ,
+   "[path]  Use a custom preferences path instead of $HOME/.vpinball"s,
+   "List available fullscreen resolutions"s,
+   "List available sound devices"s
+#endif   
 };
 enum option_names
 {
@@ -258,6 +288,12 @@ enum option_names
    OPTION_EXTRACTVBS,
    OPTION_INI,
    OPTION_FRONTEND_EXIT
+#ifdef __STANDALONE__
+   ,
+   OPTION_PREFPATH,
+   OPTION_LISTRES,
+   OPTION_LISTSND
+#endif
 };
 
 static bool compare_option(const char *const arg, const option_names option)
@@ -275,8 +311,15 @@ private:
    bool file;
    bool loadFileResult;
    bool extractScript;
+#ifdef __STANDALONE__
+   bool listRes;
+   bool listSnd;
+#endif
    bool bgles;
    float fgles;
+#ifdef __STANDALONE__
+   string szPrefPath;
+#endif
    string szTableFileName;
    string szIniFileName;
    VPinball m_vpinball;
@@ -284,14 +327,18 @@ private:
 public:
    VPApp(HINSTANCE hInstance)
    {
+#ifndef __STANDALONE__
        m_vpinball.theInstance = GetInstanceHandle();
        SetResourceHandle(m_vpinball.theInstance);
+#endif
    }
 
    virtual ~VPApp() 
    {
+#ifndef __STANDALONE__
       _Module.Term();
       CoUninitialize();
+#endif
       g_pvp = nullptr;
 
 #ifdef _CRTDBG_MAP_ALLOC
@@ -303,6 +350,8 @@ public:
    }
    BOOL InitInstance() override
    {
+      g_pvp = &m_vpinball;
+
 #ifdef CRASH_HANDLER
       rde::CrashHandler::Init();
 #endif
@@ -344,16 +393,26 @@ public:
       run = true;
       loadFileResult = true;
       extractScript = false;
+#ifdef __STANDALONE__
+      listRes = false;
+      listSnd = false;
+#endif
       fgles = 0.f;
       bgles = false;
 
+#ifdef __STANDALONE__
+      szPrefPath.clear();
+#endif
+
       szTableFileName.clear();
 
-      // Default ini path (can be overriden from command line)
-      szIniFileName = m_vpinball.m_szMyPrefPath + "VPinballX.ini"s;
-
+#ifndef __STANDALONE__
       int nArgs;
       LPSTR *szArglist = CommandLineToArgvA(GetCommandLine(), &nArgs);
+#else
+      int nArgs = g_argc;
+      char**  szArglist = g_argv;
+#endif
 
       for (int i = 1; i < nArgs; ++i) // skip szArglist[0], contains executable name
       {
@@ -384,25 +443,44 @@ public:
             || compare_option(szArglist[i], OPTION_HELP)
             || compare_option(szArglist[i], OPTION_QMARK))
          {
-            string output = '-'    +options[OPTION_UNREGSERVER]+          "  "+option_descs[OPTION_UNREGSERVER]+
+            string output = 
+#ifndef __STANDALONE__
+                            "-"    +options[OPTION_UNREGSERVER]+          "  "+option_descs[OPTION_UNREGSERVER]+
                             "\n-"  +options[OPTION_REGSERVER]+            "  "+option_descs[OPTION_REGSERVER]+
-                            "\n\n-"+options[OPTION_DISABLETRUEFULLSCREEN]+"  "+option_descs[OPTION_DISABLETRUEFULLSCREEN]+
+                            "\n\n"+
+#endif
+                            "-"+options[OPTION_DISABLETRUEFULLSCREEN]+    "  "+option_descs[OPTION_DISABLETRUEFULLSCREEN]+
                             "\n-"  +options[OPTION_ENABLETRUEFULLSCREEN]+ "  "+option_descs[OPTION_ENABLETRUEFULLSCREEN]+
                             "\n-"  +options[OPTION_MINIMIZED]+            "  "+option_descs[OPTION_MINIMIZED]+
                             "\n-"  +options[OPTION_EXTMINIMIZED]+         "  "+option_descs[OPTION_EXTMINIMIZED]+
                             "\n-"  +options[OPTION_PRIMARY]+              "  "+option_descs[OPTION_PRIMARY]+
-                            "\n\n-"+options[OPTION_GLES]+                 ' '+ option_descs[OPTION_GLES]+
+                            "\n\n-"+options[OPTION_GLES]+                 "  "+option_descs[OPTION_GLES]+
                             "\n\n-"+options[OPTION_LESSCPUTHREADS]+       "  "+option_descs[OPTION_LESSCPUTHREADS]+
-                            "\n\n-"+options[OPTION_EDIT]+                 ' '+ option_descs[OPTION_EDIT]+
-                            "\n-"  +options[OPTION_PLAY]+                 ' '+ option_descs[OPTION_PLAY]+
-                            "\n-"  +options[OPTION_POVEDIT]+              ' '+ option_descs[OPTION_POVEDIT]+
-                            "\n-"  +options[OPTION_POV]+                  ' '+ option_descs[OPTION_POV]+
-                            "\n-"  +options[OPTION_EXTRACTVBS]+           ' '+ option_descs[OPTION_EXTRACTVBS]+
-                            "\n-"  +options[OPTION_INI]+                  ' '+ option_descs[OPTION_INI]+
+                            "\n\n-"+options[OPTION_EDIT]+                 " "+option_descs[OPTION_EDIT]+
+                            "\n-"  +options[OPTION_PLAY]+                 " "+option_descs[OPTION_PLAY]+
+                            "\n-"  +options[OPTION_POVEDIT]+              " "+option_descs[OPTION_POVEDIT]+
+                            "\n-"  +options[OPTION_POV]+                  " "+option_descs[OPTION_POV]+
+                            "\n-"  +options[OPTION_EXTRACTVBS]+           " "+option_descs[OPTION_EXTRACTVBS]+
+                            "\n-"  +options[OPTION_INI]+                  " "+option_descs[OPTION_INI]+
+#ifdef __STANDALONE__
+                            "\n\n-"+options[OPTION_PREFPATH]+             " "+option_descs[OPTION_PREFPATH]+
+                            "\n-"  +options[OPTION_LISTRES]+              "  "+option_descs[OPTION_LISTRES]+
+                            "\n-"  +options[OPTION_LISTSND]+              "  "+option_descs[OPTION_LISTSND]+
+                            "\n"+
+#endif       
                             "\n-c1 [customparam] .. -c9 [customparam]  Custom user parameters that can be accessed in the script via GetCustomParam(X)";
             if (!valid_param)
                 output = "Invalid Parameter "s + szArglist[i] + "\n\nValid Parameters are:\n\n" + output;
+#ifndef __STANDALONE__
             m_vpinball.MessageBox(output.c_str(), "Visual Pinball Usage", valid_param ? MB_OK : MB_ICONERROR);
+#else
+            std::cout 
+                << "Visual Pinball Usage"
+                << "\n\n" 
+                << output
+                << "\n\n";
+#endif
+
             //run = false;
             exit(valid_param ? 0 : 1);
          }
@@ -414,6 +492,7 @@ public:
 
          //
 
+#ifndef __STANDALONE__
          if (compare_option(szArglist[i], OPTION_UNREGSERVER))
          {
             _Module.UpdateRegistryFromResource(IDR_VPINBALL, FALSE);
@@ -432,6 +511,7 @@ public:
             run = false;
             break;
          }
+#endif
 
          //
 
@@ -503,6 +583,13 @@ public:
 
          const bool ini = compare_option(szArglist[i], OPTION_INI);
 
+#ifdef __STANDALONE__
+         const bool prefPath = compare_option(szArglist[i], OPTION_PREFPATH);
+
+         listRes = compare_option(szArglist[i], OPTION_LISTRES);
+         listSnd = compare_option(szArglist[i], OPTION_LISTSND);
+#endif
+
          // global emission scale parameter handling
          if (gles && (i + 1 < nArgs))
          {
@@ -519,16 +606,19 @@ public:
          // user specified ini handling
          if (ini && (i + 1 < nArgs))
          {
+#ifndef __STANDALONE__
             // Remove leading - or /
             if ((szArglist[i + 1][0] == '-') || (szArglist[i + 1][0] == '/'))
                  szIniFileName = szArglist[i + 1] + 1;
             else
+#endif
                  szIniFileName = szArglist[i + 1];
 
             // Remove " "
             if (szIniFileName[0] == '"')
                  szIniFileName = szIniFileName.substr(1, szIniFileName.size() - 1);
 
+#ifndef __STANDALONE__
             // Add current path
             if (szIniFileName[1] != ':')
             {
@@ -536,9 +626,24 @@ public:
                  GetCurrentDirectory(MAXSTRING, szLoadDir);
                  szIniFileName = string(szLoadDir) + PATH_SEPARATOR_CHAR + szIniFileName;
             }
+#endif
 
             ++i; // two params processed
          }
+
+#ifdef __STANDALONE__
+         // user specified prefPath handling
+         if (prefPath && (i + 1 < nArgs))
+         {
+            szPrefPath = szArglist[i + 1];
+
+            // Remove " "
+            if (szPrefPath[0] == '"')
+                 szPrefPath = szPrefPath.substr(1, szPrefPath.size() - 1);
+
+            ++i; // two params processed
+         }
+#endif
 
          // table name handling
          if ((editfile || playfile || povEdit || extractpov || extractscript) && (i + 1 < nArgs))
@@ -548,16 +653,19 @@ public:
             extractPov = extractpov;
             extractScript = extractscript;
 
+#ifndef __STANDALONE__
             // Remove leading - or /
             if ((szArglist[i + 1][0] == '-') || (szArglist[i + 1][0] == '/'))
                szTableFileName = szArglist[i + 1] + 1;
             else
+#endif
                szTableFileName = szArglist[i + 1];
 
             // Remove " "
             if (szTableFileName[0] == '"')
                szTableFileName = szTableFileName.substr(1, szTableFileName.size()-1);
 
+#ifndef __STANDALONE__
             // Add current path
             if (szTableFileName[1] != ':') {
                char szLoadDir[MAXSTRING];
@@ -570,6 +678,7 @@ public:
                   const string dir = PathFromFilename(szTableFileName);
                   SetCurrentDirectory(dir.c_str());
                }
+#endif
 
             ++i; // two params processed
 
@@ -580,12 +689,92 @@ public:
          }
       }
 
+#ifndef __STANDALONE__
       free(szArglist);
+#endif
+
+#ifdef __STANDALONE__
+   if (!szPrefPath.empty()) {
+      if (!szPrefPath.ends_with(PATH_SEPARATOR_CHAR))
+         szPrefPath += PATH_SEPARATOR_CHAR;
+
+      if (!DirExists(szPrefPath)) {
+         try {
+            std::filesystem::create_directory(szPrefPath);
+         }
+         catch(...) {
+            std::cout << "Could not create preferences path: " << szPrefPath << "\n";
+            exit(1);
+         }
+      }
+
+      m_vpinball.m_szMyPrefPath = szPrefPath;
+   }
+#endif
+
+#ifdef __STANDALONE__
+#if (defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV)))
+      copy_folder("assets", m_vpinball.m_szMyPrefPath);
+#endif
+#endif
+
+      // Default ini path (can be overriden from command line)
+      if (szIniFileName.empty())
+         szIniFileName = m_vpinball.m_szMyPrefPath + "VPinballX.ini"s;
 
       m_vpinball.m_settings.LoadFromFile(szIniFileName, true);
       
+#ifndef __STANDALONE__
       SetupLogger(m_vpinball.m_settings.LoadValueWithDefault(Settings::Editor, "EnableLog"s, false));
+#else
+      SetupLogger(m_vpinball.m_settings.LoadValueWithDefault(Settings::Editor, "EnableLog"s, true));
+#endif
       PLOGI << "Starting VPX...";
+
+#ifdef __STANDALONE__
+      PLOGI << "m_logicalNumberOfProcessors=" << m_vpinball.m_logicalNumberOfProcessors;
+
+      PLOGI << "m_szMyPath=" << m_vpinball.m_szMyPath;
+      PLOGI << "m_szMyPrefPath=" << m_vpinball.m_szMyPrefPath;
+
+      if (!DirExists(PATH_USER))
+         std::filesystem::create_directory(PATH_USER);
+
+      if (listRes) {
+         PLOGI << "Available fullscreen resolutions:";
+         int displays = getNumberOfDisplays();
+         for (int display = 0; display < displays; display++) {
+            vector<VideoMode> allVideoModes;
+            EnumerateDisplayModes(display, allVideoModes);
+            for (size_t i = 0; i < allVideoModes.size(); ++i) {
+               VideoMode mode = allVideoModes.at(i);
+               PLOGI << "display " << display << ": " << mode.width << "x" << mode.height
+                     << " (depth=" << mode.depth << ", refreshRate=" << mode.refreshrate << ")";
+            }
+         }
+      }
+
+      if (listSnd) {
+         PLOGI << "Available sound devices:";
+         vector<AudioDevice> allAudioDevices;
+         EnumerateAudioDevices(allAudioDevices);
+         for (size_t i = 0; i < allAudioDevices.size(); ++i) {
+            AudioDevice audioDevice = allAudioDevices.at(i);
+            PLOGI << "id " << audioDevice.id << ": name=" << audioDevice.name << ", enabled=" << audioDevice.enabled;
+         }
+      }
+
+      if (listRes || listSnd)
+         exit(0);
+
+#if (defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__)
+      const string launchTable = g_pvp->m_settings.LoadValueWithDefault(Settings::Standalone, "LaunchTable"s, "res/exampleTable.vpx"s);
+      szTableFileName = m_vpinball.m_szMyPrefPath + launchTable;
+      file = true;
+      play = true;
+#endif
+
+#endif
 
       // Start VP with file dialog open and then also playing that one?
       const bool stos = m_vpinball.m_settings.LoadValueWithDefault(Settings::Editor, "SelectTableOnStart"s, true);
@@ -595,6 +784,7 @@ public:
          play = true;
       }
 
+#ifndef __STANDALONE__
       // load and register VP type library for COM integration
       char szFileName[MAXSTRING];
       if (GetModuleFileName(m_vpinball.theInstance, szFileName, MAXSTRING))
@@ -617,6 +807,7 @@ public:
          else
             m_vpinball.MessageBox("Could not load type library.", "Error", MB_ICONERROR);
       }
+#endif
 
       InitVPX();
       //SET_CRT_DEBUG_FIELD( _CRTDBG_LEAK_CHECK_DF );
@@ -625,6 +816,7 @@ public:
 
    void InitVPX()
    {
+#ifndef __STANDALONE__
 #if _WIN32_WINNT >= 0x0400 & defined(_ATL_FREE_THREADED)
        const HRESULT hRes = _Module.RegisterClassObjects(CLSCTX_LOCAL_SERVER,
            REGCLS_MULTIPLEUSE | REGCLS_SUSPENDED);
@@ -640,6 +832,7 @@ public:
        iccex.dwSize = sizeof(INITCOMMONCONTROLSEX);
        iccex.dwICC = ICC_COOL_CLASSES;
        InitCommonControlsEx(&iccex);
+#endif
 
        {
            EditableRegistry::RegisterEditable<Bumper>();
@@ -664,12 +857,13 @@ public:
        }
 
        m_vpinball.AddRef();
-       g_pvp = &m_vpinball;
        m_vpinball.Create(nullptr);
        m_vpinball.m_bgles = bgles;
        m_vpinball.m_fgles = fgles;
 
+#ifndef __STANDALONE__
        g_haccel = LoadAccelerators(m_vpinball.theInstance, MAKEINTRESOURCE(IDR_VPACCEL));
+#endif
 
        if (file)
        {
@@ -693,14 +887,22 @@ public:
                string szScriptFilename = szTableFileName;
                if(ReplaceExtensionFromFilename(szScriptFilename, "vbs"s))
                    m_vpinball.m_ptableActive->m_pcv->SaveToFile(szScriptFilename);
+#ifndef __STANDALONE__
                m_vpinball.QuitPlayer(Player::CloseState::CS_CLOSE_APP);
+#else
+               run = false;
+#endif
            }
            if (extractPov && loadFileResult)
            {
                string szPOVFilename = szTableFileName;
                if (ReplaceExtensionFromFilename(szPOVFilename, "pov"s))
                    m_vpinball.m_ptableActive->ExportBackdropPOV(szPOVFilename);
+#ifndef __STANDALONE__
                m_vpinball.QuitPlayer(Player::CloseState::CS_CLOSE_APP);
+#else
+               run = false;
+#endif
            }
        }
    }
@@ -719,9 +921,11 @@ public:
 
          m_vpinball.Release();
 
+#ifndef __STANDALONE__
          DestroyAcceleratorTable(g_haccel);
 
          _Module.RevokeClassObjects();
+#endif
          Sleep(THREADS_PAUSE); //wait for any threads to finish
       }
       return 0;
@@ -733,6 +937,7 @@ public:
 // Note: There are quite a lot of applications doing this, but I think this may hide an incorrect OpenGL call somewhere
 // that the threaded optimization of NVIDIA drivers ends up to crash. This would be good to find the root cause, if any.
 
+#ifndef __STANDALONE__
 #include "nvapi/nvapi.h"
 #include "nvapi/NvApiDriverSettings.h"
 #include "nvapi/NvApiDriverSettings.c"
@@ -849,6 +1054,7 @@ static void SetNVIDIAThreadOptimization(NvThreadOptimization threadedOptimizatio
    NvAPI_DRS_DestroySession(hSession);
 }
 #endif
+#endif
 
 class DebugAppender : public plog::IAppender
 {
@@ -883,11 +1089,24 @@ void SetupLogger(const bool enable)
       if (!initialized)
       {
          initialized = true;
-         static plog::RollingFileAppender<plog::TxtFormatter> fileAppender("vpinball.log", 1024 * 1024 * 5, 1);
+         string szLogPath = g_pvp->m_szMyPrefPath + "vpinball.log";
+         static plog::RollingFileAppender<plog::TxtFormatter> fileAppender(szLogPath.c_str(), 1024 * 1024 * 5, 1);
          static DebugAppender debugAppender;
          plog::Logger<PLOG_DEFAULT_INSTANCE_ID>::getInstance()->addAppender(&debugAppender);
          plog::Logger<PLOG_DEFAULT_INSTANCE_ID>::getInstance()->addAppender(&fileAppender);
          plog::Logger<PLOG_NO_DBG_OUT_INSTANCE_ID>::getInstance()->addAppender(&fileAppender);
+
+#ifdef __STANDALONE__
+#ifndef __ANDROID__
+         static plog::ColorConsoleAppender<plog::TxtFormatter> consoleAppender;
+         plog::Logger<PLOG_DEFAULT_INSTANCE_ID>::getInstance()->addAppender(&consoleAppender);
+         plog::Logger<PLOG_NO_DBG_OUT_INSTANCE_ID>::getInstance()->addAppender(&consoleAppender);
+#else
+         static plog::AndroidAppender<plog::TxtFormatter> androidAppender("vpinball");
+         plog::Logger<PLOG_DEFAULT_INSTANCE_ID>::getInstance()->addAppender(&androidAppender);
+         plog::Logger<PLOG_NO_DBG_OUT_INSTANCE_ID>::getInstance()->addAppender(&androidAppender);
+#endif
+#endif
       }
       #ifdef _DEBUG
       maxLogSeverity = plog::debug;
@@ -901,13 +1120,16 @@ void SetupLogger(const bool enable)
 
 extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR /*lpCmdLine*/, int /*nShowCmd*/)
 {
+#ifndef __STANDALONE__
    #if defined(ENABLE_SDL)
    static NvThreadOptimization s_OriginalNVidiaThreadOptimization = NV_THREAD_OPTIMIZATION_NO_SUPPORT;
    #endif
+#endif
 
    int retval;
    try
    {
+#ifndef __STANDALONE__
       #if defined(ENABLE_SDL)
       s_OriginalNVidiaThreadOptimization = GetNVIDIAThreadOptimization();
       if (s_OriginalNVidiaThreadOptimization != NV_THREAD_OPTIMIZATION_NO_SUPPORT && s_OriginalNVidiaThreadOptimization != NV_THREAD_OPTIMIZATION_DISABLE)
@@ -916,6 +1138,7 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
          SetNVIDIAThreadOptimization(NV_THREAD_OPTIMIZATION_DISABLE);
       }
       #endif
+#endif
 
       #if defined(ENABLE_SDL) || defined(ENABLE_SDL_INPUT)
       SDL_Init(0
@@ -925,6 +1148,9 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
          #ifdef ENABLE_SDL_INPUT
             | SDL_INIT_JOYSTICK
          #endif
+#ifdef __STANDALONE__
+            | SDL_INIT_TIMER
+#endif
       );
       #endif
 
@@ -950,6 +1176,7 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
    SDL_Quit();
    #endif
 
+#ifndef __STANDALONE__
    #if defined(ENABLE_SDL)
    if (s_OriginalNVidiaThreadOptimization != NV_THREAD_OPTIMIZATION_NO_SUPPORT && s_OriginalNVidiaThreadOptimization != NV_THREAD_OPTIMIZATION_DISABLE)
    {
@@ -957,7 +1184,22 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
       SetNVIDIAThreadOptimization(s_OriginalNVidiaThreadOptimization);
    };
    #endif
+#endif
 
    PLOGI << "Closing VPX...";
+#ifdef __STANDALONE__
+#if (defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__)
+   exit(retval);
+#endif
+#endif
    return retval;
 }
+
+#ifdef __STANDALONE__
+int main(int argc, char** argv) {
+   g_argc = argc;
+   g_argv = argv;
+
+   return WinMain(nullptr, nullptr, (LPTSTR)"", 0);
+}
+#endif

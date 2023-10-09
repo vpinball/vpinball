@@ -20,6 +20,7 @@ public:
 
       // UI and Player stuff
       Editor,
+      Standalone,
       Player,
       PlayerVR,
       RecentDir,

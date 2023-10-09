@@ -13,13 +13,22 @@
 #include "imgui/imgui_internal.h" // Needed for FindRenderedTextEnd in HelpSplash (should be adapted when this function will refactored in ImGui)
 #ifdef ENABLE_SDL
 #include "imgui/imgui_impl_opengl3.h"
+#ifdef __STANDALONE__
+  #include "imgui/imgui_impl_sdl2.h"
+#endif
 #else
 #include "imgui/imgui_impl_dx9.h"
 #endif
+#ifndef __STANDALONE__
 #include "imgui/imgui_impl_win32.h"
+#endif
 #include "imgui/implot/implot.h"
 #include "imgui/imgui_stdlib.h"
 #include "imgui/ImGuizmo.h"
+
+#ifdef __STANDALONE__
+#include <unordered_map>
+#endif
 
 #if __cplusplus >= 202002L && !defined(__clang__)
 #define stable_sort std::ranges::stable_sort
@@ -29,7 +38,9 @@
 #define sort std::sort
 #endif
 
+#ifndef __STANDALONE__
 #include "BAM/BAMView.h"
+#endif
 
 // Titles (used as Ids) of modal dialogs
 #define ID_MODAL_SPLASH "In Game UI"
@@ -513,7 +524,7 @@ static void HelpTextCentered(const std::string& text)
    ImGui::PopTextWrapPos();
 }
 
-static void HelpSplash(const std::string &text, int rotation)
+static void HelpSplash(const string &text, int rotation)
 {
    const ImVec2 win_size = ImGui::GetIO().DisplaySize;
 
@@ -524,36 +535,41 @@ static void HelpSplash(const std::string &text, int rotation)
    const float maxWidth = win_size.x - padding;
    ImFont *const font = ImGui::GetFont();
 
-   const char *textEnd = text.c_str();
-   while (*textEnd)
-   {
-      const char *nextLineTextEnd = ImGui::FindRenderedTextEnd(textEnd, nullptr);
-      ImVec2 lineSize = font->CalcTextSizeA(font->FontSize, FLT_MAX, 0.0f, textEnd, nextLineTextEnd);
-      if (lineSize.x > maxWidth)
-      {
-         const char *wrapPoint = font->CalcWordWrapPositionA(font->Scale, textEnd, nextLineTextEnd, maxWidth);
-         if (wrapPoint == textEnd)
-            wrapPoint++;
-         nextLineTextEnd = wrapPoint;
-         lineSize = font->CalcTextSizeA(font->FontSize, FLT_MAX, 0.0f, textEnd, wrapPoint);
-      }
+   string line;
+   std::istringstream iss(text);
+   while (std::getline(iss, line)) {
+       const char *textEnd = line.c_str();
+       if (*textEnd == '\0') {
+          lines.push_back(line);
+          continue;
+       }
+       while (*textEnd) {
+          const char *nextLineTextEnd = ImGui::FindRenderedTextEnd(textEnd, nullptr);
+          ImVec2 lineSize = font->CalcTextSizeA(font->FontSize, FLT_MAX, 0.0f, textEnd, nextLineTextEnd);
+          if (lineSize.x > maxWidth)
+          {
+             const char *wrapPoint = font->CalcWordWrapPositionA(font->Scale, textEnd, nextLineTextEnd, maxWidth);
+             if (wrapPoint == textEnd)
+                wrapPoint++;
+             nextLineTextEnd = wrapPoint;
+             lineSize = font->CalcTextSizeA(font->FontSize, FLT_MAX, 0.0f, textEnd, wrapPoint);
+          }
 
-      string line(textEnd, nextLineTextEnd);
-      lines.push_back(line);
+          string newLine(textEnd, nextLineTextEnd);
+          lines.push_back(newLine);
 
-      if (lineSize.x > text_size.x)
-         text_size.x = lineSize.x;
+          if (lineSize.x > text_size.x)
+             text_size.x = lineSize.x;
 
-      text_size.y += (float)(std::count(line.begin(), line.end(), '\n') + 1) * ImGui::GetTextLineHeightWithSpacing();
+          textEnd = nextLineTextEnd;
 
-      textEnd = nextLineTextEnd;
-
-      if (*textEnd == '\n' || *textEnd == ' ')
-         textEnd++;
+          while (*textEnd && *textEnd == ' ')
+             textEnd++;
+       }
    }
 
    text_size.x += (padding / 2);
-   text_size.y += (padding / 2);
+   text_size.y = (lines.size() * ImGui::GetTextLineHeightWithSpacing()) + (padding / 2);
 
    constexpr ImGuiWindowFlags window_flags
       = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
@@ -569,6 +585,48 @@ static void HelpSplash(const std::string &text, int rotation)
       ImGui::Text("%s", line.c_str());
    }
    ImGui::End();
+}
+
+void LiveUI::UpdateTouchUI()
+{
+   if (!g_pplayer->m_supportsTouch)
+      return;
+
+   ImGuiIO &io = ImGui::GetIO();
+
+   float screenWidth = io.DisplaySize.x;
+   float screenHeight = io.DisplaySize.y;
+
+   constexpr ImGuiWindowFlags window_flags
+      = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
+
+   ImGui::SetNextWindowBgAlpha(0.0f);
+   ImGui::SetNextWindowPos(ImVec2(0,0));
+   ImGui::SetNextWindowSize(ImVec2(screenWidth, screenHeight));
+   ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+
+   ImGui::Begin("Touch Controls", nullptr, window_flags);
+
+   if (g_pplayer->m_showTouchOverlay) {
+      ImDrawList* drawList = ImGui::GetWindowDrawList();
+
+      for (int i = 0; i < MAX_TOUCHREGION; ++i) {
+         RECT rect = touchregion[i];
+
+         ImVec2 topLeft(rect.left * screenWidth / 100.0f, rect.top * screenHeight / 100.0f);
+         ImVec2 bottomRight(rect.right * screenWidth / 100.0f , rect.bottom * screenHeight / 100.0f);
+
+         ImColor fillColor(255, 255, 255, 5);
+         drawList->AddRectFilled(topLeft, bottomRight, fillColor);
+
+         ImColor borderColor(255, 255, 255, 20);
+         drawList->AddRect(topLeft, bottomRight, borderColor, 0.0f, ImDrawCornerFlags_All, 2.0f);
+      }
+   }
+
+   ImGui::End();
+   ImGui::PopStyleVar(2);
 }
 
 static void HelpEditableHeader(bool is_live, IEditable *editable, IEditable *live_editable)
@@ -650,15 +708,32 @@ LiveUI::LiveUI(RenderDevice *const rd)
    m_camView.SetLookAtRH(eye, at, up);
    ImGuizmo::AllowAxisFlip(false);
 
+#ifndef __STANDALONE__
    ImGui_ImplWin32_Init(rd->getHwnd());
+#else
+   ImGui_ImplSDL2_InitForOpenGL(rd->m_sdl_playfieldHwnd, rd->m_sdl_context);
+#endif
 
    SetupImGuiStyle(1.0f);
 
+#ifndef __STANDALONE__
    m_dpi = ImGui_ImplWin32_GetDpiScaleForHwnd(rd->getHwnd());
+#else
+#ifdef __ANDROID__
+   int displayIndex = SDL_GetWindowDisplayIndex(rd->m_sdl_playfieldHwnd);
+   float ddpi, hdpi, vdpi;
+   if (SDL_GetDisplayDPI(displayIndex, &ddpi, &hdpi, &vdpi) == 0)
+      m_dpi = (hdpi + vdpi) / 2.0f / 96.0f;
+#endif
+#endif
    ImGui::GetStyle().ScaleAllSizes(m_dpi);
 
+#ifndef __STANDALONE__
    const float overlaySize = min(32.f * m_dpi, (float)min(m_player->m_wnd_width, m_player->m_wnd_height) / (26.f * 2.0f)); // Fit 26 lines of text on screen
    m_overlayFont = io.Fonts->AddFontFromMemoryCompressedTTF(droidsans_compressed_data, droidsans_compressed_size, overlaySize);
+#else
+   m_overlayFont = io.Fonts->AddFontFromMemoryCompressedTTF(droidsans_compressed_data, droidsans_compressed_size, 13.0f * m_dpi);
+#endif
 
    m_baseFont = io.Fonts->AddFontFromMemoryCompressedTTF(droidsans_compressed_data, droidsans_compressed_size, 13.0f * m_dpi);
    ImFontConfig icons_config;
@@ -684,7 +759,11 @@ LiveUI::~LiveUI()
 #else
       ImGui_ImplDX9_Shutdown();
 #endif
+#ifndef __STANDALONE__
       ImGui_ImplWin32_Shutdown();
+#else
+      ImGui_ImplSDL2_Shutdown();
+#endif
       ImPlot::DestroyContext();
       ImGui::DestroyContext();
    }
@@ -752,11 +831,15 @@ void LiveUI::Render()
       draw_data->DisplaySize.y = tmp;
    }
 #ifdef ENABLE_SDL
+#ifndef __OPENGLES__
    if (GLAD_GL_VERSION_4_3)
       glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "ImGui");
+#endif
    ImGui_ImplOpenGL3_RenderDrawData(draw_data);
+#ifndef __OPENGLES__
    if (GLAD_GL_VERSION_4_3)
       glPopDebugGroup();
+#endif
 #else
    ImGui_ImplDX9_RenderDrawData(draw_data);
 #endif
@@ -805,7 +888,11 @@ void LiveUI::Update()
 #else
    ImGui_ImplDX9_NewFrame();
 #endif
+#ifndef __STANDALONE__
    ImGui_ImplWin32_NewFrame();
+#else
+   ImGui_ImplSDL2_NewFrame();
+#endif
 
    ImGui::NewFrame();
    ImGui::GetIO().ConfigFlags &= ~ImGuiConfigFlags_NavEnableKeyboard; // We use it for main splash popup, but needs it to be disabled to allow keyboard shortcuts
@@ -826,6 +913,9 @@ void LiveUI::Update()
          ImGui::NewFrame();
       }
    }
+
+   UpdateTouchUI();
+
    ImGuizmo::SetOrthographic(m_orthoCam);
    ImGuizmo::BeginFrame();
    const ImGuiIO &io = ImGui::GetIO();
@@ -1147,6 +1237,7 @@ void LiveUI::HideUI()
 
 void LiveUI::UpdateMainUI()
 {
+#if !((defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__))
    m_menubar_height = 0.0f;
    m_toolbar_height = 0.0f;
 
@@ -1300,6 +1391,7 @@ void LiveUI::UpdateMainUI()
 
    if (ImGui::IsPopupOpen(ID_BAM_SETTINGS))
       UpdateHeadTrackingModal();
+#endif
 
    if (m_ShowSplashModal && !ImGui::IsPopupOpen(ID_MODAL_SPLASH))
       ImGui::OpenPopup(ID_MODAL_SPLASH);
@@ -1850,6 +1942,7 @@ void LiveUI::UpdatePropertyUI()
                   case eItemSurface: SurfaceProperties(is_live, (Surface *)startup_obj, (Surface *)live_obj); break;
                   case eItemRamp: RampProperties(is_live, (Ramp *)startup_obj, (Ramp *)live_obj); break;
                   case eItemRubber: RubberProperties(is_live, (Rubber *)startup_obj, (Rubber *)live_obj); break;
+                  default: break;
                   }
                }
                break;
@@ -2210,7 +2303,9 @@ void LiveUI::UpdateAnaglyphCalibrationModal()
 
 void LiveUI::UpdateHeadTrackingModal()
 {
+#ifndef __STANDALONE__
    BAMView::drawMenu();
+#endif
 }
 
 void LiveUI::UpdateRendererInspectionModal()
@@ -2362,10 +2457,14 @@ void LiveUI::UpdateMainSplashModal()
       ImGui::End();
    }
 
-   constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings;
+   constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoMove;
    if (ImGui::BeginPopupModal(ID_MODAL_SPLASH, nullptr, window_flags))
    {
+#ifndef __STANDALONE__
       const ImVec2 size(m_dpi * (m_player->m_headTracking ? 120.f : 100.f), 0);
+#else
+      const ImVec2 size(m_dpi * 170.f, 0);
+#endif
 
       // If displaying the main splash popup, save user changes and exit camera mode started from it
       if (m_player->m_cameraMode && !m_old_player_camera_mode && m_live_table != nullptr && m_table != nullptr)
@@ -2400,6 +2499,7 @@ void LiveUI::UpdateMainSplashModal()
          m_player->SetCameraMode(true);
       }
       bool popup_headtracking = false;
+#if !((defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__))
       if (m_player->m_headTracking && ImGui::Button("Adjust Headtracking", size))
       {
          ImGui::CloseCurrentPopup();
@@ -2418,6 +2518,8 @@ void LiveUI::UpdateMainSplashModal()
          ResetCameraFromPlayer();
          EnterEditMode();
       }
+#endif
+#ifndef __STANDALONE__
       // Quit: click on the button, or press exit button
       if (ImGui::Button("Quit to editor", size) || (enableKeyboardShortcuts && ImGui::IsKeyPressed(dikToImGuiKeys[m_player->m_rgKeys[eExitGame]])))
       {
@@ -2425,6 +2527,88 @@ void LiveUI::UpdateMainSplashModal()
          HideUI();
          m_table->QuitPlayer(Player::CS_STOP_PLAY);
       }
+#else
+#if ((defined(__APPLE__) && (defined(TARGET_OS_IOS) && TARGET_OS_IOS)) || defined(__ANDROID__))
+      if (ImGui::Button(g_pplayer->m_showTouchOverlay ? "Disable Touch Overlay" : "Enable Touch Overlay", size))
+      {
+         g_pplayer->m_showTouchOverlay = !g_pplayer->m_showTouchOverlay;
+         g_pvp->m_settings.SaveValue(Settings::Player, "TouchOverlay"s, g_pplayer->m_showTouchOverlay);
+
+         ImGui::GetIO().MousePos.x = 0;
+         ImGui::GetIO().MousePos.y = 0;
+      }
+#endif
+#if (defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__)
+      if (ImGui::Button(m_show_fps > 0 ? "Disable FPS" : "Enable FPS", size))
+      {
+         m_show_fps = (m_show_fps > 0) ? 0 : 1;
+
+         if (m_show_fps)
+            g_pplayer->InitFPS();
+
+         ImGui::GetIO().MousePos.x = 0;
+         ImGui::GetIO().MousePos.y = 0;
+      }
+#endif
+      bool webServerRunning = g_pvp->m_webServer.IsRunning();
+      if (ImGui::Button(webServerRunning ? "Disable Web Server" : "Enable Web Server", size))
+      {
+         g_pvp->m_settings.SaveValue(Settings::Player, "WebServer"s, !webServerRunning);
+
+         if (webServerRunning)
+            g_pvp->m_webServer.Stop();
+         else
+            g_pvp->m_webServer.Start();
+
+#if ((defined(__APPLE__) && (defined(TARGET_OS_IOS) && TARGET_OS_IOS)) || defined(__ANDROID__))
+         ImGui::GetIO().MousePos.x = 0;
+         ImGui::GetIO().MousePos.y = 0;
+#endif
+      }
+
+      if (ImGui::Button("Quit", size) || (enableKeyboardShortcuts && ImGui::IsKeyPressed(dikToImGuiKeys[m_player->m_rgKeys[eExitGame]])))
+      {
+         ImGui::CloseCurrentPopup();
+         HideUI();
+         m_table->QuitPlayer(Player::CS_CLOSE_APP);
+      }
+
+#if (defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__)
+      ImGui::Dummy(ImVec2(0.f, m_dpi * 4.f));
+      ImGui::Separator();
+      ImGui::Dummy(ImVec2(0.f, m_dpi * 4.f));
+      ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ((ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize("Launch Table:").x) * 0.5f));
+      ImGui::Text("Launch Table:");
+
+      ImGui::PushItemWidth(size.x);
+
+      const string launchTable = g_pvp->m_settings.LoadValueWithDefault(Settings::Standalone, "LaunchTable"s, "res/exampleTable.vpx"s);
+      if (ImGui::BeginCombo("##Launch Table", launchTable.c_str()))
+      {
+         vector<string> files = find_files_by_extension(g_pvp->m_szMyPrefPath, "vpx");
+
+         for (const auto& file : files) {
+            if (ImGui::Selectable(file.c_str()))
+               g_pvp->m_settings.SaveValue(Settings::Standalone, "LaunchTable"s, file);
+         }
+
+         ImGui::EndCombo();
+      }
+
+      ImGui::PopItemWidth();
+#endif
+
+      string url = g_pvp->m_webServer.GetUrl();
+      if (!url.empty())
+      {
+         ImGui::Dummy(ImVec2(0.f, m_dpi * 4.f));
+         ImGui::Separator();
+         ImGui::Dummy(ImVec2(0.f, m_dpi * 4.f));
+         ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ((ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize(url.c_str()).x) * 0.5f));
+         ImGui::Text("%s", url.c_str());
+      }
+
+#endif
       const ImVec2 pos = ImGui::GetWindowPos();
       ImVec2 max = ImGui::GetWindowSize();
       const bool hovered = ImGui::IsWindowHovered();
