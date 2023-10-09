@@ -432,8 +432,8 @@ void Player::PreCreate(CREATESTRUCT& cs)
         // is this a non-fullscreen window? -> get previously saved window position
         if ((m_wnd_height != m_screenheight) || (m_wnd_width != m_screenwidth))
         {
-            const int xn = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "WindowPosX"s, x); //!! does this handle multi-display correctly like this?
-            const int yn = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "WindowPosY"s, y);
+            const int xn = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "WindowPosX"s, x); //!! does this handle multi-display correctly like this?
+            const int yn = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "WindowPosY"s, y);
 
             RECT r;
             r.left = xn;

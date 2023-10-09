@@ -1058,6 +1058,7 @@
 #define IDC_RESET_WINDOW                765
 #define IDC_LAYER_FILTER_CASE_BUTTON    766
 #define IDC_COLOR_BUTTON2               766
+#define IDC_SAVE_ALL                    766
 #define IDC_COLOR_BUTTON3               767
 #define IDC_STATIC_GLOSSY_IMGLERP       768
 #define IDC_COLOR_BUTTON4               768
@@ -1241,6 +1242,8 @@
 #define IDC_MAX_TEXTURE_COMBO           918
 #define IDC_MAX_REFLECTION_COMBO        919
 #define IDC_MAX_AO_COMBO                920
+#define IDC_APPLICATION_SETTINGS        921
+#define IDC_TABLE_OVERRIDE              922
 #define IDC_LAYBACK_EDIT                1040
 #define IDC_3D_STEREO_SEPARATION_EDIT   1041
 #define IDC_3D_STEREO_ZPD_EDIT          1042
