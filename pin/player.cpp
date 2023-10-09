@@ -1307,7 +1307,6 @@ HRESULT Player::Init()
 
    //
 
-   const float aaFactor = m_ptable->m_useAA == -1 ? m_AAfactor : m_ptable->m_useAA == 1 ? 2.0f : 1.0f;
    const bool ss_refl = (m_ss_refl && (m_ptable->m_useSSR == -1)) || (m_ptable->m_useSSR == 1);
 
    const int colordepth = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "ColorDepth"s, 32);
@@ -1316,7 +1315,7 @@ HRESULT Player::Init()
 
    // colordepth & refreshrate are only defined if fullscreen is true.
    // width and height may be modified during initialization (for example for VR, they are adapted to the headset resolution)
-   const HRESULT hr = m_pin3d.InitPin3D(m_fullScreen, m_wnd_width, m_wnd_height, colordepth, m_refreshrate, m_videoSyncMode, aaFactor, m_stereo3DfakeStereo ? STEREO_OFF : m_stereo3D, m_FXAA, !!m_sharpen, ss_refl);
+   const HRESULT hr = m_pin3d.InitPin3D(m_fullScreen, m_wnd_width, m_wnd_height, colordepth, m_refreshrate, m_videoSyncMode, m_AAfactor, m_stereo3DfakeStereo ? STEREO_OFF : m_stereo3D, m_FXAA, !!m_sharpen, ss_refl);
    if (hr != S_OK)
    {
       char szFoo[64];
@@ -1949,7 +1948,7 @@ void Player::InitStatic()
    // Now finalize static buffer with static AO
    if (GetAOMode() == 1)
    {
-      const bool useAA = ((m_AAfactor != 1.0f) && (m_ptable->m_useAA == -1)) || (m_ptable->m_useAA == 1);
+      const bool useAA = m_AAfactor != 1.0f;
 
       m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("PreRender AO Save Depth"s, m_pin3d.m_pddsStatic);
       m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderRT, m_pin3d.m_pddsStatic, false, true);
@@ -3496,7 +3495,7 @@ string Player::GetPerfInfo()
 
 void Player::PrepareVideoBuffers()
 {
-   const bool useAA = ((m_AAfactor != 1.0f) && (m_ptable->m_useAA == -1)) || (m_ptable->m_useAA == 1);
+   const bool useAA = m_AAfactor != 1.0f;
    const bool stereo= m_stereo3D == STEREO_VR || ((m_stereo3D != STEREO_OFF) && m_stereo3Denabled && (!m_stereo3DfakeStereo || m_pin3d.m_pd3dPrimaryDevice->DepthBufferReadBackAvailable()));
    // Since stereo is applied as a postprocess step for fake stereo, it disables AA and sharpening except for top/bottom & side by side modes
    const bool PostProcAA = !m_stereo3DfakeStereo || (!stereo || (m_stereo3D == STEREO_TB) || (m_stereo3D == STEREO_SBS));

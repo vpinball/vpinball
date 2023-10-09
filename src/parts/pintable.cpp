@@ -2212,13 +2212,9 @@ void PinTable::Play(const bool cameraMode)
    dst->m_overwriteGlobalDetailLevel = src->m_overwriteGlobalDetailLevel;
    dst->m_grid = src->m_grid;
    dst->m_reflectElementsOnPlayfield = src->m_reflectElementsOnPlayfield;
-   dst->m_useAA = src->m_useAA;
    dst->m_useAO = src->m_useAO;
    dst->m_useSSR = src->m_useSSR;
    dst->m_bloom_strength = src->m_bloom_strength;
-   dst->m_useAA = src->m_useAA;
-   dst->m_useAA = src->m_useAA;
-   dst->m_useAA = src->m_useAA;
    memcpy(dst->m_wzName, src->m_wzName, MAXNAMEBUFFER * sizeof(src->m_wzName[0]));
 
    dst->m_Light[0].emission = src->m_Light[0].emission;
@@ -3484,7 +3480,6 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
    bw.WriteBool(FID(GDAC), m_grid);
    bw.WriteBool(FID(REOP), m_reflectElementsOnPlayfield);
 
-   bw.WriteInt(FID(UAAL), m_useAA);
    bw.WriteInt(FID(UAOC), m_useAO);
    bw.WriteInt(FID(USSR), m_useSSR);
    bw.WriteFloat(FID(BLST), m_bloom_strength);
@@ -4122,7 +4117,6 @@ void PinTable::SetLoadDefaults()
    m_ballTrailStrength = 0.4f;
    m_ballPlayfieldReflectionStrength = 1.f;
 
-   m_useAA = -1;
    m_useAO = -1;
    m_useSSR = -1;
 
@@ -4304,7 +4298,15 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    }
    case FID(BPRS): pbr->GetFloat(m_ballPlayfieldReflectionStrength); break;
    case FID(DBIS): pbr->GetFloat(m_defaultBulbIntensityScaleOnBall); break;
-   case FID(UAAL): pbr->GetInt(m_useAA); break;
+   case FID(UAAL):
+   {
+      // Before 10.8, users tweaks were stored in the table file (now moved to a user ini file)
+      int useAA;
+      pbr->GetInt(useAA);
+      if (useAA != -1)
+         m_settings.SaveValue(Settings::Player, "AAFactor"s, useAA == 0 ? 1.f : 2.f);
+      break;
+   }
    case FID(UAOC): pbr->GetInt(m_useAO); break;
    case FID(USSR): pbr->GetInt(m_useSSR); break;
    case FID(UFXA):
@@ -5984,7 +5986,17 @@ void PinTable::ImportBackdropPOV(const string& filename)
       if (section)
       {
          int boolTmp = -1;
-         POV_FIELD("SSAA", "%i", m_useAA);
+         // POV_FIELD("SSAA", "%i", m_useAA);
+         {
+            auto node = section->FirstChildElement("postprocAA");
+            if (node != nullptr)
+            {
+               int useAA;
+               sscanf_s(node->GetText(), "%i", &useAA);
+               if (useAA > -1)
+                  m_settings.SaveValue(Settings::Player, "AAFactor"s, useAA == 0 ? 1.f : 2.f);
+            }
+         }
          // POV_FIELD("postprocAA", "%i", m_useFXAA);
          {
             auto node = section->FirstChildElement("postprocAA");
@@ -5999,15 +6011,11 @@ void PinTable::ImportBackdropPOV(const string& filename)
          POV_FIELD("ingameAO", "%i", m_useAO);
          POV_FIELD("ScSpReflect", "%i", m_useSSR);
          POV_FIELD("FPSLimiter", "%i", m_TableAdaptiveVSync);
-         POV_FIELD("OverwriteDetailsLevel", "%i", m_useAA);
+         POV_FIELD("OverwriteDetailsLevel", "%i", m_overwriteGlobalDetailLevel);
          POV_FIELD("DetailsLevel", "%i", m_userDetailLevel);
          POV_FIELD("BallReflection", "%i", m_useReflectionForBalls);
          POV_FIELD("BallTrail", "%i", m_useTrailForBalls);
          POV_FIELD("BallTrailStrength", "%f", m_ballTrailStrength);
-         POV_FIELD("SSAA", "%i", m_useAA);
-         POV_FIELD("SSAA", "%i", m_useAA);
-         POV_FIELD("SSAA", "%i", m_useAA);
-         POV_FIELD("SSAA", "%i", m_useAA);
          auto node = section->FirstChildElement("OverwriteDetailsLevel");
          if (node)
          {
@@ -6138,9 +6146,9 @@ void PinTable::ExportBackdropPOV(const string& filename)
       }
 
       auto view = xmlDoc.NewElement("customsettings");
-      POV_FIELD("SSAA", m_useAA);
-      POV_FIELD("ingameAO", m_useAA);
+      POV_FIELD("SSAA", m_settings.HasValue(Settings::Player, "AAFactor"s) ? (m_settings.LoadValueWithDefault(Settings::Player, "AAFactor"s, (int)Standard_FXAA) > 1 ? 1 : 0) : -1);
       POV_FIELD("postprocAA", m_settings.HasValue(Settings::Player, "FXAA"s) ? m_settings.LoadValueWithDefault(Settings::Player, "FXAA"s, (int)Standard_FXAA) : -1);
+      POV_FIELD("ingameAO", m_useAO);
       POV_FIELD("ScSpReflect", m_useSSR);
       POV_FIELD("FPSLimiter", m_TableAdaptiveVSync);
       POV_FIELD("OverwriteDetailsLevel", m_overwriteGlobalDetailLevel ? 1 : 0);
@@ -9388,15 +9396,23 @@ STDMETHODIMP PinTable::put_YieldTime(long newVal)
 
 STDMETHODIMP PinTable::get_EnableAntialiasing(UserDefaultOnOff *pVal)
 {
-   *pVal = (UserDefaultOnOff)m_useAA;
+   // See put_EnableFXAA, not sure why we keep this
+   if (m_settings.HasValue(Settings::Player, "AAFactor"s))
+      *pVal = m_settings.LoadValueWithDefault(Settings::Player, "AAFactor"s, 1.f) > 1.f ? UserDefaultOnOff::On : UserDefaultOnOff::Off;
+   else
+      *pVal = UserDefaultOnOff::Default;
 
    return S_OK;
 }
 
 STDMETHODIMP PinTable::put_EnableAntialiasing(UserDefaultOnOff newVal)
 {
+   // See put_EnableFXAA, not sure why we keep this
    STARTUNDO
-   m_useAA = (int)newVal;
+   if (newVal == UserDefaultOnOff::Default)
+      m_settings.DeleteValue(Settings::Player, "AAFactor"s);
+   else
+      m_settings.SaveValue(Settings::Player, "AAFactor"s, newVal == UserDefaultOnOff::On ? 2.f : 1.f);
    STOPUNDO
 
    return S_OK;

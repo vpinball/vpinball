@@ -242,8 +242,7 @@ inline void ShowError(const string& sz)
 
 __forceinline float getBGxmult()
 {
-   const float aaFactor = g_pplayer->m_ptable->m_useAA == -1 ? g_pplayer->m_AAfactor : g_pplayer->m_ptable->m_useAA == 1 ? 2.0f : 1.0f;
-   return (float)g_pplayer->m_wnd_width * (float)(1.0 / EDITOR_BG_WIDTH) * aaFactor;
+   return (float)g_pplayer->m_wnd_width * (float)(1.0 / EDITOR_BG_WIDTH) * g_pplayer->m_AAfactor;
 }
 
 __forceinline float getBGymult()

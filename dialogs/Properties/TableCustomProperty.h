@@ -17,7 +17,6 @@ protected:
     virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 private:
-    ComboBox    m_SSAACombo;
     ComboBox    m_inGameAOCombo;
     ComboBox    m_ScreenReflectionCombo;
     ComboBox    m_ballReflectionCombo;
@@ -34,7 +33,6 @@ private:
     HWND        m_hOverwriteNightDayCheck;
     HWND        m_hOverwriteFlipperCheck;
 
-    vector<string> m_postAAList;
     vector<string> m_userList;
     vector<string> m_physicSetList;
 };
