@@ -12,7 +12,8 @@ project(vpinball VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}")
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_C_STANDARD 99)
-set(CMAKE_SKIP_RPATH TRUE)
+SET(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+SET(CMAKE_INSTALL_RPATH "$ORIGIN")
 
 add_library(glad
    third-party/include/glad/src/gl.c
@@ -646,7 +647,7 @@ target_link_libraries(vpinball PUBLIC
 
 set_target_properties(vpinball PROPERTIES
    RUNTIME_OUTPUT_NAME "VPinballX_GL"
-   LINK_FLAGS "-Wl,--copy-dt-needed-entries -Wl,-rpath,$ORIGIN"
+   LINK_FLAGS "-Wl,--copy-dt-needed-entries"
 )
 
 add_custom_command(TARGET vpinball POST_BUILD
