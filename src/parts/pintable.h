@@ -772,7 +772,6 @@ public:
    float m_ballTrailStrength;
    float m_ballPlayfieldReflectionStrength;
    int m_useAA;
-   int m_useFXAA;
    int m_useAO;
    int m_useSSR;
    float m_bloom_strength;

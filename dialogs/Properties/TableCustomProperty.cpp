@@ -4,15 +4,6 @@
 
 TableCustomProperty::TableCustomProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPTABLE_USER, pvsel)
 {
-    m_postAAList.push_back("Default");  // -1
-    m_postAAList.push_back("Disabled");  // 0
-    m_postAAList.push_back("Fast FXAA"); // 1
-    m_postAAList.push_back("Standard FXAA"); // 2
-    m_postAAList.push_back("Quality FXAA"); // 3
-    m_postAAList.push_back("Fast NFAA"); // 4
-    m_postAAList.push_back("Standard DLAA"); // 5
-    m_postAAList.push_back("Quality SMAA"); // 6
-
     m_userList.push_back("Default"); // -1
     m_userList.push_back("Off"); // 0
     m_userList.push_back("On"); // 1
@@ -34,7 +25,6 @@ TableCustomProperty::TableCustomProperty(const VectorProtected<ISelect> *pvsel) 
     m_musicVolEdit.SetDialog(this);
 
     m_SSAACombo.SetDialog(this);
-    m_postProcAACombo.SetDialog(this);
     m_inGameAOCombo.SetDialog(this);
     m_ScreenReflectionCombo.SetDialog(this);
     m_ballReflectionCombo.SetDialog(this);
@@ -50,8 +40,6 @@ void TableCustomProperty::UpdateVisuals(const int dispid/*=-1*/)
 
     if (dispid == IDC_ENABLE_AA || dispid == -1)
         PropertyDialog::UpdateComboBox(m_userList, m_SSAACombo, m_userList[table->m_useAA + 1]);
-    if (dispid == IDC_ENABLE_FXAA || dispid == -1)
-        PropertyDialog::UpdateComboBox(m_postAAList, m_postProcAACombo, m_postAAList[table->m_useFXAA + 1]);
     if (dispid == IDC_ENABLE_AO || dispid == -1)
         PropertyDialog::UpdateComboBox(m_userList, m_inGameAOCombo, m_userList[table->m_useAO + 1]);
     if (dispid == IDC_ENABLE_SSR || dispid == -1)
@@ -99,9 +87,6 @@ void TableCustomProperty::UpdateProperties(const int dispid)
     {
         case IDC_ENABLE_AA:
             CHECK_UPDATE_ITEM(table->m_useAA, (PropertyDialog::GetComboBoxIndex(m_SSAACombo, m_userList) - 1), table);
-            break;
-        case IDC_ENABLE_FXAA:
-            CHECK_UPDATE_ITEM(table->m_useFXAA, (PropertyDialog::GetComboBoxIndex(m_postProcAACombo, m_postAAList) - 1), table);
             break;
         case IDC_ENABLE_AO:
             CHECK_UPDATE_ITEM(table->m_useAO, (PropertyDialog::GetComboBoxIndex(m_inGameAOCombo, m_userList) - 1), table);
@@ -163,7 +148,6 @@ void TableCustomProperty::UpdateProperties(const int dispid)
 BOOL TableCustomProperty::OnInitDialog()
 {
     m_SSAACombo.AttachItem(IDC_ENABLE_AA);
-    m_postProcAACombo.AttachItem(IDC_ENABLE_FXAA);
     m_inGameAOCombo.AttachItem(IDC_ENABLE_AO);
     m_ScreenReflectionCombo.AttachItem(IDC_ENABLE_SSR);
     m_fpsLimiterEdit.AttachItem(IDC_TABLEAVSYNC);
@@ -212,7 +196,6 @@ BOOL TableCustomProperty::OnInitDialog()
     m_resizer.AddChild(GetDlgItem(IDC_STATIC14), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC15), CResizer::topleft, 0);
     m_resizer.AddChild(m_SSAACombo, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_postProcAACombo, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_inGameAOCombo, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_ScreenReflectionCombo, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_fpsLimiterEdit, CResizer::topleft, RD_STRETCH_WIDTH);
