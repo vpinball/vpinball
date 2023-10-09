@@ -21,7 +21,7 @@ struct BallS
    Vertex3Ds m_vel; // ball velocity
    float m_radius;
    float m_mass;
-   bool m_frozen;
+   bool m_lockedInKicker;
 };
 
 class Ball : public HitObject

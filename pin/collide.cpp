@@ -46,7 +46,7 @@ void LineSeg::CalcHitBBox()
 
 float LineSeg::HitTestBasic(const BallS& ball, const float dtime, CollisionEvent& coll, const bool direction, const bool lateral, const bool rigid) const
 {
-   if (!m_enabled || ball.m_frozen) return -1.0f;
+   if (!m_enabled || ball.m_lockedInKicker) return -1.0f;
 
    const float ballvx = ball.m_vel.x;						// ball velocity
    const float ballvy = ball.m_vel.y;
@@ -184,7 +184,7 @@ void LineSeg::CalcNormal()
 float HitCircle::HitTestBasicRadius(const BallS& ball, const float dtime, CollisionEvent& coll,
                                     const bool direction, const bool lateral, const bool rigid) const // all of these true = bumper/flipperbase/gate/spinner, all false = kicker/trigger
 {
-   if (!m_enabled || ball.m_frozen) return -1.0f;
+   if (!m_enabled || ball.m_lockedInKicker) return -1.0f;
 
    Vertex3Ds c(center.x, center.y, 0.0f);
    Vertex3Ds dist = ball.m_pos - c;    // relative ball position
