@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "Settings.h"
 
+#include <stdio.h>
+
 #define VP_REGKEY_GENERAL "Software\\Visual Pinball\\"
 #define VP_REGKEY "Software\\Visual Pinball\\VP10\\"
 
@@ -146,10 +148,19 @@ bool Settings::LoadFromFile(const string& path, const bool createDefault)
 void Settings::SaveToFile(const string &path)
 {
    m_iniPath = path;
-   if (m_ini.size() == 0)
-      return;
-   mINI::INIFile file(path);
-   file.write(m_ini, true);
+   int size = 0;
+   for (auto section : m_ini)
+      size += section.second.size();
+   if (size > 0)
+   {
+      mINI::INIFile file(path);
+      file.write(m_ini, true);
+   }
+   else if (FileExists(path))
+   {
+      // Remove empty settings file
+      remove(path.c_str());
+   }
 }
 
 void Settings::Save()
