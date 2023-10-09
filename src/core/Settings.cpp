@@ -168,6 +168,14 @@ void Settings::Save()
    SaveToFile(m_iniPath);
 }
 
+bool Settings::HasValue(const Section& section, const string& key, const bool searchParent) const
+{
+   bool hasInIni = m_ini.has(regKey[section]) && m_ini.get(regKey[section]).has(key);
+   if (!hasInIni && m_parent && searchParent)
+      hasInIni = m_parent->HasValue(section, key, searchParent);
+   return hasInIni;
+}
+
 bool Settings::LoadValue(const Section &section, const string &key, string &buffer) const
 {
    DataType type = DT_SZ;

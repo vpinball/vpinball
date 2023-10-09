@@ -54,6 +54,8 @@ public:
 
    static Section GetSection(const string& szName);
 
+   bool HasValue(const Section &section, const string &key, const bool searchParent = false) const;
+
    bool LoadValue(const Section &section, const string &key, string &buffer) const;
    bool LoadValue(const Section &section, const string &key, void *const szbuffer, const DWORD size) const;
    bool LoadValue(const Section &section, const string &key, float &pfloat) const;
