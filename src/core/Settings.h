@@ -5,7 +5,7 @@
 // This class holds the settings registry.
 // A setting registry can have a parent, in which case, missing settings will be looked for in the parent.
 // This is used to allow overriding part of the settings while still using the base application value.
-class Settings
+class Settings final
 {
 public:
    Settings(const Settings* parent = nullptr);
@@ -54,28 +54,28 @@ public:
 
    static Section GetSection(const string& szName);
 
-   bool HasValue(const Section &section, const string &key, const bool searchParent = false) const;
+   bool HasValue(const Section section, const string &key, const bool searchParent = false) const;
 
-   bool LoadValue(const Section &section, const string &key, string &buffer) const;
-   bool LoadValue(const Section &section, const string &key, void *const szbuffer, const DWORD size) const;
-   bool LoadValue(const Section &section, const string &key, float &pfloat) const;
-   bool LoadValue(const Section &section, const string &key, int &pint) const;
-   bool LoadValue(const Section &section, const string &key, unsigned int &pint) const;
+   bool LoadValue(const Section section, const string &key, string &buffer) const;
+   bool LoadValue(const Section section, const string &key, void *const szbuffer, const DWORD size) const;
+   bool LoadValue(const Section section, const string &key, float &pfloat) const;
+   bool LoadValue(const Section section, const string &key, int &pint) const;
+   bool LoadValue(const Section section, const string &key, unsigned int &pint) const;
 
-   bool LoadValueWithDefault(const Section &section, const string &key, string &buffer, const string &def) const;
-   float LoadValueWithDefault(const Section &section, const string &key, const float def) const;
-   int LoadValueWithDefault(const Section &section, const string &key, const int def) const;
-   bool LoadValueWithDefault(const Section &section, const string &key, const bool def) const;
-   string LoadValueWithDefault(const Section &section, const string &key, const string &def) const;
+   bool LoadValueWithDefault(const Section section, const string &key, string &buffer, const string &def) const;
+   float LoadValueWithDefault(const Section section, const string &key, const float def) const;
+   int LoadValueWithDefault(const Section section, const string &key, const int def) const;
+   bool LoadValueWithDefault(const Section section, const string &key, const bool def) const;
+   string LoadValueWithDefault(const Section section, const string &key, const string &def) const;
 
-   bool SaveValue(const Section &section, const string &key, const char *val);
-   bool SaveValue(const Section &section, const string &key, const string &val);
-   bool SaveValue(const Section &section, const string &key, const float val);
-   bool SaveValue(const Section &section, const string &key, const int val);
-   bool SaveValue(const Section &section, const string &key, const bool val);
+   bool SaveValue(const Section section, const string &key, const char *val);
+   bool SaveValue(const Section section, const string &key, const string &val);
+   bool SaveValue(const Section section, const string &key, const float val);
+   bool SaveValue(const Section section, const string &key, const int val);
+   bool SaveValue(const Section section, const string &key, const bool val);
 
-   bool DeleteValue(const Section &section, const string &key, const bool& deleteFromParent = false);
-   bool DeleteSubKey(const Section &section, const bool &deleteFromParent = false);
+   bool DeleteValue(const Section section, const string &key, const bool& deleteFromParent = false);
+   bool DeleteSubKey(const Section section, const bool &deleteFromParent = false);
 
 private:
    enum DataType
@@ -85,9 +85,9 @@ private:
       DT_ERROR
    };
 
-   bool LoadValue(const Section &section, const string &key, DataType &type, void *pvalue, DWORD size) const;
-   bool SaveValue(const Section &section, const string &key, const DataType type, const void *pvalue, const DWORD size);
-   
+   bool LoadValue(const Section section, const string &key, DataType &type, void *pvalue, const DWORD size) const;
+   bool SaveValue(const Section section, const string &key, const DataType type, const void *pvalue, const DWORD size);
+
    string m_iniPath;
    mINI::INIStructure m_ini;
    const Settings *m_parent;

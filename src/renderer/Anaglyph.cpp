@@ -11,7 +11,7 @@ void Anaglyph::LoadSetupFromRegistry(const int glassesSet)
 
    // Common settings for all anaglyph sets
    m_brightness = table->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DBrightness"s, 1.0f);
-   m_saturation = table->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DSaturation"s, 1.f);
+   m_saturation = table->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DSaturation"s, 1.0f);
    m_leftEyeContrast = table->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DLeftContrast"s, 1.0f);
    m_rightEyeContrast = table->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DRightContrast"s, 1.0f);
 
@@ -41,7 +41,7 @@ void Anaglyph::LoadSetupFromRegistry(const int glassesSet)
    rightLum.x = table->m_settings.LoadValueWithDefault(Settings::Player, prefKey + "RightRed"s, -1.f);
    rightLum.y = table->m_settings.LoadValueWithDefault(Settings::Player, prefKey + "RightGreen"s, -1.f);
    rightLum.z = table->m_settings.LoadValueWithDefault(Settings::Player, prefKey + "RightBlue"s, -1.f);
-   if (leftLum.x < 0 || leftLum.y < 0 || leftLum.z < 0 || rightLum.x < 0 || rightLum.y < 0 || rightLum.z < 0)
+   if (leftLum.x < 0.f || leftLum.y < 0.f || leftLum.z < 0.f || rightLum.x < 0.f || rightLum.y < 0.f || rightLum.z < 0.f)
       SetLuminanceCalibration(defaultColors[glassesSet * 2], defaultColors[glassesSet * 2 + 1]);
    else
       SetLuminanceCalibration(leftLum, rightLum);
@@ -56,12 +56,12 @@ void Anaglyph::SetupShader(Shader* shader)
    shader->SetMatrix(m_reversedColorPair ? SHADER_Stereo_LeftMat : SHADER_Stereo_RightMat, &m_rgb2AnaglyphRight);
    
    // Used by the dynamic desaturation filter to identify colors that would be seen by only one eye
-   const float scale = 0.25f * 0.5f; // 0.5 is because we sum the contribution of the 2 eyes, 0.25 is magic adjusted from real play
+   constexpr float scale = 0.25f * 0.5f; // 0.5 is because we sum the contribution of the 2 eyes, 0.25 is magic adjusted from real play
    shader->SetVector(SHADER_Stereo_LeftLuminance_Gamma, scale * m_rgb2Yl.x, scale * m_rgb2Yl.y, scale * m_rgb2Yl.z, m_sRGBDisplay ? -1.f : m_displayGamma);
    shader->SetVector(SHADER_Stereo_RightLuminance_DynDesat, scale * m_rgb2Yr.x, scale * m_rgb2Yr.y, scale * m_rgb2Yr.z, m_dynDesatLevel);
 
    // Used by Deghost filter
-   shader->SetVector(SHADER_Stereo_DeghostGamma, m_deghostGamma.x, m_deghostGamma.y, m_deghostGamma.z, 0.00f);
+   shader->SetVector(SHADER_Stereo_DeghostGamma, m_deghostGamma.x, m_deghostGamma.y, m_deghostGamma.z, 0.0f);
    shader->SetMatrix(SHADER_Stereo_DeghostFilter, &m_deghostFilter);
 
    // Select the shader based on the filter, dynamic desaturation and the gamma mode
@@ -75,7 +75,7 @@ void Anaglyph::SetupShader(Shader* shader)
 
 vec3 Anaglyph::Gamma(const vec3& rgb) const
 {
-   #define sRGB(x) ((x <= 0.0031308f) ? (12.92f * x) : (1.055f * powf(x, 1.0f / 2.4f) - 0.055f))
+   #define sRGB(x) ((x <= 0.0031308f) ? (12.92f * x) : (1.055f * powf(x, (float)(1.0 / 2.4)) - 0.055f))
    if (m_sRGBDisplay)
       return vec3(sRGB(rgb.x), sRGB(rgb.y), sRGB(rgb.z));
    else
@@ -85,7 +85,7 @@ vec3 Anaglyph::Gamma(const vec3& rgb) const
 
 vec3 Anaglyph::InvGamma(const vec3& rgb) const
 {
-   #define InvsRGB(x) ((x <= 0.04045f) ? (x * (1.0f / 12.92f)) : (powf(x * (1.0f / 1.055f) + (0.055f / 1.055f), 2.4f)))
+   #define InvsRGB(x) ((x <= 0.04045f) ? (x * (float)(1.0 / 12.92)) : (powf(x * (float)(1.0 / 1.055) + (float)(0.055 / 1.055), 2.4f)))
    if (m_sRGBDisplay)
       return vec3(InvsRGB(rgb.x), InvsRGB(rgb.y), InvsRGB(rgb.z));
    else
@@ -118,8 +118,8 @@ void Anaglyph::SetLuminanceCalibration(const vec3& leftLum, const vec3& rightLum
       float gamma = 2.4f;
       for (int i = 0; i < 100; i++)
       {
-         float f = powf(leftLum.x, gamma) + powf(leftLum.y, gamma) + powf(leftLum.z, gamma) - 1
-                 + powf(rightLum.x, gamma) + powf(rightLum.y, gamma) + powf(rightLum.z, gamma) - 1;
+         float f = powf(leftLum.x, gamma) + powf(leftLum.y, gamma) + powf(leftLum.z, gamma) - 1.f
+                 + powf(rightLum.x, gamma) + powf(rightLum.y, gamma) + powf(rightLum.z, gamma) - 1.f;
          float fp = powf(leftLum.x, gamma) / logf(leftLum.x) + powf(leftLum.y, gamma) / logf(leftLum.y) + powf(leftLum.z, gamma) / logf(leftLum.z)
                   + powf(rightLum.x, gamma) / logf(rightLum.x) + powf(rightLum.y, gamma) / logf(rightLum.y) + powf(rightLum.z, gamma) / logf(rightLum.z);
          gamma -= f / fp;
@@ -393,7 +393,7 @@ void Anaglyph::Update()
          m_rgb2AnaglyphLeft = Matrix3D(a, b, b, 0.f, /**/ 0.f, 0.f, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
          const float c = 1.00f * contrast, d = 1.f - c;
          m_rgb2AnaglyphRight = Matrix3D(0.f, 0.f, 0.f, 0.f, /**/ d, c, 0.f, 0.f, /**/ d, 0.f, c, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
-         constexpr float e = 0.06f * 0.1f;
+         constexpr float e = 0.06 * 0.1;
          m_deghostGamma = vec3(1.00f, 1.15f, 1.15f);
          m_deghostFilter = Matrix3D(1.f + e, -0.5f*e, -0.5f*e, 0.f, /**/ -0.25f*e, 1.f + 0.5f*e, -0.25f*e, 0.f, /**/ -0.25f*e, -0.25f*e, 1.f + 0.5f*e, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
       }
@@ -403,7 +403,7 @@ void Anaglyph::Update()
          m_rgb2AnaglyphLeft = Matrix3D(0.f, 0.f, 0.f, 0.f, /**/ b, a, b, 0.f, /**/ 0.f, 0.f, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
          const float c = 0.80f * contrast, d = 1.f - c;
          m_rgb2AnaglyphRight = Matrix3D(c, d, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 0.f, /**/ 0.f, d, c, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
-         constexpr float e = 0.06f * 0.275f;
+         constexpr float e = 0.06 * 0.275;
          m_deghostGamma = vec3(1.15f, 1.05f, 1.15f);
          m_deghostFilter = Matrix3D(1.f + 0.5f*e, -0.25f*e, -0.25f*e, 0.f, /**/ -0.5f*e, 1.f + 0.25f*e, -0.5f*e, 0.f, /**/ -0.25f*e, -0.25f*e, 1.f + 0.5f*e, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
       }
@@ -413,7 +413,7 @@ void Anaglyph::Update()
          m_rgb2AnaglyphLeft = Matrix3D(0.f, 0.f, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 0.f, /**/ b, b, a, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
          const float c = 1.00f * contrast, d = 1.f - c;
          m_rgb2AnaglyphRight = Matrix3D(c, 0.f, d, 0.f, /**/ 0.f, c, d, 0.f, /**/ 0.f, 0.f, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
-         constexpr float e = 0.06f * 0.275f;
+         constexpr float e = 0.06 * 0.275;
          m_deghostGamma = vec3(1.05f, 1.10f, 1.00f);
          m_deghostFilter = Matrix3D(1.f + 1.5f*e, -0.75f*e, -0.75f*e, 0.f, /**/ -0.75f*e, 1.f + 1.5f*e, -0.75f*e, 0.f, /**/ -1.5f*e, -1.5f*e, 1.f + 3.f*e, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
       }

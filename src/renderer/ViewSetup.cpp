@@ -50,8 +50,7 @@ float ViewSetup::GetRotation(const int viewportWidth, const int viewportHeight) 
 {
    if (mMode == VLM_WINDOW)
    {
-      int rotation;
-      rotation = ((int)mViewportRotation) - (((int)mViewportRotation) / 360) * 360;
+      int rotation = ((int)mViewportRotation) - (((int)mViewportRotation) / 360) * 360;
       return (float) (((viewportWidth < viewportHeight ? 0 : 3) * 90 + (rotation < 0 ? rotation + 360 : rotation)) % 360); // 0 / 90 / 180 / 270
    }
    else
@@ -69,7 +68,7 @@ float ViewSetup::GetRealToVirtualScale(const PinTable* const table) const
       const float screenHeight = table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenWidth"s, 0.0f); // Physical width (always measured in landscape orientation) is the height in window mode
       // const float inc = atan2f(mSceneScaleZ * (windowTopZ - windowBotZ), mSceneScaleY * table->m_bottom);
       const float inc = atan2f(windowTopZ - windowBotZ, table->m_bottom);
-      return screenHeight <= 1.f ? 1.f : (VPUTOCM(table->m_bottom) / cos(inc)) / screenHeight; // Ratio between screen height in virtual world to real world screen height
+      return screenHeight <= 1.f ? 1.f : (VPUTOCM(table->m_bottom) / cosf(inc)) / screenHeight; // Ratio between screen height in virtual world to real world screen height
    }
    else
       return 1.f;
@@ -87,7 +86,7 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
 
    // Scale to convert a value expressed in the player 'real' world to our virtual world (where the geometry is defined)
    float realToVirtual = GetRealToVirtualScale(table);
-   
+
    // Viewport rotation. Window mode does not support free rotation (since we fit the table to the screen)
    float rotation;
    int quadrant;

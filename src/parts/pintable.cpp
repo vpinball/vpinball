@@ -4300,7 +4300,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    case FID(DBIS): pbr->GetFloat(m_defaultBulbIntensityScaleOnBall); break;
    case FID(UAAL):
    {
-      // Before 10.8, users tweaks were stored in the table file (now moved to a user ini file)
+      // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file)
       int useAA;
       pbr->GetInt(useAA);
       if (useAA != -1)
@@ -4311,7 +4311,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    case FID(USSR): pbr->GetInt(m_useSSR); break;
    case FID(UFXA):
    {
-      // Before 10.8, users tweaks were stored in the table file (now moved to a user ini file)
+      // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file)
       int fxaa;
       pbr->GetInt(fxaa);
       if (fxaa != -1)
@@ -10467,7 +10467,7 @@ LRESULT PinTableMDI::OnMDIActivate(UINT msg, WPARAM wparam, LPARAM lparam)
 {
    //wparam holds HWND of the MDI frame that is about to be deactivated
    //lparam holds HWND of the MDI frame that is about to be activated
-   if ((GetHwnd() == (HWND)wparam) && m_table->m_szFileName != "")
+   if ((GetHwnd() == (HWND)wparam) && !m_table->m_szFileName.empty())
    {
       const string szFileNameAuto = PathFromFilename(m_table->m_szFileName) + m_table->m_szTitle;
       if (FileExists(szFileNameAuto + ".vpx"))

@@ -815,7 +815,6 @@ void VideoOptionsDialog::SaveSettings(const bool saveAll)
       maxTexDim = 7;
    maxTexDim = maxTexDim == 7 ? 0 : (1024 * (maxTexDim + 1));
    SaveOrDelete(saveAll, "MaxTexDimension"s, (int)maxTexDim, 0);
-   SaveOrDelete(saveAll, "MaxTexDimension"s, (int)maxTexDim, 0);
    if (m_initialMaxTexDim != maxTexDim)
       MessageBox("You have changed the maximum texture size.\n\nThis change will only take effect after reloading the tables.", "Reload tables", MB_ICONWARNING);
    SaveOrDelete(saveAll, "BallTrail"s, SendMessage(GetDlgItem(IDC_GLOBAL_TRAIL_CHECK).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED, true);

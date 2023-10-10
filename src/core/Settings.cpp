@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Settings.h"
 
-#include <stdio.h>
+#include <cstdio>
 
 #define VP_REGKEY_GENERAL "Software\\Visual Pinball\\"
 #define VP_REGKEY "Software\\Visual Pinball\\VP10\\"
@@ -148,7 +148,7 @@ bool Settings::LoadFromFile(const string& path, const bool createDefault)
 void Settings::SaveToFile(const string &path)
 {
    m_iniPath = path;
-   int size = 0;
+   size_t size = 0;
    for (auto section : m_ini)
       size += section.second.size();
    if (size > 0)
@@ -168,7 +168,7 @@ void Settings::Save()
    SaveToFile(m_iniPath);
 }
 
-bool Settings::HasValue(const Section& section, const string& key, const bool searchParent) const
+bool Settings::HasValue(const Section section, const string& key, const bool searchParent) const
 {
    bool hasInIni = m_ini.has(regKey[section]) && m_ini.get(regKey[section]).has(key);
    if (!hasInIni && m_parent && searchParent)
@@ -176,7 +176,7 @@ bool Settings::HasValue(const Section& section, const string& key, const bool se
    return hasInIni;
 }
 
-bool Settings::LoadValue(const Section &section, const string &key, string &buffer) const
+bool Settings::LoadValue(const Section section, const string &key, string &buffer) const
 {
    DataType type = DT_SZ;
    char szbuffer[MAXSTRING];
@@ -186,7 +186,7 @@ bool Settings::LoadValue(const Section &section, const string &key, string &buff
    return success && (type == DT_SZ);
 }
 
-bool Settings::LoadValue(const Section &section, const string &key, void *const szbuffer, const DWORD size) const
+bool Settings::LoadValue(const Section section, const string &key, void *const szbuffer, const DWORD size) const
 {
    if (size > 0) // clear string in case of reg value being set, but being null string which results in szbuffer being kept as-is
       ((char *)szbuffer)[0] = '\0';
@@ -195,7 +195,7 @@ bool Settings::LoadValue(const Section &section, const string &key, void *const 
    return success && (type == DT_SZ);
 }
 
-bool Settings::LoadValue(const Section &section, const string &key, float &pfloat) const
+bool Settings::LoadValue(const Section section, const string &key, float &pfloat) const
 {
    DataType type = DT_SZ;
    char szbuffer[16];
@@ -220,21 +220,21 @@ bool Settings::LoadValue(const Section &section, const string &key, float &pfloa
    return true;
 }
 
-bool Settings::LoadValue(const Section &section, const string &key, int &pint) const
+bool Settings::LoadValue(const Section section, const string &key, int &pint) const
 {
    DataType type = DT_DWORD;
    const bool success = LoadValue(section, key, type, (void *)&pint, 4);
    return success && (type == DT_DWORD);
 }
 
-bool Settings::LoadValue(const Section &section, const string &key, unsigned int &pint) const
+bool Settings::LoadValue(const Section section, const string &key, unsigned int &pint) const
 {
    DataType type = DT_DWORD;
    const bool success = LoadValue(section, key, type, (void *)&pint, 4);
    return success && (type == DT_DWORD);
 }
 
-bool Settings::LoadValue(const Section &section, const string &key, DataType &type, void *pvalue, DWORD size) const
+bool Settings::LoadValue(const Section section, const string &key, DataType &type, void *pvalue, const DWORD size) const
 {
    if (size == 0)
    {
@@ -277,30 +277,30 @@ bool Settings::LoadValue(const Section &section, const string &key, DataType &ty
    return false;
 }
 
-int Settings::LoadValueWithDefault(const Section &section, const string &key, const int def) const
+int Settings::LoadValueWithDefault(const Section section, const string &key, const int def) const
 {
    int val;
    return LoadValue(section, key, val) ? val : def;
 }
 
-float Settings::LoadValueWithDefault(const Section &section, const string &key, const float def) const
+float Settings::LoadValueWithDefault(const Section section, const string &key, const float def) const
 {
    float val;
    return LoadValue(section, key, val) ? val : def;
 }
 
-bool Settings::LoadValueWithDefault(const Section &section, const string &key, const bool def) const
+bool Settings::LoadValueWithDefault(const Section section, const string &key, const bool def) const
 {
    return LoadValueWithDefault(section, key, (int)def) != 0;
 }
 
-string Settings::LoadValueWithDefault(const Section &section, const string &key, const string &def) const
+string Settings::LoadValueWithDefault(const Section section, const string &key, const string &def) const
 {
    string val;
    return LoadValue(section, key, val) ? val : def;
 }
 
-bool Settings::SaveValue(const Section &section, const string &key, const DataType type, const void *pvalue, const DWORD size)
+bool Settings::SaveValue(const Section section, const string &key, const DataType type, const void *pvalue, const DWORD size)
 {
    if (key.empty() || size == 0)
       return false;
@@ -329,35 +329,35 @@ bool Settings::SaveValue(const Section &section, const string &key, const DataTy
    return true;
 }
 
-bool Settings::SaveValue(const Section &section, const string &key, const bool val)
+bool Settings::SaveValue(const Section section, const string &key, const bool val)
 {
    const DWORD dwval = val ? 1 : 0;
    return SaveValue(section, key, DT_DWORD, &dwval, sizeof(DWORD));
 }
 
-bool Settings::SaveValue(const Section &section, const string &key, const int val)
+bool Settings::SaveValue(const Section section, const string &key, const int val)
 {
    return SaveValue(section, key, DT_DWORD, &val, sizeof(DWORD));
 }
 
-bool Settings::SaveValue(const Section &section, const string &key, const float val)
+bool Settings::SaveValue(const Section section, const string &key, const float val)
 {
    char buf[16];
    sprintf_s(buf, sizeof(buf), "%f", val);
    return SaveValue(section, key, DT_SZ, buf, lstrlen(buf));
 }
 
-bool Settings::SaveValue(const Section &section, const string &key, const char *val)
+bool Settings::SaveValue(const Section section, const string &key, const char *val)
 {
    return SaveValue(section, key, DT_SZ, val, lstrlen(val));
 }
 
-bool Settings::SaveValue(const Section &section, const string &key, const string &val)
+bool Settings::SaveValue(const Section section, const string &key, const string &val)
 {
    return SaveValue(section, key, DT_SZ, val.c_str(), (DWORD)val.length());
 }
 
-bool Settings::DeleteValue(const Section &section, const string &key, const bool &deleteFromParent)
+bool Settings::DeleteValue(const Section section, const string &key, const bool &deleteFromParent)
 {
    bool success = true;
    if (m_parent && deleteFromParent)
@@ -367,7 +367,7 @@ bool Settings::DeleteValue(const Section &section, const string &key, const bool
    return success;
 }
 
-bool Settings::DeleteSubKey(const Section &section, const bool &deleteFromParent)
+bool Settings::DeleteSubKey(const Section section, const bool &deleteFromParent)
 {
    bool success = true;
    if (m_parent && deleteFromParent)

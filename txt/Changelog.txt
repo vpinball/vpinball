@@ -101,6 +101,8 @@ FEATURES:
   - allow easier collaboration by being able to share the setting file with bug reports.
   If a file with the exact same name as the one of the table file but with '.ini' extension is found along the table file, it will be used as a settings override for that table.
 
+- remove Anti-Aliasing and Postprocessed Anti-Aliasing options from the table properties (and use an .ini based override instead)
+
 - the application is now fully 'DPI aware'. This means that one can use multiple monitors at different DPI settings.
   This may require to adjust the position of windows on existing installs.
 

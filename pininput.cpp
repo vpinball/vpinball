@@ -1130,7 +1130,7 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
          {
          case BG_DESKTOP:
          case BG_FSS:
-            g_pplayer->m_liveUI->PushNotification("POV reseted to default values"s, 5000);
+            g_pplayer->m_liveUI->PushNotification("POV reset to default values"s, 5000);
             if (id == BG_DESKTOP && !portrait)
             { // Desktop
                viewSetup.mMode = (ViewLayoutMode)g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "DesktopMode"s, VLM_CAMERA);
@@ -1175,7 +1175,7 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
                viewSetup.mViewVOfs = isFitted ? 0.f : -2.8f;
                viewSetup.mSceneScaleX = scale;
                viewSetup.mSceneScaleY = isFitted ? 1.f : scale;
-               g_pplayer->m_liveUI->PushNotification(isFitted ? "POV reseted to default values (stretch to fit)"s : "POV reseted to default values (no stretching)"s, 5000);
+               g_pplayer->m_liveUI->PushNotification(isFitted ? "POV reset to default values (stretch to fit)"s : "POV reset to default values (no stretching)"s, 5000);
             }
             break;
          }
@@ -1193,7 +1193,7 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
          else
          {
             // Reset POV: copy from startup table to the live one
-            g_pplayer->m_liveUI->PushNotification("POV reseted to startup values"s, 5000);
+            g_pplayer->m_liveUI->PushNotification("POV reset to startup values"s, 5000);
             ViewSetupID id = g_pplayer->m_ptable->m_BG_current_set;
             const PinTable * const __restrict src = g_pplayer->m_pEditorTable;
             PinTable * const __restrict dst = g_pplayer->m_ptable;
@@ -1789,7 +1789,7 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
             deadu -= m_deadz;
 
         switch (input->dwOfs)	// Axis, Sliders and POV
-        {	// with selectable axes added to menu, giving priority in this order... X Axis (the Left/Right Axis), Y Axis
+        {   // with selectable axes added to menu, giving priority in this order... X Axis (the Left/Right Axis), Y Axis
             case DIJOFS_X:
             {
                 if (g_pplayer) //joyk  rotLeftManual
@@ -2043,30 +2043,30 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
             if (m_cameraMode == 1)
             {
 			      if (!m_cameraModeAltKey)
-				      g_pplayer->m_pin3d.m_cam.y += 10.0f;
+			         g_pplayer->m_pin3d.m_cam.y += 10.0f;
 			      else
-				      g_pplayer->m_pin3d.m_cam.z += 10.0f;
+			         g_pplayer->m_pin3d.m_cam.z += 10.0f;
             }
             else if (m_cameraMode == 2)
-		      {
+            {
 			      if (!m_cameraModeAltKey)
-				      g_pplayer->m_pin3d.m_cam.y -= 10.0f;
+			         g_pplayer->m_pin3d.m_cam.y -= 10.0f;
 			      else
-				      g_pplayer->m_pin3d.m_cam.z -= 10.0f;
+			         g_pplayer->m_pin3d.m_cam.z -= 10.0f;
             }
             else if (m_cameraMode == 3)
             {
 			      if (!m_cameraModeAltKey)
-				      g_pplayer->m_pin3d.m_cam.x -= 10.0f;
+			         g_pplayer->m_pin3d.m_cam.x -= 10.0f;
 			      else
-				      g_pplayer->m_pin3d.m_inc -= 0.01f;
+			         g_pplayer->m_pin3d.m_inc -= 0.01f;
             }
             else if (m_cameraMode == 4)
             {
 			      if (!m_cameraModeAltKey)
-				      g_pplayer->m_pin3d.m_cam.x += 10.0f;
+			         g_pplayer->m_pin3d.m_cam.x += 10.0f;
 			      else
-				      g_pplayer->m_pin3d.m_inc += 0.01f;
+			         g_pplayer->m_pin3d.m_inc += 0.01f;
             }
 
             // Table tweaks
