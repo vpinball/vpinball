@@ -255,7 +255,7 @@ Player::Player(const bool cameraMode, PinTable *const editor_table, PinTable *co
        bool hr = m_ptable->m_settings.LoadValue(Settings::Player, "BallImage"s, imageName);
        if (hr)
        {
-           BaseTexture * const tex = BaseTexture::CreateFromFile(imageName);
+         BaseTexture *const tex = BaseTexture::CreateFromFile(imageName, m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "MaxTexDimension"s, 0));
 
            if (tex != nullptr)
                m_ballImage = new Texture(tex);
@@ -263,7 +263,7 @@ Player::Player(const bool cameraMode, PinTable *const editor_table, PinTable *co
        hr = m_ptable->m_settings.LoadValue(Settings::Player, "DecalImage"s, imageName);
        if (hr)
        {
-           BaseTexture * const tex = BaseTexture::CreateFromFile(imageName);
+           BaseTexture *const tex = BaseTexture::CreateFromFile(imageName, m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "MaxTexDimension"s, 0));
 
            if (tex != nullptr)
                m_decalImage = new Texture(tex);
@@ -913,11 +913,8 @@ void Player::Shutdown()
 
    //CloseHandle(m_hSongCompletionEvent);
 
-   if (m_audio)
-   {
-      delete m_audio;
-      m_audio = nullptr;
-   }
+   delete m_audio;
+   m_audio = nullptr;
 
    for (size_t i = 0; i < m_controlclsidsafe.size(); i++)
       delete m_controlclsidsafe[i];

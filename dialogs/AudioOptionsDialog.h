@@ -1,5 +1,4 @@
-#ifndef H_AUDIO_OPTIONS_DIALOG
-#define H_AUDIO_OPTIONS_DIALOG
+#pragma once
 
 class AudioOptionsDialog : public CDialog
 {
@@ -8,10 +7,10 @@ public:
 
 protected:
    BOOL OnInitDialog() final;
-   INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam) final;
    BOOL OnCommand(WPARAM wParam, LPARAM lParam) final;
    void OnOK() final;
-   void OnClose() final;
-};
 
-#endif // !H_AUDIO_OPTIONS_DIALOG
+   Settings& GetEditedSettings();
+   void LoadSettings();
+   void SaveSettings(const bool saveAll);
+};

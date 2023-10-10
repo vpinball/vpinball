@@ -37,18 +37,17 @@ public:
    void AddAlpha();
    void RemoveAlpha();
 
-private:
-   unsigned int m_width, m_height;
-   vector<BYTE> m_data;
-
-public:
    unsigned int m_realWidth, m_realHeight;
    Format m_format;
 
-   static BaseTexture *CreateFromHBitmap(const HBITMAP hbm, bool with_alpha = true);
-   static BaseTexture *CreateFromFile(const string& filename);
-   static BaseTexture *CreateFromFreeImage(FIBITMAP *dib, bool resize_on_low_mem); // also free's/delete's the dib inside!
-   static BaseTexture *CreateFromData(const void *data, const size_t size);
+   static BaseTexture *CreateFromHBitmap(const HBITMAP hbm, unsigned int maxTexDim, bool with_alpha = true);
+   static BaseTexture *CreateFromFile(const string &filename, unsigned int maxTexDim);
+   static BaseTexture *CreateFromData(const void *data, const size_t size, unsigned int maxTexDim);
+   static BaseTexture *CreateFromFreeImage(FIBITMAP *dib, bool resize_on_low_mem, unsigned int maxTexDim); // also free's/delete's the dib inside!
+
+private:
+   const unsigned int m_width, m_height;
+   vector<BYTE> m_data;
 };
 
 class Texture final : public ILoadable
@@ -93,7 +92,8 @@ private:
    bool m_resize_on_low_mem;
 
 public:
-
+   unsigned int m_maxTexDim = 0;
+   
    // width and height of texture can be different than width and height
    // of m_pdsBuffer, since the surface can be limited to smaller sizes by the user
    unsigned int m_width, m_height;

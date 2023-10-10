@@ -2228,6 +2228,7 @@ void PinTable::Play(const bool cameraMode)
    {
       dst->mViewSetups[i] = src->mViewSetups[i];
       dst->m_BG_image[i] = src->m_BG_image[i];
+      dst->mViewSetups[i].ApplyTableOverrideSettings(m_settings, i == 0 ? "ViewDT" : i == 1 ? "ViewFSS" :"ViewCab");
    }
    for (size_t i = 0; i < src->m_materials.size(); i++)
    {
@@ -2604,6 +2605,11 @@ HRESULT PinTable::Save(const bool saveAs)
       m_pcv->SetClean(eSaveClean);
       SetNonUndoableDirty(eSaveClean);
    }
+
+   // Save user custom settings file (if any) along the table file
+   string szINIFilename = m_szFileName;
+   if (ReplaceExtensionFromFilename(szINIFilename, "ini"s))
+      m_settings.SaveToFile(szINIFilename);
 
    return S_OK;
 }
@@ -3600,6 +3606,11 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
    ProfileLog("LoadGameFromFilename " + szFileName);
 
    m_szFileName = szFileName;
+
+   // Load user custom settings before actually loading the table for settings applying during load
+   string szINIFilename = m_szFileName;
+   if (ReplaceExtensionFromFilename(szINIFilename, "ini"s))
+      m_settings.LoadFromFile(szINIFilename, false);
 
    MAKE_WIDEPTR_FROMANSI(wszCodeFile, m_szFileName.c_str());
    HRESULT hr;
@@ -7052,7 +7063,7 @@ void PinTable::ReImportImage(Texture * const ppi, const string& filename)
       ppb->ReadFromFile(filename);
    }
 
-   BaseTexture * const tex = BaseTexture::CreateFromFile(filename);
+   BaseTexture *const tex = BaseTexture::CreateFromFile(filename, 0);
 
    if (tex == nullptr)
    {
@@ -7679,7 +7690,7 @@ HRESULT PinTable::LoadImageFromStream(IStream *pstm, size_t idx, int version, bo
    else
    {
       Texture * const ppi = new Texture();
-
+      ppi->m_maxTexDim = m_settings.LoadValueWithDefault(Settings::Player, "MaxTexDimension"s, 0); // default: Don't resize textures
       if (ppi->LoadFromStream(pstm, version, this, resize_on_low_mem) == S_OK)
          m_vimage[idx] = ppi;
       else
@@ -10469,9 +10480,9 @@ LRESULT PinTableMDI::OnMDIActivate(UINT msg, WPARAM wparam, LPARAM lparam)
    //lparam holds HWND of the MDI frame that is about to be activated
    if ((GetHwnd() == (HWND)wparam) && !m_table->m_szFileName.empty())
    {
-      const string szFileNameAuto = PathFromFilename(m_table->m_szFileName) + m_table->m_szTitle;
-      if (FileExists(szFileNameAuto + ".vpx"))
-         m_table->m_settings.SaveToFile(szFileNameAuto + ".ini");
+      string szINIFilename = m_table->m_szFileName;
+      if (ReplaceExtensionFromFilename(szINIFilename, "ini"s))
+         m_table->m_settings.SaveToFile(szINIFilename);
       if (g_pvp->m_ptableActive == m_table)
          g_pvp->m_ptableActive = nullptr;
    }
@@ -10484,8 +10495,9 @@ LRESULT PinTableMDI::OnMDIActivate(UINT msg, WPARAM wparam, LPARAM lparam)
          g_pvp->SetPropSel(m_table->m_vmultisel);
       }
       m_vpinball->m_currentTablePath = PathFromFilename(m_table->m_szFileName);
-      const string szFileNameAuto = m_vpinball->m_currentTablePath + m_table->m_szTitle + ".ini";
-      m_table->m_settings.LoadFromFile(szFileNameAuto, false);
+      string szINIFilename = m_table->m_szFileName;
+      if (ReplaceExtensionFromFilename(szINIFilename, "ini"s))
+         m_table->m_settings.LoadFromFile(szINIFilename, false);
       if (g_pvp->m_ptableActive != m_table)
          g_pvp->m_ptableActive = m_table;
    }

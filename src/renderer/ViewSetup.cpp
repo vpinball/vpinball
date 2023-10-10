@@ -26,6 +26,44 @@ void ViewSetup::SetWindowModeFromSettings(const PinTable* const table)
    mViewZ = playerPos.z + screenBotZ * mSceneScaleY / realToVirtual;
 }
 
+void ViewSetup::ApplyTableOverrideSettings(const Settings& settings, const string& keyPrefix)
+{
+   settings.LoadValue(Settings::TableOverride, keyPrefix + "Mode"s, (int&)mMode);
+   settings.LoadValue(Settings::TableOverride, keyPrefix + "ScaleX"s, mSceneScaleX);
+   settings.LoadValue(Settings::TableOverride, keyPrefix + "ScaleY"s, mSceneScaleY);
+   settings.LoadValue(Settings::TableOverride, keyPrefix + "ScaleZ"s, mSceneScaleZ);
+   settings.LoadValue(Settings::TableOverride, keyPrefix + "PlayerX"s, mViewX);
+   settings.LoadValue(Settings::TableOverride, keyPrefix + "PlayerY"s, mViewY);
+   settings.LoadValue(Settings::TableOverride, keyPrefix + "PlayerZ"s, mViewZ);
+   settings.LoadValue(Settings::TableOverride, keyPrefix + "LookAt"s, mLookAt);
+   settings.LoadValue(Settings::TableOverride, keyPrefix + "Rotation"s, mViewportRotation);
+   settings.LoadValue(Settings::TableOverride, keyPrefix + "FOV"s, mFOV);
+   settings.LoadValue(Settings::TableOverride, keyPrefix + "Layback"s, mLayback);
+   settings.LoadValue(Settings::TableOverride, keyPrefix + "HOfs"s, mViewHOfs);
+   settings.LoadValue(Settings::TableOverride, keyPrefix + "VOfs"s, mViewVOfs);
+   settings.LoadValue(Settings::TableOverride, keyPrefix + "WindowTop"s, mWindowTopZOfs);
+   settings.LoadValue(Settings::TableOverride, keyPrefix + "WindowBot"s, mWindowBottomZOfs);
+}
+
+void ViewSetup::SaveToTableOverrideSettings(Settings& settings, const string& keyPrefix)
+{
+   settings.SaveValue(Settings::TableOverride, keyPrefix + "Mode"s, mMode);
+   settings.SaveValue(Settings::TableOverride, keyPrefix + "ScaleX"s, mSceneScaleX);
+   settings.SaveValue(Settings::TableOverride, keyPrefix + "ScaleY"s, mSceneScaleY);
+   settings.SaveValue(Settings::TableOverride, keyPrefix + "ScaleZ"s, mSceneScaleZ);
+   settings.SaveValue(Settings::TableOverride, keyPrefix + "PlayerX"s, mViewX);
+   settings.SaveValue(Settings::TableOverride, keyPrefix + "PlayerY"s, mViewY);
+   settings.SaveValue(Settings::TableOverride, keyPrefix + "PlayerZ"s, mViewZ);
+   settings.SaveValue(Settings::TableOverride, keyPrefix + "LookAt"s, mLookAt);
+   settings.SaveValue(Settings::TableOverride, keyPrefix + "Rotation"s, mViewportRotation);
+   settings.SaveValue(Settings::TableOverride, keyPrefix + "FOV"s, mFOV);
+   settings.SaveValue(Settings::TableOverride, keyPrefix + "Layback"s, mLayback);
+   settings.SaveValue(Settings::TableOverride, keyPrefix + "HOfs"s, mViewHOfs);
+   settings.SaveValue(Settings::TableOverride, keyPrefix + "VOfs"s, mViewVOfs);
+   settings.SaveValue(Settings::TableOverride, keyPrefix + "WindowTop"s, mWindowTopZOfs);
+   settings.SaveValue(Settings::TableOverride, keyPrefix + "WindowBot"s, mWindowBottomZOfs);
+}
+
 float ViewSetup::GetWindowTopZOFfset(const PinTable* const table) const
 {
    // FIXME to be replaced by a relative position between playfield and table glass

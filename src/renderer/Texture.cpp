@@ -21,10 +21,9 @@ BaseTexture::BaseTexture(const unsigned int w, const unsigned int h, const Forma
 {
 }
 
-BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, bool resize_on_low_mem)
+BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, bool resize_on_low_mem, unsigned int maxTexDim)
 {
    // check if Textures exceed the maximum texture dimension
-   int maxTexDim = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "MaxTexDimension"s, 0); // default: Don't resize textures
    if (maxTexDim <= 0)
       maxTexDim = 65536;
 
@@ -260,7 +259,7 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, bool resize_on_low_
    return tex;
 }
 
-BaseTexture* BaseTexture::CreateFromFile(const string& szfile)
+BaseTexture* BaseTexture::CreateFromFile(const string& szfile, unsigned int maxTexDim)
 {
    if (szfile.empty())
       return nullptr;
@@ -279,7 +278,7 @@ BaseTexture* BaseTexture::CreateFromFile(const string& szfile)
       if (!dib)
          return nullptr;
       
-      BaseTexture* const mySurface = CreateFromFreeImage(dib, true);
+      BaseTexture* const mySurface = CreateFromFreeImage(dib, true, maxTexDim);
 
       //if (bitsPerPixel == 24)
       //   mySurface->SetOpaque();
@@ -290,7 +289,7 @@ BaseTexture* BaseTexture::CreateFromFile(const string& szfile)
       return nullptr;
 }
 
-BaseTexture* BaseTexture::CreateFromData(const void *data, const size_t size)
+BaseTexture* BaseTexture::CreateFromData(const void* data, const size_t size, unsigned int maxTexDim)
 {
    // check the file signature and deduce its format
    FIMEMORY * const dataHandle = FreeImage_OpenMemory((BYTE*)data, (DWORD)size);
@@ -305,7 +304,7 @@ BaseTexture* BaseTexture::CreateFromData(const void *data, const size_t size)
       FreeImage_CloseMemory(dataHandle);
       if (!dib)
          return nullptr;
-      return BaseTexture::CreateFromFreeImage(dib, true);
+      return BaseTexture::CreateFromFreeImage(dib, true, maxTexDim);
    }
    else
    {
@@ -335,7 +334,7 @@ static FIBITMAP* HBitmapToFreeImage(HBITMAP hbmp)
    return dib;
 }
 
-BaseTexture* BaseTexture::CreateFromHBitmap(const HBITMAP hbm, bool with_alpha)
+BaseTexture* BaseTexture::CreateFromHBitmap(const HBITMAP hbm, unsigned int maxTexDim, bool with_alpha)
 {
    FIBITMAP* dib = HBitmapToFreeImage(hbm);
    if (!dib)
@@ -348,7 +347,7 @@ BaseTexture* BaseTexture::CreateFromHBitmap(const HBITMAP hbm, bool with_alpha)
       if (!dib)
          return nullptr;
    }
-   BaseTexture* const pdds = BaseTexture::CreateFromFreeImage(dib, true);
+   BaseTexture* const pdds = BaseTexture::CreateFromFreeImage(dib, true, maxTexDim);
    return pdds;
 }
 
@@ -614,8 +613,7 @@ bool Texture::LoadFromMemory(BYTE * const data, const DWORD size)
    if (m_pdsBuffer)
       FreeStuff();
 
-   const int maxTexDim = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "MaxTexDimension"s, 0); // default: Don't resize textures
-   if(maxTexDim <= 0) // only use fast JPG path via stbi if no texture resize must be triggered
+   if(m_maxTexDim <= 0) // only use fast JPG path via stbi if no texture resize must be triggered
    {
       int x, y, channels_in_file = 0;
       const int ok = stbi_info_from_memory(data, size, &x, &y, &channels_in_file); // Request stbi to convert image to BW, SRGB or SRGBA
@@ -671,7 +669,7 @@ freeimage_fallback:
    if (!dib)
       return false;
 
-   m_pdsBuffer = BaseTexture::CreateFromFreeImage(dib, m_resize_on_low_mem);
+   m_pdsBuffer = BaseTexture::CreateFromFreeImage(dib, m_resize_on_low_mem, m_maxTexDim);
    if (!m_pdsBuffer)
       return false;
 

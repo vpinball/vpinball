@@ -1115,6 +1115,9 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
          }
          else
             g_pplayer->m_liveUI->PushNotification("Failed to export POV"s, 12000);
+         // Update table ini file with user overrides
+         for (int i = 0; i < 3; i++)
+            g_pplayer->m_ptable->mViewSetups[i].SaveToTableOverrideSettings(g_pplayer->m_ptable->m_settings, i == 0 ? "ViewDT" : i == 1 ? "ViewFSS" :"ViewCab");
          if (g_pvp->m_povEdit)
             g_pvp->QuitPlayer(Player::CloseState::CS_CLOSE_APP);
       }
@@ -1198,6 +1201,7 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
             const PinTable * const __restrict src = g_pplayer->m_pEditorTable;
             PinTable * const __restrict dst = g_pplayer->m_ptable;
             dst->mViewSetups[id] = src->mViewSetups[id];
+            dst->mViewSetups[id].ApplyTableOverrideSettings(g_pplayer->m_ptable->m_settings, id == 0 ? "ViewDT" : id == 1 ? "ViewFSS" : "ViewCab");
             dst->m_lightHeight = src->m_lightHeight;
             dst->m_lightRange = src->m_lightRange;
             dst->m_lightEmissionScale = src->m_lightEmissionScale;
