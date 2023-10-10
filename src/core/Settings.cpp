@@ -3,12 +3,9 @@
 
 #include <cstdio>
 
-#define VP_REGKEY_GENERAL "Software\\Visual Pinball\\"
-#define VP_REGKEY "Software\\Visual Pinball\\VP10\\"
-
 static const string regKey[Settings::Count] =
    {
-      "Controller"s, "Editor"s, "Player"s, "PlayerVR"s, "RecentDir"s, "Version"s, "CVEdit"s,
+      "Controller"s, "Editor"s, "Player"s, "PlayerVR"s, "RecentDir"s, "Version"s, "CVEdit"s, "TableOverride"s,
       "DefaultProps\\Bumper"s, "DefaultProps\\Decal"s, "DefaultProps\\EMReel"s, "DefaultProps\\Flasher"s, "DefaultProps\\Flipper"s,
       "DefaultProps\\Gate"s, "DefaultProps\\HitTarget"s, "DefaultProps\\Kicker"s, "DefaultProps\\Light"s, "DefaultProps\\LightSequence"s,
       "DefaultProps\\Plunger"s, "DefaultProps\\Primitive"s, "DefaultProps\\Ramp"s, "DefaultProps\\Rubber"s, "DefaultProps\\Spinner"s,
@@ -58,14 +55,14 @@ bool Settings::LoadFromFile(const string& path, const bool createDefault)
          PLOGE << "Loading of default settings file failed";
       }
 
-      // Get default values from windows registry
+      // Get settings values from windows registry (which was used to store settings before 10.8)
       for (unsigned int j = 0; j < Section::Count; j++)
       {
          // We do not save version of played tables in the ini file
          if (j == Section::Version)
             continue;
 
-         string regpath(j == 0 ? VP_REGKEY_GENERAL : VP_REGKEY);
+         string regpath(j == 0 ? "Software\\Visual Pinball\\" : "Software\\Visual Pinball\\VP10\\");
          regpath += regKey[j];
 
          HKEY hk;
@@ -182,7 +179,8 @@ bool Settings::LoadValue(const Section section, const string &key, string &buffe
    char szbuffer[MAXSTRING];
    szbuffer[0] = '\0';
    const bool success = LoadValue(section, key, type, szbuffer, MAXSTRING);
-   buffer = szbuffer;
+   if (success)
+      buffer = szbuffer;
    return success && (type == DT_SZ);
 }
 
@@ -300,61 +298,57 @@ string Settings::LoadValueWithDefault(const Section section, const string &key, 
    return LoadValue(section, key, val) ? val : def;
 }
 
-bool Settings::SaveValue(const Section section, const string &key, const DataType type, const void *pvalue, const DWORD size)
+bool Settings::SaveValue(const Section section, const string &key, const DataType type, const void *pvalue, const DWORD size, const bool overrideMode)
 {
-   if (key.empty() || size == 0)
+   assert(type == DT_SZ || type == DT_DWORD);
+   if (key.empty() || size == 0 || (type != DT_SZ && type != DT_DWORD))
       return false;
-
-   char *copy;
-   if (type == DT_SZ)
+   const string copy = type == DT_SZ ? std::string((char*)pvalue) : std::to_string(*(DWORD *)pvalue);
+   if (m_parent && overrideMode)
    {
-      copy = new char[size + 1];
-      memcpy(copy, pvalue, size);
-      copy[size] = '\0';
-   }
-   else if (type == DT_DWORD)
-   {
-      const string tmp = std::to_string(*(DWORD *)pvalue);
-      const size_t len = tmp.length() + 1;
-      copy = new char[len];
-      strcpy_s(copy, len, tmp.c_str());
-   }
-   else
-   {
-      assert(!"Bad RegKey");
-      return false;
+      bool hasInIni = m_parent->m_ini.has(regKey[section]) && m_ini.get(regKey[section]).has(key);
+      if (hasInIni)
+      {
+         string value = m_parent->m_ini.get(regKey[section]).get(key);
+         if (value == copy)
+         {
+            // This is an override and it has the same value as parent: remove it
+            if (m_ini.has(regKey[section]) && m_ini.get(regKey[section]).has(key))
+               m_ini[regKey[section]].remove(key);
+            return true;
+         }
+      }
    }
    m_ini[regKey[section]][key] = copy;
-   delete[] copy;
    return true;
 }
 
-bool Settings::SaveValue(const Section section, const string &key, const bool val)
+bool Settings::SaveValue(const Section section, const string &key, const bool val, const bool overrideMode)
 {
    const DWORD dwval = val ? 1 : 0;
-   return SaveValue(section, key, DT_DWORD, &dwval, sizeof(DWORD));
+   return SaveValue(section, key, DT_DWORD, &dwval, sizeof(DWORD), overrideMode);
 }
 
-bool Settings::SaveValue(const Section section, const string &key, const int val)
+bool Settings::SaveValue(const Section section, const string &key, const int val, const bool overrideMode)
 {
-   return SaveValue(section, key, DT_DWORD, &val, sizeof(DWORD));
+   return SaveValue(section, key, DT_DWORD, &val, sizeof(DWORD), overrideMode);
 }
 
-bool Settings::SaveValue(const Section section, const string &key, const float val)
+bool Settings::SaveValue(const Section section, const string &key, const float val, const bool overrideMode)
 {
    char buf[16];
    sprintf_s(buf, sizeof(buf), "%f", val);
-   return SaveValue(section, key, DT_SZ, buf, lstrlen(buf));
+   return SaveValue(section, key, DT_SZ, buf, lstrlen(buf), overrideMode);
 }
 
-bool Settings::SaveValue(const Section section, const string &key, const char *val)
+bool Settings::SaveValue(const Section section, const string &key, const char *val, const bool overrideMode)
 {
-   return SaveValue(section, key, DT_SZ, val, lstrlen(val));
+   return SaveValue(section, key, DT_SZ, val, lstrlen(val), overrideMode);
 }
 
-bool Settings::SaveValue(const Section section, const string &key, const string &val)
+bool Settings::SaveValue(const Section section, const string &key, const string &val, const bool overrideMode)
 {
-   return SaveValue(section, key, DT_SZ, val.c_str(), (DWORD)val.length());
+   return SaveValue(section, key, DT_SZ, val.c_str(), (DWORD)val.length(), overrideMode);
 }
 
 bool Settings::DeleteValue(const Section section, const string &key, const bool &deleteFromParent)

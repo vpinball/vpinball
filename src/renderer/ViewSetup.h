@@ -21,11 +21,15 @@ class ViewSetup final
 public:
    ViewSetup();
 
+   void ApplyTableOverrideSettings(const Settings& settings, const string& keyPrefix);
+   void SaveToTableOverrideSettings(Settings& settings, const string& keyPrefix);
    void SetWindowModeFromSettings(const PinTable* const table);
+   
    float GetWindowTopZOFfset(const PinTable* const table) const;
    float GetWindowBottomZOFfset(const PinTable* const table) const;
    float GetRealToVirtualScale(const PinTable* const table) const;
    float GetRotation(const int viewportWidth, const int viewportHeight) const;
+   
    void ComputeMVP(const PinTable* const table, const int viewportWidth, const int viewportHeight, const bool stereo, ModelViewProj& mvp, 
       const vec3& cam = vec3(0.f, 0.f, 0.f), const float cam_inc = 0.f, const float xpixoff = 0.f, const float ypixoff = 0.f);
 

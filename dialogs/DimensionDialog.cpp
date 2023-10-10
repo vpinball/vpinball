@@ -97,10 +97,8 @@ BOOL DimensionDialog::OnInitDialog()
    if (pt)
    {
       char textBuf[MAXNAMEBUFFER];
-      const float width = pt->m_right - pt->m_left;
-      const float height = pt->m_bottom - pt->m_top;
-      const int width = (int)(width + 0.5f);
-      const int height = (int)(height + 0.5f);
+      const int width = (int)(pt->m_right - pt->m_left + 0.5f);
+      const int height = (int)(pt->m_bottom - pt->m_top + 0.5f);
       SetDlgItemText(IDC_VP_WIDTH, std::to_string(width).c_str());
       SetDlgItemText(IDC_VP_HEIGHT, std::to_string(height).c_str());
       sprintf_s(textBuf, sizeof(textBuf), "%.03f", VPUTOINCHES(width));

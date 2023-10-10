@@ -754,19 +754,9 @@ void VideoOptionsDialog::LoadSettings()
    }
 }
 
-template <typename T> void VideoOptionsDialog::SaveOrDelete(const bool saveAll, const string& key, T value, T defValue)
-{
-   Settings& settings = GetEditedSettings();
-   if (saveAll || value != g_pvp->m_settings.LoadValueWithDefault(Settings::Player, key, defValue))
-      settings.SaveValue(Settings::Player, key, value);
-   else
-      settings.DeleteValue(Settings::Player, key);
-}
-
 void VideoOptionsDialog::SaveSettings(const bool saveAll)
 {
    BOOL nothing = 0;
-   const Settings& appSettings = g_pvp->m_settings;
    Settings& settings = GetEditedSettings();
 
    const bool fullscreen = SendMessage(GetDlgItem(IDC_EXCLUSIVE_FULLSCREEN).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED;
@@ -774,10 +764,10 @@ void VideoOptionsDialog::SaveSettings(const bool saveAll)
    {
       const size_t index = SendMessage(GetDlgItem(IDC_SIZELIST).GetHwnd(), LB_GETCURSEL, 0, 0);
       const VideoMode* const pvm = &m_allVideoModes[index];
-      SaveOrDelete(saveAll, "Width"s, pvm->width, -1);
-      SaveOrDelete(saveAll, "Height"s, pvm->height, -1);
-      SaveOrDelete(saveAll, "ColorDepth"s, pvm->depth, -1);
-      SaveOrDelete(saveAll, "RefreshRate"s, pvm->refreshrate, -1);
+      settings.SaveValue(Settings::Player, "Width"s, pvm->width, !saveAll);
+      settings.SaveValue(Settings::Player, "Height"s, pvm->height, !saveAll);
+      settings.SaveValue(Settings::Player, "ColorDepth"s, pvm->depth, !saveAll);
+      settings.SaveValue(Settings::Player, "RefreshRate"s, pvm->refreshrate, !saveAll);
    }
    else
    {
@@ -797,49 +787,49 @@ void VideoOptionsDialog::SaveSettings(const bool saveAll)
       }
       if (width > 0 && height > 0)
       {
-         SaveOrDelete(saveAll, "Width"s, width, -1);
-         SaveOrDelete(saveAll, "Height"s, height, -1);
+         settings.SaveValue(Settings::Player, "Width"s, width, !saveAll);
+         settings.SaveValue(Settings::Player, "Height"s, height, !saveAll);
       }
    }
-   SaveOrDelete(saveAll, "Display"s, (int)SendMessage(GetDlgItem(IDC_DISPLAY_ID).GetHwnd(), CB_GETCURSEL, 0, 0), -1);
-   SaveOrDelete(saveAll, "FullScreen"s, fullscreen, IsWindows10_1803orAbove());
-   SaveOrDelete(saveAll, "ScreenWidth"s, GetDlgItemText(IDC_SCREEN_WIDTH).GetString(), "0.0"s);
-   SaveOrDelete(saveAll, "ScreenHeight"s, GetDlgItemText(IDC_SCREEN_HEIGHT).GetString(), "0.0"s);
-   SaveOrDelete(saveAll, "ScreenInclination"s, GetDlgItemText(IDC_SCREEN_INCLINATION).GetString(), "0.0"s);
-   SaveOrDelete(saveAll, "ScreenPlayerX"s, GetDlgItemText(IDC_SCREEN_PLAYERX).GetString(), "0.0"s);
-   SaveOrDelete(saveAll, "ScreenPlayerY"s, GetDlgItemText(IDC_SCREEN_PLAYERY).GetString(), "0.0"s);
-   SaveOrDelete(saveAll, "ScreenPlayerZ"s, GetDlgItemText(IDC_SCREEN_PLAYERZ).GetString(), "0.0"s);
-   SaveOrDelete(saveAll, "Render10Bit"s, SendMessage(GetDlgItem(IDC_10BIT_VIDEO).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED, false);
+   settings.SaveValue(Settings::Player, "Display"s, (int)SendMessage(GetDlgItem(IDC_DISPLAY_ID).GetHwnd(), CB_GETCURSEL, 0, 0), !saveAll);
+   settings.SaveValue(Settings::Player, "FullScreen"s, fullscreen, !saveAll);
+   settings.SaveValue(Settings::Player, "ScreenWidth"s, GetDlgItemText(IDC_SCREEN_WIDTH).GetString(), !saveAll);
+   settings.SaveValue(Settings::Player, "ScreenHeight"s, GetDlgItemText(IDC_SCREEN_HEIGHT).GetString(), !saveAll);
+   settings.SaveValue(Settings::Player, "ScreenInclination"s, GetDlgItemText(IDC_SCREEN_INCLINATION).GetString(), !saveAll);
+   settings.SaveValue(Settings::Player, "ScreenPlayerX"s, GetDlgItemText(IDC_SCREEN_PLAYERX).GetString(), !saveAll);
+   settings.SaveValue(Settings::Player, "ScreenPlayerY"s, GetDlgItemText(IDC_SCREEN_PLAYERY).GetString(), !saveAll);
+   settings.SaveValue(Settings::Player, "ScreenPlayerZ"s, GetDlgItemText(IDC_SCREEN_PLAYERZ).GetString(), !saveAll);
+   settings.SaveValue(Settings::Player, "Render10Bit"s, SendMessage(GetDlgItem(IDC_10BIT_VIDEO).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED, !saveAll);
    LRESULT maxTexDim = SendMessage(GetDlgItem(IDC_MAX_TEXTURE_COMBO).GetHwnd(), CB_GETCURSEL, 0, 0);
    if (maxTexDim == LB_ERR)
       maxTexDim = 7;
    maxTexDim = maxTexDim == 7 ? 0 : (1024 * (maxTexDim + 1));
-   SaveOrDelete(saveAll, "MaxTexDimension"s, (int)maxTexDim, 0);
+   settings.SaveValue(Settings::Player, "MaxTexDimension"s, (int)maxTexDim, !saveAll);
    if (m_initialMaxTexDim != maxTexDim)
       MessageBox("You have changed the maximum texture size.\n\nThis change will only take effect after reloading the tables.", "Reload tables", MB_ICONWARNING);
-   SaveOrDelete(saveAll, "BallTrail"s, SendMessage(GetDlgItem(IDC_GLOBAL_TRAIL_CHECK).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED, true);
-   SaveOrDelete(saveAll, "DisableLightingForBalls"s, SendMessage(GetDlgItem(IDC_GLOBAL_DISABLE_LIGHTING_BALLS).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED, false);
-   SaveOrDelete(saveAll, "MaxFramerate"s, (int)GetDlgItemInt(IDC_MAX_FPS, nothing, TRUE), 0);
+   settings.SaveValue(Settings::Player, "BallTrail"s, SendMessage(GetDlgItem(IDC_GLOBAL_TRAIL_CHECK).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED, !saveAll);
+   settings.SaveValue(Settings::Player, "DisableLightingForBalls"s, SendMessage(GetDlgItem(IDC_GLOBAL_DISABLE_LIGHTING_BALLS).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED, !saveAll);
+   settings.SaveValue(Settings::Player, "MaxFramerate"s, (int)GetDlgItemInt(IDC_MAX_FPS, nothing, TRUE), !saveAll);
    LRESULT syncMode = SendMessage(GetDlgItem(IDC_VIDEO_SYNC_MODE).GetHwnd(), CB_GETCURSEL, 0, 0);
    if (syncMode == LB_ERR)
       syncMode = VideoSyncMode::VSM_FRAME_PACING;
-   SaveOrDelete(saveAll, "SyncMode"s, (int)syncMode, (int)VideoSyncMode::VSM_FRAME_PACING);
-   SaveOrDelete(saveAll, "MaxPrerenderedFrames"s, (int)GetDlgItemInt(IDC_MAX_PRE_FRAMES, nothing, TRUE), 0);
-   SaveOrDelete(saveAll, "BallCorrectionX"s, GetDlgItemText(IDC_CORRECTION_X).GetString(), "0.0"s);
-   SaveOrDelete(saveAll, "BallCorrectionY"s, GetDlgItemText(IDC_CORRECTION_X).GetString(), "0.0"s);
-   SaveOrDelete(saveAll, "Longitude"s, GetDlgItemText(IDC_CORRECTION_X).GetString(), "0.0"s);
-   SaveOrDelete(saveAll, "Latitude"s, GetDlgItemText(IDC_CORRECTION_X).GetString(), "0.0"s);
-   SaveOrDelete(saveAll, "NudgeStrength"s, GetDlgItemText(IDC_CORRECTION_X).GetString(), "0.0"s);
+   settings.SaveValue(Settings::Player, "SyncMode"s, (int)syncMode, !saveAll);
+   settings.SaveValue(Settings::Player, "MaxPrerenderedFrames"s, (int)GetDlgItemInt(IDC_MAX_PRE_FRAMES, nothing, TRUE), !saveAll);
+   settings.SaveValue(Settings::Player, "BallCorrectionX"s, GetDlgItemText(IDC_CORRECTION_X).GetString(), !saveAll);
+   settings.SaveValue(Settings::Player, "BallCorrectionY"s, GetDlgItemText(IDC_CORRECTION_X).GetString(), !saveAll);
+   settings.SaveValue(Settings::Player, "Longitude"s, GetDlgItemText(IDC_CORRECTION_X).GetString(), !saveAll);
+   settings.SaveValue(Settings::Player, "Latitude"s, GetDlgItemText(IDC_CORRECTION_X).GetString(), !saveAll);
+   settings.SaveValue(Settings::Player, "NudgeStrength"s, GetDlgItemText(IDC_CORRECTION_X).GetString(), !saveAll);
    LRESULT fxaa = SendMessage(GetDlgItem(IDC_POST_PROCESS_COMBO).GetHwnd(), CB_GETCURSEL, 0, 0);
    if (fxaa == LB_ERR)
       fxaa = Standard_FXAA;
-   SaveOrDelete(saveAll, "FXAA"s, (int) fxaa, (int) Standard_FXAA);
+   settings.SaveValue(Settings::Player, "FXAA"s, (int) fxaa, !saveAll);
    LRESULT sharpen = SendMessage(GetDlgItem(IDC_SHARPEN_COMBO).GetHwnd(), CB_GETCURSEL, 0, 0);
    if (sharpen == LB_ERR)
       sharpen = 0;
-   SaveOrDelete(saveAll, "Sharpen"s, (int)sharpen, 0);
-   SaveOrDelete(saveAll, "ScaleFXDMD"s, SendMessage(GetDlgItem(IDC_SCALE_FX_DMD).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED, true);
-   SaveOrDelete(saveAll, "BGSet"s, (int)SendMessage(GetDlgItem(IDC_BG_SET).GetHwnd(), CB_GETCURSEL, 0, 0), 0);
+   settings.SaveValue(Settings::Player, "Sharpen"s, (int)sharpen, !saveAll);
+   settings.SaveValue(Settings::Player, "ScaleFXDMD"s, SendMessage(GetDlgItem(IDC_SCALE_FX_DMD).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED, !saveAll);
+   settings.SaveValue(Settings::Player, "BGSet"s, (int)SendMessage(GetDlgItem(IDC_BG_SET).GetHwnd(), CB_GETCURSEL, 0, 0), !saveAll);
    // update the cached current view setup of all loaded tables since it also depends on this setting
    for (auto table : g_pvp->m_vtable)
       table->UpdateCurrentBGSet();
@@ -847,66 +837,66 @@ void VideoOptionsDialog::SaveSettings(const bool saveAll)
    if (AAfactorIndex == LB_ERR)
       AAfactorIndex = getBestMatchingAAfactorIndex(1);
    const float AAfactor = (AAfactorIndex < AAfactorCount) ? AAfactors[AAfactorIndex] : 1.0f;
-   SaveOrDelete(saveAll, "USEAA"s, AAfactor > 1.0f, false);
-   SaveOrDelete(saveAll, "AAFactor"s, AAfactor, 1.f);
+   settings.SaveValue(Settings::Player, "USEAA"s, AAfactor > 1.0f, !saveAll);
+   settings.SaveValue(Settings::Player, "AAFactor"s, AAfactor, !saveAll);
    LRESULT MSAASamplesIndex = SendMessage(GetDlgItem(IDC_MSAA_COMBO).GetHwnd(), CB_GETCURSEL, 0, 0);
    if (MSAASamplesIndex == LB_ERR)
       MSAASamplesIndex = 0;
    const int MSAASamples = (MSAASamplesIndex < MSAASampleCount) ? MSAASamplesOpts[MSAASamplesIndex] : 1;
-   SaveOrDelete(saveAll, "MSAASamples"s, MSAASamples, 1);
-   SaveOrDelete(saveAll, "DynamicDayNight"s, SendMessage(GetDlgItem(IDC_DYNAMIC_DN).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED, false);
+   settings.SaveValue(Settings::Player, "MSAASamples"s, MSAASamples, !saveAll);
+   settings.SaveValue(Settings::Player, "DynamicDayNight"s, SendMessage(GetDlgItem(IDC_DYNAMIC_DN).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED, !saveAll);
    LRESULT maxAOMode = SendMessage(GetDlgItem(IDC_MAX_AO_COMBO).GetHwnd(), CB_GETCURSEL, 0, 0);
    if (maxAOMode == LB_ERR)
       maxAOMode = 2;
-   SaveOrDelete(saveAll, "DisableAO"s, maxAOMode == 0, false);
-   SaveOrDelete(saveAll, "DynamicAO"s, maxAOMode == 2, true);
+   settings.SaveValue(Settings::Player, "DisableAO"s, maxAOMode == 0, !saveAll);
+   settings.SaveValue(Settings::Player, "DynamicAO"s, maxAOMode == 2, !saveAll);
    LRESULT maxReflectionMode = SendMessage(GetDlgItem(IDC_MAX_REFLECTION_COMBO).GetHwnd(), CB_GETCURSEL, 0, 0);
    if (maxReflectionMode == LB_ERR)
       maxReflectionMode = RenderProbe::REFL_STATIC;
-   SaveOrDelete(saveAll, "PFReflection"s, (int)maxReflectionMode, (int)RenderProbe::REFL_STATIC);
-   SaveOrDelete(saveAll, "SSRefl"s, SendMessage(GetDlgItem(IDC_GLOBAL_SSREFLECTION_CHECK).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED, false);
-   SaveOrDelete(saveAll, "ForceAnisotropicFiltering"s, SendMessage(GetDlgItem(IDC_FORCE_ANISO).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED, true);
-   SaveOrDelete(saveAll, "CompressTextures"s, SendMessage(GetDlgItem(IDC_TEX_COMPRESS).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED, false);
-   SaveOrDelete(saveAll, "SoftwareVertexProcessing"s, SendMessage(GetDlgItem(IDC_SOFTWARE_VP).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED, false);
-   SaveOrDelete(saveAll, "AlphaRampAccuracy"s, (int)SendMessage(GetDlgItem(IDC_ARASlider).GetHwnd(), TBM_GETPOS, 0, 0), 0);
+   settings.SaveValue(Settings::Player, "PFReflection"s, (int)maxReflectionMode, !saveAll);
+   settings.SaveValue(Settings::Player, "SSRefl"s, SendMessage(GetDlgItem(IDC_GLOBAL_SSREFLECTION_CHECK).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED, !saveAll);
+   settings.SaveValue(Settings::Player, "ForceAnisotropicFiltering"s, SendMessage(GetDlgItem(IDC_FORCE_ANISO).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED, !saveAll);
+   settings.SaveValue(Settings::Player, "CompressTextures"s, SendMessage(GetDlgItem(IDC_TEX_COMPRESS).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED, !saveAll);
+   settings.SaveValue(Settings::Player, "SoftwareVertexProcessing"s, SendMessage(GetDlgItem(IDC_SOFTWARE_VP).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED, !saveAll);
+   settings.SaveValue(Settings::Player, "AlphaRampAccuracy"s, (int)SendMessage(GetDlgItem(IDC_ARASlider).GetHwnd(), TBM_GETPOS, 0, 0), !saveAll);
    LRESULT stereo3D = SendMessage(GetDlgItem(IDC_3D_STEREO).GetHwnd(), CB_GETCURSEL, 0, 0);
    if (stereo3D == LB_ERR)
       stereo3D = STEREO_OFF;
-   SaveOrDelete(saveAll, "Stereo3D"s, (int)stereo3D, 0);
-   SaveOrDelete(saveAll, "Stereo3DEnabled"s, stereo3D != STEREO_OFF, false);
-   SaveOrDelete(saveAll, "Stereo3DYAxis"s, SendMessage(GetDlgItem(IDC_3D_STEREO_Y).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED, false);
-   SaveOrDelete(saveAll, "Stereo3DOffset"s, GetDlgItemText(IDC_3D_STEREO_OFS).GetString(), "0.0"s);
+   settings.SaveValue(Settings::Player, "Stereo3D"s, (int)stereo3D, !saveAll);
+   settings.SaveValue(Settings::Player, "Stereo3DEnabled"s, stereo3D != STEREO_OFF, !saveAll);
+   settings.SaveValue(Settings::Player, "Stereo3DYAxis"s, SendMessage(GetDlgItem(IDC_3D_STEREO_Y).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED, !saveAll);
+   settings.SaveValue(Settings::Player, "Stereo3DOffset"s, GetDlgItemText(IDC_3D_STEREO_OFS).GetString(), !saveAll);
    bool fakeStereo = true;
    #ifdef ENABLE_SDL
-   SaveOrDelete(saveAll, "Stereo3DFake"s, SendDlgItemMessage(IDC_FAKE_STEREO, BM_GETCHECK, 0, 0) == BST_CHECKED, false);
+   settings.SaveValue(Settings::Player, "Stereo3DFake"s, SendDlgItemMessage(IDC_FAKE_STEREO, BM_GETCHECK, 0, 0) == BST_CHECKED, !saveAll);
    #endif
-   SaveOrDelete(saveAll, "Stereo3DMaxSeparation"s, GetDlgItemText(IDC_3D_STEREO_MS).GetString(), "0.0"s);
-   SaveOrDelete(saveAll, "Stereo3DEyeSeparation"s, GetDlgItemText(IDC_3D_STEREO_ES).GetString(), "0.0"s);
-   SaveOrDelete(saveAll, "Stereo3DZPD"s, GetDlgItemText(IDC_3D_STEREO_ZPD).GetString(), "0.0"s);
-   SaveOrDelete(saveAll, "Stereo3DBrightness"s, GetDlgItemText(IDC_3D_STEREO_BRIGHTNESS).GetString(), "0.0"s);
-   SaveOrDelete(saveAll, "Stereo3DSaturation"s, GetDlgItemText(IDC_3D_STEREO_DESATURATION).GetString(), "0.0"s);
+   settings.SaveValue(Settings::Player, "Stereo3DMaxSeparation"s, GetDlgItemText(IDC_3D_STEREO_MS).GetString(), !saveAll);
+   settings.SaveValue(Settings::Player, "Stereo3DEyeSeparation"s, GetDlgItemText(IDC_3D_STEREO_ES).GetString(), !saveAll);
+   settings.SaveValue(Settings::Player, "Stereo3DZPD"s, GetDlgItemText(IDC_3D_STEREO_ZPD).GetString(), !saveAll);
+   settings.SaveValue(Settings::Player, "Stereo3DBrightness"s, GetDlgItemText(IDC_3D_STEREO_BRIGHTNESS).GetString(), !saveAll);
+   settings.SaveValue(Settings::Player, "Stereo3DSaturation"s, GetDlgItemText(IDC_3D_STEREO_DESATURATION).GetString(), !saveAll);
    if (IsAnaglyphStereoMode(stereo3D))
    {
       LRESULT glassesIndex = stereo3D - STEREO_ANAGLYPH_1;
       LRESULT anaglyphFilter = SendMessage(GetDlgItem(IDC_3D_STEREO_ANAGLYPH_FILTER).GetHwnd(), CB_GETCURSEL, 0, 0);
       if (anaglyphFilter == LB_ERR)
          anaglyphFilter = 4;
-      SaveOrDelete(saveAll, "Anaglyph"s.append(std::to_string(glassesIndex + 1)).append("Filter"s), (int)anaglyphFilter, 4);
+      settings.SaveValue(Settings::Player, "Anaglyph"s.append(std::to_string(glassesIndex + 1)).append("Filter"s), (int)anaglyphFilter, !saveAll);
    }
-   SaveOrDelete(saveAll, "BAMheadTracking"s, SendMessage(GetDlgItem(IDC_HEADTRACKING).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED, false);
-   SaveOrDelete(saveAll, "DisableDWM"s, SendMessage(GetDlgItem(IDC_DISABLE_DWM).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED, false);
-   SaveOrDelete(saveAll, "UseNVidiaAPI"s, SendMessage(GetDlgItem(IDC_USE_NVIDIA_API_CHECK).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED, false);
-   SaveOrDelete(saveAll, "ForceBloomOff"s, SendMessage(GetDlgItem(IDC_BLOOM_OFF).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED, false);
+   settings.SaveValue(Settings::Player, "BAMheadTracking"s, SendMessage(GetDlgItem(IDC_HEADTRACKING).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED, !saveAll);
+   settings.SaveValue(Settings::Player, "DisableDWM"s, SendMessage(GetDlgItem(IDC_DISABLE_DWM).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED, !saveAll);
+   settings.SaveValue(Settings::Player, "UseNVidiaAPI"s, SendMessage(GetDlgItem(IDC_USE_NVIDIA_API_CHECK).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED, !saveAll);
+   settings.SaveValue(Settings::Player, "ForceBloomOff"s, SendMessage(GetDlgItem(IDC_BLOOM_OFF).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED, !saveAll);
    const int ballStretchMode = SendMessage(GetDlgItem(IDC_StretchYes).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED ? 1
             : SendMessage(GetDlgItem(IDC_StretchMonitor).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED              ? 2
                                                                                                                    : 0;
-   SaveOrDelete(saveAll, "BallStretchMode"s, ballStretchMode, 0);
+   settings.SaveValue(Settings::Player, "BallStretchMode"s, ballStretchMode, !saveAll);
    const bool overwriteEnabled = IsDlgButtonChecked(IDC_OVERWRITE_BALL_IMAGE_CHECK) == BST_CHECKED;
-   SaveOrDelete(saveAll, "OverwriteBallImage"s, overwriteEnabled, true);
+   settings.SaveValue(Settings::Player, "OverwriteBallImage"s, overwriteEnabled, !saveAll);
    if (overwriteEnabled)
    {
-      SaveOrDelete(saveAll, "BallImage"s, GetDlgItemText(IDC_BALL_IMAGE_EDIT).GetString(), ""s);
-      SaveOrDelete(saveAll, "DecalImage"s, GetDlgItemText(IDC_BALL_IMAGE_EDIT).GetString(), ""s);
+      settings.SaveValue(Settings::Player, "BallImage"s, GetDlgItemText(IDC_BALL_IMAGE_EDIT).GetString(), !saveAll);
+      settings.SaveValue(Settings::Player, "DecalImage"s, GetDlgItemText(IDC_BALL_IMAGE_EDIT).GetString(), !saveAll);
    }
    else if (!saveAll)
    {

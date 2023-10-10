@@ -5,6 +5,7 @@
 // This class holds the settings registry.
 // A setting registry can have a parent, in which case, missing settings will be looked for in the parent.
 // This is used to allow overriding part of the settings while still using the base application value.
+// When saving value, an 'override mode' can be used where the value will be saved only if it not the same as the one in the parent.
 class Settings final
 {
 public:
@@ -25,6 +26,7 @@ public:
       RecentDir,
       Version,
       CVEdit,
+      TableOverride,
 
       // Optional user defaults for each element
       DefaultPropsBumper,
@@ -68,11 +70,11 @@ public:
    bool LoadValueWithDefault(const Section section, const string &key, const bool def) const;
    string LoadValueWithDefault(const Section section, const string &key, const string &def) const;
 
-   bool SaveValue(const Section section, const string &key, const char *val);
-   bool SaveValue(const Section section, const string &key, const string &val);
-   bool SaveValue(const Section section, const string &key, const float val);
-   bool SaveValue(const Section section, const string &key, const int val);
-   bool SaveValue(const Section section, const string &key, const bool val);
+   bool SaveValue(const Section section, const string &key, const char *val, const bool overrideMode = false);
+   bool SaveValue(const Section section, const string &key, const string &val, const bool overrideMode = false);
+   bool SaveValue(const Section section, const string &key, const float val, const bool overrideMode = false);
+   bool SaveValue(const Section section, const string &key, const int val, const bool overrideMode = false);
+   bool SaveValue(const Section section, const string &key, const bool val, const bool overrideMode = false);
 
    bool DeleteValue(const Section section, const string &key, const bool& deleteFromParent = false);
    bool DeleteSubKey(const Section section, const bool &deleteFromParent = false);
@@ -85,9 +87,9 @@ private:
       DT_ERROR
    };
 
-   bool LoadValue(const Section section, const string &key, DataType &type, void *pvalue, const DWORD size) const;
-   bool SaveValue(const Section section, const string &key, const DataType type, const void *pvalue, const DWORD size);
-
+   bool LoadValue(const Section section, const string &key, DataType &type, void *pvalue, DWORD size) const;
+   bool SaveValue(const Section section, const string &key, const DataType type, const void *pvalue, const DWORD size, const bool overrideMode);
+   
    string m_iniPath;
    mINI::INIStructure m_ini;
    const Settings *m_parent;
