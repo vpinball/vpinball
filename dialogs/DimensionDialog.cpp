@@ -44,7 +44,7 @@ static const ManufacturerDimensions dimTable[DIM_TABLE_SIZE] =
    { "BSD Dracula (1993)"s, 20.5f, 45.0f }, //!! chepas claims its 20.5 (by pics/compared to TAF), OPA 20.25
    { "Doctor Who (1992)"s, 20.25f, 45.0625f },
    { "Future Spa (1979)"s, 26.7717f, 40.55118f },
-   { "Guns N' Roses (1994)"s, 25.0f, 51.75f },
+   { "Guns N' Roses (1994)"s, 23.0f, 46.0f }, // Niwak: changed to 23"x46" after checking from multiple sources and hirez playfield scan (was 25"x51"75)
    { "Hercules (1979 Atari)"s, 36.0f, 72.0f },
    { "Mystery Castle (1993 Alvin G)"s, 20.25f, 46.0f },
    // Playboy does not have standard size, so around 20.25f, 42.0f ???
@@ -92,6 +92,26 @@ BOOL DimensionDialog::OnInitDialog()
       sprintf_s(textBuf, sizeof(textBuf), "%.03f", dimTable[i].height);
       ListView_SetItemText(listHwnd, i, 2, textBuf);
    }
+   
+   CComObject<PinTable> * const pt = g_pvp->GetActiveTable();
+   if (pt)
+   {
+      char textBuf[MAXNAMEBUFFER];
+      const float width = pt->m_right - pt->m_left;
+      const float height = pt->m_bottom - pt->m_top;
+      const int width = (int)(width + 0.5f);
+      const int height = (int)(height + 0.5f);
+      SetDlgItemText(IDC_VP_WIDTH, std::to_string(width).c_str());
+      SetDlgItemText(IDC_VP_HEIGHT, std::to_string(height).c_str());
+      sprintf_s(textBuf, sizeof(textBuf), "%.03f", VPUTOINCHES(width));
+      SetDlgItemText(IDC_SIZE_WIDTH, textBuf);
+      sprintf_s(textBuf, sizeof(textBuf), "%.03f", VPUTOINCHES(height));
+      SetDlgItemText(IDC_SIZE_HEIGHT, textBuf);
+      float ratio = (float)height / width;
+      sprintf_s(textBuf, sizeof(textBuf), "%.04f", ratio);
+      SetDlgItemText(IDC_ASPECT_RATIO_EDIT, textBuf);
+   }
+
    return TRUE;
 }
 
@@ -111,8 +131,8 @@ INT_PTR DimensionDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                if (idx >= DIM_TABLE_SIZE || idx < 0)
                   break;
 
-               const int width = (int)(dimTable[idx].width*47.0f + 0.5f);
-               const int height = (int)(dimTable[idx].height*47.0f + 0.5f);
+               const int width = (int)(INCHESTOVPU(dimTable[idx].width) + 0.5f);
+               const int height = (int)(INCHESTOVPU(dimTable[idx].height) + 0.5f);
                SetDlgItemText(IDC_VP_WIDTH, std::to_string(width).c_str());
                SetDlgItemText(IDC_VP_HEIGHT, std::to_string(height).c_str());
                char textBuf[MAXNAMEBUFFER];
@@ -142,7 +162,7 @@ INT_PTR DimensionDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                   ret = sscanf_s(GetDlgItemText(IDC_SIZE_WIDTH).c_str(), "%f", &sizeWidth);
                   if (ret != 1 || sizeWidth < 0.0f)
                      sizeWidth = 0;
-                  const int width = (int)(sizeWidth*47.0f + 0.5f);
+                  const int width = (int)(INCHESTOVPU(sizeWidth) + 0.5f);
                   SetDlgItemText(IDC_VP_WIDTH, std::to_string(width).c_str());
                }
                if (LOWORD(wParam) == IDC_SIZE_HEIGHT)
@@ -150,7 +170,7 @@ INT_PTR DimensionDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                   ret = sscanf_s(GetDlgItemText(IDC_SIZE_HEIGHT).c_str(), "%f", &sizeHeight);
                   if (ret != 1 || sizeHeight < 0.0f)
                      sizeHeight = 0;
-                  const int height = (int)(sizeHeight*47.0f + 0.5f);
+                  const int height = (int)(INCHESTOVPU(sizeHeight) + 0.5f);
                   SetDlgItemText(IDC_VP_HEIGHT, std::to_string(height).c_str());
                }
                if (LOWORD(wParam) == IDC_VP_WIDTH)
@@ -158,7 +178,7 @@ INT_PTR DimensionDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                   ret = sscanf_s(GetDlgItemText(IDC_VP_WIDTH).c_str(), "%i", &vpWidth);
                   if (ret != 1 || vpWidth < 0)
                      vpWidth = 0;
-                  const float width = (float)vpWidth / 47.0f;
+                  const float width = (float)VPUTOINCHES(vpWidth);
                   char textBuf[MAXNAMEBUFFER];
                   sprintf_s(textBuf, sizeof(textBuf), "%.3f", width);
                   CString textStr2(textBuf);
@@ -169,7 +189,7 @@ INT_PTR DimensionDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                   ret = sscanf_s(GetDlgItemText(IDC_VP_HEIGHT).c_str(), "%i", &vpHeight);
                   if (ret != 1 || vpHeight < 0)
                      vpHeight = 0;
-                  const float height = (float)vpHeight / 47.0f;
+                  const float height = (float)VPUTOINCHES(vpHeight);
                   char textBuf[MAXNAMEBUFFER];
                   sprintf_s(textBuf, sizeof(textBuf), "%.03f", height);
                   CString textStr2(textBuf);
