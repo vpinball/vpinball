@@ -29,7 +29,7 @@ BOOL ScriptErrorDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 	{
 		case IDC_SCRIPT_CONTINUE:
 		{
-			shouldSuppressErrors = ::IsDlgButtonChecked(GetHwnd(), IDC_SUPPRESS_ERRORS_CHECK) == BST_CHECKED;
+			shouldSuppressErrors = IsDlgButtonChecked(IDC_SUPPRESS_ERRORS_CHECK) == BST_CHECKED;
 			Close();
 			return TRUE;
 		}

@@ -321,9 +321,9 @@ BOOL CollectionDialog::OnInitDialog()
 
     ::SetWindowText(GetDlgItem(IDC_NAME).GetHwnd(), szT);
 
-    ::SendMessage(GetDlgItem(IDC_FIRE).GetHwnd(), BM_SETCHECK, pcol->m_fireEvents ? BST_CHECKED : BST_UNCHECKED, 0);
-    ::SendMessage(GetDlgItem(IDC_SUPPRESS).GetHwnd(), BM_SETCHECK, pcol->m_stopSingleEvents ? BST_CHECKED : BST_UNCHECKED, 0);
-    ::SendMessage(GetDlgItem(IDC_GROUP_CHECK).GetHwnd(), BM_SETCHECK, pcol->m_groupElements ? BST_CHECKED : BST_UNCHECKED, 0);
+    SendDlgItemMessage(IDC_FIRE, BM_SETCHECK, pcol->m_fireEvents ? BST_CHECKED : BST_UNCHECKED, 0);
+    SendDlgItemMessage(IDC_SUPPRESS, BM_SETCHECK, pcol->m_stopSingleEvents ? BST_CHECKED : BST_UNCHECKED, 0);
+    SendDlgItemMessage(IDC_GROUP_CHECK, BM_SETCHECK, pcol->m_groupElements ? BST_CHECKED : BST_UNCHECKED, 0);
 
     const HWND hwndOut = GetDlgItem(IDC_OUTLIST).GetHwnd();
     const HWND hwndIn = GetDlgItem(IDC_INLIST).GetHwnd();

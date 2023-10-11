@@ -368,7 +368,7 @@ BOOL ToolbarDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             {
                 case BN_CLICKED:
                 {
-                    if (SendDlgItemMessage(id, BM_GETCHECK, 0, 0)==BST_UNCHECKED)
+                    if (IsDlgButtonChecked(id) == BST_UNCHECKED)
                         SendDlgItemMessage(id, BM_SETCHECK, BST_CHECKED, 0);
 
                     return TRUE;

@@ -451,7 +451,7 @@ void ImageDialog::Export()
             char g_filename[MAXSTRING];
             g_filename[0] = '\0';
 
-            const size_t renameOnExport = SendMessage(GetDlgItem(IDC_CHECK_RENAME_ON_EXPORT).GetHwnd(), BM_GETCHECK, 0, 0);
+            const size_t renameOnExport = IsDlgButtonChecked(IDC_CHECK_RENAME_ON_EXPORT);
 
             if (!renameOnExport)
             {

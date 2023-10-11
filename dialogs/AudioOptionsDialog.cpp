@@ -93,14 +93,14 @@ BOOL AudioOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
    }
    case IDC_PLAY_MUSIC:
    {
-      const size_t checked = SendDlgItemMessage(IDC_PLAY_MUSIC, BM_GETCHECK, 0, 0);
+      const size_t checked = IsDlgButtonChecked(IDC_PLAY_MUSIC);
       GetDlgItem(IDC_MUSIC_SLIDER).EnableWindow(checked == BST_CHECKED);
       GetDlgItem(IDC_STATIC_MUSIC).EnableWindow(checked == BST_CHECKED);
       break;
    }
    case IDC_PLAY_SOUND:
    {
-      const size_t checked = SendDlgItemMessage(IDC_PLAY_SOUND, BM_GETCHECK, 0, 0);
+      const size_t checked = IsDlgButtonChecked(IDC_PLAY_SOUND);
       GetDlgItem(IDC_SOUND_SLIDER).EnableWindow(checked == BST_CHECKED);
       GetDlgItem(IDC_STATIC_SOUND).EnableWindow(checked == BST_CHECKED);
       break;
@@ -113,13 +113,13 @@ BOOL AudioOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 
 void AudioOptionsDialog::OnOK()
 {
-   SaveSettings(SendDlgItemMessage(IDC_APPLICATION_SETTINGS, BM_GETCHECK, 0, 0) == BST_CHECKED);
+   SaveSettings(IsDlgButtonChecked(IDC_APPLICATION_SETTINGS) == BST_CHECKED);
    CDialog::OnOK();
 }
 
 Settings& AudioOptionsDialog::GetEditedSettings()
 {
-   if (g_pvp->m_ptableActive && SendDlgItemMessage(IDC_TABLE_OVERRIDE, BM_GETCHECK, 0, 0) == BST_CHECKED)
+   if (g_pvp->m_ptableActive && IsDlgButtonChecked(IDC_TABLE_OVERRIDE) == BST_CHECKED)
       return g_pvp->m_ptableActive->m_settings;
    SendDlgItemMessage(IDC_APPLICATION_SETTINGS, BM_SETCHECK, BST_CHECKED, 0);
    return g_pvp->m_settings;
@@ -159,22 +159,22 @@ void AudioOptionsDialog::SaveSettings(const bool saveAll)
 {
    Settings& settings = GetEditedSettings();
 
-   size_t checked = SendDlgItemMessage(IDC_PLAY_MUSIC, BM_GETCHECK, 0, 0);
+   size_t checked = IsDlgButtonChecked(IDC_PLAY_MUSIC);
    settings.SaveValue(Settings::Player, "PlayMusic"s, checked == BST_CHECKED, !saveAll);
 
-   checked = SendDlgItemMessage(IDC_PLAY_SOUND, BM_GETCHECK, 0, 0);
+   checked = IsDlgButtonChecked(IDC_PLAY_SOUND);
    settings.SaveValue(Settings::Player, "PlaySound"s, (checked == BST_CHECKED), !saveAll);
 
    int fmusic = SNDCFG_SND3D2CH;
-   if (SendDlgItemMessage(IDC_RADIO_SND3DALLREAR, BM_GETCHECK, 0, 0) == BST_CHECKED)
+   if (IsDlgButtonChecked(IDC_RADIO_SND3DALLREAR) == BST_CHECKED)
 	   fmusic = SNDCFG_SND3DALLREAR;
-   if (SendDlgItemMessage(IDC_RADIO_SND3DFRONTISFRONT, BM_GETCHECK, 0, 0) == BST_CHECKED)
+   if (IsDlgButtonChecked(IDC_RADIO_SND3DFRONTISFRONT) == BST_CHECKED)
 	   fmusic = SNDCFG_SND3DFRONTISFRONT;
-   if (SendDlgItemMessage(IDC_RADIO_SND3DFRONTISREAR, BM_GETCHECK, 0, 0) == BST_CHECKED)
+   if (IsDlgButtonChecked(IDC_RADIO_SND3DFRONTISREAR) == BST_CHECKED)
 	   fmusic = SNDCFG_SND3DFRONTISREAR;
-   if (SendDlgItemMessage(IDC_RADIO_SND3D6CH, BM_GETCHECK, 0, 0) == BST_CHECKED)
+   if (IsDlgButtonChecked(IDC_RADIO_SND3D6CH) == BST_CHECKED)
 	   fmusic = SNDCFG_SND3D6CH;
-   if (SendDlgItemMessage(IDC_RADIO_SND3DSSF, BM_GETCHECK, 0, 0) == BST_CHECKED)
+   if (IsDlgButtonChecked(IDC_RADIO_SND3DSSF) == BST_CHECKED)
 	   fmusic = SNDCFG_SND3DSSF;
    settings.SaveValue(Settings::Player, "Sound3D"s, fmusic, !saveAll);
 

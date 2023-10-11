@@ -174,7 +174,7 @@ INT_PTR RenderProbeDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 void RenderProbeDialog::LoadProbeToUI(RenderProbe *const pb)
 {
    GetDlgItem(IDC_RENDER_PROBE_NAME_LABEL).SetWindowText(pb->GetName().c_str());
-   SendMessage(GetDlgItem(IDC_REFLECTION_MAX_LEVEL).GetHwnd(), CB_SETCURSEL, pb->GetReflectionMode(), 0);
+   SendDlgItemMessage(IDC_REFLECTION_MAX_LEVEL, CB_SETCURSEL, pb->GetReflectionMode(), 0);
    RenderProbe::ProbeType type = pb->GetType();
    CheckRadioButton(IDC_REFLECTION_PROBE, IDC_REFRACTION_PROBE, type == RenderProbe::PLANE_REFLECTION ? IDC_REFLECTION_PROBE : IDC_REFRACTION_PROBE);
    vec4 plane;
@@ -202,7 +202,7 @@ void RenderProbeDialog::LoadProbeToUI(RenderProbe *const pb)
 
 void RenderProbeDialog::SaveProbeFromUI(RenderProbe *const pb)
 {
-   const size_t isReflection = SendMessage(GetDlgItem(IDC_REFLECTION_PROBE).GetHwnd(), BM_GETCHECK, 0, 0);
+   const size_t isReflection = IsDlgButtonChecked(IDC_REFLECTION_PROBE);
    RenderProbe::ProbeType type = isReflection ? RenderProbe::PLANE_REFLECTION : RenderProbe::SCREEN_SPACE_TRANSPARENCY;
    vec4 plane;
    pb->GetReflectionPlane(plane);
@@ -210,10 +210,10 @@ void RenderProbeDialog::SaveProbeFromUI(RenderProbe *const pb)
    const float vy = sz2f(GetDlgItemText(IDC_REFLECTION_PLANE_NY).c_str());
    const float vz = sz2f(GetDlgItemText(IDC_REFLECTION_PLANE_NZ).c_str());
    const float vw = sz2f(GetDlgItemText(IDC_REFLECTION_PLANE_DIST).c_str());
-   LRESULT reflectionMode = SendMessage(GetDlgItem(IDC_REFLECTION_MAX_LEVEL).GetHwnd(), CB_GETCURSEL, 0, 0);
+   LRESULT reflectionMode = SendDlgItemMessage(IDC_REFLECTION_MAX_LEVEL, CB_GETCURSEL, 0, 0);
    if (reflectionMode == LB_ERR)
       reflectionMode = RenderProbe::REFL_STATIC;
-   const size_t roughness = SendMessage(GetDlgItem(IDC_ROUGHNESS).GetHwnd(), TBM_GETPOS, 0, 0);
+   const size_t roughness = SendDlgItemMessage(IDC_ROUGHNESS, TBM_GETPOS, 0, 0);
    pb->SetReflectionNoLightmaps(IsDlgButtonChecked(IDC_REFLECTION_NO_LIGHTMAPS) == BST_CHECKED);
 
    if (pb->GetType() != type || pb->GetReflectionMode() != reflectionMode || plane.x != vx || plane.y != vy || plane.z != vz || plane.w != vw || roughness != pb->GetRoughness())
