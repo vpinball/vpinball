@@ -53,11 +53,11 @@ BOOL EditorOptionsDialog::OnInitDialog()
 
     // drag points
     const bool fdrawpoints = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "ShowDragPoints"s, false);
-    SendMessage(GetDlgItem(IDC_DRAW_DRAGPOINTS).GetHwnd(), BM_SETCHECK, fdrawpoints ? BST_CHECKED : BST_UNCHECKED, 0);
+    SendDlgItemMessage(IDC_DRAW_DRAGPOINTS, BM_SETCHECK, fdrawpoints ? BST_CHECKED : BST_UNCHECKED, 0);
 
     // light centers
     const bool fdrawcenters = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "DrawLightCenters"s, false);
-    SendMessage(GetDlgItem(IDC_DRAW_LIGHTCENTERS).GetHwnd(), BM_SETCHECK, fdrawcenters ? BST_CHECKED : BST_UNCHECKED, 0);
+    SendDlgItemMessage(IDC_DRAW_LIGHTCENTERS, BM_SETCHECK, fdrawcenters ? BST_CHECKED : BST_UNCHECKED, 0);
 
     const bool fautosave = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "AutoSaveOn"s, true);
     SendDlgItemMessage(IDC_AUTOSAVE, BM_SETCHECK, fautosave ? BST_CHECKED : BST_UNCHECKED, 0);
@@ -93,10 +93,10 @@ BOOL EditorOptionsDialog::OnInitDialog()
     SetDlgItemText(IDC_THROW_BALLS_MASS_EDIT, f2sz(throwBallMass).c_str());
 
     const bool enableLog = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "EnableLog"s, false);
-    SendMessage(GetDlgItem(IDC_ENABLE_LOGGING).GetHwnd(), BM_SETCHECK, enableLog ? BST_CHECKED : BST_UNCHECKED, 0);
+    SendDlgItemMessage(IDC_ENABLE_LOGGING, BM_SETCHECK, enableLog ? BST_CHECKED : BST_UNCHECKED, 0);
 
     const bool logScript = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "LogScriptOutput"s, false);
-    SendMessage(GetDlgItem(IDC_ENABLE_SCRIPT_LOGGING).GetHwnd(), BM_SETCHECK, logScript ? BST_CHECKED : BST_UNCHECKED, 0);
+    SendDlgItemMessage(IDC_ENABLE_SCRIPT_LOGGING, BM_SETCHECK, logScript ? BST_CHECKED : BST_UNCHECKED, 0);
 
     const int units = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "Units"s, 0);
     const HWND hwnd = GetDlgItem(IDC_UNIT_LIST_COMBO).GetHwnd();
@@ -199,8 +199,8 @@ BOOL EditorOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
        }
        case IDC_SET_DEFAULTS_BUTTON:
        {
-          SendMessage(GetDlgItem(IDC_DRAW_DRAGPOINTS).GetHwnd(), BM_SETCHECK, BST_UNCHECKED, 0);
-          SendMessage(GetDlgItem(IDC_DRAW_LIGHTCENTERS).GetHwnd(), BM_SETCHECK, BST_UNCHECKED, 0);
+          SendDlgItemMessage(IDC_DRAW_DRAGPOINTS, BM_SETCHECK, BST_UNCHECKED, 0);
+          SendDlgItemMessage(IDC_DRAW_LIGHTCENTERS, BM_SETCHECK, BST_UNCHECKED, 0);
           SendDlgItemMessage(IDC_AUTOSAVE, BM_SETCHECK, BST_CHECKED, 0);
           SetDlgItemInt(IDC_AUTOSAVE_MINUTES, AUTOSAVE_DEFAULT_TIME, FALSE);
           SetDlgItemInt(IDC_GRID_SIZE, 50, FALSE);
@@ -211,10 +211,10 @@ BOOL EditorOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
           SetDlgItemInt(IDC_THROW_BALLS_SIZE_EDIT, 50, FALSE);
           SendDlgItemMessage(IDC_START_VP_FILE_DIALOG, BM_SETCHECK, BST_CHECKED, 0);
           SendDlgItemMessage(IDC_START_VP_FILE_DIALOG2, BM_SETCHECK, BST_CHECKED, 0);
-          SendMessage(GetDlgItem(IDC_UNIT_LIST_COMBO).GetHwnd(), CB_SETCURSEL, 0, 0);
+          SendDlgItemMessage(IDC_UNIT_LIST_COMBO, CB_SETCURSEL, 0, 0);
           SetDlgItemText(IDC_THROW_BALLS_MASS_EDIT, "1.0");
-          SendMessage(GetDlgItem(IDC_ENABLE_LOGGING).GetHwnd(), BM_SETCHECK, BST_UNCHECKED, 0);
-          SendMessage(GetDlgItem(IDC_ENABLE_SCRIPT_LOGGING).GetHwnd(), BM_SETCHECK, BST_CHECKED, 0);
+          SendDlgItemMessage(IDC_ENABLE_LOGGING, BM_SETCHECK, BST_UNCHECKED, 0);
+          SendDlgItemMessage(IDC_ENABLE_SCRIPT_LOGGING, BM_SETCHECK, BST_CHECKED, 0);
           constexpr int x = 0;
           constexpr int y = 0;
           g_pvp->m_settings.SaveValue(Settings::Editor, "CodeViewPosX"s, x);
@@ -277,15 +277,15 @@ void EditorOptionsDialog::OnOK()
     BOOL nothing=0;
 
     // drag points
-    checked = (SendDlgItemMessage(IDC_DRAW_DRAGPOINTS, BM_GETCHECK, 0, 0) == BST_CHECKED);
+    checked = (IsDlgButtonChecked(IDC_DRAW_DRAGPOINTS) == BST_CHECKED);
     g_pvp->m_settings.SaveValue(Settings::Editor, "ShowDragPoints"s, checked);
 
     // light centers
-    checked = (SendDlgItemMessage(IDC_DRAW_LIGHTCENTERS, BM_GETCHECK, 0, 0) == BST_CHECKED);
+    checked = (IsDlgButtonChecked(IDC_DRAW_LIGHTCENTERS) == BST_CHECKED);
     g_pvp->m_settings.SaveValue(Settings::Editor, "DrawLightCenters"s, checked);
 
     // auto save
-    const bool autosave = (SendDlgItemMessage(IDC_AUTOSAVE, BM_GETCHECK, 0, 0) == BST_CHECKED);
+    const bool autosave = (IsDlgButtonChecked(IDC_AUTOSAVE) == BST_CHECKED);
     g_pvp->m_settings.SaveValue(Settings::Editor, "AutoSaveOn"s, autosave);
 
     const int autosavetime = GetDlgItemInt(IDC_AUTOSAVE_MINUTES, nothing, FALSE);
@@ -294,10 +294,10 @@ void EditorOptionsDialog::OnOK()
     const int gridsize = GetDlgItemInt(IDC_GRID_SIZE, nothing, FALSE);
     g_pvp->m_settings.SaveValue(Settings::Editor, "GridSize"s, gridsize);
 
-    checked = (SendDlgItemMessage(IDC_THROW_BALLS_ALWAYS_ON_CHECK, BM_GETCHECK, 0, 0) == BST_CHECKED);
+    checked = (IsDlgButtonChecked(IDC_THROW_BALLS_ALWAYS_ON_CHECK) == BST_CHECKED);
     g_pvp->m_settings.SaveValue(Settings::Editor, "ThrowBallsAlwaysOn"s, checked);
 
-    checked = (SendDlgItemMessage(IDC_BALL_CONTROL_ALWAYS_ON_CHECK, BM_GETCHECK, 0, 0) == BST_CHECKED);
+    checked = (IsDlgButtonChecked(IDC_BALL_CONTROL_ALWAYS_ON_CHECK) == BST_CHECKED);
     g_pvp->m_settings.SaveValue(Settings::Editor, "BallControlAlwaysOn"s, checked);
 
     const int ballSize = GetDlgItemInt(IDC_THROW_BALLS_SIZE_EDIT, nothing, FALSE);
@@ -306,17 +306,17 @@ void EditorOptionsDialog::OnOK()
     const float fv = sz2f(GetDlgItemText(IDC_THROW_BALLS_MASS_EDIT).c_str());
     g_pvp->m_settings.SaveValue(Settings::Editor, "ThrowBallMass"s, fv);
 
-    checked = (SendDlgItemMessage(IDC_DEFAULT_GROUP_COLLECTION_CHECK, BM_GETCHECK, 0, 0) == BST_CHECKED);
+    checked = (IsDlgButtonChecked(IDC_DEFAULT_GROUP_COLLECTION_CHECK) == BST_CHECKED);
     g_pvp->m_settings.SaveValue(Settings::Editor, "GroupElementsInCollection"s, checked);
 
-    checked = (SendDlgItemMessage(IDC_ALWAYSVIEWSCRIPT, BM_GETCHECK, 0, 0) == BST_CHECKED);
+    checked = (IsDlgButtonChecked(IDC_ALWAYSVIEWSCRIPT) == BST_CHECKED);
     g_pvp->m_settings.SaveValue(Settings::Editor, "AlwaysViewScript"s, checked);
 
-    checked = (SendDlgItemMessage(IDC_ENABLE_LOGGING, BM_GETCHECK, 0, 0) == BST_CHECKED);
+    checked = (IsDlgButtonChecked(IDC_ENABLE_LOGGING) == BST_CHECKED);
     g_pvp->m_settings.SaveValue(Settings::Editor, "EnableLog"s, checked);
     SetupLogger(checked);
 
-    checked = (SendDlgItemMessage(IDC_ENABLE_SCRIPT_LOGGING, BM_GETCHECK, 0, 0) == BST_CHECKED);
+    checked = (IsDlgButtonChecked(IDC_ENABLE_SCRIPT_LOGGING) == BST_CHECKED);
     g_pvp->m_settings.SaveValue(Settings::Editor, "LogScriptOutput"s, checked);
 
     // Go through and reset the autosave time on all the tables
@@ -334,13 +334,13 @@ void EditorOptionsDialog::OnOK()
     g_pvp->m_settings.SaveValue(Settings::Editor, "BackgroundColor"s, (int)g_pvp->m_backgroundColor);
     g_pvp->m_settings.SaveValue(Settings::Editor, "FillColor"s, (int)g_pvp->m_fillColor);
 
-    checked = (SendDlgItemMessage(IDC_START_VP_FILE_DIALOG, BM_GETCHECK, 0, 0) == BST_CHECKED);
+    checked = (IsDlgButtonChecked(IDC_START_VP_FILE_DIALOG) == BST_CHECKED);
     g_pvp->m_settings.SaveValue(Settings::Editor, "SelectTableOnStart"s, checked);
 
-    checked = (SendDlgItemMessage(IDC_START_VP_FILE_DIALOG2, BM_GETCHECK, 0, 0) == BST_CHECKED);
+    checked = (IsDlgButtonChecked(IDC_START_VP_FILE_DIALOG2) == BST_CHECKED);
     g_pvp->m_settings.SaveValue(Settings::Editor, "SelectTableOnPlayerClose"s, checked);
 
-    LRESULT units = SendMessage(GetDlgItem(IDC_UNIT_LIST_COMBO).GetHwnd(), CB_GETCURSEL, 0, 0);
+    LRESULT units = SendDlgItemMessage(IDC_UNIT_LIST_COMBO, CB_GETCURSEL, 0, 0);
     if (units == LB_ERR)
         units = 0;
     g_pvp->m_settings.SaveValue(Settings::Editor, "Units"s, (int)units);

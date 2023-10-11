@@ -296,19 +296,19 @@ void KeysConfigDialog::AddToolTip(char *text, HWND parentHwnd, HWND toolTipHwnd,
 BOOL KeysConfigDialog::OnInitDialog()
 {
     bool on = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "PBWDefaultLayout"s, false);
-    ::SendMessage(GetDlgItem(IDC_DefaultLayout).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
+    SendDlgItemMessage(IDC_DefaultLayout, BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
     on = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "DisableESC"s, false);
-    ::SendMessage(GetDlgItem(IDC_DisableESC_CB).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
+    SendDlgItemMessage(IDC_DisableESC_CB, BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
     on = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "PBWRotationCB"s, false);
-    ::SendMessage(GetDlgItem(IDC_CBGLOBALROTATION).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
+    SendDlgItemMessage(IDC_CBGLOBALROTATION, BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
     int key = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "PBWRotationValue"s, 0);
     SetDlgItemInt( IDC_GLOBALROTATION, key, FALSE);
 
     on = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "TiltSensCB"s, false);
-    ::SendMessage(GetDlgItem(IDC_CBGLOBALTILT).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
+    SendDlgItemMessage(IDC_CBGLOBALTILT, BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
     key = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "TiltSensValue"s, 400);
     SetDlgItemInt( IDC_GLOBALTILT, key, FALSE);
@@ -317,22 +317,22 @@ BOOL KeysConfigDialog::OnInitDialog()
     SetDlgItemInt( IDC_DEADZONEAMT, key, FALSE);
 
     on = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "PBWEnabled"s, false);
-    ::SendMessage(GetDlgItem(IDC_GLOBALACCEL).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
+    SendDlgItemMessage(IDC_GLOBALACCEL, BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
     on = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "PBWNormalMount"s, false);
-    ::SendMessage(GetDlgItem(IDC_GLOBALNMOUNT).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
+    SendDlgItemMessage(IDC_GLOBALNMOUNT, BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
     on = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "ReversePlungerAxis"s, false);
-    ::SendMessage(GetDlgItem(IDC_ReversePlunger).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
+    SendDlgItemMessage(IDC_ReversePlunger, BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
     on = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "PlungerRetract"s, false);
-    ::SendMessage(GetDlgItem(IDC_PLUNGERRETRACT).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
+    SendDlgItemMessage(IDC_PLUNGERRETRACT, BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
     on = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "LRAxisFlip"s, false);
-    ::SendMessage(GetDlgItem(IDC_LRAXISFLIP).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
+    SendDlgItemMessage(IDC_LRAXISFLIP, BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
     on = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "UDAxisFlip"s, false);
-    ::SendMessage(GetDlgItem(IDC_UDAXISFLIP).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
+    SendDlgItemMessage(IDC_UDAXISFLIP, BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
     key = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "PBWAccelGainX"s, 150);
     SetDlgItemInt( IDC_LRAXISGAIN, key, FALSE);
@@ -347,16 +347,16 @@ BOOL KeysConfigDialog::OnInitDialog()
     SetDlgItemInt( IDC_YMAX_EDIT, key, FALSE);
 
     on = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "EnableMouseInPlayer"s, true);
-    ::SendMessage(GetDlgItem(IDC_ENABLE_MOUSE_PLAYER).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
+    SendDlgItemMessage(IDC_ENABLE_MOUSE_PLAYER, BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
     on = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "EnableCameraModeFlyAround"s, false);
-    ::SendMessage(GetDlgItem(IDC_ENABLE_CAMERA_FLY_AROUND).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
+    SendDlgItemMessage(IDC_ENABLE_CAMERA_FLY_AROUND, BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
     on = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "EnableNudgeFilter"s, false);
-    ::SendMessage(GetDlgItem(IDC_ENABLE_NUDGE_FILTER).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
+    SendDlgItemMessage(IDC_ENABLE_NUDGE_FILTER, BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
     on = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "EnableLegacyNudge"s, false);
-    ::SendMessage(GetDlgItem(IDC_ENABLE_LEGACY_NUDGE).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
+    SendDlgItemMessage(IDC_ENABLE_LEGACY_NUDGE, BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
     const float legacyNudgeStrength = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "LegacyNudgeStrength"s, 1.f);
     SetDlgItemInt(IDC_LEGACY_NUDGE_STRENGTH, quantizeUnsignedPercent(legacyNudgeStrength), FALSE);
@@ -445,7 +445,7 @@ BOOL KeysConfigDialog::OnInitDialog()
     //
 
     on = g_pvp->m_settings.LoadValueWithDefault(Settings::Controller, "ForceDisableB2S"s, false);
-    ::SendMessage(GetDlgItem(IDC_DOF_FORCEDISABLE).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
+    SendDlgItemMessage(IDC_DOF_FORCEDISABLE, BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
     int selected = g_pvp->m_settings.LoadValueWithDefault(Settings::Controller, "DOFContactors"s, 2); // assume both as standard
     HWND hwnd = GetDlgItem(IDC_DOF_CONTACTORS).GetHwnd();
@@ -923,7 +923,7 @@ BOOL KeysConfigDialog::OnCommand(WPARAM wParam, LPARAM lParam)
     }//if (HIWORD(wParam) == BN_CLICKED)
 
     if (LOWORD(wParam) == IDC_COMBO_INPUT_API) {
-       const size_t inputApi = SendMessage(GetDlgItem(IDC_COMBO_INPUT_API).GetHwnd(), CB_GETCURSEL, 0, 0);
+       const size_t inputApi = SendDlgItemMessage(IDC_COMBO_INPUT_API, CB_GETCURSEL, 0, 0);
        GetDlgItem(IDC_COMBO_RUMBLE).EnableWindow(inputApi > 0);
     }
 
@@ -988,37 +988,37 @@ void KeysConfigDialog::OnOK()
     newvalue = clamp((int)GetDlgItemInt(IDC_YMAX_EDIT, nothing, TRUE), 0, 100);
     g_pvp->m_settings.SaveValue(Settings::Player, "PBWAccelMaxY"s, newvalue);
 
-    selected = ::SendMessage(GetDlgItem(IDC_DefaultLayout).GetHwnd(), BM_GETCHECK, 0, 0);
+    selected = IsDlgButtonChecked(IDC_DefaultLayout);
     g_pvp->m_settings.SaveValue(Settings::Player, "PBWDefaultLayout"s, selected != 0);
 
-    selected = ::SendMessage(GetDlgItem(IDC_DisableESC_CB).GetHwnd(), BM_GETCHECK, 0, 0);
+    selected = IsDlgButtonChecked(IDC_DisableESC_CB);
     g_pvp->m_settings.SaveValue(Settings::Player, "DisableESC"s, selected != 0);
 
-    selected = ::SendMessage(GetDlgItem(IDC_LRAXISFLIP).GetHwnd(), BM_GETCHECK, 0, 0);
+    selected = IsDlgButtonChecked(IDC_LRAXISFLIP);
     g_pvp->m_settings.SaveValue(Settings::Player, "LRAxisFlip"s, selected != 0);
 
-    selected = ::SendMessage(GetDlgItem(IDC_UDAXISFLIP).GetHwnd(), BM_GETCHECK, 0, 0);
+    selected = IsDlgButtonChecked(IDC_UDAXISFLIP);
     g_pvp->m_settings.SaveValue(Settings::Player, "UDAxisFlip"s, selected != 0);
 
-    selected = ::SendMessage(GetDlgItem(IDC_ReversePlunger).GetHwnd(), BM_GETCHECK, 0, 0);
+    selected = IsDlgButtonChecked(IDC_ReversePlunger);
     g_pvp->m_settings.SaveValue(Settings::Player, "ReversePlungerAxis"s, selected != 0);
 
-    selected = ::SendMessage(GetDlgItem(IDC_PLUNGERRETRACT).GetHwnd(), BM_GETCHECK, 0, 0);
+    selected = IsDlgButtonChecked(IDC_PLUNGERRETRACT);
     g_pvp->m_settings.SaveValue(Settings::Player, "PlungerRetract"s, selected != 0);
 
-    selected = ::SendMessage(GetDlgItem(IDC_GLOBALACCEL).GetHwnd(), BM_GETCHECK, 0, 0);
+    selected = IsDlgButtonChecked(IDC_GLOBALACCEL);
     g_pvp->m_settings.SaveValue(Settings::Player, "PBWEnabled"s, selected != 0);
 
-    selected = ::SendMessage(GetDlgItem(IDC_GLOBALNMOUNT).GetHwnd(), BM_GETCHECK, 0, 0);
+    selected = IsDlgButtonChecked(IDC_GLOBALNMOUNT);
     g_pvp->m_settings.SaveValue(Settings::Player, "PBWNormalMount"s, selected != 0);
 
-    selected = ::SendMessage(GetDlgItem(IDC_CBGLOBALROTATION).GetHwnd(), BM_GETCHECK, 0, 0);
+    selected = IsDlgButtonChecked(IDC_CBGLOBALROTATION);
     g_pvp->m_settings.SaveValue(Settings::Player, "PBWRotationCB"s, selected != 0);
 
     newvalue = GetDlgItemInt(IDC_GLOBALROTATION, nothing, TRUE);
     g_pvp->m_settings.SaveValue(Settings::Player, "PBWRotationValue"s, newvalue);
 
-    const bool tscb = (::SendMessage(GetDlgItem(IDC_CBGLOBALTILT).GetHwnd(), BM_GETCHECK, 0, 0) != 0);
+    const bool tscb = (IsDlgButtonChecked(IDC_CBGLOBALTILT)!= 0);
     g_pvp->m_settings.SaveValue(Settings::Player, "TiltSensCB"s, tscb);
 
     newvalue = clamp((int)GetDlgItemInt(IDC_GLOBALTILT, nothing, TRUE), 0, 1000);
@@ -1055,25 +1055,25 @@ void KeysConfigDialog::OnOK()
     SetValue(IDC_DOF_TARGETS, Settings::Controller, "DOFTargets"s);
     SetValue(IDC_DOF_DROPTARGETS, Settings::Controller, "DOFDropTargets"s);
 
-    selected = ::SendMessage(GetDlgItem(IDC_ENABLE_NUDGE_FILTER).GetHwnd(), BM_GETCHECK, 0, 0);
+    selected = IsDlgButtonChecked(IDC_ENABLE_NUDGE_FILTER);
     g_pvp->m_settings.SaveValue(Settings::Player, "EnableNudgeFilter"s, selected != 0);
 
-    selected = ::SendMessage(GetDlgItem(IDC_ENABLE_LEGACY_NUDGE).GetHwnd(), BM_GETCHECK, 0, 0);
+    selected = IsDlgButtonChecked(IDC_ENABLE_LEGACY_NUDGE);
     g_pvp->m_settings.SaveValue(Settings::Player, "EnableLegacyNudge"s, selected != 0);
 
     newvalue = GetDlgItemInt(IDC_LEGACY_NUDGE_STRENGTH, nothing, TRUE);
     g_pvp->m_settings.SaveValue(Settings::Player, "LegacyNudgeStrength"s, dequantizeUnsignedPercent((unsigned int)newvalue));
 
-    selected = ::SendMessage(GetDlgItem(IDC_ENABLE_MOUSE_PLAYER).GetHwnd(), BM_GETCHECK, 0, 0);
+    selected = IsDlgButtonChecked(IDC_ENABLE_MOUSE_PLAYER);
     g_pvp->m_settings.SaveValue(Settings::Player, "EnableMouseInPlayer"s, selected != 0);
 
-    selected = ::SendMessage(GetDlgItem(IDC_ENABLE_CAMERA_FLY_AROUND).GetHwnd(), BM_GETCHECK, 0, 0);
+    selected = IsDlgButtonChecked(IDC_ENABLE_CAMERA_FLY_AROUND);
     g_pvp->m_settings.SaveValue(Settings::Player, "EnableCameraModeFlyAround"s, selected != 0);
 
-    selected = ::SendMessage(GetDlgItem(IDC_DOF_FORCEDISABLE).GetHwnd(), BM_GETCHECK, 0, 0);
+    selected = IsDlgButtonChecked(IDC_DOF_FORCEDISABLE);
     g_pvp->m_settings.SaveValue(Settings::Controller, "ForceDisableB2S"s, selected != 0);
 
-    int inputApi = (int)SendMessage(GetDlgItem(IDC_COMBO_INPUT_API).GetHwnd(), CB_GETCURSEL, 0, 0);
+    int inputApi = (int)SendDlgItemMessage(IDC_COMBO_INPUT_API, CB_GETCURSEL, 0, 0);
 #ifndef ENABLE_XINPUT
     if (inputApi >= 1) inputApi++;
 #endif
@@ -1088,7 +1088,7 @@ void KeysConfigDialog::OnOK()
 #endif
     g_pvp->m_settings.SaveValue(Settings::Player, "InputApi"s, inputApi);
 
-    const int rumble = (int)SendMessage(GetDlgItem(IDC_COMBO_RUMBLE).GetHwnd(), CB_GETCURSEL, 0, 0);
+    const int rumble = (int)SendDlgItemMessage(IDC_COMBO_RUMBLE, CB_GETCURSEL, 0, 0);
     g_pvp->m_settings.SaveValue(Settings::Player, "RumbleMode"s, rumble);
 
     CDialog::OnOK();
@@ -1113,7 +1113,7 @@ HWND KeysConfigDialog::GetItemHwnd(int nID)
 
 void KeysConfigDialog::SetValue(int nID, const Settings::Section& section, const string& key)
 {
-    LRESULT selected = ::SendMessage(GetDlgItem(nID).GetHwnd(), CB_GETCURSEL, 0, 0);
+    LRESULT selected = SendDlgItemMessage(nID, CB_GETCURSEL, 0, 0);
     if (selected == LB_ERR)
         selected = 2; // assume both as standard
     g_pvp->m_settings.SaveValue(section, key, (int)selected);

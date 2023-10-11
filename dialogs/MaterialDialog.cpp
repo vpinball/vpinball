@@ -156,7 +156,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
          lvitem.iSubItem = 0;
          ListView_GetItem(m_hMaterialList, &lvitem);
          Material *const pmat = (Material *)lvitem.lParam;
-         size_t type = SendMessage(GetDlgItem(IDC_MATERIAL_TYPE).GetHwnd(), CB_GETCURSEL, 0, 0);
+         size_t type = SendDlgItemMessage(IDC_MATERIAL_TYPE, CB_GETCURSEL, 0, 0);
          if (pmat->m_type != type)
             pt->SetNonUndoableDirty(eSaveDirty);
          pmat->m_type = (Material::MaterialType)type;
@@ -575,7 +575,7 @@ void MaterialDialog::SetEditedMaterial(const Material& mat)
 
    // Material type
    GetDlgItem(IDC_MATERIAL_TYPE).EnableWindow(count == 1);
-   SendMessage(GetDlgItem(IDC_MATERIAL_TYPE).GetHwnd(), CB_SETCURSEL, mat.m_type, 0);
+   SendDlgItemMessage(IDC_MATERIAL_TYPE, CB_SETCURSEL, mat.m_type, 0);
 
    // Base
    m_colorButton1.EnableWindow(count == 1);
@@ -607,7 +607,7 @@ void MaterialDialog::SetEditedMaterial(const Material& mat)
    GetDlgItem(IDC_EDGEALPHA_EDIT).EnableWindow(count == 1);
    GetDlgItem(IDC_THICKNESS_EDIT).EnableWindow(count == 1);
    m_colorButton4.EnableWindow(count == 1);
-   SendMessage(GetDlgItem(IDC_OPACITY_CHECK).GetHwnd(), BM_SETCHECK, mat.m_bOpacityActive ? BST_CHECKED : BST_UNCHECKED, 0);
+   SendDlgItemMessage(IDC_OPACITY_CHECK, BM_SETCHECK, mat.m_bOpacityActive ? BST_CHECKED : BST_UNCHECKED, 0);
    setItemText(IDC_OPACITY_EDIT, mat.m_fOpacity);
    setItemText(IDC_EDGEALPHA_EDIT, mat.m_fEdgeAlpha);
    setItemText(IDC_THICKNESS_EDIT, mat.m_fThickness);
@@ -648,11 +648,11 @@ void MaterialDialog::SaveEditedMaterial(Material& mat)
    if (mat.m_fOpacity != fv)
          pt->SetNonUndoableDirty(eSaveDirty);
    mat.m_fOpacity = fv;
-   size_t type = SendMessage(GetDlgItem(IDC_MATERIAL_TYPE).GetHwnd(), CB_GETCURSEL, 0, 0);
+   size_t type = SendDlgItemMessage(IDC_MATERIAL_TYPE, CB_GETCURSEL, 0, 0);
    if (mat.m_type != type)
          pt->SetNonUndoableDirty(eSaveDirty);
    mat.m_type = (Material::MaterialType)type;
-   size_t checked = SendDlgItemMessage(IDC_OPACITY_CHECK, BM_GETCHECK, 0, 0);
+   size_t checked = IsDlgButtonChecked(IDC_OPACITY_CHECK);
    if (mat.m_bOpacityActive != (checked == 1))
          pt->SetNonUndoableDirty(eSaveDirty);
    mat.m_bOpacityActive = (checked == 1);
@@ -887,12 +887,12 @@ void MaterialDialog::OnOK()
             pt->SetNonUndoableDirty(eSaveDirty);
          pmat->m_fOpacity = fv;
 
-         size_t type = SendMessage(GetDlgItem(IDC_MATERIAL_TYPE).GetHwnd(), CB_SETCURSEL, pmat->m_type, 0);
+         size_t type = SendDlgItemMessage(IDC_MATERIAL_TYPE, CB_SETCURSEL, pmat->m_type, 0);
          if (pmat->m_type != type)
             pt->SetNonUndoableDirty(eSaveDirty);
          pmat->m_type = (Material::MaterialType)type;
 
-         size_t checked = SendDlgItemMessage(IDC_OPACITY_CHECK, BM_GETCHECK, 0, 0);
+         size_t checked = IsDlgButtonChecked(IDC_OPACITY_CHECK);
          if (pmat->m_bOpacityActive != (checked == 1))
             pt->SetNonUndoableDirty(eSaveDirty);
          pmat->m_bOpacityActive = (checked == 1);

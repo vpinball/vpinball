@@ -324,26 +324,26 @@ void VROptionsDialog::ResetVideoPreferences()
    sprintf_s(tmp, sizeof(tmp), "%f", nudgeStrength);
    SetDlgItemText(IDC_NUDGE_STRENGTH, tmp);
 
-   SendMessage(GetDlgItem(IDC_SUPER_SAMPLING_COMBO).GetHwnd(), TBM_SETPOS, TRUE, getBestMatchingAAfactorIndex(1.0f));
+   SendDlgItemMessage(IDC_SUPER_SAMPLING_COMBO, TBM_SETPOS, TRUE, getBestMatchingAAfactorIndex(1.0f));
    SetDlgItemText(IDC_SUPER_SAMPLING_LABEL, "Supersampling Factor: 1.0");
-   SendMessage(GetDlgItem(IDC_MSAA_COMBO).GetHwnd(), TBM_SETPOS, TRUE, 1);
+   SendDlgItemMessage(IDC_MSAA_COMBO, TBM_SETPOS, TRUE, 1);
    SetDlgItemText(IDC_MSAA_LABEL, "MSAA Samples: Disabled");
 
-   SendMessage(GetDlgItem(IDC_DYNAMIC_AO).GetHwnd(), BM_SETCHECK, BST_CHECKED, 0);
-   SendMessage(GetDlgItem(IDC_ENABLE_AO).GetHwnd(), BM_SETCHECK, BST_CHECKED, 0);
-   SendMessage(GetDlgItem(IDC_GLOBAL_SSREFLECTION_CHECK).GetHwnd(), BM_SETCHECK, BST_UNCHECKED, 0);
+   SendDlgItemMessage(IDC_DYNAMIC_AO, BM_SETCHECK, BST_CHECKED, 0);
+   SendDlgItemMessage(IDC_ENABLE_AO, BM_SETCHECK, BST_CHECKED, 0);
+   SendDlgItemMessage(IDC_GLOBAL_SSREFLECTION_CHECK, BM_SETCHECK, BST_UNCHECKED, 0);
 
-   SendMessage(GetDlgItem(IDC_GLOBAL_PF_REFLECTION).GetHwnd(), CB_SETCURSEL, 2, 0);
+   SendDlgItemMessage(IDC_GLOBAL_PF_REFLECTION, CB_SETCURSEL, 2, 0);
 
-   SendMessage(GetDlgItem(IDC_POST_PROCESS_COMBO).GetHwnd(), CB_SETCURSEL, 0, 0);
-   SendMessage(GetDlgItem(IDC_SHARPEN_COMBO).GetHwnd(), CB_SETCURSEL, 0, 0);
-   SendMessage(GetDlgItem(IDC_SCALE_FX_DMD).GetHwnd(), BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
+   SendDlgItemMessage(IDC_POST_PROCESS_COMBO, CB_SETCURSEL, 0, 0);
+   SendDlgItemMessage(IDC_SHARPEN_COMBO, CB_SETCURSEL, 0, 0);
+   SendDlgItemMessage(IDC_SCALE_FX_DMD, BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
 
-   SendMessage(GetDlgItem(IDC_VR_PREVIEW).GetHwnd(), CB_SETCURSEL, VRPREVIEW_LEFT, 0);
+   SendDlgItemMessage(IDC_VR_PREVIEW, CB_SETCURSEL, VRPREVIEW_LEFT, 0);
 
    constexpr bool scaleToFixedWidth = false;
    oldScaleValue = scaleToFixedWidth;
-   SendMessage(GetDlgItem(IDC_SCALE_TO_CM).GetHwnd(), BM_SETCHECK, scaleToFixedWidth ? BST_CHECKED : BST_UNCHECKED, 0);
+   SendDlgItemMessage(IDC_SCALE_TO_CM, BM_SETCHECK, scaleToFixedWidth ? BST_CHECKED : BST_UNCHECKED, 0);
 
    scaleRelative = 1.0f;
    scaleAbsolute = 55.0f;
@@ -375,17 +375,17 @@ void VROptionsDialog::ResetVideoPreferences()
    sprintf_s(tmp, sizeof(tmp), "%0.1f", vrZ);
    SetDlgItemText(IDC_VR_OFFSET_Z, tmp);
 
-   SendMessage(GetDlgItem(IDC_BLOOM_OFF).GetHwnd(), BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
-   SendMessage(GetDlgItem(IDC_TURN_VR_ON).GetHwnd(), CB_SETCURSEL, 1, 0);
+   SendDlgItemMessage(IDC_BLOOM_OFF, BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
+   SendDlgItemMessage(IDC_TURN_VR_ON, CB_SETCURSEL, 1, 0);
 
-   SendMessage(GetDlgItem(IDC_DMD_SOURCE).GetHwnd(), CB_SETCURSEL, 1, 0);
-   SendMessage(GetDlgItem(IDC_BG_SOURCE).GetHwnd(), CB_SETCURSEL, 1, 0);
+   SendDlgItemMessage(IDC_DMD_SOURCE, CB_SETCURSEL, 1, 0);
+   SendDlgItemMessage(IDC_BG_SOURCE, CB_SETCURSEL, 1, 0);
 
-   SendMessage(GetDlgItem(IDC_CAP_EXTDMD).GetHwnd(), BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
-   SendMessage(GetDlgItem(IDC_CAP_PUP).GetHwnd(), BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
+   SendDlgItemMessage(IDC_CAP_EXTDMD, BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
+   SendDlgItemMessage(IDC_CAP_PUP, BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
 
    //AMD Debug
-   SendMessage(GetDlgItem(IDC_COMBO_TEXTURE).GetHwnd(), CB_SETCURSEL, 1, 0);
+   SendDlgItemMessage(IDC_COMBO_TEXTURE, CB_SETCURSEL, 1, 0);
 }
 
 BOOL VROptionsDialog::OnInitDialog()
@@ -455,14 +455,14 @@ BOOL VROptionsDialog::OnInitDialog()
    SetDlgItemText(IDC_MSAA_LABEL, MSAAText);
 
    bool useAO = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "DynamicAO"s, g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "DynamicAO", true));
-   SendMessage(GetDlgItem(IDC_DYNAMIC_AO).GetHwnd(), BM_SETCHECK, useAO ? BST_CHECKED : BST_UNCHECKED, 0);
+   SendDlgItemMessage(IDC_DYNAMIC_AO, BM_SETCHECK, useAO ? BST_CHECKED : BST_UNCHECKED, 0);
 
    useAO = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "DisableAO"s, g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "DisableAO"s, false));
-   SendMessage(GetDlgItem(IDC_ENABLE_AO).GetHwnd(), BM_SETCHECK, useAO ? BST_UNCHECKED : BST_CHECKED, 0); // inverted logic
+   SendDlgItemMessage(IDC_ENABLE_AO, BM_SETCHECK, useAO ? BST_UNCHECKED : BST_CHECKED, 0); // inverted logic
    GetDlgItem(IDC_DYNAMIC_AO).EnableWindow(!useAO);
 
    const bool ssreflection = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "SSRefl"s, g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "SSRefl"s, false));
-   SendMessage(GetDlgItem(IDC_GLOBAL_SSREFLECTION_CHECK).GetHwnd(), BM_SETCHECK, ssreflection ? BST_CHECKED : BST_UNCHECKED, 0);
+   SendDlgItemMessage(IDC_GLOBAL_SSREFLECTION_CHECK, BM_SETCHECK, ssreflection ? BST_CHECKED : BST_UNCHECKED, 0);
 
    HWND hwnd = GetDlgItem(IDC_GLOBAL_PF_REFLECTION).GetHwnd();
    SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
@@ -510,7 +510,7 @@ BOOL VROptionsDialog::OnInitDialog()
    SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 
    const bool scaleFX_DMD = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "ScaleFXDMD"s, g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "ScaleFXDMD"s, false));
-   SendMessage(GetDlgItem(IDC_SCALE_FX_DMD).GetHwnd(), BM_SETCHECK, scaleFX_DMD ? BST_CHECKED : BST_UNCHECKED, 0);
+   SendDlgItemMessage(IDC_SCALE_FX_DMD, BM_SETCHECK, scaleFX_DMD ? BST_CHECKED : BST_UNCHECKED, 0);
 
    const VRPreviewMode vrPreview = (VRPreviewMode)g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "VRPreview"s, VRPREVIEW_LEFT);
    hwnd = GetDlgItem(IDC_VR_PREVIEW).GetHwnd();
@@ -524,7 +524,7 @@ BOOL VROptionsDialog::OnInitDialog()
 
    const bool scaleToFixedWidth = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "scaleToFixedWidth"s, false);
    oldScaleValue = scaleToFixedWidth;
-   SendMessage(GetDlgItem(IDC_SCALE_TO_CM).GetHwnd(), BM_SETCHECK, scaleToFixedWidth ? BST_CHECKED : BST_UNCHECKED, 0);
+   SendDlgItemMessage(IDC_SCALE_TO_CM, BM_SETCHECK, scaleToFixedWidth ? BST_CHECKED : BST_UNCHECKED, 0);
 
    scaleRelative = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "scaleRelative"s, 1.0f);
    scaleAbsolute = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "scaleAbsolute"s, 55.0f);
@@ -557,7 +557,7 @@ BOOL VROptionsDialog::OnInitDialog()
    SetDlgItemText(IDC_VR_OFFSET_Z, tmp);
 
    const bool bloomOff = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "ForceBloomOff"s, g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "ForceBloomOff"s, false));
-   SendMessage(GetDlgItem(IDC_BLOOM_OFF).GetHwnd(), BM_SETCHECK, bloomOff ? BST_CHECKED : BST_UNCHECKED, 0);
+   SendDlgItemMessage(IDC_BLOOM_OFF, BM_SETCHECK, bloomOff ? BST_CHECKED : BST_UNCHECKED, 0);
 
    const int askToTurnOn = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "AskToTurnOn"s, 1);
    hwnd = GetDlgItem(IDC_TURN_VR_ON).GetHwnd();
@@ -588,10 +588,10 @@ BOOL VROptionsDialog::OnInitDialog()
    SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 
    bool on = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "CaptureExternalDMD"s, false);
-   ::SendMessage(GetDlgItem(IDC_CAP_EXTDMD).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
+   SendDlgItemMessage(IDC_CAP_EXTDMD, BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
    on = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "CapturePUP"s, false);
-   ::SendMessage(GetDlgItem(IDC_CAP_PUP).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
+   SendDlgItemMessage(IDC_CAP_PUP, BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
    //AMD Debugging
    const int textureModeVR = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "EyeFBFormat"s, 1);
@@ -728,14 +728,14 @@ INT_PTR VROptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
    case WM_HSCROLL:
       {
          if ((HWND)lParam == GetDlgItem(IDC_SUPER_SAMPLING_COMBO).GetHwnd()) {
-            const size_t posAAfactor = SendMessage(GetDlgItem(IDC_SUPER_SAMPLING_COMBO).GetHwnd(), TBM_GETPOS, 0, 0);//Reading the value from wParam does not work reliable
+            const size_t posAAfactor = SendDlgItemMessage(IDC_SUPER_SAMPLING_COMBO, TBM_GETPOS, 0, 0);//Reading the value from wParam does not work reliable
             const float AAfactor = ((posAAfactor) < AAfactorCount) ? AAfactors[posAAfactor] : 1.0f;
             char newText[32];
             sprintf_s(newText, sizeof(newText), "Supersampling Factor: %.2f", AAfactor);
             SetDlgItemText(IDC_SUPER_SAMPLING_LABEL, newText);
          }
          else if ((HWND)lParam == GetDlgItem(IDC_MSAA_COMBO).GetHwnd()) {
-            const size_t posMSAA = SendMessage(GetDlgItem(IDC_MSAA_COMBO).GetHwnd(), TBM_GETPOS, 0, 0);//Reading the value from wParam does not work reliable
+            const size_t posMSAA = SendDlgItemMessage(IDC_MSAA_COMBO, TBM_GETPOS, 0, 0);//Reading the value from wParam does not work reliable
             const int MSAASampleAmount = MSAASamplesOpts[posMSAA];
             char newText[52];
             if (MSAASampleAmount == 1)
@@ -768,7 +768,7 @@ BOOL VROptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
       }
       case IDC_SCALE_TO_CM:
       {
-         const bool newScaleValue = SendMessage(GetDlgItem(IDC_SCALE_TO_CM).GetHwnd(), BM_GETCHECK, 0, 0) > 0;
+         const bool newScaleValue = IsDlgButtonChecked(IDC_SCALE_TO_CM)> 0;
          if (oldScaleValue != newScaleValue) {
             CString tmpStr = GetDlgItemText(IDC_VR_SCALE);
             tmpStr.Replace(',', '.');
@@ -786,7 +786,7 @@ BOOL VROptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
       }
       case IDC_ENABLE_AO:
       {
-         const size_t checked = SendDlgItemMessage(IDC_ENABLE_AO, BM_GETCHECK, 0, 0);
+         const size_t checked = IsDlgButtonChecked(IDC_ENABLE_AO);
          GetDlgItem(IDC_DYNAMIC_AO).EnableWindow(checked ? 1 : 0);
          break;
       }
@@ -818,37 +818,37 @@ void VROptionsDialog::OnOK()
 {
    g_pvp->m_settings.SaveValue(Settings::PlayerVR, "NudgeStrength"s, GetDlgItemText(IDC_NUDGE_STRENGTH).c_str());
 
-   LRESULT fxaa = SendMessage(GetDlgItem(IDC_POST_PROCESS_COMBO).GetHwnd(), CB_GETCURSEL, 0, 0);
+   LRESULT fxaa = SendDlgItemMessage(IDC_POST_PROCESS_COMBO, CB_GETCURSEL, 0, 0);
    if (fxaa == LB_ERR)
       fxaa = 0;
    g_pvp->m_settings.SaveValue(Settings::PlayerVR, "FXAA"s, (int)fxaa);
 
-   LRESULT sharpen = SendMessage(GetDlgItem(IDC_SHARPEN_COMBO).GetHwnd(), CB_GETCURSEL, 0, 0);
+   LRESULT sharpen = SendDlgItemMessage(IDC_SHARPEN_COMBO, CB_GETCURSEL, 0, 0);
    if (sharpen == LB_ERR)
       sharpen = 0;
    g_pvp->m_settings.SaveValue(Settings::PlayerVR, "Sharpen"s, (int)sharpen);
 
-   const bool scaleFX_DMD = SendMessage(GetDlgItem(IDC_SCALE_FX_DMD).GetHwnd(), BM_GETCHECK, 0, 0) != 0;
+   const bool scaleFX_DMD = IsDlgButtonChecked(IDC_SCALE_FX_DMD)!= 0;
    g_pvp->m_settings.SaveValue(Settings::PlayerVR, "ScaleFXDMD"s, scaleFX_DMD);
 
-   const size_t AAfactorIndex = SendMessage(GetDlgItem(IDC_SUPER_SAMPLING_COMBO).GetHwnd(), TBM_GETPOS, 0, 0);
+   const size_t AAfactorIndex = SendDlgItemMessage(IDC_SUPER_SAMPLING_COMBO, TBM_GETPOS, 0, 0);
    const float AAfactor = (AAfactorIndex < AAfactorCount) ? AAfactors[AAfactorIndex] : 1.0f;
    g_pvp->m_settings.SaveValue(Settings::PlayerVR, "AAFactor"s, AAfactor);
 
-   const size_t MSAASamplesIndex = SendMessage(GetDlgItem(IDC_MSAA_COMBO).GetHwnd(), TBM_GETPOS, 0, 0);
+   const size_t MSAASamplesIndex = SendDlgItemMessage(IDC_MSAA_COMBO, TBM_GETPOS, 0, 0);
    const int MSAASamples = (MSAASamplesIndex < MSAASampleCount) ? MSAASamplesOpts[MSAASamplesIndex] : 1;
    g_pvp->m_settings.SaveValue(Settings::PlayerVR, "MSAASamples"s, MSAASamples);
 
-   bool useAO = SendMessage(GetDlgItem(IDC_DYNAMIC_AO).GetHwnd(), BM_GETCHECK, 0, 0) != 0;
+   bool useAO = IsDlgButtonChecked(IDC_DYNAMIC_AO)!= 0;
    g_pvp->m_settings.SaveValue(Settings::PlayerVR, "DynamicAO"s, useAO);
 
-   useAO = SendMessage(GetDlgItem(IDC_ENABLE_AO).GetHwnd(), BM_GETCHECK, 0, 0) ? false : true; // inverted logic
+   useAO = IsDlgButtonChecked(IDC_ENABLE_AO)? false : true; // inverted logic
    g_pvp->m_settings.SaveValue(Settings::PlayerVR, "DisableAO"s, useAO);
 
-   const bool ssreflection = SendMessage(GetDlgItem(IDC_GLOBAL_SSREFLECTION_CHECK).GetHwnd(), BM_GETCHECK, 0, 0) != 0;
+   const bool ssreflection = IsDlgButtonChecked(IDC_GLOBAL_SSREFLECTION_CHECK)!= 0;
    g_pvp->m_settings.SaveValue(Settings::PlayerVR, "SSRefl"s, ssreflection);
 
-   LRESULT maxReflection = SendMessage(GetDlgItem(IDC_GLOBAL_PF_REFLECTION).GetHwnd(), CB_GETCURSEL, 0, 0);
+   LRESULT maxReflection = SendDlgItemMessage(IDC_GLOBAL_PF_REFLECTION, CB_GETCURSEL, 0, 0);
    if (maxReflection == LB_ERR)
       maxReflection = RenderProbe::REFL_NONE;
    if (maxReflection == 2)
@@ -856,15 +856,15 @@ void VROptionsDialog::OnOK()
    g_pvp->m_settings.SaveValue(Settings::PlayerVR, "PFReflection"s, (int)maxReflection);
 
    //AMD Debugging
-   const size_t textureModeVR = SendMessage(GetDlgItem(IDC_COMBO_TEXTURE).GetHwnd(), CB_GETCURSEL, 0, 0);
+   const size_t textureModeVR = SendDlgItemMessage(IDC_COMBO_TEXTURE, CB_GETCURSEL, 0, 0);
    g_pvp->m_settings.SaveValue(Settings::PlayerVR, "EyeFBFormat"s, (int)textureModeVR);
 
-   LRESULT vrPreview = SendMessage(GetDlgItem(IDC_VR_PREVIEW).GetHwnd(), CB_GETCURSEL, 0, 0);
+   LRESULT vrPreview = SendDlgItemMessage(IDC_VR_PREVIEW, CB_GETCURSEL, 0, 0);
    if (vrPreview == LB_ERR)
       vrPreview = VRPREVIEW_LEFT;
    g_pvp->m_settings.SaveValue(Settings::PlayerVR, "VRPreview"s, (int)vrPreview);
 
-   const bool scaleToFixedWidth = SendMessage(GetDlgItem(IDC_SCALE_TO_CM).GetHwnd(), BM_GETCHECK, 0, 0) != 0;
+   const bool scaleToFixedWidth = IsDlgButtonChecked(IDC_SCALE_TO_CM)!= 0;
    g_pvp->m_settings.SaveValue(Settings::PlayerVR, "scaleToFixedWidth"s, scaleToFixedWidth);
 
    g_pvp->m_settings.SaveValue(Settings::PlayerVR, scaleToFixedWidth ? "scaleAbsolute"s : "scaleRelative"s, GetDlgItemText(IDC_VR_SCALE).c_str());
@@ -883,22 +883,22 @@ void VROptionsDialog::OnOK()
 
    g_pvp->m_settings.SaveValue(Settings::PlayerVR, "TableZ"s, GetDlgItemText(IDC_VR_OFFSET_Z).c_str());
 
-   const bool bloomOff = SendMessage(GetDlgItem(IDC_BLOOM_OFF).GetHwnd(), BM_GETCHECK, 0, 0) != 0;
+   const bool bloomOff = IsDlgButtonChecked(IDC_BLOOM_OFF)!= 0;
    g_pvp->m_settings.SaveValue(Settings::PlayerVR, "ForceBloomOff"s, bloomOff);
 
-   const size_t askToTurnOn = SendMessage(GetDlgItem(IDC_TURN_VR_ON).GetHwnd(), CB_GETCURSEL, 0, 0);
+   const size_t askToTurnOn = SendDlgItemMessage(IDC_TURN_VR_ON, CB_GETCURSEL, 0, 0);
    g_pvp->m_settings.SaveValue(Settings::PlayerVR, "AskToTurnOn"s, (int)askToTurnOn);
 
-   const size_t dmdSource = SendMessage(GetDlgItem(IDC_DMD_SOURCE).GetHwnd(), CB_GETCURSEL, 0, 0);
+   const size_t dmdSource = SendDlgItemMessage(IDC_DMD_SOURCE, CB_GETCURSEL, 0, 0);
    g_pvp->m_settings.SaveValue(Settings::PlayerVR, "DMDsource"s, (int)dmdSource);
 
-   const size_t bgSource = SendMessage(GetDlgItem(IDC_BG_SOURCE).GetHwnd(), CB_GETCURSEL, 0, 0);
+   const size_t bgSource = SendDlgItemMessage(IDC_BG_SOURCE, CB_GETCURSEL, 0, 0);
    g_pvp->m_settings.SaveValue(Settings::PlayerVR, "BGsource"s, (int)bgSource);
 
-   bool selected = ::SendMessage(GetDlgItem(IDC_CAP_EXTDMD).GetHwnd(), BM_GETCHECK, 0, 0) != 0;
+   bool selected = IsDlgButtonChecked(IDC_CAP_EXTDMD)!= 0;
    g_pvp->m_settings.SaveValue(Settings::Player, "CaptureExternalDMD"s, selected);
 
-   selected = ::SendMessage(GetDlgItem(IDC_CAP_PUP).GetHwnd(), BM_GETCHECK, 0, 0) != 0;
+   selected = IsDlgButtonChecked(IDC_CAP_PUP)!= 0;
    g_pvp->m_settings.SaveValue(Settings::Player, "CapturePUP"s, selected);
 
    SetValue(IDC_JOYTABLERECENTER, Settings::Player, "JoyTableRecenterKey"s);
@@ -928,7 +928,7 @@ void VROptionsDialog::OnDestroy()
 
 void VROptionsDialog::SetValue(int nID, const Settings::Section& section, const string& key)
 {
-   LRESULT selected = ::SendMessage(GetDlgItem(nID).GetHwnd(), CB_GETCURSEL, 0, 0);
+   LRESULT selected = SendDlgItemMessage(nID, CB_GETCURSEL, 0, 0);
    if (selected == LB_ERR)
       selected = 2; // assume both as standard
    g_pvp->m_settings.SaveValue(section, key, (int)selected);

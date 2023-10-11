@@ -50,18 +50,18 @@ void VideoOptionsDialog::ResetVideoPreferences(const unsigned int profile) // 0 
    if(profile == 0)
    {
       const bool fullscreen = IsWindows10_1803orAbove();
-      SendMessage(GetDlgItem(IDC_EXCLUSIVE_FULLSCREEN).GetHwnd(), BM_SETCHECK, fullscreen ? BST_CHECKED : BST_UNCHECKED, 0);
-      SendMessage(GetDlgItem(IDC_WINDOWED).GetHwnd(), BM_SETCHECK, fullscreen ? BST_UNCHECKED : BST_CHECKED, 0);
+      SendDlgItemMessage(IDC_EXCLUSIVE_FULLSCREEN, BM_SETCHECK, fullscreen ? BST_CHECKED : BST_UNCHECKED, 0);
+      SendDlgItemMessage(IDC_WINDOWED, BM_SETCHECK, fullscreen ? BST_UNCHECKED : BST_CHECKED, 0);
       OnCommand(IDC_EXCLUSIVE_FULLSCREEN, 0L); // Force UI update
    }
    if(profile < 2)
    {
-      SendMessage(GetDlgItem(IDC_10BIT_VIDEO).GetHwnd(), BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
+      SendDlgItemMessage(IDC_10BIT_VIDEO, BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
    }
 
-   SendMessage(GetDlgItem(IDC_MAX_TEXTURE_COMBO).GetHwnd(), CB_SETCURSEL, 7, 0);
-   SendMessage(GetDlgItem(IDC_GLOBAL_TRAIL_CHECK).GetHwnd(), BM_SETCHECK, true ? BST_CHECKED : BST_UNCHECKED, 0);
-   SendMessage(GetDlgItem(IDC_GLOBAL_DISABLE_LIGHTING_BALLS).GetHwnd(), BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
+   SendDlgItemMessage(IDC_MAX_TEXTURE_COMBO, CB_SETCURSEL, 7, 0);
+   SendDlgItemMessage(IDC_GLOBAL_TRAIL_CHECK, BM_SETCHECK, true ? BST_CHECKED : BST_UNCHECKED, 0);
+   SendDlgItemMessage(IDC_GLOBAL_DISABLE_LIGHTING_BALLS, BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
    SetDlgItemInt(IDC_MAX_FPS, 0, FALSE);
    SetDlgItemInt(IDC_MAX_PRE_FRAMES, 0, FALSE);
 
@@ -85,19 +85,19 @@ void VideoOptionsDialog::ResetVideoPreferences(const unsigned int profile) // 0 
       SetDlgItemText(IDC_NUDGE_STRENGTH, tmp);
    }
 
-   SendMessage(GetDlgItem(IDC_SUPER_SAMPLING_COMBO).GetHwnd(), TBM_SETPOS, TRUE, getBestMatchingAAfactorIndex(1.0f));
-   SendMessage(GetDlgItem(IDC_MSAA_COMBO).GetHwnd(), TBM_SETPOS, TRUE, 1);
+   SendDlgItemMessage(IDC_SUPER_SAMPLING_COMBO, TBM_SETPOS, TRUE, getBestMatchingAAfactorIndex(1.0f));
+   SendDlgItemMessage(IDC_MSAA_COMBO, TBM_SETPOS, TRUE, 1);
 
-   SendMessage(GetDlgItem(IDC_DYNAMIC_DN).GetHwnd(), BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
+   SendDlgItemMessage(IDC_DYNAMIC_DN, BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
    
-   SendMessage(GetDlgItem(IDC_MAX_AO_COMBO).GetHwnd(), CB_SETCURSEL,profile == 2 ? 2 : 1, 0);
+   SendDlgItemMessage(IDC_MAX_AO_COMBO, CB_SETCURSEL,profile == 2 ? 2 : 1, 0);
 
-   SendMessage(GetDlgItem(IDC_GLOBAL_SSREFLECTION_CHECK).GetHwnd(), BM_SETCHECK, profile == 2 ? BST_CHECKED : BST_UNCHECKED, 0);
-   SendMessage(GetDlgItem(IDC_MAX_REFLECTION_COMBO).GetHwnd(), CB_SETCURSEL, profile == 1 ? RenderProbe::REFL_STATIC_N_BALLS : RenderProbe::REFL_DYNAMIC, 0);
+   SendDlgItemMessage(IDC_GLOBAL_SSREFLECTION_CHECK, BM_SETCHECK, profile == 2 ? BST_CHECKED : BST_UNCHECKED, 0);
+   SendDlgItemMessage(IDC_MAX_REFLECTION_COMBO, CB_SETCURSEL, profile == 1 ? RenderProbe::REFL_STATIC_N_BALLS : RenderProbe::REFL_DYNAMIC, 0);
 
    if (profile == 0)
    {
-      SendMessage(GetDlgItem(IDC_OVERWRITE_BALL_IMAGE_CHECK).GetHwnd(), BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
+      SendDlgItemMessage(IDC_OVERWRITE_BALL_IMAGE_CHECK, BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
       SetDlgItemText(IDC_BALL_IMAGE_EDIT, "");
       SetDlgItemText(IDC_BALL_DECAL_EDIT, "");
       if (true)
@@ -109,15 +109,15 @@ void VideoOptionsDialog::ResetVideoPreferences(const unsigned int profile) // 0 
       }
    }
 
-   SendMessage(GetDlgItem(IDC_POST_PROCESS_COMBO).GetHwnd(), CB_SETCURSEL, profile == 1 ? Disabled : (profile == 2 ? Quality_FXAA : Standard_FXAA), 0);
-   SendMessage(GetDlgItem(IDC_SHARPEN_COMBO).GetHwnd(), CB_SETCURSEL, profile != 2 ? 0 : 2, 0);
-   SendMessage(GetDlgItem(IDC_SCALE_FX_DMD).GetHwnd(), BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
+   SendDlgItemMessage(IDC_POST_PROCESS_COMBO, CB_SETCURSEL, profile == 1 ? Disabled : (profile == 2 ? Quality_FXAA : Standard_FXAA), 0);
+   SendDlgItemMessage(IDC_SHARPEN_COMBO, CB_SETCURSEL, profile != 2 ? 0 : 2, 0);
+   SendDlgItemMessage(IDC_SCALE_FX_DMD, BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
 
    if (profile == 0)
    {
-      SendMessage(GetDlgItem(IDC_BG_SET).GetHwnd(), CB_SETCURSEL, 0, 0);
-      SendMessage(GetDlgItem(IDC_3D_STEREO).GetHwnd(), CB_SETCURSEL, 0, 0);
-      SendMessage(GetDlgItem(IDC_3D_STEREO_Y).GetHwnd(), BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
+      SendDlgItemMessage(IDC_BG_SET, CB_SETCURSEL, 0, 0);
+      SendDlgItemMessage(IDC_3D_STEREO, CB_SETCURSEL, 0, 0);
+      SendDlgItemMessage(IDC_3D_STEREO_Y, BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
       constexpr float stereo3DOfs = 0.0f;
       char tmp[256];
       sprintf_s(tmp, sizeof(tmp), "%f", stereo3DOfs);
@@ -135,34 +135,34 @@ void VideoOptionsDialog::ResetVideoPreferences(const unsigned int profile) // 0 
       constexpr float stereo3DSaturation = 1.0f;
       sprintf_s(tmp, sizeof(tmp), "%f", stereo3DSaturation);
       SetDlgItemText(IDC_3D_STEREO_DESATURATION, tmp);
-      SendMessage(GetDlgItem(IDC_USE_NVIDIA_API_CHECK).GetHwnd(), BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
+      SendDlgItemMessage(IDC_USE_NVIDIA_API_CHECK, BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
    }
 
-   SendMessage(GetDlgItem(IDC_BLOOM_OFF).GetHwnd(), BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
+   SendDlgItemMessage(IDC_BLOOM_OFF, BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
 
    if (profile == 0)
    {
-      SendMessage(GetDlgItem(IDC_DISABLE_DWM).GetHwnd(), BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
+      SendDlgItemMessage(IDC_DISABLE_DWM, BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
    }
 
-   SendMessage(GetDlgItem(IDC_FORCE_ANISO).GetHwnd(), BM_SETCHECK, profile != 1 ? BST_CHECKED : BST_UNCHECKED, 0);
-   SendMessage(GetDlgItem(IDC_TEX_COMPRESS).GetHwnd(), BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
-   SendMessage(GetDlgItem(IDC_SOFTWARE_VP).GetHwnd(), BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
-   SendMessage(GetDlgItem(IDC_ARASlider).GetHwnd(), TBM_SETPOS, TRUE, profile == 1 ? 5 : 10);
+   SendDlgItemMessage(IDC_FORCE_ANISO, BM_SETCHECK, profile != 1 ? BST_CHECKED : BST_UNCHECKED, 0);
+   SendDlgItemMessage(IDC_TEX_COMPRESS, BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
+   SendDlgItemMessage(IDC_SOFTWARE_VP, BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
+   SendDlgItemMessage(IDC_ARASlider, TBM_SETPOS, TRUE, profile == 1 ? 5 : 10);
 
    if (profile == 0)
    {
-      SendMessage(GetDlgItem(IDC_StretchYes).GetHwnd(), BM_SETCHECK, BST_UNCHECKED, 0);
-      SendMessage(GetDlgItem(IDC_StretchMonitor).GetHwnd(), BM_SETCHECK, BST_UNCHECKED, 0);
-      SendMessage(GetDlgItem(IDC_StretchNo).GetHwnd(), BM_SETCHECK, BST_CHECKED, 0);
-      SendMessage(GetDlgItem(IDC_DISPLAY_ID).GetHwnd(), CB_SETCURSEL, 0, 0);
+      SendDlgItemMessage(IDC_StretchYes, BM_SETCHECK, BST_UNCHECKED, 0);
+      SendDlgItemMessage(IDC_StretchMonitor, BM_SETCHECK, BST_UNCHECKED, 0);
+      SendDlgItemMessage(IDC_StretchNo, BM_SETCHECK, BST_CHECKED, 0);
+      SendDlgItemMessage(IDC_DISPLAY_ID, CB_SETCURSEL, 0, 0);
    }
 }
 
 void VideoOptionsDialog::UpdateFullscreenModesList()
 {
    const HWND hwndList = GetDlgItem(IDC_SIZELIST).GetHwnd();
-   const int display = (int)SendMessage(GetDlgItem(IDC_DISPLAY_ID).GetHwnd(), CB_GETCURSEL, 0, 0);
+   const int display = (int)SendDlgItemMessage(IDC_DISPLAY_ID, CB_GETCURSEL, 0, 0);
    if (display < 0)
       return;
    EnumerateDisplayModes(display, m_allVideoModes);
@@ -309,7 +309,7 @@ BOOL VideoOptionsDialog::OnInitDialog()
       AddToolTip("Physical height of the display area of the screen in centimeters, in landscape orientation (width > height).\r\n\r\nThis is needed to get correct size when using 'Window' mode for the camera.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_SCREEN_HEIGHT).GetHwnd());
    }
 
-   SendMessage(GetDlgItem(IDC_APPLICATION_SETTINGS).GetHwnd(), BM_SETCHECK, BST_CHECKED, 0);
+   SendDlgItemMessage(IDC_APPLICATION_SETTINGS, BM_SETCHECK, BST_CHECKED, 0);
    GetDlgItem(IDC_TABLE_OVERRIDE).EnableWindow(g_pvp->m_ptableActive != nullptr);
 
    HWND hwnd;
@@ -449,9 +449,9 @@ BOOL VideoOptionsDialog::OnInitDialog()
 
 Settings& VideoOptionsDialog::GetEditedSettings()
 {
-   if (g_pvp->m_ptableActive && SendMessage(GetDlgItem(IDC_TABLE_OVERRIDE).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED)
+   if (g_pvp->m_ptableActive && IsDlgButtonChecked(IDC_TABLE_OVERRIDE) == BST_CHECKED)
       return g_pvp->m_ptableActive->m_settings;
-   SendMessage(GetDlgItem(IDC_APPLICATION_SETTINGS).GetHwnd(), BM_SETCHECK, BST_CHECKED, 0);
+   SendDlgItemMessage(IDC_APPLICATION_SETTINGS, BM_SETCHECK, BST_CHECKED, 0);
    return g_pvp->m_settings;
 }
 
@@ -462,13 +462,13 @@ void VideoOptionsDialog::LoadSettings()
 
    m_initialMaxTexDim = settings.LoadValueWithDefault(Settings::Player, "MaxTexDimension"s, 0);
    const int maxTexDim = ((1023 + m_initialMaxTexDim) / 1024) - 1;
-   SendMessage(GetDlgItem(IDC_MAX_TEXTURE_COMBO).GetHwnd(), CB_SETCURSEL, maxTexDim < 0 ? 7 : maxTexDim, 0);
+   SendDlgItemMessage(IDC_MAX_TEXTURE_COMBO, CB_SETCURSEL, maxTexDim < 0 ? 7 : maxTexDim, 0);
 
    const bool trail = settings.LoadValueWithDefault(Settings::Player, "BallTrail"s, true);
-   SendMessage(GetDlgItem(IDC_GLOBAL_TRAIL_CHECK).GetHwnd(), BM_SETCHECK, trail ? BST_CHECKED : BST_UNCHECKED, 0);
+   SendDlgItemMessage(IDC_GLOBAL_TRAIL_CHECK, BM_SETCHECK, trail ? BST_CHECKED : BST_UNCHECKED, 0);
 
    const bool disableLighting = settings.LoadValueWithDefault(Settings::Player, "DisableLightingForBalls"s, false);
-   SendMessage(GetDlgItem(IDC_GLOBAL_DISABLE_LIGHTING_BALLS).GetHwnd(), BM_SETCHECK, disableLighting ? BST_CHECKED : BST_UNCHECKED, 0);
+   SendDlgItemMessage(IDC_GLOBAL_DISABLE_LIGHTING_BALLS, BM_SETCHECK, disableLighting ? BST_CHECKED : BST_UNCHECKED, 0);
 
    int maxFPS = settings.LoadValueWithDefault(Settings::Player, "MaxFramerate"s, -1);
    if(maxFPS > 0 && maxFPS <= 24) // at least 24 fps
@@ -492,8 +492,7 @@ void VideoOptionsDialog::LoadSettings()
       syncMode = VideoSyncMode::VSM_FRAME_PACING;
    SetDlgItemInt(IDC_MAX_FPS, maxFPS, FALSE);
 
-   hwnd = GetDlgItem(IDC_VIDEO_SYNC_MODE).GetHwnd();
-   SendMessage(hwnd, CB_SETCURSEL, syncMode, 0);
+   SendDlgItemMessage(IDC_VIDEO_SYNC_MODE, CB_SETCURSEL, syncMode, 0);
 
    const int maxPrerenderedFrames = settings.LoadValueWithDefault(Settings::Player, "MaxPrerenderedFrames"s, 0);
    SetDlgItemInt(IDC_MAX_PRE_FRAMES, maxPrerenderedFrames, FALSE);
@@ -523,27 +522,23 @@ void VideoOptionsDialog::LoadSettings()
    sprintf_s(tmp, sizeof(tmp), "%f", nudgeStrength);
    SetDlgItemText(IDC_NUDGE_STRENGTH, tmp);
 
-   hwnd = GetDlgItem(IDC_SUPER_SAMPLING_COMBO).GetHwnd();
    const float AAfactor = settings.LoadValueWithDefault(Settings::Player, "AAFactor"s, settings.LoadValueWithDefault(Settings::Player, "USEAA"s, false) ? 1.5f : 1.0f);
-   SendMessage(hwnd, CB_SETCURSEL, getBestMatchingAAfactorIndex(AAfactor), 0);
+   SendDlgItemMessage(IDC_SUPER_SAMPLING_COMBO, CB_SETCURSEL, getBestMatchingAAfactorIndex(AAfactor), 0);
 
-   hwnd = GetDlgItem(IDC_MSAA_COMBO).GetHwnd();
    const int MSAASamples = settings.LoadValueWithDefault(Settings::Player, "MSAASamples"s, 1);
    const int CurrMSAAPos = static_cast<const int>(std::find(MSAASamplesOpts, MSAASamplesOpts + (sizeof(MSAASamplesOpts) / sizeof(MSAASamplesOpts[0])), MSAASamples) - MSAASamplesOpts);
-   SendMessage(hwnd, CB_SETCURSEL, CurrMSAAPos, 0);
+   SendDlgItemMessage(IDC_MSAA_COMBO, CB_SETCURSEL, CurrMSAAPos, 0);
 
    const int useDN = settings.LoadValueWithDefault(Settings::Player, "DynamicDayNight"s, 0);
-   SendMessage(GetDlgItem(IDC_DYNAMIC_DN).GetHwnd(), BM_SETCHECK, (useDN != 0) ? BST_CHECKED : BST_UNCHECKED, 0);
+   SendDlgItemMessage(IDC_DYNAMIC_DN, BM_SETCHECK, (useDN != 0) ? BST_CHECKED : BST_UNCHECKED, 0);
 
    const bool disableAO = settings.LoadValueWithDefault(Settings::Player, "DisableAO"s, false);
    const bool dynAO = settings.LoadValueWithDefault(Settings::Player, "DynamicAO"s, true);
-   hwnd = GetDlgItem(IDC_MAX_AO_COMBO).GetHwnd();
-   SendMessage(hwnd, CB_SETCURSEL, disableAO ? 0 : dynAO ? 2 : 1, 0);
+   SendDlgItemMessage(IDC_MAX_AO_COMBO, CB_SETCURSEL, disableAO ? 0 : dynAO ? 2 : 1, 0);
 
    const bool ssreflection = settings.LoadValueWithDefault(Settings::Player, "SSRefl"s, false);
-   SendMessage(GetDlgItem(IDC_GLOBAL_SSREFLECTION_CHECK).GetHwnd(), BM_SETCHECK, ssreflection ? BST_CHECKED : BST_UNCHECKED, 0);
+   SendDlgItemMessage(IDC_GLOBAL_SSREFLECTION_CHECK, BM_SETCHECK, ssreflection ? BST_CHECKED : BST_UNCHECKED, 0);
 
-   hwnd = GetDlgItem(IDC_MAX_REFLECTION_COMBO).GetHwnd();
    int pfr = settings.LoadValueWithDefault(Settings::Player, "PFReflection"s, -1);
    RenderProbe::ReflectionMode maxReflection;
    if (pfr != -1)
@@ -556,10 +551,10 @@ void VideoOptionsDialog::LoadSettings()
       if (settings.LoadValueWithDefault(Settings::Player, "PFRefl"s, true))
          maxReflection = RenderProbe::REFL_STATIC_N_DYNAMIC;
    }
-   SendMessage(hwnd, CB_SETCURSEL, maxReflection, 0);
+   SendDlgItemMessage(IDC_MAX_REFLECTION_COMBO, CB_SETCURSEL, maxReflection, 0);
 
    const bool overwiteBallImage = settings.LoadValueWithDefault(Settings::Player, "OverwriteBallImage"s, false);
-   SendMessage(GetDlgItem(IDC_OVERWRITE_BALL_IMAGE_CHECK).GetHwnd(), BM_SETCHECK, overwiteBallImage ? BST_CHECKED : BST_UNCHECKED, 0);
+   SendDlgItemMessage(IDC_OVERWRITE_BALL_IMAGE_CHECK, BM_SETCHECK, overwiteBallImage ? BST_CHECKED : BST_UNCHECKED, 0);
 
    string imageName;
    bool hr = settings.LoadValue(Settings::Player, "BallImage"s, imageName);
@@ -579,21 +574,18 @@ void VideoOptionsDialog::LoadSettings()
    }
 
    const int fxaa = settings.LoadValueWithDefault(Settings::Player, "FXAA"s, (int)Standard_FXAA);
-   hwnd = GetDlgItem(IDC_POST_PROCESS_COMBO).GetHwnd();
-   SendMessage(hwnd, CB_SETCURSEL, fxaa, 0);
+   SendDlgItemMessage(IDC_POST_PROCESS_COMBO, CB_SETCURSEL, fxaa, 0);
 
    const int sharpen = settings.LoadValueWithDefault(Settings::Player, "Sharpen"s, 0);
-   hwnd = GetDlgItem(IDC_SHARPEN_COMBO).GetHwnd();
-   SendMessage(hwnd, CB_SETCURSEL, sharpen, 0);
+   SendDlgItemMessage(IDC_SHARPEN_COMBO, CB_SETCURSEL, sharpen, 0);
 
    const bool scaleFX_DMD = settings.LoadValueWithDefault(Settings::Player, "ScaleFXDMD"s, false);
-   SendMessage(GetDlgItem(IDC_SCALE_FX_DMD).GetHwnd(), BM_SETCHECK, scaleFX_DMD ? BST_CHECKED : BST_UNCHECKED, 0);
+   SendDlgItemMessage(IDC_SCALE_FX_DMD, BM_SETCHECK, scaleFX_DMD ? BST_CHECKED : BST_UNCHECKED, 0);
 
    const int bgset = settings.LoadValueWithDefault(Settings::Player, "BGSet"s, 0);
-   hwnd = GetDlgItem(IDC_BG_SET).GetHwnd();
-   SendMessage(hwnd, CB_SETCURSEL, bgset, 0);
+   SendDlgItemMessage(IDC_BG_SET, CB_SETCURSEL, bgset, 0);
    // FIXME
-   SendMessage(GetDlgItem(IDC_BG_SET).GetHwnd(), BM_SETCHECK, (bgset != 0) ? BST_CHECKED : BST_UNCHECKED, 0);
+   SendDlgItemMessage(IDC_BG_SET, BM_SETCHECK, (bgset != 0) ? BST_CHECKED : BST_UNCHECKED, 0);
 
    bool fakeStereo = true;
    #ifdef ENABLE_SDL
@@ -601,7 +593,7 @@ void VideoOptionsDialog::LoadSettings()
    #else
    ::EnableWindow(GetDlgItem(IDC_FAKE_STEREO).GetHwnd(), FALSE);
    #endif
-   SendMessage(GetDlgItem(IDC_FAKE_STEREO).GetHwnd(), BM_SETCHECK, fakeStereo ? BST_CHECKED : BST_UNCHECKED, 0);
+   SendDlgItemMessage(IDC_FAKE_STEREO, BM_SETCHECK, fakeStereo ? BST_CHECKED : BST_UNCHECKED, 0);
 
    const int stereo3D = settings.LoadValueWithDefault(Settings::Player, "Stereo3D"s, 0);
    hwnd = GetDlgItem(IDC_3D_STEREO).GetHwnd();
@@ -625,16 +617,17 @@ void VideoOptionsDialog::LoadSettings()
    OnCommand(IDC_3D_STEREO, 0L); // Force UI update
 
    const bool stereo3DY = settings.LoadValueWithDefault(Settings::Player, "Stereo3DYAxis"s, false);
-   SendMessage(GetDlgItem(IDC_3D_STEREO_Y).GetHwnd(), BM_SETCHECK, stereo3DY ? BST_CHECKED : BST_UNCHECKED, 0);
+   SendDlgItemMessage(IDC_3D_STEREO_Y, BM_SETCHECK, stereo3DY ? BST_CHECKED : BST_UNCHECKED, 0);
 
    const float stereo3DOfs = settings.LoadValueWithDefault(Settings::Player, "Stereo3DOffset"s, 0.f);
    sprintf_s(tmp, sizeof(tmp), "%f", stereo3DOfs);
    SetDlgItemText(IDC_3D_STEREO_OFS, tmp);
 
    const float stereo3DMS = settings.LoadValueWithDefault(Settings::Player, "Stereo3DMaxSeparation"s, 0.03f);
-   const float stereo3DES = settings.LoadValueWithDefault(Settings::Player, "Stereo3DEyeSeparation"s, 63.0f);
    sprintf_s(tmp, sizeof(tmp), "%f", stereo3DMS);
    SetDlgItemText(IDC_3D_STEREO_MS, tmp);
+
+   const float stereo3DES = settings.LoadValueWithDefault(Settings::Player, "Stereo3DEyeSeparation"s, 63.0f);
    sprintf_s(tmp, sizeof(tmp), "%f", stereo3DES);
    SetDlgItemText(IDC_3D_STEREO_ES, tmp);
 
@@ -643,7 +636,7 @@ void VideoOptionsDialog::LoadSettings()
    SetDlgItemText(IDC_3D_STEREO_ZPD, tmp);
 
    const bool bamHeadtracking = settings.LoadValueWithDefault(Settings::Player, "BAMheadTracking"s, false);
-   SendMessage(GetDlgItem(IDC_HEADTRACKING).GetHwnd(), BM_SETCHECK, bamHeadtracking ? BST_CHECKED : BST_UNCHECKED, 0);
+   SendDlgItemMessage(IDC_HEADTRACKING, BM_SETCHECK, bamHeadtracking ? BST_CHECKED : BST_UNCHECKED, 0);
 
    const float stereo3DBrightness = settings.LoadValueWithDefault(Settings::Player, "Stereo3DBrightness"s, 1.0f);
    sprintf_s(tmp, sizeof(tmp), "%f", stereo3DBrightness);
@@ -654,27 +647,26 @@ void VideoOptionsDialog::LoadSettings()
    SetDlgItemText(IDC_3D_STEREO_DESATURATION, tmp);
 
    const bool disableDWM = settings.LoadValueWithDefault(Settings::Player, "DisableDWM"s, false);
-   GetDlgItem(IDC_DISABLE_DWM).EnableWindow(IsWindowsVistaOr7());
-   SendMessage(GetDlgItem(IDC_DISABLE_DWM).GetHwnd(), BM_SETCHECK, disableDWM ? BST_CHECKED : BST_UNCHECKED, 0);
+   SendDlgItemMessage(IDC_DISABLE_DWM, BM_SETCHECK, disableDWM ? BST_CHECKED : BST_UNCHECKED, 0);
    GetDlgItem(IDC_DISABLE_DWM).EnableWindow(IsWindowsVistaOr7()); // DWM may not be disabled on Windows 8+
 
    const bool nvidiaApi = settings.LoadValueWithDefault(Settings::Player, "UseNVidiaAPI"s, false);
-   SendMessage(GetDlgItem(IDC_USE_NVIDIA_API_CHECK).GetHwnd(), BM_SETCHECK, nvidiaApi ? BST_CHECKED : BST_UNCHECKED, 0);
+   SendDlgItemMessage(IDC_USE_NVIDIA_API_CHECK, BM_SETCHECK, nvidiaApi ? BST_CHECKED : BST_UNCHECKED, 0);
 
    const bool bloomOff = settings.LoadValueWithDefault(Settings::Player, "ForceBloomOff"s, false);
-   SendMessage(GetDlgItem(IDC_BLOOM_OFF).GetHwnd(), BM_SETCHECK, bloomOff ? BST_CHECKED : BST_UNCHECKED, 0);
+   SendDlgItemMessage(IDC_BLOOM_OFF, BM_SETCHECK, bloomOff ? BST_CHECKED : BST_UNCHECKED, 0);
 
    const bool forceAniso = settings.LoadValueWithDefault(Settings::Player, "ForceAnisotropicFiltering"s, true);
-   SendMessage(GetDlgItem(IDC_FORCE_ANISO).GetHwnd(), BM_SETCHECK, forceAniso ? BST_CHECKED : BST_UNCHECKED, 0);
+   SendDlgItemMessage(IDC_FORCE_ANISO, BM_SETCHECK, forceAniso ? BST_CHECKED : BST_UNCHECKED, 0);
 
    const bool compressTextures = settings.LoadValueWithDefault(Settings::Player, "CompressTextures"s, false);
-   SendMessage(GetDlgItem(IDC_TEX_COMPRESS).GetHwnd(), BM_SETCHECK, compressTextures ? BST_CHECKED : BST_UNCHECKED, 0);
+   SendDlgItemMessage(IDC_TEX_COMPRESS, BM_SETCHECK, compressTextures ? BST_CHECKED : BST_UNCHECKED, 0);
 
    const bool softwareVP = settings.LoadValueWithDefault(Settings::Player, "SoftwareVertexProcessing"s, false);
-   SendMessage(GetDlgItem(IDC_SOFTWARE_VP).GetHwnd(), BM_SETCHECK, softwareVP ? BST_CHECKED : BST_UNCHECKED, 0);
+   SendDlgItemMessage(IDC_SOFTWARE_VP, BM_SETCHECK, softwareVP ? BST_CHECKED : BST_UNCHECKED, 0);
 
    const bool video10bit = settings.LoadValueWithDefault(Settings::Player, "Render10Bit"s, false);
-   SendMessage(GetDlgItem(IDC_10BIT_VIDEO).GetHwnd(), BM_SETCHECK, video10bit ? BST_CHECKED : BST_UNCHECKED, 0);
+   SendDlgItemMessage(IDC_10BIT_VIDEO, BM_SETCHECK, video10bit ? BST_CHECKED : BST_UNCHECKED, 0);
 
    //const int depthcur = settings.LoadValueWithDefault(Settings::Player, "ColorDepth"s, 32);
    //const int refreshrate = settings.LoadValueWithDefault(Settings::Player, "RefreshRate"s, 0);
@@ -700,7 +692,7 @@ void VideoOptionsDialog::LoadSettings()
    SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 
    const bool fullscreen = settings.LoadValueWithDefault(Settings::Player, "FullScreen"s, IsWindows10_1803orAbove());
-   SendMessage(GetDlgItem(fullscreen ? IDC_EXCLUSIVE_FULLSCREEN : IDC_WINDOWED).GetHwnd(), BM_SETCHECK, BST_CHECKED, 0);
+   SendDlgItemMessage(fullscreen ? IDC_EXCLUSIVE_FULLSCREEN : IDC_WINDOWED, BM_SETCHECK, BST_CHECKED, 0);
    OnCommand(IDC_EXCLUSIVE_FULLSCREEN, 0L); // Force UI update
 
    const int widthcur = settings.LoadValueWithDefault(Settings::Player, "Width"s, -1);
@@ -708,11 +700,10 @@ void VideoOptionsDialog::LoadSettings()
    SetDlgItemInt(IDC_WIDTH_EDIT, widthcur, FALSE);
    SetDlgItemInt(IDC_HEIGHT_EDIT, heightcur, FALSE);
 
-   hwnd = GetDlgItem(IDC_AR_COMBO).GetHwnd();
-   SendMessage(hwnd, CB_SETCURSEL, 0, 0);
+   SendDlgItemMessage(IDC_AR_COMBO, CB_SETCURSEL, 0, 0);
    for (int i = 1; i < sizeof(arFactors) / sizeof(arFactors[0]); i++)
       if (heightcur == (int)(widthcur / arFactors[i]))
-         SendMessage(hwnd, CB_SETCURSEL, i, 0);
+         SendDlgItemMessage(IDC_AR_COMBO, CB_SETCURSEL, i, 0);
 
    UpdateDisplayHeightFromWidth();
 
@@ -748,9 +739,9 @@ void VideoOptionsDialog::LoadSettings()
    switch (ballStretchMode)
    {
       default:
-      case 0:  SendMessage(GetDlgItem(IDC_StretchNo).GetHwnd(), BM_SETCHECK, BST_CHECKED, 0);      break;
-      case 1:  SendMessage(GetDlgItem(IDC_StretchYes).GetHwnd(), BM_SETCHECK, BST_CHECKED, 0);     break;
-      case 2:  SendMessage(GetDlgItem(IDC_StretchMonitor).GetHwnd(), BM_SETCHECK, BST_CHECKED, 0); break;
+      case 0:  SendDlgItemMessage(IDC_StretchNo, BM_SETCHECK, BST_CHECKED, 0);      break;
+      case 1:  SendDlgItemMessage(IDC_StretchYes, BM_SETCHECK, BST_CHECKED, 0);     break;
+      case 2:  SendDlgItemMessage(IDC_StretchMonitor, BM_SETCHECK, BST_CHECKED, 0); break;
    }
 }
 
@@ -759,10 +750,10 @@ void VideoOptionsDialog::SaveSettings(const bool saveAll)
    BOOL nothing = 0;
    Settings& settings = GetEditedSettings();
 
-   const bool fullscreen = SendMessage(GetDlgItem(IDC_EXCLUSIVE_FULLSCREEN).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED;
+   const bool fullscreen = IsDlgButtonChecked(IDC_EXCLUSIVE_FULLSCREEN) == BST_CHECKED;
    if (fullscreen)
    {
-      const size_t index = SendMessage(GetDlgItem(IDC_SIZELIST).GetHwnd(), LB_GETCURSEL, 0, 0);
+      const size_t index = SendDlgItemMessage(IDC_SIZELIST, LB_GETCURSEL, 0, 0);
       const VideoMode* const pvm = &m_allVideoModes[index];
       settings.SaveValue(Settings::Player, "Width"s, pvm->width, !saveAll);
       settings.SaveValue(Settings::Player, "Height"s, pvm->height, !saveAll);
@@ -771,7 +762,7 @@ void VideoOptionsDialog::SaveSettings(const bool saveAll)
    }
    else
    {
-      LRESULT arMode = SendMessage(GetDlgItem(IDC_AR_COMBO).GetHwnd(), CB_GETCURSEL, 0, 0);
+      LRESULT arMode = SendDlgItemMessage(IDC_AR_COMBO, CB_GETCURSEL, 0, 0);
       if (arMode == LB_ERR)
          arMode = 0;
       int width = GetDlgItemInt(IDC_WIDTH_EDIT, false);
@@ -791,7 +782,7 @@ void VideoOptionsDialog::SaveSettings(const bool saveAll)
          settings.SaveValue(Settings::Player, "Height"s, height, !saveAll);
       }
    }
-   settings.SaveValue(Settings::Player, "Display"s, (int)SendMessage(GetDlgItem(IDC_DISPLAY_ID).GetHwnd(), CB_GETCURSEL, 0, 0), !saveAll);
+   settings.SaveValue(Settings::Player, "Display"s, (int)SendDlgItemMessage(IDC_DISPLAY_ID, CB_GETCURSEL, 0, 0), !saveAll);
    settings.SaveValue(Settings::Player, "FullScreen"s, fullscreen, !saveAll);
    settings.SaveValue(Settings::Player, "ScreenWidth"s, GetDlgItemText(IDC_SCREEN_WIDTH).GetString(), !saveAll);
    settings.SaveValue(Settings::Player, "ScreenHeight"s, GetDlgItemText(IDC_SCREEN_HEIGHT).GetString(), !saveAll);
@@ -799,18 +790,18 @@ void VideoOptionsDialog::SaveSettings(const bool saveAll)
    settings.SaveValue(Settings::Player, "ScreenPlayerX"s, GetDlgItemText(IDC_SCREEN_PLAYERX).GetString(), !saveAll);
    settings.SaveValue(Settings::Player, "ScreenPlayerY"s, GetDlgItemText(IDC_SCREEN_PLAYERY).GetString(), !saveAll);
    settings.SaveValue(Settings::Player, "ScreenPlayerZ"s, GetDlgItemText(IDC_SCREEN_PLAYERZ).GetString(), !saveAll);
-   settings.SaveValue(Settings::Player, "Render10Bit"s, SendMessage(GetDlgItem(IDC_10BIT_VIDEO).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED, !saveAll);
-   LRESULT maxTexDim = SendMessage(GetDlgItem(IDC_MAX_TEXTURE_COMBO).GetHwnd(), CB_GETCURSEL, 0, 0);
+   settings.SaveValue(Settings::Player, "Render10Bit"s, IsDlgButtonChecked(IDC_10BIT_VIDEO) == BST_CHECKED, !saveAll);
+   LRESULT maxTexDim = SendDlgItemMessage(IDC_MAX_TEXTURE_COMBO, CB_GETCURSEL, 0, 0);
    if (maxTexDim == LB_ERR)
       maxTexDim = 7;
    maxTexDim = maxTexDim == 7 ? 0 : (1024 * (maxTexDim + 1));
    settings.SaveValue(Settings::Player, "MaxTexDimension"s, (int)maxTexDim, !saveAll);
    if (m_initialMaxTexDim != maxTexDim)
       MessageBox("You have changed the maximum texture size.\n\nThis change will only take effect after reloading the tables.", "Reload tables", MB_ICONWARNING);
-   settings.SaveValue(Settings::Player, "BallTrail"s, SendMessage(GetDlgItem(IDC_GLOBAL_TRAIL_CHECK).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED, !saveAll);
-   settings.SaveValue(Settings::Player, "DisableLightingForBalls"s, SendMessage(GetDlgItem(IDC_GLOBAL_DISABLE_LIGHTING_BALLS).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED, !saveAll);
+   settings.SaveValue(Settings::Player, "BallTrail"s, IsDlgButtonChecked(IDC_GLOBAL_TRAIL_CHECK) == BST_CHECKED, !saveAll);
+   settings.SaveValue(Settings::Player, "DisableLightingForBalls"s, IsDlgButtonChecked(IDC_GLOBAL_DISABLE_LIGHTING_BALLS) == BST_CHECKED, !saveAll);
    settings.SaveValue(Settings::Player, "MaxFramerate"s, (int)GetDlgItemInt(IDC_MAX_FPS, nothing, TRUE), !saveAll);
-   LRESULT syncMode = SendMessage(GetDlgItem(IDC_VIDEO_SYNC_MODE).GetHwnd(), CB_GETCURSEL, 0, 0);
+   LRESULT syncMode = SendDlgItemMessage(IDC_VIDEO_SYNC_MODE, CB_GETCURSEL, 0, 0);
    if (syncMode == LB_ERR)
       syncMode = VideoSyncMode::VSM_FRAME_PACING;
    settings.SaveValue(Settings::Player, "SyncMode"s, (int)syncMode, !saveAll);
@@ -820,55 +811,55 @@ void VideoOptionsDialog::SaveSettings(const bool saveAll)
    settings.SaveValue(Settings::Player, "Longitude"s, GetDlgItemText(IDC_CORRECTION_X).GetString(), !saveAll);
    settings.SaveValue(Settings::Player, "Latitude"s, GetDlgItemText(IDC_CORRECTION_X).GetString(), !saveAll);
    settings.SaveValue(Settings::Player, "NudgeStrength"s, GetDlgItemText(IDC_CORRECTION_X).GetString(), !saveAll);
-   LRESULT fxaa = SendMessage(GetDlgItem(IDC_POST_PROCESS_COMBO).GetHwnd(), CB_GETCURSEL, 0, 0);
+   LRESULT fxaa = SendDlgItemMessage(IDC_POST_PROCESS_COMBO, CB_GETCURSEL, 0, 0);
    if (fxaa == LB_ERR)
       fxaa = Standard_FXAA;
    settings.SaveValue(Settings::Player, "FXAA"s, (int) fxaa, !saveAll);
-   LRESULT sharpen = SendMessage(GetDlgItem(IDC_SHARPEN_COMBO).GetHwnd(), CB_GETCURSEL, 0, 0);
+   LRESULT sharpen = SendDlgItemMessage(IDC_SHARPEN_COMBO, CB_GETCURSEL, 0, 0);
    if (sharpen == LB_ERR)
       sharpen = 0;
    settings.SaveValue(Settings::Player, "Sharpen"s, (int)sharpen, !saveAll);
-   settings.SaveValue(Settings::Player, "ScaleFXDMD"s, SendMessage(GetDlgItem(IDC_SCALE_FX_DMD).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED, !saveAll);
-   settings.SaveValue(Settings::Player, "BGSet"s, (int)SendMessage(GetDlgItem(IDC_BG_SET).GetHwnd(), CB_GETCURSEL, 0, 0), !saveAll);
+   settings.SaveValue(Settings::Player, "ScaleFXDMD"s, IsDlgButtonChecked(IDC_SCALE_FX_DMD) == BST_CHECKED, !saveAll);
+   settings.SaveValue(Settings::Player, "BGSet"s, (int)SendDlgItemMessage(IDC_BG_SET, CB_GETCURSEL, 0, 0), !saveAll);
    // update the cached current view setup of all loaded tables since it also depends on this setting
    for (auto table : g_pvp->m_vtable)
       table->UpdateCurrentBGSet();
-   LRESULT AAfactorIndex = SendMessage(GetDlgItem(IDC_SUPER_SAMPLING_COMBO).GetHwnd(), CB_GETCURSEL, 0, 0);
+   LRESULT AAfactorIndex = SendDlgItemMessage(IDC_SUPER_SAMPLING_COMBO, CB_GETCURSEL, 0, 0);
    if (AAfactorIndex == LB_ERR)
       AAfactorIndex = getBestMatchingAAfactorIndex(1);
    const float AAfactor = (AAfactorIndex < AAfactorCount) ? AAfactors[AAfactorIndex] : 1.0f;
    settings.SaveValue(Settings::Player, "USEAA"s, AAfactor > 1.0f, !saveAll);
    settings.SaveValue(Settings::Player, "AAFactor"s, AAfactor, !saveAll);
-   LRESULT MSAASamplesIndex = SendMessage(GetDlgItem(IDC_MSAA_COMBO).GetHwnd(), CB_GETCURSEL, 0, 0);
+   LRESULT MSAASamplesIndex = SendDlgItemMessage(IDC_MSAA_COMBO, CB_GETCURSEL, 0, 0);
    if (MSAASamplesIndex == LB_ERR)
       MSAASamplesIndex = 0;
    const int MSAASamples = (MSAASamplesIndex < MSAASampleCount) ? MSAASamplesOpts[MSAASamplesIndex] : 1;
    settings.SaveValue(Settings::Player, "MSAASamples"s, MSAASamples, !saveAll);
-   settings.SaveValue(Settings::Player, "DynamicDayNight"s, SendMessage(GetDlgItem(IDC_DYNAMIC_DN).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED, !saveAll);
-   LRESULT maxAOMode = SendMessage(GetDlgItem(IDC_MAX_AO_COMBO).GetHwnd(), CB_GETCURSEL, 0, 0);
+   settings.SaveValue(Settings::Player, "DynamicDayNight"s, IsDlgButtonChecked(IDC_DYNAMIC_DN) == BST_CHECKED, !saveAll);
+   LRESULT maxAOMode = SendDlgItemMessage(IDC_MAX_AO_COMBO, CB_GETCURSEL, 0, 0);
    if (maxAOMode == LB_ERR)
       maxAOMode = 2;
    settings.SaveValue(Settings::Player, "DisableAO"s, maxAOMode == 0, !saveAll);
    settings.SaveValue(Settings::Player, "DynamicAO"s, maxAOMode == 2, !saveAll);
-   LRESULT maxReflectionMode = SendMessage(GetDlgItem(IDC_MAX_REFLECTION_COMBO).GetHwnd(), CB_GETCURSEL, 0, 0);
+   LRESULT maxReflectionMode = SendDlgItemMessage(IDC_MAX_REFLECTION_COMBO, CB_GETCURSEL, 0, 0);
    if (maxReflectionMode == LB_ERR)
       maxReflectionMode = RenderProbe::REFL_STATIC;
    settings.SaveValue(Settings::Player, "PFReflection"s, (int)maxReflectionMode, !saveAll);
-   settings.SaveValue(Settings::Player, "SSRefl"s, SendMessage(GetDlgItem(IDC_GLOBAL_SSREFLECTION_CHECK).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED, !saveAll);
-   settings.SaveValue(Settings::Player, "ForceAnisotropicFiltering"s, SendMessage(GetDlgItem(IDC_FORCE_ANISO).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED, !saveAll);
-   settings.SaveValue(Settings::Player, "CompressTextures"s, SendMessage(GetDlgItem(IDC_TEX_COMPRESS).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED, !saveAll);
-   settings.SaveValue(Settings::Player, "SoftwareVertexProcessing"s, SendMessage(GetDlgItem(IDC_SOFTWARE_VP).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED, !saveAll);
-   settings.SaveValue(Settings::Player, "AlphaRampAccuracy"s, (int)SendMessage(GetDlgItem(IDC_ARASlider).GetHwnd(), TBM_GETPOS, 0, 0), !saveAll);
-   LRESULT stereo3D = SendMessage(GetDlgItem(IDC_3D_STEREO).GetHwnd(), CB_GETCURSEL, 0, 0);
+   settings.SaveValue(Settings::Player, "SSRefl"s, IsDlgButtonChecked(IDC_GLOBAL_SSREFLECTION_CHECK) == BST_CHECKED, !saveAll);
+   settings.SaveValue(Settings::Player, "ForceAnisotropicFiltering"s, IsDlgButtonChecked(IDC_FORCE_ANISO) == BST_CHECKED, !saveAll);
+   settings.SaveValue(Settings::Player, "CompressTextures"s, IsDlgButtonChecked(IDC_TEX_COMPRESS) == BST_CHECKED, !saveAll);
+   settings.SaveValue(Settings::Player, "SoftwareVertexProcessing"s, IsDlgButtonChecked(IDC_SOFTWARE_VP) == BST_CHECKED, !saveAll);
+   settings.SaveValue(Settings::Player, "AlphaRampAccuracy"s, (int)SendDlgItemMessage(IDC_ARASlider, TBM_GETPOS, 0, 0), !saveAll);
+   LRESULT stereo3D = SendDlgItemMessage(IDC_3D_STEREO, CB_GETCURSEL, 0, 0);
    if (stereo3D == LB_ERR)
       stereo3D = STEREO_OFF;
    settings.SaveValue(Settings::Player, "Stereo3D"s, (int)stereo3D, !saveAll);
    settings.SaveValue(Settings::Player, "Stereo3DEnabled"s, stereo3D != STEREO_OFF, !saveAll);
-   settings.SaveValue(Settings::Player, "Stereo3DYAxis"s, SendMessage(GetDlgItem(IDC_3D_STEREO_Y).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED, !saveAll);
+   settings.SaveValue(Settings::Player, "Stereo3DYAxis"s, IsDlgButtonChecked(IDC_3D_STEREO_Y) == BST_CHECKED, !saveAll);
    settings.SaveValue(Settings::Player, "Stereo3DOffset"s, GetDlgItemText(IDC_3D_STEREO_OFS).GetString(), !saveAll);
    bool fakeStereo = true;
    #ifdef ENABLE_SDL
-   settings.SaveValue(Settings::Player, "Stereo3DFake"s, SendDlgItemMessage(IDC_FAKE_STEREO, BM_GETCHECK, 0, 0) == BST_CHECKED, !saveAll);
+   settings.SaveValue(Settings::Player, "Stereo3DFake"s, IsDlgButtonChecked(IDC_FAKE_STEREO) == BST_CHECKED, !saveAll);
    #endif
    settings.SaveValue(Settings::Player, "Stereo3DMaxSeparation"s, GetDlgItemText(IDC_3D_STEREO_MS).GetString(), !saveAll);
    settings.SaveValue(Settings::Player, "Stereo3DEyeSeparation"s, GetDlgItemText(IDC_3D_STEREO_ES).GetString(), !saveAll);
@@ -878,17 +869,17 @@ void VideoOptionsDialog::SaveSettings(const bool saveAll)
    if (IsAnaglyphStereoMode(stereo3D))
    {
       LRESULT glassesIndex = stereo3D - STEREO_ANAGLYPH_1;
-      LRESULT anaglyphFilter = SendMessage(GetDlgItem(IDC_3D_STEREO_ANAGLYPH_FILTER).GetHwnd(), CB_GETCURSEL, 0, 0);
+      LRESULT anaglyphFilter = SendDlgItemMessage(IDC_3D_STEREO_ANAGLYPH_FILTER, CB_GETCURSEL, 0, 0);
       if (anaglyphFilter == LB_ERR)
          anaglyphFilter = 4;
       settings.SaveValue(Settings::Player, "Anaglyph"s.append(std::to_string(glassesIndex + 1)).append("Filter"s), (int)anaglyphFilter, !saveAll);
    }
-   settings.SaveValue(Settings::Player, "BAMheadTracking"s, SendMessage(GetDlgItem(IDC_HEADTRACKING).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED, !saveAll);
-   settings.SaveValue(Settings::Player, "DisableDWM"s, SendMessage(GetDlgItem(IDC_DISABLE_DWM).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED, !saveAll);
-   settings.SaveValue(Settings::Player, "UseNVidiaAPI"s, SendMessage(GetDlgItem(IDC_USE_NVIDIA_API_CHECK).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED, !saveAll);
-   settings.SaveValue(Settings::Player, "ForceBloomOff"s, SendMessage(GetDlgItem(IDC_BLOOM_OFF).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED, !saveAll);
-   const int ballStretchMode = SendMessage(GetDlgItem(IDC_StretchYes).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED ? 1
-            : SendMessage(GetDlgItem(IDC_StretchMonitor).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED              ? 2
+   settings.SaveValue(Settings::Player, "BAMheadTracking"s, IsDlgButtonChecked(IDC_HEADTRACKING) == BST_CHECKED, !saveAll);
+   settings.SaveValue(Settings::Player, "DisableDWM"s, IsDlgButtonChecked(IDC_DISABLE_DWM) == BST_CHECKED, !saveAll);
+   settings.SaveValue(Settings::Player, "UseNVidiaAPI"s, IsDlgButtonChecked(IDC_USE_NVIDIA_API_CHECK) == BST_CHECKED, !saveAll);
+   settings.SaveValue(Settings::Player, "ForceBloomOff"s, IsDlgButtonChecked(IDC_BLOOM_OFF) == BST_CHECKED, !saveAll);
+   const int ballStretchMode = IsDlgButtonChecked(IDC_StretchYes) == BST_CHECKED ? 1
+            : IsDlgButtonChecked(IDC_StretchMonitor) == BST_CHECKED              ? 2
                                                                                                                    : 0;
    settings.SaveValue(Settings::Player, "BallStretchMode"s, ballStretchMode, !saveAll);
    const bool overwriteEnabled = IsDlgButtonChecked(IDC_OVERWRITE_BALL_IMAGE_CHECK) == BST_CHECKED;
@@ -909,7 +900,7 @@ void VideoOptionsDialog::SaveSettings(const bool saveAll)
 
 void VideoOptionsDialog::UpdateDisplayHeightFromWidth()
 {
-   LRESULT arMode = SendMessage(GetDlgItem(IDC_AR_COMBO).GetHwnd(), CB_GETCURSEL, 0, 0);
+   LRESULT arMode = SendDlgItemMessage(IDC_AR_COMBO, CB_GETCURSEL, 0, 0);
    if (arMode == LB_ERR)
       arMode = 0;
    GetDlgItem(IDC_HEIGHT_EDIT).EnableWindow(arMode == 0);
@@ -969,11 +960,11 @@ BOOL VideoOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
       }
       case IDC_OVERWRITE_BALL_IMAGE_CHECK:
       {
-         const BOOL overwriteEnabled = (IsDlgButtonChecked(IDC_OVERWRITE_BALL_IMAGE_CHECK) == BST_CHECKED) ? TRUE : FALSE;
-         ::EnableWindow(GetDlgItem(IDC_BROWSE_BALL_IMAGE).GetHwnd(), overwriteEnabled);
-         ::EnableWindow(GetDlgItem(IDC_BROWSE_BALL_DECAL).GetHwnd(), overwriteEnabled);
-         ::EnableWindow(GetDlgItem(IDC_BALL_IMAGE_EDIT).GetHwnd(), overwriteEnabled);
-         ::EnableWindow(GetDlgItem(IDC_BALL_DECAL_EDIT).GetHwnd(), overwriteEnabled);
+         const BOOL overwriteEnabled = IsDlgButtonChecked(IDC_OVERWRITE_BALL_IMAGE_CHECK) == BST_CHECKED ? TRUE : FALSE;
+         GetDlgItem(IDC_BROWSE_BALL_IMAGE).EnableWindow(overwriteEnabled);
+         GetDlgItem(IDC_BROWSE_BALL_DECAL).EnableWindow(overwriteEnabled);
+         GetDlgItem(IDC_BALL_IMAGE_EDIT).EnableWindow(overwriteEnabled);
+         GetDlgItem(IDC_BALL_DECAL_EDIT).EnableWindow(overwriteEnabled);
          break;
       }
       case IDC_BROWSE_BALL_IMAGE:
@@ -1023,7 +1014,7 @@ BOOL VideoOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
       case IDC_WINDOWED:
       case IDC_EXCLUSIVE_FULLSCREEN:
       {
-         const bool fullscreen = SendMessage(GetDlgItem(IDC_EXCLUSIVE_FULLSCREEN).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED;
+         const bool fullscreen = IsDlgButtonChecked(IDC_EXCLUSIVE_FULLSCREEN) == BST_CHECKED;
          // Fullscreen settings
          GetDlgItem(IDC_SIZELIST).ShowWindow(fullscreen ? 1 : 0);
          GetDlgItem(IDC_DISABLE_DWM).ShowWindow(fullscreen ? 1 : 0);
@@ -1048,17 +1039,17 @@ BOOL VideoOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
       }
       case IDC_SIZELIST:
       {
-         const bool fullscreen = SendMessage(GetDlgItem(IDC_EXCLUSIVE_FULLSCREEN).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED;
+         const bool fullscreen = IsDlgButtonChecked(IDC_EXCLUSIVE_FULLSCREEN) == BST_CHECKED;
          if (fullscreen)
          {
-            const size_t index = SendMessage(GetDlgItem(IDC_SIZELIST).GetHwnd(), LB_GETCURSEL, 0, 0);
+            const size_t index = SendDlgItemMessage(IDC_SIZELIST, LB_GETCURSEL, 0, 0);
             const VideoMode* const pvm = &m_allVideoModes[index];
             SetDlgItemInt(IDC_WIDTH_EDIT, pvm->width, FALSE);
             SetDlgItemInt(IDC_HEIGHT_EDIT, pvm->height, FALSE);
-            SendMessage(GetDlgItem(IDC_AR_COMBO).GetHwnd(), CB_SETCURSEL, 0, 0);
+            SendDlgItemMessage(IDC_AR_COMBO, CB_SETCURSEL, 0, 0);
             for (int i = 1; i < sizeof(arFactors) / sizeof(arFactors[0]); i++)
                if (pvm->height == (int)(pvm->width / arFactors[i]))
-                  SendMessage(GetDlgItem(IDC_AR_COMBO).GetHwnd(), CB_SETCURSEL, i, 0);
+                  SendDlgItemMessage(IDC_AR_COMBO, CB_SETCURSEL, i, 0);
          }
          break;
       }
@@ -1070,17 +1061,17 @@ BOOL VideoOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
       }
       case IDC_ENABLE_AO:
       {
-         const size_t checked = SendDlgItemMessage(IDC_ENABLE_AO, BM_GETCHECK, 0, 0);
+         const size_t checked = IsDlgButtonChecked(IDC_ENABLE_AO);
          GetDlgItem(IDC_DYNAMIC_AO).EnableWindow(checked ? TRUE : FALSE);
          break;
       }
       case IDC_3D_STEREO:
       case IDC_FAKE_STEREO:
       {
-         LRESULT stereo3D = SendMessage(GetDlgItem(IDC_3D_STEREO).GetHwnd(), CB_GETCURSEL, 0, 0);
+         LRESULT stereo3D = SendDlgItemMessage(IDC_3D_STEREO, CB_GETCURSEL, 0, 0);
          bool fakeStereo = true;
          #ifdef ENABLE_SDL
-         fakeStereo = SendDlgItemMessage(IDC_FAKE_STEREO, BM_GETCHECK, 0, 0);
+         fakeStereo = IsDlgButtonChecked(IDC_FAKE_STEREO);
          #endif
          SetDlgItemText(IDC_3D_STEREO_MS_LABEL, fakeStereo ? "Parallax Separation" : "Eye Separation (mm)");
          if (stereo3D == LB_ERR)
@@ -1142,12 +1133,12 @@ BOOL VideoOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 
 void VideoOptionsDialog::OnOK()
 {
-   SaveSettings(SendMessage(GetDlgItem(IDC_APPLICATION_SETTINGS).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED);
+   SaveSettings(IsDlgButtonChecked(IDC_APPLICATION_SETTINGS) == BST_CHECKED);
    CDialog::OnOK();
 }
 
 void VideoOptionsDialog::OnClose()
 {
-   SendMessage(GetDlgItem(IDC_SIZELIST).GetHwnd(), LB_RESETCONTENT, 0, 0);
+   SendDlgItemMessage(IDC_SIZELIST, LB_RESETCONTENT, 0, 0);
    CDialog::OnClose();
 }

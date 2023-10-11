@@ -351,7 +351,7 @@ void SoundDialog::Export()
 {
     CCO( PinTable ) * const pt = g_pvp->GetActiveTable();
     const int selectedItemsCount = ListView_GetSelectedCount(hSoundList);
-    const size_t renameOnExport = SendMessage(GetDlgItem(IDC_CHECK_RENAME_ON_EXPORT).GetHwnd(), BM_GETCHECK, 0, 0);
+    const size_t renameOnExport = IsDlgButtonChecked(IDC_CHECK_RENAME_ON_EXPORT);
 
     if (selectedItemsCount)
     {
@@ -634,12 +634,12 @@ BOOL SoundPositionDialog::OnInitDialog()
 	switch (m_cOutputTarget)
 	{
 	case SNDOUT_BACKGLASS:
-		::SendMessage(GetDlgItem(IDC_SPT_BACKGLASS).GetHwnd(), BM_SETCHECK, BST_CHECKED, 0);
+		SendDlgItemMessage(IDC_SPT_BACKGLASS, BM_SETCHECK, BST_CHECKED, 0);
 		break;
 	default:
 		assert(false);
 	case SNDOUT_TABLE:
-		::SendMessage(GetDlgItem(IDC_SPT_TABLE).GetHwnd(), BM_SETCHECK, BST_CHECKED, 0);
+		SendDlgItemMessage(IDC_SPT_TABLE, BM_SETCHECK, BST_CHECKED, 0);
 		break;
 	}
 
@@ -715,7 +715,7 @@ void SoundPositionDialog::SetTextValue(int ctl, int val)
 void SoundPositionDialog::GetDialogValues()
 {
 	m_cOutputTarget = SNDOUT_TABLE;
-	if (SendMessage(GetDlgItem(IDC_SPT_BACKGLASS).GetHwnd(), BM_GETCHECK, 0, 0))
+	if (IsDlgButtonChecked(IDC_SPT_BACKGLASS))
 	{
 		m_cOutputTarget = SNDOUT_BACKGLASS;
 	}
