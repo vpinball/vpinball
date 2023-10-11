@@ -17,7 +17,6 @@ protected:
     virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 private:
-    ComboBox    m_inGameAOCombo;
     ComboBox    m_ScreenReflectionCombo;
     ComboBox    m_ballReflectionCombo;
     ComboBox    m_overwritePhysicsSetCombo;

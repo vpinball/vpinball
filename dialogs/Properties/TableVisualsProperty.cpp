@@ -39,6 +39,8 @@ void TableVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
         PropertyDialog::SetFloatTextbox(m_ballReflectPlayfieldEdit, table->m_ballPlayfieldReflectionStrength);
     if (dispid == IDC_BULBINTENSITYSCALE || dispid == -1)
         PropertyDialog::SetFloatTextbox(m_ballDefaultBulbIntensScaleEdit, table->m_defaultBulbIntensityScaleOnBall);
+    if (dispid == IDC_ENABLE_AO || dispid == -1)
+        PropertyDialog::SetCheckboxState(m_hEnableAOCheck, table->m_enableAO);
 }
 
 void TableVisualsProperty::UpdateProperties(const int dispid)
@@ -79,6 +81,9 @@ void TableVisualsProperty::UpdateProperties(const int dispid)
         case IDC_BULBINTENSITYSCALE:
             CHECK_UPDATE_ITEM(table->m_defaultBulbIntensityScaleOnBall, PropertyDialog::GetFloatTextbox(m_ballDefaultBulbIntensScaleEdit), table);
             break;
+        case IDC_ENABLE_AO:
+            CHECK_UPDATE_ITEM(table->m_enableAO, PropertyDialog::GetCheckboxState(m_hEnableAOCheck), table);
+            break;
         default:
             break;
     }
@@ -91,12 +96,13 @@ BOOL TableVisualsProperty::OnInitDialog()
     m_materialCombo.AttachItem(IDC_MATERIAL_COMBO);
     m_ballImageCombo.AttachItem(DISPID_Image3);
     m_ballDecalCombo.AttachItem(DISPID_Image4);
-    m_hReflectElementsCheck = ::GetDlgItem(GetHwnd(), IDC_REFLECT_ELEMENTS_CHECK);
+    m_hReflectElementsCheck = GetDlgItem(IDC_REFLECT_ELEMENTS_CHECK);
     m_reflectionStrengthEdit.AttachItem(IDC_REFLECTION_PLAYFIELD);
-    m_hLogoModeCheck = ::GetDlgItem(GetHwnd(), IDC_BALL_DECAL_MODE);
-    m_hSphericalMapCheck = ::GetDlgItem(GetHwnd(), IDC_BALL_SPHERICAL_MAP);
+    m_hLogoModeCheck = GetDlgItem(IDC_BALL_DECAL_MODE);
+    m_hSphericalMapCheck = GetDlgItem(IDC_BALL_SPHERICAL_MAP);
     m_ballReflectPlayfieldEdit.AttachItem(IDC_BALLPLAYFIELD_REFLECTION);
     m_ballDefaultBulbIntensScaleEdit.AttachItem(IDC_BULBINTENSITYSCALE);
+    m_hEnableAOCheck = GetDlgItem(IDC_ENABLE_AO);
 
     UpdateVisuals();
 
@@ -109,6 +115,8 @@ BOOL TableVisualsProperty::OnInitDialog()
     m_resizer.AddChild(GetDlgItem(IDC_STATIC6), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC7), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC8), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC9), CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC10), CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_imageCombo, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_materialCombo, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_ballDecalCombo, CResizer::topleft, RD_STRETCH_WIDTH);
@@ -119,6 +127,7 @@ BOOL TableVisualsProperty::OnInitDialog()
     m_resizer.AddChild(m_hSphericalMapCheck, CResizer::topleft, 0);
     m_resizer.AddChild(m_ballReflectPlayfieldEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_ballDefaultBulbIntensScaleEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hEnableAOCheck, CResizer::topleft, RD_STRETCH_WIDTH);
 
     return TRUE;
 }

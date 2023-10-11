@@ -27,6 +27,7 @@ private:
     HWND        m_hSphericalMapCheck;
     HWND        m_hLogoModeCheck;
     HWND        m_hReflectElementsCheck;
+    HWND        m_hEnableAOCheck;
 };
 
 #endif

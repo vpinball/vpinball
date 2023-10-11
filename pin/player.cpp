@@ -1825,7 +1825,7 @@ HRESULT Player::Init()
 int Player::GetAOMode()
 {
    // We must evaluate this dynamically since AO scale and enabled/disable can be changed from script
-   if (m_disableAO || m_ptable->m_useAO == 0 || !m_pin3d.m_pd3dPrimaryDevice->DepthBufferReadBackAvailable() || m_ptable->m_AOScale == 0.f)
+   if (m_disableAO || !m_ptable->m_enableAO || !m_pin3d.m_pd3dPrimaryDevice->DepthBufferReadBackAvailable() || m_ptable->m_AOScale == 0.f)
       return 0;
    if (m_dynamicAO)
       return 2;
