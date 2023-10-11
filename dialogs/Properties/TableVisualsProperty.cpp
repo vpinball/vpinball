@@ -41,6 +41,8 @@ void TableVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
         PropertyDialog::SetFloatTextbox(m_ballDefaultBulbIntensScaleEdit, table->m_defaultBulbIntensityScaleOnBall);
     if (dispid == IDC_ENABLE_AO || dispid == -1)
         PropertyDialog::SetCheckboxState(m_hEnableAOCheck, table->m_enableAO);
+    if (dispid == IDC_ENABLE_SSR || dispid == -1)
+        PropertyDialog::SetCheckboxState(m_hEnableSSRCheck, table->m_enableSSR);
 }
 
 void TableVisualsProperty::UpdateProperties(const int dispid)
@@ -84,6 +86,9 @@ void TableVisualsProperty::UpdateProperties(const int dispid)
         case IDC_ENABLE_AO:
             CHECK_UPDATE_ITEM(table->m_enableAO, PropertyDialog::GetCheckboxState(m_hEnableAOCheck), table);
             break;
+        case IDC_ENABLE_SSR:
+            CHECK_UPDATE_ITEM(table->m_enableSSR, PropertyDialog::GetCheckboxState(m_hEnableSSRCheck), table);
+            break;
         default:
             break;
     }
@@ -103,6 +108,7 @@ BOOL TableVisualsProperty::OnInitDialog()
     m_ballReflectPlayfieldEdit.AttachItem(IDC_BALLPLAYFIELD_REFLECTION);
     m_ballDefaultBulbIntensScaleEdit.AttachItem(IDC_BULBINTENSITYSCALE);
     m_hEnableAOCheck = GetDlgItem(IDC_ENABLE_AO);
+    m_hEnableSSRCheck = GetDlgItem(IDC_ENABLE_SSR);
 
     UpdateVisuals();
 
@@ -128,6 +134,7 @@ BOOL TableVisualsProperty::OnInitDialog()
     m_resizer.AddChild(m_ballReflectPlayfieldEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_ballDefaultBulbIntensScaleEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_hEnableAOCheck, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hEnableSSRCheck, CResizer::topleft, RD_STRETCH_WIDTH);
 
     return TRUE;
 }
