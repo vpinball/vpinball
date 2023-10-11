@@ -22,8 +22,6 @@ private:
     ComboBox    m_ballReflectionCombo;
     ComboBox    m_ballTrailCombo;
     ComboBox    m_overwritePhysicsSetCombo;
-    CSlider     m_detailLevelSlider;
-    HWND        m_hOverwriteDetailsCheck;
     EditBox     m_gameplayDifficultEdit;
     EditBox     m_fpsLimiterEdit;
     EditBox     m_ballTrailStrengthEdit;
