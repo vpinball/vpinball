@@ -6022,7 +6022,8 @@ void PinTable::ImportBackdropPOV(const string& filename)
          POV_FIELD("ingameAO", "%i", m_useAO);
          POV_FIELD("ScSpReflect", "%i", m_useSSR);
          POV_FIELD("FPSLimiter", "%i", m_TableAdaptiveVSync);
-         POV_FIELD("OverwriteDetailsLevel", "%i", m_overwriteGlobalDetailLevel);
+         int overwriteGlobalDetailLevel = (int)m_overwriteGlobalDetailLevel;
+         POV_FIELD("OverwriteDetailsLevel", "%i", overwriteGlobalDetailLevel);
          POV_FIELD("DetailsLevel", "%i", m_userDetailLevel);
          POV_FIELD("BallReflection", "%i", m_useReflectionForBalls);
          POV_FIELD("BallTrail", "%i", m_useTrailForBalls);

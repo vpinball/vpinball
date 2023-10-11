@@ -99,7 +99,7 @@ void ExtCaptureManager::Update()
          info.bmiHeader.biCompression = BI_RGB;
          capture->m_hBitmap = CreateDIBSection(hdc2, &info, DIB_RGB_COLORS, (void**)&capture->m_data, 0, 0);
 
-         *capture->m_targetTexture = BaseTexture::CreateFromHBitmap(capture->m_hBitmap);
+         *capture->m_targetTexture = BaseTexture::CreateFromHBitmap(capture->m_hBitmap, g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "MaxTexDimension"s, 0));
          capture->m_data = (*capture->m_targetTexture)->data();
          capture->m_state = CS_Capturing;
       }
