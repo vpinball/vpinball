@@ -140,7 +140,7 @@ Variables
 *LeftMagnaSave
 *RightMagnaSave
 *LockbarKey
-*JoyCustomKey(index) - 1..4 to get the custom key mappings
+*JoyCustomKey(int index) - 1..4 to get the custom key mappings
 
 *ActiveBall - returns the current ball
 *ActiveTable - returns the currently played table element
