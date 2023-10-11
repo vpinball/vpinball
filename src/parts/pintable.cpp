@@ -2205,7 +2205,7 @@ void PinTable::Play(const bool cameraMode)
    dst->m_ballTrailStrength = src->m_ballTrailStrength;
    dst->m_grid = src->m_grid;
    dst->m_reflectElementsOnPlayfield = src->m_reflectElementsOnPlayfield;
-   dst->m_useAO = src->m_useAO;
+   dst->m_enableAO = src->m_enableAO;
    dst->m_useSSR = src->m_useSSR;
    dst->m_bloom_strength = src->m_bloom_strength;
    memcpy(dst->m_wzName, src->m_wzName, MAXNAMEBUFFER * sizeof(src->m_wzName[0]));
@@ -3476,7 +3476,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
    bw.WriteBool(FID(GDAC), m_grid);
    bw.WriteBool(FID(REOP), m_reflectElementsOnPlayfield);
 
-   bw.WriteInt(FID(UAOC), m_useAO);
+   bw.WriteInt(FID(UAOC), m_enableAO);
    bw.WriteInt(FID(USSR), m_useSSR);
    bw.WriteFloat(FID(BLST), m_bloom_strength);
 
@@ -4122,7 +4122,7 @@ void PinTable::SetLoadDefaults()
    m_ballTrailStrength = 0.4f;
    m_ballPlayfieldReflectionStrength = 1.f;
 
-   m_useAO = -1;
+   m_enableAO = true;
    m_useSSR = -1;
 
    m_bloom_strength = 1.0f;
@@ -4320,7 +4320,14 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
          m_settings.SaveValue(Settings::Player, "AAFactor"s, useAA == 0 ? 1.f : 2.f);
       break;
    }
-   case FID(UAOC): pbr->GetInt(m_useAO); break;
+   case FID(UAOC):
+   {
+      // Before 10.8, Ambient Occlusion was not a table property decided by table author but a user override (saved in the table and not inthe ini file like now)
+      int useAO;
+      pbr->GetInt(useAO);
+      m_enableAO = useAO != 0;
+      break;
+   }
    case FID(USSR): pbr->GetInt(m_useSSR); break;
    case FID(UFXA):
    {
@@ -6023,12 +6030,20 @@ void PinTable::ImportBackdropPOV(const string& filename)
                   m_settings.SaveValue(Settings::Player, "FXAA"s, useFXAA == 1 ? Standard_FXAA : Disabled);
             }
          }
-         POV_FIELD("ingameAO", "%i", m_useAO);
+         //POV_FIELD("ingameAO", "%i", m_useAO);
+         auto node = section->FirstChildElement("ingameAO");
+         if (node)
+         {
+            int ingameAO;
+            sscanf_s(node->GetText(), "%i", &ingameAO);
+            if (ingameAO != -1)
+               m_enableAO = ingameAO != 0;
+         }
          POV_FIELD("ScSpReflect", "%i", m_useSSR);
          POV_FIELD("FPSLimiter", "%i", m_TableAdaptiveVSync);
          POV_FIELD("BallReflection", "%i", m_useReflectionForBalls);
          //POV_FIELD("BallTrail", "%i", m_useTrailForBalls);
-         auto node = section->FirstChildElement("BallTrail");
+         node = section->FirstChildElement("BallTrail");
          if (node)
          {
             int useTrailForBalls;
@@ -6183,11 +6198,11 @@ void PinTable::ExportBackdropPOV(const string& filename)
       // Fields are being moved to table override ini and therefore no more exported
       //POV_FIELD("SSAA", m_settings.HasValue(Settings::Player, "AAFactor"s) ? (m_settings.LoadValueWithDefault(Settings::Player, "AAFactor"s, (int)Standard_FXAA) > 1 ? 1 : 0) : -1);
       //POV_FIELD("postprocAA", m_settings.HasValue(Settings::Player, "FXAA"s) ? m_settings.LoadValueWithDefault(Settings::Player, "FXAA"s, (int)Standard_FXAA) : -1);
-      POV_FIELD("ingameAO", m_useAO);
+      //POV_FIELD("ingameAO", m_useAO);
       POV_FIELD("ScSpReflect", m_useSSR);
       POV_FIELD("FPSLimiter", m_TableAdaptiveVSync);
-      // POV_FIELD("OverwriteDetailsLevel", m_overwriteGlobalDetailLevel ? 1 : 0);
-      // POV_FIELD("DetailsLevel", m_userDetailLevel);
+      //POV_FIELD("OverwriteDetailsLevel", m_overwriteGlobalDetailLevel ? 1 : 0);
+      //POV_FIELD("DetailsLevel", m_userDetailLevel);
       POV_FIELD("BallReflection", m_useReflectionForBalls);
       //POV_FIELD("BallTrail", m_useTrailForBalls);
       POV_FIELD("BallTrailStrength", m_ballTrailStrength);
@@ -9465,15 +9480,14 @@ STDMETHODIMP PinTable::put_EnableSSR(UserDefaultOnOff newVal)
 
 STDMETHODIMP PinTable::get_EnableAO(UserDefaultOnOff *pVal)
 {
-   *pVal = (UserDefaultOnOff)m_useAO;
-
+   *pVal = (UserDefaultOnOff)m_enableAO;
    return S_OK;
 }
 
 STDMETHODIMP PinTable::put_EnableAO(UserDefaultOnOff newVal)
 {
    STARTUNDO
-   m_useAO = (int)newVal;
+   m_enableAO = (int)newVal;
    STOPUNDO
 
    return S_OK;

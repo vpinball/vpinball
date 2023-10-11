@@ -24,7 +24,6 @@ TableCustomProperty::TableCustomProperty(const VectorProtected<ISelect> *pvsel) 
     m_soundEffectVolEdit.SetDialog(this);
     m_musicVolEdit.SetDialog(this);
 
-    m_inGameAOCombo.SetDialog(this);
     m_ScreenReflectionCombo.SetDialog(this);
     m_ballReflectionCombo.SetDialog(this);
     m_overwritePhysicsSetCombo.SetDialog(this);
@@ -36,8 +35,6 @@ void TableCustomProperty::UpdateVisuals(const int dispid/*=-1*/)
     if (table == nullptr)
         return;
 
-    if (dispid == IDC_ENABLE_AO || dispid == -1)
-        PropertyDialog::UpdateComboBox(m_userList, m_inGameAOCombo, m_userList[table->m_useAO + 1]);
     if (dispid == IDC_ENABLE_SSR || dispid == -1)
         PropertyDialog::UpdateComboBox(m_userList, m_ScreenReflectionCombo, m_userList[table->m_useSSR + 1]);
     
@@ -74,9 +71,6 @@ void TableCustomProperty::UpdateProperties(const int dispid)
     
     switch (dispid)
     {
-        case IDC_ENABLE_AO:
-            CHECK_UPDATE_ITEM(table->m_useAO, (PropertyDialog::GetComboBoxIndex(m_inGameAOCombo, m_userList) - 1), table);
-            break;
         case IDC_ENABLE_SSR:
             CHECK_UPDATE_ITEM(table->m_useSSR, (PropertyDialog::GetComboBoxIndex(m_ScreenReflectionCombo, m_userList) - 1), table);
             break;
@@ -124,7 +118,6 @@ void TableCustomProperty::UpdateProperties(const int dispid)
 
 BOOL TableCustomProperty::OnInitDialog()
 {
-    m_inGameAOCombo.AttachItem(IDC_ENABLE_AO);
     m_ScreenReflectionCombo.AttachItem(IDC_ENABLE_SSR);
     m_fpsLimiterEdit.AttachItem(IDC_TABLEAVSYNC);
     m_ballReflectionCombo.AttachItem(IDC_BALL_REFLECTION);
@@ -146,7 +139,6 @@ BOOL TableCustomProperty::OnInitDialog()
     UpdateVisuals();
 
     m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC3), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC4), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC5), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC7), CResizer::topleft, RD_STRETCH_WIDTH);
@@ -157,7 +149,6 @@ BOOL TableCustomProperty::OnInitDialog()
     m_resizer.AddChild(GetDlgItem(IDC_STATIC13), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC14), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC15), CResizer::topleft, 0);
-    m_resizer.AddChild(m_inGameAOCombo, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_ScreenReflectionCombo, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_fpsLimiterEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_ballReflectionCombo, CResizer::topleft, RD_STRETCH_WIDTH);
