@@ -28,6 +28,7 @@ private:
     HWND        m_hLogoModeCheck;
     HWND        m_hReflectElementsCheck;
     HWND        m_hEnableAOCheck;
+    HWND        m_hEnableSSRCheck;
 };
 
 #endif

@@ -1304,7 +1304,7 @@ HRESULT Player::Init()
 
    //
 
-   const bool ss_refl = (m_ss_refl && (m_ptable->m_useSSR == -1)) || (m_ptable->m_useSSR == 1);
+   const bool ss_refl = m_ss_refl && m_ptable->m_enableSSR;
 
    const int colordepth = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "ColorDepth"s, 32);
 
@@ -3502,7 +3502,7 @@ void Player::PrepareVideoBuffers()
    const bool FXAA1 = PostProcAA && m_FXAA == Fast_FXAA;
    const bool FXAA2 = PostProcAA && m_FXAA == Standard_FXAA;
    const bool FXAA3 = PostProcAA && m_FXAA == Quality_FXAA;
-   const bool ss_refl = (((m_ss_refl && (m_ptable->m_useSSR == -1)) || (m_ptable->m_useSSR == 1)) && m_pin3d.m_pd3dPrimaryDevice->DepthBufferReadBackAvailable() && m_ptable->m_SSRScale > 0.f);
+   const bool ss_refl = m_ss_refl && m_ptable->m_enableSSR && m_pin3d.m_pd3dPrimaryDevice->DepthBufferReadBackAvailable() && m_ptable->m_SSRScale > 0.f;
    const unsigned int sharpen = PostProcAA ? m_sharpen : 0;
    const bool useAO = GetAOMode() == 2;
 
