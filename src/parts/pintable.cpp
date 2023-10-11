@@ -91,15 +91,15 @@ STDMETHODIMP ScriptGlobalTable::NudgeGetCalibration(VARIANT *XMax, VARIANT *YMax
 
 	if (g_pvp->m_settings.LoadValue(Settings::Player, "PBWAccelGainX"s, tmp))
 		CComVariant(tmp).Detach(XGain);
-   if (g_pvp->m_settings.LoadValue(Settings::Player, "PBWAccelGainY"s, tmp))
+	if (g_pvp->m_settings.LoadValue(Settings::Player, "PBWAccelGainY"s, tmp))
 		CComVariant(tmp).Detach(YGain);
-   if (g_pvp->m_settings.LoadValue(Settings::Player, "PBWAccelMaxX"s, tmp))
+	if (g_pvp->m_settings.LoadValue(Settings::Player, "PBWAccelMaxX"s, tmp))
 		CComVariant(tmp).Detach(XMax);
-   if (g_pvp->m_settings.LoadValue(Settings::Player, "PBWAccelMaxY"s, tmp))
+	if (g_pvp->m_settings.LoadValue(Settings::Player, "PBWAccelMaxY"s, tmp))
 		CComVariant(tmp).Detach(YMax);
-   if (g_pvp->m_settings.LoadValue(Settings::Player, "DeadZone"s, tmp))
+	if (g_pvp->m_settings.LoadValue(Settings::Player, "DeadZone"s, tmp))
 		CComVariant(tmp).Detach(DeadZone);
-   if (g_pvp->m_settings.LoadValue(Settings::Player, "TiltSensitivity"s, tmp))
+	if (g_pvp->m_settings.LoadValue(Settings::Player, "TiltSensitivity"s, tmp))
 		CComVariant(tmp).Detach(TiltSensitivty);
 
 	return S_OK;
@@ -1356,7 +1356,7 @@ PinTable::PinTable()
 
    m_numMaterials = 0;
 
-   nudge_set_sensitivity((float)m_settings.LoadValueWithDefault(Settings::Player, "NudgeSensitivity"s, 500) * (float)(1.0 / 1000.0));
+   nudge_set_sensitivity((float)m_settings.LoadValueWithDefault(Settings::Player, "NudgeSensitivity"s, 500) * (float)(1.0/1000.0));
 
    m_globalDifficulty = dequantizeUnsignedPercent(m_settings.LoadValueWithDefault(Settings::Player, "GlobalDifficulty"s, 20)); // easy by default
 
