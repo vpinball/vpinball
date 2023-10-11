@@ -306,17 +306,13 @@ bool Settings::SaveValue(const Section section, const string &key, const DataTyp
    const string copy = type == DT_SZ ? std::string((char*)pvalue) : std::to_string(*(DWORD *)pvalue);
    if (m_parent && overrideMode)
    {
-      bool hasInIni = m_parent->m_ini.has(regKey[section]) && m_ini.get(regKey[section]).has(key);
-      if (hasInIni)
+      string value;
+      if (m_parent->LoadValue(section, key, value) && value == copy)
       {
-         string value = m_parent->m_ini.get(regKey[section]).get(key);
-         if (value == copy)
-         {
-            // This is an override and it has the same value as parent: remove it
-            if (m_ini.has(regKey[section]) && m_ini.get(regKey[section]).has(key))
-               m_ini[regKey[section]].remove(key);
-            return true;
-         }
+         // This is an override and it has the same value as parent: remove it and rely on parent
+         if (m_ini.has(regKey[section]) && m_ini.get(regKey[section]).has(key))
+            m_ini[regKey[section]].remove(key);
+         return true;
       }
    }
    m_ini[regKey[section]][key] = copy;

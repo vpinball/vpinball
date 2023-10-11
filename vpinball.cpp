@@ -1037,23 +1037,16 @@ void VPinball::LoadFileName(const string& szFileName, const bool updateEditor)
 
       AddMDITable(mdiTable);
 
-      // auto-import POV settings, if it exists...
+      // auto-import POV settings, if it exists. This is kept for backward compatibility as POV settings 
+      // are now normal settings stored with others in app/table ini file
       string szFileNameAuto = m_currentTablePath + ppt->m_szTitle + ".pov";
       if (FileExists(szFileNameAuto)) // We check if there is a matching table pov settings file first
-      {
          ppt->ImportBackdropPOV(szFileNameAuto);
-         for (int i = 0; i < 3; i++)
-            ppt->mViewSetups[i].SaveToTableOverrideSettings(ppt->m_settings, i == 0 ? "ViewDT" : i == 1 ? "ViewFSS" :"ViewCab");
-      }
       else // Otherwise, we seek for autopov settings
       {
          szFileNameAuto = m_currentTablePath + "autopov.pov";
          if (FileExists(szFileNameAuto))
-         {
             ppt->ImportBackdropPOV(szFileNameAuto);
-            for (int i = 0; i < 3; i++)
-               ppt->mViewSetups[i].SaveToTableOverrideSettings(g_pvp->m_settings, i == 0 ? "ViewDT" : i == 1 ? "ViewFSS" :"ViewCab");
-         }
       }
 
       // auto-import VBS table script, if it exists...

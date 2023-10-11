@@ -11,6 +11,8 @@ class Settings final
 public:
    Settings(const Settings* parent = nullptr);
 
+   void SetParent(const Settings *parent) { m_parent = parent; }
+
    bool LoadFromFile(const string &path, const bool createDefault);
    void SaveToFile(const string &path);
    void Save();

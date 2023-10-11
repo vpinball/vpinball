@@ -1111,13 +1111,28 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
          if (ReplaceExtensionFromFilename(szPOVFilename, "pov"s))
          {
             g_pplayer->m_ptable->ExportBackdropPOV(szPOVFilename);
-            g_pplayer->m_liveUI->PushNotification("POV exported to "s.append(szPOVFilename), 5000);
+            g_pplayer->m_liveUI->PushNotification("Overrides exported to "s.append(szPOVFilename), 5000);
          }
          else
             g_pplayer->m_liveUI->PushNotification("Failed to export POV"s, 12000);
          // Update table ini file with user overrides
+         // We save the table properties to a temporary settings registry to be able to properly evaluate what the user is 
+         // overriding in: table props + app override / user edit. We save to the edited table (otherwise, the ini file
+         // would be overwritten by the one of the edited table).
+         Settings tableProps;
+         g_pvp->m_settings.SetParent(&tableProps);
          for (int i = 0; i < 3; i++)
-            g_pplayer->m_ptable->mViewSetups[i].SaveToTableOverrideSettings(g_pplayer->m_ptable->m_settings, i == 0 ? "ViewDT" : i == 1 ? "ViewFSS" :"ViewCab");
+         {
+            g_pplayer->m_pEditorTable->mViewSetups[i].SaveToTableOverrideSettings(tableProps, i == 0 ? "ViewDT" : i == 1 ? "ViewFSS" : "ViewCab", false);
+            g_pplayer->m_ptable->mViewSetups[i].SaveToTableOverrideSettings(g_pplayer->m_pEditorTable->m_settings, i == 0 ? "ViewDT" : i == 1 ? "ViewFSS" : "ViewCab", true);
+         }
+         g_pvp->m_settings.SetParent(nullptr);
+         string szINIFilename = g_pplayer->m_ptable->m_szFileName;
+         if (ReplaceExtensionFromFilename(szINIFilename, "ini"s))
+         {
+            g_pplayer->m_pEditorTable->m_settings.SaveToFile(szINIFilename);
+            g_pplayer->m_liveUI->PushNotification("POV exported to "s.append(szINIFilename), 5000);
+         }
          if (g_pvp->m_povEdit)
             g_pvp->QuitPlayer(Player::CloseState::CS_CLOSE_APP);
       }
