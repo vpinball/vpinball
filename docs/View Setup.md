@@ -31,17 +31,17 @@ The rendering is also expected to be somewhat different since it is supposed to 
 The window projection mode is a new (as of VPX 10.8) mode which tries to simulate this bevhavior.
 
 ![Window](img/ViewSetup-WindowDef.svg)
-<sub>The window projection (green) is displayed on the screen (blue). The projection is parrallel to the screen.</sub>
+<sub>The window projection (green) is displayed on the screen (blue). The projection is parallel to the screen.</sub>
 
-The 'window' mode needs to know the physical setup of the screen. Since this settings do not change between tables, they are located in the video settings:
-- Screen width and height are the physical size of the display area in centimeters. The width is always the longest edge of the screen,
+The 'window' mode needs to know about the physical setup of the screen. Since this setting does not change between tables, it is located in the video settings:
+- Screen width and height are the physical size of the display area (in centimeters). The width is always the longest edge of the screen,
 - Screen inclination is the angle between horizontal and the screen,
-- Player X, Y, Z are the player coordinate as shown on the figure.
+- Player X, Y, Z are the player coordinates as shown on the figure.
 
 Once these informations are defined, the view can be adjusted per table with the following properties:
-- Table X and YZ scales allow to stretch the table to the screen. When set to 100%, the table size matches the real world table size. Scaling on the Y and Z axis is always the same.
-- Horizontal/Vertical Offset adjusts the position of rendered parts in the projection,
-- Window Top/Bottom Z offsets define the position of screen relatively to the playfield/glass of the table,
+- Table X and YZ scales allow to stretch the table to the screen. When set to 100%, the table size matches the real world table size. Scaling on the Y and Z axis is fixed to be always the same.
+- Horizontal/Vertical offset adjusts the position of rendered parts in the projection,
+- Window Top/Bottom Z offsets define the position of the screen relative to the playfield/glass of the table.
 
 The existing implementation does not perform (yet) perspective distortion compensation. Sadly, this may lead to some distortion at the back of the screen.
 
