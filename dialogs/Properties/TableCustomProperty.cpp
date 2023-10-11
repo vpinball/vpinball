@@ -42,10 +42,6 @@ void TableCustomProperty::UpdateVisuals(const int dispid/*=-1*/)
     if (dispid == IDC_ENABLE_SSR || dispid == -1)
         PropertyDialog::UpdateComboBox(m_userList, m_ScreenReflectionCombo, m_userList[table->m_useSSR + 1]);
     
-    m_detailLevelSlider.SetPos(table->GetDetailLevel(), 1);
-
-    if (dispid == IDC_GLOBAL_ALPHA_ACC || dispid == -1)
-        PropertyDialog::SetCheckboxState(m_hOverwriteDetailsCheck, table->m_overwriteGlobalDetailLevel);
     if (dispid == IDC_BALL_REFLECTION || dispid == -1)
         PropertyDialog::UpdateComboBox(m_userList, m_ballReflectionCombo, m_userList[(int)(table->m_useReflectionForBalls) + 1]);
     if (dispid == IDC_BALL_TRAIL || dispid == -1)
@@ -70,7 +66,6 @@ void TableCustomProperty::UpdateVisuals(const int dispid/*=-1*/)
     if (dispid == IDC_TABLEAVSYNC || dispid == -1)
         PropertyDialog::SetIntTextbox(m_fpsLimiterEdit, table->m_TableAdaptiveVSync);
 
-    m_detailLevelSlider.EnableWindow(table->m_overwriteGlobalDetailLevel);
     m_nightDaySlider.EnableWindow(table->m_overwriteGlobalDayNight);
 }
 
@@ -87,9 +82,6 @@ void TableCustomProperty::UpdateProperties(const int dispid)
             break;
         case IDC_ENABLE_SSR:
             CHECK_UPDATE_ITEM(table->m_useSSR, (PropertyDialog::GetComboBoxIndex(m_ScreenReflectionCombo, m_userList) - 1), table);
-            break;
-        case IDC_GLOBAL_ALPHA_ACC:
-            CHECK_UPDATE_ITEM(table->m_overwriteGlobalDetailLevel, PropertyDialog::GetCheckboxState(m_hOverwriteDetailsCheck), table);
             break;
         case IDC_BALL_REFLECTION:
             CHECK_UPDATE_ITEM(table->m_useReflectionForBalls, (PropertyDialog::GetComboBoxIndex(m_ballReflectionCombo, m_userList) - 1), table);
@@ -121,9 +113,6 @@ void TableCustomProperty::UpdateProperties(const int dispid)
         case IDC_TABLEAVSYNC:
             CHECK_UPDATE_ITEM(table->m_TableAdaptiveVSync, PropertyDialog::GetIntTextbox(m_fpsLimiterEdit), table);
             break;
-        case IDC_ALPHA_SLIDER:
-            CHECK_UPDATE_ITEM(table->m_userDetailLevel, m_detailLevelSlider.GetPos(), table);
-            break;
         case IDC_DAYNIGHT_SLIDER:
         {
             const int emission = table->GetGlobalEmissionScale();
@@ -144,8 +133,6 @@ BOOL TableCustomProperty::OnInitDialog()
     m_inGameAOCombo.AttachItem(IDC_ENABLE_AO);
     m_ScreenReflectionCombo.AttachItem(IDC_ENABLE_SSR);
     m_fpsLimiterEdit.AttachItem(IDC_TABLEAVSYNC);
-    AttachItem(IDC_ALPHA_SLIDER, m_detailLevelSlider);
-    m_hOverwriteDetailsCheck = ::GetDlgItem(GetHwnd(), IDC_GLOBAL_ALPHA_ACC);
     m_ballReflectionCombo.AttachItem(IDC_BALL_REFLECTION);
     m_ballTrailCombo.AttachItem(IDC_BALL_TRAIL);
     m_ballTrailStrengthEdit.AttachItem(IDC_TRAIL_EDIT);
@@ -156,13 +143,6 @@ BOOL TableCustomProperty::OnInitDialog()
     m_hOverwriteFlipperCheck = ::GetDlgItem(GetHwnd(), IDC_OVERRIDEPHYSICS_FLIPPERS);
     m_soundEffectVolEdit.AttachItem(IDC_TABLESOUNDVOLUME);
     m_musicVolEdit.AttachItem(IDC_TABLEMUSICVOLUME);
-
-    m_detailLevelSlider.SetRangeMin(0);
-    m_detailLevelSlider.SetRangeMax(10);
-    m_detailLevelSlider.SetTicFreq(1);
-    m_detailLevelSlider.SetPageSize(1);
-    m_detailLevelSlider.SetLineSize(1);
-    m_detailLevelSlider.SendMessage(TBM_SETTHUMBLENGTH, 5, 0);
 
     m_nightDaySlider.SetRangeMin(2);
     m_nightDaySlider.SetRangeMax(100);
@@ -176,7 +156,6 @@ BOOL TableCustomProperty::OnInitDialog()
     m_resizer.AddChild(GetDlgItem(IDC_STATIC3), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC4), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC5), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC6), CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC7), CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC8), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC9), CResizer::topleft, 0);
@@ -189,8 +168,6 @@ BOOL TableCustomProperty::OnInitDialog()
     m_resizer.AddChild(m_inGameAOCombo, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_ScreenReflectionCombo, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_fpsLimiterEdit, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_detailLevelSlider, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_hOverwriteDetailsCheck, CResizer::topleft, 0);
     m_resizer.AddChild(m_ballReflectionCombo, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_ballTrailCombo, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_ballTrailStrengthEdit, CResizer::topleft, RD_STRETCH_WIDTH);
@@ -209,16 +186,14 @@ INT_PTR TableCustomProperty::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
    m_resizer.HandleMessage(uMsg, wParam, lParam);
    switch (uMsg)
-    {
-        case WM_HSCROLL:
-        {
-                CComObject<PinTable> * const table = g_pvp->GetActiveTable();
-                if (table->m_overwriteGlobalDetailLevel)
-                    table->SetDetailLevel(m_detailLevelSlider.GetPos());
-                if(table->m_overwriteGlobalDayNight)
-                    table->SetGlobalEmissionScale(m_nightDaySlider.GetPos());
-                return TRUE;
-        }
-    }
-    return DialogProcDefault(uMsg, wParam, lParam);
+   {
+      case WM_HSCROLL:
+      {
+         CComObject<PinTable> * const table = g_pvp->GetActiveTable();
+         if(table->m_overwriteGlobalDayNight)
+            table->SetGlobalEmissionScale(m_nightDaySlider.GetPos());
+         return TRUE;
+      }
+   }
+   return DialogProcDefault(uMsg, wParam, lParam);
 }

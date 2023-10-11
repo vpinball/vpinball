@@ -1370,10 +1370,6 @@ PinTable::PinTable()
 
    g_pvp->m_settings.SaveValue(Settings::Version, "VPinball"s, VP_VERSION_STRING_DIGITS);
 
-   m_globalDetailLevel = m_settings.LoadValueWithDefault(Settings::Player, "AlphaRampAccuracy"s, 10);
-   m_userDetailLevel = 10;
-   m_overwriteGlobalDetailLevel = false;
-
    m_overwriteGlobalDayNight = true;
 
    m_global3DZPD = m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DZPD"s, 0.5f);
@@ -2208,8 +2204,6 @@ void PinTable::Play(const bool cameraMode)
    dst->m_ballPlayfieldReflectionStrength = src->m_ballPlayfieldReflectionStrength;
    dst->m_defaultBulbIntensityScaleOnBall = src->m_defaultBulbIntensityScaleOnBall;
    dst->m_ballTrailStrength = src->m_ballTrailStrength;
-   dst->m_userDetailLevel = src->m_userDetailLevel;
-   dst->m_overwriteGlobalDetailLevel = src->m_overwriteGlobalDetailLevel;
    dst->m_grid = src->m_grid;
    dst->m_reflectElementsOnPlayfield = src->m_reflectElementsOnPlayfield;
    dst->m_useAO = src->m_useAO;
@@ -3480,8 +3474,6 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
    bw.WriteFloat(FID(BPRS), m_ballPlayfieldReflectionStrength);
    bw.WriteFloat(FID(DBIS), m_defaultBulbIntensityScaleOnBall);
    bw.WriteInt(FID(BTST), quantizeUnsigned<8>(m_ballTrailStrength));
-   bw.WriteInt(FID(ARAC), m_userDetailLevel);
-   bw.WriteBool(FID(OGAC), m_overwriteGlobalDetailLevel);
    bw.WriteBool(FID(OGDN), m_overwriteGlobalDayNight);
    bw.WriteBool(FID(GDAC), m_grid);
    bw.WriteBool(FID(REOP), m_reflectElementsOnPlayfield);
@@ -4046,6 +4038,11 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
             }
          }
 
+         // Save INI settings since we may have converted old properties to user table overrides
+         string szINIFilename = m_szFileName;
+         if (ReplaceExtensionFromFilename(szINIFilename, "ini"s))
+            m_settings.SaveToFile(szINIFilename);
+
          //////// End Authentication block
       }
       pstgData->Release();
@@ -4361,11 +4358,27 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    case FID(BDMO): pbr->GetBool(m_BallDecalMode); break;
    case FID(MVOL): pbr->GetFloat(m_TableMusicVolume); break;
    case FID(AVSY): pbr->GetInt(m_TableAdaptiveVSync); break;
-   case FID(OGAC): pbr->GetBool(m_overwriteGlobalDetailLevel); break;
+   case FID(OGAC):
+   {
+      // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file)
+      bool overwriteGlobalDetailLevel;
+      pbr->GetBool(overwriteGlobalDetailLevel);
+      if (!overwriteGlobalDetailLevel)
+         m_settings.DeleteValue(Settings::Player, "AlphaRampAccuracy"s);
+      break;
+   }
    case FID(OGDN): pbr->GetBool(m_overwriteGlobalDayNight); break;
    case FID(GDAC): pbr->GetBool(m_grid); break;
    case FID(REOP): pbr->GetBool(m_reflectElementsOnPlayfield); break;
-   case FID(ARAC): pbr->GetInt(m_userDetailLevel); break;
+   case FID(ARAC):
+   {
+      // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file)
+      // The detail level was always saved **before** the override flag so we always load to settings, eventually deleting afterward
+      int userDetailLevel;
+      pbr->GetInt(userDetailLevel);
+      m_settings.SaveValue(Settings::Player, "AlphaRampAccuracy"s, userDetailLevel, true);
+      break;
+   }
    case FID(MASI): pbr->GetInt(m_numMaterials); break;
    case FID(MATE):
    {
@@ -4772,17 +4785,6 @@ void PinTable::MoveCollectionUp(CComObject<Collection> *pcol)
       m_vcollection.push_back(pcol);
    else
       m_vcollection.insert(pcol, idx - 1);
-}
-
-int PinTable::GetDetailLevel() const
-{
-   return m_overwriteGlobalDetailLevel ? m_userDetailLevel : m_globalDetailLevel;
-}
-
-void PinTable::SetDetailLevel(const int value)
-{
-    if (m_overwriteGlobalDetailLevel)
-        m_userDetailLevel = value;
 }
 
 float PinTable::GetZPD() const
@@ -6019,20 +6021,20 @@ void PinTable::ImportBackdropPOV(const string& filename)
          POV_FIELD("ingameAO", "%i", m_useAO);
          POV_FIELD("ScSpReflect", "%i", m_useSSR);
          POV_FIELD("FPSLimiter", "%i", m_TableAdaptiveVSync);
-         int overwriteGlobalDetailLevel = (int)m_overwriteGlobalDetailLevel;
-         POV_FIELD("OverwriteDetailsLevel", "%i", overwriteGlobalDetailLevel);
-         POV_FIELD("DetailsLevel", "%i", m_userDetailLevel);
+         //int overwriteGlobalDetailLevel = (int)m_overwriteGlobalDetailLevel;
+         //POV_FIELD("OverwriteDetailsLevel", "%i", overwriteGlobalDetailLevel);
+         //POV_FIELD("DetailsLevel", "%i", m_userDetailLevel);
          POV_FIELD("BallReflection", "%i", m_useReflectionForBalls);
          POV_FIELD("BallTrail", "%i", m_useTrailForBalls);
          POV_FIELD("BallTrailStrength", "%f", m_ballTrailStrength);
-         auto node = section->FirstChildElement("OverwriteDetailsLevel");
+         /*auto node = section->FirstChildElement("OverwriteDetailsLevel");
          if (node)
          {
                int value;
                sscanf_s(node->GetText(), "%i", &value);
                m_overwriteGlobalDetailLevel = (value == 1);
-         }
-         node = section->FirstChildElement("OverwriteNightDay");
+         }*/
+         auto node = section->FirstChildElement("OverwriteNightDay");
          if (node)
          {
                int value;
@@ -6165,8 +6167,8 @@ void PinTable::ExportBackdropPOV(const string& filename)
       POV_FIELD("ingameAO", m_useAO);
       POV_FIELD("ScSpReflect", m_useSSR);
       POV_FIELD("FPSLimiter", m_TableAdaptiveVSync);
-      POV_FIELD("OverwriteDetailsLevel", m_overwriteGlobalDetailLevel ? 1 : 0);
-      POV_FIELD("DetailsLevel", m_userDetailLevel);
+      // POV_FIELD("OverwriteDetailsLevel", m_overwriteGlobalDetailLevel ? 1 : 0);
+      // POV_FIELD("DetailsLevel", m_userDetailLevel);
       POV_FIELD("BallReflection", m_useReflectionForBalls);
       POV_FIELD("BallTrail", m_useTrailForBalls);
       POV_FIELD("BallTrailStrength", m_ballTrailStrength);
@@ -8634,40 +8636,32 @@ STDMETHODIMP PinTable::put_TableSoundVolume(int newVal)
 
 STDMETHODIMP PinTable::get_DetailLevel(int *pVal)
 {
-   *pVal = GetDetailLevel();
-
+   *pVal = m_settings.LoadValueWithDefault(Settings::Player, "AlphaRampAccuracy"s, 10);
    return S_OK;
 }
 
 STDMETHODIMP PinTable::put_DetailLevel(int newVal)
 {
-   STARTUNDO
-   SetDetailLevel(newVal);
-   STOPUNDO
-
+   m_settings.SaveValue(Settings::Player, "AlphaRampAccuracy"s, newVal, true);
    return S_OK;
 }
 
 STDMETHODIMP PinTable::get_GlobalAlphaAcc(VARIANT_BOOL *pVal)
 {
-   *pVal = FTOVB(m_overwriteGlobalDetailLevel);
-
+   // FIXME NOOP remove
+   //*pVal = FTOVB(m_overwriteGlobalDetailLevel);
+   *pVal = FTOVB(true);
    return S_OK;
-}
-
-void PinTable::PutGlobalAlphaAcc(const bool enable)
-{
-    m_overwriteGlobalDetailLevel = enable;
-    if (!m_overwriteGlobalDetailLevel)
-        m_userDetailLevel = m_globalDetailLevel;
 }
 
 STDMETHODIMP PinTable::put_GlobalAlphaAcc(VARIANT_BOOL newVal)
 {
-   STARTUNDO
-   PutGlobalAlphaAcc(VBTOb(newVal));
-   STOPUNDO
-
+   // FIXME NOOP remove
+   /*STARTUNDO
+   m_overwriteGlobalDetailLevel = VBTOb(newVal);
+   if (!m_overwriteGlobalDetailLevel)
+      m_userDetailLevel = m_globalDetailLevel;
+   STOPUNDO*/
    return S_OK;
 }
 

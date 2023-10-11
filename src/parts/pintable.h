@@ -539,8 +539,7 @@ public:
    void MoveCollectionDown(CComObject<Collection> *pcol);
    void UpdatePropertyImageList();
    void UpdatePropertyMaterialList();
-   int GetDetailLevel() const; // used for rubber, ramp and ball
-   void SetDetailLevel(const int value);
+   int GetDetailLevel() const { return m_settings.LoadValueWithDefault(Settings::Player, "AlphaRampAccuracy"s, 10); }; // used for rubber, ramp and ball
    float GetZPD() const;
    float GetMaxSeparation() const;
    float Get3DOffset() const;
@@ -750,10 +749,6 @@ public:
 
    vector<HANDLE> m_vAsyncHandles;
 
-   int m_globalDetailLevel;
-   int m_userDetailLevel;
-   bool m_overwriteGlobalDetailLevel;
-
    bool m_overwriteGlobalDayNight;
 
    LightSource m_Light[MAX_LIGHT_SOURCES];
@@ -814,7 +809,6 @@ public:
    ViewSetupID GetViewSetupOverride() const { return m_BG_override; }
    void SetViewSetupOverride(const ViewSetupID v) { m_BG_override = v; UpdateCurrentBGSet(); }
    void UpdateCurrentBGSet();
-   void PutGlobalAlphaAcc(const bool enable);
    int GetBallTrailStrength() const;
    void SetBallTrailStrength(const int value);
    int GetGlobalEmissionScale() const;
