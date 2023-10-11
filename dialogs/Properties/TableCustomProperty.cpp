@@ -27,7 +27,6 @@ TableCustomProperty::TableCustomProperty(const VectorProtected<ISelect> *pvsel) 
     m_inGameAOCombo.SetDialog(this);
     m_ScreenReflectionCombo.SetDialog(this);
     m_ballReflectionCombo.SetDialog(this);
-    m_ballTrailCombo.SetDialog(this);
     m_overwritePhysicsSetCombo.SetDialog(this);
 }
 
@@ -44,8 +43,6 @@ void TableCustomProperty::UpdateVisuals(const int dispid/*=-1*/)
     
     if (dispid == IDC_BALL_REFLECTION || dispid == -1)
         PropertyDialog::UpdateComboBox(m_userList, m_ballReflectionCombo, m_userList[(int)(table->m_useReflectionForBalls) + 1]);
-    if (dispid == IDC_BALL_TRAIL || dispid == -1)
-        PropertyDialog::UpdateComboBox(m_userList, m_ballTrailCombo, m_userList[(int)(table->m_useTrailForBalls) + 1]);
     if (dispid == IDC_TRAIL_EDIT || dispid == -1)
         PropertyDialog::SetIntTextbox(m_ballTrailStrengthEdit, table->GetBallTrailStrength());
 
@@ -85,9 +82,6 @@ void TableCustomProperty::UpdateProperties(const int dispid)
             break;
         case IDC_BALL_REFLECTION:
             CHECK_UPDATE_ITEM(table->m_useReflectionForBalls, (PropertyDialog::GetComboBoxIndex(m_ballReflectionCombo, m_userList) - 1), table);
-            break;
-        case IDC_BALL_TRAIL:
-            CHECK_UPDATE_ITEM(table->m_useTrailForBalls, (PropertyDialog::GetComboBoxIndex(m_ballTrailCombo, m_userList) - 1), table);
             break;
         case IDC_TRAIL_EDIT:
             CHECK_UPDATE_VALUE_SETTER(table->SetBallTrailStrength, table->GetBallTrailStrength, PropertyDialog::GetIntTextbox, m_ballTrailStrengthEdit, table);
@@ -134,7 +128,6 @@ BOOL TableCustomProperty::OnInitDialog()
     m_ScreenReflectionCombo.AttachItem(IDC_ENABLE_SSR);
     m_fpsLimiterEdit.AttachItem(IDC_TABLEAVSYNC);
     m_ballReflectionCombo.AttachItem(IDC_BALL_REFLECTION);
-    m_ballTrailCombo.AttachItem(IDC_BALL_TRAIL);
     m_ballTrailStrengthEdit.AttachItem(IDC_TRAIL_EDIT);
     AttachItem(IDC_DAYNIGHT_SLIDER, m_nightDaySlider);
     m_hOverwriteNightDayCheck = ::GetDlgItem(GetHwnd(), IDC_GLOBAL_DAYNIGHT);
@@ -158,7 +151,6 @@ BOOL TableCustomProperty::OnInitDialog()
     m_resizer.AddChild(GetDlgItem(IDC_STATIC5), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC7), CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC8), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC9), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC10), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC11), CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC12), CResizer::topleft, 0);
@@ -169,7 +161,6 @@ BOOL TableCustomProperty::OnInitDialog()
     m_resizer.AddChild(m_ScreenReflectionCombo, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_fpsLimiterEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_ballReflectionCombo, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_ballTrailCombo, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_ballTrailStrengthEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_nightDaySlider, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_hOverwriteNightDayCheck, CResizer::topleft, 0);

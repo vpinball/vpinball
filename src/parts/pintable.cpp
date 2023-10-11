@@ -2199,7 +2199,6 @@ void PinTable::Play(const bool cameraMode)
    dst->m_TableAdaptiveVSync = src->m_TableAdaptiveVSync;
    dst->m_useReflectionForBalls = src->m_useReflectionForBalls;
    dst->m_playfieldReflectionStrength = src->m_playfieldReflectionStrength;
-   dst->m_useTrailForBalls = src->m_useTrailForBalls;
    dst->m_BallDecalMode = src->m_BallDecalMode;
    dst->m_ballPlayfieldReflectionStrength = src->m_ballPlayfieldReflectionStrength;
    dst->m_defaultBulbIntensityScaleOnBall = src->m_defaultBulbIntensityScaleOnBall;
@@ -3469,7 +3468,6 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
 
    bw.WriteInt(FID(BREF), m_useReflectionForBalls);
    bw.WriteInt(FID(PLST), quantizeUnsigned<8>(m_playfieldReflectionStrength));
-   bw.WriteInt(FID(BTRA), m_useTrailForBalls);
    bw.WriteBool(FID(BDMO), m_BallDecalMode);
    bw.WriteFloat(FID(BPRS), m_ballPlayfieldReflectionStrength);
    bw.WriteFloat(FID(DBIS), m_defaultBulbIntensityScaleOnBall);
@@ -4121,7 +4119,6 @@ void PinTable::SetLoadDefaults()
    m_playfieldReflectionStrength = 0.2f;
    m_reflectElementsOnPlayfield = false;
 
-   m_useTrailForBalls = -1;
    m_ballTrailStrength = 0.4f;
    m_ballPlayfieldReflectionStrength = 1.f;
 
@@ -4296,7 +4293,15 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
       m_playfieldReflectionStrength = dequantizeUnsigned<8>(tmp);
       break;
    }
-   case FID(BTRA): pbr->GetInt(m_useTrailForBalls); break;
+   case FID(BTRA):
+   {
+      // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file)
+      int useTrailForBalls;
+      pbr->GetInt(useTrailForBalls);
+      if (useTrailForBalls != -1)
+         m_settings.SaveValue(Settings::Player, "BallTrail"s, useTrailForBalls == 1);
+      break;
+   }
    case FID(BTST):
    {
       int tmp;
@@ -4376,7 +4381,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
       // The detail level was always saved **before** the override flag so we always load to settings, eventually deleting afterward
       int userDetailLevel;
       pbr->GetInt(userDetailLevel);
-      m_settings.SaveValue(Settings::Player, "AlphaRampAccuracy"s, userDetailLevel, true);
+      m_settings.SaveValue(Settings::Player, "AlphaRampAccuracy"s, userDetailLevel);
       break;
    }
    case FID(MASI): pbr->GetInt(m_numMaterials); break;
@@ -6015,26 +6020,40 @@ void PinTable::ImportBackdropPOV(const string& filename)
                int useFXAA;
                sscanf_s(node->GetText(), "%i", &useFXAA);
                if (useFXAA > -1)
-                  m_settings.SaveValue(Settings::Player, "FXAA"s, useFXAA);
+                  m_settings.SaveValue(Settings::Player, "FXAA"s, useFXAA == 1 ? Standard_FXAA : Disabled);
             }
          }
          POV_FIELD("ingameAO", "%i", m_useAO);
          POV_FIELD("ScSpReflect", "%i", m_useSSR);
          POV_FIELD("FPSLimiter", "%i", m_TableAdaptiveVSync);
+         POV_FIELD("BallReflection", "%i", m_useReflectionForBalls);
+         //POV_FIELD("BallTrail", "%i", m_useTrailForBalls);
+         auto node = section->FirstChildElement("BallTrail");
+         if (node)
+         {
+            int useTrailForBalls;
+            sscanf_s(node->GetText(), "%i", &useTrailForBalls);
+            if (useTrailForBalls != -1)
+               m_settings.SaveValue(Settings::Player, "BallTrail"s, useTrailForBalls == 1);
+         }
+         POV_FIELD("BallTrailStrength", "%f", m_ballTrailStrength);
          //int overwriteGlobalDetailLevel = (int)m_overwriteGlobalDetailLevel;
          //POV_FIELD("OverwriteDetailsLevel", "%i", overwriteGlobalDetailLevel);
-         //POV_FIELD("DetailsLevel", "%i", m_userDetailLevel);
-         POV_FIELD("BallReflection", "%i", m_useReflectionForBalls);
-         POV_FIELD("BallTrail", "%i", m_useTrailForBalls);
-         POV_FIELD("BallTrailStrength", "%f", m_ballTrailStrength);
-         /*auto node = section->FirstChildElement("OverwriteDetailsLevel");
+         node = section->FirstChildElement("OverwriteDetailsLevel");
          if (node)
          {
                int value;
                sscanf_s(node->GetText(), "%i", &value);
-               m_overwriteGlobalDetailLevel = (value == 1);
-         }*/
-         auto node = section->FirstChildElement("OverwriteNightDay");
+               if (value == 1)
+               {
+                  //POV_FIELD("DetailsLevel", "%i", m_userDetailLevel);
+                  node = section->FirstChildElement("DetailsLevel");
+                  int value;
+                  sscanf_s(node->GetText(), "%i", &value);
+                  m_settings.SaveValue(Settings::Player, "AlphaRampAccuracy"s, value);
+               }
+         }
+         node = section->FirstChildElement("OverwriteNightDay");
          if (node)
          {
                int value;
@@ -6170,7 +6189,7 @@ void PinTable::ExportBackdropPOV(const string& filename)
       // POV_FIELD("OverwriteDetailsLevel", m_overwriteGlobalDetailLevel ? 1 : 0);
       // POV_FIELD("DetailsLevel", m_userDetailLevel);
       POV_FIELD("BallReflection", m_useReflectionForBalls);
-      POV_FIELD("BallTrail", m_useTrailForBalls);
+      //POV_FIELD("BallTrail", m_useTrailForBalls);
       POV_FIELD("BallTrailStrength", m_ballTrailStrength);
       POV_FIELD("OverwriteNightDay", m_overwriteGlobalDayNight ? 1 : 0);
       POV_FIELD("NightDayLevel", GetGlobalEmissionScale());
@@ -8520,17 +8539,19 @@ STDMETHODIMP PinTable::put_PlayfieldReflectionStrength(int newVal)
 
 STDMETHODIMP PinTable::get_BallTrail(UserDefaultOnOff *pVal)
 {
-   *pVal = (UserDefaultOnOff)m_useTrailForBalls;
-
+   if (!m_settings.HasValue(Settings::Player, "BallTrail"s))
+      *pVal = UserDefaultOnOff::Default;
+   else
+      *pVal = m_settings.LoadValueWithDefault(Settings::Player, "BallTrail"s, true) ? UserDefaultOnOff::On : UserDefaultOnOff::Off;
    return S_OK;
 }
 
 STDMETHODIMP PinTable::put_BallTrail(UserDefaultOnOff newVal)
 {
-   STARTUNDO
-   m_useTrailForBalls = (int)newVal;
-   STOPUNDO
-
+   if (newVal == -1)
+      m_settings.DeleteValue(Settings::Player, "BallTrail"s);
+   else
+      m_settings.SaveValue(Settings::Player, "BallTrail"s, newVal == 1, true);
    return S_OK;
 }
 

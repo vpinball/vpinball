@@ -20,7 +20,6 @@ private:
     ComboBox    m_inGameAOCombo;
     ComboBox    m_ScreenReflectionCombo;
     ComboBox    m_ballReflectionCombo;
-    ComboBox    m_ballTrailCombo;
     ComboBox    m_overwritePhysicsSetCombo;
     EditBox     m_gameplayDifficultEdit;
     EditBox     m_fpsLimiterEdit;
