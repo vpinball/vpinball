@@ -13,6 +13,7 @@ FEATURES:
   - the new OpenGL pipeline is also capable to render to VR devices (support for SteamVR):
     To use VR you need a SteamVR compatible HMD, a Steam account, and the Steam client/app
     with SteamVR client installed. More information on OpenVR + SteamVR can be found on http://steamvr.com
+    You may also want to check out OpenComposite, as it seems to provide a performance boost for some users.
 
   - autodetection of SteamVR driver installation. If its not installed, the standard 2D mode is started up instead.
     If VR drivers are installed, and the HMD is turned on, VPX starts in VR mode. Otherwise a prompt shows up to choose between VR mode and 2D mode (can be disabled).
