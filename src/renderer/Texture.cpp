@@ -853,7 +853,7 @@ void Texture::CreateFromResource(const int id)
 
 BaseTexture* Texture::CreateFromHBitmap(const HBITMAP hbm, bool with_alpha)
 {
-   BaseTexture* const pdds = BaseTexture::CreateFromHBitmap(hbm, with_alpha);
+   BaseTexture* const pdds = BaseTexture::CreateFromHBitmap(hbm, m_maxTexDim, with_alpha);
    SetSizeFrom(pdds);
 
    return pdds;
