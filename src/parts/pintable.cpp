@@ -5968,29 +5968,26 @@ void PinTable::ImportBackdropPOV(const string& filename)
       for (int i = 0; i < 3; i++)
       {
          auto section = root->FirstChildElement(sections[i].c_str());
-         if (!section)
+         if (section)
          {
-            ShowError("Error parsing POV XML file: '"s.append(sections[i]).append("' element is missing"s).c_str());
-            xmlDoc.Clear();
-            return;
+            POV_FIELD("inclination", "%f", mViewSetups[i].mLookAt);
+            POV_FIELD("fov", "%f", mViewSetups[i].mFOV);
+            POV_FIELD("layback", "%f", mViewSetups[i].mLayback);
+            POV_FIELD("lookat", "%f", mViewSetups[i].mLookAt);
+            POV_FIELD("rotation", "%f", mViewSetups[i].mViewportRotation);
+            POV_FIELD("xscale", "%f", mViewSetups[i].mSceneScaleX);
+            POV_FIELD("yscale", "%f", mViewSetups[i].mSceneScaleY);
+            POV_FIELD("zscale", "%f", mViewSetups[i].mSceneScaleZ);
+            POV_FIELD("xoffset", "%f", mViewSetups[i].mViewX);
+            POV_FIELD("yoffset", "%f", mViewSetups[i].mViewY);
+            POV_FIELD("zoffset", "%f", mViewSetups[i].mViewZ);
+            // These fields were added in 10.8
+            POV_FIELD("LayoutMode", "%i", mViewSetups[i].mMode);
+            POV_FIELD("ViewHOfs", "%f", mViewSetups[i].mViewHOfs);
+            POV_FIELD("ViewVOfs", "%f", mViewSetups[i].mViewVOfs);
+            POV_FIELD("WindowTopZOfs", "%f", mViewSetups[i].mWindowTopZOfs);
+            POV_FIELD("WindowBottomZOfs", "%f", mViewSetups[i].mWindowBottomZOfs);
          }
-         POV_FIELD("inclination", "%f", mViewSetups[i].mLookAt);
-         POV_FIELD("fov", "%f", mViewSetups[i].mFOV);
-         POV_FIELD("layback", "%f", mViewSetups[i].mLayback);
-         POV_FIELD("lookat", "%f", mViewSetups[i].mLookAt);
-         POV_FIELD("rotation", "%f", mViewSetups[i].mViewportRotation);
-         POV_FIELD("xscale", "%f", mViewSetups[i].mSceneScaleX);
-         POV_FIELD("yscale", "%f", mViewSetups[i].mSceneScaleY);
-         POV_FIELD("zscale", "%f", mViewSetups[i].mSceneScaleZ);
-         POV_FIELD("xoffset", "%f", mViewSetups[i].mViewX);
-         POV_FIELD("yoffset", "%f", mViewSetups[i].mViewY);
-         POV_FIELD("zoffset", "%f", mViewSetups[i].mViewZ);
-         // These fields were added in 10.8
-         POV_FIELD("LayoutMode", "%i", mViewSetups[i].mMode);
-         POV_FIELD("ViewHOfs", "%f", mViewSetups[i].mViewHOfs);
-         POV_FIELD("ViewVOfs", "%f", mViewSetups[i].mViewVOfs);
-         POV_FIELD("WindowTopZOfs", "%f", mViewSetups[i].mWindowTopZOfs);
-         POV_FIELD("WindowBottomZOfs", "%f", mViewSetups[i].mWindowBottomZOfs);
       }
 
       auto section = root->FirstChildElement("customsettings");
@@ -6135,6 +6132,10 @@ void PinTable::ExportBackdropPOV(const string& filename)
    {
       auto root = xmlDoc.NewElement("POV");
       #define POV_FIELD(name, value) { auto node = xmlDoc.NewElement(name); node->SetText(value); view->InsertEndChild(node);}
+      /* In 10.8, we tried to sort out all the settings, with all user settings being in an ini file instead of being in a POV 
+      file or in the table properties. Therefore we do not export them to the POV file any more, but we still read them for 
+      backward compatibility.
+
       for (int i = 0; i < 3; i++)
       {
          auto view = xmlDoc.NewElement(i == 0 ? "desktop" : i == 1 ? "fullscreen" : "fullsinglescreen");
@@ -6155,11 +6156,12 @@ void PinTable::ExportBackdropPOV(const string& filename)
          POV_FIELD("WindowTopZOfs", mViewSetups[i].mWindowTopZOfs);
          POV_FIELD("WindowBottomZOfs", mViewSetups[i].mWindowBottomZOfs);
          root->InsertEndChild(view);
-      }
+      }*/
 
       auto view = xmlDoc.NewElement("customsettings");
-      POV_FIELD("SSAA", m_settings.HasValue(Settings::Player, "AAFactor"s) ? (m_settings.LoadValueWithDefault(Settings::Player, "AAFactor"s, (int)Standard_FXAA) > 1 ? 1 : 0) : -1);
-      POV_FIELD("postprocAA", m_settings.HasValue(Settings::Player, "FXAA"s) ? m_settings.LoadValueWithDefault(Settings::Player, "FXAA"s, (int)Standard_FXAA) : -1);
+      // Fields are being moved to table override ini and therefore no more exported
+      //POV_FIELD("SSAA", m_settings.HasValue(Settings::Player, "AAFactor"s) ? (m_settings.LoadValueWithDefault(Settings::Player, "AAFactor"s, (int)Standard_FXAA) > 1 ? 1 : 0) : -1);
+      //POV_FIELD("postprocAA", m_settings.HasValue(Settings::Player, "FXAA"s) ? m_settings.LoadValueWithDefault(Settings::Player, "FXAA"s, (int)Standard_FXAA) : -1);
       POV_FIELD("ingameAO", m_useAO);
       POV_FIELD("ScSpReflect", m_useSSR);
       POV_FIELD("FPSLimiter", m_TableAdaptiveVSync);
