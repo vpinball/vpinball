@@ -4769,8 +4769,7 @@ void Player::DrawBalls()
       m_pin3d.m_pd3dPrimaryDevice->DrawMesh(m_pin3d.m_pd3dPrimaryDevice->m_ballShader, false, pos, 0.f, m_ballMeshBuffer, RenderDevice::TRIANGLELIST, 0, lowDetailBall ? basicBallLoNumFaces : basicBallMidNumFaces);
 
       // ball trails
-      if ((!g_pplayer->IsRenderPass(Player::REFLECTION_PASS)) && // do not render trails in reflection pass
-         ((m_trailForBalls && (m_ptable->m_useTrailForBalls == -1)) || (m_ptable->m_useTrailForBalls == 1)))
+      if (m_trailForBalls && !g_pplayer->IsRenderPass(Player::REFLECTION_PASS)) // do not render trails in reflection pass
       {
          m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(false, default_state);
          m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);

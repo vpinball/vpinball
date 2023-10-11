@@ -763,7 +763,6 @@ public:
 
    int m_useReflectionForBalls;
    float m_playfieldReflectionStrength;
-   int m_useTrailForBalls;
    float m_ballTrailStrength;
    float m_ballPlayfieldReflectionStrength;
    int m_useAO;
