@@ -1,5 +1,6 @@
 #pragma once
 
+#define MINI_CASE_SENSITIVE
 #include "mINI/ini.h"
 
 // This class holds the settings registry.
