@@ -711,8 +711,6 @@ public:
    float m_TableSoundVolume;
    float m_TableMusicVolume;
 
-   int m_TableAdaptiveVSync;
-
    FRect m_rcDragRect; // Multi-select
 
    HBITMAP m_hbmOffScreen; // Buffer for drawing the editor window

@@ -228,16 +228,6 @@ Player::Player(const bool cameraMode, PinTable *const editor_table, PinTable *co
          m_maxFramerate = 0;
       if (m_videoSyncMode == VideoSyncMode::VSM_INVALID)
          m_videoSyncMode = VideoSyncMode::VSM_FRAME_PACING;
-      if (m_ptable->m_TableAdaptiveVSync != -1)
-      {
-         switch (m_ptable->m_TableAdaptiveVSync)
-         {
-         case 0: m_maxFramerate = 0; m_videoSyncMode = VideoSyncMode::VSM_NONE; break;
-         case 1: m_maxFramerate = 0; m_videoSyncMode = VideoSyncMode::VSM_VSYNC; break;
-         case 2: m_maxFramerate = 0; m_videoSyncMode = VideoSyncMode::VSM_ADAPTIVE_VSYNC; break;
-         default: m_maxFramerate = m_ptable->m_TableAdaptiveVSync; m_videoSyncMode = VideoSyncMode::VSM_ADAPTIVE_VSYNC; break;
-         }
-      }
    }
 
    m_headTracking = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "BAMheadTracking"s, false);

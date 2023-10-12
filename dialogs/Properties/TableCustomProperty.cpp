@@ -19,7 +19,6 @@ TableCustomProperty::TableCustomProperty(const VectorProtected<ISelect> *pvsel) 
     m_physicSetList.push_back("Set8");
 
     m_gameplayDifficultEdit.SetDialog(this);
-    m_fpsLimiterEdit.SetDialog(this);
     m_ballTrailStrengthEdit.SetDialog(this);
     m_soundEffectVolEdit.SetDialog(this);
     m_musicVolEdit.SetDialog(this);
@@ -53,8 +52,6 @@ void TableCustomProperty::UpdateVisuals(const int dispid/*=-1*/)
         PropertyDialog::SetIntTextbox(m_soundEffectVolEdit, table->GetTableSoundVolume());
     if (dispid == IDC_TABLEMUSICVOLUME || dispid == -1)
         PropertyDialog::SetIntTextbox(m_musicVolEdit, table->GetTableMusicVolume());
-    if (dispid == IDC_TABLEAVSYNC || dispid == -1)
-        PropertyDialog::SetIntTextbox(m_fpsLimiterEdit, table->m_TableAdaptiveVSync);
 
     m_nightDaySlider.EnableWindow(table->m_overwriteGlobalDayNight);
 }
@@ -91,9 +88,6 @@ void TableCustomProperty::UpdateProperties(const int dispid)
         case IDC_TABLEMUSICVOLUME:
             CHECK_UPDATE_VALUE_SETTER(table->SetTableMusicVolume, table->GetTableMusicVolume, PropertyDialog::GetIntTextbox, m_musicVolEdit, table);
             break;
-        case IDC_TABLEAVSYNC:
-            CHECK_UPDATE_ITEM(table->m_TableAdaptiveVSync, PropertyDialog::GetIntTextbox(m_fpsLimiterEdit), table);
-            break;
         case IDC_DAYNIGHT_SLIDER:
         {
             const int emission = table->GetGlobalEmissionScale();
@@ -111,7 +105,6 @@ void TableCustomProperty::UpdateProperties(const int dispid)
 
 BOOL TableCustomProperty::OnInitDialog()
 {
-    m_fpsLimiterEdit.AttachItem(IDC_TABLEAVSYNC);
     m_ballReflectionCombo.AttachItem(IDC_BALL_REFLECTION);
     m_ballTrailStrengthEdit.AttachItem(IDC_TRAIL_EDIT);
     AttachItem(IDC_DAYNIGHT_SLIDER, m_nightDaySlider);
@@ -131,7 +124,6 @@ BOOL TableCustomProperty::OnInitDialog()
     UpdateVisuals();
 
     m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC5), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC7), CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC8), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC10), CResizer::topleft, 0);
@@ -140,7 +132,6 @@ BOOL TableCustomProperty::OnInitDialog()
     m_resizer.AddChild(GetDlgItem(IDC_STATIC13), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC14), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC15), CResizer::topleft, 0);
-    m_resizer.AddChild(m_fpsLimiterEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_ballReflectionCombo, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_ballTrailStrengthEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_nightDaySlider, CResizer::topleft, RD_STRETCH_WIDTH);
