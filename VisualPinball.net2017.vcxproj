@@ -830,6 +830,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="third-party\include\progmesh.cpp" />
     <ClCompile Include="third-party\include\serial.cpp" />
     <ClCompile Include="third-party\include\tinyxml2\tinyxml2.cpp" />
+    <ClCompile Include="src/renderer/Anaglyph.cpp" />
     <ClCompile Include="src/renderer/IndexBuffer.cpp" />
     <ClCompile Include="src/renderer/MeshBuffer.cpp" />
     <ClCompile Include="LiveUI.cpp" />
@@ -980,22 +981,22 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
   </ItemGroup>
   <ItemGroup>
     <None Include="res\Default VPinballX.ini" />
-    <None Include="Shader\SMAA.fxh" />
-    <None Include="Shader\BallShader.glfx" />
-    <None Include="Shader\BallShadows.fxh" />
-    <None Include="Shader\BasicShader.glfx" />
-    <None Include="Shader\ClassicLightShader.glfx" />
-    <None Include="Shader\DMDShader.glfx" />
-    <None Include="Shader\DMDShaderVR.glfx" />
-    <None Include="Shader\FBShader.glfx" />
-    <None Include="Shader\FlasherShader.glfx" />
-    <None Include="Shader\FXAAStereoAO_GL.fxh" />
-    <None Include="Shader\LightShader.glfx" />
-    <None Include="Shader\Material_GL.fxh" />
-    <None Include="Shader\SMAA.glfx" />
-    <None Include="Shader\SSR_GL.fxh" />
-    <None Include="Shader\Stereo.fxh" />
-    <None Include="Shader\StereoShader.glfx" />
+    <None Include="shader\SMAA.fxh" />
+    <None Include="shader\BallShader.glfx" />
+    <None Include="shader\BallShadows.fxh" />
+    <None Include="shader\BasicShader.glfx" />
+    <None Include="shader\ClassicLightShader.glfx" />
+    <None Include="shader\DMDShader.glfx" />
+    <None Include="shader\DMDShaderVR.glfx" />
+    <None Include="shader\FBShader.glfx" />
+    <None Include="shader\FlasherShader.glfx" />
+    <None Include="shader\FXAAStereoAO_GL.fxh" />
+    <None Include="shader\LightShader.glfx" />
+    <None Include="shader\Material_GL.fxh" />
+    <None Include="shader\SMAA.glfx" />
+    <None Include="shader\SSR_GL.fxh" />
+    <None Include="shader\Stereo.fxh" />
+    <None Include="shader\StereoShader.glfx" />
     <None Include="res\ball.rgs" />
     <None Include="res\blankTable.vpx" />
     <None Include="res\bumper.rgs" />
@@ -1044,10 +1045,10 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <None Include="res\trigger.rgs" />
     <None Include="res\vpinball.rgs" />
     <None Include="res\light.cur" />
-    <None Include="Shader\FXAAStereoAO.fxh" />
-    <None Include="Shader\Helpers.fxh" />
-    <None Include="Shader\Material.fxh" />
-    <None Include="Shader\SSR.fxh" />
+    <None Include="shader\FXAAStereoAO.fxh" />
+    <None Include="shader\Helpers.fxh" />
+    <None Include="shader\Material.fxh" />
+    <None Include="shader\SSR.fxh" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\add.ico" />
@@ -1302,6 +1303,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="third-party\include\win32xx\include\wxx_webbrowser.h" />
     <ClInclude Include="third-party\include\win32xx\include\wxx_wincore.h" />
     <ClInclude Include="third-party\include\win32xx\include\wxx_wincore0.h" />
+    <ClInclude Include="src/renderer/Anaglyph.h" />
     <ClInclude Include="src/renderer/IndexBuffer.h" />
     <ClInclude Include="src/renderer/MeshBuffer.h" />
     <ClInclude Include="iselect.h" />
@@ -1413,7 +1415,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="audioplayer.h" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Shader\BallShader.hlsl">
+    <FxCompile Include="shader\BallShader.hlsl">
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">ballShaderCode</EntryPointName>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release_GL|Win32'">ballShaderCode</EntryPointName>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Effect</ShaderType>
@@ -1467,7 +1469,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_GL|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_GL|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="Shader\BasicShader.hlsl">
+    <FxCompile Include="shader\BasicShader.hlsl">
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">shader\%(Filename).h</HeaderFileOutput>
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release_GL|Win32'">shader\%(Filename).h</HeaderFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -1521,7 +1523,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_GL|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_GL|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="Shader\DMDShader.hlsl">
+    <FxCompile Include="shader\DMDShader.hlsl">
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">shader\%(Filename).h</HeaderFileOutput>
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release_GL|Win32'">shader\%(Filename).h</HeaderFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -1575,7 +1577,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_GL|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_GL|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="Shader\FBShader.hlsl">
+    <FxCompile Include="shader\FBShader.hlsl">
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">shader\%(Filename).h</HeaderFileOutput>
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release_GL|Win32'">shader\%(Filename).h</HeaderFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -1629,7 +1631,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_GL|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_GL|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="Shader\FlasherShader.hlsl">
+    <FxCompile Include="shader\FlasherShader.hlsl">
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">shader\%(Filename).h</HeaderFileOutput>
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release_GL|Win32'">shader\%(Filename).h</HeaderFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -1683,7 +1685,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_GL|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_GL|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="Shader\LightShader.hlsl">
+    <FxCompile Include="shader\LightShader.hlsl">
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">shader\%(Filename).h</HeaderFileOutput>
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release_GL|Win32'">shader\%(Filename).h</HeaderFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -1737,7 +1739,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_GL|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_GL|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="Shader\StereoShader.hlsl">
+    <FxCompile Include="shader\StereoShader.hlsl">
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">shader\%(Filename).h</HeaderFileOutput>
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release_GL|Win32'">shader\%(Filename).h</HeaderFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -1791,7 +1793,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_GL|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_GL|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="Shader\ClassicLightShader.hlsl">
+    <FxCompile Include="shader\ClassicLightShader.hlsl">
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">shader\%(Filename).h</HeaderFileOutput>
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release_GL|Win32'">shader\%(Filename).h</HeaderFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -1870,7 +1872,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     </ContentWithTargetPath>
   </ItemGroup>
   <ItemGroup>
-    <ContentWithTargetPath Include="Shader\**">
+    <ContentWithTargetPath Include="shader\**">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <TargetPath>shader\%(RecursiveDir)\%(Filename)%(Extension)</TargetPath>
     </ContentWithTargetPath>

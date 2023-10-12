@@ -58,7 +58,7 @@
     <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="src/parts/surface.cpp" />
     <ClCompile Include="src/parts/textbox.cpp" />
-    <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="src/renderer/Texture.cpp" />
     <ClCompile Include="src/parts/timer.cpp" />
     <ClCompile Include="src/parts/trigger.cpp" />
     <ClCompile Include="variant.cpp" />
@@ -316,49 +316,49 @@
     <ClCompile Include="imgui\ImGuizmo.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
-    <ClCompile Include="RenderCommand.cpp">
+    <ClCompile Include="src/renderer/RenderCommand.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
-    <ClCompile Include="RenderDevice.cpp">
+    <ClCompile Include="src/renderer/RenderDevice.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
-    <ClCompile Include="RenderFrame.cpp">
+    <ClCompile Include="src/renderer/RenderFrame.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
-    <ClCompile Include="RenderPass.cpp">
+    <ClCompile Include="src/renderer/RenderPass.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
-    <ClCompile Include="RenderProbe.cpp">
+    <ClCompile Include="src/renderer/RenderProbe.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
-    <ClCompile Include="RenderState.cpp">
+    <ClCompile Include="src/renderer/RenderState.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
-    <ClCompile Include="RenderTarget.cpp">
+    <ClCompile Include="src/renderer/RenderTarget.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
-    <ClCompile Include="IndexBuffer.cpp">
+    <ClCompile Include="src/renderer/IndexBuffer.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
-    <ClCompile Include="MeshBuffer.cpp">
+    <ClCompile Include="src/renderer/MeshBuffer.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
-    <ClCompile Include="TextureManager.cpp">
+    <ClCompile Include="src/renderer/TextureManager.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
-    <ClCompile Include="Sampler.cpp">
+    <ClCompile Include="src/renderer/Sampler.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
-    <ClCompile Include="Shader.cpp">
+    <ClCompile Include="src/renderer/Shader.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
-    <ClCompile Include="VertexBuffer.cpp">
+    <ClCompile Include="src/renderer/VertexBuffer.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
-    <ClCompile Include="ViewSetup.cpp">
+    <ClCompile Include="src/renderer/ViewSetup.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
-    <ClCompile Include="src\renderer\Anaglyph.cpp">
+    <ClCompile Include="src/renderer/Anaglyph.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
   </ItemGroup>
@@ -1001,10 +1001,10 @@
     <ClInclude Include="src/core/Settings.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="RenderDevice.h">
+    <ClInclude Include="src/renderer/RenderDevice.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="RenderState.h">
+    <ClInclude Include="src/renderer/RenderState.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
@@ -1031,7 +1031,7 @@
     <ClInclude Include="src/parts/textbox.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="Texture.h">
+    <ClInclude Include="src/renderer/Texture.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="src/parts/timer.h">
@@ -1601,28 +1601,28 @@
     <ClInclude Include="third-party\include\serial.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="IndexBuffer.h">
+    <ClInclude Include="src/renderer/IndexBuffer.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="MeshBuffer.h">
+    <ClInclude Include="src/renderer/MeshBuffer.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="Shader.h">
+    <ClInclude Include="src/renderer/Shader.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="VertexBuffer.h">
+    <ClInclude Include="src/renderer/VertexBuffer.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="ViewSetup.h">
+    <ClInclude Include="src/renderer/ViewSetup.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="TextureManager.h">
+    <ClInclude Include="src/renderer/TextureManager.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="RenderTarget.h">
+    <ClInclude Include="src/renderer/RenderTarget.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="Sampler.h">
+    <ClInclude Include="src/renderer/Sampler.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="backGlass.h">
@@ -1643,7 +1643,7 @@
     <ClInclude Include="dialogs\VROptionsDialog.h">
       <Filter>dialogs</Filter>
     </ClInclude>
-    <ClInclude Include="RenderProbe.h">
+    <ClInclude Include="src/renderer/RenderProbe.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="dialogs\RenderProbeDialog.h">
@@ -1673,16 +1673,16 @@
     <ClInclude Include="imgui\ImGuizmo.h">
       <Filter>imgui</Filter>
     </ClInclude>
-    <ClInclude Include="RenderCommand.h">
+    <ClInclude Include="src/renderer/RenderCommand.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="RenderFrame.h">
+    <ClInclude Include="src/renderer/RenderFrame.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="RenderPass.h">
+    <ClInclude Include="src/renderer/RenderPass.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="src\renderer\Anaglyph.h">
+    <ClInclude Include="src/renderer/Anaglyph.h">
       <Filter>headers</Filter>
     </ClInclude>
   </ItemGroup>
