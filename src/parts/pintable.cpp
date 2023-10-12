@@ -2196,7 +2196,6 @@ void PinTable::Play(const bool cameraMode)
    dst->m_SSRScale = src->m_SSRScale;
    dst->m_TableSoundVolume = src->m_TableSoundVolume;
    dst->m_TableMusicVolume = src->m_TableMusicVolume;
-   dst->m_TableAdaptiveVSync = src->m_TableAdaptiveVSync;
    dst->m_useReflectionForBalls = src->m_useReflectionForBalls;
    dst->m_playfieldReflectionStrength = src->m_playfieldReflectionStrength;
    dst->m_BallDecalMode = src->m_BallDecalMode;
@@ -3464,8 +3463,6 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
    bw.WriteFloat(FID(SVOL), m_TableSoundVolume);
    bw.WriteFloat(FID(MVOL), m_TableMusicVolume);
 
-   bw.WriteInt(FID(AVSY), m_TableAdaptiveVSync);
-
    bw.WriteInt(FID(BREF), m_useReflectionForBalls);
    bw.WriteInt(FID(PLST), quantizeUnsigned<8>(m_playfieldReflectionStrength));
    bw.WriteBool(FID(BDMO), m_BallDecalMode);
@@ -4132,8 +4129,6 @@ void PinTable::SetLoadDefaults()
 
    m_BallDecalMode = false;
 
-   m_TableAdaptiveVSync = -1;
-
    m_overridePhysicsFlipper = false;
 }
 
@@ -4376,7 +4371,34 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    case FID(SVOL): pbr->GetFloat(m_TableSoundVolume); break;
    case FID(BDMO): pbr->GetBool(m_BallDecalMode); break;
    case FID(MVOL): pbr->GetFloat(m_TableMusicVolume); break;
-   case FID(AVSY): pbr->GetInt(m_TableAdaptiveVSync); break;
+   case FID(AVSY):
+   {
+      int tableAdaptiveVSync;
+      pbr->GetInt(tableAdaptiveVSync);
+      if (tableAdaptiveVSync != -1)
+      {
+         switch (tableAdaptiveVSync)
+         {
+         case 0:
+             m_settings.SaveValue(Settings::Player, "MaxFramerate"s, 0);
+             m_settings.SaveValue(Settings::Player, "SyncMode"s, VideoSyncMode::VSM_NONE);
+             break;
+         case 1:
+             m_settings.SaveValue(Settings::Player, "MaxFramerate"s, 0);
+             m_settings.SaveValue(Settings::Player, "SyncMode"s, VideoSyncMode::VSM_VSYNC);
+             break;
+         case 2:
+             m_settings.SaveValue(Settings::Player, "MaxFramerate"s, 0);
+             m_settings.SaveValue(Settings::Player, "SyncMode"s, VideoSyncMode::VSM_ADAPTIVE_VSYNC);
+             break;
+         default:
+             m_settings.SaveValue(Settings::Player, "MaxFramerate"s, tableAdaptiveVSync);
+             m_settings.SaveValue(Settings::Player, "SyncMode"s, VideoSyncMode::VSM_ADAPTIVE_VSYNC);
+             break;
+         }
+      }
+      break;
+   }
    case FID(OGAC):
    {
       // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file)
@@ -6055,7 +6077,35 @@ void PinTable::ImportBackdropPOV(const string& filename)
             if (useSSR != -1)
                m_enableSSR = useSSR != 0;
          }
-         POV_FIELD("FPSLimiter", "%i", m_TableAdaptiveVSync);
+         //POV_FIELD("FPSLimiter", "%i", m_TableAdaptiveVSync);
+         node = section->FirstChildElement("FPSLimiter");
+         if (node)
+         {
+            int tableAdaptiveVSync;
+            sscanf_s(node->GetText(), "%i", &tableAdaptiveVSync);
+            if (tableAdaptiveVSync != -1)
+            {
+               switch (tableAdaptiveVSync)
+               {
+               case 0:
+                  m_settings.SaveValue(Settings::Player, "MaxFramerate"s, 0);
+                  m_settings.SaveValue(Settings::Player, "SyncMode"s, VideoSyncMode::VSM_NONE);
+                  break;
+               case 1:
+                  m_settings.SaveValue(Settings::Player, "MaxFramerate"s, 0);
+                  m_settings.SaveValue(Settings::Player, "SyncMode"s, VideoSyncMode::VSM_VSYNC);
+                  break;
+               case 2:
+                  m_settings.SaveValue(Settings::Player, "MaxFramerate"s, 0);
+                  m_settings.SaveValue(Settings::Player, "SyncMode"s, VideoSyncMode::VSM_ADAPTIVE_VSYNC);
+                  break;
+               default:
+                  m_settings.SaveValue(Settings::Player, "MaxFramerate"s, tableAdaptiveVSync);
+                  m_settings.SaveValue(Settings::Player, "SyncMode"s, VideoSyncMode::VSM_ADAPTIVE_VSYNC);
+                  break;
+               }
+            }
+         }
          POV_FIELD("BallReflection", "%i", m_useReflectionForBalls);
          //POV_FIELD("BallTrail", "%i", m_useTrailForBalls);
          node = section->FirstChildElement("BallTrail");
@@ -6215,7 +6265,7 @@ void PinTable::ExportBackdropPOV(const string& filename)
       //POV_FIELD("postprocAA", m_settings.HasValue(Settings::Player, "FXAA"s) ? m_settings.LoadValueWithDefault(Settings::Player, "FXAA"s, (int)Standard_FXAA) : -1);
       //POV_FIELD("ingameAO", m_useAO);
       //POV_FIELD("ScSpReflect", m_useSSR);
-      POV_FIELD("FPSLimiter", m_TableAdaptiveVSync);
+      //POV_FIELD("FPSLimiter", m_TableAdaptiveVSync);
       //POV_FIELD("OverwriteDetailsLevel", m_overwriteGlobalDetailLevel ? 1 : 0);
       //POV_FIELD("DetailsLevel", m_userDetailLevel);
       POV_FIELD("BallReflection", m_useReflectionForBalls);
@@ -8798,17 +8848,18 @@ STDMETHODIMP PinTable::put_TableMusicVolume(int newVal)
 
 STDMETHODIMP PinTable::get_TableAdaptiveVSync(int *pVal)
 {
-   *pVal = m_TableAdaptiveVSync;
-
+   // FIXME deprecated remove
+   //*pVal = m_TableAdaptiveVSync;
+   *pVal = -1;
    return S_OK;
 }
 
 STDMETHODIMP PinTable::put_TableAdaptiveVSync(int newVal)
 {
-   STARTUNDO
-   m_TableAdaptiveVSync = newVal;
-   STOPUNDO
-
+   // FIXME deprecated remove
+   //STARTUNDO
+   //m_TableAdaptiveVSync = newVal;
+   //STOPUNDO
    return S_OK;
 }
 
