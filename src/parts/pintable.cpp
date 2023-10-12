@@ -1397,7 +1397,7 @@ void PinTable::ReadAccelerometerCalibration()
    m_tblAccelerometer = m_settings.LoadValueWithDefault(Settings::Player, "PBWEnabled"s, true); // true if electronic accelerometer enabled
    m_tblAccelNormalMount = m_settings.LoadValueWithDefault(Settings::Player, "PBWNormalMount"s, true); // true is normal mounting (left hand coordinates)
 
-   m_tblAccelAngle = 0.0f;			// 0 degrees rotated counterclockwise (GUI is lefthand coordinates)
+   m_tblAccelAngle = 0.0f; // 0 degrees rotated counterclockwise (GUI is lefthand coordinates)
    const bool accel = m_settings.LoadValueWithDefault(Settings::Player, "PBWRotationCB"s, false);
    if (accel)
       m_tblAccelAngle = (float)m_settings.LoadValueWithDefault(Settings::Player, "PBWRotationValue"s, 0);
@@ -2541,7 +2541,7 @@ HRESULT PinTable::Save(const bool saveAs)
          stg.reserved = 0;
          stg.ulSectorSize = 4096;
 
-         HRESULT hr; 
+         HRESULT hr;
          if (FAILED(hr = StgCreateStorageEx(wszCodeFile, STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE,
             STGFMT_DOCFILE, 0, &stg, 0, IID_IStorage, (void**)&pstgRoot)))
          {
@@ -9573,11 +9573,11 @@ STDMETHODIMP PinTable::ImportPhysics()
 
    vector<string> szFileName;
    if (!m_vpinball->OpenFileDialog(szInitialDir, szFileName, "Visual Pinball Physics (*.vpp)\0*.vpp\0", "vpp", 0))
-       return S_OK;
+      return S_OK;
 
    const size_t index = szFileName[0].find_last_of(PATH_SEPARATOR_CHAR);
    if (index != string::npos)
-       g_pvp->m_settings.SaveValue(Settings::RecentDir, "PhysicsDir"s, szFileName[0].substr(0, index));
+      g_pvp->m_settings.SaveValue(Settings::RecentDir, "PhysicsDir"s, szFileName[0].substr(0, index));
 
    ImportVPP(szFileName[0]);
 
@@ -10565,8 +10565,8 @@ ProgressDialog::ProgressDialog() : CDialog(IDD_PROGRESS)
 
 BOOL ProgressDialog::OnInitDialog()
 {
-    AttachItem(IDC_PROGRESS2, m_progressBar);
-    AttachItem(IDC_STATUSNAME, m_progressName);
+   AttachItem(IDC_PROGRESS2, m_progressBar);
+   AttachItem(IDC_STATUSNAME, m_progressName);
 
-    return TRUE;
+   return TRUE;
 }

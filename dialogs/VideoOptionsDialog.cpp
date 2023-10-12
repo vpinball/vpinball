@@ -880,7 +880,7 @@ void VideoOptionsDialog::SaveSettings(const bool saveAll)
    settings.SaveValue(Settings::Player, "ForceBloomOff"s, IsDlgButtonChecked(IDC_BLOOM_OFF) == BST_CHECKED, !saveAll);
    const int ballStretchMode = IsDlgButtonChecked(IDC_StretchYes) == BST_CHECKED ? 1
             : IsDlgButtonChecked(IDC_StretchMonitor) == BST_CHECKED              ? 2
-                                                                                                                   : 0;
+                                                                                 : 0;
    settings.SaveValue(Settings::Player, "BallStretchMode"s, ballStretchMode, !saveAll);
    const bool overwriteEnabled = IsDlgButtonChecked(IDC_OVERWRITE_BALL_IMAGE_CHECK) == BST_CHECKED;
    settings.SaveValue(Settings::Player, "OverwriteBallImage"s, overwriteEnabled, !saveAll);
