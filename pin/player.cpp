@@ -1066,9 +1066,9 @@ void Player::AddCabinetBoundingHitShapes()
    m_hitPlayfield.m_scatter = ANGTORAD(m_ptable->m_overridePhysics ? m_ptable->m_fOverrideScatterAngle : m_ptable->m_scatter);
 
    // glass:
-   Vertex3Ds glassNormal(0, m_ptable->m_bottom - m_ptable->m_top, m_ptable->m_glassTopHeight - m_ptable->m_glassBottomHeight);
+   Vertex3Ds glassNormal(0, m_ptable->m_bottom - m_ptable->m_top, m_ptable->m_glassBottomHeight - m_ptable->m_glassTopHeight);
    glassNormal.Normalize();
-   m_hitTopGlass = HitPlane(Vertex3Ds(0, -glassNormal.z, -glassNormal.y), m_ptable->m_glassTopHeight);
+   m_hitTopGlass = HitPlane(Vertex3Ds(0, -glassNormal.z, glassNormal.y), m_ptable->m_glassTopHeight);
    m_hitTopGlass.m_elasticity = 0.2f;
 }
 
