@@ -458,6 +458,7 @@ Settings& VideoOptionsDialog::GetEditedSettings()
 void VideoOptionsDialog::LoadSettings()
 {
    HWND hwnd;
+   char tmp[256];
    Settings& settings = GetEditedSettings();
 
    m_initialMaxTexDim = settings.LoadValueWithDefault(Settings::Player, "MaxTexDimension"s, 0);
@@ -466,6 +467,10 @@ void VideoOptionsDialog::LoadSettings()
 
    const bool trail = settings.LoadValueWithDefault(Settings::Player, "BallTrail"s, true);
    SendDlgItemMessage(IDC_GLOBAL_TRAIL_CHECK, BM_SETCHECK, trail ? BST_CHECKED : BST_UNCHECKED, 0);
+
+   const float trailStrength = settings.LoadValueWithDefault(Settings::Player, "BallTrailStrength"s, 0.5f);
+   sprintf_s(tmp, sizeof(tmp), "%f", trailStrength);
+   SetDlgItemText(IDC_BALL_TRAIL_STRENGTH, tmp);
 
    const bool disableLighting = settings.LoadValueWithDefault(Settings::Player, "DisableLightingForBalls"s, false);
    SendDlgItemMessage(IDC_GLOBAL_DISABLE_LIGHTING_BALLS, BM_SETCHECK, disableLighting ? BST_CHECKED : BST_UNCHECKED, 0);
@@ -499,8 +504,6 @@ void VideoOptionsDialog::LoadSettings()
    #ifdef ENABLE_SDL
    GetDlgItem(IDC_MAX_PRE_FRAMES).EnableWindow(false); // OpenGL does not support this option
    #endif
-
-   char tmp[256];
 
    const float ballAspecRatioOffsetX = settings.LoadValueWithDefault(Settings::Player, "BallCorrectionX"s, 0.f);
    sprintf_s(tmp, sizeof(tmp), "%f", ballAspecRatioOffsetX);
@@ -799,6 +802,7 @@ void VideoOptionsDialog::SaveSettings(const bool saveAll)
    if (m_initialMaxTexDim != maxTexDim)
       MessageBox("You have changed the maximum texture size.\n\nThis change will only take effect after reloading the tables.", "Reload tables", MB_ICONWARNING);
    settings.SaveValue(Settings::Player, "BallTrail"s, IsDlgButtonChecked(IDC_GLOBAL_TRAIL_CHECK) == BST_CHECKED, !saveAll);
+   settings.SaveValue(Settings::Player, "BallTrailStrength"s, GetDlgItemText(IDC_BALL_TRAIL_STRENGTH).GetString(), !saveAll);
    settings.SaveValue(Settings::Player, "DisableLightingForBalls"s, IsDlgButtonChecked(IDC_GLOBAL_DISABLE_LIGHTING_BALLS) == BST_CHECKED, !saveAll);
    settings.SaveValue(Settings::Player, "MaxFramerate"s, (int)GetDlgItemInt(IDC_MAX_FPS, nothing, TRUE), !saveAll);
    LRESULT syncMode = SendDlgItemMessage(IDC_VIDEO_SYNC_MODE, CB_GETCURSEL, 0, 0);

@@ -761,7 +761,6 @@ public:
 
    int m_useReflectionForBalls;
    float m_playfieldReflectionStrength;
-   float m_ballTrailStrength;
    float m_ballPlayfieldReflectionStrength;
    bool m_enableAO;
    bool m_enableSSR;
@@ -806,8 +805,6 @@ public:
    ViewSetupID GetViewSetupOverride() const { return m_BG_override; }
    void SetViewSetupOverride(const ViewSetupID v) { m_BG_override = v; UpdateCurrentBGSet(); }
    void UpdateCurrentBGSet();
-   int GetBallTrailStrength() const;
-   void SetBallTrailStrength(const int value);
    int GetGlobalEmissionScale() const;
    void SetGlobalEmissionScale(const int value);
    float GetGlobalDifficulty() const;
