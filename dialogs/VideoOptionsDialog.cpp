@@ -807,10 +807,10 @@ void VideoOptionsDialog::SaveSettings(const bool saveAll)
    settings.SaveValue(Settings::Player, "SyncMode"s, (int)syncMode, !saveAll);
    settings.SaveValue(Settings::Player, "MaxPrerenderedFrames"s, (int)GetDlgItemInt(IDC_MAX_PRE_FRAMES, nothing, TRUE), !saveAll);
    settings.SaveValue(Settings::Player, "BallCorrectionX"s, GetDlgItemText(IDC_CORRECTION_X).GetString(), !saveAll);
-   settings.SaveValue(Settings::Player, "BallCorrectionY"s, GetDlgItemText(IDC_CORRECTION_X).GetString(), !saveAll);
-   settings.SaveValue(Settings::Player, "Longitude"s, GetDlgItemText(IDC_CORRECTION_X).GetString(), !saveAll);
-   settings.SaveValue(Settings::Player, "Latitude"s, GetDlgItemText(IDC_CORRECTION_X).GetString(), !saveAll);
-   settings.SaveValue(Settings::Player, "NudgeStrength"s, GetDlgItemText(IDC_CORRECTION_X).GetString(), !saveAll);
+   settings.SaveValue(Settings::Player, "BallCorrectionY"s, GetDlgItemText(IDC_CORRECTION_Y).GetString(), !saveAll);
+   settings.SaveValue(Settings::Player, "Longitude"s, GetDlgItemText(IDC_DN_LONGITUDE).GetString(), !saveAll);
+   settings.SaveValue(Settings::Player, "Latitude"s, GetDlgItemText(IDC_DN_LATITUDE).GetString(), !saveAll);
+   settings.SaveValue(Settings::Player, "NudgeStrength"s, GetDlgItemText(IDC_NUDGE_STRENGTH).GetString(), !saveAll);
    LRESULT fxaa = SendDlgItemMessage(IDC_POST_PROCESS_COMBO, CB_GETCURSEL, 0, 0);
    if (fxaa == LB_ERR)
       fxaa = Standard_FXAA;
