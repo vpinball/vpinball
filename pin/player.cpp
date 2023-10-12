@@ -128,6 +128,7 @@ Player::Player(const bool cameraMode, PinTable *const editor_table, PinTable *co
 #endif
 
    m_trailForBalls = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "BallTrail"s, true);
+   m_ballTrailStrength = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "BallTrailStrength"s, 0.5f);
    m_disableLightingForBalls = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "DisableLightingForBalls"s, false);
    m_stereo3D = (StereoMode)m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3D"s, (int)STEREO_OFF);
    m_stereo3Denabled = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DEnabled"s, (m_stereo3D != STEREO_OFF));
@@ -4759,7 +4760,7 @@ void Player::DrawBalls()
       m_pin3d.m_pd3dPrimaryDevice->DrawMesh(m_pin3d.m_pd3dPrimaryDevice->m_ballShader, false, pos, 0.f, m_ballMeshBuffer, RenderDevice::TRIANGLELIST, 0, lowDetailBall ? basicBallLoNumFaces : basicBallMidNumFaces);
 
       // ball trails
-      if (m_trailForBalls && !g_pplayer->IsRenderPass(Player::REFLECTION_PASS)) // do not render trails in reflection pass
+      if (m_trailForBalls && m_ballTrailStrength > 0.f && !g_pplayer->IsRenderPass(Player::REFLECTION_PASS)) // do not render trails in reflection pass
       {
          m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(false, default_state);
          m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
@@ -4788,7 +4789,7 @@ void Player::DrawBalls()
                continue; // Too small => discard
 
             const float length = sqrtf(ls);
-            const float bc = m_ptable->m_ballTrailStrength * powf(1.f - 1.f / max(length, 1.0f), 64.0f); //!! 64=magic alpha falloff
+            const float bc = m_ballTrailStrength * powf(1.f - 1.f / max(length, 1.0f), 64.0f); //!! 64=magic alpha falloff
             const float r = min(pball->m_d.m_radius*0.9f, 2.0f*pball->m_d.m_radius / powf((float)(i2 + 2), 0.6f)); //!! consts are for magic radius falloff
             if (bc <= 0.f && r <= 1e-3f)
                continue; // Fully faded out or radius too small => discard

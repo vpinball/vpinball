@@ -2201,7 +2201,6 @@ void PinTable::Play(const bool cameraMode)
    dst->m_BallDecalMode = src->m_BallDecalMode;
    dst->m_ballPlayfieldReflectionStrength = src->m_ballPlayfieldReflectionStrength;
    dst->m_defaultBulbIntensityScaleOnBall = src->m_defaultBulbIntensityScaleOnBall;
-   dst->m_ballTrailStrength = src->m_ballTrailStrength;
    dst->m_grid = src->m_grid;
    dst->m_reflectElementsOnPlayfield = src->m_reflectElementsOnPlayfield;
    dst->m_enableAO = src->m_enableAO;
@@ -3468,7 +3467,6 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
    bw.WriteBool(FID(BDMO), m_BallDecalMode);
    bw.WriteFloat(FID(BPRS), m_ballPlayfieldReflectionStrength);
    bw.WriteFloat(FID(DBIS), m_defaultBulbIntensityScaleOnBall);
-   bw.WriteInt(FID(BTST), quantizeUnsigned<8>(m_ballTrailStrength));
    bw.WriteBool(FID(OGDN), m_overwriteGlobalDayNight);
    bw.WriteBool(FID(GDAC), m_grid);
    bw.WriteBool(FID(REOP), m_reflectElementsOnPlayfield);
@@ -4116,7 +4114,6 @@ void PinTable::SetLoadDefaults()
    m_playfieldReflectionStrength = 0.2f;
    m_reflectElementsOnPlayfield = false;
 
-   m_ballTrailStrength = 0.4f;
    m_ballPlayfieldReflectionStrength = 1.f;
 
    m_enableAO = true;
@@ -4299,9 +4296,10 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    }
    case FID(BTST):
    {
-      int tmp;
-      pbr->GetInt(tmp);
-      m_ballTrailStrength = dequantizeUnsigned<8>(tmp);
+      // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file)
+      int ballTrailStrength;
+      pbr->GetInt(ballTrailStrength);
+      m_settings.SaveValue(Settings::Player, "BallTrailStrength"s, dequantizeUnsigned<8>(ballTrailStrength));
       break;
    }
    case FID(BPRS): pbr->GetFloat(m_ballPlayfieldReflectionStrength); break;
@@ -6116,7 +6114,14 @@ void PinTable::ImportBackdropPOV(const string& filename)
             if (useTrailForBalls != -1)
                m_settings.SaveValue(Settings::Player, "BallTrail"s, useTrailForBalls == 1);
          }
-         POV_FIELD("BallTrailStrength", "%f", m_ballTrailStrength);
+         //POV_FIELD("BallTrailStrength", "%f", m_ballTrailStrength);
+         node = section->FirstChildElement("BallTrailStrength");
+         if (node)
+         {
+            float strength;
+            sscanf_s(node->GetText(), "%f", &strength);
+            m_settings.SaveValue(Settings::Player, "BallTrailStrength"s, strength);
+         }
          //int overwriteGlobalDetailLevel = (int)m_overwriteGlobalDetailLevel;
          //POV_FIELD("OverwriteDetailsLevel", "%i", overwriteGlobalDetailLevel);
          node = section->FirstChildElement("OverwriteDetailsLevel");
@@ -6270,7 +6275,7 @@ void PinTable::ExportBackdropPOV(const string& filename)
       //POV_FIELD("DetailsLevel", m_userDetailLevel);
       POV_FIELD("BallReflection", m_useReflectionForBalls);
       //POV_FIELD("BallTrail", m_useTrailForBalls);
-      POV_FIELD("BallTrailStrength", m_ballTrailStrength);
+      //POV_FIELD("BallTrailStrength", m_ballTrailStrength);
       POV_FIELD("OverwriteNightDay", m_overwriteGlobalDayNight ? 1 : 0);
       POV_FIELD("NightDayLevel", GetGlobalEmissionScale());
       POV_FIELD("GameplayDifficulty", GetGlobalDifficulty());
@@ -8635,29 +8640,15 @@ STDMETHODIMP PinTable::put_BallTrail(UserDefaultOnOff newVal)
    return S_OK;
 }
 
-int PinTable::GetBallTrailStrength() const
-{
-    return quantizeUnsignedPercent(m_ballTrailStrength);
-}
-
-void PinTable::SetBallTrailStrength(const int value)
-{
-    m_ballTrailStrength = dequantizeUnsignedPercent(value);
-}
-
 STDMETHODIMP PinTable::get_TrailStrength(int *pVal)
 {
-   *pVal = GetBallTrailStrength();
-
+   *pVal = (int) (100.f * m_settings.LoadValueWithDefault(Settings::Player, "BallTrailStrength"s, 0.5f));
    return S_OK;
 }
 
 STDMETHODIMP PinTable::put_TrailStrength(int newVal)
 {
-   STARTUNDO
-   SetBallTrailStrength(newVal);
-   STOPUNDO
-
+   m_settings.SaveValue(Settings::Player, "BallTrailStrength"s, newVal / 100.f);
    return S_OK;
 }
 

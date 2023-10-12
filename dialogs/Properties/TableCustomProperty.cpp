@@ -19,7 +19,6 @@ TableCustomProperty::TableCustomProperty(const VectorProtected<ISelect> *pvsel) 
     m_physicSetList.push_back("Set8");
 
     m_gameplayDifficultEdit.SetDialog(this);
-    m_ballTrailStrengthEdit.SetDialog(this);
     m_soundEffectVolEdit.SetDialog(this);
     m_musicVolEdit.SetDialog(this);
 
@@ -35,8 +34,6 @@ void TableCustomProperty::UpdateVisuals(const int dispid/*=-1*/)
     
     if (dispid == IDC_BALL_REFLECTION || dispid == -1)
         PropertyDialog::UpdateComboBox(m_userList, m_ballReflectionCombo, m_userList[(int)(table->m_useReflectionForBalls) + 1]);
-    if (dispid == IDC_TRAIL_EDIT || dispid == -1)
-        PropertyDialog::SetIntTextbox(m_ballTrailStrengthEdit, table->GetBallTrailStrength());
 
     m_nightDaySlider.SetPos(table->GetGlobalEmissionScale(), 1);
 
@@ -66,9 +63,6 @@ void TableCustomProperty::UpdateProperties(const int dispid)
     {
         case IDC_BALL_REFLECTION:
             CHECK_UPDATE_ITEM(table->m_useReflectionForBalls, (PropertyDialog::GetComboBoxIndex(m_ballReflectionCombo, m_userList) - 1), table);
-            break;
-        case IDC_TRAIL_EDIT:
-            CHECK_UPDATE_VALUE_SETTER(table->SetBallTrailStrength, table->GetBallTrailStrength, PropertyDialog::GetIntTextbox, m_ballTrailStrengthEdit, table);
             break;
         case IDC_GLOBAL_DAYNIGHT:
             CHECK_UPDATE_ITEM(table->m_overwriteGlobalDayNight, PropertyDialog::GetCheckboxState(m_hOverwriteNightDayCheck), table);
@@ -106,7 +100,6 @@ void TableCustomProperty::UpdateProperties(const int dispid)
 BOOL TableCustomProperty::OnInitDialog()
 {
     m_ballReflectionCombo.AttachItem(IDC_BALL_REFLECTION);
-    m_ballTrailStrengthEdit.AttachItem(IDC_TRAIL_EDIT);
     AttachItem(IDC_DAYNIGHT_SLIDER, m_nightDaySlider);
     m_hOverwriteNightDayCheck = ::GetDlgItem(GetHwnd(), IDC_GLOBAL_DAYNIGHT);
     m_gameplayDifficultEdit.AttachItem(IDC_GAME_DIFFICULTY_EDIT);
@@ -126,14 +119,12 @@ BOOL TableCustomProperty::OnInitDialog()
     m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
     m_resizer.AddChild(GetDlgItem(IDC_STATIC7), CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC8), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC10), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC11), CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC12), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC13), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC14), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC15), CResizer::topleft, 0);
     m_resizer.AddChild(m_ballReflectionCombo, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_ballTrailStrengthEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_nightDaySlider, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_hOverwriteNightDayCheck, CResizer::topleft, 0);
     m_resizer.AddChild(m_gameplayDifficultEdit, CResizer::topleft, RD_STRETCH_WIDTH);

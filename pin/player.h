@@ -546,6 +546,7 @@ private:
    int m_maxPrerenderedFrames;
 
    bool m_trailForBalls;
+   float m_ballTrailStrength;
    bool m_disableLightingForBalls;
 
    U64 m_startFrameTick; // System time in us when render frame was started (beginning of frame animation then collect,...)
