@@ -748,10 +748,9 @@ void Player::Shutdown()
         g_pvp->PostWorkToWorkerThread(HANG_SNOOP_STOP, NULL);
 
     // Save list of used textures to avoid stuttering in next play
-    string szVPXFile = g_pvp->m_currentTablePath + m_ptable->m_szTitle + ".vpx";
-    if ((m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "CacheMode"s, 1) > 0) && FileExists(szVPXFile))
+    if ((m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "CacheMode"s, 1) > 0) && FileExists(m_ptable->m_szFileName))
     {
-        string dir = g_pvp->m_szMyPath + "Cache" + PATH_SEPARATOR_CHAR + m_ptable->m_szTitle + PATH_SEPARATOR_CHAR;
+        string dir = g_pvp->m_szMyPrefPath + "Cache" + PATH_SEPARATOR_CHAR + m_ptable->m_szTitle + PATH_SEPARATOR_CHAR;
         std::filesystem::create_directories(std::filesystem::path(dir));
 
         std::map<string, bool> prevPreRenderOnly;
@@ -1582,10 +1581,10 @@ HRESULT Player::Init()
    m_pEditorTable->m_progressDialog.SetProgress(50);
    m_pEditorTable->m_progressDialog.SetName("Loading Textures..."s);
 
-   if (m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "CacheMode"s, 1) > 0)
+   if ((m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "CacheMode"s, 1) > 0) && FileExists(m_ptable->m_szFileName))
    {
       try {
-         string dir = g_pvp->m_szMyPath + "Cache" + PATH_SEPARATOR_CHAR + m_ptable->m_szTitle + PATH_SEPARATOR_CHAR;
+         string dir = g_pvp->m_szMyPrefPath + "Cache" + PATH_SEPARATOR_CHAR + m_ptable->m_szTitle + PATH_SEPARATOR_CHAR;
          std::filesystem::create_directories(std::filesystem::path(dir));
          if (FileExists(dir + "used_textures.xml"))
          {
