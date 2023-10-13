@@ -198,7 +198,7 @@ void RenderProbe::RenderScreenSpaceTransparency(const bool is_static)
    p3dDevice->SetRenderTarget(m_name, m_dynamicRT, false);
    p3dDevice->BlitRenderTarget(p3dDevice->GetMSAABackBufferTexture(), m_dynamicRT, true, true);
    ApplyRoughness(m_dynamicRT, m_roughness);
-   p3dDevice->SetRenderTarget(previousRT->m_name, previousRT->m_rt);
+   p3dDevice->SetRenderTarget(previousRT->m_name + "+"s, previousRT->m_rt);
 }
 
 
@@ -312,7 +312,7 @@ void RenderProbe::PreRenderStaticReflectionProbe()
    p3dDevice->FlushRenderFrame(); // Execute before destroying the render target
    delete accumulationSurface;
    if (previousRT)
-      p3dDevice->SetRenderTarget(previousRT->m_name, previousRT->m_rt);
+      p3dDevice->SetRenderTarget(previousRT->m_name + "+"s, previousRT->m_rt);
    else
       p3dDevice->SetRenderTarget(""s, nullptr);
 
@@ -355,7 +355,7 @@ void RenderProbe::RenderReflectionProbe(const bool is_static)
 
    ApplyRoughness(p3dDevice->GetCurrentPass()->m_rt, m_roughness);
 
-   p3dDevice->SetRenderTarget(previousRT->m_name, previousRT->m_rt);
+   p3dDevice->SetRenderTarget(previousRT->m_name + "+"s, previousRT->m_rt);
 }
 
 void RenderProbe::DoRenderReflectionProbe(const bool render_static, const bool render_balls, const bool render_dynamic)

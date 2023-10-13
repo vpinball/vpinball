@@ -24,11 +24,13 @@ public:
    unsigned int GetCommandCount() const { return (unsigned int)m_commands.size(); }
 
    RenderTarget* m_rt;
+   int m_singleLayerRendering = -1; // if positive, rendering will only be performed on the corresponding layer
    string m_name;
    bool m_depthReadback = false;
 
    vector<RenderCommand*> m_commands;
    vector<RenderPass*> m_dependencies; // List of render passes that must have been performed before executing this pass
+   vector<RenderTarget*> m_referencedRT; // List of render targets used by dependencies
    int m_sortKey = 0;
    bool m_updated = false;
 };

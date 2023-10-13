@@ -4,6 +4,9 @@
 #include "RenderCommand.h"
 #include "RenderDevice.h"
 
+// Uncomment this for logging pass sorting/splitting
+//#define LOG_PASS_SORTING
+
 RenderFrame::RenderFrame(RenderDevice* renderDevice)
    : m_rd(renderDevice)
 {
@@ -65,6 +68,29 @@ bool RenderFrame::Execute(const bool log)
    for (RenderPass* pass : m_passes)
       pass->m_rt->m_lastRenderPass = nullptr;
 
+   #ifdef LOG_PASS_SORTING
+   if (log)
+      PLOGI << "Frame before sorting/splitting:";
+   for (RenderPass* pass : m_passes)
+   {
+      if (log)
+      {
+         std::stringstream ss;
+         ss << "> Pass '" << pass->m_name << "' [RT=" << pass->m_rt->m_name << ", " << pass->m_commands.size() << " commands, Dependencies:";
+         bool first = true;
+         for (RenderPass* dep : pass->m_dependencies)
+         {
+            if (!first)
+               ss << ", ";
+            first = false;
+            ss << dep->m_name;
+         }
+         ss << "]";
+         PLOGI << ss.str();
+      }
+   }
+   #endif
+
    // Sort passes to avoid useless render target switching, allow merging passes for better draw call sorting/batching, drop passes that do not contribute to the final pass
    RenderPass* finalPass = m_passes.back();
    vector<RenderPass*> sortedPasses;
@@ -103,9 +129,9 @@ bool RenderFrame::Execute(const bool log)
       finalPass->SortPasses(sortedPasses, m_passes);
    }
 
-   /*
+   #ifdef LOG_PASS_SORTING
    if (log)
-      PLOGI << "Frame after splitting:";
+      PLOGI << "Frame after sorting/splitting:";
    for (RenderPass* pass : sortedPasses)
    {
       if (log)
@@ -124,7 +150,7 @@ bool RenderFrame::Execute(const bool log)
          PLOGI << ss.str();
       }
    }
-   */
+   #endif
 
    PLOGI_IF(log) << "Rendering Frame [" << sortedPasses.size() << " passes out of " << m_passes.size() << " submitted passes]";
 

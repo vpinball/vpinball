@@ -449,7 +449,7 @@ void RenderTarget::Activate(const int layer)
    if (m_depth_sampler)
       m_depth_sampler->Unbind();
    // Either bind all layers for instanced rendering or the only requested one for normal rendering (one pass per layer)
-   glBindFramebuffer(GL_FRAMEBUFFER, (layer == -1 || m_nLayers == 1)  ? m_framebuffer :m_framebuffer_layers[layer]);
+   glBindFramebuffer(GL_FRAMEBUFFER, (layer == -1 || m_nLayers == 1)  ? m_framebuffer : m_framebuffer_layers[layer]);
    glViewport(0, 0, m_width, m_height);
 #else
    static IDirect3DSurface9* currentColorSurface = nullptr;

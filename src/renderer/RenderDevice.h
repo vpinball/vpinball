@@ -149,7 +149,7 @@ public:
    void DrawTexturedQuad(Shader* shader, const Vertex3D_TexelOnly* vertices);
    void DrawTexturedQuad(Shader* shader, const Vertex3D_NoTex2* vertices);
    void DrawFullscreenTexturedQuad(Shader* shader);
-   void DrawGaussianBlur(RenderTarget* source, RenderTarget* tmp, RenderTarget* dest, float kernel_size);
+   void DrawGaussianBlur(RenderTarget* source, RenderTarget* tmp, RenderTarget* dest, float kernel_size, int singleLayer = -1);
    void LogNextFrame() { m_logNextFrame = true; }
    bool IsLogNextFrame() const { return m_logNextFrame; }
    void FlushRenderFrame();

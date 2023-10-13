@@ -1212,7 +1212,7 @@ void RenderDevice::ResolveMSAA()
       const RenderPass* initial_rt = GetCurrentPass();
       SetRenderTarget("Resolve MSAA"s, m_pOffscreenBackBufferTexture1);
       BlitRenderTarget(m_pOffscreenMSAABackBufferTexture, m_pOffscreenBackBufferTexture1, true, true);
-      SetRenderTarget(initial_rt->m_name, initial_rt->m_rt);
+      SetRenderTarget(initial_rt->m_name + "+"s, initial_rt->m_rt);
    }
 }
 
@@ -1803,7 +1803,11 @@ void RenderDevice::SetRenderTarget(const string& name, RenderTarget* rt, const b
    {
       m_currentPass = m_renderFrame.AddPass(name, rt);
       if (useRTContent && rt->m_lastRenderPass != nullptr)
+      {
+         for (auto precursors : rt->m_lastRenderPass->m_dependencies)
+            m_currentPass->AddPrecursor(precursors);
          m_currentPass->AddPrecursor(rt->m_lastRenderPass);
+      }
       rt->m_lastRenderPass = m_currentPass;
    }
 }
@@ -1907,7 +1911,7 @@ void RenderDevice::DrawMesh(Shader* shader, const bool isTransparent, const Vert
    m_currentPass->Submit(cmd);
 }
 
-void RenderDevice::DrawGaussianBlur(RenderTarget* source, RenderTarget* tmp, RenderTarget* dest, float kernel_size)
+void RenderDevice::DrawGaussianBlur(RenderTarget* source, RenderTarget* tmp, RenderTarget* dest, float kernel_size, int singleLayer)
 {
    ShaderTechniques tech_h, tech_v;
    if (kernel_size < 8)
@@ -1965,8 +1969,8 @@ void RenderDevice::DrawGaussianBlur(RenderTarget* source, RenderTarget* tmp, Ren
    SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
    {
       FBShader->SetTextureNull(SHADER_tex_fb_filtered);
-      SetRenderTarget("Horizontal Blur"s, tmp, true); // switch to temporary output buffer for horizontal phase of gaussian blur
-      // (we flag that we use the content of the buffer to avoid the pass to be sorted out disregarding flip/flop of RT)
+      SetRenderTarget(initial_rt->m_name + " HBlur"s, tmp, false); // switch to temporary output buffer for horizontal phase of gaussian blur
+      m_currentPass->m_singleLayerRendering = singleLayer; // We support bluring a single layer (for anaglyph defocusing)
       AddRenderTargetDependency(source);
       FBShader->SetTexture(SHADER_tex_fb_filtered, source->GetColorSampler());
       FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / source->GetWidth()), (float)(1.0 / source->GetHeight()), 1.0f, 1.0f);
@@ -1975,8 +1979,8 @@ void RenderDevice::DrawGaussianBlur(RenderTarget* source, RenderTarget* tmp, Ren
    }
    {
       FBShader->SetTextureNull(SHADER_tex_fb_filtered);
-      SetRenderTarget("Vertical Blur"s, dest, false); // switch to output buffer for vertical phase of gaussian blur
-      m_currentPass->Reset("Vertical Blur"s, dest); // reset to avoid dependency on self
+      SetRenderTarget(initial_rt->m_name + " VBlur"s, dest, false); // switch to output buffer for vertical phase of gaussian blur
+      m_currentPass->m_singleLayerRendering = singleLayer; // We support bluring a single layer (for anaglyph defocusing)
       AddRenderTargetDependency(tmp);
       FBShader->SetTexture(SHADER_tex_fb_filtered, tmp->GetColorSampler());
       FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / tmp->GetWidth()), (float)(1.0 / tmp->GetHeight()), 1.0f, 1.0f);
@@ -1984,7 +1988,7 @@ void RenderDevice::DrawGaussianBlur(RenderTarget* source, RenderTarget* tmp, Ren
       DrawFullscreenTexturedQuad(FBShader);
    }
    CopyRenderStates(false, initial_state);
-   SetRenderTarget(initial_rt->m_name, initial_rt->m_rt);
+   SetRenderTarget(initial_rt->m_name + "+"s, initial_rt->m_rt, true);
 }
 
 void RenderDevice::SetMainTextureDefaultFiltering(const SamplerFilter filter)
