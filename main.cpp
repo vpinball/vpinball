@@ -402,7 +402,7 @@ public:
                             "\n-c1 [customparam] .. -c9 [customparam]  Custom user parameters that can be accessed in the script via GetCustomParam(X)";
             if (!valid_param)
                 output = "Invalid Parameter "s + szArglist[i] + "\n\nValid Parameters are:\n\n" + output;
-            m_vpinball.MessageBox(output.c_str(), "Visual Pinball Usage", valid_param ? MB_OK : MB_ICONERROR);
+            ::MessageBox(NULL, output.c_str(), "Visual Pinball Usage", valid_param ? MB_OK : MB_ICONERROR);
             //run = false;
             exit(valid_param ? 0 : 1);
          }
