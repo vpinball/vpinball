@@ -8,7 +8,6 @@
 #endif
  #include <SDL2/SDL_opengl.h>
  #include <SDL2/SDL.h>
- #include <SDL2/SDL_ttf.h>
 #else
  #include "minid3d9.h"
  #include <d3dx9.h>

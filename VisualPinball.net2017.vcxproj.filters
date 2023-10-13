@@ -1682,6 +1682,9 @@
     <ClInclude Include="src/renderer/Anaglyph.h">
       <Filter>headers</Filter>
     </ClInclude>
+    <ClInclude Include="typedefs3D.h">
+      <Filter>headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="shader\BallShader.hlsl">
