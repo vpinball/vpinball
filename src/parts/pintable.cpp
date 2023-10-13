@@ -4150,6 +4150,10 @@ HRESULT PinTable::LoadData(IStream* pstm, int& csubobj, int& csounds, int& ctext
 
 bool PinTable::LoadToken(const int id, BiffReader * const pbr)
 {
+   bool hasIni = false;
+   string szINIFilename = m_szFileName;
+   if (ReplaceExtensionFromFilename(szINIFilename, "ini"s))
+      hasIni = FileExists(szINIFilename);
    switch(id)
    {
    case FID(PIID): pbr->GetInt((int *)pbr->m_pdata); break;
@@ -4286,58 +4290,58 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
       break;
    }
    case FID(BTRA):
-   {
-      // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file)
-      int useTrailForBalls;
-      pbr->GetInt(useTrailForBalls);
-      if (useTrailForBalls != -1)
-         m_settings.SaveValue(Settings::Player, "BallTrail"s, useTrailForBalls == 1);
+      if (!hasIni) // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
+      {
+         int useTrailForBalls;
+         pbr->GetInt(useTrailForBalls);
+         if (useTrailForBalls != -1)
+             m_settings.SaveValue(Settings::Player, "BallTrail"s, useTrailForBalls == 1);
+      }
       break;
-   }
    case FID(BTST):
-   {
-      // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file)
-      int ballTrailStrength;
-      pbr->GetInt(ballTrailStrength);
-      m_settings.SaveValue(Settings::Player, "BallTrailStrength"s, dequantizeUnsigned<8>(ballTrailStrength));
+      if (!hasIni) // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
+      {
+         int ballTrailStrength;
+         pbr->GetInt(ballTrailStrength);
+         m_settings.SaveValue(Settings::Player, "BallTrailStrength"s, dequantizeUnsigned<8>(ballTrailStrength));
+      }
       break;
-   }
    case FID(BPRS): pbr->GetFloat(m_ballPlayfieldReflectionStrength); break;
    case FID(DBIS): pbr->GetFloat(m_defaultBulbIntensityScaleOnBall); break;
    case FID(UAAL):
-   {
-      // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file)
-      int useAA;
-      pbr->GetInt(useAA);
-      if (useAA != -1)
-         m_settings.SaveValue(Settings::Player, "AAFactor"s, useAA == 0 ? 1.f : 2.f);
+      if (hasIni) // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
+      {
+         int useAA;
+         pbr->GetInt(useAA);
+         if (useAA != -1)
+             m_settings.SaveValue(Settings::Player, "AAFactor"s, useAA == 0 ? 1.f : 2.f);
+      }
       break;
-   }
    case FID(UAOC):
-   {
-      // Before 10.8, Ambient Occlusion was not a table property decided by table author but a user override (saved in the table and not in the ini file like now)
-      int useAO;
-      pbr->GetInt(useAO);
-      m_enableAO = useAO != 0;
+      if (!hasIni) // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
+      {
+         int useAO;
+         pbr->GetInt(useAO);
+         m_enableAO = useAO != 0;
+      }
       break;
-   }
    case FID(USSR):
-   {
-      // Before 10.8, Screen Space Reflection was not a table property decided by table author but a user override (saved in the table and not in the ini file like now)
-      int useSSR;
-      pbr->GetInt(useSSR);
-      m_enableSSR = useSSR != 0;
+      if (!hasIni) // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
+      {
+         int useSSR;
+         pbr->GetInt(useSSR);
+         m_enableSSR = useSSR != 0;
+      }
       break;
-   }
    case FID(UFXA):
-   {
-      // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file)
-      int fxaa;
-      pbr->GetInt(fxaa);
-      if (fxaa != -1)
-         m_settings.SaveValue(Settings::Player, "FXAA"s, fxaa);
+      if (!hasIni) // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
+      {
+         int fxaa;
+         pbr->GetInt(fxaa);
+         if (fxaa != -1)
+            m_settings.SaveValue(Settings::Player, "FXAA"s, fxaa);
+      }
       break;
-   }
    case FID(BLST): pbr->GetFloat(m_bloom_strength); break;
    case FID(BCLR): pbr->GetInt(m_colorbackdrop); break;
    case FID(SECB): pbr->GetStruct(&m_protectionData, sizeof(ProtectionData)); break;
@@ -4370,54 +4374,54 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    case FID(BDMO): pbr->GetBool(m_BallDecalMode); break;
    case FID(MVOL): pbr->GetFloat(m_TableMusicVolume); break;
    case FID(AVSY):
-   {
-      int tableAdaptiveVSync;
-      pbr->GetInt(tableAdaptiveVSync);
-      if (tableAdaptiveVSync != -1)
+      if (!hasIni) // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
       {
-         switch (tableAdaptiveVSync)
+         int tableAdaptiveVSync;
+         pbr->GetInt(tableAdaptiveVSync);
+         if (tableAdaptiveVSync != -1)
          {
-         case 0:
-             m_settings.SaveValue(Settings::Player, "MaxFramerate"s, 0);
-             m_settings.SaveValue(Settings::Player, "SyncMode"s, VideoSyncMode::VSM_NONE);
-             break;
-         case 1:
-             m_settings.SaveValue(Settings::Player, "MaxFramerate"s, 0);
-             m_settings.SaveValue(Settings::Player, "SyncMode"s, VideoSyncMode::VSM_VSYNC);
-             break;
-         case 2:
-             m_settings.SaveValue(Settings::Player, "MaxFramerate"s, 0);
-             m_settings.SaveValue(Settings::Player, "SyncMode"s, VideoSyncMode::VSM_ADAPTIVE_VSYNC);
-             break;
-         default:
-             m_settings.SaveValue(Settings::Player, "MaxFramerate"s, tableAdaptiveVSync);
-             m_settings.SaveValue(Settings::Player, "SyncMode"s, VideoSyncMode::VSM_ADAPTIVE_VSYNC);
-             break;
+            switch (tableAdaptiveVSync)
+            {
+            case 0:
+                m_settings.SaveValue(Settings::Player, "MaxFramerate"s, 0);
+                m_settings.SaveValue(Settings::Player, "SyncMode"s, VideoSyncMode::VSM_NONE);
+                break;
+            case 1:
+                m_settings.SaveValue(Settings::Player, "MaxFramerate"s, 0);
+                m_settings.SaveValue(Settings::Player, "SyncMode"s, VideoSyncMode::VSM_VSYNC);
+                break;
+            case 2:
+                m_settings.SaveValue(Settings::Player, "MaxFramerate"s, 0);
+                m_settings.SaveValue(Settings::Player, "SyncMode"s, VideoSyncMode::VSM_ADAPTIVE_VSYNC);
+                break;
+            default:
+                m_settings.SaveValue(Settings::Player, "MaxFramerate"s, tableAdaptiveVSync);
+                m_settings.SaveValue(Settings::Player, "SyncMode"s, VideoSyncMode::VSM_ADAPTIVE_VSYNC);
+                break;
+            }
          }
       }
       break;
-   }
    case FID(OGAC):
-   {
-      // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file)
-      bool overwriteGlobalDetailLevel;
-      pbr->GetBool(overwriteGlobalDetailLevel);
-      if (!overwriteGlobalDetailLevel)
-         m_settings.DeleteValue(Settings::Player, "AlphaRampAccuracy"s);
+      if (!hasIni) // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
+      {
+         bool overwriteGlobalDetailLevel;
+         pbr->GetBool(overwriteGlobalDetailLevel);
+         if (!overwriteGlobalDetailLevel)
+            m_settings.DeleteValue(Settings::Player, "AlphaRampAccuracy"s);
+      }
       break;
-   }
    case FID(OGDN): pbr->GetBool(m_overwriteGlobalDayNight); break;
    case FID(GDAC): pbr->GetBool(m_grid); break;
    case FID(REOP): pbr->GetBool(m_reflectElementsOnPlayfield); break;
    case FID(ARAC):
-   {
-      // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file)
-      // The detail level was always saved **before** the override flag so we always load to settings, eventually deleting afterward
-      int userDetailLevel;
-      pbr->GetInt(userDetailLevel);
-      m_settings.SaveValue(Settings::Player, "AlphaRampAccuracy"s, userDetailLevel);
+      if (!hasIni) // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
+      {
+         int userDetailLevel; // The detail level was always saved **before** the override flag so we always load to settings, eventually deleting afterward
+         pbr->GetInt(userDetailLevel);
+         m_settings.SaveValue(Settings::Player, "AlphaRampAccuracy"s, userDetailLevel);
+      }
       break;
-   }
    case FID(MASI): pbr->GetInt(m_numMaterials); break;
    case FID(MATE):
    {
