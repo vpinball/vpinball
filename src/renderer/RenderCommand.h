@@ -24,7 +24,7 @@ public:
    inline MeshBuffer* GetMeshBuffer() const { return m_mb; }
    inline float GetDepth() const { return m_depth; }
 
-   void Execute(const bool log = false);
+   void Execute(const int nInstances, const bool log);
 
    // Build from render device live state
    void SetClear(DWORD clearFlags, DWORD clearARGB);
