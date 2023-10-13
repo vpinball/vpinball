@@ -3203,10 +3203,11 @@ void Player::DrawBulbLightBuffer()
    RenderDevice* p3dDevice = m_pin3d.m_pd3dPrimaryDevice;
    const RenderPass *initial_rt = p3dDevice->GetCurrentPass();
    RenderState initial_state;
+   static int id = 0; id++;
    p3dDevice->CopyRenderStates(true, initial_state);
 
    // switch to 'bloom' output buffer to collect all bulb lights
-   p3dDevice->SetRenderTarget("Transmitted Light"s, p3dDevice->GetBloomBufferTexture(), false);
+   p3dDevice->SetRenderTarget("Transmitted Light "s + std::to_string(id), p3dDevice->GetBloomBufferTexture(), false);
    p3dDevice->Clear(clearType::TARGET, 0, 1.0f, 0L);
 
    // Draw bulb lights with transmission scale only
@@ -3228,7 +3229,7 @@ void Player::DrawBulbLightBuffer()
 
    // Restore state and render target
    p3dDevice->CopyRenderStates(false, initial_state);
-   p3dDevice->SetRenderTarget(initial_rt->m_name, initial_rt->m_rt);
+   p3dDevice->SetRenderTarget(initial_rt->m_name + "+", initial_rt->m_rt);
 
    if (hasLight)
    {

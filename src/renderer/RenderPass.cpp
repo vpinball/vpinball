@@ -18,12 +18,14 @@ RenderPass::~RenderPass()
 void RenderPass::Reset(const string& name, RenderTarget* const rt)
 {
    m_rt = rt;
+   m_singleLayerRendering = -1;
    m_name = name;
    m_depthReadback = false;
    m_sortKey = 0;
    m_updated = false;
    m_commands.clear();
    m_dependencies.clear();
+   m_referencedRT.clear();
 }
 
 void RenderPass::RecycleCommands(std::vector<RenderCommand*>& commandPool)
@@ -39,7 +41,12 @@ void RenderPass::RecycleCommands(std::vector<RenderCommand*>& commandPool)
 void RenderPass::AddPrecursor(RenderPass* dependency)
 {
    assert(this != dependency);
-   m_dependencies.push_back(dependency);
+   if (std::find(m_dependencies.begin(), m_dependencies.end(), dependency) == m_dependencies.end())
+   {
+      m_dependencies.push_back(dependency);
+      if (std::find(m_referencedRT.begin(), m_referencedRT.end(), dependency->m_rt) == m_referencedRT.end())
+         m_referencedRT.push_back(dependency->m_rt);
+   }
 }
 
 void RenderPass::UpdateDependency(RenderTarget* target, RenderPass* newDependency)
@@ -58,21 +65,44 @@ void RenderPass::UpdateDependency(RenderTarget* target, RenderPass* newDependenc
 
 void RenderPass::SortPasses(vector<RenderPass*>& sortedPasses, vector<RenderPass*>& allPasses)
 {
-   // Perform a depth first sort down the precursor list, grouping by render target
+   // Perform a depth first sort down the precursor list, sorting/grouping/merging by render target
    if (m_sortKey == 2) // Already processed
       return;
    assert(m_sortKey != 1); // Circular dependency between render pass
    m_sortKey = 1;
-   RenderPass* me = nullptr;
+
+   // Sort dependencies:
+   // - start with dependencies wich uses the same RT as we directly reference (to avoid content conflict)
+   // - others
+   // - last are dependencies on the same RT as us (to allow merge)
+   // TODO this is slow (but correct). This could be easily done better (but the list is small, so...)
+   sort(m_dependencies.begin(), m_dependencies.end(), [this](RenderPass* a, RenderPass* b)
+      {
+         // a has the same RT as this: place it at the end (a is not < b)
+         if (a->m_rt == m_rt)
+            return false;
+         // b has the same RT as this: place it at the end (b is < a)
+         if (b->m_rt == m_rt)
+            return true;
+         // a reference a RT that is used by b => place a before b
+         for (auto dep : b->m_dependencies)
+            for (auto rt : a->m_referencedRT)
+               if (dep->m_rt == rt)
+                  return true;
+         // b reference a RT that is used by a => place b before a
+         for (auto dep : a->m_dependencies)
+            for (auto rt : b->m_referencedRT)
+               if (dep->m_rt == rt)
+                  return false;
+         // no criteria to sort
+         return true;
+      });
+   
+   // Depth first recursion
    for (RenderPass* dependency : m_dependencies)
-   {
-      if (me == nullptr && dependency->m_rt == m_rt)
-         me = dependency;
-      else
          dependency->SortPasses(sortedPasses, allPasses);
-   }
-   if (me) // Process pass on the same render target after others to allow merging
-      me->SortPasses(sortedPasses, allPasses);
+
+   // Push pass to result, eventually merging it
    m_sortKey = 2;
    if (!sortedPasses.empty() && sortedPasses.back()->m_rt == m_rt)
    {
@@ -87,21 +117,16 @@ void RenderPass::SortPasses(vector<RenderPass*>& sortedPasses, vector<RenderPass
       }
       mergedPass->m_depthReadback |= m_depthReadback;
       mergedPass->m_commands.insert(mergedPass->m_commands.end(), m_commands.begin(), m_commands.end());
-      mergedPass->m_dependencies.insert(mergedPass->m_dependencies.end(), m_dependencies.begin(), m_dependencies.end());
+      for (auto dep : m_dependencies)
+         mergedPass->AddPrecursor(dep);
+      //mergedPass->m_dependencies.insert(mergedPass->m_dependencies.end(), m_dependencies.begin(), m_dependencies.end());
       m_commands.clear();
    }
-   else /* if (m_commands.size() > 0) */
+   else
    {
       // Add passes
       sortedPasses.push_back(this);
    }
-   /* else
-   {
-      for (RenderPass* pass : allPasses)
-      {
-
-      }
-   }*/
 }
 
 void RenderPass::SortCommands()
@@ -257,7 +282,7 @@ bool RenderPass::Execute(const bool log)
       PLOGI << ss.str();
    }
 
-   if (m_rt->m_nLayers == 1 || m_rt->GetRenderDevice()->SupportLayeredRendering())
+   if (m_rt->m_nLayers == 1 || (m_singleLayerRendering < 0 && m_rt->GetRenderDevice()->SupportLayeredRendering()))
    {
       m_rt->Activate();
       for (RenderCommand* cmd : m_commands)
@@ -266,6 +291,20 @@ bool RenderPass::Execute(const bool log)
          Shader::ShaderState* state = cmd->GetShaderState();
          if (state)
             state->SetInt(SHADER_layer, 0);
+         #endif
+         cmd->Execute(log);
+      }
+   }
+   else if (m_singleLayerRendering >= 0)
+   {
+      assert(m_singleLayerRendering < m_rt->m_nLayers);
+      m_rt->Activate(m_singleLayerRendering);
+      for (RenderCommand* cmd : m_commands)
+      {
+         #ifdef ENABLE_SDL // Layered rendering is not yet implemented for DirectX
+         Shader::ShaderState* state = cmd->GetShaderState();
+         if (state)
+            state->SetInt(SHADER_layer, m_singleLayerRendering);
          #endif
          cmd->Execute(log);
       }
