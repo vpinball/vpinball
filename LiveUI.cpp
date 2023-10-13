@@ -1985,6 +1985,9 @@ void LiveUI::UpdateVideoOptionsModal()
                float anaglyphRightEyeContrast = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DRightContrast"s, 1.f);
                if (ImGui::InputFloat("Right Eye Contrast", &anaglyphRightEyeContrast, 0.01f, 0.1f))
                   g_pvp->m_settings.SaveValue(Settings::Player, "Stereo3DRightContrast"s, anaglyphRightEyeContrast);
+               float anaglyphDefocus = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DDefocus"s, 0.f);
+               if (ImGui::InputFloat("Lesser Eye Defocus", &anaglyphDefocus, 0.01f, 0.1f))
+                  g_pvp->m_settings.SaveValue(Settings::Player, "Stereo3DDefocus"s, anaglyphDefocus);
 
                // Glasses settings
                static const string defaultNames[] = { "Red/Cyan"s, "Green/Magenta"s, "Blue/Amber"s, "Cyan/Red"s, "Magenta/Green"s, "Amber/Blue"s, "Custom 1"s, "Custom 2"s, "Custom 3"s, "Custom 4"s };

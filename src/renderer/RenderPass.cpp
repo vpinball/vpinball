@@ -292,7 +292,7 @@ bool RenderPass::Execute(const bool log)
          if (state)
             state->SetInt(SHADER_layer, 0);
          #endif
-         cmd->Execute(log);
+         cmd->Execute(m_rt->m_nLayers, log);
       }
    }
    else if (m_singleLayerRendering >= 0)
@@ -306,7 +306,7 @@ bool RenderPass::Execute(const bool log)
          if (state)
             state->SetInt(SHADER_layer, m_singleLayerRendering);
          #endif
-         cmd->Execute(log);
+         cmd->Execute(1, log);
       }
    }
    else
@@ -321,7 +321,7 @@ bool RenderPass::Execute(const bool log)
             if (state)
                state->SetInt(SHADER_layer, layer);
             #endif
-            cmd->Execute(log);
+            cmd->Execute(1, log);
          }
       }
    }

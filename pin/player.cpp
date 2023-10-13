@@ -1167,11 +1167,18 @@ void Player::UpdateStereoShaderState()
    #endif
    m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetVector(SHADER_w_h_height, (float)(1.0 / renderedRT->GetWidth()), (float)(1.0 / renderedRT->GetHeight()), (float)renderedRT->GetHeight(), m_ptable->Get3DOffset());
 
-   if (IsAnaglyphStereoMode(m_stereo3D))
+   m_stereo3DDefocus = 0.f;
+   if (IsAnaglyphStereoMode(m_stereo3D) && !m_stereo3DfakeStereo)
    {
       Anaglyph anaglyph;
       anaglyph.LoadSetupFromRegistry(clamp(m_stereo3D - STEREO_ANAGLYPH_1, 0, 9));
       anaglyph.SetupShader(m_pin3d.m_pd3dPrimaryDevice->StereoShader);
+      // The defocus kernel size should depend on the render resolution but since this is a user tweak, this doesn't matter that much
+      m_stereo3DDefocus = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DDefocus"s, 0);
+      // TODO I'm not 100% sure about this. I think the right way would be to select based on the transmitted luminance of the filter, the defocus 
+      // being done on the lowest of the 2. Here we do on the single color channel, which is the same most of the time but not always (f.e. green/magenta)
+      if (anaglyph.IsReversedColorPair())
+         m_stereo3DDefocus = -m_stereo3DDefocus;
    }
 }
 
@@ -3816,6 +3823,15 @@ void Player::PrepareVideoBuffers()
       {
          // Anaglyph and 3DTV
          assert(renderedRT != m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer());
+         // For anaglyph, defocus the "lesser" eye (the one with a darker color, which should be the non dominant eye of the player)
+         if (m_stereo3DDefocus != 0.f)
+         {
+            RenderTarget *tmpRT = m_pin3d.m_pd3dPrimaryDevice->GetPostProcessRenderTarget(renderedRT);
+            outputRT = m_pin3d.m_pd3dPrimaryDevice->GetPostProcessRenderTarget(tmpRT);
+            m_pin3d.m_pd3dPrimaryDevice->DrawGaussianBlur(renderedRT, tmpRT, outputRT, abs(m_stereo3DDefocus) * 39.f, m_stereo3DDefocus > 0.f ? 0 : 1);
+            renderedRT = outputRT;
+         }
+         // Stereo composition
          m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("Stereo Anaglyph"s, m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer(), false);
          m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
          if (m_stereo3DfakeStereo)

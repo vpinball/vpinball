@@ -591,6 +591,7 @@ public:
    StereoMode m_stereo3D;
    bool m_stereo3DfakeStereo;
    bool m_stereo3Denabled;
+   float m_stereo3DDefocus = 0.f;
    void UpdateStereoShaderState();
 
    VRPreviewMode m_vrPreview;
