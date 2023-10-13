@@ -64,6 +64,7 @@ private:
    void RenderReflectionProbe(const bool is_static);
    void DoRenderReflectionProbe(const bool render_static, const bool render_balls, const bool render_dynamic);
 
+   RenderDeviceState* m_rdState = nullptr;
    ProbeType m_type = PLANE_REFLECTION;
    bool m_dirty = true;
    string m_name;

@@ -75,11 +75,14 @@ bool RenderProbe::IsRendering() const
 
 void RenderProbe::RenderSetup()
 {
+   m_rdState = new RenderDeviceState(g_pplayer->m_pin3d.m_pd3dPrimaryDevice);
    MarkDirty();
 }
 
 void RenderProbe::EndPlay()
 { 
+   delete m_rdState;
+   m_rdState = nullptr;
    delete m_prerenderRT;
    m_prerenderRT = nullptr;
    delete m_dynamicRT;
@@ -358,8 +361,7 @@ void RenderProbe::RenderReflectionProbe(const bool is_static)
 void RenderProbe::DoRenderReflectionProbe(const bool render_static, const bool render_balls, const bool render_dynamic)
 {
    RenderDevice* const p3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-   RenderState initial_state;
-   p3dDevice->CopyRenderStates(true, initial_state);
+   p3dDevice->CopyRenderStates(true, *m_rdState);
 
    const unsigned int prevRenderMask = g_pplayer->m_render_mask;
    g_pplayer->m_render_mask |= Player::REFLECTION_PASS;
@@ -414,10 +416,6 @@ void RenderProbe::DoRenderReflectionProbe(const bool render_static, const bool r
 
    // Restore initial render states and camera
    g_pplayer->m_render_mask = prevRenderMask;
-   p3dDevice->CopyRenderStates(false, initial_state);
+   p3dDevice->CopyRenderStates(false, *m_rdState);
    g_pplayer->m_pin3d.GetMVP().SetView(initialViewMat);
-   if (render_static || render_dynamic)
-      g_pplayer->UpdateBasicShaderMatrix();
-   if (render_balls)
-      g_pplayer->UpdateBallShaderMatrix();
 }

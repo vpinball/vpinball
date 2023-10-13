@@ -3,6 +3,7 @@
 #include "Shader.h"
 
 class RenderDevice;
+class RenderDeviceState;
 class RenderPass;
 class RenderCommand;
 
@@ -19,16 +20,8 @@ public:
 
 private:
    RenderDevice* const m_rd;
+   RenderDeviceState* m_rdState = nullptr;
    vector<RenderPass*> m_passes;
    vector<RenderPass*> m_passPool;
    vector<RenderCommand*> m_commandPool;
-
-   // Shader state
-   Shader::ShaderState* m_basicShaderState = nullptr;
-   Shader::ShaderState* m_DMDShaderState = nullptr;
-   Shader::ShaderState* m_FBShaderState = nullptr;
-   Shader::ShaderState* m_flasherShaderState = nullptr;
-   Shader::ShaderState* m_lightShaderState = nullptr;
-   Shader::ShaderState* m_ballShaderState = nullptr;
-   Shader::ShaderState* m_stereoShaderState = nullptr;
 };

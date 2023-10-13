@@ -478,6 +478,31 @@ int getPrimaryDisplay()
 
 ////////////////////////////////////////////////////////////////////
 
+RenderDeviceState::RenderDeviceState(RenderDevice* rd)
+   : m_rd(rd)
+   , m_basicShaderState(new Shader::ShaderState(m_rd->basicShader))
+   , m_DMDShaderState(new Shader::ShaderState(m_rd->DMDShader))
+   , m_FBShaderState(new Shader::ShaderState(m_rd->FBShader))
+   , m_flasherShaderState(new Shader::ShaderState(m_rd->flasherShader))
+   , m_lightShaderState(new Shader::ShaderState(m_rd->lightShader))
+   , m_ballShaderState(new Shader::ShaderState(m_rd->m_ballShader))
+   , m_stereoShaderState(new Shader::ShaderState(m_rd->StereoShader))
+{
+}
+
+RenderDeviceState::~RenderDeviceState()
+{
+   delete m_basicShaderState;
+   delete m_DMDShaderState;
+   delete m_FBShaderState;
+   delete m_flasherShaderState;
+   delete m_lightShaderState;
+   delete m_ballShaderState;
+   delete m_stereoShaderState;
+}
+
+////////////////////////////////////////////////////////////////////
+
 #ifndef ENABLE_SDL
 typedef HRESULT(WINAPI *pD3DC9Ex)(UINT SDKVersion, IDirect3D9Ex**);
 static pD3DC9Ex mDirect3DCreate9Ex = nullptr;
@@ -1724,6 +1749,19 @@ void RenderDevice::CopyRenderStates(const bool copyTo, RenderState& state)
 void RenderDevice::ApplyRenderStates()
 {
    m_renderstate.Apply(this);
+}
+
+void RenderDevice::CopyRenderStates(const bool copyTo, RenderDeviceState& state)
+{
+   assert(state.m_rd == this);
+   CopyRenderStates(copyTo, state.m_renderState);
+   basicShader->m_state->CopyTo(copyTo, state.m_basicShaderState);
+   DMDShader->m_state->CopyTo(copyTo, state.m_DMDShaderState);
+   FBShader->m_state->CopyTo(copyTo, state.m_FBShaderState);
+   flasherShader->m_state->CopyTo(copyTo, state.m_flasherShaderState);
+   lightShader->m_state->CopyTo(copyTo, state.m_lightShaderState);
+   m_ballShader->m_state->CopyTo(copyTo, state.m_ballShaderState);
+   StereoShader->m_state->CopyTo(copyTo, state.m_stereoShaderState);
 }
 
 void RenderDevice::SetClipPlane(const vec4 &plane)
