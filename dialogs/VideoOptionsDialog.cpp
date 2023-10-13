@@ -890,8 +890,8 @@ void VideoOptionsDialog::SaveSettings(const bool saveAll)
    settings.SaveValue(Settings::Player, "OverwriteBallImage"s, overwriteEnabled, !saveAll);
    if (overwriteEnabled)
    {
-      settings.SaveValue(Settings::Player, "BallImage"s, GetDlgItemText(IDC_BALL_IMAGE_EDIT).GetString(), !saveAll);
-      settings.SaveValue(Settings::Player, "DecalImage"s, GetDlgItemText(IDC_BALL_IMAGE_EDIT).GetString(), !saveAll);
+      settings.SaveValue(Settings::Player, "BallImage"s, GetDlgItem(IDC_BALL_IMAGE_EDIT).GetWindowText().GetString(), !saveAll);
+      settings.SaveValue(Settings::Player, "DecalImage"s, GetDlgItem(IDC_BALL_DECAL_EDIT).GetWindowText().GetString(), !saveAll);
    }
    else if (!saveAll)
    {
