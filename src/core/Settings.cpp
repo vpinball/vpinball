@@ -301,7 +301,7 @@ string Settings::LoadValueWithDefault(const Section section, const string &key, 
 bool Settings::SaveValue(const Section section, const string &key, const DataType type, const void *pvalue, const DWORD size, const bool overrideMode)
 {
    assert(type == DT_SZ || type == DT_DWORD);
-   if (key.empty() || size == 0 || (type != DT_SZ && type != DT_DWORD))
+   if (key.empty() || (type != DT_SZ && type != DT_DWORD))
       return false;
    const string copy = type == DT_SZ ? std::string((char*)pvalue) : std::to_string(*(DWORD *)pvalue);
    if (m_parent && overrideMode)
