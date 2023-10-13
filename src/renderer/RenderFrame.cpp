@@ -11,19 +11,13 @@ RenderFrame::RenderFrame(RenderDevice* renderDevice)
 
 RenderFrame::~RenderFrame()
 {
+   delete m_rdState;
    for (auto item : m_commandPool)
       delete item;
    for (auto item : m_passPool)
       delete item;
    for (auto item : m_passes)
       delete item;
-   delete m_basicShaderState;
-   delete m_DMDShaderState;
-   delete m_FBShaderState;
-   delete m_flasherShaderState;
-   delete m_lightShaderState;
-   delete m_ballShaderState;
-   delete m_stereoShaderState;
 }
 
 RenderPass* RenderFrame::AddPass(const string& name, RenderTarget* const rt)
@@ -63,25 +57,9 @@ bool RenderFrame::Execute(const bool log)
       return false;
 
    // Save render/shader states
-   if (m_basicShaderState == nullptr)
-   {
-      m_basicShaderState = new Shader::ShaderState(m_rd->basicShader);
-      m_DMDShaderState = new Shader::ShaderState(m_rd->DMDShader);
-      m_FBShaderState = new Shader::ShaderState(m_rd->FBShader);
-      m_flasherShaderState = new Shader::ShaderState(m_rd->flasherShader);
-      m_lightShaderState = new Shader::ShaderState(m_rd->lightShader);
-      m_ballShaderState = new Shader::ShaderState(m_rd->m_ballShader);
-      m_stereoShaderState = new Shader::ShaderState(m_rd->StereoShader);
-   }
-   RenderState prevState;
-   m_rd->CopyRenderStates(true, prevState);
-   m_rd->basicShader->m_state->CopyTo(true, m_basicShaderState);
-   m_rd->DMDShader->m_state->CopyTo(true, m_DMDShaderState);
-   m_rd->FBShader->m_state->CopyTo(true, m_FBShaderState);
-   m_rd->flasherShader->m_state->CopyTo(true, m_flasherShaderState);
-   m_rd->lightShader->m_state->CopyTo(true, m_lightShaderState);
-   m_rd->m_ballShader->m_state->CopyTo(true, m_ballShaderState);
-   m_rd->StereoShader->m_state->CopyTo(true, m_stereoShaderState);
+   if (m_rdState == nullptr)
+      m_rdState = new RenderDeviceState(m_rd);
+   m_rd->CopyRenderStates(true, *m_rdState);
 
    // Clear last render pass to avoid cross frame references
    for (RenderPass* pass : m_passes)
@@ -171,14 +149,7 @@ bool RenderFrame::Execute(const bool log)
    m_passes.clear();
 
    // Restore render/shader states
-   m_rd->CopyRenderStates(false, prevState);
-   m_rd->basicShader->m_state->CopyTo(false, m_basicShaderState);
-   m_rd->DMDShader->m_state->CopyTo(false, m_DMDShaderState);
-   m_rd->FBShader->m_state->CopyTo(false, m_FBShaderState);
-   m_rd->flasherShader->m_state->CopyTo(false, m_flasherShaderState);
-   m_rd->lightShader->m_state->CopyTo(false, m_lightShaderState);
-   m_rd->m_ballShader->m_state->CopyTo(false, m_ballShaderState);
-   m_rd->StereoShader->m_state->CopyTo(false, m_stereoShaderState);
+   m_rd->CopyRenderStates(false, *m_rdState);
 
    return rendered;
 }

@@ -74,6 +74,23 @@ int getPrimaryDisplay();
 class Shader;
 class ModelViewProj;
 
+class RenderDeviceState
+{
+public:
+   RenderDeviceState(RenderDevice* rd);
+   ~RenderDeviceState();
+
+   const RenderDevice* m_rd;
+   Shader::ShaderState* const m_basicShaderState;
+   Shader::ShaderState* const m_DMDShaderState;
+   Shader::ShaderState* const m_FBShaderState;
+   Shader::ShaderState* const m_flasherShaderState;
+   Shader::ShaderState* const m_lightShaderState;
+   Shader::ShaderState* const m_ballShaderState;
+   Shader::ShaderState* const m_stereoShaderState;
+   RenderState m_renderState;
+};
+
 class RenderDevice final
 {
 public:
@@ -204,6 +221,7 @@ public:
    void SetRenderStateDepthBias(float bias);
    void CopyRenderStates(const bool copyTo, RenderState& state);
    void ApplyRenderStates();
+   void CopyRenderStates(const bool copyTo, RenderDeviceState& state);
 
 private:
    RenderState m_current_renderstate, m_renderstate;
