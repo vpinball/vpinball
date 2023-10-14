@@ -1178,7 +1178,7 @@ void Player::UpdateStereoShaderState()
       anaglyph.LoadSetupFromRegistry(clamp(m_stereo3D - STEREO_ANAGLYPH_1, 0, 9));
       anaglyph.SetupShader(m_pin3d.m_pd3dPrimaryDevice->StereoShader);
       // The defocus kernel size should depend on the render resolution but since this is a user tweak, this doesn't matter that much
-      m_stereo3DDefocus = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DDefocus"s, 0);
+      m_stereo3DDefocus = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DDefocus"s, 0.f);
       // TODO I'm not 100% sure about this. I think the right way would be to select based on the transmitted luminance of the filter, the defocus 
       // being done on the lowest of the 2. Here we do on the single color channel, which is the same most of the time but not always (f.e. green/magenta)
       if (anaglyph.IsReversedColorPair())

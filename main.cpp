@@ -340,6 +340,7 @@ public:
 
       file = false;
       play = false;
+      bool allowLoadOnStart = true;
       extractPov = false;
       run = true;
       loadFileResult = true;
@@ -543,6 +544,7 @@ public:
          // table name handling
          if ((editfile || playfile || povEdit || extractpov || extractscript) && (i + 1 < nArgs))
          {
+            allowLoadOnStart = false; // Don't face the user with a load dialog since the file is provided on the command line
             file = true;
             play = playfile || povEdit;
             extractPov = extractpov;
@@ -588,7 +590,7 @@ public:
       PLOGI << "Starting VPX...";
 
       // Start VP with file dialog open and then also playing that one?
-      const bool stos = m_vpinball.m_settings.LoadValueWithDefault(Settings::Editor, "SelectTableOnStart"s, true);
+      const bool stos = allowLoadOnStart && m_vpinball.m_settings.LoadValueWithDefault(Settings::Editor, "SelectTableOnStart"s, true);
       if (stos)
       {
          file = true;
