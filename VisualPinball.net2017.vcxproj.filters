@@ -58,7 +58,6 @@
     <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="src/parts/surface.cpp" />
     <ClCompile Include="src/parts/textbox.cpp" />
-    <ClCompile Include="src/renderer/Texture.cpp" />
     <ClCompile Include="src/parts/timer.cpp" />
     <ClCompile Include="src/parts/trigger.cpp" />
     <ClCompile Include="variant.cpp" />
@@ -361,6 +360,9 @@
     <ClCompile Include="src/renderer/Anaglyph.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
+    <ClCompile Include="src/renderer/Texture.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc">
@@ -383,40 +385,40 @@
     <None Include="src\assets\Default VPinballX.ini">
       <Filter>assets</Filter>
     </None>
-    <Image Include="src\assets\AOdither.bmp">
+    <Image Include="src\assets\AOdither.webp">
       <Filter>assets</Filter>
     </Image>
     <Image Include="src\assets\BallEnv.exr">
       <Filter>assets</Filter>
     </Image>
-    <Image Include="src\assets\bumperbase.bmp">
+    <Image Include="src\assets\bumperbase.webp">
       <Filter>assets</Filter>
     </Image>
-    <Image Include="src\assets\bumperCap.bmp">
+    <Image Include="src\assets\bumperCap.webp">
       <Filter>assets</Filter>
     </Image>
-    <Image Include="src\assets\bumperring.bmp">
+    <Image Include="src\assets\bumperring.webp">
       <Filter>assets</Filter>
     </Image>
-    <Image Include="src\assets\bumperskirt.bmp">
+    <Image Include="src\assets\bumperskirt.webp">
       <Filter>assets</Filter>
     </Image>
-    <Image Include="src\assets\envmap.bmp">
+    <Image Include="src\assets\envmap.webp">
       <Filter>assets</Filter>
     </Image>
-    <Image Include="src\assets\kickerCup.bmp">
+    <Image Include="src\assets\kickerCup.webp">
       <Filter>assets</Filter>
     </Image>
-    <Image Include="src\assets\kickerHoleWood.bmp">
+    <Image Include="src\assets\kickerHoleWood.webp">
       <Filter>assets</Filter>
     </Image>
-    <Image Include="src\assets\kickerWilliams.bmp">
+    <Image Include="src\assets\kickerWilliams.webp">
       <Filter>assets</Filter>
     </Image>
-    <Image Include="src\assets\kickerGottlieb.bmp">
+    <Image Include="src\assets\kickerGottlieb.webp">
       <Filter>assets</Filter>
     </Image>
-    <Image Include="src\assets\kickerT1.bmp">
+    <Image Include="src\assets\kickerT1.webp">
       <Filter>assets</Filter>
     </Image>
     <None Include="src\assets\blankTable.vpx">
