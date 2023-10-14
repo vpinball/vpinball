@@ -4227,7 +4227,7 @@ void Player::PrepareFrame()
    if (m_headTracking)
       // #ravarcade: UpdateBAMHeadTracking will set proj/view matrix to add BAM view and head tracking
       m_pin3d.UpdateBAMHeadTracking();
-   else if (!IsUsingStaticPrepass())
+   else if (m_liveUI->IsTweakMode())
       m_pin3d.InitLayout();
 
    if (GetInfoMode() != IF_STATIC_ONLY)
