@@ -808,6 +808,10 @@ void Player::Shutdown()
         myfile.close();
     }
 
+    // Save adjusted VR settings to the edited table
+    if (m_stereo3D == STEREO_VR)
+       m_pin3d.m_pd3dPrimaryDevice->SaveVRSettings(m_pEditorTable->m_settings);
+
     if (m_audio)
         m_audio->MusicPause();
 

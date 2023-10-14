@@ -187,6 +187,7 @@ public:
    RenderTarget* GetOutputBackBuffer() const { return m_pBackBuffer; } // The screen render target (the only one which is not stereo when doing stereo rendering)
 
    // VR/Stereo Stuff
+   void SaveVRSettings(Settings& settings) const;
 #ifdef ENABLE_VR
    void InitVR();
    bool IsVRReady() const { return m_pHMD != nullptr; }
