@@ -63,13 +63,13 @@ public:
    HRESULT SaveToStream(IStream *pstream, const PinTable *pt);
    HRESULT LoadFromStream(IStream *pstream, int version, PinTable *pt, bool resize_on_low_mem);
    bool LoadFromMemory(BYTE *const data, const DWORD size);
+   bool LoadFromFile(const string &filename, const bool setName = false);
 
    void FreeStuff();
 
    void CreateGDIVersion();
 
    BaseTexture *CreateFromHBitmap(const HBITMAP hbm, bool with_alpha = true);
-   void CreateFromResource(const int id);
 
    bool IsHDR() const
    {

@@ -625,7 +625,7 @@ void Bumper::RenderSetup()
    m_fullMatrix.SetRotateZ(ANGTORAD(m_d.m_orientation));
    if (m_d.m_baseVisible)
    {
-      m_baseTexture.CreateFromResource(IDB_BUMPER_BASE);
+      m_baseTexture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "BumperBase.webp");
       IndexBuffer* baseIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperBaseNumIndices, bumperBaseIndices);
       VertexBuffer* baseVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperBaseNumVertices);
       Vertex3D_NoTex2 *buf;
@@ -638,7 +638,7 @@ void Bumper::RenderSetup()
 
    if (m_d.m_skirtVisible)
    {
-      m_skirtTexture.CreateFromResource(IDB_BUMPER_SKIRT);
+      m_skirtTexture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "BumperSkirt.webp");
       IndexBuffer* socketIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperSocketNumIndices, bumperSocketIndices);
       VertexBuffer* socketVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperSocketNumVertices, nullptr, true);
       Vertex3D_NoTex2 *buf;
@@ -651,7 +651,7 @@ void Bumper::RenderSetup()
 
    if (m_d.m_ringVisible)
    {
-      m_ringTexture.CreateFromResource(IDB_BUMPER_RING);
+      m_ringTexture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "BumperRing.webp");
       IndexBuffer* ringIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperRingNumIndices, bumperRingIndices);
       VertexBuffer *ringVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperRingNumVertices, nullptr, true);
       m_ringVertices = new Vertex3D_NoTex2[bumperRingNumVertices];
@@ -666,7 +666,7 @@ void Bumper::RenderSetup()
 
    if (m_d.m_capVisible)
    {
-      m_capTexture.CreateFromResource(IDB_BUMPERCAP);
+      m_capTexture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "BumperCap.webp");
       IndexBuffer* capIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperCapNumIndices, bumperCapIndices);
       VertexBuffer* capVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperCapNumVertices);
       Vertex3D_NoTex2 *buf;

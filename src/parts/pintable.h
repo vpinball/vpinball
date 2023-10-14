@@ -372,7 +372,6 @@ public:
    HRESULT LoadSoundFromStream(IStream *pstm, const int LoadFileVersion);
    bool ExportImage(const Texture *const ppi, const char *const filename);
    void ImportImage(HWND hwndListView, const string &filename);
-   void ReImportImage(Texture *const ppi, const string &filename);
    void ListImages(HWND hwndListView);
    int AddListImage(HWND hwndListView, Texture *const ppi);
    void RemoveImage(Texture *const ppi);

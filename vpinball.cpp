@@ -2092,7 +2092,7 @@ INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
          ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
          PinImage * const ppi = (PinImage *)lvitem.lParam;
 
-         pt->ReImportImage(ppi, ppi->m_szPath);
+         ppi->LoadFromFile(ppi->m_szPath, false);
 
          // Display new image
          InvalidateRect(GetDlgItem(hwndDlg, IDC_PICTUREPREVIEW), nullptr, fTrue);
@@ -2134,7 +2134,7 @@ INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
          ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
          PinImage * const ppi = (PinImage *)lvitem.lParam;
 
-         pt->ReImportImage(ppi, ofn.lpstrFile);
+         ppi->LoadFromFile(ofn.lpstrFile, false);
 
          // Display new image
          InvalidateRect(GetDlgItem(hwndDlg, IDC_PICTUREPREVIEW), nullptr, fTrue);

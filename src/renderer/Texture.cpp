@@ -608,6 +608,62 @@ HRESULT Texture::LoadFromStream(IStream* pstream, int version, PinTable* pt, boo
    return ((m_pdsBuffer != nullptr) ? S_OK : E_FAIL);
 }
 
+bool Texture::LoadFromFile(const string& filename, const bool setName)
+{
+   const string szextension = ExtensionFromFilename(filename);
+
+   const bool binary = !!lstrcmpi(szextension.c_str(), "bmp");
+
+   PinBinary *ppb = 0;
+   if (binary)
+   {
+      ppb = new PinBinary();
+      ppb->ReadFromFile(filename);
+   }
+
+   BaseTexture *const tex = BaseTexture::CreateFromFile(filename, m_maxTexDim);
+
+   if (tex == nullptr)
+   {
+      delete ppb;
+      return false;
+   }
+
+   FreeStuff();
+
+   if (binary)
+      m_ppb = ppb;
+
+   //SAFE_RELEASE(ppi->m_pdsBuffer);
+
+   SetSizeFrom(tex);
+   m_pdsBuffer = tex;
+
+   m_szPath = filename;
+
+   if (setName)
+   {
+      int begin, end;
+      const int len = (int)filename.length();
+      for (begin = len; begin >= 0; begin--)
+      {
+         if (filename[begin] == PATH_SEPARATOR_CHAR)
+         {
+            begin++;
+            break;
+         }
+      }
+      for (end = len; end >= 0; end--)
+         if (filename[end] == '.')
+            break;
+      if (end == 0)
+         end = len - 1;
+      m_szName = filename.substr(begin, end - begin);
+   }
+
+   return true;
+}
+
 bool Texture::LoadFromMemory(BYTE * const data, const DWORD size)
 {
    if (m_pdsBuffer)
@@ -836,19 +892,6 @@ void Texture::ReleaseTextureDC(HDC dc)
 {
    SelectObject(dc, m_oldHBM);
    DeleteDC(dc);
-}
-
-void Texture::CreateFromResource(const int id)
-{
-   const HBITMAP hbm = (HBITMAP)LoadImage(g_pvp->theInstance, MAKEINTRESOURCE(id), IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
-
-   if (m_pdsBuffer)
-      FreeStuff();
-
-   if (hbm == nullptr)
-      return;
-
-   m_pdsBuffer = CreateFromHBitmap(hbm);
 }
 
 BaseTexture* Texture::CreateFromHBitmap(const HBITMAP hbm, bool with_alpha)

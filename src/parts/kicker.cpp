@@ -437,62 +437,50 @@ void Kicker::RenderSetup()
        break;
        case KickerCup:
        {
-          m_texture.CreateFromResource(IDB_KICKER_CUP);
-
+          m_texture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "KickerCup.webp");
           m_numIndices = kickerCupNumIndices;
           m_numVertices = kickerCupNumVertices;
-
           indices = kickerCupIndices;
        }
        break;
        case KickerWilliams:
        {
-          m_texture.CreateFromResource(IDB_KICKER_WILLIAMS);
-
+          m_texture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "KickerWilliams.webp");
           m_numIndices = kickerWilliamsNumIndices;
           m_numVertices = kickerWilliamsNumVertices;
-
           indices = kickerWilliamsIndices;
        }
        break;
        case KickerGottlieb:
        {
-          m_texture.CreateFromResource(IDB_KICKER_GOTTLIEB);
-
+          m_texture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "KickerGottlieb.webp");
           m_numIndices = kickerGottliebNumIndices;
           m_numVertices = kickerGottliebNumVertices;
-
           indices = kickerGottliebIndices;
        }
        break;
        case KickerCup2:
        {
-          m_texture.CreateFromResource(IDB_KICKER_T1);
-
+          m_texture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "KickerT1.webp");
           m_numIndices = kickerT1NumIndices;
           m_numVertices = kickerT1NumVertices;
-
           indices = kickerT1Indices;
        }
        break;
        case KickerHole:
        {
-          m_texture.CreateFromResource(IDB_KICKER_HOLE_WOOD);
-
+          m_texture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "KickerHoleWood.webp");
           m_numIndices = kickerHoleNumIndices;
           m_numVertices = kickerHoleNumVertices;
-
           indices = kickerHoleIndices;
        }
        break;
        default:
        case KickerHoleSimple:
        {
-          m_texture.CreateFromResource(IDB_KICKER_HOLE_WOOD);
-
+          m_texture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "KickerHoleWood.webp");
           m_numIndices = kickerSimpleHoleNumIndices;
           m_numVertices = kickerSimpleHoleNumVertices;
-
           indices = kickerSimpleHoleIndices;
        }
        break;

@@ -657,7 +657,7 @@ void ImageDialog::Reimport()
                {
                   CloseHandle(hFile);
                   CCO(PinTable) * const pt = g_pvp->GetActiveTable();
-                  pt->ReImportImage(ppi, ppi->m_szPath);
+                  ppi->LoadFromFile(ppi->m_szPath, false);
                   pt->SetNonUndoableDirty(eSaveDirty);
                }
                else
@@ -694,7 +694,7 @@ void ImageDialog::UpdateAll()
          {
             CloseHandle(hFile);
             CCO(PinTable) * const pt = g_pvp->GetActiveTable();
-            pt->ReImportImage(ppi, ppi->m_szPath);
+            ppi->LoadFromFile(ppi->m_szPath, false);
             pt->SetNonUndoableDirty(eSaveDirty);
          }
          else
@@ -736,7 +736,7 @@ void ImageDialog::ReimportFrom()
                   g_pvp->m_settings.SaveValue(Settings::RecentDir, "ImageDir"s, szFileName[0].substr(0, index));
 
                CCO(PinTable) * const pt = g_pvp->GetActiveTable();
-               pt->ReImportImage(ppi, szFileName[0]);
+               ppi->LoadFromFile(szFileName[0], false);
                ListView_SetItemText(hSoundList, sel, 1, (LPSTR)ppi->m_szPath.c_str());
                pt->SetNonUndoableDirty(eSaveDirty);
                pt->UpdatePropertyImageList();
