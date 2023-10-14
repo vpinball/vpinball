@@ -2172,6 +2172,7 @@ void PinTable::Play(const bool cameraMode)
    dst->m_reflectElementsOnPlayfield = src->m_reflectElementsOnPlayfield;
    dst->m_enableAO = src->m_enableAO;
    dst->m_enableSSR = src->m_enableSSR;
+   dst->m_toneMapper = src->m_toneMapper;
    dst->m_bloom_strength = src->m_bloom_strength;
    memcpy(dst->m_wzName, src->m_wzName, MAXNAMEBUFFER * sizeof(src->m_wzName[0]));
 
@@ -3372,6 +3373,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
 
    bw.WriteInt(FID(UAOC), m_enableAO);
    bw.WriteInt(FID(USSR), m_enableSSR);
+   bw.WriteInt(FID(TMAP), m_toneMapper);
    bw.WriteFloat(FID(BLST), m_bloom_strength);
 
    // Legacy material saving for backward compatibility
@@ -4008,6 +4010,7 @@ void PinTable::SetLoadDefaults()
 
    m_enableAO = true;
    m_enableSSR = true;
+   m_toneMapper = TM_REINHARD;
 
    m_bloom_strength = 1.0f;
 
@@ -4207,21 +4210,22 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
       }
       break;
    case FID(UAOC):
-      if (!hasIni) // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
       {
+         // Before 10.8, this setting could be set to -1, meaning override table definition using video options instead
          int useAO;
          pbr->GetInt(useAO);
          m_enableAO = useAO != 0;
       }
       break;
    case FID(USSR):
-      if (!hasIni) // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
       {
+         // Before 10.8, this setting could be set to -1, meaning override table definition using video options instead
          int useSSR;
          pbr->GetInt(useSSR);
          m_enableSSR = useSSR != 0;
       }
       break;
+   case FID(TMAP): pbr->GetInt(&m_toneMapper); break;
    case FID(UFXA):
       if (!hasIni) // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
       {

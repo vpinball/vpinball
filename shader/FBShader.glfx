@@ -49,6 +49,8 @@ uniform sampler2D tex_color_lut;         // Color grade LUT
 uniform sampler2D tex_ao_dither;         // AO dither
 uniform samplerStereo tex_normals;       // Normals
 
+#include "FBShader.fxh"
+
 in float2 tex0;
 flat in float eye;
 
@@ -257,20 +259,6 @@ void main()
 // Fragment shaders
 //-----------------------------------------------------------------------------
 
-////ps_main_fb_tonemap
-
-void main()
-{
-   //!! const float depth0 = texStereoNoLod(tex_depth, u).x;
-   //!! if((depth0 == 1.0) || (depth0 == 0.0)) //!! early out if depth too large (=BG) or too small (=DMD,etc -> retweak render options (depth write on), otherwise also screwup with stereo)
-   //!!   return float4(texStereoNoLod(tex_fb_filtered, tex0).xyz, 1.0);
-
-   float3 result = FBToneMap(texStereoNoLod(tex_fb_filtered, tex0).xyz);
-   BRANCH if (do_bloom)
-      result += texStereoNoLod(tex_bloom, tex0).xyz; //!! offset?
-   color = float4(FBColorGrade(FBGamma(saturate(FBDither(result, tex0)))), 1.0);
-}
-
 ////ps_main_fb_bloom
 
 // For reference, see https://catlikecoding.com/unity/tutorials/advanced-rendering/bloom/
@@ -295,7 +283,7 @@ void main()
                         +  texStereoNoLod(tex_fb_filtered, tex0 + w_h_height.xy).xyz
                         +  texStereoNoLod(tex_fb_filtered, tex0 + float2(w_h_height.x,-w_h_height.y)).xyz
                         +  texStereoNoLod(tex_fb_filtered, tex0 + float2(-w_h_height.x,w_h_height.y)).xyz)*0.25; //!! offset for useAA?
-    color = float4(max(bloom_cutoff(FBToneMap(result)), float3(0.,0.,0.)) * w_h_height.z, 1.0);
+    color = float4(max(bloom_cutoff(ReinhardToneMap(result)), float3(0.,0.,0.)) * w_h_height.z, 1.0);
 }
 
 ////ps_main_fb_AO
@@ -307,19 +295,7 @@ void main()
    color = float4(result,result,result, 1.0);
 }
 
-////ps_main_fb_tonemap_AO
-
-void main()
-{
-   // tex0 is pixel perfect sampling which here means between the pixels resulting from supersampling (for 2x, it's in the middle of the 2 texels)
-   float3 result = FBToneMap(texStereoNoLod(tex_fb_filtered, tex0).xyz) // moving AO before tonemap does not really change the look
-                           * texStereoNoLod(tex_ao,          tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
-   BRANCH if (do_bloom)
-      result += texStereoNoLod(tex_bloom, tex0).xyz;
-   color = float4(FBColorGrade(FBGamma(saturate(FBDither(result, tex0)))), 1.0);
-}
-
-////ps_main_fb_tonemap_AO_static
+////ps_main_fb_AO_static
 
 void main()
 {
@@ -329,50 +305,7 @@ void main()
    color = float4(result, 1.0);
 }
 
-////ps_main_fb_tonemap_no_filterRGB
-
-void main()
-{
-   float3 result = FBToneMap(texStereoNoLod(tex_fb_unfiltered, tex0).xyz);
-   BRANCH if (do_bloom)
-      result += texStereoNoLod(tex_bloom, tex0).xyz;
-   color = float4(FBColorGrade(FBGamma(saturate(FBDither(result, tex0)))), 1.0);
-}
-
-////ps_main_fb_tonemap_no_filterRG
-
-void main()
-{
-   float2 result = FBToneMap(texStereoNoLod(tex_fb_unfiltered, tex0).xy);
-   BRANCH if (do_bloom)
-      result += texStereoNoLod(tex_bloom, tex0).xy;
-   const float rg = /*FBColorGrade*/(FBGamma(saturate(dot(FBDither(result, tex0), float2(0.176204+0.0108109*0.5,0.812985+0.0108109*0.5)))));
-   color = float4(rg,rg,rg,1.0);
-}
-
-////ps_main_fb_tonemap_no_filterR
-
-void main()
-{
-   float result = FBToneMap(texStereoNoLod(tex_fb_unfiltered, tex0).x);
-   BRANCH if (do_bloom)
-      result += texStereoNoLod(tex_bloom, tex0).x;
-   const float gray = /*FBColorGrade*/(FBGamma(saturate(FBDither(result, tex0))));
-   color = float4(gray,gray,gray,1.0);
-}
-
-////ps_main_fb_tonemap_AO_no_filter
-
-void main()
-{
-   float3 result = FBToneMap(texStereoNoLod(tex_fb_unfiltered, tex0).rgb) // moving AO before tonemap does not really change the look
-                           * texStereoNoLod(tex_ao,            tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
-   BRANCH if (do_bloom)
-      result += texStereoNoLod(tex_bloom, tex0).rgb; 
-   color = float4(FBColorGrade(FBGamma(saturate(FBDither(result, tex0)))), 1.0);
-}
-
-////ps_main_fb_tonemap_AO_no_filter_static
+////ps_main_fb_AO_no_filter_static
 
 void main()
 {
@@ -380,6 +313,149 @@ void main()
                        * texStereoNoLod(tex_ao,            tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
    color = float4(result, 1.0);
 }
+
+////ps_main_fb_rhtonemap
+
+void main()
+{
+   float3 result = texStereoNoLod(tex_fb_filtered, tex0).rgb;
+   const float depth0 = texStereoNoLod(tex_depth, tex0).x;
+   BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
+      result = ReinhardToneMap(result);
+   BRANCH if (do_bloom)
+       result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
+   color = float4(FBColorGrade(FBGamma(saturate(FBDither(result, tex0)))), 1.0);
+}
+
+////ps_main_fb_tmtonemap
+
+void main()
+{
+   float3 result = texStereoNoLod(tex_fb_filtered, tex0).rgb;
+   const float depth0 = texStereoNoLod(tex_depth, tex0).x;
+   BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
+      result = TonyMcMapfaceToneMap(result);
+   BRANCH if (do_bloom)
+       result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
+   color = float4(FBColorGrade(FBGamma(saturate(FBDither(result, tex0)))), 1.0);
+}
+
+////ps_main_fb_rhtonemap_AO
+
+void main()
+{
+   float3 result = texStereoNoLod(tex_fb_filtered, tex0).rgb;
+   const float depth0 = texStereoNoLod(tex_depth, tex0).x;
+   BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
+      result = ReinhardToneMap(result);
+   // tex0 is pixel perfect sampling which here means between the pixels resulting from supersampling (for 2x, it's in the middle of the 2 texels)
+   // moving AO before tonemap does not really change the look
+   result *= texStereoNoLod(tex_ao, tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
+   BRANCH if (do_bloom)
+       result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
+   color = float4(FBColorGrade(FBGamma(saturate(FBDither(result, tex0)))), 1.0);
+}
+
+////ps_main_fb_tmtonemap_AO
+
+void main()
+{
+   float3 result = texStereoNoLod(tex_fb_filtered, tex0).rgb;
+   const float depth0 = texStereoNoLod(tex_depth, tex0).x;
+   BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
+      result = TonyMcMapfaceToneMap(result);
+   // tex0 is pixel perfect sampling which here means between the pixels resulting from supersampling (for 2x, it's in the middle of the 2 texels)
+   // moving AO before tonemap does not really change the look
+   result *= texStereoNoLod(tex_ao, tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
+   BRANCH if (do_bloom)
+       result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
+   color = float4(FBColorGrade(FBGamma(saturate(FBDither(result, tex0)))), 1.0);
+}
+
+////ps_main_fb_rhtonemap_no_filterRGB
+
+void main()
+{
+   float3 result = texStereoNoLod(tex_fb_unfiltered, tex0).rgb;
+   const float depth0 = texStereoNoLod(tex_depth, tex0).x;
+   BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
+      result = ReinhardToneMap(result);
+   BRANCH if (do_bloom)
+       result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
+   color = float4(FBColorGrade(FBGamma(saturate(FBDither(result, tex0)))), 1.0);
+}
+
+////ps_main_fb_tmtonemap_no_filter
+
+void main()
+{
+   float3 result = texStereoNoLod(tex_fb_unfiltered, tex0).rgb;
+   const float depth0 = texStereoNoLod(tex_depth, tex0).x;
+   BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
+      result = TonyMcMapfaceToneMap(result);
+   BRANCH if (do_bloom)
+       result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
+   color = float4(FBColorGrade(FBGamma(saturate(FBDither(result, tex0)))), 1.0);
+}
+
+////ps_main_fb_rhtonemap_no_filterRG
+
+void main()
+{
+   float2 result = texStereoNoLod(tex_fb_unfiltered, tex0).rg;
+   const float depth0 = texStereoNoLod(tex_depth, tex0).x;
+   BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
+      result = ReinhardToneMap(result);
+   BRANCH if (do_bloom)
+       result += texStereoNoLod(tex_bloom, tex0).rg; //!! offset?
+   const float rg = /*FBColorGrade*/(FBGamma(saturate(dot(FBDither(result, tex0), float2(0.176204+0.0108109*0.5,0.812985+0.0108109*0.5)))));
+   color = float4(rg,rg,rg,1.0);
+}
+
+////ps_main_fb_rhtonemap_no_filterR
+
+void main()
+{
+   float result = texStereoNoLod(tex_fb_unfiltered, tex0).r;
+   const float depth0 = texStereoNoLod(tex_depth, tex0).x;
+   BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
+      result = ReinhardToneMap(result);
+   BRANCH if (do_bloom)
+       result += texStereoNoLod(tex_bloom, tex0).r; //!! offset?
+   const float gray = /*FBColorGrade*/(FBGamma(saturate(FBDither(result, tex0))));
+   color = float4(gray,gray,gray,1.0);
+}
+
+////ps_main_fb_rhtonemap_AO_no_filter
+
+void main()
+{
+   float3 result = texStereoNoLod(tex_fb_unfiltered, tex0).rgb;
+   const float depth0 = texStereoNoLod(tex_depth, tex0).x;
+   BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
+      result = ReinhardToneMap(result);
+   // moving AO before tonemap does not really change the look
+   result *= texStereoNoLod(tex_ao, tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
+   BRANCH if (do_bloom)
+       result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
+   color = float4(FBColorGrade(FBGamma(saturate(FBDither(result, tex0)))), 1.0);
+}
+
+////ps_main_fb_tmtonemap_AO_no_filter
+
+void main()
+{
+   float3 result = texStereoNoLod(tex_fb_unfiltered, tex0).rgb;
+   const float depth0 = texStereoNoLod(tex_depth, tex0).x;
+   BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
+      result = TonyMcMapfaceToneMap(result);
+   // moving AO before tonemap does not really change the look
+   result *= texStereoNoLod(tex_ao, tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
+   BRANCH if (do_bloom)
+       result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
+   color = float4(FBColorGrade(FBGamma(saturate(FBDither(result, tex0)))), 1.0);
+}
+
 
 //
 // Gaussian Blur Kernels
@@ -752,19 +828,22 @@ DLAA:P0:vs_main_no_trafo():gs_main():ps_main_dlaa()
 FXAA1:P0:vs_main_no_trafo():gs_main():ps_main_fxaa1()
 FXAA2:P0:vs_main_no_trafo():gs_main():ps_main_fxaa2()
 FXAA3:P0:vs_main_no_trafo():gs_main():ps_main_fxaa3()
-fb_tonemap:P0:vs_main_no_trafo_subpixel():gs_main():ps_main_fb_tonemap()
 fb_bloom:P0:vs_main_no_trafo():gs_main():ps_main_fb_bloom()
+
 fb_AO:P0:vs_main_no_trafo_subpixel():gs_main():ps_main_fb_AO()
-fb_tonemap_AO:P0:vs_main_no_trafo_subpixel():gs_main():ps_main_fb_tonemap_AO()
-fb_tonemap_AO_static:P0:vs_main_no_trafo_subpixel():gs_main():ps_main_fb_tonemap_AO_static()
+fb_AO_static:P0:vs_main_no_trafo_subpixel():gs_main():ps_main_fb_AO_static()
+fb_AO_no_filter_static:P0:vs_main_no_trafo():gs_main():ps_main_fb_AO_no_filter_static()
 
-fb_tonemap_no_filterRGB:P0:vs_main_no_trafo():gs_main():ps_main_fb_tonemap_no_filterRGB()
-fb_tonemap_no_filterRG:P0:vs_main_no_trafo():gs_main():ps_main_fb_tonemap_no_filterRG()
-fb_tonemap_no_filterR:P0:vs_main_no_trafo():gs_main():ps_main_fb_tonemap_no_filterR()
-fb_tonemap_AO_no_filter:P0:vs_main_no_trafo():gs_main():ps_main_fb_tonemap_AO_no_filter()
-
-//!! SRGBWriteEnable = true
-fb_tonemap_AO_no_filter_static:P0:vs_main_no_trafo():gs_main():ps_main_fb_tonemap_AO_no_filter_static()
+fb_rhtonemap:P0:vs_main_no_trafo_subpixel():gs_main():ps_main_fb_rhtonemap()
+fb_rhtonemap_AO:P0:vs_main_no_trafo_subpixel():gs_main():ps_main_fb_rhtonemap_AO()
+fb_rhtonemap_no_filterRGB:P0:vs_main_no_trafo():gs_main():ps_main_fb_rhtonemap_no_filterRGB()
+fb_rhtonemap_no_filterRG:P0:vs_main_no_trafo():gs_main():ps_main_fb_rhtonemap_no_filterRG()
+fb_rhtonemap_no_filterR:P0:vs_main_no_trafo():gs_main():ps_main_fb_rhtonemap_no_filterR()
+fb_rhtonemap_AO_no_filter:P0:vs_main_no_trafo():gs_main():ps_main_fb_rhtonemap_AO_no_filter()
+fb_tmtonemap:P0:vs_main_no_trafo_subpixel():gs_main():ps_main_fb_tmtonemap()
+fb_tmtonemap_AO:P0:vs_main_no_trafo_subpixel():gs_main():ps_main_fb_tmtonemap_AO()
+fb_tmtonemap_no_filter:P0:vs_main_no_trafo():gs_main():ps_main_fb_tmtonemap_no_filter()
+fb_tmtonemap_AO_no_filter:P0:vs_main_no_trafo():gs_main():ps_main_fb_tmtonemap_AO_no_filter()
 
 // All Bloom variants:
 fb_blur_horiz7x7:P0:vs_main_no_trafo():gs_main():ps_main_fb_blur_horiz7x7()

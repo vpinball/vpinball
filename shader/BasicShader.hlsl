@@ -487,19 +487,14 @@ float4 ps_main_unshaded_with_texture_shadow(const in VS_UNSHADED_TEX_SHADOW_OUTP
 
 float4 ps_main_bg_decal(const in VS_NOTEX_OUTPUT IN) : COLOR
 {
-   return float4(InvToneMap(cBase_Alpha.xyz), cBase_Alpha.a);
+   return cBase_Alpha;
 }
 
 float4 ps_main_bg_decal_texture(const in VS_OUTPUT IN) : COLOR
 {
    float4 pixel = tex2D(tex_base_color, IN.tex0);
-
    clip(pixel.a <= alphaTestValue ? - 1 : 1); // stop the pixel shader if alpha test should reject pixel
-
-   pixel.a *= cBase_Alpha.a;
-   const float3 t = /*InvGamma*/(pixel.xyz); // uses automatic sRGB trafo instead in sampler!
-
-   return float4(InvToneMap(t*cBase_Alpha.xyz), pixel.a);
+   return pixel * cBase_Alpha;
 }
 
 //------------------------------------------

@@ -835,6 +835,9 @@ public:
    }
    CString GetNotesText() const { return m_notesText; }
 
+   ToneMapper GetToneMapper() const { return m_toneMapper; }
+   void SetToneMapper(const ToneMapper& tm) { m_toneMapper = tm; }
+
 private:
    PinTableMDI *m_mdiTable = nullptr;
    CString m_notesText;
@@ -843,6 +846,8 @@ private:
    robin_hood::unordered_map<string, Light *, StringHashFunctor, StringComparator> m_lightMap; // hash table to speed up light lookup by name
    robin_hood::unordered_map<string, RenderProbe *, StringHashFunctor, StringComparator> m_renderprobeMap; // hash table to speed up renderprobe lookup by name
    bool m_moving;
+
+   ToneMapper m_toneMapper = ToneMapper::TM_TONY_MC_MAPFACE;
 };
 
 class ScriptGlobalTable : 

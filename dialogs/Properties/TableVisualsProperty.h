@@ -5,9 +5,7 @@ class TableVisualsProperty: public BasePropertyDialog
 {
 public:
     TableVisualsProperty(const VectorProtected<ISelect> *pvsel);
-    virtual ~TableVisualsProperty()
-    {
-    }
+    virtual ~TableVisualsProperty() { }
 
     void UpdateVisuals(const int dispid=-1);
     void UpdateProperties(const int dispid);
@@ -21,14 +19,15 @@ private:
     ComboBox    m_materialCombo;
     ComboBox    m_ballImageCombo;
     ComboBox    m_ballDecalCombo;
+    ComboBox    m_toneMapperCombo;
     EditBox     m_reflectionStrengthEdit;
     EditBox     m_ballReflectPlayfieldEdit;
     EditBox     m_ballDefaultBulbIntensScaleEdit;
-    HWND        m_hSphericalMapCheck;
-    HWND        m_hLogoModeCheck;
-    HWND        m_hReflectElementsCheck;
-    HWND        m_hEnableAOCheck;
-    HWND        m_hEnableSSRCheck;
+    HWND        m_hSphericalMapCheck = NULL;
+    HWND        m_hLogoModeCheck = NULL;
+    HWND        m_hReflectElementsCheck = NULL;
+    HWND        m_hEnableAOCheck = NULL;
+    HWND        m_hEnableSSRCheck = NULL;
 };
 
 #endif

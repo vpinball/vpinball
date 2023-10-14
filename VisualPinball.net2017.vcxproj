@@ -980,6 +980,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="shader\FBShader.fxh" />
     <None Include="src\assets\Default VPinballX.ini" />
     <None Include="shader\SMAA.fxh" />
     <None Include="shader\BallShader.glfx" />
@@ -1049,6 +1050,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <None Include="shader\Helpers.fxh" />
     <None Include="shader\Material.fxh" />
     <None Include="shader\SSR.fxh" />
+    <None Include="src\assets\tony_mc_mapface_unrolled.exr" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\add.ico" />

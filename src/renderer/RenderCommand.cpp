@@ -370,6 +370,7 @@ void RenderCommand::SetDrawMesh(
    m_isTransparent = isTransparent;
    m_shader = shader;
    m_shaderTechnique = m_shader->GetCurrentTechnique();
+   assert(m_shaderTechnique < SHADER_TECHNIQUE_INVALID);
    if (m_shaderState == nullptr || m_shaderState->m_shader != m_shader)
    {
       delete m_shaderState;

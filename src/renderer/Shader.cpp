@@ -89,16 +89,20 @@ const string Shader::shaderTechniqueNames[SHADER_TECHNIQUE_COUNT]
    SHADER_TECHNIQUE(FXAA1),
    SHADER_TECHNIQUE(FXAA2),
    SHADER_TECHNIQUE(FXAA3),
-   SHADER_TECHNIQUE(fb_tonemap),
    SHADER_TECHNIQUE(fb_bloom),
-   SHADER_TECHNIQUE(fb_AO),
-   SHADER_TECHNIQUE(fb_tonemap_AO),
-   SHADER_TECHNIQUE(fb_tonemap_AO_static),
-   SHADER_TECHNIQUE(fb_tonemap_no_filterRGB),
-   SHADER_TECHNIQUE(fb_tonemap_no_filterRG),
-   SHADER_TECHNIQUE(fb_tonemap_no_filterR),
-   SHADER_TECHNIQUE(fb_tonemap_AO_no_filter),
-   SHADER_TECHNIQUE(fb_tonemap_AO_no_filter_static),
+   SHADER_TECHNIQUE(fb_AO), // Display debug AO
+   SHADER_TECHNIQUE(fb_AO_static), // Apply AO during static prerender pass (no tonemapping)
+   SHADER_TECHNIQUE(fb_AO_no_filter_static), // Apply AO during static prerender pass (no tonemapping)
+   SHADER_TECHNIQUE(fb_rhtonemap),
+   SHADER_TECHNIQUE(fb_rhtonemap_AO),
+   SHADER_TECHNIQUE(fb_rhtonemap_no_filterRGB),
+   SHADER_TECHNIQUE(fb_rhtonemap_no_filterRG),
+   SHADER_TECHNIQUE(fb_rhtonemap_no_filterR),
+   SHADER_TECHNIQUE(fb_rhtonemap_AO_no_filter),
+   SHADER_TECHNIQUE(fb_tmtonemap),
+   SHADER_TECHNIQUE(fb_tmtonemap_AO),
+   SHADER_TECHNIQUE(fb_tmtonemap_no_filter),
+   SHADER_TECHNIQUE(fb_tmtonemap_AO_no_filter),
    SHADER_TECHNIQUE(fb_blur_horiz7x7),
    SHADER_TECHNIQUE(fb_blur_vert7x7),
    SHADER_TECHNIQUE(fb_blur_horiz9x9),
@@ -255,6 +259,7 @@ Shader::ShaderUniform Shader::shaderUniformNames[SHADER_UNIFORM_COUNT] {
    SHADER_SAMPLER(tex_fb_filtered, Texture0, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // Framebuffer (filtered)
    SHADER_SAMPLER(tex_bloom, Texture1, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // Bloom
    SHADER_SAMPLER(tex_color_lut, Texture2, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // Color grade LUT
+   SHADER_SAMPLER(tex_tonemap_lut, Texture6, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // Tonemap LUT
    SHADER_SAMPLER(tex_ao, Texture3, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // AO Result
    SHADER_SAMPLER(tex_depth, Texture4, SA_CLAMP, SA_CLAMP, SF_NONE), // Depth
    SHADER_SAMPLER(tex_ao_dither, Texture5, SA_REPEAT, SA_REPEAT, SF_NONE), // AO dither

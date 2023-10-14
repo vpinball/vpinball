@@ -109,6 +109,10 @@ struct VS_OUTPUT_2D
    float2 tex0 : TEXCOORD0;
 };
 
+
+#include "FBShader.fxh"
+
+
 //
 //
 //
@@ -296,18 +300,6 @@ VS_OUTPUT_2D vs_main_no_trafo_subpixel(const in float4 vPosition : POSITION0, co
 // PS functions
 //
 
-float4 ps_main_fb_tonemap(const in VS_OUTPUT_2D IN) : COLOR
-{
-   //!! const float depth0 = texNoLod(tex_depth, u).x;
-   //!! if((depth0 == 1.0) || (depth0 == 0.0)) //!! early out if depth too large (=BG) or too small (=DMD,etc -> retweak render options (depth write on), otherwise also screwup with stereo)
-   //!!   return float4(texNoLod(tex_fb_filtered, IN.tex0).xyz, 1.0);
-
-   float3 result = FBToneMap(texNoLod(tex_fb_filtered, IN.tex0).xyz);
-   BRANCH if (do_bloom)
-      result += texNoLod(tex_bloom, IN.tex0).xyz; //!! offset?
-   return float4(FBColorGrade(FBGamma(saturate(FBDither(result, IN.tex0)))), 1.0);
-}
-
 // For reference, see https://catlikecoding.com/unity/tutorials/advanced-rendering/bloom/
 float3 bloom_cutoff(const float3 c)
 {
@@ -330,7 +322,7 @@ float4 ps_main_fb_bloom(const in VS_OUTPUT_2D IN) : COLOR
                         +  texNoLod(tex_fb_filtered, IN.tex0 + w_h_height.xy).xyz
                         +  texNoLod(tex_fb_filtered, IN.tex0 + float2(w_h_height.x,-w_h_height.y)).xyz
                         +  texNoLod(tex_fb_filtered, IN.tex0 + float2(-w_h_height.x,w_h_height.y)).xyz)*0.25; //!! offset for useAA?
-    return float4(max(bloom_cutoff(FBToneMap(result)), float3(0.,0.,0.)) * w_h_height.z, 1.0);
+    return float4(max(bloom_cutoff(ReinhardToneMap(result)), float3(0., 0., 0.)) * w_h_height.z, 1.0);
 }
 
 float4 ps_main_fb_AO(const in VS_OUTPUT_2D IN) : COLOR
@@ -340,17 +332,7 @@ float4 ps_main_fb_AO(const in VS_OUTPUT_2D IN) : COLOR
    return float4(result,result,result, 1.0);
 }
 
-float4 ps_main_fb_tonemap_AO(const in VS_OUTPUT_2D IN) : COLOR
-{
-   // tex0 is pixel perfect sampling which here means between the pixels resulting from supersampling (for 2x, it's in the middle of the 2 texels)
-   float3 result = FBToneMap(texNoLod(tex_fb_filtered, IN.tex0).xyz) // moving AO before tonemap does not really change the look
-                           * texNoLod(tex_ao,          IN.tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
-   BRANCH if (do_bloom)
-      result += texNoLod(tex_bloom, IN.tex0).xyz; //!! offset?
-   return float4(FBColorGrade(FBGamma(saturate(FBDither(result, IN.tex0)))), 1.0);
-}
-
-float4 ps_main_fb_tonemap_AO_static(const in VS_OUTPUT_2D IN) : COLOR
+float4 ps_main_fb_AO_static(const in VS_OUTPUT_2D IN) : COLOR
 {
    // tex0 is pixel perfect sampling which here means between the pixels resulting from supersampling (for 2x, it's in the middle of the 2 texels)
    const float3 result = texNoLod(tex_fb_filtered, IN.tex0).xyz // moving AO before tonemap does not really change the look
@@ -358,47 +340,135 @@ float4 ps_main_fb_tonemap_AO_static(const in VS_OUTPUT_2D IN) : COLOR
    return float4(result, 1.0);
 }
 
-float4 ps_main_fb_tonemap_no_filterRGB(const in VS_OUTPUT_2D IN) : COLOR
-{
-   float3 result = FBToneMap(texNoLod(tex_fb_unfiltered, IN.tex0).xyz);
-   BRANCH if (do_bloom)
-      result += texNoLod(tex_bloom, IN.tex0).xyz;
-   return float4(FBColorGrade(FBGamma(saturate(FBDither(result, IN.tex0)))), 1.0);
-}
-
-float4 ps_main_fb_tonemap_no_filterRG(const in VS_OUTPUT_2D IN) : COLOR
-{
-   float2 result = FBToneMap(texNoLod(tex_fb_unfiltered, IN.tex0).xy);
-   BRANCH if (do_bloom)
-      result += texNoLod(tex_bloom, IN.tex0).xy;
-   const float rg = /*FBColorGrade*/(FBGamma(saturate(dot(FBDither(result, IN.tex0), float2(0.176204+0.0108109*0.5,0.812985+0.0108109*0.5)))));
-   return float4(rg,rg,rg,1.0);
-}
-
-float4 ps_main_fb_tonemap_no_filterR(const in VS_OUTPUT_2D IN) : COLOR
-{
-   float result = FBToneMap(texNoLod(tex_fb_unfiltered, IN.tex0).x);
-   BRANCH if (do_bloom)
-      result += texNoLod(tex_bloom, IN.tex0).x;
-   const float gray = /*FBColorGrade*/(FBGamma(saturate(FBDither(result, IN.tex0))));
-   return float4(gray,gray,gray,1.0);
-}
-
-float4 ps_main_fb_tonemap_AO_no_filter(const in VS_OUTPUT_2D IN) : COLOR
-{
-   float3 result = FBToneMap(texNoLod(tex_fb_unfiltered, IN.tex0).rgb) // moving AO before tonemap does not really change the look
-                           * texNoLod(tex_ao,            IN.tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
-   BRANCH if (do_bloom)
-      result += texNoLod(tex_bloom, IN.tex0).rgb; //!! offset?
-   return float4(FBColorGrade(FBGamma(saturate(FBDither(result, IN.tex0)))), 1.0);
-}
-
-float4 ps_main_fb_tonemap_AO_no_filter_static(const in VS_OUTPUT_2D IN) : COLOR
+float4 ps_main_fb_AO_no_filter_static(const in VS_OUTPUT_2D IN) : COLOR
 {
    const float3 result = texNoLod(tex_fb_unfiltered, IN.tex0).rgb
                        * texNoLod(tex_ao,            IN.tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
    return float4(result, 1.0);
 }
+
+float4 ps_main_fb_rhtonemap(const in VS_OUTPUT_2D IN) : COLOR
+{
+   float3 result = texStereoNoLod(tex_fb_filtered, IN.tex0).rgb;
+   const float depth0 = texStereoNoLod(tex_depth, IN.tex0).x;
+   BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
+      result = ReinhardToneMap(result);
+   BRANCH if (do_bloom)
+      result += texStereoNoLod(tex_bloom, IN.tex0).rgb; //!! offset?
+   return float4(FBColorGrade(FBGamma(saturate(FBDither(result, IN.tex0)))), 1.0);
+}
+
+float4 ps_main_fb_tmtonemap(const in VS_OUTPUT_2D IN) : COLOR
+{
+   float3 result = texStereoNoLod(tex_fb_filtered, IN.tex0).rgb;
+   const float depth0 = texStereoNoLod(tex_depth, IN.tex0).x;
+   BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
+      result = TonyMcMapfaceToneMap(result);
+   BRANCH if (do_bloom)
+       result += texStereoNoLod(tex_bloom, IN.tex0).rgb; //!! offset?
+   return float4(FBColorGrade(FBGamma(saturate(FBDither(result, IN.tex0)))), 1.0);
+}
+
+float4 ps_main_fb_rhtonemap_AO(const in VS_OUTPUT_2D IN) : COLOR
+{
+   float3 result = texStereoNoLod(tex_fb_filtered, IN.tex0).rgb;
+   const float depth0 = texStereoNoLod(tex_depth, IN.tex0).x;
+   BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
+      result = ReinhardToneMap(result);
+   // tex0 is pixel perfect sampling which here means between the pixels resulting from supersampling (for 2x, it's in the middle of the 2 texels)
+   // moving AO before tonemap does not really change the look
+   result *= texStereoNoLod(tex_ao, IN.tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
+   BRANCH if (do_bloom)
+       result += texStereoNoLod(tex_bloom, IN.tex0).rgb; //!! offset?
+   return float4(FBColorGrade(FBGamma(saturate(FBDither(result, IN.tex0)))), 1.0);
+}
+
+float4 ps_main_fb_tmtonemap_AO(const in VS_OUTPUT_2D IN) : COLOR
+{
+   float3 result = texStereoNoLod(tex_fb_filtered, IN.tex0).rgb;
+   const float depth0 = texStereoNoLod(tex_depth, IN.tex0).x;
+   BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
+      result = TonyMcMapfaceToneMap(result);
+   // tex0 is pixel perfect sampling which here means between the pixels resulting from supersampling (for 2x, it's in the middle of the 2 texels)
+   // moving AO before tonemap does not really change the look
+   result *= texStereoNoLod(tex_ao, IN.tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
+   BRANCH if (do_bloom)
+       result += texStereoNoLod(tex_bloom, IN.tex0).rgb; //!! offset?
+   return float4(FBColorGrade(FBGamma(saturate(FBDither(result, IN.tex0)))), 1.0);
+}
+
+float4 ps_main_fb_rhtonemap_no_filterRGB(const in VS_OUTPUT_2D IN) : COLOR
+{
+   float3 result = texStereoNoLod(tex_fb_unfiltered, IN.tex0).rgb;
+   const float depth0 = texStereoNoLod(tex_depth, IN.tex0).x;
+   BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
+      result = ReinhardToneMap(result);
+   BRANCH if (do_bloom)
+       result += texStereoNoLod(tex_bloom, IN.tex0).rgb; //!! offset?
+   return float4(FBColorGrade(FBGamma(saturate(FBDither(result, IN.tex0)))), 1.0);
+}
+
+float4 ps_main_fb_tmtonemap_no_filter(const in VS_OUTPUT_2D IN) : COLOR
+{
+   float3 result = texStereoNoLod(tex_fb_unfiltered, IN.tex0).rgb;
+   const float depth0 = texStereoNoLod(tex_depth, IN.tex0).x;
+   BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
+      result = TonyMcMapfaceToneMap(result);
+   BRANCH if (do_bloom)
+       result += texStereoNoLod(tex_bloom, IN.tex0).rgb; //!! offset?
+   return float4(FBColorGrade(FBGamma(saturate(FBDither(result, IN.tex0)))), 1.0);
+}
+
+float4 ps_main_fb_rhtonemap_no_filterRG(const in VS_OUTPUT_2D IN) : COLOR
+{
+   float2 result = texStereoNoLod(tex_fb_unfiltered, IN.tex0).rg;
+   const float depth0 = texStereoNoLod(tex_depth, IN.tex0).x;
+   BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
+      result = ReinhardToneMap(result);
+   BRANCH if (do_bloom)
+       result += texStereoNoLod(tex_bloom, IN.tex0).rg; //!! offset?
+   const float rg = /*FBColorGrade*/(FBGamma(saturate(dot(FBDither(result, IN.tex0), float2(0.176204+0.0108109*0.5,0.812985+0.0108109*0.5)))));
+   return float4(rg,rg,rg,1.0);
+}
+
+float4 ps_main_fb_rhtonemap_no_filterR(const in VS_OUTPUT_2D IN) : COLOR
+{
+   float result = texStereoNoLod(tex_fb_unfiltered, IN.tex0).r;
+   const float depth0 = texStereoNoLod(tex_depth, IN.tex0).x;
+   BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
+      result = ReinhardToneMap(result);
+   BRANCH if (do_bloom)
+       result += texStereoNoLod(tex_bloom, IN.tex0).r; //!! offset?
+   const float gray = /*FBColorGrade*/(FBGamma(saturate(FBDither(result, IN.tex0))));
+   return float4(gray,gray,gray,1.0);
+}
+
+float4 ps_main_fb_rhtonemap_AO_no_filter(const in VS_OUTPUT_2D IN) : COLOR
+{
+   float3 result = texStereoNoLod(tex_fb_unfiltered, IN.tex0).rgb;
+   const float depth0 = texStereoNoLod(tex_depth, IN.tex0).x;
+   BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
+      result = ReinhardToneMap(result);
+   // moving AO before tonemap does not really change the look
+   result *= texStereoNoLod(tex_ao, IN.tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
+   BRANCH if (do_bloom)
+       result += texStereoNoLod(tex_bloom, IN.tex0).rgb; //!! offset?
+   return float4(FBColorGrade(FBGamma(saturate(FBDither(result, IN.tex0)))), 1.0);
+}
+
+float4 ps_main_fb_tmtonemap_AO_no_filter(const in VS_OUTPUT_2D IN) : COLOR
+{
+   float3 result = texStereoNoLod(tex_fb_unfiltered, IN.tex0).rgb;
+   const float depth0 = texStereoNoLod(tex_depth, IN.tex0).x;
+   BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
+      result = TonyMcMapfaceToneMap(result);
+   // moving AO before tonemap does not really change the look
+   result *= texStereoNoLod(tex_ao, IN.tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
+   BRANCH if (do_bloom)
+       result += texStereoNoLod(tex_bloom, IN.tex0).rgb; //!! offset?
+   return float4(FBColorGrade(FBGamma(saturate(FBDither(result, IN.tex0)))), 1.0);
+}
+
 
 //
 // Gaussian Blur Kernels
@@ -804,15 +874,6 @@ technique FXAA3
    }
 }
 
-technique fb_tonemap
-{
-   pass P0
-   {
-      VertexShader = compile vs_3_0 vs_main_no_trafo_subpixel();
-      PixelShader  = compile ps_3_0 ps_main_fb_tonemap();
-   }
-}
-
 technique fb_bloom
 {
    pass P0
@@ -822,79 +883,21 @@ technique fb_bloom
    }
 }
 
-technique fb_AO
-{
-   pass P0
-   {
-      VertexShader = compile vs_3_0 vs_main_no_trafo_subpixel();
-      PixelShader  = compile ps_3_0 ps_main_fb_AO();
-   }
-}
+technique fb_AO { pass P0 { VertexShader = compile vs_3_0 vs_main_no_trafo_subpixel(); PixelShader  = compile ps_3_0 ps_main_fb_AO(); }}
+technique fb_AO_static { pass P0 { VertexShader = compile vs_3_0 vs_main_no_trafo_subpixel(); PixelShader = compile ps_3_0 ps_main_fb_AO_static(); }}
+technique fb_AO_no_filter_static { pass P0 { VertexShader = compile vs_3_0 vs_main_no_trafo(); PixelShader = compile ps_3_0 ps_main_fb_AO_no_filter_static(); }}
 
-technique fb_tonemap_AO
-{
-   pass P0
-   {
-      VertexShader = compile vs_3_0 vs_main_no_trafo_subpixel();
-      PixelShader  = compile ps_3_0 ps_main_fb_tonemap_AO();
-   }
-}
+technique fb_rhtonemap { pass P0 { VertexShader = compile vs_3_0 vs_main_no_trafo_subpixel(); PixelShader = compile ps_3_0 ps_main_fb_rhtonemap(); }}
+technique fb_rhtonemap_AO { pass P0 { VertexShader = compile vs_3_0 vs_main_no_trafo_subpixel(); PixelShader  = compile ps_3_0 ps_main_fb_rhtonemap_AO(); }}
+technique fb_rhtonemap_no_filterRGB { pass P0 { VertexShader = compile vs_3_0 vs_main_no_trafo(); PixelShader  = compile ps_3_0 ps_main_fb_rhtonemap_no_filterRGB(); }}
+technique fb_rhtonemap_no_filterRG { pass P0 { VertexShader = compile vs_3_0 vs_main_no_trafo(); PixelShader  = compile ps_3_0 ps_main_fb_rhtonemap_no_filterRG(); }}
+technique fb_rhtonemap_no_filterR { pass P0 { VertexShader = compile vs_3_0 vs_main_no_trafo(); PixelShader  = compile ps_3_0 ps_main_fb_rhtonemap_no_filterR(); }}
+technique fb_rhtonemap_AO_no_filter { pass P0 { VertexShader = compile vs_3_0 vs_main_no_trafo(); PixelShader  = compile ps_3_0 ps_main_fb_rhtonemap_AO_no_filter(); }}
 
-technique fb_tonemap_AO_static
-{
-   pass P0
-   {
-      VertexShader = compile vs_3_0 vs_main_no_trafo_subpixel();
-      PixelShader  = compile ps_3_0 ps_main_fb_tonemap_AO_static();
-   }
-}
-
-technique fb_tonemap_no_filterRGB
-{
-   pass P0
-   {
-      VertexShader = compile vs_3_0 vs_main_no_trafo();
-      PixelShader  = compile ps_3_0 ps_main_fb_tonemap_no_filterRGB();
-   }
-}
-
-technique fb_tonemap_no_filterRG
-{
-   pass P0
-   {
-      VertexShader = compile vs_3_0 vs_main_no_trafo();
-      PixelShader  = compile ps_3_0 ps_main_fb_tonemap_no_filterRG();
-   }
-}
-
-technique fb_tonemap_no_filterR
-{
-   pass P0
-   {
-      VertexShader = compile vs_3_0 vs_main_no_trafo();
-      PixelShader  = compile ps_3_0 ps_main_fb_tonemap_no_filterR();
-   }
-}
-
-technique fb_tonemap_AO_no_filter
-{
-   pass P0
-   {
-      VertexShader = compile vs_3_0 vs_main_no_trafo();
-      PixelShader  = compile ps_3_0 ps_main_fb_tonemap_AO_no_filter();
-
-      //!! SRGBWriteEnable = true;
-   }
-}
-
-technique fb_tonemap_AO_no_filter_static
-{
-   pass P0
-   {
-      VertexShader = compile vs_3_0 vs_main_no_trafo();
-      PixelShader  = compile ps_3_0 ps_main_fb_tonemap_AO_no_filter_static();
-   }
-}
+technique fb_tmtonemap { pass P0 { VertexShader = compile vs_3_0 vs_main_no_trafo_subpixel(); PixelShader = compile ps_3_0 ps_main_fb_tmtonemap(); }}
+technique fb_tmtonemap_AO { pass P0 { VertexShader = compile vs_3_0 vs_main_no_trafo_subpixel(); PixelShader  = compile ps_3_0 ps_main_fb_tmtonemap_AO(); }}
+technique fb_tmtonemap_no_filter { pass P0 { VertexShader = compile vs_3_0 vs_main_no_trafo(); PixelShader  = compile ps_3_0 ps_main_fb_tmtonemap_no_filter(); }}
+technique fb_tmtonemap_AO_no_filter { pass P0 { VertexShader = compile vs_3_0 vs_main_no_trafo(); PixelShader  = compile ps_3_0 ps_main_fb_tmtonemap_AO_no_filter(); }}
 
 // All Bloom variants:
 

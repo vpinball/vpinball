@@ -44,6 +44,13 @@ enum StereoMode
 #define Is3DTVStereoMode(stereo)     (STEREO_TB <= stereo && stereo <= STEREO_SBS)
 #define IsAnaglyphStereoMode(stereo) (STEREO_ANAGLYPH_1 <= stereo && stereo <= STEREO_ANAGLYPH_10)
 
+// ToneMapper implemented as an enum to be future proof since there are many more than the 2 currently implemented
+enum ToneMapper
+{
+   TM_REINHARD         = 0, // Reinhard, used to be the default until 10.8
+   TM_TONY_MC_MAPFACE  = 1, // Precomputed high quality phenomenological tonemapping https://github.com/h3r2tic/tony-mc-mapface
+};
+
 enum VideoSyncMode
 {
    VSM_NONE,

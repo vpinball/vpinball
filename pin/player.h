@@ -612,9 +612,9 @@ public:
    bool m_headTracking;
 
    int m_BWrendering; // 0=off, 1=Black&White from RedGreen, 2=B&W from Red only
-
    bool m_bloomOff;
    bool m_ditherOff;
+   ToneMapper m_toneMapper = TM_TONY_MC_MAPFACE;
 
    Pin3D m_pin3d;
 
@@ -630,9 +630,11 @@ public:
    unsigned int m_render_mask = 0; // Active pass render bit mask
    inline bool IsRenderPass(const RenderMask pass_mask) const { return (m_render_mask & pass_mask) != 0; }
 
-   bool m_overwriteBallImages;
-   Texture *m_ballImage;
-   Texture *m_decalImage;
+   bool m_overwriteBallImages = false;
+   Texture *m_ballImage = nullptr;
+   Texture *m_decalImage = nullptr;
+
+   Texture *m_tonemapLUT = nullptr;
 #pragma endregion
 
 
