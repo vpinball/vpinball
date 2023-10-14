@@ -90,6 +90,7 @@ jobs:
             cp build/${{ matrix.config }}/VPinballX.exe tmp
           fi
           cp build/${{ matrix.config }}/*.dll tmp
+          cp -r build/${{ matrix.config }}/assets tmp
           cp -r build/${{ matrix.config }}/scripts tmp
           cp -r build/${{ matrix.config }}/tables tmp
           cp -r build/${{ matrix.config }}/docs tmp
@@ -134,6 +135,7 @@ jobs:
             cp build/${{ matrix.config }}/VPinballX_GL.exe tmp
           fi
           cp build/${{ matrix.config }}/*.dll tmp
+          cp -r build/${{ matrix.config }}/assets tmp
           cp -r build/${{ matrix.config }}/shader tmp
           cp -r build/${{ matrix.config }}/scripts tmp
           cp -r build/${{ matrix.config }}/tables tmp

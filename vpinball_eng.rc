@@ -3427,19 +3427,6 @@ IDW_SPLITH              CURSOR                  "res\\SplitH.cur"
 IDW_SPLITV              CURSOR                  "res\\SplitV.cur"
 
 
-/////////////////////////////////////////////////////////////////////////////
-//
-// TABLE
-//
-
-IDR_BLANK_TABLE         TABLE                   "res\\blankTable.vpx"
-
-IDR_EXAMPLE_TABLE       TABLE                   "res\\exampleTable.vpx"
-
-IDR_STRIPPED_TABLE      TABLE                   "res\\strippedTable.vpx"
-
-IDR_LIGHTSEQ_TABLE      TABLE                   "res\\lightSeqTable.vpx"
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
