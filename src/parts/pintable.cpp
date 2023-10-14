@@ -3575,13 +3575,6 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
       return hr;
    }
 
-   return LoadGameFromStorage(pstgRoot);
-}
-
-HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
-{
-   ProfileLog("LoadGameFromStorage"s);
-
    RECT rc;
    ::SendMessage(m_vpinball->m_hwndStatusBar, SB_GETRECT, 2, (size_t)&rc);
 
@@ -3613,9 +3606,6 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 
    foo = GetLastError();
 
-   BYTE hashval[256];
-   DWORD hashlen = 256;
-
    foo = CryptHashData(hch, (BYTE *)TABLE_KEY, 14, 0);
 
    foo = GetLastError();
@@ -3636,7 +3626,6 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 
    //load our stuff first
    IStorage* pstgData;
-   HRESULT hr;
    if (SUCCEEDED(hr = pstgRoot->OpenStorage(L"GameStg", nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, nullptr, 0, &pstgData)))
    {
       IStream *pstmGame;
@@ -3894,6 +3883,8 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
                ULONG read;
                hr = pstmVersion->Read(&hashvalOld, HASHLENGTH, &read);
 
+               BYTE hashval[256];
+               DWORD hashlen = 256;
                foo = CryptGetHashParam(hch, HP_HASHSIZE, hashval, &hashlen, 0);
 
                hashlen = 256;
