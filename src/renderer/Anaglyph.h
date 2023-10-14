@@ -31,6 +31,7 @@ public:
    bool IsReversedColorPair() const { return m_reversedColorPair; }
    const vec3 GetLeftEyeColor(const bool linear) const { return linear ? m_leftEyeColor : Gamma(m_leftEyeColor); }
    const vec3 GetRightEyeColor(const bool linear) const {return linear ? m_rightEyeColor : Gamma(m_rightEyeColor); }
+   const vec3 GetAnaglyphRatio() const { return m_anaglyphRatio; }
 
 private:
    void Update();
@@ -50,7 +51,7 @@ private:
    Filter m_filter = Filter::NONE;
    
    // Data computed from calibration data
-   vec3 m_rgb2Yl, m_rgb2Yr;
+   vec3 m_rgb2Yl, m_rgb2Yr, m_anaglyphRatio;
    float m_displayGamma = 2.4f;
    AnaglyphPair m_colorPair = AnaglyphPair::RED_CYAN;
    bool m_reversedColorPair = false;

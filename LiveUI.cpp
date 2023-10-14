@@ -2044,6 +2044,10 @@ void LiveUI::UpdateVideoOptionsModal()
                                                           : colors == Anaglyph::RED_CYAN ? "Red/Cyan" : colors == Anaglyph::GREEN_MAGENTA ? "Green/Magenta" : "Blue/Amber");
                ImGui::SameLine();
                ImGui::Text("Gamma %3.2f", anaglyph.GetDisplayGamma());
+               ImGui::SameLine();
+               vec3 anaglyphRatio = anaglyph.GetAnaglyphRatio();
+               ImGui::Text(" Ratios R: %2d%% G: %2d%% B: %2d%%", (int)(100.f * anaglyphRatio.x), (int)(100.f * anaglyphRatio.y), (int)(100.f * anaglyphRatio.z));
+
                if (ImGui::Button("Calibrate Glasses"))
                   popup_anaglyph_calibration = true;
                ImGui::SameLine();
