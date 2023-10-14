@@ -293,6 +293,50 @@ void KeysConfigDialog::AddToolTip(char *text, HWND parentHwnd, HWND toolTipHwnd,
    SendMessage(toolTipHwnd, TTM_ADDTOOL, 0, (LPARAM)&toolInfo);
 }
 
+void KeysConfigDialog::AddStringDOF(const string &name, const int idc)
+{
+   const int selected = g_pvp->m_settings.LoadValueWithDefault(Settings::Controller, name, 2); // assume both as standard
+   const HWND hwnd = GetDlgItem(idc).GetHwnd();
+   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Sound FX");
+   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"DOF");
+   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Both");
+   ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
+}
+
+void KeysConfigDialog::AddStringAxis(const string &name, const int idc, const int def)
+{
+   const int selected = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, name, def);
+   const HWND hwnd = GetDlgItem(idc).GetHwnd();
+   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"(disabled)");
+   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"X Axis");
+   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Y Axis");
+   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Z Axis");
+   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"rX Axis");
+   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"rY Axis");
+   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"rZ Axis");
+   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Slider 1");
+   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Slider 2");
+   ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
+}
+
+void KeysConfigDialog::AddJoyCustomKey(const string &name, const int idc, const int default_key)
+{
+   int key;
+   const bool hr = g_pvp->m_settings.LoadValue(Settings::Player, name, key);
+   if (!hr || key > 0xdd)
+      key = default_key;
+   const HWND hwndControl = GetDlgItem(idc).GetHwnd();
+   ::SetWindowText(hwndControl, rgszKeyName[key]);
+   ::SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
+}
+
+void KeysConfigDialog::AddWndProc(const int idc, const size_t MyKeyButtonProc, const size_t pksw)
+{
+   const HWND hwndButton = GetDlgItem(idc).GetHwnd();
+   ::SetWindowLongPtr(hwndButton, GWLP_WNDPROC, MyKeyButtonProc);
+   ::SetWindowLongPtr(hwndButton, GWLP_USERDATA, pksw);
+}
+
 BOOL KeysConfigDialog::OnInitDialog()
 {
     bool on = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "PBWDefaultLayout"s, false);
@@ -410,30 +454,8 @@ BOOL KeysConfigDialog::OnInitDialog()
         const HWND hwnd = GetDlgItem(item).GetHwnd();
         ::SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
         ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"(none)");
-        ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Button 1");
-        ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Button 2");
-        ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Button 3");
-        ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Button 4");
-        ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Button 5");
-        ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Button 6");
-        ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Button 7");
-        ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Button 8");
-        ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Button 9");
-        ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Button 10");
-        ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Button 11");
-        ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Button 12");
-        ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Button 13");
-        ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Button 14");
-        ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Button 15");
-        ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Button 16");
-        ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Button 17");
-        ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Button 18");
-        ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Button 19");
-        ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Button 20");
-        ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Button 21");
-        ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Button 22");
-        ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Button 23");
-        ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Button 24");
+        for (int j = 1; j <= 24; ++j)
+           ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)("Button "+std::to_string(j)).c_str());
         if (item == IDC_JOYLFLIPCOMBO || item == IDC_JOYRFLIPCOMBO || item == IDC_JOYPLUNGERCOMBO)
         {
             ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Left Mouse");
@@ -449,111 +471,23 @@ BOOL KeysConfigDialog::OnInitDialog()
     on = g_pvp->m_settings.LoadValueWithDefault(Settings::Controller, "ForceDisableB2S"s, false);
     SendDlgItemMessage(IDC_DOF_FORCEDISABLE, BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    int selected = g_pvp->m_settings.LoadValueWithDefault(Settings::Controller, "DOFContactors"s, 2); // assume both as standard
-    HWND hwnd = GetDlgItem(IDC_DOF_CONTACTORS).GetHwnd();
-    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Sound FX");
-    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"DOF");
-    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Both");
-    ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
-
-    selected = g_pvp->m_settings.LoadValueWithDefault(Settings::Controller, "DOFKnocker"s, 2); // assume both as standard
-    hwnd = GetDlgItem(IDC_DOF_KNOCKER).GetHwnd();
-    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Sound FX");
-    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"DOF");
-    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Both");
-    ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
-
-    selected = g_pvp->m_settings.LoadValueWithDefault(Settings::Controller, "DOFChimes"s, 2); // assume both as standard
-    hwnd = GetDlgItem(IDC_DOF_CHIMES).GetHwnd();
-    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Sound FX");
-    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"DOF");
-    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Both");
-    ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
-
-    selected = g_pvp->m_settings.LoadValueWithDefault(Settings::Controller, "DOFBell"s, 2); // assume both as standard
-    hwnd = GetDlgItem(IDC_DOF_BELL).GetHwnd();
-    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Sound FX");
-    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"DOF");
-    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Both");
-    ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
-
-    selected = g_pvp->m_settings.LoadValueWithDefault(Settings::Controller, "DOFGear"s, 2); // assume both as standard
-    hwnd = GetDlgItem(IDC_DOF_GEAR).GetHwnd();
-    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Sound FX");
-    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"DOF");
-    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Both");
-    ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
-
-    selected = g_pvp->m_settings.LoadValueWithDefault(Settings::Controller, "DOFShaker"s, 2); // assume both as standard
-    hwnd = GetDlgItem(IDC_DOF_SHAKER).GetHwnd();
-    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Sound FX");
-    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"DOF");
-    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Both");
-    ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
-
-    selected = g_pvp->m_settings.LoadValueWithDefault(Settings::Controller, "DOFFlippers"s, 2); // assume both as standard
-    hwnd = GetDlgItem(IDC_DOF_FLIPPERS).GetHwnd();
-    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Sound FX");
-    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"DOF");
-    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Both");
-    ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
-
-    selected = g_pvp->m_settings.LoadValueWithDefault(Settings::Controller, "DOFTargets"s, 2); // assume both as standard
-    hwnd = GetDlgItem(IDC_DOF_TARGETS).GetHwnd();
-    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Sound FX");
-    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"DOF");
-    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Both");
-    ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
-
-    selected = g_pvp->m_settings.LoadValueWithDefault(Settings::Controller, "DOFDropTargets"s, 2); // assume both as standard
-    hwnd = GetDlgItem(IDC_DOF_DROPTARGETS).GetHwnd();
-    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Sound FX");
-    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"DOF");
-    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Both");
-    ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
+    AddStringDOF("DOFContactors"s, IDC_DOF_CONTACTORS);
+    AddStringDOF("DOFKnocker"s, IDC_DOF_KNOCKER);
+    AddStringDOF("DOFChimes"s, IDC_DOF_CHIMES);
+    AddStringDOF("DOFBell"s, IDC_DOF_BELL);
+    AddStringDOF("DOFGear"s, IDC_DOF_GEAR);
+    AddStringDOF("DOFShaker"s, IDC_DOF_SHAKER);
+    AddStringDOF("DOFFlippers"s, IDC_DOF_FLIPPERS);
+    AddStringDOF("DOFTargets"s, IDC_DOF_TARGETS);
+    AddStringDOF("DOFDropTargets"s, IDC_DOF_DROPTARGETS);
 
     //
 
-    selected = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "PlungerAxis"s, 3); // assume Z Axis as standard
-    hwnd = GetDlgItem(IDC_PLUNGERAXIS).GetHwnd();
-    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"(disabled)");
-    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"X Axis");
-    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Y Axis");
-    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Z Axis");
-    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"rX Axis");
-    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"rY Axis");
-    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"rZ Axis");
-    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Slider 1");
-    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Slider 2");
-    ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
+    AddStringAxis("PlungerAxis"s, IDC_DOF_DROPTARGETS, 3); // assume Z Axis as standard
+    AddStringAxis("LRAxis"s, IDC_LRAXISCOMBO, 1); // assume X Axis as standard
+    AddStringAxis("UDAxis"s, IDC_UDAXISCOMBO, 2); // assume Y Axis as standard
 
-    selected = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "LRAxis"s, 1); // assume X Axis as standard
-    hwnd = GetDlgItem(IDC_LRAXISCOMBO).GetHwnd();
-    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"(disabled)");
-    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"X Axis");
-    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Y Axis");
-    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Z Axis");
-    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"rX Axis");
-    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"rY Axis");
-    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"rZ Axis");
-    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Slider 1");
-    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Slider 2");
-    ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
-
-    selected = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "UDAxis"s, 2); // assume Y Axis as standard
-    hwnd = GetDlgItem(IDC_UDAXISCOMBO).GetHwnd();
-    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"(disabled)");
-    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"X Axis");
-    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Y Axis");
-    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Z Axis");
-    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"rX Axis");
-    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"rY Axis");
-    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"rZ Axis");
-    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Slider 1");
-    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Slider 2");
-    ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
-
-   for (unsigned int i = 0; i <= eCKeys; ++i)
+    for (unsigned int i = 0; i <= eCKeys; ++i)
       if (regkey_idc[i] != -1 && GetDlgItem(regkey_idc[i]) && GetDlgItem(regkey_idc[i]).IsWindow())
       {
          const bool hr = g_pvp->m_settings.LoadValue(Settings::Player, regkey_string[i], key);
@@ -564,33 +498,10 @@ BOOL KeysConfigDialog::OnInitDialog()
          ::SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
       }
 
-    bool hr = g_pvp->m_settings.LoadValue(Settings::Player, "JoyCustom1Key"s, key);
-    if (!hr || key > 0xdd)
-        key = DIK_UP;
-    HWND hwndControl = GetDlgItem(IDC_JOYCUSTOM1).GetHwnd();
-    ::SetWindowText(hwndControl, rgszKeyName[key]);
-    ::SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
-
-    hr = g_pvp->m_settings.LoadValue(Settings::Player, "JoyCustom2Key"s, key);
-    if (!hr || key > 0xdd)
-        key = DIK_DOWN;
-    hwndControl = GetDlgItem(IDC_JOYCUSTOM2).GetHwnd();
-    ::SetWindowText(hwndControl, rgszKeyName[key]);
-    ::SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
-
-    hr = g_pvp->m_settings.LoadValue(Settings::Player, "JoyCustom3Key"s, key);
-    if (!hr || key > 0xdd)
-        key = DIK_LEFT;
-    hwndControl = GetDlgItem(IDC_JOYCUSTOM3).GetHwnd();
-    ::SetWindowText(hwndControl, rgszKeyName[key]);
-    ::SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
-
-    hr = g_pvp->m_settings.LoadValue(Settings::Player, "JoyCustom4Key"s, key);
-    if (!hr || key > 0xdd)
-        key = DIK_RIGHT;
-    hwndControl = GetDlgItem(IDC_JOYCUSTOM4).GetHwnd();
-    ::SetWindowText(hwndControl, rgszKeyName[key]);
-    ::SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
+    AddJoyCustomKey("JoyCustom1Key"s, IDC_JOYCUSTOM1, DIK_UP);
+    AddJoyCustomKey("JoyCustom2Key"s, IDC_JOYCUSTOM2, DIK_DOWN);
+    AddJoyCustomKey("JoyCustom3Key"s, IDC_JOYCUSTOM3, DIK_LEFT);
+    AddJoyCustomKey("JoyCustom4Key"s, IDC_JOYCUSTOM4, DIK_RIGHT);
 
     //
 
@@ -602,112 +513,34 @@ BOOL KeysConfigDialog::OnInitDialog()
     // Set buttons to ignore keyboard shortcuts when using DirectInput
     HWND hwndButton = GetDlgItem(IDC_LEFTFLIPPERBUTTON).GetHwnd();
     g_ButtonProc = (WNDPROC)::GetWindowLongPtr(hwndButton, GWLP_WNDPROC);
-    ::SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc);
-    ::SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
 
-    hwndButton = GetDlgItem(IDC_RIGHTFLIPPERBUTTON).GetHwnd();
-    ::SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc);
-    ::SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
-
-    hwndButton = GetDlgItem(IDC_STAGEDLEFTFLIPPERBUTTON).GetHwnd();
-    ::SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc);
-    ::SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
-
-    hwndButton = GetDlgItem(IDC_STAGEDRIGHTFLIPPERBUTTON).GetHwnd();
-    ::SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc);
-    ::SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
-
-    hwndButton = GetDlgItem(IDC_LEFTTILTBUTTON).GetHwnd();
-    ::SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc);
-    ::SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
-
-    hwndButton = GetDlgItem(IDC_RIGHTTILTBUTTON).GetHwnd();
-    ::SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc);
-    ::SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
-
-    hwndButton = GetDlgItem(IDC_CENTERTILTBUTTON).GetHwnd();
-    ::SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc);
-    ::SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
-
-    hwndButton = GetDlgItem(IDC_PLUNGERBUTTON).GetHwnd();
-    ::SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc);
-    ::SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
-
-    hwndButton = GetDlgItem(IDC_ADDCREDITBUTTON).GetHwnd();
-    ::SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc);
-    ::SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
-
-    hwndButton = GetDlgItem(IDC_ADDCREDITBUTTON2).GetHwnd();
-    ::SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc);
-    ::SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
-
-    hwndButton = GetDlgItem(IDC_STARTGAMEBUTTON).GetHwnd();
-    ::SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc);
-    ::SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
-
-    hwndButton = GetDlgItem(IDC_EXITGAMEBUTTON).GetHwnd();
-    ::SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc);
-    ::SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
-
-    hwndButton = GetDlgItem(IDC_FRAMECOUNTBUTTON).GetHwnd();
-    ::SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc);
-    ::SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
-
-    hwndButton = GetDlgItem(IDC_VOLUPBUTTON).GetHwnd();
-    ::SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc);
-    ::SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
-
-    hwndButton = GetDlgItem(IDC_VOLDOWNBUTTON).GetHwnd();
-    ::SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc);
-    ::SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
-
-    hwndButton = GetDlgItem(IDC_LOCKBARBUTTON).GetHwnd();
-    ::SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc);
-    ::SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
-
-    hwndButton = GetDlgItem(IDC_DEBUGBALLSBUTTON).GetHwnd();
-    ::SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc);
-    ::SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
-
-    hwndButton = GetDlgItem(IDC_DEBUGGERBUTTON).GetHwnd();
-    ::SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc);
-    ::SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
-
-    hwndButton = GetDlgItem(IDC_RMAGSAVEBUTTON).GetHwnd();
-    ::SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc);
-    ::SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
-
-    hwndButton = GetDlgItem(IDC_LMAGSAVEBUTTON).GetHwnd();
-    ::SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc);
-    ::SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
-
-    hwndButton = GetDlgItem(IDC_MECHTILTBUTTON).GetHwnd();
-    ::SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc);
-    ::SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
-
-    hwndButton = GetDlgItem(IDC_JOYCUSTOM1BUTTON).GetHwnd();
-    ::SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc);
-    ::SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
-
-    hwndButton = GetDlgItem(IDC_JOYCUSTOM2BUTTON).GetHwnd();
-    ::SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc);
-    ::SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
-
-    hwndButton = GetDlgItem(IDC_JOYCUSTOM3BUTTON).GetHwnd();
-    ::SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc);
-    ::SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
-
-    hwndButton = GetDlgItem(IDC_JOYCUSTOM4BUTTON).GetHwnd();
-    ::SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc);
-    ::SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
-
-    hwndButton = GetDlgItem(IDC_PAUSEBUTTON).GetHwnd();
-    ::SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc);
-    ::SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
-
-    hwndButton = GetDlgItem(IDC_TWEAKBUTTON).GetHwnd();
-    ::SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc);
-    ::SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
+    AddWndProc(IDC_LEFTFLIPPERBUTTON, (size_t)MyKeyButtonProc, (size_t)pksw);
+    AddWndProc(IDC_RIGHTFLIPPERBUTTON, (size_t)MyKeyButtonProc, (size_t)pksw);
+    AddWndProc(IDC_STAGEDLEFTFLIPPERBUTTON, (size_t)MyKeyButtonProc, (size_t)pksw);
+    AddWndProc(IDC_STAGEDRIGHTFLIPPERBUTTON, (size_t)MyKeyButtonProc, (size_t)pksw);
+    AddWndProc(IDC_LEFTTILTBUTTON, (size_t)MyKeyButtonProc, (size_t)pksw);
+    AddWndProc(IDC_RIGHTTILTBUTTON, (size_t)MyKeyButtonProc, (size_t)pksw);
+    AddWndProc(IDC_CENTERTILTBUTTON, (size_t)MyKeyButtonProc, (size_t)pksw);
+    AddWndProc(IDC_PLUNGERBUTTON, (size_t)MyKeyButtonProc, (size_t)pksw);
+    AddWndProc(IDC_ADDCREDITBUTTON, (size_t)MyKeyButtonProc, (size_t)pksw);
+    AddWndProc(IDC_ADDCREDITBUTTON2, (size_t)MyKeyButtonProc, (size_t)pksw);
+    AddWndProc(IDC_STARTGAMEBUTTON, (size_t)MyKeyButtonProc, (size_t)pksw);
+    AddWndProc(IDC_EXITGAMEBUTTON, (size_t)MyKeyButtonProc, (size_t)pksw);
+    AddWndProc(IDC_FRAMECOUNTBUTTON, (size_t)MyKeyButtonProc, (size_t)pksw);
+    AddWndProc(IDC_VOLUPBUTTON, (size_t)MyKeyButtonProc, (size_t)pksw);
+    AddWndProc(IDC_VOLDOWNBUTTON, (size_t)MyKeyButtonProc, (size_t)pksw);
+    AddWndProc(IDC_LOCKBARBUTTON, (size_t)MyKeyButtonProc, (size_t)pksw);
+    AddWndProc(IDC_DEBUGBALLSBUTTON, (size_t)MyKeyButtonProc, (size_t)pksw);
+    AddWndProc(IDC_DEBUGGERBUTTON, (size_t)MyKeyButtonProc, (size_t)pksw);
+    AddWndProc(IDC_RMAGSAVEBUTTON, (size_t)MyKeyButtonProc, (size_t)pksw);
+    AddWndProc(IDC_LMAGSAVEBUTTON, (size_t)MyKeyButtonProc, (size_t)pksw);
+    AddWndProc(IDC_MECHTILTBUTTON, (size_t)MyKeyButtonProc, (size_t)pksw);
+    AddWndProc(IDC_JOYCUSTOM1BUTTON, (size_t)MyKeyButtonProc, (size_t)pksw);
+    AddWndProc(IDC_JOYCUSTOM2BUTTON, (size_t)MyKeyButtonProc, (size_t)pksw);
+    AddWndProc(IDC_JOYCUSTOM3BUTTON, (size_t)MyKeyButtonProc, (size_t)pksw);
+    AddWndProc(IDC_JOYCUSTOM4BUTTON, (size_t)MyKeyButtonProc, (size_t)pksw);
+    AddWndProc(IDC_PAUSEBUTTON, (size_t)MyKeyButtonProc, (size_t)pksw);
+    AddWndProc(IDC_TWEAKBUTTON, (size_t)MyKeyButtonProc, (size_t)pksw);
 
     int inputApi = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "InputApi"s, 0);
     int inputApiIndex = inputApi;
@@ -803,141 +636,33 @@ BOOL KeysConfigDialog::OnCommand(WPARAM wParam, LPARAM lParam)
     {
         switch (LOWORD(wParam))
         {
-            case IDC_LEFTFLIPPERBUTTON:
-            {
-                StartTimer(IDC_LEFTFLIPPER);
-                break;
-            }
-            case IDC_RIGHTFLIPPERBUTTON:
-            {
-                StartTimer(IDC_RIGHTFLIPPER);
-                break;
-            }
-            case IDC_STAGEDLEFTFLIPPERBUTTON:
-            {
-                StartTimer(IDC_STAGEDLEFTFLIPPER);
-                break;
-            }
-            case IDC_STAGEDRIGHTFLIPPERBUTTON:
-            {
-                StartTimer(IDC_STAGEDRIGHTFLIPPER);
-                break;
-            }
-            case IDC_LEFTTILTBUTTON:
-            {
-                StartTimer(IDC_LEFTTILT);
-                break;
-            }
-            case IDC_RIGHTTILTBUTTON:
-            {
-                StartTimer(IDC_RIGHTTILT);
-                break;
-            }
-            case IDC_CENTERTILTBUTTON:
-            {
-                StartTimer(IDC_CENTERTILT);
-                break;
-            }
-            case IDC_PLUNGERBUTTON:
-            {
-                StartTimer(IDC_PLUNGER_TEXT);
-                break;
-            }
-            case IDC_ADDCREDITBUTTON:
-            {
-                StartTimer(IDC_ADDCREDIT);
-                break;
-            }
-            case IDC_ADDCREDITBUTTON2:
-            {
-                StartTimer(IDC_ADDCREDIT2);
-                break;
-            }
-            case IDC_STARTGAMEBUTTON:
-            {
-                StartTimer(IDC_STARTGAME);
-                break;
-            }
-            case IDC_EXITGAMEBUTTON:
-            {
-                StartTimer(IDC_EXITGAME);
-                break;
-            }
-            case IDC_FRAMECOUNTBUTTON:
-            {
-                StartTimer(IDC_FRAMECOUNT);
-                break;
-            }
-            case IDC_DEBUGBALLSBUTTON:
-            {
-                StartTimer(IDC_DEBUGBALL);
-                break;
-            }
-            case IDC_DEBUGGERBUTTON:
-            {
-                StartTimer(IDC_DEBUGGER);
-                break;
-            }
-            case IDC_VOLUPBUTTON:
-            {
-                StartTimer(IDC_VOLUMEUP);
-                break;
-            }
-            case IDC_VOLDOWNBUTTON:
-            {
-                StartTimer(IDC_VOLUMEDN);
-                break;
-            }
-            case IDC_LOCKBARBUTTON:
-            {
-                StartTimer(IDC_LOCKBAR);
-                break;
-            }
-            case IDC_RMAGSAVEBUTTON:
-            {
-                StartTimer(IDC_RMAGSAVE);
-                break;
-            }
-            case IDC_LMAGSAVEBUTTON:
-            {
-                StartTimer(IDC_LMAGSAVE);
-                break;
-            }
-            case IDC_MECHTILTBUTTON:
-            {
-                StartTimer(IDC_MECHTILT);
-                break;
-            }
-            case IDC_JOYCUSTOM1BUTTON:
-            {
-                StartTimer(IDC_JOYCUSTOM1);
-                break;
-            }
-            case IDC_JOYCUSTOM2BUTTON:
-            {
-                StartTimer(IDC_JOYCUSTOM2);
-                break;
-            }
-            case IDC_JOYCUSTOM3BUTTON:
-            {
-                StartTimer(IDC_JOYCUSTOM3);
-                break;
-            }
-            case IDC_JOYCUSTOM4BUTTON:
-            {
-                StartTimer(IDC_JOYCUSTOM4);
-                break;
-            }
-            case IDC_PAUSEBUTTON:
-            {
-                StartTimer(IDC_PAUSE);
-                break;
-            }
-            case IDC_TWEAKBUTTON:
-            {
-                StartTimer(IDC_TWEAK);
-                break;
-            }
+            case IDC_LEFTFLIPPERBUTTON: StartTimer(IDC_LEFTFLIPPER); break;
+            case IDC_RIGHTFLIPPERBUTTON: StartTimer(IDC_RIGHTFLIPPER); break;
+            case IDC_STAGEDLEFTFLIPPERBUTTON: StartTimer(IDC_STAGEDLEFTFLIPPER); break;
+            case IDC_STAGEDRIGHTFLIPPERBUTTON: StartTimer(IDC_STAGEDRIGHTFLIPPER); break;
+            case IDC_LEFTTILTBUTTON: StartTimer(IDC_LEFTTILT); break;
+            case IDC_RIGHTTILTBUTTON: StartTimer(IDC_RIGHTTILT); break;
+            case IDC_CENTERTILTBUTTON: StartTimer(IDC_CENTERTILT); break;
+            case IDC_PLUNGERBUTTON: StartTimer(IDC_PLUNGER_TEXT); break;
+            case IDC_ADDCREDITBUTTON: StartTimer(IDC_ADDCREDIT); break;
+            case IDC_ADDCREDITBUTTON2: StartTimer(IDC_ADDCREDIT2); break;
+            case IDC_STARTGAMEBUTTON: StartTimer(IDC_STARTGAME); break;
+            case IDC_EXITGAMEBUTTON: StartTimer(IDC_EXITGAME); break;
+            case IDC_FRAMECOUNTBUTTON: StartTimer(IDC_FRAMECOUNT); break;
+            case IDC_DEBUGBALLSBUTTON: StartTimer(IDC_DEBUGBALL); break;
+            case IDC_DEBUGGERBUTTON: StartTimer(IDC_DEBUGGER); break;
+            case IDC_VOLUPBUTTON: StartTimer(IDC_VOLUMEUP); break;
+            case IDC_VOLDOWNBUTTON: StartTimer(IDC_VOLUMEDN); break;
+            case IDC_LOCKBARBUTTON: StartTimer(IDC_LOCKBAR); break;
+            case IDC_RMAGSAVEBUTTON: StartTimer(IDC_RMAGSAVE); break;
+            case IDC_LMAGSAVEBUTTON: StartTimer(IDC_LMAGSAVE); break;
+            case IDC_MECHTILTBUTTON: StartTimer(IDC_MECHTILT); break;
+            case IDC_JOYCUSTOM1BUTTON: StartTimer(IDC_JOYCUSTOM1); break;
+            case IDC_JOYCUSTOM2BUTTON: StartTimer(IDC_JOYCUSTOM2); break;
+            case IDC_JOYCUSTOM3BUTTON: StartTimer(IDC_JOYCUSTOM3); break;
+            case IDC_JOYCUSTOM4BUTTON: StartTimer(IDC_JOYCUSTOM4); break;
+            case IDC_PAUSEBUTTON: StartTimer(IDC_PAUSE); break;
+            case IDC_TWEAKBUTTON: StartTimer(IDC_TWEAK); break;
             default:
                 return FALSE;
         }//switch
