@@ -978,7 +978,6 @@
 #define IDD_NOTES_DIALOG                668
 #define IDD_RENDERPROBE                 669
 #define INI_FILE                        670
-#define IDR_DEFAULT_INI                 671
 #define EXR_FILE                        672
 #define IDC_JOYSTAGEDLFLIPCOMBO         673
 #define IDC_JOYSTAGEDRFLIPCOMBO         674
