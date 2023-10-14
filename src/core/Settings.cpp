@@ -2,6 +2,7 @@
 #include "Settings.h"
 
 #include <cstdio>
+#include <filesystem>
 
 static const string regKey[Settings::Count] =
    {
@@ -40,22 +41,16 @@ bool Settings::LoadFromFile(const string& path, const bool createDefault)
    else if (createDefault)
    {
       PLOGI << "Settings file was not found at '" << path << "' creating a default one";
-#ifdef _WIN32
-      // Load failed: initialize from a default setting file
-      HMODULE handle = ::GetModuleHandle(NULL);
-      HRSRC rc = ::FindResource(handle, MAKEINTRESOURCE(IDR_DEFAULT_INI), MAKEINTRESOURCE(INI_FILE));
-      HGLOBAL rcData = ::LoadResource(handle, rc);
-      DWORD size = ::SizeofResource(handle, rc);
-      const char *data = static_cast<const char *>(::LockResource(rcData));
-      std::ofstream defaultFile(path);
-      defaultFile << data;
-      defaultFile.close();
+
+      // Load failed: initialize from the default setting file
+      std::filesystem::copy(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "Default VPinballX.ini", path);
       if (!file.read(m_ini))
       {
          PLOGE << "Loading of default settings file failed";
       }
 
-      // Get settings values from windows registry (which was used to store settings before 10.8)
+      #ifdef _WIN32
+      // Fpor Windows, get settings values from windows registry (which was used to store settings before 10.8)
       for (unsigned int j = 0; j < Section::Count; j++)
       {
          // We do not save version of played tables in the ini file
@@ -132,7 +127,8 @@ bool Settings::LoadFromFile(const string& path, const bool createDefault)
          }
          RegCloseKey(hk);
       }
-#endif
+      #endif
+
       return true;
    }
    else
