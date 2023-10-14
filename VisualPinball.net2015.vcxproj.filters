@@ -419,6 +419,18 @@
     <Image Include="src\assets\kickerT1.bmp">
       <Filter>assets</Filter>
     </Image>
+    <None Include="src\assets\blankTable.vpx">
+      <Filter>assets</Filter>
+    </None>
+    <None Include="src\assets\exampleTable.vpx">
+      <Filter>assets</Filter>
+    </None>
+    <None Include="src\assets\strippedTable.vpx">
+      <Filter>assets</Filter>
+    </None>
+    <None Include="src\assets\lightSeqTable.vpx">
+      <Filter>assets</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\chevron.bmp">
@@ -705,22 +717,10 @@
     <None Include="shader\SSR.fxh">
       <Filter>shaders</Filter>
     </None>
-    <None Include="res\blankTable.vpx">
-      <Filter>res</Filter>
-    </None>
-    <None Include="res\exampleTable.vpx">
-      <Filter>res</Filter>
-    </None>
     <None Include="res\SplitH.cur">
       <Filter>res</Filter>
     </None>
     <None Include="res\SplitV.cur">
-      <Filter>res</Filter>
-    </None>
-    <None Include="res\strippedTable.vpx">
-      <Filter>res</Filter>
-    </None>
-    <None Include="res\lightSeqTable.vpx">
       <Filter>res</Filter>
     </None>
     <None Include="shader\BasicShader.glfx">
