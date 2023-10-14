@@ -1123,8 +1123,8 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
          g_pvp->m_settings.SetParent(&tableProps);
          for (int i = 0; i < 3; i++)
          {
-            g_pplayer->m_pEditorTable->mViewSetups[i].SaveToTableOverrideSettings(tableProps, i == 0 ? "ViewDT" : i == 1 ? "ViewFSS" : "ViewCab", false);
-            g_pplayer->m_ptable->mViewSetups[i].SaveToTableOverrideSettings(g_pplayer->m_pEditorTable->m_settings, i == 0 ? "ViewDT" : i == 1 ? "ViewFSS" : "ViewCab", true);
+            g_pplayer->m_pEditorTable->mViewSetups[i].SaveToTableOverrideSettings(tableProps, i == BG_DESKTOP ? "ViewDT" : i == BG_FSS ? "ViewFSS" : "ViewCab", false);
+            g_pplayer->m_ptable->mViewSetups[i].SaveToTableOverrideSettings(g_pplayer->m_pEditorTable->m_settings, i == BG_DESKTOP ? "ViewDT" : i == BG_FSS ? "ViewFSS" : "ViewCab", true);
          }
          g_pvp->m_settings.SetParent(nullptr);
          string szINIFilename = g_pplayer->m_ptable->m_szFileName;
@@ -1216,7 +1216,7 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
             const PinTable * const __restrict src = g_pplayer->m_pEditorTable;
             PinTable * const __restrict dst = g_pplayer->m_ptable;
             dst->mViewSetups[id] = src->mViewSetups[id];
-            dst->mViewSetups[id].ApplyTableOverrideSettings(g_pplayer->m_ptable->m_settings, id == 0 ? "ViewDT" : id == 1 ? "ViewFSS" : "ViewCab");
+            dst->mViewSetups[id].ApplyTableOverrideSettings(g_pplayer->m_ptable->m_settings, id == BG_DESKTOP ? "ViewDT" : id == BG_FSS ? "ViewFSS" : "ViewCab");
             dst->m_lightHeight = src->m_lightHeight;
             dst->m_lightRange = src->m_lightRange;
             dst->m_lightEmissionScale = src->m_lightEmissionScale;

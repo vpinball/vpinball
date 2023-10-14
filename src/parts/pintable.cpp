@@ -2219,7 +2219,7 @@ void PinTable::Play(const bool cameraMode)
    {
       dst->mViewSetups[i] = src->mViewSetups[i];
       dst->m_BG_image[i] = src->m_BG_image[i];
-      dst->mViewSetups[i].ApplyTableOverrideSettings(m_settings, i == 0 ? "ViewDT" : i == 1 ? "ViewFSS" :"ViewCab");
+      dst->mViewSetups[i].ApplyTableOverrideSettings(m_settings, i == BG_DESKTOP ? "ViewDT" : i == BG_FSS ? "ViewFSS" :"ViewCab");
    }
    for (size_t i = 0; i < src->m_materials.size(); i++)
    {
