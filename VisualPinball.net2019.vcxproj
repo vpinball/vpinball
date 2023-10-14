@@ -1000,7 +1000,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="res\Default VPinballX.ini" />
+    <None Include="src\assets\Default VPinballX.ini" />
     <None Include="shader\SMAA.fxh" />
     <None Include="shader\BallShader.glfx" />
     <None Include="shader\BallShadows.fxh" />
@@ -1018,9 +1018,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <None Include="shader\Stereo.fxh" />
     <None Include="shader\StereoShader.glfx" />
     <None Include="res\ball.rgs" />
-    <None Include="res\blankTable.vpx" />
+    <None Include="src\assets\blankTable.vpx" />
     <None Include="res\bumper.rgs" />
-    <None Include="res\exampleTable.vpx" />
+    <None Include="src\assets\exampleTable.vpx" />
     <None Include="res\gate.cur" />
     <None Include="res\flasher.cur" />
     <None Include="res\hittarget.rgs" />
@@ -1031,7 +1031,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <None Include="res\dispreel.cur" />
     <None Include="res\SplitH.cur" />
     <None Include="res\SplitV.cur" />
-    <None Include="res\strippedTable.vpx" />
+    <None Include="src\assets\strippedTable.vpx" />
     <None Include="res\trigger.cur" />
     <None Include="res\timer.cur" />
     <None Include="res\target.cur" />
@@ -1072,29 +1072,29 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\add.ico" />
-    <Image Include="res\AOdither.bmp" />
+    <Image Include="src\assets\AOdither.bmp" />
     <Image Include="res\assign.ico" />
     <Image Include="res\backglass.ico" />
-    <Image Include="res\BallEnv.exr" />
+    <Image Include="src\assets\BallEnv.exr" />
     <Image Include="res\bumper.ico" />
-    <Image Include="res\bumperbase.bmp" />
-    <Image Include="res\bumperCap.bmp" />
-    <Image Include="res\bumperring.bmp" />
-    <Image Include="res\bumperskirt.bmp" />
+    <Image Include="src\assets\bumperbase.bmp" />
+    <Image Include="src\assets\bumperCap.bmp" />
+    <Image Include="src\assets\bumperring.bmp" />
+    <Image Include="src\assets\bumperskirt.bmp" />
     <Image Include="res\camera.ico" />
     <Image Include="res\chevron.bmp" />
     <Image Include="res\decal.ico" />
-    <Image Include="res\envmap.bmp" />
+    <Image Include="src\assets\envmap.bmp" />
     <Image Include="res\expandcolapse.ico" />
     <Image Include="res\flasher.ico" />
     <Image Include="res\flipper.ico" />
     <Image Include="res\gate.ico" />
     <Image Include="res\kicker.ico" />
-    <Image Include="res\kickerCup.bmp" />
-    <Image Include="res\kickerGottlieb.bmp" />
-    <Image Include="res\kickerHoleWood.bmp" />
-    <Image Include="res\kickerT1.bmp" />
-    <Image Include="res\kickerWilliams.bmp" />
+    <Image Include="src\assets\kickerCup.bmp" />
+    <Image Include="src\assets\kickerGottlieb.bmp" />
+    <Image Include="src\assets\kickerHoleWood.bmp" />
+    <Image Include="src\assets\kickerT1.bmp" />
+    <Image Include="src\assets\kickerWilliams.bmp" />
     <Image Include="res\layerIcons16.bmp" />
     <Image Include="res\layerIcons32.bmp" />
     <Image Include="res\layers.ico" />
