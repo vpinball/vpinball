@@ -837,8 +837,8 @@ void LiveUI::Update()
    ImGui_ImplWin32_NewFrame();
    
    // The render size may not match the window size used by ImGui_ImplWin32_NewFrame (for example for VR)
-   ImGui::GetIO().DisplaySize.x = (float) m_player->m_pin3d.m_pd3dPrimaryDevice->GetMSAABackBufferTexture()->GetWidth();
-   ImGui::GetIO().DisplaySize.y = (float) m_player->m_pin3d.m_pd3dPrimaryDevice->GetMSAABackBufferTexture()->GetHeight();
+   ImGui::GetIO().DisplaySize.x = (float) m_player->m_pin3d.m_pd3dPrimaryDevice->m_width;
+   ImGui::GetIO().DisplaySize.y = (float) m_player->m_pin3d.m_pd3dPrimaryDevice->m_height;
 
    ImGui::NewFrame();
    ImGui::GetIO().ConfigFlags &= ~ImGuiConfigFlags_NavEnableKeyboard; // We use it for main splash popup, but needs it to be disabled to allow keyboard shortcuts
