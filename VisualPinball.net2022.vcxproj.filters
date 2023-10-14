@@ -382,12 +382,47 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="res\AOdither.bmp">
-      <Filter>res</Filter>
+    <None Include="src\assets\Default VPinballX.ini">
+      <Filter>assets</Filter>
+    </None>
+    <Image Include="src\assets\AOdither.bmp">
+      <Filter>assets</Filter>
     </Image>
-    <Image Include="res\BallEnv.exr">
-      <Filter>res</Filter>
+    <Image Include="src\assets\BallEnv.exr">
+      <Filter>assets</Filter>
     </Image>
+    <Image Include="src\assets\bumperbase.bmp">
+      <Filter>assets</Filter>
+    </Image>
+    <Image Include="src\assets\bumperCap.bmp">
+      <Filter>assets</Filter>
+    </Image>
+    <Image Include="src\assets\bumperring.bmp">
+      <Filter>assets</Filter>
+    </Image>
+    <Image Include="src\assets\bumperskirt.bmp">
+      <Filter>assets</Filter>
+    </Image>
+    <Image Include="src\assets\envmap.bmp">
+      <Filter>assets</Filter>
+    </Image>
+    <Image Include="src\assets\kickerCup.bmp">
+      <Filter>assets</Filter>
+    </Image>
+    <Image Include="src\assets\kickerHoleWood.bmp">
+      <Filter>assets</Filter>
+    </Image>
+    <Image Include="src\assets\kickerWilliams.bmp">
+      <Filter>assets</Filter>
+    </Image>
+    <Image Include="src\assets\kickerGottlieb.bmp">
+      <Filter>assets</Filter>
+    </Image>
+    <Image Include="src\assets\kickerT1.bmp">
+      <Filter>assets</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
     <Image Include="res\chevron.bmp">
       <Filter>res</Filter>
     </Image>
@@ -413,36 +448,6 @@
       <Filter>res</Filter>
     </Image>
     <Image Include="res\vpinball.ico">
-      <Filter>res</Filter>
-    </Image>
-    <Image Include="res\bumperbase.bmp">
-      <Filter>res</Filter>
-    </Image>
-    <Image Include="res\bumperCap.bmp">
-      <Filter>res</Filter>
-    </Image>
-    <Image Include="res\bumperring.bmp">
-      <Filter>res</Filter>
-    </Image>
-    <Image Include="res\bumperskirt.bmp">
-      <Filter>res</Filter>
-    </Image>
-    <Image Include="res\envmap.bmp">
-      <Filter>res</Filter>
-    </Image>
-    <Image Include="res\kickerCup.bmp">
-      <Filter>res</Filter>
-    </Image>
-    <Image Include="res\kickerHoleWood.bmp">
-      <Filter>res</Filter>
-    </Image>
-    <Image Include="res\kickerWilliams.bmp">
-      <Filter>res</Filter>
-    </Image>
-    <Image Include="res\kickerGottlieb.bmp">
-      <Filter>res</Filter>
-    </Image>
-    <Image Include="res\kickerT1.bmp">
       <Filter>res</Filter>
     </Image>
     <Image Include="res\backglass.ico">
@@ -532,6 +537,12 @@
     <Image Include="res\SDtop.bmp">
       <Filter>res</Filter>
     </Image>
+    <Image Include="res\add.ico">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\assign.ico">
+      <Filter>res</Filter>
+    </Image>
     <Image Include="res\expandcolapse.ico">
       <Filter>res</Filter>
     </Image>
@@ -539,12 +550,6 @@
       <Filter>res</Filter>
     </Image>
     <Image Include="res\layerIcons32.bmp">
-      <Filter>res</Filter>
-    </Image>
-    <Image Include="res\assign.ico">
-      <Filter>res</Filter>
-    </Image>
-    <Image Include="res\add.ico">
       <Filter>res</Filter>
     </Image>
     <Image Include="res\remove.ico">
@@ -765,9 +770,6 @@
     <None Include="shader\SMAA.fxh">
       <Filter>shaders</Filter>
     </None>
-    <None Include="res\Default VPinballX.ini">
-      <Filter>res</Filter>
-    </None>
     <None Include="shader\Stereo.fxh">
       <Filter>shaders</Filter>
     </None>
@@ -778,6 +780,9 @@
     </Filter>
     <Filter Include="headers">
       <UniqueIdentifier>{7753e061-8049-4205-aff5-172e23e728ad}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="assets">
+      <UniqueIdentifier>{67a3c1e1-f7b5-45a4-ba1a-453f61d1e6da}</UniqueIdentifier>
     </Filter>
     <Filter Include="res">
       <UniqueIdentifier>{2553b092-dac2-4b2a-9c0c-35d589c67b37}</UniqueIdentifier>
