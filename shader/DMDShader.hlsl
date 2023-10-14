@@ -48,7 +48,9 @@ VS_OUTPUT vs_main (const in float4 vPosition : POSITION0,
 {
    VS_OUTPUT Out;
 
-   Out.pos = float4(vPosition.xy, 0.0,1.0);
+   // Set Z to 1. which in turns result in a written depth of 0. needed to avoid tonemapping of DMD and for correct fake stereo
+   // (background and DMD are placed at depth buffer = 0.0, that is to say behind the playfield, at max separation)
+   Out.pos = float4(vPosition.xy, 1.0, 1.0);
    Out.tex0 = tc;
 
    return Out;
@@ -82,7 +84,7 @@ float4 ps_main_DMD_no(const in VS_OUTPUT IN) : COLOR
    else
       color *= rgba.r * (255.9 / 100.);
 
-   return float4(InvToneMap(InvGamma(color)), vRes_Alpha_time.z); //!! meh, this sucks a bit performance-wise, but how to avoid this when doing fullscreen-tonemap/gamma without stencil and depth read?
+   return float4(InvGamma(color), vRes_Alpha_time.z);
 }
 #endif
 
@@ -161,9 +163,9 @@ float4 ps_main_DMD(const in VS_OUTPUT IN) : COLOR
    }*/
 
    //if (rgba.r > 200.0)
-   //   return float4(InvToneMap(InvGamma(min(color2,float3(1.5,1.5,1.5))/*+colorg*/)), 0.5);
+   //   return float4(InvGamma(min(color2,float3(1.5,1.5,1.5))/*+colorg*/), 0.5);
    //else
-   return float4(InvToneMap(InvGamma(color2/*+colorg*/)), vRes_Alpha_time.z); //!! meh, this sucks a bit performance-wise, but how to avoid this when doing fullscreen-tonemap/gamma without stencil and depth read?
+   return float4(InvGamma(color2/*+colorg*/), vRes_Alpha_time.z);
 }
 
 float4 ps_main_noDMD(const in VS_OUTPUT IN) : COLOR
@@ -171,12 +173,12 @@ float4 ps_main_noDMD(const in VS_OUTPUT IN) : COLOR
    const float4 l = tex2D(tex_sprite, IN.tex0);
    if (l.a < alphaTestValue)
       discard; //stop the pixel shader if alpha test should reject pixel to avoid writing to the depth buffer
-   return float4(InvToneMap(/*InvGamma*/(l.xyz * vColor_Intensity.xyz * vColor_Intensity.w)), l.w); //!! meh, this sucks a bit performance-wise, but how to avoid this when doing fullscreen-tonemap/gamma without stencil and depth read?
+   return float4(/*InvGamma*/(l.xyz * vColor_Intensity.xyz * vColor_Intensity.w), l.w);
 }
 
 float4 ps_main_noDMD_notex(const in VS_OUTPUT IN) : COLOR
 {
-   return float4(InvToneMap(InvGamma(vColor_Intensity.xyz * vColor_Intensity.w)), 1.0); //!! meh, this sucks a bit performance-wise, but how to avoid this when doing fullscreen-tonemap/gamma without stencil and depth read?
+   return float4(InvGamma(vColor_Intensity.xyz * vColor_Intensity.w), 1.0);
 }
 
 

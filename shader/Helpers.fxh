@@ -286,6 +286,13 @@ float4x4 inverse4x4(const float4x4 m)
 
 #define BURN_HIGHLIGHTS 0.25
 
+float3 InvReinhardToneMap(const float3 color)
+{
+    const float inv_2bh = 0.5 / BURN_HIGHLIGHTS;
+    const float bh = 4.0 * BURN_HIGHLIGHTS - 2.0;
+    return (color - 1.0 + sqrt(color * (color + bh) + 1.0)) * inv_2bh;
+}
+
 float InvsRGB(const float color)
 {
     //return /*color * (color * (color * 0.305306011 + 0.682171111) + 0.012522878);/*/ pow(color, 2.2); // pow does not matter anymore on current GPUs //!! not completely true for example when tested with FSS tables
@@ -312,13 +319,6 @@ float InvGamma(const float color) //!! use hardware support? D3DSAMP_SRGBTEXTURE
 float3 InvGamma(const float3 color) //!! use hardware support? D3DSAMP_SRGBTEXTURE
 {
     return float3(InvGamma(color.x),InvGamma(color.y),InvGamma(color.z));
-}
-
-float3 InvToneMap(const float3 color)
-{
-    const float inv_2bh = 0.5/BURN_HIGHLIGHTS;
-    const float bh = 4.0*BURN_HIGHLIGHTS - 2.0;
-    return (color - 1.0 + sqrt(color*(color + bh) + 1.0))*inv_2bh;
 }
 
 #if 1
@@ -377,38 +377,9 @@ float3 FBGamma(const float3 color)
 
 #define Luminance(linearRGB) dot(linearRGB, float3(0.212655,0.715158,0.072187))
 
-float FBToneMap(const float l)
-{
-    return l * ((l*BURN_HIGHLIGHTS + 1.0) / (l + 1.0)); // overflow is handled by bloom
-}
-float2 FBToneMap(const float2 color)
-{
-    const float l = dot(color,float2(0.176204+0.0108109*0.5,0.812985+0.0108109*0.5));
-    return color * ((l*BURN_HIGHLIGHTS + 1.0) / (l + 1.0)); // overflow is handled by bloom
-}
-float3 FBToneMap(const float3 color)
-{
-    const float l = dot(color,float3(0.176204,0.812985,0.0108109));
-    return color * ((l*BURN_HIGHLIGHTS + 1.0) / (l + 1.0)); // overflow is handled by bloom
-}
+
 
 #if 0
-float3 FilmicToneMap(const float3 hdr, const float whitepoint) //!! test/experimental
-{
-    const float4 vh = float4(hdr,whitepoint);
-    const float4 va = 1.425*vh + 0.05;
-    const float4 vf = (vh*va + 0.004)/(vh*(va+0.55) + 0.0491) - 0.0821;
-    return vf.rgb/vf.aaa;
-}
-
-float3 FilmicToneMap2(const float3 texColor) //!! test/experimental
-{
-    const float3 x = max(0.,texColor-0.004); // Filmic Curve
-    return (x*(6.2*x+.5))/(x*(6.2*x+1.7)+0.06);
-}
-
-
-
 // RGBM/RGBD
 
 float3 DecodeRGBM(const float4 rgbm)

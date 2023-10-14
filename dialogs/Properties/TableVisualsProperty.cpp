@@ -11,6 +11,7 @@ TableVisualsProperty::TableVisualsProperty(const VectorProtected<ISelect> *pvsel
     m_materialCombo.SetDialog(this);
     m_ballImageCombo.SetDialog(this);
     m_ballDecalCombo.SetDialog(this);
+    m_toneMapperCombo.SetDialog(this);
 }
 
 void TableVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
@@ -43,6 +44,16 @@ void TableVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
         PropertyDialog::SetCheckboxState(m_hEnableAOCheck, table->m_enableAO);
     if (dispid == IDC_ENABLE_SSR || dispid == -1)
         PropertyDialog::SetCheckboxState(m_hEnableSSRCheck, table->m_enableSSR);
+    if (dispid == IDC_TONEMAPPER || dispid == -1)
+    {
+       if (m_toneMapperCombo.GetCount() < 2)
+       {
+          m_toneMapperCombo.ResetContent();
+          m_toneMapperCombo.AddString(_T("Reinhard"));
+          m_toneMapperCombo.AddString(_T("Tony McMapFace"));
+       }
+       m_toneMapperCombo.SetCurSel((int) table->GetToneMapper());
+    }
 }
 
 void TableVisualsProperty::UpdateProperties(const int dispid)
@@ -89,6 +100,14 @@ void TableVisualsProperty::UpdateProperties(const int dispid)
         case IDC_ENABLE_SSR:
             CHECK_UPDATE_ITEM(table->m_enableSSR, PropertyDialog::GetCheckboxState(m_hEnableSSRCheck), table);
             break;
+        case IDC_TONEMAPPER:
+            if (m_toneMapperCombo.GetCurSel() != CB_ERR && m_toneMapperCombo.GetCurSel() != table->GetToneMapper())
+            {
+               PropertyDialog::StartUndo(table);
+               table->SetToneMapper((ToneMapper) m_toneMapperCombo.GetCurSel());
+               PropertyDialog::EndUndo(table);
+            }
+            break;
         default:
             break;
     }
@@ -109,6 +128,7 @@ BOOL TableVisualsProperty::OnInitDialog()
     m_ballDefaultBulbIntensScaleEdit.AttachItem(IDC_BULBINTENSITYSCALE);
     m_hEnableAOCheck = GetDlgItem(IDC_ENABLE_AO);
     m_hEnableSSRCheck = GetDlgItem(IDC_ENABLE_SSR);
+    m_toneMapperCombo.AttachItem(IDC_TONEMAPPER);
 
     UpdateVisuals();
 
@@ -123,6 +143,7 @@ BOOL TableVisualsProperty::OnInitDialog()
     m_resizer.AddChild(GetDlgItem(IDC_STATIC8), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC9), CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC10), CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC11), CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_imageCombo, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_materialCombo, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_ballDecalCombo, CResizer::topleft, RD_STRETCH_WIDTH);
@@ -135,6 +156,7 @@ BOOL TableVisualsProperty::OnInitDialog()
     m_resizer.AddChild(m_ballDefaultBulbIntensScaleEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_hEnableAOCheck, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_hEnableSSRCheck, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_toneMapperCombo, CResizer::topleft, RD_STRETCH_WIDTH);
 
     return TRUE;
 }

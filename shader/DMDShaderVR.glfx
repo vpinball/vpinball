@@ -132,10 +132,12 @@ void main()
       //collect glow from neighbors
    }*/
 
+   //!! meh, this sucks a bit performance-wise, but how to avoid this when doing fullscreen-tonemap/gamma without stencil and depth read?
+   // beside, we do reversed Reinhard while we may be using another tonemapping (they do mostly match though)
    //if (rgba.b > 200.0)
-   //   return float4(InvToneMap(InvGamma(min(color2,float3(1.5,1.5,1.5))/*+colorg*/)), 0.5);
+   //   return float4(InvReinhardToneMap(InvGamma(min(color2,float3(1.5,1.5,1.5))/*+colorg*/)), 0.5);
    //else
-    color = float4(InvToneMap(InvGamma(color2/*+colorg*/)), vRes_Alpha_time.z); //!! meh, this sucks a bit performance-wise, but how to avoid this when doing fullscreen-tonemap/gamma without stencil and depth read?
+    color = float4(InvReinhardToneMap(InvGamma(color2/*+colorg*/)), vRes_Alpha_time.z); 
 }
 
 ////ps_main_DMD_ext
@@ -157,14 +159,18 @@ void main()
    const float4 l = texture(tex_sprite, tex0);
    if (l.a < alphaTestValue)
       discard; //stop the pixel shader if alpha test should reject pixel to avoid writing to the depth buffer
-   color = float4(InvToneMap(/*InvGamma*/(l.xyz * vColor_Intensity.xyz * vColor_Intensity.w)), l.w); //!! meh, this sucks a bit performance-wise, but how to avoid this when doing fullscreen-tonemap/gamma without stencil and depth read?
+   //!! meh, this sucks a bit performance-wise, but how to avoid this when doing fullscreen-tonemap/gamma without stencil and depth read?
+   // beside, we do reversed Reinhard while we may be using another tonemapping (they do mostly match though)
+   color = float4(InvReinhardToneMap(/*InvGamma*/(l.xyz * vColor_Intensity.xyz * vColor_Intensity.w)), l.w);
 }
 
 ////ps_main_noDMD_notex
 
 void main()
 {
-   color = float4(InvToneMap(InvGamma(vColor_Intensity.xyz * vColor_Intensity.w)), 1.0); //!! meh, this sucks a bit performance-wise, but how to avoid this when doing fullscreen-tonemap/gamma without stencil and depth read?
+   //!! meh, this sucks a bit performance-wise, but how to avoid this when doing fullscreen-tonemap/gamma without stencil and depth read?
+   // beside, we do reversed Reinhard while we may be using another tonemapping (they do mostly match though)
+   color = float4(InvReinhardToneMap(InvGamma(vColor_Intensity.xyz * vColor_Intensity.w)), 1.0);
 }
 
 ////TECHNIQUES

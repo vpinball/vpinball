@@ -433,6 +433,12 @@
     <None Include="src\assets\lightSeqTable.vpx">
       <Filter>assets</Filter>
     </None>
+    <None Include="src\assets\tony_mc_mapface_unrolled.exr">
+      <Filter>assets</Filter>
+    </None>
+    <None Include="shader\FBShader.fxh">
+      <Filter>shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\chevron.bmp">

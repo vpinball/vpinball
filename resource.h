@@ -1241,6 +1241,7 @@
 #define IDC_MAX_AO_COMBO                920
 #define IDC_APPLICATION_SETTINGS        921
 #define IDC_TABLE_OVERRIDE              922
+#define IDC_TONEMAPPER                  923
 #define IDC_LAYBACK_EDIT                1040
 #define IDC_3D_STEREO_SEPARATION_EDIT   1041
 #define IDC_3D_STEREO_ZPD_EDIT          1042
@@ -1435,7 +1436,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        675
 #define _APS_NEXT_COMMAND_VALUE         4028
-#define _APS_NEXT_CONTROL_VALUE         923
+#define _APS_NEXT_CONTROL_VALUE         924
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif

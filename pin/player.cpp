@@ -165,6 +165,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const b
       m_maxReflectionMode = RenderProbe::REFL_BALLS;
    if (m_ptable->m_useReflectionForBalls == 1 && m_maxReflectionMode == RenderProbe::REFL_STATIC)
       m_maxReflectionMode = RenderProbe::REFL_STATIC_N_BALLS;
+   m_toneMapper = (ToneMapper)m_ptable->m_settings.LoadValueWithDefault(Settings::TableOverride, "ToneMapper"s, m_ptable->GetToneMapper());
    // For dynamic mode, static reflections are not available so adapt the mode
    if (!IsUsingStaticPrepass() && m_maxReflectionMode >= RenderProbe::REFL_STATIC)
       m_maxReflectionMode = RenderProbe::REFL_DYNAMIC;
@@ -343,6 +344,7 @@ Player::~Player()
    delete m_decalImage;
    delete m_pBCTarget;
    delete m_ptable;
+   delete m_tonemapLUT;
 }
 
 void Player::PreRegisterClass(WNDCLASS& wc)
@@ -1140,7 +1142,7 @@ void Player::UpdateStereoShaderState()
    m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetVector(SHADER_w_h_height, (float)(1.0 / renderedRT->GetWidth()), (float)(1.0 / renderedRT->GetHeight()), (float)renderedRT->GetHeight(), m_ptable->Get3DOffset());
 
    m_stereo3DDefocus = 0.f;
-   if (IsAnaglyphStereoMode(m_stereo3D) && !m_stereo3DfakeStereo)
+   if (IsAnaglyphStereoMode(m_stereo3D))
    {
       Anaglyph anaglyph;
       anaglyph.LoadSetupFromRegistry(clamp(m_stereo3D - STEREO_ANAGLYPH_1, 0, 9));
@@ -1151,6 +1153,13 @@ void Player::UpdateStereoShaderState()
       // being done on the lowest of the 2. Here we do on the single color channel, which is the same most of the time but not always (f.e. green/magenta)
       if (anaglyph.IsReversedColorPair())
          m_stereo3DDefocus = -m_stereo3DDefocus;
+   }
+   else
+   {
+      m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetTechnique(m_stereo3D == STEREO_SBS ? SHADER_TECHNIQUE_stereo_SBS 
+                                                            : m_stereo3D == STEREO_TB  ? SHADER_TECHNIQUE_stereo_TB
+                                                            : m_stereo3D == STEREO_INT ? SHADER_TECHNIQUE_stereo_Int 
+                                                            :                            SHADER_TECHNIQUE_stereo_Flipped_Int);
    }
 }
 
@@ -1617,6 +1626,13 @@ HRESULT Player::Init()
 
    InitShader();
 
+   if (m_toneMapper == TM_TONY_MC_MAPFACE)
+   {
+      m_tonemapLUT = new Texture();
+      m_tonemapLUT->LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "tony_mc_mapface_unrolled.exr");
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_tonemap_lut, m_tonemapLUT, SF_BILINEAR, SA_CLAMP, SA_CLAMP, true);
+   }
+
    // search through all collection for elements which support group rendering
    for (int i = 0; i < m_ptable->m_vcollection.size(); i++)
    {
@@ -1961,7 +1977,7 @@ void Player::RenderStaticPrepass()
 
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTextureNull(SHADER_tex_depth);
 
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("PreRender AO tonemap"s, m_staticPrepassRT);
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("PreRender Apply AO"s, m_staticPrepassRT);
       m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderRT);
       m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pin3d.m_pd3dPrimaryDevice->GetAORenderTarget(1));
 
@@ -1970,7 +1986,7 @@ void Player::RenderStaticPrepass()
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_ao, m_pin3d.m_pd3dPrimaryDevice->GetAORenderTarget(1)->GetColorSampler());
 
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / renderRT->GetWidth()), (float)(1.0 / renderRT->GetHeight()), 1.0f, 1.0f);
-      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(useAA ? SHADER_TECHNIQUE_fb_tonemap_AO_static : SHADER_TECHNIQUE_fb_tonemap_AO_no_filter_static);
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(useAA ? SHADER_TECHNIQUE_fb_AO_static : SHADER_TECHNIQUE_fb_AO_no_filter_static);
 
       m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pin3d.m_pd3dPrimaryDevice->FBShader);
 
@@ -3608,16 +3624,26 @@ void Player::PrepareVideoBuffers()
          jitter, // radical_inverse(jittertime) * 11.0f,
          jitter); // sobol(jittertime) * 13.0f); // jitter for dither pattern
 
-      if (useAO)
-         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(infoMode == IF_AO_ONLY       ? SHADER_TECHNIQUE_fb_AO
-                                                           : infoMode == IF_RENDER_PROBES ? SHADER_TECHNIQUE_fb_tonemap
-                                                           : useAA                        ? SHADER_TECHNIQUE_fb_tonemap_AO 
-                                                           :                                SHADER_TECHNIQUE_fb_tonemap_AO_no_filter);
+      if (infoMode == IF_AO_ONLY)
+         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_fb_AO);
+      else if (infoMode == IF_RENDER_PROBES)
+         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(m_toneMapper == TM_REINHARD ? SHADER_TECHNIQUE_fb_rhtonemap : SHADER_TECHNIQUE_fb_tmtonemap);
+      else if (m_BWrendering != 0)
+         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(m_BWrendering == 1 ? SHADER_TECHNIQUE_fb_rhtonemap_no_filterRG : SHADER_TECHNIQUE_fb_rhtonemap_no_filterR);
+      else if (m_toneMapper == TM_REINHARD)
+      {
+         if (useAO)
+            m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(useAA ? SHADER_TECHNIQUE_fb_rhtonemap_AO : SHADER_TECHNIQUE_fb_rhtonemap_AO_no_filter);
+         else
+            m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(useAA ? SHADER_TECHNIQUE_fb_rhtonemap : SHADER_TECHNIQUE_fb_rhtonemap_no_filterRGB);
+      }
       else
-         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(useAA || infoMode == IF_RENDER_PROBES ? SHADER_TECHNIQUE_fb_tonemap 
-                                                           : m_BWrendering == 1                    ? SHADER_TECHNIQUE_fb_tonemap_no_filterRG 
-                                                           : m_BWrendering == 2                    ? SHADER_TECHNIQUE_fb_tonemap_no_filterR 
-                                                           :                                         SHADER_TECHNIQUE_fb_tonemap_no_filterRGB);
+      {
+         if (useAO)
+            m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(useAA ? SHADER_TECHNIQUE_fb_tmtonemap_AO : SHADER_TECHNIQUE_fb_tmtonemap_AO_no_filter);
+         else
+            m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(useAA ? SHADER_TECHNIQUE_fb_tmtonemap : SHADER_TECHNIQUE_fb_tmtonemap_no_filter);
+      }
 
       const Vertex3D_TexelOnly shiftedVerts[4] =
       {
@@ -3821,13 +3847,6 @@ void Player::PrepareVideoBuffers()
          {
             m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture(), true);
             m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetTexture(SHADER_tex_stereo_depth, m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetDepthSampler());
-         }
-         if (!IsAnaglyphStereoMode(m_stereo3D))
-         {
-            m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetTechnique(m_stereo3D == STEREO_SBS ? SHADER_TECHNIQUE_stereo_SBS 
-                                                                  : m_stereo3D == STEREO_TB  ? SHADER_TECHNIQUE_stereo_TB
-                                                                  : m_stereo3D == STEREO_INT ? SHADER_TECHNIQUE_stereo_Int 
-                                                                  :                            SHADER_TECHNIQUE_stereo_Flipped_Int);
          }
          m_pin3d.m_pd3dPrimaryDevice->StereoShader->SetTexture(SHADER_tex_stereo_fb, renderedRT->GetColorSampler());
          m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pin3d.m_pd3dPrimaryDevice->StereoShader);

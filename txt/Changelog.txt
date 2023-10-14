@@ -171,6 +171,10 @@ FEATURES:
 
 - when renaming a surface/wall, ask if all elements (lights, etc) that reference the surface name should also use this new name
 
+- it is now possible to choose between 2 tonemappers (the part of the rendering which handles the way overbright parts are rendered):
+  - Reinhard, which is the one used by VPX until the 10.8 release,
+  - Tony Mc MapFace, which is an improved tonemapper especially regarding handling very bright sturated colors (like a very bright red, which in turns would be perceived as yellow or even white. See https://github.com/h3r2tic/tony-mc-mapface)
+
 Additional docs explaining all these new features with images are provided in the docs folder of the project: https://github.com/vpinball/vpinball/tree/master/docs
 
 FIXES:
