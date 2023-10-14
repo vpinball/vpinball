@@ -9,7 +9,6 @@ Pin3D::Pin3D()
 {
    m_pd3dPrimaryDevice = nullptr;
    m_pd3dSecondaryDevice = nullptr;
-   m_pddsStatic = nullptr;
    m_backGlass = nullptr;
 
    m_cam.x = 0.f;
@@ -33,7 +32,6 @@ Pin3D::~Pin3D()
    m_aoDitherTexture.FreeStuff();
 
    delete m_envRadianceTexture;
-   delete m_pddsStatic;
 
    if(m_pd3dPrimaryDevice != m_pd3dSecondaryDevice)
       delete m_pd3dSecondaryDevice;

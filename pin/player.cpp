@@ -57,13 +57,13 @@ static unsigned int stats_drawn_static_triangles = 0;
 #endif
 #endif
 
-Player::Player(const bool cameraMode, PinTable *const editor_table, PinTable *const live_table)
-   : m_cameraMode(cameraMode)
-   , m_pEditorTable(editor_table)
+Player::Player(PinTable *const editor_table, PinTable *const live_table, const bool startInTweakMode)
+   : m_pEditorTable(editor_table)
    , m_ptable(live_table)
+   , m_startInTweakMode(startInTweakMode)
 {
-   m_dynamicMode = m_cameraMode; // We can move the camera => disable static pre-rendering
    m_pininput.LoadSettings(m_ptable->m_settings);
+   m_disableStaticPrepass = startInTweakMode;
 
 #if !(defined(_M_IX86) || defined(_M_X64) || defined(_M_AMD64) || defined(__i386__) || defined(__i386) || defined(__i486__) || defined(__i486) || defined(i386) || defined(__ia64__) || defined(__x86_64__))
  #pragma message ( "Warning: No CPU float ignore denorm implemented" )
@@ -166,7 +166,7 @@ Player::Player(const bool cameraMode, PinTable *const editor_table, PinTable *co
    if (m_ptable->m_useReflectionForBalls == 1 && m_maxReflectionMode == RenderProbe::REFL_STATIC)
       m_maxReflectionMode = RenderProbe::REFL_STATIC_N_BALLS;
    // For dynamic mode, static reflections are not available so adapt the mode
-   if (m_dynamicMode && m_maxReflectionMode >= RenderProbe::REFL_STATIC)
+   if (!IsUsingStaticPrepass() && m_maxReflectionMode >= RenderProbe::REFL_STATIC)
       m_maxReflectionMode = RenderProbe::REFL_DYNAMIC;
 
 #ifdef ENABLE_VR
@@ -174,7 +174,6 @@ Player::Player(const bool cameraMode, PinTable *const editor_table, PinTable *co
    if (useVR)
    {
       m_stereo3D = STEREO_VR;
-      m_dynamicMode = true; // VR mode => camera will be dynamic, disable static pre-rendering
       m_maxPrerenderedFrames = 0;
       m_NudgeShake = m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "NudgeStrength"s, 2e-2f);
       m_sharpen = m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "Sharpen"s, 0);
@@ -232,7 +231,6 @@ Player::Player(const bool cameraMode, PinTable *const editor_table, PinTable *co
    }
 
    m_headTracking = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "BAMheadTracking"s, false);
-   m_dynamicMode |= m_headTracking; // disable static pre-rendering when head tracking is activated
 
    m_ballImage = nullptr;
    m_decalImage = nullptr;
@@ -339,13 +337,11 @@ Player::Player(const bool cameraMode, PinTable *const editor_table, PinTable *co
 
 Player::~Player()
 {
-   delete m_ballImage;
-   m_ballImage = nullptr;
-   delete m_decalImage;
-   m_decalImage = nullptr;
-   delete m_pBCTarget;
-   m_pBCTarget = nullptr;
    m_ptable->StopPlaying();
+   delete m_staticPrepassRT;
+   delete m_ballImage;
+   delete m_decalImage;
+   delete m_pBCTarget;
    delete m_ptable;
 }
 
@@ -627,10 +623,6 @@ void Player::CreateWnd(HWND parent /* = 0 */)
 #else
    Create();
 #endif // ENABLE_SDL
-
-   // Create the table window object.
-   // FIXME This should not be needed but the table object is also a CWnd and if not properly created, the destructor may crash...
-   m_ptable->Create(*this);
 }
 
 void Player::OnInitialUpdate()
@@ -717,28 +709,6 @@ void Player::OnInitialUpdate()
         throw 0; //!! have a more specific code (that is catched in the VPinball PeekMessageA loop)?!
 }
 
-void Player::SetCameraMode(const bool mode)
-{
-    if (m_cameraMode && !mode)
-    {
-        // Save edited camera & environment to editor's table
-        PinTable *src = m_ptable, *dst = m_pEditorTable;
-        dst->m_3DmaxSeparation = src->m_3DmaxSeparation;
-        dst->m_global3DMaxSeparation = src->m_global3DMaxSeparation;
-        dst->m_lightEmissionScale = src->m_lightEmissionScale;
-        dst->m_lightRange = src->m_lightRange;
-        dst->m_lightHeight = src->m_lightHeight;
-        dst->m_envEmissionScale = src->m_envEmissionScale;
-        for (int i = 0; i < 3; i++)
-        {
-         dst->mViewSetups[i] = src->mViewSetups[i];
-         dst->m_BG_image[i] = src->m_BG_image[i];
-        }
-        m_pEditorTable->SetNonUndoableDirty(eSaveDirty);
-    }
-    m_cameraMode = mode;
-}
-
 void Player::Shutdown()
 {
     // In Windows 10 1803, there may be a significant lag waiting for WM_DESTROY (msg sent by the delete call below) if script is not closed first.
@@ -754,7 +724,7 @@ void Player::Shutdown()
         std::filesystem::create_directories(std::filesystem::path(dir));
 
         std::map<string, bool> prevPreRenderOnly;
-        if (m_dynamicMode && FileExists(dir + "used_textures.xml"))
+        if (!IsUsingStaticPrepass() && FileExists(dir + "used_textures.xml"))
         {
          std::ifstream myFile(dir + "used_textures.xml");
          std::stringstream buffer;
@@ -792,8 +762,8 @@ void Player::Shutdown()
                node->SetAttribute("clampu", (int)m_pin3d.m_pd3dPrimaryDevice->m_texMan.GetClampU(memtex));
                node->SetAttribute("clampv", (int)m_pin3d.m_pd3dPrimaryDevice->m_texMan.GetClampV(memtex));
                node->SetAttribute("linear", m_pin3d.m_pd3dPrimaryDevice->m_texMan.IsLinearRGB(memtex));
-               bool preRenderOnly = m_dynamicMode ? (prevPreRenderOnly.find(image->m_szName) != prevPreRenderOnly.end() ? prevPreRenderOnly[image->m_szName] : true)
-                                                  : m_pin3d.m_pd3dPrimaryDevice->m_texMan.IsPreRenderOnly(memtex);
+               bool preRenderOnly = !IsUsingStaticPrepass() ? (prevPreRenderOnly.find(image->m_szName) != prevPreRenderOnly.end() ? prevPreRenderOnly[image->m_szName] : true)
+                                                            : m_pin3d.m_pd3dPrimaryDevice->m_texMan.IsPreRenderOnly(memtex);
                node->SetAttribute("prerender", preRenderOnly);
                root->InsertEndChild(node);
                break;
@@ -823,13 +793,11 @@ void Player::Shutdown()
    g_DXGIRegistry.ReleaseAll();
 #endif
 
-   while (ShowCursor(FALSE) >= 0) ;
-   while(ShowCursor(TRUE) < 0) ;
-
    delete m_liveUI;
    m_liveUI = nullptr;
 
-   SetCameraMode(false); // To save edited camera & environment
+   while (ShowCursor(FALSE) >= 0) ;
+   while(ShowCursor(TRUE) < 0) ;
 
    m_pininput.UnInit();
 
@@ -1626,7 +1594,7 @@ HRESULT Player::Init()
                   }
                   // For dynamic modes (VR, head tracking,...) mark all preloaded textures as static only
                   // This will make the cache wrong for the next non static run but it will rebuild, while the opposite would not (all preloads would stay as not prerender only)
-                  m_render_mask = (m_dynamicMode || preRenderOnly) ? STATIC_PREPASS : DEFAULT;
+                  m_render_mask = (!IsUsingStaticPrepass() || preRenderOnly) ? STATIC_PREPASS : DEFAULT;
                   m_pin3d.m_pd3dPrimaryDevice->m_texMan.LoadTexture(tex->m_pdsBuffer, (SamplerFilter)filter, (SamplerAddressMode)clampU, (SamplerAddressMode)clampV, linearRGB);
                   PLOGI << "Texture preloading: '" << name << "'";
                }
@@ -1748,7 +1716,7 @@ HRESULT Player::Init()
    m_pEditorTable->m_progressDialog.SetName("Prerendering Static Parts..."s);
    m_pEditorTable->m_progressDialog.SetProgress(70);
    PLOGI << "Prerendering static parts"; // For profiling
-   InitStatic();
+   RenderStaticPrepass();
 
 #ifdef PLAYBACK
    if (m_playback)
@@ -1820,6 +1788,9 @@ HRESULT Player::Init()
       m_liveUI->PushNotification("You can use Touch controls on this display: bottom left area to Start Game, bottom right area to use the Plunger\n"
                                  "lower left/right for Flippers, upper left/right for Magna buttons, top left for Credits and (hold) top right to Exit"s, 12000);
 
+   if (m_startInTweakMode)
+      m_liveUI->OpenTweakMode();
+
    return S_OK;
 }
 
@@ -1830,39 +1801,47 @@ int Player::GetAOMode()
       return 0;
    if (m_dynamicAO)
       return 2;
-   return m_dynamicMode ? 0 : 1; // If AO is static only and we are running in dynamic mode, disable it
+   return IsUsingStaticPrepass() ? 1 : 0; // If AO is static prepass only and we are running without it, disable AO
 }
 
-void Player::InitStatic()
+void Player::RenderStaticPrepass()
 {
-   TRACE_FUNCTION();
-
    // For VR, we don't use any static pre-rendering
    if (m_stereo3D == STEREO_VR)
       return;
+
+   if (!m_isStaticPrepassDirty)
+      return;
+
+   m_isStaticPrepassDirty = false;
+
+   TRACE_FUNCTION();
 
    m_pin3d.m_pd3dPrimaryDevice->FlushRenderFrame();
    m_render_mask |= STATIC_PREPASS;
 
    // The code will fail if the static render target is MSAA (the copy operation we are performing is not allowed)
-   delete m_pin3d.m_pddsStatic;
-   m_pin3d.m_pddsStatic = m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->Duplicate("StaticPreRender"s);
-   assert(!m_pin3d.m_pddsStatic->IsMSAA());
+   delete m_staticPrepassRT;
+   m_staticPrepassRT = m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->Duplicate("StaticPreRender"s);
+   assert(!m_staticPrepassRT->IsMSAA());
    
-   RenderTarget *accumulationSurface = m_dynamicMode ? nullptr : m_pin3d.m_pddsStatic->Duplicate("Accumulation"s);
+   RenderTarget *accumulationSurface = IsUsingStaticPrepass() ? m_staticPrepassRT->Duplicate("Accumulation"s) : nullptr;
 
-   RenderTarget *renderRT = GetAOMode() == 1 ? m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture() : m_pin3d.m_pddsStatic;
+   RenderTarget *renderRT = GetAOMode() == 1 ? m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture() : m_staticPrepassRT;
 
    // if rendering static/with heavy oversampling, disable the aniso/trilinear filter to get a sharper/more precise result overall!
-   if (!m_dynamicMode)
+   if (IsUsingStaticPrepass())
+   {
+      PLOGI << "Performing prerendering of static parts.";
       m_pin3d.m_pd3dPrimaryDevice->SetMainTextureDefaultFiltering(SF_BILINEAR);
+   }
 
    g_pvp->ProfileLog("Static PreRender Start"s);
 
    //#define STATIC_PRERENDER_ITERATIONS_KOROBOV 7.0 // for the (commented out) lattice-based QMC oversampling, 'magic factor', depending on the the number of iterations!
    // loop for X times and accumulate/average these renderings
    // NOTE: iter == 0 MUST ALWAYS PRODUCE an offset of 0,0!
-   int n_iter = m_dynamicMode ? 0 : (STATIC_PRERENDER_ITERATIONS - 1);
+   int n_iter = IsUsingStaticPrepass() ? (STATIC_PRERENDER_ITERATIONS - 1) : 0;
    for (int iter = n_iter; iter >= 0; --iter) // just do one iteration if in dynamic camera/light/material tweaking mode
    {
       m_pin3d.m_pd3dPrimaryDevice->m_curDrawnTriangles = 0;
@@ -1887,7 +1866,7 @@ void Player::InitStatic()
 
       m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("PreRender Draw"s, renderRT);
 
-      if (!m_dynamicMode)
+      if (IsUsingStaticPrepass())
       {
          RenderState initial_state;
          m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(true, initial_state);
@@ -1948,8 +1927,8 @@ void Player::InitStatic()
    {
       const bool useAA = m_AAfactor != 1.0f;
 
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("PreRender AO Save Depth"s, m_pin3d.m_pddsStatic);
-      m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderRT, m_pin3d.m_pddsStatic, false, true);
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("PreRender AO Save Depth"s, m_staticPrepassRT);
+      m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderRT, m_staticPrepassRT, false, true);
 
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
       m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderState::CULL_NONE);
@@ -1982,7 +1961,7 @@ void Player::InitStatic()
 
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTextureNull(SHADER_tex_depth);
 
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("PreRender AO tonemap"s, m_pin3d.m_pddsStatic);
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("PreRender AO tonemap"s, m_staticPrepassRT);
       m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderRT);
       m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pin3d.m_pd3dPrimaryDevice->GetAORenderTarget(1));
 
@@ -2013,7 +1992,7 @@ void Player::InitStatic()
       m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("PreRender MSAA Background"s, renderRT, false);
       m_pin3d.DrawBackground();
       m_pin3d.m_pd3dPrimaryDevice->FlushRenderFrame();
-      if (!m_dynamicMode)
+      if (IsUsingStaticPrepass())
       {
          m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("PreRender MSAA Scene"s, renderRT);
          RenderState initial_state;
@@ -2027,11 +2006,11 @@ void Player::InitStatic()
       }
       // Copy supersampled color buffer
       m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("PreRender Combine Color"s, renderRT);
-      m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(m_pin3d.m_pddsStatic, renderRT, true, false);
+      m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(m_staticPrepassRT, renderRT, true, false);
       m_pin3d.m_pd3dPrimaryDevice->FlushRenderFrame();
       // Replace with this new MSAA pre render
-      RenderTarget *initialPreRender = m_pin3d.m_pddsStatic;
-      m_pin3d.m_pddsStatic = renderRT;
+      RenderTarget *initialPreRender = m_staticPrepassRT;
+      m_staticPrepassRT = renderRT;
       delete initialPreRender;
    }
 
@@ -3303,7 +3282,7 @@ void Player::RenderDynamics()
    if (m_pin3d.m_backGlass != nullptr)
       m_pin3d.m_backGlass->Render();
 
-   if (m_dynamicMode)
+   if (!IsUsingStaticPrepass())
       DrawStatics();
 
    DrawDynamics(false);
@@ -3315,7 +3294,7 @@ void Player::RenderDynamics()
    m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_ADD);
    m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderState::CULL_CCW);
 
-   if (!m_cameraMode)
+   if (!m_liveUI->IsTweakMode())
    {
       mixer_draw(); // Draw the mixer volume
       plumb_draw(); // Debug draw of plumb
@@ -3455,7 +3434,7 @@ string Player::GetPerfInfo()
    // Draw performance readout - at end of CPU frame, so hopefully the previous frame
    //  (whose data we're getting) will have finished on the GPU by now.
    #ifndef ENABLE_SDL // No GPU profiler for OpenGL
-   if (GetProfilingMode() != PF_DISABLED && m_closing == CS_PLAYING && !m_cameraMode)
+   if (GetProfilingMode() != PF_DISABLED && m_closing == CS_PLAYING)
    {
       info << "\n";
       info << "Detailed (approximate) GPU profiling:\n";
@@ -4223,6 +4202,8 @@ void Player::PrepareFrame()
       m_pin3d.m_gpu_profiler.BeginFrame(m_pin3d.m_pd3dPrimaryDevice->GetCoreDevice());
 #endif
 
+   RenderStaticPrepass();
+
    g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_GPU_COLLECT);
    m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("Render Scene"s, m_pin3d.m_pd3dPrimaryDevice->GetMSAABackBufferTexture());
    if (m_stereo3D == STEREO_VR || GetInfoMode() == IF_DYNAMIC_ONLY)
@@ -4233,8 +4214,8 @@ void Player::PrepareFrame()
    else
    {
       // copy static buffers to back buffer including z buffer
-      m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pin3d.m_pddsStatic);
-      m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(m_pin3d.m_pddsStatic, m_pin3d.m_pd3dPrimaryDevice->GetMSAABackBufferTexture());
+      m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(m_staticPrepassRT);
+      m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(m_staticPrepassRT, m_pin3d.m_pd3dPrimaryDevice->GetMSAABackBufferTexture());
    }
 
    // Update camera point of view
@@ -4246,7 +4227,7 @@ void Player::PrepareFrame()
    if (m_headTracking)
       // #ravarcade: UpdateBAMHeadTracking will set proj/view matrix to add BAM view and head tracking
       m_pin3d.UpdateBAMHeadTracking();
-   else if (m_cameraMode)
+   else if (!IsUsingStaticPrepass())
       m_pin3d.InitLayout();
 
    if (GetInfoMode() != IF_STATIC_ONLY)

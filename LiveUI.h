@@ -17,6 +17,14 @@ public:
 
    bool IsOpened() const { return m_ShowUI || m_ShowSplashModal; }
    void OpenMainUI();
+
+   void OpenTweakMode();
+   bool IsTweakMode() const { return m_tweakMode; }
+
+   void HideUI();
+
+   void PausePlayer(bool pause);
+
    void ToggleFPS();
    void PushNotification(const string &message, const U32 lengthMs) { m_notifications.push_back(Notification(message, msec() + lengthMs)); }
 
@@ -69,10 +77,7 @@ private:
    void PropMaterialCombo(const char *label, IEditable *undo_obj, bool is_live, string *startup_v, string *live_v, PinTable *table, OnStringPropChange chg_callback = nullptr);
 
    // Enter/Exit edit mode (manage table backup, dynamic mode,...)
-   void HideUI();
-   void PausePlayer(bool pause);
-   void EnterEditMode();
-   void ExitEditMode();
+   void CloseTweakMode();
    void ResetCameraFromPlayer();
 
    // UI Context
@@ -146,11 +151,10 @@ private:
    ImFont *m_overlayFont = nullptr;
    float m_menubar_height = 0.0f;
    float m_toolbar_height = 0.0f;
-   bool m_old_player_dynamic_mode;
-   bool m_old_player_camera_mode;
 
    // UI state
    bool m_ShowUI = false;
+   bool m_tweakMode = false;
    bool m_ShowSplashModal = false;
    bool m_flyMode = false;
    bool m_RendererInspection = false;
