@@ -23,7 +23,6 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // Custom resources
 
 IDR_DEFAULT_INI         INI_FILE                "res\\Default VPinballX.ini"
-IDB_BALL                EXR_FILE                "res\\BallEnv.exr"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -3151,31 +3150,9 @@ END
 
 IDB_TOOLBAR             BITMAP                  "res\\toolbar.bmp"
 
-IDB_ENV                 BITMAP                  "res\\envmap.bmp"
-
 IDB_LOGO                BITMAP                  "res\\logo.bmp"
 
 IDB_CHEVRON             BITMAP                  "res\\chevron.bmp"
-
-IDB_BUMPERCAP           BITMAP                  "res\\bumperCap.bmp"
-
-IDB_KICKER_HOLE_WOOD    BITMAP                  "res\\kickerHoleWood.bmp"
-
-IDB_KICKER_CUP          BITMAP                  "res\\kickerCup.bmp"
-
-IDB_AO_DITHER           BITMAP                  "res\\AOdither.bmp"
-
-IDB_KICKER_WILLIAMS     BITMAP                  "res\\kickerWilliams.bmp"
-
-IDB_KICKER_GOTTLIEB     BITMAP                  "res\\kickerGottlieb.bmp"
-
-IDB_KICKER_T1           BITMAP                  "res\\kickerT1.bmp"
-
-IDB_BUMPER_BASE         BITMAP                  "res\\bumperBase.bmp"
-
-IDB_BUMPER_RING         BITMAP                  "res\\bumperRing.bmp"
-
-IDB_BUMPER_SKIRT        BITMAP                  "res\\bumperSkirt.bmp"
 
 IDW_SDBOTTOM            BITMAP                  "res\\SDbottom.bmp"
 

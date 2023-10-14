@@ -494,18 +494,10 @@ HRESULT Pin3D::InitPin3D(const bool fullScreen, const int width, const int heigh
       m_backGlass = nullptr;
 
    // This used to be a spheremap BMP, upgraded in 10.8 for an equirectangular HDR env map
-   //m_pinballEnvTexture.CreateFromResource(IDB_BALL);
-   HMODULE handle = ::GetModuleHandle(NULL);
-   HRSRC rc = ::FindResource(handle, MAKEINTRESOURCE(IDB_BALL), MAKEINTRESOURCE(EXR_FILE));
-   HGLOBAL rcData = ::LoadResource(handle, rc);
-   DWORD size = ::SizeofResource(handle, rc);
-   BYTE* data = static_cast<BYTE*>(::LockResource(rcData));
-   m_pinballEnvTexture.LoadFromMemory(data, size);
-
-   m_aoDitherTexture.CreateFromResource(IDB_AO_DITHER);
-
+   m_pinballEnvTexture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "BallEnv.exr");
+   m_aoDitherTexture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "AODither.webp");
+   m_builtinEnvTexture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "EnvMap.webp");
    m_envTexture = g_pplayer->m_ptable->GetImage(g_pplayer->m_ptable->m_envImage);
-   m_builtinEnvTexture.CreateFromResource(IDB_ENV);
    #ifdef ENABLE_SDL // OpenGL
    PLOGI << "Computing environment map radiance"; // For profiling
    g_pvp->ProfileLog("EnvmapPrecalc Start"s);

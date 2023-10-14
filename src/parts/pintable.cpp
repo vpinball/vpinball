@@ -7130,41 +7130,6 @@ Texture* PinTable::GetImage(const string &szName) const
    return nullptr;
 }
 
-void PinTable::ReImportImage(Texture * const ppi, const string& filename)
-{
-   const string szextension = ExtensionFromFilename(filename);
-
-   const bool binary = !!lstrcmpi(szextension.c_str(), "bmp");
-
-   PinBinary *ppb = 0;
-   if (binary)
-   {
-      ppb = new PinBinary();
-      ppb->ReadFromFile(filename);
-   }
-
-   BaseTexture *const tex = BaseTexture::CreateFromFile(filename, 0);
-
-   if (tex == nullptr)
-   {
-      delete ppb;
-      return;
-   }
-
-   ppi->FreeStuff();
-
-   if (binary)
-      ppi->m_ppb = ppb;
-
-   //SAFE_RELEASE(ppi->m_pdsBuffer);
-
-   ppi->SetSizeFrom(tex);
-   ppi->m_pdsBuffer = tex;
-
-   ppi->m_szPath = filename;
-}
-
-
 bool PinTable::ExportImage(const Texture * const ppi, const char * const szfilename)
 {
    if (ppi->m_ppb != nullptr)
@@ -7291,42 +7256,14 @@ bool PinTable::ExportImage(const Texture * const ppi, const char * const szfilen
 void PinTable::ImportImage(HWND hwndListView, const string& filename)
 {
    Texture * const ppi = new Texture();
-
-   ReImportImage(ppi, filename);
-
+   ppi->LoadFromFile(filename, true);
    if (ppi->m_pdsBuffer == nullptr)
    {
       delete ppi;
       return;
    }
-
-   // The first time we import a file, parse the name of the texture from the filename
-
-   int begin, end;
-   const int len = (int)filename.length();
-
-   for (begin = len; begin >= 0; begin--)
-   {
-      if (filename[begin] == PATH_SEPARATOR_CHAR)
-      {
-         begin++;
-         break;
-      }
-   }
-
-   for (end = len; end >= 0; end--)
-      if (filename[end] == '.')
-         break;
-
-   if (end == 0)
-      end = len - 1;
-
-   ppi->m_szName = filename.substr(begin, end - begin);
-
    m_vimage.push_back(ppi);
-
    const int index = AddListImage(hwndListView, ppi);
-
    ListView_SetItemState(hwndListView, index, LVIS_SELECTED, LVIS_SELECTED);
 }
 

@@ -308,7 +308,6 @@
 #define IDI_VPINBALL                    218
 #define IDC_STEP                        218
 #define IDC_STATUSNAME                  218
-#define IDB_BALL                        220
 #define IDR_SURFACEMENU                 221
 #define IDD_ROTATE                      222
 #define IDR_MULTIMENU                   222
@@ -934,12 +933,8 @@
 #define IDC_RUBBER                      602
 #define IDD_PROPRUBBER_VISUALS          604
 #define IDD_MATERIALDIALOG              605
-#define IDB_BUMPERCAP                   610
 #define IDC_GLOSSY_IMGLERP_EDIT         611
-#define IDB_KICKER_HOLE_WOOD            612
-#define IDB_KICKER_CUP                  613
 #define IDR_POINTMENU_SMOOTH            614
-#define IDB_AO_DITHER                   615
 #define IDC_TRANSMISSION_SCALE          617
 #define IDC_EDGEALPHA_EDIT              618
 #define IDD_MESH_IMPORT_DIALOG          619
@@ -954,9 +949,6 @@
 #define IDD_VR_OPTIONS                  631
 #define IDR_STRIPPED_TABLE              631
 #define IDR_LIGHTSEQ_TABLE              632
-#define IDB_KICKER_WILLIAMS             640
-#define IDB_KICKER_GOTTLIEB             645
-#define IDB_KICKER_T1                   646
 #define IDD_PROPERTY_DIALOG             647
 #define IDD_PROPPOINT_VISUALSWHEIGHT    648
 #define IDD_PROPBACKGLASS_CAMERA        649
@@ -1290,14 +1282,10 @@
 #define IDC_REFLECTION_EDIT             1701
 #define IDC_BALL_TRAIL                  1704
 #define IDC_TRAIL_EDIT                  1705
-#define IDB_ENV                         1706
 #define IDC_REFLECTION_PLAYFIELD        1707
-#define IDB_BUMPER_BASE                 1707
 #define IDC_PLAYFIELD_ELASTICITY        1708
-#define IDB_BUMPER_RING                 1708
 #define IDC_PLAYFIELD_ELASTICITY_EDIT   1708
 #define IDC_PLAYFIELD_ELASTICITY_FALLOFF 1709
-#define IDB_BUMPER_SKIRT                1709
 #define IDC_PLAYFIELD_FALLOFF_EDIT      1709
 #define IDC_PLAYFIELD_SCATTER           1710
 #define IDC_PLAYFIELD_SCATTER_EDIT      1710
