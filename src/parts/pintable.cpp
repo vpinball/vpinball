@@ -1505,57 +1505,24 @@ void PinTable::ClearForOverwrite()
 
 void PinTable::InitBuiltinTable(const size_t tableId)
 {
-   HRSRC hrsrc;
-   // Get our new table resource, get it to be opened as a storage, and open it like a normal file
+   string path;
    switch (tableId)
    {
-       case ID_NEW_EXAMPLETABLE:
-           hrsrc = FindResource(nullptr, MAKEINTRESOURCE(IDR_EXAMPLE_TABLE), "TABLE");
-           break;
-       case ID_NEW_STRIPPEDTABLE:
-           hrsrc = FindResource(nullptr, MAKEINTRESOURCE(IDR_STRIPPED_TABLE), "TABLE");
-           break;
-       case ID_NEW_LIGHTSEQTABLE:
-           hrsrc = FindResource(nullptr, MAKEINTRESOURCE(IDR_LIGHTSEQ_TABLE), "TABLE");
-           break;
-       case ID_NEW_BLANKTABLE:
-       default:
-           hrsrc = FindResource(nullptr, MAKEINTRESOURCE(IDR_BLANK_TABLE), "TABLE");
-           break;
+   case ID_NEW_EXAMPLETABLE: path = "exampleTable.vpx"s; break;
+   case ID_NEW_STRIPPEDTABLE: path = "strippedTable.vpx"s; break;
+   case ID_NEW_LIGHTSEQTABLE: path = "lightSeqTable.vpx"s; break;
+   case ID_NEW_BLANKTABLE:
+   default: path = "blankTable.vpx"s;
    }
-
-   const HGLOBAL hglobal = LoadResource(nullptr, hrsrc);
-   const char * const pchar = (char *)LockResource(hglobal);
-   const DWORD size = SizeofResource(nullptr, hrsrc);
-   const HGLOBAL hcopiedmem = GlobalAlloc(GMEM_MOVEABLE, size);
-   char * const pcopied = (char *)GlobalLock(hcopiedmem);
-   memcpy(pcopied, pchar, size);
-   GlobalUnlock(hcopiedmem);
-
-   ILockBytes *pilb;
-   CreateILockBytesOnHGlobal(hcopiedmem, TRUE, &pilb); // "TRUE" parm gives ownership of hcopiedmem to Global Object
-
-   IStorage *pis;
-   StgOpenStorageOnILockBytes(pilb, nullptr, STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE, nullptr, 0, &pis);
-   pilb->Release();	// free pilb and hcopiedmem
-
    m_glassTopHeight = m_glassBottomHeight = 210;
    m_tableheight = 0;
-
    for (int i = 0; i < 16; i++)
       m_rgcolorcustom[i] = RGB(0, 0, 0);
-
-   //pilb->Release();
-
+   LoadGameFromFilename(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + path);
    const LocalString ls(IDS_TABLE);
    m_szTitle = ls.m_szbuffer/*"Table"*/ + std::to_string(m_vpinball->m_NextTableID);
    m_vpinball->m_NextTableID++;
    m_szFileName.clear();
-
-   LoadGameFromStorage(pis);
-
-   //MAKE_WIDEPTR_FROMANSI(wszFileName, m_szFileName.c_str());
-   //ApcProject->APC_PUT(DisplayName)(wszFileName);
 }
 
 void PinTable::SetDefaultView()

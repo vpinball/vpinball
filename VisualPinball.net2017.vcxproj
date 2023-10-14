@@ -1855,6 +1855,12 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
+    <ContentWithTargetPath Include="src\assets\**">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>assets\%(RecursiveDir)\%(Filename)%(Extension)</TargetPath>
+    </ContentWithTargetPath>
+  </ItemGroup>
+  <ItemGroup>
     <ContentWithTargetPath Include="scripts\**">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <TargetPath>scripts\%(RecursiveDir)\%(Filename)%(Extension)</TargetPath>
