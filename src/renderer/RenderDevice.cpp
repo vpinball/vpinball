@@ -1384,14 +1384,7 @@ RenderDevice::~RenderDevice()
    m_samplerBindings.clear();
 #ifdef ENABLE_VR
    if (m_pHMD)
-   {
       turnVROff();
-      g_pplayer->m_ptable->m_settings.SaveValue(Settings::PlayerVR, "Slope"s, m_slope);
-      g_pplayer->m_ptable->m_settings.SaveValue(Settings::PlayerVR, "Orientation"s, m_orientation);
-      g_pplayer->m_ptable->m_settings.SaveValue(Settings::PlayerVR, "TableX"s, m_tablex);
-      g_pplayer->m_ptable->m_settings.SaveValue(Settings::PlayerVR, "TableY"s, m_tabley);
-      g_pplayer->m_ptable->m_settings.SaveValue(Settings::PlayerVR, "TableZ"s, m_tablez);
-   }
 #endif
 
    for (size_t i = 0; i < sizeof(m_samplerStateCache)/sizeof(m_samplerStateCache[0]); i++)
@@ -2024,6 +2017,15 @@ void RenderDevice::GetViewport(ViewPort* p1)
 
 //////////////////////////////////////////////////////////////////
 // VR device implementation
+
+void RenderDevice::SaveVRSettings(Settings& settings) const
+{
+   settings.SaveValue(Settings::PlayerVR, "Slope"s, m_slope);
+   settings.SaveValue(Settings::PlayerVR, "Orientation"s, m_orientation);
+   settings.SaveValue(Settings::PlayerVR, "TableX"s, m_tablex);
+   settings.SaveValue(Settings::PlayerVR, "TableY"s, m_tabley);
+   settings.SaveValue(Settings::PlayerVR, "TableZ"s, m_tablez);
+}
 
 #ifdef ENABLE_VR
 bool RenderDevice::isVRinstalled()
