@@ -135,8 +135,8 @@
     <TargetExt>.exe</TargetExt>
     <LinkIncremental>false</LinkIncremental>
     <PreBuildEventUseInBuild>false</PreBuildEventUseInBuild>
-    <OutDir>$(SolutionDir)bin\$(Configuration)-$(Platform)\</OutDir>
-    <IntDir>$(SolutionDir)obj\$(Configuration)-$(Platform)\</IntDir>
+    <OutDir>$(SolutionDir).build\bin\$(Configuration)-$(Platform)\</OutDir>
+    <IntDir>$(SolutionDir).build\obj\$(Configuration)-$(Platform)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_GL|Win32'">
     <ExecutablePath>C:\Tools\squishcoco\visualstudio;$(DXSDK_DIR)Utilities\Bin\x86;$(ExecutablePath)</ExecutablePath>
@@ -144,24 +144,24 @@
     <TargetExt>.exe</TargetExt>
     <LinkIncremental>false</LinkIncremental>
     <PreBuildEventUseInBuild>false</PreBuildEventUseInBuild>
-    <OutDir>$(SolutionDir)bin\$(Configuration)-$(Platform)\</OutDir>
-    <IntDir>$(SolutionDir)obj\$(Configuration)-$(Platform)\</IntDir>
+    <OutDir>$(SolutionDir).build\bin\$(Configuration)-$(Platform)\</OutDir>
+    <IntDir>$(SolutionDir).build\obj\$(Configuration)-$(Platform)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ExecutablePath>C:\Tools\squishcoco\visualstudio;$(DXSDK_DIR)Utilities\Bin\x64;$(ExecutablePath)</ExecutablePath>
     <TargetName>VPinballX</TargetName>
     <TargetExt>.exe</TargetExt>
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>$(SolutionDir)bin\$(Configuration)-$(Platform)\</OutDir>
-    <IntDir>$(SolutionDir)obj\$(Configuration)-$(Platform)\</IntDir>
+    <OutDir>$(SolutionDir).build\bin\$(Configuration)-$(Platform)\</OutDir>
+    <IntDir>$(SolutionDir).build\obj\$(Configuration)-$(Platform)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_GL|x64'">
     <ExecutablePath>C:\Tools\squishcoco\visualstudio;$(DXSDK_DIR)Utilities\Bin\x64;$(ExecutablePath)</ExecutablePath>
     <TargetName>VPinballX_GL64</TargetName>
     <TargetExt>.exe</TargetExt>
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>$(SolutionDir)bin\$(Configuration)-$(Platform)\</OutDir>
-    <IntDir>$(SolutionDir)obj\$(Configuration)-$(Platform)\</IntDir>
+    <OutDir>$(SolutionDir).build\bin\$(Configuration)-$(Platform)\</OutDir>
+    <IntDir>$(SolutionDir).build\obj\$(Configuration)-$(Platform)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ExecutablePath>$(DXSDK_DIR)Utilities\Bin\x86;$(ExecutablePath)</ExecutablePath>
@@ -172,8 +172,8 @@
     <EmbedManifest>true</EmbedManifest>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <PreBuildEventUseInBuild>false</PreBuildEventUseInBuild>
-    <OutDir>$(SolutionDir)bin\$(Configuration)-$(Platform)\</OutDir>
-    <IntDir>$(SolutionDir)obj\$(Configuration)-$(Platform)\</IntDir>
+    <OutDir>$(SolutionDir).build\bin\$(Configuration)-$(Platform)\</OutDir>
+    <IntDir>$(SolutionDir).build\obj\$(Configuration)-$(Platform)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_GL|Win32'">
     <ExecutablePath>$(DXSDK_DIR)Utilities\Bin\x86;$(ExecutablePath)</ExecutablePath>
@@ -184,8 +184,8 @@
     <EmbedManifest>true</EmbedManifest>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <PreBuildEventUseInBuild>false</PreBuildEventUseInBuild>
-    <OutDir>$(SolutionDir)bin\$(Configuration)-$(Platform)\</OutDir>
-    <IntDir>$(SolutionDir)obj\$(Configuration)-$(Platform)\</IntDir>
+    <OutDir>$(SolutionDir).build\bin\$(Configuration)-$(Platform)\</OutDir>
+    <IntDir>$(SolutionDir).build\obj\$(Configuration)-$(Platform)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ExecutablePath>$(DXSDK_DIR)Utilities\Bin\x64;$(ExecutablePath)</ExecutablePath>
@@ -195,8 +195,8 @@
     <GenerateManifest>true</GenerateManifest>
     <EmbedManifest>true</EmbedManifest>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-    <OutDir>$(SolutionDir)bin\$(Configuration)-$(Platform)\</OutDir>
-    <IntDir>$(SolutionDir)obj\$(Configuration)-$(Platform)\</IntDir>
+    <OutDir>$(SolutionDir).build\bin\$(Configuration)-$(Platform)\</OutDir>
+    <IntDir>$(SolutionDir).build\obj\$(Configuration)-$(Platform)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_GL|x64'">
     <ExecutablePath>$(DXSDK_DIR)Utilities\Bin\x64;$(ExecutablePath)</ExecutablePath>
@@ -206,8 +206,8 @@
     <GenerateManifest>true</GenerateManifest>
     <EmbedManifest>true</EmbedManifest>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-    <OutDir>$(SolutionDir)bin\$(Configuration)-$(Platform)\</OutDir>
-    <IntDir>$(SolutionDir)obj\$(Configuration)-$(Platform)\</IntDir>
+    <OutDir>$(SolutionDir).build\bin\$(Configuration)-$(Platform)\</OutDir>
+    <IntDir>$(SolutionDir).build\obj\$(Configuration)-$(Platform)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Midl>
