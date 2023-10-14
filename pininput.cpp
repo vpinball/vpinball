@@ -95,6 +95,8 @@ PinInput::PinInput()
    m_joydebugballs = 0;
    m_joydebugger = 0;
    m_joylockbar = 0;
+   m_joypause = 0;
+   m_joytweak = 0;
    m_joymechtilt = 0;
    m_joytablerecenter = 0;
    m_joytableup = 0;
@@ -187,6 +189,8 @@ void PinInput::LoadSettings(const Settings& settings)
    m_joydebugballs = settings.LoadValueWithDefault(Settings::Player, "JoyDebugKey"s, m_joydebugballs);
    m_joydebugger = settings.LoadValueWithDefault(Settings::Player, "JoyDebuggerKey"s, m_joydebugger);
    m_joylockbar = settings.LoadValueWithDefault(Settings::Player, "JoyLockbarKey"s, m_joylockbar);
+   m_joypause = settings.LoadValueWithDefault(Settings::Player, "JoyPauseKey"s, m_joypause);
+   m_joytweak = settings.LoadValueWithDefault(Settings::Player, "JoyTweakKey"s, m_joytweak);
    m_joytablerecenter = settings.LoadValueWithDefault(Settings::Player, "JoyTableRecenterKey"s, m_joytablerecenter);
    m_joytableup = settings.LoadValueWithDefault(Settings::Player, "JoyTableUpKey"s, m_joytableup);
    m_joytabledown = settings.LoadValueWithDefault(Settings::Player, "JoyTableDownKey"s, m_joytabledown);
@@ -1094,7 +1098,7 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
    else if (keycode == g_pplayer->m_rgKeys[eRightTiltKey] && dispid == DISPID_GameEvents_KeyUp)
       m_keyPressedState[eRightTiltKey] = false;
       
-   if (g_pplayer->m_cameraMode)
+   if (g_pplayer->m_liveUI->IsTweakMode())
    {
       if (keycode == g_pplayer->m_rgKeys[eLeftFlipperKey] && dispid == DISPID_GameEvents_KeyDown)
          g_pplayer->UpdateBackdropSettings(false);
@@ -1465,6 +1469,8 @@ void PinInput::Joy(const unsigned int n, const int updown, const bool start)
    if (m_joydebugballs == n) FireKeyEvent(updown, g_pplayer->m_rgKeys[eDBGBalls]);
    if (m_joydebugger == n)   FireKeyEvent(updown, g_pplayer->m_rgKeys[eDebugger]);
    if (m_joylockbar == n)    FireKeyEvent(updown, g_pplayer->m_rgKeys[eLockbarKey]);
+   if (m_joypause == n)      FireKeyEvent(updown, g_pplayer->m_rgKeys[ePause]);
+   if (m_joytweak == n)      FireKeyEvent(updown, g_pplayer->m_rgKeys[eTweak]);
    if (m_joycustom1 == n)    FireKeyEvent(updown, m_joycustom1key);
    if (m_joycustom2 == n)    FireKeyEvent(updown, m_joycustom2key);
    if (m_joycustom3 == n)    FireKeyEvent(updown, m_joycustom3key);
@@ -2050,7 +2056,7 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
    GetInputDeviceData(/*curr_time_msec*/);
 
    // Camera/Light tweaking mode (F6) incl. fly-around parameters
-   if (g_pplayer->m_cameraMode)
+   if (g_pplayer->m_liveUI->IsTweakMode())
    {
       if (m_head == m_tail) // key queue empty, so just continue using the old pressed key
       {
@@ -2125,7 +2131,7 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
       if (input->dwSequence == APP_KEYBOARD && (g_pplayer == nullptr || !g_pplayer->m_liveUI->HasKeyboardCapture()))
       {
          // Camera mode fly around:
-         if (g_pplayer && g_pplayer->m_cameraMode && m_enableCameraModeFlyAround)
+         if (g_pplayer && g_pplayer->m_liveUI->IsTweakMode() && m_enableCameraModeFlyAround)
             ProcessCameraKeys(input);
 
          // Normal game keys:
@@ -2133,6 +2139,21 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
          {
             if ((input->dwData & 0x80) != 0)
                g_pplayer->m_liveUI->ToggleFPS();
+         }
+         else if (input->dwOfs == (DWORD)g_pplayer->m_rgKeys[ePause])
+         {
+            if ((input->dwData & 0x80) != 0)
+               g_pplayer->m_liveUI->PausePlayer(!g_pplayer->m_debugWindowActive);
+         }
+         else if (input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eTweak])
+         {
+            if ((input->dwData & 0x80) != 0)
+            {
+               if (g_pplayer->m_liveUI->IsTweakMode())
+                  g_pplayer->m_liveUI->HideUI();
+               else
+                  g_pplayer->m_liveUI->OpenTweakMode();
+            }
          }
          else if (input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eEnable3D])
          {

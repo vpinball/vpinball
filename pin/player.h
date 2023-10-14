@@ -50,31 +50,9 @@ enum EnumAssignKeys
    eTableUp,
    eTableDown,
    eEscape,
+   ePause,
+   eTweak,
    eCKeys
-};
-
-#define MAX_TOUCHREGION 8
-
-static constexpr RECT touchregion[MAX_TOUCHREGION] = { //left,top,right,bottom (in % of screen)
-   { 0, 0, 50, 10 },      // ExtraBall
-   { 0, 10, 50, 50 },     // 2nd Left Button
-   { 0, 50, 50, 90 },     // 1st Left Button (Flipper)
-   { 0, 90, 50, 100 },    // Start
-   { 50, 0, 100, 10 },    // Exit
-   { 50, 10, 100, 50 },   // 2nd Right Button
-   { 50, 50, 100, 90 },   // 1st Right Button (Flipper)
-   { 50, 90, 100, 100 }   // Plunger
-};
-
-static EnumAssignKeys touchkeymap[MAX_TOUCHREGION] = {
-   eAddCreditKey, //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-   eLeftMagnaSave,
-   eLeftFlipperKey,
-   eStartGameKey,
-   eExitGame,
-   eRightMagnaSave,
-   eRightFlipperKey,
-   ePlungerKey
 };
 
 static const char* regkey_string[eCKeys] = {
@@ -103,7 +81,9 @@ static const char* regkey_string[eCKeys] = {
    "TableRecenterKey",
    "TableUpKey",
    "TableDownKey",
-   "EscapeKey"
+   "EscapeKey",
+   "PauseKey",
+   "TweakKey"
 };
 static constexpr int regkey_defdik[eCKeys] = {
    DIK_LSHIFT,
@@ -131,7 +111,9 @@ static constexpr int regkey_defdik[eCKeys] = {
    DIK_NUMPAD5,
    DIK_NUMPAD8,
    DIK_NUMPAD2,
-   DIK_ESCAPE
+   DIK_ESCAPE,
+   DIK_P,
+   DIK_F12
 };
 static constexpr int regkey_idc[eCKeys] = {
    IDC_LEFTFLIPPER,
@@ -155,12 +137,37 @@ static constexpr int regkey_idc[eCKeys] = {
    IDC_VOLUMEUP,
    IDC_VOLUMEDN,
    IDC_LOCKBAR,
-
-   -1, //!! missing in key dialog!
+   -1, //!! missing in key dialog! (Enable/disable 3D stereo)
    IDC_TABLEREC_TEXT,
    IDC_TABLEUP_TEXT,
    IDC_TABLEDOWN_TEXT,
-   -1
+   -1, // Escape
+   IDC_PAUSE,
+   IDC_TWEAK
+};
+
+#define MAX_TOUCHREGION 8
+
+static constexpr RECT touchregion[MAX_TOUCHREGION] = { //left,top,right,bottom (in % of screen)
+   { 0, 0, 50, 10 },      // ExtraBall
+   { 0, 10, 50, 50 },     // 2nd Left Button
+   { 0, 50, 50, 90 },     // 1st Left Button (Flipper)
+   { 0, 90, 50, 100 },    // Start
+   { 50, 0, 100, 10 },    // Exit
+   { 50, 10, 100, 50 },   // 2nd Right Button
+   { 50, 50, 100, 90 },   // 1st Right Button (Flipper)
+   { 50, 90, 100, 100 }   // Plunger
+};
+
+static EnumAssignKeys touchkeymap[MAX_TOUCHREGION] = {
+   eAddCreditKey, //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+   eLeftMagnaSave,
+   eLeftFlipperKey,
+   eStartGameKey,
+   eExitGame,
+   eRightMagnaSave,
+   eRightFlipperKey,
+   ePlungerKey
 };
 
 enum InfoMode
@@ -340,7 +347,7 @@ struct TimerOnOff
 class Player : public CWnd
 {
 public:
-   Player(const bool cameraMode, PinTable *const editor_table, PinTable *const live_table);
+   Player(PinTable *const editor_table, PinTable *const live_table, const bool startInTweakMode);
    virtual ~Player();
 
    void CreateWnd(HWND parent = 0);
@@ -351,6 +358,8 @@ public:
 
 private:
    void InitKeys();
+
+   const bool m_startInTweakMode;
 
 public:
    void LockForegroundWindow(const bool enable);
@@ -515,12 +524,12 @@ private:
 private:
    void InitShader();
    void InitBallShader();
-   void InitStatic();
 
    void PrepareFrame();
    void SubmitFrame();
    void FinishFrame();
 
+   void RenderStaticPrepass();
    void DrawBulbLightBuffer();
    void RenderDynamics();
    void DrawBalls();
@@ -561,15 +570,19 @@ public:
    void UpdateBasicShaderMatrix(const Matrix3D &objectTrafo = Matrix3D::MatrixIdentity());
    void UpdateBallShaderMatrix();
 
-   void EnableStaticPrePass(const bool use_prepass) { if (m_dynamicMode == use_prepass) { m_dynamicMode = !use_prepass; InitStatic(); } }
-
    #ifdef ENABLE_SDL
    SDL_Window  *m_sdl_playfieldHwnd;
    #endif
 
-   bool m_dynamicMode;
-   bool m_cameraMode;
-   void SetCameraMode(const bool mode);
+   void DisableStaticPrePass(const bool disable) { if (m_disableStaticPrepass != disable) { m_disableStaticPrepass = disable; m_isStaticPrepassDirty = true; } }
+   bool IsUsingStaticPrepass() const { return !m_disableStaticPrepass && m_stereo3D != STEREO_VR && !m_headTracking; }
+
+private:
+   bool m_isStaticPrepassDirty = true;
+   bool m_disableStaticPrepass = false;
+   RenderTarget *m_staticPrepassRT = nullptr;
+
+public:
 
    float m_globalEmissionScale;
 

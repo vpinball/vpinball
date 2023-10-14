@@ -625,8 +625,6 @@ LiveUI::LiveUI(RenderDevice *const rd)
    m_pininput = &(m_player->m_pininput);
    m_pin3d = &(m_player->m_pin3d);
    m_disable_esc = m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "DisableESC"s, m_disable_esc);
-   m_old_player_dynamic_mode = m_player->m_dynamicMode;
-   m_old_player_camera_mode = m_player->m_cameraMode;
 
    m_selection.type = Selection::SelectionType::S_NONE;
    m_useEditorCam = false;
@@ -677,6 +675,7 @@ LiveUI::LiveUI(RenderDevice *const rd)
 
 LiveUI::~LiveUI()
 {
+   HideUI();
    if (ImGui::GetCurrentContext())
    {
 #ifdef ENABLE_SDL
@@ -760,6 +759,36 @@ void LiveUI::Render()
 #else
    ImGui_ImplDX9_RenderDrawData(draw_data);
 #endif
+}
+
+void LiveUI::OpenTweakMode()
+{
+   m_ShowUI = false;
+   m_ShowSplashModal = false;
+   m_player->DisableStaticPrePass(true);
+   m_tweakMode = true;
+}
+
+void LiveUI::CloseTweakMode()
+{
+   if (!m_tweakMode)
+      return;
+
+   const PinTable *const __restrict src = m_live_table;
+   PinTable *const __restrict dst = m_table;
+   dst->m_3DmaxSeparation = src->m_3DmaxSeparation;
+   dst->m_global3DMaxSeparation = src->m_global3DMaxSeparation;
+   dst->m_lightEmissionScale = src->m_lightEmissionScale;
+   dst->m_lightRange = src->m_lightRange;
+   dst->m_lightHeight = src->m_lightHeight;
+   dst->m_envEmissionScale = src->m_envEmissionScale;
+   for (int i = 0; i < 3; i++)
+   {
+      dst->mViewSetups[i] = src->mViewSetups[i];
+      dst->m_BG_image[i] = src->m_BG_image[i];
+   }
+   m_table->SetNonUndoableDirty(eSaveDirty);
+   m_tweakMode = false;
 }
 
 void LiveUI::OpenMainUI()
@@ -867,8 +896,8 @@ void LiveUI::Update()
    { // Main UI
       UpdateMainUI();
    }
-   else if (m_player->m_cameraMode && showNotifications)
-   { // Camera UI
+   else if (m_tweakMode && showNotifications)
+   { // Tweak UI
       ImGui::PushFont(m_overlayFont);
       UpdateCameraModeUI();
       ImGui::PopFont();
@@ -1123,27 +1152,15 @@ void LiveUI::PausePlayer(bool pause)
    m_player->RecomputePseudoPauseState();
 }
 
-void LiveUI::EnterEditMode()
-{
-   m_player->EnableStaticPrePass(false);
-   m_player->SetCameraMode(false);
-}
-
-void LiveUI::ExitEditMode()
-{
-   SetupImGuiStyle(1.0f);
-   m_useEditorCam = false;
-   m_pin3d->InitLayout();
-   m_player->EnableStaticPrePass(!m_old_player_dynamic_mode);
-   m_player->SetCameraMode(m_old_player_camera_mode);
-}
-
 void LiveUI::HideUI()
 { 
+   CloseTweakMode();
+   m_table->m_settings.Save();
    g_pvp->m_settings.Save();
    m_ShowSplashModal = false;
    m_ShowUI = false;
    m_flyMode = false;
+   m_player->DisableStaticPrePass(false);
    PausePlayer(false);
    while (ShowCursor(TRUE)<0) ;
    while (ShowCursor(FALSE)>=0) ;
@@ -1164,7 +1181,7 @@ void LiveUI::UpdateMainUI()
    bool showFullUI = true;
    showFullUI &= !m_ShowSplashModal;
    showFullUI &= !m_RendererInspection;
-   showFullUI &= !m_player->m_cameraMode;
+   showFullUI &= !m_tweakMode;
    showFullUI &= !ImGui::IsPopupOpen(ID_BAM_SETTINGS);
    showFullUI &= !ImGui::IsPopupOpen(ID_VIDEO_SETTINGS);
    showFullUI &= !ImGui::IsPopupOpen(ID_ANAGLYPH_CALIBRATION);
@@ -1172,7 +1189,7 @@ void LiveUI::UpdateMainUI()
 
    if (showFullUI)
    {
-      m_player->EnableStaticPrePass(false);
+      m_player->DisableStaticPrePass(true);
 
       // Main menubar
       if (ImGui::BeginMainMenuBar())
@@ -1219,11 +1236,6 @@ void LiveUI::UpdateMainUI()
          HideUI();
          m_table->QuitPlayer(Player::CS_STOP_PLAY);
       }
-      /* if (ImGui::Button("Resume Game"))
-      {
-         ExitEditMode();
-         HideUI();
-      }*/
       ImGui::End();
 
       // Side panels
@@ -2219,8 +2231,7 @@ void LiveUI::UpdateHeadTrackingModal()
 
 void LiveUI::UpdateRendererInspectionModal()
 {
-   m_player->EnableStaticPrePass(!m_old_player_dynamic_mode);
-   m_player->SetCameraMode(m_old_player_camera_mode);
+   m_player->DisableStaticPrePass(false);
    m_useEditorCam = false;
    m_pin3d->InitLayout();
 
@@ -2372,36 +2383,25 @@ void LiveUI::UpdateMainSplashModal()
       const ImVec2 size(m_dpi * (m_player->m_headTracking ? 120.f : 100.f), 0);
 
       // If displaying the main splash popup, save user changes and exit camera mode started from it
-      if (m_player->m_cameraMode && !m_old_player_camera_mode && m_live_table != nullptr && m_table != nullptr)
-      {
-         m_player->SetCameraMode(m_old_player_camera_mode);
-         const PinTable * const __restrict src = m_live_table;
-         PinTable * const __restrict dst = m_table;
-         dst->m_3DmaxSeparation = src->m_3DmaxSeparation;
-         for (int i = 0; i < 3; i++)
-         {
-            dst->mViewSetups[i] = src->mViewSetups[i];
-            dst->m_BG_image[i] = src->m_BG_image[i];
-         }
-         m_table->SetNonUndoableDirty(eSaveDirty);
-      }
+      if (m_tweakMode && m_live_table != nullptr && m_table != nullptr)
+         CloseTweakMode();
 
       ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
       // Resume: click on the button, or press escape key (react on key released, otherwise, it would immediatly reopen the UI)
       if (ImGui::Button("Resume Game", size) || (enableKeyboardShortcuts && ((ImGui::IsKeyReleased(dikToImGuiKeys[m_player->m_rgKeys[eEscape]]) && !m_disable_esc))))
       {
          ImGui::CloseCurrentPopup();
-         ExitEditMode();
+         SetupImGuiStyle(1.0f);
+         m_useEditorCam = false;
+         m_pin3d->InitLayout();
+         m_player->DisableStaticPrePass(false);
          HideUI();
       }
       ImGui::SetItemDefaultFocus();
       if (ImGui::Button("Adjust Camera", size))
       {
          ImGui::CloseCurrentPopup();
-         m_ShowUI = false;
-         m_ShowSplashModal = false;
-         EnterEditMode();
-         m_player->SetCameraMode(true);
+         OpenTweakMode();
       }
       bool popup_headtracking = false;
       if (m_player->m_headTracking && ImGui::Button("Adjust Headtracking", size))
@@ -2409,7 +2409,6 @@ void LiveUI::UpdateMainSplashModal()
          ImGui::CloseCurrentPopup();
          m_ShowUI = false;
          m_ShowSplashModal = false;
-         EnterEditMode();
          popup_headtracking = true;
       }
       if (ImGui::Button("Live Editor", size))
@@ -2419,8 +2418,8 @@ void LiveUI::UpdateMainSplashModal()
          m_ShowSplashModal = false;
          m_useEditorCam = false;
          m_orthoCam = false;
+         m_player->DisableStaticPrePass(true);
          ResetCameraFromPlayer();
-         EnterEditMode();
       }
       // Quit: click on the button, or press exit button
       if (ImGui::Button("Quit to editor", size) || (enableKeyboardShortcuts && ImGui::IsKeyPressed(dikToImGuiKeys[m_player->m_rgKeys[eExitGame]])))
@@ -2520,6 +2519,8 @@ void LiveUI::TableProperties(bool is_live)
 
 void LiveUI::CameraProperties(bool is_live)
 {
+   PinTable *const table = (is_live ? m_live_table : m_table);
+
    switch (m_selection.camera)
    {
    case 0: ImGui::Text("Camera: Desktop"); break;
@@ -2529,36 +2530,23 @@ void LiveUI::CameraProperties(bool is_live)
    }
    ImGui::Separator();
 
-   // FIXME buttons need to be updated between startup/live table
-   if (ImGui::Button("Reset"))
-   {
-      const bool old_camera_mode = m_player->m_cameraMode;
-      m_player->m_cameraMode = true;
-      m_pininput->FireKeyEvent(DISPID_GameEvents_KeyDown, m_player->m_rgKeys[eStartGameKey]);
-      m_player->m_cameraMode = old_camera_mode;
-      m_pin3d->InitLights(); // Needed to update shaders with new light settings
-      const vec4 st(m_table->m_envEmissionScale * m_player->m_globalEmissionScale,
-         m_pin3d->m_envTexture ? (float)m_pin3d->m_envTexture->m_height /*+m_pin3d->m_envTexture->m_width)*0.5f*/
-                               : (float)m_pin3d->m_builtinEnvTexture.m_height /*+m_pin3d->m_builtinEnvTexture.m_width)*0.5f*/,
-         0.f, 0.f);
-      m_rd->basicShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
-      m_rd->m_ballShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
-   }
-   ImGui::SameLine();
    if (ImGui::Button("Import"))
    {
-      m_table->ImportBackdropPOV(string());
-      m_pin3d->InitLights(); // Needed to update shaders with new light settings
-      const vec4 st(m_table->m_envEmissionScale * m_player->m_globalEmissionScale,
-         m_pin3d->m_envTexture ? (float)m_pin3d->m_envTexture->m_height /*+m_pin3d->m_envTexture->m_width)*0.5f*/
-                               : (float)m_pin3d->m_builtinEnvTexture.m_height /*+m_pin3d->m_builtinEnvTexture.m_width)*0.5f*/,
-         0.f, 0.f);
-      m_rd->basicShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
-      m_rd->m_ballShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
+      table->ImportBackdropPOV(string());
+      if (is_live)
+      {
+         m_pin3d->InitLights(); // Needed to update shaders with new light settings
+         const vec4 st(table->m_envEmissionScale * m_player->m_globalEmissionScale,
+            m_pin3d->m_envTexture ? (float)m_pin3d->m_envTexture->m_height /*+m_pin3d->m_envTexture->m_width)*0.5f*/
+                                  : (float)m_pin3d->m_builtinEnvTexture.m_height /*+m_pin3d->m_builtinEnvTexture.m_width)*0.5f*/,
+            0.f, 0.f);
+         m_rd->basicShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
+         m_rd->m_ballShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
+      }
    }
    ImGui::SameLine();
    if (ImGui::Button("Export"))
-      m_table->ExportBackdropPOV(string());
+      table->ExportBackdropPOV(string());
    ImGui::NewLine();
    if (BEGIN_PROP_TABLE)
    {
@@ -2566,7 +2554,6 @@ void LiveUI::CameraProperties(bool is_live)
       static const string layoutModeLabels[] = { "Relative"s, "Absolute"s};
       int startup_mode = m_table ? (int)m_table->mViewSetups[vsId].mMode :0;
       int live_mode = m_live_table ? (int)m_live_table->mViewSetups[vsId].mMode : 0;
-      PinTable * const table = (is_live ? m_live_table : m_table);
       auto upd_mode = [table, vsId](bool is_live, int prev, int v) { table->mViewSetups[vsId].mMode = (ViewLayoutMode)v; };
       // View
       PropCombo("Layout Mode", m_table, is_live, &startup_mode, &live_mode, 2, layoutModeLabels, upd_mode);

@@ -2020,11 +2020,13 @@ void RenderDevice::GetViewport(ViewPort* p1)
 
 void RenderDevice::SaveVRSettings(Settings& settings) const
 {
+   #ifdef ENABLE_VR
    settings.SaveValue(Settings::PlayerVR, "Slope"s, m_slope);
    settings.SaveValue(Settings::PlayerVR, "Orientation"s, m_orientation);
    settings.SaveValue(Settings::PlayerVR, "TableX"s, m_tablex);
    settings.SaveValue(Settings::PlayerVR, "TableY"s, m_tabley);
    settings.SaveValue(Settings::PlayerVR, "TableZ"s, m_tablez);
+   #endif
 }
 
 #ifdef ENABLE_VR

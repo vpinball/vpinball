@@ -2361,7 +2361,7 @@ void PinTable::Play(const bool cameraMode)
       // create Player and init that one
 
       PLOGI << "Creating main window"; // For profiling
-      g_pplayer = new Player(cameraMode, this, live_table);
+      g_pplayer = new Player(this, live_table, cameraMode);
       g_pplayer->CreateWnd();
       const float minSlope = (live_table->m_overridePhysics ? live_table->m_fOverrideMinSlope : live_table->m_angletiltMin);
       const float maxSlope = (live_table->m_overridePhysics ? live_table->m_fOverrideMaxSlope : live_table->m_angletiltMax);

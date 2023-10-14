@@ -293,6 +293,7 @@
 #define IDC_ROTATEBY                    210
 #define IDC_EXPORT                      210
 #define IDC_SNDTOBG                     210
+#define IDC_TWEAK                       210
 #define IDC_CENTERX                     211
 #define IDC_CENTERY                     212
 #define IDC_STOP                        213
@@ -1108,11 +1109,15 @@
 #define IDC_LOCKBARBUTTON               804
 #define IDC_JOYLOCKBARCOMBO             805
 #define IDC_SNDPOSITION                 806
+#define IDC_PAUSEBUTTON                 806
 #define IDC_SPT_TABLE                   807
 #define IDC_SPT_BACKGLASS               808
+#define IDC_JOYPAUSECOMBO               808
 #define IDC_AUD_BALANCE                 809
+#define IDC_TWEAKBUTTON                 809
 #define IDC_AUD_VOLUME                  810
 #define IDC_RADIO_SND3DFRONTISFRONT     810
+#define IDC_JOYTWEAKCOMBO               810
 #define IDC_SPT_3D                      811
 #define IDC_RADIO_SND3D2CH              811
 #define IDC_EDIT2                       811

@@ -233,7 +233,7 @@ void RenderProbe::SetReflectionMode(ReflectionMode mode)
 void RenderProbe::PreRenderStaticReflectionProbe()
 {
    // For dynamic reflection mode, in static camera mode, we prerender static elements (like for main view) to get better antialiasing and overall performance
-   if (g_pplayer->m_dynamicMode || min(m_reflection_mode, g_pplayer->m_maxReflectionMode) != REFL_DYNAMIC)
+   if (!g_pplayer->IsUsingStaticPrepass() || min(m_reflection_mode, g_pplayer->m_maxReflectionMode) != REFL_DYNAMIC)
       return;
 
    RenderDevice* const p3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
@@ -343,12 +343,12 @@ void RenderProbe::RenderReflectionProbe(const bool is_static)
          "Failed to create plane reflection dynamic render target", nullptr);
    }
    p3dDevice->SetRenderTarget(m_name, m_dynamicRT);
-   if (mode == REFL_DYNAMIC && m_prerenderRT != nullptr && !g_pplayer->m_dynamicMode)
+   if (mode == REFL_DYNAMIC && m_prerenderRT != nullptr && g_pplayer->IsUsingStaticPrepass())
       p3dDevice->BlitRenderTarget(m_prerenderRT, m_dynamicRT, true, true);
    else
       p3dDevice->Clear(clearType::TARGET | clearType::ZBUFFER, 0, 1.0f, 0L);
 
-   const bool render_static = is_static || (mode == REFL_DYNAMIC && (m_prerenderRT == nullptr || g_pplayer->m_dynamicMode));
+   const bool render_static = is_static || (mode == REFL_DYNAMIC && (m_prerenderRT == nullptr || !g_pplayer->IsUsingStaticPrepass()));
    const bool render_balls = !is_static && (mode != REFL_NONE && mode != REFL_STATIC);
    const bool render_dynamic = !is_static && (mode >= REFL_STATIC_N_DYNAMIC);
    DoRenderReflectionProbe(render_static, render_balls, render_dynamic);

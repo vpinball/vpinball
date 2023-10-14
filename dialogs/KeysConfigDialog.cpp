@@ -361,7 +361,7 @@ BOOL KeysConfigDialog::OnInitDialog()
     const float legacyNudgeStrength = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "LegacyNudgeStrength"s, 1.f);
     SetDlgItemInt(IDC_LEGACY_NUDGE_STRENGTH, quantizeUnsignedPercent(legacyNudgeStrength), FALSE);
 
-    for (unsigned int i = 0; i <= 32; ++i)
+    for (unsigned int i = 0; i <= 34; ++i)
     {
         bool hr;
         int item,selected;
@@ -400,6 +400,8 @@ BOOL KeysConfigDialog::OnInitDialog()
             case 28:hr = g_pvp->m_settings.LoadValue(Settings::Player, "JoyPMUp"s, selected); item = IDC_JOYPMUP; break;
             case 29:hr = g_pvp->m_settings.LoadValue(Settings::Player, "JoyPMEnter"s, selected); item = IDC_JOYPMENTER; break;
             case 30:hr = g_pvp->m_settings.LoadValue(Settings::Player, "JoyLockbarKey"s, selected); item = IDC_JOYLOCKBARCOMBO; break;
+            case 33:hr = g_pvp->m_settings.LoadValue(Settings::Player, "JoyPauseKey"s, selected); item = IDC_JOYPAUSECOMBO; break;
+            case 34:hr = g_pvp->m_settings.LoadValue(Settings::Player, "JoyTweakKey"s, selected); item = IDC_JOYTWEAKCOMBO; break;
         }
 
         if (!hr)
@@ -551,15 +553,16 @@ BOOL KeysConfigDialog::OnInitDialog()
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Slider 2");
     ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
 
-    for (unsigned int i = eLeftFlipperKey; i <= eLockbarKey; ++i) if (regkey_idc[i] != -1)
-    {
-        const bool hr = g_pvp->m_settings.LoadValue(Settings::Player, regkey_string[i], key);
-        if (!hr || key > 0xdd)
+   for (unsigned int i = 0; i <= eCKeys; ++i)
+      if (regkey_idc[i] != -1 && GetDlgItem(regkey_idc[i]) && GetDlgItem(regkey_idc[i]).IsWindow())
+      {
+         const bool hr = g_pvp->m_settings.LoadValue(Settings::Player, regkey_string[i], key);
+         if (!hr || key > 0xdd)
             key = regkey_defdik[i];
-        const HWND hwndControl = GetDlgItem(regkey_idc[i]).GetHwnd();
-        ::SetWindowText(hwndControl, rgszKeyName[key]);
-        ::SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
-    }
+         const HWND hwndControl = GetDlgItem(regkey_idc[i]).GetHwnd();
+         ::SetWindowText(hwndControl, rgszKeyName[key]);
+         ::SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
+      }
 
     bool hr = g_pvp->m_settings.LoadValue(Settings::Player, "JoyCustom1Key"s, key);
     if (!hr || key > 0xdd)
@@ -695,6 +698,14 @@ BOOL KeysConfigDialog::OnInitDialog()
     ::SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
 
     hwndButton = GetDlgItem(IDC_JOYCUSTOM4BUTTON).GetHwnd();
+    ::SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc);
+    ::SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
+
+    hwndButton = GetDlgItem(IDC_PAUSEBUTTON).GetHwnd();
+    ::SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc);
+    ::SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
+
+    hwndButton = GetDlgItem(IDC_TWEAKBUTTON).GetHwnd();
     ::SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc);
     ::SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
 
@@ -917,6 +928,16 @@ BOOL KeysConfigDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                 StartTimer(IDC_JOYCUSTOM4);
                 break;
             }
+            case IDC_PAUSEBUTTON:
+            {
+                StartTimer(IDC_PAUSE);
+                break;
+            }
+            case IDC_TWEAKBUTTON:
+            {
+                StartTimer(IDC_TWEAK);
+                break;
+            }
             default:
                 return FALSE;
         }//switch
@@ -968,6 +989,8 @@ void KeysConfigDialog::OnOK()
     SetValue(IDC_PLUNGERAXIS, Settings::Player, "PlungerAxis"s);
     SetValue(IDC_LRAXISCOMBO, Settings::Player, "LRAxis"s);
     SetValue(IDC_UDAXISCOMBO, Settings::Player, "UDAxis"s);
+    SetValue(IDC_JOYPAUSECOMBO, Settings::Player, "JoyPauseKey"s);
+    SetValue(IDC_JOYTWEAKCOMBO, Settings::Player, "JoyTweakKey"s);
 
     size_t selected;
     int newvalue;
@@ -1090,6 +1113,8 @@ void KeysConfigDialog::OnOK()
 
     const int rumble = (int)SendDlgItemMessage(IDC_COMBO_RUMBLE, CB_GETCURSEL, 0, 0);
     g_pvp->m_settings.SaveValue(Settings::Player, "RumbleMode"s, rumble);
+
+    g_pvp->m_settings.Save();
 
     CDialog::OnOK();
 }

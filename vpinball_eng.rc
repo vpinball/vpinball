@@ -481,12 +481,12 @@ BEGIN
     PUSHBUTTON      "&Rename",IDC_RENAME,259,97,50,14,WS_DISABLED
 END
 
-IDD_KEYS DIALOGEX 0, 0, 627, 311
+IDD_KEYS DIALOGEX 0, 0, 627, 342
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Keys, Nudge and DOF"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    GROUPBOX        "Button Assignments",IDC_STATIC,7,7,242,296
+    GROUPBOX        "Button Assignments",IDC_STATIC,7,7,242,328
     GROUPBOX        "",IDC_STATIC,12,17,54,39
     PUSHBUTTON      "Left Flipper",IDC_LEFTFLIPPERBUTTON,14,17,50,14
     CTEXT           "",IDC_LEFTFLIPPER,14,32,50,8,SS_CENTERIMAGE
@@ -579,17 +579,25 @@ BEGIN
     PUSHBUTTON      "Lockbar/Fire",IDC_LOCKBARBUTTON,132,212,50,14
     CTEXT           "",IDC_LOCKBAR,132,227,50,8,SS_CENTERIMAGE
     COMBOBOX        IDC_JOYLOCKBARCOMBO,132,236,50,100,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
-    PUSHBUTTON      "StagedLFlipper",IDC_STAGEDLEFTFLIPPERBUTTON,192,212,50,14
-    CTEXT           "",IDC_STAGEDLEFTFLIPPER,192,227,50,8,SS_CENTERIMAGE
-    COMBOBOX        IDC_JOYSTAGEDLFLIPCOMBO,192,236,50,100,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
     GROUPBOX        "",IDC_STATIC,190,212,54,39
-    PUSHBUTTON      "StagedRFlipper",IDC_STAGEDRIGHTFLIPPERBUTTON,192,251,50,14
-    CTEXT           "",IDC_STAGEDRIGHTFLIPPER,192,266,50,8,SS_CENTERIMAGE
-    COMBOBOX        IDC_JOYSTAGEDRFLIPCOMBO,192,275,50,100,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Pause",IDC_PAUSEBUTTON,192,212,50,14
+    CTEXT           "",IDC_PAUSE,192,227,50,8,SS_CENTERIMAGE
+    COMBOBOX        IDC_JOYPAUSECOMBO,192,236,50,100,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "StagedLFlipper",IDC_STAGEDLEFTFLIPPERBUTTON,13,251,50,14
+    CTEXT           "",IDC_STAGEDLEFTFLIPPER,13,266,50,8,SS_CENTERIMAGE
+    COMBOBOX        IDC_JOYSTAGEDLFLIPCOMBO,13,275,50,100,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "",IDC_STATIC,11,251,54,39
+    PUSHBUTTON      "StagedRFlipper",IDC_STAGEDRIGHTFLIPPERBUTTON,72,251,50,14
+    CTEXT           "",IDC_STAGEDRIGHTFLIPPER,72,266,50,8,SS_CENTERIMAGE
+    COMBOBOX        IDC_JOYSTAGEDRFLIPCOMBO,72,275,50,100,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
     GROUPBOX        "",IDC_STATIC,190,251,54,39
+    PUSHBUTTON      "Tweak",IDC_TWEAKBUTTON,192,251,50,14
+    CTEXT           "",IDC_TWEAK,192,266,50,8,SS_CENTERIMAGE
+    COMBOBOX        IDC_JOYTWEAKCOMBO,192,275,50,100,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
+	GROUPBOX        "",IDC_STATIC,70,251,54,39
     CONTROL         "Override Default Button Layout",IDC_DefaultLayout,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,258,112,10
-    CONTROL         "Disable ESC Key",IDC_DisableESC_CB,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,122,258,68,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,292,112,10
+    CONTROL         "Disable ESC Key",IDC_DisableESC_CB,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,122,292,68,10
     GROUPBOX        "PinMAME Buttons",IDC_STATIC,254,7,241,91
     LTEXT           "Note that some keys can also be configured in the VPMKeys.vbs file",IDC_STATIC,264,87,230,8
     CTEXT           "EB BuyIn (2)",IDC_STATIC,261,17,50,14,0,WS_EX_DLGMODALFRAME
@@ -650,8 +658,8 @@ BEGIN
     GROUPBOX        "",IDC_STATIC,262,118,128,21
     GROUPBOX        "",IDC_STATIC,262,136,128,21
     GROUPBOX        "",IDC_STATIC,262,154,128,21
-    LTEXT           "* To assign Custom Keys to Gamepad Buttons, click on the button and select desired key, then choose desired gamepad button from dropdown box.",IDC_STATIC,13,273,168,25
-    LTEXT           "To interactively set, calibrate and test the Nudge parameters, please load the\n'Nudge Test and Calibration.vpx' table and run it",IDC_STATIC,255,279,168,25
+    LTEXT           "* To assign Custom Keys to Gamepad Buttons, click on the button and select desired key, then choose desired gamepad button from dropdown box.",IDC_STATIC,13,307,168,25
+    LTEXT           "To interactively set, calibrate and test the Nudge parameters, please load the\n'Nudge Test and Calibration.vpx' table and run it",IDC_STATIC,255,279,357,25
     CONTROL         "Enable Mouse handling during Play",IDC_ENABLE_MOUSE_PLAYER,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,254,252,150,10
     CONTROL         "Enable flying around (Arrow Keys + Left Alt Key) during Camera/Light/Material Edit Mode",IDC_ENABLE_CAMERA_FLY_AROUND,
@@ -681,8 +689,8 @@ BEGIN
     RTEXT           "Input API",IDC_LABEL_INPUT_API,496,223,44,8
     COMBOBOX        IDC_COMBO_RUMBLE,543,236,77,64,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
     RTEXT           "Ctrl. Rumble Behavior",IDC_LABEL_RUMBLE,496,234,44,15
-    PUSHBUTTON      "OK",IDOK,536,289,40,14
-    PUSHBUTTON      "Cancel",IDCANCEL,579,289,40,14
+    PUSHBUTTON      "OK",IDOK,536,318,40,14
+    PUSHBUTTON      "Cancel",IDCANCEL,579,318,40,14
 END
 
 IDD_TRANSLATE DIALOGEX 0, 0, 186, 97
@@ -2509,7 +2517,7 @@ BEGIN
 
     IDD_KEYS, DIALOG
     BEGIN
-        BOTTOMMARGIN, 310
+        BOTTOMMARGIN, 341
     END
 
     IDD_TRANSLATE, DIALOG
