@@ -2949,12 +2949,12 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
 		   DWORD   dwFmtSize; // Wave Format Size
 	   };
 	   //  Static RIFF header
-	   const BYTE WaveHeader[] =
+	   static constexpr BYTE WaveHeader[] =
 	   {
 		   'R','I','F','F',0x00,0x00,0x00,0x00,'W','A','V','E','f','m','t',' ',0x00,0x00,0x00,0x00
 	   };
 	   // Static wave DATA tag
-	   const BYTE WaveData[] = { 'd','a','t','a' };
+	   static constexpr BYTE WaveData[] = { 'd','a','t','a' };
 
 	   waveFileSize = sizeof(WAVEHEADER) + sizeof(WAVEFORMATEX) + pps->m_wfx.cbSize + sizeof(WaveData) + sizeof(DWORD) + pps->m_cdata;
 	   pps->m_pdata = new char[waveFileSize];
@@ -3158,7 +3158,7 @@ HRESULT PinTable::SaveCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH h
 }
 
 
-HRESULT PinTable::ReadInfoValue(IStorage* pstg, const WCHAR * const wzName, char **pszValue, HCRYPTHASH hcrypthash)
+HRESULT PinTable::ReadInfoValue(IStorage* pstg, const WCHAR * const wzName, string &output, HCRYPTHASH hcrypthash)
 {
    HRESULT hr;
    IStream *pstm;
@@ -3170,17 +3170,20 @@ HRESULT PinTable::ReadInfoValue(IStorage* pstg, const WCHAR * const wzName, char
 
       const int len = ss.cbSize.LowPart / (DWORD)sizeof(WCHAR);
       WCHAR * const wzT = new WCHAR[len + 1];
-      *pszValue = new char[len + 1];
+      char* pszValue = new char[len + 1];
 
       ULONG read;
       BiffReader br(pstm, NULL, NULL, 0, hcrypthash, NULL);
       br.ReadBytes(wzT, ss.cbSize.LowPart, &read);
       wzT[len] = L'\0';
 
-      WideCharToMultiByteNull(CP_ACP, 0, wzT, -1, *pszValue, len + 1, nullptr, nullptr);
+      WideCharToMultiByteNull(CP_ACP, 0, wzT, -1, pszValue, len + 1, nullptr, nullptr);
 
       //delete br;
-      //pstm->Read(*pszValue, ss.cbSize.LowPart, &read);
+      //pstm->Read(pszValue, ss.cbSize.LowPart, &read);
+
+      output = pszValue;
+      delete[] pszValue;
 
       delete[] wzT;
       pstm->Release();
@@ -3192,90 +3195,20 @@ HRESULT PinTable::ReadInfoValue(IStorage* pstg, const WCHAR * const wzName, char
 
 HRESULT PinTable::LoadInfo(IStorage* pstg, HCRYPTHASH hcrypthash, int version)
 {
-   char* txt = nullptr;
-   ReadInfoValue(pstg, L"TableName", &txt, hcrypthash);
-   if (txt != nullptr)
-   {
-       m_szTableName = txt;
-       delete(txt);
-   }
+   ReadInfoValue(pstg, L"TableName", m_szTableName, hcrypthash);
+   ReadInfoValue(pstg, L"AuthorName", m_szAuthor, hcrypthash);
+   ReadInfoValue(pstg, L"TableVersion", m_szVersion, hcrypthash);
+   ReadInfoValue(pstg, L"ReleaseDate", m_szReleaseDate, hcrypthash);
+   ReadInfoValue(pstg, L"AuthorEmail", m_szAuthorEMail, hcrypthash);
+   ReadInfoValue(pstg, L"AuthorWebSite", m_szWebSite, hcrypthash);
+   ReadInfoValue(pstg, L"TableBlurb", m_szBlurb, hcrypthash);
+   ReadInfoValue(pstg, L"TableDescription", m_szDescription, hcrypthash);
+   ReadInfoValue(pstg, L"TableRules", m_szRules, hcrypthash);
+   ReadInfoValue(pstg, L"TableSaveDate", m_szDateSaved, NULL);
 
-   txt = nullptr;
-   ReadInfoValue(pstg, L"AuthorName", &txt, hcrypthash);
-   if (txt != nullptr)
-   {
-       m_szAuthor = txt;
-       delete(txt);
-   }
-
-   txt = nullptr;
-   ReadInfoValue(pstg, L"TableVersion", &txt, hcrypthash);
-   if (txt != nullptr)
-   {
-       m_szVersion = txt;
-       delete(txt);
-   }
-
-   txt = nullptr;
-   ReadInfoValue(pstg, L"ReleaseDate", &txt, hcrypthash);
-   if (txt != nullptr)
-   {
-       m_szReleaseDate = txt;
-       delete(txt);
-   }
-
-   txt = nullptr;
-   ReadInfoValue(pstg, L"AuthorEmail", &txt, hcrypthash);
-   if (txt != nullptr)
-   {
-       m_szAuthorEMail = txt;
-       delete(txt);
-   }
-
-   txt = nullptr;
-   ReadInfoValue(pstg, L"AuthorWebSite", &txt, hcrypthash);
-   if (txt != nullptr)
-   {
-       m_szWebSite = txt;
-       delete(txt);
-   }
-
-   txt = nullptr;
-   ReadInfoValue(pstg, L"TableBlurb", &txt, hcrypthash);
-   if (txt != nullptr)
-   {
-       m_szBlurb = txt;
-       delete(txt);
-   }
-
-   txt = nullptr;
-   ReadInfoValue(pstg, L"TableDescription", &txt, hcrypthash);
-   if (txt != nullptr)
-   {
-       m_szDescription = txt;
-       delete(txt);
-   }
-
-   txt = nullptr;
-   ReadInfoValue(pstg, L"TableRules", &txt, hcrypthash);
-   if (txt != nullptr)
-   {
-       m_szRules = txt;
-       delete(txt);
-   }
-
-   txt = nullptr;
-   ReadInfoValue(pstg, L"TableSaveDate", &txt, NULL);
-   if (txt != nullptr)
-   {
-       m_szDateSaved = txt;
-       delete(txt);
-   }
-
-   char *buffer = nullptr;
-   ReadInfoValue(pstg, L"TableSaveRev", &buffer, NULL);
-   m_numTimesSaved = buffer ? atoi(buffer) : 0;
-   SAFE_VECTOR_DELETE(buffer);
+   string numTimesSaved;
+   ReadInfoValue(pstg, L"TableSaveRev", numTimesSaved, NULL);
+   m_numTimesSaved = !numTimesSaved.empty() ? atoi(numTimesSaved.c_str()) : 0;
 
    // Write the version to the registry.  This will be read later by the front end.
    g_pvp->m_settings.SaveValue(Settings::Version, m_szTableName, m_szVersion);
@@ -3301,13 +3234,13 @@ HRESULT PinTable::LoadInfo(IStorage* pstg, HCRYPTHASH hcrypthash, int version)
       pstm->Release();
    }
 
-   return S_OK;
+   return hr;
 }
 
 HRESULT PinTable::LoadCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH hcrypthash, int version)
 {
    BiffReader br(pstmTags, this, NULL, version, hcrypthash, NULL);
-   br.Load();
+   const HRESULT hr = br.Load();
 
    for (size_t i = 0; i < m_vCustomInfoTag.size(); i++)
    {
@@ -3315,15 +3248,14 @@ HRESULT PinTable::LoadCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH h
       WCHAR * const wzName = new WCHAR[len + 1];
       MultiByteToWideCharNull(CP_ACP, 0, m_vCustomInfoTag[i].c_str(), -1, wzName, len + 1);
 
-      char *szValue = nullptr;
-      ReadInfoValue(pstg, wzName, &szValue, hcrypthash);
-      m_vCustomInfoContent.push_back(szValue ? szValue : "");
+      string customInfo;
+      ReadInfoValue(pstg, wzName, customInfo, hcrypthash);
+      m_vCustomInfoContent.push_back(customInfo);
 
-      delete[] szValue;
       delete[] wzName;
    }
 
-   return S_OK;
+   return hr;
 }
 
 HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)
@@ -4094,8 +4026,7 @@ HRESULT PinTable::LoadData(IStream* pstm, int& csubobj, int& csounds, int& ctext
    int rgi[6] = { 0, 0, 0, 0, 0, 0 };
 
    BiffReader br(pstm, this, rgi, version, hcrypthash, hcryptkey);
-
-   br.Load();
+   const HRESULT hr = br.Load();
 
    csubobj = rgi[1];
    csounds = rgi[2];
@@ -4103,7 +4034,7 @@ HRESULT PinTable::LoadData(IStream* pstm, int& csubobj, int& csounds, int& ctext
    cfonts = rgi[4];
    ccollection = rgi[5];
 
-   return S_OK;
+   return hr;
 }
 
 bool PinTable::LoadToken(const int id, BiffReader * const pbr)

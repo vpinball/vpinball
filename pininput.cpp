@@ -1752,7 +1752,7 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
         }
         else if (input->dwOfs >= DIJOFS_BUTTON15 && input->dwOfs <= DIJOFS_BUTTON31)
         {
-            Joy(16 + input->dwOfs-DIJOFS_BUTTON15);
+            Joy(16 + input->dwOfs-DIJOFS_BUTTON15, updown, start);
         }
         else
             FireKeyEvent(updown, input->dwOfs | 0x01000000); // unknown button events
