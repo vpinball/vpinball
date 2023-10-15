@@ -1127,8 +1127,8 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
          g_pvp->m_settings.SetParent(&tableProps);
          for (int i = 0; i < 3; i++)
          {
-            g_pplayer->m_pEditorTable->mViewSetups[i].SaveToTableOverrideSettings(tableProps, i == BG_DESKTOP ? "ViewDT" : i == BG_FSS ? "ViewFSS" : "ViewCab", false);
-            g_pplayer->m_ptable->mViewSetups[i].SaveToTableOverrideSettings(g_pplayer->m_pEditorTable->m_settings, i == BG_DESKTOP ? "ViewDT" : i == BG_FSS ? "ViewFSS" : "ViewCab", true);
+            g_pplayer->m_pEditorTable->mViewSetups[i].SaveToTableOverrideSettings(tableProps, i == BG_DESKTOP ? "ViewDT"s : i == BG_FSS ? "ViewFSS"s : "ViewCab"s, false);
+            g_pplayer->m_ptable->mViewSetups[i].SaveToTableOverrideSettings(g_pplayer->m_pEditorTable->m_settings, i == BG_DESKTOP ? "ViewDT"s : i == BG_FSS ? "ViewFSS"s : "ViewCab"s, true);
          }
          g_pvp->m_settings.SetParent(nullptr);
          string szINIFilename = g_pplayer->m_ptable->m_szFileName;
@@ -1220,7 +1220,7 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
             const PinTable * const __restrict src = g_pplayer->m_pEditorTable;
             PinTable * const __restrict dst = g_pplayer->m_ptable;
             dst->mViewSetups[id] = src->mViewSetups[id];
-            dst->mViewSetups[id].ApplyTableOverrideSettings(g_pplayer->m_ptable->m_settings, id == BG_DESKTOP ? "ViewDT" : id == BG_FSS ? "ViewFSS" : "ViewCab");
+            dst->mViewSetups[id].ApplyTableOverrideSettings(g_pplayer->m_ptable->m_settings, id == BG_DESKTOP ? "ViewDT"s : id == BG_FSS ? "ViewFSS"s : "ViewCab"s);
             dst->m_lightHeight = src->m_lightHeight;
             dst->m_lightRange = src->m_lightRange;
             dst->m_lightEmissionScale = src->m_lightEmissionScale;
@@ -1361,60 +1361,34 @@ void PinInput::ProcessCameraKeys(const DIDEVICEOBJECTDATA * __restrict input)
     switch(input->dwOfs)
     {
     case DIK_UP:
-        {
-            if ((input->dwData & 0x80) != 0)
-            {
-                if (!m_cameraModeAltKey)
-                    g_pplayer->m_pin3d.m_cam.y += 10.0f;
-                else
-                    g_pplayer->m_pin3d.m_cam.z += 10.0f;
-
-                m_cameraMode = 1;
-            }
-            else
-                m_cameraMode = 0;
-        }
-        break;
     case DIK_DOWN:
         {
+            const bool up = (input->dwOfs == DIK_UP);
             if ((input->dwData & 0x80) != 0)
             {
                 if (!m_cameraModeAltKey)
-                    g_pplayer->m_pin3d.m_cam.y -= 10.0f;
+                    g_pplayer->m_pin3d.m_cam.y += up ? 10.0f : -10.0f;
                 else
-                    g_pplayer->m_pin3d.m_cam.z -= 10.0f;
+                    g_pplayer->m_pin3d.m_cam.z += up ? 10.0f : -10.0f;
 
-                m_cameraMode = 2;
+                m_cameraMode = up ? 1 : 2;
             }
             else
                 m_cameraMode = 0;
         }
         break;
     case DIK_RIGHT:
-        {
-            if ((input->dwData & 0x80) != 0)
-            {
-                if (!m_cameraModeAltKey)
-                    g_pplayer->m_pin3d.m_cam.x -= 10.0f;
-                else
-                    g_pplayer->m_pin3d.m_inc -= 0.01f;
-
-                m_cameraMode = 3;
-            }
-            else
-                m_cameraMode = 0;
-        }
-        break;
     case DIK_LEFT:
         {
+            const bool right = (input->dwOfs == DIK_RIGHT);
             if ((input->dwData & 0x80) != 0)
             {
                 if (!m_cameraModeAltKey)
-                    g_pplayer->m_pin3d.m_cam.x += 10.0f;
+                    g_pplayer->m_pin3d.m_cam.x += right ? -10.0f : 10.0f;
                 else
-                    g_pplayer->m_pin3d.m_inc += 0.01f;
+                    g_pplayer->m_pin3d.m_inc += right ? -0.01f : 0.01f;
 
-                m_cameraMode = 4;
+                m_cameraMode = right ? 3 : 4;
             }
             else
                 m_cameraMode = 0;
@@ -1778,26 +1752,7 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
         }
         else if (input->dwOfs >= DIJOFS_BUTTON15 && input->dwOfs <= DIJOFS_BUTTON31)
         {
-            switch (input->dwOfs)
-            {
-                case DIJOFS_BUTTON15: Joy(16, updown, start); break;
-                case DIJOFS_BUTTON16: Joy(17, updown, start); break;
-                case DIJOFS_BUTTON17: Joy(18, updown, start); break;
-                case DIJOFS_BUTTON18: Joy(19, updown, start); break;
-                case DIJOFS_BUTTON19: Joy(20, updown, start); break;
-                case DIJOFS_BUTTON20: Joy(21, updown, start); break;
-                case DIJOFS_BUTTON21: Joy(22, updown, start); break;
-                case DIJOFS_BUTTON22: Joy(23, updown, start); break;
-                case DIJOFS_BUTTON23: Joy(24, updown, start); break;
-                case DIJOFS_BUTTON24: Joy(25, updown, start); break;
-                case DIJOFS_BUTTON25: Joy(26, updown, start); break;
-                case DIJOFS_BUTTON26: Joy(27, updown, start); break;
-                case DIJOFS_BUTTON27: Joy(28, updown, start); break;
-                case DIJOFS_BUTTON28: Joy(29, updown, start); break;
-                case DIJOFS_BUTTON29: Joy(30, updown, start); break;
-                case DIJOFS_BUTTON30: Joy(31, updown, start); break;
-                case DIJOFS_BUTTON31: Joy(32, updown, start); break;
-            }
+            Joy(16 + input->dwOfs-DIJOFS_BUTTON15);
         }
         else
             FireKeyEvent(updown, input->dwOfs | 0x01000000); // unknown button events
