@@ -483,7 +483,7 @@ BOOL KeysConfigDialog::OnInitDialog()
 
     //
 
-    AddStringAxis("PlungerAxis"s, IDC_DOF_DROPTARGETS, 3); // assume Z Axis as standard
+    AddStringAxis("PlungerAxis"s, IDC_PLUNGERAXIS, 3); // assume Z Axis as standard
     AddStringAxis("LRAxis"s, IDC_LRAXISCOMBO, 1); // assume X Axis as standard
     AddStringAxis("UDAxis"s, IDC_UDAXISCOMBO, 2); // assume Y Axis as standard
 
