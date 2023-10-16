@@ -2568,7 +2568,11 @@ HRESULT PinTable::Save(const bool saveAs)
    // Save user custom settings file (if any) along the table file
    string szINIFilename = m_szFileName;
    if (ReplaceExtensionFromFilename(szINIFilename, "ini"s))
+   {
+      // Force saving as we may have upgraded the table version (from pre 10.8 to 10.8) or changed the file path
+      m_settings.SetModified(true);
       m_settings.SaveToFile(szINIFilename);
+   }
 
    return S_OK;
 }
@@ -3923,10 +3927,8 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
             }
          }
 
-         // Save INI settings since we may have converted old properties to user table overrides
-         string szINIFilename = m_szFileName;
-         if (ReplaceExtensionFromFilename(szINIFilename, "ini"s))
-            m_settings.SaveToFile(szINIFilename);
+         // Do not consider properties converted to settings as changes to avoid creating an ini for each opened old table (they will be imported again as they are part of the VPX file)
+         m_settings.SetModified(false);
 
          //////// End Authentication block
       }

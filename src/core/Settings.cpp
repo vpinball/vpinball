@@ -31,6 +31,7 @@ Settings::Settings(const Settings* parent)
 
 bool Settings::LoadFromFile(const string& path, const bool createDefault)
 {
+   m_modified = false;
    m_iniPath = path;
    mINI::INIFile file(path);
    if (file.read(m_ini))
@@ -141,6 +142,9 @@ bool Settings::LoadFromFile(const string& path, const bool createDefault)
 void Settings::SaveToFile(const string &path)
 {
    m_iniPath = path;
+   if (!m_modified)
+      return;
+   m_modified = false;
    size_t size = 0;
    for (auto section : m_ini)
       size += section.second.size();
@@ -307,10 +311,14 @@ bool Settings::SaveValue(const Section section, const string &key, const DataTyp
       {
          // This is an override and it has the same value as parent: remove it and rely on parent
          if (m_ini.has(regKey[section]) && m_ini.get(regKey[section]).has(key))
+         {
+            m_modified = true;
             m_ini[regKey[section]].remove(key);
+         }
          return true;
       }
    }
+   m_modified = true;
    m_ini[regKey[section]][key] = copy;
    return true;
 }
@@ -349,7 +357,10 @@ bool Settings::DeleteValue(const Section section, const string &key, const bool 
    if (m_parent && deleteFromParent)
       success &= DeleteValue(section, key, deleteFromParent);
    if (m_ini.has(regKey[section]) && m_ini.get(regKey[section]).has(key))
+   {
+      m_modified = true;
       success &= m_ini[regKey[section]].remove(key);
+   }
    return success;
 }
 
@@ -359,6 +370,9 @@ bool Settings::DeleteSubKey(const Section section, const bool &deleteFromParent)
    if (m_parent && deleteFromParent)
       success &= DeleteSubKey(section, deleteFromParent);
    if (m_ini.has(regKey[section]))
+   {
+      m_modified = true;
       success &= m_ini.remove(regKey[section]);
+   }
    return success;
 }
