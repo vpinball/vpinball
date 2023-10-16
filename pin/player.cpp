@@ -890,32 +890,37 @@ void Player::Shutdown()
 
    LockForegroundWindow(false);
 
-   // Reactivate edited table
-   g_pvp->GetPropertiesDocker()->EnableWindow();
-   g_pvp->GetLayersDocker()->EnableWindow();
-   g_pvp->GetToolbarDocker()->EnableWindow();
-   if (g_pvp->GetNotesDocker() != nullptr)
-      g_pvp->GetNotesDocker()->EnableWindow();
-   g_pvp->ToggleToolbar();
-   g_pvp->ShowWindow(SW_SHOW);
-   g_pvp->SetForegroundWindow();
-   m_pEditorTable->EnableWindow();
-   m_pEditorTable->SetFocus();
-   m_pEditorTable->SetActiveWindow();
-   m_pEditorTable->SetDirtyDraw();
-   m_pEditorTable->BeginAutoSaveCounter();
-
    // Copy before deleting to process after player has been closed/deleted
    CloseState closing = m_closing;
+   PinTable *editedTable = m_pEditorTable;
 
    // Destroy this player
    assert(g_pplayer == this);
    delete g_pplayer; // Win32xx call Window destroy for us from destructor, don't call it directly or it will crash due to dual destruction
    g_pplayer = nullptr;
 
-   // Close application if requested
+   // Reactivate edited table or close application if requested
    if (closing == CS_CLOSE_APP)
+   {
       g_pvp->PostMessage(WM_CLOSE, 0, 0);
+   }
+   else
+   {
+      g_pvp->GetPropertiesDocker()->EnableWindow();
+      g_pvp->GetLayersDocker()->EnableWindow();
+      g_pvp->GetToolbarDocker()->EnableWindow();
+      if (g_pvp->GetNotesDocker() != nullptr)
+         g_pvp->GetNotesDocker()->EnableWindow();
+      g_pvp->ToggleToolbar();
+      g_pvp->ShowWindow(SW_SHOW);
+      g_pvp->SetForegroundWindow();
+      editedTable->EnableWindow();
+      editedTable->SetFocus();
+      editedTable->SetActiveWindow();
+      editedTable->SetDirtyDraw();
+      editedTable->RefreshProperties();
+      editedTable->BeginAutoSaveCounter();
+   }
 }
 
 void Player::InitFPS()
