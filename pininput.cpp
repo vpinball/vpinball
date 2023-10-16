@@ -1134,8 +1134,15 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
          string szINIFilename = g_pplayer->m_ptable->m_szFileName;
          if (ReplaceExtensionFromFilename(szINIFilename, "ini"s))
          {
-            g_pplayer->m_pEditorTable->m_settings.SaveToFile(szINIFilename);
-            g_pplayer->m_liveUI->PushNotification("POV exported to "s.append(szINIFilename), 5000);
+            if (g_pplayer->m_pEditorTable->m_settings.IsModified())
+            {
+               g_pplayer->m_pEditorTable->m_settings.SaveToFile(szINIFilename);
+               g_pplayer->m_liveUI->PushNotification("POV exported to "s.append(szINIFilename), 5000);
+            }
+            else
+            {
+               g_pplayer->m_liveUI->PushNotification("POV was not exported to "s + szINIFilename + " (no override)", 5000);
+            }
          }
          if (g_pvp->m_povEdit)
             g_pvp->QuitPlayer(Player::CloseState::CS_CLOSE_APP);

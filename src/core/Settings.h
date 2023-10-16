@@ -5,7 +5,7 @@
 
 // This class holds the settings registry.
 // A setting registry can have a parent, in which case, missing settings will be looked for in the parent.
-// This is used to allow overriding part of the settings while still using the base application value.
+// This is used to allow overriding part of the settings for a specific table while still using the base application value for others.
 // When saving value, an 'override mode' can be used where the value will be saved only if it not the same as the one in the parent.
 class Settings final
 {
@@ -17,6 +17,10 @@ public:
    bool LoadFromFile(const string &path, const bool createDefault);
    void SaveToFile(const string &path);
    void Save();
+
+   // Save only actually save the settings if they have been modified. If you want to force a save (for example if filepath has changed), you need to expcitely set the modified flag
+   bool IsModified() const { return m_modified; }
+   void SetModified(const bool modified) { m_modified = modified; }
 
    enum Section
    {
@@ -93,6 +97,7 @@ private:
    bool LoadValue(const Section section, const string &key, DataType &type, void *pvalue, DWORD size) const;
    bool SaveValue(const Section section, const string &key, const DataType type, const void *pvalue, const DWORD size, const bool overrideMode);
    
+   bool m_modified = false;
    string m_iniPath;
    mINI::INIStructure m_ini;
    const Settings *m_parent;
