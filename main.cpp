@@ -286,6 +286,7 @@ public:
    {
        m_vpinball.theInstance = GetInstanceHandle();
        SetResourceHandle(m_vpinball.theInstance);
+       g_pvp = &m_vpinball;
    }
 
    virtual ~VPApp() 
@@ -666,7 +667,6 @@ public:
        }
 
        m_vpinball.AddRef();
-       g_pvp = &m_vpinball;
        m_vpinball.Create(nullptr);
        m_vpinball.m_bgles = bgles;
        m_vpinball.m_fgles = fgles;
