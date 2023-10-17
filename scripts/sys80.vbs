@@ -30,8 +30,8 @@ Const swSlamTilt    = -1
 
 Const swLRFlip      = 112
 Const swLLFlip      = 114
-Const swURFlip      = 48
-Const swULFlip      = 47
+Const swURFlip      = 113
+Const swULFlip      = 115
 
 ' Help Window
 vpmSystemHelp = "Gottlieb System 80 keys" & vbNewLine &_
