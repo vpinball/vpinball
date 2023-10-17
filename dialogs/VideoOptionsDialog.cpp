@@ -89,7 +89,6 @@ void VideoOptionsDialog::ResetVideoPreferences(const unsigned int profile) // 0 
    SendDlgItemMessage(IDC_MSAA_COMBO, TBM_SETPOS, TRUE, 1);
 
    SendDlgItemMessage(IDC_DYNAMIC_DN, BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
-   
    SendDlgItemMessage(IDC_MAX_AO_COMBO, CB_SETCURSEL,profile == 2 ? 2 : 1, 0);
 
    SendDlgItemMessage(IDC_GLOBAL_SSREFLECTION_CHECK, BM_SETCHECK, profile == 2 ? BST_CHECKED : BST_UNCHECKED, 0);
@@ -305,8 +304,8 @@ BOOL VideoOptionsDialog::OnInitDialog()
       AddToolTip("Limit the quality of ambient occlusion for better performance.\r\nDynamic is the better with contact shadows for dynamic objects but higher performance requirements.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_MAX_AO_COMBO).GetHwnd());
       AddToolTip("Activate this to enhance the texture filtering.\r\nThis slows down performance only a bit (on most systems), but increases quality tremendously.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_FORCE_ANISO).GetHwnd());
 
-      AddToolTip("Physical width of the display area of the screen in centimeters, in landscape orientation (width > height).\r\n\r\nThis is needed to get correct size when using 'Window' mode for the camera.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_SCREEN_WIDTH).GetHwnd());
-      AddToolTip("Physical height of the display area of the screen in centimeters, in landscape orientation (width > height).\r\n\r\nThis is needed to get correct size when using 'Window' mode for the camera.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_SCREEN_HEIGHT).GetHwnd());
+      AddToolTip("Physical width of the display area of the screen in centimeters, in landscape orientation (width > height).\r\n\r\nThis is needed to get the correct size when using 'Window' mode for the camera.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_SCREEN_WIDTH).GetHwnd());
+      AddToolTip("Physical height of the display area of the screen in centimeters, in landscape orientation (width > height).\r\n\r\nThis is needed to get the correct size when using 'Window' mode for the camera.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_SCREEN_HEIGHT).GetHwnd());
    }
 
    SendDlgItemMessage(IDC_APPLICATION_SETTINGS, BM_SETCHECK, BST_CHECKED, 0);
@@ -645,7 +644,7 @@ void VideoOptionsDialog::LoadSettings()
    sprintf_s(tmp, sizeof(tmp), "%f", stereo3DBrightness);
    SetDlgItemText(IDC_3D_STEREO_BRIGHTNESS, tmp);
 
-   const float stereo3DSaturation = settings.LoadValueWithDefault(Settings::Player, "stereo3DSaturation"s, 1.0f);
+   const float stereo3DSaturation = settings.LoadValueWithDefault(Settings::Player, "Stereo3DSaturation"s, 1.0f);
    sprintf_s(tmp, sizeof(tmp), "%f", stereo3DSaturation);
    SetDlgItemText(IDC_3D_STEREO_DESATURATION, tmp);
 

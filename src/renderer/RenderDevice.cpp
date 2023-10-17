@@ -670,14 +670,14 @@ void RenderDevice::CreateDevice(int& refreshrate, VideoSyncMode& syncMode, UINT 
    m_scale = 1.0f; // Scale factor from scene (in VP units) to VR view (in meters)
    if (m_stereo3D == STEREO_VR)
    {
-      if (g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "scaleToFixedWidth"s, false))
+      if (g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "ScaleToFixedWidth"s, false))
       {
          float width;
          g_pplayer->m_ptable->get_Width(&width);
-         m_scale = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "scaleAbsolute"s, 55.0f) * 0.01f / width;
+         m_scale = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "ScaleAbsolute"s, 55.0f) * 0.01f / width;
       }
       else
-         m_scale = VPUTOCM(0.01f) * g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "scaleRelative"s, 1.0f);
+         m_scale = VPUTOCM(0.01f) * g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "ScaleRelative"s, 1.0f);
       if (m_scale <= 0.000001f)
          m_scale = VPUTOCM(0.01f); // Scale factor for VPUnits to Meters
       // Initialize VR, this will also override the render buffer size (m_width, m_height) to account for HMD render size and render the 2 eyes simultaneously
@@ -1212,7 +1212,7 @@ void RenderDevice::ResolveMSAA()
       const RenderPass* initial_rt = GetCurrentPass();
       SetRenderTarget("Resolve MSAA"s, m_pOffscreenBackBufferTexture1);
       BlitRenderTarget(m_pOffscreenMSAABackBufferTexture, m_pOffscreenBackBufferTexture1, true, true);
-      SetRenderTarget(initial_rt->m_name + "+"s, initial_rt->m_rt);
+      SetRenderTarget(initial_rt->m_name + '+', initial_rt->m_rt);
    }
 }
 
@@ -1962,7 +1962,7 @@ void RenderDevice::DrawGaussianBlur(RenderTarget* source, RenderTarget* tmp, Ren
    SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
    {
       FBShader->SetTextureNull(SHADER_tex_fb_filtered);
-      SetRenderTarget(initial_rt->m_name + " HBlur"s, tmp, false); // switch to temporary output buffer for horizontal phase of gaussian blur
+      SetRenderTarget(initial_rt->m_name + " HBlur", tmp, false); // switch to temporary output buffer for horizontal phase of gaussian blur
       m_currentPass->m_singleLayerRendering = singleLayer; // We support bluring a single layer (for anaglyph defocusing)
       AddRenderTargetDependency(source);
       FBShader->SetTexture(SHADER_tex_fb_filtered, source->GetColorSampler());
@@ -1972,7 +1972,7 @@ void RenderDevice::DrawGaussianBlur(RenderTarget* source, RenderTarget* tmp, Ren
    }
    {
       FBShader->SetTextureNull(SHADER_tex_fb_filtered);
-      SetRenderTarget(initial_rt->m_name + " VBlur"s, dest, false); // switch to output buffer for vertical phase of gaussian blur
+      SetRenderTarget(initial_rt->m_name + " VBlur", dest, false); // switch to output buffer for vertical phase of gaussian blur
       m_currentPass->m_singleLayerRendering = singleLayer; // We support bluring a single layer (for anaglyph defocusing)
       AddRenderTargetDependency(tmp);
       FBShader->SetTexture(SHADER_tex_fb_filtered, tmp->GetColorSampler());
@@ -1981,7 +1981,7 @@ void RenderDevice::DrawGaussianBlur(RenderTarget* source, RenderTarget* tmp, Ren
       DrawFullscreenTexturedQuad(FBShader);
    }
    CopyRenderStates(false, initial_state);
-   SetRenderTarget(initial_rt->m_name + "+"s, initial_rt->m_rt, true);
+   SetRenderTarget(initial_rt->m_name + '+', initial_rt->m_rt, true);
 }
 
 void RenderDevice::SetMainTextureDefaultFiltering(const SamplerFilter filter)
@@ -2110,7 +2110,7 @@ void RenderDevice::InitVR() {
 
    float zNear, zFar;
    g_pplayer->m_ptable->ComputeNearFarPlane(coords * sceneScale, m_scale, zNear, zFar);
-   zNear = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "nearPlane"s, 5.0f) / 100.0f; // Replace near value to allow player to move near parts up to user defined value
+   zNear = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "NearPlane"s, 5.0f) / 100.0f; // Replace near value to allow player to move near parts up to user defined value
    zFar *= 1.2f;
 
    if (m_pHMD == nullptr)

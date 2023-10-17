@@ -96,7 +96,7 @@ private:
 
    bool LoadValue(const Section section, const string &key, DataType &type, void *pvalue, DWORD size) const;
    bool SaveValue(const Section section, const string &key, const DataType type, const void *pvalue, const DWORD size, const bool overrideMode);
-   
+
    bool m_modified = false;
    string m_iniPath;
    mINI::INIStructure m_ini;

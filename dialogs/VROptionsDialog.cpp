@@ -522,17 +522,17 @@ BOOL VROptionsDialog::OnInitDialog()
    SendMessage(hwnd, CB_SETCURSEL, (int)vrPreview, 0);
    SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 
-   const bool scaleToFixedWidth = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "scaleToFixedWidth"s, false);
+   const bool scaleToFixedWidth = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "ScaleToFixedWidth"s, false);
    oldScaleValue = scaleToFixedWidth;
    SendDlgItemMessage(IDC_SCALE_TO_CM, BM_SETCHECK, scaleToFixedWidth ? BST_CHECKED : BST_UNCHECKED, 0);
 
-   scaleRelative = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "scaleRelative"s, 1.0f);
-   scaleAbsolute = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "scaleAbsolute"s, 55.0f);
+   scaleRelative = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "ScaleRelative"s, 1.0f);
+   scaleAbsolute = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "ScaleAbsolute"s, 55.0f);
 
    sprintf_s(tmp, sizeof(tmp), scaleToFixedWidth ? "%0.1f" : "%0.3f", scaleToFixedWidth ? scaleAbsolute : scaleRelative);
    SetDlgItemText(IDC_VR_SCALE, tmp);
 
-   const float vrNearPlane = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "nearPlane"s, 5.0f);
+   const float vrNearPlane = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "NearPlane"s, 5.0f);
    sprintf_s(tmp, sizeof(tmp), "%0.1f", vrNearPlane);
    SetDlgItemText(IDC_NEAR_PLANE, tmp);
 
@@ -568,7 +568,7 @@ BOOL VROptionsDialog::OnInitDialog()
    SendMessage(hwnd, CB_SETCURSEL, askToTurnOn, 0);
    SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 
-   const int DMDsource = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "DMDsource"s, 1); // Unimplemented for the time being
+   const int DMDsource = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "DMDSource"s, 1); // Unimplemented for the time being
    hwnd = GetDlgItem(IDC_DMD_SOURCE).GetHwnd();
    SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Internal Text/Flasher (via vbscript)");
@@ -577,7 +577,7 @@ BOOL VROptionsDialog::OnInitDialog()
    SendMessage(hwnd, CB_SETCURSEL, DMDsource, 0);
    SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 
-   const int BGsource = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "BGsource"s, 1); // Unimplemented for the time being
+   const int BGsource = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "BGSource"s, 1); // Unimplemented for the time being
    hwnd = GetDlgItem(IDC_BG_SOURCE).GetHwnd();
    SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Default table background");
@@ -865,12 +865,12 @@ void VROptionsDialog::OnOK()
    g_pvp->m_settings.SaveValue(Settings::PlayerVR, "VRPreview"s, (int)vrPreview);
 
    const bool scaleToFixedWidth = IsDlgButtonChecked(IDC_SCALE_TO_CM)!= 0;
-   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "scaleToFixedWidth"s, scaleToFixedWidth);
+   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "ScaleToFixedWidth"s, scaleToFixedWidth);
 
-   g_pvp->m_settings.SaveValue(Settings::PlayerVR, scaleToFixedWidth ? "scaleAbsolute"s : "scaleRelative"s, GetDlgItemText(IDC_VR_SCALE).c_str());
-   //g_pvp->m_settings.SaveValue(Settings::PlayerVR, scaleToFixedWidth ? "scaleRelative"s : "scaleAbsolute"s, scaleToFixedWidth ? scaleRelative : scaleAbsolute); //Also update hidden value?
+   g_pvp->m_settings.SaveValue(Settings::PlayerVR, scaleToFixedWidth ? "ScaleAbsolute"s : "ScaleRelative"s, GetDlgItemText(IDC_VR_SCALE).c_str());
+   //g_pvp->m_settings.SaveValue(Settings::PlayerVR, scaleToFixedWidth ? "ScaleRelative"s : "ScaleAbsolute"s, scaleToFixedWidth ? scaleRelative : scaleAbsolute); //Also update hidden value?
 
-   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "nearPlane"s, GetDlgItemText(IDC_NEAR_PLANE).c_str());
+   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "NearPlane"s, GetDlgItemText(IDC_NEAR_PLANE).c_str());
 
    //For compatibility keep these in Player instead of PlayerVR
    g_pvp->m_settings.SaveValue(Settings::PlayerVR, "Slope"s, GetDlgItemText(IDC_VR_SLOPE).c_str());
@@ -890,10 +890,10 @@ void VROptionsDialog::OnOK()
    g_pvp->m_settings.SaveValue(Settings::PlayerVR, "AskToTurnOn"s, (int)askToTurnOn);
 
    const size_t dmdSource = SendDlgItemMessage(IDC_DMD_SOURCE, CB_GETCURSEL, 0, 0);
-   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "DMDsource"s, (int)dmdSource);
+   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "DMDSource"s, (int)dmdSource);
 
    const size_t bgSource = SendDlgItemMessage(IDC_BG_SOURCE, CB_GETCURSEL, 0, 0);
-   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "BGsource"s, (int)bgSource);
+   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "BGSource"s, (int)bgSource);
 
    bool selected = IsDlgButtonChecked(IDC_CAP_EXTDMD)!= 0;
    g_pvp->m_settings.SaveValue(Settings::Player, "CaptureExternalDMD"s, selected);
