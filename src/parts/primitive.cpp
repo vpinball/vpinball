@@ -411,7 +411,7 @@ void Primitive::SetDefaults(const bool fromMouseClick)
 
    m_d.m_collidable = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Collidable"s, true) : true;
    m_d.m_toy = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "IsToy"s, false) : false;
-   m_d.m_disableLightingTop = dequantizeUnsigned<8>(fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "DisableLighting"s, 0) : 0); // stored as uchar for backward compatibility
+   m_d.m_disableLightingTop = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "DisableLighting"s, 0) : 0.f;
    m_d.m_disableLightingBelow = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "DisableLightingBelow"s, 0.f) : 0.f;
    m_d.m_reflectionEnabled = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "ReflectionEnabled"s, true) : true;
    m_d.m_backfacesEnabled = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "BackfacesEnabled"s, false) : false;
@@ -465,8 +465,7 @@ void Primitive::WriteRegDefaults()
 
    g_pvp->m_settings.SaveValue(strKeyName, "Collidable"s, m_d.m_collidable);
    g_pvp->m_settings.SaveValue(strKeyName, "IsToy"s, m_d.m_toy);
-   const int tmp = quantizeUnsigned<8>(clamp(m_d.m_disableLightingTop, 0.f, 1.f));
-   g_pvp->m_settings.SaveValue(strKeyName, "DisableLighting"s, (tmp == 1) ? 0 : tmp); // backwards compatible saving
+   g_pvp->m_settings.SaveValue(strKeyName, "DisableLighting"s, m_d.m_disableLightingTop);
    g_pvp->m_settings.SaveValue(strKeyName, "DisableLightingBelow"s, m_d.m_disableLightingBelow);
    g_pvp->m_settings.SaveValue(strKeyName, "ReflectionEnabled"s, m_d.m_reflectionEnabled);
    g_pvp->m_settings.SaveValue(strKeyName, "BackfacesEnabled"s, m_d.m_backfacesEnabled);
@@ -1593,10 +1592,7 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool sav
    bw.WriteBool(FID(ISTO), m_d.m_toy);
    bw.WriteBool(FID(U3DM), m_d.m_use3DMesh);
    bw.WriteBool(FID(STRE), m_d.m_staticRendering);
-   {
-   const int tmp = quantizeUnsigned<8>(clamp(m_d.m_disableLightingTop, 0.f, 1.f));
-   bw.WriteInt(FID(DILI), (tmp == 1) ? 0 : tmp); // backwards compatible saving
-   }
+   bw.WriteFloat(FID(DILT), m_d.m_disableLightingTop);
    bw.WriteFloat(FID(DILB), m_d.m_disableLightingBelow);
    bw.WriteBool(FID(REEN), m_d.m_reflectionEnabled);
    bw.WriteBool(FID(EBFC), m_d.m_backfacesEnabled);
@@ -1785,13 +1781,8 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
    case FID(MAPH): pbr->GetString(m_d.m_szPhysicsMaterial); break;
    case FID(OVPH): pbr->GetBool(m_d.m_overwritePhysics); break;
    case FID(STRE): pbr->GetBool(m_d.m_staticRendering); break;
-   case FID(DILI):
-   {
-      int tmp;
-      pbr->GetInt(tmp);
-      m_d.m_disableLightingTop = (tmp == 1) ? 1.f : dequantizeUnsigned<8>(tmp); // backwards compatible hacky loading!
-      break;
-   }
+   case FID(DILI): { int tmp; pbr->GetInt(tmp); m_d.m_disableLightingTop = (tmp == 1) ? 1.f : dequantizeUnsigned<8>(tmp); break; } // Pre 10.8 compatible hacky loading!
+   case FID(DILT): pbr->GetFloat(m_d.m_disableLightingTop); break;
    case FID(DILB): pbr->GetFloat(m_d.m_disableLightingBelow); break;
    case FID(U3DM): pbr->GetBool(m_d.m_use3DMesh); break;
    case FID(EBFC): pbr->GetBool(m_d.m_backfacesEnabled); break;

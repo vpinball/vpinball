@@ -185,7 +185,7 @@ void HitTarget::SetDefaults(const bool fromMouseClick)
    SetDefaultPhysics(fromMouseClick);
 
    m_d.m_collidable = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Collidable"s, true) : true;
-   m_d.m_disableLightingTop = dequantizeUnsigned<8>(fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "DisableLighting"s, 0) : 0); // stored as uchar for backward compatibility
+   m_d.m_disableLightingTop = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "DisableLighting"s, 0) : 0.f;
    m_d.m_disableLightingBelow = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "DisableLightingBelow"s, 0.f) : 0.f;
    m_d.m_reflectionEnabled = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "ReflectionEnabled"s, true) : true;
    m_d.m_raiseDelay = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "RaiseDelay"s, 100) : 100;
@@ -223,8 +223,7 @@ void HitTarget::WriteRegDefaults()
    g_pvp->m_settings.SaveValue(strKeyName, "TargetType"s, m_d.m_targetType);
 
    g_pvp->m_settings.SaveValue(strKeyName, "Collidable"s, m_d.m_collidable);
-   const int tmp = quantizeUnsigned<8>(clamp(m_d.m_disableLightingTop, 0.f, 1.f));
-   g_pvp->m_settings.SaveValue(strKeyName, "DisableLighting"s, (tmp == 1) ? 0 : tmp); // backwards compatible saving
+   g_pvp->m_settings.SaveValue(strKeyName, "DisableLighting"s, m_d.m_disableLightingTop);
    g_pvp->m_settings.SaveValue(strKeyName, "DisableLightingBelow"s, m_d.m_disableLightingBelow);
    g_pvp->m_settings.SaveValue(strKeyName, "ReflectionEnabled"s, m_d.m_reflectionEnabled);
    g_pvp->m_settings.SaveValue(strKeyName, "RaiseDelay"s, m_d.m_raiseDelay);
@@ -895,8 +894,7 @@ HRESULT HitTarget::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool sav
    bw.WriteFloat(FID(RFCT), m_d.m_friction);
    bw.WriteFloat(FID(RSCT), m_d.m_scatter);
    bw.WriteBool(FID(CLDR), m_d.m_collidable);
-   const int tmp = quantizeUnsigned<8>(clamp(m_d.m_disableLightingTop, 0.f, 1.f));
-   bw.WriteInt(FID(DILI), (tmp == 1) ? 0 : tmp); // backwards compatible saving
+   bw.WriteFloat(FID(DILT), m_d.m_disableLightingTop);
    bw.WriteFloat(FID(DILB), m_d.m_disableLightingBelow);
    bw.WriteBool(FID(REEN), m_d.m_reflectionEnabled);
    bw.WriteFloat(FID(PIDB), m_d.m_depthBias);
@@ -953,13 +951,8 @@ bool HitTarget::LoadToken(const int id, BiffReader * const pbr)
    case FID(RFCT): pbr->GetFloat(m_d.m_friction); break;
    case FID(RSCT): pbr->GetFloat(m_d.m_scatter); break;
    case FID(CLDR): pbr->GetBool(m_d.m_collidable); break;
-   case FID(DILI):
-   {
-      int tmp;
-      pbr->GetInt(tmp);
-      m_d.m_disableLightingTop = (tmp == 1) ? 1.f : dequantizeUnsigned<8>(tmp); // backwards compatible hacky loading!
-      break;
-   }
+   case FID(DILI): { int tmp; pbr->GetInt(tmp); m_d.m_disableLightingTop = (tmp == 1) ? 1.f : dequantizeUnsigned<8>(tmp); break; } // Pre 10.8 compatible hacky loading!
+   case FID(DILT): pbr->GetFloat(m_d.m_disableLightingTop); break;
    case FID(DILB): pbr->GetFloat(m_d.m_disableLightingBelow); break;
    case FID(PIDB): pbr->GetFloat(m_d.m_depthBias); break;
    case FID(TMON): pbr->GetBool(m_d.m_tdr.m_TimerEnabled); break;
