@@ -487,7 +487,7 @@ BOOL KeysConfigDialog::OnInitDialog()
     AddStringAxis("LRAxis"s, IDC_LRAXISCOMBO, 1); // assume X Axis as standard
     AddStringAxis("UDAxis"s, IDC_UDAXISCOMBO, 2); // assume Y Axis as standard
 
-    for (unsigned int i = 0; i <= eCKeys; ++i)
+    for (unsigned int i = 0; i < eCKeys; ++i)
       if (regkey_idc[i] != -1 && GetDlgItem(regkey_idc[i]) && GetDlgItem(regkey_idc[i]).IsWindow())
       {
          const bool hr = g_pvp->m_settings.LoadValue(Settings::Player, regkey_string[i], key);
