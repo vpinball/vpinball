@@ -108,7 +108,7 @@ sampler2D depthTex {
 };
 #endif
 
-sampler2D edgesTex : TEXUNIT6 {
+sampler2D edgesTex : TEXUNIT1 {
     Texture = <edgesTex2D>;
     AddressU = Clamp; AddressV = Clamp;
     MipFilter = Linear; MinFilter = Linear; MagFilter = Linear; //!! ??
