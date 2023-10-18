@@ -319,11 +319,11 @@ void main()
 void main()
 {
    float3 result = texStereoNoLod(tex_fb_filtered, tex0).rgb;
+   BRANCH if (do_bloom)
+      result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
    const float depth0 = texStereoNoLod(tex_depth, tex0).x;
    BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
       result = ReinhardToneMap(result);
-   BRANCH if (do_bloom)
-       result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
    color = float4(FBColorGrade(FBGamma(saturate(FBDither(result, tex0)))), 1.0);
 }
 
@@ -332,11 +332,11 @@ void main()
 void main()
 {
    float3 result = texStereoNoLod(tex_fb_filtered, tex0).rgb;
+   BRANCH if (do_bloom)
+      result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
    const float depth0 = texStereoNoLod(tex_depth, tex0).x;
    BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
       result = TonyMcMapfaceToneMap(result);
-   BRANCH if (do_bloom)
-       result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
    color = float4(FBColorGrade(FBGamma(saturate(FBDither(result, tex0)))), 1.0);
 }
 
@@ -345,14 +345,14 @@ void main()
 void main()
 {
    float3 result = texStereoNoLod(tex_fb_filtered, tex0).rgb;
-   const float depth0 = texStereoNoLod(tex_depth, tex0).x;
-   BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
-      result = ReinhardToneMap(result);
    // tex0 is pixel perfect sampling which here means between the pixels resulting from supersampling (for 2x, it's in the middle of the 2 texels)
    // moving AO before tonemap does not really change the look
    result *= texStereoNoLod(tex_ao, tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
    BRANCH if (do_bloom)
-       result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
+      result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
+   const float depth0 = texStereoNoLod(tex_depth, tex0).x;
+   BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
+      result = ReinhardToneMap(result);
    color = float4(FBColorGrade(FBGamma(saturate(FBDither(result, tex0)))), 1.0);
 }
 
@@ -361,14 +361,14 @@ void main()
 void main()
 {
    float3 result = texStereoNoLod(tex_fb_filtered, tex0).rgb;
-   const float depth0 = texStereoNoLod(tex_depth, tex0).x;
-   BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
-      result = TonyMcMapfaceToneMap(result);
    // tex0 is pixel perfect sampling which here means between the pixels resulting from supersampling (for 2x, it's in the middle of the 2 texels)
    // moving AO before tonemap does not really change the look
    result *= texStereoNoLod(tex_ao, tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
    BRANCH if (do_bloom)
-       result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
+      result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
+   const float depth0 = texStereoNoLod(tex_depth, tex0).x;
+   BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
+      result = TonyMcMapfaceToneMap(result);
    color = float4(FBColorGrade(FBGamma(saturate(FBDither(result, tex0)))), 1.0);
 }
 
@@ -377,11 +377,11 @@ void main()
 void main()
 {
    float3 result = texStereoNoLod(tex_fb_unfiltered, tex0).rgb;
+   BRANCH if (do_bloom)
+      result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
    const float depth0 = texStereoNoLod(tex_depth, tex0).x;
    BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
       result = ReinhardToneMap(result);
-   BRANCH if (do_bloom)
-       result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
    color = float4(FBColorGrade(FBGamma(saturate(FBDither(result, tex0)))), 1.0);
 }
 
@@ -390,11 +390,11 @@ void main()
 void main()
 {
    float3 result = texStereoNoLod(tex_fb_unfiltered, tex0).rgb;
+   BRANCH if (do_bloom)
+      result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
    const float depth0 = texStereoNoLod(tex_depth, tex0).x;
    BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
       result = TonyMcMapfaceToneMap(result);
-   BRANCH if (do_bloom)
-       result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
    color = float4(FBColorGrade(FBGamma(saturate(FBDither(result, tex0)))), 1.0);
 }
 
@@ -403,11 +403,11 @@ void main()
 void main()
 {
    float2 result = texStereoNoLod(tex_fb_unfiltered, tex0).rg;
+   BRANCH if (do_bloom)
+      result += texStereoNoLod(tex_bloom, tex0).rg; //!! offset?
    const float depth0 = texStereoNoLod(tex_depth, tex0).x;
    BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
       result = ReinhardToneMap(result);
-   BRANCH if (do_bloom)
-       result += texStereoNoLod(tex_bloom, tex0).rg; //!! offset?
    const float rg = /*FBColorGrade*/(FBGamma(saturate(dot(FBDither(result, tex0), float2(0.176204+0.0108109*0.5,0.812985+0.0108109*0.5)))));
    color = float4(rg,rg,rg,1.0);
 }
@@ -417,11 +417,11 @@ void main()
 void main()
 {
    float result = texStereoNoLod(tex_fb_unfiltered, tex0).r;
+   BRANCH if (do_bloom)
+      result += texStereoNoLod(tex_bloom, tex0).r; //!! offset?
    const float depth0 = texStereoNoLod(tex_depth, tex0).x;
    BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
       result = ReinhardToneMap(result);
-   BRANCH if (do_bloom)
-       result += texStereoNoLod(tex_bloom, tex0).r; //!! offset?
    const float gray = /*FBColorGrade*/(FBGamma(saturate(FBDither(result, tex0))));
    color = float4(gray,gray,gray,1.0);
 }
@@ -431,13 +431,13 @@ void main()
 void main()
 {
    float3 result = texStereoNoLod(tex_fb_unfiltered, tex0).rgb;
-   const float depth0 = texStereoNoLod(tex_depth, tex0).x;
-   BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
-      result = ReinhardToneMap(result);
    // moving AO before tonemap does not really change the look
    result *= texStereoNoLod(tex_ao, tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
    BRANCH if (do_bloom)
-       result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
+      result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
+   const float depth0 = texStereoNoLod(tex_depth, tex0).x;
+   BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
+      result = ReinhardToneMap(result);
    color = float4(FBColorGrade(FBGamma(saturate(FBDither(result, tex0)))), 1.0);
 }
 
@@ -446,13 +446,13 @@ void main()
 void main()
 {
    float3 result = texStereoNoLod(tex_fb_unfiltered, tex0).rgb;
-   const float depth0 = texStereoNoLod(tex_depth, tex0).x;
-   BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
-      result = TonyMcMapfaceToneMap(result);
    // moving AO before tonemap does not really change the look
    result *= texStereoNoLod(tex_ao, tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
    BRANCH if (do_bloom)
-       result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
+      result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
+   const float depth0 = texStereoNoLod(tex_depth, tex0).x;
+   BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
+      result = TonyMcMapfaceToneMap(result);
    color = float4(FBColorGrade(FBGamma(saturate(FBDither(result, tex0)))), 1.0);
 }
 
