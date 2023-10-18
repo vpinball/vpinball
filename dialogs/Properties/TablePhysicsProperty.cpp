@@ -64,7 +64,7 @@ void TablePhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
     if (dispid == IDC_MAX_DIFFICULTY_EDIT || dispid == -1)
         PropertyDialog::SetFloatTextbox(m_maxSlopeEdit, table->m_angletiltMax);
     if (dispid == IDC_GAME_DIFFICULTY_EDIT || dispid == -1)
-        PropertyDialog::SetFloatTextbox(m_gameplayDifficultEdit, table->GetGlobalDifficulty());
+        PropertyDialog::SetFloatTextbox(m_gameplayDifficultEdit, table->m_difficulty * 100.f);
 }
 
 void TablePhysicsProperty::UpdateProperties(const int dispid)
@@ -127,10 +127,10 @@ void TablePhysicsProperty::UpdateProperties(const int dispid)
             CHECK_UPDATE_ITEM(table->m_angletiltMax, PropertyDialog::GetFloatTextbox(m_maxSlopeEdit), table);
             break;
         case IDC_GAME_DIFFICULTY_EDIT:
-           CHECK_UPDATE_VALUE_SETTER(table->SetGlobalDifficulty, table->GetGlobalDifficulty, PropertyDialog::GetFloatTextbox, m_gameplayDifficultEdit, table);
+           CHECK_UPDATE_ITEM(table->m_difficulty, PropertyDialog::GetFloatTextbox(m_gameplayDifficultEdit) / 100.f, table);
            break;
         default:
-        break;
+           break;
     }
     UpdateVisuals(dispid);
 }
