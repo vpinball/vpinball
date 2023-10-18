@@ -1358,7 +1358,8 @@ PinTable::PinTable()
 
    nudge_set_sensitivity((float)m_settings.LoadValueWithDefault(Settings::Player, "NudgeSensitivity"s, 500) * (float)(1.0/1000.0));
 
-   m_globalDifficulty = dequantizeUnsignedPercent(m_settings.LoadValueWithDefault(Settings::Player, "GlobalDifficulty"s, 20)); // easy by default
+   m_difficulty = 0.2f; // easy by default
+   m_globalDifficulty = m_settings.LoadValue(Settings::TableOverride, "Difficulty"s, m_difficulty);
 
    ReadAccelerometerCalibration();
 
@@ -1603,6 +1604,8 @@ void PinTable::InitTablePostLoad()
          if (m_BG_image[i].empty() && i == BG_FSS) // copy image over for FSS mode
             m_BG_image[i] = m_BG_image[BG_DESKTOP];
       }
+
+   m_globalDifficulty = m_settings.LoadValue(Settings::TableOverride, "Difficulty"s, m_difficulty);
 
    m_currentBackglassMode = m_BG_current_set;
    if (m_BG_enable_FSS)
@@ -2152,7 +2155,8 @@ void PinTable::Play(const bool cameraMode)
    dst->m_tableheight = src->m_tableheight;
    dst->m_playfieldMaterial = src->m_playfieldMaterial;
    dst->m_colorbackdrop = src->m_colorbackdrop;
-   dst->m_globalDifficulty = src->m_globalDifficulty;
+   dst->m_difficulty = src->m_difficulty;
+   dst->m_globalDifficulty = m_settings.LoadValue(Settings::TableOverride, "Difficulty"s, dst->m_difficulty);
    dst->m_lightAmbient = src->m_lightAmbient;
    dst->m_lightHeight = src->m_lightHeight;
    dst->m_lightRange = src->m_lightRange;
@@ -3351,7 +3355,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
    bw.WriteString(FID(PLMA), m_playfieldMaterial);
    bw.WriteInt(FID(BCLR), m_colorbackdrop);
 
-   bw.WriteFloat(FID(TDFT), m_globalDifficulty);
+   bw.WriteFloat(FID(TDFT), m_difficulty);
 
    bw.WriteInt(FID(LZAM), m_lightAmbient);
    bw.WriteInt(FID(LZDI), m_Light[0].emission);
@@ -4249,14 +4253,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
       break;
    }
    case FID(CCUS): pbr->GetStruct(m_rgcolorcustom, sizeof(COLORREF) * 16); break;
-   case FID(TDFT):
-   {
-      pbr->GetFloat(m_globalDifficulty);
-      int tmp;
-      const HRESULT hr = m_settings.LoadValue(Settings::Player, "GlobalDifficulty"s, tmp);
-      if (hr == S_OK) m_globalDifficulty = dequantizeUnsignedPercent(tmp);
-      break;
-   }
+   case FID(TDFT): pbr->GetFloat(m_difficulty); break;
    case FID(CUST):
    {
       string tmp;
@@ -9929,16 +9926,8 @@ float PinTable::GetGlobalDifficulty() const
 
 void PinTable::SetGlobalDifficulty(const float value)
 {
-    int tmp;
-    if (m_settings.LoadValue(Settings::Player, "GlobalDifficulty"s, tmp))
-        m_globalDifficulty = dequantizeUnsignedPercent(tmp);
-    else
-    {
-        float v = value;
-        if (value < 0.f) v = 0.f;
-        else if (value > 100.0f) v = 100.0f;
-        m_globalDifficulty = v * (float)(1.0 / 100.0);
-    }
+   m_difficulty = value;
+   m_globalDifficulty = m_settings.LoadValue(Settings::TableOverride, "Difficulty"s, m_difficulty);
 }
 
 STDMETHODIMP PinTable::get_GlobalDifficulty(float *pVal)

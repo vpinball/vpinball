@@ -107,6 +107,9 @@ FEATURES:
   - updating a table to a new version can be done more easily, by simply renaming the ini file to the new table name, keeping all adjusted settings,
   - all properties and settings use the same approach: data from the table, eventually overriden in the app ini settings, eventually overriden in the table ini settings,
   - POV files are no more needed and therefore deprecated (they are still read and used unless a ini file has been created for backward compatibility).
+  
+- some settings were moved to benefit from the new settings system:
+  - Player/GlobalDifficulty is now TableOverride/Difficulty, expressed as a decimal value
 
 - remove Anti-Aliasing and Postprocessed Anti-Aliasing options from the table properties (and use an .ini based override instead)
 
