@@ -213,6 +213,7 @@ static const string options[] = { // keep in sync with option_names & option_des
    "Pov"s,
    "ExtractVBS"s,
    "Ini"s,
+   "TableIni"s,
    "exit"s // (ab)used by frontend, not handled by us
 }; // + c1..c9
 static const string option_descs[] =
@@ -235,6 +236,7 @@ static const string option_descs[] =
    "[filename]  Load, export pov and close"s,
    "[filename]  Load, export table script and close"s,
    "[filename]  Use a custom settings file instead of loading it from the default location"s,
+   "[filename]  Use a custom table settings file. This option is only available in conjunction with a command which specifies a table filename like Play, Edit,..."s,
    string()
 };
 enum option_names
@@ -257,6 +259,7 @@ enum option_names
    OPTION_POV,
    OPTION_EXTRACTVBS,
    OPTION_INI,
+   OPTION_TABLE_INI,
    OPTION_FRONTEND_EXIT
 };
 
@@ -278,6 +281,7 @@ private:
    bool bgles;
    float fgles;
    string szTableFileName;
+   string szTableIniFileName;
    string szIniFileName;
    VPinball m_vpinball;
 
@@ -302,6 +306,28 @@ public:
       _CrtDumpMemoryLeaks();
 #endif
    }
+
+   string GetPathFromArg(string arg, bool setCurrentPath)
+   {
+      string path = arg;
+      if ((arg[0] == '-') || (arg[0] == '/')) // Remove leading - or /
+         path = path.substr(1, path.size() - 1);
+      if (path[0] == '"') // Remove " "
+         path = path.substr(1, path.size() - 1);
+      if (path[1] != ':') // Add current path
+      {
+         char szLoadDir[MAXSTRING];
+         GetCurrentDirectory(MAXSTRING, szLoadDir);
+         path = string(szLoadDir) + PATH_SEPARATOR_CHAR + path;
+      }
+      else if (setCurrentPath) // Or set the current path from the arg
+      {
+         const string dir = PathFromFilename(path);
+         SetCurrentDirectory(dir.c_str());
+      }
+      return path;
+   }
+
    BOOL InitInstance() override
    {
 #ifdef CRASH_HANDLER
@@ -401,6 +427,7 @@ public:
                             "\n-"  +options[OPTION_POV]+                  ' '+ option_descs[OPTION_POV]+
                             "\n-"  +options[OPTION_EXTRACTVBS]+           ' '+ option_descs[OPTION_EXTRACTVBS]+
                             "\n-"  +options[OPTION_INI]+                  ' '+ option_descs[OPTION_INI]+
+                            "\n-"  +options[OPTION_TABLE_INI]+            ' '+ option_descs[OPTION_TABLE_INI]+
                             "\n-c1 [customparam] .. -c9 [customparam]  Custom user parameters that can be accessed in the script via GetCustomParam(X)";
             if (!valid_param)
                 output = "Invalid Parameter "s + szArglist[i] + "\n\nValid Parameters are:\n\n" + output;
@@ -504,6 +531,7 @@ public:
          const bool extractscript = compare_option(szArglist[i], OPTION_EXTRACTVBS);
 
          const bool ini = compare_option(szArglist[i], OPTION_INI);
+         const bool tableIni = compare_option(szArglist[i], OPTION_TABLE_INI);
 
          // global emission scale parameter handling
          if (gles && (i + 1 < nArgs))
@@ -519,26 +547,14 @@ public:
          }
 
          // user specified ini handling
-         if (ini && (i + 1 < nArgs))
+         if (tableIni && (i + 1 < nArgs))
          {
-            // Remove leading - or /
-            if ((szArglist[i + 1][0] == '-') || (szArglist[i + 1][0] == '/'))
-                 szIniFileName = szArglist[i + 1] + 1;
-            else
-                 szIniFileName = szArglist[i + 1];
-
-            // Remove " "
-            if (szIniFileName[0] == '"')
-                 szIniFileName = szIniFileName.substr(1, szIniFileName.size() - 1);
-
-            // Add current path
-            if (szIniFileName[1] != ':')
-            {
-                 char szLoadDir[MAXSTRING];
-                 GetCurrentDirectory(MAXSTRING, szLoadDir);
-                 szIniFileName = string(szLoadDir) + PATH_SEPARATOR_CHAR + szIniFileName;
-            }
-
+            szIniFileName = GetPathFromArg(szArglist[i + 1], false);
+            ++i; // two params processed
+         }
+         else if (ini && (i + 1 < nArgs))
+         {
+            szTableIniFileName = GetPathFromArg(szArglist[i + 1], false);
             ++i; // two params processed
          }
 
@@ -550,36 +566,8 @@ public:
             play = playfile || povEdit;
             extractPov = extractpov;
             extractScript = extractscript;
-
-            // Remove leading - or /
-            if ((szArglist[i + 1][0] == '-') || (szArglist[i + 1][0] == '/'))
-               szTableFileName = szArglist[i + 1] + 1;
-            else
-               szTableFileName = szArglist[i + 1];
-
-            // Remove " "
-            if (szTableFileName[0] == '"')
-               szTableFileName = szTableFileName.substr(1, szTableFileName.size()-1);
-
-            // Add current path
-            if (szTableFileName[1] != ':') {
-               char szLoadDir[MAXSTRING];
-               GetCurrentDirectory(MAXSTRING, szLoadDir);
-               szTableFileName = string(szLoadDir) + PATH_SEPARATOR_CHAR + szTableFileName;
-            }
-            else
-               // Or set from table path
-               if (play) {
-                  const string dir = PathFromFilename(szTableFileName);
-                  SetCurrentDirectory(dir.c_str());
-               }
-
+            szTableFileName = GetPathFromArg(szArglist[i + 1], play);
             ++i; // two params processed
-
-            if (extractpov || extractscript)
-               break;
-            else
-               continue;
          }
       }
 
@@ -621,50 +609,39 @@ public:
             m_vpinball.MessageBox("Could not load type library.", "Error", MB_ICONERROR);
       }
 
-      InitVPX();
-      //SET_CRT_DEBUG_FIELD( _CRTDBG_LEAK_CHECK_DF );
-      return TRUE;
-   }
-
-   void InitVPX()
-   {
 #if _WIN32_WINNT >= 0x0400 & defined(_ATL_FREE_THREADED)
-       const HRESULT hRes = _Module.RegisterClassObjects(CLSCTX_LOCAL_SERVER,
-           REGCLS_MULTIPLEUSE | REGCLS_SUSPENDED);
-       _ASSERTE(SUCCEEDED(hRes));
-       hRes = CoResumeClassObjects();
+      const HRESULT hRes2 = _Module.RegisterClassObjects(CLSCTX_LOCAL_SERVER, REGCLS_MULTIPLEUSE | REGCLS_SUSPENDED);
+      _ASSERTE(SUCCEEDED(hRes));
+      hRes2 = CoResumeClassObjects();
 #else
-       const HRESULT hRes = _Module.RegisterClassObjects(CLSCTX_LOCAL_SERVER,
-           REGCLS_MULTIPLEUSE);
+      const HRESULT hRes2 = _Module.RegisterClassObjects(CLSCTX_LOCAL_SERVER, REGCLS_MULTIPLEUSE);
 #endif
-       _ASSERTE(SUCCEEDED(hRes));
+      _ASSERTE(SUCCEEDED(hRes2));
 
-       INITCOMMONCONTROLSEX iccex;
-       iccex.dwSize = sizeof(INITCOMMONCONTROLSEX);
-       iccex.dwICC = ICC_COOL_CLASSES;
-       InitCommonControlsEx(&iccex);
+      INITCOMMONCONTROLSEX iccex;
+      iccex.dwSize = sizeof(INITCOMMONCONTROLSEX);
+      iccex.dwICC = ICC_COOL_CLASSES;
+      InitCommonControlsEx(&iccex);
 
-       {
-           EditableRegistry::RegisterEditable<Bumper>();
-           EditableRegistry::RegisterEditable<Decal>();
-           EditableRegistry::RegisterEditable<DispReel>();
-           EditableRegistry::RegisterEditable<Flasher>();
-           EditableRegistry::RegisterEditable<Flipper>();
-           EditableRegistry::RegisterEditable<Gate>();
-           EditableRegistry::RegisterEditable<Kicker>();
-           EditableRegistry::RegisterEditable<Light>();
-           EditableRegistry::RegisterEditable<LightSeq>();
-           EditableRegistry::RegisterEditable<Plunger>();
-           EditableRegistry::RegisterEditable<Primitive>();
-           EditableRegistry::RegisterEditable<Ramp>();
-           EditableRegistry::RegisterEditable<Rubber>();
-           EditableRegistry::RegisterEditable<Spinner>();
-           EditableRegistry::RegisterEditable<Surface>();
-           EditableRegistry::RegisterEditable<Textbox>();
-           EditableRegistry::RegisterEditable<Timer>();
-           EditableRegistry::RegisterEditable<Trigger>();
-           EditableRegistry::RegisterEditable<HitTarget>();
-       }
+      EditableRegistry::RegisterEditable<Bumper>();
+      EditableRegistry::RegisterEditable<Decal>();
+      EditableRegistry::RegisterEditable<DispReel>();
+      EditableRegistry::RegisterEditable<Flasher>();
+      EditableRegistry::RegisterEditable<Flipper>();
+      EditableRegistry::RegisterEditable<Gate>();
+      EditableRegistry::RegisterEditable<Kicker>();
+      EditableRegistry::RegisterEditable<Light>();
+      EditableRegistry::RegisterEditable<LightSeq>();
+      EditableRegistry::RegisterEditable<Plunger>();
+      EditableRegistry::RegisterEditable<Primitive>();
+      EditableRegistry::RegisterEditable<Ramp>();
+      EditableRegistry::RegisterEditable<Rubber>();
+      EditableRegistry::RegisterEditable<Spinner>();
+      EditableRegistry::RegisterEditable<Surface>();
+      EditableRegistry::RegisterEditable<Textbox>();
+      EditableRegistry::RegisterEditable<Timer>();
+      EditableRegistry::RegisterEditable<Trigger>();
+      EditableRegistry::RegisterEditable<HitTarget>();
 
        m_vpinball.AddRef();
        m_vpinball.Create(nullptr);
@@ -681,6 +658,8 @@ public:
                m_vpinball.LoadFileName(szTableFileName, !play);
                m_vpinball.m_table_played_via_command_line = play;
                loadFileResult = m_vpinball.m_ptableActive != nullptr;
+               if (m_vpinball.m_ptableActive && !szTableIniFileName.empty())
+                  m_vpinball.m_ptableActive->SetSettingsFileName(szTableIniFileName);
                if (!loadFileResult && m_vpinball.m_open_minimized)
                   m_vpinball.QuitPlayer(Player::CloseState::CS_CLOSE_APP);
            }
@@ -705,6 +684,9 @@ public:
                m_vpinball.QuitPlayer(Player::CloseState::CS_CLOSE_APP);
            }
        }
+
+       //SET_CRT_DEBUG_FIELD( _CRTDBG_LEAK_CHECK_DF );
+       return TRUE;
    }
 
    int Run() override
@@ -737,7 +719,10 @@ public:
 
 #include "nvapi/nvapi.h"
 #include "nvapi/NvApiDriverSettings.h"
+#pragma warning(push)
+#pragma warning(disable : 4838)
 #include "nvapi/NvApiDriverSettings.c"
+#pragma warning(pop)
 
 enum NvThreadOptimization
 {

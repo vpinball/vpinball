@@ -2566,8 +2566,8 @@ HRESULT PinTable::Save(const bool saveAs)
    }
 
    // Save user custom settings file (if any) along the table file
-   string szINIFilename = m_szFileName;
-   if (ReplaceExtensionFromFilename(szINIFilename, "ini"s))
+   string szINIFilename = GetSettingsFileName();
+   if (!szINIFilename.empty())
    {
       // Force saving as we may have upgraded the table version (from pre 10.8 to 10.8) or changed the file path
       m_settings.SetModified(true);
@@ -3498,8 +3498,8 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
    m_szFileName = szFileName;
 
    // Load user custom settings before actually loading the table for settings applying during load
-   string szINIFilename = m_szFileName;
-   if (ReplaceExtensionFromFilename(szINIFilename, "ini"s))
+   string szINIFilename = GetSettingsFileName();
+   if (!szINIFilename.empty())
       m_settings.LoadFromFile(szINIFilename, false);
 
    MAKE_WIDEPTR_FROMANSI(wszCodeFile, m_szFileName.c_str());
@@ -4045,9 +4045,8 @@ HRESULT PinTable::LoadData(IStream* pstm, int& csubobj, int& csounds, int& ctext
 bool PinTable::LoadToken(const int id, BiffReader * const pbr)
 {
    bool hasIni = false;
-   string szINIFilename = m_szFileName;
-   if (ReplaceExtensionFromFilename(szINIFilename, "ini"s))
-      hasIni = FileExists(szINIFilename);
+   string szINIFilename = GetSettingsFileName();
+   hasIni = !szINIFilename.empty() && FileExists(szINIFilename);
    switch(id)
    {
    case FID(PIID): pbr->GetInt((int *)pbr->m_pdata); break;
@@ -10406,8 +10405,8 @@ LRESULT PinTableMDI::OnMDIActivate(UINT msg, WPARAM wparam, LPARAM lparam)
    //lparam holds HWND of the MDI frame that is about to be activated
    if ((GetHwnd() == (HWND)wparam) && !m_table->m_szFileName.empty())
    {
-      string szINIFilename = m_table->m_szFileName;
-      if (ReplaceExtensionFromFilename(szINIFilename, "ini"s))
+      string szINIFilename = m_table->GetSettingsFileName();
+      if (!szINIFilename.empty())
          m_table->m_settings.SaveToFile(szINIFilename);
       if (g_pvp->m_ptableActive == m_table)
          g_pvp->m_ptableActive = nullptr;
@@ -10421,9 +10420,6 @@ LRESULT PinTableMDI::OnMDIActivate(UINT msg, WPARAM wparam, LPARAM lparam)
          g_pvp->SetPropSel(m_table->m_vmultisel);
       }
       m_vpinball->m_currentTablePath = PathFromFilename(m_table->m_szFileName);
-      string szINIFilename = m_table->m_szFileName;
-      if (ReplaceExtensionFromFilename(szINIFilename, "ini"s))
-         m_table->m_settings.LoadFromFile(szINIFilename, false);
       if (g_pvp->m_ptableActive != m_table)
          g_pvp->m_ptableActive = m_table;
    }
