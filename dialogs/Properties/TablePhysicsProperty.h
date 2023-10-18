@@ -37,6 +37,7 @@ private:
     EditBox m_tableFieldHeightEdit;
     EditBox m_minSlopeEdit;
     EditBox m_maxSlopeEdit;
+    EditBox m_gameplayDifficultEdit;
 };
 
 #endif // !H_TABLE_PHYSICS_PROPERTY

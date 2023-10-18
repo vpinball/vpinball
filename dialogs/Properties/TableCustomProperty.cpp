@@ -18,7 +18,6 @@ TableCustomProperty::TableCustomProperty(const VectorProtected<ISelect> *pvsel) 
     m_physicSetList.push_back("Set7");
     m_physicSetList.push_back("Set8");
 
-    m_gameplayDifficultEdit.SetDialog(this);
     m_soundEffectVolEdit.SetDialog(this);
     m_musicVolEdit.SetDialog(this);
 
@@ -41,8 +40,6 @@ void TableCustomProperty::UpdateVisuals(const int dispid/*=-1*/)
         PropertyDialog::SetCheckboxState(m_hOverwriteNightDayCheck, table->m_overwriteGlobalDayNight);
     if (dispid == IDC_OVERWRITE_PHYSICS_COMBO || dispid == -1)
         PropertyDialog::UpdateComboBox(m_physicSetList, m_overwritePhysicsSetCombo, m_physicSetList[(int)table->m_overridePhysics]);
-    if (dispid == IDC_GAME_DIFFICULTY_EDIT || dispid == -1)
-        PropertyDialog::SetFloatTextbox(m_gameplayDifficultEdit, table->GetGlobalDifficulty());
     if (dispid == IDC_OVERRIDEPHYSICS_FLIPPERS || dispid == -1)
         PropertyDialog::SetCheckboxState(m_hOverwriteFlipperCheck, table->m_overridePhysicsFlipper);
     if (dispid == IDC_TABLESOUNDVOLUME || dispid == -1)
@@ -66,9 +63,6 @@ void TableCustomProperty::UpdateProperties(const int dispid)
             break;
         case IDC_GLOBAL_DAYNIGHT:
             CHECK_UPDATE_ITEM(table->m_overwriteGlobalDayNight, PropertyDialog::GetCheckboxState(m_hOverwriteNightDayCheck), table);
-            break;
-        case IDC_GAME_DIFFICULTY_EDIT:
-            CHECK_UPDATE_VALUE_SETTER(table->SetGlobalDifficulty, table->GetGlobalDifficulty, PropertyDialog::GetFloatTextbox, m_gameplayDifficultEdit, table);
             break;
         case IDC_OVERWRITE_PHYSICS_COMBO:
             CHECK_UPDATE_ITEM(table->m_overridePhysics, (PropertyDialog::GetComboBoxIndex(m_overwritePhysicsSetCombo, m_physicSetList)), table);
@@ -102,7 +96,6 @@ BOOL TableCustomProperty::OnInitDialog()
     m_ballReflectionCombo.AttachItem(IDC_BALL_REFLECTION);
     AttachItem(IDC_DAYNIGHT_SLIDER, m_nightDaySlider);
     m_hOverwriteNightDayCheck = ::GetDlgItem(GetHwnd(), IDC_GLOBAL_DAYNIGHT);
-    m_gameplayDifficultEdit.AttachItem(IDC_GAME_DIFFICULTY_EDIT);
     m_overwritePhysicsSetCombo.AttachItem(IDC_OVERWRITE_PHYSICS_COMBO);
     m_hOverwriteFlipperCheck = ::GetDlgItem(GetHwnd(), IDC_OVERRIDEPHYSICS_FLIPPERS);
     m_soundEffectVolEdit.AttachItem(IDC_TABLESOUNDVOLUME);
@@ -120,14 +113,12 @@ BOOL TableCustomProperty::OnInitDialog()
     m_resizer.AddChild(GetDlgItem(IDC_STATIC7), CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC8), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC11), CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC12), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC13), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC14), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC15), CResizer::topleft, 0);
     m_resizer.AddChild(m_ballReflectionCombo, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_nightDaySlider, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_hOverwriteNightDayCheck, CResizer::topleft, 0);
-    m_resizer.AddChild(m_gameplayDifficultEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_overwritePhysicsSetCombo, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_hOverwriteFlipperCheck, CResizer::topleft, 0);
     m_resizer.AddChild(m_soundEffectVolEdit, CResizer::topleft, RD_STRETCH_WIDTH);

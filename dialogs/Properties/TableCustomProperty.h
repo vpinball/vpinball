@@ -19,7 +19,6 @@ protected:
 private:
     ComboBox    m_ballReflectionCombo;
     ComboBox    m_overwritePhysicsSetCombo;
-    EditBox     m_gameplayDifficultEdit;
     EditBox     m_soundEffectVolEdit;
     EditBox     m_musicVolEdit;
     CSlider     m_nightDaySlider;
