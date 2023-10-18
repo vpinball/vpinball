@@ -116,17 +116,17 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect> &pvsel)
         else
         {
             m_elementTypeName.SetWindowText("Table");
-            m_tabs[0] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new TableCustomProperty(&pvsel), _T("User")));
-            m_tabs[1] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new TableVisualsProperty(&pvsel), _T("Visuals")));
-            m_tabs[2] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new TablePhysicsProperty(&pvsel), _T("Physics")));
-            m_tabs[3] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new TableLightsProperty(&pvsel), _T("Lights")));
-            if (m_tab.m_activeTabText == CString("User"))
+            m_tabs[0] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new TableVisualsProperty(&pvsel), _T("Visuals")));
+            m_tabs[1] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new TableLightsProperty(&pvsel), _T("Lights")));
+            m_tabs[2] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new TablePhysicsProperty(&pvsel), _T("Physics")));
+            m_tabs[3] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new TableCustomProperty(&pvsel), _T("Sound")));
+            if (m_tab.m_activeTabText == CString("Visuals"))
                 activePage = 0;
-            else if (m_tab.m_activeTabText == CString("Visuals"))
+            else if (m_tab.m_activeTabText == CString("Lights"))
                 activePage = 1;
             else if (m_tab.m_activeTabText == CString("Physics"))
                 activePage = 2;
-            else if (m_tab.m_activeTabText == CString("Lights"))
+            else if (m_tab.m_activeTabText == CString("Sound"))
                 activePage = 3;
         }
         break;

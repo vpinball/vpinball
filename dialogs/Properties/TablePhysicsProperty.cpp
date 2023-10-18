@@ -20,6 +20,7 @@ TablePhysicsProperty::TablePhysicsProperty(const VectorProtected<ISelect> *pvsel
     m_tableFieldHeightEdit.SetDialog(this);
     m_minSlopeEdit.SetDialog(this);
     m_maxSlopeEdit.SetDialog(this);
+    m_gameplayDifficultEdit.SetDialog(this);
 }
 
 void TablePhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
@@ -62,6 +63,8 @@ void TablePhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
         PropertyDialog::SetFloatTextbox(m_minSlopeEdit, table->m_angletiltMin);
     if (dispid == IDC_MAX_DIFFICULTY_EDIT || dispid == -1)
         PropertyDialog::SetFloatTextbox(m_maxSlopeEdit, table->m_angletiltMax);
+    if (dispid == IDC_GAME_DIFFICULTY_EDIT || dispid == -1)
+        PropertyDialog::SetFloatTextbox(m_gameplayDifficultEdit, table->GetGlobalDifficulty());
 }
 
 void TablePhysicsProperty::UpdateProperties(const int dispid)
@@ -123,6 +126,9 @@ void TablePhysicsProperty::UpdateProperties(const int dispid)
         case IDC_MAX_DIFFICULTY_EDIT:
             CHECK_UPDATE_ITEM(table->m_angletiltMax, PropertyDialog::GetFloatTextbox(m_maxSlopeEdit), table);
             break;
+        case IDC_GAME_DIFFICULTY_EDIT:
+           CHECK_UPDATE_VALUE_SETTER(table->SetGlobalDifficulty, table->GetGlobalDifficulty, PropertyDialog::GetFloatTextbox, m_gameplayDifficultEdit, table);
+           break;
         default:
         break;
     }
@@ -151,6 +157,7 @@ BOOL TablePhysicsProperty::OnInitDialog()
     m_tableFieldHeightEdit.AttachItem(IDC_TABLE_FIELD_HEIGHT_EDIT);
     m_minSlopeEdit.AttachItem(IDC_MIN_DIFFICULTY_EDIT);
     m_maxSlopeEdit.AttachItem(IDC_MAX_DIFFICULTY_EDIT);
+    m_gameplayDifficultEdit.AttachItem(IDC_GAME_DIFFICULTY_EDIT);
 
     UpdateVisuals();
 
@@ -171,6 +178,7 @@ BOOL TablePhysicsProperty::OnInitDialog()
     m_resizer.AddChild(GetDlgItem(IDC_STATIC14), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC15), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC16), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC18), CResizer::topleft, 0);
     m_resizer.AddChild(m_hFilterMechanicalPlungerCheck, CResizer::topleft, 0);
     m_resizer.AddChild(m_importSetButton, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_exportSetButton, CResizer::topleft, RD_STRETCH_WIDTH);
@@ -189,6 +197,7 @@ BOOL TablePhysicsProperty::OnInitDialog()
     m_resizer.AddChild(m_tableFieldHeightEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_minSlopeEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_maxSlopeEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_gameplayDifficultEdit, CResizer::topleft, RD_STRETCH_WIDTH);
 
     return TRUE;
 }
