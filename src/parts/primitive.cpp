@@ -411,7 +411,7 @@ void Primitive::SetDefaults(const bool fromMouseClick)
 
    m_d.m_collidable = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Collidable"s, true) : true;
    m_d.m_toy = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "IsToy"s, false) : false;
-   m_d.m_disableLightingTop = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "DisableLighting"s, 0) : 0.f;
+   m_d.m_disableLightingTop = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "DisableLighting"s, 0.f) : 0.f;
    m_d.m_disableLightingBelow = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "DisableLightingBelow"s, 0.f) : 0.f;
    m_d.m_reflectionEnabled = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "ReflectionEnabled"s, true) : true;
    m_d.m_backfacesEnabled = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "BackfacesEnabled"s, false) : false;
