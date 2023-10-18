@@ -96,11 +96,17 @@ FEATURES:
   This file will be automatically created and initialized from existing settings if found in Windows registry. This change was made to:
   - allow per table settings,
   - allow easier edition (manually or by a third party application),
-  - allow to use different settings by specifying a custom ini file on the command line (see CommandLineParameters.txt),
+  - allow to use different settings by specifying a custom ini file on the command line for the app or table settings (see CommandLineParameters.txt),
   - settings are the same and can be shared between Windows version of VPX and the standalone version (Linux, Mac, Android, iOS, Raspberry,...),
   - allow to see all the available settings at once (not so easy before, since there are a few hundreds of them),
   - allow easier collaboration by being able to share the setting file with bug reports.
   If a file with the exact same name as the one of the table file but with '.ini' extension is found along the table file, it will be used as a settings override for that table.
+
+- settings were also extended to support overriding some table properties, like camera properties or other things that used to be adjusted in the 'User' property pane. This change allows to
+  adjust a table to user preferences without modifying the table. Only the table settings (the ini file along the table) will be adjusted. This way:
+  - updating a table to a new version can be done more easily, by simply renaming the ini file to the new table name, keeping all adjusted settings,
+  - all properties and settings use the same approach: data from the table, eventually overriden in the app ini settings, eventually overriden in the table ini settings,
+  - POV files are no more needed and therefore deprecated (they are still read and used unless a ini file has been created for backward compatibility).
 
 - remove Anti-Aliasing and Postprocessed Anti-Aliasing options from the table properties (and use an .ini based override instead)
 

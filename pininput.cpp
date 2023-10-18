@@ -1131,8 +1131,8 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
             g_pplayer->m_ptable->mViewSetups[i].SaveToTableOverrideSettings(g_pplayer->m_pEditorTable->m_settings, i == BG_DESKTOP ? "ViewDT"s : i == BG_FSS ? "ViewFSS"s : "ViewCab"s, true);
          }
          g_pvp->m_settings.SetParent(nullptr);
-         string szINIFilename = g_pplayer->m_ptable->m_szFileName;
-         if (ReplaceExtensionFromFilename(szINIFilename, "ini"s))
+         string szINIFilename = g_pplayer->m_ptable->GetSettingsFileName();
+         if (!szINIFilename.empty())
          {
             if (g_pplayer->m_pEditorTable->m_settings.IsModified())
             {

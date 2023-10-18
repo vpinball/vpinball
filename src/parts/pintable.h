@@ -579,7 +579,22 @@ public:
    string m_szFileName;
    string m_szTitle;
 
-   Settings m_settings; // Settings for this table (apply table overrides above application settings)
+   void SetSettingsFileName(const string &path)
+   {
+      m_szIniFileName = FileExists(path) ? path : ""s;
+      m_settings.LoadFromFile(GetSettingsFileName(), false);
+   }
+   string GetSettingsFileName() const
+   {
+      if (!m_szIniFileName.empty() && FileExists(m_szIniFileName))
+         return m_szIniFileName;
+      string szINIFilename = m_szFileName;
+      if (ReplaceExtensionFromFilename(szINIFilename, "ini"s))
+         return szINIFilename;
+      return ""s;
+   }
+   string m_szIniFileName;
+   Settings m_settings; // Settings for this table (apply overrides above application settings)
 
    bool m_isLiveInstance = false; // true for live shallow copy of a table
    robin_hood::unordered_map<void *, void *> m_startupToLive; // For live table, maps back and forth to startup table editable parts, materials,...
