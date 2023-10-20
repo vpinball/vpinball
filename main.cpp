@@ -272,17 +272,17 @@ static bool compare_option(const char *const arg, const option_names option)
 class VPApp : public CWinApp
 {
 private:
-   bool run;
-   bool play;
-   bool extractPov;
-   bool file;
-   bool loadFileResult;
-   bool extractScript;
-   bool bgles;
-   float fgles;
-   string szTableFileName;
-   string szTableIniFileName;
-   string szIniFileName;
+   bool m_run;
+   bool m_play;
+   bool m_extractPov;
+   bool m_file;
+   bool m_loadFileResult;
+   bool m_extractScript;
+   bool m_bgles;
+   float m_fgles;
+   string m_szTableFileName;
+   string m_szTableIniFileName;
+   string m_szIniFileName;
    VPinball m_vpinball;
 
 public:
@@ -365,20 +365,20 @@ public:
       _Module.Init(ObjectMap, m_vpinball.theInstance, &LIBID_VPinballLib);
 #endif
 
-      file = false;
-      play = false;
+      m_file = false;
+      m_play = false;
       bool allowLoadOnStart = true;
-      extractPov = false;
-      run = true;
-      loadFileResult = true;
-      extractScript = false;
-      fgles = 0.f;
-      bgles = false;
+      m_extractPov = false;
+      m_run = true;
+      m_loadFileResult = true;
+      m_extractScript = false;
+      m_fgles = 0.f;
+      m_bgles = false;
 
-      szTableFileName.clear();
+      m_szTableFileName.clear();
 
       // Default ini path (can be overriden from command line)
-      szIniFileName = m_vpinball.m_szMyPrefPath + "VPinballX.ini"s;
+      m_szIniFileName = m_vpinball.m_szMyPrefPath + "VPinballX.ini"s;
 
       int nArgs;
       LPSTR *szArglist = CommandLineToArgvA(GetCommandLine(), &nArgs);
@@ -432,7 +432,6 @@ public:
             if (!valid_param)
                 output = "Invalid Parameter "s + szArglist[i] + "\n\nValid Parameters are:\n\n" + output;
             ::MessageBox(NULL, output.c_str(), "Visual Pinball Usage", valid_param ? MB_OK : MB_ICONERROR);
-            //run = false;
             exit(valid_param ? 0 : 1);
          }
 
@@ -449,7 +448,7 @@ public:
             const HRESULT ret = _Module.UnregisterServer(TRUE);
             if (ret != S_OK)
                 ShowError("Unregister VP functions failed");
-            run = false;
+            m_run = false;
             break;
          }
          if (compare_option(szArglist[i], OPTION_REGSERVER))
@@ -458,7 +457,7 @@ public:
             const HRESULT ret = _Module.RegisterServer(TRUE);
             if (ret != S_OK)
                 ShowError("Register VP functions failed");
-            run = false;
+            m_run = false;
             break;
          }
 
@@ -514,66 +513,66 @@ public:
          if (ext_minimized)
              m_vpinball.m_open_minimized = true;
 
-         const bool editfile = compare_option(szArglist[i], OPTION_EDIT);
-         const bool playfile = compare_option(szArglist[i], OPTION_PLAY);
-
          const bool gles = compare_option(szArglist[i], OPTION_GLES);
 
          const bool primaryDisplay = compare_option(szArglist[i], OPTION_PRIMARY);
          if (primaryDisplay)
              m_vpinball.m_primaryDisplay = true;
 
-         const bool povEdit = compare_option(szArglist[i], OPTION_POVEDIT);
-         if (povEdit)
-             m_vpinball.m_povEdit = true;
-
-         const bool extractpov = compare_option(szArglist[i], OPTION_POV);
-         const bool extractscript = compare_option(szArglist[i], OPTION_EXTRACTVBS);
-
-         const bool ini = compare_option(szArglist[i], OPTION_INI);
-         const bool tableIni = compare_option(szArglist[i], OPTION_TABLE_INI);
-
          // global emission scale parameter handling
          if (gles && (i + 1 < nArgs))
          {
-             char *lpszStr;
-             if ((szArglist[i + 1][0] == '-') || (szArglist[i + 1][0] == '/'))
-                 lpszStr = szArglist[i + 1] + 1;
-             else
-                 lpszStr = szArglist[i + 1];
-
-            fgles = clamp((float)atof(lpszStr), 0.115f, 0.925f);
-            bgles = true;
+            char *lpszStr;
+            if ((szArglist[i + 1][0] == '-') || (szArglist[i + 1][0] == '/'))
+               lpszStr = szArglist[i + 1] + 1;
+            else
+               lpszStr = szArglist[i + 1];
+            m_fgles = clamp((float)atof(lpszStr), 0.115f, 0.925f);
+            m_bgles = true;
          }
 
-         // user specified ini handling
-         if (tableIni && (i + 1 < nArgs))
+         const bool editfile = compare_option(szArglist[i], OPTION_EDIT);
+         const bool playfile = compare_option(szArglist[i], OPTION_PLAY);
+         const bool povEdit = compare_option(szArglist[i], OPTION_POVEDIT);
+         const bool extractpov = compare_option(szArglist[i], OPTION_POV);
+         const bool extractscript = compare_option(szArglist[i], OPTION_EXTRACTVBS);
+         const bool ini = compare_option(szArglist[i], OPTION_INI);
+         const bool tableIni = compare_option(szArglist[i], OPTION_TABLE_INI);
+         if (ini || tableIni || editfile || playfile || povEdit || extractpov || extractscript)
          {
-            szIniFileName = GetPathFromArg(szArglist[i + 1], false);
-            ++i; // two params processed
-         }
-         else if (ini && (i + 1 < nArgs))
-         {
-            szTableIniFileName = GetPathFromArg(szArglist[i + 1], false);
-            ++i; // two params processed
-         }
+            if (i + 1 >= nArgs)
+            {
+               ::MessageBox(NULL, ("Option '"s + szArglist[i] + "' must be followed by a valid file path"s).c_str(), "Command Line Error", MB_ICONERROR);
+               exit(1);
+            }
+            const string path = GetPathFromArg(szArglist[i + 1], false);
+            i++; // two params processed
+            if (!FileExists(path))
+            {
+               ::MessageBox(NULL, ("File '"s + path + "' was not found"s).c_str(), "Command Line Error", MB_ICONERROR);
+               exit(1);
+            }
 
-         // table name handling
-         if ((editfile || playfile || povEdit || extractpov || extractscript) && (i + 1 < nArgs))
-         {
-            allowLoadOnStart = false; // Don't face the user with a load dialog since the file is provided on the command line
-            file = true;
-            play = playfile || povEdit;
-            extractPov = extractpov;
-            extractScript = extractscript;
-            szTableFileName = GetPathFromArg(szArglist[i + 1], play);
-            ++i; // two params processed
+            if (ini)
+               m_szIniFileName = path;
+            else if (tableIni)
+               m_szTableIniFileName = path;
+            else // editfile || playfile || povEdit || extractpov || extractscript
+            {
+               allowLoadOnStart = false; // Don't face the user with a load dialog since the file is provided on the command line
+               m_file = true;
+               m_play = playfile || povEdit;
+               m_extractPov = extractpov;
+               m_extractScript = extractscript;
+               m_vpinball.m_povEdit = povEdit;
+               m_szTableFileName = path;
+            }
          }
       }
 
       free(szArglist);
 
-      m_vpinball.m_settings.LoadFromFile(szIniFileName, true);
+      m_vpinball.m_settings.LoadFromFile(m_szIniFileName, true);
       
       SetupLogger(m_vpinball.m_settings.LoadValueWithDefault(Settings::Editor, "EnableLog"s, false));
       PLOGI << "Starting VPX...";
@@ -582,8 +581,8 @@ public:
       const bool stos = allowLoadOnStart && m_vpinball.m_settings.LoadValueWithDefault(Settings::Editor, "SelectTableOnStart"s, true);
       if (stos)
       {
-         file = true;
-         play = true;
+         m_file = true;
+         m_play = true;
       }
 
       // load and register VP type library for COM integration
@@ -643,58 +642,58 @@ public:
       EditableRegistry::RegisterEditable<Trigger>();
       EditableRegistry::RegisterEditable<HitTarget>();
 
-       m_vpinball.AddRef();
-       m_vpinball.Create(nullptr);
-       m_vpinball.m_bgles = bgles;
-       m_vpinball.m_fgles = fgles;
+      m_vpinball.AddRef();
+      m_vpinball.Create(nullptr);
+      m_vpinball.m_bgles = m_bgles;
+      m_vpinball.m_fgles = m_fgles;
 
-       g_haccel = LoadAccelerators(m_vpinball.theInstance, MAKEINTRESOURCE(IDR_VPACCEL));
+      g_haccel = LoadAccelerators(m_vpinball.theInstance, MAKEINTRESOURCE(IDR_VPACCEL));
 
-       if (file)
-       {
-           if (!szTableFileName.empty())
-           {
-               PLOGI << "Loading table from command line option: " << szTableFileName;
-               m_vpinball.LoadFileName(szTableFileName, !play);
-               m_vpinball.m_table_played_via_command_line = play;
-               loadFileResult = m_vpinball.m_ptableActive != nullptr;
-               if (m_vpinball.m_ptableActive && !szTableIniFileName.empty())
-                  m_vpinball.m_ptableActive->SetSettingsFileName(szTableIniFileName);
-               if (!loadFileResult && m_vpinball.m_open_minimized)
-                  m_vpinball.QuitPlayer(Player::CloseState::CS_CLOSE_APP);
-           }
-           else
-           {
-               loadFileResult = m_vpinball.LoadFile(!play);
-               m_vpinball.m_table_played_via_SelectTableOnStart = m_vpinball.m_settings.LoadValueWithDefault(Settings::Editor, "SelectTableOnPlayerClose"s, true) ? loadFileResult : false;
-           }
-
-           if (extractScript && loadFileResult)
-           {
-               string szScriptFilename = szTableFileName;
-               if(ReplaceExtensionFromFilename(szScriptFilename, "vbs"s))
-                   m_vpinball.m_ptableActive->m_pcv->SaveToFile(szScriptFilename);
+      if (m_file)
+      {
+         if (!m_szTableFileName.empty())
+         {
+            PLOGI << "Loading table from command line option: " << m_szTableFileName;
+            m_vpinball.LoadFileName(m_szTableFileName, !m_play);
+            m_vpinball.m_table_played_via_command_line = m_play;
+            m_loadFileResult = m_vpinball.m_ptableActive != nullptr;
+            if (m_vpinball.m_ptableActive && !m_szTableIniFileName.empty())
+               m_vpinball.m_ptableActive->SetSettingsFileName(m_szTableIniFileName);
+            if (!m_loadFileResult && m_vpinball.m_open_minimized)
                m_vpinball.QuitPlayer(Player::CloseState::CS_CLOSE_APP);
-           }
-           if (extractPov && loadFileResult)
-           {
-               string szPOVFilename = szTableFileName;
-               if (ReplaceExtensionFromFilename(szPOVFilename, "pov"s))
-                   m_vpinball.m_ptableActive->ExportBackdropPOV(szPOVFilename);
-               m_vpinball.QuitPlayer(Player::CloseState::CS_CLOSE_APP);
-           }
-       }
+         }
+         else
+         {
+            m_loadFileResult = m_vpinball.LoadFile(!m_play);
+            m_vpinball.m_table_played_via_SelectTableOnStart = m_vpinball.m_settings.LoadValueWithDefault(Settings::Editor, "SelectTableOnPlayerClose"s, true) ? m_loadFileResult : false;
+         }
 
-       //SET_CRT_DEBUG_FIELD( _CRTDBG_LEAK_CHECK_DF );
-       return TRUE;
+         if (m_extractScript && m_loadFileResult)
+         {
+            string szScriptFilename = m_szTableFileName;
+            if(ReplaceExtensionFromFilename(szScriptFilename, "vbs"s))
+               m_vpinball.m_ptableActive->m_pcv->SaveToFile(szScriptFilename);
+            m_vpinball.QuitPlayer(Player::CloseState::CS_CLOSE_APP);
+         }
+         if (m_extractPov && m_loadFileResult)
+         {
+            string szPOVFilename = m_szTableFileName;
+            if (ReplaceExtensionFromFilename(szPOVFilename, "pov"s))
+               m_vpinball.m_ptableActive->ExportBackdropPOV(szPOVFilename);
+            m_vpinball.QuitPlayer(Player::CloseState::CS_CLOSE_APP);
+         }
+      }
+
+      //SET_CRT_DEBUG_FIELD( _CRTDBG_LEAK_CHECK_DF );
+      return TRUE;
    }
 
    int Run() override
    {
-      if (run)
+      if (m_run)
       {
-         if (play && loadFileResult)
-           m_vpinball.DoPlay(m_vpinball.m_povEdit);
+         if (m_play && m_loadFileResult)
+            m_vpinball.DoPlay(m_vpinball.m_povEdit);
 
          // VBA APC handles message loop (bastards)
          m_vpinball.MainMsgLoop();
