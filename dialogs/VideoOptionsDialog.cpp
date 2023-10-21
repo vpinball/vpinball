@@ -416,6 +416,13 @@ BOOL VideoOptionsDialog::OnInitDialog()
    SendMessage(hwndARASlider, TBM_SETPAGESIZE, 0, 1);
    SendMessage(hwndARASlider, TBM_SETTHUMBLENGTH, 5, 0);
 
+   const HWND hwndDNSlider = GetDlgItem(IDC_DAYNIGHT_SLIDER).GetHwnd();
+   SendMessage(hwndDNSlider, TBM_SETRANGE, fTrue, MAKELONG(2, 100));
+   SendMessage(hwndDNSlider, TBM_SETTICFREQ, 10, 0);
+   SendMessage(hwndDNSlider, TBM_SETLINESIZE, 0, 1);
+   SendMessage(hwndDNSlider, TBM_SETPAGESIZE, 0, 1);
+   SendMessage(hwndDNSlider, TBM_SETTHUMBLENGTH, 5, 0);
+
    // Disable unsupported features in UI
 #ifdef ENABLE_SDL
    GetDlgItem(IDC_DISABLE_DWM).EnableWindow(false);
@@ -512,14 +519,6 @@ void VideoOptionsDialog::LoadSettings()
    sprintf_s(tmp, sizeof(tmp), "%f", ballAspecRatioOffsetY);
    SetDlgItemText(IDC_CORRECTION_Y, tmp);
 
-   const float latitude = settings.LoadValueWithDefault(Settings::Player, "Latitude"s, 52.52f);
-   sprintf_s(tmp, sizeof(tmp), "%f", latitude);
-   SetDlgItemText(IDC_DN_LATITUDE, tmp);
-
-   const float longitude = settings.LoadValueWithDefault(Settings::Player, "Longitude"s, 13.37f);
-   sprintf_s(tmp, sizeof(tmp), "%f", longitude);
-   SetDlgItemText(IDC_DN_LONGITUDE, tmp);
-
    const float nudgeStrength = settings.LoadValueWithDefault(Settings::Player, "NudgeStrength"s, 2e-2f);
    sprintf_s(tmp, sizeof(tmp), "%f", nudgeStrength);
    SetDlgItemText(IDC_NUDGE_STRENGTH, tmp);
@@ -530,9 +529,6 @@ void VideoOptionsDialog::LoadSettings()
    const int MSAASamples = settings.LoadValueWithDefault(Settings::Player, "MSAASamples"s, 1);
    const int CurrMSAAPos = static_cast<const int>(std::find(MSAASamplesOpts, MSAASamplesOpts + (sizeof(MSAASamplesOpts) / sizeof(MSAASamplesOpts[0])), MSAASamples) - MSAASamplesOpts);
    SendDlgItemMessage(IDC_MSAA_COMBO, CB_SETCURSEL, CurrMSAAPos, 0);
-
-   const int useDN = settings.LoadValueWithDefault(Settings::Player, "DynamicDayNight"s, 0);
-   SendDlgItemMessage(IDC_DYNAMIC_DN, BM_SETCHECK, (useDN != 0) ? BST_CHECKED : BST_UNCHECKED, 0);
 
    const bool disableAO = settings.LoadValueWithDefault(Settings::Player, "DisableAO"s, false);
    const bool dynAO = settings.LoadValueWithDefault(Settings::Player, "DynamicAO"s, true);
@@ -729,13 +725,7 @@ void VideoOptionsDialog::LoadSettings()
    SetDlgItemText(IDC_SCREEN_PLAYERZ, tmp);
 
    const int alphaRampsAccuracy = settings.LoadValueWithDefault(Settings::Player, "AlphaRampAccuracy"s, 10);
-   const HWND hwndARASlider = GetDlgItem(IDC_ARASlider).GetHwnd();
-   SendMessage(hwndARASlider, TBM_SETRANGE, fTrue, MAKELONG(0, 10));
-   SendMessage(hwndARASlider, TBM_SETTICFREQ, 1, 0);
-   SendMessage(hwndARASlider, TBM_SETLINESIZE, 0, 1);
-   SendMessage(hwndARASlider, TBM_SETPAGESIZE, 0, 1);
-   SendMessage(hwndARASlider, TBM_SETTHUMBLENGTH, 5, 0);
-   SendMessage(hwndARASlider, TBM_SETPOS, TRUE, alphaRampsAccuracy);
+   SendDlgItemMessage(IDC_ARASlider, TBM_SETPOS, TRUE, alphaRampsAccuracy);
 
    const int ballStretchMode = settings.LoadValueWithDefault(Settings::Player, "BallStretchMode"s, 0);
    switch (ballStretchMode)
@@ -745,6 +735,13 @@ void VideoOptionsDialog::LoadSettings()
       case 1:  SendDlgItemMessage(IDC_StretchYes, BM_SETCHECK, BST_CHECKED, 0);     break;
       case 2:  SendDlgItemMessage(IDC_StretchMonitor, BM_SETCHECK, BST_CHECKED, 0); break;
    }
+
+   SendDlgItemMessage(IDC_OVERRIDE_DN, BM_SETCHECK, settings.LoadValueWithDefault(Settings::TableOverride, "OverrideEmissionScale"s, false) ? BST_CHECKED : BST_UNCHECKED, 0);
+   SendDlgItemMessage(IDC_DAYNIGHT_SLIDER, TBM_SETPOS, TRUE, settings.LoadValueWithDefault(Settings::Player, "EmissionScale"s, 0.5f));
+   SendDlgItemMessage(IDC_DYNAMIC_DN, BM_SETCHECK, settings.LoadValueWithDefault(Settings::Player, "DynamicDayNight"s, false) ? BST_CHECKED : BST_UNCHECKED, 0);
+   SetDlgItemText(IDC_DN_LATITUDE, std::to_string(settings.LoadValueWithDefault(Settings::Player, "Latitude"s, 52.52f)).c_str());
+   SetDlgItemText(IDC_DN_LONGITUDE, std::to_string(settings.LoadValueWithDefault(Settings::Player, "Longitude"s, 13.37f)).c_str());
+   OnCommand(IDC_OVERRIDE_DN, 0L); // Force UI update
 }
 
 void VideoOptionsDialog::SaveSettings(const bool saveAll)
@@ -811,8 +808,6 @@ void VideoOptionsDialog::SaveSettings(const bool saveAll)
    settings.SaveValue(Settings::Player, "MaxPrerenderedFrames"s, (int)GetDlgItemInt(IDC_MAX_PRE_FRAMES, nothing, TRUE), !saveAll);
    settings.SaveValue(Settings::Player, "BallCorrectionX"s, GetDlgItemText(IDC_CORRECTION_X).GetString(), !saveAll);
    settings.SaveValue(Settings::Player, "BallCorrectionY"s, GetDlgItemText(IDC_CORRECTION_Y).GetString(), !saveAll);
-   settings.SaveValue(Settings::Player, "Longitude"s, GetDlgItemText(IDC_DN_LONGITUDE).GetString(), !saveAll);
-   settings.SaveValue(Settings::Player, "Latitude"s, GetDlgItemText(IDC_DN_LATITUDE).GetString(), !saveAll);
    settings.SaveValue(Settings::Player, "NudgeStrength"s, GetDlgItemText(IDC_NUDGE_STRENGTH).GetString(), !saveAll);
    LRESULT fxaa = SendDlgItemMessage(IDC_POST_PROCESS_COMBO, CB_GETCURSEL, 0, 0);
    if (fxaa == LB_ERR)
@@ -838,7 +833,6 @@ void VideoOptionsDialog::SaveSettings(const bool saveAll)
       MSAASamplesIndex = 0;
    const int MSAASamples = (MSAASamplesIndex < MSAASampleCount) ? MSAASamplesOpts[MSAASamplesIndex] : 1;
    settings.SaveValue(Settings::Player, "MSAASamples"s, MSAASamples, !saveAll);
-   settings.SaveValue(Settings::Player, "DynamicDayNight"s, IsDlgButtonChecked(IDC_DYNAMIC_DN) == BST_CHECKED, !saveAll);
    LRESULT maxAOMode = SendDlgItemMessage(IDC_MAX_AO_COMBO, CB_GETCURSEL, 0, 0);
    if (maxAOMode == LB_ERR)
       maxAOMode = 2;
@@ -898,6 +892,12 @@ void VideoOptionsDialog::SaveSettings(const bool saveAll)
       settings.DeleteValue(Settings::Player, "DecalImage"s);
    }
 
+   settings.SaveValue(Settings::TableOverride, "OverrideEmissionScale"s, IsDlgButtonChecked(IDC_OVERRIDE_DN) == BST_CHECKED, !saveAll);
+   settings.SaveValue(Settings::Player, "EmissionScale"s, ((int)SendDlgItemMessage(IDC_DAYNIGHT_SLIDER, TBM_GETPOS, 0, 0)) / 100.f, !saveAll);
+   settings.SaveValue(Settings::Player, "DynamicDayNight"s, IsDlgButtonChecked(IDC_DYNAMIC_DN) == BST_CHECKED, !saveAll);
+   settings.SaveValue(Settings::Player, "Longitude"s, GetDlgItemText(IDC_DN_LONGITUDE).GetString(), !saveAll);
+   settings.SaveValue(Settings::Player, "Latitude"s, GetDlgItemText(IDC_DN_LATITUDE).GetString(), !saveAll);
+
    settings.Save();
 }
 
@@ -940,11 +940,20 @@ BOOL VideoOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
       LoadSettings();
       break;
    }
-      case IDC_DEFAULTS:
-      {
-         ResetVideoPreferences(0);
-         break;
-      }
+   case IDC_OVERRIDE_DN:
+   {
+      const bool overrideDN = IsDlgButtonChecked(IDC_OVERRIDE_DN) == BST_CHECKED;
+      GetDlgItem(IDC_DAYNIGHT_SLIDER).EnableWindow(overrideDN);
+      GetDlgItem(IDC_DYNAMIC_DN).EnableWindow(overrideDN);
+      GetDlgItem(IDC_DN_LATITUDE).EnableWindow(overrideDN);
+      GetDlgItem(IDC_DN_LONGITUDE).EnableWindow(overrideDN);
+      break;
+   }
+   case IDC_DEFAULTS:
+   {
+      ResetVideoPreferences(0);
+      break;
+   }
       case IDC_DEFAULTS_LOW:
       {
          ResetVideoPreferences(1);

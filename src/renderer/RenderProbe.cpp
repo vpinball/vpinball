@@ -353,7 +353,7 @@ void RenderProbe::RenderReflectionProbe(const bool is_static)
    const bool render_dynamic = !is_static && (mode >= REFL_STATIC_N_DYNAMIC);
    DoRenderReflectionProbe(render_static, render_balls, render_dynamic);
 
-   ApplyRoughness(p3dDevice->GetCurrentPass()->m_rt, m_roughness);
+   ApplyRoughness(m_dynamicRT, m_roughness);
 
    p3dDevice->SetRenderTarget(previousRT->m_name + "+"s, previousRT->m_rt);
 }

@@ -8,10 +8,9 @@ TableLightsProperty::TableLightsProperty(const VectorProtected<ISelect> *pvsel) 
     m_lightHeightEdit.SetDialog(this);
     m_lightRangeEdit.SetDialog(this);
     m_envEmissionScaleEdit.SetDialog(this);
-    m_ambientOcclusionScaleEdit.SetDialog(this);
     m_bloomStrengthEdit.SetDialog(this);
-    m_screenSpaceReflEdit.SetDialog(this);
     m_envEmissionImageCombo.SetDialog(this);
+    m_sceneLightScaleEdit.SetDialog(this);
 }
 
 void TableLightsProperty::UpdateVisuals(const int dispid/*=-1*/)
@@ -34,12 +33,10 @@ void TableLightsProperty::UpdateVisuals(const int dispid/*=-1*/)
         PropertyDialog::UpdateTextureComboBox(table->GetImageList(), m_envEmissionImageCombo, table->m_envImage);
     if (dispid == IDC_ENVEMISSIONSCALE || dispid == -1)
         PropertyDialog::SetFloatTextbox(m_envEmissionScaleEdit, table->m_envEmissionScale);
-    if (dispid == IDC_AOSCALE || dispid == -1)
-        PropertyDialog::SetFloatTextbox(m_ambientOcclusionScaleEdit, table->m_AOScale);
     if (dispid == IDC_BLOOM_STRENGTH || dispid == -1)
         PropertyDialog::SetFloatTextbox(m_bloomStrengthEdit, table->m_bloom_strength);
-    if (dispid == IDC_SSR_STRENGTH || dispid == -1)
-        PropertyDialog::SetFloatTextbox(m_screenSpaceReflEdit, table->m_SSRScale);
+    if (dispid == IDC_SCENELIGHTSCALE || dispid == -1)
+        PropertyDialog::SetFloatTextbox(m_sceneLightScaleEdit, table->m_globalEmissionScale);
 }
 
 void TableLightsProperty::UpdateProperties(const int dispid)
@@ -101,14 +98,11 @@ void TableLightsProperty::UpdateProperties(const int dispid)
         case IDC_ENVEMISSIONSCALE:
             CHECK_UPDATE_ITEM(table->m_envEmissionScale, PropertyDialog::GetFloatTextbox(m_envEmissionScaleEdit), table);
             break;
-        case IDC_AOSCALE:
-            CHECK_UPDATE_ITEM(table->m_AOScale, PropertyDialog::GetFloatTextbox(m_ambientOcclusionScaleEdit), table);
-            break;
         case IDC_BLOOM_STRENGTH:
             CHECK_UPDATE_ITEM(table->m_bloom_strength, PropertyDialog::GetFloatTextbox(m_bloomStrengthEdit), table);
             break;
-        case IDC_SSR_STRENGTH:
-            CHECK_UPDATE_ITEM(table->m_SSRScale, PropertyDialog::GetFloatTextbox(m_screenSpaceReflEdit), table);
+        case IDC_SCENELIGHTSCALE:
+            CHECK_UPDATE_ITEM(table->m_globalEmissionScale, PropertyDialog::GetFloatTextbox(m_sceneLightScaleEdit), table);
             break;
         default:
             break;
@@ -125,32 +119,34 @@ BOOL TableLightsProperty::OnInitDialog()
     m_lightRangeEdit.AttachItem(IDC_LIGHTRANGE);
     m_envEmissionImageCombo.AttachItem(DISPID_Image7);
     m_envEmissionScaleEdit.AttachItem(IDC_ENVEMISSIONSCALE);
-    m_ambientOcclusionScaleEdit.AttachItem(IDC_AOSCALE);
+    m_sceneLightScaleEdit.AttachItem(IDC_SCENELIGHTSCALE);
+
     m_bloomStrengthEdit.AttachItem(IDC_BLOOM_STRENGTH);
-    m_screenSpaceReflEdit.AttachItem(IDC_SSR_STRENGTH);
 
     UpdateVisuals();
     m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC3), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC4), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC5), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC6), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC7), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC8), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC9), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC10), CResizer::topleft, 0);
-    m_resizer.AddChild(m_colorButton1, CResizer::topleft, 0);
-    m_resizer.AddChild(m_colorButton2, CResizer::topleft, 0);
-    m_resizer.AddChild(m_lightEmissionScaleEdit, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_lightHeightEdit, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_lightRangeEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC12), CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_envEmissionImageCombo, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC7), CResizer::topleft, 0);
     m_resizer.AddChild(m_envEmissionScaleEdit, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_ambientOcclusionScaleEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC13), CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), CResizer::topleft, 0);
+    m_resizer.AddChild(m_colorButton1, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC3), CResizer::topleft, 0);
+    m_resizer.AddChild(m_lightEmissionScaleEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC4), CResizer::topleft, 0);
+    m_resizer.AddChild(m_lightHeightEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC5), CResizer::topleft, 0);
+    m_resizer.AddChild(m_lightRangeEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), CResizer::topleft, 0);
+    m_resizer.AddChild(m_colorButton2, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_sceneLightScaleEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC9), CResizer::topleft, 0);
     m_resizer.AddChild(m_bloomStrengthEdit, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_screenSpaceReflEdit, CResizer::topleft, RD_STRETCH_WIDTH);
 
     return TRUE;
 }

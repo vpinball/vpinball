@@ -17,14 +17,12 @@ protected:
     virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 private:
-    ComboBox    m_ballReflectionCombo;
-    ComboBox    m_overwritePhysicsSetCombo;
     EditBox     m_soundEffectVolEdit;
     EditBox     m_musicVolEdit;
-    CSlider     m_nightDaySlider;
-    HWND        m_hOverwriteNightDayCheck;
-    HWND        m_hOverwriteFlipperCheck;
 
+    ComboBox m_ballReflectionCombo;
+    ComboBox m_overwritePhysicsSetCombo;
+    HWND m_hOverwriteFlipperCheck;
     vector<string> m_userList;
     vector<string> m_physicSetList;
 };

@@ -523,7 +523,6 @@ private:
 #pragma region Rendering
 private:
    void InitShader();
-   void InitBallShader();
 
    void PrepareFrame();
    void SubmitFrame();

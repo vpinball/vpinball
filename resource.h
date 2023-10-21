@@ -814,6 +814,7 @@
 #define IDC_DN_LATITUDE                 491
 #define IDC_DISABLE_DWM                 492
 #define IDC_START_VP_FILE_DIALOG        493
+#define IDC_OVERRIDE_DN                 493
 #define IDC_BLEND_DISABLE_LIGHTING      494
 #define IDC_START_VP_FILE_DIALOG2       494
 #define IDC_ENABLE_LEGACY_NUDGE         495
@@ -909,6 +910,7 @@
 #define IDC_LIGHTEMISSIONSCALE          567
 #define IDC_AOSCALE                     568
 #define IDC_SSR_STRENGTH                569
+#define IDC_SCENELIGHTSCALE             570
 #define IDC_TABLESOUNDVOLUME            579
 #define IDC_TABLEMUSICVOLUME            580
 #define IDS_PLAYFIELD                   581
