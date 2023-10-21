@@ -25,7 +25,6 @@ private:
     EditBox     m_lightHeightEdit;
     EditBox     m_lightRangeEdit;
     EditBox     m_envEmissionScaleEdit;
-    EditBox     m_bloomStrengthEdit;
     EditBox     m_sceneLightScaleEdit;
 };
 

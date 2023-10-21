@@ -2167,13 +2167,11 @@ void PinTable::Play(const bool cameraMode)
    dst->m_SSRScale = src->m_SSRScale;
    dst->m_TableSoundVolume = src->m_TableSoundVolume;
    dst->m_TableMusicVolume = src->m_TableMusicVolume;
-   dst->m_useReflectionForBalls = src->m_useReflectionForBalls;
    dst->m_playfieldReflectionStrength = src->m_playfieldReflectionStrength;
    dst->m_BallDecalMode = src->m_BallDecalMode;
    dst->m_ballPlayfieldReflectionStrength = src->m_ballPlayfieldReflectionStrength;
    dst->m_defaultBulbIntensityScaleOnBall = src->m_defaultBulbIntensityScaleOnBall;
    dst->m_grid = src->m_grid;
-   dst->m_reflectElementsOnPlayfield = src->m_reflectElementsOnPlayfield;
    dst->m_enableAO = src->m_enableAO;
    dst->m_enableSSR = src->m_enableSSR;
    dst->m_toneMapper = src->m_toneMapper;
@@ -3370,14 +3368,12 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
    bw.WriteFloat(FID(SVOL), m_TableSoundVolume);
    bw.WriteFloat(FID(MVOL), m_TableMusicVolume);
 
-   bw.WriteInt(FID(BREF), m_useReflectionForBalls);
    bw.WriteInt(FID(PLST), quantizeUnsigned<8>(m_playfieldReflectionStrength));
    bw.WriteBool(FID(BDMO), m_BallDecalMode);
    bw.WriteFloat(FID(BPRS), m_ballPlayfieldReflectionStrength);
    bw.WriteFloat(FID(DBIS), m_defaultBulbIntensityScaleOnBall);
    bw.WriteBool(FID(OGDN), m_overwriteGlobalDayNight);
    bw.WriteBool(FID(GDAC), m_grid);
-   bw.WriteBool(FID(REOP), m_reflectElementsOnPlayfield);
 
    bw.WriteInt(FID(UAOC), m_enableAO);
    bw.WriteInt(FID(USSR), m_enableSSR);
@@ -4008,9 +4004,7 @@ void PinTable::SetLoadDefaults()
    m_angletiltMax = 6.0f;
    m_angletiltMin = 4.5f;
 
-   m_useReflectionForBalls = -1;
    m_playfieldReflectionStrength = 0.2f;
-   m_reflectElementsOnPlayfield = false;
 
    m_ballPlayfieldReflectionStrength = 1.f;
 
@@ -4178,7 +4172,8 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    case FID(GLES): pbr->GetFloat(m_globalEmissionScale); break;
    case FID(AOSC): pbr->GetFloat(m_AOScale); break;
    case FID(SSSC): pbr->GetFloat(m_SSRScale); break;
-   case FID(BREF): pbr->GetInt(m_useReflectionForBalls); break;
+   // Removed in 10.8 since we now directly define reflection in render probe. Table author can disable default playfield reflection by setting PF reflection strength to 0. Player uses app/table settings to tweak
+   //case FID(BREF): pbr->GetInt(m_useReflectionForBalls); break;
    case FID(PLST):
    {
       int tmp;
@@ -4304,7 +4299,8 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
       break;
    case FID(OGDN): pbr->GetBool(m_overwriteGlobalDayNight); break;
    case FID(GDAC): pbr->GetBool(m_grid); break;
-   case FID(REOP): pbr->GetBool(m_reflectElementsOnPlayfield); break;
+   // Removed in 10.8 since we now directly define reflection in render probe. Table author can disable default playfield reflection by setting PF reflection strength to 0. Player uses app/table settings to tweak
+   // case FID(REOP): pbr->GetBool(m_reflectElementsOnPlayfield); break;
    case FID(ARAC):
       if (!hasIni) // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
       {
@@ -5999,7 +5995,7 @@ void PinTable::ImportBackdropPOV(const string& filename)
                }
             }
          }
-         POV_FIELD("BallReflection", "%i", m_useReflectionForBalls);
+         //POV_FIELD("BallReflection", "%i", m_useReflectionForBalls); // removed in 10.8
          //POV_FIELD("BallTrail", "%i", m_useTrailForBalls);
          node = section->FirstChildElement("BallTrail");
          if (node)
@@ -6168,7 +6164,7 @@ void PinTable::ExportBackdropPOV(const string& filename)
       //POV_FIELD("FPSLimiter", m_TableAdaptiveVSync);
       //POV_FIELD("OverwriteDetailsLevel", m_overwriteGlobalDetailLevel ? 1 : 0);
       //POV_FIELD("DetailsLevel", m_userDetailLevel);
-      POV_FIELD("BallReflection", m_useReflectionForBalls);
+      // POV_FIELD("BallReflection", m_useReflectionForBalls); // Removed in 10.8
       //POV_FIELD("BallTrail", m_useTrailForBalls);
       //POV_FIELD("BallTrailStrength", m_ballTrailStrength);
       POV_FIELD("OverwriteNightDay", m_overwriteGlobalDayNight ? 1 : 0);
@@ -8414,16 +8410,18 @@ STDMETHODIMP PinTable::put_EnvironmentEmissionScale(float newVal)
 
 STDMETHODIMP PinTable::get_BallReflection(UserDefaultOnOff *pVal)
 {
-   *pVal = (UserDefaultOnOff)m_useReflectionForBalls;
+   // FIXME Deprecated
+   *pVal = UserDefaultOnOff::On; //(UserDefaultOnOff) m_useReflectionForBalls;
 
    return S_OK;
 }
 
 STDMETHODIMP PinTable::put_BallReflection(UserDefaultOnOff newVal)
 {
-   STARTUNDO
-   m_useReflectionForBalls = (int)newVal;
-   STOPUNDO
+   // FIXME Deprecated
+   //STARTUNDO
+   //m_useReflectionForBalls = (int)newVal;
+   //STOPUNDO
 
    return S_OK;
 }
@@ -9889,16 +9887,18 @@ STDMETHODIMP PinTable::get_ShowDT(VARIANT_BOOL *pVal)
 
 STDMETHODIMP PinTable::get_ReflectElementsOnPlayfield(VARIANT_BOOL *pVal)
 {
-   *pVal = FTOVB(m_reflectElementsOnPlayfield);
+   // FIXME Deprecated
+   *pVal = FTOVB(true);
 
    return S_OK;
 }
 
 STDMETHODIMP PinTable::put_ReflectElementsOnPlayfield(VARIANT_BOOL newVal)
 {
-   STARTUNDO
-   m_reflectElementsOnPlayfield = VBTOb(newVal);
-   STOPUNDO
+   // FIXME deprecated
+   //STARTUNDO
+   //m_reflectElementsOnPlayfield = VBTOb(newVal);
+   //STOPUNDO
 
    return S_OK;
 }

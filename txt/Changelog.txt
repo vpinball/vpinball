@@ -108,8 +108,10 @@ FEATURES:
   - all properties and settings use the same approach: data from the table, eventually overriden in the app ini settings, eventually overriden in the table ini settings,
   - POV files are no more needed and therefore deprecated (they are still read and used unless a ini file has been created for backward compatibility).
   
-- some settings were moved to benefit from the new settings system:
+- some settings were moved/changed to benefit from the new settings system:
   - Player/GlobalDifficulty is now TableOverride/Difficulty, expressed as a decimal value
+  - PF & Ball reflection on/off were removed from table settings, since this was redundant and conflicting with overall application and reflection probes settings. We now directly 
+    define reflections in render probe. Table author can disable default playfield reflection by setting PF reflection strength to 0. Player uses app/table settings to tweak.
 
 - remove Anti-Aliasing and Postprocessed Anti-Aliasing options from the table properties (and use an .ini based override instead)
 
