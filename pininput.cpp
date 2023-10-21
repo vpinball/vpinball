@@ -1110,40 +1110,7 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
          g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].mViewportRotation += 1.0f;
       else if (keycode == g_pplayer->m_rgKeys[eStartGameKey] && dispid == DISPID_GameEvents_KeyDown)
       {
-         // Export POV file
-         string szPOVFilename = g_pplayer->m_ptable->m_szFileName;
-         if (ReplaceExtensionFromFilename(szPOVFilename, "pov"s))
-         {
-            g_pplayer->m_ptable->ExportBackdropPOV(szPOVFilename);
-            g_pplayer->m_liveUI->PushNotification("Overrides exported to "s.append(szPOVFilename), 5000);
-         }
-         else
-            g_pplayer->m_liveUI->PushNotification("Failed to export POV"s, 12000);
-         // Update table ini file with user overrides
-         // We save the table properties to a temporary settings registry to be able to properly evaluate what the user is 
-         // overriding in: table props + app override / user edit. We save to the edited table (otherwise, the ini file
-         // would be overwritten by the one of the edited table).
-         Settings tableProps;
-         g_pvp->m_settings.SetParent(&tableProps);
-         for (int i = 0; i < 3; i++)
-         {
-            g_pplayer->m_pEditorTable->mViewSetups[i].SaveToTableOverrideSettings(tableProps, i == BG_DESKTOP ? "ViewDT"s : i == BG_FSS ? "ViewFSS"s : "ViewCab"s, false);
-            g_pplayer->m_ptable->mViewSetups[i].SaveToTableOverrideSettings(g_pplayer->m_pEditorTable->m_settings, i == BG_DESKTOP ? "ViewDT"s : i == BG_FSS ? "ViewFSS"s : "ViewCab"s, true);
-         }
-         g_pvp->m_settings.SetParent(nullptr);
-         string szINIFilename = g_pplayer->m_ptable->GetSettingsFileName();
-         if (!szINIFilename.empty())
-         {
-            if (g_pplayer->m_pEditorTable->m_settings.IsModified())
-            {
-               g_pplayer->m_pEditorTable->m_settings.SaveToFile(szINIFilename);
-               g_pplayer->m_liveUI->PushNotification("POV exported to "s.append(szINIFilename), 5000);
-            }
-            else
-            {
-               g_pplayer->m_liveUI->PushNotification("POV was not exported to "s + szINIFilename + " (no override)", 5000);
-            }
-         }
+         g_pplayer->m_ptable->ExportBackdropPOV(false, g_pplayer->m_pEditorTable);
          if (g_pvp->m_povEdit)
             g_pvp->QuitPlayer(Player::CloseState::CS_CLOSE_APP);
       }

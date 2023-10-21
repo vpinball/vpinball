@@ -677,9 +677,7 @@ public:
          }
          if (m_extractPov && m_loadFileResult)
          {
-            string szPOVFilename = m_szTableFileName;
-            if (ReplaceExtensionFromFilename(szPOVFilename, "pov"s))
-               m_vpinball.m_ptableActive->ExportBackdropPOV(szPOVFilename);
+            m_vpinball.m_ptableActive->ExportBackdropPOV(false, nullptr);
             m_vpinball.QuitPlayer(Player::CloseState::CS_CLOSE_APP);
          }
       }

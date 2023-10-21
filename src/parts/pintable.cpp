@@ -6091,17 +6091,17 @@ void PinTable::ImportBackdropPOV(const string& filename)
     m_vpinball->SetPropSel(m_vmultisel); 
 }
 
-void PinTable::ExportBackdropPOV(const string& filename)
+void PinTable::ExportBackdropPOV(const bool saveAs, const PinTable *overridesFrom)
 {
-   string povFileName;
-	if (filename.empty())
+   string iniFileName;
+	if (saveAs)
 	{
 		OPENFILENAME ofn = {};
 		ofn.lStructSize = sizeof(OPENFILENAME);
 		ofn.hInstance = m_vpinball->theInstance;
 		ofn.hwndOwner = m_vpinball->GetHwnd();
 		// TEXT
-		ofn.lpstrFilter = "POV file(*.pov)\0*.pov\0";
+		ofn.lpstrFilter = "INI file(*.ini)\0*.ini\0";
 		char szFileName[MAXSTRING];
 		strncpy_s(szFileName, m_szFileName.c_str(), sizeof(szFileName)-1);
 		const size_t idx = m_szFileName.find_last_of('.');
@@ -6109,91 +6109,53 @@ void PinTable::ExportBackdropPOV(const string& filename)
 			szFileName[idx] = '\0';
 		ofn.lpstrFile = szFileName;
 		ofn.nMaxFile = sizeof(szFileName);
-		ofn.lpstrDefExt = "pov";
+		ofn.lpstrDefExt = "ini";
 		ofn.Flags = OFN_NOREADONLYRETURN | OFN_CREATEPROMPT | OFN_OVERWRITEPROMPT | OFN_EXPLORER;
-
 		const int ret = GetSaveFileName(&ofn);
-
 		// user canceled
 		if (ret == 0)
 			return;// S_FALSE;
-
-		povFileName = szFileName;
+		iniFileName = szFileName;
 	}
-	else
-		povFileName = filename;
-
-   tinyxml2::XMLDocument xmlDoc;
-
-   try
+   else
    {
-      auto root = xmlDoc.NewElement("POV");
-      #define POV_FIELD(name, value) { auto node = xmlDoc.NewElement(name); node->SetText(value); view->InsertEndChild(node);}
-      /* In 10.8, we tried to sort out all the settings, with all user settings being in an ini file instead of being in a POV 
-      file or in the table properties. Therefore we do not export them to the POV file any more, but we still read them for 
-      backward compatibility.
+      iniFileName = GetSettingsFileName();
+      if (iniFileName.empty())
+         return;
+   }
 
+   // Save view setups (only overriden properties if we are given a reference view setup set)
+   Settings settings;
+   if (overridesFrom)
+   {
+      Settings tableProps;
+      g_pvp->m_settings.SetParent(&tableProps);
       for (int i = 0; i < 3; i++)
       {
-         auto view = xmlDoc.NewElement(i == 0 ? "desktop" : i == 1 ? "fullscreen" : "fullsinglescreen");
-         POV_FIELD("LayoutMode", mViewSetups[i].mMode);
-         POV_FIELD("inclination", mViewSetups[i].mMode);
-         POV_FIELD("fov", mViewSetups[i].mFOV);
-         POV_FIELD("layback", mViewSetups[i].mLayback);
-         POV_FIELD("lookat", mViewSetups[i].mLookAt);
-         POV_FIELD("rotation", mViewSetups[i].mViewportRotation);
-         POV_FIELD("xscale", mViewSetups[i].mSceneScaleX);
-         POV_FIELD("yscale", mViewSetups[i].mSceneScaleY);
-         POV_FIELD("zscale", mViewSetups[i].mSceneScaleZ);
-         POV_FIELD("xoffset", mViewSetups[i].mViewX);
-         POV_FIELD("yoffset", mViewSetups[i].mViewY);
-         POV_FIELD("zoffset", mViewSetups[i].mViewZ);
-         POV_FIELD("ViewHOfs", mViewSetups[i].mViewHOfs);
-         POV_FIELD("ViewVOfs", mViewSetups[i].mViewVOfs);
-         POV_FIELD("WindowTopZOfs", mViewSetups[i].mWindowTopZOfs);
-         POV_FIELD("WindowBottomZOfs", mViewSetups[i].mWindowBottomZOfs);
-         root->InsertEndChild(view);
-      }*/
-
-      auto view = xmlDoc.NewElement("customsettings");
-      // Fields are being moved to table override ini and therefore no more exported
-      //POV_FIELD("SSAA", m_settings.HasValue(Settings::Player, "AAFactor"s) ? (m_settings.LoadValueWithDefault(Settings::Player, "AAFactor"s, (int)Standard_FXAA) > 1 ? 1 : 0) : -1);
-      //POV_FIELD("postprocAA", m_settings.HasValue(Settings::Player, "FXAA"s) ? m_settings.LoadValueWithDefault(Settings::Player, "FXAA"s, (int)Standard_FXAA) : -1);
-      //POV_FIELD("ingameAO", m_useAO);
-      //POV_FIELD("ScSpReflect", m_useSSR);
-      //POV_FIELD("FPSLimiter", m_TableAdaptiveVSync);
-      //POV_FIELD("OverwriteDetailsLevel", m_overwriteGlobalDetailLevel ? 1 : 0);
-      //POV_FIELD("DetailsLevel", m_userDetailLevel);
-      // POV_FIELD("BallReflection", m_useReflectionForBalls); // Removed in 10.8
-      //POV_FIELD("BallTrail", m_useTrailForBalls);
-      //POV_FIELD("BallTrailStrength", m_ballTrailStrength);
-      POV_FIELD("OverwriteNightDay", m_overwriteGlobalDayNight ? 1 : 0);
-      POV_FIELD("NightDayLevel", GetGlobalEmissionScale());
-      POV_FIELD("GameplayDifficulty", GetGlobalDifficulty());
-      POV_FIELD("PhysicsSet", m_overridePhysics);
-      POV_FIELD("IncludeFlipperPhysics", m_overridePhysicsFlipper ? 1 : 0);
-      POV_FIELD("SoundVolume", GetTableSoundVolume());
-      POV_FIELD("MusicVolume", GetTableMusicVolume());
-      root->InsertEndChild(view);
-
-      xmlDoc.InsertEndChild(xmlDoc.NewDeclaration());
-      xmlDoc.InsertEndChild(root);
-
-      tinyxml2::XMLPrinter prn;
-      xmlDoc.Print(&prn);
-
-      std::ofstream myfile(povFileName);
-      myfile << prn.CStr();
-      myfile.close();
-      #undef POV_FIELD
+         overridesFrom->mViewSetups[i].SaveToTableOverrideSettings(tableProps, i == BG_DESKTOP ? "ViewDT"s : i == BG_FSS ? "ViewFSS"s : "ViewCab"s, false);
+         mViewSetups[i].SaveToTableOverrideSettings(m_settings, i == BG_DESKTOP ? "ViewDT"s : i == BG_FSS ? "ViewFSS"s : "ViewCab"s, true);
+      }
+      g_pvp->m_settings.SetParent(nullptr);
+      settings = m_settings;
    }
-   catch (...)
+   else
    {
-      ShowError("Error exporting POV settings!");
+      for (int i = 0; i < 3; i++)
+         mViewSetups[i].SaveToTableOverrideSettings(settings, i == BG_DESKTOP ? "ViewDT"s : i == BG_FSS ? "ViewFSS"s : "ViewCab"s, false);
    }
-   xmlDoc.Clear();
 
-   PLOGI << "View setup exported to '" << povFileName << "'";
+   if (settings.IsModified())
+   {
+      settings.SaveToFile(iniFileName);
+      if (g_pplayer)
+         g_pplayer->m_liveUI->PushNotification("POV exported to "s.append(iniFileName), 5000);
+   }
+   else if (g_pplayer)
+   {
+      g_pplayer->m_liveUI->PushNotification("POV was not exported to "s + iniFileName + " (nothing to save)", 5000);
+   }
+
+   PLOGI << "View setup exported to '" << iniFileName << "'";
 }
 
 void PinTable::SelectItem(IScriptable *piscript)

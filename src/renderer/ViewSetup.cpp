@@ -45,7 +45,7 @@ void ViewSetup::ApplyTableOverrideSettings(const Settings& settings, const strin
    settings.LoadValue(Settings::TableOverride, keyPrefix + "WindowBot"s, mWindowBottomZOfs);
 }
 
-void ViewSetup::SaveToTableOverrideSettings(Settings& settings, const string& keyPrefix, const bool isOverride)
+void ViewSetup::SaveToTableOverrideSettings(Settings& settings, const string& keyPrefix, const bool isOverride) const
 {
    settings.SaveValue(Settings::TableOverride, keyPrefix + "Mode"s, mMode, isOverride);
    settings.SaveValue(Settings::TableOverride, keyPrefix + "ScaleX"s, mSceneScaleX, isOverride);
