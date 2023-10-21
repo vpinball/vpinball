@@ -36,7 +36,7 @@
 #include "Properties/RubberPhysicsProperty.h"
 #include "Properties/BackglassVisualsProperty.h"
 #include "Properties/BackglassCameraProperty.h"
-#include "Properties/TableCustomProperty.h"
+#include "Properties/TableAudioProperty.h"
 #include "Properties/TableVisualsProperty.h"
 #include "Properties/TablePhysicsProperty.h"
 #include "Properties/TableLightsProperty.h"
@@ -119,7 +119,7 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect> &pvsel)
             m_tabs[0] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new TableVisualsProperty(&pvsel), _T("Visuals")));
             m_tabs[1] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new TableLightsProperty(&pvsel), _T("Lights")));
             m_tabs[2] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new TablePhysicsProperty(&pvsel), _T("Physics")));
-            m_tabs[3] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new TableCustomProperty(&pvsel), _T("Sound")));
+            m_tabs[3] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new TableAudioProperty(&pvsel), _T("Sound")));
             if (m_tab.m_activeTabText == CString("Visuals"))
                 activePage = 0;
             else if (m_tab.m_activeTabText == CString("Lights"))

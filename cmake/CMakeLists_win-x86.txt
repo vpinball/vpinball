@@ -203,8 +203,8 @@ add_executable(vpinball WIN32
    dialogs/Properties/SpinnerVisualsProperty.h
    dialogs/Properties/SpinnerVisualsProperty.cpp
    dialogs/Properties/SpinnerPhysicsProperty.h
-   dialogs/Properties/TableCustomProperty.cpp
-   dialogs/Properties/TableCustomProperty.h
+   dialogs/Properties/TableAudioProperty.cpp
+   dialogs/Properties/TableAudioProperty.h
    dialogs/Properties/TableLightsProperty.cpp
    dialogs/Properties/TableLightsProperty.h
    dialogs/Properties/TablePhysicsProperty.cpp

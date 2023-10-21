@@ -1,8 +1,8 @@
 #include "stdafx.h"
-#include "Properties/TableCustomProperty.h"
+#include "Properties/TableAudioProperty.h"
 #include <WindowsX.h>
 
-TableCustomProperty::TableCustomProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPTABLE_USER, pvsel)
+TableAudioProperty::TableAudioProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPTABLE_AUDIO, pvsel)
 {
    m_soundEffectVolEdit.SetDialog(this);
    m_musicVolEdit.SetDialog(this);
@@ -20,7 +20,7 @@ TableCustomProperty::TableCustomProperty(const VectorProtected<ISelect> *pvsel) 
     m_overwritePhysicsSetCombo.SetDialog(this);
 }
 
-void TableCustomProperty::UpdateVisuals(const int dispid/*=-1*/)
+void TableAudioProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
     CComObject<PinTable> * const table = g_pvp->GetActiveTable();
     if (table == nullptr)
@@ -37,7 +37,7 @@ void TableCustomProperty::UpdateVisuals(const int dispid/*=-1*/)
         PropertyDialog::SetIntTextbox(m_musicVolEdit, table->GetTableMusicVolume());
 }
 
-void TableCustomProperty::UpdateProperties(const int dispid)
+void TableAudioProperty::UpdateProperties(const int dispid)
 {
     CComObject<PinTable> * const table = g_pvp->GetActiveTable();
     if (table == nullptr)
@@ -64,7 +64,7 @@ void TableCustomProperty::UpdateProperties(const int dispid)
     UpdateVisuals(dispid);
 }
 
-BOOL TableCustomProperty::OnInitDialog()
+BOOL TableAudioProperty::OnInitDialog()
 {
     m_overwritePhysicsSetCombo.AttachItem(IDC_OVERWRITE_PHYSICS_COMBO);
     m_hOverwriteFlipperCheck = ::GetDlgItem(GetHwnd(), IDC_OVERRIDEPHYSICS_FLIPPERS);
@@ -85,7 +85,7 @@ BOOL TableCustomProperty::OnInitDialog()
     return TRUE;
 }
 
-INT_PTR TableCustomProperty::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR TableAudioProperty::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
    m_resizer.HandleMessage(uMsg, wParam, lParam);
    return DialogProcDefault(uMsg, wParam, lParam);
