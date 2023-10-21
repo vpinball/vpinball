@@ -8,7 +8,6 @@ TableLightsProperty::TableLightsProperty(const VectorProtected<ISelect> *pvsel) 
     m_lightHeightEdit.SetDialog(this);
     m_lightRangeEdit.SetDialog(this);
     m_envEmissionScaleEdit.SetDialog(this);
-    m_bloomStrengthEdit.SetDialog(this);
     m_envEmissionImageCombo.SetDialog(this);
     m_sceneLightScaleEdit.SetDialog(this);
 }
@@ -33,8 +32,6 @@ void TableLightsProperty::UpdateVisuals(const int dispid/*=-1*/)
         PropertyDialog::UpdateTextureComboBox(table->GetImageList(), m_envEmissionImageCombo, table->m_envImage);
     if (dispid == IDC_ENVEMISSIONSCALE || dispid == -1)
         PropertyDialog::SetFloatTextbox(m_envEmissionScaleEdit, table->m_envEmissionScale);
-    if (dispid == IDC_BLOOM_STRENGTH || dispid == -1)
-        PropertyDialog::SetFloatTextbox(m_bloomStrengthEdit, table->m_bloom_strength);
     if (dispid == IDC_SCENELIGHTSCALE || dispid == -1)
         PropertyDialog::SetFloatTextbox(m_sceneLightScaleEdit, table->m_globalEmissionScale);
 }
@@ -98,9 +95,6 @@ void TableLightsProperty::UpdateProperties(const int dispid)
         case IDC_ENVEMISSIONSCALE:
             CHECK_UPDATE_ITEM(table->m_envEmissionScale, PropertyDialog::GetFloatTextbox(m_envEmissionScaleEdit), table);
             break;
-        case IDC_BLOOM_STRENGTH:
-            CHECK_UPDATE_ITEM(table->m_bloom_strength, PropertyDialog::GetFloatTextbox(m_bloomStrengthEdit), table);
-            break;
         case IDC_SCENELIGHTSCALE:
             CHECK_UPDATE_ITEM(table->m_globalEmissionScale, PropertyDialog::GetFloatTextbox(m_sceneLightScaleEdit), table);
             break;
@@ -120,8 +114,6 @@ BOOL TableLightsProperty::OnInitDialog()
     m_envEmissionImageCombo.AttachItem(DISPID_Image7);
     m_envEmissionScaleEdit.AttachItem(IDC_ENVEMISSIONSCALE);
     m_sceneLightScaleEdit.AttachItem(IDC_SCENELIGHTSCALE);
-
-    m_bloomStrengthEdit.AttachItem(IDC_BLOOM_STRENGTH);
 
     UpdateVisuals();
     m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
@@ -144,9 +136,6 @@ BOOL TableLightsProperty::OnInitDialog()
     m_resizer.AddChild(GetDlgItem(IDC_STATIC1), CResizer::topleft, 0);
     m_resizer.AddChild(m_colorButton2, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_sceneLightScaleEdit, CResizer::topleft, RD_STRETCH_WIDTH);
-
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC9), CResizer::topleft, 0);
-    m_resizer.AddChild(m_bloomStrengthEdit, CResizer::topleft, RD_STRETCH_WIDTH);
 
     return TRUE;
 }

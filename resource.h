@@ -720,7 +720,6 @@
 #define EDITOR_CHECK                    431
 #define IDC_CONVERT_COORD_CHECK         431
 #define IDC_LEGACYMODE                  431
-#define IDC_REFLECT_ELEMENTS_CHECK      431
 #define IDC_CVP_CHKBOX_SHOWAUTOCOMPLETE 431
 #define IDC_USE_NVIDIA_API_CHECK        431
 #define IDC_AUDIOOPT_3D_SOUND           431

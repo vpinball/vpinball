@@ -14,6 +14,7 @@ TableVisualsProperty::TableVisualsProperty(const VectorProtected<ISelect> *pvsel
     m_toneMapperCombo.SetDialog(this);
     m_ambientOcclusionScaleEdit.SetDialog(this);
     m_screenSpaceReflEdit.SetDialog(this);
+    m_bloomStrengthEdit.SetDialog(this);
 }
 
 void TableVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
@@ -26,8 +27,6 @@ void TableVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
         PropertyDialog::UpdateTextureComboBox(table->GetImageList(), m_imageCombo, table->m_image);
     if (dispid == IDC_MATERIAL_COMBO || dispid == -1)
         PropertyDialog::UpdateMaterialComboBox(table->GetMaterialList(), m_materialCombo, table->m_playfieldMaterial);
-    if (dispid == IDC_REFLECT_ELEMENTS_CHECK || dispid == -1)
-        PropertyDialog::SetCheckboxState(m_hReflectElementsCheck, table->m_reflectElementsOnPlayfield);
     if (dispid == IDC_REFLECTION_PLAYFIELD || dispid == -1)
         PropertyDialog::SetIntTextbox(m_reflectionStrengthEdit, table->GetPlayfieldReflectionStrength());
     if (dispid == IDC_BALL_SPHERICAL_MAP || dispid == -1)
@@ -50,6 +49,8 @@ void TableVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
         PropertyDialog::SetCheckboxState(m_hEnableSSRCheck, table->m_enableSSR);
     if (dispid == IDC_SSR_STRENGTH || dispid == -1)
         PropertyDialog::SetFloatTextbox(m_screenSpaceReflEdit, table->m_SSRScale);
+    if (dispid == IDC_BLOOM_STRENGTH || dispid == -1)
+        PropertyDialog::SetFloatTextbox(m_bloomStrengthEdit, table->m_bloom_strength);
     if (dispid == IDC_TONEMAPPER || dispid == -1)
     {
        if (m_toneMapperCombo.GetCount() < 2)
@@ -75,9 +76,6 @@ void TableVisualsProperty::UpdateProperties(const int dispid)
             break;
         case IDC_MATERIAL_COMBO:
             CHECK_UPDATE_COMBO_TEXT_STRING(table->m_playfieldMaterial, m_materialCombo, table);
-            break;
-        case IDC_REFLECT_ELEMENTS_CHECK:
-            CHECK_UPDATE_ITEM(table->m_reflectElementsOnPlayfield, PropertyDialog::GetCheckboxState(m_hReflectElementsCheck), table);
             break;
         case IDC_REFLECTION_PLAYFIELD:
             CHECK_UPDATE_VALUE_SETTER(table->SetPlayfieldReflectionStrength, table->GetPlayfieldReflectionStrength, PropertyDialog::GetIntTextbox, m_reflectionStrengthEdit, table);
@@ -112,6 +110,9 @@ void TableVisualsProperty::UpdateProperties(const int dispid)
         case IDC_SSR_STRENGTH:
             CHECK_UPDATE_ITEM(table->m_SSRScale, PropertyDialog::GetFloatTextbox(m_screenSpaceReflEdit), table);
             break;
+        case IDC_BLOOM_STRENGTH:
+            CHECK_UPDATE_ITEM(table->m_bloom_strength, PropertyDialog::GetFloatTextbox(m_bloomStrengthEdit), table);
+            break;
         case IDC_TONEMAPPER:
             if (m_toneMapperCombo.GetCurSel() != CB_ERR && m_toneMapperCombo.GetCurSel() != table->GetToneMapper())
             {
@@ -132,7 +133,6 @@ BOOL TableVisualsProperty::OnInitDialog()
     m_materialCombo.AttachItem(IDC_MATERIAL_COMBO);
     m_ballImageCombo.AttachItem(DISPID_Image3);
     m_ballDecalCombo.AttachItem(DISPID_Image4);
-    m_hReflectElementsCheck = GetDlgItem(IDC_REFLECT_ELEMENTS_CHECK);
     m_reflectionStrengthEdit.AttachItem(IDC_REFLECTION_PLAYFIELD);
     m_hLogoModeCheck = GetDlgItem(IDC_BALL_DECAL_MODE);
     m_hSphericalMapCheck = GetDlgItem(IDC_BALL_SPHERICAL_MAP);
@@ -142,6 +142,7 @@ BOOL TableVisualsProperty::OnInitDialog()
     m_ambientOcclusionScaleEdit.AttachItem(IDC_AOSCALE);
     m_hEnableSSRCheck = GetDlgItem(IDC_ENABLE_SSR);
     m_screenSpaceReflEdit.AttachItem(IDC_SSR_STRENGTH);
+    m_bloomStrengthEdit.AttachItem(IDC_BLOOM_STRENGTH);
     m_toneMapperCombo.AttachItem(IDC_TONEMAPPER);
 
     UpdateVisuals();
@@ -160,7 +161,6 @@ BOOL TableVisualsProperty::OnInitDialog()
     m_resizer.AddChild(m_materialCombo, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_ballDecalCombo, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_ballImageCombo, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_hReflectElementsCheck, CResizer::topleft, 0);
     m_resizer.AddChild(m_reflectionStrengthEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_hLogoModeCheck, CResizer::topleft, 0);
     m_resizer.AddChild(m_hSphericalMapCheck, CResizer::topleft, 0);
@@ -174,6 +174,8 @@ BOOL TableVisualsProperty::OnInitDialog()
     m_resizer.AddChild(m_hEnableSSRCheck, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC13), CResizer::topleft, 0);
     m_resizer.AddChild(m_screenSpaceReflEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC14), CResizer::topleft, 0);
+    m_resizer.AddChild(m_bloomStrengthEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC11), CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_toneMapperCombo, CResizer::topleft, RD_STRETCH_WIDTH);
 

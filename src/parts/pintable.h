@@ -773,8 +773,8 @@ public:
    float m_AOScale;
    float m_SSRScale;
 
-   int m_useReflectionForBalls;
-   float m_playfieldReflectionStrength;
+   float m_playfieldReflectionStrength; // default (implicit) playfield reflection strength (0 to disable playfield reflection)
+
    float m_ballPlayfieldReflectionStrength;
    bool m_enableAO;
    bool m_enableSSR;
@@ -794,7 +794,6 @@ public:
    bool m_renderDecals;
    bool m_renderEMReels;
    bool m_overwriteGlobalStereo3D;
-   bool m_reflectElementsOnPlayfield;
 
 #ifdef UNUSED_TILT //!! currently unused (see NudgeGetTilt())
    int m_jolt_amount;

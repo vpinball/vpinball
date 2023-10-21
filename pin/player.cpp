@@ -154,21 +154,12 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const b
       if (m_ptable->m_settings.LoadValueWithDefault(useVR ? Settings::PlayerVR : Settings::Player, "PFRefl"s, true))
          m_maxReflectionMode = RenderProbe::REFL_STATIC_N_DYNAMIC;
    }
-   // Apply table specific overrides
-   if (!m_ptable->m_reflectElementsOnPlayfield)
-      m_maxReflectionMode = RenderProbe::REFL_NONE;
-   if (m_ptable->m_useReflectionForBalls == 0 && m_maxReflectionMode == RenderProbe::REFL_BALLS)
-      m_maxReflectionMode = RenderProbe::REFL_NONE;
-   if (m_ptable->m_useReflectionForBalls == 0 && m_maxReflectionMode == RenderProbe::REFL_STATIC_N_BALLS)
-      m_maxReflectionMode = RenderProbe::REFL_STATIC;
-   if (m_ptable->m_useReflectionForBalls == 1 && m_maxReflectionMode == RenderProbe::REFL_NONE)
-      m_maxReflectionMode = RenderProbe::REFL_BALLS;
-   if (m_ptable->m_useReflectionForBalls == 1 && m_maxReflectionMode == RenderProbe::REFL_STATIC)
-      m_maxReflectionMode = RenderProbe::REFL_STATIC_N_BALLS;
-   m_toneMapper = (ToneMapper)m_ptable->m_settings.LoadValueWithDefault(Settings::TableOverride, "ToneMapper"s, m_ptable->GetToneMapper());
    // For dynamic mode, static reflections are not available so adapt the mode
    if (!IsUsingStaticPrepass() && m_maxReflectionMode >= RenderProbe::REFL_STATIC)
       m_maxReflectionMode = RenderProbe::REFL_DYNAMIC;
+
+   // Apply table specific overrides
+   m_toneMapper = (ToneMapper)m_ptable->m_settings.LoadValueWithDefault(Settings::TableOverride, "ToneMapper"s, m_ptable->GetToneMapper());
 
 #ifdef ENABLE_VR
    m_vrPreview = (VRPreviewMode)m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "VRPreview"s, (int)VRPREVIEW_LEFT);
