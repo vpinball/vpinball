@@ -737,7 +737,7 @@ void VideoOptionsDialog::LoadSettings()
    }
 
    SendDlgItemMessage(IDC_OVERRIDE_DN, BM_SETCHECK, settings.LoadValueWithDefault(Settings::TableOverride, "OverrideEmissionScale"s, false) ? BST_CHECKED : BST_UNCHECKED, 0);
-   SendDlgItemMessage(IDC_DAYNIGHT_SLIDER, TBM_SETPOS, TRUE, settings.LoadValueWithDefault(Settings::Player, "EmissionScale"s, 0.5f));
+   SendDlgItemMessage(IDC_DAYNIGHT_SLIDER, TBM_SETPOS, TRUE, (int) (100.f * settings.LoadValueWithDefault(Settings::Player, "EmissionScale"s, 0.5f)));
    SendDlgItemMessage(IDC_DYNAMIC_DN, BM_SETCHECK, settings.LoadValueWithDefault(Settings::Player, "DynamicDayNight"s, false) ? BST_CHECKED : BST_UNCHECKED, 0);
    SetDlgItemText(IDC_DN_LATITUDE, std::to_string(settings.LoadValueWithDefault(Settings::Player, "Latitude"s, 52.52f)).c_str());
    SetDlgItemText(IDC_DN_LONGITUDE, std::to_string(settings.LoadValueWithDefault(Settings::Player, "Longitude"s, 13.37f)).c_str());
