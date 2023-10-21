@@ -12,6 +12,8 @@ TableVisualsProperty::TableVisualsProperty(const VectorProtected<ISelect> *pvsel
     m_ballImageCombo.SetDialog(this);
     m_ballDecalCombo.SetDialog(this);
     m_toneMapperCombo.SetDialog(this);
+    m_ambientOcclusionScaleEdit.SetDialog(this);
+    m_screenSpaceReflEdit.SetDialog(this);
 }
 
 void TableVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
@@ -42,8 +44,12 @@ void TableVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
         PropertyDialog::SetFloatTextbox(m_ballDefaultBulbIntensScaleEdit, table->m_defaultBulbIntensityScaleOnBall);
     if (dispid == IDC_ENABLE_AO || dispid == -1)
         PropertyDialog::SetCheckboxState(m_hEnableAOCheck, table->m_enableAO);
+    if (dispid == IDC_AOSCALE || dispid == -1)
+        PropertyDialog::SetFloatTextbox(m_ambientOcclusionScaleEdit, table->m_AOScale);
     if (dispid == IDC_ENABLE_SSR || dispid == -1)
         PropertyDialog::SetCheckboxState(m_hEnableSSRCheck, table->m_enableSSR);
+    if (dispid == IDC_SSR_STRENGTH || dispid == -1)
+        PropertyDialog::SetFloatTextbox(m_screenSpaceReflEdit, table->m_SSRScale);
     if (dispid == IDC_TONEMAPPER || dispid == -1)
     {
        if (m_toneMapperCombo.GetCount() < 2)
@@ -97,8 +103,14 @@ void TableVisualsProperty::UpdateProperties(const int dispid)
         case IDC_ENABLE_AO:
             CHECK_UPDATE_ITEM(table->m_enableAO, PropertyDialog::GetCheckboxState(m_hEnableAOCheck), table);
             break;
+        case IDC_AOSCALE:
+            CHECK_UPDATE_ITEM(table->m_AOScale, PropertyDialog::GetFloatTextbox(m_ambientOcclusionScaleEdit), table);
+            break;
         case IDC_ENABLE_SSR:
             CHECK_UPDATE_ITEM(table->m_enableSSR, PropertyDialog::GetCheckboxState(m_hEnableSSRCheck), table);
+            break;
+        case IDC_SSR_STRENGTH:
+            CHECK_UPDATE_ITEM(table->m_SSRScale, PropertyDialog::GetFloatTextbox(m_screenSpaceReflEdit), table);
             break;
         case IDC_TONEMAPPER:
             if (m_toneMapperCombo.GetCurSel() != CB_ERR && m_toneMapperCombo.GetCurSel() != table->GetToneMapper())
@@ -127,7 +139,9 @@ BOOL TableVisualsProperty::OnInitDialog()
     m_ballReflectPlayfieldEdit.AttachItem(IDC_BALLPLAYFIELD_REFLECTION);
     m_ballDefaultBulbIntensScaleEdit.AttachItem(IDC_BULBINTENSITYSCALE);
     m_hEnableAOCheck = GetDlgItem(IDC_ENABLE_AO);
+    m_ambientOcclusionScaleEdit.AttachItem(IDC_AOSCALE);
     m_hEnableSSRCheck = GetDlgItem(IDC_ENABLE_SSR);
+    m_screenSpaceReflEdit.AttachItem(IDC_SSR_STRENGTH);
     m_toneMapperCombo.AttachItem(IDC_TONEMAPPER);
 
     UpdateVisuals();
@@ -142,8 +156,6 @@ BOOL TableVisualsProperty::OnInitDialog()
     m_resizer.AddChild(GetDlgItem(IDC_STATIC7), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC8), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC9), CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC10), CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC11), CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_imageCombo, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_materialCombo, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_ballDecalCombo, CResizer::topleft, RD_STRETCH_WIDTH);
@@ -154,8 +166,15 @@ BOOL TableVisualsProperty::OnInitDialog()
     m_resizer.AddChild(m_hSphericalMapCheck, CResizer::topleft, 0);
     m_resizer.AddChild(m_ballReflectPlayfieldEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_ballDefaultBulbIntensScaleEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC10), CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_hEnableAOCheck, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC12), CResizer::topleft, 0);
+    m_resizer.AddChild(m_ambientOcclusionScaleEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_hEnableSSRCheck, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC13), CResizer::topleft, 0);
+    m_resizer.AddChild(m_screenSpaceReflEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC11), CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_toneMapperCombo, CResizer::topleft, RD_STRETCH_WIDTH);
 
     return TRUE;

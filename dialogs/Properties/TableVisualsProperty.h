@@ -27,7 +27,9 @@ private:
     HWND        m_hLogoModeCheck = NULL;
     HWND        m_hReflectElementsCheck = NULL;
     HWND        m_hEnableAOCheck = NULL;
+    EditBox     m_ambientOcclusionScaleEdit;
     HWND        m_hEnableSSRCheck = NULL;
+    EditBox     m_screenSpaceReflEdit;
 };
 
 #endif

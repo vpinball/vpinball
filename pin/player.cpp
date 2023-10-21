@@ -1171,14 +1171,28 @@ void Player::UpdateStereoShaderState()
 void Player::InitShader()
 {
    UpdateBasicShaderMatrix();
-   //vec4 cam( worldViewProj._41, worldViewProj._42, worldViewProj._43, 1 );
-   //m_pin3d.m_pd3dPrimaryDevice->basicShader->SetVector("camera", &cam);
-
    m_pin3d.m_pd3dPrimaryDevice->basicShader->SetTexture(SHADER_tex_env, m_pin3d.m_envTexture ? m_pin3d.m_envTexture : &m_pin3d.m_builtinEnvTexture);
-   const vec4 st(m_ptable->m_envEmissionScale*m_globalEmissionScale, m_pin3d.m_envTexture ? (float)m_pin3d.m_envTexture->m_height/*+m_pin3d.m_envTexture->m_width)*0.5f*/ : (float)m_pin3d.m_builtinEnvTexture.m_height/*+m_pin3d.m_builtinEnvTexture.m_width)*0.5f*/, 0.f, 0.f);
-   m_pin3d.m_pd3dPrimaryDevice->basicShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
+   m_pin3d.m_pd3dPrimaryDevice->basicShader->SetVector(SHADER_fenvEmissionScale_TexWidth, m_ptable->m_envEmissionScale * m_globalEmissionScale,
+      m_pin3d.m_envTexture ? (float)m_pin3d.m_envTexture->m_height /*+m_pin3d.m_envTexture->m_width)*0.5f*/
+                           : (float)m_pin3d.m_builtinEnvTexture.m_height /*+m_pin3d.m_builtinEnvTexture.m_width)*0.5f*/,
+      0.f, 0.f);
 
-   InitBallShader();
+   UpdateBallShaderMatrix();
+   const vec4 st(m_ptable->m_envEmissionScale*m_globalEmissionScale, m_pin3d.m_envTexture ? (float)m_pin3d.m_envTexture->m_height/*+m_pin3d.m_envTexture->m_width)*0.5f*/ : (float)m_pin3d.m_builtinEnvTexture.m_height/*+m_pin3d.m_builtinEnvTexture.m_width)*0.5f*/, 0.f, 0.f);
+   m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
+   //m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetInt("iLightPointNum",MAX_LIGHT_SOURCES);
+
+   constexpr float Roughness = 0.8f;
+   m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetVector(SHADER_Roughness_WrapL_Edge_Thickness, exp2f(10.0f * Roughness + 1.0f), 0.f, 1.f, 0.05f);
+   vec4 amb_lr = convertColor(m_ptable->m_lightAmbient, m_ptable->m_lightRange);
+   m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetVector(SHADER_cAmbient_LightRange, 
+      amb_lr.x * m_globalEmissionScale, amb_lr.y * m_globalEmissionScale, amb_lr.z * m_globalEmissionScale, m_ptable->m_lightRange);
+
+   delete m_ballMeshBuffer;
+   const bool lowDetailBall = (m_ptable->GetDetailLevel() < 10);
+   IndexBuffer *ballIndexBuffer = new IndexBuffer(m_pin3d.m_pd3dPrimaryDevice, lowDetailBall ? basicBallLoNumFaces : basicBallMidNumFaces, lowDetailBall ? basicBallLoIndices : basicBallMidIndices);
+   VertexBuffer *ballVertexBuffer = new VertexBuffer(m_pin3d.m_pd3dPrimaryDevice, lowDetailBall ? basicBallLoNumVertices : basicBallMidNumVertices, (float *)(lowDetailBall ? basicBallLo : basicBallMid));
+   m_ballMeshBuffer = new MeshBuffer(L"Ball"s, ballVertexBuffer, ballIndexBuffer, true);
 }
 
 void Player::UpdateBallShaderMatrix()
@@ -1207,35 +1221,6 @@ void Player::UpdateBallShaderMatrix()
 #endif
 }
 
-void Player::InitBallShader()
-{
-   UpdateBallShaderMatrix();
-
-   const vec4 st(m_ptable->m_envEmissionScale*m_globalEmissionScale, m_pin3d.m_envTexture ? (float)m_pin3d.m_envTexture->m_height/*+m_pin3d.m_envTexture->m_width)*0.5f*/ : (float)m_pin3d.m_builtinEnvTexture.m_height/*+m_pin3d.m_builtinEnvTexture.m_width)*0.5f*/, 0.f, 0.f);
-   m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
-   //m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetInt("iLightPointNum",MAX_LIGHT_SOURCES);
-
-   constexpr float Roughness = 0.8f;
-   const vec4 rwem(exp2f(10.0f * Roughness + 1.0f), 0.f, 1.f, 0.05f);
-   m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetVector(SHADER_Roughness_WrapL_Edge_Thickness, &rwem);
-
-   /*Texture * const playfield = m_ptable->GetImage(m_ptable->m_image);
-   if (playfield)
-      m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetTexture(SHADER_tex_ball_playfield, playfield);*/
-
-   const bool lowDetailBall = (m_ptable->GetDetailLevel() < 10);
-   delete m_ballMeshBuffer;
-   IndexBuffer* ballIndexBuffer = new IndexBuffer(m_pin3d.m_pd3dPrimaryDevice, lowDetailBall ? basicBallLoNumFaces : basicBallMidNumFaces, lowDetailBall ? basicBallLoIndices : basicBallMidIndices);
-   VertexBuffer* ballVertexBuffer = new VertexBuffer(m_pin3d.m_pd3dPrimaryDevice, lowDetailBall ? basicBallLoNumVertices : basicBallMidNumVertices, (float*)(lowDetailBall ? basicBallLo : basicBallMid));
-   m_ballMeshBuffer = new MeshBuffer(L"Ball"s, ballVertexBuffer, ballIndexBuffer, true);
-
-   vec4 amb_lr = convertColor(m_ptable->m_lightAmbient, m_ptable->m_lightRange);
-   amb_lr.x *= m_globalEmissionScale;
-   amb_lr.y *= m_globalEmissionScale;
-   amb_lr.z *= m_globalEmissionScale;
-   m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetVector(SHADER_cAmbient_LightRange, &amb_lr);
-}
-
 HRESULT Player::Init()
 {
    TRACE_FUNCTION();
@@ -1254,36 +1239,47 @@ HRESULT Player::Init()
    m_MusicVolume = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "MusicVolume"s, 100);
    m_SoundVolume = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "SoundVolume"s, 100);
 
-   //
-   const bool dynamicDayNight = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "DynamicDayNight"s, false);
+   // Global emission scale
+   if (g_pvp->m_bgles)
+   { // Overriden from command line
+      m_globalEmissionScale = g_pvp->m_fgles;
+   }
+   else if (m_ptable->m_settings.LoadValueWithDefault(Settings::TableOverride, "OverrideEmissionScale"s, false))
+   { // Overriden from settings
+      if (m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "DynamicDayNight"s, false))
+      {
+         time_t hour_machine;
+         time(&hour_machine);
+         tm local_hour;
+         localtime_s(&local_hour, &hour_machine);
 
-   if(dynamicDayNight && !m_ptable->m_overwriteGlobalDayNight && !g_pvp->m_bgles)
-   {
-       time_t hour_machine;
-       time(&hour_machine);
-       tm local_hour;
-       localtime_s(&local_hour, &hour_machine);
+         const float lat = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Latitude"s, 52.52f);
+         const float lon = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Longitude"s, 13.37f);
 
-       const float lat = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Latitude"s, 52.52f);
-       const float lon = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Longitude"s, 13.37f);
+         const double rlat = lat * (M_PI / 180.);
+         const double rlong = lon * (M_PI / 180.);
 
-       const double rlat = lat * (M_PI / 180.);
-       const double rlong = lon * (M_PI / 180.);
+         const double tr = TheoreticRadiation(local_hour.tm_mday, local_hour.tm_mon + 1, local_hour.tm_year + 1900, rlat);
+         const double max_tr = MaxTheoreticRadiation(local_hour.tm_year + 1900, rlat);
+         const double sset = SunsetSunriseLocalTime(local_hour.tm_mday, local_hour.tm_mon + 1, local_hour.tm_year + 1900, rlong, rlat, false);
+         const double srise = SunsetSunriseLocalTime(local_hour.tm_mday, local_hour.tm_mon + 1, local_hour.tm_year + 1900, rlong, rlat, true);
 
-       const double tr = TheoreticRadiation(local_hour.tm_mday, local_hour.tm_mon + 1, local_hour.tm_year + 1900, rlat);
-       const double max_tr = MaxTheoreticRadiation(local_hour.tm_year + 1900, rlat);
-       const double sset = SunsetSunriseLocalTime(local_hour.tm_mday, local_hour.tm_mon + 1, local_hour.tm_year + 1900, rlong, rlat, false);
-       const double srise = SunsetSunriseLocalTime(local_hour.tm_mday, local_hour.tm_mon + 1, local_hour.tm_year + 1900, rlong, rlat, true);
+         const double cur = local_hour.tm_hour + local_hour.tm_min / 60.0;
 
-       const double cur = local_hour.tm_hour + local_hour.tm_min / 60.0;
+         const float factor = (float)(sin(M_PI * clamp((cur - srise) / (sset - srise), 0., 1.)) //!! leave space before sunrise and after sunset?
+            * sqrt(tr / max_tr)); //!! magic, "emulates" that shorter days are usually also "darker",cloudier,whatever in most regions
 
-       const float factor = (float)(sin(M_PI* clamp((cur - srise) / (sset - srise), 0., 1.)) //!! leave space before sunrise and after sunset?
-           * sqrt(tr / max_tr)); //!! magic, "emulates" that shorter days are usually also "darker",cloudier,whatever in most regions
-
-       m_globalEmissionScale = clamp(factor, 0.15f, 1.f); //!! configurable clamp?
+         m_globalEmissionScale = clamp(factor, 0.15f, 1.f); //!! configurable clamp?
+      }
+      else
+      {
+         m_globalEmissionScale = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "EmissionScale"s, 0.5f);
+      }
    }
    else
-       m_globalEmissionScale = g_pvp->m_bgles ? g_pvp->m_fgles : m_ptable->m_globalEmissionScale;
+   { // Not overriden: use the table author setting
+      m_globalEmissionScale = m_ptable->m_globalEmissionScale;
+   }
 
    //
 
