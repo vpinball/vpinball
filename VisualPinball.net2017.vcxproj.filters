@@ -239,7 +239,7 @@
     <ClCompile Include="dialogs\Properties\BackglassVisualsProperty.cpp">
       <Filter>dialogs\Properties</Filter>
     </ClCompile>
-    <ClCompile Include="dialogs\Properties\TableCustomProperty.cpp">
+    <ClCompile Include="dialogs\Properties\TableAudioProperty.cpp">
       <Filter>dialogs\Properties</Filter>
     </ClCompile>
     <ClCompile Include="dialogs\Properties\TableVisualsProperty.cpp">
@@ -1560,7 +1560,7 @@
     <ClInclude Include="dialogs\Properties\BackglassVisualsProperty.h">
       <Filter>dialogs\Properties</Filter>
     </ClInclude>
-    <ClInclude Include="dialogs\Properties\TableCustomProperty.h">
+    <ClInclude Include="dialogs\Properties\TableAudioProperty.h">
       <Filter>dialogs\Properties</Filter>
     </ClInclude>
     <ClInclude Include="dialogs\Properties\TableVisualsProperty.h">

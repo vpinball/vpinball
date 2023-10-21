@@ -913,7 +913,7 @@
 #define IDC_TABLESOUNDVOLUME            579
 #define IDC_TABLEMUSICVOLUME            580
 #define IDS_PLAYFIELD                   581
-#define IDD_PROPTABLE_USER              582
+#define IDD_PROPTABLE_AUDIO              582
 #define IDS_TABLE_USER                  583
 #define IDC_OVERRIDEPHYSICS_FLIPPERS    584
 #define IDC_TABLEAVSYNC                 585

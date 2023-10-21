@@ -1,10 +1,10 @@
 #pragma once
 
-class TableCustomProperty: public BasePropertyDialog
+class TableAudioProperty: public BasePropertyDialog
 {
 public:
-    TableCustomProperty(const VectorProtected<ISelect> *pvsel);
-    virtual ~TableCustomProperty() { }
+    TableAudioProperty(const VectorProtected<ISelect> *pvsel);
+    virtual ~TableAudioProperty() { }
 
     void UpdateVisuals(const int dispid=-1);
     void UpdateProperties(const int dispid);
