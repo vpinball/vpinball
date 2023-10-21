@@ -22,7 +22,7 @@ public:
    ViewSetup();
 
    void ApplyTableOverrideSettings(const Settings& settings, const string& keyPrefix);
-   void SaveToTableOverrideSettings(Settings& settings, const string& keyPrefix, const bool isOverride);
+   void SaveToTableOverrideSettings(Settings& settings, const string& keyPrefix, const bool isOverride) const;
    void SetWindowModeFromSettings(const PinTable* const table);
    
    float GetWindowTopZOFfset(const PinTable* const table) const;

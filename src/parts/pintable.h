@@ -351,7 +351,7 @@ public:
    void ExportBlueprint();
    void ExportTableMesh();
    void ImportBackdropPOV(const string &filename);
-   void ExportBackdropPOV(const string &filename);
+   void ExportBackdropPOV(const bool saveAs, const PinTable* overridesFrom);
    void ImportVPP(const string &filename);
 
    //void FireVoidEvent(int dispid);

@@ -2550,7 +2550,7 @@ void LiveUI::CameraProperties(bool is_live)
    }
    ImGui::SameLine();
    if (ImGui::Button("Export"))
-      table->ExportBackdropPOV(string());
+      table->ExportBackdropPOV(true, nullptr);
    ImGui::NewLine();
    if (BEGIN_PROP_TABLE)
    {
