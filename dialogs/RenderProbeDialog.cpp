@@ -125,17 +125,16 @@ INT_PTR RenderProbeDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
       case LVN_ITEMCHANGED:
       {
          NMLISTVIEW *const plistview = (LPNMLISTVIEW)lParam;
-         const int sel = plistview->iItem;
-         LVITEM lvitem;
-         lvitem.mask = LVIF_PARAM;
-         lvitem.iItem = sel;
-         lvitem.iSubItem = 0;
-         ListView_GetItem(hListHwnd, &lvitem);
-         RenderProbe *const pb = (RenderProbe *)lvitem.lParam;
-         SaveProbeFromUI(pb);
-         const int count = ListView_GetSelectedCount(hListHwnd);
-         const BOOL enable = !(count > 1);
-         ::EnableWindow(GetDlgItem(IDC_RENAME).GetHwnd(), enable);
+         if ((plistview->uChanged & LVIF_STATE) != 0 && plistview->uOldState == LVIS_SELECTED)
+         {
+            LVITEM lvitem;
+            lvitem.mask = LVIF_PARAM;
+            lvitem.iItem = plistview->iItem;
+            lvitem.iSubItem = 0;
+            ListView_GetItem(hListHwnd, &lvitem);
+            RenderProbe *const pb = (RenderProbe *)lvitem.lParam;
+            SaveProbeFromUI(pb);
+         }
       }
       break;
       
@@ -173,22 +172,27 @@ INT_PTR RenderProbeDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 void RenderProbeDialog::LoadProbeToUI(RenderProbe *const pb)
 {
+   const bool isPfReflections = pb->GetName() == PLAYFIELD_REFLECTION_RENDERPROBE_NAME;
    GetDlgItem(IDC_RENDER_PROBE_NAME_LABEL).SetWindowText(pb->GetName().c_str());
    SendDlgItemMessage(IDC_REFLECTION_MAX_LEVEL, CB_SETCURSEL, pb->GetReflectionMode(), 0);
    RenderProbe::ProbeType type = pb->GetType();
    CheckRadioButton(IDC_REFLECTION_PROBE, IDC_REFRACTION_PROBE, type == RenderProbe::PLANE_REFLECTION ? IDC_REFLECTION_PROBE : IDC_REFRACTION_PROBE);
    vec4 plane;
    pb->GetReflectionPlane(plane);
+   GetDlgItem(IDC_REFLECTION_PROBE).EnableWindow(!isPfReflections);
+   GetDlgItem(IDC_REFRACTION_PROBE).EnableWindow(!isPfReflections);
+   GetDlgItem(IDC_RENAME).EnableWindow(!isPfReflections);
+   GetDlgItem(IDC_DELETE).EnableWindow(!isPfReflections);
    GetDlgItem(IDC_REFLECTION_PLANE_NX).SetWindowText(f2sz(plane.x).c_str());
    GetDlgItem(IDC_REFLECTION_PLANE_NY).SetWindowText(f2sz(plane.y).c_str());
    GetDlgItem(IDC_REFLECTION_PLANE_NZ).SetWindowText(f2sz(plane.z).c_str());
    GetDlgItem(IDC_REFLECTION_PLANE_DIST).SetWindowText(f2sz(plane.w).c_str());
-   GetDlgItem(IDC_REFLECTION_PLANE_NX).EnableWindow(type == RenderProbe::PLANE_REFLECTION);
-   GetDlgItem(IDC_REFLECTION_PLANE_NY).EnableWindow(type == RenderProbe::PLANE_REFLECTION);
-   GetDlgItem(IDC_REFLECTION_PLANE_NZ).EnableWindow(type == RenderProbe::PLANE_REFLECTION);
-   GetDlgItem(IDC_REFLECTION_PLANE_DIST).EnableWindow(type == RenderProbe::PLANE_REFLECTION);
+   GetDlgItem(IDC_REFLECTION_PLANE_NX).EnableWindow(type == RenderProbe::PLANE_REFLECTION && !isPfReflections);
+   GetDlgItem(IDC_REFLECTION_PLANE_NY).EnableWindow(type == RenderProbe::PLANE_REFLECTION && !isPfReflections);
+   GetDlgItem(IDC_REFLECTION_PLANE_NZ).EnableWindow(type == RenderProbe::PLANE_REFLECTION && !isPfReflections);
+   GetDlgItem(IDC_REFLECTION_PLANE_DIST).EnableWindow(type == RenderProbe::PLANE_REFLECTION && !isPfReflections);
    GetDlgItem(IDC_REFLECTION_MAX_LEVEL).EnableWindow(type == RenderProbe::PLANE_REFLECTION);
-   GetDlgItem(IDC_REFLECTION_NO_LIGHTMAPS).EnableWindow(type == RenderProbe::PLANE_REFLECTION);
+   GetDlgItem(IDC_REFLECTION_NO_LIGHTMAPS).EnableWindow(type == RenderProbe::PLANE_REFLECTION && !isPfReflections);
    CheckDlgButton(IDC_REFLECTION_NO_LIGHTMAPS, pb->GetReflectionNoLightmaps() ? 1 : 0);
    HWND hwnd = GetDlgItem(IDC_ROUGHNESS).GetHwnd();
    SendMessage(hwnd, TBM_SETRANGE, fTrue, MAKELONG(0, 13 - 1));
@@ -248,8 +252,9 @@ BOOL RenderProbeDialog::OnCommand(WPARAM wParam, LPARAM lParam)
    }
    case IDC_RENAME:
    {
+      const int count = ListView_GetSelectedCount(hListHwnd);
       const int sel = ListView_GetNextItem(hListHwnd, -1, LVNI_SELECTED);
-      if (sel != -1)
+      if (count == 1 && sel != -1)
       {
          ::SetFocus(hListHwnd);
          ListView_EditLabel(hListHwnd, sel);
