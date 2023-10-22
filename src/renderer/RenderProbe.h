@@ -64,18 +64,21 @@ private:
    void RenderReflectionProbe(const bool is_static);
    void DoRenderReflectionProbe(const bool render_static, const bool render_balls, const bool render_dynamic);
 
-   RenderDeviceState* m_rdState = nullptr;
+   // Base properties
    ProbeType m_type = PLANE_REFLECTION;
-   bool m_dirty = true;
    string m_name;
    int m_roughness = 0;
-   bool m_rendering = false;
-   bool m_disableLightReflection = false; // Disable rendering of lightmaps in reflection render probes, needed to avoid having having reflections of playfield lightmaps onto the playfield itself
-   RenderTarget* m_blurRT = nullptr;
-   RenderTarget* m_prerenderRT = nullptr;
-   RenderTarget* m_dynamicRT = nullptr;
 
    // Properties for reflection probe
    vec4 m_reflection_plane = vec4(0.f, 0.f, 1.f, 0.f); // Plane equation: xyz is the normal, w is the projected distance
    ReflectionMode m_reflection_mode = REFL_DYNAMIC;
+   bool m_disableLightReflection = false; // Disable rendering of lightmaps in reflection render probes, needed to avoid having having reflections of playfield lightmaps onto the playfield itself
+
+   // Properties used for rendering (not saved)
+   RenderDeviceState* m_rdState = nullptr;
+   bool m_dirty = true;
+   bool m_rendering = false;
+   RenderTarget* m_blurRT = nullptr;
+   RenderTarget* m_prerenderRT = nullptr;
+   RenderTarget* m_dynamicRT = nullptr;
 };

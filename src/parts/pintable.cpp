@@ -3868,18 +3868,24 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
                   prim->put_Collidable(FTOVB(true));
                }
 
-         if (loadfileversion < 1080) 
+         // reflections were hardcoded without render probe before 10.8.0
+         RenderProbe *pf_reflection_probe = GetRenderProbe(PLAYFIELD_REFLECTION_RENDERPROBE_NAME);
+         if (pf_reflection_probe == nullptr)
+         {
+            pf_reflection_probe = new RenderProbe();
+            pf_reflection_probe->SetName(PLAYFIELD_REFLECTION_RENDERPROBE_NAME);
+            pf_reflection_probe->SetReflectionMode(RenderProbe::ReflectionMode::REFL_DYNAMIC);
+            m_vrenderprobe.push_back(pf_reflection_probe);
+         }
+         vec4 plane = vec4(0.f, 0.f, 1.f, m_tableheight);
+         pf_reflection_probe->SetType(RenderProbe::PLANE_REFLECTION);
+         pf_reflection_probe->SetReflectionPlane(plane);
+         pf_reflection_probe->SetReflectionNoLightmaps(true);
+
+         if (loadfileversion < 1080)
          {
             // Glass was horizontal before 10.8
             m_glassBottomHeight = m_glassTopHeight;
-
-            // reflections were hardcoded without render probe before 10.8.0
-            RenderProbe* const pf_reflections = new RenderProbe();
-            pf_reflections->SetName(PLAYFIELD_REFLECTION_RENDERPROBE_NAME);
-            vec4 plane = vec4(0.f, 0.f, 1.f, m_tableheight);
-            pf_reflections->SetReflectionPlane(plane);
-            pf_reflections->SetReflectionNoLightmaps(true);
-            m_vrenderprobe.push_back(pf_reflections);
 
             for (size_t i = 0; i < m_vedit.size(); ++i)
             {

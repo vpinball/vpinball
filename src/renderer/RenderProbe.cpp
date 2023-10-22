@@ -29,11 +29,12 @@ int RenderProbe::GetSaveSize() const
 HRESULT RenderProbe::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)
 {
    BiffWriter bw(pstm, hcrypthash);
-   bw.WriteInt(FID(TYPE), m_type);
+   bw.WriteInt(FID(TYPE), (int)m_type);
    bw.WriteString(FID(NAME), m_name);
    bw.WriteInt(FID(RBAS), m_roughness);
    bw.WriteStruct(FID(RPLA), (void*)&m_reflection_plane, sizeof(vec4));
-   bw.WriteInt(FID(RMOD), m_reflection_mode);
+   bw.WriteInt(FID(RMOD), (int)m_reflection_mode);
+   bw.WriteBool(FID(RLMP), m_disableLightReflection);
    bw.WriteTag(FID(ENDB));
    return S_OK;
 }
@@ -51,9 +52,10 @@ bool RenderProbe::LoadToken(const int id, BiffReader* const pbr)
    {
    case FID(TYPE): pbr->GetInt(&m_type); break;
    case FID(NAME): pbr->GetString(m_name); break;
-   case FID(RBAS): pbr->GetInt(&m_roughness); break;
+   case FID(RBAS): pbr->GetInt(m_roughness); break;
    case FID(RPLA): pbr->GetStruct(&m_reflection_plane, sizeof(vec4)); break;
    case FID(RMOD): pbr->GetInt(&m_reflection_mode); break;
+   case FID(RLMP): pbr->GetBool(m_disableLightReflection); break;
    }
    return true;
 }
