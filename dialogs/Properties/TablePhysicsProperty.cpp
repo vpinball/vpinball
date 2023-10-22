@@ -21,6 +21,17 @@ TablePhysicsProperty::TablePhysicsProperty(const VectorProtected<ISelect> *pvsel
     m_minSlopeEdit.SetDialog(this);
     m_maxSlopeEdit.SetDialog(this);
     m_gameplayDifficultEdit.SetDialog(this);
+    m_overwritePhysicsSetCombo.SetDialog(this);
+
+    m_physicSetList.push_back("Disable");
+    m_physicSetList.push_back("Set1");
+    m_physicSetList.push_back("Set2");
+    m_physicSetList.push_back("Set3");
+    m_physicSetList.push_back("Set4");
+    m_physicSetList.push_back("Set5");
+    m_physicSetList.push_back("Set6");
+    m_physicSetList.push_back("Set7");
+    m_physicSetList.push_back("Set8");
 }
 
 void TablePhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
@@ -65,6 +76,10 @@ void TablePhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
         PropertyDialog::SetFloatTextbox(m_maxSlopeEdit, table->m_angletiltMax);
     if (dispid == IDC_GAME_DIFFICULTY_EDIT || dispid == -1)
         PropertyDialog::SetFloatTextbox(m_gameplayDifficultEdit, table->m_difficulty * 100.f);
+    if (dispid == IDC_OVERWRITE_PHYSICS_COMBO || dispid == -1)
+        PropertyDialog::UpdateComboBox(m_physicSetList, m_overwritePhysicsSetCombo, m_physicSetList[(int)table->m_overridePhysics]);
+    if (dispid == IDC_OVERRIDEPHYSICS_FLIPPERS || dispid == -1)
+        PropertyDialog::SetCheckboxState(m_hOverwriteFlipperCheck, table->m_overridePhysicsFlipper);
 }
 
 void TablePhysicsProperty::UpdateProperties(const int dispid)
@@ -129,6 +144,12 @@ void TablePhysicsProperty::UpdateProperties(const int dispid)
         case IDC_GAME_DIFFICULTY_EDIT:
            CHECK_UPDATE_ITEM(table->m_difficulty, PropertyDialog::GetFloatTextbox(m_gameplayDifficultEdit) / 100.f, table);
            break;
+        case IDC_OVERWRITE_PHYSICS_COMBO:
+            CHECK_UPDATE_ITEM(table->m_overridePhysics, (PropertyDialog::GetComboBoxIndex(m_overwritePhysicsSetCombo, m_physicSetList)), table);
+            break;
+        case IDC_OVERRIDEPHYSICS_FLIPPERS:
+            CHECK_UPDATE_ITEM(table->m_overridePhysicsFlipper, PropertyDialog::GetCheckboxState(m_hOverwriteFlipperCheck), table);
+            break;
         default:
            break;
     }
@@ -158,6 +179,8 @@ BOOL TablePhysicsProperty::OnInitDialog()
     m_minSlopeEdit.AttachItem(IDC_MIN_DIFFICULTY_EDIT);
     m_maxSlopeEdit.AttachItem(IDC_MAX_DIFFICULTY_EDIT);
     m_gameplayDifficultEdit.AttachItem(IDC_GAME_DIFFICULTY_EDIT);
+    m_overwritePhysicsSetCombo.AttachItem(IDC_OVERWRITE_PHYSICS_COMBO);
+    m_hOverwriteFlipperCheck = ::GetDlgItem(GetHwnd(), IDC_OVERRIDEPHYSICS_FLIPPERS);
 
     UpdateVisuals();
 
@@ -179,6 +202,7 @@ BOOL TablePhysicsProperty::OnInitDialog()
     m_resizer.AddChild(GetDlgItem(IDC_STATIC15), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC16), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC18), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC20), CResizer::topleft, 0);
     m_resizer.AddChild(m_hFilterMechanicalPlungerCheck, CResizer::topleft, 0);
     m_resizer.AddChild(m_importSetButton, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_exportSetButton, CResizer::topleft, RD_STRETCH_WIDTH);
@@ -198,6 +222,8 @@ BOOL TablePhysicsProperty::OnInitDialog()
     m_resizer.AddChild(m_minSlopeEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_maxSlopeEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_gameplayDifficultEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_overwritePhysicsSetCombo, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hOverwriteFlipperCheck, CResizer::topleft, 0);
 
     return TRUE;
 }
