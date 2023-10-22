@@ -16,8 +16,4 @@ protected:
 private:
     EditBox     m_soundEffectVolEdit;
     EditBox     m_musicVolEdit;
-
-    ComboBox m_overwritePhysicsSetCombo;
-    HWND m_hOverwriteFlipperCheck;
-    vector<string> m_physicSetList;
 };
