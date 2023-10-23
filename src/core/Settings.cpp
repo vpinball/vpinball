@@ -51,7 +51,7 @@ bool Settings::LoadFromFile(const string& path, const bool createDefault)
       }
 
       #ifdef _WIN32
-      // Fpor Windows, get settings values from windows registry (which was used to store settings before 10.8)
+      // For Windows, get settings values from windows registry (which was used to store settings before 10.8)
       for (unsigned int j = 0; j < Section::Count; j++)
       {
          // We do not save version of played tables in the ini file
@@ -124,7 +124,28 @@ bool Settings::LoadFromFile(const string& path, const bool createDefault)
                assert(!"Bad RegKey");
             }
 
-            m_ini[regKey[j]][szName] = copy;
+            string name(szName);
+            if (!m_ini[regKey[j]].has(name))
+            {
+               // Search for a case insensitive match
+               for (auto item : m_ini[regKey[j]])
+               {
+                  if (name.size() == item.first.size()
+                     && std::equal(name.begin(), name.end(), item.first.begin(),
+                        [](char a, char b) { return std::tolower(static_cast<unsigned char>(a)) == std::tolower(static_cast<unsigned char>(b)); }))
+                  {
+                     name = item.first;
+                     break;
+                  }
+               }
+            }
+
+            if (m_ini[regKey[j]].has(name))
+               m_ini[regKey[j]][name] = copy;
+            else
+            {
+               PLOGI << "Settings '" << regKey[j] << "/" << szName << "' was not imported (value in registry: " << copy << ")";
+            }
          }
          RegCloseKey(hk);
       }
