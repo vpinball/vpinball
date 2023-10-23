@@ -44,10 +44,10 @@ BOOL DimensionDialog::OnInitDialog()
 
             ManufacturerDimensions dim;
             dim.name = fields[0];
-            try { dim.width = std::stof(fields[1]); } catch (const std::exception& e) { dim.width = 20.25f; }
-            try { dim.height = std::stof(fields[2]); } catch (const std::exception& e) { dim.height = 46.f; }
-            try { dim.glassBottom = std::stof(fields[3]); } catch (const std::exception& e) { dim.glassBottom = 3.f; }
-            try { dim.glassTop = std::stof(fields[4]); } catch (const std::exception& e) { dim.glassTop = 8.5f; }
+            try { dim.width = std::stof(fields[1]); } catch (const std::exception&) { dim.width = 20.25f; }
+            try { dim.height = std::stof(fields[2]); } catch (const std::exception&) { dim.height = 46.f; }
+            try { dim.glassBottom = std::stof(fields[3]); } catch (const std::exception&) { dim.glassBottom = 3.f; }
+            try { dim.glassTop = std::stof(fields[4]); } catch (const std::exception&) { dim.glassTop = 8.5f; }
             dim.comment = fields[5];
             m_dimensions.push_back(dim);
 
@@ -81,10 +81,21 @@ BOOL DimensionDialog::OnInitDialog()
       SetDlgItemText(IDC_SIZE_WIDTH, textBuf);
       sprintf_s(textBuf, sizeof(textBuf), "%.03f", VPUTOINCHES(height));
       SetDlgItemText(IDC_SIZE_HEIGHT, textBuf);
+      sprintf_s(textBuf, sizeof(textBuf), "%.03f", VPUTOINCHES(pt->m_glassTopHeight));
+      SetDlgItemText(IDC_TABLE_GLASS_TOP_HEIGHT_EDIT, textBuf);
+      sprintf_s(textBuf, sizeof(textBuf), "%.03f", VPUTOINCHES(pt->m_glassBottomHeight));
+      SetDlgItemText(IDC_TABLE_GLASS_BOTTOM_HEIGHT_EDIT, textBuf);
       float ratio = (float)height / width;
-      sprintf_s(textBuf, sizeof(textBuf), "%.04f", ratio);
-      SetDlgItemText(IDC_ASPECT_RATIO_EDIT, textBuf);
+      sprintf_s(textBuf, sizeof(textBuf), "Aspect ratio: %.04f", ratio);
+      SetDlgItemText(IDC_AR_LABEL, textBuf);
    }
+   GetDlgItem(IDC_SIZE_WIDTH).EnableWindow(pt != nullptr);
+   GetDlgItem(IDC_SIZE_HEIGHT).EnableWindow(pt != nullptr);
+   GetDlgItem(IDC_VP_WIDTH).EnableWindow(pt != nullptr);
+   GetDlgItem(IDC_VP_HEIGHT).EnableWindow(pt != nullptr);
+   GetDlgItem(IDC_TABLE_GLASS_TOP_HEIGHT_EDIT).EnableWindow(pt != nullptr);
+   GetDlgItem(IDC_TABLE_GLASS_BOTTOM_HEIGHT_EDIT).EnableWindow(pt != nullptr);
+   GetDlgItem(IDC_COPY).ShowWindow(pt != nullptr);
    GetDlgItem(IDC_APPLY_TO_TABLE).ShowWindow(pt != nullptr);
 
    return TRUE;
@@ -103,12 +114,20 @@ LRESULT DimensionDialog::OnNotify(WPARAM wparam, LPARAM lparam)
             break;
          char textBuf[MAXNAMEBUFFER];
          sprintf_s(textBuf, sizeof(textBuf), "%.03f", m_dimensions[idx].width);
-         SetDlgItemText(IDC_SIZE_WIDTH, textBuf);
+         SetDlgItemText(IDC_SIZE_WIDTH2, textBuf);
          sprintf_s(textBuf, sizeof(textBuf), "%.03f", m_dimensions[idx].height);
-         SetDlgItemText(IDC_SIZE_HEIGHT, textBuf);
+         SetDlgItemText(IDC_SIZE_HEIGHT2, textBuf);
+         sprintf_s(textBuf, sizeof(textBuf), "%.03f", INCHESTOVPU(m_dimensions[idx].width));
+         SetDlgItemText(IDC_VP_WIDTH2, textBuf);
+         sprintf_s(textBuf, sizeof(textBuf), "%.03f", INCHESTOVPU(m_dimensions[idx].height));
+         SetDlgItemText(IDC_VP_HEIGHT2, textBuf);
+         sprintf_s(textBuf, sizeof(textBuf), "%.03f", m_dimensions[idx].glassTop);
+         SetDlgItemText(IDC_TABLE_GLASS_TOP_HEIGHT_EDIT2, textBuf);
+         sprintf_s(textBuf, sizeof(textBuf), "%.03f", m_dimensions[idx].glassBottom);
+         SetDlgItemText(IDC_TABLE_GLASS_BOTTOM_HEIGHT_EDIT2, textBuf);
          float ratio = m_dimensions[idx].height / m_dimensions[idx].width;
-         sprintf_s(textBuf, sizeof(textBuf), "%.04f", ratio);
-         SetDlgItemText(IDC_ASPECT_RATIO_EDIT, textBuf);
+         sprintf_s(textBuf, sizeof(textBuf), "Aspect Ratio: %.04f", ratio);
+         SetDlgItemText(IDC_AR_LABEL2, textBuf);
          break;
       }
    }
@@ -127,7 +146,7 @@ INT_PTR DimensionDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          {
             m_discardChangeNotification = true;
             float sizeWidth, sizeHeight;
-            int vpWidth, vpHeight;
+            float vpWidth, vpHeight;
             int ret = 0;
             if (LOWORD(wParam) == IDC_SIZE_WIDTH)
             {
@@ -178,35 +197,42 @@ INT_PTR DimensionDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 BOOL DimensionDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 {
+   CComObject<PinTable>* const pt = g_pvp->GetActiveTable();
    UNREFERENCED_PARAMETER(lParam);
    switch (LOWORD(wParam))
    {
    case IDC_OK:
-      CDialog::OnOK();
+      Close();
+      return TRUE;
+   case IDC_COPY:
+      // TODO this will assert if fields are empty (no consequence but not clean)
+      SetDlgItemText(IDC_SIZE_WIDTH, GetDlgItemText(IDC_SIZE_WIDTH2));
+      SetDlgItemText(IDC_SIZE_HEIGHT, GetDlgItemText(IDC_SIZE_HEIGHT2));
+      SetDlgItemText(IDC_VP_WIDTH, GetDlgItemText(IDC_VP_WIDTH2));
+      SetDlgItemText(IDC_VP_HEIGHT, GetDlgItemText(IDC_VP_HEIGHT2));
+      SetDlgItemText(IDC_TABLE_GLASS_TOP_HEIGHT_EDIT, GetDlgItemText(IDC_TABLE_GLASS_TOP_HEIGHT_EDIT2));
+      SetDlgItemText(IDC_TABLE_GLASS_BOTTOM_HEIGHT_EDIT, GetDlgItemText(IDC_TABLE_GLASS_BOTTOM_HEIGHT_EDIT2));
+      SetDlgItemText(IDC_AR_LABEL, GetDlgItemText(IDC_AR_LABEL2));
       return TRUE;
    case IDC_APPLY_TO_TABLE:
-   {
-      CComObject<PinTable> * const pt = g_pvp->GetActiveTable();
-      if (pt == nullptr)
+      if (pt != nullptr)
       {
-         ShowError("No table loaded!");
-         break;
+         float value;
+         int ret;
+         ret = sscanf_s(GetDlgItemText(IDC_VP_WIDTH).c_str(), "%f", &value);
+         if (ret == 1 && value > 0)
+            pt->put_Width(value);
+         ret = sscanf_s(GetDlgItemText(IDC_VP_HEIGHT).c_str(), "%f", &value);
+         if (ret == 1 && value > 0)
+            pt->put_Height(value);
+         ret = sscanf_s(GetDlgItemText(IDC_TABLE_GLASS_TOP_HEIGHT_EDIT).c_str(), "%f", &value);
+         if (ret == 1 && value > 0)
+            pt->m_glassTopHeight = INCHESTOVPU(value);
+         ret = sscanf_s(GetDlgItemText(IDC_TABLE_GLASS_BOTTOM_HEIGHT_EDIT).c_str(), "%f", &value);
+         if (ret == 1 && value > 0)
+            pt->m_glassBottomHeight = INCHESTOVPU(value);
       }
-
-      int vpWidth, vpHeight;
-      int ret;
-
-      ret = sscanf_s(GetDlgItemText(IDC_VP_WIDTH).c_str(), "%i", &vpWidth);
-      if (ret != 1 || vpWidth < 0)
-         vpWidth = 0;
-
-      ret = sscanf_s(GetDlgItemText(IDC_VP_HEIGHT).c_str(), "%i", &vpHeight);
-      if (ret != 1 || vpHeight < 0)
-         vpHeight = 0;
-      pt->put_Width((float)vpWidth);
-      pt->put_Height((float)vpHeight);
       return TRUE;
-   }
    }
    return FALSE;
 }
