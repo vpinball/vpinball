@@ -398,7 +398,7 @@ void Anaglyph::Update()
          m_rgb2AnaglyphLeft = Matrix3D(a, b, b, 0.f, /**/ 0.f, 0.f, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
          const float c = 1.00f * contrast, d = 1.f - c;
          m_rgb2AnaglyphRight = Matrix3D(0.f, 0.f, 0.f, 0.f, /**/ d, c, 0.f, 0.f, /**/ d, 0.f, c, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
-         constexpr float e = 0.06 * 0.1;
+         constexpr float e = 0.06f * 0.1f;
          m_deghostGamma = vec3(1.00f, 1.15f, 1.15f);
          m_deghostFilter = Matrix3D(1.f + e, -0.5f*e, -0.5f*e, 0.f, /**/ -0.25f*e, 1.f + 0.5f*e, -0.25f*e, 0.f, /**/ -0.25f*e, -0.25f*e, 1.f + 0.5f*e, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
       }
@@ -408,7 +408,7 @@ void Anaglyph::Update()
          m_rgb2AnaglyphLeft = Matrix3D(0.f, 0.f, 0.f, 0.f, /**/ b, a, b, 0.f, /**/ 0.f, 0.f, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
          const float c = 0.80f * contrast, d = 1.f - c;
          m_rgb2AnaglyphRight = Matrix3D(c, d, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 0.f, /**/ 0.f, d, c, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
-         constexpr float e = 0.06 * 0.275;
+         constexpr float e = 0.06f * 0.275f;
          m_deghostGamma = vec3(1.15f, 1.05f, 1.15f);
          m_deghostFilter = Matrix3D(1.f + 0.5f*e, -0.25f*e, -0.25f*e, 0.f, /**/ -0.5f*e, 1.f + 0.25f*e, -0.5f*e, 0.f, /**/ -0.25f*e, -0.25f*e, 1.f + 0.5f*e, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
       }
@@ -418,7 +418,7 @@ void Anaglyph::Update()
          m_rgb2AnaglyphLeft = Matrix3D(0.f, 0.f, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 0.f, /**/ b, b, a, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
          const float c = 1.00f * contrast, d = 1.f - c;
          m_rgb2AnaglyphRight = Matrix3D(c, 0.f, d, 0.f, /**/ 0.f, c, d, 0.f, /**/ 0.f, 0.f, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
-         constexpr float e = 0.06 * 0.275;
+         constexpr float e = 0.06f * 0.275f;
          m_deghostGamma = vec3(1.05f, 1.10f, 1.00f);
          m_deghostFilter = Matrix3D(1.f + 1.5f*e, -0.75f*e, -0.75f*e, 0.f, /**/ -0.75f*e, 1.f + 1.5f*e, -0.75f*e, 0.f, /**/ -1.5f*e, -1.5f*e, 1.f + 3.f*e, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
       }

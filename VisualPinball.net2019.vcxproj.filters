@@ -439,6 +439,9 @@
     <None Include="shader\FBShader.fxh">
       <Filter>shaders</Filter>
     </None>
+    <None Include="src\assets\TableSizes.csv">
+      <Filter>assets</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\chevron.bmp">
