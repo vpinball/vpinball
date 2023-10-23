@@ -633,7 +633,7 @@ void VideoOptionsDialog::LoadSettings()
    sprintf_s(tmp, sizeof(tmp), "%f", stereo3DZPD);
    SetDlgItemText(IDC_3D_STEREO_ZPD, tmp);
 
-   const bool bamHeadtracking = settings.LoadValueWithDefault(Settings::Player, "BAMheadTracking"s, false);
+   const bool bamHeadtracking = settings.LoadValueWithDefault(Settings::Player, "BAMHeadTracking"s, false);
    SendDlgItemMessage(IDC_HEADTRACKING, BM_SETCHECK, bamHeadtracking ? BST_CHECKED : BST_UNCHECKED, 0);
 
    const float stereo3DBrightness = settings.LoadValueWithDefault(Settings::Player, "Stereo3DBrightness"s, 1.0f);

@@ -222,7 +222,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const b
          m_videoSyncMode = VideoSyncMode::VSM_FRAME_PACING;
    }
 
-   m_headTracking = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "BAMheadTracking"s, false);
+   m_headTracking = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "BAMHeadTracking"s, false);
 
    m_ballImage = nullptr;
    m_decalImage = nullptr;

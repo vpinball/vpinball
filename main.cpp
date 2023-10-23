@@ -547,7 +547,7 @@ public:
             }
             const string path = GetPathFromArg(szArglist[i + 1], false);
             i++; // two params processed
-            if (!FileExists(path))
+            if (!FileExists(path) && !ini && !tableIni)
             {
                ::MessageBox(NULL, ("File '"s + path + "' was not found"s).c_str(), "Command Line Error", MB_ICONERROR);
                exit(1);
@@ -561,6 +561,11 @@ public:
             {
                allowLoadOnStart = false; // Don't face the user with a load dialog since the file is provided on the command line
                m_file = true;
+               if (m_play || m_extractPov || m_extractScript || m_vpinball.m_povEdit)
+               {
+                  ::MessageBox(NULL, "Only one of 'Edit', 'Play', 'PovEdit', 'Pov', 'ExtractVBS' can be used.", "Command Line Error", MB_ICONERROR);
+                  exit(1);
+               }
                m_play = playfile || povEdit;
                m_extractPov = extractpov;
                m_extractScript = extractscript;
