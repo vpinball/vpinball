@@ -25,10 +25,12 @@
 #define IDC_TABLE_GLASS_TOP_HEIGHT_EDIT 4
 #define DISPID_SIZE_X                   5
 #define IDC_REEL_WIDTH_EDIT             5
+#define IDC_TABLE_GLASS_TOP_HEIGHT_EDIT2 5
 #define DISPID_Surface_SideColor        6
 #define DISPID_SIZE_Y                   6
 #define IDC_REEL_HEIGHT_EDIT            6
 #define IDC_MIN_DIFFICULTY_EDIT         6
+#define IDC_TABLE_GLASS_BOTTOM_HEIGHT_EDIT2 6
 #define DISPID_Surface_SideColor2       7
 #define DISPID_POSITION_X               7
 #define IDC_DAMPING_EDIT                7
@@ -588,6 +590,7 @@
 #define IDC_THROW_BALLS_SIZE_EDIT2      378
 #define IDC_THROW_BALLS_MASS_EDIT       378
 #define IDI_RAMP                        378
+#define IDC_SIZE_WIDTH2                 378
 #define IDC_FILTERAMOUNT_EDIT           379
 #define IDD_PROPKICKER_STATE            379
 #define IDC_SPECULAR_EDIT               379
@@ -654,6 +657,7 @@
 #define IDC_AA_ALL_TABLES               398
 #define IDC_GLOBAL_ALPHA_ACC            398
 #define IDC_OPACITY_CHECK               398
+#define IDC_SIZE_HEIGHT2                398
 #define IDC_JOYMECHTILTCOMBO            399
 #define IDC_FLASHER                     399
 #define IDC_ADDCREDITBUTTON2            400
@@ -698,9 +702,11 @@
 #define IDC_TABLE_DIM_LIST              423
 #define IDC_JOYDEBUGGERCOMBO            423
 #define IDC_DYNAMIC_AO                  424
+#define IDC_VP_WIDTH2                   424
 #define IDC_FORCE_ANISO                 425
 #define IDC_WIRE_DISTY                  425
 #define IDC_SCALE_BULB_MESH             425
+#define IDC_VP_HEIGHT2                  425
 #define IDC_MATERIAL_COMBO3             426
 #define IDC_BTTABLERECENTER             426
 #define IDC_GLOBAL_3DSTEREO             427
@@ -913,7 +919,7 @@
 #define IDC_TABLESOUNDVOLUME            579
 #define IDC_TABLEMUSICVOLUME            580
 #define IDS_PLAYFIELD                   581
-#define IDD_PROPTABLE_AUDIO              582
+#define IDD_PROPTABLE_AUDIO             582
 #define IDS_TABLE_USER                  583
 #define IDC_OVERRIDEPHYSICS_FLIPPERS    584
 #define IDC_TABLEAVSYNC                 585
@@ -1243,6 +1249,7 @@
 #define IDC_APPLICATION_SETTINGS        921
 #define IDC_TABLE_OVERRIDE              922
 #define IDC_TONEMAPPER                  923
+#define IDC_AR_LABEL2                   924
 #define IDC_LAYBACK_EDIT                1040
 #define IDC_3D_STEREO_SEPARATION_EDIT   1041
 #define IDC_3D_STEREO_ZPD_EDIT          1042
@@ -1435,9 +1442,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        675
+#define _APS_NEXT_RESOURCE_VALUE        676
 #define _APS_NEXT_COMMAND_VALUE         4028
-#define _APS_NEXT_CONTROL_VALUE         924
+#define _APS_NEXT_CONTROL_VALUE         925
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif
