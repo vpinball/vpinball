@@ -2402,7 +2402,7 @@ void LiveUI::UpdateMainSplashModal()
          HideUI();
       }
       ImGui::SetItemDefaultFocus();
-      if (ImGui::Button("Adjust Camera", size))
+      if (m_player->m_stereo3D != STEREO_VR && ImGui::Button("Adjust Camera", size))
       {
          ImGui::CloseCurrentPopup();
          OpenTweakMode();
@@ -2415,7 +2415,7 @@ void LiveUI::UpdateMainSplashModal()
          m_ShowSplashModal = false;
          popup_headtracking = true;
       }
-      if (ImGui::Button("Live Editor", size))
+      if (m_player->m_stereo3D != STEREO_VR && ImGui::Button("Live Editor", size))
       {
          ImGui::CloseCurrentPopup();
          m_ShowUI = true;

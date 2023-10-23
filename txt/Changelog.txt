@@ -44,6 +44,9 @@ FEATURES:
     weird we warned you). If you have issues locating the table or getting nightmares, it is NOT our fault.
     Default values are: box unchecked and 1.
 
+  - note that VPVR did not support the roughness property of metallic parts (always supposing mirror like metal). Some VR only tables have wrong material shininess that will lead to 
+    incorrect rendering of metal parts. These table's materials need to be updated to adjust the shininess of metal materials.
+
   - note that adaptive vsync (=mode value 2) is recommended (at least) on macOS/iOS and Android
 
   - added rudimentary support for BAM Headtracking (thanks to Rafal from ravarcade.pl). Usage:
