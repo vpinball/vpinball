@@ -2,6 +2,8 @@
 
 #include "stdafx.h"
 
+#include "vpversion.h"
+
 #ifdef CRASH_HANDLER
 #include "StackTrace.h"
 #include "CrashHandler.h"
@@ -580,7 +582,8 @@ public:
       m_vpinball.m_settings.LoadFromFile(m_szIniFileName, true);
       
       SetupLogger(m_vpinball.m_settings.LoadValueWithDefault(Settings::Editor, "EnableLog"s, false));
-      PLOGI << "Starting VPX...";
+
+      PLOGI << "Starting VPX - " << VP_VERSION_STRING_FULL_LITERAL;
 
       // Start VP with file dialog open and then also playing that one?
       const bool stos = allowLoadOnStart && m_vpinball.m_settings.LoadValueWithDefault(Settings::Editor, "SelectTableOnStart"s, true);
