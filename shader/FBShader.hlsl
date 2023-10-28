@@ -775,6 +775,13 @@ float4 ps_main_fb_mirror(const in VS_OUTPUT_2D IN) : COLOR
 }
 
 
+// upscale
+float4 ps_main_fb_copy(const in VS_OUTPUT_2D IN) : COLOR
+{
+   return float4(tex2D(tex_fb_filtered, IN.tex0).rgb, 1.0);
+}
+
+
 // cos_hemisphere_sample & rotate_to_vector_upper are defined in FXAAStereoAO
 float4 ps_main_fb_irradiance(const in VS_OUTPUT_2D IN) : COLOR
 {
@@ -1092,6 +1099,17 @@ technique fb_mirror
 		VertexShader = compile vs_3_0 vs_main_no_trafo();
 		PixelShader  = compile ps_3_0 ps_main_fb_mirror();
 	}
+}
+
+//
+
+technique fb_copy
+{
+    pass P0
+    {
+        VertexShader = compile vs_3_0 vs_main_no_trafo();
+        PixelShader = compile ps_3_0 ps_main_fb_copy();
+    }
 }
 
 //
