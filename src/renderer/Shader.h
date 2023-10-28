@@ -117,6 +117,7 @@ enum ShaderTechniques
    SHADER_TECHNIQUE(fb_blur_horiz39x39),
    SHADER_TECHNIQUE(fb_blur_vert39x39),
    SHADER_TECHNIQUE(fb_mirror),
+   SHADER_TECHNIQUE(fb_copy),
    SHADER_TECHNIQUE(CAS),
    SHADER_TECHNIQUE(BilateralSharp_CAS),
    SHADER_TECHNIQUE(SSReflection),

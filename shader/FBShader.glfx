@@ -776,6 +776,14 @@ void main()
 }
 
 
+////ps_main_fb_copy
+
+void main()
+{
+   color = float4(texStereo(tex_fb_filtered, tex0).rgb, 1.0);
+}
+
+
 ////ps_main_fb_irradiance
 
 uniform sampler2D tex_env; // envmap
@@ -869,6 +877,7 @@ fb_blur_vert27x27:P0:vs_main_no_trafo():gs_main():ps_main_fb_blur_vert27x27()
 fb_blur_horiz39x39:P0:vs_main_no_trafo():gs_main():ps_main_fb_blur_horiz39x39()
 fb_blur_vert39x39:P0:vs_main_no_trafo():gs_main():ps_main_fb_blur_vert39x39()
 fb_mirror:P0:vs_main_no_trafo():gs_main():ps_main_fb_mirror()
+fb_copy:P0:vs_main_no_trafo():gs_main():ps_main_fb_copy()
 CAS:P0:vs_main_no_trafo():gs_main():ps_main_CAS()
 BilateralSharp_CAS:P0:vs_main_no_trafo():gs_main():ps_main_BilateralSharp_CAS()
 SSReflection:P0:vs_main_no_trafo():gs_main():ps_main_fb_ss_refl()

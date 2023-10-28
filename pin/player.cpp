@@ -3462,8 +3462,8 @@ string Player::GetPerfInfo()
 
 void Player::PrepareVideoBuffers()
 {
-   const bool useAA = m_AAfactor != 1.0f;
-   const bool stereo= m_stereo3D == STEREO_VR || ((m_stereo3D != STEREO_OFF) && m_stereo3Denabled && (!m_stereo3DfakeStereo || m_pin3d.m_pd3dPrimaryDevice->DepthBufferReadBackAvailable()));
+   const bool useAA = m_AAfactor > 1.0f;
+   const bool stereo = m_stereo3D == STEREO_VR || ((m_stereo3D != STEREO_OFF) && m_stereo3Denabled && (!m_stereo3DfakeStereo || m_pin3d.m_pd3dPrimaryDevice->DepthBufferReadBackAvailable()));
    // Since stereo is applied as a postprocess step for fake stereo, it disables AA and sharpening except for top/bottom & side by side modes
    const bool PostProcAA = !m_stereo3DfakeStereo || (!stereo || (m_stereo3D == STEREO_TB) || (m_stereo3D == STEREO_SBS));
    const bool SMAA  = PostProcAA && m_FXAA == Quality_SMAA;
@@ -3475,6 +3475,7 @@ void Player::PrepareVideoBuffers()
    const bool ss_refl = m_ss_refl && m_ptable->m_enableSSR && m_pin3d.m_pd3dPrimaryDevice->DepthBufferReadBackAvailable() && m_ptable->m_SSRScale > 0.f;
    const unsigned int sharpen = PostProcAA ? m_sharpen : 0;
    const bool useAO = GetAOMode() == 2;
+   const bool useUpscaler = (m_AAfactor < 1.0f) && !stereo && (SMAA || DLAA || NFAA || FXAA1 || FXAA2 || FXAA3 || sharpen);
 
    RenderTarget *renderedRT = m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture();
    RenderTarget *outputRT = nullptr;
@@ -3537,7 +3538,7 @@ void Player::PrepareVideoBuffers()
    // Perform color grade LUT / dither / tonemapping, also applying bloom and AO
    {
       // switch to output buffer (main output frame buffer, or a temporary one for postprocessing)
-      if (SMAA || DLAA || NFAA || FXAA1 || FXAA2 || FXAA3 || sharpen || stereo)
+      if (SMAA || DLAA || NFAA || FXAA1 || FXAA2 || FXAA3 || sharpen || stereo || useUpscaler)
          outputRT = m_pin3d.m_pd3dPrimaryDevice->GetPostProcessRenderTarget1();
       else
          outputRT = m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
@@ -3665,7 +3666,7 @@ void Player::PrepareVideoBuffers()
    if (NFAA || FXAA1 || FXAA2 || FXAA3)
    {
       assert(renderedRT == m_pin3d.m_pd3dPrimaryDevice->GetPostProcessRenderTarget1());
-      outputRT = (sharpen || stereo) ? m_pin3d.m_pd3dPrimaryDevice->GetPostProcessRenderTarget(renderedRT) : m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
+      outputRT = sharpen || stereo || useUpscaler ? m_pin3d.m_pd3dPrimaryDevice->GetPostProcessRenderTarget(renderedRT) : m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
       m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget(SMAA ? "SMAA Color/Edge Detection"s : "Post Process AA Pass 1"s, outputRT, false);
       m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, renderedRT->GetColorSampler());
@@ -3692,7 +3693,7 @@ void Player::PrepareVideoBuffers()
       renderedRT = outputRT;
 
       // Second pass: use edge detection from first pass (alpha channel) and RGB colors for actual filtering
-      outputRT = sharpen || stereo ? m_pin3d.m_pd3dPrimaryDevice->GetPostProcessRenderTarget(renderedRT) : m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
+      outputRT = sharpen || stereo || useUpscaler ? m_pin3d.m_pd3dPrimaryDevice->GetPostProcessRenderTarget(renderedRT) : m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
       m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("DLAA Neigborhood blending"s, outputRT, false);
       m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, renderedRT->GetColorSampler());
@@ -3728,7 +3729,7 @@ void Player::PrepareVideoBuffers()
       m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pin3d.m_pd3dPrimaryDevice->FBShader);
       renderedRT = outputRT;
 
-      outputRT = sharpen || stereo ? m_pin3d.m_pd3dPrimaryDevice->GetPreviousBackBufferTexture() : m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
+      outputRT = sharpen || stereo || useUpscaler ? m_pin3d.m_pd3dPrimaryDevice->GetPreviousBackBufferTexture() : m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
       m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("SMAA Neigborhood blending"s, outputRT, false);
       m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(sourceRT); // PostProcess RT 1
       m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT); // PostProcess RT 2
@@ -3742,7 +3743,7 @@ void Player::PrepareVideoBuffers()
    if (sharpen)
    {
       assert(renderedRT != m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer()); // At this point, renderedRT may be PP1, PP2 or backbuffer
-      outputRT = stereo ? m_pin3d.m_pd3dPrimaryDevice->GetPostProcessRenderTarget(renderedRT) : m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
+      outputRT = stereo || useUpscaler ? m_pin3d.m_pd3dPrimaryDevice->GetPostProcessRenderTarget(renderedRT) : m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
       m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("Sharpen"s, outputRT, false);
       m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
       m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture(), true); // Depth is always taken from the MSAA resolved render buffer
@@ -3827,6 +3828,18 @@ void Player::PrepareVideoBuffers()
          // STEREO_OFF: nothing to do
          assert(renderedRT == m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer());
       }
+   }
+   // Upscale: When using downscaled backbuffer (for performance reason), upscaling is done after postprocessing
+   else if (useUpscaler)
+   {
+      assert(renderedRT != m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer()); // At this point, renderedRT may be PP1, PP2 or backbuffer
+      outputRT = m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("Upscale"s, outputRT, false);
+      m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, renderedRT->GetColorSampler());
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_fb_copy);
+      m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pin3d.m_pd3dPrimaryDevice->FBShader);
+      renderedRT = outputRT;
    }
 
    if (!stereo || m_stereo3D != STEREO_VR)

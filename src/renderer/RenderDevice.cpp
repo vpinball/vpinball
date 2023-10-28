@@ -1155,9 +1155,13 @@ RenderTarget* RenderDevice::GetPostProcessRenderTarget1()
 {
    if (m_pPostProcessRenderTarget1 == nullptr)
    {
-      // Buffers for post-processing (postprocess is done at scene resolution, on a LDR render target without MSAA nor full scene supersampling)
+      // Buffers for post-processing. Postprocess is done at scene resolution, on a LDR render target without MSAA nor full scene supersampling
+      // excepted when using downsampled render buffer where upscaling is done after postprocessing.
       const colorFormat pp_format = GetBackBufferTexture()->GetColorFormat() == RGBA10 ? colorFormat::RGBA10 : colorFormat::RGBA8;
-      m_pPostProcessRenderTarget1 = new RenderTarget(this, m_pOffscreenBackBufferTexture1->m_type, "PostProcess1"s, m_width, m_height, pp_format, false, 1, "Fatal Error: unable to create stereo3D/post-processing AA/sharpen buffer!");
+      int width = m_AAfactor < 1 ? m_pOffscreenBackBufferTexture1->GetWidth() : m_width;
+      int height = m_AAfactor < 1 ? m_pOffscreenBackBufferTexture1->GetHeight() : m_height;
+      m_pPostProcessRenderTarget1 = new RenderTarget(this, m_pOffscreenBackBufferTexture1->m_type, "PostProcess1"s, width, height, pp_format, false, 1, 
+         "Fatal Error: unable to create stereo3D/post-processing AA/sharpen buffer!");
    }
    return m_pPostProcessRenderTarget1;
 }
@@ -1180,10 +1184,11 @@ RenderTarget* RenderDevice::GetPostProcessRenderTarget(RenderTarget* renderedRT)
 
 RenderTarget* RenderDevice::GetAORenderTarget(int idx)
 {
-   // Lazily creates AO render target since this can be enabled during play from script
+   // Lazily creates AO render target since this can be enabled during play from script (at render buffer resolution)
    if (m_pAORenderTarget1 == nullptr)
    {
-      m_pAORenderTarget1 = new RenderTarget(this, m_pOffscreenBackBufferTexture1->m_type, "AO1"s, m_width, m_height, colorFormat::GREY8, false, 1,
+      m_pAORenderTarget1 = new RenderTarget(this, m_pOffscreenBackBufferTexture1->m_type, "AO1"s, 
+         m_pOffscreenBackBufferTexture1->GetWidth(), m_pOffscreenBackBufferTexture1->GetHeight(), colorFormat::GREY8, false, 1, 
          "Unable to create AO buffers!\r\nPlease disable Ambient Occlusion.\r\nOr try to (un)set \"Alternative Depth Buffer processing\" in the video options!");
       m_pAORenderTarget2 = m_pAORenderTarget1->Duplicate("AO2"s);
 
