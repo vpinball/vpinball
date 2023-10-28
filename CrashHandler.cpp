@@ -9,7 +9,7 @@
 #include <windows.h>
 #include <dbghelp.h>
 #include <cassert>
-#include "git_version.h"
+#include "vpversion.h"
 
 namespace
 {
@@ -121,11 +121,7 @@ namespace
 
    void WriteHeader(FILE* f)
    {
-#ifdef ENABLE_SDL
-      fprintf(f, "Crash report VPX GL rev%i (%s)\n============\n", GIT_REVISION, GIT_SHA);
-#else
-      fprintf(f, "Crash report VPX rev%i (%s)\n============\n", GIT_REVISION, GIT_SHA);
-#endif
+      fprintf(f, "Crash report VPX - %s\n============\n", VP_VERSION_STRING_FULL_LITERAL);
    }
 
    const char* GetExceptionString(DWORD exc)
