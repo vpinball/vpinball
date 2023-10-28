@@ -13,6 +13,8 @@ protected:
    virtual LRESULT OnNotify(WPARAM wparam, LPARAM lparam);
 
 private:
+   void UpdateApplyState();
+
    CListView m_listView;
    struct ManufacturerDimensions
    {
