@@ -377,6 +377,8 @@ add_executable(vpinball WIN32
    
    src/core/Settings.cpp
    src/core/Settings.h
+   src/core/TableDB.cpp
+   src/core/TableDB.h
 
    src/parts/bumper.cpp
    src/parts/bumper.h
