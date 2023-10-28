@@ -2275,6 +2275,7 @@ void PinTable::Play(const bool cameraMode)
       vec4 plane;
       m_vrenderprobe[i]->GetReflectionPlane(plane);
       rp->SetReflectionPlane(plane);
+      rp->SetReflectionNoLightmaps(m_vrenderprobe[i]->GetReflectionNoLightmaps());
       live_table->m_vrenderprobe.push_back(rp);
    }
       
