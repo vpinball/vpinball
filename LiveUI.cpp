@@ -1929,16 +1929,16 @@ void LiveUI::UpdateVideoOptionsModal()
       {
          const char *postprocessed_aa_items[] = { "Disabled", "Fast FXAA", "Standard FXAA", "Quality FXAA", "Fast NFAA", "Standard DLAA", "Quality SMAA" };
          if (ImGui::Combo("Postprocessed AA", &m_player->m_FXAA, postprocessed_aa_items, IM_ARRAYSIZE(postprocessed_aa_items)))
-            g_pvp->m_settings.SaveValue(m_player->m_stereo3D == STEREO_VR ? Settings::PlayerVR : Settings::Player, "FXAA"s, m_player->m_FXAA);
+            g_pvp->m_settings.SaveValue(Settings::Player, "FXAA"s, m_player->m_FXAA);
          const char *sharpen_items[] = { "Disabled", "CAS", "Bilateral CAS" };
          if (ImGui::Combo("Sharpen", &m_player->m_sharpen, sharpen_items, IM_ARRAYSIZE(sharpen_items)))
-            g_pvp->m_settings.SaveValue(m_player->m_stereo3D == STEREO_VR ? Settings::PlayerVR : Settings::Player, "Sharpen"s, m_player->m_sharpen);
+            g_pvp->m_settings.SaveValue(Settings::Player, "Sharpen"s, m_player->m_sharpen);
       }
       
       if (ImGui::CollapsingHeader("Performance & Troubleshooting", ImGuiTreeNodeFlags_DefaultOpen))
       {
          if (ImGui::Checkbox("Force Bloom filter off", &m_player->m_bloomOff))
-            g_pvp->m_settings.SaveValue(m_player->m_stereo3D == STEREO_VR ? Settings::PlayerVR : Settings::Player, "ForceBloomOff"s, m_player->m_bloomOff);
+            g_pvp->m_settings.SaveValue(Settings::Player, "ForceBloomOff"s, m_player->m_bloomOff);
       }
       
       if (m_player->m_stereo3D != STEREO_VR && ImGui::CollapsingHeader("3D Stereo Output", ImGuiTreeNodeFlags_DefaultOpen))

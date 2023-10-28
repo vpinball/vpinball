@@ -119,39 +119,39 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const b
    bool useVR = vrDetectionMode == 2 /* VR Disabled */  ? false : RenderDevice::isVRinstalled();
    if (useVR && (vrDetectionMode == 1 /* VR Autodetect => ask to turn on and adapt accordingly */) && !RenderDevice::isVRturnedOn())
       useVR = g_pvp->MessageBox("VR headset detected but SteamVR is not running.\n\nTurn VR on?", "VR Headset Detected", MB_YESNO) == IDYES;
-   m_capExtDMD = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "CaptureExternalDMD"s, false);
-   m_capPUP = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "CapturePUP"s, false);
+   m_capExtDMD = useVR && m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "CaptureExternalDMD"s, false);
+   m_capPUP = useVR && m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "CapturePUP"s, false);
 #else
    bool useVR = false;
    m_capExtDMD = false;
    m_capPUP = false;
 #endif
+   m_vrPreview = (VRPreviewMode)m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "VRPreview"s, (int)VRPREVIEW_LEFT);
 
    m_trailForBalls = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "BallTrail"s, true);
    m_ballTrailStrength = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "BallTrailStrength"s, 0.5f);
    m_disableLightingForBalls = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "DisableLightingForBalls"s, false);
-   m_stereo3D = (StereoMode)m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3D"s, (int)STEREO_OFF);
+   m_stereo3D = useVR ? STEREO_VR : (StereoMode)m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3D"s, (int)STEREO_OFF);
    m_stereo3Denabled = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DEnabled"s, (m_stereo3D != STEREO_OFF));
    m_disableDWM = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "DisableDWM"s, false);
    m_useNvidiaApi = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "UseNVidiaAPI"s, false);
-   #ifdef ENABLE_SDL
-   m_ditherOff = false;
    m_stereo3DfakeStereo = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DFake"s, false);
-   #else
-   m_ditherOff = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Render10Bit"s, false); // if rendering at 10bit output resolution, disable dithering
+   // FIXME if rendering at 10bit output resolution, disable dithering => use the effective rendering setup and not the settings
+   m_ditherOff = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Render10Bit"s, false);
+   #ifndef ENABLE_SDL // DirectX does not support stereo rendering
    m_stereo3DfakeStereo = true;
    #endif
    m_BWrendering = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "BWRendering"s, 0);
    m_detectScriptHang = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "DetectHang"s, false);
-   const int maxReflection = m_ptable->m_settings.LoadValueWithDefault(useVR ? Settings::PlayerVR : Settings::Player, "PFReflection"s, -1);
+   const int maxReflection = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "PFReflection"s, -1);
    if (maxReflection != -1)
       m_maxReflectionMode = (RenderProbe::ReflectionMode)maxReflection;
    else
    {
       m_maxReflectionMode = RenderProbe::REFL_STATIC;
-      if (m_ptable->m_settings.LoadValueWithDefault(useVR ? Settings::PlayerVR : Settings::Player, "BallReflection"s, true))
+      if (m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "BallReflection"s, true))
          m_maxReflectionMode = RenderProbe::REFL_STATIC_N_BALLS;
-      if (m_ptable->m_settings.LoadValueWithDefault(useVR ? Settings::PlayerVR : Settings::Player, "PFRefl"s, true))
+      if (m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "PFRefl"s, true))
          m_maxReflectionMode = RenderProbe::REFL_STATIC_N_DYNAMIC;
    }
    // For dynamic mode, static reflections are not available so adapt the mode
@@ -161,68 +161,51 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const b
    // Apply table specific overrides
    m_toneMapper = (ToneMapper)m_ptable->m_settings.LoadValueWithDefault(Settings::TableOverride, "ToneMapper"s, m_ptable->GetToneMapper());
 
-#ifdef ENABLE_VR
-   m_vrPreview = (VRPreviewMode)m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "VRPreview"s, (int)VRPREVIEW_LEFT);
+   m_maxPrerenderedFrames = useVR ? 0 : m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "MaxPrerenderedFrames"s, 0);
+
+   m_NudgeShake = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "NudgeStrength"s, 2e-2f);
+   m_sharpen = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Sharpen"s, 0);
+   m_FXAA = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "FXAA"s, (int)Disabled);
+#ifdef ENABLE_SDL
+   m_MSAASamples = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "MSAASamples"s, 1);
+#else
+   // Sadly DX9 does not support resolving an MSAA depth buffer, making MSAA implementation complex for it. So just disable for now
+   m_MSAASamples = 1;
+#endif
+   m_AAfactor = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "AAFactor"s, m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "USEAA"s, false) ? 2.0f : 1.0f);
+   m_dynamicAO = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "DynamicAO"s, true);
+   m_disableAO = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "DisableAO"s, false);
+   m_ss_refl = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "SSRefl"s, false);
+   m_scaleFX_DMD = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "ScaleFXDMD"s, false);
+   m_bloomOff = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "ForceBloomOff"s, false);
+   m_maxFramerate = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "MaxFramerate"s, -1);
+   if(m_maxFramerate > 0 && m_maxFramerate < 24) // at least 24 fps
+      m_maxFramerate = 24;
+   m_videoSyncMode = (VideoSyncMode)m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "SyncMode"s, VSM_INVALID);
+   if (m_maxFramerate < 0 && m_videoSyncMode == VideoSyncMode::VSM_INVALID)
+   {
+      const int vsync = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "AdaptiveVSync"s, -1);
+      switch (vsync)
+      {
+      case -1: m_maxFramerate = 0; m_videoSyncMode = VideoSyncMode::VSM_FRAME_PACING; break;
+      case 0: m_maxFramerate = 0; m_videoSyncMode = VideoSyncMode::VSM_NONE; break;
+      case 1: m_maxFramerate = 0; m_videoSyncMode = VideoSyncMode::VSM_VSYNC; break;
+      case 2: m_maxFramerate = 0; m_videoSyncMode = VideoSyncMode::VSM_ADAPTIVE_VSYNC; break;
+      default: m_maxFramerate = vsync; m_videoSyncMode = VideoSyncMode::VSM_ADAPTIVE_VSYNC; break;
+      }
+   }
+   if (m_maxFramerate < 0)
+      m_maxFramerate = 0;
+   if (m_videoSyncMode == VideoSyncMode::VSM_INVALID)
+      m_videoSyncMode = VideoSyncMode::VSM_FRAME_PACING;
    if (useVR)
    {
-      m_stereo3D = STEREO_VR;
-      m_maxPrerenderedFrames = 0;
-      m_NudgeShake = m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "NudgeStrength"s, 2e-2f);
-      m_sharpen = m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "Sharpen"s, 0);
-      m_FXAA = m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "FXAA"s, (int)Disabled);
-      m_MSAASamples = m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "MSAASamples"s, 1);
-      m_AAfactor = m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "AAFactor"s, m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "USEAA"s, false) ? 2.0f : 1.0f);
-      m_dynamicAO = m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "DynamicAO"s, true);
-      m_disableAO = m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "DisableAO"s, false);
-      m_ss_refl = m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "SSRefl"s, false);
-      m_scaleFX_DMD = m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "ScaleFXDMD"s, false);
-      m_bloomOff = m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "ForceBloomOff"s, false);
-      m_videoSyncMode = VideoSyncMode::VSM_NONE; // Disable VSync for VR (sync is performed by the OpenVR runtime)
-      m_maxFramerate = 0; 
-   }
-   else
-#endif
-   {
-      m_stereo3D = (StereoMode)m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3D"s, (int)STEREO_OFF);
-      m_maxPrerenderedFrames = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "MaxPrerenderedFrames"s, 0);
-      m_NudgeShake = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "NudgeStrength"s, 2e-2f);
-      m_sharpen = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Sharpen"s, 0);
-      m_FXAA = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "FXAA"s, (int)Disabled);
-#ifdef ENABLE_SDL
-      m_MSAASamples = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "MSAASamples"s, 1);
-#else
-      // Sadly DX9 does not support resolving an MSAA depth buffer, making MSAA implementation complex for it. So just disable for now
-      m_MSAASamples = 1;
-#endif
-      m_AAfactor = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "AAFactor"s, m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "USEAA"s, false) ? 2.0f : 1.0f);
-      m_dynamicAO = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "DynamicAO"s, true);
-      m_disableAO = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "DisableAO"s, false);
-      m_ss_refl = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "SSRefl"s, false);
-      m_scaleFX_DMD = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "ScaleFXDMD"s, false);
-      m_bloomOff = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "ForceBloomOff"s, false);
-      m_maxFramerate = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "MaxFramerate"s, -1);
-      if(m_maxFramerate > 0 && m_maxFramerate < 24) // at least 24 fps
-         m_maxFramerate = 24;
-      m_videoSyncMode = (VideoSyncMode)m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "SyncMode"s, VSM_INVALID);
-      if (m_maxFramerate < 0 && m_videoSyncMode == VideoSyncMode::VSM_INVALID)
-      {
-         const int vsync = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "AdaptiveVSync"s, -1);
-         switch (vsync)
-         {
-         case -1: m_maxFramerate = 0; m_videoSyncMode = VideoSyncMode::VSM_FRAME_PACING; break;
-         case 0: m_maxFramerate = 0; m_videoSyncMode = VideoSyncMode::VSM_NONE; break;
-         case 1: m_maxFramerate = 0; m_videoSyncMode = VideoSyncMode::VSM_VSYNC; break;
-         case 2: m_maxFramerate = 0; m_videoSyncMode = VideoSyncMode::VSM_ADAPTIVE_VSYNC; break;
-         default: m_maxFramerate = vsync; m_videoSyncMode = VideoSyncMode::VSM_ADAPTIVE_VSYNC; break;
-         }
-      }
-      if (m_maxFramerate < 0)
-         m_maxFramerate = 0;
-      if (m_videoSyncMode == VideoSyncMode::VSM_INVALID)
-         m_videoSyncMode = VideoSyncMode::VSM_FRAME_PACING;
+      // Disable VSync for VR (sync is performed by the OpenVR runtime)
+      m_videoSyncMode = VideoSyncMode::VSM_NONE;
+      m_maxFramerate = 0;
    }
 
-   m_headTracking = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "BAMHeadTracking"s, false);
+   m_headTracking = useVR ? false : m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "BAMHeadTracking"s, false);
 
    m_ballImage = nullptr;
    m_decalImage = nullptr;

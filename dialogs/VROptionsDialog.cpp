@@ -2,16 +2,6 @@
 #include "resource.h"
 #include "VROptionsDialog.h"
 
-#define GET_WINDOW_MODES		(WM_USER+100)
-
-//static constexpr int rgwindowsize[] = { 640, 720, 800, 912, 1024, 1152, 1280, 1360, 1366, 1400, 1440, 1600, 1680, 1920, 2048, 2560, 3440, 3840, 4096, 5120, 6400, 7680, 8192, 11520, 15360 };  // windowed resolutions for selection list
-
-constexpr float AAfactors[] = { 0.5f, 0.75f, 1.0f, 1.25f, (float)(4.0/3.0), 1.5f, 1.75f, 2.0f }; // factor is applied to width and to height, so 2.0f increases pixel count by 4. Additional values can be added.
-constexpr int AAfactorCount = 8;
-
-constexpr int MSAASamplesOpts[] = { 1, 4, 6, 8 };
-constexpr int MSAASampleCount = 4;
-
 static bool oldScaleValue = false;
 static float scaleRelative = 1.0f;
 static float scaleAbsolute = 55.0f;
@@ -273,18 +263,6 @@ LRESULT CALLBACK MyKeyButtonProc2(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
       return CallWindowProc(g_ButtonProc2, hwnd, uMsg, wParam, lParam);
 }
 
-static size_t getBestMatchingAAfactorIndex(float f)
-{
-   float delta = fabsf(f - AAfactors[0]);
-   size_t bestMatch = 0;
-   for (size_t i = 1; i < AAfactorCount; ++i)
-      if (fabsf(f - AAfactors[i]) < delta) {
-         delta = fabsf(f - AAfactors[i]);
-         bestMatch = i;
-      }
-   return bestMatch;
-}
-
 VROptionsDialog::VROptionsDialog() : CDialog(IDD_VR_OPTIONS)
 {
    // Adjust keyboard translation to user keyboard layout
@@ -320,24 +298,6 @@ void VROptionsDialog::AddToolTip(const char * const text, HWND parentHwnd, HWND 
 void VROptionsDialog::ResetVideoPreferences()
 {
    char tmp[256];
-   constexpr float nudgeStrength = 2e-2f;
-   sprintf_s(tmp, sizeof(tmp), "%f", nudgeStrength);
-   SetDlgItemText(IDC_NUDGE_STRENGTH, tmp);
-
-   SendDlgItemMessage(IDC_SUPER_SAMPLING_COMBO, TBM_SETPOS, TRUE, getBestMatchingAAfactorIndex(1.0f));
-   SetDlgItemText(IDC_SUPER_SAMPLING_LABEL, "Supersampling Factor: 1.0");
-   SendDlgItemMessage(IDC_MSAA_COMBO, TBM_SETPOS, TRUE, 1);
-   SetDlgItemText(IDC_MSAA_LABEL, "MSAA Samples: Disabled");
-
-   SendDlgItemMessage(IDC_DYNAMIC_AO, BM_SETCHECK, BST_CHECKED, 0);
-   SendDlgItemMessage(IDC_ENABLE_AO, BM_SETCHECK, BST_CHECKED, 0);
-   SendDlgItemMessage(IDC_GLOBAL_SSREFLECTION_CHECK, BM_SETCHECK, BST_UNCHECKED, 0);
-
-   SendDlgItemMessage(IDC_GLOBAL_PF_REFLECTION, CB_SETCURSEL, 2, 0);
-
-   SendDlgItemMessage(IDC_POST_PROCESS_COMBO, CB_SETCURSEL, 0, 0);
-   SendDlgItemMessage(IDC_SHARPEN_COMBO, CB_SETCURSEL, 0, 0);
-   SendDlgItemMessage(IDC_SCALE_FX_DMD, BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
 
    SendDlgItemMessage(IDC_VR_PREVIEW, CB_SETCURSEL, VRPREVIEW_LEFT, 0);
 
@@ -375,7 +335,6 @@ void VROptionsDialog::ResetVideoPreferences()
    sprintf_s(tmp, sizeof(tmp), "%0.1f", vrZ);
    SetDlgItemText(IDC_VR_OFFSET_Z, tmp);
 
-   SendDlgItemMessage(IDC_BLOOM_OFF, BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
    SendDlgItemMessage(IDC_TURN_VR_ON, CB_SETCURSEL, 1, 0);
 
    SendDlgItemMessage(IDC_DMD_SOURCE, CB_SETCURSEL, 1, 0);
@@ -384,7 +343,6 @@ void VROptionsDialog::ResetVideoPreferences()
    SendDlgItemMessage(IDC_CAP_EXTDMD, BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
    SendDlgItemMessage(IDC_CAP_PUP, BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
 
-   //AMD Debug
    SendDlgItemMessage(IDC_COMBO_TEXTURE, CB_SETCURSEL, 1, 0);
 }
 
@@ -395,125 +353,19 @@ BOOL VROptionsDialog::OnInitDialog()
    if (toolTipHwnd)
    {
       SendMessage(toolTipHwnd, TTM_SETMAXTIPWIDTH, 0, 180);
-      AddToolTip("Forces the bloom filter to be always off. Only for very low-end graphics cards.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_BLOOM_OFF).GetHwnd());
       AddToolTip("Disable VR auto-detection, e.g. if Visual Pinball refuses to start up.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_TURN_VR_ON).GetHwnd());
       AddToolTip("What sources should be used for DMD?\nOnly internally supplied via Script/Text Label/Flasher\nScreenreader (see screenreader.ini)\nFrom Shared Memory API", hwndDlg, toolTipHwnd, GetDlgItem(IDC_DMD_SOURCE).GetHwnd());
       AddToolTip("What sources should be used for Backglass?\nOnly internal background\nTry to open a directb2s file\ndirectb2s file dialog\nScreenreader (see screenreader.ini)\nFrom Shared Memory API", hwndDlg, toolTipHwnd, GetDlgItem(IDC_BG_SOURCE).GetHwnd());
-      AddToolTip("Changes the visual effect/screen shaking when nudging the table.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_NUDGE_STRENGTH).GetHwnd());
-      AddToolTip("Activate this to enable dynamic Ambient Occlusion.\r\n\r\nThis slows down performance, but enables contact shadows for dynamic objects.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_DYNAMIC_AO).GetHwnd());
-      AddToolTip("Activate this to enable Ambient Occlusion.\r\nThis enables contact shadows between objects.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_ENABLE_AO).GetHwnd());
-      AddToolTip("Enables post-processed Anti-Aliasing.\r\n\r\nThese settings can make the image quality a bit smoother at cost of performance and a slight blurring.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_POST_PROCESS_COMBO).GetHwnd());
-      AddToolTip("Enables post-processed Sharpening of the image.\r\n'Bilateral CAS' is recommended,\nbut will harm performance on low-end graphics cards.\r\n'CAS' is less aggressive and faster, but also rather subtle.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_SHARPEN_COMBO).GetHwnd());
       AddToolTip("Select which VR-output/eye(s) to be displayed on the computer screen.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_VR_PREVIEW).GetHwnd());
-      AddToolTip("Enables brute-force Up/Downsampling.\r\n\r\nThis delivers very good quality but has a significant impact on performance.\r\n\r\n2.0 means twice the resolution to be handled while rendering.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_SUPER_SAMPLING_COMBO).GetHwnd());
-      AddToolTip("Set the amount of MSAA samples.\r\n\r\nMSAA can help reduce geometry aliasing in VR at the cost of performance and GPU memory.\r\n\r\nThis can improve image quality if not using supersampling.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_MSAA_COMBO).GetHwnd());
-      AddToolTip("Enables post-processed reflections on all objects (besides the playfield).", hwndDlg, toolTipHwnd, GetDlgItem(IDC_GLOBAL_SSREFLECTION_CHECK).GetHwnd());
-      AddToolTip("Enables playfield reflections.\r\n\r\n'Dynamic' is recommended and will give the best results, but may harm performance.\r\n\r\n'Static Only' has no performance cost (except for VR rendering).\r\n\r\nOther options feature different trade-offs between quality and performance.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_GLOBAL_PF_REFLECTION).GetHwnd());
-      //AMD Debug
       AddToolTip("Pixel format for VR Rendering.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_COMBO_TEXTURE).GetHwnd());
-
       AddToolTip("Attempt to capture an external DMD window such as Freezy/DMDext, UltraDMD or P-ROC.\r\n\r\nFor Freezy/DMDext the DmdDevice.ini needs to set 'stayontop = true'.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_CAP_EXTDMD).GetHwnd());
       AddToolTip("Attempt to capture the PUP player window and display it as a Backglass in VR.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_CAP_PUP).GetHwnd());
    }
 
    char tmp[256];
 
-   const float nudgeStrength = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "NudgeStrength"s, g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "NudgeStrength"s, 2e-2f));
-   sprintf_s(tmp, sizeof(tmp), "%f", nudgeStrength);
-   SetDlgItemText(IDC_NUDGE_STRENGTH, tmp);
-
-   const float AAfactor = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "AAFactor", g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "USEAA"s, false) ? 1.5f : 1.0f);
-   const HWND hwndSSSlider = GetDlgItem(IDC_SUPER_SAMPLING_COMBO).GetHwnd();
-   SendMessage(hwndSSSlider, TBM_SETRANGE, fTrue, MAKELONG(0, AAfactorCount - 1));
-   SendMessage(hwndSSSlider, TBM_SETTICFREQ, 1, 0);
-   SendMessage(hwndSSSlider, TBM_SETLINESIZE, 0, 1);
-   SendMessage(hwndSSSlider, TBM_SETPAGESIZE, 0, 1);
-   SendMessage(hwndSSSlider, TBM_SETTHUMBLENGTH, 5, 0);
-   SendMessage(hwndSSSlider, TBM_SETPOS, TRUE, getBestMatchingAAfactorIndex(AAfactor));
-   char SSText[32];
-   sprintf_s(SSText, sizeof(SSText), "Supersampling Factor: %.2f", AAfactor);
-   SetDlgItemText(IDC_SUPER_SAMPLING_LABEL, SSText);
-
-   const int MSAASamples = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "MSAASamples"s, 1);
-   const auto CurrMSAAPos = std::find(MSAASamplesOpts, MSAASamplesOpts + (sizeof(MSAASamplesOpts) / sizeof(MSAASamplesOpts[0])), MSAASamples);
-   const HWND hwndMSAASlider = GetDlgItem(IDC_MSAA_COMBO).GetHwnd();
-   SendMessage(hwndMSAASlider, TBM_SETRANGE, fTrue, MAKELONG(0, MSAASampleCount - 1));
-   SendMessage(hwndMSAASlider, TBM_SETTICFREQ, 1, 0);
-   SendMessage(hwndMSAASlider, TBM_SETLINESIZE, 0, 1);
-   SendMessage(hwndMSAASlider, TBM_SETPAGESIZE, 0, 1);
-   SendMessage(hwndMSAASlider, TBM_SETTHUMBLENGTH, 5, 0);
-   SendMessage(hwndMSAASlider, TBM_SETPOS, TRUE, (LPARAM)std::distance(MSAASamplesOpts, CurrMSAAPos));
-   char MSAAText[52];
-   if (MSAASamples == 1)
-   {
-      sprintf_s(MSAAText, sizeof(MSAAText), "MSAA Samples: Disabled");
-   }
-   else
-   {
-      sprintf_s(MSAAText, sizeof(MSAAText), "MSAA Samples: %d", MSAASamples);
-   }
-   SetDlgItemText(IDC_MSAA_LABEL, MSAAText);
-
-   bool useAO = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "DynamicAO"s, g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "DynamicAO", true));
-   SendDlgItemMessage(IDC_DYNAMIC_AO, BM_SETCHECK, useAO ? BST_CHECKED : BST_UNCHECKED, 0);
-
-   useAO = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "DisableAO"s, g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "DisableAO"s, false));
-   SendDlgItemMessage(IDC_ENABLE_AO, BM_SETCHECK, useAO ? BST_UNCHECKED : BST_CHECKED, 0); // inverted logic
-   GetDlgItem(IDC_DYNAMIC_AO).EnableWindow(!useAO);
-
-   const bool ssreflection = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "SSRefl"s, g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "SSRefl"s, false));
-   SendDlgItemMessage(IDC_GLOBAL_SSREFLECTION_CHECK, BM_SETCHECK, ssreflection ? BST_CHECKED : BST_UNCHECKED, 0);
-
-   HWND hwnd = GetDlgItem(IDC_GLOBAL_PF_REFLECTION).GetHwnd();
-   SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Disabled");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Balls Only");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Dynamic");
-   int pfr = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "PFReflection"s, -1);
-   RenderProbe::ReflectionMode maxReflection;
-   if (pfr != -1)
-      maxReflection = (RenderProbe::ReflectionMode)pfr;
-   else
-   {
-      maxReflection = RenderProbe::REFL_NONE;
-      if (g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "BallReflection"s, true))
-         maxReflection = RenderProbe::REFL_BALLS;
-      if (g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "PFRefl"s, true))
-         maxReflection = RenderProbe::REFL_DYNAMIC;
-   }
-   if (maxReflection == RenderProbe::REFL_DYNAMIC)
-      SendMessage(hwnd, CB_SETCURSEL, 2, 0);
-   else
-      SendMessage(hwnd, CB_SETCURSEL, maxReflection, 0);
-   SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
-
-   const int fxaa = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "FXAA"s, g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "FXAA"s, 0));
-   hwnd = GetDlgItem(IDC_POST_PROCESS_COMBO).GetHwnd();
-   SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Disabled");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Fast FXAA");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Standard FXAA");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Quality FXAA");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Fast NFAA");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Standard DLAA");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Quality SMAA");
-   SendMessage(hwnd, CB_SETCURSEL, fxaa, 0);
-   SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
-
-   const int sharpen = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "Sharpen"s, 0);
-   hwnd = GetDlgItem(IDC_SHARPEN_COMBO).GetHwnd();
-   SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Disabled");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "CAS");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Bilateral CAS");
-   SendMessage(hwnd, CB_SETCURSEL, sharpen, 0);
-   SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
-
-   const bool scaleFX_DMD = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "ScaleFXDMD"s, g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "ScaleFXDMD"s, false));
-   SendDlgItemMessage(IDC_SCALE_FX_DMD, BM_SETCHECK, scaleFX_DMD ? BST_CHECKED : BST_UNCHECKED, 0);
-
    const VRPreviewMode vrPreview = (VRPreviewMode)g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "VRPreview"s, VRPREVIEW_LEFT);
-   hwnd = GetDlgItem(IDC_VR_PREVIEW).GetHwnd();
+   HWND hwnd = GetDlgItem(IDC_VR_PREVIEW).GetHwnd();
    SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Disabled");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Left Eye");
@@ -555,9 +407,6 @@ BOOL VROptionsDialog::OnInitDialog()
    const float vrZ = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "TableZ"s, 80.0f);
    sprintf_s(tmp, sizeof(tmp), "%0.1f", vrZ);
    SetDlgItemText(IDC_VR_OFFSET_Z, tmp);
-
-   const bool bloomOff = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "ForceBloomOff"s, g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "ForceBloomOff"s, false));
-   SendDlgItemMessage(IDC_BLOOM_OFF, BM_SETCHECK, bloomOff ? BST_CHECKED : BST_UNCHECKED, 0);
 
    const int askToTurnOn = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "AskToTurnOn"s, 1);
    hwnd = GetDlgItem(IDC_TURN_VR_ON).GetHwnd();
@@ -725,31 +574,6 @@ INT_PTR VROptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
       }
       break;
    }
-   case WM_HSCROLL:
-      {
-         if ((HWND)lParam == GetDlgItem(IDC_SUPER_SAMPLING_COMBO).GetHwnd()) {
-            const size_t posAAfactor = SendDlgItemMessage(IDC_SUPER_SAMPLING_COMBO, TBM_GETPOS, 0, 0);//Reading the value from wParam does not work reliable
-            const float AAfactor = ((posAAfactor) < AAfactorCount) ? AAfactors[posAAfactor] : 1.0f;
-            char newText[32];
-            sprintf_s(newText, sizeof(newText), "Supersampling Factor: %.2f", AAfactor);
-            SetDlgItemText(IDC_SUPER_SAMPLING_LABEL, newText);
-         }
-         else if ((HWND)lParam == GetDlgItem(IDC_MSAA_COMBO).GetHwnd()) {
-            const size_t posMSAA = SendDlgItemMessage(IDC_MSAA_COMBO, TBM_GETPOS, 0, 0);//Reading the value from wParam does not work reliable
-            const int MSAASampleAmount = MSAASamplesOpts[posMSAA];
-            char newText[52];
-            if (MSAASampleAmount == 1)
-            {
-               sprintf_s(newText, sizeof(newText), "MSAA Samples: Disabled");
-            }
-            else
-            {
-               sprintf_s(newText, sizeof(newText), "MSAA Samples: %d", MSAASampleAmount);
-            }
-            SetDlgItemText(IDC_MSAA_LABEL, newText);
-         }
-         break;
-      }
    }
 
    return DialogProcDefault(uMsg, wParam, lParam);
@@ -784,12 +608,6 @@ BOOL VROptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
          }
          break;
       }
-      case IDC_ENABLE_AO:
-      {
-         const size_t checked = IsDlgButtonChecked(IDC_ENABLE_AO);
-         GetDlgItem(IDC_DYNAMIC_AO).EnableWindow(checked ? 1 : 0);
-         break;
-      }
       case IDC_BTTABLERECENTER:
       {
          if (HIWORD(wParam) == BN_CLICKED)
@@ -816,46 +634,6 @@ BOOL VROptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 
 void VROptionsDialog::OnOK()
 {
-   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "NudgeStrength"s, GetDlgItemText(IDC_NUDGE_STRENGTH).c_str());
-
-   LRESULT fxaa = SendDlgItemMessage(IDC_POST_PROCESS_COMBO, CB_GETCURSEL, 0, 0);
-   if (fxaa == LB_ERR)
-      fxaa = 0;
-   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "FXAA"s, (int)fxaa);
-
-   LRESULT sharpen = SendDlgItemMessage(IDC_SHARPEN_COMBO, CB_GETCURSEL, 0, 0);
-   if (sharpen == LB_ERR)
-      sharpen = 0;
-   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "Sharpen"s, (int)sharpen);
-
-   const bool scaleFX_DMD = IsDlgButtonChecked(IDC_SCALE_FX_DMD)!= 0;
-   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "ScaleFXDMD"s, scaleFX_DMD);
-
-   const size_t AAfactorIndex = SendDlgItemMessage(IDC_SUPER_SAMPLING_COMBO, TBM_GETPOS, 0, 0);
-   const float AAfactor = (AAfactorIndex < AAfactorCount) ? AAfactors[AAfactorIndex] : 1.0f;
-   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "AAFactor"s, AAfactor);
-
-   const size_t MSAASamplesIndex = SendDlgItemMessage(IDC_MSAA_COMBO, TBM_GETPOS, 0, 0);
-   const int MSAASamples = (MSAASamplesIndex < MSAASampleCount) ? MSAASamplesOpts[MSAASamplesIndex] : 1;
-   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "MSAASamples"s, MSAASamples);
-
-   bool useAO = IsDlgButtonChecked(IDC_DYNAMIC_AO)!= 0;
-   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "DynamicAO"s, useAO);
-
-   useAO = IsDlgButtonChecked(IDC_ENABLE_AO)? false : true; // inverted logic
-   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "DisableAO"s, useAO);
-
-   const bool ssreflection = IsDlgButtonChecked(IDC_GLOBAL_SSREFLECTION_CHECK)!= 0;
-   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "SSRefl"s, ssreflection);
-
-   LRESULT maxReflection = SendDlgItemMessage(IDC_GLOBAL_PF_REFLECTION, CB_GETCURSEL, 0, 0);
-   if (maxReflection == LB_ERR)
-      maxReflection = RenderProbe::REFL_NONE;
-   if (maxReflection == 2)
-      maxReflection = RenderProbe::REFL_DYNAMIC;
-   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "PFReflection"s, (int)maxReflection);
-
-   //AMD Debugging
    const size_t textureModeVR = SendDlgItemMessage(IDC_COMBO_TEXTURE, CB_GETCURSEL, 0, 0);
    g_pvp->m_settings.SaveValue(Settings::PlayerVR, "EyeFBFormat"s, (int)textureModeVR);
 
@@ -882,9 +660,6 @@ void VROptionsDialog::OnOK()
    g_pvp->m_settings.SaveValue(Settings::PlayerVR, "TableY"s, GetDlgItemText(IDC_VR_OFFSET_Y).c_str());
 
    g_pvp->m_settings.SaveValue(Settings::PlayerVR, "TableZ"s, GetDlgItemText(IDC_VR_OFFSET_Z).c_str());
-
-   const bool bloomOff = IsDlgButtonChecked(IDC_BLOOM_OFF)!= 0;
-   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "ForceBloomOff"s, bloomOff);
 
    const size_t askToTurnOn = SendDlgItemMessage(IDC_TURN_VR_ON, CB_GETCURSEL, 0, 0);
    g_pvp->m_settings.SaveValue(Settings::PlayerVR, "AskToTurnOn"s, (int)askToTurnOn);
