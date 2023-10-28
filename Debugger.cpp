@@ -28,13 +28,6 @@ BOOL DebuggerDialog::OnInitDialog()
     AttachItem(IDC_THROW_BALL_MASS_EDIT2, m_ballMassEdit);
     AttachItem(IDC_EDITSIZE, m_notesEdit);
 
-    const CRect rcMain = GetParent().GetWindowRect();
-    const CRect rcDialog = GetWindowRect();
-
-    SetWindowPos(nullptr, (rcMain.right + rcMain.left) / 2 - (rcDialog.right - rcDialog.left) / 2,
-                          (rcMain.bottom + rcMain.top) / 2 - (rcDialog.bottom - rcDialog.top) / 2,
-                          0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE/* | SWP_NOMOVE*/);
-
     HANDLE hIcon = ::LoadImage(GetModuleHandle(nullptr), MAKEINTRESOURCE(IDI_PLAY), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
     m_playButton.SetIcon((HICON)hIcon);
 
@@ -68,11 +61,14 @@ BOOL DebuggerDialog::OnInitDialog()
 
     m_ballMassEdit.SetWindowText(f2sz(g_pplayer->m_debugBallMass).c_str());
 
-    m_resizer.Initialize(*this, rcDialog);
+    m_resizer.Initialize(*this, GetWindowRect());
     m_resizer.AddChild(m_notesEdit.GetHwnd(), CResizer::bottomright, RD_STRETCH_HEIGHT | RD_STRETCH_WIDTH);
     m_resizer.AddChild(g_pplayer->m_hwndDebugOutput, CResizer::bottomright, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
     m_resizer.AddChild(GetDlgItem(IDC_GUIDE1).GetHwnd(), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_GUIDE2).GetHwnd(), CResizer::bottomright, 0);
+
+    LoadPosition();
+
     return TRUE;
 }
 
@@ -155,6 +151,32 @@ void DebuggerDialog::OnClose()
         while (ShowCursor(TRUE)<0) ;
         while (ShowCursor(FALSE)>=0) ;
     }
+
+    SavePosition();
+}
+
+void DebuggerDialog::LoadPosition()
+{
+   const CRect rcMain = GetParent().GetWindowRect();
+   const CRect rcDialog = GetWindowRect();
+   const int x = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "DebuggerPosX"s, (int) ((rcMain.right + rcMain.left) / 2 - (rcDialog.right - rcDialog.left) / 2));
+   const int y = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "DebuggerPosY"s, (int) ((rcMain.bottom + rcMain.top) / 2 - (rcDialog.bottom - rcDialog.top) / 2));
+   const int w = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "DebuggerWidth"s, 1000);
+   const int h = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "DebuggerHeight"s, 800);
+   POINT p { x, y };
+   if (MonitorFromPoint(p, MONITOR_DEFAULTTONULL) != NULL) // Do not apply if point is offscreen
+      SetWindowPos(nullptr, x, y, w, h, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE);
+}
+
+void DebuggerDialog::SavePosition()
+{
+   const CRect rect = GetWindowRect();
+   g_pvp->m_settings.SaveValue(Settings::Editor, "DebuggerPosX"s, (int)rect.left);
+   g_pvp->m_settings.SaveValue(Settings::Editor, "DebuggerPosY"s, (int)rect.top);
+   const int w = rect.right - rect.left;
+   g_pvp->m_settings.SaveValue(Settings::Editor, "DebuggerWidth"s, w);
+   const int h = rect.bottom - rect.top;
+   g_pvp->m_settings.SaveValue(Settings::Editor, "DebuggerHeight"s, h);
 }
 
 LRESULT DebuggerDialog::OnNotify(WPARAM wparam, LPARAM lparam)
