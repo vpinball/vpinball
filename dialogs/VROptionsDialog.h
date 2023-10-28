@@ -1,5 +1,4 @@
-#ifndef H_VR_OPTIONS_DIALOG
-#define  H_VR_OPTIONS_DIALOG
+#pragma once
 
 class VROptionsDialog : public CDialog
 {
@@ -19,5 +18,3 @@ private:
    void SetValue(int nID, const Settings::Section& srction, const string& key);
    void StartTimer(int nID);
 };
-
-#endif
