@@ -798,6 +798,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="src/parts/flasher.cpp" />
     <ClCompile Include="imgui\ImGuizmo.cpp" />
     <ClCompile Include="imgui\imgui_stdlib.cpp" />
+    <ClCompile Include="src\core\TableDB.cpp" />
     <ClCompile Include="third-party\include\BAM\BAMView.cpp" />
     <ClCompile Include="third-party\include\glad\src\gl.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
@@ -1233,6 +1234,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="imgui\imgui_stdlib.h" />
     <ClInclude Include="imgui\implot\implot.h" />
     <ClInclude Include="imgui\implot\implot_internal.h" />
+    <ClInclude Include="src\core\TableDB.h" />
     <ClInclude Include="third-party\include\BAM\BAMView.h" />
     <ClInclude Include="third-party\include\BAM\BAM_Tracker.h" />
     <ClInclude Include="third-party\include\BAM\BAM_ViewPortSetup.h" />

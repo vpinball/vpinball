@@ -10,59 +10,7 @@ DimensionDialog::DimensionDialog() : CDialog(IDD_DIMENSION_CALCULATOR)
 
 BOOL DimensionDialog::OnInitDialog()
 {
-   // Loads database file
-   m_dimensions.clear();
-   std::ifstream dbFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "TableSizes.csv"); 
-   while (dbFile.good())
-   {
-      // Simple CSV parsing
-      std::stringstream ss;
-      bool inQuotes = false;
-      std::vector<std::string> fields;
-      while (dbFile.good())
-      {
-         char c = dbFile.get();
-         if (!inQuotes && c == '"')
-            inQuotes = true;
-         else if (inQuotes && c == '"')
-         {
-            if (dbFile.peek() == '"') // 2 consecutive quotes resolve to 1
-               ss << (char)dbFile.get();
-            else
-               inQuotes = false;
-         }
-         else if (!inQuotes && c == ',')
-         {
-            fields.push_back(ss.str());
-            ss.str("");
-         }
-         else if (!inQuotes && (c == '\r' || c == '\n'))
-         {
-            if (dbFile.peek() == '\n')
-               dbFile.get();
-            fields.push_back(ss.str());
-            break;
-         }
-         else
-            ss << c;
-      }
-
-      // Parse fields
-      if (fields.size() >= 6)
-      {
-         ManufacturerDimensions dim;
-         dim.name = fields[0];
-         try { dim.width = std::stof(fields[1]); } catch (const std::exception&) { dim.width = 20.25f; }
-         try { dim.height = std::stof(fields[2]); } catch (const std::exception&) { dim.height = 46.f; }
-         try { dim.glassBottom = std::stof(fields[3]); } catch (const std::exception&) { dim.glassBottom = 3.f; }
-         try { dim.glassTop = std::stof(fields[4]); } catch (const std::exception&) { dim.glassTop = 8.5f; }
-         dim.comment = fields[5];
-         m_dimensions.push_back(dim);
-      }
-   }
-   if (!m_dimensions.empty())
-      m_dimensions.erase(m_dimensions.begin()); // Remove header line
-   dbFile.close();
+   m_db.Load();
 
    AttachItem(IDC_TABLE_DIM_LIST, m_listView);
    m_listView.SetExtendedStyle(LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
@@ -97,21 +45,7 @@ BOOL DimensionDialog::OnInitDialog()
       sprintf_s(textBuf, sizeof(textBuf), "Aspect ratio: %.04f", ratio);
       SetDlgItemText(IDC_AR_LABEL, textBuf);
 
-      float bestErr = FLT_MAX;
-      for (int i = 0; i < m_dimensions.size(); i++)
-      {
-         float wErr = VPUTOINCHES(width) - m_dimensions[i].width;
-         float hErr = VPUTOINCHES(height) - m_dimensions[i].height;
-         float gthErr = VPUTOINCHES(pt->m_glassTopHeight) - m_dimensions[i].glassTop;
-         float gbhErr = VPUTOINCHES(pt->m_glassBottomHeight) - m_dimensions[i].glassBottom;
-         // We mainly match on the playfield size (always well defined by table author), then top glass height (sometime right, but has been there for a long time), then bottom glass height (added in 10.8)
-         float err = wErr * wErr + hErr * hErr + 0.01f * gthErr * gthErr + 0.00001f * gbhErr * gbhErr;
-         if (err < bestErr)
-         {
-            bestErr = err;
-            selectedItem = i;
-         }
-      }
+      selectedItem = m_db.GetBestSizeMatch(width, height, pt->m_glassTopHeight, pt->m_glassBottomHeight);
    }
    GetDlgItem(IDC_SIZE_WIDTH).EnableWindow(pt != nullptr);
    GetDlgItem(IDC_SIZE_HEIGHT).EnableWindow(pt != nullptr);
@@ -122,10 +56,10 @@ BOOL DimensionDialog::OnInitDialog()
    GetDlgItem(IDC_COPY).ShowWindow(pt != nullptr);
    GetDlgItem(IDC_APPLY_TO_TABLE).ShowWindow(pt != nullptr);
 
-   for (int i = 0; i < m_dimensions.size(); i++)
+   for (int i = 0; i < m_db.m_data.size(); i++)
    {
       char textBuf[MAXNAMEBUFFER];
-      ManufacturerDimensions& dim = m_dimensions[i];
+      TableDB::Entry& dim = m_db.m_data[i];
       m_listView.InsertItem(i, dim.name.c_str());
       sprintf_s(textBuf, sizeof(textBuf), "%.03f", dim.width);
       m_listView.SetItemText(i, 1, textBuf);
@@ -179,22 +113,22 @@ LRESULT DimensionDialog::OnNotify(WPARAM wparam, LPARAM lparam)
       {
          NMLISTVIEW* const plistview = (LPNMLISTVIEW)lparam;
          const int idx = plistview->iItem;
-         if (idx >= m_dimensions.size() || idx < 0)
+         if (idx >= m_db.m_data.size() || idx < 0)
             break;
          char textBuf[MAXNAMEBUFFER];
-         sprintf_s(textBuf, sizeof(textBuf), "%.03f", m_dimensions[idx].width);
+         sprintf_s(textBuf, sizeof(textBuf), "%.03f", m_db.m_data[idx].width);
          SetDlgItemText(IDC_SIZE_WIDTH2, textBuf);
-         sprintf_s(textBuf, sizeof(textBuf), "%.03f", m_dimensions[idx].height);
+         sprintf_s(textBuf, sizeof(textBuf), "%.03f", m_db.m_data[idx].height);
          SetDlgItemText(IDC_SIZE_HEIGHT2, textBuf);
-         sprintf_s(textBuf, sizeof(textBuf), "%.03f", INCHESTOVPU(m_dimensions[idx].width));
+         sprintf_s(textBuf, sizeof(textBuf), "%.03f", INCHESTOVPU(m_db.m_data[idx].width));
          SetDlgItemText(IDC_VP_WIDTH2, textBuf);
-         sprintf_s(textBuf, sizeof(textBuf), "%.03f", INCHESTOVPU(m_dimensions[idx].height));
+         sprintf_s(textBuf, sizeof(textBuf), "%.03f", INCHESTOVPU(m_db.m_data[idx].height));
          SetDlgItemText(IDC_VP_HEIGHT2, textBuf);
-         sprintf_s(textBuf, sizeof(textBuf), "%.03f", m_dimensions[idx].glassTop);
+         sprintf_s(textBuf, sizeof(textBuf), "%.03f", m_db.m_data[idx].glassTop);
          SetDlgItemText(IDC_TABLE_GLASS_TOP_HEIGHT_EDIT2, textBuf);
-         sprintf_s(textBuf, sizeof(textBuf), "%.03f", m_dimensions[idx].glassBottom);
+         sprintf_s(textBuf, sizeof(textBuf), "%.03f", m_db.m_data[idx].glassBottom);
          SetDlgItemText(IDC_TABLE_GLASS_BOTTOM_HEIGHT_EDIT2, textBuf);
-         float ratio = m_dimensions[idx].height / m_dimensions[idx].width;
+         float ratio = m_db.m_data[idx].height / m_db.m_data[idx].width;
          sprintf_s(textBuf, sizeof(textBuf), "Aspect Ratio: %.04f", ratio);
          SetDlgItemText(IDC_AR_LABEL2, textBuf);
          UpdateApplyState();

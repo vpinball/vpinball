@@ -363,6 +363,7 @@
     <ClCompile Include="src/renderer/Texture.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
+    <ClCompile Include="src\core\TableDB.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc">
@@ -1699,6 +1700,9 @@
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="typedefs3D.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\TableDB.h">
       <Filter>headers</Filter>
     </ClInclude>
   </ItemGroup>

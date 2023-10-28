@@ -1,5 +1,6 @@
-#ifndef H_DIMENSION_MANAGER_DIALOG
-#define H_DIMENSION_MANAGER_DIALOG
+#pragma once
+
+#include "core/TableDB.h"
 
 class DimensionDialog : public CDialog
 {
@@ -16,17 +17,6 @@ private:
    void UpdateApplyState();
 
    CListView m_listView;
-   struct ManufacturerDimensions
-   {
-      string name;
-      float width;
-      float height;
-      float glassBottom;
-      float glassTop;
-      string comment;
-   };
-   vector<ManufacturerDimensions> m_dimensions;
+   TableDB m_db;
    bool m_discardChangeNotification = false;
 };
-
-#endif
