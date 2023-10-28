@@ -136,8 +136,6 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const b
    m_disableDWM = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "DisableDWM"s, false);
    m_useNvidiaApi = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "UseNVidiaAPI"s, false);
    m_stereo3DfakeStereo = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DFake"s, false);
-   // FIXME if rendering at 10bit output resolution, disable dithering => use the effective rendering setup and not the settings
-   m_ditherOff = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Render10Bit"s, false);
    #ifndef ENABLE_SDL // DirectX does not support stereo rendering
    m_stereo3DfakeStereo = true;
    #endif
@@ -3587,7 +3585,7 @@ void Player::PrepareVideoBuffers()
       if (pin)
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_color_lut, pin, SF_BILINEAR, SA_CLAMP, SA_CLAMP, true); // FIXME always honor the linear RGB
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetBool(SHADER_color_grade, pin != nullptr);
-      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetBool(SHADER_do_dither, !m_ditherOff);
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetBool(SHADER_do_dither, m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer()->GetColorFormat() != colorFormat::RGBA10);
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetBool(SHADER_do_bloom, (m_ptable->m_bloom_strength > 0.0f && !m_bloomOff && infoMode <= IF_DYNAMIC_ONLY));
 
       //const unsigned int jittertime = (unsigned int)((U64)msec()*90/1000);
