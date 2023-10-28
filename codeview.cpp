@@ -730,7 +730,9 @@ void CodeViewer::SetVisible(const bool visible)
          const int y = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "CodeViewPosY"s, 0);
          const int w = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "CodeViewPosWidth"s, 640);
          const int h = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "CodeViewPosHeight"s, 490);
-		   SetWindowPos(HWND_TOP, x, y, w, h, SWP_NOMOVE | SWP_NOSIZE);
+         POINT p { x, y };
+         if (MonitorFromPoint(p, MONITOR_DEFAULTTONULL) != NULL) // Do not apply if point is offscreen
+            SetWindowPos(HWND_TOP, x, y, w, h, SWP_NOMOVE | SWP_NOSIZE);
 	   }
 	   SetForegroundWindow();
    }

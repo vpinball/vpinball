@@ -940,12 +940,13 @@ void MaterialDialog::OnClose()
 
 void MaterialDialog::LoadPosition()
 {
-    const int x = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "MaterialMngPosX"s, 0);
-    const int y = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "MaterialMngPosY"s, 0);
-
-    const int w = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "MaterialMngWidth"s, 1000);
-    const int h = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "MaterialMngHeight"s, 800);
-    SetWindowPos(nullptr, x, y, w, h, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE);
+   const int x = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "MaterialMngPosX"s, 0);
+   const int y = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "MaterialMngPosY"s, 0);
+   const int w = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "MaterialMngWidth"s, 1000);
+   const int h = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "MaterialMngHeight"s, 800);
+   POINT p { x, y };
+   if (MonitorFromPoint(p, MONITOR_DEFAULTTONULL) != NULL) // Do not apply if point is offscreen
+      SetWindowPos(nullptr, x, y, w, h, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE);
 }
 
 void MaterialDialog::SavePosition()

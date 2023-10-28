@@ -773,8 +773,9 @@ void SearchSelectDialog::LoadPosition()
    const int y = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "SearchSelectPosY"s, 0);
    const int w = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "SearchSelectWidth"s, 650);
    const int h = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "SearchSelectHeight"s, 400);
-
-   SetWindowPos(nullptr, x, y, w, h, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE);
+   POINT p { x, y };
+   if (MonitorFromPoint(p, MONITOR_DEFAULTTONULL) != NULL) // Do not apply if point is offscreen
+      SetWindowPos(nullptr, x, y, w, h, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE);
 }
 
 void SearchSelectDialog::SavePosition()

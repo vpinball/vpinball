@@ -344,10 +344,11 @@ void RenderProbeDialog::LoadPosition()
 {
    const int x = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "RenderProbeMngPosX"s, 0);
    const int y = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "RenderProbeMngPosY"s, 0);
-
    const int w = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "RenderProbeMngWidth"s, 1000);
    const int h = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "RenderProbeMngHeight"s, 800);
-   SetWindowPos(nullptr, x, y, w, h, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE);
+   POINT p { x, y };
+   if (MonitorFromPoint(p, MONITOR_DEFAULTTONULL) != NULL) // Do not apply if point is offscreen
+      SetWindowPos(nullptr, x, y, w, h, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE);
 }
 
 void RenderProbeDialog::SavePosition()
