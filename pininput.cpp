@@ -1171,6 +1171,8 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
                viewSetup.mViewVOfs = isFitted ? 0.f : -2.8f;
                viewSetup.mSceneScaleX = scale;
                viewSetup.mSceneScaleY = isFitted ? 1.f : scale;
+               viewSetup.mWindowBottomZOfs = VPUTOINCHES(g_pplayer->m_ptable->m_glassBottomHeight);
+               viewSetup.mWindowTopZOfs = VPUTOINCHES(g_pplayer->m_ptable->m_glassTopHeight);
                g_pplayer->m_liveUI->PushNotification(isFitted ? "POV reset to default values (stretch to fit)"s : "POV reset to default values (no stretching)"s, 5000);
             }
             break;

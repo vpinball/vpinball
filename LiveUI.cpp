@@ -1096,22 +1096,21 @@ void LiveUI::UpdateCameraModeUI()
       Matrix3D view = m_pin3d->GetMVP().GetView();
       view.Invert();
       const vec3 pos = view.GetOrthoNormalPos();
-      ImGui::NewLine();
-      ImGui::Text("Camera at X: %.0f Y: %.0f Z: %.0f (cm), Rotation: %.2f", 
+      ImGui::Text("Camera at X: %.0fcm Y: %.0fcm Z: %.0fcm, Rotation: %.2f", 
          VPUTOCM(pos.x - 0.5f * m_player->m_ptable->m_right), 
          VPUTOCM(pos.y - m_player->m_ptable->m_bottom), 
          VPUTOCM(pos.z), viewSetup.mViewportRotation);
+      ImGui::NewLine();
    }
    
    if (isWindow)
    {
-      ImGui::NewLine();
-      ImGui::Text("Camera at X: %.1fcm Y: %.1fcm Z: %.1fcm", VPUTOCM(viewSetup.mViewX), VPUTOCM(viewSetup.mViewY), VPUTOCM(viewSetup.mViewZ));
+      // Do not show it as it is more confusing than helpfull due to the use of different coordinate systems in settings vs live edit
+      //ImGui::Text("Camera at X: %.1fcm Y: %.1fcm Z: %.1fcm", VPUTOCM(viewSetup.mViewX), VPUTOCM(viewSetup.mViewY), VPUTOCM(viewSetup.mViewZ));
+      //ImGui::NewLine();
       if (m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenWidth"s, 0.0f) <= 1.f)
       {
          ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 0, 0, 255));
-         ImGui::NewLine();
-         ImGui::NewLine();
          ImGui::Text("You are using 'Window' mode but haven't defined your display physical size.");
          ImGui::Text("This will break the overall scale as well as the stereo rendering.");
          ImGui::NewLine();
