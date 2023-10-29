@@ -1,4 +1,5 @@
 Name,Width,Height,Bottom Glass Height,Top Glass Height,Comment
+Alvin G.,20.25,42.0,,,Missing glass measures.
 Atari (widebody),27.0,45.0,,,Missing glass measures.
 Bally EM (standard),20.25,41.0,,,Missing glass measures.
 Bally (standard),20.25,42.0,,,Missing glass measures.
@@ -14,7 +15,7 @@ Gottlieb System 1 (standard),20.25,42.0,,,Missing glass measures.
 Gottlieb System 1 (widebody),26.75,47.0,,,Missing glass measures.
 Gottlieb System 80 (standard),20.25,42.0,,,Missing glass measures.
 Gottlieb System 80 (widebody),23.875,47.875,,,Missing glass measures. verified on at least two actual machines (via BorgDog)
-Gottlieb System 80 (extrawide),26.75,46.5,,,Missing glass measures.
+Gottlieb System 80 (extrawide),26.75,46.5,,,Missing glass measures. Circus & Star Race
 Gottlieb System 3,20.25,46.0,,,Missing glass measures.
 Stern (widebody),23.875,45.0,,,Missing glass measures.
 Stern (standard),20.25,42.0,,,Missing glass measures.
@@ -25,7 +26,7 @@ Williams System 1-11 (widebody),27.0,42.0,,,Missing glass measures.
 WMS WPC (standard),20.5,46.0,,,Missing glass measures.
 WMS WPC (superpin),23.25,46.0,,,Missing glass measures.
 WMS Pinball 2000,20.5,43.0,,,Missing glass measures.
-Zaccaria (standard),20.25,42.0,,,Missing glass measures.
+Zaccaria (standard),20.25,42.0,3.15,4.0,Glass measured on Robot by Devious626.
 Black Knight 2000 (1991),20.25,46.0,,,Missing glass measures. OPA: 20.2756 x 42.0
 Bride Of Pinbot (1991),20.25,45.25,,,Missing glass measures. OPA: 20.2362 x 45.27559
 BSD Dracula (1993),20.5,45.0,,,"Missing glass measures. chepas claims its 20.5 (by pics/compared to TAF), OPA 20.25"
