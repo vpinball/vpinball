@@ -248,26 +248,8 @@ add_executable(vpinball WIN32
    MemoryStatus.h
    hash.cpp
    hash.h
-   kdtree.cpp
-   kdtree.h
    objloader.cpp
    objloader.h
-   pin/ball.cpp
-   pin/ball.h
-   pin/collide.cpp
-   pin/collide.h
-   pin/collideex.cpp
-   pin/collideex.h
-   pin/hitable.h
-   pin/hitflipper.cpp
-   pin/hitflipper.h
-   pin/hitplunger.cpp
-   pin/hitplunger.h
-   pin/hittimer.h
-   pin/player.cpp
-   pin/player.h
-   ballex.cpp
-   ballex.h
    codeview.cpp
    codeview.h
    def.cpp
@@ -348,8 +330,6 @@ add_executable(vpinball WIN32
    pinundo.h
    plumb.cpp
    plumb.h
-   quadtree.cpp
-   quadtree.h
    resource.h
    slintf.cpp
    slintf.h
@@ -374,11 +354,32 @@ add_executable(vpinball WIN32
    audioplayer.cpp
    audioplayer.h
    
+   src/physics/ball.cpp
+   src/physics/ball.h
+   src/physics/collide.cpp
+   src/physics/collide.h
+   src/physics/collideex.cpp
+   src/physics/collideex.h
+   src/physics/hitable.h
+   src/physics/hitflipper.cpp
+   src/physics/hitflipper.h
+   src/physics/hitplunger.cpp
+   src/physics/hitplunger.h
+   src/physics/hittimer.h
+   src/physics/kdtree.cpp
+   src/physics/kdtree.h
+   src/physics/quadtree.cpp
+   src/physics/quadtree.h
+
+   src/core/player.cpp
+   src/core/player.h
    src/core/Settings.cpp
    src/core/Settings.h
    src/core/TableDB.cpp
    src/core/TableDB.h
 
+   src/parts/ballex.cpp
+   src/parts/ballex.h
    src/parts/bumper.cpp
    src/parts/bumper.h
    src/parts/decal.cpp

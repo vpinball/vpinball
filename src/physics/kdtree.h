@@ -1,7 +1,7 @@
 #pragma once
 
-#include "pin/ball.h"
-#include "pin/collide.h"
+#include "physics/ball.h"
+#include "physics/collide.h"
 
 #ifdef ENABLE_SSE_OPTIMIZATIONS
 #define KDTREE_SSE_LEAFTEST

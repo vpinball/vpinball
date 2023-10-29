@@ -21,5 +21,4 @@
 #include "parts/textbox.h"
 #include "parts/timer.h"
 #include "parts/trigger.h"
-
-#include "ballex.h"
+#include "parts/ballex.h"
