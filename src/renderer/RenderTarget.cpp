@@ -399,11 +399,10 @@ void RenderTarget::CopyTo(RenderTarget* dest, const bool copyColor, const bool c
    assert(pw1 == pw2 && ph1 == ph2); // we do not support scaling
    assert(srcLayer != -1 || dstLayer != -1 || m_nLayers == dest->m_nLayers); // Either we copy a single layer or the full set in which case they must match
 #ifdef ENABLE_SDL
-   int bitmask = (copyColor ? GL_COLOR_BUFFER_BIT : 0) | (m_has_depth && dest->m_has_depth && copyDepth ? GL_DEPTH_BUFFER_BIT : 0);
    #ifndef __OPENGLES__
-   if (GLAD_GL_VERSION_4_3 && m_texTarget == dest->m_texTarget)
+   if (GLAD_GL_VERSION_4_3 && m_texTarget == dest->m_texTarget && w1 == w2 && h1 == h2)
    {
-      // No MSAA resolution => glCopyImageSubData is more efficient and supports all configurations (copying one layer to another, all of them,...)
+      // No MSAA resolution => glCopyImageSubData is more efficient and supports all configurations (copying one layer to another, all of them,...) but not scaling
       if (copyColor)
          glCopyImageSubData(m_color_tex, m_texTarget, 0, px1, py1, pz1, dest->m_color_tex, dest->m_texTarget, 0, px2, py2, pz2, pw1, ph1, nLayers);
       if (copyDepth)
@@ -414,6 +413,7 @@ void RenderTarget::CopyTo(RenderTarget* dest, const bool copyColor, const bool c
    {
       // OpenGl ES or MSAA resolve => We need glBlitFramebuffer. It will perform MSAA resolution but it will only copy the first layer
       // Therefore we need to use anciliary FBOs with only the wanted layer bound to them to perform all of the wanted blit
+      int bitmask = (copyColor ? GL_COLOR_BUFFER_BIT : 0) | (m_has_depth && dest->m_has_depth && copyDepth ? GL_DEPTH_BUFFER_BIT : 0);
       for (int i = 0; i < nLayers; i++)
       {
          glBindFramebuffer(GL_READ_FRAMEBUFFER, m_nLayers == 1 ? m_framebuffer : m_framebuffer_layers[pz1 + i]);
