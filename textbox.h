@@ -14,7 +14,6 @@ class TextboxData final
 {
 public:
    Vertex2D m_v1, m_v2;
-   float m_fontsize;
    COLORREF m_backcolor;
    COLORREF m_fontcolor;
    float m_intensity_scale;
