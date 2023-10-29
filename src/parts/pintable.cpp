@@ -13,6 +13,7 @@
 #include "freeimage.h"
 #include "ThreadPool.h"
 #include "scalefx.h"
+#include "core/TableDB.h"
 
 #include "serial.h"
 static serial Serial;

@@ -559,7 +559,7 @@ void Player::CreateWnd(HWND parent /* = 0 */)
       {
          SDL_GetDisplayMode(adapter, index, &mode);
          // if (mode.w == m_wnd_width && mode.h == m_wnd_height && mode.refresh_rate == m_refreshrate && mode.format == format)
-         if (mode.w == m_wnd_width && mode.h == displayWidth && mode.refresh_rate == displayHeight && mode.format == format)
+         if (mode.w == displayWidth && mode.h == displayHeight && mode.refresh_rate == m_refreshrate && mode.format == format)
          {
             SDL_SetWindowDisplayMode(m_sdl_playfieldHwnd, &mode);
             found = true;
