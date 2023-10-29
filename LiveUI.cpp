@@ -821,7 +821,7 @@ void LiveUI::ResetCameraFromPlayer()
 }
 
 
-void LiveUI::Update()
+void LiveUI::Update(const RenderTarget *rt)
 {
    // For the time being, the UI is only available inside a running player
    if (m_player == nullptr || m_player->m_closing != Player::CS_PLAYING)
@@ -837,8 +837,8 @@ void LiveUI::Update()
    ImGui_ImplWin32_NewFrame();
    
    // The render size may not match the window size used by ImGui_ImplWin32_NewFrame (for example for VR)
-   ImGui::GetIO().DisplaySize.x = (float)m_player->m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer()->GetWidth();
-   ImGui::GetIO().DisplaySize.y = (float)m_player->m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer()->GetHeight();
+   ImGui::GetIO().DisplaySize.x = (float)rt->GetWidth();
+   ImGui::GetIO().DisplaySize.y = (float)rt->GetHeight();
 
    ImGui::NewFrame();
    ImGui::GetIO().ConfigFlags &= ~ImGuiConfigFlags_NavEnableKeyboard; // We use it for main splash popup, but needs it to be disabled to allow keyboard shortcuts

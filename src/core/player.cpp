@@ -4246,7 +4246,7 @@ void Player::PrepareFrame()
    hid_set_output(HID_OUTPUT_PLUNGER, ((m_time_msec - m_LastPlungerHit) < 512) && ((m_time_msec & 512) > 0));
 
    g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_MISC);
-   m_liveUI->Update();
+   m_liveUI->Update(m_stereo3D == STEREO_VR ? m_pin3d.m_pd3dPrimaryDevice->GetOffscreenVR(0) : m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer());
    g_frameProfiler.ExitProfileSection();
 
    PrepareVideoBuffers();
