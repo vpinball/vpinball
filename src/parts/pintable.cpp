@@ -3921,7 +3921,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
             db.Load();
             int bestSizeMatch = db.GetBestSizeMatch(GetTableWidth(), GetHeight(), m_glassTopHeight);
             if (bestSizeMatch >= 0)
-               m_glassBottomHeight = db.m_data[bestSizeMatch].glassBottom;
+               m_glassBottomHeight = INCHESTOVPU(db.m_data[bestSizeMatch].glassBottom);
             else
                m_glassBottomHeight = m_glassTopHeight;
 
