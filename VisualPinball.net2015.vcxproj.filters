@@ -4,15 +4,15 @@
     <ClCompile Include="src/parts/flasher.cpp" />
     <ClCompile Include="src/parts/rubber.cpp" />
     <ClCompile Include="hash.cpp" />
-    <ClCompile Include="kdtree.cpp" />
+    <ClCompile Include="src/physics/kdtree.cpp" />
     <ClCompile Include="math\matrix.cpp" />
     <ClCompile Include="objloader.cpp" />
-    <ClCompile Include="Pin\ball.cpp" />
-    <ClCompile Include="ballex.cpp" />
+    <ClCompile Include="src/physics/ball.cpp" />
+    <ClCompile Include="src/parts/ballex.cpp" />
     <ClCompile Include="src/parts/bumper.cpp" />
     <ClCompile Include="codeview.cpp" />
-    <ClCompile Include="Pin\collide.cpp" />
-    <ClCompile Include="Pin\collideex.cpp" />
+    <ClCompile Include="src/physics/collide.cpp" />
+    <ClCompile Include="src/physics/collideex.cpp" />
     <ClCompile Include="src/parts/decal.cpp" />
     <ClCompile Include="def.cpp" />
     <ClCompile Include="src/parts/dispreel.cpp" />
@@ -24,8 +24,8 @@
     <ClCompile Include="src/parts/flipper.cpp" />
     <ClCompile Include="src/parts/gate.cpp" />
     <ClCompile Include="hid.cpp" />
-    <ClCompile Include="Pin\hitflipper.cpp" />
-    <ClCompile Include="Pin\hitplunger.cpp" />
+    <ClCompile Include="src/physics/hitflipper.cpp" />
+    <ClCompile Include="src/physics/hitplunger.cpp" />
     <ClCompile Include="hitrectsur.cpp" />
     <ClCompile Include="hitsur.cpp" />
     <ClCompile Include="src/parts/hittarget.cpp" />
@@ -46,11 +46,11 @@
     <ClCompile Include="pinsound.cpp" />
     <ClCompile Include="src/parts/pintable.cpp" />
     <ClCompile Include="pinundo.cpp" />
-    <ClCompile Include="Pin\player.cpp" />
+    <ClCompile Include="src/core/player.cpp" />
     <ClCompile Include="plumb.cpp" />
     <ClCompile Include="src/parts/plunger.cpp" />
     <ClCompile Include="src/parts/primitive.cpp" />
-    <ClCompile Include="quadtree.cpp" />
+    <ClCompile Include="src/physics/quadtree.cpp" />
     <ClCompile Include="src/parts/ramp.cpp" />
     <ClCompile Include="src/core/Settings.cpp" />
     <ClCompile Include="slintf.cpp" />
@@ -877,7 +877,7 @@
     <ClInclude Include="third-party\include\ThreadPool.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="ballex.h">
+    <ClInclude Include="src/parts/ballex.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="src/parts/bumper.h">
@@ -949,7 +949,7 @@
     <ClInclude Include="iselect.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="kdtree.h">
+    <ClInclude Include="src/physics/kdtree.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="src/parts/kicker.h">
@@ -1009,7 +1009,7 @@
     <ClInclude Include="src/parts/primitive.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="quadtree.h">
+    <ClInclude Include="src/physics/quadtree.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="src/parts/ramp.h">
@@ -1099,7 +1099,7 @@
     <ClInclude Include="math\matrix.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="pin\ball.h">
+    <ClInclude Include="src/physics/ball.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="third-party\include\bass.h">
@@ -1108,28 +1108,28 @@
     <ClInclude Include="math\bbox.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="pin\collide.h">
+    <ClInclude Include="src/physics/collide.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="pin\collideex.h">
+    <ClInclude Include="src/physics/collideex.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="media\fileio.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="pin\hitable.h">
+    <ClInclude Include="src/physics/hitable.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="pin\hitflipper.h">
+    <ClInclude Include="src/physics/hitflipper.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="pin\hitplunger.h">
+    <ClInclude Include="src/physics/hitplunger.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="pin\hittimer.h">
+    <ClInclude Include="src/physics/hittimer.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="pin\player.h">
+    <ClInclude Include="src/core/player.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="math\vector.h">

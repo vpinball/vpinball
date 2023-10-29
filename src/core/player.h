@@ -1,7 +1,7 @@
 #pragma once
 
-#include "kdtree.h"
-#include "quadtree.h"
+#include "physics/kdtree.h"
+#include "physics/quadtree.h"
 #include "Debugger.h"
 #include "typedefs3D.h"
 #include "pininput.h"

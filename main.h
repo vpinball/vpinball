@@ -173,7 +173,7 @@ using std::vector;
 #include "parts/pintable.h"
 
 #include "mesh.h"
-#include "pin/collide.h"
+#include "physics/collide.h"
 #include "pin3d.h"
 
 #include "sur.h"
@@ -181,15 +181,15 @@ using std::vector;
 #include "hitsur.h"
 #include "hitrectsur.h"
 
-#include "ballex.h"
+#include "parts/ballex.h"
 
-#include "pin/collideex.h"
-#include "pin/ball.h"
-#include "pin/hittimer.h"
-#include "pin/hitable.h"
-#include "pin/hitflipper.h"
-#include "pin/hitplunger.h"
-#include "pin/player.h"
+#include "physics/collideex.h"
+#include "physics/ball.h"
+#include "physics/hittimer.h"
+#include "physics/hitable.h"
+#include "physics/hitflipper.h"
+#include "physics/hitplunger.h"
+#include "core/player.h"
 
 #include "color.h"
 
@@ -217,7 +217,7 @@ using std::vector;
 #include "hid.h"
 #include "plumb.h"
 
-#include "kdtree.h"
+#include "physics/kdtree.h"
 
 #include "slintf.h"
 #include "trace.h"
