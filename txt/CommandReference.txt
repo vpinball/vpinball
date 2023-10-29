@@ -9,6 +9,7 @@ As for coding light sequences for original tables, please check this helper app:
 
 Changelog:
 10.8.0:
+- add DisableStaticPrerendering to the globals
 - add StagedLeftFlipperKey, StagedRightFlipperKey and JoyCustomKey
 - add TablesDirectory, MusicDirectory, ScriptsDirectory, PlatformOS, PlatformCPU, PlatformBits and ShowCursor to the globals
 - add Animate event to Bumper, Light, Flipper, Gate, Spinner, Trigger, Targets and EMReel. This event is called when the object's visual properties are animated, in order to easily sync with custom visuals

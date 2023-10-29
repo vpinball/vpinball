@@ -1074,6 +1074,22 @@ STDMETHODIMP ScriptGlobalTable::put_DMDColoredPixels(VARIANT pVal) //!! assumes 
 	return S_OK;
 }
 
+STDMETHODIMP ScriptGlobalTable::get_DisableStaticPrerendering(VARIANT_BOOL *pVal)
+{
+   if (g_pplayer == nullptr)
+      return E_FAIL;
+   *pVal = FTOVB(!g_pplayer->IsUsingStaticPrepass());
+   return S_OK;
+}
+
+STDMETHODIMP ScriptGlobalTable::put_DisableStaticPrerendering(VARIANT_BOOL newVal)
+{
+   if (g_pplayer == nullptr)
+      return E_FAIL;
+   g_pplayer->DisableStaticPrePass(VBTOb(newVal));
+   return S_OK;
+}
+
 STDMETHODIMP ScriptGlobalTable::GetBalls(LPSAFEARRAY *pVal)
 {
    if (!pVal || !g_pplayer)

@@ -80,6 +80,7 @@ As for coding light sequences for original tables, please check this helper app:
 | DMDColoredPixels | Variant |  set array of (long-)values (0..255,0..255,0..255), size needs to match the previously set width and height (see example below) |
 | | | |
 | *RenderingMode | int | returns the rendering mode: 0 = Normal 2D, 1 = Stereo 3D, 2 = VR |
+| DisableStaticPrerendering | bool | Note that when setting to false, if needed, VPX will update the static prerender which can be lengthy |
 
 Example for using DMDColoredPixels:
 ```
@@ -957,6 +958,8 @@ The following methods only applies to mesh primitives with an animation sequence
 ## Changelog
 
 ### 10.8.0
+- add `DisableStaticPrerendering` to the globals
+- add `StagedLeftFlipperKey`, `StagedRightFlipperKey` and `JoyCustomKey`
 - add `TablesDirectory`, `MusicDirectory`, `ScriptsDirectory`, `PlatformOS`, `PlatformCPU`, `PlatformBits`, `ShowCursor` to the globals
 - add `Animate` event to Bumper, Light, Flipper, Gate, Spinner, Trigger, Targets and EMReel. This event is called when the object's visual properties are animated, in order to easily sync with custom visuals
 - add `CurrentAnimOffset` to the Trigger and Target elements
