@@ -798,6 +798,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 
                 [propget, id(228), helpstring("property DisableStaticPrerendering")] HRESULT DisableStaticPrerendering([out, retval] VARIANT_BOOL *pVal);
                 [propput, id(228), helpstring("property DisableStaticPrerendering")] HRESULT DisableStaticPrerendering([in] VARIANT_BOOL newVal);
+
+                [id(229), helpstring("method LoadTexture")] HRESULT LoadTexture([in] BSTR imageName, [in] BSTR fileName);
         }
 
         [

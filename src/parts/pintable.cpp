@@ -952,6 +952,17 @@ STDMETHODIMP ScriptGlobalTable::MaterialColor(BSTR pVal, OLE_COLOR newVal)
    return S_OK;
 }
 
+STDMETHODIMP ScriptGlobalTable::LoadTexture(BSTR imageName, BSTR fileName)
+{
+   if (!g_pplayer)
+      return E_FAIL;
+   char szImageName[MAX_PATH], szFileName[MAX_PATH];
+   WideCharToMultiByteNull(CP_ACP, 0, imageName, -1, szImageName, MAX_PATH, nullptr, nullptr);
+   WideCharToMultiByteNull(CP_ACP, 0, fileName, -1, szFileName, MAX_PATH, nullptr, nullptr);
+   Texture *image = m_pt->ImportImage(szFileName, szImageName);
+   return image->m_pdsBuffer == nullptr ? E_FAIL : S_OK;
+}
+
 STDMETHODIMP ScriptGlobalTable::get_WindowWidth(int *pVal)
 {
    if (g_pplayer)
@@ -1453,6 +1464,9 @@ PinTable::~PinTable()
          delete m_vfont[i];
       }
    }
+
+   for (size_t i = 0; i < m_vliveimage.size(); i++)
+      delete m_vliveimage[i];
 
    for (size_t i = 0; i < m_materials.size(); ++i)
       delete m_materials[i];
@@ -7165,18 +7179,32 @@ bool PinTable::ExportImage(const Texture * const ppi, const char * const szfilen
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++>>
 
-void PinTable::ImportImage(HWND hwndListView, const string& filename)
+Texture *PinTable::ImportImage(const string &filename, const string &imagename)
 {
-   Texture * const ppi = new Texture();
+   bool isUpdate = true;
+   Texture *ppi = nullptr;
+   if (imagename != "")
+      ppi = GetImage(imagename);
+   if (ppi == nullptr)
+   {
+      ppi = new Texture();
+      isUpdate = false;
+   }
    ppi->LoadFromFile(filename, true);
    if (ppi->m_pdsBuffer == nullptr)
    {
-      delete ppi;
-      return;
+      if (!isUpdate)
+         delete ppi;
+      return nullptr;
    }
-   m_vimage.push_back(ppi);
-   const int index = AddListImage(hwndListView, ppi);
-   ListView_SetItemState(hwndListView, index, LVIS_SELECTED, LVIS_SELECTED);
+   if (!isUpdate)
+   {
+      m_textureMap[ppi->m_szName] = ppi;
+      m_vimage.push_back(ppi);
+      if (m_isLiveInstance)
+         m_vliveimage.push_back(ppi);
+   }
+   return ppi;
 }
 
 void PinTable::ListImages(HWND hwndListView)

@@ -155,6 +155,8 @@ DMDColoredPixels = myDMDdata
 
 - `GetTextFile(string)` - returns content of text file
 
+- `LoadTexture(string imageName, string fileName)` - load the file fileName into image imageName
+
 
 -------------------------------------------------------------------------------
 ## Ball
@@ -958,6 +960,7 @@ The following methods only applies to mesh primitives with an animation sequence
 ## Changelog
 
 ### 10.8.0
+- add `LoadTexture` to the globals
 - add `DisableStaticPrerendering` to the globals
 - add `StagedLeftFlipperKey`, `StagedRightFlipperKey` and `JoyCustomKey`
 - add `TablesDirectory`, `MusicDirectory`, `ScriptsDirectory`, `PlatformOS`, `PlatformCPU`, `PlatformBits`, `ShowCursor` to the globals

@@ -411,10 +411,17 @@ void ImageDialog::Import()
    if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Bitmap, JPEG, PNG, TGA, WEBP, EXR, HDR Files (.bmp/.jpg/.png/.tga/.webp/.exr/.hdr)\0*.bmp;*.jpg;*.jpeg;*.png;*.tga;*.webp;*.exr;*.hdr\0", "png", OFN_EXPLORER | OFN_ALLOWMULTISELECT))
    {
       CCO(PinTable) * const pt = g_pvp->GetActiveTable();
-      const HWND hSoundList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
+      const HWND hImageList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
 
       for (const string &file : szFileName)
-         pt->ImportImage(hSoundList, file);
+      {
+         Texture *tex = pt->ImportImage(file, "");
+         if (tex != nullptr)
+         {
+            const int index = pt->AddListImage(hImageList, tex);
+            ListView_SetItemState(hImageList, index, LVIS_SELECTED, LVIS_SELECTED);
+         }
+      }
 
       const size_t index = szFileName[0].find_last_of(PATH_SEPARATOR_CHAR);
       if (index != string::npos)
