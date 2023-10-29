@@ -18,6 +18,7 @@ Textbox::~Textbox()
 Textbox *Textbox::CopyForPlay(PinTable *live_table)
 {
    STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(Textbox, live_table)
+   m_pIFont->Clone(&dst->m_pIFont);
    return dst;
 }
 
@@ -81,8 +82,8 @@ void Textbox::SetDefaults(const bool fromMouseClick)
       m_d.m_transparent = g_pvp->m_settings.LoadValueWithDefault(regKey, "Transparent"s, false);
       m_d.m_isDMD = g_pvp->m_settings.LoadValueWithDefault(regKey, "DMD"s, false);
 
-      m_d.m_fontsize = g_pvp->m_settings.LoadValueWithDefault(regKey, "FontSize"s, 14.25f);
-      fd.cySize.int64 = (LONGLONG)(m_d.m_fontsize * 10000.0f);
+      float fontsize = g_pvp->m_settings.LoadValueWithDefault(regKey, "FontSize"s, 14.25f);
+      fd.cySize.int64 = (LONGLONG)(fontsize * 10000.0f);
 
       string tmp;
       bool hr;
@@ -176,8 +177,13 @@ char * Textbox::GetFontName()
 
 HFONT Textbox::GetFont()
 {
+    FONTDESC fd;
+    fd.cbSizeofstruct = sizeof(FONTDESC);
+    m_pIFont->get_Size(&fd.cySize);
+    const float fontSize = (float)(fd.cySize.int64 / 10000.0);
+
     LOGFONT lf = {};
-    lf.lfHeight = -MulDiv((int)m_d.m_fontsize, GetDeviceCaps(g_pvp->GetDC(), LOGPIXELSY), 72);
+    lf.lfHeight = -MulDiv((int)fontSize, GetDeviceCaps(g_pvp->GetDC(), LOGPIXELSY), 72);
     lf.lfCharSet = DEFAULT_CHARSET;
     lf.lfQuality = NONANTIALIASED_QUALITY;
 
@@ -258,14 +264,9 @@ void Textbox::GetHitShapesDebug(vector<HitObject*> &pvho)
 
 void Textbox::EndPlay()
 {
-   if (m_texture)
-   {
-      delete m_texture;
-      m_texture = nullptr;
-
-      m_pIFontPlay->Release();
-   }
-
+   delete m_texture;
+   m_texture = nullptr;
+   SAFE_RELEASE(m_pIFontPlay);
    IEditable::EndPlay();
 }
 
