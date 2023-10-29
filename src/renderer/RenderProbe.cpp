@@ -165,7 +165,7 @@ void RenderProbe::ApplyRoughness(RenderTarget* probe, const int roughness)
    {
       RenderDevice* const p3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
       if (m_blurRT == nullptr)
-         m_blurRT = probe->Duplicate("BlurProbe"s);
+         m_blurRT = probe->Duplicate(probe->m_name+".Blur"s);
       // The kernel sizes were chosen by reverse engineering the blur shader. So there's a part of guess here.
       // The blur shader seems to mix binomial & gaussian distributions, with a kernel size which does not directly match the pascal triangle size.
       // Ideally this should be a gaussian distribution's sigma, scaled by the render height against a reference height.
