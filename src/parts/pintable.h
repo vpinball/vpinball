@@ -917,6 +917,9 @@ public:
    STDMETHOD(put_DMDPixels)(/*[in]*/ VARIANT pVal);
    STDMETHOD(put_DMDColoredPixels)(/*[in]*/ VARIANT pVal);
 
+   STDMETHOD(get_DisableStaticPrerendering)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_DisableStaticPrerendering)(/*[in]*/ VARIANT_BOOL newVal);
+
    STDMETHOD(get_WindowWidth)(/*[out, retval]*/ int *pVal);
    STDMETHOD(get_WindowHeight)(/*[out, retval]*/ int *pVal);
 
