@@ -243,8 +243,6 @@ add_executable(vpinball WIN32
    media/lzwreader.h
    media/lzwwriter.cpp
    media/lzwwriter.h
-   media/wavread.cpp
-   media/wavread.h
    MemoryStatus.cpp
    MemoryStatus.h
    hash.cpp
@@ -295,8 +293,6 @@ add_executable(vpinball WIN32
    pinbinary.h
    pininput.cpp
    pininput.h
-   pinsound.cpp
-   pinsound.h
    pinundo.cpp
    pinundo.h
    plumb.cpp
@@ -322,9 +318,14 @@ add_executable(vpinball WIN32
    wintimer.h
    worker.cpp
    worker.h
-   audioplayer.cpp
-   audioplayer.h
-   
+
+   src/audio/audioplayer.cpp
+   src/audio/audioplayer.h
+   src/audio/pinsound.cpp
+   src/audio/pinsound.h
+   src/audio/wavread.cpp
+   src/audio/wavread.h
+
    src/core/player.cpp
    src/core/player.h
    src/core/Settings.cpp

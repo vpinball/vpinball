@@ -883,7 +883,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="pin3d.cpp" />
     <ClCompile Include="pinbinary.cpp" />
     <ClCompile Include="pininput.cpp" />
-    <ClCompile Include="pinsound.cpp" />
+    <ClCompile Include="src/audio/pinsound.cpp" />
     <ClCompile Include="src/parts/pintable.cpp" />
     <ClCompile Include="pinundo.cpp" />
     <ClCompile Include="src/core/player.cpp" />
@@ -920,10 +920,10 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="src/renderer/VertexBuffer.cpp" />
     <ClCompile Include="src/renderer/ViewSetup.cpp" />
     <ClCompile Include="vpinball.cpp" />
-    <ClCompile Include="media\wavread.cpp" />
+    <ClCompile Include="src/audio/wavread.cpp" />
     <ClCompile Include="wintimer.cpp" />
     <ClCompile Include="worker.cpp" />
-    <ClCompile Include="audioplayer.cpp" />
+    <ClCompile Include="src/audio/audioplayer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="vpinball.idl" />
@@ -1326,7 +1326,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="media\fileio.h" />
     <ClInclude Include="media\lzwreader.h" />
     <ClInclude Include="media\lzwwriter.h" />
-    <ClInclude Include="media\wavread.h" />
+    <ClInclude Include="src/audio/wavread.h" />
     <ClInclude Include="MemoryStatus.h" />
     <ClInclude Include="memutil.h" />
     <ClInclude Include="mesh.h" />
@@ -1367,7 +1367,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="pin3d.h" />
     <ClInclude Include="pinbinary.h" />
     <ClInclude Include="pininput.h" />
-    <ClInclude Include="pinsound.h" />
+    <ClInclude Include="src/audio/pinsound.h" />
     <ClInclude Include="src/parts/pintable.h" />
     <ClInclude Include="pinundo.h" />
     <ClInclude Include="src/physics/ball.h" />
@@ -1418,7 +1418,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="vpversion.h" />
     <ClInclude Include="wintimer.h" />
     <ClInclude Include="worker.h" />
-    <ClInclude Include="audioplayer.h" />
+    <ClInclude Include="src/audio/audioplayer.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="shader\BallShader.hlsl">
