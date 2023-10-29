@@ -283,36 +283,6 @@ add_executable(vpinball WIN32
    memutil.h
    mesh.cpp
    mesh.h
-   meshes/ballMesh.h
-   meshes/bulbLightMesh.h
-   meshes/bulbSocketMesh.h
-   meshes/bumperBaseMesh.h
-   meshes/bumperCapMesh.h
-   meshes/bumperRingMesh.h
-   meshes/bumperSocketMesh.h
-   meshes/dropTargetT2Mesh.h
-   meshes/dropTargetT3Mesh.h
-   meshes/dropTargetT4Mesh.h
-   meshes/flipperBase.h
-   meshes/gateBracketMesh.h
-   meshes/gateLongPlateMesh.h
-   meshes/gatePlateMesh.h
-   meshes/gateWireMesh.h
-   meshes/gateWireRectangleMesh.h
-   meshes/hitTargetFatRectangleMesh.h
-   meshes/hitTargetFatSquareMesh.h
-   meshes/hitTargetRectangleMesh.h
-   meshes/hitTargetRoundMesh.h
-   meshes/hitTargetT1SlimMesh.h
-   meshes/hitTargetT2SlimMesh.h
-   meshes/kickerCupMesh.h
-   meshes/kickerHitMesh.h
-   meshes/kickerHoleMesh.h
-   meshes/kickerSimpleHoleMesh.h
-   meshes/spinnerBracketMesh.h
-   meshes/spinnerPlateMesh.h
-   meshes/triggerSimpleMesh.h
-   meshes/triggerStarMesh.h
    mixer.cpp
    mixer.h
    paintsur.cpp
@@ -354,29 +324,43 @@ add_executable(vpinball WIN32
    audioplayer.cpp
    audioplayer.h
    
-   src/physics/ball.cpp
-   src/physics/ball.h
-   src/physics/collide.cpp
-   src/physics/collide.h
-   src/physics/collideex.cpp
-   src/physics/collideex.h
-   src/physics/hitable.h
-   src/physics/hitflipper.cpp
-   src/physics/hitflipper.h
-   src/physics/hitplunger.cpp
-   src/physics/hitplunger.h
-   src/physics/hittimer.h
-   src/physics/kdtree.cpp
-   src/physics/kdtree.h
-   src/physics/quadtree.cpp
-   src/physics/quadtree.h
-
    src/core/player.cpp
    src/core/player.h
    src/core/Settings.cpp
    src/core/Settings.h
    src/core/TableDB.cpp
    src/core/TableDB.h
+
+   src/meshes/ballMesh.h
+   src/meshes/bulbLightMesh.h
+   src/meshes/bulbSocketMesh.h
+   src/meshes/bumperBaseMesh.h
+   src/meshes/bumperCapMesh.h
+   src/meshes/bumperRingMesh.h
+   src/meshes/bumperSocketMesh.h
+   src/meshes/dropTargetT2Mesh.h
+   src/meshes/dropTargetT3Mesh.h
+   src/meshes/dropTargetT4Mesh.h
+   src/meshes/flipperBase.h
+   src/meshes/gateBracketMesh.h
+   src/meshes/gateLongPlateMesh.h
+   src/meshes/gatePlateMesh.h
+   src/meshes/gateWireMesh.h
+   src/meshes/gateWireRectangleMesh.h
+   src/meshes/hitTargetFatRectangleMesh.h
+   src/meshes/hitTargetFatSquareMesh.h
+   src/meshes/hitTargetRectangleMesh.h
+   src/meshes/hitTargetRoundMesh.h
+   src/meshes/hitTargetT1SlimMesh.h
+   src/meshes/hitTargetT2SlimMesh.h
+   src/meshes/kickerCupMesh.h
+   src/meshes/kickerHitMesh.h
+   src/meshes/kickerHoleMesh.h
+   src/meshes/kickerSimpleHoleMesh.h
+   src/meshes/spinnerBracketMesh.h
+   src/meshes/spinnerPlateMesh.h
+   src/meshes/triggerSimpleMesh.h
+   src/meshes/triggerStarMesh.h
 
    src/parts/ballex.cpp
    src/parts/ballex.h
@@ -420,6 +404,23 @@ add_executable(vpinball WIN32
    src/parts/timer.h
    src/parts/trigger.cpp
    src/parts/trigger.h
+
+   src/physics/ball.cpp
+   src/physics/ball.h
+   src/physics/collide.cpp
+   src/physics/collide.h
+   src/physics/collideex.cpp
+   src/physics/collideex.h
+   src/physics/hitable.h
+   src/physics/hitflipper.cpp
+   src/physics/hitflipper.h
+   src/physics/hitplunger.cpp
+   src/physics/hitplunger.h
+   src/physics/hittimer.h
+   src/physics/kdtree.cpp
+   src/physics/kdtree.h
+   src/physics/quadtree.cpp
+   src/physics/quadtree.h
 
    src/renderer/Anaglyph.cpp
    src/renderer/Anaglyph.h
