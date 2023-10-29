@@ -151,7 +151,7 @@ using std::vector;
 
 #include "worker.h"
 
-#include "audioplayer.h"
+#include "audio/audioplayer.h"
 #include "media/fileio.h"
 #include "pinundo.h"
 #include "iselect.h"
@@ -162,9 +162,9 @@ using std::vector;
 #include "media/lzwreader.h"
 #include "media/lzwwriter.h"
 
-#include "media/wavread.h"
+#include "audio/wavread.h"
 
-#include "pinsound.h"
+#include "audio/pinsound.h"
 #include "pinbinary.h"
 
 #include "extern.h"

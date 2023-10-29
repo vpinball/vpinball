@@ -43,7 +43,7 @@
     <ClCompile Include="pin3d.cpp" />
     <ClCompile Include="pinbinary.cpp" />
     <ClCompile Include="pininput.cpp" />
-    <ClCompile Include="pinsound.cpp" />
+    <ClCompile Include="src/audio/pinsound.cpp" />
     <ClCompile Include="src/parts/pintable.cpp" />
     <ClCompile Include="pinundo.cpp" />
     <ClCompile Include="src/core/player.cpp" />
@@ -63,10 +63,10 @@
     <ClCompile Include="variant.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="vpinball.cpp" />
-    <ClCompile Include="Media\wavread.cpp" />
+    <ClCompile Include="src/audio/wavread.cpp" />
     <ClCompile Include="wintimer.cpp" />
     <ClCompile Include="worker.cpp" />
-    <ClCompile Include="audioplayer.cpp" />
+    <ClCompile Include="src/audio/audioplayer.cpp" />
     <ClCompile Include="math\math.cpp" />
     <ClCompile Include="BlackBox.cpp" />
     <ClCompile Include="CrashHandler.cpp" />
@@ -991,7 +991,7 @@
     <ClInclude Include="pininput.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="pinsound.h">
+    <ClInclude Include="src/audio/pinsound.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="src/parts/pintable.h">
@@ -1084,7 +1084,7 @@
     <ClInclude Include="worker.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="audioplayer.h">
+    <ClInclude Include="src/audio/audioplayer.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="math\math.h">
@@ -1135,7 +1135,7 @@
     <ClInclude Include="math\vector.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="media\wavread.h">
+    <ClInclude Include="src/audio/wavread.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="BlackBox.h">
