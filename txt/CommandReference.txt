@@ -166,6 +166,7 @@ DMDColoredPixels(VARIANT) - set array of (long-)values (0..255,0..255,0..255), s
                                      DMDColoredPixels = myDMDdata
 
 *RenderingMode - returns the rendering mode: 0 = Normal 2D, 1 = Stereo 3D, 2 = VR
+DisableStaticPrerendering(bool) - Note that when setting to false, if needed, VPX will update the static prerender which can be lengthy
 
 Methods
 -------

@@ -963,7 +963,7 @@ The following methods only applies to mesh primitives with an animation sequence
 - add `LoadTexture` to the globals
 - add `DisableStaticPrerendering` to the globals
 - add `StagedLeftFlipperKey`, `StagedRightFlipperKey` and `JoyCustomKey`
-- add `TablesDirectory`, `MusicDirectory`, `ScriptsDirectory`, `PlatformOS`, `PlatformCPU`, `PlatformBits`, `ShowCursor` to the globals
+- add `TablesDirectory`, `MusicDirectory`, `ScriptsDirectory`, `PlatformOS`, `PlatformCPU`, `PlatformBits` and `ShowCursor` to the globals
 - add `Animate` event to Bumper, Light, Flipper, Gate, Spinner, Trigger, Targets and EMReel. This event is called when the object's visual properties are animated, in order to easily sync with custom visuals
 - add `CurrentAnimOffset` to the Trigger and Target elements
 - add `CurrentRingOffset` to the Bumper Element
@@ -972,6 +972,10 @@ The following methods only applies to mesh primitives with an animation sequence
 - add support for multiple custom DMDs by adding `DMDWidth`/`DMDHeight`/`DMDPixels`/`DMDColoredPixels` to flashers. The flasher will use the provided data if any, or defaults to the table data (captured or directly defined)
 - add `Shadows` property to Light element
 - add `EnableDepthMask` to the primitive element
+- `YieldTime` will now do nothing anymore
+
+### 10.7.4
+- add `Setting` property to the globals
 - document missing `GetTextFile`
 
 ### 10.7.2
