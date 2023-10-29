@@ -207,6 +207,8 @@ FIXES:
 
 - fix some problems with playing sounds via BASS: pitch/frequency change and loop/restart should now be matching the 'old' player
 
+- fix longstanding textbox font size bug
+
 - reflections now work in the interactive camera/light editing mode (F6) as well
 
 - fix overbrightness in F6 (interactive camera/light editing) mode
@@ -258,6 +260,8 @@ FIXES:
 - fix wrong keyboard characters in dialogs for non QWERTY keyboards
 
 - fix some problems with playing sounds via BASS: pitch/frequency change and loop/restart should now be matching the 'old' player
+
+- fix longstanding textbox font size bug
 
 - fix swapped red & blue channels when exporting from BMPs
 
