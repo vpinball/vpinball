@@ -959,6 +959,9 @@ STDMETHODIMP ScriptGlobalTable::LoadTexture(BSTR imageName, BSTR fileName)
    char szImageName[MAX_PATH], szFileName[MAX_PATH];
    WideCharToMultiByteNull(CP_ACP, 0, imageName, -1, szImageName, MAX_PATH, nullptr, nullptr);
    WideCharToMultiByteNull(CP_ACP, 0, fileName, -1, szFileName, MAX_PATH, nullptr, nullptr);
+   // Do not allow to load an image with the same name as one of the edited table as they would conflict
+   if (g_pplayer->m_pEditorTable->GetImage(szImageName))
+      return E_FAIL;
    Texture *image = m_pt->ImportImage(szFileName, szImageName);
    return image->m_pdsBuffer == nullptr ? E_FAIL : S_OK;
 }
