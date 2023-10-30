@@ -1393,8 +1393,11 @@ void Primitive::RenderObject()
       }
 
       // draw the mesh
-      pd3dDevice->DrawMesh(pd3dDevice->basicShader, is_reflection_only_pass || (!m_d.m_staticRendering && mat->m_bOpacityActive /* IsTransparent() */), m_d.m_vPosition, m_d.m_depthBias, 
-         m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_d.m_groupdRendering ? m_numGroupIndices : (DWORD)m_mesh.NumIndices());
+      pd3dDevice->DrawMesh(pd3dDevice->basicShader, 
+            is_reflection_only_pass // The reflection pass is an additive (so transparent) pass to be drawn after the opaque one
+         || refractions // Refractions must be rendered back to front since they rely on what is behind
+         || (mat->m_bOpacityActive && !m_d.m_staticRendering && !pd3dDevice->GetRenderState().IsOpaque() /* IsTransparent() */),
+            m_d.m_vPosition, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_d.m_groupdRendering ? m_numGroupIndices : (DWORD)m_mesh.NumIndices());
    }
 
    // also draw the back of the primitive faces
