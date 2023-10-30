@@ -1262,9 +1262,9 @@ void Primitive::RenderObject()
 
    // Request probes before setting up state since this can trigger a renderprobe update which modifies the render state
    RenderProbe * const refraction_probe = m_ptable->GetRenderProbe(m_d.m_szRefractionProbe);
-   RenderTarget * const refractions = refraction_probe ? refraction_probe->GetProbe(g_pplayer->IsRenderPass(Player::STATIC_PREPASS)) : nullptr;
+   RenderTarget * const refractions = refraction_probe ? refraction_probe->GetProbe(g_pplayer->IsRenderPass(Player::STATIC_ONLY)) : nullptr;
    RenderProbe * const reflection_probe = m_d.m_reflectionStrength <= 0 ? nullptr : m_ptable->GetRenderProbe(m_d.m_szReflectionProbe);
-   RenderTarget * const reflections = reflection_probe ? reflection_probe->GetProbe(g_pplayer->IsRenderPass(Player::STATIC_PREPASS)) : nullptr;
+   RenderTarget * const reflections = reflection_probe ? reflection_probe->GetProbe(g_pplayer->IsRenderPass(Player::STATIC_ONLY)) : nullptr;
 
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
 
@@ -1369,7 +1369,7 @@ void Primitive::RenderObject()
          n.Normalize();
          pd3dDevice->basicShader->SetVector(SHADER_mirrorNormal_factor, n.x, n.y, n.z, m_d.m_reflectionStrength);
          pd3dDevice->basicShader->SetTexture(SHADER_tex_reflection, reflections->GetColorSampler());
-         is_reflection_only_pass = m_d.m_staticRendering && !g_pplayer->IsRenderPass(Player::STATIC_PREPASS) && g_pplayer->IsUsingStaticPrepass();
+         is_reflection_only_pass = m_d.m_staticRendering && !g_pplayer->IsRenderPass(Player::STATIC_ONLY) && g_pplayer->IsUsingStaticPrepass();
          if (!is_reflection_only_pass && mat->m_bOpacityActive && (mat->m_fOpacity < 1.0f || (pin && pin->has_alpha())))
          { // Primitive uses alpha transparency => render in 2 passes, one for the texture with alpha blending, one for the reflections which can happen above a transparent part (like for a glass or insert plastic)
             pd3dDevice->basicShader->SetTechniqueMaterial(pin ? SHADER_TECHNIQUE_basic_with_texture : SHADER_TECHNIQUE_basic_without_texture, mat, nMap, false, false);

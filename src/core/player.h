@@ -619,11 +619,12 @@ public:
    bool m_scaleFX_DMD;
    enum RenderMask : unsigned int
    {
-      DEFAULT = 0,
-      STATIC_PREPASS = 1 << 0,
-      LIGHT_BUFFER = 1 << 1,
-      REFLECTION_PASS = 1 << 2,
-      DISABLE_LIGHTMAPS = 1 << 3
+      DEFAULT = 0, // Render everything
+      STATIC_ONLY = 1 << 0, // Disable non static part rendering (for static prerendering)
+      DYNAMIC_ONLY = 1 << 1, // Disable static part rendering
+      LIGHT_BUFFER = 1 << 2, // Transmitted light rendering
+      REFLECTION_PASS = 1 << 3,
+      DISABLE_LIGHTMAPS = 1 << 4
    };
    unsigned int m_render_mask = 0; // Active pass render bit mask
    inline bool IsRenderPass(const RenderMask pass_mask) const { return (m_render_mask & pass_mask) != 0; }

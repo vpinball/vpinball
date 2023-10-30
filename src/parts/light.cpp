@@ -335,12 +335,10 @@ void Light::EndPlay()
    // ensure not locked just in case the player exits during a LS sequence
    m_lockedByLS = false;
 
-   m_vvertex.clear();
-
    m_lightmaps.clear();
 
    IEditable::EndPlay();
-   FreeBuffers();
+   RenderRelease();
 }
 
 float Light::GetDepth(const Vertex3Ds& viewDir) const
@@ -356,314 +354,6 @@ void Light::UpdateBounds()
 void Light::ClearForOverwrite()
 {
    ClearPointsForOverwrite();
-}
-
-void Light::RenderBulbMesh()
-{
-   if (m_bulbLightMeshBuffer == nullptr) 
-      return; // FIXME will be null if started without a bulb, then activated from the LiveUI. Prevent the crash. WOuld be nicer to actually build the buffer if needed
-
-   RenderDevice *const pd3dDevice = m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-   RenderState initial_state;
-   pd3dDevice->CopyRenderStates(true, initial_state);
-
-   Material mat;
-   mat.m_cBase = 0x181818;
-   mat.m_fWrapLighting = 0.5f;
-   mat.m_bOpacityActive = false;
-   mat.m_fOpacity = 1.0f;
-   mat.m_cGlossy = 0xB4B4B4;
-   mat.m_type = Material::MaterialType::BASIC;
-   mat.m_fEdge = 1.0f;
-   mat.m_fEdgeAlpha = 1.0f;
-   mat.m_fRoughness = 0.9f;
-   mat.m_fGlossyImageLerp = 1.0f;
-   mat.m_fThickness = 0.05f;
-   mat.m_cClearcoat = 0;
-   pd3dDevice->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, mat);
-   pd3dDevice->basicShader->SetMaterial(&mat, false);
-   pd3dDevice->DrawMesh(pd3dDevice->basicShader, false /* IsTransparent() */, m_boundingSphereCenter, m_d.m_depthBias, m_bulbSocketMeshBuffer, RenderDevice::TRIANGLELIST, 0, bulbSocketNumFaces);
-
-   mat.m_cBase = 0;
-   mat.m_fWrapLighting = 0.5f;
-   mat.m_bOpacityActive = true;
-   mat.m_fOpacity = 0.2f;
-   mat.m_cGlossy = 0xFFFFFF;
-   mat.m_type = Material::MaterialType::BASIC;
-   mat.m_fEdge = 1.0f;
-   mat.m_fEdgeAlpha = 1.0f;
-   mat.m_fRoughness = 0.9f;
-   mat.m_fGlossyImageLerp = 1.0f;
-   mat.m_fThickness = 0.05f;
-   mat.m_cClearcoat = 0xFFFFFF;
-   pd3dDevice->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, mat);
-   pd3dDevice->basicShader->SetMaterial(&mat, false);
-   Vertex3Ds bulbPos(m_boundingSphereCenter.x, m_boundingSphereCenter.y, m_boundingSphereCenter.z + m_d.m_height);
-   pd3dDevice->DrawMesh(pd3dDevice->basicShader, true /* IsTransparent() */, bulbPos, m_d.m_depthBias, m_bulbLightMeshBuffer, RenderDevice::TRIANGLELIST, 0, bulbLightNumFaces);
-
-   pd3dDevice->CopyRenderStates(false, initial_state);
-}
-
-void Light::RenderDynamic()
-{
-   TRACE_FUNCTION();
-
-   if (!m_d.m_reflectionEnabled && g_pplayer->IsRenderPass(Player::REFLECTION_PASS))
-      return;
-
-   if (m_customMoverMeshBuffer == nullptr) // in case of degenerate light
-      return;
-
-   if (m_backglass && (!GetPTable()->GetDecalsEnabled() || g_pplayer->m_stereo3D == STEREO_VR))
-      return;
-
-   if (m_d.m_showBulbMesh && !m_d.m_staticBulbMesh && !g_pplayer->IsRenderPass(Player::LIGHT_BUFFER))
-      RenderBulbMesh();
-
-   if (!m_d.m_visible)
-      return;
-
-   Texture *offTexel = nullptr;
-
-   // early out all lights with no contribution
-   vec4 lightColor2_falloff_power = convertColor(m_d.m_color2, m_d.m_falloff_power);
-   vec4 lightColor_intensity = convertColor(m_d.m_color);
-   if (m_d.m_BulbLight ||
-      (!m_d.m_BulbLight && (m_surfaceTexture == (offTexel = m_ptable->GetImage(m_d.m_szImage))) && (offTexel != nullptr) && !m_backglass && !m_d.m_imageMode)) // assumes/requires that the light in this kind of state is basically -exactly- the same as the static/(un)lit playfield/surface and accompanying image
-   {
-      if (m_currentIntensity == 0.f)
-         return;
-      if (lightColor_intensity.x == 0.f && lightColor_intensity.y == 0.f && lightColor_intensity.z == 0.f &&
-         lightColor2_falloff_power.x == 0.f && lightColor2_falloff_power.y == 0.f && lightColor2_falloff_power.z == 0.f)
-         return;
-   }
-
-   // Tint color based on filament temperature
-   if (m_d.m_fader == FADER_INCANDESCENT)
-   {
-      float tint2700[3], tint[3];
-      bulb_filament_temperature_to_tint(2700, tint2700);
-      bulb_filament_temperature_to_tint(m_currentFilamentTemperature, tint);
-      lightColor_intensity.x *= tint[0] / tint2700[0];
-      lightColor_intensity.y *= tint[1] / tint2700[1];
-      lightColor_intensity.z *= tint[2] / tint2700[2];
-      lightColor2_falloff_power.x *= tint[0] / tint2700[0];
-      lightColor2_falloff_power.y *= tint[1] / tint2700[1];
-      lightColor2_falloff_power.z *= tint[2] / tint2700[2];
-   }
-
-   RenderDevice *const pd3dDevice = m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-   RenderState initial_state;
-   pd3dDevice->CopyRenderStates(true, initial_state);
-
-   if (m_backglass)
-   {
-      pd3dDevice->SetRenderStateDepthBias(0.0f);
-      pd3dDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
-   }
-   else
-   {
-      pd3dDevice->SetRenderStateDepthBias(-1.0f);
-      pd3dDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
-   }
-
-   if (m_backglass || (m_ptable->m_tblMirrorEnabled ^ g_pplayer->IsRenderPass(Player::REFLECTION_PASS)))
-      pd3dDevice->SetRenderStateCulling(RenderState::CULL_NONE);
-   else
-      pd3dDevice->SetRenderStateCulling(RenderState::CULL_CCW);
-
-   Vertex2D centerHUD;
-   centerHUD.x = m_d.m_vCenter.x;
-   centerHUD.y = m_d.m_vCenter.y;
-   if (m_backglass)
-   {
-      const float  mult = getBGxmult();
-      const float ymult = getBGymult();
-
-      centerHUD.x = centerHUD.x* mult - 0.5f;
-      centerHUD.y = centerHUD.y*ymult - 0.5f;
-   }
-   const vec4 center_range(centerHUD.x, centerHUD.y, GetCurrentHeight(), 1.0f / max(m_d.m_falloff, 0.1f));
-
-   if (m_d.m_showBulbMesh) // blend bulb mesh hull additive over "normal" bulb to approximate the emission directly reaching the camera
-   {
-      RenderState tmp_state;
-      pd3dDevice->CopyRenderStates(true, tmp_state);
-
-      pd3dDevice->lightShader->SetLightData(center_range);
-      pd3dDevice->lightShader->SetLightColor2FalloffPower(lightColor2_falloff_power);
-      pd3dDevice->lightShader->SetTechnique(SHADER_TECHNIQUE_bulb_light);
-
-      const Pin3D *const ppin3d = &g_pplayer->m_pin3d;
-      ppin3d->EnableAlphaBlend(false, false, false);
-      //pd3dDevice->SetRenderState(RenderState::SRCBLEND,  RenderState::SRC_ALPHA);  // add the lightcontribution
-      pd3dDevice->SetRenderState(RenderState::DESTBLEND, RenderState::INVSRC_COLOR); // but also modulate the light first with the underlying elements by (1+lightcontribution, e.g. a very crude approximation of real lighting)
-      pd3dDevice->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_REVSUBTRACT);
-
-      lightColor_intensity.w = m_currentIntensity * 0.02f; //!! make configurable?
-      if (m_d.m_BulbLight && g_pplayer->IsRenderPass(Player::LIGHT_BUFFER))
-         lightColor_intensity.w *= m_d.m_transmissionScale;
-      pd3dDevice->lightShader->SetLightColorIntensity(lightColor_intensity);
-      pd3dDevice->lightShader->SetFloat(SHADER_blend_modulate_vs_add, 0.00001f); // additive, but avoid full 0, as it disables the blend
-
-      Vertex3Ds bulbPos(m_boundingSphereCenter.x, m_boundingSphereCenter.y, m_boundingSphereCenter.z + m_d.m_height);
-      if (m_bulbLightMeshBuffer) // FIXME will be null if started without a bulb, then activated from the LiveUI. Prevent the crash. WOuld be nicer to actually build the buffer if needed
-         pd3dDevice->DrawMesh(pd3dDevice->lightShader, IsTransparent(), bulbPos, m_d.m_depthBias, m_bulbLightMeshBuffer, RenderDevice::TRIANGLELIST, 0, bulbLightNumFaces);
-
-      pd3dDevice->CopyRenderStates(false, tmp_state);
-   }
-
-   if (g_pplayer->IsRenderPass(Player::REFLECTION_PASS) && g_pplayer->IsRenderPass(Player::DISABLE_LIGHTMAPS))
-   {
-      pd3dDevice->CopyRenderStates(false, initial_state);
-      return;
-   }
-
-   Shader *shader = m_d.m_BulbLight ? pd3dDevice->lightShader : pd3dDevice->classicLightShader;
-   shader->SetLightData(center_range);
-   shader->SetLightColor2FalloffPower(lightColor2_falloff_power);
-   lightColor_intensity.w = m_currentIntensity;
-   if (g_pplayer->IsRenderPass(Player::LIGHT_BUFFER))
-      lightColor_intensity.w *= m_d.m_transmissionScale;
-   shader->SetLightColorIntensity(lightColor_intensity);
-
-   if (!m_d.m_BulbLight)
-   {
-      shader->SetLightImageBackglassMode(m_d.m_imageMode, m_backglass);
-      shader->SetMaterial(m_surfaceMaterial);
-      if (offTexel != nullptr)
-      {
-         shader->SetTechniqueMaterial(SHADER_TECHNIQUE_light_with_texture, m_surfaceMaterial);
-         shader->SetTexture(SHADER_tex_light_color, offTexel, SF_TRILINEAR, SA_CLAMP, SA_CLAMP);
-         // TOTAN and Flintstones inserts break if alpha blending is disabled here.
-         // Also see below if changing again
-         if (!m_backglass)
-         {
-            pd3dDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
-            pd3dDevice->SetRenderState(RenderState::SRCBLEND, RenderState::ONE);
-            pd3dDevice->SetRenderState(RenderState::DESTBLEND, RenderState::ONE);
-         }
-      }
-      else
-         shader->SetTechniqueMaterial(SHADER_TECHNIQUE_light_without_texture, m_surfaceMaterial);
-   }
-   else
-   {
-      const Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-      ppin3d->EnableAlphaBlend(false, false, false);
-      //pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  RenderDevice::SRC_ALPHA);  // add the lightcontribution
-      pd3dDevice->SetRenderState(RenderState::DESTBLEND, RenderState::INVSRC_COLOR); // but also modulate the light first with the underlying elements by (1+lightcontribution, e.g. a very crude approximation of real lighting)
-      pd3dDevice->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_REVSUBTRACT);
-      shader->SetFloat(SHADER_blend_modulate_vs_add, !g_pplayer->IsRenderPass(Player::LIGHT_BUFFER) ? clamp(m_d.m_modulate_vs_add, 0.00001f, 0.9999f) : 0.00001f); // avoid 0, as it disables the blend and avoid 1 as it looks not good with day->night changes // in the separate bulb light render stage only enable additive
-      shader->SetTechnique(m_d.m_shadows == ShadowMode::RAYTRACED_BALL_SHADOWS ? SHADER_TECHNIQUE_bulb_light_with_ball_shadows : SHADER_TECHNIQUE_bulb_light);
-   }
-
-   // (maybe) update, then render light shape
-   if (m_updateBulbLightHeight)
-   {
-      if (m_d.m_BulbLight && !m_backglass)
-         UpdateCustomMoverVBuffer();
-
-      m_updateBulbLightHeight = false;
-   }
-
-   if (m_backglass)
-   {
-      Matrix3D matWorldViewProj[2]; // MVP to move from back buffer space (0..w, 0..h) to clip space (-1..1, -1..1)
-      matWorldViewProj[0].SetIdentity();
-      matWorldViewProj[0]._11 = 2.0f / (float)pd3dDevice->GetMSAABackBufferTexture()->GetWidth();
-      matWorldViewProj[0]._41 = -1.0f;
-      matWorldViewProj[0]._22 = -2.0f / (float)pd3dDevice->GetMSAABackBufferTexture()->GetHeight();
-      matWorldViewProj[0]._42 = 1.0f;
-      #ifdef ENABLE_SDL
-      if (shader == pd3dDevice->lightShader)
-      {
-         const int eyes = pd3dDevice->GetCurrentRenderTarget()->m_nLayers;
-         if (eyes > 1)
-            memcpy(&matWorldViewProj[1], &matWorldViewProj[0], 4 * 4 * sizeof(float));
-         shader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj[0].m[0][0], eyes);
-      }
-      else
-      {
-         struct
-         {
-            Matrix3D matWorld;
-            Matrix3D matView;
-            Matrix3D matWorldView;
-            Matrix3D matWorldViewInverseTranspose;
-            Matrix3D matWorldViewProj[2];
-         } matrices;
-         memcpy(&matrices.matWorldViewProj[0], &matWorldViewProj[0], 4 * 4 * sizeof(float));
-         memcpy(&matrices.matWorldViewProj[1], &matWorldViewProj[0], 4 * 4 * sizeof(float));
-         shader->SetUniformBlock(SHADER_basicMatrixBlock, &matrices.matWorld.m[0][0]);
-      }
-      #else
-      shader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj[0]);
-      #endif
-   }
-
-   Vertex3Ds pos0(0.f, 0.f, 0.f);
-   Vertex3Ds haloPos(m_boundingSphereCenter.x, m_boundingSphereCenter.y, m_surfaceHeight);
-   pd3dDevice->DrawMesh(shader, IsTransparent(), m_backglass ? pos0 : haloPos, m_backglass ? 0.f : m_d.m_depthBias, m_customMoverMeshBuffer, RenderDevice::TRIANGLELIST, 0, m_customMoverIndexNum);
-
-   // Restore state
-   if (m_backglass)
-      g_pplayer->UpdateBasicShaderMatrix();
-   pd3dDevice->CopyRenderStates(false, initial_state);
-}
-
-void Light::PrepareMoversCustom()
-{
-   GetRgVertex(m_vvertex);
-
-   if (m_vvertex.empty())
-      return;
-
-   m_maxDist = 0.f;
-   vector<WORD> vtri;
-
-   {
-      vector<unsigned int> vpoly(m_vvertex.size());
-      const unsigned int cvertex = (unsigned int)m_vvertex.size();
-      for (unsigned int i = 0; i < cvertex; i++)
-      {
-         vpoly[i] = i;
-
-         const float dx = m_vvertex[i].x - m_d.m_vCenter.x;
-         const float dy = m_vvertex[i].y - m_d.m_vCenter.y;
-         const float dist = dx*dx + dy*dy;
-         if (dist > m_maxDist)
-            m_maxDist = dist;
-      }
-
-      PolygonToTriangles(m_vvertex, vpoly, vtri, true);
-   }
-
-   delete m_customMoverMeshBuffer;
-
-   if (vtri.empty())
-   {
-      char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
-      WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), nullptr, nullptr);
-      char textBuffer[MAX_PATH];
-      _snprintf_s(textBuffer, MAX_PATH-1, "%s has an invalid shape! It can not be rendered!", name);
-      ShowError(textBuffer);
-      return;
-   }
-
-   m_customMoverVertexNum = (unsigned int)m_vvertex.size();
-   VertexBuffer *customMoverVBuffer = new VertexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_customMoverVertexNum, nullptr, true);
-
-   m_customMoverIndexNum = (unsigned int)vtri.size();
-   IndexBuffer* customMoverIBuffer = new IndexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_customMoverIndexNum, 0, IndexBuffer::FMT_INDEX16);
-   WORD* bufi;
-   customMoverIBuffer->lock(0, 0, (void**)&bufi, IndexBuffer::WRITEONLY);
-   memcpy(bufi, vtri.data(), vtri.size()*sizeof(WORD));
-   customMoverIBuffer->unlock();
-
-   m_customMoverMeshBuffer = new MeshBuffer(m_wzName + L".Lightmap"s, customMoverVBuffer, customMoverIBuffer, true);
-
-   UpdateCustomMoverVBuffer();
 }
 
 void Light::UpdateCustomMoverVBuffer()
@@ -724,79 +414,6 @@ void Light::UpdateCustomMoverVBuffer()
       buf[t].nz = 1.0f;
    }
    m_customMoverMeshBuffer->m_vb->unlock();
-}
-
-void Light::RenderSetup()
-{
-   bulb_init();
-
-   m_iblinkframe = 0;
-   m_updateBulbLightHeight = false;
-
-   m_initSurfaceHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
-   m_surfaceMaterial = m_ptable->GetSurfaceMaterial(m_d.m_szSurface);
-   m_surfaceTexture = m_ptable->GetSurfaceImage(m_d.m_szSurface);
-
-   m_surfaceHeight = m_initSurfaceHeight;
-   
-   UpdateBounds();
-
-   if (m_inPlayState == (float)LightStateBlinking)
-      RestartBlinker(g_pplayer->m_time_msec);
-   else if (m_duration > 0 && m_inPlayState != 0.f)
-      m_timerDurationEndTime = g_pplayer->m_time_msec + m_duration;
-
-   const float state = (m_inPlayState == (float)LightStateBlinking) ? (m_d.m_rgblinkpattern[m_iblinkframe] == '1') : m_inPlayState;
-   m_currentFilamentTemperature = (state < 0.5f) ? 293.0 : 2700.0;
-   m_currentIntensity = m_d.m_intensity * m_d.m_intensity_scale * state;
-
-   if (m_d.m_showBulbMesh)
-   {
-      // Bulb is always rendered at surface level which correspond to the base of the glass
-      // Note: the distance between the light (emitting point) and the bulb base (bulb mesh origin) is 28 for a bulb with a radius of 20
-      const float bulb_z = m_surfaceHeight;
-
-      delete m_bulbLightMeshBuffer;
-      IndexBuffer* bulbLightIndexBuffer = new IndexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bulbLightNumFaces, bulbLightIndices);
-      VertexBuffer* bulbLightVBuffer = new VertexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bulbLightNumVertices);
-      m_bulbLightMeshBuffer = new MeshBuffer(m_wzName + L".Bulb"s, bulbLightVBuffer, bulbLightIndexBuffer, true);
-
-      Vertex3D_NoTex2 *buf;
-      bulbLightVBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
-      for (unsigned int i = 0; i < bulbLightNumVertices; i++)
-      {
-         buf[i].x = bulbLight[i].x*m_d.m_meshRadius + m_d.m_vCenter.x;
-         buf[i].y = bulbLight[i].y*m_d.m_meshRadius + m_d.m_vCenter.y;
-         buf[i].z = bulbLight[i].z*m_d.m_meshRadius + bulb_z;
-         buf[i].nx = bulbLight[i].nx;
-         buf[i].ny = bulbLight[i].ny;
-         buf[i].nz = bulbLight[i].nz;
-         buf[i].tu = bulbLight[i].tu;
-         buf[i].tv = bulbLight[i].tv;
-      }
-      bulbLightVBuffer->unlock();
-
-      delete m_bulbSocketMeshBuffer;
-      IndexBuffer* bulbSocketIndexBuffer = new IndexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bulbSocketNumFaces, bulbSocketIndices);
-      VertexBuffer *bulbSocketVBuffer = new VertexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bulbSocketNumVertices);
-      m_bulbSocketMeshBuffer = new MeshBuffer(m_wzName + L".Socket"s, bulbSocketVBuffer, bulbSocketIndexBuffer, true);
-
-      bulbSocketVBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
-      for (unsigned int i = 0; i < bulbSocketNumVertices; i++)
-      {
-         buf[i].x = bulbSocket[i].x*m_d.m_meshRadius + m_d.m_vCenter.x;
-         buf[i].y = bulbSocket[i].y*m_d.m_meshRadius + m_d.m_vCenter.y;
-         buf[i].z = bulbSocket[i].z*m_d.m_meshRadius + bulb_z;
-         buf[i].nx = bulbSocket[i].nx;
-         buf[i].ny = bulbSocket[i].ny;
-         buf[i].nz = bulbSocket[i].nz;
-         buf[i].tu = bulbSocket[i].tu;
-         buf[i].tv = bulbSocket[i].tv;
-      }
-      bulbSocketVBuffer->unlock();
-   }
-
-   PrepareMoversCustom();
 }
 
 void Light::AddLightmap(IEditable *lightmap)
@@ -874,10 +491,395 @@ void Light::UpdateAnimation(const float diff_time_msec)
    }
 }
 
-void Light::RenderStatic()
+// Deprecated Legacy API to be removed
+void Light::RenderSetup() { }
+void Light::RenderStatic() { }
+void Light::RenderDynamic() { }
+
+void Light::RenderSetup(RenderDevice *device)
 {
-   if (m_d.m_showBulbMesh && m_d.m_staticBulbMesh)
-      RenderBulbMesh();
+   assert(m_rd == nullptr);
+   m_rd = device;
+
+   bulb_init();
+
+   m_iblinkframe = 0;
+   m_updateBulbLightHeight = false;
+
+   m_initSurfaceHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
+   m_surfaceMaterial = m_ptable->GetSurfaceMaterial(m_d.m_szSurface);
+   m_surfaceTexture = m_ptable->GetSurfaceImage(m_d.m_szSurface);
+
+   m_surfaceHeight = m_initSurfaceHeight;
+   
+   UpdateBounds();
+
+   if (m_inPlayState == (float)LightStateBlinking)
+      RestartBlinker(g_pplayer->m_time_msec);
+   else if (m_duration > 0 && m_inPlayState != 0.f)
+      m_timerDurationEndTime = g_pplayer->m_time_msec + m_duration;
+
+   const float state = (m_inPlayState == (float)LightStateBlinking) ? (m_d.m_rgblinkpattern[m_iblinkframe] == '1') : m_inPlayState;
+   m_currentFilamentTemperature = (state < 0.5f) ? 293.0 : 2700.0;
+   m_currentIntensity = m_d.m_intensity * m_d.m_intensity_scale * state;
+
+   if (m_d.m_showBulbMesh)
+   {
+      // Bulb is always rendered at surface level which correspond to the base of the glass
+      // Note: the distance between the light (emitting point) and the bulb base (bulb mesh origin) is 28 for a bulb with a radius of 20
+      const float bulb_z = m_surfaceHeight;
+
+      delete m_bulbLightMeshBuffer;
+      IndexBuffer *bulbLightIndexBuffer = new IndexBuffer(m_rd, bulbLightNumFaces, bulbLightIndices);
+      VertexBuffer *bulbLightVBuffer = new VertexBuffer(m_rd, bulbLightNumVertices);
+      m_bulbLightMeshBuffer = new MeshBuffer(m_wzName + L".Bulb"s, bulbLightVBuffer, bulbLightIndexBuffer, true);
+
+      Vertex3D_NoTex2 *buf;
+      bulbLightVBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+      for (unsigned int i = 0; i < bulbLightNumVertices; i++)
+      {
+         buf[i].x = bulbLight[i].x*m_d.m_meshRadius + m_d.m_vCenter.x;
+         buf[i].y = bulbLight[i].y*m_d.m_meshRadius + m_d.m_vCenter.y;
+         buf[i].z = bulbLight[i].z*m_d.m_meshRadius + bulb_z;
+         buf[i].nx = bulbLight[i].nx;
+         buf[i].ny = bulbLight[i].ny;
+         buf[i].nz = bulbLight[i].nz;
+         buf[i].tu = bulbLight[i].tu;
+         buf[i].tv = bulbLight[i].tv;
+      }
+      bulbLightVBuffer->unlock();
+
+      delete m_bulbSocketMeshBuffer;
+      IndexBuffer *bulbSocketIndexBuffer = new IndexBuffer(m_rd, bulbSocketNumFaces, bulbSocketIndices);
+      VertexBuffer *bulbSocketVBuffer = new VertexBuffer(m_rd, bulbSocketNumVertices);
+      m_bulbSocketMeshBuffer = new MeshBuffer(m_wzName + L".Socket"s, bulbSocketVBuffer, bulbSocketIndexBuffer, true);
+
+      bulbSocketVBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+      for (unsigned int i = 0; i < bulbSocketNumVertices; i++)
+      {
+         buf[i].x = bulbSocket[i].x*m_d.m_meshRadius + m_d.m_vCenter.x;
+         buf[i].y = bulbSocket[i].y*m_d.m_meshRadius + m_d.m_vCenter.y;
+         buf[i].z = bulbSocket[i].z*m_d.m_meshRadius + bulb_z;
+         buf[i].nx = bulbSocket[i].nx;
+         buf[i].ny = bulbSocket[i].ny;
+         buf[i].nz = bulbSocket[i].nz;
+         buf[i].tu = bulbSocket[i].tu;
+         buf[i].tv = bulbSocket[i].tv;
+      }
+      bulbSocketVBuffer->unlock();
+   }
+
+   GetRgVertex(m_vvertex);
+
+   if (m_vvertex.empty())
+      return;
+
+   m_maxDist = 0.f;
+   vector<WORD> vtri;
+
+   {
+      vector<unsigned int> vpoly(m_vvertex.size());
+      const unsigned int cvertex = (unsigned int)m_vvertex.size();
+      for (unsigned int i = 0; i < cvertex; i++)
+      {
+         vpoly[i] = i;
+
+         const float dx = m_vvertex[i].x - m_d.m_vCenter.x;
+         const float dy = m_vvertex[i].y - m_d.m_vCenter.y;
+         const float dist = dx*dx + dy*dy;
+         if (dist > m_maxDist)
+            m_maxDist = dist;
+      }
+
+      PolygonToTriangles(m_vvertex, vpoly, vtri, true);
+   }
+
+   delete m_customMoverMeshBuffer;
+
+   if (vtri.empty())
+   {
+      char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
+      WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), nullptr, nullptr);
+      char textBuffer[MAX_PATH];
+      _snprintf_s(textBuffer, MAX_PATH-1, "%s has an invalid shape! It can not be rendered!", name);
+      ShowError(textBuffer);
+      return;
+   }
+
+   m_customMoverVertexNum = (unsigned int)m_vvertex.size();
+   VertexBuffer *customMoverVBuffer = new VertexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_customMoverVertexNum, nullptr, true);
+
+   m_customMoverIndexNum = (unsigned int)vtri.size();
+   IndexBuffer* customMoverIBuffer = new IndexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_customMoverIndexNum, 0, IndexBuffer::FMT_INDEX16);
+   WORD* bufi;
+   customMoverIBuffer->lock(0, 0, (void**)&bufi, IndexBuffer::WRITEONLY);
+   memcpy(bufi, vtri.data(), vtri.size()*sizeof(WORD));
+   customMoverIBuffer->unlock();
+
+   m_customMoverMeshBuffer = new MeshBuffer(m_wzName + L".Lightmap"s, customMoverVBuffer, customMoverIBuffer, true);
+
+   UpdateCustomMoverVBuffer();
+}
+
+void Light::Render(const unsigned int renderMask)
+{
+   assert(m_rd != nullptr);
+   const bool isStaticOnly = renderMask & Player::STATIC_ONLY;
+   const bool isDynamicOnly = renderMask & Player::DYNAMIC_ONLY;
+   const bool isLightBuffer = renderMask & Player::LIGHT_BUFFER;
+   const bool isReflectionPass = renderMask & Player::REFLECTION_PASS;
+   TRACE_FUNCTION();
+
+   RenderState initialState;
+   m_rd->CopyRenderStates(true, initialState);
+
+   // Bulb model
+   // FIXME m_bulbLightMeshBuffer will be null if started without a bulb, then activated from the LiveUI. This prevent the crash but it would be nicer to ensure LiveUI do RenderRelease/RenderSetup on toggle
+   if (m_d.m_showBulbMesh && m_d.m_visible && m_bulbLightMeshBuffer != nullptr 
+      && ((m_d.m_reflectionEnabled && !m_backglass) || !isReflectionPass)
+      && !isLightBuffer)
+   {
+      Material mat;
+      if (!isDynamicOnly) // Glass is always static (since bulbs are not movable)
+      {
+         mat.m_cBase = 0x181818;
+         mat.m_fWrapLighting = 0.5f;
+         mat.m_bOpacityActive = false;
+         mat.m_fOpacity = 1.0f;
+         mat.m_cGlossy = 0xB4B4B4;
+         mat.m_type = Material::MaterialType::BASIC;
+         mat.m_fEdge = 1.0f;
+         mat.m_fEdgeAlpha = 1.0f;
+         mat.m_fRoughness = 0.9f;
+         mat.m_fGlossyImageLerp = 1.0f;
+         mat.m_fThickness = 0.05f;
+         mat.m_cClearcoat = 0;
+         m_rd->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, mat);
+         m_rd->basicShader->SetMaterial(&mat, false);
+         m_rd->DrawMesh(m_rd->basicShader, false, m_boundingSphereCenter, m_d.m_depthBias, m_bulbSocketMeshBuffer, RenderDevice::TRIANGLELIST, 0, bulbSocketNumFaces);
+      }
+      if ((!isDynamicOnly && m_d.m_staticBulbMesh) || (!isStaticOnly && !m_d.m_staticBulbMesh))
+      {
+         mat.m_cBase = 0;
+         mat.m_fWrapLighting = 0.5f;
+         mat.m_bOpacityActive = true;
+         mat.m_fOpacity = 0.2f;
+         mat.m_cGlossy = 0xFFFFFF;
+         mat.m_type = Material::MaterialType::BASIC;
+         mat.m_fEdge = 1.0f;
+         mat.m_fEdgeAlpha = 1.0f;
+         mat.m_fRoughness = 0.9f;
+         mat.m_fGlossyImageLerp = 1.0f;
+         mat.m_fThickness = 0.05f;
+         mat.m_cClearcoat = 0xFFFFFF;
+         m_rd->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, mat);
+         m_rd->basicShader->SetMaterial(&mat, false);
+         Vertex3Ds bulbPos(m_boundingSphereCenter.x, m_boundingSphereCenter.y, m_boundingSphereCenter.z + m_d.m_height);
+         m_rd->DrawMesh(m_rd->basicShader, true, bulbPos, m_d.m_depthBias, m_bulbLightMeshBuffer, RenderDevice::TRIANGLELIST, 0, bulbLightNumFaces);
+      }
+   }
+
+   // Lightmap
+   if (!isStaticOnly
+      && m_d.m_visible
+      && ((m_d.m_reflectionEnabled && ! m_backglass) || !isReflectionPass)
+      && (m_customMoverMeshBuffer != nullptr) // in case of degenerate light
+      && (!m_backglass || (GetPTable()->GetDecalsEnabled() && g_pplayer->m_stereo3D != STEREO_VR)))
+   {
+      Texture *offTexel = nullptr;
+
+      // early out all lights with no contribution
+      vec4 lightColor2_falloff_power = convertColor(m_d.m_color2, m_d.m_falloff_power);
+      vec4 lightColor_intensity = convertColor(m_d.m_color);
+      if (m_d.m_BulbLight ||
+         (!m_d.m_BulbLight && (m_surfaceTexture == (offTexel = m_ptable->GetImage(m_d.m_szImage))) && (offTexel != nullptr) && !m_backglass && !m_d.m_imageMode)) // assumes/requires that the light in this kind of state is basically -exactly- the same as the static/(un)lit playfield/surface and accompanying image
+      {
+         if (m_currentIntensity == 0.f)
+         {
+            m_rd->CopyRenderStates(false, initialState);
+            return;
+         }
+         if (lightColor_intensity.x == 0.f && lightColor_intensity.y == 0.f && lightColor_intensity.z == 0.f &&
+            lightColor2_falloff_power.x == 0.f && lightColor2_falloff_power.y == 0.f && lightColor2_falloff_power.z == 0.f)
+         {
+            m_rd->CopyRenderStates(false, initialState);
+            return;
+         }
+      }
+
+      // Tint color based on filament temperature
+      if (m_d.m_fader == FADER_INCANDESCENT)
+      {
+         float tint2700[3], tint[3];
+         bulb_filament_temperature_to_tint(2700, tint2700);
+         bulb_filament_temperature_to_tint(m_currentFilamentTemperature, tint);
+         lightColor_intensity.x *= tint[0] / tint2700[0];
+         lightColor_intensity.y *= tint[1] / tint2700[1];
+         lightColor_intensity.z *= tint[2] / tint2700[2];
+         lightColor2_falloff_power.x *= tint[0] / tint2700[0];
+         lightColor2_falloff_power.y *= tint[1] / tint2700[1];
+         lightColor2_falloff_power.z *= tint[2] / tint2700[2];
+      }
+
+      if (m_backglass)
+      {
+         m_rd->SetRenderStateDepthBias(0.0f);
+         m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
+      }
+      else
+      {
+         m_rd->SetRenderStateDepthBias(-1.0f);
+         m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
+      }
+
+      if (m_backglass || (m_ptable->m_tblMirrorEnabled ^ isReflectionPass))
+         m_rd->SetRenderStateCulling(RenderState::CULL_NONE);
+      else
+         m_rd->SetRenderStateCulling(RenderState::CULL_CCW);
+
+      Vertex2D centerHUD(m_d.m_vCenter.x, m_d.m_vCenter.y);
+      if (m_backglass)
+      {
+         centerHUD.x = centerHUD.x * getBGxmult() - 0.5f;
+         centerHUD.y = centerHUD.y * getBGymult() - 0.5f;
+      }
+      const vec4 center_range(centerHUD.x, centerHUD.y, GetCurrentHeight(), 1.0f / max(m_d.m_falloff, 0.1f));
+
+      if (m_d.m_showBulbMesh) // blend bulb mesh hull additive over "normal" bulb to approximate the emission directly reaching the camera
+      {
+         RenderState tmp_state;
+         m_rd->CopyRenderStates(true, tmp_state);
+
+         m_rd->lightShader->SetLightData(center_range);
+         m_rd->lightShader->SetLightColor2FalloffPower(lightColor2_falloff_power);
+         m_rd->lightShader->SetTechnique(SHADER_TECHNIQUE_bulb_light);
+
+         const Pin3D *const ppin3d = &g_pplayer->m_pin3d;
+         ppin3d->EnableAlphaBlend(false, false, false);
+         //m_rd->SetRenderState(RenderState::SRCBLEND,  RenderState::SRC_ALPHA);  // add the lightcontribution
+         m_rd->SetRenderState(RenderState::DESTBLEND, RenderState::INVSRC_COLOR); // but also modulate the light first with the underlying elements by (1+lightcontribution, e.g. a very crude approximation of real lighting)
+         m_rd->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_REVSUBTRACT);
+
+         lightColor_intensity.w = m_currentIntensity * 0.02f; //!! make configurable?
+         //lightColor_intensity.w = m_currentIntensity * 0.5f;
+         if (m_d.m_BulbLight && g_pplayer->IsRenderPass(Player::LIGHT_BUFFER))
+            lightColor_intensity.w *= m_d.m_transmissionScale;
+         m_rd->lightShader->SetLightColorIntensity(lightColor_intensity);
+         m_rd->lightShader->SetFloat(SHADER_blend_modulate_vs_add, 0.00001f); // additive, but avoid full 0, as it disables the blend
+
+         Vertex3Ds bulbPos(m_boundingSphereCenter.x, m_boundingSphereCenter.y, m_boundingSphereCenter.z + m_d.m_height);
+         if (m_bulbLightMeshBuffer) // FIXME will be null if started without a bulb, then activated from the LiveUI. Prevent the crash. WOuld be nicer to actually build the buffer if needed
+            m_rd->DrawMesh(m_rd->lightShader, IsTransparent(), bulbPos, m_d.m_depthBias, m_bulbLightMeshBuffer, RenderDevice::TRIANGLELIST, 0, bulbLightNumFaces);
+
+         m_rd->CopyRenderStates(false, tmp_state);
+      }
+
+      if (isReflectionPass && (renderMask & Player::DISABLE_LIGHTMAPS) != 0)
+      {
+         m_rd->CopyRenderStates(false, initialState);
+         return;
+      }
+
+      Shader *shader = m_d.m_BulbLight ? m_rd->lightShader : m_rd->classicLightShader;
+      shader->SetLightData(center_range);
+      shader->SetLightColor2FalloffPower(lightColor2_falloff_power);
+      lightColor_intensity.w = m_currentIntensity;
+      if (g_pplayer->IsRenderPass(Player::LIGHT_BUFFER))
+         lightColor_intensity.w *= m_d.m_transmissionScale;
+      shader->SetLightColorIntensity(lightColor_intensity);
+
+      if (!m_d.m_BulbLight)
+      {
+         shader->SetLightImageBackglassMode(m_d.m_imageMode, m_backglass);
+         shader->SetMaterial(m_surfaceMaterial);
+         if (offTexel != nullptr)
+         {
+            shader->SetTechniqueMaterial(SHADER_TECHNIQUE_light_with_texture, m_surfaceMaterial);
+            shader->SetTexture(SHADER_tex_light_color, offTexel, SF_TRILINEAR, SA_CLAMP, SA_CLAMP);
+            // TOTAN and Flintstones inserts break if alpha blending is disabled here.
+            // Also see below if changing again
+            if (!m_backglass)
+            {
+               m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
+               m_rd->SetRenderState(RenderState::SRCBLEND, RenderState::ONE);
+               m_rd->SetRenderState(RenderState::DESTBLEND, RenderState::ONE);
+            }
+         }
+         else
+            shader->SetTechniqueMaterial(SHADER_TECHNIQUE_light_without_texture, m_surfaceMaterial);
+      }
+      else
+      {
+         const Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+         ppin3d->EnableAlphaBlend(false, false, false);
+         //m_rd->SetRenderState(RenderDevice::SRCBLEND,  RenderDevice::SRC_ALPHA);  // add the lightcontribution
+         m_rd->SetRenderState(RenderState::DESTBLEND, RenderState::INVSRC_COLOR); // but also modulate the light first with the underlying elements by (1+lightcontribution, e.g. a very crude approximation of real lighting)
+         m_rd->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_REVSUBTRACT);
+         shader->SetFloat(SHADER_blend_modulate_vs_add, !g_pplayer->IsRenderPass(Player::LIGHT_BUFFER) ? clamp(m_d.m_modulate_vs_add, 0.00001f, 0.9999f) : 0.00001f); // avoid 0, as it disables the blend and avoid 1 as it looks not good with day->night changes // in the separate bulb light render stage only enable additive
+         shader->SetTechnique(m_d.m_shadows == ShadowMode::RAYTRACED_BALL_SHADOWS ? SHADER_TECHNIQUE_bulb_light_with_ball_shadows : SHADER_TECHNIQUE_bulb_light);
+      }
+
+      // (maybe) update, then render light shape
+      if (m_updateBulbLightHeight)
+      {
+         if (m_d.m_BulbLight && !m_backglass)
+            UpdateCustomMoverVBuffer();
+
+         m_updateBulbLightHeight = false;
+      }
+
+      if (m_backglass)
+      {
+         Matrix3D matWorldViewProj[2]; // MVP to move from back buffer space (0..w, 0..h) to clip space (-1..1, -1..1)
+         matWorldViewProj[0].SetIdentity();
+         matWorldViewProj[0]._11 = 2.0f / (float)m_rd->GetMSAABackBufferTexture()->GetWidth();
+         matWorldViewProj[0]._41 = -1.0f;
+         matWorldViewProj[0]._22 = -2.0f / (float)m_rd->GetMSAABackBufferTexture()->GetHeight();
+         matWorldViewProj[0]._42 = 1.0f;
+         #ifdef ENABLE_SDL
+         if (shader == m_rd->lightShader)
+         {
+            const int eyes = m_rd->GetCurrentRenderTarget()->m_nLayers;
+            if (eyes > 1)
+               memcpy(&matWorldViewProj[1], &matWorldViewProj[0], 4 * 4 * sizeof(float));
+            shader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj[0].m[0][0], eyes);
+         }
+         else
+         {
+            struct
+            {
+               Matrix3D matWorld;
+               Matrix3D matView;
+               Matrix3D matWorldView;
+               Matrix3D matWorldViewInverseTranspose;
+               Matrix3D matWorldViewProj[2];
+            } matrices;
+            memcpy(&matrices.matWorldViewProj[0], &matWorldViewProj[0], 4 * 4 * sizeof(float));
+            memcpy(&matrices.matWorldViewProj[1], &matWorldViewProj[0], 4 * 4 * sizeof(float));
+            shader->SetUniformBlock(SHADER_basicMatrixBlock, &matrices.matWorld.m[0][0]);
+         }
+         #else
+         shader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj[0]);
+         #endif
+      }
+
+      Vertex3Ds pos0(0.f, 0.f, 0.f);
+      Vertex3Ds haloPos(m_boundingSphereCenter.x, m_boundingSphereCenter.y, m_surfaceHeight);
+      m_rd->DrawMesh(shader, IsTransparent(), m_backglass ? pos0 : haloPos, m_backglass ? 0.f : m_d.m_depthBias, m_customMoverMeshBuffer, RenderDevice::TRIANGLELIST, 0, m_customMoverIndexNum);
+   }
+
+   // Restore state
+   if (m_backglass)
+      g_pplayer->UpdateBasicShaderMatrix();
+   m_rd->CopyRenderStates(false, initialState);
+}
+
+void Light::RenderRelease()
+{
+   assert(m_rd != nullptr);
+   m_rd = nullptr;
+   m_vvertex.clear();
+   FreeBuffers();
 }
 
 void Light::SetObjectPos()
