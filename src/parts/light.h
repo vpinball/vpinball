@@ -132,6 +132,17 @@ public:
    void PutPointCenter(const Vertex2D& pv) final;
    float GetCurrentHeight() const { return m_backglass ? 0.0f : m_initSurfaceHeight + m_d.m_height; }
 
+   virtual void RenderSetup(RenderDevice *device);
+   virtual void Render(const unsigned int renderMask);
+   virtual void RenderRelease();
+
+protected:
+   void UpdateCustomMoverVBuffer();
+   void FreeBuffers();
+
+   RenderDevice *m_rd = nullptr;
+
+public:
    bool IsTransparent() const final { return m_d.m_BulbLight || (m_surfaceMaterial && m_surfaceMaterial->m_bOpacityActive); }
    bool RenderToLightBuffer() const final { return m_d.m_BulbLight && (m_d.m_transmissionScale > 0.f) && !m_backglass; }
    float GetDepth(const Vertex3Ds& viewDir) const final;
@@ -146,17 +157,10 @@ public:
    STDMETHOD(GetInPlayStateBool)(/*[out, retval]*/ VARIANT_BOOL* pVal);
    STDMETHOD(GetInPlayIntensity)(/*[out, retval]*/ float *pVal);
 
-   void PrepareMoversCustom();
-   void UpdateCustomMoverVBuffer();
-
-   void FreeBuffers();
-
    void InitShape();
    void setInPlayState(const float newVal);
 
    void RenderOutline(Sur *const psur);
-
-   void RenderBulbMesh();
 
    Light *CopyForPlay(PinTable *live_table);
 

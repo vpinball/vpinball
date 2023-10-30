@@ -1577,7 +1577,7 @@ HRESULT Player::Init()
                   }
                   // For dynamic modes (VR, head tracking,...) mark all preloaded textures as static only
                   // This will make the cache wrong for the next non static run but it will rebuild, while the opposite would not (all preloads would stay as not prerender only)
-                  m_render_mask = (!IsUsingStaticPrepass() || preRenderOnly) ? STATIC_PREPASS : DEFAULT;
+                  m_render_mask = (!IsUsingStaticPrepass() || preRenderOnly) ? STATIC_ONLY : DEFAULT;
                   m_pin3d.m_pd3dPrimaryDevice->m_texMan.LoadTexture(tex->m_pdsBuffer, (SamplerFilter)filter, (SamplerAddressMode)clampU, (SamplerAddressMode)clampV, linearRGB);
                   PLOGI << "Texture preloading: '" << name << "'";
                }
@@ -1628,7 +1628,7 @@ HRESULT Player::Init()
    for (RenderProbe* probe : m_ptable->m_vrenderprobe)
       probe->RenderSetup();
    for (Hitable* hitable : m_vhitables)
-      hitable->RenderSetup();
+      hitable->RenderSetup(m_pin3d.m_pd3dPrimaryDevice);
 
    // Initialize lighting (maybe move to pin3d ? in InitLights ?)
    const vec4 st(m_ptable->m_envEmissionScale*m_globalEmissionScale, m_pin3d.m_envTexture ? (float)m_pin3d.m_envTexture->m_height/*+m_pin3d.m_envTexture->m_width)*0.5f*/ : (float)m_pin3d.m_builtinEnvTexture.m_height/*+m_pin3d.m_builtinEnvTexture.m_width)*0.5f*/, 0.f, 0.f); //!! dto.
@@ -1808,7 +1808,7 @@ void Player::RenderStaticPrepass()
    TRACE_FUNCTION();
 
    m_pin3d.m_pd3dPrimaryDevice->FlushRenderFrame();
-   m_render_mask |= STATIC_PREPASS;
+   m_render_mask |= STATIC_ONLY;
 
    // The code will fail if the static render target is MSAA (the copy operation we are performing is not allowed)
    delete m_staticPrepassRT;
@@ -1867,7 +1867,8 @@ void Player::RenderStaticPrepass()
 
          // Render static parts
          UpdateBasicShaderMatrix();
-         DrawStatics();
+         for (Hitable *hitable : m_vhitables)
+            hitable->Render(m_render_mask);
          m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(false, initial_state);
 
          // Rendering is done to the static render target then accumulated to accumulationSurface
@@ -1990,7 +1991,8 @@ void Player::RenderStaticPrepass()
          for (size_t i = 0; i < m_ptable->m_vrenderprobe.size(); ++i)
             m_ptable->m_vrenderprobe[i]->MarkDirty();
          UpdateBasicShaderMatrix();
-         DrawStatics();
+         for (Hitable *hitable : m_vhitables)
+            hitable->Render(m_render_mask);
          m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(false, initial_state);
          m_pin3d.m_pd3dPrimaryDevice->FlushRenderFrame();
       }
@@ -2016,7 +2018,7 @@ void Player::RenderStaticPrepass()
 
    g_pvp->ProfileLog("Static PreRender End"s);
    
-   m_render_mask &= ~STATIC_PREPASS;
+   m_render_mask &= ~STATIC_ONLY;
    m_pin3d.m_pd3dPrimaryDevice->FlushRenderFrame();
 }
 
@@ -3195,7 +3197,7 @@ void Player::DrawBulbLightBuffer()
    p3dDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE); // disable all z-tests as zbuffer is in different resolution
    for (Hitable *hitable : m_vhitables)
       if (hitable->RenderToLightBuffer())
-         hitable->RenderDynamic();
+         hitable->Render(m_render_mask);
    m_render_mask &= ~LIGHT_BUFFER;
 
    bool hasLight = p3dDevice->GetCurrentPass()->GetCommandCount() > 1;
@@ -3272,10 +3274,12 @@ void Player::RenderDynamics()
    if (m_pin3d.m_backGlass != nullptr)
       m_pin3d.m_backGlass->Render();
 
-   if (!IsUsingStaticPrepass())
-      DrawStatics();
-
-   DrawDynamics(false);
+   m_render_mask = IsUsingStaticPrepass() ? DYNAMIC_ONLY : DEFAULT;
+   DrawBulbLightBuffer();
+   for (Hitable *hitable : m_vhitables)
+      hitable->Render(m_render_mask);
+   DrawBalls();
+   m_render_mask = DEFAULT;
    
    m_pin3d.m_pd3dPrimaryDevice->basicShader->SetTextureNull(SHADER_tex_base_transmission); // need to reset the bulb light texture, as its used as render target for bloom again
 
@@ -4532,15 +4536,18 @@ void Player::DrawStatics()
    // - Counter clockwise culling
    // - Write all channels (RGBA + Depth)
    #endif
+   const unsigned int mask = m_render_mask;
+   m_render_mask |= STATIC_ONLY;
    for (Hitable *hitable : m_vhitables)
    {
-      hitable->RenderStatic();
+      hitable->Render(m_render_mask);
       #ifdef DEBUG
       m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(true, live_state);
       assert(initial_state.m_state == live_state.m_state);
       assert(initial_state.m_depthBias == live_state.m_depthBias);
       #endif
    }
+   m_render_mask = mask;
 }
 
 void Player::DrawDynamics(bool onlyBalls)
@@ -4563,15 +4570,18 @@ void Player::DrawDynamics(bool onlyBalls)
       DrawBulbLightBuffer();
 
       // Draw all parts
+      const unsigned int mask = m_render_mask;
+      m_render_mask |= DYNAMIC_ONLY;
       for (Hitable *hitable : m_vhitables)
       {
-         hitable->RenderDynamic();
+         hitable->Render(m_render_mask);
          #ifdef DEBUG
          m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(true, live_state);
          assert(initial_state.m_state == live_state.m_state);
          assert(initial_state.m_depthBias == live_state.m_depthBias);
          #endif
       }
+      m_render_mask = mask;
    }
 
    DrawBalls();

@@ -33,7 +33,7 @@ Sampler* TextureManager::LoadTexture(BaseTexture* memtex, const SamplerFilter fi
       entry.clampV = clampV;
       entry.filter = filter;
       entry.forceLinearRGB = force_linear_rgb;
-      entry.preRenderOnly = g_pplayer->IsRenderPass(Player::STATIC_PREPASS);
+      entry.preRenderOnly = g_pplayer->IsRenderPass(Player::STATIC_ONLY);
       m_map[memtex] = entry;
       return entry.sampler;
    }
@@ -51,7 +51,7 @@ Sampler* TextureManager::LoadTexture(BaseTexture* memtex, const SamplerFilter fi
       entry.clampV = clampV;
       entry.filter = filter;
       entry.forceLinearRGB = force_linear_rgb;
-      entry.preRenderOnly &= g_pplayer->IsRenderPass(Player::STATIC_PREPASS);
+      entry.preRenderOnly &= g_pplayer->IsRenderPass(Player::STATIC_ONLY);
       return entry.sampler;
    }
 }
