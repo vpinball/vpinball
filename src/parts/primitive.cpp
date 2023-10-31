@@ -220,7 +220,7 @@ Primitive::Primitive()
 Primitive::~Primitive()
 {
    WaitForMeshDecompression(); //!! needed nowadays due to multithreaded mesh decompression
-   delete m_meshBuffer;
+   assert(m_rd == nullptr); // RenderRelease must be explicitely called before deleting this object
 }
 
 Primitive *Primitive::CopyForPlay(PinTable *live_table)
@@ -661,18 +661,11 @@ void Primitive::SetupHitObject(vector<HitObject*> &pvho, HitObject * obj)
 
 void Primitive::EndPlay()
 {
-   m_vhoCollidable.clear();
-
-   delete m_meshBuffer;
-   m_meshBuffer = nullptr;
-   m_vertexBufferRegenerate = true;
-
    m_d.m_skipRendering = false;
    m_d.m_groupdRendering = false;
-
-   m_lightmap = nullptr;
-
+   m_vhoCollidable.clear();
    IEditable::EndPlay();
+   RenderRelease();
 }
 
 //////////////////////////////
@@ -1231,231 +1224,16 @@ void Primitive::ExportMesh(ObjLoader& loader)
    }
 }
 
-void Primitive::RenderObject()
+// Deprecated Legacy API to be removed
+void Primitive::RenderSetup() { }
+void Primitive::RenderStatic() { }
+void Primitive::RenderDynamic() { }
+
+void Primitive::RenderSetup(RenderDevice *device)
 {
-   RenderDevice *const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-   RenderState initial_state;
-   pd3dDevice->CopyRenderStates(true, initial_state);
-   
-   if (m_d.m_groupdRendering)
-      m_fullMatrix.SetIdentity();
-   else
-   {
-      RecalculateMatrices();
-      if (m_vertexBufferRegenerate)
-      {
-         m_mesh.UploadToVB(m_meshBuffer->m_vb, m_currentFrame);
-         m_vertexBufferRegenerate = false;
-      }
-   }
+   assert(m_rd == nullptr);
+   m_rd = device;
 
-   // Update playfield primitive settings from table settings
-   SamplerFilter pinf = SF_UNDEFINED; // Use the default filtering of the sampler (trilinear or anisotropic, depending on user choice)
-   if (m_d.m_useAsPlayfield)
-   {
-      m_d.m_szMaterial = g_pplayer->m_ptable->m_playfieldMaterial;
-      m_d.m_szImage = g_pplayer->m_ptable->m_image;
-      m_d.m_szReflectionProbe = PLAYFIELD_REFLECTION_RENDERPROBE_NAME;
-      m_d.m_reflectionStrength = m_ptable->m_playfieldReflectionStrength;
-      pinf = SF_ANISOTROPIC;
-   }
-
-   // Request probes before setting up state since this can trigger a renderprobe update which modifies the render state
-   RenderProbe * const refraction_probe = m_ptable->GetRenderProbe(m_d.m_szRefractionProbe);
-   RenderTarget * const refractions = refraction_probe ? refraction_probe->GetProbe(g_pplayer->IsRenderPass(Player::STATIC_ONLY)) : nullptr;
-   RenderProbe * const reflection_probe = m_d.m_reflectionStrength <= 0 ? nullptr : m_ptable->GetRenderProbe(m_d.m_szReflectionProbe);
-   RenderTarget * const reflections = reflection_probe ? reflection_probe->GetProbe(g_pplayer->IsRenderPass(Player::STATIC_ONLY)) : nullptr;
-
-   const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
-
-   const bool depthMask = m_d.m_useDepthMask && !m_d.m_addBlend;
-
-   pd3dDevice->SetRenderStateDepthBias(0.f);
-   pd3dDevice->SetRenderStateCulling(depthMask ? ((m_d.m_backfacesEnabled && mat->m_bOpacityActive) ? RenderState::CULL_CW : RenderState::CULL_CCW) : RenderState::CULL_NONE);
-
-   if (m_d.m_disableLightingTop != 0.f || m_d.m_disableLightingBelow != 0.f)
-      // Force disable light from below for objects marked as static since there is no light from below during pre-render pass (to get the same result in dynamic mode & static mode)
-      pd3dDevice->basicShader->SetVector(SHADER_fDisableLighting_top_below, m_d.m_disableLightingTop, m_d.m_staticRendering ? 1.0f : m_d.m_disableLightingBelow, 0.f, 0.f);
-
-   // Select textures, replacing backglass image by capture if it is available
-   Texture * const nMap = m_ptable->GetImage(m_d.m_szNormalMap);
-   BaseTexture *pin = nullptr;
-   if (g_pplayer->m_texPUP && m_d.m_isBackGlassImage)
-   {
-      pin = g_pplayer->m_texPUP;
-      pd3dDevice->basicShader->SetAlphaTestValue(0.f);
-   }
-   else
-   {
-      Texture * const img = m_ptable->GetImage(m_d.m_szImage);
-      if (img != nullptr)
-      {
-         pin = img->m_pdsBuffer;
-         pd3dDevice->basicShader->SetAlphaTestValue(img->m_alphaTestValue * (float)(1.0 / 255.0));
-      }
-      else
-      {
-         pin = nullptr;
-      }
-   }
-
-   // accommodate models with UV coords outside of [0,1] by using Repeat address mode
-   if (pin && nMap)
-   {
-      pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, pin, pinf, SA_REPEAT, SA_REPEAT);
-      pd3dDevice->basicShader->SetTexture(SHADER_tex_base_normalmap, nMap, SF_UNDEFINED, SA_REPEAT, SA_REPEAT, true);
-      pd3dDevice->basicShader->SetBool(SHADER_objectSpaceNormalMap, m_d.m_objectSpaceNormalMap);
-      pd3dDevice->basicShader->SetMaterial(mat, pin->has_alpha() || m_d.m_alpha != 100.f);
-   }
-   else if (pin)
-   {
-      pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, pin, pinf, SA_REPEAT, SA_REPEAT);
-      pd3dDevice->basicShader->SetMaterial(mat, pin->has_alpha() || m_d.m_alpha != 100.f);
-   }
-   else
-   {
-      pd3dDevice->basicShader->SetMaterial(mat, m_d.m_alpha != 100.f);
-   }
-
-   // set transform
-   g_pplayer->UpdateBasicShaderMatrix(m_fullMatrix);
-
-   // Check if this primitive is used as a lightmap and should be convoluted with the light shadows
-   bool lightmap = m_lightmap != nullptr && m_lightmap->m_d.m_shadows == ShadowMode::RAYTRACED_BALL_SHADOWS;
-   if (lightmap)
-      pd3dDevice->basicShader->SetVector(SHADER_lightCenter_doShadow, m_lightmap->m_d.m_vCenter.x, m_lightmap->m_d.m_vCenter.y, m_lightmap->GetCurrentHeight(), 1.0f);
-
-   if (m_d.m_addBlend)
-   {
-      // Additive blending is a special unlit mode with depth mask disabled
-      g_pplayer->m_pin3d.EnableAlphaBlend(true);
-      pd3dDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
-      const vec4 color = convertColor(m_d.m_color, m_d.m_alpha * (float)(1.0 / 100.0));
-      pd3dDevice->basicShader->SetVector(SHADER_staticColor_Alpha, color.x * color.w, color.y * color.w, color.z * color.w, color.w);
-      ShaderTechniques tech = lightmap ? (pin ? SHADER_TECHNIQUE_unshaded_with_texture_shadow : SHADER_TECHNIQUE_unshaded_without_texture_shadow)
-                                       : (pin ? SHADER_TECHNIQUE_unshaded_with_texture : SHADER_TECHNIQUE_unshaded_without_texture);
-      pd3dDevice->basicShader->SetTechnique(tech);
-      pd3dDevice->DrawMesh(pd3dDevice->basicShader, true, m_d.m_vPosition, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_d.m_groupdRendering ? m_numGroupIndices : (DWORD)m_mesh.NumIndices());
-   }
-   else
-   {
-      // Default lit primitive rendering
-
-      // Setup for applying refractions from screen space probe
-      if (refractions)
-      {
-         const vec4 color = convertColor(mat->m_cRefractionTint, m_d.m_refractionThickness);
-         pd3dDevice->basicShader->SetVector(SHADER_refractionTint_thickness, &color);
-         pd3dDevice->basicShader->SetTexture(SHADER_tex_refraction, refractions->GetColorSampler());
-         pd3dDevice->basicShader->SetTexture(SHADER_tex_probe_depth, refractions->GetDepthSampler());
-         pd3dDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
-      }
-
-      pd3dDevice->SetRenderState(RenderState::ZWRITEENABLE, depthMask ? RenderState::RS_TRUE : RenderState::RS_FALSE);
-      const vec4 color = convertColor(m_d.m_color, m_d.m_alpha * (float)(1.0 / 100.0));
-      pd3dDevice->basicShader->SetVector(SHADER_staticColor_Alpha, &color);
-
-      bool is_reflection_only_pass = false;
-
-      // setup for applying reflections from reflection probe
-      if (reflections)
-      {
-         pd3dDevice->AddRenderTargetDependency(reflections);
-         vec3 plane_normal;
-         reflection_probe->GetReflectionPlaneNormal(plane_normal);
-         Matrix3D matWorldViewInverseTranspose = g_pplayer->m_pin3d.GetMVP().GetModelViewInverseTranspose();
-         matWorldViewInverseTranspose.MultiplyVectorNoTranslate(plane_normal, plane_normal);
-         Vertex3Ds n(plane_normal.x, plane_normal.y, plane_normal.z);
-         n.Normalize();
-         pd3dDevice->basicShader->SetVector(SHADER_mirrorNormal_factor, n.x, n.y, n.z, m_d.m_reflectionStrength);
-         pd3dDevice->basicShader->SetTexture(SHADER_tex_reflection, reflections->GetColorSampler());
-         is_reflection_only_pass = m_d.m_staticRendering && !g_pplayer->IsRenderPass(Player::STATIC_ONLY) && g_pplayer->IsUsingStaticPrepass();
-         if (!is_reflection_only_pass && mat->m_bOpacityActive && (mat->m_fOpacity < 1.0f || (pin && pin->has_alpha())))
-         { // Primitive uses alpha transparency => render in 2 passes, one for the texture with alpha blending, one for the reflections which can happen above a transparent part (like for a glass or insert plastic)
-            pd3dDevice->basicShader->SetTechniqueMaterial(pin ? SHADER_TECHNIQUE_basic_with_texture : SHADER_TECHNIQUE_basic_without_texture, mat, nMap, false, false);
-            pd3dDevice->DrawMesh(pd3dDevice->basicShader, !m_d.m_staticRendering && mat->m_bOpacityActive /* IsTransparent() */, m_d.m_vPosition, m_d.m_depthBias, 
-               m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_d.m_groupdRendering ? m_numGroupIndices : (DWORD)m_mesh.NumIndices());
-            is_reflection_only_pass = true;
-         }
-      }
-
-      if (is_reflection_only_pass)
-      { // If the primitive is already rendered (dynamic pass after a static prepass, or multipass rendering due to alpha blending) => only render additive reflections (primitive itself is already rendered in the static prepass)
-         g_pplayer->m_pin3d.EnableAlphaBlend(true);
-         pd3dDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
-         pd3dDevice->basicShader->SetTechnique(SHADER_TECHNIQUE_basic_refl_only_without_texture);
-      }
-      else
-      {
-         if (refractions != nullptr && !is_reflection_only_pass)
-            pd3dDevice->AddRenderTargetDependencyOnNextRenderCommand(refractions); // Add a renderpass dependency on the render command (instead of in the renderframe) for the pass to be sorted with the command
-         pd3dDevice->basicShader->SetTechniqueMaterial(pin ? SHADER_TECHNIQUE_basic_with_texture : SHADER_TECHNIQUE_basic_without_texture, mat, nMap, reflections, refractions);
-      }
-
-      // draw the mesh
-      pd3dDevice->DrawMesh(pd3dDevice->basicShader, 
-            is_reflection_only_pass // The reflection pass is an additive (so transparent) pass to be drawn after the opaque one
-         || refractions // Refractions must be rendered back to front since they rely on what is behind
-         || (mat->m_bOpacityActive && !m_d.m_staticRendering && !pd3dDevice->GetRenderState().IsOpaque() /* IsTransparent() */),
-            m_d.m_vPosition, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_d.m_groupdRendering ? m_numGroupIndices : (DWORD)m_mesh.NumIndices());
-   }
-
-   // also draw the back of the primitive faces
-   if (depthMask && m_d.m_backfacesEnabled && mat->m_bOpacityActive)
-   {
-      pd3dDevice->SetRenderStateCulling(RenderState::CULL_CCW);
-      pd3dDevice->DrawMesh(pd3dDevice->basicShader, mat->m_bOpacityActive /* IsTransparent() */, m_d.m_vPosition, m_d.m_depthBias, 
-         m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_d.m_groupdRendering ? m_numGroupIndices : (DWORD)m_mesh.NumIndices());
-   }
-
-   // Restore state
-   g_pplayer->UpdateBasicShaderMatrix();
-   pd3dDevice->basicShader->SetVector(SHADER_mirrorNormal_factor, 0.f, 0.f, 0.f, 0.f);
-   pd3dDevice->basicShader->SetVector(SHADER_lightCenter_doShadow, 0.0f, 0.0f, 0.0f, 0.0f);
-   pd3dDevice->basicShader->SetVector(SHADER_staticColor_Alpha, 1.0f, 1.0f, 1.0f, 1.0f);
-   pd3dDevice->basicShader->SetVector(SHADER_fDisableLighting_top_below, 0.f, 0.f, 0.f, 0.f);
-   pd3dDevice->CopyRenderStates(false, initial_state);
-}
-
-// Always called each frame to render over everything else (along with alpha ramps)
-void Primitive::RenderDynamic()
-{
-   TRACE_FUNCTION();
-
-   if (m_d.m_staticRendering)
-   {
-      if (!g_pplayer->IsUsingStaticPrepass())
-         return; // don't render in dynamic mode since object will be rendered during 'static' pass
-      RenderProbe *reflection_probe = m_ptable->GetRenderProbe(m_d.m_szReflectionProbe);
-      if (reflection_probe == nullptr || reflection_probe->IsRendering() || reflection_probe->GetProbe(false) == nullptr)
-         return; // don't render static except if we have dynamic reflections to render above the staticly prerendered primitive
-   }
-   if (m_lockedByLS)
-   {
-       //don't render in LS when state off
-       if (!m_inPlayState) return;
-   }
-   else
-   {
-       if (!m_d.m_visible || m_d.m_skipRendering)
-           return;
-       if (g_pplayer->IsRenderPass(Player::REFLECTION_PASS) && !m_d.m_reflectionEnabled)
-           return;
-       if (m_d.m_addBlend)
-       {
-          const vec4 color = convertColor(m_d.m_color, m_d.m_alpha * (float)(1.0 / 100.0));
-          if (color.w == 0.f)
-             return;
-          if (color.x == 0.f && color.y == 0.f && color.z == 0.f)
-             return;
-       }
-   }
-
-   RenderObject();
-}
-
-void Primitive::RenderSetup()
-{
    if (m_d.m_groupdRendering || m_d.m_skipRendering)
       return;
 
@@ -1481,6 +1259,232 @@ void Primitive::RenderSetup()
    m_vertexBufferRegenerate = false;
 }
 
+void Primitive::RenderRelease()
+{
+   assert(m_rd != nullptr);
+   delete m_meshBuffer;
+   m_meshBuffer = nullptr;
+   if (m_lightmap)
+      m_lightmap->RemoveLightmap(this);
+   m_lightmap = nullptr;
+   m_rd = nullptr;
+}
+
+void Primitive::Render(const unsigned int renderMask)
+{
+   assert(m_rd != nullptr);
+   const bool isStaticOnly = renderMask & Player::STATIC_ONLY;
+   const bool isDynamicOnly = renderMask & Player::DYNAMIC_ONLY;
+   const bool isReflectionPass = renderMask & Player::REFLECTION_PASS;
+   TRACE_FUNCTION();
+
+   // Update playfield primitive settings from table settings
+   SamplerFilter pinf = SF_UNDEFINED; // Use the default filtering of the sampler (trilinear or anisotropic, depending on user choice)
+   if (m_d.m_useAsPlayfield)
+   {
+      m_d.m_szMaterial = g_pplayer->m_ptable->m_playfieldMaterial;
+      m_d.m_szImage = g_pplayer->m_ptable->m_image;
+      m_d.m_szReflectionProbe = PLAYFIELD_REFLECTION_RENDERPROBE_NAME;
+      m_d.m_reflectionStrength = m_ptable->m_playfieldReflectionStrength;
+      pinf = SF_ANISOTROPIC;
+   }
+
+   // Do not render ourself inside our reflection probe (no self reflection)
+   RenderProbe * const reflection_probe = m_d.m_reflectionStrength <= 0 ? nullptr : m_ptable->GetRenderProbe(m_d.m_szReflectionProbe);
+   if (reflection_probe != nullptr && reflection_probe->IsRendering())
+      return;
+
+   if (!m_d.m_visible || m_d.m_skipRendering)
+      return;
+   
+   if (isReflectionPass && !m_d.m_reflectionEnabled)
+      return;
+   
+   if (isStaticOnly && !m_d.m_staticRendering)
+      return;
+   
+   // Don't render in LS when state off (visibility driven by light sequencer)
+   if (m_lockedByLS && !m_inPlayState)
+      return;
+   
+   if (m_d.m_addBlend && (m_d.m_color == 0 || m_d.m_alpha == 0.f))
+      return;
+
+   // only render if we have dynamic reflections to render above the staticly prerendered primitive
+   if (isDynamicOnly && m_d.m_staticRendering && (reflection_probe == nullptr || reflection_probe->GetProbe(false) == nullptr))
+      return; 
+
+   // Request probes before setting up state since this can trigger a renderprobe update which modifies the render state
+   RenderProbe * const refraction_probe = m_ptable->GetRenderProbe(m_d.m_szRefractionProbe);
+   RenderTarget * const refractions = refraction_probe ? refraction_probe->GetProbe(isStaticOnly) : nullptr;
+   RenderTarget * const reflections = reflection_probe ? reflection_probe->GetProbe(isStaticOnly) : nullptr;
+
+   RenderState initial_state;
+   m_rd->CopyRenderStates(true, initial_state);
+   
+   if (m_d.m_groupdRendering)
+      m_fullMatrix.SetIdentity();
+   else
+   {
+      RecalculateMatrices();
+      if (m_vertexBufferRegenerate)
+      {
+         m_mesh.UploadToVB(m_meshBuffer->m_vb, m_currentFrame);
+         m_vertexBufferRegenerate = false;
+      }
+   }
+
+   const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
+
+   const bool depthMask = m_d.m_useDepthMask && !m_d.m_addBlend;
+
+   m_rd->SetRenderStateDepthBias(0.f);
+   m_rd->SetRenderStateCulling(depthMask ? ((m_d.m_backfacesEnabled && mat->m_bOpacityActive) ? RenderState::CULL_CW : RenderState::CULL_CCW) : RenderState::CULL_NONE);
+
+   if (m_d.m_disableLightingTop != 0.f || m_d.m_disableLightingBelow != 0.f)
+      // Force disable light from below for objects marked as static since there is no light from below during pre-render pass (to get the same result in dynamic mode & static mode)
+      m_rd->basicShader->SetVector(SHADER_fDisableLighting_top_below, m_d.m_disableLightingTop, m_d.m_staticRendering ? 1.0f : m_d.m_disableLightingBelow, 0.f, 0.f);
+
+   // Select textures, replacing backglass image by capture if it is available
+   Texture * const nMap = m_ptable->GetImage(m_d.m_szNormalMap);
+   BaseTexture *pin = nullptr;
+   if (g_pplayer->m_texPUP && m_d.m_isBackGlassImage)
+   {
+      pin = g_pplayer->m_texPUP;
+      m_rd->basicShader->SetAlphaTestValue(0.f);
+   }
+   else
+   {
+      Texture * const img = m_ptable->GetImage(m_d.m_szImage);
+      if (img != nullptr)
+      {
+         pin = img->m_pdsBuffer;
+         m_rd->basicShader->SetAlphaTestValue(img->m_alphaTestValue * (float)(1.0 / 255.0));
+      }
+      else
+      {
+         pin = nullptr;
+      }
+   }
+
+   // accommodate models with UV coords outside of [0,1] by using Repeat address mode
+   if (pin && nMap)
+   {
+      m_rd->basicShader->SetTexture(SHADER_tex_base_color, pin, pinf, SA_REPEAT, SA_REPEAT);
+      m_rd->basicShader->SetTexture(SHADER_tex_base_normalmap, nMap, SF_UNDEFINED, SA_REPEAT, SA_REPEAT, true);
+      m_rd->basicShader->SetBool(SHADER_objectSpaceNormalMap, m_d.m_objectSpaceNormalMap);
+      m_rd->basicShader->SetMaterial(mat, pin->has_alpha() || m_d.m_alpha != 100.f);
+   }
+   else if (pin)
+   {
+      m_rd->basicShader->SetTexture(SHADER_tex_base_color, pin, pinf, SA_REPEAT, SA_REPEAT);
+      m_rd->basicShader->SetMaterial(mat, pin->has_alpha() || m_d.m_alpha != 100.f);
+   }
+   else
+   {
+      m_rd->basicShader->SetMaterial(mat, m_d.m_alpha != 100.f);
+   }
+
+   // set transform
+   g_pplayer->UpdateBasicShaderMatrix(m_fullMatrix);
+
+   // Check if this primitive is used as a lightmap and should be convoluted with the light shadows
+   bool lightmap = m_lightmap != nullptr && m_lightmap->m_d.m_shadows == ShadowMode::RAYTRACED_BALL_SHADOWS;
+   if (lightmap)
+      m_rd->basicShader->SetVector(SHADER_lightCenter_doShadow, m_lightmap->m_d.m_vCenter.x, m_lightmap->m_d.m_vCenter.y, m_lightmap->GetCurrentHeight(), 1.0f);
+
+   if (m_d.m_addBlend)
+   {
+      // Additive blending is a special unlit mode with depth mask disabled
+      m_rd->EnableAlphaBlend(true);
+      m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
+      const vec4 color = convertColor(m_d.m_color, m_d.m_alpha * (float)(1.0 / 100.0));
+      m_rd->basicShader->SetVector(SHADER_staticColor_Alpha, color.x * color.w, color.y * color.w, color.z * color.w, color.w);
+      ShaderTechniques tech = lightmap ? (pin ? SHADER_TECHNIQUE_unshaded_with_texture_shadow : SHADER_TECHNIQUE_unshaded_without_texture_shadow)
+                                       : (pin ? SHADER_TECHNIQUE_unshaded_with_texture : SHADER_TECHNIQUE_unshaded_without_texture);
+      m_rd->basicShader->SetTechnique(tech);
+      m_rd->DrawMesh(m_rd->basicShader, true, m_d.m_vPosition, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_d.m_groupdRendering ? m_numGroupIndices : (DWORD)m_mesh.NumIndices());
+   }
+   else
+   {
+      // Default lit primitive rendering
+
+      // Setup for applying refractions from screen space probe
+      if (refractions)
+      {
+         const vec4 color = convertColor(mat->m_cRefractionTint, m_d.m_refractionThickness);
+         m_rd->basicShader->SetVector(SHADER_refractionTint_thickness, &color);
+         m_rd->basicShader->SetTexture(SHADER_tex_refraction, refractions->GetColorSampler());
+         m_rd->basicShader->SetTexture(SHADER_tex_probe_depth, refractions->GetDepthSampler());
+         m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
+      }
+
+      m_rd->SetRenderState(RenderState::ZWRITEENABLE, depthMask ? RenderState::RS_TRUE : RenderState::RS_FALSE);
+      const vec4 color = convertColor(m_d.m_color, m_d.m_alpha * (float)(1.0 / 100.0));
+      m_rd->basicShader->SetVector(SHADER_staticColor_Alpha, &color);
+
+      bool is_reflection_only_pass = false;
+
+      // setup for applying reflections from reflection probe
+      if (reflections)
+      {
+         m_rd->AddRenderTargetDependency(reflections);
+         vec3 plane_normal;
+         reflection_probe->GetReflectionPlaneNormal(plane_normal);
+         Matrix3D matWorldViewInverseTranspose = g_pplayer->m_pin3d.GetMVP().GetModelViewInverseTranspose();
+         matWorldViewInverseTranspose.MultiplyVectorNoTranslate(plane_normal, plane_normal);
+         Vertex3Ds n(plane_normal.x, plane_normal.y, plane_normal.z);
+         n.Normalize();
+         m_rd->basicShader->SetVector(SHADER_mirrorNormal_factor, n.x, n.y, n.z, m_d.m_reflectionStrength);
+         m_rd->basicShader->SetTexture(SHADER_tex_reflection, reflections->GetColorSampler());
+         is_reflection_only_pass = m_d.m_staticRendering && isDynamicOnly;
+         if (!is_reflection_only_pass && !m_rd->GetRenderState().IsOpaque())
+         { // Primitive uses alpha transparency => render in 2 passes, one for the texture with alpha blending, one for the reflections which can happen above a transparent part (like for a glass or insert plastic)
+            m_rd->basicShader->SetTechniqueMaterial(pin ? SHADER_TECHNIQUE_basic_with_texture : SHADER_TECHNIQUE_basic_without_texture, mat, nMap, false, false);
+            m_rd->DrawMesh(m_rd->basicShader, !m_d.m_staticRendering && mat->m_bOpacityActive /* IsTransparent() */, m_d.m_vPosition, m_d.m_depthBias, 
+               m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_d.m_groupdRendering ? m_numGroupIndices : (DWORD)m_mesh.NumIndices());
+            is_reflection_only_pass = true;
+         }
+      }
+
+      if (is_reflection_only_pass)
+      { // If the primitive is already rendered (dynamic pass after a static prepass, or multipass rendering due to alpha blending) => only render additive reflections
+         m_rd->EnableAlphaBlend(true);
+         m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
+         m_rd->basicShader->SetTechnique(SHADER_TECHNIQUE_basic_refl_only_without_texture);
+      }
+      else
+      {
+         if (refractions != nullptr && !is_reflection_only_pass)
+            m_rd->AddRenderTargetDependencyOnNextRenderCommand(refractions); // Add a renderpass dependency on the render command (instead of in the renderframe) for the pass to be sorted with the command
+         m_rd->basicShader->SetTechniqueMaterial(pin ? SHADER_TECHNIQUE_basic_with_texture : SHADER_TECHNIQUE_basic_without_texture, mat, nMap, reflections, refractions);
+      }
+
+      // draw the mesh
+      m_rd->DrawMesh(m_rd->basicShader, 
+            is_reflection_only_pass // The reflection pass is an additive (so transparent) pass to be drawn after the opaque one
+         || refractions // Refractions must be rendered back to front since they rely on what is behind
+         || (mat->m_bOpacityActive && !m_d.m_staticRendering && !m_rd->GetRenderState().IsOpaque() /* IsTransparent() */),
+            m_d.m_vPosition, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_d.m_groupdRendering ? m_numGroupIndices : (DWORD)m_mesh.NumIndices());
+   }
+
+   // also draw the back of the primitive faces
+   if (depthMask && m_d.m_backfacesEnabled && mat->m_bOpacityActive)
+   {
+      m_rd->SetRenderStateCulling(RenderState::CULL_CCW);
+      m_rd->DrawMesh(m_rd->basicShader, mat->m_bOpacityActive /* IsTransparent() */, m_d.m_vPosition, m_d.m_depthBias, 
+         m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_d.m_groupdRendering ? m_numGroupIndices : (DWORD)m_mesh.NumIndices());
+   }
+
+   // Restore state
+   g_pplayer->UpdateBasicShaderMatrix();
+   m_rd->basicShader->SetVector(SHADER_mirrorNormal_factor, 0.f, 0.f, 0.f, 0.f);
+   m_rd->basicShader->SetVector(SHADER_lightCenter_doShadow, 0.0f, 0.0f, 0.0f, 0.0f);
+   m_rd->basicShader->SetVector(SHADER_staticColor_Alpha, 1.0f, 1.0f, 1.0f, 1.0f);
+   m_rd->basicShader->SetVector(SHADER_fDisableLighting_top_below, 0.f, 0.f, 0.f, 0.f);
+   m_rd->CopyRenderStates(false, initial_state);
+}
+
 void Primitive::UpdateAnimation(const float diff_time_msec)
 {
    if (m_currentFrame != -1.0f && m_doAnimation)
@@ -1501,25 +1505,6 @@ void Primitive::UpdateAnimation(const float diff_time_msec)
       }
       m_vertexBufferRegenerate |= m_currentFrame != previousFrame;
    }
-}
-
-void Primitive::RenderStatic()
-{
-   if (!m_d.m_staticRendering) return; //don't render dynamic
-   RenderProbe *reflection_probe = m_ptable->GetRenderProbe(m_d.m_szReflectionProbe);
-   if (reflection_probe != nullptr && reflection_probe->IsRendering())
-      return;
-   if (m_lockedByLS)
-   {
-       if(!m_inPlayState) return; //don't render in LS when state off
-   }
-   else 
-   {
-       if (!m_d.m_visible) return;
-       if (g_pplayer->IsRenderPass(Player::REFLECTION_PASS) && !m_d.m_reflectionEnabled)
-           return;
-   }
-   RenderObject();
 }
 
 //////////////////////////////
