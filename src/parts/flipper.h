@@ -98,16 +98,6 @@ public:
       void SetDefaultPhysics(const bool fromMouseClick) final;
       void ExportMesh(ObjLoader &loader) final;
 
-      unsigned long long GetMaterialID() const final
-      {
-		  const unsigned long long m1 = m_ptable->GetMaterial(m_d.m_szMaterial)->hash();
-		  const unsigned long long m2 = m_ptable->GetMaterial(m_d.m_szRubberMaterial)->hash();
-		  if (m1 == m2 || (m_d.m_rubberthickness <= 0.f))
-			  return m1;
-		  else
-			  return 0;
-      }
-      unsigned long long GetImageID() const final { return (unsigned long long)(m_ptable->GetImage(m_d.m_szImage)); }
       ItemTypeEnum HitableGetItemType() const final { return eItemFlipper; }
       void WriteRegDefaults() final;
 

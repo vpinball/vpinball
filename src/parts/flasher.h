@@ -101,19 +101,6 @@ public:
    {
       return m_d.m_depthBias + viewDir.x * m_d.m_vCenter.x + viewDir.y * m_d.m_vCenter.y + viewDir.z * m_d.m_height;
    }
-   unsigned long long GetMaterialID() const final { return 64-1; } //!! some constant number
-   unsigned long long GetImageID() const final
-   {
-      Texture * const pinA = m_ptable->GetImage(m_d.m_szImageA);
-      Texture * const pinB = m_ptable->GetImage(m_d.m_szImageB);
-      Texture *tex = nullptr;
-      if (pinA && !pinB)
-         tex = pinA;
-      else if (!pinA && pinB)
-         tex = pinB;
-      return (unsigned long long)tex;
-   }
-   bool IsDMD() const final { return m_d.m_isDMD; }
    ItemTypeEnum HitableGetItemType() const final { return eItemFlasher; }
 
    void WriteRegDefaults() final;

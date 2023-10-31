@@ -95,8 +95,6 @@ public:
    ItemTypeEnum HitableGetItemType() const final { return eItemTrigger; }
    void UpdateStatusBarInfo() final;
 
-   unsigned long long GetMaterialID() const final { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
-
    void ClearForOverwrite() final;
 
    void WriteRegDefaults() final;

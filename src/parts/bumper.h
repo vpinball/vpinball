@@ -88,21 +88,6 @@ public:
    void ExportMesh(ObjLoader &loader) final;
    void RenderBlueprint(Sur *psur, const bool solid) final;
 
-   unsigned long long GetMaterialID() const final
-   {
-      if (!m_d.m_baseVisible && m_d.m_capVisible)
-         return m_ptable->GetMaterial(m_d.m_szCapMaterial)->hash();
-      else
-         return 64-3; //!! some constant number
-   }
-   unsigned long long GetImageID() const final
-   {
-      if (!m_d.m_baseVisible && m_d.m_capVisible)
-         return (unsigned long long)&m_capTexture; //!! meh
-      else
-         return 0;
-   }
-
    ItemTypeEnum HitableGetItemType() const final { return eItemBumper; }
 
    void WriteRegDefaults() final;
