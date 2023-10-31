@@ -224,6 +224,7 @@ public:
    void SetRenderStateDepthBias(float bias);
    void CopyRenderStates(const bool copyTo, RenderState& state);
    void CopyRenderStates(const bool copyTo, RenderDeviceState& state);
+   void EnableAlphaBlend(const bool additiveBlending, const bool set_dest_blend = true, const bool set_blend_op = true);
 
    // Active render state
    void ApplyRenderStates();

@@ -1730,6 +1730,16 @@ void RenderDevice::SetRenderStateDepthBias(float bias)
    m_renderstate.SetRenderStateDepthBias(bias);
 }
 
+void RenderDevice::EnableAlphaBlend(const bool additiveBlending, const bool set_dest_blend, const bool set_blend_op)
+{
+   SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
+   SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);
+   if (set_dest_blend)
+      SetRenderState(RenderState::DESTBLEND, additiveBlending ? RenderState::ONE : RenderState::INVSRC_ALPHA);
+   if (set_blend_op)
+      SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_ADD);
+}
+
 void RenderDevice::CopyRenderStates(const bool copyTo, RenderState& state)
 {
    if (copyTo)
