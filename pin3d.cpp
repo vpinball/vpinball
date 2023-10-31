@@ -691,12 +691,7 @@ void Pin3D::InitLayout(const float xpixoff, const float ypixoff)
 
 void Pin3D::EnableAlphaBlend(const bool additiveBlending, const bool set_dest_blend, const bool set_blend_op) const
 {
-   m_pd3dPrimaryDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
-   m_pd3dPrimaryDevice->SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);
-   if (set_dest_blend)
-      m_pd3dPrimaryDevice->SetRenderState(RenderState::DESTBLEND, additiveBlending ? RenderState::ONE : RenderState::INVSRC_ALPHA);
-   if (set_blend_op)
-      m_pd3dPrimaryDevice->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_ADD);
+   m_pd3dPrimaryDevice->EnableAlphaBlend(additiveBlending, set_dest_blend, set_blend_op);
 }
 
 Vertex3Ds Pin3D::Unproject(const Vertex3Ds& point)
