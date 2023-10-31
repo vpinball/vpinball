@@ -26,8 +26,4 @@ public:
    virtual bool IsTransparent() const                     { return false; }
    virtual float GetDepth(const Vertex3Ds& viewDir) const { return 0.0f; }
    virtual bool RenderToLightBuffer() const               { return false; }
-   // Deprecated functions to be removed
-   virtual unsigned long long GetMaterialID() const       { return 0; }
-   virtual unsigned long long GetImageID() const          { return 0; }
-   virtual bool IsDMD() const                             { return false; }
 };

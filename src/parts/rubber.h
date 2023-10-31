@@ -94,8 +94,6 @@ public:
    void GetBoundingVertices(vector<Vertex3Ds> &pvvertex3D, const bool isLegacy) /*const*/ final;
 
    float GetDepth(const Vertex3Ds& viewDir) const final;
-   unsigned long long GetMaterialID() const final { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
-   unsigned long long GetImageID() const final { return (unsigned long long)(m_ptable->GetImage(m_d.m_szImage)); }
    ItemTypeEnum HitableGetItemType() const final { return eItemRubber; }
    void SetDefaultPhysics(const bool fromMouseClick) final;
    void ExportMesh(ObjLoader& loader) final;

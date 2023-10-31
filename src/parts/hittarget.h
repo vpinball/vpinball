@@ -163,8 +163,6 @@ public:
 
    bool IsTransparent() const final;
    float GetDepth(const Vertex3Ds& viewDir) const final;
-   unsigned long long GetMaterialID() const final { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
-   unsigned long long GetImageID() const final { return (unsigned long long)(m_ptable->GetImage(m_d.m_szImage)); }
    ItemTypeEnum HitableGetItemType() const final { return eItemHitTarget; }
 
    void SetDefaultPhysics(const bool fromMouseClick) final;

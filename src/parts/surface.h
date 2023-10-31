@@ -96,24 +96,6 @@ public:
    // end ISelect
 
    float GetDepth(const Vertex3Ds& viewDir) const final { return viewDir.z * m_d.m_heighttop; }
-   unsigned long long GetMaterialID() const final
-   {
-      unsigned long long h = 0;
-      if (m_d.m_sideVisible)
-         h = m_ptable->GetMaterial(m_d.m_szSideMaterial)->hash();
-      if (m_d.m_topBottomVisible)
-         h = m_ptable->GetMaterial(m_d.m_szTopMaterial)->hash();
-      return h;
-   }
-   unsigned long long GetImageID() const final
-   {
-      Texture* tex = nullptr;
-      if (m_d.m_sideVisible)
-         tex = m_ptable->GetImage(m_d.m_szSideImage);
-      if (m_d.m_topBottomVisible)
-         tex = m_ptable->GetImage(m_d.m_szImage);
-      return (unsigned long long)tex;
-   }
    ItemTypeEnum HitableGetItemType() const final { return eItemSurface; }
    bool IsTransparent() const final;
    void SetDefaultPhysics(const bool fromMouseClick) final;

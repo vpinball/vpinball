@@ -79,7 +79,6 @@ public:
    void SetDefaultPhysics(const bool fromMouseClick) final;
    void ExportMesh(ObjLoader& loader) final;
 
-   unsigned long long GetMaterialID() const final { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
    ItemTypeEnum HitableGetItemType() const final { return eItemKicker; }
    void UpdateStatusBarInfo() final;
 

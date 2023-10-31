@@ -85,7 +85,6 @@ public:
    void RenderBlueprint(Sur *psur, const bool solid) final;
    void ExportMesh(ObjLoader &loader) final;
 
-   unsigned long long GetMaterialID() const final { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
    ItemTypeEnum HitableGetItemType() const final { return eItemGate; }
    void UpdateStatusBarInfo() final;
 

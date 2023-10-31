@@ -146,8 +146,6 @@ public:
    bool IsTransparent() const final { return m_d.m_BulbLight || (m_surfaceMaterial && m_surfaceMaterial->m_bOpacityActive); }
    bool RenderToLightBuffer() const final { return m_d.m_BulbLight && (m_d.m_transmissionScale > 0.f) && !m_backglass; }
    float GetDepth(const Vertex3Ds& viewDir) const final;
-   unsigned long long GetMaterialID() const final { return m_surfaceMaterial ? m_surfaceMaterial->hash() : 64 - 2; } //!! 2 = some constant number
-   unsigned long long GetImageID() const final { return (m_d.m_BulbLight ? 0 : (unsigned long long)(m_ptable->GetImage(m_d.m_szImage))); }
    ItemTypeEnum HitableGetItemType() const final { return eItemLight; }
    void AddPoint(int x, int y, const bool smooth) final;
 
