@@ -68,13 +68,17 @@ bool RenderFrame::Execute(const bool log)
    for (RenderPass* pass : m_passes)
       pass->m_rt->m_lastRenderPass = nullptr;
 
-   #ifdef LOG_PASS_SORTING
    if (log)
-      PLOGI << "Frame before sorting/splitting:";
-   for (RenderPass* pass : m_passes)
    {
-      if (log)
+      PLOGI << "Rendering Frame";
+      std::stringstream ss1;
+      ss1 << "Submitted passes: [";
+      for (RenderPass* pass : m_passes)
       {
+         if (pass != m_passes[0])
+            ss1 << ", ";
+         ss1 << "'" << pass->m_name << "'";
+         #ifdef LOG_PASS_SORTING
          std::stringstream ss;
          ss << "> Pass '" << pass->m_name << "' [RT=" << pass->m_rt->m_name << ", " << pass->m_commands.size() << " commands, Dependencies:";
          bool first = true;
@@ -87,9 +91,10 @@ bool RenderFrame::Execute(const bool log)
          }
          ss << "]";
          PLOGI << ss.str();
+         #endif
       }
+      PLOGI << ss1.str() << "]";
    }
-   #endif
 
    // Sort passes to avoid useless render target switching, allow merging passes for better draw call sorting/batching, drop passes that do not contribute to the final pass
    RenderPass* finalPass = m_passes.back();
@@ -129,13 +134,16 @@ bool RenderFrame::Execute(const bool log)
       finalPass->SortPasses(sortedPasses, m_passes);
    }
 
-   #ifdef LOG_PASS_SORTING
    if (log)
-      PLOGI << "Frame after sorting/splitting:";
-   for (RenderPass* pass : sortedPasses)
    {
-      if (log)
+      std::stringstream ss1;
+      ss1 << "Sorted passes: [";
+      for (RenderPass* pass : m_passes)
       {
+         if (pass != m_passes[0])
+            ss1 << ", ";
+         ss1 << "'" << pass->m_name << "'";
+         #ifdef LOG_PASS_SORTING
          std::stringstream ss;
          ss << "> Pass '" << pass->m_name << "' [RT=" << pass->m_rt->m_name << ", " << pass->m_commands.size() << " commands, Dependencies:";
          bool first = true;
@@ -148,9 +156,10 @@ bool RenderFrame::Execute(const bool log)
          }
          ss << "]";
          PLOGI << ss.str();
+         #endif
       }
+      PLOGI << ss1.str() << "]";
    }
-   #endif
 
    PLOGI_IF(log) << "Rendering Frame [" << sortedPasses.size() << " passes out of " << m_passes.size() << " submitted passes]";
 

@@ -269,14 +269,17 @@ bool RenderPass::Execute(const bool log)
    if (log)
    {
       std::stringstream ss;
-      ss << "Pass '" << m_name << "' [RT=" << m_rt->m_name << ", " << m_commands.size() << " commands, Dependencies:";
+      ss << "Pass '" << m_name << "' [RT='" << m_rt->m_name << "', ";
+      if (m_singleLayerRendering >= 0)
+         ss << "Layer=" << m_singleLayerRendering << ", ";
+      ss << m_commands.size() << " commands, Dependencies:";
       bool first = true;
       for (RenderPass* dep : m_dependencies)
       {
          if (!first)
             ss << ", ";
          first = false;
-         ss << dep->m_name;
+         ss << "'" << dep->m_name << "'";
       }
       ss << "]";
       PLOGI << ss.str();
