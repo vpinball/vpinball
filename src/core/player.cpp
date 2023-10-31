@@ -3790,14 +3790,15 @@ void Player::PrepareVideoBuffers()
          m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
          m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(leftTexture);
          m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(rightTexture);
+         RenderTarget* outRT = m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
          if (m_vrPreview == VRPREVIEW_LEFT)
-            m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer(), true, false, 0, 0, w, h, 0, 0, w, h, 0, 0);
+            m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, outRT, true, false, 0, 0, w, h, 0, 0, outRT->GetWidth(), outRT->GetHeight(), 0, 0);
          else if (m_vrPreview == VRPREVIEW_RIGHT)
-            m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer(), true, false, 0, 0, w, h, 0, 0, w, h, 1, 0);
+            m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, outRT, true, false, 0, 0, w, h, 0, 0, outRT->GetWidth(), outRT->GetHeight(), 1, 0);
          else if (m_vrPreview == VRPREVIEW_BOTH)
          {
-            m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer(), true, false, 0, 0, w, h, 0, 0, w, h, 0, 0);
-            m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer(), true, false, 0, 0, w, h, w, 0, w, h, 1, 0);
+            m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, outRT, true, false, 0, 0, w, h, 0,                     0, outRT->GetWidth() / 2, outRT->GetHeight(), 0, 0);
+            m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, outRT, true, false, 0, 0, w, h, outRT->GetWidth() / 2, 0, outRT->GetWidth() / 2, outRT->GetHeight(), 1, 0);
          }
 
          m_pin3d.m_pd3dPrimaryDevice->SubmitVR(renderedRT);
