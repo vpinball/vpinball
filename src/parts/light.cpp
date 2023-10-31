@@ -27,13 +27,11 @@ Light::Light() : m_lightcenter(this)
    m_d.m_visible = true;
    m_roundLight = false;
    m_propVisual = nullptr;
-   m_updateBulbLightHeight = false;
-   m_maxDist = 0.0f;
 }
 
 Light::~Light()
 {
-   FreeBuffers();
+   assert(m_rd == nullptr); // RenderRelease must be explicitely called before deleting this object
 }
 
 Light *Light::CopyForPlay(PinTable *live_table)
@@ -53,7 +51,6 @@ Light *Light::CopyForPlay(PinTable *live_table)
    dst->m_lightcenter = m_lightcenter;
    dst->m_initSurfaceHeight = m_initSurfaceHeight;
    dst->m_maxDist = m_maxDist;
-   dst->m_updateBulbLightHeight = m_updateBulbLightHeight;
    dst->m_roundLight = m_roundLight;
    return dst;
 }
@@ -320,16 +317,6 @@ void Light::GetHitShapesDebug(vector<HitObject*> &pvho)
    }
 }
 
-void Light::FreeBuffers()
-{
-   delete m_customMoverMeshBuffer;
-   delete m_bulbSocketMeshBuffer;
-   delete m_bulbLightMeshBuffer;
-   m_customMoverMeshBuffer = nullptr;
-   m_bulbSocketMeshBuffer = nullptr;
-   m_bulbLightMeshBuffer = nullptr;
-}
-
 void Light::EndPlay()
 {
    // ensure not locked just in case the player exits during a LS sequence
@@ -356,73 +343,18 @@ void Light::ClearForOverwrite()
    ClearPointsForOverwrite();
 }
 
-void Light::UpdateCustomMoverVBuffer()
-{
-   float height = m_initSurfaceHeight;
-   if (m_d.m_BulbLight)
-   {
-      height += m_d.m_bulbHaloHeight;
-      m_surfaceHeight = height;
-   }
-
-   Texture* const pin = m_ptable->GetImage(m_d.m_szImage);
-
-   const float inv_maxdist = (m_maxDist > 0.0f) ? 0.5f / sqrtf(m_maxDist) : 0.0f;
-   const float inv_tablewidth = 1.0f / (m_ptable->m_right - m_ptable->m_left);
-   const float inv_tableheight = 1.0f / (m_ptable->m_bottom - m_ptable->m_top);
-
-   const float mult = m_backglass ? getBGxmult() : 1.f;
-   const float ymult = m_backglass ? getBGymult() : 1.f;
-
-   Vertex3D_NoTex2 *buf;
-   m_customMoverMeshBuffer->m_vb->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
-   for (unsigned int t = 0; t < m_customMoverVertexNum; t++)
-   {
-      const RenderVertex * const pv0 = &m_vvertex[t];
-      if (!m_backglass)
-      {
-         buf[t].x = pv0->x;
-         buf[t].y = pv0->y;
-         buf[t].z = height + 0.1f;
-
-         // Check if we are using a custom texture.
-         if (pin != nullptr)
-         {
-            buf[t].tu = pv0->x * inv_tablewidth;
-            buf[t].tv = pv0->y * inv_tableheight;
-         }
-         else
-         {
-            // Set texture coordinates for default light.
-            buf[t].tu = 0.5f + (pv0->x - m_d.m_vCenter.x) * inv_maxdist;
-            buf[t].tv = 0.5f + (pv0->y - m_d.m_vCenter.y) * inv_maxdist;
-         }
-      }
-      else
-      {
-         // Backdrop position
-         buf[t].x = pv0->x * mult - 0.5f;
-         buf[t].y = pv0->y * ymult - 0.5f;
-         buf[t].z = 0.0f;
-
-         buf[t].tu = pv0->x * (float)(1.0 / EDITOR_BG_WIDTH);
-         buf[t].tv = pv0->y * (float)(1.0 / EDITOR_BG_HEIGHT);
-      }
-
-      buf[t].nx = 0;
-      buf[t].ny = 0;
-      buf[t].nz = 1.0f;
-   }
-   m_customMoverMeshBuffer->m_vb->unlock();
-}
-
 void Light::AddLightmap(IEditable *lightmap)
-{ 
+{
    m_lightmaps.push_back(lightmap);
    if (lightmap->GetItemType() == ItemTypeEnum::eItemPrimitive)
       ((Primitive *)lightmap)->put_Opacity(100.0f * m_currentIntensity / (m_d.m_intensity * m_d.m_intensity_scale));
    else if (lightmap->GetItemType() == ItemTypeEnum::eItemFlasher)
       ((Flasher *)lightmap)->put_Opacity((long)(100.0f * m_currentIntensity / (m_d.m_intensity * m_d.m_intensity_scale)));
+}
+
+void Light::RemoveLightmap(IEditable *lightmap)
+{
+   RemoveFromVectorSingle(m_lightmaps, lightmap);
 }
 
 void Light::UpdateAnimation(const float diff_time_msec)
@@ -504,7 +436,6 @@ void Light::RenderSetup(RenderDevice *device)
    bulb_init();
 
    m_iblinkframe = 0;
-   m_updateBulbLightHeight = false;
 
    m_initSurfaceHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
    m_surfaceMaterial = m_ptable->GetSurfaceMaterial(m_d.m_szSurface);
@@ -529,7 +460,6 @@ void Light::RenderSetup(RenderDevice *device)
       // Note: the distance between the light (emitting point) and the bulb base (bulb mesh origin) is 28 for a bulb with a radius of 20
       const float bulb_z = m_surfaceHeight;
 
-      delete m_bulbLightMeshBuffer;
       IndexBuffer *bulbLightIndexBuffer = new IndexBuffer(m_rd, bulbLightNumFaces, bulbLightIndices);
       VertexBuffer *bulbLightVBuffer = new VertexBuffer(m_rd, bulbLightNumVertices);
       m_bulbLightMeshBuffer = new MeshBuffer(m_wzName + L".Bulb"s, bulbLightVBuffer, bulbLightIndexBuffer, true);
@@ -549,7 +479,6 @@ void Light::RenderSetup(RenderDevice *device)
       }
       bulbLightVBuffer->unlock();
 
-      delete m_bulbSocketMeshBuffer;
       IndexBuffer *bulbSocketIndexBuffer = new IndexBuffer(m_rd, bulbSocketNumFaces, bulbSocketIndices);
       VertexBuffer *bulbSocketVBuffer = new VertexBuffer(m_rd, bulbSocketNumVertices);
       m_bulbSocketMeshBuffer = new MeshBuffer(m_wzName + L".Socket"s, bulbSocketVBuffer, bulbSocketIndexBuffer, true);
@@ -594,8 +523,6 @@ void Light::RenderSetup(RenderDevice *device)
       PolygonToTriangles(m_vvertex, vpoly, vtri, true);
    }
 
-   delete m_customMoverMeshBuffer;
-
    if (vtri.empty())
    {
       char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
@@ -606,19 +533,27 @@ void Light::RenderSetup(RenderDevice *device)
       return;
    }
 
-   m_customMoverVertexNum = (unsigned int)m_vvertex.size();
-   VertexBuffer *customMoverVBuffer = new VertexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_customMoverVertexNum, nullptr, true);
-
-   m_customMoverIndexNum = (unsigned int)vtri.size();
-   IndexBuffer* customMoverIBuffer = new IndexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_customMoverIndexNum, 0, IndexBuffer::FMT_INDEX16);
+   VertexBuffer *customMoverVBuffer = new VertexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, (unsigned int) m_vvertex.size(), nullptr, true);
+   IndexBuffer* customMoverIBuffer = new IndexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, (unsigned int) vtri.size(), 0, IndexBuffer::FMT_INDEX16);
    WORD* bufi;
    customMoverIBuffer->lock(0, 0, (void**)&bufi, IndexBuffer::WRITEONLY);
    memcpy(bufi, vtri.data(), vtri.size()*sizeof(WORD));
    customMoverIBuffer->unlock();
+   m_lightmapMeshBuffer = new MeshBuffer(m_wzName + L".Lightmap"s, customMoverVBuffer, customMoverIBuffer, true);
+   m_lightmapMeshBufferDirty = true;
+}
 
-   m_customMoverMeshBuffer = new MeshBuffer(m_wzName + L".Lightmap"s, customMoverVBuffer, customMoverIBuffer, true);
-
-   UpdateCustomMoverVBuffer();
+void Light::RenderRelease()
+{
+   assert(m_rd != nullptr);
+   m_vvertex.clear();
+   delete m_lightmapMeshBuffer;
+   delete m_bulbSocketMeshBuffer;
+   delete m_bulbLightMeshBuffer;
+   m_lightmapMeshBuffer = nullptr;
+   m_bulbSocketMeshBuffer = nullptr;
+   m_bulbLightMeshBuffer = nullptr;
+   m_rd = nullptr;
 }
 
 void Light::Render(const unsigned int renderMask)
@@ -683,7 +618,7 @@ void Light::Render(const unsigned int renderMask)
    if (!isStaticOnly
       && m_d.m_visible
       && ((m_d.m_reflectionEnabled && ! m_backglass) || !isReflectionPass)
-      && (m_customMoverMeshBuffer != nullptr) // in case of degenerate light
+      && (m_lightmapMeshBuffer != nullptr) // in case of degenerate light
       && (!m_backglass || (GetPTable()->GetDecalsEnabled() && g_pplayer->m_stereo3D != STEREO_VR)))
    {
       Texture *offTexel = nullptr;
@@ -754,8 +689,7 @@ void Light::Render(const unsigned int renderMask)
          m_rd->lightShader->SetLightColor2FalloffPower(lightColor2_falloff_power);
          m_rd->lightShader->SetTechnique(SHADER_TECHNIQUE_bulb_light);
 
-         const Pin3D *const ppin3d = &g_pplayer->m_pin3d;
-         ppin3d->EnableAlphaBlend(false, false, false);
+         m_rd->EnableAlphaBlend(false, false, false);
          //m_rd->SetRenderState(RenderState::SRCBLEND,  RenderState::SRC_ALPHA);  // add the lightcontribution
          m_rd->SetRenderState(RenderState::DESTBLEND, RenderState::INVSRC_COLOR); // but also modulate the light first with the underlying elements by (1+lightcontribution, e.g. a very crude approximation of real lighting)
          m_rd->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_REVSUBTRACT);
@@ -778,6 +712,68 @@ void Light::Render(const unsigned int renderMask)
       {
          m_rd->CopyRenderStates(false, initialState);
          return;
+      }
+
+      // Lazily update the position of the vertex buffer (done here instead of setup since this halo height is a dynamic property of bulb lights)
+      if (m_lightmapMeshBufferDirty)
+      {
+         m_lightmapMeshBufferDirty = false;
+         float height = m_initSurfaceHeight;
+         if (m_d.m_BulbLight)
+         {
+            height += m_d.m_bulbHaloHeight;
+            m_surfaceHeight = height;
+         }
+
+         Texture* const pin = m_ptable->GetImage(m_d.m_szImage);
+
+         const float inv_maxdist = (m_maxDist > 0.0f) ? 0.5f / sqrtf(m_maxDist) : 0.0f;
+         const float inv_tablewidth = 1.0f / (m_ptable->m_right - m_ptable->m_left);
+         const float inv_tableheight = 1.0f / (m_ptable->m_bottom - m_ptable->m_top);
+
+         const float mult = m_backglass ? getBGxmult() : 1.f;
+         const float ymult = m_backglass ? getBGymult() : 1.f;
+
+         Vertex3D_NoTex2 *buf;
+         m_lightmapMeshBuffer->m_vb->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+         for (unsigned int t = 0; t < m_vvertex.size(); t++)
+         {
+            const RenderVertex * const pv0 = &m_vvertex[t];
+            if (!m_backglass)
+            {
+               buf[t].x = pv0->x;
+               buf[t].y = pv0->y;
+               buf[t].z = height + 0.1f;
+
+               // Check if we are using a custom texture.
+               if (pin != nullptr)
+               {
+                  buf[t].tu = pv0->x * inv_tablewidth;
+                  buf[t].tv = pv0->y * inv_tableheight;
+               }
+               else
+               {
+                  // Set texture coordinates for default light.
+                  buf[t].tu = 0.5f + (pv0->x - m_d.m_vCenter.x) * inv_maxdist;
+                  buf[t].tv = 0.5f + (pv0->y - m_d.m_vCenter.y) * inv_maxdist;
+               }
+            }
+            else
+            {
+               // Backdrop position
+               buf[t].x = pv0->x * mult - 0.5f;
+               buf[t].y = pv0->y * ymult - 0.5f;
+               buf[t].z = 0.0f;
+
+               buf[t].tu = pv0->x * (float)(1.0 / EDITOR_BG_WIDTH);
+               buf[t].tv = pv0->y * (float)(1.0 / EDITOR_BG_HEIGHT);
+            }
+
+            buf[t].nx = 0;
+            buf[t].ny = 0;
+            buf[t].nz = 1.0f;
+         }
+         m_lightmapMeshBuffer->m_vb->unlock();
       }
 
       Shader *shader = m_d.m_BulbLight ? m_rd->lightShader : m_rd->classicLightShader;
@@ -810,22 +806,12 @@ void Light::Render(const unsigned int renderMask)
       }
       else
       {
-         const Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-         ppin3d->EnableAlphaBlend(false, false, false);
+         m_rd->EnableAlphaBlend(false, false, false);
          //m_rd->SetRenderState(RenderDevice::SRCBLEND,  RenderDevice::SRC_ALPHA);  // add the lightcontribution
          m_rd->SetRenderState(RenderState::DESTBLEND, RenderState::INVSRC_COLOR); // but also modulate the light first with the underlying elements by (1+lightcontribution, e.g. a very crude approximation of real lighting)
          m_rd->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_REVSUBTRACT);
          shader->SetFloat(SHADER_blend_modulate_vs_add, !g_pplayer->IsRenderPass(Player::LIGHT_BUFFER) ? clamp(m_d.m_modulate_vs_add, 0.00001f, 0.9999f) : 0.00001f); // avoid 0, as it disables the blend and avoid 1 as it looks not good with day->night changes // in the separate bulb light render stage only enable additive
          shader->SetTechnique(m_d.m_shadows == ShadowMode::RAYTRACED_BALL_SHADOWS ? SHADER_TECHNIQUE_bulb_light_with_ball_shadows : SHADER_TECHNIQUE_bulb_light);
-      }
-
-      // (maybe) update, then render light shape
-      if (m_updateBulbLightHeight)
-      {
-         if (m_d.m_BulbLight && !m_backglass)
-            UpdateCustomMoverVBuffer();
-
-         m_updateBulbLightHeight = false;
       }
 
       if (m_backglass)
@@ -865,21 +851,13 @@ void Light::Render(const unsigned int renderMask)
 
       Vertex3Ds pos0(0.f, 0.f, 0.f);
       Vertex3Ds haloPos(m_boundingSphereCenter.x, m_boundingSphereCenter.y, m_surfaceHeight);
-      m_rd->DrawMesh(shader, IsTransparent(), m_backglass ? pos0 : haloPos, m_backglass ? 0.f : m_d.m_depthBias, m_customMoverMeshBuffer, RenderDevice::TRIANGLELIST, 0, m_customMoverIndexNum);
+      m_rd->DrawMesh(shader, IsTransparent(), m_backglass ? pos0 : haloPos, m_backglass ? 0.f : m_d.m_depthBias, m_lightmapMeshBuffer, RenderDevice::TRIANGLELIST, 0, m_lightmapMeshBuffer->m_ib->m_count);
    }
 
    // Restore state
    if (m_backglass)
       g_pplayer->UpdateBasicShaderMatrix();
    m_rd->CopyRenderStates(false, initialState);
-}
-
-void Light::RenderRelease()
-{
-   assert(m_rd != nullptr);
-   m_rd = nullptr;
-   m_vvertex.clear();
-   FreeBuffers();
 }
 
 void Light::SetObjectPos()
@@ -1636,7 +1614,7 @@ STDMETHODIMP Light::put_BulbHaloHeight(float newVal)
    if(m_d.m_bulbHaloHeight != newVal)
    {
       m_d.m_bulbHaloHeight = newVal;
-      m_updateBulbLightHeight = true;
+      m_lightmapMeshBufferDirty |= m_d.m_BulbLight && !m_backglass;
    }
 
    return S_OK;

@@ -137,9 +137,6 @@ public:
    virtual void RenderRelease();
 
 protected:
-   void UpdateCustomMoverVBuffer();
-   void FreeBuffers();
-
    RenderDevice *m_rd = nullptr;
 
 public:
@@ -163,6 +160,7 @@ public:
    Light *CopyForPlay(PinTable *live_table);
 
    void AddLightmap(IEditable *lightmap);
+   void RemoveLightmap(IEditable *lightmap);
 
    // Light definition
    LightData m_d;
@@ -219,18 +217,16 @@ private:
 
    LightCenter m_lightcenter;
 
-   unsigned int m_customMoverVertexNum;
-   unsigned int m_customMoverIndexNum;
-   MeshBuffer *m_customMoverMeshBuffer = nullptr;
+   MeshBuffer *m_lightmapMeshBuffer = nullptr;
    MeshBuffer *m_bulbSocketMeshBuffer = nullptr;
    MeshBuffer *m_bulbLightMeshBuffer = nullptr;
    PropertyPane *m_propVisual;
 
    vector<RenderVertex> m_vvertex;
 
-   float m_initSurfaceHeight;
-   float m_maxDist;
-   bool  m_updateBulbLightHeight;
+   float m_initSurfaceHeight = 0.0f;
+   float m_maxDist = 0.0f;
+   bool  m_lightmapMeshBufferDirty = false;
 
    bool  m_roundLight; // pre-VPX compatibility
 
