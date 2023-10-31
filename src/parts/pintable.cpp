@@ -7193,7 +7193,7 @@ Texture *PinTable::ImportImage(const string &filename, const string &imagename)
       ppi = new Texture();
       isUpdate = false;
    }
-   ppi->LoadFromFile(filename, true);
+   ppi->LoadFromFile(filename, imagename == "");
    if (ppi->m_pdsBuffer == nullptr)
    {
       if (!isUpdate)
