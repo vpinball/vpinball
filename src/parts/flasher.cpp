@@ -24,12 +24,7 @@ Flasher::Flasher()
 
 Flasher::~Flasher()
 {
-   delete m_meshBuffer;
-   if (m_vertices)
-   {
-      delete[] m_vertices;
-      m_vertices = nullptr;
-   }
+   assert(m_rd == nullptr); // RenderRelease must be explicitely called before deleting this object
 }
 
 Flasher *Flasher::CopyForPlay(PinTable *live_table)
@@ -288,160 +283,10 @@ void Flasher::EndPlay()
    m_lockedByLS = false;
    
    ResetVideoCap();
-
-   delete m_meshBuffer;
-   m_meshBuffer = nullptr;
-   m_dynamicVertexBufferRegenerate = true;
-   if (m_vertices)
-   {
-      delete[] m_vertices;
-      m_vertices = nullptr;
-   }
-
-   m_lightmap = nullptr;
-   
-   m_dmdSize = int2(0, 0);
-   if (m_texdmd)
-   {
-      delete m_texdmd;
-      m_texdmd = nullptr;
-   }
-}
-
-void Flasher::UpdateMesh()
-{
-   const float height = m_d.m_height + m_ptable->m_tableheight;
-   const float movx = m_minx + (m_maxx - m_minx)*0.5f;
-   const float movy = m_miny + (m_maxy - m_miny)*0.5f;
-
-   Matrix3D tempMatrix, TMatrix;
-   TMatrix.SetRotateZ(ANGTORAD(m_d.m_rotZ));
-   tempMatrix.SetRotateY(ANGTORAD(m_d.m_rotY));
-   tempMatrix.Multiply(TMatrix, TMatrix);
-   tempMatrix.SetRotateX(ANGTORAD(m_d.m_rotX));
-   tempMatrix.Multiply(TMatrix, TMatrix);
-
-   tempMatrix.SetTranslation(m_d.m_vCenter.x,m_d.m_vCenter.y,height);
-   tempMatrix.Multiply(TMatrix, tempMatrix);
-
-   TMatrix.SetTranslation(
-       -movx, //-m_d.m_vCenter.x,
-       -movy, //-m_d.m_vCenter.y,
-       0.f);
-   tempMatrix.Multiply(TMatrix, tempMatrix);
-
-   Vertex3D_NoTex2 *buf;
-   m_meshBuffer->m_vb->lock(0, 0, (void **)&buf, VertexBuffer::DISCARDCONTENTS);
-
-   for (unsigned int i = 0; i < m_numVertices; i++)
-   {
-      Vertex3D_NoTex2 vert = m_vertices[i];
-      tempMatrix.MultiplyVector(vert, vert);
-      buf[i] = vert;
-   }
-
-   m_meshBuffer->m_vb->unlock();
-}
-
-void Flasher::RenderSetup()
-{
-   m_texdmd = nullptr;
-   m_dmdSize = int2(0, 0);
-
-   m_lightmap = m_ptable->GetLight(m_d.m_szLightmap);
-   if (m_lightmap)
-      m_lightmap->AddLightmap(this);
-
-   vector<RenderVertex> vvertex;
-   GetRgVertex(vvertex);
-
-   m_numVertices = (unsigned int)vvertex.size();
-   if (m_numVertices == 0)
-   {
-       // no polys to render leave vertex buffer undefined 
-       m_numPolys = 0;
-       return;
-   }
-
-   vector<WORD> vtri;
-   
-   {
-   vector<unsigned int> vpoly(m_numVertices);
-   for (unsigned int i = 0; i < m_numVertices; i++)
-      vpoly[i] = i;
-
-   PolygonToTriangles(vvertex, vpoly, vtri, false);
-   }
-
-   m_numPolys = (int)(vtri.size()/3);
-   if (m_numPolys == 0)
-   {
-      // no polys to render leave vertex buffer undefined 
-      return;
-   }
-
-   IndexBuffer* dynamicIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numPolys * 3, 0, IndexBuffer::FMT_INDEX16);
-
-   WORD* bufi;
-   dynamicIndexBuffer->lock(0, 0, (void**)&bufi, IndexBuffer::WRITEONLY);
-   memcpy(bufi, vtri.data(), vtri.size()*sizeof(WORD));
-   dynamicIndexBuffer->unlock();
-
-   VertexBuffer* dynamicVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numVertices, nullptr, true);
-
-   delete m_meshBuffer;
-   m_meshBuffer = new MeshBuffer(m_wzName, dynamicVertexBuffer, dynamicIndexBuffer, true);
-
-   if (m_vertices)
-      delete[] m_vertices;
-   m_vertices = new Vertex3D_NoTex2[m_numVertices];
-
-   m_minx = FLT_MAX;
-   m_miny = FLT_MAX;
-   m_maxx = -FLT_MAX;
-   m_maxy = -FLT_MAX;
-
-   for (unsigned int i = 0; i < m_numVertices; i++)
-   {
-      const RenderVertex * const pv0 = &vvertex[i];
-
-      m_vertices[i].x = pv0->x;
-      m_vertices[i].y = pv0->y;
-      m_vertices[i].z = 0;
-
-      if (pv0->x > m_maxx) m_maxx = pv0->x;
-      if (pv0->x < m_minx) m_minx = pv0->x;
-      if (pv0->y > m_maxy) m_maxy = pv0->y;
-      if (pv0->y < m_miny) m_miny = pv0->y;
-   }
-   
-   const float inv_width = 1.0f / (m_maxx - m_minx);
-   const float inv_height = 1.0f / (m_maxy - m_miny);
-   const float inv_tablewidth = 1.0f / (m_ptable->m_right - m_ptable->m_left);
-   const float inv_tableheight = 1.0f / (m_ptable->m_bottom - m_ptable->m_top);
-   m_d.m_vCenter.x = m_minx + ((m_maxx - m_minx)*0.5f);
-   m_d.m_vCenter.y = m_miny + ((m_maxy - m_miny)*0.5f);
-
-   for (unsigned int i = 0; i < m_numVertices; i++)
-   {
-      if (m_d.m_imagealignment == ImageModeWrap)
-      {
-         m_vertices[i].tu = (m_vertices[i].x - m_minx)*inv_width;
-         m_vertices[i].tv = (m_vertices[i].y - m_miny)*inv_height;
-      }
-      else
-      {
-         m_vertices[i].tu = m_vertices[i].x*inv_tablewidth;
-         m_vertices[i].tv = m_vertices[i].y*inv_tableheight;
-      }
-   }
+   RenderRelease();
 }
 
 void Flasher::UpdateAnimation(const float diff_time_msec)
-{
-}
-
-void Flasher::RenderStatic()
 {
 }
 
@@ -1112,14 +957,14 @@ STDMETHODIMP Flasher::put_VideoCapHeight(long cHeight)
 
 void Flasher::ResetVideoCap()
 {
-    m_isVideoCap = false;
-    if (m_videoCapTex)
-    {
+   m_isVideoCap = false;
+   if (m_videoCapTex)
+   {
       //  g_pplayer->m_pin3d.m_pd3dPrimaryDevice->flasherShader->SetTextureNull(SHADER_tex_flasher_A); //!! ??
-        g_pplayer->m_pin3d.m_pd3dPrimaryDevice->m_texMan.UnloadTexture(m_videoCapTex);
-        delete m_videoCapTex;
-        m_videoCapTex = nullptr;
-    }
+      g_pplayer->m_pin3d.m_pd3dPrimaryDevice->m_texMan.UnloadTexture(m_videoCapTex);
+      delete m_videoCapTex;
+      m_videoCapTex = nullptr;
+   }
 }
 
 //if PASSED a blank title then we treat this as STOP capture and free resources.
@@ -1246,178 +1091,319 @@ void Flasher::setInPlayState(const bool newVal)
    m_inPlayState = newVal;
 }
 
-void Flasher::RenderDynamic()
+// Deprecated Legacy API to be removed
+void Flasher::RenderSetup() { }
+void Flasher::RenderStatic() { }
+void Flasher::RenderDynamic() { }
+
+void Flasher::RenderSetup(RenderDevice *device)
 {
+   assert(m_rd == nullptr);
+   m_rd = device;
+
+   m_texdmd = nullptr;
+   m_dmdSize = int2(0, 0);
+
+   m_lightmap = m_ptable->GetLight(m_d.m_szLightmap);
+   if (m_lightmap)
+      m_lightmap->AddLightmap(this);
+
+   vector<RenderVertex> vvertex;
+   GetRgVertex(vvertex);
+
+   m_numVertices = (unsigned int)vvertex.size();
+   if (m_numVertices == 0)
+   {
+       // no polys to render leave vertex buffer undefined 
+       m_numPolys = 0;
+       return;
+   }
+
+   vector<WORD> vtri;
+   
+   {
+   vector<unsigned int> vpoly(m_numVertices);
+   for (unsigned int i = 0; i < m_numVertices; i++)
+      vpoly[i] = i;
+
+   PolygonToTriangles(vvertex, vpoly, vtri, false);
+   }
+
+   m_numPolys = (int)(vtri.size()/3);
+   if (m_numPolys == 0)
+   {
+      // no polys to render leave vertex buffer undefined 
+      return;
+   }
+
+   IndexBuffer* dynamicIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numPolys * 3, 0, IndexBuffer::FMT_INDEX16);
+
+   WORD* bufi;
+   dynamicIndexBuffer->lock(0, 0, (void**)&bufi, IndexBuffer::WRITEONLY);
+   memcpy(bufi, vtri.data(), vtri.size()*sizeof(WORD));
+   dynamicIndexBuffer->unlock();
+
+   VertexBuffer* dynamicVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numVertices, nullptr, true);
+
+   delete m_meshBuffer;
+   m_meshBuffer = new MeshBuffer(m_wzName, dynamicVertexBuffer, dynamicIndexBuffer, true);
+
+   m_vertices = new Vertex3D_NoTex2[m_numVertices];
+
+   m_minx = FLT_MAX;
+   m_miny = FLT_MAX;
+   m_maxx = -FLT_MAX;
+   m_maxy = -FLT_MAX;
+
+   for (unsigned int i = 0; i < m_numVertices; i++)
+   {
+      const RenderVertex * const pv0 = &vvertex[i];
+
+      m_vertices[i].x = pv0->x;
+      m_vertices[i].y = pv0->y;
+      m_vertices[i].z = 0;
+
+      if (pv0->x > m_maxx) m_maxx = pv0->x;
+      if (pv0->x < m_minx) m_minx = pv0->x;
+      if (pv0->y > m_maxy) m_maxy = pv0->y;
+      if (pv0->y < m_miny) m_miny = pv0->y;
+   }
+   
+   const float inv_width = 1.0f / (m_maxx - m_minx);
+   const float inv_height = 1.0f / (m_maxy - m_miny);
+   const float inv_tablewidth = 1.0f / (m_ptable->m_right - m_ptable->m_left);
+   const float inv_tableheight = 1.0f / (m_ptable->m_bottom - m_ptable->m_top);
+   m_d.m_vCenter.x = m_minx + ((m_maxx - m_minx)*0.5f);
+   m_d.m_vCenter.y = m_miny + ((m_maxy - m_miny)*0.5f);
+
+   for (unsigned int i = 0; i < m_numVertices; i++)
+   {
+      if (m_d.m_imagealignment == ImageModeWrap)
+      {
+         m_vertices[i].tu = (m_vertices[i].x - m_minx)*inv_width;
+         m_vertices[i].tv = (m_vertices[i].y - m_miny)*inv_height;
+      }
+      else
+      {
+         m_vertices[i].tu = m_vertices[i].x*inv_tablewidth;
+         m_vertices[i].tv = m_vertices[i].y*inv_tableheight;
+      }
+   }
+}
+
+void Flasher::RenderRelease()
+{
+   assert(m_rd != nullptr);
+   delete m_meshBuffer;
+   delete[] m_vertices;
+   delete m_texdmd;
+   m_meshBuffer = nullptr;
+   m_vertices = nullptr;
+   m_texdmd = nullptr;
+   m_dmdSize = int2(0, 0);
+   if (m_lightmap)
+      m_lightmap->RemoveLightmap(this);
+   m_lightmap = nullptr;
+   m_rd = nullptr;
+}
+
+void Flasher::Render(const unsigned int renderMask)
+{
+   assert(m_rd != nullptr);
+   const bool isStaticOnly = renderMask & Player::STATIC_ONLY;
+   const bool isReflectionPass = renderMask & Player::REFLECTION_PASS;
    TRACE_FUNCTION();
 
-   //Don't render if LightSequence in play and state is off
-   if (m_lockedByLS) 
-   {
-      if (!m_inPlayState) return;
-   }
-   //Don't render if invisible (or DMD connection not set)
-   BaseTexture *texdmd = m_texdmd != nullptr ? m_texdmd : g_pplayer->m_texdmd;
-   if (!m_d.m_isVisible || m_meshBuffer == nullptr || g_pplayer->IsRenderPass(Player::REFLECTION_PASS) || (m_d.m_isDMD && !texdmd))
+   // Flashers are always dynamic parts
+   if (isStaticOnly)
       return;
+
+   // Don't render if invisible, degenerated or in reflection pass
+   // TODO shouldn't we handle flashers like lights and therefore process them according to disable lightmap flag ?
+   if (!m_d.m_isVisible || m_meshBuffer == nullptr || isReflectionPass)
+      return;
+
+   // Don't render if LightSequence in play and state is off
+   if (m_lockedByLS && !m_inPlayState)
+      return;
+   
+   // Don't render DMD if DMD connection not set
+   BaseTexture *texdmd = m_texdmd != nullptr ? m_texdmd : g_pplayer->m_texdmd;
+   if (m_d.m_isDMD && !texdmd)
+      return;
+
+   if (m_d.m_color == 0 || m_d.m_alpha == 0.0f || m_d.m_intensity_scale == 0.0f)
+      return;
+
+   RenderState initial_state;
+   m_rd->CopyRenderStates(true, initial_state);
+
+   if (m_dynamicVertexBufferRegenerate)
+   {
+      m_dynamicVertexBufferRegenerate = false;
+      const float height = m_d.m_height + m_ptable->m_tableheight;
+      const float movx = m_minx + (m_maxx - m_minx)*0.5f;
+      const float movy = m_miny + (m_maxy - m_miny)*0.5f;
+
+      Matrix3D tempMatrix, TMatrix;
+      TMatrix.SetRotateZ(ANGTORAD(m_d.m_rotZ));
+      tempMatrix.SetRotateY(ANGTORAD(m_d.m_rotY));
+      tempMatrix.Multiply(TMatrix, TMatrix);
+      tempMatrix.SetRotateX(ANGTORAD(m_d.m_rotX));
+      tempMatrix.Multiply(TMatrix, TMatrix);
+
+      tempMatrix.SetTranslation(m_d.m_vCenter.x,m_d.m_vCenter.y,height);
+      tempMatrix.Multiply(TMatrix, tempMatrix);
+
+      TMatrix.SetTranslation(
+          -movx, //-m_d.m_vCenter.x,
+          -movy, //-m_d.m_vCenter.y,
+          0.f);
+      tempMatrix.Multiply(TMatrix, tempMatrix);
+
+      Vertex3D_NoTex2 *buf;
+      m_meshBuffer->m_vb->lock(0, 0, (void **)&buf, VertexBuffer::DISCARDCONTENTS);
+      for (unsigned int i = 0; i < m_numVertices; i++)
+      {
+         Vertex3D_NoTex2 vert = m_vertices[i];
+         tempMatrix.MultiplyVector(vert, vert);
+         buf[i] = vert;
+      }
+      m_meshBuffer->m_vb->unlock();
+   }
+
+   m_rd->SetRenderStateDepthBias(0.0f);
+   m_rd->SetRenderStateCulling(RenderState::CULL_NONE);
 
    const vec4 color = convertColor(m_d.m_color, (float)m_d.m_alpha*m_d.m_intensity_scale / 100.0f);
-   if (color.w == 0.f)
-      return;
-
-   if (color.x == 0.f && color.y == 0.f && color.z == 0.f)
-      return;
-
-   RenderDevice *const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-   RenderState initial_state;
-   pd3dDevice->CopyRenderStates(true, initial_state);
-
    if (m_d.m_isDMD)
    {
-      if (m_dynamicVertexBufferRegenerate)
-       {
-          UpdateMesh();
-          m_dynamicVertexBufferRegenerate = false;
-       }
+      m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
+      if (m_d.m_modulate_vs_add < 1.f)
+         m_rd->EnableAlphaBlend(m_d.m_addBlend);
+      else
+         m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
 
-       pd3dDevice->SetRenderStateDepthBias(0.0f);
-       pd3dDevice->SetRenderStateCulling(RenderState::CULL_NONE);
-
-       pd3dDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
-       if (m_d.m_modulate_vs_add < 1.f)
-          g_pplayer->m_pin3d.EnableAlphaBlend(m_d.m_addBlend);
-       else
-          pd3dDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
-
-       /*const unsigned int alphamode = 1; //!! make configurable?
-       // add
-       if (alphamode == 1) {
+      /*const unsigned int alphamode = 1; //!! make configurable?
+      // add
+      if (alphamode == 1) {
          g_pplayer->m_pin3d.EnableAlphaBlend(true);
-       // max
-       } else if (alphamode == 2) {
-         pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_TRUE);
-         pd3dDevice->SetRenderState(RenderDevice::BLENDOP, RenderDevice::BLENDOP_MAX);
-         pd3dDevice->SetRenderState(RenderDevice::SRCBLEND, RenderDevice::SRC_ALPHA);
-         pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, RenderDevice::INVSRC_COLOR);
-       //subtract
-       } else if (alphamode == 3) {
-         pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_TRUE);
-         pd3dDevice->SetRenderState(RenderDevice::BLENDOP, RenderDevice::BLENDOP_SUBTRACT);
-         pd3dDevice->SetRenderState(RenderDevice::SRCBLEND, RenderDevice::ZERO);
-         pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, RenderDevice::INVSRC_COLOR);
-       // normal
-       } else if (alphamode == 4) {
-         pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_TRUE);
-         pd3dDevice->SetRenderState(RenderDevice::BLENDOP, RenderDevice::BLENDOP_ADD);
-         pd3dDevice->SetRenderState(RenderDevice::SRCBLEND, RenderDevice::SRC_ALPHA);
-         pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, RenderDevice::INVSRC_ALPHA);
-       }
+      // max
+      } else if (alphamode == 2) {
+         m_rd->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_TRUE);
+         m_rd->SetRenderState(RenderDevice::BLENDOP, RenderDevice::BLENDOP_MAX);
+         m_rd->SetRenderState(RenderDevice::SRCBLEND, RenderDevice::SRC_ALPHA);
+         m_rd->SetRenderState(RenderDevice::DESTBLEND, RenderDevice::INVSRC_COLOR);
+      //subtract
+      } else if (alphamode == 3) {
+         m_rd->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_TRUE);
+         m_rd->SetRenderState(RenderDevice::BLENDOP, RenderDevice::BLENDOP_SUBTRACT);
+         m_rd->SetRenderState(RenderDevice::SRCBLEND, RenderDevice::ZERO);
+         m_rd->SetRenderState(RenderDevice::DESTBLEND, RenderDevice::INVSRC_COLOR);
+      // normal
+      } else if (alphamode == 4) {
+         m_rd->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_TRUE);
+         m_rd->SetRenderState(RenderDevice::BLENDOP, RenderDevice::BLENDOP_ADD);
+         m_rd->SetRenderState(RenderDevice::SRCBLEND, RenderDevice::SRC_ALPHA);
+         m_rd->SetRenderState(RenderDevice::DESTBLEND, RenderDevice::INVSRC_ALPHA);
+      }
 
-       const int alphatest = 0; //!!
-       if (alphatest)
+      const int alphatest = 0; //!!
+      if (alphatest)
          g_pplayer->m_pin3d.EnableAlphaTestReference(0x80);*/
 
-       //const float width = g_pplayer->m_pin3d.m_useAA ? 2.0f*(float)m_width : (float)m_width; //!! AA ?? -> should just work
-       pd3dDevice->DMDShader->SetTechnique(SHADER_TECHNIQUE_basic_DMD_world); //!! DMD_UPSCALE ?? -> should just work
+      m_rd->DMDShader->SetTechnique(SHADER_TECHNIQUE_basic_DMD_world); //!! DMD_UPSCALE ?? -> should just work
 
-       pd3dDevice->DMDShader->SetVector(SHADER_vColor_Intensity, &color);
+      m_rd->DMDShader->SetVector(SHADER_vColor_Intensity, &color);
 
-       const int2 &dmdSize = m_texdmd != nullptr ? m_dmdSize : g_pplayer->m_dmd;
+      const int2 &dmdSize = m_texdmd != nullptr ? m_dmdSize : g_pplayer->m_dmd;
 
-#ifdef DMD_UPSCALE
-       const vec4 r((float)(dmdSize.x * 3), (float)(dmdSize.y * 3), m_d.m_modulate_vs_add, (float)(g_pplayer->m_overall_frames % 2048)); //(float)(0.5 / m_width), (float)(0.5 / m_height));
-#else
-       const vec4 r((float)dmdSize.x, (float)dmdSize.y, m_d.m_modulate_vs_add, (float)(g_pplayer->m_overall_frames % 2048)); //(float)(0.5 / m_width), (float)(0.5 / m_height));
-#endif
-       pd3dDevice->DMDShader->SetVector(SHADER_vRes_Alpha_time, &r);
+      #ifdef DMD_UPSCALE
+      const vec4 r((float)(dmdSize.x * 3), (float)(dmdSize.y * 3), m_d.m_modulate_vs_add, (float)(g_pplayer->m_overall_frames % 2048)); //(float)(0.5 / m_width), (float)(0.5 / m_height));
+      #else
+      const vec4 r((float)dmdSize.x, (float)dmdSize.y, m_d.m_modulate_vs_add, (float)(g_pplayer->m_overall_frames % 2048)); //(float)(0.5 / m_width), (float)(0.5 / m_height));
+      #endif
+      m_rd->DMDShader->SetVector(SHADER_vRes_Alpha_time, &r);
 
-       // If we're capturing Freezy DMD switch to ext technique to avoid incorrect colorization
-       if (HasDMDCapture())
-          pd3dDevice->DMDShader->SetTechnique(SHADER_TECHNIQUE_basic_DMD_world_ext);
+      // If we're capturing Freezy DMD switch to ext technique to avoid incorrect colorization
+      if (HasDMDCapture())
+         m_rd->DMDShader->SetTechnique(SHADER_TECHNIQUE_basic_DMD_world_ext);
 
-       if (texdmd != nullptr)
-          pd3dDevice->DMDShader->SetTexture(SHADER_tex_dmd, texdmd, SF_NONE, SA_CLAMP, SA_CLAMP);
+      if (texdmd != nullptr)
+         m_rd->DMDShader->SetTexture(SHADER_tex_dmd, texdmd, SF_NONE, SA_CLAMP, SA_CLAMP);
 
-       Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_height);
-       // DMD flasher are rendered transparent. They used to be drawn as a separate pass after opaque parts and before other transparents.
-       // There we shift the depthbias to reproduc this behavior.
-       pd3dDevice->DrawMesh(pd3dDevice->DMDShader, true, pos, m_d.m_depthBias - 10000.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
+      Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_height);
+      // DMD flasher are rendered transparent. They used to be drawn as a separate pass after opaque parts and before other transparents.
+      // There we shift the depthbias to reproduce this behavior.
+      m_rd->DrawMesh(m_rd->DMDShader, true, pos, m_d.m_depthBias - 10000.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
    }
    else
    {
-       if (m_dynamicVertexBufferRegenerate)
-       {
-          UpdateMesh();
-          m_dynamicVertexBufferRegenerate = false;
-       }
+      Texture * const pinA = m_ptable->GetImage(m_d.m_szImageA);
+      Texture * const pinB = m_ptable->GetImage(m_d.m_szImageB);
 
-       pd3dDevice->SetRenderStateDepthBias(0.0f);
-       pd3dDevice->SetRenderStateCulling(RenderState::CULL_NONE);
+      m_rd->flasherShader->SetVector(SHADER_staticColor_Alpha, &color);
 
-       Texture * const pinA = m_ptable->GetImage(m_d.m_szImageA);
-       Texture * const pinB = m_ptable->GetImage(m_d.m_szImageB);
+      vec4 flasherData(-1.f, -1.f, (float)m_d.m_filter, m_d.m_addBlend ? 1.f : 0.f);
+      m_rd->flasherShader->SetTechnique(SHADER_TECHNIQUE_basic_noLight);
 
-       pd3dDevice->flasherShader->SetVector(SHADER_staticColor_Alpha, &color);
+      float flasherMode;
+      if ((pinA || m_isVideoCap) && !pinB)
+      {
+         flasherMode = 0.f;
+         if (m_isVideoCap)
+            m_rd->flasherShader->SetTexture(SHADER_tex_flasher_A, m_videoCapTex);
+         else
+            m_rd->flasherShader->SetTexture(SHADER_tex_flasher_A, pinA);
 
-       vec4 flasherData(-1.f, -1.f, (float)m_d.m_filter, m_d.m_addBlend ? 1.f : 0.f);
-       pd3dDevice->flasherShader->SetTechnique(SHADER_TECHNIQUE_basic_noLight);
+         if (!m_d.m_addBlend)
+            flasherData.x = !m_isVideoCap ? pinA->m_alphaTestValue * (float)(1.0/255.0) : 0.f;
+      }
+      else if (!(pinA || m_isVideoCap) && pinB)
+      {
+         flasherMode = 0.f;
+         m_rd->flasherShader->SetTexture(SHADER_tex_flasher_A, pinB);
 
-       float flasherMode;
-       if ((pinA || m_isVideoCap) && !pinB)
-       {
-          flasherMode = 0.f;
-          if (m_isVideoCap)
-             pd3dDevice->flasherShader->SetTexture(SHADER_tex_flasher_A, m_videoCapTex);
-          else
-             pd3dDevice->flasherShader->SetTexture(SHADER_tex_flasher_A, pinA);
+         if (!m_d.m_addBlend)
+            flasherData.x = pinB->m_alphaTestValue * (float)(1.0/255.0);
+      }
+      else if ((pinA || m_isVideoCap) && pinB)
+      {
+         flasherMode = 1.f;
+         if (m_isVideoCap)
+            m_rd->flasherShader->SetTexture(SHADER_tex_flasher_A, m_videoCapTex);
+         else
+            m_rd->flasherShader->SetTexture(SHADER_tex_flasher_A, pinA);
+         m_rd->flasherShader->SetTexture(SHADER_tex_flasher_B, pinB);
 
-          if (!m_d.m_addBlend)
-             flasherData.x = !m_isVideoCap ? pinA->m_alphaTestValue * (float)(1.0/255.0) : 0.f;
-       }
-       else if (!(pinA || m_isVideoCap) && pinB)
-       {
-          flasherMode = 0.f;
-          pd3dDevice->flasherShader->SetTexture(SHADER_tex_flasher_A, pinB);
+         if (!m_d.m_addBlend)
+         {
+            flasherData.x = !m_isVideoCap ? pinA->m_alphaTestValue * (float)(1.0/255.0) : 0.f;
+            flasherData.y = pinB->m_alphaTestValue * (float)(1.0/255.0);
+         }
+      }
+      else
+         flasherMode = 2.f;
 
-          if (!m_d.m_addBlend)
-             flasherData.x = pinB->m_alphaTestValue * (float)(1.0/255.0);
-       }
-       else if ((pinA || m_isVideoCap) && pinB)
-       {
-          flasherMode = 1.f;
-          if (m_isVideoCap)
-             pd3dDevice->flasherShader->SetTexture(SHADER_tex_flasher_A, m_videoCapTex);
-          else
-             pd3dDevice->flasherShader->SetTexture(SHADER_tex_flasher_A, pinA);
-          pd3dDevice->flasherShader->SetTexture(SHADER_tex_flasher_B, pinB);
+      const vec4 flasherData2((float)m_d.m_filterAmount / 100.0f, min(max(m_d.m_modulate_vs_add, 0.00001f), 0.9999f), // avoid 0, as it disables the blend and avoid 1 as it looks not good with day->night changes
+         flasherMode, 0.f);
+      m_rd->flasherShader->SetVector(SHADER_alphaTestValueAB_filterMode_addBlend, &flasherData);
+      m_rd->flasherShader->SetVector(SHADER_amount_blend_modulate_vs_add_flasherMode, &flasherData2);
 
-          if (!m_d.m_addBlend)
-          {
-             flasherData.x = !m_isVideoCap ? pinA->m_alphaTestValue * (float)(1.0/255.0) : 0.f;
-             flasherData.y = pinB->m_alphaTestValue * (float)(1.0/255.0);
-          }
-       }
-       else
-          flasherMode = 2.f;
+      // Check if this flasher is used as a lightmap and should be convoluted with the light shadows
+      if (m_lightmap != nullptr && m_lightmap->m_d.m_shadows == ShadowMode::RAYTRACED_BALL_SHADOWS)
+         m_rd->flasherShader->SetVector(SHADER_lightCenter_doShadow, m_lightmap->m_d.m_vCenter.x, m_lightmap->m_d.m_vCenter.y, m_lightmap->GetCurrentHeight(), 1.0f);
 
-       const vec4 flasherData2((float)m_d.m_filterAmount / 100.0f, min(max(m_d.m_modulate_vs_add, 0.00001f), 0.9999f), // avoid 0, as it disables the blend and avoid 1 as it looks not good with day->night changes
-          flasherMode, 0.f);
-       pd3dDevice->flasherShader->SetVector(SHADER_alphaTestValueAB_filterMode_addBlend, &flasherData);
-       pd3dDevice->flasherShader->SetVector(SHADER_amount_blend_modulate_vs_add_flasherMode, &flasherData2);
+      m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
+      g_pplayer->m_pin3d.EnableAlphaBlend(m_d.m_addBlend, false, false);
+      m_rd->SetRenderState(RenderState::DESTBLEND, m_d.m_addBlend ? RenderState::INVSRC_COLOR : RenderState::INVSRC_ALPHA);
+      m_rd->SetRenderState(RenderState::BLENDOP, m_d.m_addBlend ? RenderState::BLENDOP_REVSUBTRACT : RenderState::BLENDOP_ADD);
 
-       // Check if this flasher is used as a lightmap and should be convoluted with the light shadows
-       if (m_lightmap != nullptr && m_lightmap->m_d.m_shadows == ShadowMode::RAYTRACED_BALL_SHADOWS)
-          pd3dDevice->flasherShader->SetVector(SHADER_lightCenter_doShadow, m_lightmap->m_d.m_vCenter.x, m_lightmap->m_d.m_vCenter.y, m_lightmap->GetCurrentHeight(), 1.0f);
+      Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_height);
+      m_rd->DrawMesh(m_rd->flasherShader, true, pos, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
 
-       pd3dDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
-       g_pplayer->m_pin3d.EnableAlphaBlend(m_d.m_addBlend, false, false);
-       pd3dDevice->SetRenderState(RenderState::DESTBLEND, m_d.m_addBlend ? RenderState::INVSRC_COLOR : RenderState::INVSRC_ALPHA);
-       pd3dDevice->SetRenderState(RenderState::BLENDOP, m_d.m_addBlend ? RenderState::BLENDOP_REVSUBTRACT : RenderState::BLENDOP_ADD);
-
-       Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_height);
-       pd3dDevice->DrawMesh(pd3dDevice->flasherShader, true, pos, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
-
-       pd3dDevice->flasherShader->SetVector(SHADER_lightCenter_doShadow, 0.0f, 0.0f, 0.0f, 0.0f);
+      m_rd->flasherShader->SetVector(SHADER_lightCenter_doShadow, 0.0f, 0.0f, 0.0f, 0.0f);
    }
 
-   pd3dDevice->CopyRenderStates(false, initial_state);
+   m_rd->CopyRenderStates(false, initial_state);
 }
