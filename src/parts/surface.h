@@ -97,6 +97,18 @@ public:
 
    float GetDepth(const Vertex3Ds& viewDir) const final { return viewDir.z * m_d.m_heighttop; }
    ItemTypeEnum HitableGetItemType() const final { return eItemSurface; }
+
+   virtual void RenderSetup(RenderDevice *device);
+   virtual void Render(const unsigned int renderMask);
+   virtual void RenderRelease();
+
+protected:
+   void RenderSlingshots();
+   void RenderWallsAtHeight(const bool drop, const bool isReflectionPass);
+
+   RenderDevice *m_rd = nullptr;
+
+public:
    bool IsTransparent() const final;
    void SetDefaultPhysics(const bool fromMouseClick) final;
    void ExportMesh(ObjLoader& loader) final;
@@ -121,14 +133,7 @@ private:
    void SetupHitObject(vector<HitObject*> &pvho, HitObject * const obj);
    void AddLine(vector<HitObject*> &pvho, const RenderVertex &pv1, const RenderVertex &pv2);
 
-   void RenderSlingshots();
-   void RenderWallsAtHeight(const bool drop);
-   void PrepareWallsAtHeight();
-   void PrepareSlingshots();
    void GenerateMesh(vector<Vertex3D_NoTex2> &topBuf, vector<Vertex3D_NoTex2> &sideBuf, vector<WORD> &topBottomIndices, vector<WORD> &sideIndices);
-
-   void FreeBuffers();
-
 
    PinTable *m_ptable;
 

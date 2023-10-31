@@ -19,7 +19,7 @@ Surface::Surface()
 
 Surface::~Surface()
 {
-   FreeBuffers();
+   assert(m_rd == nullptr); // RenderRelease must be explicitely called before deleting this object
 }
 
 Surface *Surface::CopyForPlay(PinTable *live_table)
@@ -538,7 +538,7 @@ void Surface::EndPlay()
    m_vhoDrop.clear();
    m_vhoCollidable.clear();
 
-   FreeBuffers();
+   RenderRelease();
 }
 
 void Surface::UpdateBounds()
@@ -555,34 +555,6 @@ void Surface::MoveOffset(const float dx, const float dy)
 
       pdp->m_v.x += dx;
       pdp->m_v.y += dy;
-   }
-}
-
-void Surface::RenderDynamic()
-{
-   TRACE_FUNCTION();
-
-   if (g_pplayer->IsRenderPass(Player::REFLECTION_PASS) && !m_d.m_reflectionEnabled)
-      return;
-
-   RenderSlingshots();
-
-   if (!StaticRendering())
-   {
-      if (!m_isDropped)
-      {
-         // Render wall raised.
-         RenderWallsAtHeight(false);
-      }
-      else    // is dropped
-      {
-         // if this wall is part of flipbook animation, do not render when dropped
-         if (!m_d.m_flipbook)
-         {
-            // Render wall dropped (smashed to a pancake at bottom height).
-            RenderWallsAtHeight(true);
-         }
-      }
    }
 }
 
@@ -856,119 +828,26 @@ void Surface::ExportMesh(ObjLoader& loader)
    }
 }
 
-void Surface::PrepareWallsAtHeight()
+void Surface::UpdateAnimation(const float diff_time_msec)
 {
-   vector<Vertex3D_NoTex2> topBottomBuf, sideBuf;
-   vector<WORD> topBottomIndices, sideIndices;
-   GenerateMesh(topBottomBuf, sideBuf, topBottomIndices, sideIndices);
-
-   VertexBuffer *VBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, static_cast<const unsigned int>(sideBuf.size() + topBottomBuf.size()));
-   Vertex3D_NoTex2 *verts;
-   VBuffer->lock(0, 0, (void**)&verts, VertexBuffer::WRITEONLY);
-   memcpy(verts, sideBuf.data(), sizeof(Vertex3D_NoTex2) * sideBuf.size());
-   memcpy(verts + sideBuf.size(), topBottomBuf.data(), sizeof(Vertex3D_NoTex2) * topBottomBuf.size());
-   VBuffer->unlock();
-
-   // Offset indices to directly point to the right vertices in the vertex buffer
-   for (unsigned int i = 0; i < m_numPolys * 3; i++)
-      topBottomIndices[i] += (WORD)sideBuf.size();
-   topBottomIndices.reserve(m_numPolys*3 * 3);
-   // Append indices for dropped top
-   for (unsigned int i = 0; i < m_numPolys * 3; i++)
-      topBottomIndices.push_back(topBottomIndices[i] + m_numVertices);
-   // Append indices for bottom (used when rendering reflections)
-   for (unsigned int i = 0; i < m_numPolys * 3; i++)
-      topBottomIndices.push_back(topBottomIndices[i] + m_numVertices * 2);
-
-   IndexBuffer *IBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, (unsigned int)topBottomIndices.size() + (unsigned int)sideIndices.size());
-   WORD* buf;
-   IBuffer->lock(0, 0, (void**)&buf, IndexBuffer::WRITEONLY);
-   memcpy(buf, sideIndices.data(), sideIndices.size() * sizeof(WORD));
-   memcpy(buf + sideIndices.size(), topBottomIndices.data(), topBottomIndices.size() * sizeof(WORD));
-   IBuffer->unlock();
-
-   delete m_meshBuffer;
-   m_meshBuffer = new MeshBuffer(m_wzName, VBuffer, IBuffer, true);
+   for (size_t i = 0; i < m_vlinesling.size(); ++i)
+      m_vlinesling[i]->Animate();
 }
 
-static constexpr WORD rgiSlingshot[24] = { 0, 4, 3, 0, 1, 4, 1, 2, 5, 1, 5, 4, 4, 8, 5, 4, 7, 8, 3, 7, 4, 3, 6, 7 };
+// Deprecated Legacy API to be removed
+void Surface::RenderSetup() { }
+void Surface::RenderStatic() { }
+void Surface::RenderDynamic() { }
 
-void Surface::PrepareSlingshots()
+void Surface::RenderSetup(RenderDevice *device)
 {
-   const float slingbottom = (m_d.m_heighttop - m_d.m_heightbottom) * 0.2f + m_d.m_heightbottom;
-   const float slingtop = (m_d.m_heighttop - m_d.m_heightbottom) * 0.8f + m_d.m_heightbottom;
-   const unsigned int n_lines = static_cast<const unsigned int>(m_vlinesling.size());
+   assert(m_rd == nullptr);
+   m_rd = device;
 
-   Vertex3D_NoTex2 *const rgv3D = new Vertex3D_NoTex2[n_lines * 9];
-   unsigned short *const rgIdx = new unsigned short[n_lines * 24];
-
-   unsigned int offset = 0, offsetIdx = 0;
-   for (size_t i = 0; i < n_lines; i++, offset += 9, offsetIdx += 24)
-   {
-      LineSegSlingshot * const plinesling = m_vlinesling[i];
-      plinesling->m_animations = m_d.m_slingshotAnimation;
-
-      rgv3D[offset].x = plinesling->v1.x;
-      rgv3D[offset].y = plinesling->v1.y;
-      rgv3D[offset].z = slingbottom + m_ptable->m_tableheight;
-
-      rgv3D[offset + 1].x = (plinesling->v1.x + plinesling->v2.x)*0.5f + plinesling->normal.x*(m_d.m_slingshotforce * 0.25f); //40;//20;
-      rgv3D[offset + 1].y = (plinesling->v1.y + plinesling->v2.y)*0.5f + plinesling->normal.y*(m_d.m_slingshotforce * 0.25f); //20;
-      rgv3D[offset + 1].z = slingbottom + m_ptable->m_tableheight;
-
-      rgv3D[offset + 2].x = plinesling->v2.x;
-      rgv3D[offset + 2].y = plinesling->v2.y;
-      rgv3D[offset + 2].z = slingbottom + m_ptable->m_tableheight;
-
-      for (unsigned int l = 0; l < 3; l++)
-      {
-         rgv3D[l + offset + 3].x = rgv3D[l + offset].x;
-         rgv3D[l + offset + 3].y = rgv3D[l + offset].y;
-         rgv3D[l + offset + 3].z = slingtop + m_ptable->m_tableheight;
-      }
-
-      for (unsigned int l = 0; l < 3; l++)
-      {
-         rgv3D[l + offset + 6].x = rgv3D[l + offset].x - plinesling->normal.x*5.0f;
-         rgv3D[l + offset + 6].y = rgv3D[l + offset].y - plinesling->normal.y*5.0f;
-         rgv3D[l + offset + 6].z = slingtop + m_ptable->m_tableheight;
-      }
-
-      for (unsigned int l = 0; l < 24; l++)
-      {
-         rgIdx[l + offsetIdx] = offset + rgiSlingshot[l];
-      }
-
-      ComputeNormals(rgv3D + offset, 9, rgiSlingshot, 24);
-   }
-
-   VertexBuffer *slingshotVBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, n_lines * 9);
-   Vertex3D_NoTex2 *buf;
-   slingshotVBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
-   memcpy(buf, rgv3D, m_vlinesling.size() * 9 * sizeof(Vertex3D_NoTex2));
-   slingshotVBuffer->unlock();
-   delete[] rgv3D;
-
-   IndexBuffer *slingIBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, n_lines * 24);
-   unsigned short *ibuf;
-   slingIBuffer->lock(0, 0, (void**)&ibuf, VertexBuffer::WRITEONLY);
-   memcpy(ibuf, rgIdx, m_vlinesling.size() * 24 * sizeof(unsigned short));
-   delete[] rgIdx;
-   slingIBuffer->unlock();
-
-   delete m_slingshotMeshBuffer;
-   m_slingshotMeshBuffer = new MeshBuffer(m_wzName + L".Slingshot"s, slingshotVBuffer, slingIBuffer, true);
-}
-
-void Surface::RenderSetup()
-{
    const float oldBottomHeight = m_d.m_heightbottom;
    const float oldTopHeight = m_d.m_heighttop;
    
    UpdateBounds();
-
-   if (!m_vlinesling.empty())
-      PrepareSlingshots();
 
    m_isDynamic = false;
    if (m_d.m_sideVisible)
@@ -982,34 +861,152 @@ void Surface::RenderSetup()
          m_isDynamic = true;
    }
 
-   // create all vertices for dropped and non-dropped surface
-   PrepareWallsAtHeight();
+   // Prepare slingshot rendering
+   if (!m_vlinesling.empty())
+   {
+      static constexpr WORD rgiSlingshot[24] = { 0, 4, 3, 0, 1, 4, 1, 2, 5, 1, 5, 4, 4, 8, 5, 4, 7, 8, 3, 7, 4, 3, 6, 7 };
+      
+      const float slingbottom = (m_d.m_heighttop - m_d.m_heightbottom) * 0.2f + m_d.m_heightbottom;
+      const float slingtop = (m_d.m_heighttop - m_d.m_heightbottom) * 0.8f + m_d.m_heightbottom;
+      const unsigned int n_lines = static_cast<const unsigned int>(m_vlinesling.size());
+
+      Vertex3D_NoTex2 *const rgv3D = new Vertex3D_NoTex2[n_lines * 9];
+      unsigned short *const rgIdx = new unsigned short[n_lines * 24];
+
+      unsigned int offset = 0, offsetIdx = 0;
+      for (size_t i = 0; i < n_lines; i++, offset += 9, offsetIdx += 24)
+      {
+         LineSegSlingshot * const plinesling = m_vlinesling[i];
+         plinesling->m_animations = m_d.m_slingshotAnimation;
+
+         rgv3D[offset].x = plinesling->v1.x;
+         rgv3D[offset].y = plinesling->v1.y;
+         rgv3D[offset].z = slingbottom + m_ptable->m_tableheight;
+
+         rgv3D[offset + 1].x = (plinesling->v1.x + plinesling->v2.x)*0.5f + plinesling->normal.x*(m_d.m_slingshotforce * 0.25f); //40;//20;
+         rgv3D[offset + 1].y = (plinesling->v1.y + plinesling->v2.y)*0.5f + plinesling->normal.y*(m_d.m_slingshotforce * 0.25f); //20;
+         rgv3D[offset + 1].z = slingbottom + m_ptable->m_tableheight;
+
+         rgv3D[offset + 2].x = plinesling->v2.x;
+         rgv3D[offset + 2].y = plinesling->v2.y;
+         rgv3D[offset + 2].z = slingbottom + m_ptable->m_tableheight;
+
+         for (unsigned int l = 0; l < 3; l++)
+         {
+            rgv3D[l + offset + 3].x = rgv3D[l + offset].x;
+            rgv3D[l + offset + 3].y = rgv3D[l + offset].y;
+            rgv3D[l + offset + 3].z = slingtop + m_ptable->m_tableheight;
+         }
+
+         for (unsigned int l = 0; l < 3; l++)
+         {
+            rgv3D[l + offset + 6].x = rgv3D[l + offset].x - plinesling->normal.x*5.0f;
+            rgv3D[l + offset + 6].y = rgv3D[l + offset].y - plinesling->normal.y*5.0f;
+            rgv3D[l + offset + 6].z = slingtop + m_ptable->m_tableheight;
+         }
+
+         for (unsigned int l = 0; l < 24; l++)
+         {
+            rgIdx[l + offsetIdx] = offset + rgiSlingshot[l];
+         }
+
+         ComputeNormals(rgv3D + offset, 9, rgiSlingshot, 24);
+      }
+
+      VertexBuffer *slingshotVBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, n_lines * 9);
+      Vertex3D_NoTex2 *buf;
+      slingshotVBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+      memcpy(buf, rgv3D, m_vlinesling.size() * 9 * sizeof(Vertex3D_NoTex2));
+      slingshotVBuffer->unlock();
+      delete[] rgv3D;
+
+      IndexBuffer *slingIBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, n_lines * 24);
+      unsigned short *ibuf;
+      slingIBuffer->lock(0, 0, (void**)&ibuf, VertexBuffer::WRITEONLY);
+      memcpy(ibuf, rgIdx, m_vlinesling.size() * 24 * sizeof(unsigned short));
+      delete[] rgIdx;
+      slingIBuffer->unlock();
+
+      m_slingshotMeshBuffer = new MeshBuffer(m_wzName + L".Slingshot"s, slingshotVBuffer, slingIBuffer, true);
+   }
+
+   // Prepare mesh buffer for dropped and non-dropped surfaces
+   {
+      vector<Vertex3D_NoTex2> topBottomBuf, sideBuf;
+      vector<WORD> topBottomIndices, sideIndices;
+      GenerateMesh(topBottomBuf, sideBuf, topBottomIndices, sideIndices);
+
+      VertexBuffer *VBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, static_cast<const unsigned int>(sideBuf.size() + topBottomBuf.size()));
+      Vertex3D_NoTex2 *verts;
+      VBuffer->lock(0, 0, (void**)&verts, VertexBuffer::WRITEONLY);
+      memcpy(verts, sideBuf.data(), sizeof(Vertex3D_NoTex2) * sideBuf.size());
+      memcpy(verts + sideBuf.size(), topBottomBuf.data(), sizeof(Vertex3D_NoTex2) * topBottomBuf.size());
+      VBuffer->unlock();
+
+      // Offset indices to directly point to the right vertices in the vertex buffer
+      for (unsigned int i = 0; i < m_numPolys * 3; i++)
+         topBottomIndices[i] += (WORD)sideBuf.size();
+      topBottomIndices.reserve(m_numPolys*3 * 3);
+      // Append indices for dropped top
+      for (unsigned int i = 0; i < m_numPolys * 3; i++)
+         topBottomIndices.push_back(topBottomIndices[i] + m_numVertices);
+      // Append indices for bottom (used when rendering reflections)
+      for (unsigned int i = 0; i < m_numPolys * 3; i++)
+         topBottomIndices.push_back(topBottomIndices[i] + m_numVertices * 2);
+
+      IndexBuffer *IBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, (unsigned int)topBottomIndices.size() + (unsigned int)sideIndices.size());
+      WORD* buf;
+      IBuffer->lock(0, 0, (void**)&buf, IndexBuffer::WRITEONLY);
+      memcpy(buf, sideIndices.data(), sideIndices.size() * sizeof(WORD));
+      memcpy(buf + sideIndices.size(), topBottomIndices.data(), topBottomIndices.size() * sizeof(WORD));
+      IBuffer->unlock();
+
+      m_meshBuffer = new MeshBuffer(m_wzName, VBuffer, IBuffer, true);
+   }
+
    m_d.m_heightbottom = oldBottomHeight;
    m_d.m_heighttop = oldTopHeight;
 }
 
-void Surface::FreeBuffers()
+void Surface::RenderRelease()
 {
+   assert(m_rd != nullptr);
    delete m_slingshotMeshBuffer;
    m_slingshotMeshBuffer = nullptr;
    delete m_meshBuffer;
    m_meshBuffer = nullptr;
+   m_rd = nullptr;
 }
 
-void Surface::UpdateAnimation(const float diff_time_msec)
+void Surface::Render(const unsigned int renderMask)
 {
-   for (size_t i = 0; i < m_vlinesling.size(); ++i)
-      m_vlinesling[i]->Animate();
-}
+   assert(m_rd != nullptr);
+   const bool isStaticOnly = renderMask & Player::STATIC_ONLY;
+   const bool isDynamicOnly = renderMask & Player::DYNAMIC_ONLY;
+   const bool isReflectionPass = renderMask & Player::REFLECTION_PASS;
+   TRACE_FUNCTION();
 
-void Surface::RenderStatic()
-{
-   if (g_pplayer->IsRenderPass(Player::REFLECTION_PASS) && !m_d.m_reflectionEnabled)
+   if (isReflectionPass && !m_d.m_reflectionEnabled)
       return;
-
+   
    RenderSlingshots();
-   if (StaticRendering())
-      RenderWallsAtHeight(false);
+   
+   if (isStaticOnly && !StaticRendering())
+      return;
+   
+   if (isDynamicOnly && StaticRendering())
+      return;
+   
+   if (!m_isDropped || StaticRendering())
+   {
+      RenderWallsAtHeight(false, isReflectionPass);
+   }
+   else if (!m_d.m_flipbook)
+   {
+      // if this wall is part of flipbook animation, do not render when dropped
+      // Render wall dropped (smashed to a pancake at bottom height).
+      RenderWallsAtHeight(true, isReflectionPass);
+   }
 }
 
 void Surface::RenderSlingshots()
@@ -1031,17 +1028,16 @@ void Surface::RenderSlingshots()
    if (nothing_to_draw)
       return;
 
-   RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
    RenderState initial_state;
-   pd3dDevice->CopyRenderStates(true, initial_state);
+   m_rd->CopyRenderStates(true, initial_state);
 
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szSlingShotMaterial);
-   pd3dDevice->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, mat);
-   pd3dDevice->basicShader->SetMaterial(mat, false);
+   m_rd->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, mat);
+   m_rd->basicShader->SetMaterial(mat, false);
 
-   pd3dDevice->SetRenderStateDepthBias(0.0f);
-   pd3dDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
-   pd3dDevice->SetRenderStateCulling(RenderState::CULL_NONE);
+   m_rd->SetRenderStateDepthBias(0.0f);
+   m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
+   m_rd->SetRenderStateCulling(RenderState::CULL_NONE);
 
    for (size_t i = 0; i < m_vlinesling.size(); i++)
    {
@@ -1059,23 +1055,19 @@ void Surface::RenderSlingshots()
           }
       }
    }
-   pd3dDevice->DrawMesh(
-      pd3dDevice->basicShader, m_isDynamic, m_boundingSphereCenter, 0.f, m_slingshotMeshBuffer, RenderDevice::TRIANGLELIST, 0, static_cast<DWORD>(m_vlinesling.size() * 24));
+   m_rd->DrawMesh(m_rd->basicShader, m_isDynamic, m_boundingSphereCenter, 0.f, m_slingshotMeshBuffer, RenderDevice::TRIANGLELIST, 0, static_cast<DWORD>(m_vlinesling.size() * 24));
 
-   pd3dDevice->CopyRenderStates(false, initial_state);
+   m_rd->CopyRenderStates(false, initial_state);
 }
 
-void Surface::RenderWallsAtHeight(const bool drop)
+void Surface::RenderWallsAtHeight(const bool drop, const bool isReflectionPass)
 {
-   if (g_pplayer->IsRenderPass(Player::REFLECTION_PASS) && (/*m_d.m_heightbottom < 0.0f ||*/ m_d.m_heighttop < 0.0f))
+   if (isReflectionPass && (/*m_d.m_heightbottom < 0.0f ||*/ m_d.m_heighttop < 0.0f))
       return;
 
-   RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
    RenderState initial_state;
-   pd3dDevice->CopyRenderStates(true, initial_state);
-
-   if ((m_d.m_disableLightingTop != 0.f || m_d.m_disableLightingBelow != 0.f) && (m_d.m_sideVisible || m_d.m_topBottomVisible))
-      pd3dDevice->basicShader->SetVector(SHADER_fDisableLighting_top_below, m_d.m_disableLightingTop, m_d.m_disableLightingBelow, 0.f, 0.f);
+   m_rd->CopyRenderStates(true, initial_state);
+   m_rd->basicShader->SetVector(SHADER_fDisableLighting_top_below, m_d.m_disableLightingTop, m_d.m_disableLightingBelow, 0.f, 0.f);
 
    // render side
    if (m_d.m_sideVisible && !drop && (m_numVertices > 0)) // Don't need to render walls if dropped
@@ -1083,31 +1075,31 @@ void Surface::RenderWallsAtHeight(const bool drop)
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szSideMaterial);
 
       if (mat->m_bOpacityActive || !m_isDynamic)
-          pd3dDevice->SetRenderStateCulling(RenderState::CULL_NONE);
+          m_rd->SetRenderStateCulling(RenderState::CULL_NONE);
       else
       {
          if (m_d.m_topBottomVisible && m_isDynamic)
-              pd3dDevice->SetRenderStateCulling(RenderState::CULL_NONE);
+              m_rd->SetRenderStateCulling(RenderState::CULL_NONE);
          else
-              pd3dDevice->SetRenderStateCulling(RenderState::CULL_CCW);
+              m_rd->SetRenderStateCulling(RenderState::CULL_CCW);
       }
 
       Texture *const pinSide = m_ptable->GetImage(m_d.m_szSideImage);
       if (pinSide)
       {
-         pd3dDevice->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, mat);
-         pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, pinSide, SF_UNDEFINED, SA_CLAMP, SA_CLAMP);
-         pd3dDevice->basicShader->SetAlphaTestValue(pinSide->m_alphaTestValue * (float)(1.0 / 255.0));
-         pd3dDevice->basicShader->SetMaterial(mat, pinSide->m_pdsBuffer->has_alpha());
+         m_rd->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, mat);
+         m_rd->basicShader->SetTexture(SHADER_tex_base_color, pinSide, SF_UNDEFINED, SA_CLAMP, SA_CLAMP);
+         m_rd->basicShader->SetAlphaTestValue(pinSide->m_alphaTestValue * (float)(1.0 / 255.0));
+         m_rd->basicShader->SetMaterial(mat, pinSide->m_pdsBuffer->has_alpha());
       }
       else
       {
-         pd3dDevice->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, mat);
-         pd3dDevice->basicShader->SetMaterial(mat, false);
+         m_rd->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, mat);
+         m_rd->basicShader->SetMaterial(mat, false);
       }
 
       // combine drawcalls into one (hopefully faster)
-      pd3dDevice->DrawMesh(pd3dDevice->basicShader, m_isDynamic, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numVertices * 6);
+      m_rd->DrawMesh(m_rd->basicShader, m_isDynamic, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numVertices * 6);
    }
 
    // render top&bottom
@@ -1116,45 +1108,44 @@ void Surface::RenderWallsAtHeight(const bool drop)
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szTopMaterial);
 
       if (mat->m_bOpacityActive || !m_isDynamic)
-         pd3dDevice->SetRenderStateCulling(RenderState::CULL_NONE);
+         m_rd->SetRenderStateCulling(RenderState::CULL_NONE);
       else
-         pd3dDevice->SetRenderStateCulling(RenderState::CULL_CCW);
+         m_rd->SetRenderStateCulling(RenderState::CULL_CCW);
 
       Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
       if (pin)
       {
-         pd3dDevice->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, mat);
-         pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, pin);
-         pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
-         pd3dDevice->basicShader->SetMaterial(mat, pin->m_pdsBuffer->has_alpha());
+         m_rd->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, mat);
+         m_rd->basicShader->SetTexture(SHADER_tex_base_color, pin);
+         m_rd->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
+         m_rd->basicShader->SetMaterial(mat, pin->m_pdsBuffer->has_alpha());
       }
       else
       {
-         pd3dDevice->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, mat);
-         pd3dDevice->basicShader->SetMaterial(mat, false);
+         m_rd->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, mat);
+         m_rd->basicShader->SetMaterial(mat, false);
       }
 
       // Top
-      pd3dDevice->DrawMesh(
-         pd3dDevice->basicShader, m_isDynamic, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, m_numVertices * 6 + (drop ? m_numPolys * 3 : 0), m_numPolys * 3);
+      m_rd->DrawMesh(
+         m_rd->basicShader, m_isDynamic, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, m_numVertices * 6 + (drop ? m_numPolys * 3 : 0), m_numPolys * 3);
 
       // Only render Bottom for Reflections
-      if (g_pplayer->IsRenderPass(Player::REFLECTION_PASS))
+      if (isReflectionPass)
       {
          if (mat->m_bOpacityActive || !m_isDynamic)
-            pd3dDevice->SetRenderStateCulling(RenderState::CULL_NONE);
+            m_rd->SetRenderStateCulling(RenderState::CULL_NONE);
          else
-            pd3dDevice->SetRenderStateCulling(RenderState::CULL_CW);
+            m_rd->SetRenderStateCulling(RenderState::CULL_CW);
 
-         pd3dDevice->DrawMesh(
-            pd3dDevice->basicShader, m_isDynamic, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, m_numVertices * 6 + (m_numPolys * 3 * 2), m_numPolys * 3);
+         m_rd->DrawMesh(
+            m_rd->basicShader, m_isDynamic, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, m_numVertices * 6 + (m_numPolys * 3 * 2), m_numPolys * 3);
       }
    }
 
    // reset render states
-   pd3dDevice->CopyRenderStates(false, initial_state);
-   if ((m_d.m_disableLightingTop != 0.f || m_d.m_disableLightingBelow != 0.f) && (m_d.m_sideVisible || m_d.m_topBottomVisible))
-      pd3dDevice->basicShader->SetVector(SHADER_fDisableLighting_top_below, 0.f, 0.f, 0.f, 0.f);
+   m_rd->CopyRenderStates(false, initial_state);
+   m_rd->basicShader->SetVector(SHADER_fDisableLighting_top_below, 0.f, 0.f, 0.f, 0.f);
 }
 
 void Surface::AddPoint(int x, int y, const bool smooth)
