@@ -96,6 +96,14 @@ public:
 
    void AddPoint(int x, int y, const bool smooth) final;
 
+   virtual void RenderSetup(RenderDevice *device);
+   virtual void Render(const unsigned int renderMask);
+   virtual void RenderRelease();
+
+protected:
+   RenderDevice *m_rd = nullptr;
+
+public:
    bool IsTransparent() const final { return !m_d.m_isDMD; }
    float GetDepth(const Vertex3Ds& viewDir) const final
    {
@@ -134,7 +142,6 @@ public:
    bool m_inPlayState;
 
 private:
-   void UpdateMesh();
    void InitShape();
 
    PinTable *m_ptable;
