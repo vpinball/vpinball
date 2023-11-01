@@ -1143,18 +1143,19 @@ void Player::UpdateStereoShaderState()
    }
 }
 
-void Player::InitShader()
+void Player::SetupShaders()
 {
+   const vec4 fenvEmissionScale_TexWidth(m_ptable->m_envEmissionScale * m_globalEmissionScale,
+      (m_pin3d.m_envTexture ? *m_pin3d.m_envTexture : m_pin3d.m_builtinEnvTexture).m_height /*+m_pin3d.m_builtinEnvTexture.m_width)*0.5f*/, 0.f, 0.f); //!! dto.
+
    UpdateBasicShaderMatrix();
    m_pin3d.m_pd3dPrimaryDevice->basicShader->SetTexture(SHADER_tex_env, m_pin3d.m_envTexture ? m_pin3d.m_envTexture : &m_pin3d.m_builtinEnvTexture);
-   m_pin3d.m_pd3dPrimaryDevice->basicShader->SetVector(SHADER_fenvEmissionScale_TexWidth, m_ptable->m_envEmissionScale * m_globalEmissionScale,
-      m_pin3d.m_envTexture ? (float)m_pin3d.m_envTexture->m_height /*+m_pin3d.m_envTexture->m_width)*0.5f*/
-                           : (float)m_pin3d.m_builtinEnvTexture.m_height /*+m_pin3d.m_builtinEnvTexture.m_width)*0.5f*/,
-      0.f, 0.f);
+   m_pin3d.m_pd3dPrimaryDevice->basicShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &fenvEmissionScale_TexWidth);
 
    UpdateBallShaderMatrix();
    const vec4 st(m_ptable->m_envEmissionScale*m_globalEmissionScale, m_pin3d.m_envTexture ? (float)m_pin3d.m_envTexture->m_height/*+m_pin3d.m_envTexture->m_width)*0.5f*/ : (float)m_pin3d.m_builtinEnvTexture.m_height/*+m_pin3d.m_builtinEnvTexture.m_width)*0.5f*/, 0.f, 0.f);
    m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
+   m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &fenvEmissionScale_TexWidth);
    //m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetInt("iLightPointNum",MAX_LIGHT_SOURCES);
 
    constexpr float Roughness = 0.8f;
@@ -1163,11 +1164,7 @@ void Player::InitShader()
    m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetVector(SHADER_cAmbient_LightRange, 
       amb_lr.x * m_globalEmissionScale, amb_lr.y * m_globalEmissionScale, amb_lr.z * m_globalEmissionScale, m_ptable->m_lightRange);
 
-   delete m_ballMeshBuffer;
-   const bool lowDetailBall = (m_ptable->GetDetailLevel() < 10);
-   IndexBuffer *ballIndexBuffer = new IndexBuffer(m_pin3d.m_pd3dPrimaryDevice, lowDetailBall ? basicBallLoNumFaces : basicBallMidNumFaces, lowDetailBall ? basicBallLoIndices : basicBallMidIndices);
-   VertexBuffer *ballVertexBuffer = new VertexBuffer(m_pin3d.m_pd3dPrimaryDevice, lowDetailBall ? basicBallLoNumVertices : basicBallMidNumVertices, (float *)(lowDetailBall ? basicBallLo : basicBallMid));
-   m_ballMeshBuffer = new MeshBuffer(L"Ball"s, ballVertexBuffer, ballIndexBuffer, true);
+   m_pin3d.InitLights();
 }
 
 void Player::UpdateBallShaderMatrix()
@@ -1595,7 +1592,13 @@ HRESULT Player::Init()
    g_pvp->ProfileLog("Setup Renderer"s);
    PLOGI << "Initializing renderer"; // For profiling
 
-   InitShader();
+   SetupShaders();
+
+   delete m_ballMeshBuffer;
+   const bool lowDetailBall = (m_ptable->GetDetailLevel() < 10);
+   IndexBuffer *ballIndexBuffer = new IndexBuffer(m_pin3d.m_pd3dPrimaryDevice, lowDetailBall ? basicBallLoNumFaces : basicBallMidNumFaces, lowDetailBall ? basicBallLoIndices : basicBallMidIndices);
+   VertexBuffer *ballVertexBuffer = new VertexBuffer(m_pin3d.m_pd3dPrimaryDevice, lowDetailBall ? basicBallLoNumVertices : basicBallMidNumVertices, (float *)(lowDetailBall ? basicBallLo : basicBallMid));
+   m_ballMeshBuffer = new MeshBuffer(L"Ball"s, ballVertexBuffer, ballIndexBuffer, true);
 
    if (m_toneMapper == TM_TONY_MC_MAPFACE)
    {
@@ -1626,11 +1629,6 @@ HRESULT Player::Init()
       probe->RenderSetup();
    for (Hitable* hitable : m_vhitables)
       hitable->RenderSetup(m_pin3d.m_pd3dPrimaryDevice);
-
-   // Initialize lighting (maybe move to pin3d ? in InitLights ?)
-   const vec4 st(m_ptable->m_envEmissionScale*m_globalEmissionScale, m_pin3d.m_envTexture ? (float)m_pin3d.m_envTexture->m_height/*+m_pin3d.m_envTexture->m_width)*0.5f*/ : (float)m_pin3d.m_builtinEnvTexture.m_height/*+m_pin3d.m_builtinEnvTexture.m_width)*0.5f*/, 0.f, 0.f); //!! dto.
-   m_pin3d.m_pd3dPrimaryDevice->basicShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
-   m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
 
    // Setup anisotropic filtering
    const bool forceAniso = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "ForceAnisotropicFiltering"s, true);

@@ -38,12 +38,13 @@ private:
       // Point of View
       BS_ViewMode, BS_LookAt, BS_FOV, BS_Layback, BS_ViewHOfs, BS_ViewVOfs, BS_XYZScale, BS_XScale, BS_YScale, BS_ZScale, BS_XOffset, BS_YOffset, BS_ZOffset, BS_WndTopZOfs, BS_WndBottomZOfs,
       // Table tweaks
-      BS_EnvEmissionScale, /*BS_LightEmissionScale, BS_Difficulty,*/
+      BS_DayNight,
       // Custom table defined settings
       /*BS_Custom1, BS_Custom2,*/
    };
    TweakPage m_activeTweakPage = TP_PointOfView;
    int m_activeTweakIndex = 0;
+   bool m_dayNightOverriden = false;
    vector<BackdropSetting> m_tweakPageOptions;
    bool m_tweakMode = false;
    void UpdateTweakPage();
