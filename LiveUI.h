@@ -31,12 +31,34 @@ public:
 
 private:
    // Interactive Camera Mode
+   enum TweakPage { TP_PointOfView, TP_TableOption, TP_Info, TP_Count };
    enum BackdropSetting
    {
-      BS_ViewMode, BS_LookAt, BS_FOV, BS_Layback, BS_ViewHOfs, BS_ViewVOfs, BS_XYZScale, BS_XScale, BS_YScale, BS_ZScale, BS_XOffset, BS_YOffset, BS_ZOffset,
-      BS_WndTopZOfs, BS_WndBottomZOfs,
-      BS_LightEmissionScale, BS_EnvEmissionScale
+      BS_Page,
+      // Point of View
+      BS_ViewMode, BS_LookAt, BS_FOV, BS_Layback, BS_ViewHOfs, BS_ViewVOfs, BS_XYZScale, BS_XScale, BS_YScale, BS_ZScale, BS_XOffset, BS_YOffset, BS_ZOffset, BS_WndTopZOfs, BS_WndBottomZOfs,
+      // Table tweaks
+      BS_EnvEmissionScale, /*BS_LightEmissionScale, BS_Difficulty,*/
+      // Custom table defined settings
+      /*BS_Custom1, BS_Custom2,*/
    };
+   TweakPage m_activeTweakPage = TP_PointOfView;
+   int m_activeTweakIndex = 0;
+   vector<BackdropSetting> m_tweakPageOptions;
+   bool m_tweakMode = false;
+   void UpdateTweakPage();
+
+   enum TweakType { TT_Int, TT_Float, TT_Set };
+   struct TweakOption
+   {
+      TweakType type;
+      float min, max, step, def;
+      string name, unit;
+      vector<string> options;
+      TweakOption(TweakType _type, float _min, float _max, float _step, float _def, string _name, string _unit, std::initializer_list<string> _options): 
+         type(_type), min(_min), max(_max), step(_step), def(_def), name(_name), unit(_unit), options(_options) { }
+   };
+
    static constexpr BackdropSetting mLegacyViewSettings[] = {
       BS_ViewMode, BS_LookAt, BS_FOV, BS_Layback, BS_XYZScale, BS_XScale, BS_YScale, BS_ZScale, BS_XOffset, BS_YOffset, BS_ZOffset,
       /* BS_LightEmissionScale, BS_EnvEmissionScale*/
@@ -50,8 +72,6 @@ private:
       BS_WndTopZOfs, BS_WndBottomZOfs, BS_XOffset, BS_YOffset, BS_ZOffset, 
       /* BS_LightEmissionScale, BS_EnvEmissionScale*/
    };
-   bool m_tweakMode = false;
-   BackdropSetting m_activeTweakSetting = BS_ViewMode;
    void UpdateTweakModeUI();
 
    // Main UI frame & panels
