@@ -3916,14 +3916,8 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
 
          if (loadfileversion < 1080)
          {
-            // Glass was horizontal before 10.8, try to find a sensible default based on other table dimensions
-            TableDB db;
-            db.Load();
-            int bestSizeMatch = db.GetBestSizeMatch(GetTableWidth(), GetHeight(), m_glassTopHeight);
-            if (bestSizeMatch >= 0)
-               m_glassBottomHeight = INCHESTOVPU(db.m_data[bestSizeMatch].glassBottom);
-            else
-               m_glassBottomHeight = m_glassTopHeight;
+            // Glass was horizontal before 10.8
+            m_glassBottomHeight = m_glassTopHeight;
 
             for (size_t i = 0; i < m_vedit.size(); ++i)
             {

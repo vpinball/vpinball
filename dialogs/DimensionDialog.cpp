@@ -56,7 +56,7 @@ BOOL DimensionDialog::OnInitDialog()
    GetDlgItem(IDC_COPY).ShowWindow(pt != nullptr);
    GetDlgItem(IDC_APPLY_TO_TABLE).ShowWindow(pt != nullptr);
 
-   for (int i = 0; i < m_db.m_data.size(); i++)
+   for (unsigned int i = 0; i < m_db.m_data.size(); i++)
    {
       char textBuf[MAXNAMEBUFFER];
       TableDB::Entry& dim = m_db.m_data[i];
@@ -113,7 +113,7 @@ LRESULT DimensionDialog::OnNotify(WPARAM wparam, LPARAM lparam)
       {
          NMLISTVIEW* const plistview = (LPNMLISTVIEW)lparam;
          const int idx = plistview->iItem;
-         if (idx >= m_db.m_data.size() || idx < 0)
+         if (idx >= (int) m_db.m_data.size() || idx < 0)
             break;
          char textBuf[MAXNAMEBUFFER];
          sprintf_s(textBuf, sizeof(textBuf), "%.03f", m_db.m_data[idx].width);
