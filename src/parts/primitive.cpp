@@ -1311,13 +1311,13 @@ void Primitive::Render(const unsigned int renderMask)
       return;
 
    // only render if we have dynamic reflections to render above the staticly prerendered primitive
-   if (isDynamicOnly && m_d.m_staticRendering && (reflection_probe == nullptr || reflection_probe->GetProbe(false) == nullptr))
+   RenderTarget *const reflections = reflection_probe ? reflection_probe->GetProbe(isStaticOnly) : nullptr;
+   if (isDynamicOnly && m_d.m_staticRendering && (reflections == nullptr))
       return; 
 
    // Request probes before setting up state since this can trigger a renderprobe update which modifies the render state
    RenderProbe * const refraction_probe = m_ptable->GetRenderProbe(m_d.m_szRefractionProbe);
    RenderTarget * const refractions = refraction_probe ? refraction_probe->GetProbe(isStaticOnly) : nullptr;
-   RenderTarget * const reflections = reflection_probe ? reflection_probe->GetProbe(isStaticOnly) : nullptr;
 
    RenderState initial_state;
    m_rd->CopyRenderStates(true, initial_state);
@@ -1428,6 +1428,25 @@ void Primitive::Render(const unsigned int renderMask)
       // setup for applying reflections from reflection probe
       if (reflections)
       {
+         float xMin = 1.f, yMin = 1.f, xMax = 0.f, yMax = 0.f;
+         const int nEyes = m_rd->m_stereo3D != STEREO_OFF ? 2 : 1;
+         for (int eye = 0; eye < nEyes; eye++)
+         {
+            const Matrix3D & mvp = g_pplayer->m_pin3d.GetMVP().GetModelViewProj(eye);
+            for (int i = 0; i < 8; i++)
+            {
+               Vertex3Ds p;
+               p.x = (i & 1) ? m_mesh.m_minAABound.x : m_mesh.m_maxAABound.x;
+               p.y = (i & 2) ? m_mesh.m_minAABound.y : m_mesh.m_maxAABound.y;
+               p.z = (i & 4) ? m_mesh.m_minAABound.z : m_mesh.m_maxAABound.z;
+               p = mvp.MultiplyVector(p);
+               xMin = min(xMin, p.x);
+               xMax = max(xMax, p.x);
+               yMin = min(yMin, p.y);
+               yMax = max(yMax, p.y);
+            }
+         }
+         reflection_probe->AddReflectionAreaOfInterest(xMin, xMax, yMin, yMax);
          m_rd->AddRenderTargetDependency(reflections);
          vec3 plane_normal;
          reflection_probe->GetReflectionPlaneNormal(plane_normal);

@@ -24,6 +24,7 @@ public:
    unsigned int GetCommandCount() const { return (unsigned int)m_commands.size(); }
 
    RenderTarget* m_rt;
+   vec4 m_areaOfInterest; // if defined (not FLT_MAX), defines render clipping bounds (in clip space -1..1)
    int m_singleLayerRendering = -1; // if positive, rendering will only be performed on the corresponding layer
    string m_name;
    bool m_depthReadback = false;

@@ -7,6 +7,7 @@ RenderPass::RenderPass(const string& name, RenderTarget* const rt)
    : m_rt(rt)
    , m_name(name)
 {
+   m_areaOfInterest.x = m_areaOfInterest.y = m_areaOfInterest.z = m_areaOfInterest.w = FLT_MAX;
 }
 
 RenderPass::~RenderPass()
@@ -18,8 +19,9 @@ RenderPass::~RenderPass()
 void RenderPass::Reset(const string& name, RenderTarget* const rt)
 {
    m_rt = rt;
-   m_singleLayerRendering = -1;
    m_name = name;
+   m_singleLayerRendering = -1;
+   m_areaOfInterest.x = m_areaOfInterest.y = m_areaOfInterest.z = m_areaOfInterest.w = FLT_MAX;
    m_depthReadback = false;
    m_sortKey = 0;
    m_updated = false;
@@ -104,29 +106,33 @@ void RenderPass::SortPasses(vector<RenderPass*>& sortedPasses, vector<RenderPass
 
    // Push pass to result, eventually merging it
    m_sortKey = 2;
-   if (!sortedPasses.empty() && sortedPasses.back()->m_rt == m_rt)
+   if (!sortedPasses.empty())
    {
       // Merge passes
       RenderPass* mergedPass = sortedPasses.back();
-      for (RenderPass* pass : allPasses)
+      if (mergedPass->m_rt == m_rt
+       && mergedPass->m_areaOfInterest.x == m_areaOfInterest.x && mergedPass->m_areaOfInterest.y == m_areaOfInterest.y 
+       && mergedPass->m_areaOfInterest.z == m_areaOfInterest.z && mergedPass->m_areaOfInterest.w == m_areaOfInterest.w)
       {
-         if (pass == this)
-            RemoveFromVector(pass->m_dependencies, mergedPass);
-         else
-            std::replace(pass->m_dependencies.begin(), pass->m_dependencies.end(), this, mergedPass);
+         for (RenderPass* pass : allPasses)
+         {
+            if (pass == this)
+               RemoveFromVector(pass->m_dependencies, mergedPass);
+            else
+               std::replace(pass->m_dependencies.begin(), pass->m_dependencies.end(), this, mergedPass);
+         }
+         mergedPass->m_depthReadback |= m_depthReadback;
+         mergedPass->m_commands.insert(mergedPass->m_commands.end(), m_commands.begin(), m_commands.end());
+         for (auto dep : m_dependencies)
+            mergedPass->AddPrecursor(dep);
+         //mergedPass->m_dependencies.insert(mergedPass->m_dependencies.end(), m_dependencies.begin(), m_dependencies.end());
+         m_commands.clear();
+         return;
       }
-      mergedPass->m_depthReadback |= m_depthReadback;
-      mergedPass->m_commands.insert(mergedPass->m_commands.end(), m_commands.begin(), m_commands.end());
-      for (auto dep : m_dependencies)
-         mergedPass->AddPrecursor(dep);
-      //mergedPass->m_dependencies.insert(mergedPass->m_dependencies.end(), m_dependencies.begin(), m_dependencies.end());
-      m_commands.clear();
    }
-   else
-   {
-      // Add passes
-      sortedPasses.push_back(this);
-   }
+
+   // Add passes
+   sortedPasses.push_back(this);
 }
 
 void RenderPass::SortCommands()
@@ -258,14 +264,14 @@ bool RenderPass::Execute(const bool log)
    if (m_commands.empty())
       return false;
 
-   #ifdef ENABLE_SDL
+#ifdef ENABLE_SDL
    if (GLAD_GL_VERSION_4_3)
    {
       std::stringstream passName;
       passName << m_name << " [RT=" << m_rt->m_name << "]";
       glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, passName.str().c_str());
    }
-   #endif
+#endif
    if (log)
    {
       std::stringstream ss;
@@ -283,6 +289,34 @@ bool RenderPass::Execute(const bool log)
       }
       ss << "]";
       PLOGI << ss.str();
+   }
+
+   if (m_areaOfInterest.x != FLT_MAX)
+   {
+      int left = (int) ((0.5f + m_areaOfInterest.x * 0.5f) * m_rt->GetWidth());
+      int bottom = (int) ((0.5f + m_areaOfInterest.y * 0.5f) * m_rt->GetHeight());
+      int width = (int) ((m_areaOfInterest.z - m_areaOfInterest.x) * 0.5f * m_rt->GetWidth());
+      int height = (int) ((m_areaOfInterest.w - m_areaOfInterest.y) * 0.5f * m_rt->GetWidth());
+      if (left < 0)
+      {
+         width += left;
+         left = 0;
+      }
+      if (bottom < 0)
+      {
+         height += bottom;
+         bottom = 0;
+      }
+      width = min(width, m_rt->GetWidth());
+      height = min(height, m_rt->GetHeight());
+      #ifdef ENABLE_SDL
+      glEnable(GL_SCISSOR_TEST);
+      glScissor((GLint)left, (GLint)bottom, (GLsizei)width, (GLsizei)height);
+      #else
+      const RECT r = { (LONG)left, (LONG)bottom, (LONG)(left + width), (LONG)(bottom+height) };
+      m_rt->GetRenderDevice()->GetCoreDevice()->SetScissorRect(&r);
+      m_rt->GetRenderDevice()->GetCoreDevice()->SetRenderState(D3DRS_SCISSORTESTENABLE, TRUE);
+      #endif
    }
 
    if (m_rt->m_nLayers == 1 || (m_singleLayerRendering < 0 && m_rt->GetRenderDevice()->SupportLayeredRendering()))
@@ -327,6 +361,15 @@ bool RenderPass::Execute(const bool log)
             cmd->Execute(1, log);
          }
       }
+   }
+
+   if (m_areaOfInterest.x != FLT_MAX)
+   {
+      #ifdef ENABLE_SDL
+      glDisable(GL_SCISSOR_TEST);
+      #else
+      m_rt->GetRenderDevice()->GetCoreDevice()->SetRenderState(D3DRS_SCISSORTESTENABLE, FALSE);
+      #endif
    }
 
    if (m_depthReadback)
