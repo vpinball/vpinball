@@ -799,6 +799,7 @@ void VideoOptionsDialog::SaveSettings(const bool saveAll)
    settings.SaveValue(Settings::Player, "ScreenPlayerX"s, GetDlgItemText(IDC_SCREEN_PLAYERX).GetString(), !saveAll);
    settings.SaveValue(Settings::Player, "ScreenPlayerY"s, GetDlgItemText(IDC_SCREEN_PLAYERY).GetString(), !saveAll);
    settings.SaveValue(Settings::Player, "ScreenPlayerZ"s, GetDlgItemText(IDC_SCREEN_PLAYERZ).GetString(), !saveAll);
+   settings.SaveValue(Settings::Player, "BAMHeadTracking"s, IsDlgButtonChecked(IDC_HEADTRACKING) == BST_CHECKED, !saveAll);
    settings.SaveValue(Settings::Player, "Render10Bit"s, IsDlgButtonChecked(IDC_10BIT_VIDEO) == BST_CHECKED, !saveAll);
    LRESULT maxTexDim = SendDlgItemMessage(IDC_MAX_TEXTURE_COMBO, CB_GETCURSEL, 0, 0);
    if (maxTexDim == CB_ERR)
