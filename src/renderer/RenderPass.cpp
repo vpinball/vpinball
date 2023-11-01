@@ -293,27 +293,15 @@ bool RenderPass::Execute(const bool log)
 
    if (m_areaOfInterest.x != FLT_MAX)
    {
-      int left = (int) ((0.5f + m_areaOfInterest.x * 0.5f) * m_rt->GetWidth());
-      int bottom = (int) ((0.5f + m_areaOfInterest.y * 0.5f) * m_rt->GetHeight());
-      int width = (int) ((m_areaOfInterest.z - m_areaOfInterest.x) * 0.5f * m_rt->GetWidth());
-      int height = (int) ((m_areaOfInterest.w - m_areaOfInterest.y) * 0.5f * m_rt->GetWidth());
-      if (left < 0)
-      {
-         width += left;
-         left = 0;
-      }
-      if (bottom < 0)
-      {
-         height += bottom;
-         bottom = 0;
-      }
-      width = min(width, m_rt->GetWidth());
-      height = min(height, m_rt->GetHeight());
+      const int left   = clamp((int)((0.5f + m_areaOfInterest.x * 0.5f) * m_rt->GetWidth() ), 0, m_rt->GetWidth());
+      const int bottom = clamp((int)((0.5f + m_areaOfInterest.y * 0.5f) * m_rt->GetHeight()), 0, m_rt->GetHeight());
+      const int right  = clamp((int)((0.5f + m_areaOfInterest.z * 0.5f) * m_rt->GetWidth() ), 0, m_rt->GetWidth());
+      const int top    = clamp((int)((0.5f + m_areaOfInterest.w * 0.5f) * m_rt->GetHeight()), 0, m_rt->GetHeight());
       #ifdef ENABLE_SDL
       glEnable(GL_SCISSOR_TEST);
-      glScissor((GLint)left, (GLint)bottom, (GLsizei)width, (GLsizei)height);
+      glScissor((GLint)left, (GLint)bottom, (GLsizei)(right - left), (GLsizei)(top - bottom));
       #else
-      const RECT r = { (LONG)left, (LONG)bottom, (LONG)(left + width), (LONG)(bottom+height) };
+      const RECT r = { (LONG)left, (LONG)bottom, (LONG)right, (LONG)top };
       m_rt->GetRenderDevice()->GetCoreDevice()->SetScissorRect(&r);
       m_rt->GetRenderDevice()->GetCoreDevice()->SetRenderState(D3DRS_SCISSORTESTENABLE, TRUE);
       #endif

@@ -253,6 +253,7 @@ void RenderProbe::AddReflectionAreaOfInterest(const float xMin, const float xMax
 
 void RenderProbe::ApplyAreaOfInterest(RenderPass* pass)
 {
+   // TODO we should enlarge the AOI depending of the blur kernel
    if (pass == nullptr)
       pass = m_renderPass;
    pass->m_areaOfInterest.x = m_reflection_clip_bounds.x;
