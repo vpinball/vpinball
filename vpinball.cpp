@@ -792,7 +792,7 @@ bool VPinball::ParseCommand(const size_t code, const bool notify)
    {
       CComObject<PinTable> * const ptCur = GetActiveTable();
       if (ptCur)
-         ptCur->ExportBackdropPOV(true, nullptr);
+         ptCur->ExportBackdropPOV();
       return true;
    }
    case ID_FILE_EXIT:

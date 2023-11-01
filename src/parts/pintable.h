@@ -351,7 +351,7 @@ public:
    void ExportBlueprint();
    void ExportTableMesh();
    void ImportBackdropPOV(const string &filename);
-   void ExportBackdropPOV(const bool saveAs, const PinTable* overridesFrom);
+   void ExportBackdropPOV();
    void ImportVPP(const string &filename);
 
    //void FireVoidEvent(int dispid);
@@ -761,8 +761,6 @@ public:
    vector<string> m_vCustomInfoContent;
 
    vector<HANDLE> m_vAsyncHandles;
-
-   bool m_overwriteGlobalDayNight;
 
    LightSource m_Light[MAX_LIGHT_SOURCES];
    COLORREF m_lightAmbient;

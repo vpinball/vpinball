@@ -1215,11 +1215,8 @@ HRESULT Player::Init()
    m_SoundVolume = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "SoundVolume"s, 100);
 
    // Global emission scale
-   if (g_pvp->m_bgles)
-   { // Overriden from command line
-      m_globalEmissionScale = g_pvp->m_fgles;
-   }
-   else if (m_ptable->m_settings.LoadValueWithDefault(Settings::TableOverride, "OverrideEmissionScale"s, false))
+   m_globalEmissionScale = m_ptable->m_globalEmissionScale;
+   if (m_ptable->m_settings.LoadValueWithDefault(Settings::TableOverride, "OverrideEmissionScale"s, false))
    { // Overriden from settings
       if (m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "DynamicDayNight"s, false))
       {
@@ -1251,9 +1248,9 @@ HRESULT Player::Init()
          m_globalEmissionScale = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "EmissionScale"s, 0.5f);
       }
    }
-   else
-   { // Not overriden: use the table author setting
-      m_globalEmissionScale = m_ptable->m_globalEmissionScale;
+   if (g_pvp->m_bgles)
+   { // Overriden from command line
+      m_globalEmissionScale = g_pvp->m_fgles;
    }
 
    //

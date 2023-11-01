@@ -1110,7 +1110,19 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
          g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].mViewportRotation += 1.0f;
       else if (keycode == g_pplayer->m_rgKeys[eStartGameKey] && dispid == DISPID_GameEvents_KeyDown)
       {
-         g_pplayer->m_ptable->ExportBackdropPOV(false, g_pplayer->m_pEditorTable);
+         string iniFileName = g_pplayer->m_ptable->GetSettingsFileName();
+         g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].SaveToTableOverrideSettings(g_pplayer->m_ptable->m_settings, g_pplayer->m_ptable->m_BG_current_set);
+         // FIXME save other tweaked user settings
+         if (g_pplayer->m_ptable->m_settings.IsModified())
+         {
+            g_pplayer->m_ptable->m_settings.SaveToFile(iniFileName);
+            g_pplayer->m_liveUI->PushNotification("POV exported to "s.append(iniFileName), 5000);
+         }
+         else
+         {
+            g_pplayer->m_liveUI->PushNotification("POV was not exported to "s + iniFileName + " (nothing to save)", 5000);
+         }
+
          if (g_pvp->m_povEdit)
             g_pvp->QuitPlayer(Player::CloseState::CS_CLOSE_APP);
       }
@@ -1196,7 +1208,7 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
             const PinTable * const __restrict src = g_pplayer->m_pEditorTable;
             PinTable * const __restrict dst = g_pplayer->m_ptable;
             dst->mViewSetups[id] = src->mViewSetups[id];
-            dst->mViewSetups[id].ApplyTableOverrideSettings(g_pplayer->m_ptable->m_settings, id == BG_DESKTOP ? "ViewDT"s : id == BG_FSS ? "ViewFSS"s : "ViewCab"s);
+            dst->mViewSetups[id].ApplyTableOverrideSettings(g_pplayer->m_ptable->m_settings, (ViewSetupID)id);
             dst->m_lightHeight = src->m_lightHeight;
             dst->m_lightRange = src->m_lightRange;
             dst->m_lightEmissionScale = src->m_lightEmissionScale;

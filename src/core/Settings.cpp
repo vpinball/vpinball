@@ -130,9 +130,7 @@ bool Settings::LoadFromFile(const string& path, const bool createDefault)
                // Search for a case insensitive match
                for (auto item : m_ini[regKey[j]])
                {
-                  if (name.size() == item.first.size()
-                     && std::equal(name.begin(), name.end(), item.first.begin(),
-                        [](char a, char b) { return std::tolower(static_cast<unsigned char>(a)) == std::tolower(static_cast<unsigned char>(b)); }))
+                  if (StrCompareNoCase(name, item.first))
                   {
                      name = item.first;
                      break;

@@ -26,8 +26,9 @@ void ViewSetup::SetWindowModeFromSettings(const PinTable* const table)
    mViewZ = playerPos.z + screenBotZ * mSceneScaleY / realToVirtual;
 }
 
-void ViewSetup::ApplyTableOverrideSettings(const Settings& settings, const string& keyPrefix)
+void ViewSetup::ApplyTableOverrideSettings(const Settings& settings, const ViewSetupID id)
 {
+   const string& keyPrefix = id == BG_DESKTOP ? "ViewDT"s : id == BG_FSS ? "ViewFSS"s : "ViewCab"s;
    settings.LoadValue(Settings::TableOverride, keyPrefix + "Mode"s, (int&)mMode);
    settings.LoadValue(Settings::TableOverride, keyPrefix + "ScaleX"s, mSceneScaleX);
    settings.LoadValue(Settings::TableOverride, keyPrefix + "ScaleY"s, mSceneScaleY);
@@ -45,23 +46,24 @@ void ViewSetup::ApplyTableOverrideSettings(const Settings& settings, const strin
    settings.LoadValue(Settings::TableOverride, keyPrefix + "WindowBot"s, mWindowBottomZOfs);
 }
 
-void ViewSetup::SaveToTableOverrideSettings(Settings& settings, const string& keyPrefix, const bool isOverride) const
+void ViewSetup::SaveToTableOverrideSettings(Settings& settings, const ViewSetupID id) const
 {
-   settings.SaveValue(Settings::TableOverride, keyPrefix + "Mode"s, mMode, isOverride);
-   settings.SaveValue(Settings::TableOverride, keyPrefix + "ScaleX"s, mSceneScaleX, isOverride);
-   settings.SaveValue(Settings::TableOverride, keyPrefix + "ScaleY"s, mSceneScaleY, isOverride);
-   settings.SaveValue(Settings::TableOverride, keyPrefix + "ScaleZ"s, mSceneScaleZ, isOverride);
-   settings.SaveValue(Settings::TableOverride, keyPrefix + "PlayerX"s, mViewX, isOverride);
-   settings.SaveValue(Settings::TableOverride, keyPrefix + "PlayerY"s, mViewY, isOverride);
-   settings.SaveValue(Settings::TableOverride, keyPrefix + "PlayerZ"s, mViewZ, isOverride);
-   settings.SaveValue(Settings::TableOverride, keyPrefix + "LookAt"s, mLookAt, isOverride);
-   settings.SaveValue(Settings::TableOverride, keyPrefix + "Rotation"s, mViewportRotation, isOverride);
-   settings.SaveValue(Settings::TableOverride, keyPrefix + "FOV"s, mFOV, isOverride);
-   settings.SaveValue(Settings::TableOverride, keyPrefix + "Layback"s, mLayback, isOverride);
-   settings.SaveValue(Settings::TableOverride, keyPrefix + "HOfs"s, mViewHOfs, isOverride);
-   settings.SaveValue(Settings::TableOverride, keyPrefix + "VOfs"s, mViewVOfs, isOverride);
-   settings.SaveValue(Settings::TableOverride, keyPrefix + "WindowTop"s, mWindowTopZOfs, isOverride);
-   settings.SaveValue(Settings::TableOverride, keyPrefix + "WindowBot"s, mWindowBottomZOfs, isOverride);
+   const string& keyPrefix = id == BG_DESKTOP ? "ViewDT"s : id == BG_FSS ? "ViewFSS"s : "ViewCab"s;
+   settings.SaveValue(Settings::TableOverride, keyPrefix + "Mode"s, mMode, false);
+   settings.SaveValue(Settings::TableOverride, keyPrefix + "ScaleX"s, mSceneScaleX, false);
+   settings.SaveValue(Settings::TableOverride, keyPrefix + "ScaleY"s, mSceneScaleY, false);
+   settings.SaveValue(Settings::TableOverride, keyPrefix + "ScaleZ"s, mSceneScaleZ, false);
+   settings.SaveValue(Settings::TableOverride, keyPrefix + "PlayerX"s, mViewX, false);
+   settings.SaveValue(Settings::TableOverride, keyPrefix + "PlayerY"s, mViewY, false);
+   settings.SaveValue(Settings::TableOverride, keyPrefix + "PlayerZ"s, mViewZ, false);
+   settings.SaveValue(Settings::TableOverride, keyPrefix + "LookAt"s, mLookAt, false);
+   settings.SaveValue(Settings::TableOverride, keyPrefix + "Rotation"s, mViewportRotation, false);
+   settings.SaveValue(Settings::TableOverride, keyPrefix + "FOV"s, mFOV, false);
+   settings.SaveValue(Settings::TableOverride, keyPrefix + "Layback"s, mLayback, false);
+   settings.SaveValue(Settings::TableOverride, keyPrefix + "HOfs"s, mViewHOfs, false);
+   settings.SaveValue(Settings::TableOverride, keyPrefix + "VOfs"s, mViewVOfs, false);
+   settings.SaveValue(Settings::TableOverride, keyPrefix + "WindowTop"s, mWindowTopZOfs, false);
+   settings.SaveValue(Settings::TableOverride, keyPrefix + "WindowBot"s, mWindowBottomZOfs, false);
 }
 
 float ViewSetup::GetWindowTopZOFfset(const PinTable* const table) const
