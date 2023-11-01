@@ -984,6 +984,7 @@ void LiveUI::OpenTweakMode()
    m_tweakMode = true;
    m_activeTweakPage = TP_PointOfView;
    m_activeTweakIndex = 0;
+   m_dayNightOverriden = false;
    UpdateTweakPage();
 }
 
@@ -999,8 +1000,8 @@ void LiveUI::UpdateTweakPage()
    switch (m_activeTweakPage)
    {
    case TP_TableOption:
+      m_tweakPageOptions.push_back(BS_DayNight);
       //m_tweakPageOptions.push_back(BS_Difficulty);
-      m_tweakPageOptions.push_back(BS_EnvEmissionScale);
       break;
    case TP_Info:
       break;
@@ -1066,6 +1067,7 @@ void LiveUI::OnTweakModeEvent(const bool isKeyDown, const int keycode)
          return;
       const bool up = keycode == g_pplayer->m_rgKeys[eLeftFlipperKey];
       const float thesign = !up ? -0.2f : 0.2f;
+      const float step = up ? -1.f : 1.f;
       ViewSetup &viewSetup = table->mViewSetups[table->m_BG_current_set];
       const bool isWindow = viewSetup.mMode == VLM_WINDOW;
       switch (activeTweakSetting)
@@ -1085,7 +1087,7 @@ void LiveUI::OnTweakModeEvent(const bool isKeyDown, const int keycode)
       // View setup settings
       case BS_ViewMode:
       {
-         int vlm = viewSetup.mMode + (up ? 1 : -1);
+         int vlm = viewSetup.mMode + (int) step;
          viewSetup.mMode = vlm < 0 ? VLM_WINDOW : vlm >= 3 ? VLM_LEGACY : (ViewLayoutMode)vlm;
          UpdateTweakPage();
          break;
@@ -1143,16 +1145,11 @@ void LiveUI::OnTweakModeEvent(const bool isKeyDown, const int keycode)
          m_player->m_pin3d.InitLights();
          break;
       }*/
-      case BS_EnvEmissionScale:
+      case BS_DayNight:
       {
-         table->m_envEmissionScale += thesign * 0.5f;
-         if (table->m_envEmissionScale < 0.f)
-            table->m_envEmissionScale = 0.f;
-         const vec4 st(table->m_envEmissionScale * m_player->m_globalEmissionScale,
-            m_player->m_pin3d.m_envTexture ? (float)m_player->m_pin3d.m_envTexture->m_height /*+m_pin3d.m_envTexture->m_width)*0.5f*/
-                                             : (float)m_player->m_pin3d.m_builtinEnvTexture.m_height /*+m_pin3d.m_builtinEnvTexture.m_width)*0.5f*/,
-            0.f, 0.f);
-         m_player->m_pin3d.m_pd3dPrimaryDevice->basicShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
+         m_dayNightOverriden = true;
+         m_player->m_globalEmissionScale = clamp(m_player->m_globalEmissionScale + step * 0.005f, 0.f, 1.f);
+         m_player->SetupShaders();
          break;
       }
 
@@ -1161,29 +1158,38 @@ void LiveUI::OnTweakModeEvent(const bool isKeyDown, const int keycode)
    }
    else if (isKeyDown)
    {
-      if (keycode == g_pplayer->m_rgKeys[eLeftTiltKey] && g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "EnableCameraModeFlyAround"s, false))
-         g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].mViewportRotation -= 1.0f;
-      else if (keycode == g_pplayer->m_rgKeys[eRightTiltKey] && g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "EnableCameraModeFlyAround"s, false))
-         g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].mViewportRotation += 1.0f;
+      if (keycode == g_pplayer->m_rgKeys[eLeftTiltKey] && m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "EnableCameraModeFlyAround"s, false))
+         m_live_table->mViewSetups[m_live_table->m_BG_current_set].mViewportRotation -= 1.0f;
+      else if (keycode == g_pplayer->m_rgKeys[eRightTiltKey] && m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "EnableCameraModeFlyAround"s, false))
+         m_live_table->mViewSetups[m_live_table->m_BG_current_set].mViewportRotation += 1.0f;
       else if (keycode == g_pplayer->m_rgKeys[eStartGameKey])
       {
-         string iniFileName = g_pplayer->m_ptable->GetSettingsFileName();
-         g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].SaveToTableOverrideSettings(g_pplayer->m_ptable->m_settings, g_pplayer->m_ptable->m_BG_current_set);
-         if (g_pplayer->m_ptable->m_settings.IsModified())
+         string iniFileName = m_live_table->GetSettingsFileName();
+         // Save POV
+         m_live_table->mViewSetups[m_live_table->m_BG_current_set].SaveToTableOverrideSettings(m_live_table->m_settings, m_live_table->m_BG_current_set);
+         // Save user tweaks
+         if (m_dayNightOverriden)
+         {
+            m_live_table->m_settings.SaveValue(Settings::TableOverride, "OverrideEmissionScale"s, true);
+            m_live_table->m_settings.SaveValue(Settings::Player, "DynamicDayNight"s, false);
+            m_live_table->m_settings.SaveValue(Settings::Player, "EmissionScale"s, m_player->m_globalEmissionScale);
+         }
+
+         if (m_live_table->m_settings.IsModified())
          {
             if (iniFileName == ""s)
             {
-               g_pplayer->m_liveUI->PushNotification("You need to save your table before exporting POV"s, 5000);
+               PushNotification("You need to save your table before exporting POV"s, 5000);
             }
             else
             {
-               g_pplayer->m_ptable->m_settings.SaveToFile(iniFileName);
-               g_pplayer->m_liveUI->PushNotification("POV exported to "s.append(iniFileName), 5000);
+               m_live_table->m_settings.SaveToFile(iniFileName);
+               PushNotification("POV exported to "s.append(iniFileName), 5000);
             }
          }
          else
          {
-            g_pplayer->m_liveUI->PushNotification("POV was not exported to "s + iniFileName + " (nothing to save)", 5000);
+            PushNotification("POV was not exported to "s + iniFileName + " (nothing to save)", 5000);
          }
 
          if (g_pvp->m_povEdit)
@@ -1192,7 +1198,7 @@ void LiveUI::OnTweakModeEvent(const bool isKeyDown, const int keycode)
       else if (keycode == g_pplayer->m_rgKeys[ePlungerKey])
       {
          // Reset to default values
-         PinTable *const table = g_pplayer->m_ptable;
+         PinTable *const table = m_live_table;
          if (m_activeTweakPage == TP_PointOfView)
          {
             ViewSetupID id = table->m_BG_current_set;
@@ -1203,7 +1209,7 @@ void LiveUI::OnTweakModeEvent(const bool isKeyDown, const int keycode)
             {
             case BG_DESKTOP:
             case BG_FSS:
-               g_pplayer->m_liveUI->PushNotification("POV reset to default values"s, 5000);
+               PushNotification("POV reset to default values"s, 5000);
                if (id == BG_DESKTOP && !portrait)
                { // Desktop
                   viewSetup.mMode = (ViewLayoutMode)g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "DesktopMode"s, VLM_CAMERA);
@@ -1237,7 +1243,7 @@ void LiveUI::OnTweakModeEvent(const bool isKeyDown, const int keycode)
                const float screenHeight = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "ScreenHeight"s, 0.0f);
                if (screenWidth <= 1.f || screenHeight <= 1.f)
                {
-                  g_pplayer->m_liveUI->PushNotification("You must setup your screen size before using Window mode"s, 5000);
+                  PushNotification("You must setup your screen size before using Window mode"s, 5000);
                }
                else
                {
@@ -1255,11 +1261,11 @@ void LiveUI::OnTweakModeEvent(const bool isKeyDown, const int keycode)
                         char textBuf1[MAXNAMEBUFFER], textBuf2[MAXNAMEBUFFER];
                         sprintf_s(textBuf1, sizeof(textBuf1), "%.02f", db.m_data[bestSizeMatch].glassBottom);
                         sprintf_s(textBuf2, sizeof(textBuf2), "%.02f", db.m_data[bestSizeMatch].glassTop);
-                        g_pplayer->m_liveUI->PushNotification("Missing glass position guessed to be "s + textBuf1 + "\" / " + textBuf2 + "\" (" + db.m_data[bestSizeMatch].name + ")", 5000);
+                        PushNotification("Missing glass position guessed to be "s + textBuf1 + "\" / " + textBuf2 + "\" (" + db.m_data[bestSizeMatch].name + ")", 5000);
                      }
                      else
                      {
-                        g_pplayer->m_liveUI->PushNotification("The table is missing glass position and no good guess was found."s, 5000);
+                        PushNotification("The table is missing glass position and no good guess was found."s, 5000);
                      }
                   }
                   const float scale = (screenHeight / table->GetTableWidth()) * (table->GetHeight() / screenWidth);
@@ -1271,7 +1277,7 @@ void LiveUI::OnTweakModeEvent(const bool isKeyDown, const int keycode)
                   viewSetup.mSceneScaleY = isFitted ? 1.f : scale;
                   viewSetup.mWindowBottomZOfs = VPUTOINCHES(bottomHeight);
                   viewSetup.mWindowTopZOfs = VPUTOINCHES(topHeight);
-                  g_pplayer->m_liveUI->PushNotification(isFitted ? "POV reset to default values (stretch to fit)"s : "POV reset to default values (no stretching)"s, 5000);
+                  PushNotification(isFitted ? "POV reset to default values (stretch to fit)"s : "POV reset to default values (no stretching)"s, 5000);
                }
                break;
             }
@@ -1291,12 +1297,12 @@ void LiveUI::OnTweakModeEvent(const bool isKeyDown, const int keycode)
             // Reset POV: copy from startup table to the live one
             if (m_activeTweakPage == TP_PointOfView)
             {
-               g_pplayer->m_liveUI->PushNotification("POV reset to startup values"s, 5000);
-               ViewSetupID id = g_pplayer->m_ptable->m_BG_current_set;
+               PushNotification("POV reset to startup values"s, 5000);
+               ViewSetupID id = m_live_table->m_BG_current_set;
                const PinTable *const __restrict src = g_pplayer->m_pEditorTable;
-               PinTable *const __restrict dst = g_pplayer->m_ptable;
+               PinTable *const __restrict dst = m_live_table;
                dst->mViewSetups[id] = src->mViewSetups[id];
-               dst->mViewSetups[id].ApplyTableOverrideSettings(g_pplayer->m_ptable->m_settings, (ViewSetupID)id);
+               dst->mViewSetups[id].ApplyTableOverrideSettings(m_live_table->m_settings, (ViewSetupID)id);
                g_pplayer->m_pin3d.m_cam = Vertex3Ds(0.f, 0.f, 0.f);
             }
             if (m_activeTweakPage == TP_TableOption)
@@ -1324,10 +1330,10 @@ void LiveUI::OnTweakModeEvent(const bool isKeyDown, const int keycode)
    }
    else
    {
-      if (keycode == eLeftTiltKey && g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "EnableCameraModeFlyAround"s, false))
-         g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].mViewportRotation -= 1.0f;
-      if (keycode == eRightTiltKey && g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "EnableCameraModeFlyAround"s, false))
-         g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].mViewportRotation += 1.0f;
+      if (keycode == eLeftTiltKey && m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "EnableCameraModeFlyAround"s, false))
+         m_live_table->mViewSetups[m_live_table->m_BG_current_set].mViewportRotation -= 1.0f;
+      if (keycode == eRightTiltKey && m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "EnableCameraModeFlyAround"s, false))
+         m_live_table->mViewSetups[m_live_table->m_BG_current_set].mViewportRotation += 1.0f;
    }
 }
 
@@ -1398,7 +1404,7 @@ void LiveUI::UpdateTweakModeUI()
          // Table options
          //case BS_Difficulty: CM_ROW("Difficulty", "%.0f", table->m_lightEmissionScale, "%"); break;
          //case BS_LightEmissionScale: CM_ROW("Light Emission Scale", "%.0f", table->m_lightEmissionScale, "%"); break;
-         case BS_EnvEmissionScale: CM_ROW("Environment Emission", "%.1f", 100.f * table->m_envEmissionScale, "%"); break;
+         case BS_DayNight: CM_ROW("Day Night: ", "%.1f", 100.f * m_player->m_globalEmissionScale, "%"); break;
 
          }
          if (highlight)
