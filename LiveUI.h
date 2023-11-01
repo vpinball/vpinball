@@ -20,6 +20,7 @@ public:
 
    void OpenTweakMode();
    bool IsTweakMode() const { return m_tweakMode; }
+   void OnTweakModeEvent(const bool isKeyDown, const int keycode);
 
    void HideUI();
 
@@ -30,7 +31,28 @@ public:
 
 private:
    // Interactive Camera Mode
-   void UpdateCameraModeUI();
+   enum BackdropSetting
+   {
+      BS_ViewMode, BS_LookAt, BS_FOV, BS_Layback, BS_ViewHOfs, BS_ViewVOfs, BS_XYZScale, BS_XScale, BS_YScale, BS_ZScale, BS_XOffset, BS_YOffset, BS_ZOffset,
+      BS_WndTopZOfs, BS_WndBottomZOfs,
+      BS_LightEmissionScale, BS_EnvEmissionScale
+   };
+   static constexpr BackdropSetting mLegacyViewSettings[] = {
+      BS_ViewMode, BS_LookAt, BS_FOV, BS_Layback, BS_XYZScale, BS_XScale, BS_YScale, BS_ZScale, BS_XOffset, BS_YOffset, BS_ZOffset,
+      /* BS_LightEmissionScale, BS_EnvEmissionScale*/
+   };
+   static constexpr BackdropSetting mCameraViewSettings[] = {
+      BS_ViewMode, BS_FOV, BS_ViewHOfs, BS_ViewVOfs, BS_XYZScale, BS_XScale, BS_YScale, BS_ZScale, BS_LookAt, BS_XOffset, BS_YOffset, BS_ZOffset,
+      /* BS_LightEmissionScale, BS_EnvEmissionScale*/
+   };
+   static constexpr BackdropSetting mWindowViewSettings[] = {
+      BS_ViewMode, BS_ViewHOfs, BS_ViewVOfs, BS_XYZScale, BS_XScale, BS_YScale,
+      BS_WndTopZOfs, BS_WndBottomZOfs, BS_XOffset, BS_YOffset, BS_ZOffset, 
+      /* BS_LightEmissionScale, BS_EnvEmissionScale*/
+   };
+   bool m_tweakMode = false;
+   BackdropSetting m_activeTweakSetting = BS_ViewMode;
+   void UpdateTweakModeUI();
 
    // Main UI frame & panels
    void UpdateMainUI();
@@ -154,7 +176,6 @@ private:
 
    // UI state
    bool m_ShowUI = false;
-   bool m_tweakMode = false;
    bool m_ShowSplashModal = false;
    bool m_flyMode = false;
    bool m_RendererInspection = false;
