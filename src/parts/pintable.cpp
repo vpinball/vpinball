@@ -5910,6 +5910,7 @@ void PinTable::ImportBackdropPOV(const string &filename)
 {
    string file = filename;
    const bool toUserSettings = !filename.empty();
+   const bool wasModified = m_settings.IsModified();
    if (!toUserSettings)
    {
       string initialDir = m_settings.LoadValueWithDefault(Settings::RecentDir, "POVDir"s, PATH_TABLES);
@@ -6167,6 +6168,10 @@ void PinTable::ImportBackdropPOV(const string &filename)
          mViewSetups[id].ApplyTableOverrideSettings(settings, (ViewSetupID)id);
       }
    }
+
+   // If loaded without UI interaction, do not mark settings as modified
+   if (!filename.empty())
+      m_settings.SetModified(wasModified);
 
    // update properties UI
    if (!toUserSettings)
