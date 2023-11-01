@@ -1112,7 +1112,6 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
       {
          string iniFileName = g_pplayer->m_ptable->GetSettingsFileName();
          g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].SaveToTableOverrideSettings(g_pplayer->m_ptable->m_settings, g_pplayer->m_ptable->m_BG_current_set);
-         // FIXME save other tweaked user settings
          if (g_pplayer->m_ptable->m_settings.IsModified())
          {
             g_pplayer->m_ptable->m_settings.SaveToFile(iniFileName);
