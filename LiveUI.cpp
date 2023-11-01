@@ -1063,9 +1063,9 @@ void LiveUI::UpdateCameraModeUI()
             else
                { CM_ROW("Look at", "%.1f", viewSetup.mLookAt, "%"); }
             break;
-         case Player::BS_XOffset: CM_ROW(isLegacy ? "X Offset" : isCamera ? "Player X" : "Global Player X", "%.1f", isWindow ? g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerX"s, 0.0f) : VPUTOCM(viewSetup.mViewX), "cm"); break;
-         case Player::BS_YOffset: CM_ROW(isLegacy ? "Y Offset" : isCamera ? "Player Y" : "Global Player Y", "%.1f", isWindow ? g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerY"s, 0.0f) : VPUTOCM(viewSetup.mViewY), "cm"); break;
-         case Player::BS_ZOffset: CM_ROW(isLegacy ? "Z Offset" : isCamera ? "Player Z" : "Global Player Z", "%.1f", isWindow ? g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerZ"s, 70.0f) : VPUTOCM(viewSetup.mViewZ), "cm"); CM_SKIP_LINE; break;
+         case Player::BS_XOffset: CM_ROW(isLegacy ? "X Offset" : isWindow ? "Player X" : "Camera X", "%.1f", isWindow ? table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerX"s, 0.0f) : VPUTOCM(viewSetup.mViewX), "cm"); break;
+         case Player::BS_YOffset: CM_ROW(isLegacy ? "Y Offset" : isWindow ? "Player Y" : "Camera Y", "%.1f", isWindow ? table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerY"s, 0.0f) : VPUTOCM(viewSetup.mViewY), "cm"); break;
+         case Player::BS_ZOffset: CM_ROW(isLegacy ? "Z Offset" : isWindow ? "Player Z" : "Camera Z", "%.1f", isWindow ? table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerZ"s, 70.0f) : VPUTOCM(viewSetup.mViewZ), "cm"); CM_SKIP_LINE; break;
 
          // View settings
          case Player::BS_FOV: CM_ROW("Field Of View (overall scale)", "%.1f", viewSetup.mFOV, "deg"); break;
