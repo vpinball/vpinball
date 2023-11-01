@@ -787,7 +787,6 @@ void LiveUI::CloseTweakMode()
       dst->mViewSetups[i] = src->mViewSetups[i];
       dst->m_BG_image[i] = src->m_BG_image[i];
    }
-   m_table->SetNonUndoableDirty(eSaveDirty);
    m_tweakMode = false;
 }
 
