@@ -1176,15 +1176,37 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
             }
             else
             {
-               const float scale = (screenHeight / table->m_right) * (table->m_bottom / screenWidth);
+               float topHeight = table->m_glassTopHeight;
+               float bottomHeight = table->m_glassBottomHeight;
+               if (bottomHeight == topHeight)
+               { // If table does not define the glass position (for table without it, when loading we set the glass as horizontal)
+                  TableDB db;
+                  db.Load();
+                  int bestSizeMatch = db.GetBestSizeMatch(table->GetTableWidth(), table->GetHeight(), topHeight);
+                  if (bestSizeMatch >= 0)
+                  {
+                     bottomHeight = INCHESTOVPU(db.m_data[bestSizeMatch].glassBottom);
+                     topHeight = INCHESTOVPU(db.m_data[bestSizeMatch].glassTop);
+                     char textBuf1[MAXNAMEBUFFER], textBuf2[MAXNAMEBUFFER];
+                     sprintf_s(textBuf1, sizeof(textBuf1), "%.02f", db.m_data[bestSizeMatch].glassBottom);
+                     sprintf_s(textBuf2, sizeof(textBuf2), "%.02f", db.m_data[bestSizeMatch].glassTop);
+                     g_pplayer->m_liveUI->PushNotification("Missing glass position guessed to be "s + textBuf1 + "\" / " + textBuf2 + "\" (" + db.m_data[bestSizeMatch].name + ")",
+                        5000);
+                  }
+                  else
+                  {
+                     g_pplayer->m_liveUI->PushNotification("The table is missing glass position and no good guess was found."s, 5000);
+                  }
+               }
+               const float scale = (screenHeight / table->GetTableWidth()) * (table->GetHeight() / screenWidth);
                const bool isFitted = (viewSetup.mViewHOfs == 0.f) && (viewSetup.mViewVOfs == -2.8f) && (viewSetup.mSceneScaleY == scale) && (viewSetup.mSceneScaleX == scale);
                viewSetup.mMode = VLM_WINDOW;
                viewSetup.mViewHOfs = 0.f;
                viewSetup.mViewVOfs = isFitted ? 0.f : -2.8f;
                viewSetup.mSceneScaleX = scale;
                viewSetup.mSceneScaleY = isFitted ? 1.f : scale;
-               viewSetup.mWindowBottomZOfs = VPUTOINCHES(g_pplayer->m_ptable->m_glassBottomHeight);
-               viewSetup.mWindowTopZOfs = VPUTOINCHES(g_pplayer->m_ptable->m_glassTopHeight);
+               viewSetup.mWindowBottomZOfs = VPUTOINCHES(bottomHeight);
+               viewSetup.mWindowTopZOfs = VPUTOINCHES(topHeight);
                g_pplayer->m_liveUI->PushNotification(isFitted ? "POV reset to default values (stretch to fit)"s : "POV reset to default values (no stretching)"s, 5000);
             }
             break;
