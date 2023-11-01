@@ -985,6 +985,7 @@ void LiveUI::OpenTweakMode()
    m_activeTweakPage = TP_PointOfView;
    m_activeTweakIndex = 0;
    m_dayNightOverriden = false;
+   m_difficultyOverriden = false;
    UpdateTweakPage();
 }
 
@@ -1001,7 +1002,7 @@ void LiveUI::UpdateTweakPage()
    {
    case TP_TableOption:
       m_tweakPageOptions.push_back(BS_DayNight);
-      //m_tweakPageOptions.push_back(BS_Difficulty);
+      m_tweakPageOptions.push_back(BS_Difficulty);
       break;
    case TP_Info:
       break;
@@ -1137,19 +1138,17 @@ void LiveUI::OnTweakModeEvent(const bool isKeyDown, const int keycode)
       case BS_WndBottomZOfs: viewSetup.mWindowBottomZOfs += 5.f * thesign; break;
 
       // Table customization
-      /* case BS_LightEmissionScale:
-      {
-         table->m_lightEmissionScale += thesign * 100000.f;
-         if (table->m_lightEmissionScale < 0.f)
-            table->m_lightEmissionScale = 0.f;
-         m_player->m_pin3d.InitLights();
-         break;
-      }*/
       case BS_DayNight:
       {
          m_dayNightOverriden = true;
          m_player->m_globalEmissionScale = clamp(m_player->m_globalEmissionScale + step * 0.005f, 0.f, 1.f);
          m_player->SetupShaders();
+         break;
+      }
+      case BS_Difficulty:
+      {
+         m_difficultyOverriden = true;
+         table->m_globalDifficulty = clamp(table->m_globalDifficulty + step * 0.005f, 0.f, 1.f);
          break;
       }
 
@@ -1173,6 +1172,11 @@ void LiveUI::OnTweakModeEvent(const bool isKeyDown, const int keycode)
             m_live_table->m_settings.SaveValue(Settings::TableOverride, "OverrideEmissionScale"s, true);
             m_live_table->m_settings.SaveValue(Settings::Player, "DynamicDayNight"s, false);
             m_live_table->m_settings.SaveValue(Settings::Player, "EmissionScale"s, m_player->m_globalEmissionScale);
+         }
+         if (m_difficultyOverriden)
+         {
+            PushNotification("You have changed the difficulty level\nThis change will only be applied after restart.", 10000);
+            m_live_table->m_settings.SaveValue(Settings::TableOverride, "Difficulty"s, m_live_table->m_globalDifficulty);
          }
 
          if (m_live_table->m_settings.IsModified())
@@ -1307,8 +1311,8 @@ void LiveUI::OnTweakModeEvent(const bool isKeyDown, const int keycode)
             }
             if (m_activeTweakPage == TP_TableOption)
             {
-               // dst->m_lightEmissionScale = src->m_lightEmissionScale;
-               // dst->m_envEmissionScale = src->m_envEmissionScale;
+               // TODO reset Day/Night
+               // TODO reset difficulty
             }
          }
       }
@@ -1402,9 +1406,8 @@ void LiveUI::UpdateTweakModeUI()
          case BS_WndBottomZOfs: CM_ROW("Window Bottom Z Ofs.", "%.1f", VPUTOCM(viewSetup.mWindowBottomZOfs), "cm"); CM_SKIP_LINE; break;
 
          // Table options
-         //case BS_Difficulty: CM_ROW("Difficulty", "%.0f", table->m_lightEmissionScale, "%"); break;
-         //case BS_LightEmissionScale: CM_ROW("Light Emission Scale", "%.0f", table->m_lightEmissionScale, "%"); break;
-         case BS_DayNight: CM_ROW("Day Night: ", "%.1f", 100.f * m_player->m_globalEmissionScale, "%"); break;
+         case BS_DayNight: CM_ROW("Day Night: ", "%.1f", 100.f * m_player->m_globalEmissionScale, m_dayNightOverriden ? "% *" : "%"); break;
+         case BS_Difficulty: CM_ROW("Difficulty: ", "%.1f", 100.f * m_live_table->m_globalDifficulty, m_difficultyOverriden ? "% *" : "%"); break;
 
          }
          if (highlight)
