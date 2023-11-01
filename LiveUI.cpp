@@ -1007,7 +1007,7 @@ void LiveUI::UpdateTweakPage()
    case TP_Info:
       break;
    case TP_PointOfView:
-      switch (m_table->mViewSetups[m_table->m_BG_current_set].mMode)
+      switch (m_live_table->mViewSetups[m_live_table->m_BG_current_set].mMode)
       {
       case VLM_LEGACY:
          m_tweakPageOptions.push_back(BS_ViewMode);
