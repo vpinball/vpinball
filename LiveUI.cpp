@@ -5,6 +5,8 @@
 #include "renderer/Shader.h"
 #include "renderer/Anaglyph.h"
 
+#include "core/TableDB.h"
+
 #include "fonts/DroidSans.h"
 #include "fonts/IconsForkAwesome.h"
 #include "fonts/ForkAwesome.h"
@@ -1051,6 +1053,7 @@ void LiveUI::UpdateTweakPage()
          break;
       }
       break;
+   default: assert(false); break;
    }
    if (m_activeTweakIndex >= (int)m_tweakPageOptions.size())
       m_activeTweakIndex = (int)m_tweakPageOptions.size() - 1;

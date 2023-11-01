@@ -96,6 +96,7 @@ void RenderProbe::EndPlay()
 void RenderProbe::MarkDirty()
 { 
    m_dirty = true;
+   m_reflection_clip_bounds.x = FLT_MAX;
 }
 
 void RenderProbe::PreRenderStatic()
@@ -232,6 +233,36 @@ void RenderProbe::SetReflectionMode(ReflectionMode mode)
    m_reflection_mode = mode;
 }
 
+void RenderProbe::AddReflectionAreaOfInterest(const float xMin, const float xMax, const float yMin, const float yMax)
+{
+   if (m_reflection_clip_bounds.x == FLT_MAX)
+   {
+      m_reflection_clip_bounds.x = xMin;
+      m_reflection_clip_bounds.y = yMin;
+      m_reflection_clip_bounds.z = xMax;
+      m_reflection_clip_bounds.w = yMax;
+   }
+   else
+   {
+      m_reflection_clip_bounds.x = min(m_reflection_clip_bounds.x, xMin);
+      m_reflection_clip_bounds.y = min(m_reflection_clip_bounds.y, yMin);
+      m_reflection_clip_bounds.z = max(m_reflection_clip_bounds.z, xMax);
+      m_reflection_clip_bounds.w = max(m_reflection_clip_bounds.w, yMax);
+   }
+}
+
+void RenderProbe::ApplyAreaOfInterest(RenderPass* pass)
+{
+   if (pass == nullptr)
+      pass = m_renderPass;
+   pass->m_areaOfInterest.x = m_reflection_clip_bounds.x;
+   pass->m_areaOfInterest.y = m_reflection_clip_bounds.y;
+   pass->m_areaOfInterest.z = m_reflection_clip_bounds.z;
+   pass->m_areaOfInterest.w = m_reflection_clip_bounds.w;
+   for (RenderPass* subpass : pass->m_dependencies)
+      ApplyAreaOfInterest(subpass);
+}
+
 void RenderProbe::PreRenderStaticReflectionProbe()
 {
    // For dynamic reflection mode, in static camera mode, we prerender static elements (like for main view) to get better antialiasing and overall performance
@@ -356,6 +387,8 @@ void RenderProbe::RenderReflectionProbe(const bool is_static)
    DoRenderReflectionProbe(render_static, render_balls, render_dynamic);
 
    ApplyRoughness(m_dynamicRT, m_roughness);
+
+   m_renderPass = p3dDevice->GetCurrentPass();
 
    p3dDevice->SetRenderTarget(previousRT->m_name + "+"s, previousRT->m_rt);
 }

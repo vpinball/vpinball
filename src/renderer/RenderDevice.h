@@ -133,7 +133,7 @@ public:
    void CreateDevice(int& refreshrate, VideoSyncMode& syncMode, UINT adapterIndex = D3DADAPTER_DEFAULT);
    bool LoadShaders();
 
-   const RenderPass* GetCurrentPass() const { return m_currentPass; }
+   RenderPass* GetCurrentPass() { return m_currentPass; }
    const RenderTarget* GetCurrentRenderTarget() const { assert(m_currentPass != nullptr); return m_currentPass->m_rt; }
    void SetRenderTarget(const string& passName, RenderTarget* rt, const bool useRTContent = true);
    void AddRenderTargetDependency(RenderTarget* rt, const bool needDepth = false);
