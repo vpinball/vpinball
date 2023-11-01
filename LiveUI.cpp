@@ -761,35 +761,6 @@ void LiveUI::Render()
 #endif
 }
 
-void LiveUI::OpenTweakMode()
-{
-   m_ShowUI = false;
-   m_ShowSplashModal = false;
-   m_player->DisableStaticPrePass(true);
-   m_tweakMode = true;
-}
-
-void LiveUI::CloseTweakMode()
-{
-   if (!m_tweakMode)
-      return;
-
-   const PinTable *const __restrict src = m_live_table;
-   PinTable *const __restrict dst = m_table;
-   dst->m_3DmaxSeparation = src->m_3DmaxSeparation;
-   dst->m_global3DMaxSeparation = src->m_global3DMaxSeparation;
-   dst->m_lightEmissionScale = src->m_lightEmissionScale;
-   dst->m_lightRange = src->m_lightRange;
-   dst->m_lightHeight = src->m_lightHeight;
-   dst->m_envEmissionScale = src->m_envEmissionScale;
-   for (int i = 0; i < 3; i++)
-   {
-      dst->mViewSetups[i] = src->mViewSetups[i];
-      dst->m_BG_image[i] = src->m_BG_image[i];
-   }
-   m_tweakMode = false;
-}
-
 void LiveUI::OpenMainUI()
 {
    // Opens the main UI. This will only open the main splash modal which allows to go further in the live UI.
@@ -898,7 +869,7 @@ void LiveUI::Update(const RenderTarget *rt)
    else if (m_tweakMode && showNotifications)
    { // Tweak UI
       ImGui::PushFont(m_overlayFont);
-      UpdateCameraModeUI();
+      UpdateTweakModeUI();
       ImGui::PopFont();
    }
 
@@ -1005,7 +976,299 @@ void LiveUI::Update(const RenderTarget *rt)
    ImGui::EndFrame();
 }
 
-void LiveUI::UpdateCameraModeUI()
+void LiveUI::OpenTweakMode()
+{
+   m_ShowUI = false;
+   m_ShowSplashModal = false;
+   m_player->DisableStaticPrePass(true);
+   m_tweakMode = true;
+}
+
+void LiveUI::CloseTweakMode()
+{
+   if (!m_tweakMode)
+      return;
+
+   const PinTable *const __restrict src = m_live_table;
+   PinTable *const __restrict dst = m_table;
+   dst->m_3DmaxSeparation = src->m_3DmaxSeparation;
+   dst->m_global3DMaxSeparation = src->m_global3DMaxSeparation;
+   dst->m_lightEmissionScale = src->m_lightEmissionScale;
+   dst->m_lightRange = src->m_lightRange;
+   dst->m_lightHeight = src->m_lightHeight;
+   dst->m_envEmissionScale = src->m_envEmissionScale;
+   for (int i = 0; i < 3; i++)
+   {
+      dst->mViewSetups[i] = src->mViewSetups[i];
+      dst->m_BG_image[i] = src->m_BG_image[i];
+   }
+   m_tweakMode = false;
+}
+
+void LiveUI::OnTweakModeEvent(const bool isKeyDown, const int keycode)
+{
+   if (!IsTweakMode())
+      return;
+   PinTable *table = m_live_table;
+   if (keycode == g_pplayer->m_rgKeys[eLeftFlipperKey] || keycode == g_pplayer->m_rgKeys[eRightFlipperKey])
+   {
+      if (m_activeTweakSetting == BS_ViewMode && !isKeyDown)
+         return;
+      const bool up = keycode == g_pplayer->m_rgKeys[eLeftFlipperKey];
+      const float thesign = !up ? -0.2f : 0.2f;
+      ViewSetup &viewSetup = table->mViewSetups[table->m_BG_current_set];
+      const bool isWindow = viewSetup.mMode == VLM_WINDOW;
+      switch (m_activeTweakSetting)
+      {
+      // View setup settings
+      case BS_ViewMode:
+      {
+         int vlm = viewSetup.mMode + (up ? 1 : -1);
+         viewSetup.mMode = vlm < 0 ? VLM_WINDOW : vlm >= 3 ? VLM_LEGACY : (ViewLayoutMode)vlm;
+         break;
+      }
+      case BS_LookAt: viewSetup.mLookAt += 0.5f * thesign; break;
+      case BS_FOV: viewSetup.mFOV += 0.5f * thesign; break;
+      case BS_Layback: viewSetup.mLayback += 0.5f * thesign; break;
+      case BS_ViewHOfs: viewSetup.mViewHOfs += (isWindow ? 0.1f : 0.5f) * thesign; break;
+      case BS_ViewVOfs: viewSetup.mViewVOfs += (isWindow ? 0.1f : 0.5f) * thesign; break;
+      case BS_XYZScale:
+         viewSetup.mSceneScaleX += 0.0025f * thesign;
+         viewSetup.mSceneScaleY += 0.0025f * thesign;
+         viewSetup.mSceneScaleZ += 0.0025f * thesign;
+         // m_player->CalcBallAspectRatio();
+         break;
+      case BS_XScale:
+         viewSetup.mSceneScaleX += 0.0025f * thesign;
+         // m_player->CalcBallAspectRatio();
+         break;
+      case BS_YScale:
+         viewSetup.mSceneScaleY += 0.0025f * thesign;
+         // m_player->CalcBallAspectRatio();
+         break;
+      case BS_ZScale:
+         viewSetup.mSceneScaleZ += 0.0025f * thesign;
+         // m_player->CalcBallAspectRatio();
+         break;
+      case BS_XOffset:
+         if (isWindow)
+            table->m_settings.SaveValue(Settings::Player, "ScreenPlayerX"s, table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerX"s, 0.0f) + 0.25f * thesign);
+         else
+            viewSetup.mViewX += 5.f * thesign;
+         break;
+      case BS_YOffset:
+         if (isWindow)
+            table->m_settings.SaveValue(Settings::Player, "ScreenPlayerY"s, table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerY"s, 0.0f) + 0.25f * thesign);
+         else
+            viewSetup.mViewY += 5.f * thesign;
+         break;
+      case BS_ZOffset:
+         if (isWindow)
+            table->m_settings.SaveValue(Settings::Player, "ScreenPlayerZ"s, table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerZ"s, 70.0f) + 0.25f * thesign);
+         else
+            viewSetup.mViewZ += (viewSetup.mMode == VLM_LEGACY ? 50.f : 5.f) * thesign;
+         break;
+      case BS_WndTopZOfs: viewSetup.mWindowTopZOfs += 5.f * thesign; break;
+      case BS_WndBottomZOfs: viewSetup.mWindowBottomZOfs += 5.f * thesign; break;
+
+      // Scene lighting settings
+      case BS_LightEmissionScale:
+      {
+         table->m_lightEmissionScale += thesign * 100000.f;
+         if (table->m_lightEmissionScale < 0.f)
+            table->m_lightEmissionScale = 0.f;
+         m_player->m_pin3d.InitLights();
+         break;
+      }
+      case BS_EnvEmissionScale:
+      {
+         table->m_envEmissionScale += thesign * 0.5f;
+         if (table->m_envEmissionScale < 0.f)
+            table->m_envEmissionScale = 0.f;
+         const vec4 st(table->m_envEmissionScale * m_player->m_globalEmissionScale,
+            m_player->m_pin3d.m_envTexture ? (float)m_player->m_pin3d.m_envTexture->m_height /*+m_pin3d.m_envTexture->m_width)*0.5f*/
+                                             : (float)m_player->m_pin3d.m_builtinEnvTexture.m_height /*+m_pin3d.m_builtinEnvTexture.m_width)*0.5f*/,
+            0.f, 0.f);
+         m_player->m_pin3d.m_pd3dPrimaryDevice->basicShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
+         break;
+      }
+
+      default: assert(!"UpdateBackdropSettings unhandled case"); break;
+      }
+   }
+   else if (isKeyDown)
+   {
+      if (keycode == g_pplayer->m_rgKeys[eLeftTiltKey] && g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "EnableCameraModeFlyAround"s, false))
+         g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].mViewportRotation -= 1.0f;
+      else if (keycode == g_pplayer->m_rgKeys[eRightTiltKey] && g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "EnableCameraModeFlyAround"s, false))
+         g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].mViewportRotation += 1.0f;
+      else if (keycode == g_pplayer->m_rgKeys[eStartGameKey])
+      {
+         string iniFileName = g_pplayer->m_ptable->GetSettingsFileName();
+         g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].SaveToTableOverrideSettings(g_pplayer->m_ptable->m_settings, g_pplayer->m_ptable->m_BG_current_set);
+         if (g_pplayer->m_ptable->m_settings.IsModified())
+         {
+            if (iniFileName == ""s)
+            {
+               g_pplayer->m_liveUI->PushNotification("You need to save your table before exporting POV"s, 5000);
+            }
+            else
+            {
+               g_pplayer->m_ptable->m_settings.SaveToFile(iniFileName);
+               g_pplayer->m_liveUI->PushNotification("POV exported to "s.append(iniFileName), 5000);
+            }
+         }
+         else
+         {
+            g_pplayer->m_liveUI->PushNotification("POV was not exported to "s + iniFileName + " (nothing to save)", 5000);
+         }
+
+         if (g_pvp->m_povEdit)
+            g_pvp->QuitPlayer(Player::CloseState::CS_CLOSE_APP);
+      }
+      else if (keycode == g_pplayer->m_rgKeys[ePlungerKey])
+      {
+         // Reset to default values
+         PinTable *const table = g_pplayer->m_ptable;
+         ViewSetupID id = table->m_BG_current_set;
+         ViewSetup &viewSetup = table->mViewSetups[id];
+         viewSetup.mViewportRotation = 0.f;
+         const bool portrait = g_pplayer->m_wnd_width < g_pplayer->m_wnd_height;
+         switch (id)
+         {
+         case BG_DESKTOP:
+         case BG_FSS:
+            g_pplayer->m_liveUI->PushNotification("POV reset to default values"s, 5000);
+            if (id == BG_DESKTOP && !portrait)
+            { // Desktop
+               viewSetup.mMode = (ViewLayoutMode)g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "DesktopMode"s, VLM_CAMERA);
+               viewSetup.mViewX = CMTOVPU(g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "DesktopCamX"s, 0.f));
+               viewSetup.mViewY = CMTOVPU(g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "DesktopCamY"s, 20.f));
+               viewSetup.mViewZ = CMTOVPU(g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "DesktopCamZ"s, 70.f));
+               viewSetup.mSceneScaleX = g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "DesktopScaleX"s, 1.f);
+               viewSetup.mSceneScaleY = g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "DesktopScaleY"s, 1.f);
+               viewSetup.mSceneScaleZ = g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "DesktopScaleZ"s, 1.f);
+               viewSetup.mFOV = g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "DesktopFov"s, 50.f);
+               viewSetup.mLookAt = g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "DesktopLookAt"s, 25.0f);
+               viewSetup.mViewVOfs = g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "DesktopViewVOfs"s, 14.f);
+            }
+            else
+            { // FSS
+               viewSetup.mMode = (ViewLayoutMode)g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "FSSMode"s, VLM_CAMERA);
+               viewSetup.mViewX = CMTOVPU(g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "FSSCamX"s, 0.f));
+               viewSetup.mViewY = CMTOVPU(g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "FSSCamY"s, 20.f));
+               viewSetup.mViewZ = CMTOVPU(g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "FSSCamZ"s, 70.f));
+               viewSetup.mSceneScaleX = g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "FSSScaleX"s, 1.f);
+               viewSetup.mSceneScaleY = g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "FSSScaleY"s, 1.f);
+               viewSetup.mSceneScaleZ = g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "FSSScaleZ"s, 1.f);
+               viewSetup.mFOV = g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "FSSFov"s, 77.f);
+               viewSetup.mLookAt = g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "FSSLookAt"s, 50.0f);
+               viewSetup.mViewVOfs = g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "FSSViewVOfs"s, 22.f);
+            }
+            break;
+         case BG_FULLSCREEN:
+         {
+            const float screenWidth = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "ScreenWidth"s, 0.0f);
+            const float screenHeight = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "ScreenHeight"s, 0.0f);
+            if (screenWidth <= 1.f || screenHeight <= 1.f)
+            {
+               g_pplayer->m_liveUI->PushNotification("You must setup your screen size before using Window mode"s, 5000);
+            }
+            else
+            {
+               float topHeight = table->m_glassTopHeight;
+               float bottomHeight = table->m_glassBottomHeight;
+               if (bottomHeight == topHeight)
+               { // If table does not define the glass position (for table without it, when loading we set the glass as horizontal)
+                  TableDB db;
+                  db.Load();
+                  int bestSizeMatch = db.GetBestSizeMatch(table->GetTableWidth(), table->GetHeight(), topHeight);
+                  if (bestSizeMatch >= 0)
+                  {
+                     bottomHeight = INCHESTOVPU(db.m_data[bestSizeMatch].glassBottom);
+                     topHeight = INCHESTOVPU(db.m_data[bestSizeMatch].glassTop);
+                     char textBuf1[MAXNAMEBUFFER], textBuf2[MAXNAMEBUFFER];
+                     sprintf_s(textBuf1, sizeof(textBuf1), "%.02f", db.m_data[bestSizeMatch].glassBottom);
+                     sprintf_s(textBuf2, sizeof(textBuf2), "%.02f", db.m_data[bestSizeMatch].glassTop);
+                     g_pplayer->m_liveUI->PushNotification("Missing glass position guessed to be "s + textBuf1 + "\" / " + textBuf2 + "\" (" + db.m_data[bestSizeMatch].name + ")", 5000);
+                  }
+                  else
+                  {
+                     g_pplayer->m_liveUI->PushNotification("The table is missing glass position and no good guess was found."s, 5000);
+                  }
+               }
+               const float scale = (screenHeight / table->GetTableWidth()) * (table->GetHeight() / screenWidth);
+               const bool isFitted = (viewSetup.mViewHOfs == 0.f) && (viewSetup.mViewVOfs == -2.8f) && (viewSetup.mSceneScaleY == scale) && (viewSetup.mSceneScaleX == scale);
+               viewSetup.mMode = VLM_WINDOW;
+               viewSetup.mViewHOfs = 0.f;
+               viewSetup.mViewVOfs = isFitted ? 0.f : -2.8f;
+               viewSetup.mSceneScaleX = scale;
+               viewSetup.mSceneScaleY = isFitted ? 1.f : scale;
+               viewSetup.mWindowBottomZOfs = VPUTOINCHES(bottomHeight);
+               viewSetup.mWindowTopZOfs = VPUTOINCHES(topHeight);
+               g_pplayer->m_liveUI->PushNotification(isFitted ? "POV reset to default values (stretch to fit)"s : "POV reset to default values (no stretching)"s, 5000);
+            }
+            break;
+         }
+         case BG_INVALID:
+         case NUM_BG_SETS: assert(false); break;
+         }
+         g_pplayer->m_pin3d.m_cam = Vertex3Ds(0.f, 0.f, 0.f);
+      }
+      else if (keycode == g_pplayer->m_rgKeys[eAddCreditKey])
+      {
+         if (g_pvp->m_povEdit)
+            // POV Edit mode => quit
+            g_pvp->QuitPlayer(Player::CloseState::CS_CLOSE_APP);
+         else
+         {
+            // Reset POV: copy from startup table to the live one
+            g_pplayer->m_liveUI->PushNotification("POV reset to startup values"s, 5000);
+            ViewSetupID id = g_pplayer->m_ptable->m_BG_current_set;
+            const PinTable *const __restrict src = g_pplayer->m_pEditorTable;
+            PinTable *const __restrict dst = g_pplayer->m_ptable;
+            dst->mViewSetups[id] = src->mViewSetups[id];
+            dst->mViewSetups[id].ApplyTableOverrideSettings(g_pplayer->m_ptable->m_settings, (ViewSetupID)id);
+            dst->m_lightHeight = src->m_lightHeight;
+            dst->m_lightRange = src->m_lightRange;
+            dst->m_lightEmissionScale = src->m_lightEmissionScale;
+            dst->m_envEmissionScale = src->m_envEmissionScale;
+            g_pplayer->m_pin3d.m_cam.x = 0.f;
+            g_pplayer->m_pin3d.m_cam.y = 0.f;
+            g_pplayer->m_pin3d.m_cam.z = 0.f;
+         }
+      }
+      else if (keycode == g_pplayer->m_rgKeys[eRightMagnaSave] || keycode == g_pplayer->m_rgKeys[eLeftMagnaSave])
+      {
+         ViewSetup &viewSetup = g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set];
+         const BackdropSetting *settings = viewSetup.mMode == VLM_LEGACY ? mLegacyViewSettings
+            : viewSetup.mMode == VLM_CAMERA                                      ? mCameraViewSettings
+                                                                                 : mWindowViewSettings;
+         int nSettings = (viewSetup.mMode == VLM_LEGACY        ? sizeof(mLegacyViewSettings)
+                               : viewSetup.mMode == VLM_CAMERA ? sizeof(mCameraViewSettings)
+                                                               : sizeof(mWindowViewSettings))
+            / sizeof(BackdropSetting);
+         for (int i = 0; i < nSettings; i++)
+            if (settings[i] == m_activeTweakSetting)
+            {
+               if (keycode == g_pplayer->m_rgKeys[eRightMagnaSave])
+                  m_activeTweakSetting = i < nSettings - 1 ? settings[i + 1] : settings[0];
+               else
+                  m_activeTweakSetting = i > 0 ? settings[i - 1] : settings[nSettings - 1];
+               break;
+            }
+      }
+   }
+   else
+   {
+      if (keycode == eLeftTiltKey && g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "EnableCameraModeFlyAround"s, false))
+         g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].mViewportRotation -= 1.0f;
+      if (keycode == eRightTiltKey && g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "EnableCameraModeFlyAround"s, false))
+         g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].mViewportRotation += 1.0f;
+   }
+}
+
+void LiveUI::UpdateTweakModeUI()
 {
    PinTable* const table = m_live_table;
    constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
@@ -1021,8 +1284,8 @@ void LiveUI::UpdateCameraModeUI()
    const bool isWindow = viewSetup.mMode == VLM_WINDOW;
 
    const bool isStereo = m_player->m_stereo3Denabled && m_player->m_stereo3D != STEREO_OFF && m_player->m_stereo3D != STEREO_VR;
-   const Player::BackdropSetting *settings = isLegacy ? Player::mLegacyViewSettings : isCamera ? Player::mCameraViewSettings : Player::mWindowViewSettings;
-   int nSettings = (isLegacy ? sizeof(Player::mLegacyViewSettings) : isCamera ? sizeof(Player::mCameraViewSettings) : sizeof(Player::mWindowViewSettings)) / sizeof(Player::BackdropSetting);
+   const BackdropSetting *settings = isLegacy ? mLegacyViewSettings : isCamera ? mCameraViewSettings : mWindowViewSettings;
+   int nSettings = (isLegacy ? sizeof(mLegacyViewSettings) : isCamera ? sizeof(mCameraViewSettings) : sizeof(mWindowViewSettings)) / sizeof(BackdropSetting);
    if (ImGui::BeginTable("Camera", 3, /* ImGuiTableFlags_Borders */ 0))
    {
       static float vWidth = 50.f;
@@ -1042,46 +1305,44 @@ void LiveUI::UpdateCameraModeUI()
       const float realToVirtual = viewSetup.GetRealToVirtualScale(table);
       for (int i = 0; i < nSettings; i++)
       {
-         if (settings[i] == m_player->m_backdropSettingActive 
-            || (m_player->m_backdropSettingActive == Player::BS_XYZScale && (settings[i] == Player::BS_XScale || settings[i] == Player::BS_YScale || settings[i] == Player::BS_ZScale)))
+         if (settings[i] == m_activeTweakSetting 
+            || (m_activeTweakSetting == BS_XYZScale && (settings[i] == BS_XScale || settings[i] == BS_YScale || settings[i] == BS_ZScale)))
             ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
          switch (settings[i])
          {
-         case Player::BS_ViewMode: CM_ROW("View Layout Mode:", "%s", isLegacy ? "Legacy" : isCamera ? "Camera" : "Window", ""); CM_SKIP_LINE; break;
+         case BS_ViewMode: CM_ROW("View Layout Mode:", "%s", isLegacy ? "Legacy" : isCamera ? "Camera" : "Window", ""); CM_SKIP_LINE; break;
 
          // Scene scale
-         case Player::BS_XYZScale: break;
-         case Player::BS_XScale: CM_ROW("Table X Scale", "%.1f", 100.f * viewSetup.mSceneScaleX / realToVirtual, "%"); break;
-         case Player::BS_YScale: CM_ROW(isWindow ? "Table YZ Scale" : "Table Y Scale", "%.1f", 100.f * viewSetup.mSceneScaleY / realToVirtual, "%"); break;
-         case Player::BS_ZScale: CM_ROW("Table Z Scale", "%.1f", 100.f * viewSetup.mSceneScaleZ / realToVirtual, "%"); CM_SKIP_LINE; break;
+         case BS_XYZScale: break;
+         case BS_XScale: CM_ROW("Table X Scale", "%.1f", 100.f * viewSetup.mSceneScaleX / realToVirtual, "%"); break;
+         case BS_YScale: CM_ROW(isWindow ? "Table YZ Scale" : "Table Y Scale", "%.1f", 100.f * viewSetup.mSceneScaleY / realToVirtual, "%"); break;
+         case BS_ZScale: CM_ROW("Table Z Scale", "%.1f", 100.f * viewSetup.mSceneScaleZ / realToVirtual, "%"); CM_SKIP_LINE; break;
 
          // Player position
-         case Player::BS_LookAt: 
+         case BS_LookAt: 
             if (isLegacy)
                { CM_ROW("Inclination", "%.1f", viewSetup.mLookAt, "deg"); }
             else
                { CM_ROW("Look at", "%.1f", viewSetup.mLookAt, "%"); }
             break;
-         case Player::BS_XOffset: CM_ROW(isLegacy ? "X Offset" : isWindow ? "Player X" : "Camera X", "%.1f", isWindow ? table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerX"s, 0.0f) : VPUTOCM(viewSetup.mViewX), "cm"); break;
-         case Player::BS_YOffset: CM_ROW(isLegacy ? "Y Offset" : isWindow ? "Player Y" : "Camera Y", "%.1f", isWindow ? table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerY"s, 0.0f) : VPUTOCM(viewSetup.mViewY), "cm"); break;
-         case Player::BS_ZOffset: CM_ROW(isLegacy ? "Z Offset" : isWindow ? "Player Z" : "Camera Z", "%.1f", isWindow ? table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerZ"s, 70.0f) : VPUTOCM(viewSetup.mViewZ), "cm"); CM_SKIP_LINE; break;
+         case BS_XOffset: CM_ROW(isLegacy ? "X Offset" : isWindow ? "Player X" : "Camera X", "%.1f", isWindow ? table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerX"s, 0.0f) : VPUTOCM(viewSetup.mViewX), "cm"); break;
+         case BS_YOffset: CM_ROW(isLegacy ? "Y Offset" : isWindow ? "Player Y" : "Camera Y", "%.1f", isWindow ? table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerY"s, 0.0f) : VPUTOCM(viewSetup.mViewY), "cm"); break;
+         case BS_ZOffset: CM_ROW(isLegacy ? "Z Offset" : isWindow ? "Player Z" : "Camera Z", "%.1f", isWindow ? table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerZ"s, 70.0f) : VPUTOCM(viewSetup.mViewZ), "cm"); CM_SKIP_LINE; break;
 
          // View settings
-         case Player::BS_FOV: CM_ROW("Field Of View (overall scale)", "%.1f", viewSetup.mFOV, "deg"); break;
-         case Player::BS_Layback: CM_ROW("Layback", "%.1f", viewSetup.mLayback, ""); CM_SKIP_LINE; break;
-         case Player::BS_ViewHOfs: CM_ROW("Horizontal Offset", "%.1f", viewSetup.mViewHOfs, isWindow ? "cm" : ""); break;
-         case Player::BS_ViewVOfs: CM_ROW("Vertical Offset", "%.1f", viewSetup.mViewVOfs, isWindow ? "cm" : ""); CM_SKIP_LINE; break;
-         case Player::BS_WndTopZOfs: CM_ROW("Window Top Z Ofs.", "%.1f", VPUTOCM(viewSetup.mWindowTopZOfs), "cm"); break;
-         case Player::BS_WndBottomZOfs: CM_ROW("Window Bottom Z Ofs.", "%.1f", VPUTOCM(viewSetup.mWindowBottomZOfs), "cm"); CM_SKIP_LINE; break;
+         case BS_FOV: CM_ROW("Field Of View (overall scale)", "%.1f", viewSetup.mFOV, "deg"); break;
+         case BS_Layback: CM_ROW("Layback", "%.1f", viewSetup.mLayback, ""); CM_SKIP_LINE; break;
+         case BS_ViewHOfs: CM_ROW("Horizontal Offset", "%.1f", viewSetup.mViewHOfs, isWindow ? "cm" : ""); break;
+         case BS_ViewVOfs: CM_ROW("Vertical Offset", "%.1f", viewSetup.mViewVOfs, isWindow ? "cm" : ""); CM_SKIP_LINE; break;
+         case BS_WndTopZOfs: CM_ROW("Window Top Z Ofs.", "%.1f", VPUTOCM(viewSetup.mWindowTopZOfs), "cm"); break;
+         case BS_WndBottomZOfs: CM_ROW("Window Bottom Z Ofs.", "%.1f", VPUTOCM(viewSetup.mWindowBottomZOfs), "cm"); CM_SKIP_LINE; break;
 
          // Scene lighting
-         case Player::BS_LightEmissionScale: CM_ROW("Light Emission Scale", "%.0f", table->m_lightEmissionScale, ""); break;
-         case Player::BS_LightRange: CM_ROW("Light Range", "%.0f", VPUTOCM(table->m_lightRange), "cm"); break;
-         case Player::BS_LightHeight: CM_ROW("Light Height", "%.0f", VPUTOCM(table->m_lightHeight), "cm"); CM_SKIP_LINE; break;
-         case Player::BS_EnvEmissionScale: CM_ROW("Environment Emission", "%.1f", 100.f * table->m_envEmissionScale, "%"); break;
+         case BS_LightEmissionScale: CM_ROW("Light Emission Scale", "%.0f", table->m_lightEmissionScale, ""); break;
+         case BS_EnvEmissionScale: CM_ROW("Environment Emission", "%.1f", 100.f * table->m_envEmissionScale, "%"); break;
          }
-         if (settings[i] == m_player->m_backdropSettingActive
-            || (m_player->m_backdropSettingActive == Player::BS_XYZScale && (settings[i] == Player::BS_XScale || settings[i] == Player::BS_YScale || settings[i] == Player::BS_ZScale)))
+         if (settings[i] == m_activeTweakSetting
+            || (m_activeTweakSetting == BS_XYZScale && (settings[i] == BS_XScale || settings[i] == BS_YScale || settings[i] == BS_ZScale)))
             ImGui::PopStyleColor();
       }
       #undef CM_ROW

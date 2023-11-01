@@ -1100,164 +1100,8 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
       
    if (g_pplayer->m_liveUI->IsTweakMode())
    {
-      if (keycode == g_pplayer->m_rgKeys[eLeftFlipperKey] && dispid == DISPID_GameEvents_KeyDown)
-         g_pplayer->UpdateBackdropSettings(false);
-      else if (keycode == g_pplayer->m_rgKeys[eRightFlipperKey] && dispid == DISPID_GameEvents_KeyDown)
-         g_pplayer->UpdateBackdropSettings(true);
-      else if (keycode == g_pplayer->m_rgKeys[eLeftTiltKey] && dispid == DISPID_GameEvents_KeyDown && m_enableCameraModeFlyAround)
-         g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].mViewportRotation -= 1.0f;
-      else if (keycode == g_pplayer->m_rgKeys[eRightTiltKey] && dispid == DISPID_GameEvents_KeyDown && m_enableCameraModeFlyAround)
-         g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].mViewportRotation += 1.0f;
-      else if (keycode == g_pplayer->m_rgKeys[eStartGameKey] && dispid == DISPID_GameEvents_KeyDown)
-      {
-         string iniFileName = g_pplayer->m_ptable->GetSettingsFileName();
-         g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].SaveToTableOverrideSettings(g_pplayer->m_ptable->m_settings, g_pplayer->m_ptable->m_BG_current_set);
-         if (g_pplayer->m_ptable->m_settings.IsModified())
-         {
-            g_pplayer->m_ptable->m_settings.SaveToFile(iniFileName);
-            g_pplayer->m_liveUI->PushNotification("POV exported to "s.append(iniFileName), 5000);
-         }
-         else
-         {
-            g_pplayer->m_liveUI->PushNotification("POV was not exported to "s + iniFileName + " (nothing to save)", 5000);
-         }
-
-         if (g_pvp->m_povEdit)
-            g_pvp->QuitPlayer(Player::CloseState::CS_CLOSE_APP);
-      }
-      else if (keycode == g_pplayer->m_rgKeys[ePlungerKey] && dispid == DISPID_GameEvents_KeyDown)
-      {
-         // Reset to default values
-         PinTable *const table = g_pplayer->m_ptable;
-         ViewSetupID id = table->m_BG_current_set;
-         ViewSetup &viewSetup = table->mViewSetups[id];
-         viewSetup.mViewportRotation = 0.f;
-         const bool portrait = g_pplayer->m_wnd_width < g_pplayer->m_wnd_height;
-         switch (id)
-         {
-         case BG_DESKTOP:
-         case BG_FSS:
-            g_pplayer->m_liveUI->PushNotification("POV reset to default values"s, 5000);
-            if (id == BG_DESKTOP && !portrait)
-            { // Desktop
-               viewSetup.mMode = (ViewLayoutMode)g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "DesktopMode"s, VLM_CAMERA);
-               viewSetup.mViewX = CMTOVPU(g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "DesktopCamX"s, 0.f));
-               viewSetup.mViewY = CMTOVPU(g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "DesktopCamY"s, 20.f));
-               viewSetup.mViewZ = CMTOVPU(g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "DesktopCamZ"s, 70.f));
-               viewSetup.mSceneScaleX = g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "DesktopScaleX"s, 1.f);
-               viewSetup.mSceneScaleY = g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "DesktopScaleY"s, 1.f);
-               viewSetup.mSceneScaleZ = g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "DesktopScaleZ"s, 1.f);
-               viewSetup.mFOV = g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "DesktopFov"s, 50.f);
-               viewSetup.mLookAt = g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "DesktopLookAt"s, 25.0f);
-               viewSetup.mViewVOfs = g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "DesktopViewVOfs"s, 14.f);
-            }
-            else
-            { // FSS
-               viewSetup.mMode = (ViewLayoutMode)g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "FSSMode"s, VLM_CAMERA);
-               viewSetup.mViewX = CMTOVPU(g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "FSSCamX"s, 0.f));
-               viewSetup.mViewY = CMTOVPU(g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "FSSCamY"s, 20.f));
-               viewSetup.mViewZ = CMTOVPU(g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "FSSCamZ"s, 70.f));
-               viewSetup.mSceneScaleX = g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "FSSScaleX"s, 1.f);
-               viewSetup.mSceneScaleY = g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "FSSScaleY"s, 1.f);
-               viewSetup.mSceneScaleZ = g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "FSSScaleZ"s, 1.f);
-               viewSetup.mFOV = g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "FSSFov"s, 77.f);
-               viewSetup.mLookAt = g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "FSSLookAt"s, 50.0f);
-               viewSetup.mViewVOfs = g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "FSSViewVOfs"s, 22.f);
-            }
-            break;
-         case BG_FULLSCREEN:
-         {
-            const float screenWidth = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "ScreenWidth"s, 0.0f);
-            const float screenHeight = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "ScreenHeight"s, 0.0f);
-            if (screenWidth <= 1.f || screenHeight <= 1.f)
-            {
-               g_pplayer->m_liveUI->PushNotification("You must setup your screen size before using Window mode"s, 5000);
-            }
-            else
-            {
-               float topHeight = table->m_glassTopHeight;
-               float bottomHeight = table->m_glassBottomHeight;
-               if (bottomHeight == topHeight)
-               { // If table does not define the glass position (for table without it, when loading we set the glass as horizontal)
-                  TableDB db;
-                  db.Load();
-                  int bestSizeMatch = db.GetBestSizeMatch(table->GetTableWidth(), table->GetHeight(), topHeight);
-                  if (bestSizeMatch >= 0)
-                  {
-                     bottomHeight = INCHESTOVPU(db.m_data[bestSizeMatch].glassBottom);
-                     topHeight = INCHESTOVPU(db.m_data[bestSizeMatch].glassTop);
-                     char textBuf1[MAXNAMEBUFFER], textBuf2[MAXNAMEBUFFER];
-                     sprintf_s(textBuf1, sizeof(textBuf1), "%.02f", db.m_data[bestSizeMatch].glassBottom);
-                     sprintf_s(textBuf2, sizeof(textBuf2), "%.02f", db.m_data[bestSizeMatch].glassTop);
-                     g_pplayer->m_liveUI->PushNotification("Missing glass position guessed to be "s + textBuf1 + "\" / " + textBuf2 + "\" (" + db.m_data[bestSizeMatch].name + ")",
-                        5000);
-                  }
-                  else
-                  {
-                     g_pplayer->m_liveUI->PushNotification("The table is missing glass position and no good guess was found."s, 5000);
-                  }
-               }
-               const float scale = (screenHeight / table->GetTableWidth()) * (table->GetHeight() / screenWidth);
-               const bool isFitted = (viewSetup.mViewHOfs == 0.f) && (viewSetup.mViewVOfs == -2.8f) && (viewSetup.mSceneScaleY == scale) && (viewSetup.mSceneScaleX == scale);
-               viewSetup.mMode = VLM_WINDOW;
-               viewSetup.mViewHOfs = 0.f;
-               viewSetup.mViewVOfs = isFitted ? 0.f : -2.8f;
-               viewSetup.mSceneScaleX = scale;
-               viewSetup.mSceneScaleY = isFitted ? 1.f : scale;
-               viewSetup.mWindowBottomZOfs = VPUTOINCHES(bottomHeight);
-               viewSetup.mWindowTopZOfs = VPUTOINCHES(topHeight);
-               g_pplayer->m_liveUI->PushNotification(isFitted ? "POV reset to default values (stretch to fit)"s : "POV reset to default values (no stretching)"s, 5000);
-            }
-            break;
-         }
-         case BG_INVALID:
-         case NUM_BG_SETS:
-            assert(false); break;
-         }
-         g_pplayer->m_pin3d.m_cam = Vertex3Ds(0.f,0.f,0.f);
-      }
-      else if (keycode == g_pplayer->m_rgKeys[eAddCreditKey])
-      {
-         if (dispid == DISPID_GameEvents_KeyDown && g_pvp->m_povEdit)
-            // POV Edit mode => quit
-            g_pvp->QuitPlayer(Player::CloseState::CS_CLOSE_APP);
-         else
-         {
-            // Reset POV: copy from startup table to the live one
-            g_pplayer->m_liveUI->PushNotification("POV reset to startup values"s, 5000);
-            ViewSetupID id = g_pplayer->m_ptable->m_BG_current_set;
-            const PinTable * const __restrict src = g_pplayer->m_pEditorTable;
-            PinTable * const __restrict dst = g_pplayer->m_ptable;
-            dst->mViewSetups[id] = src->mViewSetups[id];
-            dst->mViewSetups[id].ApplyTableOverrideSettings(g_pplayer->m_ptable->m_settings, (ViewSetupID)id);
-            dst->m_lightHeight = src->m_lightHeight;
-            dst->m_lightRange = src->m_lightRange;
-            dst->m_lightEmissionScale = src->m_lightEmissionScale;
-            dst->m_envEmissionScale = src->m_envEmissionScale;
-            g_pplayer->m_pin3d.m_cam.x = 0.f;
-            g_pplayer->m_pin3d.m_cam.y = 0.f;
-            g_pplayer->m_pin3d.m_cam.z = 0.f;
-         }
-      }
-      else if ((keycode == g_pplayer->m_rgKeys[eRightMagnaSave] || keycode == g_pplayer->m_rgKeys[eLeftMagnaSave]) && dispid == DISPID_GameEvents_KeyDown)
-      {
-         ViewSetup& viewSetup = g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set];
-         const Player::BackdropSetting *settings = viewSetup.mMode == VLM_LEGACY ? Player::mLegacyViewSettings
-                                                 : viewSetup.mMode == VLM_CAMERA ? Player::mCameraViewSettings
-                                                                                 : Player::mWindowViewSettings; 
-         int nSettings = (viewSetup.mMode == VLM_LEGACY        ? sizeof(Player::mLegacyViewSettings)
-                               : viewSetup.mMode == VLM_CAMERA ? sizeof(Player::mCameraViewSettings)
-                                                               : sizeof(Player::mWindowViewSettings))/ sizeof(Player::BackdropSetting);
-         for (int i = 0; i < nSettings; i++)
-            if (settings[i] == g_pplayer->m_backdropSettingActive)
-            {
-               if (keycode == g_pplayer->m_rgKeys[eRightMagnaSave])
-                  g_pplayer->m_backdropSettingActive = i < nSettings - 1 ? settings[i + 1] : settings[0];
-               else
-                  g_pplayer->m_backdropSettingActive = i > 0 ? settings[i - 1] : settings[nSettings - 1];
-               break;
-            }
-      }
+      if (dispid == DISPID_GameEvents_KeyUp)
+         g_pplayer->m_liveUI->OnTweakModeEvent(true, keycode);
    }
    else
    {
@@ -2058,15 +1902,18 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
 			         g_pplayer->m_pin3d.m_inc += 0.01f;
             }
 
-            // Table tweaks
-            if (m_keyPressedState[eLeftFlipperKey] && g_pplayer->m_backdropSettingActive != Player::BS_ViewMode)
-               g_pplayer->UpdateBackdropSettings(false);
-            if (m_keyPressedState[eRightFlipperKey] && g_pplayer->m_backdropSettingActive != Player::BS_ViewMode)
-               g_pplayer->UpdateBackdropSettings(true);
-            if (m_keyPressedState[eLeftTiltKey] && m_enableCameraModeFlyAround)
-               g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].mViewportRotation -= 1.0f;
-            if (m_keyPressedState[eRightTiltKey] && m_enableCameraModeFlyAround)
-               g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].mViewportRotation += 1.0f;
+            // Table tweaks, continuous actions
+            if (g_pplayer->m_liveUI->IsTweakMode())
+            {
+               if (m_keyPressedState[eLeftFlipperKey])
+                  g_pplayer->m_liveUI->OnTweakModeEvent(false, g_pplayer->m_rgKeys[eLeftFlipperKey]);
+               if (m_keyPressedState[eRightFlipperKey])
+                  g_pplayer->m_liveUI->OnTweakModeEvent(false, g_pplayer->m_rgKeys[eRightFlipperKey]);
+               if (m_keyPressedState[eLeftTiltKey])
+                  g_pplayer->m_liveUI->OnTweakModeEvent(false, g_pplayer->m_rgKeys[eLeftTiltKey]);
+               if (m_keyPressedState[eRightTiltKey])
+                  g_pplayer->m_liveUI->OnTweakModeEvent(false, g_pplayer->m_rgKeys[eRightTiltKey]);
+            }
          }
          return;
       }
