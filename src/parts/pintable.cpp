@@ -1402,8 +1402,6 @@ PinTable::PinTable()
 
    g_pvp->m_settings.SaveValue(Settings::Version, "VPinball"s, VP_VERSION_STRING_DIGITS);
 
-   m_overwriteGlobalDayNight = true;
-
    m_global3DZPD = m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DZPD"s, 0.5f);
    m_3DZPD = 0.5f;
    m_global3DMaxSeparation = m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DMaxSeparation"s, 0.03f);
@@ -2223,7 +2221,7 @@ void PinTable::Play(const bool cameraMode)
    {
       dst->mViewSetups[i] = src->mViewSetups[i];
       dst->m_BG_image[i] = src->m_BG_image[i];
-      dst->mViewSetups[i].ApplyTableOverrideSettings(m_settings, i == BG_DESKTOP ? "ViewDT" : i == BG_FSS ? "ViewFSS" :"ViewCab");
+      dst->mViewSetups[i].ApplyTableOverrideSettings(m_settings, (ViewSetupID) i);
    }
    for (size_t i = 0; i < src->m_materials.size(); i++)
    {
@@ -3407,7 +3405,6 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
    bw.WriteBool(FID(BDMO), m_BallDecalMode);
    bw.WriteFloat(FID(BPRS), m_ballPlayfieldReflectionStrength);
    bw.WriteFloat(FID(DBIS), m_defaultBulbIntensityScaleOnBall);
-   bw.WriteBool(FID(OGDN), m_overwriteGlobalDayNight);
    bw.WriteBool(FID(GDAC), m_grid);
 
    bw.WriteInt(FID(UAOC), m_enableAO);
@@ -4344,7 +4341,22 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
             m_settings.DeleteValue(Settings::Player, "AlphaRampAccuracy"s);
       }
       break;
-   case FID(OGDN): pbr->GetBool(m_overwriteGlobalDayNight); break;
+   case FID(OGDN):
+      if (!hasIni) // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
+      {
+         // Global Day/Night was fairly convoluted:
+         // - table would define the value
+         // - user could select in video options to override this value by an automatic value
+         // - table could then define to reject this user settings
+         // - user could define in commandline to finally override the value
+         // Now the logic is the same as all other settings:
+         // - table defines the default value, then user defines if he wants to override this value (through app/table settings or commandline)
+         bool overwriteGlobalDayNight;
+         pbr->GetBool(overwriteGlobalDayNight);
+         if (overwriteGlobalDayNight)
+            m_settings.SaveValue(Settings::TableOverride, "OverrideEmissionScale"s, true);
+      }
+      break;
    case FID(GDAC): pbr->GetBool(m_grid); break;
    // Removed in 10.8 since we now directly define reflection in render probe. Table author can disable default playfield reflection by setting PF reflection strength to 0. Player uses app/table settings to tweak
    // case FID(REOP): pbr->GetBool(m_reflectElementsOnPlayfield); break;
@@ -5897,299 +5909,307 @@ void PinTable::ExportTableMesh()
    m_vpinball->MessageBox("Export finished!", "Info", MB_OK | MB_ICONEXCLAMATION);
 }
 
-void PinTable::ImportBackdropPOV(const string& filename)
+// Import Point of View file. This can be either:
+// - a UI interaction from table author, loading to table **properties** after file selection,
+// - triggered to load user settings preference to table **settings** without UI interaction.
+void PinTable::ImportBackdropPOV(const string &filename)
 {
-    vector<string> szFileName;
-    bool oldFormatLoaded = false;
-
-    if (filename.empty())
-    {
-       string szInitialDir;
-       if (!m_settings.LoadValue(Settings::RecentDir, "POVDir"s, szInitialDir))
-          szInitialDir = PATH_TABLES;
-
-       if (!m_vpinball->OpenFileDialog(szInitialDir, szFileName, "POV file (*.pov)\0*.pov\0Old POV file(*.xml)\0*.xml\0", "pov", 0))
-          return;
-
-       const size_t index = szFileName[0].find_last_of(PATH_SEPARATOR_CHAR);
-       if (index != string::npos)
-           g_pvp->m_settings.SaveValue(Settings::RecentDir, "POVDir"s, szFileName[0].substr(0, index));
-    }
-    else
-       szFileName.push_back(filename);
-
-    tinyxml2::XMLDocument xmlDoc;
-
-   try
+   string file = filename;
+   const bool toUserSettings = !filename.empty();
+   if (!toUserSettings)
    {
-        std::stringstream buffer;
-        std::ifstream myFile(szFileName[0]);
-        buffer << myFile.rdbuf();
-        myFile.close();
-        auto xml = buffer.str();
+      string initialDir = m_settings.LoadValueWithDefault(Settings::RecentDir, "POVDir"s, PATH_TABLES);
+      vector<string> fileNames;
+      if (!m_vpinball->OpenFileDialog(initialDir, fileNames, 
+         "User settings file (*.ini)\0*.ini\0Old POV file (*.pov)\0*.pov\0Legacy POV file(*.xml)\0*.xml\0",
+         "ini", 0, toUserSettings ? "Import POV to user settings" : "Import POV to table properties"))
+         return;
+      file = fileNames[0];
+      const size_t index = file.find_last_of(PATH_SEPARATOR_CHAR);
+      if (index != string::npos)
+         g_pvp->m_settings.SaveValue(Settings::RecentDir, "POVDir"s, file.substr(0, index));
+   }
 
-        if (xmlDoc.Parse(xml.c_str()))
-        {
-           ShowError("Error parsing POV XML file");
-           return;
-        }
+   string ext = ExtensionFromFilename(file);
+   StrToLower(ext);
+   ViewSetup vs[3];
 
-        auto root = xmlDoc.FirstChildElement("POV");
-        if (root == nullptr)
-        {
-           ShowError("Error parsing POV XML file: root 'POV' element is missing");
-           xmlDoc.Clear();
-           return;
-        }
-
-      #define POV_FIELD(name, parse, field) { auto node = section->FirstChildElement(name); if (node != nullptr) sscanf_s(node->GetText(), parse, &field); }
-      string sections[] = { "desktop"s, "fullscreen"s, "fullsinglescreen"s };
-      for (int i = 0; i < 3; i++)
+   if (ext == "ini")
+   {
+      Settings settings;
+      settings.LoadFromFile(file, false);
+      for (int id = 0; id < 3; id++)
+         vs[id].ApplyTableOverrideSettings(settings, (ViewSetupID) id);
+   }
+   else if (ext == "pov" || ext == "xml")
+   {
+      tinyxml2::XMLDocument xmlDoc;
+      try
       {
-         auto section = root->FirstChildElement(sections[i].c_str());
-         if (section)
+         std::stringstream buffer;
+         std::ifstream myFile(file);
+         buffer << myFile.rdbuf();
+         myFile.close();
+         auto xml = buffer.str();
+         if (xmlDoc.Parse(xml.c_str()))
          {
-            POV_FIELD("inclination", "%f", mViewSetups[i].mLookAt);
-            POV_FIELD("fov", "%f", mViewSetups[i].mFOV);
-            POV_FIELD("layback", "%f", mViewSetups[i].mLayback);
-            POV_FIELD("lookat", "%f", mViewSetups[i].mLookAt);
-            POV_FIELD("rotation", "%f", mViewSetups[i].mViewportRotation);
-            POV_FIELD("xscale", "%f", mViewSetups[i].mSceneScaleX);
-            POV_FIELD("yscale", "%f", mViewSetups[i].mSceneScaleY);
-            POV_FIELD("zscale", "%f", mViewSetups[i].mSceneScaleZ);
-            POV_FIELD("xoffset", "%f", mViewSetups[i].mViewX);
-            POV_FIELD("yoffset", "%f", mViewSetups[i].mViewY);
-            POV_FIELD("zoffset", "%f", mViewSetups[i].mViewZ);
-            // These fields were added in 10.8
-            POV_FIELD("LayoutMode", "%i", mViewSetups[i].mMode);
-            POV_FIELD("ViewHOfs", "%f", mViewSetups[i].mViewHOfs);
-            POV_FIELD("ViewVOfs", "%f", mViewSetups[i].mViewVOfs);
-            POV_FIELD("WindowTopZOfs", "%f", mViewSetups[i].mWindowTopZOfs);
-            POV_FIELD("WindowBottomZOfs", "%f", mViewSetups[i].mWindowBottomZOfs);
+            ShowError("Error parsing POV XML file");
+            return;
          }
-      }
-
-      auto section = root->FirstChildElement("customsettings");
-      if (section)
-      {
-         int boolTmp = -1;
-         // POV_FIELD("SSAA", "%i", m_useAA);
+         auto root = xmlDoc.FirstChildElement("POV");
+         if (root == nullptr)
          {
-            auto node = section->FirstChildElement("postprocAA");
-            if (node != nullptr)
+            ShowError("Error parsing POV XML file: root 'POV' element is missing");
+            xmlDoc.Clear();
+            return;
+         }
+         #define POV_FIELD(name, parse, field) { auto node = section->FirstChildElement(name); if (node != nullptr) sscanf_s(node->GetText(), parse, &field); }
+         string sections[] = { "desktop"s, "fullscreen"s, "fullsinglescreen"s };
+         for (int i = 0; i < 3; i++)
+         {
+            auto section = root->FirstChildElement(sections[i].c_str());
+            if (section)
             {
-               int useAA;
-               sscanf_s(node->GetText(), "%i", &useAA);
-               if (useAA > -1)
-                  m_settings.SaveValue(Settings::Player, "AAFactor"s, useAA == 0 ? 1.f : 2.f);
+               POV_FIELD("inclination", "%f", vs[i].mLookAt);
+               POV_FIELD("fov", "%f", vs[i].mFOV);
+               POV_FIELD("layback", "%f", vs[i].mLayback);
+               POV_FIELD("lookat", "%f", vs[i].mLookAt);
+               POV_FIELD("rotation", "%f", vs[i].mViewportRotation);
+               POV_FIELD("xscale", "%f", vs[i].mSceneScaleX);
+               POV_FIELD("yscale", "%f", vs[i].mSceneScaleY);
+               POV_FIELD("zscale", "%f", vs[i].mSceneScaleZ);
+               POV_FIELD("xoffset", "%f", vs[i].mViewX);
+               POV_FIELD("yoffset", "%f", vs[i].mViewY);
+               POV_FIELD("zoffset", "%f", vs[i].mViewZ);
+               // These fields were added in 10.8 before moving to ini settings file. Just remove ?
+               POV_FIELD("LayoutMode", "%i", vs[i].mMode);
+               POV_FIELD("ViewHOfs", "%f", vs[i].mViewHOfs);
+               POV_FIELD("ViewVOfs", "%f", vs[i].mViewVOfs);
+               POV_FIELD("WindowTopZOfs", "%f", vs[i].mWindowTopZOfs);
+               POV_FIELD("WindowBottomZOfs", "%f", vs[i].mWindowBottomZOfs);
             }
          }
-         // POV_FIELD("postprocAA", "%i", m_useFXAA);
+         #undef POV_FIELD
+         if (toUserSettings)
          {
-            auto node = section->FirstChildElement("postprocAA");
-            if (node != nullptr)
+            auto section = root->FirstChildElement("customsettings");
+            if (section)
             {
-               int useFXAA;
-               sscanf_s(node->GetText(), "%i", &useFXAA);
-               if (useFXAA > -1)
-                  m_settings.SaveValue(Settings::Player, "FXAA"s, useFXAA == 1 ? Standard_FXAA : Disabled);
-            }
-         }
-         //POV_FIELD("ingameAO", "%i", m_useAO);
-         auto node = section->FirstChildElement("ingameAO");
-         if (node)
-         {
-            int ingameAO;
-            sscanf_s(node->GetText(), "%i", &ingameAO);
-            if (ingameAO != -1)
-               m_enableAO = ingameAO != 0;
-         }
-         //POV_FIELD("ScSpReflect", "%i", m_useSSR);
-         node = section->FirstChildElement("ScSpReflect");
-         if (node)
-         {
-            int useSSR;
-            sscanf_s(node->GetText(), "%i", &useSSR);
-            if (useSSR != -1)
-               m_enableSSR = useSSR != 0;
-         }
-         //POV_FIELD("FPSLimiter", "%i", m_TableAdaptiveVSync);
-         node = section->FirstChildElement("FPSLimiter");
-         if (node)
-         {
-            int tableAdaptiveVSync;
-            sscanf_s(node->GetText(), "%i", &tableAdaptiveVSync);
-            if (tableAdaptiveVSync != -1)
-            {
-               switch (tableAdaptiveVSync)
+               int boolTmp = -1;
+               // POV_FIELD("SSAA", "%i", m_useAA);
                {
-               case 0:
-                  m_settings.SaveValue(Settings::Player, "MaxFramerate"s, 0);
-                  m_settings.SaveValue(Settings::Player, "SyncMode"s, VideoSyncMode::VSM_NONE);
-                  break;
-               case 1:
-                  m_settings.SaveValue(Settings::Player, "MaxFramerate"s, 0);
-                  m_settings.SaveValue(Settings::Player, "SyncMode"s, VideoSyncMode::VSM_VSYNC);
-                  break;
-               case 2:
-                  m_settings.SaveValue(Settings::Player, "MaxFramerate"s, 0);
-                  m_settings.SaveValue(Settings::Player, "SyncMode"s, VideoSyncMode::VSM_ADAPTIVE_VSYNC);
-                  break;
-               default:
-                  m_settings.SaveValue(Settings::Player, "MaxFramerate"s, tableAdaptiveVSync);
-                  m_settings.SaveValue(Settings::Player, "SyncMode"s, VideoSyncMode::VSM_ADAPTIVE_VSYNC);
-                  break;
+                  auto node = section->FirstChildElement("postprocAA");
+                  if (node != nullptr)
+                  {
+                     int useAA;
+                     sscanf_s(node->GetText(), "%i", &useAA);
+                     if (useAA > -1)
+                        m_settings.SaveValue(Settings::Player, "AAFactor"s, useAA == 0 ? 1.f : 2.f);
+                  }
                }
-            }
-         }
-         //POV_FIELD("BallReflection", "%i", m_useReflectionForBalls); // removed in 10.8
-         //POV_FIELD("BallTrail", "%i", m_useTrailForBalls);
-         node = section->FirstChildElement("BallTrail");
-         if (node)
-         {
-            int useTrailForBalls;
-            sscanf_s(node->GetText(), "%i", &useTrailForBalls);
-            if (useTrailForBalls != -1)
-               m_settings.SaveValue(Settings::Player, "BallTrail"s, useTrailForBalls == 1);
-         }
-         //POV_FIELD("BallTrailStrength", "%f", m_ballTrailStrength);
-         node = section->FirstChildElement("BallTrailStrength");
-         if (node)
-         {
-            float strength;
-            sscanf_s(node->GetText(), "%f", &strength);
-            m_settings.SaveValue(Settings::Player, "BallTrailStrength"s, strength);
-         }
-         //int overwriteGlobalDetailLevel = (int)m_overwriteGlobalDetailLevel;
-         //POV_FIELD("OverwriteDetailsLevel", "%i", overwriteGlobalDetailLevel);
-         node = section->FirstChildElement("OverwriteDetailsLevel");
-         if (node)
-         {
-               int value;
-               sscanf_s(node->GetText(), "%i", &value);
-               if (value == 1)
+               // POV_FIELD("postprocAA", "%i", m_useFXAA);
                {
-                  //POV_FIELD("DetailsLevel", "%i", m_userDetailLevel);
-                  node = section->FirstChildElement("DetailsLevel");
+                  auto node = section->FirstChildElement("postprocAA");
+                  if (node != nullptr)
+                  {
+                     int useFXAA;
+                     sscanf_s(node->GetText(), "%i", &useFXAA);
+                     if (useFXAA > -1)
+                        m_settings.SaveValue(Settings::Player, "FXAA"s, useFXAA == 1 ? Standard_FXAA : Disabled);
+                  }
+               }
+               //POV_FIELD("ingameAO", "%i", m_useAO);
+               auto node = section->FirstChildElement("ingameAO");
+               if (node)
+               {
+                  int ingameAO;
+                  sscanf_s(node->GetText(), "%i", &ingameAO);
+                  if (ingameAO != -1)
+                     m_settings.SaveValue(Settings::Player, "DisableAO"s, ingameAO == 0);
+               }
+               //POV_FIELD("ScSpReflect", "%i", m_useSSR);
+               node = section->FirstChildElement("ScSpReflect");
+               if (node)
+               {
+                  int useSSR;
+                  sscanf_s(node->GetText(), "%i", &useSSR);
+                  if (useSSR != -1)
+                     m_settings.SaveValue(Settings::Player, "SSRefl"s, useSSR != 0);
+               }
+               //POV_FIELD("FPSLimiter", "%i", m_TableAdaptiveVSync);
+               node = section->FirstChildElement("FPSLimiter");
+               if (node)
+               {
+                  int tableAdaptiveVSync;
+                  sscanf_s(node->GetText(), "%i", &tableAdaptiveVSync);
+                  if (tableAdaptiveVSync != -1)
+                  {
+                     switch (tableAdaptiveVSync)
+                     {
+                     case 0:
+                        m_settings.SaveValue(Settings::Player, "MaxFramerate"s, 0);
+                        m_settings.SaveValue(Settings::Player, "SyncMode"s, VideoSyncMode::VSM_NONE);
+                        break;
+                     case 1:
+                        m_settings.SaveValue(Settings::Player, "MaxFramerate"s, 0);
+                        m_settings.SaveValue(Settings::Player, "SyncMode"s, VideoSyncMode::VSM_VSYNC);
+                        break;
+                     case 2:
+                        m_settings.SaveValue(Settings::Player, "MaxFramerate"s, 0);
+                        m_settings.SaveValue(Settings::Player, "SyncMode"s, VideoSyncMode::VSM_ADAPTIVE_VSYNC);
+                        break;
+                     default:
+                        m_settings.SaveValue(Settings::Player, "MaxFramerate"s, tableAdaptiveVSync);
+                        m_settings.SaveValue(Settings::Player, "SyncMode"s, VideoSyncMode::VSM_ADAPTIVE_VSYNC);
+                        break;
+                     }
+                  }
+               }
+               //POV_FIELD("BallTrail", "%i", m_useTrailForBalls);
+               node = section->FirstChildElement("BallTrail");
+               if (node)
+               {
+                  int useTrailForBalls;
+                  sscanf_s(node->GetText(), "%i", &useTrailForBalls);
+                  if (useTrailForBalls != -1)
+                     m_settings.SaveValue(Settings::Player, "BallTrail"s, useTrailForBalls == 1);
+               }
+               //POV_FIELD("BallTrailStrength", "%f", m_ballTrailStrength);
+               node = section->FirstChildElement("BallTrailStrength");
+               if (node)
+               {
+                  float strength;
+                  sscanf_s(node->GetText(), "%f", &strength);
+                  m_settings.SaveValue(Settings::Player, "BallTrailStrength"s, strength);
+               }
+               //int overwriteGlobalDetailLevel = (int)m_overwriteGlobalDetailLevel;
+               //POV_FIELD("OverwriteDetailsLevel", "%i", overwriteGlobalDetailLevel);
+               node = section->FirstChildElement("OverwriteDetailsLevel");
+               if (node)
+               {
                   int value;
                   sscanf_s(node->GetText(), "%i", &value);
-                  m_settings.SaveValue(Settings::Player, "AlphaRampAccuracy"s, value);
+                  if (value == 1)
+                  {
+                     //POV_FIELD("DetailsLevel", "%i", m_userDetailLevel);
+                     node = section->FirstChildElement("DetailsLevel");
+                     int value;
+                     sscanf_s(node->GetText(), "%i", &value);
+                     m_settings.SaveValue(Settings::Player, "AlphaRampAccuracy"s, value);
+                  }
                }
-         }
-         node = section->FirstChildElement("OverwriteNightDay");
-         if (node)
-         {
-               int value;
-               sscanf_s(node->GetText(), "%i", &value);
-               m_overwriteGlobalDayNight = (value == 1);
-         }
-         node = section->FirstChildElement("NightDayLevel");
-         if (node)
-         {
-               int value;
-               sscanf_s(node->GetText(), "%i", &value);
-               SetGlobalEmissionScale(value);
-         }
-         node = section->FirstChildElement("GameplayDifficulty");
-         if (node)
-         {
-               float value;
-               sscanf_s(node->GetText(), "%f", &value);
-               SetGlobalDifficulty(value);
-         }
-         node = section->FirstChildElement("PhysicsSet");
-         if (node) sscanf_s(node->GetText(), "%i", &m_overridePhysics);
-         node = section->FirstChildElement("IncludeFlipperPhysics");
-         if (node)
-         {
-               int value;
-               sscanf_s(node->GetText(), "%i", &value);
-               m_overridePhysicsFlipper = (value == 1);
-         }
-         node = section->FirstChildElement("SoundVolume");
-         if (node) 
-         {
-               int value;
-               sscanf_s(node->GetText(), "%i", &value);
-               SetTableSoundVolume(value);
-         }
-         node = section->FirstChildElement("MusicVolume");
-         if (node)
-         {
-               int value;
-               sscanf_s(node->GetText(), "%i", &value);
-               SetTableMusicVolume(value);
+               node = section->FirstChildElement("OverwriteNightDay");
+               if (node)
+               {
+                  int value;
+                  sscanf_s(node->GetText(), "%i", &value);
+                  //m_overwriteGlobalDayNight = (value == 1);
+                  if (value == 1)
+                  {
+                     m_settings.SaveValue(Settings::TableOverride, "OverrideEmissionScale"s, true);
+                     node = section->FirstChildElement("NightDayLevel");
+                     if (node)
+                     {
+                        int value;
+                        sscanf_s(node->GetText(), "%i", &value);
+                        m_settings.SaveValue(Settings::Player, "EmissionScale"s, value / 100.f);
+                     }
+                  }
+               }
+               node = section->FirstChildElement("GameplayDifficulty");
+               if (node)
+               {
+                  float value;
+                  sscanf_s(node->GetText(), "%f", &value);
+                  m_settings.SaveValue(Settings::TableOverride, "Difficulty"s, value);
+               }
+               node = section->FirstChildElement("SoundVolume");
+               if (node)
+               {
+                  int value;
+                  sscanf_s(node->GetText(), "%i", &value);
+                  m_settings.SaveValue(Settings::Player, "SoundVolume"s, value);
+               }
+               node = section->FirstChildElement("MusicVolume");
+               if (node)
+               {
+                  int value;
+                  sscanf_s(node->GetText(), "%i", &value);
+                  m_settings.SaveValue(Settings::Player, "MusicVolume"s, value);
+               }
+               // FIXME these are the last 3 settings which were not ported to the setting API
+               // - for physics set, since they can be applied at the part level, for each flipper
+               // - for ball reflection, since I don't think that matters and there is no obvious way
+               //POV_FIELD("BallReflection", "%i", m_useReflectionForBalls); // removed in 10.8
+               /* node = section->FirstChildElement("PhysicsSet");
+               if (node)
+                  sscanf_s(node->GetText(), "%i", &m_overridePhysics);
+               node = section->FirstChildElement("IncludeFlipperPhysics");
+               if (node)
+               {
+                  int value;
+                  sscanf_s(node->GetText(), "%i", &value);
+                  m_overridePhysicsFlipper = (value == 1);
+               } */
+            }
          }
       }
-      #undef POV_FIELD
-
-      if (filename.empty())
-         SetNonUndoableDirty(eSaveDirty);
-   }
-   catch (...)
-   {
-       if (!oldFormatLoaded)
+      catch (...)
+      {
          ShowError("Error parsing POV XML file");
-    }
+      }
+      xmlDoc.Clear();
+   }
 
-    xmlDoc.Clear();
+   // Apply loaded POV to the table or user settings
+   for (int id = 0; id < 3; id++)
+   {
+      if (toUserSettings)
+         vs[id].SaveToTableOverrideSettings(m_settings, (ViewSetupID)id);
+      else
+      {
+         Settings settings;
+         vs[id].SaveToTableOverrideSettings(settings, (ViewSetupID)id);
+         mViewSetups[id].ApplyTableOverrideSettings(settings, (ViewSetupID)id);
+      }
+   }
 
-    // update properties UI
-    m_vpinball->SetPropSel(m_vmultisel); 
+   // update properties UI
+   if (!toUserSettings)
+      SetNonUndoableDirty(eSaveDirty);
+   m_vpinball->SetPropSel(m_vmultisel);
 }
 
-void PinTable::ExportBackdropPOV(const bool saveAs, const PinTable *overridesFrom)
+// Select file and export the point of view definition
+void PinTable::ExportBackdropPOV()
 {
    string iniFileName;
-	if (saveAs)
-	{
-		OPENFILENAME ofn = {};
-		ofn.lStructSize = sizeof(OPENFILENAME);
-		ofn.hInstance = m_vpinball->theInstance;
-		ofn.hwndOwner = m_vpinball->GetHwnd();
-		// TEXT
-		ofn.lpstrFilter = "INI file(*.ini)\0*.ini\0";
-		char szFileName[MAXSTRING];
-		strncpy_s(szFileName, m_szFileName.c_str(), sizeof(szFileName)-1);
-		const size_t idx = m_szFileName.find_last_of('.');
-		if(idx != string::npos && idx < MAXSTRING)
-			szFileName[idx] = '\0';
-		ofn.lpstrFile = szFileName;
-		ofn.nMaxFile = sizeof(szFileName);
-		ofn.lpstrDefExt = "ini";
-		ofn.Flags = OFN_NOREADONLYRETURN | OFN_CREATEPROMPT | OFN_OVERWRITEPROMPT | OFN_EXPLORER;
-		const int ret = GetSaveFileName(&ofn);
-		// user canceled
-		if (ret == 0)
-			return;// S_FALSE;
-		iniFileName = szFileName;
-	}
-   else
-   {
-      iniFileName = GetSettingsFileName();
-      if (iniFileName.empty())
-         return;
-   }
+	OPENFILENAME ofn = {};
+	ofn.lStructSize = sizeof(OPENFILENAME);
+	ofn.hInstance = m_vpinball->theInstance;
+	ofn.hwndOwner = m_vpinball->GetHwnd();
+	// TEXT
+	ofn.lpstrFilter = "INI file(*.ini)\0*.ini\0";
+	char szFileName[MAXSTRING];
+	strncpy_s(szFileName, m_szFileName.c_str(), sizeof(szFileName)-1);
+	const size_t idx = m_szFileName.find_last_of('.');
+	if(idx != string::npos && idx < MAXSTRING)
+		szFileName[idx] = '\0';
+	ofn.lpstrFile = szFileName;
+	ofn.nMaxFile = sizeof(szFileName);
+	ofn.lpstrDefExt = "ini";
+	ofn.Flags = OFN_NOREADONLYRETURN | OFN_CREATEPROMPT | OFN_OVERWRITEPROMPT | OFN_EXPLORER;
+	const int ret = GetSaveFileName(&ofn);
+	// user canceled
+	if (ret == 0)
+		return;// S_FALSE;
+	iniFileName = szFileName;
 
    // Save view setups (only overriden properties if we are given a reference view setup set)
    Settings settings;
-   if (overridesFrom)
-   {
-      Settings tableProps;
-      g_pvp->m_settings.SetParent(&tableProps);
-      for (int i = 0; i < 3; i++)
-      {
-         overridesFrom->mViewSetups[i].SaveToTableOverrideSettings(tableProps, i == BG_DESKTOP ? "ViewDT"s : i == BG_FSS ? "ViewFSS"s : "ViewCab"s, false);
-         mViewSetups[i].SaveToTableOverrideSettings(m_settings, i == BG_DESKTOP ? "ViewDT"s : i == BG_FSS ? "ViewFSS"s : "ViewCab"s, true);
-      }
-      g_pvp->m_settings.SetParent(nullptr);
-      settings = m_settings;
-   }
-   else
-   {
-      for (int i = 0; i < 3; i++)
-         mViewSetups[i].SaveToTableOverrideSettings(settings, i == BG_DESKTOP ? "ViewDT"s : i == BG_FSS ? "ViewFSS"s : "ViewCab"s, false);
-   }
+   for (int i = 0; i < 3; i++)
+      mViewSetups[i].SaveToTableOverrideSettings(settings, (ViewSetupID)i);
+   settings.SaveToFile(iniFileName);
 
    if (settings.IsModified())
    {
@@ -8612,16 +8632,19 @@ STDMETHODIMP PinTable::put_GlobalAlphaAcc(VARIANT_BOOL newVal)
 
 STDMETHODIMP PinTable::get_GlobalDayNight(VARIANT_BOOL *pVal)
 {
-   *pVal = FTOVB(m_overwriteGlobalDayNight);
+   // FIXME deprecated
+   //*pVal = FTOVB(m_overwriteGlobalDayNight);
+   *pVal = FTOVB(m_settings.HasValue(Settings::TableOverride, "OverrideEmissionScale"));
 
    return S_OK;
 }
 
 STDMETHODIMP PinTable::put_GlobalDayNight(VARIANT_BOOL newVal)
 {
-   STARTUNDO
-   m_overwriteGlobalDayNight = VBTOb(newVal);
-   STOPUNDO
+   // FIXME deprecated
+   //STARTUNDO
+   //m_overwriteGlobalDayNight = VBTOb(newVal);
+   //STOPUNDO
 
    return S_OK;
 }

@@ -21,8 +21,8 @@ class ViewSetup final
 public:
    ViewSetup();
 
-   void ApplyTableOverrideSettings(const Settings& settings, const string& keyPrefix);
-   void SaveToTableOverrideSettings(Settings& settings, const string& keyPrefix, const bool isOverride) const;
+   void ApplyTableOverrideSettings(const Settings& settings, const ViewSetupID id);
+   void SaveToTableOverrideSettings(Settings& settings, const ViewSetupID id) const;
    void SetWindowModeFromSettings(const PinTable* const table);
    
    float GetWindowTopZOFfset(const PinTable* const table) const;

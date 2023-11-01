@@ -685,7 +685,9 @@ public:
          }
          if (m_extractPov && m_loadFileResult)
          {
-            m_vpinball.m_ptableActive->ExportBackdropPOV(false, nullptr);
+            for (int i = 0; i < 3; i++)
+               m_vpinball.m_ptableActive->mViewSetups[i].SaveToTableOverrideSettings(m_vpinball.m_ptableActive->m_settings, (ViewSetupID) i);
+            m_vpinball.m_ptableActive->m_settings.Save();
             m_vpinball.QuitPlayer(Player::CloseState::CS_CLOSE_APP);
          }
       }

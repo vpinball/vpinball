@@ -529,6 +529,17 @@ inline int MultiByteToWideCharNull(
     return res;
 }
 
+inline void StrToLower(string& str)
+{
+   std::transform(str.begin(), str.end(), str.begin(), tolower);
+}
+
+inline bool StrCompareNoCase(const string& strA, const string& strB)
+{
+   return strA.size() == strB.size()
+      && std::equal(strA.begin(), strA.end(), strB.begin(), 
+         [](char a, char b) { return std::tolower(static_cast<unsigned char>(a)) == std::tolower(static_cast<unsigned char>(b)); });
+}
 
 char* replace(const char* const original, const char* const pattern, const char* const replacement);
 
