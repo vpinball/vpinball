@@ -137,8 +137,8 @@ float3 LinearAnaglyph(const float3 lCol, const float3 rCol)
 {
     const float3 color = (mul(float4(lCol, 1.), Stereo_LeftMat) + mul(float4(rCol, 1.), Stereo_RightMat)).rgb;
     // Uncomment to vizualize parts that should exhibit ghosting (clamping always result in ghosting)
-	//if (color.r < 0.0 || color.g < 0.0 || color.b < 0.0 || color.r > 1.0 || color.g > 1.0 || color.b > 1.0)
-	//	color = vec3(0.0);
+    //if (color.r < 0.0 || color.g < 0.0 || color.b < 0.0 || color.r > 1.0 || color.g > 1.0 || color.b > 1.0)
+    //    color = vec3(0.0);
     return color;
 }
 

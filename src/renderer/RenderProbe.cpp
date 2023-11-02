@@ -16,14 +16,14 @@ RenderProbe::~RenderProbe()
 
 int RenderProbe::GetSaveSize() const
 {
-   int size = 0;
+   size_t size = 0;
    size += 2 * sizeof(int) + sizeof(int); // TYPE
-   size += 2 * sizeof(int) + sizeof(int) + (int)m_name.length(); // NAME
+   size += 2 * sizeof(int) + sizeof(int) + m_name.length(); // NAME
    size += 2 * sizeof(int) + sizeof(int); // RBAS
    size += 2 * sizeof(int) + sizeof(int); // RCLE
    size += 2 * sizeof(int) + sizeof(vec4); // RPLA
    size += 2 * sizeof(int) + sizeof(int); // RMOD
-   return size;
+   return (int)size;
 }
 
 HRESULT RenderProbe::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)
@@ -166,7 +166,7 @@ void RenderProbe::ApplyRoughness(RenderTarget* probe, const int roughness)
    {
       RenderDevice* const p3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
       if (m_blurRT == nullptr)
-         m_blurRT = probe->Duplicate(probe->m_name+".Blur"s);
+         m_blurRT = probe->Duplicate(probe->m_name+".Blur");
       // The kernel sizes were chosen by reverse engineering the blur shader. So there's a part of guess here.
       // The blur shader seems to mix binomial & gaussian distributions, with a kernel size which does not directly match the pascal triangle size.
       // Ideally this should be a gaussian distribution's sigma, scaled by the render height against a reference height.
@@ -201,7 +201,7 @@ void RenderProbe::RenderScreenSpaceTransparency(const bool is_static)
    p3dDevice->SetRenderTarget(m_name, m_dynamicRT, false);
    p3dDevice->BlitRenderTarget(p3dDevice->GetMSAABackBufferTexture(), m_dynamicRT, true, true);
    ApplyRoughness(m_dynamicRT, m_roughness);
-   p3dDevice->SetRenderTarget(previousRT->m_name + "+"s, previousRT->m_rt);
+   p3dDevice->SetRenderTarget(previousRT->m_name + '+', previousRT->m_rt);
 }
 
 
@@ -277,7 +277,7 @@ void RenderProbe::PreRenderStaticReflectionProbe()
    {
       const int downscale = GetRoughnessDownscale(m_roughness);
       const int w = p3dDevice->GetMSAABackBufferTexture()->GetWidth() / downscale, h = p3dDevice->GetMSAABackBufferTexture()->GetHeight() / downscale;
-      m_prerenderRT = new RenderTarget(p3dDevice, p3dDevice->GetMSAABackBufferTexture()->m_type, m_name + ".Stat"s, w, h, p3dDevice->GetMSAABackBufferTexture()->GetColorFormat(), true, 1,
+      m_prerenderRT = new RenderTarget(p3dDevice, p3dDevice->GetMSAABackBufferTexture()->m_type, m_name + ".Stat", w, h, p3dDevice->GetMSAABackBufferTexture()->GetColorFormat(), true, 1,
          "Failed to create plane reflection static render target", nullptr);
    }
 
@@ -346,7 +346,7 @@ void RenderProbe::PreRenderStaticReflectionProbe()
    p3dDevice->FlushRenderFrame(); // Execute before destroying the render target
    delete accumulationSurface;
    if (previousRT)
-      p3dDevice->SetRenderTarget(previousRT->m_name + "+"s, previousRT->m_rt);
+      p3dDevice->SetRenderTarget(previousRT->m_name + '+', previousRT->m_rt);
    else
       p3dDevice->SetRenderTarget(""s, nullptr);
 
@@ -373,7 +373,7 @@ void RenderProbe::RenderReflectionProbe(const bool is_static)
    {
       const int downscale = GetRoughnessDownscale(m_roughness);
       const int w = p3dDevice->GetMSAABackBufferTexture()->GetWidth() / downscale, h = p3dDevice->GetMSAABackBufferTexture()->GetHeight() / downscale;
-      m_dynamicRT = new RenderTarget(p3dDevice, p3dDevice->GetMSAABackBufferTexture()->m_type, m_name + ".Dyn"s, w, h, p3dDevice->GetMSAABackBufferTexture()->GetColorFormat(), true, 1,
+      m_dynamicRT = new RenderTarget(p3dDevice, p3dDevice->GetMSAABackBufferTexture()->m_type, m_name + ".Dyn", w, h, p3dDevice->GetMSAABackBufferTexture()->GetColorFormat(), true, 1,
          "Failed to create plane reflection dynamic render target", nullptr);
    }
    p3dDevice->SetRenderTarget(m_name, m_dynamicRT);
@@ -391,7 +391,7 @@ void RenderProbe::RenderReflectionProbe(const bool is_static)
 
    m_renderPass = p3dDevice->GetCurrentPass();
 
-   p3dDevice->SetRenderTarget(previousRT->m_name + "+"s, previousRT->m_rt);
+   p3dDevice->SetRenderTarget(previousRT->m_name + '+', previousRT->m_rt);
 }
 
 void RenderProbe::DoRenderReflectionProbe(const bool render_static, const bool render_balls, const bool render_dynamic)

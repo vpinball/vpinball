@@ -1,6 +1,6 @@
 #pragma once
 
-class HitRectSur : public Sur
+class HitRectSur final : public Sur
 {
 public:
 

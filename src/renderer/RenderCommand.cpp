@@ -226,18 +226,18 @@ void RenderCommand::Execute(const int nInstances, const bool log)
             #ifdef ENABLE_SDL
             assert(0 <= m_mb->m_vb->GetVertexOffset() && m_mb->m_vb->GetVertexOffset() + m_indicesCount <= m_mb->m_vb->GetSharedBuffer()->GetCount());
             if (instanceCount > 1)
-               glDrawArraysInstanced(m_primitiveType, m_mb->m_vb->GetVertexOffset() + m_startIndice, m_indicesCount, instanceCount);
+               glDrawArraysInstanced(m_primitiveType, m_mb->m_vb->GetVertexOffset() + m_startIndex, m_indicesCount, instanceCount);
             else
-               glDrawArrays(m_primitiveType, m_mb->m_vb->GetVertexOffset() + m_startIndice, m_indicesCount);
+               glDrawArrays(m_primitiveType, m_mb->m_vb->GetVertexOffset() + m_startIndex, m_indicesCount);
             #else
-            CHECKD3D(m_rd->GetCoreDevice()->DrawPrimitive((D3DPRIMITIVETYPE)m_primitiveType, m_mb->m_vb->GetVertexOffset() + m_startIndice, np));
+            CHECKD3D(m_rd->GetCoreDevice()->DrawPrimitive((D3DPRIMITIVETYPE)m_primitiveType, m_mb->m_vb->GetVertexOffset() + m_startIndex, np));
             #endif
          }
          else
          {
             const int vertexOffset = m_mb->m_isVBOffsetApplied ? 0 : m_mb->m_vb->GetOffset();
             #ifdef ENABLE_SDL
-            const int indexOffset = m_mb->m_ib->GetOffset() + m_startIndice * m_mb->m_ib->m_sizePerIndex;
+            const int indexOffset = m_mb->m_ib->GetOffset() + m_startIndex * m_mb->m_ib->m_sizePerIndex;
             const GLenum indexType = m_mb->m_ib->m_indexFormat == IndexBuffer::FMT_INDEX16 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT;
             #if defined(DEBUG) && 0
             // Track invalid vertex memory reference. Very slow, only for debugging memory access exception in OpenGL
@@ -277,7 +277,7 @@ void RenderCommand::Execute(const int nInstances, const bool log)
             }
             #else
             CHECKD3D(m_rd->GetCoreDevice()->DrawIndexedPrimitive((D3DPRIMITIVETYPE)m_primitiveType, 
-               vertexOffset, 0, m_mb->m_vb->m_count, m_mb->m_ib->GetIndexOffset() + m_startIndice, np));
+               vertexOffset, 0, m_mb->m_vb->m_count, m_mb->m_ib->GetIndexOffset() + m_startIndex, np));
             #endif
          }
          break;
@@ -357,13 +357,13 @@ void RenderCommand::SetRenderLiveUI()
 
 void RenderCommand::SetDrawMesh(
    Shader* shader, MeshBuffer* mb, const RenderDevice::PrimitiveTypes type, 
-   const DWORD startIndice, const DWORD indexCount,const bool isTransparent, const float depth)
+   const DWORD startIndex, const DWORD indexCount,const bool isTransparent, const float depth)
 {
    assert(mb != nullptr);
    m_command = Command::RC_DRAW_MESH;
    m_mb = mb;
    m_primitiveType = type;
-   m_startIndice = startIndice;
+   m_startIndex = startIndex;
    m_indicesCount = indexCount;
    m_rd->CopyRenderStates(true, m_renderState);
    m_depth = depth;

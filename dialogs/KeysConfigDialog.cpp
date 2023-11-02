@@ -307,6 +307,7 @@ void KeysConfigDialog::AddStringAxis(const string &name, const int idc, const in
 {
    const int selected = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, name, def);
    const HWND hwnd = GetDlgItem(idc).GetHwnd();
+   ::SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"(disabled)");
    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"X Axis");
    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Y Axis");
@@ -317,6 +318,7 @@ void KeysConfigDialog::AddStringAxis(const string &name, const int idc, const in
    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Slider 1");
    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Slider 2");
    ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
+   ::SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 }
 
 void KeysConfigDialog::AddJoyCustomKey(const string &name, const int idc, const int default_key)

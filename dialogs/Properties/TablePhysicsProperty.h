@@ -9,7 +9,7 @@ public:
     {
     }
 
-    void UpdateVisuals(const int dispid=-1);
+    void UpdateVisuals(const int dispid = -1);
     void UpdateProperties(const int dispid);
 
 protected:
@@ -37,7 +37,7 @@ private:
     EditBox m_tableFieldHeightEdit;
     EditBox m_minSlopeEdit;
     EditBox m_maxSlopeEdit;
-    EditBox m_gameplayDifficultEdit;
+    EditBox m_gameplayDifficultyEdit;
     ComboBox m_overwritePhysicsSetCombo;
     HWND    m_hOverwriteFlipperCheck;
     vector<string> m_physicSetList;

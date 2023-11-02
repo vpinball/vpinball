@@ -271,9 +271,9 @@ void Anaglyph::Update()
    m_rgb2Yr = m_rgb2Yr / (m_rgb2Yr.x + m_rgb2Yr.y + m_rgb2Yr.z);
 
    // Compute the anaglyph property of the filter (ability to split the image between the eyes)
-   m_anaglyphRatio = vec3(abs(m_rgb2Yl.x - m_rgb2Yr.x) / (m_rgb2Yl.x + m_rgb2Yr.x), 
-                          abs(m_rgb2Yl.y - m_rgb2Yr.y) / (m_rgb2Yl.y + m_rgb2Yr.y), 
-                          abs(m_rgb2Yl.z - m_rgb2Yr.z) / (m_rgb2Yl.z + m_rgb2Yr.z));
+   m_anaglyphRatio = vec3(fabsf(m_rgb2Yl.x - m_rgb2Yr.x) / (m_rgb2Yl.x + m_rgb2Yr.x), 
+                          fabsf(m_rgb2Yl.y - m_rgb2Yr.y) / (m_rgb2Yl.y + m_rgb2Yr.y), 
+                          fabsf(m_rgb2Yl.z - m_rgb2Yr.z) / (m_rgb2Yl.z + m_rgb2Yr.z));
 
    // Evaluate filter tints (for UI display)
    m_leftEyeColor = vec3(m_rgb2Yl.x / 0.2126f, m_rgb2Yl.y / 0.7152f, m_rgb2Yl.z / 0.0722f);

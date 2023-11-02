@@ -1268,7 +1268,7 @@ void LiveUI::OnTweakModeEvent(const bool isKeyDown, const int keycode)
                         char textBuf1[MAXNAMEBUFFER], textBuf2[MAXNAMEBUFFER];
                         sprintf_s(textBuf1, sizeof(textBuf1), "%.02f", db.m_data[bestSizeMatch].glassBottom);
                         sprintf_s(textBuf2, sizeof(textBuf2), "%.02f", db.m_data[bestSizeMatch].glassTop);
-                        PushNotification("Missing glass position guessed to be "s + textBuf1 + "\" / " + textBuf2 + "\" (" + db.m_data[bestSizeMatch].name + ")", 5000);
+                        PushNotification("Missing glass position guessed to be "s + textBuf1 + "\" / " + textBuf2 + "\" (" + db.m_data[bestSizeMatch].name + ')', 5000);
                      }
                      else
                      {
@@ -1461,12 +1461,12 @@ void LiveUI::UpdateTweakModeUI()
       if (!m_table->m_szAuthor.empty())
          info << " by " << m_table->m_szAuthor;
       if (!m_table->m_szVersion.empty())
-         info << " (" << m_table->m_szVersion << ")";
+         info << " (" << m_table->m_szVersion << ')';
       info << " (" << (!m_table->m_szDateSaved.empty() ? m_table->m_szDateSaved : "N.A.") << " Revision " << m_table->m_numTimesSaved << ")\n";
       const size_t line_length = info.str().size();
-      info << std::string(line_length, '=') << "\n";
+      info << std::string(line_length, '=') << '\n';
       if (!m_table->m_szBlurb.empty())
-         info << m_table->m_szBlurb << std::string(line_length, '=') << "\n";
+         info << m_table->m_szBlurb << std::string(line_length, '=') << '\n';
       if (!m_table->m_szDescription.empty())
          info << m_table->m_szDescription;
       ImGui::NewLine();
@@ -2662,7 +2662,7 @@ void LiveUI::UpdateRendererInspectionModal()
          ImGui::EndTable();
          ImGui::NewLine();
       }
-	  
+
       // Latency timing table
       if (ImGui::BeginTable("Latencies", 5, ImGuiTableFlags_Borders))
       {

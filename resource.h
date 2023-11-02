@@ -979,7 +979,6 @@
 #define IDI_EXPANDCOLLAPSE              663
 #define IDI_LAYERS                      664
 #define IDI_TOOLBAR                     665
-#define IDI_ICON5                       666
 #define IDI_CAMERA                      666
 #define IDC_DATE_SAVED                  667
 #define IDD_NOTES_DIALOG                668
@@ -1442,7 +1441,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        676
+#define _APS_NEXT_RESOURCE_VALUE        675
 #define _APS_NEXT_COMMAND_VALUE         4028
 #define _APS_NEXT_CONTROL_VALUE         925
 #define _APS_NEXT_SYMED_VALUE           188

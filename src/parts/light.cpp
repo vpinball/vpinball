@@ -399,7 +399,7 @@ void Light::UpdateAnimation(const float diff_time_msec)
          const double remaining_time = diff_time_msec * (0.001 * 40.0 / fadeSpeed); // Apply a speed factor (a bulb with this characteristics reach full power between 30 and 40ms so we modulate around this)
          if (lightState != 0.f)
          {
-            const double U = 6.3 * powf(lightState, 0.25f); // Modulating by Emission^0.25 is not fully correct (ignoring visible/non visible wavelengths) but an acceptable approximation
+            const double U = 6.3 * pow(lightState, 0.25); // Modulating by Emission^0.25 is not fully correct (ignoring visible/non visible wavelengths) but an acceptable approximation
             m_currentFilamentTemperature = bulb_heat_up(BULB_44, m_currentFilamentTemperature, remaining_time, U, 0.0);
          }
          else

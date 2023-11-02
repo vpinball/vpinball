@@ -139,14 +139,14 @@ void RenderPass::SortCommands()
 {
    /*
    Before 10.8, render command were not buffered and processed in the following order (* is optional static prepass):
-	   - Playfield *
-	   - Static render,  not decals * => Unsorted
-	   - Static render decals * => Unsorted
-	   - Dynamic render Opaque, not DMD => Unsorted (front to back, state changes,...)
-	   - Dynamic render Opaque DMD => Unsorted (front to back, state changes,...), only used by Flasher DMD
-	   - Balls
-	   - Dynamic render Transparent, not DMD => Sorted back to front
-	   - Dynamic render Transparent DMD => Sorted back to front, unused feature (none of the parts are simultaneously IsDMD and IsTransparent)
+      - Playfield *
+      - Static render,  not decals * => Unsorted
+      - Static render decals * => Unsorted
+      - Dynamic render Opaque, not DMD => Unsorted (front to back, state changes,...)
+      - Dynamic render Opaque DMD => Unsorted (front to back, state changes,...), only used by Flasher DMD
+      - Balls
+      - Dynamic render Transparent, not DMD => Sorted back to front
+      - Dynamic render Transparent DMD => Sorted back to front, unused feature (none of the parts are simultaneously IsDMD and IsTransparent)
    Note that:
       - Kickers are rendered with a "pass always" depth test
       - Transparent parts do write to depth buffer (they can be used as masks)
@@ -203,9 +203,9 @@ void RenderPass::SortCommands()
          }
          if (transparent2)
             return true;
-            
+
          // At this point, both commands are draw commands of opaque items
-            
+
          // HACKY: if marked with a very high depthbias, render them first. This is needed to avoid breaking playfield rendering of old table 
          // since before 10.8, playfield was always rendered before all other parts, with alpha testing and depth writing.
          if (r1->GetDepth() != r2->GetDepth() && fabsf(r1->GetDepth() - r2->GetDepth()) > 50000.f)
@@ -268,7 +268,7 @@ bool RenderPass::Execute(const bool log)
    if (GLAD_GL_VERSION_4_3)
    {
       std::stringstream passName;
-      passName << m_name << " [RT=" << m_rt->m_name << "]";
+      passName << m_name << " [RT=" << m_rt->m_name << ']';
       glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, passName.str().c_str());
    }
 #endif
@@ -285,18 +285,18 @@ bool RenderPass::Execute(const bool log)
          if (!first)
             ss << ", ";
          first = false;
-         ss << "'" << dep->m_name << "'";
+         ss << '\'' << dep->m_name << '\'';
       }
-      ss << "]";
+      ss << ']';
       PLOGI << ss.str();
    }
 
    if (m_areaOfInterest.x != FLT_MAX)
    {
-      const int left   = clamp((int)((0.5f + m_areaOfInterest.x * 0.5f) * m_rt->GetWidth() ), 0, m_rt->GetWidth());
-      const int bottom = clamp((int)((0.5f + m_areaOfInterest.y * 0.5f) * m_rt->GetHeight()), 0, m_rt->GetHeight());
-      const int right  = clamp((int)((0.5f + m_areaOfInterest.z * 0.5f) * m_rt->GetWidth() ), 0, m_rt->GetWidth());
-      const int top    = clamp((int)((0.5f + m_areaOfInterest.w * 0.5f) * m_rt->GetHeight()), 0, m_rt->GetHeight());
+      const int left   = clamp((int)((0.5f + m_areaOfInterest.x * 0.5f) * (float)m_rt->GetWidth() ), 0, m_rt->GetWidth());
+      const int bottom = clamp((int)((0.5f + m_areaOfInterest.y * 0.5f) * (float)m_rt->GetHeight()), 0, m_rt->GetHeight());
+      const int right  = clamp((int)((0.5f + m_areaOfInterest.z * 0.5f) * (float)m_rt->GetWidth() ), 0, m_rt->GetWidth());
+      const int top    = clamp((int)((0.5f + m_areaOfInterest.w * 0.5f) * (float)m_rt->GetHeight()), 0, m_rt->GetHeight());
       #ifdef ENABLE_SDL
       glEnable(GL_SCISSOR_TEST);
       glScissor((GLint)left, (GLint)bottom, (GLsizei)(right - left), (GLsizei)(top - bottom));

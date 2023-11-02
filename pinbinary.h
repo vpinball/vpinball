@@ -17,7 +17,7 @@ public:
    HRESULT LoadFromStream(IStream *pstream, int version);
 
    // ILoadable callback
-   virtual bool LoadToken(const int id, BiffReader * const pbr) override;
+   bool LoadToken(const int id, BiffReader * const pbr) override;
 
    string m_szName;
    string m_szPath;
@@ -26,7 +26,7 @@ public:
    int m_cdata;
 };
 
-class PinFont : public PinBinary
+class PinFont final : public PinBinary
 {
 public:
    void Register();

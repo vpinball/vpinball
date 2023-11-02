@@ -44,8 +44,8 @@ FEATURES:
     weird we warned you). If you have issues locating the table or getting nightmares, it is NOT our fault.
     Default values are: box unchecked and 1.
 
-  - note that VPVR did not support the roughness property of metallic parts (always supposing mirror like metal). Some VR only tables have wrong material shininess that will lead to 
-    incorrect rendering of metal parts. These table's materials need to be updated to adjust the shininess of metal materials.
+  - note that the VPVR fork did not support the roughness property of metallic parts (=always mirror like metal instead). Some VR-only tables thus feature wrong material shininess that will lead to
+    incorrect rendering of metal parts. These table's materials need to be updated to re-adjust the shininess of metal materials.
 
   - note that adaptive vsync (=mode value 2) is recommended (at least) on macOS/iOS and Android
 
@@ -108,13 +108,13 @@ FEATURES:
 - settings were also extended to support overriding some table properties, like camera properties or other things that used to be adjusted in the 'User' property pane. This change allows to
   adjust a table to user preferences without modifying the table. Only the table settings (the ini file along the table) will be adjusted. This way:
   - updating a table to a new version can be done more easily, by simply renaming the ini file to the new table name, keeping all adjusted settings,
-  - all properties and settings use the same approach: data from the table, eventually overriden in the app ini settings, eventually overriden in the table ini settings,
-  - POV files are no more needed and therefore deprecated (they are still read and used unless a ini file has been created for backward compatibility).
-  
+  - all properties and settings use the same approach: load data from the table, optionally overriden in the app ini settings, optionally overriden in the table ini settings,
+  - POV files are not needed anymore and therefore deprecated (these are still read and used, unless an ini file has been created, for backwards compatibility).
+
 - some settings were moved/changed to benefit from the new settings system:
   - Player/GlobalDifficulty is now TableOverride/Difficulty, expressed as a decimal value
-  - PF & Ball reflection on/off were removed from table settings, since this was redundant and conflicting with overall application and reflection probes settings. We now directly 
-    define reflections in render probe. Table author can disable default playfield reflection by setting PF reflection strength to 0. Player uses app/table settings to tweak.
+  - Playfield & Ball reflection on/off were removed from the table settings, since this was redundant and conflicting with overall application and reflection probes settings. We now directly
+    define reflections in the render probe. Table authors can disable the default playfield reflection by setting PF reflection strength to 0. Players use the app/table settings to tweak in addition.
 
 - remove Anti-Aliasing and Postprocessed Anti-Aliasing options from the table properties (and use an .ini based override instead)
 
@@ -185,9 +185,9 @@ FEATURES:
 
 - when renaming a surface/wall, ask if all elements (lights, etc) that reference the surface name should also use this new name
 
-- it is now possible to choose between 2 tonemappers (the part of the rendering which handles the way overbright parts are rendered):
+- it is now possible to choose between 2 tonemappers (the part of the rendering which handles the way overbright parts are displayed on non-HDR displays):
   - Reinhard, which is the one used by VPX until the 10.8 release,
-  - Tony Mc MapFace, which is an improved tonemapper especially regarding handling very bright sturated colors (like a very bright red, which in turns would be perceived as yellow or even white. See https://github.com/h3r2tic/tony-mc-mapface)
+  - Tony McMapFace, which is an improved tonemapper especially regarding handling very bright sturated colors (like a very bright red, which in turns would be perceived as yellow or even white. See https://github.com/h3r2tic/tony-mc-mapface)
 
 Additional docs explaining all these new features with images are provided in the docs folder of the project: https://github.com/vpinball/vpinball/tree/master/docs
 
@@ -642,6 +642,7 @@ FEATURES:
 - support 'Add Point' hotkey (F10 normal and F11 for smooth point) for rubbers
 
 - add apply button to the dimensions manager to apply the selected dimension to the active table
+- add/correct more data to the dimensions database
 
 - add support for up to 9 custom start parameters (range 1-9). Usage: "VPinballX.exe -c1 param1 -c2 param2" sets two custom parameters "param1" and "param2".
   To access these in the script use: GetCustomParam(1) to get "param1" and GetCustomParam(2) to get "param2"

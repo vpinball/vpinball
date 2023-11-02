@@ -15,9 +15,9 @@ public:
    virtual ItemTypeEnum HitableGetItemType() const = 0;
 
    // New rendering API (implementation in progress, the aim being to split its lifecycle from the other parts, for example for LiveUI update)
-	virtual void RenderSetup(RenderDevice *device) { RenderSetup(); }
-	virtual void Render(const unsigned int renderMask) { if ((renderMask & 1) == 0) RenderDynamic(); if ((renderMask & 2) == 0) RenderStatic();}
-	virtual void RenderRelease() { }
+   virtual void RenderSetup(RenderDevice *device) { RenderSetup(); }
+   virtual void Render(const unsigned int renderMask) { if ((renderMask & 1) == 0) RenderDynamic(); if ((renderMask & 2) == 0) RenderStatic();}
+   virtual void RenderRelease() { }
    // Previous API (called by the new API while the transition is in progress)
    virtual void RenderSetup() = 0;
    virtual void UpdateAnimation(const float diff_time_msec) = 0;

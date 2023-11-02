@@ -5958,7 +5958,7 @@ void PinTable::ImportBackdropPOV(const string &filename)
             return;
          }
          #define POV_FIELD(name, parse, field) { auto node = section->FirstChildElement(name); if (node != nullptr) sscanf_s(node->GetText(), parse, &field); }
-         string sections[] = { "desktop"s, "fullscreen"s, "fullsinglescreen"s };
+         static const string sections[] = { "desktop"s, "fullscreen"s, "fullsinglescreen"s };
          for (int i = 0; i < 3; i++)
          {
             auto section = root->FirstChildElement(sections[i].c_str());
@@ -6532,7 +6532,7 @@ void PinTable::AddMultiSel(ISelect *psel, const bool add, const bool update, con
                   for (int i = 0; i < col->m_visel.size(); i++)
                   {
                      col->m_visel[i].m_selectstate = eMultiSelected;
-                     // current element is already in m_vmultisel. (ClearMultiSel(psel) added it
+                     // current element is already in m_vmultisel. (ClearMultiSel(psel) added it)
                      if (col->m_visel.ElementAt(i) != psel)
                         m_vmultisel.push_back(&col->m_visel[i]);
                   }
@@ -7204,14 +7204,14 @@ Texture *PinTable::ImportImage(const string &filename, const string &imagename)
 {
    bool isUpdate = true;
    Texture *ppi = nullptr;
-   if (imagename != "")
+   if (!imagename.empty())
       ppi = GetImage(imagename);
    if (ppi == nullptr)
    {
       ppi = new Texture();
       isUpdate = false;
    }
-   ppi->LoadFromFile(filename, imagename == "");
+   ppi->LoadFromFile(filename, imagename.empty());
    if (ppi->m_pdsBuffer == nullptr)
    {
       if (!isUpdate)

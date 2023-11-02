@@ -362,7 +362,7 @@ float4 ps_main_fb_tmtonemap(const in VS_OUTPUT_2D IN) : COLOR
 {
    float3 result = texStereoNoLod(tex_fb_filtered, IN.tex0).rgb;
    BRANCH if (do_bloom)
-       result += texStereoNoLod(tex_bloom, IN.tex0).rgb; //!! offset?
+      result += texStereoNoLod(tex_bloom, IN.tex0).rgb; //!! offset?
    const float depth0 = texStereoNoLod(tex_depth, IN.tex0).x;
    BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
       result = TonyMcMapfaceToneMap(result);
@@ -376,7 +376,7 @@ float4 ps_main_fb_rhtonemap_AO(const in VS_OUTPUT_2D IN) : COLOR
    // moving AO before tonemap does not really change the look
    result *= texStereoNoLod(tex_ao, IN.tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
    BRANCH if (do_bloom)
-       result += texStereoNoLod(tex_bloom, IN.tex0).rgb; //!! offset?
+      result += texStereoNoLod(tex_bloom, IN.tex0).rgb; //!! offset?
    const float depth0 = texStereoNoLod(tex_depth, IN.tex0).x;
    BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
       result = ReinhardToneMap(result);
@@ -390,7 +390,7 @@ float4 ps_main_fb_tmtonemap_AO(const in VS_OUTPUT_2D IN) : COLOR
    // moving AO before tonemap does not really change the look
    result *= texStereoNoLod(tex_ao, IN.tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
    BRANCH if (do_bloom)
-       result += texStereoNoLod(tex_bloom, IN.tex0).rgb; //!! offset?
+      result += texStereoNoLod(tex_bloom, IN.tex0).rgb; //!! offset?
    const float depth0 = texStereoNoLod(tex_depth, IN.tex0).x;
    BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
       result = TonyMcMapfaceToneMap(result);

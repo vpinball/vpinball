@@ -581,7 +581,7 @@ public:
 
    void SetSettingsFileName(const string &path)
    {
-      m_szIniFileName = FileExists(path) ? path : ""s;
+      m_szIniFileName = FileExists(path) ? path : string();
       m_settings.LoadFromFile(GetSettingsFileName(), false);
    }
    string GetSettingsFileName() const
@@ -591,7 +591,7 @@ public:
       string szINIFilename = m_szFileName;
       if (ReplaceExtensionFromFilename(szINIFilename, "ini"s))
          return szINIFilename;
-      return ""s;
+      return string();
    }
    string m_szIniFileName;
    Settings m_settings; // Settings for this table (apply overrides above application settings)

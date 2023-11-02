@@ -225,7 +225,7 @@ public:
       return S_OK;
    }
 
-   bool LoadToken(const int id, BiffReader* const pbr)
+   bool LoadToken(const int id, BiffReader* const pbr) override
    {
       switch (id)
       {

@@ -51,7 +51,7 @@ public:
    GLenum GetCoreTarget() const { return m_texTarget; }
 #else
    Sampler(RenderDevice* rd, IDirect3DTexture9* dx9Texture, bool ownTexture, bool force_linear_rgb, const SamplerAddressMode clampu = SA_UNDEFINED, const SamplerAddressMode clampv = SA_UNDEFINED, const SamplerFilter filter = SF_UNDEFINED);
-   IDirect3DTexture9* GetCoreTexture() { return m_texture;  }
+   IDirect3DTexture9* GetCoreTexture() { return m_texture; }
 #endif
    ~Sampler();
 

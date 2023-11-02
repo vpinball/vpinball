@@ -309,7 +309,7 @@ public:
 #endif
    }
 
-   string GetPathFromArg(string arg, bool setCurrentPath)
+   string GetPathFromArg(const string& arg, bool setCurrentPath)
    {
       string path = arg;
       if ((arg[0] == '-') || (arg[0] == '/')) // Remove leading - or /

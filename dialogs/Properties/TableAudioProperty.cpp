@@ -13,7 +13,7 @@ void TableAudioProperty::UpdateVisuals(const int dispid/*=-1*/)
     CComObject<PinTable> * const table = g_pvp->GetActiveTable();
     if (table == nullptr)
         return;
-    
+
     if (dispid == IDC_TABLESOUNDVOLUME || dispid == -1)
         PropertyDialog::SetIntTextbox(m_soundEffectVolEdit, table->GetTableSoundVolume());
     if (dispid == IDC_TABLEMUSICVOLUME || dispid == -1)
@@ -25,7 +25,7 @@ void TableAudioProperty::UpdateProperties(const int dispid)
     CComObject<PinTable> * const table = g_pvp->GetActiveTable();
     if (table == nullptr)
         return;
-    
+
     switch (dispid)
     {
         case IDC_TABLESOUNDVOLUME:

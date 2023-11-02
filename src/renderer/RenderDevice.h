@@ -20,7 +20,7 @@
 #endif
 
 #ifdef ENABLE_SDL
-#include <d3d11.h> // Used to get a VSync source when DWM is not available
+#include <d3d11.h> // Used to get a VSync source if DWM is not available
 #endif
 
 #ifndef ENABLE_SDL
@@ -145,7 +145,7 @@ public:
       const int srcLayer = -1, const int dstLayer = -1);
    void SubmitVR(RenderTarget* source);
    void RenderLiveUI();
-   void DrawMesh(Shader* shader, const bool isTransparent, const Vertex3Ds& center, const float depthBias, MeshBuffer* mb, const PrimitiveTypes type, const DWORD startIndice, const DWORD indexCount);
+   void DrawMesh(Shader* shader, const bool isTransparent, const Vertex3Ds& center, const float depthBias, MeshBuffer* mb, const PrimitiveTypes type, const DWORD startIndex, const DWORD indexCount);
    void DrawTexturedQuad(Shader* shader, const Vertex3D_TexelOnly* vertices);
    void DrawTexturedQuad(Shader* shader, const Vertex3D_NoTex2* vertices);
    void DrawFullscreenTexturedQuad(Shader* shader);
