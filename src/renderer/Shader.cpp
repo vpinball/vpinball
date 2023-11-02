@@ -661,6 +661,7 @@ void Shader::SetTechniqueMaterial(ShaderTechniques technique, const Material& ma
       };
       int idx = (isMetal ? 1 : 0) + (doNormalMapping ? 2 : 0) + (doReflections ? 4 : 0) + (doRefractions ? 8 : 0) + (doAlphaTest ? 16 : 0);
       tech = tech_with_texture[idx];
+      break;
    }
    case SHADER_TECHNIQUE_basic_without_texture:
    {
@@ -676,8 +677,8 @@ void Shader::SetTechniqueMaterial(ShaderTechniques technique, const Material& ma
       };
       int idx = (isMetal ? 1 : 0) + (doReflections ? 2 : 0) + (doRefractions ? 4 : 0);
       tech = tech_without_texture[idx];
+      break;
    }
-   break;
    case SHADER_TECHNIQUE_kickerBoolean: if (isMetal) tech = SHADER_TECHNIQUE_kickerBoolean_isMetal; break;
    case SHADER_TECHNIQUE_light_with_texture: if (isMetal) tech = SHADER_TECHNIQUE_light_with_texture_isMetal; break;
    case SHADER_TECHNIQUE_light_without_texture: if (isMetal) tech = SHADER_TECHNIQUE_light_without_texture_isMetal; break;

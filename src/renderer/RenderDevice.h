@@ -135,7 +135,7 @@ public:
 
    RenderPass* GetCurrentPass() { return m_currentPass; }
    const RenderTarget* GetCurrentRenderTarget() const { assert(m_currentPass != nullptr); return m_currentPass->m_rt; }
-   void SetRenderTarget(const string& passName, RenderTarget* rt, const bool useRTContent = true);
+   void SetRenderTarget(const string& passName, RenderTarget* rt, const bool useRTContent = true, const bool forceNewPass = false);
    void AddRenderTargetDependency(RenderTarget* rt, const bool needDepth = false);
    void AddRenderTargetDependencyOnNextRenderCommand(RenderTarget* rt);
    void Clear(const DWORD flags, const D3DCOLOR color, const D3DVALUE z, const DWORD stencil);

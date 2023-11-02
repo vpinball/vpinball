@@ -1801,13 +1801,13 @@ void RenderDevice::FlushRenderFrame()
       m_logNextFrame = false;
 }
 
-void RenderDevice::SetRenderTarget(const string& name, RenderTarget* rt, const bool useRTContent)
+void RenderDevice::SetRenderTarget(const string& name, RenderTarget* rt, const bool useRTContent, const bool forceNewPass)
 {
    if (rt == nullptr)
    {
       m_currentPass = nullptr;
    }
-   else if (m_currentPass == nullptr || !useRTContent || rt != m_currentPass->m_rt)
+   else if (m_currentPass == nullptr || !useRTContent || rt != m_currentPass->m_rt || forceNewPass)
    {
       m_currentPass = m_renderFrame.AddPass(name, rt);
       if (useRTContent && rt->m_lastRenderPass != nullptr)

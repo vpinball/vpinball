@@ -25,5 +25,4 @@ public:
    virtual void RenderDynamic() = 0;
    virtual bool IsTransparent() const                     { return false; }
    virtual float GetDepth(const Vertex3Ds& viewDir) const { return 0.0f; }
-   virtual bool RenderToLightBuffer() const               { return false; }
 };

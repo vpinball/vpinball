@@ -169,7 +169,11 @@ void RenderProbe::ExtendAreaOfInterest(const float xMin, const float xMax, const
 void RenderProbe::ApplyAreaOfInterest(RenderPass* pass)
 {
    if (pass == nullptr)
+   {
       pass = m_renderPass;
+      if (pass == nullptr)
+         return;
+   }
    if (m_type == SCREEN_SPACE_TRANSPARENCY)
    {
       // Since we don't know where the sampling will occur, we only apply AOI to the blur passes, 
@@ -185,10 +189,7 @@ void RenderProbe::ApplyAreaOfInterest(RenderPass* pass)
    else
    {
       // TODO we should enlarge the AOI to account for the blur kernel size
-      pass->m_areaOfInterest.x = m_reflection_clip_bounds.x;
-      pass->m_areaOfInterest.y = m_reflection_clip_bounds.y;
-      pass->m_areaOfInterest.z = m_reflection_clip_bounds.z;
-      pass->m_areaOfInterest.w = m_reflection_clip_bounds.w;
+      pass->m_areaOfInterest = m_reflection_clip_bounds;
    }
    for (RenderPass* subpass : pass->m_dependencies)
       ApplyAreaOfInterest(subpass);

@@ -694,15 +694,15 @@ void Player::Shutdown()
     if (m_detectScriptHang)
         g_pvp->PostWorkToWorkerThread(HANG_SNOOP_STOP, NULL);
 
-    // Save list of used textures to avoid stuttering in next play
-    if ((m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "CacheMode"s, 1) > 0) && FileExists(m_ptable->m_szFileName))
-    {
-        string dir = g_pvp->m_szMyPrefPath + "Cache" + PATH_SEPARATOR_CHAR + m_ptable->m_szTitle + PATH_SEPARATOR_CHAR;
-        std::filesystem::create_directories(std::filesystem::path(dir));
+   // Save list of used textures to avoid stuttering in next play
+   if ((m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "CacheMode"s, 1) > 0) && FileExists(m_ptable->m_szFileName))
+   {
+      string dir = g_pvp->m_szMyPrefPath + "Cache" + PATH_SEPARATOR_CHAR + m_ptable->m_szTitle + PATH_SEPARATOR_CHAR;
+      std::filesystem::create_directories(std::filesystem::path(dir));
 
-        std::map<string, bool> prevPreRenderOnly;
-        if (!IsUsingStaticPrepass() && FileExists(dir + "used_textures.xml"))
-        {
+      std::map<string, bool> prevPreRenderOnly;
+      if (!IsUsingStaticPrepass() && FileExists(dir + "used_textures.xml"))
+      {
          std::ifstream myFile(dir + "used_textures.xml");
          std::stringstream buffer;
          buffer << myFile.rdbuf();
@@ -720,15 +720,15 @@ void Player::Shutdown()
                   prevPreRenderOnly[name] = preRenderOnly;
             }
          }
-        }
+      }
 
-        tinyxml2::XMLDocument xmlDoc;
-        tinyxml2::XMLElement *root = xmlDoc.NewElement("textures");
-        xmlDoc.InsertEndChild(xmlDoc.NewDeclaration());
-        xmlDoc.InsertEndChild(root);
-        vector<BaseTexture *> textures = m_pin3d.m_pd3dPrimaryDevice->m_texMan.GetLoadedTextures();
-        for (BaseTexture *memtex : textures)
-        {
+      tinyxml2::XMLDocument xmlDoc;
+      tinyxml2::XMLElement *root = xmlDoc.NewElement("textures");
+      xmlDoc.InsertEndChild(xmlDoc.NewDeclaration());
+      xmlDoc.InsertEndChild(root);
+      vector<BaseTexture *> textures = m_pin3d.m_pd3dPrimaryDevice->m_texMan.GetLoadedTextures();
+      for (BaseTexture *memtex : textures)
+      {
          for (Texture *image : g_pplayer->m_ptable->m_vimage)
          {
             if (image->m_pdsBuffer == memtex)
@@ -746,14 +746,14 @@ void Player::Shutdown()
                break;
             }
          }
-        }
-        tinyxml2::XMLPrinter prn;
-        xmlDoc.Print(&prn);
+      }
+      tinyxml2::XMLPrinter prn;
+      xmlDoc.Print(&prn);
 
-        std::ofstream myfile(dir + "used_textures.xml");
-        myfile << prn.CStr();
-        myfile.close();
-    }
+      std::ofstream myfile(dir + "used_textures.xml");
+      myfile << prn.CStr();
+      myfile.close();
+   }
 
     // Save adjusted VR settings to the edited table
     if (m_stereo3D == STEREO_VR)
@@ -3187,21 +3187,31 @@ void Player::DrawBulbLightBuffer()
    p3dDevice->SetRenderTarget("Transmitted Light "s + std::to_string(id), p3dDevice->GetBloomBufferTexture(), false);
    p3dDevice->Clear(clearType::TARGET, 0, 1.0f, 0L);
 
-   // Draw bulb lights with transmission scale only
+   // Draw bulb lights
    m_render_mask |= LIGHT_BUFFER;
+   p3dDevice->SetRenderTarget("Transmitted Light "s + std::to_string(id), p3dDevice->GetBloomBufferTexture(), true, true);
    p3dDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE); // disable all z-tests as zbuffer is in different resolution
    for (Hitable *hitable : m_vhitables)
-      if (hitable->RenderToLightBuffer())
+      if (hitable->HitableGetItemType() == eItemLight)
          hitable->Render(m_render_mask);
    m_render_mask &= ~LIGHT_BUFFER;
 
    bool hasLight = p3dDevice->GetCurrentPass()->GetCommandCount() > 1;
    if (hasLight)
    { // Only apply blur if we have actually rendered some lights
+      RenderPass* renderPass = p3dDevice->GetCurrentPass();
       p3dDevice->DrawGaussianBlur(
          p3dDevice->GetBloomBufferTexture(), 
          p3dDevice->GetBloomTmpBufferTexture(), 
          p3dDevice->GetBloomBufferTexture(), 19.f); // FIXME kernel size should depend on buffer resolution
+      RenderPass *blurPass2 = p3dDevice->GetCurrentPass();
+      RenderPass *blurPass1 = blurPass2->m_dependencies[0];
+      constexpr float margin = 0.05f; // margin for the blur
+      blurPass1->m_areaOfInterest.x = renderPass->m_areaOfInterest.x - margin;
+      blurPass1->m_areaOfInterest.y = renderPass->m_areaOfInterest.y - margin;
+      blurPass1->m_areaOfInterest.z = renderPass->m_areaOfInterest.z + margin;
+      blurPass1->m_areaOfInterest.w = renderPass->m_areaOfInterest.w + margin;
+      blurPass2->m_areaOfInterest = blurPass1->m_areaOfInterest;
    }
 
    // Restore state and render target

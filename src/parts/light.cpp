@@ -568,6 +568,47 @@ void Light::Render(const unsigned int renderMask)
    RenderState initialState;
    m_rd->CopyRenderStates(true, initialState);
 
+   if (isLightBuffer)
+   {
+      if (!m_d.m_BulbLight || m_d.m_transmissionScale == 0.f || m_backglass)
+         return;
+      // Compute projected bounds
+      const float radius = m_d.m_falloff;
+      float xMin = 1.f, yMin = 1.f, xMax = -1.f, yMax = -1.f;
+      const int nEyes = m_rd->m_stereo3D != STEREO_OFF ? 2 : 1;
+      for (int eye = 0; eye < nEyes; eye++)
+      {
+         const Matrix3D &mvp = g_pplayer->m_pin3d.GetMVP().GetModelViewProj(eye);
+         for (int i = 0; i < 4; i++)
+         {
+            Vertex3Ds p;
+            p.x = m_d.m_vCenter.x + ((i & 1) ? (-radius) : radius);
+            p.y = m_d.m_vCenter.y + ((i & 2) ? (-radius) : radius);
+            p.z = m_surfaceHeight + 0.1f;
+            p = mvp.MultiplyVector(p);
+            xMin = min(xMin, p.x);
+            xMax = max(xMax, p.x);
+            yMin = min(yMin, p.y);
+            yMax = max(yMax, p.y);
+         }
+      }
+      RenderPass *pass = m_rd->GetCurrentPass();
+      if (pass->m_areaOfInterest.x == FLT_MAX)
+      {
+         pass->m_areaOfInterest.x = xMin;
+         pass->m_areaOfInterest.y = yMin;
+         pass->m_areaOfInterest.z = xMax;
+         pass->m_areaOfInterest.w = yMax;
+      }
+      else
+      {
+         pass->m_areaOfInterest.x = min(pass->m_areaOfInterest.x, xMin);
+         pass->m_areaOfInterest.y = min(pass->m_areaOfInterest.y, yMin);
+         pass->m_areaOfInterest.z = max(pass->m_areaOfInterest.z, xMax);
+         pass->m_areaOfInterest.w = max(pass->m_areaOfInterest.w, yMax);
+      }
+   }
+
    // Bulb model
    // FIXME m_bulbLightMeshBuffer will be null if started without a bulb, then activated from the LiveUI. This prevent the crash but it would be nicer to ensure LiveUI do RenderRelease/RenderSetup on toggle
    if (m_d.m_showBulbMesh && m_d.m_visible && m_bulbLightMeshBuffer != nullptr 
@@ -680,7 +721,9 @@ void Light::Render(const unsigned int renderMask)
       }
       const vec4 center_range(centerHUD.x, centerHUD.y, GetCurrentHeight(), 1.0f / max(m_d.m_falloff, 0.1f));
 
-      if (m_d.m_showBulbMesh) // blend bulb mesh hull additive over "normal" bulb to approximate the emission directly reaching the camera
+      // blend bulb mesh hull additive over "normal" bulb to approximate the emission directly reaching the camera
+      // not rendered for transmitted light buffer since the 0.02 coefficient applied on intensity makes it invisible
+      if (m_d.m_showBulbMesh && !isLightBuffer) 
       {
          RenderState tmp_state;
          m_rd->CopyRenderStates(true, tmp_state);
