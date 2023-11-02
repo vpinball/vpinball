@@ -64,20 +64,18 @@ float4 ps_main_noLight(const in VS_OUTPUT_2D IN)
    : COLOR
 {
    float4 pixel1,pixel2;
-   bool stop = false;
-
    BRANCH if (amount_blend_modulate_vs_add_flasherMode.z < 2.) // Mode 0 & 1
    {
       pixel1 = tex2D(tex_flasher_A, IN.tex0);
-      stop = (pixel1.a <= alphaTestValueAB_filterMode_addBlend.x);
+	  if (pixel1.a <= alphaTestValueAB_filterMode_addBlend.x)
+		return float4(0.0, 0.0, 0.0, 0.0);
    }
    BRANCH if (amount_blend_modulate_vs_add_flasherMode.z == 1.)
    {
       pixel2 = tex2D(tex_flasher_B, IN.tex0);
-      stop = (stop || pixel2.a <= alphaTestValueAB_filterMode_addBlend.y);
+      if (pixel2.a <= alphaTestValueAB_filterMode_addBlend.y)
+		return float4(0.0, 0.0, 0.0, 0.0);
    }
-
-   clip(stop ? -1 : 1); // stop the pixel shader if alpha test should reject pixel (Mode 0 & 1)
 
    float4 result = staticColor_Alpha; // Mode 2 wires this through
 

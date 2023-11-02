@@ -40,7 +40,7 @@ public:
    void SetReflectionMode(ReflectionMode mode);
    bool GetReflectionNoLightmaps() const { return m_disableLightReflection; };
    void SetReflectionNoLightmaps(const bool disableLightmaps) { m_disableLightReflection = disableLightmaps; }
-   void AddReflectionAreaOfInterest(const float xMin, const float xMax, const float yMin, const float yMax);
+   void ExtendAreaOfInterest(const float xMin, const float xMax, const float yMin, const float yMax);
    void ApplyAreaOfInterest(RenderPass* pass = nullptr);
 
    // Load/Save

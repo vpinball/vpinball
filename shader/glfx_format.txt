@@ -176,7 +176,6 @@ tex2Dlod(sampler, vec4) => textureLod(sampler, vec4.xy, vec4.w)
 lerp(x,y,s) => mix(x,y,s)
 ddx(x) => dFdx(x)
 ddy(x) => dFdy(x)
-clip(x) => if(x<0) {discard;}
 sincos(phi,sp,cp) => {sp=sin(phi);cp=cos(phi);
 frac(x) => fract(x)
 

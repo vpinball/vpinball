@@ -96,20 +96,24 @@ in vec3 tablePos;
 void main()
 {
    float4 pixel1,pixel2;
-   bool stop = false;
-
    BRANCH if (amount_blend_modulate_vs_add_flasherMode.z < 2.) // Mode 0 & 1
    {
       pixel1 = texture(tex_flasher_A, tex0);
-      stop = (pixel1.a <= alphaTestValueAB_filterMode_addBlend.x);
+      if (pixel1.a <= alphaTestValueAB_filterMode_addBlend.x)
+	  {
+	     color = float4(0.0, 0.0, 0.0, 0.0);
+		 return;
+	  }
    }
    BRANCH if (amount_blend_modulate_vs_add_flasherMode.z == 1.)
    {
       pixel2 = texture(tex_flasher_B, tex0);
-      stop = (stop || pixel2.a <= alphaTestValueAB_filterMode_addBlend.y);
+      if (pixel2.a <= alphaTestValueAB_filterMode_addBlend.y)
+	  {
+	     color = float4(0.0, 0.0, 0.0, 0.0);
+		 return;
+	  }
    }
-
-   if (stop) discard;
 
    float4 result = staticColor_Alpha; // Mode 2 wires this through
 

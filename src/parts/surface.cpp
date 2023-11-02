@@ -1087,9 +1087,9 @@ void Surface::RenderWallsAtHeight(const bool drop, const bool isReflectionPass)
       Texture *const pinSide = m_ptable->GetImage(m_d.m_szSideImage);
       if (pinSide)
       {
-         m_rd->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, mat);
+         m_rd->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, mat, pinSide->m_pdsBuffer->has_alpha() && pinSide->m_alphaTestValue >= 0.f);
          m_rd->basicShader->SetTexture(SHADER_tex_base_color, pinSide, SF_UNDEFINED, SA_CLAMP, SA_CLAMP);
-         m_rd->basicShader->SetAlphaTestValue(pinSide->m_alphaTestValue * (float)(1.0 / 255.0));
+         m_rd->basicShader->SetAlphaTestValue(pinSide->m_alphaTestValue);
          m_rd->basicShader->SetMaterial(mat, pinSide->m_pdsBuffer->has_alpha());
       }
       else
@@ -1115,9 +1115,9 @@ void Surface::RenderWallsAtHeight(const bool drop, const bool isReflectionPass)
       Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
       if (pin)
       {
-         m_rd->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, mat);
+         m_rd->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, mat, pin->m_pdsBuffer->has_alpha() && pin->m_alphaTestValue >= 0.f);
          m_rd->basicShader->SetTexture(SHADER_tex_base_color, pin);
-         m_rd->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
+         m_rd->basicShader->SetAlphaTestValue(pin->m_alphaTestValue);
          m_rd->basicShader->SetMaterial(mat, pin->m_pdsBuffer->has_alpha());
       }
       else

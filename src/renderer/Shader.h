@@ -44,6 +44,23 @@ enum ShaderTechniques
    SHADER_TECHNIQUE(basic_with_texture_refr_refl_normal),
    SHADER_TECHNIQUE(basic_with_texture_refr_refl_normal_isMetal),
    // OpenGL only has the first variant. DX9 needs all of them due to shader compiler limitation
+   SHADER_TECHNIQUE(basic_with_texture_at),
+   SHADER_TECHNIQUE(basic_with_texture_at_isMetal),
+   SHADER_TECHNIQUE(basic_with_texture_at_normal),
+   SHADER_TECHNIQUE(basic_with_texture_at_normal_isMetal),
+   SHADER_TECHNIQUE(basic_with_texture_at_refl),
+   SHADER_TECHNIQUE(basic_with_texture_at_refl_isMetal),
+   SHADER_TECHNIQUE(basic_with_texture_at_refl_normal),
+   SHADER_TECHNIQUE(basic_with_texture_at_refl_normal_isMetal),
+   SHADER_TECHNIQUE(basic_with_texture_at_refr),
+   SHADER_TECHNIQUE(basic_with_texture_at_refr_isMetal),
+   SHADER_TECHNIQUE(basic_with_texture_at_refr_normal),
+   SHADER_TECHNIQUE(basic_with_texture_at_refr_normal_isMetal),
+   SHADER_TECHNIQUE(basic_with_texture_at_refr_refl),
+   SHADER_TECHNIQUE(basic_with_texture_at_refr_refl_isMetal),
+   SHADER_TECHNIQUE(basic_with_texture_at_refr_refl_normal),
+   SHADER_TECHNIQUE(basic_with_texture_at_refr_refl_normal_isMetal),
+   // OpenGL only has the first variant. DX9 needs all of them due to shader compiler limitation
    SHADER_TECHNIQUE(basic_without_texture),
    SHADER_TECHNIQUE(basic_without_texture_isMetal),
    SHADER_TECHNIQUE(basic_without_texture_refl),
@@ -58,10 +75,7 @@ enum ShaderTechniques
    SHADER_TECHNIQUE(unshaded_without_texture_shadow),
    SHADER_TECHNIQUE(unshaded_with_texture_shadow),
 
-   SHADER_TECHNIQUE(basic_refl_only_without_texture),
-   SHADER_TECHNIQUE(basic_refl_only_with_texture),
-   SHADER_TECHNIQUE(basic_depth_only_without_texture),
-   SHADER_TECHNIQUE(basic_depth_only_with_texture),
+   SHADER_TECHNIQUE(basic_reflection_only),
    SHADER_TECHNIQUE(bg_decal_without_texture),
    SHADER_TECHNIQUE(bg_decal_with_texture),
    SHADER_TECHNIQUE(kickerBoolean),
@@ -325,7 +339,7 @@ public:
    static Shader* GetCurrentShader();
    static string GetTechniqueName(ShaderTechniques technique);
    void SetTechnique(const ShaderTechniques technique);
-   void SetTechniqueMaterial(ShaderTechniques technique, const Material& mat, const bool doNormalMapping = false, const bool doReflection = false, const bool doRefraction = false);
+   void SetTechniqueMaterial(ShaderTechniques technique, const Material& mat, const bool doAlphaTest = false, const bool doNormalMapping = false, const bool doReflection = false, const bool doRefraction = false);
    ShaderTechniques GetCurrentTechnique() { return m_technique; }
 
    static void SetDefaultSamplerFilter(const ShaderUniforms sampler, const SamplerFilter sf);

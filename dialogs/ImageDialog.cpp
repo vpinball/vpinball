@@ -192,7 +192,7 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                   ListView_GetItem(GetDlgItem(IDC_SOUNDLIST).GetHwnd(), &lvitem);
                   Texture * const ppi = (Texture *)lvitem.lParam;
                   if (ppi != nullptr)
-                     SetDlgItemText(IDC_ALPHA_MASK_EDIT, std::to_string((int)ppi->m_alphaTestValue).c_str());
+                     SetDlgItemText(IDC_ALPHA_MASK_EDIT, std::to_string((int)(255.f * ppi->m_alphaTestValue)).c_str());
                }
                ::InvalidateRect(GetDlgItem(IDC_PICTUREPREVIEW).GetHwnd(), nullptr, fTrue);
             }
@@ -214,9 +214,9 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             if (ppi != nullptr)
             {
                const float v = sz2f(GetDlgItemText(IDC_ALPHA_MASK_EDIT).c_str());
-               if (ppi->m_alphaTestValue != v)
+               if ((int)(ppi->m_alphaTestValue * 255.f) != v)
                {
-                  ppi->m_alphaTestValue = v;
+                  ppi->m_alphaTestValue = v / 255.f;
                   CCO(PinTable) * const pt = g_pvp->GetActiveTable();
                   pt->SetNonUndoableDirty(eSaveDirty);
                }
@@ -335,9 +335,9 @@ void ImageDialog::UpdateImages()
             if (ppi != nullptr)
             {
                 const float v = sz2f(GetDlgItemText(IDC_ALPHA_MASK_EDIT).c_str());
-                if (ppi->m_alphaTestValue != v)
+                if ((int)(ppi->m_alphaTestValue * 255.f) != v)
                 {
-                    ppi->m_alphaTestValue = v;
+                    ppi->m_alphaTestValue = v / 255.f;
                     CCO(PinTable) * const pt = g_pvp->GetActiveTable();
                     pt->SetNonUndoableDirty(eSaveDirty);
                 }

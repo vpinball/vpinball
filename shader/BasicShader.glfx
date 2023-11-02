@@ -516,8 +516,69 @@ flat in float eye;
 void main() {
    float4 pixel = texture(tex_base_color, tex01);
 
+   pixel.a *= cBase_Alpha.a;
+   if (fDisableLighting_top_below.x < 1.0) // if there is lighting applied, make sure to clamp the values (as it could be coming from a HDR tex)
+      pixel.xyz = saturate(pixel.xyz);
+   const float3 diffuse  = pixel.xyz * cBase_Alpha.xyz;
+   const float3 glossy   = is_metal ? diffuse : (pixel.xyz * cGlossy_ImageLerp.w + (1.0-cGlossy_ImageLerp.w)) * cGlossy_ImageLerp.xyz * 0.08; //!! use AO for glossy? specular?
+   const float3 specular = cClearcoat_EdgeAlpha.xyz * 0.08;
+   const float  edge     = is_metal ? 1.0 : Roughness_WrapL_Edge_Thickness.z;
+
+   const float3 V = normalize(/*camera=0,0,0,1*/-worldPos);
+   float3 N = normalize(normal);
+   BRANCH if (doNormalMapping)
+      N = normal_map(N, V, tex01);
+
+   color = float4(lightLoop(worldPos, N, V, diffuse, glossy, specular, edge, is_metal), pixel.a);
+
+   BRANCH if (color.a < 1.0) // We may not opacify if we already are opaque
+   {
+      color.a = GeometricOpacity(dot(N,V), color.a, cClearcoat_EdgeAlpha.w, Roughness_WrapL_Edge_Thickness.w);
+
+      if (fDisableLighting_top_below.y < 1.0)
+         // add light from "below" from user-flagged bulb lights, pre-rendered/blurred in previous renderpass //!! sqrt = magic
+         color.rgb += lerp(sqrt(diffuse)*texStereoNoLod(tex_base_transmission, gl_FragCoord.xy * w_h_height.xy).rgb*color.a, float3(0.), fDisableLighting_top_below.y); //!! depend on normal of light (unknown though) vs geom normal, too?
+   }
+
+   BRANCH if (lightCenter_doShadow.w != 0.)
+   {
+      const float3 light_dir = tablePos.xyz - lightCenter_doShadow.xyz;
+      const float light_dist = length(light_dir);
+      const float shadow = get_light_ball_shadow(lightCenter_doShadow.xyz, light_dir, light_dist);
+      color.rgb *= shadow;
+   }
+
+   BRANCH if (doReflections)
+      color.rgb += compute_reflection(gl_FragCoord.xy * w_h_height.xy, N, eye);
+
+   BRANCH if (doRefractions)
+   {
+      // alpha channel is the transparency of the object, tinting is supported even if alpha is 0 by applying a tint color (not from main texture since these are different informations (reflected/refracted color))
+      color.rgb = lerp(compute_refraction(worldPos, gl_FragCoord.xy * w_h_height.xy, N, V, eye), color.rgb, color.a);
+      color.a = 1.0;
+   }
+
+   // visualize normals for debugging
+   // color.rgb = color.rgb * 0.0001 + 0.5 + 0.5 * N.rgb;
+
+   color *= staticColor_Alpha;
+}
+
+
+////ps_main_texture_alphatest
+// Copy / Paste from above with alpha testing (which breaks early depth testing) on texture alpha for backward compatibility
+
+in vec2 tex01;
+in vec3 worldPos;
+in vec3 tablePos;
+in vec3 normal;
+flat in float eye;
+
+void main() {
+   float4 pixel = texture(tex_base_color, tex01);
+
    if (pixel.a <= alphaTestValue)
-      discard;           //stop the pixel shader if alpha test should reject pixel
+      discard; //stop the pixel shader if alpha test should reject pixel. This breaks early depth testing.
 
    pixel.a *= cBase_Alpha.a;
    if (fDisableLighting_top_below.x < 1.0) // if there is lighting applied, make sure to clamp the values (as it could be coming from a HDR tex)
@@ -551,9 +612,6 @@ void main() {
       color.rgb *= shadow;
    }
 
-   // visualize normals for debugging
-   // color.rgb = color.rgb * 0.0001 + 0.5 + 0.5 * N.rgb;
-
    BRANCH if (doReflections)
       color.rgb += compute_reflection(gl_FragCoord.xy * w_h_height.xy, N, eye);
 
@@ -568,7 +626,7 @@ void main() {
 }
 
 
-////ps_main_reflection_only_without_texture
+////ps_main_reflection_only
 
 in vec2 tex01;
 in vec3 worldPos;
@@ -580,53 +638,6 @@ void main() {
    color.rgb = compute_reflection(gl_FragCoord.xy * w_h_height.xy, N, eye);
    color.a = 1.0;
    color *= staticColor_Alpha;
-}
-
-
-////ps_main_reflection_only_with_texture
-
-in vec2 tex01;
-in vec3 worldPos;
-in vec3 normal;
-flat in float eye;
-
-void main() {
-   color.a = tex2D(tex_base_color, tex01).a;
-
-   if (color.a <= alphaTestValue)
-      discard;           //stop the pixel shader if alpha test should reject pixel
-
-   color.a *= cBase_Alpha.a;
-
-   float3 N = normalize(normal);
-   color.rgb = compute_reflection(gl_FragCoord.xy * w_h_height.xy, N, eye);
-
-   // Maybe overkill for just the additive reflections
-   BRANCH if (color.a < 1.0)
-   {
-      const float3 V = normalize(/*camera=0,0,0,1*/ -worldPos);
-      color.a = GeometricOpacity(dot(N, V), color.a, cClearcoat_EdgeAlpha.w, Roughness_WrapL_Edge_Thickness.w);
-   }
-
-   color *= staticColor_Alpha;
-}
-
-
-////ps_main_depth_only_without_texture
-
-void main() {
-    color =  float4(0.,0.,0.,1.);
-}
-
-////ps_main_depth_only_with_texture
-
-in vec2 tex0;
-
-void main() {
-   if (texNoLod(tex_base_color, tex0).a <= alphaTestValue)
-      discard;           //stop the pixel shader if alpha test should reject pixel
-
-   color = float4(0., 0., 0., 1.);
 }
 
 
@@ -733,28 +744,17 @@ void main() {
 
 basic_without_texture:P0:vs_notex_main():gs_notex_main():ps_main_notex()
 basic_with_texture:P0:vs_main():gs_main():ps_main_texture()
+basic_with_texture_at:P0:vs_main():gs_main():ps_main_texture_alphatest()
 
-basic_refl_only_without_texture:P0:vs_notex_main():gs_notex_main():ps_main_reflection_only_without_texture()
-basic_refl_only_with_texture:P0:vs_main():gs_main():ps_main_reflection_only_with_texture()
-
-basic_depth_only_without_texture:P0:vs_depth_only_main_without_texture():gs_depth_only_main_without_texture():ps_main_depth_only_without_texture()
-basic_depth_only_with_texture:P0:vs_depth_only_main_with_texture():gs_depth_only_main_with_texture():ps_main_depth_only_with_texture()
+basic_reflection_only:P0:vs_notex_main():gs_notex_main():ps_main_reflection_only()
 
 unshaded_without_texture:P0:vs_depth_only_main_without_texture():gs_depth_only_main_without_texture():ps_main_unshaded_without_texture()
 unshaded_with_texture:P0:vs_depth_only_main_with_texture():gs_depth_only_main_with_texture():ps_main_unshaded_with_texture()
 unshaded_without_texture_shadow:P0:vs_main_unshaded_without_texture_shadow():gs_main_unshaded_without_texture_shadow():ps_main_unshaded_without_texture_shadow()
 unshaded_with_texture_shadow:P0:vs_main_unshaded_with_texture_shadow():gs_main_unshaded_with_texture_shadow():ps_main_unshaded_with_texture_shadow()
 
-//
-// BG-Decal
-//
-
 bg_decal_without_texture:P0:vs_notex_main():gs_notex_main():ps_main_bg_decal()
 bg_decal_with_texture:P0:vs_main():gs_main():ps_main_bg_decal_texture()
-
-//
-// Kicker
-//
 
 kickerBoolean:P0:vs_kicker():gs_kicker_main():ps_main_notex()
 

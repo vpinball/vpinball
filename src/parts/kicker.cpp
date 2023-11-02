@@ -535,7 +535,7 @@ void Kicker::RenderDynamic()
 
       if (m_d.m_kickertype != KickerHoleSimple)
       {
-         pd3dDevice->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, mat);
+         pd3dDevice->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, mat, false);
          pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, &m_texture);
       }
       else
