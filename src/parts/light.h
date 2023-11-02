@@ -141,7 +141,6 @@ protected:
 
 public:
    bool IsTransparent() const final { return m_d.m_BulbLight || (m_surfaceMaterial && m_surfaceMaterial->m_bOpacityActive); }
-   bool RenderToLightBuffer() const final { return m_d.m_BulbLight && (m_d.m_transmissionScale > 0.f) && !m_backglass; }
    float GetDepth(const Vertex3Ds& viewDir) const final;
    ItemTypeEnum HitableGetItemType() const final { return eItemLight; }
    void AddPoint(int x, int y, const bool smooth) final;

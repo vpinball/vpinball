@@ -301,9 +301,9 @@ bool RenderPass::Execute(const bool log)
       glEnable(GL_SCISSOR_TEST);
       glScissor((GLint)left, (GLint)bottom, (GLsizei)(right - left), (GLsizei)(top - bottom));
       #else
-      const RECT r = { (LONG)left, (LONG)bottom, (LONG)right, (LONG)top };
-      m_rt->GetRenderDevice()->GetCoreDevice()->SetScissorRect(&r);
+      const RECT r = { (LONG)left, (LONG)(m_rt->GetHeight() - top), (LONG)right, (LONG)(m_rt->GetHeight() - bottom) };
       m_rt->GetRenderDevice()->GetCoreDevice()->SetRenderState(D3DRS_SCISSORTESTENABLE, TRUE);
+      m_rt->GetRenderDevice()->GetCoreDevice()->SetScissorRect(&r);
       #endif
    }
 
