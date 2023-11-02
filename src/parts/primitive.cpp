@@ -1348,6 +1348,7 @@ void Primitive::Render(const unsigned int renderMask)
    // Select textures, replacing backglass image by capture if it is available
    Texture * const nMap = m_ptable->GetImage(m_d.m_szNormalMap);
    BaseTexture *pin = nullptr;
+   float pinAlphaTest = -1.f;
    if (g_pplayer->m_texPUP && m_d.m_isBackGlassImage)
    {
       pin = g_pplayer->m_texPUP;
@@ -1359,7 +1360,8 @@ void Primitive::Render(const unsigned int renderMask)
       if (img != nullptr)
       {
          pin = img->m_pdsBuffer;
-         m_rd->basicShader->SetAlphaTestValue(img->m_alphaTestValue * (float)(1.0 / 255.0));
+         pinAlphaTest = img->m_alphaTestValue;
+         m_rd->basicShader->SetAlphaTestValue(img->m_alphaTestValue);
       }
       else
       {
@@ -1400,33 +1402,22 @@ void Primitive::Render(const unsigned int renderMask)
       m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
       const vec4 color = convertColor(m_d.m_color, m_d.m_alpha * (float)(1.0 / 100.0));
       m_rd->basicShader->SetVector(SHADER_staticColor_Alpha, color.x * color.w, color.y * color.w, color.z * color.w, color.w);
-      ShaderTechniques tech = lightmap ? (pin ? SHADER_TECHNIQUE_unshaded_with_texture_shadow : SHADER_TECHNIQUE_unshaded_without_texture_shadow)
-                                       : (pin ? SHADER_TECHNIQUE_unshaded_with_texture : SHADER_TECHNIQUE_unshaded_without_texture);
-      m_rd->basicShader->SetTechnique(tech);
+      m_rd->basicShader->SetTechnique(lightmap ? (pin ? SHADER_TECHNIQUE_unshaded_with_texture_shadow : SHADER_TECHNIQUE_unshaded_without_texture_shadow)
+                                               : (pin ? SHADER_TECHNIQUE_unshaded_with_texture : SHADER_TECHNIQUE_unshaded_without_texture));
       m_rd->DrawMesh(m_rd->basicShader, true, m_d.m_vPosition, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_d.m_groupdRendering ? m_numGroupIndices : (DWORD)m_mesh.NumIndices());
    }
    else
    {
       // Default lit primitive rendering
-
-      // Setup for applying refractions from screen space probe
-      if (refractions)
-      {
-         const vec4 color = convertColor(mat->m_cRefractionTint, m_d.m_refractionThickness);
-         m_rd->basicShader->SetVector(SHADER_refractionTint_thickness, &color);
-         m_rd->basicShader->SetTexture(SHADER_tex_refraction, refractions->GetColorSampler());
-         m_rd->basicShader->SetTexture(SHADER_tex_probe_depth, refractions->GetDepthSampler());
-         m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
-      }
-
       m_rd->SetRenderState(RenderState::ZWRITEENABLE, depthMask ? RenderState::RS_TRUE : RenderState::RS_FALSE);
       const vec4 color = convertColor(m_d.m_color, m_d.m_alpha * (float)(1.0 / 100.0));
       m_rd->basicShader->SetVector(SHADER_staticColor_Alpha, &color);
-
+      m_rd->basicShader->SetTechniqueMaterial(pin ? SHADER_TECHNIQUE_basic_with_texture : SHADER_TECHNIQUE_basic_without_texture, 
+         mat, pin ? pinAlphaTest >= 0.f && pin->has_alpha() : false, nMap, reflections, refractions);
       bool is_reflection_only_pass = false;
 
-      // setup for applying reflections from reflection probe
-      if (reflections)
+      // Handle render probes
+      if (reflections || refractions)
       {
          float xMin = 1.f, yMin = 1.f, xMax = 0.f, yMax = 0.f;
          const int nEyes = m_rd->m_stereo3D != STEREO_OFF ? 2 : 1;
@@ -1446,37 +1437,45 @@ void Primitive::Render(const unsigned int renderMask)
                yMax = max(yMax, p.y);
             }
          }
-         reflection_probe->AddReflectionAreaOfInterest(xMin, xMax, yMin, yMax);
-         m_rd->AddRenderTargetDependency(reflections);
-         vec3 plane_normal;
-         reflection_probe->GetReflectionPlaneNormal(plane_normal);
-         Matrix3D matWorldViewInverseTranspose = g_pplayer->m_pin3d.GetMVP().GetModelViewInverseTranspose();
-         matWorldViewInverseTranspose.MultiplyVectorNoTranslate(plane_normal, plane_normal);
-         Vertex3Ds n(plane_normal.x, plane_normal.y, plane_normal.z);
-         n.Normalize();
-         m_rd->basicShader->SetVector(SHADER_mirrorNormal_factor, n.x, n.y, n.z, m_d.m_reflectionStrength);
-         m_rd->basicShader->SetTexture(SHADER_tex_reflection, reflections->GetColorSampler());
-         is_reflection_only_pass = m_d.m_staticRendering && isDynamicOnly;
-         if (!is_reflection_only_pass && !m_rd->GetRenderState().IsOpaque())
-         { // Primitive uses alpha transparency => render in 2 passes, one for the texture with alpha blending, one for the reflections which can happen above a transparent part (like for a glass or insert plastic)
-            m_rd->basicShader->SetTechniqueMaterial(pin ? SHADER_TECHNIQUE_basic_with_texture : SHADER_TECHNIQUE_basic_without_texture, mat, nMap, false, false);
-            m_rd->DrawMesh(m_rd->basicShader, !m_d.m_staticRendering && mat->m_bOpacityActive /* IsTransparent() */, m_d.m_vPosition, m_d.m_depthBias, 
-               m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_d.m_groupdRendering ? m_numGroupIndices : (DWORD)m_mesh.NumIndices());
-            is_reflection_only_pass = true;
+         if (reflections)
+         {
+            reflection_probe->ExtendAreaOfInterest(xMin, xMax, yMin, yMax);
+            m_rd->AddRenderTargetDependency(reflections);
+            vec3 plane_normal;
+            reflection_probe->GetReflectionPlaneNormal(plane_normal);
+            Matrix3D matWorldViewInverseTranspose = g_pplayer->m_pin3d.GetMVP().GetModelViewInverseTranspose();
+            matWorldViewInverseTranspose.MultiplyVectorNoTranslate(plane_normal, plane_normal);
+            Vertex3Ds n(plane_normal.x, plane_normal.y, plane_normal.z);
+            n.Normalize();
+            m_rd->basicShader->SetVector(SHADER_mirrorNormal_factor, n.x, n.y, n.z, m_d.m_reflectionStrength);
+            m_rd->basicShader->SetTexture(SHADER_tex_reflection, reflections->GetColorSampler());
+            is_reflection_only_pass = m_d.m_staticRendering && isDynamicOnly;
+            if (!is_reflection_only_pass && !m_rd->GetRenderState().IsOpaque())
+            { // Primitive uses alpha transparency => render in 2 passes, one for the texture with alpha blending, one for the reflections which can happen above a transparent part (like for a glass or insert plastic)
+               m_rd->basicShader->SetTechniqueMaterial(pin ? SHADER_TECHNIQUE_basic_with_texture : SHADER_TECHNIQUE_basic_without_texture, 
+                  mat, pin ? pinAlphaTest >= 0.f && pin->has_alpha() : false, nMap, false, false);
+               m_rd->DrawMesh(m_rd->basicShader, !m_d.m_staticRendering && mat->m_bOpacityActive /* IsTransparent() */, m_d.m_vPosition, m_d.m_depthBias, 
+                  m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_d.m_groupdRendering ? m_numGroupIndices : (DWORD)m_mesh.NumIndices());
+               is_reflection_only_pass = true;
+            }
+            if (is_reflection_only_pass)
+            { // If the primitive is already rendered (dynamic pass after a static prepass, or multipass rendering due to alpha blending) => only render additive reflections
+               m_rd->EnableAlphaBlend(true);
+               m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
+               m_rd->basicShader->SetTechnique(SHADER_TECHNIQUE_basic_reflection_only);
+            }
          }
-      }
-
-      if (is_reflection_only_pass)
-      { // If the primitive is already rendered (dynamic pass after a static prepass, or multipass rendering due to alpha blending) => only render additive reflections
-         m_rd->EnableAlphaBlend(true);
-         m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
-         m_rd->basicShader->SetTechnique(SHADER_TECHNIQUE_basic_refl_only_without_texture);
-      }
-      else
-      {
-         if (refractions != nullptr && !is_reflection_only_pass)
-            m_rd->AddRenderTargetDependencyOnNextRenderCommand(refractions); // Add a renderpass dependency on the render command (instead of in the renderframe) for the pass to be sorted with the command
-         m_rd->basicShader->SetTechniqueMaterial(pin ? SHADER_TECHNIQUE_basic_with_texture : SHADER_TECHNIQUE_basic_without_texture, mat, nMap, reflections, refractions);
+         if (refractions)
+         {
+            refraction_probe->ExtendAreaOfInterest(xMin, xMax, yMin, yMax);
+            const vec4 color = convertColor(mat->m_cRefractionTint, m_d.m_refractionThickness);
+            m_rd->basicShader->SetVector(SHADER_refractionTint_thickness, &color);
+            m_rd->basicShader->SetTexture(SHADER_tex_refraction, refractions->GetColorSampler());
+            m_rd->basicShader->SetTexture(SHADER_tex_probe_depth, refractions->GetDepthSampler());
+            m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
+            if (!is_reflection_only_pass)
+               m_rd->AddRenderTargetDependencyOnNextRenderCommand(refractions); // Add a renderpass dependency on the render command (instead of in the renderframe) for the pass to be sorted with the command
+         }
       }
 
       // draw the mesh

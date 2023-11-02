@@ -15,7 +15,6 @@
     #endif
 
     //HLSL to GLSL helpers
-    #define clip(x) {if (x<0) {discard;}}
     #define ddx(x) dFdx(x)
     #define ddy(x) dFdy(x)
     #define lerp(x,y,s) mix(x,y,s)

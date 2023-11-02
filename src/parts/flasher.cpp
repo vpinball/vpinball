@@ -1357,7 +1357,7 @@ void Flasher::Render(const unsigned int renderMask)
             m_rd->flasherShader->SetTexture(SHADER_tex_flasher_A, pinA);
 
          if (!m_d.m_addBlend)
-            flasherData.x = !m_isVideoCap ? pinA->m_alphaTestValue * (float)(1.0/255.0) : 0.f;
+            flasherData.x = !m_isVideoCap ? pinA->m_alphaTestValue : 0.f;
       }
       else if (!(pinA || m_isVideoCap) && pinB)
       {
@@ -1365,7 +1365,7 @@ void Flasher::Render(const unsigned int renderMask)
          m_rd->flasherShader->SetTexture(SHADER_tex_flasher_A, pinB);
 
          if (!m_d.m_addBlend)
-            flasherData.x = pinB->m_alphaTestValue * (float)(1.0/255.0);
+            flasherData.x = pinB->m_alphaTestValue;
       }
       else if ((pinA || m_isVideoCap) && pinB)
       {
@@ -1378,8 +1378,8 @@ void Flasher::Render(const unsigned int renderMask)
 
          if (!m_d.m_addBlend)
          {
-            flasherData.x = !m_isVideoCap ? pinA->m_alphaTestValue * (float)(1.0/255.0) : 0.f;
-            flasherData.y = pinB->m_alphaTestValue * (float)(1.0/255.0);
+            flasherData.x = !m_isVideoCap ? pinA->m_alphaTestValue : 0.f;
+            flasherData.y = pinB->m_alphaTestValue;
          }
       }
       else
@@ -1395,7 +1395,8 @@ void Flasher::Render(const unsigned int renderMask)
          m_rd->flasherShader->SetVector(SHADER_lightCenter_doShadow, m_lightmap->m_d.m_vCenter.x, m_lightmap->m_d.m_vCenter.y, m_lightmap->GetCurrentHeight(), 1.0f);
 
       m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
-      g_pplayer->m_pin3d.EnableAlphaBlend(m_d.m_addBlend, false, false);
+      m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
+      m_rd->SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);
       m_rd->SetRenderState(RenderState::DESTBLEND, m_d.m_addBlend ? RenderState::INVSRC_COLOR : RenderState::INVSRC_ALPHA);
       m_rd->SetRenderState(RenderState::BLENDOP, m_d.m_addBlend ? RenderState::BLENDOP_REVSUBTRACT : RenderState::BLENDOP_ADD);
 

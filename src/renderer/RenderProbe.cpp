@@ -96,7 +96,7 @@ void RenderProbe::EndPlay()
 void RenderProbe::MarkDirty()
 { 
    m_dirty = true;
-   m_reflection_clip_bounds.x = FLT_MAX;
+   m_reflection_clip_bounds.x = m_reflection_clip_bounds.y = m_reflection_clip_bounds.z = m_reflection_clip_bounds.w = FLT_MAX;
 }
 
 void RenderProbe::PreRenderStatic()
@@ -148,6 +148,52 @@ RenderTarget *RenderProbe::GetProbe(const bool is_static)
    }
 }
 
+void RenderProbe::ExtendAreaOfInterest(const float xMin, const float xMax, const float yMin, const float yMax)
+{
+   if (m_reflection_clip_bounds.x == FLT_MAX)
+   {
+      m_reflection_clip_bounds.x = xMin;
+      m_reflection_clip_bounds.y = yMin;
+      m_reflection_clip_bounds.z = xMax;
+      m_reflection_clip_bounds.w = yMax;
+   }
+   else
+   {
+      m_reflection_clip_bounds.x = min(m_reflection_clip_bounds.x, xMin);
+      m_reflection_clip_bounds.y = min(m_reflection_clip_bounds.y, yMin);
+      m_reflection_clip_bounds.z = max(m_reflection_clip_bounds.z, xMax);
+      m_reflection_clip_bounds.w = max(m_reflection_clip_bounds.w, yMax);
+   }
+}
+
+void RenderProbe::ApplyAreaOfInterest(RenderPass* pass)
+{
+   if (pass == nullptr)
+      pass = m_renderPass;
+   if (m_type == SCREEN_SPACE_TRANSPARENCY)
+   {
+      // Since we don't know where the sampling will occur, we only apply AOI to the blur passes, 
+      // with a small arbitrary margin to account for IOR shift
+      if (pass->m_rt == m_dynamicRT)
+         return;
+      constexpr float margin = 0.05f;
+      pass->m_areaOfInterest.x = m_reflection_clip_bounds.x - margin;
+      pass->m_areaOfInterest.y = m_reflection_clip_bounds.y - margin;
+      pass->m_areaOfInterest.z = m_reflection_clip_bounds.z + margin;
+      pass->m_areaOfInterest.w = m_reflection_clip_bounds.w + margin;
+   }
+   else
+   {
+      // TODO we should enlarge the AOI to account for the blur kernel size
+      pass->m_areaOfInterest.x = m_reflection_clip_bounds.x;
+      pass->m_areaOfInterest.y = m_reflection_clip_bounds.y;
+      pass->m_areaOfInterest.z = m_reflection_clip_bounds.z;
+      pass->m_areaOfInterest.w = m_reflection_clip_bounds.w;
+   }
+   for (RenderPass* subpass : pass->m_dependencies)
+      ApplyAreaOfInterest(subpass);
+}
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // Roughness implementation, using downscaling and bluring
@@ -162,9 +208,9 @@ int RenderProbe::GetRoughnessDownscale(const int roughness)
 void RenderProbe::ApplyRoughness(RenderTarget* probe, const int roughness)
 {
    assert(0 <= roughness && roughness <= 12);
+   RenderDevice* const p3dDevice = probe->GetRenderDevice();
    if (roughness > 0)
    {
-      RenderDevice* const p3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
       if (m_blurRT == nullptr)
          m_blurRT = probe->Duplicate(probe->m_name+".Blur");
       // The kernel sizes were chosen by reverse engineering the blur shader. So there's a part of guess here.
@@ -182,6 +228,7 @@ void RenderProbe::ApplyRoughness(RenderTarget* probe, const int roughness)
          p3dDevice->DrawGaussianBlur(probe, m_blurRT, probe, kernel[roughness]);
       }
    }
+   m_renderPass = p3dDevice->GetCurrentPass();
 }
 
 
@@ -231,37 +278,6 @@ void RenderProbe::SetReflectionMode(ReflectionMode mode)
 {
    assert(m_reflection_mode == mode || m_dynamicRT == nullptr); // Reflection mode may not be changed between RenderSetup/EndPlay
    m_reflection_mode = mode;
-}
-
-void RenderProbe::AddReflectionAreaOfInterest(const float xMin, const float xMax, const float yMin, const float yMax)
-{
-   if (m_reflection_clip_bounds.x == FLT_MAX)
-   {
-      m_reflection_clip_bounds.x = xMin;
-      m_reflection_clip_bounds.y = yMin;
-      m_reflection_clip_bounds.z = xMax;
-      m_reflection_clip_bounds.w = yMax;
-   }
-   else
-   {
-      m_reflection_clip_bounds.x = min(m_reflection_clip_bounds.x, xMin);
-      m_reflection_clip_bounds.y = min(m_reflection_clip_bounds.y, yMin);
-      m_reflection_clip_bounds.z = max(m_reflection_clip_bounds.z, xMax);
-      m_reflection_clip_bounds.w = max(m_reflection_clip_bounds.w, yMax);
-   }
-}
-
-void RenderProbe::ApplyAreaOfInterest(RenderPass* pass)
-{
-   // TODO we should enlarge the AOI depending of the blur kernel
-   if (pass == nullptr)
-      pass = m_renderPass;
-   pass->m_areaOfInterest.x = m_reflection_clip_bounds.x;
-   pass->m_areaOfInterest.y = m_reflection_clip_bounds.y;
-   pass->m_areaOfInterest.z = m_reflection_clip_bounds.z;
-   pass->m_areaOfInterest.w = m_reflection_clip_bounds.w;
-   for (RenderPass* subpass : pass->m_dependencies)
-      ApplyAreaOfInterest(subpass);
 }
 
 void RenderProbe::PreRenderStaticReflectionProbe()
@@ -388,8 +404,6 @@ void RenderProbe::RenderReflectionProbe(const bool is_static)
    DoRenderReflectionProbe(render_static, render_balls, render_dynamic);
 
    ApplyRoughness(m_dynamicRT, m_roughness);
-
-   m_renderPass = p3dDevice->GetCurrentPass();
 
    p3dDevice->SetRenderTarget(previousRT->m_name + '+', previousRT->m_rt);
 }

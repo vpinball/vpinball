@@ -543,7 +543,7 @@ Texture::Texture()
    m_pdsBuffer = nullptr;
    m_hbmGDIVersion = nullptr;
    m_ppb = nullptr;
-   m_alphaTestValue = 1.0f;
+   m_alphaTestValue = -1.0f / 255.0f;
    m_resize_on_low_mem = true;
 }
 
@@ -554,7 +554,7 @@ Texture::Texture(BaseTexture * const base)
 
    m_hbmGDIVersion = nullptr;
    m_ppb = nullptr;
-   m_alphaTestValue = 1.0f;
+   m_alphaTestValue = -1.0f / 255.0f;
    m_resize_on_low_mem = true;
 }
 
@@ -592,7 +592,7 @@ HRESULT Texture::SaveToStream(IStream *pstream, const PinTable *pt)
       else
          bw.WriteInt(FID(LINK), 1);
    }
-   bw.WriteFloat(FID(ALTV), m_alphaTestValue);
+   bw.WriteFloat(FID(ALTV), m_alphaTestValue * 255.0f);
    bw.WriteTag(FID(ENDB));
 
    return S_OK;
@@ -742,7 +742,7 @@ bool Texture::LoadToken(const int id, BiffReader * const pbr)
    case FID(PATH): pbr->GetString(m_szPath); break;
    case FID(WDTH): pbr->GetInt(m_width); break;
    case FID(HGHT): pbr->GetInt(m_height); break;
-   case FID(ALTV): pbr->GetFloat(m_alphaTestValue); break;
+   case FID(ALTV): pbr->GetFloat(m_alphaTestValue); m_alphaTestValue *= (float)(1.0 / 255.0); break;
    case FID(BITS):
    {
       if (m_pdsBuffer)
