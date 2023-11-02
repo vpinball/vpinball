@@ -159,7 +159,7 @@ static constexpr RECT touchregion[MAX_TOUCHREGION] = { //left,top,right,bottom (
    { 50, 90, 100, 100 }   // Plunger
 };
 
-static EnumAssignKeys touchkeymap[MAX_TOUCHREGION] = {
+static constexpr EnumAssignKeys touchkeymap[MAX_TOUCHREGION] = {
    eAddCreditKey, //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    eLeftMagnaSave,
    eLeftFlipperKey,
@@ -498,7 +498,7 @@ private:
 
    U64 m_StartTime_usec;
    U64 m_curPhysicsFrameTime; // Time when the last frame was drawn
-   U64 m_nextPhysicsFrameTime; // time at which the next physics update should be
+   U64 m_nextPhysicsFrameTime; // Time at which the next physics update should be
    U64 m_lastFlipTime;
 
    // all Hitables obtained from the table's list of Editables

@@ -98,10 +98,11 @@ float4 ps_main_stereo_srgb_dyndesat_anaglyph(const in VS_OUTPUT_2D IN) : COLOR
 
 float4 ps_main_stereo_gamma_dyndesat_anaglyph(const in VS_OUTPUT_2D IN) : COLOR
 {
-    float3 lCol, rCol, lColDesat, rColDesat;
+    float3 lCol, rCol;
     gatherLeftRightColors(IN.tex0, lCol, rCol);
     lCol = pow(lCol, float3(Stereo_LeftLuminance_Gamma.w, Stereo_LeftLuminance_Gamma.w, Stereo_LeftLuminance_Gamma.w));
     rCol = pow(rCol, float3(Stereo_LeftLuminance_Gamma.w, Stereo_LeftLuminance_Gamma.w, Stereo_LeftLuminance_Gamma.w));
+    float3 lColDesat, rColDesat;
     DynamicDesatAnaglyph(lCol, rCol, lColDesat, rColDesat);
     return float4(pow(LinearAnaglyph(lColDesat, rColDesat), float3(1. / Stereo_LeftLuminance_Gamma.w, 1. / Stereo_LeftLuminance_Gamma.w, 1. / Stereo_LeftLuminance_Gamma.w)), 1.0);
 }
@@ -113,7 +114,6 @@ float4 ps_main_stereo_deghost_anaglyph(const in VS_OUTPUT_2D IN) : COLOR
    gatherLeftRightColors(IN.tex0, lCol, rCol);
    return float4(DeghostAnaglyph(lCol, rCol), 1.0);
 }
-
 
 
 ////TECHNIQUES

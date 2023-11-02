@@ -92,10 +92,11 @@ void main()
 ////ps_main_stereo_gamma_dyndesat_anaglyph
 void main()
 {
-   float3 lCol, rCol, lColDesat, rColDesat;
+   float3 lCol, rCol;
    gatherLeftRightColors(tex0, lCol, rCol);
    lCol = pow(lCol, float3(Stereo_LeftLuminance_Gamma.w, Stereo_LeftLuminance_Gamma.w, Stereo_LeftLuminance_Gamma.w));
    rCol = pow(rCol, float3(Stereo_LeftLuminance_Gamma.w, Stereo_LeftLuminance_Gamma.w, Stereo_LeftLuminance_Gamma.w));
+   float3 lColDesat, rColDesat;
    DynamicDesatAnaglyph(lCol, rCol, lColDesat, rColDesat);
    color = float4(pow(LinearAnaglyph(lColDesat, rColDesat), float3(1./Stereo_LeftLuminance_Gamma.w, 1./Stereo_LeftLuminance_Gamma.w, 1./Stereo_LeftLuminance_Gamma.w)), 1.0);
 }
