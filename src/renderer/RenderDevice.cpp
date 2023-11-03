@@ -1905,13 +1905,14 @@ void RenderDevice::DrawFullscreenTexturedQuad(Shader* shader)
    DrawMesh(shader, false, pos, 0.f, m_quadMeshBuffer, TRIANGLESTRIP, 0, 4);
 }
 
-void RenderDevice::DrawMesh(Shader* shader, const bool allowBackToFront, const Vertex3Ds& center, const float depthBias, MeshBuffer* mb, const PrimitiveTypes type, const DWORD startIndex, const DWORD indexCount)
+void RenderDevice::DrawMesh(Shader* shader, const bool isTranparentPass, const Vertex3Ds& center, const float depthBias, MeshBuffer* mb, const PrimitiveTypes type, const DWORD startIndex, const DWORD indexCount)
 {
    RenderCommand* cmd = m_renderFrame.NewCommand();
    // Legacy sorting order (only along negative z axis, which is reversed for reflections).
    // This is completely wrong but needed to preserve backward compatibility. We should sort along the view axis (especially for reflection probes)
    const float depth = g_pplayer->IsRenderPass(Player::REFLECTION_PASS) ? depthBias + center.z : depthBias - center.z;
-   cmd->SetDrawMesh(shader, mb, type, startIndex, indexCount, allowBackToFront && !GetRenderState().IsOpaque(), depth);
+   // We can not use the real opacity from render states since some legacy uses alpha part that write to the depth buffer (rendered during transparent pass) to mask out opaque parts
+   cmd->SetDrawMesh(shader, mb, type, startIndex, indexCount, isTranparentPass /* && !GetRenderState().IsOpaque() */, depth);
    cmd->m_dependency = m_nextRenderCommandDependency;
    m_nextRenderCommandDependency = nullptr;
    m_currentPass->Submit(cmd);

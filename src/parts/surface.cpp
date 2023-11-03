@@ -1054,7 +1054,7 @@ void Surface::RenderSlingshots()
           }
       }
    }
-   m_rd->DrawMesh(m_rd->basicShader, mat->m_bOpacityActive && m_isDynamic && !m_rd->GetRenderState().IsOpaque(), m_boundingSphereCenter, 0.f, m_slingshotMeshBuffer, RenderDevice::TRIANGLELIST, 0, static_cast<DWORD>(m_vlinesling.size() * 24));
+   m_rd->DrawMesh(m_rd->basicShader, m_isDynamic, m_boundingSphereCenter, 0.f, m_slingshotMeshBuffer, RenderDevice::TRIANGLELIST, 0, static_cast<DWORD>(m_vlinesling.size() * 24));
 
    m_rd->CopyRenderStates(false, initial_state);
 }
@@ -1091,7 +1091,7 @@ void Surface::RenderWallsAtHeight(const bool drop, const bool isReflectionPass)
       }
 
       // combine drawcalls into one (hopefully faster)
-      m_rd->DrawMesh(m_rd->basicShader, !m_rd->GetRenderState().IsOpaque(), m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numVertices * 6);
+      m_rd->DrawMesh(m_rd->basicShader, m_isDynamic, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numVertices * 6);
    }
 
    // render top&bottom
@@ -1115,13 +1115,13 @@ void Surface::RenderWallsAtHeight(const bool drop, const bool isReflectionPass)
       }
 
       // Top
-      m_rd->DrawMesh(m_rd->basicShader, !m_rd->GetRenderState().IsOpaque(), m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, m_numVertices * 6 + (drop ? m_numPolys * 3 : 0), m_numPolys * 3);
+      m_rd->DrawMesh(m_rd->basicShader, m_isDynamic, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, m_numVertices * 6 + (drop ? m_numPolys * 3 : 0), m_numPolys * 3);
 
       // Only render Bottom for Reflections
       if (isReflectionPass)
       {
          m_rd->SetRenderStateCulling((mat->m_bOpacityActive || !m_isDynamic) ? RenderState::CULL_NONE : RenderState::CULL_CCW);
-         m_rd->DrawMesh(m_rd->basicShader, !m_rd->GetRenderState().IsOpaque(), m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, m_numVertices * 6 + (m_numPolys * 3 * 2), m_numPolys * 3);
+         m_rd->DrawMesh(m_rd->basicShader, m_isDynamic, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, m_numVertices * 6 + (m_numPolys * 3 * 2), m_numPolys * 3);
       }
    }
 
