@@ -1467,7 +1467,7 @@ void Primitive::Render(const unsigned int renderMask)
             { // Primitive uses alpha transparency => render in 2 passes, one for the texture with alpha blending, one for the reflections which can happen above a transparent part (like for a glass or insert plastic)
                m_rd->basicShader->SetTechniqueMaterial(pin ? SHADER_TECHNIQUE_basic_with_texture : SHADER_TECHNIQUE_basic_without_texture, 
                   mat, pin ? pinAlphaTest >= 0.f && !pin->IsOpaque() : false, nMap, false, false);
-               m_rd->DrawMesh(m_rd->basicShader, mat->m_bOpacityActive && !m_d.m_staticRendering && !m_rd->GetRenderState().IsOpaque() /* IsTransparent() */, m_d.m_vPosition, m_d.m_depthBias, 
+               m_rd->DrawMesh(m_rd->basicShader, mat->m_bOpacityActive && !m_d.m_staticRendering /* IsTransparent() */, m_d.m_vPosition, m_d.m_depthBias, 
                   m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_d.m_groupdRendering ? m_numGroupIndices : (DWORD)m_mesh.NumIndices());
                is_reflection_only_pass = true;
             }

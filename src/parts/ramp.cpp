@@ -943,7 +943,7 @@ void Ramp::RenderStaticHabitrail(const Material * const mat)
       pd3dDevice->basicShader->SetMaterial(mat, !pin->m_pdsBuffer->IsOpaque());
    }
 
-   pd3dDevice->DrawMesh(pd3dDevice->basicShader, !pd3dDevice->GetRenderState().IsOpaque() /* mat->m_bOpacityActive /* IsTransparent() */, m_boundingSphereCenter, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
+   pd3dDevice->DrawMesh(pd3dDevice->basicShader, mat->m_bOpacityActive /* IsTransparent() */, m_boundingSphereCenter, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
 }
 
 //
@@ -2296,13 +2296,13 @@ void Ramp::RenderRamp(const Material * const mat)
       if (m_d.m_rightwallheightvisible != 0.f && m_d.m_leftwallheightvisible != 0.f && (!pin || m_d.m_imageWalls))
       {
          // both walls with image and floor
-         pd3dDevice->DrawMesh(pd3dDevice->basicShader, !pd3dDevice->GetRenderState().IsOpaque() /* mat->m_bOpacityActive /* IsTransparent() */, m_boundingSphereCenter, m_d.m_depthBias,
+         pd3dDevice->DrawMesh(pd3dDevice->basicShader, mat->m_bOpacityActive /* IsTransparent() */, m_boundingSphereCenter, m_d.m_depthBias,
             m_meshBuffer, RenderDevice::TRIANGLELIST, 0, (m_rampVertex - 1) * 6 * 3);
       }
       else
       {
          // only floor
-         pd3dDevice->DrawMesh(pd3dDevice->basicShader, !pd3dDevice->GetRenderState().IsOpaque() /* mat->m_bOpacityActive /* IsTransparent() */, m_boundingSphereCenter, m_d.m_depthBias,
+         pd3dDevice->DrawMesh(pd3dDevice->basicShader, mat->m_bOpacityActive /* IsTransparent() */, m_boundingSphereCenter, m_d.m_depthBias,
             m_meshBuffer, RenderDevice::TRIANGLELIST, 0, (m_rampVertex - 1) * 6);
 
          if (m_d.m_rightwallheightvisible != 0.f || m_d.m_leftwallheightvisible != 0.f)
@@ -2311,13 +2311,13 @@ void Ramp::RenderRamp(const Material * const mat)
                pd3dDevice->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, mat);
 
             if (m_d.m_rightwallheightvisible != 0.f && m_d.m_leftwallheightvisible != 0.f) //only render left & right side if the height is >0
-               pd3dDevice->DrawMesh(pd3dDevice->basicShader, !pd3dDevice->GetRenderState().IsOpaque() /* mat->m_bOpacityActive /* IsTransparent() */, m_boundingSphereCenter, m_d.m_depthBias,
+               pd3dDevice->DrawMesh(pd3dDevice->basicShader, mat->m_bOpacityActive /* IsTransparent() */, m_boundingSphereCenter, m_d.m_depthBias,
                   m_meshBuffer, RenderDevice::TRIANGLELIST, (m_rampVertex - 1) * 6, (m_rampVertex - 1) * 6 * 2);
             else if (m_d.m_rightwallheightvisible != 0.f) //only render right side if the height is >0
-               pd3dDevice->DrawMesh(pd3dDevice->basicShader, !pd3dDevice->GetRenderState().IsOpaque() /* mat->m_bOpacityActive /* IsTransparent() */, m_boundingSphereCenter, m_d.m_depthBias,
+               pd3dDevice->DrawMesh(pd3dDevice->basicShader, mat->m_bOpacityActive /* IsTransparent() */, m_boundingSphereCenter, m_d.m_depthBias,
                   m_meshBuffer, RenderDevice::TRIANGLELIST, (m_rampVertex - 1) * 6, (m_rampVertex - 1) * 6);
             else if (m_d.m_leftwallheightvisible != 0.f) //only render left side if the height is >0
-               pd3dDevice->DrawMesh(pd3dDevice->basicShader, !pd3dDevice->GetRenderState().IsOpaque() /* mat->m_bOpacityActive /* IsTransparent() */, m_boundingSphereCenter, m_d.m_depthBias,
+               pd3dDevice->DrawMesh(pd3dDevice->basicShader, mat->m_bOpacityActive /* IsTransparent() */, m_boundingSphereCenter, m_d.m_depthBias,
                   m_meshBuffer, RenderDevice::TRIANGLELIST, (m_rampVertex - 1) * 6 * 2, (m_rampVertex - 1) * 6);
          }
       }
