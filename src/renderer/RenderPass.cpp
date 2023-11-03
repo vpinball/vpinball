@@ -297,6 +297,9 @@ bool RenderPass::Execute(const bool log)
       const int bottom = clamp((int)((0.5f + m_areaOfInterest.y * 0.5f) * (float)m_rt->GetHeight()), 0, m_rt->GetHeight());
       const int right  = clamp((int)((0.5f + m_areaOfInterest.z * 0.5f) * (float)m_rt->GetWidth() ), 0, m_rt->GetWidth());
       const int top    = clamp((int)((0.5f + m_areaOfInterest.w * 0.5f) * (float)m_rt->GetHeight()), 0, m_rt->GetHeight());
+      assert((left <= right) && (bottom <= top));
+      if (left == right || bottom == top)
+         return false;
       #ifdef ENABLE_SDL
       glEnable(GL_SCISSOR_TEST);
       glScissor((GLint)left, (GLint)bottom, (GLsizei)(right - left), (GLsizei)(top - bottom));

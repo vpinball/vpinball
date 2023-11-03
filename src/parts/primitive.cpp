@@ -1430,11 +1430,24 @@ void Primitive::Render(const unsigned int renderMask)
                p.x = (i & 1) ? m_mesh.m_minAABound.x : m_mesh.m_maxAABound.x;
                p.y = (i & 2) ? m_mesh.m_minAABound.y : m_mesh.m_maxAABound.y;
                p.z = (i & 4) ? m_mesh.m_minAABound.z : m_mesh.m_maxAABound.z;
-               p = mvp.MultiplyVector(p);
-               xMin = min(xMin, p.x);
-               xMax = max(xMax, p.x);
-               yMin = min(yMin, p.y);
-               yMax = max(yMax, p.y);
+               float xp = mvp._11 * p.x + mvp._21 * p.y + mvp._31 * p.z + mvp._41;
+               float yp = mvp._12 * p.x + mvp._22 * p.y + mvp._32 * p.z + mvp._42;
+               const float wp = mvp._14 * p.x + mvp._24 * p.y + mvp._34 * p.z + mvp._44;
+               if (wp > 0.)
+               {
+                  xp /= wp;
+                  yp /= wp;
+                  xMin = min(xMin, xp);
+                  xMax = max(xMax, xp);
+                  yMin = min(yMin, yp);
+                  yMax = max(yMax, yp);
+               }
+               else
+               {
+                  xMin = yMin = -1.f;
+                  xMax = yMax = 1.f;
+                  break;
+               }
             }
          }
          if (reflections)
