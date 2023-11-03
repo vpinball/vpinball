@@ -85,7 +85,7 @@ private:
 #ifdef ENABLE_SDL
    GLenum m_texTarget = 0;
    GLuint m_texture = 0;
-   GLuint CreateTexture(unsigned int Width, unsigned int Height, unsigned int Levels, colorFormat Format, void* data, int stereo);
+   GLuint CreateTexture(BaseTexture* const surf, unsigned int Levels, colorFormat Format, int stereo);
 #else
    IDirect3DTexture9* m_texture;
    IDirect3DTexture9* CreateSystemTexture(BaseTexture* const surf, const bool force_linear_rgb, colorFormat& texformat);

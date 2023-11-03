@@ -1375,12 +1375,12 @@ void Primitive::Render(const unsigned int renderMask)
       m_rd->basicShader->SetTexture(SHADER_tex_base_color, pin, pinf, SA_REPEAT, SA_REPEAT);
       m_rd->basicShader->SetTexture(SHADER_tex_base_normalmap, nMap, SF_UNDEFINED, SA_REPEAT, SA_REPEAT, true);
       m_rd->basicShader->SetBool(SHADER_objectSpaceNormalMap, m_d.m_objectSpaceNormalMap);
-      m_rd->basicShader->SetMaterial(mat, pin->has_alpha() || m_d.m_alpha != 100.f);
+      m_rd->basicShader->SetMaterial(mat, !pin->IsOpaque() || m_d.m_alpha != 100.f);
    }
    else if (pin)
    {
       m_rd->basicShader->SetTexture(SHADER_tex_base_color, pin, pinf, SA_REPEAT, SA_REPEAT);
-      m_rd->basicShader->SetMaterial(mat, pin->has_alpha() || m_d.m_alpha != 100.f);
+      m_rd->basicShader->SetMaterial(mat, !pin->IsOpaque() || m_d.m_alpha != 100.f);
    }
    else
    {
@@ -1413,7 +1413,7 @@ void Primitive::Render(const unsigned int renderMask)
       const vec4 color = convertColor(m_d.m_color, m_d.m_alpha * (float)(1.0 / 100.0));
       m_rd->basicShader->SetVector(SHADER_staticColor_Alpha, &color);
       m_rd->basicShader->SetTechniqueMaterial(pin ? SHADER_TECHNIQUE_basic_with_texture : SHADER_TECHNIQUE_basic_without_texture, 
-         mat, pin ? pinAlphaTest >= 0.f && pin->has_alpha() : false, nMap, reflections, refractions);
+         mat, pin ? pinAlphaTest >= 0.f && !pin->IsOpaque() : false, nMap, reflections, refractions);
       bool is_reflection_only_pass = false;
 
       // Handle render probes
@@ -1466,8 +1466,8 @@ void Primitive::Render(const unsigned int renderMask)
             if (!is_reflection_only_pass && !m_rd->GetRenderState().IsOpaque())
             { // Primitive uses alpha transparency => render in 2 passes, one for the texture with alpha blending, one for the reflections which can happen above a transparent part (like for a glass or insert plastic)
                m_rd->basicShader->SetTechniqueMaterial(pin ? SHADER_TECHNIQUE_basic_with_texture : SHADER_TECHNIQUE_basic_without_texture, 
-                  mat, pin ? pinAlphaTest >= 0.f && pin->has_alpha() : false, nMap, false, false);
-               m_rd->DrawMesh(m_rd->basicShader, !m_d.m_staticRendering && mat->m_bOpacityActive /* IsTransparent() */, m_d.m_vPosition, m_d.m_depthBias, 
+                  mat, pin ? pinAlphaTest >= 0.f && !pin->IsOpaque() : false, nMap, false, false);
+               m_rd->DrawMesh(m_rd->basicShader, mat->m_bOpacityActive && !m_d.m_staticRendering && !m_rd->GetRenderState().IsOpaque() /* IsTransparent() */, m_d.m_vPosition, m_d.m_depthBias, 
                   m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_d.m_groupdRendering ? m_numGroupIndices : (DWORD)m_mesh.NumIndices());
                is_reflection_only_pass = true;
             }

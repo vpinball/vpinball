@@ -41,7 +41,7 @@ Sampler::Sampler(RenderDevice* rd, BaseTexture* const surf, const bool force_lin
       else if (format == colorFormat::SRGBA)
          format = colorFormat::RGBA;
    }
-   m_texture = CreateTexture(surf->width(), surf->height(), 0, format, surf->data(), 0);
+   m_texture = CreateTexture(surf, 0, format, 0);
    m_isLinear = format != colorFormat::SRGB && format != colorFormat::SRGBA;
 #else
    colorFormat texformat;
@@ -209,8 +209,12 @@ void Sampler::SetName(const string& name)
 }
 
 #ifdef ENABLE_SDL
-GLuint Sampler::CreateTexture(unsigned int Width, unsigned int Height, unsigned int Levels, colorFormat Format, void* data, int stereo)
+GLuint Sampler::CreateTexture(BaseTexture* const surf, unsigned int Levels, colorFormat Format, int stereo)
 {
+   unsigned int Width = surf->width();
+   unsigned int Height = surf->height();
+   void* data = surf->data();
+
    const GLuint col_type = ((Format == RGBA32F) || (Format == RGB32F)) ? GL_FLOAT : ((Format == RGBA16F) || (Format == RGB16F)) ? GL_HALF_FLOAT : GL_UNSIGNED_BYTE;
    const GLuint col_format = ((Format == GREY8) || (Format == RED16F))                                                                                                      ? GL_RED
       : ((Format == GREY_ALPHA) || (Format == RG16F))                                                                                                                       ? GL_RG
@@ -262,7 +266,7 @@ GLuint Sampler::CreateTexture(unsigned int Width, unsigned int Height, unsigned 
       {
 #ifndef __OPENGLES__
          if (GLAD_GL_ARB_texture_compression_bptc)
-            comp_format = colorFormat::BC6S; // We should use unsigned BC6 but this needs to know beforehand if the texture is only positive
+            comp_format = surf->IsSigned() ? colorFormat::BC6S : colorFormat::BC6U;
 #endif
       }
 #ifndef __OPENGLES__

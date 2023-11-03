@@ -385,10 +385,10 @@ void Spinner::RenderDynamic()
    Texture * const image = m_ptable->GetImage(m_d.m_szImage);
    if (image)
    {
-      pd3dDevice->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, mat, image->m_pdsBuffer->has_alpha() && image->m_alphaTestValue >= 0.f);
+      pd3dDevice->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, mat, image->m_alphaTestValue >= 0.f && !image->m_pdsBuffer->IsOpaque());
       pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, image);
       pd3dDevice->basicShader->SetAlphaTestValue(image->m_alphaTestValue);
-      pd3dDevice->basicShader->SetMaterial(mat, image->m_pdsBuffer->has_alpha());
+      pd3dDevice->basicShader->SetMaterial(mat, !image->m_pdsBuffer->IsOpaque());
    }
    else // No image by that name
    {
