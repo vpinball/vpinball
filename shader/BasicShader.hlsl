@@ -381,13 +381,11 @@ float4 ps_main_texture(const in VS_OUTPUT IN, float2 screenSpace : VPOS, uniform
    float4 color = float4(lightLoop(IN.worldPos, N, V, diffuse, glossy, specular, edge, is_metal), pixel.a);
 
    BRANCH if (color.a < 1.0) // We may not opacify if we already are opaque
-   {
       color.a = GeometricOpacity(dot(N,V), color.a, cClearcoat_EdgeAlpha.w, Roughness_WrapL_Edge_Thickness.w);
 
-      if (fDisableLighting_top_below.y < 1.0)
-         // add light from "below" from user-flagged bulb lights, pre-rendered/blurred in previous renderpass //!! sqrt = magic
-         color.rgb += lerp(sqrt(diffuse)*texNoLod(tex_base_transmission, screenSpace * w_h_height.xy).rgb*color.a, 0., fDisableLighting_top_below.y); //!! depend on normal of light (unknown though) vs geom normal, too?
-   }
+   BRANCH if(fDisableLighting_top_below.y < 1.0)
+      // add light from "below" from user-flagged bulb lights, pre-rendered/blurred in previous renderpass //!! sqrt = magic
+      color.rgb += lerp(sqrt(diffuse) * texNoLod(tex_base_transmission, screenSpace * w_h_height.xy).rgb * color.a, 0., fDisableLighting_top_below.y); //!! depend on normal of light (unknown though) vs geom normal, too?
 
    BRANCH if (lightCenter_doShadow.w != 0.)
    {
