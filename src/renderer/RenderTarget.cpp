@@ -396,11 +396,10 @@ void RenderTarget::CopyTo(RenderTarget* dest, const bool copyColor, const bool c
    int px2 = x2 == -1 ? 0 : x2, py2 = y2 == -1 ? 0 : y2, pz2 = dstLayer == -1 ? 0 : dstLayer;
    int pw2 = w2 == -1 ? dest->GetWidth() : w2, ph2 = h2 == -1 ? dest->GetHeight() : h2;
    int nLayers = srcLayer == -1 ? m_nLayers : 1;
-   assert(pw1 == pw2 && ph1 == ph2); // we do not support scaling
    assert(srcLayer != -1 || dstLayer != -1 || m_nLayers == dest->m_nLayers); // Either we copy a single layer or the full set in which case they must match
 #ifdef ENABLE_SDL
    #ifndef __OPENGLES__
-   if (GLAD_GL_VERSION_4_3 && m_texTarget == dest->m_texTarget && w1 == w2 && h1 == h2)
+   if (GLAD_GL_VERSION_4_3 && m_texTarget == dest->m_texTarget && pw1 == pw2 && ph1 == ph2)
    {
       // No MSAA resolution => glCopyImageSubData is more efficient and supports all configurations (copying one layer to another, all of them,...) but not scaling
       if (copyColor)
@@ -418,11 +417,12 @@ void RenderTarget::CopyTo(RenderTarget* dest, const bool copyColor, const bool c
       {
          glBindFramebuffer(GL_READ_FRAMEBUFFER, m_nLayers == 1 ? m_framebuffer : m_framebuffer_layers[pz1 + i]);
          glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dest->m_nLayers == 1 ? dest->m_framebuffer : dest->m_framebuffer_layers[pz2 + i]);
-         glBlitFramebuffer(px1, py1, px1 + pw1, py1 + ph1, px2, py2, px2 + pw2, py2 + ph2, bitmask, GL_NEAREST);
+         glBlitFramebuffer(px1, py1, px1 + pw1, py1 + ph1, px2, py2, px2 + pw2, py2 + ph2, bitmask, pw1 == pw2 && ph1 == ph2 ? GL_NEAREST : GL_LINEAR);
       }
       glBindFramebuffer(GL_FRAMEBUFFER, current_render_target->m_framebuffer);
    }
 #else
+   assert(pw1 == pw2 && ph1 == ph2); // we do not support scaling (only used for VR preview)
    assert(srcLayer == -1); // Layered rendering is not supported for DirectX 9
    if (copyColor)
    {

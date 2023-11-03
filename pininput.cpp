@@ -2025,6 +2025,14 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
                   // Toggle stereo on/off
                   g_pplayer->m_stereo3Denabled = !g_pplayer->m_stereo3Denabled;
                }
+               else if (g_pplayer->m_stereo3D == STEREO_VR)
+               {
+                  g_pplayer->m_vrPreview = (VRPreviewMode)((g_pplayer->m_vrPreview + 1) % (VRPREVIEW_BOTH + 1));
+                  g_pplayer->m_liveUI->PushNotification(g_pplayer->m_vrPreview == VRPREVIEW_DISABLED ? "Preview disabled"s // Will only display in headset
+                                                      : g_pplayer->m_vrPreview == VRPREVIEW_LEFT     ? "Preview switched to left eye"s
+                                                      : g_pplayer->m_vrPreview == VRPREVIEW_RIGHT    ? "Preview switched to right eye"s
+                                                                                                     : "Preview switched to both eyes"s, 2000);
+               }
                g_pvp->m_settings.SaveValue(Settings::Player, "Stereo3DEnabled"s, g_pplayer->m_stereo3Denabled);
                g_pplayer->m_pin3d.InitLayout();
                g_pplayer->UpdateStereoShaderState();

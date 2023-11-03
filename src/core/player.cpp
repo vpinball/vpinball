@@ -353,14 +353,6 @@ void Player::PreCreate(CREATESTRUCT& cs)
        m_wnd_height = m_screenheight;
     }
 
-    // VR preview window does not support fullscreen. Its size will be defined from the headset eye render size
-    if (m_stereo3D == STEREO_VR)
-    {
-       m_fullScreen = false;
-       m_wnd_width = 640;
-       m_wnd_height = 480;
-    }
-
    if (m_fullScreen)
    {
       x = 0;
@@ -1273,31 +1265,6 @@ HRESULT Player::Init()
    PLOGI << "Synchronization mode: " << m_videoSyncMode << " with maximum FPS: " << m_maxFramerate << ", display FPS: " << m_refreshrate;
 
 #ifdef ENABLE_SDL
-   if (m_stereo3D == STEREO_VR)
-   {
-      // Adjust stereo preview size to eye aspect ratio and number of eyes previewed
-      if (m_vrPreview == VRPREVIEW_DISABLED)
-      {
-         // Hide window ?
-      }
-      else
-      {
-         m_wnd_width = m_vrPreview == VRPREVIEW_BOTH ? 2 * m_pin3d.m_viewPort.Width : m_pin3d.m_viewPort.Width;
-         m_wnd_height = m_pin3d.m_viewPort.Height;
-         if (m_wnd_width > m_screenwidth)
-         {
-            m_wnd_height = (m_wnd_height * m_screenwidth) / m_wnd_width;
-            m_wnd_width = m_screenwidth;
-         }
-         if (m_wnd_height > m_screenheight)
-         {
-            m_wnd_width = (m_wnd_width * m_screenheight) / m_wnd_height;
-            m_wnd_height = m_screenheight;
-         }
-         SDL_SetWindowSize(m_sdl_playfieldHwnd, m_wnd_width, m_wnd_height);
-         SDL_SetWindowPosition(m_sdl_playfieldHwnd, (m_screenwidth - m_wnd_width) / 2, (m_screenheight - m_wnd_height) / 2);
-      }
-   }
    SDL_GL_GetDrawableSize(m_sdl_playfieldHwnd, &m_wnd_width, &m_wnd_height);
 #endif
    // Set the output frame buffer size to the size of the window output
@@ -3794,19 +3761,35 @@ void Player::PrepareVideoBuffers()
          m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
          m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, rightTexture, true, false, 0, 0, w, h, 0, 0, w, h, 1, 0);
 
-         m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("VR Preview"s, m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer(), false);
+         RenderTarget *outRT = m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
+         m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("VR Preview"s, outRT, false);
+         m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(leftTexture); // To ensure blit is made
+         m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(rightTexture); // To ensure blit is made
          m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
-         m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(leftTexture);
-         m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(rightTexture);
-         RenderTarget* outRT = m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
-         if (m_vrPreview == VRPREVIEW_LEFT)
-            m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, outRT, true, false, 0, 0, w, h, 0, 0, outRT->GetWidth(), outRT->GetHeight(), 0, 0);
-         else if (m_vrPreview == VRPREVIEW_RIGHT)
-            m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, outRT, true, false, 0, 0, w, h, 0, 0, outRT->GetWidth(), outRT->GetHeight(), 1, 0);
+         const int outW = m_vrPreview == VRPREVIEW_BOTH ? outRT->GetWidth() / 2 : outRT->GetWidth(), outH = outRT->GetHeight();
+         float ar = (float)w / (float)h, outAr = (float)outW / (float)outH;
+         int x = 0, y = 0;
+         int fw = w, fh = h;
+         if (ar > outAr)
+         { // Fit on Y
+            const int scaledW = (int) (h * outAr);
+            x = (w - scaledW) / 2;
+            fw = scaledW;
+         }
+         else
+         { // Fit on X
+            const int scaledH = (int)(w / outAr);
+            y = (h - scaledH) / 2;
+            fh = scaledH;
+         }
+         if (m_vrPreview == VRPREVIEW_LEFT || m_vrPreview == VRPREVIEW_RIGHT)
+         {
+            m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, outRT, true, false, x, y, w, h, 0, 0, outW, outH, m_vrPreview == VRPREVIEW_LEFT ? 0 : 1, 0);
+         }
          else if (m_vrPreview == VRPREVIEW_BOTH)
          {
-            m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, outRT, true, false, 0, 0, w, h, 0,                     0, outRT->GetWidth() / 2, outRT->GetHeight(), 0, 0);
-            m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, outRT, true, false, 0, 0, w, h, outRT->GetWidth() / 2, 0, outRT->GetWidth() / 2, outRT->GetHeight(), 1, 0);
+            m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, outRT, true, false, x, y, w, h, 0, 0, outW, outH, 0, 0);
+            m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, outRT, true, false, x, y, w, h, outW, 0, outW, outH, 1, 0);
          }
 
          m_pin3d.m_pd3dPrimaryDevice->SubmitVR(renderedRT);
