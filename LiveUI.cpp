@@ -1069,9 +1069,9 @@ void LiveUI::OnTweakModeEvent(const bool isKeyDown, const int keycode)
    {
       if (!isKeyDown && (activeTweakSetting == BS_Page || activeTweakSetting == BS_ViewMode))
          return;
-      const bool up = keycode == g_pplayer->m_rgKeys[eLeftFlipperKey];
-      const float thesign = !up ? -0.2f : 0.2f;
-      const float step = up ? -1.f : 1.f;
+      const bool up = keycode == g_pplayer->m_rgKeys[eRightFlipperKey];
+      const float thesign = up ? 0.2f : -0.2f;
+      const float step = up ? 1.f : -1.f;
       ViewSetup &viewSetup = table->mViewSetups[table->m_BG_current_set];
       const bool isWindow = viewSetup.mMode == VLM_WINDOW;
       switch (activeTweakSetting)
