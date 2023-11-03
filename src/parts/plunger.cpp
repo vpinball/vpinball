@@ -243,10 +243,10 @@ void Plunger::RenderDynamic()
    Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
    if (pin)
    {
-      pd3dDevice->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, mat, pin->m_pdsBuffer->has_alpha() && pin->m_alphaTestValue >= 0.f);
+      pd3dDevice->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, mat, pin->m_alphaTestValue >= 0.f && !pin->m_pdsBuffer->IsOpaque());
       pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, pin);
       pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue);
-      pd3dDevice->basicShader->SetMaterial(mat, pin->m_pdsBuffer->has_alpha());
+      pd3dDevice->basicShader->SetMaterial(mat, !pin->m_pdsBuffer->IsOpaque());
    }
    else
    {
