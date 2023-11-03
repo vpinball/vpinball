@@ -1191,6 +1191,7 @@ void LiveUI::OnTweakModeEvent(const bool isKeyDown, const int keycode)
             else
             {
                m_live_table->m_settings.SaveToFile(iniFileName);
+               m_table->m_settings.LoadFromFile(iniFileName, false); // Immediatly loads it to the edited table for the change to take effect on next play
                PushNotification("POV exported to "s.append(iniFileName), 5000);
             }
          }
