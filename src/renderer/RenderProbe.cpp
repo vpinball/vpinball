@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "RenderProbe.h"
+#include "RenderCommand.h"
 #include "Shader.h"
 #include "math/bluenoise.h"
 
@@ -189,7 +190,9 @@ void RenderProbe::ApplyAreaOfInterest(RenderPass* pass)
    else
    {
       // TODO we should enlarge the AOI to account for the blur kernel size
-      pass->m_areaOfInterest = m_reflection_clip_bounds;
+      // We do not apply to pass with just a clear command to avoid sampling artefacts
+      if (!(pass->m_dependencies.empty() && pass->m_commands.size() == 1 && pass->m_commands[0]->IsFullClear(false)))
+         pass->m_areaOfInterest = m_reflection_clip_bounds;
    }
    for (RenderPass* subpass : pass->m_dependencies)
       ApplyAreaOfInterest(subpass);
