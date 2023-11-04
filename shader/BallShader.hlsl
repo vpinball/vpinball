@@ -216,31 +216,25 @@ float4 psBall( const in vout IN, uniform bool equirectangularMap, uniform bool d
 	// TODO use previous frame projection instead of the one of the current frame to limit reflection distortion (still this is minimal)
     const float4 proj = mul(float4(playfield_hit, 1.0), matProj);
     const float2 uvp = float2(0.5, 0.5) + float2(proj.x, -proj.y) * (0.5 / proj.w);
-	const float3 playfieldColor = saturate(0.25 * (
+	const float3 playfieldColor = 0.25 * (
 		  tex2D(tex_ball_playfield, uvp + float2(w_h_disableLighting.x, 0.)).rgb
 		+ tex2D(tex_ball_playfield, uvp - float2(w_h_disableLighting.x, 0.)).rgb
 		+ tex2D(tex_ball_playfield, uvp + float2(0., w_h_disableLighting.y)).rgb
 		+ tex2D(tex_ball_playfield, uvp - float2(0., w_h_disableLighting.y)).rgb
-	) * invTableRes_playfield_height_reflection.w); // a bit of supersampling, not strictly needed, but a bit better and not that costly
+	) * invTableRes_playfield_height_reflection.w; // a bit of supersampling, not strictly needed, but a bit better and not that costly
 
-	float weight;
-	if (NdotR <= 0.)
-		// Reversed reflection => discard
-		weight = 0.;
     // we don't clamp sampling outside the playfield (costly and no real visual impact)
 	// const float2 uv = (matWorldViewInverse * float4(playfield_hit, 1.0)).xy * invTableRes_playfield_height_reflection.xy;
-	// else if (uv.x < 0.1 && uv.y < 0.1 && uv.x > 0.9 && uv.y > 0.9)
-	//	weight = 0.;
-	else if (uvp.x < 0. || uvp.x > 1. || uvp.y < 0. || uvp.y > 1.)
-		// outside of previous render => discard (we could use sampling techniques to optimize a bit)
-		weight = 0.;
-	else if (t <= 0.)
-		// t < 0.0 may happen in some situation where ball intersects the playfield and the reflected point is inside the ball (like in kicker)
-		weight = 0.;
-	else
-		// Default: magic falloff between playfield (down) and environment (up)
-		weight = NdotR * NdotR;
-    ballImageColor = lerp(ballImageColor, playfieldColor, weight);
+	// && !(uv.x < 0.1 && uv.y < 0.1 && uv.x > 0.9 && uv.y > 0.9)
+    BRANCH if (!(NdotR <= 0.) // Reversed reflection => discard
+	 && !(uvp.x < 0. || uvp.x > 1. || uvp.y < 0. || uvp.y > 1.) // outside of previous render => discard (we could use sampling techniques to optimize a bit)
+	 && !(t <= 0.)) // t < 0.0 may happen in some situation where ball intersects the playfield and the reflected point is inside the ball (like in kicker)
+    {
+		// NdotR * NdotR is a magic falloff between playfield (down) and environment (up)
+        // We can face infinite reflections (ball->playfield->ball->playfield->...) which would overblow, so we need to saturate based on N.V
+        const float NdotV = dot(N, V);
+        ballImageColor = lerp(ballImageColor, lerp(saturate(playfieldColor), playfieldColor, NdotV * NdotV), NdotR * NdotR);
+    }
 
     float3 diffuse = cBase_Alpha.rgb*0.075;
     if(!decalMode)
