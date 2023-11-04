@@ -1283,8 +1283,8 @@ void LiveUI::OnTweakModeEvent(const bool isKeyDown, const int keycode)
                   viewSetup.mViewVOfs = isFitted ? 0.f : -2.8f;
                   viewSetup.mSceneScaleX = scale;
                   viewSetup.mSceneScaleY = isFitted ? 1.f : scale;
-                  viewSetup.mWindowBottomZOfs = VPUTOINCHES(bottomHeight);
-                  viewSetup.mWindowTopZOfs = VPUTOINCHES(topHeight);
+                  viewSetup.mWindowBottomZOfs = bottomHeight;
+                  viewSetup.mWindowTopZOfs = topHeight;
                   PushNotification(isFitted ? "POV reset to default values (stretch to fit)"s : "POV reset to default values (no stretching)"s, 5000);
                }
                break;
