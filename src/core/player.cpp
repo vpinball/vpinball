@@ -1382,6 +1382,7 @@ HRESULT Player::Init()
          m_implicitPlayfieldMesh->m_mesh.m_indices[3] = 2;
          m_implicitPlayfieldMesh->m_mesh.m_indices[4] = 1;
          m_implicitPlayfieldMesh->m_mesh.m_indices[5] = 3;
+         m_implicitPlayfieldMesh->m_mesh.m_validBounds = false;
          m_ptable->m_vedit.push_back(m_implicitPlayfieldMesh);
       }
    }
@@ -3151,7 +3152,7 @@ void Player::DrawBulbLightBuffer()
    p3dDevice->CopyRenderStates(true, initial_state);
 
    // switch to 'bloom' output buffer to collect all bulb lights
-   p3dDevice->SetRenderTarget("Transmitted Light "s + std::to_string(id), p3dDevice->GetBloomBufferTexture(), false);
+   p3dDevice->SetRenderTarget("Transmitted Light "s + std::to_string(id) + " Clear", p3dDevice->GetBloomBufferTexture(), false);
    p3dDevice->Clear(clearType::TARGET, 0, 1.0f, 0L);
 
    // Draw bulb lights

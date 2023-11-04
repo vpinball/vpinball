@@ -264,6 +264,25 @@ bool RenderPass::Execute(const bool log)
    if (m_commands.empty())
       return false;
 
+   if (m_areaOfInterest.x != FLT_MAX)
+   {
+      const int left   = clamp((int)((0.5f + m_areaOfInterest.x * 0.5f) * (float)m_rt->GetWidth() ), 0, m_rt->GetWidth());
+      const int bottom = clamp((int)((0.5f + m_areaOfInterest.y * 0.5f) * (float)m_rt->GetHeight()), 0, m_rt->GetHeight());
+      const int right  = clamp((int)((0.5f + m_areaOfInterest.z * 0.5f) * (float)m_rt->GetWidth() ), 0, m_rt->GetWidth());
+      const int top    = clamp((int)((0.5f + m_areaOfInterest.w * 0.5f) * (float)m_rt->GetHeight()), 0, m_rt->GetHeight());
+      assert((left <= right) && (bottom <= top));
+      if (left == right || bottom == top)
+         return false;
+      #ifdef ENABLE_SDL
+      glEnable(GL_SCISSOR_TEST);
+      glScissor((GLint)left, (GLint)bottom, (GLsizei)(right - left), (GLsizei)(top - bottom));
+      #else
+      const RECT r = { (LONG)left, (LONG)(m_rt->GetHeight() - top), (LONG)right, (LONG)(m_rt->GetHeight() - bottom) };
+      m_rt->GetRenderDevice()->GetCoreDevice()->SetRenderState(D3DRS_SCISSORTESTENABLE, TRUE);
+      m_rt->GetRenderDevice()->GetCoreDevice()->SetScissorRect(&r);
+      #endif
+   }
+
 #ifdef ENABLE_SDL
    if (GLAD_GL_VERSION_4_3)
    {
@@ -289,25 +308,6 @@ bool RenderPass::Execute(const bool log)
       }
       ss << ']';
       PLOGI << ss.str();
-   }
-
-   if (m_areaOfInterest.x != FLT_MAX)
-   {
-      const int left   = clamp((int)((0.5f + m_areaOfInterest.x * 0.5f) * (float)m_rt->GetWidth() ), 0, m_rt->GetWidth());
-      const int bottom = clamp((int)((0.5f + m_areaOfInterest.y * 0.5f) * (float)m_rt->GetHeight()), 0, m_rt->GetHeight());
-      const int right  = clamp((int)((0.5f + m_areaOfInterest.z * 0.5f) * (float)m_rt->GetWidth() ), 0, m_rt->GetWidth());
-      const int top    = clamp((int)((0.5f + m_areaOfInterest.w * 0.5f) * (float)m_rt->GetHeight()), 0, m_rt->GetHeight());
-      assert((left <= right) && (bottom <= top));
-      if (left == right || bottom == top)
-         return false;
-      #ifdef ENABLE_SDL
-      glEnable(GL_SCISSOR_TEST);
-      glScissor((GLint)left, (GLint)bottom, (GLsizei)(right - left), (GLsizei)(top - bottom));
-      #else
-      const RECT r = { (LONG)left, (LONG)(m_rt->GetHeight() - top), (LONG)right, (LONG)(m_rt->GetHeight() - bottom) };
-      m_rt->GetRenderDevice()->GetCoreDevice()->SetRenderState(D3DRS_SCISSORTESTENABLE, TRUE);
-      m_rt->GetRenderDevice()->GetCoreDevice()->SetScissorRect(&r);
-      #endif
    }
 
    if (m_rt->m_nLayers == 1 || (m_singleLayerRendering < 0 && m_rt->GetRenderDevice()->SupportLayeredRendering()))
