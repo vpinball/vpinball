@@ -1621,10 +1621,6 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool sav
    bw.WriteBool(FID(DIPT), m_d.m_displayTexture);
    bw.WriteBool(FID(OSNM), m_d.m_objectSpaceNormalMap);
 
-   m_mesh.UpdateBounds();
-   bw.WriteVector3(FID(BMIN), m_mesh.m_minAABound);
-   bw.WriteVector3(FID(BMAX), m_mesh.m_maxAABound);
-
    // Don't save the meshes for undo/redo
    if (m_d.m_use3DMesh && !saveForUndo)
    {
@@ -1736,8 +1732,6 @@ HRESULT Primitive::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int versi
 
    m_ptable = ptable;
    m_mesh.m_validBounds = false;
-   m_mesh.m_minAABound = Vertex3Ds(FLT_MAX, FLT_MAX, FLT_MAX);
-   m_mesh.m_maxAABound = Vertex3Ds(FLT_MAX, FLT_MAX, FLT_MAX);
 
    br.Load();
 
@@ -1802,8 +1796,6 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
    case FID(U3DM): pbr->GetBool(m_d.m_use3DMesh); break;
    case FID(EBFC): pbr->GetBool(m_d.m_backfacesEnabled); break;
    case FID(DIPT): pbr->GetBool(m_d.m_displayTexture); break;
-   case FID(BMIN): pbr->GetVector3(m_mesh.m_minAABound); m_mesh.m_validBounds = true; break; // Min & max are always saved together
-   case FID(BMAX): pbr->GetVector3(m_mesh.m_maxAABound); m_mesh.m_validBounds = true; break; // Min & max are always saved together
    case FID(M3DN): pbr->GetString(m_d.m_meshFileName); break;
    case FID(M3VN):
    {
@@ -1963,12 +1955,6 @@ HRESULT Primitive::InitPostLoad()
 {
    WaitForMeshDecompression(); //!! needed nowadays due to multithreaded mesh decompression
    UpdateStatusBarInfo();
-
-   // Hack fix: some tables were saved during development cycle of 10.8 with wrong bounds (both at 0).
-   // TODO remove this in later VPX version
-   if (m_mesh.m_minAABound == m_mesh.m_maxAABound)
-      m_mesh.m_validBounds = false;
-
    return S_OK;
 }
 

@@ -171,7 +171,7 @@ void RenderProbe::ApplyAreaOfInterest(RenderPass* pass)
 {
    if (pass == nullptr)
    {
-      pass = m_renderPass;
+      pass = m_finalPass;
       if (pass == nullptr)
          return;
    }
@@ -179,7 +179,7 @@ void RenderProbe::ApplyAreaOfInterest(RenderPass* pass)
    {
       // Since we don't know where the sampling will occur, we only apply AOI to the blur passes, 
       // with a small arbitrary margin to account for IOR shift
-      if (pass->m_rt == m_dynamicRT)
+      if (pass == m_copyPass)
          return;
       constexpr float margin = 0.05f;
       pass->m_areaOfInterest.x = m_reflection_clip_bounds.x - margin;
@@ -232,7 +232,7 @@ void RenderProbe::ApplyRoughness(RenderTarget* probe, const int roughness)
          p3dDevice->DrawGaussianBlur(probe, m_blurRT, probe, kernel[roughness]);
       }
    }
-   m_renderPass = p3dDevice->GetCurrentPass();
+   m_finalPass = p3dDevice->GetCurrentPass();
 }
 
 
@@ -251,6 +251,7 @@ void RenderProbe::RenderScreenSpaceTransparency(const bool is_static)
    }
    p3dDevice->SetRenderTarget(m_name, m_dynamicRT, false);
    p3dDevice->BlitRenderTarget(p3dDevice->GetMSAABackBufferTexture(), m_dynamicRT, true, true);
+   m_copyPass = p3dDevice->GetCurrentPass();
    ApplyRoughness(m_dynamicRT, m_roughness);
    p3dDevice->SetRenderTarget(previousRT->m_name + '+', previousRT->m_rt);
 }
