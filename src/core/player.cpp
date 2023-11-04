@@ -3785,12 +3785,12 @@ void Player::PrepareVideoBuffers()
          }
          if (m_vrPreview == VRPREVIEW_LEFT || m_vrPreview == VRPREVIEW_RIGHT)
          {
-            m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, outRT, true, false, x, y, w, h, 0, 0, outW, outH, m_vrPreview == VRPREVIEW_LEFT ? 0 : 1, 0);
+            m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, outRT, true, false, x, y, fw, fh, 0, 0, outW, outH, m_vrPreview == VRPREVIEW_LEFT ? 0 : 1, 0);
          }
          else if (m_vrPreview == VRPREVIEW_BOTH)
          {
-            m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, outRT, true, false, x, y, w, h, 0, 0, outW, outH, 0, 0);
-            m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, outRT, true, false, x, y, w, h, outW, 0, outW, outH, 1, 0);
+            m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, outRT, true, false, x, y, fw, fh, 0, 0, outW, outH, 0, 0);
+            m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, outRT, true, false, x, y, fw, fh, outW, 0, outW, outH, 1, 0);
          }
 
          m_pin3d.m_pd3dPrimaryDevice->SubmitVR(renderedRT);
