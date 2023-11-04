@@ -576,9 +576,9 @@ void Shader::SetMaterial(const Material* const mat, const bool has_alpha)
    // As of VPX 10.8:
    // - the behavior did not change regarding lighting from below,
    // - the alpha channel of the texture is always considered,
-   // - alpha blending is only performed if there is an alpha channel or a 'meaningfull' (not 0.999) alpha value (for performance reasons),
+   // - alpha blending is only performed if there is an alpha channel or a 'meaningfull' (not 0.999) alpha value (for performance reasons), [Note that Flupper uses near opaque at 0.99 with a light below for his inserts]
    // - alpha test is only applied if there is some alpha and a positive test threshold (to allow early depth testing).
-   if (bOpacityActive && (has_alpha || alpha < 0.99f))
+   if (bOpacityActive && (has_alpha || alpha < 0.999f))
       g_pplayer->m_pin3d.m_pd3dPrimaryDevice->EnableAlphaBlend(false);
    else
       g_pplayer->m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
