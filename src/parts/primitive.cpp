@@ -1419,6 +1419,7 @@ void Primitive::Render(const unsigned int renderMask)
       // Handle render probes
       if (reflections || refractions)
       {
+         m_mesh.UpdateBounds();
          float xMin = 1.f, yMin = 1.f, xMax = -1.f, yMax = -1.f;
          const int nEyes = m_rd->m_stereo3D != STEREO_OFF ? 2 : 1;
          for (int eye = 0; eye < nEyes; eye++)
