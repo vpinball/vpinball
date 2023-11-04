@@ -4347,7 +4347,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
          bool overwriteGlobalDayNight;
          pbr->GetBool(overwriteGlobalDayNight);
          if (overwriteGlobalDayNight)
-            m_settings.SaveValue(Settings::TableOverride, "OverrideEmissionScale"s, true);
+            m_settings.SaveValue(Settings::TableOverride, "OverrideEmissionScale"s, false);
       }
       break;
    case FID(GDAC): pbr->GetBool(m_grid); break;
