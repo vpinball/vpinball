@@ -1741,11 +1741,6 @@ HRESULT Primitive::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int versi
 
    br.Load();
 
-   // If we loaded the bounds, then they are valid and don't need to be recomputed
-   m_mesh.m_validBounds = m_mesh.m_minAABound.x != FLT_MAX && m_mesh.m_minAABound.y != FLT_MAX && m_mesh.m_minAABound.z != FLT_MAX
-      && m_mesh.m_maxAABound.x != FLT_MAX && m_mesh.m_maxAABound.y != FLT_MAX && m_mesh.m_maxAABound.z != FLT_MAX;
-   m_mesh.UpdateBounds();
-
    if(version < 1011) // so that old tables do the reorderForsyth on each load, new tables only on mesh import, so a simple resave of a old table will also skip this step
    {
       WaitForMeshDecompression(); //!! needed nowadays due to multithreaded mesh decompression
@@ -1807,8 +1802,8 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
    case FID(U3DM): pbr->GetBool(m_d.m_use3DMesh); break;
    case FID(EBFC): pbr->GetBool(m_d.m_backfacesEnabled); break;
    case FID(DIPT): pbr->GetBool(m_d.m_displayTexture); break;
-   case FID(BMIN): pbr->GetVector3(m_mesh.m_minAABound); break;
-   case FID(BMAX): pbr->GetVector3(m_mesh.m_maxAABound); break;
+   case FID(BMIN): pbr->GetVector3(m_mesh.m_minAABound); m_mesh.m_validBounds = true; break; // Min & max are always saved together
+   case FID(BMAX): pbr->GetVector3(m_mesh.m_maxAABound); m_mesh.m_validBounds = true; break; // Min & max are always saved together
    case FID(M3DN): pbr->GetString(m_d.m_meshFileName); break;
    case FID(M3VN):
    {
@@ -1967,8 +1962,12 @@ void Primitive::WaitForMeshDecompression()
 HRESULT Primitive::InitPostLoad()
 {
    WaitForMeshDecompression(); //!! needed nowadays due to multithreaded mesh decompression
-
    UpdateStatusBarInfo();
+
+   // Hack fix: some tables were saved during development cycle of 10.8 with wrong bounds (both at 0).
+   // TODO remove this in later VPX version
+   if (m_mesh.m_minAABound == m_mesh.m_maxAABound)
+      m_mesh.m_validBounds = false;
 
    return S_OK;
 }

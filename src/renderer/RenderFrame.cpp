@@ -138,9 +138,9 @@ bool RenderFrame::Execute(const bool log)
    {
       std::stringstream ss1;
       ss1 << "Sorted passes: [";
-      for (RenderPass* pass : m_passes)
+      for (RenderPass* pass : sortedPasses)
       {
-         if (pass != m_passes[0])
+         if (pass != sortedPasses[0])
             ss1 << ", ";
          ss1 << "'" << pass->m_name << "'";
          #ifdef LOG_PASS_SORTING
@@ -160,8 +160,6 @@ bool RenderFrame::Execute(const bool log)
       }
       PLOGI << ss1.str() << "]";
    }
-
-   PLOGI_IF(log) << "Rendering Frame [" << sortedPasses.size() << " passes out of " << m_passes.size() << " submitted passes]";
 
    #ifndef ENABLE_SDL
    CHECKD3D(m_rd->GetCoreDevice()->BeginScene());
