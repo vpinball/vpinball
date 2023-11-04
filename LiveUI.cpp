@@ -1293,6 +1293,7 @@ void LiveUI::OnTweakModeEvent(const bool isKeyDown, const int keycode)
             case NUM_BG_SETS: assert(false); break;
             }
             g_pplayer->m_pin3d.m_cam = Vertex3Ds(0.f, 0.f, 0.f);
+            UpdateTweakPage();
          }
       }
       else if (keycode == g_pplayer->m_rgKeys[eAddCreditKey])
