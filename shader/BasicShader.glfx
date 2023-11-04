@@ -532,11 +532,13 @@ void main() {
    color = float4(lightLoop(worldPos, N, V, diffuse, glossy, specular, edge, is_metal), pixel.a);
 
    BRANCH if (color.a < 1.0) // We may not opacify if we already are opaque
+   {
       color.a = GeometricOpacity(dot(N,V), color.a, cClearcoat_EdgeAlpha.w, Roughness_WrapL_Edge_Thickness.w);
 
-   BRANCH if (fDisableLighting_top_below.y < 1.0)
-      // add light from "below" from user-flagged bulb lights, pre-rendered/blurred in previous renderpass //!! sqrt = magic
-      color.rgb += lerp(sqrt(diffuse)*texStereoNoLod(tex_base_transmission, gl_FragCoord.xy * w_h_height.xy).rgb*color.a, float3(0.), fDisableLighting_top_below.y); //!! depend on normal of light (unknown though) vs geom normal, too?
+      BRANCH if (fDisableLighting_top_below.y < 1.0)
+         // add light from "below" from user-flagged bulb lights, pre-rendered/blurred in previous renderpass //!! sqrt = magic
+         color.rgb += lerp(sqrt(diffuse)*texStereoNoLod(tex_base_transmission, gl_FragCoord.xy * w_h_height.xy).rgb*color.a, float3(0.), fDisableLighting_top_below.y); //!! depend on normal of light (unknown though) vs geom normal, too?
+   }
 
    BRANCH if (lightCenter_doShadow.w != 0.)
    {

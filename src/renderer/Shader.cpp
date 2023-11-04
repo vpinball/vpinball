@@ -507,11 +507,6 @@ void Shader::SetMaterial(const Material* const mat, const bool has_alpha)
       fEdge = mat->m_fEdge;
       fEdgeAlpha = mat->m_fEdgeAlpha;
       fOpacity = mat->m_fOpacity;
-      // VPX before 10.8 used to discard alpha of texture if opacity was 1, so lots of table author used a workaround by defining an opacity just below 1
-      // As of VPX 10.8, the alpha channel of the texture is considered so we do not need this, and we discard it to have the corresponding parts processed 
-      // in the right pass between opaque & transparent
-      if (fOpacity >= 0.99f && fOpacity < 1.f)
-         fOpacity = 1.f;
       cBase = mat->m_cBase;
       cGlossy = mat->m_cGlossy;
       cClearcoat = mat->m_cClearcoat;
@@ -572,8 +567,19 @@ void Shader::SetMaterial(const Material* const mat, const bool has_alpha)
       currentMaterial.m_fEdgeAlpha = fEdgeAlpha;
    }
 
-   if (bOpacityActive && (has_alpha || alpha < 1.0f))
-      g_pplayer->m_pin3d.EnableAlphaBlend(false);
+   // Before 10.8 when opacity was one:
+   // - lighting from below would be disabled,
+   // - alpha channel of texture would be discarded,
+   // - alpha test was always performed.
+   // Therefore lots of table author used a workaround by defining an opacity just below 1 to enable these features.
+   // 
+   // As of VPX 10.8:
+   // - the behavior did not change regarding lighting from below,
+   // - the alpha channel of the texture is always considered,
+   // - alpha blending is only performed if there is an alpha channel or a 'meaningfull' (not 0.999) alpha value (for performance reasons),
+   // - alpha test is only applied if there is some alpha and a positive test threshold (to allow early depth testing).
+   if (bOpacityActive && (has_alpha || alpha < 0.99f))
+      g_pplayer->m_pin3d.m_pd3dPrimaryDevice->EnableAlphaBlend(false);
    else
       g_pplayer->m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
 }
