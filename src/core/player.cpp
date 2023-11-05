@@ -57,13 +57,13 @@ static unsigned int stats_drawn_static_triangles = 0;
 #endif
 #endif
 
-Player::Player(PinTable *const editor_table, PinTable *const live_table, const bool startInTweakMode)
+Player::Player(PinTable *const editor_table, PinTable *const live_table, const int playMode)
    : m_pEditorTable(editor_table)
    , m_ptable(live_table)
-   , m_startInTweakMode(startInTweakMode)
+   , m_playMode(playMode)
 {
    m_pininput.LoadSettings(m_ptable->m_settings);
-   m_disableStaticPrepass = startInTweakMode;
+   m_disableStaticPrepass = playMode != 0;
 
 #if !(defined(_M_IX86) || defined(_M_X64) || defined(_M_AMD64) || defined(__i386__) || defined(__i386) || defined(__i486__) || defined(__i486) || defined(i386) || defined(__ia64__) || defined(__x86_64__))
  #pragma message ( "Warning: No CPU float ignore denorm implemented" )
@@ -1741,8 +1741,10 @@ HRESULT Player::Init()
       m_liveUI->PushNotification("You can use Touch controls on this display: bottom left area to Start Game, bottom right area to use the Plunger\n"
                                  "lower left/right for Flippers, upper left/right for Magna buttons, top left for Credits and (hold) top right to Exit"s, 12000);
 
-   if (m_startInTweakMode)
+   if (m_playMode == 1)
       m_liveUI->OpenTweakMode();
+   else if (m_playMode == 2)
+      m_liveUI->OpenLiveUI();
 
    return S_OK;
 }
@@ -4298,7 +4300,7 @@ void Player::FinishFrame()
       if (g_pvp->m_disable_pause_menu)
          m_closing = CS_STOP_PLAY;
       else
-         m_liveUI->OpenMainUI();
+         m_liveUI->OpenMainSplash();
    }
 
    // Brute force stop: blast into space

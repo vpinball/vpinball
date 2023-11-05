@@ -16,7 +16,8 @@ public:
    bool HasMouseCapture() const;
 
    bool IsOpened() const { return m_ShowUI || m_ShowSplashModal; }
-   void OpenMainUI();
+   void OpenMainSplash();
+   void OpenLiveUI();
 
    void OpenTweakMode();
    bool IsTweakMode() const { return m_tweakMode; }

@@ -347,7 +347,7 @@ struct TimerOnOff
 class Player : public CWnd
 {
 public:
-   Player(PinTable *const editor_table, PinTable *const live_table, const bool startInTweakMode);
+   Player(PinTable *const editor_table, PinTable *const live_table, const int playMode);
    virtual ~Player();
 
    void CreateWnd(HWND parent = 0);
@@ -359,7 +359,7 @@ public:
 private:
    void InitKeys();
 
-   const bool m_startInTweakMode;
+   const int m_playMode;
 
 public:
    void LockForegroundWindow(const bool enable);

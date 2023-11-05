@@ -359,7 +359,7 @@ public:
 
    void HandleLoadFailure();
    
-   void Play(const bool cameraMode); // Duplicate table into a live instance, create a player to run it, suspend edit mode
+   void Play(const int playMode); // Duplicate table into a live instance, create a player to run it, suspend edit mode
    void StopPlaying(); // Called on a live instance of the table (copy for playing) before Player instance gets deleted
 
    void ImportSound(const HWND hwndListView, const string &filename);

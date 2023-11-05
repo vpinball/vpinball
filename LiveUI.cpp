@@ -763,9 +763,8 @@ void LiveUI::Render()
 #endif
 }
 
-void LiveUI::OpenMainUI()
+void LiveUI::OpenMainSplash()
 {
-   // Opens the main UI. This will only open the main splash modal which allows to go further in the live UI.
    if (!m_ShowUI && !m_ShowSplashModal)
    {
       while (ShowCursor(FALSE)>=0) ;
@@ -774,6 +773,23 @@ void LiveUI::OpenMainUI()
       m_ShowSplashModal = true;
       m_OpenUITime = msec();
       PausePlayer(true);
+   }
+}
+
+void LiveUI::OpenLiveUI()
+{
+   if (!m_ShowUI && !m_ShowSplashModal)
+   {
+      while (ShowCursor(FALSE) >= 0) ;
+      while (ShowCursor(TRUE) < 0) ;
+      m_OpenUITime = msec();
+      PausePlayer(true);
+      m_ShowUI = true;
+      m_ShowSplashModal = false;
+      m_useEditorCam = true;
+      m_orthoCam = false;
+      m_player->DisableStaticPrePass(true);
+      ResetCameraFromPlayer();
    }
 }
 

@@ -92,7 +92,7 @@ public:
    void LoadFileName(const string& szFileName, const bool updateEditor);
    void SetClipboard(vector<IStream*> * const pvstm);
 
-   void DoPlay(const bool _cameraMode);
+   void DoPlay(const int playMode);
 
    void SetPosCur(float x, float y);
    void SetObjectPosCur(float x, float y);
