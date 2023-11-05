@@ -1205,7 +1205,7 @@ HRESULT Player::Init()
 
    // Global emission scale
    m_globalEmissionScale = m_ptable->m_globalEmissionScale;
-   if (m_ptable->m_settings.LoadValueWithDefault(Settings::TableOverride, "OverrideEmissionScale"s, false))
+   if (m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "OverrideTableEmissionScale"s, false))
    { // Overriden from settings
       if (m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "DynamicDayNight"s, false))
       {

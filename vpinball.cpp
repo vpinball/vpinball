@@ -1038,19 +1038,33 @@ void VPinball::LoadFileName(const string& szFileName, const bool updateEditor)
       AddMDITable(mdiTable);
 
       // auto-import POV settings, if it exists. This is kept for backward compatibility as POV settings 
-      // are now normal settings stored with others in app/table ini file
-      string szFileNameAuto = m_currentTablePath + ppt->m_szTitle + ".pov";
-      if (FileExists(szFileNameAuto)) // We check if there is a matching table pov settings file first
-         ppt->ImportBackdropPOV(szFileNameAuto);
-      else // Otherwise, we seek for autopov settings
+      // are now normal settings stored with others in app/table ini file. It will be only imported if no ini settings are defined
+      bool hasTablePovSettings = false, hasAppPovSettings = false;
+      const char *vsPrefix[3] = { "ViewDT", "ViewCab", "ViewFSS" };
+      const char *vsFields[15] = { "Mode", "ScaleX", "ScaleY", "ScaleZ", "PlayerX", "PlayerY", "PlayerZ", "LookAt", "Rotation", "FOV", "Layback", "HOfs", "VOfs", "WindowTop", "WindowBot" };
+      for (int i = 0; i < 3; i++)
+         for (int j = 0; j < 15; j++)
+         {
+            hasTablePovSettings |= ppt->m_settings.HasValue(Settings::TableOverride, string(vsPrefix[i]) + vsFields[j], false);
+            hasAppPovSettings |= g_pvp->m_settings.HasValue(Settings::TableOverride, string(vsPrefix[i]) + vsFields[j], false);
+         }
+      if (!hasTablePovSettings)
       {
-         szFileNameAuto = m_currentTablePath + "autopov.pov";
-         if (FileExists(szFileNameAuto))
+         string szFileNameAuto = m_currentTablePath + ppt->m_szTitle + ".pov";
+         if (FileExists(szFileNameAuto)) // We check if there is a matching table pov settings file first
+         {
             ppt->ImportBackdropPOV(szFileNameAuto);
+         }
+         else if (!hasAppPovSettings) // Otherwise, we seek for autopov settings (only if we do not already have settings in the app settings)
+         {
+            szFileNameAuto = m_currentTablePath + "autopov.pov";
+            if (FileExists(szFileNameAuto))
+               ppt->ImportBackdropPOV(szFileNameAuto);
+         }
       }
 
       // auto-import VBS table script, if it exists...
-      szFileNameAuto = m_currentTablePath + ppt->m_szTitle + ".vbs";
+      string szFileNameAuto = m_currentTablePath + ppt->m_szTitle + ".vbs";
       if (FileExists(szFileNameAuto)) // We check if there is a matching table vbs first
          ppt->m_pcv->LoadFromFile(szFileNameAuto);
       else // Otherwise we seek in the Scripts folder
