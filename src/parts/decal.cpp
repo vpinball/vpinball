@@ -38,20 +38,14 @@ Decal *Decal::CopyForPlay(PinTable *live_table)
    return dst;
 }
 
-HRESULT Decal::Init(PinTable * const ptable, const float x, const float y, const bool fromMouseClick)
+HRESULT Decal::Init(PinTable * const ptable, const float x, const float y, const bool fromMouseClick, const bool forPlay)
 {
    m_ptable = ptable;
-
+   SetDefaults(fromMouseClick);
    m_d.m_vCenter.x = x;
    m_d.m_vCenter.y = y;
-
-   SetDefaults(fromMouseClick);
-
-   InitVBA(fTrue, 0, nullptr);
-
    EnsureSize();
-
-   return S_OK;
+   return forPlay ? S_OK : InitVBA(fTrue, 0, nullptr);
 }
 
 void Decal::SetDefaults(const bool fromMouseClick)
@@ -71,7 +65,6 @@ void Decal::SetDefaults(const bool fromMouseClick)
       m_d.m_szSurface.clear();
 
    m_d.m_decaltype = fromMouseClick ? (enum DecalType)g_pvp->m_settings.LoadValueWithDefault(regKey, "DecalType"s, (int)DecalImage) : DecalImage;
-
    hr = g_pvp->m_settings.LoadValue(regKey, "Text"s, m_d.m_sztext);
    if (!hr || !fromMouseClick)
       m_d.m_sztext.clear();

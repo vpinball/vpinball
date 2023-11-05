@@ -99,18 +99,14 @@ Flipper *Flipper::CopyForPlay(PinTable *live_table)
    return dst;
 }
 
-HRESULT Flipper::Init(PinTable * const ptable, const float x, const float y, const bool fromMouseClick)
+HRESULT Flipper::Init(PinTable *const ptable, const float x, const float y, const bool fromMouseClick, const bool forPlay)
 {
    m_ptable = ptable;
-
+   SetDefaults(fromMouseClick);
    m_d.m_Center.x = x;
    m_d.m_Center.y = y;
-
-   SetDefaults(fromMouseClick);
-
    m_phitflipper = nullptr;
-
-   return InitVBA(fTrue, 0, nullptr);
+   return forPlay ? S_OK : InitVBA(fTrue, 0, nullptr);
 }
 
 void Flipper::SetDefaults(const bool fromMouseClick)

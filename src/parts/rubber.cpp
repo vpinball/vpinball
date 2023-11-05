@@ -37,9 +37,10 @@ void Rubber::UpdateStatusBarInfo()
    m_vpinball->SetStatusBarUnitInfo(tbuf, true);
 }
 
-HRESULT Rubber::Init(PinTable * const ptable, const float x, const float y, const bool fromMouseClick)
+HRESULT Rubber::Init(PinTable *const ptable, const float x, const float y, const bool fromMouseClick, const bool forPlay)
 {
    m_ptable = ptable;
+   SetDefaults(fromMouseClick);
    m_d.m_visible = true;
 
    //float length = 0.5f * LoadValueWithDefault(Settings::DefaultPropsRubber, "Length"s, 400.0f);
@@ -59,11 +60,7 @@ HRESULT Rubber::Init(PinTable * const ptable, const float x, const float y, cons
       }
    }
 
-   SetDefaults(fromMouseClick);
-
-   InitVBA(fTrue, 0, nullptr);
-
-   return S_OK;
+   return forPlay ? S_OK : InitVBA(fTrue, 0, nullptr);
 }
 
 void Rubber::SetDefaults(const bool fromMouseClick)

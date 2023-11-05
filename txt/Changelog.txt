@@ -92,8 +92,9 @@ FEATURES:
 
 - add support for more than one DMD (for original tables, in-game DMD menu,...)
 
-- add new log file functionality (vpinball.log), with script and error informations
-  it can be en/disabled in the UI/Editor preferences
+- add new log file functionality (vpinball.log), with script and error informations. it can be en/disabled in the UI/Editor preferences
+  The ability to do a rough profiling of the table loading by using a 'Profile.txt' has been removed in favor logging (all the profile events will be in the log file with timestamps)
+
 
 - the settings are now stored in a file named 'VPinballX.ini' located in the standard Windows location for application data: %AppData%/VPinballX/
   This file will be automatically created and initialized from existing settings if found in Windows registry. This change was made to:

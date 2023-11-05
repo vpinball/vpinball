@@ -56,8 +56,6 @@ void Pin3D::TransformVertices(const Vertex3Ds* const __restrict rgv, const WORD*
 
 BaseTexture* EnvmapPrecalc(const Texture* envTex, const unsigned int rad_env_xres, const unsigned int rad_env_yres)
 {
-   PLOGI << "Computing environment map radiance"; // For profiling
-   g_pvp->ProfileLog("EnvmapPrecalc Start"s);
    const void* __restrict envmap = envTex->m_pdsBuffer->data();
    const unsigned int env_xres = envTex->m_pdsBuffer->width();
    const unsigned int env_yres = envTex->m_pdsBuffer->height();
@@ -402,8 +400,6 @@ BaseTexture* EnvmapPrecalc(const Texture* envTex, const unsigned int rad_env_xre
       free((void*)envmap);
 #endif
 
-   g_pvp->ProfileLog("EnvmapPrecalc End"s);
-
 #ifdef __OPENGLES__
    if (radTex->m_format == BaseTexture::SRGB || radTex->m_format == BaseTexture::RGB_FP16) {
       radTex->AddAlpha();
@@ -498,9 +494,8 @@ HRESULT Pin3D::InitPin3D(const bool fullScreen, const int width, const int heigh
    m_aoDitherTexture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "AODither.webp");
    m_builtinEnvTexture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "EnvMap.webp");
    m_envTexture = g_pplayer->m_ptable->GetImage(g_pplayer->m_ptable->m_envImage);
-   #ifdef ENABLE_SDL // OpenGL
    PLOGI << "Computing environment map radiance"; // For profiling
-   g_pvp->ProfileLog("EnvmapPrecalc Start"s);
+   #ifdef ENABLE_SDL // OpenGL
    Texture* const envTex = m_envTexture ? m_envTexture : &m_builtinEnvTexture;
    const int envTexHeight = min(envTex->m_pdsBuffer->height(), 256u) / 8;
    const int envTexWidth = envTexHeight * 2;
@@ -523,6 +518,7 @@ HRESULT Pin3D::InitPin3D(const bool fullScreen, const int width, const int heigh
    m_pd3dPrimaryDevice->basicShader->SetTexture(SHADER_tex_diffuse_env, m_envRadianceTexture);
    m_pd3dPrimaryDevice->m_ballShader->SetTexture(SHADER_tex_diffuse_env, m_envRadianceTexture);
    #endif
+   PLOGI << "Environment map radiance computed"s; // For profiling
 
 
    //

@@ -74,24 +74,18 @@ void Flasher::InitShape()
    }
 }
 
-HRESULT Flasher::Init(PinTable * const ptable, const float x, const float y, const bool fromMouseClick)
+HRESULT Flasher::Init(PinTable *const ptable, const float x, const float y, const bool fromMouseClick, const bool forPlay)
 {
    m_ptable = ptable;
+   SetDefaults(fromMouseClick);
    m_d.m_isVisible = true;
-
    m_d.m_vCenter.x = x;
    m_d.m_vCenter.y = y;
-
    m_d.m_rotX = 0.0f;
    m_d.m_rotY = 0.0f;
    m_d.m_rotZ = 0.0f;
-   SetDefaults(fromMouseClick);
-
    InitShape();
-
-   InitVBA(fTrue, 0, nullptr);
-
-   return S_OK;
+   return forPlay ? S_OK : InitVBA(fTrue, 0, nullptr);
 }
 
 void Flasher::SetDefaults(const bool fromMouseClick)

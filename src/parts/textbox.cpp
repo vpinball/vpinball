@@ -22,21 +22,17 @@ Textbox *Textbox::CopyForPlay(PinTable *live_table)
    return dst;
 }
 
-HRESULT Textbox::Init(PinTable * const ptable, const float x, const float y, const bool fromMouseClick)
+HRESULT Textbox::Init(PinTable *const ptable, const float x, const float y, const bool fromMouseClick, const bool forPlay)
 {
    m_ptable = ptable;
-
+   SetDefaults(fromMouseClick);
    const float width  = g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultPropsTextBox, "Width"s, 100.0f);
    const float height = g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultPropsTextBox, "Height"s, 50.0f);
-
    m_d.m_v1.x = x;
    m_d.m_v1.y = y;
    m_d.m_v2.x = x + width;
    m_d.m_v2.y = y + height;
-
-   SetDefaults(fromMouseClick);
-
-   return InitVBA(fTrue, 0, nullptr);//ApcProjectItem.Define(ptable->ApcProject, GetDispatch(), axTypeHostProjectItem/*axTypeHostClass*/, L"Textbox", nullptr);
+   return forPlay ? S_OK : InitVBA(fTrue, 0, nullptr); //ApcProjectItem.Define(ptable->ApcProject, GetDispatch(), axTypeHostProjectItem/*axTypeHostClass*/, L"Textbox", nullptr);
 }
 
 void Textbox::SetDefaults(const bool fromMouseClick)

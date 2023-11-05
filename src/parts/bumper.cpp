@@ -37,16 +37,13 @@ Bumper *Bumper::CopyForPlay(PinTable *live_table)
    return dst;
 }
 
-HRESULT Bumper::Init(PinTable * const ptable, const float x, const float y, const bool fromMouseClick)
+HRESULT Bumper::Init(PinTable * const ptable, const float x, const float y, const bool fromMouseClick, const bool forPlay)
 {
    m_ptable = ptable;
-
    SetDefaults(fromMouseClick);
-
    m_d.m_vCenter.x = x;
    m_d.m_vCenter.y = y;
-
-   return InitVBA(fTrue, 0, nullptr);
+   return forPlay ? S_OK : InitVBA(fTrue, 0, nullptr);
 }
 
 void Bumper::SetDefaults(const bool fromMouseClick)

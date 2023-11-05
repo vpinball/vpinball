@@ -72,18 +72,6 @@ static volatile bool firstRun = true;
 ///</summary>
 VPinball::VPinball()
 {
-   if ((fopen_s(&m_profile_file, "Profile.txt", "r") == 0) && m_profile_file)
-   {
-      fclose(m_profile_file);
-      if ((fopen_s(&m_profile_file, "Profile.txt", "a") == 0) && m_profile_file)
-      {
-         const time_t curr = time(0);
-         char buf[26];
-         ctime_s(buf,sizeof(buf),&curr);
-         fprintf(m_profile_file, "\nTrace from %s\n", buf);
-      }
-   }
-
    // DLL_API void DLL_CALLCONV FreeImage_Initialise(BOOL load_local_plugins_only FI_DEFAULT(FALSE)); // would only be needed if linking statically
 
    m_closing = false;
@@ -151,9 +139,6 @@ VPinball::~VPinball()
    // DLL_API void DLL_CALLCONV FreeImage_DeInitialise(); // would only be needed if linking statically
    SetClipboard(nullptr);
    FreeLibrary(m_scintillaDll);
-
-   if (m_profile_file)
-       fclose(m_profile_file);
 }
 
 ///<summary>
@@ -962,8 +947,6 @@ void VPinball::ToggleToolbar()
 
 void VPinball::DoPlay(const int playMode)
 {
-   ProfileLog("DoPlay"s);
-
    CComObject<PinTable> * const ptCur = GetActiveTable();
    if (ptCur)
       ptCur->Play(playMode);
@@ -1093,7 +1076,7 @@ void VPinball::LoadFileName(const string& szFileName, const bool updateEditor)
       SetCurrentDirectory(m_currentTablePath.c_str());
       UpdateRecentFileList(szFileName);
 
-      ProfileLog("UI Post Load Start"s);
+      PLOGI << "UI Post Load Start"s;
 
       ppt->AddMultiSel(ppt, false, true, false);
       ppt->SetDirty(eSaveClean);
@@ -1108,7 +1091,7 @@ void VPinball::LoadFileName(const string& szFileName, const bool updateEditor)
          SetFocus();
       }
 
-      ProfileLog("UI Post Load End"s);
+      PLOGI << "UI Post Load End"s;
    }
 }
 
@@ -1628,7 +1611,7 @@ void VPinball::OnInitialUpdate()
 
    wintimer_init();                    // calibrate the timer routines
 
-   ProfileLog("OnInitialUpdate"s);
+   PLOGI << "OnInitialUpdate"s;
 
    constexpr int foo[6] = { 120, 240, 400, 600, 800, 1400 };
 
@@ -2486,14 +2469,5 @@ void VPinball::CopyPasteElement(const CopyPasteModes mode)
       default:
          break;
       }
-   }
-}
-
-void VPinball::ProfileLog(const string& msg)
-{
-   if (m_profile_file)
-   {
-      const double sec = msec() * (1.0/1000.0);
-      fprintf(m_profile_file, "%.3f : %s\n", sec, msg.c_str());
    }
 }

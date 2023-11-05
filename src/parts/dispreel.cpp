@@ -14,18 +14,15 @@ DispReel *DispReel::CopyForPlay(PinTable *live_table)
 // This function is called when ever a new instance of this object is created
 // (along with the constructor (above))
 //
-HRESULT DispReel::Init(PinTable * const ptable, const float x, const float y, const bool fromMouseClick)
+HRESULT DispReel::Init(PinTable *const ptable, const float x, const float y, const bool fromMouseClick, const bool forPlay)
 {
    m_ptable = ptable;
-
    SetDefaults(fromMouseClick);
-
    m_d.m_v1.x = x;
    m_d.m_v1.y = y;
    m_d.m_v2.x = x + getBoxWidth();
    m_d.m_v2.y = y + getBoxHeight();
-
-   return InitVBA(fTrue, 0, nullptr);
+   return forPlay ? S_OK : InitVBA(fTrue, 0, nullptr);
 }
 
 // set the defaults for the objects persistent data (m_d.*) in case this

@@ -86,18 +86,13 @@ void Spinner::SetAngleMin(const float angle)
         m_d.m_angleMin = newVal;
 }
 
-HRESULT Spinner::Init(PinTable * const ptable, const float x, const float y, const bool fromMouseClick)
+HRESULT Spinner::Init(PinTable *const ptable, const float x, const float y, const bool fromMouseClick, const bool forPlay)
 {
    m_ptable = ptable;
-
+   SetDefaults(fromMouseClick);
    m_d.m_vCenter.x = x;
    m_d.m_vCenter.y = y;
-
-   SetDefaults(fromMouseClick);
-
-   InitVBA(fTrue, 0, nullptr);
-
-   return S_OK;
+   return forPlay ? S_OK : InitVBA(fTrue, 0, nullptr);
 }
 
 

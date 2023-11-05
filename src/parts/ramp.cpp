@@ -49,7 +49,7 @@ bool Ramp::IsTransparent() const
    return m_ptable->GetMaterial(m_d.m_szMaterial)->m_bOpacityActive;
 }
 
-HRESULT Ramp::Init(PinTable * const ptable, const float x, const float y, const bool fromMouseClick)
+HRESULT Ramp::Init(PinTable *const ptable, const float x, const float y, const bool fromMouseClick, const bool forPlay)
 {
    m_ptable = ptable;
    SetDefaults(fromMouseClick);
@@ -76,9 +76,7 @@ HRESULT Ramp::Init(PinTable * const ptable, const float x, const float y, const 
       m_vdpoint.push_back(pdp);
    }
 
-   InitVBA(fTrue, 0, nullptr);
-
-   return S_OK;
+   return forPlay ? S_OK : InitVBA(fTrue, 0, nullptr);
 }
 
 void Ramp::SetDefaults(const bool fromMouseClick)
