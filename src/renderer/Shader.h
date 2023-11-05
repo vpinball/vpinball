@@ -533,9 +533,7 @@ private:
 
    vector<ShaderUniforms> m_uniforms[SHADER_TECHNIQUE_COUNT]; // Uniforms used by each technique
    
-   // caches:
-   Material currentMaterial;
-
+   // caches
 #ifdef ENABLE_SDL // OpenGL
    ShaderState* m_boundState[SHADER_TECHNIQUE_COUNT]; // The state currently applied to the backend (per technique for OpenGL)
    static ShaderTechniques m_boundTechnique; // This is global for OpenGL

@@ -334,10 +334,8 @@ ShaderAttributes Shader::getAttributeByName(const string& name)
 Shader* Shader::current_shader = nullptr;
 Shader* Shader::GetCurrentShader() { return current_shader;  }
 
-Shader::Shader(RenderDevice* renderDevice, const std::string& src1, const std::string& src2, const BYTE* code, unsigned int codeSize)
-   : currentMaterial(Material::MaterialType::BASIC, -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX, 0xCCCCCCCC, 0xCCCCCCCC, 0xCCCCCCCC, false, -FLT_MAX, -FLT_MAX,
-      -FLT_MAX, -FLT_MAX, 0xCCCCCCCC)
-   , m_renderDevice(renderDevice)
+Shader::Shader(RenderDevice* renderDevice, const std::string& src1, const std::string& src2, const BYTE* code, unsigned int codeSize):
+   m_renderDevice(renderDevice)
 {
    #ifdef ENABLE_SDL
    if (renderDevice->m_stereo3D != STEREO_OFF)
@@ -529,43 +527,17 @@ void Shader::SetMaterial(const Material* const mat, const bool has_alpha)
       bOpacityActive = false;
    }
 
-   // bIsMetal is nowadays handled via a separate technique! (so not in here)
-
-   if (fRoughness != currentMaterial.m_fRoughness || fEdge != currentMaterial.m_fEdge || fWrapLighting != currentMaterial.m_fWrapLighting || fThickness != currentMaterial.m_fThickness)
-   {
-      const vec4 rwem(fRoughness, fWrapLighting, fEdge, fThickness);
-      SetVector(SHADER_Roughness_WrapL_Edge_Thickness, &rwem);
-      currentMaterial.m_fRoughness = fRoughness;
-      currentMaterial.m_fWrapLighting = fWrapLighting;
-      currentMaterial.m_fEdge = fEdge;
-      currentMaterial.m_fThickness = fThickness;
-   }
+   SetVector(SHADER_Roughness_WrapL_Edge_Thickness, fRoughness, fWrapLighting, fEdge, fThickness);
 
    const float alpha = bOpacityActive ? fOpacity : 1.0f;
-   if (cBase != currentMaterial.m_cBase || alpha != currentMaterial.m_fOpacity)
-   {
-      const vec4 cBaseF = convertColor(cBase, alpha);
-      SetVector(SHADER_cBase_Alpha, &cBaseF);
-      currentMaterial.m_cBase = cBase;
-      currentMaterial.m_fOpacity = alpha;
-   }
+   const vec4 cBaseF = convertColor(cBase, alpha);
+   SetVector(SHADER_cBase_Alpha, &cBaseF);
 
-   if (!bIsMetal) // Metal has no glossy
-      if (cGlossy != currentMaterial.m_cGlossy || fGlossyImageLerp != currentMaterial.m_fGlossyImageLerp)
-      {
-         const vec4 cGlossyF = convertColor(cGlossy, fGlossyImageLerp);
-         SetVector(SHADER_cGlossy_ImageLerp, &cGlossyF);
-         currentMaterial.m_cGlossy = cGlossy;
-         currentMaterial.m_fGlossyImageLerp = fGlossyImageLerp;
-      }
+   const vec4 cGlossyF = bIsMetal ? vec4(0.f, 0.f, 0.f, 0.f) : convertColor(cGlossy, fGlossyImageLerp);
+   SetVector(SHADER_cGlossy_ImageLerp, &cGlossyF);
 
-   if (cClearcoat != currentMaterial.m_cClearcoat || (bOpacityActive && fEdgeAlpha != currentMaterial.m_fEdgeAlpha))
-   {
-      const vec4 cClearcoatF = convertColor(cClearcoat, fEdgeAlpha);
-      SetVector(SHADER_cClearcoat_EdgeAlpha, &cClearcoatF);
-      currentMaterial.m_cClearcoat = cClearcoat;
-      currentMaterial.m_fEdgeAlpha = fEdgeAlpha;
-   }
+   const vec4 cClearcoatF = convertColor(cClearcoat, fEdgeAlpha);
+   SetVector(SHADER_cClearcoat_EdgeAlpha, &cClearcoatF);
 
    // Before 10.8 when opacity was one:
    // - lighting from below would be disabled,
