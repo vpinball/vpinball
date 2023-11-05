@@ -8,9 +8,11 @@ public:
 protected:
    BOOL OnInitDialog() final;
    BOOL OnCommand(WPARAM wParam, LPARAM lParam) final;
-   void OnOK() final;
 
    Settings& GetEditedSettings();
    void LoadSettings();
    void SaveSettings(const bool saveAll);
+
+   Settings* m_editedSettings = nullptr;
+   Settings m_appSettings, m_tableSettings;
 };

@@ -8,7 +8,6 @@ public:
 protected:
    virtual BOOL OnInitDialog();
    virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
-   virtual void OnOK();
    virtual void OnClose();
 
 private:
@@ -23,4 +22,6 @@ private:
 
    vector<VideoMode> m_allVideoModes;
    int m_initialMaxTexDim;
+   Settings* m_editedSettings = nullptr;
+   Settings m_appSettings, m_tableSettings;
 };
