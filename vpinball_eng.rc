@@ -3019,7 +3019,8 @@ BEGIN
     POPUP "&Table"
     BEGIN
         MENUITEM "&Play\tF5",                   ID_TABLE_PLAY
-        MENUITEM "Interactive &edit Table (Camera/Lights/Materials)\tF6", ID_TABLE_CAMERAMODE
+        MENUITEM "Adjust User Settings (Camera,...)\tF6", ID_TABLE_CAMERAMODE
+        MENUITEM "Live Table Edition\tF7",      ID_TABLE_LIVEEDIT
         MENUITEM SEPARATOR
         MENUITEM "&Table Info...",              ID_TABLE_TABLEINFO
         MENUITEM "&Sound Manager...\tF2",       ID_TABLE_SOUNDMANAGER
@@ -3200,6 +3201,7 @@ BEGIN
     "T",            ID_INSERT_TRIGGER,      VIRTKEY, CONTROL, NOINVERT
     "W",            ID_INSERT_WALL,         VIRTKEY, CONTROL, NOINVERT
     "L",            ID_LOCK,                VIRTKEY, SHIFT, CONTROL, NOINVERT
+    VK_F7,          ID_TABLE_LIVEEDIT,      VIRTKEY, NOINVERT
     VK_F6,          ID_TABLE_CAMERAMODE,    VIRTKEY, NOINVERT
     VK_F5,          ID_TABLE_PLAY,          VIRTKEY, NOINVERT
     "C",            IDC_COPY,               VIRTKEY, CONTROL, NOINVERT
@@ -3256,6 +3258,7 @@ BEGIN
     "T",            ID_INSERT_TRIGGER,      VIRTKEY, CONTROL, NOINVERT
     "W",            ID_INSERT_WALL,         VIRTKEY, CONTROL, NOINVERT
     "L",            ID_LOCK,                VIRTKEY, SHIFT, CONTROL, NOINVERT
+    VK_F7,          ID_TABLE_LIVEEDIT,      VIRTKEY, NOINVERT
     VK_F6,          ID_TABLE_CAMERAMODE,    VIRTKEY, NOINVERT
     VK_F5,          ID_TABLE_PLAY,          VIRTKEY, NOINVERT
     VK_F8,          IDM_COLLECTION_EDITOR,  VIRTKEY, NOINVERT

@@ -625,9 +625,10 @@ bool VPinball::ParseCommand(const size_t code, const bool notify)
       return true;
    }
    case ID_TABLE_CAMERAMODE:
+   case ID_TABLE_LIVEEDIT:
    case ID_TABLE_PLAY:
    {
-      DoPlay(code == ID_TABLE_CAMERAMODE);
+      DoPlay(code == ID_TABLE_PLAY ? 0 : code == ID_TABLE_CAMERAMODE ? 1 : 2);
       return true;
    }
    case ID_SCRIPT_SHOWIDE:
@@ -959,13 +960,13 @@ void VPinball::ToggleToolbar()
       m_toolbarDialog->EnableButtons();
 }
 
-void VPinball::DoPlay(const bool _cameraMode)
+void VPinball::DoPlay(const int playMode)
 {
    ProfileLog("DoPlay"s);
 
    CComObject<PinTable> * const ptCur = GetActiveTable();
    if (ptCur)
-      ptCur->Play(_cameraMode);
+      ptCur->Play(playMode);
 }
 
 bool VPinball::LoadFile(const bool updateEditor)
@@ -1168,6 +1169,7 @@ void VPinball::SetEnableMenuItems()
       mainMenu.EnableMenuItem(ID_EDIT_BACKGLASSVIEW, MF_BYCOMMAND | MF_ENABLED);
       mainMenu.EnableMenuItem(ID_TABLE_PLAY, MF_BYCOMMAND | MF_ENABLED);
       mainMenu.EnableMenuItem(ID_TABLE_CAMERAMODE, MF_BYCOMMAND | MF_ENABLED);
+      mainMenu.EnableMenuItem(ID_TABLE_LIVEEDIT, MF_BYCOMMAND | MF_ENABLED);
       mainMenu.EnableMenuItem(ID_TABLE_MAGNIFY, MF_BYCOMMAND | MF_ENABLED);
       mainMenu.EnableMenuItem(ID_TABLE_TABLEINFO, MF_BYCOMMAND | MF_ENABLED);
       mainMenu.EnableMenuItem(ID_TABLE_RENDERPROBEMANAGER, MF_BYCOMMAND | MF_ENABLED);
@@ -1228,6 +1230,7 @@ void VPinball::SetEnableMenuItems()
 
       mainMenu.EnableMenuItem(ID_TABLE_PLAY, MF_BYCOMMAND | MF_GRAYED);
       mainMenu.EnableMenuItem(ID_TABLE_CAMERAMODE, MF_BYCOMMAND | MF_GRAYED);
+      mainMenu.EnableMenuItem(ID_TABLE_LIVEEDIT, MF_BYCOMMAND | MF_GRAYED);
       mainMenu.EnableMenuItem(ID_TABLE_SOUNDMANAGER, MF_BYCOMMAND | MF_GRAYED);
       mainMenu.EnableMenuItem(ID_TABLE_IMAGEMANAGER, MF_BYCOMMAND | MF_GRAYED);
       mainMenu.EnableMenuItem(ID_TABLE_FONTMANAGER, MF_BYCOMMAND | MF_GRAYED);

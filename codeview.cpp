@@ -3155,6 +3155,7 @@ BOOL CodeViewer::ParseSelChangeEvent(const int id, const SCNotification *pSCN)
       }
       case ID_SAVE:
       case ID_TABLE_CAMERAMODE:
+      case ID_TABLE_LIVEEDIT:
       case ID_TABLE_PLAY:
       {
          pcv->m_psh->DoCodeViewCommand(id);

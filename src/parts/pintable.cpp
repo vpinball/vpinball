@@ -2108,13 +2108,13 @@ void PinTable::HandleLoadFailure()
    g_pvp->m_table_played_via_SelectTableOnStart = false;
 }
 
-void PinTable::Play(const bool cameraMode)
+void PinTable::Play(const int playMode)
 {
    // Creates Player instance with a shallow duplicate of this table
    if (g_pplayer)
       return; // Can't play twice
 
-   PLOGI << "Starting Play mode [table: " << m_szTableName << ", camera mode: " << cameraMode << "]";
+   PLOGI << "Starting Play mode [table: " << m_szTableName << ", play mode: " << playMode << "]";
    m_vpinball->ShowSubDialog(m_progressDialog, !g_pvp->m_open_minimized);
 
    m_progressDialog.SetProgress(1);
@@ -2362,7 +2362,7 @@ void PinTable::Play(const bool cameraMode)
       // create Player and init that one
 
       PLOGI << "Creating main window"; // For profiling
-      g_pplayer = new Player(this, live_table, cameraMode);
+      g_pplayer = new Player(this, live_table, playMode);
       g_pplayer->CreateWnd();
       const float minSlope = (live_table->m_overridePhysics ? live_table->m_fOverrideMinSlope : live_table->m_angletiltMin);
       const float maxSlope = (live_table->m_overridePhysics ? live_table->m_fOverrideMaxSlope : live_table->m_angletiltMax);
@@ -6251,17 +6251,10 @@ void PinTable::DoCodeViewCommand(int command)
 {
    switch (command)
    {
-   case ID_SAVE:
-      TableSave();
-      break;
-   case ID_TABLE_CAMERAMODE:
-   {
-      Play(true);
-      break;
-   }
-   case ID_TABLE_PLAY:
-      Play(false);
-      break;
+   case ID_SAVE: TableSave(); break;
+   case ID_TABLE_PLAY: Play(0); break;
+   case ID_TABLE_CAMERAMODE: Play(1); break;
+   case ID_TABLE_LIVEEDIT: Play(2); break;
    }
 }
 
