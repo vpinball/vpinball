@@ -8,6 +8,15 @@ AudioOptionsDialog::AudioOptionsDialog() : CDialog(IDD_AUDIO_OPTIONS)
 
 BOOL AudioOptionsDialog::OnInitDialog()
 {
+   // Do a copy of the edited settings
+   m_editedSettings = nullptr;
+   m_appSettings = g_pvp->m_settings;
+   if (g_pvp->m_ptableActive)
+   {
+      m_tableSettings = g_pvp->m_ptableActive->m_settings;
+      m_tableSettings.SetParent(&m_appSettings);
+   }
+
    SendDlgItemMessage(IDC_APPLICATION_SETTINGS, BM_SETCHECK, BST_CHECKED, 0);
    GetDlgItem(IDC_TABLE_OVERRIDE).EnableWindow(g_pvp->m_ptableActive != nullptr);
 
@@ -53,10 +62,27 @@ BOOL AudioOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 
    switch (LOWORD(wParam))
    {
+   case IDC_SAVE_OVERRIDES:
    case IDC_SAVE_ALL:
    {
-      SaveSettings(true);
-      Close();
+      if (IsDlgButtonChecked(IDC_APPLICATION_SETTINGS) == BST_CHECKED)
+      {
+         SaveSettings(true);
+         g_pvp->m_settings = m_appSettings;
+      }
+      else if (g_pvp->m_ptableActive && LOWORD(wParam) == IDC_SAVE_ALL)
+      {
+         SaveSettings(true);
+         g_pvp->m_ptableActive->m_settings = m_tableSettings;
+      }
+      else if (g_pvp->m_ptableActive && LOWORD(wParam) == IDC_SAVE_OVERRIDES)
+      {
+         SaveSettings(false);
+         g_pvp->m_ptableActive->m_settings.CopyOverrides(m_tableSettings);
+      }
+      g_pvp->m_settings.Save();
+      if (g_pvp->m_ptableActive && !g_pvp->m_ptableActive->GetSettingsFileName().empty())
+         g_pvp->m_ptableActive->m_settings.SaveToFile(g_pvp->m_ptableActive->GetSettingsFileName());
       break;
    }
    case IDC_TABLE_OVERRIDE:
@@ -70,8 +96,8 @@ BOOL AudioOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
       GetDlgItem(IDC_RADIO_SND3DFRONTISREAR).EnableWindow(false);
       GetDlgItem(IDC_RADIO_SND3D6CH).EnableWindow(false);
       GetDlgItem(IDC_RADIO_SND3DSSF).EnableWindow(false);
-      GetDlgItem(IDC_SAVE_ALL).ShowWindow(true);
-      GetDlgItem(IDOK).SetWindowText("Save overrides");
+      GetDlgItem(IDC_SAVE_OVERRIDES).ShowWindow(true);
+      SetDlgItemText(IDC_SAVE_ALL, "Save All");
       LoadSettings();
       break;
    }
@@ -86,8 +112,8 @@ BOOL AudioOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
       GetDlgItem(IDC_RADIO_SND3DFRONTISREAR).EnableWindow(true);
       GetDlgItem(IDC_RADIO_SND3D6CH).EnableWindow(true);
       GetDlgItem(IDC_RADIO_SND3DSSF).EnableWindow(true);
-      GetDlgItem(IDC_SAVE_ALL).ShowWindow(false);
-      GetDlgItem(IDOK).SetWindowText("OK");
+      GetDlgItem(IDC_SAVE_OVERRIDES).ShowWindow(false);
+      SetDlgItemText(IDC_SAVE_ALL, "Save Changes");
       LoadSettings();
       break;
    }
@@ -111,24 +137,22 @@ BOOL AudioOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
    return TRUE;
 }
 
-void AudioOptionsDialog::OnOK()
-{
-   SaveSettings(IsDlgButtonChecked(IDC_APPLICATION_SETTINGS) == BST_CHECKED);
-   CDialog::OnOK();
-}
-
 Settings& AudioOptionsDialog::GetEditedSettings()
 {
    if (g_pvp->m_ptableActive && IsDlgButtonChecked(IDC_TABLE_OVERRIDE) == BST_CHECKED)
-      return g_pvp->m_ptableActive->m_settings;
+      return m_tableSettings;
    SendDlgItemMessage(IDC_APPLICATION_SETTINGS, BM_SETCHECK, BST_CHECKED, 0);
-   return g_pvp->m_settings;
+   return m_appSettings;
 }
 
 void AudioOptionsDialog::LoadSettings()
 {
    Settings& settings = GetEditedSettings();
-   
+   // persist user edition to local copy of settings
+   if (m_editedSettings != nullptr && m_editedSettings != &settings)
+      SaveSettings(m_editedSettings == &m_appSettings);
+   m_editedSettings = &settings;
+
    bool fsound = settings.LoadValueWithDefault(Settings::Player, "PlayMusic"s, true);
    SendDlgItemMessage(IDC_PLAY_MUSIC, BM_SETCHECK, fsound ? BST_CHECKED : BST_UNCHECKED, 0);
    OnCommand(IDC_PLAY_MUSIC, 0L);
@@ -157,7 +181,9 @@ void AudioOptionsDialog::LoadSettings()
 
 void AudioOptionsDialog::SaveSettings(const bool saveAll)
 {
-   Settings& settings = GetEditedSettings();
+   if (m_editedSettings == nullptr)
+      return;
+   Settings& settings = *m_editedSettings;
 
    size_t checked = IsDlgButtonChecked(IDC_PLAY_MUSIC);
    settings.SaveValue(Settings::Player, "PlayMusic"s, checked == BST_CHECKED, !saveAll);
@@ -165,18 +191,21 @@ void AudioOptionsDialog::SaveSettings(const bool saveAll)
    checked = IsDlgButtonChecked(IDC_PLAY_SOUND);
    settings.SaveValue(Settings::Player, "PlaySound"s, (checked == BST_CHECKED), !saveAll);
 
-   int fmusic = SNDCFG_SND3D2CH;
-   if (IsDlgButtonChecked(IDC_RADIO_SND3DALLREAR) == BST_CHECKED)
-	   fmusic = SNDCFG_SND3DALLREAR;
-   if (IsDlgButtonChecked(IDC_RADIO_SND3DFRONTISFRONT) == BST_CHECKED)
-	   fmusic = SNDCFG_SND3DFRONTISFRONT;
-   if (IsDlgButtonChecked(IDC_RADIO_SND3DFRONTISREAR) == BST_CHECKED)
-	   fmusic = SNDCFG_SND3DFRONTISREAR;
-   if (IsDlgButtonChecked(IDC_RADIO_SND3D6CH) == BST_CHECKED)
-	   fmusic = SNDCFG_SND3D6CH;
-   if (IsDlgButtonChecked(IDC_RADIO_SND3DSSF) == BST_CHECKED)
-	   fmusic = SNDCFG_SND3DSSF;
-   settings.SaveValue(Settings::Player, "Sound3D"s, fmusic, !saveAll);
+   if (m_editedSettings == &m_appSettings)
+   {
+      int fmusic = SNDCFG_SND3D2CH;
+      if (IsDlgButtonChecked(IDC_RADIO_SND3DALLREAR) == BST_CHECKED)
+         fmusic = SNDCFG_SND3DALLREAR;
+      if (IsDlgButtonChecked(IDC_RADIO_SND3DFRONTISFRONT) == BST_CHECKED)
+         fmusic = SNDCFG_SND3DFRONTISFRONT;
+      if (IsDlgButtonChecked(IDC_RADIO_SND3DFRONTISREAR) == BST_CHECKED)
+         fmusic = SNDCFG_SND3DFRONTISREAR;
+      if (IsDlgButtonChecked(IDC_RADIO_SND3D6CH) == BST_CHECKED)
+         fmusic = SNDCFG_SND3D6CH;
+      if (IsDlgButtonChecked(IDC_RADIO_SND3DSSF) == BST_CHECKED)
+         fmusic = SNDCFG_SND3DSSF;
+      settings.SaveValue(Settings::Player, "Sound3D"s, fmusic, !saveAll);
+   }
 
    size_t volume = SendDlgItemMessage(IDC_MUSIC_SLIDER, TBM_GETPOS, 0, 0);
    settings.SaveValue(Settings::Player, "MusicVolume"s, (int)volume, !saveAll);
@@ -184,13 +213,16 @@ void AudioOptionsDialog::SaveSettings(const bool saveAll)
    volume = SendDlgItemMessage(IDC_SOUND_SLIDER, TBM_GETPOS, 0, 0);
    settings.SaveValue(Settings::Player, "SoundVolume"s, (int)volume, !saveAll);
 
-   size_t soundindex = SendDlgItemMessage(IDC_SoundList, LB_GETCURSEL, 0, 0);
-   size_t sd = SendDlgItemMessage(IDC_SoundList, LB_GETITEMDATA, soundindex, 0);
-   settings.SaveValue(Settings::Player, "SoundDevice"s, (int)sd, !saveAll);
-   
-   soundindex = SendDlgItemMessage(IDC_SoundListBG, LB_GETCURSEL, 0, 0);
-   sd = SendDlgItemMessage(IDC_SoundListBG, LB_GETITEMDATA, soundindex, 0);
-   settings.SaveValue(Settings::Player, "SoundDeviceBG"s, (int)sd, !saveAll);
+   if (m_editedSettings == &m_appSettings)
+   {
+      size_t soundindex = SendDlgItemMessage(IDC_SoundList, LB_GETCURSEL, 0, 0);
+      size_t sd = SendDlgItemMessage(IDC_SoundList, LB_GETITEMDATA, soundindex, 0);
+      settings.SaveValue(Settings::Player, "SoundDevice"s, (int)sd, !saveAll);
+
+      soundindex = SendDlgItemMessage(IDC_SoundListBG, LB_GETCURSEL, 0, 0);
+      sd = SendDlgItemMessage(IDC_SoundListBG, LB_GETITEMDATA, soundindex, 0);
+      settings.SaveValue(Settings::Player, "SoundDeviceBG"s, (int)sd, !saveAll);
+   }
    
    g_pvp->ReInitSound();
 }

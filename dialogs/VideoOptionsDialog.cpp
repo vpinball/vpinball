@@ -263,6 +263,15 @@ void VideoOptionsDialog::UpdateFullscreenModesList()
 
 BOOL VideoOptionsDialog::OnInitDialog()
 {
+   // Do a copy of the edited settings
+   m_editedSettings = nullptr;
+   m_appSettings = g_pvp->m_settings;
+   if (g_pvp->m_ptableActive)
+   {
+      m_tableSettings = g_pvp->m_ptableActive->m_settings;
+      m_tableSettings.SetParent(&m_appSettings);
+   }
+
    const HWND hwndDlg = GetHwnd();
    const HWND toolTipHwnd = CreateWindowEx(NULL, TOOLTIPS_CLASS, NULL, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, hwndDlg, NULL, g_pvp->theInstance, NULL);
    if (toolTipHwnd)
@@ -458,16 +467,21 @@ BOOL VideoOptionsDialog::OnInitDialog()
 Settings& VideoOptionsDialog::GetEditedSettings()
 {
    if (g_pvp->m_ptableActive && IsDlgButtonChecked(IDC_TABLE_OVERRIDE) == BST_CHECKED)
-      return g_pvp->m_ptableActive->m_settings;
+      return m_tableSettings;
    SendDlgItemMessage(IDC_APPLICATION_SETTINGS, BM_SETCHECK, BST_CHECKED, 0);
-   return g_pvp->m_settings;
+   return m_appSettings;
 }
 
 void VideoOptionsDialog::LoadSettings()
 {
    HWND hwnd;
    char tmp[256];
+
    Settings& settings = GetEditedSettings();
+   // persist user edition to local copy of settings
+   if (m_editedSettings != nullptr && m_editedSettings != &settings)
+      SaveSettings(m_editedSettings == &m_appSettings);
+   m_editedSettings = &settings;
 
    m_initialMaxTexDim = settings.LoadValueWithDefault(Settings::Player, "MaxTexDimension"s, 0);
    const int maxTexDim = ((1023 + m_initialMaxTexDim) / 1024) - 1;
@@ -692,7 +706,8 @@ void VideoOptionsDialog::LoadSettings()
    SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 
    const bool fullscreen = settings.LoadValueWithDefault(Settings::Player, "FullScreen"s, IsWindows10_1803orAbove());
-   SendDlgItemMessage(fullscreen ? IDC_EXCLUSIVE_FULLSCREEN : IDC_WINDOWED, BM_SETCHECK, BST_CHECKED, 0);
+   SendDlgItemMessage(IDC_EXCLUSIVE_FULLSCREEN, BM_SETCHECK, fullscreen ? BST_CHECKED : BST_UNCHECKED, 0);
+   SendDlgItemMessage(IDC_WINDOWED, BM_SETCHECK, fullscreen ? BST_UNCHECKED : BST_CHECKED, 0);
    OnCommand(IDC_EXCLUSIVE_FULLSCREEN, 0L); // Force UI update
 
    const int widthcur = settings.LoadValueWithDefault(Settings::Player, "Width"s, -1);
@@ -730,13 +745,9 @@ void VideoOptionsDialog::LoadSettings()
    SendDlgItemMessage(IDC_ARASlider, TBM_SETPOS, TRUE, alphaRampsAccuracy);
 
    const int ballStretchMode = settings.LoadValueWithDefault(Settings::Player, "BallStretchMode"s, 0);
-   switch (ballStretchMode)
-   {
-      default:
-      case 0:  SendDlgItemMessage(IDC_StretchNo, BM_SETCHECK, BST_CHECKED, 0);      break;
-      case 1:  SendDlgItemMessage(IDC_StretchYes, BM_SETCHECK, BST_CHECKED, 0);     break;
-      case 2:  SendDlgItemMessage(IDC_StretchMonitor, BM_SETCHECK, BST_CHECKED, 0); break;
-   }
+   SendDlgItemMessage(IDC_StretchNo, BM_SETCHECK, ballStretchMode == 0 ? BST_CHECKED : BST_UNCHECKED, 0);
+   SendDlgItemMessage(IDC_StretchYes, BM_SETCHECK, ballStretchMode == 1 ? BST_CHECKED : BST_UNCHECKED, 0);
+   SendDlgItemMessage(IDC_StretchMonitor, BM_SETCHECK, ballStretchMode == 2 ? BST_CHECKED : BST_UNCHECKED, 0);
 
    SendDlgItemMessage(IDC_OVERRIDE_DN, BM_SETCHECK, settings.LoadValueWithDefault(Settings::TableOverride, "OverrideEmissionScale"s, false) ? BST_CHECKED : BST_UNCHECKED, 0);
    SendDlgItemMessage(IDC_DAYNIGHT_SLIDER, TBM_SETPOS, TRUE, (int) (100.f * settings.LoadValueWithDefault(Settings::Player, "EmissionScale"s, 0.5f)));
@@ -748,9 +759,11 @@ void VideoOptionsDialog::LoadSettings()
 
 void VideoOptionsDialog::SaveSettings(const bool saveAll)
 {
-   BOOL nothing = 0;
-   Settings& settings = GetEditedSettings();
+   if (m_editedSettings == nullptr)
+      return;
+   Settings& settings = *m_editedSettings;
 
+   BOOL nothing = 0;
    const bool fullscreen = IsDlgButtonChecked(IDC_EXCLUSIVE_FULLSCREEN) == BST_CHECKED;
    if (fullscreen)
    {
@@ -934,23 +947,40 @@ BOOL VideoOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 
    switch (LOWORD(wParam))
    {
+   case IDC_SAVE_OVERRIDES:
    case IDC_SAVE_ALL:
    {
-      SaveSettings(true);
-      Close();
+      if (IsDlgButtonChecked(IDC_APPLICATION_SETTINGS) == BST_CHECKED)
+      {
+         SaveSettings(true);
+         g_pvp->m_settings = m_appSettings;
+      }
+      else if (g_pvp->m_ptableActive && LOWORD(wParam) == IDC_SAVE_ALL)
+      {
+         SaveSettings(true);
+         g_pvp->m_ptableActive->m_settings = m_tableSettings;
+      }
+      else if (g_pvp->m_ptableActive && LOWORD(wParam) == IDC_SAVE_OVERRIDES)
+      {
+         SaveSettings(false);
+         g_pvp->m_ptableActive->m_settings.CopyOverrides(m_tableSettings);
+      }
+      g_pvp->m_settings.Save();
+      if (g_pvp->m_ptableActive && !g_pvp->m_ptableActive->GetSettingsFileName().empty())
+         g_pvp->m_ptableActive->m_settings.SaveToFile(g_pvp->m_ptableActive->GetSettingsFileName());
       break;
    }
    case IDC_TABLE_OVERRIDE:
    {
-      GetDlgItem(IDC_SAVE_ALL).ShowWindow(true);
-      GetDlgItem(IDOK).SetWindowText("Save overrides");
+      GetDlgItem(IDC_SAVE_OVERRIDES).ShowWindow(true);
+      SetDlgItemText(IDC_SAVE_ALL, "Save All");
       LoadSettings();
       break;
    }
    case IDC_APPLICATION_SETTINGS:
    {
-      GetDlgItem(IDC_SAVE_ALL).ShowWindow(false);
-      GetDlgItem(IDOK).SetWindowText("OK");
+      GetDlgItem(IDC_SAVE_OVERRIDES).ShowWindow(false);
+      SetDlgItemText(IDC_SAVE_ALL, "Save Changes");
       LoadSettings();
       break;
    }
@@ -1160,12 +1190,6 @@ BOOL VideoOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
          return FALSE;
    }
    return TRUE;
-}
-
-void VideoOptionsDialog::OnOK()
-{
-   SaveSettings(IsDlgButtonChecked(IDC_APPLICATION_SETTINGS) == BST_CHECKED);
-   CDialog::OnOK();
 }
 
 void VideoOptionsDialog::OnClose()

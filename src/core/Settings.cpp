@@ -161,7 +161,7 @@ bool Settings::LoadFromFile(const string& path, const bool createDefault)
 void Settings::SaveToFile(const string &path)
 {
    m_iniPath = path;
-   if (!m_modified)
+   if (!m_modified || m_iniPath.empty())
       return;
    m_modified = false;
    size_t size = 0;
@@ -182,6 +182,34 @@ void Settings::SaveToFile(const string &path)
 void Settings::Save()
 {
    SaveToFile(m_iniPath);
+}
+
+void Settings::CopyOverrides(const Settings& settings)
+{
+   assert(m_parent != nullptr); // Overrides are defined relatively to a parent
+   for (auto section : settings.m_ini)
+   {
+      for (auto item : section.second)
+      {
+         if (m_parent->m_ini.has(section.first) && m_parent->m_ini.get(section.first).has(item.first))
+         { // Value stored in parent setting block
+            if (m_parent->m_ini.get(section.first).get(item.first) != item.second)
+            {
+               m_ini[section.first][item.first] = item.second;
+               m_modified = true;
+            }
+            else
+            {
+               m_modified |= m_ini[section.first].remove(item.first);
+            }
+         }
+         else
+         { // Value missing from parent (so an override)
+            m_modified |= (m_ini[section.first][item.first] != item.second);
+            m_ini[section.first][item.first] = item.second;
+         }
+      }
+   }
 }
 
 bool Settings::HasValue(const Section section, const string& key, const bool searchParent) const

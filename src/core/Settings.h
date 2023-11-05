@@ -14,9 +14,12 @@ public:
 
    void SetParent(const Settings *parent) { m_parent = parent; }
 
+   void SetIniPath(const string &path) { m_iniPath = path; }
    bool LoadFromFile(const string &path, const bool createDefault);
    void SaveToFile(const string &path);
    void Save();
+
+   void CopyOverrides(const Settings &settings);
 
    // Save only actually save the settings if they have been modified. If you want to force a save (for example if filepath has changed), you need to expcitely set the modified flag
    bool IsModified() const { return m_modified; }
