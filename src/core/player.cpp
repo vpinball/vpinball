@@ -537,6 +537,8 @@ void Player::CreateWnd(HWND parent /* = 0 */)
    // Prevent from being top most, to allow DMD, B2S,... to be over the VPX window
    SDL_SetHint(SDL_HINT_ALLOW_TOPMOST, "0");
 
+   PLOGI << "Creating main window"; // For profiling (SDL create window is fairly slow, can be more than 1 second, but there doesn't seem to be any workaround)
+
    if (m_fullScreen)
    {
       //FIXME we have a bug somewhere that will prevent SDL from keeping the focus when in fullscreen mode, so we just run in scaled windowed mode...
@@ -590,6 +592,7 @@ void Player::CreateWnd(HWND parent /* = 0 */)
    }
 
 #else
+   PLOGI << "Creating main window"; // For profiling
    Create();
 #endif // ENABLE_SDL
 }
@@ -1189,6 +1192,8 @@ HRESULT Player::Init()
 {
    TRACE_FUNCTION();
 
+   PLOGI << "Initializing player"; // For profiling
+
    set_lowest_possible_win_timer_resolution();
 
    //m_hSongCompletionEvent = CreateEvent( nullptr, TRUE, FALSE, nullptr );
@@ -1435,7 +1440,7 @@ HRESULT Player::Init()
    m_infoMode = IF_NONE;
    m_infoProbeIndex = 0;
 
-   g_pvp->ProfileLog("Hitables"s);
+   PLOGI << "Initializing Hitables"s; // For profiling
 
    for (size_t i = 0; i < m_ptable->m_vedit.size(); i++)
    {
@@ -1470,8 +1475,6 @@ HRESULT Player::Init()
    }
 
    m_pEditorTable->m_progressDialog.SetProgress(45);
-   m_pEditorTable->m_progressDialog.SetName("Initializing Octree..."s);
-   g_pvp->ProfileLog("Octree"s);
    PLOGI << "Initializing octree"; // For profiling
 
    AddCabinetBoundingHitShapes();
@@ -1557,7 +1560,6 @@ HRESULT Player::Init()
 
    m_pEditorTable->m_progressDialog.SetProgress(60);
    m_pEditorTable->m_progressDialog.SetName("Initializing Renderer..."s);
-   g_pvp->ProfileLog("Setup Renderer"s);
    PLOGI << "Initializing renderer"; // For profiling
 
    SetupShaders();
@@ -1650,8 +1652,6 @@ HRESULT Player::Init()
 
    m_pEditorTable->m_progressDialog.SetName("Starting Game Scripts..."s);
    PLOGI << "Starting script"; // For profiling
-
-   g_pvp->ProfileLog("Start Scripts"s);
 
    m_ptable->m_pcv->Start(); // Hook up to events and start cranking script
 
@@ -1787,11 +1787,9 @@ void Player::RenderStaticPrepass()
    // if rendering static/with heavy oversampling, disable the aniso/trilinear filter to get a sharper/more precise result overall!
    if (IsUsingStaticPrepass())
    {
-      PLOGI << "Performing prerendering of static parts.";
+      PLOGI << "Performing prerendering of static parts."; // For profiling
       m_pin3d.m_pd3dPrimaryDevice->SetMainTextureDefaultFiltering(SF_BILINEAR);
    }
-
-   g_pvp->ProfileLog("Static PreRender Start"s);
 
    //#define STATIC_PRERENDER_ITERATIONS_KOROBOV 7.0 // for the (commented out) lattice-based QMC oversampling, 'magic factor', depending on the the number of iterations!
    // loop for X times and accumulate/average these renderings
@@ -1876,11 +1874,11 @@ void Player::RenderStaticPrepass()
    const bool forceAniso = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "ForceAnisotropicFiltering"s, true);
    m_pin3d.m_pd3dPrimaryDevice->SetMainTextureDefaultFiltering(forceAniso ? SF_ANISOTROPIC : SF_TRILINEAR);
 
-   g_pvp->ProfileLog("AO PreRender Start"s);
-
    // Now finalize static buffer with static AO
    if (GetAOMode() == 1)
    {
+      PLOGI << "Starting static AO prerendering"s; // For profiling
+
       const bool useAA = m_AAfactor != 1.0f;
 
       m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("PreRender AO Save Depth"s, m_staticPrepassRT);
@@ -1971,7 +1969,7 @@ void Player::RenderStaticPrepass()
       delete initialPreRender;
    }
 
-   g_pvp->ProfileLog("Reflection Probe PreRender Start"s);
+   PLOGI << "Starting Reflection Probe prerendering"s; // For profiling
 
    for (size_t i = 0; i < m_ptable->m_vrenderprobe.size(); i++)
    {
@@ -1981,7 +1979,7 @@ void Player::RenderStaticPrepass()
    // Store the total number of triangles prerendered (including ones done for render probes)
    stats_drawn_static_triangles = m_pin3d.m_pd3dPrimaryDevice->m_curDrawnTriangles;
 
-   g_pvp->ProfileLog("Static PreRender End"s);
+   PLOGI << "Static PreRender done"s; // For profiling
    
    m_render_mask &= ~STATIC_ONLY;
    m_pin3d.m_pd3dPrimaryDevice->FlushRenderFrame();

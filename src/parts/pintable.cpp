@@ -22,12 +22,6 @@ static serial Serial;
 constexpr unsigned char TABLE_KEY[] = "Visual Pinball";
 //constexpr unsigned char PARAPHRASE_KEY[] = { 0xB4, 0x0B, 0xBE, 0x37, 0xC3, 0x0C, 0x8E, 0xA1, 0x5A, 0x05, 0xDF, 0x1B, 0x2D, 0x02, 0xEF, 0x8D };
 
-static void ProfileLog(const string& msg)
-{
-   if (g_pvp)
-      g_pvp->ProfileLog(msg);
-}
-
 #pragma region ScriptGlobalTable
 
 //////////////////////////////////////////////////////////////////////
@@ -1625,7 +1619,7 @@ if(!found) \
 
 void PinTable::InitTablePostLoad()
 {
-   ProfileLog("InitTablePostLoad"s);
+   PLOGI << "InitTablePostLoad"s; // For profiling
 
    for (unsigned int i = 1; i < NUM_BG_SETS; ++i)
       if (mViewSetups[i].mFOV == FLT_MAX) // old table, copy FS and/or FSS settings over from old DT setting
@@ -2237,6 +2231,7 @@ void PinTable::Play(const int playMode)
    for (size_t i = 0; i < src->m_vfont.size(); i++)
       dst->m_vfont.push_back(src->m_vfont[i]);
 
+   PLOGI << "Duplicating parts for live instance"; // For profiling
    for (size_t i = 0; i < src->m_vedit.size(); i++)
    {
       IEditable *edit_dst = nullptr;
@@ -2268,6 +2263,7 @@ void PinTable::Play(const int playMode)
       dst->m_liveToStartup[edit_dst] = src->m_vedit[i];
    }
 
+   PLOGI << "Duplicating collections"; // For profiling
    for (int i = 0; i < m_vcollection.size(); i++)
    {
       CComObject<Collection> *pcol;
@@ -2361,7 +2357,7 @@ void PinTable::Play(const int playMode)
 
       // create Player and init that one
 
-      PLOGI << "Creating main window"; // For profiling
+      PLOGI << "Creating player"; // For profiling
       g_pplayer = new Player(this, live_table, playMode);
       g_pplayer->CreateWnd();
       const float minSlope = (live_table->m_overridePhysics ? live_table->m_fOverrideMinSlope : live_table->m_angletiltMin);
@@ -3523,7 +3519,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
       return S_FALSE;
    }
 
-   ProfileLog("LoadGameFromFilename " + szFileName);
+   PLOGI << "LoadGameFromFilename " + szFileName; // For profiling
 
    m_szFileName = szFileName;
 
@@ -3647,7 +3643,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
 
          if (SUCCEEDED(hr = LoadData(pstmGame, csubobj, csounds, ctextures, cfonts, ccollection, loadfileversion, hch, (loadfileversion < NO_ENCRYPTION_FORMAT_VERSION) ? hkey : NULL)))
          {
-            ProfileLog("LoadData"s);
+            PLOGI << "LoadData loaded"s; // For profiling
 
             const int ctotalitems = csubobj + csounds + ctextures + cfonts;
             int cloadeditems = 0;
@@ -3682,7 +3678,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
                ::SendMessage(hwndProgressBar, PBM_SETPOS, cloadeditems, 0);
             }
 
-            ProfileLog("GameItem"s);
+            PLOGI << "GameItem loaded"s; // For profiling
 
             for (int i = 0; i < csounds; i++)
             {
@@ -3700,7 +3696,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
                ::SendMessage(hwndProgressBar, PBM_SETPOS, cloadeditems, 0);
             }
 
-            ProfileLog("Sound"s);
+            PLOGI << "Sound loaded"s; // For profiling
 
             assert(m_vimage.empty());
             m_vimage.resize(ctextures); // due to multithreaded loading do pre-allocation
@@ -3782,7 +3778,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
                         --i2;
                      }
 
-            ProfileLog("Image"s);
+            PLOGI << "Image loaded"s; // Profiling
 
             ::SendMessage(hwndProgressBar, PBM_SETPOS, cloadeditems, 0);
 
@@ -3805,7 +3801,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
                ::SendMessage(hwndProgressBar, PBM_SETPOS, cloadeditems, 0);
             }
 
-            ProfileLog("Font"s);
+            PLOGI << "Font loaded"s; // For profiling
 
             for (int i = 0; i < ccollection; i++)
             {
@@ -3828,7 +3824,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
                ::SendMessage(hwndProgressBar, PBM_SETPOS, cloadeditems, 0);
             }
 
-            ProfileLog("Collection"s);
+            PLOGI << "Collection loaded"s; // For profiling
 
             for (size_t i = 0; i < m_vedit.size(); i++)
             {
@@ -3836,7 +3832,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
                piedit->InitPostLoad();
             }
 
-            ProfileLog("IEditable PostLoad"s);
+            PLOGI << "IEditable PostLoad performed"s; // For profiling
          }
          pstmGame->Release();
 
@@ -10231,7 +10227,7 @@ void PinTable::InvokeBallBallCollisionCallback(const Ball *b1, const Ball *b2, f
 
 void PinTable::OnInitialUpdate()
 {
-    ProfileLog("PinTable OnInitialUpdate"s);
+    PLOGI << "PinTable OnInitialUpdate"s; // For profiling
 
     BeginAutoSaveCounter();
     SetWindowText(m_szFileName.c_str());

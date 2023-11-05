@@ -55,22 +55,17 @@ Light *Light::CopyForPlay(PinTable *live_table)
    return dst;
 }
 
-HRESULT Light::Init(PinTable * const ptable, const float x, const float y, const bool fromMouseClick)
+HRESULT Light::Init(PinTable *const ptable, const float x, const float y, const bool fromMouseClick, const bool forPlay)
 {
    m_ptable = ptable;
-
+   SetDefaults(fromMouseClick);
    m_d.m_vCenter.x = x;
    m_d.m_vCenter.y = y;
-
-   SetDefaults(fromMouseClick);
-
    InitShape();
-
    m_lockedByLS = false;
    m_inPlayState = clampLightState(m_d.m_state);
    m_d.m_visible = true;
-
-   return InitVBA(fTrue, 0, nullptr);
+   return forPlay ? S_OK : InitVBA(fTrue, 0, nullptr);
 }
 
 void Light::SetDefaults(const bool fromMouseClick)

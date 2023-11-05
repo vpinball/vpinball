@@ -162,18 +162,15 @@ void Trigger::InitShape(float x, float y)
    }
 }
 
-HRESULT Trigger::Init(PinTable * const ptable, const float x, const float y, const bool fromMouseClick)
+HRESULT Trigger::Init(PinTable *const ptable, const float x, const float y, const bool fromMouseClick, const bool forPlay)
 {
    m_ptable = ptable;
-
+   SetDefaults(fromMouseClick);
    m_d.m_vCenter.x = x;
    m_d.m_vCenter.y = y;
-
-   SetDefaults(fromMouseClick);
    if (m_vdpoint.empty())
       InitShape(x, y);
-
-   return InitVBA(fTrue, 0, nullptr);
+   return forPlay ? S_OK : InitVBA(fTrue, 0, nullptr);
 }
 
 void Trigger::SetDefaults(const bool fromMouseClick)

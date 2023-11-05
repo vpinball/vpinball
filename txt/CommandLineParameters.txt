@@ -26,7 +26,3 @@
 
 -c1 [customparam] .. -c9 [customparam]  Custom user parameters that can be accessed in the script via GetCustomParam(X)
 
-
-
-Also: Do a rough profiling of the table loading:
-  if a file 'Profile.txt' exists in the same directory as VPX, then statistics for the loaded tables will be appended

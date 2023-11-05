@@ -1347,7 +1347,7 @@ bool Shader::Load(const std::string& name, const BYTE* code, unsigned int codeSi
             }
             else
             {
-               PLOGI << "Compiling technique: " << shaderTechniqueNames[technique];
+               //PLOGI << "Compiling technique: " << shaderTechniqueNames[technique];
                string vertexShaderCode = vertex;
                vertexShaderCode.append("\n//").append(_technique).append("\n//").append(element[2]).append("\n");
                vertexShaderCode.append(analyzeFunction(m_shaderCodeName, _technique, element[2], values)).append("\0");

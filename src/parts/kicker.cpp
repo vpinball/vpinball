@@ -40,16 +40,13 @@ void Kicker::UpdateStatusBarInfo()
    m_vpinball->SetStatusBarUnitInfo(tbuf, true);
 }
 
-HRESULT Kicker::Init(PinTable * const ptable, const float x, const float y, const bool fromMouseClick)
+HRESULT Kicker::Init(PinTable *const ptable, const float x, const float y, const bool fromMouseClick, const bool forPlay)
 {
    m_ptable = ptable;
-
+   SetDefaults(fromMouseClick);
    m_d.m_vCenter.x = x;
    m_d.m_vCenter.y = y;
-
-   SetDefaults(fromMouseClick);
-
-   return InitVBA(fTrue, 0, nullptr);
+   return forPlay ? S_OK : InitVBA(fTrue, 0, nullptr);
 }
 
 void Kicker::SetDefaults(const bool fromMouseClick)

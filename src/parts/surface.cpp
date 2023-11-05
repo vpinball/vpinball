@@ -44,10 +44,11 @@ bool Surface::IsTransparent() const
    return result;
 }
 
-HRESULT Surface::Init(PinTable * const ptable, const float x, const float y, const bool fromMouseClick)
+HRESULT Surface::Init(PinTable *const ptable, const float x, const float y, const bool fromMouseClick, const bool forPlay)
 {
    m_ptable = ptable;
    m_isWall = true;
+   SetDefaults(fromMouseClick);
 
    const float width  = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultPropsWall, "Width"s,  50.f) : 50.f;
    const float length = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultPropsWall, "Length"s, 50.f) : 50.f;
@@ -82,9 +83,7 @@ HRESULT Surface::Init(PinTable * const ptable, const float x, const float y, con
       m_vdpoint.push_back(pdp);
    }
 
-   SetDefaults(fromMouseClick);
-
-   return InitVBA(fTrue, 0, nullptr);
+   return forPlay ? S_OK : InitVBA(fTrue, 0, nullptr);
 }
 
 void Surface::WriteRegDefaults()

@@ -333,20 +333,14 @@ void Primitive::CreateRenderGroup(const Collection * const collection)
    prims[0]->m_meshBuffer = new MeshBuffer(m_wzName + L".RenderGroup"s, vertexBuffer, indexBuffer, true);
 }
 
-HRESULT Primitive::Init(PinTable * const ptable, const float x, const float y, const bool fromMouseClick)
+HRESULT Primitive::Init(PinTable *const ptable, const float x, const float y, const bool fromMouseClick, const bool forPlay)
 {
    m_ptable = ptable;
-
+   SetDefaults(fromMouseClick);
    m_d.m_vPosition.x = x;
    m_d.m_vPosition.y = y;
-
-   SetDefaults(fromMouseClick);
-
-   InitVBA(fTrue, 0, nullptr);
-
    UpdateStatusBarInfo();
-
-   return S_OK;
+   return forPlay ? S_OK : InitVBA(fTrue, 0, nullptr);
 }
 
 void Primitive::SetDefaults(const bool fromMouseClick)
@@ -1237,9 +1231,9 @@ void Primitive::RenderSetup(RenderDevice *device)
    if (m_d.m_groupdRendering || m_d.m_skipRendering)
       return;
 
-   const char* const szT = MakeChar(m_wzName);
-   PLOGD_IF(m_d.m_staticRendering && m_d.m_disableLightingBelow != 1.0f && m_d.m_visible) << "Primitive '" << szT << "' is set as static rendering with lighting from below not disabled. The back lighting will not be performed.";
-   delete[] szT;
+   //const char* const szT = MakeChar(m_wzName);
+   //PLOGD_IF(m_d.m_staticRendering && m_d.m_disableLightingBelow != 1.0f && m_d.m_visible) << "Primitive '" << szT << "' is set as static rendering with lighting from below not disabled. The back lighting will not be performed.";
+   //delete[] szT;
 
    m_lightmap = m_ptable->GetLight(m_d.m_szLightmap);
    if (m_lightmap)

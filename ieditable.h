@@ -123,7 +123,7 @@ public:
         obj->Init(ptable, x, y, true); \
         return obj; \
     } \
-	HRESULT Init(PinTable * const ptable, const float x, const float y, const bool fromMouseClick); \
+	HRESULT Init(PinTable * const ptable, const float x, const float y, const bool fromMouseClick, const bool forPlay = false); \
 	INITVBA(ItemType) \
 	virtual void UIRenderPass1(Sur * const psur); \
 	virtual void UIRenderPass2(Sur * const psur); \
@@ -166,9 +166,8 @@ public:
 	static const unsigned AllowedViews = AllwdViews;
 
 #define STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(type, table) \
-   type *dst = (type *)COMCreateAndInit(table, 0.f, 0.f); \
-   if (dst->GetScriptable()) \
-      table->m_pcv->RemoveItem(dst->GetScriptable()); \
+   type *dst = type::COMCreate(); \
+   dst->Init(table, 0.f, 0.f, false, true); \
    memcpy(dst->m_wzName, m_wzName, MAXNAMEBUFFER * sizeof(m_wzName[0])); \
    if (dst->GetScriptable()) \
       table->m_pcv->AddItem(dst->GetScriptable(), false); \

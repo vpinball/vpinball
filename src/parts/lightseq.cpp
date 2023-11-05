@@ -15,16 +15,13 @@ LightSeq *LightSeq::CopyForPlay(PinTable *live_table)
    return dst;
 }
 
-HRESULT LightSeq::Init(PinTable * const ptable, const float x, const float y, const bool fromMouseClick)
+HRESULT LightSeq::Init(PinTable *const ptable, const float x, const float y, const bool fromMouseClick, const bool forPlay)
 {
    m_ptable = ptable;
-
+   SetDefaults(fromMouseClick);
    m_d.m_v.x = x;
    m_d.m_v.y = y;
-
-   SetDefaults(fromMouseClick);
-
-   return InitVBA(fTrue, 0, nullptr);
+   return forPlay ? S_OK : InitVBA(fTrue, 0, nullptr);
 }
 
 void LightSeq::SetDefaults(const bool fromMouseClick)

@@ -132,21 +132,15 @@ void HitTarget::SetMeshType(const TargetType type)
     }
 }
 
-HRESULT HitTarget::Init(PinTable * const ptable, const float x, const float y, const bool fromMouseClick)
+HRESULT HitTarget::Init(PinTable *const ptable, const float x, const float y, const bool fromMouseClick, const bool forPlay)
 {
    m_ptable = ptable;
-
+   SetDefaults(false);
    m_d.m_vPosition.x = x;
    m_d.m_vPosition.y = y;
-
-   SetDefaults(false);
    m_hitEvent = false;
-
-   InitVBA(fTrue, 0, nullptr);
-
    UpdateStatusBarInfo();
-
-   return S_OK;
+   return forPlay ? S_OK : InitVBA(fTrue, 0, nullptr);
 }
 
 void HitTarget::SetDefaults(const bool fromMouseClick)
