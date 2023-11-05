@@ -50,12 +50,12 @@ public:
    bool LoadToken(const int id, BiffReader* const pbr);
 
    // Rendering
-   void RenderSetup();
+   void RenderSetup(RenderDevice* device);
    void MarkDirty(); // Mark this probe as dirty, should be called when starting a new frame
    bool IsRendering() const; // Rendering is not reentrant so GetProbe should not be called when this returns true
    void PreRenderStatic(); // Allows to precompute static parts
-   RenderTarget* GetProbe(const bool is_static); // Request render probe, eventually rendering it if it is dirty
-   void EndPlay();
+   RenderTarget* GetProbe(const bool isStaticOnly); // Request render probe, eventually rendering it if it is dirty
+   void RenderRelease();
 
 private:
    int GetRoughnessDownscale(const int roughness);
@@ -78,6 +78,7 @@ private:
    bool m_disableLightReflection = false; // Disable rendering of lightmaps in reflection render probes, needed to avoid having having reflections of playfield lightmaps onto the playfield itself
 
    // Properties used for rendering (not saved)
+   RenderDevice* m_rd = nullptr;
    RenderDeviceState* m_rdState = nullptr;
    bool m_dirty = true;
    bool m_rendering = false;

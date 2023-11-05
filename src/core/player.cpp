@@ -793,7 +793,7 @@ void Player::Shutdown()
    }
 
    for (size_t i = 0; i < m_ptable->m_vrenderprobe.size(); ++i)
-      m_ptable->m_vrenderprobe[i]->EndPlay();
+      m_ptable->m_vrenderprobe[i]->RenderRelease();
    for (size_t i = 0; i < m_vhitables.size(); ++i)
       m_vhitables[i]->EndPlay();
 
@@ -1594,7 +1594,7 @@ HRESULT Player::Init()
 
    // Start the frame.
    for (RenderProbe* probe : m_ptable->m_vrenderprobe)
-      probe->RenderSetup();
+      probe->RenderSetup(m_pin3d.m_pd3dPrimaryDevice);
    for (Hitable* hitable : m_vhitables)
       hitable->RenderSetup(m_pin3d.m_pd3dPrimaryDevice);
 
