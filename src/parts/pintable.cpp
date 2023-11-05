@@ -1399,8 +1399,6 @@ PinTable::PinTable()
    m_tblVolmod = (float)m_settings.LoadValueWithDefault(Settings::Player, "Volmod"s, 1000) * (float)(1.0 / 1000.0);
    m_tblExitConfirm = m_settings.LoadValueWithDefault(Settings::Player, "Exitconfirm"s, 120) * 1000 / 60; // this is supposed to be seconds, but is seconds*60  :/
 
-   g_pvp->m_settings.SaveValue(Settings::Version, "VPinball"s, VP_VERSION_STRING_DIGITS);
-
    m_global3DZPD = m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DZPD"s, 0.5f);
    m_3DZPD = 0.5f;
    m_global3DMaxSeparation = m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DMaxSeparation"s, 0.03f);
@@ -4347,7 +4345,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
          bool overwriteGlobalDayNight;
          pbr->GetBool(overwriteGlobalDayNight);
          if (overwriteGlobalDayNight)
-            m_settings.SaveValue(Settings::TableOverride, "OverrideEmissionScale"s, false);
+            m_settings.SaveValue(Settings::Player, "OverrideTableEmissionScale"s, false);
       }
       break;
    case FID(GDAC): pbr->GetBool(m_grid); break;
@@ -5904,7 +5902,7 @@ void PinTable::ExportTableMesh()
 
 // Import Point of View file. This can be either:
 // - a UI interaction from table author, loading to table **properties** after file selection,
-// - triggered to load user settings preference to table **settings** without UI interaction.
+// - without UI interaction, triggered to load user settings preference to table **settings**.
 void PinTable::ImportBackdropPOV(const string &filename)
 {
    string file = filename;
@@ -5926,14 +5924,23 @@ void PinTable::ImportBackdropPOV(const string &filename)
 
    string ext = ExtensionFromFilename(file);
    StrToLower(ext);
-   ViewSetup vs[3];
 
+   const char *vsPrefix[3] = { "ViewDT", "ViewCab", "ViewFSS" };
+   const char *vsFields[15] = { "Mode", "ScaleX", "ScaleY", "ScaleZ", "PlayerX", "PlayerY", "PlayerZ", "LookAt", "Rotation", "FOV", "Layback", "HOfs", "VOfs", "WindowTop", "WindowBot" };
    if (ext == "ini")
    {
       Settings settings;
       settings.LoadFromFile(file, false);
       for (int id = 0; id < 3; id++)
-         vs[id].ApplyTableOverrideSettings(settings, (ViewSetupID) id);
+      {
+         const string &keyPrefix = vsPrefix[id];
+         if (toUserSettings)
+            for (int j = 0; j < 15; j++)
+               if (settings.HasValue(Settings::TableOverride, keyPrefix + vsFields[j]))
+                  m_settings.SaveValue(Settings::TableOverride, keyPrefix + vsFields[j], settings.LoadValueWithDefault(Settings::TableOverride, keyPrefix + vsFields[j], 0.f));
+         else
+            mViewSetups[id].ApplyTableOverrideSettings(settings, (ViewSetupID)id);
+      }
    }
    else if (ext == "pov" || ext == "xml")
    {
@@ -5957,30 +5964,52 @@ void PinTable::ImportBackdropPOV(const string &filename)
             xmlDoc.Clear();
             return;
          }
-         #define POV_FIELD(name, parse, field) { auto node = section->FirstChildElement(name); if (node != nullptr) sscanf_s(node->GetText(), parse, &field); }
+         #define POV_FIELD(name, settingField, field) \
+         { \
+            auto node = section->FirstChildElement(name); \
+            if (node != nullptr) \
+            { \
+               float value; sscanf_s(node->GetText(), "%f", &value); \
+               if (toUserSettings) \
+                  m_settings.SaveValue(Settings::TableOverride, keyPrefix + settingField, value); \
+               else \
+                  field = value; \
+            } \
+         }
          static const string sections[] = { "desktop"s, "fullscreen"s, "fullsinglescreen"s };
          for (int i = 0; i < 3; i++)
          {
             auto section = root->FirstChildElement(sections[i].c_str());
             if (section)
             {
-               POV_FIELD("inclination", "%f", vs[i].mLookAt);
-               POV_FIELD("fov", "%f", vs[i].mFOV);
-               POV_FIELD("layback", "%f", vs[i].mLayback);
-               POV_FIELD("lookat", "%f", vs[i].mLookAt);
-               POV_FIELD("rotation", "%f", vs[i].mViewportRotation);
-               POV_FIELD("xscale", "%f", vs[i].mSceneScaleX);
-               POV_FIELD("yscale", "%f", vs[i].mSceneScaleY);
-               POV_FIELD("zscale", "%f", vs[i].mSceneScaleZ);
-               POV_FIELD("xoffset", "%f", vs[i].mViewX);
-               POV_FIELD("yoffset", "%f", vs[i].mViewY);
-               POV_FIELD("zoffset", "%f", vs[i].mViewZ);
-               // These fields were added in 10.8 before moving to ini settings file. Just remove ?
-               POV_FIELD("LayoutMode", "%i", vs[i].mMode);
-               POV_FIELD("ViewHOfs", "%f", vs[i].mViewHOfs);
-               POV_FIELD("ViewVOfs", "%f", vs[i].mViewVOfs);
-               POV_FIELD("WindowTopZOfs", "%f", vs[i].mWindowTopZOfs);
-               POV_FIELD("WindowBottomZOfs", "%f", vs[i].mWindowBottomZOfs);
+               const string &keyPrefix = vsPrefix[i];
+               POV_FIELD("inclination", "LookAt", mViewSetups[i].mLookAt);
+               POV_FIELD("fov", "FOV", mViewSetups[i].mFOV);
+               POV_FIELD("layback", "Layback", mViewSetups[i].mLayback);
+               POV_FIELD("lookat", "LookAt", mViewSetups[i].mLookAt);
+               POV_FIELD("rotation", "Rotation", mViewSetups[i].mViewportRotation);
+               POV_FIELD("xscale", "ScaleX", mViewSetups[i].mSceneScaleX);
+               POV_FIELD("yscale", "ScaleY", mViewSetups[i].mSceneScaleY);
+               POV_FIELD("zscale", "ScaleZ", mViewSetups[i].mSceneScaleZ);
+               POV_FIELD("xoffset", "PlayerX", mViewSetups[i].mViewX);
+               POV_FIELD("yoffset", "PlayerY", mViewSetups[i].mViewY);
+               POV_FIELD("zoffset", "PlayerZ", mViewSetups[i].mViewZ);
+               POV_FIELD("ViewHOfs", "HOfs", mViewSetups[i].mViewHOfs);
+               POV_FIELD("ViewVOfs", "VOfs", mViewSetups[i].mViewVOfs);
+               POV_FIELD("WindowTopZOfs", "WindowTop", mViewSetups[i].mWindowTopZOfs);
+               POV_FIELD("WindowBottomZOfs", "WindowBot", mViewSetups[i].mWindowBottomZOfs);
+               {
+                  auto node = section->FirstChildElement("LayoutMode");
+                  if (node != nullptr)
+                  {
+                     int value;
+                     sscanf_s(node->GetText(), "%i", &value);
+                     if (toUserSettings)
+                        m_settings.SaveValue(Settings::TableOverride, keyPrefix + "Mode", value);
+                     else
+                        mViewSetups[i].mMode = (ViewLayoutMode) value;
+                  }
+               }
             }
          }
          #undef POV_FIELD
@@ -6100,7 +6129,7 @@ void PinTable::ImportBackdropPOV(const string &filename)
                   //m_overwriteGlobalDayNight = (value == 1);
                   if (value == 1)
                   {
-                     m_settings.SaveValue(Settings::TableOverride, "OverrideEmissionScale"s, true);
+                     m_settings.SaveValue(Settings::Player, "OverrideTableEmissionScale"s, true);
                      node = section->FirstChildElement("NightDayLevel");
                      if (node)
                      {
@@ -6153,19 +6182,6 @@ void PinTable::ImportBackdropPOV(const string &filename)
          ShowError("Error parsing POV XML file");
       }
       xmlDoc.Clear();
-   }
-
-   // Apply loaded POV to the table or user settings
-   for (int id = 0; id < 3; id++)
-   {
-      if (toUserSettings)
-         vs[id].SaveToTableOverrideSettings(m_settings, (ViewSetupID)id);
-      else
-      {
-         Settings settings;
-         vs[id].SaveToTableOverrideSettings(settings, (ViewSetupID)id);
-         mViewSetups[id].ApplyTableOverrideSettings(settings, (ViewSetupID)id);
-      }
    }
 
    // If loaded without UI interaction, do not mark settings as modified
@@ -8632,7 +8648,7 @@ STDMETHODIMP PinTable::get_GlobalDayNight(VARIANT_BOOL *pVal)
 {
    // FIXME deprecated
    //*pVal = FTOVB(m_overwriteGlobalDayNight);
-   *pVal = FTOVB(m_settings.HasValue(Settings::TableOverride, "OverrideEmissionScale"));
+   *pVal = FTOVB(m_settings.HasValue(Settings::Player, "OverrideTableEmissionScale"));
 
    return S_OK;
 }

@@ -986,8 +986,8 @@ void LiveUI::OpenTweakMode()
    m_tweakMode = true;
    m_activeTweakPage = TP_PointOfView;
    m_activeTweakIndex = 0;
-   m_dayNightOverriden = false;
-   m_difficultyOverriden = false;
+   m_dayNightOverriden = 0;
+   m_difficultyOverriden = 0;
    UpdateTweakPage();
 }
 
@@ -1143,14 +1143,14 @@ void LiveUI::OnTweakModeEvent(const bool isKeyDown, const int keycode)
       // Table customization
       case BS_DayNight:
       {
-         m_dayNightOverriden = true;
+         m_dayNightOverriden |= 1;
          m_player->m_globalEmissionScale = clamp(m_player->m_globalEmissionScale + step * 0.005f, 0.f, 1.f);
          m_player->SetupShaders();
          break;
       }
       case BS_Difficulty:
       {
-         m_difficultyOverriden = true;
+         m_difficultyOverriden |= 1;
          table->m_globalDifficulty = clamp(table->m_globalDifficulty + step * 0.005f, 0.f, 1.f);
          break;
       }
@@ -1167,39 +1167,35 @@ void LiveUI::OnTweakModeEvent(const bool isKeyDown, const int keycode)
       else if (keycode == g_pplayer->m_rgKeys[eStartGameKey])
       {
          string iniFileName = m_live_table->GetSettingsFileName();
-         // Save POV
          m_live_table->mViewSetups[m_live_table->m_BG_current_set].SaveToTableOverrideSettings(m_live_table->m_settings, m_live_table->m_BG_current_set);
-         // Save user tweaks
-         if (m_dayNightOverriden)
-         {
-            m_live_table->m_settings.SaveValue(Settings::TableOverride, "OverrideEmissionScale"s, true);
+         if ((m_dayNightOverriden & 2) != 0)
+         { // User has resetted day/night (get back to app settings, so remove the ones from the user settings)
+            m_live_table->m_settings.DeleteValue(Settings::Player, "OverrideTableEmissionScale"s);
+            m_live_table->m_settings.DeleteValue(Settings::Player, "DynamicDayNight"s);
+            m_live_table->m_settings.DeleteValue(Settings::Player, "EmissionScale"s);
+         }
+         if ((m_dayNightOverriden & 1) != 0)
+         { // User has defined a custom day/night value (disable auto day/night and save custom value to be used)
+            m_live_table->m_settings.SaveValue(Settings::Player, "OverrideTableEmissionScale"s, true);
             m_live_table->m_settings.SaveValue(Settings::Player, "DynamicDayNight"s, false);
             m_live_table->m_settings.SaveValue(Settings::Player, "EmissionScale"s, m_player->m_globalEmissionScale);
          }
          if (m_difficultyOverriden)
-         {
             PushNotification("You have changed the difficulty level\nThis change will only be applied after restart.", 10000);
+         if ((m_difficultyOverriden & 2) != 0)
+            m_live_table->m_settings.DeleteValue(Settings::TableOverride, "Difficulty"s);
+         if ((m_difficultyOverriden & 1) != 0)
             m_live_table->m_settings.SaveValue(Settings::TableOverride, "Difficulty"s, m_live_table->m_globalDifficulty);
-         }
-
-         if (m_live_table->m_settings.IsModified())
+         if (m_live_table->m_szFileName.empty() || !FileExists(m_live_table->m_szFileName))
          {
-            if (iniFileName == ""s)
-            {
-               PushNotification("You need to save your table before exporting POV"s, 5000);
-            }
-            else
-            {
-               m_live_table->m_settings.SaveToFile(iniFileName);
-               m_table->m_settings.LoadFromFile(iniFileName, false); // Immediatly loads it to the edited table for the change to take effect on next play
-               PushNotification("POV exported to "s.append(iniFileName), 5000);
-            }
+            PushNotification("You need to save your table before exporting user settings"s, 5000);
          }
          else
          {
-            PushNotification("POV was not exported to "s + iniFileName + " (nothing to save)", 5000);
+            m_live_table->m_settings.SaveToFile(iniFileName);
+            m_table->m_settings.LoadFromFile(iniFileName, false); // Immediatly loads it to the edited table for the change to take effect on next play
+            PushNotification("User settings exported to "s.append(iniFileName), 5000);
          }
-
          if (g_pvp->m_povEdit)
             g_pvp->QuitPlayer(Player::CloseState::CS_CLOSE_APP);
       }
@@ -1207,7 +1203,19 @@ void LiveUI::OnTweakModeEvent(const bool isKeyDown, const int keycode)
       {
          // Reset to default values
          PinTable *const table = m_live_table;
-         if (m_activeTweakPage == TP_PointOfView)
+         if (m_activeTweakPage == TP_TableOption)
+         {
+            // Remove custom difficulty and get back to the one of the table, eventually overiden by app (not table) settings
+            m_difficultyOverriden = 2;
+            m_live_table->m_globalDifficulty = g_pvp->m_settings.LoadValue(Settings::TableOverride, "Difficulty"s, m_table->m_difficulty);
+
+            // Remove custom day/night and get back to the one of the table, eventually overiden by app (not table) settings
+            // TODO we just default to the table value, missing the app settings being applied (like day/night from lat/lon,... see in player.cpp)
+            m_dayNightOverriden = 2;
+            m_player->m_globalEmissionScale = m_table->m_lightEmissionScale;
+            m_player->SetupShaders();
+         }
+         else if (m_activeTweakPage == TP_PointOfView)
          {
             ViewSetupID id = table->m_BG_current_set;
             ViewSetup &viewSetup = table->mViewSetups[id];
@@ -1411,8 +1419,8 @@ void LiveUI::UpdateTweakModeUI()
          case BS_WndBottomZOfs: CM_ROW("Window Bottom Z Ofs.", "%.1f", VPUTOCM(viewSetup.mWindowBottomZOfs), "cm"); CM_SKIP_LINE; break;
 
          // Table options
-         case BS_DayNight: CM_ROW("Day Night: ", "%.1f", 100.f * m_player->m_globalEmissionScale, m_dayNightOverriden ? "% *" : "%"); break;
-         case BS_Difficulty: CM_ROW("Difficulty: ", "%.1f", 100.f * m_live_table->m_globalDifficulty, m_difficultyOverriden ? "% *" : "%"); break;
+         case BS_DayNight: CM_ROW("Day Night: ", "%.1f", 100.f * m_player->m_globalEmissionScale, m_dayNightOverriden != 0 ? "% *" : "%"); break;
+         case BS_Difficulty: CM_ROW("Difficulty: ", "%.1f", 100.f * m_live_table->m_globalDifficulty, m_difficultyOverriden != 0 ? "% *" : "%"); break;
 
          }
          if (highlight)
@@ -2861,15 +2869,7 @@ void LiveUI::TableProperties(bool is_live)
       PropFloat("Light Range", m_table, is_live, &(m_table->m_lightRange), m_live_table ? &(m_live_table->m_lightRange) : nullptr, 200.0f, 1000.0f, "%.0f");
       PropSeparator();
       // TODO Missing: environment texture combo
-      auto upd_env_em_scale = [this](bool is_live, float prev, float v)
-      {
-         const vec4 st(v * m_player->m_globalEmissionScale,
-            m_pin3d->m_envTexture ? (float)m_pin3d->m_envTexture->m_height /*+m_pin3d->m_envTexture->m_width)*0.5f*/
-                                      : (float)m_pin3d->m_builtinEnvTexture.m_height /*+m_pin3d->m_builtinEnvTexture.m_width)*0.5f*/,
-            0.f, 0.f);
-         m_rd->basicShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
-         m_rd->m_ballShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
-      };
+      auto upd_env_em_scale = [this](bool is_live, float prev, float v) { m_player->SetupShaders(); };
       PropFloat("Environment Em. Scale", m_table, is_live, &(m_table->m_envEmissionScale), m_live_table ? &(m_live_table->m_envEmissionScale) : nullptr, 0.1f, 0.5f, "%.3f", ImGuiInputTextFlags_CharsDecimal, upd_env_em_scale);
       PropFloat("Ambient Occlusion Scale", m_table, is_live, &(m_table->m_AOScale), m_live_table ? &(m_live_table->m_AOScale) : nullptr, 0.1f, 1.0f);
       PropFloat("Bloom Strength", m_table, is_live, &(m_table->m_bloom_strength), m_live_table ? &(m_live_table->m_bloom_strength) : nullptr, 0.1f, 1.0f);
@@ -2895,15 +2895,7 @@ void LiveUI::CameraProperties(bool is_live)
    {
       table->ImportBackdropPOV(string());
       if (is_live)
-      {
-         m_pin3d->InitLights(); // Needed to update shaders with new light settings
-         const vec4 st(table->m_envEmissionScale * m_player->m_globalEmissionScale,
-            m_pin3d->m_envTexture ? (float)m_pin3d->m_envTexture->m_height /*+m_pin3d->m_envTexture->m_width)*0.5f*/
-                                  : (float)m_pin3d->m_builtinEnvTexture.m_height /*+m_pin3d->m_builtinEnvTexture.m_width)*0.5f*/,
-            0.f, 0.f);
-         m_rd->basicShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
-         m_rd->m_ballShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
-      }
+         m_player->SetupShaders();
    }
    ImGui::SameLine();
    if (ImGui::Button("Export"))

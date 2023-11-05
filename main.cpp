@@ -580,6 +580,7 @@ public:
       free(szArglist);
 
       m_vpinball.m_settings.LoadFromFile(m_szIniFileName, true);
+      m_vpinball.m_settings.SaveValue(Settings::Version, "VPinball"s, VP_VERSION_STRING_DIGITS);
       
       SetupLogger(m_vpinball.m_settings.LoadValueWithDefault(Settings::Editor, "EnableLog"s, false));
 

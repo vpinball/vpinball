@@ -44,8 +44,8 @@ private:
    };
    TweakPage m_activeTweakPage = TP_PointOfView;
    int m_activeTweakIndex = 0;
-   bool m_dayNightOverriden = false;
-   bool m_difficultyOverriden = false;
+   int m_dayNightOverriden = 0; // mask with: 1 = edited / 2 = reseted
+   int m_difficultyOverriden = 0; // mask with: 1 = edited / 2 = reseted
    vector<BackdropSetting> m_tweakPageOptions;
    bool m_tweakMode = false;
    void UpdateTweakPage();
