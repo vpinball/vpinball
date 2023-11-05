@@ -1754,10 +1754,6 @@ void LiveUI::UpdateMainUI()
          {
             m_flyMode = !m_flyMode;
          }
-         else if (ImGui::IsKeyPressed(ImGuiKey_P))
-         {
-            PausePlayer(!m_player->m_debugWindowActive);
-         }
          else if (m_useEditorCam && ImGui::IsKeyPressed(ImGuiKey_G))
          {
             // Grab (translate)
