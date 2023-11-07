@@ -3012,7 +3012,10 @@ void LiveUI::RenderProbeProperties(bool is_live)
       for (size_t t = 0; t < table->m_vedit.size(); t++)
       {
          ISelect *const psel = table->m_vedit[t]->GetISelect();
-         if (psel != nullptr && psel->GetItemType() == eItemPrimitive && ((Primitive *)psel)->m_d.m_szReflectionProbe == probe->GetName() && ImGui::Selectable(((Primitive *)psel)->GetName()))
+         if (psel != nullptr && psel->GetItemType() == eItemPrimitive 
+            && ((probe->GetType() == RenderProbe::PLANE_REFLECTION && ((Primitive *)psel)->m_d.m_szReflectionProbe == probe->GetName())
+             || (probe->GetType() == RenderProbe::SCREEN_SPACE_TRANSPARENCY  && ((Primitive *)psel)->m_d.m_szRefractionProbe == probe->GetName()))
+            && ImGui::Selectable(((Primitive *)psel)->GetName()))
             m_selection = Selection(is_live, table->m_vedit[t]);
       }
    }
