@@ -163,6 +163,7 @@ Sub LoadVBSFiles(VBSfile)
 End Sub
 
 Sub LoadVPinMAME(VPMver, VBSfile, VBSver)
+	Err.Clear ' Clear any error that happened before and that we would report wrongly
 	Set Controller = CreateObject("VPinMAME.Controller")
 	If Err Then MsgBox "Can't load VPinMAME." & vbNewLine & Err.Description
 	If VPMver > "" Then If Controller.Version < VPMver Or Err Then MsgBox "VPinMAME ver " & VPMver & " required."
@@ -222,6 +223,7 @@ Sub LoadController(TableType, VPMver, VBSfile, VBSver)
 		DOFeffects(DOFFlippers)    = CInt(Setting("Controller", "DOFFlippers"))
 		DOFeffects(DOFTargets)     = CInt(Setting("Controller", "DOFTargets"))
 		DOFeffects(DOFDropTargets) = CInt(Setting("Controller", "DOFDropTargets"))
+		Err.Clear ' Clear any error that may have happened with missing/malformated settings
 	End If
 
 	'deactivate B2S via table script
