@@ -1100,8 +1100,10 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
       
    if (g_pplayer->m_liveUI->IsTweakMode())
    {
+      if (dispid == DISPID_GameEvents_KeyDown)
+         g_pplayer->m_liveUI->OnTweakModeEvent(1, keycode);
       if (dispid == DISPID_GameEvents_KeyUp)
-         g_pplayer->m_liveUI->OnTweakModeEvent(true, keycode);
+         g_pplayer->m_liveUI->OnTweakModeEvent(2, keycode);
    }
    else
    {
@@ -1906,13 +1908,13 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
             if (g_pplayer->m_liveUI->IsTweakMode())
             {
                if (m_keyPressedState[eLeftFlipperKey])
-                  g_pplayer->m_liveUI->OnTweakModeEvent(false, g_pplayer->m_rgKeys[eLeftFlipperKey]);
+                  g_pplayer->m_liveUI->OnTweakModeEvent(0, g_pplayer->m_rgKeys[eLeftFlipperKey]);
                if (m_keyPressedState[eRightFlipperKey])
-                  g_pplayer->m_liveUI->OnTweakModeEvent(false, g_pplayer->m_rgKeys[eRightFlipperKey]);
+                  g_pplayer->m_liveUI->OnTweakModeEvent(0, g_pplayer->m_rgKeys[eRightFlipperKey]);
                if (m_keyPressedState[eLeftTiltKey])
-                  g_pplayer->m_liveUI->OnTweakModeEvent(false, g_pplayer->m_rgKeys[eLeftTiltKey]);
+                  g_pplayer->m_liveUI->OnTweakModeEvent(0, g_pplayer->m_rgKeys[eLeftTiltKey]);
                if (m_keyPressedState[eRightTiltKey])
-                  g_pplayer->m_liveUI->OnTweakModeEvent(false, g_pplayer->m_rgKeys[eRightTiltKey]);
+                  g_pplayer->m_liveUI->OnTweakModeEvent(0, g_pplayer->m_rgKeys[eRightTiltKey]);
             }
          }
          return;
