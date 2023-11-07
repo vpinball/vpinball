@@ -3004,6 +3004,18 @@ void LiveUI::RenderProbeProperties(bool is_live)
 
       ImGui::EndTable();
    }
+   ImGui::Separator();
+   if (ImGui::CollapsingHeader("Users", ImGuiTreeNodeFlags_DefaultOpen))
+   {
+      PinTable *const table = is_live ? m_live_table : m_table;
+      RenderProbe *const probe = (is_live ? live_probe : startup_probe);
+      for (size_t t = 0; t < table->m_vedit.size(); t++)
+      {
+         ISelect *const psel = table->m_vedit[t]->GetISelect();
+         if (psel != nullptr && psel->GetItemType() == eItemPrimitive && ((Primitive *)psel)->m_d.m_szReflectionProbe == probe->GetName() && ImGui::Selectable(((Primitive *)psel)->GetName()))
+            m_selection = Selection(is_live, table->m_vedit[t]);
+      }
+   }
 }
 
 void LiveUI::BallProperties(bool is_live)
