@@ -1075,7 +1075,7 @@ void LiveUI::UpdateTweakPage()
       m_activeTweakIndex = (int)m_tweakPageOptions.size() - 1;
 }
 
-void LiveUI::OnTweakModeEvent(const bool isKeyDown, const int keycode)
+void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
 {
    if (!IsTweakMode())
       return;
@@ -1083,7 +1083,11 @@ void LiveUI::OnTweakModeEvent(const bool isKeyDown, const int keycode)
    PinTable *table = m_live_table;
    if (keycode == g_pplayer->m_rgKeys[eLeftFlipperKey] || keycode == g_pplayer->m_rgKeys[eRightFlipperKey])
    {
-      if (!isKeyDown && (activeTweakSetting == BS_Page || activeTweakSetting == BS_ViewMode))
+      // Do not react on key up/continuous press for Page/View
+      if (keyEvent != 1 && (activeTweakSetting == BS_Page || activeTweakSetting == BS_ViewMode))
+         return;
+      // Do not react on key up (only key down or long press)
+      if (keyEvent == 2)
          return;
       const bool up = keycode == g_pplayer->m_rgKeys[eRightFlipperKey];
       const float thesign = up ? 0.2f : -0.2f;
@@ -1174,7 +1178,7 @@ void LiveUI::OnTweakModeEvent(const bool isKeyDown, const int keycode)
       default: assert(false); break;
       }
    }
-   else if (isKeyDown)
+   else if (keyEvent == 1) // Key down
    {
       if (keycode == g_pplayer->m_rgKeys[eLeftTiltKey] && m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "EnableCameraModeFlyAround"s, false))
          m_live_table->mViewSetups[m_live_table->m_BG_current_set].mViewportRotation -= 1.0f;

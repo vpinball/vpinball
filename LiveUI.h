@@ -21,7 +21,7 @@ public:
 
    void OpenTweakMode();
    bool IsTweakMode() const { return m_tweakMode; }
-   void OnTweakModeEvent(const bool isKeyDown, const int keycode);
+   void OnTweakModeEvent(const int keyEvent, const int keycode);
 
    void HideUI();
 
