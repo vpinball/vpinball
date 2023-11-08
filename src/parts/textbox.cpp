@@ -3,16 +3,11 @@
 
 Textbox::Textbox()
 {
-   m_ptable = nullptr;
-   m_texture = nullptr;
-   m_pIFont = nullptr;
-   m_pIFontPlay = nullptr;
 }
 
 Textbox::~Textbox()
 {
-   if (m_pIFont)
-      m_pIFont->Release();
+   SAFE_RELEASE(m_pIFont);
 }
 
 Textbox *Textbox::CopyForPlay(PinTable *live_table)
@@ -107,8 +102,7 @@ void Textbox::SetDefaults(const bool fromMouseClick)
          m_d.m_sztext.clear();
    }
 
-   if (m_pIFont)
-      m_pIFont->Release();
+   SAFE_RELEASE(m_pIFont);
    OleCreateFontIndirect(&fd, IID_IFont, (void **)&m_pIFont);
    if (free_lpstrName)
       free(fd.lpstrName);
@@ -155,6 +149,100 @@ void Textbox::WriteRegDefaults()
    g_pvp->m_settings.SaveValue(regKey, "Text"s, m_d.m_sztext);
 
 #undef regKey
+}
+
+
+HRESULT Textbox::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)
+{
+   BiffWriter bw(pstm, hcrypthash);
+
+   bw.WriteVector2(FID(VER1), m_d.m_v1);
+   bw.WriteVector2(FID(VER2), m_d.m_v2);
+   bw.WriteInt(FID(CLRB), m_d.m_backcolor);
+   bw.WriteInt(FID(CLRF), m_d.m_fontcolor);
+   bw.WriteFloat(FID(INSC), m_d.m_intensity_scale);
+   bw.WriteString(FID(TEXT), m_d.m_sztext);
+   bw.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
+   bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
+   bw.WriteWideString(FID(NAME), m_wzName);
+   bw.WriteInt(FID(ALGN), m_d.m_talign);
+   bw.WriteBool(FID(TRNS), m_d.m_transparent);
+   bw.WriteBool(FID(IDMD), m_d.m_isDMD);
+
+   ISelect::SaveData(pstm, hcrypthash);
+
+   bw.WriteTag(FID(FONT));
+   IPersistStream * ips;
+   m_pIFont->QueryInterface(IID_IPersistStream, (void **)&ips);
+   const HRESULT hr = ips->Save(pstm, TRUE);
+
+   bw.WriteTag(FID(ENDB));
+
+   return S_OK;
+}
+
+HRESULT Textbox::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+{
+   SetDefaults(false);
+
+   BiffReader br(pstm, this, pid, version, hcrypthash, hcryptkey);
+
+   m_ptable = ptable;
+
+   br.Load();
+   return S_OK;
+}
+
+bool Textbox::LoadToken(const int id, BiffReader * const pbr)
+{
+   switch(id)
+   {
+   case FID(PIID): pbr->GetInt((int *)pbr->m_pdata); break;
+   case FID(VER1): pbr->GetVector2(m_d.m_v1); break;
+   case FID(VER2): pbr->GetVector2(m_d.m_v2); break;
+   case FID(CLRB): pbr->GetInt(m_d.m_backcolor); break;
+   case FID(CLRF): pbr->GetInt(m_d.m_fontcolor); break;
+   case FID(INSC): pbr->GetFloat(m_d.m_intensity_scale); break;
+   case FID(TMON): pbr->GetBool(m_d.m_tdr.m_TimerEnabled); break;
+   case FID(TMIN): pbr->GetInt(m_d.m_tdr.m_TimerInterval); break;
+   case FID(TEXT): pbr->GetString(m_d.m_sztext); break;
+   case FID(NAME): pbr->GetWideString(m_wzName,sizeof(m_wzName)/sizeof(m_wzName[0])); break;
+   case FID(ALGN): pbr->GetInt(&m_d.m_talign); break;
+   case FID(TRNS): pbr->GetBool(m_d.m_transparent); break;
+   case FID(IDMD): pbr->GetBool(m_d.m_isDMD); break;
+   case FID(FONT):
+   {
+      if (!m_pIFont)
+      {
+         FONTDESC fd;
+         fd.cbSizeofstruct = sizeof(FONTDESC);
+         fd.lpstrName = (LPOLESTR)(L"Arial");
+         fd.cySize.int64 = 142500;
+         //fd.cySize.Lo = 0;
+         fd.sWeight = FW_NORMAL;
+         fd.sCharset = 0;
+         fd.fItalic = 0;
+         fd.fUnderline = 0;
+         fd.fStrikethrough = 0;
+         OleCreateFontIndirect(&fd, IID_IFont, (void **)&m_pIFont);
+      }
+      IPersistStream * ips;
+      m_pIFont->QueryInterface(IID_IPersistStream, (void **)&ips);
+
+      ips->Load(pbr->m_pistream);
+
+      break;
+   }
+   default: ISelect::LoadToken(id, pbr); break;
+   }
+   return true;
+}
+
+HRESULT Textbox::InitPostLoad()
+{
+   m_texture = nullptr;
+
+   return S_OK;
 }
 
 char * Textbox::GetFontName()
@@ -250,187 +338,6 @@ void Textbox::GetTimers(vector<HitTimer*> &pvht)
       pvht.push_back(pht);
 }
 
-void Textbox::GetHitShapes(vector<HitObject*> &pvho)
-{
-}
-
-void Textbox::GetHitShapesDebug(vector<HitObject*> &pvho)
-{
-}
-
-void Textbox::EndPlay()
-{
-   delete m_texture;
-   m_texture = nullptr;
-   SAFE_RELEASE(m_pIFontPlay);
-   IEditable::EndPlay();
-}
-
-void Textbox::RenderDynamic()
-{
-   TRACE_FUNCTION();
-
-   const bool dmd = m_d.m_isDMD || StrStrI(m_d.m_sztext.c_str(), "DMD") != nullptr; //!! second part is VP10.0 legacy
-
-   if (!m_d.m_visible || (dmd && !g_pplayer->m_texdmd) || (m_backglass && g_pplayer->IsRenderPass(Player::REFLECTION_PASS)))
-      return;
-
-   RenderDevice * const pd3dDevice = m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-   RenderState initial_state;
-   pd3dDevice->CopyRenderStates(true, initial_state);
-   if (m_ptable->m_tblMirrorEnabled ^ g_pplayer->IsRenderPass(Player::REFLECTION_PASS))
-      pd3dDevice->SetRenderStateCulling(RenderState::CULL_NONE);
-   else
-      pd3dDevice->SetRenderStateCulling(RenderState::CULL_CCW);
-   pd3dDevice->SetRenderStateDepthBias(0.0f);
-   pd3dDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
-
-   constexpr float mult  = (float)(1.0 / EDITOR_BG_WIDTH);
-   constexpr float ymult = (float)(1.0 / EDITOR_BG_HEIGHT);
-
-   const float rect_left = min(m_d.m_v1.x, m_d.m_v2.x);
-   const float rect_top = min(m_d.m_v1.y, m_d.m_v2.y);
-   const float rect_right = max(m_d.m_v1.x, m_d.m_v2.x);
-   const float rect_bottom = max(m_d.m_v1.y, m_d.m_v2.y);
-
-   const float x = rect_left*mult;
-   const float y = rect_top*ymult;
-   const float width = (rect_right - rect_left)*mult;
-   const float height = (rect_bottom - rect_top)*ymult;
-
-   if (dmd)
-   {
-      pd3dDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
-      g_pplayer->DMDdraw(x, y, width, height, m_d.m_fontcolor, m_d.m_intensity_scale); //!! replace??!
-   }
-   else if (m_texture)
-   {
-      pd3dDevice->DMDShader->SetFloat(SHADER_alphaTestValue, (float)(128.0 / 255.0));
-      g_pplayer->Spritedraw(x, y, width, height, 0xFFFFFFFF, pd3dDevice->m_texMan.LoadTexture(m_texture, SF_TRILINEAR, SA_REPEAT, SA_REPEAT, false), m_d.m_intensity_scale);
-      pd3dDevice->DMDShader->SetFloat(SHADER_alphaTestValue, 1.0f);
-   }
-
-   pd3dDevice->CopyRenderStates(false, initial_state);
-}
-
-void Textbox::RenderSetup()
-{
-   m_pIFont->Clone(&m_pIFontPlay);
-
-   CY size;
-   m_pIFontPlay->get_Size(&size);
-   size.int64 = (LONGLONG)(size.int64 / 1.5 * g_pplayer->m_wnd_height * g_pplayer->m_wnd_width);
-   m_pIFontPlay->put_Size(size);
-
-   PreRenderText();
-}
-
-void Textbox::UpdateAnimation(const float diff_time_msec)
-{
-}
-
-void Textbox::RenderStatic()
-{
-}
-
-void Textbox::PreRenderText()
-{
-   RECT rect;
-   rect.left = (int)min(m_d.m_v1.x, m_d.m_v2.x);
-   rect.top = (int)min(m_d.m_v1.y, m_d.m_v2.y);
-   rect.right = (int)max(m_d.m_v1.x, m_d.m_v2.x);
-   rect.bottom = (int)max(m_d.m_v1.y, m_d.m_v2.y);
-
-   const int width = rect.right - rect.left;
-   const int height = rect.bottom - rect.top;
-
-   BITMAPINFO bmi = {};
-   bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-   bmi.bmiHeader.biWidth = width;
-   bmi.bmiHeader.biHeight = -height;
-   bmi.bmiHeader.biPlanes = 1;
-   bmi.bmiHeader.biBitCount = 32;
-   bmi.bmiHeader.biCompression = BI_RGB;
-   bmi.bmiHeader.biSizeImage = 0;
-
-   void *bits;
-   const HBITMAP hbm = CreateDIBSection(0, &bmi, DIB_RGB_COLORS, &bits, nullptr, 0);
-   assert(hbm);
-
-   const HDC hdc = CreateCompatibleDC(nullptr);
-   const HBITMAP oldBmp = (HBITMAP)SelectObject(hdc, hbm);
-
-   const HBRUSH hbrush = CreateSolidBrush(m_d.m_backcolor);
-   const HBRUSH hbrushold = (HBRUSH)SelectObject(hdc, hbrush);
-   PatBlt(hdc, 0, 0, width, height, PATCOPY);
-   SelectObject(hdc, hbrushold);
-   DeleteObject(hbrush);
-
-   HFONT hFont;
-   m_pIFontPlay->get_hFont(&hFont);
-   const HFONT oldFont = (HFONT)SelectObject(hdc, hFont);
-   SetTextColor(hdc, m_d.m_fontcolor);
-   SetBkMode(hdc, TRANSPARENT);
-   SetTextAlign(hdc, TA_LEFT | TA_TOP | TA_NOUPDATECP);
-
-   int alignment;
-   switch (m_d.m_talign)
-   {
-   case TextAlignLeft:
-      alignment = DT_LEFT;
-      break;
-
-   default:
-   case TextAlignCenter:
-      alignment = DT_CENTER;
-      break;
-
-   case TextAlignRight:
-      alignment = DT_RIGHT;
-      break;
-   }
-
-   const int border = (4 * g_pplayer->m_wnd_width) / EDITOR_BG_WIDTH;
-   RECT rcOut;
-   rcOut.left = border;
-   rcOut.top = border;
-   rcOut.right = width - border * 2;
-   rcOut.bottom = height - border * 2;
-
-   DrawText(hdc, m_d.m_sztext.c_str(), (int)m_d.m_sztext.length(), &rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK);
-
-   GdiFlush();     // make sure everything is drawn
-
-   if (!m_texture)
-      m_texture = new BaseTexture(width, height, BaseTexture::SRGBA); // This could be optimized to an RGB texture if transparent is not set
-
-   // Set alpha for pixels that match transparent color (if transparent enabled), otherwise set to opaque
-   const D3DCOLOR* __restrict bitsd = (D3DCOLOR*)bits;
-         D3DCOLOR* __restrict dest = (D3DCOLOR*)m_texture->data();
-   for (unsigned int i = 0; i < m_texture->height(); i++)
-   {
-      for (unsigned int l = 0; l < m_texture->width(); l++, dest++, bitsd++)
-      {
-		  const D3DCOLOR src = *bitsd;
-		  if (m_d.m_transparent && ((src & 0xFFFFFFu) == m_d.m_backcolor))
-			  *dest = 0x00000000; // set to black & alpha full transparent
-		  else
-			  *dest = ((src & 0x000000FFu) << 16)
-			  | (src & 0x0000FF00u)
-			  | ((src & 0x0000FF0000u) >> 16)
-			  | 0xFF000000u;
-      }
-      dest += m_texture->pitch()/4 - m_texture->width();
-   }
-
-   g_pplayer->m_pin3d.m_pd3dPrimaryDevice->m_texMan.SetDirty(m_texture);
-
-   SelectObject(hdc, oldFont);
-   SelectObject(hdc, oldBmp);
-   DeleteDC(hdc);
-   DeleteObject(hbm);
-}
-
 void Textbox::SetObjectPos()
 {
     m_vpinball->SetObjectPosCur(m_d.m_v1.x, m_d.m_v1.y);
@@ -452,6 +359,222 @@ void Textbox::PutCenter(const Vertex2D& pv)
 
    m_d.m_v1 = pv;
 }
+
+
+#pragma region Physics
+
+void Textbox::GetHitShapes(vector<HitObject*> &pvho)
+{
+}
+
+void Textbox::GetHitShapesDebug(vector<HitObject*> &pvho)
+{
+}
+
+void Textbox::EndPlay()
+{
+   IEditable::EndPlay();
+   RenderRelease();
+}
+
+#pragma endregion
+
+
+#pragma region Rendering
+
+// Deprecated Legacy API to be removed
+void Textbox::RenderSetup() { }
+void Textbox::RenderStatic() { }
+void Textbox::RenderDynamic() { }
+
+void Textbox::RenderSetup(RenderDevice *device)
+{
+   assert(m_rd == nullptr);
+   m_rd = device;
+
+   m_pIFont->Clone(&m_pIFontPlay);
+
+   CY size;
+   m_pIFontPlay->get_Size(&size);
+   size.int64 = (LONGLONG)(size.int64 / 1.5 * g_pplayer->m_wnd_height * g_pplayer->m_wnd_width);
+   m_pIFontPlay->put_Size(size);
+
+   const int width = (int)max(m_d.m_v1.x, m_d.m_v2.x) - (int)min(m_d.m_v1.x, m_d.m_v2.x);
+   const int height = (int)max(m_d.m_v1.y, m_d.m_v2.y) - (int)min(m_d.m_v1.y, m_d.m_v2.y);
+   if (width > 0 && height > 0)
+   {
+      m_texture = new BaseTexture(width, height, BaseTexture::SRGBA);
+      m_textureDirty = true;
+   }
+}
+
+void Textbox::RenderRelease()
+{
+   assert(m_rd != nullptr);
+   delete m_texture;
+   m_texture = nullptr;
+   SAFE_RELEASE(m_pIFontPlay);
+   m_rd = nullptr;
+}
+
+void Textbox::UpdateAnimation(const float diff_time_msec)
+{
+   assert(m_rd != nullptr);
+}
+
+void Textbox::Render(const unsigned int renderMask)
+{
+   assert(m_rd != nullptr);
+   const bool isStaticOnly = renderMask & Player::STATIC_ONLY;
+   const bool isDynamicOnly = renderMask & Player::DYNAMIC_ONLY;
+   const bool isReflectionPass = renderMask & Player::REFLECTION_PASS;
+   TRACE_FUNCTION();
+
+   if (isStaticOnly)
+      return;
+
+   if (!m_d.m_visible || m_texture == nullptr || (m_backglass && isReflectionPass))
+      return;
+
+   const bool dmd = m_d.m_isDMD || StrStrI(m_d.m_sztext.c_str(), "DMD") != nullptr; //!! second part is VP10.0 legacy
+   if (dmd && !g_pplayer->m_texdmd)
+      return;
+
+   if (m_textureDirty)
+   {
+      m_textureDirty = false;
+      
+      RECT rect;
+      rect.left = (int)min(m_d.m_v1.x, m_d.m_v2.x);
+      rect.top = (int)min(m_d.m_v1.y, m_d.m_v2.y);
+      rect.right = (int)max(m_d.m_v1.x, m_d.m_v2.x);
+      rect.bottom = (int)max(m_d.m_v1.y, m_d.m_v2.y);
+
+      const int width = rect.right - rect.left;
+      const int height = rect.bottom - rect.top;
+
+      BITMAPINFO bmi = {};
+      bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+      bmi.bmiHeader.biWidth = width;
+      bmi.bmiHeader.biHeight = -height;
+      bmi.bmiHeader.biPlanes = 1;
+      bmi.bmiHeader.biBitCount = 32;
+      bmi.bmiHeader.biCompression = BI_RGB;
+      bmi.bmiHeader.biSizeImage = 0;
+
+      void *bits;
+      const HBITMAP hbm = CreateDIBSection(0, &bmi, DIB_RGB_COLORS, &bits, nullptr, 0);
+      assert(hbm);
+
+      const HDC hdc = CreateCompatibleDC(nullptr);
+      const HBITMAP oldBmp = (HBITMAP)SelectObject(hdc, hbm);
+
+      const HBRUSH hbrush = CreateSolidBrush(m_d.m_backcolor);
+      const HBRUSH hbrushold = (HBRUSH)SelectObject(hdc, hbrush);
+      PatBlt(hdc, 0, 0, width, height, PATCOPY);
+      SelectObject(hdc, hbrushold);
+      DeleteObject(hbrush);
+
+      HFONT hFont;
+      m_pIFontPlay->get_hFont(&hFont);
+      const HFONT oldFont = (HFONT)SelectObject(hdc, hFont);
+      SetTextColor(hdc, m_d.m_fontcolor);
+      SetBkMode(hdc, TRANSPARENT);
+      SetTextAlign(hdc, TA_LEFT | TA_TOP | TA_NOUPDATECP);
+
+      int alignment;
+      switch (m_d.m_talign)
+      {
+      case TextAlignLeft:
+         alignment = DT_LEFT;
+         break;
+
+      default:
+      case TextAlignCenter:
+         alignment = DT_CENTER;
+         break;
+
+      case TextAlignRight:
+         alignment = DT_RIGHT;
+         break;
+      }
+
+      const int border = (4 * g_pplayer->m_wnd_width) / EDITOR_BG_WIDTH;
+      RECT rcOut;
+      rcOut.left = border;
+      rcOut.top = border;
+      rcOut.right = width - border * 2;
+      rcOut.bottom = height - border * 2;
+
+      DrawText(hdc, m_d.m_sztext.c_str(), (int)m_d.m_sztext.length(), &rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK);
+
+      GdiFlush();     // make sure everything is drawn
+
+      // Set alpha for pixels that match transparent color (if transparent enabled), otherwise set to opaque
+      const D3DCOLOR* __restrict bitsd = (D3DCOLOR*)bits;
+            D3DCOLOR* __restrict dest = (D3DCOLOR*)m_texture->data();
+      for (unsigned int i = 0; i < m_texture->height(); i++)
+      {
+         for (unsigned int l = 0; l < m_texture->width(); l++, dest++, bitsd++)
+         {
+           const D3DCOLOR src = *bitsd;
+           if (m_d.m_transparent && ((src & 0xFFFFFFu) == m_d.m_backcolor))
+              *dest = 0x00000000; // set to black & alpha full transparent
+           else
+              *dest = ((src & 0x000000FFu) << 16)
+              | (src & 0x0000FF00u)
+              | ((src & 0x0000FF0000u) >> 16)
+              | 0xFF000000u;
+         }
+         dest += m_texture->pitch()/4 - m_texture->width();
+      }
+
+      g_pplayer->m_pin3d.m_pd3dPrimaryDevice->m_texMan.SetDirty(m_texture);
+
+      SelectObject(hdc, oldFont);
+      SelectObject(hdc, oldBmp);
+      DeleteDC(hdc);
+      DeleteObject(hbm);
+   }
+
+   RenderState initial_state;
+   m_rd->CopyRenderStates(true, initial_state);
+   assert(m_rd->GetRenderState().m_depthBias == 0.0f);
+   assert(m_rd->GetRenderState().GetRenderState(RenderState::ZWRITEENABLE) == RenderState::RS_TRUE);
+   m_rd->SetRenderStateCulling(m_ptable->m_tblMirrorEnabled ^ isReflectionPass ? RenderState::CULL_NONE : RenderState::CULL_CCW);
+
+   constexpr float mult  = (float)(1.0 / EDITOR_BG_WIDTH);
+   constexpr float ymult = (float)(1.0 / EDITOR_BG_HEIGHT);
+
+   const float rect_left = min(m_d.m_v1.x, m_d.m_v2.x);
+   const float rect_top = min(m_d.m_v1.y, m_d.m_v2.y);
+   const float rect_right = max(m_d.m_v1.x, m_d.m_v2.x);
+   const float rect_bottom = max(m_d.m_v1.y, m_d.m_v2.y);
+
+   const float x = rect_left*mult;
+   const float y = rect_top*ymult;
+   const float width = (rect_right - rect_left)*mult;
+   const float height = (rect_bottom - rect_top)*ymult;
+
+   if (dmd)
+   {
+      m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
+      g_pplayer->DMDdraw(x, y, width, height, m_d.m_fontcolor, m_d.m_intensity_scale); //!! replace??!
+   }
+   else if (m_texture)
+   {
+      m_rd->DMDShader->SetFloat(SHADER_alphaTestValue, (float)(128.0 / 255.0));
+      g_pplayer->Spritedraw(x, y, width, height, 0xFFFFFFFF, m_rd->m_texMan.LoadTexture(m_texture, SF_TRILINEAR, SA_REPEAT, SA_REPEAT, false), m_d.m_intensity_scale);
+      m_rd->DMDShader->SetFloat(SHADER_alphaTestValue, 1.0f);
+   }
+
+   m_rd->CopyRenderStates(false, initial_state);
+}
+
+#pragma endregion
+
+
+#pragma region ScriptProxy
 
 STDMETHODIMP Textbox::get_BackColor(OLE_COLOR *pVal)
 {
@@ -495,101 +618,7 @@ STDMETHODIMP Textbox::put_Text(BSTR newVal)
    char buf[MAXSTRING];
    WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXSTRING, nullptr, nullptr);
    m_d.m_sztext = buf;
-   if (g_pplayer)
-      PreRenderText();
-
-   return S_OK;
-}
-
-HRESULT Textbox::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)
-{
-   BiffWriter bw(pstm, hcrypthash);
-
-   bw.WriteVector2(FID(VER1), m_d.m_v1);
-   bw.WriteVector2(FID(VER2), m_d.m_v2);
-   bw.WriteInt(FID(CLRB), m_d.m_backcolor);
-   bw.WriteInt(FID(CLRF), m_d.m_fontcolor);
-   bw.WriteFloat(FID(INSC), m_d.m_intensity_scale);
-   bw.WriteString(FID(TEXT), m_d.m_sztext);
-   bw.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
-   bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
-   bw.WriteWideString(FID(NAME), m_wzName);
-   bw.WriteInt(FID(ALGN), m_d.m_talign);
-   bw.WriteBool(FID(TRNS), m_d.m_transparent);
-   bw.WriteBool(FID(IDMD), m_d.m_isDMD);
-
-   ISelect::SaveData(pstm, hcrypthash);
-
-   bw.WriteTag(FID(FONT));
-   IPersistStream * ips;
-   m_pIFont->QueryInterface(IID_IPersistStream, (void **)&ips);
-   const HRESULT hr = ips->Save(pstm, TRUE);
-
-   bw.WriteTag(FID(ENDB));
-
-   return S_OK;
-}
-
-HRESULT Textbox::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
-{
-   SetDefaults(false);
-
-   BiffReader br(pstm, this, pid, version, hcrypthash, hcryptkey);
-
-   m_ptable = ptable;
-
-   br.Load();
-   return S_OK;
-}
-
-bool Textbox::LoadToken(const int id, BiffReader * const pbr)
-{
-   switch(id)
-   {
-   case FID(PIID): pbr->GetInt((int *)pbr->m_pdata); break;
-   case FID(VER1): pbr->GetVector2(m_d.m_v1); break;
-   case FID(VER2): pbr->GetVector2(m_d.m_v2); break;
-   case FID(CLRB): pbr->GetInt(m_d.m_backcolor); break;
-   case FID(CLRF): pbr->GetInt(m_d.m_fontcolor); break;
-   case FID(INSC): pbr->GetFloat(m_d.m_intensity_scale); break;
-   case FID(TMON): pbr->GetBool(m_d.m_tdr.m_TimerEnabled); break;
-   case FID(TMIN): pbr->GetInt(m_d.m_tdr.m_TimerInterval); break;
-   case FID(TEXT): pbr->GetString(m_d.m_sztext); break;
-   case FID(NAME): pbr->GetWideString(m_wzName,sizeof(m_wzName)/sizeof(m_wzName[0])); break;
-   case FID(ALGN): pbr->GetInt(&m_d.m_talign); break;
-   case FID(TRNS): pbr->GetBool(m_d.m_transparent); break;
-   case FID(IDMD): pbr->GetBool(m_d.m_isDMD); break;
-   case FID(FONT):
-   {
-      if (!m_pIFont)
-      {
-         FONTDESC fd;
-         fd.cbSizeofstruct = sizeof(FONTDESC);
-         fd.lpstrName = (LPOLESTR)(L"Arial");
-         fd.cySize.int64 = 142500;
-         //fd.cySize.Lo = 0;
-         fd.sWeight = FW_NORMAL;
-         fd.sCharset = 0;
-         fd.fItalic = 0;
-         fd.fUnderline = 0;
-         fd.fStrikethrough = 0;
-         OleCreateFontIndirect(&fd, IID_IFont, (void **)&m_pIFont);
-      }
-      IPersistStream * ips;
-      m_pIFont->QueryInterface(IID_IPersistStream, (void **)&ips);
-
-      ips->Load(pbr->m_pistream);
-
-      break;
-   }
-   default: ISelect::LoadToken(id, pbr); break;
-   }
-   return true;
-}
-
-HRESULT Textbox::InitPostLoad()
-{
-   m_texture = nullptr;
+   m_textureDirty = true;
 
    return S_OK;
 }
@@ -749,3 +778,5 @@ STDMETHODIMP Textbox::put_Visible(VARIANT_BOOL newVal)
 
    return S_OK;
 }
+
+#pragma endregion

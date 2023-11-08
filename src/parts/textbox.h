@@ -79,18 +79,21 @@ public:
 
    Textbox *CopyForPlay(PinTable *live_table);
 
-   IFont *m_pIFont;
+   IFont *m_pIFont = nullptr;
 
    TextboxData m_d;
 
+   virtual void RenderSetup(RenderDevice *device);
+   virtual void Render(const unsigned int renderMask);
+   virtual void RenderRelease();
+
 private:
-   void PreRenderText();
-
-   PinTable *m_ptable;
-
-   BaseTexture *m_texture;
-
-   IFont *m_pIFontPlay; // Our font, scaled to match play window resolution
+   PinTable *m_ptable = nullptr;
+   
+   RenderDevice *m_rd = nullptr;
+   bool m_textureDirty = true;
+   BaseTexture *m_texture = nullptr;
+   IFont *m_pIFontPlay = nullptr; // Our font, scaled to match play window resolution
 
 public:
    // ITextbox
