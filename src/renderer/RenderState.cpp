@@ -57,6 +57,11 @@ RenderState::RenderState()
    #endif
 }
 
+RenderState::RenderStateValue RenderState::GetRenderState(const RenderStates p1) const
+{
+   return (RenderState::RenderStateValue) ((m_state & render_state_masks[p1].mask) >> render_state_masks[p1].shift);
+}
+
 void RenderState::SetRenderState(const RenderStates p1, const RenderStateValue p2)
 {
    // Value must fit inside the render state bit mask

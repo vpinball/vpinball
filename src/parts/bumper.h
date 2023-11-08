@@ -96,13 +96,13 @@ public:
 
    BumperData m_d;
 
-   BumperHitCircle *m_pbumperhitcircle;
+   BumperHitCircle *m_pbumperhitcircle = nullptr;
+
+   virtual void RenderSetup(RenderDevice *device);
+   virtual void Render(const unsigned int renderMask);
+   virtual void RenderRelease();
 
 private:
-   void RenderBase(const Material * const baseMaterial);
-   void RenderCap(const Material * const capMaterial);
-   void RenderSocket(const Material * const socketMaterial);
-   void UpdateRing();
    void UpdateSkirt(const bool doCalculation);
    void GenerateBaseMesh(Vertex3D_NoTex2 *buf);
    void GenerateSocketMesh(Vertex3D_NoTex2 *buf);
@@ -111,27 +111,28 @@ private:
 
    PinTable *m_ptable;
 
-   MeshBuffer *m_baseMeshBuffer;
-   MeshBuffer *m_socketMeshBuffer;
-   MeshBuffer *m_ringMeshBuffer;
-   MeshBuffer *m_capMeshBuffer;
+   RenderDevice *m_rd = nullptr;
+   MeshBuffer *m_baseMeshBuffer = nullptr;
+   MeshBuffer *m_socketMeshBuffer = nullptr;
+   MeshBuffer *m_ringMeshBuffer = nullptr;
+   MeshBuffer *m_capMeshBuffer = nullptr;
 
    Matrix3D m_fullMatrix;
-   Vertex3D_NoTex2 *m_ringVertices;
+   Vertex3D_NoTex2 *m_ringVertices = nullptr;
    Texture m_ringTexture;
    Texture m_skirtTexture;
    Texture m_baseTexture;
    Texture m_capTexture;
 
-   PropertyPane *m_propVisual;
+   PropertyPane *m_propVisual = nullptr;
 
    float   m_baseHeight;
-   float   m_skirtCounter;
-   bool    m_updateSkirt;
-   bool    m_doSkirtAnimation;
-   bool    m_enableSkirtAnimation;
-   bool    m_ringDown;
-   bool    m_ringAnimate;
+   float   m_skirtCounter = 0.0f;
+   bool    m_updateSkirt = false;
+   bool    m_doSkirtAnimation = false;
+   bool    m_enableSkirtAnimation = true;
+   bool    m_ringDown = false;
+   bool    m_ringAnimate = false;
 
    // IBumper
 public:

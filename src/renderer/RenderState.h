@@ -57,6 +57,7 @@ public:
 
    RenderState();
 
+   RenderStateValue GetRenderState(const RenderStates p1) const;
    void SetRenderState(const RenderStates p1, const RenderStateValue p2);
    void SetRenderStateCulling(RenderStateValue cull);
    void SetRenderStateDepthBias(float bias);

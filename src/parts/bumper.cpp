@@ -10,25 +10,11 @@
 
 Bumper::Bumper()
 {
-   m_pbumperhitcircle = nullptr;
-   m_baseMeshBuffer = nullptr;
-   m_ringMeshBuffer = nullptr;
-   m_capMeshBuffer = nullptr;
-   m_socketMeshBuffer = nullptr;
-   m_ringVertices = nullptr;
-   m_ringAnimate = false;
-   m_propVisual = nullptr;
    m_d.m_ringDropOffset = 0.0f;
-   m_ringDown = false;
-   m_updateSkirt = false;
-   m_doSkirtAnimation = false;
-   m_enableSkirtAnimation = true;
-   m_skirtCounter = 0.0f;
 }
 
 Bumper::~Bumper()
 {
-   EndPlay();
 }
 
 Bumper *Bumper::CopyForPlay(PinTable *live_table)
@@ -214,6 +200,9 @@ void Bumper::GetTimers(vector<HitTimer*> &pvht)
       pvht.push_back(pht);
 }
 
+
+#pragma region Physics
+
 void Bumper::GetHitShapes(vector<HitObject*> &pvho)
 {
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
@@ -242,9 +231,86 @@ void Bumper::GetHitShapesDebug(vector<HitObject*> &pvho)
 void Bumper::EndPlay()
 {
    IEditable::EndPlay();
-
    m_pbumperhitcircle = nullptr;
+   RenderRelease();
+}
 
+#pragma endregion
+
+
+#pragma region Rendering
+
+// Deprecated Legacy API to be removed
+void Bumper::RenderSetup() { }
+void Bumper::RenderStatic() { }
+void Bumper::RenderDynamic() { }
+
+void Bumper::RenderSetup(RenderDevice *device)
+{
+   assert(m_rd == nullptr);
+   m_rd = device;
+
+   m_baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
+
+   m_fullMatrix.SetRotateZ(ANGTORAD(m_d.m_orientation));
+   if (m_d.m_baseVisible)
+   {
+      m_baseTexture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "BumperBase.webp");
+      IndexBuffer* baseIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperBaseNumIndices, bumperBaseIndices);
+      VertexBuffer* baseVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperBaseNumVertices);
+      Vertex3D_NoTex2 *buf;
+      baseVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+      GenerateBaseMesh(buf);
+      baseVertexBuffer->unlock();
+      delete m_baseMeshBuffer;
+      m_baseMeshBuffer = new MeshBuffer(m_wzName + L".Base"s, baseVertexBuffer, baseIndexBuffer, true);
+   }
+
+   if (m_d.m_skirtVisible)
+   {
+      m_skirtTexture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "BumperSkirt.webp");
+      IndexBuffer* socketIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperSocketNumIndices, bumperSocketIndices);
+      VertexBuffer* socketVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperSocketNumVertices, nullptr, true);
+      Vertex3D_NoTex2 *buf;
+      socketVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+      GenerateSocketMesh(buf);
+      socketVertexBuffer->unlock();
+      delete m_socketMeshBuffer;
+      m_socketMeshBuffer = new MeshBuffer(m_wzName + L".Socket"s, socketVertexBuffer, socketIndexBuffer, true);
+   }
+
+   if (m_d.m_ringVisible)
+   {
+      m_ringTexture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "BumperRing.webp");
+      IndexBuffer* ringIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperRingNumIndices, bumperRingIndices);
+      VertexBuffer *ringVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperRingNumVertices, nullptr, true);
+      m_ringVertices = new Vertex3D_NoTex2[bumperRingNumVertices];
+      GenerateRingMesh(m_ringVertices);
+      Vertex3D_NoTex2 *buf;
+      ringVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
+      memcpy(buf, m_ringVertices, bumperRingNumVertices*sizeof(Vertex3D_NoTex2));
+      ringVertexBuffer->unlock();
+      delete m_ringMeshBuffer;
+      m_ringMeshBuffer = new MeshBuffer(m_wzName + L".Ring"s, ringVertexBuffer, ringIndexBuffer, true);
+   }
+
+   if (m_d.m_capVisible)
+   {
+      m_capTexture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "BumperCap.webp");
+      IndexBuffer* capIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperCapNumIndices, bumperCapIndices);
+      VertexBuffer* capVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperCapNumVertices);
+      Vertex3D_NoTex2 *buf;
+      capVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+      GenerateCapMesh(buf);
+      capVertexBuffer->unlock();
+      delete m_capMeshBuffer;
+      m_capMeshBuffer = new MeshBuffer(m_wzName + L".Cap"s, capVertexBuffer, capIndexBuffer, true);
+   }
+}
+
+void Bumper::RenderRelease()
+{
+   assert(m_rd != nullptr);
    delete m_baseMeshBuffer;
    delete m_ringMeshBuffer;
    delete m_capMeshBuffer;
@@ -260,66 +326,94 @@ void Bumper::EndPlay()
    m_ringVertices = nullptr;
    m_capTexture.FreeStuff();
    m_skirtTexture.FreeStuff();
+
+   m_rd = nullptr;
 }
 
-void Bumper::UpdateRing()
+void Bumper::Render(const unsigned int renderMask)
 {
-   if (m_ringMeshBuffer == nullptr)
+   assert(m_rd != nullptr);
+   const bool isStaticOnly = renderMask & Player::STATIC_ONLY;
+   const bool isDynamicOnly = renderMask & Player::DYNAMIC_ONLY;
+   const bool isReflectionPass = renderMask & Player::REFLECTION_PASS;
+   TRACE_FUNCTION();
+
+   if (isReflectionPass && !m_d.m_reflectionEnabled)
       return;
 
-   //TODO update Worldmatrix instead.
-   Vertex3D_NoTex2 *buf;
-   m_ringMeshBuffer->m_vb->lock(0, 0, (void **)&buf, VertexBuffer::DISCARDCONTENTS);
-   for (unsigned int i = 0; i < bumperRingNumVertices; i++)
+   RenderState initial_state;
+   m_rd->CopyRenderStates(true, initial_state);
+   assert(m_rd->GetRenderState().m_depthBias == 0.0f);
+   assert(m_rd->GetRenderState().GetRenderState(RenderState::ZWRITEENABLE) == RenderState::RS_TRUE);
+   m_rd->SetRenderStateCulling(RenderState::CULL_CCW);
+
+   if (m_d.m_baseVisible)
    {
-      buf[i].x = m_ringVertices[i].x;
-      buf[i].y = m_ringVertices[i].y;
-      buf[i].z = m_ringVertices[i].z + m_pbumperhitcircle->m_bumperanim_ringAnimOffset;
-      buf[i].nx = m_ringVertices[i].nx;
-      buf[i].ny = m_ringVertices[i].ny;
-      buf[i].nz = m_ringVertices[i].nz;
-      buf[i].tu = m_ringVertices[i].tu;
-      buf[i].tv = m_ringVertices[i].tv;
+      const Material * const mat = m_ptable->GetMaterial(m_d.m_szBaseMaterial);
+      if ((!mat->m_bOpacityActive && !isDynamicOnly) || (mat->m_bOpacityActive && !isStaticOnly))
+      {
+         m_rd->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, mat, false);
+         m_rd->SetRenderStateCulling(mat->m_bOpacityActive ? RenderState::CULL_NONE : RenderState::CULL_CCW);
+         m_rd->basicShader->SetMaterial(mat, false);
+         m_rd->basicShader->SetTexture(SHADER_tex_base_color, &m_baseTexture);
+         // We used to do alpha testing for alpha = 0 or 1. Not sure why. Now the shader disables it
+         // m_rd->basicShader->SetAlphaTestValue((float)(1.0 / 255.0));
+         Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight);
+         m_rd->DrawMesh(m_rd->basicShader, IsTransparent(), pos, 0.f, m_baseMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperBaseNumIndices);
+      }
    }
-   m_ringMeshBuffer->m_vb->unlock();
-}
 
-void Bumper::RenderBase(const Material * const baseMaterial)
-{
-   RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+   if (m_d.m_capVisible)
+   {
+      const Material * const mat = m_ptable->GetMaterial(m_d.m_szCapMaterial);
+      if ((!mat->m_bOpacityActive && !isDynamicOnly) || (mat->m_bOpacityActive && !isStaticOnly))
+      {
+         m_rd->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, mat, false);
+         m_rd->SetRenderStateCulling(mat->m_bOpacityActive ? RenderState::CULL_NONE : RenderState::CULL_CCW);
+         m_rd->basicShader->SetMaterial(mat, false);
+         m_rd->basicShader->SetTexture(SHADER_tex_base_color, &m_capTexture);
+         m_rd->basicShader->SetAlphaTestValue((float)(1.0 / 255.0));
+         Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight);
+         m_rd->DrawMesh(m_rd->basicShader, IsTransparent(), pos, 0.f, m_capMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperCapNumIndices);
+      }
+   }
 
-   pd3dDevice->basicShader->SetMaterial(baseMaterial, false);
-   pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, &m_baseTexture);
-   // We used to do alpha testing for alpha = 0 or 1. Not sure why. Now the shader disables it
-   // pd3dDevice->basicShader->SetAlphaTestValue((float)(1.0 / 255.0));
+   if (m_d.m_ringVisible && !isStaticOnly)
+   {
+      Material ringMaterial;
+      if (m_d.m_szRingMaterial[0] != '\0')
+      {
+         ringMaterial = *(m_ptable->GetMaterial(m_d.m_szRingMaterial));
+      }
+      else
+      {
+         ringMaterial.m_cBase = 0xFFFFFFFF; //!! set properly
+         ringMaterial.m_cGlossy = 0;
+         ringMaterial.m_type = Material::MaterialType::METAL;
+      }
+      m_rd->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, ringMaterial, false);
+      m_rd->basicShader->SetTexture(SHADER_tex_base_color, &m_ringTexture);
+      m_rd->basicShader->SetMaterial(&ringMaterial, false);
+      m_rd->SetRenderStateCulling(RenderState::CULL_CCW);
+      Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight + m_pbumperhitcircle->m_bumperanim_ringAnimOffset);
+      m_rd->DrawMesh(m_rd->basicShader, IsTransparent(), pos, 0.f, m_ringMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperRingNumIndices);
+   }
 
-   Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight);
-   pd3dDevice->DrawMesh(pd3dDevice->basicShader, IsTransparent(), pos, 0.f, m_baseMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperBaseNumIndices);
-}
+   if (m_d.m_skirtVisible && !isStaticOnly)
+   {
+      const Material * const mat = m_ptable->GetMaterial(m_d.m_szSkirtMaterial);
+      m_rd->basicShader->SetTexture(SHADER_tex_base_color, &m_skirtTexture);
+      m_rd->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, mat, false);
+      m_rd->SetRenderStateCulling(RenderState::CULL_NONE);
+      m_rd->basicShader->SetMaterial(mat, false);
+      m_rd->basicShader->SetTexture(SHADER_tex_base_color, &m_skirtTexture);
+      // We used to do alpha testing for alpha = 0 or 1. Not sure why. Now the shader disables it
+      // m_rd->basicShader->SetAlphaTestValue((float)(1.0 / 255.0));
+      Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight + 5.0f);
+      m_rd->DrawMesh(m_rd->basicShader, IsTransparent(), pos, 0.f, m_socketMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperSocketNumIndices);
+   }
 
-void Bumper::RenderSocket(const Material * const socketMaterial)
-{
-   RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-
-   pd3dDevice->basicShader->SetMaterial(socketMaterial, false);
-   pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, &m_skirtTexture);
-   // We used to do alpha testing for alpha = 0 or 1. Not sure why. Now the shader disables it
-   // pd3dDevice->basicShader->SetAlphaTestValue((float)(1.0 / 255.0));
-
-   Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight + 5.0f);
-   pd3dDevice->DrawMesh(pd3dDevice->basicShader, IsTransparent(), pos, 0.f, m_socketMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperSocketNumIndices);
-}
-
-void Bumper::RenderCap(const Material * const capMaterial)
-{
-   RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-
-   pd3dDevice->basicShader->SetMaterial(capMaterial, false);
-   pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, &m_capTexture);
-   pd3dDevice->basicShader->SetAlphaTestValue((float)(1.0 / 255.0));
-
-   Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight);
-   pd3dDevice->DrawMesh(pd3dDevice->basicShader, IsTransparent(), pos, 0.f, m_capMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperCapNumIndices);
+   m_rd->CopyRenderStates(false, initial_state);
 }
 
 void Bumper::UpdateSkirt(const bool doCalculation)
@@ -379,78 +473,6 @@ void Bumper::UpdateSkirt(const bool doCalculation)
       buf[i].tv = bumperSocket[i].tv;
    }
    m_socketMeshBuffer->m_vb->unlock();
-}
-
-void Bumper::RenderDynamic()
-{
-   TRACE_FUNCTION();
-
-   if (g_pplayer->IsRenderPass(Player::REFLECTION_PASS) && !m_d.m_reflectionEnabled)
-      return;
-
-   RenderDevice *const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-   RenderState initial_state;
-   pd3dDevice->CopyRenderStates(true, initial_state);
-
-   pd3dDevice->SetRenderStateDepthBias(0.0f);
-   pd3dDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
-   pd3dDevice->SetRenderStateCulling(RenderState::CULL_CCW);
-
-   if (m_d.m_ringVisible)
-   {
-      Material ringMaterial;
-      if (m_d.m_szRingMaterial[0] != '\0')
-      {
-         ringMaterial = *(m_ptable->GetMaterial(m_d.m_szRingMaterial));
-      }
-      else
-      {
-         ringMaterial.m_cBase = 0xFFFFFFFF; //!! set properly
-         ringMaterial.m_cGlossy = 0;
-         ringMaterial.m_type = Material::MaterialType::METAL;
-      }
-
-      pd3dDevice->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, ringMaterial, false);
-      pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, &m_ringTexture);
-      pd3dDevice->basicShader->SetMaterial(&ringMaterial, false);
-
-      // render ring
-      Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight + m_pbumperhitcircle->m_bumperanim_ringAnimOffset);
-      pd3dDevice->DrawMesh(pd3dDevice->basicShader, IsTransparent(), pos, 0.f, m_ringMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperRingNumIndices);
-   }
-
-   if (m_d.m_skirtVisible)
-   {
-      const Material * const mat = m_ptable->GetMaterial(m_d.m_szSkirtMaterial);
-      pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, &m_skirtTexture);
-      pd3dDevice->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, mat, false);
-      pd3dDevice->SetRenderStateCulling(RenderState::CULL_NONE);
-      RenderSocket(mat);
-   }
-
-   if (m_d.m_baseVisible)
-   {
-      const Material * const mat = m_ptable->GetMaterial(m_d.m_szBaseMaterial);
-      if (mat->m_bOpacityActive)
-      {
-         pd3dDevice->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, mat, false);
-         pd3dDevice->SetRenderStateCulling(RenderState::CULL_NONE);
-         RenderBase(mat);
-      }
-   }
-
-   if (m_d.m_capVisible)
-   {
-      const Material * const mat = m_ptable->GetMaterial(m_d.m_szCapMaterial);
-      if (mat->m_bOpacityActive)
-      {
-         pd3dDevice->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, mat, false);
-         pd3dDevice->SetRenderStateCulling(RenderState::CULL_NONE);
-         RenderCap(mat);
-      }
-   }
-
-   pd3dDevice->CopyRenderStates(false, initial_state);
 }
 
 void Bumper::ExportMesh(ObjLoader& loader)
@@ -616,66 +638,6 @@ void Bumper::GenerateCapMesh(Vertex3D_NoTex2 *buf)
 // end of license:GPLv3+, back to 'old MAME'-like
 //
 
-void Bumper::RenderSetup()
-{
-   m_baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
-
-   m_fullMatrix.SetRotateZ(ANGTORAD(m_d.m_orientation));
-   if (m_d.m_baseVisible)
-   {
-      m_baseTexture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "BumperBase.webp");
-      IndexBuffer* baseIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperBaseNumIndices, bumperBaseIndices);
-      VertexBuffer* baseVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperBaseNumVertices);
-      Vertex3D_NoTex2 *buf;
-      baseVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
-      GenerateBaseMesh(buf);
-      baseVertexBuffer->unlock();
-      delete m_baseMeshBuffer;
-      m_baseMeshBuffer = new MeshBuffer(m_wzName + L".Base"s, baseVertexBuffer, baseIndexBuffer, true);
-   }
-
-   if (m_d.m_skirtVisible)
-   {
-      m_skirtTexture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "BumperSkirt.webp");
-      IndexBuffer* socketIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperSocketNumIndices, bumperSocketIndices);
-      VertexBuffer* socketVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperSocketNumVertices, nullptr, true);
-      Vertex3D_NoTex2 *buf;
-      socketVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
-      GenerateSocketMesh(buf);
-      socketVertexBuffer->unlock();
-      delete m_socketMeshBuffer;
-      m_socketMeshBuffer = new MeshBuffer(m_wzName + L".Socket"s, socketVertexBuffer, socketIndexBuffer, true);
-   }
-
-   if (m_d.m_ringVisible)
-   {
-      m_ringTexture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "BumperRing.webp");
-      IndexBuffer* ringIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperRingNumIndices, bumperRingIndices);
-      VertexBuffer *ringVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperRingNumVertices, nullptr, true);
-      m_ringVertices = new Vertex3D_NoTex2[bumperRingNumVertices];
-      GenerateRingMesh(m_ringVertices);
-      Vertex3D_NoTex2 *buf;
-      ringVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
-      memcpy(buf, m_ringVertices, bumperRingNumVertices*sizeof(Vertex3D_NoTex2));
-      ringVertexBuffer->unlock();
-      delete m_ringMeshBuffer;
-      m_ringMeshBuffer = new MeshBuffer(m_wzName + L".Ring"s, ringVertexBuffer, ringIndexBuffer, true);
-   }
-
-   if (m_d.m_capVisible)
-   {
-      m_capTexture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "BumperCap.webp");
-      IndexBuffer* capIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperCapNumIndices, bumperCapIndices);
-      VertexBuffer* capVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperCapNumVertices);
-      Vertex3D_NoTex2 *buf;
-      capVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
-      GenerateCapMesh(buf);
-      capVertexBuffer->unlock();
-      delete m_capMeshBuffer;
-      m_capMeshBuffer = new MeshBuffer(m_wzName + L".Cap"s, capVertexBuffer, capIndexBuffer, true);
-   }
-}
-
 void Bumper::UpdateAnimation(const float diff_time_msec)
 {
    if (m_pbumperhitcircle->m_bumperanim_hitEvent)
@@ -718,7 +680,23 @@ void Bumper::UpdateAnimation(const float diff_time_msec)
               }
          }
          if (m_ringMeshBuffer && (old_bumperanim_ringAnimOffset != m_pbumperhitcircle->m_bumperanim_ringAnimOffset))
-              UpdateRing();
+         {
+            //TODO update Worldmatrix instead.
+            Vertex3D_NoTex2 *buf;
+            m_ringMeshBuffer->m_vb->lock(0, 0, (void **)&buf, VertexBuffer::DISCARDCONTENTS);
+            for (unsigned int i = 0; i < bumperRingNumVertices; i++)
+            {
+               buf[i].x = m_ringVertices[i].x;
+               buf[i].y = m_ringVertices[i].y;
+               buf[i].z = m_ringVertices[i].z + m_pbumperhitcircle->m_bumperanim_ringAnimOffset;
+               buf[i].nx = m_ringVertices[i].nx;
+               buf[i].ny = m_ringVertices[i].ny;
+               buf[i].nz = m_ringVertices[i].nz;
+               buf[i].tu = m_ringVertices[i].tu;
+               buf[i].tv = m_ringVertices[i].tv;
+            }
+            m_ringMeshBuffer->m_vb->unlock();
+         }
 
          FireGroupEvent(DISPID_AnimateEvents_Animate);
       }
@@ -754,37 +732,8 @@ void Bumper::UpdateAnimation(const float diff_time_msec)
    }
 }
 
-void Bumper::RenderStatic()
-{
-   if (g_pplayer->IsRenderPass(Player::REFLECTION_PASS) && !m_d.m_reflectionEnabled)
-      return;
+#pragma endregion
 
-   RenderDevice *const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-   RenderState initial_state;
-   pd3dDevice->CopyRenderStates(true, initial_state);
-
-   if (m_d.m_baseVisible)
-   {
-      const Material * const mat = m_ptable->GetMaterial(m_d.m_szBaseMaterial);
-      if (!mat->m_bOpacityActive)
-      {
-         pd3dDevice->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, mat, false);
-         RenderBase(mat);
-      }
-   }
-
-   if (m_d.m_capVisible)
-   {
-      const Material * const mat = m_ptable->GetMaterial(m_d.m_szCapMaterial);
-      if (!mat->m_bOpacityActive)
-      {
-         pd3dDevice->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, mat, false);
-         RenderCap(mat);
-      }
-   }
-
-   pd3dDevice->CopyRenderStates(false, initial_state);
-}
 
 void Bumper::SetObjectPos()
 {
