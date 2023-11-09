@@ -8,7 +8,6 @@ Ramp::Ramp()
    m_menuid = IDR_SURFACEMENU;
    m_d.m_collidable = true;
    m_d.m_visible = true;
-   m_dynamicVertexBufferRegenerate = true;
    m_d.m_depthBias = 0.0f;
    m_d.m_wireDiameter = 6.0f;
    m_d.m_wireDistanceX = 38.0f;
@@ -22,8 +21,7 @@ Ramp::Ramp()
 
 Ramp::~Ramp()
 {
-   delete m_meshBuffer;
-
+   assert(m_rd == nullptr);
    if (m_rgheightInit)
       delete[] m_rgheightInit;
 }
@@ -43,11 +41,6 @@ void Ramp::UpdateStatusBarInfo()
    m_vpinball->SetStatusBarUnitInfo(tbuf, true);
 }
 
-
-bool Ramp::IsTransparent() const
-{
-   return m_ptable->GetMaterial(m_d.m_szMaterial)->m_bOpacityActive;
-}
 
 HRESULT Ramp::Init(PinTable *const ptable, const float x, const float y, const bool fromMouseClick, const bool forPlay)
 {
@@ -571,6 +564,8 @@ void Ramp::GetTimers(vector<HitTimer*> &pvht)
       pvht.push_back(pht);
 }
 
+#pragma region Physics
+
 // Ported at: VisualPinball.Engine/VPT/Ramp/RampHitGenerator.cs
 
 void Ramp::GetHitShapes(vector<HitObject*> &pvho)
@@ -875,9 +870,148 @@ void Ramp::EndPlay()
 {
    IEditable::EndPlay();
    m_vhoCollidable.clear();
+   RenderRelease();
+}
+
+#pragma endregion
+
+
+#pragma region Rendering
+
+// Deprecated Legacy API to be removed
+void Ramp::RenderSetup() { }
+void Ramp::RenderStatic() { }
+void Ramp::RenderDynamic() { }
+
+void Ramp::RenderSetup(RenderDevice *device)
+{
+   assert(m_rd == nullptr);
+   m_rd = device;
+   UpdateBounds();
+}
+
+void Ramp::RenderRelease()
+{
+   assert(m_rd != nullptr);
    delete m_meshBuffer;
    m_meshBuffer = nullptr;
    m_dynamicVertexBufferRegenerate = true;
+   m_rd = nullptr;
+}
+
+void Ramp::UpdateAnimation(const float diff_time_msec)
+{
+   assert(m_rd != nullptr);
+}
+
+void Ramp::Render(const unsigned int renderMask)
+{
+   assert(m_rd != nullptr);
+   const bool isStaticOnly = renderMask & Player::STATIC_ONLY;
+   const bool isDynamicOnly = renderMask & Player::DYNAMIC_ONLY;
+   const bool isReflectionPass = renderMask & Player::REFLECTION_PASS;
+   TRACE_FUNCTION();
+
+   const Material *const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
+   if (!m_d.m_visible
+    || mat == nullptr
+    || (isReflectionPass && !m_d.m_reflectionEnabled)
+    || (isStaticOnly && mat->m_bOpacityActive)
+    || (isDynamicOnly && !mat->m_bOpacityActive))
+      return;
+
+
+   if (m_d.m_widthbottom == 0.0f && m_d.m_widthtop == 0.0f)
+   {
+      m_dynamicVertexBufferRegenerate = false;
+      return;
+   }
+
+   m_rd->ResetRenderState();
+
+   if (isHabitrail())
+   {
+      if (!m_meshBuffer || m_dynamicVertexBufferRegenerate)
+         PrepareHabitrail();
+
+      /* TODO: This is a misnomer right now, but clamp fixes some visual glitches (single-pixel lines)
+       * with transparent textures. Probably the option should simply be renamed to ImageModeClamp,
+       * since the texture coordinates always stay within [0,1] anyway. */
+      SamplerAddressMode sam = m_d.m_imagealignment == ImageModeWrap ? SA_CLAMP : SA_REPEAT;
+      m_rd->SetRenderStateDepthBias(0.0f);
+      m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
+      m_rd->SetRenderStateCulling(RenderState::CULL_NONE);
+      Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
+      if (!pin)
+      {
+         m_rd->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, mat);
+         m_rd->basicShader->SetMaterial(mat, false);
+      }
+      else
+      {
+         m_rd->basicShader->SetTexture(SHADER_tex_base_color, pin, SF_TRILINEAR, sam, sam);
+         m_rd->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, mat, pin->m_alphaTestValue >= 0.f && !pin->m_pdsBuffer->IsOpaque());
+         m_rd->basicShader->SetAlphaTestValue(pin->m_alphaTestValue);
+         m_rd->basicShader->SetMaterial(mat, !pin->m_pdsBuffer->IsOpaque());
+      }
+
+      m_rd->DrawMesh(m_rd->basicShader, mat->m_bOpacityActive, m_boundingSphereCenter, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
+   }
+   else
+   {
+      if (!m_meshBuffer || m_dynamicVertexBufferRegenerate)
+         GenerateVertexBuffer();
+
+      m_rd->SetRenderStateCulling(RenderState::CULL_NONE); // as both floor and walls are thinwalled
+
+      Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
+      if (pin)
+      {
+         /* TODO: This is a misnomer right now, but clamp fixes some visual glitches (single-pixel lines)
+          * with transparent textures. Probably the option should simply be renamed to ImageModeClamp,
+          * since the texture coordinates always stay within [0,1] anyway. */
+         SamplerAddressMode sam = m_d.m_imagealignment == ImageModeWrap ? SA_CLAMP : SA_REPEAT;
+         m_rd->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, mat, pin->m_alphaTestValue >= 0.f && !pin->m_pdsBuffer->IsOpaque());
+         m_rd->basicShader->SetTexture(SHADER_tex_base_color, pin, SF_TRILINEAR, sam, sam);
+         m_rd->basicShader->SetAlphaTestValue(pin->m_alphaTestValue);
+         m_rd->basicShader->SetMaterial(mat, !pin->m_pdsBuffer->IsOpaque());
+      }
+      else
+      {
+         m_rd->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, mat);
+         m_rd->basicShader->SetMaterial(mat, false);
+      }
+
+      if (m_d.m_rightwallheightvisible != 0.f && m_d.m_leftwallheightvisible != 0.f && (!pin || m_d.m_imageWalls))
+      {
+         // both walls with image and floor
+         m_rd->DrawMesh(m_rd->basicShader, mat->m_bOpacityActive, m_boundingSphereCenter, m_d.m_depthBias,
+            m_meshBuffer, RenderDevice::TRIANGLELIST, 0, (m_rampVertex - 1) * 6 * 3);
+      }
+      else
+      {
+         // only floor
+         m_rd->DrawMesh(m_rd->basicShader, mat->m_bOpacityActive, m_boundingSphereCenter, m_d.m_depthBias,
+            m_meshBuffer, RenderDevice::TRIANGLELIST, 0, (m_rampVertex - 1) * 6);
+
+         if (m_d.m_rightwallheightvisible != 0.f || m_d.m_leftwallheightvisible != 0.f)
+         {
+            if (pin && !m_d.m_imageWalls)
+               m_rd->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, mat);
+            if (m_d.m_rightwallheightvisible != 0.f && m_d.m_leftwallheightvisible != 0.f) //only render left & right side if the height is >0
+               m_rd->DrawMesh(m_rd->basicShader, mat->m_bOpacityActive, m_boundingSphereCenter, m_d.m_depthBias,
+                  m_meshBuffer, RenderDevice::TRIANGLELIST, (m_rampVertex - 1) * 6, (m_rampVertex - 1) * 6 * 2);
+            else if (m_d.m_rightwallheightvisible != 0.f) //only render right side if the height is >0
+               m_rd->DrawMesh(m_rd->basicShader, mat->m_bOpacityActive, m_boundingSphereCenter, m_d.m_depthBias,
+                  m_meshBuffer, RenderDevice::TRIANGLELIST, (m_rampVertex - 1) * 6, (m_rampVertex - 1) * 6);
+            else if (m_d.m_leftwallheightvisible != 0.f) //only render left side if the height is >0
+               m_rd->DrawMesh(m_rd->basicShader, mat->m_bOpacityActive, m_boundingSphereCenter, m_d.m_depthBias,
+                  m_meshBuffer, RenderDevice::TRIANGLELIST, (m_rampVertex - 1) * 6 * 2, (m_rampVertex - 1) * 6);
+         }
+      }
+   }
+
+   m_rd->ResetRenderState();
 }
 
 float Ramp::GetDepth(const Vertex3Ds& viewDir) const
@@ -894,7 +1028,6 @@ void Ramp::UpdateBounds()
    m_boundingSphereCenter.Set(center2D.x, center2D.y, 0.5f * (m_d.m_heightbottom + m_d.m_heighttop));
 }
 
-
 //
 // license:GPLv3+
 // Ported at: VisualPinball.Engine/VPT/Ramp/RampHitGenerator.cs
@@ -908,46 +1041,6 @@ bool Ramp::isHabitrail() const
        || m_d.m_type == RampType3WireLeft
        || m_d.m_type == RampType3WireRight;
 }
-
-//
-// end of license:GPLv3+, back to 'old MAME'-like
-//
-
-void Ramp::RenderStaticHabitrail(const Material * const mat)
-{
-   if (!m_meshBuffer || m_dynamicVertexBufferRegenerate)
-      PrepareHabitrail();
-
-   RenderDevice *const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-
-   /* TODO: This is a misnomer right now, but clamp fixes some visual glitches (single-pixel lines)
-    * with transparent textures. Probably the option should simply be renamed to ImageModeClamp,
-    * since the texture coordinates always stay within [0,1] anyway. */
-   SamplerAddressMode sam = m_d.m_imagealignment == ImageModeWrap ? SA_CLAMP : SA_REPEAT;
-   pd3dDevice->SetRenderStateDepthBias(0.0f);
-   pd3dDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
-   pd3dDevice->SetRenderStateCulling(RenderState::CULL_NONE);
-   Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
-   if (!pin)
-   {
-      pd3dDevice->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, mat);
-      pd3dDevice->basicShader->SetMaterial(mat, false);
-   }
-   else
-   {
-      pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, pin, SF_TRILINEAR, sam, sam);
-      pd3dDevice->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, mat, pin->m_alphaTestValue >= 0.f && !pin->m_pdsBuffer->IsOpaque());
-      pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue);
-      pd3dDevice->basicShader->SetMaterial(mat, !pin->m_pdsBuffer->IsOpaque());
-   }
-
-   pd3dDevice->DrawMesh(pd3dDevice->basicShader, mat->m_bOpacityActive /* IsTransparent() */, m_boundingSphereCenter, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
-}
-
-//
-// license:GPLv3+
-// Ported at: VisualPinball.Engine/VPT/Ramp/RampMeshGenerator.cs
-//
 
 void Ramp::CreateWire(const int numRings, const int numSegments, const Vertex2D * const midPoints, Vertex3D_NoTex2 * const rgvbuf)
 {
@@ -1246,42 +1339,8 @@ void Ramp::PrepareHabitrail()
    m_meshIndices.clear();
 }
 
-void Ramp::RenderSetup()
-{
-   if (m_d.m_visible)
-   {
-      if (isHabitrail())
-         PrepareHabitrail();
-      else
-         GenerateVertexBuffer();
-   }
+#pragma endregion
 
-   const Material *const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
-   // don't render transparent ramps into static buffer, these are done per frame later-on
-   m_isStaticRendering = mat == nullptr || !mat->m_bOpacityActive;
-
-   UpdateBounds();
-}
-
-void Ramp::UpdateAnimation(const float diff_time_msec)
-{
-}
-
-void Ramp::RenderStatic()
-{
-   // return if not Visible
-   if (!m_d.m_visible)
-      return;
-
-   if (g_pplayer->IsRenderPass(Player::REFLECTION_PASS) && !m_d.m_reflectionEnabled)
-      return;
-
-   if (!m_isStaticRendering)
-      return;
-
-   const Material *const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
-   RenderRamp(mat);
-}
 
 void Ramp::SetObjectPos()
 {
@@ -1621,13 +1680,6 @@ STDMETHODIMP Ramp::put_Type(RampType newVal)
    {
       m_d.m_type = newVal;
       m_dynamicVertexBufferRegenerate = true;
-
-      if (m_isStaticRendering)
-      {
-         const char* const szT = MakeChar(m_wzName);
-         PLOGE << "Setting type on ramp '" << szT << "' is not supported (the ramp is prerendered and static since its material is not transparent)";
-         delete[] szT;
-      }
    }
 
    return S_OK;
@@ -1657,13 +1709,6 @@ STDMETHODIMP Ramp::put_Image(BSTR newVal)
    {
       m_d.m_szImage = szImage;
       m_dynamicVertexBufferRegenerate = true;
-
-      if (m_isStaticRendering)
-      {
-         const char* const szT = MakeChar(m_wzName);
-         PLOGE << "Setting image on ramp '" << szT << "' is not supported (the ramp is prerendered and static since its material is not transparent)";
-         delete[] szT;
-      }
    }
 
    return S_OK;
@@ -1682,13 +1727,6 @@ STDMETHODIMP Ramp::put_ImageAlignment(RampImageAlignment newVal)
    {
       m_d.m_imagealignment = newVal;
       m_dynamicVertexBufferRegenerate = true;
-
-      if (m_isStaticRendering)
-      {
-         const char* const szT = MakeChar(m_wzName);
-         PLOGE << "Setting image alignment on ramp '" << szT << "' is not supported (the ramp is prerendered and static since its material is not transparent)";
-         delete[] szT;
-      }
    }
 
    return S_OK;
@@ -1707,13 +1745,6 @@ STDMETHODIMP Ramp::put_HasWallImage(VARIANT_BOOL newVal)
    {
       m_d.m_imageWalls = VBTOb(newVal);
       m_dynamicVertexBufferRegenerate = true;
-
-      if (m_isStaticRendering)
-      {
-         const char* const szT = MakeChar(m_wzName);
-         PLOGE << "Setting wall image on ramp '" << szT << "' is not supported (the ramp is prerendered and static since its material is not transparent)";
-         delete[] szT;
-      }
    }
 
    return S_OK;
@@ -1774,14 +1805,6 @@ STDMETHODIMP Ramp::put_VisibleLeftWallHeight(float newVal)
    {
       m_d.m_leftwallheightvisible = nv;
       m_dynamicVertexBufferRegenerate = true;
-
-      if (m_isStaticRendering)
-      {
-         const char* const szT = MakeChar(m_wzName);
-         PLOGE << "Setting visible left wall height on ramp '" << szT
-                                    << "' is not supported (the ramp is prerendered and static since its material is not transparent)";
-         delete[] szT;
-      }
    }
 
    return S_OK;
@@ -1802,14 +1825,6 @@ STDMETHODIMP Ramp::put_VisibleRightWallHeight(float newVal)
    {
       m_d.m_rightwallheightvisible = nv;
       m_dynamicVertexBufferRegenerate = true;
-
-      if (m_isStaticRendering)
-      {
-         const char* const szT = MakeChar(m_wzName);
-         PLOGE << "Setting visible right wall height on ramp '" << szT
-                                    << "' is not supported (the ramp is prerendered and static since its material is not transparent)";
-         delete[] szT;
-      }
    }
 
    return S_OK;
@@ -1919,14 +1934,6 @@ STDMETHODIMP Ramp::get_Visible(VARIANT_BOOL *pVal)
 STDMETHODIMP Ramp::put_Visible(VARIANT_BOOL newVal)
 {
    m_d.m_visible = VBTOb(newVal);
-
-   if (m_isStaticRendering)
-   {
-      const char* const szT = MakeChar(m_wzName);
-      PLOGE << "Setting visibility on ramp '" << szT << "' is not supported (the ramp is prerendered and static since its material is not transparent)";
-      delete[] szT;
-   }
-
    return S_OK;
 }
 
@@ -1954,14 +1961,6 @@ STDMETHODIMP Ramp::get_DepthBias(float *pVal)
 STDMETHODIMP Ramp::put_DepthBias(float newVal)
 {
    m_d.m_depthBias = newVal;
-
-   if (m_isStaticRendering)
-   {
-      const char* const szT = MakeChar(m_wzName);
-      PLOGE << "Setting depth bias on ramp '" << szT << "' is not supported (the ramp is prerendered and static since its material is not transparent)";
-      delete[] szT;
-   }
- 
    return S_OK;
 }
 
@@ -1978,13 +1977,6 @@ STDMETHODIMP Ramp::put_WireDiameter(float newVal)
    {
        m_d.m_wireDiameter = newVal;
        m_dynamicVertexBufferRegenerate = true;
-
-       if (m_isStaticRendering)
-       {
-          const char* const szT = MakeChar(m_wzName);
-          PLOGE << "Setting wire diameter on ramp '" << szT << "' is not supported (the ramp is prerendered and static since its material is not transparent)";
-          delete[] szT;
-       }
    }
 
    return S_OK;
@@ -2003,13 +1995,6 @@ STDMETHODIMP Ramp::put_WireDistanceX(float newVal)
    {
        m_d.m_wireDistanceX = newVal;
        m_dynamicVertexBufferRegenerate = true;
-
-       if (m_isStaticRendering)
-       {
-          const char* const szT = MakeChar(m_wzName);
-          PLOGE << "Setting X wire distance on ramp '" << szT << "' is not supported (the ramp is prerendered and static since its material is not transparent)";
-          delete[] szT;
-       }
    }
 
    return S_OK;
@@ -2028,13 +2013,6 @@ STDMETHODIMP Ramp::put_WireDistanceY(float newVal)
    {
        m_d.m_wireDistanceY = newVal;
        m_dynamicVertexBufferRegenerate = true;
-
-       if (m_isStaticRendering)
-       {
-          const char* const szT = MakeChar(m_wzName);
-          PLOGE << "Setting Y wire distance on ramp '" << szT << "' is not supported (the ramp is prerendered and static since its material is not transparent)";
-          delete[] szT;
-       }
    }
 
    return S_OK;
@@ -2240,107 +2218,6 @@ void Ramp::ExportMesh(ObjLoader& loader)
             delete[] tmpBuf2;
       }
    }
-}
-
-void Ramp::RenderRamp(const Material * const mat)
-{
-   if (!mat)
-      return;
-
-   if (m_d.m_widthbottom == 0.0f && m_d.m_widthtop == 0.0f)
-   {
-      m_dynamicVertexBufferRegenerate = false;
-      return;
-   }
-
-   RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-   RenderState initial_state;
-   pd3dDevice->CopyRenderStates(true, initial_state);
-
-   if (isHabitrail())
-      RenderStaticHabitrail(mat);
-   else
-   {
-      if (!m_meshBuffer || m_dynamicVertexBufferRegenerate)
-         GenerateVertexBuffer();
-
-      pd3dDevice->SetRenderStateDepthBias(0.0f);
-      pd3dDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
-      pd3dDevice->SetRenderStateCulling(RenderState::CULL_NONE); // as both floor and walls are thinwalled
-
-      //Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-      Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
-
-      if (pin)
-      {
-         /* TODO: This is a misnomer right now, but clamp fixes some visual glitches (single-pixel lines)
-          * with transparent textures. Probably the option should simply be renamed to ImageModeClamp,
-          * since the texture coordinates always stay within [0,1] anyway. */
-         SamplerAddressMode sam = m_d.m_imagealignment == ImageModeWrap ? SA_CLAMP : SA_REPEAT;
-
-         pd3dDevice->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, mat, pin->m_alphaTestValue >= 0.f && !pin->m_pdsBuffer->IsOpaque());
-         pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, pin, SF_TRILINEAR, sam, sam);
-         pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue);
-         pd3dDevice->basicShader->SetMaterial(mat, !pin->m_pdsBuffer->IsOpaque());
-      }
-      else
-      {
-         pd3dDevice->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, mat);
-         pd3dDevice->basicShader->SetMaterial(mat, false);
-      }
-
-      //ppin3d->EnableAlphaBlend( false ); //!! not necessary anymore
-
-      if (m_d.m_rightwallheightvisible != 0.f && m_d.m_leftwallheightvisible != 0.f && (!pin || m_d.m_imageWalls))
-      {
-         // both walls with image and floor
-         pd3dDevice->DrawMesh(pd3dDevice->basicShader, mat->m_bOpacityActive /* IsTransparent() */, m_boundingSphereCenter, m_d.m_depthBias,
-            m_meshBuffer, RenderDevice::TRIANGLELIST, 0, (m_rampVertex - 1) * 6 * 3);
-      }
-      else
-      {
-         // only floor
-         pd3dDevice->DrawMesh(pd3dDevice->basicShader, mat->m_bOpacityActive /* IsTransparent() */, m_boundingSphereCenter, m_d.m_depthBias,
-            m_meshBuffer, RenderDevice::TRIANGLELIST, 0, (m_rampVertex - 1) * 6);
-
-         if (m_d.m_rightwallheightvisible != 0.f || m_d.m_leftwallheightvisible != 0.f)
-         {
-            if (pin && !m_d.m_imageWalls)
-               pd3dDevice->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, mat);
-
-            if (m_d.m_rightwallheightvisible != 0.f && m_d.m_leftwallheightvisible != 0.f) //only render left & right side if the height is >0
-               pd3dDevice->DrawMesh(pd3dDevice->basicShader, mat->m_bOpacityActive /* IsTransparent() */, m_boundingSphereCenter, m_d.m_depthBias,
-                  m_meshBuffer, RenderDevice::TRIANGLELIST, (m_rampVertex - 1) * 6, (m_rampVertex - 1) * 6 * 2);
-            else if (m_d.m_rightwallheightvisible != 0.f) //only render right side if the height is >0
-               pd3dDevice->DrawMesh(pd3dDevice->basicShader, mat->m_bOpacityActive /* IsTransparent() */, m_boundingSphereCenter, m_d.m_depthBias,
-                  m_meshBuffer, RenderDevice::TRIANGLELIST, (m_rampVertex - 1) * 6, (m_rampVertex - 1) * 6);
-            else if (m_d.m_leftwallheightvisible != 0.f) //only render left side if the height is >0
-               pd3dDevice->DrawMesh(pd3dDevice->basicShader, mat->m_bOpacityActive /* IsTransparent() */, m_boundingSphereCenter, m_d.m_depthBias,
-                  m_meshBuffer, RenderDevice::TRIANGLELIST, (m_rampVertex - 1) * 6 * 2, (m_rampVertex - 1) * 6);
-         }
-      }
-
-      //pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE); //!! not necessary anymore
-   }
-
-   pd3dDevice->CopyRenderStates(false, initial_state);
-}
-
-// Always called each frame to render over everything else (along with primitives)
-// Same code as RenderStatic (with the exception of the alpha tests).
-// Also has less drawing calls by bundling seperate calls.
-void Ramp::RenderDynamic()
-{
-   TRACE_FUNCTION();
-
-   const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
-   // don't render if invisible or not a transparent ramp
-   if (!m_d.m_visible || (!mat->m_bOpacityActive))
-      return;
-   if (g_pplayer->IsRenderPass(Player::REFLECTION_PASS) && !m_d.m_reflectionEnabled)
-      return;
-
-   RenderRamp(mat);
 }
 
 //

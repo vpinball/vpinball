@@ -196,6 +196,8 @@ void Flipper::GetTimers(vector<HitTimer*> &pvht)
       pvht.push_back(pht);
 }
 
+#pragma region Physics
+
 void Flipper::UpdatePhysicsSettings()
 {
    if (m_d.m_OverridePhysics || (m_ptable->m_overridePhysicsFlipper && m_ptable->m_overridePhysics))
@@ -289,10 +291,12 @@ void Flipper::EndPlay()
 {
    if (m_phitflipper) // Failed player case
       m_phitflipper = nullptr;
-   delete m_meshBuffer;
-   m_meshBuffer = nullptr;
    IEditable::EndPlay();
+   RenderRelease();
 }
+
+#pragma endregion
+
 
 void Flipper::SetVertices(const float basex, const float basey, const float angle, Vertex2D * const pvEndCenter, Vertex2D * const rgvTangents, const float baseradius, const float endradius) const
 {
@@ -589,76 +593,6 @@ STDMETHODIMP Flipper::RotateToStart() // return to park, key/button up/released
 
    return S_OK;
 }
-void Flipper::RenderDynamic()
-{
-   RenderDevice *const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-   RenderState initial_state;
-   pd3dDevice->CopyRenderStates(true, initial_state);
-
-   TRACE_FUNCTION();
-
-   if (m_phitflipper && !m_phitflipper->m_flipperMover.m_visible)
-      return;
-   if (m_phitflipper == nullptr && !m_d.m_visible)
-      return;
-
-   if (g_pplayer->IsRenderPass(Player::REFLECTION_PASS) && !m_d.m_reflectionEnabled)
-      return;
-
-   const Material * mat = m_ptable->GetMaterial(m_d.m_szMaterial);
-
-   Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
-   if (pin)
-   {
-      pd3dDevice->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, mat, pin->m_alphaTestValue >= 0.f && !pin->m_pdsBuffer->IsOpaque());
-      // accomodate models with UV coords outside of [0,1]
-      pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, pin, SF_TRILINEAR, SA_REPEAT, SA_REPEAT);
-      pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue);
-      pd3dDevice->basicShader->SetMaterial(mat, !pin->m_pdsBuffer->IsOpaque());
-   }
-   else
-   {
-      pd3dDevice->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, mat);
-      pd3dDevice->basicShader->SetMaterial(mat, false);
-   }
-
-   pd3dDevice->SetRenderStateDepthBias(0.0f);
-   pd3dDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
-   pd3dDevice->SetRenderStateCulling(RenderState::CULL_CCW);
-
-   Matrix3D matTrafo;
-   matTrafo.SetIdentity();
-   matTrafo._41 = m_d.m_Center.x;
-   matTrafo._42 = m_d.m_Center.y;
-   if (m_phitflipper)
-   {
-      Matrix3D matTemp;
-      matTemp.SetRotateZ(m_phitflipper->m_flipperMover.m_angleCur);
-      matTrafo.Multiply(matTemp, matTrafo);
-   }
-   g_pplayer->UpdateBasicShaderMatrix(matTrafo);
-   pd3dDevice->DrawMesh(pd3dDevice->basicShader, IsTransparent(), m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, flipperBaseNumIndices);
-
-   //render rubber
-   if (m_d.m_rubberthickness > 0.f)
-   {
-      mat = m_ptable->GetMaterial(m_d.m_szRubberMaterial);
-      if (pin)
-      {
-         pd3dDevice->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, mat, false);
-         pd3dDevice->basicShader->SetMaterial(mat, !pin->m_pdsBuffer->IsOpaque());
-      }
-      else
-      {
-         pd3dDevice->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, mat);
-         pd3dDevice->basicShader->SetMaterial(mat, false);
-      }
-      pd3dDevice->DrawMesh(pd3dDevice->basicShader, IsTransparent(), m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, flipperBaseNumIndices, flipperBaseNumIndices);
-   }
-   g_pplayer->UpdateBasicShaderMatrix();
-
-   pd3dDevice->CopyRenderStates(false, initial_state);
-}
 
 void Flipper::ExportMesh(ObjLoader& loader)
 {
@@ -858,16 +792,26 @@ void Flipper::GenerateBaseMesh(Vertex3D_NoTex2 *buf)
 // end of license:GPLv3+, back to 'old MAME'-like
 //
 
-void Flipper::RenderSetup()
+
+#pragma region Rendering
+
+// Deprecated Legacy API to be removed
+void Flipper::RenderSetup() { }
+void Flipper::RenderStatic() { }
+void Flipper::RenderDynamic() { }
+
+void Flipper::RenderSetup(RenderDevice *device)
 {
-   IndexBuffer *indexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, flipperBaseNumIndices * 2);
+   assert(m_rd == nullptr);
+   m_rd = device;
+   IndexBuffer *indexBuffer = new IndexBuffer(m_rd, flipperBaseNumIndices * 2);
    WORD *bufI;
    indexBuffer->lock(0, 0, (void**)&bufI, IndexBuffer::WRITEONLY);
    memcpy(bufI, flipperBaseIndices, flipperBaseNumIndices * sizeof(flipperBaseIndices[0]));
    for (int i = 0; i < flipperBaseNumIndices; i++)
       bufI[flipperBaseNumIndices + i] = flipperBaseIndices[i] + flipperBaseVertices;
    indexBuffer->unlock();
-   VertexBuffer *vertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, flipperBaseVertices * 2);
+   VertexBuffer *vertexBuffer = new VertexBuffer(m_rd, flipperBaseVertices * 2);
    Vertex3D_NoTex2 *buf;
    vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
    GenerateBaseMesh(buf);
@@ -877,8 +821,17 @@ void Flipper::RenderSetup()
    m_lastAngle = 123486.0f;
 }
 
+void Flipper::RenderRelease()
+{
+   assert(m_rd != nullptr);
+   delete m_meshBuffer;
+   m_meshBuffer = nullptr;
+   m_rd = nullptr;
+}
+
 void Flipper::UpdateAnimation(const float diff_time_msec)
 {
+   assert(m_rd != nullptr);
    // Animation is updated by physics engine through a MoverObject. No additional visual animation here
    // Still monitor angle updates in order to fire animate event at most once per frame (physics engine performs far more cycles per frame)
    if (m_phitflipper && m_lastAngle != m_phitflipper->m_flipperMover.m_angleCur)
@@ -888,9 +841,50 @@ void Flipper::UpdateAnimation(const float diff_time_msec)
    }
 }
 
-void Flipper::RenderStatic()
+void Flipper::Render(const unsigned int renderMask)
 {
+   assert(m_rd != nullptr);
+   const bool isStaticOnly = renderMask & Player::STATIC_ONLY;
+   const bool isDynamicOnly = renderMask & Player::DYNAMIC_ONLY;
+   const bool isReflectionPass = renderMask & Player::REFLECTION_PASS;
+   TRACE_FUNCTION();
+
+   if ((m_phitflipper && !m_phitflipper->m_flipperMover.m_visible)
+    || (m_phitflipper == nullptr && !m_d.m_visible)
+    || (isReflectionPass && !m_d.m_reflectionEnabled)
+    || isStaticOnly)  
+      return;
+
+   m_rd->ResetRenderState();
+   m_rd->SetRenderStateCulling(RenderState::CULL_CCW);
+   Matrix3D matTrafo;
+   matTrafo.SetIdentity();
+   matTrafo._41 = m_d.m_Center.x;
+   matTrafo._42 = m_d.m_Center.y;
+   if (m_phitflipper)
+   {
+      Matrix3D matTemp;
+      matTemp.SetRotateZ(m_phitflipper->m_flipperMover.m_angleCur);
+      matTrafo.Multiply(matTemp, matTrafo);
+   }
+   g_pplayer->UpdateBasicShaderMatrix(matTrafo);
+   Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
+
+   m_rd->basicShader->SetBasic(m_ptable->GetMaterial(m_d.m_szMaterial), pin);
+   m_rd->DrawMesh(m_rd->basicShader, false, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, flipperBaseNumIndices);
+
+   if (m_d.m_rubberthickness > 0.f)
+   {
+      m_rd->basicShader->SetBasic(m_ptable->GetMaterial(m_d.m_szRubberMaterial), pin);
+      m_rd->DrawMesh(m_rd->basicShader, false, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, flipperBaseNumIndices, flipperBaseNumIndices);
+   }
+
+   g_pplayer->UpdateBasicShaderMatrix();
+   m_rd->ResetRenderState();
 }
+
+#pragma endregion
+
 
 HRESULT Flipper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)
 {
@@ -1036,6 +1030,9 @@ HRESULT Flipper::InitPostLoad()
 
    return S_OK;
 }
+
+
+#pragma region ScriptProxy
 
 STDMETHODIMP Flipper::get_BaseRadius(float *pVal)
 {
@@ -1560,3 +1557,5 @@ STDMETHODIMP Flipper::put_ReflectionEnabled(VARIANT_BOOL newVal)
 
    return S_OK;
 }
+
+#pragma endregion

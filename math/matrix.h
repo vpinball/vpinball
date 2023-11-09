@@ -546,6 +546,13 @@ public:
       return result;
    }
 
+   static Matrix3D MatrixRotateZ(const float angRad)
+   {
+      Matrix3D result;
+      result.SetRotateZ(angRad);
+      return result;
+   }
+
    static Matrix3D MatrixScale(float scale)
    {
       Matrix3D result;
@@ -849,6 +856,53 @@ public:
       v.x = _11 * x + _21 * y + _31 * z + _41;
       v.y = _12 * x + _22 * y + _32 * z + _42;
       v.z = _13 * x + _23 * y + _33 * z + _43;
+   }
+
+   void TransformVertices(const Vertex3D_NoTex2* const __restrict inVerts, Vertex3D_NoTex2* const __restrict outVerts, const int count) const
+   {
+      for (int i = 0; i < count; ++i)
+      {
+         const float x = inVerts[i].x;
+         const float y = inVerts[i].y;
+         const float z = inVerts[i].z;
+         const float nx = inVerts[i].nx;
+         const float ny = inVerts[i].ny;
+         const float nz = inVerts[i].nz;
+         outVerts[i].x = _11 * x + _21 * y + _31 * z + _41;
+         outVerts[i].y = _12 * x + _22 * y + _32 * z + _42;
+         outVerts[i].z = _13 * x + _23 * y + _33 * z + _43;
+         outVerts[i].nx = _11 * nx + _21 * ny + _31 * nz;
+         outVerts[i].ny = _12 * nx + _22 * ny + _32 * nz;
+         outVerts[i].nz = _13 * nx + _23 * ny + _33 * nz;
+         outVerts[i].tu = inVerts[i].tu;
+         outVerts[i].tv = inVerts[i].tv;
+      }
+   }
+
+   void TransformPositions(const Vertex3D_NoTex2* const __restrict inVerts, Vertex3D_NoTex2* const __restrict outVerts, const int count) const
+   {
+      for (int i = 0; i < count; ++i)
+      {
+         const float x = inVerts[i].x;
+         const float y = inVerts[i].y;
+         const float z = inVerts[i].z;
+         outVerts[i].x = _11 * x + _21 * y + _31 * z + _41;
+         outVerts[i].y = _12 * x + _22 * y + _32 * z + _42;
+         outVerts[i].z = _13 * x + _23 * y + _33 * z + _43;
+      }
+   }
+
+   void TransformNormals(const Vertex3D_NoTex2* const __restrict inVerts, Vertex3D_NoTex2* const __restrict outVerts, const int count) const
+   {
+      for (int i = 0; i < count; ++i)
+      {
+         const float nx = inVerts[i].nx;
+         const float ny = inVerts[i].ny;
+         const float nz = inVerts[i].nz;
+         outVerts[i].nx = _11 * nx + _21 * ny + _31 * nz;
+         outVerts[i].ny = _12 * nx + _22 * ny + _32 * nz;
+         outVerts[i].nz = _13 * nx + _23 * ny + _33 * nz;
+      }
    }
 
    template <class T> void TransformVertices(const T* const __restrict rgv, const WORD* const __restrict rgi, const int count, Vertex2D* const __restrict rgvout, const RECT& viewPort) const

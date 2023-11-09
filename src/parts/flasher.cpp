@@ -1085,6 +1085,8 @@ void Flasher::setInPlayState(const bool newVal)
    m_inPlayState = newVal;
 }
 
+#pragma region Rendering
+
 // Deprecated Legacy API to be removed
 void Flasher::RenderSetup() { }
 void Flasher::RenderStatic() { }
@@ -1229,9 +1231,6 @@ void Flasher::Render(const unsigned int renderMask)
    if (m_d.m_color == 0 || m_d.m_alpha == 0.0f || m_d.m_intensity_scale == 0.0f)
       return;
 
-   RenderState initial_state;
-   m_rd->CopyRenderStates(true, initial_state);
-
    if (m_dynamicVertexBufferRegenerate)
    {
       m_dynamicVertexBufferRegenerate = false;
@@ -1266,7 +1265,7 @@ void Flasher::Render(const unsigned int renderMask)
       m_meshBuffer->m_vb->unlock();
    }
 
-   m_rd->SetRenderStateDepthBias(0.0f);
+   m_rd->ResetRenderState();
    m_rd->SetRenderStateCulling(RenderState::CULL_NONE);
 
    const vec4 color = convertColor(m_d.m_color, (float)m_d.m_alpha*m_d.m_intensity_scale / 100.0f);
@@ -1400,5 +1399,7 @@ void Flasher::Render(const unsigned int renderMask)
       m_rd->flasherShader->SetVector(SHADER_lightCenter_doShadow, 0.0f, 0.0f, 0.0f, 0.0f);
    }
 
-   m_rd->CopyRenderStates(false, initial_state);
+   m_rd->ResetRenderState();
 }
+
+#pragma endregion

@@ -30,20 +30,6 @@ Surface *Surface::CopyForPlay(PinTable *live_table)
    return dst;
 }
 
-bool Surface::IsTransparent() const
-{
-   bool result = false;
-   if (m_d.m_sideVisible)
-   {
-      result = m_ptable->GetMaterial(m_d.m_szSideMaterial)->m_bOpacityActive;
-   }
-   if (m_d.m_topBottomVisible)
-   {
-      result = result || m_ptable->GetMaterial(m_d.m_szTopMaterial)->m_bOpacityActive;
-   }
-   return result;
-}
-
 HRESULT Surface::Init(PinTable *const ptable, const float x, const float y, const bool fromMouseClick, const bool forPlay)
 {
    m_ptable = ptable;

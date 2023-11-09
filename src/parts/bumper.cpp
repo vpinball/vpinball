@@ -15,6 +15,7 @@ Bumper::Bumper()
 
 Bumper::~Bumper()
 {
+   assert(m_rd == nullptr);
 }
 
 Bumper *Bumper::CopyForPlay(PinTable *live_table)
@@ -256,6 +257,7 @@ void Bumper::RenderSetup(RenderDevice *device)
    if (m_d.m_baseVisible)
    {
       m_baseTexture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "BumperBase.webp");
+      m_baseTexture.m_alphaTestValue = -1.0f;
       IndexBuffer* baseIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperBaseNumIndices, bumperBaseIndices);
       VertexBuffer* baseVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperBaseNumVertices);
       Vertex3D_NoTex2 *buf;
@@ -269,6 +271,7 @@ void Bumper::RenderSetup(RenderDevice *device)
    if (m_d.m_skirtVisible)
    {
       m_skirtTexture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "BumperSkirt.webp");
+      m_skirtTexture.m_alphaTestValue = -1.0f;
       IndexBuffer* socketIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperSocketNumIndices, bumperSocketIndices);
       VertexBuffer* socketVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperSocketNumVertices, nullptr, true);
       Vertex3D_NoTex2 *buf;
@@ -282,6 +285,7 @@ void Bumper::RenderSetup(RenderDevice *device)
    if (m_d.m_ringVisible)
    {
       m_ringTexture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "BumperRing.webp");
+      m_ringTexture.m_alphaTestValue = -1.0f;
       IndexBuffer* ringIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperRingNumIndices, bumperRingIndices);
       VertexBuffer *ringVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperRingNumVertices, nullptr, true);
       m_ringVertices = new Vertex3D_NoTex2[bumperRingNumVertices];
@@ -297,6 +301,7 @@ void Bumper::RenderSetup(RenderDevice *device)
    if (m_d.m_capVisible)
    {
       m_capTexture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "BumperCap.webp");
+      m_capTexture.m_alphaTestValue = -1.0f;
       IndexBuffer* capIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperCapNumIndices, bumperCapIndices);
       VertexBuffer* capVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperCapNumVertices);
       Vertex3D_NoTex2 *buf;
@@ -341,10 +346,7 @@ void Bumper::Render(const unsigned int renderMask)
    if (isReflectionPass && !m_d.m_reflectionEnabled)
       return;
 
-   RenderState initial_state;
-   m_rd->CopyRenderStates(true, initial_state);
-   assert(m_rd->GetRenderState().m_depthBias == 0.0f);
-   assert(m_rd->GetRenderState().GetRenderState(RenderState::ZWRITEENABLE) == RenderState::RS_TRUE);
+   m_rd->ResetRenderState();
    m_rd->SetRenderStateCulling(RenderState::CULL_CCW);
 
    if (m_d.m_baseVisible)
@@ -352,14 +354,10 @@ void Bumper::Render(const unsigned int renderMask)
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szBaseMaterial);
       if ((!mat->m_bOpacityActive && !isDynamicOnly) || (mat->m_bOpacityActive && !isStaticOnly))
       {
-         m_rd->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, mat, false);
+         m_rd->basicShader->SetBasic(mat, &m_baseTexture);
          m_rd->SetRenderStateCulling(mat->m_bOpacityActive ? RenderState::CULL_NONE : RenderState::CULL_CCW);
-         m_rd->basicShader->SetMaterial(mat, false);
-         m_rd->basicShader->SetTexture(SHADER_tex_base_color, &m_baseTexture);
-         // We used to do alpha testing for alpha = 0 or 1. Not sure why. Now the shader disables it
-         // m_rd->basicShader->SetAlphaTestValue((float)(1.0 / 255.0));
          Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight);
-         m_rd->DrawMesh(m_rd->basicShader, IsTransparent(), pos, 0.f, m_baseMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperBaseNumIndices);
+         m_rd->DrawMesh(m_rd->basicShader, false, pos, 0.f, m_baseMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperBaseNumIndices);
       }
    }
 
@@ -368,13 +366,10 @@ void Bumper::Render(const unsigned int renderMask)
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szCapMaterial);
       if ((!mat->m_bOpacityActive && !isDynamicOnly) || (mat->m_bOpacityActive && !isStaticOnly))
       {
-         m_rd->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, mat, false);
+         m_rd->basicShader->SetBasic(mat, &m_capTexture);
          m_rd->SetRenderStateCulling(mat->m_bOpacityActive ? RenderState::CULL_NONE : RenderState::CULL_CCW);
-         m_rd->basicShader->SetMaterial(mat, false);
-         m_rd->basicShader->SetTexture(SHADER_tex_base_color, &m_capTexture);
-         m_rd->basicShader->SetAlphaTestValue((float)(1.0 / 255.0));
          Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight);
-         m_rd->DrawMesh(m_rd->basicShader, IsTransparent(), pos, 0.f, m_capMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperCapNumIndices);
+         m_rd->DrawMesh(m_rd->basicShader, false, pos, 0.f, m_capMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperCapNumIndices);
       }
    }
 
@@ -391,29 +386,22 @@ void Bumper::Render(const unsigned int renderMask)
          ringMaterial.m_cGlossy = 0;
          ringMaterial.m_type = Material::MaterialType::METAL;
       }
-      m_rd->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, ringMaterial, false);
-      m_rd->basicShader->SetTexture(SHADER_tex_base_color, &m_ringTexture);
-      m_rd->basicShader->SetMaterial(&ringMaterial, false);
+      m_rd->basicShader->SetBasic(&ringMaterial, &m_ringTexture);
       m_rd->SetRenderStateCulling(RenderState::CULL_CCW);
       Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight + m_pbumperhitcircle->m_bumperanim_ringAnimOffset);
-      m_rd->DrawMesh(m_rd->basicShader, IsTransparent(), pos, 0.f, m_ringMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperRingNumIndices);
+      m_rd->DrawMesh(m_rd->basicShader, false, pos, 0.f, m_ringMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperRingNumIndices);
    }
 
    if (m_d.m_skirtVisible && !isStaticOnly)
    {
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szSkirtMaterial);
-      m_rd->basicShader->SetTexture(SHADER_tex_base_color, &m_skirtTexture);
-      m_rd->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, mat, false);
+      m_rd->basicShader->SetBasic(mat, &m_skirtTexture);
       m_rd->SetRenderStateCulling(RenderState::CULL_NONE);
-      m_rd->basicShader->SetMaterial(mat, false);
-      m_rd->basicShader->SetTexture(SHADER_tex_base_color, &m_skirtTexture);
-      // We used to do alpha testing for alpha = 0 or 1. Not sure why. Now the shader disables it
-      // m_rd->basicShader->SetAlphaTestValue((float)(1.0 / 255.0));
       Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight + 5.0f);
-      m_rd->DrawMesh(m_rd->basicShader, IsTransparent(), pos, 0.f, m_socketMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperSocketNumIndices);
+      m_rd->DrawMesh(m_rd->basicShader, false, pos, 0.f, m_socketMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperSocketNumIndices);
    }
 
-   m_rd->CopyRenderStates(false, initial_state);
+   m_rd->ResetRenderState();
 }
 
 void Bumper::UpdateSkirt(const bool doCalculation)

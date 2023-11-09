@@ -101,7 +101,6 @@ public:
 
    void GetBoundingVertices(vector<Vertex3Ds> &pvvertex3D, const bool isLegacy) final;
 
-   bool IsTransparent() const final;
    float GetDepth(const Vertex3Ds &viewDir) const final;
    ItemTypeEnum HitableGetItemType() const final { return eItemRamp; }
    void SetDefaultPhysics(const bool fromMouseClick) final;
@@ -118,27 +117,30 @@ public:
 
    RampData m_d;
 
-private:
-   PinTable *m_ptable;
+   virtual void RenderSetup(RenderDevice *device);
+   virtual void Render(const unsigned int renderMask);
+   virtual void RenderRelease();
 
-   bool m_isStaticRendering;
+private:
+   PinTable *m_ptable = nullptr;
+
+   RenderDevice *m_rd = nullptr;
 
    int m_rampVertex;
    Vertex2D *m_rgvInit;    // just for setup/static drawing
    float *m_rgheightInit;
 
-   int m_numVertices;      // this goes along with dynamicVertexBuffer
-   int m_numIndices;
-   Vertex3D_NoTex2* m_vertBuffer;
-   Vertex3D_NoTex2* m_vertBuffer2;
+   int m_numVertices = 0;      // this goes along with dynamicVertexBuffer
+   int m_numIndices = 0;
+   Vertex3D_NoTex2* m_vertBuffer = nullptr;
+   Vertex3D_NoTex2* m_vertBuffer2 = nullptr;
    vector<WORD> m_meshIndices;
+   MeshBuffer *m_meshBuffer = nullptr;
+   bool m_dynamicVertexBufferRegenerate = false;
 
    vector<HitObject*> m_vhoCollidable; // Objects to that may be collide selectable
 
-   MeshBuffer *m_meshBuffer = nullptr;
-   bool m_dynamicVertexBufferRegenerate;
-
-   PropertyPane *m_propPhysics;
+   PropertyPane *m_propPhysics = nullptr;
 
    // Get an approximation of the curve described by the control points of this ramp.
    template <typename T>

@@ -300,11 +300,10 @@ public:
    virtual void Render(const unsigned int renderMask);
    virtual void RenderRelease();
 
-protected:
+private:
    RenderDevice *m_rd = nullptr;
 
 public:
-   bool IsTransparent() const final;
    float GetDepth(const Vertex3Ds &viewDir) const final;
    ItemTypeEnum HitableGetItemType() const final { return eItemPrimitive; }
 

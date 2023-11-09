@@ -104,7 +104,6 @@ protected:
    RenderDevice *m_rd = nullptr;
 
 public:
-   bool IsTransparent() const final { return !m_d.m_isDMD; }
    float GetDepth(const Vertex3Ds& viewDir) const final
    {
       return m_d.m_depthBias + viewDir.x * m_d.m_vCenter.x + viewDir.y * m_d.m_vCenter.y + viewDir.z * m_d.m_height;

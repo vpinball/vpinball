@@ -9,23 +9,12 @@
 
 Decal::Decal()
 {
-   m_pIFont = nullptr;
-   m_textImg = nullptr;
-   m_ptable = nullptr;
-   m_leading = 0.0f;
-   m_descent = 0.0f;
-   m_realheight = 0.0f;
-   m_realwidth = 0.0f;
 }
 
 Decal::~Decal()
 {
-   if (m_pIFont)
-      m_pIFont->Release();
-
-   if (m_textImg)
-      delete m_textImg;
-   delete m_meshBuffer;
+   assert(m_rd == nullptr);
+   SAFE_RELEASE(m_pIFont);
 }
 
 Decal *Decal::CopyForPlay(PinTable *live_table)
@@ -285,242 +274,6 @@ void Decal::GetTextSize(int * const px, int * const py)
    DeleteObject(hFont);
 }
 
-void Decal::PreRenderText()
-{
-   if (m_d.m_decaltype != DecalText)
-      return;
-
-   RECT rcOut = { };
-   const int len = (int)m_d.m_sztext.length();
-   const HFONT hFont = GetFont();
-   int alignment = DT_LEFT;
-
-   const CClientDC clientDC(nullptr);
-
-   CFont hFontOld = clientDC.SelectObject(hFont);
-
-   TEXTMETRIC tm;
-   clientDC.GetTextMetrics(tm);
-
-   float charheight;
-   if (m_d.m_verticalText)
-   {
-      int maxwidth = 0;
-
-      for (int i = 0; i < len; i++)
-      {
-         rcOut.left = 0;
-         rcOut.top = 0;//-tm.tmInternalLeading + 2; // Leave a pixel for anti-aliasing;
-         rcOut.right = 1;
-         rcOut.bottom = 1;
-         clientDC.DrawText(m_d.m_sztext.c_str()+i, 1, rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK | DT_CALCRECT);
-         maxwidth = max(maxwidth, (int)rcOut.right);
-      }
-
-      rcOut.bottom += AUTOLEADING * (len - 1);
-      rcOut.right = maxwidth;
-
-      charheight = m_realheight / (float)len;
-   }
-   else
-   {
-      rcOut.left = 0;
-      rcOut.top = 0;//-tm.tmInternalLeading + 2; // Leave a pixel for anti-aliasing;
-      rcOut.right = 1;
-      rcOut.bottom = 1;
-      clientDC.DrawText(m_d.m_sztext.c_str(), len, rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK | DT_CALCRECT);
-
-      charheight = m_realheight;
-   }
-
-   clientDC.SelectObject(hFontOld);
-
-   // Calculate the percentage of the texture which is for oomlats and commas.
-   const float invascent = charheight / (float)tm.tmAscent;
-   m_leading = (float)tm.tmInternalLeading * invascent /*m_d.m_height*/;
-   m_descent = (float)tm.tmDescent * invascent;
-
-   m_textImg = new BaseTexture(rcOut.right, rcOut.bottom, BaseTexture::SRGBA);
-
-   if (m_d.m_color == RGB(255, 255, 255))
-      m_d.m_color = RGB(254, 255, 255); //m_pinimage.SetTransparentColor(RGB(0,0,0));
-   else if (m_d.m_color == RGB(0, 0, 0))
-      m_d.m_color = RGB(0, 0, 1);
-
-   BITMAPINFO bmi = {};
-   bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-   bmi.bmiHeader.biWidth = m_textImg->width();
-   bmi.bmiHeader.biHeight = -(LONG)m_textImg->height();
-   bmi.bmiHeader.biPlanes = 1;
-   bmi.bmiHeader.biBitCount = 32;
-   bmi.bmiHeader.biCompression = BI_RGB;
-   bmi.bmiHeader.biSizeImage = 0;
-
-   void *bits;
-   const HBITMAP hbm = CreateDIBSection(0, &bmi, DIB_RGB_COLORS, &bits, nullptr, 0);
-
-   assert(hbm);
-
-   CDC dc;
-   dc.CreateCompatibleDC(nullptr);
-   const CBitmap oldBmp = dc.SelectObject(hbm);
-
-   dc.SelectObject(reinterpret_cast<HBRUSH>(dc.GetStockObject(WHITE_BRUSH)));
-   dc.PatBlt(0, 0, rcOut.right, rcOut.bottom, PATCOPY);
-
-   hFontOld = dc.SelectObject(hFont);
-
-   dc.SetTextColor(m_d.m_color);
-   dc.SetBkMode(TRANSPARENT);
-   dc.SetTextAlign(TA_LEFT | TA_TOP | TA_NOUPDATECP);
-   alignment = DT_CENTER;
-
-   if (m_d.m_verticalText)
-   {
-      for (int i = 0; i < len; i++)
-      {
-         rcOut.top = AUTOLEADING * i;//-tm.tmInternalLeading + 2; // Leave a pixel for anti-aliasing;
-         rcOut.bottom = rcOut.top + 100;
-         dc.DrawText(m_d.m_sztext.c_str()+i, 1, rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK);
-      }
-   }
-   else
-      dc.DrawText(m_d.m_sztext.c_str(), len, rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK);
-
-   // Copy and set to opaque
-   const D3DCOLOR* __restrict bitsd = (D3DCOLOR*)bits;
-         D3DCOLOR* __restrict dest = (D3DCOLOR*)m_textImg->data();
-   for (unsigned int i = 0; i < m_textImg->height(); i++)
-   {
-      for (unsigned int l = 0; l < m_textImg->width(); l++, dest++, bitsd++)
-         *dest = *bitsd | 0xFF000000u;
-      dest += m_textImg->pitch()/4 - m_textImg->width();
-   }
-
-   dc.SelectObject(hFontOld);
-   dc.SelectObject(oldBmp);
-   DeleteObject(hFont);
-   DeleteObject(hbm);
-}
-
-void Decal::GetHitShapes(vector<HitObject*> &pvho)
-{
-}
-
-void Decal::GetHitShapesDebug(vector<HitObject*> &pvho)
-{
-}
-
-void Decal::EndPlay()
-{
-   if (m_textImg)
-   {
-      delete m_textImg;
-      m_textImg = nullptr;
-   }
-
-   delete m_meshBuffer;
-   m_meshBuffer = nullptr;
-
-   IEditable::EndPlay();
-}
-
-void Decal::RenderDynamic()
-{
-   const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
-   if (!m_backglass //!! should just check if material has opacity enabled, but this is crucial for HV setup performance like-is
-      && mat->m_bOpacityActive)
-      RenderObject();
-}
-
-void Decal::RenderSetup()
-{
-#ifdef ENABLE_SDL
-   RenderDevice *const pd3dDevice = m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-#endif
-
-   UpdateBounds();
-   
-   PreRenderText();
-
-   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
-
-   float leading, descent; // For fonts
-   if (m_d.m_decaltype != DecalImage)
-   {
-      leading = m_leading;
-      descent = m_descent;
-   }
-   else
-   {
-      leading = 0.f;
-      descent = 0.f;
-   }
-
-   const float halfwidth = m_realwidth * 0.5f;
-   const float halfheight = m_realheight * 0.5f;
-
-   const float radangle = ANGTORAD(m_d.m_rotation);
-   const float sn = sinf(radangle);
-   const float cs = cosf(radangle);
-
-   VertexBuffer *vertexBuffer = new VertexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, 4);
-   Vertex3D_NoTex2 *vertices;
-   vertexBuffer->lock(0, 0, (void**)&vertices, VertexBuffer::WRITEONLY);
-   float z = m_backglass ? 0.f : (height + 0.2f);
-
-   vertices[0].x = m_d.m_vCenter.x + sn*(halfheight + leading) - cs*halfwidth;
-   vertices[0].y = m_d.m_vCenter.y - cs*(halfheight + leading) - sn*halfwidth;
-   vertices[0].z = z;
-   vertices[0].nx = 0.f;
-   vertices[0].ny = 0.f;
-   vertices[0].nz = 1.f;
-   vertices[0].tu = 0;
-   vertices[0].tv = 0;
-
-   vertices[1].x = m_d.m_vCenter.x + sn*(halfheight + leading) + cs*halfwidth;
-   vertices[1].y = m_d.m_vCenter.y - cs*(halfheight + leading) + sn*halfwidth;
-   vertices[1].z = z;
-   vertices[1].nx = 0.f;
-   vertices[1].ny = 0.f;
-   vertices[1].nz = 1.f;
-   vertices[1].tu = 1.0f;
-   vertices[1].tv = 0;
-
-   vertices[2].x = m_d.m_vCenter.x - sn*(halfheight + descent) - cs*halfwidth;
-   vertices[2].y = m_d.m_vCenter.y + cs*(halfheight + descent) - sn*halfwidth;
-   vertices[2].z = z;
-   vertices[2].nx = 0.f;
-   vertices[2].ny = 0.f;
-   vertices[2].nz = 1.f;
-   vertices[2].tu = 0;
-   vertices[2].tv = 1.0f;
-
-   vertices[3].x = m_d.m_vCenter.x - sn*(halfheight + descent) + cs*halfwidth;
-   vertices[3].y = m_d.m_vCenter.y + cs*(halfheight + descent) + sn*halfwidth;
-   vertices[3].z = z;
-   vertices[3].nx = 0.f;
-   vertices[3].ny = 0.f;
-   vertices[3].nz = 1.f;
-   vertices[3].tu = 1.0f;
-   vertices[3].tv = 1.0f;
-
-   if (m_backglass)
-   {
-      const float xmult = getBGxmult();
-      const float ymult = getBGymult();
-      for (int i = 0; i < 4; ++i)
-      {
-         vertices[i].x = vertices[i].x * xmult  - 0.5f;
-         vertices[i].y = vertices[i].y * ymult - 0.5f;
-      }
-   }
-   vertexBuffer->unlock();
-
-   delete m_meshBuffer;
-   m_meshBuffer = new MeshBuffer(m_wzName, vertexBuffer);
-}
-
 float Decal::GetDepth(const Vertex3Ds& viewDir) const
 {
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
@@ -536,116 +289,6 @@ void Decal::UpdateBounds()
       const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
       m_boundingSphereCenter.Set(m_d.m_vCenter.x, m_d.m_vCenter.y, height);
    }
-}
-
-void Decal::RenderObject()
-{
-   if (m_backglass && (!GetPTable()->GetDecalsEnabled() || g_pplayer->m_stereo3D == STEREO_VR))
-      return;
-
-   RenderDevice * const pd3dDevice = m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-   RenderState initial_state;
-   pd3dDevice->CopyRenderStates(true, initial_state);
-
-   if (m_backglass && (m_ptable->m_tblMirrorEnabled ^ g_pplayer->IsRenderPass(Player::REFLECTION_PASS)))
-      pd3dDevice->SetRenderStateCulling(RenderState::CULL_NONE);
-   else
-      pd3dDevice->SetRenderStateCulling(RenderState::CULL_CCW);
-
-   pd3dDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
-
-   const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
-   pd3dDevice->basicShader->SetMaterial(mat);
-
-   //pd3dDevice->basicShader->SetFloat("fmaterialAlpha",1.0f);
-
-   if (m_d.m_decaltype != DecalImage)
-   {
-      if (!m_backglass)
-         pd3dDevice->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, mat, false);
-      else
-         pd3dDevice->basicShader->SetTechnique(SHADER_TECHNIQUE_bg_decal_with_texture);
-      pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, m_textImg);
-   }
-   else
-   {
-      Texture *const pin = m_ptable->GetImage(m_d.m_szImage);
-      if (pin)
-      {
-         if (!m_backglass)
-            pd3dDevice->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, mat, pin->m_alphaTestValue >= 0.f && !pin->m_pdsBuffer->IsOpaque());
-         else
-            pd3dDevice->basicShader->SetTechnique(SHADER_TECHNIQUE_bg_decal_with_texture);
-         // Set texture to mirror, so the alpha state of the texture blends correctly to the outside
-         pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, pin, SF_TRILINEAR, SA_MIRROR, SA_MIRROR);
-         pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue);
-      }
-      else
-      {
-         if (!m_backglass)
-            pd3dDevice->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, mat);
-         else
-            pd3dDevice->basicShader->SetTechnique(SHADER_TECHNIQUE_bg_decal_without_texture);
-      }
-   }
-
-   g_pplayer->m_pin3d.EnableAlphaBlend(false);
-
-   if (!m_backglass)
-   {
-      constexpr float depthbias = -5.f;
-      pd3dDevice->SetRenderStateDepthBias(depthbias);
-   }
-   else
-   {
-      pd3dDevice->SetRenderStateDepthBias(0.0f);
-      const vec4 staticColor(1.0f, 1.0f, 1.0f, 1.0f);
-      pd3dDevice->basicShader->SetVector(SHADER_cBase_Alpha, &staticColor);
-   }
-
-   if (m_backglass)
-   {
-      Matrix3D matWorldViewProj; // MVP to move from back buffer space (0..w, 0..h) to clip space (-1..1, -1..1)
-      matWorldViewProj.SetIdentity();
-      matWorldViewProj._11 = 2.0f / (float)pd3dDevice->GetMSAABackBufferTexture()->GetWidth();
-      matWorldViewProj._41 = -1.0f;
-      matWorldViewProj._22 = -2.0f / (float)pd3dDevice->GetMSAABackBufferTexture()->GetHeight();
-      matWorldViewProj._42 = 1.0f;
-      #ifdef ENABLE_SDL
-      struct
-      {
-         Matrix3D matWorld;
-         Matrix3D matView;
-         Matrix3D matWorldView;
-         Matrix3D matWorldViewInverseTranspose;
-         Matrix3D matWorldViewProj[2];
-      } matrices;
-      memcpy(&matrices.matWorldViewProj[0], &matWorldViewProj, 4 * 4 * sizeof(float));
-      memcpy(&matrices.matWorldViewProj[1], &matWorldViewProj, 4 * 4 * sizeof(float));
-      pd3dDevice->basicShader->SetUniformBlock(SHADER_basicMatrixBlock, &matrices.matWorld.m[0][0]);
-      #else
-      pd3dDevice->basicShader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj);
-      #endif
-   }
-
-   pd3dDevice->DrawMesh(pd3dDevice->basicShader, IsTransparent(), m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLESTRIP, 0, 4);
-
-   if (m_backglass)
-      g_pplayer->UpdateBasicShaderMatrix();
-   pd3dDevice->CopyRenderStates(false, initial_state);
-}
-
-void Decal::UpdateAnimation(const float diff_time_msec)
-{
-}
-
-void Decal::RenderStatic()
-{
-   const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
-
-   if (m_backglass //!! should just check if material has no opacity enabled, but this is crucial for HV setup performance like-is
-      || !mat->m_bOpacityActive)
-      RenderObject();
 }
 
 void Decal::SetObjectPos()
@@ -845,6 +488,352 @@ HFONT Decal::GetFont()
 
    return hFont;
 }
+
+
+#pragma region Physics
+
+void Decal::GetHitShapes(vector<HitObject*> &pvho)
+{
+}
+
+void Decal::GetHitShapesDebug(vector<HitObject*> &pvho)
+{
+}
+
+void Decal::EndPlay()
+{
+   IEditable::EndPlay();
+   RenderRelease();
+}
+
+#pragma endregion
+
+
+#pragma region Rendering
+
+// Deprecated Legacy API to be removed
+void Decal::RenderSetup() { }
+void Decal::RenderStatic() { }
+void Decal::RenderDynamic() { }
+
+void Decal::RenderSetup(RenderDevice *device)
+{
+   assert(m_rd == nullptr);
+   m_rd = device;
+
+   UpdateBounds();
+   
+   if (m_d.m_decaltype == DecalText)
+   {
+      RECT rcOut = { };
+      const int len = (int)m_d.m_sztext.length();
+      const HFONT hFont = GetFont();
+      int alignment = DT_LEFT;
+
+      const CClientDC clientDC(nullptr);
+
+      CFont hFontOld = clientDC.SelectObject(hFont);
+
+      TEXTMETRIC tm;
+      clientDC.GetTextMetrics(tm);
+
+      float charheight;
+      if (m_d.m_verticalText)
+      {
+         int maxwidth = 0;
+
+         for (int i = 0; i < len; i++)
+         {
+            rcOut.left = 0;
+            rcOut.top = 0;//-tm.tmInternalLeading + 2; // Leave a pixel for anti-aliasing;
+            rcOut.right = 1;
+            rcOut.bottom = 1;
+            clientDC.DrawText(m_d.m_sztext.c_str()+i, 1, rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK | DT_CALCRECT);
+            maxwidth = max(maxwidth, (int)rcOut.right);
+         }
+
+         rcOut.bottom += AUTOLEADING * (len - 1);
+         rcOut.right = maxwidth;
+
+         charheight = m_realheight / (float)len;
+      }
+      else
+      {
+         rcOut.left = 0;
+         rcOut.top = 0;//-tm.tmInternalLeading + 2; // Leave a pixel for anti-aliasing;
+         rcOut.right = 1;
+         rcOut.bottom = 1;
+         clientDC.DrawText(m_d.m_sztext.c_str(), len, rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK | DT_CALCRECT);
+
+         charheight = m_realheight;
+      }
+
+      clientDC.SelectObject(hFontOld);
+
+      // Calculate the percentage of the texture which is for oomlats and commas.
+      const float invascent = charheight / (float)tm.tmAscent;
+      m_leading = (float)tm.tmInternalLeading * invascent /*m_d.m_height*/;
+      m_descent = (float)tm.tmDescent * invascent;
+
+      m_textImg = new BaseTexture(rcOut.right, rcOut.bottom, BaseTexture::SRGBA);
+
+      if (m_d.m_color == RGB(255, 255, 255))
+         m_d.m_color = RGB(254, 255, 255); //m_pinimage.SetTransparentColor(RGB(0,0,0));
+      else if (m_d.m_color == RGB(0, 0, 0))
+         m_d.m_color = RGB(0, 0, 1);
+
+      BITMAPINFO bmi = {};
+      bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+      bmi.bmiHeader.biWidth = m_textImg->width();
+      bmi.bmiHeader.biHeight = -(LONG)m_textImg->height();
+      bmi.bmiHeader.biPlanes = 1;
+      bmi.bmiHeader.biBitCount = 32;
+      bmi.bmiHeader.biCompression = BI_RGB;
+      bmi.bmiHeader.biSizeImage = 0;
+
+      void *bits;
+      const HBITMAP hbm = CreateDIBSection(0, &bmi, DIB_RGB_COLORS, &bits, nullptr, 0);
+
+      assert(hbm);
+
+      CDC dc;
+      dc.CreateCompatibleDC(nullptr);
+      const CBitmap oldBmp = dc.SelectObject(hbm);
+
+      dc.SelectObject(reinterpret_cast<HBRUSH>(dc.GetStockObject(WHITE_BRUSH)));
+      dc.PatBlt(0, 0, rcOut.right, rcOut.bottom, PATCOPY);
+
+      hFontOld = dc.SelectObject(hFont);
+
+      dc.SetTextColor(m_d.m_color);
+      dc.SetBkMode(TRANSPARENT);
+      dc.SetTextAlign(TA_LEFT | TA_TOP | TA_NOUPDATECP);
+      alignment = DT_CENTER;
+
+      if (m_d.m_verticalText)
+      {
+         for (int i = 0; i < len; i++)
+         {
+            rcOut.top = AUTOLEADING * i;//-tm.tmInternalLeading + 2; // Leave a pixel for anti-aliasing;
+            rcOut.bottom = rcOut.top + 100;
+            dc.DrawText(m_d.m_sztext.c_str()+i, 1, rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK);
+         }
+      }
+      else
+         dc.DrawText(m_d.m_sztext.c_str(), len, rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK);
+
+      // Copy and set to opaque
+      const D3DCOLOR* __restrict bitsd = (D3DCOLOR*)bits;
+            D3DCOLOR* __restrict dest = (D3DCOLOR*)m_textImg->data();
+      for (unsigned int i = 0; i < m_textImg->height(); i++)
+      {
+         for (unsigned int l = 0; l < m_textImg->width(); l++, dest++, bitsd++)
+            *dest = *bitsd | 0xFF000000u;
+         dest += m_textImg->pitch()/4 - m_textImg->width();
+      }
+
+      dc.SelectObject(hFontOld);
+      dc.SelectObject(oldBmp);
+      DeleteObject(hFont);
+      DeleteObject(hbm);
+   }
+
+   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
+
+   float leading, descent; // For fonts
+   if (m_d.m_decaltype != DecalImage)
+   {
+      leading = m_leading;
+      descent = m_descent;
+   }
+   else
+   {
+      leading = 0.f;
+      descent = 0.f;
+   }
+
+   const float halfwidth = m_realwidth * 0.5f;
+   const float halfheight = m_realheight * 0.5f;
+
+   const float radangle = ANGTORAD(m_d.m_rotation);
+   const float sn = sinf(radangle);
+   const float cs = cosf(radangle);
+
+   VertexBuffer *vertexBuffer = new VertexBuffer(m_rd, 4);
+   Vertex3D_NoTex2 *vertices;
+   vertexBuffer->lock(0, 0, (void**)&vertices, VertexBuffer::WRITEONLY);
+   float z = m_backglass ? 0.f : (height + 0.2f);
+
+   vertices[0].x = m_d.m_vCenter.x + sn*(halfheight + leading) - cs*halfwidth;
+   vertices[0].y = m_d.m_vCenter.y - cs*(halfheight + leading) - sn*halfwidth;
+   vertices[0].z = z;
+   vertices[0].nx = 0.f;
+   vertices[0].ny = 0.f;
+   vertices[0].nz = 1.f;
+   vertices[0].tu = 0;
+   vertices[0].tv = 0;
+
+   vertices[1].x = m_d.m_vCenter.x + sn*(halfheight + leading) + cs*halfwidth;
+   vertices[1].y = m_d.m_vCenter.y - cs*(halfheight + leading) + sn*halfwidth;
+   vertices[1].z = z;
+   vertices[1].nx = 0.f;
+   vertices[1].ny = 0.f;
+   vertices[1].nz = 1.f;
+   vertices[1].tu = 1.0f;
+   vertices[1].tv = 0;
+
+   vertices[2].x = m_d.m_vCenter.x - sn*(halfheight + descent) - cs*halfwidth;
+   vertices[2].y = m_d.m_vCenter.y + cs*(halfheight + descent) - sn*halfwidth;
+   vertices[2].z = z;
+   vertices[2].nx = 0.f;
+   vertices[2].ny = 0.f;
+   vertices[2].nz = 1.f;
+   vertices[2].tu = 0;
+   vertices[2].tv = 1.0f;
+
+   vertices[3].x = m_d.m_vCenter.x - sn*(halfheight + descent) + cs*halfwidth;
+   vertices[3].y = m_d.m_vCenter.y + cs*(halfheight + descent) + sn*halfwidth;
+   vertices[3].z = z;
+   vertices[3].nx = 0.f;
+   vertices[3].ny = 0.f;
+   vertices[3].nz = 1.f;
+   vertices[3].tu = 1.0f;
+   vertices[3].tv = 1.0f;
+
+   if (m_backglass)
+   {
+      const float xmult = getBGxmult();
+      const float ymult = getBGymult();
+      for (int i = 0; i < 4; ++i)
+      {
+         vertices[i].x = vertices[i].x * xmult  - 0.5f;
+         vertices[i].y = vertices[i].y * ymult - 0.5f;
+      }
+   }
+   vertexBuffer->unlock();
+
+   delete m_meshBuffer;
+   m_meshBuffer = new MeshBuffer(m_wzName, vertexBuffer);
+}
+
+void Decal::RenderRelease()
+{
+   assert(m_rd != nullptr);
+   delete m_textImg;
+   delete m_meshBuffer;
+   m_textImg = nullptr;
+   m_meshBuffer = nullptr;
+   m_rd = nullptr;
+}
+
+void Decal::UpdateAnimation(const float diff_time_msec)
+{
+   assert(m_rd != nullptr);
+}
+
+void Decal::Render(const unsigned int renderMask)
+{
+   assert(m_rd != nullptr);
+   const bool isStaticOnly = renderMask & Player::STATIC_ONLY;
+   const bool isDynamicOnly = renderMask & Player::DYNAMIC_ONLY;
+   const bool isReflectionPass = renderMask & Player::REFLECTION_PASS;
+   TRACE_FUNCTION();
+
+   if (m_backglass && (!GetPTable()->GetDecalsEnabled() || g_pplayer->m_stereo3D == STEREO_VR))
+      return;
+
+   const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
+   //!! should just check if material has no opacity enabled, but this is crucial for HV setup performance like-is
+   if ((!isDynamicOnly && (m_backglass || !mat->m_bOpacityActive)) // Static prerendering
+    || (!isStaticOnly && (!m_backglass && mat->m_bOpacityActive))) // Not prerendered part pass
+   {
+      m_rd->ResetRenderState();
+      m_rd->SetRenderStateCulling(m_backglass && (m_ptable->m_tblMirrorEnabled ^ isReflectionPass) ? RenderState::CULL_NONE : RenderState::CULL_CCW);
+
+      const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
+      m_rd->basicShader->SetMaterial(mat);
+
+      if (m_d.m_decaltype != DecalImage)
+      {
+         if (!m_backglass)
+            m_rd->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, mat, false);
+         else
+            m_rd->basicShader->SetTechnique(SHADER_TECHNIQUE_bg_decal_with_texture);
+         m_rd->basicShader->SetTexture(SHADER_tex_base_color, m_textImg);
+      }
+      else
+      {
+         Texture *const pin = m_ptable->GetImage(m_d.m_szImage);
+         if (pin)
+         {
+            if (!m_backglass)
+               m_rd->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, mat, pin->m_alphaTestValue >= 0.f && !pin->m_pdsBuffer->IsOpaque());
+            else
+               m_rd->basicShader->SetTechnique(SHADER_TECHNIQUE_bg_decal_with_texture);
+            // Set texture to mirror, so the alpha state of the texture blends correctly to the outside
+            m_rd->basicShader->SetTexture(SHADER_tex_base_color, pin, SF_TRILINEAR, SA_MIRROR, SA_MIRROR);
+            m_rd->basicShader->SetAlphaTestValue(pin->m_alphaTestValue);
+         }
+         else
+         {
+            if (!m_backglass)
+               m_rd->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, mat);
+            else
+               m_rd->basicShader->SetTechnique(SHADER_TECHNIQUE_bg_decal_without_texture);
+         }
+      }
+
+      m_rd->EnableAlphaBlend(false);
+
+      if (!m_backglass)
+      {
+         constexpr float depthbias = -5.f;
+         m_rd->SetRenderStateDepthBias(depthbias);
+      }
+      else
+      {
+         m_rd->SetRenderStateDepthBias(0.0f);
+         const vec4 staticColor(1.0f, 1.0f, 1.0f, 1.0f);
+         m_rd->basicShader->SetVector(SHADER_cBase_Alpha, &staticColor);
+      }
+
+      if (m_backglass)
+      {
+         Matrix3D matWorldViewProj; // MVP to move from back buffer space (0..w, 0..h) to clip space (-1..1, -1..1)
+         matWorldViewProj.SetIdentity();
+         matWorldViewProj._11 = 2.0f / (float)m_rd->GetMSAABackBufferTexture()->GetWidth();
+         matWorldViewProj._41 = -1.0f;
+         matWorldViewProj._22 = -2.0f / (float)m_rd->GetMSAABackBufferTexture()->GetHeight();
+         matWorldViewProj._42 = 1.0f;
+         #ifdef ENABLE_SDL
+         struct
+         {
+            Matrix3D matWorld;
+            Matrix3D matView;
+            Matrix3D matWorldView;
+            Matrix3D matWorldViewInverseTranspose;
+            Matrix3D matWorldViewProj[2];
+         } matrices;
+         memcpy(&matrices.matWorldViewProj[0], &matWorldViewProj, 4 * 4 * sizeof(float));
+         memcpy(&matrices.matWorldViewProj[1], &matWorldViewProj, 4 * 4 * sizeof(float));
+         m_rd->basicShader->SetUniformBlock(SHADER_basicMatrixBlock, &matrices.matWorld.m[0][0]);
+         #else
+         m_rd->basicShader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj);
+         #endif
+      }
+
+      m_rd->DrawMesh(m_rd->basicShader, !m_backglass, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLESTRIP, 0, 4);
+
+      if (m_backglass)
+         g_pplayer->UpdateBasicShaderMatrix();
+      m_rd->ResetRenderState();
+   }
+}
+
+#pragma endregion
+
+
+#pragma region ScriptProxy
 
 STDMETHODIMP Decal::get_Rotation(float *pVal)
 {
@@ -1072,3 +1061,5 @@ STDMETHODIMP Decal::put_HasVerticalText(VARIANT_BOOL newVal)
 
    return S_OK;
 }
+
+#pragma endregion

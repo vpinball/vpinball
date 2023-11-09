@@ -7,6 +7,7 @@ Textbox::Textbox()
 
 Textbox::~Textbox()
 {
+   assert(m_rd == nullptr);
    SAFE_RELEASE(m_pIFont);
 }
 
@@ -537,10 +538,8 @@ void Textbox::Render(const unsigned int renderMask)
       DeleteObject(hbm);
    }
 
-   RenderState initial_state;
-   m_rd->CopyRenderStates(true, initial_state);
-   assert(m_rd->GetRenderState().m_depthBias == 0.0f);
-   assert(m_rd->GetRenderState().GetRenderState(RenderState::ZWRITEENABLE) == RenderState::RS_TRUE);
+   m_rd->ResetRenderState();
+   m_rd->SetRenderStateCulling(RenderState::CULL_CCW);
    m_rd->SetRenderStateCulling(m_ptable->m_tblMirrorEnabled ^ isReflectionPass ? RenderState::CULL_NONE : RenderState::CULL_CCW);
 
    constexpr float mult  = (float)(1.0 / EDITOR_BG_WIDTH);
@@ -568,7 +567,7 @@ void Textbox::Render(const unsigned int renderMask)
       m_rd->DMDShader->SetFloat(SHADER_alphaTestValue, 1.0f);
    }
 
-   m_rd->CopyRenderStates(false, initial_state);
+   m_rd->ResetRenderState();
 }
 
 #pragma endregion

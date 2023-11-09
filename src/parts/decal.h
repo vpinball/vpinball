@@ -29,6 +29,60 @@ class Decal :
    public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
 {
 public:
+   Decal();
+   virtual ~Decal();
+
+   BEGIN_COM_MAP(Decal)
+      COM_INTERFACE_ENTRY(IDispatch)
+      COM_INTERFACE_ENTRY(IDecal)
+      COM_INTERFACE_ENTRY(IPerPropertyBrowsing)
+   END_COM_MAP()
+
+   STANDARD_NOSCRIPT_EDITABLE_DECLARES(Decal, eItemDecal, DECAL, VIEW_PLAYFIELD | VIEW_BACKGLASS)
+
+   void MoveOffset(const float dx, const float dy) final { m_d.m_vCenter.x += dx; m_d.m_vCenter.y += dy; }
+   void SetObjectPos() final;
+   // Multi-object manipulation
+   Vertex2D GetCenter() const final { return m_d.m_vCenter; }
+   void PutCenter(const Vertex2D& pv) final { m_d.m_vCenter = pv; }
+   float GetDepth(const Vertex3Ds &viewDir) const final;
+   void Rotate(const float ang, const Vertex2D &pvCenter, const bool useElementCenter) final;
+
+   STDMETHOD(get_Name)(BSTR *pVal) final { return E_FAIL; }
+   char *GetFontName();
+   HFONT GetFont();
+
+   void WriteRegDefaults() final;
+
+   ItemTypeEnum HitableGetItemType() const final { return eItemDecal; }
+
+   void EnsureSize();
+
+   Decal *CopyForPlay(PinTable *live_table);
+
+   DecalData m_d;
+   IFont *m_pIFont = nullptr;
+
+   virtual void RenderSetup(RenderDevice *device);
+   virtual void Render(const unsigned int renderMask);
+   virtual void RenderRelease();
+
+private:
+   void GetTextSize(int * const px, int * const py);
+
+   PinTable *m_ptable = nullptr;
+
+   RenderDevice *m_rd = nullptr;
+   MeshBuffer *m_meshBuffer = nullptr;
+   BaseTexture *m_textImg = nullptr;
+   float m_leading = 0.0f, m_descent = 0.0f;
+   float m_realwidth = 0.0f, m_realheight = 0.0f;
+
+   Vertex3Ds m_boundingSphereCenter;
+   void UpdateBounds();
+
+   // IDecal
+public:
    STDMETHOD(get_HasVerticalText)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_HasVerticalText)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_Font)(/*[out, retval]*/ IFontDisp **pVal);
@@ -57,56 +111,6 @@ public:
    STDMETHOD(put_Image)(/*[in]*/ BSTR newVal);
    STDMETHOD(get_Rotation)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_Rotation)(/*[in]*/ float newVal);
-   Decal();
-   virtual ~Decal();
-
-   BEGIN_COM_MAP(Decal)
-      COM_INTERFACE_ENTRY(IDispatch)
-      COM_INTERFACE_ENTRY(IDecal)
-      COM_INTERFACE_ENTRY(IPerPropertyBrowsing)
-   END_COM_MAP()
-
-   STANDARD_NOSCRIPT_EDITABLE_DECLARES(Decal, eItemDecal, DECAL, VIEW_PLAYFIELD | VIEW_BACKGLASS)
-
-   void MoveOffset(const float dx, const float dy) final { m_d.m_vCenter.x += dx; m_d.m_vCenter.y += dy; }
-   void SetObjectPos() final;
-   // Multi-object manipulation
-   Vertex2D GetCenter() const final { return m_d.m_vCenter; }
-   void PutCenter(const Vertex2D& pv) final { m_d.m_vCenter = pv; }
-   float GetDepth(const Vertex3Ds &viewDir) const final;
-   bool IsTransparent() const final { return !m_backglass; }
-   void Rotate(const float ang, const Vertex2D &pvCenter, const bool useElementCenter) final;
-
-   STDMETHOD(get_Name)(BSTR *pVal) final { return E_FAIL; }
-   char *GetFontName();
-   HFONT GetFont();
-
-   void WriteRegDefaults() final;
-
-   ItemTypeEnum HitableGetItemType() const final { return eItemDecal; }
-
-   void EnsureSize();
-
-   Decal *CopyForPlay(PinTable *live_table);
-
-   DecalData m_d;
-   IFont *m_pIFont;
-
-private:
-   void GetTextSize(int * const px, int * const py);
-   void PreRenderText();
-   void RenderObject();
-
-   PinTable *m_ptable;
-
-   BaseTexture *m_textImg;
-   float m_leading, m_descent;
-
-   float m_realwidth, m_realheight;
-   MeshBuffer *m_meshBuffer = nullptr;
-
-   Vertex3Ds m_boundingSphereCenter;
-   void UpdateBounds();
 };
 
 #endif // !defined(AFX_DECAL_H__447B3CE2_C9EA_4ED1_AA3D_A8328F6DFD48__INCLUDED_)
