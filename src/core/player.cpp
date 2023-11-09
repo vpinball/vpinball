@@ -4450,6 +4450,7 @@ void Player::DrawStatics()
    #ifdef DEBUG
    // Check that RenderStatic / RenderDynamic restore render state to its initial value
    RenderState initial_state, live_state;
+   m_pin3d.m_pd3dPrimaryDevice->ResetRenderState();
    m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(true, initial_state);
    // Default expected State: Blend: { _  A  SA   RSA } Depth: { Z  <=  ZW } Clip: _ Cull: CCW Mask: F
    // - Blend disabled / Add / Source alpha / 1 - Source alpha
@@ -4477,6 +4478,7 @@ void Player::DrawDynamics(bool onlyBalls)
    #ifdef DEBUG
    // Check that RenderStatic / RenderDynamic restore render state to its initial value
    RenderState initial_state, live_state;
+   m_pin3d.m_pd3dPrimaryDevice->ResetRenderState();
    m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(true, initial_state);
    // Default expected State: Blend: { _  A  SA   RSA } Depth: { Z  <=  ZW } Clip: _ Cull: CCW Mask: F
    // - Blend disabled / Add / Source alpha / 1 - Source alpha
