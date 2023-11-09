@@ -1188,6 +1188,12 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
       {
          string iniFileName = m_live_table->GetSettingsFileName();
          m_live_table->mViewSetups[m_live_table->m_BG_current_set].SaveToTableOverrideSettings(m_live_table->m_settings, m_live_table->m_BG_current_set);
+         if (m_live_table->m_BG_current_set == BG_FULLSCREEN)
+         { // Player position is saved as an override (not saved if equal to app settings)
+            m_live_table->m_settings.SaveValue(Settings::Player, "ScreenPlayerX", m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerX"s, 0.0f), true);
+            m_live_table->m_settings.SaveValue(Settings::Player, "ScreenPlayerY", m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerY"s, 0.0f), true);
+            m_live_table->m_settings.SaveValue(Settings::Player, "ScreenPlayerZ", m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerZ"s, 70.0f), true);
+         }
          if ((m_dayNightOverriden & 2) != 0)
          { // User has resetted day/night (get back to app settings, so remove the ones from the user settings)
             m_live_table->m_settings.DeleteValue(Settings::Player, "OverrideTableEmissionScale"s);
@@ -1660,6 +1666,7 @@ void LiveUI::UpdateMainUI()
       ImGuizmo::DrawGrid((const float *)(m_camView.m), (const float *)(m_camProj.m), (const float *)(gridMatrix.m), 100.f); */
       //ImGuizmo::DrawGrid(cameraView, cameraProjection, identityMatrix, 100.f);
 
+      // Selection manipulator
       Matrix3D transform;
       if (GetSelectionTransform(transform))
       {

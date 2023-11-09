@@ -33,17 +33,17 @@ void ViewSetup::ApplyTableOverrideSettings(const Settings& settings, const ViewS
    settings.LoadValue(Settings::TableOverride, keyPrefix + "ScaleX"s, mSceneScaleX);
    settings.LoadValue(Settings::TableOverride, keyPrefix + "ScaleY"s, mSceneScaleY);
    settings.LoadValue(Settings::TableOverride, keyPrefix + "ScaleZ"s, mSceneScaleZ);
+   settings.LoadValue(Settings::TableOverride, keyPrefix + "Rotation"s, mViewportRotation);
    settings.LoadValue(Settings::TableOverride, keyPrefix + "PlayerX"s, mViewX);
    settings.LoadValue(Settings::TableOverride, keyPrefix + "PlayerY"s, mViewY);
    settings.LoadValue(Settings::TableOverride, keyPrefix + "PlayerZ"s, mViewZ);
    settings.LoadValue(Settings::TableOverride, keyPrefix + "LookAt"s, mLookAt);
-   settings.LoadValue(Settings::TableOverride, keyPrefix + "Rotation"s, mViewportRotation);
    settings.LoadValue(Settings::TableOverride, keyPrefix + "FOV"s, mFOV);
-   settings.LoadValue(Settings::TableOverride, keyPrefix + "Layback"s, mLayback);
    settings.LoadValue(Settings::TableOverride, keyPrefix + "HOfs"s, mViewHOfs);
    settings.LoadValue(Settings::TableOverride, keyPrefix + "VOfs"s, mViewVOfs);
    settings.LoadValue(Settings::TableOverride, keyPrefix + "WindowTop"s, mWindowTopZOfs);
    settings.LoadValue(Settings::TableOverride, keyPrefix + "WindowBot"s, mWindowBottomZOfs);
+   settings.LoadValue(Settings::TableOverride, keyPrefix + "Layback"s, mLayback);
 }
 
 void ViewSetup::SaveToTableOverrideSettings(Settings& settings, const ViewSetupID id) const
@@ -53,17 +53,51 @@ void ViewSetup::SaveToTableOverrideSettings(Settings& settings, const ViewSetupI
    settings.SaveValue(Settings::TableOverride, keyPrefix + "ScaleX"s, mSceneScaleX, false);
    settings.SaveValue(Settings::TableOverride, keyPrefix + "ScaleY"s, mSceneScaleY, false);
    settings.SaveValue(Settings::TableOverride, keyPrefix + "ScaleZ"s, mSceneScaleZ, false);
-   settings.SaveValue(Settings::TableOverride, keyPrefix + "PlayerX"s, mViewX, false);
-   settings.SaveValue(Settings::TableOverride, keyPrefix + "PlayerY"s, mViewY, false);
-   settings.SaveValue(Settings::TableOverride, keyPrefix + "PlayerZ"s, mViewZ, false);
-   settings.SaveValue(Settings::TableOverride, keyPrefix + "LookAt"s, mLookAt, false);
    settings.SaveValue(Settings::TableOverride, keyPrefix + "Rotation"s, mViewportRotation, false);
-   settings.SaveValue(Settings::TableOverride, keyPrefix + "FOV"s, mFOV, false);
-   settings.SaveValue(Settings::TableOverride, keyPrefix + "Layback"s, mLayback, false);
-   settings.SaveValue(Settings::TableOverride, keyPrefix + "HOfs"s, mViewHOfs, false);
-   settings.SaveValue(Settings::TableOverride, keyPrefix + "VOfs"s, mViewVOfs, false);
-   settings.SaveValue(Settings::TableOverride, keyPrefix + "WindowTop"s, mWindowTopZOfs, false);
-   settings.SaveValue(Settings::TableOverride, keyPrefix + "WindowBot"s, mWindowBottomZOfs, false);
+   if (mMode == VLM_LEGACY || mMode == VLM_CAMERA)
+   {
+      settings.SaveValue(Settings::TableOverride, keyPrefix + "PlayerX"s, mViewX, false);
+      settings.SaveValue(Settings::TableOverride, keyPrefix + "PlayerY"s, mViewY, false);
+      settings.SaveValue(Settings::TableOverride, keyPrefix + "PlayerZ"s, mViewZ, false);
+      settings.SaveValue(Settings::TableOverride, keyPrefix + "LookAt"s, mLookAt, false);
+      settings.SaveValue(Settings::TableOverride, keyPrefix + "FOV"s, mFOV, false);
+   }
+   else
+   {
+      settings.DeleteValue(Settings::TableOverride, keyPrefix + "PlayerX"s);
+      settings.DeleteValue(Settings::TableOverride, keyPrefix + "PlayerY"s);
+      settings.DeleteValue(Settings::TableOverride, keyPrefix + "PlayerZ"s);
+      settings.DeleteValue(Settings::TableOverride, keyPrefix + "LookAt"s);
+      settings.DeleteValue(Settings::TableOverride, keyPrefix + "FOV"s);
+   }
+   if (mMode == VLM_CAMERA || mMode == VLM_WINDOW)
+   {
+      settings.SaveValue(Settings::TableOverride, keyPrefix + "HOfs"s, mViewHOfs, false);
+      settings.SaveValue(Settings::TableOverride, keyPrefix + "VOfs"s, mViewVOfs, false);
+   }
+   else
+   {
+      settings.DeleteValue(Settings::TableOverride, keyPrefix + "HOfs"s);
+      settings.DeleteValue(Settings::TableOverride, keyPrefix + "VOfs"s);
+   }
+   if (mMode == VLM_WINDOW)
+   {
+      settings.SaveValue(Settings::TableOverride, keyPrefix + "WindowTop"s, mWindowTopZOfs, false);
+      settings.SaveValue(Settings::TableOverride, keyPrefix + "WindowBot"s, mWindowBottomZOfs, false);
+   }
+   else
+   {
+      settings.DeleteValue(Settings::TableOverride, keyPrefix + "WindowTop"s);
+      settings.DeleteValue(Settings::TableOverride, keyPrefix + "WindowBot"s);
+   }
+   if (mMode == VLM_LEGACY)
+   {
+      settings.SaveValue(Settings::TableOverride, keyPrefix + "Layback"s, mLayback, false);
+   }
+   else
+   {
+      settings.DeleteValue(Settings::TableOverride, keyPrefix + "Layback"s);
+   }
 }
 
 float ViewSetup::GetWindowTopZOFfset(const PinTable* const table) const
