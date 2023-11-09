@@ -252,7 +252,7 @@ void Plunger::RenderDynamic()
       pd3dDevice->basicShader->SetMaterial(mat, false);
    }
 
-   pd3dDevice->DrawMesh(pd3dDevice->basicShader, IsTransparent(), m_boundingSphereCenter, 0.f /*m_boundingSphereRadius*/, m_meshBuffer, RenderDevice::TRIANGLELIST, frame * m_indicesPerFrame,
+   pd3dDevice->DrawMesh(pd3dDevice->basicShader, false, m_boundingSphereCenter, 0.f /*m_boundingSphereRadius*/, m_meshBuffer, RenderDevice::TRIANGLELIST, frame * m_indicesPerFrame,
       m_indicesPerFrame);
 
    pd3dDevice->CopyRenderStates(false, initial_state);

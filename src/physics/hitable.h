@@ -23,6 +23,5 @@ public:
    virtual void UpdateAnimation(const float diff_time_msec) = 0;
    virtual void RenderStatic() = 0;
    virtual void RenderDynamic() = 0;
-   virtual bool IsTransparent() const                     { return false; }
    virtual float GetDepth(const Vertex3Ds& viewDir) const { return 0.0f; }
 };
