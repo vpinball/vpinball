@@ -612,7 +612,7 @@ void Trigger::RenderDynamic()
    if (m_d.m_shape == TriggerWireA || m_d.m_shape == TriggerWireB || m_d.m_shape == TriggerWireC || m_d.m_shape == TriggerWireD || m_d.m_shape == TriggerInder)
       pd3dDevice->SetRenderStateCulling(RenderState::CULL_NONE);
 
-   pd3dDevice->DrawMesh(pd3dDevice->basicShader, IsTransparent(), m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
+   pd3dDevice->DrawMesh(pd3dDevice->basicShader, false, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
 
    pd3dDevice->CopyRenderStates(false, initial_state);
 }

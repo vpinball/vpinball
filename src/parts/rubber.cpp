@@ -1282,7 +1282,7 @@ void Rubber::RenderObject()
       pd3dDevice->basicShader->SetMaterial(mat, false);
    }
 
-   pd3dDevice->DrawMesh(pd3dDevice->basicShader, IsTransparent(), m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
+   pd3dDevice->DrawMesh(pd3dDevice->basicShader, false, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
 
    pd3dDevice->CopyRenderStates(false, initial_state);
 }
