@@ -109,7 +109,6 @@ protected:
    RenderDevice *m_rd = nullptr;
 
 public:
-   bool IsTransparent() const final;
    void SetDefaultPhysics(const bool fromMouseClick) final;
    void ExportMesh(ObjLoader& loader) final;
    void AddPoint(int x, int y, const bool smooth) final;

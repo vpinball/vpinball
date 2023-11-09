@@ -99,25 +99,30 @@ public:
 
    GateData m_d;
 
+   virtual void RenderSetup(RenderDevice *device);
+   virtual void Render(const unsigned int renderMask);
+   virtual void RenderRelease();
+
 private:
-   void RenderObject();
    void GenerateBracketMesh(Vertex3D_NoTex2 *buf);
    void GenerateWireMesh(Vertex3D_NoTex2 *buf);
 
-   PinTable *m_ptable;
+   PinTable *m_ptable = nullptr;
+   
+   RenderDevice *m_rd = nullptr;
 
-   LineSeg *m_plineseg;
-   HitGate *m_phitgate;
+   LineSeg *m_plineseg = nullptr;
+   HitGate *m_phitgate = nullptr;
    float m_lastAngle;
 
-   float m_vertexbuffer_angle;
+   float m_vertexbuffer_angle = FLT_MAX;
    MeshBuffer *m_wireMeshBuffer = nullptr;
    MeshBuffer *m_bracketMeshBuffer = nullptr;
 
-   const Vertex3D_NoTex2 *m_vertices;
-   const WORD            *m_indices;
-   unsigned int m_numVertices;
-   unsigned int m_numIndices;
+   const Vertex3D_NoTex2 *m_vertices = nullptr;
+   const WORD            *m_indices = nullptr;
+   unsigned int m_numVertices = 0;
+   unsigned int m_numIndices = 0;
 
    float m_baseHeight;
 

@@ -11,14 +11,12 @@
 
 Gate::Gate()
 {
-   m_phitgate = nullptr;
-   m_plineseg = nullptr;
-   m_vertexbuffer_angle = FLT_MAX;
    m_d.m_type = GateWireW;
-   m_vertices = 0;
-   m_indices = 0;
-   m_numIndices = 0;
-   m_numVertices = 0;
+}
+
+Gate::~Gate()
+{
+   assert(m_rd == nullptr);
 }
 
 Gate *Gate::CopyForPlay(PinTable *live_table)
@@ -67,12 +65,6 @@ void Gate::SetGateType(GateType type)
         ShowError("Unknown Gate type");
         break;
     }
-}
-
-Gate::~Gate()
-{
-    delete m_wireMeshBuffer;
-    delete m_bracketMeshBuffer;
 }
 
 void Gate::UpdateStatusBarInfo()
@@ -311,6 +303,9 @@ void Gate::GetTimers(vector<HitTimer*> &pvht)
       pvht.push_back(pht);
 }
 
+
+#pragma region Physics
+
 //
 // license:GPLv3+
 // Ported at: VisualPinball.Engine/VPT/Gate/GateHitGenerator.cs
@@ -378,25 +373,86 @@ void Gate::GetHitShapesDebug(vector<HitObject*> &pvho)
 void Gate::EndPlay()
 {
    IEditable::EndPlay();
-
    m_phitgate = nullptr;
    m_plineseg = nullptr;
+   RenderRelease();
+}
 
+#pragma endregion
+
+
+#pragma region Rendering
+
+// Deprecated Legacy API to be removed
+void Gate::RenderSetup() { }
+void Gate::RenderStatic() { }
+void Gate::RenderDynamic() { }
+
+void Gate::RenderSetup(RenderDevice *device)
+{
+   assert(m_rd == nullptr);
+   m_rd = device;
+
+   SetGateType(m_d.m_type);
+   m_baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
+
+   IndexBuffer *bracketIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, gateBracketNumIndices, gateBracketIndices);
+   VertexBuffer *bracketVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, gateBracketNumVertices);
+   Vertex3D_NoTex2 *buf;
+   bracketVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+   GenerateBracketMesh(buf);
+   bracketVertexBuffer->unlock();
+   m_bracketMeshBuffer = new MeshBuffer(m_wzName + L".Bracket"s, bracketVertexBuffer, bracketIndexBuffer, true);
+
+   IndexBuffer *wireIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numIndices, m_indices);
+   VertexBuffer *wireVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numVertices, nullptr, true);
+   wireVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
+   GenerateWireMesh(buf);
+   wireVertexBuffer->unlock();
+   m_wireMeshBuffer = new MeshBuffer(m_wzName + L".Wire"s, wireVertexBuffer, wireIndexBuffer, true);
+}
+
+void Gate::RenderRelease()
+{
+   assert(m_rd != nullptr);
    delete m_wireMeshBuffer;
    m_wireMeshBuffer = nullptr;
    delete m_bracketMeshBuffer;
    m_bracketMeshBuffer = nullptr;
    m_vertexbuffer_angle = FLT_MAX;
+   m_rd = nullptr;
 }
 
-void Gate::RenderObject()
+void Gate::UpdateAnimation(const float diff_time_msec)
 {
+   assert(m_rd != nullptr);
+   // Animation is updated by physics engine through a MoverObject. No additional visual animation here
+   // Still monitor angle updates in order to fire animate event at most once per frame (physics engine perform far more cycle per frame)
+   if (m_phitgate && m_lastAngle != m_phitgate->m_gateMover.m_angle)
+   {
+      m_lastAngle = m_phitgate->m_gateMover.m_angle;
+      FireGroupEvent(DISPID_AnimateEvents_Animate);
+   }
+}
+
+void Gate::Render(const unsigned int renderMask)
+{
+   assert(m_rd != nullptr);
+   const bool isStaticOnly = renderMask & Player::STATIC_ONLY;
+   const bool isDynamicOnly = renderMask & Player::DYNAMIC_ONLY;
+   const bool isReflectionPass = renderMask & Player::REFLECTION_PASS;
+   TRACE_FUNCTION();
+
+   if (isStaticOnly 
+   || !m_phitgate->m_gateMover.m_visible 
+   || (isReflectionPass && !m_d.m_reflectionEnabled))
+      return;
+
    if (m_phitgate->m_gateMover.m_angle != m_vertexbuffer_angle)
    {
       m_vertexbuffer_angle = m_phitgate->m_gateMover.m_angle;
 
       Matrix3D fullMatrix, tempMat;
-
       fullMatrix.SetRotateX(m_d.m_twoWay ? m_phitgate->m_gateMover.m_angle : -m_phitgate->m_gateMover.m_angle);
       tempMat.SetRotateZ(ANGTORAD(m_d.m_rotation));
       tempMat.Multiply(fullMatrix, fullMatrix);
@@ -409,62 +465,24 @@ void Gate::RenderObject()
 
       Vertex3D_NoTex2 *buf;
       m_wireMeshBuffer->m_vb->lock(0, 0, (void **)&buf, VertexBuffer::DISCARDCONTENTS);
-      for (unsigned int i = 0; i < m_numVertices; i++)
-      {
-         Vertex3Ds vert(m_vertices[i].x, m_vertices[i].y, m_vertices[i].z);
-         vert = vertMatrix.MultiplyVector(vert);
-         buf[i].x = vert.x;
-         buf[i].y = vert.y;
-         buf[i].z = vert.z;
-
-         vert = Vertex3Ds(m_vertices[i].nx, m_vertices[i].ny, m_vertices[i].nz);
-         vert = fullMatrix.MultiplyVectorNoTranslate(vert);
-         buf[i].nx = vert.x;
-         buf[i].ny = vert.y;
-         buf[i].nz = vert.z;
-         buf[i].tu = m_vertices[i].tu;
-         buf[i].tv = m_vertices[i].tv;
-      }
+      vertMatrix.TransformPositions(m_vertices, buf, m_numVertices);
+      fullMatrix.TransformNormals(m_vertices, buf, m_numVertices);
       m_wireMeshBuffer->m_vb->unlock();
    }
 
-   RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-   RenderState initial_state;
-   pd3dDevice->CopyRenderStates(true, initial_state);
-
+   m_rd->ResetRenderState();
+   m_rd->SetRenderStateCulling(RenderState::CULL_CCW);
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
-   pd3dDevice->basicShader->SetMaterial(mat, false);
-
-   pd3dDevice->SetRenderStateDepthBias(0.0f);
-   pd3dDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
-   pd3dDevice->SetRenderStateCulling(RenderState::CULL_CCW);
-
-   pd3dDevice->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, mat);
-
+   m_rd->basicShader->SetMaterial(mat, false);
+   m_rd->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, mat);
    Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight);
-
-   // render bracket
    if (m_d.m_showBracket)
-      pd3dDevice->DrawMesh(pd3dDevice->basicShader, IsTransparent(), pos, 0.f, m_bracketMeshBuffer, RenderDevice::TRIANGLELIST, 0, gateBracketNumIndices);
-
-   // render wire
-   pd3dDevice->DrawMesh(pd3dDevice->basicShader, IsTransparent(), pos, 0.f, m_wireMeshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
-
-   pd3dDevice->CopyRenderStates(false, initial_state);
+      m_rd->DrawMesh(m_rd->basicShader, false, pos, 0.f, m_bracketMeshBuffer, RenderDevice::TRIANGLELIST, 0, gateBracketNumIndices);
+   m_rd->DrawMesh(m_rd->basicShader, false, pos, 0.f, m_wireMeshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
+   m_rd->ResetRenderState();
 }
 
-void Gate::RenderDynamic()
-{
-   TRACE_FUNCTION();
-
-   if (!m_phitgate->m_gateMover.m_visible)
-      return;
-
-   if (g_pplayer->IsRenderPass(Player::REFLECTION_PASS) && !m_d.m_reflectionEnabled)
-      return;
-
-   RenderObject();
-}
+#pragma endregion
 
 void Gate::ExportMesh(ObjLoader& loader)
 {
@@ -504,84 +522,16 @@ void Gate::ExportMesh(ObjLoader& loader)
 
 void Gate::GenerateBracketMesh(Vertex3D_NoTex2 *buf)
 {
-   Matrix3D fullMatrix;
-   fullMatrix.SetRotateZ(ANGTORAD(m_d.m_rotation));
-   for (unsigned int i = 0; i < gateBracketNumVertices; i++)
-   {
-      Vertex3Ds vert(gateBracket[i].x, gateBracket[i].y, gateBracket[i].z);
-      vert = fullMatrix.MultiplyVector(vert);
-      buf[i].x = vert.x*m_d.m_length + m_d.m_vCenter.x;
-      buf[i].y = vert.y*m_d.m_length + m_d.m_vCenter.y;
-      buf[i].z = vert.z*m_d.m_length + m_d.m_height + m_baseHeight;
-
-      vert = Vertex3Ds(gateBracket[i].nx, gateBracket[i].ny, gateBracket[i].nz);
-      vert = fullMatrix.MultiplyVectorNoTranslate(vert);
-      buf[i].nx = vert.x;
-      buf[i].ny = vert.y;
-      buf[i].nz = vert.z;
-      buf[i].tu = gateBracket[i].tu;
-      buf[i].tv = gateBracket[i].tv;
-   }
+   Matrix3D rotMatrix = Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotation));
+   Matrix3D vertMatrix = rotMatrix * Matrix3D::MatrixScale(m_d.m_length) * Matrix3D::MatrixTranslate(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_height + m_baseHeight);
+   vertMatrix.TransformPositions(gateBracket, buf, gateBracketNumVertices);
+   rotMatrix.TransformNormals(gateBracket, buf, gateBracketNumVertices);
 }
 
 void Gate::GenerateWireMesh(Vertex3D_NoTex2 *buf)
 {
-   Matrix3D fullMatrix;
-   fullMatrix.SetRotateZ(ANGTORAD(m_d.m_rotation));
-
-   for (unsigned int i = 0; i < m_numVertices; i++)
-   {
-      Vertex3Ds vert(m_vertices[i].x, m_vertices[i].y, m_vertices[i].z);
-      vert = fullMatrix.MultiplyVector(vert);
-      buf[i].x = vert.x*m_d.m_length + m_d.m_vCenter.x;
-      buf[i].y = vert.y*m_d.m_length + m_d.m_vCenter.y;
-      buf[i].z = vert.z*m_d.m_length + m_d.m_height + m_baseHeight;
-
-      vert = Vertex3Ds(m_vertices[i].nx, m_vertices[i].ny, m_vertices[i].nz);
-      vert = fullMatrix.MultiplyVectorNoTranslate(vert);
-      buf[i].nx = vert.x;
-      buf[i].ny = vert.y;
-      buf[i].nz = vert.z;
-      buf[i].tu = m_vertices[i].tu;
-      buf[i].tv = m_vertices[i].tv;
-   }
-}
-
-void Gate::RenderSetup()
-{
-   IndexBuffer *bracketIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, gateBracketNumIndices, gateBracketIndices);
-   VertexBuffer *bracketVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, gateBracketNumVertices);
-   SetGateType(m_d.m_type);
-   m_baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
-   Vertex3D_NoTex2 *buf;
-   bracketVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
-   GenerateBracketMesh(buf);
-   bracketVertexBuffer->unlock();
-   delete m_bracketMeshBuffer;
-   m_bracketMeshBuffer = new MeshBuffer(m_wzName + L".Bracket"s, bracketVertexBuffer, bracketIndexBuffer, true);
-
-   IndexBuffer *wireIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numIndices, m_indices);
-   VertexBuffer *wireVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numVertices, nullptr, true);
-   wireVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
-   GenerateWireMesh(buf);
-   wireVertexBuffer->unlock();
-   delete m_wireMeshBuffer;
-   m_wireMeshBuffer = new MeshBuffer(m_wzName + L".Wire"s, wireVertexBuffer, wireIndexBuffer, true);
-}
-
-void Gate::UpdateAnimation(const float diff_time_msec)
-{
-   // Animation is updated by physics engine through a MoverObject. No additional visual animation here
-   // Still monitor angle updates in order to fire animate event at most once per frame (physics engine perform far more cycle per frame)
-   if (m_phitgate && m_lastAngle != m_phitgate->m_gateMover.m_angle)
-   {
-      m_lastAngle = m_phitgate->m_gateMover.m_angle;
-      FireGroupEvent(DISPID_AnimateEvents_Animate);
-   }
-}
-
-void Gate::RenderStatic()
-{
+   const Matrix3D world = Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotation)) * Matrix3D::MatrixTranslate(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_height + m_baseHeight);
+   world.TransformVertices(m_vertices, buf, m_numVertices);
 }
 
 void Gate::SetObjectPos()

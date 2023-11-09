@@ -31,21 +31,16 @@ HitTarget::HitTarget()
    m_propPosition = nullptr;
    m_propVisual = nullptr;
    m_d.m_overwritePhysics = true;
-   m_vertices = nullptr;
-   m_indices = nullptr;
-   m_numIndices = 0;
-   m_numVertices = 0;
    m_moveAnimation = false;
    m_moveDown = true;
    m_moveAnimationOffset = 0.0f;
    m_hitEvent = false;
-   m_ptable = nullptr;
    m_timeStamp = 0;
 }
 
 HitTarget::~HitTarget()
 {
-   delete m_meshBuffer;
+   assert(m_rd == nullptr);
 }
 
 HitTarget *HitTarget::CopyForPlay(PinTable *live_table)
@@ -422,11 +417,8 @@ void HitTarget::SetupHitObject(vector<HitObject*> &pvho, HitObject * obj, const 
 void HitTarget::EndPlay()
 {
    m_vhoCollidable.clear();
-
-   delete m_meshBuffer;
-   m_meshBuffer = nullptr;
-
    IEditable::EndPlay();
+   RenderRelease();
 }
 
 //////////////////////////////
@@ -586,6 +578,48 @@ void HitTarget::UpdateStatusBarInfo()
    TransformVertices();
 }
 
+#pragma region Rendering
+
+// Deprecated Legacy API to be removed
+void HitTarget::RenderSetup() { }
+void HitTarget::RenderStatic() { }
+void HitTarget::RenderDynamic() { }
+
+void HitTarget::RenderSetup(RenderDevice *device)
+{
+   assert(m_rd == nullptr);
+   m_rd = device;
+
+   SetMeshType(m_d.m_targetType);
+   m_transformedVertices.resize(m_numVertices);
+
+   GenerateMesh(m_transformedVertices);
+   delete m_meshBuffer;
+   VertexBuffer *vertexBuffer = new VertexBuffer(m_rd, (unsigned int)m_numVertices, (float *)m_transformedVertices.data(), true);
+   IndexBuffer *indexBuffer = new IndexBuffer(m_rd, m_numIndices, m_indices);
+   m_meshBuffer = new MeshBuffer(m_wzName, vertexBuffer, indexBuffer, true);
+
+   m_moveAnimationOffset = 0.0f;
+   if (m_d.m_targetType == DropTargetBeveled || m_d.m_targetType == DropTargetSimple || m_d.m_targetType == DropTargetFlatSimple)
+   {
+       if (m_d.m_isDropped)
+       {
+           m_moveDown = false;
+           m_moveAnimationOffset = -DROP_TARGET_LIMIT;
+           UpdateTarget();
+           return;
+       }
+   }
+}
+
+void HitTarget::RenderRelease()
+{
+   assert(m_rd != nullptr);
+   delete m_meshBuffer;
+   m_meshBuffer = nullptr;
+   m_rd = nullptr;
+}
+
 //
 // license:GPLv3+
 // Ported at: VisualPinball.Unity/VisualPinball.Unity/VPT/HitTarget/HitTargetAnimationSystem.cs
@@ -684,54 +718,47 @@ void HitTarget::UpdateAnimation(const float diff_time_msec)
 // end of license:GPLv3+, back to 'old MAME'-like
 //
 
-void HitTarget::RenderObject()
+void HitTarget::Render(const unsigned int renderMask)
 {
-   RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-   RenderState initial_state;
-   pd3dDevice->CopyRenderStates(true, initial_state);
+   assert(m_rd != nullptr);
+   const bool isStaticOnly = renderMask & Player::STATIC_ONLY;
+   const bool isDynamicOnly = renderMask & Player::DYNAMIC_ONLY;
+   const bool isReflectionPass = renderMask & Player::REFLECTION_PASS;
+   TRACE_FUNCTION();
+   
+   if (isStaticOnly 
+   || !m_d.m_visible 
+   || (isReflectionPass && !m_d.m_reflectionEnabled))
+      return;
+
+   m_rd->ResetRenderState();
+   if (m_d.m_disableLightingTop != 0.f || m_d.m_disableLightingBelow != 0.f)
+        m_rd->basicShader->SetVector(SHADER_fDisableLighting_top_below, m_d.m_disableLightingTop, m_d.m_disableLightingBelow, 0.f, 0.f);
 
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
+   m_rd->basicShader->SetBasic(mat, m_ptable->GetImage(m_d.m_szImage));
 
-   pd3dDevice->SetRenderStateDepthBias(0.0f);
-   pd3dDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
-#ifdef TWOSIDED_TRANSPARENCY
-   pd3dDevice->SetRenderStateCulling(mat->m_bOpacityActive ? RenderDevice::CULL_CW : RenderDevice::CULL_CCW);
-#else
-   pd3dDevice->SetRenderStateCulling(RenderState::CULL_CCW);
-#endif
-
-   if (m_d.m_disableLightingTop != 0.f || m_d.m_disableLightingBelow != 0.f)
-        pd3dDevice->basicShader->SetVector(SHADER_fDisableLighting_top_below, m_d.m_disableLightingTop, m_d.m_disableLightingBelow, 0.f, 0.f);
-
-   Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
-   if (pin)
+   #ifdef TWOSIDED_TRANSPARENCY
+   if (mat->m_bOpacityActive)
    {
-      pd3dDevice->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, mat, pin->m_alphaTestValue >= 0.f && !pin->m_pdsBuffer->IsOpaque());
-      // accomodate models with UV coords outside of [0,1]
-      pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, pin, SF_TRILINEAR, SA_REPEAT, SA_REPEAT);
-      pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue);
-      pd3dDevice->basicShader->SetMaterial(mat, !pin->m_pdsBuffer->IsOpaque());
+      m_rd->SetRenderStateCulling(RenderDevice::CULL_CW);
+      m_rd->DrawMesh(m_rd->basicShader, mat->m_bOpacityActive, m_d.m_vPosition, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
+      m_rd->SetRenderStateCulling(RenderDevice::CULL_CCW);
+      m_rd->DrawMesh(m_rd->basicShader, mat->m_bOpacityActive, m_d.m_vPosition, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
    }
    else
    {
-      pd3dDevice->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, mat);
-      pd3dDevice->basicShader->SetMaterial(mat, false);
+      m_rd->SetRenderStateCulling(RenderState::CULL_CCW);
+      m_rd->DrawMesh(m_rd->basicShader, mat->m_bOpacityActive, m_d.m_vPosition, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
    }
-
-   // draw the mesh
-   pd3dDevice->DrawMesh(pd3dDevice->basicShader, mat->m_bOpacityActive /* IsTransparent() */, m_d.m_vPosition, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
-
-#ifdef TWOSIDED_TRANSPARENCY
-   if (mat->m_bOpacityActive)
-   {
-      pd3dDevice->SetRenderStateCulling(RenderDevice::CULL_CCW);
-      pd3dDevice->DrawMesh(pd3dDevice->basicShader, mat->m_bOpacityActive /* IsTransparent() */, m_d.m_vPosition, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
-   }
-#endif
+   #else
+   m_rd->SetRenderStateCulling(RenderState::CULL_CCW);
+   m_rd->DrawMesh(m_rd->basicShader, mat->m_bOpacityActive, m_d.m_vPosition, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
+   #endif
 
    if (m_d.m_disableLightingTop != 0.f || m_d.m_disableLightingBelow != 0.f)
-      pd3dDevice->basicShader->SetVector(SHADER_fDisableLighting_top_below, 0.f, 0.f, 0.f, 0.f);
-   pd3dDevice->CopyRenderStates(false, initial_state);
+      m_rd->basicShader->SetVector(SHADER_fDisableLighting_top_below, 0.f, 0.f, 0.f, 0.f);
+   m_rd->ResetRenderState();
 }
 
 void HitTarget::UpdateTarget()
@@ -787,47 +814,7 @@ void HitTarget::UpdateTarget()
    m_meshBuffer->m_vb->unlock();
 }
 
-// Always called each frame to render over everything else (along with alpha ramps)
-void HitTarget::RenderDynamic()
-{
-   TRACE_FUNCTION();
-
-   if (g_pplayer->IsRenderPass(Player::REFLECTION_PASS) && !m_d.m_reflectionEnabled)
-       return;
-
-   if (!m_d.m_visible)
-      return;
-
-   RenderObject();
-}
-
-void HitTarget::RenderSetup()
-{
-   SetMeshType(m_d.m_targetType);
-   m_transformedVertices.resize(m_numVertices);
-
-   GenerateMesh(m_transformedVertices);
-   delete m_meshBuffer;
-   VertexBuffer *vertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, (unsigned int)m_numVertices, (float *)m_transformedVertices.data(), true);
-   IndexBuffer *indexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numIndices, m_indices);
-   m_meshBuffer = new MeshBuffer(m_wzName, vertexBuffer, indexBuffer, true);
-
-   m_moveAnimationOffset = 0.0f;
-   if (m_d.m_targetType == DropTargetBeveled || m_d.m_targetType == DropTargetSimple || m_d.m_targetType == DropTargetFlatSimple)
-   {
-       if (m_d.m_isDropped)
-       {
-           m_moveDown = false;
-           m_moveAnimationOffset = -DROP_TARGET_LIMIT;
-           UpdateTarget();
-           return;
-       }
-   }
-}
-
-void HitTarget::RenderStatic()
-{
-}
+#pragma endregion
 
 //////////////////////////////
 // Positioning
@@ -994,11 +981,6 @@ STDMETHODIMP HitTarget::put_Image(BSTR newVal)
    return S_OK;
 }
 
-
-bool HitTarget::IsTransparent() const
-{
-   return m_ptable->GetMaterial(m_d.m_szMaterial)->m_bOpacityActive;
-}
 
 float HitTarget::GetDepth(const Vertex3Ds& viewDir) const
 {

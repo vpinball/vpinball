@@ -164,22 +164,27 @@ public:
       Flipper *CopyForPlay(PinTable *live_table);
 
       FlipperData m_d;
-      PinTable *m_ptable;
+
+   PinTable *m_ptable;
+
+   virtual void RenderSetup(RenderDevice *device);
+   virtual void Render(const unsigned int renderMask);
+   virtual void RenderRelease();
 
 private:
-      void SetVertices(const float basex, const float basey, const float angle, Vertex2D * const pvEndCenter, Vertex2D * const rgvTangents, const float baseradius, const float endradius) const;
-
-      void GenerateBaseMesh(Vertex3D_NoTex2 *buf);
-
-      void UpdatePhysicsSettings();
-
-      MeshBuffer *m_meshBuffer = nullptr;
-
-      HitFlipper *m_phitflipper;
-      float m_lastAngle;
-
+   RenderDevice *m_rd = nullptr;
+   MeshBuffer *m_meshBuffer = nullptr;
    Vertex3Ds m_boundingSphereCenter;
    //float m_boundingSphereRadius = -1.f;
+
+   void SetVertices(const float basex, const float basey, const float angle, Vertex2D * const pvEndCenter, Vertex2D * const rgvTangents, const float baseradius, const float endradius) const;
+
+   void GenerateBaseMesh(Vertex3D_NoTex2 *buf);
+
+   void UpdatePhysicsSettings();
+
+   HitFlipper *m_phitflipper;
+   float m_lastAngle;
 
 // IFlipper
 public:

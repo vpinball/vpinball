@@ -90,22 +90,25 @@ public:
 
    vector<Vertex3Ds> m_hitMesh;
 
+   virtual void RenderSetup(RenderDevice *device);
+   virtual void Render(const unsigned int renderMask);
+   virtual void RenderRelease();
+
 private:
    void GenerateMesh(Vertex3D_NoTex2 *const buf);
 
-   PinTable *m_ptable;
+   PinTable *m_ptable = nullptr;
 
-   KickerHitCircle *m_phitkickercircle;
-
+   RenderDevice* m_rd = nullptr;
+   MeshBuffer *m_plateMeshBuffer = nullptr;
    MeshBuffer *m_meshBuffer = nullptr;
-   unsigned int m_numVertices;
-   unsigned int m_numIndices;
-
+   unsigned int m_numVertices = 0;
+   unsigned int m_numIndices = 0;
    Texture m_texture;
 
-   float m_baseHeight;
+   float m_baseHeight = 0.f;
 
-   MeshBuffer *m_plateMeshBuffer = nullptr;
+   KickerHitCircle *m_phitkickercircle = nullptr;
 
 public:
    // IKicker

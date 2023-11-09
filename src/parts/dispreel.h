@@ -50,7 +50,7 @@ class DispReel :
 {
 public:
    DispReel();
-   virtual ~DispReel() {}
+   virtual ~DispReel();
    BEGIN_COM_MAP(DispReel)
       COM_INTERFACE_ENTRY(IDispatch)
       COM_INTERFACE_ENTRY(IDispReel)
@@ -149,12 +149,17 @@ public:
 
    DispReelData m_d;
 
+   virtual void RenderSetup(RenderDevice *device);
+   virtual void Render(const unsigned int renderMask);
+   virtual void RenderRelease();
+
 private:
    float   getBoxWidth() const;
    float   getBoxHeight() const;
 
-   PinTable    *m_ptable;
+   PinTable    *m_ptable = nullptr;
 
+   RenderDevice *m_rd = nullptr;
    float       m_renderwidth, m_renderheight;     // size of each reel (rendered)
 
    struct ReelInfo

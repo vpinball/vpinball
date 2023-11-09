@@ -14,17 +14,11 @@
 
 Kicker::Kicker()
 {
-   m_phitkickercircle = nullptr;
-   m_ptable = nullptr;
-   m_numVertices = 0;
-   m_numIndices = 0;
-   m_baseHeight = 0.0f;
 }
 
 Kicker::~Kicker()
 {
-   delete m_meshBuffer;
-   delete m_plateMeshBuffer;
+   assert(m_rd == nullptr);
 }
 
 Kicker *Kicker::CopyForPlay(PinTable *live_table)
@@ -160,6 +154,8 @@ void Kicker::GetTimers(vector<HitTimer*> &pvht)
       pvht.push_back(pht);
 }
 
+#pragma region Physics
+
 //
 // license:GPLv3+
 // Ported at: VisualPinball.Engine/VPT/Kicker/KickerHit.cs
@@ -213,22 +209,189 @@ void Kicker::GetHitShapesDebug(vector<HitObject*> &pvho)
 void Kicker::EndPlay()
 {
    m_phitkickercircle = nullptr;
+   m_hitMesh.clear();
+   IEditable::EndPlay();
+   RenderRelease();
+}
+
+#pragma endregion
+
+
+
+#pragma region Rendering
+
+// Deprecated Legacy API to be removed
+void Kicker::RenderSetup() { }
+void Kicker::RenderStatic() { }
+void Kicker::RenderDynamic() { }
+
+void Kicker::RenderSetup(RenderDevice *device)
+{
+   assert(m_rd == nullptr);
+   m_rd = device;
+
+   if (m_d.m_kickertype == KickerInvisible)
+      return;
+
+   m_baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
+
+//
+// license:GPLv3+
+// Ported at: VisualPinball.Engine/VPT/Kicker/KickerMeshGenerator.cs
+//
+
+   if (m_d.m_kickertype == KickerCup || m_d.m_kickertype == KickerHole || m_d.m_kickertype == KickerHoleSimple || m_d.m_kickertype == KickerWilliams || m_d.m_kickertype == KickerGottlieb || m_d.m_kickertype == KickerCup2)
+   {
+      Vertex3D_NoTex2 *buf = new Vertex3D_NoTex2[kickerPlateNumVertices];
+      float rad = m_d.m_radius; 
+
+      if (m_d.m_kickertype == KickerWilliams || m_d.m_kickertype == KickerGottlieb)
+          rad = m_d.m_radius * 0.88f;
+      else if (m_d.m_kickertype == KickerCup2)
+          rad = m_d.m_radius * 0.87f;
+      else if (m_d.m_kickertype != KickerCup && m_d.m_kickertype != KickerWilliams)
+          rad = m_d.m_radius * 0.82f;
+
+      for (unsigned int i = 0; i < kickerPlateNumVertices; i++)
+      {
+         buf[i].x = kickerPlate[i].x*rad + m_d.m_vCenter.x;
+         buf[i].y = kickerPlate[i].y*rad + m_d.m_vCenter.y;
+         buf[i].z = kickerPlate[i].z*rad + m_baseHeight;
+         buf[i].nx = kickerPlate[i].nx;
+         buf[i].ny = kickerPlate[i].ny;
+         buf[i].nz = kickerPlate[i].nz;
+         buf[i].tu = 0.0f;
+         buf[i].tv = 0.0f;
+      }
+
+      VertexBuffer *plateVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, kickerPlateNumVertices, (float*)buf);
+      IndexBuffer *plateIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, kickerPlateNumIndices, kickerPlateIndices);
+      m_plateMeshBuffer = new MeshBuffer(m_wzName + L".Plate"s, plateVertexBuffer, plateIndexBuffer, true);
+
+      delete[] buf;
+   }
+
+//
+// end of license:GPLv3+, back to 'old MAME'-like
+//
+
+   const WORD * indices;
+   switch (m_d.m_kickertype)
+   {
+       case KickerInvisible:
+          assert(false);
+       break;
+       case KickerCup:
+       {
+          m_texture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "KickerCup.webp");
+          m_texture.m_alphaTestValue = -1.f;
+          m_numIndices = kickerCupNumIndices;
+          m_numVertices = kickerCupNumVertices;
+          indices = kickerCupIndices;
+       }
+       break;
+       case KickerWilliams:
+       {
+          m_texture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "KickerWilliams.webp");
+          m_texture.m_alphaTestValue = -1.f;
+          m_numIndices = kickerWilliamsNumIndices;
+          m_numVertices = kickerWilliamsNumVertices;
+          indices = kickerWilliamsIndices;
+       }
+       break;
+       case KickerGottlieb:
+       {
+          m_texture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "KickerGottlieb.webp");
+          m_texture.m_alphaTestValue = -1.f;
+          m_numIndices = kickerGottliebNumIndices;
+          m_numVertices = kickerGottliebNumVertices;
+          indices = kickerGottliebIndices;
+       }
+       break;
+       case KickerCup2:
+       {
+          m_texture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "KickerT1.webp");
+          m_texture.m_alphaTestValue = -1.f;
+          m_numIndices = kickerT1NumIndices;
+          m_numVertices = kickerT1NumVertices;
+          indices = kickerT1Indices;
+       }
+       break;
+       case KickerHole:
+       {
+          m_texture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "KickerHoleWood.webp");
+          m_texture.m_alphaTestValue = -1.f;
+          m_numIndices = kickerHoleNumIndices;
+          m_numVertices = kickerHoleNumVertices;
+          indices = kickerHoleIndices;
+       }
+       break;
+       default:
+       case KickerHoleSimple:
+       {
+          m_texture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "KickerHoleWood.webp");
+          m_texture.m_alphaTestValue = -1.f;
+          m_numIndices = kickerSimpleHoleNumIndices;
+          m_numVertices = kickerSimpleHoleNumVertices;
+          indices = kickerSimpleHoleIndices;
+       }
+       break;
+   }
+
+   //
+
+   VertexBuffer *vertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numVertices);
+   Vertex3D_NoTex2 *buf;
+   vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+   GenerateMesh(buf);
+   vertexBuffer->unlock();
+   IndexBuffer *indexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numIndices, indices);
+   m_meshBuffer = new MeshBuffer(m_wzName + L".Kicker"s, vertexBuffer, indexBuffer, true);
+}
+
+void Kicker::RenderRelease()
+{
+   assert(m_rd != nullptr);
    delete m_meshBuffer;
    delete m_plateMeshBuffer;
    m_meshBuffer = nullptr;
    m_plateMeshBuffer = nullptr;
-
-   m_hitMesh.clear();
-
-   IEditable::EndPlay();
+   m_texture.FreeStuff();
+   m_rd = nullptr;
 }
 
 void Kicker::UpdateAnimation(const float diff_time_msec)
 {
+   assert(m_rd != nullptr);
 }
 
-void Kicker::RenderStatic()
+void Kicker::Render(const unsigned int renderMask)
 {
+   assert(m_rd != nullptr);
+   const bool isStaticOnly = renderMask & Player::STATIC_ONLY;
+   const bool isDynamicOnly = renderMask & Player::DYNAMIC_ONLY;
+   const bool isReflectionPass = renderMask & Player::REFLECTION_PASS;
+   TRACE_FUNCTION();
+
+   if (isStaticOnly 
+   || isReflectionPass 
+   || !(m_d.m_kickertype == KickerCup || m_d.m_kickertype == KickerHole || m_d.m_kickertype == KickerHoleSimple || m_d.m_kickertype == KickerWilliams || m_d.m_kickertype == KickerGottlieb || m_d.m_kickertype == KickerCup2))
+      return;
+
+   m_rd->ResetRenderState();
+   m_rd->SetRenderStateCulling(m_d.m_kickertype != KickerHoleSimple ? RenderState::CULL_CCW : RenderState::CULL_NONE);
+
+   const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
+   m_rd->basicShader->SetMaterial(mat);
+   m_rd->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_kickerBoolean, mat);
+   m_rd->SetRenderState(RenderState::ZFUNC, RenderState::Z_ALWAYS);
+   Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight);
+   m_rd->DrawMesh(m_rd->basicShader, false, pos, 0.f, m_plateMeshBuffer, RenderDevice::TRIANGLELIST, 0, kickerPlateNumIndices);
+
+   m_rd->SetRenderState(RenderState::ZFUNC, RenderState::Z_LESSEQUAL);
+   m_rd->basicShader->SetBasic(mat, m_d.m_kickertype == KickerHoleSimple ? nullptr : &m_texture);
+   m_rd->EnableAlphaBlend(false);
+   m_rd->DrawMesh(m_rd->basicShader, false, pos, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
 }
 
 void Kicker::ExportMesh(ObjLoader& loader)
@@ -378,173 +541,9 @@ void Kicker::GenerateMesh(Vertex3D_NoTex2 *const buf)
    }
 }
 
-void Kicker::RenderSetup()
-{
-   if (m_d.m_kickertype == KickerInvisible)
-      return;
-
-   m_baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
-
-//
-// license:GPLv3+
-// Ported at: VisualPinball.Engine/VPT/Kicker/KickerMeshGenerator.cs
-//
-
-   if (m_d.m_kickertype == KickerCup || m_d.m_kickertype == KickerHole || m_d.m_kickertype == KickerHoleSimple || m_d.m_kickertype == KickerWilliams || m_d.m_kickertype == KickerGottlieb || m_d.m_kickertype == KickerCup2)
-   {
-      Vertex3D_NoTex2 *buf = new Vertex3D_NoTex2[kickerPlateNumVertices];
-      float rad = m_d.m_radius; 
-
-      if (m_d.m_kickertype == KickerWilliams || m_d.m_kickertype == KickerGottlieb)
-          rad = m_d.m_radius * 0.88f;
-      else if (m_d.m_kickertype == KickerCup2)
-          rad = m_d.m_radius * 0.87f;
-      else if (m_d.m_kickertype != KickerCup && m_d.m_kickertype != KickerWilliams)
-          rad = m_d.m_radius * 0.82f;
-
-      for (unsigned int i = 0; i < kickerPlateNumVertices; i++)
-      {
-         buf[i].x = kickerPlate[i].x*rad + m_d.m_vCenter.x;
-         buf[i].y = kickerPlate[i].y*rad + m_d.m_vCenter.y;
-         buf[i].z = kickerPlate[i].z*rad + m_baseHeight;
-         buf[i].nx = kickerPlate[i].nx;
-         buf[i].ny = kickerPlate[i].ny;
-         buf[i].nz = kickerPlate[i].nz;
-         buf[i].tu = 0.0f;
-         buf[i].tv = 0.0f;
-      }
-
-      delete m_plateMeshBuffer;
-      VertexBuffer *plateVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, kickerPlateNumVertices, (float*)buf);
-      IndexBuffer *plateIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, kickerPlateNumIndices, kickerPlateIndices);
-      m_plateMeshBuffer = new MeshBuffer(m_wzName + L".Plate"s, plateVertexBuffer, plateIndexBuffer, true);
-
-      delete[] buf;
-   }
-
-//
-// end of license:GPLv3+, back to 'old MAME'-like
-//
-
-   const WORD * indices;
-   switch (m_d.m_kickertype)
-   {
-       case KickerInvisible:
-          assert(false);
-       break;
-       case KickerCup:
-       {
-          m_texture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "KickerCup.webp");
-          m_numIndices = kickerCupNumIndices;
-          m_numVertices = kickerCupNumVertices;
-          indices = kickerCupIndices;
-       }
-       break;
-       case KickerWilliams:
-       {
-          m_texture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "KickerWilliams.webp");
-          m_numIndices = kickerWilliamsNumIndices;
-          m_numVertices = kickerWilliamsNumVertices;
-          indices = kickerWilliamsIndices;
-       }
-       break;
-       case KickerGottlieb:
-       {
-          m_texture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "KickerGottlieb.webp");
-          m_numIndices = kickerGottliebNumIndices;
-          m_numVertices = kickerGottliebNumVertices;
-          indices = kickerGottliebIndices;
-       }
-       break;
-       case KickerCup2:
-       {
-          m_texture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "KickerT1.webp");
-          m_numIndices = kickerT1NumIndices;
-          m_numVertices = kickerT1NumVertices;
-          indices = kickerT1Indices;
-       }
-       break;
-       case KickerHole:
-       {
-          m_texture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "KickerHoleWood.webp");
-          m_numIndices = kickerHoleNumIndices;
-          m_numVertices = kickerHoleNumVertices;
-          indices = kickerHoleIndices;
-       }
-       break;
-       default:
-       case KickerHoleSimple:
-       {
-          m_texture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "KickerHoleWood.webp");
-          m_numIndices = kickerSimpleHoleNumIndices;
-          m_numVertices = kickerSimpleHoleNumVertices;
-          indices = kickerSimpleHoleIndices;
-       }
-       break;
-   }
-
-   //
-
-   delete m_meshBuffer;
-   VertexBuffer *vertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numVertices);
-   Vertex3D_NoTex2 *buf;
-   vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
-   GenerateMesh(buf);
-   vertexBuffer->unlock();
-   IndexBuffer *indexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numIndices, indices);
-   m_meshBuffer = new MeshBuffer(m_wzName + L".Kicker"s, vertexBuffer, indexBuffer, true);
-}
-
 void Kicker::SetDefaultPhysics(const bool fromMouseClick)
 {
    m_d.m_scatter = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultPropsKicker, "Scatter"s, 0.f) : 0.f;
-}
-
-void Kicker::RenderDynamic()
-{
-   if (g_pplayer->IsRenderPass(Player::REFLECTION_PASS))
-      return;
-
-   if (m_d.m_kickertype == KickerCup || m_d.m_kickertype == KickerHole || m_d.m_kickertype == KickerHoleSimple || m_d.m_kickertype == KickerWilliams || m_d.m_kickertype == KickerGottlieb || m_d.m_kickertype == KickerCup2)
-   {
-      RenderDevice *const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-      RenderState initial_state;
-      pd3dDevice->CopyRenderStates(true, initial_state);
-
-      pd3dDevice->SetRenderStateDepthBias(0.0f);
-      pd3dDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
-      if (m_d.m_kickertype != KickerHoleSimple)
-         pd3dDevice->SetRenderStateCulling(RenderState::CULL_CCW);
-      else
-         pd3dDevice->SetRenderStateCulling(RenderState::CULL_NONE);
-
-      const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
-      pd3dDevice->basicShader->SetMaterial(mat);
-
-      pd3dDevice->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_kickerBoolean, mat);
-      pd3dDevice->SetRenderState(RenderState::ZFUNC, RenderState::Z_ALWAYS);
-
-      Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight);
-      
-      pd3dDevice->DrawMesh(pd3dDevice->basicShader, IsTransparent(), pos, 0.f, m_plateMeshBuffer, RenderDevice::TRIANGLELIST, 0, kickerPlateNumIndices);
-
-      pd3dDevice->SetRenderState(RenderState::ZFUNC, RenderState::Z_LESSEQUAL);
-
-      if (m_d.m_kickertype != KickerHoleSimple)
-      {
-         pd3dDevice->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, mat, false);
-         pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, &m_texture);
-      }
-      else
-         pd3dDevice->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, mat);
-
-      g_pplayer->m_pin3d.EnableAlphaBlend(false);
-      pd3dDevice->basicShader->SetAlphaTestValue(-1.0f);
-
-      pd3dDevice->DrawMesh(pd3dDevice->basicShader, IsTransparent(), pos, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
-
-      pd3dDevice->CopyRenderStates(false, initial_state);
-   }
 }
 
 void Kicker::SetObjectPos()

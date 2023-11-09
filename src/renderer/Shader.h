@@ -340,8 +340,8 @@ public:
    static string GetTechniqueName(ShaderTechniques technique);
    void SetTechnique(const ShaderTechniques technique);
    void SetTechniqueMaterial(ShaderTechniques technique, const Material& mat, const bool doAlphaTest = false, const bool doNormalMapping = false, const bool doReflection = false, const bool doRefraction = false);
+   void SetBasic(const Material * const mat, Texture * const pin);
    ShaderTechniques GetCurrentTechnique() { return m_technique; }
-
    static void SetDefaultSamplerFilter(const ShaderUniforms sampler, const SamplerFilter sf);
 
    void SetMaterial(const Material * const mat, const bool has_alpha = true);

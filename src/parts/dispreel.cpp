@@ -5,6 +5,11 @@ DispReel::DispReel()
 {
 }
 
+DispReel::~DispReel()
+{
+   assert(m_rd == nullptr);
+}
+
 DispReel *DispReel::CopyForPlay(PinTable *live_table)
 {
    STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(DispReel, live_table)
@@ -189,6 +194,8 @@ void DispReel::GetTimers(vector<HitTimer*> &pvht)
       pvht.push_back(pht);
 }
 
+#pragma region Physics
+
 void DispReel::GetHitShapes(vector<HitObject*> &pvho)
 {
 }
@@ -197,89 +204,27 @@ void DispReel::GetHitShapesDebug(vector<HitObject*> &pvho)
 {
 }
 
-// This method is called as the game exits..
-// it cleans up any allocated memory used by the instance of the object
-//
 void DispReel::EndPlay()
 {
    IEditable::EndPlay();
+   RenderRelease();
 }
 
-void DispReel::RenderDynamic()
+#pragma endregion
+
+
+#pragma region Rendering
+
+// Deprecated Legacy API to be removed
+void DispReel::RenderSetup() { }
+void DispReel::RenderStatic() { }
+void DispReel::RenderDynamic() { }
+
+void DispReel::RenderSetup(RenderDevice *device)
 {
-   TRACE_FUNCTION();
+   assert(m_rd == nullptr);
+   m_rd = device;
 
-   if (!m_d.m_visible || !GetPTable()->GetEMReelsEnabled() || (m_backglass && g_pplayer->IsRenderPass(Player::REFLECTION_PASS)))
-      return;
-
-   // get a pointer to the image specified in the object
-   Texture * const pin = m_ptable->GetImage(m_d.m_szImage); // pointer to image information from the image manager
-
-   if (!pin)
-      return;
-
-   RenderDevice * const pd3dDevice = m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-   RenderState initial_state;
-   pd3dDevice->CopyRenderStates(true, initial_state);
-
-   if (m_ptable->m_tblMirrorEnabled ^ g_pplayer->IsRenderPass(Player::REFLECTION_PASS))
-      pd3dDevice->SetRenderStateCulling(RenderState::CULL_NONE);
-   else
-      pd3dDevice->SetRenderStateCulling(RenderState::CULL_CCW);
-
-   pd3dDevice->SetRenderStateDepthBias(0.0f);
-   pd3dDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
-
-   pd3dDevice->DMDShader->SetFloat(SHADER_alphaTestValue, (float)(128.0 / 255.0));
-   g_pplayer->m_pin3d.EnableAlphaBlend(false);
-
-   pd3dDevice->DMDShader->SetTechnique(SHADER_TECHNIQUE_basic_noDMD);
-
-   const vec4 c = convertColor(0xFFFFFFFF, 1.f);
-   pd3dDevice->DMDShader->SetVector(SHADER_vColor_Intensity, &c);
-
-   pd3dDevice->DMDShader->SetTexture(SHADER_tex_sprite, pin, SF_TRILINEAR, SA_REPEAT, SA_REPEAT);
-
-   // set up all the reel positions within the object frame
-   const float renderspacingx = max(0.0f, m_d.m_reelspacing / (float)EDITOR_BG_WIDTH);
-   const float renderspacingy = max(0.0f, m_d.m_reelspacing / (float)EDITOR_BG_HEIGHT);
-         float x1 = m_d.m_v1.x / (float)EDITOR_BG_WIDTH  + renderspacingx;
-   const float y1 = m_d.m_v1.y / (float)EDITOR_BG_HEIGHT + renderspacingy;
-
-   for (int r = 0; r < m_d.m_reelcount; ++r) //!! optimize by doing all draws in a single one
-   {
-      const float u0 = m_digitTexCoords[m_reelInfo[r].currentValue].u_min;
-      const float v0 = m_digitTexCoords[m_reelInfo[r].currentValue].v_min;
-      const float u1 = m_digitTexCoords[m_reelInfo[r].currentValue].u_max;
-      const float v1 = m_digitTexCoords[m_reelInfo[r].currentValue].v_max;
-
-      Vertex3D_NoTex2 vertices[4] =
-      {
-         { 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, u1, v1 },
-         { 0.f, 1.f, 0.f, 0.f, 0.f, 1.f, u0, v1 },
-         { 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, u1, v0 },
-         { 0.f, 0.f, 0.f, 0.f, 0.f, 1.f, u0, v0 }
-      };
-
-      for (unsigned int i = 0; i < 4; ++i)
-      {
-         vertices[i].x =        (vertices[i].x * m_renderwidth  + x1)*2.0f - 1.0f;
-         vertices[i].y = 1.0f - (vertices[i].y * m_renderheight + y1)*2.0f;
-      }
-
-      pd3dDevice->DrawTexturedQuad(pd3dDevice->DMDShader, vertices);
-
-      // move to the next reel
-      x1 += renderspacingx + m_renderwidth;
-   }
-
-   pd3dDevice->DMDShader->SetFloat(SHADER_alphaTestValue, 1.0f);
-
-   pd3dDevice->CopyRenderStates(false, initial_state);
-}
-
-void DispReel::RenderSetup()
-{
    // get the render sizes of the objects (reels and frame)
    m_renderwidth = max(0.0f, m_d.m_width / (float)EDITOR_BG_WIDTH);
    m_renderheight = max(0.0f, m_d.m_height / (float)EDITOR_BG_HEIGHT);
@@ -364,8 +309,10 @@ void DispReel::RenderSetup()
    m_timeNextUpdate = g_pplayer->m_time_msec + m_d.m_updateinterval;
 }
 
-void DispReel::RenderStatic()
+void DispReel::RenderRelease()
 {
+   assert(m_rd != nullptr);
+   m_rd = nullptr;
 }
 
 // This function is called each frame.  It basically check to see if the update
@@ -373,6 +320,7 @@ void DispReel::RenderStatic()
 // number of motor steps queued up for each reel
 void DispReel::UpdateAnimation(const float diff_time_msec)
 {
+   assert(m_rd != nullptr);
    bool animated = false;
    while (g_pplayer->m_time_msec >= m_timeNextUpdate)
    {
@@ -453,6 +401,78 @@ void DispReel::UpdateAnimation(const float diff_time_msec)
    if (animated)
       FireGroupEvent(DISPID_AnimateEvents_Animate);
 }
+
+void DispReel::Render(const unsigned int renderMask)
+{
+   assert(m_rd != nullptr);
+   const bool isStaticOnly = renderMask & Player::STATIC_ONLY;
+   const bool isDynamicOnly = renderMask & Player::DYNAMIC_ONLY;
+   const bool isReflectionPass = renderMask & Player::REFLECTION_PASS;
+   TRACE_FUNCTION();
+
+   if (isStaticOnly
+   || !m_d.m_visible
+   || !GetPTable()->GetEMReelsEnabled()
+   || (m_backglass && isReflectionPass))
+      return;
+
+   Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
+   if (!pin)
+      return;
+
+   m_rd->ResetRenderState();
+   m_rd->SetRenderStateCulling(m_ptable->m_tblMirrorEnabled ^ isReflectionPass ? RenderState::CULL_NONE : RenderState::CULL_CCW);
+
+   m_rd->DMDShader->SetFloat(SHADER_alphaTestValue, (float)(128.0 / 255.0));
+   m_rd->EnableAlphaBlend(false);
+
+   m_rd->DMDShader->SetTechnique(SHADER_TECHNIQUE_basic_noDMD);
+
+   const vec4 c = convertColor(0xFFFFFFFF, 1.f);
+   m_rd->DMDShader->SetVector(SHADER_vColor_Intensity, &c);
+
+   m_rd->DMDShader->SetTexture(SHADER_tex_sprite, pin, SF_TRILINEAR, SA_REPEAT, SA_REPEAT);
+
+   // set up all the reel positions within the object frame
+   const float renderspacingx = max(0.0f, m_d.m_reelspacing / (float)EDITOR_BG_WIDTH);
+   const float renderspacingy = max(0.0f, m_d.m_reelspacing / (float)EDITOR_BG_HEIGHT);
+         float x1 = m_d.m_v1.x / (float)EDITOR_BG_WIDTH  + renderspacingx;
+   const float y1 = m_d.m_v1.y / (float)EDITOR_BG_HEIGHT + renderspacingy;
+
+   for (int r = 0; r < m_d.m_reelcount; ++r) //!! optimize by doing all draws in a single one
+   {
+      const float u0 = m_digitTexCoords[m_reelInfo[r].currentValue].u_min;
+      const float v0 = m_digitTexCoords[m_reelInfo[r].currentValue].v_min;
+      const float u1 = m_digitTexCoords[m_reelInfo[r].currentValue].u_max;
+      const float v1 = m_digitTexCoords[m_reelInfo[r].currentValue].v_max;
+
+      Vertex3D_NoTex2 vertices[4] =
+      {
+         { 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, u1, v1 },
+         { 0.f, 1.f, 0.f, 0.f, 0.f, 1.f, u0, v1 },
+         { 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, u1, v0 },
+         { 0.f, 0.f, 0.f, 0.f, 0.f, 1.f, u0, v0 }
+      };
+
+      for (unsigned int i = 0; i < 4; ++i)
+      {
+         vertices[i].x =        (vertices[i].x * m_renderwidth  + x1)*2.0f - 1.0f;
+         vertices[i].y = 1.0f - (vertices[i].y * m_renderheight + y1)*2.0f;
+      }
+
+      m_rd->DrawTexturedQuad(m_rd->DMDShader, vertices);
+
+      // move to the next reel
+      x1 += renderspacingx + m_renderwidth;
+   }
+
+   m_rd->DMDShader->SetFloat(SHADER_alphaTestValue, 1.0f);
+
+   m_rd->ResetRenderState();
+}
+
+#pragma endregion
+
 
 void DispReel::SetObjectPos()
 {

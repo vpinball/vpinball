@@ -1462,7 +1462,7 @@ void Primitive::Render(const unsigned int renderMask)
             { // Primitive uses alpha transparency => render in 2 passes, one for the texture with alpha blending, one for the reflections which can happen above a transparent part (like for a glass or insert plastic)
                m_rd->basicShader->SetTechniqueMaterial(pin ? SHADER_TECHNIQUE_basic_with_texture : SHADER_TECHNIQUE_basic_without_texture, 
                   mat, pin ? pinAlphaTest >= 0.f && !pin->IsOpaque() : false, nMap, false, false);
-               m_rd->DrawMesh(m_rd->basicShader, mat->m_bOpacityActive && !m_d.m_staticRendering /* IsTransparent() */, m_d.m_vPosition, m_d.m_depthBias, 
+               m_rd->DrawMesh(m_rd->basicShader, mat->m_bOpacityActive && !m_d.m_staticRendering, m_d.m_vPosition, m_d.m_depthBias, 
                   m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_d.m_groupdRendering ? m_numGroupIndices : (DWORD)m_mesh.NumIndices());
                is_reflection_only_pass = true;
             }
@@ -1490,7 +1490,7 @@ void Primitive::Render(const unsigned int renderMask)
       m_rd->DrawMesh(m_rd->basicShader, 
             is_reflection_only_pass // The reflection pass is an additive (so transparent) pass to be drawn after the opaque one
          || refractions // Refractions must be rendered back to front since they rely on what is behind
-         || (mat->m_bOpacityActive && !m_d.m_staticRendering && !m_rd->GetRenderState().IsOpaque() /* IsTransparent() */),
+         || (mat->m_bOpacityActive && !m_d.m_staticRendering && !m_rd->GetRenderState().IsOpaque()),
             m_d.m_vPosition, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_d.m_groupdRendering ? m_numGroupIndices : (DWORD)m_mesh.NumIndices());
    }
 
@@ -1498,7 +1498,7 @@ void Primitive::Render(const unsigned int renderMask)
    if (depthMask && m_d.m_backfacesEnabled && mat->m_bOpacityActive)
    {
       m_rd->SetRenderStateCulling(RenderState::CULL_CCW);
-      m_rd->DrawMesh(m_rd->basicShader, mat->m_bOpacityActive /* IsTransparent() */, m_d.m_vPosition, m_d.m_depthBias, 
+      m_rd->DrawMesh(m_rd->basicShader, mat->m_bOpacityActive, m_d.m_vPosition, m_d.m_depthBias, 
          m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_d.m_groupdRendering ? m_numGroupIndices : (DWORD)m_mesh.NumIndices());
    }
 
@@ -2285,14 +2285,6 @@ void Primitive::ExportMeshDialog()
       m_mesh.SaveWavefrontObj(szFileName[0], m_d.m_use3DMesh ? string(name) : "Primitive"s);
    }
 
-}
-
-bool Primitive::IsTransparent() const
-{
-   if (m_d.m_skipRendering)
-      return false;
-
-   return m_ptable->GetMaterial(m_d.m_szMaterial)->m_bOpacityActive;
 }
 
 float Primitive::GetDepth(const Vertex3Ds& viewDir) const

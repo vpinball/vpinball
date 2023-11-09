@@ -161,7 +161,6 @@ public:
    //virtual HRESULT InitVBA(BOOL fNew, int id, WCHAR * const wzName);
    void WriteRegDefaults() final;
 
-   bool IsTransparent() const final;
    float GetDepth(const Vertex3Ds& viewDir) const final;
    ItemTypeEnum HitableGetItemType() const final { return eItemHitTarget; }
 
@@ -179,6 +178,10 @@ public:
 
    bool             m_hitEvent;
 
+   virtual void RenderSetup(RenderDevice *device);
+   virtual void Render(const unsigned int renderMask);
+   virtual void RenderRelease();
+
 private:
 
    void RenderObject();
@@ -186,20 +189,20 @@ private:
    void SetupHitObject(vector<HitObject*> &pvho, HitObject * obj, const bool setHitObject);
    void AddHitEdge(vector<HitObject*> &pvho, robin_hood::unordered_set< robin_hood::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j, const Vertex3Ds &vi, const Vertex3Ds &vj, const bool setHitObject = true);
 
-   PinTable        *m_ptable;
+   PinTable        *m_ptable = nullptr;
 
-   const Vertex3D_NoTex2 *m_vertices; // pointer just to the existing hittargets hardcoded in arrays
-   const WORD      *m_indices;        // dto.
-   unsigned int     m_numVertices;
-   unsigned int     m_numIndices;
+   RenderDevice *m_rd = nullptr;
+   const Vertex3D_NoTex2 *m_vertices = nullptr; // pointer just to the existing hittargets hardcoded in arrays
+   const WORD      *m_indices = nullptr; // dto.
+   unsigned int     m_numVertices = 0;
+   unsigned int     m_numIndices = 0;
+   MeshBuffer *m_meshBuffer = nullptr;
 
-   PropertyPane *m_propVisual;
-   PropertyPane *m_propPosition;
-   PropertyPane *m_propPhysics;
+   PropertyPane *m_propVisual = nullptr;
+   PropertyPane *m_propPosition = nullptr;
+   PropertyPane *m_propPhysics = nullptr;
 
    vector<HitObject*> m_vhoCollidable; // Objects to that may be collide selectable
-
-   MeshBuffer *m_meshBuffer = nullptr;
 
    // Vertices for editor display & hit shape
    vector<Vertex3Ds> m_hitUIVertices;
