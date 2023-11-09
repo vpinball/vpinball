@@ -32,6 +32,16 @@ public:
 
 private:
    // Interactive Camera Mode
+   enum TweakType { TT_Int, TT_Float, TT_Set };
+   struct TweakOption
+   {
+      TweakType type;
+      float min, max, step, def;
+      string name, unit;
+      vector<string> options;
+      TweakOption(TweakType _type, float _min, float _max, float _step, float _def, string _name, string _unit, std::initializer_list<string> _options): 
+         type(_type), min(_min), max(_max), step(_step), def(_def), name(_name), unit(_unit), options(_options) { }
+   };
    enum TweakPage { TP_PointOfView, TP_TableOption, TP_Info, TP_Count };
    enum BackdropSetting
    {
@@ -50,31 +60,6 @@ private:
    vector<BackdropSetting> m_tweakPageOptions;
    bool m_tweakMode = false;
    void UpdateTweakPage();
-
-   enum TweakType { TT_Int, TT_Float, TT_Set };
-   struct TweakOption
-   {
-      TweakType type;
-      float min, max, step, def;
-      string name, unit;
-      vector<string> options;
-      TweakOption(TweakType _type, float _min, float _max, float _step, float _def, string _name, string _unit, std::initializer_list<string> _options): 
-         type(_type), min(_min), max(_max), step(_step), def(_def), name(_name), unit(_unit), options(_options) { }
-   };
-
-   static constexpr BackdropSetting mLegacyViewSettings[] = {
-      BS_ViewMode, BS_LookAt, BS_FOV, BS_Layback, BS_XYZScale, BS_XScale, BS_YScale, BS_ZScale, BS_XOffset, BS_YOffset, BS_ZOffset,
-      /* BS_LightEmissionScale, BS_EnvEmissionScale*/
-   };
-   static constexpr BackdropSetting mCameraViewSettings[] = {
-      BS_ViewMode, BS_FOV, BS_ViewHOfs, BS_ViewVOfs, BS_XYZScale, BS_XScale, BS_YScale, BS_ZScale, BS_LookAt, BS_XOffset, BS_YOffset, BS_ZOffset,
-      /* BS_LightEmissionScale, BS_EnvEmissionScale*/
-   };
-   static constexpr BackdropSetting mWindowViewSettings[] = {
-      BS_ViewMode, BS_ViewHOfs, BS_ViewVOfs, BS_XYZScale, BS_XScale, BS_YScale,
-      BS_WndTopZOfs, BS_WndBottomZOfs, BS_XOffset, BS_YOffset, BS_ZOffset, 
-      /* BS_LightEmissionScale, BS_EnvEmissionScale*/
-   };
    void UpdateTweakModeUI();
 
    // Main UI frame & panels
@@ -82,7 +67,7 @@ private:
    void UpdateOutlinerUI();
    void UpdatePropertyUI();
 
-   // Pop ups & Modals
+   // Popups & Modals
    void UpdateMainSplashModal();
    void UpdateAudioOptionsModal();
    void UpdateVideoOptionsModal();
