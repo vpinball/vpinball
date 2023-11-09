@@ -218,6 +218,7 @@ public:
    void SetClipPlane(const vec4 &plane);
 
    // RenderState used in submitted render command
+   void ResetRenderState() { m_renderstate.Reset(); };
    RenderState& GetRenderState() { return m_renderstate; }
    void SetRenderState(const RenderState::RenderStates p1, const RenderState::RenderStateValue p2);
    void SetRenderStateCulling(RenderState::RenderStateValue cull);
