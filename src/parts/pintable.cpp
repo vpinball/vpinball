@@ -5936,9 +5936,11 @@ void PinTable::ImportBackdropPOV(const string &filename)
       {
          const string &keyPrefix = vsPrefix[id];
          if (toUserSettings)
+         {
             for (int j = 0; j < 15; j++)
                if (settings.HasValue(Settings::TableOverride, keyPrefix + vsFields[j]))
                   m_settings.SaveValue(Settings::TableOverride, keyPrefix + vsFields[j], settings.LoadValueWithDefault(Settings::TableOverride, keyPrefix + vsFields[j], 0.f));
+         }
          else
             mViewSetups[id].ApplyTableOverrideSettings(settings, (ViewSetupID)id);
       }
