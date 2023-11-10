@@ -618,7 +618,24 @@ public:
       const float sy = sinf(yaw);
       const float cy = cosf(yaw);
       //!! This code should be validated!
-      return Matrix3D(cr * cy, sr, cr * sy, 0.0f, -sr * cp * sy - sp * sy, cr * cp, sr * cp * sy + sp * cy, 0.0f, -sr * sp * cy - cp * sy, -cr * sp, -sr * sp * sy + cp * cy, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+      return Matrix3D(
+         cr * cy, sr, cr * sy, 0.0f, 
+         -sr * cp * sy - sp * sy, cr * cp, sr * cp * sy + sp * cy, 0.0f, 
+         -sr * sp * cy - cp * sy, -cr * sp, -sr * sp * sy + cp * cy, 0.0f, 
+         0.0f, 0.0f, 0.0f, 1.0f);
+   }
+
+   static Matrix3D MatrixRotate(const float angRad, const Vertex3Ds& axis)
+   {
+      // From https://en.wikipedia.org/wiki/Rotation_matrix
+      const float s = sinf(angRad), c = cosf(angRad);
+      const float u_s = 1.f - s, u_c = 1.f - c;
+      const float x = axis.x, y = axis.y, z = axis.z;
+      return Matrix3D(
+         c + x * x * u_c, x * y * u_c - z * s, x * z * u_c + y * s, 0.0f, 
+         y * x * u_c + z * s, c + y * y * u_c, y * z * u_c - x * s, 0.0f, 
+         z * x * u_c - y * s, z * y * u_c + x * s, c + z * z * u_c, 0.0f, 
+         0.0f, 0.0f, 0.0f, 1.0f);
    }
 
 #pragma endregion FactoryConstructors

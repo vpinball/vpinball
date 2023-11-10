@@ -282,11 +282,7 @@ public:
          Normalize();
    }
 
-   float Dot(const Vertex3Ds &pv) const
-   {
-      return x*pv.x + y*pv.y + z*pv.z;
-   }
-   float Dot(const Vertex3D_NoTex2 &pv) const
+   template <class VecIn> float Dot(const VecIn& pv) const
    {
       return x*pv.x + y*pv.y + z*pv.z;
    }

@@ -427,9 +427,7 @@ void RenderProbe::DoRenderReflectionProbe(const bool render_static, const bool r
    n.Normalize();
    vec4 clip_plane(n.x, n.y, n.z, m_reflection_plane.w);
    m_rd->SetClipPlane(clip_plane);
-   m_rd->SetRenderState(RenderState::CLIPPLANEENABLE, RenderState::RS_TRUE);
-
-   m_rd->SetRenderStateCulling(RenderState::CULL_CCW); // re-init/thrash cache entry due to the hacky nature of the table mirroring
+   m_rd->ResetRenderState();
 
    // Flip camera
    Matrix3D viewMat, initialViewMat;
@@ -453,6 +451,7 @@ void RenderProbe::DoRenderReflectionProbe(const bool render_static, const bool r
    reflect._41 = -2.0f * n.x * m_reflection_plane.w;
    reflect._42 = -2.0f * n.y * m_reflection_plane.w;
    reflect._43 = -2.0f * n.z * m_reflection_plane.w;
+   
    viewMat = reflect * viewMat;
    g_pplayer->m_pin3d.GetMVP().SetView(viewMat);
 
