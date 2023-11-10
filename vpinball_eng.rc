@@ -3031,6 +3031,8 @@ BEGIN
         MENUITEM "&Collection Manager...\tF8",  ID_TABLE_COLLECTIONMANAGER
         MENUITEM "Render Probe Manager...",     ID_TABLE_RENDERPROBEMANAGER
         MENUITEM SEPARATOR
+        MENUITEM "Lock/Unlock Table",           ID_TABLE_LOCK
+        MENUITEM SEPARATOR
         MENUITEM "&Magnify",                    ID_TABLE_MAGNIFY
     END
     POPUP "&Preferences"

@@ -62,7 +62,7 @@ BOOL ToolbarDialog::OnInitDialog()
     m_tooltip.AddTool(m_scriptButton, _T("Toggle Script Editor"));
     m_tooltip.AddTool(m_backglassButton, _T("Toggle Backglass View"));
     m_tooltip.AddTool(m_playButton, _T("Play Table"));
-    m_tooltip.AddTool(m_playCameraButton, _T("Interactive edit Table (Camera/Lights/Materials)"));
+    m_tooltip.AddTool(m_playCameraButton, _T("Adjust user settings (Camera/Options)"));
 
     m_tooltip.AddTool(m_wallButton, _T("Insert Wall"));
     m_tooltip.AddTool(m_gateButton, _T("Insert Gate"));
@@ -248,18 +248,18 @@ void ToolbarDialog::EnableButtons()
     else if (g_pvp->m_backglassView)
     {
         m_magnifyButton.EnableWindow(TRUE);
-        m_selectButton.EnableWindow(TRUE);
-        m_scriptButton.EnableWindow(TRUE);
+        m_selectButton.EnableWindow(ptCur->m_locked ? FALSE : TRUE);
+        m_scriptButton.EnableWindow(ptCur->m_locked ? FALSE : TRUE);
         m_backglassButton.EnableWindow(TRUE);
         m_playButton.EnableWindow(TRUE);
         m_playCameraButton.EnableWindow(TRUE);
 
-        m_textboxButton.EnableWindow(TRUE);
-        m_reelButton.EnableWindow(TRUE);
-        m_decalButton.EnableWindow(TRUE);
-        m_lightButton.EnableWindow(TRUE);
-        m_timerButton.EnableWindow(TRUE);
-        m_lightseqButton.EnableWindow(TRUE);
+        m_textboxButton.EnableWindow(ptCur->m_locked ? FALSE : TRUE);
+        m_reelButton.EnableWindow(ptCur->m_locked ? FALSE : TRUE);
+        m_decalButton.EnableWindow(ptCur->m_locked ? FALSE : TRUE);
+        m_lightButton.EnableWindow(ptCur->m_locked ? FALSE : TRUE);
+        m_timerButton.EnableWindow(ptCur->m_locked ? FALSE : TRUE);
+        m_lightseqButton.EnableWindow(ptCur->m_locked ? FALSE : TRUE);
 
         m_wallButton.EnableWindow(FALSE);
         m_gateButton.EnableWindow(FALSE);
@@ -278,31 +278,31 @@ void ToolbarDialog::EnableButtons()
     else
     {
         m_magnifyButton.EnableWindow(TRUE);
-        m_selectButton.EnableWindow(TRUE);
-        m_scriptButton.EnableWindow(TRUE);
+        m_selectButton.EnableWindow(ptCur->m_locked ? FALSE : TRUE);
+        m_scriptButton.EnableWindow(ptCur->m_locked ? FALSE : TRUE);
         m_backglassButton.EnableWindow(TRUE);
         m_playButton.EnableWindow(TRUE);
         m_playCameraButton.EnableWindow(TRUE);
 
         m_textboxButton.EnableWindow(FALSE);
         m_reelButton.EnableWindow(FALSE);
-        m_wallButton.EnableWindow(TRUE);
-        m_gateButton.EnableWindow(TRUE);
-        m_rampButton.EnableWindow(TRUE);
-        m_flipperButton.EnableWindow(TRUE);
-        m_plungerButton.EnableWindow(TRUE);
-        m_bumperButton.EnableWindow(TRUE);
-        m_spinnerButton.EnableWindow(TRUE);
-        m_triggerButton.EnableWindow(TRUE);
-        m_kickerButton.EnableWindow(TRUE);
-        m_primitiveButton.EnableWindow(TRUE);
-        m_flasherButton.EnableWindow(TRUE);
-        m_rubberButton.EnableWindow(TRUE);
-        m_decalButton.EnableWindow(TRUE);
-        m_lightButton.EnableWindow(TRUE);
-        m_timerButton.EnableWindow(TRUE);
-        m_lightseqButton.EnableWindow(TRUE);
-        m_targetButton.EnableWindow(TRUE);
+        m_wallButton.EnableWindow(ptCur->m_locked ? FALSE : TRUE);
+        m_gateButton.EnableWindow(ptCur->m_locked ? FALSE : TRUE);
+        m_rampButton.EnableWindow(ptCur->m_locked ? FALSE : TRUE);
+        m_flipperButton.EnableWindow(ptCur->m_locked ? FALSE : TRUE);
+        m_plungerButton.EnableWindow(ptCur->m_locked ? FALSE : TRUE);
+        m_bumperButton.EnableWindow(ptCur->m_locked ? FALSE : TRUE);
+        m_spinnerButton.EnableWindow(ptCur->m_locked ? FALSE : TRUE);
+        m_triggerButton.EnableWindow(ptCur->m_locked ? FALSE : TRUE);
+        m_kickerButton.EnableWindow(ptCur->m_locked ? FALSE : TRUE);
+        m_primitiveButton.EnableWindow(ptCur->m_locked ? FALSE : TRUE);
+        m_flasherButton.EnableWindow(ptCur->m_locked ? FALSE : TRUE);
+        m_rubberButton.EnableWindow(ptCur->m_locked ? FALSE : TRUE);
+        m_decalButton.EnableWindow(ptCur->m_locked ? FALSE : TRUE);
+        m_lightButton.EnableWindow(ptCur->m_locked ? FALSE : TRUE);
+        m_timerButton.EnableWindow(ptCur->m_locked ? FALSE : TRUE);
+        m_lightseqButton.EnableWindow(ptCur->m_locked ? FALSE : TRUE);
+        m_targetButton.EnableWindow(ptCur->m_locked ? FALSE : TRUE);
     }
 }
 
