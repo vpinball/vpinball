@@ -207,18 +207,12 @@ void DispReel::GetHitShapesDebug(vector<HitObject*> &pvho)
 void DispReel::EndPlay()
 {
    IEditable::EndPlay();
-   RenderRelease();
 }
 
 #pragma endregion
 
 
 #pragma region Rendering
-
-// Deprecated Legacy API to be removed
-void DispReel::RenderSetup() { }
-void DispReel::RenderStatic() { }
-void DispReel::RenderDynamic() { }
 
 void DispReel::RenderSetup(RenderDevice *device)
 {

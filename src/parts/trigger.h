@@ -119,15 +119,16 @@ private:
 
    TriggerHitCircle *m_ptriggerhitcircle;
 
+   RenderDevice *m_rd = nullptr;
    MeshBuffer *m_meshBuffer = nullptr;
    vector<Vertex3Ds> m_vertices;
-   const WORD *m_faceIndices;
-   Vertex3D_NoTex2 *m_triggerVertices;
+   const WORD *m_faceIndices = nullptr;
+   Vertex3D_NoTex2 *m_triggerVertices = nullptr;
+   int m_numVertices = 0;
+   int m_numIndices = 0;
 
    PropertyPane *m_propVisual;
 
-   int m_numVertices;
-   int m_numIndices;
    float m_animHeightOffset;
    float m_vertexBuffer_animHeightOffset;
    bool m_hitEvent;

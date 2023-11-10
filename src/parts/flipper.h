@@ -167,10 +167,6 @@ public:
 
    PinTable *m_ptable;
 
-   virtual void RenderSetup(RenderDevice *device);
-   virtual void Render(const unsigned int renderMask);
-   virtual void RenderRelease();
-
 private:
    RenderDevice *m_rd = nullptr;
    MeshBuffer *m_meshBuffer = nullptr;

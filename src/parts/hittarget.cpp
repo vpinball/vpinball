@@ -418,7 +418,6 @@ void HitTarget::EndPlay()
 {
    m_vhoCollidable.clear();
    IEditable::EndPlay();
-   RenderRelease();
 }
 
 //////////////////////////////
@@ -579,11 +578,6 @@ void HitTarget::UpdateStatusBarInfo()
 }
 
 #pragma region Rendering
-
-// Deprecated Legacy API to be removed
-void HitTarget::RenderSetup() { }
-void HitTarget::RenderStatic() { }
-void HitTarget::RenderDynamic() { }
 
 void HitTarget::RenderSetup(RenderDevice *device)
 {

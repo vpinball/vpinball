@@ -211,7 +211,6 @@ void Kicker::EndPlay()
    m_phitkickercircle = nullptr;
    m_hitMesh.clear();
    IEditable::EndPlay();
-   RenderRelease();
 }
 
 #pragma endregion
@@ -219,11 +218,6 @@ void Kicker::EndPlay()
 
 
 #pragma region Rendering
-
-// Deprecated Legacy API to be removed
-void Kicker::RenderSetup() { }
-void Kicker::RenderStatic() { }
-void Kicker::RenderDynamic() { }
 
 void Kicker::RenderSetup(RenderDevice *device)
 {
@@ -264,8 +258,8 @@ void Kicker::RenderSetup(RenderDevice *device)
          buf[i].tv = 0.0f;
       }
 
-      VertexBuffer *plateVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, kickerPlateNumVertices, (float*)buf);
-      IndexBuffer *plateIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, kickerPlateNumIndices, kickerPlateIndices);
+      VertexBuffer *plateVertexBuffer = new VertexBuffer(m_rd, kickerPlateNumVertices, (float*)buf);
+      IndexBuffer *plateIndexBuffer = new IndexBuffer(m_rd, kickerPlateNumIndices, kickerPlateIndices);
       m_plateMeshBuffer = new MeshBuffer(m_wzName + L".Plate"s, plateVertexBuffer, plateIndexBuffer, true);
 
       delete[] buf;
@@ -340,12 +334,12 @@ void Kicker::RenderSetup(RenderDevice *device)
 
    //
 
-   VertexBuffer *vertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numVertices);
+   VertexBuffer *vertexBuffer = new VertexBuffer(m_rd, m_numVertices);
    Vertex3D_NoTex2 *buf;
    vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
    GenerateMesh(buf);
    vertexBuffer->unlock();
-   IndexBuffer *indexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numIndices, indices);
+   IndexBuffer *indexBuffer = new IndexBuffer(m_rd, m_numIndices, indices);
    m_meshBuffer = new MeshBuffer(m_wzName + L".Kicker"s, vertexBuffer, indexBuffer, true);
 }
 

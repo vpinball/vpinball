@@ -199,20 +199,14 @@ void LightSeq::GetHitShapesDebug(vector<HitObject*> &pvho)
 //
 void LightSeq::EndPlay()
 {
-   if (m_pgridData != nullptr)
-   {
-      delete[] m_pgridData;
-      m_pgridData = nullptr;
-   }
-
+   delete[] m_pgridData;
+   m_pgridData = nullptr;
    IEditable::EndPlay();
 }
 
-void LightSeq::RenderDynamic()
-{
-}
+#pragma region Rendering
 
-void LightSeq::RenderSetup()
+void LightSeq::RenderSetup(RenderDevice *device)
 {
    // zero pointers as a safe guard
    m_pcollection = nullptr;
@@ -331,7 +325,7 @@ void LightSeq::RenderSetup()
    }
 }
 
-void LightSeq::RenderStatic()
+void LightSeq::RenderRelease()
 {
 }
 
@@ -408,6 +402,12 @@ void LightSeq::UpdateAnimation(const float diff_time_msec)
       }
    }
 }
+
+void LightSeq::Render(const unsigned int renderMask)
+{
+}
+
+#pragma endregion
 
 
 STDMETHODIMP LightSeq::InterfaceSupportsErrorInfo(REFIID riid)

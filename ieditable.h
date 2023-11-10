@@ -148,10 +148,10 @@ public:
 	virtual const ISelect *GetISelect() const {return static_cast<const ISelect*>(this);} \
 	virtual Hitable *GetIHitable() {return static_cast<Hitable *>(this);} \
 	virtual const Hitable *GetIHitable() const {return static_cast<const Hitable *>(this);} \
-	virtual void RenderSetup(); \
+	virtual void RenderSetup(RenderDevice *device); \
 	virtual void UpdateAnimation(const float diff_time_msec); \
-	virtual void RenderStatic(); \
-	virtual void RenderDynamic(); \
+	virtual void Render(const unsigned int renderMask); \
+	virtual void RenderRelease(); \
 	STDMETHOD(GetDisplayString)(DISPID dispID, BSTR *pbstr) {return hrNotImplemented;} \
 	STDMETHOD(MapPropertyToPage)(DISPID dispID, CLSID *pclsid) {return hrNotImplemented;} \
 	STDMETHOD(GetPredefinedStrings)(DISPID dispID, CALPOLESTR *pcaStringsOut, CADWORD *pcaCookiesOut) {return GetPTable()->GetPredefinedStrings(dispID, pcaStringsOut, pcaCookiesOut, this);} \

@@ -296,10 +296,6 @@ public:
 
    void GetBoundingVertices(vector<Vertex3Ds> &pvvertex3D, const bool isLegacy) final;
 
-   virtual void RenderSetup(RenderDevice *device);
-   virtual void Render(const unsigned int renderMask);
-   virtual void RenderRelease();
-
 private:
    RenderDevice *m_rd = nullptr;
 

@@ -19,19 +19,13 @@ Trigger::Trigger()
    m_vertexBuffer_animHeightOffset = -FLT_MAX;
 
    m_hitEnabled = true;
-   m_triggerVertices = nullptr;
    m_menuid = IDR_SURFACEMENU;
    m_propVisual = nullptr;
 }
 
 Trigger::~Trigger()
 {
-   delete m_meshBuffer;
-   if (m_triggerVertices)
-   {
-      delete[] m_triggerVertices;
-      m_triggerVertices = nullptr;
-   }
+   assert(m_rd == nullptr);
 }
 
 Trigger *Trigger::CopyForPlay(PinTable *live_table)
@@ -331,6 +325,8 @@ void Trigger::GetTimers(vector<HitTimer*> &pvht)
       pvht.push_back(pht);
 }
 
+#pragma region Physics
+
 //
 // license:GPLv3+
 // Ported at: VisualPinball.Engine/VPT/Trigger/TriggerHitGenerator.cs
@@ -483,14 +479,6 @@ void Trigger::AddLine(vector<HitObject*> &pvho, const RenderVertex &pv1, const R
 void Trigger::EndPlay()
 {
    IEditable::EndPlay();
-
-   delete m_meshBuffer;
-   m_meshBuffer = nullptr;
-   if (m_triggerVertices)
-   {
-      delete[] m_triggerVertices;
-      m_triggerVertices = nullptr;
-   }
    m_ptriggerhitcircle = nullptr;
 }
 
@@ -504,6 +492,88 @@ void Trigger::TriggerAnimationUnhit()
    m_unhitEvent = true;
 }
 
+#pragma endregion
+
+
+#pragma region Rendering
+
+void Trigger::RenderSetup(RenderDevice *device)
+{
+   assert(m_rd == nullptr);
+   m_rd = device;
+   m_hitEvent = false;
+   m_unhitEvent = false;
+   m_doAnimation = false;
+   m_moveDown = false;
+   m_animHeightOffset = 0.0f;
+   m_vertexBuffer_animHeightOffset = -FLT_MAX;
+
+   if (!m_d.m_visible || m_d.m_shape == TriggerNone)
+      return;
+
+   const WORD* indices;
+   switch(m_d.m_shape)
+   {
+   case TriggerWireA:
+   case TriggerWireB:
+   case TriggerWireC:
+   {
+      m_numVertices = triggerSimpleNumVertices;
+      m_numIndices = triggerSimpleNumIndices;
+      indices = triggerSimpleIndices;
+      break;
+   }
+   case TriggerWireD:
+   {
+      m_numVertices = triggerDWireNumVertices;
+      m_numIndices = triggerDWireNumIndices;
+      indices = triggerDWireIndices;
+      break;
+   }
+   case TriggerInder:
+   {
+      m_numVertices = triggerInderNumVertices;
+      m_numIndices = triggerInderNumIndices;
+      indices = triggerInderIndices;
+      break;
+   }
+   case TriggerButton:
+   {
+      m_numVertices = triggerButtonNumVertices;
+      m_numIndices = triggerButtonNumIndices;
+      indices = triggerButtonIndices;
+      break;
+   }
+   case TriggerStar:
+   {
+      m_numVertices = triggerStarNumVertices;
+      m_numIndices = triggerStarNumIndices;
+      indices = triggerStarIndices;
+      break;
+   }
+   default:
+   {
+      assert(!"Unknown Trigger");
+      break;
+   }
+   }
+
+   GenerateMesh();
+   IndexBuffer *triggerIndexBuffer = new IndexBuffer(m_rd, m_numIndices, indices);
+   VertexBuffer *vertexBuffer = new VertexBuffer(m_rd, m_numVertices, (float*) m_triggerVertices, true);
+   m_meshBuffer = new MeshBuffer(m_wzName, vertexBuffer, triggerIndexBuffer, true);
+}
+
+void Trigger::RenderRelease()
+{
+   assert(m_rd != nullptr);
+   m_rd = nullptr;
+   delete m_meshBuffer;
+   delete[] m_triggerVertices;
+   m_meshBuffer = nullptr;
+   m_triggerVertices = nullptr;
+}
+
 //
 // license:GPLv3+
 // Ported at: VisualPinball.Unity/VisualPinball.Unity/VPT/Trigger/TriggerAnimationSystem.cs
@@ -511,6 +581,7 @@ void Trigger::TriggerAnimationUnhit()
 
 void Trigger::UpdateAnimation(const float diff_time_msec)
 {
+   assert(m_rd != nullptr);
    float animLimit;
    switch (m_d.m_shape)
    {
@@ -572,21 +643,23 @@ void Trigger::UpdateAnimation(const float diff_time_msec)
 // end of license:GPLv3+, back to 'old MAME'-like
 //
 
-void Trigger::RenderDynamic()
+void Trigger::Render(const unsigned int renderMask)
 {
-   if (!m_d.m_visible || m_d.m_shape == TriggerNone)
-      return;
-   if (g_pplayer->IsRenderPass(Player::REFLECTION_PASS) && !m_d.m_reflectionEnabled)
-      return;
+   assert(m_rd != nullptr);
+   const bool isStaticOnly = renderMask & Player::STATIC_ONLY;
+   const bool isDynamicOnly = renderMask & Player::DYNAMIC_ONLY;
+   const bool isReflectionPass = renderMask & Player::REFLECTION_PASS;
+   TRACE_FUNCTION();
 
-   RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-   RenderState initial_state;
-   pd3dDevice->CopyRenderStates(true, initial_state);
-
+   if (!m_d.m_visible 
+   || m_d.m_shape == TriggerNone 
+   || isStaticOnly 
+   || (isReflectionPass && !m_d.m_reflectionEnabled))
+      return;
+      
    if (m_animHeightOffset != m_vertexBuffer_animHeightOffset)
    {
       m_vertexBuffer_animHeightOffset = m_animHeightOffset;
-
       Vertex3D_NoTex2 *buf;
       m_meshBuffer->m_vb->lock(0, 0, (void **)&buf, VertexBuffer::DISCARDCONTENTS);
       for (int i = 0; i < m_numVertices; i++)
@@ -603,19 +676,17 @@ void Trigger::RenderDynamic()
       m_meshBuffer->m_vb->unlock();
    }
 
-   const Material *const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
-   pd3dDevice->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, mat);
-   pd3dDevice->basicShader->SetMaterial(mat, false);
-
-   pd3dDevice->SetRenderStateDepthBias(0.0f);
-   pd3dDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
+   m_rd->ResetRenderState();
    if (m_d.m_shape == TriggerWireA || m_d.m_shape == TriggerWireB || m_d.m_shape == TriggerWireC || m_d.m_shape == TriggerWireD || m_d.m_shape == TriggerInder)
-      pd3dDevice->SetRenderStateCulling(RenderState::CULL_NONE);
-
-   pd3dDevice->DrawMesh(pd3dDevice->basicShader, false, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
-
-   pd3dDevice->CopyRenderStates(false, initial_state);
+      m_rd->SetRenderStateCulling(RenderState::CULL_NONE);
+   m_rd->basicShader->SetBasic(m_ptable->GetMaterial(m_d.m_szMaterial), nullptr);
+   m_rd->DrawMesh(m_rd->basicShader, false, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
+   m_rd->ResetRenderState();
 }
+
+#pragma endregion
+
+
 
 void Trigger::ExportMesh(ObjLoader& loader)
 {
@@ -670,6 +741,9 @@ void Trigger::ExportMesh(ObjLoader& loader)
 
    loader.WriteFaceInfoList(indices, m_numIndices);
    loader.UpdateFaceOffset(m_numVertices);
+   
+   delete[] m_triggerVertices;
+   m_triggerVertices = nullptr;
 }
 
 //
@@ -679,6 +753,8 @@ void Trigger::ExportMesh(ObjLoader& loader)
 
 void Trigger::GenerateMesh()
 {
+   // This create m_triggerVertices which must be disposed by caller
+   assert(m_triggerVertices == nullptr);
    const float baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
    const Vertex3D_NoTex2 *verts;
    float zoffset = (m_d.m_shape == TriggerButton) ? 5.0f : 0.0f;
@@ -732,8 +808,6 @@ void Trigger::GenerateMesh()
    }
    }
 
-   if (m_triggerVertices)
-      delete[] m_triggerVertices;
    m_triggerVertices = new Vertex3D_NoTex2[m_numVertices];
 
    Matrix3D fullMatrix;
@@ -792,76 +866,6 @@ void Trigger::GenerateMesh()
 //
 // end of license:GPLv3+, back to 'old MAME'-like
 //
-
-void Trigger::RenderSetup()
-{
-   m_hitEvent = false;
-   m_unhitEvent = false;
-   m_doAnimation = false;
-   m_moveDown = false;
-   m_animHeightOffset = 0.0f;
-   m_vertexBuffer_animHeightOffset = -FLT_MAX;
-
-   if (!m_d.m_visible || m_d.m_shape == TriggerNone)
-      return;
-
-   const WORD* indices;
-   switch(m_d.m_shape)
-   {
-   case TriggerWireA:
-   case TriggerWireB:
-   case TriggerWireC:
-   {
-      m_numVertices = triggerSimpleNumVertices;
-      m_numIndices = triggerSimpleNumIndices;
-      indices = triggerSimpleIndices;
-      break;
-   }
-   case TriggerWireD:
-   {
-      m_numVertices = triggerDWireNumVertices;
-      m_numIndices = triggerDWireNumIndices;
-      indices = triggerDWireIndices;
-      break;
-   }
-   case TriggerInder:
-   {
-      m_numVertices = triggerInderNumVertices;
-      m_numIndices = triggerInderNumIndices;
-      indices = triggerInderIndices;
-      break;
-   }
-   case TriggerButton:
-   {
-      m_numVertices = triggerButtonNumVertices;
-      m_numIndices = triggerButtonNumIndices;
-      indices = triggerButtonIndices;
-      break;
-   }
-   case TriggerStar:
-   {
-      m_numVertices = triggerStarNumVertices;
-      m_numIndices = triggerStarNumIndices;
-      indices = triggerStarIndices;
-      break;
-   }
-   default:
-   {
-      assert(!"Unknown Trigger");
-      break;
-   }
-   }
-
-   GenerateMesh();
-   delete m_meshBuffer;
-   IndexBuffer *triggerIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numIndices, indices);
-   VertexBuffer *vertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numVertices, (float*) m_triggerVertices, true);
-   m_meshBuffer = new MeshBuffer(m_wzName, vertexBuffer, triggerIndexBuffer, true);
-}
-
-void Trigger::RenderStatic()
-{
-}
 
 void Trigger::SetObjectPos()
 {

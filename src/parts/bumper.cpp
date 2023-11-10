@@ -233,18 +233,12 @@ void Bumper::EndPlay()
 {
    IEditable::EndPlay();
    m_pbumperhitcircle = nullptr;
-   RenderRelease();
 }
 
 #pragma endregion
 
 
 #pragma region Rendering
-
-// Deprecated Legacy API to be removed
-void Bumper::RenderSetup() { }
-void Bumper::RenderStatic() { }
-void Bumper::RenderDynamic() { }
 
 void Bumper::RenderSetup(RenderDevice *device)
 {
@@ -258,8 +252,8 @@ void Bumper::RenderSetup(RenderDevice *device)
    {
       m_baseTexture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "BumperBase.webp");
       m_baseTexture.m_alphaTestValue = -1.0f;
-      IndexBuffer* baseIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperBaseNumIndices, bumperBaseIndices);
-      VertexBuffer* baseVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperBaseNumVertices);
+      IndexBuffer* baseIndexBuffer = new IndexBuffer(m_rd, bumperBaseNumIndices, bumperBaseIndices);
+      VertexBuffer* baseVertexBuffer = new VertexBuffer(m_rd, bumperBaseNumVertices);
       Vertex3D_NoTex2 *buf;
       baseVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
       GenerateBaseMesh(buf);
@@ -272,8 +266,8 @@ void Bumper::RenderSetup(RenderDevice *device)
    {
       m_skirtTexture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "BumperSkirt.webp");
       m_skirtTexture.m_alphaTestValue = -1.0f;
-      IndexBuffer* socketIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperSocketNumIndices, bumperSocketIndices);
-      VertexBuffer* socketVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperSocketNumVertices, nullptr, true);
+      IndexBuffer* socketIndexBuffer = new IndexBuffer(m_rd, bumperSocketNumIndices, bumperSocketIndices);
+      VertexBuffer* socketVertexBuffer = new VertexBuffer(m_rd, bumperSocketNumVertices, nullptr, true);
       Vertex3D_NoTex2 *buf;
       socketVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
       GenerateSocketMesh(buf);
@@ -286,8 +280,8 @@ void Bumper::RenderSetup(RenderDevice *device)
    {
       m_ringTexture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "BumperRing.webp");
       m_ringTexture.m_alphaTestValue = -1.0f;
-      IndexBuffer* ringIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperRingNumIndices, bumperRingIndices);
-      VertexBuffer *ringVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperRingNumVertices, nullptr, true);
+      IndexBuffer* ringIndexBuffer = new IndexBuffer(m_rd, bumperRingNumIndices, bumperRingIndices);
+      VertexBuffer *ringVertexBuffer = new VertexBuffer(m_rd, bumperRingNumVertices, nullptr, true);
       m_ringVertices = new Vertex3D_NoTex2[bumperRingNumVertices];
       GenerateRingMesh(m_ringVertices);
       Vertex3D_NoTex2 *buf;
@@ -302,8 +296,8 @@ void Bumper::RenderSetup(RenderDevice *device)
    {
       m_capTexture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "BumperCap.webp");
       m_capTexture.m_alphaTestValue = -1.0f;
-      IndexBuffer* capIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperCapNumIndices, bumperCapIndices);
-      VertexBuffer* capVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, bumperCapNumVertices);
+      IndexBuffer* capIndexBuffer = new IndexBuffer(m_rd, bumperCapNumIndices, bumperCapIndices);
+      VertexBuffer* capVertexBuffer = new VertexBuffer(m_rd, bumperCapNumVertices);
       Vertex3D_NoTex2 *buf;
       capVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
       GenerateCapMesh(buf);

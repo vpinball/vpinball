@@ -98,10 +98,6 @@ public:
    float GetDepth(const Vertex3Ds& viewDir) const final { return viewDir.z * m_d.m_heighttop; }
    ItemTypeEnum HitableGetItemType() const final { return eItemSurface; }
 
-   virtual void RenderSetup(RenderDevice *device);
-   virtual void Render(const unsigned int renderMask);
-   virtual void RenderRelease();
-
 protected:
    void RenderSlingshots();
    void RenderWallsAtHeight(const bool drop, const bool isReflectionPass);

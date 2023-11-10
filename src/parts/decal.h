@@ -63,10 +63,6 @@ public:
    DecalData m_d;
    IFont *m_pIFont = nullptr;
 
-   virtual void RenderSetup(RenderDevice *device);
-   virtual void Render(const unsigned int renderMask);
-   virtual void RenderRelease();
-
 private:
    void GetTextSize(int * const px, int * const py);
 

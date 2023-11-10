@@ -98,10 +98,6 @@ public:
 
    BumperHitCircle *m_pbumperhitcircle = nullptr;
 
-   virtual void RenderSetup(RenderDevice *device);
-   virtual void Render(const unsigned int renderMask);
-   virtual void RenderRelease();
-
 private:
    void UpdateSkirt(const bool doCalculation);
    void GenerateBaseMesh(Vertex3D_NoTex2 *buf);

@@ -316,11 +316,8 @@ void Light::EndPlay()
 {
    // ensure not locked just in case the player exits during a LS sequence
    m_lockedByLS = false;
-
    m_lightmaps.clear();
-
    IEditable::EndPlay();
-   RenderRelease();
 }
 
 float Light::GetDepth(const Vertex3Ds& viewDir) const
@@ -417,11 +414,6 @@ void Light::UpdateAnimation(const float diff_time_msec)
       FireGroupEvent(DISPID_AnimateEvents_Animate);
    }
 }
-
-// Deprecated Legacy API to be removed
-void Light::RenderSetup() { }
-void Light::RenderStatic() { }
-void Light::RenderDynamic() { }
 
 void Light::RenderSetup(RenderDevice *device)
 {
@@ -528,8 +520,8 @@ void Light::RenderSetup(RenderDevice *device)
       return;
    }
 
-   VertexBuffer *customMoverVBuffer = new VertexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, (unsigned int) m_vvertex.size(), nullptr, true);
-   IndexBuffer* customMoverIBuffer = new IndexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice, (unsigned int) vtri.size(), 0, IndexBuffer::FMT_INDEX16);
+   VertexBuffer *customMoverVBuffer = new VertexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : m_rd, (unsigned int) m_vvertex.size(), nullptr, true);
+   IndexBuffer* customMoverIBuffer = new IndexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : m_rd, (unsigned int) vtri.size(), 0, IndexBuffer::FMT_INDEX16);
    WORD* bufi;
    customMoverIBuffer->lock(0, 0, (void**)&bufi, IndexBuffer::WRITEONLY);
    memcpy(bufi, vtri.data(), vtri.size()*sizeof(WORD));

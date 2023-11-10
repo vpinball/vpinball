@@ -798,6 +798,8 @@ void Player::Shutdown()
    for (size_t i = 0; i < m_ptable->m_vrenderprobe.size(); ++i)
       m_ptable->m_vrenderprobe[i]->RenderRelease();
    for (size_t i = 0; i < m_vhitables.size(); ++i)
+      m_vhitables[i]->RenderRelease();
+   for (size_t i = 0; i < m_vhitables.size(); ++i)
       m_vhitables[i]->EndPlay();
 
    for (size_t i = 0; i < m_vho.size(); i++)

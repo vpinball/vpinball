@@ -106,6 +106,8 @@ void Timer::GetTimers(vector<HitTimer*> &pvht)
       pvht.push_back(pht);
 }
 
+#pragma region Physics
+
 void Timer::GetHitShapes(vector<HitObject*> &pvho)
 {
    m_phittimer = nullptr;
@@ -115,7 +117,17 @@ void Timer::GetHitShapesDebug(vector<HitObject*> &pvho)
 {
 }
 
-void Timer::RenderSetup()
+void Timer::EndPlay()
+{
+   IEditable::EndPlay();
+}
+
+#pragma endregion
+
+
+#pragma region Rendering
+
+void Timer::RenderSetup(RenderDevice *device)
 {
 }
 
@@ -123,18 +135,16 @@ void Timer::UpdateAnimation(const float diff_time_msec)
 {
 }
 
-void Timer::RenderStatic()
+void Timer::Render(const unsigned int renderMask)
 {
 }
 
-void Timer::RenderDynamic()
+void Timer::RenderRelease()
 {
 }
 
-void Timer::EndPlay()
-{
-   IEditable::EndPlay();
-}
+#pragma endregion
+
 
 STDMETHODIMP Timer::InterfaceSupportsErrorInfo(REFIID riid)
 {

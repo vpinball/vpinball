@@ -14,8 +14,7 @@ Spinner::Spinner()
 
 Spinner::~Spinner()
 {
-   delete m_bracketMeshBuffer;
-   delete m_plateMeshBuffer;
+   assert(m_rd == nullptr);
 }
 
 Spinner *Spinner::CopyForPlay(PinTable *live_table)
@@ -194,6 +193,9 @@ void Spinner::GetTimers(vector<HitTimer*> &pvht)
       pvht.push_back(pht);
 }
 
+
+#pragma region Physics
+
 //
 // license:GPLv3+
 // Ported at: VisualPinball.Engine/VPT/Spinner/SpinnerHitGenerator.cs
@@ -244,11 +246,10 @@ void Spinner::EndPlay()
 {
    IEditable::EndPlay();
    m_phitspinner = nullptr;
-   delete m_bracketMeshBuffer;
-   delete m_plateMeshBuffer;
-   m_bracketMeshBuffer = nullptr;
-   m_plateMeshBuffer = nullptr;
 }
+
+#pragma endregion
+
 
 void Spinner::ExportMesh(ObjLoader& loader)
 {
@@ -311,6 +312,117 @@ void Spinner::ExportMesh(ObjLoader& loader)
    transformedVertices.clear();
 }
 
+
+#pragma region Rendering
+
+void Spinner::RenderSetup(RenderDevice *device)
+{
+   assert(m_rd == nullptr);
+   m_rd = device;
+
+   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
+   m_posZ = height + m_d.m_height;
+
+   IndexBuffer *bracketIndexBuffer = new IndexBuffer(m_rd, spinnerBracketNumFaces, spinnerBracketIndices);
+   VertexBuffer *bracketVertexBuffer = new VertexBuffer(m_rd, spinnerBracketNumVertices);
+   m_bracketMeshBuffer = new MeshBuffer(m_wzName + L".Bracket"s, bracketVertexBuffer, bracketIndexBuffer, true);
+
+   m_fullMatrix.SetRotateZ(ANGTORAD(m_d.m_rotation));
+
+   Vertex3D_NoTex2 *buf;
+   bracketVertexBuffer->lock(0, 0, (void **)&buf, VertexBuffer::WRITEONLY);
+   for (unsigned int i = 0; i < spinnerBracketNumVertices; i++)
+   {
+      Vertex3Ds vert(spinnerBracket[i].x, spinnerBracket[i].y, spinnerBracket[i].z);
+      vert = m_fullMatrix.MultiplyVector(vert);
+      buf[i].x = vert.x*m_d.m_length + m_d.m_vCenter.x;
+      buf[i].y = vert.y*m_d.m_length + m_d.m_vCenter.y;
+      buf[i].z = vert.z*m_d.m_length + m_posZ;
+
+      vert = Vertex3Ds(spinnerBracket[i].nx, spinnerBracket[i].ny, spinnerBracket[i].nz);
+      vert = m_fullMatrix.MultiplyVectorNoTranslate(vert);
+      buf[i].nx = vert.x;
+      buf[i].ny = vert.y;
+      buf[i].nz = vert.z;
+
+      buf[i].tu = spinnerBracket[i].tu;
+      buf[i].tv = spinnerBracket[i].tv;
+   }
+   bracketVertexBuffer->unlock();
+
+   IndexBuffer* plateIndexBuffer = new IndexBuffer(m_rd, spinnerPlateNumFaces, spinnerPlateIndices);
+   VertexBuffer* plateVertexBuffer = new VertexBuffer(m_rd, spinnerPlateNumVertices, nullptr, true);
+   m_plateMeshBuffer = new MeshBuffer(m_wzName + L".Plate"s, plateVertexBuffer, plateIndexBuffer, true);
+
+   m_vertexBuffer_spinneranimangle = -FLT_MAX;
+   UpdatePlate(nullptr);
+}
+
+void Spinner::RenderRelease()
+{
+   assert(m_rd != nullptr);
+   m_rd = nullptr;
+   delete m_bracketMeshBuffer;
+   delete m_plateMeshBuffer;
+   m_bracketMeshBuffer = nullptr;
+   m_plateMeshBuffer = nullptr;
+}
+
+void Spinner::UpdateAnimation(const float diff_time_msec)
+{
+   // Animation is updated by physics engine through a MoverObject. No additional visual animation here
+   // Still monitor angle updates in order to fire animate event at most once per frame (physics engine perform far more cycle per frame)
+   if (m_phitspinner && m_lastAngle != m_phitspinner->m_spinnerMover.m_angle)
+   {
+      m_lastAngle = m_phitspinner->m_spinnerMover.m_angle;
+      FireGroupEvent(DISPID_AnimateEvents_Animate);
+   }
+}
+
+void Spinner::Render(const unsigned int renderMask)
+{
+   assert(m_rd != nullptr);
+   const bool isStaticOnly = renderMask & Player::STATIC_ONLY;
+   const bool isDynamicOnly = renderMask & Player::DYNAMIC_ONLY;
+   const bool isReflectionPass = renderMask & Player::REFLECTION_PASS;
+   TRACE_FUNCTION();
+
+   if (!m_d.m_visible
+   || (isReflectionPass && !m_d.m_reflectionEnabled))
+      return;
+
+   m_rd->ResetRenderState();
+   m_rd->SetRenderStateCulling(RenderState::CULL_CCW);
+
+   if (m_d.m_showBracket && !isDynamicOnly)
+   {
+      Material mat;
+      mat.m_type = Material::MaterialType::METAL;
+      mat.m_cBase = 0x20202020;
+      mat.m_fWrapLighting = 0.9f;
+      mat.m_cGlossy = 0x60606060;
+      mat.m_fRoughness = 0.4f;
+      mat.m_fGlossyImageLerp = 1.0f;
+      mat.m_fThickness = 0.05f;
+      mat.m_cClearcoat = 0x20202020;
+      mat.m_fEdge = 1.0f;
+      mat.m_fEdgeAlpha = 1.0f;
+      m_rd->basicShader->SetBasic(&mat, nullptr);
+      Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_posZ);
+      m_rd->DrawMesh(m_rd->basicShader, false, pos, 0.f, m_bracketMeshBuffer, RenderDevice::TRIANGLELIST, 0, spinnerBracketNumFaces);
+   }
+
+   if (m_phitspinner->m_spinnerMover.m_visible && !isStaticOnly)
+   {
+      UpdatePlate(nullptr);
+      Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_posZ);
+      m_rd->basicShader->SetBasic(m_ptable->GetMaterial(m_d.m_szMaterial), m_ptable->GetImage(m_d.m_szImage));
+      m_rd->DrawMesh(m_rd->basicShader, false, pos, 0.f, m_plateMeshBuffer, RenderDevice::TRIANGLELIST, 0, spinnerPlateNumFaces);
+   }
+
+   m_rd->ResetRenderState();
+}
+
 void Spinner::UpdatePlate(Vertex3D_NoTex2 * const vertBuffer)
 {
    // early out in case still same rotation
@@ -355,132 +467,8 @@ void Spinner::UpdatePlate(Vertex3D_NoTex2 * const vertBuffer)
       m_plateMeshBuffer->m_vb->unlock();
 }
 
-void Spinner::RenderDynamic()
-{
-   TRACE_FUNCTION();
+#pragma endregion
 
-   if (!m_phitspinner->m_spinnerMover.m_visible || !m_d.m_visible)
-      return;
-
-   if (g_pplayer->IsRenderPass(Player::REFLECTION_PASS) && !m_d.m_reflectionEnabled)
-      return;
-
-   RenderDevice *const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-   RenderState initial_state;
-   pd3dDevice->CopyRenderStates(true, initial_state);
-
-   UpdatePlate(nullptr);
-
-   const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
-
-   pd3dDevice->SetRenderStateDepthBias(0.0f);
-   pd3dDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
-   pd3dDevice->SetRenderStateCulling(RenderState::CULL_CCW);
-
-   Texture * const image = m_ptable->GetImage(m_d.m_szImage);
-   if (image)
-   {
-      pd3dDevice->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, mat, image->m_alphaTestValue >= 0.f && !image->m_pdsBuffer->IsOpaque());
-      pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, image);
-      pd3dDevice->basicShader->SetAlphaTestValue(image->m_alphaTestValue);
-      pd3dDevice->basicShader->SetMaterial(mat, !image->m_pdsBuffer->IsOpaque());
-   }
-   else // No image by that name
-   {
-      pd3dDevice->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, mat);
-      pd3dDevice->basicShader->SetMaterial(mat, false);
-   }
-
-   Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_posZ);
-   pd3dDevice->DrawMesh(pd3dDevice->basicShader, false, pos, 0.f, m_plateMeshBuffer, RenderDevice::TRIANGLELIST, 0, spinnerPlateNumFaces);
-
-   pd3dDevice->CopyRenderStates(false, initial_state);
-}
-
-
-void Spinner::RenderSetup()
-{
-   if (!m_d.m_visible)
-      return;
-
-   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
-   m_posZ = height + m_d.m_height;
-
-   delete m_bracketMeshBuffer;
-   IndexBuffer *bracketIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, spinnerBracketNumFaces, spinnerBracketIndices);
-   VertexBuffer *bracketVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, spinnerBracketNumVertices);
-   m_bracketMeshBuffer = new MeshBuffer(m_wzName + L".Bracket"s, bracketVertexBuffer, bracketIndexBuffer, true);
-
-   m_fullMatrix.SetRotateZ(ANGTORAD(m_d.m_rotation));
-
-   Vertex3D_NoTex2 *buf;
-   bracketVertexBuffer->lock(0, 0, (void **)&buf, VertexBuffer::WRITEONLY);
-   for (unsigned int i = 0; i < spinnerBracketNumVertices; i++)
-   {
-      Vertex3Ds vert(spinnerBracket[i].x, spinnerBracket[i].y, spinnerBracket[i].z);
-      vert = m_fullMatrix.MultiplyVector(vert);
-      buf[i].x = vert.x*m_d.m_length + m_d.m_vCenter.x;
-      buf[i].y = vert.y*m_d.m_length + m_d.m_vCenter.y;
-      buf[i].z = vert.z*m_d.m_length + m_posZ;
-
-      vert = Vertex3Ds(spinnerBracket[i].nx, spinnerBracket[i].ny, spinnerBracket[i].nz);
-      vert = m_fullMatrix.MultiplyVectorNoTranslate(vert);
-      buf[i].nx = vert.x;
-      buf[i].ny = vert.y;
-      buf[i].nz = vert.z;
-
-      buf[i].tu = spinnerBracket[i].tu;
-      buf[i].tv = spinnerBracket[i].tv;
-   }
-   bracketVertexBuffer->unlock();
-
-   delete m_plateMeshBuffer;
-   IndexBuffer* plateIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, spinnerPlateNumFaces, spinnerPlateIndices);
-   VertexBuffer* plateVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, spinnerPlateNumVertices, nullptr, true);
-   m_plateMeshBuffer = new MeshBuffer(m_wzName + L".Plate"s, plateVertexBuffer, plateIndexBuffer, true);
-
-   m_vertexBuffer_spinneranimangle = -FLT_MAX;
-   UpdatePlate(nullptr);
-}
-
-void Spinner::UpdateAnimation(const float diff_time_msec)
-{
-   // Animation is updated by physics engine through a MoverObject. No additional visual animation here
-   // Still monitor angle updates in order to fire animate event at most once per frame (physics engine perform far more cycle per frame)
-   if (m_phitspinner && m_lastAngle != m_phitspinner->m_spinnerMover.m_angle)
-   {
-      m_lastAngle = m_phitspinner->m_spinnerMover.m_angle;
-      FireGroupEvent(DISPID_AnimateEvents_Animate);
-   }
-}
-
-void Spinner::RenderStatic()
-{
-   if (!m_d.m_showBracket || !m_d.m_visible)
-      return;
-
-   if (g_pplayer->IsRenderPass(Player::REFLECTION_PASS) && !m_d.m_reflectionEnabled)
-      return;
-
-   RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-
-   Material mat;
-   mat.m_type = Material::MaterialType::METAL;
-   mat.m_cBase = 0x20202020;
-   mat.m_fWrapLighting = 0.9f;
-   mat.m_cGlossy = 0x60606060;
-   mat.m_fRoughness = 0.4f;
-   mat.m_fGlossyImageLerp = 1.0f;
-   mat.m_fThickness = 0.05f;
-   mat.m_cClearcoat = 0x20202020;
-   mat.m_fEdge = 1.0f;
-   mat.m_fEdgeAlpha = 1.0f;
-   pd3dDevice->basicShader->SetMaterial(&mat, false);
-   pd3dDevice->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, mat);
-
-   Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_posZ);
-   pd3dDevice->DrawMesh(pd3dDevice->basicShader, false, pos, 0.f, m_bracketMeshBuffer, RenderDevice::TRIANGLELIST, 0, spinnerBracketNumFaces);
-}
 
 void Spinner::SetObjectPos()
 {

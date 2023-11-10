@@ -95,6 +95,7 @@ private:
 
    PinTable *m_ptable;
 
+   RenderDevice *m_rd = nullptr;
    MeshBuffer *m_bracketMeshBuffer = nullptr;
    MeshBuffer *m_plateMeshBuffer = nullptr;
    Matrix3D m_fullMatrix;

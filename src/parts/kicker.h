@@ -90,10 +90,6 @@ public:
 
    vector<Vertex3Ds> m_hitMesh;
 
-   virtual void RenderSetup(RenderDevice *device);
-   virtual void Render(const unsigned int renderMask);
-   virtual void RenderRelease();
-
 private:
    void GenerateMesh(Vertex3D_NoTex2 *const buf);
 

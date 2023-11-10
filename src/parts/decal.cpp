@@ -503,18 +503,12 @@ void Decal::GetHitShapesDebug(vector<HitObject*> &pvho)
 void Decal::EndPlay()
 {
    IEditable::EndPlay();
-   RenderRelease();
 }
 
 #pragma endregion
 
 
 #pragma region Rendering
-
-// Deprecated Legacy API to be removed
-void Decal::RenderSetup() { }
-void Decal::RenderStatic() { }
-void Decal::RenderDynamic() { }
 
 void Decal::RenderSetup(RenderDevice *device)
 {

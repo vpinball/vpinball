@@ -292,7 +292,6 @@ void Flipper::EndPlay()
    if (m_phitflipper) // Failed player case
       m_phitflipper = nullptr;
    IEditable::EndPlay();
-   RenderRelease();
 }
 
 #pragma endregion
@@ -794,11 +793,6 @@ void Flipper::GenerateBaseMesh(Vertex3D_NoTex2 *buf)
 
 
 #pragma region Rendering
-
-// Deprecated Legacy API to be removed
-void Flipper::RenderSetup() { }
-void Flipper::RenderStatic() { }
-void Flipper::RenderDynamic() { }
 
 void Flipper::RenderSetup(RenderDevice *device)
 {
