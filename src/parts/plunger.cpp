@@ -865,8 +865,6 @@ void Plunger::Render(const unsigned int renderMask)
    m_rd->basicShader->SetBasic(m_ptable->GetMaterial(m_d.m_szMaterial), m_ptable->GetImage(m_d.m_szImage));
    m_rd->DrawMesh(m_rd->basicShader, false, m_boundingSphereCenter, 0.f /*m_boundingSphereRadius*/, m_meshBuffer, 
       RenderDevice::TRIANGLELIST, frame * m_indicesPerFrame, m_indicesPerFrame);
-
-   m_rd->ResetRenderState();
 }
 
 #pragma endregion

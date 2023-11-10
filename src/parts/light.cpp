@@ -552,8 +552,7 @@ void Light::Render(const unsigned int renderMask)
    const bool isReflectionPass = renderMask & Player::REFLECTION_PASS;
    TRACE_FUNCTION();
 
-   RenderState initialState;
-   m_rd->CopyRenderStates(true, initialState);
+   m_rd->ResetRenderState();
 
    if (isLightBuffer)
    {
@@ -671,16 +670,10 @@ void Light::Render(const unsigned int renderMask)
          (!m_d.m_BulbLight && (m_surfaceTexture == (offTexel = m_ptable->GetImage(m_d.m_szImage))) && (offTexel != nullptr) && !m_backglass && !m_d.m_imageMode)) // assumes/requires that the light in this kind of state is basically -exactly- the same as the static/(un)lit playfield/surface and accompanying image
       {
          if (m_currentIntensity == 0.f)
-         {
-            m_rd->CopyRenderStates(false, initialState);
             return;
-         }
          if (lightColor_intensity.x == 0.f && lightColor_intensity.y == 0.f && lightColor_intensity.z == 0.f &&
             lightColor2_falloff_power.x == 0.f && lightColor2_falloff_power.y == 0.f && lightColor2_falloff_power.z == 0.f)
-         {
-            m_rd->CopyRenderStates(false, initialState);
             return;
-         }
       }
 
       // Tint color based on filament temperature
@@ -752,10 +745,7 @@ void Light::Render(const unsigned int renderMask)
       }
 
       if (isReflectionPass && (renderMask & Player::DISABLE_LIGHTMAPS) != 0)
-      {
-         m_rd->CopyRenderStates(false, initialState);
          return;
-      }
 
       // Lazily update the position of the vertex buffer (done here instead of setup since this halo height is a dynamic property of bulb lights)
       if (m_lightmapMeshBufferDirty)
@@ -900,7 +890,6 @@ void Light::Render(const unsigned int renderMask)
    // Restore state
    if (m_backglass)
       g_pplayer->UpdateBasicShaderMatrix();
-   m_rd->CopyRenderStates(false, initialState);
 }
 
 void Light::SetObjectPos()

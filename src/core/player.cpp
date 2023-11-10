@@ -1823,9 +1823,6 @@ void Player::RenderStaticPrepass()
 
       if (IsUsingStaticPrepass())
       {
-         RenderState initial_state;
-         m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(true, initial_state);
-
          // Mark all probes to be re-rendered for this frame (only if needed, lazily rendered)
          for (size_t i = 0; i < m_ptable->m_vrenderprobe.size(); ++i)
             m_ptable->m_vrenderprobe[i]->MarkDirty();
@@ -1834,7 +1831,7 @@ void Player::RenderStaticPrepass()
          UpdateBasicShaderMatrix();
          for (Hitable *hitable : m_vhitables)
             hitable->Render(m_render_mask);
-         m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(false, initial_state);
+         m_pin3d.m_pd3dPrimaryDevice->ResetRenderState();
 
          // Rendering is done to the static render target then accumulated to accumulationSurface
          // We use the framebuffer mirror shader which copies a weighted version of the bound texture
@@ -1854,7 +1851,7 @@ void Player::RenderStaticPrepass()
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, renderRT->GetColorSampler());
          m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pin3d.m_pd3dPrimaryDevice->FBShader);
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTextureNull(SHADER_tex_fb_unfiltered);
-         m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(false, initial_state);
+         m_pin3d.m_pd3dPrimaryDevice->ResetRenderState();
       }
 
       // Finish the frame.
@@ -3149,12 +3146,11 @@ void Player::DrawBulbLightBuffer()
 {
    RenderDevice* p3dDevice = m_pin3d.m_pd3dPrimaryDevice;
    const RenderPass *initial_rt = p3dDevice->GetCurrentPass();
-   RenderState initial_state;
    static int id = 0; id++;
-   p3dDevice->CopyRenderStates(true, initial_state);
 
    // switch to 'bloom' output buffer to collect all bulb lights
    p3dDevice->SetRenderTarget("Transmitted Light "s + std::to_string(id) + " Clear", p3dDevice->GetBloomBufferTexture(), false);
+   p3dDevice->ResetRenderState();
    p3dDevice->Clear(clearType::TARGET, 0, 1.0f, 0L);
 
    // Draw bulb lights
@@ -3185,7 +3181,6 @@ void Player::DrawBulbLightBuffer()
    }
 
    // Restore state and render target
-   p3dDevice->CopyRenderStates(false, initial_state);
    p3dDevice->SetRenderTarget(initial_rt->m_name + "+", initial_rt->m_rt);
 
    if (hasLight)
@@ -4449,47 +4444,15 @@ void Player::GetBallAspectRatio(const Ball * const pball, Vertex2D &stretch, con
 
 void Player::DrawStatics()
 {
-   #ifdef DEBUG
-   // Check that RenderStatic / RenderDynamic restore render state to its initial value
-   RenderState initial_state, live_state;
-   m_pin3d.m_pd3dPrimaryDevice->ResetRenderState();
-   m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(true, initial_state);
-   // Default expected State: Blend: { _  A  SA   RSA } Depth: { Z  <=  ZW } Clip: _ Cull: CCW Mask: F
-   // - Blend disabled / Add / Source alpha / 1 - Source alpha
-   // - Enable depth test / less or equal / enable write depth
-   // - No clipping
-   // - Counter clockwise culling
-   // - Write all channels (RGBA + Depth)
-   #endif
    const unsigned int mask = m_render_mask;
    m_render_mask |= STATIC_ONLY;
    for (Hitable *hitable : m_vhitables)
-   {
       hitable->Render(m_render_mask);
-      #ifdef DEBUG
-      m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(true, live_state);
-      assert(initial_state.m_state == live_state.m_state);
-      assert(initial_state.m_depthBias == live_state.m_depthBias);
-      #endif
-   }
    m_render_mask = mask;
 }
 
 void Player::DrawDynamics(bool onlyBalls)
 {
-   #ifdef DEBUG
-   // Check that RenderStatic / RenderDynamic restore render state to its initial value
-   RenderState initial_state, live_state;
-   m_pin3d.m_pd3dPrimaryDevice->ResetRenderState();
-   m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(true, initial_state);
-   // Default expected State: Blend: { _  A  SA   RSA } Depth: { Z  <=  ZW } Clip: _ Cull: CCW Mask: F
-   // - Blend disabled / Add / Source alpha / 1 - Source alpha
-   // - Enable depth test / less or equal / enable write depth
-   // - No clipping
-   // - Counter clockwise culling
-   // - Write all channels (RGBA + Depth)
-   #endif
-
    if (!onlyBalls)
    {
       // Update Bulb light buffer and set up render pass dependencies
@@ -4499,14 +4462,7 @@ void Player::DrawDynamics(bool onlyBalls)
       const unsigned int mask = m_render_mask;
       m_render_mask |= DYNAMIC_ONLY;
       for (Hitable *hitable : m_vhitables)
-      {
          hitable->Render(m_render_mask);
-         #ifdef DEBUG
-         m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(true, live_state);
-         assert(initial_state.m_state == live_state.m_state);
-         assert(initial_state.m_depthBias == live_state.m_depthBias);
-         #endif
-      }
       m_render_mask = mask;
    }
 
@@ -4515,11 +4471,6 @@ void Player::DrawDynamics(bool onlyBalls)
 
 void Player::DrawBalls()
 {
-   RenderState initial_state;
-   m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(true, initial_state);
-
-   RenderState default_state;
-
    // collect all lights that can reflect on balls (currently only bulbs and if flag set to do so)
    vector<Light*> lights;
    for (size_t i = 0; i < m_ptable->m_vedit.size(); i++)
@@ -4557,7 +4508,7 @@ void Player::DrawBalls()
                continue;
       }
 
-      m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(false, default_state);
+      m_pin3d.m_pd3dPrimaryDevice->ResetRenderState();
       // Set the render state to something that will always display for debug mode
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ZENABLE, m_debugBalls ? RenderState::RS_FALSE : RenderState::RS_TRUE);
 
@@ -4702,7 +4653,7 @@ void Player::DrawBalls()
       // ball trails
       if (m_trailForBalls && m_ballTrailStrength > 0.f && !g_pplayer->IsRenderPass(Player::REFLECTION_PASS)) // do not render trails in reflection pass
       {
-         m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(false, default_state);
+         m_pin3d.m_pd3dPrimaryDevice->ResetRenderState();
          m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
          m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
          m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);
@@ -4821,8 +4772,6 @@ void Player::DrawBalls()
       }
       #endif
    }   // end loop over all balls
-
-   m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(false, initial_state);
 }
 
 struct DebugMenuItem

@@ -1004,36 +1004,28 @@ void Surface::RenderSlingshots()
    if (nothing_to_draw)
       return;
 
-   RenderState initial_state;
-   m_rd->CopyRenderStates(true, initial_state);
-
-   const Material * const mat = m_ptable->GetMaterial(m_d.m_szSlingShotMaterial);
-   m_rd->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, mat);
-   m_rd->basicShader->SetMaterial(mat, false);
-
-   m_rd->SetRenderStateDepthBias(0.0f);
-   m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
-   m_rd->SetRenderStateCulling(RenderState::CULL_NONE);
-
+   // FIXME this should be paret of the animation update, not rendering
    for (size_t i = 0; i < m_vlinesling.size(); i++)
    {
-      LineSegSlingshot * const plinesling = m_vlinesling[i];
+      LineSegSlingshot *const plinesling = m_vlinesling[i];
       if (!plinesling->m_iframe && !plinesling->m_doHitEvent)
          continue;
       else if (plinesling->m_doHitEvent)
       {
-          if (plinesling->m_EventTimeReset == 0)
-             plinesling->m_EventTimeReset = g_pplayer->m_time_msec+100;
-          else if (plinesling->m_EventTimeReset < g_pplayer->m_time_msec)
-          {
-              plinesling->m_doHitEvent = false;
-              plinesling->m_EventTimeReset = 0;
-          }
+         if (plinesling->m_EventTimeReset == 0)
+            plinesling->m_EventTimeReset = g_pplayer->m_time_msec + 100;
+         else if (plinesling->m_EventTimeReset < g_pplayer->m_time_msec)
+         {
+            plinesling->m_doHitEvent = false;
+            plinesling->m_EventTimeReset = 0;
+         }
       }
    }
-   m_rd->DrawMesh(m_rd->basicShader, m_isDynamic, m_boundingSphereCenter, 0.f, m_slingshotMeshBuffer, RenderDevice::TRIANGLELIST, 0, static_cast<DWORD>(m_vlinesling.size() * 24));
 
-   m_rd->CopyRenderStates(false, initial_state);
+   m_rd->ResetRenderState();
+   m_rd->SetRenderStateCulling(RenderState::CULL_NONE);
+   m_rd->basicShader->SetBasic(m_ptable->GetMaterial(m_d.m_szSlingShotMaterial), nullptr);
+   m_rd->DrawMesh(m_rd->basicShader, m_isDynamic, m_boundingSphereCenter, 0.f, m_slingshotMeshBuffer, RenderDevice::TRIANGLELIST, 0, static_cast<DWORD>(m_vlinesling.size() * 24));
 }
 
 void Surface::RenderWallsAtHeight(const bool drop, const bool isReflectionPass)
@@ -1041,8 +1033,7 @@ void Surface::RenderWallsAtHeight(const bool drop, const bool isReflectionPass)
    if (isReflectionPass && (/*m_d.m_heightbottom < 0.0f ||*/ m_d.m_heighttop < 0.0f))
       return;
 
-   RenderState initial_state;
-   m_rd->CopyRenderStates(true, initial_state);
+   m_rd->ResetRenderState();
    m_rd->basicShader->SetVector(SHADER_fDisableLighting_top_below, m_d.m_disableLightingTop, m_d.m_disableLightingBelow, 0.f, 0.f);
 
    // render side
@@ -1052,21 +1043,7 @@ void Surface::RenderWallsAtHeight(const bool drop, const bool isReflectionPass)
       m_rd->SetRenderStateCulling((mat->m_bOpacityActive || !m_isDynamic) ? RenderState::CULL_NONE
                                 : (m_d.m_topBottomVisible && m_isDynamic) ? RenderState::CULL_NONE
                                                                           : RenderState::CULL_CCW);
-
-      Texture *const pinSide = m_ptable->GetImage(m_d.m_szSideImage);
-      if (pinSide)
-      {
-         m_rd->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, mat, pinSide->m_alphaTestValue >= 0.f && !pinSide->m_pdsBuffer->IsOpaque());
-         m_rd->basicShader->SetTexture(SHADER_tex_base_color, pinSide, SF_UNDEFINED, SA_CLAMP, SA_CLAMP);
-         m_rd->basicShader->SetAlphaTestValue(pinSide->m_alphaTestValue);
-         m_rd->basicShader->SetMaterial(mat, !pinSide->m_pdsBuffer->IsOpaque());
-      }
-      else
-      {
-         m_rd->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, mat);
-         m_rd->basicShader->SetMaterial(mat, false);
-      }
-
+      m_rd->basicShader->SetBasic(mat, m_ptable->GetImage(m_d.m_szSideImage));
       // combine drawcalls into one (hopefully faster)
       m_rd->DrawMesh(m_rd->basicShader, m_isDynamic, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numVertices * 6);
    }
@@ -1074,22 +1051,9 @@ void Surface::RenderWallsAtHeight(const bool drop, const bool isReflectionPass)
    // render top&bottom
    if (m_d.m_topBottomVisible && (m_numPolys > 0))
    {
-      const Material * const mat = m_ptable->GetMaterial(m_d.m_szTopMaterial);
+      const Material *const mat = m_ptable->GetMaterial(m_d.m_szTopMaterial);
       m_rd->SetRenderStateCulling((mat->m_bOpacityActive || !m_isDynamic) ? RenderState::CULL_NONE : RenderState::CULL_CCW);
-
-      Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
-      if (pin)
-      {
-         m_rd->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, mat, pin->m_alphaTestValue >= 0.f && !pin->m_pdsBuffer->IsOpaque());
-         m_rd->basicShader->SetTexture(SHADER_tex_base_color, pin);
-         m_rd->basicShader->SetAlphaTestValue(pin->m_alphaTestValue);
-         m_rd->basicShader->SetMaterial(mat, !pin->m_pdsBuffer->IsOpaque());
-      }
-      else
-      {
-         m_rd->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, mat);
-         m_rd->basicShader->SetMaterial(mat, false);
-      }
+      m_rd->basicShader->SetBasic(mat, m_ptable->GetImage(m_d.m_szImage));
 
       // Top
       m_rd->DrawMesh(m_rd->basicShader, m_isDynamic, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, m_numVertices * 6 + (drop ? m_numPolys * 3 : 0), m_numPolys * 3);
@@ -1102,8 +1066,6 @@ void Surface::RenderWallsAtHeight(const bool drop, const bool isReflectionPass)
       }
    }
 
-   // reset render states
-   m_rd->CopyRenderStates(false, initial_state);
    m_rd->basicShader->SetVector(SHADER_fDisableLighting_top_below, 0.f, 0.f, 0.f, 0.f);
 }
 

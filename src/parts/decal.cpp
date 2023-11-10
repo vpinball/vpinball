@@ -820,7 +820,6 @@ void Decal::Render(const unsigned int renderMask)
 
       if (m_backglass)
          g_pplayer->UpdateBasicShaderMatrix();
-      m_rd->ResetRenderState();
    }
 }
 

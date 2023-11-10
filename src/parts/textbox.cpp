@@ -533,7 +533,6 @@ void Textbox::Render(const unsigned int renderMask)
    }
 
    m_rd->ResetRenderState();
-   m_rd->SetRenderStateCulling(RenderState::CULL_CCW);
    m_rd->SetRenderStateCulling(m_ptable->m_tblMirrorEnabled ^ isReflectionPass ? RenderState::CULL_NONE : RenderState::CULL_CCW);
 
    constexpr float mult  = (float)(1.0 / EDITOR_BG_WIDTH);
@@ -560,8 +559,6 @@ void Textbox::Render(const unsigned int renderMask)
       g_pplayer->Spritedraw(x, y, width, height, 0xFFFFFFFF, m_rd->m_texMan.LoadTexture(m_texture, SF_TRILINEAR, SA_REPEAT, SA_REPEAT, false), m_d.m_intensity_scale);
       m_rd->DMDShader->SetFloat(SHADER_alphaTestValue, 1.0f);
    }
-
-   m_rd->ResetRenderState();
 }
 
 #pragma endregion

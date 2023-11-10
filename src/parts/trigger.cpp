@@ -681,7 +681,6 @@ void Trigger::Render(const unsigned int renderMask)
       m_rd->SetRenderStateCulling(RenderState::CULL_NONE);
    m_rd->basicShader->SetBasic(m_ptable->GetMaterial(m_d.m_szMaterial), nullptr);
    m_rd->DrawMesh(m_rd->basicShader, false, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
-   m_rd->ResetRenderState();
 }
 
 #pragma endregion

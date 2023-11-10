@@ -461,8 +461,6 @@ void DispReel::Render(const unsigned int renderMask)
    }
 
    m_rd->DMDShader->SetFloat(SHADER_alphaTestValue, 1.0f);
-
-   m_rd->ResetRenderState();
 }
 
 #pragma endregion

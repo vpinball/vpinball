@@ -307,8 +307,8 @@ void Primitive::CreateRenderGroup(const Collection * const collection)
          prims[i]->m_d.m_skipRendering = false;
    }
 
-   VertexBuffer* vertexBuffer = new VertexBuffer(m_rd, m_numGroupVertices);
-   IndexBuffer* indexBuffer = new IndexBuffer(m_rd, indices);
+   VertexBuffer* vertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numGroupVertices);
+   IndexBuffer *indexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, indices);
    unsigned int ofs = 0;
    Vertex3D_NoTex2 *buf;
    vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
@@ -1307,8 +1307,7 @@ void Primitive::Render(const unsigned int renderMask)
    RenderProbe * const refraction_probe = m_ptable->GetRenderProbe(m_d.m_szRefractionProbe);
    RenderTarget * const refractions = refraction_probe ? refraction_probe->GetProbe(isStaticOnly) : nullptr;
 
-   RenderState initial_state;
-   m_rd->CopyRenderStates(true, initial_state);
+   m_rd->ResetRenderState();
    
    if (m_d.m_groupdRendering)
       m_fullMatrix.SetIdentity();
@@ -1502,7 +1501,6 @@ void Primitive::Render(const unsigned int renderMask)
    m_rd->basicShader->SetVector(SHADER_lightCenter_doShadow, 0.0f, 0.0f, 0.0f, 0.0f);
    m_rd->basicShader->SetVector(SHADER_staticColor_Alpha, 1.0f, 1.0f, 1.0f, 1.0f);
    m_rd->basicShader->SetVector(SHADER_fDisableLighting_top_below, 0.f, 0.f, 0.f, 0.f);
-   m_rd->CopyRenderStates(false, initial_state);
 }
 
 void Primitive::UpdateAnimation(const float diff_time_msec)

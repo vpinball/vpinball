@@ -1970,6 +1970,7 @@ void RenderDevice::DrawGaussianBlur(RenderTarget* source, RenderTarget* tmp, Ren
    const RenderPass* initial_rt = GetCurrentPass();
    RenderState initial_state;
    CopyRenderStates(true, initial_state);
+   ResetRenderState();
    SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
    SetRenderStateCulling(RenderState::CULL_NONE);
    SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);

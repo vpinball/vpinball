@@ -392,7 +392,6 @@ void Spinner::Render(const unsigned int renderMask)
       return;
 
    m_rd->ResetRenderState();
-   m_rd->SetRenderStateCulling(RenderState::CULL_CCW);
 
    if (m_d.m_showBracket && !isDynamicOnly)
    {
@@ -419,8 +418,6 @@ void Spinner::Render(const unsigned int renderMask)
       m_rd->basicShader->SetBasic(m_ptable->GetMaterial(m_d.m_szMaterial), m_ptable->GetImage(m_d.m_szImage));
       m_rd->DrawMesh(m_rd->basicShader, false, pos, 0.f, m_plateMeshBuffer, RenderDevice::TRIANGLELIST, 0, spinnerPlateNumFaces);
    }
-
-   m_rd->ResetRenderState();
 }
 
 void Spinner::UpdatePlate(Vertex3D_NoTex2 * const vertBuffer)
