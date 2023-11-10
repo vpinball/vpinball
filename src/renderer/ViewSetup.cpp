@@ -6,7 +6,7 @@ ViewSetup::ViewSetup()
 }
 
 // Update the view setup from the application/table settings and table property for window mode.
-// - window position is relative to table playfield/glass (usually in between, likely at the glass position)
+// - window position is relative to table playfield (likely at the glass position)
 // - player position is defined in the app settings relatively from the bottom center of the screen (to avoid depending on a specific table)
 void ViewSetup::SetWindowModeFromSettings(const PinTable* const table)
 {
@@ -102,7 +102,6 @@ void ViewSetup::SaveToTableOverrideSettings(Settings& settings, const ViewSetupI
 
 float ViewSetup::GetWindowTopZOFfset(const PinTable* const table) const
 {
-   // FIXME to be replaced by a relative position between playfield and table glass
    if (mMode == VLM_WINDOW)
       return mWindowTopZOfs;
    else
@@ -111,7 +110,6 @@ float ViewSetup::GetWindowTopZOFfset(const PinTable* const table) const
 
 float ViewSetup::GetWindowBottomZOFfset(const PinTable* const table) const
 {
-   // FIXME to be replaced by a relative position between playfield and table glass
    // result is in the table coordinate system (so, usually between 0 and table->bottomglassheight)
    if (mMode == VLM_WINDOW)
       return mWindowBottomZOfs;

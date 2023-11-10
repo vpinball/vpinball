@@ -66,7 +66,6 @@ public:
    float mViewVOfs = 0.0f; // Camera & Window: vertical frustrum offset
 
    // Magic Window mode properties
-   // FIXME to be replaced by a relative position between playfield and table glass
    float mWindowTopZOfs = CMTOVPU(20.0f); // Upper window border Z coordinate, relative to table playfield Z
    float mWindowBottomZOfs = CMTOVPU(7.5f); // Lower window border Z coordinate, relative to table playfield Z
 };
