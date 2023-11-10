@@ -375,18 +375,12 @@ void Gate::EndPlay()
    IEditable::EndPlay();
    m_phitgate = nullptr;
    m_plineseg = nullptr;
-   RenderRelease();
 }
 
 #pragma endregion
 
 
 #pragma region Rendering
-
-// Deprecated Legacy API to be removed
-void Gate::RenderSetup() { }
-void Gate::RenderStatic() { }
-void Gate::RenderDynamic() { }
 
 void Gate::RenderSetup(RenderDevice *device)
 {
@@ -396,16 +390,16 @@ void Gate::RenderSetup(RenderDevice *device)
    SetGateType(m_d.m_type);
    m_baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
-   IndexBuffer *bracketIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, gateBracketNumIndices, gateBracketIndices);
-   VertexBuffer *bracketVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, gateBracketNumVertices);
+   IndexBuffer *bracketIndexBuffer = new IndexBuffer(m_rd, gateBracketNumIndices, gateBracketIndices);
+   VertexBuffer *bracketVertexBuffer = new VertexBuffer(m_rd, gateBracketNumVertices);
    Vertex3D_NoTex2 *buf;
    bracketVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
    GenerateBracketMesh(buf);
    bracketVertexBuffer->unlock();
    m_bracketMeshBuffer = new MeshBuffer(m_wzName + L".Bracket"s, bracketVertexBuffer, bracketIndexBuffer, true);
 
-   IndexBuffer *wireIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numIndices, m_indices);
-   VertexBuffer *wireVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numVertices, nullptr, true);
+   IndexBuffer *wireIndexBuffer = new IndexBuffer(m_rd, m_numIndices, m_indices);
+   VertexBuffer *wireVertexBuffer = new VertexBuffer(m_rd, m_numVertices, nullptr, true);
    wireVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
    GenerateWireMesh(buf);
    wireVertexBuffer->unlock();

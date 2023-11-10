@@ -375,18 +375,12 @@ void Textbox::GetHitShapesDebug(vector<HitObject*> &pvho)
 void Textbox::EndPlay()
 {
    IEditable::EndPlay();
-   RenderRelease();
 }
 
 #pragma endregion
 
 
 #pragma region Rendering
-
-// Deprecated Legacy API to be removed
-void Textbox::RenderSetup() { }
-void Textbox::RenderStatic() { }
-void Textbox::RenderDynamic() { }
 
 void Textbox::RenderSetup(RenderDevice *device)
 {
@@ -530,7 +524,7 @@ void Textbox::Render(const unsigned int renderMask)
          dest += m_texture->pitch()/4 - m_texture->width();
       }
 
-      g_pplayer->m_pin3d.m_pd3dPrimaryDevice->m_texMan.SetDirty(m_texture);
+      m_rd->m_texMan.SetDirty(m_texture);
 
       SelectObject(hdc, oldFont);
       SelectObject(hdc, oldBmp);

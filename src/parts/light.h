@@ -132,10 +132,6 @@ public:
    void PutPointCenter(const Vertex2D& pv) final;
    float GetCurrentHeight() const { return m_backglass ? 0.0f : m_initSurfaceHeight + m_d.m_height; }
 
-   virtual void RenderSetup(RenderDevice *device);
-   virtual void Render(const unsigned int renderMask);
-   virtual void RenderRelease();
-
 protected:
    RenderDevice *m_rd = nullptr;
 

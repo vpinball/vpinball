@@ -83,10 +83,6 @@ public:
 
    TextboxData m_d;
 
-   virtual void RenderSetup(RenderDevice *device);
-   virtual void Render(const unsigned int renderMask);
-   virtual void RenderRelease();
-
 private:
    PinTable *m_ptable = nullptr;
    

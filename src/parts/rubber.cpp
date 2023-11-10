@@ -21,7 +21,7 @@ Rubber::Rubber()
 
 Rubber::~Rubber()
 {
-   delete m_meshBuffer;
+   assert(m_rd == nullptr);
 }
 
 Rubber *Rubber::CopyForPlay(PinTable *live_table)
@@ -536,6 +536,9 @@ void Rubber::GetTimers(vector<HitTimer*> &pvht)
       pvht.push_back(pht);
 }
 
+
+#pragma region Physics
+
 //
 // license:GPLv3+
 // Ported at: VisualPinball.Engine/VPT/Rubber/RubberHitGenerator.cs
@@ -675,11 +678,12 @@ void Rubber::EndPlay()
 {
    IEditable::EndPlay();
    m_vhoCollidable.clear();
-
-   delete m_meshBuffer;
-   m_meshBuffer = nullptr;
-   m_dynamicVertexBufferRegenerate = true;
 }
+
+#pragma endregion
+
+
+#pragma region Rendering
 
 float Rubber::GetDepth(const Vertex3Ds& viewDir) const
 {
@@ -693,26 +697,62 @@ void Rubber::UpdateBounds()
    m_boundingSphereCenter.Set(center2D.x, center2D.y, m_d.m_height);
 }
 
-void Rubber::RenderSetup()
+void Rubber::RenderSetup(RenderDevice *device)
 {
+   assert(m_rd == nullptr);
+   m_rd = device;
    UpdateBounds();
-   GenerateVertexBuffer();
+
+   GenerateMesh();
+
+   VertexBuffer *dynamicVertexBuffer = new VertexBuffer(m_rd, m_numVertices, (float *)m_vertices.data() , !m_d.m_staticRendering);
+   IndexBuffer *dynamicIndexBuffer = new IndexBuffer(m_rd, m_ringIndices);
+   m_meshBuffer = new MeshBuffer(m_wzName, dynamicVertexBuffer, dynamicIndexBuffer, true);
+
+   UpdateRubber(true, m_d.m_height);
+   m_dynamicVertexBufferRegenerate = false;
+}
+
+void Rubber::RenderRelease()
+{
+   assert(m_rd != nullptr);
+   m_rd = nullptr;
+   delete m_meshBuffer;
+   m_meshBuffer = nullptr;
+   m_dynamicVertexBufferRegenerate = true;
 }
 
 void Rubber::UpdateAnimation(const float diff_time_msec)
 {
 }
 
-void Rubber::RenderStatic()
+void Rubber::Render(const unsigned int renderMask)
 {
-   if (m_d.m_staticRendering)
-   {
-      if (g_pplayer->IsRenderPass(Player::REFLECTION_PASS) && !m_d.m_reflectionEnabled)
-         return;
+   assert(m_rd != nullptr);
+   const bool isStaticOnly = renderMask & Player::STATIC_ONLY;
+   const bool isDynamicOnly = renderMask & Player::DYNAMIC_ONLY;
+   const bool isReflectionPass = renderMask & Player::REFLECTION_PASS;
+   TRACE_FUNCTION();
 
-      RenderObject();
-   }
+   if (!m_d.m_visible
+   || (isReflectionPass && !m_d.m_reflectionEnabled)
+   || m_d.m_thickness == 0
+   || (isDynamicOnly && m_d.m_staticRendering)
+   || (isStaticOnly && !m_d.m_staticRendering))
+      return;
+
+   if (m_dynamicVertexBufferRegenerate && !m_d.m_staticRendering)
+      UpdateRubber(true, m_d.m_height);
+
+   m_rd->ResetRenderState();
+   m_rd->SetRenderStateCulling(RenderState::CULL_CCW);
+   m_rd->basicShader->SetBasic(m_ptable->GetMaterial(m_d.m_szMaterial), m_ptable->GetImage(m_d.m_szImage));
+   m_rd->DrawMesh(m_rd->basicShader, false, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
+   m_rd->ResetRenderState();
 }
+
+#pragma endregion
+
 
 void Rubber::SetObjectPos()
 {
@@ -1240,67 +1280,6 @@ STDMETHODIMP Rubber::put_OverwritePhysics(VARIANT_BOOL newVal)
     return S_OK;
 }
 
-
-void Rubber::RenderObject()
-{
-   TRACE_FUNCTION();
-
-   // don't render if invisible or not a transparent ramp
-   if (!m_d.m_visible)
-      return;
-
-   if (m_d.m_thickness == 0)
-   {
-      m_dynamicVertexBufferRegenerate = false;
-      return;
-   }
-
-   if (m_dynamicVertexBufferRegenerate && !m_d.m_staticRendering)
-      UpdateRubber(true, m_d.m_height);
-
-   RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-   RenderState initial_state;
-   pd3dDevice->CopyRenderStates(true, initial_state);
-
-   const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
-
-   pd3dDevice->SetRenderStateDepthBias(0.0f);
-   pd3dDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
-   pd3dDevice->SetRenderStateCulling(RenderState::CULL_CCW);
-
-   Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
-   if (pin)
-   {
-      pd3dDevice->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, mat, pin->m_alphaTestValue >= 0.f && !pin->m_pdsBuffer->IsOpaque());
-      pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, pin);
-      pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue);
-      pd3dDevice->basicShader->SetMaterial(mat, !pin->m_pdsBuffer->IsOpaque());
-   }
-   else
-   {
-      pd3dDevice->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, mat);
-      pd3dDevice->basicShader->SetMaterial(mat, false);
-   }
-
-   pd3dDevice->DrawMesh(pd3dDevice->basicShader, false, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
-
-   pd3dDevice->CopyRenderStates(false, initial_state);
-}
-
-// Always called each frame to render over everything else (along with primitives)
-// Same code as RenderStatic (with the exception of the alpha tests).
-// Also has less drawing calls by bundling seperate calls.
-void Rubber::RenderDynamic()
-{
-   if (!m_d.m_staticRendering)
-   {
-      if (g_pplayer->IsRenderPass(Player::REFLECTION_PASS) && !m_d.m_reflectionEnabled)
-         return;
-
-      RenderObject();
-   }
-}
-
 void Rubber::ExportMesh(ObjLoader& loader)
 {
    if (m_d.m_visible)
@@ -1467,20 +1446,6 @@ void Rubber::GenerateMesh(const int _accuracy, const bool createHitShape) //!! h
 
    delete[] rgvLocal;
    delete[] middlePoints;
-}
-
-void Rubber::GenerateVertexBuffer()
-{
-   GenerateMesh();
-
-   delete m_meshBuffer;
-   VertexBuffer *dynamicVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numVertices, (float *)m_vertices.data() , !m_d.m_staticRendering);
-   IndexBuffer *dynamicIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_ringIndices);
-   m_meshBuffer = new MeshBuffer(m_wzName, dynamicVertexBuffer, dynamicIndexBuffer, true);
-
-   UpdateRubber(true, m_d.m_height);
-
-   m_dynamicVertexBufferRegenerate = false;
 }
 
 void Rubber::UpdateRubber(const bool updateVB, const float height)

@@ -159,6 +159,7 @@ public:
 private:
    PinTable *m_ptable = nullptr;
 
+   RenderDevice *m_rd = nullptr;
    MeshBuffer *m_meshBuffer = nullptr;
 
    HitPlunger *m_phitplunger = nullptr;

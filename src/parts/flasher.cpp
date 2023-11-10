@@ -272,16 +272,9 @@ void Flasher::GetHitShapesDebug(vector<HitObject*> &pvho)
 void Flasher::EndPlay()
 {
    IEditable::EndPlay();
-
    // ensure not locked just in case the player exits during a LS sequence
    m_lockedByLS = false;
-   
    ResetVideoCap();
-   RenderRelease();
-}
-
-void Flasher::UpdateAnimation(const float diff_time_msec)
-{
 }
 
 void Flasher::SetObjectPos()
@@ -848,6 +841,8 @@ void upscale(DWORD *const data, const int2 &res, const bool is_brightness_data);
 STDMETHODIMP Flasher::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as input //!! use 64bit instead of 8bit to reduce overhead??
 {
    SAFEARRAY *psa = V_ARRAY(&pVal);
+   if (m_rd == nullptr)
+      return E_FAIL;
 
    if (psa && m_dmdSize.x > 0 && m_dmdSize.y > 0)
    {
@@ -861,8 +856,8 @@ STDMETHODIMP Flasher::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as input //!
       {
          if (m_texdmd)
          {
-            g_pplayer->m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetTextureNull(SHADER_tex_dmd);
-            g_pplayer->m_pin3d.m_pd3dPrimaryDevice->m_texMan.UnloadTexture(m_texdmd);
+            m_rd->DMDShader->SetTextureNull(SHADER_tex_dmd);
+            m_rd->m_texMan.UnloadTexture(m_texdmd);
             delete m_texdmd;
          }
 #ifdef DMD_UPSCALE
@@ -883,7 +878,7 @@ STDMETHODIMP Flasher::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as input //!
       if (g_pplayer->m_scaleFX_DMD)
          upscale(data, m_dmdSize, true);
 
-      g_pplayer->m_pin3d.m_pd3dPrimaryDevice->m_texMan.SetDirty(m_texdmd);
+      m_rd->m_texMan.SetDirty(m_texdmd);
    }
 
    return S_OK;
@@ -905,8 +900,8 @@ STDMETHODIMP Flasher::put_DMDColoredPixels(VARIANT pVal) //!! assumes VT_UI4 as 
       {
          if (m_texdmd)
          {
-            g_pplayer->m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetTextureNull(SHADER_tex_dmd);
-            g_pplayer->m_pin3d.m_pd3dPrimaryDevice->m_texMan.UnloadTexture(m_texdmd);
+            m_rd->DMDShader->SetTextureNull(SHADER_tex_dmd);
+            m_rd->m_texMan.UnloadTexture(m_texdmd);
             delete m_texdmd;
          }
 #ifdef DMD_UPSCALE
@@ -927,7 +922,7 @@ STDMETHODIMP Flasher::put_DMDColoredPixels(VARIANT pVal) //!! assumes VT_UI4 as 
       if (g_pplayer->m_scaleFX_DMD)
          upscale(data, m_dmdSize, false);
 
-      g_pplayer->m_pin3d.m_pd3dPrimaryDevice->m_texMan.SetDirty(m_texdmd);
+      m_rd->m_texMan.SetDirty(m_texdmd);
    }
 
    return S_OK;
@@ -954,8 +949,8 @@ void Flasher::ResetVideoCap()
    m_isVideoCap = false;
    if (m_videoCapTex)
    {
-      //  g_pplayer->m_pin3d.m_pd3dPrimaryDevice->flasherShader->SetTextureNull(SHADER_tex_flasher_A); //!! ??
-      g_pplayer->m_pin3d.m_pd3dPrimaryDevice->m_texMan.UnloadTexture(m_videoCapTex);
+      //  m_rd->flasherShader->SetTextureNull(SHADER_tex_flasher_A); //!! ??
+      m_rd->m_texMan.UnloadTexture(m_videoCapTex);
       delete m_videoCapTex;
       m_videoCapTex = nullptr;
    }
@@ -1041,7 +1036,7 @@ STDMETHODIMP Flasher::put_VideoCapUpdate(BSTR cWinTitle)
         GlobalUnlock(hDIB);
         GlobalFree(hDIB);
 
-        g_pplayer->m_pin3d.m_pd3dPrimaryDevice->m_texMan.SetDirty(m_videoCapTex);
+        m_rd->m_texMan.SetDirty(m_videoCapTex);
     }
 
     ReleaseDC(m_videoCapHwnd, hdcWindow);
@@ -1087,11 +1082,6 @@ void Flasher::setInPlayState(const bool newVal)
 
 #pragma region Rendering
 
-// Deprecated Legacy API to be removed
-void Flasher::RenderSetup() { }
-void Flasher::RenderStatic() { }
-void Flasher::RenderDynamic() { }
-
 void Flasher::RenderSetup(RenderDevice *device)
 {
    assert(m_rd == nullptr);
@@ -1132,14 +1122,14 @@ void Flasher::RenderSetup(RenderDevice *device)
       return;
    }
 
-   IndexBuffer* dynamicIndexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numPolys * 3, 0, IndexBuffer::FMT_INDEX16);
+   IndexBuffer* dynamicIndexBuffer = new IndexBuffer(m_rd, m_numPolys * 3, 0, IndexBuffer::FMT_INDEX16);
 
    WORD* bufi;
    dynamicIndexBuffer->lock(0, 0, (void**)&bufi, IndexBuffer::WRITEONLY);
    memcpy(bufi, vtri.data(), vtri.size()*sizeof(WORD));
    dynamicIndexBuffer->unlock();
 
-   VertexBuffer* dynamicVertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numVertices, nullptr, true);
+   VertexBuffer* dynamicVertexBuffer = new VertexBuffer(m_rd, m_numVertices, nullptr, true);
 
    delete m_meshBuffer;
    m_meshBuffer = new MeshBuffer(m_wzName, dynamicVertexBuffer, dynamicIndexBuffer, true);
@@ -1201,6 +1191,10 @@ void Flasher::RenderRelease()
       m_lightmap->RemoveLightmap(this);
    m_lightmap = nullptr;
    m_rd = nullptr;
+}
+
+void Flasher::UpdateAnimation(const float diff_time_msec)
+{
 }
 
 void Flasher::Render(const unsigned int renderMask)

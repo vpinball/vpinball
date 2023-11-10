@@ -307,8 +307,8 @@ void Primitive::CreateRenderGroup(const Collection * const collection)
          prims[i]->m_d.m_skipRendering = false;
    }
 
-   VertexBuffer* vertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numGroupVertices);
-   IndexBuffer* indexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, indices);
+   VertexBuffer* vertexBuffer = new VertexBuffer(m_rd, m_numGroupVertices);
+   IndexBuffer* indexBuffer = new IndexBuffer(m_rd, indices);
    unsigned int ofs = 0;
    Vertex3D_NoTex2 *buf;
    vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
@@ -659,7 +659,6 @@ void Primitive::EndPlay()
    m_d.m_groupdRendering = false;
    m_vhoCollidable.clear();
    IEditable::EndPlay();
-   RenderRelease();
 }
 
 //////////////////////////////
@@ -1218,11 +1217,6 @@ void Primitive::ExportMesh(ObjLoader& loader)
    }
 }
 
-// Deprecated Legacy API to be removed
-void Primitive::RenderSetup() { }
-void Primitive::RenderStatic() { }
-void Primitive::RenderDynamic() { }
-
 void Primitive::RenderSetup(RenderDevice *device)
 {
    assert(m_rd == nullptr);
@@ -1243,8 +1237,8 @@ void Primitive::RenderSetup(RenderDevice *device)
    m_d.m_isBackGlassImage = IsBackglass();
 
    delete m_meshBuffer;
-   VertexBuffer* vertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, (unsigned int)m_mesh.NumVertices(), nullptr, !(m_d.m_staticRendering || m_mesh.m_animationFrames.size() == 0));
-   IndexBuffer* indexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_mesh.m_indices);
+   VertexBuffer* vertexBuffer = new VertexBuffer(m_rd, (unsigned int)m_mesh.NumVertices(), nullptr, !(m_d.m_staticRendering || m_mesh.m_animationFrames.size() == 0));
+   IndexBuffer* indexBuffer = new IndexBuffer(m_rd, m_mesh.m_indices);
    m_meshBuffer = new MeshBuffer(m_wzName, vertexBuffer, indexBuffer, true);
 
    // Compute and upload mesh to let a chance for renderdevice to share the buffers with other static objects

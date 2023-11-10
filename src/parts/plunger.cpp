@@ -8,7 +8,7 @@ Plunger::Plunger()
 
 Plunger::~Plunger()
 {
-   delete m_meshBuffer;
+   assert(m_rd == nullptr);
 }
 
 Plunger* Plunger::CopyForPlay(PinTable *live_table)
@@ -135,6 +135,24 @@ void Plunger::UIRenderPass2(Sur * const psur)
    }
 }
 
+void Plunger::GetTimers(vector<HitTimer*> &pvht)
+{
+   IEditable::BeginPlay();
+
+   HitTimer * const pht = new HitTimer();
+   pht->m_interval = m_d.m_tdr.m_TimerInterval >= 0 ? max(m_d.m_tdr.m_TimerInterval, MAX_TIMER_MSEC_INTERVAL) : -1;
+   pht->m_nextfire = pht->m_interval;
+   pht->m_pfe = (IFireEvents *)this;
+
+   m_phittimer = pht;
+
+   if (m_d.m_tdr.m_TimerEnabled)
+      pvht.push_back(pht);
+}
+
+
+#pragma region Physics
+
 void Plunger::GetHitShapes(vector<HitObject*> &pvho)
 {
    const float zheight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_v.x, m_d.m_v.y);
@@ -153,29 +171,14 @@ void Plunger::GetHitShapesDebug(vector<HitObject*> &pvho)
 {
 }
 
-void Plunger::GetTimers(vector<HitTimer*> &pvht)
-{
-   IEditable::BeginPlay();
-
-   HitTimer * const pht = new HitTimer();
-   pht->m_interval = m_d.m_tdr.m_TimerInterval >= 0 ? max(m_d.m_tdr.m_TimerInterval, MAX_TIMER_MSEC_INTERVAL) : -1;
-   pht->m_nextfire = pht->m_interval;
-   pht->m_pfe = (IFireEvents *)this;
-
-   m_phittimer = pht;
-
-   if (m_d.m_tdr.m_TimerEnabled)
-      pvht.push_back(pht);
-}
-
 void Plunger::EndPlay()
 {
    m_phitplunger = nullptr;       // possible memory leak here?
-
    IEditable::EndPlay();
-   delete m_meshBuffer;
-   m_meshBuffer = nullptr;
 }
+
+#pragma endregion
+
 
 void Plunger::SetObjectPos()
 {
@@ -211,52 +214,8 @@ void Plunger::SetDefaultPhysics(const bool fromMouseClick)
 #undef regKey
 }
 
-void Plunger::RenderDynamic()
-{
-   TRACE_FUNCTION();
 
-   // TODO: get rid of frame stuff
-   if (!m_d.m_visible)
-      return;
-
-   if (g_pplayer->IsRenderPass(Player::REFLECTION_PASS) && !m_d.m_reflectionEnabled)
-      return;
-
-   _ASSERTE(m_phitplunger);
-
-   const PlungerMoverObject& pa = m_phitplunger->m_plungerMover;
-   const int frame0 = (int)((pa.m_pos - pa.m_frameStart) / (pa.m_frameEnd - pa.m_frameStart) * (float)(m_cframes - 1) + 0.5f);
-   const int frame = (frame0 < 0 ? 0 : frame0 >= m_cframes ? m_cframes - 1 : frame0);
-
-   const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
-
-   RenderDevice *const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-   RenderState initial_state;
-   pd3dDevice->CopyRenderStates(true, initial_state);
-
-   pd3dDevice->SetRenderStateDepthBias(0.0f);
-   pd3dDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
-   pd3dDevice->SetRenderStateCulling(RenderState::CULL_CCW);
-
-   Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
-   if (pin)
-   {
-      pd3dDevice->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, mat, pin->m_alphaTestValue >= 0.f && !pin->m_pdsBuffer->IsOpaque());
-      pd3dDevice->basicShader->SetTexture(SHADER_tex_base_color, pin);
-      pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue);
-      pd3dDevice->basicShader->SetMaterial(mat, !pin->m_pdsBuffer->IsOpaque());
-   }
-   else
-   {
-      pd3dDevice->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, mat);
-      pd3dDevice->basicShader->SetMaterial(mat, false);
-   }
-
-   pd3dDevice->DrawMesh(pd3dDevice->basicShader, false, m_boundingSphereCenter, 0.f /*m_boundingSphereRadius*/, m_meshBuffer, RenderDevice::TRIANGLELIST, frame * m_indicesPerFrame,
-      m_indicesPerFrame);
-
-   pd3dDevice->CopyRenderStates(false, initial_state);
-}
+#pragma region Rendering
 
 //
 // license:GPLv3+
@@ -315,15 +274,16 @@ static const char *nextTipToken(const char* &p)
 
 #define PLUNGER_FRAME_COUNT 25   //frame per 80 units distance
 
-
 //
 // license:GPLv3+
 // Ported at: VisualPinball.Engine/VPT/Plunger/PlungerDesc.cs
 //            VisualPinball.Engine/VPT/Plunger/PlungerMeshGenerator.cs
 //
 
-void Plunger::RenderSetup()
+void Plunger::RenderSetup(RenderDevice *device)
 {
+   assert(m_rd == nullptr);
+   m_rd = device;
    const float zheight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_v.x, m_d.m_v.y) + m_d.m_zAdjust;
    const float stroke = m_d.m_stroke;
    const float beginy = m_d.m_v.y;
@@ -543,7 +503,7 @@ void Plunger::RenderSetup()
    // figure the relative spring gauge, in terms of the overall width
    const float springGaugeRel = springGauge / m_d.m_width;
 
-   VertexBuffer *vertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_cframes * m_vtsPerFrame);
+   VertexBuffer *vertexBuffer = new VertexBuffer(m_rd, m_cframes * m_vtsPerFrame);
 
    Vertex3D_NoTex2 *buf;
    vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
@@ -849,19 +809,14 @@ void Plunger::RenderSetup()
          }
       }
    }
-
-   // done with the vertex buffer
    vertexBuffer->unlock();
 
    // create the new index buffer
-   IndexBuffer* indexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, k, indices);
+   IndexBuffer* indexBuffer = new IndexBuffer(m_rd, k, indices);
+   delete[] indices;
 
    // Create the mesh buffer
-   delete m_meshBuffer;
    m_meshBuffer = new MeshBuffer(m_wzName, vertexBuffer, indexBuffer, true);
-
-   // done with the index scratch pad
-   delete[] indices;
 
    // delete our custom descriptor, if we created one
    if (customDesc != 0)
@@ -875,14 +830,47 @@ void Plunger::RenderSetup()
 // end of license:GPLv3+, back to 'old MAME'-like
 //
 
+void Plunger::RenderRelease()
+{
+   assert(m_rd != nullptr);
+   delete m_meshBuffer;
+   m_meshBuffer = nullptr;
+   m_rd = nullptr;
+}
+
 void Plunger::UpdateAnimation(const float diff_time_msec)
 {
    // Animation is updated by physics engine through a MoverObject. No additional visual animation here
 }
 
-void Plunger::RenderStatic()
+void Plunger::Render(const unsigned int renderMask)
 {
+   assert(m_rd != nullptr);
+   const bool isStaticOnly = renderMask & Player::STATIC_ONLY;
+   const bool isDynamicOnly = renderMask & Player::DYNAMIC_ONLY;
+   const bool isReflectionPass = renderMask & Player::REFLECTION_PASS;
+   TRACE_FUNCTION();
+
+   if (isStaticOnly || !m_d.m_visible || (isReflectionPass && !m_d.m_reflectionEnabled))
+      return;
+
+   // TODO: get rid of frame stuff
+   assert(m_phitplunger != nullptr);
+   const PlungerMoverObject& pa = m_phitplunger->m_plungerMover;
+   const int frame0 = (int)((pa.m_pos - pa.m_frameStart) / (pa.m_frameEnd - pa.m_frameStart) * (float)(m_cframes - 1) + 0.5f);
+   const int frame = (frame0 < 0 ? 0 : frame0 >= m_cframes ? m_cframes - 1 : frame0);
+
+   m_rd->ResetRenderState();
+   m_rd->SetRenderStateCulling(RenderState::CULL_CCW);
+   m_rd->basicShader->SetBasic(m_ptable->GetMaterial(m_d.m_szMaterial), m_ptable->GetImage(m_d.m_szImage));
+   m_rd->DrawMesh(m_rd->basicShader, false, m_boundingSphereCenter, 0.f /*m_boundingSphereRadius*/, m_meshBuffer, 
+      RenderDevice::TRIANGLELIST, frame * m_indicesPerFrame, m_indicesPerFrame);
+
+   m_rd->ResetRenderState();
 }
+
+#pragma endregion
+
 
 STDMETHODIMP Plunger::InterfaceSupportsErrorInfo(REFIID riid)
 {

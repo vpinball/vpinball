@@ -116,6 +116,10 @@ private:
 
    Vertex2D *m_rgvInit;    // just for setup/static drawing
 
+   RenderDevice *m_rd = nullptr;
+   MeshBuffer *m_meshBuffer = nullptr;
+   bool m_dynamicVertexBufferRegenerate;
+
    int m_numVertices;      // this goes along with dynamicVertexBuffer
    int m_numIndices;
 
@@ -125,9 +129,6 @@ private:
 
    Vertex3Ds m_middlePoint;
 
-   MeshBuffer *m_meshBuffer = nullptr;
-   bool m_dynamicVertexBufferRegenerate;
-
    PropertyPane *m_propVisual;
    PropertyPane *m_propPhysics;
 
@@ -135,9 +136,6 @@ private:
 
    Vertex2D *GetSplineVertex(int &pcvertex, bool ** const ppfCross, Vertex2D ** const pMiddlePoints, const float _accuracy = -1.f) const;
 
-   void GenerateVertexBuffer();
-
-   void RenderObject();
    void UpdateRubber(const bool updateVB, const float height);
    void GenerateMesh(const int _accuracy = -1, const bool createHitShape = false);
    void DrawRubberMesh(Sur * const psur);

@@ -178,10 +178,6 @@ public:
 
    bool             m_hitEvent;
 
-   virtual void RenderSetup(RenderDevice *device);
-   virtual void Render(const unsigned int renderMask);
-   virtual void RenderRelease();
-
 private:
 
    void RenderObject();
