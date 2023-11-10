@@ -1585,7 +1585,7 @@ void LiveUI::UpdateMainUI()
       // Main menubar
       if (ImGui::BeginMainMenuBar())
       {
-         if (ImGui::BeginMenu("Debug"))
+         if (!m_table->m_locked && ImGui::BeginMenu("Debug"))
          {
             if (ImGui::MenuItem("Open debugger"))
                m_player->m_showDebugger = true;
@@ -2047,6 +2047,8 @@ bool LiveUI::IsOutlinerFiltered(const string& name)
 
 void LiveUI::UpdateOutlinerUI()
 {
+   if (m_table && m_table->m_locked)
+      return;
    const ImGuiViewport * const viewport = ImGui::GetMainViewport();
    const float pane_width = 200.f * m_dpi;
    ImGui::SetNextWindowPos(ImVec2(viewport->Pos.x, viewport->Pos.y + m_menubar_height + m_toolbar_height));
@@ -2201,6 +2203,8 @@ void LiveUI::UpdateOutlinerUI()
 
 void LiveUI::UpdatePropertyUI()
 {
+   if (m_table && m_table->m_locked)
+      return;
    const ImGuiViewport *const viewport = ImGui::GetMainViewport();
    const float pane_width = 250.f * m_dpi;
    ImGui::SetNextWindowPos(ImVec2(viewport->Pos.x + viewport->Size.x - pane_width, viewport->Pos.y + m_menubar_height + m_toolbar_height));

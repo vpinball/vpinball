@@ -531,6 +531,29 @@ void PropertyDialog::UpdateComboBox(const vector<string>& contentList, const CCo
 
 void PropertyDialog::UpdateTabs(VectorProtected<ISelect> &pvsel)
 {
+    if (g_pvp->m_ptableActive && g_pvp->m_ptableActive->m_locked)
+    {
+        m_multipleElementsStatic.ShowWindow(SW_HIDE);
+        m_nameEdit.ShowWindow(SW_HIDE);
+        m_elementTypeName.ShowWindow(SW_HIDE);
+        m_tab.ShowWindow(SW_HIDE);
+        for (int i = 0; i < PROPERTY_TABS; i++)
+            if (m_tabs[i] != nullptr)
+            {
+                m_tab.RemoveTabPage(m_tab.GetTabIndex(m_tabs[i]));
+                m_tabs[i] = nullptr;
+            }
+        m_previousType = eItemTypeCount;
+        return;
+    }
+    else
+    {
+        m_multipleElementsStatic.ShowWindow(SW_SHOW);
+        m_nameEdit.ShowWindow(SW_SHOW);
+        m_elementTypeName.ShowWindow(SW_SHOW);
+        m_tab.ShowWindow(SW_SHOW);
+    }
+
     ISelect * const psel = pvsel.ElementAt(0);
     if (psel == nullptr)
         return;

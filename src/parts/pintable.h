@@ -578,6 +578,7 @@ public:
 
    string m_szFileName;
    string m_szTitle;
+   bool m_locked = false;
 
    void SetSettingsFileName(const string &path)
    {

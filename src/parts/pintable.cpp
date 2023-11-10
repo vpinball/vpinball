@@ -3506,6 +3506,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
       m_pcv->SaveToStream(pstm, hcrypthash);
    }
 
+   bw.WriteBool(FID(TLCK), m_locked);
    bw.WriteTag(FID(ENDB));
 
    return S_OK;
@@ -4459,6 +4460,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
       ::GlobalFree(hMem);
       break;
    }
+   case FID(TLCK): pbr->GetBool(m_locked); break;
    }
    return true;
 }
@@ -5907,6 +5909,8 @@ void PinTable::ImportBackdropPOV(const string &filename)
    const bool wasModified = m_settings.IsModified();
    if (!toUserSettings)
    {
+      if (m_locked)
+         return;
       string initialDir = m_settings.LoadValueWithDefault(Settings::RecentDir, "POVDir"s, PATH_TABLES);
       vector<string> fileNames;
       if (!m_vpinball->OpenFileDialog(initialDir, fileNames, 
@@ -6517,6 +6521,9 @@ void PinTable::AddMultiSel(ISelect *psel, const bool add, const bool update, con
    const int index = m_vmultisel.find(psel);
    ISelect *piSelect = nullptr;
    //_ASSERTE(m_vmultisel[0].m_selectstate == eSelected);
+
+   if (m_locked)
+      return;
 
    if (index == -1) // If we aren't selected yet, do that
    {
@@ -10281,7 +10288,7 @@ void PinTable::OnLeftButtonDown(const short x, const short y)
     {
         DoLeftButtonDown(x, y, true);
     }
-    else
+    else if (!m_locked)
     {
         UseTool(x, y, m_vpinball->m_ToolCur);
     }
@@ -10452,6 +10459,7 @@ LRESULT PinTableMDI::OnMDIActivate(UINT msg, WPARAM wparam, LPARAM lparam)
    }
    if(GetHwnd()==(HWND)lparam)
    {
+      g_pvp->m_ptableActive = m_table;
       if (g_pvp->GetLayersDocker() != nullptr)
       {
          g_pvp->GetLayersDocker()->GetContainLayers()->GetLayersDialog()->SetActiveTable(m_table);
@@ -10459,8 +10467,6 @@ LRESULT PinTableMDI::OnMDIActivate(UINT msg, WPARAM wparam, LPARAM lparam)
          g_pvp->SetPropSel(m_table->m_vmultisel);
       }
       m_vpinball->m_currentTablePath = PathFromFilename(m_table->m_szFileName);
-      if (g_pvp->m_ptableActive != m_table)
-         g_pvp->m_ptableActive = m_table;
    }
    return CMDIChild::OnMDIActivate(msg, wparam, lparam);
 }
