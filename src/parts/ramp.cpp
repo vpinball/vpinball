@@ -932,8 +932,6 @@ void Ramp::Render(const unsigned int renderMask)
        * with transparent textures. Probably the option should simply be renamed to ImageModeClamp,
        * since the texture coordinates always stay within [0,1] anyway. */
       SamplerAddressMode sam = m_d.m_imagealignment == ImageModeWrap ? SA_CLAMP : SA_REPEAT;
-      m_rd->SetRenderStateDepthBias(0.0f);
-      m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
       m_rd->SetRenderStateCulling(RenderState::CULL_NONE);
       Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
       if (!pin)
@@ -948,7 +946,6 @@ void Ramp::Render(const unsigned int renderMask)
          m_rd->basicShader->SetAlphaTestValue(pin->m_alphaTestValue);
          m_rd->basicShader->SetMaterial(mat, !pin->m_pdsBuffer->IsOpaque());
       }
-
       m_rd->DrawMesh(m_rd->basicShader, mat->m_bOpacityActive, m_boundingSphereCenter, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
    }
    else
@@ -1004,8 +1001,6 @@ void Ramp::Render(const unsigned int renderMask)
          }
       }
    }
-
-   m_rd->ResetRenderState();
 }
 
 float Ramp::GetDepth(const Vertex3Ds& viewDir) const

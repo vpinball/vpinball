@@ -341,7 +341,6 @@ void Bumper::Render(const unsigned int renderMask)
       return;
 
    m_rd->ResetRenderState();
-   m_rd->SetRenderStateCulling(RenderState::CULL_CCW);
 
    if (m_d.m_baseVisible)
    {
@@ -394,8 +393,6 @@ void Bumper::Render(const unsigned int renderMask)
       Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight + 5.0f);
       m_rd->DrawMesh(m_rd->basicShader, false, pos, 0.f, m_socketMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperSocketNumIndices);
    }
-
-   m_rd->ResetRenderState();
 }
 
 void Bumper::UpdateSkirt(const bool doCalculation)

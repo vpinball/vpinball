@@ -850,7 +850,6 @@ void Flipper::Render(const unsigned int renderMask)
       return;
 
    m_rd->ResetRenderState();
-   m_rd->SetRenderStateCulling(RenderState::CULL_CCW);
    Matrix3D matTrafo;
    matTrafo.SetIdentity();
    matTrafo._41 = m_d.m_Center.x;
@@ -874,7 +873,6 @@ void Flipper::Render(const unsigned int renderMask)
    }
 
    g_pplayer->UpdateBasicShaderMatrix();
-   m_rd->ResetRenderState();
 }
 
 #pragma endregion

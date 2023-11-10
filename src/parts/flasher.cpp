@@ -1265,7 +1265,6 @@ void Flasher::Render(const unsigned int renderMask)
    const vec4 color = convertColor(m_d.m_color, (float)m_d.m_alpha*m_d.m_intensity_scale / 100.0f);
    if (m_d.m_isDMD)
    {
-      m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
       if (m_d.m_modulate_vs_add < 1.f)
          m_rd->EnableAlphaBlend(m_d.m_addBlend);
       else
@@ -1392,8 +1391,6 @@ void Flasher::Render(const unsigned int renderMask)
 
       m_rd->flasherShader->SetVector(SHADER_lightCenter_doShadow, 0.0f, 0.0f, 0.0f, 0.0f);
    }
-
-   m_rd->ResetRenderState();
 }
 
 #pragma endregion
