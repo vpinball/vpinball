@@ -57,7 +57,7 @@ public:
 
    RenderState();
 
-   void Reset() { m_depthBias = 0.f; m_state = 0x001f5146; } // Default render state is Blend: { _  A  SA   RSA } Depth: { Z  <=  ZW } Clip: _ Cull: CCW Mask: F
+   void Reset();
    RenderStateValue GetRenderState(const RenderStates p1) const;
    void SetRenderState(const RenderStates p1, const RenderStateValue p2);
    void SetRenderStateCulling(RenderStateValue cull);

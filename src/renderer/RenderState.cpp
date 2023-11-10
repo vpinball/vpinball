@@ -35,9 +35,14 @@ constexpr RenderState::RenderStateMask RenderState::render_state_masks[RENDERSTA
 #undef RENDER_STATE
 
 RenderState::RenderState()
-   : m_state(0x001f5146)
-   , m_depthBias(0.f)
 {
+   Reset();
+}
+
+void RenderState::Reset()
+{
+   m_depthBias = 0.f;
+   m_state = 0x001f5146;
    // Default render state is:
    // Blend: { _  A  SA   RSA } Depth: { Z  <=  ZW } Clip: _ Cull: CCW Mask: F
    #if 0
@@ -55,6 +60,12 @@ RenderState::RenderState()
    OutputDebugString(GetLog().c_str());
    OutputDebugString("\n");
    #endif
+   if (g_pplayer && g_pplayer->IsRenderPass(Player::RenderMask::REFLECTION_PASS))
+   {
+      // re-init/thrash cache entry due to the hacky nature of the table mirroring (we use a matrix that reverse normal orientation)
+      SetRenderState(RenderState::CLIPPLANEENABLE, RenderState::RS_TRUE);
+      SetRenderStateCulling(RenderState::CULL_CCW);
+   }
 }
 
 RenderState::RenderStateValue RenderState::GetRenderState(const RenderStates p1) const
