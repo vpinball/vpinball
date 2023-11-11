@@ -2557,10 +2557,18 @@ static unsigned int GenerateTournamentFileInternal(BYTE *const dmd_data, const u
    else
       ShowError("Cannot open Table");
 
-#ifdef _MSC_VER //!! other OSs?
-   char szPath[MAXSTRING];
-   GetModuleFileName(nullptr, szPath, MAXSTRING);
-   if(fopen_s(&f, szPath, "rb") == 0 && f)
+   char path[MAXSTRING];
+#ifdef _MSC_VER
+   GetModuleFileName(nullptr, path, MAXSTRING);
+#elif defined(__APPLE__) //!! ??
+   uint32_t len = sizeof(path);
+   _NSGetExecutablePath(path, &len);
+#else
+   const ssize_t len = ::readlink("/proc/self/exe", path, sizeof(path)-1);
+   if (len != -1)
+      path[len] = '\0';
+#endif
+   if(fopen_s(&f, path, "rb") == 0 && f)
    {
       BYTE tmp[4096];
       size_t r;
@@ -2577,9 +2585,12 @@ static unsigned int GenerateTournamentFileInternal(BYTE *const dmd_data, const u
    }
    else
       ShowError("Cannot open Executable");
-#endif
 
+#if defined(_M_IX86) || defined(_M_X64) || defined(_M_AMD64) || defined(__i386__) || defined(__i386) || defined(__i486__) || defined(__i486) || defined(i386) || defined(__ia64__) || defined(__x86_64__)
    _mm_sfence();
+#else // for now arm only
+   __atomic_thread_fence(__ATOMIC_SEQ_CST);
+#endif
 
    return dmd_data_c;
 }
@@ -2590,7 +2601,11 @@ static void GenerateTournamentFileInternal2(BYTE *const dmd_data, const unsigned
    BYTE *fe = fs;
    while (true)
    {
+#if defined(_M_IX86) || defined(_M_X64) || defined(_M_AMD64) || defined(__i386__) || defined(__i386) || defined(__i486__) || defined(__i486) || defined(i386) || defined(__ia64__) || defined(__x86_64__)
       if (fe[0] == 0x0F && fe[1] == 0xAE && fe[2] == 0xF8)
+#else // for now arm only
+      if (fe[0] == 0xD5 && fe[1] == 0x03 && fe[2] == 0x3B && fe[3] == 0xBF)
+#endif
          break;
       fe++;
    } //!! also include MD5 ?
