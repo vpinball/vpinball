@@ -21,8 +21,7 @@ Decal *Decal::CopyForPlay(PinTable *live_table)
 {
    STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(Decal, live_table)
    dst->m_backglass = m_backglass;
-   dst->m_pIFont = m_pIFont;
-   dst->m_pIFont->AddRef();
+   m_pIFont->Clone(&dst->m_pIFont);
    dst->EnsureSize();
    return dst;
 }
@@ -330,6 +329,7 @@ HRESULT Decal::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveFor
    IPersistStream * ips;
    m_pIFont->QueryInterface(IID_IPersistStream, (void **)&ips);
    ips->Save(pstm, TRUE);
+   SAFE_RELEASE_NO_RCC(ips);
 
    bw.WriteTag(FID(ENDB));
 
@@ -385,8 +385,8 @@ bool Decal::LoadToken(const int id, BiffReader * const pbr)
 
       IPersistStream * ips;
       m_pIFont->QueryInterface(IID_IPersistStream, (void **)&ips);
-
       ips->Load(pbr->m_pistream);
+      SAFE_RELEASE_NO_RCC(ips);
 
       break;
    }
