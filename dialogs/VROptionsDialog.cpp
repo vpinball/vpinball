@@ -482,7 +482,7 @@ BOOL VROptionsDialog::OnInitDialog()
       if (!hr)
          selected = 0; // assume no assignment as standard
 
-      const HWND hwnd = GetDlgItem(item).GetHwnd();
+      hwnd = GetDlgItem(item).GetHwnd();
       ::SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
       ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "(none)");
       ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Button 1");

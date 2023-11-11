@@ -384,8 +384,8 @@ void ObjLoader::WriteVertexInfo(const Vertex3D_NoTex2* verts, unsigned int numVe
    {
       float tu = verts[i].tu;
       float tv = 1.f - verts[i].tv;
-      if (tu != tu) tu = 0.0f;
-      if (tv != tv) tv = 0.0f;
+      if (infNaN(tu)) tu = 0.0f;
+      if (infNan(tv)) tv = 0.0f;
       fprintf_s(m_fHandle, "vt %f %f\n", tu, tv);
    }
    for (unsigned i = 0; i < numVerts; i++)
@@ -393,9 +393,9 @@ void ObjLoader::WriteVertexInfo(const Vertex3D_NoTex2* verts, unsigned int numVe
       float nx = verts[i].nx;
       float ny = verts[i].ny;
       float nz = verts[i].nz;
-      if (nx != nx) nx = 0.0f;
-      if (ny != ny) ny = 0.0f;
-      if (nz != nz) nz = 0.0f;
+      if (infNaN(nx)) nx = 0.0f;
+      if (infNaN(ny)) ny = 0.0f;
+      if (infNaN(nz)) nz = 0.0f;
       fprintf_s(m_fHandle, "vn %f %f %f\n", nx, ny, -nz);
    }
 }

@@ -74,7 +74,6 @@ public:
    bool LoadValue(const Section section, const string &key, int &pint) const;
    bool LoadValue(const Section section, const string &key, unsigned int &pint) const;
 
-   bool LoadValueWithDefault(const Section section, const string &key, string &buffer, const string &def) const;
    float LoadValueWithDefault(const Section section, const string &key, const float def) const;
    int LoadValueWithDefault(const Section section, const string &key, const int def) const;
    bool LoadValueWithDefault(const Section section, const string &key, const bool def) const;

@@ -629,7 +629,7 @@ public:
    {
       // From https://en.wikipedia.org/wiki/Rotation_matrix
       const float s = sinf(angRad), c = cosf(angRad);
-      const float u_s = 1.f - s, u_c = 1.f - c;
+      const float u_c = 1.f - c;
       const float x = axis.x, y = axis.y, z = axis.z;
       return Matrix3D(
          c + x * x * u_c, x * y * u_c - z * s, x * z * u_c + y * s, 0.0f, 

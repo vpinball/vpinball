@@ -299,7 +299,6 @@ VS_DEPTH_ONLY_TEX_OUTPUT vs_depth_only_main_with_texture(const in float4 vPositi
 
 VS_UNSHADED_NOTEX_SHADOW_OUTPUT vs_main_unshaded_without_texture_shadow(const in float4 vPosition : POSITION0)
 {
-    const float3 P = mul(vPosition, matWorldView).xyz;
     VS_UNSHADED_NOTEX_SHADOW_OUTPUT Out;
     Out.pos = mul(vPosition, matWorldViewProj);
     Out.tablePos = mul(vPosition, matWorld).xyz;
@@ -308,7 +307,6 @@ VS_UNSHADED_NOTEX_SHADOW_OUTPUT vs_main_unshaded_without_texture_shadow(const in
 
 VS_UNSHADED_TEX_SHADOW_OUTPUT vs_main_unshaded_with_texture_shadow(const in float4 vPosition : POSITION0, const in float2 tc : TEXCOORD0)
 {
-    const float3 P = mul(vPosition, matWorldView).xyz;
     VS_UNSHADED_TEX_SHADOW_OUTPUT Out;
     Out.pos = mul(vPosition, matWorldViewProj);
     Out.tablePos = mul(vPosition, matWorld).xyz;

@@ -217,7 +217,7 @@ void RenderProbeDialog::SaveProbeFromUI(RenderProbe *const pb)
    LRESULT reflectionMode = SendDlgItemMessage(IDC_REFLECTION_MAX_LEVEL, CB_GETCURSEL, 0, 0);
    if (reflectionMode == LB_ERR)
       reflectionMode = RenderProbe::REFL_STATIC;
-   const size_t roughness = SendDlgItemMessage(IDC_ROUGHNESS, TBM_GETPOS, 0, 0);
+   const int roughness = (int)SendDlgItemMessage(IDC_ROUGHNESS, TBM_GETPOS, 0, 0);
    pb->SetReflectionNoLightmaps(IsDlgButtonChecked(IDC_REFLECTION_NO_LIGHTMAPS) == BST_CHECKED);
 
    if (pb->GetType() != type || pb->GetReflectionMode() != reflectionMode || plane.x != vx || plane.y != vy || plane.z != vz || plane.w != vw || roughness != pb->GetRoughness())
@@ -227,7 +227,7 @@ void RenderProbeDialog::SaveProbeFromUI(RenderProbe *const pb)
       plane.z = vz;
       plane.w = vw;
       pb->SetType(type);
-      pb->SetRoughness((int)roughness);
+      pb->SetRoughness(roughness);
       pb->SetReflectionPlane(plane);
       pb->SetReflectionMode((RenderProbe::ReflectionMode)reflectionMode);
       CCO(PinTable) *const pt = g_pvp->GetActiveTable();
