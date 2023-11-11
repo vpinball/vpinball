@@ -2854,8 +2854,8 @@ void LiveUI::UpdateMainSplashModal()
             y = rect.top + (int)drag.y;
             m_player->SetWindowPos(nullptr, x, y, m_player->m_wnd_width, m_player->m_wnd_height, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
 #endif
-            g_pvp->m_settings.SaveValue((m_player->m_stereo3D == STEREO_VR) ? Settings::PlayerVR : Settings::Player, "WindowPosX"s, x);
-            g_pvp->m_settings.SaveValue((m_player->m_stereo3D == STEREO_VR) ? Settings::PlayerVR : Settings::Player, "WindowPosY"s, y);
+            g_pvp->m_settings.SaveValue(Settings::Player, "WindowPosX"s, x);
+            g_pvp->m_settings.SaveValue(Settings::Player, "WindowPosY"s, y);
          }
       }
       else
