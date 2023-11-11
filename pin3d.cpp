@@ -513,7 +513,7 @@ HRESULT Pin3D::InitPin3D(const bool fullScreen, const int width, const int heigh
    m_pd3dPrimaryDevice->basicShader->SetTexture(SHADER_tex_diffuse_env, m_envRadianceTexture);
    m_pd3dPrimaryDevice->m_ballShader->SetTexture(SHADER_tex_diffuse_env, m_envRadianceTexture);
    #endif
-   PLOGI << "Environment map radiance computed"s; // For profiling
+   PLOGI << "Environment map radiance computed"; // For profiling
 
    m_pd3dPrimaryDevice->ResetRenderState();
 #ifndef ENABLE_SDL

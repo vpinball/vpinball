@@ -1004,7 +1004,7 @@ void Surface::RenderSlingshots()
    if (nothing_to_draw)
       return;
 
-   // FIXME this should be paret of the animation update, not rendering
+   // FIXME this should be part of the animation update, not rendering
    for (size_t i = 0; i < m_vlinesling.size(); i++)
    {
       LineSegSlingshot *const plinesling = m_vlinesling[i];

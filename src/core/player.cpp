@@ -561,7 +561,7 @@ void Player::CreateWnd(HWND parent /* = 0 */)
          }
       }
       if (!found)
-         PLOGE << "Failed to find a display mode matching the requested refresh rate [" << m_refreshrate << "]";
+         PLOGE << "Failed to find a display mode matching the requested refresh rate [" << m_refreshrate << ']';
    }
    else
    {
@@ -572,7 +572,7 @@ void Player::CreateWnd(HWND parent /* = 0 */)
    }
    SDL_DisplayMode mode;
    SDL_GetWindowDisplayMode(m_sdl_playfieldHwnd, &mode);
-   PLOGI << "SDL display mode: " << mode.w << "x" << mode.h << " " << mode.refresh_rate << "Hz " << SDL_GetPixelFormatName(mode.format);
+   PLOGI << "SDL display mode: " << mode.w << 'x' << mode.h << ' ' << mode.refresh_rate << "Hz " << SDL_GetPixelFormatName(mode.format);
 
    SDL_SysWMinfo wmInfo;
    SDL_VERSION(&wmInfo.version);
@@ -1439,7 +1439,7 @@ HRESULT Player::Init()
    m_infoMode = IF_NONE;
    m_infoProbeIndex = 0;
 
-   PLOGI << "Initializing Hitables"s; // For profiling
+   PLOGI << "Initializing Hitables"; // For profiling
 
    for (size_t i = 0; i < m_ptable->m_vedit.size(); i++)
    {
@@ -1543,7 +1543,7 @@ HRESULT Player::Init()
                   // This will make the cache wrong for the next non static run but it will rebuild, while the opposite would not (all preloads would stay as not prerender only)
                   m_render_mask = (!IsUsingStaticPrepass() || preRenderOnly) ? STATIC_ONLY : DEFAULT;
                   m_pin3d.m_pd3dPrimaryDevice->m_texMan.LoadTexture(tex->m_pdsBuffer, (SamplerFilter)filter, (SamplerAddressMode)clampU, (SamplerAddressMode)clampV, linearRGB);
-                  PLOGI << "Texture preloading: '" << name << "'";
+                  PLOGI << "Texture preloading: '" << name << '\'';
                }
             }
          }
@@ -1872,7 +1872,7 @@ void Player::RenderStaticPrepass()
    // Now finalize static buffer with static AO
    if (GetAOMode() == 1)
    {
-      PLOGI << "Starting static AO prerendering"s; // For profiling
+      PLOGI << "Starting static AO prerendering"; // For profiling
 
       const bool useAA = m_AAfactor != 1.0f;
 
@@ -1960,7 +1960,7 @@ void Player::RenderStaticPrepass()
       delete initialPreRender;
    }
 
-   PLOGI << "Starting Reflection Probe prerendering"s; // For profiling
+   PLOGI << "Starting Reflection Probe prerendering"; // For profiling
 
    for (size_t i = 0; i < m_ptable->m_vrenderprobe.size(); i++)
    {
@@ -1970,7 +1970,7 @@ void Player::RenderStaticPrepass()
    // Store the total number of triangles prerendered (including ones done for render probes)
    stats_drawn_static_triangles = m_pin3d.m_pd3dPrimaryDevice->m_curDrawnTriangles;
 
-   PLOGI << "Static PreRender done"s; // For profiling
+   PLOGI << "Static PreRender done"; // For profiling
    
    m_render_mask &= ~STATIC_ONLY;
    m_pin3d.m_pd3dPrimaryDevice->FlushRenderFrame();
@@ -2848,7 +2848,7 @@ void Player::UpdatePhysics()
       //                                        Intended mainly to be used if vsync is enabled (e.g. most idle time is shifted from vsync-waiting to here)
       if (m_minphyslooptime > 0)
       {
-         const U64 basetime = usec(); 
+         const U64 basetime = usec();
          const U64 targettime = ((U64)m_minphyslooptime * m_phys_iterations) + m_lastFlipTime;
          // If we're 3/4 of the way through the loop, fire a "controller sync" timer (timers with an interval set to -2) event so VPM can react to input.
          if (m_phys_iterations == 750 / ((int)m_fps + 1))
@@ -3082,13 +3082,13 @@ void Player::DrawBulbLightBuffer()
    static int id = 0; id++;
 
    // switch to 'bloom' output buffer to collect all bulb lights
-   p3dDevice->SetRenderTarget("Transmitted Light "s + std::to_string(id) + " Clear", p3dDevice->GetBloomBufferTexture(), false);
+   p3dDevice->SetRenderTarget("Transmitted Light " + std::to_string(id) + " Clear", p3dDevice->GetBloomBufferTexture(), false);
    p3dDevice->ResetRenderState();
    p3dDevice->Clear(clearType::TARGET, 0, 1.0f, 0L);
 
    // Draw bulb lights
    m_render_mask |= LIGHT_BUFFER;
-   p3dDevice->SetRenderTarget("Transmitted Light "s + std::to_string(id), p3dDevice->GetBloomBufferTexture(), true, true);
+   p3dDevice->SetRenderTarget("Transmitted Light " + std::to_string(id), p3dDevice->GetBloomBufferTexture(), true, true);
    p3dDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE); // disable all z-tests as zbuffer is in different resolution
    for (Hitable *hitable : m_vhitables)
       if (hitable->HitableGetItemType() == eItemLight)
@@ -3114,7 +3114,7 @@ void Player::DrawBulbLightBuffer()
    }
 
    // Restore state and render target
-   p3dDevice->SetRenderTarget(initial_rt->m_name + "+", initial_rt->m_rt);
+   p3dDevice->SetRenderTarget(initial_rt->m_name + '+', initial_rt->m_rt);
 
    if (hasLight)
    {

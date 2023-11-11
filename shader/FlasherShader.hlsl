@@ -67,20 +67,20 @@ float4 ps_main_noLight(const in VS_OUTPUT_2D IN)
    BRANCH if (amount_blend_modulate_vs_add_flasherMode.z < 2.) // Mode 0 & 1
    {
       pixel1 = tex2D(tex_flasher_A, IN.tex0);
-	  if (pixel1.a <= alphaTestValueAB_filterMode_addBlend.x)
-		return float4(0.0, 0.0, 0.0, 0.0);
+      if (pixel1.a <= alphaTestValueAB_filterMode_addBlend.x)
+         return float4(0.0, 0.0, 0.0, 0.0);
    }
    BRANCH if (amount_blend_modulate_vs_add_flasherMode.z == 1.)
    {
       pixel2 = tex2D(tex_flasher_B, IN.tex0);
       if (pixel2.a <= alphaTestValueAB_filterMode_addBlend.y)
-		return float4(0.0, 0.0, 0.0, 0.0);
+         return float4(0.0, 0.0, 0.0, 0.0);
    }
 
    float4 result = staticColor_Alpha; // Mode 2 wires this through
 
    if (amount_blend_modulate_vs_add_flasherMode.z == 0.) // Mode 0 mods it by Texture
-      result *= pixel1;
+      result *= pixel1; //!! gl has clamp for alpha
 
    BRANCH if (amount_blend_modulate_vs_add_flasherMode.z == 1.) // Mode 1 allows blends between Tex 1 & 2, and then mods the staticColor with it
    {

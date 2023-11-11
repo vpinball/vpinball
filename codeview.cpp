@@ -1361,7 +1361,7 @@ STDMETHODIMP CodeViewer::OnScriptErrorDebug(
 				errorStream << L" (";
 				errorStream << stackVariablesStream.str();
 				errorStream << L')';
-				PLOGE_(PLOG_NO_DBG_OUT_INSTANCE_ID) << "Stacktrace: " << frameDesc << " (" << stackVariablesStream.str() << ")";
+				PLOGE_(PLOG_NO_DBG_OUT_INSTANCE_ID) << "Stacktrace: " << frameDesc << " (" << stackVariablesStream.str() << ')';
 			}
 			else
 			{
@@ -3933,7 +3933,7 @@ STDMETHODIMP DebuggerModule::Print(VARIANT *pvar)
    {
       if (g_pplayer->m_hwndDebugOutput)
          m_pcv->AddToDebugOutput("");
-      PLOGI_IF_(PLOG_NO_DBG_OUT_INSTANCE_ID, logScript) << "Script.Print ''";
+      PLOGI_IF_(PLOG_NO_DBG_OUT_INSTANCE_ID, logScript) << "Script.Print '";
       return S_OK;
    }
 
@@ -3945,7 +3945,7 @@ STDMETHODIMP DebuggerModule::Print(VARIANT *pvar)
       const LocalString ls(IDS_DEBUGNOCONVERT);
       if (g_pplayer->m_hwndDebugOutput)
          m_pcv->AddToDebugOutput(ls.m_szbuffer);
-      PLOGI_IF_(PLOG_NO_DBG_OUT_INSTANCE_ID, logScript) << "Script.Print '" << ls.m_szbuffer << "'";
+      PLOGI_IF_(PLOG_NO_DBG_OUT_INSTANCE_ID, logScript) << "Script.Print '" << ls.m_szbuffer << '\'';
       return S_OK;
    }
 
@@ -3956,7 +3956,7 @@ STDMETHODIMP DebuggerModule::Print(VARIANT *pvar)
    WideCharToMultiByteNull(CP_ACP, 0, wzT, -1, szT, len + 1, nullptr, nullptr);
    if (g_pplayer->m_hwndDebugOutput)
       m_pcv->AddToDebugOutput(szT);
-   PLOGI_IF_(PLOG_NO_DBG_OUT_INSTANCE_ID, logScript) << "Script.Print '" << szT << "'";
+   PLOGI_IF_(PLOG_NO_DBG_OUT_INSTANCE_ID, logScript) << "Script.Print '" << szT << '\'';
    delete[] szT;
 
    return S_OK;

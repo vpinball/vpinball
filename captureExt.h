@@ -68,7 +68,7 @@ public:
          &dev->m_D3DFeatureLevel,  /* OUT: the selected feature level. */
          &dev->m_D3DContext);      /* OUT: the ID3D11DeviceContext that represents the above features. */
 
-      PLOGI << "Direct3D11 device created for adapter '" << adapterDesc.Description << "'";
+      PLOGI << "Direct3D11 device created for adapter '" << adapterDesc.Description << '\'';
 
       m_devices.push_back(dev);
       return dev;

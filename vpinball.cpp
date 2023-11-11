@@ -628,7 +628,7 @@ bool VPinball::ParseCommand(const size_t code, const bool notify)
          }
          else if (!ptCur->m_locked)
          {
-            if (IDYES == MessageBox("This will locl the table to prevent unexpected modification.\n\nAre you sure you want to lock the table ?", "Table locking", MB_YESNO | MB_ICONINFORMATION))
+            if (IDYES == MessageBox("This will lock the table to prevent unexpected modifications.\n\nAre you sure you want to lock the table ?", "Table locking", MB_YESNO | MB_ICONINFORMATION))
             {
                // TODO perform and show table audit (disable lighting vs static, script reference of static parts, png vs webp, hdr vs exr,...)
                ptCur->m_locked = true;
@@ -1051,13 +1051,13 @@ void VPinball::LoadFileName(const string& szFileName, const bool updateEditor)
       // auto-import POV settings, if it exists. This is kept for backward compatibility as POV settings 
       // are now normal settings stored with others in app/table ini file. It will be only imported if no ini settings are defined
       bool hasTablePovSettings = false, hasAppPovSettings = false;
-      const char *vsPrefix[3] = { "ViewDT", "ViewCab", "ViewFSS" };
-      const char *vsFields[15] = { "Mode", "ScaleX", "ScaleY", "ScaleZ", "PlayerX", "PlayerY", "PlayerZ", "LookAt", "Rotation", "FOV", "Layback", "HOfs", "VOfs", "WindowTop", "WindowBot" };
+      static const string vsPrefix[3] = { "ViewDT"s, "ViewCab"s, "ViewFSS"s };
+      static const char *vsFields[15] = { "Mode", "ScaleX", "ScaleY", "ScaleZ", "PlayerX", "PlayerY", "PlayerZ", "LookAt", "Rotation", "FOV", "Layback", "HOfs", "VOfs", "WindowTop", "WindowBot" };
       for (int i = 0; i < 3; i++)
          for (int j = 0; j < 15; j++)
          {
-            hasTablePovSettings |= ppt->m_settings.HasValue(Settings::TableOverride, string(vsPrefix[i]) + vsFields[j], false);
-            hasAppPovSettings |= g_pvp->m_settings.HasValue(Settings::TableOverride, string(vsPrefix[i]) + vsFields[j], false);
+            hasTablePovSettings |= ppt->m_settings.HasValue(Settings::TableOverride, vsPrefix[i] + vsFields[j], false);
+            hasAppPovSettings |= g_pvp->m_settings.HasValue(Settings::TableOverride, vsPrefix[i] + vsFields[j], false);
          }
       if (!hasTablePovSettings)
       {
@@ -1103,7 +1103,7 @@ void VPinball::LoadFileName(const string& szFileName, const bool updateEditor)
       SetCurrentDirectory(m_currentTablePath.c_str());
       UpdateRecentFileList(szFileName);
 
-      PLOGI << "UI Post Load Start"s;
+      PLOGI << "UI Post Load Start";
 
       ppt->AddMultiSel(ppt, false, true, false);
       ppt->SetDirty(eSaveClean);
@@ -1118,7 +1118,7 @@ void VPinball::LoadFileName(const string& szFileName, const bool updateEditor)
          SetFocus();
       }
 
-      PLOGI << "UI Post Load End"s;
+      PLOGI << "UI Post Load End";
    }
 }
 
@@ -1688,7 +1688,7 @@ void VPinball::OnInitialUpdate()
 
    wintimer_init();                    // calibrate the timer routines
 
-   PLOGI << "OnInitialUpdate"s;
+   PLOGI << "OnInitialUpdate";
 
    constexpr int foo[6] = { 120, 240, 400, 600, 800, 1400 };
 

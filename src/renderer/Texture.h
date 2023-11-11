@@ -45,13 +45,13 @@ public:
    static BaseTexture *CreateFromData(const void *data, const size_t size, unsigned int maxTexDim);
    static BaseTexture *CreateFromFreeImage(FIBITMAP *dib, bool resize_on_low_mem, unsigned int maxTexDim); // also free's/delete's the dib inside!
 
-   uint8_t* GetMD5Hash() { UpdateMD5();  return m_md5Hash; }
-   bool IsOpaque() const { UpdateOpaque();  return m_isOpaque; }
+   uint8_t* GetMD5Hash() { UpdateMD5(); return m_md5Hash; }
+   bool IsOpaque() const { UpdateOpaque(); return m_isOpaque; }
    bool IsSigned() const { return m_isSigned; }
 
    bool IsMD5HashComputed() const { return !m_isMD5Dirty; }
    bool IsOpaqueComputed() const { return !m_isOpaqueDirty; }
-   void SetMD5Hash(uint8_t* md5) { memcpy(m_md5Hash, md5, 16); m_isMD5Dirty = false; }
+   void SetMD5Hash(uint8_t* md5) { memcpy(m_md5Hash, md5, sizeof(m_md5Hash)); m_isMD5Dirty = false; }
    void SetIsOpaque(const bool v) { m_isOpaque = v; m_isOpaqueDirty = false; }
    void SetIsSigned(const bool v) { m_isSigned = v; }
 

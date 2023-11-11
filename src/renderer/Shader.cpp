@@ -302,7 +302,7 @@ ShaderUniforms Shader::getUniformByName(const string& name)
    for (int i = 0; i < SHADER_UNIFORM_COUNT; ++i)
       if (name == shaderUniformNames[i].name)
          return (ShaderUniforms)i;
-   PLOGE << "[" << m_shaderCodeName << "] getUniformByName Could not find uniform " << name << " in shaderUniformNames";
+   PLOGE << '[' << m_shaderCodeName << "] getUniformByName Could not find uniform " << name << " in shaderUniformNames";
    return SHADER_UNIFORM_INVALID;
 }
 
@@ -327,7 +327,7 @@ ShaderAttributes Shader::getAttributeByName(const string& name)
    for (int i = 0; i < SHADER_ATTRIBUTE_COUNT; ++i)
       if (name == shaderAttributeNames[i])
          return ShaderAttributes(i);
-   PLOGE << "[" << m_shaderCodeName << "] getAttributeByName Could not find attribute " << name << " in shaderAttributeNames";
+   PLOGE << '[' << m_shaderCodeName << "] getAttributeByName Could not find attribute " << name << " in shaderAttributeNames";
    return SHADER_ATTRIBUTE_INVALID;
 }
 
@@ -1022,7 +1022,7 @@ bool Shader::parseFile(const string& fileNameRoot, const string& fileName, int l
             const size_t end = line.find('"', start + 1);
             values[currentMode] = currentElement;
             if ((start == string::npos) || (end == string::npos) || (end <= start) || !parseFile(fileNameRoot, line.substr(start + 1, end - start - 1), level + 1, values, currentMode)) {
-               PLOGE << fileName << "(" << linenumber << "):" << line << " failed.";
+               PLOGE << fileName << '(' << linenumber << "):" << line << " failed.";
             }
             currentElement = values[currentMode];
          }

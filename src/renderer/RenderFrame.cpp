@@ -77,7 +77,7 @@ bool RenderFrame::Execute(const bool log)
       {
          if (pass != m_passes[0])
             ss1 << ", ";
-         ss1 << "'" << pass->m_name << "'";
+         ss1 << '\'' << pass->m_name << '\'';
          #ifdef LOG_PASS_SORTING
          std::stringstream ss;
          ss << "> Pass '" << pass->m_name << "' [RT=" << pass->m_rt->m_name << ", " << pass->m_commands.size() << " commands, Dependencies:";
@@ -89,11 +89,11 @@ bool RenderFrame::Execute(const bool log)
             first = false;
             ss << dep->m_name;
          }
-         ss << "]";
+         ss << ']';
          PLOGI << ss.str();
          #endif
       }
-      PLOGI << ss1.str() << "]";
+      PLOGI << ss1.str() << ']';
    }
 
    // Sort passes to avoid useless render target switching, allow merging passes for better draw call sorting/batching, drop passes that do not contribute to the final pass
@@ -142,7 +142,7 @@ bool RenderFrame::Execute(const bool log)
       {
          if (pass != sortedPasses[0])
             ss1 << ", ";
-         ss1 << "'" << pass->m_name << "'";
+         ss1 << '\'' << pass->m_name << '\'';
          #ifdef LOG_PASS_SORTING
          std::stringstream ss;
          ss << "> Pass '" << pass->m_name << "' [RT=" << pass->m_rt->m_name << ", " << pass->m_commands.size() << " commands, Dependencies:";
@@ -154,11 +154,11 @@ bool RenderFrame::Execute(const bool log)
             first = false;
             ss << dep->m_name;
          }
-         ss << "]";
+         ss << ']';
          PLOGI << ss.str();
          #endif
       }
-      PLOGI << ss1.str() << "]";
+      PLOGI << ss1.str() << ']';
    }
 
    #ifndef ENABLE_SDL

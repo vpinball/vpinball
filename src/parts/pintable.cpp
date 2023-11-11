@@ -1619,7 +1619,7 @@ if(!found) \
 
 void PinTable::InitTablePostLoad()
 {
-   PLOGI << "InitTablePostLoad"s; // For profiling
+   PLOGI << "InitTablePostLoad"; // For profiling
 
    for (unsigned int i = 1; i < NUM_BG_SETS; ++i)
       if (mViewSetups[i].mFOV == FLT_MAX) // old table, copy FS and/or FSS settings over from old DT setting
@@ -2108,7 +2108,7 @@ void PinTable::Play(const int playMode)
    if (g_pplayer)
       return; // Can't play twice
 
-   PLOGI << "Starting Play mode [table: " << m_szTableName << ", play mode: " << playMode << "]";
+   PLOGI << "Starting Play mode [table: " << m_szTableName << ", play mode: " << playMode << ']';
    m_vpinball->ShowSubDialog(m_progressDialog, !g_pvp->m_open_minimized);
 
    m_progressDialog.SetProgress(1);
@@ -2396,7 +2396,7 @@ void PinTable::StopPlaying()
    m_lightMap.clear();
    m_renderprobeMap.clear();
 
-   PLOGI << "Ending Play mode [table: " << m_szTableName << "]";
+   PLOGI << "Ending Play mode [table: " << m_szTableName << ']';
 }
 
 HRESULT PinTable::InitVBA()
@@ -3644,7 +3644,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
 
          if (SUCCEEDED(hr = LoadData(pstmGame, csubobj, csounds, ctextures, cfonts, ccollection, loadfileversion, hch, (loadfileversion < NO_ENCRYPTION_FORMAT_VERSION) ? hkey : NULL)))
          {
-            PLOGI << "LoadData loaded"s; // For profiling
+            PLOGI << "LoadData loaded"; // For profiling
 
             const int ctotalitems = csubobj + csounds + ctextures + cfonts;
             int cloadeditems = 0;
@@ -3679,7 +3679,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
                ::SendMessage(hwndProgressBar, PBM_SETPOS, cloadeditems, 0);
             }
 
-            PLOGI << "GameItem loaded"s; // For profiling
+            PLOGI << "GameItem loaded"; // For profiling
 
             for (int i = 0; i < csounds; i++)
             {
@@ -3697,7 +3697,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
                ::SendMessage(hwndProgressBar, PBM_SETPOS, cloadeditems, 0);
             }
 
-            PLOGI << "Sound loaded"s; // For profiling
+            PLOGI << "Sound loaded"; // For profiling
 
             assert(m_vimage.empty());
             m_vimage.resize(ctextures); // due to multithreaded loading do pre-allocation
@@ -3749,7 +3749,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
                     if (!m_vimage[i] || m_vimage[i]->m_pdsBuffer == nullptr)
                         failed_load_img += '\n' + (m_vimage[i] ? m_vimage[i]->m_szName : szStmName);
                     else if ((m_vimage[i]->m_realWidth > m_vimage[i]->m_width) || (m_vimage[i]->m_realHeight > m_vimage[i]->m_height)) //!! do not warn on resize, as original image file/binary blob is always loaded into mem! (otherwise table load failure is triggered)
-                        PLOGW << "Image '" << m_vimage[i]->m_szName << "' was downsized from " << m_vimage[i]->m_realWidth << "x" << m_vimage[i]->m_realHeight << " to " << m_vimage[i]->m_width << "x" << m_vimage[i]->m_height << " due to low memory ";
+                        PLOGW << "Image '" << m_vimage[i]->m_szName << "' was downsized from " << m_vimage[i]->m_realWidth << 'x' << m_vimage[i]->m_realHeight << " to " << m_vimage[i]->m_width << 'x' << m_vimage[i]->m_height << " due to low memory ";
                 }
 
             if (!failed_load_img.empty())
@@ -3779,7 +3779,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
                         --i2;
                      }
 
-            PLOGI << "Image loaded"s; // Profiling
+            PLOGI << "Image loaded"; // Profiling
 
             ::SendMessage(hwndProgressBar, PBM_SETPOS, cloadeditems, 0);
 
@@ -3802,7 +3802,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
                ::SendMessage(hwndProgressBar, PBM_SETPOS, cloadeditems, 0);
             }
 
-            PLOGI << "Font loaded"s; // For profiling
+            PLOGI << "Font loaded"; // For profiling
 
             for (int i = 0; i < ccollection; i++)
             {
@@ -3825,7 +3825,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
                ::SendMessage(hwndProgressBar, PBM_SETPOS, cloadeditems, 0);
             }
 
-            PLOGI << "Collection loaded"s; // For profiling
+            PLOGI << "Collection loaded"; // For profiling
 
             for (size_t i = 0; i < m_vedit.size(); i++)
             {
@@ -3833,7 +3833,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
                piedit->InitPostLoad();
             }
 
-            PLOGI << "IEditable PostLoad performed"s; // For profiling
+            PLOGI << "IEditable PostLoad performed"; // For profiling
          }
          pstmGame->Release();
 
@@ -5926,8 +5926,8 @@ void PinTable::ImportBackdropPOV(const string &filename)
    string ext = ExtensionFromFilename(file);
    StrToLower(ext);
 
-   const char *vsPrefix[3] = { "ViewDT", "ViewCab", "ViewFSS" };
-   const char *vsFields[15] = { "Mode", "ScaleX", "ScaleY", "ScaleZ", "PlayerX", "PlayerY", "PlayerZ", "LookAt", "Rotation", "FOV", "Layback", "HOfs", "VOfs", "WindowTop", "WindowBot" };
+   static const string vsPrefix[3] = { "ViewDT"s, "ViewCab"s, "ViewFSS"s };
+   static const char *vsFields[15] = { "Mode", "ScaleX", "ScaleY", "ScaleZ", "PlayerX", "PlayerY", "PlayerZ", "LookAt", "Rotation", "FOV", "Layback", "HOfs", "VOfs", "WindowTop", "WindowBot" };
    if (ext == "ini")
    {
       Settings settings;
@@ -6239,7 +6239,7 @@ void PinTable::ExportBackdropPOV()
       g_pplayer->m_liveUI->PushNotification("POV was not exported to "s + iniFileName + " (nothing to save)", 5000);
    }
 
-   PLOGI << "View setup exported to '" << iniFileName << "'";
+   PLOGI << "View setup exported to '" << iniFileName << '\'';
 }
 
 void PinTable::SelectItem(IScriptable *piscript)
@@ -8647,7 +8647,7 @@ STDMETHODIMP PinTable::get_GlobalDayNight(VARIANT_BOOL *pVal)
 {
    // FIXME deprecated
    //*pVal = FTOVB(m_overwriteGlobalDayNight);
-   *pVal = FTOVB(m_settings.HasValue(Settings::Player, "OverrideTableEmissionScale"));
+   *pVal = FTOVB(m_settings.HasValue(Settings::Player, "OverrideTableEmissionScale"s));
 
    return S_OK;
 }
@@ -10236,7 +10236,7 @@ void PinTable::InvokeBallBallCollisionCallback(const Ball *b1, const Ball *b2, f
 
 void PinTable::OnInitialUpdate()
 {
-    PLOGI << "PinTable OnInitialUpdate"s; // For profiling
+    PLOGI << "PinTable OnInitialUpdate"; // For profiling
 
     BeginAutoSaveCounter();
     SetWindowText(m_szFileName.c_str());

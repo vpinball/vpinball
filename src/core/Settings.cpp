@@ -36,7 +36,7 @@ bool Settings::LoadFromFile(const string& path, const bool createDefault)
    mINI::INIFile file(path);
    if (file.read(m_ini))
    {
-      PLOGI << "Settings file was loaded from '" << path << "'";
+      PLOGI << "Settings file was loaded from '" << path << '\'';
       return true;
    }
    else if (createDefault)
@@ -142,7 +142,7 @@ bool Settings::LoadFromFile(const string& path, const bool createDefault)
                m_ini[regKey[j]][name] = copy;
             else
             {
-               PLOGI << "Settings '" << regKey[j] << "/" << szName << "' was not imported (value in registry: " << copy << ")";
+               PLOGI << "Settings '" << regKey[j] << '/' << szName << "' was not imported (value in registry: " << copy << ')';
             }
          }
          RegCloseKey(hk);
@@ -153,7 +153,7 @@ bool Settings::LoadFromFile(const string& path, const bool createDefault)
    }
    else
    {
-      PLOGI << "Settings file was not found at '" << path << "'";
+      PLOGI << "Settings file was not found at '" << path << '\'';
       return false;
    }
 }
