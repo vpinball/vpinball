@@ -640,10 +640,6 @@ LiveUI::LiveUI(RenderDevice *const rd)
    // Editor camera position. We use a right handed system for easy ImGuizmo integration while VPX renderer is left handed, so reverse X axis
    m_orthoCam = true;
    m_camDistance = m_live_table->m_bottom * 0.7f;
-   constexpr bool isPerspective = false;
-   constexpr float viewWidth = 10.f; // for orthographic
-   constexpr float camYAngle = 165.f * float(M_PI / 180.);
-   constexpr float camXAngle = 32.f * float(M_PI / 180.);
    const vec3 eye(m_live_table->m_right * 0.5f, m_live_table->m_bottom * 0.5f, -m_camDistance);
    const vec3 at(m_live_table->m_right * 0.5f, m_live_table->m_bottom * 0.5f, 0.f);
    const vec3 up(0.f, -1.f, 0.f);
@@ -1080,7 +1076,7 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
    if (!IsTweakMode())
       return;
    BackdropSetting activeTweakSetting = m_tweakPageOptions[m_activeTweakIndex];
-   PinTable *table = m_live_table;
+   PinTable * const table = m_live_table;
    if (keycode == g_pplayer->m_rgKeys[eLeftFlipperKey] || keycode == g_pplayer->m_rgKeys[eRightFlipperKey])
    {
       // Do not react on key up/continuous press for Page/View
@@ -1228,7 +1224,6 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
       else if (keycode == g_pplayer->m_rgKeys[ePlungerKey])
       {
          // Reset to default values
-         PinTable *const table = m_live_table;
          if (m_activeTweakPage == TP_TableOption)
          {
             // Remove custom difficulty and get back to the one of the table, eventually overiden by app (not table) settings
@@ -1396,7 +1391,6 @@ void LiveUI::UpdateTweakModeUI()
    const bool isWindow = viewSetup.mMode == VLM_WINDOW;
 
    BackdropSetting activeTweakSetting = m_tweakPageOptions[m_activeTweakIndex];
-   const bool isStereo = m_player->m_stereo3Denabled && m_player->m_stereo3D != STEREO_OFF && m_player->m_stereo3D != STEREO_VR;
    if (ImGui::BeginTable("TweakTable", 3, /* ImGuiTableFlags_Borders */ 0))
    {
       static float vWidth = 50.f;
@@ -2783,7 +2777,7 @@ void LiveUI::UpdateMainSplashModal()
          CloseTweakMode();
 
       ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-      // Resume: click on the button, or press escape key (react on key released, otherwise, it would immediatly reopen the UI)
+      // Resume: click on the button, or press escape key (react on key released, otherwise, it would immediately reopen the UI)
       if (ImGui::Button("Resume Game", size) || (enableKeyboardShortcuts && ((ImGui::IsKeyReleased(dikToImGuiKeys[m_player->m_rgKeys[eEscape]]) && !m_disable_esc))))
       {
          ImGui::CloseCurrentPopup();
@@ -2817,8 +2811,12 @@ void LiveUI::UpdateMainSplashModal()
          m_player->DisableStaticPrePass(true);
          ResetCameraFromPlayer();
       }
+      if (g_pvp->m_ptableActive->IsLocked() && !g_pvp->m_ptableActive->FDirty() && ImGui::Button("Generate Tournament File", size))
+      {
+         g_pvp->GenerateTournamentFile();
+      }
       // Quit: click on the button, or press exit button
-      if (ImGui::Button("Quit to editor", size) || (enableKeyboardShortcuts && ImGui::IsKeyPressed(dikToImGuiKeys[m_player->m_rgKeys[eExitGame]])))
+      if (ImGui::Button("Quit to Editor", size) || (enableKeyboardShortcuts && ImGui::IsKeyPressed(dikToImGuiKeys[m_player->m_rgKeys[eExitGame]])))
       {
          ImGui::CloseCurrentPopup();
          HideUI();
@@ -3557,7 +3555,7 @@ void LiveUI::PropCombo(const char *label, IEditable *undo_obj, bool is_live, int
 void LiveUI::PropImageCombo(const char *label, IEditable *undo_obj, bool is_live, string *startup_v, string *live_v, PinTable *table, OnStringPropChange chg_callback)
 {
    PROP_HELPER_BEGIN(string)
-   const char * const preview_value = (*v).c_str();
+   const char *const preview_value = v->c_str();
    if (ImGui::BeginCombo(label, preview_value))
    {
       const std::function<string(Texture *)> map = [](Texture *image) -> string { return image->m_szName; };
@@ -3583,7 +3581,7 @@ void LiveUI::PropImageCombo(const char *label, IEditable *undo_obj, bool is_live
 void LiveUI::PropMaterialCombo(const char *label, IEditable *undo_obj, bool is_live, string *startup_v, string *live_v, PinTable *table, OnStringPropChange chg_callback)
 {
    PROP_HELPER_BEGIN(string)
-   const char *const preview_value = (*v).c_str();
+   const char *const preview_value = v->c_str();
    if (ImGui::BeginCombo(label, preview_value))
    {
       const std::function<string(Material *)> map = [](Material *material) -> string { return material->m_szName; };

@@ -77,7 +77,6 @@ private:
    bool ApcHost_OnTranslateMessage(MSG* pmsg);
    bool processKeyInputForDialogs(MSG *pmsg);
 
-
 public:
    void AddMDITable(PinTableMDI* mdiTable);
    CMenu GetMainMenu(int id);
@@ -102,6 +101,9 @@ public:
 
    void SetActionCur(const string& szaction);
    void SetCursorCur(HINSTANCE hInstance, LPCTSTR lpCursorName);
+
+   void GenerateTournamentFile();
+   void GenerateImageFromTournamentFile(const string& tablefile, const string& txtfile);
 
    STDMETHOD(QueryInterface)(REFIID riid, void** ppvObj);
    STDMETHOD_(ULONG, AddRef)();

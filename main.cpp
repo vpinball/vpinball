@@ -216,6 +216,7 @@ static const string options[] = { // keep in sync with option_names & option_des
    "ExtractVBS"s,
    "Ini"s,
    "TableIni"s,
+   "TournamentFile"s,
    "exit"s // (ab)used by frontend, not handled by us
 }; // + c1..c9
 static const string option_descs[] =
@@ -239,6 +240,7 @@ static const string option_descs[] =
    "[filename]  Load, export table script and close"s,
    "[filename]  Use a custom settings file instead of loading it from the default location"s,
    "[filename]  Use a custom table settings file. This option is only available in conjunction with a command which specifies a table filename like Play, Edit,..."s,
+   "[table filename] [tournament filename]  Load a table and tournament file and convert to .png"s,
    string()
 };
 enum option_names
@@ -262,6 +264,7 @@ enum option_names
    OPTION_EXTRACTVBS,
    OPTION_INI,
    OPTION_TABLE_INI,
+   OPTION_TOURNAMENT,
    OPTION_FRONTEND_EXIT
 };
 
@@ -430,11 +433,21 @@ public:
                             "\n-"  +options[OPTION_EXTRACTVBS]+           ' '+ option_descs[OPTION_EXTRACTVBS]+
                             "\n-"  +options[OPTION_INI]+                  ' '+ option_descs[OPTION_INI]+
                             "\n-"  +options[OPTION_TABLE_INI]+            ' '+ option_descs[OPTION_TABLE_INI]+
-                            "\n-c1 [customparam] .. -c9 [customparam]  Custom user parameters that can be accessed in the script via GetCustomParam(X)";
+                            "\n\n-"+options[OPTION_TOURNAMENT]+           ' '+ option_descs[OPTION_TOURNAMENT]+
+                            "\n\n-c1 [customparam] .. -c9 [customparam]  Custom user parameters that can be accessed in the script via GetCustomParam(X)";
             if (!valid_param)
                 output = "Invalid Parameter "s + szArglist[i] + "\n\nValid Parameters are:\n\n" + output;
             ::MessageBox(NULL, output.c_str(), "Visual Pinball Usage", valid_param ? MB_OK : MB_ICONERROR);
             exit(valid_param ? 0 : 1);
+         }
+
+         //
+
+         if (compare_option(szArglist[i], OPTION_TOURNAMENT) && (i+2 < nArgs))
+         {
+            m_vpinball.GenerateImageFromTournamentFile(szArglist[i + 1], szArglist[i + 2]);
+            m_run = false;
+            break;
          }
 
          //

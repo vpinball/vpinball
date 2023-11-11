@@ -6,6 +6,7 @@
 #include "resource.h"
 #include "KeysConfigDialog.h"
 #include <filesystem>
+#include "freeimage.h"
 
 #if defined(IMSPANISH)
 #define TOOLBAR_WIDTH 152
@@ -66,10 +67,6 @@ SORTDATA SortData;
 
 static volatile bool firstRun = true;
 
-///<summary>
-///VPinball Constructor
-///<para>Init</para>
-///</summary>
 VPinball::VPinball()
 {
    // DLL_API void DLL_CALLCONV FreeImage_Initialise(BOOL load_local_plugins_only FI_DEFAULT(FALSE)); // would only be needed if linking statically
@@ -129,11 +126,8 @@ VPinball::VPinball()
    }
 }
 
-///<summary>
-///VPinball Destructor
-///<para>deletes clipboard</para>
-///<para>Releases Resources for Script editor</para>
-///</summary>
+//deletes clipboard
+//Releases Resources for Script editor
 VPinball::~VPinball()
 {
    // DLL_API void DLL_CALLCONV FreeImage_DeInitialise(); // would only be needed if linking statically
@@ -141,11 +135,9 @@ VPinball::~VPinball()
    FreeLibrary(m_scintillaDll);
 }
 
-///<summary>
-///Store path of exe (without the exe's filename) in Class Variable
-///<para>Stores path as string in m_szMyPath (8 bit ansi)</para>
-///<para>Stores path as wstring in m_wzMyPath (16 bit Unicode)</para>
-///</summary>
+//Store path of exe (without the exe's filename) in Class Variable
+//Stores path as string in m_szMyPath (8 bit Ansi)
+//Stores path as wstring in m_wzMyPath (16 bit Unicode)
 void VPinball::GetMyPath()
 {
    char szPath[MAXSTRING];
@@ -204,10 +196,8 @@ void VPinball::GetMyPrefPath()
       std::filesystem::create_directory(m_szMyPrefPath);
 }
 
-///<summary>
-///Ensure that worker thread exists
-///<para>Starts worker Thread otherwise</para>
-///</summary>
+//Ensure that worker thread exists
+//Starts worker Thread otherwise
 void VPinball::EnsureWorkerThread()
 {
    if (!m_workerthread)
@@ -221,14 +211,12 @@ void VPinball::EnsureWorkerThread()
    }
 }
 
-///<summary>
-///Post Work to the worker Thread
-///<para>Creates Worker-Thread if not present</para>
-///<para>See Worker::VPWorkerThreadStart for infos</para>
-///<param name="workid">int for the type of message (COMPLETE_AUTOSAVE | HANG_SNOOP_START | HANG_SNOOP_STOP)</param>
-///<param name="lParam">Second Parameter for message (AutoSavePackage (see worker.h) if COMPLETE_AUTOSAVE, otherwise nullptr)</param>
-///<returns>Handle to Event that get ack. If event is finished (unsure)</returns>
-///</summary>
+//Post Work to the worker Thread
+//Creates Worker-Thread if not present
+//See Worker::VPWorkerThreadStart for infos
+//workid int for the type of message (COMPLETE_AUTOSAVE | HANG_SNOOP_START | HANG_SNOOP_STOP)
+//Second Parameter for message (AutoSavePackage (see worker.h) if COMPLETE_AUTOSAVE, otherwise nullptr)
+//returns Handle to Event that get ack. If event is finished (unsure)
 HANDLE VPinball::PostWorkToWorkerThread(int workid, LPARAM lParam)
 {
    EnsureWorkerThread();										// Check if Workerthread was created once, otherwise create
@@ -240,35 +228,27 @@ HANDLE VPinball::PostWorkToWorkerThread(int workid, LPARAM lParam)
    return hEvent;
 }
 
-///<summary>
-///Sets m_autosavetime
-///<param name="minutes">int Minutes between autosave</param>
-///</summary>
 void VPinball::SetAutoSaveMinutes(const int minutes)
 {
    m_autosaveTime = (minutes <= 0) ? -1 : minutes * (60 * 1000); // convert to milliseconds
 }
 
-///<summary>
-///Post Work to the worker Thread
-///<para>Creates Worker-Thread if not present</para>
-///<para>See Worker::VPWorkerThreadStart for infos</para>
-///<param name="workid">int for the type of message (COMPLETE_AUTOSAVE | HANG_SNOOP_START | HANG_SNOOP_STOP)</param>
-///<param name="lparam">Second Parameter for message (AutoSavePackage (see worker.h) if COMPLETE_AUTOSAVE, otherwise nullptr)</param>
-///<returns>Handle to Event that get ack. If event is finished (unsure)</returns>
-///</summary>
+//Post Work to the worker Thread
+//Creates Worker-Thread if not present
+//See Worker::VPWorkerThreadStart for infos
+//workid int for the type of message (COMPLETE_AUTOSAVE | HANG_SNOOP_START | HANG_SNOOP_STOP)
+//Second Parameter for message (AutoSavePackage (see worker.h) if COMPLETE_AUTOSAVE, otherwise nullptr)
+//returns Handle to Event that get ack. If event is finished (unsure)
 void VPinball::InitTools()
 {
    m_ToolCur = IDC_SELECT;
 }
 
-///<summary>
-///Initializes Default Values of many variables (from Registry if keys are present).
-///<para>Registry Values under HKEY-CURRENT-USER/Software/Visual Pinball</para>
-///<para>Deadzone, ShowDragPoints, DrawLightCenters,</para>
-///<para>AutoSaveOn, AutoSaveTime, SecurityLevel</para>
-///<para>Gets the last loaded Tables (List under File-Menu)</para>
-///</summary>
+//Initializes Default Values of many variables (from Registry if keys are present).
+//Registry Values under HKEY-CURRENT-USER/Software/Visual Pinball
+//Deadzone, ShowDragPoints, DrawLightCenters,
+//AutoSaveOn, AutoSaveTime, SecurityLevel
+//Gets the last loaded Tables (List under File-Menu)
 void VPinball::InitRegValues()
 {
    const int deadz = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "DeadZone"s, 0);
@@ -2543,4 +2523,169 @@ void VPinball::CopyPasteElement(const CopyPasteModes mode)
          break;
       }
    }
+}
+
+static constexpr uint8_t lookupRev[16] = {
+0x0, 0x8, 0x4, 0xc, 0x2, 0xa, 0x6, 0xe,
+0x1, 0x9, 0x5, 0xd, 0x3, 0xb, 0x7, 0xf };
+
+inline uint8_t reverse(uint8_t n)
+{
+   return (lookupRev[n & 0x0f] << 4) | lookupRev[n >> 4];
+}
+
+static unsigned int GenerateTournamentFileInternal(BYTE *const dmd_data, const unsigned int dmd_size, const string& tablefile)
+{
+   unsigned int dmd_data_c = 0;
+
+   FILE *f;
+   if (fopen_s(&f, tablefile.c_str(), "rb") == 0 && f)
+   {
+      BYTE tmp[4096];
+      size_t r;
+      while ((r = fread(tmp, 1, sizeof(tmp), f))) //!! also include MD5 at end?
+      {
+         for (unsigned int i = 0; i < r; ++i)
+         {
+            dmd_data[dmd_data_c++] ^= reverse(tmp[i]);
+            if (dmd_data_c == dmd_size)
+               dmd_data_c = 0;
+         }
+      }
+      fclose(f);
+   }
+   else
+      ShowError("Cannot open Table");
+
+#ifdef _MSC_VER //!! other OSs?
+   char szPath[MAXSTRING];
+   GetModuleFileName(nullptr, szPath, MAXSTRING);
+   if(fopen_s(&f, szPath, "rb") == 0 && f)
+   {
+      BYTE tmp[4096];
+      size_t r;
+      while ((r = fread(tmp, 1, sizeof(tmp), f))) //!! also include MD5 at end?
+      {
+         for (unsigned int i = 0; i < r; ++i)
+         {
+            dmd_data[dmd_data_c++] ^= reverse(tmp[i]);
+            if (dmd_data_c == dmd_size)
+               dmd_data_c = 0;
+         }
+      }
+      fclose(f);
+   }
+   else
+      ShowError("Cannot open Executable");
+#endif
+
+   _mm_sfence();
+
+   return dmd_data_c;
+}
+
+static void GenerateTournamentFileInternal2(BYTE *const dmd_data, const unsigned int dmd_size, unsigned int dmd_data_c)
+{
+   BYTE *fs = (BYTE*)&GenerateTournamentFileInternal;
+   BYTE *fe = fs;
+   while (true)
+   {
+      if (fe[0] == 0x0F && fe[1] == 0xAE && fe[2] == 0xF8)
+         break;
+      fe++;
+   } //!! also include MD5 ?
+
+   while (fs < fe)
+   {
+      dmd_data[dmd_data_c++] ^= reverse(*fs);
+      fs++;
+      if (dmd_data_c == dmd_size)
+         dmd_data_c = 0;
+   }
+}
+
+void VPinball::GenerateTournamentFile()
+{
+   unsigned int dmd_size = g_pplayer->m_dmd.x * g_pplayer->m_dmd.y;
+   if (dmd_size == 0)
+      return;
+
+   BYTE *const dmd_data = new BYTE[dmd_size + 16];
+   if (g_pplayer->m_texdmd->m_format == BaseTexture::BW)
+      memcpy(dmd_data, g_pplayer->m_texdmd->data(), dmd_size);
+   else if (g_pplayer->m_texdmd->m_format == BaseTexture::RGBA)
+   {
+      const DWORD *const data = (DWORD*)g_pplayer->m_texdmd->data();
+      if (data[0] & 0xFF000000u) // real RGB 0..255
+      {
+         for (unsigned int i = 0; i < dmd_size; ++i)
+            dmd_data[i] = ((data[i] & 0xFF) + ((data[i] >> 8) & 0xFF) + ((data[i] >> 16) & 0xFF))/3;
+      }
+      else // single channel 0..100
+         for (unsigned int i = 0; i < dmd_size; ++i)
+            dmd_data[i] = (data[i] & 0xFF)*255 / 100;
+   }
+   generateMD5(dmd_data, dmd_size, dmd_data + dmd_size);
+   dmd_size += 16;
+   GenerateTournamentFileInternal2(dmd_data, dmd_size, GenerateTournamentFileInternal(dmd_data, dmd_size, GetActiveTable()->m_szFileName));
+
+   FILE *f;
+   if (fopen_s(&f, (g_pvp->GetActiveTable()->m_szFileName + ".txt").c_str(), "w") == 0 && f)
+   {
+      fprintf(f, "%04X", g_pplayer->m_dmd.x);
+      fprintf(f, "%04X", g_pplayer->m_dmd.y);
+      for (unsigned int i = 0; i < dmd_size; ++i)
+         fprintf(f,"%02X",dmd_data[i]);
+      fclose(f);
+   }
+   else
+      ShowError("Cannot save Tournament file");
+
+   delete[] dmd_data;
+}
+
+void VPinball::GenerateImageFromTournamentFile(const string &tablefile, const string &txtfile)
+{
+   unsigned int x, y, dmd_size;
+   BYTE *dmd_data;
+   FILE *f;
+   if (fopen_s(&f, txtfile.c_str(), "r") == 0 && f)
+   {
+      fscanf_s(f, "%04X", &x);
+      fscanf_s(f, "%04X", &y);
+      dmd_size = x * y + 16;
+      dmd_data = new BYTE[dmd_size];
+      for (unsigned int i = 0; i < dmd_size; ++i)
+      {
+         unsigned int v;
+         fscanf_s(f, "%02X", &v);
+         dmd_data[i] = v;
+      }
+      fclose(f);
+   }
+   else
+   {
+      ShowError("Cannot open Tournament file");
+      return;
+   }
+
+   GenerateTournamentFileInternal2(dmd_data, dmd_size, GenerateTournamentFileInternal(dmd_data, dmd_size, tablefile));
+   uint8_t md5[16];
+   generateMD5(dmd_data, dmd_size-16, md5);
+   if (memcmp(dmd_data+(dmd_size-16),md5,16) != 0)
+   {
+      ShowError("Corrupt Tournament file");
+      return;
+   }
+
+   FIBITMAP *dib = FreeImage_Allocate(x, y, 8);
+   BYTE *const psrc = FreeImage_GetBits(dib);
+   for (unsigned int j = 0; j < y; j++)
+      for (unsigned int i = 0; i < x; i++)
+         psrc[i + (y-1-j)*x] = dmd_data[i+j*x]; // flip y-axis for image output
+   if (!FreeImage_Save(FIF_PNG, dib, (txtfile + ".png").c_str(), PNG_Z_BEST_COMPRESSION))
+      MessageBox("Export failed!", "Tournament file conversion", MB_OK | MB_ICONEXCLAMATION);
+   FreeImage_Unload(dib);
+
+   delete[] dmd_data;
 }
