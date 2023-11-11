@@ -1484,7 +1484,7 @@ void Primitive::Render(const unsigned int renderMask)
       m_rd->DrawMesh(m_rd->basicShader, 
             is_reflection_only_pass // The reflection pass is an additive (so transparent) pass to be drawn after the opaque one
          || refractions // Refractions must be rendered back to front since they rely on what is behind
-         || (mat->m_bOpacityActive && !m_d.m_staticRendering && !m_rd->GetRenderState().IsOpaque()),
+         || (mat->m_bOpacityActive && !m_d.m_staticRendering /* && !m_rd->GetRenderState().IsOpaque() */), // We can not use the real render state opaque state since Blood Machine and other tables use depth masks
             m_d.m_vPosition, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_d.m_groupdRendering ? m_numGroupIndices : (DWORD)m_mesh.NumIndices());
    }
 
