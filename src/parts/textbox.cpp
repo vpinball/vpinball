@@ -177,6 +177,7 @@ HRESULT Textbox::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveF
    IPersistStream * ips;
    m_pIFont->QueryInterface(IID_IPersistStream, (void **)&ips);
    const HRESULT hr = ips->Save(pstm, TRUE);
+   SAFE_RELEASE_NO_RCC(ips);
 
    bw.WriteTag(FID(ENDB));
 
@@ -230,9 +231,8 @@ bool Textbox::LoadToken(const int id, BiffReader * const pbr)
       }
       IPersistStream * ips;
       m_pIFont->QueryInterface(IID_IPersistStream, (void **)&ips);
-
       ips->Load(pbr->m_pistream);
-
+      SAFE_RELEASE_NO_RCC(ips);
       break;
    }
    default: ISelect::LoadToken(id, pbr); break;
