@@ -1260,7 +1260,7 @@ void Flasher::Render(const unsigned int renderMask)
    }
 
    m_rd->ResetRenderState();
-   m_rd->SetRenderStateCulling(RenderState::CULL_NONE);
+   m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
 
    const vec4 color = convertColor(m_d.m_color, (float)m_d.m_alpha*m_d.m_intensity_scale / 100.0f);
    if (m_d.m_isDMD)

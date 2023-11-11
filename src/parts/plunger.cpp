@@ -861,7 +861,6 @@ void Plunger::Render(const unsigned int renderMask)
    const int frame = (frame0 < 0 ? 0 : frame0 >= m_cframes ? m_cframes - 1 : frame0);
 
    m_rd->ResetRenderState();
-   m_rd->SetRenderStateCulling(RenderState::CULL_CCW);
    m_rd->basicShader->SetBasic(m_ptable->GetMaterial(m_d.m_szMaterial), m_ptable->GetImage(m_d.m_szImage));
    m_rd->DrawMesh(m_rd->basicShader, false, m_boundingSphereCenter, 0.f /*m_boundingSphereRadius*/, m_meshBuffer, 
       RenderDevice::TRIANGLELIST, frame * m_indicesPerFrame, m_indicesPerFrame);

@@ -218,10 +218,10 @@ public:
    void SetClipPlane(const vec4 &plane);
 
    // RenderState used in submitted render command
-   void ResetRenderState() { m_renderstate.Reset(); };
+   void SetDefaultRenderState() { m_defaultRenderState = m_renderstate; }
+   void ResetRenderState() { m_renderstate = m_defaultRenderState; };
    RenderState& GetRenderState() { return m_renderstate; }
    void SetRenderState(const RenderState::RenderStates p1, const RenderState::RenderStateValue p2);
-   void SetRenderStateCulling(RenderState::RenderStateValue cull);
    void SetRenderStateDepthBias(float bias);
    void CopyRenderStates(const bool copyTo, RenderState& state);
    void CopyRenderStates(const bool copyTo, RenderDeviceState& state);
@@ -232,7 +232,7 @@ public:
    RenderState& GetActiveRenderState() { return m_current_renderstate; }
 
 private:
-   RenderState m_current_renderstate, m_renderstate;
+   RenderState m_current_renderstate, m_renderstate, m_defaultRenderState;
    bool m_logNextFrame = false; // Output a log of next frame to main application log
 
 public:

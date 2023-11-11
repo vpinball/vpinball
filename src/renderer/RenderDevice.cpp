@@ -1720,11 +1720,6 @@ void RenderDevice::SetRenderState(const RenderState::RenderStates p1, const Rend
    m_renderstate.SetRenderState(p1, p2);
 }
 
-void RenderDevice::SetRenderStateCulling(RenderState::RenderStateValue cull)
-{
-   m_renderstate.SetRenderStateCulling((RenderState::RenderStateValue)cull);
-}
-
 void RenderDevice::SetRenderStateDepthBias(float bias)
 {
    m_renderstate.SetRenderStateDepthBias(bias);
@@ -1972,7 +1967,7 @@ void RenderDevice::DrawGaussianBlur(RenderTarget* source, RenderTarget* tmp, Ren
    CopyRenderStates(true, initial_state);
    ResetRenderState();
    SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
-   SetRenderStateCulling(RenderState::CULL_NONE);
+   SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
    SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
    SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
    {

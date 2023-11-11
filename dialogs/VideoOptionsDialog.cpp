@@ -423,14 +423,14 @@ BOOL VideoOptionsDialog::OnInitDialog()
    SendMessage(hwndARASlider, TBM_SETTICFREQ, 1, 0);
    SendMessage(hwndARASlider, TBM_SETLINESIZE, 0, 1);
    SendMessage(hwndARASlider, TBM_SETPAGESIZE, 0, 1);
-   SendMessage(hwndARASlider, TBM_SETTHUMBLENGTH, 5, 0);
+   SendMessage(hwndARASlider, TBM_SETTHUMBLENGTH, 10, 0);
 
    const HWND hwndDNSlider = GetDlgItem(IDC_DAYNIGHT_SLIDER).GetHwnd();
    SendMessage(hwndDNSlider, TBM_SETRANGE, fTrue, MAKELONG(2, 100));
    SendMessage(hwndDNSlider, TBM_SETTICFREQ, 10, 0);
    SendMessage(hwndDNSlider, TBM_SETLINESIZE, 0, 1);
    SendMessage(hwndDNSlider, TBM_SETPAGESIZE, 0, 1);
-   SendMessage(hwndDNSlider, TBM_SETTHUMBLENGTH, 5, 0);
+   SendMessage(hwndDNSlider, TBM_SETTHUMBLENGTH, 10, 0);
 
    // Disable unsupported features in UI
 #ifdef ENABLE_SDL

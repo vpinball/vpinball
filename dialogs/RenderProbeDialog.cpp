@@ -199,7 +199,7 @@ void RenderProbeDialog::LoadProbeToUI(RenderProbe *const pb)
    SendMessage(hwnd, TBM_SETTICFREQ, 1, 0);
    SendMessage(hwnd, TBM_SETLINESIZE, 0, 1);
    SendMessage(hwnd, TBM_SETPAGESIZE, 0, 1);
-   SendMessage(hwnd, TBM_SETTHUMBLENGTH, 5, 0);
+   SendMessage(hwnd, TBM_SETTHUMBLENGTH, 10, 0);
    SendMessage(hwnd, TBM_SETPOS, TRUE, pb->GetRoughness());
    GetDlgItem(IDC_ROUGHNESS_LABEL).SetWindowText("Level: "s.append(std::to_string(pb->GetRoughness())).c_str());
 }

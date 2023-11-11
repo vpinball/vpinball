@@ -1023,7 +1023,7 @@ void Surface::RenderSlingshots()
    }
 
    m_rd->ResetRenderState();
-   m_rd->SetRenderStateCulling(RenderState::CULL_NONE);
+   m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
    m_rd->basicShader->SetBasic(m_ptable->GetMaterial(m_d.m_szSlingShotMaterial), nullptr);
    m_rd->DrawMesh(m_rd->basicShader, m_isDynamic, m_boundingSphereCenter, 0.f, m_slingshotMeshBuffer, RenderDevice::TRIANGLELIST, 0, static_cast<DWORD>(m_vlinesling.size() * 24));
 }
@@ -1033,16 +1033,15 @@ void Surface::RenderWallsAtHeight(const bool drop, const bool isReflectionPass)
    if (isReflectionPass && (/*m_d.m_heightbottom < 0.0f ||*/ m_d.m_heighttop < 0.0f))
       return;
 
-   m_rd->ResetRenderState();
    m_rd->basicShader->SetVector(SHADER_fDisableLighting_top_below, m_d.m_disableLightingTop, m_d.m_disableLightingBelow, 0.f, 0.f);
 
    // render side
    if (m_d.m_sideVisible && !drop && (m_numVertices > 0)) // Don't need to render walls if dropped
    {
-      const Material * const mat = m_ptable->GetMaterial(m_d.m_szSideMaterial);
-      m_rd->SetRenderStateCulling((mat->m_bOpacityActive || !m_isDynamic) ? RenderState::CULL_NONE
-                                : (m_d.m_topBottomVisible && m_isDynamic) ? RenderState::CULL_NONE
-                                                                          : RenderState::CULL_CCW);
+      const Material *const mat = m_ptable->GetMaterial(m_d.m_szSideMaterial);
+      m_rd->ResetRenderState();
+      if ((mat->m_bOpacityActive || !m_isDynamic) || (m_d.m_topBottomVisible && m_isDynamic))
+         m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
       m_rd->basicShader->SetBasic(mat, m_ptable->GetImage(m_d.m_szSideImage));
       // combine drawcalls into one (hopefully faster)
       m_rd->DrawMesh(m_rd->basicShader, m_isDynamic, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numVertices * 6);
@@ -1052,7 +1051,9 @@ void Surface::RenderWallsAtHeight(const bool drop, const bool isReflectionPass)
    if (m_d.m_topBottomVisible && (m_numPolys > 0))
    {
       const Material *const mat = m_ptable->GetMaterial(m_d.m_szTopMaterial);
-      m_rd->SetRenderStateCulling((mat->m_bOpacityActive || !m_isDynamic) ? RenderState::CULL_NONE : RenderState::CULL_CCW);
+      m_rd->ResetRenderState();
+      if (mat->m_bOpacityActive || !m_isDynamic)
+         m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
       m_rd->basicShader->SetBasic(mat, m_ptable->GetImage(m_d.m_szImage));
 
       // Top
@@ -1061,7 +1062,9 @@ void Surface::RenderWallsAtHeight(const bool drop, const bool isReflectionPass)
       // Only render Bottom for Reflections
       if (isReflectionPass)
       {
-         m_rd->SetRenderStateCulling((mat->m_bOpacityActive || !m_isDynamic) ? RenderState::CULL_NONE : RenderState::CULL_CCW);
+         m_rd->ResetRenderState();
+         if (mat->m_bOpacityActive || !m_isDynamic)
+            m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
          m_rd->DrawMesh(m_rd->basicShader, m_isDynamic, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, m_numVertices * 6 + (m_numPolys * 3 * 2), m_numPolys * 3);
       }
    }

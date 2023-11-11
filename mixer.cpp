@@ -195,11 +195,6 @@ void mixer_draw()
 
    const bool cabMode = fmodf(g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].mViewportRotation, 360.f) != 0.f;
 
-   if (g_pplayer->m_ptable->m_tblMirrorEnabled ^ g_pplayer->IsRenderPass(Player::REFLECTION_PASS))
-      g_pplayer->m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderState::CULL_NONE);
-
-   g_pplayer->m_pin3d.EnableAlphaBlend(true);
-
    fade *= (float)(222.2 / 255.0);
 
    constexpr F32 yoff = volume_adjustment_bar_big_size[1] * 2.0f;
@@ -244,13 +239,12 @@ void mixer_draw()
             */
       // Set the color.
       // Draw the tick mark.  (Reversed x and y to match coordinate system of front end.)
+      g_pplayer->m_pin3d.m_pd3dPrimaryDevice->ResetRenderState();
+      g_pplayer->m_pin3d.m_pd3dPrimaryDevice->EnableAlphaBlend(true);
       g_pplayer->Spritedraw(cabMode ? fX : fY, cabMode ? fY : fX,
          cabMode ? size[0] : size[1], cabMode ? size[1] : size[0],
          color,
          (Texture*)nullptr,
          fade);
    }
-
-   if (g_pplayer->m_ptable->m_tblMirrorEnabled ^ g_pplayer->IsRenderPass(Player::REFLECTION_PASS))
-      g_pplayer->m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderState::CULL_CCW);
 }

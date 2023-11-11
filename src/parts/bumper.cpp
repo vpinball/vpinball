@@ -340,15 +340,15 @@ void Bumper::Render(const unsigned int renderMask)
    if (isReflectionPass && !m_d.m_reflectionEnabled)
       return;
 
-   m_rd->ResetRenderState();
-
    if (m_d.m_baseVisible)
    {
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szBaseMaterial);
       if ((!mat->m_bOpacityActive && !isDynamicOnly) || (mat->m_bOpacityActive && !isStaticOnly))
       {
+         m_rd->ResetRenderState();
+         if (mat->m_bOpacityActive)
+            m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
          m_rd->basicShader->SetBasic(mat, &m_baseTexture);
-         m_rd->SetRenderStateCulling(mat->m_bOpacityActive ? RenderState::CULL_NONE : RenderState::CULL_CCW);
          Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight);
          m_rd->DrawMesh(m_rd->basicShader, false, pos, 0.f, m_baseMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperBaseNumIndices);
       }
@@ -359,8 +359,10 @@ void Bumper::Render(const unsigned int renderMask)
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szCapMaterial);
       if ((!mat->m_bOpacityActive && !isDynamicOnly) || (mat->m_bOpacityActive && !isStaticOnly))
       {
+         m_rd->ResetRenderState();
+         if (mat->m_bOpacityActive)
+            m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
          m_rd->basicShader->SetBasic(mat, &m_capTexture);
-         m_rd->SetRenderStateCulling(mat->m_bOpacityActive ? RenderState::CULL_NONE : RenderState::CULL_CCW);
          Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight);
          m_rd->DrawMesh(m_rd->basicShader, false, pos, 0.f, m_capMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperCapNumIndices);
       }
@@ -379,8 +381,8 @@ void Bumper::Render(const unsigned int renderMask)
          ringMaterial.m_cGlossy = 0;
          ringMaterial.m_type = Material::MaterialType::METAL;
       }
+      m_rd->ResetRenderState();
       m_rd->basicShader->SetBasic(&ringMaterial, &m_ringTexture);
-      m_rd->SetRenderStateCulling(RenderState::CULL_CCW);
       Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight + m_pbumperhitcircle->m_bumperanim_ringAnimOffset);
       m_rd->DrawMesh(m_rd->basicShader, false, pos, 0.f, m_ringMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperRingNumIndices);
    }
@@ -388,8 +390,10 @@ void Bumper::Render(const unsigned int renderMask)
    if (m_d.m_skirtVisible && !isStaticOnly)
    {
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szSkirtMaterial);
+      m_rd->ResetRenderState();
+      if (mat->m_bOpacityActive)
+         m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
       m_rd->basicShader->SetBasic(mat, &m_skirtTexture);
-      m_rd->SetRenderStateCulling(RenderState::CULL_NONE);
       Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight + 5.0f);
       m_rd->DrawMesh(m_rd->basicShader, false, pos, 0.f, m_socketMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperSocketNumIndices);
    }

@@ -330,24 +330,23 @@ void RenderProbe::PreRenderStaticReflectionProbe()
       // Setup Camera,etc matrices for each iteration, applying antialiasing offset
       g_pplayer->m_pin3d.InitLayout(u1, u2);
 
-      RenderState initial_state;
-      m_rd->CopyRenderStates(true, initial_state);
       m_rd->SetRenderTarget("PreRender Reflection"s, m_prerenderRT, false);
+      m_rd->ResetRenderState();
       m_rd->Clear(clearType::TARGET | clearType::ZBUFFER, 0, 1.0f, 0L);
       DoRenderReflectionProbe(true, false, false);
-      m_rd->CopyRenderStates(false, initial_state);
 
       // Rendering is done to the static render target then accumulated to accumulationSurface
       // We use the framebuffer mirror shader which copies a weighted version of the bound texture
       m_rd->SetRenderTarget("PreRender Accumulate Reflection"s, accumulationSurface);
       m_rd->AddRenderTargetDependency(m_prerenderRT);
+      m_rd->ResetRenderState();
       m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
       m_rd->SetRenderState(RenderState::SRCBLEND, RenderState::ONE);
       m_rd->SetRenderState(RenderState::DESTBLEND, RenderState::ONE);
       m_rd->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_ADD);
       m_rd->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
       m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
-      m_rd->SetRenderStateCulling(RenderState::CULL_NONE);
+      m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
       if (iter == STATIC_PRERENDER_ITERATIONS - 1)
          m_rd->Clear(clearType::TARGET, 0, 1.0f, 0L);
       m_rd->FBShader->SetTechnique(SHADER_TECHNIQUE_fb_mirror);
@@ -356,7 +355,6 @@ void RenderProbe::PreRenderStaticReflectionProbe()
       m_rd->FBShader->SetTexture(SHADER_tex_fb_unfiltered, m_prerenderRT->GetColorSampler());
       m_rd->DrawFullscreenTexturedQuad(m_rd->FBShader);
       m_rd->FBShader->SetTextureNull(SHADER_tex_fb_unfiltered);
-      m_rd->CopyRenderStates(false, initial_state);
 
       m_rd->FlushRenderFrame();
    }
@@ -398,6 +396,7 @@ void RenderProbe::RenderReflectionProbe(const bool isStaticOnly)
          "Failed to create plane reflection dynamic render target", nullptr);
    }
    m_rd->SetRenderTarget(m_name, m_dynamicRT);
+   m_rd->ResetRenderState();
    if (mode == REFL_DYNAMIC && m_prerenderRT != nullptr && g_pplayer->IsUsingStaticPrepass())
       m_rd->BlitRenderTarget(m_prerenderRT, m_dynamicRT, true, true);
    else
@@ -415,6 +414,7 @@ void RenderProbe::RenderReflectionProbe(const bool isStaticOnly)
 
 void RenderProbe::DoRenderReflectionProbe(const bool render_static, const bool render_balls, const bool render_dynamic)
 {
+   m_rd->ResetRenderState();
    m_rd->CopyRenderStates(true, *m_rdState);
 
    const unsigned int prevRenderMask = g_pplayer->m_render_mask;
@@ -427,7 +427,10 @@ void RenderProbe::DoRenderReflectionProbe(const bool render_static, const bool r
    n.Normalize();
    vec4 clip_plane(n.x, n.y, n.z, m_reflection_plane.w);
    m_rd->SetClipPlane(clip_plane);
-   m_rd->ResetRenderState();
+   m_rd->SetRenderState(RenderState::CLIPPLANEENABLE, RenderState::RS_TRUE);
+   // Reverse cull mode since we multiply by a reversing matrix (mirror also has a reversing matrix)
+   m_rd->SetRenderState(RenderState::CULLMODE, g_pplayer->m_ptable->m_tblMirrorEnabled ? RenderState::CULL_CCW : RenderState::CULL_CW);
+   m_rd->SetDefaultRenderState();
 
    // Flip camera
    Matrix3D viewMat, initialViewMat;
@@ -470,5 +473,6 @@ void RenderProbe::DoRenderReflectionProbe(const bool render_static, const bool r
    // Restore initial render states and camera
    g_pplayer->m_render_mask = prevRenderMask;
    m_rd->CopyRenderStates(false, *m_rdState);
+   m_rd->SetDefaultRenderState();
    g_pplayer->m_pin3d.GetMVP().SetView(initialViewMat);
 }

@@ -415,7 +415,6 @@ void DispReel::Render(const unsigned int renderMask)
       return;
 
    m_rd->ResetRenderState();
-   m_rd->SetRenderStateCulling(m_ptable->m_tblMirrorEnabled ^ isReflectionPass ? RenderState::CULL_NONE : RenderState::CULL_CCW);
 
    m_rd->DMDShader->SetFloat(SHADER_alphaTestValue, (float)(128.0 / 255.0));
    m_rd->EnableAlphaBlend(false);

@@ -373,7 +373,8 @@ void Kicker::Render(const unsigned int renderMask)
       return;
 
    m_rd->ResetRenderState();
-   m_rd->SetRenderStateCulling(m_d.m_kickertype != KickerHoleSimple ? RenderState::CULL_CCW : RenderState::CULL_NONE);
+   if (m_d.m_kickertype == KickerHoleSimple)
+      m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
 
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
    m_rd->basicShader->SetMaterial(mat);

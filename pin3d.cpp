@@ -8,7 +8,6 @@
 Pin3D::Pin3D()
 {
    m_pd3dPrimaryDevice = nullptr;
-   m_pd3dSecondaryDevice = nullptr;
    m_backGlass = nullptr;
 
    m_cam.x = 0.f;
@@ -33,11 +32,8 @@ Pin3D::~Pin3D()
 
    delete m_envRadianceTexture;
 
-   if(m_pd3dPrimaryDevice != m_pd3dSecondaryDevice)
-      delete m_pd3dSecondaryDevice;
    delete m_pd3dPrimaryDevice;
    m_pd3dPrimaryDevice = nullptr;
-   m_pd3dSecondaryDevice = nullptr;
 
    delete m_backGlass;
 }
@@ -480,12 +476,11 @@ HRESULT Pin3D::InitPin3D(const bool fullScreen, const int width, const int heigh
    if (FAILED(InitPrimary(fullScreen, colordepth, refreshrate, syncMode, AAfactor, stereo3D, FXAA, sharpen, ss_refl)))
       return E_FAIL;
 
-   m_pd3dSecondaryDevice = m_pd3dPrimaryDevice; //!! for now, there is no secondary device :/
-
    //
 
    if (m_stereo3D == STEREO_VR)
-      m_backGlass = new BackGlass(m_pd3dSecondaryDevice, g_pplayer->m_ptable->GetDecalsEnabled() ? g_pplayer->m_ptable->GetImage(g_pplayer->m_ptable->m_BG_image[g_pplayer->m_ptable->m_BG_current_set]) : nullptr);
+      m_backGlass = new BackGlass(
+         m_pd3dPrimaryDevice, g_pplayer->m_ptable->GetDecalsEnabled() ? g_pplayer->m_ptable->GetImage(g_pplayer->m_ptable->m_BG_image[g_pplayer->m_ptable->m_BG_current_set]) : nullptr);
    else
       m_backGlass = nullptr;
 
@@ -520,75 +515,34 @@ HRESULT Pin3D::InitPin3D(const bool fullScreen, const int width, const int heigh
    #endif
    PLOGI << "Environment map radiance computed"s; // For profiling
 
-
-   //
-
-   InitPrimaryRenderState();
+   m_pd3dPrimaryDevice->ResetRenderState();
+#ifndef ENABLE_SDL
+   CHECKD3D(m_pd3dPrimaryDevice->GetCoreDevice()->SetRenderState(D3DRS_LIGHTING, FALSE));
+   CHECKD3D(m_pd3dPrimaryDevice->GetCoreDevice()->SetRenderState(D3DRS_CLIPPING, FALSE));
+   CHECKD3D(m_pd3dPrimaryDevice->GetCoreDevice()->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1));
+   CHECKD3D(m_pd3dPrimaryDevice->GetCoreDevice()->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE));
+   CHECKD3D(m_pd3dPrimaryDevice->GetCoreDevice()->SetTextureStageState(0, D3DTSS_TEXCOORDINDEX, 0));
+   CHECKD3D(m_pd3dPrimaryDevice->GetCoreDevice()->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE));
+   CHECKD3D(m_pd3dPrimaryDevice->GetCoreDevice()->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE));
+   CHECKD3D(m_pd3dPrimaryDevice->GetCoreDevice()->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_TFACTOR)); // default tfactor: 1,1,1,1
+#endif
 
    return S_OK;
-}
-
-void Pin3D::InitRenderState(RenderDevice * const pd3dDevice)
-{
-   pd3dDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
-
-   pd3dDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_TRUE);
-   pd3dDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
-   pd3dDevice->SetRenderState(RenderState::ZFUNC, RenderState::Z_LESSEQUAL);
-
-   pd3dDevice->SetRenderStateCulling(RenderState::CULL_CCW);
-
-   pd3dDevice->SetRenderState(RenderState::CLIPPLANEENABLE, RenderState::RS_FALSE);
-
-   // initialize first texture stage
-#ifndef ENABLE_SDL
-   CHECKD3D(pd3dDevice->GetCoreDevice()->SetRenderState(D3DRS_LIGHTING, FALSE));
-   CHECKD3D(pd3dDevice->GetCoreDevice()->SetRenderState(D3DRS_CLIPPING, FALSE));
-   CHECKD3D(pd3dDevice->GetCoreDevice()->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1));
-   CHECKD3D(pd3dDevice->GetCoreDevice()->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE));
-   CHECKD3D(pd3dDevice->GetCoreDevice()->SetTextureStageState(0, D3DTSS_TEXCOORDINDEX, 0));
-   CHECKD3D(pd3dDevice->GetCoreDevice()->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE));
-   CHECKD3D(pd3dDevice->GetCoreDevice()->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE));
-   CHECKD3D(pd3dDevice->GetCoreDevice()->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_TFACTOR)); // default tfactor: 1,1,1,1
-#endif
-}
-
-void Pin3D::InitPrimaryRenderState()
-{
-   InitRenderState(m_pd3dPrimaryDevice);
-}
-
-void Pin3D::InitSecondaryRenderState()
-{
-   InitRenderState(m_pd3dSecondaryDevice);
 }
 
 void Pin3D::DrawBackground()
 {
    const PinTable * const ptable = g_pplayer->m_ptable;
-   Texture * const pin = ptable->GetDecalsEnabled()
-      ? ptable->GetImage(ptable->m_BG_image[ptable->m_BG_current_set])
-      : nullptr;
+   Texture * const pin = ptable->GetDecalsEnabled() ? ptable->GetImage(ptable->m_BG_image[ptable->m_BG_current_set]) : nullptr;
+   m_pd3dPrimaryDevice->ResetRenderState();
    if (pin)
    {
       m_pd3dPrimaryDevice->Clear(clearType::ZBUFFER, 0, 1.0f, 0L);
-
       m_pd3dPrimaryDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
       m_pd3dPrimaryDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
-
-      if (g_pplayer->m_ptable->m_tblMirrorEnabled ^ g_pplayer->IsRenderPass(Player::REFLECTION_PASS))
-         m_pd3dPrimaryDevice->SetRenderStateCulling(RenderState::CULL_NONE);
-
       m_pd3dPrimaryDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
-
       // FIXME this should be called with a trilinear/anisotropy filtering override
       g_pplayer->Spritedraw(0.f, 0.f, 1.f, 1.f, 0xFFFFFFFF, pin, ptable->m_ImageBackdropNightDay ? sqrtf(g_pplayer->m_globalEmissionScale) : 1.0f, true);
-
-      if (g_pplayer->m_ptable->m_tblMirrorEnabled ^ g_pplayer->IsRenderPass(Player::REFLECTION_PASS))
-         m_pd3dPrimaryDevice->SetRenderStateCulling(RenderState::CULL_CCW);
-
-      m_pd3dPrimaryDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_TRUE);
-      m_pd3dPrimaryDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
    }
    else
    {

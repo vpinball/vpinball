@@ -1300,9 +1300,6 @@ HRESULT Player::Init()
    else
       m_ptable->m_tblMirrorEnabled = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "mirror"s, false);
 
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderState::CULL_NONE); // re-init/thrash cache entry due to the hacky nature of the table mirroring
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderState::CULL_CCW);
-
    // if left flipper or shift hold during load, then swap DT/FS view (for quick testing)
    if (m_ptable->m_BG_current_set != BG_FSS &&
        !m_ptable->m_tblMirrorEnabled &&
@@ -1831,19 +1828,19 @@ void Player::RenderStaticPrepass()
          UpdateBasicShaderMatrix();
          for (Hitable *hitable : m_vhitables)
             hitable->Render(m_render_mask);
-         m_pin3d.m_pd3dPrimaryDevice->ResetRenderState();
 
          // Rendering is done to the static render target then accumulated to accumulationSurface
          // We use the framebuffer mirror shader which copies a weighted version of the bound texture
          m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("PreRender Accumulate"s, accumulationSurface);
          m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderRT);
+         m_pin3d.m_pd3dPrimaryDevice->ResetRenderState();
          m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ALPHABLENDENABLE, iter == STATIC_PRERENDER_ITERATIONS - 1 ? RenderState::RS_FALSE : RenderState::RS_TRUE);
          m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::SRCBLEND, RenderState::ONE);
          m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::DESTBLEND, RenderState::ONE);
          m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_ADD);
          m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
          m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
-         m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderState::CULL_NONE);
+         m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_fb_mirror);
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, 
             (float)(1.0 / (double)renderRT->GetWidth()), (float)(1.0 / (double)renderRT->GetHeight()),
@@ -1851,7 +1848,6 @@ void Player::RenderStaticPrepass()
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, renderRT->GetColorSampler());
          m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pin3d.m_pd3dPrimaryDevice->FBShader);
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTextureNull(SHADER_tex_fb_unfiltered);
-         m_pin3d.m_pd3dPrimaryDevice->ResetRenderState();
       }
 
       // Finish the frame.
@@ -1883,8 +1879,9 @@ void Player::RenderStaticPrepass()
       m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("PreRender AO Save Depth"s, m_staticPrepassRT);
       m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderRT, m_staticPrepassRT, false, true);
 
+      m_pin3d.m_pd3dPrimaryDevice->ResetRenderState();
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderState::CULL_NONE);
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::CULLMODE ,RenderState::CULL_NONE);
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
 
@@ -1915,6 +1912,7 @@ void Player::RenderStaticPrepass()
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTextureNull(SHADER_tex_depth);
 
       m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("PreRender Apply AO"s, m_staticPrepassRT);
+      m_pin3d.m_pd3dPrimaryDevice->ResetRenderState();
       m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderRT);
       m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pin3d.m_pd3dPrimaryDevice->GetAORenderTarget(1));
 
@@ -1926,10 +1924,6 @@ void Player::RenderStaticPrepass()
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(useAA ? SHADER_TECHNIQUE_fb_AO_static : SHADER_TECHNIQUE_fb_AO_no_filter_static);
 
       m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pin3d.m_pd3dPrimaryDevice->FBShader);
-
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_TRUE);
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderState::CULL_CCW);
 
       m_pin3d.m_pd3dPrimaryDevice->FlushRenderFrame(); // Execute before destroying the render targets
 
@@ -1948,14 +1942,12 @@ void Player::RenderStaticPrepass()
       if (IsUsingStaticPrepass())
       {
          m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("PreRender MSAA Scene"s, renderRT);
-         RenderState initial_state;
-         m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(true, initial_state);
+         m_pin3d.m_pd3dPrimaryDevice->ResetRenderState();
          for (size_t i = 0; i < m_ptable->m_vrenderprobe.size(); ++i)
             m_ptable->m_vrenderprobe[i]->MarkDirty();
          UpdateBasicShaderMatrix();
          for (Hitable *hitable : m_vhitables)
             hitable->Render(m_render_mask);
-         m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(false, initial_state);
          m_pin3d.m_pd3dPrimaryDevice->FlushRenderFrame();
       }
       // Copy supersampled color buffer
@@ -3025,68 +3017,9 @@ void Player::UpdatePhysics()
 
 #pragma region Rendering
 
-void Player::DMDdraw(const float DMDposx, const float DMDposy, const float DMDwidth, const float DMDheight, const COLORREF DMDcolor, const float intensity)
-{
-   if (m_texdmd)
-   {
-      float x = DMDposx;
-      float y = DMDposy;
-      float w = DMDwidth;
-      float h = DMDheight;
-      RenderState initial_state;
-      m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(true, initial_state);
-      const bool isExternalDMD = HasDMDCapture();
-
-#ifdef ENABLE_SDL
-      // If DMD capture is enabled check if external DMD exists and update m_texdmd with captured data (for capturing UltraDMD+P-ROC DMD)
-      m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetTechnique(isExternalDMD ? SHADER_TECHNIQUE_basic_DMD_ext : SHADER_TECHNIQUE_basic_DMD); //!! DMD_UPSCALE ?? -> should just work
-
-      if (m_pin3d.m_backGlass)
-      {
-         m_pin3d.m_backGlass->GetDMDPos(x, y, w, h);
-         m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
-         m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
-         m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderState::CULL_NONE); // is this really necessary ?
-      }
-#else
-      //const float width = m_pin3d.m_useAA ? 2.0f*(float)m_width : (float)m_width; //!! AA ?? -> should just work
-      m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetTechnique(SHADER_TECHNIQUE_basic_DMD); //!! DMD_UPSCALE ?? -> should just work
-#endif
-
-      Vertex3D_NoTex2 vertices[4] =
-      {
-         { 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 1.f },
-         { 0.f, 1.f, 0.f, 0.f, 0.f, 1.f, 0.f, 1.f },
-         { 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f },
-         { 0.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f }
-      };
-
-      for (unsigned int i = 0; i < 4; ++i)
-      {
-         vertices[i].x =        (vertices[i].x * w + x)*2.0f - 1.0f;
-         vertices[i].y = 1.0f - (vertices[i].y * h + y)*2.0f;
-      }
-
-      const vec4 c = convertColor(DMDcolor, intensity);
-      m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetVector(SHADER_vColor_Intensity, &c);
-#ifdef DMD_UPSCALE
-      const vec4 r((float)(m_dmd.x*3), (float)(m_dmd.y*3), 1.f, (float)(m_overall_frames%2048));
-#else
-      const vec4 r((float)m_dmd.x, (float)m_dmd.y, 1.f, (float)(m_overall_frames%2048));
-#endif
-      m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetVector(SHADER_vRes_Alpha_time, &r);
-
-      m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetTexture(SHADER_tex_dmd, m_texdmd, isExternalDMD ? SF_TRILINEAR : SF_NONE, SA_CLAMP, SA_CLAMP);
-
-      m_pin3d.m_pd3dPrimaryDevice->DrawTexturedQuad(m_pin3d.m_pd3dPrimaryDevice->DMDShader, vertices);
-
-      m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(false, initial_state);
-   }
-}
-
 void Player::Spritedraw(const float posx, const float posy, const float width, const float height, const COLORREF color, Texture * const tex, const float intensity, const bool backdrop)
 {
-   RenderDevice * const pd3dDevice = backdrop ? m_pin3d.m_pd3dSecondaryDevice : m_pin3d.m_pd3dPrimaryDevice;
+   RenderDevice * const pd3dDevice = m_pin3d.m_pd3dPrimaryDevice;
 
    Vertex3D_NoTex2 vertices[4] =
    {
@@ -3115,7 +3048,7 @@ void Player::Spritedraw(const float posx, const float posy, const float width, c
 
 void Player::Spritedraw(const float posx, const float posy, const float width, const float height, const COLORREF color, Sampler * const tex, const float intensity, const bool backdrop)
 {
-   RenderDevice * const pd3dDevice = backdrop ? m_pin3d.m_pd3dSecondaryDevice : m_pin3d.m_pd3dPrimaryDevice;
+   RenderDevice *const pd3dDevice = m_pin3d.m_pd3dPrimaryDevice;
 
    Vertex3D_NoTex2 vertices[4] =
    {
@@ -3255,11 +3188,6 @@ void Player::RenderDynamics()
 
    for (size_t i = 0; i < m_ptable->m_vrenderprobe.size(); ++i)
       m_ptable->m_vrenderprobe[i]->ApplyAreaOfInterest();
-
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderStateDepthBias(0.0f); //!! paranoia set of old state, remove as soon as sure that no other code still relies on that legacy set
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_ADD);
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderState::CULL_CCW);
 
    if (!m_liveUI->IsTweakMode())
    {
@@ -3456,10 +3384,9 @@ void Player::PrepareVideoBuffers()
 
    RenderTarget *renderedRT = m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture();
    RenderTarget *outputRT = nullptr;
-   RenderState initial_state;
-   m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(true, initial_state);
+   m_pin3d.m_pd3dPrimaryDevice->ResetRenderState();
    m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderStateCulling(RenderState::CULL_NONE);
+   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
    m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
    m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
 
@@ -3847,7 +3774,6 @@ void Player::PrepareVideoBuffers()
 
    if (GetProfilingMode() == PF_ENABLED)
       m_pin3d.m_gpu_profiler.Timestamp(GTS_PostProcess);
-   m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(false, initial_state);
 }
 
 void Player::SetScreenOffset(const float x, const float y)
