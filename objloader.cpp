@@ -385,7 +385,7 @@ void ObjLoader::WriteVertexInfo(const Vertex3D_NoTex2* verts, unsigned int numVe
       float tu = verts[i].tu;
       float tv = 1.f - verts[i].tv;
       if (infNaN(tu)) tu = 0.0f;
-      if (infNan(tv)) tv = 0.0f;
+      if (infNaN(tv)) tv = 0.0f;
       fprintf_s(m_fHandle, "vt %f %f\n", tu, tv);
    }
    for (unsigned i = 0; i < numVerts; i++)
