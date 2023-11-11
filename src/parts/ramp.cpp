@@ -932,7 +932,7 @@ void Ramp::Render(const unsigned int renderMask)
        * with transparent textures. Probably the option should simply be renamed to ImageModeClamp,
        * since the texture coordinates always stay within [0,1] anyway. */
       SamplerAddressMode sam = m_d.m_imagealignment == ImageModeWrap ? SA_CLAMP : SA_REPEAT;
-      m_rd->SetRenderStateCulling(RenderState::CULL_NONE);
+      m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
       Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
       if (!pin)
       {
@@ -953,7 +953,7 @@ void Ramp::Render(const unsigned int renderMask)
       if (!m_meshBuffer || m_dynamicVertexBufferRegenerate)
          GenerateVertexBuffer();
 
-      m_rd->SetRenderStateCulling(RenderState::CULL_NONE); // as both floor and walls are thinwalled
+      m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE); // as both floor and walls are thinwalled
 
       Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
       if (pin)

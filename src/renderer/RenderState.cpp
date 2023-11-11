@@ -35,14 +35,9 @@ constexpr RenderState::RenderStateMask RenderState::render_state_masks[RENDERSTA
 #undef RENDER_STATE
 
 RenderState::RenderState()
+   : m_depthBias(0.f),
+     m_state(0x001f5146)
 {
-   Reset();
-}
-
-void RenderState::Reset()
-{
-   m_depthBias = 0.f;
-   m_state = 0x001f5146;
    // Default render state is:
    // Blend: { _  A  SA   RSA } Depth: { Z  <=  ZW } Clip: _ Cull: CCW Mask: F
    #if 0
@@ -60,12 +55,6 @@ void RenderState::Reset()
    OutputDebugString(GetLog().c_str());
    OutputDebugString("\n");
    #endif
-   if (g_pplayer && g_pplayer->IsRenderPass(Player::RenderMask::REFLECTION_PASS))
-   {
-      // re-init/thrash cache entry due to the hacky nature of the table mirroring (we use a matrix that reverse normal orientation)
-      SetRenderState(RenderState::CLIPPLANEENABLE, RenderState::RS_TRUE);
-      SetRenderStateCulling(RenderState::CULL_CCW);
-   }
 }
 
 RenderState::RenderStateValue RenderState::GetRenderState(const RenderStates p1) const
@@ -79,18 +68,6 @@ void RenderState::SetRenderState(const RenderStates p1, const RenderStateValue p
    assert(((p2 << render_state_masks[p1].shift) & render_state_masks[p1].clear_mask) == 0);
    m_state &= render_state_masks[p1].clear_mask;
    m_state |= p2 << render_state_masks[p1].shift;
-}
-
-void RenderState::SetRenderStateCulling(RenderStateValue cull)
-{
-   if (g_pplayer && (g_pplayer->m_ptable->m_tblMirrorEnabled ^ g_pplayer->IsRenderPass(Player::REFLECTION_PASS)))
-   {
-      if (cull == CULL_CCW)
-         cull = CULL_CW;
-      else if (cull == CULL_CW)
-         cull = CULL_CCW;
-   }
-   SetRenderState(CULLMODE, cull);
 }
 
 void RenderState::SetRenderStateDepthBias(float bias)

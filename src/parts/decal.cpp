@@ -742,7 +742,6 @@ void Decal::Render(const unsigned int renderMask)
     || (!isStaticOnly && (!m_backglass && mat->m_bOpacityActive))) // Not prerendered part pass
    {
       m_rd->ResetRenderState();
-      m_rd->SetRenderStateCulling(m_backglass && (m_ptable->m_tblMirrorEnabled ^ isReflectionPass) ? RenderState::CULL_NONE : RenderState::CULL_CCW);
 
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
       m_rd->basicShader->SetMaterial(mat);

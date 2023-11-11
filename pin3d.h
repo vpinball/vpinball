@@ -118,9 +118,6 @@ public:
    BackGlass* m_backGlass;
 
 private:
-   void InitRenderState(RenderDevice * const pd3dDevice);
-   void InitPrimaryRenderState();
-   void InitSecondaryRenderState();
    HRESULT InitPrimary(const bool fullScreen, const int colordepth, int& refreshrate, VideoSyncMode& syncMode, const float AAfactor, const StereoMode stereo3D,
       const unsigned int FXAA, const bool sharpen, const bool ss_refl);
 
@@ -139,7 +136,6 @@ public:
    CGpuProfiler m_gpu_profiler;
 
    RenderDevice* m_pd3dPrimaryDevice = nullptr;
-   RenderDevice* m_pd3dSecondaryDevice = nullptr;
 
    Texture m_pinballEnvTexture; // loaded from Resources
    Texture m_builtinEnvTexture; // loaded from Resources

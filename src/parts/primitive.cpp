@@ -1325,8 +1325,9 @@ void Primitive::Render(const unsigned int renderMask)
 
    const bool depthMask = m_d.m_useDepthMask && !m_d.m_addBlend;
 
-   m_rd->SetRenderStateDepthBias(0.f);
-   m_rd->SetRenderStateCulling(depthMask ? ((m_d.m_backfacesEnabled && mat->m_bOpacityActive) ? RenderState::CULL_CW : RenderState::CULL_CCW) : RenderState::CULL_NONE);
+   RenderState::RenderStateValue cullMode = m_rd->GetRenderState().GetRenderState(RenderState::CULLMODE);
+   RenderState::RenderStateValue reversedCullMode = cullMode == RenderState::CULL_CCW ? RenderState::CULL_CW : RenderState::CULL_CCW;
+   m_rd->SetRenderState(RenderState::CULLMODE, depthMask ? ((m_d.m_backfacesEnabled && mat->m_bOpacityActive) ? reversedCullMode : cullMode) : RenderState::CULL_NONE);
 
    if (m_d.m_disableLightingTop != 0.f || m_d.m_disableLightingBelow != 0.f)
       // Force disable light from below for objects marked as static since there is no light from below during pre-render pass (to get the same result in dynamic mode & static mode)
@@ -1479,7 +1480,7 @@ void Primitive::Render(const unsigned int renderMask)
          }
       }
 
-      // draw the mesh
+      // draw the mesh (back of it if backface enabled)
       m_rd->DrawMesh(m_rd->basicShader, 
             is_reflection_only_pass // The reflection pass is an additive (so transparent) pass to be drawn after the opaque one
          || refractions // Refractions must be rendered back to front since they rely on what is behind
@@ -1487,10 +1488,10 @@ void Primitive::Render(const unsigned int renderMask)
             m_d.m_vPosition, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_d.m_groupdRendering ? m_numGroupIndices : (DWORD)m_mesh.NumIndices());
    }
 
-   // also draw the back of the primitive faces
+   // Draw the front of the primitive if backface enabled
    if (depthMask && m_d.m_backfacesEnabled && mat->m_bOpacityActive)
    {
-      m_rd->SetRenderStateCulling(RenderState::CULL_CCW);
+      m_rd->SetRenderState(RenderState::CULLMODE, cullMode);
       m_rd->DrawMesh(m_rd->basicShader, mat->m_bOpacityActive, m_d.m_vPosition, m_d.m_depthBias, 
          m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_d.m_groupdRendering ? m_numGroupIndices : (DWORD)m_mesh.NumIndices());
    }

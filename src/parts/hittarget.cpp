@@ -732,14 +732,14 @@ void HitTarget::Render(const unsigned int renderMask)
    #ifdef TWOSIDED_TRANSPARENCY
    if (mat->m_bOpacityActive)
    {
-      m_rd->SetRenderStateCulling(RenderDevice::CULL_CW);
+      RenderState::RenderStateValue cullMode = m_rd->GetRenderState().GetRenderState(RenderState::CULLMODE);
+      m_rd->SetRenderState(RenderState::CULLMODE, cullMode == RenderState::CULL_CCW ? RenderState::CULL_CW : RenderState::CULL_CCW);
       m_rd->DrawMesh(m_rd->basicShader, mat->m_bOpacityActive, m_d.m_vPosition, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
-      m_rd->SetRenderStateCulling(RenderDevice::CULL_CCW);
+      m_rd->SetRenderState(RenderState::CULLMODE, cullMode);
       m_rd->DrawMesh(m_rd->basicShader, mat->m_bOpacityActive, m_d.m_vPosition, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
    }
    else
    {
-      m_rd->SetRenderStateCulling(RenderState::CULL_CCW);
       m_rd->DrawMesh(m_rd->basicShader, mat->m_bOpacityActive, m_d.m_vPosition, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
    }
    #else

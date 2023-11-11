@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "renderer/Shader.h"
+#include "captureExt.h"
 
 Textbox::Textbox()
 {
@@ -425,115 +426,13 @@ void Textbox::Render(const unsigned int renderMask)
    const bool isReflectionPass = renderMask & Player::REFLECTION_PASS;
    TRACE_FUNCTION();
 
-   if (isStaticOnly)
-      return;
-
-   if (!m_d.m_visible || m_texture == nullptr || (m_backglass && isReflectionPass))
-      return;
-
    const bool dmd = m_d.m_isDMD || StrStrI(m_d.m_sztext.c_str(), "DMD") != nullptr; //!! second part is VP10.0 legacy
-   if (dmd && !g_pplayer->m_texdmd)
+   if (isStaticOnly
+      || !m_d.m_visible
+      || (m_backglass && isReflectionPass)
+      || (!dmd && m_texture == nullptr)
+      || (dmd && g_pplayer->m_texdmd == nullptr))
       return;
-
-   if (m_textureDirty)
-   {
-      m_textureDirty = false;
-      
-      RECT rect;
-      rect.left = (int)min(m_d.m_v1.x, m_d.m_v2.x);
-      rect.top = (int)min(m_d.m_v1.y, m_d.m_v2.y);
-      rect.right = (int)max(m_d.m_v1.x, m_d.m_v2.x);
-      rect.bottom = (int)max(m_d.m_v1.y, m_d.m_v2.y);
-
-      const int width = rect.right - rect.left;
-      const int height = rect.bottom - rect.top;
-
-      BITMAPINFO bmi = {};
-      bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-      bmi.bmiHeader.biWidth = width;
-      bmi.bmiHeader.biHeight = -height;
-      bmi.bmiHeader.biPlanes = 1;
-      bmi.bmiHeader.biBitCount = 32;
-      bmi.bmiHeader.biCompression = BI_RGB;
-      bmi.bmiHeader.biSizeImage = 0;
-
-      void *bits;
-      const HBITMAP hbm = CreateDIBSection(0, &bmi, DIB_RGB_COLORS, &bits, nullptr, 0);
-      assert(hbm);
-
-      const HDC hdc = CreateCompatibleDC(nullptr);
-      const HBITMAP oldBmp = (HBITMAP)SelectObject(hdc, hbm);
-
-      const HBRUSH hbrush = CreateSolidBrush(m_d.m_backcolor);
-      const HBRUSH hbrushold = (HBRUSH)SelectObject(hdc, hbrush);
-      PatBlt(hdc, 0, 0, width, height, PATCOPY);
-      SelectObject(hdc, hbrushold);
-      DeleteObject(hbrush);
-
-      HFONT hFont;
-      m_pIFontPlay->get_hFont(&hFont);
-      const HFONT oldFont = (HFONT)SelectObject(hdc, hFont);
-      SetTextColor(hdc, m_d.m_fontcolor);
-      SetBkMode(hdc, TRANSPARENT);
-      SetTextAlign(hdc, TA_LEFT | TA_TOP | TA_NOUPDATECP);
-
-      int alignment;
-      switch (m_d.m_talign)
-      {
-      case TextAlignLeft:
-         alignment = DT_LEFT;
-         break;
-
-      default:
-      case TextAlignCenter:
-         alignment = DT_CENTER;
-         break;
-
-      case TextAlignRight:
-         alignment = DT_RIGHT;
-         break;
-      }
-
-      const int border = (4 * g_pplayer->m_wnd_width) / EDITOR_BG_WIDTH;
-      RECT rcOut;
-      rcOut.left = border;
-      rcOut.top = border;
-      rcOut.right = width - border * 2;
-      rcOut.bottom = height - border * 2;
-
-      DrawText(hdc, m_d.m_sztext.c_str(), (int)m_d.m_sztext.length(), &rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK);
-
-      GdiFlush();     // make sure everything is drawn
-
-      // Set alpha for pixels that match transparent color (if transparent enabled), otherwise set to opaque
-      const D3DCOLOR* __restrict bitsd = (D3DCOLOR*)bits;
-            D3DCOLOR* __restrict dest = (D3DCOLOR*)m_texture->data();
-      for (unsigned int i = 0; i < m_texture->height(); i++)
-      {
-         for (unsigned int l = 0; l < m_texture->width(); l++, dest++, bitsd++)
-         {
-           const D3DCOLOR src = *bitsd;
-           if (m_d.m_transparent && ((src & 0xFFFFFFu) == m_d.m_backcolor))
-              *dest = 0x00000000; // set to black & alpha full transparent
-           else
-              *dest = ((src & 0x000000FFu) << 16)
-              | (src & 0x0000FF00u)
-              | ((src & 0x0000FF0000u) >> 16)
-              | 0xFF000000u;
-         }
-         dest += m_texture->pitch()/4 - m_texture->width();
-      }
-
-      m_rd->m_texMan.SetDirty(m_texture);
-
-      SelectObject(hdc, oldFont);
-      SelectObject(hdc, oldBmp);
-      DeleteDC(hdc);
-      DeleteObject(hbm);
-   }
-
-   m_rd->ResetRenderState();
-   m_rd->SetRenderStateCulling(m_ptable->m_tblMirrorEnabled ^ isReflectionPass ? RenderState::CULL_NONE : RenderState::CULL_CCW);
 
    constexpr float mult  = (float)(1.0 / EDITOR_BG_WIDTH);
    constexpr float ymult = (float)(1.0 / EDITOR_BG_HEIGHT);
@@ -543,20 +442,148 @@ void Textbox::Render(const unsigned int renderMask)
    const float rect_right = max(m_d.m_v1.x, m_d.m_v2.x);
    const float rect_bottom = max(m_d.m_v1.y, m_d.m_v2.y);
 
-   const float x = rect_left*mult;
-   const float y = rect_top*ymult;
-   const float width = (rect_right - rect_left)*mult;
-   const float height = (rect_bottom - rect_top)*ymult;
+   float x = rect_left*mult;
+   float y = rect_top*ymult;
+   float w = (rect_right - rect_left)*mult;
+   float h = (rect_bottom - rect_top)*ymult;
 
    if (dmd)
    {
+      const bool isExternalDMD = HasDMDCapture();
+
+      m_rd->ResetRenderState();
       m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
-      g_pplayer->DMDdraw(x, y, width, height, m_d.m_fontcolor, m_d.m_intensity_scale); //!! replace??!
+      #ifdef ENABLE_SDL
+      // If DMD capture is enabled check if external DMD exists and update m_texdmd with captured data (for capturing UltraDMD+P-ROC DMD)
+      m_rd->DMDShader->SetTechnique(isExternalDMD ? SHADER_TECHNIQUE_basic_DMD_ext : SHADER_TECHNIQUE_basic_DMD); //!! DMD_UPSCALE ?? -> should just work
+      if (g_pplayer->m_pin3d.m_backGlass)
+      {
+         g_pplayer->m_pin3d.m_backGlass->GetDMDPos(x, y, w, h);
+         m_rd->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
+         m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
+         m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE); // is this really necessary ?
+      }
+      #else
+      //const float width = m_pin3d.m_useAA ? 2.0f*(float)m_width : (float)m_width; //!! AA ?? -> should just work
+      m_rd->DMDShader->SetTechnique(SHADER_TECHNIQUE_basic_DMD); //!! DMD_UPSCALE ?? -> should just work
+      #endif
+
+      Vertex3D_NoTex2 vertices[4] = { 
+         { 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 1.f }, 
+         { 0.f, 1.f, 0.f, 0.f, 0.f, 1.f, 0.f, 1.f }, 
+         { 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f },
+         { 0.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f } };
+
+      for (unsigned int i = 0; i < 4; ++i)
+      {
+         vertices[i].x = (vertices[i].x * w + x) * 2.0f - 1.0f;
+         vertices[i].y = 1.0f - (vertices[i].y * h + y) * 2.0f;
+      }
+
+      const vec4 c = convertColor(m_d.m_fontcolor, m_d.m_intensity_scale);
+      m_rd->DMDShader->SetVector(SHADER_vColor_Intensity, &c);
+      #ifdef DMD_UPSCALE
+      const vec4 r((float)(m_dmd.x * 3), (float)(m_dmd.y * 3), 1.f, (float)(m_overall_frames % 2048));
+      #else
+      const vec4 r((float)g_pplayer->m_dmd.x, (float)g_pplayer->m_dmd.y, 1.f, (float)(g_pplayer->m_overall_frames % 2048));
+      #endif
+      m_rd->DMDShader->SetVector(SHADER_vRes_Alpha_time, &r);
+      m_rd->DMDShader->SetTexture(SHADER_tex_dmd, g_pplayer->m_texdmd, isExternalDMD ? SF_TRILINEAR : SF_NONE, SA_CLAMP, SA_CLAMP);
+      m_rd->DrawTexturedQuad(m_rd->DMDShader, vertices);
    }
    else if (m_texture)
    {
+      if (m_textureDirty)
+      {
+         m_textureDirty = false;
+
+         RECT rect;
+         rect.left = (int)min(m_d.m_v1.x, m_d.m_v2.x);
+         rect.top = (int)min(m_d.m_v1.y, m_d.m_v2.y);
+         rect.right = (int)max(m_d.m_v1.x, m_d.m_v2.x);
+         rect.bottom = (int)max(m_d.m_v1.y, m_d.m_v2.y);
+
+         const int width = rect.right - rect.left;
+         const int height = rect.bottom - rect.top;
+
+         BITMAPINFO bmi = {};
+         bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+         bmi.bmiHeader.biWidth = width;
+         bmi.bmiHeader.biHeight = -height;
+         bmi.bmiHeader.biPlanes = 1;
+         bmi.bmiHeader.biBitCount = 32;
+         bmi.bmiHeader.biCompression = BI_RGB;
+         bmi.bmiHeader.biSizeImage = 0;
+
+         void *bits;
+         const HBITMAP hbm = CreateDIBSection(0, &bmi, DIB_RGB_COLORS, &bits, nullptr, 0);
+         assert(hbm);
+
+         const HDC hdc = CreateCompatibleDC(nullptr);
+         const HBITMAP oldBmp = (HBITMAP)SelectObject(hdc, hbm);
+
+         const HBRUSH hbrush = CreateSolidBrush(m_d.m_backcolor);
+         const HBRUSH hbrushold = (HBRUSH)SelectObject(hdc, hbrush);
+         PatBlt(hdc, 0, 0, width, height, PATCOPY);
+         SelectObject(hdc, hbrushold);
+         DeleteObject(hbrush);
+
+         HFONT hFont;
+         m_pIFontPlay->get_hFont(&hFont);
+         const HFONT oldFont = (HFONT)SelectObject(hdc, hFont);
+         SetTextColor(hdc, m_d.m_fontcolor);
+         SetBkMode(hdc, TRANSPARENT);
+         SetTextAlign(hdc, TA_LEFT | TA_TOP | TA_NOUPDATECP);
+
+         int alignment;
+         switch (m_d.m_talign)
+         {
+         case TextAlignLeft: alignment = DT_LEFT; break;
+
+         default:
+         case TextAlignCenter: alignment = DT_CENTER; break;
+
+         case TextAlignRight: alignment = DT_RIGHT; break;
+         }
+
+         const int border = (4 * g_pplayer->m_wnd_width) / EDITOR_BG_WIDTH;
+         RECT rcOut;
+         rcOut.left = border;
+         rcOut.top = border;
+         rcOut.right = width - border * 2;
+         rcOut.bottom = height - border * 2;
+
+         DrawText(hdc, m_d.m_sztext.c_str(), (int)m_d.m_sztext.length(), &rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK);
+
+         GdiFlush(); // make sure everything is drawn
+
+         // Set alpha for pixels that match transparent color (if transparent enabled), otherwise set to opaque
+         const D3DCOLOR *__restrict bitsd = (D3DCOLOR *)bits;
+         D3DCOLOR *__restrict dest = (D3DCOLOR *)m_texture->data();
+         for (unsigned int i = 0; i < m_texture->height(); i++)
+         {
+            for (unsigned int l = 0; l < m_texture->width(); l++, dest++, bitsd++)
+            {
+               const D3DCOLOR src = *bitsd;
+               if (m_d.m_transparent && ((src & 0xFFFFFFu) == m_d.m_backcolor))
+                  *dest = 0x00000000; // set to black & alpha full transparent
+               else
+                  *dest = ((src & 0x000000FFu) << 16) | (src & 0x0000FF00u) | ((src & 0x0000FF0000u) >> 16) | 0xFF000000u;
+            }
+            dest += m_texture->pitch() / 4 - m_texture->width();
+         }
+
+         m_rd->m_texMan.SetDirty(m_texture);
+
+         SelectObject(hdc, oldFont);
+         SelectObject(hdc, oldBmp);
+         DeleteDC(hdc);
+         DeleteObject(hbm);
+      }
+
+      m_rd->ResetRenderState();
       m_rd->DMDShader->SetFloat(SHADER_alphaTestValue, (float)(128.0 / 255.0));
-      g_pplayer->Spritedraw(x, y, width, height, 0xFFFFFFFF, m_rd->m_texMan.LoadTexture(m_texture, SF_TRILINEAR, SA_REPEAT, SA_REPEAT, false), m_d.m_intensity_scale);
+      g_pplayer->Spritedraw(x, y, w, h, 0xFFFFFFFF, m_rd->m_texMan.LoadTexture(m_texture, SF_TRILINEAR, SA_REPEAT, SA_REPEAT, false), m_d.m_intensity_scale);
       m_rd->DMDShader->SetFloat(SHADER_alphaTestValue, 1.0f);
    }
 }

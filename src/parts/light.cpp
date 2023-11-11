@@ -520,8 +520,8 @@ void Light::RenderSetup(RenderDevice *device)
       return;
    }
 
-   VertexBuffer *customMoverVBuffer = new VertexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : m_rd, (unsigned int) m_vvertex.size(), nullptr, true);
-   IndexBuffer* customMoverIBuffer = new IndexBuffer(m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : m_rd, (unsigned int) vtri.size(), 0, IndexBuffer::FMT_INDEX16);
+   VertexBuffer *customMoverVBuffer = new VertexBuffer(m_rd, (unsigned int) m_vvertex.size(), nullptr, true);
+   IndexBuffer* customMoverIBuffer = new IndexBuffer(m_rd, (unsigned int) vtri.size(), 0, IndexBuffer::FMT_INDEX16);
    WORD* bufi;
    customMoverIBuffer->lock(0, 0, (void**)&bufi, IndexBuffer::WRITEONLY);
    memcpy(bufi, vtri.data(), vtri.size()*sizeof(WORD));
@@ -701,10 +701,8 @@ void Light::Render(const unsigned int renderMask)
          m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
       }
 
-      if (m_backglass || (m_ptable->m_tblMirrorEnabled ^ isReflectionPass))
-         m_rd->SetRenderStateCulling(RenderState::CULL_NONE);
-      else
-         m_rd->SetRenderStateCulling(RenderState::CULL_CCW);
+      if (m_backglass)
+         m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
 
       Vertex2D centerHUD(m_d.m_vCenter.x, m_d.m_vCenter.y);
       if (m_backglass)
