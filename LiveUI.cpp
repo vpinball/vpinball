@@ -1585,7 +1585,7 @@ void LiveUI::UpdateMainUI()
       // Main menubar
       if (ImGui::BeginMainMenuBar())
       {
-         if (!m_table->m_locked && ImGui::BeginMenu("Debug"))
+         if (!m_table->IsLocked() && ImGui::BeginMenu("Debug"))
          {
             if (ImGui::MenuItem("Open debugger"))
                m_player->m_showDebugger = true;
@@ -2047,7 +2047,7 @@ bool LiveUI::IsOutlinerFiltered(const string& name)
 
 void LiveUI::UpdateOutlinerUI()
 {
-   if (m_table && m_table->m_locked)
+   if (m_table && m_table->IsLocked())
       return;
    const ImGuiViewport * const viewport = ImGui::GetMainViewport();
    const float pane_width = 200.f * m_dpi;
@@ -2203,7 +2203,7 @@ void LiveUI::UpdateOutlinerUI()
 
 void LiveUI::UpdatePropertyUI()
 {
-   if (m_table && m_table->m_locked)
+   if (m_table && m_table->IsLocked())
       return;
    const ImGuiViewport *const viewport = ImGui::GetMainViewport();
    const float pane_width = 250.f * m_dpi;

@@ -4235,7 +4235,7 @@ void Player::FinishFrame()
       PostMessage(WM_CLOSE, 0, 0);
 
    // Open debugger window
-   if (m_showDebugger && !g_pvp->m_disable_pause_menu)
+   if (m_showDebugger && !g_pvp->m_disable_pause_menu && !m_ptable->IsLocked())
    {
       m_debugMode = true;
       m_showDebugger = false;

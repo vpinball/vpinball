@@ -578,8 +578,15 @@ public:
 
    string m_szFileName;
    string m_szTitle;
-   bool m_locked = false;
 
+   // Flag that disables all table edition. Lock toggles are counted to identify version changes in a table (for example to guarantee untouched table for tournament)
+   bool IsLocked() const { return (m_locked & 1) != 0; }
+   void ToggleLock() { m_locked++; }
+
+private:
+   unsigned int m_locked = 0;
+
+public:
    void SetSettingsFileName(const string &path)
    {
       m_szIniFileName = FileExists(path) ? path : string();

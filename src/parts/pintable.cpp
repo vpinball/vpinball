@@ -3506,7 +3506,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
       m_pcv->SaveToStream(pstm, hcrypthash);
    }
 
-   bw.WriteBool(FID(TLCK), m_locked);
+   bw.WriteInt(FID(TLCK), m_locked);
    bw.WriteTag(FID(ENDB));
 
    return S_OK;
@@ -4460,7 +4460,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
       ::GlobalFree(hMem);
       break;
    }
-   case FID(TLCK): pbr->GetBool(m_locked); break;
+   case FID(TLCK): pbr->GetInt(m_locked); break;
    }
    return true;
 }
@@ -5909,7 +5909,7 @@ void PinTable::ImportBackdropPOV(const string &filename)
    const bool wasModified = m_settings.IsModified();
    if (!toUserSettings)
    {
-      if (m_locked)
+      if (IsLocked())
          return;
       string initialDir = m_settings.LoadValueWithDefault(Settings::RecentDir, "POVDir"s, PATH_TABLES);
       vector<string> fileNames;
@@ -6524,7 +6524,7 @@ void PinTable::AddMultiSel(ISelect *psel, const bool add, const bool update, con
    ISelect *piSelect = nullptr;
    //_ASSERTE(m_vmultisel[0].m_selectstate == eSelected);
 
-   if (m_locked)
+   if (IsLocked())
       return;
 
    if (index == -1) // If we aren't selected yet, do that
@@ -10290,7 +10290,7 @@ void PinTable::OnLeftButtonDown(const short x, const short y)
     {
         DoLeftButtonDown(x, y, true);
     }
-    else if (!m_locked)
+    else if (!IsLocked())
     {
         UseTool(x, y, m_vpinball->m_ToolCur);
     }

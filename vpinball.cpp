@@ -621,17 +621,17 @@ bool VPinball::ParseCommand(const size_t code, const bool notify)
       CComObject<PinTable> *const ptCur = GetActiveTable();
       if (ptCur)
       {
-         if (ptCur->m_locked)
+         if (ptCur->IsLocked())
          {
             if (IDYES == MessageBox("This table is locked to avoid modification.\n\nYou do not need to unlock it to adjust settings like the camera or rendering options.\n\nAre you sure you want to unlock the table ?", "Table Unlocking", MB_YESNO | MB_ICONINFORMATION))
-               ptCur->m_locked = false;
+               ptCur->ToggleLock();
          }
-         else if (!ptCur->m_locked)
+         else if (!ptCur->IsLocked())
          {
             if (IDYES == MessageBox("This will lock the table to prevent unexpected modifications.\n\nAre you sure you want to lock the table ?", "Table locking", MB_YESNO | MB_ICONINFORMATION))
             {
                // TODO perform and show table audit (disable lighting vs static, script reference of static parts, png vs webp, hdr vs exr,...)
-               ptCur->m_locked = true;
+               ptCur->ToggleLock();
             }
          }
          ptCur->ClearMultiSel(nullptr);
@@ -1176,7 +1176,7 @@ void VPinball::SetEnableMenuItems()
       mainMenu.CheckMenuItem(ID_EDIT_SCRIPT, MF_BYCOMMAND | ((ptCur->m_pcv != nullptr && ptCur->m_pcv->m_visible && !ptCur->m_pcv->m_minimized) ? MF_CHECKED : MF_UNCHECKED));
 
       mainMenu.EnableMenuItem(IDM_CLOSE, enabled);
-      mainMenu.EnableMenuItem(ID_EDIT_UNDO, ptCur->m_locked ? grayed : enabled);
+      mainMenu.EnableMenuItem(ID_EDIT_UNDO, ptCur->IsLocked() ? grayed : enabled);
       mainMenu.EnableMenuItem(ID_EDIT_BACKGLASSVIEW, enabled);
       mainMenu.EnableMenuItem(ID_TABLE_PLAY, enabled);
       mainMenu.EnableMenuItem(ID_TABLE_CAMERAMODE, enabled);
@@ -1184,58 +1184,58 @@ void VPinball::SetEnableMenuItems()
       mainMenu.EnableMenuItem(ID_TABLE_LOCK, enabled);
       mainMenu.EnableMenuItem(ID_TABLE_MAGNIFY, enabled);
       mainMenu.EnableMenuItem(ID_TABLE_TABLEINFO, enabled);
-      mainMenu.EnableMenuItem(ID_TABLE_DIMENSIONMANAGER, ptCur->m_locked ? grayed : enabled);
-      mainMenu.EnableMenuItem(ID_TABLE_RENDERPROBEMANAGER, ptCur->m_locked ? grayed : enabled);
-      mainMenu.EnableMenuItem(ID_EDIT_SEARCH, ptCur->m_locked ? grayed : enabled);
-      mainMenu.EnableMenuItem(ID_EDIT_DRAWINGORDER_HIT, ptCur->m_locked ? grayed : enabled);
-      mainMenu.EnableMenuItem(ID_EDIT_DRAWINGORDER_SELECT, ptCur->m_locked ? grayed : enabled);
+      mainMenu.EnableMenuItem(ID_TABLE_DIMENSIONMANAGER, ptCur->IsLocked() ? grayed : enabled);
+      mainMenu.EnableMenuItem(ID_TABLE_RENDERPROBEMANAGER, ptCur->IsLocked() ? grayed : enabled);
+      mainMenu.EnableMenuItem(ID_EDIT_SEARCH, ptCur->IsLocked() ? grayed : enabled);
+      mainMenu.EnableMenuItem(ID_EDIT_DRAWINGORDER_HIT, ptCur->IsLocked() ? grayed : enabled);
+      mainMenu.EnableMenuItem(ID_EDIT_DRAWINGORDER_SELECT, ptCur->IsLocked() ? grayed : enabled);
       // enable/disable save options
       mainMenu.EnableMenuItem(IDM_SAVE, enabled);
       mainMenu.EnableMenuItem(IDM_SAVEAS, enabled);
       mainMenu.EnableMenuItem(ID_FILE_EXPORT_BLUEPRINT, enabled);
       mainMenu.EnableMenuItem(ID_EXPORT_TABLEMESH, enabled);
       mainMenu.EnableMenuItem(ID_EXPORT_BACKDROPPOV, enabled);
-      mainMenu.EnableMenuItem(ID_IMPORT_BACKDROPPOV, ptCur->m_locked ? grayed : enabled);
+      mainMenu.EnableMenuItem(ID_IMPORT_BACKDROPPOV, ptCur->IsLocked() ? grayed : enabled);
 
       // enable/disable script option
-      mainMenu.EnableMenuItem(ID_EDIT_SCRIPT, ptCur->m_locked ? grayed : enabled);
+      mainMenu.EnableMenuItem(ID_EDIT_SCRIPT, ptCur->IsLocked() ? grayed : enabled);
 
       // enable/disable managers options
-      mainMenu.EnableMenuItem(ID_TABLE_SOUNDMANAGER, ptCur->m_locked ? grayed : enabled);
-      mainMenu.EnableMenuItem(ID_TABLE_IMAGEMANAGER, ptCur->m_locked ? grayed : enabled);
-      mainMenu.EnableMenuItem(ID_TABLE_FONTMANAGER, ptCur->m_locked ? grayed : enabled);
-      mainMenu.EnableMenuItem(ID_TABLE_MATERIALMANAGER, ptCur->m_locked ? grayed : enabled);
-      mainMenu.EnableMenuItem(ID_TABLE_COLLECTIONMANAGER, ptCur->m_locked ? grayed : enabled);
+      mainMenu.EnableMenuItem(ID_TABLE_SOUNDMANAGER, ptCur->IsLocked() ? grayed : enabled);
+      mainMenu.EnableMenuItem(ID_TABLE_IMAGEMANAGER, ptCur->IsLocked() ? grayed : enabled);
+      mainMenu.EnableMenuItem(ID_TABLE_FONTMANAGER, ptCur->IsLocked() ? grayed : enabled);
+      mainMenu.EnableMenuItem(ID_TABLE_MATERIALMANAGER, ptCur->IsLocked() ? grayed : enabled);
+      mainMenu.EnableMenuItem(ID_TABLE_COLLECTIONMANAGER, ptCur->IsLocked() ? grayed : enabled);
 
       // enable/disable editing options
-      mainMenu.EnableMenuItem(ID_LOCK, ptCur->m_locked ? grayed : enabled);
-      mainMenu.EnableMenuItem(IDC_COPY, ptCur->m_locked ? grayed : enabled);
-      mainMenu.EnableMenuItem(IDC_PASTE, ptCur->m_locked ? grayed : enabled);
-      mainMenu.EnableMenuItem(IDC_PASTEAT, ptCur->m_locked ? grayed : enabled);
-      mainMenu.EnableMenuItem(ID_DELETE, ptCur->m_locked ? grayed : enabled);
+      mainMenu.EnableMenuItem(ID_LOCK, ptCur->IsLocked() ? grayed : enabled);
+      mainMenu.EnableMenuItem(IDC_COPY, ptCur->IsLocked() ? grayed : enabled);
+      mainMenu.EnableMenuItem(IDC_PASTE, ptCur->IsLocked() ? grayed : enabled);
+      mainMenu.EnableMenuItem(IDC_PASTEAT, ptCur->IsLocked() ? grayed : enabled);
+      mainMenu.EnableMenuItem(ID_DELETE, ptCur->IsLocked() ? grayed : enabled);
       mainMenu.EnableMenuItem(ID_TABLE_NOTES, enabled);
-      mainMenu.EnableMenuItem(ID_EDIT_SETDEFAULTPHYSICS, ptCur->m_locked ? grayed : enabled);
+      mainMenu.EnableMenuItem(ID_EDIT_SETDEFAULTPHYSICS, ptCur->IsLocked() ? grayed : enabled);
 
       // enable/disable insert tool
-      mainMenu.EnableMenuItem(ID_INSERT_WALL, ptCur->m_locked ? grayed : enabled);
-      mainMenu.EnableMenuItem(ID_INSERT_GATE, ptCur->m_locked ? grayed : enabled);
-      mainMenu.EnableMenuItem(ID_INSERT_RAMP, ptCur->m_locked ? grayed : enabled);
-      mainMenu.EnableMenuItem(ID_INSERT_FLIPPER, ptCur->m_locked ? grayed : enabled);
-      mainMenu.EnableMenuItem(ID_INSERT_PLUNGER, ptCur->m_locked ? grayed : enabled);
-      mainMenu.EnableMenuItem(ID_INSERT_BUMPER, ptCur->m_locked ? grayed : enabled);
-      mainMenu.EnableMenuItem(ID_INSERT_SPINNER, ptCur->m_locked ? grayed : enabled);
-      mainMenu.EnableMenuItem(ID_INSERT_TIMER, ptCur->m_locked ? grayed : enabled);
-      mainMenu.EnableMenuItem(ID_INSERT_TRIGGER, ptCur->m_locked ? grayed : enabled);
-      mainMenu.EnableMenuItem(ID_INSERT_LIGHT, ptCur->m_locked ? grayed : enabled);
-      mainMenu.EnableMenuItem(ID_INSERT_KICKER, ptCur->m_locked ? grayed : enabled);
-      mainMenu.EnableMenuItem(ID_INSERT_TARGET, ptCur->m_locked ? grayed : enabled);
-      mainMenu.EnableMenuItem(ID_INSERT_DECAL, ptCur->m_locked ? grayed : enabled);
-      mainMenu.EnableMenuItem(ID_INSERT_TEXTBOX, ptCur->m_locked ? grayed : enabled);
-      mainMenu.EnableMenuItem(ID_INSERT_DISPREEL, ptCur->m_locked ? grayed : enabled);
-      mainMenu.EnableMenuItem(ID_INSERT_LIGHTSEQ, ptCur->m_locked ? grayed : enabled);
-      mainMenu.EnableMenuItem(ID_INSERT_PRIMITIVE, ptCur->m_locked ? grayed : enabled);
-      mainMenu.EnableMenuItem(ID_INSERT_FLASHER, ptCur->m_locked ? grayed : enabled);
-      mainMenu.EnableMenuItem(ID_INSERT_RUBBER, ptCur->m_locked ? grayed : enabled);
+      mainMenu.EnableMenuItem(ID_INSERT_WALL, ptCur->IsLocked() ? grayed : enabled);
+      mainMenu.EnableMenuItem(ID_INSERT_GATE, ptCur->IsLocked() ? grayed : enabled);
+      mainMenu.EnableMenuItem(ID_INSERT_RAMP, ptCur->IsLocked() ? grayed : enabled);
+      mainMenu.EnableMenuItem(ID_INSERT_FLIPPER, ptCur->IsLocked() ? grayed : enabled);
+      mainMenu.EnableMenuItem(ID_INSERT_PLUNGER, ptCur->IsLocked() ? grayed : enabled);
+      mainMenu.EnableMenuItem(ID_INSERT_BUMPER, ptCur->IsLocked() ? grayed : enabled);
+      mainMenu.EnableMenuItem(ID_INSERT_SPINNER, ptCur->IsLocked() ? grayed : enabled);
+      mainMenu.EnableMenuItem(ID_INSERT_TIMER, ptCur->IsLocked() ? grayed : enabled);
+      mainMenu.EnableMenuItem(ID_INSERT_TRIGGER, ptCur->IsLocked() ? grayed : enabled);
+      mainMenu.EnableMenuItem(ID_INSERT_LIGHT, ptCur->IsLocked() ? grayed : enabled);
+      mainMenu.EnableMenuItem(ID_INSERT_KICKER, ptCur->IsLocked() ? grayed : enabled);
+      mainMenu.EnableMenuItem(ID_INSERT_TARGET, ptCur->IsLocked() ? grayed : enabled);
+      mainMenu.EnableMenuItem(ID_INSERT_DECAL, ptCur->IsLocked() ? grayed : enabled);
+      mainMenu.EnableMenuItem(ID_INSERT_TEXTBOX, ptCur->IsLocked() ? grayed : enabled);
+      mainMenu.EnableMenuItem(ID_INSERT_DISPREEL, ptCur->IsLocked() ? grayed : enabled);
+      mainMenu.EnableMenuItem(ID_INSERT_LIGHTSEQ, ptCur->IsLocked() ? grayed : enabled);
+      mainMenu.EnableMenuItem(ID_INSERT_PRIMITIVE, ptCur->IsLocked() ? grayed : enabled);
+      mainMenu.EnableMenuItem(ID_INSERT_FLASHER, ptCur->IsLocked() ? grayed : enabled);
+      mainMenu.EnableMenuItem(ID_INSERT_RUBBER, ptCur->IsLocked() ? grayed : enabled);
 
       mainMenu.CheckMenuItem(ID_VIEW_SOLID, MF_BYCOMMAND | (ptCur->RenderSolid() ? MF_CHECKED : MF_UNCHECKED));
       mainMenu.CheckMenuItem(ID_VIEW_OUTLINE, MF_BYCOMMAND | (ptCur->RenderSolid() ? MF_UNCHECKED : MF_CHECKED));
@@ -1456,12 +1456,8 @@ bool VPinball::ApcHost_OnTranslateMessage(MSG* pmsg)
    }
    else
    {
-      consumed = false;
-      if (g_pplayer->m_debugMode)
-      {
-         if (g_pplayer->m_debuggerDialog.IsWindow())
-            consumed = !!g_pplayer->m_debuggerDialog.IsSubDialogMessage(*pmsg);
-      }
+      if (g_pplayer->m_debugMode && g_pplayer->m_debuggerDialog.IsWindow())
+         consumed = !!g_pplayer->m_debuggerDialog.IsSubDialogMessage(*pmsg);
    }
 
    return consumed;
@@ -2523,7 +2519,7 @@ void VPinball::OpenRecentFile(const size_t menuId)
 void VPinball::CopyPasteElement(const CopyPasteModes mode)
 {
    CComObject<PinTable> * const ptCur = GetActiveTable();
-   if (ptCur && !ptCur->m_locked)
+   if (ptCur && !ptCur->IsLocked())
    {
       const POINT ptCursor = ptCur->GetScreenPoint();
       switch (mode)
