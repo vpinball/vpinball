@@ -531,7 +531,7 @@ void PropertyDialog::UpdateComboBox(const vector<string>& contentList, const CCo
 
 void PropertyDialog::UpdateTabs(VectorProtected<ISelect> &pvsel)
 {
-    if (g_pvp->m_ptableActive && g_pvp->m_ptableActive->m_locked)
+    if (g_pvp->m_ptableActive && g_pvp->m_ptableActive->IsLocked())
     {
         m_multipleElementsStatic.ShowWindow(SW_HIDE);
         m_nameEdit.ShowWindow(SW_HIDE);
