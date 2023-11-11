@@ -535,6 +535,7 @@ void Pin3D::DrawBackground()
    const PinTable * const ptable = g_pplayer->m_ptable;
    Texture * const pin = ptable->GetDecalsEnabled() ? ptable->GetImage(ptable->m_BG_image[ptable->m_BG_current_set]) : nullptr;
    m_pd3dPrimaryDevice->ResetRenderState();
+   m_pd3dPrimaryDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_CCW);
    if (pin)
    {
       m_pd3dPrimaryDevice->Clear(clearType::ZBUFFER, 0, 1.0f, 0L);

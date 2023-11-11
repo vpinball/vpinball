@@ -1315,6 +1315,11 @@ HRESULT Player::Init()
       m_ptable->UpdateCurrentBGSet();
    }
 
+   // Initialize default state
+   RenderState state;
+   state.SetRenderState(RenderState::CULLMODE, m_ptable->m_tblMirrorEnabled ? RenderState::CULL_CW : RenderState::CULL_CCW);
+   m_pin3d.m_pd3dPrimaryDevice->CopyRenderStates(false, state);
+   m_pin3d.m_pd3dPrimaryDevice->SetDefaultRenderState();
    m_pin3d.InitLayout();
 
    const float minSlope = (m_ptable->m_overridePhysics ? m_ptable->m_fOverrideMinSlope : m_ptable->m_angletiltMin);
