@@ -374,6 +374,9 @@ BOOL VROptionsDialog::OnInitDialog()
    SendMessage(hwnd, CB_SETCURSEL, (int)vrPreview, 0);
    SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 
+   const bool shrinkToFit = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "ShrinkPreview"s, false);
+   SendDlgItemMessage(IDC_SHRINK, BM_SETCHECK, shrinkToFit ? BST_CHECKED : BST_UNCHECKED, 0);
+
    const bool scaleToFixedWidth = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "ScaleToFixedWidth"s, false);
    oldScaleValue = scaleToFixedWidth;
    SendDlgItemMessage(IDC_SCALE_TO_CM, BM_SETCHECK, scaleToFixedWidth ? BST_CHECKED : BST_UNCHECKED, 0);
@@ -641,6 +644,9 @@ void VROptionsDialog::OnOK()
    if (vrPreview == LB_ERR)
       vrPreview = VRPREVIEW_LEFT;
    g_pvp->m_settings.SaveValue(Settings::PlayerVR, "VRPreview"s, (int)vrPreview);
+
+   const bool shrinkToFit = IsDlgButtonChecked(IDC_SHRINK) != 0;
+   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "ShrinkPreview"s, shrinkToFit);
 
    const bool scaleToFixedWidth = IsDlgButtonChecked(IDC_SCALE_TO_CM)!= 0;
    g_pvp->m_settings.SaveValue(Settings::PlayerVR, "ScaleToFixedWidth"s, scaleToFixedWidth);

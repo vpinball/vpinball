@@ -607,6 +607,7 @@ public:
    void UpdateStereoShaderState();
 
    VRPreviewMode m_vrPreview;
+   bool m_vrPreviewShrink = false;
 
    bool m_headTracking;
 

@@ -127,7 +127,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    m_capPUP = false;
 #endif
    m_vrPreview = (VRPreviewMode)m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "VRPreview"s, (int)VRPREVIEW_LEFT);
-
+   m_vrPreviewShrink = m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "ShrinkPreview"s, false);
    m_trailForBalls = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "BallTrail"s, true);
    m_ballTrailStrength = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "BallTrailStrength"s, 0.5f);
    m_disableLightingForBalls = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "DisableLightingForBalls"s, false);
@@ -3695,7 +3695,7 @@ void Player::PrepareVideoBuffers()
          float ar = (float)w / (float)h, outAr = (float)outW / (float)outH;
          int x = 0, y = 0;
          int fw = w, fh = h;
-         if (ar > outAr)
+         if ((m_vrPreviewShrink && ar < outAr) || (!m_vrPreviewShrink && ar > outAr))
          { // Fit on Y
             const int scaledW = (int) (h * outAr);
             x = (w - scaledW) / 2;
@@ -3707,6 +3707,8 @@ void Player::PrepareVideoBuffers()
             y = (h - scaledH) / 2;
             fh = scaledH;
          }
+         if (m_vrPreviewShrink || m_vrPreview == VRPREVIEW_DISABLED)
+            m_pin3d.m_pd3dPrimaryDevice->Clear(clearType::TARGET | clearType::ZBUFFER, 0, 1.0f, 0L);
          if (m_vrPreview == VRPREVIEW_LEFT || m_vrPreview == VRPREVIEW_RIGHT)
          {
             m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, outRT, true, false, x, y, fw, fh, 0, 0, outW, outH, m_vrPreview == VRPREVIEW_LEFT ? 0 : 1, 0);
@@ -4579,14 +4581,6 @@ void Player::DrawBalls()
       // ball trails
       if (m_trailForBalls && m_ballTrailStrength > 0.f && !g_pplayer->IsRenderPass(Player::REFLECTION_PASS)) // do not render trails in reflection pass
       {
-         m_pin3d.m_pd3dPrimaryDevice->ResetRenderState();
-         m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
-         m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
-         m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);
-         m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::DESTBLEND, RenderState::INVSRC_ALPHA);
-         m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_ADD);
-         m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetTechnique(SHADER_TECHNIQUE_RenderBallTrail);
-
          Vertex3D_NoTex2 vertices[MAX_BALL_TRAIL_POS * 2];
          unsigned int nVertices = 0;
          for (int i2 = 0; i2 < MAX_BALL_TRAIL_POS - 1; ++i2)
@@ -4667,6 +4661,15 @@ void Player::DrawBalls()
             m_ballTrailMeshBuffer->m_vb->lock(ballTrailPos * sizeof(Vertex3D_NoTex2), nVertices * sizeof(Vertex3D_NoTex2), (void **)&bufvb, VertexBuffer::DISCARDCONTENTS);
             memcpy(bufvb, vertices, nVertices * sizeof(Vertex3D_NoTex2));
             m_ballTrailMeshBuffer->m_vb->unlock();
+            m_pin3d.m_pd3dPrimaryDevice->ResetRenderState();
+            m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
+            m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ZFUNC, RenderState::Z_ALWAYS);
+            m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
+            m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
+            m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);
+            m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::DESTBLEND, RenderState::INVSRC_ALPHA);
+            m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_ADD);
+            m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetTechnique(SHADER_TECHNIQUE_RenderBallTrail);
             m_pin3d.m_pd3dPrimaryDevice->DrawMesh(m_pin3d.m_pd3dPrimaryDevice->m_ballShader, true, pos, 0.f, m_ballTrailMeshBuffer, RenderDevice::TRIANGLESTRIP, ballTrailPos, nVertices);
             ballTrailPos += nVertices;
          }
@@ -4686,10 +4689,11 @@ void Player::DrawBalls()
                matRot.m[j][k] = pball->m_orientation.m_d[k][j];
          matNew.Multiply(matRot, matNew);
          m_pin3d.GetMVP().SetModel(matNew);
-         m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
 
          // draw points
          constexpr float ptsize = 5.0f;
+         m_pin3d.m_pd3dPrimaryDevice->ResetRenderState();
+         m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
          m_pin3d.m_pd3dPrimaryDevice->GetCoreDevice()->SetRenderState(D3DRS_POINTSIZE, float_as_uint(ptsize));
          m_pin3d.m_pd3dPrimaryDevice->DrawMesh(m_pin3d.m_pd3dPrimaryDevice->m_ballShader, false, pos, 0.f, m_ballDebugPoints, RenderDevice::POINTLIST, 0, 12);
 

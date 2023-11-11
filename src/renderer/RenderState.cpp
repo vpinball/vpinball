@@ -100,12 +100,12 @@ const string RenderState::GetLog() const
    static const string blend_functions[] = { "  0  "s, "  1  "s, " SA  "s, " DA  "s, " RSA "s, " RSC "s };
    string s { "Blend: {"s };
    s.append(blend ? " B " : " _ ");
-   s.append(blend_modes[blend_op]);
-   s.append(blend_functions[blend_dest]);
-   s.append(blend_functions[blend_src]);
+   s.append(blend ? blend_modes[blend_op] : " _ ");
+   s.append(blend ? blend_functions[blend_dest] : " ___ ");
+   s.append(blend ? blend_functions[blend_src] : " ___ ");
    s.append("} Depth: {");
    s.append(z_test ? " Z " : " _ ");
-   s.append(functions[z_func]);
+   s.append(z_test ? functions[z_func] : " __ ");
    s.append(z_write ? " ZW " : " __ ");
    s.append("} Clip:");
    s.append(clip_plane ? " C " : " _ ");

@@ -167,11 +167,11 @@ void RenderPass::SortCommands()
    {
       inline bool operator()(const RenderCommand* r1, const RenderCommand* r2) const
       {
-         // Move Clear/Copy command at the beginning of the pass
+         // Move Clear/Copy/SubmitVR command at the beginning of the pass
+         if (!r2->IsDrawCommand())
+            return false; // Return false first to keep submit order if we have multiple clear/copy/submit to sort
          if (!r1->IsDrawCommand())
             return true;
-         if (!r2->IsDrawCommand())
-            return false;
 
          // Move LiveUI command at the end of the pass
          if (r1->IsDrawLiveUICommand())
