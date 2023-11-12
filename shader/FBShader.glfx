@@ -352,8 +352,10 @@ void main()
       result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
    const float depth0 = texStereoNoLod(tex_depth, tex0).x;
    BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
-      result = FilmicToneMap(result);
-   color = float4(FBColorGrade(FBGamma(saturate(FBDither(result, tex0)))), 1.0);
+      result = saturate(FBDither(FilmicToneMap(result), tex0));
+   else
+      result = FBGamma(saturate(FBDither(result, tex0)));
+   color = float4(FBColorGrade(result), 1.0);
 }
 
 ////ps_main_fb_rhtonemap_AO
@@ -400,8 +402,10 @@ void main()
       result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
    const float depth0 = texStereoNoLod(tex_depth, tex0).x;
    BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
-      result = FilmicToneMap(result);
-   color = float4(FBColorGrade(FBGamma(saturate(FBDither(result, tex0)))), 1.0);
+      result = saturate(FBDither(FilmicToneMap(result), tex0));
+   else
+      result = FBGamma(saturate(FBDither(result, tex0)));
+   color = float4(FBColorGrade(result), 1.0);
 }
 
 ////ps_main_fb_rhtonemap_no_filter
@@ -439,8 +443,10 @@ void main()
       result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
    const float depth0 = texStereoNoLod(tex_depth, tex0).x;
    BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
-      result = FilmicToneMap(result);
-   color = float4(FBColorGrade(FBGamma(saturate(FBDither(result, tex0)))), 1.0);
+      result = saturate(FBDither(FilmicToneMap(result), tex0));
+   else
+      result = FBGamma(saturate(FBDither(result, tex0)));
+   color = float4(FBColorGrade(result), 1.0);
 }
 
 
@@ -470,8 +476,10 @@ void main()
       result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
    const float depth0 = texStereoNoLod(tex_depth, tex0).x;
    BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
-      result = FilmicToneMap(result);
-   color = float4(FBColorGrade(FBGamma(saturate(FBDither(result, tex0)))), 1.0);
+      result = saturate(FBDither(FilmicToneMap(result), tex0));
+   else
+      result = FBGamma(saturate(FBDither(result, tex0)));
+   color = float4(FBColorGrade(result), 1.0);
 }
 
 
