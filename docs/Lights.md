@@ -31,4 +31,4 @@ The softness of the shadow depends on the distance between ball and bulb, the ra
 Light reflections on balls are directly rendered, if the corresponding checkbox is enabled in the editor.
 Note that even a light set to 'None' mode for rendering (no lightmap) can have this checkbox enabled and therefore have its reflection visible on balls.
 
-<sub><sup>[Informations applicable to version 10.8 Beta]</sup></sub>
+<sub><sup>[Information applicable to version 10.8 Beta]</sup></sub>

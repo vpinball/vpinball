@@ -58,7 +58,7 @@ private:
    vec3 m_leftEyeColor = vec3(1.f, 0.f, 0.f);
    vec3 m_rightEyeColor = vec3(0.f, 1.f, 1.f);
 
-   // Render informations
+   // Render information
    vec3 m_deghostGamma;
    Matrix3D m_deghostFilter;
    Matrix3D m_rgb2AnaglyphLeft, m_rgb2AnaglyphRight;

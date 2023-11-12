@@ -553,7 +553,7 @@ void main() {
 
    BRANCH if (doRefractions)
    {
-      // alpha channel is the transparency of the object, tinting is supported even if alpha is 0 by applying a tint color (not from main texture since these are different informations (reflected/refracted color))
+      // alpha channel is the transparency of the object, tinting is supported even if alpha is 0 by applying a tint color (not from main texture since this is different information (reflected/refracted color))
       color.rgb = lerp(compute_refraction(worldPos, gl_FragCoord.xy * w_h_height.xy, N, V, eye), color.rgb, color.a);
       color.a = 1.0;
    }
@@ -617,7 +617,7 @@ void main() {
 
    BRANCH if (doRefractions)
    {
-      // alpha channel is the transparency of the object, tinting is supported even if alpha is 0 by applying a tint color (not from main texture since these are different informations (reflected/refracted color))
+      // alpha channel is the transparency of the object, tinting is supported even if alpha is 0 by applying a tint color (not from main texture since these is different information (reflected/refracted color))
       color.rgb = lerp(compute_refraction(worldPos, gl_FragCoord.xy * w_h_height.xy, N, V, eye), color.rgb, color.a);
       color.a = 1.0;
    }

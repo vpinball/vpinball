@@ -6,7 +6,7 @@ Visual Pinball X supports rendering to a stereo output which can be one of:
 - a traditional screen, using anaglyph glasses.
 
 Two rendering modes are available:
-- Fake Stereo: a single image is rendered from a single point of view, then a 'fake' view for each eye is built from the depth informations. This mode needs a less powerful setup but has graphical glitches (like not properly handling transparency).
+- Fake Stereo: a single image is rendered from a single point of view, then a 'fake' view for each eye is built from the depth information. This mode needs a less powerful setup but has graphical glitches (like not properly handling transparency).
 - Real Stereo: one image per eye is rendered and presented to the user. For the time being, this mode is only supported by the OpenGL flavor of VPX.
 
 ## 3D TV
@@ -83,4 +83,4 @@ When seting up the view, the cabinet screen (a.k.a. the 'window') is unlikely to
 
 
 
-<sub><sup>[Informations applicable to version 10.8 Beta]</sup></sub>
+<sub><sup>[Information applicable to version 10.8 Beta]</sup></sub>

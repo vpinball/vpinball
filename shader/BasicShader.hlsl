@@ -400,7 +400,7 @@ float4 ps_main_texture(const in VS_OUTPUT IN, float2 screenSpace : VPOS, uniform
 
    BRANCH if (doRefractions)
    {
-      // alpha channel is the transparency of the object, tinting is supported even if alpha is 0 by applying a tint color (not from main texture since these are different informations (reflected/refracted color))
+      // alpha channel is the transparency of the object, tinting is supported even if alpha is 0 by applying a tint color (not from main texture since this is different information (reflected/refracted color))
       color.rgb = lerp(compute_refraction(IN.worldPos, screenSpace * w_h_height.xy, N, V), color.rgb, color.a);
       color.a = 1.0;
    }

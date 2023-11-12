@@ -11,7 +11,7 @@ The perspective camera is the usual way of defining a view in most video games. 
 
 ![Camera](img/ViewSetup-Camera.webp)
 
-'Legacy' is the old way of defining the camera, kept for backwards compatibility. The following informations apply to 'Camera' mode only.
+'Legacy' is the old way of defining the camera, kept for backwards compatibility. The following information applies to 'Camera' mode only.
 
 The 'camera' view is setup by the following properties:
 - Player X/Y/Z is the view position from the bottom center of the playfield,
@@ -38,11 +38,11 @@ The 'window' mode needs to know about the physical setup of the screen. Since th
 - Screen inclination is the angle between horizontal and the screen,
 - Player X, Y, Z are the player coordinates as shown on the figure.
 
-Once these informations are defined, the view can be adjusted per table with the following properties:
+Once this information is defined, the view can be adjusted per table with the following properties:
 - Table X and YZ scales allow to stretch the table to the screen. When set to 100%, the table size matches the real world table size. Scaling on the Y and Z axis is fixed to be always the same.
 - Horizontal/Vertical offset adjusts the position of rendered parts in the projection,
 - Window Top/Bottom Z offsets define the position of the screen relative to the playfield/glass of the table.
 
 The existing implementation does not perform (yet) perspective distortion compensation. Sadly, this may lead to some distortion at the back of the screen.
 
-<sub><sup>[Informations applicable to version 10.8 Beta]</sup></sub>
+<sub><sup>[Information applicable to version 10.8 Beta]</sup></sub>

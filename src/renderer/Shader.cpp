@@ -1469,7 +1469,7 @@ bool Shader::Load(const std::string& name, const BYTE* code, unsigned int codeSi
       return false;
    }
 
-   // Collect the list of uniforms and there informations (handle, type,...)
+   // Collect the list of uniforms and their information (handle, type,...)
    D3DXEFFECT_DESC effect_desc;
    m_shader->GetDesc(&effect_desc);
    ShaderUniforms textureMask[TEXTURESET_STATE_CACHE_SIZE];
