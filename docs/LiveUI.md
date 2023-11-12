@@ -60,4 +60,4 @@ The property tab, located on the right, allows to edit the selected part, or the
 | 7        | Look from top                                                                       |
 | Ctrl + 7 | Look from bottom                                                                    |
 
-<sub><sup>[Informations applicable to version 10.8 Beta]</sup></sub>
+<sub><sup>[Information applicable to version 10.8 Beta]</sup></sub>

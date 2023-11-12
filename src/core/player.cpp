@@ -503,7 +503,7 @@ void Player::CreateWnd(HWND parent /* = 0 */)
    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
 #else
    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-   //This would enforce a 4.1 context, disabling all recent features (storage buffers, debug informations,...)
+   //This would enforce a 4.1 context, disabling all recent features (storage buffers, debug information,...)
    //SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
    //SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
 #endif
@@ -3298,7 +3298,7 @@ string Player::GetPerfInfo()
       m_count++;
    }
 
-   // Renderer additional informations
+   // Renderer additional information
    info << "Triangles: " << ((m_pin3d.m_pd3dPrimaryDevice->m_frameDrawnTriangles + 999) / 1000) << "k per frame, "
         << ((stats_drawn_static_triangles + m_pin3d.m_pd3dPrimaryDevice->m_frameDrawnTriangles + 999) / 1000) << "k overall. DayNight " << quantizeUnsignedPercent(m_globalEmissionScale)
         << "%%\n";
@@ -3309,7 +3309,7 @@ string Player::GetPerfInfo()
    info << "Objects: " << (unsigned int)m_vhitables.size() << "\n";
    info << "\n";
 
-   // Physics additional informations
+   // Physics additional information
    info << "Physics: " << m_phys_iterations << " iterations per frame (" << ((U32)(m_phys_total_iterations / m_count)) << " avg " << m_phys_max_iterations
         << " max)    Ball Velocity / Ang.Vel.: " << (m_pactiveball ? (m_pactiveball->m_d.m_vel + (float)PHYS_FACTOR * m_gravity).Length() : -1.f) << " "
         << (m_pactiveball ? (m_pactiveball->m_angularmomentum / m_pactiveball->Inertia()).Length() : -1.f) << "\n";

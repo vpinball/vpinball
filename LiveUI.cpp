@@ -1417,7 +1417,7 @@ void LiveUI::UpdateTweakModeUI()
          switch (setting)
          {
          case BS_Page:
-            CM_ROW("Option Page:", "%s", m_activeTweakPage == TP_TableOption ? "Table Options" : m_activeTweakPage == TP_PointOfView ? "Point of View" : "Informations", "");
+            CM_ROW("Option Page:", "%s", m_activeTweakPage == TP_TableOption ? "Table Options" : m_activeTweakPage == TP_PointOfView ? "Point of View" : "Information", "");
             CM_SKIP_LINE;
             break;
 
@@ -2661,7 +2661,7 @@ void LiveUI::UpdateRendererInspectionModal()
          ImGui::TableSetupColumn("Ratio", ImGuiTableColumnFlags_WidthFixed);
          ImGui::TableSetupColumn("Avg Time", ImGuiTableColumnFlags_WidthFixed);
          ImGui::TableSetupColumn("Avg Ratio", ImGuiTableColumnFlags_WidthFixed);
-         ImGui::TableSetupColumn("Additional informations", ImGuiTableColumnFlags_WidthStretch);
+         ImGui::TableSetupColumn("Additional information", ImGuiTableColumnFlags_WidthStretch);
          ImGui::TableHeadersRow();
 
          #define PROF_ROW(name, section) \
@@ -2702,7 +2702,7 @@ void LiveUI::UpdateRendererInspectionModal()
          ImGui::TableSetupColumn("Min", ImGuiTableColumnFlags_WidthFixed);
          ImGui::TableSetupColumn("Max", ImGuiTableColumnFlags_WidthFixed);
          ImGui::TableSetupColumn("Avg", ImGuiTableColumnFlags_WidthFixed);
-         ImGui::TableSetupColumn("Informations", ImGuiTableColumnFlags_WidthStretch);
+         ImGui::TableSetupColumn("Information", ImGuiTableColumnFlags_WidthStretch);
          ImGui::TableHeadersRow();
          #define PROF_ROW(name, section, info) \
          ImGui::TableNextColumn(); ImGui::Text("%s", name); \
@@ -2721,7 +2721,7 @@ void LiveUI::UpdateRendererInspectionModal()
 	   if (ImGui::IsKeyPressed(dikToImGuiKeys[m_player->m_rgKeys[eFrameCount]]))
 		   m_player->InitFPS();
 	   
-      // Other detailled informations
+      // Other detailed information
       ImGui::Text("%s", m_player->GetPerfInfo().c_str());
 
       ImGui::End();

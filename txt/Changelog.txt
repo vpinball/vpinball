@@ -92,7 +92,7 @@ FEATURES:
 
 - add support for more than one DMD (for original tables, in-game DMD menu,...)
 
-- add new log file functionality (vpinball.log), with script and error informations. It can be en/disabled in the UI/Editor preferences.
+- add new log file functionality (vpinball.log), with script and error information. It can be en/disabled in the UI/Editor preferences.
   The ability to do a rough performance profiling of the table loading phase by using the 'Profile.txt' has thus been removed in favor of the new logging
   (all the profile events will be in the log file with timestamps)
 
@@ -126,7 +126,7 @@ FEATURES:
 - add 2 new camera layout modes which work better for cabinets, and for anaglyph stereo (as well as other use cases) and allows:
   - to setup the player position in real word units, measuring from the bottom center of the playfield in centimeters. This should allow to have a single position corresponding to your size and play position for all your tables.
   - to setup the camera like a 'real' camera: there is no more layback but a view offset, the other properties being simply the inclination and the field of view.
-  - for camera mode, adjust the user interface to show these informations and allow to easily reset to a default position by pressing the plunger key.
+  - for camera mode, adjust the user interface to show this information and allow to easily reset to a default position by pressing the plunger key.
   - support a new 'window' mode, designed for pincab users, where the screen is not orthogonal to the viewer, requiring an adjusted projection.
 - change camera mode buttons to match the ones when starting VPX with -povedit (Start = Export POV, Credit = Reset/Quit, Plunger = Defaults)
 
@@ -138,7 +138,7 @@ FEATURES:
 
 - stereo rendering has been rewritten:
   - use new projections which are well-designed for stereo rendering (same as for VR, no more parallel or toe-in with artefacts)
-  - compute exact depth informations when using the new 'window' POV mode (note that you should have the same X/Y/Z scene scale to get good results)
+  - compute exact depth information when using the new 'window' POV mode (note that you should have the same X/Y/Z scene scale to get good results)
   - add support for fake stereo to OpenGL (like DirectX): real stereo is way better but needs a more powerful setup
   - add 'Luminance' filter mode which creates anaglyph based on real display/glasses/viewer calibration. The calibration is only possible from the new Live Editor.
     This new mode adapts to any glasses based on user calibration. It is especially useful when glasses are not conforming standard filter colors, on HDR display or 

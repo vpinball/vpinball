@@ -180,4 +180,4 @@ Left image shows an (exaggerated) ambient occlusion artefact due to depth maskin
 
 Left image shows the ramp from VPW's Last Action Hero in 10.7, while the right image shows it with the mask option disabled.
 
-<sub><sup>[Informations applicable to version 10.8 Beta]</sup></sub>
+<sub><sup>[Information applicable to version 10.8 Beta]</sup></sub>
