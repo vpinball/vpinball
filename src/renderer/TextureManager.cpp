@@ -16,6 +16,8 @@ Sampler* TextureManager::LoadTexture(BaseTexture* memtex, const SamplerFilter fi
          entry.sampler->SetName("Env"s);
       else if (g_pplayer->m_pin3d.m_pinballEnvTexture.m_pdsBuffer == memtex)
          entry.sampler->SetName("Default Ball Env"s);
+      else if (g_pplayer->m_texdmd == memtex)
+         entry.sampler->SetName("DMD"s);
       else
       {
          for (Texture* image : g_pplayer->m_ptable->m_vimage)
