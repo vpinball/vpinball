@@ -1574,7 +1574,8 @@ HRESULT Player::Init()
    VertexBuffer *ballVertexBuffer = new VertexBuffer(m_pin3d.m_pd3dPrimaryDevice, lowDetailBall ? basicBallLoNumVertices : basicBallMidNumVertices, (float *)(lowDetailBall ? basicBallLo : basicBallMid));
    m_ballMeshBuffer = new MeshBuffer(L"Ball"s, ballVertexBuffer, ballIndexBuffer, true);
 
-   if (m_toneMapper == TM_TONY_MC_MAPFACE)
+   // FIXME we always loads the LUT since this can be changed in the LiveUI. Would be better to do this lazily
+   //if (m_toneMapper == TM_TONY_MC_MAPFACE)
    {
       m_tonemapLUT = new Texture();
       m_tonemapLUT->LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "tony_mc_mapface_unrolled.exr");
@@ -3528,8 +3529,6 @@ void Player::PrepareVideoBuffers()
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(useAO ?
               useAA ? SHADER_TECHNIQUE_fb_tmtonemap_AO : SHADER_TECHNIQUE_fb_tmtonemap_AO_no_filter
             : useAA ? SHADER_TECHNIQUE_fb_tmtonemap    : SHADER_TECHNIQUE_fb_tmtonemap_no_filter);
-      // Exposure is hardcoded for the time being
-      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetFloat(SHADER_exposure, m_toneMapper == TM_FILMIC ? 0.2f : 1.0f);
 
       const Vertex3D_TexelOnly shiftedVerts[4] =
       {

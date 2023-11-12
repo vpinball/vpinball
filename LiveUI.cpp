@@ -2883,15 +2883,17 @@ void LiveUI::TableProperties(bool is_live)
    {
       ImGui::EndTable();
    }
-   if (ImGui::CollapsingHeader("Lights", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
+   if (ImGui::CollapsingHeader("Lighting", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
    {
       PropRGB("Ambient Color", m_table, is_live, &(m_table->m_lightAmbient), m_live_table ? &(m_live_table->m_lightAmbient) : nullptr);
+      
       PropSeparator();
       PropRGB("Light Em. Color", m_table, is_live, &(m_table->m_Light[0].emission), m_live_table ? &(m_live_table->m_Light[0].emission) : nullptr);
       auto reinit_lights = [this](bool is_live, float prev, float v) { m_pin3d->InitLights(); }; // Needed to update shaders with new light settings 
       PropFloat("Light Em. Scale", m_table, is_live, &(m_table->m_lightEmissionScale), m_live_table ? &(m_live_table->m_lightEmissionScale) : nullptr, 20000.0f, 100000.0f, "%.0f", ImGuiInputTextFlags_CharsDecimal, reinit_lights);
       PropFloat("Light Height", m_table, is_live, &(m_table->m_lightHeight), m_live_table ? &(m_live_table->m_lightHeight) : nullptr, 20.0f, 100.0f, "%.0f");
       PropFloat("Light Range", m_table, is_live, &(m_table->m_lightRange), m_live_table ? &(m_live_table->m_lightRange) : nullptr, 200.0f, 1000.0f, "%.0f");
+      
       PropSeparator();
       // TODO Missing: environment texture combo
       auto upd_env_em_scale = [this](bool is_live, float prev, float v) { m_player->SetupShaders(); };
@@ -2899,6 +2901,21 @@ void LiveUI::TableProperties(bool is_live)
       PropFloat("Ambient Occlusion Scale", m_table, is_live, &(m_table->m_AOScale), m_live_table ? &(m_live_table->m_AOScale) : nullptr, 0.1f, 1.0f);
       PropFloat("Bloom Strength", m_table, is_live, &(m_table->m_bloom_strength), m_live_table ? &(m_live_table->m_bloom_strength) : nullptr, 0.1f, 1.0f);
       PropFloat("Screen Space Reflection Scale", m_table, is_live, &(m_table->m_SSRScale), m_live_table ? &(m_live_table->m_SSRScale) : nullptr, 0.1f, 1.0f);
+      
+      PropSeparator();
+      static const string tonemapperLabels[] = { "Reinhart"s, "Tony McMapFace"s, "Filmic"s };
+      int startup_mode = m_table ? (int)m_table->GetToneMapper() : 0;
+      int live_mode = m_live_table ? (int)m_player->m_toneMapper : 0;
+      PinTable *table = m_table;
+      Player *player = m_player;
+      auto upd_tm = [table, player](bool is_live, int prev, int v)
+      {
+         if (is_live)
+            player->m_toneMapper = (ToneMapper)v;
+         else
+            table->SetToneMapper((ToneMapper)v);
+      };
+      PropCombo("Tonemapper", m_table, is_live, &startup_mode, &live_mode, 3, tonemapperLabels, upd_tm);
       ImGui::EndTable();
    }
 }
