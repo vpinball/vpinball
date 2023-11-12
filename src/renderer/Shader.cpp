@@ -109,14 +109,18 @@ const string Shader::shaderTechniqueNames[SHADER_TECHNIQUE_COUNT]
    SHADER_TECHNIQUE(fb_AO_no_filter_static), // Apply AO during static prerender pass (no tonemapping)
    SHADER_TECHNIQUE(fb_rhtonemap),
    SHADER_TECHNIQUE(fb_rhtonemap_AO),
-   SHADER_TECHNIQUE(fb_rhtonemap_no_filterRGB),
-   SHADER_TECHNIQUE(fb_rhtonemap_no_filterRG),
-   SHADER_TECHNIQUE(fb_rhtonemap_no_filterR),
+   SHADER_TECHNIQUE(fb_rhtonemap_no_filter),
    SHADER_TECHNIQUE(fb_rhtonemap_AO_no_filter),
    SHADER_TECHNIQUE(fb_tmtonemap),
    SHADER_TECHNIQUE(fb_tmtonemap_AO),
    SHADER_TECHNIQUE(fb_tmtonemap_no_filter),
    SHADER_TECHNIQUE(fb_tmtonemap_AO_no_filter),
+   SHADER_TECHNIQUE(fb_fmtonemap),
+   SHADER_TECHNIQUE(fb_fmtonemap_AO),
+   SHADER_TECHNIQUE(fb_fmtonemap_no_filter),
+   SHADER_TECHNIQUE(fb_fmtonemap_AO_no_filter),
+   SHADER_TECHNIQUE(fb_rhtonemap_no_filterRG),
+   SHADER_TECHNIQUE(fb_rhtonemap_no_filterR),
    SHADER_TECHNIQUE(fb_blur_horiz7x7),
    SHADER_TECHNIQUE(fb_blur_vert7x7),
    SHADER_TECHNIQUE(fb_blur_horiz9x9),
@@ -270,6 +274,7 @@ Shader::ShaderUniform Shader::shaderUniformNames[SHADER_UNIFORM_COUNT] {
    SHADER_UNIFORM(SUT_Bool, do_dither, 1),
    SHADER_UNIFORM(SUT_Float4, SSR_bumpHeight_fresnelRefl_scale_FS, 1),
    SHADER_UNIFORM(SUT_Float2, AO_scale_timeblur, 1),
+   SHADER_UNIFORM(SUT_Float, exposure, 1),
    SHADER_SAMPLER(tex_fb_unfiltered, Texture0, SA_CLAMP, SA_CLAMP, SF_NONE), // Framebuffer (unfiltered)
    SHADER_SAMPLER(tex_fb_filtered, Texture0, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // Framebuffer (filtered)
    SHADER_SAMPLER(tex_bloom, Texture1, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // Bloom

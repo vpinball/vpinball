@@ -3511,23 +3511,25 @@ void Player::PrepareVideoBuffers()
       if (infoMode == IF_AO_ONLY)
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_fb_AO);
       else if (infoMode == IF_RENDER_PROBES)
-         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(m_toneMapper == TM_REINHARD ? SHADER_TECHNIQUE_fb_rhtonemap : SHADER_TECHNIQUE_fb_tmtonemap);
+         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(m_toneMapper == TM_REINHARD ? SHADER_TECHNIQUE_fb_rhtonemap
+                                                           : m_toneMapper == TM_FILMIC   ? SHADER_TECHNIQUE_fb_fmtonemap
+                                                                                         : SHADER_TECHNIQUE_fb_tmtonemap);
       else if (m_BWrendering != 0)
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(m_BWrendering == 1 ? SHADER_TECHNIQUE_fb_rhtonemap_no_filterRG : SHADER_TECHNIQUE_fb_rhtonemap_no_filterR);
       else if (m_toneMapper == TM_REINHARD)
-      {
-         if (useAO)
-            m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(useAA ? SHADER_TECHNIQUE_fb_rhtonemap_AO : SHADER_TECHNIQUE_fb_rhtonemap_AO_no_filter);
-         else
-            m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(useAA ? SHADER_TECHNIQUE_fb_rhtonemap : SHADER_TECHNIQUE_fb_rhtonemap_no_filterRGB);
-      }
-      else
-      {
-         if (useAO)
-            m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(useAA ? SHADER_TECHNIQUE_fb_tmtonemap_AO : SHADER_TECHNIQUE_fb_tmtonemap_AO_no_filter);
-         else
-            m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(useAA ? SHADER_TECHNIQUE_fb_tmtonemap : SHADER_TECHNIQUE_fb_tmtonemap_no_filter);
-      }
+         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(useAO ?
+              useAA ? SHADER_TECHNIQUE_fb_rhtonemap_AO : SHADER_TECHNIQUE_fb_rhtonemap_AO_no_filter
+            : useAA ? SHADER_TECHNIQUE_fb_rhtonemap    : SHADER_TECHNIQUE_fb_rhtonemap_no_filter);
+      else if (m_toneMapper == TM_FILMIC)
+         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(useAO ?
+              useAA ? SHADER_TECHNIQUE_fb_fmtonemap_AO : SHADER_TECHNIQUE_fb_fmtonemap_AO_no_filter
+            : useAA ? SHADER_TECHNIQUE_fb_fmtonemap    : SHADER_TECHNIQUE_fb_fmtonemap_no_filter);
+      else // TM_TONY_MC_MAPFACE
+         m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(useAO ?
+              useAA ? SHADER_TECHNIQUE_fb_tmtonemap_AO : SHADER_TECHNIQUE_fb_tmtonemap_AO_no_filter
+            : useAA ? SHADER_TECHNIQUE_fb_tmtonemap    : SHADER_TECHNIQUE_fb_tmtonemap_no_filter);
+      // Exposure is hardcoded for the time being
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetFloat(SHADER_exposure, m_toneMapper == TM_FILMIC ? 0.2f : 1.0f);
 
       const Vertex3D_TexelOnly shiftedVerts[4] =
       {

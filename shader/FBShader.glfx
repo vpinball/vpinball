@@ -314,6 +314,9 @@ void main()
    color = float4(result, 1.0);
 }
 
+// ////////////////// Tonemapping /////////////////////////
+
+
 ////ps_main_fb_rhtonemap
 
 void main()
@@ -337,6 +340,19 @@ void main()
    const float depth0 = texStereoNoLod(tex_depth, tex0).x;
    BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
       result = TonyMcMapfaceToneMap(result);
+   color = float4(FBColorGrade(FBGamma(saturate(FBDither(result, tex0)))), 1.0);
+}
+
+////ps_main_fb_fmtonemap
+
+void main()
+{
+   float3 result = texStereoNoLod(tex_fb_filtered, tex0).rgb;
+   BRANCH if (do_bloom)
+      result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
+   const float depth0 = texStereoNoLod(tex_depth, tex0).x;
+   BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
+      result = FilmicToneMap(result);
    color = float4(FBColorGrade(FBGamma(saturate(FBDither(result, tex0)))), 1.0);
 }
 
@@ -372,7 +388,23 @@ void main()
    color = float4(FBColorGrade(FBGamma(saturate(FBDither(result, tex0)))), 1.0);
 }
 
-////ps_main_fb_rhtonemap_no_filterRGB
+////ps_main_fb_fmtonemap_AO
+
+void main()
+{
+   float3 result = texStereoNoLod(tex_fb_filtered, tex0).rgb;
+   // tex0 is pixel perfect sampling which here means between the pixels resulting from supersampling (for 2x, it's in the middle of the 2 texels)
+   // moving AO before tonemap does not really change the look
+   result *= texStereoNoLod(tex_ao, tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
+   BRANCH if (do_bloom)
+      result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
+   const float depth0 = texStereoNoLod(tex_depth, tex0).x;
+   BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
+      result = FilmicToneMap(result);
+   color = float4(FBColorGrade(FBGamma(saturate(FBDither(result, tex0)))), 1.0);
+}
+
+////ps_main_fb_rhtonemap_no_filter
 
 void main()
 {
@@ -397,6 +429,51 @@ void main()
       result = TonyMcMapfaceToneMap(result);
    color = float4(FBColorGrade(FBGamma(saturate(FBDither(result, tex0)))), 1.0);
 }
+
+////ps_main_fb_fmtonemap_no_filter
+
+void main()
+{
+   float3 result = texStereoNoLod(tex_fb_unfiltered, tex0).rgb;
+   BRANCH if (do_bloom)
+      result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
+   const float depth0 = texStereoNoLod(tex_depth, tex0).x;
+   BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
+      result = FilmicToneMap(result);
+   color = float4(FBColorGrade(FBGamma(saturate(FBDither(result, tex0)))), 1.0);
+}
+
+
+////ps_main_fb_tmtonemap_AO_no_filter
+
+void main()
+{
+   float3 result = texStereoNoLod(tex_fb_unfiltered, tex0).rgb;
+   // moving AO before tonemap does not really change the look
+   result *= texStereoNoLod(tex_ao, tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
+   BRANCH if (do_bloom)
+      result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
+   const float depth0 = texStereoNoLod(tex_depth, tex0).x;
+   BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
+      result = TonyMcMapfaceToneMap(result);
+   color = float4(FBColorGrade(FBGamma(saturate(FBDither(result, tex0)))), 1.0);
+}
+
+////ps_main_fb_fmtonemap_AO_no_filter
+
+void main()
+{
+   float3 result = texStereoNoLod(tex_fb_unfiltered, tex0).rgb;
+   // moving AO before tonemap does not really change the look
+   result *= texStereoNoLod(tex_ao, tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
+   BRANCH if (do_bloom)
+      result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
+   const float depth0 = texStereoNoLod(tex_depth, tex0).x;
+   BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
+      result = FilmicToneMap(result);
+   color = float4(FBColorGrade(FBGamma(saturate(FBDither(result, tex0)))), 1.0);
+}
+
 
 ////ps_main_fb_rhtonemap_no_filterRG
 
@@ -426,6 +503,7 @@ void main()
    color = float4(gray,gray,gray,1.0);
 }
 
+
 ////ps_main_fb_rhtonemap_AO_no_filter
 
 void main()
@@ -441,20 +519,6 @@ void main()
    color = float4(FBColorGrade(FBGamma(saturate(FBDither(result, tex0)))), 1.0);
 }
 
-////ps_main_fb_tmtonemap_AO_no_filter
-
-void main()
-{
-   float3 result = texStereoNoLod(tex_fb_unfiltered, tex0).rgb;
-   // moving AO before tonemap does not really change the look
-   result *= texStereoNoLod(tex_ao, tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
-   BRANCH if (do_bloom)
-      result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
-   const float depth0 = texStereoNoLod(tex_depth, tex0).x;
-   BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
-      result = TonyMcMapfaceToneMap(result);
-   color = float4(FBColorGrade(FBGamma(saturate(FBDither(result, tex0)))), 1.0);
-}
 
 
 //
@@ -842,16 +906,23 @@ fb_AO:P0:vs_main_no_trafo_subpixel():gs_main():ps_main_fb_AO()
 fb_AO_static:P0:vs_main_no_trafo_subpixel():gs_main():ps_main_fb_AO_static()
 fb_AO_no_filter_static:P0:vs_main_no_trafo():gs_main():ps_main_fb_AO_no_filter_static()
 
+// Reinhart
 fb_rhtonemap:P0:vs_main_no_trafo_subpixel():gs_main():ps_main_fb_rhtonemap()
 fb_rhtonemap_AO:P0:vs_main_no_trafo_subpixel():gs_main():ps_main_fb_rhtonemap_AO()
-fb_rhtonemap_no_filterRGB:P0:vs_main_no_trafo():gs_main():ps_main_fb_rhtonemap_no_filterRGB()
+fb_rhtonemap_no_filter:P0:vs_main_no_trafo():gs_main():ps_main_fb_rhtonemap_no_filter()
+fb_rhtonemap_AO_no_filter:P0:vs_main_no_trafo():gs_main():ps_main_fb_rhtonemap_AO_no_filter()
 fb_rhtonemap_no_filterRG:P0:vs_main_no_trafo():gs_main():ps_main_fb_rhtonemap_no_filterRG()
 fb_rhtonemap_no_filterR:P0:vs_main_no_trafo():gs_main():ps_main_fb_rhtonemap_no_filterR()
-fb_rhtonemap_AO_no_filter:P0:vs_main_no_trafo():gs_main():ps_main_fb_rhtonemap_AO_no_filter()
+// Tony McMapFace
 fb_tmtonemap:P0:vs_main_no_trafo_subpixel():gs_main():ps_main_fb_tmtonemap()
 fb_tmtonemap_AO:P0:vs_main_no_trafo_subpixel():gs_main():ps_main_fb_tmtonemap_AO()
 fb_tmtonemap_no_filter:P0:vs_main_no_trafo():gs_main():ps_main_fb_tmtonemap_no_filter()
 fb_tmtonemap_AO_no_filter:P0:vs_main_no_trafo():gs_main():ps_main_fb_tmtonemap_AO_no_filter()
+// Filmic
+fb_fmtonemap:P0:vs_main_no_trafo_subpixel():gs_main():ps_main_fb_fmtonemap()
+fb_fmtonemap_AO:P0:vs_main_no_trafo_subpixel():gs_main():ps_main_fb_fmtonemap_AO()
+fb_fmtonemap_no_filter:P0:vs_main_no_trafo():gs_main():ps_main_fb_fmtonemap_no_filter()
+fb_fmtonemap_AO_no_filter:P0:vs_main_no_trafo():gs_main():ps_main_fb_fmtonemap_AO_no_filter()
 
 // All Bloom variants:
 fb_blur_horiz7x7:P0:vs_main_no_trafo():gs_main():ps_main_fb_blur_horiz7x7()

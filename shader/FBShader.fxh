@@ -1,5 +1,6 @@
 #ifdef GLSL
 uniform sampler2D tex_tonemap_lut; // Precomputed Tonemapping LUT
+uniform float exposure;
 
 #else // HLSL
 
@@ -14,24 +15,33 @@ sampler2D tex_tonemap_lut : TEXUNIT6 = sampler_state
     ADDRESSV = Clamp;
     SRGBTexture = false;
 };
+const float exposure;
 
 #endif
 
 // //////////////////////////////////////////////////////////////////////////////////////////////////
 // Tonemapping
 
-float ReinhardToneMap(const float l)
+#define MAX_BURST 1000.0
+
+float ReinhardToneMap(float l)
 {
-    return l * ((l * BURN_HIGHLIGHTS + 1.0) / (l + 1.0)); // overflow is handled by bloom
+    l = exposure * l;
+	// The clamping (to an arbitrary high value) prevents overflow leading to nan/inf in turn rendered as black blobs (at least on NVidia hardware)
+    return min(l * ((l * BURN_HIGHLIGHTS + 1.0) / (l + 1.0)), MAX_BURST); // overflow is handled by bloom
 }
-float2 ReinhardToneMap(const float2 color)
+float2 ReinhardToneMap(float2 color)
 {
-    const float l = dot(color, float2(0.176204 + 0.0108109 * 0.5, 0.812985 + 0.0108109 * 0.5)); // CIE RGB to XYZ, Y row (relative luminance) adjusted for RG colors
+    color = exposure * color;
+	// The clamping (to an arbitrary high value) prevents overflow leading to nan/inf in turn rendered as black blobs (at least on NVidia hardware)
+    const float l = min(dot(color, float2(0.176204 + 0.0108109 * 0.5, 0.812985 + 0.0108109 * 0.5)), MAX_BURST); // CIE RGB to XYZ, Y row (relative luminance)
     return color * ((l * BURN_HIGHLIGHTS + 1.0) / (l + 1.0)); // overflow is handled by bloom
 }
-float3 ReinhardToneMap(const float3 color)
+float3 ReinhardToneMap(float3 color)
 {
-    const float l = dot(color, float3(0.176204, 0.812985, 0.0108109)); // CIE RGB to XYZ, Y row (relative luminance)
+    color = exposure * color;
+	// The clamping (to an arbitrary high value) prevents overflow leading to nan/inf in turn rendered as black blobs (at least on NVidia hardware)
+    const float l = min(dot(color, float3(0.176204, 0.812985, 0.0108109)), MAX_BURST); // CIE RGB to XYZ, Y row (relative luminance)
     return color * ((l * BURN_HIGHLIGHTS + 1.0) / (l + 1.0)); // overflow is handled by bloom
 }
 
@@ -43,21 +53,25 @@ float3 FilmicToneMap(const float3 hdr, const float whitepoint) //!! test/experim
     const float4 vf = (vh*va + 0.004)/(vh*(va+0.55) + 0.0491) - 0.0821;
     return vf.rgb/vf.aaa;
 }
+#endif
 
-float3 FilmicToneMap2(const float3 texColor) //!! test/experimental
+// Filmic Tonemapping Operators http://filmicworlds.com/blog/filmic-tonemapping-operators/
+float3 FilmicToneMap(const float3 color)
 {
-    const float3 x = max(0.,texColor-0.004); // Filmic Curve
+    const float3 x = max(float3(0., 0., 0.), exposure * color - 0.004); // Filmic Curve
     return (x*(6.2*x+.5))/(x*(6.2*x+1.7)+0.06);
 }
-#endif
 
 // Tony Mc MapFace Tonemapping (MIT licensed): see https://github.com/h3r2tic/tony-mc-mapface
 // This tonemapping is similar to Reinhard but handles better highly saturated over powered colors
 // (for these, it looks somewhat similar to AGX by desaturating them)
 // It is more or less a Reinhard tonemapping followed by a color grade color correction
-float3 TonyMcMapfaceToneMap(const float3 color)
+float3 TonyMcMapfaceToneMap(float3 color)
 {
     const float LUT_DIMS = 48.0;
+
+	// The clamping (to an arbitrary high value) prevents overflow leading to nan/inf in turn rendered as black blobs (at least on NVidia hardware)
+    color = min(exposure * color, float3(MAX_BURST, MAX_BURST, MAX_BURST));
 
     // Apply a non-linear transform that the LUT is encoded with.
     float3 encoded = color / (color + float3(1.0, 1.0, 1.0));

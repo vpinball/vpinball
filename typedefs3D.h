@@ -49,6 +49,7 @@ enum ToneMapper
 {
    TM_REINHARD         = 0, // Reinhard, used to be the default until 10.8
    TM_TONY_MC_MAPFACE  = 1, // Precomputed high quality phenomenological tonemapping https://github.com/h3r2tic/tony-mc-mapface
+   TM_FILMIC = 2,           // Filmic tonemapper
 };
 
 enum VideoSyncMode
