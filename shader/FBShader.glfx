@@ -906,7 +906,7 @@ fb_AO:P0:vs_main_no_trafo_subpixel():gs_main():ps_main_fb_AO()
 fb_AO_static:P0:vs_main_no_trafo_subpixel():gs_main():ps_main_fb_AO_static()
 fb_AO_no_filter_static:P0:vs_main_no_trafo():gs_main():ps_main_fb_AO_no_filter_static()
 
-// Reinhart
+// Reinhard
 fb_rhtonemap:P0:vs_main_no_trafo_subpixel():gs_main():ps_main_fb_rhtonemap()
 fb_rhtonemap_AO:P0:vs_main_no_trafo_subpixel():gs_main():ps_main_fb_rhtonemap_AO()
 fb_rhtonemap_no_filter:P0:vs_main_no_trafo():gs_main():ps_main_fb_rhtonemap_no_filter()
