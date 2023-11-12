@@ -20,7 +20,6 @@
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #pragma code_page(1252)
 
-
 /////////////////////////////////////////////////////////////////////////////
 //
 // Dialog
@@ -372,22 +371,23 @@ BEGIN
     LISTBOX         IDC_SIZELIST,14,107,129,121,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "View mode",IDC_STATIC,14,232,64,8
     COMBOBOX        IDC_BG_SET,78,231,65,100,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Environment lighting",IDC_STATIC,7,249,142,68
+    GROUPBOX        "Environment lighting",IDC_STATIC,7,249,142,69
+    CONTROL         "Override Table Global Lighting",IDC_OVERRIDE_DN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,259,129,10
     LTEXT           "Night/Day",IDC_STATIC,11,273,35,10
     CONTROL         "",IDC_DAYNIGHT_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | TBS_BOTH | TBS_ENABLESELRANGE | WS_TABSTOP,49,269,98,14
     CONTROL         "Automatic Day/Night cycle",IDC_DYNAMIC_DN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,288,129,10
-    LTEXT           "Latitude",IDC_STATIC,10,303,35,10
+    LTEXT           "Latitude",IDC_STATIC,10,303,29,10
     EDITTEXT        IDC_DN_LATITUDE,39,301,36,12,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Longitude",IDC_STATIC,78,303,35,10
-    EDITTEXT        IDC_DN_LONGITUDE,111,301,36,12,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Longitude",IDC_STATIC,78,303,32,10
+    EDITTEXT        IDC_DN_LONGITUDE,110,301,36,12,ES_RIGHT | ES_AUTOHSCROLL
     PUSHBUTTON      "Reset Player Position",IDC_RESET_WINDOW,2,344,74,14
     PUSHBUTTON      "Reset to Defaults",IDC_DEFAULTS,78,344,74,14
     PUSHBUTTON      "Set for Low End PC",IDC_DEFAULTS_LOW,2,360,74,14
     PUSHBUTTON      "Set for High End PC",IDC_DEFAULTS_HIGH,78,360,74,14
     GROUPBOX        "Ball Rendering",IDC_STATIC,154,6,94,98
-    CONTROL         "Ball Trails",IDC_GLOBAL_TRAIL_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,159,16,86,10
+    CONTROL         "Ball Trails",IDC_GLOBAL_TRAIL_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,159,16,47,10
     LTEXT           "Strength",IDC_STATIC,170,26,32,8
-    EDITTEXT        IDC_BALL_TRAIL_STRENGTH,207,24,38,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_BALL_TRAIL_STRENGTH,207,24,37,12,ES_AUTOHSCROLL
     CONTROL         "Overwrite Ball Image",IDC_OVERWRITE_BALL_IMAGE_CHECK,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,159,38,81,10
     PUSHBUTTON      "...",IDC_BROWSE_BALL_IMAGE,227,56,17,12
@@ -485,7 +485,6 @@ BEGIN
     PUSHBUTTON      "Save Overrides",IDC_SAVE_OVERRIDES,372,343,60,14
     PUSHBUTTON      "&Save Changes",IDC_SAVE_ALL,372,360,60,14
     DEFPUSHBUTTON   "&Close",IDOK,434,360,60,14
-    CONTROL         "Override Table Global Lighting",IDC_OVERRIDE_DN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,259,129,10
 END
 
 IDD_FONTDIALOG DIALOG 0, 0, 316, 167
@@ -3401,7 +3400,6 @@ IDC_RUBBER              CURSOR                  "res\\rubber.cur"
 IDW_SPLITH              CURSOR                  "res\\SplitH.cur"
 
 IDW_SPLITV              CURSOR                  "res\\SplitV.cur"
-
 
 
 /////////////////////////////////////////////////////////////////////////////
