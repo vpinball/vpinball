@@ -3926,6 +3926,10 @@ void DebuggerModule::Init(CodeViewer * const pcv)
 
 STDMETHODIMP DebuggerModule::Print(VARIANT *pvar)
 {
+   // Disable logging in locked tables (there is no debugger in locked mode anyway)
+   if (g_pplayer->m_ptable->IsLocked())
+      return S_OK;
+
    const bool enableLog = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "EnableLog"s, false);
    const bool logScript = enableLog && g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "LogScriptOutput"s, true);
 
