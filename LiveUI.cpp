@@ -865,7 +865,7 @@ void LiveUI::Update(const RenderTarget *rt)
          ImFont *const font = ImGui::GetFont();
          ImVec2 textSize = font->CalcTextSizeA(font->FontSize, FLT_MAX, 0.0f, m_notifications[i].message.c_str()) + ImVec2(30.f, 30.f);
          constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
-         ImGui::SetNextWindowBgAlpha(0.35f);
+         ImGui::SetNextWindowBgAlpha(0.666f);
          ImGui::SetNextWindowPos(ImVec2((io.DisplaySize.x - textSize.x) / 2, notifY));
          ImGui::SetNextWindowSize(textSize);
          ImGui::Begin("Notification"s.append(std::to_string(i)).c_str(), nullptr, window_flags);
@@ -2237,7 +2237,7 @@ void LiveUI::UpdatePropertyUI()
                assert(startup_obj == nullptr || std::find(m_table->m_vedit.begin(), m_table->m_vedit.end(), startup_obj) != m_table->m_vedit.end());
                if ((is_live && live_obj == nullptr) || (!is_live && startup_obj == nullptr))
                {
-                  HelpTextCentered("No Object");
+                  HelpTextCentered("No Object"s);
                }
                else
                {
@@ -2977,7 +2977,7 @@ void LiveUI::RenderProbeProperties(bool is_live)
 {
    RenderProbe * const live_probe = (RenderProbe *)(m_selection.is_live ? m_selection.renderprobe : m_live_table->m_startupToLive[m_selection.renderprobe]);
    RenderProbe * const startup_probe = (RenderProbe *)(m_selection.is_live ? m_live_table->m_liveToStartup[m_selection.renderprobe] : m_selection.renderprobe);
-   HelpTextCentered("Render Probe");
+   HelpTextCentered("Render Probe"s);
    string name = ((RenderProbe *)m_selection.renderprobe)->GetName();
    ImGui::BeginDisabled(is_live); // Editing the name of a live item can break the script
    if (ImGui::InputText("Name", &name))
@@ -3090,7 +3090,7 @@ void LiveUI::MaterialProperties(bool is_live)
    Material * const live_material = (Material *)(m_selection.is_live ? m_selection.editable : m_live_table->m_startupToLive[m_selection.editable]);
    Material * const startup_material = (Material *)(m_selection.is_live ? m_live_table->m_liveToStartup[m_selection.editable] : m_selection.editable);
    Material * const material = (is_live ? live_material : startup_material);
-   HelpTextCentered("Material");
+   HelpTextCentered("Material"s);
    string name = ((Material *)m_selection.editable)->m_szName;
    ImGui::BeginDisabled(is_live); // Editing the name of a live item can break the script
    if (ImGui::InputText("Name", &name))

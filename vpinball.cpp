@@ -2529,7 +2529,7 @@ static constexpr uint8_t lookupRev[16] = {
 0x0, 0x8, 0x4, 0xc, 0x2, 0xa, 0x6, 0xe,
 0x1, 0x9, 0x5, 0xd, 0x3, 0xb, 0x7, 0xf };
 
-inline uint8_t reverse(uint8_t n)
+inline uint8_t reverse(const uint8_t n)
 {
    return (lookupRev[n & 0x0f] << 4) | lookupRev[n >> 4];
 }
@@ -2555,7 +2555,13 @@ static unsigned int GenerateTournamentFileInternal(BYTE *const dmd_data, const u
       fclose(f);
    }
    else
-      ShowError("Cannot open Table");
+   {
+      if (g_pplayer && g_pplayer->m_liveUI)
+         g_pplayer->m_liveUI->PushNotification("Cannot open Table"s, 4000);
+      else
+         ShowError("Cannot open Table");
+      return ~0u;
+   }
 
    char path[MAXSTRING];
 #ifdef _MSC_VER
@@ -2584,7 +2590,13 @@ static unsigned int GenerateTournamentFileInternal(BYTE *const dmd_data, const u
       fclose(f);
    }
    else
-      ShowError("Cannot open Executable");
+   {
+      if (g_pplayer && g_pplayer->m_liveUI)
+         g_pplayer->m_liveUI->PushNotification("Cannot open Executable"s, 4000);
+      else
+         ShowError("Cannot open Executable");
+      return ~0u;
+   }
 
 #if defined(_M_IX86) || defined(_M_X64) || defined(_M_AMD64) || defined(__i386__) || defined(__i386) || defined(__i486__) || defined(__i486) || defined(i386) || defined(__ia64__) || defined(__x86_64__)
    _mm_sfence();
@@ -2642,7 +2654,10 @@ void VPinball::GenerateTournamentFile()
    }
    generateMD5(dmd_data, dmd_size, dmd_data + dmd_size);
    dmd_size += 16;
-   GenerateTournamentFileInternal2(dmd_data, dmd_size, GenerateTournamentFileInternal(dmd_data, dmd_size, GetActiveTable()->m_szFileName));
+   const unsigned int res = GenerateTournamentFileInternal(dmd_data, dmd_size, GetActiveTable()->m_szFileName);
+   if (res == ~0u)
+      return;
+   GenerateTournamentFileInternal2(dmd_data, dmd_size, res);
 
    FILE *f;
    if (fopen_s(&f, (g_pvp->GetActiveTable()->m_szFileName + ".txt").c_str(), "w") == 0 && f)
@@ -2652,9 +2667,11 @@ void VPinball::GenerateTournamentFile()
       for (unsigned int i = 0; i < dmd_size; ++i)
          fprintf(f,"%02X",dmd_data[i]);
       fclose(f);
+
+      g_pplayer->m_liveUI->PushNotification("Tournament file saved as " + g_pvp->GetActiveTable()->m_szFileName + ".txt", 4000);
    }
    else
-      ShowError("Cannot save Tournament file");
+      g_pplayer->m_liveUI->PushNotification("Cannot save Tournament file"s, 4000);
 
    delete[] dmd_data;
 }
@@ -2684,12 +2701,15 @@ void VPinball::GenerateImageFromTournamentFile(const string &tablefile, const st
       return;
    }
 
-   GenerateTournamentFileInternal2(dmd_data, dmd_size, GenerateTournamentFileInternal(dmd_data, dmd_size, tablefile));
+   const unsigned int res = GenerateTournamentFileInternal(dmd_data, dmd_size, tablefile);
+   if (res == ~0u)
+      return;
+   GenerateTournamentFileInternal2(dmd_data, dmd_size, res);
    uint8_t md5[16];
    generateMD5(dmd_data, dmd_size-16, md5);
    if (memcmp(dmd_data+(dmd_size-16),md5,16) != 0)
    {
-      ShowError("Corrupt Tournament file");
+      ShowError("Corrupt Tournament file or non-matching table- or VPX-version used to encode");
       return;
    }
 
@@ -2699,7 +2719,7 @@ void VPinball::GenerateImageFromTournamentFile(const string &tablefile, const st
       for (unsigned int i = 0; i < x; i++)
          psrc[i + (y-1-j)*x] = dmd_data[i+j*x]; // flip y-axis for image output
    if (!FreeImage_Save(FIF_PNG, dib, (txtfile + ".png").c_str(), PNG_Z_BEST_COMPRESSION))
-      MessageBox("Export failed!", "Tournament file conversion", MB_OK | MB_ICONEXCLAMATION);
+      ShowError("Tournament file converted image could not be saved");
    FreeImage_Unload(dib);
 
    delete[] dmd_data;
