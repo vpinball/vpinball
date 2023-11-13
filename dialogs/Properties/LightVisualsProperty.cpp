@@ -74,9 +74,9 @@ void LightVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
         if (dispid == IDC_INTENSITY || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_intensityEdit, light->m_d.m_intensity);
         if (dispid == IDC_FADE_SPEED_UP || dispid == -1)
-            PropertyDialog::SetIntTextbox(m_fadeSpeedUpEdit, (int)(0.5 + light->m_d.m_intensity / light->m_d.m_fadeSpeedUp));
+            PropertyDialog::SetIntTextbox(m_fadeSpeedUpEdit, min(24*60*60*1000, (int)(0.5 + light->m_d.m_intensity / light->m_d.m_fadeSpeedUp)));
         if (dispid == IDC_FADE_SPEED_DOWN || dispid == -1)
-            PropertyDialog::SetIntTextbox(m_fadeSpeedDownEdit, (int)(0.5 + light->m_d.m_intensity / light->m_d.m_fadeSpeedDown));
+            PropertyDialog::SetIntTextbox(m_fadeSpeedDownEdit, min(24*60*60*1000, (int)(0.5 + light->m_d.m_intensity / light->m_d.m_fadeSpeedDown)));
         if (dispid == IDC_COLOR_BUTTON1 || dispid == -1)
             m_colorButton1.SetColor(light->m_d.m_color);
         if (dispid == IDC_COLOR_BUTTON2 || dispid == -1)
@@ -170,8 +170,10 @@ void LightVisualsProperty::UpdateProperties(const int dispid)
                      {
                          PropertyDialog::StartUndo(light);
                          light->m_d.m_intensity = PropertyDialog::GetFloatTextbox(m_intensityEdit);
-                         light->m_d.m_fadeSpeedUp = light->m_d.m_intensity / (float)PropertyDialog::GetIntTextbox(m_fadeSpeedUpEdit);
-                         light->m_d.m_fadeSpeedDown = light->m_d.m_intensity / (float)PropertyDialog::GetIntTextbox(m_fadeSpeedDownEdit);
+                         int speedUpMs = PropertyDialog::GetIntTextbox(m_fadeSpeedUpEdit);
+                         light->m_d.m_fadeSpeedUp = speedUpMs <= 0 ? (light->m_d.m_intensity * 1000.0f) : (light->m_d.m_intensity / (float)speedUpMs);
+                         int speedDownMs = PropertyDialog::GetIntTextbox(m_fadeSpeedDownEdit);
+                         light->m_d.m_fadeSpeedDown = speedDownMs <= 0 ? (light->m_d.m_intensity * 1000.0f) : (light->m_d.m_intensity / (float)speedDownMs);
                          PropertyDialog::EndUndo(light);
                      }
                  }
@@ -180,11 +182,17 @@ void LightVisualsProperty::UpdateProperties(const int dispid)
                 CHECK_UPDATE_ITEM(light->m_d.m_fader, (Fader)m_faderCombo.GetCurSel(), light);
                 break;
             case IDC_FADE_SPEED_UP:
-                CHECK_UPDATE_ITEM(light->m_d.m_fadeSpeedUp, light->m_d.m_intensity / (float) PropertyDialog::GetIntTextbox(m_fadeSpeedUpEdit), light);
+            {
+                int speedUpMs = PropertyDialog::GetIntTextbox(m_fadeSpeedUpEdit);
+                CHECK_UPDATE_ITEM(light->m_d.m_fadeSpeedUp, speedUpMs <= 0 ? (light->m_d.m_intensity * 1000.0f) : (light->m_d.m_intensity / (float)speedUpMs), light);
                 break;
+            }
             case IDC_FADE_SPEED_DOWN:
-                CHECK_UPDATE_ITEM(light->m_d.m_fadeSpeedDown, light->m_d.m_intensity / (float) PropertyDialog::GetIntTextbox(m_fadeSpeedDownEdit), light);
+            {
+                int speedDownMs = PropertyDialog::GetIntTextbox(m_fadeSpeedDownEdit);
+                CHECK_UPDATE_ITEM(light->m_d.m_fadeSpeedDown, speedDownMs <= 0 ? (light->m_d.m_intensity * 1000.0f) : (light->m_d.m_intensity / (float)speedDownMs), light);
                 break;
+            }
 
             case IDC_LIGHT_TYPE_COMBO:
                 PropertyDialog::StartUndo(light);
