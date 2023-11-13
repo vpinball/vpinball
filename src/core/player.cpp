@@ -1883,9 +1883,9 @@ void Player::RenderStaticPrepass()
       const bool useAA = m_AAfactor != 1.0f;
 
       m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("PreRender AO Save Depth"s, m_staticPrepassRT);
+      m_pin3d.m_pd3dPrimaryDevice->ResetRenderState();
       m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderRT, m_staticPrepassRT, false, true);
 
-      m_pin3d.m_pd3dPrimaryDevice->ResetRenderState();
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::CULLMODE ,RenderState::CULL_NONE);
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
@@ -1918,7 +1918,6 @@ void Player::RenderStaticPrepass()
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTextureNull(SHADER_tex_depth);
 
       m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("PreRender Apply AO"s, m_staticPrepassRT);
-      m_pin3d.m_pd3dPrimaryDevice->ResetRenderState();
       m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderRT);
       m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pin3d.m_pd3dPrimaryDevice->GetAORenderTarget(1));
 
@@ -1934,6 +1933,7 @@ void Player::RenderStaticPrepass()
       m_pin3d.m_pd3dPrimaryDevice->FlushRenderFrame(); // Execute before destroying the render targets
 
       // Delete buffers: we won't need them anymore since dynamic AO is disabled
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTextureNull(SHADER_tex_ao);
       m_pin3d.m_pd3dPrimaryDevice->ReleaseAORenderTargets();
    }
 
