@@ -7735,10 +7735,10 @@ bool PinTable::AuditTable() const
    delete[] szText;
 
    if (m_glassBottomHeight > m_glassTopHeight)
-      ss << ". Glass height seems invalid: bottom is higher than top\n";
+      ss << ". Warning: Glass height seems invalid: bottom is higher than top\n";
 
    if (m_glassBottomHeight < INCHESTOVPU(2) || m_glassTopHeight < INCHESTOVPU(2))
-      ss << ". Glass height seems invalid: glass is below 2\"\n";
+      ss << ". Warning: Glass height seems invalid: glass is below 2\"\n";
 
    // Search for inconsistencies in the table parts
    for (auto part : m_vedit)
@@ -7749,14 +7749,18 @@ bool PinTable::AuditTable() const
 
       // Referencing a static object from script (ok if it is for reading properties, not for writing)
       if (type == eItemPrimitive && prim->m_d.m_staticRendering && FindIndexOf(identifiers, string(prim->GetName())) != -1) 
-         ss << ". Primitive '" << prim->GetName() << "' seems to be referenced from the script while it is marked as static (most properties of a static object may not be modified at runtime).\n";
+         ss << ". Warning: Primitive '" << prim->GetName() << "' seems to be referenced from the script while it is marked as static (most properties of a static object may not be modified at runtime).\n";
 
-      // Enabling translucency (light from below) won't work with static parts: otherwise the rendering will be different in VR/Headtracked vs desktop modes
+      // Enabling translucency (light from below) won't work with static parts: otherwise the rendering will be different in VR/Headtracked vs desktop modes. It also needs a non opaque alpha.
+      if (type == eItemPrimitive && prim->m_d.m_disableLightingBelow != 1.f && !prim->m_d.m_staticRendering
+         && (!GetMaterial(prim->m_d.m_szMaterial)->m_bOpacityActive || GetMaterial(prim->m_d.m_szMaterial)->m_fOpacity == 1.f)
+         && (GetImage(prim->m_d.m_szImage) == nullptr || GetImage(prim->m_d.m_szImage)->m_pdsBuffer->IsOpaque()))
+         ss << ". Warning: Primitive '" << prim->GetName() << "' uses translucency (lighting from below) but it is fully opaque.\n";
       // Disabled as this is now enforced in the rendering
       //if (type == eItemPrimitive && prim->m_d.m_disableLightingBelow != 1.f && prim->m_d.m_staticRendering) 
-      //   ss << ". Primitive '" << prim->GetName() << "' has translucency enabled but is also marked as static. Translucency will not be applied on desktop, and it will look different between VR/headtracked and desktop.\n";
+      //   ss << ". Warning: Primitive '" << prim->GetName() << "' has translucency enabled but is also marked as static. Translucency will not be applied on desktop, and it will look different between VR/headtracked and desktop.\n";
       //if (type == eItemSurface && surf->m_d.m_disableLightingBelow != 1.f && surf->StaticRendering()) 
-      //   ss << ". Wall '" << surf->GetName() << "' has translucency enabled but will be staticly rendered (not droppable with opaque materials). Translucency will not be applied on desktop, and it will look different between VR/headtracked and desktop.\n";
+      //   ss << ". Warning: Wall '" << surf->GetName() << "' has translucency enabled but will be staticly rendered (not droppable with opaque materials). Translucency will not be applied on desktop, and it will look different between VR/headtracked and desktop.\n";
    }
 
    bool hasIssues = !ss.str().empty();
