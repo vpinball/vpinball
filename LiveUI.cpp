@@ -1233,7 +1233,7 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
             // Remove custom day/night and get back to the one of the table, eventually overiden by app (not table) settings
             // TODO we just default to the table value, missing the app settings being applied (like day/night from lat/lon,... see in player.cpp)
             m_dayNightOverriden = 2;
-            m_player->m_globalEmissionScale = m_table->m_lightEmissionScale;
+            m_player->m_globalEmissionScale = m_table->m_globalEmissionScale;
             m_player->SetupShaders();
          }
          else if (m_activeTweakPage == TP_PointOfView)
