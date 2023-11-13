@@ -1130,7 +1130,7 @@ void KickerHitCircle::DoChangeBallVelocity(Ball * const pball, const Vertex3Ds& 
         const float dot = -pball->m_d.m_vel.Dot(hitnorm);
         const float reactionImpulse = pball->m_d.m_mass * fabsf(dot);
         /*
-        if (pball->m_pos.z > pball->m_radius + g_pplayer->m_ptable->m_tableheight)
+        if (pball->m_pos.z > pball->m_radius)
         {
         // ball is on a surface(e.g. upper playfield) use a high friction and a different calculation to compensate surface collision
         friction = 1.0f;

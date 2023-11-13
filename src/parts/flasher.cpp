@@ -1228,7 +1228,7 @@ void Flasher::Render(const unsigned int renderMask)
    if (m_dynamicVertexBufferRegenerate)
    {
       m_dynamicVertexBufferRegenerate = false;
-      const float height = m_d.m_height + m_ptable->m_tableheight;
+      const float height = m_d.m_height;
       const float movx = m_minx + (m_maxx - m_minx)*0.5f;
       const float movy = m_miny + (m_maxy - m_miny)*0.5f;
 

@@ -1346,7 +1346,6 @@ PinTable::PinTable()
    m_bottom = 0.0f;
 
    m_glassTopHeight = m_glassBottomHeight = 210;
-   m_tableheight = 0;
 
    m_BG_enable_FSS = false;
    UpdateCurrentBGSet();
@@ -1539,7 +1538,6 @@ void PinTable::InitBuiltinTable(const size_t tableId)
    default: path = "blankTable.vpx"s;
    }
    m_glassTopHeight = m_glassBottomHeight = 210;
-   m_tableheight = 0;
    for (int i = 0; i < 16; i++)
       m_rgcolorcustom[i] = RGB(0, 0, 0);
    LoadGameFromFilename(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + path);
@@ -2176,7 +2174,6 @@ void PinTable::Play(const int playMode)
    dst->m_backdrop = src->m_backdrop;
    dst->m_glassBottomHeight = src->m_glassBottomHeight;
    dst->m_glassTopHeight = src->m_glassTopHeight;
-   dst->m_tableheight = src->m_tableheight;
    dst->m_playfieldMaterial = src->m_playfieldMaterial;
    dst->m_colorbackdrop = src->m_colorbackdrop;
    dst->m_difficulty = src->m_difficulty;
@@ -3375,7 +3372,6 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
 
    bw.WriteFloat(FID(GLAS), m_glassTopHeight);
    bw.WriteFloat(FID(GLAB), m_glassBottomHeight);
-   bw.WriteFloat(FID(TBLH), m_tableheight);
 
    bw.WriteString(FID(PLMA), m_playfieldMaterial);
    bw.WriteInt(FID(BCLR), m_colorbackdrop);
@@ -3904,7 +3900,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
             pf_reflection_probe->SetReflectionMode(RenderProbe::ReflectionMode::REFL_DYNAMIC);
             m_vrenderprobe.push_back(pf_reflection_probe);
          }
-         vec4 plane = vec4(0.f, 0.f, 1.f, m_tableheight);
+         vec4 plane = vec4(0.f, 0.f, 1.f, 0.f);
          pf_reflection_probe->SetType(RenderProbe::PLANE_REFLECTION);
          pf_reflection_probe->SetReflectionPlane(plane);
          pf_reflection_probe->SetReflectionNoLightmaps(true);
@@ -4175,7 +4171,6 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    case FID(SLOP): pbr->GetFloat(m_angletiltMin); break;
    case FID(GLAS): pbr->GetFloat(m_glassTopHeight); break;
    case FID(GLAB): pbr->GetFloat(m_glassBottomHeight); break;
-   case FID(TBLH): pbr->GetFloat(m_tableheight); break;
    case FID(IMAG): pbr->GetString(m_image); break;
    case FID(BLIM): pbr->GetString(m_ballImage); break;
    case FID(BLSM): pbr->GetBool(m_ballSphericalMapping); break;
@@ -4800,7 +4795,7 @@ FRect3D PinTable::GetBoundingBox() const
    bbox.right = m_right;
    bbox.top = m_top;
    bbox.bottom = m_bottom;
-   bbox.zlow = m_tableheight;
+   bbox.zlow = 0.f;
    bbox.zhigh = m_glassTopHeight;
    return bbox;
 }
@@ -5810,15 +5805,15 @@ void PinTable::ExportMesh(ObjLoader& loader)
    WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), nullptr, nullptr);
 
    Vertex3D_NoTex2 rgv[7];
-   rgv[0].x = m_left;     rgv[0].y = m_top;      rgv[0].z = m_tableheight;
-   rgv[1].x = m_right;    rgv[1].y = m_top;      rgv[1].z = m_tableheight;
-   rgv[2].x = m_right;    rgv[2].y = m_bottom;   rgv[2].z = m_tableheight;
-   rgv[3].x = m_left;     rgv[3].y = m_bottom;   rgv[3].z = m_tableheight;
+   rgv[0].x = m_left;     rgv[0].y = m_top;      rgv[0].z = 0.f;
+   rgv[1].x = m_right;    rgv[1].y = m_top;      rgv[1].z = 0.f;
+   rgv[2].x = m_right;    rgv[2].y = m_bottom;   rgv[2].z = 0.f;
+   rgv[3].x = m_left;     rgv[3].y = m_bottom;   rgv[3].z = 0.f;
 
    // These next 4 vertices are used just to set the extents
-   rgv[4].x = m_left;     rgv[4].y = m_top;      rgv[4].z = m_tableheight + 50.0f;
-   rgv[5].x = m_left;     rgv[5].y = m_bottom;   rgv[5].z = m_tableheight + 50.0f;
-   rgv[6].x = m_right;    rgv[6].y = m_bottom;   rgv[6].z = m_tableheight + 50.0f;
+   rgv[4].x = m_left;     rgv[4].y = m_top;      rgv[4].z = 50.0f;
+   rgv[5].x = m_left;     rgv[5].y = m_bottom;   rgv[5].z = 50.0f;
+   rgv[6].x = m_right;    rgv[6].y = m_bottom;   rgv[6].z = 50.0f;
    //rgv[7].x = m_right;    rgv[7].y = m_top;      rgv[7].z = 50.0f;
 
    for (int i = 0; i < 4; ++i)
@@ -8112,14 +8107,14 @@ float PinTable::GetSurfaceHeight(const string& name, float x, float y) const
          if (!WzSzStrCmp(bstr, name.c_str()))
          {
             if (item->GetItemType() == eItemSurface)
-               return ((Surface *)item)->m_d.m_heighttop + m_tableheight;
+               return ((Surface *)item)->m_d.m_heighttop;
             else //if (item->GetItemType() == eItemRamp)
                return ((Ramp *)item)->GetSurfaceHeight(x, y);
          }
       }
    }
 
-   return m_tableheight;
+   return 0.f;
 }
 
 Material* PinTable::GetSurfaceMaterial(const string& name) const
@@ -8218,18 +8213,20 @@ STDMETHODIMP PinTable::put_GlassHeight(float newVal)
    return S_OK;
 }
 
+// FIXME deprecated
 STDMETHODIMP PinTable::get_TableHeight(float *pVal)
 {
-   *pVal = m_tableheight;
+   *pVal = 0.f;
 
    return S_OK;
 }
 
+// FIXME deprecated
 STDMETHODIMP PinTable::put_TableHeight(float newVal)
 {
-   STARTUNDO
+   /* STARTUNDO
    m_tableheight = newVal;
-   STOPUNDO
+   STOPUNDO*/
 
    return S_OK;
 }

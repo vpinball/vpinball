@@ -971,10 +971,10 @@ void Player::RecomputePseudoPauseState()
 void Player::AddCabinetBoundingHitShapes()
 {
    // simple outer borders:
-   m_vho.push_back(new LineSeg(Vertex2D(m_ptable->m_right, m_ptable->m_top),    Vertex2D(m_ptable->m_right, m_ptable->m_bottom), m_ptable->m_tableheight, m_ptable->m_glassTopHeight));
-   m_vho.push_back(new LineSeg(Vertex2D(m_ptable->m_left,  m_ptable->m_bottom), Vertex2D(m_ptable->m_left,  m_ptable->m_top),    m_ptable->m_tableheight, m_ptable->m_glassBottomHeight));
-   m_vho.push_back(new LineSeg(Vertex2D(m_ptable->m_right, m_ptable->m_bottom), Vertex2D(m_ptable->m_left,  m_ptable->m_bottom), m_ptable->m_tableheight, m_ptable->m_glassBottomHeight));
-   m_vho.push_back(new LineSeg(Vertex2D(m_ptable->m_left,  m_ptable->m_top),    Vertex2D(m_ptable->m_right, m_ptable->m_top),    m_ptable->m_tableheight, m_ptable->m_glassTopHeight));
+   m_vho.push_back(new LineSeg(Vertex2D(m_ptable->m_right, m_ptable->m_top),    Vertex2D(m_ptable->m_right, m_ptable->m_bottom), 0.f, m_ptable->m_glassTopHeight));
+   m_vho.push_back(new LineSeg(Vertex2D(m_ptable->m_left,  m_ptable->m_bottom), Vertex2D(m_ptable->m_left,  m_ptable->m_top),    0.f, m_ptable->m_glassBottomHeight));
+   m_vho.push_back(new LineSeg(Vertex2D(m_ptable->m_right, m_ptable->m_bottom), Vertex2D(m_ptable->m_left,  m_ptable->m_bottom), 0.f, m_ptable->m_glassBottomHeight));
+   m_vho.push_back(new LineSeg(Vertex2D(m_ptable->m_left,  m_ptable->m_top),    Vertex2D(m_ptable->m_right, m_ptable->m_top),    0.f, m_ptable->m_glassTopHeight));
 
    // glass:
    Vertex3Ds * const rgv3D = new Vertex3Ds[4];
@@ -987,10 +987,10 @@ void Player::AddCabinetBoundingHitShapes()
    /*
    // playfield:
    Vertex3Ds * const rgv3D = new Vertex3Ds[4];
-   rgv3D[3] = Vertex3Ds(m_ptable->m_left, m_ptable->m_top, m_ptable->m_tableheight);
-   rgv3D[2] = Vertex3Ds(m_ptable->m_right, m_ptable->m_top, m_ptable->m_tableheight);
-   rgv3D[1] = Vertex3Ds(m_ptable->m_right, m_ptable->m_bottom, m_ptable->m_tableheight);
-   rgv3D[0] = Vertex3Ds(m_ptable->m_left, m_ptable->m_bottom, m_ptable->m_tableheight);
+   rgv3D[3] = Vertex3Ds(m_ptable->m_left, m_ptable->m_top, 0.f);
+   rgv3D[2] = Vertex3Ds(m_ptable->m_right, m_ptable->m_top, 0.f);
+   rgv3D[1] = Vertex3Ds(m_ptable->m_right, m_ptable->m_bottom, 0.f);
+   rgv3D[0] = Vertex3Ds(m_ptable->m_left, m_ptable->m_bottom, 0.f);
    Hit3DPoly * const ph3dpoly = new Hit3DPoly(rgv3D, 4); //!!
    ph3dpoly->SetFriction(m_ptable->m_overridePhysics ? m_ptable->m_fOverrideContactFriction : m_ptable->m_friction);
    ph3dpoly->m_elasticity = m_ptable->m_overridePhysics ? m_ptable->m_fOverrideElasticity : m_ptable->m_elasticity;
@@ -1000,7 +1000,7 @@ void Player::AddCabinetBoundingHitShapes()
    */
 
    // playfield:
-   m_hitPlayfield = HitPlane(Vertex3Ds(0, 0, 1), m_ptable->m_tableheight);
+   m_hitPlayfield = HitPlane(Vertex3Ds(0, 0, 1), 0.f);
    m_hitPlayfield.SetFriction(m_ptable->m_overridePhysics ? m_ptable->m_fOverrideContactFriction : m_ptable->m_friction);
    m_hitPlayfield.m_elasticity = m_ptable->m_overridePhysics ? m_ptable->m_fOverrideElasticity : m_ptable->m_elasticity;
    m_hitPlayfield.m_elasticityFalloff = m_ptable->m_overridePhysics ? m_ptable->m_fOverrideElasticityFalloff : m_ptable->m_elasticityFalloff;
@@ -1400,7 +1400,7 @@ HRESULT Player::Init()
    RenderProbe *pf_reflection_probe = m_ptable->GetRenderProbe(PLAYFIELD_REFLECTION_RENDERPROBE_NAME);
    if (pf_reflection_probe)
    {
-      vec4 plane = vec4(0.f, 0.f, 1.f, m_ptable->m_tableheight);
+      vec4 plane = vec4(0.f, 0.f, 1.f, 0.f);
       pf_reflection_probe->SetReflectionPlane(plane);
    }
 
@@ -4429,8 +4429,8 @@ void Player::DrawBalls()
       // calculate/adapt height of ball
       float zheight = (!pball->m_d.m_lockedInKicker) ? pball->m_d.m_pos.z : (pball->m_d.m_pos.z - pball->m_d.m_radius);
 
-      const float maxz = (pball->m_d.m_radius + m_ptable->m_tableheight) + 3.0f;
-      const float minz = (pball->m_d.m_radius + m_ptable->m_tableheight) - 0.1f;
+      const float maxz = (pball->m_d.m_radius) + 3.0f;
+      const float minz = (pball->m_d.m_radius) - 0.1f;
 
       if (g_pplayer->IsRenderPass(Player::REFLECTION_PASS))
       {
@@ -4448,7 +4448,7 @@ void Player::DrawBalls()
 
       m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetVector(SHADER_invTableRes_playfield_height_reflection, 
          1.0f / (m_ptable->m_right - m_ptable->m_left), 1.0f / (m_ptable->m_bottom - m_ptable->m_top), 
-         m_ptable->m_tableheight, m_ptable->m_ballPlayfieldReflectionStrength * pball->m_playfieldReflectionStrength);
+         0.f, m_ptable->m_ballPlayfieldReflectionStrength * pball->m_playfieldReflectionStrength);
 
       // collect the x nearest lights that can reflect on balls
       Light* light_nearest[MAX_BALL_LIGHT_SOURCES];
