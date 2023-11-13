@@ -371,8 +371,8 @@ void Surface::CurvesToShapes(vector<HitObject*> &pvho)
    Vertex3Ds * const rgv3Dt = new Vertex3Ds[count];
    Vertex3Ds * const rgv3Db = m_d.m_isBottomSolid ? new Vertex3Ds[count] : nullptr;
 
-   const float bottom = m_d.m_heightbottom + m_ptable->m_tableheight;
-   const float top = m_d.m_heighttop + m_ptable->m_tableheight;
+   const float bottom = m_d.m_heightbottom;
+   const float top = m_d.m_heighttop;
 
    for (int i = 0; i < count; ++i)
    {
@@ -449,8 +449,8 @@ void Surface::SetupHitObject(vector<HitObject*> &pvho, HitObject * const obj)
 
 void Surface::AddLine(vector<HitObject*> &pvho, const RenderVertex &pv1, const RenderVertex &pv2)
 {
-   const float bottom = m_d.m_heightbottom + m_ptable->m_tableheight;
-   const float top = m_d.m_heighttop + m_ptable->m_tableheight;
+   const float bottom = m_d.m_heightbottom;
+   const float top = m_d.m_heighttop;
 
    LineSeg *plineseg;
    if (!pv1.slingshot)
@@ -574,8 +574,8 @@ void Surface::GenerateMesh(vector<Vertex3D_NoTex2> &topBuf, vector<Vertex3D_NoTe
    memset(sideBuf.data(), 0, sizeof(Vertex3D_NoTex2)*m_numVertices * 4);
    Vertex3D_NoTex2 *verts = sideBuf.data();
 
-   const float bottom = m_d.m_heightbottom + m_ptable->m_tableheight;
-   const float top = m_d.m_heighttop + m_ptable->m_tableheight;
+   const float bottom = m_d.m_heightbottom;
+   const float top = m_d.m_heighttop;
 
    int offset = 0;
    // Render side
@@ -710,7 +710,7 @@ void Surface::GenerateMesh(vector<Vertex3D_NoTex2> &topBuf, vector<Vertex3D_NoTe
 
          vertsTop[0][i].x = pv0->x;
          vertsTop[0][i].y = pv0->y;
-         vertsTop[0][i].z = heightNotDropped + m_ptable->m_tableheight;
+         vertsTop[0][i].z = heightNotDropped;
          vertsTop[0][i].tu = pv0->x * inv_tablewidth;
          vertsTop[0][i].tv = pv0->y * inv_tableheight;
          vertsTop[0][i].nx = 0;
@@ -857,28 +857,28 @@ void Surface::RenderSetup(RenderDevice *device)
 
          rgv3D[offset].x = plinesling->v1.x;
          rgv3D[offset].y = plinesling->v1.y;
-         rgv3D[offset].z = slingbottom + m_ptable->m_tableheight;
+         rgv3D[offset].z = slingbottom;
 
          rgv3D[offset + 1].x = (plinesling->v1.x + plinesling->v2.x)*0.5f + plinesling->normal.x*(m_d.m_slingshotforce * 0.25f); //40;//20;
          rgv3D[offset + 1].y = (plinesling->v1.y + plinesling->v2.y)*0.5f + plinesling->normal.y*(m_d.m_slingshotforce * 0.25f); //20;
-         rgv3D[offset + 1].z = slingbottom + m_ptable->m_tableheight;
+         rgv3D[offset + 1].z = slingbottom;
 
          rgv3D[offset + 2].x = plinesling->v2.x;
          rgv3D[offset + 2].y = plinesling->v2.y;
-         rgv3D[offset + 2].z = slingbottom + m_ptable->m_tableheight;
+         rgv3D[offset + 2].z = slingbottom;
 
          for (unsigned int l = 0; l < 3; l++)
          {
             rgv3D[l + offset + 3].x = rgv3D[l + offset].x;
             rgv3D[l + offset + 3].y = rgv3D[l + offset].y;
-            rgv3D[l + offset + 3].z = slingtop + m_ptable->m_tableheight;
+            rgv3D[l + offset + 3].z = slingtop;
          }
 
          for (unsigned int l = 0; l < 3; l++)
          {
             rgv3D[l + offset + 6].x = rgv3D[l + offset].x - plinesling->normal.x*5.0f;
             rgv3D[l + offset + 6].y = rgv3D[l + offset].y - plinesling->normal.y*5.0f;
-            rgv3D[l + offset + 6].z = slingtop + m_ptable->m_tableheight;
+            rgv3D[l + offset + 6].z = slingtop;
          }
 
          for (unsigned int l = 0; l < 24; l++)

@@ -313,7 +313,7 @@ void HitTarget::GetHitShapes(vector<HitObject*> &pvho)
 
              rgv3D[i].x = vert.x + m_d.m_vPosition.x;
              rgv3D[i].y = vert.y + m_d.m_vPosition.y;
-             rgv3D[i].z = vert.z + m_d.m_vPosition.z + m_ptable->m_tableheight;
+             rgv3D[i].z = vert.z + m_d.m_vPosition.z;
           }
 
           for (unsigned int i = 0; i < num_dropTargetHitPlaneIndices; i += 3)
@@ -444,7 +444,7 @@ void HitTarget::GenerateMesh(vector<Vertex3D_NoTex2> &buf)
 
       buf[i].x = vert.x + m_d.m_vPosition.x;
       buf[i].y = vert.y + m_d.m_vPosition.y;
-      buf[i].z = vert.z + m_d.m_vPosition.z + m_ptable->m_tableheight;
+      buf[i].z = vert.z + m_d.m_vPosition.z;
 
       vert = Vertex3Ds(m_vertices[i].nx, m_vertices[i].ny, m_vertices[i].nz);
       vert = fullMatrix.MultiplyVectorNoTranslate(vert);
@@ -478,7 +478,7 @@ void HitTarget::TransformVertices()
 
       m_hitUIVertices[i].x = vert.x + m_d.m_vPosition.x;
       m_hitUIVertices[i].y = vert.y + m_d.m_vPosition.y;
-      m_hitUIVertices[i].z = vert.z + m_d.m_vPosition.z + m_ptable->m_tableheight;
+      m_hitUIVertices[i].z = vert.z + m_d.m_vPosition.z;
    }
 }
 
@@ -777,7 +777,7 @@ void HitTarget::UpdateTarget()
        Matrix3D vertMatrix;
        vertMatrix.SetScaling(m_d.m_vSize.x, m_d.m_vSize.y, m_d.m_vSize.z);
        fullMatrix.Multiply(vertMatrix, vertMatrix);
-       tempMatrix.SetTranslation(m_d.m_vPosition.x, m_d.m_vPosition.y, m_d.m_vPosition.z + m_ptable->m_tableheight);
+       tempMatrix.SetTranslation(m_d.m_vPosition.x, m_d.m_vPosition.y, m_d.m_vPosition.z);
        tempMatrix.Multiply(vertMatrix, vertMatrix);
 
        //TODO Update object Matrix instead

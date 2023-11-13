@@ -1329,7 +1329,7 @@ void Rubber::GenerateMesh(const int _accuracy, const bool createHitShape) //!! h
 
    m_vertices.resize(m_numVertices);
    m_ringIndices.resize(m_numIndices);
-   const float height = m_d.m_hitHeight + m_ptable->m_tableheight;
+   const float height = m_d.m_hitHeight;
 
    Vertex3Ds prevB;
    const float invNR = 1.0f / (float)numRings;
@@ -1459,9 +1459,9 @@ void Rubber::UpdateRubber(const bool updateVB, const float height)
    tempMat.SetTranslation(-m_middlePoint.x, -m_middlePoint.y, -m_middlePoint.z);
    fullMatrix.Multiply(tempMat, vertMatrix);
    if (height == m_d.m_hitHeight)   // do not z-scale the hit mesh
-      tempMat.SetTranslation(m_middlePoint.x, m_middlePoint.y, height + m_ptable->m_tableheight);
+      tempMat.SetTranslation(m_middlePoint.x, m_middlePoint.y, height);
    else
-      tempMat.SetTranslation(m_middlePoint.x, m_middlePoint.y, height + m_ptable->m_tableheight);
+      tempMat.SetTranslation(m_middlePoint.x, m_middlePoint.y, height);
    tempMat.Multiply(vertMatrix, vertMatrix);
 
    Vertex3D_NoTex2 *buf;

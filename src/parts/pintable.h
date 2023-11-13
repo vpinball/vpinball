@@ -622,7 +622,6 @@ public:
 
    float m_glassBottomHeight; // Height of glass above playfield at bottom of playfield
    float m_glassTopHeight; // Height of glass above playfield at top of playfield
-   float m_tableheight;
 
    float m_3DmaxSeparation;
    float m_global3DMaxSeparation;

@@ -678,7 +678,7 @@ void Primitive::RecalculateMatrices()
 
    // translation matrix
    Matrix3D Tmatrix;
-   Tmatrix.SetTranslation(m_d.m_vPosition.x, m_d.m_vPosition.y, m_d.m_vPosition.z + m_ptable->m_tableheight);
+   Tmatrix.SetTranslation(m_d.m_vPosition.x, m_d.m_vPosition.y, m_d.m_vPosition.z);
 
    // translation + rotation matrix
    Matrix3D RTmatrix;

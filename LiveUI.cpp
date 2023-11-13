@@ -1905,7 +1905,7 @@ bool LiveUI::GetSelectionTransform(Matrix3D& transform)
       Matrix3D Smatrix;
       Smatrix.SetScaling(p->m_d.m_vSize.x, p->m_d.m_vSize.y, p->m_d.m_vSize.z);
       Matrix3D Tmatrix;
-      Tmatrix.SetTranslation(p->m_d.m_vPosition.x, p->m_d.m_vPosition.y, p->m_d.m_vPosition.z + m_live_table->m_tableheight);
+      Tmatrix.SetTranslation(p->m_d.m_vPosition.x, p->m_d.m_vPosition.y, p->m_d.m_vPosition.z);
       Matrix3D Rmatrix;
       Matrix3D tempMatrix;
       Rmatrix.SetRotateZ(ANGTORAD(p->m_d.m_aRotAndTra[2]));
@@ -1923,7 +1923,7 @@ bool LiveUI::GetSelectionTransform(Matrix3D& transform)
    {
       Flasher * const p = (Flasher *)m_selection.editable;
       Matrix3D rotx, roty, rotz, trans;
-      trans.SetTranslation(p->m_d.m_vCenter.x, p->m_d.m_vCenter.y, p->m_d.m_height + m_live_table->m_tableheight);
+      trans.SetTranslation(p->m_d.m_vCenter.x, p->m_d.m_vCenter.y, p->m_d.m_height);
       rotx.SetRotateX(ANGTORAD(p->m_d.m_rotX));
       roty.SetRotateY(ANGTORAD(p->m_d.m_rotY));
       rotz.SetRotateZ(ANGTORAD(p->m_d.m_rotZ));

@@ -373,8 +373,8 @@ Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** co
    // Compute an approximation to the length of the central curve
    // by adding up the lengths of the line segments.
    float totallength = 0;
-   const float bottomHeight = m_d.m_heightbottom + m_ptable->m_tableheight;
-   const float topHeight = m_d.m_heighttop + m_ptable->m_tableheight;
+   const float bottomHeight = m_d.m_heightbottom;
+   const float topHeight = m_d.m_heighttop;
 
    for (int i = 0; i < (cvertex - 1); i++)
    {
@@ -539,8 +539,8 @@ float Ramp::GetSurfaceHeight(float x, float y) const
    const float len = sqrtf(dx*dx + dy*dy);
    startlength += len; // Add the distance the object is between the two closest polyline segments.  Matters mostly for straight edges. Z does not respect that yet!
 
-   const float topHeight = m_d.m_heighttop + m_ptable->m_tableheight;
-   const float bottomHeight = m_d.m_heightbottom + m_ptable->m_tableheight;
+   const float topHeight = m_d.m_heighttop;
+   const float bottomHeight = m_d.m_heightbottom;
 
    return vvertex[iSeg].z + (startlength / totallength) * (topHeight - bottomHeight) + bottomHeight;
 }
