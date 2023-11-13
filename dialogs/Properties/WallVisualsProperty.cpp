@@ -43,7 +43,7 @@ void WallVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
     if (dispid == IDC_BLEND_DISABLE_LIGHTING || dispid == -1)
         PropertyDialog::SetFloatTextbox(m_disableLightingEdit, wall->m_d.m_disableLightingTop);
     if (dispid == IDC_BLEND_DISABLE_LIGHTING_FROM_BELOW || dispid == -1)
-        PropertyDialog::SetFloatTextbox(m_disableLightFromBelowEdit, wall->m_d.m_disableLightingBelow);
+        PropertyDialog::SetFloatTextbox(m_disableLightFromBelowEdit, 1.f - wall->m_d.m_disableLightingBelow);
     if (dispid == 9 || dispid == -1)
         PropertyDialog::SetFloatTextbox(m_topHeightEdit, wall->m_d.m_heighttop);
     if (dispid == 8 || dispid == -1)
@@ -83,7 +83,7 @@ void WallVisualsProperty::UpdateProperties(const int dispid)
                 CHECK_UPDATE_ITEM(wall->m_d.m_disableLightingTop, PropertyDialog::GetFloatTextbox(m_disableLightingEdit), wall);
                 break;
             case IDC_BLEND_DISABLE_LIGHTING_FROM_BELOW:
-                CHECK_UPDATE_ITEM(wall->m_d.m_disableLightingBelow, PropertyDialog::GetFloatTextbox(m_disableLightFromBelowEdit), wall);
+                CHECK_UPDATE_ITEM(wall->m_d.m_disableLightingBelow, 1.f - PropertyDialog::GetFloatTextbox(m_disableLightFromBelowEdit), wall);
                 break;
             case 16:
                 CHECK_UPDATE_ITEM(wall->m_d.m_topBottomVisible, PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid)), wall);

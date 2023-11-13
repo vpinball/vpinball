@@ -72,7 +72,7 @@ void PrimitiveVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
         if (dispid == IDC_BLEND_DISABLE_LIGHTING || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_disableLightingEdit, prim->m_d.m_disableLightingTop);
         if (dispid == IDC_BLEND_DISABLE_LIGHTING_FROM_BELOW || dispid == -1)
-            PropertyDialog::SetFloatTextbox(m_disableLightFromBelowEdit, prim->m_d.m_disableLightingBelow);
+            PropertyDialog::SetFloatTextbox(m_disableLightFromBelowEdit, 1.f - prim->m_d.m_disableLightingBelow);
         if (dispid == IDC_PRIMITIVE_LEGACY_SIDES_EDIT || dispid == -1)
             PropertyDialog::SetIntTextbox(m_legacySidesEdit, prim->m_d.m_Sides);
         if (dispid == IDC_EDGE_FACTOR_UI || dispid == -1)
@@ -215,7 +215,7 @@ void PrimitiveVisualsProperty::UpdateProperties(const int dispid)
                 CHECK_UPDATE_ITEM(prim->m_d.m_disableLightingTop, PropertyDialog::GetFloatTextbox(m_disableLightingEdit), prim);
                 break;
             case IDC_BLEND_DISABLE_LIGHTING_FROM_BELOW:
-                CHECK_UPDATE_ITEM(prim->m_d.m_disableLightingBelow, PropertyDialog::GetFloatTextbox(m_disableLightFromBelowEdit), prim);
+                CHECK_UPDATE_ITEM(prim->m_d.m_disableLightingBelow, 1.f - PropertyDialog::GetFloatTextbox(m_disableLightFromBelowEdit), prim);
                 break;
             case IDC_PRIMITIVE_LEGACY_SIDES_EDIT:
                 CHECK_UPDATE_ITEM(prim->m_d.m_Sides, PropertyDialog::GetIntTextbox(m_legacySidesEdit), prim);
