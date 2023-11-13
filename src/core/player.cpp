@@ -4446,9 +4446,9 @@ void Player::DrawBalls()
       // Set the render state to something that will always display for debug mode
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ZENABLE, m_debugBalls ? RenderState::RS_FALSE : RenderState::RS_TRUE);
 
-      m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetVector(SHADER_invTableRes_playfield_height_reflection, 
+      m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetVector(SHADER_invTableRes_reflection, 
          1.0f / (m_ptable->m_right - m_ptable->m_left), 1.0f / (m_ptable->m_bottom - m_ptable->m_top), 
-         0.f, m_ptable->m_ballPlayfieldReflectionStrength * pball->m_playfieldReflectionStrength);
+         m_ptable->m_ballPlayfieldReflectionStrength * pball->m_playfieldReflectionStrength, 0.f);
 
       // collect the x nearest lights that can reflect on balls
       Light* light_nearest[MAX_BALL_LIGHT_SOURCES];
