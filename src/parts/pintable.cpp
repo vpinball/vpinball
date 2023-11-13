@@ -7646,6 +7646,146 @@ PinBinary *PinTable::GetImageLinkBinary(const int id)
    return nullptr;
 }
 
+bool PinTable::AuditTable() const
+{
+   // Perform a simple table audit (disable lighting vs static, script reference of static parts, png vs webp, hdr vs exr,...)
+   std::stringstream ss;
+
+   // Ultra basic parser to get a (somewhat) valid list of referenced parts
+   const size_t cchar = SendMessage(m_pcv->m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
+   char * szText = new char[cchar + 1];
+   SendMessage(m_pcv->m_hwndScintilla, SCI_GETTEXT, cchar + 1, (size_t)szText);
+   char *wordStart = nullptr;
+   char *wordPos = szText;
+   string inClass = "";
+   bool nextIsFunc = false, nextIsEnd = false, nextIsClass = false, isInString = false, isInComment = false;
+   vector<string> functions, identifiers;
+   int line = 0;
+   while (wordPos[0] != '\0')
+   {
+      if (isInComment)
+      {
+         // skip
+      }
+      else if (wordPos[0] == '"')
+         isInString = !isInString;
+      else if (!isInString)
+      {
+         if (wordPos[0] == '\'')
+            isInComment = true;
+         else if (wordPos[0] == ' ' || wordPos[0] == '\r' || wordPos[0] == '\n' || wordPos[0] == '.' || wordPos[0] == '(' || wordPos[0] == ')' || wordPos[0] == '[' || wordPos[0] == ']')
+         {
+            if (wordStart)
+            {
+               string word(wordStart, (int)(wordPos - wordStart));
+               StrToLower(word);
+               if (word == "end" || word == "exit")
+               {
+                  nextIsFunc = false;
+                  nextIsEnd = true;
+               }
+               else if (word == "class")
+               {
+                  if (nextIsEnd)
+                     inClass = "";
+                  nextIsClass = !nextIsEnd;
+                  nextIsEnd = false;
+               }
+               else if (word == "function" || word == "sub")
+               {
+                  nextIsFunc = !nextIsEnd;
+                  nextIsEnd = false;
+               }
+               else
+               {
+                  if (word[0] >= 'a' && word[0] <= 'z')
+                  {
+                     if (nextIsClass)
+                        inClass = word;
+                     else if (nextIsFunc)
+                     {
+                        //ss << "- " << word << ", line=" << (line + 1) << ", class=" << inClass << '\n';
+                        if (FindIndexOf(functions, inClass + "." + word) != -1)
+                           ss << ". Duplicate declaration of '" << string(wordStart, (int)(wordPos - wordStart)) << "' in script at line " << line << "\n";
+                        else
+                           functions.push_back(inClass + "." + word);
+                     }
+                     else
+                        identifiers.push_back(word);
+                  }
+                  nextIsFunc = false;
+                  nextIsEnd = false;
+                  nextIsClass = false;
+               }
+            }
+            wordStart = nullptr;
+         }
+         else if (wordStart == nullptr)
+            wordStart = wordPos;
+      }
+
+      if (wordPos[0] == '\n')
+      {
+         isInComment = false;
+         line++;
+      }
+
+      wordPos++;
+   }
+   delete[] szText;
+
+   if (m_glassBottomHeight > m_glassTopHeight)
+      ss << ". Glass height seems invalid: bottom is higher than top\n";
+
+   if (m_glassBottomHeight < INCHESTOVPU(2) || m_glassTopHeight < INCHESTOVPU(2))
+      ss << ". Glass height seems invalid: glass is below 2\"\n";
+
+   // Search for inconsistencies in the table parts
+   for (auto part : m_vedit)
+   {
+      auto type = part->GetItemType();
+      Primitive *prim = type == eItemPrimitive ? (Primitive *)part : nullptr;
+      Surface *surf = type == eItemSurface ? (Surface *)part : nullptr;
+
+      // Referencing a static object from script (ok if it is for reading properties, not for writing)
+      if (type == eItemPrimitive && prim->m_d.m_staticRendering && FindIndexOf(identifiers, string(prim->GetName())) != -1) 
+         ss << ". Primitive '" << prim->GetName() << "' seems to be referenced from the script while it is marked as static (most properties of a static object may not be modified at runtime).\n";
+
+      // Enabling translucency (light from below) won't work with static parts: otherwise the rendering will be different in VR/Headtracked vs desktop modes
+      // Disabled as this is now enforced in the rendering
+      //if (type == eItemPrimitive && prim->m_d.m_disableLightingBelow != 1.f && prim->m_d.m_staticRendering) 
+      //   ss << ". Primitive '" << prim->GetName() << "' has translucency enabled but is also marked as static. Translucency will not be applied on desktop, and it will look different between VR/headtracked and desktop.\n";
+      //if (type == eItemSurface && surf->m_d.m_disableLightingBelow != 1.f && surf->StaticRendering()) 
+      //   ss << ". Wall '" << surf->GetName() << "' has translucency enabled but will be staticly rendered (not droppable with opaque materials). Translucency will not be applied on desktop, and it will look different between VR/headtracked and desktop.\n";
+   }
+
+   bool hasIssues = !ss.str().empty();
+
+   // Also output a log of the table file content to allow easier size optimization
+   unsigned long totalSize = 0, totalGpuSize = 0;
+   for (auto sound : m_vsound)
+   {
+      //ss << "  . Sound: '" << sound->m_szName << "', size: " << (sound->m_cdata / 1024) << "ko\n";
+      totalSize += sound->m_cdata;
+   }
+   ss << ". Total sound size: " <<  (totalSize / (1024 * 1024)) << "Mo\n";
+   
+   totalSize = 0;
+   for (auto image : m_vimage)
+   {
+      unsigned int imageSize = image->m_ppb != nullptr ? image->m_ppb->m_cdata : image->m_pdsBuffer->height() * image->m_pdsBuffer->pitch();
+      unsigned int gpuSize = image->m_pdsBuffer->height() * image->m_pdsBuffer->pitch();
+      //ss << "  . Image: '" << image->m_szName << "', size: " << (imageSize / 1024) << "ko, GPU mem size: " << (gpuSize / 1024) << "ko\n";
+      totalSize += imageSize;
+      totalGpuSize += gpuSize;
+   }
+   ss << ". Total image size stored in VPX file: " << (totalSize / (1024 * 1024)) << "Mo, in GPU memoryw when played: " << (totalGpuSize / (1024 * 1024)) << "Mo\n";
+
+   PLOGI << "Table audit:\n" << ss.str();
+
+   return hasIssues;
+}
+
 void PinTable::ListCustomInfo(HWND hwndListView)
 {
    for (size_t i = 0; i < m_vCustomInfoTag.size(); i++)
