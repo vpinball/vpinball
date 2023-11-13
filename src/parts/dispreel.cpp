@@ -416,6 +416,13 @@ void DispReel::Render(const unsigned int renderMask)
 
    m_rd->ResetRenderState();
 
+   if (m_backglass)
+   {
+      m_rd->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
+      m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
+      m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
+   }
+
    m_rd->DMDShader->SetFloat(SHADER_alphaTestValue, (float)(128.0 / 255.0));
    m_rd->EnableAlphaBlend(false);
 

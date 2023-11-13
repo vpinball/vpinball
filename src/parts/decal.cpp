@@ -736,90 +736,89 @@ void Decal::Render(const unsigned int renderMask)
    if (m_backglass && (!GetPTable()->GetDecalsEnabled() || g_pplayer->m_stereo3D == STEREO_VR))
       return;
 
-   const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
    //!! should just check if material has no opacity enabled, but this is crucial for HV setup performance like-is
-   if ((!isDynamicOnly && (m_backglass || !mat->m_bOpacityActive)) // Static prerendering
-    || (!isStaticOnly && (!m_backglass && mat->m_bOpacityActive))) // Not prerendered part pass
+   const Material *const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
+   if (!(   (!isDynamicOnly && (m_backglass || !mat->m_bOpacityActive)) // Static prerendering
+         || (!isStaticOnly && (!m_backglass && mat->m_bOpacityActive)))) // Not prerendered part pass
+      return;
+
+   m_rd->ResetRenderState();
+
+   m_rd->basicShader->SetMaterial(mat);
+
+   if (m_d.m_decaltype != DecalImage)
    {
-      m_rd->ResetRenderState();
-
-      const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
-      m_rd->basicShader->SetMaterial(mat);
-
-      if (m_d.m_decaltype != DecalImage)
+      if (!m_backglass)
+         m_rd->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, mat, false);
+      else
+         m_rd->basicShader->SetTechnique(SHADER_TECHNIQUE_bg_decal_with_texture);
+      m_rd->basicShader->SetTexture(SHADER_tex_base_color, m_textImg);
+   }
+   else
+   {
+      Texture *const pin = m_ptable->GetImage(m_d.m_szImage);
+      if (pin)
       {
          if (!m_backglass)
-            m_rd->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, mat, false);
+            m_rd->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, mat, pin->m_alphaTestValue >= 0.f && !pin->m_pdsBuffer->IsOpaque());
          else
             m_rd->basicShader->SetTechnique(SHADER_TECHNIQUE_bg_decal_with_texture);
-         m_rd->basicShader->SetTexture(SHADER_tex_base_color, m_textImg);
+         // Set texture to mirror, so the alpha state of the texture blends correctly to the outside
+         m_rd->basicShader->SetTexture(SHADER_tex_base_color, pin, SF_TRILINEAR, SA_MIRROR, SA_MIRROR);
+         m_rd->basicShader->SetAlphaTestValue(pin->m_alphaTestValue);
       }
       else
       {
-         Texture *const pin = m_ptable->GetImage(m_d.m_szImage);
-         if (pin)
-         {
-            if (!m_backglass)
-               m_rd->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, mat, pin->m_alphaTestValue >= 0.f && !pin->m_pdsBuffer->IsOpaque());
-            else
-               m_rd->basicShader->SetTechnique(SHADER_TECHNIQUE_bg_decal_with_texture);
-            // Set texture to mirror, so the alpha state of the texture blends correctly to the outside
-            m_rd->basicShader->SetTexture(SHADER_tex_base_color, pin, SF_TRILINEAR, SA_MIRROR, SA_MIRROR);
-            m_rd->basicShader->SetAlphaTestValue(pin->m_alphaTestValue);
-         }
+         if (!m_backglass)
+            m_rd->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, mat);
          else
-         {
-            if (!m_backglass)
-               m_rd->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, mat);
-            else
-               m_rd->basicShader->SetTechnique(SHADER_TECHNIQUE_bg_decal_without_texture);
-         }
+            m_rd->basicShader->SetTechnique(SHADER_TECHNIQUE_bg_decal_without_texture);
       }
-
-      m_rd->EnableAlphaBlend(false);
-
-      if (!m_backglass)
-      {
-         constexpr float depthbias = -5.f;
-         m_rd->SetRenderStateDepthBias(depthbias);
-      }
-      else
-      {
-         m_rd->SetRenderStateDepthBias(0.0f);
-         const vec4 staticColor(1.0f, 1.0f, 1.0f, 1.0f);
-         m_rd->basicShader->SetVector(SHADER_cBase_Alpha, &staticColor);
-      }
-
-      if (m_backglass)
-      {
-         Matrix3D matWorldViewProj; // MVP to move from back buffer space (0..w, 0..h) to clip space (-1..1, -1..1)
-         matWorldViewProj.SetIdentity();
-         matWorldViewProj._11 = 2.0f / (float)m_rd->GetMSAABackBufferTexture()->GetWidth();
-         matWorldViewProj._41 = -1.0f;
-         matWorldViewProj._22 = -2.0f / (float)m_rd->GetMSAABackBufferTexture()->GetHeight();
-         matWorldViewProj._42 = 1.0f;
-         #ifdef ENABLE_SDL
-         struct
-         {
-            Matrix3D matWorld;
-            Matrix3D matView;
-            Matrix3D matWorldView;
-            Matrix3D matWorldViewInverseTranspose;
-            Matrix3D matWorldViewProj[2];
-         } matrices;
-         memcpy(&matrices.matWorldViewProj[0], &matWorldViewProj, 4 * 4 * sizeof(float));
-         memcpy(&matrices.matWorldViewProj[1], &matWorldViewProj, 4 * 4 * sizeof(float));
-         m_rd->basicShader->SetUniformBlock(SHADER_basicMatrixBlock, &matrices.matWorld.m[0][0]);
-         #else
-         m_rd->basicShader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj);
-         #endif
-      }
-
-      m_rd->DrawMesh(m_rd->basicShader, !m_backglass, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLESTRIP, 0, 4);
-
-      if (m_backglass)
-         g_pplayer->UpdateBasicShaderMatrix();
    }
+
+   m_rd->EnableAlphaBlend(false);
+
+   if (!m_backglass)
+   {
+      constexpr float depthbias = -5.f;
+      m_rd->SetRenderStateDepthBias(depthbias);
+   }
+   else
+   {
+      m_rd->SetRenderStateDepthBias(0.0f);
+      const vec4 staticColor(1.0f, 1.0f, 1.0f, 1.0f);
+      m_rd->basicShader->SetVector(SHADER_cBase_Alpha, &staticColor);
+   }
+
+   if (m_backglass)
+   {
+      Matrix3D matWorldViewProj; // MVP to move from back buffer space (0..w, 0..h) to clip space (-1..1, -1..1)
+      matWorldViewProj.SetIdentity();
+      matWorldViewProj._11 = 2.0f / (float)m_rd->GetMSAABackBufferTexture()->GetWidth();
+      matWorldViewProj._41 = -1.0f;
+      matWorldViewProj._22 = -2.0f / (float)m_rd->GetMSAABackBufferTexture()->GetHeight();
+      matWorldViewProj._42 = 1.0f;
+      #ifdef ENABLE_SDL
+      struct
+      {
+         Matrix3D matWorld;
+         Matrix3D matView;
+         Matrix3D matWorldView;
+         Matrix3D matWorldViewInverseTranspose;
+         Matrix3D matWorldViewProj[2];
+      } matrices;
+      memcpy(&matrices.matWorldViewProj[0], &matWorldViewProj, 4 * 4 * sizeof(float));
+      memcpy(&matrices.matWorldViewProj[1], &matWorldViewProj, 4 * 4 * sizeof(float));
+      m_rd->basicShader->SetUniformBlock(SHADER_basicMatrixBlock, &matrices.matWorld.m[0][0]);
+      #else
+      m_rd->basicShader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj);
+      #endif
+   }
+
+   m_rd->DrawMesh(m_rd->basicShader, !m_backglass, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLESTRIP, 0, 4);
+
+   if (m_backglass)
+      g_pplayer->UpdateBasicShaderMatrix();
 }
 
 #pragma endregion

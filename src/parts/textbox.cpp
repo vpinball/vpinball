@@ -461,7 +461,7 @@ void Textbox::Render(const unsigned int renderMask)
          g_pplayer->m_pin3d.m_backGlass->GetDMDPos(x, y, w, h);
          m_rd->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
          m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
-         m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE); // is this really necessary ?
+         m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
       }
       #else
       //const float width = m_pin3d.m_useAA ? 2.0f*(float)m_width : (float)m_width; //!! AA ?? -> should just work
