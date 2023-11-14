@@ -195,7 +195,8 @@ FEATURES:
 - the full table can now be locked to prevent unintended user changes (can be changed anytime)
 
 - if playing in locked mode and also not having any unsaved table changes, one can now export a 'tournament score' file via the pause menu
-  (currently limited to PinMAME-emulated DMD based machines, thus the file contains the encoded content of the DMD at that point in time)
+  (currently limited to PinMAME-emulated DMD based machines and the script has to enforce the connection via 'UseVPMDMD = True' or 'UseVPMColoredDMD = True',
+   thus the file contains the encoded content of the DMD at that point in time)
   The content of this text file can then be posted to the tournament administrators and converted by them via the '-TournamentFile tablename textfilename' command line option to a .png again
   Note that the VPX version used to play and to convert must exactly match (incl. same revision/build, same OS, DXvsGL, 32vs64bit)
 
