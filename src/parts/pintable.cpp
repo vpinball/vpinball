@@ -376,10 +376,8 @@ bool ScriptGlobalTable::GetTextFileFromDirectory(const string& szfilename, const
    // else: use current directory
    szPath += szfilename;
 
-   bool success = false;
    int len;
    BYTE *szContents;
-
    if (RawReadFromFile(szPath.c_str(), &len, (char **)&szContents))
    {
       BYTE *szDataStart = szContents;
@@ -411,10 +409,10 @@ bool ScriptGlobalTable::GetTextFileFromDirectory(const string& szfilename, const
 
       delete[] szContents;
 
-      success = true;
+      return true;
    }
 
-   return success;
+   return false;
 }
 
 STDMETHODIMP ScriptGlobalTable::GetCustomParam(long index, BSTR *param)
@@ -456,25 +454,11 @@ STDMETHODIMP ScriptGlobalTable::GetTextFile(BSTR FileName, BSTR *pContents)
    char szFileName[MAX_PATH];
    WideCharToMultiByteNull(CP_ACP, 0, FileName, -1, szFileName, MAX_PATH, nullptr, nullptr);
 
-   // try to load the file from the current directory
-   bool success = GetTextFileFromDirectory(szFileName, string(), pContents);
+   for(size_t i = 0; i < std::size(defaultFileNameSearch); ++i)
+      if(GetTextFileFromDirectory(defaultFileNameSearch[i] + szFileName, defaultPathSearch[i], pContents))
+         return S_OK;
 
-   // if that fails, try the User, Scripts and Tables sub-directorys under where VP was loaded from
-   if (!success)
-      success = GetTextFileFromDirectory(szFileName, "user"s   +PATH_SEPARATOR_CHAR, pContents);
-   if (!success)
-      success = GetTextFileFromDirectory(szFileName, "scripts"s+PATH_SEPARATOR_CHAR, pContents);
-   if (!success)
-      success = GetTextFileFromDirectory(szFileName, "tables"s +PATH_SEPARATOR_CHAR, pContents);
-   // if that also fails, try the standard installation path
-   if (!success)
-      success = GetTextFileFromDirectory(PATH_USER    + szFileName, string(), pContents);
-   if (!success)
-      success = GetTextFileFromDirectory(PATH_SCRIPTS + szFileName, string(), pContents);
-   if (!success)
-      success = GetTextFileFromDirectory(PATH_TABLES  + szFileName, string(), pContents);
-
-   return success ? S_OK : S_FALSE;
+   return S_FALSE;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_UserDirectory(BSTR *pVal)
@@ -6016,7 +6000,6 @@ void PinTable::ImportBackdropPOV(const string &filename)
             auto section = root->FirstChildElement("customsettings");
             if (section)
             {
-               int boolTmp = -1;
                // POV_FIELD("SSAA", "%i", m_useAA);
                {
                   auto node = section->FirstChildElement("postprocAA");
@@ -6114,7 +6097,6 @@ void PinTable::ImportBackdropPOV(const string &filename)
                   {
                      //POV_FIELD("DetailsLevel", "%i", m_userDetailLevel);
                      node = section->FirstChildElement("DetailsLevel");
-                     int value;
                      sscanf_s(node->GetText(), "%i", &value);
                      m_settings.SaveValue(Settings::Player, "AlphaRampAccuracy"s, value);
                   }
@@ -6131,7 +6113,6 @@ void PinTable::ImportBackdropPOV(const string &filename)
                      node = section->FirstChildElement("NightDayLevel");
                      if (node)
                      {
-                        int value;
                         sscanf_s(node->GetText(), "%i", &value);
                         m_settings.SaveValue(Settings::Player, "EmissionScale"s, value / 100.f);
                      }
@@ -7653,11 +7634,11 @@ bool PinTable::AuditTable() const
 
    // Ultra basic parser to get a (somewhat) valid list of referenced parts
    const size_t cchar = SendMessage(m_pcv->m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
-   char * szText = new char[cchar + 1];
+   char * const szText = new char[cchar + 1];
    SendMessage(m_pcv->m_hwndScintilla, SCI_GETTEXT, cchar + 1, (size_t)szText);
    char *wordStart = nullptr;
    char *wordPos = szText;
-   string inClass = "";
+   string inClass;
    bool nextIsFunc = false, nextIsEnd = false, nextIsClass = false, isInString = false, isInComment = false;
    vector<string> functions, identifiers;
    int line = 0;
@@ -7687,7 +7668,7 @@ bool PinTable::AuditTable() const
                else if (word == "class")
                {
                   if (nextIsEnd)
-                     inClass = "";
+                     inClass.clear();
                   nextIsClass = !nextIsEnd;
                   nextIsEnd = false;
                }
@@ -7705,10 +7686,10 @@ bool PinTable::AuditTable() const
                      else if (nextIsFunc)
                      {
                         //ss << "- " << word << ", line=" << (line + 1) << ", class=" << inClass << '\n';
-                        if (FindIndexOf(functions, inClass + "." + word) != -1)
-                           ss << ". Duplicate declaration of '" << string(wordStart, (int)(wordPos - wordStart)) << "' in script at line " << line << "\n";
+                        if (FindIndexOf(functions, inClass + '.' + word) != -1)
+                           ss << ". Duplicate declaration of '" << string(wordStart, (int)(wordPos - wordStart)) << "' in script at line " << line << '\n';
                         else
-                           functions.push_back(inClass + "." + word);
+                           functions.push_back(inClass + '.' + word);
                      }
                      else
                         identifiers.push_back(word);
@@ -7773,7 +7754,7 @@ bool PinTable::AuditTable() const
       totalSize += sound->m_cdata;
    }
    ss << ". Total sound size: " <<  (totalSize / (1024 * 1024)) << "Mo\n";
-   
+
    totalSize = 0;
    for (auto image : m_vimage)
    {
