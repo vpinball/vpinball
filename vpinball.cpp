@@ -2644,7 +2644,10 @@ void VPinball::GenerateTournamentFile()
 {
    unsigned int dmd_size = g_pplayer->m_dmd.x * g_pplayer->m_dmd.y;
    if (dmd_size == 0)
+   {
+      g_pplayer->m_liveUI->PushNotification("Tournament file export requires a valid DMD script connection to PinMAME via 'UseVPM(Colored)DMD = True'", 4000);
       return;
+   }
 
    BYTE *const dmd_data = new BYTE[dmd_size + 16];
    if (g_pplayer->m_texdmd->m_format == BaseTexture::BW)
