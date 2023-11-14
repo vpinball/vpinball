@@ -22,6 +22,7 @@ Changelog:
 - add Shadows property to Light element
 - add EnableDepthMask to the primitive element
 - YieldTime will now do nothing anymore
+- add Option property to table to store options that are presented to the user in the Tweak mode
 
 10.7.4:
 - add Setting property to the globals
@@ -316,6 +317,7 @@ PlungerFilter(bool) - default=false
 *TiltTriggerTime(int)
 *DeadZone(int)
 NudgeTime(float)
+Option - Get/Set a custom option (persisted through run, adjustable by the user in Tweak mode)
 
 *TableSoundVolume(int) - Scales the global sound volume (in percent). default=100
 *TableMusicVolume(int) - Scales the global music volume (in percent). default=100

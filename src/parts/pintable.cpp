@@ -504,10 +504,10 @@ STDMETHODIMP ScriptGlobalTable::get_TablesDirectory(BSTR *pVal)
 STDMETHODIMP ScriptGlobalTable::get_MusicDirectory(VARIANT pSubDir, BSTR *pVal)
 {
    // Optional sub directory parameter must be either missing or a string
-   if (V_VT(&pSubDir) != VT_EMPTY && V_VT(&pSubDir) != VT_BSTR)
+   if (V_VT(&pSubDir) != VT_ERROR && V_VT(&pSubDir) != VT_EMPTY && V_VT(&pSubDir) != VT_BSTR)
       return S_FALSE;
 
-   string endPath = V_VT(&pSubDir) == VT_EMPTY ? string() : (MakeString(V_BSTR(&pSubDir)) + PATH_SEPARATOR_CHAR);
+   string endPath = V_VT(&pSubDir) == VT_BSTR ? (MakeString(V_BSTR(&pSubDir)) + PATH_SEPARATOR_CHAR) : string();
    string szPath = m_vpinball->m_szMyPath + "music"s + PATH_SEPARATOR_CHAR + endPath;
    if (!DirExists(szPath))
    {
@@ -10325,6 +10325,77 @@ STDMETHODIMP PinTable::get_VersionMinor(int *pVal)
 STDMETHODIMP PinTable::get_VersionRevision(int *pVal)
 {
    *pVal = VP_VERSION_REV;
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::get_Option(BSTR optionName, float minValue, float maxValue, float step, float defaultValue, int unit, /*[optional][in]*/ VARIANT values, /*[out, retval]*/ float* param)
+{
+   if (V_VT(&values) != VT_ERROR && V_VT(&values) != VT_EMPTY && V_VT(&values) != (VT_ARRAY | VT_VARIANT))
+      return S_FALSE;
+   if (minValue >= maxValue || step <= 0.f || defaultValue < minValue || defaultValue > maxValue)
+      return S_FALSE;
+
+   vector<string> literals;
+   if (V_VT(&values) == (VT_ARRAY | VT_VARIANT))
+   {
+      if (V_VT(&values) != (VT_ARRAY | VT_VARIANT) || step != 1.f || (minValue - (long) minValue) != 0.f || (maxValue - (long) maxValue) != 0.f)
+         return S_FALSE;
+      int nValues = 1 + (int)maxValue - (int)minValue;
+      SAFEARRAY *psa = V_ARRAY(&values);
+      LONG lbound, ubound;
+      if (SafeArrayGetLBound(psa, 1, &lbound) != S_OK || SafeArrayGetUBound(psa, 1, &ubound) != S_OK || ubound != lbound + nValues - 1)
+         return S_FALSE;
+      VARIANT *p;
+      SafeArrayAccessData(psa, (void **)&p);
+      for (int i = 0; i < nValues; i++)
+      {
+         char buf[MAXTOKEN];
+         WideCharToMultiByteNull(CP_ACP, 0, V_BSTR(&p[i]), -1, buf, MAXTOKEN, nullptr, nullptr);
+         literals.push_back(buf);
+      }
+      SafeArrayUnaccessData(psa);
+   }
+   string name = MakeString(optionName);
+   m_settings.RegisterSetting(Settings::TableOption, name, minValue, maxValue, step, defaultValue, (Settings::OptionUnit)unit, literals);
+
+   float value = m_settings.LoadValueWithDefault(Settings::TableOption, name, defaultValue);
+   *param = clamp(minValue + step * (int)roundf((value - minValue) / step), minValue, maxValue);
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_Option(BSTR optionName, float minValue, float maxValue, float step, float defaultValue, int unit, /*[optional][in]*/ VARIANT values, /*[in]*/ float val)
+{
+   if (V_VT(&values) != VT_ERROR && V_VT(&values) != VT_EMPTY && V_VT(&values) != (VT_ARRAY | VT_VARIANT))
+      return S_FALSE;
+   if (minValue >= maxValue || step <= 0.f || defaultValue < minValue || defaultValue > maxValue)
+      return S_FALSE;
+
+   vector<string> literals;
+   if (V_VT(&values) == (VT_ARRAY | VT_VARIANT))
+   {
+      if (V_VT(&values) != (VT_ARRAY | VT_VARIANT) || step != 1.f || (minValue - (long) minValue) != 0.f || (maxValue - (long) maxValue) != 0.f)
+         return S_FALSE;
+      int nValues = 1 + (int)maxValue - (int)minValue;
+      SAFEARRAY *psa = V_ARRAY(&values);
+      LONG lbound, ubound;
+      if (SafeArrayGetLBound(psa, 1, &lbound) != S_OK || SafeArrayGetUBound(psa, 1, &ubound) != S_OK || ubound != lbound + nValues - 1)
+         return S_FALSE;
+      VARIANT *p;
+      SafeArrayAccessData(psa, (void **)&p);
+      for (int i = 0; i < nValues; i++)
+      {
+         char buf[MAXTOKEN];
+         WideCharToMultiByteNull(CP_ACP, 0, V_BSTR(&p[i]), -1, buf, MAXTOKEN, nullptr, nullptr);
+         literals.push_back(buf);
+      }
+      SafeArrayUnaccessData(psa);
+   }
+   string name = MakeString(optionName);
+   m_settings.RegisterSetting(Settings::TableOption, name, minValue, maxValue, step, defaultValue, (Settings::OptionUnit)unit, literals);
+   
+   m_settings.SaveValue(Settings::TableOption, name, val);
+
    return S_OK;
 }
 

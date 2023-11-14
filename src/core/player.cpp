@@ -1668,6 +1668,7 @@ HRESULT Player::Init()
       if (ph->GetEventProxyBase())
          ph->GetEventProxyBase()->FireVoidEvent(DISPID_GameEvents_Init);
    }
+   m_ptable->FireKeyEvent(DISPID_GameEvents_OptionEvent, 0 /* custom option init event */); 
 
    // Pre-render all non-changing elements such as static walls, rails, backdrops, etc. and also static playfield reflections
    // This is done after starting the script and firing the Init event to allow script to adjust static parts on startup

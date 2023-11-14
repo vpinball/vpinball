@@ -118,6 +118,11 @@ FEATURES:
   - Playfield & Ball reflection on/off were removed from the table settings, since this was redundant and conflicting with overall application and reflection probes settings. We now directly
     define reflections in the render probe. Table authors can disable the default playfield reflection by setting PF reflection strength to 0. Players use the app/table settings to tweak in addition.
 
+- the camera mode was replaced by a user setting mode which allows to edit the point of view like before, but also adjust table settings.
+  This mode will not modify the table like it used to do, but only adjust the settings (table's ini file). The settings are only saved when the credit key is pressed.
+  This mode can be entered while playing using the (new) dedicated key shortcut. 
+  Tables can declare custom options from the script that will be presented to the player in this mode (see script reference).
+
 - remove Anti-Aliasing and Postprocessed Anti-Aliasing options from the table properties (and use an .ini based override instead)
 
 - the application is now fully 'DPI aware'. This means that one can use multiple monitors at different DPI settings.
