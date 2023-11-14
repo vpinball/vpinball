@@ -37,6 +37,7 @@ public:
       Version,
       CVEdit,
       TableOverride,
+      TableOption,
 
       // Optional user defaults for each element
       DefaultPropsBumper,
@@ -84,9 +85,24 @@ public:
    bool SaveValue(const Section section, const string &key, const float val, const bool overrideMode = false);
    bool SaveValue(const Section section, const string &key, const int val, const bool overrideMode = false);
    bool SaveValue(const Section section, const string &key, const bool val, const bool overrideMode = false);
-
+    
    bool DeleteValue(const Section section, const string &key, const bool& deleteFromParent = false);
    bool DeleteSubKey(const Section section, const bool &deleteFromParent = false);
+
+   enum OptionUnit
+   {
+      OT_NONE, // Display without a unit
+      OT_PERCENT, // Shows valut multiplied by 100, with % as the unit
+   };
+   struct OptionDef
+   {
+      string name;
+      float minValue, maxValue, step, defaultValue;
+      OptionUnit unit;
+      vector<string> literals;
+   };
+   void RegisterSetting(const Section section, const string &name, float minValue, float maxValue, float step, float defaultValue, OptionUnit unit, const vector<string>& literals);
+   const vector<OptionDef> &GetSettings() { return m_options; }
 
 private:
    enum DataType
@@ -98,6 +114,8 @@ private:
 
    bool LoadValue(const Section section, const string &key, DataType &type, void *pvalue, DWORD size) const;
    bool SaveValue(const Section section, const string &key, const DataType type, const void *pvalue, const DWORD size, const bool overrideMode);
+
+   vector<OptionDef> m_options;
 
    bool m_modified = false;
    string m_iniPath;

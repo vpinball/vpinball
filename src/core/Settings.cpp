@@ -5,8 +5,7 @@
 #include <filesystem>
 
 static const string regKey[Settings::Count] =
-   {
-      "Controller"s, "Editor"s, "Player"s, "PlayerVR"s, "RecentDir"s, "Version"s, "CVEdit"s, "TableOverride"s,
+   { "Controller"s, "Editor"s, "Player"s, "PlayerVR"s, "RecentDir"s, "Version"s, "CVEdit"s, "TableOverride"s, "TableOption"s,
       "DefaultProps\\Bumper"s, "DefaultProps\\Decal"s, "DefaultProps\\EMReel"s, "DefaultProps\\Flasher"s, "DefaultProps\\Flipper"s,
       "DefaultProps\\Gate"s, "DefaultProps\\HitTarget"s, "DefaultProps\\Kicker"s, "DefaultProps\\Light"s, "DefaultProps\\LightSequence"s,
       "DefaultProps\\Plunger"s, "DefaultProps\\Primitive"s, "DefaultProps\\Ramp"s, "DefaultProps\\Rubber"s, "DefaultProps\\Spinner"s,
@@ -422,4 +421,29 @@ bool Settings::DeleteSubKey(const Section section, const bool &deleteFromParent)
       success &= m_ini.remove(regKey[section]);
    }
    return success;
+}
+
+void Settings::RegisterSetting(const Section section, const string &name, float minValue, float maxValue, float step, float defaultValue, OptionUnit unit, const vector<string> &literals)
+{
+   assert(section == TableOption); // For the time being, this system is only used for custom table options (could be extend for all options to get the benefit of validation, fast access, and remove unneeded copied states...)
+   OptionDef opt;
+   opt.name = name;
+   opt.minValue = minValue;
+   opt.maxValue = maxValue;
+   opt.step = step;
+   opt.defaultValue = defaultValue;
+   opt.literals = literals;
+   opt.unit = unit;
+   bool found = false;
+   for (auto option = begin(m_options); option != end(m_options); option++)
+   {
+      if (option->name == name)
+      {
+         *option = opt;
+         found = true;
+         break;
+      }
+   }
+   if (!found)
+      m_options.push_back(opt);
 }

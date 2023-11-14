@@ -58,6 +58,7 @@
 #define DISPID_GameEvents_Exit 1004
 #define DISPID_GameEvents_Paused 1005
 #define DISPID_GameEvents_UnPaused 1006
+#define DISPID_GameEvents_OptionEvent 1007
 
 // Surface
 #define DISPID_SurfaceEvents_Slingshot 1101
