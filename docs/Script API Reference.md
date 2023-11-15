@@ -805,6 +805,8 @@ The following methods only applies to mesh primitives with an animation sequence
 
 ### Events
 - `MusicDone()` - Called when the played music has ended.
+- `OptionEvent(ByVal eventId)` - Called when an event regarding table option happens: 0 = initialize options (after Init event), 1 = an option has changed, 2 = options have been reseted, 3 = player just exited the Tweak UI
+
 
 
 -------------------------------------------------------------------------------
