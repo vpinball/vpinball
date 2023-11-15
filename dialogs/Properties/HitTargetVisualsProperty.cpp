@@ -50,7 +50,7 @@ void HitTargetVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
         if (dispid == IDC_BLEND_DISABLE_LIGHTING || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_disableLightingEdit, target->m_d.m_disableLightingTop);
         if (dispid == IDC_BLEND_DISABLE_LIGHTING_FROM_BELOW || dispid == -1)
-            PropertyDialog::SetFloatTextbox(m_disableLightBelowEdit, target->m_d.m_disableLightingBelow);
+            PropertyDialog::SetFloatTextbox(m_disableLightBelowEdit, 1.f - target->m_d.m_disableLightingBelow);
         if (dispid == DISPID_POSITION_X || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_posXEdit, target->m_d.m_vPosition.x);
         if (dispid == DISPID_POSITION_Y || dispid == -1)
@@ -98,7 +98,7 @@ void HitTargetVisualsProperty::UpdateProperties(const int dispid)
                 CHECK_UPDATE_ITEM(target->m_d.m_disableLightingTop, PropertyDialog::GetFloatTextbox(m_disableLightingEdit), target);
                 break;
             case IDC_BLEND_DISABLE_LIGHTING_FROM_BELOW:
-                CHECK_UPDATE_ITEM(target->m_d.m_disableLightingBelow, PropertyDialog::GetFloatTextbox(m_disableLightBelowEdit), target);
+                CHECK_UPDATE_ITEM(target->m_d.m_disableLightingBelow, 1.f - PropertyDialog::GetFloatTextbox(m_disableLightBelowEdit), target);
                 break;
             case DISPID_POSITION_X:
                 CHECK_UPDATE_ITEM(target->m_d.m_vPosition.x, PropertyDialog::GetFloatTextbox(m_posXEdit), target);

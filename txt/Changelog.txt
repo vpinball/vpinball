@@ -118,6 +118,17 @@ FEATURES:
   - Playfield & Ball reflection on/off were removed from the table settings, since this was redundant and conflicting with overall application and reflection probes settings. We now directly
     define reflections in the render probe. Table authors can disable the default playfield reflection by setting PF reflection strength to 0. Players use the app/table settings to tweak in addition.
 
+- the camera mode was replaced by a user setting 'tweak' mode which allows to edit the point of view like before, but also adjust table settings.
+  This mode will not modify the table like it used to do, but only adjust the settings (in table's ini file). The settings are only saved when the credit key is pressed.
+  This mode can be started from the ui, from the commandline, or entered while playing using the (new) dedicated key shortcut. 
+  Tables can declare custom options from the script that will be presented to the player in this mode (see script reference). For example:
+  Sub Table1_OptionEvent(ByVal eventId)
+    Dim mod1: mod1 = Table1.Option("Option", 1, 4, 1, 1, 0, Array("Option 1", "Option 2", "Option 3", "Option 4"))
+    Dim mod2: mod2 = Table1.Option("Percent", 0, 1, 0.01, 0.5, 1)
+    ' Adjust table according to the value of 'mod1' and 'mod2'. Note that mod1 is a value between 1 and 4. mod2 is a value between 0 and 1 (displayed as a percent in the UI).
+  End Sub
+
+
 - remove Anti-Aliasing and Postprocessed Anti-Aliasing options from the table properties (and use an .ini based override instead)
 
 - the application is now fully 'DPI aware'. This means that one can use multiple monitors at different DPI settings.
@@ -195,7 +206,8 @@ FEATURES:
 - the full table can now be locked to prevent unintended user changes (can be changed anytime)
 
 - if playing in locked mode and also not having any unsaved table changes, one can now export a 'tournament score' file via the pause menu
-  (currently limited to PinMAME-emulated DMD based machines, thus the file contains the encoded content of the DMD at that point in time)
+  (currently limited to PinMAME-emulated DMD based machines and the script has to enforce the connection via 'UseVPMDMD = True' or 'UseVPMColoredDMD = True',
+   thus the file contains the encoded content of the DMD at that point in time)
   The content of this text file can then be posted to the tournament administrators and converted by them via the '-TournamentFile tablename textfilename' command line option to a .png again
   Note that the VPX version used to play and to convert must exactly match (incl. same revision/build, same OS, DXvsGL, 32vs64bit)
 
@@ -1403,13 +1415,13 @@ VP 10.0.0 Changelog
 
   * "Import mesh's material" : Loads the corresponding .mtl file and adds the first material in that file.
                                For instance: if the mesh .obj file is called "bumper.obj", then there should be a file "bumper.mtl" in the same directory.
-							   But only some basic material settings are imported due to the limited .mtl format, for Blender the used material parameters are:
+                               But only some basic material settings are imported due to the limited .mtl format, for Blender the used material parameters are:
                                 Blender diffuse color -> VP base color
                                 Blender specular color -> VP glossy layer
                                 Blender specular hardness -> VP shininess value
                                 Blender transparency alpha value -> VP opacity amount
                                When imported the primitive has the imported material automatically assigned.
-							   Note that any textures aren't imported automatically though, this must be done as usual with the help of the image manager.
+                               Note that any textures aren't imported automatically though, this must be done as usual with the help of the image manager.
 
 - add additional debug mode when pressing F11 multiple times to visualize the content of only the static buffer.
   this can be used to optimize for performance by trying to put as many elements as possible into this buffer, for example:

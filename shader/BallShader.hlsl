@@ -54,7 +54,7 @@ sampler2D tex_ball_playfield : TEXUNIT4 = sampler_state // playfield
 #include "Material.fxh"
 
 const float4x3 orientation;
-const float4   invTableRes_playfield_height_reflection;
+const float4   invTableRes_reflection;
 const float4   w_h_disableLighting;
 #define disableLighting (w_h_disableLighting.z != 0.)
 
@@ -208,7 +208,7 @@ float4 psBall( const in vout IN, uniform bool equirectangularMap, uniform bool d
     const float3 playfield_normal = float3(matWorldView._31, matWorldView._32, matWorldView._33);
     const float NdotR = dot(playfield_normal, R);
 
-    const float3 playfield_p0 = mul_w1(float3(/*playfield_pos=*/0.,0.,invTableRes_playfield_height_reflection.z), matWorldView);
+    const float3 playfield_p0 = mul_w1(float3(/*playfield_pos=*/0.,0.,0.), matWorldView);
     const float t = dot(playfield_normal, IN.worldPos_t0y.xyz - playfield_p0) / NdotR;
     const float3 playfield_hit = IN.worldPos_t0y.xyz - t * R;
 
@@ -221,10 +221,10 @@ float4 psBall( const in vout IN, uniform bool equirectangularMap, uniform bool d
         + tex2D(tex_ball_playfield, uvp - float2(w_h_disableLighting.x, 0.)).rgb
         + tex2D(tex_ball_playfield, uvp + float2(0., w_h_disableLighting.y)).rgb
         + tex2D(tex_ball_playfield, uvp - float2(0., w_h_disableLighting.y)).rgb
-    ) * invTableRes_playfield_height_reflection.w; // a bit of supersampling, not strictly needed, but a bit better and not that costly
+    ) * invTableRes_reflection.z; // a bit of supersampling, not strictly needed, but a bit better and not that costly
 
     // we don't clamp sampling outside the playfield (costly and no real visual impact)
-    // const float2 uv = (matWorldViewInverse * float4(playfield_hit, 1.0)).xy * invTableRes_playfield_height_reflection.xy;
+    // const float2 uv = (matWorldViewInverse * float4(playfield_hit, 1.0)).xy * invTableRes_reflection.xy;
     // && !(uv.x < 0.1 && uv.y < 0.1 && uv.x > 0.9 && uv.y > 0.9)
     BRANCH if (!(NdotR <= 0.) // Reversed reflection => discard
      && !(uvp.x < 0. || uvp.x > 1. || uvp.y < 0. || uvp.y > 1.) // outside of previous render => discard (we could use sampling techniques to optimize a bit)

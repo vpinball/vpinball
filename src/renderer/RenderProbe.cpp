@@ -111,45 +111,43 @@ void RenderProbe::PreRenderStatic()
    }
 }
 
-RenderTarget* RenderProbe::GetProbe(const bool isStaticOnly)
+RenderTarget* RenderProbe::Render(const unsigned int renderMask)
 {
    assert(m_rd != nullptr);
+   const bool isStaticOnly = renderMask & Player::STATIC_ONLY;
+   const bool isDynamicOnly = renderMask & Player::DYNAMIC_ONLY;
+   const bool isReflectionPass = renderMask & Player::REFLECTION_PASS;
+
    // Probes are rendered and used in screen space therefore, they can't be recusively used (e.g. reflections
    // of reflections). Beside this, some properties are not cached (clip plane,...) and would break if
    // we would allow this. We simply return nullptr to disable this behavior.
-   // Note that this will break for refractions, but since the implementation is a preliminary one, waiting 
-   // for order independent transparency pass, this is not a big deal.
-   if (g_pplayer->IsRenderPass(Player::REFLECTION_PASS))
+   if (m_rendering || isReflectionPass)
       return nullptr;
-   if (m_dirty && !m_rendering)
+
+   switch (m_type)
    {
-      m_rendering = true;
-      switch (m_type)
-      {
-      case PLANE_REFLECTION: RenderReflectionProbe(isStaticOnly); break;
-      case SCREEN_SPACE_TRANSPARENCY: RenderScreenSpaceTransparency(isStaticOnly); break;
-      }
-      m_rendering = false;
-      m_dirty = false;
-   }
-   if (m_type == PLANE_REFLECTION)
+   case PLANE_REFLECTION:
    {
       const ReflectionMode mode = min(m_reflection_mode, g_pplayer->m_maxReflectionMode);
-      if (isStaticOnly)
+      if (mode == REFL_NONE || (isStaticOnly && (mode == REFL_BALLS || mode == REFL_DYNAMIC)) || (isDynamicOnly && (mode == REFL_STATIC)))
+         return nullptr;
+      if (m_dirty)
       {
-         if (mode == REFL_STATIC || mode == REFL_STATIC_N_BALLS || mode == REFL_STATIC_N_DYNAMIC)
-            return m_dynamicRT;
+         m_dirty = false;
+         RenderReflectionProbe(renderMask);
       }
-      else
-      {
-         if (mode != REFL_NONE && mode != REFL_STATIC)
-            return m_dynamicRT;
-      }
-      return nullptr;
+      return m_dynamicRT;
    }
-   else // SCREEN_SPACE_TRANSPARENCY
+   case SCREEN_SPACE_TRANSPARENCY:
    {
-      return isStaticOnly ? nullptr : m_dynamicRT;
+      if (m_dirty)
+      {
+         m_dirty = false;
+         RenderScreenSpaceTransparency();
+      }
+      return m_dynamicRT;
+   }
+   default: assert(false); return nullptr;
    }
 }
 
@@ -242,7 +240,7 @@ void RenderProbe::ApplyRoughness(RenderTarget* probe, const int roughness)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Screen copy
 
-void RenderProbe::RenderScreenSpaceTransparency(const bool is_static)
+void RenderProbe::RenderScreenSpaceTransparency()
 {
    const RenderPass* const previousRT = m_rd->GetCurrentPass();
    if (m_dynamicRT == nullptr)
@@ -290,7 +288,7 @@ void RenderProbe::SetReflectionMode(ReflectionMode mode)
 void RenderProbe::PreRenderStaticReflectionProbe()
 {
    // For dynamic reflection mode, in static camera mode, we prerender static elements (like for main view) to get better antialiasing and overall performance
-   if (!g_pplayer->IsUsingStaticPrepass() || min(m_reflection_mode, g_pplayer->m_maxReflectionMode) != REFL_DYNAMIC)
+   if (min(m_reflection_mode, g_pplayer->m_maxReflectionMode) != REFL_DYNAMIC)
       return;
 
    const RenderPass* previousRT = m_rd->GetCurrentPass();
@@ -375,19 +373,21 @@ void RenderProbe::PreRenderStaticReflectionProbe()
    m_rd->SetMainTextureDefaultFiltering(forceAniso ? SF_ANISOTROPIC : SF_TRILINEAR);
 }
 
-void RenderProbe::RenderReflectionProbe(const bool isStaticOnly)
+void RenderProbe::RenderReflectionProbe(const unsigned int renderMask)
 {
+   assert(m_rd != nullptr);
+   const bool isStaticOnly = renderMask & Player::STATIC_ONLY;
+   const bool isDynamicOnly = renderMask & Player::DYNAMIC_ONLY;
+   assert((renderMask & Player::REFLECTION_PASS) == 0);
    const ReflectionMode mode = min(m_reflection_mode, g_pplayer->m_maxReflectionMode);
-   if ((isStaticOnly && (mode == REFL_NONE || mode == REFL_BALLS || m_reflection_mode == REFL_DYNAMIC)) 
-      || (!isStaticOnly && (mode == REFL_NONE || mode == REFL_STATIC)))
+
+   if (mode == REFL_NONE
+   || (isStaticOnly && (mode == REFL_BALLS || mode == REFL_DYNAMIC))
+   || (isDynamicOnly && (mode == REFL_STATIC)))
       return;
 
-   // Rendering reflection is not reentrant and would fail (clip plane and view matrices are not cached)
-   assert(!g_pplayer->IsRenderPass(Player::REFLECTION_PASS));
-
+   m_rendering = true;
    const RenderPass* const previousRT = m_rd->GetCurrentPass();
-
-   // Prepare to render into the reflection back buffer
    if (m_dynamicRT == nullptr)
    {
       const int downscale = GetRoughnessDownscale(m_roughness);
@@ -397,19 +397,17 @@ void RenderProbe::RenderReflectionProbe(const bool isStaticOnly)
    }
    m_rd->SetRenderTarget(m_name, m_dynamicRT);
    m_rd->ResetRenderState();
-   if (mode == REFL_DYNAMIC && m_prerenderRT != nullptr && g_pplayer->IsUsingStaticPrepass())
+   if (isDynamicOnly && mode == REFL_DYNAMIC)
       m_rd->BlitRenderTarget(m_prerenderRT, m_dynamicRT, true, true);
    else
       m_rd->Clear(clearType::TARGET | clearType::ZBUFFER, 0, 1.0f, 0L);
-
-   const bool render_static = isStaticOnly || (mode == REFL_DYNAMIC && (m_prerenderRT == nullptr || !g_pplayer->IsUsingStaticPrepass()));
-   const bool render_balls = !isStaticOnly && (mode != REFL_NONE && mode != REFL_STATIC);
+   const bool render_static = !isDynamicOnly;
+   const bool render_balls = !isStaticOnly && (mode == REFL_BALLS || mode >= REFL_STATIC_N_BALLS);
    const bool render_dynamic = !isStaticOnly && (mode >= REFL_STATIC_N_DYNAMIC);
    DoRenderReflectionProbe(render_static, render_balls, render_dynamic);
-
    ApplyRoughness(m_dynamicRT, m_roughness);
-
    m_rd->SetRenderTarget(previousRT->m_name + '+', previousRT->m_rt);
+   m_rendering = false;
 }
 
 void RenderProbe::DoRenderReflectionProbe(const bool render_static, const bool render_balls, const bool render_dynamic)

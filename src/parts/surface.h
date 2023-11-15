@@ -116,7 +116,24 @@ public:
        m_d.m_slingshotforce = value * 10.0f;
    }
 
-   bool     StaticRendering() const { return (!m_d.m_droppable && !m_isDynamic); }
+   bool     StaticRendering() const
+   {
+      if (m_d.m_droppable)
+         return false;
+      if (m_rd != nullptr) // Static behavior is cached since changing the material could break rendering (is it still valid since we now allow to disable/enable static prerendering while playing)
+         return !m_isDynamic;
+      if (m_d.m_sideVisible)
+      {
+         if (m_ptable->GetMaterial(m_d.m_szSideMaterial)->m_bOpacityActive)
+            return true;
+      }
+      if (m_d.m_topBottomVisible)
+      {
+         if (m_ptable->GetMaterial(m_d.m_szTopMaterial)->m_bOpacityActive)
+            return true;
+      }
+      return false;
+   }
 
    Surface *CopyForPlay(PinTable *live_table);
 

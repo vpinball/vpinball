@@ -18,7 +18,7 @@ End Sub
 ' Bally 6803 Data
 '-------------------------
 ' Flipper Solenoid
-Const GameOnSolenoid = 19
+Const GameOnSolenoid   = 19
 ' Cabinet switches
 Const swCPUDiag        = -7
 Const swSoundDiag      = -6

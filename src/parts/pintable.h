@@ -315,6 +315,9 @@ public:
    STDMETHOD(get_VersionMinor)(/*[out, retval]*/ int *pVal);
    STDMETHOD(get_VersionRevision)(/*[out, retval]*/ int *pVal);
 
+   STDMETHOD(get_Option)(BSTR optionName, float minValue, float maxValue, float step, float defaultValue, int unit, /*[optional][in]*/ VARIANT values, /*[out, retval]*/ float *param);
+   STDMETHOD(put_Option)(BSTR optionName, float minValue, float maxValue, float step, float defaultValue, int unit, /*[optional][in]*/ VARIANT values, /*[in]*/ float val);
+
    /////////////////////////////////////////////
 
    PinTable();
@@ -381,6 +384,8 @@ public:
    PinBinary *GetImageLinkBinary(const int id);
    Light *GetLight(const string &szName) const;
    RenderProbe *GetRenderProbe(const string &szName) const;
+
+   bool AuditTable() const;
 
    void ListCustomInfo(HWND hwndListView);
    int AddListItem(HWND hwndListView, const string &szName, const string &szValue1, LPARAM lparam);

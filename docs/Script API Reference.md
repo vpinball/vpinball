@@ -796,6 +796,8 @@ The following methods only applies to mesh primitives with an animation sequence
 | *LightRange | float | range of lights
 | | | |
 | ColorGradeImage | string | the 256x16 LUT texture used for the color grading post process
+| | | |
+| Option | float | Get/Set a custom option (persisted through run, adjustable by the user in Tweak mode). Arguments are: option name, minimum value, maximum value, step between valid values, default value, unit (0=None, 1=Percent), an optional arry of literal strings
 
 ### Callback
 
@@ -803,6 +805,8 @@ The following methods only applies to mesh primitives with an animation sequence
 
 ### Events
 - `MusicDone()` - Called when the played music has ended.
+- `OptionEvent(ByVal eventId)` - Called when an event regarding table option happens: 0 = initialize options (after Init event), 1 = an option has changed, 2 = options have been reseted, 3 = player just exited the Tweak UI
+
 
 
 -------------------------------------------------------------------------------

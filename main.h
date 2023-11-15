@@ -76,9 +76,16 @@
 #include <algorithm>
 #include <commdlg.h>
 
+using namespace std::string_literals;
 using std::string;
 using std::wstring;
 using std::vector;
+
+// try to load the file from the current directory
+// if that fails, try the User, Scripts and Tables sub-directorys under where VP was loaded from
+// if that also fails, try the standard installation path
+static const string defaultFileNameSearch[] = { string(), string(), string(), string(), PATH_USER, PATH_SCRIPTS, PATH_TABLES };
+static const string defaultPathSearch[]     = { string(), "user"s +PATH_SEPARATOR_CHAR, "scripts"s +PATH_SEPARATOR_CHAR, "tables"s +PATH_SEPARATOR_CHAR, string(), string(), string() };
 
 #include <dlgs.h>
 #include <cderr.h>

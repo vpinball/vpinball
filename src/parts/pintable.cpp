@@ -376,10 +376,8 @@ bool ScriptGlobalTable::GetTextFileFromDirectory(const string& szfilename, const
    // else: use current directory
    szPath += szfilename;
 
-   bool success = false;
    int len;
    BYTE *szContents;
-
    if (RawReadFromFile(szPath.c_str(), &len, (char **)&szContents))
    {
       BYTE *szDataStart = szContents;
@@ -411,10 +409,10 @@ bool ScriptGlobalTable::GetTextFileFromDirectory(const string& szfilename, const
 
       delete[] szContents;
 
-      success = true;
+      return true;
    }
 
-   return success;
+   return false;
 }
 
 STDMETHODIMP ScriptGlobalTable::GetCustomParam(long index, BSTR *param)
@@ -456,25 +454,11 @@ STDMETHODIMP ScriptGlobalTable::GetTextFile(BSTR FileName, BSTR *pContents)
    char szFileName[MAX_PATH];
    WideCharToMultiByteNull(CP_ACP, 0, FileName, -1, szFileName, MAX_PATH, nullptr, nullptr);
 
-   // try to load the file from the current directory
-   bool success = GetTextFileFromDirectory(szFileName, string(), pContents);
+   for(size_t i = 0; i < std::size(defaultFileNameSearch); ++i)
+      if(GetTextFileFromDirectory(defaultFileNameSearch[i] + szFileName, defaultPathSearch[i], pContents))
+         return S_OK;
 
-   // if that fails, try the User, Scripts and Tables sub-directorys under where VP was loaded from
-   if (!success)
-      success = GetTextFileFromDirectory(szFileName, "user"s   +PATH_SEPARATOR_CHAR, pContents);
-   if (!success)
-      success = GetTextFileFromDirectory(szFileName, "scripts"s+PATH_SEPARATOR_CHAR, pContents);
-   if (!success)
-      success = GetTextFileFromDirectory(szFileName, "tables"s +PATH_SEPARATOR_CHAR, pContents);
-   // if that also fails, try the standard installation path
-   if (!success)
-      success = GetTextFileFromDirectory(PATH_USER    + szFileName, string(), pContents);
-   if (!success)
-      success = GetTextFileFromDirectory(PATH_SCRIPTS + szFileName, string(), pContents);
-   if (!success)
-      success = GetTextFileFromDirectory(PATH_TABLES  + szFileName, string(), pContents);
-
-   return success ? S_OK : S_FALSE;
+   return S_FALSE;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_UserDirectory(BSTR *pVal)
@@ -520,10 +504,10 @@ STDMETHODIMP ScriptGlobalTable::get_TablesDirectory(BSTR *pVal)
 STDMETHODIMP ScriptGlobalTable::get_MusicDirectory(VARIANT pSubDir, BSTR *pVal)
 {
    // Optional sub directory parameter must be either missing or a string
-   if (V_VT(&pSubDir) != VT_EMPTY && V_VT(&pSubDir) != VT_BSTR)
+   if (V_VT(&pSubDir) != VT_ERROR && V_VT(&pSubDir) != VT_EMPTY && V_VT(&pSubDir) != VT_BSTR)
       return S_FALSE;
 
-   string endPath = V_VT(&pSubDir) == VT_EMPTY ? string() : (MakeString(V_BSTR(&pSubDir)) + PATH_SEPARATOR_CHAR);
+   string endPath = V_VT(&pSubDir) == VT_BSTR ? (MakeString(V_BSTR(&pSubDir)) + PATH_SEPARATOR_CHAR) : string();
    string szPath = m_vpinball->m_szMyPath + "music"s + PATH_SEPARATOR_CHAR + endPath;
    if (!DirExists(szPath))
    {
@@ -6016,7 +6000,6 @@ void PinTable::ImportBackdropPOV(const string &filename)
             auto section = root->FirstChildElement("customsettings");
             if (section)
             {
-               int boolTmp = -1;
                // POV_FIELD("SSAA", "%i", m_useAA);
                {
                   auto node = section->FirstChildElement("postprocAA");
@@ -6114,7 +6097,6 @@ void PinTable::ImportBackdropPOV(const string &filename)
                   {
                      //POV_FIELD("DetailsLevel", "%i", m_userDetailLevel);
                      node = section->FirstChildElement("DetailsLevel");
-                     int value;
                      sscanf_s(node->GetText(), "%i", &value);
                      m_settings.SaveValue(Settings::Player, "AlphaRampAccuracy"s, value);
                   }
@@ -6131,7 +6113,6 @@ void PinTable::ImportBackdropPOV(const string &filename)
                      node = section->FirstChildElement("NightDayLevel");
                      if (node)
                      {
-                        int value;
                         sscanf_s(node->GetText(), "%i", &value);
                         m_settings.SaveValue(Settings::Player, "EmissionScale"s, value / 100.f);
                      }
@@ -7644,6 +7625,150 @@ PinBinary *PinTable::GetImageLinkBinary(const int id)
    }
 
    return nullptr;
+}
+
+bool PinTable::AuditTable() const
+{
+   // Perform a simple table audit (disable lighting vs static, script reference of static parts, png vs webp, hdr vs exr,...)
+   std::stringstream ss;
+
+   // Ultra basic parser to get a (somewhat) valid list of referenced parts
+   const size_t cchar = SendMessage(m_pcv->m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
+   char * const szText = new char[cchar + 1];
+   SendMessage(m_pcv->m_hwndScintilla, SCI_GETTEXT, cchar + 1, (size_t)szText);
+   char *wordStart = nullptr;
+   char *wordPos = szText;
+   string inClass;
+   bool nextIsFunc = false, nextIsEnd = false, nextIsClass = false, isInString = false, isInComment = false;
+   vector<string> functions, identifiers;
+   int line = 0;
+   while (wordPos[0] != '\0')
+   {
+      if (isInComment)
+      {
+         // skip
+      }
+      else if (wordPos[0] == '"')
+         isInString = !isInString;
+      else if (!isInString)
+      {
+         if (wordPos[0] == '\'')
+            isInComment = true;
+         else if (wordPos[0] == ' ' || wordPos[0] == '\r' || wordPos[0] == '\n' || wordPos[0] == '.' || wordPos[0] == '(' || wordPos[0] == ')' || wordPos[0] == '[' || wordPos[0] == ']')
+         {
+            if (wordStart)
+            {
+               string word(wordStart, (int)(wordPos - wordStart));
+               StrToLower(word);
+               if (word == "end" || word == "exit")
+               {
+                  nextIsFunc = false;
+                  nextIsEnd = true;
+               }
+               else if (word == "class")
+               {
+                  if (nextIsEnd)
+                     inClass.clear();
+                  nextIsClass = !nextIsEnd;
+                  nextIsEnd = false;
+               }
+               else if (word == "function" || word == "sub")
+               {
+                  nextIsFunc = !nextIsEnd;
+                  nextIsEnd = false;
+               }
+               else
+               {
+                  if (word[0] >= 'a' && word[0] <= 'z')
+                  {
+                     if (nextIsClass)
+                        inClass = word;
+                     else if (nextIsFunc)
+                     {
+                        //ss << "- " << word << ", line=" << (line + 1) << ", class=" << inClass << '\n';
+                        if (FindIndexOf(functions, inClass + '.' + word) != -1)
+                           ss << ". Duplicate declaration of '" << string(wordStart, (int)(wordPos - wordStart)) << "' in script at line " << line << '\n';
+                        else
+                           functions.push_back(inClass + '.' + word);
+                     }
+                     else
+                        identifiers.push_back(word);
+                  }
+                  nextIsFunc = false;
+                  nextIsEnd = false;
+                  nextIsClass = false;
+               }
+            }
+            wordStart = nullptr;
+         }
+         else if (wordStart == nullptr)
+            wordStart = wordPos;
+      }
+
+      if (wordPos[0] == '\n')
+      {
+         isInComment = false;
+         line++;
+      }
+
+      wordPos++;
+   }
+   delete[] szText;
+
+   if (m_glassBottomHeight > m_glassTopHeight)
+      ss << ". Warning: Glass height seems invalid: bottom is higher than top\n";
+
+   if (m_glassBottomHeight < INCHESTOVPU(2) || m_glassTopHeight < INCHESTOVPU(2))
+      ss << ". Warning: Glass height seems invalid: glass is below 2\"\n";
+
+   // Search for inconsistencies in the table parts
+   for (auto part : m_vedit)
+   {
+      auto type = part->GetItemType();
+      Primitive *prim = type == eItemPrimitive ? (Primitive *)part : nullptr;
+      Surface *surf = type == eItemSurface ? (Surface *)part : nullptr;
+
+      // Referencing a static object from script (ok if it is for reading properties, not for writing)
+      if (type == eItemPrimitive && prim->m_d.m_staticRendering && FindIndexOf(identifiers, string(prim->GetName())) != -1) 
+         ss << ". Warning: Primitive '" << prim->GetName() << "' seems to be referenced from the script while it is marked as static (most properties of a static object may not be modified at runtime).\n";
+
+      // Enabling translucency (light from below) won't work with static parts: otherwise the rendering will be different in VR/Headtracked vs desktop modes. It also needs a non opaque alpha.
+      if (type == eItemPrimitive && prim->m_d.m_disableLightingBelow != 1.f && !prim->m_d.m_staticRendering
+         && (!GetMaterial(prim->m_d.m_szMaterial)->m_bOpacityActive || GetMaterial(prim->m_d.m_szMaterial)->m_fOpacity == 1.f)
+         && (GetImage(prim->m_d.m_szImage) == nullptr || GetImage(prim->m_d.m_szImage)->m_pdsBuffer->IsOpaque()))
+         ss << ". Warning: Primitive '" << prim->GetName() << "' uses translucency (lighting from below) but it is fully opaque.\n";
+      // Disabled as this is now enforced in the rendering
+      //if (type == eItemPrimitive && prim->m_d.m_disableLightingBelow != 1.f && prim->m_d.m_staticRendering) 
+      //   ss << ". Warning: Primitive '" << prim->GetName() << "' has translucency enabled but is also marked as static. Translucency will not be applied on desktop, and it will look different between VR/headtracked and desktop.\n";
+      //if (type == eItemSurface && surf->m_d.m_disableLightingBelow != 1.f && surf->StaticRendering()) 
+      //   ss << ". Warning: Wall '" << surf->GetName() << "' has translucency enabled but will be staticly rendered (not droppable with opaque materials). Translucency will not be applied on desktop, and it will look different between VR/headtracked and desktop.\n";
+   }
+
+   bool hasIssues = !ss.str().empty();
+
+   // Also output a log of the table file content to allow easier size optimization
+   unsigned long totalSize = 0, totalGpuSize = 0;
+   for (auto sound : m_vsound)
+   {
+      //ss << "  . Sound: '" << sound->m_szName << "', size: " << (sound->m_cdata / 1024) << "ko\n";
+      totalSize += sound->m_cdata;
+   }
+   ss << ". Total sound size: " <<  (totalSize / (1024 * 1024)) << "Mo\n";
+
+   totalSize = 0;
+   for (auto image : m_vimage)
+   {
+      unsigned int imageSize = image->m_ppb != nullptr ? image->m_ppb->m_cdata : image->m_pdsBuffer->height() * image->m_pdsBuffer->pitch();
+      unsigned int gpuSize = image->m_pdsBuffer->height() * image->m_pdsBuffer->pitch();
+      //ss << "  . Image: '" << image->m_szName << "', size: " << (imageSize / 1024) << "ko, GPU mem size: " << (gpuSize / 1024) << "ko\n";
+      totalSize += imageSize;
+      totalGpuSize += gpuSize;
+   }
+   ss << ". Total image size stored in VPX file: " << (totalSize / (1024 * 1024)) << "Mo, in GPU memoryw when played: " << (totalGpuSize / (1024 * 1024)) << "Mo\n";
+
+   PLOGI << "Table audit:\n" << ss.str();
+
+   return hasIssues;
 }
 
 void PinTable::ListCustomInfo(HWND hwndListView)
@@ -10200,6 +10325,77 @@ STDMETHODIMP PinTable::get_VersionMinor(int *pVal)
 STDMETHODIMP PinTable::get_VersionRevision(int *pVal)
 {
    *pVal = VP_VERSION_REV;
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::get_Option(BSTR optionName, float minValue, float maxValue, float step, float defaultValue, int unit, /*[optional][in]*/ VARIANT values, /*[out, retval]*/ float* param)
+{
+   if (V_VT(&values) != VT_ERROR && V_VT(&values) != VT_EMPTY && V_VT(&values) != (VT_ARRAY | VT_VARIANT))
+      return S_FALSE;
+   if (minValue >= maxValue || step <= 0.f || defaultValue < minValue || defaultValue > maxValue)
+      return S_FALSE;
+
+   vector<string> literals;
+   if (V_VT(&values) == (VT_ARRAY | VT_VARIANT))
+   {
+      if (V_VT(&values) != (VT_ARRAY | VT_VARIANT) || step != 1.f || (minValue - (long) minValue) != 0.f || (maxValue - (long) maxValue) != 0.f)
+         return S_FALSE;
+      int nValues = 1 + (int)maxValue - (int)minValue;
+      SAFEARRAY *psa = V_ARRAY(&values);
+      LONG lbound, ubound;
+      if (SafeArrayGetLBound(psa, 1, &lbound) != S_OK || SafeArrayGetUBound(psa, 1, &ubound) != S_OK || ubound != lbound + nValues - 1)
+         return S_FALSE;
+      VARIANT *p;
+      SafeArrayAccessData(psa, (void **)&p);
+      for (int i = 0; i < nValues; i++)
+      {
+         char buf[MAXTOKEN];
+         WideCharToMultiByteNull(CP_ACP, 0, V_BSTR(&p[i]), -1, buf, MAXTOKEN, nullptr, nullptr);
+         literals.push_back(buf);
+      }
+      SafeArrayUnaccessData(psa);
+   }
+   string name = MakeString(optionName);
+   m_settings.RegisterSetting(Settings::TableOption, name, minValue, maxValue, step, defaultValue, (Settings::OptionUnit)unit, literals);
+
+   float value = m_settings.LoadValueWithDefault(Settings::TableOption, name, defaultValue);
+   *param = clamp(minValue + step * (int)roundf((value - minValue) / step), minValue, maxValue);
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_Option(BSTR optionName, float minValue, float maxValue, float step, float defaultValue, int unit, /*[optional][in]*/ VARIANT values, /*[in]*/ float val)
+{
+   if (V_VT(&values) != VT_ERROR && V_VT(&values) != VT_EMPTY && V_VT(&values) != (VT_ARRAY | VT_VARIANT))
+      return S_FALSE;
+   if (minValue >= maxValue || step <= 0.f || defaultValue < minValue || defaultValue > maxValue)
+      return S_FALSE;
+
+   vector<string> literals;
+   if (V_VT(&values) == (VT_ARRAY | VT_VARIANT))
+   {
+      if (V_VT(&values) != (VT_ARRAY | VT_VARIANT) || step != 1.f || (minValue - (long) minValue) != 0.f || (maxValue - (long) maxValue) != 0.f)
+         return S_FALSE;
+      int nValues = 1 + (int)maxValue - (int)minValue;
+      SAFEARRAY *psa = V_ARRAY(&values);
+      LONG lbound, ubound;
+      if (SafeArrayGetLBound(psa, 1, &lbound) != S_OK || SafeArrayGetUBound(psa, 1, &ubound) != S_OK || ubound != lbound + nValues - 1)
+         return S_FALSE;
+      VARIANT *p;
+      SafeArrayAccessData(psa, (void **)&p);
+      for (int i = 0; i < nValues; i++)
+      {
+         char buf[MAXTOKEN];
+         WideCharToMultiByteNull(CP_ACP, 0, V_BSTR(&p[i]), -1, buf, MAXTOKEN, nullptr, nullptr);
+         literals.push_back(buf);
+      }
+      SafeArrayUnaccessData(psa);
+   }
+   string name = MakeString(optionName);
+   m_settings.RegisterSetting(Settings::TableOption, name, minValue, maxValue, step, defaultValue, (Settings::OptionUnit)unit, literals);
+   
+   m_settings.SaveValue(Settings::TableOption, name, val);
+
    return S_OK;
 }
 

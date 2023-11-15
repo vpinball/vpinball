@@ -627,6 +627,7 @@ LiveUI::LiveUI(RenderDevice *const rd)
    m_pininput = &(m_player->m_pininput);
    m_pin3d = &(m_player->m_pin3d);
    m_disable_esc = m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "DisableESC"s, m_disable_esc);
+   memset(m_tweakState, 0, sizeof(m_tweakState));
 
    m_selection.type = Selection::SelectionType::S_NONE;
    m_useEditorCam = false;
@@ -998,14 +999,13 @@ void LiveUI::OpenTweakMode()
    m_tweakMode = true;
    m_activeTweakPage = TP_PointOfView;
    m_activeTweakIndex = 0;
-   m_dayNightOverriden = 0;
-   m_difficultyOverriden = 0;
    UpdateTweakPage();
 }
 
 void LiveUI::CloseTweakMode()
 {
    m_tweakMode = false;
+   m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 3 /* tweak mode closed event */);
 }
 
 void LiveUI::UpdateTweakPage()
@@ -1015,9 +1015,17 @@ void LiveUI::UpdateTweakPage()
    switch (m_activeTweakPage)
    {
    case TP_TableOption:
+   {
+      int nTableOptions = (int)m_live_table->m_settings.GetSettings().size();
+      for (int i = 0; i < nTableOptions; i++)
+         m_tweakPageOptions.push_back((BackdropSetting)(BS_Custom + i));
       m_tweakPageOptions.push_back(BS_DayNight);
+      m_tweakPageOptions.push_back(BS_Tonemapper);
       m_tweakPageOptions.push_back(BS_Difficulty);
+      m_tweakPageOptions.push_back(BS_MusicVolume);
+      m_tweakPageOptions.push_back(BS_SoundVolume);
       break;
+   }
    case TP_Info:
       break;
    case TP_PointOfView:
@@ -1079,22 +1087,22 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
    PinTable * const table = m_live_table;
    if (keycode == g_pplayer->m_rgKeys[eLeftFlipperKey] || keycode == g_pplayer->m_rgKeys[eRightFlipperKey])
    {
-      // Do not react on key up/continuous press for Page/View
-      if (keyEvent != 1 && (activeTweakSetting == BS_Page || activeTweakSetting == BS_ViewMode))
-         return;
-      // Do not react on key up (only key down or long press)
-      if (keyEvent == 2)
+      if (keyEvent == 2) // Do not react on key up (only key down or long press)
          return;
       const bool up = keycode == g_pplayer->m_rgKeys[eRightFlipperKey];
       const float thesign = up ? 0.2f : -0.2f;
       const float step = up ? 1.f : -1.f;
       ViewSetup &viewSetup = table->mViewSetups[table->m_BG_current_set];
       const bool isWindow = viewSetup.mMode == VLM_WINDOW;
+      bool modified = true;
       switch (activeTweakSetting)
       {
       // UI navigation
       case BS_Page:
       {
+         m_tweakState[activeTweakSetting] = 0;
+         if (keyEvent != 1) // Only keydown
+            return;
          if (up)
             m_activeTweakPage = (TweakPage)((m_activeTweakPage + TP_Count - 1) % TP_Count);
          else
@@ -1107,7 +1115,9 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
       // View setup settings
       case BS_ViewMode:
       {
-         int vlm = viewSetup.mMode + (int) step;
+         if (keyEvent != 1) // Only keydown
+            return;
+         int vlm = viewSetup.mMode + (int)step;
          viewSetup.mMode = vlm < 0 ? VLM_WINDOW : vlm >= 3 ? VLM_LEGACY : (ViewLayoutMode)vlm;
          UpdateTweakPage();
          break;
@@ -1159,20 +1169,76 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
       // Table customization
       case BS_DayNight:
       {
-         m_dayNightOverriden |= 1;
          m_player->m_globalEmissionScale = clamp(m_player->m_globalEmissionScale + step * 0.005f, 0.f, 1.f);
          m_player->SetupShaders();
          break;
       }
       case BS_Difficulty:
       {
-         m_difficultyOverriden |= 1;
          table->m_globalDifficulty = clamp(table->m_globalDifficulty + step * 0.005f, 0.f, 1.f);
          break;
       }
-
-      default: assert(false); break;
+      case BS_MusicVolume:
+      {
+         m_player->m_MusicVolume = clamp(m_player->m_MusicVolume + (int) step, 0, 100);
+         break;
       }
+      case BS_SoundVolume:
+      {
+         m_player->m_SoundVolume = clamp(m_player->m_SoundVolume + (int) step, 0, 100);
+         break;
+      }
+      case BS_Tonemapper:
+      {
+         if (keyEvent == 1)
+            m_player->m_toneMapper = (ToneMapper)(m_player->m_toneMapper + (int) step);
+         if (m_player->m_toneMapper == -1)
+            m_player->m_toneMapper = ToneMapper::TM_FILMIC;
+         if (m_player->m_toneMapper > ToneMapper::TM_FILMIC)
+            m_player->m_toneMapper = ToneMapper::TM_REINHARD;
+         break;
+      }
+
+      default:
+         if (activeTweakSetting >= BS_Custom && activeTweakSetting - BS_Custom < table->m_settings.GetSettings().size())
+         {
+            auto opt = m_live_table->m_settings.GetSettings()[activeTweakSetting - BS_Custom];
+            float nTotalSteps = (opt.maxValue - opt.minValue) / opt.step;
+            int nMsecPerStep = nTotalSteps < 20.f ? 500 : 30; // continuous vs discrete sliding
+            U32 elapsed = msec() - m_lastTweakKeyDown;
+            int nSteps = elapsed / nMsecPerStep;
+            if (keyEvent == 1)
+            {
+               nSteps = 1;
+               m_lastTweakKeyDown = msec() - nSteps * nMsecPerStep;
+            }
+            if (nSteps > 0)
+            {
+               m_lastTweakKeyDown += nSteps * nMsecPerStep;
+               float value = m_live_table->m_settings.LoadValueWithDefault(Settings::TableOption, opt.name, opt.defaultValue);
+               if (!opt.literals.empty())
+               {
+                  value += nSteps * opt.step * step;
+                  while (value < opt.minValue)
+                     value += opt.maxValue - opt.minValue + 1;
+                  while (value > opt.maxValue)
+                     value -= opt.maxValue - opt.minValue + 1;
+               }
+               else
+                  value = clamp(value + nSteps * opt.step * step, opt.minValue, opt.maxValue);
+               table->m_settings.SaveValue(Settings::TableOption, opt.name, value);
+               m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 1 /* custom option changed event */);
+            }
+            else
+               modified = false;
+         }
+         else
+         {
+            assert(false);
+            break;
+         }
+      }
+      m_tweakState[activeTweakSetting] |= modified ? 1 : 0;
    }
    else if (keyEvent == 1) // Key down
    {
@@ -1180,64 +1246,128 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
          m_live_table->mViewSetups[m_live_table->m_BG_current_set].mViewportRotation -= 1.0f;
       else if (keycode == g_pplayer->m_rgKeys[eRightTiltKey] && m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "EnableCameraModeFlyAround"s, false))
          m_live_table->mViewSetups[m_live_table->m_BG_current_set].mViewportRotation += 1.0f;
-      else if (keycode == g_pplayer->m_rgKeys[eStartGameKey])
+      else if (keycode == g_pplayer->m_rgKeys[eStartGameKey]) // Save tweak page
       {
          string iniFileName = m_live_table->GetSettingsFileName();
-         m_live_table->mViewSetups[m_live_table->m_BG_current_set].SaveToTableOverrideSettings(m_live_table->m_settings, m_live_table->m_BG_current_set);
-         if (m_live_table->m_BG_current_set == BG_FULLSCREEN)
-         { // Player position is saved as an override (not saved if equal to app settings)
-            m_live_table->m_settings.SaveValue(Settings::Player, "ScreenPlayerX", m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerX"s, 0.0f), true);
-            m_live_table->m_settings.SaveValue(Settings::Player, "ScreenPlayerY", m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerY"s, 0.0f), true);
-            m_live_table->m_settings.SaveValue(Settings::Player, "ScreenPlayerZ", m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerZ"s, 70.0f), true);
+         string message;
+         if (m_activeTweakPage == TP_PointOfView)
+         {
+            message = "Point of view";
+            m_live_table->mViewSetups[m_live_table->m_BG_current_set].SaveToTableOverrideSettings(m_live_table->m_settings, m_live_table->m_BG_current_set);
+            if (m_live_table->m_BG_current_set == BG_FULLSCREEN)
+            { // Player position is saved as an override (not saved if equal to app settings)
+               m_live_table->m_settings.SaveValue(Settings::Player, "ScreenPlayerX", m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerX"s, 0.0f), true);
+               m_live_table->m_settings.SaveValue(Settings::Player, "ScreenPlayerY", m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerY"s, 0.0f), true);
+               m_live_table->m_settings.SaveValue(Settings::Player, "ScreenPlayerZ", m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerZ"s, 70.0f), true);
+            }
+            // The saved value are the new base value, so all fields are marked as untouched
+            for (int i = BS_ViewMode; i < BS_WndBottomZOfs; i++)
+               m_tweakState[i] = 0;
          }
-         if ((m_dayNightOverriden & 2) != 0)
-         { // User has resetted day/night (get back to app settings, so remove the ones from the user settings)
-            m_live_table->m_settings.DeleteValue(Settings::Player, "OverrideTableEmissionScale"s);
-            m_live_table->m_settings.DeleteValue(Settings::Player, "DynamicDayNight"s);
-            m_live_table->m_settings.DeleteValue(Settings::Player, "EmissionScale"s);
+         else if (m_activeTweakPage == TP_TableOption)
+         {
+            message = "Table options";
+            // Day Night slider
+            if (m_tweakState[BS_DayNight] == 1)
+            {
+               m_table->m_settings.SaveValue(Settings::Player, "OverrideTableEmissionScale"s, true);
+               m_table->m_settings.SaveValue(Settings::Player, "DynamicDayNight"s, false);
+               m_table->m_settings.SaveValue(Settings::Player, "EmissionScale"s, m_player->m_globalEmissionScale);
+            }
+            else if (m_tweakState[BS_DayNight] == 2)
+            {
+               m_table->m_settings.DeleteValue(Settings::Player, "OverrideTableEmissionScale"s);
+               m_table->m_settings.DeleteValue(Settings::Player, "DynamicDayNight"s);
+               m_table->m_settings.DeleteValue(Settings::Player, "EmissionScale"s);
+            }
+            m_tweakState[BS_DayNight] = 0;
+            // Tonemapper
+            if (m_tweakState[BS_Tonemapper] == 1)
+               m_table->m_settings.SaveValue(Settings::TableOverride, "ToneMapper"s, m_player->m_toneMapper);
+            else if (m_tweakState[BS_Tonemapper] == 2)
+               m_table->m_settings.DeleteValue(Settings::TableOverride, "ToneMapper"s);
+            m_tweakState[BS_Tonemapper] = 0;
+            // Difficulty
+            if (m_tweakState[BS_Difficulty] != 0)
+               PushNotification("You have changed the difficulty level\nThis change will only be applied after restart.", 10000);
+            if (m_tweakState[BS_Difficulty] == 1)
+               m_table->m_settings.SaveValue(Settings::TableOverride, "Difficulty"s, m_live_table->m_globalDifficulty);
+            else if (m_tweakState[BS_Difficulty] == 2)
+               m_table->m_settings.DeleteValue(Settings::TableOverride, "Difficulty"s);
+            m_tweakState[BS_Difficulty] = 0;
+            // Music/sound volume
+            if (m_tweakState[BS_MusicVolume] == 1)
+               m_table->m_settings.SaveValue(Settings::Player, "MusicVolume"s, m_player->m_MusicVolume);
+            else if (m_tweakState[BS_MusicVolume] == 2)
+               m_table->m_settings.DeleteValue(Settings::Player, "MusicVolume"s);
+            m_tweakState[BS_MusicVolume] = 0;
+            if (m_tweakState[BS_SoundVolume] == 1)
+               m_table->m_settings.SaveValue(Settings::Player, "SoundVolume"s, m_player->m_SoundVolume);
+            else if (m_tweakState[BS_SoundVolume] == 2)
+               m_table->m_settings.DeleteValue(Settings::Player, "SoundVolume"s);
+            m_tweakState[BS_SoundVolume] = 0;
+            // Custom table options
+            int nTableOptions = (int)m_live_table->m_settings.GetSettings().size();
+            for (int i = 0; i < nTableOptions; i++)
+            {
+               auto opt = m_live_table->m_settings.GetSettings()[i];
+               if (m_tweakState[BS_Custom + i] == 2)
+                  m_table->m_settings.DeleteValue(Settings::TableOption, opt.name);
+               else
+                  m_table->m_settings.SaveValue(Settings::TableOption, opt.name, m_live_table->m_settings.LoadValueWithDefault(Settings::TableOption, opt.name, opt.defaultValue));
+               m_tweakState[BS_Custom + i] = 0;
+            }
          }
-         if ((m_dayNightOverriden & 1) != 0)
-         { // User has defined a custom day/night value (disable auto day/night and save custom value to be used)
-            m_live_table->m_settings.SaveValue(Settings::Player, "OverrideTableEmissionScale"s, true);
-            m_live_table->m_settings.SaveValue(Settings::Player, "DynamicDayNight"s, false);
-            m_live_table->m_settings.SaveValue(Settings::Player, "EmissionScale"s, m_player->m_globalEmissionScale);
-         }
-         if (m_difficultyOverriden)
-            PushNotification("You have changed the difficulty level\nThis change will only be applied after restart.", 10000);
-         if ((m_difficultyOverriden & 2) != 0)
-            m_live_table->m_settings.DeleteValue(Settings::TableOverride, "Difficulty"s);
-         if ((m_difficultyOverriden & 1) != 0)
-            m_live_table->m_settings.SaveValue(Settings::TableOverride, "Difficulty"s, m_live_table->m_globalDifficulty);
-         if (m_live_table->m_szFileName.empty() || !FileExists(m_live_table->m_szFileName))
+         if (m_table->m_szFileName.empty() || !FileExists(m_table->m_szFileName))
          {
             PushNotification("You need to save your table before exporting user settings"s, 5000);
          }
          else
          {
-            m_live_table->m_settings.SaveToFile(iniFileName);
-            m_table->m_settings.LoadFromFile(iniFileName, false); // Immediatly loads it to the edited table for the change to take effect on next play
-            PushNotification("User settings exported to "s.append(iniFileName), 5000);
+            m_table->m_settings.SaveToFile(iniFileName);
+            PushNotification(message + " exported to "s.append(iniFileName), 5000);
          }
-         if (g_pvp->m_povEdit)
+         if (g_pvp->m_povEdit && m_activeTweakPage == TP_PointOfView)
             g_pvp->QuitPlayer(Player::CloseState::CS_CLOSE_APP);
       }
-      else if (keycode == g_pplayer->m_rgKeys[ePlungerKey])
+      else if (keycode == g_pplayer->m_rgKeys[ePlungerKey]) // Reset tweak page
       {
-         // Reset to default values
          if (m_activeTweakPage == TP_TableOption)
          {
-            // Remove custom difficulty and get back to the one of the table, eventually overiden by app (not table) settings
-            m_difficultyOverriden = 2;
-            m_live_table->m_globalDifficulty = g_pvp->m_settings.LoadValue(Settings::TableOverride, "Difficulty"s, m_table->m_difficulty);
+            PushNotification("Table options reset to default values"s, 5000);
 
             // Remove custom day/night and get back to the one of the table, eventually overiden by app (not table) settings
-            // TODO we just default to the table value, missing the app settings being applied (like day/night from lat/lon,... see in player.cpp)
-            m_dayNightOverriden = 2;
-            m_player->m_globalEmissionScale = m_table->m_lightEmissionScale;
+            // FIXME we just default to the table value, missing the app settings being applied (like day/night from lat/lon,... see in player.cpp)
+            m_tweakState[BS_DayNight] = 2;
+            m_player->m_globalEmissionScale = m_table->m_globalEmissionScale;
             m_player->SetupShaders();
+
+            // Tonemapper
+            m_tweakState[BS_Tonemapper] = 2;
+            m_player->m_toneMapper = m_table->GetToneMapper();
+
+            // Remove custom difficulty and get back to the one of the table, eventually overiden by app (not table) settings
+            m_tweakState[BS_Difficulty] = 2;
+            m_live_table->m_globalDifficulty = g_pvp->m_settings.LoadValue(Settings::TableOverride, "Difficulty"s, m_table->m_difficulty);
+
+            // Music/sound volume
+            m_player->m_MusicVolume = m_table->m_settings.LoadValueWithDefault(Settings::Player, "MusicVolume"s, 100);
+            m_player->m_SoundVolume = m_table->m_settings.LoadValueWithDefault(Settings::Player, "SoundVolume"s, 100);
+
+            // Reset custom options to their default value
+            int nTableOptions = (int)m_live_table->m_settings.GetSettings().size();
+            for (int i = 0; i < nTableOptions; i++)
+            {
+               m_tweakState[BS_Custom + i] = 2;
+               auto opt = m_live_table->m_settings.GetSettings()[i];
+               m_live_table->m_settings.SaveValue(Settings::TableOption, opt.name, opt.defaultValue);
+            }
+            m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 2 /* custom option reseted event */);
          }
          else if (m_activeTweakPage == TP_PointOfView)
          {
+            for (int i = BS_ViewMode; i < BS_WndBottomZOfs; i++)
+               m_tweakState[i] = 2;
             ViewSetupID id = table->m_BG_current_set;
             ViewSetup &viewSetup = table->mViewSetups[id];
             viewSetup.mViewportRotation = 0.f;
@@ -1325,17 +1455,17 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
             UpdateTweakPage();
          }
       }
-      else if (keycode == g_pplayer->m_rgKeys[eAddCreditKey])
+      else if (keycode == g_pplayer->m_rgKeys[eAddCreditKey]) // Undo tweaks of page
       {
          if (g_pvp->m_povEdit)
             // Tweak mode from command line => quit
             g_pvp->QuitPlayer(Player::CloseState::CS_CLOSE_APP);
          else
          {
-            // Reset POV: copy from startup table to the live one
+            // Undo POV: copy from startup table to the live one
             if (m_activeTweakPage == TP_PointOfView)
             {
-               PushNotification("POV reset to startup values"s, 5000);
+               PushNotification("POV undo to startup values"s, 5000);
                ViewSetupID id = m_live_table->m_BG_current_set;
                const PinTable *const __restrict src = g_pplayer->m_pEditorTable;
                PinTable *const __restrict dst = m_live_table;
@@ -1345,8 +1475,7 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
             }
             if (m_activeTweakPage == TP_TableOption)
             {
-               // TODO reset Day/Night
-               // TODO reset difficulty
+               // TODO undo Day/Night, difficulty, ...
             }
          }
       }
@@ -1391,20 +1520,22 @@ void LiveUI::UpdateTweakModeUI()
    const bool isWindow = viewSetup.mMode == VLM_WINDOW;
 
    BackdropSetting activeTweakSetting = m_tweakPageOptions[m_activeTweakIndex];
-   if (ImGui::BeginTable("TweakTable", 3, /* ImGuiTableFlags_Borders */ 0))
+   if (ImGui::BeginTable("TweakTable", 4, /* ImGuiTableFlags_Borders */ 0))
    {
       static float vWidth = 50.f;
       ImGui::TableSetupColumn("Property", ImGuiTableColumnFlags_WidthStretch);
       ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthFixed, vWidth);
       ImGui::TableSetupColumn("Unit", ImGuiTableColumnFlags_WidthFixed);
-      #define CM_ROW(label, format, value, unit) \
+      ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed);
+      #define CM_ROW(id, label, format, value, unit) \
       { \
          char buf[1024]; snprintf(buf, 1024, format, value); \
          ImGui::TableNextColumn(); ImGui::Text("%s",label); ImGui::TableNextColumn(); \
-         float textWidth = ImGui::CalcTextSize(buf).x; \
-         vWidth = max(vWidth, textWidth); \
+         float textWidth = ImGui::CalcTextSize(buf).x; vWidth = max(vWidth, textWidth); \
          if (textWidth < vWidth) ImGui::SameLine(vWidth - textWidth); \
-         ImGui::Text("%s",buf); ImGui::TableNextColumn(); ImGui::Text("%s",unit); ImGui::TableNextRow();\
+         ImGui::Text("%s", buf); ImGui::TableNextColumn(); \
+         ImGui::Text("%s", unit); ImGui::TableNextColumn(); \
+         ImGui::Text("%s", m_tweakState[id] == 0 ? "  "s : m_tweakState[id] == 1 ? " **"s : " *"s); ImGui::TableNextRow(); \
       }
       #define CM_SKIP_LINE {ImGui::TableNextColumn(); ImGui::Dummy(ImVec2(0.f, m_dpi * 3.f)); ImGui::TableNextRow();}
       const float realToVirtual = viewSetup.GetRealToVirtualScale(table);
@@ -1414,33 +1545,58 @@ void LiveUI::UpdateTweakModeUI()
                              || (activeTweakSetting == BS_XYZScale && (setting == BS_XScale || setting == BS_YScale || setting == BS_ZScale));
          if (highlight)
             ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
-         switch (setting)
+         if (setting >= BS_Custom)
+         {
+            if (setting - BS_Custom >= table->m_settings.GetSettings().size())
+               continue;
+            const Settings::OptionDef &opt = table->m_settings.GetSettings()[setting - BS_Custom];
+            float value = table->m_settings.LoadValueWithDefault(Settings::TableOption, opt.name, opt.defaultValue);
+            if (opt.literals.size() > 0) // List of values
+            {
+               int index = (int) (value - opt.minValue);
+               if (index < 0 || index >= opt.literals.size())
+                  index = (int)(opt.defaultValue - opt.minValue);
+               CM_ROW(setting, opt.name + ": ", "%s", opt.literals[index].c_str(), "");
+            }
+            else if (opt.unit == Settings::OT_PERCENT) // Percent value
+            {
+               CM_ROW(setting, opt.name + ": ", "%.1f", 100.f * value, "%");
+            }
+            else // OT_NONE
+            {
+               CM_ROW(setting, opt.name + ": ", "%.1f", value, "");
+            }
+         }
+         else switch (setting)
          {
          case BS_Page:
-            CM_ROW("Option Page:", "%s", m_activeTweakPage == TP_TableOption ? "Table Options" : m_activeTweakPage == TP_PointOfView ? "Point of View" : "Information", "");
+            CM_ROW(setting, "Option Page:", "%s", m_activeTweakPage == TP_TableOption ? "Table Options" : m_activeTweakPage == TP_PointOfView ? "Point of View" : "Information", "");
             CM_SKIP_LINE;
             break;
 
          // View setup
-         case BS_ViewMode: CM_ROW("View Layout Mode:", "%s", isLegacy ? "Legacy" : isCamera ? "Camera" : "Window", ""); CM_SKIP_LINE; break;
+         case BS_ViewMode: CM_ROW(setting, "View Layout Mode:", "%s", isLegacy ? "Legacy" : isCamera ? "Camera" : "Window", ""); CM_SKIP_LINE; break;
          case BS_XYZScale: break;
-         case BS_XScale: CM_ROW("Table X Scale", "%.1f", 100.f * viewSetup.mSceneScaleX / realToVirtual, "%"); break;
-         case BS_YScale: CM_ROW(isWindow ? "Table YZ Scale" : "Table Y Scale", "%.1f", 100.f * viewSetup.mSceneScaleY / realToVirtual, "%"); break;
-         case BS_ZScale: CM_ROW("Table Z Scale", "%.1f", 100.f * viewSetup.mSceneScaleZ / realToVirtual, "%"); CM_SKIP_LINE; break;
-         case BS_LookAt:  if (isLegacy) { CM_ROW("Inclination", "%.1f", viewSetup.mLookAt, "deg"); } else { CM_ROW("Look at", "%.1f", viewSetup.mLookAt, "%"); } break;
-         case BS_XOffset: CM_ROW(isLegacy ? "X Offset" : isWindow ? "Player X" : "Camera X", "%.1f", isWindow ? table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerX"s, 0.0f) : VPUTOCM(viewSetup.mViewX), "cm"); break;
-         case BS_YOffset: CM_ROW(isLegacy ? "Y Offset" : isWindow ? "Player Y" : "Camera Y", "%.1f", isWindow ? table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerY"s, 0.0f) : VPUTOCM(viewSetup.mViewY), "cm"); break;
-         case BS_ZOffset: CM_ROW(isLegacy ? "Z Offset" : isWindow ? "Player Z" : "Camera Z", "%.1f", isWindow ? table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerZ"s, 70.0f) : VPUTOCM(viewSetup.mViewZ), "cm"); CM_SKIP_LINE; break;
-         case BS_FOV: CM_ROW("Field Of View (overall scale)", "%.1f", viewSetup.mFOV, "deg"); break;
-         case BS_Layback: CM_ROW("Layback", "%.1f", viewSetup.mLayback, ""); CM_SKIP_LINE; break;
-         case BS_ViewHOfs: CM_ROW("Horizontal Offset", "%.1f", viewSetup.mViewHOfs, isWindow ? "cm" : ""); break;
-         case BS_ViewVOfs: CM_ROW("Vertical Offset", "%.1f", viewSetup.mViewVOfs, isWindow ? "cm" : ""); CM_SKIP_LINE; break;
-         case BS_WndTopZOfs: CM_ROW("Window Top Z Ofs.", "%.1f", VPUTOCM(viewSetup.mWindowTopZOfs), "cm"); break;
-         case BS_WndBottomZOfs: CM_ROW("Window Bottom Z Ofs.", "%.1f", VPUTOCM(viewSetup.mWindowBottomZOfs), "cm"); CM_SKIP_LINE; break;
+         case BS_XScale: CM_ROW(setting, "Table X Scale", "%.1f", 100.f * viewSetup.mSceneScaleX / realToVirtual, "%"); break;
+         case BS_YScale: CM_ROW(setting, isWindow ? "Table YZ Scale" : "Table Y Scale", "%.1f", 100.f * viewSetup.mSceneScaleY / realToVirtual, "%"); break;
+         case BS_ZScale: CM_ROW(setting, "Table Z Scale", "%.1f", 100.f * viewSetup.mSceneScaleZ / realToVirtual, "%"); CM_SKIP_LINE; break;
+         case BS_LookAt:  if (isLegacy) { CM_ROW(setting, "Inclination", "%.1f", viewSetup.mLookAt, "deg"); } else { CM_ROW(setting, "Look at", "%.1f", viewSetup.mLookAt, "%"); } break;
+         case BS_XOffset: CM_ROW(setting, isLegacy ? "X Offset" : isWindow ? "Player X" : "Camera X", "%.1f", isWindow ? table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerX"s, 0.0f) : VPUTOCM(viewSetup.mViewX), "cm"); break;
+         case BS_YOffset: CM_ROW(setting, isLegacy ? "Y Offset" : isWindow ? "Player Y" : "Camera Y", "%.1f", isWindow ? table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerY"s, 0.0f) : VPUTOCM(viewSetup.mViewY), "cm"); break;
+         case BS_ZOffset: CM_ROW(setting, isLegacy ? "Z Offset" : isWindow ? "Player Z" : "Camera Z", "%.1f", isWindow ? table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerZ"s, 70.0f) : VPUTOCM(viewSetup.mViewZ), "cm"); CM_SKIP_LINE; break;
+         case BS_FOV: CM_ROW(setting, "Field Of View (overall scale)", "%.1f", viewSetup.mFOV, "deg"); break;
+         case BS_Layback: CM_ROW(setting, "Layback", "%.1f", viewSetup.mLayback, ""); CM_SKIP_LINE; break;
+         case BS_ViewHOfs: CM_ROW(setting, "Horizontal Offset", "%.1f", viewSetup.mViewHOfs, isWindow ? "cm" : ""); break;
+         case BS_ViewVOfs: CM_ROW(setting, "Vertical Offset", "%.1f", viewSetup.mViewVOfs, isWindow ? "cm" : ""); CM_SKIP_LINE; break;
+         case BS_WndTopZOfs: CM_ROW(setting, "Window Top Z Ofs.", "%.1f", VPUTOCM(viewSetup.mWindowTopZOfs), "cm"); break;
+         case BS_WndBottomZOfs: CM_ROW(setting, "Window Bottom Z Ofs.", "%.1f", VPUTOCM(viewSetup.mWindowBottomZOfs), "cm"); CM_SKIP_LINE; break;
 
          // Table options
-         case BS_DayNight: CM_ROW("Day Night: ", "%.1f", 100.f * m_player->m_globalEmissionScale, m_dayNightOverriden != 0 ? "% *" : "%"); break;
-         case BS_Difficulty: CM_ROW("Difficulty: ", "%.1f", 100.f * m_live_table->m_globalDifficulty, m_difficultyOverriden != 0 ? "% *" : "%"); break;
+         case BS_DayNight: CM_ROW(setting, "Day Night: ", "%.1f", 100.f * m_player->m_globalEmissionScale, "%"); break;
+         case BS_Difficulty: CM_ROW(setting, "Difficulty: ", "%.1f", 100.f * m_live_table->m_globalDifficulty, "%"); break;
+         case BS_Tonemapper: CM_ROW(setting, "Tonemapper: ", "%s", m_player->m_toneMapper == 0 ? "Reinhard" : m_player->m_toneMapper == 1 ? "Tony McMapFace" : "Filmic", ""); break;
+         case BS_MusicVolume: CM_ROW(setting, "Music Volume: ", "%d", m_player->m_MusicVolume, "%"); break;
+         case BS_SoundVolume: CM_ROW(setting, "Sound Volume: ", "%d", m_player->m_SoundVolume, "%"); break;
 
          }
          if (highlight)
@@ -1467,7 +1623,7 @@ void LiveUI::UpdateTweakModeUI()
       }
       if (isWindow)
       {
-         // Do not show it as it is more confusing than helpfull due to the use of different coordinate systems in settings vs live edit
+         // Do not show it as it is more confusing than helpful due to the use of different coordinate systems in settings vs live edit
          //ImGui::Text("Camera at X: %.1fcm Y: %.1fcm Z: %.1fcm", VPUTOCM(viewSetup.mViewX), VPUTOCM(viewSetup.mViewY), VPUTOCM(viewSetup.mViewZ));
          //ImGui::NewLine();
          if (m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenWidth"s, 0.0f) <= 1.f)

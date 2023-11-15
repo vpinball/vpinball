@@ -2993,25 +2993,20 @@ void CodeViewer::ParseForFunction() // Subs & Collections WIP
 	SendMessage(m_hwndScintilla, SCI_SETKEYWORDS, 3, (LPARAM)strVPcoreWords.c_str());
 }
 
+static string GetTextFileFromDirectory(const string& szfilename, const string& dirname)
+{
+   string szPath;
+   if (!dirname.empty())
+      szPath = g_pvp->m_szMyPath + dirname;
+   // else: use current directory
+   return szPath + szfilename;
+}
+
 void CodeViewer::ParseVPCore()
 {
-	vector<string> searchPaths;
-	searchPaths.push_back(g_pvp->m_szMyPath + "scripts" + PATH_SEPARATOR_CHAR + "core.vbs"); // executable path
-
-	const size_t index = g_pvp->m_szMyPath.substr(0, g_pvp->m_szMyPath.length()-1).find_last_of(PATH_SEPARATOR_CHAR);
-	if (index != string::npos)
-		searchPaths.push_back(g_pvp->m_szMyPath.substr(0, index+1) + "scripts" + PATH_SEPARATOR_CHAR + "core.vbs"); // executable minus one dir (i.e. minus Release or Debug)
-
-	searchPaths.push_back(g_pvp->m_currentTablePath + "core.vbs"); // table path
-
-	searchPaths.push_back(PATH_SCRIPTS + "core.vbs"); // default script path
-
-	string szLoadDir = g_pvp->m_settings.LoadValueWithDefault(Settings::RecentDir, "LoadDir"s, PATH_TABLES); // last known load dir path
-	searchPaths.push_back(szLoadDir + "core.vbs");
-
 	FILE* fCore = nullptr;
-	for(size_t i = 0; i < searchPaths.size(); ++i)
-		if ((fopen_s(&fCore, searchPaths[i].c_str(), "r") == 0) && fCore)
+	for(size_t i = 0; i < std::size(defaultFileNameSearch); ++i)
+		if ((fopen_s(&fCore, GetTextFileFromDirectory(defaultFileNameSearch[i] + "core.vbs", defaultPathSearch[i]).c_str(), "r") == 0) && fCore)
 			break;
 
 	if(!fCore)
@@ -3021,7 +3016,6 @@ void CodeViewer::ParseVPCore()
 	}
 
 	//initialize Parent child
-///////////////////////
 	m_parentLevel = 0; //root
 	m_currentParentKey.clear();
 	m_stopErrorDisplay = true;/// WIP BRANDREW (was set to false)
@@ -3926,6 +3920,10 @@ void DebuggerModule::Init(CodeViewer * const pcv)
 
 STDMETHODIMP DebuggerModule::Print(VARIANT *pvar)
 {
+   // Disable logging in locked tables (there is no debugger in locked mode anyway)
+   if (g_pplayer->m_ptable->IsLocked())
+      return S_OK;
+
    const bool enableLog = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "EnableLog"s, false);
    const bool logScript = enableLog && g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "LogScriptOutput"s, true);
 

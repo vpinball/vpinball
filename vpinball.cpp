@@ -610,8 +610,17 @@ bool VPinball::ParseCommand(const size_t code, const bool notify)
          {
             if (IDYES == MessageBox("This will lock the table to prevent unexpected modifications.\n\nAre you sure you want to lock the table ?", "Table locking", MB_YESNO | MB_ICONINFORMATION))
             {
-               // TODO perform and show table audit (disable lighting vs static, script reference of static parts, png vs webp, hdr vs exr,...)
                ptCur->ToggleLock();
+               if (ptCur->AuditTable())
+               {
+                  if (g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "EnableLog"s, false))
+                     MessageBox("Table lock has been defined.\n\nThe table was analyzed before locking. The result of this analysis is available in the log file.", "Table locking",
+                        MB_OK | MB_ICONINFORMATION);
+                  else
+                     MessageBox(
+                        "Table lock has been defined.\n\nSince logging is disabled (in editor settings), the table was not analyzed. Enable logging to get a table analysis upon next lock.",
+                        "Table locking", MB_OK | MB_ICONEXCLAMATION);
+               }
             }
          }
          ptCur->ClearMultiSel(nullptr);
@@ -2525,6 +2534,17 @@ void VPinball::CopyPasteElement(const CopyPasteModes mode)
    }
 }
 
+//
+
+inline string GetTextFileFromDirectory(const string& szfilename, const string& dirname)
+{
+   string szPath;
+   if (!dirname.empty())
+      szPath = g_pvp->m_szMyPath + dirname;
+   // else: use current directory
+   return szPath + szfilename;
+}
+
 static constexpr uint8_t lookupRev[16] = {
 0x0, 0x8, 0x4, 0xc, 0x2, 0xa, 0x6, 0xe,
 0x1, 0x9, 0x5, 0xd, 0x3, 0xb, 0x7, 0xf };
@@ -2562,6 +2582,57 @@ static unsigned int GenerateTournamentFileInternal(BYTE *const dmd_data, const u
          ShowError("Cannot open Table");
       return ~0u;
    }
+
+   //
+
+   const size_t cchar = SendMessage(g_pvp->GetActiveTable()->m_pcv->m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
+   char * const szText = new char[cchar + 1];
+   SendMessage(g_pvp->GetActiveTable()->m_pcv->m_hwndScintilla, SCI_GETTEXT, cchar + 1, (size_t)szText);
+   for(size_t i = 0; i < cchar; ++i)
+      szText[i] = tolower(szText[i]);
+
+   const char* textPos = szText;
+   const char* const textEnd = szText+cchar;
+   vector<string> vbsFiles;
+   while(textPos < textEnd)
+   {
+      const char* const textFound = strstr(textPos,".vbs\"");
+      if(textFound == nullptr)
+         break;
+      textPos = textFound+1;
+
+      const char* textFoundStart = textFound;
+      while(*textFoundStart != '"')
+         --textFoundStart;
+
+      vbsFiles.push_back(string(textFoundStart+1,textFound+3-textFoundStart));
+   }
+
+   delete [] szText;
+
+   vbsFiles.push_back("core.vbs"s);
+
+   for(auto& i : vbsFiles)
+      for(size_t i2 = 0; i2 < std::size(defaultFileNameSearch); ++i2)
+         if(fopen_s(&f, GetTextFileFromDirectory(defaultFileNameSearch[i2] + i, defaultPathSearch[i2]).c_str(), "rb") == 0 && f)
+         {
+            BYTE tmp[4096];
+            size_t r;
+            while ((r = fread(tmp, 1, sizeof(tmp), f))) //!! also include MD5 at end?
+            {
+               for (unsigned int i = 0; i < r; ++i)
+               {
+                  dmd_data[dmd_data_c++] ^= reverse(tmp[i]);
+                  if (dmd_data_c == dmd_size)
+                     dmd_data_c = 0;
+               }
+            }
+            fclose(f);
+
+            break;
+         }
+
+   //
 
    char path[MAXSTRING];
 #ifdef _MSC_VER
@@ -2635,7 +2706,10 @@ void VPinball::GenerateTournamentFile()
 {
    unsigned int dmd_size = g_pplayer->m_dmd.x * g_pplayer->m_dmd.y;
    if (dmd_size == 0)
+   {
+      g_pplayer->m_liveUI->PushNotification("Tournament file export requires a valid DMD script connection to PinMAME via 'UseVPM(Colored)DMD = True'", 4000);
       return;
+   }
 
    BYTE *const dmd_data = new BYTE[dmd_size + 16];
    if (g_pplayer->m_texdmd->m_format == BaseTexture::BW)

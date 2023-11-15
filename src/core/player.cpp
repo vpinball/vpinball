@@ -139,6 +139,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    #ifndef ENABLE_SDL // DirectX does not support stereo rendering
    m_stereo3DfakeStereo = true;
    #endif
+   m_headTracking = useVR ? false : m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "BAMHeadTracking"s, false);
    m_BWrendering = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "BWRendering"s, 0);
    m_detectScriptHang = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "DetectHang"s, false);
    const int maxReflection = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "PFReflection"s, -1);
@@ -202,8 +203,6 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
       m_videoSyncMode = VideoSyncMode::VSM_NONE;
       m_maxFramerate = 0;
    }
-
-   m_headTracking = useVR ? false : m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "BAMHeadTracking"s, false);
 
    m_ballImage = nullptr;
    m_decalImage = nullptr;
@@ -1668,6 +1667,7 @@ HRESULT Player::Init()
       if (ph->GetEventProxyBase())
          ph->GetEventProxyBase()->FireVoidEvent(DISPID_GameEvents_Init);
    }
+   m_ptable->FireKeyEvent(DISPID_GameEvents_OptionEvent, 0 /* custom option init event */); 
 
    // Pre-render all non-changing elements such as static walls, rails, backdrops, etc. and also static playfield reflections
    // This is done after starting the script and firing the Init event to allow script to adjust static parts on startup
@@ -1966,11 +1966,11 @@ void Player::RenderStaticPrepass()
       delete initialPreRender;
    }
 
-   PLOGI << "Starting Reflection Probe prerendering"; // For profiling
-
-   for (size_t i = 0; i < m_ptable->m_vrenderprobe.size(); i++)
+   if (IsUsingStaticPrepass())
    {
-      m_ptable->m_vrenderprobe[i]->PreRenderStatic();
+      PLOGI << "Starting Reflection Probe prerendering"; // For profiling
+      for (RenderProbe *probe : m_ptable->m_vrenderprobe)
+         probe->PreRenderStatic();
    }
 
    // Store the total number of triangles prerendered (including ones done for render probes)
@@ -3474,7 +3474,7 @@ void Player::PrepareVideoBuffers()
       if (infoMode == IF_RENDER_PROBES)
       {
          RenderProbe *render_probe = m_ptable->m_vrenderprobe[m_infoProbeIndex];
-         RenderTarget *probe = render_probe->GetProbe(false);
+         RenderTarget *probe = render_probe->Render(0);
          if (probe)
          {
             m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(probe);
@@ -4446,9 +4446,9 @@ void Player::DrawBalls()
       // Set the render state to something that will always display for debug mode
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ZENABLE, m_debugBalls ? RenderState::RS_FALSE : RenderState::RS_TRUE);
 
-      m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetVector(SHADER_invTableRes_playfield_height_reflection, 
+      m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetVector(SHADER_invTableRes_reflection, 
          1.0f / (m_ptable->m_right - m_ptable->m_left), 1.0f / (m_ptable->m_bottom - m_ptable->m_top), 
-         0.f, m_ptable->m_ballPlayfieldReflectionStrength * pball->m_playfieldReflectionStrength);
+         m_ptable->m_ballPlayfieldReflectionStrength * pball->m_playfieldReflectionStrength, 0.f);
 
       // collect the x nearest lights that can reflect on balls
       Light* light_nearest[MAX_BALL_LIGHT_SOURCES];
