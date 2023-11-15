@@ -1299,13 +1299,13 @@ void Primitive::Render(const unsigned int renderMask)
       return;
 
    // only render if we have dynamic reflections to render above the staticly prerendered primitive
-   RenderTarget *const reflections = reflection_probe ? reflection_probe->GetProbe(isStaticOnly) : nullptr;
+   RenderTarget *const reflections = reflection_probe ? reflection_probe->Render(renderMask) : nullptr;
    if (isDynamicOnly && m_d.m_staticRendering && (reflections == nullptr))
       return; 
 
    // Request probes before setting up state since this can trigger a renderprobe update which modifies the render state
    RenderProbe * const refraction_probe = m_ptable->GetRenderProbe(m_d.m_szRefractionProbe);
-   RenderTarget * const refractions = refraction_probe ? refraction_probe->GetProbe(isStaticOnly) : nullptr;
+   RenderTarget *const refractions = refraction_probe ? refraction_probe->Render(renderMask) : nullptr;
 
    m_rd->ResetRenderState();
    

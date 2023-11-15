@@ -139,6 +139,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    #ifndef ENABLE_SDL // DirectX does not support stereo rendering
    m_stereo3DfakeStereo = true;
    #endif
+   m_headTracking = useVR ? false : m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "BAMHeadTracking"s, false);
    m_BWrendering = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "BWRendering"s, 0);
    m_detectScriptHang = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "DetectHang"s, false);
    const int maxReflection = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "PFReflection"s, -1);
@@ -202,8 +203,6 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
       m_videoSyncMode = VideoSyncMode::VSM_NONE;
       m_maxFramerate = 0;
    }
-
-   m_headTracking = useVR ? false : m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "BAMHeadTracking"s, false);
 
    m_ballImage = nullptr;
    m_decalImage = nullptr;
@@ -1967,11 +1966,11 @@ void Player::RenderStaticPrepass()
       delete initialPreRender;
    }
 
-   PLOGI << "Starting Reflection Probe prerendering"; // For profiling
-
-   for (size_t i = 0; i < m_ptable->m_vrenderprobe.size(); i++)
+   if (IsUsingStaticPrepass())
    {
-      m_ptable->m_vrenderprobe[i]->PreRenderStatic();
+      PLOGI << "Starting Reflection Probe prerendering"; // For profiling
+      for (RenderProbe *probe : m_ptable->m_vrenderprobe)
+         probe->PreRenderStatic();
    }
 
    // Store the total number of triangles prerendered (including ones done for render probes)
@@ -3475,7 +3474,7 @@ void Player::PrepareVideoBuffers()
       if (infoMode == IF_RENDER_PROBES)
       {
          RenderProbe *render_probe = m_ptable->m_vrenderprobe[m_infoProbeIndex];
-         RenderTarget *probe = render_probe->GetProbe(false);
+         RenderTarget *probe = render_probe->Render(0);
          if (probe)
          {
             m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(probe);

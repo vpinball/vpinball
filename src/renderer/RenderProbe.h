@@ -52,18 +52,19 @@ public:
    // Rendering
    void RenderSetup(RenderDevice* device);
    void MarkDirty(); // Mark this probe as dirty, should be called when starting a new frame
-   bool IsRendering() const; // Rendering is not reentrant so GetProbe should not be called when this returns true
+   bool IsRendering() const;
    void PreRenderStatic(); // Allows to precompute static parts
-   RenderTarget* GetProbe(const bool isStaticOnly); // Request render probe, eventually rendering it if it is dirty
+   RenderTarget* Render(const unsigned int renderMask); // Lazily update render probe and returns it
    void RenderRelease();
 
 private:
    int GetRoughnessDownscale(const int roughness);
    void ApplyRoughness(RenderTarget* probe, const int roughness);
-   void RenderScreenSpaceTransparency(const bool is_static);
+
+   void RenderScreenSpaceTransparency();
 
    void PreRenderStaticReflectionProbe();
-   void RenderReflectionProbe(const bool is_static);
+   void RenderReflectionProbe(const unsigned int renderMask);
    void DoRenderReflectionProbe(const bool render_static, const bool render_balls, const bool render_dynamic);
 
    // Base properties
