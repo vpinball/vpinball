@@ -1708,6 +1708,9 @@
     <ClInclude Include="src\core\TableDB.h">
       <Filter>headers</Filter>
     </ClInclude>
+    <ClInclude Include="src\renderer\Renderable.h">
+      <Filter>headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="shader\BallShader.hlsl">

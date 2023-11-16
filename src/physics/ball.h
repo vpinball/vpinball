@@ -30,7 +30,6 @@ public:
    Ball();
 
    void Init(const float mass);
-   void RenderSetup();
 
    void UpdateDisplacements(const float dtime);
    void UpdateVelocities();
@@ -53,8 +52,6 @@ public:
    float Inertia() const { return (float)(2.0/5.0) * m_d.m_radius*m_d.m_radius * m_d.m_mass; }
 
    void ApplySurfaceImpulse(const Vertex3Ds& rotI, const Vertex3Ds& impulse);
-
-   void EnsureOMObject();
 
    // Per frame info
    CCO(BallEx) *m_pballex;   // Object model version of the ball

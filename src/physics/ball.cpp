@@ -36,10 +36,6 @@ Ball::Ball()
       m_oldpos[i].x = FLT_MAX;
 }
 
-void Ball::RenderSetup()
-{
-}
-
 void Ball::Init(const float mass)
 {
    // Only called by real balls, not temporary objects created for physics/rendering
@@ -108,21 +104,8 @@ void Ball::Init(const float mass)
    }
 
    m_bulb_intensity_scale = g_pplayer->m_ptable->m_defaultBulbIntensityScaleOnBall;
-
-   RenderSetup();
 }
 
-
-void Ball::EnsureOMObject()
-{
-   if (m_pballex)
-      return;
-
-   CComObject<BallEx>::CreateInstance(&m_pballex);
-   m_pballex->AddRef();
-
-   m_pballex->m_pball = this;
-}
 
 //
 // license:GPLv3+

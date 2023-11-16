@@ -429,6 +429,7 @@ add_executable(vpinball WIN32
    src/renderer/IndexBuffer.h
    src/renderer/MeshBuffer.cpp
    src/renderer/MeshBuffer.h
+   src/renderer/Renderable.h
    src/renderer/RenderDevice.cpp
    src/renderer/RenderDevice.h
    src/renderer/RenderCommand.cpp

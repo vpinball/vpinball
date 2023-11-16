@@ -252,6 +252,12 @@ float4 psBall( const in vout IN, uniform bool equirectangularMap, uniform bool d
     return color;
 }
 
+float4 psBallDebug(in vout IN) : COLOR
+{
+    return float4(1.0, 1.0, 1.0, 0.0);
+
+}
+
 float4 psBallTrail( in voutTrail IN ) : COLOR
 {
    const float3 ballImageColor = tex2D(tex_ball_color, IN.tex0_alpha.xy).rgb;
@@ -264,47 +270,9 @@ float4 psBallTrail( in voutTrail IN ) : COLOR
 //------------------------------------
 // Techniques
 
-technique RenderBall
-{
-	pass p0 
-	{
-		vertexshader = compile vs_3_0 vsBall();
-		pixelshader  = compile ps_3_0 psBall(true, false);
-	}
-}
-
-technique RenderBall_DecalMode
-{
-	pass p0
-	{
-		vertexshader = compile vs_3_0 vsBall();
-		pixelshader  = compile ps_3_0 psBall(true, true);
-	}
-}
-
-technique RenderBall_SphericalMap
-{
-	pass p0
-	{
-		vertexshader = compile vs_3_0 vsBall();
-		pixelshader = compile ps_3_0 psBall(false, false);
-	}
-}
-
-technique RenderBall_SphericalMap_DecalMode
-{
-	pass p0
-	{
-		vertexshader = compile vs_3_0 vsBall();
-		pixelshader = compile ps_3_0 psBall(false, true);
-	}
-}
-
-technique RenderBallTrail
-{
-	pass p0
-	{
-		vertexshader = compile vs_3_0 vsBallTrail();
-		pixelshader  = compile ps_3_0 psBallTrail();
-	}
-}
+technique RenderBall { pass p0 { vertexshader = compile vs_3_0 vsBall(); pixelshader  = compile ps_3_0 psBall(true, false);	}}
+technique RenderBall_DecalMode { pass p0 { vertexshader = compile vs_3_0 vsBall(); pixelshader  = compile ps_3_0 psBall(true, true); }}
+technique RenderBall_SphericalMap {	pass p0	{ vertexshader = compile vs_3_0 vsBall(); pixelshader = compile ps_3_0 psBall(false, false); }}
+technique RenderBall_SphericalMap_DecalMode { pass p0 { vertexshader = compile vs_3_0 vsBall(); pixelshader = compile ps_3_0 psBall(false, true); }}
+technique RenderBall_Debug { pass p0 { vertexshader = compile vs_3_0 vsBall(); pixelshader = compile ps_3_0 psBallDebug(); }}
+technique RenderBallTrail {	pass p0	{ vertexshader = compile vs_3_0 vsBallTrail(); pixelshader  = compile ps_3_0 psBallTrail();	}}
