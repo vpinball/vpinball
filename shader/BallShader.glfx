@@ -276,6 +276,13 @@ void main()
     color.a = cBase_Alpha.a;
 }
 
+////psBallDebug
+
+void main()
+{
+    color = float4(1.0, 1.0, 1.0, 0.0);
+}
+
 ////psBallTrail
 
 in vec3 tex0_alpha;
@@ -298,4 +305,5 @@ RenderBall:P0:vsBall():gsBall():psBall(true, false)
 RenderBall_DecalMode:P0:vsBall():gsBall():psBall(true, true)
 RenderBall_SphericalMap:P0:vsBall():gsBall():psBall(false, false)
 RenderBall_SphericalMap_DecalMode:P0:vsBall():gsBall():psBall(false, true)
+RenderBall_Debug:P0:vsBall():gsBall():psBallDebug()
 RenderBallTrail:P0:vsBallTrail():gsBallTrail():psBallTrail()

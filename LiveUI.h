@@ -28,6 +28,7 @@ public:
    void PausePlayer(bool pause);
 
    void ToggleFPS();
+   bool IsShowingFPSDetails() const { return m_show_fps > 1; }
    void PushNotification(const string &message, const U32 lengthMs) { m_notifications.push_back(Notification(message, msec() + lengthMs)); }
 
 private:

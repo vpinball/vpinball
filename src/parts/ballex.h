@@ -1,6 +1,7 @@
 #pragma once
 
 #include "resource.h"
+#include "renderer/Renderable.h"
 
 class Ball;
 
@@ -9,7 +10,8 @@ class BallEx :
    public CComCoClass<BallEx, &CLSID_Ball>,
    public IDispatchImpl<IBall, &IID_IBall, &LIBID_VPinballLib>,
    public IFireEvents,
-   public IDebugCommands
+   public IDebugCommands,
+   public Renderable
 {
 public:
    BallEx();
@@ -24,6 +26,19 @@ public:
       COM_INTERFACE_ENTRY(IDispatch)
    END_COM_MAP()
 
+	virtual void RenderSetup(RenderDevice *device);
+	virtual void UpdateAnimation(const float diff_time_msec);
+	virtual void Render(const unsigned int renderMask);
+	virtual void RenderRelease();
+
+private:
+   RenderDevice *m_rd = nullptr;
+   Vertex2D m_BallStretch;
+   bool m_antiStretchBall;
+   
+   void CalcBallAspectRatio();
+   void GetBallAspectRatio(const Ball *const pball, Vertex2D &stretch, const float zHeight);
+   
    // IBall
 public:
    STDMETHOD(get_Name)(/*[out, retval]*/ BSTR *pVal);

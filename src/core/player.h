@@ -532,7 +532,6 @@ private:
    void RenderStaticPrepass();
    void DrawBulbLightBuffer();
    void RenderDynamics();
-   void DrawBalls();
    void PrepareVideoBuffers();
    void Bloom();
    void SSRefl();
@@ -541,22 +540,25 @@ private:
 
    void SetScreenOffset(const float x, const float y); // set render offset in screen coordinates, e.g., for the nudge shake
 
-   void CalcBallAspectRatio();
-   void GetBallAspectRatio(const Ball *const pball, Vertex2D &stretch, const float zHeight);
-   //void DrawBallReflection(Ball *pball, const float zheight, const bool lowDetailBall);
-
-   Vertex2D m_BallStretch;
    Vertex2D m_ScreenOffset; // for screen shake effect during nudge
 
+public:
+   vector<Light*> m_ballReflectedLights;
    MeshBuffer *m_ballMeshBuffer = nullptr;
    MeshBuffer *m_ballTrailMeshBuffer = nullptr;
-   bool m_antiStretchBall;
-
-   int m_maxPrerenderedFrames;
-
+   #ifdef DEBUG_BALL_SPIN
+   MeshBuffer *m_ballDebugPoints = nullptr;
+   #endif
+   int m_ballTrailMeshBufferPos = 0;
    bool m_trailForBalls;
    float m_ballTrailStrength;
    bool m_disableLightingForBalls;
+   bool m_overwriteBallImages = false;
+   Texture *m_ballImage = nullptr;
+   Texture *m_decalImage = nullptr;
+
+private:
+   int m_maxPrerenderedFrames;
 
    U64 m_startFrameTick; // System time in us when render frame was started (beginning of frame animation then collect,...)
 
@@ -629,10 +631,6 @@ public:
    };
    unsigned int m_render_mask = 0; // Active pass render bit mask
    inline bool IsRenderPass(const RenderMask pass_mask) const { return (m_render_mask & pass_mask) != 0; }
-
-   bool m_overwriteBallImages = false;
-   Texture *m_ballImage = nullptr;
-   Texture *m_decalImage = nullptr;
 
    Texture *m_tonemapLUT = nullptr;
 #pragma endregion
@@ -721,9 +719,6 @@ public:
    bool m_debugMode;
 
    bool m_debugBalls;                   // Draw balls in the foreground via 'O' key
-   #ifdef DEBUG_BALL_SPIN
-   MeshBuffer *m_ballDebugPoints = nullptr;
-   #endif
 
    int m_wnd_width, m_wnd_height; // Window height (requested size before creation, effective size after) which is not directly linked to the render size
 

@@ -1200,7 +1200,7 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
       }
 
       default:
-         if (activeTweakSetting >= BS_Custom && activeTweakSetting - BS_Custom < table->m_settings.GetSettings().size())
+         if (activeTweakSetting >= BS_Custom && activeTweakSetting - BS_Custom < (int) table->m_settings.GetSettings().size())
          {
             auto opt = m_live_table->m_settings.GetSettings()[activeTweakSetting - BS_Custom];
             float nTotalSteps = (opt.maxValue - opt.minValue) / opt.step;
@@ -1547,14 +1547,14 @@ void LiveUI::UpdateTweakModeUI()
             ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
          if (setting >= BS_Custom)
          {
-            if (setting - BS_Custom >= table->m_settings.GetSettings().size())
+            if (setting - BS_Custom >= (int)table->m_settings.GetSettings().size())
                continue;
             const Settings::OptionDef &opt = table->m_settings.GetSettings()[setting - BS_Custom];
             float value = table->m_settings.LoadValueWithDefault(Settings::TableOption, opt.name, opt.defaultValue);
             if (opt.literals.size() > 0) // List of values
             {
                int index = (int) (value - opt.minValue);
-               if (index < 0 || index >= opt.literals.size())
+               if (index < 0 || index >= (int)opt.literals.size())
                   index = (int)(opt.defaultValue - opt.minValue);
                CM_ROW(setting, opt.name + ": ", "%s", opt.literals[index].c_str(), "");
             }
