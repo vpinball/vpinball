@@ -50,7 +50,7 @@ void CVPreference::GetPrefsFromReg()
 
 	char bakupFaceName[LF_FACESIZE]; // to save the default font name, in case the corresponding registry entry is empty
 	strncpy_s(bakupFaceName, m_logFont.lfFaceName, sizeof(bakupFaceName)-1);
-	if (LoadValue(regKey[RegName::CVEdit], m_szRegName + "_Font", m_logFont.lfFaceName, LF_FACESIZE) != S_OK)
+	if (!LoadValue(regKey[RegName::CVEdit], m_szRegName + "_Font", m_logFont.lfFaceName, LF_FACESIZE))
 		strncpy_s(m_logFont.lfFaceName, bakupFaceName, sizeof(m_logFont.lfFaceName)-1);
 
 	m_logFont.lfWeight = LoadValueIntWithDefault(regKey[RegName::CVEdit], m_szRegName + "_FontWeight", m_logFont.lfWeight);
