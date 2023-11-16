@@ -1535,7 +1535,7 @@ void LiveUI::UpdateTweakModeUI()
          if (textWidth < vWidth) ImGui::SameLine(vWidth - textWidth); \
          ImGui::Text("%s", buf); ImGui::TableNextColumn(); \
          ImGui::Text("%s", unit); ImGui::TableNextColumn(); \
-         ImGui::Text("%s", m_tweakState[id] == 0 ? "  "s : m_tweakState[id] == 1 ? " **"s : " *"s); ImGui::TableNextRow(); \
+         ImGui::Text("%s", m_tweakState[id] == 0 ? "  " : m_tweakState[id] == 1 ? " **" : " *"); ImGui::TableNextRow(); \
       }
       #define CM_SKIP_LINE {ImGui::TableNextColumn(); ImGui::Dummy(ImVec2(0.f, m_dpi * 3.f)); ImGui::TableNextRow();}
       const float realToVirtual = viewSetup.GetRealToVirtualScale(table);
