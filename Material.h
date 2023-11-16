@@ -169,11 +169,11 @@ public:
    float m_fFriction;
    float m_fScatterAngle;
    
-   int GetSaveSize() const
+   size_t GetSaveSize() const
    {
-      int size = 0;
+      size_t size = 0;
       size += 2 * sizeof(int) + sizeof(int); // TYPE
-      size += 2 * sizeof(int) + sizeof(int) + (int)m_szName.length(); // NAME
+      size += 2 * sizeof(int) + sizeof(int) + m_szName.length(); // NAME
       size += 2 * sizeof(int) + sizeof(float); // WLIG
       size += 2 * sizeof(int) + sizeof(float); // ROUG
       size += 2 * sizeof(int) + sizeof(float); // GIML

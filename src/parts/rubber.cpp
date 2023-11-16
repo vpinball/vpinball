@@ -1458,10 +1458,7 @@ void Rubber::UpdateRubber(const bool updateVB, const float height)
    Matrix3D vertMatrix;
    tempMat.SetTranslation(-m_middlePoint.x, -m_middlePoint.y, -m_middlePoint.z);
    fullMatrix.Multiply(tempMat, vertMatrix);
-   if (height == m_d.m_hitHeight)   // do not z-scale the hit mesh
-      tempMat.SetTranslation(m_middlePoint.x, m_middlePoint.y, height);
-   else
-      tempMat.SetTranslation(m_middlePoint.x, m_middlePoint.y, height);
+   tempMat.SetTranslation(m_middlePoint.x, m_middlePoint.y, height);
    tempMat.Multiply(vertMatrix, vertMatrix);
 
    Vertex3D_NoTex2 *buf;

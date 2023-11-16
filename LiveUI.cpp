@@ -1348,7 +1348,7 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
 
             // Remove custom difficulty and get back to the one of the table, eventually overiden by app (not table) settings
             m_tweakState[BS_Difficulty] = 2;
-            m_live_table->m_globalDifficulty = g_pvp->m_settings.LoadValue(Settings::TableOverride, "Difficulty"s, m_table->m_difficulty);
+            m_live_table->m_globalDifficulty = g_pvp->m_settings.LoadValueWithDefault(Settings::TableOverride, "Difficulty"s, m_table->m_difficulty);
 
             // Music/sound volume
             m_player->m_MusicVolume = m_table->m_settings.LoadValueWithDefault(Settings::Player, "MusicVolume"s, 100);

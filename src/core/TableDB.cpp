@@ -99,7 +99,7 @@ int TableDB::GetBestSizeMatch(float width, float height, float topGlassHeight, f
 {
    int selection = -1;
    float bestErr = FLT_MAX;
-   for (unsigned int i = 0; i < m_data.size(); i++)
+   for (unsigned int i = 0; i < (unsigned int)m_data.size(); i++)
    {
       float wErr = VPUTOINCHES(width) - m_data[i].width;
       float hErr = VPUTOINCHES(height) - m_data[i].height;

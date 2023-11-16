@@ -304,11 +304,11 @@ void ObjLoader::Save(const string& filename, const string& description, const Me
       assert(pos != string::npos);
       const string name = filename.substr(0, pos);
       char number[32] = { 0 };
-      for (unsigned int i = 0; i < mesh.m_animationFrames.size(); i++)
+      for (unsigned int i = 0; i < (unsigned int)mesh.m_animationFrames.size(); i++)
       {
          vector<Vertex3D_NoTex2> vertsTmp = mesh.m_vertices;
 
-         for (unsigned int t = 0; t < mesh.NumVertices(); t++)
+         for (size_t t = 0; t < mesh.NumVertices(); t++)
          {
             const Mesh::VertData vi = mesh.m_animationFrames[i].m_frameVerts[t];
             vertsTmp[t].x = vi.x;

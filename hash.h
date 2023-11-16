@@ -192,7 +192,7 @@ static void md5Update(MD5Context* const ctx, const uint8_t* const input_buffer, 
    ctx->size += (uint64_t)input_len;
 
    // Copy each byte in input_buffer into the next space in our context input
-   for (unsigned int i = 0; i < input_len; ++i)
+   for (size_t i = 0; i < input_len; ++i)
    {
       ctx->input[offset++] = (uint8_t) * (input_buffer + i);
 
@@ -202,15 +202,15 @@ static void md5Update(MD5Context* const ctx, const uint8_t* const input_buffer, 
       // to enable some back and forth between cpu and i/o
       if (offset % 64 == 0)
       {
-          for (unsigned int j = 0; j < 16; ++j)
-          {
+         for (unsigned int j = 0; j < 16; ++j)
+         {
             // Convert to little-endian
             // The local variable `input` our 512-bit chunk separated into 32-bit words
             // we can use in calculations
             input[j] = (uint32_t)(ctx->input[(j * 4) + 3]) << 24 | (uint32_t)(ctx->input[(j * 4) + 2]) << 16 | (uint32_t)(ctx->input[(j * 4) + 1]) << 8 | (uint32_t)(ctx->input[(j * 4)]);
-          }
-          md5Step(ctx->buffer, input);
-          offset = 0;
+         }
+         md5Step(ctx->buffer, input);
+         offset = 0;
       }
    }
 }

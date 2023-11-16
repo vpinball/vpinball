@@ -515,7 +515,7 @@ void PropertyDialog::UpdateCollectionComboBox(const PinTable *const ptable, cons
 void PropertyDialog::UpdateComboBox(const vector<string>& contentList, const CComboBox &combo, const string& selectName)
 {
     bool strFound = false;
-    for (auto str : contentList)
+    for (auto& str : contentList)
     {
         if (str == selectName)
             strFound = true;

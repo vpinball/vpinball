@@ -1366,7 +1366,7 @@ PinTable::PinTable()
    nudge_set_sensitivity((float)m_settings.LoadValueWithDefault(Settings::Player, "NudgeSensitivity"s, 500) * (float)(1.0/1000.0));
 
    m_difficulty = 0.2f; // easy by default
-   m_globalDifficulty = m_settings.LoadValue(Settings::TableOverride, "Difficulty"s, m_difficulty);
+   m_globalDifficulty = m_settings.LoadValueWithDefault(Settings::TableOverride, "Difficulty"s, m_difficulty);
 
    ReadAccelerometerCalibration();
 
@@ -1611,7 +1611,7 @@ void PinTable::InitTablePostLoad()
             m_BG_image[i] = m_BG_image[BG_DESKTOP];
       }
 
-   m_globalDifficulty = m_settings.LoadValue(Settings::TableOverride, "Difficulty"s, m_difficulty);
+   m_globalDifficulty = m_settings.LoadValueWithDefault(Settings::TableOverride, "Difficulty"s, m_difficulty);
 
    m_currentBackglassMode = m_BG_current_set;
    if (m_BG_enable_FSS)
@@ -2161,7 +2161,7 @@ void PinTable::Play(const int playMode)
    dst->m_playfieldMaterial = src->m_playfieldMaterial;
    dst->m_colorbackdrop = src->m_colorbackdrop;
    dst->m_difficulty = src->m_difficulty;
-   dst->m_globalDifficulty = m_settings.LoadValue(Settings::TableOverride, "Difficulty"s, dst->m_difficulty);
+   dst->m_globalDifficulty = m_settings.LoadValueWithDefault(Settings::TableOverride, "Difficulty"s, dst->m_difficulty);
    dst->m_lightAmbient = src->m_lightAmbient;
    dst->m_lightHeight = src->m_lightHeight;
    dst->m_lightRange = src->m_lightRange;
@@ -10108,7 +10108,7 @@ float PinTable::GetGlobalDifficulty() const
 void PinTable::SetGlobalDifficulty(const float value)
 {
    m_difficulty = value;
-   m_globalDifficulty = m_settings.LoadValue(Settings::TableOverride, "Difficulty"s, m_difficulty);
+   m_globalDifficulty = m_settings.LoadValueWithDefault(Settings::TableOverride, "Difficulty"s, m_difficulty);
 }
 
 STDMETHODIMP PinTable::get_GlobalDifficulty(float *pVal)

@@ -422,7 +422,7 @@ void Decal::EnsureSize()
       double rh = (double)cy.Lo * (1.0 / 2545.0);
 
       if (m_d.m_verticalText)
-         rh *= m_d.m_sztext.length();
+         rh *= (double)m_d.m_sztext.length();
 
       m_realheight = (float)rh;
       m_realwidth = (float)(rh * sizex / sizey);
@@ -450,7 +450,7 @@ void Decal::EnsureSize()
 
          if (m_d.m_verticalText)
          {
-            rh *= m_d.m_sztext.length();
+            rh *= (double)m_d.m_sztext.length();
             m_realheight = (float)rh;
             m_realwidth = m_d.m_width;
          }

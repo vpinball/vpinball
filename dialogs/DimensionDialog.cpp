@@ -56,7 +56,7 @@ BOOL DimensionDialog::OnInitDialog()
    GetDlgItem(IDC_COPY).ShowWindow(pt != nullptr);
    GetDlgItem(IDC_APPLY_TO_TABLE).ShowWindow(pt != nullptr);
 
-   for (unsigned int i = 0; i < m_db.m_data.size(); i++)
+   for (unsigned int i = 0; i < (unsigned int)m_db.m_data.size(); i++)
    {
       char textBuf[MAXNAMEBUFFER];
       TableDB::Entry& dim = m_db.m_data[i];

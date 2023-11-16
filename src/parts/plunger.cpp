@@ -711,10 +711,10 @@ void Plunger::RenderSetup(RenderDevice *device)
          //y1 += 0;
       }
    }
-   
+
    // for sorting and bounding
    m_boundingSphereRadius = 0.5f * (m_d.m_stroke + m_d.m_height);
-   m_boundingSphereCenter.Set(m_d.m_v.x, 0.5f * (m_d.m_v.y - m_d.m_stroke + m_d.m_v.y + m_d.m_height), zScale * (zheight + m_d.m_width * (PlungerTypeFlat ? 1.25f : 1.f)));
+   m_boundingSphereCenter.Set(m_d.m_v.x, 0.5f * (m_d.m_v.y - m_d.m_stroke + m_d.m_v.y + m_d.m_height), zScale * (zheight + m_d.m_width * (m_d.m_type == PlungerTypeFlat ? 1.25f : 1.f)));
 
    // set up the vertex index list
    unsigned int *const indices = new unsigned int[m_indicesPerFrame * m_cframes];
