@@ -111,6 +111,7 @@ Sampler::Sampler(RenderDevice* rd, IDirect3DTexture9* dx9Texture, bool ownTextur
 
 Sampler::~Sampler()
 {
+   m_rd->UnbindSampler(this);
 #ifdef ENABLE_SDL
    Unbind();
    if (m_ownTexture)

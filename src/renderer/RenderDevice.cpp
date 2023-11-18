@@ -1236,65 +1236,39 @@ bool RenderDevice::DepthBufferReadBackAvailable()
 
 void RenderDevice::FreeShader()
 {
+   UnbindSampler(nullptr);
+   delete basicShader;
+   basicShader = nullptr;
+   delete DMDShader;
+   DMDShader = nullptr;
+   delete FBShader;
+   FBShader = nullptr;
+   delete StereoShader;
+   StereoShader = nullptr;
+   delete flasherShader;
+   flasherShader = nullptr;
+   delete lightShader;
+   lightShader = nullptr;
+   delete m_ballShader;
+   m_ballShader = nullptr;
+}
+
+void RenderDevice::UnbindSampler(Sampler* sampler)
+{
    if (basicShader)
-   {
-      basicShader->SetTextureNull(SHADER_tex_base_color);
-      basicShader->SetTextureNull(SHADER_tex_base_transmission);
-      basicShader->SetTextureNull(SHADER_tex_base_normalmap);
-      basicShader->SetTextureNull(SHADER_tex_env);
-      basicShader->SetTextureNull(SHADER_tex_diffuse_env);
-      delete basicShader;
-      basicShader = nullptr;
-   }
+      basicShader->UnbindSampler(sampler);
    if (DMDShader)
-   {
-      DMDShader->SetTextureNull(SHADER_tex_dmd);
-      DMDShader->SetTextureNull(SHADER_tex_sprite);
-      delete DMDShader;
-      DMDShader = nullptr;
-   }
+      DMDShader->UnbindSampler(sampler);
    if (FBShader)
-   {
-      FBShader->SetTextureNull(SHADER_tex_fb_filtered);
-      FBShader->SetTextureNull(SHADER_tex_fb_unfiltered);
-      FBShader->SetTextureNull(SHADER_tex_bloom);
-      FBShader->SetTextureNull(SHADER_tex_ao);
-      FBShader->SetTextureNull(SHADER_tex_depth);
-      FBShader->SetTextureNull(SHADER_tex_color_lut);
-      FBShader->SetTextureNull(SHADER_tex_ao_dither);
-      FBShader->SetTextureNull(SHADER_areaTex);
-      FBShader->SetTextureNull(SHADER_searchTex);
-      delete FBShader;
-      FBShader = nullptr;
-   }
-   #ifdef ENABLE_SDL
-   if (StereoShader)
-   {
-      delete StereoShader;
-      StereoShader = nullptr;
-   }
-   #endif
+      FBShader->UnbindSampler(sampler);
    if (flasherShader)
-   {
-      flasherShader->SetTextureNull(SHADER_tex_flasher_A);
-      flasherShader->SetTextureNull(SHADER_tex_flasher_B);
-      delete flasherShader;
-      flasherShader = nullptr;
-   }
+      flasherShader->UnbindSampler(sampler);
    if (lightShader)
-   {
-      delete lightShader;
-      lightShader = nullptr;
-   }
+      lightShader->UnbindSampler(sampler);
+   if (StereoShader)
+      StereoShader->UnbindSampler(sampler);
    if (m_ballShader)
-   {
-      m_ballShader->SetTextureNull(SHADER_tex_ball_color);
-      m_ballShader->SetTextureNull(SHADER_tex_ball_playfield);
-      m_ballShader->SetTextureNull(SHADER_tex_diffuse_env);
-      m_ballShader->SetTextureNull(SHADER_tex_ball_decal);
-      delete m_ballShader;
-      m_ballShader = nullptr;
-   }
+      m_ballShader->UnbindSampler(sampler);
 }
 
 RenderDevice::~RenderDevice()

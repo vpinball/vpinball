@@ -3082,7 +3082,6 @@ void Player::RenderDynamics()
    }
    for (; p < MAX_BALL_SHADOW; p++)
       balls[p] = vec4(-1000.f, -1000.f, -1000.f, 0.0f);
-   m_pin3d.m_pd3dPrimaryDevice->classicLightShader->SetFloat4v(SHADER_balls, balls, MAX_BALL_SHADOW);
    m_pin3d.m_pd3dPrimaryDevice->lightShader->SetFloat4v(SHADER_balls, balls, MAX_BALL_SHADOW);
    m_pin3d.m_pd3dPrimaryDevice->basicShader->SetFloat4v(SHADER_balls, balls, MAX_BALL_SHADOW);
    m_pin3d.m_pd3dPrimaryDevice->flasherShader->SetFloat4v(SHADER_balls, balls, MAX_BALL_SHADOW);
