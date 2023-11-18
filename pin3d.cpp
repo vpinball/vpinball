@@ -640,11 +640,6 @@ void Pin3D::InitLayout(const float xpixoff, const float ypixoff)
    InitLights();
 }
 
-void Pin3D::EnableAlphaBlend(const bool additiveBlending, const bool set_dest_blend, const bool set_blend_op) const
-{
-   m_pd3dPrimaryDevice->EnableAlphaBlend(additiveBlending, set_dest_blend, set_blend_op);
-}
-
 Vertex3Ds Pin3D::Unproject(const Vertex3Ds& point)
 {
    Matrix3D m2 = m_mvp->GetModelViewProj(0);

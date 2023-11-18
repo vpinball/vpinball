@@ -1273,7 +1273,7 @@ void Flasher::Render(const unsigned int renderMask)
       /*const unsigned int alphamode = 1; //!! make configurable?
       // add
       if (alphamode == 1) {
-         g_pplayer->m_pin3d.EnableAlphaBlend(true);
+         m_rd->EnableAlphaBlend(true);
       // max
       } else if (alphamode == 2) {
          m_rd->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_TRUE);

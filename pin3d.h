@@ -106,8 +106,6 @@ public:
    Vertex3Ds Unproject(const Vertex3Ds& point);
    Vertex3Ds Get3DPointFrom2D(const POINT& p);
 
-   void EnableAlphaBlend(const bool additiveBlending, const bool set_dest_blend = true, const bool set_blend_op = true) const;
-
    void DrawBackground();
 
    ModelViewProj& GetMVP() { return *m_mvp; }
