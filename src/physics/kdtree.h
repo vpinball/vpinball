@@ -1,6 +1,6 @@
 #pragma once
 
-#include "physics/ball.h"
+#include "physics/hitball.h"
 #include "physics/collide.h"
 
 #ifdef ENABLE_SSE_OPTIMIZATIONS

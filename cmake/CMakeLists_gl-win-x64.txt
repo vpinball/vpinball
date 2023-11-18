@@ -329,8 +329,8 @@ add_executable(vpinball WIN32
    src/meshes/triggerSimpleMesh.h
    src/meshes/triggerStarMesh.h
 
-   src/parts/ballex.cpp
-   src/parts/ballex.h
+   src/parts/ball.cpp
+   src/parts/ball.h
    src/parts/bumper.cpp
    src/parts/bumper.h
    src/parts/decal.cpp
@@ -372,13 +372,13 @@ add_executable(vpinball WIN32
    src/parts/trigger.cpp
    src/parts/trigger.h
 
-   src/physics/ball.cpp
-   src/physics/ball.h
    src/physics/collide.cpp
    src/physics/collide.h
    src/physics/collideex.cpp
    src/physics/collideex.h
    src/physics/hitable.h
+   src/physics/hitball.cpp
+   src/physics/hitball.h
    src/physics/hitflipper.cpp
    src/physics/hitflipper.h
    src/physics/hitplunger.cpp
