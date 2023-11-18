@@ -451,6 +451,21 @@ Shader::~Shader()
 #endif
 }
 
+void Shader::UnbindSampler(Sampler* sampler)
+{
+   #if !defined(ENABLE_SDL)
+   for (auto uniform : m_uniforms[0])
+   {
+      auto desc = m_uniform_desc[uniform];
+      if (desc.uniform.type == SUT_Sampler && (sampler == nullptr || m_boundTexture[desc.sampler] == sampler))
+      {
+         CHECKD3D(m_shader->SetTexture(desc.tex_handle, nullptr));
+         m_boundTexture[desc.sampler] = nullptr;
+      }
+   }
+   #endif
+}
+
 void Shader::Begin()
 {
    assert(current_shader == nullptr);

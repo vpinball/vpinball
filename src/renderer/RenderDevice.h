@@ -362,8 +362,9 @@ public:
    Shader *flasherShader = nullptr;
    Shader *lightShader = nullptr;
    Shader *StereoShader = nullptr;
-   #define classicLightShader basicShader
    Shader* m_ballShader = nullptr;
+
+   void UnbindSampler(Sampler* smapler);
 
    TextureManager m_texMan;
 

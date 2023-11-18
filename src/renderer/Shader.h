@@ -335,6 +335,7 @@ public:
    Shader(RenderDevice *renderDevice, const std::string& name, const BYTE* code, unsigned int codeSize) : Shader(renderDevice, name, ""s, code, codeSize) { }
    #endif
    ~Shader();
+   void UnbindSampler(Sampler* sampler);
 
    bool HasError() const { return m_hasError; }
 

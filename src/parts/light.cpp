@@ -807,7 +807,7 @@ void Light::Render(const unsigned int renderMask)
          m_lightmapMeshBuffer->m_vb->unlock();
       }
 
-      Shader *shader = m_d.m_BulbLight ? m_rd->lightShader : m_rd->classicLightShader;
+      Shader *shader = m_d.m_BulbLight ? m_rd->lightShader : m_rd->basicShader;
       shader->SetLightData(center_range);
       shader->SetLightColor2FalloffPower(lightColor2_falloff_power);
       lightColor_intensity.w = m_currentIntensity;
