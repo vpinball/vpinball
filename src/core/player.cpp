@@ -327,27 +327,34 @@ void Player::PreRegisterClass(WNDCLASS& wc)
 
 void Player::PreCreate(CREATESTRUCT& cs)
 {
-    m_fullScreen = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "FullScreen"s, IsWindows10_1803orAbove());
-
-    // command line override
-    if (g_pvp->m_disEnableTrueFullscreen == 0)
-        m_fullScreen = false;
-    else if (g_pvp->m_disEnableTrueFullscreen == 1)
-        m_fullScreen = true;
-
     int display = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Display"s, -1);
     if (display >= getNumberOfDisplays() || g_pvp->m_primaryDisplay)
         display = -1; // force primary monitor
     int x, y;
     getDisplaySetupByID(display, x, y, m_screenwidth, m_screenheight);
 
-    m_wnd_width = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Width"s, m_fullScreen ? -1 : DEFAULT_PLAYER_WIDTH);
-    m_wnd_height = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Height"s, m_wnd_width * 9 / 16);
-    if (m_wnd_width <= 0)
-    {
-       m_wnd_width = m_screenwidth;
-       m_wnd_height = m_screenheight;
-    }
+   if (m_stereo3D == STEREO_VR)
+   {
+      m_fullScreen = false;
+      m_wnd_width = m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "PreviewWidth"s, 640.f);
+      m_wnd_height = m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "PreviewHeight"s, 480.f);
+   }
+   else
+   {
+      m_fullScreen = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "FullScreen"s, IsWindows10_1803orAbove());
+      // command line override
+      if (g_pvp->m_disEnableTrueFullscreen == 0)
+         m_fullScreen = false;
+      else if (g_pvp->m_disEnableTrueFullscreen == 1)
+         m_fullScreen = true;
+      m_wnd_width = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Width"s, m_fullScreen ? -1 : DEFAULT_PLAYER_WIDTH);
+      m_wnd_height = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Height"s, m_wnd_width * 9 / 16);
+   }
+   if (m_wnd_width <= 0)
+   {
+      m_wnd_width = m_screenwidth;
+      m_wnd_height = m_screenheight;
+   }
 
    if (m_fullScreen)
    {
@@ -359,44 +366,41 @@ void Player::PreCreate(CREATESTRUCT& cs)
    }
    else
    {
-        m_refreshrate = 0; // The default
+      m_refreshrate = 0; // The default
 
-        // constrain window to screen
-        if (m_wnd_width > m_screenwidth)
-        {
-           m_wnd_width = m_screenwidth;
-           m_wnd_height = m_wnd_width * 9 / 16;
-        }
-
-        if (m_wnd_height > m_screenheight)
-        {
-           m_wnd_height = m_screenheight;
-           m_wnd_width = m_wnd_height * 16 / 9;
-        }
-
-        x += (m_screenwidth - m_wnd_width) / 2;
-        y += (m_screenheight - m_wnd_height) / 2;
+      // constrain window to screen
+      if (m_wnd_width > m_screenwidth)
+      {
+         m_wnd_width = m_screenwidth;
+         m_wnd_height = m_wnd_width * 9 / 16;
+      }
+      if (m_wnd_height > m_screenheight)
+      {
+         m_wnd_height = m_screenheight;
+         m_wnd_width = m_wnd_height * 16 / 9;
+      }
+      x += (m_screenwidth - m_wnd_width) / 2;
+      y += (m_screenheight - m_wnd_height) / 2;
 
 #ifdef _MSC_VER
-        // is this a non-fullscreen window? -> get previously saved window position
-        if ((m_wnd_height != m_screenheight) || (m_wnd_width != m_screenwidth))
-        {
-            const int xn = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "WindowPosX"s, x); //!! does this handle multi-display correctly like this?
-            const int yn = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "WindowPosY"s, y);
-
-            RECT r;
-            r.left = xn;
-            r.top = yn;
-            r.right = xn + m_wnd_width;
-            r.bottom = yn + m_wnd_height;
-            if (MonitorFromRect(&r, MONITOR_DEFAULTTONULL) != nullptr) // window is visible somewhere, so use the coords from the registry
-            {
-                x = xn;
-                y = yn;
-            }
+      // is this a non-fullscreen window? -> get previously saved window position
+      if ((m_wnd_height != m_screenheight) || (m_wnd_width != m_screenwidth))
+      {
+         const int xn = g_pvp->m_settings.LoadValueWithDefault(m_stereo3D == STEREO_VR ? Settings::PlayerVR : Settings::Player, "WindowPosX"s, x); //!! does this handle multi-display correctly like this?
+         const int yn = g_pvp->m_settings.LoadValueWithDefault(m_stereo3D == STEREO_VR ? Settings::PlayerVR : Settings::Player, "WindowPosY"s, y);
+         RECT r;
+         r.left = xn;
+         r.top = yn;
+         r.right = xn + m_wnd_width;
+         r.bottom = yn + m_wnd_height;
+         if (MonitorFromRect(&r, MONITOR_DEFAULTTONULL) != nullptr) // window is visible somewhere, so use the coords from the registry
+         {
+            x = xn;
+            y = yn;
+         }
 #endif
-        }
-    }
+      }
+   }
 
     int windowflags;
     int windowflagsex;
