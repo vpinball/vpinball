@@ -188,10 +188,10 @@ static const string defaultPathSearch[]     = { string(), "user"s +PATH_SEPARATO
 #include "hitsur.h"
 #include "hitrectsur.h"
 
-#include "parts/ballex.h"
+#include "parts/ball.h"
 
 #include "physics/collideex.h"
-#include "physics/ball.h"
+#include "physics/hitball.h"
 #include "physics/hittimer.h"
 #include "physics/hitable.h"
 #include "physics/hitflipper.h"

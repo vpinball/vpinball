@@ -853,8 +853,8 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="src/physics/kdtree.cpp" />
     <ClCompile Include="math\matrix.cpp" />
     <ClCompile Include="objloader.cpp" />
-    <ClCompile Include="src/physics/ball.cpp" />
-    <ClCompile Include="src/parts/ballex.cpp" />
+    <ClCompile Include="src/physics/hitball.cpp" />
+    <ClCompile Include="src/parts/ball.cpp" />
     <ClCompile Include="src/parts/bumper.cpp" />
     <ClCompile Include="codeview.cpp" />
     <ClCompile Include="src/physics/collide.cpp" />
@@ -1279,7 +1279,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="src/meshes/spinnerPlateMesh.h" />
     <ClInclude Include="src/meshes/triggerSimpleMesh.h" />
     <ClInclude Include="src/meshes/triggerStarMesh.h" />
-    <ClInclude Include="src/parts/ballex.h" />
+    <ClInclude Include="src/parts/ball.h" />
     <ClInclude Include="src/parts/bumper.h" />
     <ClInclude Include="src/parts/decal.h" />
     <ClInclude Include="src/parts/dispreel.h" />
@@ -1301,7 +1301,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="src/parts/light.h" />
     <ClInclude Include="src/parts/lightseq.h" />
     <ClInclude Include="src/physics/kdtree.h" />
-    <ClInclude Include="src/physics/ball.h" />
+    <ClInclude Include="src/physics/hitball.h" />
     <ClInclude Include="src/physics/collide.h" />
     <ClInclude Include="src/physics/collideex.h" />
     <ClInclude Include="src/physics/hitable.h" />

@@ -74,30 +74,24 @@ public:
 #endif
 
    unsigned int m_id;        // unique ID for each ball
+   static unsigned int ballID; // increased for each ball created to have an unique ID for scripts for each ball
 
-   // rendering only:
+   Matrix3 m_orientation;
+
+   Vertex3Ds m_oldpos[MAX_BALL_TRAIL_POS]; // used for killing spin and for ball trails
+   unsigned int m_ringcounter_oldpos;
+
+   // rendering only (to be moved to parts/ball):
    bool m_reflectionEnabled;
    bool m_forceReflection;
    bool m_visible;
    bool m_decalMode;
-
-   Matrix3 m_orientation;
-
    string m_image;
    string m_imageDecal;
-
    float m_bulb_intensity_scale; // to dampen/increase contribution of the bulb lights (locally/by script)
-
    float m_playfieldReflectionStrength;
-
    COLORREF m_color;
-   Texture *m_pinballEnv;
+   Texture* m_pinballEnv;
    bool m_pinballEnvSphericalMapping;
-   Texture *m_pinballDecal;
-
-   Vertex3Ds m_oldpos[MAX_BALL_TRAIL_POS]; // for the optional ball trails
-   unsigned int m_ringcounter_oldpos;
-
-   //
-   static unsigned int ballID; // increased for each ball created to have an unique ID for scripts for each ball
+   Texture* m_pinballDecal;
 };
