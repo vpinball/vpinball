@@ -1191,11 +1191,14 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
       case BS_Tonemapper:
       {
          if (keyEvent == 1)
-            m_player->m_toneMapper = (ToneMapper)(m_player->m_toneMapper + (int) step);
-         if (m_player->m_toneMapper == -1)
-            m_player->m_toneMapper = ToneMapper::TM_FILMIC;
-         if (m_player->m_toneMapper > ToneMapper::TM_FILMIC)
-            m_player->m_toneMapper = ToneMapper::TM_REINHARD;
+         {
+            int tm = m_player->m_toneMapper + (int)step;
+            if (tm < 0)
+               tm = ToneMapper::TM_FILMIC;
+            if (tm > ToneMapper::TM_FILMIC)
+               tm = ToneMapper::TM_REINHARD;
+            m_player->m_toneMapper = (ToneMapper)tm;
+         }
          break;
       }
 
@@ -1556,15 +1559,15 @@ void LiveUI::UpdateTweakModeUI()
                int index = (int) (value - opt.minValue);
                if (index < 0 || index >= (int)opt.literals.size())
                   index = (int)(opt.defaultValue - opt.minValue);
-               CM_ROW(setting, opt.name + ": ", "%s", opt.literals[index].c_str(), "");
+               CM_ROW(setting, (opt.name + ": ").c_str(), "%s", opt.literals[index].c_str(), "");
             }
             else if (opt.unit == Settings::OT_PERCENT) // Percent value
             {
-               CM_ROW(setting, opt.name + ": ", "%.1f", 100.f * value, "%");
+               CM_ROW(setting, (opt.name + ": ").c_str(), "%.1f", 100.f * value, "%");
             }
             else // OT_NONE
             {
-               CM_ROW(setting, opt.name + ": ", "%.1f", value, "");
+               CM_ROW(setting, (opt.name + ": ").c_str(), "%.1f", value, "");
             }
          }
          else switch (setting)
