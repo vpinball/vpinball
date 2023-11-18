@@ -903,9 +903,11 @@
 #define IDC_VR_SCALE                    553
 #define IDC_MODIFY3DSTEREO              554
 #define IDC_NEAR_PLANE                  554
+#define IDC_VRPREVIEW_WIDTH             555
 #define IDC_DMD2                        555
 #define IDC_USE_SCRIPT_DMD_CHECK        555
 #define IDC_ADDBLEND                    556
+#define IDC_VRPREVIEW_HEIGHT            556
 #define IDC_DMD                         557
 #define IDC_LIGHTAMBIENT                558
 #define IDC_LIGHT0EMISSION              559
@@ -937,8 +939,10 @@
 #define IDC_GET_INPLAYSTATE             595
 #define IDC_TURN_VR_ON                  597
 #define IDC_VR_PREVIEW_LABEL            600
+#define IDC_VR_PREVIEW_LABEL2           601
 #define IDD_PROPRUBBER_PHYSICS          602
 #define IDC_RUBBER                      602
+#define IDC_VR_PREVIEW_LABEL3           602
 #define IDD_PROPRUBBER_VISUALS          604
 #define IDD_MATERIALDIALOG              605
 #define IDC_GLOSSY_IMGLERP_EDIT         611
