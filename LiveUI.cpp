@@ -1253,12 +1253,12 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
          if (m_activeTweakPage == TP_PointOfView)
          {
             message = "Point of view";
-            m_live_table->mViewSetups[m_live_table->m_BG_current_set].SaveToTableOverrideSettings(m_live_table->m_settings, m_live_table->m_BG_current_set);
+            m_live_table->mViewSetups[m_live_table->m_BG_current_set].SaveToTableOverrideSettings(m_table->m_settings, m_live_table->m_BG_current_set);
             if (m_live_table->m_BG_current_set == BG_FULLSCREEN)
             { // Player position is saved as an override (not saved if equal to app settings)
-               m_live_table->m_settings.SaveValue(Settings::Player, "ScreenPlayerX", m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerX"s, 0.0f), true);
-               m_live_table->m_settings.SaveValue(Settings::Player, "ScreenPlayerY", m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerY"s, 0.0f), true);
-               m_live_table->m_settings.SaveValue(Settings::Player, "ScreenPlayerZ", m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerZ"s, 70.0f), true);
+               m_table->m_settings.SaveValue(Settings::Player, "ScreenPlayerX", m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerX"s, 0.0f), true);
+               m_table->m_settings.SaveValue(Settings::Player, "ScreenPlayerY", m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerY"s, 0.0f), true);
+               m_table->m_settings.SaveValue(Settings::Player, "ScreenPlayerZ", m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerZ"s, 70.0f), true);
             }
             // The saved value are the new base value, so all fields are marked as untouched
             for (int i = BS_ViewMode; i < BS_WndBottomZOfs; i++)
