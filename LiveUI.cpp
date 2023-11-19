@@ -2797,7 +2797,7 @@ void LiveUI::UpdateRendererInspectionModal()
       ImGui::RadioButton("Static prerender pass", &pass_selection, IF_STATIC_ONLY);
       ImGui::RadioButton("Dynamic render pass", &pass_selection, IF_DYNAMIC_ONLY);
       ImGui::RadioButton("Transmitted light pass", &pass_selection, IF_LIGHT_BUFFER_ONLY);
-      if (m_player->GetAOMode() != 0)
+      if (m_player->m_renderer->GetAOMode() != 0)
          ImGui::RadioButton("Ambient Occlusion pass", &pass_selection, IF_AO_ONLY);
       for (size_t i = 0; i < m_table->m_vrenderprobe.size(); i++)
       {

@@ -130,6 +130,19 @@ public:
       // For dynamic mode, static reflections are not available so adapt the mode
       return !IsUsingStaticPrepass() && m_maxReflectionMode >= RenderProbe::REFL_STATIC ? RenderProbe::REFL_DYNAMIC : m_maxReflectionMode;
    }
+
+   bool m_dynamicAO;
+   bool m_disableAO;
+   int GetAOMode() const // 0=Off, 1=Static, 2=Dynamic
+   {
+      // We must evaluate this dynamically since AO scale and enabled/disable can be changed from script
+      if (m_disableAO || !m_table->m_enableAO || !m_pd3dPrimaryDevice->DepthBufferReadBackAvailable() || m_table->m_AOScale == 0.f)
+         return 0;
+      if (m_dynamicAO)
+         return 2;
+      return IsUsingStaticPrepass() ? 1 : 0; // If AO is static prepass only and we are running without it, disable AO
+   }
+
    BackGlass* m_backGlass = nullptr;
 
    float m_globalEmissionScale;

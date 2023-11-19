@@ -144,8 +144,6 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    // Sadly DX9 does not support resolving an MSAA depth buffer, making MSAA implementation complex for it. So just disable for now
    m_MSAASamples = 1;
 #endif
-   m_dynamicAO = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "DynamicAO"s, true);
-   m_disableAO = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "DisableAO"s, false);
    m_scaleFX_DMD = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "ScaleFXDMD"s, false);
    m_maxFramerate = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "MaxFramerate"s, -1);
    if(m_maxFramerate > 0 && m_maxFramerate < 24) // at least 24 fps
@@ -1506,16 +1504,6 @@ HRESULT Player::Init()
       m_liveUI->OpenLiveUI();
 
    return S_OK;
-}
-
-int Player::GetAOMode()
-{
-   // We must evaluate this dynamically since AO scale and enabled/disable can be changed from script
-   if (m_disableAO || !m_ptable->m_enableAO || !m_renderer->m_pd3dPrimaryDevice->DepthBufferReadBackAvailable() || m_ptable->m_AOScale == 0.f)
-      return 0;
-   if (m_dynamicAO)
-      return 2;
-   return m_renderer->IsUsingStaticPrepass() ? 1 : 0; // If AO is static prepass only and we are running without it, disable AO
 }
 
 Ball *Player::CreateBall(const float x, const float y, const float z, const float vx, const float vy, const float vz, const float radius, const float mass)

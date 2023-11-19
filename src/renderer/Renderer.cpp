@@ -10,6 +10,8 @@
 Renderer::Renderer(PinTable* const table, const bool fullScreen, const int width, const int height, const int colordepth, int& refreshrate, VideoSyncMode& syncMode, const StereoMode stereo3D)
    : m_table(table)
 {
+   m_dynamicAO = m_table->m_settings.LoadValueWithDefault(Settings::Player, "DynamicAO"s, true);
+   m_disableAO = m_table->m_settings.LoadValueWithDefault(Settings::Player, "DisableAO"s, false);
    m_AAfactor = m_table->m_settings.LoadValueWithDefault(Settings::Player, "AAFactor"s, m_table->m_settings.LoadValueWithDefault(Settings::Player, "USEAA"s, false) ? 2.0f : 1.0f);
    m_vrPreview = (VRPreviewMode)m_table->m_settings.LoadValueWithDefault(Settings::PlayerVR, "VRPreview"s, (int)VRPREVIEW_LEFT);
    m_vrPreviewShrink = m_table->m_settings.LoadValueWithDefault(Settings::PlayerVR, "ShrinkPreview"s, false);
@@ -1016,7 +1018,7 @@ void Renderer::RenderStaticPrepass()
    
    RenderTarget *accumulationSurface = IsUsingStaticPrepass() ? m_staticPrepassRT->Duplicate("Accumulation"s) : nullptr;
 
-   RenderTarget* renderRT = g_pplayer->GetAOMode() == 1 ? m_pd3dPrimaryDevice->GetBackBufferTexture() : m_staticPrepassRT;
+   RenderTarget* renderRT = GetAOMode() == 1 ? m_pd3dPrimaryDevice->GetBackBufferTexture() : m_staticPrepassRT;
 
    // if rendering static/with heavy oversampling, disable the aniso/trilinear filter to get a sharper/more precise result overall!
    if (IsUsingStaticPrepass())
@@ -1105,7 +1107,7 @@ void Renderer::RenderStaticPrepass()
    m_pd3dPrimaryDevice->SetMainTextureDefaultFiltering(forceAniso ? SF_ANISOTROPIC : SF_TRILINEAR);
 
    // Now finalize static buffer with static AO
-   if (g_pplayer->GetAOMode() == 1)
+   if (GetAOMode() == 1)
    {
       PLOGI << "Starting static AO prerendering"; // For profiling
 
@@ -1361,7 +1363,7 @@ void Renderer::PrepareVideoBuffers()
    const bool FXAA3 = PostProcAA && m_FXAA == Quality_FXAA;
    const bool ss_refl = m_ss_refl && m_table->m_enableSSR && m_pd3dPrimaryDevice->DepthBufferReadBackAvailable() && m_table->m_SSRScale > 0.f;
    const unsigned int sharpen = PostProcAA ? m_sharpen : 0;
-   const bool useAO = g_pplayer->GetAOMode() == 2;
+   const bool useAO = GetAOMode() == 2;
    const bool useUpscaler = (m_AAfactor < 1.0f) && !stereo && (SMAA || DLAA || NFAA || FXAA1 || FXAA2 || FXAA3 || sharpen);
 
    RenderTarget *renderedRT = m_pd3dPrimaryDevice->GetBackBufferTexture();
