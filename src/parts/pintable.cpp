@@ -779,7 +779,7 @@ STDMETHODIMP ScriptGlobalTable::get_SystemTime(long *pVal)
 STDMETHODIMP ScriptGlobalTable::get_NightDay(int *pVal)
 {
    if (g_pplayer)
-      *pVal = quantizeUnsignedPercent(g_pplayer->m_globalEmissionScale);
+      *pVal = quantizeUnsignedPercent(g_pplayer->m_renderer->m_globalEmissionScale);
    return S_OK;
 }
 

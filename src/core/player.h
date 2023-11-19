@@ -547,9 +547,6 @@ private:
    RenderTarget *m_staticPrepassRT = nullptr;
 
 public:
-
-   float m_globalEmissionScale;
-
    int m_MSAASamples;
    float m_AAfactor;
 

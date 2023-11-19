@@ -1069,45 +1069,6 @@ HRESULT Player::Init()
    m_MusicVolume = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "MusicVolume"s, 100);
    m_SoundVolume = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "SoundVolume"s, 100);
 
-   // Global emission scale
-   m_globalEmissionScale = m_ptable->m_globalEmissionScale;
-   if (m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "OverrideTableEmissionScale"s, false))
-   { // Overriden from settings
-      if (m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "DynamicDayNight"s, false))
-      {
-         time_t hour_machine;
-         time(&hour_machine);
-         tm local_hour;
-         localtime_s(&local_hour, &hour_machine);
-
-         const float lat = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Latitude"s, 52.52f);
-         const float lon = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Longitude"s, 13.37f);
-
-         const double rlat = lat * (M_PI / 180.);
-         const double rlong = lon * (M_PI / 180.);
-
-         const double tr = TheoreticRadiation(local_hour.tm_mday, local_hour.tm_mon + 1, local_hour.tm_year + 1900, rlat);
-         const double max_tr = MaxTheoreticRadiation(local_hour.tm_year + 1900, rlat);
-         const double sset = SunsetSunriseLocalTime(local_hour.tm_mday, local_hour.tm_mon + 1, local_hour.tm_year + 1900, rlong, rlat, false);
-         const double srise = SunsetSunriseLocalTime(local_hour.tm_mday, local_hour.tm_mon + 1, local_hour.tm_year + 1900, rlong, rlat, true);
-
-         const double cur = local_hour.tm_hour + local_hour.tm_min / 60.0;
-
-         const float factor = (float)(sin(M_PI * clamp((cur - srise) / (sset - srise), 0., 1.)) //!! leave space before sunrise and after sunset?
-            * sqrt(tr / max_tr)); //!! magic, "emulates" that shorter days are usually also "darker",cloudier,whatever in most regions
-
-         m_globalEmissionScale = clamp(factor, 0.15f, 1.f); //!! configurable clamp?
-      }
-      else
-      {
-         m_globalEmissionScale = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "EmissionScale"s, 0.5f);
-      }
-   }
-   if (g_pvp->m_bgles)
-   { // Overriden from command line
-      m_globalEmissionScale = g_pvp->m_fgles;
-   }
-
    //
 
    const int colordepth = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "ColorDepth"s, 32);
@@ -2930,7 +2891,7 @@ string Player::GetPerfInfo()
 
    // Renderer additional information
    info << "Triangles: " << ((m_renderer->m_pd3dPrimaryDevice->m_frameDrawnTriangles + 999) / 1000) << "k per frame, "
-        << ((stats_drawn_static_triangles + m_renderer->m_pd3dPrimaryDevice->m_frameDrawnTriangles + 999) / 1000) << "k overall. DayNight " << quantizeUnsignedPercent(m_globalEmissionScale)
+        << ((stats_drawn_static_triangles + m_renderer->m_pd3dPrimaryDevice->m_frameDrawnTriangles + 999) / 1000) << "k overall. DayNight " << quantizeUnsignedPercent(m_renderer->m_globalEmissionScale)
         << "%%\n";
    info << "Draw calls: " << m_renderer->m_pd3dPrimaryDevice->Perf_GetNumDrawCalls() << "  (" << m_renderer->m_pd3dPrimaryDevice->Perf_GetNumLockCalls() << " Locks)\n";
    info << "State changes: " << m_renderer->m_pd3dPrimaryDevice->Perf_GetNumStateChanges() << "\n";
