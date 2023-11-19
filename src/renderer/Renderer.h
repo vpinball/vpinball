@@ -117,6 +117,9 @@ public:
 
    void PrepareFrame();
    void DrawBackground();
+   void DrawBulbLightBuffer();
+   void DrawStatics();
+   void DrawDynamics(bool onlyBalls);
 
    BackGlass* m_backGlass = nullptr;
 
@@ -144,6 +147,18 @@ public:
    int m_sharpen; // 0=off, 1=CAS, 2=bilateral CAS
    VRPreviewMode m_vrPreview;
 
+   enum RenderMask : unsigned int
+   {
+      DEFAULT = 0, // Render everything
+      STATIC_ONLY = 1 << 0, // Disable non static part rendering (for static prerendering)
+      DYNAMIC_ONLY = 1 << 1, // Disable static part rendering
+      LIGHT_BUFFER = 1 << 2, // Transmitted light rendering
+      REFLECTION_PASS = 1 << 3,
+      DISABLE_LIGHTMAPS = 1 << 4
+   };
+   unsigned int m_render_mask = DEFAULT; // Active pass render bit mask
+   inline bool IsRenderPass(const RenderMask pass_mask) const { return (m_render_mask & pass_mask) != 0; }
+
 private:
    PinTable* const m_table;
 
@@ -154,11 +169,15 @@ private:
    bool m_vrPreviewShrink = false;
    Vertex2D m_ScreenOffset = Vertex2D(0.f, 0.f); // for screen shake effect during nudge
 
+   Texture* m_tonemapLUT = nullptr;
+
    #ifdef ENABLE_SDL
    RenderTarget* m_envRadianceTexture = nullptr;
    #else
    BaseTexture* m_envRadianceTexture = nullptr;
    #endif
+
+   BaseTexture* EnvmapPrecalc(const Texture* envTex, const unsigned int rad_env_xres, const unsigned int rad_env_yres);
 
    // Data members
 public:

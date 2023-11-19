@@ -94,8 +94,6 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    m_pauseRefCount = 0;
    m_noTimeCorrect = false;
 
-   m_render_mask = DEFAULT;
-
    m_throwBalls = false;
    m_ballControl = false;
    m_pactiveballBC = nullptr;
@@ -274,7 +272,6 @@ Player::~Player()
    delete m_staticPrepassRT;
    delete m_pBCTarget;
    delete m_ptable;
-   delete m_tonemapLUT;
 }
 
 void Player::PreRegisterClass(WNDCLASS& wc)
@@ -1410,7 +1407,7 @@ HRESULT Player::Init()
                   }
                   // For dynamic modes (VR, head tracking,...) mark all preloaded textures as static only
                   // This will make the cache wrong for the next non static run but it will rebuild, while the opposite would not (all preloads would stay as not prerender only)
-                  m_render_mask = (!IsUsingStaticPrepass() || preRenderOnly) ? STATIC_ONLY : DEFAULT;
+                  m_renderer->m_render_mask = (!IsUsingStaticPrepass() || preRenderOnly) ? Pin3D::STATIC_ONLY : Pin3D::DEFAULT;
                   m_renderer->m_pd3dPrimaryDevice->m_texMan.LoadTexture(tex->m_pdsBuffer, (SamplerFilter)filter, (SamplerAddressMode)clampU, (SamplerAddressMode)clampV, linearRGB);
                   PLOGI << "Texture preloading: '" << name << '\'';
                }
@@ -1421,7 +1418,7 @@ HRESULT Player::Init()
       {
          PLOGE << "Texture preloading failed";
       }
-      m_render_mask = DEFAULT;
+      m_renderer->m_render_mask = Pin3D::DEFAULT;
    }
 
    //----------------------------------------------------------------------------------
@@ -1431,14 +1428,6 @@ HRESULT Player::Init()
    PLOGI << "Initializing renderer"; // For profiling
 
    m_renderer->SetupShaders();
-
-   // FIXME we always loads the LUT since this can be changed in the LiveUI. Would be better to do this lazily
-   //if (m_toneMapper == TM_TONY_MC_MAPFACE)
-   {
-      m_tonemapLUT = new Texture();
-      m_tonemapLUT->LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "tony_mc_mapface_unrolled.exr");
-      m_renderer->m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_tonemap_lut, m_tonemapLUT, SF_BILINEAR, SA_CLAMP, SA_CLAMP, true);
-   }
 
    // search through all collection for elements which support group rendering
    for (int i = 0; i < m_ptable->m_vcollection.size(); i++)
@@ -1601,7 +1590,7 @@ void Player::RenderStaticPrepass()
    TRACE_FUNCTION();
 
    m_renderer->m_pd3dPrimaryDevice->FlushRenderFrame();
-   m_render_mask |= STATIC_ONLY;
+   m_renderer->m_render_mask |= Pin3D::STATIC_ONLY;
 
    // The code will fail if the static render target is MSAA (the copy operation we are performing is not allowed)
    delete m_staticPrepassRT;
@@ -1656,7 +1645,7 @@ void Player::RenderStaticPrepass()
          // Render static parts
          m_renderer->UpdateBasicShaderMatrix();
          for (Hitable *hitable : m_vhitables)
-            hitable->Render(m_render_mask);
+            hitable->Render(m_renderer->m_render_mask);
 
          // Rendering is done to the static render target then accumulated to accumulationSurface
          // We use the framebuffer mirror shader which copies a weighted version of the bound texture
@@ -1776,7 +1765,7 @@ void Player::RenderStaticPrepass()
             m_ptable->m_vrenderprobe[i]->MarkDirty();
          m_renderer->UpdateBasicShaderMatrix();
          for (Hitable *hitable : m_vhitables)
-            hitable->Render(m_render_mask);
+            hitable->Render(m_renderer->m_render_mask);
          m_renderer->m_pd3dPrimaryDevice->FlushRenderFrame();
       }
       // Copy supersampled color buffer
@@ -1801,7 +1790,7 @@ void Player::RenderStaticPrepass()
 
    PLOGI << "Static PreRender done"; // For profiling
    
-   m_render_mask &= ~STATIC_ONLY;
+   m_renderer->m_render_mask &= ~Pin3D::STATIC_ONLY;
    m_renderer->m_pd3dPrimaryDevice->FlushRenderFrame();
 }
 
@@ -2831,59 +2820,6 @@ void Player::Spritedraw(const float posx, const float posy, const float width, c
    pd3dDevice->GetCurrentPass()->m_commands.back()->SetDepth(-10000.f);
 }
 
-void Player::DrawBulbLightBuffer()
-{
-   RenderDevice* p3dDevice = m_renderer->m_pd3dPrimaryDevice;
-   const RenderPass *initial_rt = p3dDevice->GetCurrentPass();
-   static int id = 0; id++;
-
-   // switch to 'bloom' output buffer to collect all bulb lights
-   p3dDevice->SetRenderTarget("Transmitted Light " + std::to_string(id) + " Clear", p3dDevice->GetBloomBufferTexture(), false);
-   p3dDevice->ResetRenderState();
-   p3dDevice->Clear(clearType::TARGET, 0, 1.0f, 0L);
-
-   // Draw bulb lights
-   m_render_mask |= LIGHT_BUFFER;
-   p3dDevice->SetRenderTarget("Transmitted Light " + std::to_string(id), p3dDevice->GetBloomBufferTexture(), true, true);
-   p3dDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE); // disable all z-tests as zbuffer is in different resolution
-   for (Hitable *hitable : m_vhitables)
-      if (hitable->HitableGetItemType() == eItemLight)
-         hitable->Render(m_render_mask);
-   m_render_mask &= ~LIGHT_BUFFER;
-
-   bool hasLight = p3dDevice->GetCurrentPass()->GetCommandCount() > 1;
-   if (hasLight)
-   { // Only apply blur if we have actually rendered some lights
-      RenderPass* renderPass = p3dDevice->GetCurrentPass();
-      p3dDevice->DrawGaussianBlur(
-         p3dDevice->GetBloomBufferTexture(), 
-         p3dDevice->GetBloomTmpBufferTexture(), 
-         p3dDevice->GetBloomBufferTexture(), 19.f); // FIXME kernel size should depend on buffer resolution
-      RenderPass *blurPass2 = p3dDevice->GetCurrentPass();
-      RenderPass *blurPass1 = blurPass2->m_dependencies[0];
-      constexpr float margin = 0.05f; // margin for the blur
-      blurPass1->m_areaOfInterest.x = renderPass->m_areaOfInterest.x - margin;
-      blurPass1->m_areaOfInterest.y = renderPass->m_areaOfInterest.y - margin;
-      blurPass1->m_areaOfInterest.z = renderPass->m_areaOfInterest.z + margin;
-      blurPass1->m_areaOfInterest.w = renderPass->m_areaOfInterest.w + margin;
-      blurPass2->m_areaOfInterest = blurPass1->m_areaOfInterest;
-   }
-
-   // Restore state and render target
-   p3dDevice->SetRenderTarget(initial_rt->m_name + '+', initial_rt->m_rt);
-
-   if (hasLight)
-   {
-      // Declare dependency on Bulb Light buffer (actually rendered to the bloom buffer texture)
-      m_renderer->m_pd3dPrimaryDevice->AddRenderTargetDependency(m_renderer->m_pd3dPrimaryDevice->GetBloomBufferTexture());
-      p3dDevice->basicShader->SetTexture(SHADER_tex_base_transmission, p3dDevice->GetBloomBufferTexture()->GetColorSampler());
-   } 
-   else
-   {
-      p3dDevice->basicShader->SetTextureNull(SHADER_tex_base_transmission);
-   }
-}
-
 void Player::RenderDynamics()
 {
    PROFILE_FUNCTION(FrameProfiler::PROFILE_GPU_COLLECT);
@@ -2932,13 +2868,13 @@ void Player::RenderDynamics()
    if (m_renderer->m_backGlass != nullptr)
       m_renderer->m_backGlass->Render();
 
-   m_render_mask = IsUsingStaticPrepass() ? DYNAMIC_ONLY : DEFAULT;
-   DrawBulbLightBuffer();
+   m_renderer->m_render_mask = IsUsingStaticPrepass() ? Pin3D::DYNAMIC_ONLY : Pin3D::DEFAULT;
+   m_renderer->DrawBulbLightBuffer();
    for (Hitable *hitable : m_vhitables)
-      hitable->Render(m_render_mask);
+      hitable->Render(m_renderer->m_render_mask);
    for (Ball* ball : m_vball)
-      ball->m_pballex->Render(m_render_mask);
-   m_render_mask = DEFAULT;
+      ball->m_pballex->Render(m_renderer->m_render_mask);
+   m_renderer->m_render_mask = Pin3D::DEFAULT;
    
    m_renderer->m_pd3dPrimaryDevice->basicShader->SetTextureNull(SHADER_tex_base_transmission); // need to reset the bulb light texture, as its used as render target for bloom again
 
@@ -3576,34 +3512,6 @@ void Player::UnpauseMusic()
    }
    else if (m_pauseRefCount < 0)
       m_pauseRefCount = 0;
-}
-
-void Player::DrawStatics()
-{
-   const unsigned int mask = m_render_mask;
-   m_render_mask |= STATIC_ONLY;
-   for (Hitable *hitable : m_vhitables)
-      hitable->Render(m_render_mask);
-   m_render_mask = mask;
-}
-
-void Player::DrawDynamics(bool onlyBalls)
-{
-   if (!onlyBalls)
-   {
-      // Update Bulb light buffer and set up render pass dependencies
-      DrawBulbLightBuffer();
-
-      // Draw all parts
-      const unsigned int mask = m_render_mask;
-      m_render_mask |= DYNAMIC_ONLY;
-      for (Hitable *hitable : m_vhitables)
-         hitable->Render(m_render_mask);
-      m_render_mask = mask;
-   }
-   
-   for (Ball* ball : m_vball)
-      ball->m_pballex->Render(m_render_mask);
 }
 
 struct DebugMenuItem

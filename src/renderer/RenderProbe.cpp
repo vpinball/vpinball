@@ -114,9 +114,9 @@ void RenderProbe::PreRenderStatic()
 RenderTarget* RenderProbe::Render(const unsigned int renderMask)
 {
    assert(m_rd != nullptr);
-   const bool isStaticOnly = renderMask & Player::STATIC_ONLY;
-   const bool isDynamicOnly = renderMask & Player::DYNAMIC_ONLY;
-   const bool isReflectionPass = renderMask & Player::REFLECTION_PASS;
+   const bool isStaticOnly = renderMask & Pin3D::STATIC_ONLY;
+   const bool isDynamicOnly = renderMask & Pin3D::DYNAMIC_ONLY;
+   const bool isReflectionPass = renderMask & Pin3D::REFLECTION_PASS;
 
    // Probes are rendered and used in screen space therefore, they can't be recusively used (e.g. reflections
    // of reflections). Beside this, some properties are not cached (clip plane,...) and would break if
@@ -376,9 +376,9 @@ void RenderProbe::PreRenderStaticReflectionProbe()
 void RenderProbe::RenderReflectionProbe(const unsigned int renderMask)
 {
    assert(m_rd != nullptr);
-   const bool isStaticOnly = renderMask & Player::STATIC_ONLY;
-   const bool isDynamicOnly = renderMask & Player::DYNAMIC_ONLY;
-   assert((renderMask & Player::REFLECTION_PASS) == 0);
+   const bool isStaticOnly = renderMask & Pin3D::STATIC_ONLY;
+   const bool isDynamicOnly = renderMask & Pin3D::DYNAMIC_ONLY;
+   assert((renderMask & Pin3D::REFLECTION_PASS) == 0);
    const ReflectionMode mode = min(m_reflection_mode, g_pplayer->m_maxReflectionMode);
 
    if (mode == REFL_NONE
@@ -415,10 +415,10 @@ void RenderProbe::DoRenderReflectionProbe(const bool render_static, const bool r
    m_rd->ResetRenderState();
    m_rd->CopyRenderStates(true, *m_rdState);
 
-   const unsigned int prevRenderMask = g_pplayer->m_render_mask;
-   g_pplayer->m_render_mask |= Player::REFLECTION_PASS;
+   const unsigned int prevRenderMask = g_pplayer->m_renderer->m_render_mask;
+   g_pplayer->m_renderer->m_render_mask |= Pin3D::REFLECTION_PASS;
    if (m_disableLightReflection)
-      g_pplayer->m_render_mask |= Player::DISABLE_LIGHTMAPS;
+      g_pplayer->m_renderer->m_render_mask |= Pin3D::DISABLE_LIGHTMAPS;
 
    // Set the clip plane to only render objects above the reflection plane (do not reflect what is under or the plane itself)
    Vertex3Ds n(m_reflection_plane.x, m_reflection_plane.y, m_reflection_plane.z);
@@ -443,14 +443,14 @@ void RenderProbe::DoRenderReflectionProbe(const bool render_static, const bool r
       g_pplayer->m_renderer->UpdateBallShaderMatrix();
 
    if (render_static)
-      g_pplayer->DrawStatics();
+      g_pplayer->m_renderer->DrawStatics();
    if (render_dynamic)
-      g_pplayer->DrawDynamics(false);
+      g_pplayer->m_renderer->DrawDynamics(false);
    else if (render_balls)
-      g_pplayer->DrawDynamics(true);
+      g_pplayer->m_renderer->DrawDynamics(true);
 
    // Restore initial render states and camera
-   g_pplayer->m_render_mask = prevRenderMask;
+   g_pplayer->m_renderer->m_render_mask = prevRenderMask;
    m_rd->CopyRenderStates(false, *m_rdState);
    m_rd->SetDefaultRenderState();
    g_pplayer->m_renderer->GetMVP().SetView(initialViewMat);
