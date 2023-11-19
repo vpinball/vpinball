@@ -6123,7 +6123,7 @@ void PinTable::ImportBackdropPOV(const string &filename)
                {
                   float value;
                   sscanf_s(node->GetText(), "%f", &value);
-                  m_settings.SaveValue(Settings::TableOverride, "Difficulty"s, value);
+                  m_settings.SaveValue(Settings::TableOverride, "Difficulty"s, value / 100.f);
                }
                node = section->FirstChildElement("SoundVolume");
                if (node)
