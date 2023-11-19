@@ -542,21 +542,6 @@ private:
 
    Vertex2D m_ScreenOffset; // for screen shake effect during nudge
 
-public:
-   vector<Light*> m_ballReflectedLights;
-   MeshBuffer *m_ballMeshBuffer = nullptr;
-   MeshBuffer *m_ballTrailMeshBuffer = nullptr;
-   #ifdef DEBUG_BALL_SPIN
-   MeshBuffer *m_ballDebugPoints = nullptr;
-   #endif
-   int m_ballTrailMeshBufferPos = 0;
-   bool m_trailForBalls;
-   float m_ballTrailStrength;
-   bool m_disableLightingForBalls;
-   bool m_overwriteBallImages = false;
-   Texture *m_ballImage = nullptr;
-   Texture *m_decalImage = nullptr;
-
 private:
    int m_maxPrerenderedFrames;
 
@@ -567,9 +552,6 @@ public:
    void DrawDynamics(bool onlyBalls);
    void Spritedraw(const float posx, const float posy, const float width, const float height, const COLORREF color, Texture* const tex, const float intensity, const bool backdrop=false);
    void Spritedraw(const float posx, const float posy, const float width, const float height, const COLORREF color, Sampler* const tex, const float intensity, const bool backdrop=false);
-
-   void UpdateBasicShaderMatrix(const Matrix3D &objectTrafo = Matrix3D::MatrixIdentity());
-   void UpdateBallShaderMatrix();
 
    #ifdef ENABLE_SDL
    SDL_Window  *m_sdl_playfieldHwnd;

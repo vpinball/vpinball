@@ -92,7 +92,7 @@ private:
 class Pin3D
 {
 public:
-   Pin3D();
+   Pin3D(PinTable* const table);
    ~Pin3D();
 
    HRESULT InitPin3D(const bool fullScreen, const int width, const int height, const int colordepth, int &refreshrate, VideoSyncMode& syncMode, 
@@ -106,6 +106,8 @@ public:
    Vertex3Ds Unproject(const Vertex3Ds& point);
    Vertex3Ds Get3DPointFrom2D(const POINT& p);
 
+   void PrepareFrame();
+
    void DrawBackground();
 
    ModelViewProj& GetMVP() { return *m_mvp; }
@@ -113,11 +115,32 @@ public:
 
    void InitLights();
 
-   BackGlass* m_backGlass;
+   BackGlass* m_backGlass = nullptr;
+
+   void UpdateBasicShaderMatrix(const Matrix3D& objectTrafo = Matrix3D::MatrixIdentity());
+   void UpdateBallShaderMatrix();
+
+   // Ball rendering
+
+   vector<Light*> m_ballReflectedLights;
+   MeshBuffer* m_ballMeshBuffer = nullptr;
+   MeshBuffer* m_ballTrailMeshBuffer = nullptr;
+#ifdef DEBUG_BALL_SPIN
+   MeshBuffer* m_ballDebugPoints = nullptr;
+#endif
+   int m_ballTrailMeshBufferPos = 0;
+   bool m_trailForBalls;
+   float m_ballTrailStrength;
+   bool m_disableLightingForBalls;
+   bool m_overwriteBallImages = false;
+   Texture* m_ballImage = nullptr;
+   Texture* m_decalImage = nullptr;
 
 private:
    HRESULT InitPrimary(const bool fullScreen, const int colordepth, int& refreshrate, VideoSyncMode& syncMode, const float AAfactor, const StereoMode stereo3D,
       const unsigned int FXAA, const bool sharpen, const bool ss_refl);
+
+   PinTable* const m_table;
 
    StereoMode m_stereo3D;
 
@@ -142,8 +165,8 @@ public:
    Texture* m_envTexture = nullptr;
 
    // free-camera-mode-fly-around parameters
-   Vertex3Ds m_cam;
-   float m_inc;
+   Vertex3Ds m_cam = Vertex3Ds(0.f, 0.f, 0.f);
+   float m_inc = 0.f;
 
    ViewPort m_viewPort; // Viewport of the screen output (different from render size for VR, anaglyph, superscaling,...)
    float m_AAfactor;
