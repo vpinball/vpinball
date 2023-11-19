@@ -456,15 +456,15 @@ void Textbox::Render(const unsigned int renderMask)
       #ifdef ENABLE_SDL
       // If DMD capture is enabled check if external DMD exists and update m_texdmd with captured data (for capturing UltraDMD+P-ROC DMD)
       m_rd->DMDShader->SetTechnique(isExternalDMD ? SHADER_TECHNIQUE_basic_DMD_ext : SHADER_TECHNIQUE_basic_DMD); //!! DMD_UPSCALE ?? -> should just work
-      if (g_pplayer->m_pin3d.m_backGlass)
+      if (g_pplayer->m_renderer->m_backGlass)
       {
-         g_pplayer->m_pin3d.m_backGlass->GetDMDPos(x, y, w, h);
+         g_pplayer->m_renderer->m_backGlass->GetDMDPos(x, y, w, h);
          m_rd->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
          m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
          m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
       }
       #else
-      //const float width = m_pin3d.m_useAA ? 2.0f*(float)m_width : (float)m_width; //!! AA ?? -> should just work
+      //const float width = m_renderer->m_useAA ? 2.0f*(float)m_width : (float)m_width; //!! AA ?? -> should just work
       m_rd->DMDShader->SetTechnique(SHADER_TECHNIQUE_basic_DMD); //!! DMD_UPSCALE ?? -> should just work
       #endif
 

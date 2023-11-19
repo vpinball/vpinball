@@ -326,7 +326,7 @@ void RenderProbe::PreRenderStaticReflectionProbe()
       assert(iter != 0 || (u1 == 0.f && u2 == 0.f));
 
       // Setup Camera,etc matrices for each iteration, applying antialiasing offset
-      g_pplayer->m_pin3d.InitLayout(u1, u2);
+      g_pplayer->m_renderer->InitLayout(u1, u2);
 
       m_rd->SetRenderTarget("PreRender Reflection"s, m_prerenderRT, false);
       m_rd->ResetRenderState();
@@ -432,15 +432,15 @@ void RenderProbe::DoRenderReflectionProbe(const bool render_static, const bool r
 
    // Flip camera
    Matrix3D viewMat, initialViewMat;
-   viewMat = g_pplayer->m_pin3d.GetMVP().GetView();
+   viewMat = g_pplayer->m_renderer->GetMVP().GetView();
    memcpy(initialViewMat.m, viewMat.m, 4 * 4 * sizeof(float));
    viewMat = Matrix3D::MatrixPlaneReflection(n, m_reflection_plane.w) * viewMat;
-   g_pplayer->m_pin3d.GetMVP().SetView(viewMat);
+   g_pplayer->m_renderer->Gm_pin3d.GetMVP().SetView(viewMat);
 
    if (render_static || render_dynamic)
-      g_pplayer->m_pin3d.UpdateBasicShaderMatrix();
+      g_pplayer->m_renderer->UpdateBasicShaderMatrix();
    if (render_balls)
-      g_pplayer->m_pin3d.UpdateBallShaderMatrix();
+      g_pplayer->m_renderer->UpdateBallShaderMatrix();
 
    if (render_static)
       g_pplayer->DrawStatics();
@@ -453,5 +453,5 @@ void RenderProbe::DoRenderReflectionProbe(const bool render_static, const bool r
    g_pplayer->m_render_mask = prevRenderMask;
    m_rd->CopyRenderStates(false, *m_rdState);
    m_rd->SetDefaultRenderState();
-   g_pplayer->m_pin3d.GetMVP().SetView(initialViewMat);
+   g_pplayer->m_renderer->GetMVP().SetView(initialViewMat);
 }

@@ -1296,7 +1296,7 @@ void Flasher::Render(const unsigned int renderMask)
 
       const int alphatest = 0; //!!
       if (alphatest)
-         g_pplayer->m_pin3d.EnableAlphaTestReference(0x80);*/
+         g_pplayer->m_renderer->EnableAlphaTestReference(0x80);*/
 
       m_rd->DMDShader->SetTechnique(SHADER_TECHNIQUE_basic_DMD_world); //!! DMD_UPSCALE ?? -> should just work
 
