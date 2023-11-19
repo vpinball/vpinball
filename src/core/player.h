@@ -13,14 +13,6 @@
 
 constexpr int DBG_SPRITE_SIZE = 1024;
 
-enum VRPreviewMode
-{
-   VRPREVIEW_DISABLED,
-   VRPREVIEW_LEFT,
-   VRPREVIEW_RIGHT,
-   VRPREVIEW_BOTH
-};
-
 // NOTE that the following four definitions need to be in sync in their order!
 enum EnumAssignKeys
 {
@@ -532,15 +524,8 @@ private:
    void RenderStaticPrepass();
    void DrawBulbLightBuffer();
    void RenderDynamics();
-   void PrepareVideoBuffers();
-   void Bloom();
-   void SSRefl();
 
    FrameQueueLimiter m_limiter;
-
-   void SetScreenOffset(const float x, const float y); // set render offset in screen coordinates, e.g., for the nudge shake
-
-   Vertex2D m_ScreenOffset; // for screen shake effect during nudge
 
 private:
    int m_maxPrerenderedFrames;
@@ -569,8 +554,6 @@ public:
 
    float m_globalEmissionScale;
 
-   int m_FXAA;    // =FXAASettings
-   int m_sharpen; // 0=off, 1=CAS, 2=bilateral CAS
    int m_MSAASamples;
    float m_AAfactor;
 
@@ -579,7 +562,6 @@ public:
    int GetAOMode(); // 0=Off, 1=Static, 2=Dynamic
 
    RenderProbe::ReflectionMode m_maxReflectionMode;
-   bool m_ss_refl;
 
    bool m_useNvidiaApi;
    bool m_disableDWM;
@@ -590,16 +572,12 @@ public:
    float m_stereo3DDefocus = 0.f;
    void UpdateStereoShaderState();
 
-   VRPreviewMode m_vrPreview;
-   bool m_vrPreviewShrink = false;
-
    bool m_headTracking;
 
    int m_BWrendering; // 0=off, 1=Black&White from RedGreen, 2=B&W from Red only
-   bool m_bloomOff;
    ToneMapper m_toneMapper = TM_TONY_MC_MAPFACE;
 
-   Pin3D m_pin3d;
+   Pin3D* m_renderer = nullptr;
 
    bool m_scaleFX_DMD;
    enum RenderMask : unsigned int

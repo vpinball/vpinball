@@ -1751,7 +1751,7 @@ void RenderDevice::SetClipPlane(const vec4 &plane)
    m_ballShader->SetVector(SHADER_clip_plane, &plane);
 #else
    // FIXME shouldn't we set the Model matrix to identity first ?
-   Matrix3D mT = g_pplayer->m_pin3d.GetMVP().GetModelViewProj(0); // = world * view * proj
+   Matrix3D mT = g_pplayer->m_renderer->GetMVP().GetModelViewProj(0); // = world * view * proj
    mT.Invert();
    mT.Transpose();
    const D3DXMATRIX m(mT);

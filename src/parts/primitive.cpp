@@ -307,8 +307,8 @@ void Primitive::CreateRenderGroup(const Collection * const collection)
          prims[i]->m_d.m_skipRendering = false;
    }
 
-   VertexBuffer* vertexBuffer = new VertexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, m_numGroupVertices);
-   IndexBuffer *indexBuffer = new IndexBuffer(g_pplayer->m_pin3d.m_pd3dPrimaryDevice, indices);
+   VertexBuffer* vertexBuffer = new VertexBuffer(g_pplayer->m_renderer->m_pd3dPrimaryDevice, m_numGroupVertices);
+   IndexBuffer *indexBuffer = new IndexBuffer(g_pplayer->m_renderer->m_pd3dPrimaryDevice, indices);
    unsigned int ofs = 0;
    Vertex3D_NoTex2 *buf;
    vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
@@ -1375,7 +1375,7 @@ void Primitive::Render(const unsigned int renderMask)
    }
 
    // set transform
-   g_pplayer->m_pin3d.UpdateBasicShaderMatrix(m_fullMatrix);
+   g_pplayer->m_renderer->UpdateBasicShaderMatrix(m_fullMatrix);
 
    // Check if this primitive is used as a lightmap and should be convoluted with the light shadows
    bool lightmap = m_lightmap != nullptr && m_lightmap->m_d.m_shadows == ShadowMode::RAYTRACED_BALL_SHADOWS;
@@ -1411,7 +1411,7 @@ void Primitive::Render(const unsigned int renderMask)
          const int nEyes = m_rd->m_stereo3D != STEREO_OFF ? 2 : 1;
          for (int eye = 0; eye < nEyes; eye++)
          {
-            const Matrix3D & mvp = g_pplayer->m_pin3d.GetMVP().GetModelViewProj(eye);
+            const Matrix3D & mvp = g_pplayer->m_renderer->GetMVP().GetModelViewProj(eye);
             for (int i = 0; i < 8; i++)
             {
                Vertex3Ds p;
@@ -1444,7 +1444,7 @@ void Primitive::Render(const unsigned int renderMask)
             m_rd->AddRenderTargetDependency(reflections);
             vec3 plane_normal;
             reflection_probe->GetReflectionPlaneNormal(plane_normal);
-            Matrix3D matWorldViewInverseTranspose = g_pplayer->m_pin3d.GetMVP().GetModelViewInverseTranspose();
+            Matrix3D matWorldViewInverseTranspose = g_pplayer->m_renderer->GetMVP().GetModelViewInverseTranspose();
             matWorldViewInverseTranspose.MultiplyVectorNoTranslate(plane_normal, plane_normal);
             Vertex3Ds n(plane_normal.x, plane_normal.y, plane_normal.z);
             n.Normalize();
@@ -1496,7 +1496,7 @@ void Primitive::Render(const unsigned int renderMask)
    }
 
    // Restore state
-   g_pplayer->m_pin3d.UpdateBasicShaderMatrix();
+   g_pplayer->m_renderer->UpdateBasicShaderMatrix();
    m_rd->basicShader->SetVector(SHADER_mirrorNormal_factor, 0.f, 0.f, 0.f, 0.f);
    m_rd->basicShader->SetVector(SHADER_lightCenter_doShadow, 0.0f, 0.0f, 0.0f, 0.0f);
    m_rd->basicShader->SetVector(SHADER_staticColor_Alpha, 1.0f, 1.0f, 1.0f, 1.0f);

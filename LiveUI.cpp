@@ -625,7 +625,7 @@ LiveUI::LiveUI(RenderDevice *const rd)
    m_table = m_player->m_pEditorTable;
    m_live_table = m_player->m_ptable;
    m_pininput = &(m_player->m_pininput);
-   m_pin3d = &(m_player->m_pin3d);
+   m_renderer = m_player->m_renderer;
    m_disable_esc = m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "DisableESC"s, m_disable_esc);
    memset(m_tweakState, 0, sizeof(m_tweakState));
 
@@ -802,9 +802,8 @@ void LiveUI::ToggleFPS()
 void LiveUI::ResetCameraFromPlayer()
 {
    // Try to setup editor camera to match the used one, but only mostly since the LiveUI does not have some view setup features like off-center, ...
-   m_camView = Matrix3D::MatrixScale(1.f, 1.f, -1.f) * m_pin3d->GetMVP().GetView() * Matrix3D::MatrixScale(1.f, -1.f, 1.f);
+   m_camView = Matrix3D::MatrixScale(1.f, 1.f, -1.f) * m_renderer->GetMVP().GetView() * Matrix3D::MatrixScale(1.f, -1.f, 1.f);
 }
-
 
 void LiveUI::Update(const RenderTarget *rt)
 {
@@ -853,7 +852,7 @@ void LiveUI::Update(const RenderTarget *rt)
    // Display notification (except when script has an unaligned rotation)
    const U32 tick = msec();
    float notifY = io.DisplaySize.y * 0.5f;
-   const bool showNotifications = ((float)m_rotate * 90.0f == m_player->m_ptable->mViewSetups[m_player->m_ptable->m_BG_current_set].GetRotation(m_player->m_pin3d.m_pd3dPrimaryDevice->m_width, m_player->m_pin3d.m_pd3dPrimaryDevice->m_height));
+   const bool showNotifications = ((float)m_rotate * 90.0f == m_player->m_ptable->mViewSetups[m_player->m_ptable->m_BG_current_set].GetRotation(m_player->m_renderer->m_pd3dPrimaryDevice->m_width, m_player->m_renderer->m_pd3dPrimaryDevice->m_height));
    ImGui::PushFont(m_overlayFont);
    for (int i = (int)m_notifications.size() - 1; i >= 0; i--)
    {
@@ -1455,7 +1454,7 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
             case BG_INVALID:
             case NUM_BG_SETS: assert(false); break;
             }
-            g_pplayer->m_pin3d.m_cam = Vertex3Ds(0.f, 0.f, 0.f);
+            g_pplayer->m_renderer->m_cam = Vertex3Ds(0.f, 0.f, 0.f);
             UpdateTweakPage();
          }
       }
@@ -1475,7 +1474,7 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
                PinTable *const __restrict dst = m_live_table;
                dst->mViewSetups[id] = src->mViewSetups[id];
                dst->mViewSetups[id].ApplyTableOverrideSettings(m_live_table->m_settings, (ViewSetupID)id);
-               g_pplayer->m_pin3d.m_cam = Vertex3Ds(0.f, 0.f, 0.f);
+               g_pplayer->m_renderer->m_cam = Vertex3Ds(0.f, 0.f, 0.f);
             }
             if (m_activeTweakPage == TP_TableOption)
             {
@@ -1617,7 +1616,7 @@ void LiveUI::UpdateTweakModeUI()
       if (isLegacy)
       {
          // Useless for absolute mode: the camera is always where we put it
-         Matrix3D view = m_pin3d->GetMVP().GetView();
+         Matrix3D view = m_renderer->GetMVP().GetView();
          view.Invert();
          const vec3 pos = view.GetOrthoNormalPos();
          ImGui::Text("Camera at X: %.0fcm Y: %.0fcm Z: %.0fcm, Rotation: %.2f", 
@@ -2048,13 +2047,13 @@ void LiveUI::UpdateMainUI()
       YAxis.SetScaling(1.f, -1.f, 1.f);
       const Matrix3D view = RH2LH * m_camView * YAxis;
       const Matrix3D proj = YAxis * m_camProj;
-      m_pin3d->GetMVP().SetView(view);
-      m_pin3d->GetMVP().SetProj(0, proj);
-      m_pin3d->GetMVP().SetProj(1, proj);
+      m_renderer->GetMVP().SetView(view);
+      m_renderer->GetMVP().SetProj(0, proj);
+      m_renderer->GetMVP().SetProj(1, proj);
    }
    else
    {
-      m_pin3d->InitLayout();
+      m_renderer->InitLayout();
    }
 }
 
@@ -2475,17 +2474,17 @@ void LiveUI::UpdateVideoOptionsModal()
       if (ImGui::CollapsingHeader("Anti-Aliasing", ImGuiTreeNodeFlags_DefaultOpen))
       {
          const char *postprocessed_aa_items[] = { "Disabled", "Fast FXAA", "Standard FXAA", "Quality FXAA", "Fast NFAA", "Standard DLAA", "Quality SMAA" };
-         if (ImGui::Combo("Postprocessed AA", &m_player->m_FXAA, postprocessed_aa_items, IM_ARRAYSIZE(postprocessed_aa_items)))
-            g_pvp->m_settings.SaveValue(Settings::Player, "FXAA"s, m_player->m_FXAA);
+         if (ImGui::Combo("Postprocessed AA", &m_renderer->m_FXAA, postprocessed_aa_items, IM_ARRAYSIZE(postprocessed_aa_items)))
+            g_pvp->m_settings.SaveValue(Settings::Player, "FXAA"s, m_renderer->m_FXAA);
          const char *sharpen_items[] = { "Disabled", "CAS", "Bilateral CAS" };
-         if (ImGui::Combo("Sharpen", &m_player->m_sharpen, sharpen_items, IM_ARRAYSIZE(sharpen_items)))
-            g_pvp->m_settings.SaveValue(Settings::Player, "Sharpen"s, m_player->m_sharpen);
+         if (ImGui::Combo("Sharpen", &m_renderer->m_sharpen, sharpen_items, IM_ARRAYSIZE(sharpen_items)))
+            g_pvp->m_settings.SaveValue(Settings::Player, "Sharpen"s, m_renderer->m_sharpen);
       }
       
       if (ImGui::CollapsingHeader("Performance & Troubleshooting", ImGuiTreeNodeFlags_DefaultOpen))
       {
-         if (ImGui::Checkbox("Force Bloom filter off", &m_player->m_bloomOff))
-            g_pvp->m_settings.SaveValue(Settings::Player, "ForceBloomOff"s, m_player->m_bloomOff);
+         if (ImGui::Checkbox("Force Bloom filter off", &m_renderer->m_bloomOff))
+            g_pvp->m_settings.SaveValue(Settings::Player, "ForceBloomOff"s, m_renderer->m_bloomOff);
       }
       
       if (m_player->m_stereo3D != STEREO_VR && ImGui::CollapsingHeader("3D Stereo Output", ImGuiTreeNodeFlags_DefaultOpen))
@@ -2784,7 +2783,7 @@ void LiveUI::UpdateRendererInspectionModal()
 {
    m_player->DisableStaticPrePass(false);
    m_useEditorCam = false;
-   m_pin3d->InitLayout();
+   m_renderer->InitLayout();
 
    ImGui::SetNextWindowSize(ImVec2(550.f * m_dpi, 0));
    if (ImGui::Begin(ID_RENDERER_INSPECTION, &m_RendererInspection))
@@ -2944,7 +2943,7 @@ void LiveUI::UpdateMainSplashModal()
          ImGui::CloseCurrentPopup();
          SetupImGuiStyle(1.0f);
          m_useEditorCam = false;
-         m_pin3d->InitLayout();
+         m_renderer->InitLayout();
          m_player->DisableStaticPrePass(false);
          HideUI();
       }
@@ -3050,7 +3049,7 @@ void LiveUI::TableProperties(bool is_live)
       
       PropSeparator();
       PropRGB("Light Em. Color", m_table, is_live, &(m_table->m_Light[0].emission), m_live_table ? &(m_live_table->m_Light[0].emission) : nullptr);
-      auto reinit_lights = [this](bool is_live, float prev, float v) { m_pin3d->InitLights(); }; // Needed to update shaders with new light settings 
+      auto reinit_lights = [this](bool is_live, float prev, float v) { m_renderer->InitLights(); }; // Needed to update shaders with new light settings 
       PropFloat("Light Em. Scale", m_table, is_live, &(m_table->m_lightEmissionScale), m_live_table ? &(m_live_table->m_lightEmissionScale) : nullptr, 20000.0f, 100000.0f, "%.0f", ImGuiInputTextFlags_CharsDecimal, reinit_lights);
       PropFloat("Light Height", m_table, is_live, &(m_table->m_lightHeight), m_live_table ? &(m_live_table->m_lightHeight) : nullptr, 20.0f, 100.0f, "%.0f");
       PropFloat("Light Range", m_table, is_live, &(m_table->m_lightRange), m_live_table ? &(m_live_table->m_lightRange) : nullptr, 200.0f, 1000.0f, "%.0f");
@@ -3129,9 +3128,9 @@ void LiveUI::CameraProperties(bool is_live)
       ImGui::EndTable();
    }
    ImGui::Separator();
-   ImGui::Text("Absolute position:\nX: %.2f  Y: %.2f  Z: %.2f", -m_pin3d->GetMVP().GetView()._41,
-      (m_selection.camera == 0 || m_selection.camera == 2) ? m_pin3d->GetMVP().GetView()._42 : -m_pin3d->GetMVP().GetView()._42, 
-      m_pin3d->GetMVP().GetView()._43);
+   ImGui::Text("Absolute position:\nX: %.2f  Y: %.2f  Z: %.2f", -m_renderer->GetMVP().GetView()._41,
+      (m_selection.camera == 0 || m_selection.camera == 2) ? m_renderer->GetMVP().GetView()._42 : -m_renderer->GetMVP().GetView()._42, 
+      m_renderer->GetMVP().GetView()._43);
 }
 
 void LiveUI::RenderProbeProperties(bool is_live)

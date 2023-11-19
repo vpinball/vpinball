@@ -564,7 +564,7 @@ void Light::Render(const unsigned int renderMask)
       const int nEyes = m_rd->m_stereo3D != STEREO_OFF ? 2 : 1;
       for (int eye = 0; eye < nEyes; eye++)
       {
-         const Matrix3D &mvp = g_pplayer->m_pin3d.GetMVP().GetModelViewProj(eye);
+         const Matrix3D &mvp = g_pplayer->m_renderer->GetMVP().GetModelViewProj(eye);
          for (int i = 0; i < 4; i++)
          {
             Vertex3Ds p;
@@ -887,7 +887,7 @@ void Light::Render(const unsigned int renderMask)
 
    // Restore state
    if (m_backglass)
-      g_pplayer->m_pin3d.UpdateBasicShaderMatrix();
+      g_pplayer->m_renderer->UpdateBasicShaderMatrix();
 }
 
 void Light::SetObjectPos()

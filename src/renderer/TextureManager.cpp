@@ -12,9 +12,9 @@ Sampler* TextureManager::LoadTexture(BaseTexture* memtex, const SamplerFilter fi
    {
       MapEntry entry;
       entry.sampler = new Sampler(&m_rd, memtex, force_linear_rgb, clampU, clampV, filter);
-      if (g_pplayer->m_pin3d.m_envTexture != nullptr && g_pplayer->m_pin3d.m_envTexture->m_pdsBuffer == memtex)
+      if (g_pplayer->m_renderer && g_pplayer->m_renderer->m_envTexture != nullptr && g_pplayer->m_renderer->m_envTexture->m_pdsBuffer == memtex)
          entry.sampler->SetName("Env"s);
-      else if (g_pplayer->m_pin3d.m_pinballEnvTexture.m_pdsBuffer == memtex)
+      else if (g_pplayer->m_renderer && g_pplayer->m_renderer->m_pinballEnvTexture.m_pdsBuffer == memtex)
          entry.sampler->SetName("Default Ball Env"s);
       else if (g_pplayer->m_texdmd == memtex)
          entry.sampler->SetName("DMD"s);

@@ -1073,11 +1073,11 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
    }
 #ifdef ENABLE_VR
    if (keycode == g_pplayer->m_rgKeys[eTableRecenter] && dispid == DISPID_GameEvents_KeyUp)
-      g_pplayer->m_pin3d.m_pd3dPrimaryDevice->recenterTable();
+      g_pplayer->m_renderer->m_pd3dPrimaryDevice->recenterTable();
    else if (keycode == g_pplayer->m_rgKeys[eTableUp] && dispid == DISPID_GameEvents_KeyUp)
-      g_pplayer->m_pin3d.m_pd3dPrimaryDevice->tableUp();
+      g_pplayer->m_renderer->m_pd3dPrimaryDevice->tableUp();
    else if (keycode == g_pplayer->m_rgKeys[eTableDown] && dispid == DISPID_GameEvents_KeyUp)
-      g_pplayer->m_pin3d.m_pd3dPrimaryDevice->tableDown();
+      g_pplayer->m_renderer->m_pd3dPrimaryDevice->tableDown();
    else
 #endif
 
@@ -1222,9 +1222,9 @@ void PinInput::ProcessCameraKeys(const DIDEVICEOBJECTDATA * __restrict input)
             if ((input->dwData & 0x80) != 0)
             {
                 if (!m_cameraModeAltKey)
-                    g_pplayer->m_pin3d.m_cam.y += up ? 10.0f : -10.0f;
+                    g_pplayer->m_renderer->m_cam.y += up ? 10.0f : -10.0f;
                 else
-                    g_pplayer->m_pin3d.m_cam.z += up ? 10.0f : -10.0f;
+                    g_pplayer->m_renderer->m_cam.z += up ? 10.0f : -10.0f;
 
                 m_cameraMode = up ? 1 : 2;
             }
@@ -1239,9 +1239,9 @@ void PinInput::ProcessCameraKeys(const DIDEVICEOBJECTDATA * __restrict input)
             if ((input->dwData & 0x80) != 0)
             {
                 if (!m_cameraModeAltKey)
-                    g_pplayer->m_pin3d.m_cam.x += right ? -10.0f : 10.0f;
+                    g_pplayer->m_renderer->m_cam.x += right ? -10.0f : 10.0f;
                 else
-                    g_pplayer->m_pin3d.m_inc += right ? -0.01f : 0.01f;
+                    g_pplayer->m_renderer->m_inc += right ? -0.01f : 0.01f;
 
                 m_cameraMode = right ? 3 : 4;
             }
@@ -1321,7 +1321,7 @@ void PinInput::ProcessBallControl(const DIDEVICEOBJECTDATA * __restrict input)
 		POINT point = { m_mouseX, m_mouseY };
 		ScreenToClient(m_hwnd, &point);
 		delete g_pplayer->m_pBCTarget;
-		g_pplayer->m_pBCTarget = new Vertex3Ds(g_pplayer->m_pin3d.Get3DPointFrom2D(point));
+		g_pplayer->m_pBCTarget = new Vertex3Ds(g_pplayer->m_renderer->Get3DPointFrom2D(point));
 		if (input->dwData == 1 || input->dwData == 3)
 		{
 			const uint64_t cur = usec();
@@ -1353,7 +1353,7 @@ void PinInput::ProcessThrowBalls(const DIDEVICEOBJECTDATA * __restrict input)
    {
       POINT point = { m_mouseX, m_mouseY };
       ScreenToClient(m_hwnd, &point);
-      const Vertex3Ds vertex = g_pplayer->m_pin3d.Get3DPointFrom2D(point);
+      const Vertex3Ds vertex = g_pplayer->m_renderer->Get3DPointFrom2D(point);
 
       float vx = (float)m_mouseDX*0.1f;
       float vy = (float)m_mouseDY*0.1f;
@@ -1368,7 +1368,7 @@ void PinInput::ProcessThrowBalls(const DIDEVICEOBJECTDATA * __restrict input)
 		POINT newPoint;
 		GetCursorPos(&newPoint);
 		ScreenToClient(m_hwnd, &newPoint);
-		const Vertex3Ds vert = g_pplayer->m_pin3d.Get3DPointFrom2D(newPoint);
+		const Vertex3Ds vert = g_pplayer->m_renderer->Get3DPointFrom2D(newPoint);
 
 		if (g_pplayer->m_ballControl)
 		{
@@ -1418,7 +1418,7 @@ void PinInput::ProcessThrowBalls(const DIDEVICEOBJECTDATA * __restrict input)
     {
         POINT point = { m_mouseX, m_mouseY };
         ScreenToClient(m_hwnd, &point);
-        const Vertex3Ds vertex = g_pplayer->m_pin3d.Get3DPointFrom2D(point);
+        const Vertex3Ds vertex = g_pplayer->m_renderer->Get3DPointFrom2D(point);
 
         for (size_t i = 0; i < g_pplayer->m_vball.size(); i++)
         {
@@ -1878,30 +1878,30 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
             if (m_cameraMode == 1)
             {
 			      if (!m_cameraModeAltKey)
-			         g_pplayer->m_pin3d.m_cam.y += 10.0f;
+			         g_pplayer->m_renderer->m_cam.y += 10.0f;
 			      else
-			         g_pplayer->m_pin3d.m_cam.z += 10.0f;
+			         g_pplayer->m_renderer->m_cam.z += 10.0f;
             }
             else if (m_cameraMode == 2)
             {
 			      if (!m_cameraModeAltKey)
-			         g_pplayer->m_pin3d.m_cam.y -= 10.0f;
+			         g_pplayer->m_renderer->m_cam.y -= 10.0f;
 			      else
-			         g_pplayer->m_pin3d.m_cam.z -= 10.0f;
+			         g_pplayer->m_renderer->m_cam.z -= 10.0f;
             }
             else if (m_cameraMode == 3)
             {
 			      if (!m_cameraModeAltKey)
-			         g_pplayer->m_pin3d.m_cam.x -= 10.0f;
+			         g_pplayer->m_renderer->m_cam.x -= 10.0f;
 			      else
-			         g_pplayer->m_pin3d.m_inc -= 0.01f;
+			         g_pplayer->m_renderer->m_inc -= 0.01f;
             }
             else if (m_cameraMode == 4)
             {
 			      if (!m_cameraModeAltKey)
-			         g_pplayer->m_pin3d.m_cam.x += 10.0f;
+			         g_pplayer->m_renderer->m_cam.x += 10.0f;
 			      else
-			         g_pplayer->m_pin3d.m_inc += 0.01f;
+			         g_pplayer->m_renderer->m_inc += 0.01f;
             }
 
             // Table tweaks, continuous actions
@@ -2029,14 +2029,14 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
                }
                else if (g_pplayer->m_stereo3D == STEREO_VR)
                {
-                  g_pplayer->m_vrPreview = (VRPreviewMode)((g_pplayer->m_vrPreview + 1) % (VRPREVIEW_BOTH + 1));
-                  g_pplayer->m_liveUI->PushNotification(g_pplayer->m_vrPreview == VRPREVIEW_DISABLED ? "Preview disabled"s // Will only display in headset
-                                                      : g_pplayer->m_vrPreview == VRPREVIEW_LEFT     ? "Preview switched to left eye"s
-                                                      : g_pplayer->m_vrPreview == VRPREVIEW_RIGHT    ? "Preview switched to right eye"s
+                  g_pplayer->m_renderer->m_vrPreview = (VRPreviewMode)((g_pplayer->m_renderer->m_vrPreview + 1) % (VRPREVIEW_BOTH + 1));
+                  g_pplayer->m_liveUI->PushNotification(g_pplayer->m_renderer->m_vrPreview == VRPREVIEW_DISABLED ? "Preview disabled"s // Will only display in headset
+                                                      : g_pplayer->m_renderer->m_vrPreview == VRPREVIEW_LEFT     ? "Preview switched to left eye"s
+                                                      : g_pplayer->m_renderer->m_vrPreview == VRPREVIEW_RIGHT    ? "Preview switched to right eye"s
                                                                                                      : "Preview switched to both eyes"s, 2000);
                }
                g_pvp->m_settings.SaveValue(Settings::Player, "Stereo3DEnabled"s, g_pplayer->m_stereo3Denabled);
-               g_pplayer->m_pin3d.InitLayout();
+               g_pplayer->m_renderer->InitLayout();
                g_pplayer->UpdateStereoShaderState();
             }
          }

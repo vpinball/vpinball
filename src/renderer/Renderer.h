@@ -89,14 +89,19 @@ private:
    mutable Vertex3Ds m_viewVec;
 };
 
+enum VRPreviewMode
+{
+   VRPREVIEW_DISABLED,
+   VRPREVIEW_LEFT,
+   VRPREVIEW_RIGHT,
+   VRPREVIEW_BOTH
+};
+
 class Pin3D
 {
 public:
-   Pin3D(PinTable* const table);
+   Pin3D(PinTable* const table, const bool fullScreen, const int width, const int height, const int colordepth, int& refreshrate, VideoSyncMode& syncMode, const float AAfactor, const StereoMode stereo3D);
    ~Pin3D();
-
-   HRESULT InitPin3D(const bool fullScreen, const int width, const int height, const int colordepth, int &refreshrate, VideoSyncMode& syncMode, 
-      const float AAfactor, const StereoMode stereo3D, const unsigned int FXAA, const bool sharpen, const bool ss_refl);
 
    void InitLayout(const float xpixoff = 0.f, const float ypixoff = 0.f);
 
@@ -129,17 +134,27 @@ public:
    MeshBuffer* m_ballDebugPoints = nullptr;
 #endif
    int m_ballTrailMeshBufferPos = 0;
-   bool m_trailForBalls;
-   float m_ballTrailStrength;
-   bool m_disableLightingForBalls;
+   bool m_trailForBalls = false;
+   float m_ballTrailStrength = 0.5f;
+   bool m_disableLightingForBalls = false;
    bool m_overwriteBallImages = false;
    Texture* m_ballImage = nullptr;
    Texture* m_decalImage = nullptr;
 
-private:
-   HRESULT InitPrimary(const bool fullScreen, const int colordepth, int& refreshrate, VideoSyncMode& syncMode, const float AAfactor, const StereoMode stereo3D,
-      const unsigned int FXAA, const bool sharpen, const bool ss_refl);
+   // Post processing
+   void PrepareVideoBuffers();
+   void SetScreenOffset(const float x, const float y); // set render offset in screen coordinates, e.g., for the nudge shake
+   void Bloom();
+   void SSRefl();
+   Vertex2D m_ScreenOffset = Vertex2D(0.f, 0.f); // for screen shake effect during nudge
+   bool m_bloomOff;
+   bool m_ss_refl;
+   int m_FXAA; // =FXAASettings
+   int m_sharpen; // 0=off, 1=CAS, 2=bilateral CAS
+   VRPreviewMode m_vrPreview;
+   bool m_vrPreviewShrink = false;
 
+private:
    PinTable* const m_table;
 
    StereoMode m_stereo3D;

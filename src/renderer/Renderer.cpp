@@ -6,9 +6,16 @@
 #include "BAM/BAMView.h"
 #include "meshes/ballMesh.h"
 
-Pin3D::Pin3D(PinTable* const table)
+Pin3D::Pin3D(PinTable* const table, const bool fullScreen, const int width, const int height, const int colordepth, int& refreshrate, VideoSyncMode& syncMode, const float AAfactor, const StereoMode stereo3D)
    : m_table(table)
 {
+   m_vrPreview = (VRPreviewMode)m_table->m_settings.LoadValueWithDefault(Settings::PlayerVR, "VRPreview"s, (int)VRPREVIEW_LEFT);
+   m_vrPreviewShrink = m_table->m_settings.LoadValueWithDefault(Settings::PlayerVR, "ShrinkPreview"s, false);
+   m_FXAA = m_table->m_settings.LoadValueWithDefault(Settings::Player, "FXAA"s, (int)Disabled);
+   m_sharpen = m_table->m_settings.LoadValueWithDefault(Settings::Player, "Sharpen"s, 0);
+   m_ss_refl = m_table->m_settings.LoadValueWithDefault(Settings::Player, "SSRefl"s, false);
+   const bool ss_refl = m_ss_refl && m_table->m_enableSSR;
+   m_bloomOff = m_table->m_settings.LoadValueWithDefault(Settings::Player, "ForceBloomOff"s, false);
    m_trailForBalls = m_table->m_settings.LoadValueWithDefault(Settings::Player, "BallTrail"s, true);
    m_ballTrailStrength = m_table->m_settings.LoadValueWithDefault(Settings::Player, "BallTrailStrength"s, 0.5f);
    m_disableLightingForBalls = m_table->m_settings.LoadValueWithDefault(Settings::Player, "DisableLightingForBalls"s, false);
@@ -33,6 +40,155 @@ Pin3D::Pin3D(PinTable* const table)
             m_decalImage = new Texture(tex);
       }
    }
+
+   m_stereo3D = stereo3D;
+   m_mvp = new ModelViewProj(m_stereo3D == STEREO_OFF ? 1 : 2);
+   m_AAfactor = AAfactor;
+
+   // set the expected viewport for the newly created device (it may be modified upon creation)
+   m_viewPort.X = 0;
+   m_viewPort.Y = 0;
+   m_viewPort.Width = width;
+   m_viewPort.Height = height;
+   m_viewPort.MinZ = 0.0f;
+   m_viewPort.MaxZ = 1.0f;
+
+   const int display = g_pvp->m_primaryDisplay ? 0 : g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Display"s, 0);
+   vector<DisplayConfig> displays;
+   getDisplayList(displays);
+   int adapter = 0;
+   for (vector<DisplayConfig>::iterator dispConf = displays.begin(); dispConf != displays.end(); ++dispConf)
+      if (display == dispConf->display)
+         adapter = dispConf->adapter;
+
+   m_pd3dPrimaryDevice = new RenderDevice(g_pplayer->GetHwnd(), m_viewPort.Width, m_viewPort.Height, fullScreen, colordepth, AAfactor, stereo3D, m_FXAA, m_sharpen, ss_refl,
+      g_pplayer->m_useNvidiaApi, g_pplayer->m_disableDWM, g_pplayer->m_BWrendering);
+   try {
+      m_pd3dPrimaryDevice->CreateDevice(refreshrate, syncMode, adapter);
+   }
+   catch (...) {
+      // TODO better error handling => just let the exception up
+      throw(E_FAIL);
+   }
+
+   #ifndef ENABLE_SDL
+   if (m_stereo3D == STEREO_SBS)
+   {
+      // Side by side needs to fit the 2 views along the width, so each view is half the total width
+      m_viewPort.Width = m_pd3dPrimaryDevice->m_width / 2;
+      m_viewPort.Height = m_pd3dPrimaryDevice->m_height;
+   }
+   else if (m_stereo3D == STEREO_TB || m_stereo3D == STEREO_INT || m_stereo3D == STEREO_FLIPPED_INT)
+   {
+      // Top/Bottom (and interlaced) needs to fit the 2 views along the height, so each view is half the total height
+      m_viewPort.Width = m_pd3dPrimaryDevice->m_width;
+      m_viewPort.Height = m_pd3dPrimaryDevice->m_height / 2;
+   }
+   else
+   #endif
+   { // Use the effective size of the created device's window (should be the same as the requested)
+      m_viewPort.Width = m_pd3dPrimaryDevice->m_width;
+      m_viewPort.Height = m_pd3dPrimaryDevice->m_height;
+   }
+
+   // TODO better error handling
+   if (!m_pd3dPrimaryDevice->LoadShaders())
+      throw(E_FAIL);
+
+   BAMView::init();
+
+   const bool compressTextures = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "CompressTextures"s, false);
+   m_pd3dPrimaryDevice->CompressTextures(compressTextures);
+
+   m_pd3dPrimaryDevice->SetViewport(&m_viewPort);
+
+   //
+
+   if (m_stereo3D == STEREO_VR)
+      m_backGlass = new BackGlass(
+         m_pd3dPrimaryDevice, g_pplayer->m_ptable->GetDecalsEnabled() ? g_pplayer->m_ptable->GetImage(g_pplayer->m_ptable->m_BG_image[g_pplayer->m_ptable->m_BG_current_set]) : nullptr);
+   else
+      m_backGlass = nullptr;
+
+   // This used to be a spheremap BMP, upgraded in 10.8 for an equirectangular HDR env map
+   m_pinballEnvTexture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "BallEnv.exr");
+   m_aoDitherTexture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "AODither.webp");
+   m_builtinEnvTexture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "EnvMap.webp");
+   m_envTexture = g_pplayer->m_ptable->GetImage(g_pplayer->m_ptable->m_envImage);
+   PLOGI << "Computing environment map radiance"; // For profiling
+   #ifdef ENABLE_SDL // OpenGL
+   Texture* const envTex = m_envTexture ? m_envTexture : &m_builtinEnvTexture;
+   const int envTexHeight = min(envTex->m_pdsBuffer->height(), 256u) / 8;
+   const int envTexWidth = envTexHeight * 2;
+   const colorFormat rad_format = envTex->m_pdsBuffer->m_format == BaseTexture::RGB_FP32 ? colorFormat::RGBA32F : colorFormat::RGBA16F;
+   m_envRadianceTexture = new RenderTarget(m_pd3dPrimaryDevice, SurfaceType::RT_DEFAULT, "Irradiance"s, envTexWidth, envTexHeight, rad_format, false, 1, "Failed to create irradiance render target");
+   m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_irradiance);
+   m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_env, envTex);
+   m_pd3dPrimaryDevice->SetRenderTarget("Env Irradiance PreCalc"s, m_envRadianceTexture);
+   m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->FBShader);
+   m_pd3dPrimaryDevice->FlushRenderFrame();
+   m_pd3dPrimaryDevice->basicShader->SetTexture(SHADER_tex_diffuse_env, m_envRadianceTexture->GetColorSampler());
+   m_pd3dPrimaryDevice->m_ballShader->SetTexture(SHADER_tex_diffuse_env, m_envRadianceTexture->GetColorSampler());
+   #else // DirectX 9
+   // DirectX 9 does not support bitwise operation in shader, so radical_inverse is not implemented and therefore we use the slow CPU path instead of GPU
+   const Texture* const envTex = m_envTexture ? m_envTexture : &m_builtinEnvTexture;
+   const unsigned int envTexHeight = min(envTex->m_pdsBuffer->height(), 256u) / 8;
+   const unsigned int envTexWidth = envTexHeight * 2;
+   m_envRadianceTexture = EnvmapPrecalc(envTex, envTexWidth, envTexHeight);
+   m_pd3dPrimaryDevice->m_texMan.SetDirty(m_envRadianceTexture);
+   m_pd3dPrimaryDevice->basicShader->SetTexture(SHADER_tex_diffuse_env, m_envRadianceTexture);
+   m_pd3dPrimaryDevice->m_ballShader->SetTexture(SHADER_tex_diffuse_env, m_envRadianceTexture);
+   #endif
+   PLOGI << "Environment map radiance computed"; // For profiling
+
+   const bool lowDetailBall = (m_table->GetDetailLevel() < 10);
+   IndexBuffer* ballIndexBuffer
+      = new IndexBuffer(m_pd3dPrimaryDevice, lowDetailBall ? basicBallLoNumFaces : basicBallMidNumFaces, lowDetailBall ? basicBallLoIndices : basicBallMidIndices);
+   VertexBuffer* ballVertexBuffer
+      = new VertexBuffer(m_pd3dPrimaryDevice, lowDetailBall ? basicBallLoNumVertices : basicBallMidNumVertices, (float*)(lowDetailBall ? basicBallLo : basicBallMid));
+   m_ballMeshBuffer = new MeshBuffer(L"Ball"s, ballVertexBuffer, ballIndexBuffer, true);
+#ifdef DEBUG_BALL_SPIN
+   {
+      vector<Vertex3D_NoTex2> ballDbgVtx;
+      for (int j = -1; j <= 1; ++j)
+      {
+         const int numPts = (j == 0) ? 6 : 3;
+         const float theta = (float)(j * (M_PI / 4.0));
+         for (int i = 0; i < numPts; ++i)
+         {
+            const float phi = (float)(i * (2.0 * M_PI) / numPts);
+            Vertex3D_NoTex2 vtx;
+            vtx.nx = cosf(theta) * cosf(phi);
+            vtx.ny = cosf(theta) * sinf(phi);
+            vtx.nz = sinf(theta);
+            vtx.x = vtx.nx;
+            vtx.y = vtx.ny;
+            vtx.z = vtx.nz;
+            vtx.tu = 0.f;
+            vtx.tv = 0.f;
+            ballDbgVtx.push_back(vtx);
+         }
+      }
+
+      VertexBuffer* ballDebugPoints = new VertexBuffer(m_pd3dPrimaryDevice, (unsigned int)ballDbgVtx.size(), (float*)ballDbgVtx.data(), false);
+      m_ballDebugPoints = new MeshBuffer(L"Ball.Debug"s, ballDebugPoints);
+   }
+#endif
+   // Support up to 64 balls, that should be sufficient
+   VertexBuffer* ballTrailVertexBuffer = new VertexBuffer(m_pd3dPrimaryDevice, 64 * (MAX_BALL_TRAIL_POS - 2) * 2 + 4, nullptr, true);
+   m_ballTrailMeshBuffer = new MeshBuffer(L"Ball.Trail"s, ballTrailVertexBuffer);
+
+   m_pd3dPrimaryDevice->ResetRenderState();
+#ifndef ENABLE_SDL
+   CHECKD3D(m_pd3dPrimaryDevice->GetCoreDevice()->SetRenderState(D3DRS_LIGHTING, FALSE));
+   CHECKD3D(m_pd3dPrimaryDevice->GetCoreDevice()->SetRenderState(D3DRS_CLIPPING, FALSE));
+   CHECKD3D(m_pd3dPrimaryDevice->GetCoreDevice()->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1));
+   CHECKD3D(m_pd3dPrimaryDevice->GetCoreDevice()->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE));
+   CHECKD3D(m_pd3dPrimaryDevice->GetCoreDevice()->SetTextureStageState(0, D3DTSS_TEXCOORDINDEX, 0));
+   CHECKD3D(m_pd3dPrimaryDevice->GetCoreDevice()->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE));
+   CHECKD3D(m_pd3dPrimaryDevice->GetCoreDevice()->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE));
+   CHECKD3D(m_pd3dPrimaryDevice->GetCoreDevice()->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_TFACTOR)); // default tfactor: 1,1,1,1
+#endif
 }
 
 Pin3D::~Pin3D()
@@ -48,19 +204,13 @@ Pin3D::~Pin3D()
    delete m_envRadianceTexture;
    delete m_pd3dPrimaryDevice;
    delete m_backGlass;
-
    delete m_ballMeshBuffer;
-   m_ballMeshBuffer = nullptr;
-#ifdef DEBUG_BALL_SPIN
+   #ifdef DEBUG_BALL_SPIN
    delete m_ballDebugPoints;
-   m_ballDebugPoints = nullptr;
-#endif
+   #endif
    delete m_ballTrailMeshBuffer;
-   m_ballTrailMeshBuffer = nullptr;
    delete m_ballImage;
-   m_ballImage = nullptr;
    delete m_decalImage;
-   m_decalImage = nullptr;
 }
 
 void Pin3D::TransformVertices(const Vertex3D_NoTex2 * const __restrict rgv, const WORD * const __restrict rgi, const int count, Vertex2D * const __restrict rgvout) const
@@ -430,168 +580,6 @@ BaseTexture* EnvmapPrecalc(const Texture* envTex, const unsigned int rad_env_xre
    return radTex;
 }
 
-HRESULT Pin3D::InitPrimary(const bool fullScreen, const int colordepth, int& refreshrate, VideoSyncMode& syncMode, const float AAfactor,
-   const StereoMode stereo3D, const unsigned int FXAA, const bool sharpen, const bool ss_refl)
-{
-   const int display = g_pvp->m_primaryDisplay ? 0 : g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Display"s, 0);
-   vector<DisplayConfig> displays;
-   getDisplayList(displays);
-   int adapter = 0;
-   for (vector<DisplayConfig>::iterator dispConf = displays.begin(); dispConf != displays.end(); ++dispConf)
-      if (display == dispConf->display)
-         adapter = dispConf->adapter;
-
-   m_pd3dPrimaryDevice = new RenderDevice(g_pplayer->GetHwnd(), m_viewPort.Width, m_viewPort.Height, fullScreen, colordepth, AAfactor, stereo3D, FXAA, sharpen, ss_refl,
-      g_pplayer->m_useNvidiaApi, g_pplayer->m_disableDWM, g_pplayer->m_BWrendering);
-   try {
-      m_pd3dPrimaryDevice->CreateDevice(refreshrate, syncMode, adapter);
-   }
-   catch (...) {
-      return E_FAIL;
-   }
-
-   #ifndef ENABLE_SDL
-   if (m_stereo3D == STEREO_SBS)
-   {
-      // Side by side needs to fit the 2 views along the width, so each view is half the total width
-      m_viewPort.Width = m_pd3dPrimaryDevice->m_width / 2;
-      m_viewPort.Height = m_pd3dPrimaryDevice->m_height;
-   }
-   else if (m_stereo3D == STEREO_TB || m_stereo3D == STEREO_INT || m_stereo3D == STEREO_FLIPPED_INT)
-   {
-      // Top/Bottom (and interlaced) needs to fit the 2 views along the height, so each view is half the total height
-      m_viewPort.Width = m_pd3dPrimaryDevice->m_width;
-      m_viewPort.Height = m_pd3dPrimaryDevice->m_height / 2;
-   }
-   else
-   #endif
-   { // Use the effective size of the created device's window (should be the same as the requested)
-      m_viewPort.Width = m_pd3dPrimaryDevice->m_width;
-      m_viewPort.Height = m_pd3dPrimaryDevice->m_height;
-   }
-
-   if (!m_pd3dPrimaryDevice->LoadShaders())
-      return E_FAIL;
-
-   BAMView::init();
-
-   const bool compressTextures = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "CompressTextures"s, false);
-   m_pd3dPrimaryDevice->CompressTextures(compressTextures);
-
-   m_pd3dPrimaryDevice->SetViewport(&m_viewPort);
-
-   return S_OK;
-}
-
-HRESULT Pin3D::InitPin3D(const bool fullScreen, const int width, const int height, const int colordepth, int& refreshrate, VideoSyncMode& syncMode,
-   const float AAfactor, const StereoMode stereo3D, const unsigned int FXAA, const bool sharpen, const bool ss_refl)
-{
-   m_stereo3D = stereo3D;
-   m_mvp = new ModelViewProj(m_stereo3D == STEREO_OFF ? 1 : 2);
-   m_AAfactor = AAfactor;
-
-   // set the expected viewport for the newly created device (it may be modified upon creation)
-   m_viewPort.X = 0;
-   m_viewPort.Y = 0;
-   m_viewPort.Width = width;
-   m_viewPort.Height = height;
-   m_viewPort.MinZ = 0.0f;
-   m_viewPort.MaxZ = 1.0f;
-
-   if (FAILED(InitPrimary(fullScreen, colordepth, refreshrate, syncMode, AAfactor, stereo3D, FXAA, sharpen, ss_refl)))
-      return E_FAIL;
-
-   //
-
-   if (m_stereo3D == STEREO_VR)
-      m_backGlass = new BackGlass(
-         m_pd3dPrimaryDevice, g_pplayer->m_ptable->GetDecalsEnabled() ? g_pplayer->m_ptable->GetImage(g_pplayer->m_ptable->m_BG_image[g_pplayer->m_ptable->m_BG_current_set]) : nullptr);
-   else
-      m_backGlass = nullptr;
-
-   // This used to be a spheremap BMP, upgraded in 10.8 for an equirectangular HDR env map
-   m_pinballEnvTexture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "BallEnv.exr");
-   m_aoDitherTexture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "AODither.webp");
-   m_builtinEnvTexture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "EnvMap.webp");
-   m_envTexture = g_pplayer->m_ptable->GetImage(g_pplayer->m_ptable->m_envImage);
-   PLOGI << "Computing environment map radiance"; // For profiling
-   #ifdef ENABLE_SDL // OpenGL
-   Texture* const envTex = m_envTexture ? m_envTexture : &m_builtinEnvTexture;
-   const int envTexHeight = min(envTex->m_pdsBuffer->height(), 256u) / 8;
-   const int envTexWidth = envTexHeight * 2;
-   const colorFormat rad_format = envTex->m_pdsBuffer->m_format == BaseTexture::RGB_FP32 ? colorFormat::RGBA32F : colorFormat::RGBA16F;
-   m_envRadianceTexture = new RenderTarget(m_pd3dPrimaryDevice, SurfaceType::RT_DEFAULT, "Irradiance"s, envTexWidth, envTexHeight, rad_format, false, 1, "Failed to create irradiance render target");
-   m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_irradiance);
-   m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_env, envTex);
-   m_pd3dPrimaryDevice->SetRenderTarget("Env Irradiance PreCalc"s, m_envRadianceTexture);
-   m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->FBShader);
-   m_pd3dPrimaryDevice->FlushRenderFrame();
-   m_pd3dPrimaryDevice->basicShader->SetTexture(SHADER_tex_diffuse_env, m_envRadianceTexture->GetColorSampler());
-   m_pd3dPrimaryDevice->m_ballShader->SetTexture(SHADER_tex_diffuse_env, m_envRadianceTexture->GetColorSampler());
-   #else // DirectX 9
-   // DirectX 9 does not support bitwise operation in shader, so radical_inverse is not implemented and therefore we use the slow CPU path instead of GPU
-   const Texture* const envTex = m_envTexture ? m_envTexture : &m_builtinEnvTexture;
-   const unsigned int envTexHeight = min(envTex->m_pdsBuffer->height(), 256u) / 8;
-   const unsigned int envTexWidth = envTexHeight * 2;
-   m_envRadianceTexture = EnvmapPrecalc(envTex, envTexWidth, envTexHeight);
-   m_pd3dPrimaryDevice->m_texMan.SetDirty(m_envRadianceTexture);
-   m_pd3dPrimaryDevice->basicShader->SetTexture(SHADER_tex_diffuse_env, m_envRadianceTexture);
-   m_pd3dPrimaryDevice->m_ballShader->SetTexture(SHADER_tex_diffuse_env, m_envRadianceTexture);
-   #endif
-   PLOGI << "Environment map radiance computed"; // For profiling
-
-   const bool lowDetailBall = (m_table->GetDetailLevel() < 10);
-   IndexBuffer* ballIndexBuffer
-      = new IndexBuffer(m_pd3dPrimaryDevice, lowDetailBall ? basicBallLoNumFaces : basicBallMidNumFaces, lowDetailBall ? basicBallLoIndices : basicBallMidIndices);
-   VertexBuffer* ballVertexBuffer
-      = new VertexBuffer(m_pd3dPrimaryDevice, lowDetailBall ? basicBallLoNumVertices : basicBallMidNumVertices, (float*)(lowDetailBall ? basicBallLo : basicBallMid));
-   m_ballMeshBuffer = new MeshBuffer(L"Ball"s, ballVertexBuffer, ballIndexBuffer, true);
-#ifdef DEBUG_BALL_SPIN
-   {
-      vector<Vertex3D_NoTex2> ballDbgVtx;
-      for (int j = -1; j <= 1; ++j)
-      {
-         const int numPts = (j == 0) ? 6 : 3;
-         const float theta = (float)(j * (M_PI / 4.0));
-         for (int i = 0; i < numPts; ++i)
-         {
-            const float phi = (float)(i * (2.0 * M_PI) / numPts);
-            Vertex3D_NoTex2 vtx;
-            vtx.nx = cosf(theta) * cosf(phi);
-            vtx.ny = cosf(theta) * sinf(phi);
-            vtx.nz = sinf(theta);
-            vtx.x = vtx.nx;
-            vtx.y = vtx.ny;
-            vtx.z = vtx.nz;
-            vtx.tu = 0.f;
-            vtx.tv = 0.f;
-            ballDbgVtx.push_back(vtx);
-         }
-      }
-
-      VertexBuffer* ballDebugPoints = new VertexBuffer(m_pd3dPrimaryDevice, (unsigned int)ballDbgVtx.size(), (float*)ballDbgVtx.data(), false);
-      m_ballDebugPoints = new MeshBuffer(L"Ball.Debug"s, ballDebugPoints);
-   }
-#endif
-   // Support up to 64 balls, that should be sufficient
-   VertexBuffer* ballTrailVertexBuffer = new VertexBuffer(m_pd3dPrimaryDevice, 64 * (MAX_BALL_TRAIL_POS - 2) * 2 + 4, nullptr, true);
-   m_ballTrailMeshBuffer = new MeshBuffer(L"Ball.Trail"s, ballTrailVertexBuffer);
-
-   m_pd3dPrimaryDevice->ResetRenderState();
-#ifndef ENABLE_SDL
-   CHECKD3D(m_pd3dPrimaryDevice->GetCoreDevice()->SetRenderState(D3DRS_LIGHTING, FALSE));
-   CHECKD3D(m_pd3dPrimaryDevice->GetCoreDevice()->SetRenderState(D3DRS_CLIPPING, FALSE));
-   CHECKD3D(m_pd3dPrimaryDevice->GetCoreDevice()->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1));
-   CHECKD3D(m_pd3dPrimaryDevice->GetCoreDevice()->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE));
-   CHECKD3D(m_pd3dPrimaryDevice->GetCoreDevice()->SetTextureStageState(0, D3DTSS_TEXCOORDINDEX, 0));
-   CHECKD3D(m_pd3dPrimaryDevice->GetCoreDevice()->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE));
-   CHECKD3D(m_pd3dPrimaryDevice->GetCoreDevice()->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE));
-   CHECKD3D(m_pd3dPrimaryDevice->GetCoreDevice()->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_TFACTOR)); // default tfactor: 1,1,1,1
-#endif
-
-   return S_OK;
-}
-
 void Pin3D::DrawBackground()
 {
    const PinTable * const ptable = g_pplayer->m_ptable;
@@ -818,6 +806,490 @@ void Pin3D::PrepareFrame()
          m_ballReflectedLights.push_back((Light*)item);
    }
    // We don't need to set the dependency on the previous frame render as this would be a cross frame dependency which does not have any meaning since dependencies are resolved per frame
-   // m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pin3d.m_pd3dPrimaryDevice->GetPreviousBackBufferTexture());
+   // m_renderer->m_pd3dPrimaryDevice->AddRenderTargetDependency(m_renderer->m_pd3dPrimaryDevice->GetPreviousBackBufferTexture());
    m_pd3dPrimaryDevice->m_ballShader->SetTexture(SHADER_tex_ball_playfield, m_pd3dPrimaryDevice->GetPreviousBackBufferTexture()->GetColorSampler());
 }
+
+
+
+
+#pragma region PostProcess
+
+void Pin3D::SetScreenOffset(const float x, const float y)
+{
+   const float rotation = ANGTORAD(m_table->mViewSetups[m_table->m_BG_current_set].GetRotation(m_pd3dPrimaryDevice->m_width, m_pd3dPrimaryDevice->m_height));
+   const float c = cosf(-rotation), s = sinf(-rotation);
+   m_ScreenOffset.x = x * c - y * s;
+   m_ScreenOffset.y = x * s + y * c;
+}
+
+void Pin3D::SSRefl()
+{
+   m_pd3dPrimaryDevice->SetRenderTarget("ScreenSpace Reflection"s, m_pd3dPrimaryDevice->GetReflectionBufferTexture(), false);
+   m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pd3dPrimaryDevice->GetBackBufferTexture(), true);
+
+   m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, m_pd3dPrimaryDevice->GetBackBufferTexture()->GetColorSampler());
+   m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, m_pd3dPrimaryDevice->GetBackBufferTexture()->GetColorSampler());
+   m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_ao_dither, &m_aoDitherTexture, SF_NONE, SA_REPEAT, SA_REPEAT, true); // FIXME the force linear RGB is not honored in VR
+
+   // FIXME check if size should not be taken from renderdevice to account for VR (double width) or supersampling
+   m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height,
+      (float)(1.0 / m_pd3dPrimaryDevice->GetBackBufferTexture()->GetWidth()), (float)(1.0 / m_pd3dPrimaryDevice->GetBackBufferTexture()->GetHeight()), 1.0f /*radical_inverse(m_overall_frames%2048)*/, 1.0f);
+
+   const float rotation = m_table->mViewSetups[m_table->m_BG_current_set].GetRotation(m_pd3dPrimaryDevice->m_width, m_pd3dPrimaryDevice->m_height);
+   const vec4 SSR_bumpHeight_fresnelRefl_scale_FS(0.3f, 0.3f, m_table->m_SSRScale, rotation);
+   m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_SSR_bumpHeight_fresnelRefl_scale_FS, &SSR_bumpHeight_fresnelRefl_scale_FS);
+
+   m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_SSReflection);
+
+   m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->FBShader);
+}
+
+void Pin3D::Bloom()
+{
+   if (m_table->m_bloom_strength <= 0.0f || m_bloomOff || g_pplayer->GetInfoMode() == IF_LIGHT_BUFFER_ONLY)
+      return;
+
+   const double w = (double)m_pd3dPrimaryDevice->GetBackBufferTexture()->GetWidth();
+   const double h = (double)m_pd3dPrimaryDevice->GetBackBufferTexture()->GetHeight();
+   const Vertex3D_TexelOnly shiftedVerts[4] =
+   {
+      {  1.0f,  1.0f, 0.0f, 1.0f + (float)(2.25 / w), 0.0f + (float)(2.25 / h) },
+      { -1.0f,  1.0f, 0.0f, 0.0f + (float)(2.25 / w), 0.0f + (float)(2.25 / h) },
+      {  1.0f, -1.0f, 0.0f, 1.0f + (float)(2.25 / w), 1.0f + (float)(2.25 / h) },
+      { -1.0f, -1.0f, 0.0f, 0.0f + (float)(2.25 / w), 1.0f + (float)(2.25 / h) }
+   };
+   {
+      m_pd3dPrimaryDevice->FBShader->SetTextureNull(SHADER_tex_fb_filtered);
+
+      // switch to 'bloom' output buffer to collect clipped framebuffer values
+      m_pd3dPrimaryDevice->SetRenderTarget("Bloom Cut Off"s, m_pd3dPrimaryDevice->GetBloomBufferTexture(), false);
+      m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pd3dPrimaryDevice->GetBackBufferTexture());
+
+      m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, m_pd3dPrimaryDevice->GetBackBufferTexture()->GetColorSampler());
+      m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, (float) (1.0 / w), (float) (1.0 / h), m_table->m_bloom_strength, 1.0f);
+      m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_fb_bloom);
+
+      m_pd3dPrimaryDevice->DrawTexturedQuad(m_pd3dPrimaryDevice->FBShader, shiftedVerts);
+   }
+
+   m_pd3dPrimaryDevice->DrawGaussianBlur(
+      m_pd3dPrimaryDevice->GetBloomBufferTexture(), 
+      m_pd3dPrimaryDevice->GetBloomTmpBufferTexture(),
+      m_pd3dPrimaryDevice->GetBloomBufferTexture(), 39.f); // FIXME kernel size should depend on buffer resolution
+}
+
+void Pin3D::PrepareVideoBuffers()
+{
+   const bool useAA = m_AAfactor > 1.0f;
+   const bool stereo = m_stereo3D == STEREO_VR || ((m_stereo3D != STEREO_OFF) && g_pplayer->m_stereo3Denabled && (!g_pplayer->m_stereo3DfakeStereo || m_pd3dPrimaryDevice->DepthBufferReadBackAvailable()));
+   // Since stereo is applied as a postprocess step for fake stereo, it disables AA and sharpening except for top/bottom & side by side modes
+   const bool PostProcAA = !g_pplayer->m_stereo3DfakeStereo || (!stereo || (m_stereo3D == STEREO_TB) || (m_stereo3D == STEREO_SBS));
+   const bool SMAA  = PostProcAA && m_FXAA == Quality_SMAA;
+   const bool DLAA  = PostProcAA && m_FXAA == Standard_DLAA;
+   const bool NFAA  = PostProcAA && m_FXAA == Fast_NFAA;
+   const bool FXAA1 = PostProcAA && m_FXAA == Fast_FXAA;
+   const bool FXAA2 = PostProcAA && m_FXAA == Standard_FXAA;
+   const bool FXAA3 = PostProcAA && m_FXAA == Quality_FXAA;
+   const bool ss_refl = m_ss_refl && m_table->m_enableSSR && m_pd3dPrimaryDevice->DepthBufferReadBackAvailable() && m_table->m_SSRScale > 0.f;
+   const unsigned int sharpen = PostProcAA ? m_sharpen : 0;
+   const bool useAO = g_pplayer->GetAOMode() == 2;
+   const bool useUpscaler = (m_AAfactor < 1.0f) && !stereo && (SMAA || DLAA || NFAA || FXAA1 || FXAA2 || FXAA3 || sharpen);
+
+   RenderTarget *renderedRT = m_pd3dPrimaryDevice->GetBackBufferTexture();
+   RenderTarget *outputRT = nullptr;
+   m_pd3dPrimaryDevice->ResetRenderState();
+   m_pd3dPrimaryDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
+   m_pd3dPrimaryDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
+   m_pd3dPrimaryDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
+   m_pd3dPrimaryDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
+
+   // All postprocess that uses depth sample it from the MSAA resolved rendered backbuffer
+   m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_depth, m_pd3dPrimaryDevice->GetBackBufferTexture()->GetDepthSampler());
+
+   // Compute bloom (to be applied later)
+   Bloom();
+   if (g_pplayer->GetProfilingMode() == PF_ENABLED)
+      m_gpu_profiler.Timestamp(GTS_Bloom);
+
+   // Add screen space reflections
+   if (ss_refl)
+   {
+      SSRefl();
+      renderedRT = m_pd3dPrimaryDevice->GetReflectionBufferTexture();
+   }
+   if (g_pplayer->GetProfilingMode() == PF_ENABLED)
+      m_gpu_profiler.Timestamp(GTS_SSR);
+
+   // Compute AO contribution (to be applied later)
+   if (useAO)
+   {
+      // separate normal generation pass, currently roughly same perf or even much worse
+      /* m_pd3dPrimaryDevice->SetRenderTarget(m_pd3dDevice->GetPostProcessRenderTarget1()); //!! expects stereo or FXAA enabled
+      m_pd3dDevice->FBShader->SetTexture(SHADER_tex_depth, m_pdds3DZBuffer, true);
+      m_pd3dDevice->FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / m_width), (float)(1.0 / m_height),
+         radical_inverse(m_overall_frames%2048)*(float)(1. / 8.0), sobol(m_overall_frames%2048)*(float)(5. / 8.0));// jitter within lattice cell //!! ?
+      m_pd3dDevice->FBShader->SetTechnique("normals");
+      m_pd3dDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->FBShader);*/
+
+      m_pd3dPrimaryDevice->SetRenderTarget("ScreenSpace AO"s, m_pd3dPrimaryDevice->GetAORenderTarget(0), false);
+      m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pd3dPrimaryDevice->GetAORenderTarget(1));
+      m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pd3dPrimaryDevice->GetBackBufferTexture());
+      m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, m_pd3dPrimaryDevice->GetAORenderTarget(1)->GetColorSampler());
+      //m_pd3dDevice->FBShader->SetTexture(SHADER_Texture1, m_pd3dDevice->GetPostProcessRenderTarget1()); // temporary normals
+      m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_ao_dither, &m_aoDitherTexture, SF_NONE, SA_REPEAT, SA_REPEAT, true); // FIXME the force linear RGB is not honored
+      m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, 
+         (float)(1.0 / m_pd3dPrimaryDevice->GetAORenderTarget(1)->GetWidth()),
+         (float)(1.0 / m_pd3dPrimaryDevice->GetAORenderTarget(1)->GetHeight()), 
+         radical_inverse(g_pplayer->m_overall_frames % 2048) * (float)(1. / 8.0),
+         /*sobol*/ radical_inverse<3>(g_pplayer->m_overall_frames % 2048) * (float)(1. / 8.0)); // jitter within (64/8)x(64/8) neighborhood of 64x64 tex, good compromise between blotches and noise
+      m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_AO_scale_timeblur, m_table->m_AOScale, 0.4f, 0.f, 0.f); //!! 0.4f: fake global option in video pref? or time dependent? //!! commonly used is 0.1, but would require to clear history for moving stuff
+      m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_AO);
+      m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->FBShader);
+
+      // flip AO buffers (avoids copy)
+      m_pd3dPrimaryDevice->SwapAORenderTargets();
+   }
+   if (g_pplayer->GetProfilingMode() == PF_ENABLED)
+      m_gpu_profiler.Timestamp(GTS_AO);
+
+   // Perform color grade LUT / dither / tonemapping, also applying bloom and AO
+   {
+      // switch to output buffer (main output frame buffer, or a temporary one for postprocessing)
+      if (SMAA || DLAA || NFAA || FXAA1 || FXAA2 || FXAA3 || sharpen || stereo || useUpscaler)
+         outputRT = m_pd3dPrimaryDevice->GetPostProcessRenderTarget1();
+      else
+         outputRT = m_pd3dPrimaryDevice->GetOutputBackBuffer();
+      m_pd3dPrimaryDevice->SetRenderTarget("Tonemap/Dither/ColorGrade"s, outputRT, false);
+      m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT, useAO);
+
+      int render_w = renderedRT->GetWidth(), render_h = renderedRT->GetHeight();
+      m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, renderedRT->GetColorSampler());
+      m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, renderedRT->GetColorSampler());
+      if (m_table->m_bloom_strength > 0.0f && !m_bloomOff)
+      {
+         m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pd3dPrimaryDevice->GetBloomBufferTexture());
+         m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_bloom, m_pd3dPrimaryDevice->GetBloomBufferTexture()->GetColorSampler());
+      }
+      if (useAO)
+      {
+         m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_ao, m_pd3dPrimaryDevice->GetAORenderTarget(1)->GetColorSampler());
+         m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pd3dPrimaryDevice->GetAORenderTarget(1));
+      }
+
+      // For information mode, override with the wanted render target instead of the render buffer
+      const InfoMode infoMode = g_pplayer->GetInfoMode();
+      if (infoMode == IF_RENDER_PROBES)
+      {
+         RenderProbe* render_probe = m_table->m_vrenderprobe[g_pplayer->m_infoProbeIndex];
+         RenderTarget *probe = render_probe->Render(0);
+         if (probe)
+         {
+            m_pd3dPrimaryDevice->AddRenderTargetDependency(probe);
+            m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, probe->GetColorSampler());
+            m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, probe->GetColorSampler());
+            render_w = probe->GetWidth();
+            render_h = probe->GetHeight();
+         }
+      }
+      else if (infoMode == IF_LIGHT_BUFFER_ONLY)
+      {
+         renderedRT = m_pd3dPrimaryDevice->GetBloomBufferTexture();
+         m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
+         m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, renderedRT->GetColorSampler());
+         m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, renderedRT->GetColorSampler());
+         render_w = renderedRT->GetWidth();
+         render_h = renderedRT->GetHeight();
+      }
+
+      // Texture used for LUT color grading must be treated as if they were linear
+      Texture *const pin = m_table->GetImage(m_table->m_imageColorGrade);
+      if (pin)
+         m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_color_lut, pin, SF_BILINEAR, SA_CLAMP, SA_CLAMP, true); // FIXME always honor the linear RGB
+      m_pd3dPrimaryDevice->FBShader->SetBool(SHADER_color_grade, pin != nullptr);
+      m_pd3dPrimaryDevice->FBShader->SetBool(SHADER_do_dither, m_pd3dPrimaryDevice->GetOutputBackBuffer()->GetColorFormat() != colorFormat::RGBA10);
+      m_pd3dPrimaryDevice->FBShader->SetBool(SHADER_do_bloom, (m_table->m_bloom_strength > 0.0f && !m_bloomOff && infoMode <= IF_DYNAMIC_ONLY));
+
+      //const unsigned int jittertime = (unsigned int)((U64)msec()*90/1000);
+      const float jitter = (float)((msec()&2047)/1000.0);
+      m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, 
+         (float)(1.0 / (double)render_w), (float)(1.0 / (double)render_h), //1.0f, 1.0f);
+         jitter, // radical_inverse(jittertime) * 11.0f,
+         jitter); // sobol(jittertime) * 13.0f); // jitter for dither pattern
+
+      if (infoMode == IF_AO_ONLY)
+         m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_fb_AO);
+      else if (infoMode == IF_RENDER_PROBES)
+         m_pd3dPrimaryDevice->FBShader->SetTechnique(g_pplayer->m_toneMapper == TM_REINHARD ? SHADER_TECHNIQUE_fb_rhtonemap
+                                                   : g_pplayer->m_toneMapper == TM_FILMIC   ? SHADER_TECHNIQUE_fb_fmtonemap
+                                                                                            : SHADER_TECHNIQUE_fb_tmtonemap);
+      else if (g_pplayer->m_BWrendering != 0)
+         m_pd3dPrimaryDevice->FBShader->SetTechnique(g_pplayer->m_BWrendering == 1 ? SHADER_TECHNIQUE_fb_rhtonemap_no_filterRG : SHADER_TECHNIQUE_fb_rhtonemap_no_filterR);
+      else if (g_pplayer->m_toneMapper == TM_REINHARD)
+         m_pd3dPrimaryDevice->FBShader->SetTechnique(useAO ?
+              useAA ? SHADER_TECHNIQUE_fb_rhtonemap_AO : SHADER_TECHNIQUE_fb_rhtonemap_AO_no_filter
+            : useAA ? SHADER_TECHNIQUE_fb_rhtonemap    : SHADER_TECHNIQUE_fb_rhtonemap_no_filter);
+      else if (g_pplayer->m_toneMapper == TM_FILMIC)
+         m_pd3dPrimaryDevice->FBShader->SetTechnique(useAO ?
+              useAA ? SHADER_TECHNIQUE_fb_fmtonemap_AO : SHADER_TECHNIQUE_fb_fmtonemap_AO_no_filter
+            : useAA ? SHADER_TECHNIQUE_fb_fmtonemap    : SHADER_TECHNIQUE_fb_fmtonemap_no_filter);
+      else // TM_TONY_MC_MAPFACE
+         m_pd3dPrimaryDevice->FBShader->SetTechnique(useAO ?
+              useAA ? SHADER_TECHNIQUE_fb_tmtonemap_AO : SHADER_TECHNIQUE_fb_tmtonemap_AO_no_filter
+            : useAA ? SHADER_TECHNIQUE_fb_tmtonemap    : SHADER_TECHNIQUE_fb_tmtonemap_no_filter);
+
+      const Vertex3D_TexelOnly shiftedVerts[4] =
+      {
+         {  1.0f + m_ScreenOffset.x,  1.0f + m_ScreenOffset.y, 0.0f, 1.0f, 0.0f },
+         { -1.0f + m_ScreenOffset.x,  1.0f + m_ScreenOffset.y, 0.0f, 0.0f, 0.0f },
+         {  1.0f + m_ScreenOffset.x, -1.0f + m_ScreenOffset.y, 0.0f, 1.0f, 1.0f },
+         { -1.0f + m_ScreenOffset.x, -1.0f + m_ScreenOffset.y, 0.0f, 0.0f, 1.0f }
+      };
+      m_pd3dPrimaryDevice->DrawTexturedQuad(m_pd3dPrimaryDevice->FBShader, shiftedVerts);
+      renderedRT = outputRT;
+   }
+
+   // This code allows to check that the FB shader does perform pixel perfect processing (1 to 1 match between renderedRT and outputRT)
+   // This needs a modification of the shader to used the filtered texture (tex_fb_filtered) instead of unfiltered
+   if (false)
+   {
+      BaseTexture *tex = new BaseTexture(renderedRT->GetWidth(), renderedRT->GetHeight(), BaseTexture::RGB);
+      BYTE *const __restrict pdest = tex->data();
+      for (size_t i = 0; i < (size_t)renderedRT->GetWidth() * renderedRT->GetHeight(); ++i)
+      {
+         size_t y = i / renderedRT->GetWidth();
+         #ifdef ENABLE_SDL
+         y = renderedRT->GetHeight() - 1 - y;
+         #endif
+         pdest[i * 3 + 0] = ((i & 1) == 0 && (y & 1) == 0) ? 0x00 : 0xFF;
+         pdest[i * 3 + 1] = ((i >> 2) & 1) == 0 ? 0x00 : ((i & 1) == 0 && (y & 1) == 0) ? 0x00 : 0xFF;
+         pdest[i * 3 + 2] = ((y >> 2) & 1) == 0 ? 0x00 : ((i & 1) == 0 && (y & 1) == 0) ? 0x00 : 0xFF;
+      }
+      Sampler *checker = new Sampler(m_pd3dPrimaryDevice, tex, true, SA_CLAMP, SA_CLAMP, SF_NONE);
+      m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / renderedRT->GetWidth()), (float)(1.0 / renderedRT->GetHeight()), 1.f, 1.f);
+      m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, checker);
+      m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_fb_mirror);
+      m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->FBShader);
+      renderedRT = outputRT;
+      delete checker;
+      delete tex;
+   }
+
+   // Stereo and AA are performed on LDR render buffer after tonemapping (RGB8 or RGB10, but nof RGBF).
+   // We ping pong between BackBufferTmpTexture and BackBufferTmpTexture2 for the different postprocess
+   // SMAA is a special case since it needs 3 passes, so it uses GetBackBufferTexture also (which is somewhat overkill since it is RGB16F)
+   assert(renderedRT == m_pd3dPrimaryDevice->GetOutputBackBuffer() || renderedRT == m_pd3dPrimaryDevice->GetPostProcessRenderTarget1());
+
+   // Perform post processed anti aliasing
+   if (NFAA || FXAA1 || FXAA2 || FXAA3)
+   {
+      assert(renderedRT == m_pd3dPrimaryDevice->GetPostProcessRenderTarget1());
+      outputRT = sharpen || stereo || useUpscaler ? m_pd3dPrimaryDevice->GetPostProcessRenderTarget(renderedRT) : m_pd3dPrimaryDevice->GetOutputBackBuffer();
+      m_pd3dPrimaryDevice->SetRenderTarget(SMAA ? "SMAA Color/Edge Detection"s : "Post Process AA Pass 1"s, outputRT, false);
+      m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
+      m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, renderedRT->GetColorSampler());
+      m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, renderedRT->GetColorSampler());
+      m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pd3dPrimaryDevice->GetBackBufferTexture(), true); // Depth is always taken from the MSAA resolved render buffer
+      m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / renderedRT->GetWidth()), (float)(1.0 / renderedRT->GetHeight()), (float)renderedRT->GetWidth(), 1.f);
+      m_pd3dPrimaryDevice->FBShader->SetTechnique(NFAA  ? SHADER_TECHNIQUE_NFAA : FXAA3 ? SHADER_TECHNIQUE_FXAA3 : FXAA2 ? SHADER_TECHNIQUE_FXAA2 : SHADER_TECHNIQUE_FXAA1);
+      m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->FBShader);
+      renderedRT = outputRT;
+   }
+   else if (DLAA)
+   {
+      assert(renderedRT == m_pd3dPrimaryDevice->GetPostProcessRenderTarget1());
+      // First pass detect edges and write it to alpha channel (keeping RGB)
+      outputRT = m_pd3dPrimaryDevice->GetPostProcessRenderTarget(renderedRT);
+      m_pd3dPrimaryDevice->SetRenderTarget("DLAA Edge Detection"s, outputRT, false);
+      m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
+      m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, renderedRT->GetColorSampler());
+      m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, renderedRT->GetColorSampler());
+      m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pd3dPrimaryDevice->GetBackBufferTexture(), true); // Depth is always taken from the MSAA resolved render buffer
+      m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / renderedRT->GetWidth()), (float)(1.0 / renderedRT->GetHeight()), (float)renderedRT->GetWidth(), 1.f);
+      m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_DLAA_edge);
+      m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->FBShader);
+      renderedRT = outputRT;
+
+      // Second pass: use edge detection from first pass (alpha channel) and RGB colors for actual filtering
+      outputRT = sharpen || stereo || useUpscaler ? m_pd3dPrimaryDevice->GetPostProcessRenderTarget(renderedRT) : m_pd3dPrimaryDevice->GetOutputBackBuffer();
+      m_pd3dPrimaryDevice->SetRenderTarget("DLAA Neigborhood blending"s, outputRT, false);
+      m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
+      m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, renderedRT->GetColorSampler());
+      m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, renderedRT->GetColorSampler());
+      m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_DLAA);
+      m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->FBShader);
+      renderedRT = outputRT;
+   }
+   else if (SMAA)
+   {
+      assert(renderedRT == m_pd3dPrimaryDevice->GetPostProcessRenderTarget1());
+      // SMAA use 3 passes, all of them using the initial render, so since tonemap use postprocess RT 1, we use the back buffer and post process RT 2
+      RenderTarget *sourceRT = renderedRT;
+      m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, sourceRT->GetColorSampler());
+      m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, sourceRT->GetColorSampler());
+      m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_areaTex, m_pd3dPrimaryDevice->m_SMAAareaTexture);
+      m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_searchTex, m_pd3dPrimaryDevice->m_SMAAsearchTexture);
+      m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / sourceRT->GetWidth()), (float)(1.0 / sourceRT->GetHeight()), (float)sourceRT->GetWidth(), (float)sourceRT->GetHeight());
+
+      outputRT = m_pd3dPrimaryDevice->GetPreviousBackBufferTexture(); // We don't need it anymore, so use it as a third postprocess buffer
+      m_pd3dPrimaryDevice->SetRenderTarget("SMAA Color/Edge Detection"s, outputRT, false);
+      m_pd3dPrimaryDevice->AddRenderTargetDependency(sourceRT); // PostProcess RT 1
+      m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_SMAA_ColorEdgeDetection);
+      m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->FBShader);
+      renderedRT = outputRT;
+
+      outputRT = m_pd3dPrimaryDevice->GetPostProcessRenderTarget(sourceRT);
+      m_pd3dPrimaryDevice->SetRenderTarget("SMAA Blend weight calculation"s, outputRT, false);
+      m_pd3dPrimaryDevice->AddRenderTargetDependency(sourceRT); // PostProcess RT 1
+      m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT); // BackBuffer RT
+      m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_edgesTex, renderedRT->GetColorSampler());
+      m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_SMAA_BlendWeightCalculation);
+      m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->FBShader);
+      renderedRT = outputRT;
+
+      outputRT = sharpen || stereo || useUpscaler ? m_pd3dPrimaryDevice->GetPreviousBackBufferTexture() : m_pd3dPrimaryDevice->GetOutputBackBuffer();
+      m_pd3dPrimaryDevice->SetRenderTarget("SMAA Neigborhood blending"s, outputRT, false);
+      m_pd3dPrimaryDevice->AddRenderTargetDependency(sourceRT); // PostProcess RT 1
+      m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT); // PostProcess RT 2
+      m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_blendTex, renderedRT->GetColorSampler());
+      m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_SMAA_NeighborhoodBlending);
+      m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->FBShader);
+      renderedRT = outputRT;
+   }
+
+   // Performs sharpening
+   if (sharpen)
+   {
+      assert(renderedRT != m_pd3dPrimaryDevice->GetOutputBackBuffer()); // At this point, renderedRT may be PP1, PP2 or backbuffer
+      outputRT = stereo || useUpscaler ? m_pd3dPrimaryDevice->GetPostProcessRenderTarget(renderedRT) : m_pd3dPrimaryDevice->GetOutputBackBuffer();
+      m_pd3dPrimaryDevice->SetRenderTarget("Sharpen"s, outputRT, false);
+      m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
+      m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pd3dPrimaryDevice->GetBackBufferTexture(), true); // Depth is always taken from the MSAA resolved render buffer
+      m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, renderedRT->GetColorSampler());
+      m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, renderedRT->GetColorSampler());
+      m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / renderedRT->GetWidth()), (float)(1.0 / renderedRT->GetHeight()), (float)renderedRT->GetWidth(), 1.f);
+      m_pd3dPrimaryDevice->FBShader->SetTechnique((sharpen == 1) ? SHADER_TECHNIQUE_CAS : SHADER_TECHNIQUE_BilateralSharp_CAS);
+      m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->FBShader);
+      renderedRT = outputRT;
+   }
+
+   // Apply stereo
+   if (stereo)
+   {
+      #if defined(ENABLE_SDL) && defined(ENABLE_VR)
+      // For STEREO_OFF, STEREO_TB, STEREO_SBS, this won't do anything. The previous postprocess steps should already have written to OutputBackBuffer
+      // For VR, copy each eye to the HMD texture and render the wanted preview if activated
+      if (m_stereo3D == STEREO_VR)
+      {
+         // Render LiveUI in headset for VR
+         g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_MISC);
+         m_pd3dPrimaryDevice->SetRenderTarget("ImGui"s, renderedRT);
+         m_pd3dPrimaryDevice->RenderLiveUI();
+         g_frameProfiler.ExitProfileSection();
+
+         assert(renderedRT != m_pd3dPrimaryDevice->GetOutputBackBuffer());
+         int w = renderedRT->GetWidth(), h = renderedRT->GetHeight();
+         
+         RenderTarget *leftTexture = m_pd3dPrimaryDevice->GetOffscreenVR(0);
+         m_pd3dPrimaryDevice->SetRenderTarget("Left Eye"s, leftTexture, false);
+         m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
+         m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, leftTexture, true, false, 0, 0, w, h, 0, 0, w, h, 0, 0);
+
+         RenderTarget *rightTexture = m_pd3dPrimaryDevice->GetOffscreenVR(1);
+         m_pd3dPrimaryDevice->SetRenderTarget("Right Eye"s, rightTexture, false);
+         m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
+         m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, rightTexture, true, false, 0, 0, w, h, 0, 0, w, h, 1, 0);
+
+         RenderTarget *outRT = m_pd3dPrimaryDevice->GetOutputBackBuffer();
+         m_pd3dPrimaryDevice->SetRenderTarget("VR Preview"s, outRT, false);
+         m_pd3dPrimaryDevice->AddRenderTargetDependency(leftTexture); // To ensure blit is made
+         m_pd3dPrimaryDevice->AddRenderTargetDependency(rightTexture); // To ensure blit is made
+         m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
+         const int outW = m_vrPreview == VRPREVIEW_BOTH ? outRT->GetWidth() / 2 : outRT->GetWidth(), outH = outRT->GetHeight();
+         float ar = (float)w / (float)h, outAr = (float)outW / (float)outH;
+         int x = 0, y = 0;
+         int fw = w, fh = h;
+         if ((m_vrPreviewShrink && ar < outAr) || (!m_vrPreviewShrink && ar > outAr))
+         { // Fit on Y
+            const int scaledW = (int) (h * outAr);
+            x = (w - scaledW) / 2;
+            fw = scaledW;
+         }
+         else
+         { // Fit on X
+            const int scaledH = (int)(w / outAr);
+            y = (h - scaledH) / 2;
+            fh = scaledH;
+         }
+         if (m_vrPreviewShrink || m_vrPreview == VRPREVIEW_DISABLED)
+            m_pd3dPrimaryDevice->Clear(clearType::TARGET | clearType::ZBUFFER, 0, 1.0f, 0L);
+         if (m_vrPreview == VRPREVIEW_LEFT || m_vrPreview == VRPREVIEW_RIGHT)
+         {
+            m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, outRT, true, false, x, y, fw, fh, 0, 0, outW, outH, m_vrPreview == VRPREVIEW_LEFT ? 0 : 1, 0);
+         }
+         else if (m_vrPreview == VRPREVIEW_BOTH)
+         {
+            m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, outRT, true, false, x, y, fw, fh, 0, 0, outW, outH, 0, 0);
+            m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, outRT, true, false, x, y, fw, fh, outW, 0, outW, outH, 1, 0);
+         }
+
+         m_pd3dPrimaryDevice->SubmitVR(renderedRT);
+      }
+      else 
+      #endif
+      if (IsAnaglyphStereoMode(m_stereo3D) || Is3DTVStereoMode(m_stereo3D))
+      {
+         // Anaglyph and 3DTV
+         assert(renderedRT != m_pd3dPrimaryDevice->GetOutputBackBuffer());
+         // For anaglyph, defocus the "lesser" eye (the one with a darker color, which should be the non dominant eye of the player)
+         if (g_pplayer->m_stereo3DDefocus != 0.f)
+         {
+            RenderTarget *tmpRT = m_pd3dPrimaryDevice->GetPostProcessRenderTarget(renderedRT);
+            outputRT = m_pd3dPrimaryDevice->GetPostProcessRenderTarget(tmpRT);
+            m_pd3dPrimaryDevice->DrawGaussianBlur(renderedRT, tmpRT, outputRT, abs(g_pplayer->m_stereo3DDefocus) * 39.f, g_pplayer->m_stereo3DDefocus > 0.f ? 0 : 1);
+            renderedRT = outputRT;
+         }
+         // Stereo composition
+         m_pd3dPrimaryDevice->SetRenderTarget("Stereo Anaglyph"s, m_pd3dPrimaryDevice->GetOutputBackBuffer(), false);
+         m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
+         if (g_pplayer->m_stereo3DfakeStereo)
+         {
+            m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pd3dPrimaryDevice->GetBackBufferTexture(), true);
+            m_pd3dPrimaryDevice->StereoShader->SetTexture(SHADER_tex_stereo_depth, m_pd3dPrimaryDevice->GetBackBufferTexture()->GetDepthSampler());
+         }
+         m_pd3dPrimaryDevice->StereoShader->SetTexture(SHADER_tex_stereo_fb, renderedRT->GetColorSampler());
+         m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->StereoShader);
+      }
+      else
+      {
+         // STEREO_OFF: nothing to do
+         assert(renderedRT == m_pd3dPrimaryDevice->GetOutputBackBuffer());
+      }
+   }
+   // Upscale: When using downscaled backbuffer (for performance reason), upscaling is done after postprocessing
+   else if (useUpscaler)
+   {
+      assert(renderedRT != m_pd3dPrimaryDevice->GetOutputBackBuffer()); // At this point, renderedRT may be PP1, PP2 or backbuffer
+      outputRT = m_pd3dPrimaryDevice->GetOutputBackBuffer();
+      m_pd3dPrimaryDevice->SetRenderTarget("Upscale"s, outputRT, false);
+      m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
+      m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, renderedRT->GetColorSampler());
+      m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_fb_copy);
+      m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->FBShader);
+      renderedRT = outputRT;
+   }
+
+   if (!stereo || m_stereo3D != STEREO_VR)
+   {
+      // Except for VR, render LiveUI after tonemapping and stereo (otherwise it would break the calibration process for stereo anaglyph)
+      g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_MISC);
+      m_pd3dPrimaryDevice->SetRenderTarget("ImGui"s, m_pd3dPrimaryDevice->GetOutputBackBuffer());
+      m_pd3dPrimaryDevice->RenderLiveUI();
+      g_frameProfiler.ExitProfileSection();
+   }
+
+   if (g_pplayer->GetProfilingMode() == PF_ENABLED)
+      m_gpu_profiler.Timestamp(GTS_PostProcess);
+}
+
+#pragma endregion

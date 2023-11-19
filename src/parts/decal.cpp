@@ -818,7 +818,7 @@ void Decal::Render(const unsigned int renderMask)
    m_rd->DrawMesh(m_rd->basicShader, !m_backglass, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLESTRIP, 0, 4);
 
    if (m_backglass)
-      g_pplayer->m_pin3d.UpdateBasicShaderMatrix();
+      g_pplayer->m_renderer->UpdateBasicShaderMatrix();
 }
 
 #pragma endregion
