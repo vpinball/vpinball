@@ -1171,21 +1171,25 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
       {
          m_player->m_globalEmissionScale = clamp(m_player->m_globalEmissionScale + step * 0.005f, 0.f, 1.f);
          m_player->SetupShaders();
+         m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 1 /* table option changed event */);
          break;
       }
       case BS_Difficulty:
       {
          table->m_globalDifficulty = clamp(table->m_globalDifficulty + step * 0.005f, 0.f, 1.f);
+         m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 1 /* table option changed event */);
          break;
       }
       case BS_MusicVolume:
       {
          m_player->m_MusicVolume = clamp(m_player->m_MusicVolume + (int) step, 0, 100);
+         m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 1 /* table option changed event */);
          break;
       }
       case BS_SoundVolume:
       {
          m_player->m_SoundVolume = clamp(m_player->m_SoundVolume + (int) step, 0, 100);
+         m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 1 /* table option changed event */);
          break;
       }
       case BS_Tonemapper:
@@ -1198,6 +1202,7 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
             if (tm > ToneMapper::TM_FILMIC)
                tm = ToneMapper::TM_REINHARD;
             m_player->m_toneMapper = (ToneMapper)tm;
+            m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 1 /* table option changed event */);
          }
          break;
       }
@@ -1230,7 +1235,7 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
                else
                   value = clamp(value + nSteps * opt.step * step, opt.minValue, opt.maxValue);
                table->m_settings.SaveValue(Settings::TableOption, opt.name, value);
-               m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 1 /* custom option changed event */);
+               m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 1 /* table option changed event */);
             }
             else
                modified = false;
