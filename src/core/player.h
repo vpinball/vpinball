@@ -538,10 +538,6 @@ public:
 public:
    int m_MSAASamples;
 
-   bool m_dynamicAO;
-   bool m_disableAO;
-   int GetAOMode(); // 0=Off, 1=Static, 2=Dynamic
-
    bool m_useNvidiaApi;
    bool m_disableDWM;
 
