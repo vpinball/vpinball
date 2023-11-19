@@ -123,6 +123,8 @@ public:
 
    BackGlass* m_backGlass = nullptr;
 
+   float m_globalEmissionScale;
+
    vector<Light*> m_ballReflectedLights;
    MeshBuffer* m_ballMeshBuffer = nullptr;
    MeshBuffer* m_ballTrailMeshBuffer = nullptr;

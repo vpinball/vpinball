@@ -132,9 +132,9 @@ void BallEx::Render(const unsigned int renderMask)
    const int lightStride = 6, lightOfs = 3;
    #endif
    vec4 emission = convertColor(g_pplayer->m_ptable->m_Light[0].emission);
-   emission.x *= g_pplayer->m_ptable->m_lightEmissionScale * g_pplayer->m_globalEmissionScale;
-   emission.y *= g_pplayer->m_ptable->m_lightEmissionScale * g_pplayer->m_globalEmissionScale;
-   emission.z *= g_pplayer->m_ptable->m_lightEmissionScale * g_pplayer->m_globalEmissionScale;
+   emission.x *= g_pplayer->m_ptable->m_lightEmissionScale * g_pplayer->m_renderer->m_globalEmissionScale;
+   emission.y *= g_pplayer->m_ptable->m_lightEmissionScale * g_pplayer->m_renderer->m_globalEmissionScale;
+   emission.z *= g_pplayer->m_ptable->m_lightEmissionScale * g_pplayer->m_renderer->m_globalEmissionScale;
    for (unsigned int i2 = 0; i2 < MAX_LIGHT_SOURCES; ++i2)
    {
       const int pPos = i2 * lightStride, pEm = pPos + lightOfs;

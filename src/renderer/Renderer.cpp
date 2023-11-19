@@ -41,6 +41,45 @@ Pin3D::Pin3D(PinTable* const table, const bool fullScreen, const int width, cons
       }
    }
 
+   // Global emission scale
+   m_globalEmissionScale = m_table->m_globalEmissionScale;
+   if (m_table->m_settings.LoadValueWithDefault(Settings::Player, "OverrideTableEmissionScale"s, false))
+   { // Overriden from settings
+      if (m_table->m_settings.LoadValueWithDefault(Settings::Player, "DynamicDayNight"s, false))
+      {
+         time_t hour_machine;
+         time(&hour_machine);
+         tm local_hour;
+         localtime_s(&local_hour, &hour_machine);
+
+         const float lat = m_table->m_settings.LoadValueWithDefault(Settings::Player, "Latitude"s, 52.52f);
+         const float lon = m_table->m_settings.LoadValueWithDefault(Settings::Player, "Longitude"s, 13.37f);
+
+         const double rlat = lat * (M_PI / 180.);
+         const double rlong = lon * (M_PI / 180.);
+
+         const double tr = TheoreticRadiation(local_hour.tm_mday, local_hour.tm_mon + 1, local_hour.tm_year + 1900, rlat);
+         const double max_tr = MaxTheoreticRadiation(local_hour.tm_year + 1900, rlat);
+         const double sset = SunsetSunriseLocalTime(local_hour.tm_mday, local_hour.tm_mon + 1, local_hour.tm_year + 1900, rlong, rlat, false);
+         const double srise = SunsetSunriseLocalTime(local_hour.tm_mday, local_hour.tm_mon + 1, local_hour.tm_year + 1900, rlong, rlat, true);
+
+         const double cur = local_hour.tm_hour + local_hour.tm_min / 60.0;
+
+         const float factor = (float)(sin(M_PI * clamp((cur - srise) / (sset - srise), 0., 1.)) //!! leave space before sunrise and after sunset?
+            * sqrt(tr / max_tr)); //!! magic, "emulates" that shorter days are usually also "darker",cloudier,whatever in most regions
+
+         m_globalEmissionScale = clamp(factor, 0.15f, 1.f); //!! configurable clamp?
+      }
+      else
+      {
+         m_globalEmissionScale = m_table->m_settings.LoadValueWithDefault(Settings::Player, "EmissionScale"s, 0.5f);
+      }
+   }
+   if (g_pvp->m_bgles)
+   { // Overriden from command line
+      m_globalEmissionScale = g_pvp->m_fgles;
+   }
+
    m_stereo3D = stereo3D;
    m_mvp = new ModelViewProj(m_stereo3D == STEREO_OFF ? 1 : 2);
    m_AAfactor = AAfactor;
@@ -602,22 +641,13 @@ void Pin3D::DrawBackground()
       m_pd3dPrimaryDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
       m_pd3dPrimaryDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
       // FIXME this should be called with a trilinear/anisotropy filtering override
-      g_pplayer->Spritedraw(0.f, 0.f, 1.f, 1.f, 0xFFFFFFFF, pin, ptable->m_ImageBackdropNightDay ? sqrtf(g_pplayer->m_globalEmissionScale) : 1.0f, true);
+      g_pplayer->Spritedraw(0.f, 0.f, 1.f, 1.f, 0xFFFFFFFF, pin, ptable->m_ImageBackdropNightDay ? sqrtf(m_globalEmissionScale) : 1.0f, true);
    }
    else
    {
       const D3DCOLOR d3dcolor = COLORREF_to_D3DCOLOR(ptable->m_colorbackdrop);
       m_pd3dPrimaryDevice->Clear(clearType::TARGET | clearType::ZBUFFER, d3dcolor, 1.0f, 0L);
    }
-}
-
-Matrix3D ComputeLaybackTransform(const float layback)
-{
-   // skew the coordinate system from kartesian to non kartesian.
-   Matrix3D matTrans;
-   matTrans.SetIdentity();
-   matTrans._32 = -tanf(0.5f * ANGTORAD(layback));
-   return matTrans;
 }
 
 
@@ -688,7 +718,7 @@ void Pin3D::UpdateBAMHeadTracking()
 
 void Pin3D::SetupShaders()
 {
-   const vec4 envEmissionScale_TexWidth(m_table->m_envEmissionScale * g_pplayer->m_globalEmissionScale,
+   const vec4 envEmissionScale_TexWidth(m_table->m_envEmissionScale * m_globalEmissionScale,
       (float) (m_envTexture ? *m_envTexture : m_builtinEnvTexture).m_height /*+m_builtinEnvTexture.m_width)*0.5f*/, 0.f, 0.f); //!! dto.
 
    UpdateBasicShaderMatrix();
@@ -696,7 +726,7 @@ void Pin3D::SetupShaders()
    m_pd3dPrimaryDevice->basicShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &envEmissionScale_TexWidth);
 
    UpdateBallShaderMatrix();
-   const vec4 st(m_table->m_envEmissionScale * g_pplayer->m_globalEmissionScale, m_envTexture ? (float)m_envTexture->m_height/*+m_envTexture->m_width)*0.5f*/ : (float)m_builtinEnvTexture.m_height/*+m_builtinEnvTexture.m_width)*0.5f*/, 0.f, 0.f);
+   const vec4 st(m_table->m_envEmissionScale * m_globalEmissionScale, m_envTexture ? (float)m_envTexture->m_height/*+m_envTexture->m_width)*0.5f*/ : (float)m_builtinEnvTexture.m_height/*+m_builtinEnvTexture.m_width)*0.5f*/, 0.f, 0.f);
    m_pd3dPrimaryDevice->m_ballShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
    m_pd3dPrimaryDevice->m_ballShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &envEmissionScale_TexWidth);
    //m_pd3dPrimaryDevice->m_ballShader->SetInt("iLightPointNum",MAX_LIGHT_SOURCES);
@@ -705,7 +735,7 @@ void Pin3D::SetupShaders()
    m_pd3dPrimaryDevice->m_ballShader->SetVector(SHADER_Roughness_WrapL_Edge_Thickness, exp2f(10.0f * Roughness + 1.0f), 0.f, 1.f, 0.05f);
    vec4 amb_lr = convertColor(m_table->m_lightAmbient, m_table->m_lightRange);
    m_pd3dPrimaryDevice->m_ballShader->SetVector(SHADER_cAmbient_LightRange, 
-      amb_lr.x * g_pplayer->m_globalEmissionScale, amb_lr.y * g_pplayer->m_globalEmissionScale, amb_lr.z * g_pplayer->m_globalEmissionScale, m_table->m_lightRange);
+      amb_lr.x * m_globalEmissionScale, amb_lr.y * m_globalEmissionScale, amb_lr.z * m_globalEmissionScale, m_table->m_lightRange);
 
    //m_pd3dPrimaryDevice->basicShader->SetInt("iLightPointNum",MAX_LIGHT_SOURCES);
 
@@ -717,9 +747,9 @@ void Pin3D::SetupShaders()
    g_pplayer->m_ptable->m_Light[1].pos.z = g_pplayer->m_ptable->m_lightHeight;
 
    vec4 emission = convertColor(g_pplayer->m_ptable->m_Light[0].emission);
-   emission.x *= g_pplayer->m_ptable->m_lightEmissionScale * g_pplayer->m_globalEmissionScale;
-   emission.y *= g_pplayer->m_ptable->m_lightEmissionScale * g_pplayer->m_globalEmissionScale;
-   emission.z *= g_pplayer->m_ptable->m_lightEmissionScale * g_pplayer->m_globalEmissionScale;
+   emission.x *= g_pplayer->m_ptable->m_lightEmissionScale * m_globalEmissionScale;
+   emission.y *= g_pplayer->m_ptable->m_lightEmissionScale * m_globalEmissionScale;
+   emission.z *= g_pplayer->m_ptable->m_lightEmissionScale * m_globalEmissionScale;
 
 #ifdef ENABLE_SDL
    float lightPos[MAX_LIGHT_SOURCES][4] = { 0.f };

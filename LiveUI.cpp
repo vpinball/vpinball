@@ -1164,7 +1164,7 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
       // Table customization
       case BS_DayNight:
       {
-         m_player->m_globalEmissionScale = clamp(m_player->m_globalEmissionScale + step * 0.005f, 0.f, 1.f);
+         m_renderer->m_globalEmissionScale = clamp(m_renderer->m_globalEmissionScale + step * 0.005f, 0.f, 1.f);
          m_renderer->SetupShaders();
          m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 1 /* table option changed event */);
          break;
@@ -1275,7 +1275,7 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
             {
                m_table->m_settings.SaveValue(Settings::Player, "OverrideTableEmissionScale"s, true);
                m_table->m_settings.SaveValue(Settings::Player, "DynamicDayNight"s, false);
-               m_table->m_settings.SaveValue(Settings::Player, "EmissionScale"s, m_player->m_globalEmissionScale);
+               m_table->m_settings.SaveValue(Settings::Player, "EmissionScale"s, m_renderer->m_globalEmissionScale);
             }
             else if (m_tweakState[BS_DayNight] == 2)
             {
@@ -1342,7 +1342,7 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
             // Remove custom day/night and get back to the one of the table, eventually overiden by app (not table) settings
             // FIXME we just default to the table value, missing the app settings being applied (like day/night from lat/lon,... see in player.cpp)
             m_tweakState[BS_DayNight] = 2;
-            m_player->m_globalEmissionScale = m_table->m_globalEmissionScale;
+            m_renderer->m_globalEmissionScale = m_table->m_globalEmissionScale;
             m_renderer->SetupShaders();
 
             // Tonemapper
@@ -1596,7 +1596,7 @@ void LiveUI::UpdateTweakModeUI()
          case BS_WndBottomZOfs: CM_ROW(setting, "Window Bottom Z Ofs.", "%.1f", VPUTOCM(viewSetup.mWindowBottomZOfs), "cm"); CM_SKIP_LINE; break;
 
          // Table options
-         case BS_DayNight: CM_ROW(setting, "Day Night: ", "%.1f", 100.f * m_player->m_globalEmissionScale, "%"); break;
+         case BS_DayNight: CM_ROW(setting, "Day Night: ", "%.1f", 100.f * m_renderer->m_globalEmissionScale, "%"); break;
          case BS_Difficulty: CM_ROW(setting, "Difficulty: ", "%.1f", 100.f * m_live_table->m_globalDifficulty, "%"); break;
          case BS_Tonemapper: CM_ROW(setting, "Tonemapper: ", "%s", m_player->m_toneMapper == 0 ? "Reinhard" : m_player->m_toneMapper == 1 ? "Tony McMapFace" : "Filmic", ""); break;
          case BS_MusicVolume: CM_ROW(setting, "Music Volume: ", "%d", m_player->m_MusicVolume, "%"); break;
