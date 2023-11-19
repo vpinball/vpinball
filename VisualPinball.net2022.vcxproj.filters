@@ -40,7 +40,6 @@
     <ClCompile Include="mesh.cpp" />
     <ClCompile Include="mixer.cpp" />
     <ClCompile Include="paintsur.cpp" />
-    <ClCompile Include="pin3d.cpp" />
     <ClCompile Include="pinbinary.cpp" />
     <ClCompile Include="pininput.cpp" />
     <ClCompile Include="src/audio/pinsound.cpp" />
@@ -364,6 +363,9 @@
       <Filter>renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\core\TableDB.cpp" />
+    <ClCompile Include="src/renderer/Renderer.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc">
@@ -982,7 +984,7 @@
     <ClInclude Include="physconst.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="pin3d.h">
+    <ClInclude Include="src/renderer/Renderer.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="pinbinary.h">
@@ -1708,7 +1710,7 @@
     <ClInclude Include="src\core\TableDB.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="src\renderer\Renderable.h">
+    <ClInclude Include="src/renderer/Renderable.h">
       <Filter>headers</Filter>
     </ClInclude>
   </ItemGroup>
