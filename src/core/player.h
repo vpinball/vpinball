@@ -520,7 +520,6 @@ private:
    void SubmitFrame();
    void FinishFrame();
 
-   void RenderStaticPrepass();
    void RenderDynamics();
 
    FrameQueueLimiter m_limiter;
@@ -538,22 +537,12 @@ public:
    SDL_Window  *m_sdl_playfieldHwnd;
    #endif
 
-   void DisableStaticPrePass(const bool disable) { if (m_disableStaticPrepass != disable) { m_disableStaticPrepass = disable; m_isStaticPrepassDirty = true; } }
-   bool IsUsingStaticPrepass() const { return !m_disableStaticPrepass && m_stereo3D != STEREO_VR && !m_headTracking; }
-
-private:
-   bool m_isStaticPrepassDirty = true;
-   bool m_disableStaticPrepass = false;
-   RenderTarget *m_staticPrepassRT = nullptr;
-
 public:
    int m_MSAASamples;
 
    bool m_dynamicAO;
    bool m_disableAO;
    int GetAOMode(); // 0=Off, 1=Static, 2=Dynamic
-
-   RenderProbe::ReflectionMode m_maxReflectionMode;
 
    bool m_useNvidiaApi;
    bool m_disableDWM;

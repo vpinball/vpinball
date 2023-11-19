@@ -20,7 +20,6 @@
 #include "renderer/RenderCommand.h"
 #include "typedefs3D.h"
 #include "captureExt.h"
-#include "../math/bluenoise.h"
 #ifdef _MSC_VER
 #include "winsdk/legacy_touch.h"
 #endif
@@ -38,8 +37,6 @@
  #define KEYEVENTF_SCANCODE    0x0008
 #endif /* _WIN32_WINNT >= 0x0500 */
 
-//
-static unsigned int stats_drawn_static_triangles = 0;
 
 //
 
@@ -63,7 +60,6 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    , m_playMode(playMode)
 {
    m_pininput.LoadSettings(m_ptable->m_settings);
-   m_disableStaticPrepass = playMode != 0;
 
 #if !(defined(_M_IX86) || defined(_M_X64) || defined(_M_AMD64) || defined(__i386__) || defined(__i386) || defined(__i486__) || defined(__i486) || defined(i386) || defined(__ia64__) || defined(__x86_64__))
  #pragma message ( "Warning: No CPU float ignore denorm implemented" )
@@ -135,20 +131,6 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    m_headTracking = useVR ? false : m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "BAMHeadTracking"s, false);
    m_BWrendering = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "BWRendering"s, 0);
    m_detectScriptHang = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "DetectHang"s, false);
-   const int maxReflection = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "PFReflection"s, -1);
-   if (maxReflection != -1)
-      m_maxReflectionMode = (RenderProbe::ReflectionMode)maxReflection;
-   else
-   {
-      m_maxReflectionMode = RenderProbe::REFL_STATIC;
-      if (m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "BallReflection"s, true))
-         m_maxReflectionMode = RenderProbe::REFL_STATIC_N_BALLS;
-      if (m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "PFRefl"s, true))
-         m_maxReflectionMode = RenderProbe::REFL_STATIC_N_DYNAMIC;
-   }
-   // For dynamic mode, static reflections are not available so adapt the mode
-   if (!IsUsingStaticPrepass() && m_maxReflectionMode >= RenderProbe::REFL_STATIC)
-      m_maxReflectionMode = RenderProbe::REFL_DYNAMIC;
 
    // Apply table specific overrides
    m_toneMapper = (ToneMapper)m_ptable->m_settings.LoadValueWithDefault(Settings::TableOverride, "ToneMapper"s, m_ptable->GetToneMapper());
@@ -268,7 +250,6 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
 Player::~Player()
 {
    m_ptable->StopPlaying();
-   delete m_staticPrepassRT;
    delete m_pBCTarget;
    delete m_ptable;
 }
@@ -652,7 +633,7 @@ void Player::Shutdown()
       std::filesystem::create_directories(std::filesystem::path(dir));
 
       std::map<string, bool> prevPreRenderOnly;
-      if (!IsUsingStaticPrepass() && FileExists(dir + "used_textures.xml"))
+      if (!m_renderer->IsUsingStaticPrepass() && FileExists(dir + "used_textures.xml"))
       {
          std::ifstream myFile(dir + "used_textures.xml");
          std::stringstream buffer;
@@ -690,8 +671,8 @@ void Player::Shutdown()
                node->SetAttribute("clampu", (int)m_renderer->m_pd3dPrimaryDevice->m_texMan.GetClampU(memtex));
                node->SetAttribute("clampv", (int)m_renderer->m_pd3dPrimaryDevice->m_texMan.GetClampV(memtex));
                node->SetAttribute("linear", m_renderer->m_pd3dPrimaryDevice->m_texMan.IsLinearRGB(memtex));
-               bool preRenderOnly = !IsUsingStaticPrepass() ? (prevPreRenderOnly.find(image->m_szName) != prevPreRenderOnly.end() ? prevPreRenderOnly[image->m_szName] : true)
-                                                            : m_renderer->m_pd3dPrimaryDevice->m_texMan.IsPreRenderOnly(memtex);
+               bool preRenderOnly = !m_renderer->IsUsingStaticPrepass() ? (prevPreRenderOnly.find(image->m_szName) != prevPreRenderOnly.end() ? prevPreRenderOnly[image->m_szName] : true)
+                                                                        : m_renderer->m_pd3dPrimaryDevice->m_texMan.IsPreRenderOnly(memtex);
                node->SetAttribute("prerender", preRenderOnly);
                root->InsertEndChild(node);
                break;
@@ -1088,6 +1069,7 @@ HRESULT Player::Init()
       return hr;
    }
    
+   m_renderer->DisableStaticPrePass(m_playMode != 0);
    m_renderer->m_pd3dPrimaryDevice->m_vsyncCount = 1;
    m_maxFramerate = (m_videoSyncMode != VideoSyncMode::VSM_NONE && m_maxFramerate == 0) ? m_refreshrate : min(m_maxFramerate, m_refreshrate);
    PLOGI << "Synchronization mode: " << m_videoSyncMode << " with maximum FPS: " << m_maxFramerate << ", display FPS: " << m_refreshrate;
@@ -1367,7 +1349,7 @@ HRESULT Player::Init()
                   }
                   // For dynamic modes (VR, head tracking,...) mark all preloaded textures as static only
                   // This will make the cache wrong for the next non static run but it will rebuild, while the opposite would not (all preloads would stay as not prerender only)
-                  m_renderer->m_render_mask = (!IsUsingStaticPrepass() || preRenderOnly) ? Renderer::STATIC_ONLY : Renderer::DEFAULT;
+                  m_renderer->m_render_mask = (!m_renderer->IsUsingStaticPrepass() || preRenderOnly) ? Renderer::STATIC_ONLY : Renderer::DEFAULT;
                   m_renderer->m_pd3dPrimaryDevice->m_texMan.LoadTexture(tex->m_pdsBuffer, (SamplerFilter)filter, (SamplerAddressMode)clampU, (SamplerAddressMode)clampV, linearRGB);
                   PLOGI << "Texture preloading: '" << name << '\'';
                }
@@ -1446,7 +1428,7 @@ HRESULT Player::Init()
    m_pEditorTable->m_progressDialog.SetName("Prerendering Static Parts..."s);
    m_pEditorTable->m_progressDialog.SetProgress(70);
    PLOGI << "Prerendering static parts"; // For profiling
-   RenderStaticPrepass();
+   m_renderer->RenderStaticPrepass();
 
 #ifdef PLAYBACK
    if (m_playback)
@@ -1533,225 +1515,7 @@ int Player::GetAOMode()
       return 0;
    if (m_dynamicAO)
       return 2;
-   return IsUsingStaticPrepass() ? 1 : 0; // If AO is static prepass only and we are running without it, disable AO
-}
-
-void Player::RenderStaticPrepass()
-{
-   // For VR, we don't use any static pre-rendering
-   if (m_stereo3D == STEREO_VR)
-      return;
-
-   if (!m_isStaticPrepassDirty)
-      return;
-
-   m_isStaticPrepassDirty = false;
-
-   TRACE_FUNCTION();
-
-   m_renderer->m_pd3dPrimaryDevice->FlushRenderFrame();
-   m_renderer->m_render_mask |= Renderer::STATIC_ONLY;
-
-   // The code will fail if the static render target is MSAA (the copy operation we are performing is not allowed)
-   delete m_staticPrepassRT;
-   m_staticPrepassRT = m_renderer->m_pd3dPrimaryDevice->GetBackBufferTexture()->Duplicate("StaticPreRender"s);
-   assert(!m_staticPrepassRT->IsMSAA());
-   
-   RenderTarget *accumulationSurface = IsUsingStaticPrepass() ? m_staticPrepassRT->Duplicate("Accumulation"s) : nullptr;
-
-   RenderTarget *renderRT = GetAOMode() == 1 ? m_renderer->m_pd3dPrimaryDevice->GetBackBufferTexture() : m_staticPrepassRT;
-
-   // if rendering static/with heavy oversampling, disable the aniso/trilinear filter to get a sharper/more precise result overall!
-   if (IsUsingStaticPrepass())
-   {
-      PLOGI << "Performing prerendering of static parts."; // For profiling
-      m_renderer->m_pd3dPrimaryDevice->SetMainTextureDefaultFiltering(SF_BILINEAR);
-   }
-
-   //#define STATIC_PRERENDER_ITERATIONS_KOROBOV 7.0 // for the (commented out) lattice-based QMC oversampling, 'magic factor', depending on the the number of iterations!
-   // loop for X times and accumulate/average these renderings
-   // NOTE: iter == 0 MUST ALWAYS PRODUCE an offset of 0,0!
-   int n_iter = IsUsingStaticPrepass() ? (STATIC_PRERENDER_ITERATIONS - 1) : 0;
-   for (int iter = n_iter; iter >= 0; --iter) // just do one iteration if in dynamic camera/light/material tweaking mode
-   {
-      m_renderer->m_pd3dPrimaryDevice->m_curDrawnTriangles = 0;
-
-      float u1 = xyLDBNbnot[iter*2  ];  //      (float)iter*(float)(1.0                                /STATIC_PRERENDER_ITERATIONS);
-      float u2 = xyLDBNbnot[iter*2+1];  //fmodf((float)iter*(float)(STATIC_PRERENDER_ITERATIONS_KOROBOV/STATIC_PRERENDER_ITERATIONS), 1.f);
-      // the following line implements filter importance sampling for a small gauss (i.e. less jaggies as it also samples neighboring pixels) -> but also potentially more artifacts in compositing!
-      gaussianDistribution(u1, u2, 0.5f, 0.0f); //!! first 0.5 could be increased for more blur, but is pretty much what is recommended
-      // sanity check to be sure to limit filter area to 3x3 in practice, as the gauss transformation is unbound (which is correct, but for our use-case/limited amount of samples very bad)
-      assert(u1 > -1.5f && u1 < 1.5f);
-      assert(u2 > -1.5f && u2 < 1.5f);
-      // Last iteration MUST set a sample offset of 0,0 so that final depth buffer features 'correctly' centered pixel sample
-      assert(iter != 0 || (u1 == 0.f && u2 == 0.f));
-
-      // Setup Camera,etc matrices for each iteration.
-      m_renderer->InitLayout(u1, u2);
-
-      // Direct all renders to the "static" buffer
-      m_renderer->m_pd3dPrimaryDevice->SetRenderTarget("PreRender Background"s, renderRT, false);
-      m_renderer->DrawBackground();
-      m_renderer->m_pd3dPrimaryDevice->FlushRenderFrame();
-
-      m_renderer->m_pd3dPrimaryDevice->SetRenderTarget("PreRender Draw"s, renderRT);
-
-      if (IsUsingStaticPrepass())
-      {
-         // Mark all probes to be re-rendered for this frame (only if needed, lazily rendered)
-         for (size_t i = 0; i < m_ptable->m_vrenderprobe.size(); ++i)
-            m_ptable->m_vrenderprobe[i]->MarkDirty();
-
-         // Render static parts
-         m_renderer->UpdateBasicShaderMatrix();
-         for (Hitable *hitable : m_vhitables)
-            hitable->Render(m_renderer->m_render_mask);
-
-         // Rendering is done to the static render target then accumulated to accumulationSurface
-         // We use the framebuffer mirror shader which copies a weighted version of the bound texture
-         m_renderer->m_pd3dPrimaryDevice->SetRenderTarget("PreRender Accumulate"s, accumulationSurface);
-         m_renderer->m_pd3dPrimaryDevice->AddRenderTargetDependency(renderRT);
-         m_renderer->m_pd3dPrimaryDevice->ResetRenderState();
-         m_renderer->m_pd3dPrimaryDevice->SetRenderState(RenderState::ALPHABLENDENABLE, iter == STATIC_PRERENDER_ITERATIONS - 1 ? RenderState::RS_FALSE : RenderState::RS_TRUE);
-         m_renderer->m_pd3dPrimaryDevice->SetRenderState(RenderState::SRCBLEND, RenderState::ONE);
-         m_renderer->m_pd3dPrimaryDevice->SetRenderState(RenderState::DESTBLEND, RenderState::ONE);
-         m_renderer->m_pd3dPrimaryDevice->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_ADD);
-         m_renderer->m_pd3dPrimaryDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
-         m_renderer->m_pd3dPrimaryDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
-         m_renderer->m_pd3dPrimaryDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
-         m_renderer->m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_fb_mirror);
-         m_renderer->m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, 
-            (float)(1.0 / (double)renderRT->GetWidth()), (float)(1.0 / (double)renderRT->GetHeight()),
-            (float)((double)STATIC_PRERENDER_ITERATIONS), 1.0f);
-         m_renderer->m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, renderRT->GetColorSampler());
-         m_renderer->m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_renderer->m_pd3dPrimaryDevice->FBShader);
-         m_renderer->m_pd3dPrimaryDevice->FBShader->SetTextureNull(SHADER_tex_fb_unfiltered);
-      }
-
-      // Finish the frame.
-      m_renderer->m_pd3dPrimaryDevice->FlushRenderFrame();
-      if (m_pEditorTable->m_progressDialog.IsWindow())
-         m_pEditorTable->m_progressDialog.SetProgress(70 +(((30 * (n_iter + 1 - iter)) / (n_iter + 1))));
-   }
-
-   if (accumulationSurface)
-   {
-      // copy back weighted antialiased color result to the static render target, keeping depth untouched
-      m_renderer->m_pd3dPrimaryDevice->SetRenderTarget("PreRender Store"s, renderRT);
-      m_renderer->m_pd3dPrimaryDevice->BlitRenderTarget(accumulationSurface, renderRT, true, false);
-      m_renderer->m_pd3dPrimaryDevice->FlushRenderFrame(); // Execute before destroying the render target
-      delete accumulationSurface;
-   }
-
-   // if rendering static/with heavy oversampling, re-enable the aniso/trilinear filter now for the normal rendering
-   const bool forceAniso = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "ForceAnisotropicFiltering"s, true);
-   m_renderer->m_pd3dPrimaryDevice->SetMainTextureDefaultFiltering(forceAniso ? SF_ANISOTROPIC : SF_TRILINEAR);
-
-   // Now finalize static buffer with static AO
-   if (GetAOMode() == 1)
-   {
-      PLOGI << "Starting static AO prerendering"; // For profiling
-
-      const bool useAA = m_renderer->m_AAfactor != 1.0f;
-
-      m_renderer->m_pd3dPrimaryDevice->SetRenderTarget("PreRender AO Save Depth"s, m_staticPrepassRT);
-      m_renderer->m_pd3dPrimaryDevice->ResetRenderState();
-      m_renderer->m_pd3dPrimaryDevice->BlitRenderTarget(renderRT, m_staticPrepassRT, false, true);
-
-      m_renderer->m_pd3dPrimaryDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
-      m_renderer->m_pd3dPrimaryDevice->SetRenderState(RenderState::CULLMODE ,RenderState::CULL_NONE);
-      m_renderer->m_pd3dPrimaryDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
-      m_renderer->m_pd3dPrimaryDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
-
-      m_renderer->m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_depth, renderRT->GetDepthSampler());
-      m_renderer->m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_ao_dither, &m_renderer->m_aoDitherTexture, SF_NONE, SA_REPEAT, SA_REPEAT, true); // FIXME the force linear RGB is not honored in VR
-      m_renderer->m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_AO_scale_timeblur, m_ptable->m_AOScale, 0.1f, 0.f, 0.f);
-      m_renderer->m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_AO);
-
-      for (unsigned int i = 0; i < 50; ++i) // 50 iterations to get AO smooth
-      {
-         m_renderer->m_pd3dPrimaryDevice->SetRenderTarget("PreRender AO"s, m_renderer->m_pd3dPrimaryDevice->GetAORenderTarget(0));
-         m_renderer->m_pd3dPrimaryDevice->AddRenderTargetDependency(renderRT);
-         m_renderer->m_pd3dPrimaryDevice->AddRenderTargetDependency(m_renderer->m_pd3dPrimaryDevice->GetAORenderTarget(1));
-         if (i == 0)
-            m_renderer->m_pd3dPrimaryDevice->Clear(clearType::TARGET, 0, 1.0f, 0L);
-
-         m_renderer->m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, m_renderer->m_pd3dPrimaryDevice->GetAORenderTarget(1)->GetColorSampler()); //!! ?
-         m_renderer->m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, m_renderer->m_pd3dPrimaryDevice->GetAORenderTarget(1)->GetColorSampler()); //!! ?
-         m_renderer->m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, 
-            (float)(1.0 / m_renderer->m_pd3dPrimaryDevice->GetAORenderTarget(1)->GetWidth()), (float)(1.0 / m_renderer->m_pd3dPrimaryDevice->GetAORenderTarget(1)->GetHeight()),
-            radical_inverse(i) * (float)(1. / 8.0), /*sobol*/ radical_inverse<3>(i) * (float)(1. / 8.0)); // jitter within (64/8)x(64/8) neighborhood of 64x64 tex, good compromise between blotches and noise
-         m_renderer->m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_renderer->m_pd3dPrimaryDevice->FBShader);
-
-         // flip AO buffers (avoids copy)
-         m_renderer->m_pd3dPrimaryDevice->SwapAORenderTargets();
-      }
-
-      m_renderer->m_pd3dPrimaryDevice->FBShader->SetTextureNull(SHADER_tex_depth);
-
-      m_renderer->m_pd3dPrimaryDevice->SetRenderTarget("PreRender Apply AO"s, m_staticPrepassRT);
-      m_renderer->m_pd3dPrimaryDevice->AddRenderTargetDependency(renderRT);
-      m_renderer->m_pd3dPrimaryDevice->AddRenderTargetDependency(m_renderer->m_pd3dPrimaryDevice->GetAORenderTarget(1));
-
-      m_renderer->m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, renderRT->GetColorSampler());
-      m_renderer->m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, renderRT->GetColorSampler());
-      m_renderer->m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_ao, m_renderer->m_pd3dPrimaryDevice->GetAORenderTarget(1)->GetColorSampler());
-
-      m_renderer->m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / renderRT->GetWidth()), (float)(1.0 / renderRT->GetHeight()), 1.0f, 1.0f);
-      m_renderer->m_pd3dPrimaryDevice->FBShader->SetTechnique(useAA ? SHADER_TECHNIQUE_fb_AO_static : SHADER_TECHNIQUE_fb_AO_no_filter_static);
-
-      m_renderer->m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_renderer->m_pd3dPrimaryDevice->FBShader);
-
-      m_renderer->m_pd3dPrimaryDevice->FlushRenderFrame(); // Execute before destroying the render targets
-
-      // Delete buffers: we won't need them anymore since dynamic AO is disabled
-      m_renderer->m_pd3dPrimaryDevice->FBShader->SetTextureNull(SHADER_tex_ao);
-      m_renderer->m_pd3dPrimaryDevice->ReleaseAORenderTargets();
-   }
-
-   if (m_MSAASamples > 1)
-   {
-      // Render one frame with MSAA to keep MSAA depth (this adds MSAA to the overlapping parts between statics & dynamics)
-      RenderTarget* renderRT = m_renderer->m_pd3dPrimaryDevice->GetMSAABackBufferTexture()->Duplicate("MSAAPreRender"s);
-      m_renderer->InitLayout();
-      m_renderer->m_pd3dPrimaryDevice->SetRenderTarget("PreRender MSAA Background"s, renderRT, false);
-      m_renderer->DrawBackground();
-      m_renderer->m_pd3dPrimaryDevice->FlushRenderFrame();
-      if (IsUsingStaticPrepass())
-      {
-         m_renderer->m_pd3dPrimaryDevice->SetRenderTarget("PreRender MSAA Scene"s, renderRT);
-         m_renderer->m_pd3dPrimaryDevice->ResetRenderState();
-         for (size_t i = 0; i < m_ptable->m_vrenderprobe.size(); ++i)
-            m_ptable->m_vrenderprobe[i]->MarkDirty();
-         m_renderer->UpdateBasicShaderMatrix();
-         for (Hitable *hitable : m_vhitables)
-            hitable->Render(m_renderer->m_render_mask);
-         m_renderer->m_pd3dPrimaryDevice->FlushRenderFrame();
-      }
-      // Copy supersampled color buffer
-      m_renderer->m_pd3dPrimaryDevice->SetRenderTarget("PreRender Combine Color"s, renderRT);
-      m_renderer->m_pd3dPrimaryDevice->BlitRenderTarget(m_staticPrepassRT, renderRT, true, false);
-      m_renderer->m_pd3dPrimaryDevice->FlushRenderFrame();
-      // Replace with this new MSAA pre render
-      RenderTarget *initialPreRender = m_staticPrepassRT;
-      m_staticPrepassRT = renderRT;
-      delete initialPreRender;
-   }
-
-   if (IsUsingStaticPrepass())
-   {
-      PLOGI << "Starting Reflection Probe prerendering"; // For profiling
-      for (RenderProbe *probe : m_ptable->m_vrenderprobe)
-         probe->PreRenderStatic();
-   }
-
-   // Store the total number of triangles prerendered (including ones done for render probes)
-   stats_drawn_static_triangles = m_renderer->m_pd3dPrimaryDevice->m_curDrawnTriangles;
-
-   PLOGI << "Static PreRender done"; // For profiling
-   
-   m_renderer->m_render_mask &= ~Renderer::STATIC_ONLY;
-   m_renderer->m_pd3dPrimaryDevice->FlushRenderFrame();
+   return m_renderer->IsUsingStaticPrepass() ? 1 : 0; // If AO is static prepass only and we are running without it, disable AO
 }
 
 Ball *Player::CreateBall(const float x, const float y, const float z, const float vx, const float vy, const float vz, const float radius, const float mass)
@@ -2828,7 +2592,7 @@ void Player::RenderDynamics()
    if (m_renderer->m_backGlass != nullptr)
       m_renderer->m_backGlass->Render();
 
-   m_renderer->m_render_mask = IsUsingStaticPrepass() ? Renderer::DYNAMIC_ONLY : Renderer::DEFAULT;
+   m_renderer->m_render_mask = m_renderer->IsUsingStaticPrepass() ? Renderer::DYNAMIC_ONLY : Renderer::DEFAULT;
    m_renderer->DrawBulbLightBuffer();
    for (Hitable *hitable : m_vhitables)
       hitable->Render(m_renderer->m_render_mask);
@@ -2890,7 +2654,7 @@ string Player::GetPerfInfo()
 
    // Renderer additional information
    info << "Triangles: " << ((m_renderer->m_pd3dPrimaryDevice->m_frameDrawnTriangles + 999) / 1000) << "k per frame, "
-        << ((stats_drawn_static_triangles + m_renderer->m_pd3dPrimaryDevice->m_frameDrawnTriangles + 999) / 1000) << "k overall. DayNight " << quantizeUnsignedPercent(m_renderer->m_globalEmissionScale)
+        << ((m_renderer->GetNPrerenderTris() + m_renderer->m_pd3dPrimaryDevice->m_frameDrawnTriangles + 999) / 1000) << "k overall. DayNight " << quantizeUnsignedPercent(m_renderer->m_globalEmissionScale)
         << "%%\n";
    info << "Draw calls: " << m_renderer->m_pd3dPrimaryDevice->Perf_GetNumDrawCalls() << "  (" << m_renderer->m_pd3dPrimaryDevice->Perf_GetNumLockCalls() << " Locks)\n";
    info << "State changes: " << m_renderer->m_pd3dPrimaryDevice->Perf_GetNumStateChanges() << "\n";
@@ -3231,34 +2995,9 @@ void Player::PrepareFrame()
       m_renderer->m_gpu_profiler.BeginFrame(m_renderer->m_pd3dPrimaryDevice->GetCoreDevice());
 #endif
 
-   RenderStaticPrepass();
+   m_renderer->RenderStaticPrepass();
 
    g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_GPU_COLLECT);
-   m_renderer->m_pd3dPrimaryDevice->SetRenderTarget("Render Scene"s, m_renderer->m_pd3dPrimaryDevice->GetMSAABackBufferTexture());
-   if (m_stereo3D == STEREO_VR || GetInfoMode() == IF_DYNAMIC_ONLY)
-   {
-      // For VR start from a clear render
-      m_renderer->m_pd3dPrimaryDevice->Clear(clearType::TARGET | clearType::ZBUFFER, 0, 1.0f, 0L);
-   }
-   else
-   {
-      // copy static buffers to back buffer including z buffer
-      m_renderer->m_pd3dPrimaryDevice->AddRenderTargetDependency(m_staticPrepassRT);
-      m_renderer->m_pd3dPrimaryDevice->BlitRenderTarget(m_staticPrepassRT, m_renderer->m_pd3dPrimaryDevice->GetMSAABackBufferTexture());
-   }
-
-   // Update camera point of view
-   #ifdef ENABLE_VR
-   if (m_stereo3D == STEREO_VR)
-      m_renderer->m_pd3dPrimaryDevice->UpdateVRPosition(m_renderer->GetMVP());
-   else 
-   #endif
-   if (m_headTracking)
-      // #ravarcade: UpdateBAMHeadTracking will set proj/view matrix to add BAM view and head tracking
-      m_renderer->UpdateBAMHeadTracking();
-   else if (m_liveUI->IsTweakMode())
-      m_renderer->InitLayout();
-
    m_renderer->PrepareFrame();
 
    if (GetInfoMode() != IF_STATIC_ONLY)

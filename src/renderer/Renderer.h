@@ -116,11 +116,19 @@ public:
    void UpdateBallShaderMatrix();
 
    void PrepareFrame();
+   void RenderStaticPrepass();
    void DrawBackground();
    void DrawBulbLightBuffer();
    void DrawStatics();
    void DrawDynamics(bool onlyBalls);
 
+   void DisableStaticPrePass(const bool disable) { if (m_disableStaticPrepass != disable) { m_disableStaticPrepass = disable; m_isStaticPrepassDirty = true; } }
+   bool IsUsingStaticPrepass() const;
+   unsigned int GetNPrerenderTris() const { return m_statsDrawnStaticTriangles; }
+   RenderProbe::ReflectionMode GetMaxReflectionMode() const {
+      // For dynamic mode, static reflections are not available so adapt the mode
+      return !IsUsingStaticPrepass() && m_maxReflectionMode >= RenderProbe::REFL_STATIC ? RenderProbe::REFL_DYNAMIC : m_maxReflectionMode;
+   }
    BackGlass* m_backGlass = nullptr;
 
    float m_globalEmissionScale;
@@ -165,6 +173,12 @@ private:
    PinTable* const m_table;
 
    ModelViewProj* m_mvp = nullptr; // Store the active Model / View / Projection
+
+   bool m_isStaticPrepassDirty = true;
+   bool m_disableStaticPrepass = false;
+   RenderTarget* m_staticPrepassRT = nullptr;
+   unsigned int m_statsDrawnStaticTriangles = 0;
+   RenderProbe::ReflectionMode m_maxReflectionMode;
 
    bool m_ss_refl;
    StereoMode m_stereo3D;

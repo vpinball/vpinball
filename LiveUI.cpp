@@ -785,7 +785,7 @@ void LiveUI::OpenLiveUI()
       m_ShowSplashModal = false;
       m_useEditorCam = true;
       m_orthoCam = false;
-      m_player->DisableStaticPrePass(true);
+      m_renderer->DisableStaticPrePass(true);
       ResetCameraFromPlayer();
    }
 }
@@ -994,7 +994,7 @@ void LiveUI::OpenTweakMode()
 {
    m_ShowUI = false;
    m_ShowSplashModal = false;
-   m_player->DisableStaticPrePass(true);
+   m_renderer->DisableStaticPrePass(true);
    m_tweakMode = true;
    m_activeTweakPage = TP_PointOfView;
    m_activeTweakIndex = 0;
@@ -1705,7 +1705,7 @@ void LiveUI::HideUI()
    m_ShowSplashModal = false;
    m_ShowUI = false;
    m_flyMode = false;
-   m_player->DisableStaticPrePass(false);
+   m_renderer->DisableStaticPrePass(false);
    PausePlayer(false);
    while (ShowCursor(TRUE)<0) ;
    while (ShowCursor(FALSE)>=0) ;
@@ -1734,7 +1734,7 @@ void LiveUI::UpdateMainUI()
 
    if (showFullUI)
    {
-      m_player->DisableStaticPrePass(true);
+      m_renderer->DisableStaticPrePass(true);
 
       // Main menubar
       if (ImGui::BeginMainMenuBar())
@@ -2781,7 +2781,7 @@ void LiveUI::UpdateHeadTrackingModal()
 
 void LiveUI::UpdateRendererInspectionModal()
 {
-   m_player->DisableStaticPrePass(false);
+   m_renderer->DisableStaticPrePass(false);
    m_useEditorCam = false;
    m_renderer->InitLayout();
 
@@ -2944,7 +2944,7 @@ void LiveUI::UpdateMainSplashModal()
          SetupImGuiStyle(1.0f);
          m_useEditorCam = false;
          m_renderer->InitLayout();
-         m_player->DisableStaticPrePass(false);
+         m_renderer->DisableStaticPrePass(false);
          HideUI();
       }
       ImGui::SetItemDefaultFocus();
@@ -2968,7 +2968,7 @@ void LiveUI::UpdateMainSplashModal()
          m_ShowSplashModal = false;
          m_useEditorCam = false;
          m_orthoCam = false;
-         m_player->DisableStaticPrePass(true);
+         m_renderer->DisableStaticPrePass(true);
          ResetCameraFromPlayer();
       }
       if (g_pvp->m_ptableActive->IsLocked() && !g_pvp->m_ptableActive->FDirty() && ImGui::Button("Generate Tournament File", size))
