@@ -520,8 +520,6 @@ private:
    void SubmitFrame();
    void FinishFrame();
 
-   void RenderDynamics();
-
    FrameQueueLimiter m_limiter;
 
 private:

@@ -2544,74 +2544,6 @@ void Player::Spritedraw(const float posx, const float posy, const float width, c
    pd3dDevice->GetCurrentPass()->m_commands.back()->SetDepth(-10000.f);
 }
 
-void Player::RenderDynamics()
-{
-   PROFILE_FUNCTION(FrameProfiler::PROFILE_GPU_COLLECT);
-   TRACE_FUNCTION();
-
-   // Mark all probes to be re-rendered for this frame (only if needed, lazily rendered)
-   for (size_t i = 0; i < m_ptable->m_vrenderprobe.size(); ++i)
-      m_ptable->m_vrenderprobe[i]->MarkDirty();
-
-   // Setup the projection matrices used for refraction
-   Matrix3D matProj[2];
-   #ifdef ENABLE_SDL
-   const int nEyes = m_renderer->m_pd3dPrimaryDevice->m_stereo3D != STEREO_OFF ? 2 : 1;
-   for (int eye = 0; eye < nEyes; eye++)
-      matProj[eye] = m_renderer->GetMVP().GetProj(eye);
-   m_renderer->m_pd3dPrimaryDevice->basicShader->SetMatrix(SHADER_matProj, &matProj[0], nEyes);
-   m_renderer->m_pd3dPrimaryDevice->m_ballShader->SetMatrix(SHADER_matProj, &matProj[0], nEyes);
-   #else
-   matProj[0] = m_renderer->GetMVP().GetProj(0);
-   m_renderer->m_pd3dPrimaryDevice->basicShader->SetMatrix(SHADER_matProj, &matProj[0]);
-   m_renderer->m_pd3dPrimaryDevice->m_ballShader->SetMatrix(SHADER_matProj, &matProj[0]);
-   #endif
-
-   // Update ball pos uniforms
-   #define MAX_BALL_SHADOW 8
-   vec4 balls[MAX_BALL_SHADOW];
-   int p = 0;
-   for (size_t i = 0; i < m_vball.size() && p < MAX_BALL_SHADOW; i++)
-   {
-      Ball *const pball = m_vball[i];
-      if (!pball->m_visible)
-         continue;
-      balls[p] = vec4(pball->m_d.m_pos.x, pball->m_d.m_pos.y, pball->m_d.m_pos.z, pball->m_d.m_radius);
-      p++;
-   }
-   for (; p < MAX_BALL_SHADOW; p++)
-      balls[p] = vec4(-1000.f, -1000.f, -1000.f, 0.0f);
-   m_renderer->m_pd3dPrimaryDevice->lightShader->SetFloat4v(SHADER_balls, balls, MAX_BALL_SHADOW);
-   m_renderer->m_pd3dPrimaryDevice->basicShader->SetFloat4v(SHADER_balls, balls, MAX_BALL_SHADOW);
-   m_renderer->m_pd3dPrimaryDevice->flasherShader->SetFloat4v(SHADER_balls, balls, MAX_BALL_SHADOW);
-
-   m_renderer->UpdateBasicShaderMatrix();
-   m_renderer->UpdateBallShaderMatrix();
-
-   // Render the default backglass without depth write before the table so that it will be visible for tables without a VR backglass but overwriten otherwise
-   if (m_renderer->m_backGlass != nullptr)
-      m_renderer->m_backGlass->Render();
-
-   m_renderer->m_render_mask = m_renderer->IsUsingStaticPrepass() ? Renderer::DYNAMIC_ONLY : Renderer::DEFAULT;
-   m_renderer->DrawBulbLightBuffer();
-   for (Hitable *hitable : m_vhitables)
-      hitable->Render(m_renderer->m_render_mask);
-   for (Ball* ball : m_vball)
-      ball->m_pballex->Render(m_renderer->m_render_mask);
-   m_renderer->m_render_mask = Renderer::DEFAULT;
-   
-   m_renderer->m_pd3dPrimaryDevice->basicShader->SetTextureNull(SHADER_tex_base_transmission); // need to reset the bulb light texture, as its used as render target for bloom again
-
-   for (size_t i = 0; i < m_ptable->m_vrenderprobe.size(); ++i)
-      m_ptable->m_vrenderprobe[i]->ApplyAreaOfInterest();
-
-   if (!m_liveUI->IsTweakMode())
-   {
-      mixer_draw(); // Draw the mixer volume
-      plumb_draw(); // Debug draw of plumb
-   }
-}
-
 #pragma endregion
 
 
@@ -2998,13 +2930,8 @@ void Player::PrepareFrame()
    m_renderer->RenderStaticPrepass();
 
    g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_GPU_COLLECT);
+   
    m_renderer->PrepareFrame();
-
-   if (GetInfoMode() != IF_STATIC_ONLY)
-      RenderDynamics();
-
-   // Resolve MSAA buffer to a normal one (noop if not using MSAA), allowing sampling it for postprocessing
-   m_renderer->m_pd3dPrimaryDevice->ResolveMSAA();
 
    if (!m_pause && (m_videoSyncMode != VideoSyncMode::VSM_FRAME_PACING))
       m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(m_startFrameTick / 1000)); // trigger key events mainly for VPM<->VP roundtrip
