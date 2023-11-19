@@ -23,6 +23,8 @@ public:
    inline ShaderTechniques GetShaderTechnique() const { return m_shaderTechnique; }
    inline MeshBuffer* GetMeshBuffer() const { return m_mb; }
    inline float GetDepth() const { return m_depth; }
+   inline void SetTransparent(bool t) { m_isTransparent = t; }
+   inline void SetDepth(float d) { m_depth = d; }
 
    void Execute(const int nInstances, const bool log);
 
