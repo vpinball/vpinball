@@ -1052,30 +1052,6 @@ void Player::UpdateStereoShaderState()
    }
 }
 
-void Player::SetupShaders()
-{
-   const vec4 envEmissionScale_TexWidth(m_ptable->m_envEmissionScale * m_globalEmissionScale,
-      (float) (m_renderer->m_envTexture ? *m_renderer->m_envTexture : m_renderer->m_builtinEnvTexture).m_height /*+m_renderer->m_builtinEnvTexture.m_width)*0.5f*/, 0.f, 0.f); //!! dto.
-
-   m_renderer->UpdateBasicShaderMatrix();
-   m_renderer->m_pd3dPrimaryDevice->basicShader->SetTexture(SHADER_tex_env, m_renderer->m_envTexture ? m_renderer->m_envTexture : &m_renderer->m_builtinEnvTexture);
-   m_renderer->m_pd3dPrimaryDevice->basicShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &envEmissionScale_TexWidth);
-
-   m_renderer->UpdateBallShaderMatrix();
-   const vec4 st(m_ptable->m_envEmissionScale*m_globalEmissionScale, m_renderer->m_envTexture ? (float)m_renderer->m_envTexture->m_height/*+m_renderer->m_envTexture->m_width)*0.5f*/ : (float)m_renderer->m_builtinEnvTexture.m_height/*+m_renderer->m_builtinEnvTexture.m_width)*0.5f*/, 0.f, 0.f);
-   m_renderer->m_pd3dPrimaryDevice->m_ballShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
-   m_renderer->m_pd3dPrimaryDevice->m_ballShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &envEmissionScale_TexWidth);
-   //m_renderer->m_pd3dPrimaryDevice->m_ballShader->SetInt("iLightPointNum",MAX_LIGHT_SOURCES);
-
-   constexpr float Roughness = 0.8f;
-   m_renderer->m_pd3dPrimaryDevice->m_ballShader->SetVector(SHADER_Roughness_WrapL_Edge_Thickness, exp2f(10.0f * Roughness + 1.0f), 0.f, 1.f, 0.05f);
-   vec4 amb_lr = convertColor(m_ptable->m_lightAmbient, m_ptable->m_lightRange);
-   m_renderer->m_pd3dPrimaryDevice->m_ballShader->SetVector(SHADER_cAmbient_LightRange, 
-      amb_lr.x * m_globalEmissionScale, amb_lr.y * m_globalEmissionScale, amb_lr.z * m_globalEmissionScale, m_ptable->m_lightRange);
-
-   m_renderer->InitLights();
-}
-
 HRESULT Player::Init()
 {
    TRACE_FUNCTION();
@@ -1454,7 +1430,7 @@ HRESULT Player::Init()
    m_pEditorTable->m_progressDialog.SetName("Initializing Renderer..."s);
    PLOGI << "Initializing renderer"; // For profiling
 
-   SetupShaders();
+   m_renderer->SetupShaders();
 
    // FIXME we always loads the LUT since this can be changed in the LiveUI. Would be better to do this lazily
    //if (m_toneMapper == TM_TONY_MC_MAPFACE)

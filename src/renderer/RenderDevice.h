@@ -270,7 +270,6 @@ public:
    float         m_AAfactor;
    bool          m_ssRefl;
    bool          m_disableDwm;
-   bool          m_sharpen;
    unsigned int  m_FXAA;
    int           m_BWrendering;
 

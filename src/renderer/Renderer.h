@@ -104,28 +104,21 @@ public:
    ~Pin3D();
 
    void InitLayout(const float xpixoff = 0.f, const float ypixoff = 0.f);
-
-   void TransformVertices(const Vertex3D_NoTex2 * const __restrict rgv, const WORD * const __restrict rgi, const int count, Vertex2D * const __restrict rgvout) const;
+   ModelViewProj& GetMVP() { return *m_mvp; }
+   const ModelViewProj& GetMVP() const { return *m_mvp; }
+   void TransformVertices(const Vertex3D_NoTex2* const __restrict rgv, const WORD* const __restrict rgi, const int count, Vertex2D* const __restrict rgvout) const;
    void TransformVertices(const Vertex3Ds* const __restrict rgv, const WORD* const __restrict rgi, const int count, Vertex2D* const __restrict rgvout) const;
-
    Vertex3Ds Unproject(const Vertex3Ds& point);
    Vertex3Ds Get3DPointFrom2D(const POINT& p);
 
-   void PrepareFrame();
-
-   void DrawBackground();
-
-   ModelViewProj& GetMVP() { return *m_mvp; }
-   const ModelViewProj& GetMVP() const { return *m_mvp; }
-
-   void InitLights();
-
-   BackGlass* m_backGlass = nullptr;
-
+   void SetupShaders();
    void UpdateBasicShaderMatrix(const Matrix3D& objectTrafo = Matrix3D::MatrixIdentity());
    void UpdateBallShaderMatrix();
 
-   // Ball rendering
+   void PrepareFrame();
+   void DrawBackground();
+
+   BackGlass* m_backGlass = nullptr;
 
    vector<Light*> m_ballReflectedLights;
    MeshBuffer* m_ballMeshBuffer = nullptr;
@@ -146,20 +139,20 @@ public:
    void SetScreenOffset(const float x, const float y); // set render offset in screen coordinates, e.g., for the nudge shake
    void Bloom();
    void SSRefl();
-   Vertex2D m_ScreenOffset = Vertex2D(0.f, 0.f); // for screen shake effect during nudge
    bool m_bloomOff;
-   bool m_ss_refl;
    int m_FXAA; // =FXAASettings
    int m_sharpen; // 0=off, 1=CAS, 2=bilateral CAS
    VRPreviewMode m_vrPreview;
-   bool m_vrPreviewShrink = false;
 
 private:
    PinTable* const m_table;
 
-   StereoMode m_stereo3D;
-
    ModelViewProj* m_mvp = nullptr; // Store the active Model / View / Projection
+
+   bool m_ss_refl;
+   StereoMode m_stereo3D;
+   bool m_vrPreviewShrink = false;
+   Vertex2D m_ScreenOffset = Vertex2D(0.f, 0.f); // for screen shake effect during nudge
 
    #ifdef ENABLE_SDL
    RenderTarget* m_envRadianceTexture = nullptr;

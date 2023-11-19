@@ -520,7 +520,7 @@ static pDEC mDwmEnableComposition = nullptr;
 RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, const float AAfactor, const StereoMode stereo3D, const unsigned int FXAA, const bool sharpen, const bool ss_refl, const bool useNvidiaApi, const bool disable_dwm, const int BWrendering)
     : m_windowHwnd(hwnd), m_width(width), m_height(height), m_fullscreen(fullscreen), 
       m_colorDepth(colordepth), m_AAfactor(AAfactor), m_stereo3D(stereo3D),
-      m_ssRefl(ss_refl), m_disableDwm(disable_dwm), m_sharpen(sharpen), m_FXAA(FXAA), m_BWrendering(BWrendering), m_texMan(*this), m_renderFrame(this)
+      m_ssRefl(ss_refl), m_disableDwm(disable_dwm), m_FXAA(FXAA), m_BWrendering(BWrendering), m_texMan(*this), m_renderFrame(this)
 {
 #ifdef ENABLE_SDL
 #ifdef ENABLE_VR
