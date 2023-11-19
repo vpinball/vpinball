@@ -252,8 +252,6 @@ add_executable(vpinball WIN32
    paintsur.cpp
    paintsur.h
    physconst.h
-   pin3d.cpp
-   pin3d.h
    pinbinary.cpp
    pinbinary.h
    pininput.cpp
@@ -396,6 +394,8 @@ add_executable(vpinball WIN32
    src/renderer/MeshBuffer.cpp
    src/renderer/MeshBuffer.h
    src/renderer/Renderable.h
+   src/renderer/Renderer.cpp
+   src/renderer/Renderer.h
    src/renderer/RenderDevice.cpp
    src/renderer/RenderDevice.h
    src/renderer/RenderCommand.cpp

@@ -181,7 +181,7 @@ static const string defaultPathSearch[]     = { string(), "user"s +PATH_SEPARATO
 
 #include "mesh.h"
 #include "physics/collide.h"
-#include "pin3d.h"
+#include "renderer/Renderer.h"
 
 #include "sur.h"
 #include "paintsur.h"

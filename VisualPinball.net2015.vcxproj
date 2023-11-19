@@ -885,7 +885,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="mesh.cpp" />
     <ClCompile Include="mixer.cpp" />
     <ClCompile Include="paintsur.cpp" />
-    <ClCompile Include="pin3d.cpp" />
+    <ClCompile Include="src/renderer/Renderer.cpp" />
     <ClCompile Include="pinbinary.cpp" />
     <ClCompile Include="pininput.cpp" />
     <ClCompile Include="src/audio/pinsound.cpp" />
@@ -1155,7 +1155,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="objloader.h" />
     <ClInclude Include="paintsur.h" />
     <ClInclude Include="physconst.h" />
-    <ClInclude Include="pin3d.h" />
+    <ClInclude Include="src/renderer/Renderer.h" />
     <ClInclude Include="pinbinary.h" />
     <ClInclude Include="pininput.h" />
     <ClInclude Include="pinundo.h" />
