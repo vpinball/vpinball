@@ -358,8 +358,8 @@ void BallEx::Render(const unsigned int renderMask)
    Vertex3Ds pos(m_pball->m_d.m_pos.x, m_pball->m_d.m_pos.y, zheight);
    m_rd->DrawMesh(m_rd->m_ballShader, false, pos, 0.f, g_pplayer->m_ballMeshBuffer, RenderDevice::TRIANGLELIST, 0, g_pplayer->m_ballMeshBuffer->m_ib->m_count);
 
-   // draw debug points for visualizing ball rotation
-   #if defined(DEBUG_BALL_SPIN)
+   // draw debug points for visualizing ball rotation (this uses point rendering which is a deprecated feature, not available in OpenGL ES)
+   #if defined(DEBUG_BALL_SPIN) && !defined(__OPENGLES__)
    if (g_pplayer->m_liveUI->IsShowingFPSDetails())
    {
       float pointSize = 5.f * m_rd->GetCurrentRenderTarget()->GetWidth() / 1920.0f;
