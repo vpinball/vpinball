@@ -6,9 +6,10 @@
 #include "BAM/BAMView.h"
 #include "meshes/ballMesh.h"
 
-Renderer::Renderer(PinTable* const table, const bool fullScreen, const int width, const int height, const int colordepth, int& refreshrate, VideoSyncMode& syncMode, const float AAfactor, const StereoMode stereo3D)
+Renderer::Renderer(PinTable* const table, const bool fullScreen, const int width, const int height, const int colordepth, int& refreshrate, VideoSyncMode& syncMode, const StereoMode stereo3D)
    : m_table(table)
 {
+   m_AAfactor = m_table->m_settings.LoadValueWithDefault(Settings::Player, "AAFactor"s, m_table->m_settings.LoadValueWithDefault(Settings::Player, "USEAA"s, false) ? 2.0f : 1.0f);
    m_vrPreview = (VRPreviewMode)m_table->m_settings.LoadValueWithDefault(Settings::PlayerVR, "VRPreview"s, (int)VRPREVIEW_LEFT);
    m_vrPreviewShrink = m_table->m_settings.LoadValueWithDefault(Settings::PlayerVR, "ShrinkPreview"s, false);
    m_FXAA = m_table->m_settings.LoadValueWithDefault(Settings::Player, "FXAA"s, (int)Disabled);
@@ -82,7 +83,6 @@ Renderer::Renderer(PinTable* const table, const bool fullScreen, const int width
 
    m_stereo3D = stereo3D;
    m_mvp = new ModelViewProj(m_stereo3D == STEREO_OFF ? 1 : 2);
-   m_AAfactor = AAfactor;
 
    // set the expected viewport for the newly created device (it may be modified upon creation)
    m_viewPort.X = 0;
@@ -100,7 +100,7 @@ Renderer::Renderer(PinTable* const table, const bool fullScreen, const int width
       if (display == dispConf->display)
          adapter = dispConf->adapter;
 
-   m_pd3dPrimaryDevice = new RenderDevice(g_pplayer->GetHwnd(), m_viewPort.Width, m_viewPort.Height, fullScreen, colordepth, AAfactor, stereo3D, m_FXAA, m_sharpen, ss_refl,
+   m_pd3dPrimaryDevice = new RenderDevice(g_pplayer->GetHwnd(), m_viewPort.Width, m_viewPort.Height, fullScreen, colordepth, m_AAfactor, stereo3D, m_FXAA, m_sharpen, ss_refl,
       g_pplayer->m_useNvidiaApi, g_pplayer->m_disableDWM, g_pplayer->m_BWrendering);
    try {
       m_pd3dPrimaryDevice->CreateDevice(refreshrate, syncMode, adapter);

@@ -162,7 +162,6 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    // Sadly DX9 does not support resolving an MSAA depth buffer, making MSAA implementation complex for it. So just disable for now
    m_MSAASamples = 1;
 #endif
-   m_AAfactor = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "AAFactor"s, m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "USEAA"s, false) ? 2.0f : 1.0f);
    m_dynamicAO = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "DynamicAO"s, true);
    m_disableAO = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "DisableAO"s, false);
    m_scaleFX_DMD = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "ScaleFXDMD"s, false);
@@ -1079,7 +1078,7 @@ HRESULT Player::Init()
    // width and height may be modified during initialization (for example for VR, they are adapted to the headset resolution)
    try
    {
-      m_renderer = new Renderer(m_ptable, m_fullScreen, m_wnd_width, m_wnd_height, colordepth, m_refreshrate, m_videoSyncMode, m_AAfactor, m_stereo3DfakeStereo ? STEREO_OFF : m_stereo3D);
+      m_renderer = new Renderer(m_ptable, m_fullScreen, m_wnd_width, m_wnd_height, colordepth, m_refreshrate, m_videoSyncMode, m_stereo3DfakeStereo ? STEREO_OFF : m_stereo3D);
    }
    catch (HRESULT hr)
    {
@@ -1653,7 +1652,7 @@ void Player::RenderStaticPrepass()
    {
       PLOGI << "Starting static AO prerendering"; // For profiling
 
-      const bool useAA = m_AAfactor != 1.0f;
+      const bool useAA = m_renderer->m_AAfactor != 1.0f;
 
       m_renderer->m_pd3dPrimaryDevice->SetRenderTarget("PreRender AO Save Depth"s, m_staticPrepassRT);
       m_renderer->m_pd3dPrimaryDevice->ResetRenderState();

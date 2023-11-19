@@ -548,7 +548,6 @@ private:
 
 public:
    int m_MSAASamples;
-   float m_AAfactor;
 
    bool m_dynamicAO;
    bool m_disableAO;
