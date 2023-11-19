@@ -178,6 +178,14 @@ Pin3D::Pin3D(PinTable* const table, const bool fullScreen, const int width, cons
    VertexBuffer* ballTrailVertexBuffer = new VertexBuffer(m_pd3dPrimaryDevice, 64 * (MAX_BALL_TRAIL_POS - 2) * 2 + 4, nullptr, true);
    m_ballTrailMeshBuffer = new MeshBuffer(L"Ball.Trail"s, ballTrailVertexBuffer);
 
+   // FIXME we always loads the LUT since this can be changed in the LiveUI. Would be better to do this lazily
+   //if (m_toneMapper == TM_TONY_MC_MAPFACE)
+   {
+      m_tonemapLUT = new Texture();
+      m_tonemapLUT->LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "tony_mc_mapface_unrolled.exr");
+      m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_tonemap_lut, m_tonemapLUT, SF_BILINEAR, SA_CLAMP, SA_CLAMP, true);
+   }
+
    m_pd3dPrimaryDevice->ResetRenderState();
 #ifndef ENABLE_SDL
    CHECKD3D(m_pd3dPrimaryDevice->GetCoreDevice()->SetRenderState(D3DRS_LIGHTING, FALSE));
@@ -211,6 +219,7 @@ Pin3D::~Pin3D()
    delete m_ballTrailMeshBuffer;
    delete m_ballImage;
    delete m_decalImage;
+   delete m_tonemapLUT;
 }
 
 void Pin3D::TransformVertices(const Vertex3D_NoTex2 * const __restrict rgv, const WORD * const __restrict rgi, const int count, Vertex2D * const __restrict rgvout) const
@@ -225,7 +234,7 @@ void Pin3D::TransformVertices(const Vertex3Ds* const __restrict rgv, const WORD*
    m_mvp->GetModelViewProj(0).TransformVertices(rgv, rgi, count, rgvout, viewport);
 }
 
-BaseTexture* EnvmapPrecalc(const Texture* envTex, const unsigned int rad_env_xres, const unsigned int rad_env_yres)
+BaseTexture* Pin3D::EnvmapPrecalc(const Texture* envTex, const unsigned int rad_env_xres, const unsigned int rad_env_yres)
 {
    const void* __restrict envmap = envTex->m_pdsBuffer->data();
    const unsigned int env_xres = envTex->m_pdsBuffer->width();
@@ -823,6 +832,86 @@ void Pin3D::PrepareFrame()
    m_pd3dPrimaryDevice->m_ballShader->SetTexture(SHADER_tex_ball_playfield, m_pd3dPrimaryDevice->GetPreviousBackBufferTexture()->GetColorSampler());
 }
 
+void Pin3D::DrawBulbLightBuffer()
+{
+   RenderDevice* p3dDevice = m_pd3dPrimaryDevice;
+   const RenderPass *initial_rt = p3dDevice->GetCurrentPass();
+   static int id = 0; id++;
+
+   // switch to 'bloom' output buffer to collect all bulb lights
+   p3dDevice->SetRenderTarget("Transmitted Light " + std::to_string(id) + " Clear", p3dDevice->GetBloomBufferTexture(), false);
+   p3dDevice->ResetRenderState();
+   p3dDevice->Clear(clearType::TARGET, 0, 1.0f, 0L);
+
+   // Draw bulb lights
+   m_render_mask |= Pin3D::LIGHT_BUFFER;
+   p3dDevice->SetRenderTarget("Transmitted Light " + std::to_string(id), p3dDevice->GetBloomBufferTexture(), true, true);
+   p3dDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE); // disable all z-tests as zbuffer is in different resolution
+   for (Hitable *hitable : g_pplayer->m_vhitables)
+      if (hitable->HitableGetItemType() == eItemLight)
+         hitable->Render(m_render_mask);
+   m_render_mask &= ~Pin3D::LIGHT_BUFFER;
+
+   bool hasLight = p3dDevice->GetCurrentPass()->GetCommandCount() > 1;
+   if (hasLight)
+   { // Only apply blur if we have actually rendered some lights
+      RenderPass* renderPass = p3dDevice->GetCurrentPass();
+      p3dDevice->DrawGaussianBlur(
+         p3dDevice->GetBloomBufferTexture(), 
+         p3dDevice->GetBloomTmpBufferTexture(), 
+         p3dDevice->GetBloomBufferTexture(), 19.f); // FIXME kernel size should depend on buffer resolution
+      RenderPass *blurPass2 = p3dDevice->GetCurrentPass();
+      RenderPass *blurPass1 = blurPass2->m_dependencies[0];
+      constexpr float margin = 0.05f; // margin for the blur
+      blurPass1->m_areaOfInterest.x = renderPass->m_areaOfInterest.x - margin;
+      blurPass1->m_areaOfInterest.y = renderPass->m_areaOfInterest.y - margin;
+      blurPass1->m_areaOfInterest.z = renderPass->m_areaOfInterest.z + margin;
+      blurPass1->m_areaOfInterest.w = renderPass->m_areaOfInterest.w + margin;
+      blurPass2->m_areaOfInterest = blurPass1->m_areaOfInterest;
+   }
+
+   // Restore state and render target
+   p3dDevice->SetRenderTarget(initial_rt->m_name + '+', initial_rt->m_rt);
+
+   if (hasLight)
+   {
+      // Declare dependency on Bulb Light buffer (actually rendered to the bloom buffer texture)
+      m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pd3dPrimaryDevice->GetBloomBufferTexture());
+      p3dDevice->basicShader->SetTexture(SHADER_tex_base_transmission, p3dDevice->GetBloomBufferTexture()->GetColorSampler());
+   } 
+   else
+   {
+      p3dDevice->basicShader->SetTextureNull(SHADER_tex_base_transmission);
+   }
+}
+
+void Pin3D::DrawStatics()
+{
+   const unsigned int mask = m_render_mask;
+   m_render_mask |= Pin3D::STATIC_ONLY;
+   for (Hitable* hitable : g_pplayer->m_vhitables)
+      hitable->Render(m_render_mask);
+   m_render_mask = mask;
+}
+
+void Pin3D::DrawDynamics(bool onlyBalls)
+{
+   if (!onlyBalls)
+   {
+      // Update Bulb light buffer and set up render pass dependencies
+      DrawBulbLightBuffer();
+
+      // Draw all parts
+      const unsigned int mask = m_render_mask;
+      m_render_mask |= Pin3D::DYNAMIC_ONLY;
+      for (Hitable* hitable : g_pplayer->m_vhitables)
+         hitable->Render(m_render_mask);
+      m_render_mask = mask;
+   }
+
+   for (Ball* ball : g_pplayer->m_vball)
+      ball->m_pballex->Render(m_render_mask);
+}
 
 
 

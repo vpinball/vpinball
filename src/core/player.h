@@ -493,9 +493,11 @@ private:
    U64 m_nextPhysicsFrameTime; // Time at which the next physics update should be
    U64 m_lastFlipTime;
 
+public:
    // all Hitables obtained from the table's list of Editables
    vector<Hitable *> m_vhitables;
 
+private:
    int2 m_curAccel[PININ_JOYMXCNT];
 
    int m_curPlunger;
@@ -519,7 +521,6 @@ private:
    void FinishFrame();
 
    void RenderStaticPrepass();
-   void DrawBulbLightBuffer();
    void RenderDynamics();
 
    FrameQueueLimiter m_limiter;
@@ -530,8 +531,6 @@ private:
    U64 m_startFrameTick; // System time in us when render frame was started (beginning of frame animation then collect,...)
 
 public:
-   void DrawStatics();
-   void DrawDynamics(bool onlyBalls);
    void Spritedraw(const float posx, const float posy, const float width, const float height, const COLORREF color, Texture* const tex, const float intensity, const bool backdrop=false);
    void Spritedraw(const float posx, const float posy, const float width, const float height, const COLORREF color, Sampler* const tex, const float intensity, const bool backdrop=false);
 
@@ -577,19 +576,6 @@ public:
    Pin3D* m_renderer = nullptr;
 
    bool m_scaleFX_DMD;
-   enum RenderMask : unsigned int
-   {
-      DEFAULT = 0, // Render everything
-      STATIC_ONLY = 1 << 0, // Disable non static part rendering (for static prerendering)
-      DYNAMIC_ONLY = 1 << 1, // Disable static part rendering
-      LIGHT_BUFFER = 1 << 2, // Transmitted light rendering
-      REFLECTION_PASS = 1 << 3,
-      DISABLE_LIGHTMAPS = 1 << 4
-   };
-   unsigned int m_render_mask = 0; // Active pass render bit mask
-   inline bool IsRenderPass(const RenderMask pass_mask) const { return (m_render_mask & pass_mask) != 0; }
-
-   Texture *m_tonemapLUT = nullptr;
 #pragma endregion
 
 

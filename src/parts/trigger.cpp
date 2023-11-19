@@ -646,9 +646,9 @@ void Trigger::UpdateAnimation(const float diff_time_msec)
 void Trigger::Render(const unsigned int renderMask)
 {
    assert(m_rd != nullptr);
-   const bool isStaticOnly = renderMask & Player::STATIC_ONLY;
-   const bool isDynamicOnly = renderMask & Player::DYNAMIC_ONLY;
-   const bool isReflectionPass = renderMask & Player::REFLECTION_PASS;
+   const bool isStaticOnly = renderMask & Pin3D::STATIC_ONLY;
+   const bool isDynamicOnly = renderMask & Pin3D::DYNAMIC_ONLY;
+   const bool isReflectionPass = renderMask & Pin3D::REFLECTION_PASS;
    TRACE_FUNCTION();
 
    if (!m_d.m_visible 

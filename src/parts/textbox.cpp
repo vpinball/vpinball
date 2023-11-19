@@ -421,9 +421,9 @@ void Textbox::UpdateAnimation(const float diff_time_msec)
 void Textbox::Render(const unsigned int renderMask)
 {
    assert(m_rd != nullptr);
-   const bool isStaticOnly = renderMask & Player::STATIC_ONLY;
-   const bool isDynamicOnly = renderMask & Player::DYNAMIC_ONLY;
-   const bool isReflectionPass = renderMask & Player::REFLECTION_PASS;
+   const bool isStaticOnly = renderMask & Pin3D::STATIC_ONLY;
+   const bool isDynamicOnly = renderMask & Pin3D::DYNAMIC_ONLY;
+   const bool isReflectionPass = renderMask & Pin3D::REFLECTION_PASS;
    TRACE_FUNCTION();
 
    const bool dmd = m_d.m_isDMD || StrStrI(m_d.m_sztext.c_str(), "DMD") != nullptr; //!! second part is VP10.0 legacy
