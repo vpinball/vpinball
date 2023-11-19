@@ -1069,7 +1069,7 @@ STDMETHODIMP ScriptGlobalTable::get_DisableStaticPrerendering(VARIANT_BOOL *pVal
 {
    if (g_pplayer == nullptr)
       return E_FAIL;
-   *pVal = FTOVB(!g_pplayer->IsUsingStaticPrepass());
+   *pVal = FTOVB(!g_pplayer->m_renderer->IsUsingStaticPrepass());
    return S_OK;
 }
 
@@ -1077,7 +1077,7 @@ STDMETHODIMP ScriptGlobalTable::put_DisableStaticPrerendering(VARIANT_BOOL newVa
 {
    if (g_pplayer == nullptr)
       return E_FAIL;
-   g_pplayer->DisableStaticPrePass(VBTOb(newVal));
+   g_pplayer->m_renderer->DisableStaticPrePass(VBTOb(newVal));
    return S_OK;
 }
 

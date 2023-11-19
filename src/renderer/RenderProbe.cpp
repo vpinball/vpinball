@@ -128,7 +128,7 @@ RenderTarget* RenderProbe::Render(const unsigned int renderMask)
    {
    case PLANE_REFLECTION:
    {
-      const ReflectionMode mode = min(m_reflection_mode, g_pplayer->m_maxReflectionMode);
+      const ReflectionMode mode = min(m_reflection_mode, g_pplayer->m_renderer->GetMaxReflectionMode());
       if (mode == REFL_NONE || (isStaticOnly && (mode == REFL_BALLS || mode == REFL_DYNAMIC)) || (isDynamicOnly && (mode == REFL_STATIC)))
          return nullptr;
       if (m_dirty)
@@ -288,7 +288,7 @@ void RenderProbe::SetReflectionMode(ReflectionMode mode)
 void RenderProbe::PreRenderStaticReflectionProbe()
 {
    // For dynamic reflection mode, in static camera mode, we prerender static elements (like for main view) to get better antialiasing and overall performance
-   if (min(m_reflection_mode, g_pplayer->m_maxReflectionMode) != REFL_DYNAMIC)
+   if (min(m_reflection_mode, g_pplayer->m_renderer->GetMaxReflectionMode()) != REFL_DYNAMIC)
       return;
 
    const RenderPass* previousRT = m_rd->GetCurrentPass();
@@ -379,7 +379,7 @@ void RenderProbe::RenderReflectionProbe(const unsigned int renderMask)
    const bool isStaticOnly = renderMask & Renderer::STATIC_ONLY;
    const bool isDynamicOnly = renderMask & Renderer::DYNAMIC_ONLY;
    assert((renderMask & Renderer::REFLECTION_PASS) == 0);
-   const ReflectionMode mode = min(m_reflection_mode, g_pplayer->m_maxReflectionMode);
+   const ReflectionMode mode = min(m_reflection_mode, g_pplayer->m_renderer->GetMaxReflectionMode());
 
    if (mode == REFL_NONE
    || (isStaticOnly && (mode == REFL_BALLS || mode == REFL_DYNAMIC))
