@@ -117,6 +117,7 @@ public:
 
    void PrepareFrame();
    void RenderStaticPrepass();
+   void RenderDynamics();
    void DrawBackground();
    void DrawBulbLightBuffer();
    void DrawStatics();
