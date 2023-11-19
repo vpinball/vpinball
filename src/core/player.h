@@ -513,9 +513,6 @@ private:
 
 
 #pragma region Rendering
-public:
-   void SetupShaders();
-
 private:
    void PrepareFrame();
    void SubmitFrame();

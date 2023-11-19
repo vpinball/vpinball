@@ -602,58 +602,6 @@ void Pin3D::DrawBackground()
    }
 }
 
-void Pin3D::InitLights()
-{
-   //m_pd3dPrimaryDevice->basicShader->SetInt("iLightPointNum",MAX_LIGHT_SOURCES);
-
-   g_pplayer->m_ptable->m_Light[0].pos.x = g_pplayer->m_ptable->m_right*0.5f;
-   g_pplayer->m_ptable->m_Light[1].pos.x = g_pplayer->m_ptable->m_right*0.5f;
-   g_pplayer->m_ptable->m_Light[0].pos.y = g_pplayer->m_ptable->m_bottom*(float)(1.0 / 3.0);
-   g_pplayer->m_ptable->m_Light[1].pos.y = g_pplayer->m_ptable->m_bottom*(float)(2.0 / 3.0);
-   g_pplayer->m_ptable->m_Light[0].pos.z = g_pplayer->m_ptable->m_lightHeight;
-   g_pplayer->m_ptable->m_Light[1].pos.z = g_pplayer->m_ptable->m_lightHeight;
-
-   vec4 emission = convertColor(g_pplayer->m_ptable->m_Light[0].emission);
-   emission.x *= g_pplayer->m_ptable->m_lightEmissionScale*g_pplayer->m_globalEmissionScale;
-   emission.y *= g_pplayer->m_ptable->m_lightEmissionScale*g_pplayer->m_globalEmissionScale;
-   emission.z *= g_pplayer->m_ptable->m_lightEmissionScale*g_pplayer->m_globalEmissionScale;
-
-#ifdef ENABLE_SDL
-   float lightPos[MAX_LIGHT_SOURCES][4] = { 0.f };
-   float lightEmission[MAX_LIGHT_SOURCES][4] = { 0.f };
-
-   for (unsigned int i = 0; i < MAX_LIGHT_SOURCES; ++i)
-   {
-      memcpy(&lightPos[i], &g_pplayer->m_ptable->m_Light[i].pos, sizeof(float) * 3);
-      memcpy(&lightEmission[i], &emission, sizeof(float) * 3);
-   }
-
-   m_pd3dPrimaryDevice->basicShader->SetFloat4v(SHADER_basicLightPos, (vec4*) lightPos, MAX_LIGHT_SOURCES);
-   m_pd3dPrimaryDevice->basicShader->SetFloat4v(SHADER_basicLightEmission, (vec4*) lightEmission, MAX_LIGHT_SOURCES);
-#else
-   struct CLight
-   {
-      float vPos[3];
-      float vEmission[3];
-   };
-   CLight l[MAX_LIGHT_SOURCES];
-
-   for (unsigned int i = 0; i < MAX_LIGHT_SOURCES; ++i)
-   {
-      memcpy(&l[i].vPos, &g_pplayer->m_ptable->m_Light[i].pos, sizeof(float) * 3);
-      memcpy(&l[i].vEmission, &emission, sizeof(float) * 3);
-   }
-
-   m_pd3dPrimaryDevice->basicShader->SetFloat4v(SHADER_basicPackedLights, (vec4*) l, sizeof(CLight) * MAX_LIGHT_SOURCES / (4 * sizeof(float)));
-#endif
-
-   vec4 amb_lr = convertColor(g_pplayer->m_ptable->m_lightAmbient, g_pplayer->m_ptable->m_lightRange);
-   amb_lr.x *= g_pplayer->m_globalEmissionScale;
-   amb_lr.y *= g_pplayer->m_globalEmissionScale;
-   amb_lr.z *= g_pplayer->m_globalEmissionScale;
-   m_pd3dPrimaryDevice->basicShader->SetVector(SHADER_cAmbient_LightRange, &amb_lr);
-}
-
 Matrix3D ComputeLaybackTransform(const float layback)
 {
    // skew the coordinate system from kartesian to non kartesian.
@@ -687,7 +635,7 @@ void Pin3D::InitLayout(const float xpixoff, const float ypixoff)
    if (viewSetup.mMode == VLM_WINDOW)
       viewSetup.SetWindowModeFromSettings(g_pplayer->m_ptable);
    viewSetup.ComputeMVP(g_pplayer->m_ptable, m_viewPort.Width, m_viewPort.Height, stereo, *m_mvp, vec3(m_cam.x, m_cam.y, m_cam.z), m_inc, xpixoff, ypixoff);
-   InitLights();
+   SetupShaders();
 }
 
 Vertex3Ds Pin3D::Unproject(const Vertex3Ds& point)
@@ -728,6 +676,71 @@ void Pin3D::UpdateBAMHeadTracking()
 
 
 
+
+void Pin3D::SetupShaders()
+{
+   const vec4 envEmissionScale_TexWidth(m_table->m_envEmissionScale * g_pplayer->m_globalEmissionScale,
+      (float) (m_envTexture ? *m_envTexture : m_builtinEnvTexture).m_height /*+m_builtinEnvTexture.m_width)*0.5f*/, 0.f, 0.f); //!! dto.
+
+   UpdateBasicShaderMatrix();
+   m_pd3dPrimaryDevice->basicShader->SetTexture(SHADER_tex_env, m_envTexture ? m_envTexture : &m_builtinEnvTexture);
+   m_pd3dPrimaryDevice->basicShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &envEmissionScale_TexWidth);
+
+   UpdateBallShaderMatrix();
+   const vec4 st(m_table->m_envEmissionScale * g_pplayer->m_globalEmissionScale, m_envTexture ? (float)m_envTexture->m_height/*+m_envTexture->m_width)*0.5f*/ : (float)m_builtinEnvTexture.m_height/*+m_builtinEnvTexture.m_width)*0.5f*/, 0.f, 0.f);
+   m_pd3dPrimaryDevice->m_ballShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
+   m_pd3dPrimaryDevice->m_ballShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &envEmissionScale_TexWidth);
+   //m_pd3dPrimaryDevice->m_ballShader->SetInt("iLightPointNum",MAX_LIGHT_SOURCES);
+
+   constexpr float Roughness = 0.8f;
+   m_pd3dPrimaryDevice->m_ballShader->SetVector(SHADER_Roughness_WrapL_Edge_Thickness, exp2f(10.0f * Roughness + 1.0f), 0.f, 1.f, 0.05f);
+   vec4 amb_lr = convertColor(m_table->m_lightAmbient, m_table->m_lightRange);
+   m_pd3dPrimaryDevice->m_ballShader->SetVector(SHADER_cAmbient_LightRange, 
+      amb_lr.x * g_pplayer->m_globalEmissionScale, amb_lr.y * g_pplayer->m_globalEmissionScale, amb_lr.z * g_pplayer->m_globalEmissionScale, m_table->m_lightRange);
+
+   //m_pd3dPrimaryDevice->basicShader->SetInt("iLightPointNum",MAX_LIGHT_SOURCES);
+
+   g_pplayer->m_ptable->m_Light[0].pos.x = g_pplayer->m_ptable->m_right * 0.5f;
+   g_pplayer->m_ptable->m_Light[1].pos.x = g_pplayer->m_ptable->m_right * 0.5f;
+   g_pplayer->m_ptable->m_Light[0].pos.y = g_pplayer->m_ptable->m_bottom * (float)(1.0 / 3.0);
+   g_pplayer->m_ptable->m_Light[1].pos.y = g_pplayer->m_ptable->m_bottom * (float)(2.0 / 3.0);
+   g_pplayer->m_ptable->m_Light[0].pos.z = g_pplayer->m_ptable->m_lightHeight;
+   g_pplayer->m_ptable->m_Light[1].pos.z = g_pplayer->m_ptable->m_lightHeight;
+
+   vec4 emission = convertColor(g_pplayer->m_ptable->m_Light[0].emission);
+   emission.x *= g_pplayer->m_ptable->m_lightEmissionScale * g_pplayer->m_globalEmissionScale;
+   emission.y *= g_pplayer->m_ptable->m_lightEmissionScale * g_pplayer->m_globalEmissionScale;
+   emission.z *= g_pplayer->m_ptable->m_lightEmissionScale * g_pplayer->m_globalEmissionScale;
+
+#ifdef ENABLE_SDL
+   float lightPos[MAX_LIGHT_SOURCES][4] = { 0.f };
+   float lightEmission[MAX_LIGHT_SOURCES][4] = { 0.f };
+
+   for (unsigned int i = 0; i < MAX_LIGHT_SOURCES; ++i)
+   {
+      memcpy(&lightPos[i], &g_pplayer->m_ptable->m_Light[i].pos, sizeof(float) * 3);
+      memcpy(&lightEmission[i], &emission, sizeof(float) * 3);
+   }
+
+   m_pd3dPrimaryDevice->basicShader->SetFloat4v(SHADER_basicLightPos, (vec4*)lightPos, MAX_LIGHT_SOURCES);
+   m_pd3dPrimaryDevice->basicShader->SetFloat4v(SHADER_basicLightEmission, (vec4*)lightEmission, MAX_LIGHT_SOURCES);
+#else
+   struct CLight
+   {
+      float vPos[3];
+      float vEmission[3];
+   };
+   CLight l[MAX_LIGHT_SOURCES];
+
+   for (unsigned int i = 0; i < MAX_LIGHT_SOURCES; ++i)
+   {
+      memcpy(&l[i].vPos, &g_pplayer->m_ptable->m_Light[i].pos, sizeof(float) * 3);
+      memcpy(&l[i].vEmission, &emission, sizeof(float) * 3);
+   }
+
+   m_pd3dPrimaryDevice->basicShader->SetFloat4v(SHADER_basicPackedLights, (vec4*)l, sizeof(CLight) * MAX_LIGHT_SOURCES / (4 * sizeof(float)));
+#endif
+}
 
 void Pin3D::UpdateBasicShaderMatrix(const Matrix3D& objectTrafo)
 {

@@ -1165,7 +1165,7 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
       case BS_DayNight:
       {
          m_player->m_globalEmissionScale = clamp(m_player->m_globalEmissionScale + step * 0.005f, 0.f, 1.f);
-         m_player->SetupShaders();
+         m_renderer->SetupShaders();
          m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 1 /* table option changed event */);
          break;
       }
@@ -1343,7 +1343,7 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
             // FIXME we just default to the table value, missing the app settings being applied (like day/night from lat/lon,... see in player.cpp)
             m_tweakState[BS_DayNight] = 2;
             m_player->m_globalEmissionScale = m_table->m_globalEmissionScale;
-            m_player->SetupShaders();
+            m_renderer->SetupShaders();
 
             // Tonemapper
             m_tweakState[BS_Tonemapper] = 2;
@@ -3045,19 +3045,18 @@ void LiveUI::TableProperties(bool is_live)
    }
    if (ImGui::CollapsingHeader("Lighting", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
    {
+      auto reinit_lights = [this](bool is_live, float prev, float v) { m_renderer->SetupShaders(); }; // Needed to update shaders with new light settings 
       PropRGB("Ambient Color", m_table, is_live, &(m_table->m_lightAmbient), m_live_table ? &(m_live_table->m_lightAmbient) : nullptr);
       
       PropSeparator();
       PropRGB("Light Em. Color", m_table, is_live, &(m_table->m_Light[0].emission), m_live_table ? &(m_live_table->m_Light[0].emission) : nullptr);
-      auto reinit_lights = [this](bool is_live, float prev, float v) { m_renderer->InitLights(); }; // Needed to update shaders with new light settings 
       PropFloat("Light Em. Scale", m_table, is_live, &(m_table->m_lightEmissionScale), m_live_table ? &(m_live_table->m_lightEmissionScale) : nullptr, 20000.0f, 100000.0f, "%.0f", ImGuiInputTextFlags_CharsDecimal, reinit_lights);
       PropFloat("Light Height", m_table, is_live, &(m_table->m_lightHeight), m_live_table ? &(m_live_table->m_lightHeight) : nullptr, 20.0f, 100.0f, "%.0f");
       PropFloat("Light Range", m_table, is_live, &(m_table->m_lightRange), m_live_table ? &(m_live_table->m_lightRange) : nullptr, 200.0f, 1000.0f, "%.0f");
       
       PropSeparator();
       // TODO Missing: environment texture combo
-      auto upd_env_em_scale = [this](bool is_live, float prev, float v) { m_player->SetupShaders(); };
-      PropFloat("Environment Em. Scale", m_table, is_live, &(m_table->m_envEmissionScale), m_live_table ? &(m_live_table->m_envEmissionScale) : nullptr, 0.1f, 0.5f, "%.3f", ImGuiInputTextFlags_CharsDecimal, upd_env_em_scale);
+      PropFloat("Environment Em. Scale", m_table, is_live, &(m_table->m_envEmissionScale), m_live_table ? &(m_live_table->m_envEmissionScale) : nullptr, 0.1f, 0.5f, "%.3f", ImGuiInputTextFlags_CharsDecimal, reinit_lights);
       PropFloat("Ambient Occlusion Scale", m_table, is_live, &(m_table->m_AOScale), m_live_table ? &(m_live_table->m_AOScale) : nullptr, 0.1f, 1.0f);
       PropFloat("Bloom Strength", m_table, is_live, &(m_table->m_bloom_strength), m_live_table ? &(m_live_table->m_bloom_strength) : nullptr, 0.1f, 1.0f);
       PropFloat("Screen Space Reflection Scale", m_table, is_live, &(m_table->m_SSRScale), m_live_table ? &(m_live_table->m_SSRScale) : nullptr, 0.1f, 1.0f);
@@ -3097,7 +3096,7 @@ void LiveUI::CameraProperties(bool is_live)
    {
       table->ImportBackdropPOV(string());
       if (is_live)
-         m_player->SetupShaders();
+         m_renderer->SetupShaders();
    }
    ImGui::SameLine();
    if (ImGui::Button("Export"))
