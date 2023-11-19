@@ -438,9 +438,9 @@ void RenderProbe::DoRenderReflectionProbe(const bool render_static, const bool r
    g_pplayer->m_pin3d.GetMVP().SetView(viewMat);
 
    if (render_static || render_dynamic)
-      g_pplayer->UpdateBasicShaderMatrix();
+      g_pplayer->m_pin3d.UpdateBasicShaderMatrix();
    if (render_balls)
-      g_pplayer->UpdateBallShaderMatrix();
+      g_pplayer->m_pin3d.UpdateBallShaderMatrix();
 
    if (render_static)
       g_pplayer->DrawStatics();

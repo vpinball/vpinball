@@ -115,7 +115,7 @@ void BallEx::Render(const unsigned int renderMask)
 
    // collect the x nearest lights that can reflect on balls
    Light* light_nearest[MAX_BALL_LIGHT_SOURCES];
-   search_for_nearest(m_pball, g_pplayer->m_ballReflectedLights, light_nearest);
+   search_for_nearest(m_pball, g_pplayer->m_pin3d.m_ballReflectedLights, light_nearest);
    #ifdef ENABLE_SDL
    float lightPos[MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES][4] = { 0.0f, 0.0f, 0.0f, 0.0f };
    float lightEmission[MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES][4] = { 0.0f, 0.0f, 0.0f, 0.0f };
@@ -276,7 +276,7 @@ void BallEx::Render(const unsigned int renderMask)
    m_rd->m_ballShader->SetVector(SHADER_w_h_disableLighting, 
       1.5f / m_rd->GetPreviousBackBufferTexture()->GetWidth(), // UV Offset for sampling reflections
       1.5f / m_rd->GetPreviousBackBufferTexture()->GetHeight(),
-      g_pplayer->m_disableLightingForBalls ? 1.f : 0.f, 0.f);
+      g_pplayer->m_pin3d.m_disableLightingForBalls ? 1.f : 0.f, 0.f);
 
    m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
    bool sphericalMapping;
@@ -297,7 +297,7 @@ void BallEx::Render(const unsigned int renderMask)
    m_rd->m_ballShader->SetTechnique(sphericalMapping ? m_pball->m_decalMode ? SHADER_TECHNIQUE_RenderBall_SphericalMap_DecalMode : SHADER_TECHNIQUE_RenderBall_SphericalMap
                                                      : m_pball->m_decalMode ? SHADER_TECHNIQUE_RenderBall_DecalMode : SHADER_TECHNIQUE_RenderBall);
    Vertex3Ds pos(m_pball->m_d.m_pos.x, m_pball->m_d.m_pos.y, zheight);
-   m_rd->DrawMesh(m_rd->m_ballShader, false, pos, 0.f, g_pplayer->m_ballMeshBuffer, RenderDevice::TRIANGLELIST, 0, g_pplayer->m_ballMeshBuffer->m_ib->m_count);
+   m_rd->DrawMesh(m_rd->m_ballShader, false, pos, 0.f, g_pplayer->m_pin3d.m_ballMeshBuffer, RenderDevice::TRIANGLELIST, 0, g_pplayer->m_pin3d.m_ballMeshBuffer->m_ib->m_count);
 
    // draw debug points for visualizing ball rotation (this uses point rendering which is a deprecated feature, not available in OpenGL ES)
    #if defined(DEBUG_BALL_SPIN) && !defined(__OPENGLES__)
@@ -312,12 +312,12 @@ void BallEx::Render(const unsigned int renderMask)
       #endif
       m_rd->ResetRenderState();
       m_rd->m_ballShader->SetTechnique(SHADER_TECHNIQUE_RenderBall_Debug);
-      m_rd->DrawMesh(m_rd->m_ballShader, false, pos, 0.f, g_pplayer->m_ballDebugPoints, RenderDevice::POINTLIST, 0, g_pplayer->m_ballDebugPoints->m_vb->m_count);
+      m_rd->DrawMesh(m_rd->m_ballShader, false, pos, 0.f, g_pplayer->m_pin3d.m_ballDebugPoints, RenderDevice::POINTLIST, 0, g_pplayer->m_pin3d.m_ballDebugPoints->m_vb->m_count);
    }
    #endif
 
    // ball trails (except in reflection passes)
-   if (g_pplayer->m_trailForBalls && g_pplayer->m_ballTrailStrength > 0.f && !isReflectionPass)
+   if (g_pplayer->m_pin3d.m_trailForBalls && g_pplayer->m_pin3d.m_ballTrailStrength > 0.f && !isReflectionPass)
    {
       Vertex3D_NoTex2 vertices[MAX_BALL_TRAIL_POS * 2];
       unsigned int nVertices = 0;
@@ -338,7 +338,7 @@ void BallEx::Render(const unsigned int renderMask)
             continue; // Too small => discard
 
          const float length = sqrtf(ls);
-         const float bc = g_pplayer->m_ballTrailStrength * powf(1.f - 1.f / max(length, 1.0f), 64.0f); //!! 64=magic alpha falloff
+         const float bc = g_pplayer->m_pin3d.m_ballTrailStrength * powf(1.f - 1.f / max(length, 1.0f), 64.0f); //!! 64=magic alpha falloff
          const float r = min(m_pball->m_d.m_radius*0.9f, 2.0f*m_pball->m_d.m_radius / powf((float)(i2 + 2), 0.6f)); //!! consts are for magic radius falloff
          if (bc <= 0.f && r <= 1e-3f)
             continue; // Fully faded out or radius too small => discard
@@ -393,13 +393,13 @@ void BallEx::Render(const unsigned int renderMask)
             nVertices += 2;
          }
       }
-      if (nVertices > 0 && g_pplayer->m_ballTrailMeshBufferPos + nVertices <= g_pplayer->m_ballTrailMeshBuffer->m_vb->m_count)
+      if (nVertices > 0 && g_pplayer->m_pin3d.m_ballTrailMeshBufferPos + nVertices <= g_pplayer->m_pin3d.m_ballTrailMeshBuffer->m_vb->m_count)
       {
          Vertex3D_NoTex2 *bufvb;
-         g_pplayer->m_ballTrailMeshBuffer->m_vb->lock(
-            g_pplayer->m_ballTrailMeshBufferPos * sizeof(Vertex3D_NoTex2), nVertices * sizeof(Vertex3D_NoTex2), (void **)&bufvb, VertexBuffer::DISCARDCONTENTS);
+         g_pplayer->m_pin3d.m_ballTrailMeshBuffer->m_vb->lock(
+            g_pplayer->m_pin3d.m_ballTrailMeshBufferPos * sizeof(Vertex3D_NoTex2), nVertices * sizeof(Vertex3D_NoTex2), (void **)&bufvb, VertexBuffer::DISCARDCONTENTS);
          memcpy(bufvb, vertices, nVertices * sizeof(Vertex3D_NoTex2));
-         g_pplayer->m_ballTrailMeshBuffer->m_vb->unlock();
+         g_pplayer->m_pin3d.m_ballTrailMeshBuffer->m_vb->unlock();
          m_rd->ResetRenderState();
          m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
          m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
@@ -408,8 +408,8 @@ void BallEx::Render(const unsigned int renderMask)
          m_rd->SetRenderState(RenderState::DESTBLEND, RenderState::INVSRC_ALPHA);
          m_rd->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_ADD);
          m_rd->m_ballShader->SetTechnique(SHADER_TECHNIQUE_RenderBallTrail);
-         m_rd->DrawMesh(m_rd->m_ballShader, true, pos, 0.f, g_pplayer->m_ballTrailMeshBuffer, RenderDevice::TRIANGLESTRIP, g_pplayer->m_ballTrailMeshBufferPos, nVertices);
-         g_pplayer->m_ballTrailMeshBufferPos += nVertices;
+         m_rd->DrawMesh(m_rd->m_ballShader, true, pos, 0.f, g_pplayer->m_pin3d.m_ballTrailMeshBuffer, RenderDevice::TRIANGLESTRIP, g_pplayer->m_pin3d.m_ballTrailMeshBufferPos, nVertices);
+         g_pplayer->m_pin3d.m_ballTrailMeshBufferPos += nVertices;
       }
    }
 }

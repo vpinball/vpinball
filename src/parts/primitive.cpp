@@ -1375,7 +1375,7 @@ void Primitive::Render(const unsigned int renderMask)
    }
 
    // set transform
-   g_pplayer->UpdateBasicShaderMatrix(m_fullMatrix);
+   g_pplayer->m_pin3d.UpdateBasicShaderMatrix(m_fullMatrix);
 
    // Check if this primitive is used as a lightmap and should be convoluted with the light shadows
    bool lightmap = m_lightmap != nullptr && m_lightmap->m_d.m_shadows == ShadowMode::RAYTRACED_BALL_SHADOWS;
@@ -1496,7 +1496,7 @@ void Primitive::Render(const unsigned int renderMask)
    }
 
    // Restore state
-   g_pplayer->UpdateBasicShaderMatrix();
+   g_pplayer->m_pin3d.UpdateBasicShaderMatrix();
    m_rd->basicShader->SetVector(SHADER_mirrorNormal_factor, 0.f, 0.f, 0.f, 0.f);
    m_rd->basicShader->SetVector(SHADER_lightCenter_doShadow, 0.0f, 0.0f, 0.0f, 0.0f);
    m_rd->basicShader->SetVector(SHADER_staticColor_Alpha, 1.0f, 1.0f, 1.0f, 1.0f);

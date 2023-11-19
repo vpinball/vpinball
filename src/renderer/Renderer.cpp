@@ -4,38 +4,63 @@
 #include "math/math.h"
 #include "ThreadPool.h"
 #include "BAM/BAMView.h"
+#include "meshes/ballMesh.h"
 
-Pin3D::Pin3D()
+Pin3D::Pin3D(PinTable* const table)
+   : m_table(table)
 {
-   m_pd3dPrimaryDevice = nullptr;
-   m_backGlass = nullptr;
-
-   m_cam.x = 0.f;
-   m_cam.y = 0.f;
-   m_cam.z = 0.f;
-   m_inc  = 0.f;
+   m_trailForBalls = m_table->m_settings.LoadValueWithDefault(Settings::Player, "BallTrail"s, true);
+   m_ballTrailStrength = m_table->m_settings.LoadValueWithDefault(Settings::Player, "BallTrailStrength"s, 0.5f);
+   m_disableLightingForBalls = m_table->m_settings.LoadValueWithDefault(Settings::Player, "DisableLightingForBalls"s, false);
+   m_ballImage = nullptr;
+   m_decalImage = nullptr;
+   m_overwriteBallImages = m_table->m_settings.LoadValueWithDefault(Settings::Player, "OverwriteBallImage"s, false);
+   if (m_overwriteBallImages)
+   {
+      string imageName;
+      bool hr = m_table->m_settings.LoadValue(Settings::Player, "BallImage"s, imageName);
+      if (hr)
+      {
+         BaseTexture* const tex = BaseTexture::CreateFromFile(imageName, m_table->m_settings.LoadValueWithDefault(Settings::Player, "MaxTexDimension"s, 0));
+         if (tex != nullptr)
+            m_ballImage = new Texture(tex);
+      }
+      hr = m_table->m_settings.LoadValue(Settings::Player, "DecalImage"s, imageName);
+      if (hr)
+      {
+         BaseTexture* const tex = BaseTexture::CreateFromFile(imageName, m_table->m_settings.LoadValueWithDefault(Settings::Player, "MaxTexDimension"s, 0));
+         if (tex != nullptr)
+            m_decalImage = new Texture(tex);
+      }
+   }
 }
 
 Pin3D::~Pin3D()
 {
    delete m_mvp;
-
    m_gpu_profiler.Shutdown();
-
    m_pd3dPrimaryDevice->FreeShader();
-
    m_pinballEnvTexture.FreeStuff();
-
    m_builtinEnvTexture.FreeStuff();
-
    m_aoDitherTexture.FreeStuff();
-
+   delete m_ballImage;
+   delete m_decalImage;
    delete m_envRadianceTexture;
-
    delete m_pd3dPrimaryDevice;
-   m_pd3dPrimaryDevice = nullptr;
-
    delete m_backGlass;
+
+   delete m_ballMeshBuffer;
+   m_ballMeshBuffer = nullptr;
+#ifdef DEBUG_BALL_SPIN
+   delete m_ballDebugPoints;
+   m_ballDebugPoints = nullptr;
+#endif
+   delete m_ballTrailMeshBuffer;
+   m_ballTrailMeshBuffer = nullptr;
+   delete m_ballImage;
+   m_ballImage = nullptr;
+   delete m_decalImage;
+   m_decalImage = nullptr;
 }
 
 void Pin3D::TransformVertices(const Vertex3D_NoTex2 * const __restrict rgv, const WORD * const __restrict rgi, const int count, Vertex2D * const __restrict rgvout) const
@@ -515,6 +540,43 @@ HRESULT Pin3D::InitPin3D(const bool fullScreen, const int width, const int heigh
    #endif
    PLOGI << "Environment map radiance computed"; // For profiling
 
+   const bool lowDetailBall = (m_table->GetDetailLevel() < 10);
+   IndexBuffer* ballIndexBuffer
+      = new IndexBuffer(m_pd3dPrimaryDevice, lowDetailBall ? basicBallLoNumFaces : basicBallMidNumFaces, lowDetailBall ? basicBallLoIndices : basicBallMidIndices);
+   VertexBuffer* ballVertexBuffer
+      = new VertexBuffer(m_pd3dPrimaryDevice, lowDetailBall ? basicBallLoNumVertices : basicBallMidNumVertices, (float*)(lowDetailBall ? basicBallLo : basicBallMid));
+   m_ballMeshBuffer = new MeshBuffer(L"Ball"s, ballVertexBuffer, ballIndexBuffer, true);
+#ifdef DEBUG_BALL_SPIN
+   {
+      vector<Vertex3D_NoTex2> ballDbgVtx;
+      for (int j = -1; j <= 1; ++j)
+      {
+         const int numPts = (j == 0) ? 6 : 3;
+         const float theta = (float)(j * (M_PI / 4.0));
+         for (int i = 0; i < numPts; ++i)
+         {
+            const float phi = (float)(i * (2.0 * M_PI) / numPts);
+            Vertex3D_NoTex2 vtx;
+            vtx.nx = cosf(theta) * cosf(phi);
+            vtx.ny = cosf(theta) * sinf(phi);
+            vtx.nz = sinf(theta);
+            vtx.x = vtx.nx;
+            vtx.y = vtx.ny;
+            vtx.z = vtx.nz;
+            vtx.tu = 0.f;
+            vtx.tv = 0.f;
+            ballDbgVtx.push_back(vtx);
+         }
+      }
+
+      VertexBuffer* ballDebugPoints = new VertexBuffer(m_pd3dPrimaryDevice, (unsigned int)ballDbgVtx.size(), (float*)ballDbgVtx.data(), false);
+      m_ballDebugPoints = new MeshBuffer(L"Ball.Debug"s, ballDebugPoints);
+   }
+#endif
+   // Support up to 64 balls, that should be sufficient
+   VertexBuffer* ballTrailVertexBuffer = new VertexBuffer(m_pd3dPrimaryDevice, 64 * (MAX_BALL_TRAIL_POS - 2) * 2 + 4, nullptr, true);
+   m_ballTrailMeshBuffer = new MeshBuffer(L"Ball.Trail"s, ballTrailVertexBuffer);
+
    m_pd3dPrimaryDevice->ResetRenderState();
 #ifndef ENABLE_SDL
    CHECKD3D(m_pd3dPrimaryDevice->GetCoreDevice()->SetRenderState(D3DRS_LIGHTING, FALSE));
@@ -673,4 +735,89 @@ void Pin3D::UpdateBAMHeadTracking()
    m_mvp->SetView(m_matView);
    for (unsigned int eye = 0; eye < m_mvp->m_nEyes; eye++)
       m_mvp->SetProj(eye, m_matProj[eye]);
+}
+
+
+
+
+
+void Pin3D::UpdateBasicShaderMatrix(const Matrix3D& objectTrafo)
+{
+   struct
+   {
+      Matrix3D matWorld;
+      Matrix3D matView;
+      Matrix3D matWorldView;
+      Matrix3D matWorldViewInverseTranspose;
+      Matrix3D matWorldViewProj[2];
+   } matrices;
+   GetMVP().SetModel(objectTrafo);
+   matrices.matWorld = GetMVP().GetModel();
+   matrices.matView = GetMVP().GetView();
+   matrices.matWorldView = GetMVP().GetModelView();
+   matrices.matWorldViewInverseTranspose = GetMVP().GetModelViewInverseTranspose();
+
+#ifdef ENABLE_SDL // OpenGL
+   const int nEyes = m_pd3dPrimaryDevice->m_stereo3D != STEREO_OFF ? 2 : 1;
+   for (int eye = 0; eye < nEyes; eye++)
+      matrices.matWorldViewProj[eye] = GetMVP().GetModelViewProj(eye);
+   m_pd3dPrimaryDevice->flasherShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0].m[0][0], nEyes);
+   m_pd3dPrimaryDevice->lightShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0].m[0][0], nEyes);
+   m_pd3dPrimaryDevice->DMDShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0].m[0][0], nEyes);
+   m_pd3dPrimaryDevice->basicShader->SetUniformBlock(SHADER_basicMatrixBlock, &matrices.matWorld.m[0][0]);
+
+#else // DirectX 9
+   matrices.matWorldViewProj[0] = GetMVP().GetModelViewProj(0);
+   m_pd3dPrimaryDevice->basicShader->SetMatrix(SHADER_matWorld, &matrices.matWorld);
+   m_pd3dPrimaryDevice->basicShader->SetMatrix(SHADER_matView, &matrices.matView);
+   m_pd3dPrimaryDevice->basicShader->SetMatrix(SHADER_matWorldView, &matrices.matWorldView);
+   m_pd3dPrimaryDevice->basicShader->SetMatrix(SHADER_matWorldViewInverseTranspose, &matrices.matWorldViewInverseTranspose);
+   m_pd3dPrimaryDevice->basicShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0]);
+   m_pd3dPrimaryDevice->flasherShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0]);
+   m_pd3dPrimaryDevice->lightShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0]);
+   m_pd3dPrimaryDevice->DMDShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0]);
+#endif
+}
+
+void Pin3D::UpdateBallShaderMatrix()
+{
+   struct
+   {
+      Matrix3D matView;
+      Matrix3D matWorldView;
+      Matrix3D matWorldViewInverse;
+      Matrix3D matWorldViewProj[2];
+   } matrices;
+   GetMVP().SetModel(Matrix3D::MatrixIdentity());
+   matrices.matView = GetMVP().GetView();
+   matrices.matWorldView = GetMVP().GetModelView();
+   matrices.matWorldViewInverse = GetMVP().GetModelViewInverse();
+#ifdef ENABLE_SDL
+   const int nEyes = m_pd3dPrimaryDevice->m_stereo3D != STEREO_OFF ? 2 : 1;
+   for (int eye = 0; eye < nEyes; eye++)
+      matrices.matWorldViewProj[eye] = GetMVP().GetModelViewProj(eye);
+   m_pd3dPrimaryDevice->m_ballShader->SetUniformBlock(SHADER_ballMatrixBlock, &matrices.matView.m[0][0]);
+#else
+   matrices.matWorldViewProj[0] = GetMVP().GetModelViewProj(0);
+   m_pd3dPrimaryDevice->m_ballShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0]);
+   m_pd3dPrimaryDevice->m_ballShader->SetMatrix(SHADER_matWorldView, &matrices.matWorldView);
+   m_pd3dPrimaryDevice->m_ballShader->SetMatrix(SHADER_matWorldViewInverse, &matrices.matWorldViewInverse);
+   m_pd3dPrimaryDevice->m_ballShader->SetMatrix(SHADER_matView, &matrices.matView);
+#endif
+}
+
+void Pin3D::PrepareFrame()
+{
+   // Setup ball rendering: collect all lights that can reflect on balls
+   m_ballTrailMeshBufferPos = 0;
+   m_ballReflectedLights.clear();
+   for (size_t i = 0; i < m_table->m_vedit.size(); i++)
+   {
+      IEditable* const item = m_table->m_vedit[i];
+      if (item && item->GetItemType() == eItemLight && ((Light*)item)->m_d.m_showReflectionOnBall)
+         m_ballReflectedLights.push_back((Light*)item);
+   }
+   // We don't need to set the dependency on the previous frame render as this would be a cross frame dependency which does not have any meaning since dependencies are resolved per frame
+   // m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pin3d.m_pd3dPrimaryDevice->GetPreviousBackBufferTexture());
+   m_pd3dPrimaryDevice->m_ballShader->SetTexture(SHADER_tex_ball_playfield, m_pd3dPrimaryDevice->GetPreviousBackBufferTexture()->GetColorSampler());
 }

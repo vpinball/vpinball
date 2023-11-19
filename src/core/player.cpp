@@ -15,7 +15,6 @@
 #include <fstream>
 #include <sstream>
 #include <filesystem>
-#include "../meshes/ballMesh.h"
 #include "renderer/Shader.h"
 #include "renderer/Anaglyph.h"
 #include "renderer/RenderCommand.h"
@@ -62,6 +61,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    : m_pEditorTable(editor_table)
    , m_ptable(live_table)
    , m_playMode(playMode)
+   , m_pin3d(live_table)
 {
    m_pininput.LoadSettings(m_ptable->m_settings);
    m_disableStaticPrepass = playMode != 0;
@@ -129,9 +129,6 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
 #endif
    m_vrPreview = (VRPreviewMode)m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "VRPreview"s, (int)VRPREVIEW_LEFT);
    m_vrPreviewShrink = m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "ShrinkPreview"s, false);
-   m_trailForBalls = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "BallTrail"s, true);
-   m_ballTrailStrength = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "BallTrailStrength"s, 0.5f);
-   m_disableLightingForBalls = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "DisableLightingForBalls"s, false);
    m_stereo3D = useVR ? STEREO_VR : (StereoMode)m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3D"s, (int)STEREO_OFF);
    m_stereo3Denabled = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DEnabled"s, (m_stereo3D != STEREO_OFF));
    m_disableDWM = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "DisableDWM"s, false);
@@ -205,32 +202,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
       m_maxFramerate = 0;
    }
 
-   m_ballImage = nullptr;
-   m_decalImage = nullptr;
-
-   m_overwriteBallImages = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "OverwriteBallImage"s, false);
    m_minphyslooptime = min(m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "MinPhysLoopTime"s, 0), 1000);
-
-   if (m_overwriteBallImages)
-   {
-       string imageName;
-       bool hr = m_ptable->m_settings.LoadValue(Settings::Player, "BallImage"s, imageName);
-       if (hr)
-       {
-         BaseTexture *const tex = BaseTexture::CreateFromFile(imageName, m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "MaxTexDimension"s, 0));
-
-           if (tex != nullptr)
-               m_ballImage = new Texture(tex);
-       }
-       hr = m_ptable->m_settings.LoadValue(Settings::Player, "DecalImage"s, imageName);
-       if (hr)
-       {
-           BaseTexture *const tex = BaseTexture::CreateFromFile(imageName, m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "MaxTexDimension"s, 0));
-
-           if (tex != nullptr)
-               m_decalImage = new Texture(tex);
-       }
-   }
 
    m_throwBalls = m_ptable->m_settings.LoadValueWithDefault(Settings::Editor, "ThrowBallsAlwaysOn"s, false);
    m_ballControl = m_ptable->m_settings.LoadValueWithDefault(Settings::Editor, "BallControlAlwaysOn"s, false);
@@ -309,8 +281,6 @@ Player::~Player()
 {
    m_ptable->StopPlaying();
    delete m_staticPrepassRT;
-   delete m_ballImage;
-   delete m_decalImage;
    delete m_pBCTarget;
    delete m_ptable;
    delete m_tonemapLUT;
@@ -772,19 +742,6 @@ void Player::Shutdown()
 
    m_pininput.UnInit();
 
-   delete m_ballMeshBuffer;
-   m_ballMeshBuffer = nullptr;
-   #ifdef DEBUG_BALL_SPIN
-   delete m_ballDebugPoints;
-   m_ballDebugPoints = nullptr;
-   #endif
-   delete m_ballTrailMeshBuffer;
-   m_ballTrailMeshBuffer = nullptr;
-   delete m_ballImage;
-   m_ballImage = nullptr;
-   delete m_decalImage;
-   m_decalImage = nullptr;
-
    m_limiter.Shutdown();
 
    if (m_implicitPlayfieldMesh)
@@ -1053,43 +1010,6 @@ void Player::InitDebugHitStructure()
    m_debugoctree.Initialize(FRect(bbox.left,bbox.right,bbox.top,bbox.bottom));
 }
 
-void Player::UpdateBasicShaderMatrix(const Matrix3D& objectTrafo)
-{
-   struct {
-      Matrix3D matWorld;
-      Matrix3D matView;
-      Matrix3D matWorldView;
-      Matrix3D matWorldViewInverseTranspose;
-      Matrix3D matWorldViewProj[2];
-   } matrices;
-   m_pin3d.GetMVP().SetModel(objectTrafo);
-   matrices.matWorld = m_pin3d.GetMVP().GetModel();
-   matrices.matView = m_pin3d.GetMVP().GetView();
-   matrices.matWorldView = m_pin3d.GetMVP().GetModelView();
-   matrices.matWorldViewInverseTranspose = m_pin3d.GetMVP().GetModelViewInverseTranspose();
-
-#ifdef ENABLE_SDL // OpenGL
-   const int nEyes = m_pin3d.m_pd3dPrimaryDevice->m_stereo3D != STEREO_OFF ? 2 : 1;
-   for (int eye = 0; eye < nEyes; eye++)
-      matrices.matWorldViewProj[eye] = m_pin3d.GetMVP().GetModelViewProj(eye);
-   m_pin3d.m_pd3dPrimaryDevice->flasherShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0].m[0][0], nEyes);
-   m_pin3d.m_pd3dPrimaryDevice->lightShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0].m[0][0], nEyes);
-   m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0].m[0][0], nEyes);
-   m_pin3d.m_pd3dPrimaryDevice->basicShader->SetUniformBlock(SHADER_basicMatrixBlock, &matrices.matWorld.m[0][0]);
-
-#else // DirectX 9
-   matrices.matWorldViewProj[0] = m_pin3d.GetMVP().GetModelViewProj(0);
-   m_pin3d.m_pd3dPrimaryDevice->basicShader->SetMatrix(SHADER_matWorld, &matrices.matWorld);
-   m_pin3d.m_pd3dPrimaryDevice->basicShader->SetMatrix(SHADER_matView, &matrices.matView);
-   m_pin3d.m_pd3dPrimaryDevice->basicShader->SetMatrix(SHADER_matWorldView, &matrices.matWorldView);
-   m_pin3d.m_pd3dPrimaryDevice->basicShader->SetMatrix(SHADER_matWorldViewInverseTranspose, &matrices.matWorldViewInverseTranspose);
-   m_pin3d.m_pd3dPrimaryDevice->basicShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0]);
-   m_pin3d.m_pd3dPrimaryDevice->flasherShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0]);
-   m_pin3d.m_pd3dPrimaryDevice->lightShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0]);
-   m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0]);
-#endif
-}
-
 void Player::UpdateStereoShaderState()
 {
    if (m_stereo3DfakeStereo)
@@ -1146,11 +1066,11 @@ void Player::SetupShaders()
    const vec4 envEmissionScale_TexWidth(m_ptable->m_envEmissionScale * m_globalEmissionScale,
       (float) (m_pin3d.m_envTexture ? *m_pin3d.m_envTexture : m_pin3d.m_builtinEnvTexture).m_height /*+m_pin3d.m_builtinEnvTexture.m_width)*0.5f*/, 0.f, 0.f); //!! dto.
 
-   UpdateBasicShaderMatrix();
+   m_pin3d.UpdateBasicShaderMatrix();
    m_pin3d.m_pd3dPrimaryDevice->basicShader->SetTexture(SHADER_tex_env, m_pin3d.m_envTexture ? m_pin3d.m_envTexture : &m_pin3d.m_builtinEnvTexture);
    m_pin3d.m_pd3dPrimaryDevice->basicShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &envEmissionScale_TexWidth);
 
-   UpdateBallShaderMatrix();
+   m_pin3d.UpdateBallShaderMatrix();
    const vec4 st(m_ptable->m_envEmissionScale*m_globalEmissionScale, m_pin3d.m_envTexture ? (float)m_pin3d.m_envTexture->m_height/*+m_pin3d.m_envTexture->m_width)*0.5f*/ : (float)m_pin3d.m_builtinEnvTexture.m_height/*+m_pin3d.m_builtinEnvTexture.m_width)*0.5f*/, 0.f, 0.f);
    m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
    m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &envEmissionScale_TexWidth);
@@ -1163,32 +1083,6 @@ void Player::SetupShaders()
       amb_lr.x * m_globalEmissionScale, amb_lr.y * m_globalEmissionScale, amb_lr.z * m_globalEmissionScale, m_ptable->m_lightRange);
 
    m_pin3d.InitLights();
-}
-
-void Player::UpdateBallShaderMatrix()
-{
-   struct {
-      Matrix3D matView;
-      Matrix3D matWorldView;
-      Matrix3D matWorldViewInverse;
-      Matrix3D matWorldViewProj[2];
-   } matrices;
-   m_pin3d.GetMVP().SetModel(Matrix3D::MatrixIdentity());
-   matrices.matView = m_pin3d.GetMVP().GetView();
-   matrices.matWorldView = m_pin3d.GetMVP().GetModelView();
-   matrices.matWorldViewInverse = m_pin3d.GetMVP().GetModelViewInverse();
-#ifdef ENABLE_SDL
-   const int nEyes = m_pin3d.m_pd3dPrimaryDevice->m_stereo3D != STEREO_OFF ? 2 : 1;
-   for (int eye = 0; eye < nEyes; eye++)
-      matrices.matWorldViewProj[eye] = m_pin3d.GetMVP().GetModelViewProj(eye);
-   m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetUniformBlock(SHADER_ballMatrixBlock, &matrices.matView.m[0][0]);
-#else
-   matrices.matWorldViewProj[0] = m_pin3d.GetMVP().GetModelViewProj(0);
-   m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0]);
-   m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetMatrix(SHADER_matWorldView, &matrices.matWorldView);
-   m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetMatrix(SHADER_matWorldViewInverse, &matrices.matWorldViewInverse);
-   m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetMatrix(SHADER_matView, &matrices.matView);
-#endif
 }
 
 HRESULT Player::Init()
@@ -1604,41 +1498,6 @@ HRESULT Player::Init()
    const bool forceAniso = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "ForceAnisotropicFiltering"s, true);
    m_pin3d.m_pd3dPrimaryDevice->SetMainTextureDefaultFiltering(forceAniso ? SF_ANISOTROPIC : SF_TRILINEAR);
 
-   const bool lowDetailBall = (m_ptable->GetDetailLevel() < 10);
-   IndexBuffer *ballIndexBuffer = new IndexBuffer(m_pin3d.m_pd3dPrimaryDevice, lowDetailBall ? basicBallLoNumFaces : basicBallMidNumFaces, lowDetailBall ? basicBallLoIndices : basicBallMidIndices);
-   VertexBuffer *ballVertexBuffer = new VertexBuffer(m_pin3d.m_pd3dPrimaryDevice, lowDetailBall ? basicBallLoNumVertices : basicBallMidNumVertices, (float *)(lowDetailBall ? basicBallLo : basicBallMid));
-   m_ballMeshBuffer = new MeshBuffer(L"Ball"s, ballVertexBuffer, ballIndexBuffer, true);
-   #ifdef DEBUG_BALL_SPIN
-   {
-      vector<Vertex3D_NoTex2> ballDbgVtx;
-      for (int j = -1; j <= 1; ++j)
-      {
-         const int numPts = (j == 0) ? 6 : 3;
-         const float theta = (float)(j * (M_PI/4.0));
-         for (int i = 0; i < numPts; ++i)
-         {
-            const float phi = (float)(i * (2.0*M_PI) / numPts);
-            Vertex3D_NoTex2 vtx;
-            vtx.nx = cosf(theta) * cosf(phi);
-            vtx.ny = cosf(theta) * sinf(phi);
-            vtx.nz = sinf(theta);
-            vtx.x = vtx.nx;
-            vtx.y = vtx.ny;
-            vtx.z = vtx.nz;
-            vtx.tu = 0.f;
-            vtx.tv = 0.f;
-            ballDbgVtx.push_back(vtx);
-         }
-      }
-
-      VertexBuffer *ballDebugPoints = new VertexBuffer(m_pin3d.m_pd3dPrimaryDevice, (unsigned int)ballDbgVtx.size(), (float *)ballDbgVtx.data(), false);
-      m_ballDebugPoints = new MeshBuffer(L"Ball.Debug"s, ballDebugPoints);
-   }
-   #endif
-   // Support up to 64 balls, that should be sufficient
-   VertexBuffer* ballTrailVertexBuffer = new VertexBuffer(m_pin3d.m_pd3dPrimaryDevice, 64 * (MAX_BALL_TRAIL_POS - 2) * 2 + 4, nullptr, true);
-   m_ballTrailMeshBuffer = new MeshBuffer(L"Ball.Trail"s, ballTrailVertexBuffer);
-
    #ifdef ENABLE_SDL
    if (m_stereo3D == STEREO_VR)
    {
@@ -1826,7 +1685,7 @@ void Player::RenderStaticPrepass()
             m_ptable->m_vrenderprobe[i]->MarkDirty();
 
          // Render static parts
-         UpdateBasicShaderMatrix();
+         m_pin3d.UpdateBasicShaderMatrix();
          for (Hitable *hitable : m_vhitables)
             hitable->Render(m_render_mask);
 
@@ -1946,7 +1805,7 @@ void Player::RenderStaticPrepass()
          m_pin3d.m_pd3dPrimaryDevice->ResetRenderState();
          for (size_t i = 0; i < m_ptable->m_vrenderprobe.size(); ++i)
             m_ptable->m_vrenderprobe[i]->MarkDirty();
-         UpdateBasicShaderMatrix();
+         m_pin3d.UpdateBasicShaderMatrix();
          for (Hitable *hitable : m_vhitables)
             hitable->Render(m_render_mask);
          m_pin3d.m_pd3dPrimaryDevice->FlushRenderFrame();
@@ -3097,8 +2956,8 @@ void Player::RenderDynamics()
    m_pin3d.m_pd3dPrimaryDevice->basicShader->SetFloat4v(SHADER_balls, balls, MAX_BALL_SHADOW);
    m_pin3d.m_pd3dPrimaryDevice->flasherShader->SetFloat4v(SHADER_balls, balls, MAX_BALL_SHADOW);
 
-   UpdateBasicShaderMatrix();
-   UpdateBallShaderMatrix();
+   m_pin3d.UpdateBasicShaderMatrix();
+   m_pin3d.UpdateBallShaderMatrix();
 
    // Render the default backglass without depth write before the table so that it will be visible for tables without a VR backglass but overwriten otherwise
    if (m_pin3d.m_backGlass != nullptr)
@@ -4012,18 +3871,7 @@ void Player::PrepareFrame()
    else if (m_liveUI->IsTweakMode())
       m_pin3d.InitLayout();
 
-   // Setup ball rendering: collect all lights that can reflect on balls
-   m_ballTrailMeshBufferPos = 0;
-   m_ballReflectedLights.clear();
-   for (size_t i = 0; i < m_ptable->m_vedit.size(); i++)
-   {
-      IEditable * const item = m_ptable->m_vedit[i];
-      if (item && item->GetItemType() == eItemLight && ((Light *)item)->m_d.m_showReflectionOnBall)
-         m_ballReflectedLights.push_back((Light *)item);
-   }
-   // We don't need to set the dependency on the previous frame render as this would be a cross frame dependency which does not have any meaning since dependencies are resolved per frame
-   // m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pin3d.m_pd3dPrimaryDevice->GetPreviousBackBufferTexture());
-   m_pin3d.m_pd3dPrimaryDevice->m_ballShader->SetTexture(SHADER_tex_ball_playfield, m_pin3d.m_pd3dPrimaryDevice->GetPreviousBackBufferTexture()->GetColorSampler());
+   m_pin3d.PrepareFrame();
 
    if (GetInfoMode() != IF_STATIC_ONLY)
       RenderDynamics();

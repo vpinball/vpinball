@@ -887,7 +887,7 @@ void Light::Render(const unsigned int renderMask)
 
    // Restore state
    if (m_backglass)
-      g_pplayer->UpdateBasicShaderMatrix();
+      g_pplayer->m_pin3d.UpdateBasicShaderMatrix();
 }
 
 void Light::SetObjectPos()
