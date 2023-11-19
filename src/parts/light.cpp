@@ -546,10 +546,10 @@ void Light::RenderRelease()
 void Light::Render(const unsigned int renderMask)
 {
    assert(m_rd != nullptr);
-   const bool isStaticOnly = renderMask & Pin3D::STATIC_ONLY;
-   const bool isDynamicOnly = renderMask & Pin3D::DYNAMIC_ONLY;
-   const bool isLightBuffer = renderMask & Pin3D::LIGHT_BUFFER;
-   const bool isReflectionPass = renderMask & Pin3D::REFLECTION_PASS;
+   const bool isStaticOnly = renderMask & Renderer::STATIC_ONLY;
+   const bool isDynamicOnly = renderMask & Renderer::DYNAMIC_ONLY;
+   const bool isLightBuffer = renderMask & Renderer::LIGHT_BUFFER;
+   const bool isReflectionPass = renderMask & Renderer::REFLECTION_PASS;
    TRACE_FUNCTION();
 
    m_rd->ResetRenderState();
@@ -730,7 +730,7 @@ void Light::Render(const unsigned int renderMask)
 
          lightColor_intensity.w = m_currentIntensity * 0.02f; //!! make configurable?
          //lightColor_intensity.w = m_currentIntensity * 0.5f;
-         if (m_d.m_BulbLight && g_pplayer->m_renderer->IsRenderPass(Pin3D::LIGHT_BUFFER))
+         if (m_d.m_BulbLight && g_pplayer->m_renderer->IsRenderPass(Renderer::LIGHT_BUFFER))
             lightColor_intensity.w *= m_d.m_transmissionScale;
          m_rd->lightShader->SetLightColorIntensity(lightColor_intensity);
          m_rd->lightShader->SetFloat(SHADER_blend_modulate_vs_add, 0.00001f); // additive, but avoid full 0, as it disables the blend
@@ -742,7 +742,7 @@ void Light::Render(const unsigned int renderMask)
          m_rd->CopyRenderStates(false, tmp_state);
       }
 
-      if (isReflectionPass && (renderMask & Pin3D::DISABLE_LIGHTMAPS) != 0)
+      if (isReflectionPass && (renderMask & Renderer::DISABLE_LIGHTMAPS) != 0)
          return;
 
       // Lazily update the position of the vertex buffer (done here instead of setup since this halo height is a dynamic property of bulb lights)
@@ -811,7 +811,7 @@ void Light::Render(const unsigned int renderMask)
       shader->SetLightData(center_range);
       shader->SetLightColor2FalloffPower(lightColor2_falloff_power);
       lightColor_intensity.w = m_currentIntensity;
-      if (g_pplayer->m_renderer->IsRenderPass(Pin3D::LIGHT_BUFFER))
+      if (g_pplayer->m_renderer->IsRenderPass(Renderer::LIGHT_BUFFER))
          lightColor_intensity.w *= m_d.m_transmissionScale;
       shader->SetLightColorIntensity(lightColor_intensity);
 
@@ -841,7 +841,7 @@ void Light::Render(const unsigned int renderMask)
          //m_rd->SetRenderState(RenderDevice::SRCBLEND,  RenderDevice::SRC_ALPHA);  // add the lightcontribution
          m_rd->SetRenderState(RenderState::DESTBLEND, RenderState::INVSRC_COLOR); // but also modulate the light first with the underlying elements by (1+lightcontribution, e.g. a very crude approximation of real lighting)
          m_rd->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_REVSUBTRACT);
-         shader->SetFloat(SHADER_blend_modulate_vs_add, !g_pplayer->m_renderer->IsRenderPass(Pin3D::LIGHT_BUFFER) ? clamp(m_d.m_modulate_vs_add, 0.00001f, 0.9999f) : 0.00001f); // avoid 0, as it disables the blend and avoid 1 as it looks not good with day->night changes // in the separate bulb light render stage only enable additive
+         shader->SetFloat(SHADER_blend_modulate_vs_add, !g_pplayer->m_renderer->IsRenderPass(Renderer::LIGHT_BUFFER) ? clamp(m_d.m_modulate_vs_add, 0.00001f, 0.9999f) : 0.00001f); // avoid 0, as it disables the blend and avoid 1 as it looks not good with day->night changes // in the separate bulb light render stage only enable additive
          shader->SetTechnique(m_d.m_shadows == ShadowMode::RAYTRACED_BALL_SHADOWS ? SHADER_TECHNIQUE_bulb_light_with_ball_shadows : SHADER_TECHNIQUE_bulb_light);
       }
 

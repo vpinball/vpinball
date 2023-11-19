@@ -115,7 +115,7 @@ private:
    PinTable *m_table; // The edited table
    PinTable *m_live_table; // The live copy of the edited table being played by the player (all properties can be changed at any time by the script)
    PinInput *m_pininput;
-   Pin3D *m_renderer;
+   Renderer *m_renderer;
    struct Selection
    {
       enum SelectionType { S_NONE, S_CAMERA, S_MATERIAL, S_BALL, S_EDITABLE, S_RENDERPROBE } type = S_NONE;

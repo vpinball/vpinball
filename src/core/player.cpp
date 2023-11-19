@@ -1079,12 +1079,12 @@ HRESULT Player::Init()
    // width and height may be modified during initialization (for example for VR, they are adapted to the headset resolution)
    try
    {
-      m_renderer = new Pin3D(m_ptable, m_fullScreen, m_wnd_width, m_wnd_height, colordepth, m_refreshrate, m_videoSyncMode, m_AAfactor, m_stereo3DfakeStereo ? STEREO_OFF : m_stereo3D);
+      m_renderer = new Renderer(m_ptable, m_fullScreen, m_wnd_width, m_wnd_height, colordepth, m_refreshrate, m_videoSyncMode, m_AAfactor, m_stereo3DfakeStereo ? STEREO_OFF : m_stereo3D);
    }
    catch (HRESULT hr)
    {
       char szFoo[64];
-      sprintf_s(szFoo, sizeof(szFoo), "InitPin3D Error code: %x", hr);
+      sprintf_s(szFoo, sizeof(szFoo), "InitRenderer Error code: %x", hr);
       ShowError(szFoo);
       return hr;
    }
@@ -1368,7 +1368,7 @@ HRESULT Player::Init()
                   }
                   // For dynamic modes (VR, head tracking,...) mark all preloaded textures as static only
                   // This will make the cache wrong for the next non static run but it will rebuild, while the opposite would not (all preloads would stay as not prerender only)
-                  m_renderer->m_render_mask = (!IsUsingStaticPrepass() || preRenderOnly) ? Pin3D::STATIC_ONLY : Pin3D::DEFAULT;
+                  m_renderer->m_render_mask = (!IsUsingStaticPrepass() || preRenderOnly) ? Renderer::STATIC_ONLY : Renderer::DEFAULT;
                   m_renderer->m_pd3dPrimaryDevice->m_texMan.LoadTexture(tex->m_pdsBuffer, (SamplerFilter)filter, (SamplerAddressMode)clampU, (SamplerAddressMode)clampV, linearRGB);
                   PLOGI << "Texture preloading: '" << name << '\'';
                }
@@ -1379,7 +1379,7 @@ HRESULT Player::Init()
       {
          PLOGE << "Texture preloading failed";
       }
-      m_renderer->m_render_mask = Pin3D::DEFAULT;
+      m_renderer->m_render_mask = Renderer::DEFAULT;
    }
 
    //----------------------------------------------------------------------------------
@@ -1551,7 +1551,7 @@ void Player::RenderStaticPrepass()
    TRACE_FUNCTION();
 
    m_renderer->m_pd3dPrimaryDevice->FlushRenderFrame();
-   m_renderer->m_render_mask |= Pin3D::STATIC_ONLY;
+   m_renderer->m_render_mask |= Renderer::STATIC_ONLY;
 
    // The code will fail if the static render target is MSAA (the copy operation we are performing is not allowed)
    delete m_staticPrepassRT;
@@ -1751,7 +1751,7 @@ void Player::RenderStaticPrepass()
 
    PLOGI << "Static PreRender done"; // For profiling
    
-   m_renderer->m_render_mask &= ~Pin3D::STATIC_ONLY;
+   m_renderer->m_render_mask &= ~Renderer::STATIC_ONLY;
    m_renderer->m_pd3dPrimaryDevice->FlushRenderFrame();
 }
 
@@ -2829,13 +2829,13 @@ void Player::RenderDynamics()
    if (m_renderer->m_backGlass != nullptr)
       m_renderer->m_backGlass->Render();
 
-   m_renderer->m_render_mask = IsUsingStaticPrepass() ? Pin3D::DYNAMIC_ONLY : Pin3D::DEFAULT;
+   m_renderer->m_render_mask = IsUsingStaticPrepass() ? Renderer::DYNAMIC_ONLY : Renderer::DEFAULT;
    m_renderer->DrawBulbLightBuffer();
    for (Hitable *hitable : m_vhitables)
       hitable->Render(m_renderer->m_render_mask);
    for (Ball* ball : m_vball)
       ball->m_pballex->Render(m_renderer->m_render_mask);
-   m_renderer->m_render_mask = Pin3D::DEFAULT;
+   m_renderer->m_render_mask = Renderer::DEFAULT;
    
    m_renderer->m_pd3dPrimaryDevice->basicShader->SetTextureNull(SHADER_tex_base_transmission); // need to reset the bulb light texture, as its used as render target for bloom again
 

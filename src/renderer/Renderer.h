@@ -97,11 +97,11 @@ enum VRPreviewMode
    VRPREVIEW_BOTH
 };
 
-class Pin3D
+class Renderer
 {
 public:
-   Pin3D(PinTable* const table, const bool fullScreen, const int width, const int height, const int colordepth, int& refreshrate, VideoSyncMode& syncMode, const float AAfactor, const StereoMode stereo3D);
-   ~Pin3D();
+   Renderer(PinTable* const table, const bool fullScreen, const int width, const int height, const int colordepth, int& refreshrate, VideoSyncMode& syncMode, const float AAfactor, const StereoMode stereo3D);
+   ~Renderer();
 
    void InitLayout(const float xpixoff = 0.f, const float ypixoff = 0.f);
    ModelViewProj& GetMVP() { return *m_mvp; }
