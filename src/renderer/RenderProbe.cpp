@@ -114,9 +114,9 @@ void RenderProbe::PreRenderStatic()
 RenderTarget* RenderProbe::Render(const unsigned int renderMask)
 {
    assert(m_rd != nullptr);
-   const bool isStaticOnly = renderMask & Pin3D::STATIC_ONLY;
-   const bool isDynamicOnly = renderMask & Pin3D::DYNAMIC_ONLY;
-   const bool isReflectionPass = renderMask & Pin3D::REFLECTION_PASS;
+   const bool isStaticOnly = renderMask & Renderer::STATIC_ONLY;
+   const bool isDynamicOnly = renderMask & Renderer::DYNAMIC_ONLY;
+   const bool isReflectionPass = renderMask & Renderer::REFLECTION_PASS;
 
    // Probes are rendered and used in screen space therefore, they can't be recusively used (e.g. reflections
    // of reflections). Beside this, some properties are not cached (clip plane,...) and would break if
@@ -376,9 +376,9 @@ void RenderProbe::PreRenderStaticReflectionProbe()
 void RenderProbe::RenderReflectionProbe(const unsigned int renderMask)
 {
    assert(m_rd != nullptr);
-   const bool isStaticOnly = renderMask & Pin3D::STATIC_ONLY;
-   const bool isDynamicOnly = renderMask & Pin3D::DYNAMIC_ONLY;
-   assert((renderMask & Pin3D::REFLECTION_PASS) == 0);
+   const bool isStaticOnly = renderMask & Renderer::STATIC_ONLY;
+   const bool isDynamicOnly = renderMask & Renderer::DYNAMIC_ONLY;
+   assert((renderMask & Renderer::REFLECTION_PASS) == 0);
    const ReflectionMode mode = min(m_reflection_mode, g_pplayer->m_maxReflectionMode);
 
    if (mode == REFL_NONE
@@ -416,9 +416,9 @@ void RenderProbe::DoRenderReflectionProbe(const bool render_static, const bool r
    m_rd->CopyRenderStates(true, *m_rdState);
 
    const unsigned int prevRenderMask = g_pplayer->m_renderer->m_render_mask;
-   g_pplayer->m_renderer->m_render_mask |= Pin3D::REFLECTION_PASS;
+   g_pplayer->m_renderer->m_render_mask |= Renderer::REFLECTION_PASS;
    if (m_disableLightReflection)
-      g_pplayer->m_renderer->m_render_mask |= Pin3D::DISABLE_LIGHTMAPS;
+      g_pplayer->m_renderer->m_render_mask |= Renderer::DISABLE_LIGHTMAPS;
 
    // Set the clip plane to only render objects above the reflection plane (do not reflect what is under or the plane itself)
    Vertex3Ds n(m_reflection_plane.x, m_reflection_plane.y, m_reflection_plane.z);

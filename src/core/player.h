@@ -570,7 +570,7 @@ public:
    int m_BWrendering; // 0=off, 1=Black&White from RedGreen, 2=B&W from Red only
    ToneMapper m_toneMapper = TM_TONY_MC_MAPFACE;
 
-   Pin3D* m_renderer = nullptr;
+   Renderer* m_renderer = nullptr;
 
    bool m_scaleFX_DMD;
 #pragma endregion

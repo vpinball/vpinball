@@ -6,7 +6,7 @@
 #include "BAM/BAMView.h"
 #include "meshes/ballMesh.h"
 
-Pin3D::Pin3D(PinTable* const table, const bool fullScreen, const int width, const int height, const int colordepth, int& refreshrate, VideoSyncMode& syncMode, const float AAfactor, const StereoMode stereo3D)
+Renderer::Renderer(PinTable* const table, const bool fullScreen, const int width, const int height, const int colordepth, int& refreshrate, VideoSyncMode& syncMode, const float AAfactor, const StereoMode stereo3D)
    : m_table(table)
 {
    m_vrPreview = (VRPreviewMode)m_table->m_settings.LoadValueWithDefault(Settings::PlayerVR, "VRPreview"s, (int)VRPREVIEW_LEFT);
@@ -238,7 +238,7 @@ Pin3D::Pin3D(PinTable* const table, const bool fullScreen, const int width, cons
 #endif
 }
 
-Pin3D::~Pin3D()
+Renderer::~Renderer()
 {
    delete m_mvp;
    m_gpu_profiler.Shutdown();
@@ -261,19 +261,19 @@ Pin3D::~Pin3D()
    delete m_tonemapLUT;
 }
 
-void Pin3D::TransformVertices(const Vertex3D_NoTex2 * const __restrict rgv, const WORD * const __restrict rgi, const int count, Vertex2D * const __restrict rgvout) const
+void Renderer::TransformVertices(const Vertex3D_NoTex2 * const __restrict rgv, const WORD * const __restrict rgi, const int count, Vertex2D * const __restrict rgvout) const
 {
    RECT viewport { 0, 0, (LONG)m_viewPort.Width, (LONG)m_viewPort.Height };
    m_mvp->GetModelViewProj(0).TransformVertices(rgv, rgi, count, rgvout, viewport);
 }
 
-void Pin3D::TransformVertices(const Vertex3Ds* const __restrict rgv, const WORD* const __restrict rgi, const int count, Vertex2D* const __restrict rgvout) const
+void Renderer::TransformVertices(const Vertex3Ds* const __restrict rgv, const WORD* const __restrict rgi, const int count, Vertex2D* const __restrict rgvout) const
 {
    RECT viewport { 0, 0, (LONG)m_viewPort.Width, (LONG)m_viewPort.Height };
    m_mvp->GetModelViewProj(0).TransformVertices(rgv, rgi, count, rgvout, viewport);
 }
 
-BaseTexture* Pin3D::EnvmapPrecalc(const Texture* envTex, const unsigned int rad_env_xres, const unsigned int rad_env_yres)
+BaseTexture* Renderer::EnvmapPrecalc(const Texture* envTex, const unsigned int rad_env_xres, const unsigned int rad_env_yres)
 {
    const void* __restrict envmap = envTex->m_pdsBuffer->data();
    const unsigned int env_xres = envTex->m_pdsBuffer->width();
@@ -628,7 +628,7 @@ BaseTexture* Pin3D::EnvmapPrecalc(const Texture* envTex, const unsigned int rad_
    return radTex;
 }
 
-void Pin3D::DrawBackground()
+void Renderer::DrawBackground()
 {
    const PinTable * const ptable = g_pplayer->m_ptable;
    Texture * const pin = ptable->GetDecalsEnabled() ? ptable->GetImage(ptable->m_BG_image[ptable->m_BG_current_set]) : nullptr;
@@ -662,7 +662,7 @@ void Pin3D::DrawBackground()
 // - Absolute layout mode which was added in 10.8
 //   This mode computes the camera position by using an absolute coordinate system with origin at the bottom center of the table.
 //
-void Pin3D::InitLayout(const float xpixoff, const float ypixoff)
+void Renderer::InitLayout(const float xpixoff, const float ypixoff)
 {
    TRACE_FUNCTION();
    ViewSetup& viewSetup = g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set];
@@ -677,7 +677,7 @@ void Pin3D::InitLayout(const float xpixoff, const float ypixoff)
    SetupShaders();
 }
 
-Vertex3Ds Pin3D::Unproject(const Vertex3Ds& point)
+Vertex3Ds Renderer::Unproject(const Vertex3Ds& point)
 {
    Matrix3D m2 = m_mvp->GetModelViewProj(0);
    m2.Invert();
@@ -689,7 +689,7 @@ Vertex3Ds Pin3D::Unproject(const Vertex3Ds& point)
    return p3;
 }
 
-Vertex3Ds Pin3D::Get3DPointFrom2D(const POINT& p)
+Vertex3Ds Renderer::Get3DPointFrom2D(const POINT& p)
 {
    const Vertex3Ds pNear((float)p.x,(float)p.y,m_viewPort.MinZ);
    const Vertex3Ds pFar ((float)p.x,(float)p.y,m_viewPort.MaxZ);
@@ -702,7 +702,7 @@ Vertex3Ds Pin3D::Get3DPointFrom2D(const POINT& p)
    return vertex;
 }
 
-void Pin3D::UpdateBAMHeadTracking()
+void Renderer::UpdateBAMHeadTracking()
 {
    Matrix3D m_matView;
    Matrix3D m_matProj[2];
@@ -716,7 +716,7 @@ void Pin3D::UpdateBAMHeadTracking()
 
 
 
-void Pin3D::SetupShaders()
+void Renderer::SetupShaders()
 {
    const vec4 envEmissionScale_TexWidth(m_table->m_envEmissionScale * m_globalEmissionScale,
       (float) (m_envTexture ? *m_envTexture : m_builtinEnvTexture).m_height /*+m_builtinEnvTexture.m_width)*0.5f*/, 0.f, 0.f); //!! dto.
@@ -781,7 +781,7 @@ void Pin3D::SetupShaders()
 #endif
 }
 
-void Pin3D::UpdateBasicShaderMatrix(const Matrix3D& objectTrafo)
+void Renderer::UpdateBasicShaderMatrix(const Matrix3D& objectTrafo)
 {
    struct
    {
@@ -819,7 +819,7 @@ void Pin3D::UpdateBasicShaderMatrix(const Matrix3D& objectTrafo)
 #endif
 }
 
-void Pin3D::UpdateBallShaderMatrix()
+void Renderer::UpdateBallShaderMatrix()
 {
    struct
    {
@@ -846,7 +846,7 @@ void Pin3D::UpdateBallShaderMatrix()
 #endif
 }
 
-void Pin3D::PrepareFrame()
+void Renderer::PrepareFrame()
 {
    // Setup ball rendering: collect all lights that can reflect on balls
    m_ballTrailMeshBufferPos = 0;
@@ -862,7 +862,7 @@ void Pin3D::PrepareFrame()
    m_pd3dPrimaryDevice->m_ballShader->SetTexture(SHADER_tex_ball_playfield, m_pd3dPrimaryDevice->GetPreviousBackBufferTexture()->GetColorSampler());
 }
 
-void Pin3D::DrawBulbLightBuffer()
+void Renderer::DrawBulbLightBuffer()
 {
    RenderDevice* p3dDevice = m_pd3dPrimaryDevice;
    const RenderPass *initial_rt = p3dDevice->GetCurrentPass();
@@ -874,13 +874,13 @@ void Pin3D::DrawBulbLightBuffer()
    p3dDevice->Clear(clearType::TARGET, 0, 1.0f, 0L);
 
    // Draw bulb lights
-   m_render_mask |= Pin3D::LIGHT_BUFFER;
+   m_render_mask |= Renderer::LIGHT_BUFFER;
    p3dDevice->SetRenderTarget("Transmitted Light " + std::to_string(id), p3dDevice->GetBloomBufferTexture(), true, true);
    p3dDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE); // disable all z-tests as zbuffer is in different resolution
    for (Hitable *hitable : g_pplayer->m_vhitables)
       if (hitable->HitableGetItemType() == eItemLight)
          hitable->Render(m_render_mask);
-   m_render_mask &= ~Pin3D::LIGHT_BUFFER;
+   m_render_mask &= ~Renderer::LIGHT_BUFFER;
 
    bool hasLight = p3dDevice->GetCurrentPass()->GetCommandCount() > 1;
    if (hasLight)
@@ -915,16 +915,16 @@ void Pin3D::DrawBulbLightBuffer()
    }
 }
 
-void Pin3D::DrawStatics()
+void Renderer::DrawStatics()
 {
    const unsigned int mask = m_render_mask;
-   m_render_mask |= Pin3D::STATIC_ONLY;
+   m_render_mask |= Renderer::STATIC_ONLY;
    for (Hitable* hitable : g_pplayer->m_vhitables)
       hitable->Render(m_render_mask);
    m_render_mask = mask;
 }
 
-void Pin3D::DrawDynamics(bool onlyBalls)
+void Renderer::DrawDynamics(bool onlyBalls)
 {
    if (!onlyBalls)
    {
@@ -933,7 +933,7 @@ void Pin3D::DrawDynamics(bool onlyBalls)
 
       // Draw all parts
       const unsigned int mask = m_render_mask;
-      m_render_mask |= Pin3D::DYNAMIC_ONLY;
+      m_render_mask |= Renderer::DYNAMIC_ONLY;
       for (Hitable* hitable : g_pplayer->m_vhitables)
          hitable->Render(m_render_mask);
       m_render_mask = mask;
@@ -947,7 +947,7 @@ void Pin3D::DrawDynamics(bool onlyBalls)
 
 #pragma region PostProcess
 
-void Pin3D::SetScreenOffset(const float x, const float y)
+void Renderer::SetScreenOffset(const float x, const float y)
 {
    const float rotation = ANGTORAD(m_table->mViewSetups[m_table->m_BG_current_set].GetRotation(m_pd3dPrimaryDevice->m_width, m_pd3dPrimaryDevice->m_height));
    const float c = cosf(-rotation), s = sinf(-rotation);
@@ -955,7 +955,7 @@ void Pin3D::SetScreenOffset(const float x, const float y)
    m_ScreenOffset.y = x * s + y * c;
 }
 
-void Pin3D::SSRefl()
+void Renderer::SSRefl()
 {
    m_pd3dPrimaryDevice->SetRenderTarget("ScreenSpace Reflection"s, m_pd3dPrimaryDevice->GetReflectionBufferTexture(), false);
    m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pd3dPrimaryDevice->GetBackBufferTexture(), true);
@@ -977,7 +977,7 @@ void Pin3D::SSRefl()
    m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->FBShader);
 }
 
-void Pin3D::Bloom()
+void Renderer::Bloom()
 {
    if (m_table->m_bloom_strength <= 0.0f || m_bloomOff || g_pplayer->GetInfoMode() == IF_LIGHT_BUFFER_ONLY)
       return;
@@ -1011,7 +1011,7 @@ void Pin3D::Bloom()
       m_pd3dPrimaryDevice->GetBloomBufferTexture(), 39.f); // FIXME kernel size should depend on buffer resolution
 }
 
-void Pin3D::PrepareVideoBuffers()
+void Renderer::PrepareVideoBuffers()
 {
    const bool useAA = m_AAfactor > 1.0f;
    const bool stereo = m_stereo3D == STEREO_VR || ((m_stereo3D != STEREO_OFF) && g_pplayer->m_stereo3Denabled && (!g_pplayer->m_stereo3DfakeStereo || m_pd3dPrimaryDevice->DepthBufferReadBackAvailable()));
