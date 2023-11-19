@@ -231,9 +231,8 @@ float4 psBall( const in vout IN, uniform bool equirectangularMap, uniform bool d
      && !(t <= 0.)) // t < 0.0 may happen in some situation where ball intersects the playfield and the reflected point is inside the ball (like in kicker)
     {
         // NdotR * NdotR is a magic falloff between playfield (down) and environment (up)
-        // We can face infinite reflections (ball->playfield->ball->playfield->...) which would overblow, so we need to saturate based on N.V
-        const float NdotV = dot(N, V);
-        ballImageColor = lerp(ballImageColor, lerp(saturate(playfieldColor), playfieldColor, NdotV * NdotV), NdotR * NdotR);
+        // We can face infinite reflections (ball->playfield->ball->playfield->...) which would overflow, so we saturate to an arbitrary value
+        ballImageColor = lerp(ballImageColor, min(playfieldColor, float3(15., 15., 15.)), NdotR * NdotR);
     }
 
     float3 diffuse = cBase_Alpha.rgb*0.075;
