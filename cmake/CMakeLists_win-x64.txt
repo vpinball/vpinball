@@ -279,7 +279,6 @@ add_executable(vpinball WIN32
    Material.h
    memutil.cpp
    memutil.h
-   mesh.cpp
    mesh.h
    mixer.cpp
    mixer.h
@@ -329,6 +328,8 @@ add_executable(vpinball WIN32
    src/core/Settings.h
    src/core/TableDB.cpp
    src/core/TableDB.h
+
+   src/math/ModelViewProj.h
 
    src/meshes/ballMesh.h
    src/meshes/bulbLightMesh.h
@@ -418,6 +419,8 @@ add_executable(vpinball WIN32
    src/physics/hittimer.h
    src/physics/kdtree.cpp
    src/physics/kdtree.h
+   src/physics/PhysicsEngine.cpp
+   src/physics/PhysicsEngine.h
    src/physics/quadtree.cpp
    src/physics/quadtree.h
 
@@ -456,6 +459,8 @@ add_executable(vpinball WIN32
    src/renderer/VertexBuffer.h
    src/renderer/ViewSetup.cpp
    src/renderer/ViewSetup.h
+   src/renderer/VRDevice.cpp
+   src/renderer/VRDevice.h
 
    vpinball.rc
    vpinball.idl

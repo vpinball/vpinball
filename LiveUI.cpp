@@ -1191,12 +1191,12 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
       {
          if (keyEvent == 1)
          {
-            int tm = m_player->m_toneMapper + (int)step;
+            int tm = m_renderer->m_toneMapper + (int)step;
             if (tm < 0)
                tm = ToneMapper::TM_FILMIC;
             if (tm > ToneMapper::TM_FILMIC)
                tm = ToneMapper::TM_REINHARD;
-            m_player->m_toneMapper = (ToneMapper)tm;
+            m_renderer->m_toneMapper = (ToneMapper)tm;
             m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 1 /* table option changed event */);
          }
          break;
@@ -1286,7 +1286,7 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
             m_tweakState[BS_DayNight] = 0;
             // Tonemapper
             if (m_tweakState[BS_Tonemapper] == 1)
-               m_table->m_settings.SaveValue(Settings::TableOverride, "ToneMapper"s, m_player->m_toneMapper);
+               m_table->m_settings.SaveValue(Settings::TableOverride, "ToneMapper"s, m_renderer->m_toneMapper);
             else if (m_tweakState[BS_Tonemapper] == 2)
                m_table->m_settings.DeleteValue(Settings::TableOverride, "ToneMapper"s);
             m_tweakState[BS_Tonemapper] = 0;
@@ -1347,7 +1347,7 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
 
             // Tonemapper
             m_tweakState[BS_Tonemapper] = 2;
-            m_player->m_toneMapper = m_table->GetToneMapper();
+            m_renderer->m_toneMapper = m_table->GetToneMapper();
 
             // Remove custom difficulty and get back to the one of the table, eventually overiden by app (not table) settings
             m_tweakState[BS_Difficulty] = 2;
@@ -1598,7 +1598,7 @@ void LiveUI::UpdateTweakModeUI()
          // Table options
          case BS_DayNight: CM_ROW(setting, "Day Night: ", "%.1f", 100.f * m_renderer->m_globalEmissionScale, "%"); break;
          case BS_Difficulty: CM_ROW(setting, "Difficulty: ", "%.1f", 100.f * m_live_table->m_globalDifficulty, "%"); break;
-         case BS_Tonemapper: CM_ROW(setting, "Tonemapper: ", "%s", m_player->m_toneMapper == 0 ? "Reinhard" : m_player->m_toneMapper == 1 ? "Tony McMapFace" : "Filmic", ""); break;
+         case BS_Tonemapper: CM_ROW(setting, "Tonemapper: ", "%s", m_renderer->m_toneMapper == 0 ? "Reinhard" : m_renderer->m_toneMapper == 1 ? "Tony McMapFace" : "Filmic", ""); break;
          case BS_MusicVolume: CM_ROW(setting, "Music Volume: ", "%d", m_player->m_MusicVolume, "%"); break;
          case BS_SoundVolume: CM_ROW(setting, "Sound Volume: ", "%d", m_player->m_SoundVolume, "%"); break;
 
@@ -2489,11 +2489,11 @@ void LiveUI::UpdateVideoOptionsModal()
       
       if (m_player->m_stereo3D != STEREO_VR && ImGui::CollapsingHeader("3D Stereo Output", ImGuiTreeNodeFlags_DefaultOpen))
       {
-         if (ImGui::Checkbox("Enable stereo rendering", &m_player->m_stereo3Denabled))
-            g_pvp->m_settings.SaveValue(Settings::Player, "Stereo3DEnabled"s, m_player->m_stereo3Denabled);
-         if (m_player->m_stereo3Denabled)
+         if (ImGui::Checkbox("Enable stereo rendering", &m_renderer->m_stereo3Denabled))
+            g_pvp->m_settings.SaveValue(Settings::Player, "Stereo3DEnabled"s, m_renderer->m_stereo3Denabled);
+         if (m_renderer->m_stereo3Denabled)
          {
-            m_player->UpdateStereoShaderState();
+            m_renderer->UpdateStereoShaderState();
             bool modeChanged = false;
             const char *stereo_output_items[] = { "Disabled", "3D TV", "Anaglyph" };
             int stereo_mode = m_player->m_stereo3D == STEREO_OFF ? 0 : Is3DTVStereoMode(m_player->m_stereo3D) ? 1 : 2;
@@ -2508,9 +2508,9 @@ void LiveUI::UpdateVideoOptionsModal()
             if (stereo_mode != 0) // Stereo settings
             {
                ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-               ImGui::Checkbox("Use Fake Stereo", &m_player->m_stereo3DfakeStereo);
+               ImGui::Checkbox("Use Fake Stereo", &m_renderer->m_stereo3DfakeStereo);
                ImGui::PopItemFlag();
-               if (m_player->m_stereo3DfakeStereo)
+               if (m_renderer->m_stereo3DfakeStereo)
                {
                   float stereo3DEyeSep = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DMaxSeparation"s, 0.03f);
                   if (ImGui::InputFloat("Max Separation", &stereo3DEyeSep, 0.001f, 0.01f, "%.3f"))
@@ -2638,7 +2638,7 @@ void LiveUI::UpdateAnaglyphCalibrationModal()
    ImGui::PushStyleColor(ImGuiCol_PopupBg, ImVec4(0.f, 0.f, 0.f, backgroundOpacity));
    if (ImGui::BeginPopupModal(ID_ANAGLYPH_CALIBRATION, nullptr, (ImGuiWindowFlags_)((int)ImGuiWindowFlags_NoTitleBar | (int)ImGuiNextWindowDataFlags_HasBgAlpha)))
    {
-      m_player->UpdateStereoShaderState();
+      m_renderer->UpdateStereoShaderState();
       const string prefKey = "Anaglyph"s.append(std::to_string(glassesIndex + 1));
       static int calibrationStep = -1;
       static float calibrationBrightness = 0.5f;
@@ -3064,13 +3064,13 @@ void LiveUI::TableProperties(bool is_live)
       PropSeparator();
       static const string tonemapperLabels[] = { "Reinhard"s, "Tony McMapFace"s, "Filmic"s };
       int startup_mode = m_table ? (int)m_table->GetToneMapper() : 0;
-      int live_mode = m_live_table ? (int)m_player->m_toneMapper : 0;
+      int live_mode = m_live_table ? (int)m_renderer->m_toneMapper : 0;
       PinTable *table = m_table;
       Player *player = m_player;
       auto upd_tm = [table, player](bool is_live, int prev, int v)
       {
          if (is_live)
-            player->m_toneMapper = (ToneMapper)v;
+            player->m_renderer->m_toneMapper = (ToneMapper)v;
          else
             table->SetToneMapper((ToneMapper)v);
       };

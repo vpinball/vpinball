@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "RenderCommand.h"
+#include "VRDevice.h"
 
 RenderCommand::RenderCommand(RenderDevice* rd)
    : m_rd(rd)
@@ -86,31 +87,10 @@ void RenderCommand::Execute(const int nInstances, const bool log)
       if (log)
          PLOGI << "> Submit VR";
       #if defined(ENABLE_VR) && defined(ENABLE_SDL)
-      if (m_rd->IsVRReady())
+      if (g_pplayer->m_vrDevice && g_pplayer->m_vrDevice->IsVRReady())
       {
          g_frameProfiler.OnPresent();
-
-         RenderTarget* leftTexture = m_rd->GetOffscreenVR(0);
-         vr::Texture_t leftEyeTexture = { (void*)(__int64)leftTexture->GetColorSampler()->GetCoreTexture(), vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
-         vr::EVRCompositorError errorLeft = vr::VRCompositor()->Submit(vr::Eye_Left, &leftEyeTexture);
-         if (errorLeft != vr::VRCompositorError_None)
-         {
-            char msg[128];
-            sprintf_s(msg, sizeof(msg), "VRCompositor Submit Left Error %u", errorLeft);
-            ShowError(msg);
-         }
-
-         RenderTarget* rightTexture = m_rd->GetOffscreenVR(1);
-         vr::Texture_t rightEyeTexture = { (void*)(__int64)rightTexture->GetColorSampler()->GetCoreTexture(), vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
-         vr::EVRCompositorError errorRight = vr::VRCompositor()->Submit(vr::Eye_Right, &rightEyeTexture);
-         if (errorRight != vr::VRCompositorError_None)
-         {
-            char msg[128];
-            sprintf_s(msg, sizeof(msg), "VRCompositor Submit Right Error %u", errorRight);
-            ShowError(msg);
-         }
-
-         glFlush();
+         g_pplayer->m_vrDevice->SubmitFrame(m_rd->GetOffscreenVR(0)->GetColorSampler(), m_rd->GetOffscreenVR(1)->GetColorSampler());
          //vr::VRCompositor()->PostPresentHandoff(); // PostPresentHandoff gives mixed results, improved GPU frametime for some, worse CPU frametime for others, troublesome enough to not warrants it's usage for now
       }
       #endif

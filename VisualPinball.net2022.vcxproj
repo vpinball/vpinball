@@ -742,13 +742,12 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="backGlass.cpp" />
-    <ClCompile Include="BlackBox.cpp" />
-    <ClCompile Include="bulb.cpp" />
-    <ClCompile Include="captureExt.cpp" />
-    <ClCompile Include="codeviewedit.cpp" />
-    <ClCompile Include="CrashHandler.cpp" />
-    <ClCompile Include="Debugger.cpp" />
+    <ClCompile Include="src/audio/audioplayer.cpp" />
+    <ClCompile Include="src/audio/pinsound.cpp" />
+    <ClCompile Include="src/audio/wavread.cpp" />
+    <ClCompile Include="src/core/player.cpp" />
+    <ClCompile Include="src/core/Settings.cpp" />
+    <ClCompile Include="src/core/TableDB.cpp" />
     <ClCompile Include="dialogs\AboutDialog.cpp" />
     <ClCompile Include="dialogs\AudioOptionsDialog.cpp" />
     <ClCompile Include="dialogs\CollectionManagerDialog.cpp" />
@@ -760,9 +759,15 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="dialogs\LayersListDialog.cpp" />
     <ClCompile Include="dialogs\MaterialDialog.cpp" />
     <ClCompile Include="dialogs\NotesDialog.cpp" />
+    <ClCompile Include="dialogs\PhysicsOptionsDialog.cpp" />
     <ClCompile Include="dialogs\RenderProbeDialog.cpp" />
     <ClCompile Include="dialogs\ScriptErrorDialog.cpp" />
-    <ClCompile Include="dialogs\PhysicsOptionsDialog.cpp" />
+    <ClCompile Include="dialogs\SearchSelectDialog.cpp" />
+    <ClCompile Include="dialogs\SoundDialog.cpp" />
+    <ClCompile Include="dialogs\TableInfoDialog.cpp" />
+    <ClCompile Include="dialogs\ToolbarDialog.cpp" />
+    <ClCompile Include="dialogs\VideoOptionsDialog.cpp" />
+    <ClCompile Include="dialogs\VROptionsDialog.cpp" />
     <ClCompile Include="dialogs\Properties\BackglassCameraProperty.cpp" />
     <ClCompile Include="dialogs\Properties\BackglassVisualsProperty.cpp" />
     <ClCompile Include="dialogs\Properties\BumperPhysicsProperty.cpp" />
@@ -804,28 +809,106 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="dialogs\Properties\TriggerVisualsProperty.cpp" />
     <ClCompile Include="dialogs\Properties\WallPhysicsProperty.cpp" />
     <ClCompile Include="dialogs\Properties\WallVisualsProperty.cpp" />
-    <ClCompile Include="dialogs\SearchSelectDialog.cpp" />
-    <ClCompile Include="dialogs\SoundDialog.cpp" />
-    <ClCompile Include="dialogs\TableInfoDialog.cpp" />
-    <ClCompile Include="dialogs\ToolbarDialog.cpp" />
-    <ClCompile Include="dialogs\VideoOptionsDialog.cpp" />
-    <ClCompile Include="dialogs\VROptionsDialog.cpp" />
+    <ClCompile Include="math\math.cpp" />
+    <ClCompile Include="math\matrix.cpp" />
+    <ClCompile Include="media\fileio.cpp" />
+    <ClCompile Include="media\lzwreader.cpp" />
+    <ClCompile Include="media\lzwwriter.cpp" />
+    <ClCompile Include="src/parts/ball.cpp" />
+    <ClCompile Include="src/parts/bumper.cpp" />
+    <ClCompile Include="src/parts/decal.cpp" />
+    <ClCompile Include="src/parts/dispreel.cpp" />
     <ClCompile Include="src/parts/flasher.cpp" />
-    <ClCompile Include="imgui\ImGuizmo.cpp" />
-    <ClCompile Include="imgui\imgui_stdlib.cpp" />
-    <ClCompile Include="src\core\TableDB.cpp" />
-    <ClCompile Include="third-party\include\BAM\BAMView.cpp" />
-    <ClCompile Include="third-party\include\glad\src\gl.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
-    </ClCompile>
+    <ClCompile Include="src/parts/flipper.cpp" />
+    <ClCompile Include="src/parts/gate.cpp" />
     <ClCompile Include="src/parts/hittarget.cpp" />
+    <ClCompile Include="src/parts/kicker.cpp" />
+    <ClCompile Include="src/parts/light.cpp" />
+    <ClCompile Include="src/parts/lightseq.cpp" />
+    <ClCompile Include="src/parts/rubber.cpp" />
+    <ClCompile Include="src/parts/pintable.cpp" />
+    <ClCompile Include="src/parts/plunger.cpp" />
+    <ClCompile Include="src/parts/primitive.cpp" />
+    <ClCompile Include="src/parts/ramp.cpp" />
+    <ClCompile Include="src/parts/spinner.cpp" />
+    <ClCompile Include="src/parts/surface.cpp" />
+    <ClCompile Include="src/parts/textbox.cpp" />
+    <ClCompile Include="src/parts/timer.cpp" />
+    <ClCompile Include="src/parts/trigger.cpp" />
+    <ClCompile Include="src/physics/collide.cpp" />
+    <ClCompile Include="src/physics/collideex.cpp" />
+    <ClCompile Include="src/physics/kdtree.cpp" />
+    <ClCompile Include="src/physics/hitball.cpp" />
+    <ClCompile Include="src/physics/hitflipper.cpp" />
+    <ClCompile Include="src/physics/hitplunger.cpp" />
+    <ClCompile Include="src/physics/PhysicsEngine.cpp" />
+    <ClCompile Include="src/physics/quadtree.cpp" />
+    <ClCompile Include="src/renderer/Anaglyph.cpp" />
+    <ClCompile Include="src/renderer/IndexBuffer.cpp" />
+    <ClCompile Include="src/renderer/MeshBuffer.cpp" />
+    <ClCompile Include="src/renderer/RenderCommand.cpp" />
+    <ClCompile Include="src/renderer/RenderDevice.cpp" />
+    <ClCompile Include="src/renderer/RenderFrame.cpp" />
+    <ClCompile Include="src/renderer/RenderPass.cpp" />
+    <ClCompile Include="src/renderer/RenderProbe.cpp" />
+    <ClCompile Include="src/renderer/RenderState.cpp" />
+    <ClCompile Include="src/renderer/RenderTarget.cpp" />
+    <ClCompile Include="src/renderer/Renderer.cpp" />
+    <ClCompile Include="src/renderer/Sampler.cpp" />
+    <ClCompile Include="src/renderer/Shader.cpp" />
+    <ClCompile Include="src/renderer/Texture.cpp" />
+    <ClCompile Include="src/renderer/TextureManager.cpp" />
+    <ClCompile Include="src/renderer/VertexBuffer.cpp" />
+    <ClCompile Include="src/renderer/ViewSetup.cpp" />
+    <ClCompile Include="src/renderer/VRDevice.cpp" />
+    <ClCompile Include="stdafx.cpp">
+      <PrecompiledHeader>Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="LiveUI.cpp" />
+    <ClCompile Include="MemoryStatus.cpp" />
+    <ClCompile Include="hash.cpp" />
+    <ClCompile Include="objloader.cpp" />
+    <ClCompile Include="codeview.cpp" />
+    <ClCompile Include="def.cpp" />
+    <ClCompile Include="disputil.cpp" />
+    <ClCompile Include="dragpoint.cpp" />
+    <ClCompile Include="eventproxy.cpp" />
+    <ClCompile Include="extern.cpp" />
+    <ClCompile Include="hid.cpp" />
+    <ClCompile Include="hitrectsur.cpp" />
+    <ClCompile Include="hitsur.cpp" />
+    <ClCompile Include="ieditable.cpp" />
+    <ClCompile Include="iselect.cpp" />
+    <ClCompile Include="memutil.cpp" />
+    <ClCompile Include="mixer.cpp" />
+    <ClCompile Include="paintsur.cpp" />
+    <ClCompile Include="pinbinary.cpp" />
+    <ClCompile Include="pininput.cpp" />
+    <ClCompile Include="pinundo.cpp" />
+    <ClCompile Include="plumb.cpp" />
+    <ClCompile Include="slintf.cpp" />
+    <ClCompile Include="StackTrace.cpp" />
+    <ClCompile Include="variant.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="vpinball.cpp" />
+    <ClCompile Include="wintimer.cpp" />
+    <ClCompile Include="worker.cpp" />
+    <ClCompile Include="backGlass.cpp" />
+    <ClCompile Include="BlackBox.cpp" />
+    <ClCompile Include="bulb.cpp" />
+    <ClCompile Include="captureExt.cpp" />
+    <ClCompile Include="codeviewedit.cpp" />
+    <ClCompile Include="CrashHandler.cpp" />
+    <ClCompile Include="Debugger.cpp" />
     <ClCompile Include="imgui\imgui.cpp" />
     <ClCompile Include="imgui\imgui_draw.cpp" />
+    <ClCompile Include="imgui\imgui_impl_win32.cpp" />
+    <ClCompile Include="imgui\imgui_tables.cpp" />
+    <ClCompile Include="imgui\imgui_widgets.cpp" />
+    <ClCompile Include="imgui\imgui_stdlib.cpp" />
+    <ClCompile Include="imgui\ImGuizmo.cpp" />
+    <ClCompile Include="imgui\implot\implot.cpp" />
+    <ClCompile Include="imgui\implot\implot_items.cpp" />
     <ClCompile Include="imgui\imgui_impl_opengl3.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -838,11 +921,15 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_GL|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_GL|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="imgui\imgui_impl_win32.cpp" />
-    <ClCompile Include="imgui\imgui_tables.cpp" />
-    <ClCompile Include="imgui\imgui_widgets.cpp" />
-    <ClCompile Include="imgui\implot\implot.cpp" />
-    <ClCompile Include="imgui\implot\implot_items.cpp" />
+    <ClCompile Include="third-party\include\BAM\BAMView.cpp" />
+    <ClCompile Include="third-party\include\glad\src\gl.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
+    </ClCompile>
     <ClCompile Include="third-party\include\gpuprofiler.cpp" />
     <ClCompile Include="third-party\include\miniz\miniz.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -851,99 +938,6 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="third-party\include\progmesh.cpp" />
     <ClCompile Include="third-party\include\serial.cpp" />
     <ClCompile Include="third-party\include\tinyxml2\tinyxml2.cpp" />
-    <ClCompile Include="src/renderer/Anaglyph.cpp" />
-    <ClCompile Include="src/renderer/IndexBuffer.cpp" />
-    <ClCompile Include="src/renderer/MeshBuffer.cpp" />
-    <ClCompile Include="LiveUI.cpp" />
-    <ClCompile Include="math\math.cpp" />
-    <ClCompile Include="MemoryStatus.cpp" />
-    <ClCompile Include="src/renderer/RenderCommand.cpp" />
-    <ClCompile Include="src/renderer/RenderFrame.cpp" />
-    <ClCompile Include="src/renderer/RenderPass.cpp" />
-    <ClCompile Include="src/renderer/RenderProbe.cpp" />
-    <ClCompile Include="src/renderer/RenderState.cpp" />
-    <ClCompile Include="src/renderer/RenderTarget.cpp" />
-    <ClCompile Include="src/parts/rubber.cpp" />
-    <ClCompile Include="hash.cpp" />
-    <ClCompile Include="src/physics/kdtree.cpp" />
-    <ClCompile Include="math\matrix.cpp" />
-    <ClCompile Include="objloader.cpp" />
-    <ClCompile Include="src/physics/hitball.cpp" />
-    <ClCompile Include="src/parts/ball.cpp" />
-    <ClCompile Include="src/parts/bumper.cpp" />
-    <ClCompile Include="codeview.cpp" />
-    <ClCompile Include="src/physics/collide.cpp" />
-    <ClCompile Include="src/physics/collideex.cpp" />
-    <ClCompile Include="src/parts/decal.cpp" />
-    <ClCompile Include="def.cpp" />
-    <ClCompile Include="src/parts/dispreel.cpp" />
-    <ClCompile Include="disputil.cpp" />
-    <ClCompile Include="dragpoint.cpp" />
-    <ClCompile Include="eventproxy.cpp" />
-    <ClCompile Include="extern.cpp" />
-    <ClCompile Include="media\fileio.cpp" />
-    <ClCompile Include="src/parts/flipper.cpp" />
-    <ClCompile Include="src/parts/gate.cpp" />
-    <ClCompile Include="hid.cpp" />
-    <ClCompile Include="src/physics/hitflipper.cpp" />
-    <ClCompile Include="src/physics/hitplunger.cpp" />
-    <ClCompile Include="hitrectsur.cpp" />
-    <ClCompile Include="hitsur.cpp" />
-    <ClCompile Include="ieditable.cpp" />
-    <ClCompile Include="iselect.cpp" />
-    <ClCompile Include="src/parts/kicker.cpp" />
-    <ClCompile Include="src/parts/light.cpp" />
-    <ClCompile Include="src/parts/lightseq.cpp" />
-    <ClCompile Include="media\lzwreader.cpp" />
-    <ClCompile Include="media\lzwwriter.cpp" />
-    <ClCompile Include="memutil.cpp" />
-    <ClCompile Include="mesh.cpp" />
-    <ClCompile Include="mixer.cpp" />
-    <ClCompile Include="paintsur.cpp" />
-    <ClCompile Include="src/renderer/Renderer.cpp" />
-    <ClCompile Include="pinbinary.cpp" />
-    <ClCompile Include="pininput.cpp" />
-    <ClCompile Include="src/audio/pinsound.cpp" />
-    <ClCompile Include="src/parts/pintable.cpp" />
-    <ClCompile Include="pinundo.cpp" />
-    <ClCompile Include="src/core/player.cpp" />
-    <ClCompile Include="plumb.cpp" />
-    <ClCompile Include="src/parts/plunger.cpp" />
-    <ClCompile Include="src/parts/primitive.cpp" />
-    <ClCompile Include="src/physics/quadtree.cpp" />
-    <ClCompile Include="src/parts/ramp.cpp" />
-    <ClCompile Include="src/core/Settings.cpp" />
-    <ClCompile Include="src/renderer/RenderDevice.cpp" />
-    <ClCompile Include="src/renderer/Sampler.cpp" />
-    <ClCompile Include="src/renderer/Shader.cpp" />
-    <ClCompile Include="slintf.cpp" />
-    <ClCompile Include="src/parts/spinner.cpp" />
-    <ClCompile Include="StackTrace.cpp" />
-    <ClCompile Include="stdafx.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug_GL|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release_GL|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug_GL|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release_GL|x64'">Create</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="src/parts/surface.cpp" />
-    <ClCompile Include="src/parts/textbox.cpp" />
-    <ClCompile Include="src/renderer/Texture.cpp" />
-    <ClCompile Include="src/renderer/TextureManager.cpp" />
-    <ClCompile Include="src/parts/timer.cpp" />
-    <ClCompile Include="src/parts/trigger.cpp" />
-    <ClCompile Include="variant.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="src/renderer/VertexBuffer.cpp" />
-    <ClCompile Include="src/renderer/ViewSetup.cpp" />
-    <ClCompile Include="vpinball.cpp" />
-    <ClCompile Include="src/audio/wavread.cpp" />
-    <ClCompile Include="wintimer.cpp" />
-    <ClCompile Include="worker.cpp" />
-    <ClCompile Include="src/audio/audioplayer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="vpinball.idl" />
@@ -1137,65 +1131,12 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <Image Include="res\wall.ico" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="backGlass.h" />
-    <ClInclude Include="BlackBox.h" />
-    <ClInclude Include="bulb.h" />
-    <ClInclude Include="captureExt.h" />
-    <ClInclude Include="codeview.h" />
-    <ClInclude Include="codeviewedit.h" />
-    <ClInclude Include="CrashHandler.h" />
-    <ClInclude Include="Debugger.h" />
-    <ClInclude Include="def.h" />
-    <ClInclude Include="dispid.h" />
-    <ClInclude Include="disputil.h" />
-    <ClInclude Include="dragpoint.h" />
-    <ClInclude Include="editablereg.h" />
-    <ClInclude Include="eventproxy.h" />
-    <ClInclude Include="extern.h" />
-    <ClInclude Include="hash.h" />
-    <ClInclude Include="helpers.h" />
-    <ClInclude Include="hid.h" />
-    <ClInclude Include="hitrectsur.h" />
-    <ClInclude Include="hitsur.h" />
-    <ClInclude Include="idebug.h" />
-    <ClInclude Include="ieditable.h" />
-    <ClInclude Include="iselect.h" />
-    <ClInclude Include="LiveUI.h" />
-    <ClInclude Include="main.h" />
-    <ClInclude Include="Material.h" />
-    <ClInclude Include="MemoryStatus.h" />
-    <ClInclude Include="memutil.h" />
-    <ClInclude Include="mesh.h" />
-    <ClInclude Include="mixer.h" />
-    <ClInclude Include="objloader.h" />
-    <ClInclude Include="paintsur.h" />
-    <ClInclude Include="physconst.h" />
-    <ClInclude Include="src/renderer/Renderer.h" />
-    <ClInclude Include="pinbinary.h" />
-    <ClInclude Include="pininput.h" />
-    <ClInclude Include="pinundo.h" />
-    <ClInclude Include="plumb.h" />
-    <ClInclude Include="resource.h" />
-    <ClInclude Include="slintf.h" />
-    <ClInclude Include="StackTrace.h" />
-    <ClInclude Include="stdafx.h" />
-    <ClInclude Include="sur.h" />
-    <ClInclude Include="trace.h" />
-    <ClInclude Include="typedefs3D.h" />
-    <ClInclude Include="variant.h" />
-    <ClInclude Include="vector.h" />
-    <ClInclude Include="vectorsort.h" />
-    <ClInclude Include="vpinball_h.h" />
-    <ClInclude Include="vpinball.h" />
-    <ClInclude Include="vpversion.h" />
-    <ClInclude Include="wintimer.h" />
-    <ClInclude Include="worker.h" />
     <ClInclude Include="src/audio/audioplayer.h" />
     <ClInclude Include="src/audio/pinsound.h" />
     <ClInclude Include="src/audio/wavread.h" />
     <ClInclude Include="src/core/player.h" />
     <ClInclude Include="src/core/Settings.h" />
-    <ClInclude Include="src\core\TableDB.h" />
+    <ClInclude Include="src/core/TableDB.h" />
     <ClInclude Include="dialogs\AboutDialog.h" />
     <ClInclude Include="dialogs\AudioOptionsDialog.h" />
     <ClInclude Include="dialogs\CollectionManagerDialog.h" />
@@ -1261,6 +1202,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="math\math.h" />
     <ClInclude Include="math\matrix.h" />
     <ClInclude Include="math\vector.h" />
+    <ClInclude Include="src/math/ModelViewProj.h" />
     <ClInclude Include="media\fileio.h" />
     <ClInclude Include="media\lzwreader.h" />
     <ClInclude Include="media\lzwwriter.h" />
@@ -1323,6 +1265,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="src/physics/hitflipper.h" />
     <ClInclude Include="src/physics/hitplunger.h" />
     <ClInclude Include="src/physics/hittimer.h" />
+    <ClInclude Include="src/physics/PhysicsEngine.h" />
     <ClInclude Include="src/physics/quadtree.h" />
     <ClInclude Include="src/renderer/Anaglyph.h" />
     <ClInclude Include="src/renderer/IndexBuffer.h" />
@@ -1335,12 +1278,66 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="src/renderer/RenderProbe.h" />
     <ClInclude Include="src/renderer/RenderState.h" />
     <ClInclude Include="src/renderer/RenderTarget.h" />
+    <ClInclude Include="src/renderer/Renderer.h" />
     <ClInclude Include="src/renderer/Sampler.h" />
     <ClInclude Include="src/renderer/Shader.h" />
     <ClInclude Include="src/renderer/Texture.h" />
     <ClInclude Include="src/renderer/TextureManager.h" />
     <ClInclude Include="src/renderer/VertexBuffer.h" />
     <ClInclude Include="src/renderer/ViewSetup.h" />
+    <ClInclude Include="src/renderer/VRDevice.h" />
+    <ClInclude Include="backGlass.h" />
+    <ClInclude Include="BlackBox.h" />
+    <ClInclude Include="bulb.h" />
+    <ClInclude Include="captureExt.h" />
+    <ClInclude Include="codeview.h" />
+    <ClInclude Include="codeviewedit.h" />
+    <ClInclude Include="CrashHandler.h" />
+    <ClInclude Include="Debugger.h" />
+    <ClInclude Include="def.h" />
+    <ClInclude Include="dispid.h" />
+    <ClInclude Include="disputil.h" />
+    <ClInclude Include="dragpoint.h" />
+    <ClInclude Include="editablereg.h" />
+    <ClInclude Include="eventproxy.h" />
+    <ClInclude Include="extern.h" />
+    <ClInclude Include="hash.h" />
+    <ClInclude Include="helpers.h" />
+    <ClInclude Include="hid.h" />
+    <ClInclude Include="hitrectsur.h" />
+    <ClInclude Include="hitsur.h" />
+    <ClInclude Include="idebug.h" />
+    <ClInclude Include="ieditable.h" />
+    <ClInclude Include="iselect.h" />
+    <ClInclude Include="LiveUI.h" />
+    <ClInclude Include="main.h" />
+    <ClInclude Include="Material.h" />
+    <ClInclude Include="MemoryStatus.h" />
+    <ClInclude Include="memutil.h" />
+    <ClInclude Include="mesh.h" />
+    <ClInclude Include="mixer.h" />
+    <ClInclude Include="objloader.h" />
+    <ClInclude Include="paintsur.h" />
+    <ClInclude Include="physconst.h" />
+    <ClInclude Include="pinbinary.h" />
+    <ClInclude Include="pininput.h" />
+    <ClInclude Include="pinundo.h" />
+    <ClInclude Include="plumb.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="slintf.h" />
+    <ClInclude Include="StackTrace.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="sur.h" />
+    <ClInclude Include="trace.h" />
+    <ClInclude Include="typedefs3D.h" />
+    <ClInclude Include="variant.h" />
+    <ClInclude Include="vector.h" />
+    <ClInclude Include="vectorsort.h" />
+    <ClInclude Include="vpinball_h.h" />
+    <ClInclude Include="vpinball.h" />
+    <ClInclude Include="vpversion.h" />
+    <ClInclude Include="wintimer.h" />
+    <ClInclude Include="worker.h" />
     <ClInclude Include="imgui\imconfig.h" />
     <ClInclude Include="imgui\imgui.h" />
     <ClInclude Include="imgui\ImGuizmo.h" />

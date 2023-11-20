@@ -13,6 +13,8 @@
 
 constexpr int DBG_SPRITE_SIZE = 1024;
 
+class VRDevice;
+
 // NOTE that the following four definitions need to be in sync in their order!
 enum EnumAssignKeys
 {
@@ -348,23 +350,9 @@ public:
    virtual void OnInitialUpdate() override;
    virtual LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 
-private:
-   void InitKeys();
-
-   const int m_playMode;
-
-public:
    void LockForegroundWindow(const bool enable);
 
    string GetPerfInfo();
-
-   Ball *CreateBall(const float x, const float y, const float z, const float vx, const float vy, const float vz, const float radius = 25.0f, const float mass = 1.0f);
-   void DestroyBall(Ball *pball);
-
-   void AddCabinetBoundingHitShapes();
-
-   void InitDebugHitStructure();
-   void DoDebugObjectMenu(const int x, const int y);
 
    void PauseMusic();
    void UnpauseMusic();
@@ -372,6 +360,12 @@ public:
    void RecomputePauseState();
    void RecomputePseudoPauseState();
 
+private:
+   void InitKeys();
+
+   const int m_playMode;
+
+public:
 #pragma region Main Loop
    void OnIdle();
 
@@ -387,6 +381,14 @@ public:
 #pragma endregion
 
 #pragma region Physics
+   Ball *CreateBall(const float x, const float y, const float z, const float vx, const float vy, const float vz, const float radius = 25.0f, const float mass = 1.0f);
+   void DestroyBall(Ball *pball);
+
+   void AddCabinetBoundingHitShapes();
+
+   void InitDebugHitStructure();
+   void DoDebugObjectMenu(const int x, const int y);
+
 private:
    void UpdatePhysics();
    void PhysicsSimulateCycle(float dtime);
@@ -514,47 +516,34 @@ private:
 #endif
 
 
+public:
+   VRDevice* m_vrDevice = nullptr;
+
 #pragma region Rendering
-private:
+   Renderer *m_renderer = nullptr;
+
    void PrepareFrame();
    void SubmitFrame();
    void FinishFrame();
 
-   FrameQueueLimiter m_limiter;
-
-private:
-   int m_maxPrerenderedFrames;
-
-   U64 m_startFrameTick; // System time in us when render frame was started (beginning of frame animation then collect,...)
-
-public:
    void Spritedraw(const float posx, const float posy, const float width, const float height, const COLORREF color, Texture* const tex, const float intensity, const bool backdrop=false);
    void Spritedraw(const float posx, const float posy, const float width, const float height, const COLORREF color, Sampler* const tex, const float intensity, const bool backdrop=false);
+
+   FrameQueueLimiter m_limiter;
 
    #ifdef ENABLE_SDL
    SDL_Window  *m_sdl_playfieldHwnd;
    #endif
 
-public:
-   int m_MSAASamples;
-
-   bool m_useNvidiaApi;
-   bool m_disableDWM;
-
    StereoMode m_stereo3D;
-   bool m_stereo3DfakeStereo;
-   bool m_stereo3Denabled;
-   float m_stereo3DDefocus = 0.f;
-   void UpdateStereoShaderState();
 
    bool m_headTracking;
 
-   int m_BWrendering; // 0=off, 1=Black&White from RedGreen, 2=B&W from Red only
-   ToneMapper m_toneMapper = TM_TONY_MC_MAPFACE;
-
-   Renderer* m_renderer = nullptr;
-
    bool m_scaleFX_DMD;
+
+private:
+   int m_maxPrerenderedFrames;
+   U64 m_startFrameTick; // System time in us when render frame was started (beginning of frame animation then collect,...)
 #pragma endregion
 
 
