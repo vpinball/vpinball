@@ -979,6 +979,9 @@
     <ClInclude Include="src/renderer/TextureManager.h">
       <Filter>renderer</Filter>
     </ClInclude>
+    <ClInclude Include="typedefs3D.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
     <ClInclude Include="src/renderer/VertexBuffer.h">
       <Filter>renderer</Filter>
     </ClInclude>
@@ -995,9 +998,6 @@
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="LiveUI.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="typedefs3D.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="codeview.h">

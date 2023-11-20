@@ -9,6 +9,102 @@
 #include "renderer/RenderDevice.h"
 #include "renderer/VRDevice.h"
 
+#ifndef ENABLE_SDL
+// Note: Nowadays the original code seems to be counter-productive, so we use the official
+// pre-rendered frame mechanism instead where possible
+// (e.g. all windows versions except for XP and no "EnableLegacyMaximumPreRenderedFrames" set in the registry)
+/*
+ * Class to limit the length of the GPU command buffer queue to at most 'numFrames' frames.
+ * Excessive buffering of GPU commands creates high latency and can create stuttery overlong
+ * frames when the CPU stalls due to a full command buffer ring.
+ *
+ * Calling Execute() within a BeginScene() / EndScene() pair creates an artificial pipeline
+ * stall by locking a vertex buffer which was rendered from (numFrames-1) frames ago. This
+ * forces the CPU to wait and let the GPU catch up so that rendering doesn't lag more than
+ * numFrames behind the CPU. It does *NOT* limit the framerate itself, only the drawahead.
+ * Note that VP is currently usually GPU-bound.
+ *
+ * This is similar to Flush() in later DX versions, but doesn't flush the entire command
+ * buffer, only up to a certain previous frame.
+ *
+ * Use of this class has been observed to effectively reduce stutter at least on an NVidia/
+ * Win7 64 bit setup. The queue limiting effect can be clearly seen in GPUView.
+ *
+ * The initial cause for the stutter may be that our command buffers are too big (two
+ * packets per frame on typical tables, instead of one), so with more optimizations to
+ * draw calls/state changes, none of this may be needed anymore.
+ */
+class FrameQueueLimiter
+{
+public:
+   FrameQueueLimiter(RenderDevice* const pd3dDevice, const int numFrames)
+      : m_pd3dDevice(pd3dDevice)
+   {
+      m_curIdx = 0;
+      const int EnableLegacyMaximumPreRenderedFrames = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "EnableLegacyMaximumPreRenderedFrames"s, 0);
+
+      // if available, use the official RenderDevice mechanism
+      if (!EnableLegacyMaximumPreRenderedFrames && pd3dDevice->SetMaximumPreRenderedFrames(numFrames))
+      {
+          m_buffers.resize(0);
+          return;
+      }
+
+      // if not, fallback to cheating the driver
+      m_buffers.resize(numFrames, nullptr);
+      m_curIdx = 0;
+   }
+
+   ~FrameQueueLimiter()
+   {
+      for (size_t i = 0; i < m_buffers.size(); ++i)
+         delete m_buffers[i];
+   }
+
+   void Execute()
+   {
+      if (m_buffers.empty())
+         return;
+
+      if (m_buffers[m_curIdx])
+      {
+         Vertex3Ds pos(0.f, 0.f, 0.f);
+         m_pd3dDevice->DrawMesh(m_pd3dDevice->basicShader, false, pos, 0.f, m_buffers[m_curIdx], RenderDevice::TRIANGLESTRIP, 0, 3);
+      }
+
+      m_curIdx = (m_curIdx + 1) % m_buffers.size();
+
+      if (!m_buffers[m_curIdx])
+      {
+         VertexBuffer* vb = new VertexBuffer(m_pd3dDevice, 1024);
+         m_buffers[m_curIdx] = new MeshBuffer(L"FrameLimiter"s,  vb);
+      }
+
+      // idea: locking a static vertex buffer stalls the pipeline if that VB is still
+      // in the GPU render queue. In effect, this lets the GPU catch up.
+      Vertex3D_NoTex2* buf;
+      m_buffers[m_curIdx]->m_vb->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+      memset(buf, 0, 3 * sizeof(buf[0]));
+      buf[0].z = buf[1].z = buf[2].z = 1e5f;      // single triangle, degenerates to point far off screen
+      m_buffers[m_curIdx]->m_vb->unlock();
+   }
+
+private:
+   RenderDevice* const m_pd3dDevice;
+   vector<MeshBuffer*> m_buffers;
+   size_t m_curIdx;
+};
+#else
+class FrameQueueLimiter
+{
+public:
+   FrameQueueLimiter(RenderDevice* const pd3dDevice, const int numFrames) { }
+   void Execute() { }
+};
+#endif
+
+////////////////////////////////////////////////////////////////////////////////
+
 Renderer::Renderer(PinTable* const table, const bool fullScreen, const int width, const int height, const int colordepth, int& refreshrate, VideoSyncMode& syncMode, const StereoMode stereo3D)
    : m_table(table)
 {
@@ -260,7 +356,7 @@ Renderer::Renderer(PinTable* const table, const bool fullScreen, const int width
    }
 
    m_pd3dPrimaryDevice->ResetRenderState();
-#ifndef ENABLE_SDL
+   #ifndef ENABLE_SDL
    CHECKD3D(m_pd3dPrimaryDevice->GetCoreDevice()->SetRenderState(D3DRS_LIGHTING, FALSE));
    CHECKD3D(m_pd3dPrimaryDevice->GetCoreDevice()->SetRenderState(D3DRS_CLIPPING, FALSE));
    CHECKD3D(m_pd3dPrimaryDevice->GetCoreDevice()->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1));
@@ -269,7 +365,10 @@ Renderer::Renderer(PinTable* const table, const bool fullScreen, const int width
    CHECKD3D(m_pd3dPrimaryDevice->GetCoreDevice()->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE));
    CHECKD3D(m_pd3dPrimaryDevice->GetCoreDevice()->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE));
    CHECKD3D(m_pd3dPrimaryDevice->GetCoreDevice()->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_TFACTOR)); // default tfactor: 1,1,1,1
-#endif
+   // 0 means disable limiting of draw-ahead queue
+   int maxPrerenderedFrames = m_stereo3D == STEREO_VR ? 0 : m_table->m_settings.LoadValueWithDefault(Settings::Player, "MaxPrerenderedFrames"s, 0);
+   m_limiter = new FrameQueueLimiter(m_pd3dPrimaryDevice, maxPrerenderedFrames);
+   #endif
 }
 
 Renderer::~Renderer()
@@ -293,6 +392,7 @@ Renderer::~Renderer()
    delete m_decalImage;
    delete m_tonemapLUT;
    delete m_staticPrepassRT;
+   delete m_limiter;
 }
 
 void Renderer::TransformVertices(const Vertex3D_NoTex2 * const __restrict rgv, const WORD * const __restrict rgi, const int count, Vertex2D * const __restrict rgvout) const
@@ -736,19 +836,6 @@ Vertex3Ds Renderer::Get3DPointFrom2D(const POINT& p)
    return vertex;
 }
 
-void Renderer::UpdateBAMHeadTracking()
-{
-   Matrix3D m_matView;
-   Matrix3D m_matProj[2];
-   BAMView::createProjectionAndViewMatrix(&m_matProj[0]._11, &m_matView._11);
-   m_mvp->SetView(m_matView);
-   for (unsigned int eye = 0; eye < m_mvp->m_nEyes; eye++)
-      m_mvp->SetProj(eye, m_matProj[eye]);
-}
-
-
-
-
 
 void Renderer::SetupShaders()
 {
@@ -933,19 +1020,6 @@ void Renderer::UpdateStereoShaderState()
 
 void Renderer::PrepareFrame()
 {
-   m_pd3dPrimaryDevice->SetRenderTarget("Render Scene"s, m_pd3dPrimaryDevice->GetMSAABackBufferTexture());
-   if (m_stereo3D == STEREO_VR || g_pplayer->GetInfoMode() == IF_DYNAMIC_ONLY)
-   {
-      // For VR start from a clear render
-      m_pd3dPrimaryDevice->Clear(clearType::TARGET | clearType::ZBUFFER, 0, 1.0f, 0L);
-   }
-   else
-   {
-      // copy static buffers to back buffer including z buffer
-      m_pd3dPrimaryDevice->AddRenderTargetDependency(m_staticPrepassRT);
-      m_pd3dPrimaryDevice->BlitRenderTarget(m_staticPrepassRT, m_pd3dPrimaryDevice->GetMSAABackBufferTexture());
-   }
-
    // Update camera point of view
    #ifdef ENABLE_VR
    if (m_stereo3D == STEREO_VR)
@@ -953,10 +1027,29 @@ void Renderer::PrepareFrame()
    else 
    #endif
    if (g_pplayer->m_headTracking)
-      // #ravarcade: UpdateBAMHeadTracking will set proj/view matrix to add BAM view and head tracking
-      UpdateBAMHeadTracking();
+   {
+      Matrix3D m_matView;
+      Matrix3D m_matProj[2];
+      BAMView::createProjectionAndViewMatrix(&m_matProj[0]._11, &m_matView._11);
+      m_mvp->SetView(m_matView);
+      for (unsigned int eye = 0; eye < m_mvp->m_nEyes; eye++)
+         m_mvp->SetProj(eye, m_matProj[eye]);
+   }
    else if (g_pplayer->m_liveUI->IsTweakMode())
       InitLayout();
+
+   // Update staticly prerendered parts if needed
+   RenderStaticPrepass();
+
+   // Start from the prerendered parts/background or a clear background for VR
+   m_pd3dPrimaryDevice->SetRenderTarget("Render Scene"s, m_pd3dPrimaryDevice->GetMSAABackBufferTexture());
+   if (m_stereo3D == STEREO_VR || g_pplayer->GetInfoMode() == IF_DYNAMIC_ONLY)
+      m_pd3dPrimaryDevice->Clear(clearType::TARGET | clearType::ZBUFFER, 0, 1.0f, 0L);
+   else
+   {
+      m_pd3dPrimaryDevice->AddRenderTargetDependency(m_staticPrepassRT);
+      m_pd3dPrimaryDevice->BlitRenderTarget(m_staticPrepassRT, m_pd3dPrimaryDevice->GetMSAABackBufferTexture());
+   }
 
    // Setup ball rendering: collect all lights that can reflect on balls
    m_ballTrailMeshBufferPos = 0;
@@ -976,6 +1069,18 @@ void Renderer::PrepareFrame()
 
    // Resolve MSAA buffer to a normal one (noop if not using MSAA), allowing sampling it for postprocessing
    m_pd3dPrimaryDevice->ResolveMSAA();
+}
+
+void Renderer::SubmitFrame()
+{
+   // Submit to GPU render queue
+   g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_GPU_SUBMIT);
+   m_pd3dPrimaryDevice->FlushRenderFrame();
+   m_pd3dPrimaryDevice->SwapBackBufferRenderTargets(); // Keep previous render as a reflection probe for ball reflection and for hires motion blur
+   // (Optionally) force queue flushing of the driver. Can be used to artifically limit latency on DX9 (depends on OS/GFXboard/driver if still useful nowadays). This must be done after submiting render commands
+   if (m_limiter)
+      m_limiter->Execute();
+   g_frameProfiler.ExitProfileSection();
 }
 
 void Renderer::DrawBulbLightBuffer()

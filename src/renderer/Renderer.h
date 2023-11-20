@@ -6,13 +6,7 @@
 #include "renderer/Texture.h"
 #include "backGlass.h"
 
-enum VRPreviewMode
-{
-   VRPREVIEW_DISABLED,
-   VRPREVIEW_LEFT,
-   VRPREVIEW_RIGHT,
-   VRPREVIEW_BOTH
-};
+class FrameQueueLimiter;
 
 class Renderer
 {
@@ -39,6 +33,7 @@ public:
    void RenderStaticPrepass();
 
    void PrepareFrame();
+   void SubmitFrame();
 
    void DrawStatics();
    void DrawDynamics(bool onlyBalls);
@@ -116,8 +111,6 @@ public:
    ViewPort m_viewPort; // Viewport of the screen output (different from render size for VR, anaglyph, superscaling,...)
    float m_AAfactor;
 
-   void UpdateBAMHeadTracking();                 // #ravarcade: UpdateBAMHeadTracking will set proj/view matrix to add BAM view and head tracking
-
    bool m_stereo3DfakeStereo;
    bool m_stereo3Denabled;
    float m_stereo3DDefocus = 0.f;
@@ -151,6 +144,8 @@ private:
    Vertex2D m_ScreenOffset = Vertex2D(0.f, 0.f); // for screen shake effect during nudge
 
    Texture* m_tonemapLUT = nullptr;
+
+   FrameQueueLimiter* m_limiter = nullptr;
 
    #ifdef ENABLE_SDL
    RenderTarget* m_envRadianceTexture = nullptr;
