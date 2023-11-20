@@ -522,13 +522,6 @@ public:
 #pragma region Rendering
    Renderer *m_renderer = nullptr;
 
-   void PrepareFrame();
-   void SubmitFrame();
-   void FinishFrame();
-
-   void Spritedraw(const float posx, const float posy, const float width, const float height, const COLORREF color, Texture* const tex, const float intensity, const bool backdrop=false);
-   void Spritedraw(const float posx, const float posy, const float width, const float height, const COLORREF color, Sampler* const tex, const float intensity, const bool backdrop=false);
-
    FrameQueueLimiter m_limiter;
 
    #ifdef ENABLE_SDL
@@ -542,6 +535,10 @@ public:
    bool m_scaleFX_DMD;
 
 private:
+   void PrepareFrame();
+   void SubmitFrame();
+   void FinishFrame();
+
    int m_maxPrerenderedFrames;
    U64 m_startFrameTick; // System time in us when render frame was started (beginning of frame animation then collect,...)
 #pragma endregion

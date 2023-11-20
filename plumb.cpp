@@ -140,7 +140,7 @@ void draw_transparent_box( F32 sx, F32 sy, const F32 x, const F32 y, const U32 c
 
    g_pplayer->m_renderer->m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE);
 
-   g_pplayer->Spritedraw(y, x,
+   g_pplayer->DrawSprite(y, x,
       sy, sx,
       col,
       (Texture*)nullptr,

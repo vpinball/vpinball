@@ -675,7 +675,7 @@ void Renderer::DrawBackground()
       m_pd3dPrimaryDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
       m_pd3dPrimaryDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
       // FIXME this should be called with a trilinear/anisotropy filtering override
-      g_pplayer->Spritedraw(0.f, 0.f, 1.f, 1.f, 0xFFFFFFFF, pin, ptable->m_ImageBackdropNightDay ? sqrtf(m_globalEmissionScale) : 1.0f, true);
+      g_pplayer->m_renderer->DrawSprite(0.f, 0.f, 1.f, 1.f, 0xFFFFFFFF, pin, ptable->m_ImageBackdropNightDay ? sqrtf(m_globalEmissionScale) : 1.0f, true);
    }
    else
    {
@@ -1059,6 +1059,59 @@ void Renderer::DrawDynamics(bool onlyBalls)
       ball->m_pballex->Render(m_render_mask);
 }
 
+void Renderer::DrawSprite(const float posx, const float posy, const float width, const float height, const COLORREF color, Texture* const tex, const float intensity, const bool backdrop)
+{
+   Vertex3D_NoTex2 vertices[4] =
+   {
+      { 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 1.f },
+      { 0.f, 1.f, 0.f, 0.f, 0.f, 1.f, 0.f, 1.f },
+      { 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f },
+      { 0.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f }
+   };
+
+   for (unsigned int i = 0; i < 4; ++i)
+   {
+      vertices[i].x =        (vertices[i].x * width  + posx)*2.0f - 1.0f;
+      vertices[i].y = 1.0f - (vertices[i].y * height + posy)*2.0f;
+   }
+
+   const vec4 c = convertColor(color, intensity);
+   m_pd3dPrimaryDevice->DMDShader->SetVector(SHADER_vColor_Intensity, &c);
+   m_pd3dPrimaryDevice->DMDShader->SetTechnique(tex ? SHADER_TECHNIQUE_basic_noDMD : SHADER_TECHNIQUE_basic_noDMD_notex);
+   if (tex)
+      m_pd3dPrimaryDevice->DMDShader->SetTexture(SHADER_tex_sprite, tex, SF_NONE, SA_REPEAT, SA_REPEAT);
+   m_pd3dPrimaryDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
+   m_pd3dPrimaryDevice->DrawTexturedQuad(m_pd3dPrimaryDevice->DMDShader, vertices);
+   m_pd3dPrimaryDevice->GetCurrentPass()->m_commands.back()->SetTransparent(true);
+   m_pd3dPrimaryDevice->GetCurrentPass()->m_commands.back()->SetDepth(-10000.f);
+}
+
+void Renderer::DrawSprite(const float posx, const float posy, const float width, const float height, const COLORREF color, Sampler* const tex, const float intensity, const bool backdrop)
+{
+   Vertex3D_NoTex2 vertices[4] =
+   {
+      { 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 1.f },
+      { 0.f, 1.f, 0.f, 0.f, 0.f, 1.f, 0.f, 1.f },
+      { 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f },
+      { 0.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f }
+   };
+
+   for (unsigned int i = 0; i < 4; ++i)
+   {
+      vertices[i].x =        (vertices[i].x * width  + posx)*2.0f - 1.0f;
+      vertices[i].y = 1.0f - (vertices[i].y * height + posy)*2.0f;
+   }
+
+   const vec4 c = convertColor(color, intensity);
+   m_pd3dPrimaryDevice->DMDShader->SetVector(SHADER_vColor_Intensity, &c);
+   m_pd3dPrimaryDevice->DMDShader->SetTechnique(tex ? SHADER_TECHNIQUE_basic_noDMD : SHADER_TECHNIQUE_basic_noDMD_notex);
+   if (tex)
+      m_pd3dPrimaryDevice->DMDShader->SetTexture(SHADER_tex_sprite, tex);
+   m_pd3dPrimaryDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
+   m_pd3dPrimaryDevice->DrawTexturedQuad(m_pd3dPrimaryDevice->DMDShader, vertices);
+   m_pd3dPrimaryDevice->GetCurrentPass()->m_commands.back()->SetTransparent(true);
+   m_pd3dPrimaryDevice->GetCurrentPass()->m_commands.back()->SetDepth(-10000.f);
+}
 
 bool Renderer::IsUsingStaticPrepass() const
 {
