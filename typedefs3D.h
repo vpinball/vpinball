@@ -61,6 +61,14 @@ enum VideoSyncMode
    VSM_INVALID
 };
 
+enum VRPreviewMode
+{
+   VRPREVIEW_DISABLED,
+   VRPREVIEW_LEFT,
+   VRPREVIEW_RIGHT,
+   VRPREVIEW_BOTH
+};
+
 #ifdef ENABLE_SDL
 
 #define MAX_DEVICE_IDENTIFIER_STRING 512

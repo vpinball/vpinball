@@ -126,8 +126,6 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    m_headTracking = useVR ? false : m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "BAMHeadTracking"s, false);
    m_detectScriptHang = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "DetectHang"s, false);
 
-   m_maxPrerenderedFrames = useVR ? 0 : m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "MaxPrerenderedFrames"s, 0);
-
    m_NudgeShake = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "NudgeStrength"s, 2e-2f);
    m_scaleFX_DMD = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "ScaleFXDMD"s, false);
    m_maxFramerate = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "MaxFramerate"s, -1);
@@ -692,8 +690,6 @@ void Player::Shutdown()
    while(ShowCursor(TRUE) < 0) ;
 
    m_pininput.UnInit();
-
-   m_limiter.Shutdown();
 
    if (m_implicitPlayfieldMesh)
    {
@@ -1414,9 +1410,6 @@ HRESULT Player::Init()
 
    if (m_detectScriptHang)
       g_pvp->PostWorkToWorkerThread(HANG_SNOOP_START, NULL);
-
-   // 0 means disable limiting of draw-ahead queue
-   m_limiter.Init(m_renderer->m_pd3dPrimaryDevice, m_maxPrerenderedFrames);
 
    // Broadcast a message to notify front-ends that it is 
    // time to reveal the playfield. 
@@ -2675,9 +2668,6 @@ void Player::OnIdle()
 
       SubmitFrame();
 
-      // (Optionally) force queue flushing of the driver. Can be used to artifically limit latency on DX9 (depends on OS/GFXboard/driver if still useful nowadays). This must be done after submiting render commands
-      m_limiter.Execute(m_renderer->m_pd3dPrimaryDevice);
-
       // DJRobX's crazy latency-reduction code active? Insert some Physics updates before vsync'ing
       if (!m_pause && m_minphyslooptime > 0)
       {
@@ -2772,8 +2762,6 @@ void Player::PrepareFrame()
       m_renderer->m_gpu_profiler.BeginFrame(m_renderer->m_pd3dPrimaryDevice->GetCoreDevice());
 #endif
 
-   m_renderer->RenderStaticPrepass();
-
    g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_GPU_COLLECT);
    
    m_renderer->PrepareFrame();
@@ -2795,11 +2783,7 @@ void Player::PrepareFrame()
 
 void Player::SubmitFrame()
 {
-   // Submit to GPU render queue
-   g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_GPU_SUBMIT);
-   m_renderer->m_pd3dPrimaryDevice->FlushRenderFrame();
-   m_renderer->m_pd3dPrimaryDevice->SwapBackBufferRenderTargets(); // Keep previous render as a reflection probe for ball reflection and for hires motion blur
-   g_frameProfiler.ExitProfileSection();
+   m_renderer->SubmitFrame();
 
    // Trigger captures
    #ifdef ENABLE_SDL

@@ -53,7 +53,7 @@ Sampler* TextureManager::LoadTexture(BaseTexture* memtex, const SamplerFilter fi
       entry.clampV = clampV;
       entry.filter = filter;
       entry.forceLinearRGB = force_linear_rgb;
-      entry.preRenderOnly &= g_pplayer->m_renderer->IsRenderPass(Renderer::STATIC_ONLY);
+      entry.preRenderOnly &= g_pplayer->m_renderer && g_pplayer->m_renderer->IsRenderPass(Renderer::STATIC_ONLY);
       return entry.sampler;
    }
 }
