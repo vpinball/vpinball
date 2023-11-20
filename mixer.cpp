@@ -1,7 +1,6 @@
 #include "stdafx.h"
 
 #include <mmsystem.h>
-#include "renderer/RenderCommand.h"
 
 static HMIXER m_hMixer;
 //static MIXERCAPS sMxCaps;
@@ -242,11 +241,8 @@ void mixer_draw()
       // Draw the tick mark.  (Reversed x and y to match coordinate system of front end.)
       g_pplayer->m_pin3d.m_pd3dPrimaryDevice->ResetRenderState();
       g_pplayer->m_pin3d.m_pd3dPrimaryDevice->EnableAlphaBlend(true);
-      g_pplayer->m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
       g_pplayer->Spritedraw(cabMode ? fX : fY, cabMode ? fY : fX,
          cabMode ? size[0] : size[1], cabMode ? size[1] : size[0],
          color, (Texture*)nullptr, fade);
-      g_pplayer->m_pin3d.m_pd3dPrimaryDevice->GetCurrentPass()->m_commands.back()->SetTransparent(true);
-      g_pplayer->m_pin3d.m_pd3dPrimaryDevice->GetCurrentPass()->m_commands.back()->SetDepth(-10000.f);
    }
 }

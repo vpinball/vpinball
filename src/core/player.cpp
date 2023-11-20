@@ -18,6 +18,7 @@
 #include "../meshes/ballMesh.h"
 #include "renderer/Shader.h"
 #include "renderer/Anaglyph.h"
+#include "renderer/RenderCommand.h"
 #include "typedefs3D.h"
 #include "captureExt.h"
 #include "../math/bluenoise.h"
@@ -336,8 +337,8 @@ void Player::PreCreate(CREATESTRUCT& cs)
    if (m_stereo3D == STEREO_VR)
    {
       m_fullScreen = false;
-      m_wnd_width = m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "PreviewWidth"s, 640.f);
-      m_wnd_height = m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "PreviewHeight"s, 480.f);
+      m_wnd_width = m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "PreviewWidth"s, 640);
+      m_wnd_height = m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "PreviewHeight"s, 480);
    }
    else
    {
@@ -2964,7 +2965,10 @@ void Player::Spritedraw(const float posx, const float posy, const float width, c
    if (tex)
       pd3dDevice->DMDShader->SetTexture(SHADER_tex_sprite, tex, SF_NONE, SA_REPEAT, SA_REPEAT);
 
+   pd3dDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
    pd3dDevice->DrawTexturedQuad(pd3dDevice->DMDShader, vertices);
+   pd3dDevice->GetCurrentPass()->m_commands.back()->SetTransparent(true);
+   pd3dDevice->GetCurrentPass()->m_commands.back()->SetDepth(-10000.f);
 }
 
 void Player::Spritedraw(const float posx, const float posy, const float width, const float height, const COLORREF color, Sampler * const tex, const float intensity, const bool backdrop)
@@ -2993,7 +2997,10 @@ void Player::Spritedraw(const float posx, const float posy, const float width, c
    if (tex)
       pd3dDevice->DMDShader->SetTexture(SHADER_tex_sprite, tex);
 
+   pd3dDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
    pd3dDevice->DrawTexturedQuad(pd3dDevice->DMDShader, vertices);
+   pd3dDevice->GetCurrentPass()->m_commands.back()->SetTransparent(true);
+   pd3dDevice->GetCurrentPass()->m_commands.back()->SetDepth(-10000.f);
 }
 
 void Player::DrawBulbLightBuffer()
