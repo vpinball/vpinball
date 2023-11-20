@@ -205,7 +205,7 @@ void BallEx::Render(const unsigned int renderMask)
             }
          }
       }
-      const Matrix3D &mvp = g_pplayer->m_pin3d.GetMVP().GetModelViewProj(0);
+      const Matrix3D &mvp = g_pplayer->m_renderer->GetMVP().GetModelViewProj(0);
       bool invalid = false;
       float xMin = FLT_MAX, yMin = FLT_MAX, xMax = -FLT_MAX, yMax = -FLT_MAX;
       for (int i = 0; i < 36; i += 3)

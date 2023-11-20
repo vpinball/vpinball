@@ -247,20 +247,14 @@ public:
    virtual void PreCreate(CREATESTRUCT& cs) override;
    virtual void OnInitialUpdate() override;
    virtual LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
-
    void LockForegroundWindow(const bool enable);
 
    string GetPerfInfo();
-
-   void PauseMusic();
-   void UnpauseMusic();
 
    void RecomputePauseState();
    void RecomputePseudoPauseState();
 
 private:
-   void InitKeys();
-
    const int m_playMode;
 
 public:
@@ -275,7 +269,7 @@ public:
    bool m_lastFrameSyncOnFPS;
    bool m_curFrameSyncOnVBlank = false;
    bool m_curFrameSyncOnFPS = false;
-
+   U64 m_startFrameTick; // System time in us when render frame was started (beginning of frame animation then collect,...)
 #pragma endregion
 
 #pragma region Physics
@@ -283,7 +277,6 @@ public:
    void DestroyBall(Ball *pball);
 
    void AddCabinetBoundingHitShapes();
-
    void InitDebugHitStructure();
    void DoDebugObjectMenu(const int x, const int y);
 
@@ -404,49 +397,7 @@ private:
 #pragma endregion
 
 
-#ifdef PLAYBACK
 public:
-   float ParseLog(LARGE_INTEGER *pli1, LARGE_INTEGER *pli2);
-
-private:
-   bool m_playback;
-   FILE *m_fplaylog;
-#endif
-
-
-public:
-   StereoMode m_stereo3D;
-   VRDevice *m_vrDevice = nullptr;
-   bool m_headTracking;
-
-   Renderer *m_renderer = nullptr;
-
-   #ifdef ENABLE_SDL
-   SDL_Window  *m_sdl_playfieldHwnd;
-   #endif
-
-   bool m_scaleFX_DMD;
-
-private:
-   void PrepareFrame();
-   void SubmitFrame();
-   void FinishFrame();
-
-   U64 m_startFrameTick; // System time in us when render frame was started (beginning of frame animation then collect,...)
-
-
-public:
-   void InitFPS();
-   bool ShowFPSonly() const;
-   bool ShowStats() const;
-   InfoMode GetInfoMode() const;
-   ProfilingMode GetProfilingMode() const;
-
-   InfoMode m_infoMode = IF_NONE;
-   unsigned int m_infoProbeIndex = 0;
-   LiveUI *m_liveUI = nullptr;
-
-
    PinTable * const m_pEditorTable; // The untouched version of the table, as it is in the editor (The Player needs it to interact with the UI)
    PinTable * const m_ptable; // The played table, which can be modified by the script
 
@@ -460,20 +411,59 @@ public:
 
    vector<Ball*> m_vball;
    vector<HitFlipper*> m_vFlippers;
-
    vector<HitTimer*> m_vht;
    vector<TimerOnOff> m_changed_vht; // stores all en/disable changes to the m_vht timer list, to avoid problems with timers dis/enabling themselves
+
+
+#pragma region UI
+public:
+   void InitFPS();
+   bool ShowFPSonly() const;
+   bool ShowStats() const;
+   InfoMode GetInfoMode() const;
+   ProfilingMode GetProfilingMode() const;
+
+   InfoMode m_infoMode = IF_NONE;
+   unsigned int m_infoProbeIndex = 0;
+   LiveUI *m_liveUI = nullptr;
+#pragma endregion
+
+
+#pragma region Rendering
+public:
+   Renderer *m_renderer = nullptr;
+   VRDevice *m_vrDevice = nullptr;
+   StereoMode m_stereo3D = STEREO_OFF;
+   bool m_headTracking = false;
+   #ifdef ENABLE_SDL
+   SDL_Window  *m_sdl_playfieldHwnd = nullptr;
+   #endif
+   bool m_scaleFX_DMD = false;
+
+private:
+   void PrepareFrame();
+   void SubmitFrame();
+   void FinishFrame();
+#pragma endregion
+
 
 #pragma region Input
 public:
    PinInput m_pininput;
-   EnumAssignKeys m_rgKeys[eCKeys]; //Player's key assignments
+   EnumAssignKeys m_rgKeys[eCKeys]; // Player's key assignments
+
+private:
+   bool m_supportsTouch = false; // Display is a touchscreen?
+   bool m_touchregion_pressed[MAX_TOUCHREGION]; // status for each touch region to avoid multitouch double triggers (true = finger on, false = finger off)
    int m_lastcursorx, m_lastcursory; // used for the dumb task of seeing if the mouse has really moved when we get a WM_MOUSEMOVE message
 #pragma endregion
 
 
 #pragma region Audio
 public:
+   void PauseMusic();
+   void UnpauseMusic();
+
    bool m_PlayMusic;
    bool m_PlaySound;
    int m_MusicVolume;
@@ -501,8 +491,6 @@ public:
    HWND m_hwndDebugOutput;
    bool m_showDebugger;
 
-   bool m_showWindowedCaption;
-
    bool m_throwBalls;
    bool m_ballControl;
    int  m_debugBallSize;
@@ -520,12 +508,12 @@ public:
    int m_screenwidth, m_screenheight, m_refreshrate;
    bool m_fullScreen;
 
-   bool m_touchregion_pressed[MAX_TOUCHREGION]; // status for each touch region to avoid multitouch double triggers (true = finger on, false = finger off)
-
    bool m_drawCursor;
    bool m_gameWindowActive;
    bool m_userDebugPaused;
    bool m_debugWindowActive;
+   DebuggerDialog m_debuggerDialog;
+   
    Primitive *m_implicitPlayfieldMesh = nullptr;
 
    bool m_capExtDMD;
@@ -538,35 +526,36 @@ public:
    unsigned int m_overall_frames; // amount of rendered frames since start
 
 private:
-   //HANDLE m_hSongCompletionEvent;
-
    int m_pauseRefCount;
-
    bool m_pseudoPause;   // Nothing is moving, but we're still redrawing
 
 public:
-   bool m_supportsTouch; // Display is a touchscreen?
-   bool m_showTouchMessage;
-
    // all kinds of stats tracking, incl. FPS measurement
    int m_lastMaxChangeTime; // Used to update counters every seconds
    float m_fps;             // Average number of frames per second, updated once per second
    U32 m_script_max;
 
 private:
-   // only called from ctor
-   HRESULT Init();
-   // only called from OnClose, causing destruction of player (window destroy, object destruction, calling destructor)
-   void Shutdown();
+   HRESULT Init(); // Called from OnInitialUpdate callback (after native window creation)
+   void Shutdown(); // Only called from OnClose, causing destruction of player (window destroy, object destruction, calling destructor)
 
 public:
    void OnClose() override { Shutdown(); }
 
+
 #ifdef STEPPING
+public:
    U32 m_pauseTimeTarget;
    volatile bool m_pause;
    bool m_step;
 #endif
 
-   DebuggerDialog m_debuggerDialog;
+#ifdef PLAYBACK
+public:
+   float ParseLog(LARGE_INTEGER *pli1, LARGE_INTEGER *pli2);
+
+private:
+   bool m_playback;
+   FILE *m_fplaylog;
+#endif
 };

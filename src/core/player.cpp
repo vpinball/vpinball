@@ -18,7 +18,6 @@
 #include "renderer/Shader.h"
 #include "renderer/Anaglyph.h"
 #include "renderer/VRDevice.h"
-#include "renderer/RenderCommand.h"
 #include "typedefs3D.h"
 #include "captureExt.h"
 #ifdef _MSC_VER
@@ -84,8 +83,6 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    m_pause = false;
    m_step = false;
 #endif
-
-   m_supportsTouch = false;
 
    m_pseudoPause = false;
    m_pauseRefCount = 0;
@@ -162,11 +159,6 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    m_debugBallSize = m_ptable->m_settings.LoadValueWithDefault(Settings::Editor, "ThrowBallSize"s, 50);
    m_debugBallMass = m_ptable->m_settings.LoadValueWithDefault(Settings::Editor, "ThrowBallMass"s, 1.0f);
 
-   const int numberOfTimesToShowTouchMessage = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "NumberOfTimesToShowTouchMessage"s, 10);
-   g_pvp->m_settings.SaveValue(Settings::Player, "NumberOfTimesToShowTouchMessage"s, max(numberOfTimesToShowTouchMessage - 1, 0));
-   m_showTouchMessage = (numberOfTimesToShowTouchMessage != 0);
-
-   m_showWindowedCaption = false;
    m_showDebugger = false;
 
    m_debugBalls = false;
@@ -752,8 +744,6 @@ void Player::Shutdown()
       fclose(m_fplaylog);
 #endif
 
-   //CloseHandle(m_hSongCompletionEvent);
-
    delete m_audio;
    m_audio = nullptr;
 
@@ -922,18 +912,6 @@ void Player::AddCabinetBoundingHitShapes()
 // end of license:GPLv3+, back to 'old MAME'-like
 //
 
-void Player::InitKeys()
-{
-   for(unsigned int i = 0; i < eCKeys; ++i)
-   {
-      int key;
-      const bool hr = m_ptable->m_settings.LoadValue(Settings::Player, regkey_string[i], key);
-      if (!hr || key > 0xdd)
-          key = regkey_defdik[i];
-      m_rgKeys[i] = (EnumAssignKeys)key;
-   }
-}
-
 void Player::InitDebugHitStructure()
 {
    for (size_t i = 0; i < m_vhitables.size(); ++i)
@@ -965,12 +943,17 @@ HRESULT Player::Init()
 
    set_lowest_possible_win_timer_resolution();
 
-   //m_hSongCompletionEvent = CreateEvent( nullptr, TRUE, FALSE, nullptr );
-
    m_pEditorTable->m_progressDialog.SetProgress(10);
    m_pEditorTable->m_progressDialog.SetName("Initializing Visuals..."s);
 
-   InitKeys();
+   for(unsigned int i = 0; i < eCKeys; ++i)
+   {
+      int key;
+      const bool hr = m_ptable->m_settings.LoadValue(Settings::Player, regkey_string[i], key);
+      if (!hr || key > 0xdd)
+          key = regkey_defdik[i];
+      m_rgKeys[i] = (EnumAssignKeys)key;
+   }
 
    m_PlayMusic = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "PlayMusic"s, true);
    m_PlaySound = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "PlaySound"s, true);
@@ -1421,9 +1404,14 @@ HRESULT Player::Init()
    // Popup notification on startup
    if (m_stereo3D != STEREO_OFF && m_stereo3D != STEREO_VR && !m_renderer->m_stereo3Denabled)
       m_liveUI->PushNotification("3D Stereo is enabled but currently toggled off, press F10 to toggle 3D Stereo on"s, 4000);
-   if (m_supportsTouch && m_showTouchMessage) //!! visualize with real buttons or at least the areas?? Add extra buttons?
-      m_liveUI->PushNotification("You can use Touch controls on this display: bottom left area to Start Game, bottom right area to use the Plunger\n"
-                                 "lower left/right for Flippers, upper left/right for Magna buttons, top left for Credits and (hold) top right to Exit"s, 12000);
+   if (m_supportsTouch) //!! visualize with real buttons or at least the areas?? Add extra buttons?
+   {
+      const int numberOfTimesToShowTouchMessage = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "NumberOfTimesToShowTouchMessage"s, 10);
+      g_pvp->m_settings.SaveValue(Settings::Player, "NumberOfTimesToShowTouchMessage"s, max(numberOfTimesToShowTouchMessage - 1, 0));
+      if (numberOfTimesToShowTouchMessage != 0);
+         m_liveUI->PushNotification("You can use Touch controls on this display: bottom left area to Start Game, bottom right area to use the Plunger\n"
+                                    "lower left/right for Flippers, upper left/right for Magna buttons, top left for Credits and (hold) top right to Exit"s, 12000);
+   }
 
    if (m_playMode == 1)
       m_liveUI->OpenTweakMode();
