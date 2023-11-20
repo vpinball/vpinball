@@ -3,9 +3,6 @@
 #include <DxErr.h>
 #include <thread>
 
-// Undefine this if you want to debug VR mode without a VR headset
-//#define VR_PREVIEW_TEST
-
 //#include "Dwmapi.h" // use when we get rid of XP at some point, get rid of the manual dll loads in here then
 
 #ifndef DISABLE_FORCE_NVIDIA_OPTIMUS
@@ -517,21 +514,17 @@ static pDF mDwmFlush = nullptr;
 typedef HRESULT(STDAPICALLTYPE *pDEC)(UINT uCompositionAction);
 static pDEC mDwmEnableComposition = nullptr;
 
-RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, const float AAfactor, const StereoMode stereo3D, const unsigned int FXAA, const bool sharpen, const bool ss_refl, const bool useNvidiaApi, const bool disable_dwm, const int BWrendering)
-    : m_windowHwnd(hwnd), m_width(width), m_height(height), m_fullscreen(fullscreen), 
-      m_colorDepth(colordepth), m_AAfactor(AAfactor), m_stereo3D(stereo3D),
-      m_ssRefl(ss_refl), m_disableDwm(disable_dwm), m_FXAA(FXAA), m_BWrendering(BWrendering), m_texMan(*this), m_renderFrame(this)
+RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, 
+   const float AAfactor, const StereoMode stereo3D, const bool useNvidiaApi, const bool disableDWM, const int BWrendering, 
+   int nMSAASamples, int& refreshrate, VideoSyncMode& syncMode, UINT adapterIndex)
+    : m_windowHwnd(hwnd), m_width(width), m_height(height), m_fullscreen(fullscreen), m_colorDepth(colordepth), 
+      m_AAfactor(AAfactor), m_stereo3D(stereo3D), m_texMan(*this), m_renderFrame(this)
 {
-#ifdef ENABLE_SDL
-#ifdef ENABLE_VR
-   m_pHMD = nullptr;
-   m_rTrackedDevicePose = nullptr;
-#endif
-#else
+   #ifndef ENABLE_SDL
     m_useNvidiaApi = useNvidiaApi;
     m_INTZ_support = false;
     NVAPIinit = false;
-#endif
+   #endif
 
     mDwmIsCompositionEnabled = (pDICE)GetProcAddress(GetModuleHandle(TEXT("dwmapi.dll")), "DwmIsCompositionEnabled"); //!! remove as soon as win xp support dropped and use static link
     mDwmEnableComposition = (pDEC)GetProcAddress(GetModuleHandle(TEXT("dwmapi.dll")), "DwmEnableComposition"); //!! remove as soon as win xp support dropped and use static link
@@ -543,7 +536,7 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
         mDwmIsCompositionEnabled(&dwm);
         m_dwm_enabled = m_dwm_was_enabled = !!dwm;
 
-        if (m_dwm_was_enabled && m_disableDwm && IsWindowsVistaOr7()) // windows 8 and above will not allow do disable it, but will still return S_OK
+        if (m_dwm_was_enabled && disableDWM && IsWindowsVistaOr7()) // windows 8 and above will not allow do disable it, but will still return S_OK
         {
             mDwmEnableComposition(DWM_EC_DISABLECOMPOSITION);
             m_dwm_enabled = false;
@@ -554,10 +547,7 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
         m_dwm_was_enabled = false;
         m_dwm_enabled = false;
     }
-}
 
-void RenderDevice::CreateDevice(int& refreshrate, VideoSyncMode& syncMode, UINT adapterIndex)
-{
    assert(g_pplayer != nullptr); // Player must be created to give access to the output window
    colorFormat back_buffer_format;
 
@@ -656,45 +646,6 @@ void RenderDevice::CreateDevice(int& refreshrate, VideoSyncMode& syncMode, UINT 
    glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_FALSE); // disable all
    glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_ERROR, GL_DONT_CARE, 0, nullptr, GL_TRUE); // enable only errors
 #endif
-
-   /* This fails on some situations, just keep the requested size
-   GLint frameBuffer[4];
-   glGetIntegerv(GL_VIEWPORT, frameBuffer);
-   const int fbWidth = frameBuffer[2];
-   const int fbHeight = frameBuffer[3];
-   m_width = fbWidth;
-   m_height = fbHeight;
-   */
-
-#ifdef ENABLE_VR
-   m_scale = 1.0f; // Scale factor from scene (in VP units) to VR view (in meters)
-   if (m_stereo3D == STEREO_VR)
-   {
-      if (g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "ScaleToFixedWidth"s, false))
-      {
-         float width;
-         g_pplayer->m_ptable->get_Width(&width);
-         m_scale = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "ScaleAbsolute"s, 55.0f) * 0.01f / width;
-      }
-      else
-         m_scale = VPUTOCM(0.01f) * g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "ScaleRelative"s, 1.0f);
-      if (m_scale <= 0.000001f)
-         m_scale = VPUTOCM(0.01f); // Scale factor for VPUnits to Meters
-      // Initialize VR, this will also override the render buffer size (m_width, m_height) to account for HMD render size and render the 2 eyes simultaneously
-      InitVR();
-   }
-   else
-#endif
-   if (m_stereo3D == STEREO_SBS)
-   {
-      // Side by side needs to fit the 2 views along the width, so each view is half the total width
-      m_width = m_width / 2;
-   }
-   else if (m_stereo3D == STEREO_TB || m_stereo3D == STEREO_INT || m_stereo3D == STEREO_FLIPPED_INT)
-   {
-      // Top/Bottom (and interlaced) needs to fit the 2 views along the height, so each view is half the total height
-      m_height = m_height / 2;
-   }
 
    // Flip scheduling: 0 for immediate, 1 for synchronized with the vertical retrace, -1 for adaptive vsync (i.e. synchronized on vsync except for late frame)
    switch (syncMode)
@@ -969,16 +920,15 @@ void RenderDevice::CreateDevice(int& refreshrate, VideoSyncMode& syncMode, UINT 
    m_pBackBuffer = new RenderTarget(this, backBufferWidth, backBufferHeight, back_buffer_format);
 
 #ifdef ENABLE_SDL
-   const colorFormat render_format = ((m_BWrendering == 1) ? colorFormat::RG16F : ((m_BWrendering == 2) ? colorFormat::RED16F : colorFormat::RGB16F));
+   const colorFormat render_format = ((BWrendering == 1) ? colorFormat::RG16F : ((BWrendering == 2) ? colorFormat::RED16F : colorFormat::RGB16F));
 #else
-   const colorFormat render_format = ((m_BWrendering == 1) ? colorFormat::RG16F : ((m_BWrendering == 2) ? colorFormat::RED16F : colorFormat::RGBA16F));
+   const colorFormat render_format = ((BWrendering == 1) ? colorFormat::RG16F : ((BWrendering == 2) ? colorFormat::RED16F : colorFormat::RGBA16F));
 #endif
    // alloc float buffer for rendering (optionally AA factor res for manual super sampling)
    int m_width_aa = (int)((float)m_width * m_AAfactor);
    int m_height_aa = (int)((float)m_height * m_AAfactor);
 
    // alloc float buffer for rendering
-   int nMSAASamples = (g_pplayer != nullptr) ? g_pplayer->m_MSAASamples : 1;
 #ifdef ENABLE_SDL
    int maxSamples;
    glGetIntegerv(GL_MAX_SAMPLES, &maxSamples);
@@ -1001,10 +951,6 @@ void RenderDevice::CreateDevice(int& refreshrate, VideoSyncMode& syncMode, UINT 
 
    // Second render target to swap, allowing to read previous frame render for ball reflection and motion blur
    m_pOffscreenBackBufferTexture2 = m_pOffscreenBackBufferTexture1->Duplicate("BackBuffer2"s, true);
-
-   // alloc buffer for screen space fake reflection rendering
-   if (m_ssRefl)
-      m_pReflectionBufferTexture = new RenderTarget(this, rtType, "ReflectionBuffer"s, m_width_aa, m_height_aa, render_format, false, 1, "Fatal Error: unable to create reflection buffer!");
 
    // alloc bloom tex at 1/4 x 1/4 res (allows for simple HQ downscale of clipped input while saving memory)
    m_pBloomBufferTexture = new RenderTarget(this, rtType, "BloomBuffer1"s, m_width / 4, m_height / 4, render_format, false, 1, "Fatal Error: unable to create bloom buffer!");
@@ -1034,10 +980,6 @@ void RenderDevice::CreateDevice(int& refreshrate, VideoSyncMode& syncMode, UINT 
       m_pOffscreenVRRight = new RenderTarget(this, SurfaceType::RT_DEFAULT, "VRRight"s, m_width, m_height, renderBufferFormatVR, false, 1, "Fatal Error: unable to create right eye buffer!");
    }
    #endif
-
-   // Buffers for post-processing (postprocess is done at scene resolution, on a LDR render target without MSAA or full scene supersampling)
-   if (video10bit && (m_FXAA == Quality_SMAA || m_FXAA == Standard_DLAA))
-      ShowError("SMAA or DLAA post-processing AA should not be combined with 10bit-output rendering (will result in visible artifacts)!");
 
 #ifndef ENABLE_SDL
    // create default vertex declarations for shaders
@@ -1113,11 +1055,8 @@ void RenderDevice::CreateDevice(int& refreshrate, VideoSyncMode& syncMode, UINT 
       SDL_GL_SetSwapInterval(-1);
       #endif
    }
-}
 
-bool RenderDevice::LoadShaders()
-{
-#ifdef ENABLE_SDL // OpenGL
+   #ifdef ENABLE_SDL // OpenGL
    basicShader = new Shader(this, "BasicShader.glfx"s);
    DMDShader = new Shader(this, m_stereo3D == STEREO_VR ? "DMDShaderVR.glfx"s : "DMDShader.glfx"s);
    FBShader = new Shader(this, "FBShader.glfx"s, "SMAA.glfx"s);
@@ -1125,7 +1064,7 @@ bool RenderDevice::LoadShaders()
    lightShader = new Shader(this, "LightShader.glfx"s);
    StereoShader = new Shader(this, "StereoShader.glfx"s);
    m_ballShader = new Shader(this, "BallShader.glfx"s);
-#else // DirectX 9
+   #else // DirectX 9
    basicShader = new Shader(this, "BasicShader.hlsl"s, g_basicShaderCode, sizeof(g_basicShaderCode));
    DMDShader = new Shader(this, "DMDShader.hlsl"s, g_dmdShaderCode, sizeof(g_dmdShaderCode));
    FBShader = new Shader(this, "FBShader.hlsl"s, g_FBShaderCode, sizeof(g_FBShaderCode));
@@ -1133,12 +1072,12 @@ bool RenderDevice::LoadShaders()
    lightShader = new Shader(this, "LightShader.hlsl"s, g_lightShaderCode, sizeof(g_lightShaderCode));
    StereoShader = new Shader(this, "StereoShader.hlsl"s, g_stereoShaderCode, sizeof(g_stereoShaderCode));
    m_ballShader = new Shader(this, "BallShader.hlsl"s, g_ballShaderCode, sizeof(g_ballShaderCode));
-#endif
+   #endif
 
    if (basicShader->HasError() || DMDShader->HasError() || FBShader->HasError() || flasherShader->HasError() || lightShader->HasError() || StereoShader->HasError())
    {
       ReportError("Fatal Error: shader compilation failed!", -1, __FILE__, __LINE__);
-      return false;
+      throw(-1);
    }
 
    // Initialize uniform to default value
@@ -1147,129 +1086,8 @@ bool RenderDevice::LoadShaders()
    DMDShader->SetFloat(SHADER_alphaTestValue, 1.0f); // No alpha clipping
    FBShader->SetTexture(SHADER_areaTex, m_SMAAareaTexture);
    FBShader->SetTexture(SHADER_searchTex, m_SMAAsearchTexture);
-
-   return true;
 }
 
-RenderTarget* RenderDevice::GetPostProcessRenderTarget1()
-{
-   if (m_pPostProcessRenderTarget1 == nullptr)
-   {
-      // Buffers for post-processing. Postprocess is done at scene resolution, on a LDR render target without MSAA nor full scene supersampling
-      // excepted when using downsampled render buffer where upscaling is done after postprocessing.
-      const colorFormat pp_format = GetBackBufferTexture()->GetColorFormat() == RGBA10 ? colorFormat::RGBA10 : colorFormat::RGBA8;
-      int width = m_AAfactor < 1 ? m_pOffscreenBackBufferTexture1->GetWidth() : m_width;
-      int height = m_AAfactor < 1 ? m_pOffscreenBackBufferTexture1->GetHeight() : m_height;
-      m_pPostProcessRenderTarget1 = new RenderTarget(this, m_pOffscreenBackBufferTexture1->m_type, "PostProcess1"s, width, height, pp_format, false, 1, 
-         "Fatal Error: unable to create stereo3D/post-processing AA/sharpen buffer!");
-   }
-   return m_pPostProcessRenderTarget1;
-}
-   
-RenderTarget* RenderDevice::GetPostProcessRenderTarget2()
-{
-   if (m_pPostProcessRenderTarget2 == nullptr)
-      m_pPostProcessRenderTarget2 = GetPostProcessRenderTarget1()->Duplicate("PostProcess2"s);
-   return m_pPostProcessRenderTarget2;
-}
-
-RenderTarget* RenderDevice::GetPostProcessRenderTarget(RenderTarget* renderedRT)
-{
-   RenderTarget* pp1 = GetPostProcessRenderTarget1();
-   if (renderedRT == pp1)
-      return GetPostProcessRenderTarget2();
-   else
-      return pp1;
-}
-
-RenderTarget* RenderDevice::GetAORenderTarget(int idx)
-{
-   // Lazily creates AO render target since this can be enabled during play from script (at render buffer resolution)
-   if (m_pAORenderTarget1 == nullptr)
-   {
-      m_pAORenderTarget1 = new RenderTarget(this, m_pOffscreenBackBufferTexture1->m_type, "AO1"s, 
-         m_pOffscreenBackBufferTexture1->GetWidth(), m_pOffscreenBackBufferTexture1->GetHeight(), colorFormat::GREY8, false, 1, 
-         "Unable to create AO buffers!\r\nPlease disable Ambient Occlusion.\r\nOr try to (un)set \"Alternative Depth Buffer processing\" in the video options!");
-      m_pAORenderTarget2 = m_pAORenderTarget1->Duplicate("AO2"s);
-
-   }
-   return idx == 0 ? m_pAORenderTarget1 : m_pAORenderTarget2;
-}
-
-void RenderDevice::SwapBackBufferRenderTargets()
-{
-   RenderTarget* tmp = m_pOffscreenBackBufferTexture1;
-   m_pOffscreenBackBufferTexture1 = m_pOffscreenBackBufferTexture2;
-   m_pOffscreenBackBufferTexture2 = tmp;
-}
-
-void RenderDevice::SwapAORenderTargets()
-{
-   RenderTarget* tmpAO = m_pAORenderTarget1;
-   m_pAORenderTarget1 = m_pAORenderTarget2;
-   m_pAORenderTarget2 = tmpAO;
-}
-
-void RenderDevice::ResolveMSAA()
-{
-   if (m_pOffscreenMSAABackBufferTexture)
-   {
-      const RenderPass* initial_rt = GetCurrentPass();
-      SetRenderTarget("Resolve MSAA"s, m_pOffscreenBackBufferTexture1);
-      BlitRenderTarget(m_pOffscreenMSAABackBufferTexture, m_pOffscreenBackBufferTexture1, true, true);
-      SetRenderTarget(initial_rt->m_name + '+', initial_rt->m_rt);
-   }
-}
-
-bool RenderDevice::DepthBufferReadBackAvailable()
-{
-#ifdef ENABLE_SDL
-   return true;
-#else
-    if (m_INTZ_support && !m_useNvidiaApi)
-        return true;
-    // fall back to NVIDIAs NVAPI, only handle DepthBuffer ReadBack if API was initialized
-    return NVAPIinit;
-#endif
-}
-
-
-void RenderDevice::FreeShader()
-{
-   UnbindSampler(nullptr);
-   delete basicShader;
-   basicShader = nullptr;
-   delete DMDShader;
-   DMDShader = nullptr;
-   delete FBShader;
-   FBShader = nullptr;
-   delete StereoShader;
-   StereoShader = nullptr;
-   delete flasherShader;
-   flasherShader = nullptr;
-   delete lightShader;
-   lightShader = nullptr;
-   delete m_ballShader;
-   m_ballShader = nullptr;
-}
-
-void RenderDevice::UnbindSampler(Sampler* sampler)
-{
-   if (basicShader)
-      basicShader->UnbindSampler(sampler);
-   if (DMDShader)
-      DMDShader->UnbindSampler(sampler);
-   if (FBShader)
-      FBShader->UnbindSampler(sampler);
-   if (flasherShader)
-      flasherShader->UnbindSampler(sampler);
-   if (lightShader)
-      lightShader->UnbindSampler(sampler);
-   if (StereoShader)
-      StereoShader->UnbindSampler(sampler);
-   if (m_ballShader)
-      m_ballShader->UnbindSampler(sampler);
-}
 
 RenderDevice::~RenderDevice()
 {
@@ -1289,7 +1107,21 @@ RenderDevice::~RenderDevice()
    SAFE_RELEASE(m_pVertexNormalTexelDeclaration);
 #endif
 
-   FreeShader();
+   UnbindSampler(nullptr);
+   delete basicShader;
+   basicShader = nullptr;
+   delete DMDShader;
+   DMDShader = nullptr;
+   delete FBShader;
+   FBShader = nullptr;
+   delete StereoShader;
+   StereoShader = nullptr;
+   delete flasherShader;
+   flasherShader = nullptr;
+   delete lightShader;
+   lightShader = nullptr;
+   delete m_ballShader;
+   m_ballShader = nullptr;
 
    m_texMan.UnloadAll();
    delete m_pOffscreenBackBufferTexture1;
@@ -1361,10 +1193,6 @@ RenderDevice::~RenderDevice()
    for (auto binding : m_samplerBindings)
       delete binding;
    m_samplerBindings.clear();
-#ifdef ENABLE_VR
-   if (m_pHMD)
-      turnVROff();
-#endif
 
    for (size_t i = 0; i < sizeof(m_samplerStateCache)/sizeof(m_samplerStateCache[0]); i++)
    {
@@ -1378,6 +1206,118 @@ RenderDevice::~RenderDevice()
    SDL_GL_DeleteContext(m_sdl_context);
    SDL_DestroyWindow(m_sdl_playfieldHwnd);
 #endif
+}
+
+RenderTarget* RenderDevice::GetPostProcessRenderTarget1()
+{
+   if (m_pPostProcessRenderTarget1 == nullptr)
+   {
+      // Buffers for post-processing. Postprocess is done at scene resolution, on a LDR render target without MSAA nor full scene supersampling
+      // excepted when using downsampled render buffer where upscaling is done after postprocessing.
+      const colorFormat pp_format = GetBackBufferTexture()->GetColorFormat() == RGBA10 ? colorFormat::RGBA10 : colorFormat::RGBA8;
+      int width = m_AAfactor < 1 ? m_pOffscreenBackBufferTexture1->GetWidth() : m_width;
+      int height = m_AAfactor < 1 ? m_pOffscreenBackBufferTexture1->GetHeight() : m_height;
+      m_pPostProcessRenderTarget1 = new RenderTarget(this, m_pOffscreenBackBufferTexture1->m_type, "PostProcess1"s, width, height, pp_format, false, 1, 
+         "Fatal Error: unable to create stereo3D/post-processing AA/sharpen buffer!");
+   }
+   return m_pPostProcessRenderTarget1;
+}
+   
+RenderTarget* RenderDevice::GetPostProcessRenderTarget2()
+{
+   if (m_pPostProcessRenderTarget2 == nullptr)
+      m_pPostProcessRenderTarget2 = GetPostProcessRenderTarget1()->Duplicate("PostProcess2"s);
+   return m_pPostProcessRenderTarget2;
+}
+
+RenderTarget* RenderDevice::GetPostProcessRenderTarget(RenderTarget* renderedRT)
+{
+   RenderTarget* pp1 = GetPostProcessRenderTarget1();
+   if (renderedRT == pp1)
+      return GetPostProcessRenderTarget2();
+   else
+      return pp1;
+}
+
+RenderTarget* RenderDevice::GetReflectionBufferTexture()
+{
+   // Lazily alloc buffer for screen space fake reflection rendering
+   if (m_pReflectionBufferTexture == nullptr)
+   {
+      m_pReflectionBufferTexture = new RenderTarget(this, m_pOffscreenBackBufferTexture1->m_type, "ReflectionBuffer"s, 
+         m_pOffscreenBackBufferTexture1->GetWidth(), m_pOffscreenBackBufferTexture1->GetHeight(),
+         m_pOffscreenBackBufferTexture1->GetColorFormat(), false, 1, "Fatal Error: unable to create reflection buffer!");
+   }
+   return m_pReflectionBufferTexture;
+}
+
+RenderTarget* RenderDevice::GetAORenderTarget(int idx)
+{
+   // Lazily creates AO render target since this can be enabled during play from script (at render buffer resolution)
+   if (m_pAORenderTarget1 == nullptr)
+   {
+      m_pAORenderTarget1 = new RenderTarget(this, m_pOffscreenBackBufferTexture1->m_type, "AO1"s, 
+         m_pOffscreenBackBufferTexture1->GetWidth(), m_pOffscreenBackBufferTexture1->GetHeight(), colorFormat::GREY8, false, 1, 
+         "Unable to create AO buffers!\r\nPlease disable Ambient Occlusion.\r\nOr try to (un)set \"Alternative Depth Buffer processing\" in the video options!");
+      m_pAORenderTarget2 = m_pAORenderTarget1->Duplicate("AO2"s);
+
+   }
+   return idx == 0 ? m_pAORenderTarget1 : m_pAORenderTarget2;
+}
+
+void RenderDevice::SwapBackBufferRenderTargets()
+{
+   RenderTarget* tmp = m_pOffscreenBackBufferTexture1;
+   m_pOffscreenBackBufferTexture1 = m_pOffscreenBackBufferTexture2;
+   m_pOffscreenBackBufferTexture2 = tmp;
+}
+
+void RenderDevice::SwapAORenderTargets()
+{
+   RenderTarget* tmpAO = m_pAORenderTarget1;
+   m_pAORenderTarget1 = m_pAORenderTarget2;
+   m_pAORenderTarget2 = tmpAO;
+}
+
+void RenderDevice::ResolveMSAA()
+{
+   if (m_pOffscreenMSAABackBufferTexture)
+   {
+      const RenderPass* initial_rt = GetCurrentPass();
+      SetRenderTarget("Resolve MSAA"s, m_pOffscreenBackBufferTexture1);
+      BlitRenderTarget(m_pOffscreenMSAABackBufferTexture, m_pOffscreenBackBufferTexture1, true, true);
+      SetRenderTarget(initial_rt->m_name + '+', initial_rt->m_rt);
+   }
+}
+
+bool RenderDevice::DepthBufferReadBackAvailable()
+{
+#ifdef ENABLE_SDL
+   return true;
+#else
+    if (m_INTZ_support && !m_useNvidiaApi)
+        return true;
+    // fall back to NVIDIAs NVAPI, only handle DepthBuffer ReadBack if API was initialized
+    return NVAPIinit;
+#endif
+}
+
+void RenderDevice::UnbindSampler(Sampler* sampler)
+{
+   if (basicShader)
+      basicShader->UnbindSampler(sampler);
+   if (DMDShader)
+      DMDShader->UnbindSampler(sampler);
+   if (FBShader)
+      FBShader->UnbindSampler(sampler);
+   if (flasherShader)
+      flasherShader->UnbindSampler(sampler);
+   if (lightShader)
+      lightShader->UnbindSampler(sampler);
+   if (StereoShader)
+      StereoShader->UnbindSampler(sampler);
+   if (m_ballShader)
+      m_ballShader->UnbindSampler(sampler);
 }
 
 /*static void FlushGPUCommandBuffer(IDirect3DDevice9* pd3dDevice)
@@ -1998,280 +1938,3 @@ void RenderDevice::GetViewport(ViewPort* p1)
    CHECKD3D(m_pD3DDevice->GetViewport((D3DVIEWPORT9*)p1));
 #endif
 }
-
-//////////////////////////////////////////////////////////////////
-// VR device implementation
-
-void RenderDevice::SaveVRSettings(Settings& settings) const
-{
-   #ifdef ENABLE_VR
-   settings.SaveValue(Settings::PlayerVR, "Slope"s, m_slope);
-   settings.SaveValue(Settings::PlayerVR, "Orientation"s, m_orientation);
-   settings.SaveValue(Settings::PlayerVR, "TableX"s, m_tablex);
-   settings.SaveValue(Settings::PlayerVR, "TableY"s, m_tabley);
-   settings.SaveValue(Settings::PlayerVR, "TableZ"s, m_tablez);
-   #endif
-}
-
-#ifdef ENABLE_VR
-bool RenderDevice::isVRinstalled()
-{
-#ifdef VR_PREVIEW_TEST
-   return true;
-#else
-   return vr::VR_IsRuntimeInstalled();
-#endif
-}
-
-vr::IVRSystem* RenderDevice::m_pHMD = nullptr;
-
-bool RenderDevice::isVRturnedOn()
-{
-#ifdef VR_PREVIEW_TEST
-   return true;
-#else
-   if (vr::VR_IsHmdPresent())
-   {
-      vr::EVRInitError VRError = vr::VRInitError_None;
-      if (!m_pHMD)
-         m_pHMD = vr::VR_Init(&VRError, vr::VRApplication_Background);
-      if (VRError == vr::VRInitError_None && vr::VRCompositor()) {
-         for (uint32_t device = 0; device < vr::k_unMaxTrackedDeviceCount; device++) {
-            if ((m_pHMD->GetTrackedDeviceClass(device) == vr::TrackedDeviceClass_HMD)) {
-               vr::VR_Shutdown();
-               m_pHMD = nullptr;
-               return true;
-            }
-         }
-      } else
-         m_pHMD = nullptr;
-   }
-#endif
-   return false;
-}
-
-void RenderDevice::turnVROff()
-{
-   if (m_pHMD)
-   {
-      vr::VR_Shutdown();
-      m_pHMD = nullptr;
-   }
-}
-
-void RenderDevice::InitVR() {
-#ifdef VR_PREVIEW_TEST
-   m_pHMD = nullptr;
-#else
-   vr::EVRInitError VRError = vr::VRInitError_None;
-   if (!m_pHMD) {
-      m_pHMD = vr::VR_Init(&VRError, vr::VRApplication_Scene);
-      if (VRError != vr::VRInitError_None) {
-         m_pHMD = nullptr;
-         char buf[1024];
-         sprintf_s(buf, sizeof(buf), "Unable to init VR runtime: %s", vr::VR_GetVRInitErrorAsEnglishDescription(VRError));
-         ShowError(buf);
-      }
-      else if (!vr::VRCompositor())
-      /*if (VRError != vr::VRInitError_None)*/ {
-         m_pHMD = nullptr;
-         char buf[1024];
-         sprintf_s(buf, sizeof(buf), "Unable to init VR compositor");// :% s", vr::VR_GetVRInitErrorAsEnglishDescription(VRError));
-         ShowError(buf);
-      }
-   }
-#endif
-
-   // Move from VP units to meters, and also apply user scene scaling if any
-   Matrix3D sceneScale = Matrix3D::MatrixScale(m_scale);
-
-   // Convert from VPX coords to VR (270deg rotation around X axis, and flip x axis)
-   Matrix3D coords;
-   coords.SetIdentity();
-   coords._11 = -1.f; coords._12 = 0.f; coords._13 =  0.f;
-   coords._21 =  0.f; coords._22 = 0.f; coords._23 = -1.f;
-   coords._31 =  0.f; coords._32 = 1.f; coords._33 =  0.f;
-
-   float zNear, zFar;
-   g_pplayer->m_ptable->ComputeNearFarPlane(coords * sceneScale, m_scale, zNear, zFar);
-   zNear = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "NearPlane"s, 5.0f) / 100.0f; // Replace near value to allow player to move near parts up to user defined value
-   zFar *= 1.2f;
-
-   if (m_pHMD == nullptr)
-   {
-      // Basic debug setup (All OpenVR matrices are left handed, using meter units)
-      // For debugging without a headset, the null driver of OpenVR should be enabled. To do so:
-      // - Set "enable": true in default.vrsettings from C:\Program Files (x86)\Steam\steamapps\common\SteamVR\drivers\null\resources\settings
-      // - Add "activateMultipleDrivers" : true, "forcedDriver" : "null", to "steamvr" section of steamvr.vrsettings from C :\Program Files(x86)\Steam\config
-      uint32_t eye_width = 1080, eye_height = 1200; // Oculus Rift resolution
-      m_width = eye_width;
-      m_height = eye_height;
-      for (int i = 0; i < 2; i++)
-      {
-         Matrix3D proj;
-         proj.SetPerspectiveFovLH(90.f, 1.f, zNear, zFar);
-         m_vrMatProj[i] = coords * sceneScale * proj;
-      }
-   }
-   else
-   {
-      uint32_t eye_width, eye_height;
-      m_pHMD->GetRecommendedRenderTargetSize(&eye_width, &eye_height);
-      m_width = eye_width;
-      m_height = eye_height;
-      vr::HmdMatrix34_t left_eye_pos = m_pHMD->GetEyeToHeadTransform(vr::Eye_Left);
-      vr::HmdMatrix34_t right_eye_pos = m_pHMD->GetEyeToHeadTransform(vr::Eye_Right);
-      vr::HmdMatrix44_t left_eye_proj = m_pHMD->GetProjectionMatrix(vr::Eye_Left, zNear, zFar);
-      vr::HmdMatrix44_t right_eye_proj = m_pHMD->GetProjectionMatrix(vr::Eye_Right, zNear, zFar);
-
-      Matrix3D matEye2Head, matProjection;
-
-      //Calculate left EyeProjection Matrix relative to HMD position
-      matEye2Head.SetIdentity();
-      for (int i = 0; i < 3; i++)
-         for (int j = 0;j < 4;j++)
-            matEye2Head.m[j][i] = left_eye_pos.m[i][j];
-      matEye2Head.Invert();
-
-      left_eye_proj.m[2][2] = -1.0f;
-      left_eye_proj.m[2][3] = -zNear;
-      for (int i = 0;i < 4;i++)
-         for (int j = 0;j < 4;j++)
-            matProjection.m[j][i] = left_eye_proj.m[i][j];
-
-      m_vrMatProj[0] = coords * sceneScale * matEye2Head * matProjection;
-
-      //Calculate right EyeProjection Matrix relative to HMD position
-      matEye2Head.SetIdentity();
-      for (int i = 0; i < 3; i++)
-         for (int j = 0;j < 4;j++)
-            matEye2Head.m[j][i] = right_eye_pos.m[i][j];
-      matEye2Head.Invert();
-
-      right_eye_proj.m[2][2] = -1.0f;
-      right_eye_proj.m[2][3] = -zNear;
-      for (int i = 0;i < 4;i++)
-         for (int j = 0;j < 4;j++)
-            matProjection.m[j][i] = right_eye_proj.m[i][j];
-
-      m_vrMatProj[1] = coords * sceneScale * matEye2Head * matProjection;
-   }
-
-   if (vr::k_unMaxTrackedDeviceCount > 0) {
-      m_rTrackedDevicePose = new vr::TrackedDevicePose_t[vr::k_unMaxTrackedDeviceCount];
-   }
-   else {
-      std::runtime_error noDevicesFound("No Tracking devices found");
-      throw(noDevicesFound);
-   }
-
-   m_slope = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "Slope"s, 6.5f);
-   m_orientation = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "Orientation"s, 0.0f);
-   m_tablex = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "TableX"s, 0.0f);
-   m_tabley = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "TableY"s, 0.0f);
-   m_tablez = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "TableZ"s, 80.0f);
-
-   updateTableMatrix();
-}
-
-void RenderDevice::UpdateVRPosition(ModelViewProj& mvp)
-{
-   mvp.SetProj(0, m_vrMatProj[0]);
-   mvp.SetProj(1, m_vrMatProj[1]);
-
-   Matrix3D matView;
-   matView.SetIdentity();
-
-   if (IsVRReady())
-   {
-      vr::VRCompositor()->WaitGetPoses(m_rTrackedDevicePose, vr::k_unMaxTrackedDeviceCount, nullptr, 0);
-      for (unsigned int device = 0; device < vr::k_unMaxTrackedDeviceCount; device++)
-      {
-         if ((m_rTrackedDevicePose[device].bPoseIsValid) && (m_pHMD->GetTrackedDeviceClass(device) == vr::TrackedDeviceClass_HMD))
-         {
-            m_hmdPosition = m_rTrackedDevicePose[device];
-
-            // Convert to 4x4 inverse matrix (world to head)
-            for (int i = 0; i < 3; i++)
-               for (int j = 0; j < 4; j++)
-                  matView.m[j][i] = m_hmdPosition.mDeviceToAbsoluteTracking.m[i][j];
-            matView.Invert();
-
-            // Scale translation part
-            for (int i = 0; i < 3; i++)
-               matView.m[3][i] /= m_scale;
-
-            // Convert from VPX coords to VR and back (270deg rotation around X axis, and flip x axis)
-            Matrix3D coords, revCoords;
-            coords.SetIdentity();
-            coords._11 = -1.f; coords._12 = 0.f; coords._13 =  0.f;
-            coords._21 =  0.f; coords._22 = 0.f; coords._23 = -1.f;
-            coords._31 =  0.f; coords._32 = 1.f; coords._33 =  0.f;
-            revCoords.SetIdentity();
-            revCoords._11 = -1.f; revCoords._12 =  0.f; revCoords._13 = 0.f;
-            revCoords._21 =  0.f; revCoords._22 =  0.f; revCoords._23 = 1.f;
-            revCoords._31 =  0.f; revCoords._32 = -1.f; revCoords._33 = 0.f;
-            matView = coords * matView * revCoords;
-
-            break;
-         }
-      }
-   }
-
-   // Apply table world position
-   mvp.SetView(m_tableWorld * matView);
-}
-
-void RenderDevice::tableUp()
-{
-   m_tablez += 1.0f;
-   if (m_tablez > 250.0f)
-      m_tablez = 250.0f;
-   updateTableMatrix();
-}
-
-void RenderDevice::tableDown()
-{
-   m_tablez -= 1.0f;
-   if (m_tablez < 0.0f)
-      m_tablez = 0.0f;
-   updateTableMatrix();
-}
-
-void RenderDevice::recenterTable()
-{
-   const float w = m_scale * (g_pplayer->m_ptable->m_right - g_pplayer->m_ptable->m_left) * 0.5f;
-   const float h = m_scale * (g_pplayer->m_ptable->m_bottom - g_pplayer->m_ptable->m_top) + 0.2f;
-   float headX = 0.f, headY = 0.f;
-   if (IsVRReady())
-   {
-      m_orientation = -RADTOANG(atan2f(m_hmdPosition.mDeviceToAbsoluteTracking.m[0][2], m_hmdPosition.mDeviceToAbsoluteTracking.m[0][0]));
-      if (m_orientation < 0.0f)
-         m_orientation += 360.0f;
-      headX = m_hmdPosition.mDeviceToAbsoluteTracking.m[0][3];
-      headY = -m_hmdPosition.mDeviceToAbsoluteTracking.m[2][3];
-   }
-   const float c = cosf(ANGTORAD(m_orientation));
-   const float s = sinf(ANGTORAD(m_orientation));
-   m_tablex = 100.0f * (headX - c * w + s * h);
-   m_tabley = 100.0f * (headY + s * w + c * h);
-   updateTableMatrix();
-}
-
-void RenderDevice::updateTableMatrix()
-{
-   Matrix3D rotx, rotz, trans, coords;
-
-   // Tilt playfield.
-   rotx.SetRotateX(ANGTORAD(-m_slope));
-
-   // Rotate table around VR height axis
-   rotz.SetRotateZ(ANGTORAD(180.f + m_orientation));
-   
-   // Locate front left corner of the table in the room -x is to the right, -y is up and -z is back - all units in meters
-   const float inv_transScale = 1.0f / (100.0f * m_scale);
-   trans.SetTranslation(-m_tablex * inv_transScale, m_tabley * inv_transScale, m_tablez * inv_transScale);
-
-   m_tableWorld = rotx * rotz * trans;
-}
-#endif

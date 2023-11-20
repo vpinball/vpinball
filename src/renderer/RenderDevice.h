@@ -15,10 +15,6 @@
 #include "RenderFrame.h"
 #include "RenderPass.h"
 
-#ifdef ENABLE_VR
-#include <openvr.h>
-#endif
-
 #ifdef ENABLE_SDL
 #include <d3d11.h> // Used to get a VSync source if DWM is not available
 #endif
@@ -121,17 +117,10 @@ public:
    };
 #endif
 
-   enum TransformStateType {
-      TRANSFORMSTATE_WORLD,
-      TRANSFORMSTATE_VIEW,
-      TRANSFORMSTATE_PROJECTION
-   };
-
    RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, const float AAfactor,
-      const StereoMode stereo3D, const unsigned int FXAA, const bool sharpen, const bool ss_refl, const bool useNvidiaApi, const bool disable_dwm, const int BWrendering);
+      const StereoMode stereo3D, const bool useNvidiaApi, const bool disable_dwm, const int BWrendering, int nMSAASamples, 
+      int& refreshrate, VideoSyncMode& syncMode, UINT adapterIndex = D3DADAPTER_DEFAULT);
    ~RenderDevice();
-   void CreateDevice(int& refreshrate, VideoSyncMode& syncMode, UINT adapterIndex = D3DADAPTER_DEFAULT);
-   bool LoadShaders();
 
    RenderPass* GetCurrentPass() { return m_currentPass; }
    const RenderTarget* GetCurrentRenderTarget() const { assert(m_currentPass != nullptr); return m_currentPass->m_rt; }
@@ -177,7 +166,7 @@ public:
    RenderTarget* GetPostProcessRenderTarget2();
    RenderTarget* GetPostProcessRenderTarget(RenderTarget* renderedRT);
    RenderTarget* GetOffscreenVR(int eye) const { return eye == 0 ? m_pOffscreenVRLeft : m_pOffscreenVRRight; }
-   RenderTarget* GetReflectionBufferTexture() const { return m_pReflectionBufferTexture; }
+   RenderTarget* GetReflectionBufferTexture();
    RenderTarget* GetBloomBufferTexture() const { return m_pBloomBufferTexture; }
    RenderTarget* GetBloomTmpBufferTexture() const { return m_pBloomTmpBufferTexture; }
    RenderTarget* GetAORenderTarget(int idx);
@@ -185,33 +174,6 @@ public:
    void SwapAORenderTargets();
    void ReleaseAORenderTargets() { delete m_pAORenderTarget1; m_pAORenderTarget1 = nullptr; delete m_pAORenderTarget2; m_pAORenderTarget2 = nullptr; }
    RenderTarget* GetOutputBackBuffer() const { return m_pBackBuffer; } // The screen render target (the only one which is not stereo when doing stereo rendering)
-
-   // VR/Stereo Stuff
-   void SaveVRSettings(Settings& settings) const;
-#ifdef ENABLE_VR
-   void InitVR();
-   bool IsVRReady() const { return m_pHMD != nullptr; }
-   void UpdateVRPosition(ModelViewProj& mvp);
-   void tableUp();
-   void tableDown();
-   void recenterTable();
-   void updateTableMatrix();
-   static bool isVRinstalled();
-   static bool isVRturnedOn();
-   static void turnVROff();
-
-   float m_scale = 1.0f;
-
-private:
-   static vr::IVRSystem* m_pHMD;
-   float m_slope, m_orientation, m_tablex, m_tabley, m_tablez;
-   vr::TrackedDevicePose_t m_hmdPosition;
-   Matrix3D m_vrMatProj[2];
-   Matrix3D m_tableWorld;
-   vr::TrackedDevicePose_t* m_rTrackedDevicePose;
-
-public:
-#endif
 
    bool DepthBufferReadBackAvailable();
 
@@ -251,8 +213,6 @@ public:
    unsigned int Perf_GetNumTextureUploads() const   { return m_frameTextureUpdates; }
    unsigned int Perf_GetNumLockCalls() const        { return m_frameLockCalls; }
 
-   void FreeShader();
-
 #ifdef ENABLE_SDL
    int getGLVersion() const { return m_GLversion; }
 #else
@@ -261,19 +221,16 @@ public:
 
    HWND getHwnd() const { return m_windowHwnd; }
 
-   HWND          m_windowHwnd;
-   int           m_width;  // Width of the render buffer (not the window width, for example for stereo the render width is doubled, or for VR, the size depends on the headset)
-   int           m_height; // Height of the render buffer
-   bool          m_fullscreen;
-   int           m_colorDepth;
-   StereoMode    m_stereo3D;
-   float         m_AAfactor;
-   bool          m_ssRefl;
-   bool          m_disableDwm;
-   unsigned int  m_FXAA;
-   int           m_BWrendering;
+   const int        m_width;  // Width of the render buffer (not the window width, for example for stereo the render width is doubled, or for VR, the size depends on the headset)
+   const int        m_height; // Height of the render buffer
+   const bool       m_fullscreen;
+   const int        m_colorDepth;
+   const StereoMode m_stereo3D;
+   const float      m_AAfactor;
 
 private:
+   HWND             m_windowHwnd;
+
    void UploadAndSetSMAATextures();
 
 public:

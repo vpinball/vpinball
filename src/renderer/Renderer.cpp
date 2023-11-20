@@ -1,15 +1,24 @@
 #include "stdafx.h"
-#include "renderer/RenderDevice.h"
-#include "renderer/Shader.h"
-#include "math/math.h"
 #include "ThreadPool.h"
 #include "BAM/BAMView.h"
-#include "meshes/ballMesh.h"
 #include "math/bluenoise.h"
+#include "math/math.h"
+#include "meshes/ballMesh.h"
+#include "renderer/Anaglyph.h"
+#include "renderer/Shader.h"
+#include "renderer/RenderDevice.h"
+#include "renderer/VRDevice.h"
 
 Renderer::Renderer(PinTable* const table, const bool fullScreen, const int width, const int height, const int colordepth, int& refreshrate, VideoSyncMode& syncMode, const StereoMode stereo3D)
    : m_table(table)
 {
+   m_stereo3Denabled = m_table->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DEnabled"s, (m_stereo3D != STEREO_OFF));
+   m_stereo3DfakeStereo = m_table->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DFake"s, false);
+   #ifndef ENABLE_SDL // DirectX does not support stereo rendering
+   m_stereo3DfakeStereo = true;
+   #endif
+   m_BWrendering = m_table->m_settings.LoadValueWithDefault(Settings::Player, "BWRendering"s, 0);
+   m_toneMapper = (ToneMapper)m_table->m_settings.LoadValueWithDefault(Settings::TableOverride, "ToneMapper"s, m_table->GetToneMapper());
    m_dynamicAO = m_table->m_settings.LoadValueWithDefault(Settings::Player, "DynamicAO"s, true);
    m_disableAO = m_table->m_settings.LoadValueWithDefault(Settings::Player, "DisableAO"s, false);
    m_AAfactor = m_table->m_settings.LoadValueWithDefault(Settings::Player, "AAFactor"s, m_table->m_settings.LoadValueWithDefault(Settings::Player, "USEAA"s, false) ? 2.0f : 1.0f);
@@ -18,7 +27,6 @@ Renderer::Renderer(PinTable* const table, const bool fullScreen, const int width
    m_FXAA = m_table->m_settings.LoadValueWithDefault(Settings::Player, "FXAA"s, (int)Disabled);
    m_sharpen = m_table->m_settings.LoadValueWithDefault(Settings::Player, "Sharpen"s, 0);
    m_ss_refl = m_table->m_settings.LoadValueWithDefault(Settings::Player, "SSRefl"s, false);
-   const bool ss_refl = m_ss_refl && m_table->m_enableSSR;
    m_bloomOff = m_table->m_settings.LoadValueWithDefault(Settings::Player, "ForceBloomOff"s, false);
    const int maxReflection = m_table->m_settings.LoadValueWithDefault(Settings::Player, "PFReflection"s, -1);
    if (maxReflection != -1)
@@ -95,18 +103,10 @@ Renderer::Renderer(PinTable* const table, const bool fullScreen, const int width
       m_globalEmissionScale = g_pvp->m_fgles;
    }
 
-   m_stereo3D = stereo3D;
+   m_stereo3D = m_stereo3DfakeStereo ? STEREO_OFF : stereo3D;
    m_mvp = new ModelViewProj(m_stereo3D == STEREO_OFF ? 1 : 2);
 
-   // set the expected viewport for the newly created device (it may be modified upon creation)
-   m_viewPort.X = 0;
-   m_viewPort.Y = 0;
-   m_viewPort.Width = width;
-   m_viewPort.Height = height;
-   m_viewPort.MinZ = 0.0f;
-   m_viewPort.MaxZ = 1.0f;
-
-   const int display = g_pvp->m_primaryDisplay ? 0 : g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Display"s, 0);
+   const int display = g_pvp->m_primaryDisplay ? 0 : m_table->m_settings.LoadValueWithDefault(Settings::Player, "Display"s, 0);
    vector<DisplayConfig> displays;
    getDisplayList(displays);
    int adapter = 0;
@@ -114,43 +114,63 @@ Renderer::Renderer(PinTable* const table, const bool fullScreen, const int width
       if (display == dispConf->display)
          adapter = dispConf->adapter;
 
-   m_pd3dPrimaryDevice = new RenderDevice(g_pplayer->GetHwnd(), m_viewPort.Width, m_viewPort.Height, fullScreen, colordepth, m_AAfactor, stereo3D, m_FXAA, m_sharpen, ss_refl,
-      g_pplayer->m_useNvidiaApi, g_pplayer->m_disableDWM, g_pplayer->m_BWrendering);
-   try {
-      m_pd3dPrimaryDevice->CreateDevice(refreshrate, syncMode, adapter);
+   #ifdef ENABLE_SDL
+   const int nMSAASamples = m_table->m_settings.LoadValueWithDefault(Settings::Player, "MSAASamples"s, 1);
+   #else
+   // Sadly DX9 does not support resolving an MSAA depth buffer, making MSAA implementation complex for it. So just disable for now
+   const int nMSAASamples = 1;
+   #endif
+   const bool useNvidiaApi = m_table->m_settings.LoadValueWithDefault(Settings::Player, "UseNVidiaAPI"s, false);
+   const bool disableDWM = m_table->m_settings.LoadValueWithDefault(Settings::Player, "DisableDWM"s, false);
+   int renderWidth, renderHeight;
+   if (m_stereo3D == STEREO_VR)
+   {
+      // For VR the render view is defined by the HMD
+      renderWidth = g_pplayer->m_vrDevice->GetEyeWidth();
+      renderHeight = g_pplayer->m_vrDevice->GetEyeHeight();
    }
-   catch (...) {
-      // TODO better error handling => just let the exception up
-      throw(E_FAIL);
-   }
-
-   #ifndef ENABLE_SDL
    if (m_stereo3D == STEREO_SBS)
    {
       // Side by side needs to fit the 2 views along the width, so each view is half the total width
-      m_viewPort.Width = m_pd3dPrimaryDevice->m_width / 2;
-      m_viewPort.Height = m_pd3dPrimaryDevice->m_height;
+      renderWidth = width / 2;
+      renderHeight = height;
    }
    else if (m_stereo3D == STEREO_TB || m_stereo3D == STEREO_INT || m_stereo3D == STEREO_FLIPPED_INT)
    {
       // Top/Bottom (and interlaced) needs to fit the 2 views along the height, so each view is half the total height
-      m_viewPort.Width = m_pd3dPrimaryDevice->m_width;
-      m_viewPort.Height = m_pd3dPrimaryDevice->m_height / 2;
+      renderWidth = width;
+      renderHeight = height / 2;
    }
    else
-   #endif
-   { // Use the effective size of the created device's window (should be the same as the requested)
-      m_viewPort.Width = m_pd3dPrimaryDevice->m_width;
-      m_viewPort.Height = m_pd3dPrimaryDevice->m_height;
+   {
+      // Use the effective size of the created device's window (should be the same as the requested)
+      renderWidth = width;
+      renderHeight = height;
    }
+   
+   // set the expected viewport for the newly created device
+   m_viewPort.X = 0;
+   m_viewPort.Y = 0;
+   m_viewPort.Width = renderWidth;
+   m_viewPort.Height = renderHeight;
+   m_viewPort.MinZ = 0.0f;
+   m_viewPort.MaxZ = 1.0f;
 
-   // TODO better error handling
-   if (!m_pd3dPrimaryDevice->LoadShaders())
+   try {
+      m_pd3dPrimaryDevice = new RenderDevice(g_pplayer->GetHwnd(), renderWidth, renderHeight, fullScreen, colordepth, 
+         m_AAfactor, stereo3D, useNvidiaApi, disableDWM, m_BWrendering, nMSAASamples, refreshrate, syncMode, adapter);
+   }
+   catch (...) {
+      // TODO better error handling => just let the exception up ?
       throw(E_FAIL);
+   }
+   
+   if ((m_pd3dPrimaryDevice->GetOutputBackBuffer()->GetColorFormat() == colorFormat::RGBA10) && (m_FXAA == Quality_SMAA || m_FXAA == Standard_DLAA))
+      ShowError("SMAA or DLAA post-processing AA should not be combined with 10bit-output rendering (will result in visible artifacts)!");
 
    BAMView::init();
 
-   const bool compressTextures = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "CompressTextures"s, false);
+   const bool compressTextures = m_table->m_settings.LoadValueWithDefault(Settings::Player, "CompressTextures"s, false);
    m_pd3dPrimaryDevice->CompressTextures(compressTextures);
 
    m_pd3dPrimaryDevice->SetViewport(&m_viewPort);
@@ -159,7 +179,7 @@ Renderer::Renderer(PinTable* const table, const bool fullScreen, const int width
 
    if (m_stereo3D == STEREO_VR)
       m_backGlass = new BackGlass(
-         m_pd3dPrimaryDevice, g_pplayer->m_ptable->GetDecalsEnabled() ? g_pplayer->m_ptable->GetImage(g_pplayer->m_ptable->m_BG_image[g_pplayer->m_ptable->m_BG_current_set]) : nullptr);
+         m_pd3dPrimaryDevice, m_table->GetDecalsEnabled() ? m_table->GetImage(m_table->m_BG_image[m_table->m_BG_current_set]) : nullptr);
    else
       m_backGlass = nullptr;
 
@@ -167,7 +187,7 @@ Renderer::Renderer(PinTable* const table, const bool fullScreen, const int width
    m_pinballEnvTexture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "BallEnv.exr");
    m_aoDitherTexture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "AODither.webp");
    m_builtinEnvTexture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "EnvMap.webp");
-   m_envTexture = g_pplayer->m_ptable->GetImage(g_pplayer->m_ptable->m_envImage);
+   m_envTexture = m_table->GetImage(m_table->m_envImage);
    PLOGI << "Computing environment map radiance"; // For profiling
    #ifdef ENABLE_SDL // OpenGL
    Texture* const envTex = m_envTexture ? m_envTexture : &m_builtinEnvTexture;
@@ -256,7 +276,6 @@ Renderer::~Renderer()
 {
    delete m_mvp;
    m_gpu_profiler.Shutdown();
-   m_pd3dPrimaryDevice->FreeShader();
    m_pinballEnvTexture.FreeStuff();
    m_builtinEnvTexture.FreeStuff();
    m_aoDitherTexture.FreeStuff();
@@ -680,15 +699,15 @@ void Renderer::DrawBackground()
 void Renderer::InitLayout(const float xpixoff, const float ypixoff)
 {
    TRACE_FUNCTION();
-   ViewSetup& viewSetup = g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set];
+   ViewSetup& viewSetup = m_table->mViewSetups[m_table->m_BG_current_set];
    #ifdef ENABLE_SDL
-   bool stereo = m_stereo3D != STEREO_OFF && m_stereo3D != STEREO_VR && g_pplayer->m_stereo3Denabled;
+   bool stereo = m_stereo3D != STEREO_OFF && m_stereo3D != STEREO_VR && m_stereo3Denabled;
    #else
    bool stereo = false;
    #endif
    if (viewSetup.mMode == VLM_WINDOW)
-      viewSetup.SetWindowModeFromSettings(g_pplayer->m_ptable);
-   viewSetup.ComputeMVP(g_pplayer->m_ptable, m_viewPort.Width, m_viewPort.Height, stereo, *m_mvp, vec3(m_cam.x, m_cam.y, m_cam.z), m_inc, xpixoff, ypixoff);
+      viewSetup.SetWindowModeFromSettings(m_table);
+   viewSetup.ComputeMVP(m_table, m_viewPort.Width, m_viewPort.Height, stereo, *m_mvp, vec3(m_cam.x, m_cam.y, m_cam.z), m_inc, xpixoff, ypixoff);
    SetupShaders();
 }
 
@@ -754,17 +773,17 @@ void Renderer::SetupShaders()
 
    //m_pd3dPrimaryDevice->basicShader->SetInt("iLightPointNum",MAX_LIGHT_SOURCES);
 
-   g_pplayer->m_ptable->m_Light[0].pos.x = g_pplayer->m_ptable->m_right * 0.5f;
-   g_pplayer->m_ptable->m_Light[1].pos.x = g_pplayer->m_ptable->m_right * 0.5f;
-   g_pplayer->m_ptable->m_Light[0].pos.y = g_pplayer->m_ptable->m_bottom * (float)(1.0 / 3.0);
-   g_pplayer->m_ptable->m_Light[1].pos.y = g_pplayer->m_ptable->m_bottom * (float)(2.0 / 3.0);
-   g_pplayer->m_ptable->m_Light[0].pos.z = g_pplayer->m_ptable->m_lightHeight;
-   g_pplayer->m_ptable->m_Light[1].pos.z = g_pplayer->m_ptable->m_lightHeight;
+   m_table->m_Light[0].pos.x = m_table->m_right * 0.5f;
+   m_table->m_Light[1].pos.x = m_table->m_right * 0.5f;
+   m_table->m_Light[0].pos.y = m_table->m_bottom * (float)(1.0 / 3.0);
+   m_table->m_Light[1].pos.y = m_table->m_bottom * (float)(2.0 / 3.0);
+   m_table->m_Light[0].pos.z = m_table->m_lightHeight;
+   m_table->m_Light[1].pos.z = m_table->m_lightHeight;
 
-   vec4 emission = convertColor(g_pplayer->m_ptable->m_Light[0].emission);
-   emission.x *= g_pplayer->m_ptable->m_lightEmissionScale * m_globalEmissionScale;
-   emission.y *= g_pplayer->m_ptable->m_lightEmissionScale * m_globalEmissionScale;
-   emission.z *= g_pplayer->m_ptable->m_lightEmissionScale * m_globalEmissionScale;
+   vec4 emission = convertColor(m_table->m_Light[0].emission);
+   emission.x *= m_table->m_lightEmissionScale * m_globalEmissionScale;
+   emission.y *= m_table->m_lightEmissionScale * m_globalEmissionScale;
+   emission.z *= m_table->m_lightEmissionScale * m_globalEmissionScale;
 
 #ifdef ENABLE_SDL
    float lightPos[MAX_LIGHT_SOURCES][4] = { 0.f };
@@ -772,7 +791,7 @@ void Renderer::SetupShaders()
 
    for (unsigned int i = 0; i < MAX_LIGHT_SOURCES; ++i)
    {
-      memcpy(&lightPos[i], &g_pplayer->m_ptable->m_Light[i].pos, sizeof(float) * 3);
+      memcpy(&lightPos[i], &m_table->m_Light[i].pos, sizeof(float) * 3);
       memcpy(&lightEmission[i], &emission, sizeof(float) * 3);
    }
 
@@ -788,7 +807,7 @@ void Renderer::SetupShaders()
 
    for (unsigned int i = 0; i < MAX_LIGHT_SOURCES; ++i)
    {
-      memcpy(&l[i].vPos, &g_pplayer->m_ptable->m_Light[i].pos, sizeof(float) * 3);
+      memcpy(&l[i].vPos, &m_table->m_Light[i].pos, sizeof(float) * 3);
       memcpy(&l[i].vEmission, &emission, sizeof(float) * 3);
    }
 
@@ -861,6 +880,57 @@ void Renderer::UpdateBallShaderMatrix()
 #endif
 }
 
+void Renderer::UpdateStereoShaderState()
+{
+   if (m_stereo3DfakeStereo)
+   {
+      // FIXME compute max separation and zero point depth for fake stereo corresponding to the ones of the real stereo, remove these from settings and table properties
+      // The problem with the legacy parameter is that both depends on the camera and do not match any physicaly correct measure. Authors tweak it but it will break at the
+      // next depth buffer change (due to difference between rendering API or for example if we switch to reversed or infinite buffer for better precision, ...)
+      // The idea would be (to be checked against shader implementation and ViewSetup projection maths):
+      // - Max separation is the separation of a point with a very high depth (compute it from eye separation which is physically measures, and near/far planes)
+      // - ZPD is the depth at which separation is 0 (compute it from the zNullSeparation in ViewSetup)
+      /*ModelViewProj stereoMVP;
+      m_table->mViewSetups[m_table->m_BG_current_set].ComputeMVP(m_ptable, m_viewPort.Width, m_viewPort.Height, true, stereoMVP);
+      RECT viewport { 0, 0, (LONG)m_viewPort.Width, (LONG)m_viewPort.Height };
+      vec3 deepPt(0.f, 0.f, 0.f); // = 5000.f * stereoMVP.GetModelViewInverse().GetOrthoNormalDir();
+      Vertex2D projLeft, projRight;
+      stereoMVP.GetModelViewProj(0).TransformVertices(&deepPt, nullptr, 1, &projLeft, viewport);
+      stereoMVP.GetModelViewProj(1).TransformVertices(&deepPt, nullptr, 1, &projRight, viewport);*/
+      const float eyeSeparation = m_table->GetMaxSeparation();
+      const float zpd = m_table->GetZPD();
+      const bool swapAxis = m_table->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DYAxis"s, false); // Swap X/Y axis
+      m_pd3dPrimaryDevice->StereoShader->SetVector(SHADER_Stereo_MS_ZPD_YAxis, eyeSeparation, zpd, swapAxis ? 1.0f : 0.0f, 0.0f);
+   }
+   
+   RenderTarget *renderedRT = m_pd3dPrimaryDevice->GetPostProcessRenderTarget1();
+   #ifdef ENABLE_SDL
+   if (m_stereo3DfakeStereo) // OpenGL strip down this uniform which is only needed for interlaced mode on DirectX 9
+   #endif
+   m_pd3dPrimaryDevice->StereoShader->SetVector(SHADER_w_h_height, (float)(1.0 / renderedRT->GetWidth()), (float)(1.0 / renderedRT->GetHeight()), (float)renderedRT->GetHeight(), m_table->Get3DOffset());
+
+   m_stereo3DDefocus = 0.f;
+   if (IsAnaglyphStereoMode(m_stereo3D))
+   {
+      Anaglyph anaglyph;
+      anaglyph.LoadSetupFromRegistry(clamp(m_stereo3D - STEREO_ANAGLYPH_1, 0, 9));
+      anaglyph.SetupShader(m_pd3dPrimaryDevice->StereoShader);
+      // The defocus kernel size should depend on the render resolution but since this is a user tweak, this doesn't matter that much
+      m_stereo3DDefocus = m_table->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DDefocus"s, 0.f);
+      // TODO I'm not 100% sure about this. I think the right way would be to select based on the transmitted luminance of the filter, the defocus 
+      // being done on the lowest of the 2. Here we do on the single color channel, which is the same most of the time but not always (f.e. green/magenta)
+      if (anaglyph.IsReversedColorPair())
+         m_stereo3DDefocus = -m_stereo3DDefocus;
+   }
+   else
+   {
+      m_pd3dPrimaryDevice->StereoShader->SetTechnique(m_stereo3D == STEREO_SBS ? SHADER_TECHNIQUE_stereo_SBS 
+                                                    : m_stereo3D == STEREO_TB  ? SHADER_TECHNIQUE_stereo_TB
+                                                    : m_stereo3D == STEREO_INT ? SHADER_TECHNIQUE_stereo_Int 
+                                                    :                            SHADER_TECHNIQUE_stereo_Flipped_Int);
+   }
+}
+
 void Renderer::PrepareFrame()
 {
    m_pd3dPrimaryDevice->SetRenderTarget("Render Scene"s, m_pd3dPrimaryDevice->GetMSAABackBufferTexture());
@@ -879,7 +949,7 @@ void Renderer::PrepareFrame()
    // Update camera point of view
    #ifdef ENABLE_VR
    if (m_stereo3D == STEREO_VR)
-      m_pd3dPrimaryDevice->UpdateVRPosition(GetMVP());
+      g_pplayer->m_vrDevice->UpdateVRPosition(GetMVP());
    else 
    #endif
    if (g_pplayer->m_headTracking)
@@ -1168,7 +1238,7 @@ void Renderer::RenderStaticPrepass()
       m_pd3dPrimaryDevice->ReleaseAORenderTargets();
    }
 
-   if (g_pplayer->m_MSAASamples > 1)
+   if (m_pd3dPrimaryDevice->GetMSAABackBufferTexture()->IsMSAA())
    {
       // Render one frame with MSAA to keep MSAA depth (this adds MSAA to the overlapping parts between statics & dynamics)
       RenderTarget* renderRT = m_pd3dPrimaryDevice->GetMSAABackBufferTexture()->Duplicate("MSAAPreRender"s);
@@ -1352,9 +1422,9 @@ void Renderer::Bloom()
 void Renderer::PrepareVideoBuffers()
 {
    const bool useAA = m_AAfactor > 1.0f;
-   const bool stereo = m_stereo3D == STEREO_VR || ((m_stereo3D != STEREO_OFF) && g_pplayer->m_stereo3Denabled && (!g_pplayer->m_stereo3DfakeStereo || m_pd3dPrimaryDevice->DepthBufferReadBackAvailable()));
+   const bool stereo = m_stereo3D == STEREO_VR || ((m_stereo3D != STEREO_OFF) && m_stereo3Denabled && (!m_stereo3DfakeStereo || m_pd3dPrimaryDevice->DepthBufferReadBackAvailable()));
    // Since stereo is applied as a postprocess step for fake stereo, it disables AA and sharpening except for top/bottom & side by side modes
-   const bool PostProcAA = !g_pplayer->m_stereo3DfakeStereo || (!stereo || (m_stereo3D == STEREO_TB) || (m_stereo3D == STEREO_SBS));
+   const bool PostProcAA = !m_stereo3DfakeStereo || (!stereo || (m_stereo3D == STEREO_TB) || (m_stereo3D == STEREO_SBS));
    const bool SMAA  = PostProcAA && m_FXAA == Quality_SMAA;
    const bool DLAA  = PostProcAA && m_FXAA == Standard_DLAA;
    const bool NFAA  = PostProcAA && m_FXAA == Fast_NFAA;
@@ -1490,16 +1560,16 @@ void Renderer::PrepareVideoBuffers()
       if (infoMode == IF_AO_ONLY)
          m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_fb_AO);
       else if (infoMode == IF_RENDER_PROBES)
-         m_pd3dPrimaryDevice->FBShader->SetTechnique(g_pplayer->m_toneMapper == TM_REINHARD ? SHADER_TECHNIQUE_fb_rhtonemap
-                                                   : g_pplayer->m_toneMapper == TM_FILMIC   ? SHADER_TECHNIQUE_fb_fmtonemap
+         m_pd3dPrimaryDevice->FBShader->SetTechnique(m_toneMapper == TM_REINHARD ? SHADER_TECHNIQUE_fb_rhtonemap
+                                                   : m_toneMapper == TM_FILMIC   ? SHADER_TECHNIQUE_fb_fmtonemap
                                                                                             : SHADER_TECHNIQUE_fb_tmtonemap);
-      else if (g_pplayer->m_BWrendering != 0)
-         m_pd3dPrimaryDevice->FBShader->SetTechnique(g_pplayer->m_BWrendering == 1 ? SHADER_TECHNIQUE_fb_rhtonemap_no_filterRG : SHADER_TECHNIQUE_fb_rhtonemap_no_filterR);
-      else if (g_pplayer->m_toneMapper == TM_REINHARD)
+      else if (m_BWrendering != 0)
+         m_pd3dPrimaryDevice->FBShader->SetTechnique(m_BWrendering == 1 ? SHADER_TECHNIQUE_fb_rhtonemap_no_filterRG : SHADER_TECHNIQUE_fb_rhtonemap_no_filterR);
+      else if (m_toneMapper == TM_REINHARD)
          m_pd3dPrimaryDevice->FBShader->SetTechnique(useAO ?
               useAA ? SHADER_TECHNIQUE_fb_rhtonemap_AO : SHADER_TECHNIQUE_fb_rhtonemap_AO_no_filter
             : useAA ? SHADER_TECHNIQUE_fb_rhtonemap    : SHADER_TECHNIQUE_fb_rhtonemap_no_filter);
-      else if (g_pplayer->m_toneMapper == TM_FILMIC)
+      else if (m_toneMapper == TM_FILMIC)
          m_pd3dPrimaryDevice->FBShader->SetTechnique(useAO ?
               useAA ? SHADER_TECHNIQUE_fb_fmtonemap_AO : SHADER_TECHNIQUE_fb_fmtonemap_AO_no_filter
             : useAA ? SHADER_TECHNIQUE_fb_fmtonemap    : SHADER_TECHNIQUE_fb_fmtonemap_no_filter);
@@ -1712,17 +1782,17 @@ void Renderer::PrepareVideoBuffers()
          // Anaglyph and 3DTV
          assert(renderedRT != m_pd3dPrimaryDevice->GetOutputBackBuffer());
          // For anaglyph, defocus the "lesser" eye (the one with a darker color, which should be the non dominant eye of the player)
-         if (g_pplayer->m_stereo3DDefocus != 0.f)
+         if (m_stereo3DDefocus != 0.f)
          {
             RenderTarget *tmpRT = m_pd3dPrimaryDevice->GetPostProcessRenderTarget(renderedRT);
             outputRT = m_pd3dPrimaryDevice->GetPostProcessRenderTarget(tmpRT);
-            m_pd3dPrimaryDevice->DrawGaussianBlur(renderedRT, tmpRT, outputRT, abs(g_pplayer->m_stereo3DDefocus) * 39.f, g_pplayer->m_stereo3DDefocus > 0.f ? 0 : 1);
+            m_pd3dPrimaryDevice->DrawGaussianBlur(renderedRT, tmpRT, outputRT, abs(m_stereo3DDefocus) * 39.f, m_stereo3DDefocus > 0.f ? 0 : 1);
             renderedRT = outputRT;
          }
          // Stereo composition
          m_pd3dPrimaryDevice->SetRenderTarget("Stereo Anaglyph"s, m_pd3dPrimaryDevice->GetOutputBackBuffer(), false);
          m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
-         if (g_pplayer->m_stereo3DfakeStereo)
+         if (m_stereo3DfakeStereo)
          {
             m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pd3dPrimaryDevice->GetBackBufferTexture(), true);
             m_pd3dPrimaryDevice->StereoShader->SetTexture(SHADER_tex_stereo_depth, m_pd3dPrimaryDevice->GetBackBufferTexture()->GetDepthSampler());

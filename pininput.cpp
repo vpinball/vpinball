@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "renderer/VRDevice.h"
 
 // from dinput.h, modernized to please clang
 #undef DIJOFS_X
@@ -1071,17 +1072,13 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
       else if (keycode == DIK_LEFT)   keycode = DIK_RIGHT;
       else if (keycode == DIK_RIGHT)  keycode = DIK_LEFT;
    }
-#ifdef ENABLE_VR
-   if (keycode == g_pplayer->m_rgKeys[eTableRecenter] && dispid == DISPID_GameEvents_KeyUp)
-      g_pplayer->m_renderer->m_pd3dPrimaryDevice->recenterTable();
-   else if (keycode == g_pplayer->m_rgKeys[eTableUp] && dispid == DISPID_GameEvents_KeyUp)
-      g_pplayer->m_renderer->m_pd3dPrimaryDevice->tableUp();
-   else if (keycode == g_pplayer->m_rgKeys[eTableDown] && dispid == DISPID_GameEvents_KeyUp)
-      g_pplayer->m_renderer->m_pd3dPrimaryDevice->tableDown();
-   else
-#endif
-
-   if (keycode == g_pplayer->m_rgKeys[eLeftFlipperKey] && dispid == DISPID_GameEvents_KeyDown)
+   if (g_pplayer->m_vrDevice && keycode == g_pplayer->m_rgKeys[eTableRecenter] && dispid == DISPID_GameEvents_KeyUp)
+      g_pplayer->m_vrDevice->RecenterTable();
+   else if (g_pplayer->m_vrDevice && keycode == g_pplayer->m_rgKeys[eTableUp] && dispid == DISPID_GameEvents_KeyUp)
+      g_pplayer->m_vrDevice->TableUp();
+   else if (g_pplayer->m_vrDevice && keycode == g_pplayer->m_rgKeys[eTableDown] && dispid == DISPID_GameEvents_KeyUp)
+      g_pplayer->m_vrDevice->TableDown();
+   else if (keycode == g_pplayer->m_rgKeys[eLeftFlipperKey] && dispid == DISPID_GameEvents_KeyDown)
       m_keyPressedState[eLeftFlipperKey] = true;
    else if (keycode == g_pplayer->m_rgKeys[eRightFlipperKey] && dispid == DISPID_GameEvents_KeyDown)
       m_keyPressedState[eRightFlipperKey] = true;
@@ -1976,43 +1973,43 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
                {
                   // Select next glasses or toggle stereo on/off
                   int glassesIndex = g_pplayer->m_stereo3D - STEREO_ANAGLYPH_1;
-                  if (!g_pplayer->m_stereo3Denabled && glassesIndex != 0)
+                  if (!g_pplayer->m_renderer->m_stereo3Denabled && glassesIndex != 0)
                   {
                      g_pplayer->m_liveUI->PushNotification("Stereo enabled"s, 2000);
-                     g_pplayer->m_stereo3Denabled = true;
+                     g_pplayer->m_renderer->m_stereo3Denabled = true;
                   }
                   else
                   {
                      const int dir = (m_keyPressedState[eLeftFlipperKey] || m_keyPressedState[eRightFlipperKey]) ? -1 : 1;
                      // Loop back with shift pressed
-                     if (!g_pplayer->m_stereo3Denabled && glassesIndex <= 0 && dir == -1)
+                     if (!g_pplayer->m_renderer->m_stereo3Denabled && glassesIndex <= 0 && dir == -1)
                      {
-                        g_pplayer->m_stereo3Denabled = true;
+                        g_pplayer->m_renderer->m_stereo3Denabled = true;
                         glassesIndex = 9;
                      }
-                     else if (g_pplayer->m_stereo3Denabled && glassesIndex <= 0 && dir == -1)
+                     else if (g_pplayer->m_renderer->m_stereo3Denabled && glassesIndex <= 0 && dir == -1)
                      {
                         g_pplayer->m_liveUI->PushNotification("Stereo disabled"s, 2000);
-                        g_pplayer->m_stereo3Denabled = false;
+                        g_pplayer->m_renderer->m_stereo3Denabled = false;
                      }
                      // Loop forward
-                     else if (!g_pplayer->m_stereo3Denabled)
+                     else if (!g_pplayer->m_renderer->m_stereo3Denabled)
                      {
                         g_pplayer->m_liveUI->PushNotification("Stereo enabled"s, 2000);
-                        g_pplayer->m_stereo3Denabled = true;
+                        g_pplayer->m_renderer->m_stereo3Denabled = true;
                      }
                      else if (glassesIndex >= 9 && dir == 1)
                      {
                         g_pplayer->m_liveUI->PushNotification("Stereo disabled"s, 2000);
                         glassesIndex = 0;
-                        g_pplayer->m_stereo3Denabled = false;
+                        g_pplayer->m_renderer->m_stereo3Denabled = false;
                      }
                      else
                      {
                         glassesIndex += dir;
                      }
                      g_pplayer->m_stereo3D = (StereoMode)(STEREO_ANAGLYPH_1 + glassesIndex);
-                     if (g_pplayer->m_stereo3Denabled)
+                     if (g_pplayer->m_renderer->m_stereo3Denabled)
                      {
                         string name;
                         static const string defaultNames[] = { "Red/Cyan"s, "Green/Magenta"s, "Blue/Amber"s, "Cyan/Red"s, "Magenta/Green"s, "Amber/Blue"s, "Custom 1"s, "Custom 2"s, "Custom 3"s, "Custom 4"s };
@@ -2025,7 +2022,7 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
                else if (Is3DTVStereoMode(g_pplayer->m_stereo3D))
                {
                   // Toggle stereo on/off
-                  g_pplayer->m_stereo3Denabled = !g_pplayer->m_stereo3Denabled;
+                  g_pplayer->m_renderer->m_stereo3Denabled = !g_pplayer->m_renderer->m_stereo3Denabled;
                }
                else if (g_pplayer->m_stereo3D == STEREO_VR)
                {
@@ -2035,9 +2032,9 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
                                                       : g_pplayer->m_renderer->m_vrPreview == VRPREVIEW_RIGHT    ? "Preview switched to right eye"s
                                                                                                      : "Preview switched to both eyes"s, 2000);
                }
-               g_pvp->m_settings.SaveValue(Settings::Player, "Stereo3DEnabled"s, g_pplayer->m_stereo3Denabled);
+               g_pvp->m_settings.SaveValue(Settings::Player, "Stereo3DEnabled"s, g_pplayer->m_renderer->m_stereo3Denabled);
                g_pplayer->m_renderer->InitLayout();
-               g_pplayer->UpdateStereoShaderState();
+               g_pplayer->m_renderer->UpdateStereoShaderState();
             }
          }
          else if (input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eDBGBalls])

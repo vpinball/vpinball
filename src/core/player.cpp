@@ -17,6 +17,7 @@
 #include <filesystem>
 #include "renderer/Shader.h"
 #include "renderer/Anaglyph.h"
+#include "renderer/VRDevice.h"
 #include "renderer/RenderCommand.h"
 #include "typedefs3D.h"
 #include "captureExt.h"
@@ -110,8 +111,8 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
 
 #ifdef ENABLE_VR
    const int vrDetectionMode = m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "AskToTurnOn"s, 0);
-   bool useVR = vrDetectionMode == 2 /* VR Disabled */  ? false : RenderDevice::isVRinstalled();
-   if (useVR && (vrDetectionMode == 1 /* VR Autodetect => ask to turn on and adapt accordingly */) && !RenderDevice::isVRturnedOn())
+   bool useVR = vrDetectionMode == 2 /* VR Disabled */  ? false : VRDevice::IsVRinstalled();
+   if (useVR && (vrDetectionMode == 1 /* VR Autodetect => ask to turn on and adapt accordingly */) && !VRDevice::IsVRturnedOn())
       useVR = g_pvp->MessageBox("VR headset detected but SteamVR is not running.\n\nTurn VR on?", "VR Headset Detected", MB_YESNO) == IDYES;
    m_capExtDMD = useVR && m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "CaptureExternalDMD"s, false);
    m_capPUP = useVR && m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "CapturePUP"s, false);
@@ -120,30 +121,14 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    m_capExtDMD = false;
    m_capPUP = false;
 #endif
+   m_vrDevice = useVR ? new VRDevice() : nullptr;
    m_stereo3D = useVR ? STEREO_VR : (StereoMode)m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3D"s, (int)STEREO_OFF);
-   m_stereo3Denabled = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DEnabled"s, (m_stereo3D != STEREO_OFF));
-   m_disableDWM = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "DisableDWM"s, false);
-   m_useNvidiaApi = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "UseNVidiaAPI"s, false);
-   m_stereo3DfakeStereo = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DFake"s, false);
-   #ifndef ENABLE_SDL // DirectX does not support stereo rendering
-   m_stereo3DfakeStereo = true;
-   #endif
    m_headTracking = useVR ? false : m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "BAMHeadTracking"s, false);
-   m_BWrendering = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "BWRendering"s, 0);
    m_detectScriptHang = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "DetectHang"s, false);
-
-   // Apply table specific overrides
-   m_toneMapper = (ToneMapper)m_ptable->m_settings.LoadValueWithDefault(Settings::TableOverride, "ToneMapper"s, m_ptable->GetToneMapper());
 
    m_maxPrerenderedFrames = useVR ? 0 : m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "MaxPrerenderedFrames"s, 0);
 
    m_NudgeShake = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "NudgeStrength"s, 2e-2f);
-#ifdef ENABLE_SDL
-   m_MSAASamples = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "MSAASamples"s, 1);
-#else
-   // Sadly DX9 does not support resolving an MSAA depth buffer, making MSAA implementation complex for it. So just disable for now
-   m_MSAASamples = 1;
-#endif
    m_scaleFX_DMD = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "ScaleFXDMD"s, false);
    m_maxFramerate = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "MaxFramerate"s, -1);
    if(m_maxFramerate > 0 && m_maxFramerate < 24) // at least 24 fps
@@ -687,7 +672,7 @@ void Player::Shutdown()
 
     // Save adjusted VR settings to the edited table
     if (m_stereo3D == STEREO_VR)
-       m_renderer->m_pd3dPrimaryDevice->SaveVRSettings(g_pvp->m_settings);
+       m_vrDevice->SaveVRSettings(g_pvp->m_settings);
 
     if (m_audio)
         m_audio->MusicPause();
@@ -976,57 +961,6 @@ void Player::InitDebugHitStructure()
    m_debugoctree.Initialize(FRect(bbox.left,bbox.right,bbox.top,bbox.bottom));
 }
 
-void Player::UpdateStereoShaderState()
-{
-   if (m_stereo3DfakeStereo)
-   {
-      // FIXME compute max separation and zero point depth for fake stereo corresponding to the ones of the real stereo, remove these from settings and table properties
-      // The problem with the legacy parameter is that both depends on the camera and do not match any physicaly correct measure. Authors tweak it but it will break at the
-      // next depth buffer change (due to difference between rendering API or for example if we switch to reversed or infinite buffer for better precision, ...)
-      // The idea would be (to be checked against shader implementation and ViewSetup projection maths):
-      // - Max separation is the separation of a point with a very high depth (compute it from eye separation which is physically measures, and near/far planes)
-      // - ZPD is the depth at which separation is 0 (compute it from the zNullSeparation in ViewSetup)
-      /*ModelViewProj stereoMVP;
-      m_ptable->mViewSetups[m_ptable->m_BG_current_set].ComputeMVP(m_ptable, m_renderer->m_viewPort.Width, m_renderer->m_viewPort.Height, true, stereoMVP);
-      RECT viewport { 0, 0, (LONG)m_renderer->m_viewPort.Width, (LONG)m_renderer->m_viewPort.Height };
-      vec3 deepPt(0.f, 0.f, 0.f); // = 5000.f * stereoMVP.GetModelViewInverse().GetOrthoNormalDir();
-      Vertex2D projLeft, projRight;
-      stereoMVP.GetModelViewProj(0).TransformVertices(&deepPt, nullptr, 1, &projLeft, viewport);
-      stereoMVP.GetModelViewProj(1).TransformVertices(&deepPt, nullptr, 1, &projRight, viewport);*/
-      const float eyeSeparation = m_ptable->GetMaxSeparation();
-      const float zpd = m_ptable->GetZPD();
-      const bool swapAxis = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DYAxis"s, false); // Swap X/Y axis
-      m_renderer->m_pd3dPrimaryDevice->StereoShader->SetVector(SHADER_Stereo_MS_ZPD_YAxis, eyeSeparation, zpd, swapAxis ? 1.0f : 0.0f, 0.0f);
-   }
-   
-   RenderTarget *renderedRT = m_renderer->m_pd3dPrimaryDevice->GetPostProcessRenderTarget1();
-   #ifdef ENABLE_SDL
-   if (m_stereo3DfakeStereo) // OpenGL strip down this uniform which is only needed for interlaced mode on DirectX 9
-   #endif
-   m_renderer->m_pd3dPrimaryDevice->StereoShader->SetVector(SHADER_w_h_height, (float)(1.0 / renderedRT->GetWidth()), (float)(1.0 / renderedRT->GetHeight()), (float)renderedRT->GetHeight(), m_ptable->Get3DOffset());
-
-   m_stereo3DDefocus = 0.f;
-   if (IsAnaglyphStereoMode(m_stereo3D))
-   {
-      Anaglyph anaglyph;
-      anaglyph.LoadSetupFromRegistry(clamp(m_stereo3D - STEREO_ANAGLYPH_1, 0, 9));
-      anaglyph.SetupShader(m_renderer->m_pd3dPrimaryDevice->StereoShader);
-      // The defocus kernel size should depend on the render resolution but since this is a user tweak, this doesn't matter that much
-      m_stereo3DDefocus = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DDefocus"s, 0.f);
-      // TODO I'm not 100% sure about this. I think the right way would be to select based on the transmitted luminance of the filter, the defocus 
-      // being done on the lowest of the 2. Here we do on the single color channel, which is the same most of the time but not always (f.e. green/magenta)
-      if (anaglyph.IsReversedColorPair())
-         m_stereo3DDefocus = -m_stereo3DDefocus;
-   }
-   else
-   {
-      m_renderer->m_pd3dPrimaryDevice->StereoShader->SetTechnique(m_stereo3D == STEREO_SBS ? SHADER_TECHNIQUE_stereo_SBS 
-                                                            : m_stereo3D == STEREO_TB  ? SHADER_TECHNIQUE_stereo_TB
-                                                            : m_stereo3D == STEREO_INT ? SHADER_TECHNIQUE_stereo_Int 
-                                                            :                            SHADER_TECHNIQUE_stereo_Flipped_Int);
-   }
-}
-
 HRESULT Player::Init()
 {
    TRACE_FUNCTION();
@@ -1057,7 +991,7 @@ HRESULT Player::Init()
    // width and height may be modified during initialization (for example for VR, they are adapted to the headset resolution)
    try
    {
-      m_renderer = new Renderer(m_ptable, m_fullScreen, m_wnd_width, m_wnd_height, colordepth, m_refreshrate, m_videoSyncMode, m_stereo3DfakeStereo ? STEREO_OFF : m_stereo3D);
+      m_renderer = new Renderer(m_ptable, m_fullScreen, m_wnd_width, m_wnd_height, colordepth, m_refreshrate, m_videoSyncMode, m_stereo3D);
    }
    catch (HRESULT hr)
    {
@@ -1434,7 +1368,7 @@ HRESULT Player::Init()
 #endif
 
    // Initialize stereo rendering
-   UpdateStereoShaderState();
+   m_renderer->UpdateStereoShaderState();
 
    wintimer_init();
    m_StartTime_usec = usec();
@@ -1492,7 +1426,7 @@ HRESULT Player::Init()
 #endif
 
    // Popup notification on startup
-   if (m_stereo3D != STEREO_OFF && m_stereo3D != STEREO_VR && !m_stereo3Denabled)
+   if (m_stereo3D != STEREO_OFF && m_stereo3D != STEREO_VR && !m_renderer->m_stereo3Denabled)
       m_liveUI->PushNotification("3D Stereo is enabled but currently toggled off, press F10 to toggle 3D Stereo on"s, 4000);
    if (m_supportsTouch && m_showTouchMessage) //!! visualize with real buttons or at least the areas?? Add extra buttons?
       m_liveUI->PushNotification("You can use Touch controls on this display: bottom left area to Start Game, bottom right area to use the Plunger\n"
@@ -2953,10 +2887,6 @@ void Player::SubmitFrame()
 
 void Player::FinishFrame()
 {
-   // switch to texture output buffer again
-   m_renderer->m_pd3dPrimaryDevice->FBShader->SetTextureNull(SHADER_tex_fb_filtered);
-   m_renderer->m_pd3dPrimaryDevice->FBShader->SetTextureNull(SHADER_tex_fb_unfiltered);
-
    m_lastFlipTime = usec();
 
    if (GetProfilingMode() != PF_DISABLED)
