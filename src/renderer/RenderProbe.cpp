@@ -435,7 +435,7 @@ void RenderProbe::DoRenderReflectionProbe(const bool render_static, const bool r
    viewMat = g_pplayer->m_renderer->GetMVP().GetView();
    memcpy(initialViewMat.m, viewMat.m, 4 * 4 * sizeof(float));
    viewMat = Matrix3D::MatrixPlaneReflection(n, m_reflection_plane.w) * viewMat;
-   g_pplayer->m_renderer->Gm_pin3d.GetMVP().SetView(viewMat);
+   g_pplayer->m_renderer->GetMVP().SetView(viewMat);
 
    if (render_static || render_dynamic)
       g_pplayer->m_renderer->UpdateBasicShaderMatrix();

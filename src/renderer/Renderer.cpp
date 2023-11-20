@@ -6,6 +6,7 @@
 #include "meshes/ballMesh.h"
 #include "renderer/Anaglyph.h"
 #include "renderer/Shader.h"
+#include "renderer/RenderCommand.h"
 #include "renderer/RenderDevice.h"
 #include "renderer/VRDevice.h"
 

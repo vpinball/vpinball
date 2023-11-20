@@ -241,7 +241,7 @@ void mixer_draw()
       // Draw the tick mark.  (Reversed x and y to match coordinate system of front end.)
       g_pplayer->m_renderer->m_pd3dPrimaryDevice->ResetRenderState();
       g_pplayer->m_renderer->m_pd3dPrimaryDevice->EnableAlphaBlend(true);
-      g_pplayer->DrawSprite(cabMode ? fX : fY, cabMode ? fY : fX,
+      g_pplayer->m_renderer->DrawSprite(cabMode ? fX : fY, cabMode ? fY : fX,
          cabMode ? size[0] : size[1], cabMode ? size[1] : size[0],
          color, (Texture*)nullptr, fade);
    }
