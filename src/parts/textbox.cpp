@@ -583,7 +583,7 @@ void Textbox::Render(const unsigned int renderMask)
 
       m_rd->ResetRenderState();
       m_rd->DMDShader->SetFloat(SHADER_alphaTestValue, (float)(128.0 / 255.0));
-      g_pplayer->Spritedraw(x, y, w, h, 0xFFFFFFFF, m_rd->m_texMan.LoadTexture(m_texture, SF_TRILINEAR, SA_REPEAT, SA_REPEAT, false), m_d.m_intensity_scale);
+      g_pplayer->m_renderer->DrawSprite(x, y, w, h, 0xFFFFFFFF, m_rd->m_texMan.LoadTexture(m_texture, SF_TRILINEAR, SA_REPEAT, SA_REPEAT, false), m_d.m_intensity_scale);
       m_rd->DMDShader->SetFloat(SHADER_alphaTestValue, 1.0f);
    }
 }
