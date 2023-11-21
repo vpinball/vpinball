@@ -35,7 +35,6 @@ void BallEx::RenderSetup(RenderDevice *device)
 {
    assert(m_rd == nullptr);
    m_rd = device;
-   CalcBallAspectRatio();
 }
 
 void BallEx::RenderRelease()
@@ -81,124 +80,6 @@ void search_for_nearest(const Ball * const pball, const vector<Light*> &lights, 
          }
       }
    }
-}
-
-// FIXME remove completely and use exact projection (conic intersection leading to ellipsoid based on real MVP matrix)
-void BallEx::CalcBallAspectRatio()
-{
-   const int ballStretchMode = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "BallStretchMode"s, 0);
-   if (ballStretchMode == 0)
-   {
-      m_BallStretch = Vertex2D(1.0f, 1.0f);
-      return;
-   }
-
-   const float ballAspecRatioOffsetX = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "BallCorrectionX"s, 0.f);
-   const float ballAspecRatioOffsetY = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "BallCorrectionY"s, 0.f);
-
-   const ViewSetup &viewSetup = g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set];
-   const float scalebackX = (viewSetup.mSceneScaleX != 0.0f) ? ((viewSetup.mSceneScaleX + viewSetup.mSceneScaleY) * 0.5f) / viewSetup.mSceneScaleX : 1.0f;
-   const float scalebackY = (viewSetup.mSceneScaleY != 0.0f) ? ((viewSetup.mSceneScaleX + viewSetup.mSceneScaleY) * 0.5f) / viewSetup.mSceneScaleY : 1.0f;
-
-   const float rotation = viewSetup.GetRotation(g_pplayer->m_wnd_width, g_pplayer->m_wnd_height); // FIXME We use the window size since this is called before creating the device (which is a bit wrong)
-      // m_pin3d.m_pd3dPrimaryDevice->m_width, m_pin3d.m_pd3dPrimaryDevice->m_height);
-   const float c = sinf(ANGTORAD(fmodf(rotation + 90.0f, 180.0f)));
-   const float s = sinf(ANGTORAD(fmodf(rotation, 180.0f)));
-   m_BallStretch = Vertex2D(scalebackX * c + scalebackY * s, scalebackY * c + scalebackX * s);
-   m_antiStretchBall = false;
-
-   // Cabinet anti stretch mode is fairly weird: it will only apply when using rotated fullscreen, and apply a stretching based on monitor aspect ratio
-   if (ballStretchMode == 2 && (g_pplayer->m_fullScreen || (g_pplayer->m_wnd_width == g_pplayer->m_screenwidth && g_pplayer->m_wnd_height == g_pplayer->m_screenheight)))
-   {
-      m_antiStretchBall = true;
-      double xMonitor, yMonitor;
-      const double aspect = (double)g_pplayer->m_screenwidth / (double)g_pplayer->m_screenheight;
-      double factor = aspect * 3.0;
-      if (factor > 4.0)
-      {
-         factor = aspect * 9.0;
-         if ((int)(factor + 0.5) == 16)
-         {
-            //16:9
-            xMonitor = (16.0 + ballAspecRatioOffsetX) / 4.0;
-            yMonitor = (9.0 + ballAspecRatioOffsetY) / 3.0;
-         }
-         else if ((int)(factor + 0.5) == 21)
-         {
-            //21:9
-            xMonitor = (21.0 + ballAspecRatioOffsetX) / 4.0;
-            yMonitor = (9.0 + ballAspecRatioOffsetY) / 3.0;
-         }
-         else
-         {
-            factor = aspect * 10.0;
-            if ((int)(factor + 0.5) == 16)
-            {
-               //16:10
-               xMonitor = (16.0 + ballAspecRatioOffsetX) / 4.0;
-               yMonitor = (10.0 + ballAspecRatioOffsetY) / 3.0;
-            }
-            else
-            {
-               //21:10
-               xMonitor = (factor + ballAspecRatioOffsetX) / 4.0;
-               yMonitor = (10.0 + ballAspecRatioOffsetY) / 3.0;
-            }
-         }
-      }
-      else
-      {
-         //4:3
-         xMonitor = (factor + ballAspecRatioOffsetX) / 4.0;
-         yMonitor = (3.0 + ballAspecRatioOffsetY) / 3.0;
-      }
-      const double scalebackMonitorX = (xMonitor + yMonitor) * 0.5 / xMonitor;
-      const double scalebackMonitorY = (xMonitor + yMonitor) * 0.5 / yMonitor;
-      m_BallStretch.x *= (float)(scalebackMonitorX * c + scalebackMonitorY * s);
-      m_BallStretch.y *= (float)(scalebackMonitorY * c + scalebackMonitorX * s);
-   }
-}
-
-// FIXME remove completely and use exact projection (conic intersection leading to ellipsoid based on real MVP matrix)
-void BallEx::GetBallAspectRatio(const Ball * const pball, Vertex2D &stretch, const float zHeight)
-{
-   // always use lowest detail level for fastest update
-   Vertex3Ds rgvIn[(basicBallLoNumVertices+1) / 2];
-   Vertex2D rgvOut[(basicBallLoNumVertices+1) / 2];
-
-   //     rgvIn[0].x = pball->m_pos.x;                    rgvIn[0].y = pball->m_pos.y+pball->m_radius;    rgvIn[0].z = zHeight;
-   //     rgvIn[1].x = pball->m_pos.x + pball->m_radius;  rgvIn[1].y = pball->m_pos.y;                    rgvIn[1].z = zHeight;
-   //     rgvIn[2].x = pball->m_pos.x;                    rgvIn[2].y = pball->m_pos.y - pball->m_radius;  rgvIn[2].z = zHeight;
-   //     rgvIn[3].x = pball->m_pos.x - pball->m_radius;  rgvIn[3].y = pball->m_pos.y;                    rgvIn[3].z = zHeight;
-   //     rgvIn[4].x = pball->m_pos.x;                    rgvIn[4].y = pball->m_pos.y;                    rgvIn[4].z = zHeight + pball->m_radius;
-   //     rgvIn[5].x = pball->m_pos.x;                    rgvIn[5].y = pball->m_pos.y;                    rgvIn[5].z = zHeight - pball->m_radius;
-   
-   for (unsigned int i = 0, t = 0; i < basicBallLoNumVertices; i += 2, t++)
-   {
-      rgvIn[t].x = basicBallLo[i].x*pball->m_d.m_radius + pball->m_d.m_pos.x;
-      rgvIn[t].y = basicBallLo[i].y*pball->m_d.m_radius + pball->m_d.m_pos.y;
-      rgvIn[t].z = basicBallLo[i].z*pball->m_d.m_radius + zHeight;
-   }
-   
-   RECT viewport { 0, 0, (LONG)g_pplayer->m_pin3d.m_viewPort.Width, (LONG)g_pplayer->m_pin3d.m_viewPort.Height };
-   g_pplayer->m_pin3d.TransformVertices(rgvIn, nullptr, basicBallLoNumVertices / 2, rgvOut);
-   
-   float maxX = -FLT_MAX;
-   float minX = FLT_MAX;
-   float maxY = -FLT_MAX;
-   float minY = FLT_MAX;
-   for (unsigned int i = 0; i < basicBallLoNumVertices / 2; i++)
-   {
-      if (maxX < rgvOut[i].x) maxX = rgvOut[i].x;
-      if (minX > rgvOut[i].x) minX = rgvOut[i].x;
-      if (maxY < rgvOut[i].y) maxY = rgvOut[i].y;
-      if (minY > rgvOut[i].y) minY = rgvOut[i].y;
-   }
-
-   const float midX = maxX - minX;
-   const float midY = maxY - minY;
-   stretch.y = midY/midX;
-   stretch.x = 1.0f; // midX/midY;
 }
 
 void BallEx::Render(const unsigned int renderMask)
@@ -302,11 +183,66 @@ void BallEx::Render(const unsigned int renderMask)
    m_rd->m_ballShader->SetVector(SHADER_Roughness_WrapL_Edge_Thickness, &rwem);
 
    // ************************* draw the ball itself ****************************
-   Vertex2D stretch;
-   if (m_antiStretchBall && g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].GetRotation(m_rd->m_width, m_rd->m_height) != 0.0f)
-      GetBallAspectRatio(m_pball, stretch, zheight);
-   else
-      stretch = m_BallStretch;
+   float antiStretch = 1.f;
+   if (g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "BallAntiStretch"s, false))
+   {
+      // To evaluate projection stretch, we project 12 points and compute projected bounds then apply opposite stretching on YZ axis.
+      // This is somewhat overkill but the maths to do it directly would be fairly complicated to accomodate for the 3 view setup projections
+      // and tests did not show a real performance impact (likely because VPX is mainly GPU bound, not CPU)
+      if (m_stretchFitPoints[0] > 1.f)
+      {
+         for (int pos = 0, j = -1; j <= 1; ++j)
+         {
+            const int numPts = (j == 0) ? 6 : 3;
+            const float theta = (float)(j * (M_PI / 4.0));
+            for (int i = 0; i < numPts; ++i)
+            {
+               const float phi = (float)(i * (2.0 * M_PI) / numPts);
+               m_stretchFitPoints[pos++] = cosf(theta) * cosf(phi);
+               m_stretchFitPoints[pos++] = cosf(theta) * sinf(phi);
+               m_stretchFitPoints[pos++] = sinf(theta);
+            }
+         }
+      }
+      const Matrix3D &mvp = g_pplayer->m_pin3d.GetMVP().GetModelViewProj(0);
+      bool invalid = false;
+      float xMin = FLT_MAX, yMin = FLT_MAX, xMax = -FLT_MAX, yMax = -FLT_MAX;
+      for (int i = 0; i < 36; i += 3)
+      {
+         const float px = m_pball->m_d.m_pos.x + m_stretchFitPoints[i];
+         const float py = m_pball->m_d.m_pos.y + m_stretchFitPoints[i + 1];
+         const float pz = zheight + m_stretchFitPoints[i + 2];
+               float xp = mvp._11 * px + mvp._21 * py + mvp._31 * pz + mvp._41;
+               float yp = mvp._12 * px + mvp._22 * py + mvp._32 * pz + mvp._42;
+         const float wp = mvp._14 * px + mvp._24 * py + mvp._34 * pz + mvp._44;
+         if (wp > 1e-3f)
+         {
+            xp /= wp;
+            yp /= wp;
+            xMin = min(xMin, xp);
+            xMax = max(xMax, xp);
+            yMin = min(yMin, yp);
+            yMax = max(yMax, yp);
+         }
+         else
+         {
+            invalid = true;
+         }
+      }
+      if (!invalid)
+      {
+         // compute size of the rendered ball on viewport, then apply reversed viewport rotation, then compute stretch correction
+         const float w = m_rd->GetCurrentRenderTarget()->GetWidth();
+         const float h = m_rd->GetCurrentRenderTarget()->GetHeight();
+         const float viewportRot = -ANGTORAD(g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].GetRotation(w, h));
+         const float c = cosf(viewportRot), s = sinf(viewportRot);
+         const float rx = (xMax - xMin) * w;
+         const float ry = (yMax - yMin) * h;
+         const float sx = fabs(c * rx - s * ry);
+         const float sy = fabs(s * rx + c * ry);
+         antiStretch = sx / sy;
+      }
+   }
 
    const vec4 diffuse = convertColor(m_pball->m_color, 1.0f);
    m_rd->m_ballShader->SetVector(SHADER_cBase_Alpha, &diffuse);
@@ -324,10 +260,10 @@ void BallEx::Render(const unsigned int renderMask)
 
    Matrix3D scale, trans, m3D_full;
    Matrix3D rot(m_pball->m_orientation.m_d[0][0], m_pball->m_orientation.m_d[1][0], m_pball->m_orientation.m_d[2][0], 0.0f,
-      m_pball->m_orientation.m_d[0][1], m_pball->m_orientation.m_d[1][1], m_pball->m_orientation.m_d[2][1], 0.0f,
-      m_pball->m_orientation.m_d[0][2], m_pball->m_orientation.m_d[1][2], m_pball->m_orientation.m_d[2][2], 0.0f,
-      0.f, 0.f, 0.f, 1.f);
-   scale.SetScaling(m_pball->m_d.m_radius * stretch.x, m_pball->m_d.m_radius * stretch.y, m_pball->m_d.m_radius);
+                m_pball->m_orientation.m_d[0][1], m_pball->m_orientation.m_d[1][1], m_pball->m_orientation.m_d[2][1], 0.0f,
+                m_pball->m_orientation.m_d[0][2], m_pball->m_orientation.m_d[1][2], m_pball->m_orientation.m_d[2][2], 0.0f,
+                0.f, 0.f, 0.f, 1.f);
+   scale.SetScaling(m_pball->m_d.m_radius, m_pball->m_d.m_radius * antiStretch, m_pball->m_d.m_radius * antiStretch);
    trans.SetTranslation(m_pball->m_d.m_pos.x, m_pball->m_d.m_pos.y, zheight);
    m3D_full = rot * scale * trans;
    m_rd->m_ballShader->SetMatrix(SHADER_orientation, &m3D_full);

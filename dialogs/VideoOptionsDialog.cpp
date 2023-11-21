@@ -67,13 +67,7 @@ void VideoOptionsDialog::ResetVideoPreferences(const unsigned int profile) // 0 
 
    if(profile == 0)
    {
-      constexpr float ballAspecRatioOffsetX = 0.0f;
       char tmp[256];
-      sprintf_s(tmp, sizeof(tmp), "%f", ballAspecRatioOffsetX);
-      SetDlgItemText(IDC_CORRECTION_X, tmp);
-      constexpr float ballAspecRatioOffsetY = 0.0f;
-      sprintf_s(tmp, sizeof(tmp), "%f", ballAspecRatioOffsetY);
-      SetDlgItemText(IDC_CORRECTION_Y, tmp);
       constexpr float latitude = 52.52f;
       sprintf_s(tmp, sizeof(tmp), "%f", latitude);
       SetDlgItemText(IDC_DN_LATITUDE, tmp);
@@ -151,10 +145,7 @@ void VideoOptionsDialog::ResetVideoPreferences(const unsigned int profile) // 0 
 
    if (profile == 0)
    {
-      SendDlgItemMessage(IDC_StretchYes, BM_SETCHECK, BST_UNCHECKED, 0);
-      SendDlgItemMessage(IDC_StretchMonitor, BM_SETCHECK, BST_UNCHECKED, 0);
-      SendDlgItemMessage(IDC_StretchNo, BM_SETCHECK, BST_CHECKED, 0);
-      SendDlgItemMessage(IDC_DISPLAY_ID, CB_SETCURSEL, 0, 0);
+      SendDlgItemMessage(IDC_BALL_ANTISTRETCH, BM_SETCHECK, BST_UNCHECKED, 0);
    }
 }
 
@@ -286,7 +277,6 @@ BOOL VideoOptionsDialog::OnInitDialog()
       AddToolTip("None: No synchronization.\r\nVertical Sync: Synchronize on video sync which avoids video tearing, but has higher input latency.\r\nAdaptive Sync: Synchronize on video sync, except for late frames (below target FPS), also has higher input latency.\r\nFrame Pacing: Targets real time simulation with low input- and video-latency (also dynamically adjusts framerate).", hwndDlg, toolTipHwnd, GetDlgItem(IDC_VIDEO_SYNC_MODE).GetHwnd());
       AddToolTip("Limit the FPS to the given value (energy saving/less heat, framerate stability), 0 will disable it", hwndDlg, toolTipHwnd, GetDlgItem(IDC_MAX_FPS).GetHwnd());
       AddToolTip("Leave at 0 if you have enabled 'Low Latency' or 'Anti Lag' settings in the graphics driver.\r\nOtherwise experiment with 1 or 2 for a chance of lag reduction at the price of a bit of framerate.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_MAX_PRE_FRAMES).GetHwnd());
-      AddToolTip("If played in cabinet mode and you get an egg shaped ball activate this.\r\nFor screen ratios other than 16:9 you may have to adjust the offsets.\r\nNormally you have to set the Y offset (around 1.5) but you have to experiment.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_StretchMonitor).GetHwnd());
       AddToolTip("Changes the visual effect/screen shaking when nudging the table.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_NUDGE_STRENGTH).GetHwnd());
       AddToolTip("Activate this to switch the table brightness automatically based on your PC date,clock and location.\r\nThis requires to fill in geographic coordinates for your PCs location to work correctly.\r\nYou may use openstreetmap.org for example to get these in the correct format.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_DYNAMIC_DN).GetHwnd());
       AddToolTip("In decimal degrees (-90..90, North positive)", hwndDlg, toolTipHwnd, GetDlgItem(IDC_DN_LATITUDE).GetHwnd());
@@ -527,14 +517,6 @@ void VideoOptionsDialog::LoadSettings()
    GetDlgItem(IDC_MAX_PRE_FRAMES).EnableWindow(false); // OpenGL does not support this option
    #endif
 
-   const float ballAspecRatioOffsetX = settings.LoadValueWithDefault(Settings::Player, "BallCorrectionX"s, 0.f);
-   sprintf_s(tmp, sizeof(tmp), "%f", ballAspecRatioOffsetX);
-   SetDlgItemText(IDC_CORRECTION_X, tmp);
-
-   const float ballAspecRatioOffsetY = settings.LoadValueWithDefault(Settings::Player, "BallCorrectionY"s, 0.f);
-   sprintf_s(tmp, sizeof(tmp), "%f", ballAspecRatioOffsetY);
-   SetDlgItemText(IDC_CORRECTION_Y, tmp);
-
    const float nudgeStrength = settings.LoadValueWithDefault(Settings::Player, "NudgeStrength"s, 2e-2f);
    sprintf_s(tmp, sizeof(tmp), "%f", nudgeStrength);
    SetDlgItemText(IDC_NUDGE_STRENGTH, tmp);
@@ -744,10 +726,8 @@ void VideoOptionsDialog::LoadSettings()
    const int alphaRampsAccuracy = settings.LoadValueWithDefault(Settings::Player, "AlphaRampAccuracy"s, 10);
    SendDlgItemMessage(IDC_ARASlider, TBM_SETPOS, TRUE, alphaRampsAccuracy);
 
-   const int ballStretchMode = settings.LoadValueWithDefault(Settings::Player, "BallStretchMode"s, 0);
-   SendDlgItemMessage(IDC_StretchNo, BM_SETCHECK, ballStretchMode == 0 ? BST_CHECKED : BST_UNCHECKED, 0);
-   SendDlgItemMessage(IDC_StretchYes, BM_SETCHECK, ballStretchMode == 1 ? BST_CHECKED : BST_UNCHECKED, 0);
-   SendDlgItemMessage(IDC_StretchMonitor, BM_SETCHECK, ballStretchMode == 2 ? BST_CHECKED : BST_UNCHECKED, 0);
+   const bool ballAntiStretch = settings.LoadValueWithDefault(Settings::Player, "BallAntiStretch"s, false);
+   SendDlgItemMessage(IDC_BALL_ANTISTRETCH, BM_SETCHECK, ballAntiStretch ? BST_CHECKED : BST_UNCHECKED, 0);
 
    SendDlgItemMessage(IDC_OVERRIDE_DN, BM_SETCHECK, settings.LoadValueWithDefault(Settings::TableOverride, "OverrideEmissionScale"s, false) ? BST_CHECKED : BST_UNCHECKED, 0);
    SendDlgItemMessage(IDC_DAYNIGHT_SLIDER, TBM_SETPOS, TRUE, (int) (100.f * settings.LoadValueWithDefault(Settings::Player, "EmissionScale"s, 0.5f)));
@@ -830,8 +810,6 @@ void VideoOptionsDialog::SaveSettings(const bool saveAll)
       syncMode = VideoSyncMode::VSM_FRAME_PACING;
    settings.SaveValue(Settings::Player, "SyncMode"s, (int)syncMode, !saveAll);
    settings.SaveValue(Settings::Player, "MaxPrerenderedFrames"s, (int)GetDlgItemInt(IDC_MAX_PRE_FRAMES, nothing, TRUE), !saveAll);
-   settings.SaveValue(Settings::Player, "BallCorrectionX"s, GetDlgItemText(IDC_CORRECTION_X).GetString(), !saveAll);
-   settings.SaveValue(Settings::Player, "BallCorrectionY"s, GetDlgItemText(IDC_CORRECTION_Y).GetString(), !saveAll);
    settings.SaveValue(Settings::Player, "NudgeStrength"s, GetDlgItemText(IDC_NUDGE_STRENGTH).GetString(), !saveAll);
    LRESULT fxaa = SendDlgItemMessage(IDC_POST_PROCESS_COMBO, CB_GETCURSEL, 0, 0);
    if (fxaa == CB_ERR)
@@ -902,10 +880,8 @@ void VideoOptionsDialog::SaveSettings(const bool saveAll)
    settings.SaveValue(Settings::Player, "DisableDWM"s, IsDlgButtonChecked(IDC_DISABLE_DWM) == BST_CHECKED, !saveAll);
    settings.SaveValue(Settings::Player, "UseNVidiaAPI"s, IsDlgButtonChecked(IDC_USE_NVIDIA_API_CHECK) == BST_CHECKED, !saveAll);
    settings.SaveValue(Settings::Player, "ForceBloomOff"s, IsDlgButtonChecked(IDC_BLOOM_OFF) == BST_CHECKED, !saveAll);
-   const int ballStretchMode = IsDlgButtonChecked(IDC_StretchYes) == BST_CHECKED ? 1
-            : IsDlgButtonChecked(IDC_StretchMonitor) == BST_CHECKED              ? 2
-                                                                                 : 0;
-   settings.SaveValue(Settings::Player, "BallStretchMode"s, ballStretchMode, !saveAll);
+
+   settings.SaveValue(Settings::Player, "BallAntiStretch"s, IsDlgButtonChecked(IDC_BALL_ANTISTRETCH) == BST_CHECKED, !saveAll);
    const bool overwriteEnabled = IsDlgButtonChecked(IDC_OVERWRITE_BALL_IMAGE_CHECK) == BST_CHECKED;
    settings.SaveValue(Settings::Player, "OverwriteBallImage"s, overwriteEnabled, !saveAll);
    if (overwriteEnabled)

@@ -33,11 +33,7 @@ public:
 
 private:
    RenderDevice *m_rd = nullptr;
-   Vertex2D m_BallStretch;
-   bool m_antiStretchBall;
-   
-   void CalcBallAspectRatio();
-   void GetBallAspectRatio(const Ball *const pball, Vertex2D &stretch, const float zHeight);
+   float m_stretchFitPoints[3 * 12] = { 2.f };
    
    // IBall
 public:
