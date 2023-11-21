@@ -2188,6 +2188,7 @@ void PinTable::Play(const int playMode)
    dst->m_BG_enable_FSS = src->m_BG_enable_FSS;
    dst->m_BG_override = src->m_BG_override;
    dst->m_BG_current_set = src->m_BG_current_set;
+   dst->UpdateCurrentBGSet();
    dst->m_currentBackglassMode = src->m_currentBackglassMode;
    dst->m_3DmaxSeparation = src->m_3DmaxSeparation;
    for (int i = 0; i < 3; i++)
