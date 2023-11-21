@@ -870,7 +870,7 @@ void LiveUI::Update(const RenderTarget *rt)
          ImGui::SetNextWindowPos(ImVec2((io.DisplaySize.x - textSize.x) / 2, notifY));
          ImGui::SetNextWindowSize(textSize);
          ImGui::Begin("Notification"s.append(std::to_string(i)).c_str(), nullptr, window_flags);
-         ImGui::Text(m_notifications[i].message.c_str());
+         ImGui::Text("%s", m_notifications[i].message.c_str());
          ImGui::End();
          notifY += textSize.y + 10.f;
       }
@@ -1559,20 +1559,21 @@ void LiveUI::UpdateTweakModeUI()
                continue;
             const Settings::OptionDef &opt = table->m_settings.GetSettings()[setting - BS_Custom];
             float value = table->m_settings.LoadValueWithDefault(Settings::TableOption, opt.name, opt.defaultValue);
+            const string label = opt.name + ": ";
             if (opt.literals.size() > 0) // List of values
             {
                int index = (int) (value - opt.minValue);
                if (index < 0 || index >= (int)opt.literals.size())
                   index = (int)(opt.defaultValue - opt.minValue);
-               CM_ROW(setting, (opt.name + ": ").c_str(), "%s", opt.literals[index].c_str(), "");
+               CM_ROW(setting, label.c_str(), "%s", opt.literals[index].c_str(), "");
             }
             else if (opt.unit == Settings::OT_PERCENT) // Percent value
             {
-               CM_ROW(setting, (opt.name + ": ").c_str(), "%.1f", 100.f * value, "%");
+               CM_ROW(setting, label.c_str(), "%.1f", 100.f * value, "%");
             }
             else // OT_NONE
             {
-               CM_ROW(setting, (opt.name + ": ").c_str(), "%.1f", value, "");
+               CM_ROW(setting, label.c_str(), "%.1f", value, "");
             }
          }
          else switch (setting)
@@ -2640,7 +2641,7 @@ void LiveUI::UpdateAnaglyphCalibrationModal()
    ImGuiIO& io = ImGui::GetIO();
    ImGui::SetNextWindowSize(io.DisplaySize);
    ImGui::PushStyleColor(ImGuiCol_PopupBg, ImVec4(0.f, 0.f, 0.f, backgroundOpacity));
-   if (ImGui::BeginPopupModal(ID_ANAGLYPH_CALIBRATION, nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiNextWindowDataFlags_HasBgAlpha))
+   if (ImGui::BeginPopupModal(ID_ANAGLYPH_CALIBRATION, nullptr, (ImGuiWindowFlags_)((int)ImGuiWindowFlags_NoTitleBar | (int)ImGuiNextWindowDataFlags_HasBgAlpha)))
    {
       m_player->UpdateStereoShaderState();
       const string prefKey = "Anaglyph"s.append(std::to_string(glassesIndex + 1));
@@ -2754,7 +2755,7 @@ void LiveUI::UpdateAnaglyphCalibrationModal()
       }
 
       float line_height = ImGui::CalcTextSize("A").y * 1.2f;
-      #define CENTERED_TEXT(y, t) ImGui::SetCursorPos(ImVec2((win_size.x - ImGui::CalcTextSize(t).x) * 0.5f, y));ImGui::Text(t);
+      #define CENTERED_TEXT(y, t) ImGui::SetCursorPos(ImVec2((win_size.x - ImGui::CalcTextSize(t).x) * 0.5f, y));ImGui::Text("%s", t);
       float y = win_size.y * 0.5f + t + line_height;
       string step_info = "Anaglyph glasses calibration step #"s.append(std::to_string(calibrationStep + 1)).append("/6");
       CENTERED_TEXT(y + 0 * line_height, step_info.c_str());
