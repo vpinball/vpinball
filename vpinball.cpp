@@ -7,6 +7,7 @@
 #include "KeysConfigDialog.h"
 #include <filesystem>
 #include "freeimage.h"
+#include "vpversion.h"
 
 #if defined(IMSPANISH)
 #define TOOLBAR_WIDTH 152
@@ -2707,7 +2708,7 @@ void VPinball::GenerateTournamentFile()
    unsigned int dmd_size = g_pplayer->m_dmd.x * g_pplayer->m_dmd.y;
    if (dmd_size == 0)
    {
-      g_pplayer->m_liveUI->PushNotification("Tournament file export requires a valid DMD script connection to PinMAME via 'UseVPM(Colored)DMD = True'", 4000);
+      g_pplayer->m_liveUI->PushNotification("Tournament file export requires a valid DMD script connection to PinMAME via 'UseVPM(Colored)DMD = True'"s, 4000);
       return;
    }
 
@@ -2736,8 +2737,15 @@ void VPinball::GenerateTournamentFile()
    FILE *f;
    if (fopen_s(&f, (g_pvp->GetActiveTable()->m_szFileName + ".txt").c_str(), "w") == 0 && f)
    {
-      fprintf(f, "%04X", g_pplayer->m_dmd.x);
-      fprintf(f, "%04X", g_pplayer->m_dmd.y);
+      fprintf(f, "%03X", g_pplayer->m_dmd.x);
+      fprintf(f, "%03X", g_pplayer->m_dmd.y);
+      fprintf(f, "%01X", GET_PLATFORM_CPU_ENUM);
+      fprintf(f, "%01X", GET_PLATFORM_BITS_ENUM);
+      fprintf(f, "%01X", GET_PLATFORM_OS_ENUM);
+      fprintf(f, "%01X", VP_VERSION_MAJOR);
+      fprintf(f, "%01X", VP_VERSION_MINOR);
+      fprintf(f, "%01X", VP_VERSION_REV);
+      fprintf(f, "%01X", GIT_REVISION);
       for (unsigned int i = 0; i < dmd_size; ++i)
          fprintf(f,"%02X",dmd_data[i]);
       fclose(f);
@@ -2752,13 +2760,20 @@ void VPinball::GenerateTournamentFile()
 
 void VPinball::GenerateImageFromTournamentFile(const string &tablefile, const string &txtfile)
 {
-   unsigned int x, y, dmd_size;
+   unsigned int x = 0, y = 0, dmd_size = 0, cpu = 0, bits = 0, os = 0, major = 0, minor = 0, rev = 0, git_rev = 0;
    BYTE *dmd_data;
    FILE *f;
    if (fopen_s(&f, txtfile.c_str(), "r") == 0 && f)
    {
-      fscanf_s(f, "%04X", &x);
-      fscanf_s(f, "%04X", &y);
+      fscanf_s(f, "%03X", &x);
+      fscanf_s(f, "%03X", &y);
+      fscanf_s(f, "%01X", &cpu);
+      fscanf_s(f, "%01X", &bits);
+      fscanf_s(f, "%01X", &os);
+      fscanf_s(f, "%01X", &major);
+      fscanf_s(f, "%01X", &minor);
+      fscanf_s(f, "%01X", &rev);
+      fscanf_s(f, "%01X", &git_rev);
       dmd_size = x * y + 16;
       dmd_data = new BYTE[dmd_size];
       for (unsigned int i = 0; i < dmd_size; ++i)
@@ -2775,6 +2790,18 @@ void VPinball::GenerateImageFromTournamentFile(const string &tablefile, const st
       return;
    }
 
+   if (cpu != GET_PLATFORM_CPU_ENUM || bits != GET_PLATFORM_BITS_ENUM || os != GET_PLATFORM_OS_ENUM)
+   {
+      ShowError("Cannot decode Tournament file\nas the setup differs:\nEncoder: " + platform_cpu[cpu] + ' ' + platform_bits[bits] + "bits " + platform_os[os] + "\nDecoder: "+ platform_cpu[GET_PLATFORM_CPU_ENUM] + ' ' + platform_bits[GET_PLATFORM_BITS_ENUM] + "bits " + platform_os[GET_PLATFORM_OS_ENUM]);
+      return;
+   }
+
+   if (major != VP_VERSION_MAJOR || minor != VP_VERSION_MINOR || rev != VP_VERSION_REV || git_rev != GIT_REVISION)
+   {
+      ShowError("Cannot decode Tournament file\nas the VP version differs:\nEncoder: " + std::to_string(major) + '.' + std::to_string(minor) + '.' + std::to_string(rev) + " rev. " + std::to_string(git_rev) + "\nDecoder: "+ std::to_string(VP_VERSION_MAJOR) + '.' + std::to_string(VP_VERSION_MINOR) + '.' + std::to_string(VP_VERSION_REV) + " rev. " + std::to_string(GIT_REVISION));
+      return;
+   }
+
    const unsigned int res = GenerateTournamentFileInternal(dmd_data, dmd_size, tablefile);
    if (res == ~0u)
       return;
@@ -2783,7 +2810,7 @@ void VPinball::GenerateImageFromTournamentFile(const string &tablefile, const st
    generateMD5(dmd_data, dmd_size-16, md5);
    if (memcmp(dmd_data+(dmd_size-16),md5,16) != 0)
    {
-      ShowError("Corrupt Tournament file or non-matching table- or VPX-version used to encode");
+      ShowError("Corrupt Tournament file or non-matching table-version or modified VP used to encode");
       return;
    }
 

@@ -134,7 +134,7 @@ inline void md5Init(MD5Context* ctx)
 /*
  * Step on 512 bits of input with the main MD5 algorithm.
  */
-static void md5Step(uint32_t* buffer, uint32_t* input)
+static void md5Step(uint32_t buffer[4], const uint32_t input[16])
 {
    uint32_t AA = buffer[0];
    uint32_t BB = buffer[1];
@@ -166,7 +166,7 @@ static void md5Step(uint32_t* buffer, uint32_t* input)
           break;
       }
 
-      uint32_t temp = DD;
+      const uint32_t temp = DD;
       DD = CC;
       CC = BB;
       BB = BB + rotateLeft(AA + E + MD5K[i] + input[j], MD5S[i]);
@@ -200,7 +200,7 @@ static void md5Update(MD5Context* const ctx, const uint8_t* const input_buffer, 
       // then reset the offset to 0 and fill in a new buffer.
       // Every time we fill out a chunk, we run it through the algorithm
       // to enable some back and forth between cpu and i/o
-      if (offset % 64 == 0)
+      if (offset == 64)
       {
          for (unsigned int j = 0; j < 16; ++j)
          {

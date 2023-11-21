@@ -204,39 +204,53 @@ public:
 #define M_PIf 3.1415926535897932384626433832795f
 #endif
 
-#define ANGTORAD(x) ((x) * (float)(M_PI / 180.0))
-#define RADTOANG(x) ((x) *(float)(180.0/M_PI))
+#define ANGTORAD(x) ((x) * (float)(M_PI/180.0))
+#define RADTOANG(x) ((x) * (float)(180.0/M_PI))
 
 #define VBTOF(x) ((x) ? fTrue : fFalse)
 #define VBTOb(x) (!!(x))
 #define FTOVB(x) ((x) ? (VARIANT_BOOL)-1 : (VARIANT_BOOL)0)
 
+static const string platform_cpu[2] = { "x86"s, "arm"s };
+static const string platform_bits[2] = { "32"s, "64"s };
+static const string platform_os[6] = { "windows"s, "linux"s, "ios"s, "tvos"s, "macos"s, "android"s };
+
 #if defined(_M_IX86) || defined(_M_X64) || defined(_M_AMD64) || defined(__i386__) || defined(__i386) || defined(__i486__) || defined(__i486) || defined(i386) || defined(__ia64__) || defined(__x86_64__)
-#define GET_PLATFORM_CPU "x86"
+ #define GET_PLATFORM_CPU_ENUM 0
+ #define GET_PLATFORM_CPU "x86"
 #else
-#define GET_PLATFORM_CPU "arm"
+ #define GET_PLATFORM_CPU_ENUM 1
+ #define GET_PLATFORM_CPU "arm"
 #endif
 
-#if INTPTR_MAX == INT32_MAX
-#define GET_PLATFORM_BITS "32"
+#if (INTPTR_MAX == INT32_MAX)
+ #define GET_PLATFORM_BITS_ENUM 0
+ #define GET_PLATFORM_BITS "32"
 #else
-#define GET_PLATFORM_BITS "64"
+ #define GET_PLATFORM_BITS_ENUM 1
+ #define GET_PLATFORM_BITS "64"
 #endif
 
 #ifdef _MSC_VER
-#define GET_PLATFORM_OS "windows"
+ #define GET_PLATFORM_OS_ENUM 0
+ #define GET_PLATFORM_OS "windows"
 #elif (defined(__linux) || defined(__linux__))
-#define GET_PLATFORM_OS "linux"
+ #define GET_PLATFORM_OS_ENUM 1
+ #define GET_PLATFORM_OS "linux"
 #elif defined(__APPLE__)
 #if defined(TARGET_OS_IOS) && TARGET_OS_IOS
-#define GET_PLATFORM_OS "ios"
+ #define GET_PLATFORM_OS_ENUM 2
+ #define GET_PLATFORM_OS "ios"
 #elif defined(TARGET_OS_TV) && TARGET_OS_TV
-#define GET_PLATFORM_OS "tvos"
+ #define GET_PLATFORM_OS_ENUM 3
+ #define GET_PLATFORM_OS "tvos"
 #else
-#define GET_PLATFORM_OS "macos"
+ #define GET_PLATFORM_OS_ENUM 4
+ #define GET_PLATFORM_OS "macos"
 #endif
 #elif defined(__ANDROID__)
-#define GET_PLATFORM_OS "android" 
+ #define GET_PLATFORM_OS_ENUM 5
+ #define GET_PLATFORM_OS "android" 
 #endif
 
 #ifdef ENABLE_SSE_OPTIMIZATIONS

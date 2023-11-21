@@ -327,7 +327,7 @@ class Shader final
 private:
    Shader(RenderDevice *renderDevice, const std::string& src1, const std::string& src2, const BYTE* code, unsigned int codeSize);
    bool Load(const std::string& name, const BYTE* code, unsigned int codeSize);
-   
+
 public:
    #ifdef ENABLE_SDL // OpenGL
    Shader(RenderDevice *renderDevice, const std::string& src1, const std::string& src2 = ""s) : Shader(renderDevice, src1, src2, nullptr, 0) { }
@@ -369,7 +369,7 @@ public:
    void SetMatrix(const ShaderUniforms uniformName, const D3DXMATRIX* pMatrix, const unsigned int count = 1) { SetMatrix(uniformName, &(pMatrix->m[0][0]), count); }
    void SetMatrix(const ShaderUniforms uniformName, const Matrix3D* pMatrix, const unsigned int count = 1) { SetMatrix(uniformName, &(pMatrix->m[0][0]), count); }
    void SetVector(const ShaderUniforms uniformName, const vec4* pVector) { m_state->SetVector(uniformName, pVector); }
-   void SetVector(const ShaderUniforms uniformName, const float x, const float y, const float z, const float w) { vec4 v(x, y, z, w); m_state->SetVector(uniformName, &v); }
+   void SetVector(const ShaderUniforms uniformName, const float x, const float y, const float z, const float w) { const vec4 v(x, y, z, w); m_state->SetVector(uniformName, &v); }
    void SetFloat4v(const ShaderUniforms uniformName, const vec4* pData, const unsigned int count) { m_state->SetVector(uniformName, pData, count); }
    void SetTexture(const ShaderUniforms uniformName, Sampler* sampler) { m_state->SetTexture(uniformName, sampler); }
    void SetTextureNull(const ShaderUniforms uniformName);
@@ -451,7 +451,7 @@ public:
          assert(m_shader->m_stateOffsets[uniformName] != -1);
          assert(shaderUniformNames[uniformName].type == SUT_Float2 || shaderUniformNames[uniformName].type == SUT_Float3 || shaderUniformNames[uniformName].type == SUT_Float4 || shaderUniformNames[uniformName].type == SUT_Float4v);
          assert(shaderUniformNames[uniformName].count == count);
-         int n = shaderUniformNames[uniformName].type == SUT_Float2 ? 2 : shaderUniformNames[uniformName].type == SUT_Float3 ? 3 : 4;
+         const int n = shaderUniformNames[uniformName].type == SUT_Float2 ? 2 : shaderUniformNames[uniformName].type == SUT_Float3 ? 3 : 4;
          memcpy(m_state + m_shader->m_stateOffsets[uniformName], pData, count * n * sizeof(float));
       }
       vec4 GetVector(const ShaderUniforms uniformName)
@@ -460,7 +460,7 @@ public:
          assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
          assert(m_shader->m_stateOffsets[uniformName] != -1);
          assert(shaderUniformNames[uniformName].type == SUT_Float2 || shaderUniformNames[uniformName].type == SUT_Float3 || shaderUniformNames[uniformName].type == SUT_Float4 || shaderUniformNames[uniformName].type == SUT_Float4v);
-         int n = shaderUniformNames[uniformName].type == SUT_Float2 ? 2 : shaderUniformNames[uniformName].type == SUT_Float3 ? 3 : 4;
+         const int n = shaderUniformNames[uniformName].type == SUT_Float2 ? 2 : shaderUniformNames[uniformName].type == SUT_Float3 ? 3 : 4;
          vec4 result;
          result.x = ((float*)(m_state + m_shader->m_stateOffsets[uniformName]))[0];
          result.y = ((float*)(m_state + m_shader->m_stateOffsets[uniformName]))[1];
