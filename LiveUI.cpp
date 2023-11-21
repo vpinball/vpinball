@@ -1131,19 +1131,15 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
          viewSetup.mSceneScaleX += 0.0025f * thesign;
          viewSetup.mSceneScaleY += 0.0025f * thesign;
          viewSetup.mSceneScaleZ += 0.0025f * thesign;
-         // m_player->CalcBallAspectRatio();
          break;
       case BS_XScale:
          viewSetup.mSceneScaleX += 0.0025f * thesign;
-         // m_player->CalcBallAspectRatio();
          break;
       case BS_YScale:
          viewSetup.mSceneScaleY += 0.0025f * thesign;
-         // m_player->CalcBallAspectRatio();
          break;
       case BS_ZScale:
          viewSetup.mSceneScaleZ += 0.0025f * thesign;
-         // m_player->CalcBallAspectRatio();
          break;
       case BS_XOffset:
          if (isWindow)

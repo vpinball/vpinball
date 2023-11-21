@@ -1216,6 +1216,7 @@
 #define IDC_GLOBAL_DISABLE_LIGHTING_BALLS 881
 #define IDC_POST_PROCESS_AA_LABEL       882
 #define IDC_SHARPEN_LABEL               883
+#define IDC_BALL_ANTISTRETCH            884
 #define IDC_BG_SOURCE                   885
 #define IDC_BACKGLASS_GROUP             886
 #define IDC_BACKGLASS_GROUP2            887
