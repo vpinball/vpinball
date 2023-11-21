@@ -2555,8 +2555,9 @@ inline uint8_t reverse(const uint8_t n)
    return (lookupRev[n & 0x0f] << 4) | lookupRev[n >> 4];
 }
 
-static unsigned int GenerateTournamentFileInternal(BYTE *const dmd_data, const unsigned int dmd_size, const string& tablefile)
+static unsigned int GenerateTournamentFileInternal(BYTE *const dmd_data, const unsigned int dmd_size, const string& tablefile, unsigned int& tablefileChecksum, unsigned int& vpxChecksum, unsigned int& scriptsChecksum)
 {
+   tablefileChecksum = vpxChecksum = scriptsChecksum = 0;
    unsigned int dmd_data_c = 0;
 
    FILE *f;
@@ -2572,6 +2573,11 @@ static unsigned int GenerateTournamentFileInternal(BYTE *const dmd_data, const u
             if (dmd_data_c == dmd_size)
                dmd_data_c = 0;
          }
+
+         uint32_t md5[4];
+         generateMD5(tmp, r, (uint8_t*)md5);
+         for (unsigned int i = 0; i < 4; ++i)
+            tablefileChecksum ^= md5[i];
       }
       fclose(f);
    }
@@ -2627,6 +2633,11 @@ static unsigned int GenerateTournamentFileInternal(BYTE *const dmd_data, const u
                   if (dmd_data_c == dmd_size)
                      dmd_data_c = 0;
                }
+
+               uint32_t md5[4];
+               generateMD5(tmp, r, (uint8_t *)md5);
+               for (unsigned int i = 0; i < 4; ++i)
+                  scriptsChecksum ^= md5[i];
             }
             fclose(f);
 
@@ -2658,6 +2669,11 @@ static unsigned int GenerateTournamentFileInternal(BYTE *const dmd_data, const u
             if (dmd_data_c == dmd_size)
                dmd_data_c = 0;
          }
+
+         uint32_t md5[4];
+         generateMD5(tmp, r, (uint8_t*)md5);
+         for (unsigned int i = 0; i < 4; ++i)
+            vpxChecksum ^= md5[i];
       }
       fclose(f);
    }
@@ -2729,7 +2745,8 @@ void VPinball::GenerateTournamentFile()
    }
    generateMD5(dmd_data, dmd_size, dmd_data + dmd_size);
    dmd_size += 16;
-   const unsigned int res = GenerateTournamentFileInternal(dmd_data, dmd_size, GetActiveTable()->m_szFileName);
+   unsigned int tablefileChecksum, vpxChecksum, scriptsChecksum;
+   const unsigned int res = GenerateTournamentFileInternal(dmd_data, dmd_size, GetActiveTable()->m_szFileName, tablefileChecksum, vpxChecksum, scriptsChecksum);
    if (res == ~0u)
       return;
    GenerateTournamentFileInternal2(dmd_data, dmd_size, res);
@@ -2746,6 +2763,9 @@ void VPinball::GenerateTournamentFile()
       fprintf(f, "%01X", VP_VERSION_MINOR);
       fprintf(f, "%01X", VP_VERSION_REV);
       fprintf(f, "%01X", GIT_REVISION);
+      fprintf(f, "%04X", tablefileChecksum);
+      fprintf(f, "%04X", vpxChecksum);
+      fprintf(f, "%04X", scriptsChecksum);
       for (unsigned int i = 0; i < dmd_size; ++i)
          fprintf(f,"%02X",dmd_data[i]);
       fclose(f);
@@ -2761,6 +2781,7 @@ void VPinball::GenerateTournamentFile()
 void VPinball::GenerateImageFromTournamentFile(const string &tablefile, const string &txtfile)
 {
    unsigned int x = 0, y = 0, dmd_size = 0, cpu = 0, bits = 0, os = 0, major = 0, minor = 0, rev = 0, git_rev = 0;
+   unsigned int tablefileChecksum_in = 0, vpxChecksum_in = 0, scriptsChecksum_in = 0;
    BYTE *dmd_data;
    FILE *f;
    if (fopen_s(&f, txtfile.c_str(), "r") == 0 && f)
@@ -2774,6 +2795,9 @@ void VPinball::GenerateImageFromTournamentFile(const string &tablefile, const st
       fscanf_s(f, "%01X", &minor);
       fscanf_s(f, "%01X", &rev);
       fscanf_s(f, "%01X", &git_rev);
+      fscanf_s(f, "%04X", &tablefileChecksum_in);
+      fscanf_s(f, "%04X", &vpxChecksum_in);
+      fscanf_s(f, "%04X", &scriptsChecksum_in);
       dmd_size = x * y + 16;
       dmd_data = new BYTE[dmd_size];
       for (unsigned int i = 0; i < dmd_size; ++i)
@@ -2802,9 +2826,25 @@ void VPinball::GenerateImageFromTournamentFile(const string &tablefile, const st
       return;
    }
 
-   const unsigned int res = GenerateTournamentFileInternal(dmd_data, dmd_size, tablefile);
+   unsigned int tablefileChecksum, vpxChecksum, scriptsChecksum;
+   const unsigned int res = GenerateTournamentFileInternal(dmd_data, dmd_size, tablefile, tablefileChecksum, vpxChecksum, scriptsChecksum);
    if (res == ~0u)
       return;
+   if (tablefileChecksum != tablefileChecksum_in)
+   {
+      ShowError("Cannot decode Tournament file\nas the table version differs"s);
+      return;
+   }
+   if (vpxChecksum != vpxChecksum_in)
+   {
+      ShowError("Cannot decode Tournament file\nas VP was modified"s);
+      return;
+   }
+   if (scriptsChecksum != scriptsChecksum_in)
+   {
+      ShowError("Cannot decode Tournament file\nas scripts version differs"s);
+      return;
+   }
    GenerateTournamentFileInternal2(dmd_data, dmd_size, res);
    uint8_t md5[16];
    generateMD5(dmd_data, dmd_size-16, md5);
