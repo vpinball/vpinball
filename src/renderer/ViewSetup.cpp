@@ -289,9 +289,25 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
       matView = scale * trans * rotx * rotz * coords;
    }
 
-   // Compute frustrum Z bounds (near/far plane)
+   // Compute frustrum Z bounds (near/far plane), taking in account base view but also reflected point of view to avoid depth clipping in reflection probes
    float zNear, zFar;
    table->ComputeNearFarPlane(matView, 1.f, zNear, zFar);
+   for (auto probe : table->m_vrenderprobe)
+   {
+      if (probe->GetType() == RenderProbe::PLANE_REFLECTION)
+      {
+         vec4 plane;
+         probe->GetReflectionPlane(plane);
+         Vertex3Ds pn = Vertex3Ds(plane.x, plane.y, plane.z);
+         pn.Normalize();
+         Matrix3D reflect = Matrix3D::MatrixPlaneReflection(pn, plane.w);
+         Matrix3D probeView = reflect * matView;
+         float zNearProbe, zFarProbe;
+         table->ComputeNearFarPlane(probeView, 1.f, zNearProbe, zFarProbe);
+         zNear = min(zNear, zNearProbe);
+         zFar = max(zFar, zFarProbe);
+      }
+   }
 
    // Compute frustrum X/Y bounds
    float xcenter, ycenter, xspan, yspan;

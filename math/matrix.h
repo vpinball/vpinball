@@ -421,6 +421,27 @@ public:
       _21 = -_12;
    }
 
+   void SetPlaneReflection(const Vertex3Ds& n, const float d)
+   {
+      // Reflect against reflection plane given by its normal (formula from https://en.wikipedia.org/wiki/Transformation_matrix#Reflection_2)
+      SetIdentity();
+      _11 = 1.0f - 2.0f * n.x * n.x;
+      _12 = -2.0f * n.x * n.y;
+      _13 = -2.0f * n.x * n.z;
+
+      _21 = -2.0f * n.y * n.x;
+      _22 = 1.0f - 2.0f * n.y * n.y;
+      _23 = -2.0f * n.y * n.z;
+
+      _31 = -2.0f * n.z * n.x;
+      _32 = -2.0f * n.z * n.y;
+      _33 = 1.0f - 2.0f * n.z * n.z;
+
+      _41 = -2.0f * n.x * d;
+      _42 = -2.0f * n.y * d;
+      _43 = -2.0f * n.z * d;
+   }
+
    void SetOrthoOffCenterRH(const float l, const float r, const float b, const float t, const float zn, const float zf)
    {
       _11 = 2.f / (r - l);
@@ -571,6 +592,13 @@ public:
    {
       Matrix3D result;
       result.SetTranslation(x, y, z);
+      return result;
+   }
+
+   static Matrix3D MatrixPlaneReflection(const Vertex3Ds& n, const float d)
+   {
+      Matrix3D result;
+      result.SetPlaneReflection(n, d);
       return result;
    }
 
