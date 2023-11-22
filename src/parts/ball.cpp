@@ -183,12 +183,13 @@ void BallEx::Render(const unsigned int renderMask)
    m_rd->m_ballShader->SetVector(SHADER_Roughness_WrapL_Edge_Thickness, &rwem);
 
    // ************************* draw the ball itself ****************************
-   float antiStretch = 1.f;
+   Vertex2D antiStretch(1.f, 1.f);
    if (g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "BallAntiStretch"s, false))
    {
       // To evaluate projection stretch, we project 12 points and compute projected bounds then apply opposite stretching on YZ axis.
       // This is somewhat overkill but the maths to do it directly would be fairly complicated to accomodate for the 3 view setup projections
       // and tests did not show a real performance impact (likely because VPX is mainly GPU bound, not CPU)
+      // Note that this will only work if view is screen aligned (x axis is left-right, yz is top-down). If view has some free rotation this will fail.
       if (m_stretchFitPoints[0] > 1.f)
       {
          for (int pos = 0, j = -1; j <= 1; ++j)
@@ -240,7 +241,11 @@ void BallEx::Render(const unsigned int renderMask)
          const float ry = (yMax - yMin) * h;
          const float sx = fabs(c * rx - s * ry);
          const float sy = fabs(s * rx + c * ry);
-         antiStretch = sx / sy;
+         // only shrink ball to avoid artefact of the ball being rendered over resting parts
+         if (sy > sx)
+            antiStretch.y = sx / sy;
+         else
+            antiStretch.x = sy / sx;
       }
    }
 
@@ -263,7 +268,7 @@ void BallEx::Render(const unsigned int renderMask)
                 m_pball->m_orientation.m_d[0][1], m_pball->m_orientation.m_d[1][1], m_pball->m_orientation.m_d[2][1], 0.0f,
                 m_pball->m_orientation.m_d[0][2], m_pball->m_orientation.m_d[1][2], m_pball->m_orientation.m_d[2][2], 0.0f,
                 0.f, 0.f, 0.f, 1.f);
-   scale.SetScaling(m_pball->m_d.m_radius, m_pball->m_d.m_radius * antiStretch, m_pball->m_d.m_radius * antiStretch);
+   scale.SetScaling(m_pball->m_d.m_radius * antiStretch.x, m_pball->m_d.m_radius * antiStretch.y, m_pball->m_d.m_radius * antiStretch.y);
    trans.SetTranslation(m_pball->m_d.m_pos.x, m_pball->m_d.m_pos.y, zheight);
    m3D_full = rot * scale * trans;
    m_rd->m_ballShader->SetMatrix(SHADER_orientation, &m3D_full);
