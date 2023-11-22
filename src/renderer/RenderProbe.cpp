@@ -434,26 +434,7 @@ void RenderProbe::DoRenderReflectionProbe(const bool render_static, const bool r
    Matrix3D viewMat, initialViewMat;
    viewMat = g_pplayer->m_pin3d.GetMVP().GetView();
    memcpy(initialViewMat.m, viewMat.m, 4 * 4 * sizeof(float));
-   // Reflect against reflection plane given by its normal (formula from https://en.wikipedia.org/wiki/Transformation_matrix#Reflection_2)
-   Matrix3D reflect;
-   reflect.SetIdentity();
-   reflect._11 = 1.0f - 2.0f * n.x * n.x;
-   reflect._12 =      - 2.0f * n.x * n.y;
-   reflect._13 =      - 2.0f * n.x * n.z;
-
-   reflect._21 =      - 2.0f * n.y * n.x;
-   reflect._22 = 1.0f - 2.0f * n.y * n.y;
-   reflect._23 =      - 2.0f * n.y * n.z;
-
-   reflect._31 =      - 2.0f * n.z * n.x;
-   reflect._32 =      - 2.0f * n.z * n.y;
-   reflect._33 = 1.0f - 2.0f * n.z * n.z;
-
-   reflect._41 = -2.0f * n.x * m_reflection_plane.w;
-   reflect._42 = -2.0f * n.y * m_reflection_plane.w;
-   reflect._43 = -2.0f * n.z * m_reflection_plane.w;
-   
-   viewMat = reflect * viewMat;
+   viewMat = Matrix3D::MatrixPlaneReflection(n, m_reflection_plane.w) * viewMat;
    g_pplayer->m_pin3d.GetMVP().SetView(viewMat);
 
    if (render_static || render_dynamic)
