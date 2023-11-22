@@ -2759,6 +2759,7 @@ void VPinball::GenerateTournamentFile()
       fprintf(f, "%01X", GET_PLATFORM_CPU_ENUM);
       fprintf(f, "%01X", GET_PLATFORM_BITS_ENUM);
       fprintf(f, "%01X", GET_PLATFORM_OS_ENUM);
+      fprintf(f, "%01X", GET_PLATFORM_RENDERER_ENUM);
       fprintf(f, "%01X", VP_VERSION_MAJOR);
       fprintf(f, "%01X", VP_VERSION_MINOR);
       fprintf(f, "%01X", VP_VERSION_REV);
@@ -2780,7 +2781,7 @@ void VPinball::GenerateTournamentFile()
 
 void VPinball::GenerateImageFromTournamentFile(const string &tablefile, const string &txtfile)
 {
-   unsigned int x = 0, y = 0, dmd_size = 0, cpu = 0, bits = 0, os = 0, major = 0, minor = 0, rev = 0, git_rev = 0;
+   unsigned int x = 0, y = 0, dmd_size = 0, cpu = 0, bits = 0, os = 0, renderer = 0, major = 0, minor = 0, rev = 0, git_rev = 0;
    unsigned int tablefileChecksum_in = 0, vpxChecksum_in = 0, scriptsChecksum_in = 0;
    BYTE *dmd_data;
    FILE *f;
@@ -2791,6 +2792,7 @@ void VPinball::GenerateImageFromTournamentFile(const string &tablefile, const st
       fscanf_s(f, "%01X", &cpu);
       fscanf_s(f, "%01X", &bits);
       fscanf_s(f, "%01X", &os);
+      fscanf_s(f, "%01X", &renderer);
       fscanf_s(f, "%01X", &major);
       fscanf_s(f, "%01X", &minor);
       fscanf_s(f, "%01X", &rev);
@@ -2814,9 +2816,9 @@ void VPinball::GenerateImageFromTournamentFile(const string &tablefile, const st
       return;
    }
 
-   if (cpu != GET_PLATFORM_CPU_ENUM || bits != GET_PLATFORM_BITS_ENUM || os != GET_PLATFORM_OS_ENUM)
+   if (cpu != GET_PLATFORM_CPU_ENUM || bits != GET_PLATFORM_BITS_ENUM || os != GET_PLATFORM_OS_ENUM || renderer != GET_PLATFORM_RENDERER_ENUM)
    {
-      ShowError("Cannot decode Tournament file\nas the setup differs:\nEncoder: " + platform_cpu[cpu] + ' ' + platform_bits[bits] + "bits " + platform_os[os] + "\nDecoder: "+ platform_cpu[GET_PLATFORM_CPU_ENUM] + ' ' + platform_bits[GET_PLATFORM_BITS_ENUM] + "bits " + platform_os[GET_PLATFORM_OS_ENUM]);
+      ShowError("Cannot decode Tournament file\nas the setup differs:\nEncoder: " + platform_cpu[cpu] + ' ' + platform_bits[bits] + "bits " + platform_os[os] + ' ' + platform_renderer[renderer] + "\nDecoder: "+ platform_cpu[GET_PLATFORM_CPU_ENUM] + ' ' + platform_bits[GET_PLATFORM_BITS_ENUM] + "bits " + platform_os[GET_PLATFORM_OS_ENUM] + ' ' + platform_renderer[GET_PLATFORM_RENDERER_ENUM]);
       return;
    }
 
