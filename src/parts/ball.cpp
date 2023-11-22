@@ -402,7 +402,6 @@ void BallEx::Render(const unsigned int renderMask)
          g_pplayer->m_ballTrailMeshBuffer->m_vb->unlock();
          m_rd->ResetRenderState();
          m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
-         m_rd->SetRenderState(RenderState::ZFUNC, RenderState::Z_ALWAYS);
          m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
          m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
          m_rd->SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);
