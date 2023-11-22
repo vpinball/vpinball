@@ -128,7 +128,6 @@ FEATURES:
     ' Adjust table according to the value of 'mod1' and 'mod2'. Note that mod1 is a value between 1 and 4. mod2 is a value between 0 and 1 (displayed as a percent in the UI).
   End Sub
 
-
 - remove Anti-Aliasing and Postprocessed Anti-Aliasing options from the table properties (and use an .ini based override instead)
 
 - the application is now fully 'DPI aware'. This means that one can use multiple monitors at different DPI settings.
@@ -167,6 +166,7 @@ FEATURES:
   the table environment lighting image for full consistency between the lighting and reflections.
 - the ball is now shaded using the previous frame for computing the reflections of the playfield on the ball. This allows to have correct reflections of the playfield on balls
   when using a playfield_mesh, to reflect the inserts and all the full shading/lighting applied (so no more need to enable ball reflections for insert lights unless you want some extra reflected light).
+- new 'Force round ball' option in the video preferences to replace the old, manual anti-stretch parameters
 
 - timers with a -1 interval used to be ran 1 or 2 times per frame (depending on user latency reduction setting). They now are always ran once per frame only.
   timers with a -2 interval are now considered as controller sync timers and will be ran as many time per frame as needed, depending on user settings.
