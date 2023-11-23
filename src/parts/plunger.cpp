@@ -1113,10 +1113,9 @@ STDMETHODIMP Plunger::Fire()
       }
    }
 
-#ifdef LOG
-   const int i = FindIndexOf(g_pplayer->m_vmover, (MoverObject*)&m_phitplunger->m_plungerMover);
-   PLOGD.printf("Plunger Release %d", i);
-#endif
+   #ifdef LOG
+   PLOGD << "Plunger Release " << GetName();
+   #endif
 
    return S_OK;
 }

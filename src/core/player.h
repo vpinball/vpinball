@@ -1,7 +1,7 @@
 #pragma once
 
-#include "physics/kdtree.h"
-#include "physics/quadtree.h"
+#include "renderer/Renderer.h"
+#include "physics/PhysicsEngine.h"
 #include "Debugger.h"
 #include "typedefs3D.h"
 #include "pininput.h"
@@ -184,6 +184,9 @@ enum ProfilingMode
    PF_ENABLED,
 };
 
+#define GetNudgeX() (((F32)g_pplayer->m_curAccel[0].x) * (F32)(2.0 / JOYRANGE)) // Get the -2 .. 2 values from joystick input tilt sensor / ushock //!! why 2?
+#define GetNudgeY() (((F32)g_pplayer->m_curAccel[0].y) * (F32)(2.0 / JOYRANGE))
+
 #ifdef DEBUG_NUDGE
 # define IF_DEBUG_NUDGE(code) code
 #else
@@ -246,6 +249,7 @@ public:
    virtual void PreRegisterClass(WNDCLASS& wc) override;
    virtual void PreCreate(CREATESTRUCT& cs) override;
    virtual void OnInitialUpdate() override;
+   void OnClose() override { Shutdown(); }
    virtual LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
    void LockForegroundWindow(const bool enable);
 
@@ -255,10 +259,28 @@ public:
    void RecomputePseudoPauseState();
 
 private:
+   HRESULT Init(); // Called from OnInitialUpdate callback (after native window creation)
+   void Shutdown(); // Only called from OnClose, causing destruction of player (window destroy, object destruction, calling destructor)
+
    const int m_playMode;
 
 public:
+   PinTable *const m_pEditorTable; // The untouched version of the table, as it is in the editor (The Player needs it to interact with the UI)
+   PinTable *const m_ptable; // The played table, which can be modified by the script
+
+   U32 m_time_msec; // current physics time
+   U32 m_last_frame_time_msec; // used for non-physics controlled animations to update once per-frame only, aligned with m_time_msec
+
+   Ball *m_pactiveball; // ball the script user can get with ActiveBall
+   Ball *m_pactiveballDebug; // ball the debugger will use as Activeball when firing events
+   Ball *m_pactiveballBC; // ball that the ball control UI will use
+   Vertex3Ds *m_pBCTarget; // if non-null, the target location for the ball to roll towards
+
+   void FireSyncController();
+
+
 #pragma region Main Loop
+public:
    void OnIdle();
 
    VideoSyncMode m_videoSyncMode = VideoSyncMode::VSM_FRAME_PACING;
@@ -272,147 +294,69 @@ public:
    U64 m_startFrameTick; // System time in us when render frame was started (beginning of frame animation then collect,...)
 #pragma endregion
 
-#pragma region Physics
-   Ball *CreateBall(const float x, const float y, const float z, const float vx, const float vy, const float vz, const float radius = 25.0f, const float mass = 1.0f);
-   void DestroyBall(Ball *pball);
 
-   void AddCabinetBoundingHitShapes();
-   void InitDebugHitStructure();
-   void DoDebugObjectMenu(const int x, const int y);
-
-private:
-   void UpdatePhysics();
-   void PhysicsSimulateCycle(float dtime);
-   void NudgeUpdate();
-   void FilterNudge();
-   #ifdef UNUSED_TILT
-   int NudgeGetTilt(); // returns non-zero when appropriate to set the tilt switch
-   #endif
-   void MechPlungerUpdate();
-
+#pragma region MechPlunger
 public:
-   void NudgeX(const int x, const int joyidx);
-   void NudgeY(const int y, const int joyidx);
    void MechPlungerIn(const int z);
-   void SetGravity(float slopeDeg, float strength);
-
-   Vertex3Ds m_gravity;
-
-   Vertex2D m_Nudge;
-
-   NudgeFilterX m_NudgeFilterX;
-   NudgeFilterY m_NudgeFilterY;
-
-   // new nudging
-   Vertex3Ds m_tableVel;
-   Vertex3Ds m_tableDisplacement;
-   Vertex3Ds m_tableVelOld;
-   Vertex3Ds m_tableVelDelta;
-   float m_nudgeSpring;
-   float m_nudgeDamping;
-
-   // legacy/VP9 style keyboard nudging
-   bool m_legacyNudge;
-   float m_legacyNudgeStrength;
-   Vertex2D m_legacyNudgeBack;
-   int m_legacyNudgeTime;
-
-   bool m_swap_ball_collision_handling; // Swaps the order of ball-ball collision handling around each physics cycle (in regard to the RLC comment block in quadtree.cpp (hopefully ;)))
-
-#ifdef DEBUGPHYSICS
-   U32 c_hitcnts;
-   U32 c_collisioncnt;
-   U32 c_contactcnt;
-#ifdef C_DYNAMIC
-   U32 c_staticcnt;
-#endif
-   U32 c_embedcnts;
-   U32 c_timesearch;
-
-   U32 c_kDObjects;
-   U32 c_kDNextlevels;
-   U32 c_quadObjects;
-   U32 c_quadNextlevels;
-
-   U32 c_traversed;
-   U32 c_tested;
-   U32 c_deepTested;
-#endif
 
    U32 m_movedPlunger; // has plunger moved, must have moved at least three times
    U32 m_LastPlungerHit; // The last time the plunger was in contact (at least the vicinity) of the ball.
    float m_curMechPlungerPos;
 
-   // Physics stats
-   U32 m_phys_iterations;
-   U64 m_phys_total_iterations;
-   U32 m_phys_max_iterations;
-   U32 m_phys_max;
-   U64 m_count; // Number of frames included in the total variant of the counters
-
-   bool m_recordContacts; // flag for DoHitTest()
-   vector<CollisionEvent> m_contacts;
-
-#ifndef LOG
-private:
-#endif
-   vector<MoverObject *> m_vmover; // moving objects for physics simulation
-#ifdef LOG
-private:
-#endif
-   vector<HitObject *> m_vho;
-
-   vector<Ball *> m_vballDelete; // Balls to free at the end of the frame
-
-   /*HitKD*/ HitQuadtree m_hitoctree;
-
-   vector<HitObject *> m_vdebugho;
-   HitQuadtree m_debugoctree;
-
-   vector<HitObject *> m_vho_dynamic;
-#ifdef USE_EMBREE
-   HitQuadtree m_hitoctree_dynamic; // should be generated from scratch each time something changes
-#else
-   HitKD m_hitoctree_dynamic; // should be generated from scratch each time something changes
-#endif
-
-   float m_NudgeShake; // whether to shake the screen during nudges and how much
-
-   HitPlane m_hitPlayfield; // HitPlanes cannot be part of octree (infinite size)
-   HitPlane m_hitTopGlass;
-
-   U64 m_StartTime_usec;
-   U64 m_curPhysicsFrameTime; // Time when the last frame was drawn
-   U64 m_nextPhysicsFrameTime; // Time at which the next physics update should be
-   U64 m_lastFlipTime;
-
-public:
-   // all Hitables obtained from the table's list of Editables
-   vector<Hitable *> m_vhitables;
+   void MechPlungerUpdate();
 
 private:
-   int2 m_curAccel[PININ_JOYMXCNT];
-
    int m_curPlunger;
 #pragma endregion
 
 
+#pragma region Nudge
 public:
-   PinTable * const m_pEditorTable; // The untouched version of the table, as it is in the editor (The Player needs it to interact with the UI)
-   PinTable * const m_ptable; // The played table, which can be modified by the script
+   void NudgeUpdate();
+   void FilterNudge(U64 timeStamp);
+   void NudgeX(const int x, const int joyidx);
+   void NudgeY(const int y, const int joyidx);
+   #ifdef UNUSED_TILT
+   int NudgeGetTilt(); // returns non-zero when appropriate to set the tilt switch
+   #endif
 
-   U32 m_time_msec;          // current physics time
-   U32 m_last_frame_time_msec; // used for non-physics controlled animations to update once per-frame only, aligned with m_time_msec
+   Vertex2D m_Nudge;
+   NudgeFilterX m_NudgeFilterX;
+   NudgeFilterY m_NudgeFilterY;
+   float m_NudgeShake; // whether to shake the screen during nudges and how much
+   int2 m_curAccel[PININ_JOYMXCNT];
+#pragma endregion
 
-   Ball *m_pactiveball;      // ball the script user can get with ActiveBall
-   Ball *m_pactiveballDebug; // ball the debugger will use as Activeball when firing events
-   Ball *m_pactiveballBC;    // ball that the ball control UI will use
-   Vertex3Ds *m_pBCTarget;   // if non-null, the target location for the ball to roll towards
 
-   vector<Ball*> m_vball;
-   vector<HitFlipper*> m_vFlippers;
-   vector<HitTimer*> m_vht;
+#pragma region Physics
+public:
+   Ball *CreateBall(const float x, const float y, const float z, const float vx, const float vy, const float vz, const float radius = 25.0f, const float mass = 1.0f);
+   void DestroyBall(Ball *pball);
+
+   void DoDebugObjectMenu(const int x, const int y);
+
+   PhysicsEngine* m_physics = nullptr;
+
+   vector<Ball *> m_vball;
+   vector<Hitable *> m_vhitables; // all Hitables obtained from the table's list of Editables
+
+   int m_minphyslooptime; // minimum physics loop processing time in usec (0-1000), effort to reduce input latency (mainly useful if vsync is enabled, too)
+
+private:
+   vector<Ball *> m_vballDelete; // Balls to free at the end of the frame
+#pragma endregion
+
+
+#pragma region Timers
+public:
+   void FireTimers(const unsigned int simulationTime);
+   void DeferTimerStateChange(HitTimer * const hittimer, bool enabled);
+   void ApplyDeferredTimerChanges();
+
+private:
+   vector<HitTimer *> m_vht;
    vector<TimerOnOff> m_changed_vht; // stores all en/disable changes to the m_vht timer list, to avoid problems with timers dis/enabling themselves
+#pragma endregion
 
 
 #pragma region UI
@@ -423,9 +367,9 @@ public:
    InfoMode GetInfoMode() const;
    ProfilingMode GetProfilingMode() const;
 
+   LiveUI *m_liveUI = nullptr;
    InfoMode m_infoMode = IF_NONE;
    unsigned int m_infoProbeIndex = 0;
-   LiveUI *m_liveUI = nullptr;
 #pragma endregion
 
 
@@ -473,11 +417,6 @@ public:
 
    vector<CLSID*> m_controlclsidsafe; // ActiveX control types which have already been okayed as being safe
 
-   int m_minphyslooptime;    // minimum physics loop processing time in usec (0-1000), effort to reduce input latency (mainly useful if vsync is enabled, too)
-
-   int m_LastKnownGoodCounter;
-   int m_ModalRefCount;
-
    enum CloseState
    {
       CS_PLAYING = 0,   // Normal state
@@ -488,6 +427,10 @@ public:
    };
    CloseState m_closing = CS_PLAYING;
 
+   bool m_userDebugPaused;
+   bool m_debugWindowActive;
+   DebuggerDialog m_debuggerDialog;
+   bool m_debugMode;
    HWND m_hwndDebugOutput;
    bool m_showDebugger;
 
@@ -495,13 +438,14 @@ public:
    bool m_ballControl;
    int  m_debugBallSize;
    float m_debugBallMass;
+   bool m_debugBalls;                   // Draw balls in the foreground via 'O' key
 
-   bool m_detectScriptHang;
    bool m_noTimeCorrect;                // Used so the frame after debugging does not do normal time correction
 
-   bool m_debugMode;
-
-   bool m_debugBalls;                   // Draw balls in the foreground via 'O' key
+   // Used to detect script hangs (modal is used by script to tell VPX that it is in a modal state, so disabling watch dog)
+   bool m_detectScriptHang;
+   int m_LastKnownGoodCounter;
+   int m_ModalRefCount;
 
    int m_wnd_width, m_wnd_height; // Window height (requested size before creation, effective size after) which is not directly linked to the render size
 
@@ -510,9 +454,6 @@ public:
 
    bool m_drawCursor;
    bool m_gameWindowActive;
-   bool m_userDebugPaused;
-   bool m_debugWindowActive;
-   DebuggerDialog m_debuggerDialog;
    
    Primitive *m_implicitPlayfieldMesh = nullptr;
 
@@ -534,13 +475,6 @@ public:
    int m_lastMaxChangeTime; // Used to update counters every seconds
    float m_fps;             // Average number of frames per second, updated once per second
    U32 m_script_max;
-
-private:
-   HRESULT Init(); // Called from OnInitialUpdate callback (after native window creation)
-   void Shutdown(); // Only called from OnClose, causing destruction of player (window destroy, object destruction, calling destructor)
-
-public:
-   void OnClose() override { Shutdown(); }
 
 
 #ifdef STEPPING

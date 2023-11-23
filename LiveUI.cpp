@@ -2837,7 +2837,8 @@ void LiveUI::UpdateRendererInspectionModal()
          PROF_ROW("> Submit", FrameProfiler::PROFILE_GPU_SUBMIT); ImGui::TableNextRow();
          PROF_ROW("> Flip", FrameProfiler::PROFILE_GPU_FLIP); ImGui::TableNextRow();
          PROF_ROW("> Physics", FrameProfiler::PROFILE_PHYSICS); ImGui::TableNextColumn();
-         ImGui::Text("Max: %4.1fms (over last second), %4.1fms", 1e-3 * m_player->m_phys_max, 1e-3 * g_frameProfiler.GetMax(FrameProfiler::PROFILE_PHYSICS)); ImGui::TableNextRow();
+         ImGui::Text("Max: %4.1fms (over last second), %4.1fms", 1e-3 * m_player->m_physics->GetPerfLengthMax(), 1e-3 * g_frameProfiler.GetMax(FrameProfiler::PROFILE_PHYSICS));
+         ImGui::TableNextRow();
          PROF_ROW("> Script", FrameProfiler::PROFILE_SCRIPT); ImGui::TableNextColumn();
          ImGui::Text("Max: %4.1fms (over last second), %4.1fms", 1e-3 * m_player->m_script_max, 1e-3 * g_frameProfiler.GetMax(FrameProfiler::PROFILE_SCRIPT)); ImGui::TableNextRow();
          PROF_ROW("> Misc", FrameProfiler::PROFILE_MISC); ImGui::TableNextRow();

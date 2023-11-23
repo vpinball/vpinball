@@ -233,8 +233,8 @@ void BallEx::Render(const unsigned int renderMask)
       if (!invalid)
       {
          // compute size of the rendered ball on viewport, then apply reversed viewport rotation, then compute stretch correction
-         const float w = m_rd->GetCurrentRenderTarget()->GetWidth();
-         const float h = m_rd->GetCurrentRenderTarget()->GetHeight();
+         const int w = m_rd->GetCurrentRenderTarget()->GetWidth();
+         const int h = m_rd->GetCurrentRenderTarget()->GetHeight();
          const float viewportRot = -ANGTORAD(g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].GetRotation(w, h));
          const float c = cosf(viewportRot), s = sinf(viewportRot);
          const float rx = (xMax - xMin) * w;

@@ -292,7 +292,10 @@ public:
    U64 m_lastVSyncUs = 0;
    unsigned int m_vsyncCount = 0;
 
+private:
    MeshBuffer* m_quadMeshBuffer = nullptr;       // internal vb for rendering quads
+
+public:
    MeshBuffer* m_quadPNTDynMeshBuffer = nullptr; // internal vb for rendering dynamic quads (position/normal/texture)
    MeshBuffer* m_quadPTDynMeshBuffer = nullptr;  // internal vb for rendering dynamic quads (position/texture)
 
@@ -320,7 +323,7 @@ public:
    Shader *StereoShader = nullptr;
    Shader* m_ballShader = nullptr;
 
-   void UnbindSampler(Sampler* smapler);
+   void UnbindSampler(Sampler* sampler);
 
    TextureManager m_texMan;
 
