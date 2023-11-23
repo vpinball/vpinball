@@ -2763,10 +2763,10 @@ void VPinball::GenerateTournamentFile()
       fprintf(f, "%01X", VP_VERSION_MAJOR);
       fprintf(f, "%01X", VP_VERSION_MINOR);
       fprintf(f, "%01X", VP_VERSION_REV);
-      fprintf(f, "%01X", GIT_REVISION);
-      fprintf(f, "%04X", tablefileChecksum);
-      fprintf(f, "%04X", vpxChecksum);
-      fprintf(f, "%04X", scriptsChecksum);
+      fprintf(f, "%04X", GIT_REVISION);
+      fprintf(f, "%08X", tablefileChecksum);
+      fprintf(f, "%08X", vpxChecksum);
+      fprintf(f, "%08X", scriptsChecksum);
       for (unsigned int i = 0; i < dmd_size; ++i)
          fprintf(f,"%02X",dmd_data[i]);
       fclose(f);
@@ -2796,10 +2796,10 @@ void VPinball::GenerateImageFromTournamentFile(const string &tablefile, const st
       fscanf_s(f, "%01X", &major);
       fscanf_s(f, "%01X", &minor);
       fscanf_s(f, "%01X", &rev);
-      fscanf_s(f, "%01X", &git_rev);
-      fscanf_s(f, "%04X", &tablefileChecksum_in);
-      fscanf_s(f, "%04X", &vpxChecksum_in);
-      fscanf_s(f, "%04X", &scriptsChecksum_in);
+      fscanf_s(f, "%04X", &git_rev);
+      fscanf_s(f, "%08X", &tablefileChecksum_in);
+      fscanf_s(f, "%08X", &vpxChecksum_in);
+      fscanf_s(f, "%08X", &scriptsChecksum_in);
       dmd_size = x * y + 16;
       dmd_data = new BYTE[dmd_size];
       for (unsigned int i = 0; i < dmd_size; ++i)
