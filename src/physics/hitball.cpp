@@ -294,9 +294,9 @@ void Ball::Collide(const CollisionEvent& coll)
 
    // make sure we process each ball/ball collision only once
    // (but if we are frozen, there won't be a second collision event, so deal with it now!)
-   if (((g_pplayer->m_swap_ball_collision_handling && pball >= this) ||
-      (!g_pplayer->m_swap_ball_collision_handling && pball <= this)) &&
-      !m_d.m_lockedInKicker)
+   if (((g_pplayer->m_physics->IsBallCollisionHandlingSwapped() && pball >= this) ||
+       (!g_pplayer->m_physics->IsBallCollisionHandlingSwapped() && pball <= this)) &&
+        !m_d.m_lockedInKicker)
       return;
 
    // target ball to object ball delta velocity
@@ -364,7 +364,7 @@ void Ball::HandleStaticContact(const CollisionEvent& coll, const float friction,
    // If some collision has changed the ball's velocity, we may not have to do anything.
    if (normVel <= C_CONTACTVEL)
    {
-      const Vertex3Ds fe = m_d.m_mass * g_pplayer->m_gravity;      // external forces (only gravity for now)
+      const Vertex3Ds fe = m_d.m_mass * g_pplayer->m_physics->GetGravity(); // external forces (only gravity for now)
       const float dot = fe.Dot(coll.m_hitnormal);
       const float normalForce = std::max(0.0f, -(dot*dtime + coll.m_hit_org_normalvelocity)); // normal force is always nonnegative
 
@@ -397,7 +397,7 @@ void Ball::ApplyFriction(const Vertex3Ds& hitnormal, const float dtime, const fl
    const Vertex3Ds surfVel = SurfaceVelocity(surfP);
    const Vertex3Ds slip = surfVel - surfVel.Dot(hitnormal) * hitnormal;       // calc the tangential slip velocity
 
-   const float maxFric = fricCoeff * m_d.m_mass * -g_pplayer->m_gravity.Dot(hitnormal);
+   const float maxFric = fricCoeff * m_d.m_mass * -g_pplayer->m_physics->GetGravity().Dot(hitnormal);
 
    const float slipspeed = slip.Length();
    Vertex3Ds slipDir;
@@ -452,7 +452,7 @@ Vertex3Ds Ball::SurfaceAcceleration(const Vertex3Ds& surfP) const
 {
    const Vertex3Ds angularvelocity = m_angularmomentum / Inertia();
    // if we had any external torque, we would have to add "(deriv. of ang.vel.) x surfP" here
-   return g_pplayer->m_gravity/m_d.m_mass    // linear acceleration
+   return g_pplayer->m_physics->GetGravity() / m_d.m_mass // linear acceleration
       + CrossProduct(angularvelocity, CrossProduct(angularvelocity, surfP)); // centripetal acceleration
 }
 
@@ -532,12 +532,12 @@ void Ball::UpdateVelocities()
                                 -2.0f);
       }
       else
-         m_d.m_vel += (float)PHYS_FACTOR * g_pplayer->m_gravity;
+         m_d.m_vel += (float)PHYS_FACTOR * g_pplayer->m_physics->GetGravity();
 
       m_d.m_vel.x += g_pplayer->m_Nudge.x; // TODO: depends on STEPTIME
       m_d.m_vel.y += g_pplayer->m_Nudge.y;
 
-      m_d.m_vel -= g_pplayer->m_tableVelDelta;
+      m_d.m_vel -= g_pplayer->m_physics->GetTableAcceleration();
    }
 
 #ifdef C_DYNAMIC

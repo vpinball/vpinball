@@ -531,27 +531,18 @@ void DoHitTest(const Ball *const pball, const HitObject *const pho, CollisionEve
       return;
 
 #ifdef DEBUGPHYSICS
-   g_pplayer->c_deepTested++; //!! atomic needed if USE_EMBREE
+   g_pplayer->m_physics->c_deepTested++; //!! atomic needed if USE_EMBREE
 #endif
 
    CollisionEvent newColl;
    const float newtime = pho->HitTest(pball->m_d, coll.m_hittime, newColl);
    const bool validhit = ((newtime >= 0.f) && !sign(newtime) && (newtime <= coll.m_hittime));
-
    if (validhit)
    {
       newColl.m_ball = const_cast<Ball*>(pball); //!! meh, but will not be changed in here
       newColl.m_obj = const_cast<HitObject*>(pho); //!! meh, but will not be changed in here
       newColl.m_hittime = newtime;
-
-      if (g_pplayer->m_recordContacts && newColl.m_isContact) // remember all contacts?
-      {
-#ifdef USE_EMBREE
-         const std::lock_guard<std::mutex> lg(mtx); // multiple threads may end up here and call push_back
-#endif
-         g_pplayer->m_contacts.push_back(newColl);
-      }
-      else // record first collision event
-         coll = newColl;
+      if (!newColl.m_isContact || !g_pplayer->m_physics->RecordContact(newColl))
+         coll = newColl; // record first collision event
    }
 }

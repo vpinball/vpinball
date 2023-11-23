@@ -52,30 +52,7 @@ HRESULT IEditable::put_TimerEnabled(VARIANT_BOOL newVal, BOOL *pte)
    const BOOL val = VBTOF(newVal);
 
    if (val != *pte && m_phittimer)
-   {
-       // to avoid problems with timers dis/enabling themselves, store all the changes in a list
-       bool found = false;
-       for (size_t i = 0; i < g_pplayer->m_changed_vht.size(); ++i)
-           if (g_pplayer->m_changed_vht[i].m_timer == m_phittimer)
-           {
-               g_pplayer->m_changed_vht[i].m_enabled = !!val;
-               found = true;
-               break;
-           }
-
-       if (!found)
-       {
-         TimerOnOff too;
-         too.m_enabled = !!val;
-         too.m_timer = m_phittimer;
-         g_pplayer->m_changed_vht.push_back(too);
-       }
-
-       if (val)
-           m_phittimer->m_nextfire = g_pplayer->m_time_msec + m_phittimer->m_interval;
-       else
-           m_phittimer->m_nextfire = 0xFFFFFFFF; // fakes the disabling of the timer, until it will be catched by the cleanup via m_changed_vht
-   }
+      g_pplayer->DeferTimerStateChange(m_phittimer, !!val);
 
    *pte = val;
 

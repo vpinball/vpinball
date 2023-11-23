@@ -1,7 +1,114 @@
 #pragma once
 
+#include "physics/kdtree.h"
+#include "physics/quadtree.h"
+
 class PhysicsEngine final
 {
 public:
+   PhysicsEngine(PinTable *const table);
+   ~PhysicsEngine();
 
+   void SetGravity(float slopeDeg, float strength);
+   const Vertex3Ds& GetGravity() const { return m_gravity; }
+
+   // For the time being, beside the colliders loaded from the table in the constructor, only ball can added/removed
+   void AddBall(Ball *const ball);
+   void RemoveBall(Ball *const ball);
+
+   void OnPrepareFrame();
+   void OnFinishFrame();
+   
+   void UpdatePhysics();
+
+   bool IsBallCollisionHandlingSwapped() const { return m_swap_ball_collision_handling; }
+   bool RecordContact(CollisionEvent& newColl);
+
+   void Nudge(float angle, float force);
+   Vertex2D GetScreenNudge() const;
+   const Vertex3Ds& GetTableAcceleration() const { return m_tableVelDelta; }
+
+   void RayCast(const Vertex3Ds& source, const Vertex3Ds& target, const bool uiCast, vector<HitObject *> &vhoHit);
+
+   void ResetStats() { m_phys_max = 0; m_phys_max_iterations = 0; m_count = 0; m_phys_total_iterations = 0; }
+   int GetPerfNIterations() const { return m_phys_iterations; }
+   int GetPerfLengthMax() const { return m_phys_max; }
+   string GetPerfInfo(bool resetMax);
+
+private:
+   void AddCabinetBoundingHitShapes(PinTable *const table);
+   void PhysicsSimulateCycle(float dtime); // Perform continuous collision detection for the given amount of delta time
+
+   Vertex3Ds m_gravity;
+   
+   unsigned int m_physicsMaxLoops;
+
+   bool m_swap_ball_collision_handling = false; // Swaps the order of ball-ball collision handling around each physics cycle (in regard to the RLC comment block in quadtree.cpp (hopefully ;)))
+
+   bool m_recordContacts = false; // flag for DoHitTest()
+   vector<CollisionEvent> m_contacts;
+
+   U64 m_StartTime_usec; // Time when the simulation started (creation of this object)
+   U64 m_curPhysicsFrameTime; // Time where the last machine simulation (physics, timers, scripts,...) stopped
+   U64 m_nextPhysicsFrameTime; // Time at which the next physics update should be
+   U64 m_lastFlipTime = 0;
+
+   vector<HitFlipper *> m_vFlippers;
+   HitPlane m_hitPlayfield; // HitPlanes cannot be part of octree (infinite size)
+   HitPlane m_hitTopGlass;
+
+   vector<MoverObject *> m_vmover; // moving objects for physics simulation
+
+   vector<HitObject *> m_vho;
+   /*HitKD*/ HitQuadtree m_hitoctree;
+   vector<HitObject *> m_vho_dynamic;
+#ifdef USE_EMBREE
+   HitQuadtree m_hitoctree_dynamic; // should be generated from scratch each time something changes
+#else
+   HitKD m_hitoctree_dynamic; // should be generated from scratch each time something changes
+#endif
+
+   vector<HitObject *> m_vUIHitObjects;
+   HitQuadtree m_UIOctree;
+
+   // VP10+ nudging (table modeled as a spring)
+   Vertex3Ds m_tableVel;
+   Vertex3Ds m_tableDisplacement;
+   Vertex3Ds m_tableVelOld;
+   Vertex3Ds m_tableVelDelta;
+   float m_nudgeSpring;
+   float m_nudgeDamping;
+
+   // legacy/VP9 style keyboard nudging
+   bool m_legacyNudge;
+   float m_legacyNudgeStrength;
+   Vertex2D m_legacyNudgeBack;
+   int m_legacyNudgeTime;
+
+   // Physics stats
+   U32 m_phys_iterations;
+   U32 m_phys_max_iterations;
+   U32 m_phys_max;
+   U64 m_phys_total_iterations;
+   U64 m_count; // Number of frames included in the total variant of the counters
+
+#ifdef DEBUGPHYSICS
+   U32 c_hitcnts;
+   U32 c_collisioncnt;
+   U32 c_contactcnt;
+   #ifdef C_DYNAMIC
+   U32 c_staticcnt;
+   #endif
+   U32 c_embedcnts;
+   U32 c_timesearch;
+
+   U32 c_kDObjects;
+   U32 c_kDNextlevels;
+   U32 c_quadObjects;
+   U32 c_quadNextlevels;
+
+   U32 c_traversed;
+   U32 c_tested;
+   U32 c_deepTested;
+#endif
 };

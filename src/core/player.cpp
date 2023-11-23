@@ -163,8 +163,6 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
 
    m_debugBalls = false;
 
-   m_swap_ball_collision_handling = false;
-
    m_debugMode = false;
 
 #ifdef STEPPING
@@ -184,33 +182,11 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    m_lastcursorx = 0xfffffff;
    m_lastcursory = 0xfffffff;
 
-#ifdef DEBUGPHYSICS
-   c_hitcnts = 0;
-   c_collisioncnt = 0;
-   c_contactcnt = 0;
-#ifdef C_DYNAMIC
-   c_staticcnt = 0;
-#endif
-   c_embedcnts = 0;
-   c_timesearch = 0;
-
-   c_kDNextlevels = 0;
-   c_quadNextlevels = 0;
-
-   c_traversed = 0;
-   c_tested = 0;
-   c_deepTested = 0;
-#endif
-
    m_movedPlunger = 0;
    m_LastPlungerHit = 0;
-   m_lastFlipTime = 0;
 
    for (unsigned int i = 0; i < MAX_TOUCHREGION; ++i)
       m_touchregion_pressed[i] = false;
-
-   m_recordContacts = false;
-   m_contacts.reserve(8);
 
    m_overall_frames = 0;
 
@@ -225,6 +201,29 @@ Player::~Player()
    m_ptable->StopPlaying();
    delete m_pBCTarget;
    delete m_ptable;
+
+   //!! cleanup the whole mem management for balls, this is a mess!
+
+   // balls are added to the octree, but not the hit object vector
+   for (size_t i = 0; i < m_vball.size(); i++)
+   {
+      Ball *const pball = m_vball[i];
+      if (pball->m_pballex)
+      {
+         pball->m_pballex->m_pball = nullptr;
+         pball->m_pballex->Release();
+      }
+
+      delete pball->m_d.m_vpVolObjs;
+      delete pball;
+   }
+
+   //!! see above
+   //for (size_t i=0;i<m_vho_dynamic.size();i++)
+   //      delete m_vho_dynamic[i];
+   //m_vho_dynamic.clear();
+
+   m_vball.clear();
 }
 
 void Player::PreRegisterClass(WNDCLASS& wc)
@@ -634,7 +633,7 @@ void Player::Shutdown()
       vector<BaseTexture *> textures = m_renderer->m_pd3dPrimaryDevice->m_texMan.GetLoadedTextures();
       for (BaseTexture *memtex : textures)
       {
-         for (Texture *image : g_pplayer->m_ptable->m_vimage)
+         for (Texture *image : m_ptable->m_vimage)
          {
             if (image->m_pdsBuffer == memtex)
             {
@@ -699,37 +698,6 @@ void Player::Shutdown()
    for (auto hitable : m_vhitables)
       hitable->EndPlay();
 
-   for (size_t i = 0; i < m_vho.size(); i++)
-      delete m_vho[i];
-   m_vho.clear();
-
-   for (size_t i = 0; i < m_vdebugho.size(); i++)
-      delete m_vdebugho[i];
-   m_vdebugho.clear();
-
-   //!! cleanup the whole mem management for balls, this is a mess!
-
-   // balls are added to the octree, but not the hit object vector
-   for (size_t i = 0; i < m_vball.size(); i++)
-   {
-      Ball * const pball = m_vball[i];
-      if (pball->m_pballex)
-      {
-         pball->m_pballex->m_pball = nullptr;
-         pball->m_pballex->Release();
-      }
-
-      delete pball->m_d.m_vpVolObjs;
-      delete pball;
-   }
-
-   //!! see above
-   //for (size_t i=0;i<m_vho_dynamic.size();i++)
-   //      delete m_vho_dynamic[i];
-   //m_vho_dynamic.clear();
-
-   m_vball.clear();
-
    m_dmd = int2(0,0);
    if (m_texdmd)
    {
@@ -752,6 +720,8 @@ void Player::Shutdown()
    m_controlclsidsafe.clear();
 
    m_changed_vht.clear();
+
+   delete m_physics;
 
    restore_win_timer_resolution();
 
@@ -793,16 +763,9 @@ void Player::Shutdown()
 void Player::InitFPS()
 {
    m_fps = 0.f;
-
-   m_count = 0;
    m_lastMaxChangeTime = 0;
-
-   m_phys_max = 0;
-   m_phys_max_iterations = 0;
-   m_phys_total_iterations = 0;
-
    m_script_max = 0;
-
+   m_physics->ResetStats();
    g_frameProfiler.Reset();
 }
 
@@ -856,83 +819,6 @@ void Player::RecomputePseudoPauseState()
       else
          UnpauseMusic();
    }
-}
-
-//
-// license:GPLv3+
-// Ported at: VisualPinball.Engine/VPT/Table/TableHitGenerator.cs
-//
-
-void Player::AddCabinetBoundingHitShapes()
-{
-   // simple outer borders:
-   m_vho.push_back(new LineSeg(Vertex2D(m_ptable->m_right, m_ptable->m_top),    Vertex2D(m_ptable->m_right, m_ptable->m_bottom), 0.f, m_ptable->m_glassTopHeight));
-   m_vho.push_back(new LineSeg(Vertex2D(m_ptable->m_left,  m_ptable->m_bottom), Vertex2D(m_ptable->m_left,  m_ptable->m_top),    0.f, m_ptable->m_glassBottomHeight));
-   m_vho.push_back(new LineSeg(Vertex2D(m_ptable->m_right, m_ptable->m_bottom), Vertex2D(m_ptable->m_left,  m_ptable->m_bottom), 0.f, m_ptable->m_glassBottomHeight));
-   m_vho.push_back(new LineSeg(Vertex2D(m_ptable->m_left,  m_ptable->m_top),    Vertex2D(m_ptable->m_right, m_ptable->m_top),    0.f, m_ptable->m_glassTopHeight));
-
-   // glass:
-   Vertex3Ds * const rgv3D = new Vertex3Ds[4];
-   rgv3D[0] = Vertex3Ds(m_ptable->m_left, m_ptable->m_top, m_ptable->m_glassTopHeight);
-   rgv3D[1] = Vertex3Ds(m_ptable->m_right, m_ptable->m_top, m_ptable->m_glassTopHeight);
-   rgv3D[2] = Vertex3Ds(m_ptable->m_right, m_ptable->m_bottom, m_ptable->m_glassBottomHeight);
-   rgv3D[3] = Vertex3Ds(m_ptable->m_left, m_ptable->m_bottom, m_ptable->m_glassBottomHeight);
-   m_vho.push_back(new Hit3DPoly(rgv3D, 4)); //!!
-
-   /*
-   // playfield:
-   Vertex3Ds * const rgv3D = new Vertex3Ds[4];
-   rgv3D[3] = Vertex3Ds(m_ptable->m_left, m_ptable->m_top, 0.f);
-   rgv3D[2] = Vertex3Ds(m_ptable->m_right, m_ptable->m_top, 0.f);
-   rgv3D[1] = Vertex3Ds(m_ptable->m_right, m_ptable->m_bottom, 0.f);
-   rgv3D[0] = Vertex3Ds(m_ptable->m_left, m_ptable->m_bottom, 0.f);
-   Hit3DPoly * const ph3dpoly = new Hit3DPoly(rgv3D, 4); //!!
-   ph3dpoly->SetFriction(m_ptable->m_overridePhysics ? m_ptable->m_fOverrideContactFriction : m_ptable->m_friction);
-   ph3dpoly->m_elasticity = m_ptable->m_overridePhysics ? m_ptable->m_fOverrideElasticity : m_ptable->m_elasticity;
-   ph3dpoly->m_elasticityFalloff = m_ptable->m_overridePhysics ? m_ptable->m_fOverrideElasticityFalloff : m_ptable->m_elasticityFalloff;
-   ph3dpoly->m_scatter = ANGTORAD(m_ptable->m_overridePhysics ? m_ptable->m_fOverrideScatterAngle : m_ptable->m_scatter);
-   m_vho.push_back(ph3dpoly);
-   */
-
-   // playfield:
-   m_hitPlayfield = HitPlane(Vertex3Ds(0, 0, 1), 0.f);
-   m_hitPlayfield.SetFriction(m_ptable->m_overridePhysics ? m_ptable->m_fOverrideContactFriction : m_ptable->m_friction);
-   m_hitPlayfield.m_elasticity = m_ptable->m_overridePhysics ? m_ptable->m_fOverrideElasticity : m_ptable->m_elasticity;
-   m_hitPlayfield.m_elasticityFalloff = m_ptable->m_overridePhysics ? m_ptable->m_fOverrideElasticityFalloff : m_ptable->m_elasticityFalloff;
-   m_hitPlayfield.m_scatter = ANGTORAD(m_ptable->m_overridePhysics ? m_ptable->m_fOverrideScatterAngle : m_ptable->m_scatter);
-
-   // glass:
-   Vertex3Ds glassNormal(0, m_ptable->m_bottom - m_ptable->m_top, m_ptable->m_glassBottomHeight - m_ptable->m_glassTopHeight);
-   glassNormal.Normalize();
-   m_hitTopGlass = HitPlane(Vertex3Ds(0, glassNormal.z, -glassNormal.y), -m_ptable->m_glassTopHeight);
-   m_hitTopGlass.m_elasticity = 0.2f;
-}
-
-//
-// end of license:GPLv3+, back to 'old MAME'-like
-//
-
-void Player::InitDebugHitStructure()
-{
-   for (size_t i = 0; i < m_vhitables.size(); ++i)
-   {
-      Hitable * const ph = m_vhitables[i];
-      const size_t currentsize = m_vdebugho.size();
-      ph->GetHitShapesDebug(m_vdebugho);
-      const size_t newsize = m_vdebugho.size();
-      // Save the objects the trouble of having the set the idispatch pointer themselves
-      for (size_t hitloop = currentsize; hitloop < newsize; hitloop++)
-         m_vdebugho[hitloop]->m_pfedebug = m_ptable->m_vedit[i]->GetIFireEvents();
-   }
-
-   for (size_t i = 0; i < m_vdebugho.size(); ++i)
-   {
-      m_vdebugho[i]->CalcHitBBox(); // maybe needed to update here, as only done lazily for some objects (i.e. balls!)
-      m_debugoctree.AddElement(m_vdebugho[i]);
-   }
-
-   const FRect3D bbox = m_ptable->GetBoundingBox();
-   m_debugoctree.Initialize(FRect(bbox.left,bbox.right,bbox.top,bbox.bottom));
 }
 
 HRESULT Player::Init()
@@ -1008,7 +894,7 @@ HRESULT Player::Init()
       || ((lflip != ~0u) && (rflip != ~0u) && (GetAsyncKeyState(lflip) & 0x8000) && (GetAsyncKeyState(rflip) & 0x8000)))
    {
       m_ptable->m_tblMirrorEnabled = true;
-      int rotation = (int)(g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].GetRotation(m_renderer->m_pd3dPrimaryDevice->m_width, m_renderer->m_pd3dPrimaryDevice->m_height)) / 90;
+      int rotation = (int)(m_ptable->mViewSetups[m_ptable->m_BG_current_set].GetRotation(m_renderer->m_pd3dPrimaryDevice->m_width, m_renderer->m_pd3dPrimaryDevice->m_height)) / 90;
       m_renderer->GetMVP().SetFlip(rotation == 0 || rotation == 2 ? ModelViewProj::FLIPX : ModelViewProj::FLIPY);
    }
    else
@@ -1036,22 +922,7 @@ HRESULT Player::Init()
    m_renderer->m_pd3dPrimaryDevice->SetDefaultRenderState();
    m_renderer->InitLayout();
 
-   const float minSlope = (m_ptable->m_overridePhysics ? m_ptable->m_fOverrideMinSlope : m_ptable->m_angletiltMin);
-   const float maxSlope = (m_ptable->m_overridePhysics ? m_ptable->m_fOverrideMaxSlope : m_ptable->m_angletiltMax);
-   const float slope = minSlope + (maxSlope - minSlope) * m_ptable->m_globalDifficulty;
-
-   m_gravity.x = 0.f;
-   m_gravity.y =  sinf(ANGTORAD(slope))*(m_ptable->m_overridePhysics ? m_ptable->m_fOverrideGravityConstant : m_ptable->m_Gravity);
-   m_gravity.z = -cosf(ANGTORAD(slope))*(m_ptable->m_overridePhysics ? m_ptable->m_fOverrideGravityConstant : m_ptable->m_Gravity);
-
    m_Nudge = Vertex2D(0.f,0.f);
-
-   m_legacyNudgeTime = 0;
-
-   m_legacyNudge = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "EnableLegacyNudge"s, false);
-   m_legacyNudgeStrength = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "LegacyNudgeStrength"s, 1.f);
-
-   m_legacyNudgeBack = Vertex2D(0.f,0.f);
 
    m_movedPlunger = 0;
 
@@ -1122,104 +993,20 @@ HRESULT Player::Init()
    m_pEditorTable->m_progressDialog.SetName("Initializing Physics..."s);
    PLOGI << "Initializing physics"; // For profiling
 
-   // Initialize new nudging.
-   m_tableVel.SetZero();
-   m_tableDisplacement.SetZero();
-   m_tableVelOld.SetZero();
-   m_tableVelDelta.SetZero();
-
-   // Table movement (displacement u) is modeled as a mass-spring-damper system
-   //   u'' = -k u - c u'
-   // with a spring constant k and a damping coefficient c.
-   // See http://en.wikipedia.org/wiki/Damping#Linear_damping
-
-   const float nudgeTime = m_ptable->m_nudgeTime;      // T
-   constexpr float dampingRatio = 0.5f;                // zeta
-
-   // time for one half period (one swing and swing back):
-   //   T = pi / omega_d,
-   // where
-   //   omega_d = omega_0 * sqrt(1 - zeta^2)       (damped frequency)
-   //   omega_0 = sqrt(k)                          (undamped frequency)
-   // Solving for the spring constant k, we get
-   m_nudgeSpring = (float)(M_PI*M_PI) / (nudgeTime*nudgeTime * (1.0f - dampingRatio*dampingRatio));
-
-   // The formula for the damping ratio is
-   //   zeta = c / (2 sqrt(k)).
-   // Solving for the damping coefficient c, we get
-   m_nudgeDamping = dampingRatio * 2.0f * sqrtf(m_nudgeSpring);
-
    // Need to set timecur here, for init functions that set timers
    m_time_msec = 0;
 
    m_last_frame_time_msec = 0;
 
+   PLOGI << "Initializing Physics"; // For profiling
+
+   m_physics = new PhysicsEngine(m_ptable);
+   const float minSlope = (m_ptable->m_overridePhysics ? m_ptable->m_fOverrideMinSlope : m_ptable->m_angletiltMin);
+   const float maxSlope = (m_ptable->m_overridePhysics ? m_ptable->m_fOverrideMaxSlope : m_ptable->m_angletiltMax);
+   const float slope = minSlope + (maxSlope - minSlope) * m_ptable->m_globalDifficulty;
+   m_physics->SetGravity(slope, m_ptable->m_overridePhysics ? m_ptable->m_fOverrideGravityConstant : m_ptable->m_Gravity);
+
    InitFPS();
-   m_infoMode = IF_NONE;
-   m_infoProbeIndex = 0;
-
-   PLOGI << "Initializing Hitables"; // For profiling
-
-   for (size_t i = 0; i < m_ptable->m_vedit.size(); i++)
-   {
-      IEditable * const pe = m_ptable->m_vedit[i];
-      Hitable * const ph = pe->GetIHitable();
-      if (ph)
-      {
-#ifdef DEBUGPHYSICS
-         if(pe->GetScriptable())
-         {
-            CComBSTR bstr;
-            pe->GetScriptable()->get_Name(&bstr);
-            char * bstr2 = MakeChar(bstr);
-            CHAR wzDst[256];
-            sprintf_s(wzDst, sizeof(wzDst), "Initializing Object-Physics %s...", bstr2);
-            delete [] bstr2;
-            m_pEditorTable->m_progressDialog.SetName(wzDst);
-         }
-#endif
-         const size_t currentsize = m_vho.size();
-         ph->GetHitShapes(m_vho);
-         const size_t newsize = m_vho.size();
-         // Save the objects the trouble of having to set the idispatch pointer themselves
-         for (size_t hitloop = currentsize; hitloop < newsize; hitloop++)
-            m_vho[hitloop]->m_pfedebug = pe->GetIFireEvents();
-
-         ph->GetTimers(m_vht);
-
-         // build list of hitables
-         m_vhitables.push_back(ph);
-      }
-   }
-
-   m_pEditorTable->m_progressDialog.SetProgress(45);
-   PLOGI << "Initializing octree"; // For profiling
-
-   AddCabinetBoundingHitShapes();
-
-   for (size_t i = 0; i < m_vho.size(); ++i)
-   {
-      HitObject * const pho = m_vho[i];
-
-      pho->CalcHitBBox(); // maybe needed to update here, as only done lazily for some objects (i.e. balls!)
-      m_hitoctree.AddElement(pho);
-
-      if (pho->GetType() == eFlipper)
-         m_vFlippers.push_back((HitFlipper*)pho);
-
-      MoverObject * const pmo = pho->GetMoverObject();
-      if (pmo && pmo->AddToList()) // Spinner, Gate, Flipper, Plunger (ball is added separately on each create ball)
-         m_vmover.push_back(pmo);
-   }
-
-   const FRect3D tableBounds = m_ptable->GetBoundingBox();
-   m_hitoctree.Initialize(FRect(tableBounds.left,tableBounds.right,tableBounds.top,tableBounds.bottom));
-#if !defined(NDEBUG) && defined(PRINT_DEBUG_COLLISION_TREE)
-   m_hitoctree.DumpTree(0);
-#endif
-
-   // initialize hit structure for dynamic objects
-   m_hitoctree_dynamic.FillFromVector(m_vho_dynamic);
 
    //----------------------------------------------------------------------------------
 
@@ -1300,6 +1087,12 @@ HRESULT Player::Init()
    }
 
    // Start the frame.
+   for (auto editable : m_ptable->m_vedit)
+      if (editable->GetIHitable())
+      {
+         editable->GetIHitable()->GetTimers(m_vht);
+         m_vhitables.push_back(editable->GetIHitable());
+      }
    for (RenderProbe* probe : m_ptable->m_vrenderprobe)
       probe->RenderSetup(m_renderer->m_pd3dPrimaryDevice);
    for (Hitable* hitable : m_vhitables)
@@ -1350,24 +1143,8 @@ HRESULT Player::Init()
    m_renderer->UpdateStereoShaderState();
 
    wintimer_init();
-   m_StartTime_usec = usec();
-   m_curPhysicsFrameTime = m_StartTime_usec;
-   m_nextPhysicsFrameTime = m_curPhysicsFrameTime + PHYSICS_STEPTIME;
 
    m_liveUI = new LiveUI(m_renderer->m_pd3dPrimaryDevice);
-
-#ifdef PLAYBACK
-   if (m_playback)
-   {
-      float physicsStepTime;
-      ParseLog((LARGE_INTEGER*)&physicsStepTime, (LARGE_INTEGER*)&m_StartTime_usec);
-   }
-#endif
-
-#ifdef LOG
-   PLOGD.printf("Step Time %llu", m_StartTime_usec);
-   PLOGD.printf("End Frame");
-#endif
 
    m_pEditorTable->m_progressDialog.SetProgress(100);
    m_pEditorTable->m_progressDialog.SetName("Starting..."s);
@@ -1408,7 +1185,7 @@ HRESULT Player::Init()
    {
       const int numberOfTimesToShowTouchMessage = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "NumberOfTimesToShowTouchMessage"s, 10);
       g_pvp->m_settings.SaveValue(Settings::Player, "NumberOfTimesToShowTouchMessage"s, max(numberOfTimesToShowTouchMessage - 1, 0));
-      if (numberOfTimesToShowTouchMessage != 0);
+      if (numberOfTimesToShowTouchMessage != 0)
          m_liveUI->PushNotification("You can use Touch controls on this display: bottom left area to Start Game, bottom right area to use the Plunger\n"
                                     "lower left/right for Flippers, upper left/right for Magna buttons, top left for Credits and (hold) top right to Exit"s, 12000);
    }
@@ -1442,16 +1219,14 @@ Ball *Player::CreateBall(const float x, const float y, const float z, const floa
 
    pball->m_pfedebug = (IFireEvents *)pball->m_pballex;
 
-   m_vball.push_back(pball);
-   m_vmover.push_back(&pball->m_mover); // balls are always added separately to this list!
-
    pball->CalcHitBBox(); // need to update here, as only done lazily
-
-   m_vho_dynamic.push_back(pball);
-   m_hitoctree_dynamic.FillFromVector(m_vho_dynamic);
 
    if (!m_pactiveballDebug)
       m_pactiveballDebug = pball;
+
+   m_vball.push_back(pball);
+
+   m_physics->AddBall(pball);
 
    return pball;
 }
@@ -1460,29 +1235,87 @@ void Player::DestroyBall(Ball *pball)
 {
    if (!pball) return;
 
-   const bool activeball = (m_pactiveball == pball);
-   if (activeball)
-      m_pactiveball = nullptr;
+   RemoveFromVectorSingle(m_vball, pball);
+   m_vballDelete.push_back(pball);
+   m_physics->RemoveBall(pball);
 
-   const bool debugball = (m_pactiveballDebug == pball);
-   if (debugball)
-      m_pactiveballDebug = nullptr;
-
+   if (m_pactiveball == pball)
+      m_pactiveball = m_vball.empty() ? nullptr : m_vball.front();
+   if (m_pactiveballDebug == pball)
+      m_pactiveballDebug = m_vball.empty() ? nullptr : m_vball.front();
    if (m_pactiveballBC == pball)
       m_pactiveballBC = nullptr;
+}
 
-   RemoveFromVectorSingle(m_vball, pball);
-   RemoveFromVectorSingle<MoverObject*>(m_vmover, &pball->m_mover);
-   RemoveFromVectorSingle<HitObject*>(m_vho_dynamic, pball);
 
-   m_hitoctree_dynamic.FillFromVector(m_vho_dynamic);
+void Player::FireSyncController()
+{
+   // Legacy implementation: timers with magic interval value have special behaviors: -2 for controller sync event
+   g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_SCRIPT);
+   for (HitTimer *const pht : m_vht)
+      if (pht->m_interval == -2)
+         pht->m_pfe->FireGroupEvent(DISPID_TimerEvents_Timer);
+   g_frameProfiler.ExitProfileSection();
+}
 
-   m_vballDelete.push_back(pball);
+void Player::FireTimers(const unsigned int simulationTime)
+{
+   g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_SCRIPT);
+   Ball *const old_pactiveball = g_pplayer->m_pactiveball;
+   g_pplayer->m_pactiveball = nullptr; // No ball is the active ball for timers/key events
+   for (HitTimer *const pht : m_vht)
+   {
+      if (pht->m_interval >= 0 && pht->m_nextfire <= simulationTime)
+      {
+         const unsigned int curnextfire = pht->m_nextfire;
+         pht->m_pfe->FireGroupEvent(DISPID_TimerEvents_Timer);
+         // Only add interval if the next fire time hasn't changed since the event was run. 
+         // Handles corner case:
+         //Timer1.Enabled = False
+         //Timer1.Interval = 1000
+         //Timer1.Enabled = True
+         if (curnextfire == pht->m_nextfire && pht->m_interval > 0)
+            while (pht->m_nextfire <= simulationTime)
+               pht->m_nextfire += pht->m_interval;
+      }
+   }
+   g_pplayer->m_pactiveball = old_pactiveball;
+   g_frameProfiler.ExitProfileSection();
+}
 
-   if (debugball && !m_vball.empty())
-      m_pactiveballDebug = m_vball.front();
-   if (activeball && !m_vball.empty())
-      m_pactiveball = m_vball.front();
+void Player::DeferTimerStateChange(HitTimer * const hittimer, bool enabled)
+{
+   // fakes the disabling of the timer, until it will be catched by the cleanup via m_changed_vht
+   hittimer->m_nextfire = enabled ? m_time_msec + hittimer->m_interval : 0xFFFFFFFF;
+   // to avoid problems with timers dis/enabling themselves, store all the changes in a list
+   for (auto changed_ht : m_changed_vht)
+      if (changed_ht.m_timer == hittimer)
+      {
+         changed_ht.m_enabled = enabled;
+         return;
+      }
+   TimerOnOff too;
+   too.m_enabled = enabled;
+   too.m_timer = hittimer;
+   m_changed_vht.push_back(too);
+}
+
+void Player::ApplyDeferredTimerChanges()
+{
+   // do the en/disable changes for the timers that piled up
+   for (size_t i = 0; i < m_changed_vht.size(); ++i)
+      if (m_changed_vht[i].m_enabled) // add the timer?
+      {
+         if (FindIndexOf(m_vht, m_changed_vht[i].m_timer) < 0)
+            m_vht.push_back(m_changed_vht[i].m_timer);
+      }
+      else // delete the timer?
+      {
+         const int idx = FindIndexOf(m_vht, m_changed_vht[i].m_timer);
+         if (idx >= 0)
+            m_vht.erase(m_vht.begin() + idx);
+      }
+   m_changed_vht.clear();
 }
 
 
@@ -1509,9 +1342,6 @@ void Player::NudgeY(const int y, const int joyidx)
    if (y < -m_ptable->m_tblAccelMax.y) v = -m_ptable->m_tblAccelMax.y;
    m_curAccel[joyidx].y = v;
 }
-
-#define GetNudgeX() (((F32)m_curAccel[0].x) * (F32)(2.0 / JOYRANGE)) // Get the -2 .. 2 values from joystick input tilt sensor / ushock //!! why 2?
-#define GetNudgeY() (((F32)m_curAccel[0].y) * (F32)(2.0 / JOYRANGE))
 
 #ifdef UNUSED_TILT
 int Player::NudgeGetTilt()
@@ -1569,7 +1399,7 @@ void Player::NudgeUpdate()      // called on every integral physics frame
          dx = -dx;
             m_Nudge.x += m_ptable->m_tblAccelAmp.x * (dx*cna + dy*sna) * (1.0f - nudge_get_sensitivity()); // calc Green's transform component for X
       const float nugY = m_ptable->m_tblAccelAmp.y * (dy*cna - dx*sna) * (1.0f - nudge_get_sensitivity()); // calc Green's transform component for Y
-      m_Nudge.y = m_ptable->m_tblAccelNormalMount ? (m_Nudge.y + nugY) : (m_Nudge.y - nugY);               // add as left or right hand coordinate system
+      m_Nudge.y += m_ptable->m_tblAccelNormalMount ? nugY : -nugY;               // add as left or right hand coordinate system
    }
 }
 
@@ -1653,7 +1483,7 @@ float PlungerMoverObject::MechPlunger() const
       // scaling factor between physical units and joystick units must be the same on the
       // positive and negative sides.  (The maximum forward position is not calibrated.)
       const float m = (1.0f - m_restPos)*(float)(1.0 / JOYRANGEMX), b = m_restPos;
-      return m*g_pplayer->m_curMechPlungerPos + b;
+      return m * g_pplayer->m_curMechPlungerPos + b;
    }
    else
    {
@@ -1661,7 +1491,7 @@ float PlungerMoverObject::MechPlunger() const
       // position reads as 0, the fully retracted position reads as JOYRANGEMN, and the
       // full forward position reads as JOYRANGMN.
       const float range = (float)JOYRANGEMX * (1.0f - m_restPos) - (float)JOYRANGEMN *m_restPos; // final range limit
-      const float tmp = (g_pplayer->m_curMechPlungerPos < 0) ? g_pplayer->m_curMechPlungerPos*m_restPos : g_pplayer->m_curMechPlungerPos*(1.0f - m_restPos);
+      const float tmp = (g_pplayer->m_curMechPlungerPos < 0) ? g_pplayer->m_curMechPlungerPos * m_restPos : g_pplayer->m_curMechPlungerPos * (1.0f - m_restPos);
       return tmp / range + m_restPos;              //scale and offset
    }
 }
@@ -1857,519 +1687,13 @@ IF_DEBUG_NUDGE(void NudgeFilter::dbg(const char *fmt, ...) {
 })
 
 // apply nudge acceleration data filtering
-void Player::FilterNudge()
+void Player::FilterNudge(U64 timeStamp)
 {
-   m_NudgeFilterX.sample(m_Nudge.x, m_curPhysicsFrameTime);
-   m_NudgeFilterY.sample(m_Nudge.y, m_curPhysicsFrameTime);
+   m_NudgeFilterX.sample(m_Nudge.x, timeStamp);
+   m_NudgeFilterY.sample(m_Nudge.y, timeStamp);
 }
 
 //++++++++++++++++++++++++++++++++++++++++
-
-void Player::SetGravity(float slopeDeg, float strength)
-{
-   m_gravity.x = 0;
-   m_gravity.y = sinf(ANGTORAD(slopeDeg)) * strength;
-   m_gravity.z = -cosf(ANGTORAD(slopeDeg)) * strength;
-}
-
-void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this time
-{
-   // PLOGD << "Cycle " << dtime;
-
-   int StaticCnts = STATICCNTS; // maximum number of static counts
-   // it's okay to have this code outside of the inner loop, as the ball hitrects already include the maximum distance they can travel in that timespan
-   m_hitoctree_dynamic.Update();
-
-   while (dtime > 0.f)
-   {
-      // first find hits, if any +++++++++++++++++++++ 
-#ifdef DEBUGPHYSICS
-      c_timesearch++;
-#endif
-      float hittime = dtime;       // begin time search from now ...  until delta ends
-
-      // find earliest time where a flipper collides with its stop
-      for (size_t i = 0; i < m_vFlippers.size(); ++i)
-      {
-         const float fliphit = m_vFlippers[i]->GetHitTime();
-         //if ((fliphit >= 0.f) && !sign(fliphit) && (fliphit <= hittime))
-         if ((fliphit > 0.f) && (fliphit <= hittime)) //!! >= 0.f causes infinite loop
-            hittime = fliphit;
-      }
-
-      m_recordContacts = true;
-      m_contacts.clear();
-
-#ifdef USE_EMBREE
-      for (size_t i = 0; i < m_vball.size(); i++)
-         if (!m_vball[i]->m_d.m_lockedInKicker
-#ifdef C_DYNAMIC
-             && m_vball[i]->m_dynamic > 0
-#endif
-            ) // don't play with frozen balls
-         {
-            m_vball[i]->m_coll.m_hittime = hittime; // search upto current hittime
-            m_vball[i]->m_coll.m_obj = nullptr;
-         }
-
-      if (!m_vball.empty())
-      {
-         m_hitoctree.HitTestBall(m_vball);         // find the hit objects hit times
-         m_hitoctree_dynamic.HitTestBall(m_vball); // dynamic objects !! should reuse the same embree scene created already in m_hitoctree.HitTestBall!
-      }
-#endif
-
-      for (size_t i = 0; i < m_vball.size(); i++)
-      {
-         Ball * const pball = m_vball[i];
-
-         if (!pball->m_d.m_lockedInKicker
-#ifdef C_DYNAMIC
-             && pball->m_dynamic > 0
-#endif
-            ) // don't play with frozen balls
-         {
-#ifndef USE_EMBREE
-            pball->m_coll.m_hittime = hittime;          // search upto current hittime
-            pball->m_coll.m_obj = nullptr;
-#endif
-            // always check for playfield and top glass
-            if (m_implicitPlayfieldMesh)
-               DoHitTest(pball, &m_hitPlayfield, pball->m_coll);
-
-            DoHitTest(pball, &m_hitTopGlass, pball->m_coll);
-
-#ifndef USE_EMBREE
-            if (rand_mt_01() < 0.5f) // swap order of dynamic and static obj checks randomly
-            {
-               m_hitoctree_dynamic.HitTestBall(pball, pball->m_coll); // dynamic objects
-               m_hitoctree.HitTestBall(pball, pball->m_coll);         // find the static hit objects hit times
-            }
-            else
-            {
-               m_hitoctree.HitTestBall(pball, pball->m_coll);         // find the static hit objects hit times
-               m_hitoctree_dynamic.HitTestBall(pball, pball->m_coll); // dynamic objects
-            }
-#endif
-            const float htz = pball->m_coll.m_hittime; // this ball's hit time
-            if (htz < 0.f) pball->m_coll.m_obj = nullptr; // no negative time allowed
-
-            if (pball->m_coll.m_obj)                   // hit object
-            {
-#ifdef DEBUGPHYSICS
-               ++c_hitcnts;                            // stats for display
-
-               if (/*pball->m_coll.m_hitRigid &&*/ pball->m_coll.m_hitdistance < -0.0875f) //rigid and embedded
-                  ++c_embedcnts;
-#endif
-               ///////////////////////////////////////////////////////////////////////////
-
-               if (htz <= hittime)                     // smaller hit time??
-               {
-                  hittime = htz;                       // record actual event time
-
-                  if (hittime < STATICTIME)            // less than static time interval
-                  {
-                     /*if (!pball->m_coll.m_hitRigid) hittime = STATICTIME; // non-rigid ... set Static time
-                     else*/ if (--StaticCnts < 0)
-                     {
-                        StaticCnts = 0;                // keep from wrapping
-                        hittime = STATICTIME;
-                     }
-                  }
-               }
-            }
-         }
-      } // end loop over all balls
-
-      m_recordContacts = false;
-
-      // hittime now set ... or full frame if no hit 
-      // now update displacements to collide-contact or end of physics frame
-      // !!!!! 2) move objects to hittime
-
-      if (hittime > STATICTIME) StaticCnts = STATICCNTS; // allow more zeros next round
-
-      for (size_t i = 0; i < m_vmover.size(); i++)
-         m_vmover[i]->UpdateDisplacements(hittime); // step 2: move the objects about according to velocities (spinner, gate, flipper, plunger, ball)
-
-      // find balls that need to be collided and script'ed (generally there will be one, but more are possible)
-
-      for (size_t i = 0; i < m_vball.size(); i++) // use m_vball.size(), in case script deletes a ball
-      {
-         Ball * const pball = m_vball[i];
-
-         if (
-#ifdef C_DYNAMIC
-             pball->m_dynamic > 0 &&
-#endif
-             pball->m_coll.m_obj && pball->m_coll.m_hittime <= hittime) // find balls with hit objects and minimum time
-         {
-            // now collision, contact and script reactions on active ball (object)+++++++++
-            HitObject * const pho = pball->m_coll.m_obj; // object that ball hit in trials
-            m_pactiveball = pball;                       // For script that wants the ball doing the collision
-#ifdef DEBUGPHYSICS
-            c_collisioncnt++;
-#endif
-            pho->Collide(pball->m_coll);                 //!!!!! 3) collision on active ball
-            pball->m_coll.m_obj = nullptr;                  // remove trial hit object pointer
-
-            // Collide may have changed the velocity of the ball, 
-            // and therefore the bounding box for the next hit cycle
-            if (m_vball[i] != pball) // Ball still exists? may have been deleted from list
-            {
-               // collision script deleted the ball, back up one count
-               --i;
-               continue;
-            }
-            else
-            {
-#ifdef C_DYNAMIC
-               // is this ball static? .. set static and quench        
-               if (/*pball->m_coll.m_hitRigid &&*/ (pball->m_coll.m_hitdistance < (float)PHYS_TOUCH)) //rigid and close distance contacts //!! rather test isContact??
-               {
-                  const float mag = pball->m_vel.x*pball->m_vel.x + pball->m_vel.y*pball->m_vel.y; // values below are taken from simulation
-                  if (pball->m_drsq < 8.0e-5f && mag < 1.0e-3f*m_ptable->m_Gravity*m_ptable->m_Gravity / GRAVITYCONST / GRAVITYCONST && fabsf(pball->m_vel.z) < 0.2f*m_ptable->m_Gravity / GRAVITYCONST)
-                  {
-                     if (--pball->m_dynamic <= 0)             //... ball static, cancels next gravity increment
-                     {                                       // m_dynamic is cleared in ball gravity section
-                        pball->m_dynamic = 0;
-#ifdef DEBUGPHYSICS
-                        c_staticcnt++;
-#endif
-                        pball->m_vel.x = pball->m_vel.y = pball->m_vel.z = 0.f; //quench the remaining velocity and set ...
-                     }
-                  }
-               }
-#endif
-            }
-         }
-      }
-
-#ifdef DEBUGPHYSICS
-      c_contactcnt = (U32)m_contacts.size();
-#endif
-      /*
-       * Now handle contacts.
-       *
-       * At this point UpdateDisplacements() was already called, so the state is different
-       * from that at HitTest(). However, contacts have zero relative velocity, so
-       * hopefully nothing catastrophic has happened in the meanwhile.
-       *
-       * Maybe a two-phase setup where we first process only contacts, then only collisions
-       * could also work.
-       */
-      if (rand_mt_01() < 0.5f) // swap order of contact handling randomly
-         for (size_t i = 0; i < m_contacts.size(); ++i)
-            //if (m_contacts[i].m_hittime <= hittime) // does not happen often, and values then look sane, so do this check //!! why does this break some collisions (MM NZ&TT Reloaded Skitso, also CCC (Saloon))? maybe due to ball colliding with multiple things and then some sideeffect?
-               m_contacts[i].m_obj->Contact(m_contacts[i], hittime);
-      else
-         for (size_t i = m_contacts.size() - 1; i != -1; --i)
-            //if (m_contacts[i].m_hittime <= hittime) // does not happen often, and values then look sane, so do this check //!! why does this break some collisions (MM NZ&TT Reloaded Skitso, also CCC (Saloon))? maybe due to ball colliding with multiple things and then some sideeffect?
-               m_contacts[i].m_obj->Contact(m_contacts[i], hittime);
-
-      m_contacts.clear();
-
-#ifdef C_BALL_SPIN_HACK
-      // hacky killing of ball spin on resting balls (very low and very high spinning)
-      for (size_t i = 0; i < m_vball.size(); i++)
-      {
-         Ball * const pball = m_vball[i];
-
-         const unsigned int p0 = (pball->m_ringcounter_oldpos / (10000 / PHYSICS_STEPTIME) + 1) % MAX_BALL_TRAIL_POS;
-         const unsigned int p1 = (pball->m_ringcounter_oldpos / (10000 / PHYSICS_STEPTIME) + 2) % MAX_BALL_TRAIL_POS;
-
-         if (/*pball->m_coll.m_hitRigid &&*/ (pball->m_coll.m_hitdistance < (float)PHYS_TOUCH) && (pball->m_oldpos[p0].x != FLT_MAX) && (pball->m_oldpos[p1].x != FLT_MAX)) // only if already initialized
-         {
-            /*const float mag = pball->m_vel.x*pball->m_vel.x + pball->m_vel.y*pball->m_vel.y; // values below are copy pasted from above
-            if (pball->m_drsq < 8.0e-5f && mag < 1.0e-3f*m_ptable->m_Gravity*m_ptable->m_Gravity / GRAVITYCONST / GRAVITYCONST && fabsf(pball->m_vel.z) < 0.2f*m_ptable->m_Gravity / GRAVITYCONST
-            && pball->m_angularmomentum.Length() < 0.9f*m_ptable->m_Gravity / GRAVITYCONST
-            ) //&& rand_mt_01() < 0.95f)
-            {
-            pball->m_angularmomentum *= 0.05f; // do not kill spin completely, otherwise stuck balls will happen during regular gameplay
-            }*/
-
-            const Vertex3Ds diff_pos = pball->m_oldpos[p0] - pball->m_d.m_pos;
-            const float mag = diff_pos.x*diff_pos.x + diff_pos.y*diff_pos.y;
-            const Vertex3Ds diff_pos2 = pball->m_oldpos[p1] - pball->m_d.m_pos;
-            const float mag2 = diff_pos2.x*diff_pos2.x + diff_pos2.y*diff_pos2.y;
-
-            const float threshold = (pball->m_angularmomentum.x*pball->m_angularmomentum.x + pball->m_angularmomentum.y*pball->m_angularmomentum.y) / max(mag, mag2);
-
-            if (!infNaN(threshold) && threshold > 666.f)
-            {
-               const float damp = clamp(1.0f - (threshold - 666.f) / 10000.f, 0.23f, 1.f); // do not kill spin completely, otherwise stuck balls will happen during regular gameplay
-               pball->m_angularmomentum *= damp;
-            }
-         }
-      }
-#endif
-
-      dtime -= hittime;       //new delta .. i.e. time remaining
-
-      m_swap_ball_collision_handling = !m_swap_ball_collision_handling; // swap order of ball-ball collisions
-
-   } // end physics loop
-}
-
-void Player::UpdatePhysics()
-{
-   g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_PHYSICS);
-   U64 initial_time_usec = usec();
-
-   // DJRobX's crazy latency-reduction code
-   U64 delta_frame = 0;
-   if (m_minphyslooptime > 0 && m_lastFlipTime > 0)
-   {
-      // We want the physics loops to sync up to the frames, not
-      // the post-render period, as that can cause some judder.
-      delta_frame = initial_time_usec - m_lastFlipTime;
-      initial_time_usec -= delta_frame;
-   }
-
-   if (m_noTimeCorrect) // After debugging script
-   {
-      // Shift whole game forward in time
-      m_StartTime_usec       += initial_time_usec - m_curPhysicsFrameTime;
-      m_nextPhysicsFrameTime += initial_time_usec - m_curPhysicsFrameTime;
-      m_curPhysicsFrameTime   = initial_time_usec; // 0 time frame
-      m_noTimeCorrect = false;
-   }
-
-#ifdef STEPPING
-#ifndef EVENPHYSICSTIME
-   if (m_debugWindowActive || m_userDebugPaused)
-   {
-      // Shift whole game forward in time
-      m_StartTime_usec       += initial_time_usec - m_curPhysicsFrameTime;
-      m_nextPhysicsFrameTime += initial_time_usec - m_curPhysicsFrameTime;
-      if (m_step)
-      {
-         // Walk one physics step forward
-         m_curPhysicsFrameTime = initial_time_usec - PHYSICS_STEPTIME;
-         m_step = false;
-      }
-      else
-         m_curPhysicsFrameTime = initial_time_usec; // 0 time frame
-   }
-#endif
-#endif
-
-#ifdef EVENPHYSICSTIME
-   if (!m_pause || m_step)
-   {
-      initial_time_usec = m_curPhysicsFrameTime - 3547811060 + 3547825450;
-      m_step = false;
-   }
-   else
-      initial_time_usec = m_curPhysicsFrameTime;
-#endif
-
-#ifdef LOG
-   const double timepassed = (double)(initial_time_usec - m_curPhysicsFrameTime) / 1000000.0;
-
-   const float frametime =
-#ifdef PLAYBACK
-      (!m_playback) ? (float)(timepassed * 100.0) : ParseLog((LARGE_INTEGER*)&initial_time_usec, (LARGE_INTEGER*)&m_nextPhysicsFrameTime);
-#else
-#define TIMECORRECT 1
-#ifdef TIMECORRECT
-      (float)(timepassed * 100.0);
-   // 1.456927f;
-#else
-      0.45f;
-#endif
-#endif //PLAYBACK
-
-   PLOGD.printf("Frame Time %.20f %u %u %u %u", frametime, initial_time_usec >> 32, initial_time_usec, m_nextPhysicsFrameTime >> 32, m_nextPhysicsFrameTime);
-   PLOGD.printf("End Frame");
-#endif
-
-   m_phys_iterations = 0;
-
-   while (m_curPhysicsFrameTime < initial_time_usec) // loop here until current (real) time matches the physics (simulated) time
-   {
-      // Get time in milliseconds for timers
-      m_time_msec = (U32)((m_curPhysicsFrameTime - m_StartTime_usec) / 1000);
-
-      m_phys_iterations++;
-
-      // Get the time until the next physics tick is done, and get the time
-      // until the next frame is done
-      // If the frame is the next thing to happen, update physics to that
-      // point next update acceleration, and continue loop
-
-      const float physics_diff_time = (float)((double)(m_nextPhysicsFrameTime - m_curPhysicsFrameTime)*(1.0 / DEFAULT_STEPTIME));
-      //const float physics_to_graphic_diff_time = (float)((double)(initial_time_usec - m_curPhysicsFrameTime)*(1.0 / DEFAULT_STEPTIME));
-
-      //if (physics_to_graphic_diff_time < physics_diff_time)          // is graphic frame time next???
-      //{
-      //      PhysicsSimulateCycle(physics_to_graphic_diff_time);      // advance physics to this time
-      //      m_curPhysicsFrameTime = initial_time_usec;               // now current to the wall clock
-      //      break;  //this is the common exit from the loop          // exit skipping accelerate
-      //}                     // some rare cases will exit from while()
-
-
-      // DJRobX's crazy latency-reduction code: Artificially lengthen the execution of the physics loop by X usecs, to give more opportunities to read changes from input(s) (try values in the multiple 100s up to maximum 1000 range, in general: the more, the faster the CPU is)
-      //                                        Intended mainly to be used if vsync is enabled (e.g. most idle time is shifted from vsync-waiting to here)
-      if (m_minphyslooptime > 0)
-      {
-         const U64 basetime = usec();
-         const U64 targettime = ((U64)m_minphyslooptime * m_phys_iterations) + m_lastFlipTime;
-         // If we're 3/4 of the way through the loop, fire a "controller sync" timer (timers with an interval set to -2) event so VPM can react to input.
-         if (m_phys_iterations == 750 / ((int)m_fps + 1))
-         {
-            g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_SCRIPT);
-            for (HitTimer *const pht : m_vht)
-               if (pht->m_interval == -2)
-                  pht->m_pfe->FireGroupEvent(DISPID_TimerEvents_Timer);
-            g_frameProfiler.ExitProfileSection();
-         }
-         if (basetime < targettime)
-         {
-            g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_SLEEP);
-            uSleep(targettime - basetime);
-            g_frameProfiler.ExitProfileSection();
-         }
-      }
-      // end DJRobX's crazy code
-      const U64 cur_time_usec = usec()-delta_frame; //!! one could also do this directly in the while loop condition instead (so that the while loop will really match with the current time), but that leads to some stuttering on some heavy frames
-
-      // hung in the physics loop over 200 milliseconds or the number of physics iterations to catch up on is high (i.e. very low/unplayable FPS)
-      if ((cur_time_usec - initial_time_usec > 200000) || (m_phys_iterations > ((m_ptable->m_PhysicsMaxLoops == 0) || (m_ptable->m_PhysicsMaxLoops == 0xFFFFFFFFu) ? 0xFFFFFFFFu : (m_ptable->m_PhysicsMaxLoops*(10000 / PHYSICS_STEPTIME))/*2*/)))
-      {                                                             // can not keep up to real time
-         m_curPhysicsFrameTime  = initial_time_usec;                // skip physics forward ... slip-cycles -> 'slowed' down physics
-         m_nextPhysicsFrameTime = initial_time_usec + PHYSICS_STEPTIME;
-         break;                                                     // go draw frame
-      }
-
-      //update keys, hid, plumb, nudge, timers, etc
-      //const U32 sim_msec = (U32)(m_curPhysicsFrameTime / 1000);
-      const U32 cur_time_msec = (U32)(cur_time_usec / 1000);
-
-      m_pininput.ProcessKeys(/*sim_msec,*/ cur_time_msec);
-
-      mixer_update();
-      hid_update(/*sim_msec*/cur_time_msec);
-      plumb_update(/*sim_msec*/cur_time_msec, GetNudgeX(), GetNudgeY());
-
-#ifdef ACCURATETIMERS
-      // do the en/disable changes for the timers that piled up
-      for(size_t i = 0; i < m_changed_vht.size(); ++i)
-          if (m_changed_vht[i].m_enabled) // add the timer?
-          {
-              if (FindIndexOf(m_vht, m_changed_vht[i].m_timer) < 0)
-                  m_vht.push_back(m_changed_vht[i].m_timer);
-          }
-          else // delete the timer?
-          {
-              const int idx = FindIndexOf(m_vht, m_changed_vht[i].m_timer);
-              if (idx >= 0)
-                  m_vht.erase(m_vht.begin() + idx);
-          }
-      m_changed_vht.clear();
-
-      Ball * const old_pactiveball = m_pactiveball;
-      m_pactiveball = nullptr; // No ball is the active ball for timers/key events
-
-      if (m_videoSyncMode == VideoSyncMode::VSM_FRAME_PACING || g_frameProfiler.Get(FrameProfiler::PROFILE_SCRIPT) <= 1000 * MAX_TIMERS_MSEC_OVERALL) // if overall script time per frame exceeded, skip
-      {
-         const unsigned int p_timeCur = (unsigned int)((m_curPhysicsFrameTime - m_StartTime_usec) / 1000); // milliseconds
-
-         g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_SCRIPT);
-         for (size_t i = 0; i < m_vht.size(); i++)
-         {
-            HitTimer * const pht = m_vht[i];
-            if (pht->m_interval >= 0 && pht->m_nextfire <= p_timeCur)
-            {
-               const unsigned int curnextfire = pht->m_nextfire;
-               pht->m_pfe->FireGroupEvent(DISPID_TimerEvents_Timer);
-               // Only add interval if the next fire time hasn't changed since the event was run. 
-               // Handles corner case:
-               //Timer1.Enabled = False
-               //Timer1.Interval = 1000
-               //Timer1.Enabled = True
-               if (curnextfire == pht->m_nextfire && pht->m_interval > 0)
-                  while (pht->m_nextfire <= p_timeCur)
-                     pht->m_nextfire += pht->m_interval;
-            }
-         }
-         g_frameProfiler.ExitProfileSection();
-      }
-
-      m_pactiveball = old_pactiveball;
-#endif
-
-      NudgeUpdate();       // physics_diff_time is the balance of time to move from the graphic frame position to the next
-      MechPlungerUpdate(); // integral physics frame. So the previous graphics frame was (1.0 - physics_diff_time) before 
-      // this integral physics frame. Accelerations and inputs are always physics frame aligned
-
-      // table movement is modeled as a mass-spring-damper system
-      //   u'' = -k u - c u'
-      // with a spring constant k and a damping coefficient c
-      const Vertex3Ds force = -m_nudgeSpring * m_tableDisplacement - m_nudgeDamping * m_tableVel;
-      m_tableVel          += (float)PHYS_FACTOR * force;
-      m_tableDisplacement += (float)PHYS_FACTOR * m_tableVel;
-
-      m_tableVelDelta = m_tableVel - m_tableVelOld;
-      m_tableVelOld = m_tableVel;
-
-      // legacy/VP9 style keyboard nudging
-      if (m_legacyNudge && m_legacyNudgeTime != 0)
-      {
-          --m_legacyNudgeTime;
-
-          if (m_legacyNudgeTime == 95)
-          {
-              m_Nudge.x = -m_legacyNudgeBack.x * 2.0f;
-              m_Nudge.y =  m_legacyNudgeBack.y * 2.0f;
-          }
-          else if (m_legacyNudgeTime == 90)
-          {
-              m_Nudge.x =  m_legacyNudgeBack.x;
-              m_Nudge.y = -m_legacyNudgeBack.y;
-          }
-
-          if (m_NudgeShake > 0.0f)
-              m_renderer->SetScreenOffset(m_NudgeShake * m_legacyNudgeBack.x * sqrf((float)m_legacyNudgeTime*0.01f), -m_NudgeShake * m_legacyNudgeBack.y * sqrf((float)m_legacyNudgeTime*0.01f));
-      }
-      else
-          if (m_NudgeShake > 0.0f)
-          {
-              // NB: in table coordinates, +Y points down, but in screen coordinates, it points up,
-              // so we have to flip the y component
-              m_renderer->SetScreenOffset(m_NudgeShake * m_tableDisplacement.x, -m_NudgeShake * m_tableDisplacement.y);
-          }
-
-      // Apply our filter to the nudge data
-      if (m_pininput.m_enable_nudge_filter)
-         FilterNudge();
-
-      for (size_t i = 0; i < m_vmover.size(); i++)
-         m_vmover[i]->UpdateVelocities();      // always on integral physics frame boundary (spinner, gate, flipper, plunger, ball)
-
-      //primary physics loop
-      PhysicsSimulateCycle(physics_diff_time); // main simulator call
-
-      //ball trail, keep old pos of balls
-      for (size_t i = 0; i < m_vball.size(); i++)
-      {
-         Ball * const pball = m_vball[i];
-         pball->m_oldpos[pball->m_ringcounter_oldpos / (10000 / PHYSICS_STEPTIME)] = pball->m_d.m_pos;
-
-         pball->m_ringcounter_oldpos++;
-         if (pball->m_ringcounter_oldpos == MAX_BALL_TRAIL_POS*(10000 / PHYSICS_STEPTIME))
-            pball->m_ringcounter_oldpos = 0;
-      }
-
-      //slintf( "PT: %f %f %u %u %u\n", physics_diff_time, physics_to_graphic_diff_time, (U32)(m_curPhysicsFrameTime/1000), (U32)(initial_time_usec/1000), cur_time_msec );
-
-      m_curPhysicsFrameTime = m_nextPhysicsFrameTime; // new cycle, on physics frame boundary
-      m_nextPhysicsFrameTime += PHYSICS_STEPTIME;     // advance physics position
-   } // end while (m_curPhysicsFrameTime < initial_time_usec)
-
-   g_frameProfiler.ExitProfileSection();
-}
 
 #pragma endregion
 
@@ -2386,29 +1710,14 @@ string Player::GetPerfInfo()
    lastUpdate = now;
    std::ostringstream info;
    info << std::fixed << std::setprecision(1);
+   
+   const bool resetMax = m_time_msec - m_lastMaxChangeTime > 1000;
 
-   if (g_frameProfiler.GetPrev(FrameProfiler::PROFILE_PHYSICS) > m_phys_max || m_time_msec - m_lastMaxChangeTime > 1000)
-      m_phys_max = g_frameProfiler.GetPrev(FrameProfiler::PROFILE_PHYSICS);
-
-   if (m_phys_iterations > m_phys_max_iterations || m_time_msec - m_lastMaxChangeTime > 1000)
-      m_phys_max_iterations = m_phys_iterations;
-
-   if (g_frameProfiler.GetPrev(FrameProfiler::PROFILE_SCRIPT) > m_script_max || m_time_msec - m_lastMaxChangeTime > 1000)
+   if (g_frameProfiler.GetPrev(FrameProfiler::PROFILE_SCRIPT) > m_script_max || resetMax)
       m_script_max = g_frameProfiler.GetPrev(FrameProfiler::PROFILE_SCRIPT);
 
-   if (m_time_msec - m_lastMaxChangeTime > 1000)
+   if (resetMax)
       m_lastMaxChangeTime = m_time_msec;
-
-   if (m_count == 0)
-   {
-      m_phys_total_iterations = m_phys_iterations;
-      m_count = 1;
-   }
-   else
-   {
-      m_phys_total_iterations += m_phys_iterations;
-      m_count++;
-   }
 
    // Renderer additional information
    info << "Triangles: " << ((m_renderer->m_pd3dPrimaryDevice->m_frameDrawnTriangles + 999) / 1000) << "k per frame, "
@@ -2422,20 +1731,9 @@ string Player::GetPerfInfo()
    info << "\n";
 
    // Physics additional information
-   info << "Physics: " << m_phys_iterations << " iterations per frame (" << ((U32)(m_phys_total_iterations / m_count)) << " avg " << m_phys_max_iterations
-        << " max)    Ball Velocity / Ang.Vel.: " << (m_pactiveball ? (m_pactiveball->m_d.m_vel + (float)PHYS_FACTOR * m_gravity).Length() : -1.f) << " "
+   info << m_physics->GetPerfInfo(resetMax);
+   info << "Ball Velocity / Ang.Vel.: " << (m_pactiveball ? (m_pactiveball->m_d.m_vel + (float)PHYS_FACTOR * m_physics->GetGravity()).Length() : -1.f) << " "
         << (m_pactiveball ? (m_pactiveball->m_angularmomentum / m_pactiveball->Inertia()).Length() : -1.f) << "\n";
-#ifdef DEBUGPHYSICS
-   info << std::setprecision(5);
-   info << "Hits:" << c_hitcnts << " Collide:" << c_collisioncnt << " Ctacs:" << c_contactcnt;
-#ifdef C_DYNAMIC
-   info << " Static:" << c_staticcnt;
-#endif
-   info << " Embed:" << c_embedcnts << " TimeSearch:" << c_timesearch << "\n";
-   info << "kDObjects:" << c_kDObjects << " kD:" << c_kDNextlevels << " QuadObjects:" << c_quadObjects << " Quadtree:" << c_quadNextlevels << " Traversed:" << c_traversed
-        << " Tested:" << c_tested << " DeepTested:" << c_deepTested << "\n";
-   info << std::setprecision(1);
-#endif
 
    info << "Left Flipper keypress to rotate: "
       << ((INT64)(m_pininput.m_leftkey_down_usec_rotate_to_end - m_pininput.m_leftkey_down_usec) < 0 ? int_as_float(0x7FC00000) : (double)(m_pininput.m_leftkey_down_usec_rotate_to_end - m_pininput.m_leftkey_down_usec) / 1000.) << " ms ("
@@ -2630,8 +1928,8 @@ void Player::OnIdle()
       {
          // Trigger key events before processing physics, also allows to sync with VPM
          m_pininput.ProcessKeys(/*sim_msec,*/ -(int)msec());
-         UpdatePhysics();
-         PLOGI_IF(debugLog && m_phys_iterations > 0) << "Input/Physics done (" << m_phys_iterations << " iterations)";
+         m_physics->UpdatePhysics();
+         PLOGI_IF(debugLog && m_physics->GetPerfNIterations() > 0) << "Input/Physics done (" << m_physics->GetPerfNIterations() << " iterations)";
       }
    }
    else
@@ -2650,7 +1948,7 @@ void Player::OnIdle()
 
       // Physics/Timer updates, done at the last moment, especially to handle key input (VP<->VPM roundtrip) and animation triggers
       if (!m_pause && m_minphyslooptime == 0) // (vsync) latency reduction code not active? -> Do Physics Updates here
-         UpdatePhysics();
+         m_physics->UpdatePhysics();
 
       PrepareFrame();
 
@@ -2659,7 +1957,7 @@ void Player::OnIdle()
       // DJRobX's crazy latency-reduction code active? Insert some Physics updates before vsync'ing
       if (!m_pause && m_minphyslooptime > 0)
       {
-         UpdatePhysics();
+         m_physics->UpdatePhysics();
          m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(m_startFrameTick / 1000)); // trigger key events mainly for VPM<->VP rountrip
       }
 
@@ -2703,31 +2001,14 @@ void Player::PrepareFrame()
    m_startFrameTick = usec();
    g_frameProfiler.OnPrepare();
 
-   // Reset per frame debug counters
-   #ifdef DEBUGPHYSICS
-   c_hitcnts = 0;
-   c_collisioncnt = 0;
-   c_contactcnt = 0;
-   #ifdef C_DYNAMIC
-   c_staticcnt = 0;
-   #endif
-   c_embedcnts = 0;
-   c_timesearch = 0;
+   m_physics->OnPrepareFrame();
 
-   c_kDNextlevels = 0;
-   //c_quadNextlevels = 0; // not updated per frame so keep!
-
-   c_traversed = 0;
-   c_tested = 0;
-   c_deepTested = 0;
-   #endif
-
-   // Update all non-physics-controlled animated parts (e.g. primitives, reels, gates, lights, bumper-skirts, hittargets, etc)
+   // Update visually animated parts (e.g. primitives, reels, gates, lights, bumper-skirts, hittargets, etc)
    if (!m_pause)
    {
       const float diff_time_msec = (float)(m_time_msec - m_last_frame_time_msec);
       m_last_frame_time_msec = m_time_msec;
-      if(diff_time_msec > 0.f)
+      if (diff_time_msec > 0.f)
          for (size_t i = 0; i < m_ptable->m_vedit.size(); ++i)
          {
             Hitable *const ph = m_ptable->m_vedit[i]->GetIHitable();
@@ -2736,12 +2017,16 @@ void Player::PrepareFrame()
          }
    }
 
-   // Fire all '-1' (the ones which are synced to the refresh rate) and '-2' (the ones used to sync with the controller) timers after physics and animation update but before rendering, to avoid the script being one frame late
-   for (HitTimer *const pht : m_vht)
-      if (pht->m_interval < 0)
-         pht->m_pfe->FireGroupEvent(DISPID_TimerEvents_Timer);
+   FireSyncController();
 
-   // Kill the profiler so that it does not affect performance => FIXME move to player
+   // New Frame event: Legacy implementation with timers with magic interval value have special behaviors, here -1 for onNewFrame event
+   g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_SCRIPT);
+   for (HitTimer *const pht : m_vht)
+      if (pht->m_interval == -1)
+         pht->m_pfe->FireGroupEvent(DISPID_TimerEvents_Timer);
+   g_frameProfiler.ExitProfileSection();
+
+   // Kill the profiler so that it does not affect performance
    if (m_infoMode != IF_PROFILING)
       m_renderer->m_gpu_profiler.Shutdown();
 
@@ -2764,6 +2049,15 @@ void Player::PrepareFrame()
    m_liveUI->Update(m_stereo3D == STEREO_VR ? m_renderer->m_pd3dPrimaryDevice->GetOffscreenVR(0) : m_renderer->m_pd3dPrimaryDevice->GetOutputBackBuffer());
    g_frameProfiler.ExitProfileSection();
 
+   // Shake screne when nudging
+   if (m_NudgeShake > 0.0f)
+   {
+      Vertex2D offset = m_physics->GetScreenNudge();
+      m_renderer->SetScreenOffset(m_NudgeShake * offset.x, m_NudgeShake * offset.y);
+   }
+   else
+      m_renderer->SetScreenOffset(0.f, 0.f);
+
    m_renderer->PrepareVideoBuffers();
 
    g_frameProfiler.ExitProfileSection();
@@ -2782,7 +2076,7 @@ void Player::SubmitFrame()
 
 void Player::FinishFrame()
 {
-   m_lastFlipTime = usec();
+   m_physics->OnFinishFrame();
 
    if (GetProfilingMode() != PF_DISABLED)
       m_renderer->m_gpu_profiler.EndFrame();
@@ -2791,42 +2085,8 @@ void Player::FinishFrame()
    m_fps = (float) (1e6 / g_frameProfiler.GetSlidingAvg(FrameProfiler::PROFILE_FRAME));
 
 #ifndef ACCURATETIMERS
-   // do the en/disable changes for the timers that piled up
-   for (size_t i = 0; i < m_changed_vht.size(); ++i)
-       if (m_changed_vht[i].enabled) // add the timer?
-       {
-           if (FindIndexOf(m_vht, m_changed_vht[i].m_timer) < 0)
-               m_vht.push_back(m_changed_vht[i].m_timer);
-       }
-       else // delete the timer?
-       {
-           const int idx = FindIndexOf(m_vht, m_changed_vht[i].m_timer);
-           if (idx >= 0)
-               m_vht.erase(m_vht.begin() + idx);
-       }
-   m_changed_vht.clear();
-
-   Ball * const old_pactiveball = m_pactiveball;
-   m_pactiveball = nullptr;  // No ball is the active ball for timers/key events
-
-   for (size_t i=0;i<m_vht.size();i++)
-   {
-      HitTimer * const pht = m_vht[i];
-      if (pht->m_interval >= 0 && pht->m_nextfire <= m_time_msec) 
-      {
-         const unsigned int curnextfire = pht->m_nextfire;
-         pht->m_pfe->FireGroupEvent(DISPID_TimerEvents_Timer);
-         // Only add interval if the next fire time hasn't changed since the event was run. 
-         // Handles corner case:
-         //Timer1.Enabled = False
-         //Timer1.Interval = 1000
-         //Timer1.Enabled = True
-         if (curnextfire == pht->m_nextfire)
-            pht->m_nextfire += pht->m_interval;
-      }
-   }
-
-   m_pactiveball = old_pactiveball;
+   ApplyDeferredTimerChanges();
+   FireTimers(m_time_msec);
 #else
    if (!m_pause && (m_videoSyncMode != VideoSyncMode::VSM_FRAME_PACING))
       m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(m_startFrameTick / 1000)); // trigger key events mainly for VPM<->VP rountrip
@@ -2971,12 +2231,6 @@ void AddEventToDebugMenu(const char *sz, int index, int dispid, LPARAM lparam)
 
 void Player::DoDebugObjectMenu(const int x, const int y)
 {
-   if (m_vdebugho.empty())
-   {
-      // First time the debug hit-testing has been used
-      InitDebugHitStructure();
-   }
-
    Matrix3D mat3D = m_renderer->GetMVP().GetModelViewProj(0);
    mat3D.Invert();
 
@@ -2995,28 +2249,8 @@ void Player::DoDebugObjectMenu(const int x, const int y)
    Vertex3Ds v3d, v3d2;
    mat3D.MultiplyVector(Vertex3Ds(xcoord, ycoord, 0.f), v3d);
    mat3D.MultiplyVector(Vertex3Ds(xcoord, ycoord, 1.f), v3d2);
-
-   // Create a ray (ball) that travels in 3D space from the screen pixel at
-   // the near clipping plane to the far clipping plane, and find what
-   // it intersects with.
-   Ball ballT;
-   ballT.m_d.m_pos = v3d;
-   ballT.m_d.m_vel = v3d2 - v3d;
-   ballT.m_d.m_radius = 0.f;
-   ballT.m_coll.m_hittime = 1.0f;
-
-   ballT.CalcHitBBox(); // need to update here, as only done lazily
-
-   //const float slope = (v3d2.y - v3d.y)/(v3d2.z - v3d.z);
-   //const float yhit = v3d.y - (v3d.z*slope);
-
-   //const float slopex = (v3d2.x - v3d.x)/(v3d2.z - v3d.z);
-   //const float xhit = v3d.x - (v3d.z*slopex);
-
    vector<HitObject*> vhoHit;
-   m_hitoctree_dynamic.HitTestXRay(&ballT, vhoHit, ballT.m_coll);
-   m_hitoctree.HitTestXRay(&ballT, vhoHit, ballT.m_coll);
-   m_debugoctree.HitTestXRay(&ballT, vhoHit, ballT.m_coll);
+   m_physics->RayCast(v3d, v3d2, true, vhoHit);
 
    if (vhoHit.empty())
    {

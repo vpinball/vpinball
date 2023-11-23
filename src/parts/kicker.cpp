@@ -1040,10 +1040,8 @@ STDMETHODIMP Kicker::BallCntOver(int *pVal)
 
    if (g_pplayer)
    {
-      for (size_t i = 0; i < g_pplayer->m_vball.size(); i++)
+      for (auto pball : g_pplayer->m_vball)
       {
-         Ball * const pball = g_pplayer->m_vball[i];
-
          if (pball->m_d.m_vpVolObjs && FindIndexOf(*(pball->m_d.m_vpVolObjs), (IFireEvents*)this) >= 0) // cast to IFireEvents necessary, as it is stored like this in HitObject.m_obj
          {
             ++cnt;
@@ -1070,9 +1068,9 @@ STDMETHODIMP Kicker::get_LastCapturedBall(IBall **pVal)
     }
 
     bool ballFound = false;
-    for (size_t i = 0; i < g_pplayer->m_vball.size(); i++)
+    for (auto ball : g_pplayer->m_vball)
     {
-        if (g_pplayer->m_vball[i] == m_phitkickercircle->m_lastCapturedBall)
+        if (ball == m_phitkickercircle->m_lastCapturedBall)
         {
             ballFound = true;
             break;

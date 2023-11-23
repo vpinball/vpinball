@@ -56,25 +56,8 @@ STDMETHODIMP ScriptGlobalTable::EndModal()
 
 STDMETHODIMP ScriptGlobalTable::Nudge(float Angle, float Force)
 {
-   if (g_pplayer && (!g_pplayer->m_legacyNudge || g_pplayer->m_legacyNudgeTime == 0))
-   {
-      const float a  = ANGTORAD(Angle);
-      const float sn = sinf(a) * Force;
-      const float cs = cosf(a) * Force;
-
-      if (g_pplayer->m_legacyNudge)
-      {
-          g_pplayer->m_legacyNudgeBack.x =  sn * g_pplayer->m_legacyNudgeStrength;
-          g_pplayer->m_legacyNudgeBack.y = -cs * g_pplayer->m_legacyNudgeStrength;
-          g_pplayer->m_legacyNudgeTime = 100;
-      }
-      else
-      {
-          g_pplayer->m_tableVel.x +=  sn;
-          g_pplayer->m_tableVel.y += -cs;
-      }
-   }
-
+   if (g_pplayer)
+      g_pplayer->m_physics->Nudge(Angle, Force);
    return S_OK;
 }
 
@@ -2342,10 +2325,6 @@ void PinTable::Play(const int playMode)
       PLOGI << "Creating player"; // For profiling
       g_pplayer = new Player(this, live_table, playMode);
       g_pplayer->CreateWnd();
-      const float minSlope = (live_table->m_overridePhysics ? live_table->m_fOverrideMinSlope : live_table->m_angletiltMin);
-      const float maxSlope = (live_table->m_overridePhysics ? live_table->m_fOverrideMaxSlope : live_table->m_angletiltMax);
-      const float slope = minSlope + (maxSlope - minSlope) * live_table->m_globalDifficulty;
-      g_pplayer->SetGravity(slope, live_table->m_overridePhysics ? live_table->m_fOverrideGravityConstant : live_table->m_Gravity);
 
       m_vpinball->ToggleToolbar();
    }
@@ -9046,7 +9025,7 @@ STDMETHODIMP PinTable::put_Gravity(float newVal)
       const float minSlope = (m_overridePhysics ? m_fOverrideMinSlope : m_angletiltMin);
       const float maxSlope = (m_overridePhysics ? m_fOverrideMaxSlope : m_angletiltMax);
       const float slope = minSlope + (maxSlope - minSlope) * m_globalDifficulty;
-      g_pplayer->SetGravity(slope, m_overridePhysics ? m_fOverrideGravityConstant : m_Gravity);
+      g_pplayer->m_physics->SetGravity(slope, m_overridePhysics ? m_fOverrideGravityConstant : m_Gravity);
    }
    else
    {
@@ -9400,7 +9379,7 @@ STDMETHODIMP PinTable::put_SlopeMax(float newVal)
    {
       m_angletiltMax = newVal;
       const float slope = m_angletiltMin + (m_angletiltMax - m_angletiltMin) * m_globalDifficulty;
-      g_pplayer->SetGravity(slope, m_overridePhysics ? m_fOverrideGravityConstant : m_Gravity);
+      g_pplayer->m_physics->SetGravity(slope, m_overridePhysics ? m_fOverrideGravityConstant : m_Gravity);
    }
    else
    {
@@ -9425,7 +9404,7 @@ STDMETHODIMP PinTable::put_SlopeMin(float newVal)
    {
       m_angletiltMin = newVal;
       const float slope = m_angletiltMin + (m_angletiltMax - m_angletiltMin) * m_globalDifficulty;
-      g_pplayer->SetGravity(slope, m_overridePhysics ? m_fOverrideGravityConstant : m_Gravity);
+      g_pplayer->m_physics->SetGravity(slope, m_overridePhysics ? m_fOverrideGravityConstant : m_Gravity);
    }
    else
    {
