@@ -1504,10 +1504,7 @@ void Renderer::RenderDynamics()
       m_table->m_vrenderprobe[i]->ApplyAreaOfInterest();
 
    if (!g_pplayer->m_liveUI->IsTweakMode())
-   {
       mixer_draw(); // Draw the mixer volume
-      plumb_draw(); // Debug draw of plumb
-   }
 }
 
 

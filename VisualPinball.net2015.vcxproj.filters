@@ -357,6 +357,9 @@
     <ClCompile Include="src/physics/hitplunger.cpp">
       <Filter>physics</Filter>
     </ClCompile>
+    <ClCompile Include="src/physics/NudgeFilter.cpp">
+      <Filter>physics</Filter>
+    </ClCompile>
     <ClCompile Include="src/physics/PhysicsEngine.cpp">
       <Filter>physics</Filter>
     </ClCompile>
@@ -439,7 +442,6 @@
     <ClCompile Include="pinbinary.cpp" />
     <ClCompile Include="pininput.cpp" />
     <ClCompile Include="pinundo.cpp" />
-    <ClCompile Include="plumb.cpp" />
     <ClCompile Include="slintf.cpp" />
     <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="variant.cpp" />
@@ -922,6 +924,9 @@
     <ClInclude Include="src/physics/kdtree.h">
       <Filter>physics</Filter>
     </ClInclude>
+    <ClInclude Include="src/physics/NudgeFilter.h">
+      <Filter>physics</Filter>
+    </ClInclude>
     <ClInclude Include="src/physics/PhysicsEngine.h">
       <Filter>physics</Filter>
     </ClInclude>
@@ -1079,9 +1084,6 @@
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="pinundo.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="plumb.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="sur.h">

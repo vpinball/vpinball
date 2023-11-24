@@ -590,6 +590,9 @@ BOOL KeysConfigDialog::OnInitDialog()
     ::SendMessage(hwndRumble, CB_ADDSTRING, 0, (LPARAM)"Table with generic fallback");
     ::SendMessage(hwndRumble, CB_SETCURSEL, rumbleMode, 0);
 
+    OnCommand(IDC_GLOBALACCEL, 0L);
+    OnCommand(IDC_ENABLE_LEGACY_NUDGE, 0L);
+    
     return TRUE;
 }
 
@@ -633,7 +636,34 @@ INT_PTR KeysConfigDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 BOOL KeysConfigDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 {
-    UNREFERENCED_PARAMETER(lParam);
+   UNREFERENCED_PARAMETER(lParam);
+   switch (LOWORD(wParam))
+   {
+   case IDC_GLOBALACCEL:
+   {
+      const size_t checked = IsDlgButtonChecked(IDC_GLOBALACCEL);
+      GetDlgItem(IDC_LRAXISCOMBO).EnableWindow(checked ? TRUE : FALSE);
+      GetDlgItem(IDC_LRAXISFLIP).EnableWindow(checked ? TRUE : FALSE);
+      GetDlgItem(IDC_XMAX_EDIT).EnableWindow(checked ? TRUE : FALSE);
+      GetDlgItem(IDC_LRAXISGAIN).EnableWindow(checked ? TRUE : FALSE);
+      GetDlgItem(IDC_UDAXISCOMBO).EnableWindow(checked ? TRUE : FALSE);
+      GetDlgItem(IDC_UDAXISFLIP).EnableWindow(checked ? TRUE : FALSE);
+      GetDlgItem(IDC_YMAX_EDIT).EnableWindow(checked ? TRUE : FALSE);
+      GetDlgItem(IDC_UDAXISGAIN).EnableWindow(checked ? TRUE : FALSE);
+      GetDlgItem(IDC_GLOBALNMOUNT).EnableWindow(checked ? TRUE : FALSE);
+      GetDlgItem(IDC_CBGLOBALROTATION).EnableWindow(checked ? TRUE : FALSE);
+      GetDlgItem(IDC_GLOBALROTATION).EnableWindow(checked ? TRUE : FALSE);
+      GetDlgItem(IDC_CBGLOBALTILT).EnableWindow(checked ? TRUE : FALSE);
+      GetDlgItem(IDC_GLOBALTILT).EnableWindow(checked ? TRUE : FALSE);
+      break;
+   }
+   case IDC_ENABLE_LEGACY_NUDGE:
+   {
+      const size_t checked = IsDlgButtonChecked(IDC_ENABLE_LEGACY_NUDGE);
+      GetDlgItem(IDC_LEGACY_NUDGE_STRENGTH).EnableWindow(checked ? TRUE : FALSE);
+      break;
+   }
+   }
     if (HIWORD(wParam) == BN_CLICKED)
     {
         switch (LOWORD(wParam))

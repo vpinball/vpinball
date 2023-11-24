@@ -119,7 +119,8 @@ STDMETHODIMP ScriptGlobalTable::NudgeSetCalibration(int XMax, int YMax, int XGai
 	else
 		g_pvp->m_settings.DeleteValue(Settings::Player, "TiltSensitivity"s);
 
-	m_pt->ReadAccelerometerCalibration();
+   if (g_pplayer)
+	   g_pplayer->ReadAccelerometerCalibration();
 
 	return S_OK;
 }
@@ -1346,12 +1347,8 @@ PinTable::PinTable()
 
    m_numMaterials = 0;
 
-   nudge_set_sensitivity((float)m_settings.LoadValueWithDefault(Settings::Player, "NudgeSensitivity"s, 500) * (float)(1.0/1000.0));
-
    m_difficulty = 0.2f; // easy by default
    m_globalDifficulty = m_settings.LoadValueWithDefault(Settings::TableOverride, "Difficulty"s, m_difficulty);
-
-   ReadAccelerometerCalibration();
 
    m_tblAutoStart = m_settings.LoadValueWithDefault(Settings::Player, "Autostart"s, 0) * 10;
    m_tblAutoStartRetry = m_settings.LoadValueWithDefault(Settings::Player, "AutostartRetry"s, 0) * 10;
@@ -1377,28 +1374,6 @@ PinTable::PinTable()
    m_jolt_trigger_time = m_settings.LoadValueWithDefault(Settings::Player, "JoltTriggerTime"s, 1000);
    m_tilt_trigger_time = m_settings.LoadValueWithDefault(Settings::Player, "TiltTriggerTime"s, 10000);
 #endif
-}
-
-void PinTable::ReadAccelerometerCalibration()
-{
-   m_tblAccelerometer = m_settings.LoadValueWithDefault(Settings::Player, "PBWEnabled"s, true); // true if electronic accelerometer enabled
-   m_tblAccelNormalMount = m_settings.LoadValueWithDefault(Settings::Player, "PBWNormalMount"s, true); // true is normal mounting (left hand coordinates)
-
-   m_tblAccelAngle = 0.0f; // 0 degrees rotated counterclockwise (GUI is lefthand coordinates)
-   const bool accel = m_settings.LoadValueWithDefault(Settings::Player, "PBWRotationCB"s, false);
-   if (accel)
-      m_tblAccelAngle = (float)m_settings.LoadValueWithDefault(Settings::Player, "PBWRotationValue"s, 0);
-
-   m_tblAccelAmp.x = dequantizeUnsignedPercentNoClamp(m_settings.LoadValueWithDefault(Settings::Player, "PBWAccelGainX"s, 150));
-   m_tblAccelAmp.y = dequantizeUnsignedPercentNoClamp(m_settings.LoadValueWithDefault(Settings::Player, "PBWAccelGainY"s, 150));
-   m_tblAccelMax.x = m_settings.LoadValueWithDefault(Settings::Player, "PBWAccelMaxX"s, 100) * JOYRANGEMX / 100;
-   m_tblAccelMax.y = m_settings.LoadValueWithDefault(Settings::Player, "PBWAccelMaxY"s, 100) * JOYRANGEMX / 100;
-
-   //!! bug!! If tilt sensitivity is not set, it's supposed to disable analog tilting, see KeysConfigDialog.cpp
-   plumb_set_sensitivity((float)m_settings.LoadValueWithDefault(Settings::Player, "TiltSensitivity"s, 400) * (float)(1.0 / 1000.0));
-
-   if (g_pplayer)
-      g_pplayer->m_pininput.LoadSettings(m_settings);
 }
 
 PinTable::~PinTable()
@@ -10110,50 +10085,50 @@ STDMETHODIMP PinTable::put_GlobalDifficulty(float newVal)
    return S_OK;
 }
 
+// FIXME deprecated
 STDMETHODIMP PinTable::get_Accelerometer(VARIANT_BOOL *pVal)
 {
-   *pVal = FTOVB(m_tblAccelerometer);
+   *pVal = FTOVB(m_settings.LoadValueWithDefault(Settings::Player, "PBWEnabled"s, true));
 
    return S_OK;
 }
 
+// FIXME deprecated
 STDMETHODIMP PinTable::put_Accelerometer(VARIANT_BOOL newVal)
 {
-   STARTUNDO
-   m_tblAccelerometer = VBTOb(newVal);
-   STOPUNDO
+   m_settings.SaveValue(Settings::Player, "PBWEnabled"s, VBTOb(newVal));
 
    return S_OK;
 }
 
+// FIXME deprecated
 STDMETHODIMP PinTable::get_AccelNormalMount(VARIANT_BOOL *pVal)
 {
-   *pVal = FTOVB(m_tblAccelNormalMount);
+   *pVal = FTOVB(m_settings.LoadValueWithDefault(Settings::Player, "PBWNormalMount"s, true));
 
    return S_OK;
 }
 
+// FIXME deprecated
 STDMETHODIMP PinTable::put_AccelNormalMount(VARIANT_BOOL newVal)
 {
-   STARTUNDO
-   m_tblAccelNormalMount = VBTOb(newVal);
-   STOPUNDO
+   m_settings.SaveValue(Settings::Player, "PBWNormalMount"s, VBTOb(newVal));
 
    return S_OK;
 }
 
+// FIXME deprecated
 STDMETHODIMP PinTable::get_AccelerometerAngle(float *pVal)
 {
-   *pVal = m_tblAccelAngle;
+   *pVal = (float) m_settings.LoadValueWithDefault(Settings::Player, "PBWRotationValue"s, 0);
 
    return S_OK;
 }
 
+// FIXME deprecated
 STDMETHODIMP PinTable::put_AccelerometerAngle(float newVal)
 {
-   STARTUNDO
-   m_tblAccelAngle = newVal;
-   STOPUNDO
+   m_settings.SaveValue(Settings::Player, "PBWRotationValue"s, newVal);
 
    return S_OK;
 }
