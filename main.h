@@ -222,7 +222,6 @@ static const string defaultPathSearch[]     = { string(), "user"s +PATH_SEPARATO
 #include "parts/rubber.h"
 #include "mixer.h"
 #include "hid.h"
-#include "plumb.h"
 
 #include "physics/kdtree.h"
 

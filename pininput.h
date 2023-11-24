@@ -111,7 +111,6 @@ public:
 
    bool m_linearPlunger;
    bool m_plunger_retract; // enable 1s retract phase for button/key plunger
-   bool m_enable_nudge_filter; // enable new nudge filtering code
 
    int m_joycustom1key, m_joycustom2key, m_joycustom3key, m_joycustom4key;
 
@@ -120,8 +119,6 @@ private:
 
    void Autostart(const U32 msecs, const U32 retry_msecs, const U32 curr_time_msec);
    void ButtonExit(const U32 msecs, const U32 curr_time_msec);
-
-   void TiltUpdate();
 
    void Joy(const unsigned int n, const int updown, const bool start);
 

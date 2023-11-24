@@ -292,8 +292,6 @@ add_executable(vpinball WIN32
    pininput.h
    pinundo.cpp
    pinundo.h
-   plumb.cpp
-   plumb.h
    resource.h
    slintf.cpp
    slintf.h
@@ -420,6 +418,8 @@ add_executable(vpinball WIN32
    src/physics/hittimer.h
    src/physics/kdtree.cpp
    src/physics/kdtree.h
+   src/physics/NudgeFilter.cpp
+   src/physics/NudgeFilter.h
    src/physics/PhysicsEngine.cpp
    src/physics/PhysicsEngine.h
    src/physics/quadtree.cpp

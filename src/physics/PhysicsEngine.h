@@ -2,6 +2,7 @@
 
 #include "physics/kdtree.h"
 #include "physics/quadtree.h"
+#include "physics/NudgeFilter.h"
 
 class PhysicsEngine final
 {
@@ -25,8 +26,8 @@ public:
    bool RecordContact(CollisionEvent& newColl);
 
    void Nudge(float angle, float force);
+   Vertex3Ds GetNudge() const;
    Vertex2D GetScreenNudge() const;
-   const Vertex3Ds& GetTableAcceleration() const { return m_tableVelDelta; }
 
    void RayCast(const Vertex3Ds& source, const Vertex3Ds& target, const bool uiCast, vector<HitObject *> &vhoHit);
 
@@ -71,7 +72,19 @@ private:
    vector<HitObject *> m_vUIHitObjects;
    HitQuadtree m_UIOctree;
 
-   // VP10+ nudging (table modeled as a spring)
+   void UpdateNudge(float dtime);
+
+   Vertex2D m_nudge; // filtered nudge acceleration acquired from hardware or resulting of keyboard nudge
+   bool m_enableNudgeFilter = false; // Located in physic engine instead of input since it is applied at physics cycle rate, on hardware input but also on keyboard nudge
+   NudgeFilter m_nudgeFilterX;
+   NudgeFilter m_nudgeFilterY;
+   bool m_enablePlumbTilt = false;
+   bool m_plumbTiltHigh = false;
+   Vertex2D m_plumb;
+   Vertex2D m_plumbVel;
+   float m_plumbTiltThreshold;
+
+   // Table modeled as a spring
    Vertex3Ds m_tableVel;
    Vertex3Ds m_tableDisplacement;
    Vertex3Ds m_tableVelOld;
@@ -80,10 +93,10 @@ private:
    float m_nudgeDamping;
 
    // legacy/VP9 style keyboard nudging
-   bool m_legacyNudge;
-   float m_legacyNudgeStrength;
+   bool m_legacyNudge = false;
+   float m_legacyNudgeStrength = 0.f;
    Vertex2D m_legacyNudgeBack;
-   int m_legacyNudgeTime;
+   int m_legacyNudgeTime = 0;
 
    // Physics stats
    U32 m_phys_iterations;

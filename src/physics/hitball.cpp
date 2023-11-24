@@ -526,18 +526,15 @@ void Ball::UpdateVelocities()
       {
          m_d.m_vel.x *= 0.5f;  // Null out most of the X/Y velocity, want a little bit so the ball can sort of find its way out of obstacles.
          m_d.m_vel.y *= 0.5f;
-
          m_d.m_vel += Vertex3Ds(max(-10.0f, min(10.0f, (g_pplayer->m_pBCTarget->x - m_d.m_pos.x) * (float)(1./10.))),
                                 max(-10.0f, min(10.0f, (g_pplayer->m_pBCTarget->y - m_d.m_pos.y) * (float)(1./10.))),
                                 -2.0f);
       }
       else
+      {
          m_d.m_vel += (float)PHYS_FACTOR * g_pplayer->m_physics->GetGravity();
-
-      m_d.m_vel.x += g_pplayer->m_Nudge.x; // TODO: depends on STEPTIME
-      m_d.m_vel.y += g_pplayer->m_Nudge.y;
-
-      m_d.m_vel -= g_pplayer->m_physics->GetTableAcceleration();
+         m_d.m_vel += g_pplayer->m_physics->GetNudge();
+      }
    }
 
 #ifdef C_DYNAMIC

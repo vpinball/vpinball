@@ -184,52 +184,6 @@ enum ProfilingMode
    PF_ENABLED,
 };
 
-#define GetNudgeX() (((F32)g_pplayer->m_curAccel[0].x) * (F32)(2.0 / JOYRANGE)) // Get the -2 .. 2 values from joystick input tilt sensor / ushock //!! why 2?
-#define GetNudgeY() (((F32)g_pplayer->m_curAccel[0].y) * (F32)(2.0 / JOYRANGE))
-
-#ifdef DEBUG_NUDGE
-# define IF_DEBUG_NUDGE(code) code
-#else
-# define IF_DEBUG_NUDGE(code)
-#endif
-
-class NudgeFilter
-{
-public:
-   NudgeFilter();
-
-   // adjust an acceleration sample (m_Nudge.x or m_Nudge.y)
-   void sample(float &a, const U64 frameTime);
-
-private:
-   // debug output
-   IF_DEBUG_NUDGE(void dbg(const char *fmt, ...);)
-   IF_DEBUG_NUDGE(virtual const char *axis() const = 0;)
-
-   // running total of samples
-   float m_sum;
-
-   // previous sample
-   float m_prv;
-
-   // timestamp of last zero crossing in the raw acceleration data
-   U64 m_tzc;
-
-   // timestamp of last correction inserted into the data
-   U64 m_tCorr;
-
-   // timestamp of last motion == start of rest
-   U64 m_tMotion;
-};
-
-class NudgeFilterX : public NudgeFilter
-{
-   const char *axis() const { return "x"; }
-};
-class NudgeFilterY : public NudgeFilter
-{
-   const char *axis() const { return "y"; }
-};
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -312,19 +266,27 @@ private:
 
 #pragma region Nudge
 public:
-   void NudgeUpdate();
-   void FilterNudge(U64 timeStamp);
-   void NudgeX(const int x, const int joyidx);
-   void NudgeY(const int y, const int joyidx);
+   void ReadAccelerometerCalibration();
+   void SetNudgeX(const int x, const int joyidx);
+   void SetNudgeY(const int y, const int joyidx);
+   const Vertex2D& GetRawAccelerometer() const;
+   
    #ifdef UNUSED_TILT
    int NudgeGetTilt(); // returns non-zero when appropriate to set the tilt switch
    #endif
 
-   Vertex2D m_Nudge;
-   NudgeFilterX m_NudgeFilterX;
-   NudgeFilterY m_NudgeFilterY;
    float m_NudgeShake; // whether to shake the screen during nudges and how much
    int2 m_curAccel[PININ_JOYMXCNT];
+
+private:
+   mutable Vertex2D m_accelerometer; // lazily evaluated sum of joystick mapped accelerometers, applying clamping then gain
+   mutable bool m_accelerometerDirty = true;
+   bool m_accelerometerEnabled; // true if electronic accelerometer enabled
+   bool m_accelerometerFaceUp; // true is Normal Mounting (Left Hand Coordinates)
+   float m_accelerometerAngle; // 0 degrees rotated counterclockwise (GUI is lefthand coordinates)
+   float m_accelerometerSensitivity;
+   Vertex2D m_accelerometerGain; // Accelerometer gain X/Y axis
+   int2 m_accelerometerMax; // Accelerometer max value X/Y axis
 #pragma endregion
 
 

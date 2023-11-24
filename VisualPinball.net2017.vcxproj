@@ -821,6 +821,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="src/physics/hitball.cpp" />
     <ClCompile Include="src/physics/hitflipper.cpp" />
     <ClCompile Include="src/physics/hitplunger.cpp" />
+    <ClCompile Include="src/physics/NudgeFilter.cpp" />
     <ClCompile Include="src/physics/PhysicsEngine.cpp" />
     <ClCompile Include="src/physics/quadtree.cpp" />
     <ClCompile Include="src/renderer/Anaglyph.cpp" />
@@ -865,7 +866,6 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="pinbinary.cpp" />
     <ClCompile Include="pininput.cpp" />
     <ClCompile Include="pinundo.cpp" />
-    <ClCompile Include="plumb.cpp" />
     <ClCompile Include="slintf.cpp" />
     <ClCompile Include="StackTrace.cpp" />
     <ClCompile Include="variant.cpp" />
@@ -1245,6 +1245,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="src/physics/hitflipper.h" />
     <ClInclude Include="src/physics/hitplunger.h" />
     <ClInclude Include="src/physics/hittimer.h" />
+    <ClInclude Include="src/physics/NudgeFilter.h" />
     <ClInclude Include="src/physics/PhysicsEngine.h" />
     <ClInclude Include="src/physics/quadtree.h" />
     <ClInclude Include="src/renderer/Anaglyph.h" />
@@ -1302,7 +1303,6 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="pinbinary.h" />
     <ClInclude Include="pininput.h" />
     <ClInclude Include="pinundo.h" />
-    <ClInclude Include="plumb.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="slintf.h" />
     <ClInclude Include="StackTrace.h" />

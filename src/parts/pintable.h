@@ -475,7 +475,6 @@ public:
    HRESULT LoadInfo(IStorage *pstg, HCRYPTHASH hcrypthash, int version);
    HRESULT LoadCustomInfo(IStorage *pstg, IStream *pstmTags, HCRYPTHASH hcrypthash, int version);
    HRESULT LoadData(IStream *pstm, int &csubobj, int &csounds, int &ctextures, int &cfonts, int &ccollection, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey);
-   void ReadAccelerometerCalibration();
    virtual IEditable *GetIEditable() override { return (IEditable *)this; }
    virtual const IEditable *GetIEditable() const override { return (const IEditable *)this; }
    virtual void Delete() override { } // Can't delete table itself
@@ -668,12 +667,6 @@ public:
 
    bool m_tblAutoStartEnabled;
    bool m_tblMirrorEnabled; // Mirror tables left to right.  This is activated by a cheat during table selection.
-
-   bool m_tblAccelerometer; // true if electronic accelerometer enabled
-   bool m_tblAccelNormalMount; // true is Normal Mounting (Left Hand Coordinates)
-   float m_tblAccelAngle; // 0 degrees rotated counterclockwise (GUI is lefthand coordinates)
-   Vertex2D m_tblAccelAmp; // Accelerometer gain X/Y axis
-   int2 m_tblAccelMax; // Accelerometer max value X/Y axis
 
    Vertex2D m_tblNudgeRead;
    float m_tblNudgeReadTilt;

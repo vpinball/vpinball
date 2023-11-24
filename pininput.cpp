@@ -109,7 +109,6 @@ PinInput::PinInput()
 
    m_enableMouseInPlayer = true;
    m_enableCameraModeFlyAround = false;
-   m_enable_nudge_filter = false;
 
    m_cameraModeAltKey = false;
    m_cameraMode = 0;
@@ -197,7 +196,6 @@ void PinInput::LoadSettings(const Settings& settings)
    m_joytabledown = settings.LoadValueWithDefault(Settings::Player, "JoyTableDownKey"s, m_joytabledown);
    m_enableMouseInPlayer = settings.LoadValueWithDefault(Settings::Player, "EnableMouseInPlayer"s, m_enableMouseInPlayer);
    m_enableCameraModeFlyAround = settings.LoadValueWithDefault(Settings::Player, "EnableCameraModeFlyAround"s, m_enableCameraModeFlyAround);
-   m_enable_nudge_filter = settings.LoadValueWithDefault(Settings::Player, "EnableNudgeFilter"s, m_enable_nudge_filter);
    m_deadz = settings.LoadValueWithDefault(Settings::Player, "DeadZone"s, 0);
    m_deadz = m_deadz*JOYRANGEMX / 100;
 }
@@ -1197,17 +1195,6 @@ void PinInput::ButtonExit(const U32 msecs, const U32 curr_time_msec)
    }
 }
 
-void PinInput::TiltUpdate()
-{
-   if (!g_pplayer) return;
-
-   const bool tmp = m_tilt_updown;
-   m_tilt_updown = plumb_tilted();
-
-   if (m_tilt_updown != tmp)
-      FireKeyEvent(m_tilt_updown ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, g_pplayer->m_rgKeys[eCenterTiltKey]);
-}
-
 void PinInput::ProcessCameraKeys(const DIDEVICEOBJECTDATA * __restrict input)
 {
     switch(input->dwOfs)
@@ -1434,7 +1421,6 @@ void PinInput::ProcessThrowBalls(const DIDEVICEOBJECTDATA * __restrict input)
 void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int curr_time_msec)
 {
     const int joyk = input->dwSequence - APP_JOYSTICKMN; // joystick index
-    static constexpr bool rotLeftManual = false; //!! delete
 
     if (input->dwOfs >= DIJOFS_BUTTON0 && input->dwOfs <= DIJOFS_BUTTON31)
     {
@@ -1631,21 +1617,16 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
                         // or non Generic controllers are being used...
                         // Axis Deadzone
                         if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && (m_lr_axis != 0))
-                            g_pplayer->NudgeX(-deadu, joyk); //rotate to match Pinball Wizard
+                            g_pplayer->SetNudgeX(-deadu, joyk); //rotate to match Pinball Wizard
                         if ((uShockType == USHOCKTYPE_ULTRACADE) && (m_lr_axis != 0))
-                        {
-                            if (rotLeftManual)
-                                g_pplayer->NudgeX(deadu, joyk);
-                            else
-                                g_pplayer->NudgeY(-deadu, joyk); //rotate to match joystick
-                        }
+                            g_pplayer->SetNudgeY(-deadu, joyk); //rotate to match joystick
                         if ((uShockType == USHOCKTYPE_SIDEWINDER) && (m_lr_axis != 0))
-                            g_pplayer->NudgeX(!m_lr_axis_reverse ? deadu : -deadu, joyk);
+                            g_pplayer->SetNudgeX(!m_lr_axis_reverse ? deadu : -deadu, joyk);
                         if ((m_lr_axis == 1) && (uShockType == USHOCKTYPE_GENERIC))
                             // giving L/R Axis priority over U/D Axis in case both are assigned to same axis
-                            g_pplayer->NudgeX(!m_lr_axis_reverse ? -deadu : deadu, joyk);
+                            g_pplayer->SetNudgeX(!m_lr_axis_reverse ? -deadu : deadu, joyk);
                         else if ((m_ud_axis == 1) && (uShockType == USHOCKTYPE_GENERIC))
-                            g_pplayer->NudgeY(!m_ud_axis_reverse ? deadu : -deadu, joyk);
+                            g_pplayer->SetNudgeY(!m_ud_axis_reverse ? deadu : -deadu, joyk);
                     }
                     else if (m_plunger_axis == 1)
                     {	// if X or Y ARE NOT chosen for this axis and Plunger IS chosen for this axis and (uShockType == USHOCKTYPE_GENERIC)
@@ -1664,20 +1645,15 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
                         // or non Generic controllers are being used...
                         // Axis Deadzone
                         if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && (m_ud_axis != 0))
-                            g_pplayer->NudgeY(deadu, joyk); //rotate to match Pinball Wizard
+                            g_pplayer->SetNudgeY(deadu, joyk); //rotate to match Pinball Wizard
                         if ((uShockType == USHOCKTYPE_ULTRACADE) && (m_ud_axis != 0))
-                        {
-                            if (rotLeftManual)
-                                g_pplayer->NudgeY(deadu, joyk);
-                            else
-                                g_pplayer->NudgeX(-deadu, joyk); //rotate to match joystick
-                        }
+                            g_pplayer->SetNudgeX(-deadu, joyk); //rotate to match joystick
                         if ((uShockType == USHOCKTYPE_SIDEWINDER) && (m_ud_axis != 0))
-                            g_pplayer->NudgeY(!m_ud_axis_reverse ? deadu : -deadu, joyk);
+                            g_pplayer->SetNudgeY(!m_ud_axis_reverse ? deadu : -deadu, joyk);
                         if ((m_lr_axis == 2) && (uShockType == USHOCKTYPE_GENERIC))
-                            g_pplayer->NudgeX(!m_lr_axis_reverse ? -deadu : deadu, joyk);
+                            g_pplayer->SetNudgeX(!m_lr_axis_reverse ? -deadu : deadu, joyk);
                         else if ((m_ud_axis == 2) && (uShockType == USHOCKTYPE_GENERIC))
-                            g_pplayer->NudgeY(!m_ud_axis_reverse ? deadu : -deadu, joyk);
+                            g_pplayer->SetNudgeY(!m_ud_axis_reverse ? deadu : -deadu, joyk);
                     }
                     else if (m_plunger_axis == 2)
                     {	// if X or Y ARE NOT chosen for this axis and Plunger IS chosen for this axis and (uShockType == USHOCKTYPE_GENERIC)
@@ -1706,9 +1682,9 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
                     {   // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
                         // Axis Deadzone
                         if (m_lr_axis == 3)
-                            g_pplayer->NudgeX(!m_lr_axis_reverse ? -deadu : deadu, joyk);
+                            g_pplayer->SetNudgeX(!m_lr_axis_reverse ? -deadu : deadu, joyk);
                         else if (m_ud_axis == 3)
-                            g_pplayer->NudgeY(!m_ud_axis_reverse ? deadu : -deadu, joyk);
+                            g_pplayer->SetNudgeY(!m_ud_axis_reverse ? deadu : -deadu, joyk);
                     }
                     else if (m_plunger_axis == 3)
                     {   // if X or Y ARE NOT chosen for this axis and Plunger IS chosen for this axis...
@@ -1727,9 +1703,9 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
                     {   // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
                         // Axis Deadzone
                         if (m_lr_axis == 4)
-                            g_pplayer->NudgeX(!m_lr_axis_reverse ? -deadu : deadu, joyk);
+                            g_pplayer->SetNudgeX(!m_lr_axis_reverse ? -deadu : deadu, joyk);
                         else if (m_ud_axis == 4)
-                            g_pplayer->NudgeY(!m_ud_axis_reverse ? deadu : -deadu, joyk);
+                            g_pplayer->SetNudgeY(!m_ud_axis_reverse ? deadu : -deadu, joyk);
                     }
                     else if (m_plunger_axis == 4)
                     {   // if X or Y ARE NOT chosen for this axis and Plunger IS chosen for this axis...
@@ -1748,9 +1724,9 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
                     {   // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
                         // Axis Deadzone
                         if (m_lr_axis == 5)
-                            g_pplayer->NudgeX(!m_lr_axis_reverse ? -deadu : deadu, joyk);
+                            g_pplayer->SetNudgeX(!m_lr_axis_reverse ? -deadu : deadu, joyk);
                         else if (m_ud_axis == 5)
-                            g_pplayer->NudgeY(!m_ud_axis_reverse ? deadu : -deadu, joyk);
+                            g_pplayer->SetNudgeY(!m_ud_axis_reverse ? deadu : -deadu, joyk);
                     }
                     else if (m_plunger_axis == 5)
                     {   // if X or Y ARE NOT chosen for this axis and Plunger IS chosen for this axis...
@@ -1771,9 +1747,9 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
                     {   // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
                         // Axis Deadzone
                         if (m_lr_axis == 6)
-                            g_pplayer->NudgeX(!m_lr_axis_reverse ? -deadu : deadu, joyk);
+                            g_pplayer->SetNudgeX(!m_lr_axis_reverse ? -deadu : deadu, joyk);
                         else if (m_ud_axis == 6)
-                            g_pplayer->NudgeY(!m_ud_axis_reverse ? deadu : -deadu, joyk);
+                            g_pplayer->SetNudgeY(!m_ud_axis_reverse ? deadu : -deadu, joyk);
                     }
                     else if (m_plunger_axis == 6)
                     {
@@ -1794,9 +1770,9 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
                     {   // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
                         // Axis Deadzone
                         if (m_lr_axis == 7)
-                            g_pplayer->NudgeX(!m_lr_axis_reverse ? -deadu : deadu, joyk);
+                            g_pplayer->SetNudgeX(!m_lr_axis_reverse ? -deadu : deadu, joyk);
                         else if (m_ud_axis == 7)
-                            g_pplayer->NudgeY(!m_ud_axis_reverse ? deadu : -deadu, joyk);
+                            g_pplayer->SetNudgeY(!m_ud_axis_reverse ? deadu : -deadu, joyk);
                     }
                     else if (m_plunger_axis == 7)
                     {
@@ -1815,9 +1791,9 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
                     {   // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
                         // Axis Deadzone
                         if (m_lr_axis == 8)
-                            g_pplayer->NudgeX(!m_lr_axis_reverse ? -deadu : deadu, joyk);
+                            g_pplayer->SetNudgeX(!m_lr_axis_reverse ? -deadu : deadu, joyk);
                         else if (m_ud_axis == 8)
-                            g_pplayer->NudgeY(!m_ud_axis_reverse ? deadu : -deadu, joyk);
+                            g_pplayer->SetNudgeY(!m_ud_axis_reverse ? deadu : -deadu, joyk);
                     }
                     else if (m_plunger_axis == 8)
                     {
@@ -1849,9 +1825,6 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
          Autostart(g_pplayer->m_ptable->m_tblAutoStart, g_pplayer->m_ptable->m_tblAutoStartRetry, curr_time_msec);
 
       ButtonExit(g_pplayer->m_ptable->m_tblExitConfirm, curr_time_msec);
-
-      // Update tilt.
-      TiltUpdate();
    }
    else
       curr_time_msec = -curr_time_msec; // due to special encoding to not do the stuff above
