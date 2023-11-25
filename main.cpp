@@ -283,11 +283,13 @@ private:
    bool m_file;
    bool m_loadFileResult;
    bool m_extractScript;
+   bool m_tournament;
    bool m_bgles;
    float m_fgles;
    string m_szTableFileName;
    string m_szTableIniFileName;
    string m_szIniFileName;
+   string m_szTournamentName;
    VPinball m_vpinball;
 
 public:
@@ -377,6 +379,7 @@ public:
       m_run = true;
       m_loadFileResult = true;
       m_extractScript = false;
+      m_tournament = false;
       m_fgles = 0.f;
       m_bgles = false;
 
@@ -439,15 +442,6 @@ public:
                 output = "Invalid Parameter "s + szArglist[i] + "\n\nValid Parameters are:\n\n" + output;
             ::MessageBox(NULL, output.c_str(), "Visual Pinball Usage", valid_param ? MB_OK : MB_ICONERROR);
             exit(valid_param ? 0 : 1);
-         }
-
-         //
-
-         if (compare_option(szArglist[i], OPTION_TOURNAMENT) && (i+2 < nArgs))
-         {
-            m_vpinball.GenerateImageFromTournamentFile(szArglist[i + 1], szArglist[i + 2]);
-            m_run = false;
-            break;
          }
 
          //
@@ -553,7 +547,8 @@ public:
          const bool extractscript = compare_option(szArglist[i], OPTION_EXTRACTVBS);
          const bool ini = compare_option(szArglist[i], OPTION_INI);
          const bool tableIni = compare_option(szArglist[i], OPTION_TABLE_INI);
-         if (ini || tableIni || editfile || playfile || povEdit || extractpov || extractscript)
+         const bool tournament = compare_option(szArglist[i], OPTION_TOURNAMENT);
+         if (ini || tableIni || editfile || playfile || povEdit || extractpov || extractscript || tournament)
          {
             if (i + 1 >= nArgs)
             {
@@ -561,30 +556,48 @@ public:
                exit(1);
             }
             const string path = GetPathFromArg(szArglist[i + 1], false);
-            i++; // two params processed
             if (!FileExists(path) && !ini && !tableIni)
             {
                ::MessageBox(NULL, ("File '"s + path + "' was not found"s).c_str(), "Command Line Error", MB_ICONERROR);
                exit(1);
             }
 
+            if (tournament && (i + 2 >= nArgs))
+            {
+               ::MessageBox(NULL, ("Option '"s + szArglist[i] + "' must be followed by two valid file paths"s).c_str(), "Command Line Error", MB_ICONERROR);
+               exit(1);
+            }
+            if (tournament)
+            {
+               m_szTournamentName = GetPathFromArg(szArglist[i + 2], false);
+               i++; // three params processed
+               if (!FileExists(m_szTournamentName))
+               {
+                  ::MessageBox(NULL, ("File '"s + m_szTournamentName + "' was not found"s).c_str(), "Command Line Error", MB_ICONERROR);
+                  exit(1);
+               }
+            }
+            i++; // two params processed
+
             if (ini)
                m_szIniFileName = path;
             else if (tableIni)
                m_szTableIniFileName = path;
-            else // editfile || playfile || povEdit || extractpov || extractscript
+            else // editfile || playfile || povEdit || extractpov || extractscript || tournament
             {
                allowLoadOnStart = false; // Don't face the user with a load dialog since the file is provided on the command line
                m_file = true;
-               if (m_play || m_extractPov || m_extractScript || m_vpinball.m_povEdit)
+               if (m_play || m_extractPov || m_extractScript || m_vpinball.m_povEdit || m_tournament)
                {
-                  ::MessageBox(NULL, "Only one of 'Edit', 'Play', 'PovEdit', 'Pov', 'ExtractVBS' can be used.", "Command Line Error", MB_ICONERROR);
+                  ::MessageBox(NULL, ("Only one of " + options[OPTION_EDIT] + ", " + options[OPTION_PLAY] + ", " + options[OPTION_POVEDIT] + ", " + options[OPTION_POV] + ", " + options[OPTION_EXTRACTVBS] + ", " + options[OPTION_TOURNAMENT] + " can be used.").c_str(),
+                     "Command Line Error", MB_ICONERROR);
                   exit(1);
                }
                m_play = playfile || povEdit;
                m_extractPov = extractpov;
                m_extractScript = extractscript;
                m_vpinball.m_povEdit = povEdit;
+               m_tournament = tournament;
                m_szTableFileName = path;
             }
          }
@@ -702,6 +715,11 @@ public:
             for (int i = 0; i < 3; i++)
                m_vpinball.m_ptableActive->mViewSetups[i].SaveToTableOverrideSettings(m_vpinball.m_ptableActive->m_settings, (ViewSetupID) i);
             m_vpinball.m_ptableActive->m_settings.Save();
+            m_vpinball.QuitPlayer(Player::CloseState::CS_CLOSE_APP);
+         }
+         if (m_tournament && m_loadFileResult)
+         {
+            m_vpinball.GenerateImageFromTournamentFile(m_szTableFileName, m_szTournamentName);
             m_vpinball.QuitPlayer(Player::CloseState::CS_CLOSE_APP);
          }
       }
