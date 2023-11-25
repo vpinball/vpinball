@@ -258,7 +258,6 @@ add_executable(vpinball WIN32
    dragpoint.cpp
    dragpoint.h
    editablereg.h
-   eventproxy.cpp
    eventproxy.h
    extern.cpp
    extern.h
@@ -292,8 +291,6 @@ add_executable(vpinball WIN32
    pinundo.cpp
    pinundo.h
    resource.h
-   slintf.cpp
-   slintf.h
    StackTrace.cpp
    StackTrace.h
    stdafx.cpp

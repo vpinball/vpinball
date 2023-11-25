@@ -225,7 +225,6 @@ static const string defaultPathSearch[]     = { string(), "user"s +PATH_SEPARATO
 
 #include "physics/kdtree.h"
 
-#include "slintf.h"
 #include "trace.h"
 
 inline void ShowError(const char * const sz)

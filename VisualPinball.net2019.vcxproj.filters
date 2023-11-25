@@ -429,7 +429,6 @@
     <ClCompile Include="def.cpp" />
     <ClCompile Include="disputil.cpp" />
     <ClCompile Include="dragpoint.cpp" />
-    <ClCompile Include="eventproxy.cpp" />
     <ClCompile Include="extern.cpp" />
     <ClCompile Include="hid.cpp" />
     <ClCompile Include="hitrectsur.cpp" />
@@ -442,8 +441,9 @@
     <ClCompile Include="pinbinary.cpp" />
     <ClCompile Include="pininput.cpp" />
     <ClCompile Include="pinundo.cpp" />
-    <ClCompile Include="slintf.cpp" />
-    <ClCompile Include="stdafx.cpp" />
+    <ClCompile Include="stdafx.cpp">
+      <Filter>headers</Filter>
+    </ClCompile>
     <ClCompile Include="variant.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="vpinball.cpp" />
@@ -473,7 +473,7 @@
       <Filter>third-party</Filter>
     </ClCompile>
     <ClCompile Include="third-party\include\BAM\BAMView.cpp">
-      <Filter>third-party/BAM</Filter>
+      <Filter>third-party\BAM</Filter>
     </ClCompile>
     <ClCompile Include="imgui\imgui_impl_win32.cpp">
       <Filter>third-party\imgui</Filter>
@@ -509,7 +509,7 @@
       <Filter>third-party\imgui</Filter>
     </ClCompile>
     <ClCompile Include="third-party\include\tinyxml2\tinyxml2.cpp">
-      <Filter>third-party/tinyxml2</Filter>
+      <Filter>third-party\tinyxml2</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1075,9 +1075,6 @@
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="pininput.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="slintf.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="stdafx.h">

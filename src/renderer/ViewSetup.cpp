@@ -472,10 +472,10 @@ vec3 ViewSetup::FitCameraToVertices(const vector<Vertex3Ds>& pvvertex3D, const f
       minxintercept = min(minxintercept, v.x - slopex * v.z);
    }
 
-   slintf("maxy: %f\n", maxyintercept);
-   slintf("miny: %f\n", minyintercept);
-   slintf("maxx: %f\n", maxxintercept);
-   slintf("minx: %f\n", minxintercept);
+   // PLOGD << "maxy: " << maxyintercept;
+   // PLOGD << "miny: " << minyintercept;
+   // PLOGD << "maxx: " << maxxintercept;
+   // PLOGD << "minx: " << minxintercept;
 
    // Find camera center in xy plane
    const float ydist = (maxyintercept - minyintercept) / (slopey * 2.0f);

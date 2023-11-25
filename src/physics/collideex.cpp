@@ -870,7 +870,7 @@ float HitPlane::HitTest(const BallS& ball, const float dtime, CollisionEvent& co
 {
    if (!m_enabled) return -1.0f;
 
-   //slintf("HitPlane test - %f %f\n", pball->m_pos.z, pball->m_vel.z);
+   //PLOGD << "HitPlane test - " << pball->m_pos.z << " " << pball->m_vel.z;
 
    const float bnv = m_normal.Dot(ball.m_vel); // speed in normal direction
 
@@ -941,9 +941,9 @@ float HitPlane::HitTest(const BallS& ball, const float dtime, CollisionEvent& co
 
 void HitPlane::Collide(const CollisionEvent& coll)
 {
-   //slintf("Playfield COLLISION - (%f %f %f) - (%f %f %f)\n",
-   //        coll.m_ball->m_d.m_pos.x, coll.m_ball->m_d.m_pos.y, coll.m_ball->m_d.m_pos.z,
-   //        coll.m_ball->m_d.m_vel.x, coll.m_ball->m_d.m_vel.y, coll.m_ball->m_d.m_vel.z);
+   //PLOGD << "Playfield COLLISION - ("
+   //      << coll.m_ball->m_d.m_pos.x << " " << coll.m_ball->m_d.m_pos.y << " " << coll.m_ball->m_d.m_pos.z << ") - ("
+   //      << coll.m_ball->m_d.m_vel.x << " " << coll.m_ball->m_d.m_vel.y << " " << coll.m_ball->m_d.m_vel.z << ")";
    coll.m_ball->Collide3DWall(coll.m_hitnormal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);
 
 #ifdef C_EMBEDSHOT_PLANE
