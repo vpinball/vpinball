@@ -648,7 +648,7 @@ void PhysicsEngine::UpdatePhysics()
             pball->m_ringcounter_oldpos = 0;
       }
 
-      //slintf( "PT: %f %f %u %u %u\n", physics_diff_time, physics_to_graphic_diff_time, (U32)(m_curPhysicsFrameTime/1000), (U32)(initial_time_usec/1000), cur_time_msec );
+      //PLOGD << "PT: " << physics_diff_time << " " << physics_to_graphic_diff_time << " " << (U32)(m_curPhysicsFrameTime/1000) << " " << (U32)(initial_time_usec/1000) << " " << cur_time_msec;
 
       m_curPhysicsFrameTime = m_nextPhysicsFrameTime; // new cycle, on physics frame boundary
       m_nextPhysicsFrameTime += PHYSICS_STEPTIME;     // advance physics position

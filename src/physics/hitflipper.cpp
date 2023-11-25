@@ -315,7 +315,7 @@ void FlipperMoverObject::UpdateDisplacements(const float dtime)
       return;
 
    //if (m_angleSpeed)
-   //    slintf("Ang.speed: %f\n", m_angleSpeed);
+   //    PLOGD << "Ang.speed: " << m_angleSpeed;
 
    bool handle_event = false;
 
@@ -328,8 +328,9 @@ void FlipperMoverObject::UpdateDisplacements(const float dtime)
          {
             const U32 dur = g_pplayer->m_time_msec - m_startTime;
             m_startTime = 0;
-            slintf("Stroke duration: %u ms\nAng. velocity: %f\n", dur, m_angleSpeed);
-            slintf("Ball velocity: %f\n", g_pplayer->m_vball[0]->vel.Length());
+            PLOGD << "Stroke duration: " << dur << " ms";
+            PLOGD << "Ang. velocity: " << m_angleSpeed;
+            PLOGD << "Ball velocity: " << g_pplayer->m_vball[0]->vel.Length();
          }
 #endif
          handle_event = true;
@@ -889,10 +890,12 @@ void HitFlipper::Collide(const CollisionEvent& coll)
    float bnv = normal.Dot(vrel);       // relative normal velocity
 
 #ifdef DEBUG_FLIPPERS
-   slintf("Collision\n  normal: %.2f %.2f %.2f\n  rel.vel.: %.2f %.2f %.2f\n", normal.x, normal.y, normal.z, vrel.x, vrel.y, vrel.z);
-   slintf("  ball vel. %.2f %.2f %.2f\n", pball->m_vel.x, pball->m_vel.y, pball->m_vel.z);
-   slintf("  norm.vel.: %.2f\n", bnv);
-   slintf("  flipper: %.2f %.2f\n", m_flipperMover.m_angleCur, m_flipperMover.m_angleSpeed);
+   PLOGD << "Collision";
+   PLOGD << "  normal: " << normal.x << " " << normal.y << " " << normal.z;
+   PLOGD << "  rel.vel.: " << vrel.x << " " << vrel.y << " " << vrel.z;
+   PLOGD << "  ball vel. " << pball->m_vel.x << " " << pball->m_vel.y << " " << pball->m_vel.z;
+   PLOGD << "  norm.vel.: " << bnv;
+   PLOGD << "  flipper: " << m_flipperMover.m_angleCur << " " << m_flipperMover.m_angleSpeed;
 #endif
 
    if (bnv >= -C_LOWNORMVEL)							// nearly receding ... make sure of conditions
@@ -949,7 +952,8 @@ void HitFlipper::Collide(const CollisionEvent& coll)
    Vertex3Ds flipperImp = -(impulse * flipperResponseScaling) * normal;
 
 #ifdef DEBUG_FLIPPERS
-   slintf("  epsilon: %.2f\n  angular response: %.3f\n", epsilon, normal.Dot(CrossProduct(angResp / m_flipperMover.m_inertia, rF)));
+   PLOGD << "  epsilon: " << epsilon;
+   PLOGD << "  angular response: " << normal.Dot(CrossProduct(angResp / m_flipperMover.m_inertia, rF));
 #endif
 
    Vertex3Ds rotI = CrossProduct(rF, flipperImp);
@@ -968,7 +972,7 @@ void HitFlipper::Collide(const CollisionEvent& coll)
          const float bnv_after = bnv + impulse * invMass;
 
 #ifdef DEBUG_FLIPPERS
-         slintf("  recoil time: %f  norm.vel after: %.2f\n", recoilTime, bnv_after);
+         PLOGD << "  recoil time: " << recoilTime << "  norm.vel after: " << bnv_after;
 #endif
          if (recoilTime <= 0.5f || bnv_after > 0.f)
          {
@@ -1025,9 +1029,9 @@ void HitFlipper::Collide(const CollisionEvent& coll)
    m_last_hittime = g_pplayer->m_time_msec; // keep resetting until idle for 250 milliseconds
 
 #ifdef DEBUG_FLIPPERS
-   slintf("   ---- after collision ----\n");
-   slintf("  ball vel. %.2f %.2f %.2f\n", pball->m_vel.x, pball->m_vel.y, pball->m_vel.z);
-   slintf("  flipper: %.2f %.2f\n", m_flipperMover.m_angleCur, m_flipperMover.m_angleSpeed);
+   PLOGD << "   ---- after collision ----\n";
+   PLOGD << "  ball vel. " << pball->m_vel.x << " " << pball->m_vel.y << " " << pball->m_vel.z;
+   PLOGD << "  flipper: " << m_flipperMover.m_angleCur << " " << m_flipperMover.m_angleSpeed;
 #endif
 }
 
@@ -1059,7 +1063,7 @@ void HitFlipper::Contact(CollisionEvent& coll, const float dtime)
    const float normVel = vrel.Dot(normal);   // this should be zero, but only up to +/- C_CONTACTVEL
 
 #ifdef DEBUG_FLIPPERS
-   slintf("Flipper contact - rel.vel. %f\n", normVel);
+   PLOGD << "Flipper contact - rel.vel. " << normVel;
 #endif
 
    // If some collision has changed the ball's velocity, we may not have to do anything.

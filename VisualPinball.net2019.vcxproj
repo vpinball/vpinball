@@ -873,7 +873,6 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="def.cpp" />
     <ClCompile Include="disputil.cpp" />
     <ClCompile Include="dragpoint.cpp" />
-    <ClCompile Include="eventproxy.cpp" />
     <ClCompile Include="extern.cpp" />
     <ClCompile Include="hid.cpp" />
     <ClCompile Include="hitrectsur.cpp" />
@@ -886,7 +885,6 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="pinbinary.cpp" />
     <ClCompile Include="pininput.cpp" />
     <ClCompile Include="pinundo.cpp" />
-    <ClCompile Include="slintf.cpp" />
     <ClCompile Include="StackTrace.cpp" />
     <ClCompile Include="variant.cpp" />
     <ClCompile Include="main.cpp" />
@@ -1324,7 +1322,6 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="pininput.h" />
     <ClInclude Include="pinundo.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="slintf.h" />
     <ClInclude Include="StackTrace.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="sur.h" />

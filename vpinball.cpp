@@ -1726,12 +1726,6 @@ void VPinball::OnInitialUpdate()
 
       SetWindowPlacement(winpl);
    }
-#ifdef SLINTF
-   // see slintf.cpp
-   slintf_init(); // initialize debug console (can be popupped by the following command)
-   slintf_popup_console();
-   slintf("Debug output:\n");
-#endif
 
    CreateDocker();
    ShowWindow(SW_SHOW);

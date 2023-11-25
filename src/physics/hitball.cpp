@@ -402,7 +402,7 @@ void Ball::ApplyFriction(const Vertex3Ds& hitnormal, const float dtime, const fl
    const float slipspeed = slip.Length();
    Vertex3Ds slipDir;
    float numer;
-   //slintf("Velocity: %.2f Angular velocity: %.2f Surface velocity: %.2f Slippage: %.2f\n", m_vel.Length(), (m_angularmomentum / Inertia()).Length(), surfVel.Length(), slipspeed);
+   //PLOGD << "Velocity: " << m_vel.Length() << " Angular velocity: " << (m_angularmomentum / Inertia()).Length() << " Surface velocity: " << surfVel.Length() << " Slippage: " << slipspeed;
    //if (slipspeed > 1e-6f)
 
 #ifdef C_BALL_SPIN_HACK
