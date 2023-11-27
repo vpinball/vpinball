@@ -340,7 +340,12 @@ public:
    MeshBuffer* m_quadPNTDynMeshBuffer = nullptr; // internal vb for rendering dynamic quads (position/normal/texture)
    MeshBuffer* m_quadPTDynMeshBuffer = nullptr;  // internal vb for rendering dynamic quads (position/texture)
 
-#ifndef ENABLE_SDL
+   vector<SharedIndexBuffer*> m_pendingSharedIndexBuffers;
+   vector<SharedVertexBuffer*> m_pendingSharedVertexBuffers;
+
+#ifdef ENABLE_SDL
+   vector<MeshBuffer::SharedVAO*> m_sharedVAOs;
+#else
    bool m_useNvidiaApi;
    bool m_INTZ_support;
    bool NVAPIinit;

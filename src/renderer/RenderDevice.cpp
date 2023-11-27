@@ -1377,7 +1377,12 @@ RenderDevice::~RenderDevice()
 
    SDL_GL_DeleteContext(m_sdl_context);
    SDL_DestroyWindow(m_sdl_playfieldHwnd);
+
+   assert(m_sharedVAOs.empty());
 #endif
+
+   assert(m_pendingSharedIndexBuffers.empty());
+   assert(m_pendingSharedVertexBuffers.empty());
 }
 
 /*static void FlushGPUCommandBuffer(IDirect3DDevice9* pd3dDevice)

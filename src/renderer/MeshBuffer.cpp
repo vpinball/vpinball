@@ -2,10 +2,6 @@
 #include "MeshBuffer.h"
 #include "RenderDevice.h"
 
-#ifdef ENABLE_SDL
-vector<MeshBuffer::SharedVAO*> MeshBuffer::sharedVAOs;
-#endif
-
 #include "Shader.h"
 #include "VertexBuffer.h"
 
@@ -41,7 +37,7 @@ MeshBuffer::~MeshBuffer()
       if (m_sharedVAO->ref_count == 0)
       {
          glDeleteVertexArrays(1, &m_sharedVAO->vao);
-         RemoveFromVectorSingle(sharedVAOs, m_sharedVAO);
+         RemoveFromVectorSingle(m_vb->m_rd->m_sharedVAOs, m_sharedVAO);
          delete m_sharedVAO;
       }
    }
@@ -74,8 +70,9 @@ void MeshBuffer::bind()
       if (isShared)
       {
          GLuint vb = m_vb->GetBuffer(), ib = m_ib == nullptr ? 0 : m_ib->GetBuffer();
-         std::vector<SharedVAO*>::iterator existing = std::find_if(sharedVAOs.begin(), sharedVAOs.end(), [vb, ib](SharedVAO* v) { return v->vb == vb && v->ib == ib; });
-         if (existing != sharedVAOs.end())
+         std::vector<SharedVAO*>::iterator existing
+            = std::find_if(m_vb->m_rd->m_sharedVAOs.begin(), m_vb->m_rd->m_sharedVAOs.end(), [vb, ib](SharedVAO* v) { return v->vb == vb && v->ib == ib; });
+         if (existing != m_vb->m_rd->m_sharedVAOs.end())
          {
             m_sharedVAO = *existing;
             m_sharedVAO->ref_count++;
@@ -116,7 +113,7 @@ void MeshBuffer::bind()
          if (isShared)
          {
             m_sharedVAO = new SharedVAO { m_vb->GetBuffer(), m_ib == nullptr ? 0 : m_ib->GetBuffer(), m_vao, 1 };
-            sharedVAOs.push_back(m_sharedVAO);
+            m_vb->m_rd->m_sharedVAOs.push_back(m_sharedVAO);
          }
       }
    }
