@@ -52,8 +52,6 @@ private:
    unsigned int m_offset = 0; // Offset in bytes of the data inside the native GPU array
    unsigned int m_vertexOffset = 0; // Offset in vertices of the data inside the native GPU array
    SharedVertexBuffer* m_sharedBuffer = nullptr;
-
-   static vector<SharedVertexBuffer*> pendingSharedBuffers;
 };
 
 
