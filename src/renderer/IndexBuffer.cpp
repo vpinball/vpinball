@@ -105,8 +105,6 @@ SharedIndexBuffer::~SharedIndexBuffer()
 
 
 
-vector<SharedIndexBuffer*> IndexBuffer::pendingSharedBuffers;
-
 IndexBuffer::IndexBuffer(RenderDevice* rd, const unsigned int indexCount, const bool isDynamic, const IndexBuffer::Format format)
    : m_rd(rd)
    , m_count(indexCount)
@@ -115,7 +113,7 @@ IndexBuffer::IndexBuffer(RenderDevice* rd, const unsigned int indexCount, const 
    , m_isStatic(!isDynamic)
    , m_size(indexCount * (format == FMT_INDEX16 ? 2 : 4))
 {
-   for (SharedIndexBuffer* block : pendingSharedBuffers)
+   for (SharedIndexBuffer* block : m_rd->m_pendingSharedIndexBuffers)
    {
       if (block->m_format == m_indexFormat && block->m_isStatic == m_isStatic)
       {
@@ -126,7 +124,7 @@ IndexBuffer::IndexBuffer(RenderDevice* rd, const unsigned int indexCount, const 
    if (m_sharedBuffer == nullptr)
    {
       m_sharedBuffer = new SharedIndexBuffer(m_indexFormat, m_isStatic);
-      pendingSharedBuffers.push_back(m_sharedBuffer);
+      m_rd->m_pendingSharedIndexBuffers.push_back(m_sharedBuffer);
    }
    m_indexOffset = m_sharedBuffer->Add(this);
    m_offset = m_indexOffset * m_sizePerIndex;
@@ -164,7 +162,7 @@ IndexBuffer::~IndexBuffer()
 {
    if (m_sharedBuffer->Remove(this))
    {
-      RemoveFromVectorSingle(pendingSharedBuffers, m_sharedBuffer);
+      RemoveFromVectorSingle(m_rd->m_pendingSharedIndexBuffers, m_sharedBuffer);
       delete m_sharedBuffer;
    }
 }
@@ -219,6 +217,6 @@ void IndexBuffer::ApplyOffset(VertexBuffer* vb)
 void IndexBuffer::Upload()
 {
    if (!m_sharedBuffer->IsUploaded())
-      RemoveFromVectorSingle(pendingSharedBuffers, m_sharedBuffer);
+      RemoveFromVectorSingle(m_rd->m_pendingSharedIndexBuffers, m_sharedBuffer);
    m_sharedBuffer->Upload();
 }

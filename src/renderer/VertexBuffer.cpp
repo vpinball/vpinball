@@ -119,8 +119,6 @@ SharedVertexBuffer::~SharedVertexBuffer()
 
 
 
-vector<SharedVertexBuffer*> VertexBuffer::pendingSharedBuffers;
-
 VertexBuffer::VertexBuffer(RenderDevice* rd, const unsigned int vertexCount, const float* verts, const bool isDynamic, const VertexFormat fvf)
    : m_rd(rd)
    , m_count(vertexCount)
@@ -131,7 +129,7 @@ VertexBuffer::VertexBuffer(RenderDevice* rd, const unsigned int vertexCount, con
 {
    #ifndef __OPENGLES__
    // Disabled since OpenGL ES does not support glDrawElementsBaseVertex, but now that we remap the indices when creating the index buffer it should be good
-   for (SharedVertexBuffer* block : pendingSharedBuffers)
+   for (SharedVertexBuffer* block : m_rd->m_pendingSharedVertexBuffers)
    {
       if (block->m_format == fvf && block->m_isStatic == m_isStatic && block->GetCount() + vertexCount <= 65535)
       {
@@ -143,7 +141,7 @@ VertexBuffer::VertexBuffer(RenderDevice* rd, const unsigned int vertexCount, con
    if (m_sharedBuffer == nullptr)
    {
       m_sharedBuffer = new SharedVertexBuffer(fvf, m_isStatic);
-      pendingSharedBuffers.push_back(m_sharedBuffer);
+      m_rd->m_pendingSharedVertexBuffers.push_back(m_sharedBuffer);
    }
    m_vertexOffset = m_sharedBuffer->Add(this);
    m_offset = m_vertexOffset * m_sizePerVertex;
@@ -160,7 +158,7 @@ VertexBuffer::~VertexBuffer()
 {
    if (m_sharedBuffer->Remove(this))
    {
-      RemoveFromVectorSingle(pendingSharedBuffers, m_sharedBuffer);
+      RemoveFromVectorSingle(m_rd->m_pendingSharedVertexBuffers, m_sharedBuffer);
       delete m_sharedBuffer;
    }
 }
@@ -188,6 +186,6 @@ void VertexBuffer::unlock()
 void VertexBuffer::Upload()
 {
    if (!m_sharedBuffer->IsUploaded())
-      RemoveFromVectorSingle(pendingSharedBuffers, m_sharedBuffer);
+      RemoveFromVectorSingle(m_rd->m_pendingSharedVertexBuffers, m_sharedBuffer);
    m_sharedBuffer->Upload();
 }
