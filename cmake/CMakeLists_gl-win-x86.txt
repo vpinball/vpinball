@@ -219,8 +219,6 @@ add_executable(vpinball WIN32
    def.cpp
    def.h
    dispid.h
-   disputil.cpp
-   disputil.h
    dragpoint.cpp
    dragpoint.h
    editablereg.h
@@ -234,7 +232,6 @@ add_executable(vpinball WIN32
    hitrectsur.h
    hitsur.cpp
    hitsur.h
-   idebug.h
    ieditable.cpp
    ieditable.h
    iselect.cpp

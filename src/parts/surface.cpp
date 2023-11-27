@@ -13,7 +13,6 @@ Surface::Surface()
    m_d.m_slingshotAnimation = true;
    m_d.m_inner = true;
    m_d.m_isBottomSolid = false;
-   m_propPhysics = nullptr;
    m_d.m_overwritePhysics = true;
 }
 

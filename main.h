@@ -140,7 +140,6 @@ static const string defaultPathSearch[]     = { string(), "user"s +PATH_SEPARATO
 #include "resource.h"
 
 #include "memutil.h"
-#include "disputil.h"
 
 #include "dispid.h"
 
@@ -149,8 +148,6 @@ static const string defaultPathSearch[]     = { string(), "user"s +PATH_SEPARATO
 #include "vectorsort.h"
 #include "vpinball.h"
 #include "core/Settings.h"
-
-#include "idebug.h"
 
 #include "wintimer.h"
 

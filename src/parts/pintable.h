@@ -485,7 +485,6 @@ public:
    virtual IDispatch *GetDispatch() override { return (IDispatch *)this; }
    virtual const IDispatch *GetDispatch() const override { return (const IDispatch *)this; }
    virtual IFireEvents *GetIFireEvents() override { return (IFireEvents *)this; }
-   virtual IDebugCommands *GetDebugCommands() { return nullptr; }
 
    void SetZoom(float zoom);
    void SetMyScrollInfo();

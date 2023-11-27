@@ -147,23 +147,23 @@ private:
 
    void GenerateMesh(vector<Vertex3D_NoTex2> &topBuf, vector<Vertex3D_NoTex2> &sideBuf, vector<WORD> &topBottomIndices, vector<WORD> &sideIndices);
 
-   PinTable *m_ptable;
+   PinTable *m_ptable = nullptr;
 
    vector<LineSegSlingshot*> m_vlinesling;
 
    vector<HitObject*> m_vhoDrop; // Objects to disable when dropped
    vector<HitObject*> m_vhoCollidable; // Objects to that may be collide selectable
 
-   unsigned int m_numVertices, m_numPolys;
+   unsigned int m_numVertices = 0, m_numPolys = 0;
 
    MeshBuffer *m_slingshotMeshBuffer = nullptr;
    MeshBuffer *m_meshBuffer = nullptr;
 
-   PropertyPane *m_propPhysics;
+   PropertyPane *m_propPhysics = nullptr;
 
-   bool m_isWall;
-   bool m_isDynamic;
-   bool m_isDropped;
+   bool m_isWall = true;
+   bool m_isDynamic = false;
+   bool m_isDropped = false;
 
    Vertex3Ds m_boundingSphereCenter;
    //float m_boundingSphereRadius = -1.f;

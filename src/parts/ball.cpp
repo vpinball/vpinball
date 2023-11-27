@@ -12,22 +12,6 @@ BallEx::~BallEx()
    assert(m_rd == nullptr);
 }
 
-void BallEx::GetDebugCommands(vector<int> & pvids, vector<int> & pvcommandid)
-{
-   pvids.push_back(IDS_MAKEACTIVEBALL);
-   pvcommandid.push_back(0);
-}
-
-void BallEx::RunDebugCommand(int id)
-{
-   switch (id)
-   {
-   case 0:
-      g_pplayer->m_pactiveballDebug = m_pball;
-      break;
-   }
-}
-
 
 #pragma region Rendering
 
