@@ -129,8 +129,6 @@ private:
    unsigned int m_offset = 0; // Offset in bytes of the data inside the native GPU array
    unsigned int m_indexOffset = 0; // Offset in indices of the data inside the native GPU array
    SharedIndexBuffer* m_sharedBuffer = nullptr;
-
-   static vector<SharedIndexBuffer*> pendingSharedBuffers;
 };
 
 

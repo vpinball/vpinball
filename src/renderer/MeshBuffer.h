@@ -21,14 +21,13 @@ public:
    const string m_name;
 
 #if defined(ENABLE_SDL) // OpenGL
-private:
-   GLuint m_vao = 0;
    struct SharedVAO
    {
       GLuint vb, ib, vao, ref_count;
    };
+private:
+   GLuint m_vao = 0;
    SharedVAO* m_sharedVAO = nullptr;
-   static vector<SharedVAO*> sharedVAOs;
 #else // DirectX 9
    IDirect3DVertexDeclaration9* const m_vertexDeclaration;
 #endif
