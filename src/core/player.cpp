@@ -1219,7 +1219,8 @@ Ball *Player::CreateBall(const float x, const float y, const float z, const floa
    pball->m_pballex->m_pball = pball;
    pball->m_pballex->RenderSetup(m_renderer->m_pd3dPrimaryDevice);
 
-   pball->m_pfedebug = (IFireEvents *)pball->m_pballex;
+   // FIXME set m_editable when balls will be editable parts
+   //pball->m_editable = pball->m_pballex;
 
    pball->CalcHitBBox(); // need to update here, as only done lazily
 
@@ -2044,151 +2045,6 @@ void Player::UnpauseMusic()
       m_pauseRefCount = 0;
 }
 
-struct DebugMenuItem
-{
-   int objectindex;
-   vector<int> *pvdispid;
-   HMENU hmenu;
-};
-
-void AddEventToDebugMenu(const char *sz, int index, int dispid, LPARAM lparam)
-{
-   const DebugMenuItem * const pdmi = (DebugMenuItem *)lparam;
-   const HMENU hmenu = pdmi->hmenu;
-   const int menuid = ((pdmi->objectindex + 1) << 16) | (int)pdmi->pvdispid->size();
-   pdmi->pvdispid->push_back(dispid);
-   AppendMenu(hmenu, MF_STRING, menuid, sz);
-}
-
-void Player::DoDebugObjectMenu(const int x, const int y)
-{
-   Matrix3D mat3D = m_renderer->GetMVP().GetModelViewProj(0);
-   mat3D.Invert();
-
-   ViewPort vp;
-   m_renderer->m_pd3dPrimaryDevice->GetViewport(&vp);
-   const float rClipWidth = (float)vp.Width*0.5f;
-   const float rClipHeight = (float)vp.Height*0.5f;
-
-   const float xcoord = ((float)x - rClipWidth) / rClipWidth;
-   const float ycoord = (rClipHeight - (float)y) / rClipHeight;
-
-   // Use the inverse of our 3D transform to determine where in 3D space the
-   // screen pixel the user clicked on is at.  Get the point at the near
-   // clipping plane (z=0) and the far clipping plane (z=1) to get the whole
-   // range we need to hit test
-   Vertex3Ds v3d, v3d2;
-   mat3D.MultiplyVector(Vertex3Ds(xcoord, ycoord, 0.f), v3d);
-   mat3D.MultiplyVector(Vertex3Ds(xcoord, ycoord, 1.f), v3d2);
-   vector<HitObject*> vhoHit;
-   m_physics->RayCast(v3d, v3d2, true, vhoHit);
-
-   if (vhoHit.empty())
-   {
-      // Nothing was hit-tested
-      return;
-   }
-
-   PauseMusic();
-
-   const HMENU hmenu = CreatePopupMenu();
-
-   vector<IFireEvents*> vpfe;
-   vector<HMENU> vsubmenu;
-   vector< vector<int>* > vvdispid;
-   for (size_t i = 0; i < vhoHit.size(); i++)
-   {
-      HitObject * const pho = vhoHit[i];
-      // Make sure we don't do the same object twice through 2 different Hitobjs.
-      if (pho->m_pfedebug && (FindIndexOf(vpfe, pho->m_pfedebug) == -1))
-      {
-         vpfe.push_back(pho->m_pfedebug);
-         CComVariant var;
-         DISPPARAMS dispparams = {
-            nullptr,
-            nullptr,
-            0,
-            0
-         };
-         const HRESULT hr = pho->m_pfedebug->GetDispatch()->Invoke(
-            0x80010000, IID_NULL,
-            LOCALE_USER_DEFAULT,
-            DISPATCH_PROPERTYGET,
-            &dispparams, &var, nullptr, nullptr);
-
-         const HMENU submenu = CreatePopupMenu();
-         vsubmenu.push_back(submenu);
-         if (hr == S_OK)
-         {
-            WCHAR *wzT;
-            wzT = V_BSTR(&var);
-            AppendMenuW(hmenu, MF_STRING | MF_POPUP, (UINT_PTR)submenu, wzT);
-
-            vector<int> *pvdispid = new vector<int>();
-            vvdispid.push_back(pvdispid);
-
-            DebugMenuItem dmi;
-            dmi.objectindex = (int)i;
-            dmi.pvdispid = pvdispid;
-            dmi.hmenu = submenu;
-            EnumEventsFromDispatch(pho->m_pfedebug->GetDispatch(), AddEventToDebugMenu, (LPARAM)&dmi);
-         }
-
-         IDebugCommands * const pdc = pho->m_pfedebug->GetDebugCommands();
-         if (pdc)
-         {
-            vector<int> vids;
-            vector<int> vcommandid;
-
-            pdc->GetDebugCommands(vids, vcommandid);
-            for (size_t l = 0; l < vids.size(); l++)
-            {
-               const LocalString ls(vids[l]);
-               AppendMenu(submenu, MF_STRING, ((i + 1) << 16) | vcommandid[l] | 0x8000, ls.m_szbuffer);
-            }
-         }
-      }
-      else
-      {
-         vvdispid.push_back(nullptr); // Put a spacer in so we can keep track of indexes
-      }
-   }
-
-   POINT pt;
-   pt.x = x;
-   pt.y = y;
-   ClientToScreen(pt);
-
-   const int icmd = TrackPopupMenuEx(hmenu, TPM_RETURNCMD | TPM_RIGHTBUTTON, pt.x, pt.y, GetHwnd(), nullptr);
-
-   if (icmd != 0 && !vsubmenu.empty())
-   {
-      const int highword = HIWORD(icmd) - 1;
-      const int lowword = icmd & 0xffff;
-      IFireEvents * const pfe = vhoHit[highword]->m_pfedebug;
-      if (lowword & 0x8000) // custom debug command
-      {
-         pfe->GetDebugCommands()->RunDebugCommand(lowword & 0x7fff);
-      }
-      else
-      {
-         const int dispid = (*vvdispid[highword])[lowword];
-         m_pactiveball = m_pactiveballDebug;
-         pfe->FireGroupEvent(dispid);
-         m_pactiveball = nullptr;
-      }
-   }
-
-   DestroyMenu(hmenu);
-   for (size_t i = 0; i < vsubmenu.size(); i++)
-      DestroyMenu(vsubmenu[i]);
-
-   for (size_t i = 0; i < vvdispid.size(); i++)
-      delete vvdispid[i];
-
-   UnpauseMusic();
-}
-
 LRESULT Player::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     if (ImGui_ImplWin32_WndProcHandler(GetHwnd(), uMsg, wParam, lParam))
@@ -2243,16 +2099,6 @@ LRESULT Player::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         break;
 #endif
 #endif
-    case WM_RBUTTONUP:
-    {
-        if (m_debugMode)
-        {
-            const int x = lParam & 0xffff;
-            const int y = (lParam >> 16) & 0xffff;
-            DoDebugObjectMenu(x, y);
-        }
-        break;
-    }
     
 
     case WM_POINTERDOWN:
@@ -2293,33 +2139,26 @@ LRESULT Player::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_ACTIVATE:
         if (wParam != WA_INACTIVE)
-            SetCursor(nullptr);
         {
-            if (wParam != WA_INACTIVE)
-            {
-                m_gameWindowActive = true;
-                m_noTimeCorrect = true;
-#ifdef STEPPING
-                m_pause = false;
-#endif
-            }
-            else
-            {
-                m_gameWindowActive = false;
-#ifdef STEPPING
-                m_pause = true;
-#endif
-            }
-            RecomputePauseState();
+           SetCursor(nullptr);
+           m_gameWindowActive = true;
+           m_noTimeCorrect = true;
+           #ifdef STEPPING
+           m_pause = false;
+           #endif
         }
-        break;
-
-    case WM_EXITMENULOOP:
-        m_noTimeCorrect = true;
+        else
+        {
+           m_gameWindowActive = false;
+           #ifdef STEPPING
+           m_pause = true;
+           #endif
+        }
+        RecomputePauseState();
         break;
 
     case WM_SETCURSOR:
-        if (LOWORD(lParam) == HTCLIENT && !m_drawCursor)
+        if (LOWORD(lParam) == HTCLIENT && !m_drawCursor) // Inside client area and cursor deactivated ?
         {
             SetCursor(nullptr);
         }

@@ -70,7 +70,7 @@ PhysicsEngine::PhysicsEngine(PinTable *const table) : m_nudgeFilterX("x"), m_nud
          const size_t newsize = m_vho.size();
          // Save the objects the trouble of having to set the idispatch pointer themselves
          for (size_t hitloop = currentsize; hitloop < newsize; hitloop++)
-            m_vho[hitloop]->m_pfedebug = pe->GetIFireEvents();
+            m_vho[hitloop]->m_editable = pe;
       }
    }
 
@@ -422,30 +422,26 @@ void PhysicsEngine::RayCast(const Vertex3Ds &source, const Vertex3Ds &target, co
    // First time the debug hit-testing has been used
    if (uiCast && m_vUIHitObjects.empty())
    {
-      for (size_t i = 0; i < g_pplayer->m_vhitables.size(); ++i)
+      for (IEditable *const pe : g_pplayer->m_ptable->m_vedit)
       {
-         Hitable *const ph = g_pplayer->m_vhitables[i];
-         const size_t currentsize = m_vUIHitObjects.size();
-         ph->GetHitShapesDebug(m_vUIHitObjects);
-         const size_t newsize = m_vUIHitObjects.size();
-         // FIXME this was kept from earlier version but I don't get why we would want to report debug events
-         // Save the objects the trouble of having the set the idispatch pointer themselves
-         for (size_t hitloop = currentsize; hitloop < newsize; hitloop++)
-            m_vUIHitObjects[hitloop]->m_pfedebug = g_pplayer->m_ptable->m_vedit[i]->GetIFireEvents();
+         if (pe->GetIHitable())
+         {
+            const size_t currentsize = m_vUIHitObjects.size();
+            pe->GetIHitable()->GetHitShapesDebug(m_vUIHitObjects);
+            // Save the objects the trouble of having the set the idispatch pointer themselves
+            for (size_t hitloop = currentsize, newsize = m_vUIHitObjects.size(); hitloop < newsize; hitloop++)
+            {
+               m_vUIHitObjects[hitloop]->m_editable = pe;
+               m_vUIHitObjects[hitloop]->CalcHitBBox(); // maybe needed to update here, as only done lazily for some objects (i.e. balls!)
+               m_UIOctree.AddElement(m_vUIHitObjects[hitloop]);
+            }
+         }
       }
-
-      for (size_t i = 0; i < m_vUIHitObjects.size(); ++i)
-      {
-         m_vUIHitObjects[i]->CalcHitBBox(); // maybe needed to update here, as only done lazily for some objects (i.e. balls!)
-         m_UIOctree.AddElement(m_vUIHitObjects[i]);
-      }
-
       const FRect3D bbox = g_pplayer->m_ptable->GetBoundingBox();
       m_UIOctree.Initialize(FRect(bbox.left, bbox.right, bbox.top, bbox.bottom));
    }
 
-   // Create a ray (ball) that travels in 3D space along the given ray, and find what
-   // it intersects with.
+   // Create a ray (ball) that travels in 3D space along the given ray, and find what it intersects with.
    Ball ballT;
    ballT.m_d.m_pos = source;
    ballT.m_d.m_vel = target - source;

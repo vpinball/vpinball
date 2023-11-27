@@ -856,7 +856,6 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="objloader.cpp" />
     <ClCompile Include="codeview.cpp" />
     <ClCompile Include="def.cpp" />
-    <ClCompile Include="disputil.cpp" />
     <ClCompile Include="dragpoint.cpp" />
     <ClCompile Include="extern.cpp" />
     <ClCompile Include="hid.cpp" />
@@ -1280,7 +1279,6 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="Debugger.h" />
     <ClInclude Include="def.h" />
     <ClInclude Include="dispid.h" />
-    <ClInclude Include="disputil.h" />
     <ClInclude Include="dragpoint.h" />
     <ClInclude Include="editablereg.h" />
     <ClInclude Include="eventproxy.h" />
@@ -1290,7 +1288,6 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="hid.h" />
     <ClInclude Include="hitrectsur.h" />
     <ClInclude Include="hitsur.h" />
-    <ClInclude Include="idebug.h" />
     <ClInclude Include="ieditable.h" />
     <ClInclude Include="iselect.h" />
     <ClInclude Include="LiveUI.h" />

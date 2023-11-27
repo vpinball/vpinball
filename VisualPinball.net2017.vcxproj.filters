@@ -427,7 +427,6 @@
     <ClCompile Include="objloader.cpp" />
     <ClCompile Include="codeview.cpp" />
     <ClCompile Include="def.cpp" />
-    <ClCompile Include="disputil.cpp" />
     <ClCompile Include="dragpoint.cpp" />
     <ClCompile Include="extern.cpp" />
     <ClCompile Include="hid.cpp" />
@@ -1014,9 +1013,6 @@
     <ClInclude Include="dispid.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="disputil.h">
-      <Filter>headers</Filter>
-    </ClInclude>
     <ClInclude Include="dragpoint.h">
       <Filter>headers</Filter>
     </ClInclude>
@@ -1045,9 +1041,6 @@
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="hitsur.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="idebug.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="ieditable.h">

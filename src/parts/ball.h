@@ -10,7 +10,6 @@ class BallEx :
    public CComCoClass<BallEx, &CLSID_Ball>,
    public IDispatchImpl<IBall, &IID_IBall, &LIBID_VPinballLib>,
    public IFireEvents,
-   public IDebugCommands,
    public Renderable
 {
 public:
@@ -94,11 +93,6 @@ public:
    void FireGroupEvent(const int dispid) final {}
    IDispatch *GetDispatch() final { return ((IDispatch *) this); }
    const IDispatch *GetDispatch() const final { return ((const IDispatch *) this); }
-   IDebugCommands *GetDebugCommands() final { return (IDebugCommands *) this; }
-
-   // IDebugCommands
-   void GetDebugCommands(vector<int> &pvids, vector<int> &pvcommandid) final;
-   void RunDebugCommand(int id) final;
 
    Ball *m_pball;
 

@@ -14,7 +14,6 @@ public:
    virtual void FireGroupEvent(const int dispid) = 0;
    virtual IDispatch *GetDispatch() = 0;
    virtual const IDispatch *GetDispatch() const = 0;
-   virtual IDebugCommands *GetDebugCommands() = 0;
 
    float   m_currentHitThreshold; // while playing and the ball hits the mesh the hit threshold is updated here
 };
@@ -68,13 +67,11 @@ public:
 	_STANDARD_DISPATCH_INDEPENDANT_EDITABLE_DECLARES(T, ItemType) \
 	virtual EventProxyBase *GetEventProxyBase() {return nullptr;} \
 	inline IFireEvents *GetIFireEvents() {return nullptr;} \
-	inline IDebugCommands *GetDebugCommands() {return nullptr;} \
 	virtual IScriptable *GetScriptable() {return nullptr;}
 
 // used above, do not invoke directly
 #define _STANDARD_DISPATCH_EDITABLE_DECLARES(itemType) \
 	inline IFireEvents *GetIFireEvents() {return (IFireEvents *)this;} \
-	inline IDebugCommands *GetDebugCommands() {return nullptr;} \
 	virtual EventProxyBase *GetEventProxyBase() {return (EventProxyBase *)this;} \
 	STDMETHOD(get_Name)(/*[out, retval]*/ BSTR *pVal) \
 		{ \
@@ -129,10 +126,6 @@ public:
 	virtual void UIRenderPass2(Sur * const psur); \
 	virtual PinTable *GetPTable() { return m_ptable; } \
 	virtual const PinTable *GetPTable() const { return m_ptable; } \
-	virtual void GetHitShapes(vector<HitObject*> &pvho); \
-	virtual void GetHitShapesDebug(vector<HitObject*> &pvho); \
-	virtual void GetTimers(vector<HitTimer*> &pvht); \
-	virtual void EndPlay(); \
 	virtual void Delete() {IEditable::Delete();} \
 	virtual void Uncreate() {IEditable::Uncreate();} \
 	virtual HRESULT SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo); \
@@ -148,15 +141,21 @@ public:
 	virtual const ISelect *GetISelect() const {return static_cast<const ISelect*>(this);} \
 	virtual Hitable *GetIHitable() {return static_cast<Hitable *>(this);} \
 	virtual const Hitable *GetIHitable() const {return static_cast<const Hitable *>(this);} \
-	virtual void RenderSetup(RenderDevice *device); \
-	virtual void UpdateAnimation(const float diff_time_msec); \
-	virtual void Render(const unsigned int renderMask); \
-	virtual void RenderRelease(); \
 	STDMETHOD(GetDisplayString)(DISPID dispID, BSTR *pbstr) {return hrNotImplemented;} \
 	STDMETHOD(MapPropertyToPage)(DISPID dispID, CLSID *pclsid) {return hrNotImplemented;} \
 	STDMETHOD(GetPredefinedStrings)(DISPID dispID, CALPOLESTR *pcaStringsOut, CADWORD *pcaCookiesOut) {return GetPTable()->GetPredefinedStrings(dispID, pcaStringsOut, pcaCookiesOut, this);} \
 	STDMETHOD(GetPredefinedValue)(DISPID dispID, DWORD dwCookie, VARIANT *pVarOut) {return GetPTable()->GetPredefinedValue(dispID, dwCookie, pVarOut, this);} \
-	virtual void SetDefaults(const bool fromMouseClick);
+	virtual void SetDefaults(const bool fromMouseClick); \
+	/* Hitable implementation */ \
+	virtual void GetTimers(vector<HitTimer*> &pvht); \
+	virtual void GetHitShapes(vector<HitObject*> &pvho); \
+	virtual void GetHitShapesDebug(vector<HitObject*> &pvho); \
+	virtual void EndPlay(); \
+	/* IRenderable implementation */ \
+	virtual void RenderSetup(RenderDevice *device); \
+	virtual void UpdateAnimation(const float diff_time_msec); \
+	virtual void Render(const unsigned int renderMask); \
+	virtual void RenderRelease();
 
 #define _STANDARD_EDITABLE_CONSTANTS(ItTy, ResName, AllwdViews) \
 	static const ItemTypeEnum ItemType = ItTy; \

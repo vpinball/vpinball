@@ -295,8 +295,6 @@ public:
    Ball *CreateBall(const float x, const float y, const float z, const float vx, const float vy, const float vz, const float radius = 25.0f, const float mass = 1.0f);
    void DestroyBall(Ball *pball);
 
-   void DoDebugObjectMenu(const int x, const int y);
-
    PhysicsEngine* m_physics = nullptr;
 
    vector<Ball *> m_vball;

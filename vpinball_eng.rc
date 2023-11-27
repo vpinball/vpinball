@@ -3927,7 +3927,6 @@ BEGIN
     IDS_EDITOR              "Editor"
     IDS_NONE                "<None>"
     IDS_VALUE               "Value"
-    IDS_MAKEACTIVEBALL      "Make ActiveBall"
     IDS_DEBUGNOCONVERT      "This value can not be displayed."
     IDS_UNDOPASTSAVE        "You are about to undo past previous save.  Continue?"
     IDS_LOADING             "Loading"

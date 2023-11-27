@@ -1811,7 +1811,7 @@ void LiveUI::UpdateMainUI()
          m_camProj.SetPerspectiveFovRH(39.6f, io.DisplaySize.x / io.DisplaySize.y, zNear, zFar);
       }
       float * const cameraView = (float *)(m_camView.m);
-      float * const cameraProjection = (float *)(m_camProj.m); 
+      float * const cameraProjection = (float *)(m_camProj.m);
 
       /* Matrix3D gridMatrix;
       static constexpr float identityMatrix[16] = { 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 1.f };
@@ -1900,6 +1900,67 @@ void LiveUI::UpdateMainUI()
             m_camView.SetLookAtRH(pos - right * drag.x + up * drag.y, camTarget, up);
          }
       }
+
+      // Select
+      if (ImGui::IsMouseClicked(ImGuiMouseButton_Right)) // FIXME for the time being, the guizmo manipulate interfere with this, so we use the other button...
+      {
+         // Compute mous position in clip space
+         ViewPort vp;
+         m_renderer->m_pd3dPrimaryDevice->GetViewport(&vp);
+         const float rClipWidth = (float)vp.Width * 0.5f;
+         const float rClipHeight = (float)vp.Height * 0.5f;
+         const float xcoord = ((float)ImGui::GetMousePos().x - rClipWidth) / rClipWidth;
+         const float ycoord = (rClipHeight - (float)ImGui::GetMousePos().y) / rClipHeight;
+
+         // Use the inverse of our 3D transform to determine where in 3D space the
+         // screen pixel the user clicked on is at.  Get the point at the near
+         // clipping plane (z=0) and the far clipping plane (z=1) to get the whole
+         // range we need to hit test
+         Vertex3Ds v3d, v3d2;
+         Matrix3D invMVP = m_renderer->GetMVP().GetModelViewProj(0);
+         invMVP.Invert();
+         invMVP.MultiplyVector(Vertex3Ds(xcoord, ycoord, 0.f), v3d);
+         invMVP.MultiplyVector(Vertex3Ds(xcoord, ycoord, 1.f), v3d2);
+         
+         // FIXME this is not working as intended (ball are always picked ok - likely because they live in a different quadtree - but not other parts)
+         vector<HitObject *> vhoHit;
+         m_player->m_physics->RayCast(v3d, v3d2, true, vhoHit);
+
+         if (vhoHit.empty())
+            m_selection.type = Selection::SelectionType::S_NONE;
+         else
+         {
+            // TODO allow to select the part we want if there are more than one
+            if (vhoHit[0]->m_editable)
+               m_selection = Selection(true, vhoHit[0]->m_editable);
+            else
+               for (size_t t = 0; t < m_player->m_vball.size(); t++)
+                  if (m_player->m_vball[t] == vhoHit[0])
+                     m_selection = Selection(Selection::SelectionType::S_BALL, true, (int)t);
+            // TODO add debug action to make ball active: g_pplayer->m_pactiveballDebug = m_pball;
+         }
+      }
+      /* { // debug code to visualize the ray cast
+         Matrix3D RH2LH, YAxis;
+         RH2LH.SetScaling(1.f, 1.f, -1.f);
+         YAxis.SetScaling(1.f, -1.f, 1.f);
+         const Matrix3D view = RH2LH * m_renderer->GetMVP().GetView() * YAxis;
+         const Matrix3D proj = YAxis * m_renderer->GetMVP().GetProj(0);
+         float camViewLH[16];
+         float *const cameraProjection = (float *)(proj.m);
+         memcpy(camViewLH, view.m, sizeof(float) * 4 * 4);
+         for (int i = 8; i < 12; i++)
+            camViewLH[i] = -camViewLH[i];
+         Matrix3D transform;
+         static int m = 0;
+         m = (m + 1) % 128;
+         for (int i = 0; i < ((30 * m) / 128); i++)
+         {
+            const float p = i / 29.f;
+            transform.SetTranslation(v3d.x + p * (v3d2.x - v3d.x), v3d.y + p * (v3d2.y - v3d.y), v3d.z + p * (v3d2.z - v3d.z));
+            ImGuizmo::Manipulate(camViewLH, cameraProjection, ImGuizmo::OPERATION::NONE, ImGuizmo::MODE::LOCAL, (float *)(transform.m));
+         }
+      }*/
    }
    if (!ImGui::GetIO().WantCaptureKeyboard)
    {
@@ -2037,14 +2098,14 @@ void LiveUI::UpdateMainUI()
       }
    }
 
+   Matrix3D RH2LH, YAxis;
+   RH2LH.SetScaling(1.f, 1.f, -1.f);
+   YAxis.SetScaling(1.f, -1.f, 1.f);
    if (m_useEditorCam)
    {
       // Apply editor camera to renderer (move view/projection from right handed to left handed)
       // Convert from right handed (ImGuizmo view manipulate is right handed) to VPX's left handed coordinate system
       // Right Hand to Left Hand (note that RH2LH = inverse(RH2LH), so RH2LH.RH2LH is identity, which property is used below)
-      Matrix3D RH2LH, YAxis; 
-      RH2LH.SetScaling(1.f, 1.f, -1.f);
-      YAxis.SetScaling(1.f, -1.f, 1.f);
       const Matrix3D view = RH2LH * m_camView * YAxis;
       const Matrix3D proj = YAxis * m_camProj;
       m_renderer->GetMVP().SetView(view);
@@ -2054,6 +2115,8 @@ void LiveUI::UpdateMainUI()
    else
    {
       m_renderer->InitLayout();
+      m_camView = RH2LH * m_renderer->GetMVP().GetView() * YAxis;
+      m_camProj = YAxis * m_renderer->GetMVP().GetProj(0);
    }
 }
 

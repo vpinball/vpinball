@@ -96,9 +96,7 @@ struct CollisionEvent
 class HitObject
 {
 public:
-   HitObject() : m_pfedebug(nullptr), m_obj(nullptr), m_threshold(0.f),
-      m_elasticity(0.3f), m_elasticityFalloff(0.0f), m_friction(0.3f), m_scatter(0.0f),
-      m_ObjType(eNull), m_enabled(true), m_fe(false), m_e(0) {}
+   HitObject() {}
    virtual ~HitObject() {}
 
    virtual float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const { return -1.f; } //!! shouldn't need to do this, but for whatever reason there is a pure virtual function call triggered otherwise that refuses to be debugged (all derived classes DO implement this one!)
@@ -112,25 +110,25 @@ public:
    void SetFriction(const float friction)  { m_friction = friction; }
    void FireHitEvent(Ball * const pball);
 
-   IFireEvents *m_pfedebug;
+   IEditable* m_editable = nullptr; // editable that created this hitobject, used for by UI for selecting editables
 
-   IFireEvents *m_obj; // base object pointer (mainly used as IFireEvents, but also as HitTarget or Primitive or Trigger or Kicker or Gate, see below)
+   IFireEvents *m_obj = nullptr; // base object pointer (mainly used as IFireEvents, but also as HitTarget or Primitive or Trigger or Kicker or Gate, see below)
 
-   float m_threshold;  // threshold for firing an event (usually (always??) normal dot ball-velocity)
+   float m_threshold = 0.f;  // threshold for firing an event (usually (always??) normal dot ball-velocity)
 
    FRect3D m_hitBBox;  // updated by CalcHitBBox, but for balls only on-demand when creating the collision hierarchies
 
-   float m_elasticity;
-   float m_elasticityFalloff;
-   float m_friction;
-   float m_scatter; // in radians
+   float m_elasticity = 0.3f;
+   float m_elasticityFalloff = 0.f;
+   float m_friction = 0.3f;
+   float m_scatter = 0.f; // in radians
 
-   eObjType m_ObjType;
+   eObjType m_ObjType = eNull;
 
-   bool  m_enabled;
+   bool  m_enabled = true;
 
-   bool  m_fe;  // FireEvents for m_obj?
-   unsigned char m_e;   // currently only used to determine which HitTriangles/HitLines/HitPoints are being part of the same Primitive(1)/HitTarget(2) element m_obj, to be able to early out intersection traversal if primitive is flagged as not collidable, its 0 if no unique element
+   bool  m_fe = false;  // FireEvents for m_obj?
+   unsigned char m_e = 0;   // currently only used to determine which HitTriangles/HitLines/HitPoints are being part of the same Primitive(1)/HitTarget(2) element m_obj, to be able to early out intersection traversal if primitive is flagged as not collidable, its 0 if no unique element
 };
 
 //

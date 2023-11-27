@@ -476,8 +476,6 @@ void Primitive::GetTimers(vector<HitTimer*> &pvht)
 
 void Primitive::GetHitShapes(vector<HitObject*> &pvho)
 {
-   char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
-   WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), nullptr, nullptr);
    m_d.m_useAsPlayfield = IsPlayfield();
 
    //
@@ -597,6 +595,13 @@ void Primitive::GetHitShapes(vector<HitObject*> &pvho)
 
 void Primitive::GetHitShapesDebug(vector<HitObject*> &pvho)
 {
+   // Makes toy primitive selectable in debug ray cast
+   if (m_d.m_toy)
+   {
+      m_d.m_toy = false;
+      GetHitShapes(pvho);
+      m_d.m_toy = true;
+   }
 }
 
 //
