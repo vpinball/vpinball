@@ -3,11 +3,13 @@
 #include "backGlass.h"
 #include "renderer/RenderDevice.h"
 #include "renderer/Shader.h"
+#ifndef __STANDALONE__
 #include "captureExt.h"
 #include "backGlass.h"
 #ifdef ENABLE_VR
 #include <fstream>
 #include "tinyxml2/tinyxml2.h"
+#endif
 #endif
 
 //#define WRITE_BACKGLASS_IMAGES

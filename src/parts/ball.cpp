@@ -1,5 +1,7 @@
 #include "stdafx.h"
+#ifndef __STANDALONE__
 #include "vpinball.h"
+#endif
 #include "meshes/ballMesh.h"
 
 BallEx::BallEx()

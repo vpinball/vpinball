@@ -17,23 +17,8 @@ add_compile_definitions(
    ENABLE_INI_SETTINGS
 )
 
-add_compile_options(
-   $<$<CONFIG:RELEASE>:/Ob2>
-   $<$<CONFIG:RELEASE>:/O2>
-   $<$<CONFIG:RELEASE>:/Oi>
-   $<$<CONFIG:RELEASE>:/fp:fast>
-   $<$<CONFIG:RELEASE>:/fp:except->
-   $<$<CONFIG:RELEASE>:/Ot>
-   $<$<CONFIG:RELEASE>:/GF>
-   $<$<CONFIG:RELEASE>:/GS->
-   $<$<CONFIG:RELEASE>:/Gy>
-   $<$<CONFIG:RELEASE>:/GR->
-   $<$<CONFIG:RELEASE>:/Oy>
-   $<$<CONFIG:RELEASE>:/GT>
-   $<$<CONFIG:RELEASE>:/GL>
-   $<$<CONFIG:RELEASE>:/w44005>
-   /Zc:__cplusplus
-   /std:c++20
+set_source_files_properties(
+   third-party/include/miniz/miniz.c PROPERTIES LANGUAGE CXX
 )
 
 set_source_files_properties(
@@ -613,6 +598,13 @@ target_include_directories(vpinball PUBLIC
 
 target_precompile_headers(vpinball PUBLIC
    stdafx.h
+)
+
+set(OPT_COMMON /Ob2 /O2 /Oi /fp:fast /fp:except- /Ot /GF /GS- /Gy /GR- /Oy /GT /GL /w44005 /Zc:__cplusplus /std:c++20)
+
+target_compile_options(vpinball PUBLIC
+   $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:CXX>:${OPT_COMMON}>>
+   $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C>:${OPT_COMMON}>>
 )
 
 target_link_directories(vpinball PUBLIC 

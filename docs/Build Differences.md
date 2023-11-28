@@ -24,6 +24,6 @@ The following features are only offered by the OpenGL version:
 - Enhanced texture compression (gives more performance with lower quality impact).
 
 ## Standalone player
-The standalone player is a preliminary build meant to allow playing VPX tables on a large set of platforms, but without the windows UI. It is targeted at devices supporting OpenGL ES 3.0 with GLSL 3.0.
+The standalone player is a preliminary build meant to allow playing VPX tables on a large set of platforms, but without the windows UI. It is targeted at devices devices supporting OpenGL 4.1 (desktop) or OpenGL ES 3.0 (mobile and sbc) with GLSL 3.0.
 
 <sub><sup>[Information applicable to version 10.8 Beta]</sup></sub>

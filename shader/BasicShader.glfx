@@ -31,7 +31,9 @@ layout(triangles) in;
 layout(triangle_strip, max_vertices = 3) out;
 
 in int eye_gs[];
-
+#ifdef SHADER_GL410
+flat out int glLayer_gs;
+#endif
 
 ////FRAGMENT
 // Early-Z-test implementation:
@@ -85,6 +87,9 @@ uniform float4 mirrorNormal_factor;
 #define doReflections (mirrorNormal_factor.w > 0.0)
 
 out vec4 color;
+#ifdef SHADER_GL410
+flat in int glLayer_gs;
+#endif
 
 uniform float4 lightCenter_doShadow;
 
@@ -312,7 +317,7 @@ flat out float eye;
 
 void main()
 {
-   gl_Layer = eye_gs[0];
+   GS_LAYER_COPY;
    for (int i=0; i<gl_in.length(); i++) {
       gl_Position = matWorldViewProj[eye_gs[i]] * gl_in[i].gl_Position;
       gl_ClipDistance[0] = gl_in[i].gl_ClipDistance[0];
@@ -341,7 +346,7 @@ flat out float eye;
 
 void main()
 {
-   gl_Layer = eye_gs[0];
+   GS_LAYER_COPY;
    for (int i=0;i<gl_in.length();i++) {
       gl_Position = matWorldViewProj[eye_gs[i]] * gl_in[i].gl_Position;
       gl_ClipDistance[0] = gl_in[i].gl_ClipDistance[0];
@@ -365,9 +370,11 @@ out vec3 normal;
 in vec3 tablePos_gs[];
 out float3 tablePos;
 
+flat out float eye;
+
 void main()
 {
-   gl_Layer = eye_gs[0];
+   GS_LAYER_COPY;
    for (int i=0;i<gl_in.length();i++) {
       float4 P2 = gl_in[i].gl_Position;
       P2.z -= 30.0;
@@ -377,6 +384,7 @@ void main()
       tablePos = tablePos_gs[i];
       worldPos = worldPos_gs[i];
       normal = normal_gs[i];
+      eye = eye_gs[i];
       EmitVertex();
    }
    EndPrimitive();
@@ -386,7 +394,7 @@ void main()
 
 void main()
 {
-   gl_Layer = eye_gs[0];
+   GS_LAYER_COPY;
    for (int i=0;i<gl_in.length();i++) {
       gl_Position = matWorldViewProj[eye_gs[i]] * gl_in[i].gl_Position;
       gl_ClipDistance[0] = gl_in[i].gl_ClipDistance[0];
@@ -402,7 +410,7 @@ out vec2 tex0;
 
 void main()
 {
-   gl_Layer = eye_gs[0];
+   GS_LAYER_COPY;
    for (int i=0;i<gl_in.length();i++) {
       gl_Position = matWorldViewProj[eye_gs[i]] * gl_in[i].gl_Position;
       gl_ClipDistance[0] = gl_in[i].gl_ClipDistance[0];
@@ -419,7 +427,7 @@ out float3 tablePos;
 
 void main()
 {
-   gl_Layer = eye_gs[0];
+   GS_LAYER_COPY;
    for (int i=0;i<gl_in.length();i++) {
       gl_Position = (matWorldViewProj[eye_gs[i]] * gl_in[i].gl_Position);
       gl_ClipDistance[0] = gl_in[i].gl_ClipDistance[0];
@@ -439,7 +447,7 @@ out vec2 tex0;
 
 void main()
 {
-   gl_Layer = eye_gs[0];
+   GS_LAYER_COPY;
    for (int i=0;i<gl_in.length();i++) {
       gl_Position = (matWorldViewProj[eye_gs[i]] * gl_in[i].gl_Position);
       gl_ClipDistance[0] = gl_in[i].gl_ClipDistance[0];
@@ -464,7 +472,9 @@ in vec3 tablePos;
 in vec3 normal;
 flat in float eye;
 
-void main() {
+void main()
+{
+   FS_LAYER_TO_GLOBAL;
    const float3 diffuse  = cBase_Alpha.xyz;
    const float3 glossy   = is_metal ? cBase_Alpha.xyz : cGlossy_ImageLerp.xyz*0.08;
    const float3 specular = cClearcoat_EdgeAlpha.xyz*0.08;
@@ -493,7 +503,11 @@ void main() {
    }
 
    BRANCH if (doReflections)
+#ifndef SHADER_GLES30
       color.rgb += compute_reflection(gl_FragCoord.xy * w_h_height.xy, N, eye);
+#else
+      color.rgb += compute_reflection(gl_FragCoord.xy * 0.5 + vec2(0.5), N, eye);
+#endif
 
    BRANCH if (doRefractions)
    {
@@ -513,7 +527,9 @@ in vec3 tablePos;
 in vec3 normal;
 flat in float eye;
 
-void main() {
+void main()
+{
+   FS_LAYER_TO_GLOBAL;
    float4 pixel = texture(tex_base_color, tex01);
 
    pixel.a *= cBase_Alpha.a;
@@ -613,7 +629,11 @@ void main() {
    }
 
    BRANCH if (doReflections)
+#ifndef SHADER_GLES30
       color.rgb += compute_reflection(gl_FragCoord.xy * w_h_height.xy, N, eye);
+#else
+      color.rgb += compute_reflection(gl_FragCoord.xy * 0.5 + vec2(0.5), N, eye);
+#endif
 
    BRANCH if (doRefractions)
    {
@@ -633,9 +653,15 @@ in vec3 worldPos;
 in vec3 normal;
 flat in float eye;
 
-void main() {
+void main()
+{
+   FS_LAYER_TO_GLOBAL;
    const float3 N = normalize(normal);
+#ifndef SHADER_GLES30
    color.rgb = compute_reflection(gl_FragCoord.xy * w_h_height.xy, N, eye);
+#else
+   color.rgb = compute_reflection(gl_FragCoord.xy * 0.5 + vec2(0.5), N, eye);
+#endif
    color.a = 1.0;
    color *= staticColor_Alpha;
 }
@@ -643,7 +669,9 @@ void main() {
 
 ////ps_main_unshaded_without_texture
 
-void main() {
+void main()
+{
+   FS_LAYER_TO_GLOBAL;
    color = staticColor_Alpha;
 }
 
@@ -652,7 +680,9 @@ void main() {
 
 in vec2 tex0;
 
-void main() {
+void main()
+{
+   FS_LAYER_TO_GLOBAL;
    color = staticColor_Alpha * texture(tex_base_color, tex0);
 }
 
@@ -661,7 +691,9 @@ void main() {
 
 in vec3 tablePos;
 
-void main() {
+void main()
+{
+   FS_LAYER_TO_GLOBAL;
    const float3 light_dir = tablePos.xyz - lightCenter_doShadow.xyz;
    const float light_dist = length(light_dir);
    const float shadow = get_light_ball_shadow(lightCenter_doShadow.xyz, light_dir, light_dist);
@@ -674,7 +706,9 @@ void main() {
 in vec2 tex0;
 in vec3 tablePos;
 
-void main() {
+void main()
+{
+   FS_LAYER_TO_GLOBAL;
    const float3 light_dir = tablePos.xyz - lightCenter_doShadow.xyz;
    const float light_dist = length(light_dir);
    const float shadow = get_light_ball_shadow(lightCenter_doShadow.xyz, light_dir, light_dist);
@@ -686,7 +720,9 @@ void main() {
 
 // BG-Decal
 
-void main() {
+void main()
+{
+   FS_LAYER_TO_GLOBAL;
    color = cBase_Alpha;
 }
 
@@ -694,7 +730,9 @@ void main() {
 
 in vec2 tex01;
 
-void main() {
+void main()
+{
+   FS_LAYER_TO_GLOBAL;
    float4 pixel = texture(tex_base_color, tex01);
    if (pixel.a <= alphaTestValue) discard;
    color = pixel * cBase_Alpha;
@@ -713,7 +751,8 @@ VS_OUT(float3, tablePos);
 VS_OUT(vec3, worldPos);
 VS_OUT(vec3, normal);
 
-void main() {
+void main()
+{
    float4 pos = float4(vPosition, 1.0);
    float3 table_pos = (matWorld * pos).xyz;
 

@@ -11,6 +11,11 @@
 #define STBI_NO_FAILURE_STRINGS
 #include "stb_image.h"
 
+#ifdef __STANDALONE__
+#include <fstream>
+#include <iostream>
+#endif
+
 BaseTexture::BaseTexture(const unsigned int w, const unsigned int h, const Format format)
    : m_width(w)
    , m_height(h)
@@ -336,6 +341,7 @@ BaseTexture* BaseTexture::CreateFromData(const void* data, const size_t size, un
 // from the FreeImage FAQ page
 static FIBITMAP* HBitmapToFreeImage(HBITMAP hbmp)
 {
+#ifndef __STANDALONE__
    BITMAP bm;
    GetObject(hbmp, sizeof(BITMAP), &bm);
    FIBITMAP* dib = FreeImage_Allocate(bm.bmWidth, bm.bmHeight, bm.bmBitsPixel);
@@ -352,6 +358,9 @@ static FIBITMAP* HBitmapToFreeImage(HBITMAP hbmp)
    FreeImage_GetInfoHeader(dib)->biClrUsed = nColors;
    FreeImage_GetInfoHeader(dib)->biClrImportant = nColors;
    return dib;
+#else
+   return nullptr;
+#endif
 }
 
 BaseTexture* BaseTexture::CreateFromHBitmap(const HBITMAP hbm, unsigned int maxTexDim, bool with_alpha)
@@ -432,7 +441,7 @@ void BaseTexture::AddAlpha()
       unsigned short* const __restrict dest_data16 = (unsigned short*)new_data.data();
       const unsigned short* const __restrict src_data16 = (unsigned short*)m_data.data();
       for (unsigned int j = 0; j < height(); ++j)
-         for (unsigned int i = 0; i < width(); ++i, ++o) 
+         for (unsigned int i = 0; i < width(); ++i, ++o)
          {
             dest_data16[o * 4 + 0] = src_data16[o * 3 + 0];
             dest_data16[o * 4 + 1] = src_data16[o * 3 + 1];
@@ -892,12 +901,14 @@ void Texture::FreeStuff()
 {
    delete m_pdsBuffer;
    m_pdsBuffer = nullptr;
+#ifndef __STANDALONE__
    if (m_hbmGDIVersion)
    {
       if(m_hbmGDIVersion != g_pvp->m_hbmInPlayMode)
           DeleteObject(m_hbmGDIVersion);
       m_hbmGDIVersion = nullptr;
    }
+#endif
    if (m_ppb)
    {
       delete m_ppb;
@@ -907,6 +918,7 @@ void Texture::FreeStuff()
 
 void Texture::CreateGDIVersion()
 {
+#ifndef __STANDALONE__
    if (m_hbmGDIVersion)
       return;
 
@@ -941,19 +953,24 @@ void Texture::CreateGDIVersion()
    SelectObject(hdcNew, hbmOld);
    DeleteDC(hdcNew);
    ReleaseDC(nullptr, hdcScreen);
+#endif
 }
 
 void Texture::GetTextureDC(HDC *pdc)
 {
+#ifndef __STANDALONE__
    CreateGDIVersion();
    *pdc = CreateCompatibleDC(nullptr);
    m_oldHBM = (HBITMAP)SelectObject(*pdc, m_hbmGDIVersion);
+#endif
 }
 
 void Texture::ReleaseTextureDC(HDC dc)
 {
+#ifndef __STANDALONE__
    SelectObject(dc, m_oldHBM);
    DeleteDC(dc);
+#endif
 }
 
 BaseTexture* Texture::CreateFromHBitmap(const HBITMAP hbm, bool with_alpha)

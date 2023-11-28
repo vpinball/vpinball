@@ -79,6 +79,7 @@ static const string regkey_string[eCKeys] = {
    "PauseKey"s,
    "TweakKey"s
 };
+
 static constexpr int regkey_defdik[eCKeys] = {
    DIK_LSHIFT,
    DIK_RSHIFT,
@@ -88,7 +89,11 @@ static constexpr int regkey_defdik[eCKeys] = {
    DIK_SLASH,
    DIK_SPACE,
    DIK_RETURN,
+#if !defined(__APPLE__) && !defined(__ANDROID__)
    DIK_F11,
+#else
+   DIK_F1,
+#endif
    DIK_O,
    DIK_D,
    DIK_5,
@@ -109,6 +114,7 @@ static constexpr int regkey_defdik[eCKeys] = {
    DIK_P,
    DIK_F12
 };
+
 static constexpr int regkey_idc[eCKeys] = {
    IDC_LEFTFLIPPER,
    IDC_RIGHTFLIPPER,
@@ -140,27 +146,33 @@ static constexpr int regkey_idc[eCKeys] = {
    IDC_TWEAK
 };
 
-#define MAX_TOUCHREGION 8
+#define MAX_TOUCHREGION 11
 
 static constexpr RECT touchregion[MAX_TOUCHREGION] = { //left,top,right,bottom (in % of screen)
-   { 0, 0, 50, 10 },      // ExtraBall
-   { 0, 10, 50, 50 },     // 2nd Left Button
-   { 0, 50, 50, 90 },     // 1st Left Button (Flipper)
-   { 0, 90, 50, 100 },    // Start
-   { 50, 0, 100, 10 },    // Exit
-   { 50, 10, 100, 50 },   // 2nd Right Button
-   { 50, 50, 100, 90 },   // 1st Right Button (Flipper)
-   { 50, 90, 100, 100 }   // Plunger
+   { 0, 0, 50, 10 },      // Extra Ball
+   { 50, 0, 100, 10 },    // Escape
+   { 0, 10, 50, 30 },     // 2nd Left Button
+   { 50, 10, 100, 30 },   // 2nd Right Button
+   { 0, 30, 50, 60 },     // Left Nudge Button
+   { 50, 30, 100, 60 },   // Right Nudge Button
+   { 0, 60, 30, 90 },     // 1st Left Button (Flipper)
+   { 30, 60, 70, 100 },   // Center Nudge Button
+   { 70, 60, 100, 90 },   // 1st Right Button (Flipper)
+   { 0, 90, 30, 100 },    // Start
+   { 70, 90, 100, 100 },  // Plunger
 };
 
 static constexpr EnumAssignKeys touchkeymap[MAX_TOUCHREGION] = {
    eAddCreditKey, //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+   eEscape,
    eLeftMagnaSave,
-   eLeftFlipperKey,
-   eStartGameKey,
-   eExitGame,
    eRightMagnaSave,
+   eLeftTiltKey,
+   eRightTiltKey,
+   eLeftFlipperKey,
+   eCenterTiltKey,
    eRightFlipperKey,
+   eStartGameKey,
    ePlungerKey
 };
 
@@ -355,10 +367,10 @@ private:
 public:
    PinInput m_pininput;
    EnumAssignKeys m_rgKeys[eCKeys]; // Player's key assignments
-
-private:
    bool m_supportsTouch = false; // Display is a touchscreen?
    bool m_touchregion_pressed[MAX_TOUCHREGION]; // status for each touch region to avoid multitouch double triggers (true = finger on, false = finger off)
+
+private:
    int m_lastcursorx, m_lastcursory; // used for the dumb task of seeing if the mouse has really moved when we get a WM_MOUSEMOVE message
 #pragma endregion
 
@@ -389,7 +401,9 @@ public:
 
    bool m_userDebugPaused;
    bool m_debugWindowActive;
+#ifndef __STANDALONE__
    DebuggerDialog m_debuggerDialog;
+#endif
    bool m_debugMode;
    HWND m_hwndDebugOutput;
    bool m_showDebugger;
@@ -414,7 +428,7 @@ public:
 
    bool m_drawCursor;
    bool m_gameWindowActive;
-   
+
    Primitive *m_implicitPlayfieldMesh = nullptr;
 
    bool m_capExtDMD;

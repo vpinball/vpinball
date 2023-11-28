@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "ThreadPool.h"
+#ifndef __STANDALONE__
 #include "BAM/BAMView.h"
+#endif
 #include "math/bluenoise.h"
 #include "math/math.h"
 #include "meshes/ballMesh.h"
@@ -265,7 +267,9 @@ Renderer::Renderer(PinTable* const table, const bool fullScreen, const int width
    if ((m_pd3dPrimaryDevice->GetOutputBackBuffer()->GetColorFormat() == colorFormat::RGBA10) && (m_FXAA == Quality_SMAA || m_FXAA == Standard_DLAA))
       ShowError("SMAA or DLAA post-processing AA should not be combined with 10bit-output rendering (will result in visible artifacts)!");
 
+#ifndef __STANDALONE__
    BAMView::init();
+#endif
 
    const bool compressTextures = m_table->m_settings.LoadValueWithDefault(Settings::Player, "CompressTextures"s, false);
    m_pd3dPrimaryDevice->CompressTextures(compressTextures);
@@ -290,6 +294,7 @@ Renderer::Renderer(PinTable* const table, const bool fullScreen, const int width
    Texture* const envTex = m_envTexture ? m_envTexture : &m_builtinEnvTexture;
    const int envTexHeight = min(envTex->m_pdsBuffer->height(), 256u) / 8;
    const int envTexWidth = envTexHeight * 2;
+#ifndef __OPENGLES__
    const colorFormat rad_format = envTex->m_pdsBuffer->m_format == BaseTexture::RGB_FP32 ? colorFormat::RGBA32F : colorFormat::RGBA16F;
    m_envRadianceTexture = new RenderTarget(m_pd3dPrimaryDevice, SurfaceType::RT_DEFAULT, "Irradiance"s, envTexWidth, envTexHeight, rad_format, false, 1, "Failed to create irradiance render target");
    m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_irradiance);
@@ -299,6 +304,12 @@ Renderer::Renderer(PinTable* const table, const bool fullScreen, const int width
    m_pd3dPrimaryDevice->FlushRenderFrame();
    m_pd3dPrimaryDevice->basicShader->SetTexture(SHADER_tex_diffuse_env, m_envRadianceTexture->GetColorSampler());
    m_pd3dPrimaryDevice->m_ballShader->SetTexture(SHADER_tex_diffuse_env, m_envRadianceTexture->GetColorSampler());
+#else
+   m_envRadianceTexture = EnvmapPrecalc(envTex, envTexWidth, envTexHeight);
+   m_pd3dPrimaryDevice->m_texMan.SetDirty(m_envRadianceTexture);
+   m_pd3dPrimaryDevice->basicShader->SetTexture(SHADER_tex_diffuse_env, m_envRadianceTexture);
+   m_pd3dPrimaryDevice->m_ballShader->SetTexture(SHADER_tex_diffuse_env, m_envRadianceTexture);
+#endif
    #else // DirectX 9
    // DirectX 9 does not support bitwise operation in shader, so radical_inverse is not implemented and therefore we use the slow CPU path instead of GPU
    const Texture* const envTex = m_envTexture ? m_envTexture : &m_builtinEnvTexture;
@@ -837,7 +848,6 @@ Vertex3Ds Renderer::Get3DPointFrom2D(const POINT& p)
    return vertex;
 }
 
-
 void Renderer::SetupShaders()
 {
    const vec4 envEmissionScale_TexWidth(m_table->m_envEmissionScale * m_globalEmissionScale,
@@ -1031,7 +1041,9 @@ void Renderer::PrepareFrame()
    {
       Matrix3D m_matView;
       Matrix3D m_matProj[2];
+#ifndef __STANDALONE__
       BAMView::createProjectionAndViewMatrix(&m_matProj[0]._11, &m_matView._11);
+#endif
       m_mvp->SetView(m_matView);
       for (unsigned int eye = 0; eye < m_mvp->m_nEyes; eye++)
          m_mvp->SetProj(eye, m_matProj[eye]);
@@ -1318,8 +1330,10 @@ void Renderer::RenderStaticPrepass()
 
       // Finish the frame.
       m_pd3dPrimaryDevice->FlushRenderFrame();
+#ifndef __STANDALONE__
       if (g_pplayer->m_pEditorTable->m_progressDialog.IsWindow())
          g_pplayer->m_pEditorTable->m_progressDialog.SetProgress(70 + (((30 * (n_iter + 1 - iter)) / (n_iter + 1))));
+#endif
    }
 
    if (accumulationSurface)
@@ -1581,7 +1595,11 @@ void Renderer::PrepareVideoBuffers()
    const bool stereo = m_stereo3D == STEREO_VR || ((m_stereo3D != STEREO_OFF) && m_stereo3Denabled && (!m_stereo3DfakeStereo || m_pd3dPrimaryDevice->DepthBufferReadBackAvailable()));
    // Since stereo is applied as a postprocess step for fake stereo, it disables AA and sharpening except for top/bottom & side by side modes
    const bool PostProcAA = !m_stereo3DfakeStereo || (!stereo || (m_stereo3D == STEREO_TB) || (m_stereo3D == STEREO_SBS));
+#ifndef __OPENGLES__
    const bool SMAA  = PostProcAA && m_FXAA == Quality_SMAA;
+#else
+   const bool SMAA = false;
+#endif
    const bool DLAA  = PostProcAA && m_FXAA == Standard_DLAA;
    const bool NFAA  = PostProcAA && m_FXAA == Fast_NFAA;
    const bool FXAA1 = PostProcAA && m_FXAA == Fast_FXAA;
@@ -1818,6 +1836,7 @@ void Renderer::PrepareVideoBuffers()
    }
    else if (SMAA)
    {
+#ifndef __OPENGLES__
       assert(renderedRT == m_pd3dPrimaryDevice->GetPostProcessRenderTarget1());
       // SMAA use 3 passes, all of them using the initial render, so since tonemap use postprocess RT 1, we use the back buffer and post process RT 2
       RenderTarget *sourceRT = renderedRT;
@@ -1851,6 +1870,7 @@ void Renderer::PrepareVideoBuffers()
       m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_SMAA_NeighborhoodBlending);
       m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->FBShader);
       renderedRT = outputRT;
+#endif
    }
 
    // Performs sharpening

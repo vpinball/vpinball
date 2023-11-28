@@ -149,7 +149,11 @@ private:
    FrameQueueLimiter* m_limiter = nullptr;
 
    #ifdef ENABLE_SDL
+#ifndef __OPENGLES__
    RenderTarget* m_envRadianceTexture = nullptr;
+#else
+   BaseTexture* m_envRadianceTexture = nullptr;
+#endif
    #else
    BaseTexture* m_envRadianceTexture = nullptr;
    #endif

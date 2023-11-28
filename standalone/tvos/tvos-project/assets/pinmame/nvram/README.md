@@ -1,0 +1,1 @@
+nvram assets go here
