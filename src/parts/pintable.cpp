@@ -3697,7 +3697,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
    // 10.8+ material saving (this format supports new properties, and can be extended in future versions, and does not perform quantizations)
    for (size_t i = 0; i < m_materials.size(); i++)
    {
-      const int record_size = m_materials[i]->GetSaveSize() + 2 *sizeof(int);
+      const size_t record_size = m_materials[i]->GetSaveSize() + 2 *sizeof(int);
       HGLOBAL hMem = ::GlobalAlloc(GMEM_MOVEABLE, record_size);
       CComPtr<IStream> spStream;
       const HRESULT hr = ::CreateStreamOnHGlobal(hMem, FALSE, &spStream);
@@ -3707,9 +3707,9 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
       LPVOID pData = ::GlobalLock(hMem);
       ULONG writ = 0;
       int id = FID(MATR);
-      bw.WriteRecordSize(sizeof(int) + record_size);
-      bw.WriteBytes(&id, sizeof(int), &writ);
-      bw.WriteBytes(pData, record_size, &writ);
+      bw.WriteRecordSize((int)(sizeof(int) + record_size));
+      bw.WriteBytes(&id, (ULONG)sizeof(int), &writ);
+      bw.WriteBytes(pData, (ULONG)record_size, &writ);
       ::GlobalUnlock(hMem);
    }
 

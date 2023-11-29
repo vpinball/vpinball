@@ -181,10 +181,10 @@ void BallEx::Render(const unsigned int renderMask)
          for (int pos = 0, j = -1; j <= 1; ++j)
          {
             const int numPts = (j == 0) ? 6 : 3;
-            const float theta = (float)(j * (M_PI / 4.0));
+            const float theta = (float)j * (float)(M_PI / 4.0);
             for (int i = 0; i < numPts; ++i)
             {
-               const float phi = (float)(i * (2.0 * M_PI) / numPts);
+               const float phi = (float)i * ((float)(2.0 * M_PI) / (float)numPts);
                m_stretchFitPoints[pos++] = cosf(theta) * cosf(phi);
                m_stretchFitPoints[pos++] = cosf(theta) * sinf(phi);
                m_stretchFitPoints[pos++] = sinf(theta);
@@ -223,10 +223,10 @@ void BallEx::Render(const unsigned int renderMask)
          const int h = m_rd->GetCurrentRenderTarget()->GetHeight();
          const float viewportRot = -ANGTORAD(g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].GetRotation(w, h));
          const float c = cosf(viewportRot), s = sinf(viewportRot);
-         const float rx = (xMax - xMin) * w;
-         const float ry = (yMax - yMin) * h;
-         const float sx = fabs(c * rx - s * ry);
-         const float sy = fabs(s * rx + c * ry);
+         const float rx = (xMax - xMin) * (float)w;
+         const float ry = (yMax - yMin) * (float)h;
+         const float sx = fabsf(c * rx - s * ry);
+         const float sy = fabsf(s * rx + c * ry);
          // only shrink ball to avoid artefact of the ball being rendered over resting parts
          if (sy > sx)
             antiStretch.y = sx / sy;
