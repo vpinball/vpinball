@@ -515,15 +515,14 @@ void Player::CreateWnd(HWND parent /* = 0 */)
       m_sdl_playfieldHwnd = SDL_CreateWindow(cs.lpszName, cs.x, cs.y, cs.cx, cs.cy, flags);
 
 #ifdef __STANDALONE__
-      std::filesystem::path exePath = std::filesystem::path(g_pvp->m_szMyPath).parent_path();
-      std::string iconPath = g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "vpinball.png";
-      SDL_Surface* icon = IMG_Load(iconPath.c_str());
-      if (icon == nullptr) {
-         PLOGE << "Failed to load window icon: " << SDL_GetError();
+      const string iconPath = g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "vpinball.png";
+      SDL_Surface* pIcon = IMG_Load(iconPath.c_str());
+      if (pIcon) {
+         SDL_SetWindowIcon(m_sdl_playfieldHwnd, pIcon);
+         SDL_FreeSurface(pIcon);
       }
       else {
-         SDL_SetWindowIcon(m_sdl_playfieldHwnd, icon);
-         SDL_FreeSurface(icon);
+         PLOGE << "Failed to load window icon: " << SDL_GetError();
       }
 #endif
    }
