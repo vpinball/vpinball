@@ -491,16 +491,16 @@ public:
                             "\n-"  +options[OPTION_PRIMARY]+              "  "+option_descs[OPTION_PRIMARY]+
                             "\n\n-"+options[OPTION_GLES]+                 "  "+option_descs[OPTION_GLES]+
                             "\n\n-"+options[OPTION_LESSCPUTHREADS]+       "  "+option_descs[OPTION_LESSCPUTHREADS]+
-                            "\n\n-"+options[OPTION_EDIT]+                 ' '+ option_descs[OPTION_EDIT]+
-                            "\n-"  +options[OPTION_PLAY]+                 ' '+ option_descs[OPTION_PLAY]+
-                            "\n-"  +options[OPTION_POVEDIT]+              ' '+ option_descs[OPTION_POVEDIT]+
-                            "\n-"  +options[OPTION_POV]+                  ' '+ option_descs[OPTION_POV]+
-                            "\n-"  +options[OPTION_EXTRACTVBS]+           ' '+ option_descs[OPTION_EXTRACTVBS]+
-                            "\n-"  +options[OPTION_INI]+                  ' '+ option_descs[OPTION_INI]+
-                            "\n-"  +options[OPTION_TABLE_INI]+            ' '+ option_descs[OPTION_TABLE_INI]+
-                            "\n\n-"+options[OPTION_TOURNAMENT]+           ' '+ option_descs[OPTION_TOURNAMENT]+
+                            "\n\n-"+options[OPTION_EDIT]+                 "  "+option_descs[OPTION_EDIT]+
+                            "\n-"  +options[OPTION_PLAY]+                 "  "+option_descs[OPTION_PLAY]+
+                            "\n-"  +options[OPTION_POVEDIT]+              "  "+option_descs[OPTION_POVEDIT]+
+                            "\n-"  +options[OPTION_POV]+                  "  "+option_descs[OPTION_POV]+
+                            "\n-"  +options[OPTION_EXTRACTVBS]+           "  "+option_descs[OPTION_EXTRACTVBS]+
+                            "\n-"  +options[OPTION_INI]+                  "  "+option_descs[OPTION_INI]+
+                            "\n-"  +options[OPTION_TABLE_INI]+            "  "+option_descs[OPTION_TABLE_INI]+
+                            "\n\n-"+options[OPTION_TOURNAMENT]+           "  "+option_descs[OPTION_TOURNAMENT]+
 #ifdef __STANDALONE__
-                            "\n\n-"+options[OPTION_PREFPATH]+             " "+option_descs[OPTION_PREFPATH]+
+                            "\n\n-"+options[OPTION_PREFPATH]+             "  "+option_descs[OPTION_PREFPATH]+
                             "\n-"  +options[OPTION_LISTRES]+              "  "+option_descs[OPTION_LISTRES]+
                             "\n-"  +options[OPTION_LISTSND]+              "  "+option_descs[OPTION_LISTSND]+
 #endif       
@@ -810,8 +810,8 @@ public:
             EnumerateDisplayModes(display, allVideoModes);
             for (size_t i = 0; i < allVideoModes.size(); ++i) {
                VideoMode mode = allVideoModes.at(i);
-               PLOGI << "display " << display << ": " << mode.width << "x" << mode.height
-                     << " (depth=" << mode.depth << ", refreshRate=" << mode.refreshrate << ")";
+               PLOGI << "display " << display << ": " << mode.width << 'x' << mode.height
+                     << " (depth=" << mode.depth << ", refreshRate=" << mode.refreshrate << ')';
             }
          }
       }

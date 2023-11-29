@@ -94,6 +94,7 @@ void LayersListDialog::UpdateLayerList(const string& name)
       return;
 
    vector<HTREEITEM> visItemList;
+   {
    HTREEITEM item = m_layerTreeView.GetNextVisible(m_layerTreeView.GetRootItem());
    while (item)
    {
@@ -106,6 +107,7 @@ void LayersListDialog::UpdateLayerList(const string& name)
             visItemList.push_back(item);
       }
       item = m_layerTreeView.GetNextVisible(item);
+   }
    }
 
    ClearList();

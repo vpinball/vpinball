@@ -283,7 +283,7 @@ void VRDevice::UpdateVRPosition(ModelViewProj& mvp)
    if (m_tableWorldDirty)
    {
       m_tableWorldDirty = false;
-      Matrix3D rotx, rotz, trans, coords;
+      Matrix3D rotx, rotz, trans;
       // Tilt playfield.
       rotx.SetRotateX(ANGTORAD(-m_slope));
       // Rotate table around VR height axis

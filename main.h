@@ -112,7 +112,7 @@ using std::vector;
 // if that fails, try the User, Scripts and Tables sub-directorys under where VP was loaded from
 // if that also fails, try the standard installation path
 static string defaultFileNameSearch[] = { string(), string(), string(), string(), string(), string(), string() };
-static const string defaultPathSearch[]     = { string(), "user"s +PATH_SEPARATOR_CHAR, "scripts"s +PATH_SEPARATOR_CHAR, "tables"s +PATH_SEPARATOR_CHAR, string(), string(), string() };
+static const string defaultPathSearch[] = { string(), "user"s +PATH_SEPARATOR_CHAR, "scripts"s +PATH_SEPARATOR_CHAR, "tables"s +PATH_SEPARATOR_CHAR, string(), string(), string() };
 
 #include <dlgs.h>
 #include <cderr.h>
@@ -191,8 +191,8 @@ static const string defaultPathSearch[]     = { string(), "user"s +PATH_SEPARATO
 #define strncpy_s(...) \
   GET_MACRO(__VA_ARGS__, STRNCPY_S4, STRNCPY_S3)(__VA_ARGS__)
 
-#define _T(x) x
-#define AtoT(x) x
+#define _T(x) (x)
+#define AtoT(x) (x)
 #define _ASSERTE(expr) ((void)0)
 
 #undef GetCurrentDirectory

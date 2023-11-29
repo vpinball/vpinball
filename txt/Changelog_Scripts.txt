@@ -1,3 +1,5 @@
+New in 3.62 (Update by )
+
 New in 3.61 (Update by vbousquet, wiesshund)
 - Setup PinMameTimer to be a controller sync timer (interval = -2)
 - Added staged flippers functionality to all kinds of machine .vbs files

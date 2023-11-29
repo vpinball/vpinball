@@ -33,6 +33,8 @@ Const swLLFlip		= 84
 Const swURFlip		= 86
 Const swULFlip		= 88
 
+'Const swTournamentButton = 15 'for all machines?
+
 ' Help Window
 vpmSystemHelp = "Stern S.A.M. keys:" & vbNewLine &_
   vpmKeyName(keyInsertCoin1) & vbTab & "Insert Coin #1" & vbNewLine &_

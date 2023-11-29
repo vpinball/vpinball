@@ -100,7 +100,7 @@ public:
    RenderDevice* m_pd3dPrimaryDevice = nullptr;
 
    Texture* m_envTexture = nullptr;
-   Texture m_pinballEnvTexture; // loaded from Resources
+   Texture m_pinballEnvTexture; // loaded from assets folder
 
    // free-camera-mode-fly-around parameters
    Vertex3Ds m_cam = Vertex3Ds(0.f, 0.f, 0.f);
@@ -131,11 +131,11 @@ private:
    unsigned int m_statsDrawnStaticTriangles = 0;
    RenderProbe::ReflectionMode m_maxReflectionMode;
 
-   Texture m_builtinEnvTexture; // loaded from Resources
+   Texture m_builtinEnvTexture; // loaded from assets folder
 
    bool m_dynamicAO;
    bool m_disableAO;
-   Texture m_aoDitherTexture; // loaded from Resources
+   Texture m_aoDitherTexture; // loaded from assets folder
 
    int m_BWrendering; // 0=off, 1=Black&White from RedGreen, 2=B&W from Red only
 

@@ -768,7 +768,7 @@ STDMETHODIMP ScriptGlobalTable::SaveValue(BSTR TableName, BSTR ValueName, VARIAN
 #else
    Settings* const pSettings = &g_pplayer->m_ptable->m_settings;
 
-   string szIniPath = pSettings->LoadValueWithDefault(Settings::Standalone, "VPRegPath"s, ""s);
+   string szIniPath = pSettings->LoadValueWithDefault(Settings::Standalone, "VPRegPath"s, string());
    if (!szIniPath.empty()) {
       if (szIniPath == "."s + PATH_SEPARATOR_CHAR)
          szIniPath = m_vpinball->m_currentTablePath;
@@ -858,7 +858,7 @@ STDMETHODIMP ScriptGlobalTable::LoadValue(BSTR TableName, BSTR ValueName, VARIAN
 #else
    Settings* const pSettings = &g_pplayer->m_ptable->m_settings;
 
-   string szIniPath = pSettings->LoadValueWithDefault(Settings::Standalone, "VPRegPath"s, ""s);
+   string szIniPath = pSettings->LoadValueWithDefault(Settings::Standalone, "VPRegPath"s, string());
    if (!szIniPath.empty()) {
       if (szIniPath == "."s + PATH_SEPARATOR_CHAR)
          szIniPath = m_vpinball->m_currentTablePath;
@@ -1673,7 +1673,6 @@ void PinTable::InitBuiltinTable(const size_t tableId)
 {
 #ifndef __STANDALONE__
    string path;
-   HRSRC hrsrc;
    // Get our new table resource, get it to be opened as a storage, and open it like a normal file
    switch (tableId)
    {
@@ -8048,10 +8047,10 @@ bool PinTable::AuditTable() const
    char * const szText = new char[cchar + 1];
    SendMessage(m_pcv->m_hwndScintilla, SCI_GETTEXT, cchar + 1, (size_t)szText);
 #else
-   char * szText = (char*)m_pcv->m_script_text.c_str();
+   const char * const szText = (char*)m_pcv->m_script_text.c_str();
 #endif
-   char *wordStart = nullptr;
-   char *wordPos = szText;
+   const char *wordStart = nullptr;
+   const char *wordPos = szText;
    string inClass;
    bool nextIsFunc = false, nextIsEnd = false, nextIsClass = false, isInString = false, isInComment = false;
    vector<string> functions, identifiers;

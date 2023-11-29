@@ -859,7 +859,6 @@ void VideoOptionsDialog::SaveSettings(const bool saveAll)
    settings.SaveValue(Settings::Player, "Stereo3DEnabled"s, stereo3D != STEREO_OFF, !saveAll);
    settings.SaveValue(Settings::Player, "Stereo3DYAxis"s, IsDlgButtonChecked(IDC_3D_STEREO_Y) == BST_CHECKED, !saveAll);
    settings.SaveValue(Settings::Player, "Stereo3DOffset"s, GetDlgItemText(IDC_3D_STEREO_OFS).GetString(), !saveAll);
-   bool fakeStereo = true;
    #ifdef ENABLE_SDL
    settings.SaveValue(Settings::Player, "Stereo3DFake"s, IsDlgButtonChecked(IDC_FAKE_STEREO) == BST_CHECKED, !saveAll);
    #endif

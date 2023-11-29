@@ -36,4 +36,3 @@ private:
    // timestamp of last motion == start of rest
    U64 m_tMotion = 0;
 };
-

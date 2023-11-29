@@ -217,7 +217,7 @@ Renderer::Renderer(PinTable* const table, const bool fullScreen, const int width
    const int nMSAASamples = m_table->m_settings.LoadValueWithDefault(Settings::Player, "MSAASamples"s, 1);
    #else
    // Sadly DX9 does not support resolving an MSAA depth buffer, making MSAA implementation complex for it. So just disable for now
-   const int nMSAASamples = 1;
+   constexpr int nMSAASamples = 1;
    #endif
    const bool useNvidiaApi = m_table->m_settings.LoadValueWithDefault(Settings::Player, "UseNVidiaAPI"s, false);
    const bool disableDWM = m_table->m_settings.LoadValueWithDefault(Settings::Player, "DisableDWM"s, false);
@@ -1414,14 +1414,14 @@ void Renderer::RenderStaticPrepass()
    if (m_pd3dPrimaryDevice->GetMSAABackBufferTexture()->IsMSAA())
    {
       // Render one frame with MSAA to keep MSAA depth (this adds MSAA to the overlapping parts between statics & dynamics)
-      RenderTarget* renderRT = m_pd3dPrimaryDevice->GetMSAABackBufferTexture()->Duplicate("MSAAPreRender"s);
+      RenderTarget* const renderRTmsaa = m_pd3dPrimaryDevice->GetMSAABackBufferTexture()->Duplicate("MSAAPreRender"s);
       InitLayout();
-      m_pd3dPrimaryDevice->SetRenderTarget("PreRender MSAA Background"s, renderRT, false);
+      m_pd3dPrimaryDevice->SetRenderTarget("PreRender MSAA Background"s, renderRTmsaa, false);
       DrawBackground();
       m_pd3dPrimaryDevice->FlushRenderFrame();
       if (IsUsingStaticPrepass())
       {
-         m_pd3dPrimaryDevice->SetRenderTarget("PreRender MSAA Scene"s, renderRT);
+         m_pd3dPrimaryDevice->SetRenderTarget("PreRender MSAA Scene"s, renderRTmsaa);
          m_pd3dPrimaryDevice->ResetRenderState();
          for (size_t i = 0; i < m_table->m_vrenderprobe.size(); ++i)
             m_table->m_vrenderprobe[i]->MarkDirty();
@@ -1431,12 +1431,12 @@ void Renderer::RenderStaticPrepass()
          m_pd3dPrimaryDevice->FlushRenderFrame();
       }
       // Copy supersampled color buffer
-      m_pd3dPrimaryDevice->SetRenderTarget("PreRender Combine Color"s, renderRT);
-      m_pd3dPrimaryDevice->BlitRenderTarget(m_staticPrepassRT, renderRT, true, false);
+      m_pd3dPrimaryDevice->SetRenderTarget("PreRender Combine Color"s, renderRTmsaa);
+      m_pd3dPrimaryDevice->BlitRenderTarget(m_staticPrepassRT, renderRTmsaa, true, false);
       m_pd3dPrimaryDevice->FlushRenderFrame();
       // Replace with this new MSAA pre render
       RenderTarget *initialPreRender = m_staticPrepassRT;
-      m_staticPrepassRT = renderRT;
+      m_staticPrepassRT = renderRTmsaa;
       delete initialPreRender;
    }
 

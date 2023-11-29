@@ -1,3 +1,17 @@
+VP 10.8.1 Changelog
+------------------------
+
+FEATURES:
+
+FIXES:
+
+- update FreeImage library to latest 3.18.0 (custom build) (currently disabled)
+- DirectX 8 port for input handling (currently disabled)
+
+- see Changelog_Scripts.txt for the respective core script changes (version 3.62)
+- see CommandReference.txt for the changelog of all the scripting properties/interface changes
+- see Scripts.txt for the actual usage and "documentation" of the scripts that come with VPX
+
 VP 10.8.0 Changelog
 ------------------------
 
@@ -262,10 +276,7 @@ FIXES:
 - update example tables with new raytraced ball shadows enabled and other new features
 - add better wood texture
 
-- update FreeImage library to latest 3.18.0 (custom build) (currently disabled)
-- DirectX 8 port for input handling (currently disabled)
-
-- see Changelog_Scripts.txt for the respective core script changes (version 3.60)
+- see Changelog_Scripts.txt for the respective core script changes (version 3.60, 3.61)
 - see CommandReference.txt for the changelog of all the scripting properties/interface changes
 - see Scripts.txt for the actual usage and "documentation" of the scripts that come with VPX
 

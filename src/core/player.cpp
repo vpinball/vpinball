@@ -1431,7 +1431,7 @@ void Player::ReadAccelerometerCalibration()
    if (accel)
       m_accelerometerAngle = (float)m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "PBWRotationValue"s, 0);
 
-   m_accelerometerSensitivity = clamp(m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "NudgeSensitivity"s, 500) * (float)(1.0 / 1000.0), 0.f, 1.f);
+   m_accelerometerSensitivity = clamp((float)m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "NudgeSensitivity"s, 500) * (float)(1.0/1000.0), 0.f, 1.f);
 
    m_pininput.LoadSettings(m_ptable->m_settings);
 }
@@ -1450,7 +1450,6 @@ void Player::SetNudgeY(const int y, const int joyidx)
 
 const Vertex2D& Player::GetRawAccelerometer() const
 {
-   
    if (m_accelerometerDirty)
    {
       m_accelerometerDirty = false;
@@ -1459,7 +1458,7 @@ const Vertex2D& Player::GetRawAccelerometer() const
       {
          // accumulate over joysticks, these acceleration values are used in update ball velocity calculations
          // and are required to be acceleration values (not velocity or displacement)
-         
+
          //rotate to match hardware mounting orentation, including left or right coordinates
          const float a = ANGTORAD(m_accelerometerAngle);
          const float cna = cosf(a);
@@ -1467,13 +1466,13 @@ const Vertex2D& Player::GetRawAccelerometer() const
 
          for (int j = 0; j < m_pininput.m_num_joy; ++j)
          {
-                  float dx = ((float)m_curAccel[j].x)*(float)(1.0 / JOYRANGE); // norm range -1 .. 1   
+                  float dx = ((float)m_curAccel[j].x)*(float)(1.0 / JOYRANGE); // norm range -1 .. 1
             const float dy = ((float)m_curAccel[j].y)*(float)(1.0 / JOYRANGE);
             if (m_ptable->m_tblMirrorEnabled)
                dx = -dx;
             m_accelerometer.x += m_accelerometerGain.x * (dx * cna + dy * sna) * (1.0f - m_accelerometerSensitivity); // calc Green's transform component for X
             const float nugY   = m_accelerometerGain.y * (dy * cna - dx * sna) * (1.0f - m_accelerometerSensitivity); // calc Green's transform component for Y
-            m_accelerometer.y += m_accelerometerFaceUp ? nugY : -nugY;               // add as left or right hand coordinate system
+            m_accelerometer.y += m_accelerometerFaceUp ? nugY : -nugY; // add as left or right hand coordinate system
          }
       }
    }

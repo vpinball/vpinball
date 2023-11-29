@@ -5,7 +5,7 @@ class RenderDevice;
 // Interface used by the renderer to render each part.
 //
 // All functions may only be called after RenderSetup and before RenderRelease.
-// RenderRelease is guaranteed to be called before object is disposed.
+// RenderRelease is guaranteed to be called before the object is disposed.
 class Renderable
 {
 public:

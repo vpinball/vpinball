@@ -2,7 +2,7 @@
 
 *An open source **cross platform** pinball table simulator.*
 
-This project is a modified version of [VPinballX](https://github.com/vpinball/vpinball) that is designed to run on non-Windows platforms.
+This sub-project of VPinballX is designed to run on non-Windows platforms.
 
 [![Watch the video](https://img.youtube.com/vi/jK3TbGvTuIA/0.jpg)](https://www.youtube.com/watch?v=xjkgzIVL_QU)
 
