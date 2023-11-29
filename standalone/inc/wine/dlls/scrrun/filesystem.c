@@ -2903,7 +2903,6 @@ static HRESULT WINAPI file_GetIDsOfNames(IFile *iface, REFIID riid,
         hr = ITypeInfo_GetIDsOfNames(typeinfo, rgszNames, cNames, rgDispId);
         ITypeInfo_Release(typeinfo);
     }
-
     return hr;
 }
 #endif
@@ -2928,7 +2927,6 @@ static HRESULT WINAPI file_Invoke(IFile *iface, DISPID dispIdMember, REFIID riid
                 pDispParams, pVarResult, pExcepInfo, puArgErr);
         ITypeInfo_Release(typeinfo);
     }
-
     return hr;
 }
 #endif

@@ -405,23 +405,13 @@ typedef struct _POINTL
 
 typedef struct tagPOINTS
 {
-#ifdef WORDS_BIGENDIAN
-    SHORT y;
-    SHORT x;
-#else
     SHORT x;
     SHORT y;
-#endif
 } POINTS, *PPOINTS, *LPPOINTS;
 
 typedef struct _FILETIME {
-#ifdef WORDS_BIGENDIAN
-    DWORD  dwHighDateTime;
-    DWORD  dwLowDateTime;
-#else
     DWORD  dwLowDateTime;
     DWORD  dwHighDateTime;
-#endif
 } FILETIME, *PFILETIME, *LPFILETIME;
 #define _FILETIME_
 
@@ -470,5 +460,11 @@ typedef enum DPI_AWARENESS
 #ifdef __cplusplus
 }
 #endif
+
+typedef enum {
+  DPI_HOSTING_BEHAVIOR_INVALID = -1,
+  DPI_HOSTING_BEHAVIOR_DEFAULT = 0,
+  DPI_HOSTING_BEHAVIOR_MIXED = 1
+} DPI_HOSTING_BEHAVIOR;
 
 #endif /* _WINDEF_ */

@@ -252,13 +252,8 @@ typedef struct _SECURITY_ATTRIBUTES
 /* 64 bit number of 100 nanoseconds intervals since January 1, 1601 */
 typedef struct _FILETIME
 {
-#ifdef WORDS_BIGENDIAN
-  DWORD  dwHighDateTime;
-  DWORD  dwLowDateTime;
-#else
   DWORD  dwLowDateTime;
   DWORD  dwHighDateTime;
-#endif
 } FILETIME, *PFILETIME, *LPFILETIME;
 #endif /* _FILETIME_ */
 
@@ -556,22 +551,12 @@ typedef struct _SYSTEMTIME{
 /* The 'overlapped' data structure used by async I/O functions.
  */
 typedef struct _OVERLAPPED {
-#ifdef WORDS_BIGENDIAN
-        ULONG_PTR InternalHigh;
-        ULONG_PTR Internal;
-#else
         ULONG_PTR Internal;
         ULONG_PTR InternalHigh;
-#endif
         union {
             struct {
-#ifdef WORDS_BIGENDIAN
-                DWORD OffsetHigh;
-                DWORD Offset;
-#else
                 DWORD Offset;
                 DWORD OffsetHigh;
-#endif
             } DUMMYSTRUCTNAME;
             PVOID Pointer;
         } DUMMYUNIONNAME;
@@ -876,7 +861,10 @@ typedef struct _FILE_END_OF_FILE_INFO {
 } FILE_END_OF_FILE_INFO, *PFILE_END_OF_FILE_INFO;
 
 typedef struct _FILE_RENAME_INFO {
-    BOOLEAN ReplaceIfExists;
+    union {
+        BOOLEAN ReplaceIfExists;
+        DWORD Flags;
+    } DUMMYUNIONNAME;
     HANDLE RootDirectory;
     DWORD FileNameLength;
     WCHAR FileName[1];
@@ -3060,7 +3048,7 @@ int WINAPI wWinMain(HINSTANCE,HINSTANCE,LPWSTR,int);
 
 #ifdef __WINESRC__
 /* shouldn't be here, but is nice for type checking */
-BOOL WINAPI DllMain( HINSTANCE hinst, DWORD reason, LPVOID reserved ) DECLSPEC_HIDDEN;
+BOOL WINAPI DllMain( HINSTANCE hinst, DWORD reason, LPVOID reserved );
 #endif
 
 #ifdef __cplusplus

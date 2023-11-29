@@ -33,7 +33,7 @@
 #endif
 
 
-#if defined(_MSC_VER) && (defined(__arm__) || defined(__aarch64__))
+#if defined(_MSC_VER) && (defined(__arm__) || defined(__aarch64__) || defined(__arm64ec__))
 #include <intrin.h>
 #endif
 
@@ -43,7 +43,7 @@ extern "C" {
 #endif
 
 #if defined(_NTSYSTEM_) || defined(WINE_UNIX_LIB)
-#define NTSYSAPI
+#define NTSYSAPI DECLSPEC_EXPORT
 #else
 #define NTSYSAPI DECLSPEC_IMPORT
 #endif
@@ -155,6 +155,16 @@ extern "C" {
 # endif
 #endif
 
+#ifndef DECLSPEC_NOINLINE
+# if defined(_MSC_VER) && (_MSC_VER >= 1300)
+#  define DECLSPEC_NOINLINE  __declspec(noinline)
+# elif defined(__GNUC__)
+#  define DECLSPEC_NOINLINE __attribute__((noinline))
+# else
+#  define DECLSPEC_NOINLINE
+# endif
+#endif
+
 #ifndef DECLSPEC_DEPRECATED
 # if defined(_MSC_VER) && (_MSC_VER >= 1300) && !defined(MIDL_PASS)
 #  define DECLSPEC_DEPRECATED __declspec(deprecated)
@@ -170,7 +180,10 @@ extern "C" {
 
 /* a couple of useful Wine extensions */
 
-#ifdef _MSC_VER
+#if defined(__WINESRC__) && !defined(WINE_UNIX_LIB)
+/* Wine uses .spec file for PE exports */
+# define DECLSPEC_EXPORT
+#elif defined(_MSC_VER)
 # define DECLSPEC_EXPORT __declspec(dllexport)
 #elif defined(__MINGW32__)
 # define DECLSPEC_EXPORT __attribute__((dllexport))
@@ -1905,6 +1918,10 @@ NTSYSAPI void WINAPI RtlCaptureContext(CONTEXT*);
 #define WOW64_SIZE_OF_80387_REGISTERS 80
 #define WOW64_MAXIMUM_SUPPORTED_EXTENSION 512
 
+#ifdef __x86_64__
+NTSYSAPI BOOLEAN NTAPI RtlIsEcCode(const void*);
+#endif
+
 /* Exception definitions */
 
 #define EXCEPTION_READ_FAULT    0
@@ -2055,6 +2072,9 @@ typedef void (CALLBACK *PTERMINATION_HANDLER)(BOOLEAN,DWORD64);
 #define UNW_FLAG_UHANDLER  2
 
 #endif /* __aarch64__ */
+
+NTSYSAPI void    NTAPI RtlRaiseException(struct _EXCEPTION_RECORD*);
+NTSYSAPI void    NTAPI RtlUnwind(void*,void*,struct _EXCEPTION_RECORD*,void*);
 
 #if defined(__x86_64__) || defined(__arm__) || defined(__aarch64__)
 
@@ -2271,8 +2291,15 @@ NTSYSAPI PVOID   WINAPI RtlVirtualUnwind(DWORD,ULONG_PTR,ULONG_PTR,RUNTIME_FUNCT
 #define WT_TRANSFER_IMPERSONATION      0x0100
 
 
-#define EXCEPTION_CONTINUABLE        0
+#define EXCEPTION_CONTINUABLE        0x00
 #define EXCEPTION_NONCONTINUABLE     0x01
+#define EXCEPTION_UNWINDING          0x02
+#define EXCEPTION_EXIT_UNWIND        0x04
+#define EXCEPTION_STACK_INVALID      0x08
+#define EXCEPTION_NESTED_CALL        0x10
+#define EXCEPTION_TARGET_UNWIND      0x20
+#define EXCEPTION_COLLIDED_UNWIND    0x40
+#define EXCEPTION_SOFTWARE_ORIGINATE 0x80
 
 /*
  * The exception record used by Win32 to give additional information
@@ -2367,9 +2394,9 @@ struct _TEB;
 #ifndef __STANDALONE__
 #ifdef WINE_UNIX_LIB
 # ifdef __GNUC__
-struct _TEB * WINAPI NtCurrentTeb(void) __attribute__((pure));
+NTSYSAPI struct _TEB * WINAPI NtCurrentTeb(void) __attribute__((pure));
 # else
-struct _TEB * WINAPI NtCurrentTeb(void);
+NTSYSAPI struct _TEB * WINAPI NtCurrentTeb(void);
 # endif
 #elif defined(__i386__) && defined(__GNUC__)
 static FORCEINLINE struct _TEB * WINAPI NtCurrentTeb(void)
@@ -2385,6 +2412,17 @@ static FORCEINLINE struct _TEB * WINAPI NtCurrentTeb(void)
   __asm mov eax, fs:[0x18];
   __asm mov teb, eax;
   return teb;
+}
+#elif (defined(__aarch64__) || defined(__arm64ec__)) && defined(__GNUC__)
+register struct _TEB *__wine_current_teb __asm__("x18");
+static FORCEINLINE struct _TEB * WINAPI NtCurrentTeb(void)
+{
+    return __wine_current_teb;
+}
+#elif (defined(__aarch64__) || defined(__arm64ec__)) && defined(_MSC_VER)
+static FORCEINLINE struct _TEB * WINAPI NtCurrentTeb(void)
+{
+    return (struct _TEB *)__getReg(18);
 }
 #elif defined(__x86_64__) && defined(__GNUC__)
 static FORCEINLINE struct _TEB * WINAPI NtCurrentTeb(void)
@@ -2412,19 +2450,6 @@ static FORCEINLINE struct _TEB * WINAPI NtCurrentTeb(void)
 static FORCEINLINE struct _TEB * WINAPI NtCurrentTeb(void)
 {
     return (struct _TEB *)(ULONG_PTR)_MoveFromCoprocessor(15, 0, 13, 0, 2);
-}
-#elif defined(__aarch64__) && defined(__GNUC__)
-register struct _TEB *__wine_current_teb __asm__("x18");
-static FORCEINLINE struct _TEB * WINAPI NtCurrentTeb(void)
-{
-    return __wine_current_teb;
-}
-#elif defined(__aarch64__) && defined(_MSC_VER)
-unsigned __int64 __getReg(int);
-#pragma intrinsic(__getReg)
-static FORCEINLINE struct _TEB * WINAPI NtCurrentTeb(void)
-{
-    return (struct _TEB *)__getReg(18);
 }
 #elif !defined(RC_INVOKED)
 # error You must define NtCurrentTeb() for your architecture
@@ -2915,8 +2940,7 @@ typedef struct _IMAGE_SECTION_HEADER {
 #define	IMAGE_SIZEOF_SECTION_HEADER 40
 
 #define IMAGE_FIRST_SECTION(ntheader) \
-  ((PIMAGE_SECTION_HEADER)(ULONG_PTR)((const BYTE *)&((const IMAGE_NT_HEADERS *)(ntheader))->OptionalHeader + \
-                           ((const IMAGE_NT_HEADERS *)(ntheader))->FileHeader.SizeOfOptionalHeader))
+    ((PIMAGE_SECTION_HEADER)((ULONG_PTR)&(ntheader)->OptionalHeader + (ntheader)->FileHeader.SizeOfOptionalHeader))
 
 /* These defines are for the Characteristics bitfield. */
 /* #define IMAGE_SCN_TYPE_REG			0x00000000 - Reserved */
@@ -4779,49 +4803,25 @@ typedef struct _TOKEN_GROUPS {
 
 typedef union _LARGE_INTEGER {
     struct {
-#ifdef WORDS_BIGENDIAN
-        LONG     HighPart;
-        DWORD    LowPart;
-#else
         DWORD    LowPart;
         LONG     HighPart;
-#endif
     } u;
-#ifndef NONAMELESSSTRUCT
     struct {
-#ifdef WORDS_BIGENDIAN
-        LONG     HighPart;
-        DWORD    LowPart;
-#else
         DWORD    LowPart;
         LONG     HighPart;
-#endif
-    };
-#endif
+    } DUMMYSTRUCTNAME;
     LONGLONG QuadPart;
 } LARGE_INTEGER, *PLARGE_INTEGER;
 
 typedef union _ULARGE_INTEGER {
     struct {
-#ifdef WORDS_BIGENDIAN
-        DWORD    HighPart;
-        DWORD    LowPart;
-#else
         DWORD    LowPart;
         DWORD    HighPart;
-#endif
     } u;
-#ifndef NONAMELESSSTRUCT
     struct {
-#ifdef WORDS_BIGENDIAN
-        DWORD    HighPart;
-        DWORD    LowPart;
-#else
         DWORD    LowPart;
         DWORD    HighPart;
-#endif
-    };
-#endif
+    } DUMMYSTRUCTNAME;
     ULONGLONG QuadPart;
 } ULARGE_INTEGER, *PULARGE_INTEGER;
 
@@ -6705,6 +6705,7 @@ typedef VOID (CALLBACK *PTP_WAIT_CALLBACK)(PTP_CALLBACK_INSTANCE,PVOID,PTP_WAIT,
 
 
 NTSYSAPI BOOLEAN NTAPI RtlGetProductInfo(DWORD,DWORD,DWORD,DWORD,PDWORD);
+NTSYSAPI void*   NTAPI RtlPcToFileHeader(void*,void**);
 
 typedef enum _RTL_UMS_THREAD_INFO_CLASS
 {
@@ -6770,6 +6771,7 @@ typedef enum _FIRMWARE_TYPE
 #define InterlockedDecrement64 _InterlockedDecrement64
 #define InterlockedExchange _InterlockedExchange
 #define InterlockedExchangeAdd _InterlockedExchangeAdd
+#define InterlockedExchangeAdd16 _InterlockedExchangeAdd16
 #define InterlockedExchangeAdd64 _InterlockedExchangeAdd64
 #define InterlockedExchangePointer _InterlockedExchangePointer
 #define InterlockedIncrement _InterlockedIncrement
@@ -6790,6 +6792,7 @@ typedef enum _FIRMWARE_TYPE
 #pragma intrinsic(_InterlockedCompareExchangePointer)
 #pragma intrinsic(_InterlockedExchange)
 #pragma intrinsic(_InterlockedExchangeAdd)
+#pragma intrinsic(_InterlockedExchangeAdd16)
 #pragma intrinsic(_InterlockedExchangePointer)
 #pragma intrinsic(_InterlockedIncrement)
 #pragma intrinsic(_InterlockedIncrement16)
@@ -6809,6 +6812,7 @@ long      _InterlockedDecrement(long volatile*);
 short     _InterlockedDecrement16(short volatile*);
 long      _InterlockedExchange(long volatile*,long);
 long      _InterlockedExchangeAdd(long volatile*,long);
+short     _InterlockedExchangeAdd16(short volatile*,short);
 void *    _InterlockedExchangePointer(void *volatile*,void*);
 long      _InterlockedIncrement(long volatile*);
 short     _InterlockedIncrement16(short volatile*);
@@ -6892,6 +6896,13 @@ static FORCEINLINE void MemoryBarrier(void)
     InterlockedOr(&dummy, 0);
 }
 
+#elif defined(__aarch64__) || defined(__arm64ec__)
+
+static FORCEINLINE void MemoryBarrier(void)
+{
+    __dmb(_ARM64_BARRIER_SY);
+}
+
 #elif defined(__x86_64__)
 
 #pragma intrinsic(__faststorefence)
@@ -6907,13 +6918,6 @@ static FORCEINLINE void MemoryBarrier(void)
 static FORCEINLINE void MemoryBarrier(void)
 {
     __dmb(_ARM_BARRIER_SY);
-}
-
-#elif defined(__aarch64__)
-
-static FORCEINLINE void MemoryBarrier(void)
-{
-    __dmb(_ARM64_BARRIER_SY);
 }
 
 #endif /* __i386__ */
@@ -7037,6 +7041,11 @@ static FORCEINLINE LONG WINAPI InterlockedExchange( LONG volatile *dest, LONG va
 }
 
 static FORCEINLINE LONG WINAPI InterlockedExchangeAdd( LONG volatile *dest, LONG incr )
+{
+    return __sync_fetch_and_add( dest, incr );
+}
+
+static FORCEINLINE short WINAPI InterlockedExchangeAdd16( short volatile *dest, short incr )
 {
     return __sync_fetch_and_add( dest, incr );
 }
@@ -7181,7 +7190,7 @@ unsigned char _InterlockedCompareExchange128(volatile __int64 *, __int64, __int6
 
 static FORCEINLINE unsigned char InterlockedCompareExchange128( volatile __int64 *dest, __int64 xchg_high, __int64 xchg_low, __int64 *compare )
 {
-#ifdef __x86_64__
+#if defined(__x86_64__) && !defined(__arm64ec__)
     unsigned char ret;
     __asm__ __volatile__( "lock cmpxchg16b %0; setz %b2"
                           : "=m" (dest[0]), "=m" (dest[1]), "=r" (ret),

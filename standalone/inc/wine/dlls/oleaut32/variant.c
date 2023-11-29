@@ -5500,7 +5500,7 @@ HRESULT WINAPI VarMod(LPVARIANT left, LPVARIANT right, LPVARIANT result)
       if(V_VT(left) == VT_EMPTY)
       {
 	V_VT(result) = VT_I4;
-	V_I4(result) = 0;
+        V_I4(result) = 0;
         rc = S_OK;
         goto end;
       }
@@ -5621,7 +5621,6 @@ end:
     VariantClear(&tempRight);
     return rc;
 }
-
 
 /**********************************************************************
  *              VarPow [OLEAUT32.158]

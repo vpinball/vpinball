@@ -861,7 +861,7 @@ static DWORD get_ptr_hash(void *ptr)
 #ifdef _WIN64
     hash ^= (ULONG_PTR)ptr >> 32;
 #endif
-    return hash % DICT_HASH_MOD;
+    return hash % 1201;
 }
 
 static HRESULT WINAPI dictionary_get_HashVal(IDictionary *iface, VARIANT *key, VARIANT *hash)

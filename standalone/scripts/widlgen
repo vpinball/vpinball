@@ -1,6 +1,6 @@
 #!/bin/bash
 
-WINE_PATH=/Users/jmillard/vpx/wine-latest
+WINE_PATH=/Users/jmillard/vpx/wine-bc13bda5ee4edaafa7ba9472d41acbad50c42112
 
 ${WINE_PATH}/tools/widl/widl -o ../vpinball_standalone_i.h --nostdinc -Ldlls/\* -I${WINE_PATH}/include -D__WINESRC__ -D_UCRT ../../vpinball.idl
 ${WINE_PATH}/tools/widl/widl -u -o ../vpinball_standalone_i.c --nostdinc -Ldlls/\* -I${WINE_PATH}/include -D__WINESRC__ -D_UCRT ../../vpinball.idl
