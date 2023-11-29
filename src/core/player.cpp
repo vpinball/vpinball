@@ -4,6 +4,10 @@
 #include <SDL2/SDL_syswm.h>
 #endif
 
+#ifdef __STANDALONE__
+#include <SDL2/SDL_image.h>
+#endif
+
 #ifndef __STANDALONE__
 #include "BAM/BAMView.h"
 #endif
@@ -512,6 +516,16 @@ void Player::CreateWnd(HWND parent /* = 0 */)
    }
 
 #ifdef __STANDALONE__
+   const string iconPath = g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "vpinball.png";
+   SDL_Surface* pIcon = IMG_Load(iconPath.c_str());
+   if (pIcon) {
+      SDL_SetWindowIcon(m_sdl_playfieldHwnd, pIcon);
+      SDL_FreeSurface(pIcon);
+   }
+   else {
+      PLOGE << "Failed to load window icon: " << SDL_GetError();
+   }
+
    B2SWindows::GetInstance()->Init();
    DMDWindow::GetInstance()->Init();
 #endif
