@@ -2972,7 +2972,7 @@ void LiveUI::UpdateMainSplashModal()
          m_player->DisableStaticPrePass(true);
          ResetCameraFromPlayer();
       }
-      if (g_pvp->m_ptableActive->IsLocked() && !g_pvp->m_ptableActive->FDirty() && g_pvp->m_ptableActive->m_pcv->external_script_name.empty() && ImGui::Button("Generate Tournament File", size))
+      if (g_pvp->m_ptableActive->TournamentModePossible() && ImGui::Button("Generate Tournament File", size))
       {
          g_pvp->GenerateTournamentFile();
       }

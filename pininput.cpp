@@ -930,7 +930,7 @@ void PinInput::Init(const HWND hwnd)
    SystemParametersInfo(SPI_SETSTICKYKEYS, sizeof(STICKYKEYS), &newStickyKeys, SPIF_SENDCHANGE);
 #endif
 
-   for (int i = 0; i < 6; i++)
+   for (int i = 0; i < eCKeys; i++)
       m_keyPressedState[i] = false;
    m_nextKeyPressedTime = 0;
    uShockType = 0;
@@ -1089,6 +1089,8 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
       m_keyPressedState[eLeftTiltKey] = true;
    else if (keycode == g_pplayer->m_rgKeys[eRightTiltKey] && dispid == DISPID_GameEvents_KeyDown)
       m_keyPressedState[eRightTiltKey] = true;
+   else if (keycode == g_pplayer->m_rgKeys[eLockbarKey] && dispid == DISPID_GameEvents_KeyDown)
+      m_keyPressedState[eLockbarKey] = true;
    else if (keycode == g_pplayer->m_rgKeys[eLeftFlipperKey] && dispid == DISPID_GameEvents_KeyUp)
       m_keyPressedState[eLeftFlipperKey] = false;
    else if (keycode == g_pplayer->m_rgKeys[eRightFlipperKey] && dispid == DISPID_GameEvents_KeyUp)
@@ -1097,6 +1099,8 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
       m_keyPressedState[eLeftTiltKey] = false;
    else if (keycode == g_pplayer->m_rgKeys[eRightTiltKey] && dispid == DISPID_GameEvents_KeyUp)
       m_keyPressedState[eRightTiltKey] = false;
+   else if (keycode == g_pplayer->m_rgKeys[eLockbarKey] && dispid == DISPID_GameEvents_KeyUp)
+      m_keyPressedState[eLockbarKey] = false;
       
    if (g_pplayer->m_liveUI->IsTweakMode())
    {
@@ -2066,7 +2070,8 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
             // Check if we have started a game yet, and do not trigger if the UI is already opened (keyboard is handled in it)
             if (!g_pplayer->m_liveUI->IsOpened() && (Started() || !g_pplayer->m_ptable->m_tblAutoStartEnabled))
             {
-               if (input->dwData & 0x80) { //on key down only
+               if ((input->dwData & 0x80) != 0)
+               { //on key down only
                   m_first_stamp = curr_time_msec;
                   m_exit_stamp = curr_time_msec;
                }
@@ -2077,6 +2082,11 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
                   m_exit_stamp = 0;
                }
             }
+         }
+         else if ((input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eStartGameKey]) && m_keyPressedState[eLockbarKey])
+         {
+            if (((input->dwData & 0x80) != 0) && g_pvp->m_ptableActive->TournamentModePossible())
+               g_pvp->GenerateTournamentFile();
          }
          else
             FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, input->dwOfs);
