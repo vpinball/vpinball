@@ -469,6 +469,7 @@ STDMETHODIMP ScriptGlobalTable::GetTextFile(BSTR FileName, BSTR *pContents)
       "B2B.vbs",
       "B2Bcollision.vbs",
       "Bally.vbs",
+      "BallyG.vbs",
       "Class1812.vbs",
       "FPVPX.vbs",
       "GamePlan.vbs",
@@ -769,7 +770,7 @@ STDMETHODIMP ScriptGlobalTable::SaveValue(BSTR TableName, BSTR ValueName, VARIAN
 
    string szIniPath = pSettings->LoadValueWithDefault(Settings::Standalone, "VPRegPath"s, ""s);
    if (!szIniPath.empty()) {
-      if (szIniPath == string(".") + PATH_SEPARATOR_CHAR)
+      if (szIniPath == "."s + PATH_SEPARATOR_CHAR)
          szIniPath = m_vpinball->m_currentTablePath;
       else if (!szIniPath.ends_with(PATH_SEPARATOR_CHAR))
          szIniPath += PATH_SEPARATOR_CHAR;
@@ -783,7 +784,7 @@ STDMETHODIMP ScriptGlobalTable::SaveValue(BSTR TableName, BSTR ValueName, VARIAN
 
    string szTableName = MakeString(TableName);
    string szValueName = MakeString(ValueName);
-   string szValue = "";
+   string szValue;
 
    BSTR bstr = BstrFromVariant(&Value, 0x409);
 
@@ -859,7 +860,7 @@ STDMETHODIMP ScriptGlobalTable::LoadValue(BSTR TableName, BSTR ValueName, VARIAN
 
    string szIniPath = pSettings->LoadValueWithDefault(Settings::Standalone, "VPRegPath"s, ""s);
    if (!szIniPath.empty()) {
-      if (szIniPath == string(".") + PATH_SEPARATOR_CHAR)
+      if (szIniPath == "."s + PATH_SEPARATOR_CHAR)
          szIniPath = m_vpinball->m_currentTablePath;
       else if (!szIniPath.ends_with(PATH_SEPARATOR_CHAR))
          szIniPath += PATH_SEPARATOR_CHAR;
@@ -1970,7 +1971,6 @@ void PinTable::GetUniqueName(const WCHAR *const wzRoot, WCHAR * const wzUniqueNa
    int suffix = 1;
    bool found = false;
    WCHAR * const wzName = new WCHAR[wzUniqueName_maxlength];
-   WCHAR wzSuffix[4] = { 0 };
 
    while (!found)
    {
