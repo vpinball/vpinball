@@ -42,12 +42,12 @@ Server::Server()
 
 Server::~Server()
 {
+   delete m_pTimer;
+
    m_pB2SData->FreeVPinMAME();
 
    if (m_pFormBackglass)
       delete m_pFormBackglass;
-
-   delete m_pTimer;
 }
 
 void Server::TimerElapsed(VP::Timer* pTimer)
