@@ -513,21 +513,19 @@ void Player::CreateWnd(HWND parent /* = 0 */)
          flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
 #endif
       m_sdl_playfieldHwnd = SDL_CreateWindow(cs.lpszName, cs.x, cs.y, cs.cx, cs.cy, flags);
-
-#ifdef __STANDALONE__
-      const string iconPath = g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "vpinball.png";
-      SDL_Surface* pIcon = IMG_Load(iconPath.c_str());
-      if (pIcon) {
-         SDL_SetWindowIcon(m_sdl_playfieldHwnd, pIcon);
-         SDL_FreeSurface(pIcon);
-      }
-      else {
-         PLOGE << "Failed to load window icon: " << SDL_GetError();
-      }
-#endif
    }
 
 #ifdef __STANDALONE__
+   const string iconPath = g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "vpinball.png";
+   SDL_Surface* pIcon = IMG_Load(iconPath.c_str());
+   if (pIcon) {
+      SDL_SetWindowIcon(m_sdl_playfieldHwnd, pIcon);
+      SDL_FreeSurface(pIcon);
+   }
+   else {
+      PLOGE << "Failed to load window icon: " << SDL_GetError();
+   }
+
    B2SWindows::GetInstance()->Init();
    DMDWindow::GetInstance()->Init();
 #endif
