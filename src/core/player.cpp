@@ -2,6 +2,7 @@
 
 #ifdef ENABLE_SDL
 #include <SDL2/SDL_syswm.h>
+#include <SDL2/SDL_image.h>
 #endif
 
 #ifndef __STANDALONE__
@@ -509,6 +510,17 @@ void Player::CreateWnd(HWND parent /* = 0 */)
          flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
 #endif
       m_sdl_playfieldHwnd = SDL_CreateWindow(cs.lpszName, cs.x, cs.y, cs.cx, cs.cy, flags);
+
+      std::filesystem::path exePath = std::filesystem::path(g_pvp->m_szMyPath).parent_path();
+      std::string iconPath = exePath / "assets" / "vpinball.ico";
+      SDL_Surface* icon = IMG_Load(iconPath.c_str());
+      if (icon == nullptr)
+         PLOGE << "Failed to load window icon: " << SDL_GetError();
+      else
+      {
+         SDL_SetWindowIcon(m_sdl_playfieldHwnd, icon);
+         SDL_FreeSurface(icon);
+      }
    }
 
 #ifdef __STANDALONE__
