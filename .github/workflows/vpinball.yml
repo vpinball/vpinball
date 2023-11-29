@@ -96,7 +96,7 @@ jobs:
           cp -r build/${{ matrix.config }}/docs tmp
       - uses: actions/upload-artifact@v3
         with:
-          name: DO-NOT-USE-VPinballX-${{ needs.version.outputs.tag }}-${{ matrix.config }}-${{ matrix.platform }}
+          name: VPinballX-${{ needs.version.outputs.tag }}-${{ matrix.config }}-${{ matrix.platform }}
           path: tmp
 
   build-gl:
@@ -143,7 +143,7 @@ jobs:
           cp -r build/${{ matrix.config }}/docs tmp
       - uses: actions/upload-artifact@v3
         with:
-          name: DO-NOT-USE-VPinballX_GL-${{ needs.version.outputs.tag }}-${{ matrix.config }}-${{ matrix.platform }}
+          name: VPinballX_GL-${{ needs.version.outputs.tag }}-${{ matrix.config }}-${{ matrix.platform }}
           path: tmp
 
   build-gl-macos-arm64:
@@ -182,7 +182,7 @@ jobs:
           if [ "${{ github.repository }}" == "vpinball/vpinball" ]; then
              cmake -DCMAKE_BUILD_TYPE=${{ matrix.config }} -DOPT_CODESIGN=ON -DCODESIGN_DEVELOPER_ID="${{ secrets.MACOS_CODESIGN_DEVELOPER_ID }}" -DCODESIGN_APPLE_ID="${{ secrets.MACOS_CODESIGN_APPLE_ID }}" -DCODESIGN_PASSWORD="${{ secrets.MACOS_CODESIGN_PASSWORD }}" -DCODESIGN_TEAM_ID="${{ secrets.MACOS_CODESIGN_TEAM_ID }}" -B build/${{ matrix.config }}
           else
-             cmake -DCMAKE_BUILD_TYPE=${{ matrix.config }}
+             cmake -DCMAKE_BUILD_TYPE=${{ matrix.config }} -B build/${{ matrix.config }}
           fi
           cmake --build build/${{ matrix.config }} -- -j${NUM_PROCS}
           cd build/${{ matrix.config }}
@@ -231,7 +231,7 @@ jobs:
           if [ "${{ github.repository }}" == "vpinball/vpinball" ]; then
              cmake -DCMAKE_BUILD_TYPE=${{ matrix.config }} -DOPT_CODESIGN=ON -DCODESIGN_DEVELOPER_ID="${{ secrets.MACOS_CODESIGN_DEVELOPER_ID }}" -DCODESIGN_APPLE_ID="${{ secrets.MACOS_CODESIGN_APPLE_ID }}" -DCODESIGN_PASSWORD="${{ secrets.MACOS_CODESIGN_PASSWORD }}" -DCODESIGN_TEAM_ID="${{ secrets.MACOS_CODESIGN_TEAM_ID }}" -B build/${{ matrix.config }}
           else
-             cmake -DCMAKE_BUILD_TYPE=${{ matrix.config }}
+             cmake -DCMAKE_BUILD_TYPE=${{ matrix.config }} -B build/${{ matrix.config }}
           fi
           cmake --build build/${{ matrix.config }} -- -j${NUM_PROCS}
           cd build/${{ matrix.config }}
