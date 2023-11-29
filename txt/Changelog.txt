@@ -205,7 +205,8 @@ FEATURES:
 
 - the full table can now be locked to prevent unintended user changes (can be changed anytime)
 
-- one can now export a 'tournament score' file via the pause menu, if playing in locked mode and also not having any unsaved table changes.
+- one can now export a 'tournament score' file via the pause menu (or when keeping the Lockbar-key pressed and then pressing the Start-key, too)
+  if playing in the new 'locked' mode, and also not having any unsaved table changes.
   This is currently limited to PinMAME-emulated machines, and the script HAS to enforce a connection to the DMD or alpha-segments display via 'UseVPMDMD = True'
   (if its an emulated DMD machine, 'UseVPMColoredDMD = True' will also work), thus the file contains the encoded content of the display at that point in time.
   The content of this text file can then be posted to the tournament administrators and converted by them via the '-TournamentFile tablename textfilename' command line option to a .png again.

@@ -631,6 +631,10 @@ public:
          const bool ini = compare_option(szArglist[i], OPTION_INI);
          const bool tableIni = compare_option(szArglist[i], OPTION_TABLE_INI);
          const bool tournament = compare_option(szArglist[i], OPTION_TOURNAMENT);
+
+         if (/*playfile ||*/ extractpov || extractscript || tournament)
+            m_vpinball.m_open_minimized = true;
+
 #ifndef __STANDALONE__
          if (ini || tableIni || editfile || playfile || povEdit || extractpov || extractscript || tournament)
 #else

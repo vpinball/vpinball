@@ -186,7 +186,7 @@ private:
    bool m_enableCameraModeFlyAround;
 
    int m_cameraMode;
-   bool m_keyPressedState[6];
+   bool m_keyPressedState[28]; // =EnumAssignKeys::eCKeys
    DWORD m_nextKeyPressedTime;
 
    int m_inputApi;   // 0=DirectInput 1=XInput, 2=SDL, 3=IGamecontroller

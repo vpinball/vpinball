@@ -3137,7 +3137,7 @@ void LiveUI::UpdateMainSplashModal()
          ResetCameraFromPlayer();
       }
 #endif
-      if (g_pvp->m_ptableActive->IsLocked() && !g_pvp->m_ptableActive->FDirty() && ImGui::Button("Generate Tournament File", size))
+      if (g_pvp->m_ptableActive->TournamentModePossible() && ImGui::Button("Generate Tournament File", size))
       {
          g_pvp->GenerateTournamentFile();
       }

@@ -6644,7 +6644,7 @@ void PinTable::CheckDirty()
    m_sdsCurrentDirtyState = sdsNewDirtyState;
 }
 
-bool PinTable::FDirty()
+bool PinTable::FDirty() const
 {
    return (m_sdsCurrentDirtyState > eSaveClean);
 }
