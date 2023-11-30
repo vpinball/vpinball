@@ -118,7 +118,7 @@ RenderTarget* RenderProbe::Render(const unsigned int renderMask)
    const bool isDynamicOnly = renderMask & Renderer::DYNAMIC_ONLY;
    const bool isReflectionPass = renderMask & Renderer::REFLECTION_PASS;
 
-   // Probes are rendered and used in screen space therefore, they can't be recusively used (e.g. reflections
+   // Probes are rendered and used in screen space therefore, they can't be recursively used (e.g. reflections
    // of reflections). Beside this, some properties are not cached (clip plane,...) and would break if
    // we would allow this. We simply return nullptr to disable this behavior.
    if (m_rendering || isReflectionPass)

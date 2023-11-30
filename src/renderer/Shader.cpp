@@ -464,9 +464,9 @@ Shader::~Shader()
 void Shader::UnbindSampler(Sampler* sampler)
 {
    #if !defined(ENABLE_SDL)
-   for (auto uniform : m_uniforms[0])
+   for (const auto& uniform : m_uniforms[0])
    {
-      auto desc = m_uniform_desc[uniform];
+      const auto& desc = m_uniform_desc[uniform];
       if (desc.uniform.type == SUT_Sampler && (sampler == nullptr || m_boundTexture[desc.sampler] == sampler))
       {
          CHECKD3D(m_shader->SetTexture(desc.tex_handle, nullptr));
@@ -491,7 +491,7 @@ void Shader::Begin()
       CHECKD3D(m_shader->SetTechnique((D3DXHANDLE)shaderTechniqueNames[m_technique].c_str()));
 #endif
    }
-   for (auto uniformName : m_uniforms[m_technique])
+   for (const auto& uniformName : m_uniforms[m_technique])
       ApplyUniform(uniformName);
 #ifndef ENABLE_SDL
    unsigned int cPasses;
@@ -1295,7 +1295,7 @@ Shader::ShaderTechnique* Shader::compileGLShader(const ShaderTechniques techniqu
             for (int i2 = 0; i2 < length; i2++)
             {
                if (uniformName[i2] == '[') {
-                  uniformName[i2] = 0;
+                  uniformName[i2] = '\0';
                   break;
                }
             }
@@ -1303,7 +1303,7 @@ Shader::ShaderTechnique* Shader::compileGLShader(const ShaderTechniques techniqu
             if (uniformIndex < SHADER_UNIFORM_COUNT)
             {
                m_uniforms[technique].push_back(uniformIndex);
-               auto uniform = shaderUniformNames[uniformIndex];
+               const auto& uniform = shaderUniformNames[uniformIndex];
                assert(uniform.type != SUT_Bool || type == GL_BOOL);
                assert(uniform.type != SUT_Int || type == GL_INT);
                assert(uniform.type != SUT_Float || type == GL_FLOAT);
@@ -1334,14 +1334,14 @@ Shader::ShaderTechnique* Shader::compileGLShader(const ShaderTechniques techniqu
             //hack for packedLights, but works for all arrays - I don't need it for uniform blocks now and I'm not sure if it makes any sense, but maybe someone else in the future?
             for (int i2 = 0;i2 < length;i2++) {
                if (uniformName[i2] == '[') {
-                  uniformName[i2] = 0;
+                  uniformName[i2] = '\0';
                   break;
                }
             }
             auto uniformIndex = getUniformByName(uniformName);
             if (uniformIndex < SHADER_UNIFORM_COUNT)
             {
-               auto uniform = shaderUniformNames[uniformIndex];
+               const auto& uniform = shaderUniformNames[uniformIndex];
                assert(uniform.type == ShaderUniformType::SUT_DataBlock);
                assert(uniform.count == size);
                shader->uniform_desc[uniformIndex].uniform = uniform;
@@ -1648,7 +1648,7 @@ bool Shader::Load(const std::string& name, const BYTE* code, unsigned int codeSi
       }
       else
       {
-         auto uniform = shaderUniformNames[uniformIndex];
+         const auto& uniform = shaderUniformNames[uniformIndex];
          assert(uniform.type == type);
          assert(uniform.count == count);
          m_uniform_desc[uniformIndex].uniform = uniform;

@@ -347,7 +347,7 @@ void SaveXML(const BAMTableSettings* const tableSettings)
    XMLPrinter prn;
    doc.Print(&prn);
 
-   auto fn = GetFileNameForSettingsXML();
+   const auto fn = GetFileNameForSettingsXML();
    SaveFile(fn, prn.CStr(), prn.CStrSize() - 1);
 }
 

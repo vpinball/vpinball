@@ -570,8 +570,8 @@ static void HelpSplash(const string &text, int rotation)
        }
    }
 
-   text_size.x += (padding / 2);
-   text_size.y = (lines.size() * ImGui::GetTextLineHeightWithSpacing()) + (padding / 2);
+   text_size.x += (padding / 2.f);
+   text_size.y = ((float)lines.size() * ImGui::GetTextLineHeightWithSpacing()) + (padding / 2.f);
 
    constexpr ImGuiWindowFlags window_flags
       = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
@@ -579,12 +579,12 @@ static void HelpSplash(const string &text, int rotation)
    ImGui::SetNextWindowPos(ImVec2((win_size.x - text_size.x) / 2, (win_size.y - text_size.y) / 2));
    ImGui::SetNextWindowSize(ImVec2(text_size.x, text_size.y));
    ImGui::Begin("ToolTip", nullptr, window_flags);
-   ImGui::SetCursorPosY(padding / 4);
-   for (const string& line : lines)
+   ImGui::SetCursorPosY(padding / 4.f);
+   for (const string& curline : lines)
    {
-      const ImVec2 lineSize = font->CalcTextSizeA(font->FontSize, FLT_MAX, 0.0f, line.c_str());
-      ImGui::SetCursorPosX(((text_size.x - lineSize.x) / 2));
-      ImGui::Text("%s", line.c_str());
+      const ImVec2 lineSize = font->CalcTextSizeA(font->FontSize, FLT_MAX, 0.0f, curline.c_str());
+      ImGui::SetCursorPosX(((text_size.x - lineSize.x) / 2.f));
+      ImGui::Text("%s", curline.c_str());
    }
    ImGui::End();
 }
@@ -617,8 +617,8 @@ void LiveUI::UpdateTouchUI()
       for (int i = 0; i < MAX_TOUCHREGION; ++i) {
          RECT rect = touchregion[i];
 
-         ImVec2 topLeft(rect.left * screenWidth / 100.0f, rect.top * screenHeight / 100.0f);
-         ImVec2 bottomRight(rect.right * screenWidth / 100.0f , rect.bottom * screenHeight / 100.0f);
+         ImVec2 topLeft((float)rect.left * screenWidth / 100.0f, (float)rect.top * screenHeight / 100.0f);
+         ImVec2 bottomRight((float)rect.right * screenWidth / 100.0f, (float)rect.bottom * screenHeight / 100.0f);
 
          ImColor fillColor(255, 255, 255, 5);
          drawList->AddRectFilled(topLeft, bottomRight, fillColor);
@@ -1312,14 +1312,14 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
                float value = m_live_table->m_settings.LoadValueWithDefault(Settings::TableOption, opt.name, opt.defaultValue);
                if (!opt.literals.empty())
                {
-                  value += nSteps * opt.step * step;
+                  value += (float)nSteps * opt.step * step;
                   while (value < opt.minValue)
                      value += opt.maxValue - opt.minValue + 1;
                   while (value > opt.maxValue)
                      value -= opt.maxValue - opt.minValue + 1;
                }
                else
-                  value = clamp(value + nSteps * opt.step * step, opt.minValue, opt.maxValue);
+                  value = clamp(value + (float)nSteps * opt.step * step, opt.minValue, opt.maxValue);
                table->m_settings.SaveValue(Settings::TableOption, opt.name, value);
                m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 1 /* table option changed event */);
             }
@@ -1430,7 +1430,7 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
          {
             PushNotification("Table options reset to default values"s, 5000);
 
-            // Remove custom day/night and get back to the one of the table, eventually overiden by app (not table) settings
+            // Remove custom day/night and get back to the one of the table, eventually overriden by app (not table) settings
             // FIXME we just default to the table value, missing the app settings being applied (like day/night from lat/lon,... see in player.cpp)
             m_tweakState[BS_DayNight] = 2;
             m_renderer->m_globalEmissionScale = m_table->m_globalEmissionScale;
@@ -1440,7 +1440,7 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
             m_tweakState[BS_Tonemapper] = 2;
             m_renderer->m_toneMapper = m_table->GetToneMapper();
 
-            // Remove custom difficulty and get back to the one of the table, eventually overiden by app (not table) settings
+            // Remove custom difficulty and get back to the one of the table, eventually overriden by app (not table) settings
             m_tweakState[BS_Difficulty] = 2;
             m_live_table->m_globalDifficulty = g_pvp->m_settings.LoadValueWithDefault(Settings::TableOverride, "Difficulty"s, m_table->m_difficulty);
 
@@ -1456,7 +1456,7 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
                auto opt = m_live_table->m_settings.GetSettings()[i];
                m_live_table->m_settings.SaveValue(Settings::TableOption, opt.name, opt.defaultValue);
             }
-            m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 2 /* custom option reseted event */);
+            m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 2 /* custom option resetted event */);
          }
          else if (m_activeTweakPage == TP_PointOfView)
          {
@@ -1646,7 +1646,7 @@ void LiveUI::UpdateTweakModeUI()
             const Settings::OptionDef &opt = table->m_settings.GetSettings()[setting - BS_Custom];
             float value = table->m_settings.LoadValueWithDefault(Settings::TableOption, opt.name, opt.defaultValue);
             const string label = opt.name + ": ";
-            if (opt.literals.size() > 0) // List of values
+            if (!opt.literals.empty()) // List of values
             {
                int index = (int) (value - opt.minValue);
                if (index < 0 || index >= (int)opt.literals.size())
@@ -2458,7 +2458,7 @@ void LiveUI::UpdateOutlinerUI()
             }
             if (ImGui::TreeNodeEx("Layers", ImGuiTreeNodeFlags_DefaultOpen))
             {
-               // Very very unefficient...
+               // Very very inefficient...
                robin_hood::unordered_map<std::string, vector<IEditable *>> layers;
                for (size_t t = 0; t < table->m_vedit.size(); t++)
                {
@@ -2890,8 +2890,8 @@ void LiveUI::UpdateAnaglyphCalibrationModal()
       ImColor calCol((calibrationStep % 3) == 0 ? 1.f : 0.f, (calibrationStep % 3) == 1 ? 1.f : 0.f, (calibrationStep % 3) == 2 ? 1.f : 0.f);
       for (int v = 0; v < 2; v++)
       {
-         ImVec2 faceTrans[10], faceOffset(win_size.x * 0.5f - 0.5f * t + v * t, win_size.y * 0.5f);
-         draw_list->AddRectFilled(ImVec2(0.5f * win_size.x - t + v * t, 0.5f * win_size.y - t), ImVec2(0.5f * win_size.x + v * t, 0.5f * win_size.y + t), v == 0 ? backCol : calCol);
+         ImVec2 faceTrans[10], faceOffset(win_size.x * 0.5f - 0.5f * t + (float)v * t, win_size.y * 0.5f);
+         draw_list->AddRectFilled(ImVec2(0.5f * win_size.x - t + (float)v * t, 0.5f * win_size.y - t), ImVec2(0.5f * win_size.x + (float)v * t, 0.5f * win_size.y + t), v == 0 ? backCol : calCol);
          ImU32 col = ImGui::GetColorU32(v == 1 ? backCol.Value : calCol.Value);
          for (int i = 0, p = 0; i < 13; p += faceLength[i], i++)
          {

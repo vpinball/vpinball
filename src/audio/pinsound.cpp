@@ -87,8 +87,7 @@ PinSound::~PinSound()
 {
    UnInitialize();
 
-   if (m_pdata)
-      delete [] m_pdata;
+   delete [] m_pdata;
 }
 
 void PinSound::UnInitialize()
@@ -223,8 +222,8 @@ HRESULT PinSound::ReInitialize()
    if ((DWORD)m_cdata < dsbd.dwBufferBytes) // if buffer was resized then duplicate channel
    {
 	   const unsigned int bps = wfx.wBitsPerSample / 8;
-	   char * __restrict s = m_pdata;
-	   char * __restrict d = (char*)pbData;
+	   const char * __restrict s = m_pdata;
+	         char * __restrict d = (char*)pbData;
 
 	   for (DWORD i = 0; i < dsbd.dwBufferBytes; i += wfx.nBlockAlign)
 	   {
@@ -388,7 +387,7 @@ void PinDirectSound::InitDirectSound(const HWND hwnd, const bool IsBackglass)
 
    DSAudioDevices DSads;
    int DSidx = 0;
-   if (!FAILED(DirectSoundEnumerate(DSEnumCallBack, &DSads)))
+   if (SUCCEEDED(DirectSoundEnumerate(DSEnumCallBack, &DSads)))
    {
       const bool hr = g_pvp->m_settings.LoadValue(Settings::Player, IsBackglass ? "SoundDeviceBG"s : "SoundDevice"s, DSidx);
       if ((!hr) || ((size_t)DSidx >= DSads.size()))

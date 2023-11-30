@@ -57,7 +57,7 @@ bool Settings::LoadFromFile(const string& path, const bool createDefault)
          if (j == Section::Version)
             continue;
 
-         string regpath(j == 0 ? "Software\\Visual Pinball\\" : "Software\\Visual Pinball\\VP10\\");
+         string regpath(j == 0 ? "Software\\Visual Pinball\\"s : "Software\\Visual Pinball\\VP10\\"s);
          regpath += regKey[j];
 
          HKEY hk;
@@ -127,7 +127,7 @@ bool Settings::LoadFromFile(const string& path, const bool createDefault)
             if (!m_ini[regKey[j]].has(name))
             {
                // Search for a case insensitive match
-               for (auto item : m_ini[regKey[j]])
+               for (const auto& item : m_ini[regKey[j]])
                {
                   if (StrCompareNoCase(name, item.first))
                   {
@@ -163,7 +163,7 @@ void Settings::SaveToFile(const string &path)
       return;
    m_modified = false;
    size_t size = 0;
-   for (auto section : m_ini)
+   for (const auto& section : m_ini)
       size += section.second.size();
    if (size > 0)
    {
@@ -185,9 +185,9 @@ void Settings::Save()
 void Settings::CopyOverrides(const Settings& settings)
 {
    assert(m_parent != nullptr); // Overrides are defined relatively to a parent
-   for (auto section : settings.m_ini)
+   for (const auto& section : settings.m_ini)
    {
-      for (auto item : section.second)
+      for (const auto& item : section.second)
       {
          if (m_parent->m_ini.has(section.first) && m_parent->m_ini.get(section.first).has(item.first))
          { // Value stored in parent setting block
@@ -434,7 +434,7 @@ void Settings::RegisterSetting(const Section section, const string &name, float 
    opt.literals = literals;
    opt.unit = unit;
    bool found = false;
-   for (auto option = begin(m_options); option != end(m_options); option++)
+   for (auto option = begin(m_options); option != end(m_options); ++option)
    {
       if (option->name == name)
       {

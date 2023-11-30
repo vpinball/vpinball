@@ -968,7 +968,7 @@ void PinInput::Init(const HWND hwnd)
    if (m_enableMouseInPlayer)
    {
       // Create mouse device
-      if (!FAILED(m_pDI->CreateDevice(GUID_SysMouse, &m_pMouse, nullptr)))
+      if (SUCCEEDED(m_pDI->CreateDevice(GUID_SysMouse, &m_pMouse, nullptr)))
       {
          hr = m_pMouse->SetDataFormat(&c_dfDIMouse2);
 

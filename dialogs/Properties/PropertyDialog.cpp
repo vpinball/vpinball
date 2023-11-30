@@ -515,10 +515,13 @@ void PropertyDialog::UpdateCollectionComboBox(const PinTable *const ptable, cons
 void PropertyDialog::UpdateComboBox(const vector<string>& contentList, const CComboBox &combo, const string& selectName)
 {
     bool strFound = false;
-    for (auto& str : contentList)
+    for (const auto& str : contentList)
     {
         if (str == selectName)
+        {
             strFound = true;
+            break;
+        }
     }
     if(combo.FindStringExact(1, selectName.c_str())==CB_ERR || !strFound)
     {

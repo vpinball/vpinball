@@ -37,7 +37,7 @@ BOOL AudioOptionsDialog::OnInitDialog()
    SendDlgItemMessage(IDC_SoundList, LB_RESETCONTENT, 0, 0);
    SendDlgItemMessage(IDC_SoundListBG, LB_RESETCONTENT, 0, 0);
    DSAudioDevices DSads;
-   if (!FAILED(DirectSoundEnumerate(DSEnumCallBack, &DSads)))
+   if (SUCCEEDED(DirectSoundEnumerate(DSEnumCallBack, &DSads)))
    {
       for (size_t i = 0; i < DSads.size(); i++)
       {

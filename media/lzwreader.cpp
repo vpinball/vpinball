@@ -119,8 +119,6 @@ short LZWReader::init_exp(int size)
  */
 int LZWReader::get_next_code()
 {
-   unsigned int ret;
-
    if (nbits_left == 0)
    {
       if (navail_bytes <= 0)
@@ -147,7 +145,7 @@ int LZWReader::get_next_code()
       --navail_bytes;
    }
 
-   ret = b1 >> (8 - nbits_left);
+   unsigned int ret = b1 >> (8 - nbits_left);
    while (curr_size > nbits_left)
    {
       if (navail_bytes <= 0)
@@ -180,11 +178,11 @@ int LZWReader::get_next_code()
 }
 
 
-/* The reason we have these seperated like this instead of using
+/* The reason we have these separated like this instead of using
  * a structure like the original Wilhite code did, is because this
  * stuff generally produces significantly faster code when compiled...
  * This code is full of similar speedups...  (For a good book on writing
- * C for speed or for space optomisation, see Efficient C by Tom Plum,
+ * C for speed or for space optimization, see Efficient C by Tom Plum,
  * published by Plum-Hall Associates...)
  */
 
@@ -196,7 +194,7 @@ int LZWReader::get_next_code()
  * will generate a call to out_line(), which is a user specific function
  * to display a line of pixels.  The function gets it's codes from
  * get_next_code() which is responsible for reading blocks of data and
- * seperating them into the proper size codes.  Finally, get_byte() is
+ * separating them into the proper size codes.  Finally, get_byte() is
  * the global routine to read the next byte from the GIF file.
  *
  * It is generally a good idea to have linewidth correspond to the actual

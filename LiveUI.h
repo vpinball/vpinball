@@ -40,7 +40,7 @@ private:
       float min, max, step, def;
       string name, unit;
       vector<string> options;
-      TweakOption(TweakType _type, float _min, float _max, float _step, float _def, string _name, string _unit, std::initializer_list<string> _options): 
+      TweakOption(TweakType _type, float _min, float _max, float _step, float _def, const string& _name, const string& _unit, std::initializer_list<string> _options): 
          type(_type), min(_min), max(_max), step(_step), def(_def), name(_name), unit(_unit), options(_options) { }
    };
    enum TweakPage { TP_PointOfView, TP_TableOption, TP_Info, TP_Count };

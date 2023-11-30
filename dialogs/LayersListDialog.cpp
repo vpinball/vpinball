@@ -743,7 +743,7 @@ vector<string> LayerTreeView::GetAllLayerNames()
       item = GetNextItem(item, TVGN_NEXT);
    }
    vector<string> layerList;
-   for (auto& layer : children) 
+   for (const auto& layer : children) 
    { 
       layerList.push_back(GetItemText(layer).c_str());
    }

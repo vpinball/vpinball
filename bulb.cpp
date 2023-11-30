@@ -137,7 +137,7 @@ void bulb_filament_temperature_to_tint(const double T, float* linear_RGB)
       // Linear interpolation between the precomputed values
       float t_ref = (float) ((T - 1500.0f) / 100.0f);
       int lower_T = (int)t_ref, upper_T = (int)(t_ref + 0.5);
-      float alpha = t_ref - lower_T;
+      float alpha = t_ref - (float)lower_T;
       linear_RGB[0] = (1.0f - alpha) * temperatureToTint[lower_T * 3 + 0] + alpha * temperatureToTint[upper_T * 3 + 0];
       linear_RGB[1] = (1.0f - alpha) * temperatureToTint[lower_T * 3 + 1] + alpha * temperatureToTint[upper_T * 3 + 1];
       linear_RGB[2] = (1.0f - alpha) * temperatureToTint[lower_T * 3 + 2] + alpha * temperatureToTint[upper_T * 3 + 2];
@@ -185,7 +185,7 @@ double bulb_cool_down(const int bulb, double T, double duration)
 /-------------------------------*/
 double bulb_heat_up_factor(const int bulb, const double T, const double U, const double serial_R)
 {
-   if (serial_R)
+   if (serial_R != 0.)
    {
       double R = bulbs[bulb].r0 * pow(T / 293.0, 1.215);
       double U1 = U * R / (R + serial_R);
@@ -206,7 +206,7 @@ double bulb_heat_up(const int bulb, double T, double duration, const double U, c
    {
       T = T < 293.0 ? 293.0 : T > 2999.0 ? 2999.0 : T; // Keeps T within the range of the LUT (between room temperature and melt down point)
       double energy;
-      if (serial_R)
+      if (serial_R != 0.)
       {
          const double R = bulbs[bulb].r0 * pow(T / 293.0, 1.215);
          const double U1 = U * R / (R + serial_R);

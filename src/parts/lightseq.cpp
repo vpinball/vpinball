@@ -417,11 +417,10 @@ STDMETHODIMP LightSeq::InterfaceSupportsErrorInfo(REFIID riid)
       &IID_ILightSeq,
    };
 
-   for (size_t i = 0; i < sizeof(arr) / sizeof(arr[0]); ++i)
-   {
+   for (size_t i = 0; i < std::size(arr); ++i)
       if (InlineIsEqualGUID(*arr[i], riid))
          return S_OK;
-   }
+
    return S_FALSE;
 }
 

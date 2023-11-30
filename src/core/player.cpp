@@ -1733,13 +1733,13 @@ void Player::LockForegroundWindow(const bool enable)
 
 void Player::OnIdle()
 {
-   assert(m_stereo3D != STEREO_VR || (m_videoSyncMode == VideoSyncMode::VSM_NONE && m_maxFramerate == 0)); // Stereo must be run unthrotlled to let OpenVR set the frame pace according to the head set
+   assert(m_stereo3D != STEREO_VR || (m_videoSyncMode == VideoSyncMode::VSM_NONE && m_maxFramerate == 0)); // Stereo must be run unthrottled to let OpenVR set the frame pace according to the head set
 
    if (m_videoSyncMode == VideoSyncMode::VSM_FRAME_PACING)
    {
       // The main loop tries to perform a constant input/physics cycle at a 1ms pace while feeding the GPU command queue at a stable rate, without multithreading.
       // These 2 tasks are designed as follows:
-      // - Input/Phyics: acquire, then process input (executing script events that will trigger the PinMAME controller), then allow
+      // - Input/Physics: acquire, then process input (executing script events that will trigger the PinMAME controller), then allow
       //   physics to catch up to the real machine time. The aim is to run at real time speed since the PinMAME controller does so and requires
       //   its input to be done the same way, and some flipper tricks depend a lot on precise timings.
       // - Rendering: it is performed in 3 steps:

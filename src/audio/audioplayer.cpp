@@ -49,7 +49,7 @@ AudioPlayer::AudioPlayer()
       if (DSidx != -1)
       {
           DSAudioDevices DSads;
-          if (!FAILED(DirectSoundEnumerate(DSEnumCallBack, &DSads)))
+          if (SUCCEEDED(DirectSoundEnumerate(DSEnumCallBack, &DSads)))
           {
               if ((size_t)DSidx < DSads.size() && DSads[DSidx]->guid != nullptr) // primary device has guid nullptr, so use BASS_idx = -1 in that case
               {
@@ -150,9 +150,9 @@ bool AudioPlayer::MusicInit(const string& szFileName, const float volume)
    if (bass_BG_idx != -1 && bass_STD_idx != bass_BG_idx) BASS_SetDevice(bass_BG_idx);
 
 #ifndef __STANDALONE__
-   string filename = szFileName;
+   const string& filename = szFileName;
 #else
-   string filename = normalize_path_separators(szFileName);
+   const string filename = normalize_path_separators(szFileName);
 #endif
 
    for (int i = 0; i < 5; ++i)

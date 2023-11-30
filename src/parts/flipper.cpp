@@ -560,11 +560,10 @@ STDMETHODIMP Flipper::InterfaceSupportsErrorInfo(REFIID riid)
       &IID_IFlipper,
    };
 
-   for (size_t i = 0; i < sizeof(arr) / sizeof(arr[0]); i++)
-   {
+   for (size_t i = 0; i < std::size(arr); i++)
       if (InlineIsEqualGUID(*arr[i], riid))
          return S_OK;
-   }
+
    return S_FALSE;
 }
 
@@ -606,7 +605,7 @@ void Flipper::ExportMesh(ObjLoader& loader)
    matTemp.SetRotateZ(ANGTORAD(m_d.m_StartAngle));
    matTrafo.Multiply(matTemp, matTrafo);
 
-   Vertex3D_NoTex2 *const flipper = new Vertex3D_NoTex2[flipperBaseVertices * 2];
+   Vertex3D_NoTex2 flipper[flipperBaseVertices*2];
    GenerateBaseMesh(flipper);
 
    {
@@ -637,7 +636,7 @@ void Flipper::ExportMesh(ObjLoader& loader)
    loader.UpdateFaceOffset(flipperBaseVertices);
    if (m_d.m_rubberthickness > 0.f)
    {
-      Vertex3D_NoTex2 *buf = &flipper[flipperBaseVertices];
+      Vertex3D_NoTex2 * const buf = &flipper[flipperBaseVertices];
       for (unsigned int i = 0; i < flipperBaseVertices; i++)
       {
          Vertex3Ds vert(buf[i].x, buf[i].y, buf[i].z);
@@ -662,8 +661,6 @@ void Flipper::ExportMesh(ObjLoader& loader)
       loader.WriteFaceInfoList(flipperBaseIndices, flipperBaseNumIndices);
       loader.UpdateFaceOffset(flipperBaseVertices);
    }
-
-   delete [] flipper;
 }
 
 //
