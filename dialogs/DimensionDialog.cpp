@@ -82,25 +82,17 @@ void DimensionDialog::UpdateApplyState()
    CComObject<PinTable>* const pt = g_pvp->GetActiveTable();
    if (pt)
    {
-      float value;
-      int ret;
-      ret = sscanf_s(GetDlgItemText(IDC_VP_WIDTH).c_str(), "%f", &value);
-      if (ret == 1 && value > 0 && pt->GetTableWidth() != value)
-      {
-         ret = sscanf_s(GetDlgItemText(IDC_VP_HEIGHT).c_str(), "%f", &value);
-         if (ret == 1 && value > 0 && pt->GetHeight() != value)
-         {
-            ret = sscanf_s(GetDlgItemText(IDC_TABLE_GLASS_TOP_HEIGHT_EDIT).c_str(), "%f", &value);
-            if (ret == 1 && value > 0 && pt->m_glassTopHeight != value)
-            {
-               ret = sscanf_s(GetDlgItemText(IDC_TABLE_GLASS_BOTTOM_HEIGHT_EDIT).c_str(), "%f", &value);
-               if (ret == 1 && value > 0 && pt->m_glassBottomHeight != value)
-               {
-                  GetDlgItem(IDC_APPLY_TO_TABLE).EnableWindow(true);
-               }
-            }
-         }
-      }
+      float w, h, t, b;
+      int rw, rh, rt, rb;
+      rw = sscanf_s(GetDlgItemText(IDC_VP_WIDTH).c_str(), "%f", &w);
+      rh = sscanf_s(GetDlgItemText(IDC_VP_HEIGHT).c_str(), "%f", &h);
+      rt = sscanf_s(GetDlgItemText(IDC_TABLE_GLASS_TOP_HEIGHT_EDIT).c_str(), "%f", &t);
+      rb = sscanf_s(GetDlgItemText(IDC_TABLE_GLASS_BOTTOM_HEIGHT_EDIT).c_str(), "%f", &b);
+      if ((rw == 1 && w > 0 && pt->GetTableWidth() != w)
+       || (rh == 1 && h > 0 && pt->GetHeight() != h)
+       || (rt == 1 && t > 0 && pt->m_glassTopHeight != INCHESTOVPU(t))
+       || (rb == 1 && b > 0 && pt->m_glassBottomHeight != INCHESTOVPU(b)))
+         GetDlgItem(IDC_APPLY_TO_TABLE).EnableWindow(true);
    }
 }
 
