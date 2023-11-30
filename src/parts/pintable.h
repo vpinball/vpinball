@@ -618,7 +618,7 @@ public:
 
    // Flag that disables all table edition. Lock toggles are counted to identify version changes in a table (for example to guarantee untouched table for tournament)
    bool IsLocked() const { return (m_locked & 1) != 0; }
-   void ToggleLock() { m_locked++; }
+   void ToggleLock() { BeginUndo(); MarkForUndo(); m_locked++; EndUndo(); SetDirtyDraw(); }
 
    bool TournamentModePossible() const { return IsLocked() && !FDirty() && m_pcv->external_script_name.empty(); }
 
