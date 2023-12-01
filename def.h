@@ -349,6 +349,7 @@ __forceinline unsigned int float_as_uint(const float x)
    return uc.i;
 }
 
+#if defined(__GNUC__) || defined(__clang__)
 __forceinline short half_as_short(const _Float16 x)
 {
    union
@@ -370,6 +371,7 @@ __forceinline unsigned short half_as_ushort(const _Float16 x)
    uc.f = x;
    return uc.i;
 }
+#endif
 
 __forceinline float int_as_float(const int i)
 {
@@ -391,6 +393,7 @@ __forceinline float uint_as_float(const unsigned int i)
    return iaf.f;
 }
 
+#if defined(__GNUC__) || defined(__clang__)
 __forceinline _Float16 short_as_half(const short i)
 {
    union {
@@ -410,6 +413,7 @@ __forceinline _Float16 ushort_as_half(const unsigned short i)
    iaf.i = i;
    return iaf.f;
 }
+#endif
 #endif
 
 __forceinline bool infNaN(const float a)

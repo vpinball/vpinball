@@ -332,18 +332,18 @@ inline unsigned short float2half(const float value) // could use _mm_cvtps_ph on
 #endif
 }
 
-float half2float_noLUT(const unsigned short x) { // IEEE-754 16-bit floating-point format (without infinity/NaN!): 1-5-10, exp-15, +-131008.0, +-6.1035156E-5, +-5.9604645E-8, 3.311 digits
-    const unsigned int e = (x&0x7C00)>>10; // exponent
-    const unsigned int m = (x&0x03FF)<<13; // mantissa
-    const unsigned int v = float_as_uint((float)m) >> 23; // evil log2 bit hack to count leading zeros in denormalized format
-    return uint_as_float((x&0x8000)<<16 | (e!=0)*((e+112)<<23|m) | ((e==0)&(m!=0))*((v-37)<<23|((m<<(150-v))&0x007FE000))); // sign : normalized : denormalized
+inline float half2float_noLUT(const unsigned short x) { // IEEE-754 16-bit floating-point format (without infinity/NaN!): 1-5-10, exp-15, +-131008.0, +-6.1035156E-5, +-5.9604645E-8, 3.311 digits
+   const unsigned int e = (x&0x7C00)>>10; // exponent
+   const unsigned int m = (x&0x03FF)<<13; // mantissa
+   const unsigned int v = float_as_uint((float)m) >> 23; // evil log2 bit hack to count leading zeros in denormalized format
+   return uint_as_float((x&0x8000)<<16 | (e!=0)*((e+112)<<23|m) | ((e==0)&(m!=0))*((v-37)<<23|((m<<(150-v))&0x007FE000))); // sign : normalized : denormalized
 }
 
-unsigned short float2half_noLUT(const float x) { // IEEE-754 16-bit floating-point format (without infinity/NaN!): 1-5-10, exp-15, +-131008.0, +-6.1035156E-5, +-5.9604645E-8, 3.311 digits
-    const unsigned int b = float_as_uint(x) + 0x00001000; // round-to-nearest-even: add last bit after truncated mantissa
-    const unsigned int e = (b&0x7F800000)>>23; // exponent
-    const unsigned int m = b&0x007FFFFF; // mantissa; in line below: 0x007FF000 = 0x00800000-0x00001000 = decimal indicator flag - initial rounding
-    return (b&0x80000000)>>16 | (e>112)*((((e-112)<<10)&0x7C00)|m>>13) | ((e<113)&(e>101))*((((0x007FF000+m)>>(125-e))+1)>>1) | (e>143)*0x7FFF; // sign : normalized : denormalized : saturate
+inline unsigned short float2half_noLUT(const float x) { // IEEE-754 16-bit floating-point format (without infinity/NaN!): 1-5-10, exp-15, +-131008.0, +-6.1035156E-5, +-5.9604645E-8, 3.311 digits
+   const unsigned int b = float_as_uint(x) + 0x00001000; // round-to-nearest-even: add last bit after truncated mantissa
+   const unsigned int e = (b&0x7F800000)>>23; // exponent
+   const unsigned int m = b&0x007FFFFF; // mantissa; in line below: 0x007FF000 = 0x00800000-0x00001000 = decimal indicator flag - initial rounding
+   return (b&0x80000000)>>16 | (e>112)*((((e-112)<<10)&0x7C00)|m>>13) | ((e<113)&(e>101))*((((0x007FF000+m)>>(125-e))+1)>>1) | (e>143)*0x7FFF; // sign : normalized : denormalized : saturate
 }
 
 //
