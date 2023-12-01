@@ -329,6 +329,7 @@ inline unsigned short float2half(const float value) // could use _mm_cvtps_ph on
    unsigned short hbits = base_table[bits >> 23] + (unsigned short)((bits & 0x7FFFFF) >> shift_table[bits >> 23]);
    hbits += (((bits & 0x7FFFFF) >> (shift_table[bits >> 23] - 1)) | (((bits >> 23) & 0xFF) == 102)) & ((hbits & 0x7C00) != 0x7C00);
    return hbits;
+#endif
 }
 
 float half2float_noLUT(const unsigned short x) { // IEEE-754 16-bit floating-point format (without infinity/NaN!): 1-5-10, exp-15, +-131008.0, +-6.1035156E-5, +-5.9604645E-8, 3.311 digits
