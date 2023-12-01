@@ -307,6 +307,10 @@ __forceinline __m128 sseHorizontalMax(const __m128 &a)
 
 //
 
+#if !(defined(__GCC_IEC_559) || defined(__STDC_IEC_559__))
+ #define _Float16 __fp16
+#endif
+
 #if __cplusplus >= 202002L
  #ifndef __clang__
   #include <bit>
