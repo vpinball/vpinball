@@ -124,6 +124,9 @@ __forceinline unsigned int quantizeUnsignedPercent(const float x)
 // 16bit half-precision to IEEE 32bit single-precision
 inline float half2float(const unsigned short value)
 {
+#if (defined(_M_ARM) || defined(_M_ARM64) || defined(__arm__) || defined(__arm64__) || defined(__aarch64__))
+   return (float)ushort_as_half(value);
+#else
    static constexpr unsigned int mantissa_table[2048] = {
 		0x00000000, 0x33800000, 0x34000000, 0x34400000, 0x34800000, 0x34A00000, 0x34C00000, 0x34E00000, 0x35000000, 0x35100000, 0x35200000, 0x35300000, 0x35400000, 0x35500000, 0x35600000, 0x35700000,
 		0x35800000, 0x35880000, 0x35900000, 0x35980000, 0x35A00000, 0x35A80000, 0x35B00000, 0x35B80000, 0x35C00000, 0x35C80000, 0x35D00000, 0x35D80000, 0x35E00000, 0x35E80000, 0x35F00000, 0x35F80000,
@@ -262,12 +265,16 @@ inline float half2float(const unsigned short value)
 		0, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024,
 		0, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024 };
    const unsigned int bits = mantissa_table[offset_table[value >> 10] + (value & 0x3FF)] + exponent_table[value >> 10];
-   return int_as_float(bits);
+   return uint_as_float(bits);
+#endif
 }
 
 // IEEE 32bit single-precision to 16bit half-precision
-inline unsigned short float2half(const float value)
+inline unsigned short float2half(const float value) // could use _mm_cvtps_ph on F16C compatible CPUs
 {
+#if (defined(_M_ARM) || defined(_M_ARM64) || defined(__arm__) || defined(__arm64__) || defined(__aarch64__))
+   return half_as_ushort((_Float16)value);
+#else
    static constexpr unsigned short base_table[512] = {
 		0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
 		0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
@@ -318,10 +325,24 @@ inline unsigned short float2half(const float value)
 		24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24,
 		24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24,
 		24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 13 };
-   const unsigned int bits = float_as_int(value);
+   const unsigned int bits = float_as_uint(value);
    unsigned short hbits = base_table[bits >> 23] + (unsigned short)((bits & 0x7FFFFF) >> shift_table[bits >> 23]);
    hbits += (((bits & 0x7FFFFF) >> (shift_table[bits >> 23] - 1)) | (((bits >> 23) & 0xFF) == 102)) & ((hbits & 0x7C00) != 0x7C00);
    return hbits;
+}
+
+float half2float_noLUT(const unsigned short x) { // IEEE-754 16-bit floating-point format (without infinity/NaN!): 1-5-10, exp-15, +-131008.0, +-6.1035156E-5, +-5.9604645E-8, 3.311 digits
+    const unsigned int e = (x&0x7C00)>>10; // exponent
+    const unsigned int m = (x&0x03FF)<<13; // mantissa
+    const unsigned int v = float_as_uint((float)m) >> 23; // evil log2 bit hack to count leading zeros in denormalized format
+    return uint_as_float((x&0x8000)<<16 | (e!=0)*((e+112)<<23|m) | ((e==0)&(m!=0))*((v-37)<<23|((m<<(150-v))&0x007FE000))); // sign : normalized : denormalized
+}
+
+unsigned short float2half_noLUT(const float x) { // IEEE-754 16-bit floating-point format (without infinity/NaN!): 1-5-10, exp-15, +-131008.0, +-6.1035156E-5, +-5.9604645E-8, 3.311 digits
+    const unsigned int b = float_as_uint(x) + 0x00001000; // round-to-nearest-even: add last bit after truncated mantissa
+    const unsigned int e = (b&0x7F800000)>>23; // exponent
+    const unsigned int m = b&0x007FFFFF; // mantissa; in line below: 0x007FF000 = 0x00800000-0x00001000 = decimal indicator flag - initial rounding
+    return (b&0x80000000)>>16 | (e>112)*((((e-112)<<10)&0x7C00)|m>>13) | ((e<113)&(e>101))*((((0x007FF000+m)>>(125-e))+1)>>1) | (e>143)*0x7FFF; // sign : normalized : denormalized : saturate
 }
 
 //
