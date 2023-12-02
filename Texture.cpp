@@ -37,6 +37,7 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, bool resize_on_low_
 
    // do loading in a loop, in case memory runs out and we need to scale the texture down due to this
    bool success = false;
+   bool isSigned = false;
    while (!success)
    {
       // the mem is so low that the texture won't even be able to be rescaled -> return
@@ -124,16 +125,20 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, bool resize_on_low_
          const unsigned int pitch = FreeImage_GetPitch(dibConv);
          for (unsigned int y = 0; y < tex_h; ++y)
          {
-            const Vertex2D minmax = min_max((float*)bits, tex_w * 3);
+            const Vertex2D minmax = min_max((const float*)bits, tex_w * 3);
             minval = min(minval, minmax.x);
             maxval = max(maxval, minmax.y);
 
             bits += pitch;
          }
          format = (maxval <= 65504.f && minval >= -65504.f) ? RGB_FP16 : RGB_FP32;
+         isSigned = (minval < 0.f);
       }
       else
+      {
          format = has_alpha ? SRGBA : SRGB;
+         isSigned = false;
+      }
 
       try
       {
@@ -175,7 +180,11 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, bool resize_on_low_
       for (unsigned int y = 0; y < tex->m_height; ++y)
       {
          const size_t offs = (size_t)(tex->m_height - y - 1) * (tex->m_width*3);
-         float2half(pdst+offs, (float*)bits, tex->m_width*3);
+         // we already did a range check above, so use faster float2half code variants
+         if (isSigned)
+            float2half_noF16MaxInfNaN(pdst+offs, (const float*)bits, tex->m_width*3);
+         else
+            float2half_pos_noF16MaxInfNaN(pdst+offs, (const float*)bits, tex->m_width*3);
          bits += pitch;
       }
    }
