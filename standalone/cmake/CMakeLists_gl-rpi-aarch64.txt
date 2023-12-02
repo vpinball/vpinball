@@ -30,6 +30,7 @@ bison_target(vbsparser ${CMAKE_SOURCE_DIR}/standalone/inc/wine/dlls/vbscript/par
 add_compile_definitions(
    __STANDALONE__
    __OPENGLES__
+   __RPI__
 
    ENABLE_SDL
    ENABLE_SDL_INPUT

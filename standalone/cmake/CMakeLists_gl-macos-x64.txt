@@ -34,7 +34,7 @@ bison_target(vbsparser ${CMAKE_SOURCE_DIR}/standalone/inc/wine/dlls/vbscript/par
 
 add_compile_definitions(
    __STANDALONE__
-  
+
    ENABLE_SDL
    ENABLE_SDL_INPUT
    ENABLE_SDL_GAMECONTROLLER
@@ -51,7 +51,7 @@ add_definitions(
    "-D__forceinline=__attribute__((always_inline)) inline" 
 )
 
-add_executable(vpinball 
+add_executable(vpinball
    backGlass.cpp
    backGlass.h
    bulb.cpp

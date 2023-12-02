@@ -83,15 +83,14 @@ void DimensionDialog::UpdateApplyState()
    if (pt)
    {
       float w, h, t, b;
-      int rw, rh, rt, rb;
-      rw = sscanf_s(GetDlgItemText(IDC_VP_WIDTH).c_str(), "%f", &w);
-      rh = sscanf_s(GetDlgItemText(IDC_VP_HEIGHT).c_str(), "%f", &h);
-      rt = sscanf_s(GetDlgItemText(IDC_TABLE_GLASS_TOP_HEIGHT_EDIT).c_str(), "%f", &t);
-      rb = sscanf_s(GetDlgItemText(IDC_TABLE_GLASS_BOTTOM_HEIGHT_EDIT).c_str(), "%f", &b);
-      if ((rw == 1 && w > 0 && pt->GetTableWidth() != w)
-       || (rh == 1 && h > 0 && pt->GetHeight() != h)
-       || (rt == 1 && t > 0 && pt->m_glassTopHeight != INCHESTOVPU(t))
-       || (rb == 1 && b > 0 && pt->m_glassBottomHeight != INCHESTOVPU(b)))
+      const int rw = sscanf_s(GetDlgItemText(IDC_VP_WIDTH).c_str(), "%f", &w);
+      const int rh = sscanf_s(GetDlgItemText(IDC_VP_HEIGHT).c_str(), "%f", &h);
+      const int rt = sscanf_s(GetDlgItemText(IDC_TABLE_GLASS_TOP_HEIGHT_EDIT).c_str(), "%f", &t);
+      const int rb = sscanf_s(GetDlgItemText(IDC_TABLE_GLASS_BOTTOM_HEIGHT_EDIT).c_str(), "%f", &b);
+      if ((rw == 1 && w > 0.f && pt->GetTableWidth() != w)
+       || (rh == 1 && h > 0.f && pt->GetHeight() != h)
+       || (rt == 1 && t > 0.f && pt->m_glassTopHeight != INCHESTOVPU(t))
+       || (rb == 1 && b > 0.f && pt->m_glassBottomHeight != INCHESTOVPU(b)))
          GetDlgItem(IDC_APPLY_TO_TABLE).EnableWindow(true);
    }
 }
@@ -218,16 +217,16 @@ BOOL DimensionDialog::OnCommand(WPARAM wParam, LPARAM lParam)
          float value;
          int ret;
          ret = sscanf_s(GetDlgItemText(IDC_VP_WIDTH).c_str(), "%f", &value);
-         if (ret == 1 && value > 0)
+         if (ret == 1 && value > 0.f)
             pt->put_Width(value);
          ret = sscanf_s(GetDlgItemText(IDC_VP_HEIGHT).c_str(), "%f", &value);
-         if (ret == 1 && value > 0)
+         if (ret == 1 && value > 0.f)
             pt->put_Height(value);
          ret = sscanf_s(GetDlgItemText(IDC_TABLE_GLASS_TOP_HEIGHT_EDIT).c_str(), "%f", &value);
-         if (ret == 1 && value > 0)
+         if (ret == 1 && value > 0.f)
             pt->m_glassTopHeight = INCHESTOVPU(value);
          ret = sscanf_s(GetDlgItemText(IDC_TABLE_GLASS_BOTTOM_HEIGHT_EDIT).c_str(), "%f", &value);
-         if (ret == 1 && value > 0)
+         if (ret == 1 && value > 0.f)
             pt->m_glassBottomHeight = INCHESTOVPU(value);
       }
       UpdateApplyState();
