@@ -5,7 +5,8 @@ FEATURES:
 
 FIXES:
 
-- update FreeImage library to latest 3.18.0 (custom build) (currently disabled)
+- update FreeImage library to latest 3.19.0 beta (custom build)
+
 - DirectX 8 port for input handling (currently disabled)
 
 - see Changelog_Scripts.txt for the respective core script changes (version 3.62)

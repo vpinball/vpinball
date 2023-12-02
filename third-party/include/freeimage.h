@@ -29,7 +29,7 @@
 // Version information ------------------------------------------------------
 
 #define FREEIMAGE_MAJOR_VERSION   3
-#define FREEIMAGE_MINOR_VERSION   18
+#define FREEIMAGE_MINOR_VERSION   19
 #define FREEIMAGE_RELEASE_SERIAL  0
 
 // Compiler options ---------------------------------------------------------
@@ -753,7 +753,7 @@ typedef void (DLL_CALLCONV *FI_InitProc)(Plugin *plugin, int format_id);
 #define TIFF_DEFAULT        0
 #define TIFF_CMYK			0x0001	//! reads/stores tags for separated CMYK (use | to combine with compression flags)
 #define TIFF_PACKBITS       0x0100  //! save using PACKBITS compression
-#define TIFF_DEFLATE        0x0200  //! save using DEFLATE compression (a.k.a. ZLIB compression)
+#define TIFF_DEFLATE        0x0200  //! save using DEFLATE compression (a.k.a. ZLIB compression) - obsolete, will save as TIFF_ADOBE_DEFLATE
 #define TIFF_ADOBE_DEFLATE  0x0400  //! save using ADOBE DEFLATE compression
 #define TIFF_NONE           0x0800  //! save without any compression
 #define TIFF_CCITTFAX3		0x1000  //! save using CCITT Group 3 fax encoding
