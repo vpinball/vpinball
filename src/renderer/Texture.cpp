@@ -78,7 +78,7 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, bool resize_on_low_
 
          maxTexDim /= 2;
          while (((unsigned int)maxTexDim > pictureHeight) && ((unsigned int)maxTexDim > pictureWidth))
-             maxTexDim /= 2;
+            maxTexDim /= 2;
 
          continue;
       }
@@ -124,7 +124,7 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, bool resize_on_low_
          const unsigned int pitch = FreeImage_GetPitch(dibConv);
          for (unsigned int y = 0; y < tex_h; ++y)
          {
-            const Vertex2D minmax = min_max((float*)bits, tex_w * 3);
+            const Vertex2D minmax = min_max((const float*)bits, tex_w * 3);
             minval = min(minval, minmax.x);
             maxval = max(maxval, minmax.y);
 
@@ -180,7 +180,11 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, bool resize_on_low_
       for (unsigned int y = 0; y < tex->m_height; ++y)
       {
          const size_t offs = (size_t)(tex->m_height - y - 1) * (tex->m_width*3);
-         float2half(pdst+offs, (float*)bits, tex->m_width*3);
+         // we already did a range check above, so use faster float2half code variants
+         if (tex->IsSigned())
+            float2half_noF16MaxInfNaN(pdst+offs, (const float*)bits, tex->m_width*3);
+         else
+            float2half_pos_noF16MaxInfNaN(pdst+offs, (const float*)bits, tex->m_width*3);
          bits += pitch;
       }
       tex->SetIsOpaque(true);
@@ -419,7 +423,7 @@ void BaseTexture::AddAlpha()
       unsigned short* const __restrict dest_data16 = (unsigned short*)new_data.data();
       const unsigned short* const __restrict src_data16 = (unsigned short*)m_data.data();
       for (unsigned int j = 0; j < height(); ++j)
-         for (unsigned int i = 0; i < width(); ++i, ++o) 
+         for (unsigned int i = 0; i < width(); ++i, ++o)
          {
             dest_data16[o * 4 + 0] = src_data16[o * 3 + 0];
             dest_data16[o * 4 + 1] = src_data16[o * 3 + 1];
