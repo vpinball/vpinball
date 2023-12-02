@@ -309,9 +309,9 @@ BaseTexture* EnvmapPrecalc(const Texture* envTex, const unsigned int rad_env_xre
                const unsigned int offs = (y*rad_env_xres + x) * 3;
                if (rad_format == BaseTexture::RGB_FP16)
                {
-                  ((unsigned short*)rad_envmap)[offs  ] = float2half(sum_r);
-                  ((unsigned short*)rad_envmap)[offs+1] = float2half(sum_g);
-                  ((unsigned short*)rad_envmap)[offs+2] = float2half(sum_b);
+                  ((unsigned short*)rad_envmap)[offs  ] = float2half_noLUT(sum_r);
+                  ((unsigned short*)rad_envmap)[offs+1] = float2half_noLUT(sum_g);
+                  ((unsigned short*)rad_envmap)[offs+2] = float2half_noLUT(sum_b);
                }
                else if (rad_format == BaseTexture::RGB_FP32)
                {

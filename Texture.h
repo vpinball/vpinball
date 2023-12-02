@@ -13,14 +13,14 @@ class BaseTexture final
 {
 public:
    enum Format
-   { // RGB/RGBA formats must be ordered R, G, B (and eventually A)
-      BW,			// Linear BW image, 1 byte per texel
-      RGB,			// Linear RGB without alpha channel, 1 byte per channel
-      RGBA,			// Linear RGB with alpha channel, 1 byte per channel
-      SRGB,			// sRGB without alpha channel, 1 byte per channel
-      SRGBA,		// sRGB with alpha channel, 1 byte per channel
-      RGB_FP16,		// Linear RGB, 1 half float per channel
-      RGB_FP32		// Linear RGB, 1 float per channel
+   { // RGB/RGBA formats must be ordered R, G, B (and optionally A)
+      BW,        // Linear BW image, 1 byte per texel
+      RGB,       // Linear RGB without alpha channel, 1 byte per channel
+      RGBA,      // Linear RGB with alpha channel, 1 byte per channel
+      SRGB,      // sRGB without alpha channel, 1 byte per channel
+      SRGBA,     // sRGB with alpha channel, 1 byte per channel
+      RGB_FP16,  // Linear RGB, 1 half float per channel
+      RGB_FP32   // Linear RGB, 1 float per channel
    };
 
    BaseTexture(const unsigned int w, const unsigned int h, const Format format);
@@ -147,4 +147,96 @@ inline void copy_bgra_rgba(unsigned int* const __restrict dst, const unsigned in
           tmp |= 0xFF000000u;
        dst[o] = tmp;
     }
+}
+
+inline void float2half(unsigned short* const __restrict dst, const float* const __restrict src, const size_t size)
+{
+    size_t o = 0;
+
+#if defined(_M_IX86) || defined(_M_X64)
+    // align output writes
+    for (; ((reinterpret_cast<size_t>(dst+o) & 15) != 0) && o < size; ++o)
+       dst[o] = float2half_noLUT(src[o]);
+
+    // see https://gist.github.com/rygorous/2156668, extended to 2 values/loop-iteration
+    const __m128 mabs = _mm_castsi128_ps(_mm_set1_epi32(0x7FFFFFFF));
+    const __m128 f32infty = _mm_castsi128_ps(_mm_set1_epi32(255 << 23));
+    const __m128 expinf = _mm_castsi128_ps(_mm_set1_epi32((255 ^ 31) << 23));
+    const __m128 f16max = _mm_castsi128_ps(_mm_set1_epi32((127 + 16) << 23));
+    const __m128 magic = _mm_castsi128_ps(_mm_set1_epi32(15 << 23));
+
+    for (; o+7 < size; o+=8)
+    {
+       const __m128 srco[2] = { _mm_loadu_ps(src + o), _mm_loadu_ps(src + o + 4) };
+
+       const __m128 fabs[2] = { _mm_and_ps(mabs, srco[0]), _mm_and_ps(mabs, srco[1]) };
+       const __m128 justsign[2] = { _mm_xor_ps(srco[0], fabs[0]), _mm_xor_ps(srco[1], fabs[1]) };
+
+       const __m128 infnancase[2] = { _mm_xor_ps(expinf, fabs[0]), _mm_xor_ps(expinf, fabs[1]) };
+       const __m128 clamped[2] = { _mm_min_ps(f16max, fabs[0]), _mm_min_ps(f16max, fabs[1]) };
+       const __m128 b_notnormal[2] = { _mm_cmpnlt_ps(fabs[0], f32infty), _mm_cmpnlt_ps(fabs[1], f32infty) };
+       const __m128 scaled[2] = { _mm_mul_ps(clamped[0], magic), _mm_mul_ps(clamped[1], magic) };
+
+       const __m128 merge1[2] = { _mm_and_ps(b_notnormal[0], infnancase[0]), _mm_and_ps(b_notnormal[1], infnancase[1]) };
+       const __m128 merge2[2] = { _mm_andnot_ps(b_notnormal[0], scaled[0]), _mm_andnot_ps(b_notnormal[1], scaled[1]) };
+       const __m128 merged[2] = { _mm_or_ps(merge1[0], merge2[0]), _mm_or_ps(merge1[1], merge2[1]) };
+
+       const __m128i shifted[2] = { _mm_srli_epi32(_mm_castps_si128(merged[0]), 13), _mm_srli_epi32(_mm_castps_si128(merged[1]), 13) };
+       const __m128i signshifted[2] = { _mm_srli_epi32(_mm_castps_si128(justsign[0]), 16), _mm_srli_epi32(_mm_castps_si128(justsign[1]), 16) };
+       __m128i final[2] = { _mm_or_si128(shifted[0], signshifted[0]), _mm_or_si128(shifted[1], signshifted[1]) };
+
+       final[0] = _mm_shufflelo_epi16(final[0], _MM_SHUFFLE(3, 1, 2, 0));
+       final[1] = _mm_shufflelo_epi16(final[1], _MM_SHUFFLE(3, 1, 2, 0));
+       final[0] = _mm_shufflehi_epi16(final[0], _MM_SHUFFLE(3, 1, 2, 0));
+       final[1] = _mm_shufflehi_epi16(final[1], _MM_SHUFFLE(3, 1, 2, 0));
+       const __m128 finalc = _mm_shuffle_ps(_mm_castsi128_ps(final[0]), _mm_castsi128_ps(final[1]), _MM_SHUFFLE(2, 0, 2, 0));
+       _mm_store_ps((float*)(dst+o), finalc);
+    }
+    // leftover writes below
+#endif
+
+    for (; o < size; ++o)
+       dst[o] = float2half_noLUT(src[o]);
+}
+
+inline Vertex2D min_max(const float* const __restrict src, const size_t size)
+{
+    Vertex2D minmax(FLT_MAX,-FLT_MAX);
+    size_t o = 0;
+
+#if defined(_M_IX86) || defined(_M_X64)
+    // align
+    for (; ((reinterpret_cast<size_t>(src+o) & 15) != 0) && o < size; ++o)
+    {
+       const float f = src[o];
+       if (f < minmax.x)
+          minmax.x = f;
+       if (f > minmax.y)
+          minmax.y = f;
+    }
+
+    __m128 min128 = _mm_set1_ps(minmax.x);
+    __m128 max128 = _mm_set1_ps(minmax.y);
+    for (; o + 3 < size; o += 4)
+    {
+       const __m128 f = _mm_load_ps(src+o);
+       min128 = _mm_min_ps(min128, f);
+       max128 = _mm_max_ps(max128, f);
+    }
+
+    minmax.x = _mm_cvtss_f32(sseHorizontalMin(min128));
+    minmax.y = _mm_cvtss_f32(sseHorizontalMax(max128));
+    // leftovers below
+#endif
+
+    for (; o < size; ++o)
+    {
+       const float f = src[o];
+       if (f < minmax.x)
+          minmax.x = f;
+       if (f > minmax.y)
+          minmax.y = f;
+    }
+
+    return minmax;
 }

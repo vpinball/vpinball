@@ -2097,22 +2097,22 @@ void Player::InitStatic()
       {
       for (unsigned int x = 0; x < descStatic.Width; ++x,ofs0+=3,ofs1+=4)
       {
-         psrc[ofs1  ] = float2half(pdestStatic[ofs0  ]*(float)(1.0/STATIC_PRERENDER_ITERATIONS));
-         psrc[ofs1+1] = float2half(pdestStatic[ofs0+1]*(float)(1.0/STATIC_PRERENDER_ITERATIONS));
-         psrc[ofs1+2] = float2half(pdestStatic[ofs0+2]*(float)(1.0/STATIC_PRERENDER_ITERATIONS));
+         psrc[ofs1  ] = float2half_noLUT(pdestStatic[ofs0  ]*(float)(1.0/STATIC_PRERENDER_ITERATIONS));
+         psrc[ofs1+1] = float2half_noLUT(pdestStatic[ofs0+1]*(float)(1.0/STATIC_PRERENDER_ITERATIONS));
+         psrc[ofs1+2] = float2half_noLUT(pdestStatic[ofs0+2]*(float)(1.0/STATIC_PRERENDER_ITERATIONS));
       }
       }
       else if (descStatic.Format == (D3DFORMAT)colorFormat::RED16F)
       {
       for (unsigned int x = 0; x < descStatic.Width; ++x,++ofs0,++ofs1)
-         psrc[ofs1] = float2half(pdestStatic[ofs0]*(float)(1.0/STATIC_PRERENDER_ITERATIONS));
+         psrc[ofs1] = float2half_noLUT(pdestStatic[ofs0]*(float)(1.0/STATIC_PRERENDER_ITERATIONS));
       }
       else if (descStatic.Format == (D3DFORMAT)colorFormat::RG16F)
       {
       for (unsigned int x = 0; x < descStatic.Width; ++x,ofs0+=2,ofs1+=2)
       {
-         psrc[ofs1  ] = float2half(pdestStatic[ofs0  ]*(float)(1.0/STATIC_PRERENDER_ITERATIONS));
-         psrc[ofs1+1] = float2half(pdestStatic[ofs0+1]*(float)(1.0/STATIC_PRERENDER_ITERATIONS));
+         psrc[ofs1  ] = float2half_noLUT(pdestStatic[ofs0  ]*(float)(1.0/STATIC_PRERENDER_ITERATIONS));
+         psrc[ofs1+1] = float2half_noLUT(pdestStatic[ofs0+1]*(float)(1.0/STATIC_PRERENDER_ITERATIONS));
       }
       }
    }
