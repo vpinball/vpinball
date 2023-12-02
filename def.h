@@ -289,6 +289,18 @@ __forceinline __m128 sseHorizontalAdd(const __m128 &a) // could use dp instructi
    return _mm_add_ss(ftemp, _mm_shuffle_ps(ftemp, ftemp, 1));
 #endif
 }
+
+__forceinline __m128 sseHorizontalMin(const __m128 &a)
+{
+   const __m128 ftemp = _mm_min_ps(a, _mm_movehl_ps(a, a));
+   return _mm_min_ss(ftemp, _mm_shuffle_ps(ftemp, ftemp, 1));
+}
+
+__forceinline __m128 sseHorizontalMax(const __m128 &a)
+{
+   const __m128 ftemp = _mm_max_ps(a, _mm_movehl_ps(a, a));
+   return _mm_max_ss(ftemp, _mm_shuffle_ps(ftemp, ftemp, 1));
+}
 #endif
 
 //
@@ -298,13 +310,21 @@ __forceinline __m128 sseHorizontalAdd(const __m128 &a) // could use dp instructi
   #include <bit>
   #define float_as_int(x) std::bit_cast<int>(x)
   #define float_as_uint(x) std::bit_cast<unsigned int>(x)
+  #define half_as_short(x) std::bit_cast<short>(x)
+  #define half_as_ushort(x) std::bit_cast<unsigned short>(x)
   #define int_as_float(x) std::bit_cast<float>(x)
   #define uint_as_float(x) std::bit_cast<float>(x)
+  #define short_as_half(x) std::bit_cast<_Float16>(x)
+  #define ushort_as_half(x) std::bit_cast<_Float16>(x)
  #else // for whatever reason apple/clang is special again
   #define float_as_int(x) __builtin_bit_cast(int, x)
   #define float_as_uint(x) __builtin_bit_cast(unsigned int, x)
+  #define half_as_short(x) __builtin_bit_cast(short, x)
+  #define half_as_ushort(x) __builtin_bit_cast(unsigned short, x)
   #define int_as_float(x) __builtin_bit_cast(float, x)
   #define uint_as_float(x) __builtin_bit_cast(float, x)
+  #define short_as_half(x) __builtin_bit_cast(_Float16, x)
+  #define ushort_as_half(x) __builtin_bit_cast(_Float16, x)
  #endif
 #else
 __forceinline int float_as_int(const float x)
@@ -327,6 +347,30 @@ __forceinline unsigned int float_as_uint(const float x)
    return uc.i;
 }
 
+#if defined(__GNUC__) || defined(__clang__)
+__forceinline short half_as_short(const _Float16 x)
+{
+   union
+   {
+      _Float16 f;
+      short i;
+   } uc;
+   uc.f = x;
+   return uc.i;
+}
+
+__forceinline unsigned short half_as_ushort(const _Float16 x)
+{
+   union
+   {
+      _Float16 f;
+      unsigned short i;
+   } uc;
+   uc.f = x;
+   return uc.i;
+}
+#endif
+
 __forceinline float int_as_float(const int i)
 {
    union {
@@ -346,6 +390,28 @@ __forceinline float uint_as_float(const unsigned int i)
    iaf.i = i;
    return iaf.f;
 }
+
+#if defined(__GNUC__) || defined(__clang__)
+__forceinline _Float16 short_as_half(const short i)
+{
+   union {
+      short i;
+      _Float16 f;
+   } iaf;
+   iaf.i = i;
+   return iaf.f;
+}
+
+__forceinline _Float16 ushort_as_half(const unsigned short i)
+{
+   union {
+      unsigned short i;
+      _Float16 f;
+   } iaf;
+   iaf.i = i;
+   return iaf.f;
+}
+#endif
 #endif
 
 __forceinline bool infNaN(const float a)

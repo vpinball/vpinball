@@ -262,7 +262,7 @@ inline float half2float(const unsigned short value)
 		0, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024,
 		0, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024 };
    const unsigned int bits = mantissa_table[offset_table[value >> 10] + (value & 0x3FF)] + exponent_table[value >> 10];
-   return int_as_float(bits);
+   return uint_as_float(bits);
 }
 
 // IEEE 32bit single-precision to 16bit half-precision
@@ -318,10 +318,52 @@ inline unsigned short float2half(const float value)
 		24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24,
 		24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24,
 		24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 13 };
-   const unsigned int bits = float_as_int(value);
+   const unsigned int bits = float_as_uint(value);
    unsigned short hbits = base_table[bits >> 23] + (unsigned short)((bits & 0x7FFFFF) >> shift_table[bits >> 23]);
    hbits += (((bits & 0x7FFFFF) >> (shift_table[bits >> 23] - 1)) | (((bits >> 23) & 0xFF) == 102)) & ((hbits & 0x7C00) != 0x7C00);
    return hbits;
+}
+
+inline float half2float_noLUT(const unsigned short x) { // IEEE-754 16-bit floating-point format (without infinity/NaN!): 1-5-10, exp-15, +-131008.0, +-6.1035156E-5, +-5.9604645E-8, 3.311 digits
+#if (defined(_M_ARM) || defined(_M_ARM64) || defined(__arm__) || defined(__arm64__) || defined(__aarch64__)) && !(defined(__RPI__) || defined(__RK3588__))
+   return (float)ushort_as_half(x);
+#else
+   const unsigned int e = (x&0x7C00)>>10; // exponent
+   const unsigned int m = (x&0x03FF)<<13; // mantissa
+   const unsigned int v = float_as_uint((float)m) >> 23; // evil log2 bit hack to count leading zeros in denormalized format
+   return uint_as_float((x&0x8000)<<16 | (e!=0)*((e+112)<<23|m) | ((e==0)&(m!=0))*((v-37)<<23|((m<<(150-v))&0x007FE000))); // sign : normalized : denormalized
+#endif
+}
+
+// matches float2half() exactly
+inline unsigned short float2half_noLUT(const float value)
+{
+#if (defined(_M_ARM) || defined(_M_ARM64) || defined(__arm__) || defined(__arm64__) || defined(__aarch64__)) && !(defined(__RPI__) || defined(__RK3588__))
+   return half_as_ushort((_Float16)value);
+#else
+   // see https://gist.github.com/rygorous/2156668, bugfixed though
+   constexpr unsigned int f32infty_u = 255u << 23;
+   constexpr unsigned int f16max_u = (127u + 16u) << 23;
+   const float magic_f = uint_as_float(15u << 23);
+   constexpr unsigned int expinf_u = (255u ^ 31u) << 23;
+   constexpr unsigned int sign_mask = 0x80000000u;
+
+   unsigned int fu = float_as_uint(value);
+
+   const unsigned int sign = fu & sign_mask;
+   fu ^= sign; // fabsf
+
+   if (fu >= f32infty_u) // Inf or NaN?
+      fu ^= expinf_u;
+   else
+   {
+      if (fu > f16max_u)
+         fu = f16max_u;
+      fu = float_as_uint(uint_as_float(fu) * magic_f);
+   }
+
+   return (unsigned short)((fu >> 13) | (sign >> 16));
+#endif
 }
 
 //

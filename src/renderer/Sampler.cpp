@@ -364,7 +364,7 @@ IDirect3DTexture9* Sampler::CreateSystemTexture(BaseTexture* const surf, const b
 
       unsigned short* const __restrict pdest = (unsigned short*)locked.pBits;
       const unsigned short* const __restrict psrc = (unsigned short*)(surf->data());
-      const unsigned short one16 = float2half(1.f);
+      const unsigned short one16 = float2half_noLUT(1.f);
       for (size_t i = 0; i < (size_t)texwidth * texheight; ++i)
       {
          pdest[i * 4 + 0] = psrc[i * 3 + 0];
@@ -414,15 +414,7 @@ IDirect3DTexture9* Sampler::CreateSystemTexture(BaseTexture* const surf, const b
       D3DLOCKED_RECT locked;
       CHECKD3D(sysTex->LockRect(0, &locked, nullptr, 0));
 
-      BYTE* const __restrict pdest = (BYTE*)locked.pBits;
-      const BYTE* const __restrict psrc = (BYTE*)(surf->data());
-      for (size_t i = 0; i < (size_t)texwidth * texheight; ++i)
-      {
-         pdest[i * 4 + 0] = psrc[i * 4 + 2];
-         pdest[i * 4 + 1] = psrc[i * 4 + 1];
-         pdest[i * 4 + 2] = psrc[i * 4 + 0];
-         pdest[i * 4 + 3] = psrc[i * 4 + 3];
-      }
+      copy_bgra_rgba<false>((unsigned int*)locked.pBits, (const unsigned int*)(surf->data()), (size_t)texwidth * texheight);
 
       CHECKD3D(sysTex->UnlockRect(0));
       /* IDirect3DSurface9* sysSurf;

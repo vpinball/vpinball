@@ -116,26 +116,28 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, bool resize_on_low_
       Format format;
       const unsigned int tex_w = FreeImage_GetWidth(dibConv);
       const unsigned int tex_h = FreeImage_GetHeight(dibConv);
-      isSigned = false;
       if (rgbf)
       {
-         float maxval = 0.f;
-         const BYTE* __restrict bits = (BYTE*)FreeImage_GetBits(dibConv);
-         const int pitch = FreeImage_GetPitch(dibConv);
+         float minval = FLT_MAX;
+         float maxval = -FLT_MAX;
+         const BYTE* __restrict bits = FreeImage_GetBits(dibConv);
+         const unsigned int pitch = FreeImage_GetPitch(dibConv);
          for (unsigned int y = 0; y < tex_h; ++y)
          {
-            const float* const __restrict pixel = (float*)bits;
-            for (unsigned int x = 0; x < tex_w * 3; ++x)
-            {
-               isSigned |= pixel[x] < 0.f;
-               maxval = max(maxval, pixel[x]);
-            }
+            const Vertex2D minmax = min_max((float*)bits, tex_w * 3);
+            minval = min(minval, minmax.x);
+            maxval = max(maxval, minmax.y);
+
             bits += pitch;
          }
-         format = (maxval <= 65504.f) ? RGB_FP16 : RGB_FP32;
+         format = (maxval <= 65504.f && minval >= -65504.f) ? RGB_FP16 : RGB_FP32;
+         isSigned = (minval < 0.f);
       }
       else
-          format = has_alpha ? SRGBA : SRGB;
+      {
+         format = has_alpha ? SRGBA : SRGB;
+         isSigned = false;
+      }
 
       try
       {
@@ -168,8 +170,8 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, bool resize_on_low_
    tex->m_realHeight = pictureHeight;
    tex->SetIsSigned(isSigned);
 
-   // Copy, applying channel and data format conversion as well as flipping upside down
-   // Note that free image use RGB for float image, and the FI_RGBA_xxx for others
+   // Copy, applying channel and data format conversion, as well as flipping upside down
+   // Note that free image uses RGB for float image, and the FI_RGBA_xxx for others
    if (tex->m_format == RGB_FP16)
    {
       const BYTE* __restrict bits = FreeImage_GetBits(dibConv);
@@ -177,15 +179,8 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, bool resize_on_low_
       unsigned short* const __restrict pdst = (unsigned short*)tex->data();
       for (unsigned int y = 0; y < tex->m_height; ++y)
       {
-         const float* __restrict pixel = (float*)bits;
          const size_t offs = (size_t)(tex->m_height - y - 1) * (tex->m_width*3);
-         for (size_t o = offs; o < tex->m_width*3+offs; o+=3)
-         {
-            pdst[o + 0] = float2half(pixel[0]);
-            pdst[o + 1] = float2half(pixel[1]);
-            pdst[o + 2] = float2half(pixel[2]);
-            pixel += 3;
-         }
+         float2half(pdst+offs, (float*)bits, tex->m_width*3);
          bits += pitch;
       }
       tex->SetIsOpaque(true);
@@ -197,15 +192,8 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, bool resize_on_low_
       float* const __restrict pdst = (float*)tex->data();
       for (unsigned int y = 0; y < tex->m_height; ++y)
       {
-         const float* __restrict pixel = (float*)bits;
          const size_t offs = (size_t)(tex->m_height - y - 1) * (tex->m_width*3);
-         for (size_t o = offs; o < tex->m_width*3+offs; o+=3)
-         {
-            pdst[o + 0] = pixel[0];
-            pdst[o + 1] = pixel[1];
-            pdst[o + 2] = pixel[2];
-            pixel += 3;
-         }
+         memcpy(pdst+offs, bits, tex->m_width*3*sizeof(float));
          bits += pitch;
       }
       tex->SetIsOpaque(true);
@@ -217,9 +205,8 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, bool resize_on_low_
       BYTE* const __restrict pdst = tex->data();
       for (unsigned int y = 0; y < tex->m_height; ++y)
       {
-         const BYTE* __restrict pixel = (BYTE*)bits;
-         size_t offs = (size_t)(tex->m_height - y - 1) * tex->m_width;
-         memcpy(&(pdst[offs]), pixel, tex->m_width);
+         const size_t offs = (size_t)(tex->m_height - y - 1) * tex->m_width;
+         memcpy(pdst+offs, bits, tex->m_width);
          bits += pitch;
       }
       tex->SetIsOpaque(true);
