@@ -197,7 +197,7 @@ inline void float2half(unsigned short* const __restrict dst, const float* const 
        const __m128 srco[2] = { _mm_loadu_ps(src + o), _mm_loadu_ps(src + o + 4) };
 
        const __m128 fabs[2] = { _mm_and_ps(mabs, srco[0]), _mm_and_ps(mabs, srco[1]) };
-       const __m128 justsign[2] = { _mm_xor_ps(srco[0], fabs[0]), _mm_xor_ps(srco[1], fabs[1]) };
+       const __m128 justsign[2] = { _mm_andnot_ps(mabs, srco[0]), _mm_andnot_ps(mabs, srco[1]) };
 
        const __m128 infnancase[2] = { _mm_xor_ps(expinf, fabs[0]), _mm_xor_ps(expinf, fabs[1]) };
        const __m128 clamped[2] = { _mm_min_ps(f16max, fabs[0]), _mm_min_ps(f16max, fabs[1]) };
@@ -208,14 +208,90 @@ inline void float2half(unsigned short* const __restrict dst, const float* const 
        const __m128 merge2[2] = { _mm_andnot_ps(b_notnormal[0], scaled[0]), _mm_andnot_ps(b_notnormal[1], scaled[1]) };
        const __m128 merged[2] = { _mm_or_ps(merge1[0], merge2[0]), _mm_or_ps(merge1[1], merge2[1]) };
 
-       const __m128i shifted[2] = { _mm_srli_epi32(_mm_castps_si128(merged[0]), 13), _mm_srli_epi32(_mm_castps_si128(merged[1]), 13) };
-       const __m128i signshifted[2] = { _mm_srli_epi32(_mm_castps_si128(justsign[0]), 16), _mm_srli_epi32(_mm_castps_si128(justsign[1]), 16) };
-       __m128i final[2] = { _mm_or_si128(shifted[0], signshifted[0]), _mm_or_si128(shifted[1], signshifted[1]) };
+       const __m128i shifted[2] = { _mm_slli_epi32(_mm_castps_si128(merged[0]), 3), _mm_slli_epi32(_mm_castps_si128(merged[1]), 3) };
+       __m128i final[2] = { _mm_or_si128(shifted[0], _mm_castps_si128(justsign[0])), _mm_or_si128(shifted[1], _mm_castps_si128(justsign[1])) };
 
-       final[0] = _mm_shufflelo_epi16(final[0], _MM_SHUFFLE(3, 1, 2, 0));
-       final[1] = _mm_shufflelo_epi16(final[1], _MM_SHUFFLE(3, 1, 2, 0));
-       final[0] = _mm_shufflehi_epi16(final[0], _MM_SHUFFLE(3, 1, 2, 0));
-       final[1] = _mm_shufflehi_epi16(final[1], _MM_SHUFFLE(3, 1, 2, 0));
+       final[0] = _mm_shufflelo_epi16(final[0], _MM_SHUFFLE(3, 1, 3, 1));
+       final[1] = _mm_shufflelo_epi16(final[1], _MM_SHUFFLE(3, 1, 3, 1));
+       final[0] = _mm_shufflehi_epi16(final[0], _MM_SHUFFLE(3, 1, 3, 1));
+       final[1] = _mm_shufflehi_epi16(final[1], _MM_SHUFFLE(3, 1, 3, 1));
+       const __m128 finalc = _mm_shuffle_ps(_mm_castsi128_ps(final[0]), _mm_castsi128_ps(final[1]), _MM_SHUFFLE(2, 0, 2, 0));
+       _mm_store_ps((float*)(dst+o), finalc);
+    }
+    // leftover writes below
+#else
+#pragma message ("Warning: No SSE texture conversion")
+#endif
+#endif
+
+    for (; o < size; ++o)
+       dst[o] = float2half_noLUT(src[o]);
+}
+
+inline void float2half_noF16MaxInfNaN(unsigned short* const __restrict dst, const float* const __restrict src, const size_t size)
+{
+    size_t o = 0;
+
+#if !(defined(_M_ARM) || defined(_M_ARM64) || defined(__arm__) || defined(__arm64__) || defined(__aarch64__)) || defined(__RPI__) || defined(__RK3588__)
+#ifdef ENABLE_SSE_OPTIMIZATIONS
+    // align output writes
+    for (; ((reinterpret_cast<size_t>(dst+o) & 15) != 0) && o < size; ++o)
+       dst[o] = float2half_noLUT(src[o]);
+
+    // see https://gist.github.com/rygorous/2156668, extended to 2 values/loop-iteration, removed f16max/inf/nan handling
+    const __m128 sign = _mm_castsi128_ps(_mm_set1_epi32(0x80000000));
+    const __m128 magic = _mm_castsi128_ps(_mm_set1_epi32(15 << 23));
+
+    for (; o+7 < size; o+=8)
+    {
+       const __m128 srco[2] = { _mm_loadu_ps(src + o), _mm_loadu_ps(src + o + 4) };
+
+       const __m128 scaled[2] = { _mm_mul_ps(srco[0], magic), _mm_mul_ps(srco[1], magic) };
+       const __m128 justsign[2] = { _mm_and_ps(srco[0], sign), _mm_and_ps(srco[1], sign) };
+       const __m128i shifted[2] = { _mm_slli_epi32(_mm_castps_si128(scaled[0]), 3), _mm_slli_epi32(_mm_castps_si128(scaled[1]), 3) };
+       __m128i final[2] = { _mm_or_si128(shifted[0], _mm_castps_si128(justsign[0])), _mm_or_si128(shifted[1], _mm_castps_si128(justsign[1])) };
+
+       final[0] = _mm_shufflelo_epi16(final[0], _MM_SHUFFLE(3, 1, 3, 1));
+       final[1] = _mm_shufflelo_epi16(final[1], _MM_SHUFFLE(3, 1, 3, 1));
+       final[0] = _mm_shufflehi_epi16(final[0], _MM_SHUFFLE(3, 1, 3, 1));
+       final[1] = _mm_shufflehi_epi16(final[1], _MM_SHUFFLE(3, 1, 3, 1));
+       const __m128 finalc = _mm_shuffle_ps(_mm_castsi128_ps(final[0]), _mm_castsi128_ps(final[1]), _MM_SHUFFLE(2, 0, 2, 0));
+       _mm_store_ps((float*)(dst+o), finalc);
+    }
+    // leftover writes below
+#else
+#pragma message ("Warning: No SSE texture conversion")
+#endif
+#endif
+
+    for (; o < size; ++o)
+       dst[o] = float2half_noLUT(src[o]);
+}
+
+inline void float2half_pos_noF16MaxInfNaN(unsigned short* const __restrict dst, const float* const __restrict src, const size_t size)
+{
+    size_t o = 0;
+
+#if !(defined(_M_ARM) || defined(_M_ARM64) || defined(__arm__) || defined(__arm64__) || defined(__aarch64__)) || defined(__RPI__) || defined(__RK3588__)
+#ifdef ENABLE_SSE_OPTIMIZATIONS
+    // align output writes
+    for (; ((reinterpret_cast<size_t>(dst+o) & 15) != 0) && o < size; ++o)
+       dst[o] = float2half_noLUT(src[o]);
+
+    // see https://gist.github.com/rygorous/2156668, extended to 2 values/loop-iteration, removed signed/f16max/inf/nan handling
+    const __m128 magic = _mm_castsi128_ps(_mm_set1_epi32(15 << 23));
+
+    for (; o+7 < size; o+=8)
+    {
+       const __m128 srco[2] = { _mm_loadu_ps(src + o), _mm_loadu_ps(src + o + 4) };
+
+       const __m128 scaled[2] = { _mm_mul_ps(srco[0], magic), _mm_mul_ps(srco[1], magic) };
+       __m128i final[2] = { _mm_slli_epi32(_mm_castps_si128(scaled[0]), 3), _mm_slli_epi32(_mm_castps_si128(scaled[1]), 3) };
+
+       final[0] = _mm_shufflelo_epi16(final[0], _MM_SHUFFLE(3, 1, 3, 1));
+       final[1] = _mm_shufflelo_epi16(final[1], _MM_SHUFFLE(3, 1, 3, 1));
+       final[0] = _mm_shufflehi_epi16(final[0], _MM_SHUFFLE(3, 1, 3, 1));
+       final[1] = _mm_shufflehi_epi16(final[1], _MM_SHUFFLE(3, 1, 3, 1));
        const __m128 finalc = _mm_shuffle_ps(_mm_castsi128_ps(final[0]), _mm_castsi128_ps(final[1]), _MM_SHUFFLE(2, 0, 2, 0));
        _mm_store_ps((float*)(dst+o), finalc);
     }
