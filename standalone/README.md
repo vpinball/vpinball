@@ -66,9 +66,9 @@ To make a successful port, we would need tackle several tasks:
 >   - ~~[Bug 55042](https://bugs.winehq.org/show_bug.cgi?id=55042) - IDictionary::Add() fails to add entries with numerical keys that have the same hashes~~
 >   - [Bug 55052](https://bugs.winehq.org/show_bug.cgi?id=55052) - For loop where right bound is string coercion issue
 >   - [Bug 55093](https://bugs.winehq.org/show_bug.cgi?id=55093) - vbscript: if boolean condition should work without braces
->   - [Bug 55185](https://bugs.winehq.org/show_bug.cgi?id=55185) - vbscript round does not handle numdecimalplaces argument
+>   - ~~[Bug 55185](https://bugs.winehq.org/show_bug.cgi?id=55185) - vbscript round does not handle numdecimalplaces argument~~
 >   - ~~[Bug 55931](https://bugs.winehq.org/show_bug.cgi?id=55931) - vbscript: empty MOD 100000 returns garbage instead of 0~~
->   - [Bug 55969](https://bugs.winehq.org/show_bug.cgi?id=55969) - vbscript fails to return TypeName for Nothing
+>   - ~~[Bug 55969](https://bugs.winehq.org/show_bug.cgi?id=55969) - vbscript fails to return TypeName for Nothing~~
 
 > - Add support for `Scripting.FileSystemObject` and `Scripting.Dictionary` leveraging Wine's `scrrun` code.
 > - Add support for `E_NOTIMPL` commands to Wine's VBScript engine:
@@ -540,9 +540,18 @@ To keep up with all the changes in master, and make it easier to rebase, this br
 
 The downside of this approach is not accurately keeping track of history:
 
+* 12/01/23
+  * Add caching to `external` folders for CI builds
+  * Bump Wine source to 8.21 [369b540a](https://gitlab.winehq.org/wine/wine/-/tree/369b540abf32869df8e9b28e283d795ae92b6a05) (fixes Wine issues 55185, 55931, 55969)
+
+* 11/29/23
+  * Stop B2S timer prior to stopping PinMAME
+  * Bump Wine source to 8.21 [bc13bda5](https://gitlab.winehq.org/wine/wine/-/tree/bc13bda5ee4edaafa7ba9472d41acbad50c42112)
+  * Add window icon for linux builds (@francisdb)
+
 * 11/27/23
-  * Implement [official](https://gitlab.winehq.org/wine/wine/-/merge_requests/4515) oleaut32: VarMod() fixes
-  * Stub PuP methods from 1.5 beta 
+  * Implement official oleaut32: VarMod() fixes
+  * Stub PuP methods from 1.5 beta
 
 * 11/25/23
   * Wine hack to clear result prior to VarMod (fixes StarTrek 1971)

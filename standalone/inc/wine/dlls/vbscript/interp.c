@@ -430,13 +430,11 @@ static HRESULT stack_pop_bool(exec_ctx_t *ctx, BOOL *b)
     else
     {
         V_VT(&v) = VT_EMPTY;
-        hres = VariantChangeType(&v, val.v, VARIANT_LOCALBOOL, VT_BOOL);
+        if (SUCCEEDED(hres = VariantChangeType(&v, val.v, VARIANT_LOCALBOOL, VT_BOOL)))
+            *b = !!V_BOOL(&v);
     }
 
     release_val(&val);
-
-    if (SUCCEEDED(hres))
-        *b = V_BOOL(&v) == VARIANT_TRUE;
 
     return hres;
 }

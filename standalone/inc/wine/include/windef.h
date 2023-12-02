@@ -263,7 +263,6 @@ typedef unsigned int    DWORD,      *PDWORD,   *LPDWORD;
 
 #ifdef __WINESRC__
 #define WINE_NO_UNICODE_MACROS 1
-#define WINE_STRICT_PROTOTYPES 1
 #endif
 
 #ifdef WINE_NO_UNICODE_MACROS
@@ -341,7 +340,7 @@ typedef HICON HCURSOR;
 
 /* Callback function pointers types */
 
-#ifdef WINE_STRICT_PROTOTYPES
+#ifndef WINE_NO_STRICT_PROTOTYPES
 typedef INT_PTR (CALLBACK *FARPROC)(void);
 typedef INT_PTR (CALLBACK *NEARPROC)(void);
 typedef INT_PTR (CALLBACK *PROC)(void);

@@ -2810,6 +2810,8 @@ static HRESULT Global_TypeName(BuiltinDisp *This, VARIANT *arg, unsigned args_cn
         case VT_NULL:
             return return_string(res, L"Null");
         case VT_DISPATCH:
+            if (!V_DISPATCH(arg))
+                return return_string(res, L"Nothing");
             if (SUCCEEDED(IDispatch_GetTypeInfo(V_DISPATCH(arg), 0, GetUserDefaultLCID(), &typeinfo)))
             {
                 hres = ITypeInfo_GetDocumentation(typeinfo, MEMBERID_NIL, &name, NULL, NULL, NULL);
@@ -3637,46 +3639,26 @@ static HRESULT Global_MonthName(BuiltinDisp *This, VARIANT *args, unsigned args_
     return return_bstr(res, ret);
 }
 
-#ifndef __STANDALONE__
-static HRESULT Global_Round(BuiltinDisp *This, VARIANT *arg, unsigned args_cnt, VARIANT *res)
-{
-    double n;
-    HRESULT hres;
-
-    TRACE("%s\n", debugstr_variant(arg));
-
-    if(!res)
-        return S_OK;
-
-    switch(V_VT(arg)) {
-    case VT_I2:
-    case VT_I4:
-    case VT_BOOL:
-        *res = *arg;
-        return S_OK;
-    case VT_R8:
-        n = V_R8(arg);
-        break;
-    default:
-        hres = to_double(arg, &n);
-        if(FAILED(hres))
-            return hres;
-    }
-
-    return return_double(res, round(n));
-}
-#else
 static HRESULT Global_Round(BuiltinDisp *This, VARIANT *args, unsigned args_cnt, VARIANT *res)
 {
     int decimal_places = 0;
-    double n;
-    double n2;
+    double d;
     HRESULT hres;
 
-    TRACE("%s\n", debugstr_variant(args));
+    TRACE("%s %s\n", debugstr_variant(args), args_cnt == 2 ? debugstr_variant(args + 1) : "0");
+
+    assert(args_cnt == 1 || args_cnt == 2);
 
     if(!res)
         return S_OK;
+
+    if(args_cnt == 2) {
+       if (V_VT(args + 1) != VT_ERROR) {
+           hres = to_int(args + 1, &decimal_places);
+           if (FAILED(hres))
+              return hres;
+       }
+    }
 
     switch(V_VT(args)) {
     case VT_I2:
@@ -3685,29 +3667,20 @@ static HRESULT Global_Round(BuiltinDisp *This, VARIANT *args, unsigned args_cnt,
         *res = *args;
         return S_OK;
     case VT_R8:
-        n = V_R8(args);
+        d = V_R8(args);
         break;
     default:
-        hres = to_double(args, &n);
+        hres = to_double(args, &d);
         if(FAILED(hres))
             return hres;
     }
 
-    if (args_cnt > 1) {
-       if (V_VT(args+1) != VT_ERROR) {
-           hres = to_int(args+1, &decimal_places);
-           if (FAILED(hres))
-              return hres;
-       }
-    }
-
-    hres = VarR8Round(n, decimal_places, &n2);
+    hres = VarR8Round(d, decimal_places, &d);
     if(FAILED(hres))
         return hres;
 
-    return return_double(res, n2);
+    return return_double(res, d);
 }
-#endif
 
 static HRESULT Global_Escape(BuiltinDisp *This, VARIANT *arg, unsigned args_cnt, VARIANT *res)
 {
