@@ -42,7 +42,12 @@ jobs:
       matrix:
         config: [ Release ]  
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v3
+        with:
+          path: |
+            standalone/rpi/external
+          key: ${{ matrix.config }}-rpi-aarch64-external-${{ hashFiles('standalone/rpi/external.sh') }}
       - uses: pguyot/arm-runner-action@v2
         id: arm_runner_make
         with:
@@ -50,15 +55,16 @@ jobs:
           image_additional_mb: 4096
           cpu: cortex-a53
           cpu_info: cpuinfo/raspberrypi_zero2_w_arm64
-          copy_repository_path: /opt/vpinball
-          copy_artifact_path: tmp
+          bind_mount_repository: true
           commands: |
             apt-get update -y --allow-releaseinfo-change
             apt-get install --no-install-recommends -y pkg-config cmake bison zlib1g-dev libdrm-dev libgbm-dev libgles2-mesa libgles2-mesa-dev libudev-dev
             perl -i -pe"s/0/${{ needs.version.outputs.revision }}/g" git_version.h
             perl -i -pe"s/unknown/${{ needs.version.outputs.sha7 }}/g" git_version.h
             cd standalone/rpi
-            ./external.sh
+            if [ ! -d "external" ]; then
+               ./external.sh
+            fi
             cd ../..
             cp standalone/cmake/CMakeLists_gl-rpi-aarch64.txt CMakeLists.txt
             cmake -DCMAKE_BUILD_TYPE=${{ matrix.config }} -B build/${{ matrix.config }}
@@ -87,7 +93,12 @@ jobs:
       matrix:
         config: [ Release ]  
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v3
+        with:
+          path: |
+            standalone/rk3588/external
+          key: ${{ matrix.config }}-rk3588-aarch64-external-${{ hashFiles('standalone/rk3588/external.sh') }}
       - uses: pguyot/arm-runner-action@v2
         id: arm_runner_make
         with:
@@ -95,15 +106,16 @@ jobs:
           image_additional_mb: 4096
           cpu: cortex-a53
           cpu_info: cpuinfo/raspberrypi_zero2_w_arm64
-          copy_repository_path: /opt/vpinball
-          copy_artifact_path: tmp
+          bind_mount_repository: true
           commands: |
             apt-get update -y --allow-releaseinfo-change
             apt-get install --no-install-recommends -y pkg-config cmake bison zlib1g-dev libdrm-dev libgbm-dev libgles2-mesa libgles2-mesa-dev libudev-dev
             perl -i -pe"s/0/${{ needs.version.outputs.revision }}/g" git_version.h
             perl -i -pe"s/unknown/${{ needs.version.outputs.sha7 }}/g" git_version.h
             cd standalone/rk3588
-            ./external.sh
+            if [ ! -d "external" ]; then
+               ./external.sh
+            fi
             cd ../..
             cp standalone/cmake/CMakeLists_gl-rk3588-aarch64.txt CMakeLists.txt
             cmake -DCMAKE_BUILD_TYPE=${{ matrix.config }} -B build/${{ matrix.config }}
