@@ -61,6 +61,7 @@ jobs:
             apt-get install --no-install-recommends -y pkg-config cmake bison zlib1g-dev libdrm-dev libgbm-dev libgles2-mesa libgles2-mesa-dev libudev-dev
             perl -i -pe"s/0/${{ needs.version.outputs.revision }}/g" git_version.h
             perl -i -pe"s/unknown/${{ needs.version.outputs.sha7 }}/g" git_version.h
+            NUM_PROCS=$(nproc)
             cd standalone/rpi
             if [ ! -d "external" ]; then
                ./external.sh
@@ -68,7 +69,7 @@ jobs:
             cd ../..
             cp standalone/cmake/CMakeLists_gl-rpi-aarch64.txt CMakeLists.txt
             cmake -DCMAKE_BUILD_TYPE=${{ matrix.config }} -B build/${{ matrix.config }}
-            cmake --build build/${{ matrix.config }}
+            cmake --build build/${{ matrix.config }} -- -j${NUM_PROCS}
             mkdir tmp
             cp build/${{ matrix.config }}/setup.sh tmp
             cp build/${{ matrix.config }}/VPinballX_GL tmp
@@ -112,6 +113,7 @@ jobs:
             apt-get install --no-install-recommends -y pkg-config cmake bison zlib1g-dev libdrm-dev libgbm-dev libgles2-mesa libgles2-mesa-dev libudev-dev
             perl -i -pe"s/0/${{ needs.version.outputs.revision }}/g" git_version.h
             perl -i -pe"s/unknown/${{ needs.version.outputs.sha7 }}/g" git_version.h
+            NUM_PROCS=$(nproc)
             cd standalone/rk3588
             if [ ! -d "external" ]; then
                ./external.sh
@@ -119,7 +121,7 @@ jobs:
             cd ../..
             cp standalone/cmake/CMakeLists_gl-rk3588-aarch64.txt CMakeLists.txt
             cmake -DCMAKE_BUILD_TYPE=${{ matrix.config }} -B build/${{ matrix.config }}
-            cmake --build build/${{ matrix.config }}
+            cmake --build build/${{ matrix.config }} -- -j${NUM_PROCS}
             mkdir tmp
             cp build/${{ matrix.config }}/setup.sh tmp
             cp build/${{ matrix.config }}/VPinballX_GL tmp
