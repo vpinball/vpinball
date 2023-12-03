@@ -7611,7 +7611,7 @@ Texture *PinTable::ImportImage(const string &filename, const string &imagename)
    }
    if (!isUpdate)
    {
-      m_textureMap[ppi->m_szName] = ppi;
+      m_textureMap[imagename.empty() ? ppi->m_szName : imagename] = ppi;
       m_vimage.push_back(ppi);
       if (m_isLiveInstance)
          m_vliveimage.push_back(ppi);
