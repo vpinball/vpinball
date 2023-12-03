@@ -1027,6 +1027,7 @@ void LiveUI::UpdateTweakPage()
       break;
    }
    case TP_Info:
+   case TP_Rules:
       break;
    case TP_PointOfView:
       switch (m_live_table->mViewSetups[m_live_table->m_BG_current_set].mMode)
@@ -1103,10 +1104,10 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
          m_tweakState[activeTweakSetting] = 0;
          if (keyEvent != 1) // Only keydown
             return;
-         if (up)
-            m_activeTweakPage = (TweakPage)((m_activeTweakPage + TP_Count - 1) % TP_Count);
-         else
-            m_activeTweakPage = (TweakPage)((m_activeTweakPage + 1) % TP_Count);
+         int step = up ? TP_Count - 1 : 1;
+         m_activeTweakPage = (TweakPage)((m_activeTweakPage + step) % TP_Count);
+         if (m_activeTweakPage == TP_Rules && m_table->m_szRules.empty())
+            m_activeTweakPage = (TweakPage)((m_activeTweakPage + step) % TP_Count);
          m_activeTweakIndex = 0;
          UpdateTweakPage();
          break;
@@ -1575,7 +1576,12 @@ void LiveUI::UpdateTweakModeUI()
          else switch (setting)
          {
          case BS_Page:
-            CM_ROW(setting, "Option Page:", "%s", m_activeTweakPage == TP_TableOption ? "Table Options" : m_activeTweakPage == TP_PointOfView ? "Point of View" : "Information", "");
+               CM_ROW(setting, "Option Page:", "%s",
+                  m_activeTweakPage == TP_TableOption      ? "Table Options"
+                     : m_activeTweakPage == TP_PointOfView ? "Point of View"
+                     : m_activeTweakPage == TP_Rules       ? "Rules"
+                                                           : "Information",
+                  "");
             CM_SKIP_LINE;
             break;
 
@@ -1642,7 +1648,13 @@ void LiveUI::UpdateTweakModeUI()
       }
    }
 
-   if (m_activeTweakPage == TP_Info)
+   if (m_activeTweakPage == TP_Rules)
+   {
+      ImGui::NewLine();
+      HelpTextCentered(m_table->m_szRules.c_str());
+      ImGui::NewLine();
+   }
+   else if (m_activeTweakPage == TP_Info)
    {
       std::ostringstream info;
       if (!m_table->m_szTableName.empty())
