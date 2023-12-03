@@ -36,7 +36,7 @@ cd tmp
 curl -sL https://downloads.sourceforge.net/project/freeimage/Source%20Distribution/3.18.0/FreeImage3180.zip -o FreeImage3180.zip
 unzip FreeImage3180.zip
 cd FreeImage
-cp ../../freeImage/Makefile.gnu .
+cp ../../freeimage/Makefile.gnu .
 make -f Makefile.gnu -j${NUM_PROCS}
 cp Dist/libfreeimage.a ../../external/lib/libfreeimage.a
 cd ..
