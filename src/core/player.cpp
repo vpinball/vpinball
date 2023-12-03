@@ -1654,13 +1654,18 @@ HRESULT Player::Init()
 
    m_ptable->m_pcv->Start(); // Hook up to events and start cranking script
 
-   // Fire Init event for table object and all 'hitable' parts
+   // Fire Init event for table object and all 'hitable' parts, also fire Animate event of parts having it since initial setup is considered as the initial animation event
    m_ptable->FireVoidEvent(DISPID_GameEvents_Init);
-   for (size_t i = 0; i < m_vhitables.size(); ++i)
+   for (Hitable *const ph : m_vhitables)
    {
-      Hitable *const ph = m_vhitables[i];
       if (ph->GetEventProxyBase())
+      {
          ph->GetEventProxyBase()->FireVoidEvent(DISPID_GameEvents_Init);
+         ItemTypeEnum type = ph->HitableGetItemType();
+         if (type == ItemTypeEnum::eItemBumper || type == ItemTypeEnum::eItemDispReel || type == ItemTypeEnum::eItemFlipper || type == ItemTypeEnum::eItemGate
+            || type == ItemTypeEnum::eItemHitTarget || type == ItemTypeEnum::eItemLight || type == ItemTypeEnum::eItemSpinner || type == ItemTypeEnum::eItemTrigger)
+            ph->GetEventProxyBase()->FireVoidEvent(DISPID_AnimateEvents_Animate);
+      }
    }
    m_ptable->FireKeyEvent(DISPID_GameEvents_OptionEvent, 0 /* custom option init event */); 
 
