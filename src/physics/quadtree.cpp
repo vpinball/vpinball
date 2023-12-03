@@ -48,6 +48,7 @@ void EmbreeBoundsFunc(const struct RTCBoundsFunctionArguments* const args)
 
 void HitQuadtree::Initialize()
 {
+    m_nLevels = 0;
 #ifdef USE_EMBREE
    if (m_scene)
        rtcReleaseScene(m_scene);
@@ -83,11 +84,7 @@ void HitQuadtree::Initialize()
    for (size_t i = 0; i < m_vho.size(); ++i)
       bounds.Extend(m_vho[i]->m_hitBBox);
 
-#ifdef DEBUGPHYSICS
-   g_pplayer->c_quadObjects = (U32)m_vho.size();
-#endif
-
-   CreateNextLevel(bounds, 0, 0);
+   Initialize(bounds);
 #endif
 }
 
@@ -98,15 +95,11 @@ void HitQuadtree::Initialize()
 
 void HitQuadtree::Initialize(const FRect& bounds)
 {
+   m_nLevels = 0;
 #ifdef USE_EMBREE
    m_pvho = &m_vho;
    Initialize();
 #else
-
-#ifdef DEBUGPHYSICS
-   g_pplayer->c_quadObjects = (U32)m_vho.size();
-#endif
-
    CreateNextLevel(bounds, 0, 0);
 #endif
 }
@@ -135,9 +128,7 @@ void HitQuadtree::CreateNextLevel(const FRect& bounds, const unsigned int level,
    if (m_vho.size() <= 4) //!! magic
       return;
 
-#ifdef DEBUGPHYSICS
-   g_pplayer->c_quadNextlevels++;
-#endif
+   m_nLevels++;
 
    m_leaf = false;
 
@@ -451,7 +442,7 @@ void HitQuadtree::HitTestBallSse(const Ball * const pball, CollisionEvent& coll)
             for (size_t i = start, i2 = start*mul; i != end; i += dt, i2 += dt2)
             {
 #ifdef DEBUGPHYSICS
-               g_pplayer->c_tested++; //!! +=4? or is this more fair?
+               g_pplayer->m_physics->c_tested++; //!! +=4? or is this more fair?
 #endif
                // comparisons set bits if bounds miss. if all bits are set, there is no collision. otherwise continue comparisons
                // bits set, there is a bounding box collision
@@ -518,7 +509,7 @@ void HitQuadtree::HitTestBallSse(const Ball * const pball, CollisionEvent& coll)
          if (!current->m_leaf)
          {
 #ifdef DEBUGPHYSICS
-            g_pplayer->c_traversed++;
+            g_pplayer->m_physics->c_traversed++;
 #endif
             const bool left = (pball->m_hitBBox.left <= current->m_vcenter.x);
             const bool right = (pball->m_hitBBox.right >= current->m_vcenter.x);
@@ -556,12 +547,12 @@ void HitQuadtree::HitTestXRay(const Ball * const pball, vector<HitObject*> &pvho
    for (size_t i = 0; i < m_vho.size(); i++)
    {
 #ifdef DEBUGPHYSICS
-      g_pplayer->c_tested++;
+      g_pplayer->m_physics->c_tested++;
 #endif
       if ((pball != m_vho[i]) && fRectIntersect3D(pball->m_hitBBox, m_vho[i]->m_hitBBox) && fRectIntersect3D(pball->m_d.m_pos, rcHitRadiusSqr, m_vho[i]->m_hitBBox))
       {
 #ifdef DEBUGPHYSICS
-         g_pplayer->c_deepTested++;
+         g_pplayer->m_physics->c_deepTested++;
 #endif
          const float newtime = m_vho[i]->HitTest(pball->m_d, coll.m_hittime, coll);
          if (newtime >= 0.f)
@@ -577,7 +568,7 @@ void HitQuadtree::HitTestXRay(const Ball * const pball, vector<HitObject*> &pvho
       const bool right = (pball->m_hitBBox.right >= m_vcenter.x);
 
 #ifdef DEBUGPHYSICS
-      g_pplayer->c_tested++;
+      g_pplayer->m_physics->c_tested++;
 #endif
       if (pball->m_hitBBox.top <= m_vcenter.y) // Top
       {

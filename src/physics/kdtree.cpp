@@ -128,10 +128,7 @@ void HitKD::FillFromVector(vector<HitObject*> &vho)
       m_org_idx[i] = i;
    }
 
-#ifdef DEBUGPHYSICS
-   g_pplayer->c_kDObjects = (U32)vho.size();
-#endif
-
+   m_nLevels = 0;
    m_rootNode.CreateNextLevel(0, 0);
    InitSseArrays();
 }
@@ -150,10 +147,7 @@ void HitKD::FillFromIndices()
       m_rootNode.m_rectbounds.Extend(pho->m_hitBBox);
    }
 
-#ifdef DEBUGPHYSICS
-   g_pplayer->c_kDObjects = m_num_items;
-#endif
-
+   m_nLevels = 0;
    m_rootNode.CreateNextLevel(0, 0);
    InitSseArrays();
 }
@@ -167,10 +161,7 @@ void HitKD::FillFromIndices(const FRect3D& initialBounds)
 
    //!! assume that CalcHitBBox() was already called on the hit objects, NOT THE CASE FOR BALLS THOUGH!
 
-#ifdef DEBUGPHYSICS
-   g_pplayer->c_kDObjects = m_num_items;
-#endif
-
+   m_nLevels = 0;
    m_rootNode.CreateNextLevel(0, 0);
    InitSseArrays();
 }
@@ -224,9 +215,7 @@ void HitKDNode::CreateNextLevel(const unsigned int level, unsigned int level_emp
    m_children[0].m_rectbounds = m_rectbounds;
    m_children[1].m_rectbounds = m_rectbounds;
 
-#ifdef DEBUGPHYSICS
-   g_pplayer->c_kDNextlevels++;
-#endif
+   m_hitoct->m_nLevels++;
 
    const Vertex3Ds vcenter((m_rectbounds.left + m_rectbounds.right)*0.5f, (m_rectbounds.top + m_rectbounds.bottom)*0.5f, (m_rectbounds.zlow + m_rectbounds.zhigh)*0.5f);
    if (axis == 0)
@@ -507,7 +496,7 @@ void HitKDNode::HitTestBallSse(const Ball * const pball, CollisionEvent& coll) c
       for (unsigned int i = start; i != end; i += dt)
       {
 #ifdef DEBUGPHYSICS
-         g_pplayer->c_tested++; //!! +=4? or is this more fair?
+         g_pplayer->m_physics->c_tested++; //!! +=4? or is this more fair?
 #endif
          // comparisons set bits if bounds miss. if all bits are set, there is no collision. otherwise continue comparisons
          // bits set, there is a bounding box collision
@@ -582,7 +571,7 @@ void HitKDNode::HitTestBallSse(const Ball * const pball, CollisionEvent& coll) c
       if (current->m_children) // not a leaf
       {
 #ifdef DEBUGPHYSICS
-         g_pplayer->c_traversed++;
+         g_pplayer->m_physics->c_traversed++;
 #endif
          if (axis == 0)
          {
@@ -624,7 +613,7 @@ void HitKDNode::HitTestXRay(const Ball * const pball, vector<HitObject*> &pvhoHi
    for (unsigned i = m_start; i < m_start + org_items; i++)
    {
 #ifdef DEBUGPHYSICS
-      g_pplayer->c_tested++;
+      g_pplayer->m_physics->c_tested++;
 #endif
       HitObject * const pho = m_hitoct->GetItemAt(i);
       if ((pball != pho) && // ball cannot hit itself
@@ -632,7 +621,7 @@ void HitKDNode::HitTestXRay(const Ball * const pball, vector<HitObject*> &pvhoHi
          fRectIntersect3D(pball->m_d.m_pos, rcHitRadiusSqr, pho->m_hitBBox))
       {
 #ifdef DEBUGPHYSICS
-         g_pplayer->c_deepTested++;
+         g_pplayer->m_physics->c_deepTested++;
 #endif
          const float newtime = pho->HitTest(pball->m_d, coll.m_hittime, coll);
          if (newtime >= 0)
@@ -643,7 +632,7 @@ void HitKDNode::HitTestXRay(const Ball * const pball, vector<HitObject*> &pvhoHi
    if (m_children) // not a leaf
    {
 #ifdef DEBUGPHYSICS
-      g_pplayer->c_traversed++;
+      g_pplayer->m_physics->c_traversed++;
 #endif
       if (axis == 0)
       {
