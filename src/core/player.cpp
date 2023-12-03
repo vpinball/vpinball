@@ -1067,14 +1067,8 @@ HRESULT Player::Init()
    m_pEditorTable->m_progressDialog.SetProgress(30);
    m_pEditorTable->m_progressDialog.SetName("Initializing Physics..."s);
    PLOGI << "Initializing physics"; // For profiling
-
    // Need to set timecur here, for init functions that set timers
-   m_time_msec = 0;
-
-   m_last_frame_time_msec = 0;
-
-   PLOGI << "Initializing Physics"; // For profiling
-
+   m_time_msec = m_last_frame_time_msec = 0;
    m_physics = new PhysicsEngine(m_ptable);
    const float minSlope = (m_ptable->m_overridePhysics ? m_ptable->m_fOverrideMinSlope : m_ptable->m_angletiltMin);
    const float maxSlope = (m_ptable->m_overridePhysics ? m_ptable->m_fOverrideMaxSlope : m_ptable->m_angletiltMax);
@@ -1198,13 +1192,18 @@ HRESULT Player::Init()
 
    m_ptable->m_pcv->Start(); // Hook up to events and start cranking script
 
-   // Fire Init event for table object and all 'hitable' parts
+   // Fire Init event for table object and all 'hitable' parts, also fire Animate event of parts having it since initial setup is considered as the initial animation event
    m_ptable->FireVoidEvent(DISPID_GameEvents_Init);
-   for (size_t i = 0; i < m_vhitables.size(); ++i)
+   for (Hitable *const ph : m_vhitables)
    {
-      Hitable *const ph = m_vhitables[i];
       if (ph->GetEventProxyBase())
+      {
          ph->GetEventProxyBase()->FireVoidEvent(DISPID_GameEvents_Init);
+         ItemTypeEnum type = ph->HitableGetItemType();
+         if (type == ItemTypeEnum::eItemBumper || type == ItemTypeEnum::eItemDispReel || type == ItemTypeEnum::eItemFlipper || type == ItemTypeEnum::eItemGate
+            || type == ItemTypeEnum::eItemHitTarget || type == ItemTypeEnum::eItemLight || type == ItemTypeEnum::eItemSpinner || type == ItemTypeEnum::eItemTrigger)
+            ph->GetEventProxyBase()->FireVoidEvent(DISPID_AnimateEvents_Animate);
+      }
    }
    m_ptable->FireKeyEvent(DISPID_GameEvents_OptionEvent, 0 /* custom option init event */); 
 
