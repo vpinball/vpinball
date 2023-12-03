@@ -9,6 +9,17 @@ PINMAME_SHA=4185c2798eff561ff8d37086b4039bed176ee799
 SERUM_SHA=ea90a5460b47d77e4cf1deacdacddbdb94c25067
 ZEDMD_SHA=499b1c094d49ae9bd988326475c51686b1415186
 
+NUM_PROCS=$(nproc)
+
+echo "Building external libraries..."
+echo "  SDL2_VERSION: ${SDL2_VERSION}"
+echo "  SDL2_IMAGE_VERSION: ${SDL2_IMAGE_VERSION}"
+echo "  PINMAME_SHA: ${PINMAME_SHA}"
+echo "  SERUM_SHA: ${SERUM_SHA}"
+echo "  ZEDMD_SHA: ${ZEDMD_SHA}"
+echo "  NUM_PROCS: ${NUM_PROCS}"
+echo ""
+
 rm -rf external
 mkdir external
 mkdir external/include
@@ -25,8 +36,8 @@ cd tmp
 curl -sL https://downloads.sourceforge.net/project/freeimage/Source%20Distribution/3.18.0/FreeImage3180.zip -o FreeImage3180.zip
 unzip FreeImage3180.zip
 cd FreeImage
-cp ../../FreeImage/Makefile.gnu .
-make -f Makefile.gnu
+cp ../../freeImage/Makefile.gnu .
+make -f Makefile.gnu -j${NUM_PROCS}
 cp Dist/libfreeimage.a ../../external/lib/libfreeimage.a
 cd ..
 
@@ -53,7 +64,7 @@ cmake -DSDL_SHARED=ON \
 	-DSDL_KMSDRM=ON \
 	-DCMAKE_BUILD_TYPE=Release \
 	-B build
-cmake --build build
+cmake --build build -- -j${NUM_PROCS}
 cp build/libSDL2-2.0.so.0 ../../external/lib
 cd ..
 
@@ -71,7 +82,7 @@ cmake -DBUILD_SHARED_LIBS=ON \
 	-DSDL2_LIBRARY=$(pwd)/../SDL2-${SDL2_VERSION}/build/libSDL2-2.0.so \
 	-DCMAKE_BUILD_TYPE=Release \
 	-B build
-cmake --build build
+cmake --build build -- -j${NUM_PROCS}
 cp build/libSDL2_image-2.0.so.0 ../../external/lib
 cd ..
 
@@ -85,7 +96,7 @@ cd pinmame-$PINMAME_SHA
 cp src/libpinmame/libpinmame.h ../../external/include
 cp cmake/libpinmame/CMakeLists_linux-x64.txt CMakeLists.txt
 cmake -DCMAKE_BUILD_TYPE=Release -B build
-cmake --build build
+cmake --build build -- -j${NUM_PROCS}
 cp build/libpinmame.so.3.6 ../../external/lib
 cd ..
 
@@ -98,7 +109,7 @@ unzip libserum.zip
 cd libserum-$SERUM_SHA
 cp src/serum-decode.h ../../external/include
 cmake -DCMAKE_BUILD_TYPE=Release -B build
-cmake --build build
+cmake --build build -- -j${NUM_PROCS}
 cp build/libserum64.so.1.6.1 ../../external/lib
 cd ..
 
@@ -111,6 +122,6 @@ unzip libzedmd.zip
 cd libzedmd-$ZEDMD_SHA
 cp src/ZeDMD.h ../../external/include
 cmake -DCMAKE_BUILD_TYPE=Release -B build
-cmake --build build
+cmake --build build -- -j${NUM_PROCS}
 cp build/libzedmd64.so.0.1.0 ../../external/lib
 cd ..
