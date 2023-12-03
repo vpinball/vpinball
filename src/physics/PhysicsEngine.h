@@ -106,6 +106,7 @@ private:
    U64 m_count; // Number of frames included in the total variant of the counters
 
 #ifdef DEBUGPHYSICS
+public:
    U32 c_hitcnts;
    U32 c_collisioncnt;
    U32 c_contactcnt;
@@ -114,11 +115,6 @@ private:
    #endif
    U32 c_embedcnts;
    U32 c_timesearch;
-
-   U32 c_kDObjects;
-   U32 c_kDNextlevels;
-   U32 c_quadObjects;
-   U32 c_quadNextlevels;
 
    U32 c_traversed;
    U32 c_tested;

@@ -59,6 +59,9 @@ public:
    // call when finalizing a tree (no dynamic changes planned on it)
    void Finalize();
 
+   unsigned int GetObjectCount() const { return m_num_items; }
+   unsigned int GetNLevels() const { return m_nLevels; };
+
    void HitTestBall(const Ball * const pball, CollisionEvent& coll) const
    {
 #ifdef KDTREE_SSE_LEAFTEST
@@ -101,4 +104,6 @@ private:
    unsigned m_num_nodes;
 
    friend class HitKDNode;
+
+   unsigned int m_nLevels = 0;
 };

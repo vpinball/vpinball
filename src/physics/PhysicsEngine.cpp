@@ -62,7 +62,7 @@ PhysicsEngine::PhysicsEngine(PinTable *const table) : m_nudgeFilterX("x"), m_nud
             CHAR wzDst[256];
             sprintf_s(wzDst, sizeof(wzDst), "Initializing Object-Physics %s...", bstr2);
             delete [] bstr2;
-            m_pEditorTable->m_progressDialog.SetName(wzDst);
+            g_pplayer->m_pEditorTable->m_progressDialog.SetName(wzDst);
          }
 #endif
          const size_t currentsize = m_vho.size();
@@ -110,9 +110,6 @@ PhysicsEngine::PhysicsEngine(PinTable *const table) : m_nudgeFilterX("x"), m_nud
    #endif
    c_embedcnts = 0;
    c_timesearch = 0;
-
-   c_kDNextlevels = 0;
-   c_quadNextlevels = 0;
 
    c_traversed = 0;
    c_tested = 0;
@@ -468,9 +465,6 @@ void PhysicsEngine::OnPrepareFrame()
    #endif
    c_embedcnts = 0;
    c_timesearch = 0;
-
-   c_kDNextlevels = 0;
-   //c_quadNextlevels = 0; // not updated per frame so keep!
 
    c_traversed = 0;
    c_tested = 0;
@@ -924,8 +918,9 @@ string PhysicsEngine::GetPerfInfo(bool resetMax)
    info << " Static:" << c_staticcnt;
 #endif
    info << " Embed:" << c_embedcnts << " TimeSearch:" << c_timesearch << "\n";
-   info << "kDObjects:" << c_kDObjects << " kD:" << c_kDNextlevels << " QuadObjects:" << c_quadObjects << " Quadtree:" << c_quadNextlevels << " Traversed:" << c_traversed
-        << " Tested:" << c_tested << " DeepTested:" << c_deepTested << "\n";
+   info << "kDObjects:" << m_hitoctree_dynamic.GetObjectCount() << " kD:" << m_hitoctree_dynamic.GetNLevels()
+        << " QuadObjects:" << m_hitoctree.GetObjectCount() << " Quadtree:" << m_hitoctree.GetNLevels()
+        << " Traversed:" << c_traversed << " Tested:" << c_tested << " DeepTested:" << c_deepTested << "\n";
    info << std::setprecision(1);
 #endif
 

@@ -29,6 +29,9 @@ public:
    void AddElement(HitObject *pho) { m_vho.push_back(pho); }
    void Initialize(const FRect& bounds); // FRect3D for an octree
 
+   unsigned int GetObjectCount() const { return (unsigned int) m_vho.size(); }
+   unsigned int GetNLevels() const { return m_nLevels; };
+
 #ifdef USE_EMBREE
    void FillFromVector(vector<HitObject*>& vho);
    void Update();
@@ -41,8 +44,8 @@ public:
 #endif
    void HitTestXRay(const Ball * const pball, vector<HitObject*> &pvhoHit, CollisionEvent& coll) const;
 
-private:
 
+private:
    void Initialize();
 
 #ifndef USE_EMBREE
@@ -91,4 +94,6 @@ public:
 #endif
    }
 #endif
+
+   unsigned int m_nLevels = 0;
 };
