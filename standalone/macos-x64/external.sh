@@ -57,16 +57,15 @@ curl -sL https://github.com/libsdl-org/SDL/releases/download/release-${SDL2_VERS
 unzip SDL2-${SDL2_VERSION}.zip
 cp -r SDL2-${SDL2_VERSION}/include ../external/include/SDL2
 cd SDL2-${SDL2_VERSION}
-cmake -DSDL_SHARED=OFF \
-	-DSDL_STATIC=ON \
-	-DSDL_STATIC_PIC=ON \
+cmake -DSDL_SHARED=ON \
+	-DSDL_STATIC=OFF \
 	-DSDL_TEST=OFF \
 	-DCMAKE_OSX_ARCHITECTURES=x86_64 \
 	-DCMAKE_OSX_DEPLOYMENT_TARGET=13.0 \
 	-DCMAKE_BUILD_TYPE=Release \
 	-B build
 cmake --build build -- -j${NUM_PROCS}
-cp build/libSDL2.a ../../external/lib
+cp build/libSDL2-2.0.0.dylib ../../external/lib
 cd ..
 
 #
@@ -77,16 +76,17 @@ curl -sL https://github.com/libsdl-org/SDL_image/releases/download/release-${SDL
 unzip SDL2_image-${SDL2_IMAGE_VERSION}.zip
 cp -r SDL2_image-${SDL2_IMAGE_VERSION}/SDL_image.h ../external/include/SDL2
 cd SDL2_image-${SDL2_IMAGE_VERSION}
-cmake -DBUILD_SHARED_LIBS=OFF \
+touch cmake/FindSDL2.cmake # force cmake to use the SDL2 we just built
+cmake -DBUILD_SHARED_LIBS=ON \
 	-DSDL2IMAGE_SAMPLES=OFF \
 	-DSDL2_INCLUDE_DIR=$(pwd)/../SDL2-${SDL2_VERSION}/include \
-	-DSDL2_LIBRARY=$(pwd)/../SDL2-${SDL2_VERSION}/build/libSDL2.a \
+	-DSDL2_LIBRARY=$(pwd)/../SDL2-${SDL2_VERSION}/build/libSDL2-2.0.0.dylib \
 	-DCMAKE_OSX_ARCHITECTURES=x86_64 \
 	-DCMAKE_OSX_DEPLOYMENT_TARGET=13.0 \
 	-DCMAKE_BUILD_TYPE=Release \
 	-B build
 cmake --build build -- -j${NUM_PROCS}
-cp build/libSDL2_image.a ../../external/lib
+cp build/libSDL2_image-2.0.3.0.0.dylib ../../external/lib
 cd ..
 
 #
@@ -98,9 +98,9 @@ unzip pinmame.zip
 cd pinmame-$PINMAME_SHA
 cp src/libpinmame/libpinmame.h ../../external/include
 cp cmake/libpinmame/CMakeLists_osx-x64.txt CMakeLists.txt
-cmake -DCMAKE_OSX_DEPLOYMENT_TARGET=13.0 -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED=OFF -B build
+cmake -DCMAKE_OSX_DEPLOYMENT_TARGET=13.0 -DCMAKE_BUILD_TYPE=Release -DBUILD_STATIC=OFF -B build
 cmake --build build -- -j${NUM_PROCS}
-cp build/libpinmame.a ../../external/lib
+cp build/libpinmame.3.6.dylib ../../external/lib
 cd ..
 
 #
@@ -113,7 +113,7 @@ cd libserum-$SERUM_SHA
 cp src/serum-decode.h ../../external/include
 cmake -DCMAKE_OSX_DEPLOYMENT_TARGET=13.0 -DCMAKE_BUILD_TYPE=Release -DUSE_OSXINTEL=ON -B build
 cmake --build build -- -j${NUM_PROCS}
-cp build/libserum.a ../../external/lib
+cp build/libserum.1.6.1.dylib ../../external/lib
 cd ..
 
 #
@@ -126,5 +126,5 @@ cd libzedmd-$ZEDMD_SHA
 cp src/ZeDMD.h ../../external/include
 cmake -DCMAKE_OSX_DEPLOYMENT_TARGET=13.0 -DCMAKE_BUILD_TYPE=Release -DUSE_OSXINTEL=ON -B build
 cmake --build build -- -j${NUM_PROCS}
-cp build/libzedmd.a ../../external/lib
+cp build/libzedmd.0.1.0.dylib ../../external/lib
 cd ..
