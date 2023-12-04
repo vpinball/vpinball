@@ -353,7 +353,7 @@ void ExtCaptureManager::UpdateThread()
                   }
             }
 
-            // Upload data to target (system) textures, they will be uploaded back to the GPU by the texture manager (this is a fairly unefficient implementation)
+            // Upload data to target (system) textures, they will be uploaded back to the GPU by the texture manager (this is a fairly inefficient implementation)
             for (Capture* capture : m_captures)
             {
                if (capture->m_duplication == duplication && capture->m_state == CS_Capturing && capture->m_dirty)
