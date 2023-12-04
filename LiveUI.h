@@ -55,7 +55,7 @@ private:
    TweakPage m_activeTweakPage = TP_PointOfView;
    U32 m_lastTweakKeyDown = 0;
    int m_activeTweakIndex = 0;
-   int m_tweakState[BS_Custom + 100]; // 0 = unmodified, 1 = modified, 2 = reseted
+   int m_tweakState[BS_Custom + 100]; // 0 = unmodified, 1 = modified, 2 = resetted
    vector<BackdropSetting> m_tweakPageOptions;
    bool m_tweakMode = false;
    void UpdateTweakPage();

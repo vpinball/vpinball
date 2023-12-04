@@ -310,7 +310,7 @@ bool RenderPass::Execute(const bool log)
       }
       ss << ']';
       if (m_areaOfInterest.x != FLT_MAX)
-         ss << ", scissor=(" << m_areaOfInterest.x << ", " << m_areaOfInterest.y << ", " << m_areaOfInterest.z << ", " << m_areaOfInterest.w << ")";
+         ss << ", scissor=(" << m_areaOfInterest.x << ", " << m_areaOfInterest.y << ", " << m_areaOfInterest.z << ", " << m_areaOfInterest.w << ')';
       PLOGI << ss.str();
    }
 

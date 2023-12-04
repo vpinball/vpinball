@@ -178,7 +178,7 @@ public:
       {
          count++;
          pos = (pos + N_SAMPLES - 1) % N_SAMPLES;
-         unsigned int period = m_profileData[pos][PROFILE_INPUT_POLL_PERIOD];
+         const unsigned int period = m_profileData[pos][PROFILE_INPUT_POLL_PERIOD];
          sum += period;
          if (isMax)
             latency = max(latency, period);

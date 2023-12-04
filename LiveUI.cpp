@@ -666,7 +666,7 @@ static void HelpEditableHeader(bool is_live, IEditable *editable, IEditable *liv
    }
    HelpTextCentered(title);
    ImGui::BeginDisabled(is_live); // Do not edit name of live objects, it would likely break the script
-   string name = select_editable ? select_editable->GetName() : ""s;
+   string name = select_editable ? select_editable->GetName() : string();
    if (ImGui::InputText("Name", &name))
    {
       editable->SetName(name);
@@ -2497,7 +2497,7 @@ void LiveUI::UpdateOutlinerUI()
                sort(keys.begin(), keys.end());
                for (auto &it : keys)
                {
-                  if (it == ""s) // Skip editables without a layer (like live implicit playfield,...)
+                  if (it.empty()) // Skip editables without a layer (like live implicit playfield,...)
                      continue;
                   if (ImGui::TreeNode(it.c_str()))
                   {

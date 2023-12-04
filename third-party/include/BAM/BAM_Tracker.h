@@ -181,7 +181,7 @@ namespace BAM_Tracker {
 		/// Get current time (synchronized with BAM Tracker if BT is present).
 		/// </summary>
 		/// <returns>Current time in milliseconds.</returns>
-		double GetTime(void) const
+		double GetTime() const
 		{
 			LARGE_INTEGER stop;
 			QueryPerformanceCounter(&stop);

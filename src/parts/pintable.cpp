@@ -1546,7 +1546,7 @@ PinTable::PinTable()
    m_tblAutoStart = m_settings.LoadValueWithDefault(Settings::Player, "Autostart"s, 0) * 10;
    m_tblAutoStartRetry = m_settings.LoadValueWithDefault(Settings::Player, "AutostartRetry"s, 0) * 10;
    m_tblAutoStartEnabled = m_settings.LoadValueWithDefault(Settings::Player, "asenable"s, false);
-   m_tblVolmod = (float)m_settings.LoadValueWithDefault(Settings::Player, "Volmod"s, 1000) * (float)(1.0 / 1000.0);
+   m_tblVolmod = (float)m_settings.LoadValueWithDefault(Settings::Player, "Volmod"s, 1000) * (float)(1.0/1000.0);
    m_tblExitConfirm = m_settings.LoadValueWithDefault(Settings::Player, "Exitconfirm"s, 120) * 1000 / 60; // this is supposed to be seconds, but is seconds*60  :/
 
    m_global3DZPD = m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DZPD"s, 0.5f);
@@ -8162,21 +8162,21 @@ bool PinTable::AuditTable() const
    unsigned long totalSize = 0, totalGpuSize = 0;
    for (auto sound : m_vsound)
    {
-      //ss << "  . Sound: '" << sound->m_szName << "', size: " << (sound->m_cdata / 1024) << "ko\n";
+      //ss << "  . Sound: '" << sound->m_szName << "', size: " << (sound->m_cdata / 1024) << "KiB\n";
       totalSize += sound->m_cdata;
    }
-   ss << ". Total sound size: " <<  (totalSize / (1024 * 1024)) << "Mo\n";
+   ss << ". Total sound size: " <<  (totalSize / (1024 * 1024)) << "MiB\n";
 
    totalSize = 0;
    for (auto image : m_vimage)
    {
       unsigned int imageSize = image->m_ppb != nullptr ? image->m_ppb->m_cdata : image->m_pdsBuffer->height() * image->m_pdsBuffer->pitch();
       unsigned int gpuSize = image->m_pdsBuffer->height() * image->m_pdsBuffer->pitch();
-      //ss << "  . Image: '" << image->m_szName << "', size: " << (imageSize / 1024) << "ko, GPU mem size: " << (gpuSize / 1024) << "ko\n";
+      //ss << "  . Image: '" << image->m_szName << "', size: " << (imageSize / 1024) << "KiB, GPU mem size: " << (gpuSize / 1024) << "KiB\n";
       totalSize += imageSize;
       totalGpuSize += gpuSize;
    }
-   ss << ". Total image size stored in VPX file: " << (totalSize / (1024 * 1024)) << "Mo, in GPU memoryw when played: " << (totalGpuSize / (1024 * 1024)) << "Mo\n";
+   ss << ". Total image size stored in VPX file: " << (totalSize / (1024 * 1024)) << "MiB, in GPU memory when played: " << (totalGpuSize / (1024 * 1024)) << "MiB\n";
 
    PLOGI << "Table audit:\n" << ss.str();
 

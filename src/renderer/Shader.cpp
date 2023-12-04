@@ -181,7 +181,7 @@ string Shader::GetTechniqueName(ShaderTechniques technique)
 }
 
 
-#define SHADER_UNIFORM(type, name, count) { type, #name, count, ""s, SA_UNDEFINED, SA_UNDEFINED, SF_UNDEFINED }
+#define SHADER_UNIFORM(type, name, count) { type, #name, count, string(), SA_UNDEFINED, SA_UNDEFINED, SF_UNDEFINED }
 #define SHADER_SAMPLER(name, tex_name, default_clampu, default_clampv, default_filter) { SUT_Sampler, #name, 1, #tex_name, default_clampu, default_clampv, default_filter }
 Shader::ShaderUniform Shader::shaderUniformNames[SHADER_UNIFORM_COUNT] {
    // Shared uniforms
@@ -359,7 +359,7 @@ Shader::Shader(RenderDevice* renderDevice, const std::string& src1, const std::s
       shaderUniformNames[SHADER_ballMatrixBlock].count = 4 * 16 * 4;
    }
    #endif
-   
+
    m_technique = SHADER_TECHNIQUE_INVALID;
    #ifdef ENABLE_SDL // OpenGL
    memset(m_techniques, 0, sizeof(ShaderTechnique*) * SHADER_TECHNIQUE_COUNT);
@@ -369,12 +369,12 @@ Shader::Shader(RenderDevice* renderDevice, const std::string& src1, const std::s
 
 #ifndef __STANDALONE__
    Load(src1, code, codeSize);
-   if (src2 != ""s) // Additional source file used by OpenGL (TODO we should rmeove this and merge at the shader file level)
+   if (!src2.empty()) // Additional source file used by OpenGL (TODO we should rmeove this and merge at the shader file level)
       Load(src2, nullptr, 0);
 #else
    if (!Load(src1, code, codeSize))
       exit(-1);
-   if (src2 != ""s) // Additional source file used by OpenGL (TODO we should rmeove this and merge at the shader file level)
+   if (!src2.empty()) // Additional source file used by OpenGL (TODO we should rmeove this and merge at the shader file level)
       if (!Load(src2, nullptr, 0))
          exit(-1);
 #endif
@@ -1019,8 +1019,8 @@ bool Shader::parseFile(const string& fileNameRoot, const string& fileName, int l
          if (line.compare(0, 4, "////") == 0) {
             string newMode = line.substr(4, line.length() - 4);
             if (newMode == "DEFINES") {
-               currentElement.append("#define GLSL\n");
-               currentElement.append("\n");
+               currentElement.append("#define GLSL\n"s);
+               currentElement.append("\n"s);
                if (UseGeometryShader())
                   currentElement.append("#define USE_GEOMETRY_SHADER 1\n"s);
                else
@@ -1057,7 +1057,7 @@ bool Shader::parseFile(const string& fileNameRoot, const string& fileName, int l
             currentElement = values[currentMode];
          }
          else {
-            currentElement.append(line).append("\n");
+            currentElement.append(line).append("\n"s);
          }
       }
       values[currentMode] = currentElement;
@@ -1370,7 +1370,7 @@ string Shader::analyzeFunction(const string& shaderCodeName, const string& _tech
       string param;
       int paramID = 0;
       while (std::getline(params, param, ',')) {
-         string token = "%PARAM" + std::to_string(paramID) + "%";
+         string token = "%PARAM" + std::to_string(paramID) + '%';
          std::size_t pos = 0;
          while ((pos = functionCode.find(token, pos)) != string::npos) {
             functionCode.replace(pos, token.length(), param);
@@ -1399,14 +1399,14 @@ string Shader::preprocessGLShader(const string& shaderCode) {
          header += "#version 410\n";
          header += "#define SHADER_GL410\n";
 #else
-         header += line + "\n";
+         header += line + '\n';
 #endif
          header += "#define SHADER_STANDALONE\n";
       }
       else if (line.compare(0, 11, "#extension ") == 0)
-         extensions += line + "\n";
+         extensions += line + '\n';
       else
-         code += line + "\n";
+         code += line + '\n';
    }
 
    return header + extensions + code;
@@ -1472,8 +1472,8 @@ bool Shader::Load(const std::string& name, const BYTE* code, unsigned int codeSi
             {
                //PLOGI << "Compiling technique: " << shaderTechniqueNames[technique];
                string vertexShaderCode = vertex;
-               vertexShaderCode.append("\n//").append(_technique).append("\n//").append(element[2]).append("\n");
-               vertexShaderCode.append(analyzeFunction(m_shaderCodeName, _technique, element[2], values)).append("\0");
+               vertexShaderCode.append("\n//"s).append(_technique).append("\n//"s).append(element[2]).append("\n"s);
+               vertexShaderCode.append(analyzeFunction(m_shaderCodeName, _technique, element[2], values)).append("\0"s);
 #ifdef __STANDALONE__
                vertexShaderCode = preprocessGLShader(vertexShaderCode);
 #endif
@@ -1481,19 +1481,19 @@ bool Shader::Load(const std::string& name, const BYTE* code, unsigned int codeSi
                if (elem == 5 && element[3].length() > 0)
                {
                   geometryShaderCode = geometry;
-                  geometryShaderCode.append("\n//").append(_technique).append("\n//").append(element[3]).append("\n");
-                  geometryShaderCode.append(analyzeFunction(m_shaderCodeName, _technique, element[3], values)).append("\0");
+                  geometryShaderCode.append("\n//").append(_technique).append("\n//").append(element[3]).append("\n"s);
+                  geometryShaderCode.append(analyzeFunction(m_shaderCodeName, _technique, element[3], values)).append("\0"s);
                }
 #ifdef __STANDALONE__
                geometryShaderCode = preprocessGLShader(geometryShaderCode);
 #endif
                string fragmentShaderCode = fragment;
-               fragmentShaderCode.append("\n//").append(_technique).append("\n//").append(element[elem - 1]).append("\n");
-               fragmentShaderCode.append(analyzeFunction(m_shaderCodeName, _technique, element[elem - 1], values)).append("\0");
+               fragmentShaderCode.append("\n//").append(_technique).append("\n//").append(element[elem - 1]).append("\n"s);
+               fragmentShaderCode.append(analyzeFunction(m_shaderCodeName, _technique, element[elem - 1], values)).append("\0"s);
 #ifdef __STANDALONE__
                fragmentShaderCode = preprocessGLShader(fragmentShaderCode);
 #endif
-               ShaderTechnique* build = compileGLShader(technique, m_shaderCodeName, element[0] /*.append("_").append(element[1])*/, vertexShaderCode, geometryShaderCode, fragmentShaderCode);
+               ShaderTechnique* build = compileGLShader(technique, m_shaderCodeName, element[0] /*.append("_"s).append(element[1])*/, vertexShaderCode, geometryShaderCode, fragmentShaderCode);
                if (build != nullptr)
                {
                   m_techniques[technique] = build;

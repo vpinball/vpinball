@@ -137,7 +137,7 @@
     <IntDir>$(SolutionDir).build\obj\$(Configuration)-$(Platform)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_GL|Win32'">
-    <ExecutablePath>C:\Tools\squishcoco\visualstudio;$(DXSDK_DIR)Utilities\Bin\x86;$(ExecutablePath)</ExecutablePath>
+    <ExecutablePath>$(DXSDK_DIR)Utilities\Bin\x86;$(ExecutablePath)</ExecutablePath>
     <TargetName>VPinballX_GL</TargetName>
     <TargetExt>.exe</TargetExt>
     <LinkIncremental>false</LinkIncremental>
@@ -145,7 +145,7 @@
     <IntDir>$(SolutionDir).build\obj\$(Configuration)-$(Platform)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <ExecutablePath>C:\Tools\squishcoco\visualstudio;$(DXSDK_DIR)Utilities\Bin\x64;$(ExecutablePath)</ExecutablePath>
+    <ExecutablePath>$(DXSDK_DIR)Utilities\Bin\x64;$(ExecutablePath)</ExecutablePath>
     <TargetName>VPinballX</TargetName>
     <TargetExt>.exe</TargetExt>
     <LinkIncremental>false</LinkIncremental>
@@ -153,7 +153,7 @@
     <IntDir>$(SolutionDir).build\obj\$(Configuration)-$(Platform)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_GL|x64'">
-    <ExecutablePath>C:\Tools\squishcoco\visualstudio;$(DXSDK_DIR)Utilities\Bin\x64;$(ExecutablePath)</ExecutablePath>
+    <ExecutablePath>$(DXSDK_DIR)Utilities\Bin\x64;$(ExecutablePath)</ExecutablePath>
     <TargetName>VPinballX_GL64</TargetName>
     <TargetExt>.exe</TargetExt>
     <LinkIncremental>false</LinkIncremental>

@@ -392,8 +392,8 @@ vector<string> find_files_by_extension(const string& srcPath, const string& exte
 
 string extension_from_path(const string& path)
 {
-   string ext = "";
-   size_t pos = path.find_last_of(".");
+   string ext;
+   size_t pos = path.find_last_of('.');
    if (pos != string::npos) {
       ext = path.substr(pos + 1);
       std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
@@ -477,7 +477,7 @@ string trim_string(const string& str)
       s = s.substr(str.find_first_not_of(" \t\r\n"), s.find_last_not_of(" \t\r\n") - s.find_first_not_of(" \t\r\n") + 1);
    }
    catch (...) {
-      s = "";
+      s.clear();
    }
    return s;
 }
@@ -514,7 +514,7 @@ string create_hex_dump(const UINT8* buffer, size_t size)
 
    for (size_t i = 0; i < size; i += bytesPerLine) {
       for (size_t j = i; j < i + bytesPerLine && j < size; ++j)
-         ss << std::setw(2) << std::setfill('0') << std::hex << static_cast<int>(buffer[j]) << " ";
+         ss << std::setw(2) << std::setfill('0') << std::hex << static_cast<int>(buffer[j]) << ' ';
 
       for (size_t j = i; j < i + bytesPerLine && j < size; ++j) {
          char ch = buffer[j];

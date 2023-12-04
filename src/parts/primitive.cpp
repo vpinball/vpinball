@@ -1476,8 +1476,8 @@ void Primitive::Render(const unsigned int renderMask)
          if (refractions)
          {
             refraction_probe->ExtendAreaOfInterest(xMin, xMax, yMin, yMax);
-            const vec4 color = convertColor(mat->m_cRefractionTint, m_d.m_refractionThickness);
-            m_rd->basicShader->SetVector(SHADER_refractionTint_thickness, &color);
+            const vec4 colorR = convertColor(mat->m_cRefractionTint, m_d.m_refractionThickness);
+            m_rd->basicShader->SetVector(SHADER_refractionTint_thickness, &colorR);
             m_rd->basicShader->SetTexture(SHADER_tex_refraction, refractions->GetColorSampler());
             m_rd->basicShader->SetTexture(SHADER_tex_probe_depth, refractions->GetDepthSampler());
             m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
