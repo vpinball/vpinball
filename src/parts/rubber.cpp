@@ -1134,7 +1134,7 @@ STDMETHODIMP Rubber::put_Collidable(VARIANT_BOOL newVal)
    return S_OK;
 }
 
-STDMETHODIMP Rubber::get_Visible(VARIANT_BOOL *pVal) //temporary value of object
+STDMETHODIMP Rubber::get_Visible(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_visible);
 

@@ -783,171 +783,205 @@ void TimerProperty::UpdateProperties(const int dispid)
             case eItemSurface:
             {
                 Surface * const wall = (Surface *)el;
-                wall->m_d.m_tdr.m_TimerInterval = PropertyDialog::GetIntTextbox(m_timerIntervalEdit);
+                if (dispid == DISPID_Timer_Interval)
+                   CHECK_UPDATE_ITEM(wall->m_d.m_tdr.m_TimerInterval, PropertyDialog::GetIntTextbox(m_timerIntervalEdit), wall);
 
                 /*TODO: uservalue is missing due to VARIANT handling*/
 
-                wall->m_d.m_tdr.m_TimerEnabled = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), DISPID_Timer_Enabled));
+                if (dispid == DISPID_Timer_Enabled)
+                   CHECK_UPDATE_ITEM(wall->m_d.m_tdr.m_TimerEnabled, PropertyDialog::GetCheckboxState(GetDlgItem(DISPID_Timer_Enabled).GetHwnd()), wall);
                 break;
             }
             case eItemLight:
             {
                 Light * const light = (Light *)el;
-                light->m_d.m_tdr.m_TimerInterval = PropertyDialog::GetIntTextbox(m_timerIntervalEdit);
+                if (dispid == DISPID_Timer_Interval)
+                   CHECK_UPDATE_ITEM(light->m_d.m_tdr.m_TimerInterval, PropertyDialog::GetIntTextbox(m_timerIntervalEdit), light);
 
                 /*TODO: uservalue is missing due to VARIANT handling*/
 
-                light->m_d.m_tdr.m_TimerEnabled = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), DISPID_Timer_Enabled));
+                if (dispid == DISPID_Timer_Enabled)
+                   CHECK_UPDATE_ITEM(light->m_d.m_tdr.m_TimerEnabled, PropertyDialog::GetCheckboxState(GetDlgItem(DISPID_Timer_Enabled).GetHwnd()), light);
                 break;
             }
             case eItemFlasher:
             {
                 Flasher * const flash = (Flasher *)el;
-                flash->m_d.m_tdr.m_TimerInterval = PropertyDialog::GetIntTextbox(m_timerIntervalEdit);
+                if (dispid == DISPID_Timer_Interval)
+                   CHECK_UPDATE_ITEM(flash->m_d.m_tdr.m_TimerInterval, PropertyDialog::GetIntTextbox(m_timerIntervalEdit), flash);
 
                 /*TODO: uservalue is missing due to VARIANT handling*/
 
-                flash->m_d.m_tdr.m_TimerEnabled = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), DISPID_Timer_Enabled));
+                if (dispid == DISPID_Timer_Enabled)
+                   CHECK_UPDATE_ITEM(flash->m_d.m_tdr.m_TimerEnabled, PropertyDialog::GetCheckboxState(GetDlgItem(DISPID_Timer_Enabled).GetHwnd()), flash);
                 break;
             }
             case eItemRubber:
             {
                 Rubber * const rubber = (Rubber *)el;
-                rubber->m_d.m_tdr.m_TimerInterval = PropertyDialog::GetIntTextbox(m_timerIntervalEdit);
+                if (dispid == DISPID_Timer_Interval)
+                   CHECK_UPDATE_ITEM(rubber->m_d.m_tdr.m_TimerInterval, PropertyDialog::GetIntTextbox(m_timerIntervalEdit), rubber);
 
                 /*TODO: uservalue is missing due to VARIANT handling*/
 
-                rubber->m_d.m_tdr.m_TimerEnabled = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), DISPID_Timer_Enabled));
+                if (dispid == DISPID_Timer_Enabled)
+                   CHECK_UPDATE_ITEM(rubber->m_d.m_tdr.m_TimerEnabled, PropertyDialog::GetCheckboxState(GetDlgItem(DISPID_Timer_Enabled).GetHwnd()), rubber);
                 break;
             }
             case eItemBumper:
             {
                 Bumper * const bumper = (Bumper *)el;
-                bumper->m_d.m_tdr.m_TimerInterval = PropertyDialog::GetIntTextbox(m_timerIntervalEdit);
+                if (dispid == DISPID_Timer_Interval)
+                   CHECK_UPDATE_ITEM(bumper->m_d.m_tdr.m_TimerInterval, PropertyDialog::GetIntTextbox(m_timerIntervalEdit), bumper);
 
                 /*TODO: uservalue is missing due to VARIANT handling*/
 
-                bumper->m_d.m_tdr.m_TimerEnabled = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), DISPID_Timer_Enabled));
+                if (dispid == DISPID_Timer_Enabled)
+                   CHECK_UPDATE_ITEM(bumper->m_d.m_tdr.m_TimerEnabled, PropertyDialog::GetCheckboxState(GetDlgItem(DISPID_Timer_Enabled).GetHwnd()), bumper);
                 break;
             }
             case eItemPlunger:
             {
                 Plunger * const plunger = (Plunger *)el;
-                plunger->m_d.m_tdr.m_TimerInterval = PropertyDialog::GetIntTextbox(m_timerIntervalEdit);
+                if (dispid == DISPID_Timer_Interval)
+                   CHECK_UPDATE_ITEM(plunger->m_d.m_tdr.m_TimerInterval, PropertyDialog::GetIntTextbox(m_timerIntervalEdit), plunger);
 
                 /*TODO: uservalue is missing due to VARIANT handling*/
 
-                plunger->m_d.m_tdr.m_TimerEnabled = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), DISPID_Timer_Enabled));
+                if (dispid == DISPID_Timer_Enabled)
+                   CHECK_UPDATE_ITEM(plunger->m_d.m_tdr.m_TimerEnabled, PropertyDialog::GetCheckboxState(GetDlgItem(DISPID_Timer_Enabled).GetHwnd()), plunger);
                 break;
             }
             case eItemSpinner:
             {
                 Spinner * const spinner = (Spinner *)el;
-                spinner->m_d.m_tdr.m_TimerInterval = PropertyDialog::GetIntTextbox(m_timerIntervalEdit);
+                if (dispid == DISPID_Timer_Interval)
+                   CHECK_UPDATE_ITEM(spinner->m_d.m_tdr.m_TimerInterval, PropertyDialog::GetIntTextbox(m_timerIntervalEdit), spinner);
 
                 /*TODO: uservalue is missing due to VARIANT handling*/
 
-                spinner->m_d.m_tdr.m_TimerEnabled = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), DISPID_Timer_Enabled));
+                if (dispid == DISPID_Timer_Enabled)
+                   CHECK_UPDATE_ITEM(spinner->m_d.m_tdr.m_TimerEnabled, PropertyDialog::GetCheckboxState(GetDlgItem(DISPID_Timer_Enabled).GetHwnd()), spinner);
                 break;
             }
             case eItemTimer:
             {
                 Timer * const timer = (Timer *)el;
-                timer->m_d.m_tdr.m_TimerInterval = PropertyDialog::GetIntTextbox(m_timerIntervalEdit);
+                if (dispid == DISPID_Timer_Interval)
+                   CHECK_UPDATE_ITEM(timer->m_d.m_tdr.m_TimerInterval, PropertyDialog::GetIntTextbox(m_timerIntervalEdit), timer);
 
                 /*TODO: uservalue is missing due to VARIANT handling*/
 
-                timer->m_d.m_tdr.m_TimerEnabled = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), DISPID_Timer_Enabled));
+                if (dispid == DISPID_Timer_Enabled)
+                   CHECK_UPDATE_ITEM(timer->m_d.m_tdr.m_TimerEnabled, PropertyDialog::GetCheckboxState(GetDlgItem(DISPID_Timer_Enabled).GetHwnd()), timer);
                 break;
             }
             case eItemHitTarget:
             {
                 HitTarget * const target= (HitTarget *)el;
-                target->m_d.m_tdr.m_TimerInterval = PropertyDialog::GetIntTextbox(m_timerIntervalEdit);
+                if (dispid == DISPID_Timer_Interval)
+                   CHECK_UPDATE_ITEM(target->m_d.m_tdr.m_TimerInterval, PropertyDialog::GetIntTextbox(m_timerIntervalEdit), target);
 
                 /*TODO: uservalue is missing due to VARIANT handling*/
 
-                target->m_d.m_tdr.m_TimerEnabled = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), DISPID_Timer_Enabled));
+                if (dispid == DISPID_Timer_Enabled)
+                   CHECK_UPDATE_ITEM(target->m_d.m_tdr.m_TimerEnabled, PropertyDialog::GetCheckboxState(GetDlgItem(DISPID_Timer_Enabled).GetHwnd()), target);
                 break;
             }
             case eItemTrigger:
             {
                 Trigger * const trigger = (Trigger *)el;
-                trigger->m_d.m_tdr.m_TimerInterval = PropertyDialog::GetIntTextbox(m_timerIntervalEdit);
+                if (dispid == DISPID_Timer_Interval)
+                   CHECK_UPDATE_ITEM(trigger->m_d.m_tdr.m_TimerInterval, PropertyDialog::GetIntTextbox(m_timerIntervalEdit), trigger);
 
                 /*TODO: uservalue is missing due to VARIANT handling*/
 
-                trigger->m_d.m_tdr.m_TimerEnabled = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), DISPID_Timer_Enabled));
+                if (dispid == DISPID_Timer_Enabled)
+                   CHECK_UPDATE_ITEM(trigger->m_d.m_tdr.m_TimerEnabled, PropertyDialog::GetCheckboxState(GetDlgItem(DISPID_Timer_Enabled).GetHwnd()), trigger);
                 break;
             }
             case eItemKicker:
             {
                 Kicker * const kicker = (Kicker *)el;
-                kicker->m_d.m_tdr.m_TimerInterval = PropertyDialog::GetIntTextbox(m_timerIntervalEdit);
+                if (dispid == DISPID_Timer_Interval)
+                   CHECK_UPDATE_ITEM(kicker->m_d.m_tdr.m_TimerInterval, PropertyDialog::GetIntTextbox(m_timerIntervalEdit), kicker);
 
                 /*TODO: uservalue is missing due to VARIANT handling*/
 
-                kicker->m_d.m_tdr.m_TimerEnabled = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), DISPID_Timer_Enabled));
+                if (dispid == DISPID_Timer_Enabled)
+                   CHECK_UPDATE_ITEM(kicker->m_d.m_tdr.m_TimerEnabled, PropertyDialog::GetCheckboxState(GetDlgItem(DISPID_Timer_Enabled).GetHwnd()), kicker);
                 break;
             }
             case eItemRamp:
             {
                 Ramp * const ramp = (Ramp *)el;
-                ramp->m_d.m_tdr.m_TimerInterval = PropertyDialog::GetIntTextbox(m_timerIntervalEdit);
+                if (dispid == DISPID_Timer_Interval)
+                   CHECK_UPDATE_ITEM(ramp->m_d.m_tdr.m_TimerInterval, PropertyDialog::GetIntTextbox(m_timerIntervalEdit), ramp);
 
                 /*TODO: uservalue is missing due to VARIANT handling*/
 
-                ramp->m_d.m_tdr.m_TimerEnabled = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), DISPID_Timer_Enabled));
+                if (dispid == DISPID_Timer_Enabled)
+                   CHECK_UPDATE_ITEM(ramp->m_d.m_tdr.m_TimerEnabled, PropertyDialog::GetCheckboxState(GetDlgItem(DISPID_Timer_Enabled).GetHwnd()), ramp);
                 break;
             }
             case eItemFlipper:
             {
                 Flipper * const flipper = (Flipper *)el;
-                flipper->m_d.m_tdr.m_TimerInterval = PropertyDialog::GetIntTextbox(m_timerIntervalEdit);
+                if (dispid == DISPID_Timer_Interval)
+                   CHECK_UPDATE_ITEM(flipper->m_d.m_tdr.m_TimerInterval, PropertyDialog::GetIntTextbox(m_timerIntervalEdit), flipper);
 
                 /*TODO: uservalue is missing due to VARIANT handling*/
 
-                flipper->m_d.m_tdr.m_TimerEnabled = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), DISPID_Timer_Enabled));
+                if (dispid == DISPID_Timer_Enabled)
+                   CHECK_UPDATE_ITEM(flipper->m_d.m_tdr.m_TimerEnabled, PropertyDialog::GetCheckboxState(GetDlgItem(DISPID_Timer_Enabled).GetHwnd()), flipper);
                 break;
             }
             case eItemGate:
             {
                 Gate * const gate = (Gate *)el;
-                gate->m_d.m_tdr.m_TimerInterval = PropertyDialog::GetIntTextbox(m_timerIntervalEdit);
+                if (dispid == DISPID_Timer_Interval)
+                   CHECK_UPDATE_ITEM(gate->m_d.m_tdr.m_TimerInterval, PropertyDialog::GetIntTextbox(m_timerIntervalEdit), gate);
 
                 /*TODO: uservalue is missing due to VARIANT handling*/
 
-                gate->m_d.m_tdr.m_TimerEnabled = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), DISPID_Timer_Enabled));
+                if (dispid == DISPID_Timer_Enabled)
+                   CHECK_UPDATE_ITEM(gate->m_d.m_tdr.m_TimerEnabled, PropertyDialog::GetCheckboxState(GetDlgItem(DISPID_Timer_Enabled).GetHwnd()), gate);
                 break;
             }
             case eItemTextbox:
             {
                 Textbox * const text = (Textbox *)el;
-                text->m_d.m_tdr.m_TimerInterval = PropertyDialog::GetIntTextbox(m_timerIntervalEdit);
+                if (dispid == DISPID_Timer_Interval)
+                   CHECK_UPDATE_ITEM(text->m_d.m_tdr.m_TimerInterval, PropertyDialog::GetIntTextbox(m_timerIntervalEdit), text);
 
                 /*TODO: uservalue is missing due to VARIANT handling*/
 
-                text->m_d.m_tdr.m_TimerEnabled = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), DISPID_Timer_Enabled));
+                if (dispid == DISPID_Timer_Enabled)
+                   CHECK_UPDATE_ITEM(text->m_d.m_tdr.m_TimerEnabled, PropertyDialog::GetCheckboxState(GetDlgItem(DISPID_Timer_Enabled).GetHwnd()), text);
                 break;
             }
             case eItemDispReel:
             {
                 DispReel * const reel = (DispReel *)el;
-                reel->m_d.m_tdr.m_TimerInterval = PropertyDialog::GetIntTextbox(m_timerIntervalEdit);
+                if (dispid == DISPID_Timer_Interval)
+                   CHECK_UPDATE_ITEM(reel->m_d.m_tdr.m_TimerInterval, PropertyDialog::GetIntTextbox(m_timerIntervalEdit), reel);
 
                 /*TODO: uservalue is missing due to VARIANT handling*/
 
-                reel->m_d.m_tdr.m_TimerEnabled = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), DISPID_Timer_Enabled));
+                if (dispid == DISPID_Timer_Enabled)
+                   CHECK_UPDATE_ITEM(reel->m_d.m_tdr.m_TimerEnabled, PropertyDialog::GetCheckboxState(GetDlgItem(DISPID_Timer_Enabled).GetHwnd()), reel);
                 break;
             }
             case eItemLightSeq:
             {
                 LightSeq * const lightseq = (LightSeq *)el;
-                lightseq->m_d.m_tdr.m_TimerInterval = PropertyDialog::GetIntTextbox(m_timerIntervalEdit);
+                if (dispid == DISPID_Timer_Interval)
+                   CHECK_UPDATE_ITEM(lightseq->m_d.m_tdr.m_TimerInterval, PropertyDialog::GetIntTextbox(m_timerIntervalEdit), lightseq);
 
                 /*TODO: uservalue is missing due to VARIANT handling*/
 
-                lightseq->m_d.m_tdr.m_TimerEnabled = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), DISPID_Timer_Enabled));
+                if (dispid == DISPID_Timer_Enabled)
+                   CHECK_UPDATE_ITEM(lightseq->m_d.m_tdr.m_TimerEnabled, PropertyDialog::GetCheckboxState(GetDlgItem(DISPID_Timer_Enabled).GetHwnd()), lightseq);
                 break;
             }
             default:
