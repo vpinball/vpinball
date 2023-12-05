@@ -36,17 +36,11 @@ BOOL DebuggerDialog::OnInitDialog()
     AttachItem(IDC_STEPAMOUNT, m_stepAmountEdit);
     AttachItem(IDC_DBGLIGHTSBUTTON, m_dbgLightsButton);
     AttachItem(IDC_DBG_MATERIALS_BUTTON, m_dbgMaterialsButton);
-    m_hThrowBallsInPlayerCheck = ::GetDlgItem(GetHwnd(), IDC_BALL_THROWING);
-    m_hBallControlCheck = ::GetDlgItem(GetHwnd(), IDC_BALL_CONTROL);
+    m_hThrowBallsInPlayerCheck = GetDlgItem(IDC_BALL_THROWING).GetHwnd();
+    m_hBallControlCheck = GetDlgItem(IDC_BALL_CONTROL).GetHwnd();
     AttachItem(IDC_THROW_BALL_SIZE_EDIT2, m_ballSizeEdit);
     AttachItem(IDC_THROW_BALL_MASS_EDIT2, m_ballMassEdit);
-
-    const CRect rcMain = GetParent().GetWindowRect();
-    const CRect rcDialog = GetWindowRect();
-
-    SetWindowPos(nullptr, (rcMain.right + rcMain.left) / 2 - (rcDialog.right - rcDialog.left) / 2,
-                          (rcMain.bottom + rcMain.top) / 2 - (rcDialog.bottom - rcDialog.top) / 2,
-                          0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE/* | SWP_NOMOVE*/);
+    AttachItem(IDC_EDITSIZE, m_notesEdit);
 
     HANDLE hIcon = ::LoadImage(GetModuleHandle(nullptr), MAKEINTRESOURCE(IDI_PLAY), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
     m_playButton.SetIcon((HICON)hIcon);
@@ -58,10 +52,8 @@ BOOL DebuggerDialog::OnInitDialog()
 
     SendMessage(RECOMPUTEBUTTONCHECK, 0, 0);
 
-    RECT rcEditSize;
-    ::GetWindowRect(GetDlgItem(IDC_EDITSIZE), &rcEditSize);
-    ::ScreenToClient(GetHwnd(), (POINT*)&rcEditSize);
-    ::ScreenToClient(GetHwnd(), &((POINT*)&rcEditSize)[1]);
+    CRect rcEditSize = GetDlgItem(IDC_EDITSIZE).GetWindowRect();
+    ScreenToClient(rcEditSize);
 
     g_pplayer->m_hwndDebugOutput = CreateWindowEx(0, "Scintilla", "",
                                                 WS_CHILD | ES_NOHIDESEL | WS_VISIBLE | ES_SUNKEN | WS_HSCROLL | WS_VSCROLL | ES_MULTILINE | ES_WANTRETURN | WS_BORDER,
@@ -81,12 +73,18 @@ BOOL DebuggerDialog::OnInitDialog()
 
     m_ballMassEdit.SetWindowText(f2sz(g_pplayer->m_debugBallMass).c_str());
 
-    m_resizer.Initialize(*this, rcDialog);
-    AttachItem(IDC_EDITSIZE, m_notesEdit);
+    m_resizer.Initialize(*this, GetWindowRect());
     m_resizer.AddChild(m_notesEdit.GetHwnd(), CResizer::bottomright, RD_STRETCH_HEIGHT | RD_STRETCH_WIDTH);
     m_resizer.AddChild(g_pplayer->m_hwndDebugOutput, CResizer::bottomright, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
     m_resizer.AddChild(GetDlgItem(IDC_GUIDE1).GetHwnd(), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_GUIDE2).GetHwnd(), CResizer::bottomright, 0);
+
+    const CRect rcMain = GetParent().GetWindowRect();
+    const CRect rcDialog = GetWindowRect();
+
+    SetWindowPos(nullptr, (rcMain.right + rcMain.left) / 2 - (rcDialog.right - rcDialog.left) / 2,
+                          (rcMain.bottom + rcMain.top) / 2 - (rcDialog.bottom - rcDialog.top) / 2,
+                          0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE/* | SWP_NOMOVE*/);
     return TRUE;
 }
 
