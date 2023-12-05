@@ -15,6 +15,8 @@ Window::Window(const string& name, int x, int y, int w, int h, int frameSkip)
    m_pRenderer = NULL;
    m_pGraphics = NULL;
 
+   m_update = false;
+
    m_szName = "vpx_" + name;
    UINT32 flags = SDL_WINDOW_SKIP_TASKBAR | SDL_WINDOW_BORDERLESS | SDL_WINDOW_HIDDEN | SDL_WINDOW_UTILITY;
 
@@ -92,27 +94,34 @@ void Window::Enable(bool enable)
 {
    if (m_pWindow && m_pRenderer) {
       m_enabled = enable;
-      if (enable)
-         SDL_ShowWindow(m_pWindow);
-      else
-         SDL_HideWindow(m_pWindow);
-
-      SDL_RaiseWindow(g_pplayer->m_sdl_playfieldHwnd);
+      m_update = true;
    }
 }
 
 bool Window::ShouldRender()
 {
-   if (m_pWindow && m_enabled) {
-      bool shouldProcess = !m_currentFrame;
+   if (!m_pWindow)
+       return false;
 
-      if (m_frameSkip > 0)
-         m_currentFrame = (m_currentFrame + 1) % m_frameSkip;
+   if (m_update) {
+      if (m_enabled)
+         SDL_ShowWindow(m_pWindow);
+      else
+         SDL_HideWindow(m_pWindow);
 
-      return shouldProcess;
+      SDL_RaiseWindow(g_pplayer->m_sdl_playfieldHwnd);
+      m_update = false;
    }
 
-   return false;
+   if (!m_enabled)
+      return false;
+
+   bool shouldProcess = !m_currentFrame;
+
+   if (m_frameSkip > 0)
+      m_currentFrame = (m_currentFrame + 1) % m_frameSkip;
+
+   return shouldProcess;
 }
 
 }

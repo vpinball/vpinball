@@ -24,6 +24,7 @@ private:
    SDL_Window* m_pWindow;
    SDL_Renderer* m_pRenderer;
    bool m_enabled;
+   bool m_update;
    int m_frameSkip;
    int m_currentFrame;
    VP::Graphics* m_pGraphics;
