@@ -189,7 +189,7 @@ void Settings::CopyOverrides(const Settings& settings)
    {
       for (const auto& item : section.second)
       {
-         if (m_parent->m_ini.has(section.first) && m_parent->m_ini.get(section.first).has(item.first))
+         if (m_parent->m_ini.get(section.first).has(item.first))
          { // Value stored in parent setting block
             if (m_parent->m_ini.get(section.first).get(item.first) != item.second)
             {
@@ -212,7 +212,7 @@ void Settings::CopyOverrides(const Settings& settings)
 
 bool Settings::HasValue(const Section section, const string& key, const bool searchParent) const
 {
-   bool hasInIni = m_ini.has(regKey[section]) && m_ini.get(regKey[section]).has(key);
+   bool hasInIni = m_ini.get(regKey[section]).has(key);
    if (!hasInIni && m_parent && searchParent)
       hasInIni = m_parent->HasValue(section, key, searchParent);
    return hasInIni;
@@ -284,11 +284,9 @@ bool Settings::LoadValue(const Section section, const string &key, DataType &typ
       type = DT_ERROR;
       return false;
    }
-   bool hasInIni = m_ini.has(regKey[section]) && m_ini.get(regKey[section]).has(key);
-   if (hasInIni)
-   {
-      string value = m_ini.get(regKey[section]).get(key);
-      if (value.length() > 0)
+
+      const string value = m_ini.get(regKey[section]).get(key);
+      if (!value.empty())
       {
          // Value is empty (just a marker for text formatting), consider it as undefined
          if (type == DT_SZ)
@@ -311,7 +309,6 @@ bool Settings::LoadValue(const Section section, const string &key, DataType &typ
             return false;
          }
       }
-   }
 
    if (m_parent != nullptr)
       return m_parent->LoadValue(section, key, type, pvalue, size);
@@ -355,7 +352,7 @@ bool Settings::SaveValue(const Section section, const string &key, const DataTyp
       if (m_parent->LoadValue(section, key, value) && value == copy)
       {
          // This is an override and it has the same value as parent: remove it and rely on parent
-         if (m_ini.has(regKey[section]) && m_ini.get(regKey[section]).has(key))
+         if (m_ini.get(regKey[section]).has(key))
          {
             m_modified = true;
             m_ini[regKey[section]].remove(key);
@@ -401,7 +398,7 @@ bool Settings::DeleteValue(const Section section, const string &key, const bool 
    bool success = true;
    if (m_parent && deleteFromParent)
       success &= DeleteValue(section, key, deleteFromParent);
-   if (m_ini.has(regKey[section]) && m_ini.get(regKey[section]).has(key))
+   if (m_ini.get(regKey[section]).has(key))
    {
       m_modified = true;
       success &= m_ini[regKey[section]].remove(key);

@@ -87,7 +87,7 @@
 #include <sstream>
 #include <algorithm>
 #include <utility>
-#include <unordered_map>
+#include "robin_hood.h"
 #include <vector>
 #include <memory>
 #include <fstream>
@@ -135,7 +135,7 @@ namespace mINI
 	class INIMap
 	{
 	private:
-		using T_DataIndexMap = std::unordered_map<std::string, std::size_t>;
+		using T_DataIndexMap = robin_hood::unordered_map<std::string, std::size_t>;
 		using T_DataItem = std::pair<std::string, T>;
 		using T_DataContainer = std::vector<T_DataItem>;
 		using T_MultiArgs = typename std::vector<std::pair<std::string, T>>;
