@@ -24,10 +24,8 @@ private:
     CEdit   m_stepAmountEdit;
     CButton m_dbgLightsButton;
     CButton m_dbgMaterialsButton;
-    HWND    m_hThrowBallsInPlayerCheck;
-    HWND    m_hBallControlCheck;
     CEdit   m_ballSizeEdit;
     CEdit   m_ballMassEdit;
-    CResizer  m_resizer;
-    CEdit     m_notesEdit;
+    CResizer m_resizer;
+    CEdit   m_notesEdit;
 };

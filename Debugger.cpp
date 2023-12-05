@@ -21,8 +21,6 @@ BOOL DebuggerDialog::OnInitDialog()
     AttachItem(IDC_PAUSE, m_pauseButton);
     AttachItem(IDC_STEP, m_stepButton);
     AttachItem(IDC_STEPAMOUNT, m_stepAmountEdit);
-    m_hThrowBallsInPlayerCheck = ::GetDlgItem(GetHwnd(), IDC_BALL_THROWING);
-    m_hBallControlCheck = ::GetDlgItem(GetHwnd(), IDC_BALL_CONTROL);
     AttachItem(IDC_THROW_BALL_SIZE_EDIT2, m_ballSizeEdit);
     AttachItem(IDC_THROW_BALL_MASS_EDIT2, m_ballMassEdit);
     AttachItem(IDC_EDITSIZE, m_notesEdit);
@@ -37,10 +35,8 @@ BOOL DebuggerDialog::OnInitDialog()
 
     SendMessage(RECOMPUTEBUTTONCHECK, 0, 0);
 
-    RECT rcEditSize;
-    ::GetWindowRect(GetDlgItem(IDC_EDITSIZE), &rcEditSize);
-    ::ScreenToClient(GetHwnd(), (POINT*)&rcEditSize);
-    ::ScreenToClient(GetHwnd(), &((POINT*)&rcEditSize)[1]);
+    CRect rcEditSize = GetDlgItem(IDC_EDITSIZE).GetWindowRect();
+    ScreenToClient(rcEditSize);
 
     g_pplayer->m_hwndDebugOutput = CreateWindowEx(0, "Scintilla", "",
                                                 WS_CHILD | ES_NOHIDESEL | WS_VISIBLE | ES_SUNKEN | WS_HSCROLL | WS_VSCROLL | ES_MULTILINE | ES_WANTRETURN | WS_BORDER,
@@ -53,8 +49,8 @@ BOOL DebuggerDialog::OnInitDialog()
 
     SendMessage(g_pplayer->m_hwndDebugOutput, SCI_SETTABWIDTH, 4, 0);
 
-    SendMessage(m_hThrowBallsInPlayerCheck, BM_SETCHECK, g_pplayer->m_throwBalls ? BST_CHECKED : BST_UNCHECKED, 0);
-    SendMessage(m_hBallControlCheck, BM_SETCHECK, g_pplayer->m_ballControl ? BST_CHECKED : BST_UNCHECKED, 0);
+    SendMessage(GetDlgItem(IDC_BALL_THROWING).GetHwnd(), BM_SETCHECK, g_pplayer->m_throwBalls ? BST_CHECKED : BST_UNCHECKED, 0);
+    SendMessage(GetDlgItem(IDC_BALL_CONTROL).GetHwnd(), BM_SETCHECK, g_pplayer->m_ballControl ? BST_CHECKED : BST_UNCHECKED, 0);
 
     m_ballSizeEdit.SetWindowText(std::to_string(g_pplayer->m_debugBallSize).c_str());
 
@@ -115,13 +111,13 @@ BOOL DebuggerDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         }
         case IDC_BALL_THROWING:
         {
-            const size_t checked = SendMessage(m_hThrowBallsInPlayerCheck, BM_GETCHECK, 0, 0);
+            const size_t checked = SendMessage(GetDlgItem(IDC_BALL_THROWING).GetHwnd(), BM_GETCHECK, 0, 0);
             g_pplayer->m_throwBalls = !!checked;
             return TRUE;
         }
         case IDC_BALL_CONTROL:
         {
-            const size_t checked = SendMessage(m_hBallControlCheck, BM_GETCHECK, 0, 0);
+            const size_t checked = SendMessage(GetDlgItem(IDC_BALL_CONTROL).GetHwnd(), BM_GETCHECK, 0, 0);
             g_pplayer->m_ballControl = !!checked;
             return TRUE;
         }
