@@ -227,6 +227,8 @@ FEATURES:
   The content of this text file can then be posted to the tournament administrators and converted by them via the '-TournamentFile tablename textfilename' command line option to a .png again.
   Note that the VPX version used to play AND to convert must exactly match (incl. same revision/build, same OS, DXvsGL, 32vs64bit)
 
+- add/correct more data to the dimensions database
+
 Additional docs explaining all these new features with images are provided in the docs folder of the project: https://github.com/vpinball/vpinball/tree/master/docs
 
 FIXES:
@@ -681,7 +683,6 @@ FEATURES:
 - support 'Add Point' hotkey (F10 normal and F11 for smooth point) for rubbers
 
 - add apply button to the dimensions manager to apply the selected dimension to the active table
-- add/correct more data to the dimensions database
 
 - add support for up to 9 custom start parameters (range 1-9). Usage: "VPinballX.exe -c1 param1 -c2 param2" sets two custom parameters "param1" and "param2".
   To access these in the script use: GetCustomParam(1) to get "param1" and GetCustomParam(2) to get "param2"
