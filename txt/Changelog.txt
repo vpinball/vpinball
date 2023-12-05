@@ -29,6 +29,8 @@ FIXES:
 
 - fix saving of custom keys for joypad input
 
+- fix changing the timer settings not marking the table as dirty
+
 - see Scripts.txt for the actual usage and "documentation" of the scripts that come with VPX
 
 VP 10.7.3 Changelog
@@ -40,6 +42,7 @@ FIXES:
 
 - show bulb in UI/viewport
 
+- fix potentially wrong primitive animation interpolation
 - fix primitive animations getting stuck
 - fix primitive animation speed being dependent on the framerate
 
@@ -1143,13 +1146,13 @@ VP 10.0.0 Changelog
 
   * "Import mesh's material" : Loads the corresponding .mtl file and adds the first material in that file.
                                For instance: if the mesh .obj file is called "bumper.obj", then there should be a file "bumper.mtl" in the same directory.
-							   But only some basic material settings are imported due to the limited .mtl format, for Blender the used material parameters are:
+                               But only some basic material settings are imported due to the limited .mtl format, for Blender the used material parameters are:
                                 Blender diffuse color -> VP base color
                                 Blender specular color -> VP glossy layer
                                 Blender specular hardness -> VP shininess value
                                 Blender transparency alpha value -> VP opacity amount
                                When imported the primitive has the imported material automatically assigned.
-							   Note that any textures aren't imported automatically though, this must be done as usual with the help of the image manager.
+                               Note that any textures aren't imported automatically though, this must be done as usual with the help of the image manager.
 
 - add additional debug mode when pressing F11 multiple times to visualize the content of only the static buffer.
   this can be used to optimize for performance by trying to put as many elements as possible into this buffer, for example:
