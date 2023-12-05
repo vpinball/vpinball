@@ -57,7 +57,7 @@ bool Settings::LoadFromFile(const string& path, const bool createDefault)
          if (j == Section::Version)
             continue;
 
-         string regpath(j == 0 ? "Software\\Visual Pinball\\" : "Software\\Visual Pinball\\VP10\\");
+         string regpath(j == 0 ? "Software\\Visual Pinball\\"s : "Software\\Visual Pinball\\VP10\\"s);
          regpath += regKey[j];
 
          HKEY hk;
@@ -127,7 +127,7 @@ bool Settings::LoadFromFile(const string& path, const bool createDefault)
             if (!m_ini[regKey[j]].has(name))
             {
                // Search for a case insensitive match
-               for (auto item : m_ini[regKey[j]])
+               for (const auto& item : m_ini[regKey[j]])
                {
                   if (StrCompareNoCase(name, item.first))
                   {
@@ -147,7 +147,6 @@ bool Settings::LoadFromFile(const string& path, const bool createDefault)
          RegCloseKey(hk);
       }
       #endif
-
       return true;
    }
    else
@@ -164,7 +163,7 @@ void Settings::SaveToFile(const string &path)
       return;
    m_modified = false;
    size_t size = 0;
-   for (auto section : m_ini)
+   for (const auto& section : m_ini)
       size += section.second.size();
    if (size > 0)
    {
@@ -186,11 +185,11 @@ void Settings::Save()
 void Settings::CopyOverrides(const Settings& settings)
 {
    assert(m_parent != nullptr); // Overrides are defined relatively to a parent
-   for (auto section : settings.m_ini)
+   for (const auto& section : settings.m_ini)
    {
-      for (auto item : section.second)
+      for (const auto& item : section.second)
       {
-         if (m_parent->m_ini.has(section.first) && m_parent->m_ini.get(section.first).has(item.first))
+         if (m_parent->m_ini.get(section.first).has(item.first))
          { // Value stored in parent setting block
             if (m_parent->m_ini.get(section.first).get(item.first) != item.second)
             {
@@ -213,7 +212,7 @@ void Settings::CopyOverrides(const Settings& settings)
 
 bool Settings::HasValue(const Section section, const string& key, const bool searchParent) const
 {
-   bool hasInIni = m_ini.has(regKey[section]) && m_ini.get(regKey[section]).has(key);
+   bool hasInIni = m_ini.get(regKey[section]).has(key);
    if (!hasInIni && m_parent && searchParent)
       hasInIni = m_parent->HasValue(section, key, searchParent);
    return hasInIni;
@@ -285,11 +284,9 @@ bool Settings::LoadValue(const Section section, const string &key, DataType &typ
       type = DT_ERROR;
       return false;
    }
-   bool hasInIni = m_ini.has(regKey[section]) && m_ini.get(regKey[section]).has(key);
-   if (hasInIni)
-   {
-      string value = m_ini.get(regKey[section]).get(key);
-      if (value.length() > 0)
+
+      const string value = m_ini.get(regKey[section]).get(key);
+      if (!value.empty())
       {
          // Value is empty (just a marker for text formatting), consider it as undefined
          if (type == DT_SZ)
@@ -312,7 +309,6 @@ bool Settings::LoadValue(const Section section, const string &key, DataType &typ
             return false;
          }
       }
-   }
 
    if (m_parent != nullptr)
       return m_parent->LoadValue(section, key, type, pvalue, size);
@@ -356,7 +352,7 @@ bool Settings::SaveValue(const Section section, const string &key, const DataTyp
       if (m_parent->LoadValue(section, key, value) && value == copy)
       {
          // This is an override and it has the same value as parent: remove it and rely on parent
-         if (m_ini.has(regKey[section]) && m_ini.get(regKey[section]).has(key))
+         if (m_ini.get(regKey[section]).has(key))
          {
             m_modified = true;
             m_ini[regKey[section]].remove(key);
@@ -402,7 +398,7 @@ bool Settings::DeleteValue(const Section section, const string &key, const bool 
    bool success = true;
    if (m_parent && deleteFromParent)
       success &= DeleteValue(section, key, deleteFromParent);
-   if (m_ini.has(regKey[section]) && m_ini.get(regKey[section]).has(key))
+   if (m_ini.get(regKey[section]).has(key))
    {
       m_modified = true;
       success &= m_ini[regKey[section]].remove(key);
@@ -435,7 +431,7 @@ void Settings::RegisterSetting(const Section section, const string &name, float 
    opt.literals = literals;
    opt.unit = unit;
    bool found = false;
-   for (auto option = begin(m_options); option != end(m_options); option++)
+   for (auto option = begin(m_options); option != end(m_options); ++option)
    {
       if (option->name == name)
       {

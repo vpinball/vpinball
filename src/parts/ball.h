@@ -34,7 +34,8 @@ public:
 private:
    RenderDevice *m_rd = nullptr;
    float m_stretchFitPoints[3 * 12] = { 2.f };
-   
+   bool m_antiStretch = false;
+
    // IBall
 public:
    STDMETHOD(get_Name)(/*[out, retval]*/ BSTR *pVal);

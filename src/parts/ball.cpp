@@ -35,6 +35,7 @@ void BallEx::RenderSetup(RenderDevice *device)
 {
    assert(m_rd == nullptr);
    m_rd = device;
+   m_antiStretch = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "BallAntiStretch"s, false);
 }
 
 void BallEx::RenderRelease()
@@ -184,7 +185,7 @@ void BallEx::Render(const unsigned int renderMask)
 
    // ************************* draw the ball itself ****************************
    Vertex2D antiStretch(1.f, 1.f);
-   if (g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "BallAntiStretch"s, false))
+   if (m_antiStretch)
    {
       // To evaluate projection stretch, we project 12 points and compute projected bounds then apply opposite stretching on YZ axis.
       // This is somewhat overkill but the maths to do it directly would be fairly complicated to accomodate for the 3 view setup projections
@@ -195,10 +196,10 @@ void BallEx::Render(const unsigned int renderMask)
          for (int pos = 0, j = -1; j <= 1; ++j)
          {
             const int numPts = (j == 0) ? 6 : 3;
-            const float theta = (float)(j * (M_PI / 4.0));
+            const float theta = (float)j * (float)(M_PI / 4.0);
             for (int i = 0; i < numPts; ++i)
             {
-               const float phi = (float)(i * (2.0 * M_PI) / numPts);
+               const float phi = (float)i * ((float)(2.0 * M_PI) / (float)numPts);
                m_stretchFitPoints[pos++] = cosf(theta) * cosf(phi);
                m_stretchFitPoints[pos++] = cosf(theta) * sinf(phi);
                m_stretchFitPoints[pos++] = sinf(theta);
@@ -239,9 +240,9 @@ void BallEx::Render(const unsigned int renderMask)
          const float c = cosf(viewportRot), s = sinf(viewportRot);
          const float rx = (xMax - xMin) * (float)w;
          const float ry = (yMax - yMin) * (float)h;
-         const float sx = fabs(c * rx - s * ry);
-         const float sy = fabs(s * rx + c * ry);
-         // only shrink ball to avoid artefact of the ball being rendered over resting parts
+         const float sx = fabsf(c * rx - s * ry);
+         const float sy = fabsf(s * rx + c * ry);
+         // only shrink ball to avoid artifact of the ball being rendered over resting parts
          if (sy > sx)
             antiStretch.y = sx / sy;
          else
@@ -274,8 +275,8 @@ void BallEx::Render(const unsigned int renderMask)
    m_rd->m_ballShader->SetMatrix(SHADER_orientation, &m3D_full);
 
    m_rd->m_ballShader->SetVector(SHADER_w_h_disableLighting, 
-      1.5f / m_rd->GetPreviousBackBufferTexture()->GetWidth(), // UV Offset for sampling reflections
-      1.5f / m_rd->GetPreviousBackBufferTexture()->GetHeight(),
+      1.5f / (float)m_rd->GetPreviousBackBufferTexture()->GetWidth(), // UV Offset for sampling reflections
+      1.5f / (float)m_rd->GetPreviousBackBufferTexture()->GetHeight(),
       g_pplayer->m_disableLightingForBalls ? 1.f : 0.f, 0.f);
 
    m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
@@ -303,7 +304,7 @@ void BallEx::Render(const unsigned int renderMask)
    #if defined(DEBUG_BALL_SPIN) && !defined(__OPENGLES__)
    if (g_pplayer->m_liveUI->IsShowingFPSDetails())
    {
-      float pointSize = 5.f * m_rd->GetCurrentRenderTarget()->GetWidth() / 1920.0f;
+      const float pointSize = 5.f * (float)m_rd->GetCurrentRenderTarget()->GetWidth() / 1920.0f;
       // this is buggy as we set the point size directly while the render comma,nd is used later on, but this is the only place where point rendering is used so it's ok for now
       #if defined(ENABLE_SDL)
       glPointSize(pointSize);
