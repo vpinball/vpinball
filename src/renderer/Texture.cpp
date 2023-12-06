@@ -89,11 +89,12 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, bool resize_on_low_
       }
 
       const FREE_IMAGE_TYPE img_type = FreeImage_GetImageType(dibResized);
-      const bool rgbf = (img_type == FIT_FLOAT) || (img_type == FIT_DOUBLE) || (img_type == FIT_RGBF) || (img_type == FIT_RGBAF); //(FreeImage_GetBPP(dibResized) > 32);
+      const bool rgbf16 = (img_type == FIT_RGB16F) || (img_type == FIT_RGBA16F);
+      const bool rgbf = (img_type == FIT_FLOAT) || (img_type == FIT_DOUBLE) || (img_type == FIT_RGBF) || (img_type == FIT_RGBAF); //(FreeImage_GetBPP(dibResized) > 32); //!! do handle/convert RGBAF better?
       const bool has_alpha = !rgbf && FreeImage_IsTransparent(dibResized);
       // already in correct format (24bits RGB, 32bits RGBA, 96bits RGBF) ?
       // Note that 8bits BW image are converted to 24bits RGB since they are in sRGB color space and there is no sGREY8 GPU format
-      if(((img_type == FIT_BITMAP) && (FreeImage_GetBPP(dibResized) == (has_alpha ? 32 : 24))) || (img_type == FIT_RGBF))
+      if(((img_type == FIT_BITMAP) && (FreeImage_GetBPP(dibResized) == (has_alpha ? 32 : 24))) || (img_type == FIT_RGBF) || rgbf16)
          dibConv = dibResized;
       else
       {
@@ -121,7 +122,12 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, bool resize_on_low_
       Format format;
       const unsigned int tex_w = FreeImage_GetWidth(dibConv);
       const unsigned int tex_h = FreeImage_GetHeight(dibConv);
-      if (rgbf)
+      if (rgbf16)
+      {
+         format = (img_type == FIT_RGB16F) ? RGB_FP16 : RGBA_FP16;
+         isSigned = false; //!! do a loop like below
+      }
+      else if (rgbf)
       {
          float minval = FLT_MAX;
          float maxval = -FLT_MAX;
