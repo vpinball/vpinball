@@ -149,6 +149,7 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, bool resize_on_low_
       catch(...)
       {
          delete tex;
+         tex = nullptr;
 
          if (dibConv != dibResized) // did we allocate a copy from conversion?
             FreeImage_Unload(dibConv);
@@ -343,7 +344,7 @@ BaseTexture* BaseTexture::CreateFromHBitmap(const HBITMAP hbm, bool with_alpha)
 
 BaseTexture* BaseTexture::ToBGRA()
 {
-   BaseTexture* tex;
+   BaseTexture* tex = nullptr;
    try
    {
       tex = new BaseTexture(m_width, m_height, RGBA);
