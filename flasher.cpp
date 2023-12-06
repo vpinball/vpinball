@@ -282,7 +282,7 @@ void Flasher::EndPlay()
 
    // ensure not locked just in case the player exits during a LS sequence
    m_lockedByLS = false;
-   
+
    ResetVideoCap();
 
    if (m_dynamicVertexBuffer)
@@ -646,7 +646,7 @@ STDMETHODIMP Flasher::InterfaceSupportsErrorInfo(REFIID riid)
       &IID_IFlasher
    };
 
-   for (size_t i = 0; i < sizeof(arr) / sizeof(arr[0]); i++)
+   for (size_t i = 0; i < std::size(arr); i++)
       if (InlineIsEqualGUID(*arr[i], riid))
          return S_OK;
 
@@ -1021,7 +1021,16 @@ STDMETHODIMP Flasher::put_VideoCapUpdate(BSTR cWinTitle)
         //source videocap found.  lets start!
         GetClientRect(m_videoCapHwnd, &m_videoSourceRect);
         ResetVideoCap();
-        m_videoCapTex = new BaseTexture(m_videoCapWidth, m_videoCapHeight, BaseTexture::SRGBA);
+        try
+        {
+           m_videoCapTex = new BaseTexture(m_videoCapWidth, m_videoCapHeight, BaseTexture::SRGBA);
+        }
+        catch (...)
+        {
+           delete m_videoCapTex;
+           m_videoCapTex = nullptr;
+           return S_FAIL;
+        }
     }
 
     // Retrieve the handle to a display device context for the client

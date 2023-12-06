@@ -343,7 +343,18 @@ BaseTexture* BaseTexture::CreateFromHBitmap(const HBITMAP hbm, bool with_alpha)
 
 BaseTexture* BaseTexture::ToBGRA()
 {
-   BaseTexture* tex = new BaseTexture(m_width, m_height, RGBA);
+   BaseTexture* tex;
+   try
+   {
+      tex = new BaseTexture(m_width, m_height, RGBA);
+   }
+   // failed to get mem?
+   catch (...)
+   {
+      delete tex;
+      return nullptr;
+   }
+
    tex->m_realWidth = m_realWidth;
    tex->m_realHeight = m_realHeight;
    BYTE* const __restrict tmp = tex->data();
@@ -618,33 +629,41 @@ bool Texture::LoadToken(const int id, BiffReader * const pbr)
 
       // Find out if all alpha values are 0x00 or 0xFF
       bool has_alpha = false;
-      for (unsigned int i = 0; i < m_height && !has_alpha; i++)
-      {
-         unsigned int o = i * m_width * 4 + 3;
-         for (unsigned int l = 0; l < m_width; l++,o+=4)
+      for (size_t o = 3; o < (size_t)m_width * m_height * 4; o+=4)
+         if (tmp[o] != 0 && tmp[o] != 255)
          {
-            if (tmp[o] != 0 && tmp[o] != 255)
-            {
-               has_alpha = true;
-               break;
-            }
+            has_alpha = true;
+            break;
          }
+
+      try
+      {
+         m_pdsBuffer = new BaseTexture(m_width, m_height, has_alpha ? BaseTexture::SRGBA : BaseTexture::SRGB);
+      }
+      // failed to get mem?
+      catch (...)
+      {
+         delete m_pdsBuffer;
+         m_pdsBuffer = nullptr;
+         delete[] tmp;
+
+         break;
       }
 
-      m_pdsBuffer = new BaseTexture(m_width, m_height, has_alpha ? BaseTexture::SRGBA : BaseTexture::SRGB);
-
-      // copy, converting from SBGR to SRGB, and eventually dropping the alpha channel
-      BYTE* const __restrict pdst = m_pdsBuffer->data();
-      size_t o1 = 0, o2 = 0;
-      const unsigned int o2_step = has_alpha ? 4 : 3;
-      for (unsigned int yo = 0; yo < m_height; yo++)
-         for (unsigned int xo = 0; xo < m_width; xo++, o1+=4, o2+=o2_step)
+      if (has_alpha)
+         copy_bgra_rgba<false>((unsigned int*)m_pdsBuffer->data(), (unsigned int*)tmp, (size_t)m_width * m_height);
+      else
+      {
+         // copy, converting from SBGRA to SRGB, dropping the alpha channel
+         BYTE* const __restrict pdst = m_pdsBuffer->data();
+         size_t o2 = 0;
+         for (size_t o1 = 0; o1 < (size_t)m_width * m_height * 4; o1+=4, o2+=3)
          {
             pdst[o2    ] = tmp[o1 + 2];
             pdst[o2 + 1] = tmp[o1 + 1];
             pdst[o2 + 2] = tmp[o1    ];
-            if (has_alpha) pdst[o2 + 3] = tmp[o1 + 3];
          }
+      }
 
       delete[] tmp;
       SetSizeFrom(m_pdsBuffer);
