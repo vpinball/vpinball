@@ -7539,7 +7539,7 @@ bool PinTable::ExportImage(const Texture * const ppi, const char * const szfilen
       delete[] sinfo;
       CloseHandle(hFile);
 #else
-      if (ppi->m_pdsBuffer->m_format == BaseTexture::RGB_FP16 || ppi->m_pdsBuffer->m_format == BaseTexture::RGB_FP32)
+      if (ppi->m_pdsBuffer->m_format == BaseTexture::RGB_FP16 || ppi->m_pdsBuffer->m_format == BaseTexture::RGBA_FP16 || ppi->m_pdsBuffer->m_format == BaseTexture::RGB_FP32)
       {
           assert(!"float format export");
           return false; // Unsupported but this should not happen since all HDR images are imported and have a m_ppb field
@@ -7677,6 +7677,10 @@ int PinTable::AddListImage(HWND hwndListView, Texture * const ppi)
    else if (ppi->m_pdsBuffer->m_format == BaseTexture::RGB_FP16)
    {
       ListView_SetItemText(hwndListView, index, 5, (LPSTR)"RGB 16F");
+   }
+   else if (ppi->m_pdsBuffer->m_format == BaseTexture::RGBA_FP16)
+   {
+      ListView_SetItemText(hwndListView, index, 5, (LPSTR)"RGBA 16F");
    }
    else if (ppi->m_pdsBuffer->m_format == BaseTexture::RGB_FP32)
    {

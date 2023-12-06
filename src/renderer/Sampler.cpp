@@ -333,7 +333,7 @@ IDirect3DTexture9* Sampler::CreateSystemTexture(BaseTexture* const surf, const b
    const unsigned int texheight = surf->height();
    const BaseTexture::Format basetexformat = surf->m_format;
 
-   if (basetexformat == BaseTexture::RGB_FP16)
+   if (basetexformat == BaseTexture::RGB_FP16 || basetexformat == BaseTexture::RGBA_FP16)
    {
       texformat = colorFormat::RGBA16F;
    }
@@ -356,12 +356,12 @@ IDirect3DTexture9* Sampler::CreateSystemTexture(BaseTexture* const surf, const b
       ReportError("Fatal Error: unable to create texture!", hr, __FILE__, __LINE__);
    }
 
+   D3DLOCKED_RECT locked;
+   CHECKD3D(sysTex->LockRect(0, &locked, nullptr, 0));
+
    // copy data into system memory texture
    if (basetexformat == BaseTexture::RGB_FP32 && texformat == colorFormat::RGBA32F)
    {
-      D3DLOCKED_RECT locked;
-      CHECKD3D(sysTex->LockRect(0, &locked, nullptr, 0));
-
       float* const __restrict pdest = (float*)locked.pBits;
       const float* const __restrict psrc = (float*)(surf->data());
       for (size_t i = 0; i < (size_t)texwidth * texheight; ++i)
@@ -371,14 +371,9 @@ IDirect3DTexture9* Sampler::CreateSystemTexture(BaseTexture* const surf, const b
          pdest[i * 4 + 2] = psrc[i * 3 + 2];
          pdest[i * 4 + 3] = 1.f;
       }
-
-      CHECKD3D(sysTex->UnlockRect(0));
    }
    else if (basetexformat == BaseTexture::RGB_FP16 && texformat == colorFormat::RGBA16F)
    {
-      D3DLOCKED_RECT locked;
-      CHECKD3D(sysTex->LockRect(0, &locked, nullptr, 0));
-
       unsigned short* const __restrict pdest = (unsigned short*)locked.pBits;
       const unsigned short* const __restrict psrc = (unsigned short*)(surf->data());
       const unsigned short one16 = float2half_noLUT(1.f);
@@ -389,14 +384,15 @@ IDirect3DTexture9* Sampler::CreateSystemTexture(BaseTexture* const surf, const b
          pdest[i * 4 + 2] = psrc[i * 3 + 2];
          pdest[i * 4 + 3] = one16;
       }
-
-      CHECKD3D(sysTex->UnlockRect(0));
+   }
+   else if (basetexformat == BaseTexture::RGBA_FP16 && texformat == colorFormat::RGBA16F)
+   {
+      unsigned short* const __restrict pdest = (unsigned short*)locked.pBits;
+      const unsigned short* const __restrict psrc = (unsigned short*)(surf->data());
+      memcpy(pdest, psrc, (size_t)texwidth * texheight*4*sizeof(unsigned short));
    }
    else if ((basetexformat == BaseTexture::BW) && texformat == colorFormat::RGBA8)
    {
-      D3DLOCKED_RECT locked;
-      CHECKD3D(sysTex->LockRect(0, &locked, nullptr, 0));
-
       BYTE* const __restrict pdest = (BYTE*)locked.pBits;
       const BYTE* const __restrict psrc = (BYTE*)(surf->data());
       for (size_t i = 0; i < (size_t)texwidth * texheight; ++i)
@@ -406,14 +402,9 @@ IDirect3DTexture9* Sampler::CreateSystemTexture(BaseTexture* const surf, const b
          pdest[i * 4 + 2] = psrc[i];
          pdest[i * 4 + 3] = 255u;
       }
-
-      CHECKD3D(sysTex->UnlockRect(0));
    }
    else if ((basetexformat == BaseTexture::RGB || basetexformat == BaseTexture::SRGB) && texformat == colorFormat::RGBA8)
    {
-      D3DLOCKED_RECT locked;
-      CHECKD3D(sysTex->LockRect(0, &locked, nullptr, 0));
-
       BYTE* const __restrict pdest = (BYTE*)locked.pBits;
       const BYTE* const __restrict psrc = (BYTE*)(surf->data());
       for (size_t i = 0; i < (size_t)texwidth * texheight; ++i)
@@ -423,17 +414,11 @@ IDirect3DTexture9* Sampler::CreateSystemTexture(BaseTexture* const surf, const b
          pdest[i * 4 + 2] = psrc[i * 3 + 0];
          pdest[i * 4 + 3] = 255u;
       }
-
-      CHECKD3D(sysTex->UnlockRect(0));
    }
    else if ((basetexformat == BaseTexture::RGBA || basetexformat == BaseTexture::SRGBA) && texformat == colorFormat::RGBA8)
    {
-      D3DLOCKED_RECT locked;
-      CHECKD3D(sysTex->LockRect(0, &locked, nullptr, 0));
-
       copy_bgra_rgba<false>((unsigned int*)locked.pBits, (const unsigned int*)(surf->data()), (size_t)texwidth * texheight);
 
-      CHECKD3D(sysTex->UnlockRect(0));
       /* IDirect3DSurface9* sysSurf;
       CHECKD3D(sysTex->GetSurfaceLevel(0, &sysSurf));
       RECT sysRect;
@@ -444,6 +429,10 @@ IDirect3DTexture9* Sampler::CreateSystemTexture(BaseTexture* const surf, const b
       CHECKD3D(D3DXLoadSurfaceFromMemory(sysSurf, nullptr, nullptr, surf->data(), (D3DFORMAT)colorFormat::RGBA8, surf->pitch(), nullptr, &sysRect, D3DX_FILTER_NONE, 0));
       SAFE_RELEASE_NO_RCC(sysSurf);*/
    }
+   else
+      assert(false); // Unsupported image format
+
+   CHECKD3D(sysTex->UnlockRect(0));
 
    if (!(texformat != colorFormat::DXT5 && m_rd->m_autogen_mipmap))
       // normal maps or float textures are already in linear space!

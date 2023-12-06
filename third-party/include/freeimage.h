@@ -443,7 +443,9 @@ FI_ENUM(FREE_IMAGE_TYPE) {
 	FIT_RGB16	= 9,	//! 48-bit RGB image			: 3 x 16-bit
 	FIT_RGBA16	= 10,	//! 64-bit RGBA image		: 4 x 16-bit
 	FIT_RGBF	= 11,	//! 96-bit RGB float image	: 3 x 32-bit IEEE floating point
-	FIT_RGBAF	= 12	//! 128-bit RGBA float image	: 4 x 32-bit IEEE floating point
+	FIT_RGBAF	= 12,	//! 128-bit RGBA float image	: 4 x 32-bit IEEE floating point
+	FIT_RGB16F	= 13,	//! 48-bit RGB float image			: 3 x 16-bit IEEE floating point
+	FIT_RGBA16F	= 14,	//! 64-bit RGBA float image		: 4 x 16-bit IEEE floating point
 };
 
 /** Image color type used in FreeImage.

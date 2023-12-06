@@ -177,19 +177,23 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, bool resize_on_low_
 
    // Copy, applying channel and data format conversion, as well as flipping upside down
    // Note that free image uses RGB for float image, and the FI_RGBA_xxx for others
-   if (tex->m_format == RGB_FP16)
+   if (tex->m_format == RGB_FP16 || tex->m_format == RGBA_FP16)
    {
+      const FREE_IMAGE_TYPE img_type = FreeImage_GetImageType(dibConv);
       const BYTE* __restrict bits = FreeImage_GetBits(dibConv);
       const unsigned pitch = FreeImage_GetPitch(dibConv);
+      const unsigned components = tex->m_format == RGB_FP16 ? 3 : 4;
       unsigned short* const __restrict pdst = (unsigned short*)tex->data();
       for (unsigned int y = 0; y < tex->m_height; ++y)
       {
-         const size_t offs = (size_t)(tex->m_height - y - 1) * (tex->m_width*3);
+         const size_t offs = (size_t)(tex->m_height - y - 1) * (tex->m_width*components);
+         if (img_type == FIT_RGB16F || img_type == FIT_RGBA16F)
+            memcpy(pdst+offs, bits, tex->m_width*components*sizeof(unsigned short));
          // we already did a range check above, so use faster float2half code variants
-         if (tex->IsSigned())
-            float2half_noF16MaxInfNaN(pdst+offs, (const float*)bits, tex->m_width*3);
+         else if (tex->IsSigned())
+            float2half_noF16MaxInfNaN(pdst+offs, (const float*)bits, tex->m_width*components);
          else
-            float2half_pos_noF16MaxInfNaN(pdst+offs, (const float*)bits, tex->m_width*3);
+            float2half_pos_noF16MaxInfNaN(pdst+offs, (const float*)bits, tex->m_width*components);
          bits += pitch;
       }
       tex->SetIsOpaque(true);
@@ -524,6 +528,52 @@ BaseTexture* BaseTexture::ToBGRA()
             tmp[o * 4 + 1] = (int)clamp(g * n, 0.f, 255.f);
             tmp[o * 4 + 2] = (int)clamp(r * n, 0.f, 255.f);
             tmp[o * 4 + 3] = 255;
+         }
+   }
+   else if (m_format == BaseTexture::RGBA_FP16) // Tonemap for 8bpc-Display
+   {
+      const unsigned short* const __restrict src = (unsigned short*)data();
+      size_t o = 0;
+      const bool isWinXP = GetWinVersion() < 2600;
+      for (unsigned int j = 0; j < height(); ++j)
+         for (unsigned int i = 0; i < width(); ++i, ++o)
+         {
+            const float rf = half2float(src[o * 4 + 0]);
+            const float gf = half2float(src[o * 4 + 1]);
+            const float bf = half2float(src[o * 4 + 2]);
+            const int alpha = (int)clamp(half2float(src[o * 4 + 3]) * 255.f, 0.f, 255.f);
+            const float l = rf * 0.176204f + gf * 0.812985f + bf * 0.0108109f;
+            const float n = (l * (float)(255. * 0.25) + 255.0f) / (l + 1.0f); // simple tonemap and scale by 255, overflow is handled by clamp below
+            int r = (int)clamp(bf * n, 0.f, 255.f);
+            int g = (int)clamp(gf * n, 0.f, 255.f);
+            int b = (int)clamp(rf * n, 0.f, 255.f);
+            if (!isWinXP) // For everything newer than Windows XP: use the alpha in the bitmap, thus RGB needs to be premultiplied with alpha, due to how AlphaBlend() works
+            {
+               if (alpha == 0) // adds a checkerboard where completely transparent (for the image manager display)
+               {
+                  r = g = b = ((((i >> 4) ^ (j >> 4)) & 1) << 7) + 127;
+               }
+               else if (alpha != 255) // premultiply alpha for win32 AlphaBlend()
+               {
+                  r = r * alpha >> 8;
+                  g = g * alpha >> 8;
+                  b = b * alpha >> 8;
+               }
+            }
+            else
+            {
+               if (alpha != 255)
+               {
+                  const unsigned int c = (((((i >> 4) ^ (j >> 4)) & 1) << 7) + 127) * (255 - alpha);
+                  r = (r * alpha + c) >> 8;
+                  g = (g * alpha + c) >> 8;
+                  b = (b * alpha + c) >> 8;
+               }
+            }
+            tmp[o * 4 + 0] = r;
+            tmp[o * 4 + 1] = g;
+            tmp[o * 4 + 2] = b;
+            tmp[o * 4 + 3] = alpha;
          }
    }
    else if (m_format == BaseTexture::BW)
