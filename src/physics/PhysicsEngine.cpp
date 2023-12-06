@@ -3,9 +3,6 @@
 
 PhysicsEngine::PhysicsEngine(PinTable *const table) : m_nudgeFilterX("x"), m_nudgeFilterY("y")
 {
-   m_StartTime_usec = usec();
-   m_curPhysicsFrameTime = m_StartTime_usec;
-   m_nextPhysicsFrameTime = m_curPhysicsFrameTime + PHYSICS_STEPTIME;
    m_physicsMaxLoops = table->m_PhysicsMaxLoops == 0xFFFFFFFFu ? 0 : table->m_PhysicsMaxLoops * (10000 / PHYSICS_STEPTIME) /*2*/;
    m_contacts.reserve(8);
 
@@ -114,19 +111,6 @@ PhysicsEngine::PhysicsEngine(PinTable *const table) : m_nudgeFilterX("x"), m_nud
    c_traversed = 0;
    c_tested = 0;
    c_deepTested = 0;
-#endif
-
-#ifdef PLAYBACK
-   if (m_playback)
-   {
-      float physicsStepTime;
-      ParseLog((LARGE_INTEGER*)&physicsStepTime, (LARGE_INTEGER*)&m_StartTime_usec);
-   }
-#endif
-
-#ifdef LOG
-   PLOGD.printf("Step Time %llu", m_StartTime_usec);
-   PLOGD.printf("End Frame");
 #endif
 }
 
@@ -475,6 +459,26 @@ void PhysicsEngine::OnPrepareFrame()
 void PhysicsEngine::OnFinishFrame()
 {
    m_lastFlipTime = usec();
+}
+
+void PhysicsEngine::StartPhysics()
+{
+   m_StartTime_usec = usec();
+   m_curPhysicsFrameTime = m_StartTime_usec;
+   m_nextPhysicsFrameTime = m_curPhysicsFrameTime + PHYSICS_STEPTIME;
+
+#ifdef PLAYBACK
+   if (m_playback)
+   {
+      float physicsStepTime;
+      ParseLog((LARGE_INTEGER*)&physicsStepTime, (LARGE_INTEGER*)&m_StartTime_usec);
+   }
+#endif
+
+#ifdef LOG
+   PLOGD.printf("Step Time %llu", m_StartTime_usec);
+   PLOGD.printf("End Frame");
+#endif
 }
 
 void PhysicsEngine::UpdatePhysics()

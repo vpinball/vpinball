@@ -19,7 +19,8 @@ public:
 
    void OnPrepareFrame();
    void OnFinishFrame();
-   
+
+   void StartPhysics();
    void UpdatePhysics();
 
    bool IsBallCollisionHandlingSwapped() const { return m_swap_ball_collision_handling; }

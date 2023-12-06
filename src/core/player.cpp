@@ -1225,6 +1225,7 @@ HRESULT Player::Init()
    ReadAccelerometerCalibration();
 
    wintimer_init();
+   m_physics->StartPhysics();
 
    m_liveUI = new LiveUI(m_renderer->m_pd3dPrimaryDevice);
 
