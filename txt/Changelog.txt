@@ -25,6 +25,10 @@ FIXES:
 
 - fix crash on tables with weird table info
 
+- fix out of memory crashes (Video capture and Image Manager)
+
+- fix wrong detection of alpha when loading BMPs stored in .vpx
+
 - fix potential multi-threading screw-up when loading textures
 
 - fix saving of custom keys for joypad input
