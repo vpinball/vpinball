@@ -445,7 +445,7 @@ FI_ENUM(FREE_IMAGE_TYPE) {
 	FIT_RGBF	= 11,	//! 96-bit RGB float image	: 3 x 32-bit IEEE floating point
 	FIT_RGBAF	= 12,	//! 128-bit RGBA float image	: 4 x 32-bit IEEE floating point
 	FIT_RGB16F	= 13,	//! 48-bit RGB float image			: 3 x 16-bit IEEE floating point
-	FIT_RGBA16F	= 14,	//! 64-bit RGBA float image		: 4 x 16-bit IEEE floating point
+	FIT_RGBA16F	= 14	//! 64-bit RGBA float image		: 4 x 16-bit IEEE floating point
 };
 
 /** Image color type used in FreeImage.
@@ -688,6 +688,7 @@ typedef void (DLL_CALLCONV *FI_InitProc)(Plugin *plugin, int format_id);
 #define EXR_PXR24			0x0010	//! save with lossy 24-bit float compression
 #define EXR_B44				0x0020	//! save with lossy 44% float compression - goes to 22% when combined with EXR_LC
 #define EXR_LC				0x0040	//! save images with one luminance and two chroma channels, rather than as RGB (lossy compression)
+#define EXR_ALLOW_FOR_FP16	0x80000
 #define FAXG3_DEFAULT		0
 #define GIF_DEFAULT			0
 #define GIF_LOAD256			1		//! load the image as a 256 color image with ununsed palette entries, if it's 16 or 2 color

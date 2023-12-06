@@ -301,7 +301,7 @@ BaseTexture* BaseTexture::CreateFromFile(const string& szfile, unsigned int maxT
    // check that the plugin has reading capabilities ...
    if ((fif != FIF_UNKNOWN) && FreeImage_FIFSupportsReading(fif)) {
       // ok, let's load the file
-      FIBITMAP * const dib = FreeImage_Load(fif, szfile.c_str(), 0);
+      FIBITMAP * const dib = FreeImage_Load(fif, szfile.c_str(), EXR_ALLOW_FOR_FP16);
       if (!dib)
          return nullptr;
       
