@@ -257,6 +257,10 @@ FIXES:
 
 - fix crash on tables with weird table info
 
+- fix out of memory crashes (Video capture and Image Manager)
+
+- fix wrong detection of alpha when loading BMPs stored in .vpx
+
 - fix potential multi-threading screw-up when loading textures
 
 - fix changing the timer settings not marking the table as dirty
@@ -299,6 +303,10 @@ FIXES:
 - fix crash if sound card(s) hardware/driver setup changed
 
 - fix crash on tables with weird table info
+
+- fix out of memory crashes (Video capture and Image Manager)
+
+- fix wrong detection of alpha when loading BMPs stored in .vpx
 
 - fix potential multi-threading screw-up when loading textures
 
