@@ -992,7 +992,16 @@ STDMETHODIMP Flasher::put_VideoCapUpdate(BSTR cWinTitle)
         //source videocap found.  lets start!
         GetClientRect(m_videoCapHwnd, &m_videoSourceRect);
         ResetVideoCap();
-        m_videoCapTex = new BaseTexture(m_videoCapWidth, m_videoCapHeight, BaseTexture::SRGBA);
+        try
+        {
+           m_videoCapTex = new BaseTexture(m_videoCapWidth, m_videoCapHeight, BaseTexture::SRGBA);
+        }
+        catch (...)
+        {
+           delete m_videoCapTex;
+           m_videoCapTex = nullptr;
+           return S_FAIL;
+        }
     }
 
     // Retrieve the handle to a display device context for the client
