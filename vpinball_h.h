@@ -79,13 +79,13 @@ private:
    void InitRegValues();
    bool CanClose();
    void GetMyPath();
-   void GetMyPrefPath();
    void UpdateRecentFileList(const string& szfilename);
 
    bool ApcHost_OnTranslateMessage(MSG* pmsg);
    bool processKeyInputForDialogs(MSG *pmsg);
 
 public:
+   void GetMyPrefPath();
    void AddMDITable(PinTableMDI* mdiTable);
    CMenu GetMainMenu(int id);
    void CloseAllDialogs();

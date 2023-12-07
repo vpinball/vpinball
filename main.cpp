@@ -778,9 +778,18 @@ public:
 #endif
 #endif
 
-      // Default ini path (can be overriden from command line)
+      // Default ini path (can be overriden from command line via m_szIniFileName)
       if (m_szIniFileName.empty())
-         m_szIniFileName = m_vpinball.m_szMyPrefPath + "VPinballX.ini"s;
+      {
+         FILE *f;
+         // first check if there is a .ini next to the .exe, otherwise use the default location
+         if ((fopen_s(&f, (m_vpinball.m_szMyPath + "VPinballX.ini").c_str(), "r") == 0) && f)
+         {
+            m_vpinball.m_szMyPrefPath = m_vpinball.m_szMyPath;
+            fclose(f);
+         }
+         m_szIniFileName = m_vpinball.m_szMyPrefPath + "VPinballX.ini";
+      }
 
       m_vpinball.m_settings.LoadFromFile(m_szIniFileName, true);
       m_vpinball.m_settings.SaveValue(Settings::Version, "VPinball"s, VP_VERSION_STRING_DIGITS);

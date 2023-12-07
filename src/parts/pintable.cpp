@@ -1689,7 +1689,7 @@ void PinTable::InitBuiltinTable(const size_t tableId)
    const LocalString ls(IDS_TABLE);
    m_szTitle = ls.m_szbuffer/*"Table"*/ + std::to_string(m_vpinball->m_NextTableID);
    m_vpinball->m_NextTableID++;
-   m_settings.SetIniPath("");
+   m_settings.SetIniPath(string());
    m_szFileName.clear();
 #endif
 }

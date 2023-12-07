@@ -814,9 +814,9 @@ BEGIN
     LTEXT           "Note:\nInserting a negative value in this Flipper section will not modify the respective table-specific Flipper setting",IDC_STATIC,144,79,53,84
 END
 
-IDD_EDITOR_OPTIONS DIALOGEX 0, 0, 356, 199
+IDD_EDITOR_OPTIONS DIALOGEX 0, 0, 356, 221
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Editor/UI Options"
+CAPTION "INI / Editor / UI Options"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     CONTROL         "Auto-&save tables every",IDC_AUTOSAVE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,19,93,10
@@ -863,10 +863,12 @@ BEGIN
     LTEXT           "Grid size",IDC_STATIC,206,162,29,8
     EDITTEXT        IDC_GRID_SIZE,237,160,27,12,ES_AUTOHSCROLL
     PUSHBUTTON      "Default colors",IDC_DEFAULT_COLORS_BUTTON,299,159,50,14
-    PUSHBUTTON      "Reset to Defaults",IDC_SET_DEFAULTS_BUTTON,5,181,81,14
-    PUSHBUTTON      "Reset Window Positions",IDC_RESET_WINDOW_POS,91,181,81,14
-    DEFPUSHBUTTON   "&OK",IDOK,247,181,50,14
-    PUSHBUTTON      "&Cancel",IDCANCEL,302,181,50,14
+    CONTROL         "Store settings file (VPinballX.ini + BAMViewSettings.xml) in same folder as executable",IDC_STORE_INI_LOCATION,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,184,343,10
+    PUSHBUTTON      "Reset to Defaults",IDC_SET_DEFAULTS_BUTTON,5,203,81,14
+    PUSHBUTTON      "Reset Window Positions",IDC_RESET_WINDOW_POS,91,203,81,14
+    DEFPUSHBUTTON   "&OK",IDOK,247,203,50,14
+    PUSHBUTTON      "&Cancel",IDCANCEL,302,203,50,14
 END
 
 IDD_COLLECTDIALOG DIALOGEX 0, 0, 316, 167
@@ -2528,6 +2530,7 @@ BEGIN
 
     IDD_EDITOR_OPTIONS, DIALOG
     BEGIN
+        BOTTOMMARGIN, 199
     END
 
     IDD_COLLECTDIALOG, DIALOG
@@ -3040,7 +3043,7 @@ BEGIN
 #ifdef ENABLE_SDL
         MENUITEM "V&R Settings...",             ID_EDIT_VROPTIONS
 #endif
-        MENUITEM "&Editor/UI Options...",       ID_EDIT_EDITOROPTIONS
+        MENUITEM "INI/&Editor/UI Options...",   ID_EDIT_EDITOROPTIONS
         MENUITEM "Configure &Keys, Nudge and DOF...", ID_EDIT_KEYS
         MENUITEM "Configure (Optional) Global &Physics Sets...", ID_EDIT_PHYSICSOPTIONS
         MENUITEM "&Scripting Security Options...", ID_PREFERENCES_SECURITYOPTIONS

@@ -110,7 +110,7 @@ VPinball::VPinball()
    m_hbmInPlayMode = nullptr;
 
    GetMyPath();				//Store path of vpinball.exe in m_szMyPath and m_wzMyPath
-   GetMyPrefPath();			//Store preference path of vpinball.exe in m_szMyPath
+   GetMyPrefPath();			//Store preference path of vpinball.exe in m_szMyPrefPath
 
 #ifndef __STANDALONE__
 #ifdef _WIN64
@@ -199,7 +199,7 @@ void VPinball::GetMyPrefPath()
 #ifdef _WIN32
    // Use standard Windows AppData directory (to avoid requesting write permissions, and behave correctly for Windows restore,...)
    // That would look something like: C:\Users\bob\AppData\Roaming\VPinballX\ 
-   m_szMyPrefPath = string(GetAppDataPath()) + PATH_SEPARATOR_CHAR + "VPinballX"s + PATH_SEPARATOR_CHAR;
+   m_szMyPrefPath = string(GetAppDataPath()) + PATH_SEPARATOR_CHAR + "VPinballX" + PATH_SEPARATOR_CHAR;
 #elif defined(__ANDROID__)
    char *szPrefPath = SDL_GetPrefPath(NULL, NULL);
    m_szMyPrefPath = szPrefPath;

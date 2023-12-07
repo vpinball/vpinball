@@ -21,7 +21,7 @@ public:
 
    void CopyOverrides(const Settings &settings);
 
-   // Save only actually save the settings if they have been modified. If you want to force a save (for example if filepath has changed), you need to expcitely set the modified flag
+   // Only actually save the settings if they have been modified. If you want to force a save (for example if filepath has changed), you need to explicitly set the modified flag
    bool IsModified() const { return m_modified; }
    void SetModified(const bool modified) { m_modified = modified; }
 
