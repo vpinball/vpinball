@@ -72,7 +72,7 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
          ListView_SetExtendedListViewStyle(hListView, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
 
-         LVCOLUMN lvcol;
+         LVCOLUMN lvcol = {};
          lvcol.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_FMT;
          const LocalString ls(IDS_NAME);
          lvcol.pszText = (LPSTR)ls.m_szbuffer; // = "Name";
@@ -223,8 +223,8 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
                const int count = ListView_GetSelectedCount(GetDlgItem(IDC_SOUNDLIST).GetHwnd());
                const BOOL enable = !(count > 1);
-               ::EnableWindow(GetDlgItem(IDC_REIMPORTFROM).GetHwnd(), enable);
-               ::EnableWindow(GetDlgItem(IDC_RENAME).GetHwnd(), enable);
+               GetDlgItem(IDC_REIMPORTFROM).EnableWindow(enable);
+               GetDlgItem(IDC_RENAME).EnableWindow(enable);
             }
             //EnableWindow(GetDlgItem(hwndDlg, IDC_EXPORT), enable);
          }

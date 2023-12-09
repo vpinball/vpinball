@@ -74,7 +74,7 @@ BOOL TableInfoDialog::OnInitDialog()
 
    // Set up custom info list
    {
-      LVCOLUMN lvcol;
+      LVCOLUMN lvcol = {};
       lvcol.mask = LVCF_TEXT | LVCF_WIDTH;
       const LocalString ls3(IDS_NAME);
       lvcol.pszText = (LPSTR)ls3.m_szbuffer; // = "Name";

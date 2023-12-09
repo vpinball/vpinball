@@ -2226,7 +2226,7 @@ INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
    {
       SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
 
-      LVCOLUMN lvcol;
+      LVCOLUMN lvcol = {};
       lvcol.mask = LVCF_TEXT | LVCF_WIDTH;
       const LocalString ls(IDS_NAME);
       lvcol.pszText = (LPSTR)ls.m_szbuffer; // = "Name";

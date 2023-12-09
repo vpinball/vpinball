@@ -95,10 +95,10 @@ void VideoOptionsDialog::ResetVideoPreferences(const unsigned int profile) // 0 
       SetDlgItemText(IDC_BALL_DECAL_EDIT, "");
       if (true)
       {
-         ::EnableWindow(GetDlgItem(IDC_BROWSE_BALL_IMAGE).GetHwnd(), FALSE);
-         ::EnableWindow(GetDlgItem(IDC_BROWSE_BALL_DECAL).GetHwnd(), FALSE);
-         ::EnableWindow(GetDlgItem(IDC_BALL_IMAGE_EDIT).GetHwnd(), FALSE);
-         ::EnableWindow(GetDlgItem(IDC_BALL_DECAL_EDIT).GetHwnd(), FALSE);
+         GetDlgItem(IDC_BROWSE_BALL_IMAGE).EnableWindow(FALSE);
+         GetDlgItem(IDC_BROWSE_BALL_DECAL).EnableWindow(FALSE);
+         GetDlgItem(IDC_BALL_IMAGE_EDIT).EnableWindow(FALSE);
+         GetDlgItem(IDC_BALL_DECAL_EDIT).EnableWindow(FALSE);
       }
    }
 
@@ -563,10 +563,10 @@ void VideoOptionsDialog::LoadSettings()
    SetDlgItemText(IDC_BALL_DECAL_EDIT, imageName.c_str());
    if (overwiteBallImage == 0)
    {
-      ::EnableWindow(GetDlgItem(IDC_BROWSE_BALL_IMAGE).GetHwnd(), FALSE);
-      ::EnableWindow(GetDlgItem(IDC_BROWSE_BALL_DECAL).GetHwnd(), FALSE);
-      ::EnableWindow(GetDlgItem(IDC_BALL_IMAGE_EDIT).GetHwnd(), FALSE);
-      ::EnableWindow(GetDlgItem(IDC_BALL_DECAL_EDIT).GetHwnd(), FALSE);
+      GetDlgItem(IDC_BROWSE_BALL_IMAGE).EnableWindow(FALSE);
+      GetDlgItem(IDC_BROWSE_BALL_DECAL).EnableWindow(FALSE);
+      GetDlgItem(IDC_BALL_IMAGE_EDIT).EnableWindow(FALSE);
+      GetDlgItem(IDC_BALL_DECAL_EDIT).EnableWindow(FALSE);
    }
 
    const int fxaa = settings.LoadValueWithDefault(Settings::Player, "FXAA"s, (int)Standard_FXAA);
@@ -587,7 +587,7 @@ void VideoOptionsDialog::LoadSettings()
    #ifdef ENABLE_SDL
    fakeStereo = settings.LoadValueWithDefault(Settings::Player, "Stereo3DFake"s, false);
    #else
-   ::EnableWindow(GetDlgItem(IDC_FAKE_STEREO).GetHwnd(), FALSE);
+   GetDlgItem(IDC_FAKE_STEREO).EnableWindow(FALSE);
    #endif
    SendDlgItemMessage(IDC_FAKE_STEREO, BM_SETCHECK, fakeStereo ? BST_CHECKED : BST_UNCHECKED, 0);
 

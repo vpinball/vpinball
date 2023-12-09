@@ -152,10 +152,10 @@ INT_PTR SoundDialog::DialogProc( UINT uMsg, WPARAM wParam, LPARAM lParam )
                 {
                     const int count = ListView_GetSelectedCount( hSoundList );
                     const BOOL enable = !(count > 1);
-                    ::EnableWindow( GetDlgItem(IDC_REIMPORTFROM).GetHwnd(), enable );
-                    ::EnableWindow( GetDlgItem(IDC_RENAME).GetHwnd(), enable );
-                    ::EnableWindow( GetDlgItem(IDC_PLAY).GetHwnd(), enable );
-                    ::EnableWindow( GetDlgItem(IDC_STOP).GetHwnd(), fFalse );
+                    GetDlgItem(IDC_REIMPORTFROM).EnableWindow( enable );
+                    GetDlgItem(IDC_RENAME).EnableWindow( enable );
+                    GetDlgItem(IDC_PLAY).EnableWindow( enable );
+                    GetDlgItem(IDC_STOP).EnableWindow( fFalse );
                     if (pt)
                         pt->StopAllSounds(); 
                 }
@@ -193,7 +193,7 @@ BOOL SoundDialog::OnCommand( WPARAM wParam, LPARAM lParam )
                 ListView_GetItem( hSoundList, &lvitem );
                 PinSound * const pps = (PinSound *)lvitem.lParam;
                 pps->Stop();
-                ::EnableWindow(GetDlgItem(IDC_STOP).GetHwnd(), fFalse);
+                GetDlgItem(IDC_STOP).EnableWindow(fFalse);
             }
             break;
         }
@@ -214,7 +214,7 @@ BOOL SoundDialog::OnCommand( WPARAM wParam, LPARAM lParam )
                 const float front_rear_fade = dequantizeSignedPercent(pps->m_fade);
                 pps->Play((1.0f + volume) * 100.0f, 0.0f, 0, pan, front_rear_fade, 0, false);
 
-                ::EnableWindow(GetDlgItem(IDC_STOP).GetHwnd(), fTrue);
+                GetDlgItem(IDC_STOP).EnableWindow(fTrue);
             }
             break;
         }
@@ -706,7 +706,7 @@ void SoundPositionDialog::SetTextValues()
 
 void SoundPositionDialog::SetTextValue(int ctl, int val)
 {
-    char textBuf[MAXNAMEBUFFER];
+	char textBuf[MAXNAMEBUFFER];
 	sprintf_s(textBuf, sizeof(textBuf), "%.03f", dequantizeSignedPercent(val));
 	const CString textStr(textBuf);
 	SetDlgItemText(ctl, textStr);

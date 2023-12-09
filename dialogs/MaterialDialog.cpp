@@ -18,18 +18,18 @@ bool MaterialDialog::m_deletingItem;
 
 void MaterialDialog::EnableAllMaterialDialogItems(const BOOL e)
 {
-   ::EnableWindow(GetDlgItem(IDC_MATERIAL_TYPE).GetHwnd(), e);
-   ::EnableWindow(GetDlgItem(IDC_DIFFUSE_EDIT).GetHwnd(), e);
-   ::EnableWindow(GetDlgItem(IDC_GLOSSY_EDIT).GetHwnd(), e);
-   ::EnableWindow(GetDlgItem(IDC_GLOSSY_IMGLERP_EDIT).GetHwnd(), e);
-   ::EnableWindow(GetDlgItem(IDC_THICKNESS_EDIT).GetHwnd(), e);
-   ::EnableWindow(GetDlgItem(IDC_SPECULAR_EDIT).GetHwnd(), e);
-   ::EnableWindow(GetDlgItem(IDC_OPACITY_EDIT).GetHwnd(), e);
-   ::EnableWindow(GetDlgItem(IDC_OPACITY_CHECK).GetHwnd(), e);
-   ::EnableWindow(GetDlgItem(IDC_EDGEALPHA_EDIT).GetHwnd(), e);
-   ::EnableWindow(GetDlgItem(IDC_CLONE_BUTTON).GetHwnd(), e);
-   ::EnableWindow(GetDlgItem(IDC_RENAME).GetHwnd(), e);
-   ::EnableWindow(GetDlgItem(IDC_IMPORT).GetHwnd(), e);
+   GetDlgItem(IDC_MATERIAL_TYPE).EnableWindow(e);
+   GetDlgItem(IDC_DIFFUSE_EDIT).EnableWindow(e);
+   GetDlgItem(IDC_GLOSSY_EDIT).EnableWindow(e);
+   GetDlgItem(IDC_GLOSSY_IMGLERP_EDIT).EnableWindow(e);
+   GetDlgItem(IDC_THICKNESS_EDIT).EnableWindow(e);
+   GetDlgItem(IDC_SPECULAR_EDIT).EnableWindow(e);
+   GetDlgItem(IDC_OPACITY_EDIT).EnableWindow(e);
+   GetDlgItem(IDC_OPACITY_CHECK).EnableWindow(e);
+   GetDlgItem(IDC_EDGEALPHA_EDIT).EnableWindow(e);
+   GetDlgItem(IDC_CLONE_BUTTON).EnableWindow(e);
+   GetDlgItem(IDC_RENAME).EnableWindow(e);
+   GetDlgItem(IDC_IMPORT).EnableWindow(e);
 }
 
 float MaterialDialog::getItemText(int id)
@@ -120,7 +120,7 @@ BOOL MaterialDialog::OnInitDialog()
 
    LoadPosition();
    ListView_SetExtendedListViewStyle(m_hMaterialList, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
-   LVCOLUMN lvcol;
+   LVCOLUMN lvcol = {};
    lvcol.mask = LVCF_TEXT | LVCF_WIDTH;
    const LocalString ls(IDS_NAME);
    lvcol.pszText = (LPSTR)ls.m_szbuffer; // = "Name";
@@ -134,9 +134,10 @@ BOOL MaterialDialog::OnInitDialog()
    ListView_InsertColumn(m_hMaterialList, 1, &lvcol);
    pt->ListMaterials(m_hMaterialList);
 
-   ListView_SetItemState(m_hMaterialList, 0, LVIS_SELECTED, LVIS_SELECTED)
+   ListView_SetItemState(m_hMaterialList, 0, LVIS_SELECTED, LVIS_SELECTED);
+   GotoDlgCtrl(m_hMaterialList);
 
-   return TRUE;
+   return FALSE;
 }
 
 BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
@@ -561,6 +562,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
          }
          break;
       }
+      default: return FALSE;
    }
    return TRUE;
 }
@@ -588,19 +590,19 @@ void MaterialDialog::SetEditedMaterial(const Material& mat)
    GetDlgItem(IDC_GLOSSY_IMGLERP_EDIT).EnableWindow(mat.m_type != Material::METAL && count == 1);
    m_colorButton2.SetColor(mat.m_cGlossy);
    setItemText(IDC_GLOSSY_IMGLERP_EDIT, mat.m_fGlossyImageLerp);
-   
+
    // Roughness
    GetDlgItem(IDC_GLOSSY_EDIT).EnableWindow(count == 1);
    setItemText(IDC_GLOSSY_EDIT, mat.m_fRoughness);
-   
+
    // Clearcoat
    m_colorButton3.EnableWindow(count == 1);
    m_colorButton3.SetColor(mat.m_cClearcoat);
-   
+
    // Edge brightness
    GetDlgItem(IDC_SPECULAR_EDIT).EnableWindow(count == 1);
    setItemText(IDC_SPECULAR_EDIT, mat.m_fEdge);
-   
+
    // Transparency
    GetDlgItem(IDC_OPACITY_CHECK).EnableWindow(count == 1);
    GetDlgItem(IDC_OPACITY_EDIT).EnableWindow(count == 1);
@@ -612,12 +614,14 @@ void MaterialDialog::SetEditedMaterial(const Material& mat)
    setItemText(IDC_EDGEALPHA_EDIT, mat.m_fEdgeAlpha);
    setItemText(IDC_THICKNESS_EDIT, mat.m_fThickness);
    m_colorButton4.SetColor(mat.m_cRefractionTint);
-   
+
    // Physics
    setItemText(IDC_MAT_ELASTICITY, mat.m_fElasticity);
    setItemText(IDC_MAT_ELASTICITY_FALLOFF, mat.m_fElasticityFalloff);
    setItemText(IDC_MAT_FRICTION, mat.m_fFriction);
    setItemText(IDC_MAT_SCATTER_ANGLE, mat.m_fScatterAngle);
+
+   ::SetFocus(m_hMaterialList); // workaround focus issue, where the main UI window is in focus instead :/
 }
 
 void MaterialDialog::SaveEditedMaterial(Material& mat)
@@ -755,9 +759,11 @@ INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             {
                if (m_deletingItem)
                    break;
-               EnableAllMaterialDialogItems(FALSE);
                if (ListView_GetSelectedCount(m_hMaterialList) > 1)
+               {
+                  EnableAllMaterialDialogItems(FALSE);
                   break;
+               }
                NMLISTVIEW * const plistview = (LPNMLISTVIEW)lParam;
                if ((plistview->uNewState & LVIS_SELECTED) != (plistview->uOldState & LVIS_SELECTED))
                {
@@ -779,9 +785,11 @@ INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             {
                if (m_deletingItem)
                    break;
-               EnableAllMaterialDialogItems(FALSE);
                if (ListView_GetSelectedCount(m_hMaterialList) > 1)
+               {
+                  EnableAllMaterialDialogItems(FALSE);
                   break;
+               }
                NMLISTVIEW * const plistview = (LPNMLISTVIEW)lParam;
                const int sel = plistview->iItem;
                LVITEM lvitem;

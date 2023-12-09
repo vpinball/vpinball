@@ -281,6 +281,8 @@ FIXES:
 
 - fix changing the timer settings not marking the table as dirty
 
+- fix keyboard navigation in Material dialogue
+
 - improve UI scaling on high resolutions (e.g. 4K)
 
 - update example tables with new raytraced ball shadows enabled and other new features

@@ -135,13 +135,13 @@ BOOL TableVisualsProperty::OnInitDialog()
     m_ballImageCombo.AttachItem(DISPID_Image3);
     m_ballDecalCombo.AttachItem(DISPID_Image4);
     m_reflectionStrengthEdit.AttachItem(IDC_REFLECTION_PLAYFIELD);
-    m_hLogoModeCheck = GetDlgItem(IDC_BALL_DECAL_MODE);
-    m_hSphericalMapCheck = GetDlgItem(IDC_BALL_SPHERICAL_MAP);
+    m_hLogoModeCheck = GetDlgItem(IDC_BALL_DECAL_MODE).GetHwnd();
+    m_hSphericalMapCheck = GetDlgItem(IDC_BALL_SPHERICAL_MAP).GetHwnd();
     m_ballReflectPlayfieldEdit.AttachItem(IDC_BALLPLAYFIELD_REFLECTION);
     m_ballDefaultBulbIntensScaleEdit.AttachItem(IDC_BULBINTENSITYSCALE);
-    m_hEnableAOCheck = GetDlgItem(IDC_ENABLE_AO);
+    m_hEnableAOCheck = GetDlgItem(IDC_ENABLE_AO).GetHwnd();
     m_ambientOcclusionScaleEdit.AttachItem(IDC_AOSCALE);
-    m_hEnableSSRCheck = GetDlgItem(IDC_ENABLE_SSR);
+    m_hEnableSSRCheck = GetDlgItem(IDC_ENABLE_SSR).GetHwnd();
     m_screenSpaceReflEdit.AttachItem(IDC_SSR_STRENGTH);
     m_bloomStrengthEdit.AttachItem(IDC_BLOOM_STRENGTH);
     m_toneMapperCombo.AttachItem(IDC_TONEMAPPER);

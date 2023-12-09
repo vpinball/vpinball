@@ -164,7 +164,7 @@ INT_PTR DimensionDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             else if (LOWORD(wParam) == IDC_VP_WIDTH)
             {
                ret = sscanf_s(GetDlgItemText(IDC_VP_WIDTH).c_str(), "%f", &vpWidth);
-               if (ret != 1 || vpWidth < 0)
+               if (ret != 1 || vpWidth < 0.0f)
                   vpWidth = 0;
                const float width = (float)VPUTOINCHES(vpWidth);
                sprintf_s(textBuf, sizeof(textBuf), "%.3f", width);
@@ -174,7 +174,7 @@ INT_PTR DimensionDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             else if (LOWORD(wParam) == IDC_VP_HEIGHT)
             {
                ret = sscanf_s(GetDlgItemText(IDC_VP_HEIGHT).c_str(), "%f", &vpHeight);
-               if (ret != 1 || vpHeight < 0)
+               if (ret != 1 || vpHeight < 0.0f)
                   vpHeight = 0;
                const float height = (float)VPUTOINCHES(vpHeight);
                sprintf_s(textBuf, sizeof(textBuf), "%.03f", height);
