@@ -5,9 +5,9 @@ set -e
 SDL2_VERSION=2.28.5
 SDL2_IMAGE_VERSION=2.6.3
 
-PINMAME_SHA=4185c2798eff561ff8d37086b4039bed176ee799
-SERUM_SHA=ea90a5460b47d77e4cf1deacdacddbdb94c25067
-ZEDMD_SHA=499b1c094d49ae9bd988326475c51686b1415186
+PINMAME_SHA=990dd1b93bedb13b512af3db434edcb190dd9b32
+LIBSERUM_SHA=ea90a5460b47d77e4cf1deacdacddbdb94c25067
+LIBZEDMD_SHA=499b1c094d49ae9bd988326475c51686b1415186
 
 if [[ $(uname) == "Linux" ]]; then
 	NUM_PROCS=$(nproc)
@@ -21,8 +21,8 @@ echo "Building external libraries..."
 echo "  SDL2_VERSION: ${SDL2_VERSION}"
 echo "  SDL2_IMAGE_VERSION: ${SDL2_IMAGE_VERSION}"
 echo "  PINMAME_SHA: ${PINMAME_SHA}"
-echo "  SERUM_SHA: ${SERUM_SHA}"
-echo "  ZEDMD_SHA: ${ZEDMD_SHA}"
+echo "  LIBSERUM_SHA: ${LIBSERUM_SHA}"
+echo "  LIBZEDMD_SHA: ${LIBZEDMD_SHA}"
 echo "  NUM_PROCS: ${NUM_PROCS}"
 echo ""
 
@@ -136,9 +136,9 @@ cd ..
 # build libserum and copy to external
 #
 
-curl -sL https://github.com/zesinger/libserum/archive/${SERUM_SHA}.zip -o libserum.zip
+curl -sL https://github.com/zesinger/libserum/archive/${LIBSERUM_SHA}.zip -o libserum.zip
 unzip libserum.zip
-cd libserum-$SERUM_SHA
+cd libserum-$LIBSERUM_SHA
 cp src/serum-decode.h ../../external/include
 cmake -DCMAKE_BUILD_TYPE=Release -DUSE_ANDROID=ON -B build
 cmake --build build -- -j${NUM_PROCS}
@@ -149,9 +149,9 @@ cd ..
 # build libzedmd and copy to external
 #
 
-curl -sL https://github.com/PPUC/libzedmd/archive/${ZEDMD_SHA}.zip -o libzedmd.zip
+curl -sL https://github.com/PPUC/libzedmd/archive/${LIBZEDMD_SHA}.zip -o libzedmd.zip
 unzip libzedmd.zip
-cd libzedmd-$ZEDMD_SHA
+cd libzedmd-$LIBZEDMD_SHA
 cp src/ZeDMD.h ../../external/include
 cmake -DCMAKE_BUILD_TYPE=Release -DUSE_ANDROID=ON  -B build
 cmake --build build -- -j${NUM_PROCS}

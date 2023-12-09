@@ -30,7 +30,7 @@ STDMETHODIMP VPinMAMEGames::get_Item(VARIANT *pKey, IGame **pGame)
    if (V_VT(pKey) & VT_BSTR) {
       string szName = MakeString(V_BSTR(pKey));
 
-      if (PinmameGetGame(szName.c_str(), &GetGameCallback, this) == PINMAME_STATUS::OK)
+      if (PinmameGetGame(szName.c_str(), &GetGameCallback, this) == PINMAME_STATUS_OK)
          return (new VPinMAMEGame(m_pController, &m_pinmameGame))->QueryInterface(IID_IGame, (void**)pGame);
    }
 

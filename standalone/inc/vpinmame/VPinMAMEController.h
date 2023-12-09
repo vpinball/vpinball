@@ -176,12 +176,14 @@ public:
    static int CALLBACK OnAudioAvailable(PinmameAudioInfo* p_audioInfo, const void* pUserData);
    static int CALLBACK OnAudioUpdated(void* p_buffer, int samples, const void* pUserData);
    static void CALLBACK OnLogMessage(PINMAME_LOG_LEVEL logLevel, const char* format, va_list args, const void* pUserData);
+   static void CALLBACK OnSoundCommand(int boardNo, int cmd, const void* pUserData);
 
    void GetGameCallback(PinmameGame* pPinmameGame);
    void OnDisplayAvailable(int index, int displayCount, PinmameDisplayLayout* p_displayLayout);
    void OnDisplayUpdated(int index, void* p_displayData, PinmameDisplayLayout* p_displayLayout);
    int OnAudioAvailable(PinmameAudioInfo* p_audioInfo);
    int OnAudioUpdated(void* p_buffer, int samples);
+   void OnSoundCommand(int boardNo, int cmd);
 
    string GetIniPath() { return m_szIniPath; }
 

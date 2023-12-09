@@ -5,8 +5,8 @@ set -e
 SDL2_VERSION=2.28.5
 SDL2_IMAGE_VERSION=2.6.3
 
-PINMAME_SHA=4185c2798eff561ff8d37086b4039bed176ee799
-SERUM_SHA=ea90a5460b47d77e4cf1deacdacddbdb94c25067
+PINMAME_SHA=990dd1b93bedb13b512af3db434edcb190dd9b32
+LIBSERUM_SHA=ea90a5460b47d77e4cf1deacdacddbdb94c25067
 
 NUM_PROCS=$(sysctl -n hw.ncpu)
 
@@ -14,7 +14,7 @@ echo "Building external libraries..."
 echo "  SDL2_VERSION: ${SDL2_VERSION}"
 echo "  SDL2_IMAGE_VERSION: ${SDL2_IMAGE_VERSION}"
 echo "  PINMAME_SHA: ${PINMAME_SHA}"
-echo "  SERUM_SHA: ${SERUM_SHA}"
+echo "  LIBSERUM_SHA: ${LIBSERUM_SHA}"
 echo "  NUM_PROCS: ${NUM_PROCS}"
 echo ""
 
@@ -89,9 +89,9 @@ cd ..
 # build libserum and copy to external
 #
 
-curl -sL https://github.com/zesinger/libserum/archive/${SERUM_SHA}.zip -o libserum.zip
+curl -sL https://github.com/zesinger/libserum/archive/${LIBSERUM_SHA}.zip -o libserum.zip
 unzip libserum.zip
-cd libserum-$SERUM_SHA
+cd libserum-$LIBSERUM_SHA
 cp src/serum-decode.h ../../external/include
 cmake -DCMAKE_BUILD_TYPE=Release -DUSE_IOS=ON -B build
 cmake --build build -- -j${NUM_PROCS}

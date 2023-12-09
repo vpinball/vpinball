@@ -35,12 +35,17 @@ void CALLBACK VPinMAMEController::OnLogMessage(PINMAME_LOG_LEVEL logLevel, const
    char buffer[4096];
    vsnprintf(buffer, sizeof(buffer), format, args);
 
-   if (logLevel == PINMAME_LOG_LEVEL::LOG_INFO) {
+   if (logLevel == PINMAME_LOG_LEVEL_INFO) {
       PLOGI.printf("%s", buffer);
    }
-   else if (logLevel == PINMAME_LOG_LEVEL::LOG_ERROR) {
+   else if (logLevel == PINMAME_LOG_LEVEL_ERROR) {
       PLOGE.printf("%s", buffer);
    }
+}
+
+void CALLBACK VPinMAMEController::OnSoundCommand(int boardNo, int cmd, const void* pUserData)
+{
+   ((VPinMAMEController*)pUserData)->OnSoundCommand(boardNo, cmd);
 }
 
 void CALLBACK VPinMAMEController::GetGameCallback(PinmameGame* pPinmameGame)
@@ -71,11 +76,11 @@ void VPinMAMEController::OnDisplayAvailable(int index, int displayCount, Pinmame
       DMDUtil* pDmd = DMDUtil::GetInstance();
 
       for (int i = 0; i < m_displays.size(); i++) {
-         if ((m_displays[i].type & DMD) == DMD) {
+         if ((m_displays[i].type & PINMAME_DISPLAY_TYPE_DMD) == PINMAME_DISPLAY_TYPE_DMD) {
             m_dmdIndex = i;
 
             m_pDmdLevels = (UINT8*)((m_displays[i].depth == 2) ? LEVELS_WPC :
-               (PinmameGetHardwareGen() & (PINMAME_HARDWARE_GEN::SAM | PINMAME_HARDWARE_GEN::SPA)) ? LEVELS_SAM : LEVELS_GTS3);
+               (PinmameGetHardwareGen() & (PINMAME_HARDWARE_GEN_SAM | PINMAME_HARDWARE_GEN_SPA)) ? LEVELS_SAM : LEVELS_GTS3);
 
             if (!pDmd->IsActive()) {
                m_pDmd = pDmd;
@@ -93,28 +98,28 @@ void VPinMAMEController::OnDisplayAvailable(int index, int displayCount, Pinmame
          NumericalLayout layout = NumericalLayout::None;
          PINMAME_HARDWARE_GEN hardwareGen = PinmameGetHardwareGen();
          switch(hardwareGen) {
-            case PINMAME_HARDWARE_GEN::S3:
-            case PINMAME_HARDWARE_GEN::S3C:
-            case PINMAME_HARDWARE_GEN::S4:
-            case PINMAME_HARDWARE_GEN::S6:
+            case PINMAME_HARDWARE_GEN_S3:
+            case PINMAME_HARDWARE_GEN_S3C:
+            case PINMAME_HARDWARE_GEN_S4:
+            case PINMAME_HARDWARE_GEN_S6:
                layout = NumericalLayout::__2x6Num_2x6Num_4x1Num;
                break;
-            case PINMAME_HARDWARE_GEN::S7:
+            case PINMAME_HARDWARE_GEN_S7:
                layout = NumericalLayout::__2x7Num_2x7Num_4x1Num_gen7;
                break;
-            case PINMAME_HARDWARE_GEN::S9:
+            case PINMAME_HARDWARE_GEN_S9:
                layout = NumericalLayout::__2x7Num10_2x7Num10_4x1Num;
                break;
-            case PINMAME_HARDWARE_GEN::WPCALPHA_1:
-            case PINMAME_HARDWARE_GEN::WPCALPHA_2:
-            case PINMAME_HARDWARE_GEN::S11C:
-            case PINMAME_HARDWARE_GEN::S11B2:
+            case PINMAME_HARDWARE_GEN_WPCALPHA_1:
+            case PINMAME_HARDWARE_GEN_WPCALPHA_2:
+            case PINMAME_HARDWARE_GEN_S11C:
+            case PINMAME_HARDWARE_GEN_S11B2:
                layout = NumericalLayout::__2x16Alpha;
                break;
-            case PINMAME_HARDWARE_GEN::S11:
+            case PINMAME_HARDWARE_GEN_S11:
                layout = NumericalLayout::__6x4Num_4x1Num;
                break;
-            case PINMAME_HARDWARE_GEN::S11X:
+            case PINMAME_HARDWARE_GEN_S11X:
                switch(displayCount) {
                   case 2:
                      layout = NumericalLayout::__2x16Alpha;
@@ -130,7 +135,7 @@ void VPinMAMEController::OnDisplayAvailable(int index, int displayCount, Pinmame
                      break;
                }
                break;
-            case PINMAME_HARDWARE_GEN::DE:
+            case PINMAME_HARDWARE_GEN_DE:
                switch(displayCount) {
                   case 2:
                      layout = NumericalLayout::__2x16Alpha;
@@ -143,8 +148,8 @@ void VPinMAMEController::OnDisplayAvailable(int index, int displayCount, Pinmame
                      break;
                }
                break;
-            case PINMAME_HARDWARE_GEN::GTS1:
-            case PINMAME_HARDWARE_GEN::GTS80:
+            case PINMAME_HARDWARE_GEN_GTS1:
+            case PINMAME_HARDWARE_GEN_GTS80:
                switch(m_displays[0].length) {
                   case 6:
                      layout = NumericalLayout::__2x6Num10_2x6Num10_4x1Num;
@@ -154,12 +159,12 @@ void VPinMAMEController::OnDisplayAvailable(int index, int displayCount, Pinmame
                      break;
                }
                break;
-            case PINMAME_HARDWARE_GEN::GTS80B:
-            case PINMAME_HARDWARE_GEN::GTS3:
+            case PINMAME_HARDWARE_GEN_GTS80B:
+            case PINMAME_HARDWARE_GEN_GTS3:
                layout = NumericalLayout::__2x20Alpha;
                break;
-            case PINMAME_HARDWARE_GEN::STMPU100:
-            case PINMAME_HARDWARE_GEN::STMPU200:
+            case PINMAME_HARDWARE_GEN_STMPU100:
+            case PINMAME_HARDWARE_GEN_STMPU200:
                switch(m_displays[0].length) {
                   case 6:
                      layout = NumericalLayout::__2x6Num_2x6Num_4x1Num;
@@ -169,8 +174,8 @@ void VPinMAMEController::OnDisplayAvailable(int index, int displayCount, Pinmame
                      break;
                }
                break;
-            case PINMAME_HARDWARE_GEN::BY17:
-            case PINMAME_HARDWARE_GEN::BY35:
+            case PINMAME_HARDWARE_GEN_BY17:
+            case PINMAME_HARDWARE_GEN_BY35:
                switch(m_displays[0].length) {
                   case 6:
                      layout = NumericalLayout::__2x6Num_2x6Num_4x1Num;
@@ -183,14 +188,14 @@ void VPinMAMEController::OnDisplayAvailable(int index, int displayCount, Pinmame
                      break;
                }
                break;
-            case PINMAME_HARDWARE_GEN::BY6803:
-            case PINMAME_HARDWARE_GEN::BY6803A:
+            case PINMAME_HARDWARE_GEN_BY6803:
+            case PINMAME_HARDWARE_GEN_BY6803A:
                layout = NumericalLayout::__4x7Num10;
                break;
-            case PINMAME_HARDWARE_GEN::BYPROTO:
+            case PINMAME_HARDWARE_GEN_BYPROTO:
                layout = NumericalLayout::__2x6Num_2x6Num_4x1Num;
                break;
-            case PINMAME_HARDWARE_GEN::HNK:
+            case PINMAME_HARDWARE_GEN_HNK:
                layout = NumericalLayout::__2x20Alpha;
                break;
             default:
@@ -268,10 +273,14 @@ int VPinMAMEController::OnAudioUpdated(void* p_buffer, int samples)
    return samples;
 }
 
+void VPinMAMEController::OnSoundCommand(int boardNo, int cmd)
+{
+}
+
 VPinMAMEController::VPinMAMEController()
 {
    PinmameConfig config = { 
-      AUDIO_FORMAT_INT16, 
+      PINMAME_AUDIO_FORMAT_INT16,
       44100, 
       "", 
       NULL,
@@ -285,6 +294,7 @@ VPinMAMEController::VPinMAMEController()
       NULL,
       NULL,
       &VPinMAMEController::OnLogMessage,
+      &VPinMAMEController::OnSoundCommand,
    };
 
    Settings* const pSettings = &g_pplayer->m_ptable->m_settings;
@@ -320,7 +330,8 @@ VPinMAMEController::VPinMAMEController()
 
    PinmameSetConfig(&config);
    PinmameSetUserData((void*)this);
-   PinmameSetDmdMode(PINMAME_DMD_MODE::RAW);
+   PinmameSetDmdMode(PINMAME_DMD_MODE_RAW);
+   PinmameSetSoundMode(PINMAME_SOUND_MODE_DEFAULT);
 
    PinmameSetHandleKeyboard(0);
    PinmameSetHandleMechanics(0xFF);
@@ -414,7 +425,7 @@ STDMETHODIMP VPinMAMEController::Run(/*[in]*/ LONG_PTR hParentWnd, /*[in,default
 
       PINMAME_STATUS status = PinmameRun(m_pPinmameGame->name);
 
-      if (status == PINMAME_STATUS::OK) {
+      if (status == PINMAME_STATUS_OK) {
          int timeout = 0;
 
          while (!PinmameIsRunning() && timeout < 20) {
@@ -422,12 +433,12 @@ STDMETHODIMP VPinMAMEController::Run(/*[in]*/ LONG_PTR hParentWnd, /*[in,default
             timeout++;
          }
 
-         m_rgb = (PinmameGetHardwareGen() == PINMAME_HARDWARE_GEN::SAM);
+         m_rgb = (PinmameGetHardwareGen() == PINMAME_HARDWARE_GEN_SAM);
 
          return S_OK;
       }
 
-      if (status == PINMAME_STATUS::GAME_ALREADY_RUNNING) {
+      if (status == PINMAME_STATUS_GAME_ALREADY_RUNNING) {
          PLOGE.printf("Game already running.");
       }
    }
@@ -712,17 +723,17 @@ STDMETHODIMP VPinMAMEController::put_GameName(BSTR newVal)
 
    PINMAME_STATUS status = PinmameGetGame(szGameName, &VPinMAMEController::GetGameCallback, this);
 
-   if (status == PINMAME_STATUS::OK) {
+   if (status == PINMAME_STATUS_OK) {
       PLOGI.printf("Game found: name=%s, description=%s, manufacturer=%s, year=%s",
          m_pPinmameGame->name, m_pPinmameGame->description, m_pPinmameGame->manufacturer, m_pPinmameGame->year);
 
       return S_OK;
    }
 
-   if (status == PINMAME_STATUS::GAME_ALREADY_RUNNING) {
+   if (status == PINMAME_STATUS_GAME_ALREADY_RUNNING) {
       PLOGE.printf("Game already running.");
    }
-   else if (status == PINMAME_STATUS::GAME_NOT_FOUND) {
+   else if (status == PINMAME_STATUS_GAME_NOT_FOUND) {
       PLOGE.printf("Game name not found.");
    }
 
