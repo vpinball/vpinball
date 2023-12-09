@@ -507,7 +507,7 @@ STDMETHODIMP ScriptGlobalTable::get_MusicDirectory(VARIANT pSubDir, BSTR *pVal)
    if (V_VT(&pSubDir) != VT_ERROR && V_VT(&pSubDir) != VT_EMPTY && V_VT(&pSubDir) != VT_BSTR)
       return S_FALSE;
 
-   string endPath = V_VT(&pSubDir) == VT_BSTR ? (MakeString(V_BSTR(&pSubDir)) + PATH_SEPARATOR_CHAR) : string();
+   const string endPath = V_VT(&pSubDir) == VT_BSTR ? (MakeString(V_BSTR(&pSubDir)) + PATH_SEPARATOR_CHAR) : string();
    string szPath = m_vpinball->m_szMyPath + "music"s + PATH_SEPARATOR_CHAR + endPath;
    if (!DirExists(szPath))
    {
@@ -1373,7 +1373,7 @@ PinTable::PinTable()
    m_tblAutoStart = m_settings.LoadValueWithDefault(Settings::Player, "Autostart"s, 0) * 10;
    m_tblAutoStartRetry = m_settings.LoadValueWithDefault(Settings::Player, "AutostartRetry"s, 0) * 10;
    m_tblAutoStartEnabled = m_settings.LoadValueWithDefault(Settings::Player, "asenable"s, false);
-   m_tblVolmod = (float)m_settings.LoadValueWithDefault(Settings::Player, "Volmod"s, 1000) * (float)(1.0 / 1000.0);
+   m_tblVolmod = (float)m_settings.LoadValueWithDefault(Settings::Player, "Volmod"s, 1000) * (float)(1.0/1000.0);
    m_tblExitConfirm = m_settings.LoadValueWithDefault(Settings::Player, "Exitconfirm"s, 120) * 1000 / 60; // this is supposed to be seconds, but is seconds*60  :/
 
    m_global3DZPD = m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DZPD"s, 0.5f);
@@ -1513,6 +1513,7 @@ void PinTable::ClearForOverwrite()
 void PinTable::InitBuiltinTable(const size_t tableId)
 {
    string path;
+   // Get our new table resource, get it to be opened as a storage, and open it like a normal file
    switch (tableId)
    {
    case ID_NEW_EXAMPLETABLE: path = "exampleTable.vpx"s; break;
@@ -1528,7 +1529,7 @@ void PinTable::InitBuiltinTable(const size_t tableId)
    const LocalString ls(IDS_TABLE);
    m_szTitle = ls.m_szbuffer/*"Table"*/ + std::to_string(m_vpinball->m_NextTableID);
    m_vpinball->m_NextTableID++;
-   m_settings.SetIniPath("");
+   m_settings.SetIniPath(string());
    m_szFileName.clear();
 }
 
@@ -2563,7 +2564,7 @@ HRESULT PinTable::Save(const bool saveAs)
 
    const HRESULT hr = SaveToStorage(pstgRoot);
 
-   if (!FAILED(hr))
+   if (SUCCEEDED(hr))
    {
       pstgRoot->Commit(STGC_DEFAULT);
       pstgRoot->Release();
@@ -2577,7 +2578,7 @@ HRESULT PinTable::Save(const bool saveAs)
    }
 
    // Save user custom settings file (if any) along the table file
-   string szINIFilename = GetSettingsFileName();
+   const string szINIFilename = GetSettingsFileName();
    if (!szINIFilename.empty())
    {
       // Force saving as we may have upgraded the table version (from pre 10.8 to 10.8) or changed the file path
@@ -3186,6 +3187,7 @@ HRESULT PinTable::ReadInfoValue(IStorage* pstg, const WCHAR * const wzName, stri
 
       const int len = ss.cbSize.LowPart / (DWORD)sizeof(WCHAR);
       WCHAR * const wzT = new WCHAR[len + 1];
+      memset(wzT, 0, sizeof(WCHAR) * (len + 1));
       char* pszValue = new char[len + 1];
 
       ULONG read;
@@ -3284,7 +3286,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
    bw.WriteFloat(FID(BOTM), m_bottom);
 
    bw.WriteBool(FID(EFSS), m_BG_enable_FSS);
-   const int vsFields[NUM_BG_SETS][19] = { 
+   static constexpr int vsFields[NUM_BG_SETS][19] = { 
       { FID(VSM0), FID(ROTA), FID(INCL), FID(LAYB), FID(FOVX), FID(XLTX), FID(XLTY), FID(XLTZ), FID(SCLX), FID(SCLY), FID(SCLZ), FID(HOF0), FID(VOF0), FID(WTX0), FID(WTY0), FID(WTZ0), FID(WBX0), FID(WBY0), FID(WBZ0) },
       { FID(VSM1), FID(ROTF), FID(INCF), FID(LAYF), FID(FOVF), FID(XLFX), FID(XLFY), FID(XLFZ), FID(SCFX), FID(SCFY), FID(SCFZ), FID(HOF1), FID(VOF1), FID(WTX1), FID(WTY1), FID(WTZ1), FID(WBX1), FID(WBY1), FID(WBZ1) },
       { FID(VSM2), FID(ROFS), FID(INFS), FID(LAFS), FID(FOFS), FID(XLXS), FID(XLYS), FID(XLZS), FID(SCXS), FID(SCYS), FID(SCZS), FID(HOF2), FID(VOF2), FID(WTX2), FID(WTY2), FID(WTZ2), FID(WBX2), FID(WBY2), FID(WBZ2) },
@@ -3430,7 +3432,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
    // 10.8+ material saving (this format supports new properties, and can be extended in future versions, and does not perform quantizations)
    for (size_t i = 0; i < m_materials.size(); i++)
    {
-      const int record_size = m_materials[i]->GetSaveSize() + 2 *sizeof(int);
+      const size_t record_size = m_materials[i]->GetSaveSize() + 2 *sizeof(int);
       HGLOBAL hMem = ::GlobalAlloc(GMEM_MOVEABLE, record_size);
       CComPtr<IStream> spStream;
       const HRESULT hr = ::CreateStreamOnHGlobal(hMem, FALSE, &spStream);
@@ -3440,9 +3442,9 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
       LPVOID pData = ::GlobalLock(hMem);
       ULONG writ = 0;
       int id = FID(MATR);
-      bw.WriteRecordSize(sizeof(int) + record_size);
-      bw.WriteBytes(&id, sizeof(int), &writ);
-      bw.WriteBytes(pData, record_size, &writ);
+      bw.WriteRecordSize((int)(sizeof(int) + record_size));
+      bw.WriteBytes(&id, (ULONG)sizeof(int), &writ);
+      bw.WriteBytes(pData, (ULONG)record_size, &writ);
       ::GlobalUnlock(hMem);
    }
 
@@ -3716,7 +3718,6 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
                     MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName.c_str());
 
                     IStream* pstmItem;
-                    HRESULT hr;
                     if (SUCCEEDED(hr = pstgData->OpenStream(wszStmName, nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
                     {
                         hr = LoadImageFromStream(pstmItem, i, loadfileversion, true);
@@ -3729,8 +3730,9 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
 
                     if (!m_vimage[i] || m_vimage[i]->m_pdsBuffer == nullptr)
                         failed_load_img += '\n' + (m_vimage[i] ? m_vimage[i]->m_szName : szStmName);
-                    else if ((m_vimage[i]->m_realWidth > m_vimage[i]->m_width) || (m_vimage[i]->m_realHeight > m_vimage[i]->m_height)) //!! do not warn on resize, as original image file/binary blob is always loaded into mem! (otherwise table load failure is triggered)
+                    else if ((m_vimage[i]->m_realWidth > m_vimage[i]->m_width) || (m_vimage[i]->m_realHeight > m_vimage[i]->m_height)) { //!! do not warn on resize, as original image file/binary blob is always loaded into mem! (otherwise table load failure is triggered) {
                         PLOGW << "Image '" << m_vimage[i]->m_szName << "' was downsized from " << m_vimage[i]->m_realWidth << 'x' << m_vimage[i]->m_realHeight << " to " << m_vimage[i]->m_width << 'x' << m_vimage[i]->m_height << " due to low memory ";
+                    }
                 }
 
             if (!failed_load_img.empty())
@@ -4056,9 +4058,8 @@ HRESULT PinTable::LoadData(IStream* pstm, int& csubobj, int& csounds, int& ctext
 
 bool PinTable::LoadToken(const int id, BiffReader * const pbr)
 {
-   bool hasIni = false;
-   string szINIFilename = GetSettingsFileName();
-   hasIni = !szINIFilename.empty() && FileExists(szINIFilename);
+   const string szINIFilename = GetSettingsFileName();
+   const bool hasIni = !szINIFilename.empty() && FileExists(szINIFilename);
    switch(id)
    {
    case FID(PIID): pbr->GetInt((int *)pbr->m_pdata); break;
@@ -4813,7 +4814,7 @@ void PinTable::ComputeNearFarPlane(const Matrix3D &matWorldView, const float sca
    // Clip to sensible value to fix tables with parts far far away breaking depth buffer precision
    zNear = max(zNear, scale * CMTOVPU(5.f)); // Avoid wasting depth buffer precision for parts too near to be useful
    zFar = clamp(zFar, zNear + 1.f, scale * CMTOVPU(100000.f)); // 1 km (yes some VR room do really need this...)
-   // Could not reproduce, so I disabled it for the sake of avoiding to pass inc to the method which is not really meaningfull here (we would have to compute it from the matWorldView)
+   // Could not reproduce, so I disabled it for the sake of avoiding to pass inc to the method which is not really meaningful here (we would have to compute it from the matWorldView)
    //!! magic threshold, otherwise kicker holes are missing for inclination ~0
    //if (fabsf(inc) < 0.0075f)
    //   zFar += 10.f;
@@ -5773,7 +5774,7 @@ void PinTable::ExportBlueprint()
 #else
    FIBITMAP * dib = FreeImage_Allocate(bmwidth, bmheight, 24);
    BYTE * const psrc = FreeImage_GetBits(dib);
-   memcpy(psrc, pbits, bmwidth*bmheight * 3);
+   memcpy(psrc, pbits, (size_t)bmwidth*bmheight * 3);
    if (!FreeImage_Save(FreeImage_GetFIFFromFilename(szBlueprintFileName), dib, szBlueprintFileName, PNG_Z_BEST_COMPRESSION | BMP_SAVE_RLE))
        m_vpinball->MessageBox("Export failed!", "Blueprint Export", MB_OK | MB_ICONEXCLAMATION);
    else
@@ -6114,8 +6115,9 @@ void PinTable::ImportBackdropPOV(const string &filename)
                      node = section->FirstChildElement("NightDayLevel");
                      if (node)
                      {
-                        sscanf_s(node->GetText(), "%i", &value);
-                        m_settings.SaveValue(Settings::Player, "EmissionScale"s, value / 100.f);
+                        float valuef;
+                        sscanf_s(node->GetText(), "%f", &valuef);
+                        m_settings.SaveValue(Settings::Player, "EmissionScale"s, valuef / 100.f);
                      }
                   }
                }
@@ -6685,7 +6687,7 @@ void PinTable::OnKeyDown(int key)
    case VK_DOWN:
    {
       BeginUndo();
-      const int distance = shift ? 10 : 1;
+      const float distance = shift ? 10.f : 1.f;
       for (int i = 0; i < m_vmultisel.size(); i++)
       {
          ISelect *const pisel = m_vmultisel.ElementAt(i);
@@ -7637,8 +7639,8 @@ bool PinTable::AuditTable() const
    const size_t cchar = SendMessage(m_pcv->m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
    char * const szText = new char[cchar + 1];
    SendMessage(m_pcv->m_hwndScintilla, SCI_GETTEXT, cchar + 1, (size_t)szText);
-   char *wordStart = nullptr;
-   char *wordPos = szText;
+   const char *wordStart = nullptr;
+   const char *wordPos = szText;
    string inClass;
    bool nextIsFunc = false, nextIsEnd = false, nextIsClass = false, isInString = false, isInComment = false;
    vector<string> functions, identifiers;
@@ -7751,21 +7753,21 @@ bool PinTable::AuditTable() const
    unsigned long totalSize = 0, totalGpuSize = 0;
    for (auto sound : m_vsound)
    {
-      //ss << "  . Sound: '" << sound->m_szName << "', size: " << (sound->m_cdata / 1024) << "ko\n";
+      //ss << "  . Sound: '" << sound->m_szName << "', size: " << (sound->m_cdata / 1024) << "KiB\n";
       totalSize += sound->m_cdata;
    }
-   ss << ". Total sound size: " <<  (totalSize / (1024 * 1024)) << "Mo\n";
+   ss << ". Total sound size: " <<  (totalSize / (1024 * 1024)) << "MiB\n";
 
    totalSize = 0;
    for (auto image : m_vimage)
    {
       unsigned int imageSize = image->m_ppb != nullptr ? image->m_ppb->m_cdata : image->m_pdsBuffer->height() * image->m_pdsBuffer->pitch();
       unsigned int gpuSize = image->m_pdsBuffer->height() * image->m_pdsBuffer->pitch();
-      //ss << "  . Image: '" << image->m_szName << "', size: " << (imageSize / 1024) << "ko, GPU mem size: " << (gpuSize / 1024) << "ko\n";
+      //ss << "  . Image: '" << image->m_szName << "', size: " << (imageSize / 1024) << "KiB, GPU mem size: " << (gpuSize / 1024) << "KiB\n";
       totalSize += imageSize;
       totalGpuSize += gpuSize;
    }
-   ss << ". Total image size stored in VPX file: " << (totalSize / (1024 * 1024)) << "Mo, in GPU memoryw when played: " << (totalGpuSize / (1024 * 1024)) << "Mo\n";
+   ss << ". Total image size stored in VPX file: " << (totalSize / (1024 * 1024)) << "MiB, in GPU memory when played: " << (totalGpuSize / (1024 * 1024)) << "MiB\n";
 
    PLOGI << "Table audit:\n" << ss.str();
 
@@ -8657,7 +8659,7 @@ STDMETHODIMP PinTable::get_TrailStrength(int *pVal)
 
 STDMETHODIMP PinTable::put_TrailStrength(int newVal)
 {
-   m_settings.SaveValue(Settings::Player, "BallTrailStrength"s, newVal / 100.f);
+   m_settings.SaveValue(Settings::Player, "BallTrailStrength"s, (float)newVal / 100.f);
    return S_OK;
 }
 
@@ -10339,7 +10341,7 @@ STDMETHODIMP PinTable::get_Option(BSTR optionName, float minValue, float maxValu
    vector<string> literals;
    if (V_VT(&values) == (VT_ARRAY | VT_VARIANT))
    {
-      if (V_VT(&values) != (VT_ARRAY | VT_VARIANT) || step != 1.f || (minValue - (long) minValue) != 0.f || (maxValue - (long) maxValue) != 0.f)
+      if (V_VT(&values) != (VT_ARRAY | VT_VARIANT) || step != 1.f || (minValue - (float)(int)minValue) != 0.f || (maxValue - (float)(int)maxValue) != 0.f)
          return S_FALSE;
       int nValues = 1 + (int)maxValue - (int)minValue;
       SAFEARRAY *psa = V_ARRAY(&values);
@@ -10360,7 +10362,7 @@ STDMETHODIMP PinTable::get_Option(BSTR optionName, float minValue, float maxValu
    m_settings.RegisterSetting(Settings::TableOption, name, minValue, maxValue, step, defaultValue, (Settings::OptionUnit)unit, literals);
 
    float value = m_settings.LoadValueWithDefault(Settings::TableOption, name, defaultValue);
-   *param = clamp(minValue + step * (int)roundf((value - minValue) / step), minValue, maxValue);
+   *param = clamp(minValue + step * roundf((value - minValue) / step), minValue, maxValue);
 
    return S_OK;
 }
@@ -10375,7 +10377,7 @@ STDMETHODIMP PinTable::put_Option(BSTR optionName, float minValue, float maxValu
    vector<string> literals;
    if (V_VT(&values) == (VT_ARRAY | VT_VARIANT))
    {
-      if (V_VT(&values) != (VT_ARRAY | VT_VARIANT) || step != 1.f || (minValue - (long) minValue) != 0.f || (maxValue - (long) maxValue) != 0.f)
+      if (V_VT(&values) != (VT_ARRAY | VT_VARIANT) || step != 1.f || (minValue - (float)(int)minValue) != 0.f || (maxValue - (float)(int)maxValue) != 0.f)
          return S_FALSE;
       int nValues = 1 + (int)maxValue - (int)minValue;
       SAFEARRAY *psa = V_ARRAY(&values);
@@ -10500,10 +10502,10 @@ void PinTable::OnMouseMove(const short x, const short y)
         // everything is moved in the direction of the mouse was moved
         const int dx = abs(m_oldMousePos.x - x);
         const int dy = abs(m_oldMousePos.y - y);
-        if (m_oldMousePos.x > x) m_offset.x += dx;
-        if (m_oldMousePos.x < x) m_offset.x -= dx;
-        if (m_oldMousePos.y > y) m_offset.y += dy;
-        if (m_oldMousePos.y < y) m_offset.y -= dy;
+        if (m_oldMousePos.x > x) m_offset.x += (float)dx;
+        if (m_oldMousePos.x < x) m_offset.x -= (float)dx;
+        if (m_oldMousePos.y > y) m_offset.y += (float)dy;
+        if (m_oldMousePos.y < y) m_offset.y -= (float)dy;
 
         SetDirtyDraw();
         SetMyScrollInfo();
@@ -10536,7 +10538,7 @@ void PinTable::OnMouseWheel(const short x, const short y, const short zDelta)
     }
     else
     {
-        m_offset.y -= zDelta / m_zoom;	// change to orientation to match windows default
+        m_offset.y -= (float)zDelta / m_zoom; // change to orientation to match windows default
         SetDirtyDraw();
         SetMyScrollInfo();
     }
@@ -10647,7 +10649,7 @@ LRESULT PinTableMDI::OnMDIActivate(UINT msg, WPARAM wparam, LPARAM lparam)
    //lparam holds HWND of the MDI frame that is about to be activated
    if ((GetHwnd() == (HWND)wparam) && !m_table->m_szFileName.empty())
    {
-      string szINIFilename = m_table->GetSettingsFileName();
+      const string szINIFilename = m_table->GetSettingsFileName();
       if (!szINIFilename.empty())
          m_table->m_settings.SaveToFile(szINIFilename);
       if (g_pvp->m_ptableActive == m_table)

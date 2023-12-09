@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
-// fichier Include Microsoft Visual C++.
-// Utilisé par vpinball_eng.rc
+// Microsoft Visual C++ generated include file.
+// Used by vpinball_eng.rc
 //
 #define DISPID_Textbox_BackColor        1
 #define IDC_FALLOFF                     1
@@ -478,6 +478,7 @@
 #define IDC_DRAW_LIGHTCENTERS2          321
 #define IDC_ENABLE_SCRIPT_LOGGING       321
 #define IDC_STAGEDRIGHTFLIPPER          322
+#define IDC_STORE_INI_LOCATION          322
 #define IDD_PROPWALL_VISUALS            330
 #define IDD_PROPWALL_PHYSICS            331
 #define IDD_PROPGATE_VISUALS            333
@@ -1452,7 +1453,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        675
 #define _APS_NEXT_COMMAND_VALUE         4030
-#define _APS_NEXT_CONTROL_VALUE         927
+#define _APS_NEXT_CONTROL_VALUE         926
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif

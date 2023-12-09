@@ -103,7 +103,7 @@ VPinball::VPinball()
    m_hbmInPlayMode = nullptr;
 
    GetMyPath();				//Store path of vpinball.exe in m_szMyPath and m_wzMyPath
-   GetMyPrefPath();			//Store preference path of vpinball.exe in m_szMyPath
+   GetMyPrefPath();			//Store preference path of vpinball.exe in m_szMyPrefPath
 
 #ifdef _WIN64
    m_scintillaDll = LoadLibrary("SciLexerVP64.DLL");
@@ -177,7 +177,7 @@ void VPinball::GetMyPrefPath()
 #ifdef _WIN32
    // Use standard Windows AppData directory (to avoid requesting write permissions, and behave correctly for Windows restore,...)
    // That would look something like: C:\Users\bob\AppData\Roaming\VPinballX\ 
-   m_szMyPrefPath = string(GetAppDataPath()) + PATH_SEPARATOR_CHAR + "VPinballX"s + PATH_SEPARATOR_CHAR;
+   m_szMyPrefPath = string(GetAppDataPath()) + PATH_SEPARATOR_CHAR + "VPinballX" + PATH_SEPARATOR_CHAR;
 #elif defined(__ANDROID__)
    char *szPrefPath = SDL_GetPrefPath(NULL, NULL);
    m_szMyPrefPath = szPrefPath;
@@ -1022,7 +1022,7 @@ void VPinball::LoadFileName(const string& szFileName, const bool updateEditor)
 
    if (!SUCCEEDED(hr) && !hashing_error)
    {
-      ShowError("This file is corrupt and failed to load.");
+      ShowError("This file does not exist, or is corrupt and failed to load.");
 
       delete mdiTable;
    }
@@ -2819,32 +2819,40 @@ void VPinball::GenerateImageFromTournamentFile(const string &tablefile, const st
    if (cpu != GET_PLATFORM_CPU_ENUM || bits != GET_PLATFORM_BITS_ENUM || os != GET_PLATFORM_OS_ENUM || renderer != GET_PLATFORM_RENDERER_ENUM)
    {
       ShowError("Cannot decode Tournament file\nas the setup differs:\nEncoder: " + platform_cpu[cpu] + ' ' + platform_bits[bits] + "bits " + platform_os[os] + ' ' + platform_renderer[renderer] + "\nDecoder: "+ platform_cpu[GET_PLATFORM_CPU_ENUM] + ' ' + platform_bits[GET_PLATFORM_BITS_ENUM] + "bits " + platform_os[GET_PLATFORM_OS_ENUM] + ' ' + platform_renderer[GET_PLATFORM_RENDERER_ENUM]);
+      delete[] dmd_data;
       return;
    }
 
    if (major != VP_VERSION_MAJOR || minor != VP_VERSION_MINOR || rev != VP_VERSION_REV || git_rev != GIT_REVISION)
    {
       ShowError("Cannot decode Tournament file\nas the VP version differs:\nEncoder: " + std::to_string(major) + '.' + std::to_string(minor) + '.' + std::to_string(rev) + " rev. " + std::to_string(git_rev) + "\nDecoder: "+ std::to_string(VP_VERSION_MAJOR) + '.' + std::to_string(VP_VERSION_MINOR) + '.' + std::to_string(VP_VERSION_REV) + " rev. " + std::to_string(GIT_REVISION));
+      delete[] dmd_data;
       return;
    }
 
    unsigned int tablefileChecksum, vpxChecksum, scriptsChecksum;
    const unsigned int res = GenerateTournamentFileInternal(dmd_data, dmd_size, tablefile, tablefileChecksum, vpxChecksum, scriptsChecksum);
    if (res == ~0u)
+   {
+      delete[] dmd_data;
       return;
+   }
    if (tablefileChecksum != tablefileChecksum_in)
    {
       ShowError("Cannot decode Tournament file\nas the table version differs"s);
+      delete[] dmd_data;
       return;
    }
    if (vpxChecksum != vpxChecksum_in)
    {
       ShowError("Cannot decode Tournament file\nas VP was modified"s);
+      delete[] dmd_data;
       return;
    }
    if (scriptsChecksum != scriptsChecksum_in)
    {
       ShowError("Cannot decode Tournament file\nas scripts version differs"s);
+      delete[] dmd_data;
       return;
    }
    GenerateTournamentFileInternal2(dmd_data, dmd_size, res);
@@ -2853,6 +2861,7 @@ void VPinball::GenerateImageFromTournamentFile(const string &tablefile, const st
    if (memcmp(dmd_data+(dmd_size-16),md5,16) != 0)
    {
       ShowError("Corrupt Tournament file or non-matching table-version or modified VP used to encode");
+      delete[] dmd_data;
       return;
    }
 

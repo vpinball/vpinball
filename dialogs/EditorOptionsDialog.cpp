@@ -2,6 +2,8 @@
 #include "resource.h"
 #include "EditorOptionsDialog.h"
 
+#include <filesystem>
+
 #define AUTOSAVE_DEFAULT_TIME 10
 
 // Implemented in main.cpp, update application logger settings
@@ -97,6 +99,9 @@ BOOL EditorOptionsDialog::OnInitDialog()
 
     const bool logScript = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "LogScriptOutput"s, false);
     SendDlgItemMessage(IDC_ENABLE_SCRIPT_LOGGING, BM_SETCHECK, logScript ? BST_CHECKED : BST_UNCHECKED, 0);
+
+    const bool storeIniLocation = (g_pvp->m_szMyPrefPath == g_pvp->m_szMyPath);
+    SendDlgItemMessage(IDC_STORE_INI_LOCATION, BM_SETCHECK, storeIniLocation ? BST_CHECKED : BST_UNCHECKED, 0);
 
     const int units = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "Units"s, 0);
     const HWND hwnd = GetDlgItem(IDC_UNIT_LIST_COMBO).GetHwnd();
@@ -215,6 +220,7 @@ BOOL EditorOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
           SetDlgItemText(IDC_THROW_BALLS_MASS_EDIT, "1.0");
           SendDlgItemMessage(IDC_ENABLE_LOGGING, BM_SETCHECK, BST_UNCHECKED, 0);
           SendDlgItemMessage(IDC_ENABLE_SCRIPT_LOGGING, BM_SETCHECK, BST_CHECKED, 0);
+          SendDlgItemMessage(IDC_STORE_INI_LOCATION, BM_SETCHECK, BST_UNCHECKED, 0);
           constexpr int x = 0;
           constexpr int y = 0;
           g_pvp->m_settings.SaveValue(Settings::Editor, "CodeViewPosX"s, x);
@@ -318,6 +324,21 @@ void EditorOptionsDialog::OnOK()
 
     checked = (IsDlgButtonChecked(IDC_ENABLE_SCRIPT_LOGGING) == BST_CHECKED);
     g_pvp->m_settings.SaveValue(Settings::Editor, "LogScriptOutput"s, checked);
+
+    checked = (IsDlgButtonChecked(IDC_STORE_INI_LOCATION) == BST_CHECKED);
+    const bool storeIniLocation_checked = (g_pvp->m_szMyPrefPath == g_pvp->m_szMyPath);
+    if (checked != storeIniLocation_checked)
+    {
+       // if checkbox changed, copy ini from one default location to the other
+       const string old = g_pvp->m_szMyPrefPath;
+       if (storeIniLocation_checked)
+           g_pvp->GetMyPrefPath();
+       else
+           g_pvp->m_szMyPrefPath = g_pvp->m_szMyPath;
+       std::filesystem::rename(old + "VPinballX.ini", g_pvp->m_szMyPrefPath + "VPinballX.ini");
+       std::filesystem::rename(old + "BAMViewSettings.xml", g_pvp->m_szMyPrefPath + "BAMViewSettings.xml");
+       g_pvp->m_settings.SetIniPath(g_pvp->m_szMyPrefPath + "VPinballX.ini");
+    }
 
     // Go through and reset the autosave time on all the tables
     if (autosave)

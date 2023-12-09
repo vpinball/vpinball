@@ -98,6 +98,7 @@ FEATURES:
 
 
 - the settings are now stored in a file named 'VPinballX.ini' located in the standard Windows location for application data: %AppData%/VPinballX/
+  (optionally this can be changed in the INI/Editor/UI preferences to be located in the same folder as the executable)
   This file will be automatically created and initialized from existing settings if found in Windows registry. This change was made to:
   - allow per table settings,
   - allow easier edition (manually or by a third party application),

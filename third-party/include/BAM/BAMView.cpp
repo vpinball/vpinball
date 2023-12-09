@@ -203,12 +203,11 @@ static void _createProjectionAndViewMatrix(float* const __restrict P, float* con
    ApplyRST(V, g_TableSettings.angle, g_TableSettings.scale, g_TableSettings.translation);
 
    Mat4Mul(V, VT);
-
 }
 
 std::wstring GetFileNameForSettingsXML()
 {
-   const string path = string(GetAppDataPath()) + PATH_SEPARATOR_CHAR + "VPinballX" + PATH_SEPARATOR_CHAR + "BAMViewSettings.xml";
+   const string path = g_pvp->m_szMyPrefPath + "BAMViewSettings.xml";
    return MakeWString(path);
 }
 
@@ -218,7 +217,7 @@ std::string GetTableName()
    auto backslash = strrchr(t->m_szFileName.c_str(), '\\');
    auto slash = strrchr(t->m_szFileName.c_str(), '/');
    auto dst = std::max(backslash, slash);
-   return dst ? dst + 1 : "Unknown";
+   return dst ? dst + 1 : "Unknown"s;
 }
 
 bool SaveFile(const std::wstring& path, const void* data, SIZE_T size)
@@ -347,7 +346,7 @@ void SaveXML(const BAMTableSettings* const tableSettings)
    XMLPrinter prn;
    doc.Print(&prn);
 
-   auto fn = GetFileNameForSettingsXML();
+   const auto fn = GetFileNameForSettingsXML();
    SaveFile(fn, prn.CStr(), prn.CStrSize() - 1);
 }
 

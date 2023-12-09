@@ -427,16 +427,16 @@ public:
                             "\n-"  +options[OPTION_MINIMIZED]+            "  "+option_descs[OPTION_MINIMIZED]+
                             "\n-"  +options[OPTION_EXTMINIMIZED]+         "  "+option_descs[OPTION_EXTMINIMIZED]+
                             "\n-"  +options[OPTION_PRIMARY]+              "  "+option_descs[OPTION_PRIMARY]+
-                            "\n\n-"+options[OPTION_GLES]+                 ' '+ option_descs[OPTION_GLES]+
+                            "\n\n-"+options[OPTION_GLES]+                 "  "+option_descs[OPTION_GLES]+
                             "\n\n-"+options[OPTION_LESSCPUTHREADS]+       "  "+option_descs[OPTION_LESSCPUTHREADS]+
-                            "\n\n-"+options[OPTION_EDIT]+                 ' '+ option_descs[OPTION_EDIT]+
-                            "\n-"  +options[OPTION_PLAY]+                 ' '+ option_descs[OPTION_PLAY]+
-                            "\n-"  +options[OPTION_POVEDIT]+              ' '+ option_descs[OPTION_POVEDIT]+
-                            "\n-"  +options[OPTION_POV]+                  ' '+ option_descs[OPTION_POV]+
-                            "\n-"  +options[OPTION_EXTRACTVBS]+           ' '+ option_descs[OPTION_EXTRACTVBS]+
-                            "\n-"  +options[OPTION_INI]+                  ' '+ option_descs[OPTION_INI]+
-                            "\n-"  +options[OPTION_TABLE_INI]+            ' '+ option_descs[OPTION_TABLE_INI]+
-                            "\n\n-"+options[OPTION_TOURNAMENT]+           ' '+ option_descs[OPTION_TOURNAMENT]+
+                            "\n\n-"+options[OPTION_EDIT]+                 "  "+option_descs[OPTION_EDIT]+
+                            "\n-"  +options[OPTION_PLAY]+                 "  "+option_descs[OPTION_PLAY]+
+                            "\n-"  +options[OPTION_POVEDIT]+              "  "+option_descs[OPTION_POVEDIT]+
+                            "\n-"  +options[OPTION_POV]+                  "  "+option_descs[OPTION_POV]+
+                            "\n-"  +options[OPTION_EXTRACTVBS]+           "  "+option_descs[OPTION_EXTRACTVBS]+
+                            "\n-"  +options[OPTION_INI]+                  "  "+option_descs[OPTION_INI]+
+                            "\n-"  +options[OPTION_TABLE_INI]+            "  "+option_descs[OPTION_TABLE_INI]+
+                            "\n\n-"+options[OPTION_TOURNAMENT]+           "  "+option_descs[OPTION_TOURNAMENT]+
                             "\n\n-c1 [customparam] .. -c9 [customparam]  Custom user parameters that can be accessed in the script via GetCustomParam(X)";
             if (!valid_param)
                 output = "Invalid Parameter "s + szArglist[i] + "\n\nValid Parameters are:\n\n" + output;
@@ -608,6 +608,19 @@ public:
       }
 
       free(szArglist);
+
+      // Default ini path (can be overriden from command line via m_szIniFileName)
+      if (m_szIniFileName.empty())
+      {
+         FILE *f;
+         // first check if there is a .ini next to the .exe, otherwise use the default location
+         if ((fopen_s(&f, (m_vpinball.m_szMyPath + "VPinballX.ini").c_str(), "r") == 0) && f)
+         {
+            m_vpinball.m_szMyPrefPath = m_vpinball.m_szMyPath;
+            fclose(f);
+         }
+         m_szIniFileName = m_vpinball.m_szMyPrefPath + "VPinballX.ini";
+      }
 
       m_vpinball.m_settings.LoadFromFile(m_szIniFileName, true);
       m_vpinball.m_settings.SaveValue(Settings::Version, "VPinball"s, VP_VERSION_STRING_DIGITS);
