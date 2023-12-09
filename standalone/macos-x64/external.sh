@@ -8,7 +8,6 @@ SDL2_IMAGE_VERSION=2.6.3
 PINMAME_SHA=990dd1b93bedb13b512af3db434edcb190dd9b32
 LIBSERUM_SHA=ea90a5460b47d77e4cf1deacdacddbdb94c25067
 LIBZEDMD_SHA=499b1c094d49ae9bd988326475c51686b1415186
-LIBSERIALPORT_SHA=fd20b0fc5a34cd7f776e4af6c763f59041de223b
 
 NUM_PROCS=$(sysctl -n hw.ncpu)
 
@@ -18,7 +17,6 @@ echo "  SDL2_IMAGE_VERSION: ${SDL2_IMAGE_VERSION}"
 echo "  PINMAME_SHA: ${PINMAME_SHA}"
 echo "  LIBSERUM_SHA: ${LIBSERUM_SHA}"
 echo "  LIBZEDMD_SHA: ${LIBZEDMD_SHA}"
-echo "  LIBSERIALPORT_SHA: ${LIBSERIALPORT_SHA}"
 echo "  NUM_PROCS: ${NUM_PROCS}"
 echo ""
 
@@ -129,18 +127,4 @@ cp src/ZeDMD.h ../../external/include
 cmake -DCMAKE_OSX_DEPLOYMENT_TARGET=13.0 -DCMAKE_BUILD_TYPE=Release -DUSE_OSXINTEL=ON -B build
 cmake --build build -- -j${NUM_PROCS}
 cp build/libzedmd.0.1.0.dylib ../../external/lib
-cd ..
-
-#
-# build libserialport and copy to external
-#
-
-curl -sL https://github.com/sigrokproject/libserialport/archive/${LIBSERIALPORT_SHA}.zip -o libserialport.zip
-unzip libserialport.zip
-cd libserialport-$LIBSERIALPORT_SHA
-cp libserialport.h ../../external/include
-./autogen.sh
-./configure LDFLAGS="-Wl,-install_name,@rpath/libserialport.dylib"
-make -j${NUM_PROCS}
-cp .libs/libserialport.dylib ../../external/lib
 cd ..
