@@ -1,6 +1,6 @@
 #!/bin/bash
 
-WINE_SRC="/Users/jmillard/vpx/wine-369b540abf32869df8e9b28e283d795ae92b6a05"
+WINE_SRC="/Users/jmillard/vpx/wine-93f7ef86701f0b5f0828c8e0c4581b00873a7676"
 WINE_VPX="/Users/jmillard/vpinball/standalone/inc/wine"
 
 find $WINE_VPX -type f | while read i; do

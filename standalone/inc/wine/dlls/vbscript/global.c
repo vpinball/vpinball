@@ -2483,6 +2483,7 @@ static HRESULT Global_MsgBox(BuiltinDisp *This, VARIANT *args, unsigned args_cnt
         external_log_info("MsgBox: prompt=%s", buf);
     }
 #endif
+
     SysFreeString(prompt);
     SysFreeString(title);
     return hres;

@@ -64,7 +64,7 @@ To make a successful port, we would need tackle several tasks:
 >   - [Bug 55006](https://bugs.winehq.org/show_bug.cgi?id=55006) - vbscript single line if else without else body fails compilation
 >   - [Bug 55037](https://bugs.winehq.org/show_bug.cgi?id=55037) - vbscript: Colon on new line after Then fails
 >   - ~~[Bug 55042](https://bugs.winehq.org/show_bug.cgi?id=55042) - IDictionary::Add() fails to add entries with numerical keys that have the same hashes~~
->   - [Bug 55052](https://bugs.winehq.org/show_bug.cgi?id=55052) - For loop where right bound is string coercion issue
+>   - ~~[Bug 55052](https://bugs.winehq.org/show_bug.cgi?id=55052) - For loop where right bound is string coercion issue~~
 >   - [Bug 55093](https://bugs.winehq.org/show_bug.cgi?id=55093) - vbscript: if boolean condition should work without braces
 >   - ~~[Bug 55185](https://bugs.winehq.org/show_bug.cgi?id=55185) - vbscript round does not handle numdecimalplaces argument~~
 >   - ~~[Bug 55931](https://bugs.winehq.org/show_bug.cgi?id=55931) - vbscript: empty MOD 100000 returns garbage instead of 0~~
@@ -539,6 +539,10 @@ On the host computer, in Visual Studio Code:
 To keep up with all the changes in master, and make it easier to rebase, this branch is a single commit -- until most tables work with no vbs changes.
 
 The downside of this approach is not accurately keeping track of history:
+
+* 12/09/23
+  * Start to implement Altsound
+  * Bump Wine source to 9.0-rc1 [93f7ef86](https://gitlab.winehq.org/wine/wine/-/tree/93f7ef86701f0b5f0828c8e0c4581b00873a7676) (fixes Wine issue 55052)
 
 * 12/01/23
   * Add caching to `external` folders for CI builds
