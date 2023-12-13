@@ -3030,6 +3030,9 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 
 void Player::UpdatePhysics()
 {
+   if (!g_pplayer) //!! meh, we have a race condition somewhere where we delete g_pplayer while still in use (e.g. if we have a script compile error and cancel the table start)
+      return;
+
    U64 initial_time_usec = usec();
 
    // DJRobX's crazy latency-reduction code

@@ -10125,8 +10125,9 @@ BOOL PinTable::OnCommand(WPARAM wparam, LPARAM lparam)
         }
         case ID_TABLE_PLAYER_STOPPED:
         {
-            delete g_pplayer;
+            volatile auto player = g_pplayer;
             g_pplayer = nullptr;
+            delete player;
 
             m_vpinball->ToggleToolbar();
             mixer_shutdown();
