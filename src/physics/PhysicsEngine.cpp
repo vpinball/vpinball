@@ -483,6 +483,9 @@ void PhysicsEngine::StartPhysics()
 
 void PhysicsEngine::UpdatePhysics()
 {
+   if (!g_pplayer)
+      return;
+
    g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_PHYSICS);
    U64 initial_time_usec = usec();
 

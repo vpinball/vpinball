@@ -17,7 +17,7 @@ ISelect::ISelect()
 
 void ISelect::SetObjectPos()
 {
-    m_vpinball->ClearObjectPosCur();
+   m_vpinball->ClearObjectPosCur();
 }
 
 void ISelect::OnLButtonDown(int x, int y)
@@ -308,8 +308,8 @@ void ISelect::GetTypeNameForType(const ItemTypeEnum type, WCHAR * const buf) con
 #ifndef __STANDALONE__
    /*const int len =*/ LoadStringW(m_vpinball->theInstance, strID, buf, 256);
 #else
-    const LocalStringW wzString(strID);
-    wcscpy(buf, wzString.m_szbuffer);
+   const LocalStringW wzString(strID);
+   wcscpy(buf, wzString.m_szbuffer);
 #endif
 }
 
@@ -325,16 +325,8 @@ bool ISelect::LoadToken(const int id, BiffReader * const pbr)
           m_oldLayerIndex = (unsigned char)tmp;
           break;
        }
-       case FID(LANR):
-       {
-           pbr->GetString(m_layerName);
-           break;
-       }
-       case FID(LVIS):
-       {
-           pbr->GetBool(m_isVisible);
-           break;
-       }
+       case FID(LANR): pbr->GetString(m_layerName); break;
+       case FID(LVIS): pbr->GetBool(m_isVisible); break;
    }
    return true;
 }
@@ -353,5 +345,5 @@ HRESULT ISelect::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
 
 void ISelect::UpdateStatusBarInfo()
 {
-    m_vpinball->SetStatusBarUnitInfo(string(), false);
+   m_vpinball->SetStatusBarUnitInfo(string(), false);
 }
