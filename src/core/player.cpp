@@ -869,8 +869,9 @@ void Player::Shutdown()
 
    // Destroy this player
    assert(g_pplayer == this);
-   delete g_pplayer; // Win32xx call Window destroy for us from destructor, don't call it directly or it will crash due to dual destruction
+   volatile auto player = g_pplayer;
    g_pplayer = nullptr;
+   delete player; // Win32xx call Window destroy for us from destructor, don't call it directly or it will crash due to dual destruction
 
    // Reactivate edited table or close application if requested
    if (closing == CS_CLOSE_APP)
@@ -2675,6 +2676,9 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 
 void Player::UpdatePhysics()
 {
+   if (!g_pplayer) //!! meh, we have a race condition somewhere where we delete g_pplayer while still in use (e.g. if we have a script compile error and cancel the table start)
+      return;
+
    g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_PHYSICS);
    U64 initial_time_usec = usec();
 
