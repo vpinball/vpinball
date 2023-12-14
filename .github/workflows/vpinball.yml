@@ -346,7 +346,6 @@ jobs:
           cmake --build build/${{ matrix.config }} -- -j${NUM_PROCS}
       - run: |
           mkdir tmp
-          cp build/${{ matrix.config }}/setup.sh tmp
           cp build/${{ matrix.config }}/VPinballX_GL tmp
           cp build/${{ matrix.config }}/*.so tmp
           cp build/${{ matrix.config }}/*.so.* tmp
@@ -356,7 +355,10 @@ jobs:
           cp -r build/${{ matrix.config }}/scripts tmp
           cp -r build/${{ matrix.config }}/tables tmp
           cp -r build/${{ matrix.config }}/docs tmp
+      - run: |
+          cd tmp
+          tar -czf ../VPinballX_GL-${{ needs.version.outputs.tag }}-${{ matrix.config }}-linux-x64.tar.gz *
       - uses: actions/upload-artifact@v3
         with:
           name: VPinballX_GL-${{ needs.version.outputs.tag }}-${{ matrix.config }}-linux-x64
-          path: tmp
+          path: VPinballX_GL-${{ needs.version.outputs.tag }}-${{ matrix.config }}-linux-x64.tar.gz

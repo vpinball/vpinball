@@ -47,7 +47,7 @@ cd ..
 
 curl -s https://www.un4seen.com/files/bass24-osx.zip -o bass.zip
 unzip bass.zip 
-mv libbass.dylib ../external/lib
+cp libbass.dylib ../external/lib
 
 #
 # build SDL2 and copy to external
@@ -128,4 +128,3 @@ cmake -DCMAKE_OSX_DEPLOYMENT_TARGET=13.0 -DCMAKE_BUILD_TYPE=Release -DUSE_OSXARM
 cmake --build build -- -j${NUM_PROCS}
 cp build/libzedmd.0.1.0.dylib ../../external/lib
 cd ..
-

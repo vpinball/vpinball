@@ -50,7 +50,7 @@ cd ..
 
 curl -s https://www.un4seen.com/files/bass24-ios.zip -o bass.zip
 unzip bass.zip 
-mv bass.xcframework/ios-arm64_armv7_armv7s/bass.framework ../external/framework
+cp -r bass.xcframework/ios-arm64_armv7_armv7s/bass.framework ../external/framework
 
 #
 # build SDL2 and copy to external
@@ -100,3 +100,4 @@ cmake -DCMAKE_BUILD_TYPE=Release -DUSE_TVOS=ON -B build
 cmake --build build -- -j${NUM_PROCS}
 cp build/libserum.a ../../external/lib
 cd ..
+

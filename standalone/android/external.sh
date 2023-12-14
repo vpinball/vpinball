@@ -64,7 +64,7 @@ cp libs/arm64-v8a/libFreeImage.so ../external/lib
 
 curl -sL https://www.un4seen.com/files/bass24-android.zip -o bass.zip
 unzip bass.zip 
-mv libs/arm64-v8a/libbass.so ../external/lib
+cp libs/arm64-v8a/libbass.so ../external/lib
 
 #
 # build SDL2 and copy to external

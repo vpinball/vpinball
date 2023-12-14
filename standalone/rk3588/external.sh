@@ -47,7 +47,7 @@ cd ..
 
 curl -s https://www.un4seen.com/files/bass24-linux.zip -o bass.zip
 unzip bass.zip 
-mv libs/aarch64/libbass.so ../external/lib
+cp libs/aarch64/libbass.so ../external/lib
 
 #
 # build SDL2 and copy to external

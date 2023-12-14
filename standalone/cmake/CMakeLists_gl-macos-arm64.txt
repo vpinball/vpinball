@@ -721,14 +721,14 @@ if(OPT_CODESIGN)
       COMMAND ditto -c -k --keepParent ${PATH_APP} ${PATH_APP_ZIPPED}
       COMMAND xcrun notarytool submit ${PATH_APP_ZIPPED} --wait --apple-id "${CODESIGN_APPLE_ID}" --password "${CODESIGN_PASSWORD}" --team-id "${CODESIGN_TEAM_ID}"
    )
-
-   install(TARGETS vpinball
-      BUNDLE DESTINATION .
-   )
-
-   set(CPACK_GENERATOR DragNDrop)
-   set(CPACK_PACKAGE_FILE_NAME VPinballX_GL-${CMAKE_PROJECT_VERSION}-macos-arm64)
-   set(CPACK_DMG_VOLUME_NAME "VPinballX_GL ${CMAKE_PROJECT_VERSION}")
-   set(CPACK_PACKAGE_ICON ${CMAKE_CURRENT_SOURCE_DIR}/standalone/macos-arm64/VPinballX_GL.icns)
-   include(CPack)
 endif()
+
+install(TARGETS vpinball
+   BUNDLE DESTINATION .
+)
+
+set(CPACK_GENERATOR DragNDrop)
+set(CPACK_PACKAGE_FILE_NAME VPinballX_GL-${CMAKE_PROJECT_VERSION}-macos-arm64)
+set(CPACK_DMG_VOLUME_NAME "VPinballX_GL ${CMAKE_PROJECT_VERSION}")
+set(CPACK_PACKAGE_ICON ${CMAKE_CURRENT_SOURCE_DIR}/standalone/macos-arm64/VPinballX_GL.icns)
+include(CPack)

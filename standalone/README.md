@@ -540,6 +540,10 @@ To keep up with all the changes in master, and make it easier to rebase, this br
 
 The downside of this approach is not accurately keeping track of history:
 
+* 12/13/23
+  * tar.gz github artifacts for linux and sbc builds to preserve file attributes
+  * removed `setup.sh` script
+
 * 12/09/23
   * Start to implement Altsound
   * Bump Wine source to 9.0-rc1 [93f7ef86](https://gitlab.winehq.org/wine/wine/-/tree/93f7ef86701f0b5f0828c8e0c4581b00873a7676) (fixes Wine issue 55052)
