@@ -9,6 +9,7 @@
 #undef DELETE
 #undef CALLBACK
 #include "libpinmame.h"
+#include "altsound.h"
 #pragma pop_macro("CALLBACK")
 #pragma pop_macro("DELETE")
 #pragma pop_macro("_WIN64")

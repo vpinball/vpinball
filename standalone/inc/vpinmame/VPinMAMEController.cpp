@@ -275,6 +275,7 @@ int VPinMAMEController::OnAudioUpdated(void* p_buffer, int samples)
 
 void VPinMAMEController::OnSoundCommand(int boardNo, int cmd)
 {
+   AltsoundProcessCommand(cmd, 0);
 }
 
 VPinMAMEController::VPinMAMEController()
@@ -434,6 +435,15 @@ STDMETHODIMP VPinMAMEController::Run(/*[in]*/ LONG_PTR hParentWnd, /*[in,default
          }
 
          m_rgb = (PinmameGetHardwareGen() == PINMAME_HARDWARE_GEN_SAM);
+
+         AltsoundSetLogger(g_pvp->m_szMyPrefPath, ALTSOUND_LOG_LEVEL_INFO, false);
+
+         if (AltsoundInit(m_szPath, string(m_pPinmameGame->name))) {
+            AltsoundSetHardwareGen((ALTSOUND_HARDWARE_GEN)PinmameGetHardwareGen());
+            PinmameSetSoundMode(PINMAME_SOUND_MODE_ALTSOUND);
+
+            PLOGI.printf("Altsound initialized successfully.");
+         }
 
          return S_OK;
       }

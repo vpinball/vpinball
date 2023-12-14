@@ -90,6 +90,7 @@ public class VPinballActivity extends SDLActivity {
                 "pinmame.3.6",
                 "zedmd",
                 "serum",
+                "altsound",
                 "vpinball"
         };
     }

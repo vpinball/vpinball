@@ -660,6 +660,7 @@ target_link_libraries(vpinball PUBLIC
    pinmame.3.6
    zedmd.0.1.0
    serum.1.6.1
+   altsound
    "-framework AppKit"
 )
 
@@ -700,6 +701,7 @@ add_custom_command(TARGET vpinball POST_BUILD
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/macos-x64/external/lib/libpinmame.3.6.dylib" "$<TARGET_FILE_DIR:vpinball>/../Frameworks"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/macos-x64/external/lib/libserum.1.6.1.dylib" "$<TARGET_FILE_DIR:vpinball>/../Frameworks"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/macos-x64/external/lib/libzedmd.0.1.0.dylib" "$<TARGET_FILE_DIR:vpinball>/../Frameworks"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/macos-x64/external/lib/libaltsound.dylib" "$<TARGET_FILE_DIR:vpinball>/../Frameworks"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/macos-x64/VPinballX_GL.icns" "$<TARGET_FILE_DIR:vpinball>/../Resources"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/macos-x64/Info.plist" "$<TARGET_FILE_DIR:vpinball>/.."
    COMMAND /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString ${CMAKE_PROJECT_VERSION}" $<TARGET_FILE_DIR:vpinball>/../Info.plist
@@ -717,6 +719,7 @@ if(OPT_CODESIGN)
       COMMAND codesign --sign "${CODESIGN_DEVELOPER_ID}" --timestamp --options runtime ${PATH_APP}/Contents/Frameworks/libpinmame.3.6.dylib
       COMMAND codesign --sign "${CODESIGN_DEVELOPER_ID}" --timestamp --options runtime ${PATH_APP}/Contents/Frameworks/libserum.1.6.1.dylib
       COMMAND codesign --sign "${CODESIGN_DEVELOPER_ID}" --timestamp --options runtime ${PATH_APP}/Contents/Frameworks/libzedmd.0.1.0.dylib
+      COMMAND codesign --sign "${CODESIGN_DEVELOPER_ID}" --timestamp --options runtime ${PATH_APP}/Contents/Frameworks/libaltsound.dylib
       COMMAND codesign --sign "${CODESIGN_DEVELOPER_ID}" --timestamp --options runtime ${PATH_APP}
       COMMAND ditto -c -k --keepParent ${PATH_APP} ${PATH_APP_ZIPPED}
       COMMAND xcrun notarytool submit ${PATH_APP_ZIPPED} --wait --apple-id "${CODESIGN_APPLE_ID}" --password "${CODESIGN_PASSWORD}" --team-id "${CODESIGN_TEAM_ID}"

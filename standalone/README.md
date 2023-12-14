@@ -541,8 +541,9 @@ To keep up with all the changes in master, and make it easier to rebase, this br
 The downside of this approach is not accurately keeping track of history:
 
 * 12/13/23
-  * tar.gz github artifacts for linux and sbc builds to preserve file attributes
-  * removed `setup.sh` script
+  * Preserve file attributes for linux/sbc github artifacts
+  * Removed `setup.sh` script
+  * Finished implementing Altsound
 
 * 12/09/23
   * Start to implement Altsound

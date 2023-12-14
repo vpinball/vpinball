@@ -682,6 +682,7 @@ target_link_libraries(vpinball PUBLIC
    "-lfreeimage"
    "-lpinmame.3.6"
    "-lserum"
+   "-laltsound"
    "-lSDL2"
    "-lSDL2_image"
 )

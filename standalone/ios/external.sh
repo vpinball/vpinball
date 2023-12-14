@@ -97,3 +97,20 @@ cmake -DCMAKE_BUILD_TYPE=Release -DUSE_IOS=ON -B build
 cmake --build build -- -j${NUM_PROCS}
 cp build/libserum.a ../../external/lib
 cd ..
+
+#
+# build libaltsound and copy to external
+#
+
+curl -sL https://github.com/jsm174/libaltsound/archive/${LIBALTSOUND_SHA}.zip -o libaltsound.zip
+unzip libaltsound.zip
+cd libaltsound-$LIBALTSOUND_SHA
+cp src/altsound.h ../../external/include
+cd platforms/ios/arm64
+./external.sh
+cp CMakeLists.txt ../../..
+cd ../../..
+cmake -DCMAKE_BUILD_TYPE=Release -B build
+cmake --build build -- -j${NUM_PROCS}
+cp build/libaltsound.a ../../external/lib
+cd ..

@@ -8,6 +8,7 @@ SDL2_IMAGE_VERSION=2.6.3
 PINMAME_SHA=990dd1b93bedb13b512af3db434edcb190dd9b32
 LIBSERUM_SHA=ea90a5460b47d77e4cf1deacdacddbdb94c25067
 LIBZEDMD_SHA=499b1c094d49ae9bd988326475c51686b1415186
+LIBALTSOUND_SHA=21e697cc809f61a93acfdbd8ead32b2e22d776e1
 
 NUM_PROCS=$(nproc)
 
@@ -17,6 +18,7 @@ echo "  SDL2_IMAGE_VERSION: ${SDL2_IMAGE_VERSION}"
 echo "  PINMAME_SHA: ${PINMAME_SHA}"
 echo "  LIBSERUM_SHA: ${LIBSERUM_SHA}"
 echo "  LIBZEDMD_SHA: ${LIBZEDMD_SHA}"
+echo "  LIBALTSOUND_SHA: ${LIBALTSOUND_SHA}"
 echo "  NUM_PROCS: ${NUM_PROCS}"
 echo ""
 
@@ -126,3 +128,19 @@ cmake --build build -- -j${NUM_PROCS}
 cp build/libzedmd64.so.0.1.0 ../../external/lib
 cd ..
 
+#
+# build libaltsound and copy to external
+#
+
+curl -sL https://github.com/jsm174/libaltsound/archive/${LIBALTSOUND_SHA}.zip -o libaltsound.zip
+unzip libaltsound.zip
+cd libaltsound-$LIBALTSOUND_SHA
+cp src/altsound.h ../../external/include
+cd platforms/linux/aarch64
+./external.sh
+cp CMakeLists.txt ../../..
+cd ../../..
+cmake -DCMAKE_BUILD_TYPE=Release -B build
+cmake --build build -- -j${NUM_PROCS}
+cp build/libaltsound.so ../../external/lib
+cd ..
