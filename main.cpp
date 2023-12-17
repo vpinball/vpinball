@@ -361,7 +361,12 @@ public:
 
    string GetPathFromArg(const string& arg, bool setCurrentPath)
    {
+#ifndef __STANDALONE__
       string path = arg;
+#else
+      string path = trim_string(arg);
+#endif
+
 #ifndef __STANDALONE__
       if ((arg[0] == '-') || (arg[0] == '/')) // Remove leading - or /
          path = path.substr(1, path.size() - 1);
@@ -375,12 +380,24 @@ public:
          GetCurrentDirectory(MAXSTRING, szLoadDir);
          path = string(szLoadDir) + PATH_SEPARATOR_CHAR + path;
       }
+#else
+      if (path[0] != '/') // Add current path
+      {
+         char szLoadDir[MAXSTRING];
+         GetCurrentDirectory(MAXSTRING, szLoadDir);
+         path = string(szLoadDir) + PATH_SEPARATOR_CHAR + path;
+      }
+#endif
       else if (setCurrentPath) // Or set the current path from the arg
       {
          const string dir = PathFromFilename(path);
          SetCurrentDirectory(dir.c_str());
       }
+
+#ifdef __STANDALONE__
+      path = std::filesystem::weakly_canonical(std::filesystem::path(path));
 #endif
+
       return path;
    }
 
