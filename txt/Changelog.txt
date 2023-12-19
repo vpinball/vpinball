@@ -285,6 +285,8 @@ FIXES:
 
 - fix .bmp export in the Image Manager
 
+- fix gate two-way flag import from VP9/8 .vpts
+
 - improve UI scaling on high resolutions (e.g. 4K)
 
 - update example tables with new raytraced ball shadows enabled and other new features
@@ -332,6 +334,8 @@ FIXES:
 - fix changing the timer settings not marking the table as dirty
 
 - fix .bmp export in the Image Manager
+
+- fix gate two-way flag import from VP9/8 .vpts
 
 - see Scripts.txt for the actual usage and "documentation" of the scripts that come with VPX
 
@@ -1226,16 +1230,16 @@ VP 10.0.0 Changelog
 
 - introducing drop/hit target element. A drop/hit target is now a separate VP element. It is mesh based and different shapes can be selected from a drop
   down list. A target fires a hit event and has it's own timer like walls when used as drop targets.
-  
+
 - kickers are mesh based. In the kicker settings you can set "Fall through" so that if a ball hits a kicker(hole) the ball will fall through the 
   surface which is attached to it. This only works if the wall is higher than the playfield, it won't work if the hole is on the playfield.
-  
-- gates are mesh based. Another option was added to the gate element "Two Way" if set the ball can roll from both sides through the gate
+
+- gates are mesh based. Another option was added to the gate element: "Two Way" if set the ball can roll from both sides through the gate
 
 - flippers can now feature an image
 
 - add material editor
-  
+
   -> quick and basic explanation:
      - First of all select if you want to design a metal material (steel, gold, silver, aluminium, etc)
        or any other one (plastic, wood, rubber, etc)
@@ -1348,7 +1352,7 @@ VP 10.0.0 Changelog
    When the mouse pointer is left to "dwell" over a keyword, the Script Editor can display additional information:
 
    e.g. for: 1056 dim scoringTimer:scoringTimer = 0 'How long DOUBLE SCORING will go on
-    
+
    - The actual definition of the keyword. [dim scoringTimer]
    - The line number of the definition of the keyword. [Line 1056]
    - Any help/comment associated with the keyword. [How long DOUBLE SCORING will go on]
@@ -1368,7 +1372,7 @@ VP 10.0.0 Changelog
    If a keyword is already defined outside the table script it will be highlighted in the original definition color,
    but the dwell tool tip will be of the re-defined keyword in the table script.
 
-  Auto complete    
+  Auto complete
    Suggestions which keywords are displayed in a dropdownbox underneath your typing according to the characters you have typed.
    The number of typed characters before suggestions are displayed can be adjusted in the Code View preferences.
 
@@ -1384,7 +1388,7 @@ VP 10.0.0 Changelog
   plus the opacity and amount parameters can be set to values > 100%
   to fade a set of flashers in/out easily you can use the IntensityScale in the script, so that you do not need to use different opacity values
   look into the CommandReference.txt for additional changes to the functions that can be used
-  
+
 - collections can now group elements together. If you enable 'Group elements together' flag and you click on one element of the group all other members 
   of that group are selected. So you can move/scale/rotate them without multi-select element by element. If you want to select just one element of that group
   just shift-left click on the element and you can manipulate only that element. Unchecking the 'Group elements together' flag disable this feature for this collection.
@@ -1396,7 +1400,7 @@ VP 10.0.0 Changelog
 - extend right click behavior for multi-select to hidden items
 
 - the property menu can now be a floating window (old behavior can be restored in the editor options)
-  
+
 - remove old shadowing code and replace it with optional screen space ambient occlusion
   additionally one can also enable ambient occlusion for dynamic objects (via the global video preferences and also the table options)
 
@@ -1426,7 +1430,7 @@ VP 10.0.0 Changelog
 - support primitive vertex sizes > 65535 and redo primitive drawing in the editor-UI 
   (there is now a new setting for each primitive, set to 0 to switch to the old approximate drawing mode (usually fast),
    1 to draw each and every triangle (usually slow) or inbetween to approximate the outlines of the object (lower values are faster))
-   
+
 - primitives can optionally be reduced for the use in the physics core (so that highly detailed objects do not cause stutter on collisions)
   by setting the new 'reduce polygons' options (0=no reduction and no slowdown on loading .. 1=high reduction of polygons and slower loading)
 
