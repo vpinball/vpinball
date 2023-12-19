@@ -858,8 +858,8 @@ void Light::Render(const unsigned int renderMask)
          {
             const int eyes = m_rd->GetCurrentRenderTarget()->m_nLayers;
             if (eyes > 1)
-               memcpy(&matWorldViewProj[1], &matWorldViewProj[0], 4 * 4 * sizeof(float));
-            shader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj[0].m[0][0], eyes);
+               memcpy(&matWorldViewProj[1].m[0][0], &matWorldViewProj[0].m[0][0], 4 * 4 * sizeof(float));
+            shader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj[0], eyes);
          }
          else
          {
@@ -871,8 +871,8 @@ void Light::Render(const unsigned int renderMask)
                Matrix3D matWorldViewInverseTranspose;
                Matrix3D matWorldViewProj[2];
             } matrices;
-            memcpy(&matrices.matWorldViewProj[0], &matWorldViewProj[0], 4 * 4 * sizeof(float));
-            memcpy(&matrices.matWorldViewProj[1], &matWorldViewProj[0], 4 * 4 * sizeof(float));
+            memcpy(&matrices.matWorldViewProj[0].m[0][0], &matWorldViewProj[0].m[0][0], 4 * 4 * sizeof(float));
+            memcpy(&matrices.matWorldViewProj[1].m[0][0], &matWorldViewProj[0].m[0][0], 4 * 4 * sizeof(float));
             shader->SetUniformBlock(SHADER_basicMatrixBlock, &matrices.matWorld.m[0][0]);
          }
          #else

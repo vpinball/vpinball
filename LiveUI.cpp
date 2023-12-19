@@ -607,7 +607,7 @@ static void HelpEditableHeader(bool is_live, IEditable *editable, IEditable *liv
    }
    HelpTextCentered(title);
    ImGui::BeginDisabled(is_live); // Do not edit name of live objects, it would likely break the script
-   string name = select_editable ? select_editable->GetName() : ""s;
+   string name = select_editable ? select_editable->GetName() : string();
    if (ImGui::InputText("Name", &name))
    {
       editable->SetName(name);
@@ -732,7 +732,7 @@ void LiveUI::Render()
             GLint shaderHandle;
             glGetIntegerv(GL_CURRENT_PROGRAM, &shaderHandle);
             GLuint attribLocationProjMtx = glGetUniformLocation(shaderHandle, "ProjMtx");
-            glUniformMatrix4fv(attribLocationProjMtx, 1, GL_FALSE, (float*)&(matProj.m[0]));
+            glUniformMatrix4fv(attribLocationProjMtx, 1, GL_FALSE, &(matProj.m[0][0]));
             glDisable(GL_SCISSOR_TEST);
 #else
             lui->m_rd->GetCoreDevice()->SetTransform(D3DTS_WORLD, (const D3DXMATRIX *)&matTranslate);
@@ -804,7 +804,6 @@ void LiveUI::ResetCameraFromPlayer()
    // Try to setup editor camera to match the used one, but only mostly since the LiveUI does not have some view setup features like off-center, ...
    m_camView = Matrix3D::MatrixScale(1.f, 1.f, -1.f) * m_pin3d->GetMVP().GetView() * Matrix3D::MatrixScale(1.f, -1.f, 1.f);
 }
-
 
 void LiveUI::Update(const RenderTarget *rt)
 {
@@ -1223,14 +1222,14 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
                float value = m_live_table->m_settings.LoadValueWithDefault(Settings::TableOption, opt.name, opt.defaultValue);
                if (!opt.literals.empty())
                {
-                  value += nSteps * opt.step * step;
+                  value += (float)nSteps * opt.step * step;
                   while (value < opt.minValue)
                      value += opt.maxValue - opt.minValue + 1;
                   while (value > opt.maxValue)
                      value -= opt.maxValue - opt.minValue + 1;
                }
                else
-                  value = clamp(value + nSteps * opt.step * step, opt.minValue, opt.maxValue);
+                  value = clamp(value + (float)nSteps * opt.step * step, opt.minValue, opt.maxValue);
                table->m_settings.SaveValue(Settings::TableOption, opt.name, value);
                m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 1 /* table option changed event */);
             }
@@ -1341,7 +1340,7 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
          {
             PushNotification("Table options reset to default values"s, 5000);
 
-            // Remove custom day/night and get back to the one of the table, eventually overiden by app (not table) settings
+            // Remove custom day/night and get back to the one of the table, eventually overriden by app (not table) settings
             // FIXME we just default to the table value, missing the app settings being applied (like day/night from lat/lon,... see in player.cpp)
             m_tweakState[BS_DayNight] = 2;
             m_player->m_globalEmissionScale = m_table->m_globalEmissionScale;
@@ -1351,7 +1350,7 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
             m_tweakState[BS_Tonemapper] = 2;
             m_player->m_toneMapper = m_table->GetToneMapper();
 
-            // Remove custom difficulty and get back to the one of the table, eventually overiden by app (not table) settings
+            // Remove custom difficulty and get back to the one of the table, eventually overriden by app (not table) settings
             m_tweakState[BS_Difficulty] = 2;
             m_live_table->m_globalDifficulty = g_pvp->m_settings.LoadValueWithDefault(Settings::TableOverride, "Difficulty"s, m_table->m_difficulty);
 
@@ -1367,7 +1366,7 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
                auto opt = m_live_table->m_settings.GetSettings()[i];
                m_live_table->m_settings.SaveValue(Settings::TableOption, opt.name, opt.defaultValue);
             }
-            m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 2 /* custom option reseted event */);
+            m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 2 /* custom option resetted event */);
          }
          else if (m_activeTweakPage == TP_PointOfView)
          {
@@ -1456,7 +1455,7 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
             case BG_INVALID:
             case NUM_BG_SETS: assert(false); break;
             }
-            g_pplayer->m_pin3d.m_cam = Vertex3Ds(0.f, 0.f, 0.f);
+            g_pplayer->m_renderer->m_cam = Vertex3Ds(0.f, 0.f, 0.f);
             UpdateTweakPage();
          }
       }
@@ -1557,7 +1556,7 @@ void LiveUI::UpdateTweakModeUI()
             const Settings::OptionDef &opt = table->m_settings.GetSettings()[setting - BS_Custom];
             float value = table->m_settings.LoadValueWithDefault(Settings::TableOption, opt.name, opt.defaultValue);
             const string label = opt.name + ": ";
-            if (opt.literals.size() > 0) // List of values
+            if (!opt.literals.empty()) // List of values
             {
                int index = (int) (value - opt.minValue);
                if (index < 0 || index >= (int)opt.literals.size())
@@ -1824,7 +1823,7 @@ void LiveUI::UpdateMainUI()
          m_camProj.SetPerspectiveFovRH(39.6f, io.DisplaySize.x / io.DisplaySize.y, zNear, zFar);
       }
       float * const cameraView = (float *)(m_camView.m);
-      float * const cameraProjection = (float *)(m_camProj.m); 
+      float * const cameraProjection = (float *)(m_camProj.m);
 
       /* Matrix3D gridMatrix;
       static constexpr float identityMatrix[16] = { 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 1.f };
@@ -1838,7 +1837,7 @@ void LiveUI::UpdateMainUI()
       if (GetSelectionTransform(transform))
       {
          float camViewLH[16];
-         memcpy(camViewLH, m_camView.m, sizeof(float) * 4 * 4);
+         memcpy(camViewLH, &m_camView.m[0][0], sizeof(float) * 4 * 4);
          for (int i = 8; i < 12; i++)
             camViewLH[i] = -camViewLH[i];
          Matrix3D prevTransform(transform);
@@ -2315,7 +2314,7 @@ void LiveUI::UpdateOutlinerUI()
             }
             if (ImGui::TreeNodeEx("Layers", ImGuiTreeNodeFlags_DefaultOpen))
             {
-               // Very very unefficient...
+               // Very very inefficient...
                robin_hood::unordered_map<std::string, vector<IEditable *>> layers;
                for (size_t t = 0; t < table->m_vedit.size(); t++)
                {
@@ -2342,7 +2341,7 @@ void LiveUI::UpdateOutlinerUI()
                sort(keys.begin(), keys.end());
                for (auto &it : keys)
                {
-                  if (it == ""s) // Skip editables without a layer (like live implicit playfield,...)
+                  if (it.empty()) // Skip editables without a layer (like live implicit playfield,...)
                      continue;
                   if (ImGui::TreeNode(it.c_str()))
                   {
@@ -2746,8 +2745,8 @@ void LiveUI::UpdateAnaglyphCalibrationModal()
       ImColor calCol((calibrationStep % 3) == 0 ? 1.f : 0.f, (calibrationStep % 3) == 1 ? 1.f : 0.f, (calibrationStep % 3) == 2 ? 1.f : 0.f);
       for (int v = 0; v < 2; v++)
       {
-         ImVec2 faceTrans[10], faceOffset(win_size.x * 0.5f - 0.5f * t + v * t, win_size.y * 0.5f);
-         draw_list->AddRectFilled(ImVec2(0.5f * win_size.x - t + v * t, 0.5f * win_size.y - t), ImVec2(0.5f * win_size.x + v * t, 0.5f * win_size.y + t), v == 0 ? backCol : calCol);
+         ImVec2 faceTrans[10], faceOffset(win_size.x * 0.5f - 0.5f * t + (float)v * t, win_size.y * 0.5f);
+         draw_list->AddRectFilled(ImVec2(0.5f * win_size.x - t + (float)v * t, 0.5f * win_size.y - t), ImVec2(0.5f * win_size.x + (float)v * t, 0.5f * win_size.y + t), v == 0 ? backCol : calCol);
          ImU32 col = ImGui::GetColorU32(v == 1 ? backCol.Value : calCol.Value);
          for (int i = 0, p = 0; i < 13; p += faceLength[i], i++)
          {

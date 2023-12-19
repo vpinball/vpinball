@@ -807,8 +807,8 @@ void Decal::Render(const unsigned int renderMask)
          Matrix3D matWorldViewInverseTranspose;
          Matrix3D matWorldViewProj[2];
       } matrices;
-      memcpy(&matrices.matWorldViewProj[0], &matWorldViewProj, 4 * 4 * sizeof(float));
-      memcpy(&matrices.matWorldViewProj[1], &matWorldViewProj, 4 * 4 * sizeof(float));
+      memcpy(&matrices.matWorldViewProj[0].m[0][0], &matWorldViewProj.m[0][0], 4 * 4 * sizeof(float));
+      memcpy(&matrices.matWorldViewProj[1].m[0][0], &matWorldViewProj.m[0][0], 4 * 4 * sizeof(float));
       m_rd->basicShader->SetUniformBlock(SHADER_basicMatrixBlock, &matrices.matWorld.m[0][0]);
       #else
       m_rd->basicShader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj);

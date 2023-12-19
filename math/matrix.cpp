@@ -57,10 +57,7 @@ void Matrix3D::Invert()
    mat3D.m[ipvt[2]][0] = m[2][0]; mat3D.m[ipvt[2]][1] = m[2][1]; mat3D.m[ipvt[2]][2] = m[2][2]; mat3D.m[ipvt[2]][3] = m[2][3];
    mat3D.m[ipvt[3]][0] = m[3][0]; mat3D.m[ipvt[3]][1] = m[3][1]; mat3D.m[ipvt[3]][2] = m[3][2]; mat3D.m[ipvt[3]][3] = m[3][3];
 
-   m[0][0] = mat3D.m[0][0]; m[0][1] = mat3D.m[0][1]; m[0][2] = mat3D.m[0][2]; m[0][3] = mat3D.m[0][3];
-   m[1][0] = mat3D.m[1][0]; m[1][1] = mat3D.m[1][1]; m[1][2] = mat3D.m[1][2]; m[1][3] = mat3D.m[1][3];
-   m[2][0] = mat3D.m[2][0]; m[2][1] = mat3D.m[2][1]; m[2][2] = mat3D.m[2][2]; m[2][3] = mat3D.m[2][3];
-   m[3][0] = mat3D.m[3][0]; m[3][1] = mat3D.m[3][1]; m[3][2] = mat3D.m[3][2]; m[3][3] = mat3D.m[3][3];
+   memcpy(&m[0][0], &mat3D.m[0][0], 16 * sizeof(float));
 }
 
 void RotateAround(const Vertex3Ds &pvAxis, Vertex3D_NoTex2 * const pvPoint, const int count, const float angle)
@@ -97,14 +94,12 @@ void RotateAround(const Vertex3Ds &pvAxis, Vertex3Ds * const pvPoint, const int 
 
    for (int i = 0; i < count; ++i)
    {
-      const float result[3] = {
+      const Vertex3Ds result = {
          mat.m_d[0][0] * pvPoint[i].x + mat.m_d[0][1] * pvPoint[i].y + mat.m_d[0][2] * pvPoint[i].z,
          mat.m_d[1][0] * pvPoint[i].x + mat.m_d[1][1] * pvPoint[i].y + mat.m_d[1][2] * pvPoint[i].z,
          mat.m_d[2][0] * pvPoint[i].x + mat.m_d[2][1] * pvPoint[i].y + mat.m_d[2][2] * pvPoint[i].z };
 
-      pvPoint[i].x = result[0];
-      pvPoint[i].y = result[1];
-      pvPoint[i].z = result[2];
+      pvPoint[i] = result;
    }
 }
 
@@ -140,15 +135,15 @@ D3DXMATRIX::D3DXMATRIX() {
 }
 
 D3DXMATRIX::D3DXMATRIX(const D3DXMATRIX &input) {
-   memcpy(m, input.m, sizeof(float) * 16);
+   memcpy(&m[0][0], &input.m[0][0], sizeof(float) * 16);
 }
 
 D3DXMATRIX::D3DXMATRIX(const D3DXMATRIX * const input) {
-   memcpy(m, input->m, sizeof(float) * 16);
+   memcpy(&m[0][0], &input->m[0][0], sizeof(float) * 16);
 }
 
 D3DXMATRIX::D3DXMATRIX(const Matrix3D &input) {
-   memcpy(m, input.m, sizeof(float) * 16);
+   memcpy(&m[0][0], &input.m[0][0], sizeof(float) * 16);
 }
 
 //Vectors4 ------------------------------------------------------------------------------------------------------------------------
