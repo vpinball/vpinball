@@ -449,7 +449,10 @@ void PropertyDialog::UpdateMaterialComboBox(const vector<Material *>& contentLis
        for (const auto mat : contentList)
        {
            if (mat->m_szName==selectName)
+           {
                matFound = true;
+               break;
+           }
        }
        need_reset |= !matFound; // Selection is not part of the list
     }

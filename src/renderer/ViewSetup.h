@@ -12,7 +12,7 @@ enum ViewSetupID
 enum ViewLayoutMode : int
 {
    VLM_LEGACY = 0,   // All tables before 10.8 used a viewer position relative to a fitting of a set of bounding vertices (not all parts) with a standard perspective projection skewed by a layback angle
-   VLM_CAMERA,       // Position viewer relative to the bottom center of the table, use a standard camera perspective projection, replace layback by a frustrum offset
+   VLM_CAMERA,       // Position viewer relative to the bottom center of the table, use a standard camera perspective projection, replace layback by a frustum offset
    VLM_WINDOW        // Position viewer relative to the bottom center of the screen, use an oblique surface (re)projection (would need some postprocess to limit distortion)
 };
 
@@ -62,8 +62,8 @@ public:
    // View properties
    float mFOV = 45.0f; // Camera & Legacy: Field of view, in degrees
    float mLayback = 0.0f; // Legacy: A skewing angle that deform the table to make it look 'good'
-   float mViewHOfs = 0.0f; // Camera & Window: horizontal frustrum offset
-   float mViewVOfs = 0.0f; // Camera & Window: vertical frustrum offset
+   float mViewHOfs = 0.0f; // Camera & Window: horizontal frustum offset
+   float mViewVOfs = 0.0f; // Camera & Window: vertical frustum offset
 
    // Magic Window mode properties
    float mWindowTopZOfs = CMTOVPU(20.0f); // Upper window border Z coordinate, relative to table playfield Z

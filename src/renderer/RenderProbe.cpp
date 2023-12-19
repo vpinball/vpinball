@@ -435,7 +435,7 @@ void RenderProbe::DoRenderReflectionProbe(const bool render_static, const bool r
    // Flip camera
    Matrix3D viewMat, initialViewMat;
    viewMat = g_pplayer->m_renderer->GetMVP().GetView();
-   memcpy(initialViewMat.m, viewMat.m, 4 * 4 * sizeof(float));
+   memcpy(&initialViewMat.m[0][0], &viewMat.m[0][0], 4 * 4 * sizeof(float));
    viewMat = Matrix3D::MatrixPlaneReflection(n, m_reflection_plane.w) * viewMat;
    g_pplayer->m_renderer->GetMVP().SetView(viewMat);
 

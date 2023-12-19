@@ -812,7 +812,7 @@ void LiveUI::Render()
             GLint shaderHandle;
             glGetIntegerv(GL_CURRENT_PROGRAM, &shaderHandle);
             GLuint attribLocationProjMtx = glGetUniformLocation(shaderHandle, "ProjMtx");
-            glUniformMatrix4fv(attribLocationProjMtx, 1, GL_FALSE, (float*)&(matProj.m[0]));
+            glUniformMatrix4fv(attribLocationProjMtx, 1, GL_FALSE, &(matProj.m[0][0]));
             glDisable(GL_SCISSOR_TEST);
 #else
             lui->m_rd->GetCoreDevice()->SetTransform(D3DTS_WORLD, (const D3DXMATRIX *)&matTranslate);
@@ -1929,7 +1929,7 @@ void LiveUI::UpdateMainUI()
       if (GetSelectionTransform(transform))
       {
          float camViewLH[16];
-         memcpy(camViewLH, m_camView.m, sizeof(float) * 4 * 4);
+         memcpy(camViewLH, &m_camView.m[0][0], sizeof(float) * 4 * 4);
          for (int i = 8; i < 12; i++)
             camViewLH[i] = -camViewLH[i];
          Matrix3D prevTransform(transform);
@@ -2053,7 +2053,7 @@ void LiveUI::UpdateMainUI()
          const Matrix3D proj = YAxis * m_renderer->GetMVP().GetProj(0);
          float camViewLH[16];
          float *const cameraProjection = (float *)(proj.m);
-         memcpy(camViewLH, view.m, sizeof(float) * 4 * 4);
+         memcpy(camViewLH, &view.m[0][0], sizeof(float) * 4 * 4);
          for (int i = 8; i < 12; i++)
             camViewLH[i] = -camViewLH[i];
          Matrix3D transform;

@@ -35,9 +35,9 @@ private:
       {
          m_dirty = false;
          m_matModelView = m_matModel * m_matView;
-         memcpy(m_matModelViewInverse.m, m_matModelView.m, 4 * 4 * sizeof(float));
+         memcpy(&m_matModelViewInverse.m[0][0], &m_matModelView.m[0][0], 4 * 4 * sizeof(float));
          m_matModelViewInverse.Invert();
-         memcpy(m_matModelViewInverseTranspose.m, m_matModelViewInverse.m, 4 * 4 * sizeof(float));
+         memcpy(&m_matModelViewInverseTranspose.m[0][0], &m_matModelViewInverse.m[0][0], 4 * 4 * sizeof(float));
          m_matModelViewInverseTranspose.Transpose();
          switch (m_flip)
          {

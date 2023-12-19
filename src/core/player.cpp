@@ -793,8 +793,9 @@ void Player::Shutdown()
 
    // Destroy this player
    assert(g_pplayer == this);
-   delete g_pplayer; // Win32xx call Window destroy for us from destructor, don't call it directly or it will crash due to dual destruction
+   volatile auto player = g_pplayer;
    g_pplayer = nullptr;
+   delete player; // Win32xx call Window destroy for us from destructor, don't call it directly or it will crash due to dual destruction
 
    // Reactivate edited table or close application if requested
    if (closing == CS_CLOSE_APP)
