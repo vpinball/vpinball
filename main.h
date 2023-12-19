@@ -97,6 +97,10 @@ extern "C" {
  #include "sse2neon.h"
 #endif
 
+#ifdef __SSSE3__
+ #include <tmmintrin.h>
+#endif
+
 #include <vector>
 #include <string>
 #include <algorithm>
