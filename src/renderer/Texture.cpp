@@ -408,12 +408,12 @@ void BaseTexture::AddAlpha()
 
    size_t o = 0;
    if (m_format == SRGBA || m_format == RGBA) {
-      vector<BYTE> new_data((size_t)width() * height() * 4);
-      copy_rgb_rgba<false>((unsigned int*)new_data.data(), m_data.data(), (size_t)width() * height());
+      vector<BYTE2> new_data((size_t)width() * height() * 4);
+      copy_rgb_rgba<false>((unsigned int*)new_data.data(), data(), (size_t)width() * height());
       m_data = std::move(new_data);
    }
    else {
-      vector<BYTE> new_data((size_t)8 * width() * height());
+      vector<BYTE2> new_data((size_t)8 * width() * height());
       unsigned short* const __restrict dest_data16 = (unsigned short*)new_data.data();
       const unsigned short* const __restrict src_data16 = (unsigned short*)m_data.data();
       for (unsigned int j = 0; j < height(); ++j)
@@ -444,7 +444,7 @@ void BaseTexture::RemoveAlpha()
    }
 
    size_t o = 0;
-   vector<BYTE> new_data((size_t)3 * width() * height());
+   vector<BYTE2> new_data((size_t)3 * width() * height());
    for (unsigned int j = 0; j < height(); ++j)
       for (unsigned int i = 0; i < width(); ++i, ++o)
       {
