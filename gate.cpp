@@ -648,6 +648,7 @@ HRESULT Gate::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backupFo
 HRESULT Gate::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
 {
    SetDefaults(false);
+   m_d.m_twoWay = false; // to keep old VP8/9 behavior when loading .vpt files
 
    BiffReader br(pstm, this, pid, version, hcrypthash, hcryptkey);
 
