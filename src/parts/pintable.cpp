@@ -6141,8 +6141,9 @@ void PinTable::ExportBlueprint()
    CloseHandle(hfile);
 #else
    FIBITMAP * dib = FreeImage_Allocate(bmwidth, bmheight, 24);
-   BYTE * const psrc = FreeImage_GetBits(dib);
-   memcpy(psrc, pbits, (size_t)bmwidth*bmheight * 3);
+   BYTE * const pdst = FreeImage_GetBits(dib);
+   //const unsigned int pitch_dst = FreeImage_GetPitch(dib); //!! necessary?
+   memcpy(pdst, pbits, (size_t)bmwidth*bmheight * 3);
    if (!FreeImage_Save(FreeImage_GetFIFFromFilename(szBlueprintFileName), dib, szBlueprintFileName, PNG_Z_BEST_COMPRESSION | BMP_SAVE_RLE))
        m_vpinball->MessageBox("Export failed!", "Blueprint Export", MB_OK | MB_ICONEXCLAMATION);
    else
@@ -7551,16 +7552,17 @@ bool PinTable::ExportImage(const Texture * const ppi, const char * const szfilen
       }
 
       FIBITMAP *dib = FreeImage_Allocate(ppi->m_width, ppi->m_height, ppi->m_pdsBuffer->has_alpha() ? 32 : 24);
-      BYTE *const psrc = FreeImage_GetBits(dib);
+      BYTE *const pdst = FreeImage_GetBits(dib);
 
       const unsigned int pitch = ppi->m_pdsBuffer->pitch();
+      const unsigned int pitch_dst = FreeImage_GetPitch(dib);
       const BYTE *spch = ppi->m_pdsBuffer->data() + (ppi->m_height * pitch); // just past the end of the Texture part of DD surface
       const unsigned int ch = ppi->m_pdsBuffer->has_alpha() ? 4 : 3;
 
       for (unsigned int i = 0; i < ppi->m_height; i++)
       {
          const BYTE *__restrict src = (spch -= pitch); // start on previous previous line
-         BYTE * __restrict dst = psrc + i * (ppi->m_width * ch);
+         BYTE * __restrict dst = pdst + i * pitch_dst;
          for (unsigned int x = 0; x < ppi->m_width; x++,src+=ch,dst+=ch) // copy and swap red & blue
          {
             dst[0] = src[2];

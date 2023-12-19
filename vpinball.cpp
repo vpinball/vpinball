@@ -3064,10 +3064,11 @@ void VPinball::GenerateImageFromTournamentFile(const string &tablefile, const st
    }
 
    FIBITMAP *dib = FreeImage_Allocate(x, y, 8);
-   BYTE *const psrc = FreeImage_GetBits(dib);
+   BYTE *const pdst = FreeImage_GetBits(dib);
+   //const unsigned int pitch_dst = FreeImage_GetPitch(dib); //!! needed?
    for (unsigned int j = 0; j < y; j++)
       for (unsigned int i = 0; i < x; i++)
-         psrc[i + (y-1-j)*x] = dmd_data[i+j*x]; // flip y-axis for image output
+         pdst[i + (y-1-j)*x] = dmd_data[i+j*x]; // flip y-axis for image output
    if (!FreeImage_Save(FIF_PNG, dib, (txtfile + ".png").c_str(), PNG_Z_BEST_COMPRESSION))
       ShowError("Tournament file converted image could not be saved");
    FreeImage_Unload(dib);
