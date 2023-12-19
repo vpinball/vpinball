@@ -6840,13 +6840,14 @@ bool PinTable::ExportImage(const Texture * const ppi, const char * const szfilen
       BYTE *const psrc = FreeImage_GetBits(dib);
 
       const unsigned int pitch = ppi->m_pdsBuffer->pitch();
+      const unsigned int pitch_dst = FreeImage_GetPitch(dib);
       const BYTE *spch = ppi->m_pdsBuffer->data() + (ppi->m_height * pitch); // just past the end of the Texture part of DD surface
       const unsigned int ch = ppi->m_pdsBuffer->has_alpha() ? 4 : 3;
 
       for (unsigned int i = 0; i < ppi->m_height; i++)
       {
          const BYTE *__restrict src = (spch -= pitch); // start on previous previous line
-         BYTE * __restrict dst = psrc + i * (ppi->m_width * ch);
+         BYTE * __restrict dst = psrc + i * pitch_dst;
          for (unsigned int x = 0; x < ppi->m_width; x++,src+=ch,dst+=ch) // copy and swap red & blue
          {
             dst[0] = src[2];

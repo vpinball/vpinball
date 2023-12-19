@@ -35,6 +35,8 @@ FIXES:
 
 - fix changing the timer settings not marking the table as dirty
 
+- fix .bmp export in the Image Manager
+
 - see Scripts.txt for the actual usage and "documentation" of the scripts that come with VPX
 
 VP 10.7.3 Changelog
