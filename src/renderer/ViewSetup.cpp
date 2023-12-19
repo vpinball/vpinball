@@ -164,7 +164,7 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
    int quadrant;
    if (isWindow)
    {
-      quadrant = ((int)mViewportRotation) - (((int)mViewportRotation) / 360) * 360;
+      quadrant = (int)mViewportRotation - ((int)mViewportRotation / 360) * 360;
       quadrant = (viewportWidth < viewportHeight ? 0 : 3) + (quadrant < 0 ? quadrant + 360 : quadrant) / 90; // 0 / 90 / 180 / 270
       rotation = ANGTORAD(quadrant * 90);
    }
@@ -205,17 +205,17 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
          else if (aspect > 1.5f)
             camz -= 1070.0f; // 650
          else if (aspect > 1.4f)
-            camz -= 900.0f; // 580
+            camz -= 900.0f;  // 580
          else if (aspect > 1.3f)
-            camz -= 820.0f; // 500 // 600
+            camz -= 820.0f;  // 500 // 600
          else
-            camz -= 800.0f; // 480
+            camz -= 800.0f;  // 480
       }
       else if (height > width)
       {
          // layout portrait(game vert) in portrait(LCD\LED vert)
          if (aspect > 0.6f)
-            camz += 10.0f; // 50
+            camz += 10.0f;  // 50
          else if (aspect > 0.5f)
             camz += 300.0f; // 100
          else
@@ -242,6 +242,13 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
    projTrans.SetTranslation((float)((double)xpixoff / (double)viewportWidth), (float)((double)ypixoff / (double)viewportHeight), 0.f); // in-pixel offset for manual oversampling
    rotz.SetRotateZ(rotation); // Viewport rotation
 
+   vector<Vertex3Ds> bounds, legacy_bounds;
+   bounds.reserve(table->m_vedit.size() * 8); // upper bound estimate
+   if (isLegacy)
+      legacy_bounds.reserve(table->m_vedit.size() * 8); // upper bound estimate
+   for (IEditable* editable : table->m_vedit)
+      editable->GetBoundingVertices(bounds, isLegacy ? &legacy_bounds : nullptr); // Collect part bounds to fit the legacy mode camera?
+
    // Compute translation
    // Also setup a dedicated matView (complete matrix stack excepted projection) to be able to compute near and far plane
    if (isLegacy)
@@ -254,13 +261,9 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
       scale.SetIdentity();
       coords.SetScaling(mSceneScaleX, -mSceneScaleY, -mSceneScaleZ);
 
-      // Collect part bounds, to fit the legacy mode camera
-      vector<Vertex3Ds> vvertex3D;
-      for (IEditable* editable : table->m_vedit)
-         editable->GetBoundingVertices(vvertex3D, true);
-      vec3 fit = FitCameraToVertices(vvertex3D, aspect, rotation, inc, FOV, mViewZ, mLayback);
+      vec3 fit = FitCameraToVertices(legacy_bounds, aspect, rotation, inc, FOV, mViewZ, mLayback);
+      legacy_bounds.clear();
       vec3 pos = vec3(mViewX - fit.x + camx, mViewY - fit.y + camy, -fit.z + camz);
-      vvertex3D.clear();
       // For some reason I don't get, viewport rotation (rotz) and head inclination (rotx) used to be swapped when in camera mode on desktop.
       // This is no more applied and we always consider this order: rotx * rotz * trans which we swap to apply it as trans * rotx * rotz
       Matrix3D rot, trans, rotx;
@@ -289,9 +292,9 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
       matView = scale * trans * rotx * rotz * coords;
    }
 
-   // Compute frustrum Z bounds (near/far plane), taking in account base view but also reflected point of view to avoid depth clipping in reflection probes
+   // Compute frustum Z bounds (near/far plane), taking in account base view but also reflected point of view to avoid depth clipping in reflection probes
    float zNear, zFar;
-   table->ComputeNearFarPlane(matView, 1.f, zNear, zFar);
+   table->ComputeNearFarPlane(bounds, matView, 1.f, zNear, zFar);
    for (auto probe : table->m_vrenderprobe)
    {
       if (probe->GetType() == RenderProbe::PLANE_REFLECTION)
@@ -300,16 +303,17 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
          probe->GetReflectionPlane(plane);
          Vertex3Ds pn = Vertex3Ds(plane.x, plane.y, plane.z);
          pn.Normalize();
-         Matrix3D reflect = Matrix3D::MatrixPlaneReflection(pn, plane.w);
-         Matrix3D probeView = reflect * matView;
+         const Matrix3D reflect = Matrix3D::MatrixPlaneReflection(pn, plane.w);
+         const Matrix3D probeView = reflect * matView;
          float zNearProbe, zFarProbe;
-         table->ComputeNearFarPlane(probeView, 1.f, zNearProbe, zFarProbe);
+         table->ComputeNearFarPlane(bounds, probeView, 1.f, zNearProbe, zFarProbe);
          zNear = min(zNear, zNearProbe);
          zFar = max(zFar, zFarProbe);
       }
    }
+   bounds.clear();
 
-   // Compute frustrum X/Y bounds
+   // Compute frustum X/Y bounds
    float xcenter, ycenter, xspan, yspan;
    switch (mMode)
    {
@@ -419,9 +423,10 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
       // We use it for rendering computation. It is reverted by the projection matrix which then apply the old transformation, including layback.
       Matrix3D invView(mvp.GetView());
       invView.Invert();
-      mvp.SetProj(0, (invView * layback * mvp.GetView()) * mvp.GetProj(0));
+      const Matrix3D tmp = invView * layback * mvp.GetView();
+      mvp.SetProj(0, tmp * mvp.GetProj(0));
       if (stereo) // Real stereo is not really supported for legacy camera mode (it used to be only fake parallax stereo)
-         mvp.SetProj(1, (invView * layback * mvp.GetView()) * mvp.GetProj(1));
+         mvp.SetProj(1, tmp * mvp.GetProj(1));
    }
 }
 

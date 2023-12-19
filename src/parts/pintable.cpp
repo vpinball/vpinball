@@ -5122,28 +5122,22 @@ FRect3D PinTable::GetBoundingBox() const
    return bbox;
 }
 
-void PinTable::ComputeNearFarPlane(const Matrix3D &matWorldView, const float scale, float &zNear, float &zFar) const
+void PinTable::ComputeNearFarPlane(const vector<Vertex3Ds> &bounds, const Matrix3D &matWorldView, const float scale, float &zNear, float &zFar) const
 {
    zNear = FLT_MAX;
    zFar = -FLT_MAX;
-   // Adjust near/far plane for each projected bounding boxes
-   vector<Vertex3Ds> vvertex3D;
-   for (IEditable *editable : m_vedit)
+   for (const Vertex3Ds &v : bounds)
    {
-      editable->GetBoundingVertices(vvertex3D, false);
-      for (const Vertex3Ds &v : vvertex3D)
+      Vertex3Ds p = v;
+      matWorldView.TransformVec3(p);
+      if (p.z > 0.0f)
       {
-         Vertex3Ds p = v;
-         matWorldView.TransformVec3(p);
-         if (p.z > 0.0f)
-         {
-            // Clip points behind the viewer (VR room have a lot of these)
-            zNear = min(zNear, p.z);
-            zFar = max(zFar, p.z);
-         }
+         // Clip points behind the viewer (VR room have a lot of these)
+         zNear = min(zNear, p.z);
+         zFar = max(zFar, p.z);
       }
-      vvertex3D.clear();
    }
+
    // Add a bit of margin
    zNear *= 0.9f;
    zFar *= 1.1f;
@@ -5155,6 +5149,17 @@ void PinTable::ComputeNearFarPlane(const Matrix3D &matWorldView, const float sca
    //if (fabsf(inc) < 0.0075f)
    //   zFar += 10.f;
    //PLOGD << "Near/Far plane: " << zNear << " to " << zFar;
+}
+
+void PinTable::ComputeNearFarPlane(const Matrix3D &matWorldView, const float scale, float &zNear, float &zFar) const
+{
+   // Adjust near/far plane for each projected bounding box
+   vector<Vertex3Ds> bounds;
+   bounds.reserve(m_vedit.size() * 8); // upper bound estimate
+   for (IEditable *editable : m_vedit)
+      editable->GetBoundingVertices(bounds, nullptr);
+
+   ComputeNearFarPlane(bounds, matWorldView, scale, zNear, zFar);
 }
 
 void PinTable::MoveCollectionDown(CComObject<Collection> *pcol)

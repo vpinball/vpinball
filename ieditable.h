@@ -239,7 +239,9 @@ public:
    virtual IFireEvents *GetIFireEvents() = 0;
    virtual ItemTypeEnum GetItemType() const = 0;
 
-   virtual void GetBoundingVertices(vector<Vertex3Ds>& pvvertex3D, const bool isLegacy) {}
+   // if legacy_bounds != nullptr, can return pre-10.8 bounds, too (depending on which editable exactly)
+   virtual void GetBoundingVertices(vector<Vertex3Ds> &bounds, vector<Vertex3Ds> *const legacy_bounds) {}
+
    virtual void WriteRegDefaults() {}
 
    void BeginUndo();

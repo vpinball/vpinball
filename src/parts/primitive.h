@@ -301,7 +301,7 @@ public:
    float GetAlpha() const { return m_d.m_alpha; }
    void SetAlpha(const float value) { m_d.m_alpha = max(value, 0.f); }
 
-   void GetBoundingVertices(vector<Vertex3Ds> &pvvertex3D, const bool isLegacy) final;
+   void GetBoundingVertices(vector<Vertex3Ds> &bounds, vector<Vertex3Ds> *const legacy_bounds) final;
 
 private:
    RenderDevice *m_rd = nullptr;

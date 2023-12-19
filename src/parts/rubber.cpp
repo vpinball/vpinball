@@ -269,23 +269,23 @@ void Rubber::RenderBlueprint(Sur *psur, const bool solid)
    }
 }
 
-void Rubber::GetBoundingVertices(vector<Vertex3Ds> &pvvertex3D, const bool isLegacy) /*const*/
+void Rubber::GetBoundingVertices(vector<Vertex3Ds> &bounds, vector<Vertex3Ds> *const legacy_bounds)
 {
-   if (!isLegacy && !m_d.m_visible)
+   if (legacy_bounds == nullptr && !m_d.m_visible)
       return;
 
    //!! meh, this is delivering something loosely related to the bounding vertices, but its only used in the cam fitting code so far, so keep for legacy reasons
    int cvertex;
    const Vertex2D * const rgvLocal = GetSplineVertex(cvertex, nullptr, nullptr);
 
-   //pvvertex3D.reserve(pvvertex3D.size() + cvertex * 2);
+   //if(m_d.m_visible) bounds.reserve(bounds.size() + cvertex * 2);
    Vertex3Ds bbox_min(FLT_MAX, FLT_MAX, FLT_MAX);
    Vertex3Ds bbox_max(-FLT_MAX, -FLT_MAX, -FLT_MAX);
    for (int i = 0; i < cvertex; i++)
    {
 	  {
 	  const Vertex3Ds pv(rgvLocal[i].x,rgvLocal[i].y,m_d.m_height + (float)(2.0*PHYS_SKIN)); // leave room for ball //!! use ballsize
-	  //pvvertex3D.push_back(pv);
+	  //if(m_d.m_visible) bounds.push_back(pv);
 	  bbox_min.x = min(bbox_min.x, pv.x);
 	  bbox_min.y = min(bbox_min.y, pv.y);
 	  bbox_min.z = min(bbox_min.z, pv.z);
@@ -295,7 +295,7 @@ void Rubber::GetBoundingVertices(vector<Vertex3Ds> &pvvertex3D, const bool isLeg
 	  }
 
 	  const Vertex3Ds pv(rgvLocal[cvertex * 2 - i - 1].x,rgvLocal[cvertex * 2 - i - 1].y,m_d.m_height + (float)(2.0*PHYS_SKIN)); // leave room for ball //!! use ballsize
-	  //pvvertex3D.push_back(pv);
+	  //if(m_d.m_visible) bounds.push_back(pv);
 	  bbox_min.x = min(bbox_min.x, pv.x);
 	  bbox_min.y = min(bbox_min.y, pv.y);
 	  bbox_min.z = min(bbox_min.z, pv.z);
@@ -314,7 +314,10 @@ void Rubber::GetBoundingVertices(vector<Vertex3Ds> &pvvertex3D, const bool isLeg
 		   (i & 2) ? bbox_min.y : bbox_max.y,
 		   (i & 4) ? bbox_min.z : bbox_max.z);
 
-	   pvvertex3D.push_back(pv);
+	   if (m_d.m_visible)
+		   bounds.push_back(pv);
+	   if (legacy_bounds)
+		   legacy_bounds->push_back(pv);
    }
 }
 

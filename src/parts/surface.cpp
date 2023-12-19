@@ -496,9 +496,9 @@ void Surface::AddLine(vector<HitObject*> &pvho, const RenderVertex &pv1, const R
 // end of license:GPLv3+, back to 'old MAME'-like
 //
 
-void Surface::GetBoundingVertices(vector<Vertex3Ds> &pvvertex3D, const bool isLegacy) /*const*/
+void Surface::GetBoundingVertices(vector<Vertex3Ds> &bounds, vector<Vertex3Ds> *const legacy_bounds)
 {
-   if (!isLegacy && !m_d.m_visible)
+   if (legacy_bounds == nullptr && !m_d.m_visible)
       return;
 
    // hardwired to table dimensions, but with bottom/top of surface, returns all 8 corners as this will be used for further transformations later-on
@@ -509,7 +509,10 @@ void Surface::GetBoundingVertices(vector<Vertex3Ds> &pvvertex3D, const bool isLe
 			(i & 2) ? m_ptable->m_bottom : m_ptable->m_top,
 			(i & 4) ? m_d.m_heighttop : m_d.m_heightbottom);
 
-		pvvertex3D.push_back(pv);
+		if (m_d.m_visible)
+			bounds.push_back(pv);
+		if (legacy_bounds)
+			legacy_bounds->push_back(pv);
 	}
 }
 
@@ -701,7 +704,7 @@ void Surface::GenerateMesh(vector<Vertex3D_NoTex2> &topBuf, vector<Vertex3D_NoTe
       const float inv_tableheight = 1.0f / (m_ptable->m_bottom - m_ptable->m_top);
 
       topBuf.resize(m_numVertices * 3);
-      Vertex3D_NoTex2 * const vertsTop[3] = { &topBuf[0], &topBuf[m_numVertices], &topBuf[m_numVertices*2] };
+      Vertex3D_NoTex2 * const vertsTop[3] = { topBuf.data(), &topBuf[m_numVertices], &topBuf[m_numVertices * 2] };
 
       for (unsigned int i = 0; i < m_numVertices; i++)
       {

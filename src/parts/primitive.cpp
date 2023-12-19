@@ -942,33 +942,34 @@ void Primitive::RenderBlueprint(Sur *psur, const bool solid)
       }
 
       if (!drawVertices.empty())
-         psur->Lines(&drawVertices[0], (int)(drawVertices.size() / 2));
+         psur->Lines(drawVertices.data(), (int)(drawVertices.size() / 2));
    }
 }
 
-void Primitive::GetBoundingVertices(vector<Vertex3Ds> &pvvertex3D, const bool isLegacy)
+// VPX before 10.8 computed the viewer position based on a partial bounding volume that would not include primitives, so never fill legacy_bounds in here, only bounds
+void Primitive::GetBoundingVertices(vector<Vertex3Ds> &bounds, vector<Vertex3Ds> *const legacy_bounds)
 {
-   // VPX before 10.8 computed the viewer position based on a partial bounding volume that would not include primitives
-   if (isLegacy || !m_d.m_visible)
+   if (!m_d.m_visible)
       return;
+
    RecalculateMatrices();
    if (m_d.m_use3DMesh)
    {
       m_mesh.UpdateBounds();
-      Vertex3Ds minBound(m_mesh.m_minAABound);
-      Vertex3Ds maxBound(m_mesh.m_maxAABound);
-      if (minBound.x != FLT_MAX)
+      if (m_mesh.m_minAABound.x != FLT_MAX)
       {
+         Vertex3Ds minBound(m_mesh.m_minAABound);
+         Vertex3Ds maxBound(m_mesh.m_maxAABound);
          m_fullMatrix.TransformVec3(minBound);
          m_fullMatrix.TransformVec3(maxBound);
-         pvvertex3D.push_back(Vertex3Ds(minBound.x, minBound.y, minBound.z));
-         pvvertex3D.push_back(Vertex3Ds(minBound.x, minBound.y, maxBound.z));
-         pvvertex3D.push_back(Vertex3Ds(minBound.x, maxBound.y, minBound.z));
-         pvvertex3D.push_back(Vertex3Ds(minBound.x, maxBound.y, maxBound.z));
-         pvvertex3D.push_back(Vertex3Ds(maxBound.x, minBound.y, minBound.z));
-         pvvertex3D.push_back(Vertex3Ds(maxBound.x, minBound.y, maxBound.z));
-         pvvertex3D.push_back(Vertex3Ds(maxBound.x, maxBound.y, minBound.z));
-         pvvertex3D.push_back(Vertex3Ds(maxBound.x, maxBound.y, maxBound.z));
+         bounds.push_back(Vertex3Ds(minBound.x, minBound.y, minBound.z));
+         bounds.push_back(Vertex3Ds(minBound.x, minBound.y, maxBound.z));
+         bounds.push_back(Vertex3Ds(minBound.x, maxBound.y, minBound.z));
+         bounds.push_back(Vertex3Ds(minBound.x, maxBound.y, maxBound.z));
+         bounds.push_back(Vertex3Ds(maxBound.x, minBound.y, minBound.z));
+         bounds.push_back(Vertex3Ds(maxBound.x, minBound.y, maxBound.z));
+         bounds.push_back(Vertex3Ds(maxBound.x, maxBound.y, minBound.z));
+         bounds.push_back(Vertex3Ds(maxBound.x, maxBound.y, maxBound.z));
       }
    }
 }
