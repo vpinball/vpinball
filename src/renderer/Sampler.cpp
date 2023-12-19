@@ -397,15 +397,7 @@ IDirect3DTexture9* Sampler::CreateSystemTexture(BaseTexture* const surf, const b
       D3DLOCKED_RECT locked;
       CHECKD3D(sysTex->LockRect(0, &locked, nullptr, 0));
 
-      BYTE* const __restrict pdest = (BYTE*)locked.pBits;
-      const BYTE* const __restrict psrc = (BYTE*)(surf->data());
-      for (size_t i = 0; i < (size_t)texwidth * texheight; ++i)
-      {
-         pdest[i * 4 + 0] = psrc[i * 3 + 2];
-         pdest[i * 4 + 1] = psrc[i * 3 + 1];
-         pdest[i * 4 + 2] = psrc[i * 3 + 0];
-         pdest[i * 4 + 3] = 255u;
-      }
+      copy_rgb_rgba<true>((unsigned int*)locked.pBits, surf->data(), (size_t)texwidth * texheight);
 
       CHECKD3D(sysTex->UnlockRect(0));
    }

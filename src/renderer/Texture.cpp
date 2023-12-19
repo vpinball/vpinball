@@ -408,15 +408,8 @@ void BaseTexture::AddAlpha()
 
    size_t o = 0;
    if (m_format == SRGBA || m_format == RGBA) {
-      vector<BYTE> new_data((size_t)4 * width() * height());
-      for (unsigned int j = 0; j < height(); ++j)
-         for (unsigned int i = 0; i < width(); ++i, ++o)
-         {
-            new_data[o * 4 + 0] = m_data[o * 3 + 0];
-            new_data[o * 4 + 1] = m_data[o * 3 + 1];
-            new_data[o * 4 + 2] = m_data[o * 3 + 2];
-            new_data[o * 4 + 3] = 255;
-         }
+      vector<BYTE> new_data((size_t)width() * height() * 4);
+      copy_rgb_rgba<false>((unsigned int*)new_data.data(), m_data.data(), (size_t)width() * height());
       m_data = std::move(new_data);
    }
    else {
@@ -533,16 +526,7 @@ BaseTexture* BaseTexture::ToBGRA()
    }
    else if (m_format == BaseTexture::RGB || m_format == BaseTexture::SRGB)
    {
-      const BYTE* const __restrict src = data();
-      size_t o = 0;
-      for (unsigned int j = 0; j < height(); ++j)
-         for (unsigned int i = 0; i < width(); ++i, ++o)
-         {
-            tmp[o * 4 + 0] = src[o * 3 + 2]; // B
-            tmp[o * 4 + 1] = src[o * 3 + 1]; // G
-            tmp[o * 4 + 2] = src[o * 3 + 0]; // R
-            tmp[o * 4 + 3] = 255; // A
-         }
+      copy_rgb_rgba<true>((unsigned int*)tmp, data(), (size_t)width() * height());
    }
    else if (m_format == BaseTexture::RGBA || m_format == BaseTexture::SRGBA)
    {
