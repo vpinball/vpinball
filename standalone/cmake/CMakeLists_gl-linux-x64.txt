@@ -621,6 +621,7 @@ target_precompile_headers(vpinball PUBLIC
 )
 
 target_compile_options(vpinball PUBLIC
+   -mssse3
    -fvisibility=hidden
    -Wno-inconsistent-missing-override
    -Wno-missing-exception-spec

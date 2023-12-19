@@ -405,15 +405,7 @@ IDirect3DTexture9* Sampler::CreateSystemTexture(BaseTexture* const surf, const b
    }
    else if ((basetexformat == BaseTexture::RGB || basetexformat == BaseTexture::SRGB) && texformat == colorFormat::RGBA8)
    {
-      BYTE* const __restrict pdest = (BYTE*)locked.pBits;
-      const BYTE* const __restrict psrc = (BYTE*)(surf->data());
-      for (size_t i = 0; i < (size_t)texwidth * texheight; ++i)
-      {
-         pdest[i * 4 + 0] = psrc[i * 3 + 2];
-         pdest[i * 4 + 1] = psrc[i * 3 + 1];
-         pdest[i * 4 + 2] = psrc[i * 3 + 0];
-         pdest[i * 4 + 3] = 255u;
-      }
+      copy_rgb_rgba<true>((unsigned int*)locked.pBits, surf->data(), (size_t)texwidth * texheight);
    }
    else if ((basetexformat == BaseTexture::RGBA || basetexformat == BaseTexture::SRGBA) && texformat == colorFormat::RGBA8)
    {

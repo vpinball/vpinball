@@ -177,7 +177,7 @@ void BuildProjectionMatrix(
 	// zs is screen position.
 	float zs = ViewerPositionZ = ViewerPositionZ >= zn ? ViewerPositionZ : zn;
 
-	// Move edges of frustrum from zs to zn
+	// Move edges of frustum from zs to zn
 	float z_near_to_z_screen = zn / zs; // <=1.0
 	r *= z_near_to_z_screen;
 	l *= z_near_to_z_screen;
