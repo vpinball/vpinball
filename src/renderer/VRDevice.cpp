@@ -14,14 +14,14 @@ VRDevice::VRDevice()
    m_pHMD = nullptr;
    m_rTrackedDevicePose = nullptr;
    m_scale = 1.0f; // Scale factor from scene (in VP units) to VR view (in meters)
-   if (g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "ScaleToFixedWidth"s, false))
+   if (g_pvp->GetActiveTable()->m_settings.LoadValueWithDefault(Settings::PlayerVR, "ScaleToFixedWidth"s, false))
    {
       float width;
-      g_pplayer->m_ptable->get_Width(&width);
-      m_scale = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "ScaleAbsolute"s, 55.0f) * 0.01f / width;
+      g_pvp->GetActiveTable()->get_Width(&width);
+      m_scale = g_pvp->GetActiveTable()->m_settings.LoadValueWithDefault(Settings::PlayerVR, "ScaleAbsolute"s, 55.0f) * 0.01f / width;
    }
    else
-      m_scale = VPUTOCM(0.01f) * g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "ScaleRelative"s, 1.0f);
+      m_scale = VPUTOCM(0.01f) * g_pvp->GetActiveTable()->m_settings.LoadValueWithDefault(Settings::PlayerVR, "ScaleRelative"s, 1.0f);
    if (m_scale <= 0.000001f)
       m_scale = VPUTOCM(0.01f); // Scale factor for VPUnits to Meters
 
@@ -59,8 +59,8 @@ VRDevice::VRDevice()
    coords._31 =  0.f; coords._32 = 1.f; coords._33 =  0.f;
 
    float zNear, zFar;
-   g_pplayer->m_ptable->ComputeNearFarPlane(coords * sceneScale, m_scale, zNear, zFar);
-   zNear = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "NearPlane"s, 5.0f) / 100.0f; // Replace near value to allow player to move near parts up to user defined value
+   g_pvp->GetActiveTable()->ComputeNearFarPlane(coords * sceneScale, m_scale, zNear, zFar);
+   zNear = g_pvp->GetActiveTable()->m_settings.LoadValueWithDefault(Settings::PlayerVR, "NearPlane"s, 5.0f) / 100.0f; // Replace near value to allow player to move near parts up to user defined value
    zFar *= 1.2f;
 
    if (m_pHMD == nullptr)
@@ -132,11 +132,11 @@ VRDevice::VRDevice()
    }
    #endif
 
-   m_slope = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "Slope"s, 6.5f);
-   m_orientation = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "Orientation"s, 0.0f);
-   m_tablex = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "TableX"s, 0.0f);
-   m_tabley = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "TableY"s, 0.0f);
-   m_tablez = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "TableZ"s, 80.0f);
+   m_slope = g_pvp->GetActiveTable()->m_settings.LoadValueWithDefault(Settings::PlayerVR, "Slope"s, 6.5f);
+   m_orientation = g_pvp->GetActiveTable()->m_settings.LoadValueWithDefault(Settings::PlayerVR, "Orientation"s, 0.0f);
+   m_tablex = g_pvp->GetActiveTable()->m_settings.LoadValueWithDefault(Settings::PlayerVR, "TableX"s, 0.0f);
+   m_tabley = g_pvp->GetActiveTable()->m_settings.LoadValueWithDefault(Settings::PlayerVR, "TableY"s, 0.0f);
+   m_tablez = g_pvp->GetActiveTable()->m_settings.LoadValueWithDefault(Settings::PlayerVR, "TableZ"s, 80.0f);
 }
 
 VRDevice::~VRDevice()
