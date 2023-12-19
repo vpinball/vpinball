@@ -122,7 +122,7 @@ void Sampler::UpdateTexture(BaseTexture* const surf, const bool force_linear_rgb
    else if (surf->m_format == BaseTexture::BW)
       format = colorFormat::GREY8;
    else
-      assert(false);
+      assert(false); // Unsupported image format
    if (force_linear_rgb)
    {
       if (format == colorFormat::SRGB)
@@ -321,16 +321,7 @@ IDirect3DTexture9* Sampler::CreateSystemTexture(BaseTexture* const surf, const b
       D3DLOCKED_RECT locked;
       CHECKD3D(sysTex->LockRect(0, &locked, nullptr, 0));
 
-      BYTE* const __restrict pdest = (BYTE*)locked.pBits;
-      const BYTE* const __restrict psrc = (BYTE*)(surf->data());
-      for (size_t i = 0; i < (size_t)texwidth * texheight; ++i)
-      {
-         pdest[i * 4 + 0] = psrc[i * 3 + 2];
-         pdest[i * 4 + 1] = psrc[i * 3 + 1];
-         pdest[i * 4 + 2] = psrc[i * 3 + 0];
-         pdest[i * 4 + 3] = 255u;
-      }
-
+      copy_rgb_rgba<true>((unsigned int*)locked.pBits, surf->data(), (size_t)texwidth * texheight);
       CHECKD3D(sysTex->UnlockRect(0));
    }
    else if ((basetexformat == BaseTexture::RGBA || basetexformat == BaseTexture::SRGBA) && texformat == colorFormat::RGBA8)
@@ -351,6 +342,8 @@ IDirect3DTexture9* Sampler::CreateSystemTexture(BaseTexture* const surf, const b
       CHECKD3D(D3DXLoadSurfaceFromMemory(sysSurf, nullptr, nullptr, surf->data(), (D3DFORMAT)colorFormat::RGBA8, surf->pitch(), nullptr, &sysRect, D3DX_FILTER_NONE, 0));
       SAFE_RELEASE_NO_RCC(sysSurf);*/
    }
+   else
+      assert(false); // Unsupported image format
 
    if (!(texformat != colorFormat::DXT5 && m_rd->m_autogen_mipmap))
       // normal maps or float textures are already in linear space!
