@@ -268,6 +268,8 @@ FIXES:
 
 - fix keyboard navigation in Material dialogue
 
+- fix .bmp export in the Image Manager
+
 - improve UI scaling on high resolutions (e.g. 4K)
 
 - update example tables with new raytraced ball shadows enabled and other new features
@@ -316,6 +318,8 @@ FIXES:
 - fix saving of custom keys for joypad input
 
 - fix changing the timer settings not marking the table as dirty
+
+- fix .bmp export in the Image Manager
 
 - see Scripts.txt for the actual usage and "documentation" of the scripts that come with VPX
 
