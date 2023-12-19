@@ -1455,7 +1455,7 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
             case BG_INVALID:
             case NUM_BG_SETS: assert(false); break;
             }
-            g_pplayer->m_renderer->m_cam = Vertex3Ds(0.f, 0.f, 0.f);
+            g_pplayer->m_pin3d.m_cam = Vertex3Ds(0.f, 0.f, 0.f);
             UpdateTweakPage();
          }
       }
