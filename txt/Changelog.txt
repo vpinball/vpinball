@@ -3,6 +3,8 @@ VP 10.8.1 Changelog
 
 FEATURES:
 
+- add -v command line option to just output the version and quit
+
 FIXES:
 
 - update FreeImage library to latest 3.19.0 beta (custom build)

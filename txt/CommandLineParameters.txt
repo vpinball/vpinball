@@ -24,5 +24,9 @@
 -Ini [filename]         Use a custom settings file instead of loading it from the default location
 -TableIni [filename]    Use a custom table settings file. This option is only available in conjunction with a command which specifies a table filename like Play, Edit,...
 
+-TournamentFile [table filename] [tournament filename]  Load a table and tournament file and convert to .png
+
+-v                      Displays the version
+
 -c1 [customparam] .. -c9 [customparam]  Custom user parameters that can be accessed in the script via GetCustomParam(X)
 

@@ -235,6 +235,7 @@ static const string options[] = { // keep in sync with option_names & option_des
    "Ini"s,
    "TableIni"s,
    "TournamentFile"s,
+   "v"s,
    "exit"s // (ab)used by frontend, not handled by us
 #ifdef __STANDALONE__
    ,
@@ -265,6 +266,7 @@ static const string option_descs[] =
    "[filename]  Use a custom settings file instead of loading it from the default location"s,
    "[filename]  Use a custom table settings file. This option is only available in conjunction with a command which specifies a table filename like Play, Edit,..."s,
    "[table filename] [tournament filename]  Load a table and tournament file and convert to .png"s,
+   "Displays the version"s,
    string()
 #ifdef __STANDALONE__
    ,
@@ -295,6 +297,7 @@ enum option_names
    OPTION_INI,
    OPTION_TABLE_INI,
    OPTION_TOURNAMENT,
+   OPTION_VERSION,
    OPTION_FRONTEND_EXIT
 #ifdef __STANDALONE__
    ,
@@ -516,6 +519,7 @@ public:
                             "\n-"  +options[OPTION_INI]+                  "  "+option_descs[OPTION_INI]+
                             "\n-"  +options[OPTION_TABLE_INI]+            "  "+option_descs[OPTION_TABLE_INI]+
                             "\n\n-"+options[OPTION_TOURNAMENT]+           "  "+option_descs[OPTION_TOURNAMENT]+
+                            "\n\n-"+options[OPTION_VERSION]+              "  "+option_descs[OPTION_VERSION]+
 #ifdef __STANDALONE__
                             "\n\n-"+options[OPTION_PREFPATH]+             "  "+option_descs[OPTION_PREFPATH]+
                             "\n-"  +options[OPTION_LISTRES]+              "  "+option_descs[OPTION_LISTRES]+
@@ -535,6 +539,19 @@ public:
 #endif
 
             exit(valid_param ? 0 : 1);
+         }
+
+         //
+
+         if (compare_option(szArglist[i], OPTION_VERSION))
+         {
+            const string ver = "Visual Pinball "s + VP_VERSION_STRING_FULL_LITERAL;
+#ifndef __STANDALONE__
+            ::MessageBox(NULL, ver.c_str(), "Visual Pinball", MB_OK);
+#else
+            std::cout << ver.c_str() << "\n\n";
+#endif
+            exit(0);
          }
 
          //
