@@ -236,7 +236,7 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, bool resize_on_low_
       const BYTE* __restrict bits = FreeImage_GetBits(dibConv);
       const unsigned pitch = FreeImage_GetPitch(dibConv);
       BYTE* const __restrict pdst = tex->data();
-      const bool has_alpha = (tex->m_format == RGBA) || (tex->m_format == SRGBA);
+      const bool has_alpha = tex->has_alpha();
       const unsigned int stride = has_alpha ? 4 : 3;
 #if (!((FI_RGBA_RED == 2) && (FI_RGBA_GREEN == 1) && (FI_RGBA_BLUE == 0) && (FI_RGBA_ALPHA == 3)))
       bool opaque = true;
@@ -244,27 +244,24 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, bool resize_on_low_
       for (unsigned int y = 0; y < tex->m_height; ++y)
       {
          const BYTE* __restrict pixel = (BYTE*)bits;
-         const size_t offs = (size_t)(tex->m_height - y - 1) * (tex->m_width*stride);
+         const size_t offs = (size_t)(tex->m_height - y - 1) * (tex->width()*stride);
          #if (FI_RGBA_RED == 2) && (FI_RGBA_GREEN == 1) && (FI_RGBA_BLUE == 0) && (FI_RGBA_ALPHA == 3)
          if (has_alpha)
-            copy_bgra_rgba<false>((unsigned int*)(pdst+offs),(const unsigned int*)pixel,tex->m_width);
+            copy_bgra_rgba<false>((unsigned int*)(pdst+offs),(const unsigned int*)pixel,tex->width());
          else
-         #endif
-         for (size_t o = offs; o < tex->m_width*stride+offs; o+=stride)
+            copy_bgr_rgb(pdst+offs,pixel,tex->width());
+         #else
+         if (!has_alpha)
+            memcpy(pdst+offs, pixel, tex->width()*3);
+         else
+         for (size_t o = offs; o < tex->width()*4+offs; o+=4,pixel+=4)
          {
-            pdst[o + 0] = pixel[FI_RGBA_RED];
-            pdst[o + 1] = pixel[FI_RGBA_GREEN];
-            pdst[o + 2] = pixel[FI_RGBA_BLUE];
-            #if (!((FI_RGBA_RED == 2) && (FI_RGBA_GREEN == 1) && (FI_RGBA_BLUE == 0) && (FI_RGBA_ALPHA == 3)))
-            if (has_alpha)
-            {
-               BYTE alpha = pixel[FI_RGBA_ALPHA];
-               pdst[o + 3] = alpha;
-               opaque &= alpha == 255;
-            }
-            #endif
-            pixel += stride;
+            const unsigned int p = *(unsigned int*)pixel;
+            *(unsigned int*)(pdst+o) = p;
+            if ((p&0xFF000000u) != 0xFF000000u)
+               opaque = false;
          }
+         #endif
          bits += pitch;
       }
       #if (!((FI_RGBA_RED == 2) && (FI_RGBA_GREEN == 1) && (FI_RGBA_BLUE == 0) && (FI_RGBA_ALPHA == 3)))
@@ -349,7 +346,7 @@ static FIBITMAP* HBitmapToFreeImage(HBITMAP hbmp)
    FIBITMAP* dib = FreeImage_Allocate(bm.bmWidth, bm.bmHeight, bm.bmBitsPixel);
    if (!dib)
       return nullptr;
-   // The GetDIBits function clears the biClrUsed and biClrImportant BITMAPINFO members (dont't know why)
+   // The GetDIBits function clears the biClrUsed and biClrImportant BITMAPINFO members (don't know why)
    // So we save these infos below. This is needed for palettized images only.
    const int nColors = FreeImage_GetColorsUsed(dib);
    const HDC dc = GetDC(nullptr);
