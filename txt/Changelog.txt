@@ -83,7 +83,7 @@ FEATURES:
 
 - reworked lights:
   - now lights have a z coordinate (relative to the surface they are on) that is used for shadows and bulb rendering
-  - allow to hide light's rendering (still allowing for ball reflections or shadows through primitives or flashers). This was only possible through script before
+  - allow to hide light rendering (still allowing for ball reflections or shadows through primitives or flashers). This was only possible through scripting before
   - allow the bulb mesh to work for both classic lights as well as bulb lights
   - allow the reflection on ball to work for both classic lights as well as bulb lights
   - add support for 'modulated' lights (through script only, corresponding to PWModulated outputs of most 1990+ pinballs)
@@ -95,7 +95,6 @@ FEATURES:
 - add new log file functionality (vpinball.log), with script and error information. It can be en/disabled in the UI/Editor preferences.
   The ability to do a rough performance profiling of the table loading phase by using the 'Profile.txt' has thus been removed in favor of the new logging
   (all the profile events will be in the log file with timestamps)
-
 
 - the settings are now stored in a file named 'VPinballX.ini' located in the standard Windows location for application data: %AppData%/VPinballX/
   (optionally this can be changed in the INI/Editor/UI preferences to be located in the same folder as the executable)
@@ -201,7 +200,7 @@ FEATURES:
 
 - it is now possible to choose between 3 tonemappers (the part of the rendering which handles the way overbright parts are displayed on non-HDR displays):
   - Reinhard, which is the one used by VPX until the 10.8 release,
-  - Tony McMapFace, which is an improved tonemapper especially regarding handling very bright sturated colors (like a very bright red, which in turns would be perceived as yellow or even white. See https://github.com/h3r2tic/tony-mc-mapface)
+  - Tony McMapFace, which is an improved tonemapper especially regarding handling very bright saturated colors (like a very bright red, which in turns would be perceived as yellow or even white. See https://github.com/h3r2tic/tony-mc-mapface)
   - Filmic curve, which is common e.g. in modern games
 
 - the full table can now be locked to prevent unintended user changes (can be changed anytime)
