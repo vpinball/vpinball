@@ -7,7 +7,7 @@ SDL2_IMAGE_VERSION=2.6.3
 
 PINMAME_SHA=be7a86f95f4aee347ce44cabd6cb055053da108a
 LIBSERUM_SHA=ea90a5460b47d77e4cf1deacdacddbdb94c25067
-LIBALTSOUND_SHA=e791d98451eadf6d33e8f2c22d4c47646b28017d
+LIBALTSOUND_SHA=816cc987db61c428c61746b65ab30aa765c87116
 
 NUM_PROCS=$(sysctl -n hw.ncpu)
 
@@ -16,6 +16,7 @@ echo "  SDL2_VERSION: ${SDL2_VERSION}"
 echo "  SDL2_IMAGE_VERSION: ${SDL2_IMAGE_VERSION}"
 echo "  PINMAME_SHA: ${PINMAME_SHA}"
 echo "  LIBSERUM_SHA: ${LIBSERUM_SHA}"
+echo "  LIBALTSOUND_SHA: ${LIBALTSOUND_SHA}"
 echo "  NUM_PROCS: ${NUM_PROCS}"
 echo ""
 
@@ -107,11 +108,8 @@ curl -sL https://github.com/jsm174/libaltsound/archive/${LIBALTSOUND_SHA}.zip -o
 unzip libaltsound.zip
 cd libaltsound-$LIBALTSOUND_SHA
 cp src/altsound.h ../../external/include
-cd platforms/ios/arm64
-./external.sh
-cp CMakeLists.txt ../../..
-cd ../../..
-cmake -DCMAKE_BUILD_TYPE=Release -B build
+platforms/ios/arm64/external.sh
+cmake -DPLATFORM=ios -DARCH=arm64 -DBUILD_SHARED=OFF -DCMAKE_BUILD_TYPE=Release -B build
 cmake --build build -- -j${NUM_PROCS}
 cp build/libaltsound.a ../../external/lib
 cd ..
