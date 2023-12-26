@@ -761,7 +761,7 @@ void Player::Shutdown()
    m_dmd = int2(0,0);
    if (m_texdmd)
    {
-      m_renderer->m_pd3dPrimaryDevice->DMDShader->SetTextureNull(SHADER_tex_dmd);
+      m_renderer->m_pd3dPrimaryDevice->m_DMDShader->SetTextureNull(SHADER_tex_dmd);
       m_renderer->m_pd3dPrimaryDevice->m_texMan.UnloadTexture(m_texdmd);
       delete m_texdmd;
       m_texdmd = nullptr;

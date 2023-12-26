@@ -324,12 +324,12 @@ public:
    unsigned int m_curLockCalls = 0, m_frameLockCalls = 0;
    unsigned int m_curDrawnTriangles = 0, m_frameDrawnTriangles = 0;
 
-   Shader *basicShader = nullptr;
-   Shader *DMDShader = nullptr;
-   Shader *FBShader = nullptr;
-   Shader *flasherShader = nullptr;
-   Shader *lightShader = nullptr;
-   Shader *StereoShader = nullptr;
+   Shader *m_basicShader = nullptr;
+   Shader *m_DMDShader = nullptr;
+   Shader *m_FBShader = nullptr;
+   Shader *m_flasherShader = nullptr;
+   Shader *m_lightShader = nullptr;
+   Shader *m_stereoShader = nullptr;
    Shader* m_ballShader = nullptr;
 
    void UnbindSampler(Sampler* sampler);

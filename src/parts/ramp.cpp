@@ -938,17 +938,17 @@ void Ramp::Render(const unsigned int renderMask)
       Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
       if (!pin)
       {
-         m_rd->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, mat);
-         m_rd->basicShader->SetMaterial(mat, false);
+         m_rd->m_basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, *mat);
+         m_rd->m_basicShader->SetMaterial(mat, false);
       }
       else
       {
-         m_rd->basicShader->SetTexture(SHADER_tex_base_color, pin, SF_TRILINEAR, sam, sam);
-         m_rd->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, mat, pin->m_alphaTestValue >= 0.f && !pin->m_pdsBuffer->IsOpaque());
-         m_rd->basicShader->SetAlphaTestValue(pin->m_alphaTestValue);
-         m_rd->basicShader->SetMaterial(mat, !pin->m_pdsBuffer->IsOpaque());
+         m_rd->m_basicShader->SetTexture(SHADER_tex_base_color, pin, SF_TRILINEAR, sam, sam);
+         m_rd->m_basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, *mat, pin->m_alphaTestValue >= 0.f && !pin->m_pdsBuffer->IsOpaque());
+         m_rd->m_basicShader->SetAlphaTestValue(pin->m_alphaTestValue);
+         m_rd->m_basicShader->SetMaterial(mat, !pin->m_pdsBuffer->IsOpaque());
       }
-      m_rd->DrawMesh(m_rd->basicShader, mat->m_bOpacityActive, m_boundingSphereCenter, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
+      m_rd->DrawMesh(m_rd->m_basicShader, mat->m_bOpacityActive, m_boundingSphereCenter, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
    }
    else
    {
@@ -964,41 +964,41 @@ void Ramp::Render(const unsigned int renderMask)
           * with transparent textures. Probably the option should simply be renamed to ImageModeClamp,
           * since the texture coordinates always stay within [0,1] anyway. */
          SamplerAddressMode sam = m_d.m_imagealignment == ImageModeWrap ? SA_CLAMP : SA_REPEAT;
-         m_rd->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, mat, pin->m_alphaTestValue >= 0.f && !pin->m_pdsBuffer->IsOpaque());
-         m_rd->basicShader->SetTexture(SHADER_tex_base_color, pin, SF_TRILINEAR, sam, sam);
-         m_rd->basicShader->SetAlphaTestValue(pin->m_alphaTestValue);
-         m_rd->basicShader->SetMaterial(mat, !pin->m_pdsBuffer->IsOpaque());
+         m_rd->m_basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, *mat, pin->m_alphaTestValue >= 0.f && !pin->m_pdsBuffer->IsOpaque());
+         m_rd->m_basicShader->SetTexture(SHADER_tex_base_color, pin, SF_TRILINEAR, sam, sam);
+         m_rd->m_basicShader->SetAlphaTestValue(pin->m_alphaTestValue);
+         m_rd->m_basicShader->SetMaterial(mat, !pin->m_pdsBuffer->IsOpaque());
       }
       else
       {
-         m_rd->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, mat);
-         m_rd->basicShader->SetMaterial(mat, false);
+         m_rd->m_basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, *mat);
+         m_rd->m_basicShader->SetMaterial(mat, false);
       }
 
       if (m_d.m_rightwallheightvisible != 0.f && m_d.m_leftwallheightvisible != 0.f && (!pin || m_d.m_imageWalls))
       {
          // both walls with image and floor
-         m_rd->DrawMesh(m_rd->basicShader, mat->m_bOpacityActive, m_boundingSphereCenter, m_d.m_depthBias,
+         m_rd->DrawMesh(m_rd->m_basicShader, mat->m_bOpacityActive, m_boundingSphereCenter, m_d.m_depthBias,
             m_meshBuffer, RenderDevice::TRIANGLELIST, 0, (m_rampVertex - 1) * 6 * 3);
       }
       else
       {
          // only floor
-         m_rd->DrawMesh(m_rd->basicShader, mat->m_bOpacityActive, m_boundingSphereCenter, m_d.m_depthBias,
+         m_rd->DrawMesh(m_rd->m_basicShader, mat->m_bOpacityActive, m_boundingSphereCenter, m_d.m_depthBias,
             m_meshBuffer, RenderDevice::TRIANGLELIST, 0, (m_rampVertex - 1) * 6);
 
          if (m_d.m_rightwallheightvisible != 0.f || m_d.m_leftwallheightvisible != 0.f)
          {
             if (pin && !m_d.m_imageWalls)
-               m_rd->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, mat);
+               m_rd->m_basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, *mat);
             if (m_d.m_rightwallheightvisible != 0.f && m_d.m_leftwallheightvisible != 0.f) //only render left & right side if the height is >0
-               m_rd->DrawMesh(m_rd->basicShader, mat->m_bOpacityActive, m_boundingSphereCenter, m_d.m_depthBias,
+               m_rd->DrawMesh(m_rd->m_basicShader, mat->m_bOpacityActive, m_boundingSphereCenter, m_d.m_depthBias,
                   m_meshBuffer, RenderDevice::TRIANGLELIST, (m_rampVertex - 1) * 6, (m_rampVertex - 1) * 6 * 2);
             else if (m_d.m_rightwallheightvisible != 0.f) //only render right side if the height is >0
-               m_rd->DrawMesh(m_rd->basicShader, mat->m_bOpacityActive, m_boundingSphereCenter, m_d.m_depthBias,
+               m_rd->DrawMesh(m_rd->m_basicShader, mat->m_bOpacityActive, m_boundingSphereCenter, m_d.m_depthBias,
                   m_meshBuffer, RenderDevice::TRIANGLELIST, (m_rampVertex - 1) * 6, (m_rampVertex - 1) * 6);
             else if (m_d.m_leftwallheightvisible != 0.f) //only render left side if the height is >0
-               m_rd->DrawMesh(m_rd->basicShader, mat->m_bOpacityActive, m_boundingSphereCenter, m_d.m_depthBias,
+               m_rd->DrawMesh(m_rd->m_basicShader, mat->m_bOpacityActive, m_boundingSphereCenter, m_d.m_depthBias,
                   m_meshBuffer, RenderDevice::TRIANGLELIST, (m_rampVertex - 1) * 6 * 2, (m_rampVertex - 1) * 6);
          }
       }

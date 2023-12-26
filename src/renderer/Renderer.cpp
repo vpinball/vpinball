@@ -72,7 +72,7 @@ public:
       if (m_buffers[m_curIdx])
       {
          Vertex3Ds pos(0.f, 0.f, 0.f);
-         m_pd3dDevice->DrawMesh(m_pd3dDevice->basicShader, false, pos, 0.f, m_buffers[m_curIdx], RenderDevice::TRIANGLESTRIP, 0, 3);
+         m_pd3dDevice->DrawMesh(m_pd3dDevice->m_basicShader, false, pos, 0.f, m_buffers[m_curIdx], RenderDevice::TRIANGLESTRIP, 0, 3);
       }
 
       m_curIdx = (m_curIdx + 1) % m_buffers.size();
@@ -297,17 +297,17 @@ Renderer::Renderer(PinTable* const table, const bool fullScreen, const int width
 #ifndef __OPENGLES__
    const colorFormat rad_format = envTex->m_pdsBuffer->m_format == BaseTexture::RGB_FP32 ? colorFormat::RGBA32F : colorFormat::RGBA16F;
    m_envRadianceTexture = new RenderTarget(m_pd3dPrimaryDevice, SurfaceType::RT_DEFAULT, "Irradiance"s, envTexWidth, envTexHeight, rad_format, false, 1, "Failed to create irradiance render target");
-   m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_irradiance);
-   m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_env, envTex);
+   m_pd3dPrimaryDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_irradiance);
+   m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_tex_env, envTex);
    m_pd3dPrimaryDevice->SetRenderTarget("Env Irradiance PreCalc"s, m_envRadianceTexture);
-   m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->FBShader);
+   m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->m_FBShader);
    m_pd3dPrimaryDevice->FlushRenderFrame();
-   m_pd3dPrimaryDevice->basicShader->SetTexture(SHADER_tex_diffuse_env, m_envRadianceTexture->GetColorSampler());
+   m_pd3dPrimaryDevice->m_basicShader->SetTexture(SHADER_tex_diffuse_env, m_envRadianceTexture->GetColorSampler());
    m_pd3dPrimaryDevice->m_ballShader->SetTexture(SHADER_tex_diffuse_env, m_envRadianceTexture->GetColorSampler());
 #else
    m_envRadianceTexture = EnvmapPrecalc(envTex, envTexWidth, envTexHeight);
    m_pd3dPrimaryDevice->m_texMan.SetDirty(m_envRadianceTexture);
-   m_pd3dPrimaryDevice->basicShader->SetTexture(SHADER_tex_diffuse_env, m_envRadianceTexture);
+   m_pd3dPrimaryDevice->m_basicShader->SetTexture(SHADER_tex_diffuse_env, m_envRadianceTexture);
    m_pd3dPrimaryDevice->m_ballShader->SetTexture(SHADER_tex_diffuse_env, m_envRadianceTexture);
 #endif
    #else // DirectX 9
@@ -317,7 +317,7 @@ Renderer::Renderer(PinTable* const table, const bool fullScreen, const int width
    const unsigned int envTexWidth = envTexHeight * 2;
    m_envRadianceTexture = EnvmapPrecalc(envTex, envTexWidth, envTexHeight);
    m_pd3dPrimaryDevice->m_texMan.SetDirty(m_envRadianceTexture);
-   m_pd3dPrimaryDevice->basicShader->SetTexture(SHADER_tex_diffuse_env, m_envRadianceTexture);
+   m_pd3dPrimaryDevice->m_basicShader->SetTexture(SHADER_tex_diffuse_env, m_envRadianceTexture);
    m_pd3dPrimaryDevice->m_ballShader->SetTexture(SHADER_tex_diffuse_env, m_envRadianceTexture);
    #endif
    PLOGI << "Environment map radiance computed"; // For profiling
@@ -364,7 +364,7 @@ Renderer::Renderer(PinTable* const table, const bool fullScreen, const int width
    {
       m_tonemapLUT = new Texture();
       m_tonemapLUT->LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "tony_mc_mapface_unrolled.exr");
-      m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_tonemap_lut, m_tonemapLUT, SF_BILINEAR, SA_CLAMP, SA_CLAMP, true);
+      m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_tex_tonemap_lut, m_tonemapLUT, SF_BILINEAR, SA_CLAMP, SA_CLAMP, true);
    }
 
    m_pd3dPrimaryDevice->ResetRenderState();
@@ -854,8 +854,8 @@ void Renderer::SetupShaders()
       (float) (m_envTexture ? *m_envTexture : m_builtinEnvTexture).m_height /*+m_builtinEnvTexture.m_width)*0.5f*/, 0.f, 0.f); //!! dto.
 
    UpdateBasicShaderMatrix();
-   m_pd3dPrimaryDevice->basicShader->SetTexture(SHADER_tex_env, m_envTexture ? m_envTexture : &m_builtinEnvTexture);
-   m_pd3dPrimaryDevice->basicShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &envEmissionScale_TexWidth);
+   m_pd3dPrimaryDevice->m_basicShader->SetTexture(SHADER_tex_env, m_envTexture ? m_envTexture : &m_builtinEnvTexture);
+   m_pd3dPrimaryDevice->m_basicShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &envEmissionScale_TexWidth);
 
    UpdateBallShaderMatrix();
    const vec4 st(m_table->m_envEmissionScale * m_globalEmissionScale, m_envTexture ? (float)m_envTexture->m_height/*+m_envTexture->m_width)*0.5f*/ : (float)m_builtinEnvTexture.m_height/*+m_builtinEnvTexture.m_width)*0.5f*/, 0.f, 0.f);
@@ -869,7 +869,7 @@ void Renderer::SetupShaders()
    m_pd3dPrimaryDevice->m_ballShader->SetVector(SHADER_cAmbient_LightRange, 
       amb_lr.x * m_globalEmissionScale, amb_lr.y * m_globalEmissionScale, amb_lr.z * m_globalEmissionScale, m_table->m_lightRange);
 
-   //m_pd3dPrimaryDevice->basicShader->SetInt("iLightPointNum",MAX_LIGHT_SOURCES);
+   //m_pd3dPrimaryDevice->m_basicShader->SetInt("iLightPointNum",MAX_LIGHT_SOURCES);
 
    m_table->m_Light[0].pos.x = m_table->m_right * 0.5f;
    m_table->m_Light[1].pos.x = m_table->m_right * 0.5f;
@@ -893,8 +893,8 @@ void Renderer::SetupShaders()
       memcpy(&lightEmission[i], &emission, sizeof(float) * 3);
    }
 
-   m_pd3dPrimaryDevice->basicShader->SetFloat4v(SHADER_basicLightPos, (vec4*)lightPos, MAX_LIGHT_SOURCES);
-   m_pd3dPrimaryDevice->basicShader->SetFloat4v(SHADER_basicLightEmission, (vec4*)lightEmission, MAX_LIGHT_SOURCES);
+   m_pd3dPrimaryDevice->m_basicShader->SetFloat4v(SHADER_basicLightPos, (vec4*)lightPos, MAX_LIGHT_SOURCES);
+   m_pd3dPrimaryDevice->m_basicShader->SetFloat4v(SHADER_basicLightEmission, (vec4*)lightEmission, MAX_LIGHT_SOURCES);
 #else
    struct CLight
    {
@@ -909,7 +909,7 @@ void Renderer::SetupShaders()
       memcpy(&l[i].vEmission, &emission, sizeof(float) * 3);
    }
 
-   m_pd3dPrimaryDevice->basicShader->SetFloat4v(SHADER_basicPackedLights, (vec4*)l, sizeof(CLight) * MAX_LIGHT_SOURCES / (4 * sizeof(float)));
+   m_pd3dPrimaryDevice->m_basicShader->SetFloat4v(SHADER_basicPackedLights, (vec4*)l, sizeof(CLight) * MAX_LIGHT_SOURCES / (4 * sizeof(float)));
 #endif
 }
 
@@ -933,21 +933,21 @@ void Renderer::UpdateBasicShaderMatrix(const Matrix3D& objectTrafo)
    const int nEyes = m_pd3dPrimaryDevice->m_stereo3D != STEREO_OFF ? 2 : 1;
    for (int eye = 0; eye < nEyes; eye++)
       matrices.matWorldViewProj[eye] = GetMVP().GetModelViewProj(eye);
-   m_pd3dPrimaryDevice->flasherShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0], nEyes);
-   m_pd3dPrimaryDevice->lightShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0], nEyes);
-   m_pd3dPrimaryDevice->DMDShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0], nEyes);
-   m_pd3dPrimaryDevice->basicShader->SetUniformBlock(SHADER_basicMatrixBlock, &matrices.matWorld.m[0][0]);
+   m_pd3dPrimaryDevice->m_flasherShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0], nEyes);
+   m_pd3dPrimaryDevice->m_lightShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0], nEyes);
+   m_pd3dPrimaryDevice->m_DMDShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0], nEyes);
+   m_pd3dPrimaryDevice->m_basicShader->SetUniformBlock(SHADER_basicMatrixBlock, &matrices.matWorld.m[0][0]);
 
 #else // DirectX 9
    matrices.matWorldViewProj[0] = GetMVP().GetModelViewProj(0);
-   m_pd3dPrimaryDevice->basicShader->SetMatrix(SHADER_matWorld, &matrices.matWorld);
-   m_pd3dPrimaryDevice->basicShader->SetMatrix(SHADER_matView, &matrices.matView);
-   m_pd3dPrimaryDevice->basicShader->SetMatrix(SHADER_matWorldView, &matrices.matWorldView);
-   m_pd3dPrimaryDevice->basicShader->SetMatrix(SHADER_matWorldViewInverseTranspose, &matrices.matWorldViewInverseTranspose);
-   m_pd3dPrimaryDevice->basicShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0]);
-   m_pd3dPrimaryDevice->flasherShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0]);
-   m_pd3dPrimaryDevice->lightShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0]);
-   m_pd3dPrimaryDevice->DMDShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0]);
+   m_pd3dPrimaryDevice->m_basicShader->SetMatrix(SHADER_matWorld, &matrices.matWorld);
+   m_pd3dPrimaryDevice->m_basicShader->SetMatrix(SHADER_matView, &matrices.matView);
+   m_pd3dPrimaryDevice->m_basicShader->SetMatrix(SHADER_matWorldView, &matrices.matWorldView);
+   m_pd3dPrimaryDevice->m_basicShader->SetMatrix(SHADER_matWorldViewInverseTranspose, &matrices.matWorldViewInverseTranspose);
+   m_pd3dPrimaryDevice->m_basicShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0]);
+   m_pd3dPrimaryDevice->m_flasherShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0]);
+   m_pd3dPrimaryDevice->m_lightShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0]);
+   m_pd3dPrimaryDevice->m_DMDShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0]);
 #endif
 }
 
@@ -998,21 +998,21 @@ void Renderer::UpdateStereoShaderState()
       const float eyeSeparation = m_table->GetMaxSeparation();
       const float zpd = m_table->GetZPD();
       const bool swapAxis = m_table->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DYAxis"s, false); // Swap X/Y axis
-      m_pd3dPrimaryDevice->StereoShader->SetVector(SHADER_Stereo_MS_ZPD_YAxis, eyeSeparation, zpd, swapAxis ? 1.0f : 0.0f, 0.0f);
+      m_pd3dPrimaryDevice->m_stereoShader->SetVector(SHADER_Stereo_MS_ZPD_YAxis, eyeSeparation, zpd, swapAxis ? 1.0f : 0.0f, 0.0f);
    }
    
    RenderTarget *renderedRT = m_pd3dPrimaryDevice->GetPostProcessRenderTarget1();
    #ifdef ENABLE_SDL
    if (m_stereo3DfakeStereo) // OpenGL strip down this uniform which is only needed for interlaced mode on DirectX 9
    #endif
-   m_pd3dPrimaryDevice->StereoShader->SetVector(SHADER_w_h_height, (float)(1.0 / renderedRT->GetWidth()), (float)(1.0 / renderedRT->GetHeight()), (float)renderedRT->GetHeight(), m_table->Get3DOffset());
+   m_pd3dPrimaryDevice->m_stereoShader->SetVector(SHADER_w_h_height, (float)(1.0 / renderedRT->GetWidth()), (float)(1.0 / renderedRT->GetHeight()), (float)renderedRT->GetHeight(), m_table->Get3DOffset());
 
    m_stereo3DDefocus = 0.f;
    if (IsAnaglyphStereoMode(m_stereo3D))
    {
       Anaglyph anaglyph;
       anaglyph.LoadSetupFromRegistry(clamp(m_stereo3D - STEREO_ANAGLYPH_1, 0, 9));
-      anaglyph.SetupShader(m_pd3dPrimaryDevice->StereoShader);
+      anaglyph.SetupShader(m_pd3dPrimaryDevice->m_stereoShader);
       // The defocus kernel size should depend on the render resolution but since this is a user tweak, this doesn't matter that much
       m_stereo3DDefocus = m_table->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DDefocus"s, 0.f);
       // TODO I'm not 100% sure about this. I think the right way would be to select based on the transmitted luminance of the filter, the defocus 
@@ -1022,10 +1022,10 @@ void Renderer::UpdateStereoShaderState()
    }
    else
    {
-      m_pd3dPrimaryDevice->StereoShader->SetTechnique(m_stereo3D == STEREO_SBS ? SHADER_TECHNIQUE_stereo_SBS 
-                                                    : m_stereo3D == STEREO_TB  ? SHADER_TECHNIQUE_stereo_TB
-                                                    : m_stereo3D == STEREO_INT ? SHADER_TECHNIQUE_stereo_Int 
-                                                    :                            SHADER_TECHNIQUE_stereo_Flipped_Int);
+      m_pd3dPrimaryDevice->m_stereoShader->SetTechnique(m_stereo3D == STEREO_SBS ? SHADER_TECHNIQUE_stereo_SBS 
+                                                      : m_stereo3D == STEREO_TB  ? SHADER_TECHNIQUE_stereo_TB
+                                                      : m_stereo3D == STEREO_INT ? SHADER_TECHNIQUE_stereo_Int 
+                                                      :                            SHADER_TECHNIQUE_stereo_Flipped_Int);
    }
 }
 
@@ -1141,11 +1141,11 @@ void Renderer::DrawBulbLightBuffer()
    {
       // Declare dependency on Bulb Light buffer (actually rendered to the bloom buffer texture)
       m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pd3dPrimaryDevice->GetBloomBufferTexture());
-      p3dDevice->basicShader->SetTexture(SHADER_tex_base_transmission, p3dDevice->GetBloomBufferTexture()->GetColorSampler());
+      p3dDevice->m_basicShader->SetTexture(SHADER_tex_base_transmission, p3dDevice->GetBloomBufferTexture()->GetColorSampler());
    } 
    else
    {
-      p3dDevice->basicShader->SetTextureNull(SHADER_tex_base_transmission);
+      p3dDevice->m_basicShader->SetTextureNull(SHADER_tex_base_transmission);
    }
 }
 
@@ -1194,12 +1194,12 @@ void Renderer::DrawSprite(const float posx, const float posy, const float width,
    }
 
    const vec4 c = convertColor(color, intensity);
-   m_pd3dPrimaryDevice->DMDShader->SetVector(SHADER_vColor_Intensity, &c);
-   m_pd3dPrimaryDevice->DMDShader->SetTechnique(tex ? SHADER_TECHNIQUE_basic_noDMD : SHADER_TECHNIQUE_basic_noDMD_notex);
+   m_pd3dPrimaryDevice->m_DMDShader->SetVector(SHADER_vColor_Intensity, &c);
+   m_pd3dPrimaryDevice->m_DMDShader->SetTechnique(tex ? SHADER_TECHNIQUE_basic_noDMD : SHADER_TECHNIQUE_basic_noDMD_notex);
    if (tex)
-      m_pd3dPrimaryDevice->DMDShader->SetTexture(SHADER_tex_sprite, tex, SF_NONE, SA_REPEAT, SA_REPEAT);
+      m_pd3dPrimaryDevice->m_DMDShader->SetTexture(SHADER_tex_sprite, tex, SF_NONE, SA_REPEAT, SA_REPEAT);
    m_pd3dPrimaryDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
-   m_pd3dPrimaryDevice->DrawTexturedQuad(m_pd3dPrimaryDevice->DMDShader, vertices);
+   m_pd3dPrimaryDevice->DrawTexturedQuad(m_pd3dPrimaryDevice->m_DMDShader, vertices);
    m_pd3dPrimaryDevice->GetCurrentPass()->m_commands.back()->SetTransparent(true);
    m_pd3dPrimaryDevice->GetCurrentPass()->m_commands.back()->SetDepth(-10000.f);
 }
@@ -1221,12 +1221,12 @@ void Renderer::DrawSprite(const float posx, const float posy, const float width,
    }
 
    const vec4 c = convertColor(color, intensity);
-   m_pd3dPrimaryDevice->DMDShader->SetVector(SHADER_vColor_Intensity, &c);
-   m_pd3dPrimaryDevice->DMDShader->SetTechnique(tex ? SHADER_TECHNIQUE_basic_noDMD : SHADER_TECHNIQUE_basic_noDMD_notex);
+   m_pd3dPrimaryDevice->m_DMDShader->SetVector(SHADER_vColor_Intensity, &c);
+   m_pd3dPrimaryDevice->m_DMDShader->SetTechnique(tex ? SHADER_TECHNIQUE_basic_noDMD : SHADER_TECHNIQUE_basic_noDMD_notex);
    if (tex)
-      m_pd3dPrimaryDevice->DMDShader->SetTexture(SHADER_tex_sprite, tex);
+      m_pd3dPrimaryDevice->m_DMDShader->SetTexture(SHADER_tex_sprite, tex);
    m_pd3dPrimaryDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
-   m_pd3dPrimaryDevice->DrawTexturedQuad(m_pd3dPrimaryDevice->DMDShader, vertices);
+   m_pd3dPrimaryDevice->DrawTexturedQuad(m_pd3dPrimaryDevice->m_DMDShader, vertices);
    m_pd3dPrimaryDevice->GetCurrentPass()->m_commands.back()->SetTransparent(true);
    m_pd3dPrimaryDevice->GetCurrentPass()->m_commands.back()->SetDepth(-10000.f);
 }
@@ -1319,13 +1319,13 @@ void Renderer::RenderStaticPrepass()
          m_pd3dPrimaryDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
          m_pd3dPrimaryDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
          m_pd3dPrimaryDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
-         m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_fb_mirror);
-         m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, 
+         m_pd3dPrimaryDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_fb_mirror);
+         m_pd3dPrimaryDevice->m_FBShader->SetVector(SHADER_w_h_height, 
             (float)(1.0 / (double)renderRT->GetWidth()), (float)(1.0 / (double)renderRT->GetHeight()),
             (float)((double)STATIC_PRERENDER_ITERATIONS), 1.0f);
-         m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, renderRT->GetColorSampler());
-         m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->FBShader);
-         m_pd3dPrimaryDevice->FBShader->SetTextureNull(SHADER_tex_fb_unfiltered);
+         m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_tex_fb_unfiltered, renderRT->GetColorSampler());
+         m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->m_FBShader);
+         m_pd3dPrimaryDevice->m_FBShader->SetTextureNull(SHADER_tex_fb_unfiltered);
       }
 
       // Finish the frame.
@@ -1365,10 +1365,10 @@ void Renderer::RenderStaticPrepass()
       m_pd3dPrimaryDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
       m_pd3dPrimaryDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
 
-      m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_depth, renderRT->GetDepthSampler());
-      m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_ao_dither, &m_aoDitherTexture, SF_NONE, SA_REPEAT, SA_REPEAT, true); // FIXME the force linear RGB is not honored in VR
-      m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_AO_scale_timeblur, m_table->m_AOScale, 0.1f, 0.f, 0.f);
-      m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_AO);
+      m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_tex_depth, renderRT->GetDepthSampler());
+      m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_tex_ao_dither, &m_aoDitherTexture, SF_NONE, SA_REPEAT, SA_REPEAT, true); // FIXME the force linear RGB is not honored in VR
+      m_pd3dPrimaryDevice->m_FBShader->SetVector(SHADER_AO_scale_timeblur, m_table->m_AOScale, 0.1f, 0.f, 0.f);
+      m_pd3dPrimaryDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_AO);
 
       for (unsigned int i = 0; i < 50; ++i) // 50 iterations to get AO smooth
       {
@@ -1378,36 +1378,36 @@ void Renderer::RenderStaticPrepass()
          if (i == 0)
             m_pd3dPrimaryDevice->Clear(clearType::TARGET, 0, 1.0f, 0L);
 
-         m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, m_pd3dPrimaryDevice->GetAORenderTarget(1)->GetColorSampler()); //!! ?
-         m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, m_pd3dPrimaryDevice->GetAORenderTarget(1)->GetColorSampler()); //!! ?
-         m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, 
+         m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_tex_fb_filtered, m_pd3dPrimaryDevice->GetAORenderTarget(1)->GetColorSampler()); //!! ?
+         m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_tex_fb_unfiltered, m_pd3dPrimaryDevice->GetAORenderTarget(1)->GetColorSampler()); //!! ?
+         m_pd3dPrimaryDevice->m_FBShader->SetVector(SHADER_w_h_height, 
             (float)(1.0 / m_pd3dPrimaryDevice->GetAORenderTarget(1)->GetWidth()), (float)(1.0 / m_pd3dPrimaryDevice->GetAORenderTarget(1)->GetHeight()),
             radical_inverse(i) * (float)(1. / 8.0), /*sobol*/ radical_inverse<3>(i) * (float)(1. / 8.0)); // jitter within (64/8)x(64/8) neighborhood of 64x64 tex, good compromise between blotches and noise
-         m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->FBShader);
+         m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->m_FBShader);
 
          // flip AO buffers (avoids copy)
          m_pd3dPrimaryDevice->SwapAORenderTargets();
       }
 
-      m_pd3dPrimaryDevice->FBShader->SetTextureNull(SHADER_tex_depth);
+      m_pd3dPrimaryDevice->m_FBShader->SetTextureNull(SHADER_tex_depth);
 
       m_pd3dPrimaryDevice->SetRenderTarget("PreRender Apply AO"s, m_staticPrepassRT);
       m_pd3dPrimaryDevice->AddRenderTargetDependency(renderRT);
       m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pd3dPrimaryDevice->GetAORenderTarget(1));
 
-      m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, renderRT->GetColorSampler());
-      m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, renderRT->GetColorSampler());
-      m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_ao, m_pd3dPrimaryDevice->GetAORenderTarget(1)->GetColorSampler());
+      m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_tex_fb_filtered, renderRT->GetColorSampler());
+      m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_tex_fb_unfiltered, renderRT->GetColorSampler());
+      m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_tex_ao, m_pd3dPrimaryDevice->GetAORenderTarget(1)->GetColorSampler());
 
-      m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / renderRT->GetWidth()), (float)(1.0 / renderRT->GetHeight()), 1.0f, 1.0f);
-      m_pd3dPrimaryDevice->FBShader->SetTechnique(useAA ? SHADER_TECHNIQUE_fb_AO_static : SHADER_TECHNIQUE_fb_AO_no_filter_static);
+      m_pd3dPrimaryDevice->m_FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / renderRT->GetWidth()), (float)(1.0 / renderRT->GetHeight()), 1.0f, 1.0f);
+      m_pd3dPrimaryDevice->m_FBShader->SetTechnique(useAA ? SHADER_TECHNIQUE_fb_AO_static : SHADER_TECHNIQUE_fb_AO_no_filter_static);
 
-      m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->FBShader);
+      m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->m_FBShader);
 
       m_pd3dPrimaryDevice->FlushRenderFrame(); // Execute before destroying the render targets
 
       // Delete buffers: we won't need them anymore since dynamic AO is disabled
-      m_pd3dPrimaryDevice->FBShader->SetTextureNull(SHADER_tex_ao);
+      m_pd3dPrimaryDevice->m_FBShader->SetTextureNull(SHADER_tex_ao);
       m_pd3dPrimaryDevice->ReleaseAORenderTargets();
    }
 
@@ -1471,11 +1471,11 @@ void Renderer::RenderDynamics()
    const int nEyes = m_pd3dPrimaryDevice->m_stereo3D != STEREO_OFF ? 2 : 1;
    for (int eye = 0; eye < nEyes; eye++)
       matProj[eye] = GetMVP().GetProj(eye);
-   m_pd3dPrimaryDevice->basicShader->SetMatrix(SHADER_matProj, &matProj[0], nEyes);
+   m_pd3dPrimaryDevice->m_basicShader->SetMatrix(SHADER_matProj, &matProj[0], nEyes);
    m_pd3dPrimaryDevice->m_ballShader->SetMatrix(SHADER_matProj, &matProj[0], nEyes);
    #else
    matProj[0] = GetMVP().GetProj(0);
-   m_pd3dPrimaryDevice->basicShader->SetMatrix(SHADER_matProj, &matProj[0]);
+   m_pd3dPrimaryDevice->m_basicShader->SetMatrix(SHADER_matProj, &matProj[0]);
    m_pd3dPrimaryDevice->m_ballShader->SetMatrix(SHADER_matProj, &matProj[0]);
    #endif
 
@@ -1493,9 +1493,9 @@ void Renderer::RenderDynamics()
    }
    for (; p < MAX_BALL_SHADOW; p++)
       balls[p] = vec4(-1000.f, -1000.f, -1000.f, 0.0f);
-   m_pd3dPrimaryDevice->lightShader->SetFloat4v(SHADER_balls, balls, MAX_BALL_SHADOW);
-   m_pd3dPrimaryDevice->basicShader->SetFloat4v(SHADER_balls, balls, MAX_BALL_SHADOW);
-   m_pd3dPrimaryDevice->flasherShader->SetFloat4v(SHADER_balls, balls, MAX_BALL_SHADOW);
+   m_pd3dPrimaryDevice->m_lightShader->SetFloat4v(SHADER_balls, balls, MAX_BALL_SHADOW);
+   m_pd3dPrimaryDevice->m_basicShader->SetFloat4v(SHADER_balls, balls, MAX_BALL_SHADOW);
+   m_pd3dPrimaryDevice->m_flasherShader->SetFloat4v(SHADER_balls, balls, MAX_BALL_SHADOW);
 
    UpdateBasicShaderMatrix();
    UpdateBallShaderMatrix();
@@ -1512,7 +1512,7 @@ void Renderer::RenderDynamics()
       ball->m_pballex->Render(m_render_mask);
    m_render_mask = Renderer::DEFAULT;
    
-   m_pd3dPrimaryDevice->basicShader->SetTextureNull(SHADER_tex_base_transmission); // need to reset the bulb light texture, as its used as render target for bloom again
+   m_pd3dPrimaryDevice->m_basicShader->SetTextureNull(SHADER_tex_base_transmission); // need to reset the bulb light texture, as its used as render target for bloom again
 
    for (size_t i = 0; i < m_table->m_vrenderprobe.size(); ++i)
       m_table->m_vrenderprobe[i]->ApplyAreaOfInterest();
@@ -1538,21 +1538,21 @@ void Renderer::SSRefl()
    m_pd3dPrimaryDevice->SetRenderTarget("ScreenSpace Reflection"s, m_pd3dPrimaryDevice->GetReflectionBufferTexture(), false);
    m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pd3dPrimaryDevice->GetBackBufferTexture(), true);
 
-   m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, m_pd3dPrimaryDevice->GetBackBufferTexture()->GetColorSampler());
-   m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, m_pd3dPrimaryDevice->GetBackBufferTexture()->GetColorSampler());
-   m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_ao_dither, &m_aoDitherTexture, SF_NONE, SA_REPEAT, SA_REPEAT, true); // FIXME the force linear RGB is not honored in VR
+   m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_tex_fb_filtered, m_pd3dPrimaryDevice->GetBackBufferTexture()->GetColorSampler());
+   m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_tex_fb_unfiltered, m_pd3dPrimaryDevice->GetBackBufferTexture()->GetColorSampler());
+   m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_tex_ao_dither, &m_aoDitherTexture, SF_NONE, SA_REPEAT, SA_REPEAT, true); // FIXME the force linear RGB is not honored in VR
 
    // FIXME check if size should not be taken from renderdevice to account for VR (double width) or supersampling
-   m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height,
+   m_pd3dPrimaryDevice->m_FBShader->SetVector(SHADER_w_h_height,
       (float)(1.0 / m_pd3dPrimaryDevice->GetBackBufferTexture()->GetWidth()), (float)(1.0 / m_pd3dPrimaryDevice->GetBackBufferTexture()->GetHeight()), 1.0f /*radical_inverse(m_overall_frames%2048)*/, 1.0f);
 
    const float rotation = m_table->mViewSetups[m_table->m_BG_current_set].GetRotation(m_pd3dPrimaryDevice->m_width, m_pd3dPrimaryDevice->m_height);
    const vec4 SSR_bumpHeight_fresnelRefl_scale_FS(0.3f, 0.3f, m_table->m_SSRScale, rotation);
-   m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_SSR_bumpHeight_fresnelRefl_scale_FS, &SSR_bumpHeight_fresnelRefl_scale_FS);
+   m_pd3dPrimaryDevice->m_FBShader->SetVector(SHADER_SSR_bumpHeight_fresnelRefl_scale_FS, &SSR_bumpHeight_fresnelRefl_scale_FS);
 
-   m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_SSReflection);
+   m_pd3dPrimaryDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_SSReflection);
 
-   m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->FBShader);
+   m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->m_FBShader);
 }
 
 void Renderer::Bloom()
@@ -1570,17 +1570,17 @@ void Renderer::Bloom()
       { -1.0f, -1.0f, 0.0f, 0.0f + (float)(2.25 / w), 1.0f + (float)(2.25 / h) }
    };
    {
-      m_pd3dPrimaryDevice->FBShader->SetTextureNull(SHADER_tex_fb_filtered);
+      m_pd3dPrimaryDevice->m_FBShader->SetTextureNull(SHADER_tex_fb_filtered);
 
       // switch to 'bloom' output buffer to collect clipped framebuffer values
       m_pd3dPrimaryDevice->SetRenderTarget("Bloom Cut Off"s, m_pd3dPrimaryDevice->GetBloomBufferTexture(), false);
       m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pd3dPrimaryDevice->GetBackBufferTexture());
 
-      m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, m_pd3dPrimaryDevice->GetBackBufferTexture()->GetColorSampler());
-      m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, (float) (1.0 / w), (float) (1.0 / h), m_table->m_bloom_strength, 1.0f);
-      m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_fb_bloom);
+      m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_tex_fb_filtered, m_pd3dPrimaryDevice->GetBackBufferTexture()->GetColorSampler());
+      m_pd3dPrimaryDevice->m_FBShader->SetVector(SHADER_w_h_height, (float) (1.0 / w), (float) (1.0 / h), m_table->m_bloom_strength, 1.0f);
+      m_pd3dPrimaryDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_fb_bloom);
 
-      m_pd3dPrimaryDevice->DrawTexturedQuad(m_pd3dPrimaryDevice->FBShader, shiftedVerts);
+      m_pd3dPrimaryDevice->DrawTexturedQuad(m_pd3dPrimaryDevice->m_FBShader, shiftedVerts);
    }
 
    m_pd3dPrimaryDevice->DrawGaussianBlur(
@@ -1619,7 +1619,7 @@ void Renderer::PrepareVideoBuffers()
    m_pd3dPrimaryDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
 
    // All postprocess that uses depth sample it from the MSAA resolved rendered backbuffer
-   m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_depth, m_pd3dPrimaryDevice->GetBackBufferTexture()->GetDepthSampler());
+   m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_tex_depth, m_pd3dPrimaryDevice->GetBackBufferTexture()->GetDepthSampler());
 
    // Compute bloom (to be applied later)
    Bloom();
@@ -1640,26 +1640,26 @@ void Renderer::PrepareVideoBuffers()
    {
       // separate normal generation pass, currently roughly same perf or even much worse
       /* m_pd3dPrimaryDevice->SetRenderTarget(m_pd3dDevice->GetPostProcessRenderTarget1()); //!! expects stereo or FXAA enabled
-      m_pd3dDevice->FBShader->SetTexture(SHADER_tex_depth, m_pdds3DZBuffer, true);
-      m_pd3dDevice->FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / m_width), (float)(1.0 / m_height),
+      m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_tex_depth, m_pdds3DZBuffer, true);
+      m_pd3dPrimaryDevice->m_FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / m_width), (float)(1.0 / m_height),
          radical_inverse(m_overall_frames%2048)*(float)(1. / 8.0), sobol(m_overall_frames%2048)*(float)(5. / 8.0));// jitter within lattice cell //!! ?
-      m_pd3dDevice->FBShader->SetTechnique("normals");
-      m_pd3dDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->FBShader);*/
+      m_pd3dPrimaryDevice->m_FBShader->SetTechnique("normals");
+      m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->m_FBShader);*/
 
       m_pd3dPrimaryDevice->SetRenderTarget("ScreenSpace AO"s, m_pd3dPrimaryDevice->GetAORenderTarget(0), false);
       m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pd3dPrimaryDevice->GetAORenderTarget(1));
       m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pd3dPrimaryDevice->GetBackBufferTexture());
-      m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, m_pd3dPrimaryDevice->GetAORenderTarget(1)->GetColorSampler());
-      //m_pd3dDevice->FBShader->SetTexture(SHADER_Texture1, m_pd3dDevice->GetPostProcessRenderTarget1()); // temporary normals
-      m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_ao_dither, &m_aoDitherTexture, SF_NONE, SA_REPEAT, SA_REPEAT, true); // FIXME the force linear RGB is not honored
-      m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, 
+      m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_tex_fb_filtered, m_pd3dPrimaryDevice->GetAORenderTarget(1)->GetColorSampler());
+      //m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_Texture1, m_pd3dDevice->GetPostProcessRenderTarget1()); // temporary normals
+      m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_tex_ao_dither, &m_aoDitherTexture, SF_NONE, SA_REPEAT, SA_REPEAT, true); // FIXME the force linear RGB is not honored
+      m_pd3dPrimaryDevice->m_FBShader->SetVector(SHADER_w_h_height, 
          (float)(1.0 / m_pd3dPrimaryDevice->GetAORenderTarget(1)->GetWidth()),
          (float)(1.0 / m_pd3dPrimaryDevice->GetAORenderTarget(1)->GetHeight()), 
          radical_inverse(g_pplayer->m_overall_frames % 2048) * (float)(1. / 8.0),
          /*sobol*/ radical_inverse<3>(g_pplayer->m_overall_frames % 2048) * (float)(1. / 8.0)); // jitter within (64/8)x(64/8) neighborhood of 64x64 tex, good compromise between blotches and noise
-      m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_AO_scale_timeblur, m_table->m_AOScale, 0.4f, 0.f, 0.f); //!! 0.4f: fake global option in video pref? or time dependent? //!! commonly used is 0.1, but would require to clear history for moving stuff
-      m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_AO);
-      m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->FBShader);
+      m_pd3dPrimaryDevice->m_FBShader->SetVector(SHADER_AO_scale_timeblur, m_table->m_AOScale, 0.4f, 0.f, 0.f); //!! 0.4f: fake global option in video pref? or time dependent? //!! commonly used is 0.1, but would require to clear history for moving stuff
+      m_pd3dPrimaryDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_AO);
+      m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->m_FBShader);
 
       // flip AO buffers (avoids copy)
       m_pd3dPrimaryDevice->SwapAORenderTargets();
@@ -1678,16 +1678,16 @@ void Renderer::PrepareVideoBuffers()
       m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT, useAO);
 
       int render_w = renderedRT->GetWidth(), render_h = renderedRT->GetHeight();
-      m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, renderedRT->GetColorSampler());
-      m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, renderedRT->GetColorSampler());
+      m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_tex_fb_unfiltered, renderedRT->GetColorSampler());
+      m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_tex_fb_filtered, renderedRT->GetColorSampler());
       if (m_table->m_bloom_strength > 0.0f && !m_bloomOff)
       {
          m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pd3dPrimaryDevice->GetBloomBufferTexture());
-         m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_bloom, m_pd3dPrimaryDevice->GetBloomBufferTexture()->GetColorSampler());
+         m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_tex_bloom, m_pd3dPrimaryDevice->GetBloomBufferTexture()->GetColorSampler());
       }
       if (useAO)
       {
-         m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_ao, m_pd3dPrimaryDevice->GetAORenderTarget(1)->GetColorSampler());
+         m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_tex_ao, m_pd3dPrimaryDevice->GetAORenderTarget(1)->GetColorSampler());
          m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pd3dPrimaryDevice->GetAORenderTarget(1));
       }
 
@@ -1700,8 +1700,8 @@ void Renderer::PrepareVideoBuffers()
          if (probe)
          {
             m_pd3dPrimaryDevice->AddRenderTargetDependency(probe);
-            m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, probe->GetColorSampler());
-            m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, probe->GetColorSampler());
+            m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_tex_fb_unfiltered, probe->GetColorSampler());
+            m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_tex_fb_filtered, probe->GetColorSampler());
             render_w = probe->GetWidth();
             render_h = probe->GetHeight();
          }
@@ -1710,8 +1710,8 @@ void Renderer::PrepareVideoBuffers()
       {
          renderedRT = m_pd3dPrimaryDevice->GetBloomBufferTexture();
          m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
-         m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, renderedRT->GetColorSampler());
-         m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, renderedRT->GetColorSampler());
+         m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_tex_fb_unfiltered, renderedRT->GetColorSampler());
+         m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_tex_fb_filtered, renderedRT->GetColorSampler());
          render_w = renderedRT->GetWidth();
          render_h = renderedRT->GetHeight();
       }
@@ -1719,36 +1719,36 @@ void Renderer::PrepareVideoBuffers()
       // Texture used for LUT color grading must be treated as if they were linear
       Texture *const pin = m_table->GetImage(m_table->m_imageColorGrade);
       if (pin)
-         m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_color_lut, pin, SF_BILINEAR, SA_CLAMP, SA_CLAMP, true); // FIXME always honor the linear RGB
-      m_pd3dPrimaryDevice->FBShader->SetBool(SHADER_color_grade, pin != nullptr);
-      m_pd3dPrimaryDevice->FBShader->SetBool(SHADER_do_dither, m_pd3dPrimaryDevice->GetOutputBackBuffer()->GetColorFormat() != colorFormat::RGBA10);
-      m_pd3dPrimaryDevice->FBShader->SetBool(SHADER_do_bloom, (m_table->m_bloom_strength > 0.0f && !m_bloomOff && infoMode <= IF_DYNAMIC_ONLY));
+         m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_tex_color_lut, pin, SF_BILINEAR, SA_CLAMP, SA_CLAMP, true); // FIXME always honor the linear RGB
+      m_pd3dPrimaryDevice->m_FBShader->SetBool(SHADER_color_grade, pin != nullptr);
+      m_pd3dPrimaryDevice->m_FBShader->SetBool(SHADER_do_dither, m_pd3dPrimaryDevice->GetOutputBackBuffer()->GetColorFormat() != colorFormat::RGBA10);
+      m_pd3dPrimaryDevice->m_FBShader->SetBool(SHADER_do_bloom, (m_table->m_bloom_strength > 0.0f && !m_bloomOff && infoMode <= IF_DYNAMIC_ONLY));
 
       //const unsigned int jittertime = (unsigned int)((U64)msec()*90/1000);
       const float jitter = (float)((msec()&2047)/1000.0);
-      m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, 
+      m_pd3dPrimaryDevice->m_FBShader->SetVector(SHADER_w_h_height,
          (float)(1.0 / (double)render_w), (float)(1.0 / (double)render_h), //1.0f, 1.0f);
          jitter, // radical_inverse(jittertime) * 11.0f,
          jitter); // sobol(jittertime) * 13.0f); // jitter for dither pattern
 
       if (infoMode == IF_AO_ONLY)
-         m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_fb_AO);
+         m_pd3dPrimaryDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_fb_AO);
       else if (infoMode == IF_RENDER_PROBES)
-         m_pd3dPrimaryDevice->FBShader->SetTechnique(m_toneMapper == TM_REINHARD ? SHADER_TECHNIQUE_fb_rhtonemap
+         m_pd3dPrimaryDevice->m_FBShader->SetTechnique(m_toneMapper == TM_REINHARD ? SHADER_TECHNIQUE_fb_rhtonemap
                                                    : m_toneMapper == TM_FILMIC   ? SHADER_TECHNIQUE_fb_fmtonemap
                                                                                             : SHADER_TECHNIQUE_fb_tmtonemap);
       else if (m_BWrendering != 0)
-         m_pd3dPrimaryDevice->FBShader->SetTechnique(m_BWrendering == 1 ? SHADER_TECHNIQUE_fb_rhtonemap_no_filterRG : SHADER_TECHNIQUE_fb_rhtonemap_no_filterR);
+         m_pd3dPrimaryDevice->m_FBShader->SetTechnique(m_BWrendering == 1 ? SHADER_TECHNIQUE_fb_rhtonemap_no_filterRG : SHADER_TECHNIQUE_fb_rhtonemap_no_filterR);
       else if (m_toneMapper == TM_REINHARD)
-         m_pd3dPrimaryDevice->FBShader->SetTechnique(useAO ?
+         m_pd3dPrimaryDevice->m_FBShader->SetTechnique(useAO ?
               useAA ? SHADER_TECHNIQUE_fb_rhtonemap_AO : SHADER_TECHNIQUE_fb_rhtonemap_AO_no_filter
             : useAA ? SHADER_TECHNIQUE_fb_rhtonemap    : SHADER_TECHNIQUE_fb_rhtonemap_no_filter);
       else if (m_toneMapper == TM_FILMIC)
-         m_pd3dPrimaryDevice->FBShader->SetTechnique(useAO ?
+         m_pd3dPrimaryDevice->m_FBShader->SetTechnique(useAO ?
               useAA ? SHADER_TECHNIQUE_fb_fmtonemap_AO : SHADER_TECHNIQUE_fb_fmtonemap_AO_no_filter
             : useAA ? SHADER_TECHNIQUE_fb_fmtonemap    : SHADER_TECHNIQUE_fb_fmtonemap_no_filter);
       else // TM_TONY_MC_MAPFACE
-         m_pd3dPrimaryDevice->FBShader->SetTechnique(useAO ?
+         m_pd3dPrimaryDevice->m_FBShader->SetTechnique(useAO ?
               useAA ? SHADER_TECHNIQUE_fb_tmtonemap_AO : SHADER_TECHNIQUE_fb_tmtonemap_AO_no_filter
             : useAA ? SHADER_TECHNIQUE_fb_tmtonemap    : SHADER_TECHNIQUE_fb_tmtonemap_no_filter);
 
@@ -1759,7 +1759,7 @@ void Renderer::PrepareVideoBuffers()
          {  1.0f + m_ScreenOffset.x, -1.0f + m_ScreenOffset.y, 0.0f, 1.0f, 1.0f },
          { -1.0f + m_ScreenOffset.x, -1.0f + m_ScreenOffset.y, 0.0f, 0.0f, 1.0f }
       };
-      m_pd3dPrimaryDevice->DrawTexturedQuad(m_pd3dPrimaryDevice->FBShader, shiftedVerts);
+      m_pd3dPrimaryDevice->DrawTexturedQuad(m_pd3dPrimaryDevice->m_FBShader, shiftedVerts);
       renderedRT = outputRT;
    }
 
@@ -1780,10 +1780,10 @@ void Renderer::PrepareVideoBuffers()
          pdest[i * 3 + 2] = ((y >> 2) & 1) == 0 ? 0x00 : ((i & 1) == 0 && (y & 1) == 0) ? 0x00 : 0xFF;
       }
       Sampler *checker = new Sampler(m_pd3dPrimaryDevice, tex, true, SA_CLAMP, SA_CLAMP, SF_NONE);
-      m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / renderedRT->GetWidth()), (float)(1.0 / renderedRT->GetHeight()), 1.f, 1.f);
-      m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, checker);
-      m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_fb_mirror);
-      m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->FBShader);
+      m_pd3dPrimaryDevice->m_FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / renderedRT->GetWidth()), (float)(1.0 / renderedRT->GetHeight()), 1.f, 1.f);
+      m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_tex_fb_filtered, checker);
+      m_pd3dPrimaryDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_fb_mirror);
+      m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->m_FBShader);
       renderedRT = outputRT;
       delete checker;
       delete tex;
@@ -1801,12 +1801,12 @@ void Renderer::PrepareVideoBuffers()
       outputRT = sharpen || stereo || useUpscaler ? m_pd3dPrimaryDevice->GetPostProcessRenderTarget(renderedRT) : m_pd3dPrimaryDevice->GetOutputBackBuffer();
       m_pd3dPrimaryDevice->SetRenderTarget(SMAA ? "SMAA Color/Edge Detection"s : "Post Process AA Pass 1"s, outputRT, false);
       m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
-      m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, renderedRT->GetColorSampler());
-      m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, renderedRT->GetColorSampler());
+      m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_tex_fb_filtered, renderedRT->GetColorSampler());
+      m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_tex_fb_unfiltered, renderedRT->GetColorSampler());
       m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pd3dPrimaryDevice->GetBackBufferTexture(), true); // Depth is always taken from the MSAA resolved render buffer
-      m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / renderedRT->GetWidth()), (float)(1.0 / renderedRT->GetHeight()), (float)renderedRT->GetWidth(), 1.f);
-      m_pd3dPrimaryDevice->FBShader->SetTechnique(NFAA  ? SHADER_TECHNIQUE_NFAA : FXAA3 ? SHADER_TECHNIQUE_FXAA3 : FXAA2 ? SHADER_TECHNIQUE_FXAA2 : SHADER_TECHNIQUE_FXAA1);
-      m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->FBShader);
+      m_pd3dPrimaryDevice->m_FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / renderedRT->GetWidth()), (float)(1.0 / renderedRT->GetHeight()), (float)renderedRT->GetWidth(), 1.f);
+      m_pd3dPrimaryDevice->m_FBShader->SetTechnique(NFAA  ? SHADER_TECHNIQUE_NFAA : FXAA3 ? SHADER_TECHNIQUE_FXAA3 : FXAA2 ? SHADER_TECHNIQUE_FXAA2 : SHADER_TECHNIQUE_FXAA1);
+      m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->m_FBShader);
       renderedRT = outputRT;
    }
    else if (DLAA)
@@ -1816,22 +1816,22 @@ void Renderer::PrepareVideoBuffers()
       outputRT = m_pd3dPrimaryDevice->GetPostProcessRenderTarget(renderedRT);
       m_pd3dPrimaryDevice->SetRenderTarget("DLAA Edge Detection"s, outputRT, false);
       m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
-      m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, renderedRT->GetColorSampler());
-      m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, renderedRT->GetColorSampler());
+      m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_tex_fb_filtered, renderedRT->GetColorSampler());
+      m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_tex_fb_unfiltered, renderedRT->GetColorSampler());
       m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pd3dPrimaryDevice->GetBackBufferTexture(), true); // Depth is always taken from the MSAA resolved render buffer
-      m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / renderedRT->GetWidth()), (float)(1.0 / renderedRT->GetHeight()), (float)renderedRT->GetWidth(), 1.f);
-      m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_DLAA_edge);
-      m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->FBShader);
+      m_pd3dPrimaryDevice->m_FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / renderedRT->GetWidth()), (float)(1.0 / renderedRT->GetHeight()), (float)renderedRT->GetWidth(), 1.f);
+      m_pd3dPrimaryDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_DLAA_edge);
+      m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->m_FBShader);
       renderedRT = outputRT;
 
       // Second pass: use edge detection from first pass (alpha channel) and RGB colors for actual filtering
       outputRT = sharpen || stereo || useUpscaler ? m_pd3dPrimaryDevice->GetPostProcessRenderTarget(renderedRT) : m_pd3dPrimaryDevice->GetOutputBackBuffer();
       m_pd3dPrimaryDevice->SetRenderTarget("DLAA Neigborhood blending"s, outputRT, false);
       m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
-      m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, renderedRT->GetColorSampler());
-      m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, renderedRT->GetColorSampler());
-      m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_DLAA);
-      m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->FBShader);
+      m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_tex_fb_filtered, renderedRT->GetColorSampler());
+      m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_tex_fb_unfiltered, renderedRT->GetColorSampler());
+      m_pd3dPrimaryDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_DLAA);
+      m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->m_FBShader);
       renderedRT = outputRT;
    }
    else if (SMAA)
@@ -1840,35 +1840,35 @@ void Renderer::PrepareVideoBuffers()
       assert(renderedRT == m_pd3dPrimaryDevice->GetPostProcessRenderTarget1());
       // SMAA use 3 passes, all of them using the initial render, so since tonemap use postprocess RT 1, we use the back buffer and post process RT 2
       RenderTarget *sourceRT = renderedRT;
-      m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, sourceRT->GetColorSampler());
-      m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, sourceRT->GetColorSampler());
-      m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_areaTex, m_pd3dPrimaryDevice->m_SMAAareaTexture);
-      m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_searchTex, m_pd3dPrimaryDevice->m_SMAAsearchTexture);
-      m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / sourceRT->GetWidth()), (float)(1.0 / sourceRT->GetHeight()), (float)sourceRT->GetWidth(), (float)sourceRT->GetHeight());
+      m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_tex_fb_filtered, sourceRT->GetColorSampler());
+      m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_tex_fb_unfiltered, sourceRT->GetColorSampler());
+      m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_areaTex, m_pd3dPrimaryDevice->m_SMAAareaTexture);
+      m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_searchTex, m_pd3dPrimaryDevice->m_SMAAsearchTexture);
+      m_pd3dPrimaryDevice->m_FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / sourceRT->GetWidth()), (float)(1.0 / sourceRT->GetHeight()), (float)sourceRT->GetWidth(), (float)sourceRT->GetHeight());
 
       outputRT = m_pd3dPrimaryDevice->GetPreviousBackBufferTexture(); // We don't need it anymore, so use it as a third postprocess buffer
       m_pd3dPrimaryDevice->SetRenderTarget("SMAA Color/Edge Detection"s, outputRT, false);
       m_pd3dPrimaryDevice->AddRenderTargetDependency(sourceRT); // PostProcess RT 1
-      m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_SMAA_ColorEdgeDetection);
-      m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->FBShader);
+      m_pd3dPrimaryDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_SMAA_ColorEdgeDetection);
+      m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->m_FBShader);
       renderedRT = outputRT;
 
       outputRT = m_pd3dPrimaryDevice->GetPostProcessRenderTarget(sourceRT);
       m_pd3dPrimaryDevice->SetRenderTarget("SMAA Blend weight calculation"s, outputRT, false);
       m_pd3dPrimaryDevice->AddRenderTargetDependency(sourceRT); // PostProcess RT 1
       m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT); // BackBuffer RT
-      m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_edgesTex, renderedRT->GetColorSampler());
-      m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_SMAA_BlendWeightCalculation);
-      m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->FBShader);
+      m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_edgesTex, renderedRT->GetColorSampler());
+      m_pd3dPrimaryDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_SMAA_BlendWeightCalculation);
+      m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->m_FBShader);
       renderedRT = outputRT;
 
       outputRT = sharpen || stereo || useUpscaler ? m_pd3dPrimaryDevice->GetPreviousBackBufferTexture() : m_pd3dPrimaryDevice->GetOutputBackBuffer();
       m_pd3dPrimaryDevice->SetRenderTarget("SMAA Neigborhood blending"s, outputRT, false);
       m_pd3dPrimaryDevice->AddRenderTargetDependency(sourceRT); // PostProcess RT 1
       m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT); // PostProcess RT 2
-      m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_blendTex, renderedRT->GetColorSampler());
-      m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_SMAA_NeighborhoodBlending);
-      m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->FBShader);
+      m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_blendTex, renderedRT->GetColorSampler());
+      m_pd3dPrimaryDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_SMAA_NeighborhoodBlending);
+      m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->m_FBShader);
       renderedRT = outputRT;
 #endif
    }
@@ -1881,11 +1881,11 @@ void Renderer::PrepareVideoBuffers()
       m_pd3dPrimaryDevice->SetRenderTarget("Sharpen"s, outputRT, false);
       m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
       m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pd3dPrimaryDevice->GetBackBufferTexture(), true); // Depth is always taken from the MSAA resolved render buffer
-      m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, renderedRT->GetColorSampler());
-      m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_unfiltered, renderedRT->GetColorSampler());
-      m_pd3dPrimaryDevice->FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / renderedRT->GetWidth()), (float)(1.0 / renderedRT->GetHeight()), (float)renderedRT->GetWidth(), 1.f);
-      m_pd3dPrimaryDevice->FBShader->SetTechnique((sharpen == 1) ? SHADER_TECHNIQUE_CAS : SHADER_TECHNIQUE_BilateralSharp_CAS);
-      m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->FBShader);
+      m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_tex_fb_filtered, renderedRT->GetColorSampler());
+      m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_tex_fb_unfiltered, renderedRT->GetColorSampler());
+      m_pd3dPrimaryDevice->m_FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / renderedRT->GetWidth()), (float)(1.0 / renderedRT->GetHeight()), (float)renderedRT->GetWidth(), 1.f);
+      m_pd3dPrimaryDevice->m_FBShader->SetTechnique((sharpen == 1) ? SHADER_TECHNIQUE_CAS : SHADER_TECHNIQUE_BilateralSharp_CAS);
+      m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->m_FBShader);
       renderedRT = outputRT;
    }
 
@@ -1971,10 +1971,10 @@ void Renderer::PrepareVideoBuffers()
          if (m_stereo3DfakeStereo)
          {
             m_pd3dPrimaryDevice->AddRenderTargetDependency(m_pd3dPrimaryDevice->GetBackBufferTexture(), true);
-            m_pd3dPrimaryDevice->StereoShader->SetTexture(SHADER_tex_stereo_depth, m_pd3dPrimaryDevice->GetBackBufferTexture()->GetDepthSampler());
+            m_pd3dPrimaryDevice->m_stereoShader->SetTexture(SHADER_tex_stereo_depth, m_pd3dPrimaryDevice->GetBackBufferTexture()->GetDepthSampler());
          }
-         m_pd3dPrimaryDevice->StereoShader->SetTexture(SHADER_tex_stereo_fb, renderedRT->GetColorSampler());
-         m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->StereoShader);
+         m_pd3dPrimaryDevice->m_stereoShader->SetTexture(SHADER_tex_stereo_fb, renderedRT->GetColorSampler());
+         m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->m_stereoShader);
       }
       else
       {
@@ -1989,9 +1989,9 @@ void Renderer::PrepareVideoBuffers()
       outputRT = m_pd3dPrimaryDevice->GetOutputBackBuffer();
       m_pd3dPrimaryDevice->SetRenderTarget("Upscale"s, outputRT, false);
       m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
-      m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_fb_filtered, renderedRT->GetColorSampler());
-      m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_fb_copy);
-      m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->FBShader);
+      m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_tex_fb_filtered, renderedRT->GetColorSampler());
+      m_pd3dPrimaryDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_fb_copy);
+      m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->m_FBShader);
       renderedRT = outputRT;
    }
 

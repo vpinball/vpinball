@@ -537,6 +537,7 @@ void Plunger::RenderSetup(RenderDevice *device)
          const float cs = cosf(angle);
          const PlungerCoord *c = desc->c;
          Vertex3D_NoTex2 *pm = &ptr[offset];
+         float pmm1tv = 0.f;
          for (int m = 0; m < lathePoints; m++, ++c, ++pm)
          {
             // get the current point's coordinates
@@ -558,7 +559,7 @@ void Plunger::RenderSetup(RenderDevice *device)
                // proportional point of the texture at our cut-off point on
                // the object surface.
                const float ratio = float(i) * inv_scale;
-               tv = (pm - 1)->tv + (tv - (pm - 1)->tv)*ratio;
+               tv = pmm1tv + (tv - pmm1tv)*ratio;
             }
 
             // figure the point coordinates
@@ -569,7 +570,7 @@ void Plunger::RenderSetup(RenderDevice *device)
             pm->ny = c->ny;
             pm->nz = -c->nx * cs;
             pm->tu = tu;
-            pm->tv = tv;
+            pm->tv = pmm1tv = tv;
          }
       }
       }
@@ -636,10 +637,10 @@ void Plunger::RenderSetup(RenderDevice *device)
          ptr[0].y = yBot;       ptr[0].ny = 0.0f;          ptr[0].tv = tv_local;           // bottom
          ptr[0].z = z;          ptr[0].nz = -1.0f;
          ptr[1].x = xLt;        ptr[1].nx = 0.0f;          ptr[1].tu = tu_local;           // left
-         ptr[1].y = yTop;       ptr[1].ny = 0.0f;          ptr[1].tv = 0.0f;				  // top
+         ptr[1].y = yTop;       ptr[1].ny = 0.0f;          ptr[1].tv = 0.0f;               // top
          ptr[1].z = z;          ptr[1].nz = -1.0f;
          ptr[2].x = xRt;        ptr[2].nx = 0.0f;          ptr[2].tu = tu_local + cellWid; // right
-         ptr[2].y = yTop;       ptr[2].ny = 0.0f;          ptr[2].tv = 0.0f;			      // top
+         ptr[2].y = yTop;       ptr[2].ny = 0.0f;          ptr[2].tv = 0.0f;               // top
          ptr[2].z = z;          ptr[2].nz = -1.0f;
          ptr[3].x = xRt;        ptr[3].nx = 0.0f;          ptr[3].tu = tu_local + cellWid; // right
          ptr[3].y = yBot;       ptr[3].ny = 0.0f;          ptr[3].tv = tv_local;           // bottom
@@ -861,8 +862,8 @@ void Plunger::Render(const unsigned int renderMask)
    const int frame = (frame0 < 0 ? 0 : frame0 >= m_cframes ? m_cframes - 1 : frame0);
 
    m_rd->ResetRenderState();
-   m_rd->basicShader->SetBasic(m_ptable->GetMaterial(m_d.m_szMaterial), m_ptable->GetImage(m_d.m_szImage));
-   m_rd->DrawMesh(m_rd->basicShader, false, m_boundingSphereCenter, 0.f /*m_boundingSphereRadius*/, m_meshBuffer, 
+   m_rd->m_basicShader->SetBasic(m_ptable->GetMaterial(m_d.m_szMaterial), m_ptable->GetImage(m_d.m_szImage));
+   m_rd->DrawMesh(m_rd->m_basicShader, false, m_boundingSphereCenter, 0.f /*m_boundingSphereRadius*/, m_meshBuffer, 
       RenderDevice::TRIANGLELIST, frame * m_indicesPerFrame, m_indicesPerFrame);
 }
 

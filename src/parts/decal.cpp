@@ -771,15 +771,15 @@ void Decal::Render(const unsigned int renderMask)
 
    m_rd->ResetRenderState();
 
-   m_rd->basicShader->SetMaterial(mat);
+   m_rd->m_basicShader->SetMaterial(mat);
 
    if (m_d.m_decaltype != DecalImage)
    {
       if (!m_backglass)
-         m_rd->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, mat, false);
+         m_rd->m_basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, *mat, false);
       else
-         m_rd->basicShader->SetTechnique(SHADER_TECHNIQUE_bg_decal_with_texture);
-      m_rd->basicShader->SetTexture(SHADER_tex_base_color, m_textImg);
+         m_rd->m_basicShader->SetTechnique(SHADER_TECHNIQUE_bg_decal_with_texture);
+      m_rd->m_basicShader->SetTexture(SHADER_tex_base_color, m_textImg);
    }
    else
    {
@@ -787,19 +787,19 @@ void Decal::Render(const unsigned int renderMask)
       if (pin)
       {
          if (!m_backglass)
-            m_rd->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, mat, pin->m_alphaTestValue >= 0.f && !pin->m_pdsBuffer->IsOpaque());
+            m_rd->m_basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, *mat, pin->m_alphaTestValue >= 0.f && !pin->m_pdsBuffer->IsOpaque());
          else
-            m_rd->basicShader->SetTechnique(SHADER_TECHNIQUE_bg_decal_with_texture);
+            m_rd->m_basicShader->SetTechnique(SHADER_TECHNIQUE_bg_decal_with_texture);
          // Set texture to mirror, so the alpha state of the texture blends correctly to the outside
-         m_rd->basicShader->SetTexture(SHADER_tex_base_color, pin, SF_TRILINEAR, SA_MIRROR, SA_MIRROR);
-         m_rd->basicShader->SetAlphaTestValue(pin->m_alphaTestValue);
+         m_rd->m_basicShader->SetTexture(SHADER_tex_base_color, pin, SF_TRILINEAR, SA_MIRROR, SA_MIRROR);
+         m_rd->m_basicShader->SetAlphaTestValue(pin->m_alphaTestValue);
       }
       else
       {
          if (!m_backglass)
-            m_rd->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, mat);
+            m_rd->m_basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, *mat);
          else
-            m_rd->basicShader->SetTechnique(SHADER_TECHNIQUE_bg_decal_without_texture);
+            m_rd->m_basicShader->SetTechnique(SHADER_TECHNIQUE_bg_decal_without_texture);
       }
    }
 
@@ -814,7 +814,7 @@ void Decal::Render(const unsigned int renderMask)
    {
       m_rd->SetRenderStateDepthBias(0.0f);
       const vec4 staticColor(1.0f, 1.0f, 1.0f, 1.0f);
-      m_rd->basicShader->SetVector(SHADER_cBase_Alpha, &staticColor);
+      m_rd->m_basicShader->SetVector(SHADER_cBase_Alpha, &staticColor);
    }
 
    if (m_backglass)
@@ -836,13 +836,13 @@ void Decal::Render(const unsigned int renderMask)
       } matrices;
       memcpy(&matrices.matWorldViewProj[0].m[0][0], &matWorldViewProj.m[0][0], 4 * 4 * sizeof(float));
       memcpy(&matrices.matWorldViewProj[1].m[0][0], &matWorldViewProj.m[0][0], 4 * 4 * sizeof(float));
-      m_rd->basicShader->SetUniformBlock(SHADER_basicMatrixBlock, &matrices.matWorld.m[0][0]);
+      m_rd->m_basicShader->SetUniformBlock(SHADER_basicMatrixBlock, &matrices.matWorld.m[0][0]);
       #else
-      m_rd->basicShader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj);
+      m_rd->m_basicShader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj);
       #endif
    }
 
-   m_rd->DrawMesh(m_rd->basicShader, !m_backglass, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLESTRIP, 0, 4);
+   m_rd->DrawMesh(m_rd->m_basicShader, !m_backglass, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLESTRIP, 0, 4);
 
    if (m_backglass)
       g_pplayer->m_renderer->UpdateBasicShaderMatrix();

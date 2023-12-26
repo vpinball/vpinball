@@ -860,13 +860,13 @@ void Flipper::Render(const unsigned int renderMask)
    g_pplayer->m_renderer->UpdateBasicShaderMatrix(matTrafo);
    Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
 
-   m_rd->basicShader->SetBasic(m_ptable->GetMaterial(m_d.m_szMaterial), pin);
-   m_rd->DrawMesh(m_rd->basicShader, false, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, flipperBaseNumIndices);
+   m_rd->m_basicShader->SetBasic(m_ptable->GetMaterial(m_d.m_szMaterial), pin);
+   m_rd->DrawMesh(m_rd->m_basicShader, false, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, flipperBaseNumIndices);
 
    if (m_d.m_rubberthickness > 0.f)
    {
-      m_rd->basicShader->SetBasic(m_ptable->GetMaterial(m_d.m_szRubberMaterial), pin);
-      m_rd->DrawMesh(m_rd->basicShader, false, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, flipperBaseNumIndices, flipperBaseNumIndices);
+      m_rd->m_basicShader->SetBasic(m_ptable->GetMaterial(m_d.m_szRubberMaterial), pin);
+      m_rd->DrawMesh(m_rd->m_basicShader, false, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, flipperBaseNumIndices, flipperBaseNumIndices);
    }
 
    g_pplayer->m_renderer->UpdateBasicShaderMatrix();

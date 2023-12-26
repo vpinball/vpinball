@@ -347,9 +347,9 @@ void Bumper::Render(const unsigned int renderMask)
          m_rd->ResetRenderState();
          if (mat->m_bOpacityActive)
             m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
-         m_rd->basicShader->SetBasic(mat, &m_baseTexture);
+         m_rd->m_basicShader->SetBasic(mat, &m_baseTexture);
          Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight);
-         m_rd->DrawMesh(m_rd->basicShader, false, pos, 0.f, m_baseMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperBaseNumIndices);
+         m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_baseMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperBaseNumIndices);
       }
    }
 
@@ -361,9 +361,9 @@ void Bumper::Render(const unsigned int renderMask)
          m_rd->ResetRenderState();
          if (mat->m_bOpacityActive)
             m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
-         m_rd->basicShader->SetBasic(mat, &m_capTexture);
+         m_rd->m_basicShader->SetBasic(mat, &m_capTexture);
          Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight);
-         m_rd->DrawMesh(m_rd->basicShader, false, pos, 0.f, m_capMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperCapNumIndices);
+         m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_capMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperCapNumIndices);
       }
    }
 
@@ -381,9 +381,9 @@ void Bumper::Render(const unsigned int renderMask)
          ringMaterial.m_type = Material::MaterialType::METAL;
       }
       m_rd->ResetRenderState();
-      m_rd->basicShader->SetBasic(&ringMaterial, &m_ringTexture);
+      m_rd->m_basicShader->SetBasic(&ringMaterial, &m_ringTexture);
       Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight + m_pbumperhitcircle->m_bumperanim_ringAnimOffset);
-      m_rd->DrawMesh(m_rd->basicShader, false, pos, 0.f, m_ringMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperRingNumIndices);
+      m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_ringMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperRingNumIndices);
    }
 
    if (m_d.m_skirtVisible && !isStaticOnly)
@@ -392,9 +392,9 @@ void Bumper::Render(const unsigned int renderMask)
       m_rd->ResetRenderState();
       if (mat->m_bOpacityActive)
          m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
-      m_rd->basicShader->SetBasic(mat, &m_skirtTexture);
+      m_rd->m_basicShader->SetBasic(mat, &m_skirtTexture);
       Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight + 5.0f);
-      m_rd->DrawMesh(m_rd->basicShader, false, pos, 0.f, m_socketMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperSocketNumIndices);
+      m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_socketMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperSocketNumIndices);
    }
 }
 

@@ -219,9 +219,9 @@ BackGlass::BackGlass(RenderDevice* const pd3dDevice, Texture * backgroundFallbac
    g_pplayer->m_ptable->get_Width(&tableWidth);
    g_pplayer->m_ptable->get_GlassHeight(&glassHeight);
    if (m_backglass_width>0 && m_backglass_height>0)
-      m_pd3dDevice->DMDShader->SetVector(SHADER_backBoxSize, tableWidth * (0.5f - m_backglass_scale / 2.0f), glassHeight, m_backglass_scale * tableWidth, m_backglass_scale * tableWidth * (float)m_backglass_height / (float)m_backglass_width);
+      m_pd3dDevice->m_DMDShader->SetVector(SHADER_backBoxSize, tableWidth * (0.5f - m_backglass_scale / 2.0f), glassHeight, m_backglass_scale * tableWidth, m_backglass_scale * tableWidth * (float)m_backglass_height / (float)m_backglass_width);
    else
-      m_pd3dDevice->DMDShader->SetVector(SHADER_backBoxSize, tableWidth * (0.5f - m_backglass_scale / 2.0f), glassHeight, m_backglass_scale * tableWidth, m_backglass_scale * tableWidth * (float)(9.0 / 16.0));
+      m_pd3dDevice->m_DMDShader->SetVector(SHADER_backBoxSize, tableWidth * (0.5f - m_backglass_scale / 2.0f), glassHeight, m_backglass_scale * tableWidth, m_backglass_scale * tableWidth * (float)(9.0 / 16.0));
    if (m_backglass_dmd_width > 0 && m_backglass_dmd_height > 0 && m_backglass_width > 0 && m_backglass_height > 0) {
       m_dmd_width = (float)m_backglass_dmd_width / (float)m_backglass_width;
       m_dmd_height = (float)m_backglass_dmd_height / (float)m_backglass_height;
@@ -254,7 +254,7 @@ void BackGlass::Render()
          const int dmdheightextra = (int)(tableWidth * .05f);
          glassHeight += (float)(dmdheightoff + dmdheightextra);
 
-         m_pd3dDevice->DMDShader->SetVector(SHADER_backBoxSize, tableWidth * (0.5f - m_backglass_scale / 2.0f), glassHeight, m_backglass_scale * tableWidth, m_backglass_scale * tableWidth * (float)(9.0 / 16.0));
+         m_pd3dDevice->m_DMDShader->SetVector(SHADER_backBoxSize, tableWidth * (0.5f - m_backglass_scale / 2.0f), glassHeight, m_backglass_scale * tableWidth, m_backglass_scale * tableWidth * (float)(9.0 / 16.0));
 
          // We lost the grill, so make a nice big DMD.
          m_dmd_width = 0.8f;
@@ -263,13 +263,13 @@ void BackGlass::Render()
          m_dmd.y = (float)(-dmdheightoff + dmdheightextra / 2);
       }
       else
-         m_pd3dDevice->DMDShader->SetVector(SHADER_backBoxSize, tableWidth * (0.5f - m_backglass_scale / 2.0f), glassHeight, m_backglass_scale * tableWidth, m_backglass_scale * tableWidth * (float)(3.0 / 4.0));
+         m_pd3dDevice->m_DMDShader->SetVector(SHADER_backBoxSize, tableWidth * (0.5f - m_backglass_scale / 2.0f), glassHeight, m_backglass_scale * tableWidth, m_backglass_scale * tableWidth * (float)(3.0 / 4.0));
    }
 
    if (m_backgroundTexture)
-      m_pd3dDevice->DMDShader->SetTexture(SHADER_tex_sprite, m_backgroundTexture);
+      m_pd3dDevice->m_DMDShader->SetTexture(SHADER_tex_sprite, m_backgroundTexture);
    else if (m_backgroundFallback)
-      m_pd3dDevice->DMDShader->SetTexture(SHADER_tex_sprite, m_backgroundFallback, SF_TRILINEAR, SA_CLAMP, SA_CLAMP);
+      m_pd3dDevice->m_DMDShader->SetTexture(SHADER_tex_sprite, m_backgroundFallback, SF_TRILINEAR, SA_CLAMP, SA_CLAMP);
    else return;
 
    m_pd3dDevice->ResetRenderState();
@@ -278,9 +278,9 @@ void BackGlass::Render()
    m_pd3dDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
    m_pd3dDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
 
-   m_pd3dDevice->DMDShader->SetTechnique(SHADER_TECHNIQUE_basic_noDMD);
+   m_pd3dDevice->m_DMDShader->SetTechnique(SHADER_TECHNIQUE_basic_noDMD);
 
-   m_pd3dDevice->DMDShader->SetVector(SHADER_vColor_Intensity, 1.0f, 1.0f, 1.0f, 1.0f);
+   m_pd3dDevice->m_DMDShader->SetVector(SHADER_vColor_Intensity, 1.0f, 1.0f, 1.0f, 1.0f);
 
    static constexpr Vertex3D_NoTex2 vertices[4] =
    {
@@ -290,7 +290,7 @@ void BackGlass::Render()
       { 0.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 1.f }
    };
 
-   m_pd3dDevice->DrawTexturedQuad(m_pd3dDevice->DMDShader, vertices);
+   m_pd3dDevice->DrawTexturedQuad(m_pd3dDevice->m_DMDShader, vertices);
 }
 
 void BackGlass::GetDMDPos(float& DMDposx, float& DMDposy, float& DMDwidth, float& DMDheight)

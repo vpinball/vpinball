@@ -422,15 +422,15 @@ void DispReel::Render(const unsigned int renderMask)
       m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
    }
 
-   m_rd->DMDShader->SetFloat(SHADER_alphaTestValue, (float)(128.0 / 255.0));
+   m_rd->m_DMDShader->SetFloat(SHADER_alphaTestValue, (float)(128.0 / 255.0));
    m_rd->EnableAlphaBlend(false);
 
-   m_rd->DMDShader->SetTechnique(SHADER_TECHNIQUE_basic_noDMD);
+   m_rd->m_DMDShader->SetTechnique(SHADER_TECHNIQUE_basic_noDMD);
 
    const vec4 c = convertColor(0xFFFFFFFF, 1.f);
-   m_rd->DMDShader->SetVector(SHADER_vColor_Intensity, &c);
+   m_rd->m_DMDShader->SetVector(SHADER_vColor_Intensity, &c);
 
-   m_rd->DMDShader->SetTexture(SHADER_tex_sprite, pin, SF_TRILINEAR, SA_REPEAT, SA_REPEAT);
+   m_rd->m_DMDShader->SetTexture(SHADER_tex_sprite, pin, SF_TRILINEAR, SA_REPEAT, SA_REPEAT);
 
    // set up all the reel positions within the object frame
    const float renderspacingx = max(0.0f, m_d.m_reelspacing / (float)EDITOR_BG_WIDTH);
@@ -459,13 +459,13 @@ void DispReel::Render(const unsigned int renderMask)
          vertices[i].y = 1.0f - (vertices[i].y * m_renderheight + y1)*2.0f;
       }
 
-      m_rd->DrawTexturedQuad(m_rd->DMDShader, vertices);
+      m_rd->DrawTexturedQuad(m_rd->m_DMDShader, vertices);
 
       // move to the next reel
       x1 += renderspacingx + m_renderwidth;
    }
 
-   m_rd->DMDShader->SetFloat(SHADER_alphaTestValue, 1.0f);
+   m_rd->m_DMDShader->SetFloat(SHADER_alphaTestValue, 1.0f);
 }
 
 #pragma endregion

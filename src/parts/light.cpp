@@ -629,9 +629,9 @@ void Light::Render(const unsigned int renderMask)
          mat.m_fGlossyImageLerp = 1.0f;
          mat.m_fThickness = 0.05f;
          mat.m_cClearcoat = 0;
-         m_rd->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, mat);
-         m_rd->basicShader->SetMaterial(&mat, false);
-         m_rd->DrawMesh(m_rd->basicShader, false, m_boundingSphereCenter, m_d.m_depthBias, m_bulbSocketMeshBuffer, RenderDevice::TRIANGLELIST, 0, bulbSocketNumFaces);
+         m_rd->m_basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, mat);
+         m_rd->m_basicShader->SetMaterial(&mat, false);
+         m_rd->DrawMesh(m_rd->m_basicShader, false, m_boundingSphereCenter, m_d.m_depthBias, m_bulbSocketMeshBuffer, RenderDevice::TRIANGLELIST, 0, bulbSocketNumFaces);
       }
       if ((!isDynamicOnly && m_d.m_staticBulbMesh) || (!isStaticOnly && !m_d.m_staticBulbMesh))
       {
@@ -647,10 +647,10 @@ void Light::Render(const unsigned int renderMask)
          mat.m_fGlossyImageLerp = 1.0f;
          mat.m_fThickness = 0.05f;
          mat.m_cClearcoat = 0xFFFFFF;
-         m_rd->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, mat);
-         m_rd->basicShader->SetMaterial(&mat, false);
+         m_rd->m_basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, mat);
+         m_rd->m_basicShader->SetMaterial(&mat, false);
          Vertex3Ds bulbPos(m_boundingSphereCenter.x, m_boundingSphereCenter.y, m_boundingSphereCenter.z + m_d.m_height);
-         m_rd->DrawMesh(m_rd->basicShader, true, bulbPos, m_d.m_depthBias, m_bulbLightMeshBuffer, RenderDevice::TRIANGLELIST, 0, bulbLightNumFaces);
+         m_rd->DrawMesh(m_rd->m_basicShader, true, bulbPos, m_d.m_depthBias, m_bulbLightMeshBuffer, RenderDevice::TRIANGLELIST, 0, bulbLightNumFaces);
       }
    }
 
@@ -719,12 +719,12 @@ void Light::Render(const unsigned int renderMask)
          RenderState tmp_state;
          m_rd->CopyRenderStates(true, tmp_state);
 
-         m_rd->lightShader->SetLightData(center_range);
-         m_rd->lightShader->SetLightColor2FalloffPower(lightColor2_falloff_power);
-         m_rd->lightShader->SetTechnique(SHADER_TECHNIQUE_bulb_light);
+         m_rd->m_lightShader->SetLightData(center_range);
+         m_rd->m_lightShader->SetLightColor2FalloffPower(lightColor2_falloff_power);
+         m_rd->m_lightShader->SetTechnique(SHADER_TECHNIQUE_bulb_light);
 
          m_rd->EnableAlphaBlend(false, false, false);
-         //m_rd->SetRenderState(RenderState::SRCBLEND,  RenderState::SRC_ALPHA);  // add the lightcontribution
+         //m_rd->SetRenderState(RenderState::SRCBLEND,  RenderState::SRC_ALPHA);  // add the light contribution
          m_rd->SetRenderState(RenderState::DESTBLEND, RenderState::INVSRC_COLOR); // but also modulate the light first with the underlying elements by (1+lightcontribution, e.g. a very crude approximation of real lighting)
          m_rd->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_REVSUBTRACT);
 
@@ -732,12 +732,12 @@ void Light::Render(const unsigned int renderMask)
          //lightColor_intensity.w = m_currentIntensity * 0.5f;
          if (m_d.m_BulbLight && g_pplayer->m_renderer->IsRenderPass(Renderer::LIGHT_BUFFER))
             lightColor_intensity.w *= m_d.m_transmissionScale;
-         m_rd->lightShader->SetLightColorIntensity(lightColor_intensity);
-         m_rd->lightShader->SetFloat(SHADER_blend_modulate_vs_add, 0.00001f); // additive, but avoid full 0, as it disables the blend
+         m_rd->m_lightShader->SetLightColorIntensity(lightColor_intensity);
+         m_rd->m_lightShader->SetFloat(SHADER_blend_modulate_vs_add, 0.00001f); // additive, but avoid full 0, as it disables the blend
 
          Vertex3Ds bulbPos(m_boundingSphereCenter.x, m_boundingSphereCenter.y, m_boundingSphereCenter.z + m_d.m_height);
          if (m_bulbLightMeshBuffer) // FIXME will be null if started without a bulb, then activated from the LiveUI. Prevent the crash. WOuld be nicer to actually build the buffer if needed
-            m_rd->DrawMesh(m_rd->lightShader, m_d.m_BulbLight || (m_surfaceMaterial && m_surfaceMaterial->m_bOpacityActive), bulbPos, m_d.m_depthBias, m_bulbLightMeshBuffer, RenderDevice::TRIANGLELIST, 0, bulbLightNumFaces);
+            m_rd->DrawMesh(m_rd->m_lightShader, m_d.m_BulbLight || (m_surfaceMaterial && m_surfaceMaterial->m_bOpacityActive), bulbPos, m_d.m_depthBias, m_bulbLightMeshBuffer, RenderDevice::TRIANGLELIST, 0, bulbLightNumFaces);
 
          m_rd->CopyRenderStates(false, tmp_state);
       }
@@ -807,7 +807,7 @@ void Light::Render(const unsigned int renderMask)
          m_lightmapMeshBuffer->m_vb->unlock();
       }
 
-      Shader *shader = m_d.m_BulbLight ? m_rd->lightShader : m_rd->basicShader;
+      Shader *const shader = m_d.m_BulbLight ? m_rd->m_lightShader : m_rd->m_basicShader;
       shader->SetLightData(center_range);
       shader->SetLightColor2FalloffPower(lightColor2_falloff_power);
       lightColor_intensity.w = m_currentIntensity;
@@ -821,7 +821,7 @@ void Light::Render(const unsigned int renderMask)
          shader->SetMaterial(m_surfaceMaterial);
          if (offTexel != nullptr)
          {
-            shader->SetTechniqueMaterial(SHADER_TECHNIQUE_light_with_texture, m_surfaceMaterial);
+            shader->SetTechniqueMaterial(SHADER_TECHNIQUE_light_with_texture, *m_surfaceMaterial);
             shader->SetTexture(SHADER_tex_light_color, offTexel, SF_TRILINEAR, SA_CLAMP, SA_CLAMP);
             // TOTAN and Flintstones inserts break if alpha blending is disabled here.
             // Also see below if changing again
@@ -833,7 +833,7 @@ void Light::Render(const unsigned int renderMask)
             }
          }
          else
-            shader->SetTechniqueMaterial(SHADER_TECHNIQUE_light_without_texture, m_surfaceMaterial);
+            shader->SetTechniqueMaterial(SHADER_TECHNIQUE_light_without_texture, *m_surfaceMaterial);
       }
       else
       {
@@ -854,7 +854,7 @@ void Light::Render(const unsigned int renderMask)
          matWorldViewProj[0]._22 = -2.0f / (float)m_rd->GetMSAABackBufferTexture()->GetHeight();
          matWorldViewProj[0]._42 = 1.0f;
          #ifdef ENABLE_SDL
-         if (shader == m_rd->lightShader)
+         if (shader == m_rd->m_lightShader)
          {
             const int eyes = m_rd->GetCurrentRenderTarget()->m_nLayers;
             if (eyes > 1)

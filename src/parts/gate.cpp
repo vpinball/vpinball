@@ -465,11 +465,11 @@ void Gate::Render(const unsigned int renderMask)
    }
 
    m_rd->ResetRenderState();
-   m_rd->basicShader->SetBasic(m_ptable->GetMaterial(m_d.m_szMaterial), nullptr);
+   m_rd->m_basicShader->SetBasic(m_ptable->GetMaterial(m_d.m_szMaterial), nullptr);
    Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight);
    if (m_d.m_showBracket)
-      m_rd->DrawMesh(m_rd->basicShader, false, pos, 0.f, m_bracketMeshBuffer, RenderDevice::TRIANGLELIST, 0, gateBracketNumIndices);
-   m_rd->DrawMesh(m_rd->basicShader, false, pos, 0.f, m_wireMeshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
+      m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_bracketMeshBuffer, RenderDevice::TRIANGLELIST, 0, gateBracketNumIndices);
+   m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_wireMeshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
 }
 
 #pragma endregion

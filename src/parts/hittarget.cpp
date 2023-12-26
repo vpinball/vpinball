@@ -726,26 +726,26 @@ void HitTarget::Render(const unsigned int renderMask)
       return;
 
    m_rd->ResetRenderState();
-   m_rd->basicShader->SetVector(SHADER_fDisableLighting_top_below, m_d.m_disableLightingTop, m_d.m_disableLightingBelow, 0.f, 0.f);
+   m_rd->m_basicShader->SetVector(SHADER_fDisableLighting_top_below, m_d.m_disableLightingTop, m_d.m_disableLightingBelow, 0.f, 0.f);
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
-   m_rd->basicShader->SetBasic(mat, m_ptable->GetImage(m_d.m_szImage));
+   m_rd->m_basicShader->SetBasic(mat, m_ptable->GetImage(m_d.m_szImage));
    #ifdef TWOSIDED_TRANSPARENCY
    if (mat->m_bOpacityActive)
    {
       RenderState::RenderStateValue cullMode = m_rd->GetRenderState().GetRenderState(RenderState::CULLMODE);
       m_rd->SetRenderState(RenderState::CULLMODE, cullMode == RenderState::CULL_CCW ? RenderState::CULL_CW : RenderState::CULL_CCW);
-      m_rd->DrawMesh(m_rd->basicShader, mat->m_bOpacityActive, m_d.m_vPosition, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
+      m_rd->DrawMesh(m_rd->m_basicShader, mat->m_bOpacityActive, m_d.m_vPosition, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
       m_rd->SetRenderState(RenderState::CULLMODE, cullMode);
-      m_rd->DrawMesh(m_rd->basicShader, mat->m_bOpacityActive, m_d.m_vPosition, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
+      m_rd->DrawMesh(m_rd->m_basicShader, mat->m_bOpacityActive, m_d.m_vPosition, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
    }
    else
    {
-      m_rd->DrawMesh(m_rd->basicShader, mat->m_bOpacityActive, m_d.m_vPosition, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
+      m_rd->DrawMesh(m_rd->m_basicShader, mat->m_bOpacityActive, m_d.m_vPosition, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
    }
    #else
-   m_rd->DrawMesh(m_rd->basicShader, mat->m_bOpacityActive, m_d.m_vPosition, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
+   m_rd->DrawMesh(m_rd->m_basicShader, mat->m_bOpacityActive, m_d.m_vPosition, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
    #endif
-   m_rd->basicShader->SetVector(SHADER_fDisableLighting_top_below, 0.f, 0.f, 0.f, 0.f);
+   m_rd->m_basicShader->SetVector(SHADER_fDisableLighting_top_below, 0.f, 0.f, 0.f, 0.f);
 }
 
 void HitTarget::UpdateTarget()

@@ -490,7 +490,7 @@ void Textbox::Render(const unsigned int renderMask)
       m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
       #ifdef ENABLE_SDL
       // If DMD capture is enabled check if external DMD exists and update m_texdmd with captured data (for capturing UltraDMD+P-ROC DMD)
-      m_rd->DMDShader->SetTechnique(isExternalDMD ? SHADER_TECHNIQUE_basic_DMD_ext : SHADER_TECHNIQUE_basic_DMD); //!! DMD_UPSCALE ?? -> should just work
+      m_rd->m_DMDShader->SetTechnique(isExternalDMD ? SHADER_TECHNIQUE_basic_DMD_ext : SHADER_TECHNIQUE_basic_DMD); //!! DMD_UPSCALE ?? -> should just work
       if (g_pplayer->m_renderer->m_backGlass)
       {
          g_pplayer->m_renderer->m_backGlass->GetDMDPos(x, y, w, h);
@@ -500,7 +500,7 @@ void Textbox::Render(const unsigned int renderMask)
       }
       #else
       //const float width = m_renderer->m_useAA ? 2.0f*(float)m_width : (float)m_width; //!! AA ?? -> should just work
-      m_rd->DMDShader->SetTechnique(SHADER_TECHNIQUE_basic_DMD); //!! DMD_UPSCALE ?? -> should just work
+      m_rd->m_DMDShader->SetTechnique(SHADER_TECHNIQUE_basic_DMD); //!! DMD_UPSCALE ?? -> should just work
       #endif
 
       Vertex3D_NoTex2 vertices[4] = { 
@@ -516,15 +516,15 @@ void Textbox::Render(const unsigned int renderMask)
       }
 
       const vec4 c = convertColor(m_d.m_fontcolor, m_d.m_intensity_scale);
-      m_rd->DMDShader->SetVector(SHADER_vColor_Intensity, &c);
+      m_rd->m_DMDShader->SetVector(SHADER_vColor_Intensity, &c);
       #ifdef DMD_UPSCALE
       const vec4 r((float)(m_dmd.x * 3), (float)(m_dmd.y * 3), 1.f, (float)(m_overall_frames % 2048));
       #else
       const vec4 r((float)g_pplayer->m_dmd.x, (float)g_pplayer->m_dmd.y, 1.f, (float)(g_pplayer->m_overall_frames % 2048));
       #endif
-      m_rd->DMDShader->SetVector(SHADER_vRes_Alpha_time, &r);
-      m_rd->DMDShader->SetTexture(SHADER_tex_dmd, g_pplayer->m_texdmd, isExternalDMD ? SF_TRILINEAR : SF_NONE, SA_CLAMP, SA_CLAMP);
-      m_rd->DrawTexturedQuad(m_rd->DMDShader, vertices);
+      m_rd->m_DMDShader->SetVector(SHADER_vRes_Alpha_time, &r);
+      m_rd->m_DMDShader->SetTexture(SHADER_tex_dmd, g_pplayer->m_texdmd, isExternalDMD ? SF_TRILINEAR : SF_NONE, SA_CLAMP, SA_CLAMP); //!! or use linear RGB space? //!! mirror as edge?!
+      m_rd->DrawTexturedQuad(m_rd->m_DMDShader, vertices);
    }
    else if (m_texture)
    {
@@ -618,9 +618,9 @@ void Textbox::Render(const unsigned int renderMask)
       }
 
       m_rd->ResetRenderState();
-      m_rd->DMDShader->SetFloat(SHADER_alphaTestValue, (float)(128.0 / 255.0));
+      m_rd->m_DMDShader->SetFloat(SHADER_alphaTestValue, (float)(128.0 / 255.0));
       g_pplayer->m_renderer->DrawSprite(x, y, w, h, 0xFFFFFFFF, m_rd->m_texMan.LoadTexture(m_texture, SF_TRILINEAR, SA_REPEAT, SA_REPEAT, false), m_d.m_intensity_scale);
-      m_rd->DMDShader->SetFloat(SHADER_alphaTestValue, 1.0f);
+      m_rd->m_DMDShader->SetFloat(SHADER_alphaTestValue, 1.0f);
    }
 }
 

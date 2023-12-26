@@ -1149,7 +1149,7 @@ STDMETHODIMP ScriptGlobalTable::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as
       {
          if (g_pplayer->m_texdmd)
          {
-            g_pplayer->m_renderer->m_pd3dPrimaryDevice->DMDShader->SetTextureNull(SHADER_tex_dmd);
+            g_pplayer->m_renderer->m_pd3dPrimaryDevice->m_DMDShader->SetTextureNull(SHADER_tex_dmd);
             g_pplayer->m_renderer->m_pd3dPrimaryDevice->m_texMan.UnloadTexture(g_pplayer->m_texdmd);
             delete g_pplayer->m_texdmd;
          }
@@ -1198,7 +1198,7 @@ STDMETHODIMP ScriptGlobalTable::put_DMDColoredPixels(VARIANT pVal) //!! assumes 
       {
          if (g_pplayer->m_texdmd)
          {
-            g_pplayer->m_renderer->m_pd3dPrimaryDevice->DMDShader->SetTextureNull(SHADER_tex_dmd);
+            g_pplayer->m_renderer->m_pd3dPrimaryDevice->m_DMDShader->SetTextureNull(SHADER_tex_dmd);
             g_pplayer->m_renderer->m_pd3dPrimaryDevice->m_texMan.UnloadTexture(g_pplayer->m_texdmd);
             delete g_pplayer->m_texdmd;
          }

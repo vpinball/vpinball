@@ -377,16 +377,16 @@ void Kicker::Render(const unsigned int renderMask)
       m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
 
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
-   m_rd->basicShader->SetMaterial(mat);
-   m_rd->basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_kickerBoolean, mat);
+   m_rd->m_basicShader->SetMaterial(mat);
+   m_rd->m_basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_kickerBoolean, *mat);
    m_rd->SetRenderState(RenderState::ZFUNC, RenderState::Z_ALWAYS);
    Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight);
-   m_rd->DrawMesh(m_rd->basicShader, false, pos, 0.f, m_plateMeshBuffer, RenderDevice::TRIANGLELIST, 0, kickerPlateNumIndices);
+   m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_plateMeshBuffer, RenderDevice::TRIANGLELIST, 0, kickerPlateNumIndices);
 
    m_rd->SetRenderState(RenderState::ZFUNC, RenderState::Z_LESSEQUAL);
-   m_rd->basicShader->SetBasic(mat, m_d.m_kickertype == KickerHoleSimple ? nullptr : &m_texture);
+   m_rd->m_basicShader->SetBasic(mat, m_d.m_kickertype == KickerHoleSimple ? nullptr : &m_texture);
    m_rd->EnableAlphaBlend(false);
-   m_rd->DrawMesh(m_rd->basicShader, false, pos, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
+   m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
 }
 
 void Kicker::ExportMesh(ObjLoader& loader)
@@ -1199,7 +1199,7 @@ void KickerHitCircle::DoCollide(Ball * const pball, const Vertex3Ds& hitnormal, 
             // this hack seems to work only if the kicker is on the playfield, a kicker attached to a wall has still problems
             // because the friction calculation for a wall is also different
             if (pball->m_d.m_vel.LengthSquared() < (float)(0.2*0.2))
-                pball->m_d.m_vel = pball->m_oldVel;
+               pball->m_d.m_vel = pball->m_oldVel;
 
             pball->m_oldVel = pball->m_d.m_vel;
          }

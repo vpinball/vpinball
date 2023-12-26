@@ -1338,7 +1338,7 @@ void Primitive::Render(const unsigned int renderMask)
    m_rd->SetRenderState(RenderState::CULLMODE, depthMask ? ((m_d.m_backfacesEnabled && mat->m_bOpacityActive) ? reversedCullMode : cullMode) : RenderState::CULL_NONE);
 
    // Force disable light from below for objects marked as static since there is no light from below during pre-render pass (to get the same result in dynamic mode & static mode)
-   m_rd->basicShader->SetVector(SHADER_fDisableLighting_top_below, m_d.m_disableLightingTop, m_d.m_staticRendering ? 1.0f : m_d.m_disableLightingBelow, 0.f, 0.f);
+   m_rd->m_basicShader->SetVector(SHADER_fDisableLighting_top_below, m_d.m_disableLightingTop, m_d.m_staticRendering ? 1.0f : m_d.m_disableLightingBelow, 0.f, 0.f);
 
    // Select textures, replacing backglass image by capture if it is available
    Texture * const nMap = m_ptable->GetImage(m_d.m_szNormalMap);
@@ -1347,7 +1347,7 @@ void Primitive::Render(const unsigned int renderMask)
    if (g_pplayer->m_texPUP && m_d.m_isBackGlassImage)
    {
       pin = g_pplayer->m_texPUP;
-      m_rd->basicShader->SetAlphaTestValue(0.f);
+      m_rd->m_basicShader->SetAlphaTestValue(0.f);
    }
    else
    {
@@ -1356,7 +1356,7 @@ void Primitive::Render(const unsigned int renderMask)
       {
          pin = img->m_pdsBuffer;
          pinAlphaTest = img->m_alphaTestValue;
-         m_rd->basicShader->SetAlphaTestValue(img->m_alphaTestValue);
+         m_rd->m_basicShader->SetAlphaTestValue(img->m_alphaTestValue);
       }
       else
       {
@@ -1367,28 +1367,28 @@ void Primitive::Render(const unsigned int renderMask)
    // accommodate models with UV coords outside of [0,1] by using Repeat address mode
    if (pin && nMap)
    {
-      m_rd->basicShader->SetTexture(SHADER_tex_base_color, pin, pinf, SA_REPEAT, SA_REPEAT);
-      m_rd->basicShader->SetTexture(SHADER_tex_base_normalmap, nMap, SF_UNDEFINED, SA_REPEAT, SA_REPEAT, true);
-      m_rd->basicShader->SetBool(SHADER_objectSpaceNormalMap, m_d.m_objectSpaceNormalMap);
-      m_rd->basicShader->SetMaterial(mat, !pin->IsOpaque() || m_d.m_alpha != 100.f);
+      m_rd->m_basicShader->SetTexture(SHADER_tex_base_color, pin, pinf, SA_REPEAT, SA_REPEAT);
+      m_rd->m_basicShader->SetTexture(SHADER_tex_base_normalmap, nMap, SF_UNDEFINED, SA_REPEAT, SA_REPEAT, true);
+      m_rd->m_basicShader->SetBool(SHADER_objectSpaceNormalMap, m_d.m_objectSpaceNormalMap);
+      m_rd->m_basicShader->SetMaterial(mat, !pin->IsOpaque() || m_d.m_alpha != 100.f);
    }
    else if (pin)
    {
-      m_rd->basicShader->SetTexture(SHADER_tex_base_color, pin, pinf, SA_REPEAT, SA_REPEAT);
-      m_rd->basicShader->SetMaterial(mat, !pin->IsOpaque() || m_d.m_alpha != 100.f);
+      m_rd->m_basicShader->SetTexture(SHADER_tex_base_color, pin, pinf, SA_REPEAT, SA_REPEAT);
+      m_rd->m_basicShader->SetMaterial(mat, !pin->IsOpaque() || m_d.m_alpha != 100.f);
    }
    else
    {
-      m_rd->basicShader->SetMaterial(mat, m_d.m_alpha != 100.f);
+      m_rd->m_basicShader->SetMaterial(mat, m_d.m_alpha != 100.f);
    }
 
    // set transform
    g_pplayer->m_renderer->UpdateBasicShaderMatrix(m_fullMatrix);
 
    // Check if this primitive is used as a lightmap and should be convoluted with the light shadows
-   bool lightmap = m_lightmap != nullptr && m_lightmap->m_d.m_shadows == ShadowMode::RAYTRACED_BALL_SHADOWS;
+   const bool lightmap = m_lightmap != nullptr && m_lightmap->m_d.m_shadows == ShadowMode::RAYTRACED_BALL_SHADOWS;
    if (lightmap)
-      m_rd->basicShader->SetVector(SHADER_lightCenter_doShadow, m_lightmap->m_d.m_vCenter.x, m_lightmap->m_d.m_vCenter.y, m_lightmap->GetCurrentHeight(), 1.0f);
+      m_rd->m_basicShader->SetVector(SHADER_lightCenter_doShadow, m_lightmap->m_d.m_vCenter.x, m_lightmap->m_d.m_vCenter.y, m_lightmap->GetCurrentHeight(), 1.0f);
 
    if (m_d.m_addBlend)
    {
@@ -1396,19 +1396,19 @@ void Primitive::Render(const unsigned int renderMask)
       m_rd->EnableAlphaBlend(true);
       m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
       const vec4 color = convertColor(m_d.m_color, m_d.m_alpha * (float)(1.0 / 100.0));
-      m_rd->basicShader->SetVector(SHADER_staticColor_Alpha, color.x * color.w, color.y * color.w, color.z * color.w, color.w);
-      m_rd->basicShader->SetTechnique(lightmap ? (pin ? SHADER_TECHNIQUE_unshaded_with_texture_shadow : SHADER_TECHNIQUE_unshaded_without_texture_shadow)
-                                               : (pin ? SHADER_TECHNIQUE_unshaded_with_texture : SHADER_TECHNIQUE_unshaded_without_texture));
-      m_rd->DrawMesh(m_rd->basicShader, true, m_d.m_vPosition, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_d.m_groupdRendering ? m_numGroupIndices : (DWORD)m_mesh.NumIndices());
+      m_rd->m_basicShader->SetVector(SHADER_staticColor_Alpha, color.x * color.w, color.y * color.w, color.z * color.w, color.w);
+      m_rd->m_basicShader->SetTechnique(lightmap ? (pin ? SHADER_TECHNIQUE_unshaded_with_texture_shadow : SHADER_TECHNIQUE_unshaded_without_texture_shadow)
+                                                 : (pin ? SHADER_TECHNIQUE_unshaded_with_texture : SHADER_TECHNIQUE_unshaded_without_texture));
+      m_rd->DrawMesh(m_rd->m_basicShader, true, m_d.m_vPosition, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_d.m_groupdRendering ? m_numGroupIndices : (DWORD)m_mesh.NumIndices());
    }
    else
    {
       // Default lit primitive rendering
       m_rd->SetRenderState(RenderState::ZWRITEENABLE, depthMask ? RenderState::RS_TRUE : RenderState::RS_FALSE);
       const vec4 color = convertColor(m_d.m_color, m_d.m_alpha * (float)(1.0 / 100.0));
-      m_rd->basicShader->SetVector(SHADER_staticColor_Alpha, &color);
-      m_rd->basicShader->SetTechniqueMaterial(pin ? SHADER_TECHNIQUE_basic_with_texture : SHADER_TECHNIQUE_basic_without_texture, 
-         mat, pin ? pinAlphaTest >= 0.f && !pin->IsOpaque() : false, nMap, reflections, refractions);
+      m_rd->m_basicShader->SetVector(SHADER_staticColor_Alpha, &color);
+      m_rd->m_basicShader->SetTechniqueMaterial(pin ? SHADER_TECHNIQUE_basic_with_texture : SHADER_TECHNIQUE_basic_without_texture, 
+         *mat, pin ? pinAlphaTest >= 0.f && !pin->IsOpaque() : false, nMap, reflections, refractions);
       bool is_reflection_only_pass = false;
 
       // Handle render probes
@@ -1456,14 +1456,14 @@ void Primitive::Render(const unsigned int renderMask)
             matWorldViewInverseTranspose.MultiplyVectorNoTranslate(plane_normal, plane_normal);
             Vertex3Ds n(plane_normal.x, plane_normal.y, plane_normal.z);
             n.Normalize();
-            m_rd->basicShader->SetVector(SHADER_mirrorNormal_factor, n.x, n.y, n.z, m_d.m_reflectionStrength);
-            m_rd->basicShader->SetTexture(SHADER_tex_reflection, reflections->GetColorSampler());
+            m_rd->m_basicShader->SetVector(SHADER_mirrorNormal_factor, n.x, n.y, n.z, m_d.m_reflectionStrength);
+            m_rd->m_basicShader->SetTexture(SHADER_tex_reflection, reflections->GetColorSampler());
             is_reflection_only_pass = m_d.m_staticRendering && isDynamicOnly;
             if (!is_reflection_only_pass && !m_rd->GetRenderState().IsOpaque())
             { // Primitive uses alpha transparency => render in 2 passes, one for the texture with alpha blending, one for the reflections which can happen above a transparent part (like for a glass or insert plastic)
-               m_rd->basicShader->SetTechniqueMaterial(pin ? SHADER_TECHNIQUE_basic_with_texture : SHADER_TECHNIQUE_basic_without_texture, 
-                  mat, pin ? pinAlphaTest >= 0.f && !pin->IsOpaque() : false, nMap, false, false);
-               m_rd->DrawMesh(m_rd->basicShader, mat->m_bOpacityActive && !m_d.m_staticRendering, m_d.m_vPosition, m_d.m_depthBias, 
+               m_rd->m_basicShader->SetTechniqueMaterial(pin ? SHADER_TECHNIQUE_basic_with_texture : SHADER_TECHNIQUE_basic_without_texture, 
+                  *mat, pin ? pinAlphaTest >= 0.f && !pin->IsOpaque() : false, nMap, false, false);
+               m_rd->DrawMesh(m_rd->m_basicShader, mat->m_bOpacityActive && !m_d.m_staticRendering, m_d.m_vPosition, m_d.m_depthBias, 
                   m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_d.m_groupdRendering ? m_numGroupIndices : (DWORD)m_mesh.NumIndices());
                is_reflection_only_pass = true;
             }
@@ -1471,16 +1471,16 @@ void Primitive::Render(const unsigned int renderMask)
             { // If the primitive is already rendered (dynamic pass after a static prepass, or multipass rendering due to alpha blending) => only render additive reflections
                m_rd->EnableAlphaBlend(true);
                m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
-               m_rd->basicShader->SetTechnique(SHADER_TECHNIQUE_basic_reflection_only);
+               m_rd->m_basicShader->SetTechnique(SHADER_TECHNIQUE_basic_reflection_only);
             }
          }
          if (refractions)
          {
             refraction_probe->ExtendAreaOfInterest(xMin, xMax, yMin, yMax);
             const vec4 colorR = convertColor(mat->m_cRefractionTint, m_d.m_refractionThickness);
-            m_rd->basicShader->SetVector(SHADER_refractionTint_thickness, &colorR);
-            m_rd->basicShader->SetTexture(SHADER_tex_refraction, refractions->GetColorSampler());
-            m_rd->basicShader->SetTexture(SHADER_tex_probe_depth, refractions->GetDepthSampler());
+            m_rd->m_basicShader->SetVector(SHADER_refractionTint_thickness, &colorR);
+            m_rd->m_basicShader->SetTexture(SHADER_tex_refraction, refractions->GetColorSampler());
+            m_rd->m_basicShader->SetTexture(SHADER_tex_probe_depth, refractions->GetDepthSampler());
             m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
             if (!is_reflection_only_pass)
                m_rd->AddRenderTargetDependencyOnNextRenderCommand(refractions); // Add a renderpass dependency on the render command (instead of in the renderframe) for the pass to be sorted with the command
@@ -1488,7 +1488,7 @@ void Primitive::Render(const unsigned int renderMask)
       }
 
       // draw the mesh (back of it if backface enabled)
-      m_rd->DrawMesh(m_rd->basicShader, 
+      m_rd->DrawMesh(m_rd->m_basicShader, 
             is_reflection_only_pass // The reflection pass is an additive (so transparent) pass to be drawn after the opaque one
          || refractions // Refractions must be rendered back to front since they rely on what is behind
          || (mat->m_bOpacityActive && !m_d.m_staticRendering /* && !m_rd->GetRenderState().IsOpaque() */), // We can not use the real render state opaque state since Blood Machine and other tables use depth masks
@@ -1499,16 +1499,16 @@ void Primitive::Render(const unsigned int renderMask)
    if (depthMask && m_d.m_backfacesEnabled && mat->m_bOpacityActive)
    {
       m_rd->SetRenderState(RenderState::CULLMODE, cullMode);
-      m_rd->DrawMesh(m_rd->basicShader, mat->m_bOpacityActive, m_d.m_vPosition, m_d.m_depthBias, 
+      m_rd->DrawMesh(m_rd->m_basicShader, mat->m_bOpacityActive, m_d.m_vPosition, m_d.m_depthBias, 
          m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_d.m_groupdRendering ? m_numGroupIndices : (DWORD)m_mesh.NumIndices());
    }
 
    // Restore state
    g_pplayer->m_renderer->UpdateBasicShaderMatrix();
-   m_rd->basicShader->SetVector(SHADER_mirrorNormal_factor, 0.f, 0.f, 0.f, 0.f);
-   m_rd->basicShader->SetVector(SHADER_lightCenter_doShadow, 0.0f, 0.0f, 0.0f, 0.0f);
-   m_rd->basicShader->SetVector(SHADER_staticColor_Alpha, 1.0f, 1.0f, 1.0f, 1.0f);
-   m_rd->basicShader->SetVector(SHADER_fDisableLighting_top_below, 0.f, 0.f, 0.f, 0.f);
+   m_rd->m_basicShader->SetVector(SHADER_mirrorNormal_factor, 0.f, 0.f, 0.f, 0.f);
+   m_rd->m_basicShader->SetVector(SHADER_lightCenter_doShadow, 0.0f, 0.0f, 0.0f, 0.0f);
+   m_rd->m_basicShader->SetVector(SHADER_staticColor_Alpha, 1.0f, 1.0f, 1.0f, 1.0f);
+   m_rd->m_basicShader->SetVector(SHADER_fDisableLighting_top_below, 0.f, 0.f, 0.f, 0.f);
 }
 
 void Primitive::UpdateAnimation(const float diff_time_msec)

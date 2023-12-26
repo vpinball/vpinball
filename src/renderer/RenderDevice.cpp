@@ -491,13 +491,13 @@ int getPrimaryDisplay()
 
 RenderDeviceState::RenderDeviceState(RenderDevice* rd)
    : m_rd(rd)
-   , m_basicShaderState(new Shader::ShaderState(m_rd->basicShader))
-   , m_DMDShaderState(new Shader::ShaderState(m_rd->DMDShader))
-   , m_FBShaderState(new Shader::ShaderState(m_rd->FBShader))
-   , m_flasherShaderState(new Shader::ShaderState(m_rd->flasherShader))
-   , m_lightShaderState(new Shader::ShaderState(m_rd->lightShader))
+   , m_basicShaderState(new Shader::ShaderState(m_rd->m_basicShader))
+   , m_DMDShaderState(new Shader::ShaderState(m_rd->m_DMDShader))
+   , m_FBShaderState(new Shader::ShaderState(m_rd->m_FBShader))
+   , m_flasherShaderState(new Shader::ShaderState(m_rd->m_flasherShader))
+   , m_lightShaderState(new Shader::ShaderState(m_rd->m_lightShader))
    , m_ballShaderState(new Shader::ShaderState(m_rd->m_ballShader))
-   , m_stereoShaderState(new Shader::ShaderState(m_rd->StereoShader))
+   , m_stereoShaderState(new Shader::ShaderState(m_rd->m_stereoShader))
 {
 }
 
@@ -1093,40 +1093,40 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
    }
 
    #ifdef ENABLE_SDL // OpenGL
-   basicShader = new Shader(this, "BasicShader.glfx"s);
-   DMDShader = new Shader(this, m_stereo3D == STEREO_VR ? "DMDShaderVR.glfx"s : "DMDShader.glfx"s);
+   m_basicShader = new Shader(this, "BasicShader.glfx"s);
+   m_DMDShader = new Shader(this, m_stereo3D == STEREO_VR ? "DMDShaderVR.glfx"s : "DMDShader.glfx"s);
 #ifndef __OPENGLES__
-   FBShader = new Shader(this, "FBShader.glfx"s, "SMAA.glfx"s);
+   m_FBShader = new Shader(this, "FBShader.glfx"s, "SMAA.glfx"s);
 #else
-   FBShader = new Shader(this, "FBShader.glfx"s);
+   m_FBShader = new Shader(this, "FBShader.glfx"s);
 #endif
-   flasherShader = new Shader(this, "FlasherShader.glfx"s);
-   lightShader = new Shader(this, "LightShader.glfx"s);
-   StereoShader = new Shader(this, "StereoShader.glfx"s);
+   m_flasherShader = new Shader(this, "FlasherShader.glfx"s);
+   m_lightShader = new Shader(this, "LightShader.glfx"s);
+   m_stereoShader = new Shader(this, "StereoShader.glfx"s);
    m_ballShader = new Shader(this, "BallShader.glfx"s);
    #else // DirectX 9
-   basicShader = new Shader(this, "BasicShader.hlsl"s, g_basicShaderCode, sizeof(g_basicShaderCode));
-   DMDShader = new Shader(this, "DMDShader.hlsl"s, g_dmdShaderCode, sizeof(g_dmdShaderCode));
-   FBShader = new Shader(this, "FBShader.hlsl"s, g_FBShaderCode, sizeof(g_FBShaderCode));
-   flasherShader = new Shader(this, "FlasherShader.hlsl"s, g_flasherShaderCode, sizeof(g_flasherShaderCode));
-   lightShader = new Shader(this, "LightShader.hlsl"s, g_lightShaderCode, sizeof(g_lightShaderCode));
-   StereoShader = new Shader(this, "StereoShader.hlsl"s, g_stereoShaderCode, sizeof(g_stereoShaderCode));
+   m_basicShader = new Shader(this, "BasicShader.hlsl"s, g_basicShaderCode, sizeof(g_basicShaderCode));
+   m_DMDShader = new Shader(this, "DMDShader.hlsl"s, g_dmdShaderCode, sizeof(g_dmdShaderCode));
+   m_FBShader = new Shader(this, "FBShader.hlsl"s, g_FBShaderCode, sizeof(g_FBShaderCode));
+   m_flasherShader = new Shader(this, "FlasherShader.hlsl"s, g_flasherShaderCode, sizeof(g_flasherShaderCode));
+   m_lightShader = new Shader(this, "LightShader.hlsl"s, g_lightShaderCode, sizeof(g_lightShaderCode));
+   m_stereoShader = new Shader(this, "StereoShader.hlsl"s, g_stereoShaderCode, sizeof(g_stereoShaderCode));
    m_ballShader = new Shader(this, "BallShader.hlsl"s, g_ballShaderCode, sizeof(g_ballShaderCode));
    #endif
 
-   if (basicShader->HasError() || DMDShader->HasError() || FBShader->HasError() || flasherShader->HasError() || lightShader->HasError() || StereoShader->HasError())
+   if (m_basicShader->HasError() || m_DMDShader->HasError() || m_FBShader->HasError() || m_flasherShader->HasError() || m_lightShader->HasError() || m_stereoShader->HasError())
    {
       ReportError("Fatal Error: shader compilation failed!", -1, __FILE__, __LINE__);
       throw(-1);
    }
 
    // Initialize uniform to default value
-   basicShader->SetVector(SHADER_w_h_height, (float)(1.0 / (double)GetMSAABackBufferTexture()->GetWidth()), (float)(1.0 / (double)GetMSAABackBufferTexture()->GetHeight()), 0.0f, 0.0f);
-   basicShader->SetVector(SHADER_staticColor_Alpha, 1.0f, 1.0f, 1.0f, 1.0f); // No tinting
-   DMDShader->SetFloat(SHADER_alphaTestValue, 1.0f); // No alpha clipping
+   m_basicShader->SetVector(SHADER_w_h_height, (float)(1.0 / (double)GetMSAABackBufferTexture()->GetWidth()), (float)(1.0 / (double)GetMSAABackBufferTexture()->GetHeight()), 0.0f, 0.0f);
+   m_basicShader->SetVector(SHADER_staticColor_Alpha, 1.0f, 1.0f, 1.0f, 1.0f); // No tinting
+   m_DMDShader->SetFloat(SHADER_alphaTestValue, 1.0f); // No alpha clipping
 #ifndef __OPENGLES__
-   FBShader->SetTexture(SHADER_areaTex, m_SMAAareaTexture);
-   FBShader->SetTexture(SHADER_searchTex, m_SMAAsearchTexture);
+   m_FBShader->SetTexture(SHADER_areaTex, m_SMAAareaTexture);
+   m_FBShader->SetTexture(SHADER_searchTex, m_SMAAsearchTexture);
 #endif
 }
 
@@ -1150,18 +1150,18 @@ RenderDevice::~RenderDevice()
 #endif
 
    UnbindSampler(nullptr);
-   delete basicShader;
-   basicShader = nullptr;
-   delete DMDShader;
-   DMDShader = nullptr;
-   delete FBShader;
-   FBShader = nullptr;
-   delete StereoShader;
-   StereoShader = nullptr;
-   delete flasherShader;
-   flasherShader = nullptr;
-   delete lightShader;
-   lightShader = nullptr;
+   delete m_basicShader;
+   m_basicShader = nullptr;
+   delete m_DMDShader;
+   m_DMDShader = nullptr;
+   delete m_FBShader;
+   m_FBShader = nullptr;
+   delete m_stereoShader;
+   m_stereoShader = nullptr;
+   delete m_flasherShader;
+   m_flasherShader = nullptr;
+   delete m_lightShader;
+   m_lightShader = nullptr;
    delete m_ballShader;
    m_ballShader = nullptr;
 
@@ -1351,18 +1351,18 @@ bool RenderDevice::DepthBufferReadBackAvailable()
 
 void RenderDevice::UnbindSampler(Sampler* sampler)
 {
-   if (basicShader)
-      basicShader->UnbindSampler(sampler);
-   if (DMDShader)
-      DMDShader->UnbindSampler(sampler);
-   if (FBShader)
-      FBShader->UnbindSampler(sampler);
-   if (flasherShader)
-      flasherShader->UnbindSampler(sampler);
-   if (lightShader)
-      lightShader->UnbindSampler(sampler);
-   if (StereoShader)
-      StereoShader->UnbindSampler(sampler);
+   if (m_basicShader)
+      m_basicShader->UnbindSampler(sampler);
+   if (m_DMDShader)
+      m_DMDShader->UnbindSampler(sampler);
+   if (m_FBShader)
+      m_FBShader->UnbindSampler(sampler);
+   if (m_flasherShader)
+      m_flasherShader->UnbindSampler(sampler);
+   if (m_lightShader)
+      m_lightShader->UnbindSampler(sampler);
+   if (m_stereoShader)
+      m_stereoShader->UnbindSampler(sampler);
    if (m_ballShader)
       m_ballShader->UnbindSampler(sampler);
 }
@@ -1721,22 +1721,22 @@ void RenderDevice::CopyRenderStates(const bool copyTo, RenderDeviceState& state)
 {
    assert(state.m_rd == this);
    CopyRenderStates(copyTo, state.m_renderState);
-   basicShader->m_state->CopyTo(copyTo, state.m_basicShaderState);
-   DMDShader->m_state->CopyTo(copyTo, state.m_DMDShaderState);
-   FBShader->m_state->CopyTo(copyTo, state.m_FBShaderState);
-   flasherShader->m_state->CopyTo(copyTo, state.m_flasherShaderState);
-   lightShader->m_state->CopyTo(copyTo, state.m_lightShaderState);
+   m_basicShader->m_state->CopyTo(copyTo, state.m_basicShaderState);
+   m_DMDShader->m_state->CopyTo(copyTo, state.m_DMDShaderState);
+   m_FBShader->m_state->CopyTo(copyTo, state.m_FBShaderState);
+   m_flasherShader->m_state->CopyTo(copyTo, state.m_flasherShaderState);
+   m_lightShader->m_state->CopyTo(copyTo, state.m_lightShaderState);
    m_ballShader->m_state->CopyTo(copyTo, state.m_ballShaderState);
-   StereoShader->m_state->CopyTo(copyTo, state.m_stereoShaderState);
+   m_stereoShader->m_state->CopyTo(copyTo, state.m_stereoShaderState);
 }
 
 void RenderDevice::SetClipPlane(const vec4 &plane)
 {
 #ifdef ENABLE_SDL
-   DMDShader->SetVector(SHADER_clip_plane, &plane);
-   basicShader->SetVector(SHADER_clip_plane, &plane);
-   lightShader->SetVector(SHADER_clip_plane, &plane);
-   flasherShader->SetVector(SHADER_clip_plane, &plane);
+   m_DMDShader->SetVector(SHADER_clip_plane, &plane);
+   m_basicShader->SetVector(SHADER_clip_plane, &plane);
+   m_lightShader->SetVector(SHADER_clip_plane, &plane);
+   m_flasherShader->SetVector(SHADER_clip_plane, &plane);
    m_ballShader->SetVector(SHADER_clip_plane, &plane);
 #else
    // FIXME shouldn't we set the Model matrix to identity first ?
@@ -1836,7 +1836,7 @@ void RenderDevice::RenderLiveUI()
 
 void RenderDevice::DrawTexturedQuad(Shader* shader, const Vertex3D_TexelOnly* vertices)
 {
-   assert(shader == FBShader || shader == StereoShader); // FrameBuffer/Stereo shader are the only ones using Position/Texture vertex format
+   assert(shader == m_FBShader || shader == m_stereoShader); // FrameBuffer/Stereo shader are the only ones using Position/Texture vertex format
    ApplyRenderStates();
    RenderCommand* cmd = m_renderFrame.NewCommand();
    cmd->SetDrawTexturedQuad(shader, vertices);
@@ -1847,7 +1847,7 @@ void RenderDevice::DrawTexturedQuad(Shader* shader, const Vertex3D_TexelOnly* ve
 
 void RenderDevice::DrawTexturedQuad(Shader* shader, const Vertex3D_NoTex2* vertices)
 {
-   assert(shader != FBShader && shader != StereoShader); // FrameBuffer/Stereo shader are the only ones using Position/Texture vertex format
+   assert(shader != m_FBShader && shader != m_stereoShader); // FrameBuffer/Stereo shader are the only ones using Position/Texture vertex format
    ApplyRenderStates();
    RenderCommand* cmd = m_renderFrame.NewCommand();
    cmd->SetDrawTexturedQuad(shader, vertices);
@@ -1858,7 +1858,7 @@ void RenderDevice::DrawTexturedQuad(Shader* shader, const Vertex3D_NoTex2* verti
 
 void RenderDevice::DrawFullscreenTexturedQuad(Shader* shader)
 {
-   assert(shader == FBShader || shader == StereoShader); // FrameBuffer/Stereo shader are the only ones using Position/Texture vertex format
+   assert(shader == m_FBShader || shader == m_stereoShader); // FrameBuffer/Stereo shader are the only ones using Position/Texture vertex format
    static const Vertex3Ds pos(0.f, 0.f, 0.f);
    DrawMesh(shader, false, pos, 0.f, m_quadMeshBuffer, TRIANGLESTRIP, 0, 4);
 }
@@ -1934,24 +1934,24 @@ void RenderDevice::DrawGaussianBlur(RenderTarget* source, RenderTarget* tmp, Ren
    SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
    SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
    {
-      FBShader->SetTextureNull(SHADER_tex_fb_filtered);
+      m_FBShader->SetTextureNull(SHADER_tex_fb_filtered);
       SetRenderTarget(initial_rt->m_name + " HBlur", tmp, false); // switch to temporary output buffer for horizontal phase of gaussian blur
       m_currentPass->m_singleLayerRendering = singleLayer; // We support bluring a single layer (for anaglyph defocusing)
       AddRenderTargetDependency(source);
-      FBShader->SetTexture(SHADER_tex_fb_filtered, source->GetColorSampler());
-      FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / source->GetWidth()), (float)(1.0 / source->GetHeight()), 1.0f, 1.0f);
-      FBShader->SetTechnique(tech_h);
-      DrawFullscreenTexturedQuad(FBShader);
+      m_FBShader->SetTexture(SHADER_tex_fb_filtered, source->GetColorSampler());
+      m_FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / source->GetWidth()), (float)(1.0 / source->GetHeight()), 1.0f, 1.0f);
+      m_FBShader->SetTechnique(tech_h);
+      DrawFullscreenTexturedQuad(m_FBShader);
    }
    {
-      FBShader->SetTextureNull(SHADER_tex_fb_filtered);
+      m_FBShader->SetTextureNull(SHADER_tex_fb_filtered);
       SetRenderTarget(initial_rt->m_name + " VBlur", dest, false); // switch to output buffer for vertical phase of gaussian blur
       m_currentPass->m_singleLayerRendering = singleLayer; // We support bluring a single layer (for anaglyph defocusing)
       AddRenderTargetDependency(tmp);
-      FBShader->SetTexture(SHADER_tex_fb_filtered, tmp->GetColorSampler());
-      FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / tmp->GetWidth()), (float)(1.0 / tmp->GetHeight()), 1.0f, 1.0f);
-      FBShader->SetTechnique(tech_v);
-      DrawFullscreenTexturedQuad(FBShader);
+      m_FBShader->SetTexture(SHADER_tex_fb_filtered, tmp->GetColorSampler());
+      m_FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / tmp->GetWidth()), (float)(1.0 / tmp->GetHeight()), 1.0f, 1.0f);
+      m_FBShader->SetTechnique(tech_v);
+      DrawFullscreenTexturedQuad(m_FBShader);
    }
    CopyRenderStates(false, initial_state);
    SetRenderTarget(initial_rt->m_name + '+', initial_rt->m_rt, true);

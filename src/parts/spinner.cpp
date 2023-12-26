@@ -406,17 +406,17 @@ void Spinner::Render(const unsigned int renderMask)
       mat.m_cClearcoat = 0x20202020;
       mat.m_fEdge = 1.0f;
       mat.m_fEdgeAlpha = 1.0f;
-      m_rd->basicShader->SetBasic(&mat, nullptr);
+      m_rd->m_basicShader->SetBasic(&mat, nullptr);
       Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_posZ);
-      m_rd->DrawMesh(m_rd->basicShader, false, pos, 0.f, m_bracketMeshBuffer, RenderDevice::TRIANGLELIST, 0, spinnerBracketNumFaces);
+      m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_bracketMeshBuffer, RenderDevice::TRIANGLELIST, 0, spinnerBracketNumFaces);
    }
 
    if (m_phitspinner->m_spinnerMover.m_visible && !isStaticOnly)
    {
       UpdatePlate(nullptr);
       Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_posZ);
-      m_rd->basicShader->SetBasic(m_ptable->GetMaterial(m_d.m_szMaterial), m_ptable->GetImage(m_d.m_szImage));
-      m_rd->DrawMesh(m_rd->basicShader, false, pos, 0.f, m_plateMeshBuffer, RenderDevice::TRIANGLELIST, 0, spinnerPlateNumFaces);
+      m_rd->m_basicShader->SetBasic(m_ptable->GetMaterial(m_d.m_szMaterial), m_ptable->GetImage(m_d.m_szImage));
+      m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_plateMeshBuffer, RenderDevice::TRIANGLELIST, 0, spinnerPlateNumFaces);
    }
 }
 
