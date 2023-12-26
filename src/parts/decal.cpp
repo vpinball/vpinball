@@ -690,10 +690,13 @@ void Decal::RenderSetup(RenderDevice *device)
    VertexBuffer *vertexBuffer = new VertexBuffer(m_rd, 4);
    Vertex3D_NoTex2 *vertices;
    vertexBuffer->lock(0, 0, (void**)&vertices, VertexBuffer::WRITEONLY);
-   float z = m_backglass ? 0.f : (height + 0.2f);
+   const float z = m_backglass ? 0.f : (height + 0.2f);
+   const float xmult = m_backglass ? getBGxmult() : 1.f;
+   const float ymult = m_backglass ? getBGymult() : 1.f;
+   const float offs = m_backglass ? 0.5f : 0.f;
 
-   vertices[0].x = m_d.m_vCenter.x + sn*(halfheight + leading) - cs*halfwidth;
-   vertices[0].y = m_d.m_vCenter.y - cs*(halfheight + leading) - sn*halfwidth;
+   vertices[0].x = (m_d.m_vCenter.x + sn*(halfheight + leading) - cs*halfwidth)*xmult-offs;
+   vertices[0].y = (m_d.m_vCenter.y - cs*(halfheight + leading) - sn*halfwidth)*ymult-offs;
    vertices[0].z = z;
    vertices[0].nx = 0.f;
    vertices[0].ny = 0.f;
@@ -701,8 +704,8 @@ void Decal::RenderSetup(RenderDevice *device)
    vertices[0].tu = 0;
    vertices[0].tv = 0;
 
-   vertices[1].x = m_d.m_vCenter.x + sn*(halfheight + leading) + cs*halfwidth;
-   vertices[1].y = m_d.m_vCenter.y - cs*(halfheight + leading) + sn*halfwidth;
+   vertices[1].x = (m_d.m_vCenter.x + sn*(halfheight + leading) + cs*halfwidth)*xmult-offs;
+   vertices[1].y = (m_d.m_vCenter.y - cs*(halfheight + leading) + sn*halfwidth)*ymult-offs;
    vertices[1].z = z;
    vertices[1].nx = 0.f;
    vertices[1].ny = 0.f;
@@ -710,8 +713,8 @@ void Decal::RenderSetup(RenderDevice *device)
    vertices[1].tu = 1.0f;
    vertices[1].tv = 0;
 
-   vertices[2].x = m_d.m_vCenter.x - sn*(halfheight + descent) - cs*halfwidth;
-   vertices[2].y = m_d.m_vCenter.y + cs*(halfheight + descent) - sn*halfwidth;
+   vertices[2].x = (m_d.m_vCenter.x - sn*(halfheight + descent) - cs*halfwidth)*xmult-offs;
+   vertices[2].y = (m_d.m_vCenter.y + cs*(halfheight + descent) - sn*halfwidth)*ymult-offs;
    vertices[2].z = z;
    vertices[2].nx = 0.f;
    vertices[2].ny = 0.f;
@@ -719,8 +722,8 @@ void Decal::RenderSetup(RenderDevice *device)
    vertices[2].tu = 0;
    vertices[2].tv = 1.0f;
 
-   vertices[3].x = m_d.m_vCenter.x - sn*(halfheight + descent) + cs*halfwidth;
-   vertices[3].y = m_d.m_vCenter.y + cs*(halfheight + descent) + sn*halfwidth;
+   vertices[3].x = (m_d.m_vCenter.x - sn*(halfheight + descent) + cs*halfwidth)*xmult-offs;
+   vertices[3].y = (m_d.m_vCenter.y + cs*(halfheight + descent) + sn*halfwidth)*ymult-offs;
    vertices[3].z = z;
    vertices[3].nx = 0.f;
    vertices[3].ny = 0.f;
@@ -728,16 +731,6 @@ void Decal::RenderSetup(RenderDevice *device)
    vertices[3].tu = 1.0f;
    vertices[3].tv = 1.0f;
 
-   if (m_backglass)
-   {
-      const float xmult = getBGxmult();
-      const float ymult = getBGymult();
-      for (int i = 0; i < 4; ++i)
-      {
-         vertices[i].x = vertices[i].x * xmult  - 0.5f;
-         vertices[i].y = vertices[i].y * ymult - 0.5f;
-      }
-   }
    vertexBuffer->unlock();
 
    delete m_meshBuffer;
