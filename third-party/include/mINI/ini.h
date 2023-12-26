@@ -87,7 +87,11 @@
 #include <sstream>
 #include <algorithm>
 #include <utility>
-#include "robin_hood.h"
+#if defined(_MSC_VER) && (_MSC_VER <= 1935)
+ #include <unordered_map>
+#else
+ #include "robin_hood.h"
+#endif
 #include <vector>
 #include <memory>
 #include <fstream>
@@ -135,7 +139,11 @@ namespace mINI
 	class INIMap
 	{
 	private:
+#if defined(_MSC_VER) && (_MSC_VER <= 1935)
+		using T_DataIndexMap = std::unordered_map<std::string, std::size_t>;
+#else
 		using T_DataIndexMap = robin_hood::unordered_map<std::string, std::size_t>;
+#endif
 		using T_DataItem = std::pair<std::string, T>;
 		using T_DataContainer = std::vector<T_DataItem>;
 		using T_MultiArgs = typename std::vector<std::pair<std::string, T>>;
