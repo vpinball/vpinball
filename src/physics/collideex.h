@@ -198,7 +198,7 @@ public:
 
 private:
    Gate *m_pgate;
-   LineSeg m_lineseg[3];
+   LineSeg m_lineseg[2];
 };
 
 class TriggerLineSeg : public LineSeg
