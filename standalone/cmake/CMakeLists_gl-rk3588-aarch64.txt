@@ -653,7 +653,7 @@ target_link_libraries(vpinball PUBLIC
    -l:libpinmame.so.3.6
    -l:libzedmd64.so.0.1.0
    -l:libserum64.so.1.6.1
-   -l:libaltsound.so
+   -l:libaltsound.so.0.1.0
 )
 
 set_target_properties(vpinball PROPERTIES
@@ -692,5 +692,5 @@ add_custom_command(TARGET vpinball POST_BUILD
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/rk3588/external/lib/libpinmame.so.3.6" "$<TARGET_FILE_DIR:vpinball>"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/rk3588/external/lib/libzedmd64.so.0.1.0" "$<TARGET_FILE_DIR:vpinball>"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/rk3588/external/lib/libserum64.so.1.6.1" "$<TARGET_FILE_DIR:vpinball>"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/rk3588/external/lib/libaltsound.so" "$<TARGET_FILE_DIR:vpinball>"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/rk3588/external/lib/libaltsound.so.0.1.0" "$<TARGET_FILE_DIR:vpinball>"
 )

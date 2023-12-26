@@ -8,7 +8,7 @@ SDL2_IMAGE_VERSION=2.6.3
 PINMAME_SHA=be7a86f95f4aee347ce44cabd6cb055053da108a
 LIBSERUM_SHA=ea90a5460b47d77e4cf1deacdacddbdb94c25067
 LIBZEDMD_SHA=499b1c094d49ae9bd988326475c51686b1415186
-LIBALTSOUND_SHA=e791d98451eadf6d33e8f2c22d4c47646b28017d
+LIBALTSOUND_SHA=816cc987db61c428c61746b65ab30aa765c87116
 
 if [[ $(uname) == "Linux" ]]; then
 	NUM_PROCS=$(nproc)
@@ -155,7 +155,7 @@ curl -sL https://github.com/PPUC/libzedmd/archive/${LIBZEDMD_SHA}.zip -o libzedm
 unzip libzedmd.zip
 cd libzedmd-$LIBZEDMD_SHA
 cp src/ZeDMD.h ../../external/include
-cmake -DCMAKE_BUILD_TYPE=Release -DUSE_ANDROID=ON  -B build
+cmake -DCMAKE_BUILD_TYPE=Release -DUSE_ANDROID=ON -B build
 cmake --build build -- -j${NUM_PROCS}
 cp build/libzedmd.so ../../external/lib
 cd ..
@@ -168,11 +168,8 @@ curl -sL https://github.com/jsm174/libaltsound/archive/${LIBALTSOUND_SHA}.zip -o
 unzip libaltsound.zip
 cd libaltsound-$LIBALTSOUND_SHA
 cp src/altsound.h ../../external/include
-cd platforms/android/arm64-v8a
-./external.sh
-cp CMakeLists.txt ../../..
-cd ../../..
-cmake -DCMAKE_BUILD_TYPE=Release -B build
+platforms/android/arm64-v8a/external.sh
+cmake -DPLATFORM=android -DARCH=arm64-v8a -DBUILD_STATIC=OFF -DCMAKE_BUILD_TYPE=Release -B build
 cmake --build build -- -j${NUM_PROCS}
 cp build/libaltsound.so ../../external/lib
 cd ..

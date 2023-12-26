@@ -8,7 +8,7 @@ SDL2_IMAGE_VERSION=2.6.3
 PINMAME_SHA=be7a86f95f4aee347ce44cabd6cb055053da108a
 LIBSERUM_SHA=ea90a5460b47d77e4cf1deacdacddbdb94c25067
 LIBZEDMD_SHA=499b1c094d49ae9bd988326475c51686b1415186
-LIBALTSOUND_SHA=e791d98451eadf6d33e8f2c22d4c47646b28017d
+LIBALTSOUND_SHA=816cc987db61c428c61746b65ab30aa765c87116
 
 NUM_PROCS=$(sysctl -n hw.ncpu)
 
@@ -139,11 +139,8 @@ curl -sL https://github.com/jsm174/libaltsound/archive/${LIBALTSOUND_SHA}.zip -o
 unzip libaltsound.zip
 cd libaltsound-$LIBALTSOUND_SHA
 cp src/altsound.h ../../external/include
-cd platforms/macos/arm64
-./external.sh
-cp CMakeLists.txt ../../..
-cd ../../..
-cmake -DCMAKE_BUILD_TYPE=Release -B build
+platforms/macos/arm64/external.sh
+cmake -DPLATFORM=macos -DARCH=arm64 -DBUILD_STATIC=OFF -DCMAKE_BUILD_TYPE=Release -B build
 cmake --build build -- -j${NUM_PROCS}
-cp build/libaltsound.dylib ../../external/lib
+cp build/libaltsound.0.1.0.dylib ../../external/lib
 cd ..
