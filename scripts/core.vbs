@@ -29,7 +29,7 @@ Dim vpmCreateBall	' Called whenever a vpm class needs to create a ball
 Dim BSize:If IsEmpty(Eval("BallSize"))=true Then BSize=25 Else BSize = BallSize/2
 Dim BMass:If IsEmpty(Eval("BallMass"))=true Then BMass=1 Else BMass = BallMass
 Dim UseDMD:If IsEmpty(Eval("UseVPMDMD"))=true Then UseDMD=false Else UseDMD = UseVPMDMD
-Dim UseModSol:If IsEmpty(Eval("UseVPMModSol"))=true Then UseModSol=false Else UseModSol = UseVPMModSol
+Dim UseModSol:If IsEmpty(Eval("UseVPMModSol"))=true Then UseModSol=0 Else If UseVPMModSol = True Then UseModSol = 1 Else UseModSol = UseVPMModSol ' True or 1 for legacy modulated solenoids (0..255 value), 2 for physics solenoids/lamps/GI/Alphanum (0..1 value)
 Dim UseColoredDMD:If IsEmpty(Eval("UseVPMColoredDMD"))=true Then UseColoredDMD=false Else UseColoredDMD = UseVPMColoredDMD
 Dim UseNVRAM:If IsEmpty(Eval("UseVPMNVRAM"))=true Then UseNVRAM=false Else UseNVRAM = UseVPMNVRAM
 Dim NVRAMCallback
@@ -2379,10 +2379,14 @@ Public Sub vpmInit(aTable)
 		If Not IsObject(GetRef(aTable.name & "_Exit")) Or Err Then Err.Clear : vpmBuildEvent aTable, "Exit", "Controller.Pause = False:Controller.Stop"
 	End If
 	if UseModSol Then
-		If Controller.Version >= 02080000 Then
-		  Controller.SolMask(2)=1
+		If Controller.Version >= 03060000 Then
+		  Controller.SolMask(2)=UseModSol ' 1 for modulated solenoids or 2 for new physics lamps/GI/AlphaNum/solenoids
+		ElseIf Controller.Version >= 02080000 Then
+		  Controller.SolMask(2)=1 ' legacy smoothed solenoids
+		  UseModSol=1
 		Else
 		  MsgBox "Modulated Flashers/Solenoids not supported with this Visual PinMAME version (2.8 or newer is required)"
+		  UseModSol=0
 		End If
 	End If
 	'InitVpmFlips	'have vpmtimer doing this atm
@@ -2474,14 +2478,38 @@ Sub PinMAMETimer_Timer
 		If isObject(GICallback) or isObject(GICallback2) Then ChgGI = Controller.ChangedGIStrings
 		MotorCallback
 	On Error Goto 0
+
+	Dim pwmScale: If UseModSol >= 2 Then pwmScale = 1.0 / 255.0 Else pwmScale = 1 ' User as activated physics output and expects a 0..1 value for solenoids/lamps/GI/Alphanum
+	
+	If Not IsEmpty(ChgSol) Then
+        SetLocale "en-us" ' Needed since we convert the decimal value to be parsed by Execute (some locals use a comma instead of a dot which would be parsed as a parameter separator)
+		For ii = 0 To UBound(ChgSol)
+			nsol = ChgSol(ii, 0)
+			tmp = SolCallback(nsol)
+			solon = ChgSol(ii, 1)
+			If solon > 1 Then solon = 1
+			If UseModSol >= 1 Then
+				If solon <> SolPrevState(nsol) Then
+					SolPrevState(nsol) = solon
+					If tmp <> "" Then Execute tmp & vpmTrueFalse(solon+1)
+				End If
+				tmp = SolModCallback(nsol)
+				If tmp <> "" Then Execute tmp & " " & CDbl(ChgSol(ii, 1) * pwmScale)
+			Else
+				If tmp <> "" Then Execute tmp & vpmTrueFalse(solon+1)
+			End If
+		    If UseSolenoids > 1 Then if nsol = vpmFlips.Solenoid then vpmFlips.TiltSol solon ': msgbox solon
+		Next
+	End If
+
 	If Not IsEmpty(ChgLamp) Then
 		On Error Resume Next
 			For ii = 0 To UBound(ChgLamp)
 				idx = ChgLamp(ii, 0)
 				If IsArray(Lights(idx)) Then
-					For Each tmp In Lights(idx) : tmp.State = ChgLamp(ii, 1) : Next
+					For Each tmp In Lights(idx) : tmp.State = ChgLamp(ii, 1) * pwmScale : Next
 				Else
-					Lights(idx).State = ChgLamp(ii, 1)
+					Lights(idx).State = ChgLamp(ii, 1) * pwmScale
 				End If
 			Next
 			For Each tmp In vpmMultiLights
@@ -2490,31 +2518,14 @@ Sub PinMAMETimer_Timer
 			LampCallback
 		On Error Goto 0
 	End If
-	If Not IsEmpty(ChgSol) Then
-		For ii = 0 To UBound(ChgSol)
-			nsol = ChgSol(ii, 0)
-			tmp = SolCallback(nsol)
-			solon = ChgSol(ii, 1)
-			If solon > 1 Then solon = 1
-			If UseModSol Then
-				If solon <> SolPrevState(nsol) Then
-					SolPrevState(nsol) = solon
-					If tmp <> "" Then Execute tmp & vpmTrueFalse(solon+1)
-				End If
-				tmp = SolModCallback(nsol)
-				If tmp <> "" Then Execute tmp & " " & ChgSol(ii, 1)
-			Else
-				If tmp <> "" Then Execute tmp & vpmTrueFalse(solon+1)
-			End If
-		if UseSolenoids > 1 then if nsol = vpmFlips.Solenoid then vpmFlips.TiltSol solon ': msgbox solon
-		Next
-	End If
+	
 	If Not IsEmpty(ChgGI) Then
 		For ii = 0 To UBound(ChgGI)
-			GICallback ChgGI(ii, 0), CBool(ChgGI(ii, 1))
-			GICallback2 ChgGI(ii, 0), ChgGI(ii, 1)
+			GICallback ChgGI(ii, 0), CBool((ChgGI(ii, 1) * pwmScale) >= 0.5)
+			GICallback2 ChgGI(ii, 0), ChgGI(ii, 1) * pwmScale
 		Next
 	End If
+	
 	If Not IsEmpty(ChgLed) Then
 		On Error Resume Next
 			For ii = 0 To UBound(ChgLed)
@@ -2522,7 +2533,6 @@ Sub PinMAMETimer_Timer
 				idx = ChgLed(ii, 0)
 				color = ChgLed(ii, 1)
 				if color = 0 Then ledstate = 0 : Else ledstate = 1: End If
-
 				If IsArray(Lights(idx)) Then
 					For Each tmp In Lights(idx) : tmp.Color = color : tmp.State = ledstate : Next
 				Else
