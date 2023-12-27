@@ -312,14 +312,14 @@ BEGIN
     LTEXT           "A Randy Davis and Visual Pinball team Production",IDC_STATIC,7,65,161,8
     LTEXT           "Version 10.8.0 Beta",IDC_ABOUT_VERSION,7,75,200,10
     GROUPBOX        "Credits",IDC_STATIC,7,91,216,116
-    LTEXT           "Original VP8/VP9 Team",IDC_STATIC,68,99,88,9
+    CTEXT           "Original VP8/VP9 Team",IDC_STATIC,61,99,88,9,WS_BORDER
     LTEXT           "Randy Davis",IDC_STATIC,13,110,59,9
     LTEXT           "Noah Fentz",IDC_STATIC,150,110,66,9
     LTEXT           "Chris Leathley",IDC_STATIC,84,110,56,9
     LTEXT           "Mark Parris",IDC_STATIC,13,120,67,9
     LTEXT           "Jerry Rice",IDC_STATIC,89,120,66,9
     LTEXT           "Rolle Cruz",IDC_STATIC,150,120,67,9
-    LTEXT           "VP9/PM/VR Open Source Contributors",IDC_STATIC,49,131,128,9
+    CTEXT           "VP9/PM/VP10/VR Open Source Contributors",IDC_STATIC,17,131,171,9,WS_BORDER
     LTEXT           "Brian Smith",IDC_STATIC,13,142,42,9
     LTEXT           "Shagendo",IDC_STATIC,150,142,42,9
     LTEXT           "Toxie",IDC_STATIC,94,142,42,9
@@ -327,23 +327,21 @@ BEGIN
     LTEXT           "Maddes",IDC_STATIC,13,152,42,9
     LTEXT           "Poiuyterry",IDC_STATIC,150,152,42,9
     CTEXT           "Cupid",IDC_STATIC,82,162,42,9
-    LTEXT           "Fuzzel",IDC_STATIC,13,162,21,8
+    LTEXT           "Fuzzel",IDC_STATIC,13,162,21,9
     LTEXT           "Koadic",IDC_STATIC,150,162,42,9
-    LTEXT           "Mjr",IDC_STATIC,13,172,21,8
-    LTEXT           "DJRobX",IDC_STATIC,48,172,32,8
+    LTEXT           "Mjr",IDC_STATIC,13,172,21,9
+    LTEXT           "DJRobX",IDC_STATIC,48,172,32,9
     CTEXT           "Mukuste",IDC_STATIC,82,172,42,9
     LTEXT           "Brandrew",IDC_STATIC,150,172,42,9
+    LTEXT           "Caligula",IDC_STATIC,48,152,32,9
+    LTEXT           "Rawnei",IDC_STATIC,48,162,32,9
     CTEXT           "Copyright (C) 2000-2023 Randy Davis and the\nVisual Pinball team. All rights reserved (see license.txt)",IDC_STATIC,1,293,167,25
     LTEXT           "Translator's Name - Translation",IDC_TRANSNAME,171,65,52,9,NOT WS_VISIBLE | WS_DISABLED
     LTEXT           "Translator's web site address",IDC_TRANSWEBSITE,0,328,32,8,NOT WS_VISIBLE | WS_DISABLED
-    LTEXT           "VP10 Active Development",IDC_STATIC,65,183,102,9
-    LTEXT           "Fuzzel",IDC_STATIC,13,194,21,8
-    LTEXT           "Toxie",IDC_STATIC,41,194,22,9
-    LTEXT           "DJRobX",IDC_STATIC,67,194,32,8
-    LTEXT           "Caligula",IDC_STATIC,48,152,32,8
-    LTEXT           "Rawnei",IDC_STATIC,48,162,32,8
-    LTEXT           "Vincent Bousquet",IDC_STATIC,150,194,70,8
-    LTEXT           "Jason Millard",IDC_STATIC,100,194,48,9
+    CTEXT           "VP10 Active Development",IDC_STATIC,52,183,102,9,WS_BORDER
+    LTEXT           "Toxie",IDC_STATIC,13,194,22,9
+    LTEXT           "Vincent Bousquet",IDC_STATIC,75,194,70,9
+    LTEXT           "Jason Millard",IDC_STATIC,150,194,48,9
     DEFPUSHBUTTON   "&OK",IDOK,173,319,50,14
 END
 
@@ -2866,18 +2864,18 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
 #ifdef ENABLE_SDL
-            VALUE "FileDescription", "Visual Pinball OpenGL 10.8.0"
+            VALUE "FileDescription", "Visual Pinball OpenGL 10.8.1"
             VALUE "OriginalFilename", "VPinballX_GL.exe"
             VALUE "ProductName", "Visual Pinball OpenGL"
 #else
-            VALUE "FileDescription", "Visual Pinball 10.8.0"
+            VALUE "FileDescription", "Visual Pinball 10.8.1"
             VALUE "OriginalFilename", "VPinballX.exe"
             VALUE "ProductName", "Visual Pinball"
 #endif
-            VALUE "FileVersion", "10, 8, 0, 0"
+            VALUE "FileVersion", "10, 8, 1, 0"
             VALUE "InternalName", "Visual Pinball"
             VALUE "LegalCopyright", "Copyright 2000-2023"
-            VALUE "ProductVersion", "10, 8, 0, 0"
+            VALUE "ProductVersion", "10, 8, 1, 0"
         END
     END
     BLOCK "VarFileInfo"
