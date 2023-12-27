@@ -1,7 +1,8 @@
+// license:GPLv3+
+
 #include "stdafx.h"
 #include "matrix.h"
 
-//Matrix3D ---------------------------------------------------------------------------------------------------------------
 void Matrix3D::Invert()
 {
    int ipvt[4] = { 0, 1, 2, 3 };
@@ -123,91 +124,3 @@ Vertex3Ds RotateAround(const Vertex3Ds &pvAxis, const Vertex2D &pvPoint, const f
       matrix[1][0] * pvPoint.x + matrix[1][1] * pvPoint.y,
       matrix[2][0] * pvPoint.x + matrix[2][1] * pvPoint.y);
 }
-
-//D3D Matrices ----------------------------------------------------------------------------------------------------------------
-
-#ifdef ENABLE_SDL
-
-D3DXMATRIX::D3DXMATRIX() {
-   for (size_t i = 0;i < 4;++i)
-      for (size_t j = 0;j < 4;++j)
-         m[i][j] = (i == j) ? 1.0f : 0.0f;
-}
-
-D3DXMATRIX::D3DXMATRIX(const D3DXMATRIX &input) {
-   memcpy(&m[0][0], &input.m[0][0], sizeof(float) * 16);
-}
-
-D3DXMATRIX::D3DXMATRIX(const D3DXMATRIX * const input) {
-   memcpy(&m[0][0], &input->m[0][0], sizeof(float) * 16);
-}
-
-D3DXMATRIX::D3DXMATRIX(const Matrix3D &input) {
-   memcpy(&m[0][0], &input.m[0][0], sizeof(float) * 16);
-}
-
-//Vectors4 ------------------------------------------------------------------------------------------------------------------------
-vec4::vec4(const float _x, const float _y, const float _z, const float _w) : x(_x), y(_y), z(_z), w(_w) {}
-
-vec4::vec4() {}
-
-vec4 vec4::normal(const vec4 &input) {
-   float len = input.x*input.x + input.y*input.y + input.z*input.z + input.w*input.w;
-   if (len <= 1.e-10f)
-      return vec4(0.0f, 0.0f, 0.0f, 0.0f);
-   len = 1.0f / sqrtf(len);
-   return vec4(input.x*len, input.y*len, input.z*len, input.w*len);
-}
-
-float vec4::dot(const vec4 &a, const vec4 &b) {
-   return a.x * b.x + a.y * a.y + a.z * b.z + a.w * b.w;
-}
-
-vec4 vec4::operator+ (const vec4& m) const {
-   return vec4(x + m.x, y + m.y, z + m.z, w + m.w);
-}
-
-vec4 vec4::operator- (const vec4& m) const {
-   return vec4(x - m.x, y - m.y, z - m.z, w - m.w);
-}
-
-
-//Vectors3 ------------------------------------------------------------------------------------------------------------------------
-
-vec3::vec3(const float _x, const float _y, const float _z) : x(_x), y(_y), z(_z) {}
-
-vec3::vec3() {}
-
-vec3 vec3::TransformCoord(const vec3& vec, const Matrix3D& mat) {
-   float w = (vec.x * mat._14 + vec.y * mat._24 + vec.z * mat._34 + mat._44);
-   if (w <= 1.e-10f)
-      return vec3(0.0f, 0.0f, 0.0f);
-   w = 1.0f / w;
-   return vec3(
-      w * (vec.x * mat._11 + vec.y * mat._21 + vec.z * mat._31 + mat._41),
-      w * (vec.x * mat._12 + vec.y * mat._22 + vec.z * mat._32 + mat._42),
-      w * (vec.x * mat._13 + vec.y * mat._23 + vec.z * mat._33 + mat._43));
-}
-
-vec3 vec3::operator+ (const vec3& m) const {
-   return vec3(x + m.x, y + m.y, z + m.z);
-}
-
-vec3 vec3::operator- (const vec3& m) const {
-   return vec3(x - m.x, y - m.y, z - m.z);
-}
-
-vec3 vec3::operator*(const float s) const {
-   return vec3(x * s, y * s, z * s);
-}
-
-vec3 operator*(const float s, const vec3 &v) {
-   return vec3(s * v.x, s * v.y, s * v.z);
-}
-
-vec3 vec3::operator/(const float s) const {
-   const float inv_s = 1.f / s;
-   return vec3(x * inv_s, y * inv_s, z * inv_s);
-}
-
-#endif

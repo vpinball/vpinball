@@ -374,7 +374,9 @@ public:
    void SetInt(const ShaderUniforms uniformName, const int i) { m_state->SetInt(uniformName, i); }
    void SetBool(const ShaderUniforms uniformName, const bool b) { m_state->SetBool(uniformName, b); }
    void SetUniformBlock(const ShaderUniforms uniformName, const float* pMatrix) { m_state->SetUniformBlock(uniformName, pMatrix); }
+#ifndef ENABLE_SDL
    void SetMatrix(const ShaderUniforms uniformName, const D3DXMATRIX* pMatrix, const unsigned int count = 1) { SetMatrix(uniformName, &(pMatrix->m[0][0]), count); }
+#endif
    void SetMatrix(const ShaderUniforms uniformName, const Matrix3D* pMatrix, const unsigned int count = 1) { SetMatrix(uniformName, &(pMatrix->m[0][0]), count); }
    void SetVector(const ShaderUniforms uniformName, const vec4* pVector) { m_state->SetVector(uniformName, pVector); }
    void SetVector(const ShaderUniforms uniformName, const float x, const float y, const float z, const float w) { const vec4 v(x, y, z, w); m_state->SetVector(uniformName, &v); }

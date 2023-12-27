@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #pragma once
 
 class ModelViewProj
@@ -49,22 +51,22 @@ private:
          }
          case FLIPX:
          {
-            static const Matrix3D flipx(-1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+            static const Matrix3D flipx{-1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
             for (unsigned int eye = 0; eye < m_nEyes; eye++)
                m_matModelViewProj[eye] = m_matModelView * m_matProj[eye] * flipx;
             break;
          }
          case FLIPY:
          {
-            static const Matrix3D flipy(1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+            static const Matrix3D flipy{1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
             for (unsigned int eye = 0; eye < m_nEyes; eye++)
                m_matModelViewProj[eye] = m_matModelView * m_matProj[eye] * flipy;
             break;
          }
          }
-         Matrix3D temp, viewRot;
-         temp = m_matView;
+         Matrix3D temp = m_matView;
          temp.Invert();
+         Matrix3D viewRot;
          temp.GetRotationPart(viewRot);
          viewRot.MultiplyVector(Vertex3Ds(0, 0, 1), m_viewVec);
          m_viewVec.NormalizeSafe();

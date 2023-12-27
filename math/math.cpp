@@ -1,9 +1,6 @@
-#include "stdafx.h"
-
-//
 // license:GPLv3+
-// Ported at: VisualPinball.Engine/Math/Functions.cs
-//
+
+#include "stdafx.h"
 
 bool SolveQuadraticEq(const float a, const float b, const float c, float& sol1, float& sol2)
 {
@@ -21,10 +18,6 @@ bool SolveQuadraticEq(const float a, const float b, const float c, float& sol1, 
    return true;
 }
 
-//
-// end of license:GPLv3+, back to 'old MAME'-like
-//
-
 // Blinn: How to solve a cubic equation, part 5: Back to numerics
 Vertex3Ds SolveCubicEq(Vertex4D Coefficient) // x = ^0, y = ^1, z = ^2, w = ^3
 {
@@ -35,7 +28,7 @@ Vertex3Ds SolveCubicEq(Vertex4D Coefficient) // x = ^0, y = ^1, z = ^2, w = ^3
     inv_w *= (float)(1./3.);
     Coefficient.y *= inv_w;
     Coefficient.z *= inv_w;    
-    // Compute the Hessian and the discrimant
+    // Compute the Hessian and the discriminant
     const Vertex3Ds Delta(
         Coefficient.y-Coefficient.z*Coefficient.z,
         Coefficient.x-Coefficient.y*Coefficient.z,

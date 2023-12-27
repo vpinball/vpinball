@@ -1,12 +1,12 @@
+// license:GPLv3+
+
 #pragma once
 
 #include "typedefs3D.h"
 #include <math/vector.h>
 
 #ifdef ENABLE_SDL
-class Matrix3D;
-
-class alignas(16) D3DXMATRIX {
+class alignas(16) D3DMATRIX {
 public:
    union {
       struct {
@@ -17,24 +17,14 @@ public:
       };
       float m[4][4];
    };
-
-   D3DXMATRIX();
-   D3DXMATRIX(const D3DXMATRIX &input);
-   D3DXMATRIX(const D3DXMATRIX * const input);
-   D3DXMATRIX(const Matrix3D &input);
 };
-
-#define D3DMATRIX D3DXMATRIX
 #endif
 
 // 3x3 matrix for representing linear transformation of 3D vectors
 class Matrix3 final
 {
 public:
-   Matrix3()
-   {
-   }
-
+   Matrix3() {}
    Matrix3(const float __11, const float __12, const float __13, const float __21, const float __22, const float __23, const float __31, const float __32, const float __33)
    {
       _11 = __11; _12 = __12; _13 = __13;
@@ -336,7 +326,7 @@ public:
 
 
 // 4x4 matrix for representing affine transformations of 3D vectors
-class Matrix3D final : public D3DMATRIX
+class alignas(16) Matrix3D final : public D3DMATRIX
 {
 public:
    Matrix3D() {}
@@ -366,7 +356,7 @@ public:
 
 #pragma region SetMatrix
    ////////////////////////////////////////////////////////////////////////////////
-   // Math for definig usual affine transforms and projection matrices
+   // Math for defining common affine transforms and projection matrices
 
    void SetIdentity()
    {
@@ -525,32 +515,30 @@ public:
       SetPerspectiveOffCenterLH(-xmax, xmax, -ymax, ymax, znear, zfar);
    }
 
-   void SetLookAtRH(const vec3& eye, const vec3& at, const vec3& up)
+   void SetLookAtRH(const Vertex3Ds& eye, const Vertex3Ds& at, const Vertex3Ds& up)
    {
-      vec3 xaxis, yaxis, zaxis;
-      const vec3 e_a = eye - at;
-      Vec3Normalize(&zaxis, &e_a);
-      Vec3Cross(&xaxis, &up, &zaxis);
-      Vec3Normalize(&xaxis, &xaxis);
-      Vec3Cross(&yaxis, &zaxis, &xaxis);
-      const float dotX = Vec3Dot(&xaxis, &eye);
-      const float dotY = Vec3Dot(&yaxis, &eye);
-      const float dotZ = Vec3Dot(&zaxis, &eye);
-      *this = Matrix3D(xaxis.x, yaxis.x, zaxis.x, 0.f, xaxis.y, yaxis.y, zaxis.y, 0.f, xaxis.z, yaxis.z, zaxis.z, 0.f, -dotX, -dotY, -dotZ, 1.f);
+      Vertex3Ds zaxis = eye - at;
+      zaxis.NormalizeSafe();
+      Vertex3Ds xaxis = CrossProduct(up, zaxis);
+      xaxis.NormalizeSafe();
+      const Vertex3Ds yaxis = CrossProduct(zaxis, xaxis);
+      const float dotX = xaxis.Dot(eye);
+      const float dotY = yaxis.Dot(eye);
+      const float dotZ = zaxis.Dot(eye);
+      *this = Matrix3D{xaxis.x, yaxis.x, zaxis.x, 0.f, xaxis.y, yaxis.y, zaxis.y, 0.f, xaxis.z, yaxis.z, zaxis.z, 0.f, -dotX, -dotY, -dotZ, 1.f};
    }
 
-   void SetLookAtLH(const vec3& eye, const vec3& at, const vec3& up)
+   void SetLookAtLH(const Vertex3Ds& eye, const Vertex3Ds& at, const Vertex3Ds& up)
    {
-      vec3 xaxis, yaxis, zaxis;
-      const vec3 a_e = at - eye;
-      Vec3Normalize(&zaxis, &a_e);
-      Vec3Cross(&xaxis, &up, &zaxis);
-      Vec3Normalize(&xaxis, &xaxis);
-      Vec3Cross(&yaxis, &zaxis, &xaxis);
-      const float dotX = Vec3Dot(&xaxis, &eye);
-      const float dotY = Vec3Dot(&yaxis, &eye);
-      const float dotZ = Vec3Dot(&zaxis, &eye);
-      *this = Matrix3D(xaxis.x, yaxis.x, zaxis.x, 0.f, xaxis.y, yaxis.y, zaxis.y, 0.f, xaxis.z, yaxis.z, zaxis.z, 0.f, -dotX, -dotY, -dotZ, 1.f);
+      Vertex3Ds zaxis = at - eye;
+      zaxis.NormalizeSafe();
+      Vertex3Ds xaxis = CrossProduct(up, zaxis);
+      xaxis.NormalizeSafe();
+      const Vertex3Ds yaxis = CrossProduct(zaxis, xaxis);
+      const float dotX = xaxis.Dot(eye);
+      const float dotY = yaxis.Dot(eye);
+      const float dotZ = zaxis.Dot(eye);
+      *this = Matrix3D{xaxis.x, yaxis.x, zaxis.x, 0.f, xaxis.y, yaxis.y, zaxis.y, 0.f, xaxis.z, yaxis.z, zaxis.z, 0.f, -dotX, -dotY, -dotZ, 1.f};
    }
 
 #pragma endregion SetMatrix
@@ -558,7 +546,7 @@ public:
 
 #pragma region FactoryConstructors
    ////////////////////////////////////////////////////////////////////////////////
-   // Factory methods for building usual affine transform and projection matrices
+   // Factory methods for building common affine transform and projection matrices
 
    static Matrix3D MatrixIdentity()
    {
@@ -602,14 +590,14 @@ public:
       return result;
    }
 
-   static Matrix3D MatrixLookAtLH(const vec3& eye, const vec3& at, const vec3& up)
+   static Matrix3D MatrixLookAtLH(const Vertex3Ds& eye, const Vertex3Ds& at, const Vertex3Ds& up)
    {
       Matrix3D result;
       result.SetLookAtLH(eye, at, up);
       return result;
    }
 
-   static Matrix3D MatrixLookAtRH(const vec3& eye, const vec3& at, const vec3& up)
+   static Matrix3D MatrixLookAtRH(const Vertex3Ds& eye, const Vertex3Ds& at, const Vertex3Ds& up)
    {
       Matrix3D result;
       result.SetLookAtRH(eye, at, up);
@@ -646,11 +634,11 @@ public:
       const float sy = sinf(yaw);
       const float cy = cosf(yaw);
       //!! This code should be validated!
-      return Matrix3D(
+      return Matrix3D{
          cr * cy, sr, cr * sy, 0.0f, 
          -sr * cp * sy - sp * sy, cr * cp, sr * cp * sy + sp * cy, 0.0f, 
          -sr * sp * cy - cp * sy, -cr * sp, -sr * sp * sy + cp * cy, 0.0f, 
-         0.0f, 0.0f, 0.0f, 1.0f);
+         0.0f, 0.0f, 0.0f, 1.0f};
    }
 
    static Matrix3D MatrixRotate(const float angRad, const Vertex3Ds& axis)
@@ -659,11 +647,11 @@ public:
       const float s = sinf(angRad), c = cosf(angRad);
       const float u_c = 1.f - c;
       const float x = axis.x, y = axis.y, z = axis.z;
-      return Matrix3D(
+      return Matrix3D{
          c + x * x * u_c, x * y * u_c - z * s, x * z * u_c + y * s, 0.0f, 
          y * x * u_c + z * s, c + y * y * u_c, y * z * u_c - x * s, 0.0f, 
          z * x * u_c - y * s, z * y * u_c + x * s, c + z * z * u_c, 0.0f, 
-         0.0f, 0.0f, 0.0f, 1.0f);
+         0.0f, 0.0f, 0.0f, 1.0f};
    }
 
 #pragma endregion FactoryConstructors
@@ -757,12 +745,12 @@ public:
    // Normalize the 3 defining vector of an orthogonal matrix
    void OrthoNormalize()
    {
-      vec3 right(_11, _12, _13);
-      vec3 up(_21, _22, _23);
-      vec3 dir(_31, _32, _33);
-      Vec3Normalize(&right, &right);
-      Vec3Normalize(&up, &up);
-      Vec3Normalize(&dir, &dir);
+      Vertex3Ds right{_11, _12, _13};
+      Vertex3Ds up{_21, _22, _23};
+      Vertex3Ds dir{_31, _32, _33};
+      right.NormalizeSafe();
+      up.NormalizeSafe();
+      dir.NormalizeSafe();
       _11 = right.x; _12 = right.y; _13 = right.z;
       _21 = up.x; _22 = up.y; _23 = up.z;
       _31 = dir.x; _32 = dir.y; _33 = dir.z;
@@ -805,11 +793,11 @@ public:
 
 #pragma region VectorOperations
 
-   // If matrix defines and orthonormal transformation (like a view or model matrix), these function give the defining vectors
-   vec3 GetOrthoNormalRight() const { return vec3(_11, _12, _13); }
-   vec3 GetOrthoNormalUp() const { return vec3(_21, _22, _23); }
-   vec3 GetOrthoNormalDir() const { return vec3(_31, _32, _33); }
-   vec3 GetOrthoNormalPos() const { return vec3(_41, _42, _43); }
+   // If matrix defines and orthonormal transformation (like a view or model matrix), these functions return the defining vectors
+   Vertex3Ds GetOrthoNormalRight() const { return Vertex3Ds{ _11, _12, _13 }; }
+   Vertex3Ds GetOrthoNormalUp() const    { return Vertex3Ds{ _21, _22, _23 }; }
+   Vertex3Ds GetOrthoNormalDir() const   { return Vertex3Ds{ _31, _32, _33 }; }
+   Vertex3Ds GetOrthoNormalPos() const   { return Vertex3Ds{ _41, _42, _43 }; }
 
    // extract the matrix corresponding to the 3x3 rotation part
    void GetRotationPart(Matrix3D& rot)
@@ -850,7 +838,7 @@ public:
       const float wp = _14*v.x + _24*v.y + _34*v.z + _44;
 
       const float inv_wp = 1.0f / wp;
-      return Vertex3Ds(xp*inv_wp,yp*inv_wp,zp*inv_wp);
+      return Vertex3Ds{xp*inv_wp,yp*inv_wp,zp*inv_wp};
    }
 
    Vertex3Ds MultiplyVectorNoTranslate(const Vertex3Ds &v) const
@@ -860,7 +848,7 @@ public:
       const float yp = _12*v.x + _22*v.y + _32*v.z;
       const float zp = _13*v.x + _23*v.y + _33*v.z;
 
-      return Vertex3Ds(xp,yp,zp);
+      return Vertex3Ds{xp,yp,zp};
    }
 
 //

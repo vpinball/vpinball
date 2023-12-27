@@ -1,91 +1,8 @@
+// license:GPLv3+
+
 #pragma once
 
 #include <cfloat>
-
-#ifdef ENABLE_SDL
-class Matrix3D;
-
-class alignas(16) vec4 final
-{
-public:
-   union
-   {
-      struct
-      {
-         float x, y, z, w;
-      };
-      struct
-      {
-         float r, g, b, a;
-      };
-      float v[4];
-   };
-
-   vec4(const float x, const float y, const float z, const float w);
-   vec4();
-   static vec4 normal(const vec4& input);
-   static float dot(const vec4& a, const vec4& b);
-   vec4 operator+(const vec4& m) const;
-   vec4 operator-(const vec4& m) const;
-};
-
-typedef vec4 D3DXPLANE;
-
-class vec3 final
-{
-public:
-   union
-   {
-      struct
-      {
-         float x, y, z;
-      };
-      struct
-      {
-         float r, g, b;
-      };
-      float v[3];
-   };
-
-   vec3(const float x, const float y, const float z);
-   vec3();
-   static vec3 TransformCoord(const vec3& ec, const Matrix3D& mat);
-   vec3 operator+(const vec3& m) const;
-   vec3 operator-(const vec3& m) const;
-   vec3 operator*(const float s) const;
-   friend vec3 operator*(float s, const vec3& v);
-   vec3 operator/(const float s) const;
-};
-
-inline vec3* Vec3Normalize(vec3* const out, const vec3* const v)
-{
-   float len = v->x * v->x + v->y * v->y + v->z * v->z;
-   if (len <= 1.e-10f)
-      *out = vec3(0.0f, 0.0f, 0.0f);
-   else
-   {
-      len = 1.0f / sqrtf(len);
-      *out = vec3(v->x * len, v->y * len, v->z * len);
-   }
-   return out;
-}
-
-inline vec3* Vec3Cross(vec3* const out, const vec3* const v1, const vec3* const v2)
-{ 
-   *out = vec3(v1->y * v2->z - v1->z * v2->y, v1->z * v2->x - v1->x * v2->z, v1->x * v2->y - v1->y * v2->x); 
-   return out;
-};
-
-inline float Vec3Dot(const vec3* const __restrict v1, const vec3* const __restrict v2) { return v1->x * v2->x + v1->y * v2->y + v1->z * v2->z; }
-
-#else
-typedef struct D3DXVECTOR3 vec3;
-#define Vec3Normalize D3DXVec3Normalize
-#define Vec3Cross D3DXVec3Cross
-#define Vec3Dot D3DXVec3Dot
-
-typedef struct D3DXVECTOR4 vec4;
-#endif
 
 // 2D vector
 class alignas(8) Vertex2D
@@ -98,7 +15,7 @@ public:
    Vertex2D(const float _x, const float _y) : x(_x), y(_y) {}
 
    void Set(const float a, const float b) { x = a; y = b; }
-   void SetZero()       { Set(0.f, 0.f); }
+   void SetZero() { Set(0.f, 0.f); }
 
    Vertex2D operator+ (const Vertex2D& v) const
    {
@@ -178,8 +95,12 @@ public:
 
    void NormalizeSafe()
    {
-      if (!IsZero())
-         Normalize();
+      const float lengthsqr = x*x + y*y;
+      if (lengthsqr <= FLT_MIN)
+         return;
+      const float oneoverlength = 1.0f / sqrtf(lengthsqr);
+      x *= oneoverlength;
+      y *= oneoverlength;
    }
 
    bool IsZero() const
@@ -199,7 +120,7 @@ public:
    Vertex3Ds(const float _x, const float _y, const float _z) : x(_x), y(_y), z(_z) {}
 
    void Set(const float a, const float b, const float c) { x = a; y = b; z = c; }
-   void SetZero()       { Set(0.f, 0.f, 0.f); }
+   void SetZero() { Set(0.f, 0.f, 0.f); }
 
    Vertex3Ds operator+ (const Vertex3Ds& v) const
    {
@@ -278,8 +199,13 @@ public:
 
    void NormalizeSafe()
    {
-      if (!IsZero())
-         Normalize();
+      const float lengthsqr = x*x + y*y + z*z;
+      if (lengthsqr <= FLT_MIN)
+         return;
+      const float oneoverlength = 1.0f / sqrtf(lengthsqr);
+      x *= oneoverlength;
+      y *= oneoverlength;
+      z *= oneoverlength;
    }
 
    template <class VecIn> float Dot(const VecIn& pv) const
@@ -307,6 +233,7 @@ public:
    const Vertex2D& xy() const   { return *(reinterpret_cast<const Vertex2D*>(&x)); }
 };
 
+#define vec3 Vertex3Ds
 
 inline Vertex3Ds CrossProduct(const Vertex3Ds &pv1, const Vertex3Ds &pv2)
 {
@@ -314,12 +241,6 @@ inline Vertex3Ds CrossProduct(const Vertex3Ds &pv1, const Vertex3Ds &pv2)
                     pv1.z * pv2.x - pv1.x * pv2.z,
                     pv1.x * pv2.y - pv1.y * pv2.x);
 }
-
-////////////////////////////////////////////////////////////////////////////////
-//
-// license:GPLv3+
-// Ported at: VisualPinball.Engine/Math/Vertex3D.cs
-//
 
 inline Vertex3Ds GetRotatedAxis(const float angle, const Vertex3Ds &axis, const Vertex3Ds &temp)
 {
@@ -346,10 +267,6 @@ inline Vertex3Ds GetRotatedAxis(const float angle, const Vertex3Ds &axis, const 
 
    return Vertex3Ds(temp.Dot(rotMatrixRow0), temp.Dot(rotMatrixRow1), temp.Dot(rotMatrixRow2));
 }
-
-//
-// end of license:GPLv3+, back to 'old MAME'-like
-//
 
 void RotateAround(const Vertex3Ds &pvAxis, Vertex3D_NoTex2 * const pvPoint, int count, float angle);
 void RotateAround(const Vertex3Ds &pvAxis, Vertex3Ds * const pvPoint, int count, float angle);
@@ -449,6 +366,8 @@ public:
     Vertex4D() {}
     Vertex4D(const float _x, const float _y, const float _z, const float _w) : x(_x), y(_y), z(_z), w(_w) {}
 };
+
+#define vec4 Vertex4D
 
 class bool4 final
 {
