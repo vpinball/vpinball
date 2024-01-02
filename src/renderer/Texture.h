@@ -185,7 +185,7 @@ inline void copy_bgra_rgba(unsigned int* const __restrict dst, const unsigned in
 }
 
 template<bool bgr>
-inline void copy_rgb_rgba(unsigned int* const __restrict dst, const unsigned char* const __restrict src, size_t size)
+inline void copy_rgb_rgba(unsigned int* const __restrict dst, const unsigned char* const __restrict src, const size_t size)
 {
 #ifdef ENABLE_SSE_OPTIMIZATIONS // actually uses SSSE3
     static int ssse3_supported = -1;
@@ -198,44 +198,39 @@ inline void copy_rgb_rgba(unsigned int* const __restrict dst, const unsigned cha
 #endif
 
     size_t o = 0;
-    size_t offs = 0;
-    size_t send;
 
 #ifdef ENABLE_SSE_OPTIMIZATIONS // actually uses SSSE3
     if (ssse3_supported)
     {
        // align output writes
-       send = size;
        if (!bgr)
        {
-          for (; ((reinterpret_cast<size_t>(dst + offs) & 15) != 0) && o < send; o += 3, ++offs, --size)
-             dst[offs] = (unsigned int)src[o] | ((unsigned int)src[o + 1] << 8) | ((unsigned int)src[o + 2] << 16) | (255u << 24);
+          for (; ((reinterpret_cast<size_t>(dst + o) & 15) != 0) && o < size; ++o)
+             dst[o] = (unsigned int)src[o*3] | ((unsigned int)src[o*3 + 1] << 8) | ((unsigned int)src[o*3 + 2] << 16) | (255u << 24);
        }
        else
-          for (; ((reinterpret_cast<size_t>(dst + offs) & 15) != 0) && o < send; o += 3, ++offs, --size)
-             dst[offs] = (unsigned int)src[o + 2] | ((unsigned int)src[o + 1] << 8) | ((unsigned int)src[o] << 16) | (255u << 24);
+          for (; ((reinterpret_cast<size_t>(dst + o) & 15) != 0) && o < size; ++o)
+             dst[o] = (unsigned int)src[o*3 + 2] | ((unsigned int)src[o*3 + 1] << 8) | ((unsigned int)src[o*3] << 16) | (255u << 24);
 
-       send = size & 0xFFFFFFFFFFFFFFF0ull;
        const __m128i mask  = bgr ? _mm_setr_epi8(2, 1, 0, -1, 5, 4, 3, -1, 8, 7, 6, -1, 11, 10, 9, -1) : _mm_setr_epi8(0, 1, 2, -1, 3, 4, 5, -1, 6, 7, 8, -1, 9, 10, 11, -1);
        const __m128i alpha = _mm_set1_epi32(0xFF000000u); // alpha set to be 255
-       for (size_t s = 0; s < send; s += 16, o += 48, offs += 16)
+       for (; o+15 < size; o+=16)
        {
-          const __m128i c[3] = { _mm_loadu_si128((__m128i *)(src + o)), _mm_loadu_si128((__m128i *)(src + o + 16)), _mm_loadu_si128((__m128i *)(src + o + 32)) };
-          _mm_store_si128((__m128i *)(dst + offs     ), _mm_or_si128(_mm_shuffle_epi8(                           c[0], mask), alpha));
-          _mm_store_si128((__m128i *)(dst + offs +  4), _mm_or_si128(_mm_shuffle_epi8(_mm_alignr_epi8(c[1], c[0], 12), mask), alpha));
-          _mm_store_si128((__m128i *)(dst + offs +  8), _mm_or_si128(_mm_shuffle_epi8(_mm_alignr_epi8(c[2], c[1],  8), mask), alpha));
-          _mm_store_si128((__m128i *)(dst + offs + 12), _mm_or_si128(_mm_shuffle_epi8(_mm_alignr_epi8(c[2], c[2],  4), mask), alpha));
+          const __m128i c[3] = { _mm_loadu_si128((__m128i *)(src + o*3)), _mm_loadu_si128((__m128i *)(src + o*3 + 16)), _mm_loadu_si128((__m128i *)(src + o*3 + 32)) };
+          _mm_store_si128((__m128i *)(dst + o     ), _mm_or_si128(_mm_shuffle_epi8(                           c[0], mask), alpha));
+          _mm_store_si128((__m128i *)(dst + o +  4), _mm_or_si128(_mm_shuffle_epi8(_mm_alignr_epi8(c[1], c[0], 12), mask), alpha));
+          _mm_store_si128((__m128i *)(dst + o +  8), _mm_or_si128(_mm_shuffle_epi8(_mm_alignr_epi8(c[2], c[1],  8), mask), alpha));
+          _mm_store_si128((__m128i *)(dst + o + 12), _mm_or_si128(_mm_shuffle_epi8(_mm_alignr_epi8(c[2], c[2],  4), mask), alpha));
        }
     }
     else
 #endif
     {
-       send = size & 0xFFFFFFFFFFFFFFFCull;
-       for (size_t s = 0; s < send; s += 4, o += 12, offs += 4)
+       for (; o+3 < size; o+=4)
        {
-          const unsigned int tmpa = *((unsigned int *)&src[o]);
-          const unsigned int tmpb = *((unsigned int *)&src[o + 4]);
-          const unsigned int tmpc = *((unsigned int *)&src[o + 8]);
+          const unsigned int tmpa = *((unsigned int *)&src[o*3]);
+          const unsigned int tmpb = *((unsigned int *)&src[o*3 + 4]);
+          const unsigned int tmpc = *((unsigned int *)&src[o*3 + 8]);
 
           const unsigned tmp0 = (tmpa & 0xFFFFFFu) | (255u << 24);
           const unsigned tmp1 = (((tmpa >> 24) | (tmpb << 8)) & 0xFFFFFFu) | (255u << 24);
@@ -244,32 +239,32 @@ inline void copy_rgb_rgba(unsigned int* const __restrict dst, const unsigned cha
 
           if (bgr)
           {
-             dst[offs    ] = (_rotl(tmp0, 16) & 0x00FF00FFu) | (tmp0 & 0xFF00FF00u);
-             dst[offs + 1] = (_rotl(tmp1, 16) & 0x00FF00FFu) | (tmp1 & 0xFF00FF00u);
-             dst[offs + 2] = (_rotl(tmp2, 16) & 0x00FF00FFu) | (tmp2 & 0xFF00FF00u);
-             dst[offs + 3] = (_rotl(tmp3, 16) & 0x00FF00FFu) | (tmp3 & 0xFF00FF00u);
+             dst[o    ] = (_rotl(tmp0, 16) & 0x00FF00FFu) | (tmp0 & 0xFF00FF00u);
+             dst[o + 1] = (_rotl(tmp1, 16) & 0x00FF00FFu) | (tmp1 & 0xFF00FF00u);
+             dst[o + 2] = (_rotl(tmp2, 16) & 0x00FF00FFu) | (tmp2 & 0xFF00FF00u);
+             dst[o + 3] = (_rotl(tmp3, 16) & 0x00FF00FFu) | (tmp3 & 0xFF00FF00u);
           }
           else
           {
-             dst[offs    ] = tmp0;
-             dst[offs + 1] = tmp1;
-             dst[offs + 2] = tmp2;
-             dst[offs + 3] = tmp3;
+             dst[o    ] = tmp0;
+             dst[o + 1] = tmp1;
+             dst[o + 2] = tmp2;
+             dst[o + 3] = tmp3;
           }
        }
     }
 
     if (!bgr)
     {
-       for (size_t s = send; s < size; ++s, o += 3, ++offs)
-          dst[offs] = (unsigned int)src[o] | ((unsigned int)src[o + 1] << 8) | ((unsigned int)src[o + 2] << 16) | (255u << 24);
+       for (; o < size; ++o)
+          dst[o] = (unsigned int)src[o*3] | ((unsigned int)src[o*3 + 1] << 8) | ((unsigned int)src[o*3 + 2] << 16) | (255u << 24);
     }
     else
-       for (size_t s = send; s < size; ++s, o += 3, ++offs)
-          dst[offs] = (unsigned int)src[o + 2] | ((unsigned int)src[o + 1] << 8) | ((unsigned int)src[o] << 16) | (255u << 24);
+       for (; o < size; ++o)
+          dst[o] = (unsigned int)src[o*3 + 2] | ((unsigned int)src[o*3 + 1] << 8) | ((unsigned int)src[o*3] << 16) | (255u << 24);
 }
 
-inline void copy_bgr_rgb(unsigned char* const __restrict dst, const unsigned char* const __restrict src, size_t size)
+inline void copy_bgr_rgb(unsigned char* const __restrict dst, const unsigned char* const __restrict src, const size_t size)
 {
 #ifdef ENABLE_SSE_OPTIMIZATIONS // actually uses SSSE3
     static int ssse3_supported = -1;
@@ -282,21 +277,18 @@ inline void copy_bgr_rgb(unsigned char* const __restrict dst, const unsigned cha
 #endif
 
     size_t o = 0;
-    size_t send = 0;
 
 #ifdef ENABLE_SSE_OPTIMIZATIONS // actually uses SSSE3
     if (ssse3_supported)
     {
        // align output writes
-       send = size;
-       for (; ((reinterpret_cast<size_t>(dst + o) & 15) != 0) && o < send; o += 3, --size)
+       for (; ((reinterpret_cast<size_t>(dst + o*3) & 15) != 0) && o < size; ++o)
        {
-          dst[o    ] = src[o + 2];
-          dst[o + 1] = src[o + 1];
-          dst[o + 2] = src[o + 0];
+          dst[o*3    ] = src[o*3 + 2];
+          dst[o*3 + 1] = src[o*3 + 1];
+          dst[o*3 + 2] = src[o*3 + 0];
        }
 
-       send = size & 0xFFFFFFFFFFFFFFF0ull;
        const __m128i mask0a = _mm_setr_epi8(2, 1, 0, 5, 4, 3, 8, 7, 6, 11, 10, 9, 14, 13, 12, -1);
        const __m128i mask0b = _mm_setr_epi8(-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 1);
        const __m128i mask1a = _mm_setr_epi8(-1, 15, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1);
@@ -304,21 +296,21 @@ inline void copy_bgr_rgb(unsigned char* const __restrict dst, const unsigned cha
        const __m128i mask1c = _mm_setr_epi8(-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, -1);
        const __m128i mask2a = _mm_setr_epi8(14, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1);
        const __m128i mask2b = _mm_setr_epi8(-1, 3, 2, 1, 6, 5, 4, 9, 8, 7, 12, 11, 10, 15, 14, 13);
-       for (size_t s = 0; s < send; s += 16, o += 48)
+       for (; o+15 < size; o+=16)
        {
-          const __m128i c[3] = { _mm_loadu_si128((__m128i *)(src + o)), _mm_loadu_si128((__m128i *)(src + o + 16)), _mm_loadu_si128((__m128i *)(src + o + 32)) };
-          _mm_store_si128((__m128i *)(dst + o     ), _mm_or_si128(_mm_shuffle_epi8(c[0], mask0a), _mm_shuffle_epi8(c[1], mask0b)));
-          _mm_store_si128((__m128i *)(dst + o + 16), _mm_or_si128(_mm_or_si128(_mm_shuffle_epi8(c[0], mask1a), _mm_shuffle_epi8(c[1], mask1b)), _mm_shuffle_epi8(c[2], mask1c)));
-          _mm_store_si128((__m128i *)(dst + o + 32), _mm_or_si128(_mm_shuffle_epi8(c[1], mask2a), _mm_shuffle_epi8(c[2], mask2b)));
+          const __m128i c[3] = { _mm_loadu_si128((__m128i *)(src + o*3)), _mm_loadu_si128((__m128i *)(src + o*3 + 16)), _mm_loadu_si128((__m128i *)(src + o*3 + 32)) };
+          _mm_store_si128((__m128i *)(dst + o*3     ), _mm_or_si128(_mm_shuffle_epi8(c[0], mask0a), _mm_shuffle_epi8(c[1], mask0b)));
+          _mm_store_si128((__m128i *)(dst + o*3 + 16), _mm_or_si128(_mm_or_si128(_mm_shuffle_epi8(c[0], mask1a), _mm_shuffle_epi8(c[1], mask1b)), _mm_shuffle_epi8(c[2], mask1c)));
+          _mm_store_si128((__m128i *)(dst + o*3 + 32), _mm_or_si128(_mm_shuffle_epi8(c[1], mask2a), _mm_shuffle_epi8(c[2], mask2b)));
        }
     }
 #endif
 
-    for (size_t s = send; s < size; ++s, o += 3)
+    for (; o < size; ++o)
     {
-       dst[o    ] = src[o + 2];
-       dst[o + 1] = src[o + 1];
-       dst[o + 2] = src[o + 0];
+       dst[o*3    ] = src[o*3 + 2];
+       dst[o*3 + 1] = src[o*3 + 1];
+       dst[o*3 + 2] = src[o*3 + 0];
     }
 }
 
