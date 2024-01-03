@@ -9,6 +9,7 @@
 struct FIBITMAP;
 
 // to avoid unnecessary zero-init/memset of texture data in here
+#pragma pack(push, 1)
 class BYTE2 final
 {
    unsigned char c;
@@ -16,6 +17,7 @@ public:
    BYTE2() {}
    operator unsigned char() const { return c; }
 };
+#pragma pack(pop)
 
 // texture stored in main memory in 24/32bit RGB/RGBA uchar format or 48/96bit RGB float
 class BaseTexture final
