@@ -608,13 +608,22 @@ void Textbox::Render(const unsigned int renderMask)
             dest += m_texture->pitch() / 4 - m_texture->width();
          }
 
-         m_rd->m_texMan.SetDirty(m_texture);
-
          SelectObject(hdc, oldFont);
          SelectObject(hdc, oldBmp);
          DeleteDC(hdc);
          DeleteObject(hbm);
+#else
+         //!! temporary workaround
+         if (m_d.m_transparent)
+            memset(m_texture->data(), 0, m_texture->height()*m_texture->width() * 4);
+         else
+         {
+            unsigned int *const __restrict dest = (unsigned int *)m_texture->data();
+            for (size_t i = 0; i < (size_t)m_texture->height()*m_texture->width(); ++i)
+               dest[i] = 0xFF000000u;
+         }
 #endif
+         m_rd->m_texMan.SetDirty(m_texture);
       }
 
       m_rd->ResetRenderState();
