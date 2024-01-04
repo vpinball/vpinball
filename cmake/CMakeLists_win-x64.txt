@@ -215,6 +215,7 @@ add_executable(vpinball WIN32
    dialogs/ToolbarDialog.h
    dialogs/VideoOptionsDialog.cpp
    dialogs/VideoOptionsDialog.h
+
    math/bbox.h
    math/math.cpp
    math/math.h
@@ -291,7 +292,7 @@ add_executable(vpinball WIN32
    wintimer.h
    worker.cpp
    worker.h
-   
+
    src/audio/audioplayer.cpp
    src/audio/audioplayer.h
    src/audio/pinsound.cpp
@@ -601,6 +602,8 @@ target_precompile_headers(vpinball PUBLIC
 )
 
 set(OPT_COMMON /Ob2 /O2 /Oi /fp:fast /fp:except- /Ot /GF /GS- /Gy /GR- /Oy /GT /GL /w44005 /Zc:__cplusplus /std:c++20)
+
+set(CMAKE_VERBOSE_MAKEFILE ON)
 
 target_compile_options(vpinball PUBLIC
    $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:CXX>:${OPT_COMMON}>>
