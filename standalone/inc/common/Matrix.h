@@ -19,9 +19,9 @@ struct AffineTransform {
 AffineTransform AffineTransformMakeTranslation(float tx, float ty);
 AffineTransform AffineTransformMakeScale(float sx, float sy);
 AffineTransform AffineTransformMakeRotation(float angle);
-AffineTransform AffineTransformMakeMultiply(AffineTransform& a, AffineTransform& b);
+AffineTransform AffineTransformMakeMultiply(const AffineTransform& a, const AffineTransform& b);
 
-class Matrix
+class Matrix final
 {
 public:
     Matrix();

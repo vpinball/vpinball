@@ -2,7 +2,7 @@
 
 namespace VP {
 
-class Timer final
+class Timer
 {
 public:
     static Uint32 TimerCallback(Uint32 interval, void* param);

@@ -5,7 +5,7 @@
 
 namespace VP {
 
-class Window
+class Window final
 {
 public:
    Window(const string& name, int x, int y, int w, int h, int frameSkip = 0);

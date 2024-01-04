@@ -35,14 +35,14 @@ AffineTransform AffineTransformMakeScale(float sx, float sy)
 
 AffineTransform AffineTransformMakeRotation(float angle)
 {
-   float sinus = (float)sin(angle);
-   float cosinus = (float)cos(angle);
+   float sine = sinf(angle);
+   float cosine = cosf(angle);
 
-   AffineTransform tRet = { cosinus, sinus, -sinus,cosinus, 0,0 };
+   AffineTransform tRet = { cosine,sine, -sine,cosine, 0,0 };
    return tRet;
 }
 
-AffineTransform AffineTransformMakeMultiply(AffineTransform& a, AffineTransform& b)
+AffineTransform AffineTransformMakeMultiply(const AffineTransform& a, const AffineTransform& b)
 {
    AffineTransform tRet = {
       a.a * b.a + a.b * b.c,
