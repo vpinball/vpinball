@@ -14,7 +14,7 @@ PinUpPlayerTrigger* PinUpPlayerTrigger::CreateFromCSVLine(string line)
 {
    vector<string> parts = PinUpPlayerUtils::ParseCSVLine(line);
    if (parts.size() != 14)
-      return NULL;
+      return nullptr;
 
    PinUpPlayerTrigger* trigger = new PinUpPlayerTrigger();
 

@@ -14,7 +14,7 @@ PinUpPlayerScreen* PinUpPlayerScreen::CreateFromCSVLine(string line)
 {
    vector<string> parts = PinUpPlayerUtils::ParseCSVLine(line);
    if (parts.size() != 8)
-      return NULL;
+      return nullptr;
 
    PinUpPlayerScreen* screen = new PinUpPlayerScreen();
 

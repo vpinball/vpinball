@@ -2,7 +2,7 @@
 #include "PoleStorage.h"
 #include "PoleStream.h"
 
-HRESULT PoleStorage::Create(const string szFilename, const string szName, IStorage** ppstg)
+HRESULT PoleStorage::Create(const string& szFilename, const string& szName, IStorage** ppstg)
 {
    POLE::Storage* pPOLEStorage = new POLE::Storage(szFilename.c_str());
 
@@ -19,8 +19,7 @@ HRESULT PoleStorage::Create(const string szFilename, const string szName, IStora
       return S_OK;
    }
 
-   if (pPOLEStorage)
-      delete pPOLEStorage;
+   delete pPOLEStorage;
 
    return STG_E_FILENOTFOUND;
 }
@@ -30,9 +29,9 @@ HRESULT PoleStorage::Clone(PoleStorage* pPoleStorage, IStorage** ppstg)
    return PoleStorage::Create(pPoleStorage->m_szFilename, pPoleStorage->m_szPath, ppstg);
 }
 
-HRESULT PoleStorage::StreamExists(string szName)
+HRESULT PoleStorage::StreamExists(const string& szName)
 {
-   return m_pPOLEStorage->exists(m_szPath + "/" + szName) ? S_OK : STG_E_INVALIDNAME;
+   return m_pPOLEStorage->exists(m_szPath + '/' + szName) ? S_OK : STG_E_INVALIDNAME;
 }
 
 POLE::Storage* PoleStorage::getPOLEStorage()
@@ -59,8 +58,7 @@ STDMETHODIMP_(ULONG) PoleStorage::Release()
    m_dwRef--;
 
    if (m_dwRef == 0) {
-      if (m_pPOLEStorage)
-         delete m_pPOLEStorage;
+      delete m_pPOLEStorage;
 
       delete this;
    }

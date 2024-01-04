@@ -2,16 +2,16 @@
 
 #include "Matrix.h"
 
-class GraphicsPath
+class GraphicsPath final
 {
 public:
    GraphicsPath();
 
    GraphicsPath* Clone() const;
-   void AddPolygon(const vector<SDL_FPoint>* pPoints);
+   void AddPolygon(const vector<SDL_FPoint>* const pPoints);
    void AddEllipse(const SDL_FRect& rect);
    void AddEllipse(float x, float y, float width, float height);
-   void AddClosedCurve(const vector<SDL_FPoint>* pPoints, float tension);
+   void AddClosedCurve(const vector<SDL_FPoint>* const pPoints, float tension);
    void AddRectangle(const SDL_FRect& rect);
    void Transform(VP::Matrix* pMatrix);
    const vector<SDL_FPoint>* GetPoints() const { return &m_points; }

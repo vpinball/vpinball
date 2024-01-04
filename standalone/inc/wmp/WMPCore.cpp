@@ -28,7 +28,7 @@ STDMETHODIMP WMPCore::close()
 
    m_pAudioPlayer->MusicClose();
 
-   m_szURL = "";
+   m_szURL.clear();
    m_playState = wmppsUndefined;
 
    return S_OK;

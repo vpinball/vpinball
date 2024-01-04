@@ -78,7 +78,7 @@ void Matrix::Translate(float offsetX, float offsetY)
 
 void Matrix::Rotate(float angle)
 {
-   angle *= (M_PI / 180.0f);
+   angle *= (float)(M_PI / 180.0);
    AffineTransform affine = AffineTransformMakeRotation(angle);
    m_transform = AffineTransformMakeMultiply(affine, m_transform);
 }

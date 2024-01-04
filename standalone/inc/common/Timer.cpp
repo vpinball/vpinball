@@ -18,7 +18,7 @@ Timer::Timer()
    m_enabled = false;
 
    m_interval = 0;
-   m_elapsedListener = NULL;
+   m_elapsedListener = nullptr;
 }
 
 Timer::Timer(Uint32 interval, ElapsedListener elapsedListener, void* param)

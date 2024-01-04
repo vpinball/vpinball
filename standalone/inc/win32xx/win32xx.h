@@ -8,7 +8,7 @@ class CMDIChild : public CWnd { };
 
 class CMDIDockFrame : public CDocker { 
 public:
-   CMDIChild* GetActiveMDIChild() { return (!m_children.empty()) ? m_children.front() : NULL; }
+   CMDIChild* GetActiveMDIChild() { return (!m_children.empty()) ? m_children.front() : nullptr; }
    void AddMDIChild(CMDIChild* pChild) { m_children.push_back(pChild); }
 private:
    vector<CMDIChild*> m_children;

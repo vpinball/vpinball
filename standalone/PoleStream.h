@@ -7,7 +7,7 @@
 
 class PoleStream : public IStream {
 public:
-   static HRESULT Create(PoleStorage* pStorage, const string szName, IStream** ppstm);
+   static HRESULT Create(PoleStorage* pStorage, const string& szName, IStream** ppstm);
 
    HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void **ppvObject);
    ULONG STDMETHODCALLTYPE AddRef();
@@ -26,8 +26,8 @@ public:
    STDMETHOD(Write)(const void *pv, ULONG cb, ULONG *pcbWritten);
 
 private:
-   PoleStorage* m_pStorage = NULL;
-   POLE::Stream* m_pPOLEStream = NULL;
+   PoleStorage* m_pStorage = nullptr;
+   POLE::Stream* m_pPOLEStream = nullptr;
 
    ULONG m_dwRef = 0;
 };

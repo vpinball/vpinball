@@ -50,8 +50,7 @@ void CALLBACK VPinMAMEController::OnSoundCommand(int boardNo, int cmd, const voi
 
 void CALLBACK VPinMAMEController::GetGameCallback(PinmameGame* pPinmameGame)
 {
-   if (m_pPinmameGame)
-      delete m_pPinmameGame;
+   delete m_pPinmameGame;
 
    m_pPinmameGame = new PinmameGame();
    memcpy(m_pPinmameGame, pPinmameGame, sizeof(PinmameGame));
@@ -366,26 +365,19 @@ VPinMAMEController::~VPinMAMEController()
    if (m_pDmd)
       m_pDmd->Cleanup();
 
-   if (m_pSolenoidBuffer)
-      delete m_pSolenoidBuffer;
+   delete m_pSolenoidBuffer;
 
-   if (m_pLampBuffer)
-      delete m_pLampBuffer;
+   delete m_pLampBuffer;
 
-   if (m_pGIBuffer)
-      delete m_pGIBuffer;
+   delete m_pGIBuffer;
 
-   if (m_pLEDBuffer)
-      delete m_pLEDBuffer;
+   delete m_pLEDBuffer;
 
-   if (m_pSoundCommandBuffer)
-      delete m_pSoundCommandBuffer;
+   delete m_pSoundCommandBuffer;
 
-   if (m_pPinmameGame)
-      delete m_pPinmameGame;
+   delete m_pPinmameGame;
 
-   if (m_pPinmameMechConfig)
-      delete m_pPinmameMechConfig;
+   delete m_pPinmameMechConfig;
 
    m_pGames->Release();
 }

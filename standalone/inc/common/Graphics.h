@@ -12,7 +12,7 @@
 
 namespace VP {
 
-class Graphics {
+class Graphics final {
 public:
    Graphics(SDL_Renderer* pRenderer);
    Graphics(SDL_Surface* pSurface);

@@ -2,7 +2,7 @@
 
 namespace VP {
 
-class Timer
+class Timer final
 {
 public:
     static Uint32 TimerCallback(Uint32 interval, void* param);
@@ -10,7 +10,7 @@ public:
     using ElapsedListener = std::function<void(Timer* pTimer)>;
 
     Timer();
-    Timer(Uint32 interval, ElapsedListener listener, void* param = NULL);
+    Timer(Uint32 interval, ElapsedListener listener, void* param = nullptr);
     ~Timer();
     
     virtual void Start();

@@ -8,10 +8,10 @@ using std::string;
 
 class PoleStorage : public IStorage {
 public:
-   static HRESULT Create(const string szFilename, const string szName, IStorage** ppstg);
+   static HRESULT Create(const string& szFilename, const string& szName, IStorage** ppstg);
    static HRESULT Clone(PoleStorage* pPoleStorage, IStorage** ppstg);
 
-   HRESULT StreamExists(string szName);
+   HRESULT StreamExists(const string& szName);
    POLE::Storage* getPOLEStorage();
    string getPath();
 
@@ -36,7 +36,7 @@ public:
    STDMETHOD(Stat)(STATSTG *pstatstg, DWORD grfStatFlag);
 
 private:
-  POLE::Storage* m_pPOLEStorage = NULL;
+  POLE::Storage* m_pPOLEStorage = nullptr;
   string m_szFilename;
   string m_szPath;
 

@@ -14,7 +14,7 @@ PinUpPlayerPlaylist* PinUpPlayerPlaylist::CreateFromCSVLine(string line)
 {
    vector<string> parts = PinUpPlayerUtils::ParseCSVLine(line);
    if (parts.size() != 7)
-      return NULL;
+      return nullptr;
 
    PinUpPlayerPlaylist* playlist = new PinUpPlayerPlaylist();
 

@@ -35,7 +35,7 @@ void WebServer::EventHandler(struct mg_connection *c, int ev, void *ev_data, voi
 WebServer::WebServer() 
 {
    m_run = false;
-   m_pThread = NULL;
+   m_pThread = nullptr;
 }
 
 WebServer::~WebServer() 
@@ -68,7 +68,7 @@ void WebServer::Files(struct mg_connection *c, struct mg_http_message* hm)
       return;
    }
 
-   string json = "[ ";
+   string json = "[ "s;
 
    int i = 0;
 
@@ -82,7 +82,7 @@ void WebServer::Files(struct mg_connection *c, struct mg_http_message* hm)
          json += ", ";
 
       string file = path + entry->d_name;
-      string ext = "";
+      string ext;
 
       if (entry->d_type != DT_DIR)
          ext = extension_from_path(file);
@@ -241,7 +241,7 @@ void WebServer::Command(struct mg_connection *c, struct mg_http_message* hm)
 
 string WebServer::GetUrl()
 {
-   return m_run ? m_url : "";
+   return m_run ? m_url : string();
 }
 
 void WebServer::Start()
@@ -278,14 +278,14 @@ void WebServer::Start()
          PLOGI.printf("To access the web server, in a browser go to: %s", m_url.c_str());
       }
       else
-         m_url = "";
+         m_url.clear();
 
       m_pThread = new std::thread([this]() {
          while (m_run)
             mg_mgr_poll(&m_mgr, 1000);
 
          mg_mgr_free(&m_mgr);
-         m_url = "";
+         m_url.clear();
 
          PLOGI.printf("Web server closed");
       });
@@ -308,7 +308,7 @@ void WebServer::Stop()
       m_pThread->join();
       delete m_pThread;
 
-      m_pThread = NULL;
+      m_pThread = nullptr;
    }
 }
 
@@ -324,13 +324,12 @@ string WebServer::GetIPAddress()
    int family;
    int s;
    char host[NI_MAXHOST];
-   string ip;
 
    if (getifaddrs(&ifaddr) == -1)
-      return "";
+      return string();
 
-   for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) {
-      if (ifa->ifa_addr == NULL)
+   for (ifa = ifaddr; ifa != nullptr; ifa = ifa->ifa_next) {
+      if (ifa->ifa_addr == nullptr)
          continue;
 
       family = ifa->ifa_addr->sa_family;
@@ -338,15 +337,16 @@ string WebServer::GetIPAddress()
       if (family == AF_INET) {
          if (!strcmp(ifa->ifa_name, "wlan0") || !strcmp(ifa->ifa_name, "eth0") || !strcmp(ifa->ifa_name, "en0") || !strcmp(ifa->ifa_name, "en1")) {
             s = getnameinfo(ifa->ifa_addr, sizeof(struct sockaddr_in), host, NI_MAXHOST, NULL, 0, NI_NUMERICHOST);
+            freeifaddrs(ifaddr);
             if (s != 0)
-               return "";
-            ip = host;
-            break;
+               return string();
+            else
+               return host;
          }
       }
    }
 
    freeifaddrs(ifaddr);
 
-   return ip;
+   return string();
 }

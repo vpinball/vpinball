@@ -1,10 +1,10 @@
 #include "stdafx.h"
 #include "PoleStream.h"
 
-HRESULT PoleStream::Create(PoleStorage* pStorage, const string szName, IStream** ppstm)
+HRESULT PoleStream::Create(PoleStorage* pStorage, const string& szName, IStream** ppstm)
 {
    PoleStream* pStm = new PoleStream();
-   pStm->m_pPOLEStream = new POLE::Stream(pStorage->getPOLEStorage(), pStorage->getPath() + "/" + szName);
+   pStm->m_pPOLEStream = new POLE::Stream(pStorage->getPOLEStorage(), pStorage->getPath() + '/' + szName);
    pStm->m_pStorage = pStorage;
 
    pStm->AddRef();
@@ -28,8 +28,7 @@ STDMETHODIMP_(ULONG) PoleStream::Release()
    m_dwRef--;
 
    if (m_dwRef == 0) {
-      if (m_pPOLEStream)
-         delete m_pPOLEStream;
+      delete m_pPOLEStream;
 
       m_pStorage->Release();
    

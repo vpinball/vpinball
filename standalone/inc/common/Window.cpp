@@ -12,8 +12,8 @@ static SDL_HitTestResult WindowHitTest(SDL_Window* pWindow, const SDL_Point* pAr
 
 Window::Window(const string& name, int x, int y, int w, int h, int frameSkip)
 {
-   m_pRenderer = NULL;
-   m_pGraphics = NULL;
+   m_pRenderer = nullptr;
+   m_pGraphics = nullptr;
 
    m_update = false;
 
@@ -27,10 +27,10 @@ Window::Window(const string& name, int x, int y, int w, int h, int frameSkip)
 
    m_pWindow = SDL_CreateWindow(m_szName.c_str(), x, y, w, h, flags);
    if (m_pWindow) {
-      int w, h;
+      int w2, h2;
       SDL_GetWindowPosition(m_pWindow, &m_x, &m_y);
-      SDL_GetWindowSize(m_pWindow, &w, &h);
-      PLOGI.printf("%s window created: %d, %d (%dx%d)", m_szName.c_str(), m_x, m_y, w, h);
+      SDL_GetWindowSize(m_pWindow, &w2, &h2);
+      PLOGI.printf("%s window created: %d, %d (%dx%d)", m_szName.c_str(), m_x, m_y, w2, h2);
 
       m_pTimer = new VP::Timer();
       m_pTimer->SetInterval(200);
@@ -42,7 +42,7 @@ Window::Window(const string& name, int x, int y, int w, int h, int frameSkip)
 
       m_pRenderer = SDL_CreateRenderer(m_pWindow, -1, SDL_RENDERER_ACCELERATED);
       if (m_pRenderer) {
-         SDL_RenderSetLogicalSize(m_pRenderer, w, h);
+         SDL_RenderSetLogicalSize(m_pRenderer, w2, h2);
          m_pGraphics = new VP::Graphics(m_pRenderer);
       }
    }
@@ -54,11 +54,9 @@ Window::Window(const string& name, int x, int y, int w, int h, int frameSkip)
 
 Window::~Window()
 {
-   if (m_pTimer)
-      delete m_pTimer;
+   delete m_pTimer;
 
-   if (m_pGraphics)
-      delete m_pGraphics;
+   delete m_pGraphics;
 
    if (m_pRenderer)
       SDL_DestroyRenderer(m_pRenderer);
