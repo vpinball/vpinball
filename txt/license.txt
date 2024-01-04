@@ -359,7 +359,7 @@ DEALINGS IN THE SOFTWARE.
 
 The GPLv3+ License:
 
-Copyright (C) 2000-2023 Visual Pinball development team and contributors
+Copyright (C) 2000-2024 Visual Pinball development team and contributors
                         (unless specifically noted differently in a respective source file)
 
 Visual Pinball is free software: you can redistribute it and/or modify
