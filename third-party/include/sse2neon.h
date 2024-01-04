@@ -134,7 +134,7 @@
 #endif
 
 #if !defined(__cplusplus)
-#error SSE2NEON only supports C++ compilation with this compiler
+//#error SSE2NEON only supports C++ compilation with this compiler
 #endif
 
 #ifdef SSE2NEON_ALLOC_DEFINED
@@ -144,6 +144,19 @@
 #if (defined(_M_AMD64) || defined(__x86_64__)) || \
     (defined(_M_ARM64) || defined(__arm64__))
 #define SSE2NEON_HAS_BITSCAN64
+#endif
+
+#ifndef ARM64_SYSREG
+#define ARM64_SYSREG(op0, op1, crn, crm, op2) \
+        ( ((op0 & 1) << 14) | \
+          ((op1 & 7) << 11) | \
+          ((crn & 15) << 7) | \
+          ((crm & 15) << 3) | \
+          ((op2 & 7) << 0) )
+#endif
+
+#ifndef ARM64_FPCR
+#define ARM64_FPCR              ARM64_SYSREG(3, 3, 4, 4, 0)   // Floating point control register (EL0)
 #endif
 #endif
 
