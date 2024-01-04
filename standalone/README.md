@@ -69,6 +69,7 @@ To make a successful port, we would need tackle several tasks:
 >   - ~~[Bug 55185](https://bugs.winehq.org/show_bug.cgi?id=55185) - vbscript round does not handle numdecimalplaces argument~~
 >   - ~~[Bug 55931](https://bugs.winehq.org/show_bug.cgi?id=55931) - vbscript: empty MOD 100000 returns garbage instead of 0~~
 >   - ~~[Bug 55969](https://bugs.winehq.org/show_bug.cgi?id=55969) - vbscript fails to return TypeName for Nothing~~
+>   - [Bug 56139](https://bugs.winehq.org/show_bug.cgi?id=56139) - scrrun: Dictionary does not allow storing at key Undefined
 
 > - Add support for `Scripting.FileSystemObject` and `Scripting.Dictionary` leveraging Wine's `scrrun` code.
 > - Add support for `E_NOTIMPL` commands to Wine's VBScript engine:
@@ -539,6 +540,9 @@ On the host computer, in Visual Studio Code:
 To keep up with all the changes in master, and make it easier to rebase, this branch is a single commit -- until most tables work with no vbs changes.
 
 The downside of this approach is not accurately keeping track of history:
+
+* 01/04/23
+  * Implement [official](https://gitlab.winehq.org/wine/wine/-/merge_requests/4778) scrrun/dictionary: Handle VT_EMPTY/VT_NULL keys
 
 * 12/13/23
   * Preserve file attributes for linux/sbc github artifacts

@@ -188,6 +188,12 @@ static BOOL is_matching_key(const struct dictionary *dict, const struct keyitem_
     {
         return hash == pair->hash && numeric_key_eq(key, &pair->key);
     }
+#ifdef __STANDALONE__
+    else if (V_VT(&pair->key) == VT_EMPTY || V_VT(&pair->key) == VT_NULL)
+    {
+        return V_VT(&pair->key) == V_VT(key);
+    }
+#endif
     else
     {
         WARN("Unexpected key type %#x.\n", V_VT(key));
