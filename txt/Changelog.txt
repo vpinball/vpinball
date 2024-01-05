@@ -5,6 +5,8 @@ FEATURES:
 
 - add -v command line option to just output the version and quit
 
+- add "Surface" to the "Select Element" table
+
 FIXES:
 
 - update FreeImage library to latest 3.19.0 beta (custom build)
