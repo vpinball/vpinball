@@ -5,11 +5,11 @@ FEATURES:
 
 - add -v command line option to just output the version and quit
 
-- add "Surface" to the "Select Element" table
+- add "Surface" to the "Select Element" list
 
 FIXES:
 
-- update FreeImage library to latest 3.19.0 beta (custom build)
+- update FreeImage library to latest 3.19.0 beta (custom build with more optimizations enabled, and a special FP16 path for .exr files)
 
 - DirectX 8 port for input handling (currently disabled)
 
