@@ -29,7 +29,6 @@ add_compile_definitions(
    ENABLE_INI_SETTINGS
    ENABLE_SDL_INPUT
    ENABLE_SDL
-   ENABLE_XINPUT
    USE_DINPUT8
 )
 

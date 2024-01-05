@@ -231,6 +231,7 @@ add_executable(vpinball WIN32
    dialogs/ToolbarDialog.h
    dialogs/VideoOptionsDialog.cpp
    dialogs/VideoOptionsDialog.h
+
    math/bbox.h
    math/math.cpp
    math/math.h
@@ -615,6 +616,15 @@ target_include_directories(vpinball PUBLIC
 
 target_precompile_headers(vpinball PUBLIC
    stdafx.h
+)
+
+set(OPT_COMMON /Ob2 /O2 /Oi /arch:SSE2 /fp:fast /fp:except- /Ot /GF /GS- /Gy /GR- /Oy /GT /GL /w44005 /Zc:__cplusplus /std:c++20)
+
+set(CMAKE_VERBOSE_MAKEFILE ON)
+
+target_compile_options(vpinball PUBLIC
+   $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:CXX>:${OPT_COMMON}>>
+   $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C>:${OPT_COMMON}>>
 )
 
 target_link_directories(vpinball PUBLIC 
