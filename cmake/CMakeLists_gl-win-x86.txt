@@ -196,6 +196,7 @@ add_executable(vpinball WIN32
    dialogs/ToolbarDialog.h
    dialogs/VideoOptionsDialog.cpp
    dialogs/VideoOptionsDialog.h
+
    math/bbox.h
    math/math.cpp
    math/math.h
@@ -283,7 +284,7 @@ add_executable(vpinball WIN32
    wintimer.h
    worker.cpp
    worker.h
-   
+
    src/audio/audioplayer.cpp
    src/audio/audioplayer.h
    src/audio/pinsound.cpp
@@ -572,6 +573,15 @@ target_precompile_headers(vpinball PUBLIC
    stdafx.h
 )
 
+set(OPT_COMMON /Ob2 /O2 /Oi /arch:SSE2 /fp:fast /fp:except- /Ot /GF /GS- /Gy /GR- /Oy /GT /GL /w44005 /Zc:__cplusplus /std:c++20)
+
+set(CMAKE_VERBOSE_MAKEFILE ON)
+
+target_compile_options(vpinball PUBLIC
+   $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:CXX>:${OPT_COMMON}>>
+   $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C>:${OPT_COMMON}>>
+)
+
 target_link_directories(vpinball PUBLIC 
    $ENV{DXSDK_DIR}/Lib/x86
    third-party/build-libs/windows-x86
@@ -620,25 +630,25 @@ add_custom_command(TARGET vpinball POST_BUILD
    COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/tables" "$<TARGET_FILE_DIR:vpinball>/tables"
    COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/txt" "$<TARGET_FILE_DIR:vpinball>/docs"
 
-   COMMAND "${CMAKE_COMMAND}" -E make_directory "$<TARGET_FILE_DIR:vpinball>/shader"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/BallShader.glfx" "$<TARGET_FILE_DIR:vpinball>/shader"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/BallShadows.fxh" "$<TARGET_FILE_DIR:vpinball>/shader"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/BasicShader.glfx" "$<TARGET_FILE_DIR:vpinball>/shader"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/ClassicLightShader.glfx" "$<TARGET_FILE_DIR:vpinball>/shader"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/DMDShader.glfx" "$<TARGET_FILE_DIR:vpinball>/shader"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/DMDShaderVR.glfx" "$<TARGET_FILE_DIR:vpinball>/shader"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/FBShader.fxh" "$<TARGET_FILE_DIR:vpinball>/shader"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/FBShader.glfx" "$<TARGET_FILE_DIR:vpinball>/shader"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/FlasherShader.glfx" "$<TARGET_FILE_DIR:vpinball>/shader"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/FXAAStereoAO_GL.fxh" "$<TARGET_FILE_DIR:vpinball>/shader"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/Helpers.fxh" "$<TARGET_FILE_DIR:vpinball>/shader"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/LightShader.glfx" "$<TARGET_FILE_DIR:vpinball>/shader"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/Material_GL.fxh" "$<TARGET_FILE_DIR:vpinball>/shader"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/SMAA.fxh" "$<TARGET_FILE_DIR:vpinball>/shader"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/SMAA.glfx" "$<TARGET_FILE_DIR:vpinball>/shader"  
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/SSR_GL.fxh" "$<TARGET_FILE_DIR:vpinball>/shader"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/Stereo.fxh" "$<TARGET_FILE_DIR:vpinball>/shader"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/StereoShader.glfx" "$<TARGET_FILE_DIR:vpinball>/shader"
+   COMMAND "${CMAKE_COMMAND}" -E make_directory "$<TARGET_FILE_DIR:vpinball>/shader${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/BallShader.glfx" "$<TARGET_FILE_DIR:vpinball>/shader${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/BallShadows.fxh" "$<TARGET_FILE_DIR:vpinball>/shader${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/BasicShader.glfx" "$<TARGET_FILE_DIR:vpinball>/shader${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/ClassicLightShader.glfx" "$<TARGET_FILE_DIR:vpinball>/shader${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/DMDShader.glfx" "$<TARGET_FILE_DIR:vpinball>/shader${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/DMDShaderVR.glfx" "$<TARGET_FILE_DIR:vpinball>/shader${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/FBShader.fxh" "$<TARGET_FILE_DIR:vpinball>/shader${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/FBShader.glfx" "$<TARGET_FILE_DIR:vpinball>/shader${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/FlasherShader.glfx" "$<TARGET_FILE_DIR:vpinball>/shader${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/FXAAStereoAO_GL.fxh" "$<TARGET_FILE_DIR:vpinball>/shader${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/Helpers.fxh" "$<TARGET_FILE_DIR:vpinball>/shader${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/LightShader.glfx" "$<TARGET_FILE_DIR:vpinball>/shader${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/Material_GL.fxh" "$<TARGET_FILE_DIR:vpinball>/shader${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/SMAA.fxh" "$<TARGET_FILE_DIR:vpinball>/shader${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/SMAA.glfx" "$<TARGET_FILE_DIR:vpinball>/shader${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}"  
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/SSR_GL.fxh" "$<TARGET_FILE_DIR:vpinball>/shader${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/Stereo.fxh" "$<TARGET_FILE_DIR:vpinball>/shader${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/StereoShader.glfx" "$<TARGET_FILE_DIR:vpinball>/shader${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}"
    
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x86/Bass.dll" "$<TARGET_FILE_DIR:vpinball>"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x86/SDL2.dll" "$<TARGET_FILE_DIR:vpinball>"

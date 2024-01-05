@@ -6,6 +6,8 @@
 #include <plog/Log.h>
 #include <plog/Initializers/RollingFileInitializer.h>
 
+#include "vpversion.h"
+
 #ifdef ENABLE_SDL
 #include <windows.h>
 #include <iostream>
@@ -180,7 +182,7 @@ string Shader::GetTechniqueName(ShaderTechniques technique)
 }
 
 
-#define SHADER_UNIFORM(type, name, count) { type, #name, count, ""s, SA_UNDEFINED, SA_UNDEFINED, SF_UNDEFINED }
+#define SHADER_UNIFORM(type, name, count) { type, #name, count, string(), SA_UNDEFINED, SA_UNDEFINED, SF_UNDEFINED }
 #define SHADER_SAMPLER(name, tex_name, default_clampu, default_clampv, default_filter) { SUT_Sampler, #name, 1, #tex_name, default_clampu, default_clampv, default_filter }
 Shader::ShaderUniform Shader::shaderUniformNames[SHADER_UNIFORM_COUNT] {
    // Shared uniforms
@@ -358,7 +360,7 @@ Shader::Shader(RenderDevice* renderDevice, const std::string& src1, const std::s
       shaderUniformNames[SHADER_ballMatrixBlock].count = 4 * 16 * 4;
    }
    #endif
-   
+
    m_technique = SHADER_TECHNIQUE_INVALID;
    #ifdef ENABLE_SDL // OpenGL
    memset(m_techniques, 0, sizeof(ShaderTechnique*) * SHADER_TECHNIQUE_COUNT);
@@ -367,7 +369,7 @@ Shader::Shader(RenderDevice* renderDevice, const std::string& src1, const std::s
    #endif
 
    Load(src1, code, codeSize);
-   if (src2 != ""s) // Additional source file used by OpenGL (TODO we should rmeove this and merge at the shader file level)
+   if (!src2.empty()) // Additional source file used by OpenGL (TODO we should rmeove this and merge at the shader file level)
       Load(src2, nullptr, 0);
 
    memset(m_stateOffsets, -1, sizeof(m_stateOffsets));
@@ -454,9 +456,9 @@ Shader::~Shader()
 void Shader::UnbindSampler(Sampler* sampler)
 {
    #if !defined(ENABLE_SDL)
-   for (auto uniform : m_uniforms[0])
+   for (const auto& uniform : m_uniforms[0])
    {
-      auto desc = m_uniform_desc[uniform];
+      const auto& desc = m_uniform_desc[uniform];
       if (desc.uniform.type == SUT_Sampler && (sampler == nullptr || m_boundTexture[desc.sampler] == sampler))
       {
          CHECKD3D(m_shader->SetTexture(desc.tex_handle, nullptr));
@@ -481,7 +483,7 @@ void Shader::Begin()
       CHECKD3D(m_shader->SetTechnique((D3DXHANDLE)shaderTechniqueNames[m_technique].c_str()));
 #endif
    }
-   for (auto uniformName : m_uniforms[m_technique])
+   for (const auto& uniformName : m_uniforms[m_technique])
       ApplyUniform(uniformName);
 #ifndef ENABLE_SDL
    unsigned int cPasses;
@@ -1009,8 +1011,8 @@ bool Shader::parseFile(const string& fileNameRoot, const string& fileName, int l
          if (line.compare(0, 4, "////") == 0) {
             string newMode = line.substr(4, line.length() - 4);
             if (newMode == "DEFINES") {
-               currentElement.append("#define GLSL\n");
-               currentElement.append("\n");
+               currentElement.append("#define GLSL\n"s);
+               currentElement.append("\n"s);
                if (UseGeometryShader())
                   currentElement.append("#define USE_GEOMETRY_SHADER 1\n"s);
                else
@@ -1047,7 +1049,7 @@ bool Shader::parseFile(const string& fileNameRoot, const string& fileName, int l
             currentElement = values[currentMode];
          }
          else {
-            currentElement.append(line).append("\n");
+            currentElement.append(line).append("\n"s);
          }
       }
       values[currentMode] = currentElement;
@@ -1240,7 +1242,7 @@ Shader::ShaderTechnique* Shader::compileGLShader(const ShaderTechniques techniqu
             for (int i2 = 0; i2 < length; i2++)
             {
                if (uniformName[i2] == '[') {
-                  uniformName[i2] = 0;
+                  uniformName[i2] = '\0';
                   break;
                }
             }
@@ -1248,7 +1250,7 @@ Shader::ShaderTechnique* Shader::compileGLShader(const ShaderTechniques techniqu
             if (uniformIndex < SHADER_UNIFORM_COUNT)
             {
                m_uniforms[technique].push_back(uniformIndex);
-               auto uniform = shaderUniformNames[uniformIndex];
+               const auto& uniform = shaderUniformNames[uniformIndex];
                assert(uniform.type != SUT_Bool || type == GL_BOOL);
                assert(uniform.type != SUT_Int || type == GL_INT);
                assert(uniform.type != SUT_Float || type == GL_FLOAT);
@@ -1279,14 +1281,14 @@ Shader::ShaderTechnique* Shader::compileGLShader(const ShaderTechniques techniqu
             //hack for packedLights, but works for all arrays - I don't need it for uniform blocks now and I'm not sure if it makes any sense, but maybe someone else in the future?
             for (int i2 = 0;i2 < length;i2++) {
                if (uniformName[i2] == '[') {
-                  uniformName[i2] = 0;
+                  uniformName[i2] = '\0';
                   break;
                }
             }
             auto uniformIndex = getUniformByName(uniformName);
             if (uniformIndex < SHADER_UNIFORM_COUNT)
             {
-               auto uniform = shaderUniformNames[uniformIndex];
+               const auto& uniform = shaderUniformNames[uniformIndex];
                assert(uniform.type == ShaderUniformType::SUT_DataBlock);
                assert(uniform.count == size);
                shader->uniform_desc[uniformIndex].uniform = uniform;
@@ -1329,10 +1331,10 @@ bool Shader::Load(const std::string& name, const BYTE* code, unsigned int codeSi
    /*DWORD length =*/ GetModuleFileName(nullptr, glShaderPath, MAX_PATH);
    m_shaderPath = string(glShaderPath);
    m_shaderPath = m_shaderPath.substr(0, m_shaderPath.find_last_of("\\/"));
-   m_shaderPath.append(PATH_SEPARATOR_CHAR + "shader"s + PATH_SEPARATOR_CHAR);
+   m_shaderPath.append(PATH_SEPARATOR_CHAR + "shader"s + std::to_string(VP_VERSION_MAJOR) + '.' + std::to_string(VP_VERSION_MINOR) + '.' + std::to_string(VP_VERSION_REV) + PATH_SEPARATOR_CHAR);
    PLOGI << "Parsing file " << name;
    robin_hood::unordered_map<string, string> values;
-   const bool parsing = parseFile(m_shaderCodeName, m_shaderCodeName, 0, values, "GLOBAL");
+   const bool parsing = parseFile(m_shaderCodeName, m_shaderCodeName, 0, values, "GLOBAL"s);
    if (!parsing) {
       m_hasError = true;
       PLOGE << "Parsing failed";
@@ -1341,22 +1343,22 @@ bool Shader::Load(const std::string& name, const BYTE* code, unsigned int codeSi
       ReportError(msg, -1, __FILE__, __LINE__);
       return false;
    }
-   robin_hood::unordered_map<string, string>::iterator it = values.find("GLOBAL");
+   robin_hood::unordered_map<string, string>::iterator it = values.find("GLOBAL"s);
    string global = (it != values.end()) ? it->second : string();
 
-   it = values.find("VERTEX");
+   it = values.find("VERTEX"s);
    string vertex = global;
    vertex.append((it != values.end()) ? it->second : string());
 
-   it = values.find("GEOMETRY");
+   it = values.find("GEOMETRY"s);
    string geometry = global;
    geometry.append((it != values.end()) ? it->second : string());
 
-   it = values.find("FRAGMENT");
+   it = values.find("FRAGMENT"s);
    string fragment = global;
    fragment.append((it != values.end()) ? it->second : string());
 
-   it = values.find("TECHNIQUES");
+   it = values.find("TECHNIQUES"s);
    std::stringstream techniques((it != values.end()) ? it->second : string());
    if (techniques)
    {
@@ -1385,19 +1387,19 @@ bool Shader::Load(const std::string& name, const BYTE* code, unsigned int codeSi
             {
                //PLOGI << "Compiling technique: " << shaderTechniqueNames[technique];
                string vertexShaderCode = vertex;
-               vertexShaderCode.append("\n//").append(_technique).append("\n//").append(element[2]).append("\n");
-               vertexShaderCode.append(analyzeFunction(m_shaderCodeName, _technique, element[2], values)).append("\0");
+               vertexShaderCode.append("\n//"s).append(_technique).append("\n//"s).append(element[2]).append("\n"s);
+               vertexShaderCode.append(analyzeFunction(m_shaderCodeName, _technique, element[2], values)).append("\0"s);
                string geometryShaderCode;
                if (elem == 5 && element[3].length() > 0)
                {
                   geometryShaderCode = geometry;
-                  geometryShaderCode.append("\n//").append(_technique).append("\n//").append(element[3]).append("\n");
-                  geometryShaderCode.append(analyzeFunction(m_shaderCodeName, _technique, element[3], values)).append("\0");
+                  geometryShaderCode.append("\n//").append(_technique).append("\n//").append(element[3]).append("\n"s);
+                  geometryShaderCode.append(analyzeFunction(m_shaderCodeName, _technique, element[3], values)).append("\0"s);
                }
                string fragmentShaderCode = fragment;
-               fragmentShaderCode.append("\n//").append(_technique).append("\n//").append(element[elem - 1]).append("\n");
-               fragmentShaderCode.append(analyzeFunction(m_shaderCodeName, _technique, element[elem - 1], values)).append("\0");
-               ShaderTechnique* build = compileGLShader(technique, m_shaderCodeName, element[0] /*.append("_").append(element[1])*/, vertexShaderCode, geometryShaderCode, fragmentShaderCode);
+               fragmentShaderCode.append("\n//").append(_technique).append("\n//").append(element[elem - 1]).append("\n"s);
+               fragmentShaderCode.append(analyzeFunction(m_shaderCodeName, _technique, element[elem - 1], values)).append("\0"s);
+               ShaderTechnique* build = compileGLShader(technique, m_shaderCodeName, element[0] /*.append("_"s).append(element[1])*/, vertexShaderCode, geometryShaderCode, fragmentShaderCode);
                if (build != nullptr)
                {
                   m_techniques[technique] = build;
@@ -1552,7 +1554,7 @@ bool Shader::Load(const std::string& name, const BYTE* code, unsigned int codeSi
       }
       else
       {
-         auto uniform = shaderUniformNames[uniformIndex];
+         const auto& uniform = shaderUniformNames[uniformIndex];
          assert(uniform.type == type);
          assert(uniform.count == count);
          m_uniform_desc[uniformIndex].uniform = uniform;
