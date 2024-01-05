@@ -72,6 +72,9 @@ void SearchSelectDialog::Update()
    lvc.cx = 70;
    lvc.pszText = (LPSTR)TEXT("Reflections enabled");
    index = ListView_InsertColumn(m_hElementList, 12, &lvc);
+   lvc.cx = 200;
+   lvc.pszText = (LPSTR)TEXT("Surface");
+   index = ListView_InsertColumn(m_hElementList, 13, &lvc);
 
    if (m_hElementList != nullptr)
       ListView_DeleteAllItems(m_hElementList);
@@ -324,6 +327,7 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       ListView_SetItemText(m_hElementList, idx, 10, /*sur->m_d.m_depthBias*/ (LPSTR)"N/A");
       ListView_SetItemText(m_hElementList, idx, 11, (LPSTR)(sur->StaticRendering() ? usedStringYes : usedStringNo));
       ListView_SetItemText(m_hElementList, idx, 12, /*sur->m_d.m_reflectionEnabled ? usedStringYes : usedStringNo*/ (LPSTR)"N/A");
+      ListView_SetItemText(m_hElementList, idx, 13, (LPSTR)"N/A");
       break;
    }
    case eItemRamp:
@@ -355,6 +359,7 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       const Material *const mat = m_curTable->GetMaterial(ramp->m_d.m_szMaterial);
       ListView_SetItemText(m_hElementList, idx, 11, (LPSTR)(mat == nullptr || !mat->m_bOpacityActive ? usedStringYes : usedStringNo)); //!!
       ListView_SetItemText(m_hElementList, idx, 12, (LPSTR)(ramp->m_d.m_reflectionEnabled ? usedStringYes : usedStringNo));
+      ListView_SetItemText(m_hElementList, idx, 13, (LPSTR)"N/A");
       break;
    }
    case eItemFlasher:
@@ -384,6 +389,7 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       ListView_SetItemText(m_hElementList, idx, 10, textBufc);
       ListView_SetItemText(m_hElementList, idx, 11, /*flasher->StaticRendering() ? usedStringYes : usedStringNo*/ (LPSTR)"N/A");
       ListView_SetItemText(m_hElementList, idx, 12, /*flasher->m_d.m_reflectionEnabled ? usedStringYes : usedStringNo*/ (LPSTR)"N/A");
+      ListView_SetItemText(m_hElementList, idx, 13, (LPSTR)"N/A");
       break;
    }
    case eItemRubber:
@@ -411,6 +417,7 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       ListView_SetItemText(m_hElementList, idx, 10, /*rubber->m_d.m_depthBias*/ (LPSTR)"N/A");
       ListView_SetItemText(m_hElementList, idx, 11, (LPSTR)(rubber->m_d.m_staticRendering ? usedStringYes : usedStringNo));
       ListView_SetItemText(m_hElementList, idx, 12, (LPSTR)(rubber->m_d.m_reflectionEnabled ? usedStringYes : usedStringNo));
+      ListView_SetItemText(m_hElementList, idx, 13, (LPSTR)"N/A");
       break;
    }
    case eItemSpinner:
@@ -438,6 +445,7 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       ListView_SetItemText(m_hElementList, idx, 10, /*spinner->m_d.m_depthBias*/ (LPSTR)"N/A");
       ListView_SetItemText(m_hElementList, idx, 11, /*spinner->StaticRendering() ? usedStringYes : usedStringNo*/ (LPSTR)"N/A");
       ListView_SetItemText(m_hElementList, idx, 12, (LPSTR)(spinner->m_d.m_reflectionEnabled ? usedStringYes : usedStringNo));
+      ListView_SetItemText(m_hElementList, idx, 13, (LPSTR)spinner->m_d.m_szSurface.c_str());
       break;
    }
    case eItemKicker:
@@ -462,6 +470,7 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       ListView_SetItemText(m_hElementList, idx, 10, /*kicker->m_d.m_depthBias*/ (LPSTR)"N/A");
       ListView_SetItemText(m_hElementList, idx, 11, /*kicker->StaticRendering() ? usedStringYes : usedStringNo*/ (LPSTR)"N/A");
       ListView_SetItemText(m_hElementList, idx, 12, (LPSTR)(kicker->m_d.m_reflectionEnabled ? usedStringYes : usedStringNo));
+      ListView_SetItemText(m_hElementList, idx, 13, (LPSTR)kicker->m_d.m_szSurface.c_str());
       break;
    }
    case eItemLight:
@@ -482,6 +491,7 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       ListView_SetItemText(m_hElementList, idx, 10, textBufc);
       ListView_SetItemText(m_hElementList, idx, 11, /*light->StaticRendering() ? usedStringYes : usedStringNo*/ (LPSTR)"N/A");
       ListView_SetItemText(m_hElementList, idx, 12, (LPSTR)(light->m_d.m_reflectionEnabled ? usedStringYes : usedStringNo));
+      ListView_SetItemText(m_hElementList, idx, 13, (LPSTR)light->m_d.m_szSurface.c_str());
       break;
    }
    case eItemBumper:
@@ -534,6 +544,7 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       ListView_SetItemText(m_hElementList, idx, 10, /*bumper->m_d.m_depthBias*/ (LPSTR)"N/A");
       ListView_SetItemText(m_hElementList, idx, 11, /*bumper->StaticRendering() ? usedStringYes : usedStringNo*/ (LPSTR)"N/A");
       ListView_SetItemText(m_hElementList, idx, 12, (LPSTR)(bumper->m_d.m_reflectionEnabled ? usedStringYes : usedStringNo));
+      ListView_SetItemText(m_hElementList, idx, 13, (LPSTR)bumper->m_d.m_szSurface.c_str());
       break;
    }
    case eItemFlipper:
@@ -569,6 +580,7 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       ListView_SetItemText(m_hElementList, idx, 10, /*flipper->m_d.m_depthBias*/ (LPSTR)"N/A");
       ListView_SetItemText(m_hElementList, idx, 11, /*flipper->StaticRendering() ? usedStringYes : usedStringNo*/ (LPSTR)"N/A");
       ListView_SetItemText(m_hElementList, idx, 12, (LPSTR)(flipper->m_d.m_reflectionEnabled ? usedStringYes : usedStringNo));
+      ListView_SetItemText(m_hElementList, idx, 13, (LPSTR)flipper->m_d.m_szSurface.c_str());
       break;
    }
    case eItemGate:
@@ -593,6 +605,7 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       ListView_SetItemText(m_hElementList, idx, 10, /*gate->m_d.m_depthBias*/ (LPSTR)"N/A");
       ListView_SetItemText(m_hElementList, idx, 11, /*gate->StaticRendering() ? usedStringYes : usedStringNo*/ (LPSTR)"N/A");
       ListView_SetItemText(m_hElementList, idx, 12, (LPSTR)(gate->m_d.m_reflectionEnabled ? usedStringYes : usedStringNo));
+      ListView_SetItemText(m_hElementList, idx, 13, (LPSTR)gate->m_d.m_szSurface.c_str());
       break;
    }
    case eItemTrigger:
@@ -617,6 +630,7 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       ListView_SetItemText(m_hElementList, idx, 10, /*trigger->m_d.m_depthBias*/ (LPSTR)"N/A");
       ListView_SetItemText(m_hElementList, idx, 11, /*trigger->StaticRendering() ? usedStringYes : usedStringNo*/ (LPSTR)"N/A");
       ListView_SetItemText(m_hElementList, idx, 12, (LPSTR)(trigger->m_d.m_reflectionEnabled ? usedStringYes : usedStringNo));
+      ListView_SetItemText(m_hElementList, idx, 13, (LPSTR)trigger->m_d.m_szSurface.c_str());
       break;
    }
    case eItemTimer:
@@ -660,6 +674,7 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       ListView_SetItemText(m_hElementList, idx, 10, /*plunger->m_d.m_depthBias*/ (LPSTR)"N/A");
       ListView_SetItemText(m_hElementList, idx, 11, /*plunger->StaticRendering() ? usedStringYes : usedStringNo*/ (LPSTR)"N/A");
       ListView_SetItemText(m_hElementList, idx, 12, (LPSTR)(plunger->m_d.m_reflectionEnabled ? usedStringYes : usedStringNo));
+      ListView_SetItemText(m_hElementList, idx, 13, (LPSTR)plunger->m_d.m_szSurface.c_str());
       break;
    }
    case eItemDispReel:
@@ -701,6 +716,7 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       ListView_SetItemText(m_hElementList, idx, 10, textBufc);
       ListView_SetItemText(m_hElementList, idx, 11, (LPSTR)(primitive->m_d.m_staticRendering ? usedStringYes : usedStringNo));
       ListView_SetItemText(m_hElementList, idx, 12, (LPSTR)(primitive->m_d.m_reflectionEnabled ? usedStringYes : usedStringNo));
+      ListView_SetItemText(m_hElementList, idx, 13, (LPSTR)"N/A");
       break;
    }
    case eItemHitTarget:
@@ -730,6 +746,7 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       ListView_SetItemText(m_hElementList, idx, 10, textBufc);
       ListView_SetItemText(m_hElementList, idx, 11, /*hitTarget->StaticRendering() ? usedStringYes : usedStringNo*/ (LPSTR)"N/A");
       ListView_SetItemText(m_hElementList, idx, 12, (LPSTR)(hitTarget->m_d.m_reflectionEnabled ? usedStringYes : usedStringNo));
+      ListView_SetItemText(m_hElementList, idx, 13, (LPSTR)"N/A");
       break;
    }
    case eItemDecal:
@@ -750,6 +767,7 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
          textBuf = decal->m_d.m_szPhysicsMaterial;
       ListView_SetItemText(m_hElementList, idx, 5, (LPSTR)textBuf.c_str());
 
+      ListView_SetItemText(m_hElementList, idx, 13, (LPSTR)decal->m_d.m_szSurface.c_str());
       break;
    }
    case eItemLightSeq:
