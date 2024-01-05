@@ -29,7 +29,7 @@ private:
     EditBox     m_posXEdit;
     EditBox     m_posYEdit;
     EditBox     m_widthEdit;
-    EditBox     m_heigthEdit;
+    EditBox     m_heightEdit;
     EditBox     m_rotationEdit;
     CFont       *m_font;
     vector<string> m_typeList;

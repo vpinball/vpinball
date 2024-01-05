@@ -296,12 +296,7 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect> &pvsel)
     {
         m_elementTypeName.SetWindowText("Decal");
         m_tabs[0] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new DecalVisualsProperty(&pvsel), _T("Visuals")));
-        if (m_tab.m_activeTabText == CString("Visuals"))
-            activePage = 0;
-        else if (m_tab.m_activeTabText == CString("Physics"))
-            activePage = 1;
-        else if (m_tab.m_activeTabText == CString("Timer"))
-            activePage = 2;
+        activePage = 0;
         break;
     }
     case eItemTextbox:

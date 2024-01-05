@@ -14,7 +14,7 @@ DecalVisualsProperty::DecalVisualsProperty(const VectorProtected<ISelect> *pvsel
     m_posXEdit.SetDialog(this);
     m_posYEdit.SetDialog(this);
     m_widthEdit.SetDialog(this);
-    m_heigthEdit.SetDialog(this);
+    m_heightEdit.SetDialog(this);
     m_rotationEdit.SetDialog(this);
     m_materialCombo.SetDialog(this);
     m_typeCombo.SetDialog(this);
@@ -25,8 +25,7 @@ DecalVisualsProperty::DecalVisualsProperty(const VectorProtected<ISelect> *pvsel
 
 DecalVisualsProperty::~DecalVisualsProperty()
 {
-    if (m_font)
-        delete m_font;
+    delete m_font;
 }
 
 void DecalVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
@@ -71,7 +70,7 @@ void DecalVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
         }
         if (dispid == 4 || dispid == -1)
         {
-            PropertyDialog::SetFloatTextbox(m_heigthEdit, decal->m_d.m_height);
+            PropertyDialog::SetFloatTextbox(m_heightEdit, decal->m_d.m_height);
             decal->EnsureSize();
         }
         if (dispid == 1 || dispid == -1)
@@ -185,7 +184,7 @@ void DecalVisualsProperty::UpdateProperties(const int dispid)
                 CHECK_UPDATE_ITEM(decal->m_d.m_width, PropertyDialog::GetFloatTextbox(m_widthEdit), decal);
                 break;
             case 4:
-                CHECK_UPDATE_ITEM(decal->m_d.m_height, PropertyDialog::GetFloatTextbox(m_heigthEdit), decal);
+                CHECK_UPDATE_ITEM(decal->m_d.m_height, PropertyDialog::GetFloatTextbox(m_heightEdit), decal);
                 break;
             case 1:
                 CHECK_UPDATE_ITEM(decal->m_d.m_rotation, PropertyDialog::GetFloatTextbox(m_rotationEdit), decal);
@@ -218,7 +217,7 @@ BOOL DecalVisualsProperty::OnInitDialog()
     m_posXEdit.AttachItem(5);
     m_posYEdit.AttachItem(6);
     m_widthEdit.AttachItem(3);
-    m_heigthEdit.AttachItem(4);
+    m_heightEdit.AttachItem(4);
     m_rotationEdit.AttachItem(1);
     m_surfaceCombo.AttachItem(IDC_SURFACE_COMBO);
     UpdateVisuals();
@@ -249,7 +248,7 @@ BOOL DecalVisualsProperty::OnInitDialog()
     m_resizer.AddChild(m_posXEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_posYEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_widthEdit, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_heigthEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_heightEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_rotationEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_surfaceCombo, CResizer::topleft, RD_STRETCH_WIDTH);
 
