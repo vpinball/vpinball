@@ -1898,7 +1898,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
   <ItemGroup>
     <ContentWithTargetPath Include="shader\**">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <TargetPath>shader\%(RecursiveDir)\%(Filename)%(Extension)</TargetPath>
+      <TargetPath>shader10.8.1\%(RecursiveDir)\%(Filename)%(Extension)</TargetPath>
     </ContentWithTargetPath>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

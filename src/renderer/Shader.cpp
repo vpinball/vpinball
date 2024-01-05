@@ -6,6 +6,8 @@
 #include <plog/Log.h>
 #include <plog/Initializers/RollingFileInitializer.h>
 
+#include "vpversion.h"
+
 #ifdef ENABLE_SDL
 #include <windows.h>
 #include <iostream>
@@ -1416,10 +1418,10 @@ string Shader::preprocessGLShader(const string& shaderCode) {
 bool Shader::Load(const std::string& name, const BYTE* code, unsigned int codeSize)
 {
    m_shaderCodeName = name;
-   m_shaderPath = g_pvp->m_szMyPath + "shader"s + PATH_SEPARATOR_CHAR;
+   m_shaderPath = g_pvp->m_szMyPath + ("shader" + std::to_string(VP_VERSION_MAJOR) + '.' + std::to_string(VP_VERSION_MINOR) + '.' + std::to_string(VP_VERSION_REV) + PATH_SEPARATOR_CHAR);
    PLOGI << "Parsing file " << name;
    robin_hood::unordered_map<string, string> values;
-   const bool parsing = parseFile(m_shaderCodeName, m_shaderCodeName, 0, values, "GLOBAL");
+   const bool parsing = parseFile(m_shaderCodeName, m_shaderCodeName, 0, values, "GLOBAL"s);
    if (!parsing) {
       m_hasError = true;
       PLOGE << "Parsing failed";
@@ -1428,22 +1430,22 @@ bool Shader::Load(const std::string& name, const BYTE* code, unsigned int codeSi
       ReportError(msg, -1, __FILE__, __LINE__);
       return false;
    }
-   robin_hood::unordered_map<string, string>::iterator it = values.find("GLOBAL");
+   robin_hood::unordered_map<string, string>::iterator it = values.find("GLOBAL"s);
    string global = (it != values.end()) ? it->second : string();
 
-   it = values.find("VERTEX");
+   it = values.find("VERTEX"s);
    string vertex = global;
    vertex.append((it != values.end()) ? it->second : string());
 
-   it = values.find("GEOMETRY");
+   it = values.find("GEOMETRY"s);
    string geometry = global;
    geometry.append((it != values.end()) ? it->second : string());
 
-   it = values.find("FRAGMENT");
+   it = values.find("FRAGMENT"s);
    string fragment = global;
    fragment.append((it != values.end()) ? it->second : string());
 
-   it = values.find("TECHNIQUES");
+   it = values.find("TECHNIQUES"s);
    std::stringstream techniques((it != values.end()) ? it->second : string());
    if (techniques)
    {
