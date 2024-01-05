@@ -136,7 +136,7 @@ jobs:
           fi
           cp build/${{ matrix.config }}/*.dll tmp
           cp -r build/${{ matrix.config }}/assets tmp
-          cp -r build/${{ matrix.config }}/shader tmp
+          cp -r build/${{ matrix.config }}/shader10.8.0 tmp
           cp -r build/${{ matrix.config }}/scripts tmp
           cp -r build/${{ matrix.config }}/tables tmp
           cp -r build/${{ matrix.config }}/docs tmp
