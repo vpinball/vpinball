@@ -74,7 +74,7 @@ jobs:
             cp build/${{ matrix.config }}/VPinballX_GL tmp
             cp build/${{ matrix.config }}/*.so tmp
             cp build/${{ matrix.config }}/*.so.* tmp
-            cp -r build/${{ matrix.config }}/shader tmp
+            cp -r build/${{ matrix.config }}/shader10.8.1 tmp
             cp -r build/${{ matrix.config }}/assets tmp
             cp -r build/${{ matrix.config }}/scripts tmp
             cp -r build/${{ matrix.config }}/tables tmp
@@ -127,7 +127,7 @@ jobs:
             cp build/${{ matrix.config }}/VPinballX_GL tmp
             cp build/${{ matrix.config }}/*.so tmp
             cp build/${{ matrix.config }}/*.so.* tmp
-            cp -r build/${{ matrix.config }}/shader tmp
+            cp -r build/${{ matrix.config }}/shader10.8.1 tmp
             cp -r build/${{ matrix.config }}/assets tmp
             cp -r build/${{ matrix.config }}/scripts tmp
             cp -r build/${{ matrix.config }}/tables tmp
