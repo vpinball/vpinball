@@ -678,7 +678,7 @@ void RenderDevice::CreateDevice(int& refreshrate, VideoSyncMode& syncMode, UINT 
       }
       else
          m_scale = VPUTOCM(0.01f) * g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "ScaleRelative"s, 1.0f);
-      if (m_scale <= 0.000001f)
+      if (m_scale < VPUTOCM(0.01f))
          m_scale = VPUTOCM(0.01f); // Scale factor for VPUnits to Meters
       // Initialize VR, this will also override the render buffer size (m_width, m_height) to account for HMD render size and render the 2 eyes simultaneously
       InitVR();
