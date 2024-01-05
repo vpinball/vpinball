@@ -192,13 +192,11 @@ private:
    int m_inputApi;   // 0=DirectInput 1=XInput, 2=SDL, 3=IGamecontroller
    int m_rumbleMode; // 0=Off, 1=Table only, 2=Generic only, 3=Table with generic as fallback
 
-#ifdef _WIN32
 #ifdef ENABLE_XINPUT
    int m_inputDeviceXI;
    XINPUT_STATE m_inputDeviceXIstate;
    DWORD m_rumbleOffTime;
    bool m_rumbleRunning;
-#endif
 #endif
 #ifdef ENABLE_SDL_INPUT
 #ifndef ENABLE_SDL_GAMECONTROLLER
