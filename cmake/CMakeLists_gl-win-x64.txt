@@ -51,6 +51,8 @@ add_compile_options(
    $<$<CONFIG:RELEASE>:/GT>
    $<$<CONFIG:RELEASE>:/GL>
    $<$<CONFIG:RELEASE>:/w44005>
+   /Zc:__cplusplus
+   /std:c++20
 )
 
 set_source_files_properties(
