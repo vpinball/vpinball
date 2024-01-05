@@ -14,6 +14,7 @@ jobs:
     name: Version
     runs-on: ubuntu-latest
     outputs:
+      version_short: ${{ steps.version.outputs.version_short }}
       revision: ${{ steps.version.outputs.revision }}
       sha7: ${{ steps.version.outputs.sha7 }}
       tag: ${{ steps.version.outputs.tag }}
@@ -26,9 +27,11 @@ jobs:
           VERSION_MAJOR=$(grep -Eo "VP_VERSION_MAJOR\s+[0-9]+" vpversion.h | grep -Eo "[0-9]+")
           VERSION_MINOR=$(grep -Eo "VP_VERSION_MINOR\s+[0-9]+" vpversion.h | grep -Eo "[0-9]+")
           VERSION_REV=$(grep -Eo "VP_VERSION_REV\s+[0-9]+" vpversion.h | grep -Eo "[0-9]+")
+          VERSION_SHORT="${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}"
           REVISION=$(git rev-list ${{ env.VERSION_START_SHA }}..HEAD --count)
           SHA7="${GITHUB_SHA::7}"
-          TAG="${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}-${REVISION}-${SHA7}"
+          TAG="${VERSION_SHORT}-${REVISION}-${SHA7}"
+          echo "version_short=${VERSION_SHORT}" >> $GITHUB_OUTPUT
           echo "revision=${REVISION}" >> $GITHUB_OUTPUT
           echo "sha7=${SHA7}" >> $GITHUB_OUTPUT
           echo "tag=${TAG}" >> $GITHUB_OUTPUT
@@ -136,7 +139,7 @@ jobs:
           fi
           cp build/${{ matrix.config }}/*.dll tmp
           cp -r build/${{ matrix.config }}/assets tmp
-          cp -r build/${{ matrix.config }}/shader10.8.1 tmp
+          cp -r build/${{ matrix.config }}/shader${{ needs.version.outputs.version_short }} tmp
           cp -r build/${{ matrix.config }}/assets tmp
           cp -r build/${{ matrix.config }}/scripts tmp
           cp -r build/${{ matrix.config }}/tables tmp
@@ -350,7 +353,7 @@ jobs:
           cp build/${{ matrix.config }}/*.so tmp
           cp build/${{ matrix.config }}/*.so.* tmp
           cp -r build/${{ matrix.config }}/flexdmd tmp
-          cp -r build/${{ matrix.config }}/shader10.8.1 tmp
+          cp -r build/${{ matrix.config }}/shader${{ needs.version.outputs.version_short }} tmp
           cp -r build/${{ matrix.config }}/assets tmp
           cp -r build/${{ matrix.config }}/scripts tmp
           cp -r build/${{ matrix.config }}/tables tmp
