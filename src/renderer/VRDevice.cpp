@@ -22,7 +22,7 @@ VRDevice::VRDevice()
    }
    else
       m_scale = VPUTOCM(0.01f) * g_pvp->GetActiveTable()->m_settings.LoadValueWithDefault(Settings::PlayerVR, "ScaleRelative"s, 1.0f);
-   if (m_scale <= 0.000001f)
+   if (m_scale < VPUTOCM(0.01f))
       m_scale = VPUTOCM(0.01f); // Scale factor for VPUnits to Meters
 
    // Initialize VR, this will also override the render buffer size (m_width, m_height) to account for HMD render size and render the 2 eyes simultaneously
@@ -218,7 +218,7 @@ void VRDevice::SubmitFrame(Sampler* leftEye, Sampler* rightEye)
    if (errorLeft != vr::VRCompositorError_None)
    {
       char msg[128];
-      sprintf_s(msg, sizeof(msg), "VRCompositor Submit Left Error %u", errorLeft);
+      sprintf_s(msg, sizeof(msg), "VRCompositor Submit Left Error %d", errorLeft);
       ShowError(msg);
    }
    vr::Texture_t rightEyeTexture = { (void*)(__int64)rightEye->GetCoreTexture(), vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
@@ -226,7 +226,7 @@ void VRDevice::SubmitFrame(Sampler* leftEye, Sampler* rightEye)
    if (errorRight != vr::VRCompositorError_None)
    {
       char msg[128];
-      sprintf_s(msg, sizeof(msg), "VRCompositor Submit Right Error %u", errorRight);
+      sprintf_s(msg, sizeof(msg), "VRCompositor Submit Right Error %d", errorRight);
       ShowError(msg);
    }
    glFlush();
