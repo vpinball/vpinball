@@ -194,6 +194,7 @@ BOOL TablePhysicsProperty::OnInitDialog()
     m_resizer.AddChild(GetDlgItem(IDC_STATIC15), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC16), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC18), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC19), CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC20), CResizer::topleft, 0);
     m_resizer.AddChild(m_hFilterMechanicalPlungerCheck, CResizer::topleft, 0);
     m_resizer.AddChild(m_importSetButton, CResizer::topleft, RD_STRETCH_WIDTH);
