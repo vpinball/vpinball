@@ -17,8 +17,7 @@
 #endif
 
 #ifdef __STANDALONE__
-#include "standalone/inc/b2s/B2SWindows.h"
-#include "standalone/inc/dmd/DMDWindow.h"
+#include "DMDUtil/DMDUtil.h"
 #endif
 
 #include <ctime>
@@ -68,6 +67,16 @@
  #define detect_no_sse !__builtin_cpu_supports("sse")
  #define detect_sse2 __builtin_cpu_supports("sse2")
 #endif
+#endif
+
+#ifdef __STANDALONE__
+void OnDMDUtilLog(const char* format, va_list args)
+{
+   char buffer[4096];
+   vsnprintf(buffer, sizeof(buffer), format, args);
+
+   PLOGI.printf("%s", buffer);
+}
 #endif
 
 Player::Player(PinTable *const editor_table, PinTable *const live_table, const int playMode)
@@ -525,9 +534,6 @@ void Player::CreateWnd(HWND parent /* = 0 */)
    else {
       PLOGE << "Failed to load window icon: " << SDL_GetError();
    }
-
-   B2SWindows::GetInstance()->Init();
-   DMDWindow::GetInstance()->Init();
 #endif
 
    SDL_DisplayMode mode;
@@ -823,11 +829,6 @@ void Player::Shutdown()
       editedTable->BeginAutoSaveCounter();
 #endif
    }
-
-#ifdef __STANDALONE__
-   B2SWindows::GetInstance()->Shutdown();
-   DMDWindow::GetInstance()->Shutdown();
-#endif
 }
 
 void Player::InitFPS()
@@ -1186,6 +1187,21 @@ HRESULT Player::Init()
          StartPUPCapture();
    }
    #endif
+#endif
+
+#ifdef __STANDALONE__
+   Settings* const pSettings = &m_ptable->m_settings;
+   DMDUtil::Config* pConfig = DMDUtil::Config::GetInstance();
+   pConfig->SetLogCallback(OnDMDUtilLog);
+   pConfig->SetAltColor(pSettings->LoadValueWithDefault(Settings::Standalone, "AltColor"s, true));
+   pConfig->SetZeDMD(pSettings->LoadValueWithDefault(Settings::Standalone, "ZeDMD"s, true));
+   pConfig->SetZeDMDDevice(pSettings->LoadValueWithDefault(Settings::Standalone, "ZeDMDDevice"s, ""s));
+   pConfig->SetZeDMDDebug(pSettings->LoadValueWithDefault(Settings::Standalone, "ZeDMDDebug"s, false));
+   pConfig->SetZeDMDRGBOrder(pSettings->LoadValueWithDefault(Settings::Standalone, "ZeDMDRGBOrder"s, -1));
+   pConfig->SetZeDMDBrightness(pSettings->LoadValueWithDefault(Settings::Standalone, "ZeDMDBrightness"s, -1));
+   pConfig->SetZeDMDSaveSettings(pSettings->LoadValueWithDefault(Settings::Standalone, "ZeDMDSaveSettings"s, false));
+   pConfig->SetPixelcade(pSettings->LoadValueWithDefault(Settings::Standalone, "Pixelcade"s, true));
+   pConfig->SetPixelcadeDevice(pSettings->LoadValueWithDefault(Settings::Standalone, "PixelcadeDevice"s, ""s));
 #endif
 
    m_pEditorTable->m_progressDialog.SetName("Starting Game Scripts..."s);
@@ -2078,12 +2094,6 @@ void Player::FinishFrame()
       else
          m_liveUI->OpenMainSplash();
    }
-
-#ifdef __STANDALONE__
-   B2SWindows::GetInstance()->Render();
-   DMDWindow::GetInstance()->Render();
-   SDL_GL_MakeCurrent(m_sdl_playfieldHwnd, m_renderer->m_pd3dPrimaryDevice->m_sdl_context);
-#endif
 
    // Brute force stop: blast into space
    if (m_closing == CS_FORCE_STOP)

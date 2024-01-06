@@ -1,25 +1,29 @@
 #pragma once
 
-#include "vpinmame_i.h"
-
-#pragma push_macro("_WIN64")
-#pragma push_macro("DELETE")
-#pragma push_macro("CALLBACK")
-#undef _WIN64
-#undef DELETE
-#undef CALLBACK
 #include "libpinmame.h"
 #include "altsound.h"
-#pragma pop_macro("CALLBACK")
-#pragma pop_macro("DELETE")
-#pragma pop_macro("_WIN64")
+#include "DMDUtil/DMDUtil.h"
 
-#include "../dmd/DMDUtil.h"
+#include "vpinmame_i.h"
 
 #include <map>
-#include <mutex>
+
+#include "../common/Window.h"
+
+#define SETTINGS_PINMAME_WINDOW_X      15
+#define SETTINGS_PINMAME_WINDOW_Y      30 + 218 + 5 + 75 + 5
+#define SETTINGS_PINMAME_WINDOW_WIDTH  290
+#define SETTINGS_PINMAME_WINDOW_HEIGHT 75
 
 class VPinMAMEGames;
+
+typedef struct {
+   PinmameDisplayLayout layout;
+   UINT8 r;
+   UINT8 g;
+   UINT8 b;
+   DMDUtil::DMD* pDmd;
+} VPinMAMEDisplay;
 
 class VPinMAMEController : public IController
 {
@@ -77,6 +81,8 @@ public:
    STDMETHOD(get_Version)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(get_SolMask)(/*[in]*/ int nLow, /*[out, retval]*/ LONG *pVal);
    STDMETHOD(put_SolMask)(/*[in]*/ int nLow, /*[in]*/ LONG newVal);
+   STDMETHOD(get_ModOutputType)(/*[in]*/int output,/*[in]*/ int no, /*[out, retval]*/ int* pVal);
+   STDMETHOD(put_ModOutputType)(/*[in]*/int output, /*[in]*/int no, /*[in]*/ int newVal);
    STDMETHOD(put_Mech)(/*[in]*/ int param, /*[in]*/ int newVal);
    STDMETHOD(get_LockDisplay)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_LockDisplay)(/*[in]*/ VARIANT_BOOL newVal);
@@ -171,24 +177,19 @@ public:
    STDMETHOD(put_SoundMode)(/*[in]*/ int newVal);
    STDMETHOD(get_ROMName)(/*[out, retval]*/ BSTR *pVal);
 
-   static void CALLBACK GetGameCallback(PinmameGame* pPinmameGame, const void* pUserData);
-   static void CALLBACK OnDisplayAvailable(int index, int displayCount, PinmameDisplayLayout* p_displayLayout, const void* pUserData);
-   static void CALLBACK OnDisplayUpdated(int index, void* p_displayData, PinmameDisplayLayout* p_displayLayout, const void* pUserData);
-   static int CALLBACK OnAudioAvailable(PinmameAudioInfo* p_audioInfo, const void* pUserData);
-   static int CALLBACK OnAudioUpdated(void* p_buffer, int samples, const void* pUserData);
-   static void CALLBACK OnLogMessage(PINMAME_LOG_LEVEL logLevel, const char* format, va_list args, const void* pUserData);
-   static void CALLBACK OnSoundCommand(int boardNo, int cmd, const void* pUserData);
-
-   void GetGameCallback(PinmameGame* pPinmameGame);
-   void OnDisplayAvailable(int index, int displayCount, PinmameDisplayLayout* p_displayLayout);
-   void OnDisplayUpdated(int index, void* p_displayData, PinmameDisplayLayout* p_displayLayout);
-   int OnAudioAvailable(PinmameAudioInfo* p_audioInfo);
-   int OnAudioUpdated(void* p_buffer, int samples);
-   void OnSoundCommand(int boardNo, int cmd);
-
+   static void PINMAMECALLBACK GetGameCallback(PinmameGame* pPinmameGame, const void* pUserData);
+   static void PINMAMECALLBACK OnDisplayAvailable(int index, int displayCount, PinmameDisplayLayout* p_displayLayout, const void* pUserData);
+   static void PINMAMECALLBACK OnDisplayUpdated(int index, void* p_displayData, PinmameDisplayLayout* p_displayLayout, const void* pUserData);
+   static int PINMAMECALLBACK OnAudioAvailable(PinmameAudioInfo* p_audioInfo, const void* pUserData);
+   static int PINMAMECALLBACK OnAudioUpdated(void* p_buffer, int samples, const void* pUserData);
+   static void PINMAMECALLBACK OnLogMessage(PINMAME_LOG_LEVEL logLevel, const char* format, va_list args, const void* pUserData);
+   static void PINMAMECALLBACK OnSoundCommand(int boardNo, int cmd, const void* pUserData);
    string GetIniPath() { return m_szIniPath; }
 
 private:
+   DMDUtil::DMD* GetActiveDMD();
+   void RenderLoop();
+
    string m_szPath;
    string m_szIniPath;
    string m_szSplashInfoLine;
@@ -200,18 +201,18 @@ private:
    PinmameLEDState* m_pLEDBuffer;
    PinmameSoundCommand* m_pSoundCommandBuffer;
    VPinMAMEGames* m_pGames;
-   vector<PinmameDisplayLayout> m_displays;
+   vector<VPinMAMEDisplay*> m_displays;
+   bool m_hidden;
+
    bool m_rgb;
-   DMDUtil* m_pDmd;
-   UINT8* m_pDmdLevels;
-   int m_dmdIndex;
    OLE_COLOR m_dmdColor;
-   std::mutex m_dmdMutex;
-   int m_segmentPos;
-   UINT16 m_segmentData[128];
    int m_enableSound;
    AudioPlayer* m_pAudioPlayer;
    int m_audioChannels;
+
+   VP::Window* m_pWindow;
+   std::thread* m_pThread;
+   bool m_running;
 
    ULONG m_dwRef = 0;
 };

@@ -6,6 +6,7 @@
 #include "forms/FormBackglass.h"
 #include "classes/B2SCollectData.h"
 #include "../common/Timer.h"
+#include "../common/Window.h"
 
 class Server : public IDispatch
 {
@@ -171,6 +172,7 @@ public:
    STDMETHOD(B2SMapSound)(VARIANT digit, BSTR soundname);
 
 private:
+   void RenderLoop();
    void TimerElapsed(VP::Timer* pTimer);
    void CheckGetMech(int number, int mech);
    void CheckLamps(SAFEARRAY* psa);
@@ -218,6 +220,6 @@ private:
    B2SCollectData* m_pCollectLEDsData;
    string m_szPath;
    VP::Timer* m_pTimer;
-   
+
    ULONG m_dwRef = 0;
 };

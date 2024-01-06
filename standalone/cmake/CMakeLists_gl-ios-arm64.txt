@@ -535,8 +535,6 @@ add_executable(vpinball
    standalone/inc/b2s/forms/FormDMD.h
    standalone/inc/b2s/Server.cpp
    standalone/inc/b2s/Server.h
-   standalone/inc/b2s/B2SWindows.cpp
-   standalone/inc/b2s/B2SWindows.h
    standalone/inc/b2s/b2s_i_proxy.cpp
    standalone/inc/b2s/b2s_i.c
    standalone/inc/b2s/b2s_i.h
@@ -554,17 +552,6 @@ add_executable(vpinball
    standalone/inc/pup/pinupplayer_i_proxy.cpp
    standalone/inc/pup/pinupplayer_i.c
    standalone/inc/pup/pinupplayer_i.h
-
-   standalone/inc/dmd/AlphaNumeric.h
-   standalone/inc/dmd/AlphaNumeric.cpp
-   standalone/inc/dmd/DMDUtil.h
-   standalone/inc/dmd/DMDUtil.cpp
-   standalone/inc/dmd/DMDWindow.h
-   standalone/inc/dmd/DMDWindow.cpp
-   standalone/inc/dmd/Serum.cpp
-   standalone/inc/dmd/Serum.h
-   standalone/inc/dmd/ZeDMDUtil.cpp
-   standalone/inc/dmd/ZeDMDUtil.h
 
    standalone/inc/common/Window.cpp
    standalone/inc/common/Window.h
@@ -683,8 +670,10 @@ target_link_libraries(vpinball PUBLIC
    "-framework Bass"
    "-lfreeimage"
    "-lpinmame.3.6"
-   "-lserum"
    "-laltsound"
+   "-lzedmd"
+   "-lserum"
+   "-ldmdutil"
    "-lSDL2"
    "-lSDL2_image"
 )

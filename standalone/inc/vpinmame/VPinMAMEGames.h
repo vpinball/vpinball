@@ -1,18 +1,8 @@
 #pragma once
 
-#pragma push_macro("_WIN64")
-#pragma push_macro("DELETE")
-#pragma push_macro("CALLBACK")
-#undef _WIN64
-#undef DELETE
-#undef CALLBACK
 #include "libpinmame.h"
-#pragma pop_macro("CALLBACK")
-#pragma pop_macro("DELETE")
-#pragma pop_macro("_WIN64")
 
 #include "vpinmame_i.h"
-
 #include "VPinMAMEController.h"
 
 class VPinMAMEGame;
@@ -66,7 +56,7 @@ public:
    STDMETHOD(get_Item)(VARIANT *pKey, IGame **pGame);
    STDMETHOD(get__NewEnum)(IUnknown** ppunkEnum);
 
-   static void CALLBACK GetGameCallback(PinmameGame* pPinmameGame, const void* pUserData);
+   static void PINMAMECALLBACK GetGameCallback(PinmameGame* pPinmameGame, const void* pUserData);
 
 private:
    PinmameGame m_pinmameGame;

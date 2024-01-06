@@ -80,10 +80,24 @@ FormBackglass::FormBackglass()
 
    // create rotation timer
    m_pRotateTimer = new VP::Timer(m_rotateTimerInterval, std::bind(&FormBackglass::RotateTimerTick, this, std::placeholders::_1));
+
+   Settings* const pSettings = &g_pplayer->m_ptable->m_settings;
+
+   if (!pSettings->LoadValueWithDefault(Settings::Standalone, "B2SWindows"s, true)) {
+      PLOGI.printf("B2S Backglass window disabled");
+      return;
+   }
+
+   m_pWindow = VP::Window::Create("B2SBackglass",
+      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SBackglassX"s, SETTINGS_B2S_BACKGLASSX),
+      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SBackglassY"s, SETTINGS_B2S_BACKGLASSY),
+      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SBackglassWidth"s, SETTINGS_B2S_BACKGLASSWIDTH),
+      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SBackglassHeight"s, SETTINGS_B2S_BACKGLASSHEIGHT));
 }
 
 FormBackglass::~FormBackglass()
 {
+    delete m_pB2SScreen;
     delete m_pStartupTimer;
     delete m_pRotateTimer;
     delete m_pB2SAnimation;

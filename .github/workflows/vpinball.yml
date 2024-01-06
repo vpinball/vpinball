@@ -159,7 +159,7 @@ jobs:
         config: [ Release ]  
     steps:
       - run: |
-          brew install bison
+          brew install bison autoconf automake
           echo "/usr/local/opt/bison/bin" >> $GITHUB_PATH
       - uses: actions/checkout@v4
       - uses: actions/cache@v3
@@ -182,7 +182,6 @@ jobs:
           fi
       - name: Build
         run: |
-          sudo sntp -sS time.windows.com
           NUM_PROCS=$(sysctl -n hw.ncpu)
           cd standalone/macos-arm64
           if [ ! -d "external" ]; then
@@ -216,7 +215,7 @@ jobs:
         config: [ Release ]  
     steps:
       - run: |
-          brew install bison
+          brew install bison autoconf automake
           echo "/usr/local/opt/bison/bin" >> $GITHUB_PATH
       - uses: actions/checkout@v4
       - uses: actions/cache@v3
@@ -239,7 +238,6 @@ jobs:
           fi
       - name: Build
         run: |
-          sudo sntp -sS time.windows.com
           NUM_PROCS=$(sysctl -n hw.ncpu)
           cd standalone/macos-x64
           if [ ! -d "external" ]; then

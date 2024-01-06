@@ -4,7 +4,6 @@ import android.content.res.AssetManager;
 import android.os.Bundle;
 import android.util.Log;
 import org.libsdl.app.SDLActivity;
-import org.ppuc.zedmd.SerialPort;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -69,8 +68,6 @@ public class VPinballActivity extends SDLActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        SerialPort.getInstance().setActivity(this);
-
         try {
             copyAssets(this.getAssets(), "", this.getFilesDir());
         }
@@ -88,9 +85,10 @@ public class VPinballActivity extends SDLActivity {
                 "FreeImage",
                 "bass",
                 "pinmame.3.6",
+                "altsound",
                 "zedmd",
                 "serum",
-                "altsound",
+                "dmdutil",
                 "vpinball"
         };
     }

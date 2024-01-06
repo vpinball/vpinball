@@ -645,38 +645,23 @@ HRESULT external_create_object(const WCHAR* progid, IClassFactory* cf, IUnknown*
 {
    HRESULT hres = E_NOTIMPL;
 
-   if (!wcsicmp(progid, L"VPinMAME.Controller")) {
+   if (!wcsicmp(progid, L"VPinMAME.Controller"))
       hres = (new VPinMAMEController())->QueryInterface(IID_IController, (void**)obj);
-   }
    else if (!wcsicmp(progid, L"WMPlayer.OCX")) {
       CComObject<WMPCore>* pObj = nullptr;
-      if (SUCCEEDED(CComObject<WMPCore>::CreateInstance(&pObj))) {
+      if (SUCCEEDED(CComObject<WMPCore>::CreateInstance(&pObj)))
          hres = pObj->QueryInterface(IID_IWMPCore, (void**)obj);
-      }
    }
-   else if (!wcsicmp(progid, L"FlexDMD.FlexDMD")) {
+   else if (!wcsicmp(progid, L"FlexDMD.FlexDMD"))
       hres = (new FlexDMD())->QueryInterface(IID_IFlexDMD, (void**)obj);
-   }
-   else if (!wcsicmp(progid, L"UltraDMD.DMDObject")) {
+   else if (!wcsicmp(progid, L"UltraDMD.DMDObject"))
       hres = (new UltraDMDDMDObject())->QueryInterface(IID_IDMDObject, (void**)obj);
-   }
-   else if (!wcsicmp(progid, L"B2S.Server")) {
-      Settings* const pSettings = &g_pplayer->m_ptable->m_settings;
-
-      if (pSettings->LoadValueWithDefault(Settings::Standalone, "B2S"s, false))
-         hres = (new Server())->QueryInterface(IID__Server, (void**)obj);
-   }
+   else if (!wcsicmp(progid, L"B2S.Server"))
+      hres = (new Server())->QueryInterface(IID__Server, (void**)obj);
    else if (!wcsicmp(progid, L"PinUpPlayer.PinDisplay")) {
       CComObject<PinUpPlayerPinDisplay>* pObj = nullptr;
-      if (SUCCEEDED(CComObject<PinUpPlayerPinDisplay>::CreateInstance(&pObj))) {
+      if (SUCCEEDED(CComObject<PinUpPlayerPinDisplay>::CreateInstance(&pObj)))
          hres = pObj->QueryInterface(IID_IPinDisplay, (void**)obj);
-      }
-   }
-   else if (!wcsicmp(progid, L"Shell.Application")) {
-   }
-   else if (!wcsicmp(progid, L"WScript.Shell")) {
-   }
-   else if (!wcsicmp(progid, L"VPROC.Controller")) {
    }
    else if (!wcsicmp(progid, L"PUPDMDControl.DMD")) {
    }

@@ -48,13 +48,11 @@ public:
    void Start(Form* pFormBackglass, Form* pFormDMD, SDL_Point defaultDMDLocation);
    void Start(Form* pFormBackglass, Form* pFormDMD, SDL_Point defaultDMDLocation, eDMDViewMode dmdViewMode, int backglassGrillHeight, int smallBackglassGrillHeight);
 
-   void RenderBackglass(VP::Graphics* pGraphics);
-   void RenderDMD(VP::Graphics* pGraphics);
-
 private:
    void ReadB2SSettingsFromFile();
    void GetB2SSettings(SDL_Point defaultDMDLocation, eDMDViewMode dmdViewMode, int backglassGrillHeight, int backglassSmallGrillHeight);
    void Show();
+   void RenderLoop();
    void ScaleAllControls(float rescaleX, float rescaleY, float rescaleDMDX, float rescaleDMDY);
    void ScaleControl(B2SBaseBox* pControl, float rescaleX, float rescaleY, bool isOnDMD, bool flipY = false);
    void ScaleControl(Dream7Display* pControl, float rescaleX, float rescaleY, bool isOnDMD, bool flipY = false);
@@ -84,4 +82,7 @@ private:
 
    B2SData* m_pB2SData;
    B2SSettings* m_pB2SSettings;
+
+   bool m_running;
+   std::thread* m_pThread;
 };

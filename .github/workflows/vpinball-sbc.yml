@@ -61,7 +61,7 @@ jobs:
           bind_mount_repository: true
           commands: |
             apt-get update -y --allow-releaseinfo-change
-            apt-get install --no-install-recommends -y pkg-config cmake bison zlib1g-dev libdrm-dev libgbm-dev libgles2-mesa libgles2-mesa-dev libudev-dev
+            apt-get install --no-install-recommends -y pkg-config cmake bison autoconf automake libtool zlib1g-dev libdrm-dev libgbm-dev libgles2-mesa libgles2-mesa-dev libudev-dev
             perl -i -pe"s/0/${{ needs.version.outputs.revision }}/g" git_version.h
             perl -i -pe"s/unknown/${{ needs.version.outputs.sha7 }}/g" git_version.h
             NUM_PROCS=$(nproc)
@@ -114,7 +114,7 @@ jobs:
           bind_mount_repository: true
           commands: |
             apt-get update -y --allow-releaseinfo-change
-            apt-get install --no-install-recommends -y pkg-config cmake bison zlib1g-dev libdrm-dev libgbm-dev libgles2-mesa libgles2-mesa-dev libudev-dev
+            apt-get install --no-install-recommends -y pkg-config cmake bison autoconf automake libtool zlib1g-dev libdrm-dev libgbm-dev libgles2-mesa libgles2-mesa-dev libudev-dev
             perl -i -pe"s/0/${{ needs.version.outputs.revision }}/g" git_version.h
             perl -i -pe"s/unknown/${{ needs.version.outputs.sha7 }}/g" git_version.h
             NUM_PROCS=$(nproc)

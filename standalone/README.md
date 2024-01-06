@@ -541,10 +541,13 @@ To keep up with all the changes in master, and make it easier to rebase, this br
 
 The downside of this approach is not accurately keeping track of history:
 
-* 01/07/23
+* 01/11/24
+  * Handle tiny negative values in GLES codepath (@toxie)
+
+* 01/07/24
   * Add path normalization to `GetFileAttributesW` and `CreateFileW` (fixes #1309)  
 
-* 01/04/23
+* 01/04/24
   * Implement [official](https://gitlab.winehq.org/wine/wine/-/merge_requests/4778) scrrun/dictionary: Handle VT_EMPTY/VT_NULL keys
 
 * 12/26/23
