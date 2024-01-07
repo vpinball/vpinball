@@ -36,10 +36,11 @@ public:
 	virtual void Render(const unsigned int renderMask);
 	virtual void RenderRelease();
 
+   bool m_antiStretch = false;
+
 private:
    RenderDevice *m_rd = nullptr;
    float m_stretchFitPoints[3 * 12] = { 2.f };
-   bool m_antiStretch = false;
 
    // IBall
 public:
