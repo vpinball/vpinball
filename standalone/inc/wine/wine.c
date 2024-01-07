@@ -49,8 +49,7 @@ int WINAPI __wine_dbg_write(const char *str, unsigned int len)
 
    char* end = strrchr(dbg_buffer, '\n');
 
-   if (end)
-   {
+   if (end) {
       *end = '\0';
 
 #ifdef _DEBUG
@@ -65,8 +64,7 @@ int WINAPI __wine_dbg_write(const char *str, unsigned int len)
 
 static int append_output(struct debug_info *info, const char *str, size_t len)
 {
-   if (len >= sizeof(info->output) - info->out_pos)
-   {
+   if (len >= sizeof(info->output) - info->out_pos) {
       __wine_dbg_write(info->output, info->out_pos);
       info->out_pos = 0;
       __wine_dbg_write(str, len);
@@ -93,8 +91,7 @@ int __cdecl __wine_dbg_output(const char *str)
    const char *end = strrchr(str, '\n');
    int ret = 0;
 
-   if (end)
-   {
+   if (end) {
       ret += append_output(info, str, end + 1 - str);
       __wine_dbg_write(info->output, info->out_pos);
       info->out_pos = 0;
@@ -344,15 +341,13 @@ static HRESULT return_multi_qi(IUnknown *unk, DWORD count, MULTI_QI *mqi, BOOL i
 {
    ULONG index = 0, fetched = 0;
 
-   if (include_unk)
-   {
+   if (include_unk) {
       mqi[0].hr = S_OK;
       mqi[0].pItf = unk;
       index = fetched = 1;
    }
 
-   for (; index < count; index++)
-   {
+   for (; index < count; index++) {
       mqi[index].hr = IUnknown_QueryInterface(unk, mqi[index].pIID, (void **)&mqi[index].pItf);
       if (mqi[index].hr == S_OK)
          fetched++;
@@ -989,8 +984,7 @@ __forceinline DWORD WINAPI CharLowerBuffA(char *str, DWORD len)
    if (!str) return 0; /* YES */
 
    lenW = MultiByteToWideChar(CP_ACP, 0, str, len, NULL, 0);
-   if (lenW > ARRAY_SIZE(buffer))
-   {
+   if (lenW > ARRAY_SIZE(buffer)) {
       strW = HeapAlloc(GetProcessHeap(), 0, lenW * sizeof(WCHAR));
       if (!strW) return 0;
    }
@@ -1087,6 +1081,11 @@ HANDLE WINAPI CreateFileW(LPCWSTR lpFileName, DWORD dwDesiredAccess, DWORD dwSha
    int len = wcslen(lpFileName);
    WideCharToMultiByte(CP_ACP, 0, lpFileName, len, szFileName, len, NULL, NULL);
    szFileName[len] = '\0';
+
+   for (int i = 0; i < len; ++i) {
+      if (szFileName[i] == '\\')
+         szFileName[i] = '/';
+   }
 
    FILE* fp = NULL;
    char mode[3] = { 0 };
@@ -1191,12 +1190,17 @@ DWORD WINAPI GetFileAttributesW(LPCWSTR lpFileName)
    int len = wcslen(lpFileName);
    WideCharToMultiByte(CP_ACP, 0, lpFileName, len, szFileName, len, NULL, NULL);
    szFileName[len] = '\0';
-   if (szFileName[len-1] == '\\' || szFileName[len-1] == '/')
+
+   for (int i = 0; i < len; ++i) {
+      if (szFileName[i] == '\\')
+         szFileName[i] = '/';
+   }
+
+   if (szFileName[len-1] == '/')
       szFileName[len-1] = '\0';
 
    struct stat statbuf;
-   if (!stat(szFileName, &statbuf))
-   {
+   if (!stat(szFileName, &statbuf)) {
       status = 0;
       if (S_ISDIR(statbuf.st_mode))
          status |= FILE_ATTRIBUTE_DIRECTORY;
@@ -1209,8 +1213,7 @@ DWORD WINAPI GetFileAttributesW(LPCWSTR lpFileName)
 BOOL WINAPI GetFileSizeEx(HANDLE hFile, PLARGE_INTEGER lpFileSize)
 {
    struct stat buffer;
-   if (!fstat(fileno(hFile), &buffer))
-   {
+   if (!fstat(fileno(hFile), &buffer)) {
       lpFileSize->QuadPart = buffer.st_size;
       return TRUE;
    }
@@ -1220,12 +1223,18 @@ BOOL WINAPI GetFileSizeEx(HANDLE hFile, PLARGE_INTEGER lpFileSize)
 DWORD WINAPI GetFullPathNameW(LPCWSTR lpFileName, DWORD nBufferLength, LPWSTR lpBuffer, LPWSTR *lpFilePart)
 {
    int len = wcslen(lpFileName) + 1;
-   if (lpBuffer)
-   {
+   if (lpBuffer) {
       wcsncpy(lpBuffer, lpFileName, nBufferLength);
-      WCHAR* ptr = wcsrchr(lpBuffer, L'/');
-      if (ptr)
-      {
+      WCHAR* ptrBackslash = wcsrchr(lpBuffer, L'\\');
+      WCHAR* ptrSlash = wcsrchr(lpBuffer, L'/');
+      WCHAR* ptr = NULL;
+      if (ptrBackslash && ptrSlash)
+         ptr = (ptrBackslash > ptrSlash) ? ptrBackslash : ptrSlash;
+      else if (ptrBackslash)
+         ptr = ptrBackslash;
+      else if (ptrSlash)
+         ptr = ptrSlash;
+      if (ptr) {
          ptr++;
          lpFilePart = (LPWSTR*)ptr;
       }
@@ -1305,8 +1314,7 @@ BOOL WINAPI WriteFile(HANDLE hFile, LPCVOID lpBuffer, DWORD nNumberOfBytesToWrit
 {
    char* pBuffer = (char*)lpBuffer;
    *lpNumberOfBytesWritten = 0;
-   while (*lpNumberOfBytesWritten < nNumberOfBytesToWrite)
-   {
+   while (*lpNumberOfBytesWritten < nNumberOfBytesToWrite) {
       fputc(*pBuffer++, hFile);
       if(feof(hFile)) break;
       (*lpNumberOfBytesWritten)++;
