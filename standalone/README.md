@@ -541,8 +541,21 @@ To keep up with all the changes in master, and make it easier to rebase, this br
 
 The downside of this approach is not accurately keeping track of history:
 
+* 01/07/23
+  * Add path normalization to `GetFileAttributesW` and `CreateFileW` (fixes #1309)  
+
 * 01/04/23
   * Implement [official](https://gitlab.winehq.org/wine/wine/-/merge_requests/4778) scrrun/dictionary: Handle VT_EMPTY/VT_NULL keys
+
+* 12/26/23
+  * Switch to versioned libaltsound
+
+* 12/17/23
+  * Add cwd to relative paths for command line path arguments (fixes #1267)
+  * Trim and normalize command line path arguments
+
+* 12/15/23
+  * Fixed 16-bit commands in libaltsound (fixes fh)
 
 * 12/13/23
   * Preserve file attributes for linux/sbc github artifacts
