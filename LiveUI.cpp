@@ -2499,6 +2499,17 @@ void LiveUI::UpdateVideoOptionsModal()
             g_pvp->m_settings.SaveValue(Settings::Player, "ForceBloomOff"s, m_player->m_bloomOff);
       }
       
+      if (ImGui::CollapsingHeader("Ball Rendering", ImGuiTreeNodeFlags_DefaultOpen))
+      {
+         bool antiStretch = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "BallAntiStretch"s, false);
+         if (ImGui::Checkbox("Force round ball", &antiStretch))
+         {
+            g_pvp->m_settings.SaveValue(Settings::Player, "BallAntiStretch"s, antiStretch);
+            for (auto ball : m_player->m_vball)
+               ball->m_pballex->m_antiStretch = antiStretch;
+         }
+      }
+
       if (m_player->m_stereo3D != STEREO_VR && ImGui::CollapsingHeader("3D Stereo Output", ImGuiTreeNodeFlags_DefaultOpen))
       {
          if (ImGui::Checkbox("Enable stereo rendering", &m_player->m_stereo3Denabled))
