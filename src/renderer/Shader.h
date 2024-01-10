@@ -446,7 +446,7 @@ public:
 #ifndef __OPENGLES__
          *(float*)(m_state + m_shader->m_stateOffsets[uniformName]) = f;
 #else
-         *(float*)(m_state + m_shader->m_stateOffsets[uniformName]) = (f > 0 && f < FLT_MIN_VALUE) ? FLT_MIN_VALUE : f;
+         *(float*)(m_state + m_shader->m_stateOffsets[uniformName]) = (f > 0 && f < FLT_MIN_VALUE) ? FLT_MIN_VALUE : (f < 0 && f > -FLT_MIN_VALUE) ? -FLT_MIN_VALUE : f;
 #endif
       }
       float GetFloat(const ShaderUniforms uniformName)
@@ -470,9 +470,13 @@ public:
          for (int i = 0; i < count; i++) {
              vec4* p = const_cast<vec4*>(&pData[i]);
              if (p->x > 0 && p->x < FLT_MIN_VALUE) p->x = FLT_MIN_VALUE;
+             if (p->x < 0 && p->x > -FLT_MIN_VALUE) p->x = -FLT_MIN_VALUE;
              if (p->y > 0 && p->y < FLT_MIN_VALUE) p->y = FLT_MIN_VALUE;
+             if (p->y < 0 && p->y > -FLT_MIN_VALUE) p->y = -FLT_MIN_VALUE;
              if (n > 2 && p->z > 0 && p->z < FLT_MIN_VALUE) p->z = FLT_MIN_VALUE;
+             if (n > 2 && p->z < 0 && p->z > -FLT_MIN_VALUE) p->z = -FLT_MIN_VALUE;
              if (n > 3 && p->w > 0 && p->w < FLT_MIN_VALUE) p->w = FLT_MIN_VALUE;
+             if (n > 3 && p->w < 0 && p->w > -FLT_MIN_VALUE) p->w = -FLT_MIN_VALUE;
          }
 #endif
          memcpy(m_state + m_shader->m_stateOffsets[uniformName], pData, count * n * sizeof(float));
@@ -500,8 +504,9 @@ public:
          assert(count == shaderUniformNames[uniformName].count);
 #ifdef __OPENGLES__
          for (int i = 0; i < count * 16; i++) {
-             float* p = const_cast<float*>(&pMatrix[i]);
+             float* const p = const_cast<float*>(&pMatrix[i]);
              if (*p > 0 && *p < FLT_MIN_VALUE) *p = FLT_MIN_VALUE;
+             if (*p < 0 && *p > -FLT_MIN_VALUE) *p = -FLT_MIN_VALUE;
          }
 #endif
          memcpy(m_state + m_shader->m_stateOffsets[uniformName], pMatrix, count * 16 * sizeof(float));
