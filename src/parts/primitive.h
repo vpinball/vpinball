@@ -1,4 +1,4 @@
-// 3dprimitive.h: interface for the 3dprimitive class.
+// primitive.h: interface for the Primitive class.
 //
 //////////////////////////////////////////////////////////////////////
 #pragma once

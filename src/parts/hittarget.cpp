@@ -1,4 +1,4 @@
-// primitive.cpp: implementation of the Primitive class.
+// hittarget.cpp: implementation of the HitTarget class.
 //
 //////////////////////////////////////////////////////////////////////
 

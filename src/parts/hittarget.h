@@ -1,4 +1,4 @@
-// 3dprimitive.h: interface for the 3dprimitive class.
+// hittarget.h: interface for the HitTarget class.
 //
 //////////////////////////////////////////////////////////////////////
 #pragma once
