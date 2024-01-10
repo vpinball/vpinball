@@ -29,7 +29,7 @@ Dim vpmCreateBall	' Called whenever a vpm class needs to create a ball
 Dim BSize:If IsEmpty(Eval("BallSize"))=true Then BSize=25 Else BSize = BallSize/2
 Dim BMass:If IsEmpty(Eval("BallMass"))=true Then BMass=1 Else BMass = BallMass
 Dim UseDMD:If IsEmpty(Eval("UseVPMDMD"))=true Then UseDMD=false Else UseDMD = UseVPMDMD
-Dim UseModSol:If IsEmpty(Eval("UseVPMModSol"))=true Then UseModSol=0 Else If UseVPMModSol = True Then UseModSol = 1 Else UseModSol = UseVPMModSol ' True or 1 for legacy modulated solenoids (0..255 value), 2 for physics solenoids/lamps/GI/Alphanum (0..1 value)
+Dim UseModSol:If IsEmpty(Eval("UseVPMModSol"))=true Then UseModSol=0 Else If UseVPMModSol=True Then UseModSol=1 Else UseModSol = UseVPMModSol ' True or 1 for legacy modulated solenoids (0..255 value), 2 for physical solenoids/lamps/GI/AlphaNumSegments (0..1 value)
 Dim UseColoredDMD:If IsEmpty(Eval("UseVPMColoredDMD"))=true Then UseColoredDMD=false Else UseColoredDMD = UseVPMColoredDMD
 Dim UseNVRAM:If IsEmpty(Eval("UseVPMNVRAM"))=true Then UseNVRAM=false Else UseNVRAM = UseVPMNVRAM
 Dim NVRAMCallback
@@ -2320,20 +2320,20 @@ Sub PinMAMETimer_Init : Me.Interval = PinMAMEInterval : Me.Enabled = True : End 
 Public Sub vpmInit(aTable)
 	Set vpmTable = aTable
 	If vpmVPVer >= 6000 Then
-	  On Error Resume Next
+		On Error Resume Next
 		If Not IsObject(GetRef(aTable.name & "_Paused")) Or Err Then Err.Clear : vpmBuildEvent aTable, "Paused", "Controller.Pause = True"
 		If Not IsObject(GetRef(aTable.name & "_UnPaused")) Or Err Then Err.Clear : vpmBuildEvent aTable, "UnPaused", "Controller.Pause = False"
 		If Not IsObject(GetRef(aTable.name & "_Exit")) Or Err Then Err.Clear : vpmBuildEvent aTable, "Exit", "Controller.Pause = False:Controller.Stop"
 	End If
 	if UseModSol Then
 		If Controller.Version >= 03060000 Then
-		  Controller.SolMask(2)=UseModSol ' 1 for modulated solenoids or 2 for new physics lamps/GI/AlphaNum/solenoids
+			Controller.SolMask(2)=UseModSol ' 1 for modulated solenoids or 2 for new physical lamps/GI/AlphaNumSegments/solenoids
 		ElseIf Controller.Version >= 02080000 Then
-		  Controller.SolMask(2)=1 ' legacy smoothed solenoids
-		  UseModSol=1
+			Controller.SolMask(2)=1 ' legacy smoothed solenoids
+			UseModSol=1
 		Else
-		  MsgBox "Modulated Flashers/Solenoids not supported with this Visual PinMAME version (2.8 or newer is required)"
-		  UseModSol=0
+			MsgBox "Modulated Flashers/Solenoids not supported with this Visual PinMAME version (2.8 or newer is required)"
+			UseModSol=0
 		End If
 	End If
 	'InitVpmFlips	'have vpmtimer doing this atm
@@ -2426,10 +2426,10 @@ Sub PinMAMETimer_Timer
 		MotorCallback
 	On Error Goto 0
 
-	Dim pwmScale: If UseModSol >= 2 Then pwmScale = 1.0 / 255.0 Else pwmScale = 1 ' User as activated physics output and expects a 0..1 value for solenoids/lamps/GI/Alphanum
-	
+	Dim pwmScale: If UseModSol >= 2 Then pwmScale = 1.0 / 255.0 Else pwmScale = 1 ' User has activated physical output and expects a 0..1 value for solenoids/lamps/GI/AlphaNumSegments
+
 	If Not IsEmpty(ChgSol) Then
-        SetLocale "en-us" ' Needed since we convert the decimal value to be parsed by Execute (some locals use a comma instead of a dot which would be parsed as a parameter separator)
+		SetLocale "en-us" ' Needed since we convert the decimal value to be parsed by Execute (some locals use a comma instead of a dot which would be parsed as a parameter separator)
 		For ii = 0 To UBound(ChgSol)
 			nsol = ChgSol(ii, 0)
 			tmp = SolCallback(nsol)
@@ -2445,7 +2445,7 @@ Sub PinMAMETimer_Timer
 			Else
 				If tmp <> "" Then Execute tmp & vpmTrueFalse(solon+1)
 			End If
-		    If UseSolenoids > 1 Then if nsol = vpmFlips.Solenoid then vpmFlips.TiltSol solon ': msgbox solon
+			If UseSolenoids > 1 Then if nsol = vpmFlips.Solenoid then vpmFlips.TiltSol solon ': msgbox solon
 		Next
 	End If
 
@@ -2465,14 +2465,14 @@ Sub PinMAMETimer_Timer
 			LampCallback
 		On Error Goto 0
 	End If
-	
+
 	If Not IsEmpty(ChgGI) Then
 		For ii = 0 To UBound(ChgGI)
 			GICallback ChgGI(ii, 0), CBool((ChgGI(ii, 1) * pwmScale) >= 0.5)
 			GICallback2 ChgGI(ii, 0), ChgGI(ii, 1) * pwmScale
 		Next
 	End If
-	
+
 	If Not IsEmpty(ChgLed) Then
 		On Error Resume Next
 			For ii = 0 To UBound(ChgLed)
