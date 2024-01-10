@@ -32,7 +32,7 @@ If it's about a crash, please attach `crash.dmp` as well.
  - VPX: [e.g. 1.7.0 Final Revision 367 (e242d7c), 32 bit - see *Help - About*]
  - Windows version
  - GPU and video settings if applicable
- - If this bug report is for VPX 10.8+, please join your setting file (locate 'VPinballX.ini' in '%AppData%\VPinballX', either zip it or change its extension to '.log', then drag'n drop it here)
+ - If this bug report is for VPX 10.8+, please add your settings file (locate 'VPinballX.ini' in '%AppData%\VPinballX', and either zip it or change its extension to '.log', then drag'n drop it here)
  - If this bug report is for VPX 10.8+, please enable log in your settingd and join your log file
 
 **Additional context**
