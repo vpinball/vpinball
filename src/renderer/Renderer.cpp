@@ -1245,6 +1245,10 @@ void Renderer::RenderStaticPrepass()
    if (!m_isStaticPrepassDirty)
       return;
 
+#ifdef __STANDALONE__
+   SDL_GL_MakeCurrent(g_pplayer->m_sdl_playfieldHwnd, g_pplayer->m_renderer->m_pd3dPrimaryDevice->m_sdl_context);
+#endif
+
    m_isStaticPrepassDirty = false;
 
    TRACE_FUNCTION();

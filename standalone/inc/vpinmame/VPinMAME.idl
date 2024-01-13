@@ -256,6 +256,8 @@ import "ocidl.idl";
 		[propget, id(86), helpstring("property SoundMode")] HRESULT SoundMode([out, retval] int *pVal);
 		[propput, id(86), helpstring("property SoundMode")] HRESULT SoundMode([in] int newVal);
 		[propget, id(87), helpstring("property ROMName")] HRESULT ROMName([out, retval] BSTR *pVal);
+		[propget, id(88), helpstring("property ModOutputType")] HRESULT ModOutputType([in] int output, [in] int no, [out, retval] int *pVal);
+		[propput, id(88), helpstring("property ModOutputType")] HRESULT ModOutputType([in] int output, [in] int no, [in] int newVal);
 	};
 
 	// WSHDlg and related interfaces

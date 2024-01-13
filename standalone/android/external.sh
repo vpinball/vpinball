@@ -5,10 +5,9 @@ set -e
 SDL2_VERSION=2.28.5
 SDL2_IMAGE_VERSION=2.6.3
 
-PINMAME_SHA=893da424f82797d9fa37854691505527353f088a
-LIBSERUM_SHA=ea90a5460b47d77e4cf1deacdacddbdb94c25067
-LIBZEDMD_SHA=499b1c094d49ae9bd988326475c51686b1415186
-LIBALTSOUND_SHA=816cc987db61c428c61746b65ab30aa765c87116
+PINMAME_SHA=505d906a1f6d113f646007c85eddd8f32bc06cb8
+LIBALTSOUND_SHA=3f17617df55c46efd101885b015e67a48663cada
+LIBDMDUTIL_SHA=9a3abffa41df66113b7d5af6e11148333defd693
 
 if [[ $(uname) == "Linux" ]]; then
 	NUM_PROCS=$(nproc)
@@ -22,10 +21,16 @@ echo "Building external libraries..."
 echo "  SDL2_VERSION: ${SDL2_VERSION}"
 echo "  SDL2_IMAGE_VERSION: ${SDL2_IMAGE_VERSION}"
 echo "  PINMAME_SHA: ${PINMAME_SHA}"
-echo "  LIBSERUM_SHA: ${LIBSERUM_SHA}"
-echo "  LIBZEDMD_SHA: ${LIBZEDMD_SHA}"
 echo "  LIBALTSOUND_SHA: ${LIBALTSOUND_SHA}"
-echo "  NUM_PROCS: ${NUM_PROCS}"
+echo "  LIBDMDUTIL_SHA: ${LIBDMDUTIL_SHA}"
+echo ""
+
+if [ -z "${BUILD_TYPE}" ]; then
+   BUILD_TYPE="Release"
+fi
+
+echo "Build type: ${BUILD_TYPE}"
+echo "Procs: ${NUM_PROCS}"
 echo ""
 
 rm -rf external
@@ -129,47 +134,37 @@ unzip pinmame.zip
 cd pinmame-$PINMAME_SHA
 cp src/libpinmame/libpinmame.h ../../external/include
 cp cmake/libpinmame/CMakeLists_android-arm64-v8a.txt CMakeLists.txt
-cmake -DCMAKE_BUILD_TYPE=Release -B build
+cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -B build
 cmake --build build -- -j${NUM_PROCS}
 cp build/libpinmame.3.6.so ../../external/lib
-cd ..
-
-#
-# build libserum and copy to external
-#
-
-curl -sL https://github.com/zesinger/libserum/archive/${LIBSERUM_SHA}.zip -o libserum.zip
-unzip libserum.zip
-cd libserum-$LIBSERUM_SHA
-cp src/serum-decode.h ../../external/include
-cmake -DCMAKE_BUILD_TYPE=Release -DUSE_ANDROID=ON -B build
-cmake --build build -- -j${NUM_PROCS}
-cp build/libserum.so ../../external/lib
-cd ..
-
-#
-# build libzedmd and copy to external
-#
-
-curl -sL https://github.com/PPUC/libzedmd/archive/${LIBZEDMD_SHA}.zip -o libzedmd.zip
-unzip libzedmd.zip
-cd libzedmd-$LIBZEDMD_SHA
-cp src/ZeDMD.h ../../external/include
-cmake -DCMAKE_BUILD_TYPE=Release -DUSE_ANDROID=ON -B build
-cmake --build build -- -j${NUM_PROCS}
-cp build/libzedmd.so ../../external/lib
 cd ..
 
 #
 # build libaltsound and copy to external
 #
 
-curl -sL https://github.com/jsm174/libaltsound/archive/${LIBALTSOUND_SHA}.zip -o libaltsound.zip
+curl -sL https://github.com/vpinball/libaltsound/archive/${LIBALTSOUND_SHA}.zip -o libaltsound.zip
 unzip libaltsound.zip
 cd libaltsound-$LIBALTSOUND_SHA
 cp src/altsound.h ../../external/include
 platforms/android/arm64-v8a/external.sh
-cmake -DPLATFORM=android -DARCH=arm64-v8a -DBUILD_STATIC=OFF -DCMAKE_BUILD_TYPE=Release -B build
+cmake -DPLATFORM=android -DARCH=arm64-v8a -DBUILD_STATIC=OFF -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -B build
 cmake --build build -- -j${NUM_PROCS}
 cp build/libaltsound.so ../../external/lib
+cd ..
+
+#
+# build libdmdutil (libserum, and libzedmd) and copy to external
+#
+
+curl -sL https://github.com/jsm174/libdmdutil/archive/${LIBDMDUTIL_SHA}.zip -o libdmdutil.zip
+unzip libdmdutil.zip
+cd libdmdutil-$LIBDMDUTIL_SHA
+cp -r include/DMDUtil ../../external/include
+platforms/android/arm64-v8a/external.sh
+cmake -DPLATFORM=android -DARCH=arm64-v8a -DBUILD_STATIC=OFF -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -B build
+cmake --build build -- -j${NUM_PROCS}
+cp third-party/runtime-libs/android/arm64-v8a/libserum.so ../../external/lib
+cp third-party/runtime-libs/android/arm64-v8a/libzedmd.so ../../external/lib
+cp build/libdmdutil.so ../../external/lib
 cd ..

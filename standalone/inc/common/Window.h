@@ -3,31 +3,31 @@
 #include "Graphics.h"
 #include "Timer.h"
 
+#include "DMDUtil/DMDUtil.h"
+
 namespace VP {
 
 class Window final
 {
 public:
-   Window(const string& name, int x, int y, int w, int h, int frameSkip = 0);
    ~Window();
 
-   void Enable(bool enable);
-   bool ShouldRender();
+   static Window* Create(const string& szTitle, int x, int y, int w, int h);
    void WindowHit(const SDL_Point* pArea);
-
+   void Render(DMDUtil::DMD* pDmd);
+   void Show();
+   void Hide();
    VP::Graphics* GetGraphics() { return m_pGraphics; }
 
+private:
+   Window(const string& szTitle, SDL_Window* pWindow, SDL_Renderer* pRenderer);
    void TimerElapsed(VP::Timer* pTimer);
 
-private:
-   string m_szName;
+   string m_szTitle;
    SDL_Window* m_pWindow;
    SDL_Renderer* m_pRenderer;
-   bool m_enabled;
-   bool m_update;
-   int m_frameSkip;
-   int m_currentFrame;
    VP::Graphics* m_pGraphics;
+   SDL_Texture* m_pTexture;
    int m_x;
    int m_y;
    VP::Timer* m_pTimer;

@@ -531,8 +531,6 @@ add_executable(vpinball
    standalone/inc/b2s/forms/FormDMD.h
    standalone/inc/b2s/Server.cpp
    standalone/inc/b2s/Server.h
-   standalone/inc/b2s/B2SWindows.cpp
-   standalone/inc/b2s/B2SWindows.h
    standalone/inc/b2s/b2s_i_proxy.cpp
    standalone/inc/b2s/b2s_i.c
    standalone/inc/b2s/b2s_i.h
@@ -550,17 +548,6 @@ add_executable(vpinball
    standalone/inc/pup/pinupplayer_i_proxy.cpp
    standalone/inc/pup/pinupplayer_i.c
    standalone/inc/pup/pinupplayer_i.h
-
-   standalone/inc/dmd/AlphaNumeric.h
-   standalone/inc/dmd/AlphaNumeric.cpp
-   standalone/inc/dmd/DMDUtil.h
-   standalone/inc/dmd/DMDUtil.cpp
-   standalone/inc/dmd/DMDWindow.h
-   standalone/inc/dmd/DMDWindow.cpp
-   standalone/inc/dmd/Serum.cpp
-   standalone/inc/dmd/Serum.h
-   standalone/inc/dmd/ZeDMDUtil.cpp
-   standalone/inc/dmd/ZeDMDUtil.h
 
    standalone/inc/common/Window.cpp
    standalone/inc/common/Window.h
@@ -651,9 +638,10 @@ target_link_libraries(vpinball PUBLIC
    -l:libSDL2_image-2.0.so.0
    bass
    -l:libpinmame.so.3.6
-   -l:libzedmd64.so.0.1.0
-   -l:libserum64.so.1.6.1
    -l:libaltsound.so.0.1.0
+   -l:libzedmd.so.0.4.1
+   -l:libserum.so.1.6.2
+   -l:libdmdutil.so.0.1.0
 )
 
 set_target_properties(vpinball PROPERTIES
@@ -690,7 +678,9 @@ add_custom_command(TARGET vpinball POST_BUILD
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/rpi/external/lib/libSDL2_image-2.0.so.0" "$<TARGET_FILE_DIR:vpinball>"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/rpi/external/lib/libbass.so" "$<TARGET_FILE_DIR:vpinball>"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/rpi/external/lib/libpinmame.so.3.6" "$<TARGET_FILE_DIR:vpinball>"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/rpi/external/lib/libzedmd64.so.0.1.0" "$<TARGET_FILE_DIR:vpinball>"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/rpi/external/lib/libserum64.so.1.6.1" "$<TARGET_FILE_DIR:vpinball>"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/rpi/external/lib/libaltsound.so.0.1.0" "$<TARGET_FILE_DIR:vpinball>"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/rpi/external/lib/libzedmd.so.0.4.1" "$<TARGET_FILE_DIR:vpinball>"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/rpi/external/lib/libserum.so.1.6.2" "$<TARGET_FILE_DIR:vpinball>"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/rpi/external/lib/libdmdutil.so.0.1.0" "$<TARGET_FILE_DIR:vpinball>"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/rpi/external/lib/libserialport.so.0" "$<TARGET_FILE_DIR:vpinball>"
 )

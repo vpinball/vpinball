@@ -1,15 +1,6 @@
 #pragma once
 
-#pragma push_macro("_WIN64")
-#pragma push_macro("DELETE")
-#pragma push_macro("CALLBACK")
-#undef _WIN64
-#undef DELETE
-#undef CALLBACK
 #include "libpinmame.h"
-#pragma pop_macro("CALLBACK")
-#pragma pop_macro("DELETE")
-#pragma pop_macro("_WIN64")
 
 #include "vpinmame_i.h"
 #include "VPinMAMEController.h"

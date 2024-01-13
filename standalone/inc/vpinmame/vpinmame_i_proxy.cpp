@@ -780,6 +780,7 @@ STDMETHODIMP VPinMAMEController::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNa
 			{ L"MasterVolume", 68 },
 			{ L"Mech", 49 },
 			{ L"MechSamples", 56 },
+			{ L"ModOutputType", 88 },
 			{ L"NewSoundCommands", 50 },
 			{ L"NVRAM", 84 },
 			{ L"Pause", 22 },
@@ -1809,6 +1810,38 @@ STDMETHODIMP VPinMAMEController::Invoke(DISPID dispIdMember, REFIID /*riid*/, LC
 			}
 			break;
 		}
+		case 88: {
+			if (wFlags & DISPATCH_PROPERTYGET) {
+				// line 259: [propget, id(88), helpstring("property ModOutputType")] HRESULT ModOutputType([in] int output, [in] int no, [out, retval] int *pVal);
+				VARIANT var0;
+				V_VT(&var0) = VT_EMPTY;
+				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_I4);
+				VARIANT var1;
+				V_VT(&var1) = VT_EMPTY;
+				VariantChangeType(&var1, &pDispParams->rgvarg[--index], 0, VT_I4);
+				V_VT(&res) = VT_I4;
+				hres = get_ModOutputType(V_I4(&var0), V_I4(&var1), (int*)&V_I4(&res));
+				VariantClear(&var0);
+				VariantClear(&var1);
+			}
+			else if (wFlags & DISPATCH_PROPERTYPUT) {
+				// line 260: [propput, id(88), helpstring("property ModOutputType")] HRESULT ModOutputType([in] int output, [in] int no, [in] int newVal);
+				VARIANT var0;
+				V_VT(&var0) = VT_EMPTY;
+				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_I4);
+				VARIANT var1;
+				V_VT(&var1) = VT_EMPTY;
+				VariantChangeType(&var1, &pDispParams->rgvarg[--index], 0, VT_I4);
+				VARIANT var2;
+				V_VT(&var2) = VT_EMPTY;
+				VariantChangeType(&var2, &pDispParams->rgvarg[--index], 0, VT_I4);
+				hres = put_ModOutputType(V_I4(&var0), V_I4(&var1), V_I4(&var2));
+				VariantClear(&var0);
+				VariantClear(&var1);
+				VariantClear(&var2);
+			}
+			break;
+		}
 		default:
 		break;
 	}
@@ -1823,3 +1856,4 @@ STDMETHODIMP VPinMAMEController::Invoke(DISPID dispIdMember, REFIID /*riid*/, LC
 	}
 	return hres;
 }
+

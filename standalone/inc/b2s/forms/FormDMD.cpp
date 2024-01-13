@@ -8,6 +8,19 @@ FormDMD::FormDMD()
    SetName("formDMD");
 
    m_pB2SData = B2SData::GetInstance();
+
+   Settings* const pSettings = &g_pplayer->m_ptable->m_settings;
+
+   if (!pSettings->LoadValueWithDefault(Settings::Standalone, "B2SWindows"s, true)) {
+      PLOGI.printf("B2S DMD window disabled");
+      return;
+   }
+
+   m_pWindow = VP::Window::Create("B2SDMD",
+      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SDMDX"s, SETTINGS_B2S_DMDX),
+      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SDMDY"s, SETTINGS_B2S_DMDY),
+      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SDMDWidth"s, SETTINGS_B2S_DMDWIDTH),
+      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SDMDHeight"s, SETTINGS_B2S_DMDHEIGHT));
 }
 
 FormDMD::~FormDMD()

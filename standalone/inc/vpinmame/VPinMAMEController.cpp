@@ -5,58 +5,18 @@
 
 #include "mINI/ini.h"
 
-void CALLBACK VPinMAMEController::GetGameCallback(PinmameGame* pPinmameGame, const void* pUserData)
+void PINMAMECALLBACK VPinMAMEController::GetGameCallback(PinmameGame* pPinmameGame, const void* pUserData)
 {
-   ((VPinMAMEController*)pUserData)->GetGameCallback(pPinmameGame);
+   VPinMAMEController* pController = (VPinMAMEController*)pUserData;
+
+   if (pController->m_pPinmameGame)
+      delete pController->m_pPinmameGame;
+
+   pController->m_pPinmameGame = new PinmameGame();
+   memcpy(pController->m_pPinmameGame, pPinmameGame, sizeof(PinmameGame));
 }
 
-void CALLBACK VPinMAMEController::OnDisplayAvailable(int index, int displayCount, PinmameDisplayLayout *p_displayLayout, const void* pUserData)
-{
-   ((VPinMAMEController*)pUserData)->OnDisplayAvailable(index, displayCount, p_displayLayout);
-}
-
-void CALLBACK VPinMAMEController::OnDisplayUpdated(int index, void* p_displayData, PinmameDisplayLayout* p_displayLayout, const void* pUserData)
-{
-   ((VPinMAMEController*)pUserData)->OnDisplayUpdated(index, p_displayData, p_displayLayout);
-}
-
-int CALLBACK VPinMAMEController::OnAudioAvailable(PinmameAudioInfo* p_audioInfo, const void* pUserData)
-{
-   return ((VPinMAMEController*)pUserData)->OnAudioAvailable(p_audioInfo);
-}
-
-int CALLBACK VPinMAMEController::OnAudioUpdated(void* p_buffer, int samples, const void* pUserData)
-{
-   return ((VPinMAMEController*)pUserData)->OnAudioUpdated(p_buffer, samples);
-}
-
-void CALLBACK VPinMAMEController::OnLogMessage(PINMAME_LOG_LEVEL logLevel, const char* format, va_list args, const void* pUserData)
-{
-   char buffer[4096];
-   vsnprintf(buffer, sizeof(buffer), format, args);
-
-   if (logLevel == PINMAME_LOG_LEVEL_INFO) {
-      PLOGI.printf("%s", buffer);
-   }
-   else if (logLevel == PINMAME_LOG_LEVEL_ERROR) {
-      PLOGE.printf("%s", buffer);
-   }
-}
-
-void CALLBACK VPinMAMEController::OnSoundCommand(int boardNo, int cmd, const void* pUserData)
-{
-   ((VPinMAMEController*)pUserData)->OnSoundCommand(boardNo, cmd);
-}
-
-void CALLBACK VPinMAMEController::GetGameCallback(PinmameGame* pPinmameGame)
-{
-   delete m_pPinmameGame;
-
-   m_pPinmameGame = new PinmameGame();
-   memcpy(m_pPinmameGame, pPinmameGame, sizeof(PinmameGame));
-}
-
-void VPinMAMEController::OnDisplayAvailable(int index, int displayCount, PinmameDisplayLayout *p_displayLayout)
+void PINMAMECALLBACK VPinMAMEController::OnDisplayAvailable(int index, int displayCount, PinmameDisplayLayout *p_displayLayout, const void* pUserData)
 {
    PLOGI.printf("index=%d, displayCount=%d, type=%d, top=%d, left=%d, width=%d, height=%d, depth=%d, length=%d", 
       index,
@@ -69,185 +29,32 @@ void VPinMAMEController::OnDisplayAvailable(int index, int displayCount, Pinmame
       p_displayLayout->depth, 
       p_displayLayout->length);
 
-   m_displays.push_back(*p_displayLayout);
+   VPinMAMEController* pController = (VPinMAMEController*)pUserData;
 
-   if (index == displayCount - 1) {
-      DMDUtil* pDmd = DMDUtil::GetInstance();
+   VPinMAMEDisplay* pDisplay = new VPinMAMEDisplay();
+   memset(pDisplay, 0, sizeof(VPinMAMEDisplay));
+   pDisplay->layout = *p_displayLayout;
+   pDisplay->r = GetRValue(pController->m_dmdColor);
+   pDisplay->g = GetGValue(pController->m_dmdColor);
+   pDisplay->b = GetBValue(pController->m_dmdColor);
 
-      for (int i = 0; i < m_displays.size(); i++) {
-         if ((m_displays[i].type & PINMAME_DISPLAY_TYPE_DMD) == PINMAME_DISPLAY_TYPE_DMD) {
-            m_dmdIndex = i;
-
-            m_pDmdLevels = (UINT8*)((m_displays[i].depth == 2) ? LEVELS_WPC :
-               (PinmameGetHardwareGen() & (PINMAME_HARDWARE_GEN_SAM | PINMAME_HARDWARE_GEN_SPA)) ? LEVELS_SAM : LEVELS_GTS3);
-
-            if (!pDmd->IsActive()) {
-               m_pDmd = pDmd;
-               m_pDmd->Register(m_displays[i].width, m_displays[i].height, m_displays[i].depth);
-            }
-            else {
-               PLOGE.printf("Another DMD is already active, VPinMAME will not render.");
-            }
-
-            break;
-         }
-      }
-
-      if (m_dmdIndex == -1) {
-         NumericalLayout layout = NumericalLayout::None;
-         PINMAME_HARDWARE_GEN hardwareGen = PinmameGetHardwareGen();
-         switch(hardwareGen) {
-            case PINMAME_HARDWARE_GEN_S3:
-            case PINMAME_HARDWARE_GEN_S3C:
-            case PINMAME_HARDWARE_GEN_S4:
-            case PINMAME_HARDWARE_GEN_S6:
-               layout = NumericalLayout::__2x6Num_2x6Num_4x1Num;
-               break;
-            case PINMAME_HARDWARE_GEN_S7:
-               layout = NumericalLayout::__2x7Num_2x7Num_4x1Num_gen7;
-               break;
-            case PINMAME_HARDWARE_GEN_S9:
-               layout = NumericalLayout::__2x7Num10_2x7Num10_4x1Num;
-               break;
-            case PINMAME_HARDWARE_GEN_WPCALPHA_1:
-            case PINMAME_HARDWARE_GEN_WPCALPHA_2:
-            case PINMAME_HARDWARE_GEN_S11C:
-            case PINMAME_HARDWARE_GEN_S11B2:
-               layout = NumericalLayout::__2x16Alpha;
-               break;
-            case PINMAME_HARDWARE_GEN_S11:
-               layout = NumericalLayout::__6x4Num_4x1Num;
-               break;
-            case PINMAME_HARDWARE_GEN_S11X:
-               switch(displayCount) {
-                  case 2:
-                     layout = NumericalLayout::__2x16Alpha;
-                     break;
-                  case 3:
-                     layout = NumericalLayout::__1x16Alpha_1x16Num_1x7Num;
-                     break;
-                  case 4:
-                     layout = NumericalLayout::__2x7Alpha_2x7Num;
-                     break;
-                  case 8:
-                     layout = NumericalLayout::__2x7Alpha_2x7Num_4x1Num;
-                     break;
-               }
-               break;
-            case PINMAME_HARDWARE_GEN_DE:
-               switch(displayCount) {
-                  case 2:
-                     layout = NumericalLayout::__2x16Alpha;
-                     break;
-                  case 4:
-                     layout = NumericalLayout::__2x7Alpha_2x7Num;
-                     break;
-                  case 8:
-                     layout = NumericalLayout::__2x7Alpha_2x7Num_4x1Num;
-                     break;
-               }
-               break;
-            case PINMAME_HARDWARE_GEN_GTS1:
-            case PINMAME_HARDWARE_GEN_GTS80:
-               switch(m_displays[0].length) {
-                  case 6:
-                     layout = NumericalLayout::__2x6Num10_2x6Num10_4x1Num;
-                     break;
-                  case 7:
-                     layout = NumericalLayout::__2x7Num10_2x7Num10_4x1Num;
-                     break;
-               }
-               break;
-            case PINMAME_HARDWARE_GEN_GTS80B:
-            case PINMAME_HARDWARE_GEN_GTS3:
-               layout = NumericalLayout::__2x20Alpha;
-               break;
-            case PINMAME_HARDWARE_GEN_STMPU100:
-            case PINMAME_HARDWARE_GEN_STMPU200:
-               switch(m_displays[0].length) {
-                  case 6:
-                     layout = NumericalLayout::__2x6Num_2x6Num_4x1Num;
-                     break;
-                  case 7:
-                     layout = NumericalLayout::__2x7Num_2x7Num_4x1Num;
-                     break;
-               }
-               break;
-            case PINMAME_HARDWARE_GEN_BY17:
-            case PINMAME_HARDWARE_GEN_BY35:
-               switch(m_displays[0].length) {
-                  case 6:
-                     layout = NumericalLayout::__2x6Num_2x6Num_4x1Num;
-                     break;
-                  case 7:
-                     if (displayCount == 9)
-                       layout = NumericalLayout::__2x7Num_2x7Num_10x1Num;
-                     else
-                       layout = NumericalLayout::__2x7Num_2x7Num_4x1Num;
-                     break;
-               }
-               break;
-            case PINMAME_HARDWARE_GEN_BY6803:
-            case PINMAME_HARDWARE_GEN_BY6803A:
-               layout = NumericalLayout::__4x7Num10;
-               break;
-            case PINMAME_HARDWARE_GEN_BYPROTO:
-               layout = NumericalLayout::__2x6Num_2x6Num_4x1Num;
-               break;
-            case PINMAME_HARDWARE_GEN_HNK:
-               layout = NumericalLayout::__2x20Alpha;
-               break;
-            default:
-               PLOGW.printf("Unable to determine alphanumeric layout (hardwareGen=0x%013X)", hardwareGen);
-               break;
-         }
-
-         if (!pDmd->IsActive()) {
-            m_pDmd = pDmd;
-            m_pDmd->Register(128, 32);
-            m_pDmd->SetAlphaNumericLayout(layout);
-         }
-         else {
-            PLOGE.printf("Another DMD is already active, VPinMAME will not render.");
-         }
-
-         m_pDmdLevels = (UINT8*)LEVELS_WPC;
-
-      }
-
-      if (m_pDmd)
-         m_pDmd->SetSerum(m_szPath + "altcolor",  string(m_pPinmameGame->name));
+   if ((p_displayLayout->type & PINMAME_DISPLAY_TYPE_DMD) == PINMAME_DISPLAY_TYPE_DMD) {
+      bool isSAM = ((PinmameGetHardwareGen() & (PINMAME_HARDWARE_GEN_SAM | PINMAME_HARDWARE_GEN_SPA)) > 0);
+      pDisplay->pDmd = new DMDUtil::DMD(p_displayLayout->width, p_displayLayout->height, isSAM, string(pController->m_pPinmameGame->name));
    }
+
+   pController->m_displays.push_back(pDisplay);
 }
 
-void VPinMAMEController::OnDisplayUpdated(int index, void* p_displayData, PinmameDisplayLayout* p_displayLayout)
+void PINMAMECALLBACK VPinMAMEController::OnDisplayUpdated(int index, void* p_displayData, PinmameDisplayLayout* p_displayLayout, const void* pUserData)
 {
-   if (!m_pDmd)
-      return;
+   VPinMAMEDisplay* pDisplay = ((VPinMAMEController*)pUserData)->m_displays[index];
 
-   if (m_dmdIndex != -1) {
-      if (m_dmdIndex == index) {
-          std::unique_lock<std::mutex> lock(m_dmdMutex);
-          m_pDmd->SetData((UINT8*)p_displayData, m_dmdColor);
-          lock.unlock();
-      }
-   }
-   else if (m_pDmd->IsAlphaNumeric()) {
-      if (p_displayData)
-        memcpy(m_segmentData + m_segmentPos, p_displayData, p_displayLayout->length * sizeof(UINT16));
-
-      m_segmentPos += p_displayLayout->length;
-
-      if (index == m_displays.size() - 1) {
-         std::unique_lock<std::mutex> lock(m_dmdMutex);
-         m_pDmd->SetAlphaNumericData(m_segmentData, NULL, false, m_dmdColor);
-         lock.unlock();
-         m_segmentPos = 0;
-      }
-   }
+   if (pDisplay->pDmd)
+      pDisplay->pDmd->UpdateData((const UINT8*)p_displayData, pDisplay->layout.depth, pDisplay->r, pDisplay->g, pDisplay->b);
 }
 
-int VPinMAMEController::OnAudioAvailable(PinmameAudioInfo* p_audioInfo)
+int PINMAMECALLBACK VPinMAMEController::OnAudioAvailable(PinmameAudioInfo* p_audioInfo, const void* pUserData)
 {
    PLOGI.printf("format=%d, channels=%d, sampleRate=%.2f, framesPerSecond=%.2f, samplesPerFrame=%d, bufferSize=%d", 
       p_audioInfo->format,
@@ -257,22 +64,39 @@ int VPinMAMEController::OnAudioAvailable(PinmameAudioInfo* p_audioInfo)
       p_audioInfo->samplesPerFrame,
       p_audioInfo->bufferSize);
 
-   m_pAudioPlayer = new AudioPlayer();
-   m_pAudioPlayer->StreamInit(p_audioInfo->sampleRate, p_audioInfo->channels, 1.);
-   m_audioChannels = p_audioInfo->channels;
+   VPinMAMEController* pController = (VPinMAMEController*)pUserData;
+
+   pController->m_pAudioPlayer = new AudioPlayer();
+   pController->m_pAudioPlayer->StreamInit(p_audioInfo->sampleRate, p_audioInfo->channels, 1.);
+   pController->m_audioChannels = p_audioInfo->channels;
 
    return p_audioInfo->samplesPerFrame;
 }
 
-int VPinMAMEController::OnAudioUpdated(void* p_buffer, int samples)
+int PINMAMECALLBACK VPinMAMEController::OnAudioUpdated(void* p_buffer, int samples, const void* pUserData)
 {
-   if (m_enableSound)
-      m_pAudioPlayer->StreamUpdate(p_buffer, samples * m_audioChannels * sizeof(int16_t));
+   VPinMAMEController* pController = (VPinMAMEController*)pUserData;
+
+   if (pController->m_enableSound)
+      pController->m_pAudioPlayer->StreamUpdate(p_buffer, samples * pController->m_audioChannels * sizeof(int16_t));
 
    return samples;
 }
 
-void VPinMAMEController::OnSoundCommand(int boardNo, int cmd)
+void PINMAMECALLBACK VPinMAMEController::OnLogMessage(PINMAME_LOG_LEVEL logLevel, const char* format, va_list args, const void* pUserData)
+{
+   char buffer[4096];
+   vsnprintf(buffer, sizeof(buffer), format, args);
+
+   if (logLevel == PINMAME_LOG_LEVEL_INFO) {
+      PLOGI.printf("%s", buffer);
+   }
+   else if (logLevel == PINMAME_LOG_LEVEL_ERROR) {
+      PLOGE.printf("%s", buffer);
+   }
+}
+
+void PINMAMECALLBACK VPinMAMEController::OnSoundCommand(int boardNo, int cmd, const void* pUserData)
 {
    AltsoundProcessCommand(cmd, 0);
 }
@@ -328,6 +152,8 @@ VPinMAMEController::VPinMAMEController()
 
    PLOGI.printf("PinMAME ini path set to: %s", m_szIniPath.c_str());
 
+   DMDUtil::Config::GetInstance()->SetAltColorPath(m_szPath + "altcolor" + PATH_SEPARATOR_CHAR);
+
    PinmameSetConfig(&config);
    PinmameSetUserData((void*)this);
    PinmameSetDmdMode(PINMAME_DMD_MODE_RAW);
@@ -335,7 +161,7 @@ VPinMAMEController::VPinMAMEController()
 
    PinmameSetHandleKeyboard(0);
    PinmameSetHandleMechanics(0xFF);
-
+  
    m_pSolenoidBuffer = new PinmameSolenoidState[PinmameGetMaxSolenoids()];
    m_pLampBuffer = new PinmameLampState[PinmameGetMaxLamps()];
    m_pGIBuffer = new PinmameGIState[PinmameGetMaxGIs()];
@@ -348,13 +174,35 @@ VPinMAMEController::VPinMAMEController()
    m_pPinmameGame = NULL;
    m_pPinmameMechConfig = NULL;
 
-   memset(m_segmentData, 0, sizeof(m_segmentData));
-   m_segmentPos = 0;
-
-   m_dmdIndex = -1;
    m_rgb = false;
+   m_hidden = true;
 
-   m_pDmd = NULL;
+   m_pWindow = nullptr;
+   m_running = false;
+   m_pThread = nullptr;
+
+   if (!pSettings->LoadValueWithDefault(Settings::Standalone, "PinMAMEWindow"s, true)) {
+      PLOGI.printf("PinMAME window disabled");
+      return;
+   }
+
+   m_pWindow = VP::Window::Create("PinMAME",
+      pSettings->LoadValueWithDefault(Settings::Standalone, "PinMAMEWindowX"s, SETTINGS_PINMAME_WINDOW_X),
+      pSettings->LoadValueWithDefault(Settings::Standalone, "PinMAMEWindowY"s, SETTINGS_PINMAME_WINDOW_Y),
+      pSettings->LoadValueWithDefault(Settings::Standalone, "PinMAMEWindowWidth"s, SETTINGS_PINMAME_WINDOW_WIDTH),
+      pSettings->LoadValueWithDefault(Settings::Standalone, "PinMAMEWindowHeight"s, SETTINGS_PINMAME_WINDOW_HEIGHT));
+
+   if (m_pWindow) {
+      PLOGI.printf("Starting render thread");
+
+      m_running = true;
+
+      m_pThread = new std::thread([this]() {
+         RenderLoop();
+
+         PLOGI.printf("Render thread finished");
+      });
+   }
 }
 
 VPinMAMEController::~VPinMAMEController()
@@ -362,8 +210,22 @@ VPinMAMEController::~VPinMAMEController()
    if (PinmameIsRunning())
       PinmameStop();
 
-   if (m_pDmd)
-      m_pDmd->Cleanup();
+   if (m_pThread) {
+      m_running = false;
+
+      m_pThread->join();
+      delete m_pThread;
+   }
+
+   if (m_pWindow)
+      delete m_pWindow;
+
+   for (auto pDisplay : m_displays) {
+      if (pDisplay->pDmd)
+         delete pDisplay->pDmd;
+   }
+
+   m_displays.clear();
 
    delete m_pSolenoidBuffer;
 
@@ -380,6 +242,19 @@ VPinMAMEController::~VPinMAMEController()
    delete m_pPinmameMechConfig;
 
    m_pGames->Release();
+}
+
+DMDUtil::DMD* VPinMAMEController::GetActiveDMD()
+{
+   if (m_displays.empty())
+      return NULL;
+
+   for (auto& pDisplay : m_displays) {
+      if (pDisplay->pDmd)
+         return pDisplay->pDmd;        
+   }
+
+   return NULL;
 }
 
 STDMETHODIMP VPinMAMEController::Run(/*[in]*/ LONG_PTR hParentWnd, /*[in,defaultvalue(100)]*/ int nMinVersion)
@@ -428,13 +303,24 @@ STDMETHODIMP VPinMAMEController::Run(/*[in]*/ LONG_PTR hParentWnd, /*[in,default
 
          m_rgb = (PinmameGetHardwareGen() == PINMAME_HARDWARE_GEN_SAM);
 
-         AltsoundSetLogger(g_pvp->m_szMyPrefPath, ALTSOUND_LOG_LEVEL_INFO, false);
+         Settings* const pSettings = &g_pplayer->m_ptable->m_settings;
 
-         if (AltsoundInit(m_szPath, string(m_pPinmameGame->name))) {
-            AltsoundSetHardwareGen((ALTSOUND_HARDWARE_GEN)PinmameGetHardwareGen());
-            PinmameSetSoundMode(PINMAME_SOUND_MODE_ALTSOUND);
+         if (pSettings->LoadValueWithDefault(Settings::Standalone, "AltSound"s, true)) {
+             AltsoundSetLogger(g_pvp->m_szMyPrefPath, ALTSOUND_LOG_LEVEL_INFO, false);
 
-            PLOGI.printf("Altsound initialized successfully.");
+             if (AltsoundInit(m_szPath, string(m_pPinmameGame->name))) {
+                AltsoundSetHardwareGen((ALTSOUND_HARDWARE_GEN)PinmameGetHardwareGen());
+                PinmameSetSoundMode(PINMAME_SOUND_MODE_ALTSOUND);
+
+                PLOGI.printf("Altsound initialized successfully.");
+             }
+         }
+
+         if (m_pWindow) {
+            if (!m_hidden)
+               m_pWindow->Show();
+            else
+               m_pWindow->Hide();
          }
 
          return S_OK;
@@ -448,24 +334,49 @@ STDMETHODIMP VPinMAMEController::Run(/*[in]*/ LONG_PTR hParentWnd, /*[in,default
    return S_FALSE;
 }
 
+void VPinMAMEController::RenderLoop()
+{
+    const UINT32 targetFrameTime = 1000 / 60;
+
+    while (m_running) {
+        Uint32 frameStartTime = SDL_GetTicks();
+
+        m_pWindow->Render(GetActiveDMD());
+
+        Uint32 frameEndTime = SDL_GetTicks();
+        Uint32 frameDuration = frameEndTime - frameStartTime;
+
+        if (frameDuration < targetFrameTime)
+           SDL_Delay(targetFrameTime - frameDuration);
+    }
+}
+
 STDMETHODIMP VPinMAMEController::Stop()
 {
    if (PinmameIsRunning())
       PinmameStop();
 
-   if (m_pDmd) {
-      m_pDmd->Cleanup();
-      m_pDmd = NULL;
+   if (m_pThread) {
+      m_running = false;
+
+      m_pThread->join();
+      delete m_pThread;
+      m_pThread = nullptr;
    }
 
-   memset(m_segmentData, 0, sizeof(m_segmentData));
-   m_segmentPos = 0;
+   for (auto pDisplay : m_displays) {
+      if (pDisplay->pDmd)
+         delete pDisplay->pDmd;
+   }
 
    m_displays.clear();
 
-   m_dmdIndex = -1;
-
    m_rgb = false;
+
+   m_hidden = true;
+
+   if (m_pWindow)
+      m_pWindow->Hide();
 
    return S_OK;
 }
@@ -530,14 +441,18 @@ STDMETHODIMP VPinMAMEController::get_Lamps(VARIANT* pVal)
 
 STDMETHODIMP VPinMAMEController::get_RawDmdWidth(int *pVal)
 {
-   *pVal = m_pDmd ? m_pDmd->GetWidth() : 0;
+   DMDUtil::DMD* pDmd = GetActiveDMD();
+
+   *pVal = pDmd ? pDmd->GetWidth() : 0;
 
    return S_OK;
 }
 
 STDMETHODIMP VPinMAMEController::get_RawDmdHeight(int *pVal)
 {
-   *pVal = m_pDmd ? m_pDmd->GetHeight() : 0;
+   DMDUtil::DMD* pDmd = GetActiveDMD();
+
+   *pVal = pDmd ? pDmd->GetHeight() : 0;
 
    return S_OK;
 }
@@ -558,75 +473,62 @@ STDMETHODIMP VPinMAMEController::get_ChangedNVRAM(VARIANT* pVal)
 
 STDMETHODIMP VPinMAMEController::get_RawDmdPixels(VARIANT* pVal)
 {
-   if (!m_pDmd || !m_pDmd->IsUpdated() || m_pDmd->IsSerumLoaded())
-      return S_FALSE;
+   DMDUtil::DMD* pDmd = GetActiveDMD();
 
-   std::unique_lock<std::mutex> lock(m_dmdMutex);
+   if (!pDmd || !pDmd->IsUpdated())
+        return S_FALSE;
 
-   const UINT32 end = m_pDmd->GetWidth() * m_pDmd->GetHeight();
-   UINT8* pDmdData = m_pDmd->GetData();
+   const int end = pDmd->GetLength();
 
-   if (pDmdData) {
-      SAFEARRAY* psa = SafeArrayCreateVector(VT_VARIANT, 0, end);
-      VARIANT* pData;
+   SAFEARRAY* psa = SafeArrayCreateVector(VT_VARIANT, 0, end);
+   VARIANT* pData;
 
-      SafeArrayAccessData(psa, (void **)&pData);
+   SafeArrayAccessData(psa, (void **)&pData);
 
-      for (UINT32 i = 0; i < end; i++) {
-         V_VT(&pData[i]) = VT_UI1;
-         V_UI1(&pData[i]) = m_pDmdLevels[pDmdData[i]];
-      }
+   UINT8* pLevelData = pDmd->GetLevelData();
 
-      SafeArrayUnaccessData(psa);
-
-      V_VT(pVal) = VT_ARRAY | VT_VARIANT;
-      V_ARRAY(pVal) = psa;
-
-      m_pDmd->ResetUpdated();
+   for (int i = 0; i < end; i++) {
+      V_VT(&pData[i]) = VT_UI1;
+      V_UI1(&pData[i]) = pLevelData[i];
    }
 
-   lock.unlock();
+   SafeArrayUnaccessData(psa);
+
+   V_VT(pVal) = VT_ARRAY | VT_VARIANT;
+   V_ARRAY(pVal) = psa;
+
+   pDmd->ResetUpdated();
 
    return S_OK;
 }
 
 STDMETHODIMP VPinMAMEController::get_RawDmdColoredPixels(VARIANT* pVal)
 {
-   if (!m_pDmd || !m_pDmd->IsUpdated())
-      return S_FALSE;
+   DMDUtil::DMD* pDmd = GetActiveDMD();
 
-   std::unique_lock<std::mutex> lock(m_dmdMutex);
+   if (!pDmd || !pDmd->IsUpdated())
+        return S_FALSE;
 
-   const UINT32 end = m_pDmd->GetWidth() * m_pDmd->GetHeight();
-   UINT8* pDmdData = m_pDmd->GetData();
+   const int end = pDmd->GetLength();
 
-   if (pDmdData) {
-      UINT8* pDmdPalette = m_pDmd->GetPalette();
+   SAFEARRAY* psa = SafeArrayCreateVector(VT_VARIANT, 0, end);
+   VARIANT* pData;
 
-      SAFEARRAY* psa = SafeArrayCreateVector(VT_VARIANT, 0, end);
-      VARIANT* pData;
+   SafeArrayAccessData(psa, (void **)&pData);
 
-      SafeArrayAccessData(psa, (void **)&pData);
+   UINT32* pRGB32Data = pDmd->GetRGB32Data();
 
-      int pos, r, g, b;
-      for (UINT32 i = 0; i < end; i++) {
-         pos = pDmdData[i] * 3;
-         r = pDmdPalette[pos];
-         g = pDmdPalette[pos + 1];
-         b = pDmdPalette[pos + 2];
-         V_VT(&pData[i]) = VT_UI4;
-         V_UI4(&pData[i]) = r | g << 8 | b << 16;
-      }
-
-      SafeArrayUnaccessData(psa);
-
-      V_VT(pVal) = VT_ARRAY | VT_VARIANT;
-      V_ARRAY(pVal) = psa;
-
-      m_pDmd->ResetUpdated();
+   for (int i = 0; i < end; i++) {
+      V_VT(&pData[i]) = VT_UI4;
+      V_UI4(&pData[i]) = pRGB32Data[i];
    }
 
-   lock.unlock();
+   SafeArrayUnaccessData(psa);
+
+   V_VT(pVal) = VT_ARRAY | VT_VARIANT;
+   V_ARRAY(pVal) = psa;
+
+   pDmd->ResetUpdated();
 
    return S_OK;
 }
@@ -728,6 +630,8 @@ STDMETHODIMP VPinMAMEController::put_GameName(BSTR newVal)
    if (status == PINMAME_STATUS_OK) {
       PLOGI.printf("Game found: name=%s, description=%s, manufacturer=%s, year=%s",
          m_pPinmameGame->name, m_pPinmameGame->description, m_pPinmameGame->manufacturer, m_pPinmameGame->year);
+
+      m_hidden = false;
 
       return S_OK;
    }
@@ -1070,7 +974,7 @@ STDMETHODIMP VPinMAMEController::put_LockDisplay(VARIANT_BOOL newVal)
 
 STDMETHODIMP VPinMAMEController::get_SolMask(int nLow, LONG *pVal)
 {
-   if (!pVal || (nLow < 0) || (nLow > 1))
+   if (!pVal)
       return S_FALSE;
 
    *pVal = PinmameGetSolenoidMask(nLow);
@@ -1080,10 +984,30 @@ STDMETHODIMP VPinMAMEController::get_SolMask(int nLow, LONG *pVal)
 
 STDMETHODIMP VPinMAMEController::put_SolMask(int nLow, LONG newVal)
 {
-   if (!((0 <= nLow && nLow <= 2) || (1000 <= nLow && nLow < 1999)))
+   if (!((0 <= nLow && nLow <= 2) || (1000 <= nLow && nLow < 2999)))
       return S_FALSE;
 
    PinmameSetSolenoidMask(nLow, newVal);
+
+   return S_OK;
+}
+
+STDMETHODIMP VPinMAMEController::get_ModOutputType(int output, int no, int* pVal)
+{
+   if (output != (int)PINMAME_MOD_OUTPUT_TYPE_SOLENOID)
+      return S_FALSE;
+
+   *pVal = (int)PinmameGetModOutputType(output, no);
+
+   return S_OK;
+}
+
+STDMETHODIMP VPinMAMEController::put_ModOutputType(int output, int no, int newVal)
+{
+   if (output != (int)PINMAME_MOD_OUTPUT_TYPE_SOLENOID)
+      return S_FALSE;
+
+   PinmameSetModOutputType(output, no, (PINMAME_MOD_OUTPUT_TYPE)newVal);
 
    return S_OK;
 }
@@ -1228,13 +1152,22 @@ STDMETHODIMP VPinMAMEController::ShowPathesDialog(LONG_PTR hParentWnd)
 
 STDMETHODIMP VPinMAMEController::get_Hidden(VARIANT_BOOL *pVal)
 {
-   *pVal = VARIANT_FALSE;
+   *pVal = m_hidden ? VARIANT_TRUE : VARIANT_FALSE;
 
    return S_OK;
 }
 
 STDMETHODIMP VPinMAMEController::put_Hidden(VARIANT_BOOL newVal)
 {
+   m_hidden = (newVal == VARIANT_TRUE);
+
+   if (m_pWindow) {
+      if (!m_hidden)
+         m_pWindow->Show();
+      else
+         m_pWindow->Hide();
+   }
+
    return S_OK;
 }
 

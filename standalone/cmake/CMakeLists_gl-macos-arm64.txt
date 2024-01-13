@@ -538,8 +538,6 @@ add_executable(vpinball
    standalone/inc/b2s/forms/FormDMD.h
    standalone/inc/b2s/Server.cpp
    standalone/inc/b2s/Server.h
-   standalone/inc/b2s/B2SWindows.cpp
-   standalone/inc/b2s/B2SWindows.h
    standalone/inc/b2s/b2s_i_proxy.cpp
    standalone/inc/b2s/b2s_i.c
    standalone/inc/b2s/b2s_i.h
@@ -557,17 +555,6 @@ add_executable(vpinball
    standalone/inc/pup/pinupplayer_i_proxy.cpp
    standalone/inc/pup/pinupplayer_i.c
    standalone/inc/pup/pinupplayer_i.h
-
-   standalone/inc/dmd/AlphaNumeric.h
-   standalone/inc/dmd/AlphaNumeric.cpp
-   standalone/inc/dmd/DMDUtil.h
-   standalone/inc/dmd/DMDUtil.cpp
-   standalone/inc/dmd/DMDWindow.h
-   standalone/inc/dmd/DMDWindow.cpp
-   standalone/inc/dmd/Serum.cpp
-   standalone/inc/dmd/Serum.h
-   standalone/inc/dmd/ZeDMDUtil.cpp
-   standalone/inc/dmd/ZeDMDUtil.h
 
    standalone/inc/common/Window.cpp
    standalone/inc/common/Window.h
@@ -658,9 +645,10 @@ target_link_libraries(vpinball PUBLIC
    FreeImage
    bass
    pinmame.3.6
-   zedmd.0.1.0
-   serum.1.6.1
    altsound.0.1.0
+   zedmd.0.4.1
+   serum.1.6.2
+   dmdutil.0.1.0
    "-framework AppKit"
 )
 
@@ -699,9 +687,11 @@ add_custom_command(TARGET vpinball POST_BUILD
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/macos-arm64/external/lib/libSDL2-2.0.0.dylib" "$<TARGET_FILE_DIR:vpinball>/../Frameworks"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/macos-arm64/external/lib/libSDL2_image-2.0.3.0.0.dylib" "$<TARGET_FILE_DIR:vpinball>/../Frameworks"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/macos-arm64/external/lib/libpinmame.3.6.dylib" "$<TARGET_FILE_DIR:vpinball>/../Frameworks"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/macos-arm64/external/lib/libserum.1.6.1.dylib" "$<TARGET_FILE_DIR:vpinball>/../Frameworks"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/macos-arm64/external/lib/libzedmd.0.1.0.dylib" "$<TARGET_FILE_DIR:vpinball>/../Frameworks"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/macos-arm64/external/lib/libaltsound.0.1.0.dylib" "$<TARGET_FILE_DIR:vpinball>/../Frameworks"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/macos-arm64/external/lib/libzedmd.0.4.1.dylib" "$<TARGET_FILE_DIR:vpinball>/../Frameworks"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/macos-arm64/external/lib/libserum.1.6.2.dylib" "$<TARGET_FILE_DIR:vpinball>/../Frameworks"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/macos-arm64/external/lib/libdmdutil.0.1.0.dylib" "$<TARGET_FILE_DIR:vpinball>/../Frameworks"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/macos-arm64/external/lib/libserialport.dylib" "$<TARGET_FILE_DIR:vpinball>/../Frameworks"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/macos-arm64/VPinballX_GL.icns" "$<TARGET_FILE_DIR:vpinball>/../Resources"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/macos-arm64/Info.plist" "$<TARGET_FILE_DIR:vpinball>/.."
    COMMAND /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString ${CMAKE_PROJECT_VERSION}" $<TARGET_FILE_DIR:vpinball>/../Info.plist
@@ -717,9 +707,11 @@ if(OPT_CODESIGN)
       COMMAND codesign --sign "${CODESIGN_DEVELOPER_ID}" --timestamp --options runtime ${PATH_APP}/Contents/Frameworks/libSDL2-2.0.0.dylib
       COMMAND codesign --sign "${CODESIGN_DEVELOPER_ID}" --timestamp --options runtime ${PATH_APP}/Contents/Frameworks/libSDL2_image-2.0.3.0.0.dylib
       COMMAND codesign --sign "${CODESIGN_DEVELOPER_ID}" --timestamp --options runtime ${PATH_APP}/Contents/Frameworks/libpinmame.3.6.dylib
-      COMMAND codesign --sign "${CODESIGN_DEVELOPER_ID}" --timestamp --options runtime ${PATH_APP}/Contents/Frameworks/libserum.1.6.1.dylib
-      COMMAND codesign --sign "${CODESIGN_DEVELOPER_ID}" --timestamp --options runtime ${PATH_APP}/Contents/Frameworks/libzedmd.0.1.0.dylib
       COMMAND codesign --sign "${CODESIGN_DEVELOPER_ID}" --timestamp --options runtime ${PATH_APP}/Contents/Frameworks/libaltsound.0.1.0.dylib
+      COMMAND codesign --sign "${CODESIGN_DEVELOPER_ID}" --timestamp --options runtime ${PATH_APP}/Contents/Frameworks/libzedmd.0.4.1.dylib
+      COMMAND codesign --sign "${CODESIGN_DEVELOPER_ID}" --timestamp --options runtime ${PATH_APP}/Contents/Frameworks/libserum.1.6.2.dylib
+      COMMAND codesign --sign "${CODESIGN_DEVELOPER_ID}" --timestamp --options runtime ${PATH_APP}/Contents/Frameworks/libdmdutil.0.1.0.dylib
+      COMMAND codesign --sign "${CODESIGN_DEVELOPER_ID}" --timestamp --options runtime ${PATH_APP}/Contents/Frameworks/libserialport.dylib
       COMMAND codesign --sign "${CODESIGN_DEVELOPER_ID}" --timestamp --options runtime ${PATH_APP}
       COMMAND ditto -c -k --keepParent ${PATH_APP} ${PATH_APP_ZIPPED}
       COMMAND xcrun notarytool submit ${PATH_APP_ZIPPED} --wait --apple-id "${CODESIGN_APPLE_ID}" --password "${CODESIGN_PASSWORD}" --team-id "${CODESIGN_TEAM_ID}"

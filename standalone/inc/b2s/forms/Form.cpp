@@ -4,26 +4,34 @@
 
 Form::Form()
 {
-   m_pGraphics = NULL;
    m_topMost = false;
+   m_pWindow = nullptr;
 }
 
 Form::~Form()
 {
+   if (m_pWindow)
+      delete m_pWindow;
 }
 
 void Form::Show()
 {
+   if (m_pWindow)
+      m_pWindow->Show();
 }
 
 void Form::Hide()
 {
+   if (m_pWindow)
+      m_pWindow->Hide();
 }
 
-void Form::Render(VP::Graphics* pGraphics)
+void Form::Render()
 {
-   if (!IsInvalidated() || !pGraphics)
+   if (!m_pWindow || !m_pWindow->GetGraphics() || !IsInvalidated())
       return;
+
+   VP::Graphics* pGraphics = m_pWindow->GetGraphics();
 
    pGraphics->SetColor(RGB(0, 0, 0));
    pGraphics->Clear();

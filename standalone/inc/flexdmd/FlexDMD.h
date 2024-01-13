@@ -2,10 +2,17 @@
 
 #include "flexdmd_i.h"
 #include "AssetManager.h"
-#include "../dmd/DMDUtil.h"
 #include "../common/Graphics.h"
+#include "../common/Window.h"
+
+#include "DMDUtil/DMDUtil.h"
 
 #include <thread>
+
+#define SETTINGS_FLEXDMD_WINDOW_X      15
+#define SETTINGS_FLEXDMD_WINDOW_Y      30 + 218 + 5 + 75 + 5
+#define SETTINGS_FLEXDMD_WINDOW_WIDTH  290
+#define SETTINGS_FLEXDMD_WINDOW_HEIGHT 75
 
 class Group;
 class AnimatedActor;
@@ -94,7 +101,6 @@ public:
 
    Font* NewFont(string szFont, OLE_COLOR tint, OLE_COLOR borderTint, LONG borderSize);
    AnimatedActor* NewVideo(string szVideo, string szName);
-   void RenderLoop();
    LONG GetRuntimeVersion() { return m_runtimeVersion; }
    int GetWidth() { return m_width; }
    int GetHeight() { return m_height; }
@@ -107,10 +113,14 @@ public:
    AssetManager* GetAssetManager() { return m_pAssetManager; }
 
 private:
+   void RenderLoop();
+   void ShowDMD(bool show);
+
    string m_szGameName;
    string m_szTableFile;
    int m_frameRate;
    bool m_run;
+   bool m_show;
    LONG m_runtimeVersion;
    bool m_clear;
    int m_renderLockCount;
@@ -124,7 +134,9 @@ private:
    RenderMode m_renderMode;
    OLE_COLOR m_dmdColor;
    AssetManager* m_pAssetManager;
-   DMDUtil* m_pDmd;
+   DMDUtil::DMD* m_pDmd;
+
+   VP::Window* m_pWindow;
 
    ULONG m_dwRef = 0;
 };

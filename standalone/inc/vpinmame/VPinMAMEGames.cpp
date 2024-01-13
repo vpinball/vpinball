@@ -2,7 +2,7 @@
 #include "VPinMAMEGames.h"
 #include "VPinMAMEGame.h"
 
-void CALLBACK VPinMAMEGames::GetGameCallback(PinmameGame* pPinmameGame, const void* pUserData)
+void PINMAMECALLBACK VPinMAMEGames::GetGameCallback(PinmameGame* pPinmameGame, const void* pUserData)
 {
    VPinMAMEGames* pGames = (VPinMAMEGames*)pUserData;
 

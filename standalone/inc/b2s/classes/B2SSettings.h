@@ -4,6 +4,15 @@
 
 #include <map>
 
+#define SETTINGS_B2S_BACKGLASSX      15
+#define SETTINGS_B2S_BACKGLASSY      30
+#define SETTINGS_B2S_BACKGLASSWIDTH  290
+#define SETTINGS_B2S_BACKGLASSHEIGHT 218
+#define SETTINGS_B2S_DMDX            SETTINGS_B2S_BACKGLASSX
+#define SETTINGS_B2S_DMDY            SETTINGS_B2S_BACKGLASSY + SETTINGS_B2S_BACKGLASSHEIGHT + 5
+#define SETTINGS_B2S_DMDWIDTH        290
+#define SETTINGS_B2S_DMDHEIGHT       75
+
 enum B2SSettingsCheckedState {
     B2SSettingsCheckedState_Unchecked = 0,
     B2SSettingsCheckedState_Checked = 1,
