@@ -122,7 +122,7 @@ public:
    STDMETHOD(FireKnocker)(int Count);
    STDMETHOD(QuitPlayer)(int CloseType);
 
-   void MainMsgLoop();
+   int MainMsgLoop();
 
    void CloseTable(const PinTable * const ppt);
 

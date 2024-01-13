@@ -2081,6 +2081,7 @@ void Player::FinishFrame()
       PLOGE.printf("Runtime error detected. Resetting LaunchTable to default.");
       g_pvp->m_settings.SaveValue(Settings::Standalone, "LaunchTable"s, "assets/exampleTable.vpx");
 #endif
+      m_pEditorTable->m_pcv->m_scriptError = true;
       m_closing = CS_CLOSE_APP;
 #endif
    }

@@ -1005,13 +1005,14 @@ public:
 
    int Run() override
    {
+      int retval = 0;
       if (m_run)
       {
          if (m_play && m_loadFileResult)
             m_vpinball.DoPlay(m_vpinball.m_povEdit);
 
          // VBA APC handles message loop (bastards)
-         m_vpinball.MainMsgLoop();
+         retval = m_vpinball.MainMsgLoop();
 
          m_vpinball.m_settings.Save();
 
@@ -1024,7 +1025,7 @@ public:
 #endif
          Sleep(THREADS_PAUSE); //wait for any threads to finish
       }
-      return 0;
+      return retval;
    }
 };
 

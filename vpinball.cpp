@@ -1565,8 +1565,9 @@ bool VPinball::ApcHost_OnTranslateMessage(MSG* pmsg)
    return consumed;
 }
 
-void VPinball::MainMsgLoop()
+int VPinball::MainMsgLoop()
 {
+   int retval = 0;
    for (;;)
    {
 #ifndef __STANDALONE__
@@ -1629,13 +1630,17 @@ void VPinball::MainMsgLoop()
       else if (!g_pplayer)
       {
          CComObject<PinTable> *const pt = GetActiveTable();
-         if (pt)
+         if (pt) {
+            if (pt->m_pcv->m_scriptError)
+               retval = 1;
             CloseTable(pt);
+         }
 
          break;
       }
 #endif
    }
+   return retval;
 }
 
 STDMETHODIMP VPinball::QueryInterface(REFIID iid, void **ppvObjOut)
