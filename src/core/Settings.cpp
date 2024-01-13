@@ -57,36 +57,22 @@ bool Settings::LoadFromFile(const string& path, const bool createDefault)
          if (j == Section::Version)
             continue;
 
-         string regpath(j == 0 ? "Software\\Visual Pinball\\"s : "Software\\Visual Pinball\\VP10\\"s);
+         string regpath(j == Section::Controller ? "Software\\Visual Pinball\\"s : "Software\\Visual Pinball\\VP10\\"s);
          regpath += regKey[j];
 
          HKEY hk;
          LSTATUS res = RegOpenKeyEx(HKEY_CURRENT_USER, regpath.c_str(), 0, KEY_READ, &hk);
          if (res != ERROR_SUCCESS)
-            return false;
+            continue;
 
          for (DWORD Index = 0;; ++Index)
          {
             DWORD dwSize = MAX_PATH;
             TCHAR szName[MAX_PATH];
             res = RegEnumValue(hk, Index, szName, &dwSize, nullptr, nullptr, nullptr, nullptr);
-            if (res != ERROR_SUCCESS)
+            if (res == ERROR_NO_MORE_ITEMS)
                break;
-
-            if (dwSize == 0 || szName[0] == '\0')
-               continue;
-            // detect whitespace and skip, as no whitespace allowed in XML tags
-            bool whitespace = false;
-            unsigned int i = 0;
-            while (szName[i])
-               if (isspace(szName[i]))
-               {
-                  whitespace = true;
-                  break;
-               }
-               else
-                  ++i;
-            if (whitespace)
+            if (res != ERROR_SUCCESS || dwSize == 0 || szName[0] == '\0')
                continue;
 
             dwSize = MAXSTRING;
@@ -94,7 +80,10 @@ bool Settings::LoadFromFile(const string& path, const bool createDefault)
             DWORD type = REG_NONE;
             res = RegQueryValueEx(hk, szName, nullptr, &type, pvalue, &dwSize);
             if (res != ERROR_SUCCESS)
+            {
+               PLOGI << "Settings '" << regKey[j] << '/' << szName << "' was not imported. Failure cause: failed to get value";
                continue;
+            }
 
             // old Win32xx and Win32xx 9+ docker keys
             if (strcmp((char *)pvalue, "Dock Windows") == 0) // should not happen, as a folder, not value.. BUT also should save these somehow and restore for Win32++, or not ?
@@ -141,7 +130,7 @@ bool Settings::LoadFromFile(const string& path, const bool createDefault)
                m_ini[regKey[j]][name] = copy;
             else
             {
-               PLOGI << "Settings '" << regKey[j] << '/' << szName << "' was not imported (value in registry: " << copy << ')';
+               PLOGI << "Settings '" << regKey[j] << '/' << szName << "' was not imported (value in registry: " << copy << "). Failure cause: name not found";
             }
          }
          RegCloseKey(hk);
