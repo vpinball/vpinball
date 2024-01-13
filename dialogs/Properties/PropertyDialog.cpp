@@ -97,6 +97,8 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect> &pvsel)
     m_backglassView = g_pvp->m_backglassView;
     m_isPlayfieldMesh = false;
 
+    while (m_tab.GetItemCount() > 0)
+       m_tab.RemoveTabPage(0);
     memset(m_tabs, 0, sizeof(m_tabs));
 
     switch (psel->GetItemType())
@@ -532,45 +534,39 @@ void PropertyDialog::UpdateComboBox(const vector<string>& contentList, const CCo
 
 void PropertyDialog::UpdateTabs(VectorProtected<ISelect> &pvsel)
 {
-    if (g_pvp->m_ptableActive && g_pvp->m_ptableActive->IsLocked())
-    {
-        m_multipleElementsStatic.ShowWindow(SW_HIDE);
-        m_nameEdit.ShowWindow(SW_HIDE);
-        m_elementTypeName.ShowWindow(SW_HIDE);
-        m_tab.ShowWindow(SW_HIDE);
-        for (int i = 0; i < PROPERTY_TABS; i++)
-            if (m_tabs[i] != nullptr)
-            {
-                m_tab.RemoveTabPage(m_tab.GetTabIndex(m_tabs[i]));
-                m_tabs[i] = nullptr;
-            }
-        m_previousType = eItemTypeCount;
-        return;
-    }
-    else
-    {
-        m_multipleElementsStatic.ShowWindow(SW_SHOW);
-        m_nameEdit.ShowWindow(SW_SHOW);
-        m_elementTypeName.ShowWindow(SW_SHOW);
-        m_tab.ShowWindow(SW_SHOW);
-    }
+   // Table is locked: just disable property pane
+   if (g_pvp->m_ptableActive && g_pvp->m_ptableActive->IsLocked())
+   {
+      m_multipleElementsStatic.ShowWindow(SW_HIDE);
+      m_nameEdit.ShowWindow(SW_HIDE);
+      m_elementTypeName.ShowWindow(SW_HIDE);
+      m_tab.ShowWindow(SW_HIDE);
+      while (m_tab.GetItemCount() > 0)
+            m_tab.RemoveTabPage(0);
+      memset(m_tabs, 0, sizeof(m_tabs));
+      m_previousType = eItemTypeCount;
+      return;
+   }
 
-    ISelect * const psel = pvsel.ElementAt(0);
-    if (psel == nullptr)
-        return;
+   // Invalid selection: discard update
+   ISelect *const psel = pvsel.ElementAt(0);
+   if (psel == nullptr)
+      return;
 
-    ShowWindow(SW_HIDE);
-    const bool is_playfield_mesh = psel->GetItemType() == eItemPrimitive && ((Primitive *)psel)->IsPlayfield();
-    if (m_previousType != psel->GetItemType() || m_isPlayfieldMesh != is_playfield_mesh || m_backglassView != g_pvp->m_backglassView || m_multipleElementsStatic.IsWindowVisible())
-    {
-        BasePropertyDialog::m_disableEvents = true;
-        m_curTabIndex = m_tab.GetCurSel();
-        for (int i = 0; i < PROPERTY_TABS; i++)
-            if (m_tabs[i] != nullptr)
-            {
-                m_tab.RemoveTabPage(m_tab.GetTabIndex(m_tabs[i]));
-                m_tabs[i] = nullptr;
-            }
+   ShowWindow(SW_HIDE);
+   m_multipleElementsStatic.ShowWindow();
+   m_nameEdit.ShowWindow();
+   m_elementTypeName.ShowWindow();
+   m_tab.ShowWindow();
+
+   const bool is_playfield_mesh = psel->GetItemType() == eItemPrimitive && ((Primitive *)psel)->IsPlayfield();
+   if (m_previousType != psel->GetItemType() || m_isPlayfieldMesh != is_playfield_mesh || m_backglassView != g_pvp->m_backglassView || m_multipleElementsStatic.IsWindowVisible())
+   {
+      BasePropertyDialog::m_disableEvents = true;
+      m_curTabIndex = m_tab.GetCurSel();
+      while (m_tab.GetItemCount() > 0)
+         m_tab.RemoveTabPage(0);
+      memset(m_tabs, 0, sizeof(m_tabs));
 
         for (int i = 0; i < pvsel.size(); i++)
         {
@@ -581,7 +577,7 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> &pvsel)
                 m_nameEdit.ShowWindow(SW_HIDE);
                 m_elementTypeName.ShowWindow(SW_HIDE);
                 m_tab.ShowWindow(SW_HIDE);
-                ShowWindow(SW_SHOW);
+                ShowWindow();
                 BasePropertyDialog::m_disableEvents = false;
                 return;
             }
