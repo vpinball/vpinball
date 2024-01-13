@@ -282,7 +282,7 @@ STDMETHODIMP FlexDMD::get_DmdColoredPixels(VARIANT* pRetVal)
 
    SafeArrayAccessData(psa, (void **)&pData);
 
-   UINT32* pRGB32Data = m_pDmd->GetRGB32Data();
+   const UINT32* pRGB32Data = m_pDmd->GetRGB32Data();
 
    for (int i = 0; i < end; i++) {
       V_VT(&pData[i]) = VT_UI4;
@@ -311,7 +311,7 @@ STDMETHODIMP FlexDMD::get_DmdPixels(VARIANT* pRetVal)
 
    SafeArrayAccessData(psa, (void **)&pData);
 
-   UINT32* pRGB32Data = m_pDmd->GetRGB32Data();
+   const UINT32* pRGB32Data = m_pDmd->GetRGB32Data();
 
    for (int i = 0; i < end; i++) {
       V_VT(&pData[i]) = VT_UI1;

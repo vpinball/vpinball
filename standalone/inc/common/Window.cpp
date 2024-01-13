@@ -53,7 +53,7 @@ Window::Window(const string& szTitle, SDL_Window* pWindow, SDL_Renderer* pRender
    int w2, h2;
    SDL_GetWindowPosition(m_pWindow, &m_x, &m_y);
    SDL_GetWindowSize(m_pWindow, &w2, &h2);
-   PLOGI.printf("Window created: title=%s, %d, %d (%dx%d)", m_szTitle.c_str(), m_x, m_y, w2, h2);
+   PLOGI.printf("Window created: title=%s, %dx%d (%dx%d)", m_szTitle.c_str(), m_x, m_y, w2, h2);
 
    SDL_RenderSetLogicalSize(m_pRenderer, w2, h2);
 

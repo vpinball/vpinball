@@ -40,7 +40,7 @@ void PINMAMECALLBACK VPinMAMEController::OnDisplayAvailable(int index, int displ
 
    if ((p_displayLayout->type & PINMAME_DISPLAY_TYPE_DMD) == PINMAME_DISPLAY_TYPE_DMD) {
       bool isSAM = ((PinmameGetHardwareGen() & (PINMAME_HARDWARE_GEN_SAM | PINMAME_HARDWARE_GEN_SPA)) > 0);
-      pDisplay->pDmd = new DMDUtil::DMD(p_displayLayout->width, p_displayLayout->height, isSAM, string(pController->m_pPinmameGame->name));
+      pDisplay->pDmd = new DMDUtil::DMD(p_displayLayout->width, p_displayLayout->height, isSAM, pController->m_pPinmameGame->name);
    }
 
    pController->m_displays.push_back(pDisplay);
@@ -152,7 +152,8 @@ VPinMAMEController::VPinMAMEController()
 
    PLOGI.printf("PinMAME ini path set to: %s", m_szIniPath.c_str());
 
-   DMDUtil::Config::GetInstance()->SetAltColorPath(m_szPath + "altcolor" + PATH_SEPARATOR_CHAR);
+   string szAltColorPath = m_szPath + "altcolor" + PATH_SEPARATOR_CHAR;
+   DMDUtil::Config::GetInstance()->SetAltColorPath(szAltColorPath.c_str());
 
    PinmameSetConfig(&config);
    PinmameSetUserData((void*)this);
@@ -485,7 +486,7 @@ STDMETHODIMP VPinMAMEController::get_RawDmdPixels(VARIANT* pVal)
 
    SafeArrayAccessData(psa, (void **)&pData);
 
-   UINT8* pLevelData = pDmd->GetLevelData();
+   const UINT8* pLevelData = pDmd->GetLevelData();
 
    for (int i = 0; i < end; i++) {
       V_VT(&pData[i]) = VT_UI1;
@@ -516,7 +517,7 @@ STDMETHODIMP VPinMAMEController::get_RawDmdColoredPixels(VARIANT* pVal)
 
    SafeArrayAccessData(psa, (void **)&pData);
 
-   UINT32* pRGB32Data = pDmd->GetRGB32Data();
+   const UINT32* pRGB32Data = pDmd->GetRGB32Data();
 
    for (int i = 0; i < end; i++) {
       V_VT(&pData[i]) = VT_UI4;

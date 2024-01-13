@@ -1195,13 +1195,13 @@ HRESULT Player::Init()
    pConfig->SetLogCallback(OnDMDUtilLog);
    pConfig->SetAltColor(pSettings->LoadValueWithDefault(Settings::Standalone, "AltColor"s, true));
    pConfig->SetZeDMD(pSettings->LoadValueWithDefault(Settings::Standalone, "ZeDMD"s, true));
-   pConfig->SetZeDMDDevice(pSettings->LoadValueWithDefault(Settings::Standalone, "ZeDMDDevice"s, ""s));
+   pConfig->SetZeDMDDevice(pSettings->LoadValueWithDefault(Settings::Standalone, "ZeDMDDevice"s, ""s).c_str());
    pConfig->SetZeDMDDebug(pSettings->LoadValueWithDefault(Settings::Standalone, "ZeDMDDebug"s, false));
    pConfig->SetZeDMDRGBOrder(pSettings->LoadValueWithDefault(Settings::Standalone, "ZeDMDRGBOrder"s, -1));
    pConfig->SetZeDMDBrightness(pSettings->LoadValueWithDefault(Settings::Standalone, "ZeDMDBrightness"s, -1));
    pConfig->SetZeDMDSaveSettings(pSettings->LoadValueWithDefault(Settings::Standalone, "ZeDMDSaveSettings"s, false));
    pConfig->SetPixelcade(pSettings->LoadValueWithDefault(Settings::Standalone, "Pixelcade"s, true));
-   pConfig->SetPixelcadeDevice(pSettings->LoadValueWithDefault(Settings::Standalone, "PixelcadeDevice"s, ""s));
+   pConfig->SetPixelcadeDevice(pSettings->LoadValueWithDefault(Settings::Standalone, "PixelcadeDevice"s, ""s).c_str());
 #endif
 
    m_pEditorTable->m_progressDialog.SetName("Starting Game Scripts..."s);
