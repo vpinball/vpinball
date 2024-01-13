@@ -129,7 +129,7 @@ cd ..
 # build libdmdutil (and libserialport, libserum, libzedmd) and copy to external
 #
 
-curl -sL https://github.com/jsm174/libdmdutil/archive/${LIBDMDUTIL_SHA}.zip -o libdmdutil.zip
+curl -sL https://github.com/vpinball/libdmdutil/archive/${LIBDMDUTIL_SHA}.zip -o libdmdutil.zip
 unzip libdmdutil.zip
 cd libdmdutil-$LIBDMDUTIL_SHA
 cp -r include/DMDUtil ../../external/include
