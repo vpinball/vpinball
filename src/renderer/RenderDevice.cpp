@@ -842,6 +842,14 @@ void RenderDevice::CreateDevice(int& refreshrate, VideoSyncMode& syncMode, UINT 
     params.FullScreen_RefreshRateInHz = m_fullscreen ? refreshrate : 0;
     params.PresentationInterval = syncMode == VideoSyncMode::VSM_VSYNC ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE;
 
+    // This is a horrible hack: DirectX only supports fake stereo made by rendering at half resolution for these mode
+    // but on the other hand, for DirectX, we do not implement clean separation between output buffer (which must be at full resolution)
+    // so we hack it back here.
+    if (g_pplayer->m_stereo3D == STEREO_SBS) // Side by side needs to fit the 2 views along the width, so each view is half the total width
+        params.BackBufferWidth *= 2;
+    else if (g_pplayer->m_stereo3D == STEREO_TB || m_stereo3D == STEREO_INT || m_stereo3D == STEREO_FLIPPED_INT) // Top/Bottom (and interlaced) needs to fit the 2 views along the height, so each view is half the total height
+        params.BackBufferHeight *= 2;
+
    // check if our HDR texture format supports/does sRGB conversion on texture reads, which must NOT be the case as we always set SRGBTexture=true independent of the format!
    HRESULT hr = m_pD3D->CheckDeviceFormat(m_adapter, devtype, params.BackBufferFormat, D3DUSAGE_QUERY_SRGBREAD, D3DRTYPE_TEXTURE, (D3DFORMAT)colorFormat::RGBA32F);
    if (SUCCEEDED(hr))
