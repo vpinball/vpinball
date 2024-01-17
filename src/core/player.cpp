@@ -1261,7 +1261,15 @@ HRESULT Player::Init()
 
    // colordepth & refreshrate are only defined if fullscreen is true.
    // width and height may be modified during initialization (for example for VR, they are adapted to the headset resolution)
-   const HRESULT hr = m_pin3d.InitPin3D(m_fullScreen, m_wnd_width, m_wnd_height, colordepth, m_refreshrate, m_videoSyncMode, m_AAfactor, m_stereo3DfakeStereo ? STEREO_OFF : m_stereo3D, m_FXAA, !!m_sharpen, ss_refl);
+   int w = m_wnd_width, h = m_wnd_height;
+   if (m_stereo3DfakeStereo)
+   {
+      if (m_stereo3D == STEREO_SBS) // Side by side needs to fit the 2 views along the width, so each view is half the total width
+         w = w / 2;
+      else if (m_stereo3D == STEREO_TB || m_stereo3D == STEREO_INT || m_stereo3D == STEREO_FLIPPED_INT) // Top/Bottom (and interlaced) needs to fit the 2 views along the height, so each view is half the total height
+         h = h / 2;
+   }
+   const HRESULT hr = m_pin3d.InitPin3D(m_fullScreen, w, h, colordepth, m_refreshrate, m_videoSyncMode, m_AAfactor, m_stereo3DfakeStereo ? STEREO_OFF : m_stereo3D, m_FXAA, !!m_sharpen, ss_refl);
    if (hr != S_OK)
    {
       char szFoo[64];
