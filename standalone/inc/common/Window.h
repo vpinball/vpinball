@@ -18,6 +18,9 @@ public:
    void Show();
    void Hide();
    VP::Graphics* GetGraphics() { return m_pGraphics; }
+   SDL_Point GetPosition() { return SDL_Point { m_x, m_y }; }
+   int GetWidth();
+   int GetHeight();
 
 private:
    Window(const string& szTitle, SDL_Window* pWindow, SDL_Renderer* pRenderer);
