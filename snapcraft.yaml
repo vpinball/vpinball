@@ -1,0 +1,35 @@
+name: vpinball
+version: '10.8.1-git'
+summary: Pinball table editor and simulator
+description: |
+  Just a test
+
+confinement: devmode
+base: core22
+
+parts:
+  vpinball-broken:
+    source: build
+    source-type: local
+    plugin: dump
+    stage-packages:
+      - libstdc++6
+  vpinball:
+    source: .
+    plugin: cmake
+    build-packages:
+      - automake
+      - bison
+      - unzip
+    override-pull: |
+      snapcraftctl pull
+      cd standalone/linux
+      ./external.sh
+      cd ../..
+      cp standalone/cmake/CMakeLists_gl-linux-x64.txt CMakeLists.txt
+      # patch CMakeLists.txt to have a minimum version of 3.22.1 (for the snap build that uses ubuntu 22.04 lts)
+      sed -i 's/cmake_minimum_required(VERSION 3.26)/cmake_minimum_required(VERSION 3.22.1)/g' CMakeLists.txt
+
+apps:
+  vpinball:
+    command: VPinballX_GL

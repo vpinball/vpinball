@@ -114,6 +114,8 @@ unzip libaltsound.zip
 cd libaltsound-$LIBALTSOUND_SHA
 cp src/altsound.h ../../external/include
 platforms/linux/x64/external.sh
+# patch CMakeLists.txt to have a minimum version of 3.22.1 (for the snap build that uses ubuntu 22.04 lts)
+sed -i 's/cmake_minimum_required(VERSION 3.25)/cmake_minimum_required(VERSION 3.22.1)/g' CMakeLists.txt
 cmake -DPLATFORM=linux -DARCH=x64 -DBUILD_STATIC=OFF -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -B build
 cmake --build build -- -j${NUM_PROCS}
 cp build/libaltsound.so.0.1.0 ../../external/lib
@@ -127,7 +129,13 @@ curl -sL https://github.com/vpinball/libdmdutil/archive/${LIBDMDUTIL_SHA}.zip -o
 unzip libdmdutil.zip
 cd libdmdutil-$LIBDMDUTIL_SHA
 cp -r include/DMDUtil ../../external/include
+# in platforms/linux/x64/external.sh after line "cd libzedmd-$LIBZEDMD_SHA" we add "sed -i 's/cmake_minimum_required(VERSION 3.25)/cmake_minimum_required(VERSION 3.22.1)/g' CMakeLists.txt"
+
+# in platforms/linux/x64/external.sh after line "cd libserum-$LIBSERUM_SHA" we add "sed -i 's/cmake_minimum_required(VERSION 3.25)/cmake_minimum_required(VERSION 3.22.1)/g' CMakeLists.txt"
+
 platforms/linux/x64/external.sh
+# patch CMakeLists.txt to have a minimum version of 3.22.1 (for the snap build that uses ubuntu 22.04 lts)
+sed -i 's/cmake_minimum_required(VERSION 3.25)/cmake_minimum_required(VERSION 3.22.1)/g' CMakeLists.txt
 cmake -DPLATFORM=linux -DARCH=x64 -DBUILD_STATIC=OFF -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -B build
 cmake --build build -- -j${NUM_PROCS}
 cp third-party/runtime-libs/linux/x64/libserum.so.1.6.2 ../../external/lib
