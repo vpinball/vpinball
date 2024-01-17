@@ -131,4 +131,18 @@ void Window::Hide()
    SDL_HideWindow(m_pWindow);
 }
 
+int Window::GetWidth()
+{
+   int w;
+   SDL_GetWindowSize(m_pWindow, &w, nullptr);
+   return w;
+}
+
+int Window::GetHeight()
+{
+   int h;
+   SDL_GetWindowSize(m_pWindow, nullptr, &h);
+   return h;
+}
+
 }

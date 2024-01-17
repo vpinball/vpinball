@@ -10,11 +10,28 @@ PinUpPlayerTrigger::~PinUpPlayerTrigger()
 {
 }
 
+static PinUpPlayerTrigger::PlayAction fromString(string name) {
+   std::transform(name.begin(), name.end(), name.begin(), ::tolower);
+
+   if (name == "normal") return PinUpPlayerTrigger::PlayAction::Normal;
+   if (name == "loop") return PinUpPlayerTrigger::PlayAction::Loop;
+   if (name == "splashreset") return PinUpPlayerTrigger::PlayAction::SplashReset;
+   if (name == "splashreturn") return PinUpPlayerTrigger::PlayAction::SplashReturn;
+   if (name == "stopplayer") return PinUpPlayerTrigger::PlayAction::StopPlayer;
+   if (name == "stopfile") return PinUpPlayerTrigger::PlayAction::StopFile;
+   if (name == "setbg") return PinUpPlayerTrigger::PlayAction::SetBG;
+   if (name == "​playssf") return PinUpPlayerTrigger::PlayAction::PlaySSF;
+   if (name == "skipsamepri") return PinUpPlayerTrigger::PlayAction::SkipSamePri;
+
+   PLOGW << "Unknown Play Action " << name;
+   return PinUpPlayerTrigger::PlayAction::Normal;
+}
+
 PinUpPlayerTrigger* PinUpPlayerTrigger::CreateFromCSVLine(string line)
 {
    vector<string> parts = PinUpPlayerUtils::ParseCSVLine(line);
    if (parts.size() != 14)
-      return nullptr;
+      return NULL;
 
    PinUpPlayerTrigger* trigger = new PinUpPlayerTrigger();
 
@@ -30,7 +47,7 @@ PinUpPlayerTrigger* PinUpPlayerTrigger::CreateFromCSVLine(string line)
    trigger->m_length = string_to_int(parts[9], 0);
    trigger->m_counter = string_to_int(parts[10], 0);
    trigger->m_restSeconds = string_to_int(parts[11], 0);
-   trigger->m_loop = parts[12];
+   trigger->m_loop = fromString(parts[12]);
    trigger->m_defaults = string_to_int(parts[13], 0);
 
    return trigger;

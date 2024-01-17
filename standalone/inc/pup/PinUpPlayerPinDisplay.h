@@ -7,6 +7,28 @@
 #include "PinUpPlayerTrigger.h"
 
 #include <vector>
+#include <map>
+
+extern "C" {
+   #include "SDL_ttf.h"
+}
+
+// 'jukebox mode will auto advance to next media in playlist and you can use next/prior sub to manuall advance
+// 'you should really have a specific pupid# display like musictrack that is only used for the playlist
+// 'sub PUPDisplayAsJukebox(pupid) needs to be called/set prior to sending your first media to that pupdisplay.
+// 'pupid=pupdiplay# like pMusic
+
+// Sub PUPDisplayAsJukebox(pupid)
+// PuPlayer.SendMSG("{'mt':301, 'SN': " & pupid & ", 'FN':30, 'PM':1 }")
+// End Sub
+
+// Sub PuPlayListPrior(pupid)
+//  PuPlayer.SendMSG("{'mt':301, 'SN': " & pupid & ", 'FN':31, 'PM':1 }")
+// End Sub
+
+// Sub PuPlayListNext(pupid)
+//  PuPlayer.SendMSG("{'mt':301, 'SN': " & pupid & ", 'FN':31, 'PM':2 }")
+// End Sub
 
 class PinUpPlayerPinDisplay :
    public IDispatchImpl<IPinDisplay, &IID_IPinDisplay, &LIBID_PinUpPlayer>,
@@ -86,4 +108,14 @@ private:
    vector<PinUpPlayerPlaylist*> m_playlists;
    vector<PinUpPlayerScreen*> m_screens;
    vector<PinUpPlayerTrigger*> m_triggers;
+   string m_romname;
+   bool m_running;
+   std::thread* m_pThread;
+
+   std::map<string,TTF_Font*> m_fonts;
+
+   void TriggerEvent(string name);
+   PinUpPlayerScreen* getScreen(int ScreenNum);
+   void PlaylistPlayInternal(LONG ScreenNum, string playlist, string playfilename, LONG volume, LONG forceplay);
+   void RenderLoop();
 };

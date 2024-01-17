@@ -552,6 +552,9 @@ add_executable(vpinball
    standalone/inc/pup/pinupplayer_i_proxy.cpp
    standalone/inc/pup/pinupplayer_i.c
    standalone/inc/pup/pinupplayer_i.h
+   standalone/inc/pup/PinUpPlayerLabel.cpp
+   standalone/inc/pup/PinUpPlayerLabel.h
+   standalone/inc/pup/PinUpPlayerVideoPlayer.cpp
 
    standalone/inc/common/Window.cpp
    standalone/inc/common/Window.h
@@ -639,7 +642,9 @@ target_link_libraries(vpinball PUBLIC
    glad
    SDL2-2.0.0
    SDL2_image-2.0.3.0.0
-   FreeImage
+   freeimage
+   SDL2_ttf
+   freetype
    bass
    pinmame.3.6
    altsound.0.1.0
@@ -647,6 +652,11 @@ target_link_libraries(vpinball PUBLIC
    serum.1.6.2
    dmdutil.0.1.0
    "-framework AppKit"
+   "-framework CoreVideo"
+   "-framework CoreMedia"
+   "-framework VideoToolbox"
+   "-framework AudioToolbox"
+   "-framework Security"
 )
 
 set_target_properties(vpinball PROPERTIES

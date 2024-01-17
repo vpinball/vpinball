@@ -4,6 +4,8 @@ set -e
 
 SDL2_VERSION=2.28.5
 SDL2_IMAGE_VERSION=2.6.3
+FREETYPE_VERSION=2.13.2
+FFMPEG_VERSION=6.1
 
 PINMAME_SHA=893da424f82797d9fa37854691505527353f088a
 LIBALTSOUND_SHA=cc1b66f4f8784acd028565c79ebdc335da3c6749
@@ -14,9 +16,11 @@ NUM_PROCS=$(sysctl -n hw.ncpu)
 echo "Building external libraries..."
 echo "  SDL2_VERSION: ${SDL2_VERSION}"
 echo "  SDL2_IMAGE_VERSION: ${SDL2_IMAGE_VERSION}"
+echo "  FREETYPE_VERSION: ${FREETYPE_VERSION}"
 echo "  PINMAME_SHA: ${PINMAME_SHA}"
 echo "  LIBALTSOUND_SHA: ${LIBALTSOUND_SHA}"
 echo "  LIBDMDUTIL_SHA: ${LIBDMDUTIL_SHA}"
+echo "  FFMPEG_VERSION: ${FFMPEG_VERSION}"
 echo ""
 
 if [ -z "${BUILD_TYPE}" ]; then
@@ -47,6 +51,37 @@ cd FreeImage
 cp ../../freeimage/Makefile.macos.arm64 .
 make -f Makefile.macos.arm64 -j${NUM_PROCS}
 cp Dist/libfreeimage-arm64.a ../../external/lib/libfreeimage.a
+cd ..
+
+#
+# build freetype and copy to external
+#
+curl -sL https://download.savannah.gnu.org/releases/freetype/freetype-2.13.2.tar.xz -o FreeType2132.tar.xz
+tar -xf FreeType2132.tar.xz
+cd freetype-2.13.2
+cmake -B build -D CMAKE_BUILD_TYPE=Release \
+               -D FT_DISABLE_BZIP2=TRUE \
+			   -D FT_DISABLE_HARFBUZZ=TRUE \
+			   -D FT_DISABLE_BROTLI=TRUE
+cmake --build build 
+cp build/libfreetype.a ../../external/lib
+cp -R include/* ../../external/include
+cd ..
+
+#
+# build SDL_ttf and copy to external
+#
+curl -sL https://github.com/libsdl-org/SDL_ttf/archive/refs/tags/release-2.20.2.zip -o sdlttf2202.zip
+unzip sdlttf2202.zip
+cd SDL_ttf-release-2.20.2
+cmake -B build -D BUILD_SHARED_LIBS=OFF \
+               -D SDL2TTF_SAMPLES=OFF \
+			   -D CMAKE_FIND_PACKAGE_PREFER_CONFIG=TRUE \
+			   -D CMAKE_PREFIX_PATH=../freetype-2.13.2/build \
+			   -D SDL2TTF_FREETYPE_VENDORED=TRUE
+cmake --build build -- -j${NUM_PROCS}
+cp build/libSDL2_ttf.a ../../external/lib
+cp SDL_ttf.h ../../external/include/
 cd ..
 
 #
@@ -140,4 +175,17 @@ cp third-party/runtime-libs/macos/arm64/libserum.1.6.2.dylib ../../external/lib
 cp third-party/runtime-libs/macos/arm64/libzedmd.0.4.1.dylib ../../external/lib
 cp third-party/runtime-libs/macos/arm64/libserialport.dylib ../../external/lib
 cp build/libdmdutil.0.1.0.dylib ../../external/lib
+cd ..
+
+#
+# build ffmpeg and copy to external
+#
+
+curl -O https://ffmpeg.org/releases/ffmpeg-${FFMPEG_VERSION}.tar.xz
+tar -xzf ffmpeg-${FFMPEG_VERSION}.tar.xz
+cd ffmpeg-${FFMPEG_VERSION}
+ ./configure --disable-programs --disable-doc --disable-iconv --disable-bzlib
+make
+find . -name "*.a" -exec cp {} ../../external/lib \;
+rsync -Rq -dir lib*/*.h ../../external/include
 cd ..
