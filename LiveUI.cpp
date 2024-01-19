@@ -3508,7 +3508,18 @@ void LiveUI::RubberProperties(bool is_live, Rubber *startup_obj, Rubber *live_ob
 
 void LiveUI::SurfaceProperties(bool is_live, Surface *startup_obj, Surface *live_obj)
 {
-
+   if (ImGui::CollapsingHeader("Visuals", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
+   {
+      PropCheckbox("Top Visible", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_topBottomVisible) : nullptr, live_obj ? &(live_obj->m_d.m_topBottomVisible) : nullptr);
+      PropCheckbox("Side Visible", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_sideVisible) : nullptr, live_obj ? &(live_obj->m_d.m_sideVisible) : nullptr);
+      PropCheckbox("Reflection Enabled", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_reflectionEnabled) : nullptr, live_obj ? &(live_obj->m_d.m_reflectionEnabled) : nullptr);
+      ImGui::EndTable();
+   }
+   if (ImGui::CollapsingHeader("Physics", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
+   {
+      ImGui::EndTable();
+   }
+   PROP_TIMER(is_live, startup_obj, live_obj)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
