@@ -120,26 +120,26 @@ public:
    void ReleaseTextureDC(HDC dc);
 
 private:
-   bool m_resize_on_low_mem;
+   bool m_resize_on_low_mem = true;
 
 public:
    unsigned int m_maxTexDim = 0;
    
    // width and height of texture can be different than width and height
    // of m_pdsBuffer, since the surface can be limited to smaller sizes by the user
-   unsigned int m_width, m_height;
-   unsigned int m_realWidth, m_realHeight;
-   float m_alphaTestValue;
-   BaseTexture* m_pdsBuffer;
+   unsigned int m_width = 0, m_height = 0;
+   unsigned int m_realWidth = 0, m_realHeight = 0;
+   float m_alphaTestValue = (float)(-1.0 / 255.0);
+   BaseTexture *m_pdsBuffer = nullptr;
 
-   HBITMAP m_hbmGDIVersion; // HBitmap at screen depth and converted/visualized alpha so GDI draws it fast
-   PinBinary *m_ppb;  // if this image should be saved as a binary stream, otherwise just LZW compressed from the live bitmap
+   HBITMAP m_hbmGDIVersion = nullptr; // HBitmap at screen depth and converted/visualized alpha so GDI draws it fast
+   PinBinary *m_ppb = nullptr; // if this image should be saved as a binary stream, otherwise just LZW compressed from the live bitmap
 
    string m_szName;
    string m_szPath;
 
 private:
-   HBITMAP m_oldHBM;        // this is to cache the result of SelectObject()
+   HBITMAP m_oldHBM = nullptr;        // this is to cache the result of SelectObject()
 };
 
 template<bool opaque>
