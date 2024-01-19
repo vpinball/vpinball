@@ -23,7 +23,6 @@ parts:
     plugin: cmake
     cmake-parameters:
       - "-DCMAKE_BUILD_TYPE=Release"
-      # - "-- -j$(nproc)"
     build-packages:
       - automake
       - bison
