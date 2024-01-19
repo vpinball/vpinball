@@ -2,16 +2,25 @@ name: vpinball
 version: '10.8.1-git'
 summary: Pinball table editor and simulator
 description: |
-  Just a test
+    Just a test
+    Some interfaces need to be connected manually:
+
+        $ sudo snap connect vpinball:alsa
+  
+    This is equivalent to direct driver access to your audio hardware and may block other applications from recording or playing sound.
+    see https://snapcraft.io/docs/alsa-interface for details.
 
 confinement: devmode
 base: core22
+
+layout:
+  /usr/share/alsa:
+    bind: $SNAP/usr/share/alsa
 
 parts:
   vpinball:
     source: .
     plugin: cmake
-    #plugin: nil
     cmake-parameters:
       - "-DCMAKE_BUILD_TYPE=Release"
       # - "-- -j$(nproc)"
@@ -31,6 +40,7 @@ parts:
       - libxrandr-dev
       - libwayland-dev
     stage-packages:
+#        - libgl1
         - zlib1g
         - libdrm2
         - libgbm1
@@ -39,9 +49,12 @@ parts:
         - libudev1
         - libx11-6
         - libxrandr2
-        - libwayland-client0
-        # bass dependencies
-        - libasound2
+#        - libwayland-client0
+#        - libwayland-egl1
+#        - libwayland-cursor0
+        # bass dependencies, what a mess to get alsa working in snaps, bass should just use pulseaudio or pipewire
+        # TODO check https://snapcraft-alsa.readthedocs.io/en/latest/snapcraft_usage.html
+        # - libasound2
         - libpulse0
         # how do we add pipewire?
     override-pull: |
@@ -59,11 +72,11 @@ parts:
 
 apps:
   vpinball:
-    command: /usr/local/VPinballX_GL
+    command: desktop-launch $SNAP/usr/local/VPinballX_GL
     plugs:
       - home
       - x11
-      - wayland
+#      - wayland
       - opengl
       - alsa
       - pulseaudio
