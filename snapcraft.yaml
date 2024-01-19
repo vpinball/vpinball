@@ -16,19 +16,30 @@ parts:
       - libstdc++6
   vpinball:
     source: .
-    plugin: cmake
+    #plugin: cmake
+    plugin: nil
+    # cmake-parameters:
+    #  - "-DCMAKE_BUILD_TYPE=Release"
+    #  # - "-- -j$(nproc)"
     build-packages:
       - automake
       - bison
       - unzip
     override-pull: |
-      snapcraftctl pull
+      craftctl default
+      # We need latest cmake for the external libs and for the main build
+      apt-get install -y ca-certificates gpg wget
+      wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | tee /usr/share/keyrings/kitware-archive-keyring.gpg >/dev/null
+      echo 'deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] https://apt.kitware.com/ubuntu/ jammy main' | tee /etc/apt/sources.list.d/kitware.list >/dev/null
+      apt-get update
+      apt-get install -y cmake
       cd standalone/linux
       ./external.sh
       cd ../..
       cp standalone/cmake/CMakeLists_gl-linux-x64.txt CMakeLists.txt
-      # patch CMakeLists.txt to have a minimum version of 3.22.1 (for the snap build that uses ubuntu 22.04 lts)
-      sed -i 's/cmake_minimum_required(VERSION 3.26)/cmake_minimum_required(VERSION 3.22.1)/g' CMakeLists.txt
+    override-build: |
+      cmake -DCMAKE_BUILD_TYPE=Release -B build
+      cmake --build build -- -j$(nproc)
 
 apps:
   vpinball:
