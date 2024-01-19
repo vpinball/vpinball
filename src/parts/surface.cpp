@@ -1061,12 +1061,7 @@ void Surface::RenderWallsAtHeight(const bool drop, const bool isReflectionPass)
 
       // Only render Bottom for Reflections
       if (isReflectionPass)
-      {
-         m_rd->ResetRenderState();
-         if (mat->m_bOpacityActive || !m_isDynamic)
-            m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
          m_rd->DrawMesh(m_rd->basicShader, m_isDynamic, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, m_numVertices * 6 + (m_numPolys * 3 * 2), m_numPolys * 3);
-      }
    }
 
    m_rd->basicShader->SetVector(SHADER_fDisableLighting_top_below, 0.f, 0.f, 0.f, 0.f);
