@@ -8,23 +8,19 @@ confinement: devmode
 base: core22
 
 parts:
-  vpinball-broken:
-    source: build
-    source-type: local
-    plugin: dump
-    stage-packages:
-      - libstdc++6
   vpinball:
     source: .
-    #plugin: cmake
-    plugin: nil
-    # cmake-parameters:
-    #  - "-DCMAKE_BUILD_TYPE=Release"
-    #  # - "-- -j$(nproc)"
+    plugin: cmake
+    #plugin: nil
+    cmake-parameters:
+      - "-DCMAKE_BUILD_TYPE=Release"
+      # - "-- -j$(nproc)"
     build-packages:
       - automake
       - bison
       - unzip
+      - libtool
+      - cmake
     override-pull: |
       craftctl default
       # We need latest cmake for the external libs and for the main build
@@ -37,10 +33,12 @@ parts:
       ./external.sh
       cd ../..
       cp standalone/cmake/CMakeLists_gl-linux-x64.txt CMakeLists.txt
-    override-build: |
-      cmake -DCMAKE_BUILD_TYPE=Release -B build
-      cmake --build build -- -j$(nproc)
+#      # make sure we don't have any old build from the host
+#      rm -rf build
+#    override-build: |
+#      cmake -DCMAKE_BUILD_TYPE=Release -B build
+#      cmake --build build -- -j$(nproc)
 
 apps:
   vpinball:
-    command: VPinballX_GL
+    command: /usr/local/VPinballX_GL

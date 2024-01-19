@@ -683,3 +683,25 @@ add_custom_command(TARGET vpinball POST_BUILD
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/linux/external/lib/libdmdutil.so.0.1.0" "$<TARGET_FILE_DIR:vpinball>"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/linux/external/lib/libserialport.so.0" "$<TARGET_FILE_DIR:vpinball>"
 )
+
+# Install for snap package
+# binary
+install(TARGETS vpinball DESTINATION "${CMAKE_INSTALL_PREFIX}")
+# external libraries
+install(FILES "${CMAKE_SOURCE_DIR}/standalone/linux/external/lib/libSDL2-2.0.so.0" DESTINATION "${CMAKE_INSTALL_PREFIX}")
+install(FILES "${CMAKE_SOURCE_DIR}/standalone/linux/external/lib/libSDL2_image-2.0.so.0" DESTINATION "${CMAKE_INSTALL_PREFIX}")
+install(FILES "${CMAKE_SOURCE_DIR}/standalone/linux/external/lib/libbass.so" DESTINATION "${CMAKE_INSTALL_PREFIX}")
+install(FILES "${CMAKE_SOURCE_DIR}/standalone/linux/external/lib/libpinmame.so.3.6" DESTINATION "${CMAKE_INSTALL_PREFIX}")
+install(FILES "${CMAKE_SOURCE_DIR}/standalone/linux/external/lib/libaltsound.so.0.1.0" DESTINATION "${CMAKE_INSTALL_PREFIX}")
+install(FILES "${CMAKE_SOURCE_DIR}/standalone/linux/external/lib/libzedmd.so.0.4.1" DESTINATION "${CMAKE_INSTALL_PREFIX}")
+install(FILES "${CMAKE_SOURCE_DIR}/standalone/linux/external/lib/libserum.so.1.6.2" DESTINATION "${CMAKE_INSTALL_PREFIX}")
+install(FILES "${CMAKE_SOURCE_DIR}/standalone/linux/external/lib/libdmdutil.so.0.1.0" DESTINATION "${CMAKE_INSTALL_PREFIX}")
+install(FILES "${CMAKE_SOURCE_DIR}/standalone/linux/external/lib/libserialport.so.0" DESTINATION "${CMAKE_INSTALL_PREFIX}")
+# other files that are expected to be in the same directory as the binary
+install(DIRECTORY "${CMAKE_SOURCE_DIR}/src/assets/" DESTINATION "${CMAKE_INSTALL_PREFIX}/assets")
+install(DIRECTORY "${CMAKE_SOURCE_DIR}/scripts/" DESTINATION "${CMAKE_INSTALL_PREFIX}/scripts")
+install(DIRECTORY "${CMAKE_SOURCE_DIR}/tables/" DESTINATION "${CMAKE_INSTALL_PREFIX}/tables")
+install(DIRECTORY "${CMAKE_SOURCE_DIR}/txt/" DESTINATION "${CMAKE_INSTALL_PREFIX}/docs")
+install(DIRECTORY "${CMAKE_SOURCE_DIR}/shader/" DESTINATION "${CMAKE_INSTALL_PREFIX}/shader${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}")
+install(DIRECTORY "${CMAKE_SOURCE_DIR}/standalone/inc/flexdmd/resources/" DESTINATION "${CMAKE_INSTALL_PREFIX}/flexdmd")
+
