@@ -579,22 +579,12 @@ BaseTexture* BaseTexture::ToBGRA()
 
 Texture::Texture()
 {
-   m_pdsBuffer = nullptr;
-   m_hbmGDIVersion = nullptr;
-   m_ppb = nullptr;
-   m_alphaTestValue = (float)(-1.0 / 255.0);
-   m_resize_on_low_mem = true;
 }
 
 Texture::Texture(BaseTexture * const base)
 {
    m_pdsBuffer = base;
    SetSizeFrom(base);
-
-   m_hbmGDIVersion = nullptr;
-   m_ppb = nullptr;
-   m_alphaTestValue = (float)(-1.0 / 255.0);
-   m_resize_on_low_mem = true;
 }
 
 Texture::~Texture()
