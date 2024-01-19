@@ -686,15 +686,11 @@ void RenderDevice::CreateDevice(int& refreshrate, VideoSyncMode& syncMode, UINT 
    else
 #endif
    if (m_stereo3D == STEREO_SBS)
-   {
       // Side by side needs to fit the 2 views along the width, so each view is half the total width
       m_width = m_width / 2;
-   }
-   else if (m_stereo3D == STEREO_TB || m_stereo3D == STEREO_INT || m_stereo3D == STEREO_FLIPPED_INT)
-   {
+   else if (m_stereo3D == STEREO_TB)
       // Top/Bottom (and interlaced) needs to fit the 2 views along the height, so each view is half the total height
       m_height = m_height / 2;
-   }
 
    // Flip scheduling: 0 for immediate, 1 for synchronized with the vertical retrace, -1 for adaptive vsync (i.e. synchronized on vsync except for late frame)
    switch (syncMode)
