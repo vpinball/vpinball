@@ -841,8 +841,20 @@ void VideoOptionsDialog::SaveSettings(const bool saveAll)
    LRESULT maxAOMode = SendDlgItemMessage(IDC_MAX_AO_COMBO, CB_GETCURSEL, 0, 0);
    if (maxAOMode == CB_ERR)
       maxAOMode = 2;
-   settings.SaveValue(Settings::Player, "DisableAO"s, maxAOMode == 0, !saveAll);
-   settings.SaveValue(Settings::Player, "DynamicAO"s, maxAOMode == 2, !saveAll);
+   // Saving a table override but this needs to be evaluated from 2 options for backward compatibility reasons...
+   const bool disableAO = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "DisableAO"s, false);
+   const bool dynAO = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "DynamicAO"s, true);
+   int appAO = disableAO ? 0 : dynAO ? 2 : 1;
+   if (saveAll || appAO != maxAOMode)
+   {
+      settings.SaveValue(Settings::Player, "DisableAO"s, maxAOMode == 0);
+      settings.SaveValue(Settings::Player, "DynamicAO"s, maxAOMode == 2);
+   }
+   else
+   {
+      settings.DeleteValue(Settings::Player, "DisableAO"s);
+      settings.DeleteValue(Settings::Player, "DynamicAO"s);
+   }
    LRESULT maxReflectionMode = SendDlgItemMessage(IDC_MAX_REFLECTION_COMBO, CB_GETCURSEL, 0, 0);
    if (maxReflectionMode == CB_ERR)
       maxReflectionMode = RenderProbe::REFL_STATIC;
@@ -938,7 +950,7 @@ BOOL VideoOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
       else if (g_pvp->m_ptableActive && LOWORD(wParam) == IDC_SAVE_OVERRIDES)
       {
          SaveSettings(false);
-         g_pvp->m_ptableActive->m_settings.CopyOverrides(m_tableSettings);
+         g_pvp->m_ptableActive->m_settings = m_tableSettings;
       }
       g_pvp->m_settings.Save();
       if (g_pvp->m_ptableActive && !g_pvp->m_ptableActive->GetSettingsFileName().empty())
