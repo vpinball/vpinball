@@ -21,6 +21,29 @@ parts:
       - unzip
       - libtool
       - cmake
+      - zlib1g-dev
+      - libdrm-dev
+      - libgbm-dev
+      - libglu1-mesa-dev
+      - libegl-dev
+      - libudev-dev
+      - libx11-dev
+      - libxrandr-dev
+      - libwayland-dev
+    stage-packages:
+        - zlib1g
+        - libdrm2
+        - libgbm1
+        - libglu1-mesa
+        - libegl1
+        - libudev1
+        - libx11-6
+        - libxrandr2
+        - libwayland-client0
+        # bass dependencies
+        - libasound2
+        - libpulse0
+        # how do we add pipewire?
     override-pull: |
       craftctl default
       # We need latest cmake for the external libs and for the main build
@@ -33,12 +56,15 @@ parts:
       ./external.sh
       cd ../..
       cp standalone/cmake/CMakeLists_gl-linux-x64.txt CMakeLists.txt
-#      # make sure we don't have any old build from the host
-#      rm -rf build
-#    override-build: |
-#      cmake -DCMAKE_BUILD_TYPE=Release -B build
-#      cmake --build build -- -j$(nproc)
 
 apps:
   vpinball:
     command: /usr/local/VPinballX_GL
+    plugs:
+      - home
+      - x11
+      - wayland
+      - opengl
+      - alsa
+      - pulseaudio
+      - audio-playback
