@@ -245,7 +245,7 @@ enum ShaderUniforms
    SHADER_UNIFORM(SUT_Float4, refractionTint_thickness, 1),
    SHADER_UNIFORM(SUT_Float4, mirrorNormal_factor, 1),
    SHADER_UNIFORM(SUT_Bool, objectSpaceNormalMap, 1),
-   SHADER_SAMPLER(tex_base_color, Texture0, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // base texture
+   SHADER_SAMPLER(tex_base_color, Texture0, SA_CLAMP, SA_CLAMP, SF_TRILINEAR), // base texture
    SHADER_SAMPLER(tex_base_transmission, Texture3, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // bulb light/transmission buffer texture
    SHADER_SAMPLER(tex_base_normalmap, Texture4, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // normal map texture
    SHADER_SAMPLER(tex_reflection, Texture5, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // plane reflection
