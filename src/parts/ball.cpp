@@ -187,29 +187,35 @@ void BallEx::Render(const unsigned int renderMask)
    Vertex2D antiStretch(1.f, 1.f);
    if (m_antiStretch)
    {
-      // To evaluate projection stretch, we project 12 points and compute projected bounds then apply opposite stretching on YZ axis.
+      // To evaluate projection stretch, we project a few points and compute projected bounds then apply opposite stretching on YZ axis.
       // This is somewhat overkill but the maths to do it directly would be fairly complicated to accomodate for the 3 view setup projections
       // and tests did not show a real performance impact (likely because VPX is mainly GPU bound, not CPU)
       // Note that this will only work if view is screen aligned (x axis is left-right, yz is top-down). If view has some free rotation this will fail.
+      // The number of points matters: 12 points are not enough, 35 and more seems to give good results
+      const int npts = 35;
       if (m_stretchFitPoints[0] > 1.f)
       {
-         for (int pos = 0, j = -1; j <= 1; ++j)
+         double a = 4.0 * M_PI / npts, d = sqrt(a);
+         int nTheta = (int)round(M_PI / d);
+         double dTheta = M_PI / nTheta, dPhi = a / dTheta;
+         for (int pos = 0, j = 0; j < nTheta; j++)
          {
-            const int numPts = (j == 0) ? 6 : 3;
-            const float theta = (float)j * (float)(M_PI / 4.0);
-            for (int i = 0; i < numPts; ++i)
+            const double theta = ((double) j + 0.5) * M_PI / (double)nTheta;
+            const int nPhi = (int)round(2.0 * M_PI * sin(theta) / dPhi);
+            for (int i = 0; i < nPhi; i++)
             {
-               const float phi = (float)i * ((float)(2.0 * M_PI) / (float)numPts);
-               m_stretchFitPoints[pos++] = cosf(theta) * cosf(phi);
-               m_stretchFitPoints[pos++] = cosf(theta) * sinf(phi);
-               m_stretchFitPoints[pos++] = sinf(theta);
+               const double phi = (double) i * (2.0 * M_PI) / (double)nPhi;
+               m_stretchFitPoints[pos++] = sin(theta) * cos(phi);
+               m_stretchFitPoints[pos++] = sin(theta) * sin(phi);
+               m_stretchFitPoints[pos++] = cos(theta);
             }
+            // npts = pos / 3;
          }
       }
       const Matrix3D &mvp = g_pplayer->m_pin3d.GetMVP().GetModelViewProj(0);
       bool invalid = false;
       float xMin = FLT_MAX, yMin = FLT_MAX, xMax = -FLT_MAX, yMax = -FLT_MAX;
-      for (int i = 0; i < 36; i += 3)
+      for (int i = 0; i < npts * 3; i += 3)
       {
          const float px = m_pball->m_d.m_pos.x + m_stretchFitPoints[i];
          const float py = m_pball->m_d.m_pos.y + m_stretchFitPoints[i + 1];
@@ -247,8 +253,6 @@ void BallEx::Render(const unsigned int renderMask)
          // balance stretching/enlarging to avoid having too much size difference between ball at the top / ball at the bottom
          antiStretch.x = 0.5f * (1.0f + sy / sx);
          antiStretch.y = 0.5f * (1.0f + sx / sy);
-         // PLOGD << "Ball antistretch #" << m_pball->m_id << " y=" << m_pball->m_d.m_pos.y << " ratio=" << sx / sy << " , sx=" << sx << ", sy=" << sy << ", sx2=" << sx * antiStretch.x
-         //      << ", sy2=" << sy * antiStretch.y << ", ratio2=" << (sx * antiStretch.x) / (sy * antiStretch.y);
       }
    }
 
@@ -307,7 +311,7 @@ void BallEx::Render(const unsigned int renderMask)
    if (g_pplayer->m_liveUI->IsShowingFPSDetails())
    {
       const float pointSize = 5.f * (float)m_rd->GetCurrentRenderTarget()->GetWidth() / 1920.0f;
-      // this is buggy as we set the point size directly while the render comma,nd is used later on, but this is the only place where point rendering is used so it's ok for now
+      // this is buggy as we set the point size directly while the render command is used later on, but this is the only place where point rendering is used so it's ok for now
       #if defined(ENABLE_SDL)
       glPointSize(pointSize);
       #else
