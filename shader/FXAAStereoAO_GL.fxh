@@ -25,6 +25,17 @@ float3 get_nonunit_normal(const float depth0, const float2 u, const float eye) /
 	const float depth1 = texStereoNoLod(tex_depth, float2(u.x, u.y - w_h_height.y)).x;
 	const float depth2 = texStereoNoLod(tex_depth, float2(u.x + w_h_height.x, u.y)).x;
 	return float3(w_h_height.y * (depth2 - depth0), (depth1 - depth0) * w_h_height.x, w_h_height.y * w_h_height.x); //!!
+
+	// better quality, maybe worth it for SSR path
+	/*const float depth1a = texStereoNoLod(tex_depth, float2(u.x, u.y+w_h_height.y)).x;
+	const float depth2a = texStereoNoLod(tex_depth, float2(u.x+w_h_height.x, u.y)).x;
+	const float depth1b = texStereoNoLod(tex_depth, float2(u.x, u.y-w_h_height.y)).x;
+	const float depth2b = texStereoNoLod(tex_depth, float2(u.x-w_h_height.x, u.y)).x;
+	const float x1a = depth1a - depth0;
+	const float x1b = depth0 - depth1b;
+	const float x2a = depth2a - depth0;
+	const float x2b = depth0 - depth2b;
+	return float3(w_h_height.y * (abs(x2a) < abs(x2b) ? x2a : x2b), (abs(x1a) < abs(x1b) ? x1a : x1b) * w_h_height.x, w_h_height.y * w_h_height.x);*/
 }
 
 //float3 sphere_sample(const float2 t)
