@@ -14,11 +14,14 @@ confinement: devmode
 base: core22
 
 layout:
+  /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/alsa-lib:
+    bind: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/alsa-lib
   /usr/share/alsa:
     bind: $SNAP/usr/share/alsa
 
 parts:
   vpinball:
+    after: [alsa-mixin]
     source: .
     plugin: cmake
     cmake-parameters:
@@ -39,7 +42,6 @@ parts:
       - libxrandr-dev
       - libwayland-dev
     stage-packages:
-#        - libgl1
         - zlib1g
         - libdrm2
         - libgbm1
@@ -53,6 +55,7 @@ parts:
 #        - libwayland-cursor0
         # bass dependencies, what a mess to get alsa working in snaps, bass should just use pulseaudio or pipewire
         # TODO check https://snapcraft-alsa.readthedocs.io/en/latest/snapcraft_usage.html
+        # TODO check https://github.com/scummvm/scummvm/blob/aa8325243abcc54ed50f36485edd1024197fd9d5/dists/snap/snap/snapcraft.yaml
         # - libasound2
         - libpulse0
         # how do we add pipewire?
@@ -69,9 +72,48 @@ parts:
       cd ../..
       cp standalone/cmake/CMakeLists_gl-linux-x64.txt CMakeLists.txt
 
+
+  alsa-mixin:
+    plugin: dump
+    source: https://github.com/diddlesnaps/snapcraft-alsa.git
+    source-subdir: snapcraft-assets
+    build-packages:
+      - libasound2-dev
+    stage-packages:
+      - libasound2
+      - libasound2-plugins
+      - yad
+    stage:
+      # restrict to only audio-related files - you need to ensure
+      # that gtk3 is staged for yad to work correctly, to prompt
+      # users to connect the alsa plug or proceed with pulseaudio.
+      #
+      # This helps prevent symbol conflicts in situations where
+      # you're using a non-default library, such as those that the
+      # gnome-3-34 extension for core18 provides.
+      - etc/asound.conf
+      - snap/command-chain/alsa-launch
+      - usr/bin/yad*
+      - usr/lib/$SNAPCRAFT_ARCH_TRIPLET/alsa-lib
+      - usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libasound*
+      - usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libdnsfile*
+      - usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libFLAC*
+      - usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libjack*
+      - usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libpulse*
+      - usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libsamplerate*
+      - usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libspeex*
+      - usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libvorbis*
+      - usr/lib/$SNAPCRAFT_ARCH_TRIPLET/pulseaudio
+
 apps:
   vpinball:
-    command: desktop-launch $SNAP/usr/local/VPinballX_GL
+    command: usr/local/VPinballX_GL
+    command-chain:
+      - snap/command-chain/alsa-launch
+      - snap/command-chain/desktop-launch
+    extensions:
+      # this adds desktop-launch to the command-chain
+      - gnome
     plugs:
       - home
       - x11
@@ -80,3 +122,8 @@ apps:
       - alsa
       - pulseaudio
       - audio-playback
+      - desktop-launch
+      - desktop-legacy
+    environment:
+      ALWAYS_USE_PULSEAUDIO: '1'
+
