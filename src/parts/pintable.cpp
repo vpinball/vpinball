@@ -8151,7 +8151,7 @@ bool PinTable::AuditTable() const
       TimerDataRoot *tdr = nullptr;
       switch (type)
       {
-      case eItemPrimitive: tdr = &prim->m_d.m_tdr; break; // Note: primitive have timers but they are not exposed to the UI
+      // case eItemPrimitive: tdr = &prim->m_d.m_tdr; break; // Note: primitive have timers but they are not exposed to the UI
       case eItemSurface: tdr = &surf->m_d.m_tdr; break;
       case eItemTimer: tdr = &((Timer *)part)->m_d.m_tdr; break;
       case eItemLight: tdr = &((Light *)part)->m_d.m_tdr; break;
@@ -8168,7 +8168,7 @@ bool PinTable::AuditTable() const
       case eItemFlipper: tdr = &((Flipper *)part)->m_d.m_tdr; break;
       case eItemGate: tdr = &((Gate *)part)->m_d.m_tdr; break;
       }
-      if (tdr && tdr->m_TimerEnabled && tdr->m_TimerInterval < 5)
+      if (tdr && tdr->m_TimerEnabled && tdr->m_TimerInterval != -1 && tdr->m_TimerInterval != -2 && tdr->m_TimerInterval < 5)
          ss << ". Warning: Part '" << part->GetName() << "' uses a timer with a very short period of " << tdr->m_TimerInterval << "ms. This will likely causes lag and the table will not support 'frame pacing'.\n";
 
       // Enabling translucency (light from below) won't work with static parts: otherwise the rendering will be different in VR/Headtracked vs desktop modes. It also needs a non opaque alpha.
