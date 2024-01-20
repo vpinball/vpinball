@@ -202,6 +202,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    {
       // Disable VSync for VR (sync is performed by the OpenVR runtime)
       m_videoSyncMode = VideoSyncMode::VSM_NONE;
+      m_stereo3DfakeStereo = false;
       m_maxFramerate = 0;
    }
 
@@ -3612,12 +3613,6 @@ void Player::PrepareVideoBuffers()
       // For VR, copy each eye to the HMD texture and render the wanted preview if activated
       if (m_stereo3D == STEREO_VR)
       {
-         // Render LiveUI in headset for VR
-         g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_MISC);
-         m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("ImGui"s, renderedRT);
-         m_pin3d.m_pd3dPrimaryDevice->RenderLiveUI();
-         g_frameProfiler.ExitProfileSection();
-
          assert(renderedRT != m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer());
          int w = renderedRT->GetWidth(), h = renderedRT->GetHeight();
          
@@ -3625,11 +3620,13 @@ void Player::PrepareVideoBuffers()
          m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("Left Eye"s, leftTexture, false);
          m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
          m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, leftTexture, true, false, 0, 0, w, h, 0, 0, w, h, 0, 0);
+         m_pin3d.m_pd3dPrimaryDevice->RenderLiveUI();
 
          RenderTarget *rightTexture = m_pin3d.m_pd3dPrimaryDevice->GetOffscreenVR(1);
          m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("Right Eye"s, rightTexture, false);
          m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
          m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, rightTexture, true, false, 0, 0, w, h, 0, 0, w, h, 1, 0);
+         m_pin3d.m_pd3dPrimaryDevice->RenderLiveUI();
 
          RenderTarget *outRT = m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
          m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("VR Preview"s, outRT, false);
@@ -4068,6 +4065,13 @@ void Player::SubmitFrame()
    // Submit to GPU render queue
    g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_GPU_SUBMIT);
    m_pin3d.m_pd3dPrimaryDevice->FlushRenderFrame();
+   if (m_stereo3D == STEREO_VR && m_vrPreview != VRPREVIEW_DISABLED)
+   {
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("ImgUI-Preview"s, m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer(), false);
+      m_liveUI->Update(m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer());
+      m_pin3d.m_pd3dPrimaryDevice->RenderLiveUI();
+      m_pin3d.m_pd3dPrimaryDevice->FlushRenderFrame();
+   }
    m_pin3d.m_pd3dPrimaryDevice->SwapBackBufferRenderTargets(); // Keep previous render as a reflection probe for ball reflection and for hires motion blur
    g_frameProfiler.ExitProfileSection();
 
