@@ -654,7 +654,8 @@ LiveUI::LiveUI(RenderDevice *const rd)
    m_dpi = ImGui_ImplWin32_GetDpiScaleForHwnd(rd->getHwnd());
    ImGui::GetStyle().ScaleAllSizes(m_dpi);
 
-   const float overlaySize = min(32.f * m_dpi, (float)min(m_player->m_wnd_width, m_player->m_wnd_height) / (26.f * 2.0f)); // Fit 26 lines of text on screen
+   // Overlays are displayed in the VR headset for which we do not have a meaningful DPI. THis is somewhat hacky but we would really need 2 UI for VR.
+   const float overlaySize = rd->m_stereo3D == STEREO_VR ? 20.0f : min(32.f * m_dpi, (float)min(m_player->m_wnd_width, m_player->m_wnd_height) / (26.f * 2.0f)); // Fit 26 lines of text on screen
    m_overlayFont = io.Fonts->AddFontFromMemoryCompressedTTF(droidsans_compressed_data, droidsans_compressed_size, overlaySize);
 
    m_baseFont = io.Fonts->AddFontFromMemoryCompressedTTF(droidsans_compressed_data, droidsans_compressed_size, 13.0f * m_dpi);
@@ -821,8 +822,7 @@ void LiveUI::Update(const RenderTarget *rt)
    ImGui_ImplWin32_NewFrame();
    
    // The render size may not match the window size used by ImGui_ImplWin32_NewFrame (for example for VR)
-   ImGui::GetIO().DisplaySize.x = (float)rt->GetWidth();
-   ImGui::GetIO().DisplaySize.y = (float)rt->GetHeight();
+   ImGui::GetIO().DisplaySize = ImVec2((float)rt->GetWidth(), (float)rt->GetHeight());
 
    ImGui::NewFrame();
    ImGui::GetIO().ConfigFlags &= ~ImGuiConfigFlags_NavEnableKeyboard; // We use it for main splash popup, but needs it to be disabled to allow keyboard shortcuts

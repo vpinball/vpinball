@@ -3620,13 +3620,15 @@ void Player::PrepareVideoBuffers()
          m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("Left Eye"s, leftTexture, false);
          m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
          m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, leftTexture, true, false, 0, 0, w, h, 0, 0, w, h, 0, 0);
-         m_pin3d.m_pd3dPrimaryDevice->RenderLiveUI();
+         if (m_liveUI->IsTweakMode())
+            m_pin3d.m_pd3dPrimaryDevice->RenderLiveUI();
 
          RenderTarget *rightTexture = m_pin3d.m_pd3dPrimaryDevice->GetOffscreenVR(1);
          m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("Right Eye"s, rightTexture, false);
          m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
          m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, rightTexture, true, false, 0, 0, w, h, 0, 0, w, h, 1, 0);
-         m_pin3d.m_pd3dPrimaryDevice->RenderLiveUI();
+         if (m_liveUI->IsTweakMode())
+            m_pin3d.m_pd3dPrimaryDevice->RenderLiveUI();
 
          RenderTarget *outRT = m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
          m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("VR Preview"s, outRT, false);
@@ -4052,7 +4054,10 @@ void Player::PrepareFrame()
    hid_set_output(HID_OUTPUT_PLUNGER, ((m_time_msec - m_LastPlungerHit) < 512) && ((m_time_msec & 512) > 0));
 
    g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_MISC);
-   m_liveUI->Update(m_stereo3D == STEREO_VR ? m_pin3d.m_pd3dPrimaryDevice->GetOffscreenVR(0) : m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer());
+   if (m_stereo3D != STEREO_VR)
+      m_liveUI->Update(m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer());
+   else if (m_liveUI->IsTweakMode())
+      m_liveUI->Update(m_pin3d.m_pd3dPrimaryDevice->GetOffscreenVR(0));
    g_frameProfiler.ExitProfileSection();
 
    PrepareVideoBuffers();
@@ -4065,7 +4070,7 @@ void Player::SubmitFrame()
    // Submit to GPU render queue
    g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_GPU_SUBMIT);
    m_pin3d.m_pd3dPrimaryDevice->FlushRenderFrame();
-   if (m_stereo3D == STEREO_VR && m_vrPreview != VRPREVIEW_DISABLED)
+   if (m_stereo3D == STEREO_VR && m_vrPreview != VRPREVIEW_DISABLED && !m_liveUI->IsTweakMode())
    {
       m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("ImgUI-Preview"s, m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer(), false);
       m_liveUI->Update(m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer());
