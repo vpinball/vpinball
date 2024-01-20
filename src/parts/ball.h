@@ -35,7 +35,7 @@ public:
 
 private:
    RenderDevice *m_rd = nullptr;
-   float m_stretchFitPoints[3 * 12] = { 2.f };
+   float m_stretchFitPoints[3 * 35] = { 2.f };
 
    // IBall
 public:
