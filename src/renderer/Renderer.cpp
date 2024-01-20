@@ -112,7 +112,7 @@ Renderer::Renderer(PinTable* const table, const bool fullScreen, const int width
    : m_table(table)
 {
    m_stereo3Denabled = m_table->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DEnabled"s, (m_stereo3D != STEREO_OFF));
-   m_stereo3DfakeStereo = m_table->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DFake"s, false);
+   m_stereo3DfakeStereo = stereo3D == STEREO_VR ? false : m_table->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DFake"s, false);
    #ifndef ENABLE_SDL // DirectX does not support stereo rendering
    m_stereo3DfakeStereo = true;
    #endif
@@ -1089,6 +1089,13 @@ void Renderer::SubmitFrame()
    // Submit to GPU render queue
    g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_GPU_SUBMIT);
    m_pd3dPrimaryDevice->FlushRenderFrame();
+   if (m_stereo3D == STEREO_VR && m_vrPreview != VRPREVIEW_DISABLED)
+   {
+      m_pd3dPrimaryDevice->SetRenderTarget("ImgUI-Preview"s, m_pd3dPrimaryDevice->GetOutputBackBuffer(), false);
+      g_pplayer->m_liveUI->Update(m_pd3dPrimaryDevice->GetOutputBackBuffer());
+      m_pd3dPrimaryDevice->RenderLiveUI();
+      m_pd3dPrimaryDevice->FlushRenderFrame();
+   }
    m_pd3dPrimaryDevice->SwapBackBufferRenderTargets(); // Keep previous render as a reflection probe for ball reflection and for hires motion blur
    // (Optionally) force queue flushing of the driver. Can be used to artifically limit latency on DX9 (depends on OS/GFXboard/driver if still useful nowadays). This must be done after submiting render commands
    if (m_limiter)
@@ -1901,12 +1908,6 @@ void Renderer::PrepareVideoBuffers()
       // For VR, copy each eye to the HMD texture and render the wanted preview if activated
       if (m_stereo3D == STEREO_VR)
       {
-         // Render LiveUI in headset for VR
-         g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_MISC);
-         m_pd3dPrimaryDevice->SetRenderTarget("ImGui"s, renderedRT);
-         m_pd3dPrimaryDevice->RenderLiveUI();
-         g_frameProfiler.ExitProfileSection();
-
          assert(renderedRT != m_pd3dPrimaryDevice->GetOutputBackBuffer());
          int w = renderedRT->GetWidth(), h = renderedRT->GetHeight();
          
@@ -1914,11 +1915,13 @@ void Renderer::PrepareVideoBuffers()
          m_pd3dPrimaryDevice->SetRenderTarget("Left Eye"s, leftTexture, false);
          m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
          m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, leftTexture, true, false, 0, 0, w, h, 0, 0, w, h, 0, 0);
+         m_pd3dPrimaryDevice->RenderLiveUI();
 
          RenderTarget *rightTexture = m_pd3dPrimaryDevice->GetOffscreenVR(1);
          m_pd3dPrimaryDevice->SetRenderTarget("Right Eye"s, rightTexture, false);
          m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
          m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, rightTexture, true, false, 0, 0, w, h, 0, 0, w, h, 1, 0);
+         m_pd3dPrimaryDevice->RenderLiveUI();
 
          RenderTarget *outRT = m_pd3dPrimaryDevice->GetOutputBackBuffer();
          m_pd3dPrimaryDevice->SetRenderTarget("VR Preview"s, outRT, false);
