@@ -82,6 +82,7 @@ public class VPinballActivity extends SDLActivity {
         return new String[] {
                 "SDL2",
                 "SDL2_image",
+                "SDL2_ttf",
                 "FreeImage",
                 "bass",
                 "pinmame.3.6",

@@ -4,6 +4,7 @@ set -e
 
 SDL2_VERSION=2.28.5
 SDL2_IMAGE_VERSION=2.6.3
+SDL2_TTF_VERSION=2.20.2
 
 PINMAME_SHA=beec0c3cda92d3df1caeeb8af83ef14b05e1cf06
 LIBALTSOUND_SHA=cc1b66f4f8784acd028565c79ebdc335da3c6749
@@ -14,6 +15,7 @@ NUM_PROCS=$(nproc)
 echo "Building external libraries..."
 echo "  SDL2_VERSION: ${SDL2_VERSION}"
 echo "  SDL2_IMAGE_VERSION: ${SDL2_IMAGE_VERSION}"
+echo "  SDL2_TTF_VERSION: ${SDL2_TTF_VERSION}"
 echo "  PINMAME_SHA: ${PINMAME_SHA}"
 echo "  LIBALTSOUND_SHA: ${LIBALTSOUND_SHA}"
 echo "  LIBDMDUTIL_SHA: ${LIBDMDUTIL_SHA}"
@@ -65,10 +67,10 @@ unzip SDL2-${SDL2_VERSION}.zip
 cp -r SDL2-${SDL2_VERSION}/include ../external/include/SDL2
 cd SDL2-${SDL2_VERSION}
 cmake -DSDL_SHARED=ON \
-	-DSDL_STATIC=OFF \
-	-DSDL_TEST=OFF \
-	-DCMAKE_BUILD_TYPE=Release \
-	-B build
+   -DSDL_STATIC=OFF \
+   -DSDL_TEST=OFF \
+   -DCMAKE_BUILD_TYPE=Release \
+   -B build
 cmake --build build -- -j${NUM_PROCS}
 cp build/libSDL2-2.0.so.0 ../../external/lib
 cd ..
@@ -82,13 +84,33 @@ unzip SDL2_image-${SDL2_IMAGE_VERSION}.zip
 cp -r SDL2_image-${SDL2_IMAGE_VERSION}/SDL_image.h ../external/include/SDL2
 cd SDL2_image-${SDL2_IMAGE_VERSION}
 cmake -DBUILD_SHARED_LIBS=ON \
-	-DSDL2IMAGE_SAMPLES=OFF \
-	-DSDL2_INCLUDE_DIR=$(pwd)/../SDL2-${SDL2_VERSION}/include \
-	-DSDL2_LIBRARY=$(pwd)/../SDL2-${SDL2_VERSION}/build/libSDL2-2.0.so \
-	-DCMAKE_BUILD_TYPE=Release \
-	-B build
+   -DSDL2IMAGE_SAMPLES=OFF \
+   -DSDL2_INCLUDE_DIR=$(pwd)/../SDL2-${SDL2_VERSION}/include \
+   -DSDL2_LIBRARY=$(pwd)/../SDL2-${SDL2_VERSION}/build/libSDL2-2.0.so \
+   -DCMAKE_BUILD_TYPE=Release \
+   -B build
 cmake --build build -- -j${NUM_PROCS}
 cp build/libSDL2_image-2.0.so.0 ../../external/lib
+cd ..
+
+#
+# build SDL2_ttf and copy to external
+#
+
+curl -sL https://github.com/libsdl-org/SDL_ttf/releases/download/release-${SDL2_TTF_VERSION}/SDL2_ttf-${SDL2_TTF_VERSION}.zip -o SDL2_ttf-${SDL2_TTF_VERSION}.zip
+unzip SDL2_ttf-${SDL2_TTF_VERSION}.zip
+cp -r SDL2_ttf-${SDL2_TTF_VERSION}/SDL_ttf.h ../external/include/SDL2
+cd SDL2_ttf-${SDL2_TTF_VERSION}
+cmake -DBUILD_SHARED_LIBS=ON \
+   -DSDL2TTF_SAMPLES=OFF \
+   -DSDL2_INCLUDE_DIR=$(pwd)/../SDL2-${SDL2_VERSION}/include \
+   -DSDL2_LIBRARY=$(pwd)/../SDL2-${SDL2_VERSION}/build/libSDL2-2.0.so \
+   -DSDL2TTF_VENDORED=ON \
+   -DSDL2TTF_HARFBUZZ=ON \
+   -DCMAKE_BUILD_TYPE=Release \
+   -B build
+cmake --build build -- -j${NUM_PROCS}
+cp build/libSDL2_ttf-2.0.so ../../external/lib
 cd ..
 
 #

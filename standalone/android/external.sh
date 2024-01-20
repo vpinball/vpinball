@@ -4,22 +4,24 @@ set -e
 
 SDL2_VERSION=2.28.5
 SDL2_IMAGE_VERSION=2.6.3
+SDL2_TTF_VERSION=2.20.2
 
 PINMAME_SHA=beec0c3cda92d3df1caeeb8af83ef14b05e1cf06
 LIBALTSOUND_SHA=cc1b66f4f8784acd028565c79ebdc335da3c6749
 LIBDMDUTIL_SHA=a5d9bc67d87ecdb620adf05fe8d2eb301b91da92
 
 if [[ $(uname) == "Linux" ]]; then
-	NUM_PROCS=$(nproc)
+   NUM_PROCS=$(nproc)
 elif [[ $(uname) == "Darwin" ]]; then
-	NUM_PROCS=$(sysctl -n hw.ncpu)
+   NUM_PROCS=$(sysctl -n hw.ncpu)
 else
-	NUM_PROCS=1
+   NUM_PROCS=1
 fi
 
 echo "Building external libraries..."
 echo "  SDL2_VERSION: ${SDL2_VERSION}"
 echo "  SDL2_IMAGE_VERSION: ${SDL2_IMAGE_VERSION}"
+echo "  SDL2_TTF_VERSION: ${SDL2_TTF_VERSION}"
 echo "  PINMAME_SHA: ${PINMAME_SHA}"
 echo "  LIBALTSOUND_SHA: ${LIBALTSOUND_SHA}"
 echo "  LIBDMDUTIL_SHA: ${LIBDMDUTIL_SHA}"
@@ -53,15 +55,15 @@ cp ../../freeimage/Android.mk Android.mk
 cd ..
 
 $ANDROID_NDK_HOME/ndk-build \
-	-C FreeImage \
-	-j${NUM_PROC} \
-	NDK_PROJECT_PATH=$ANDROID_NDK_HOME \
-	APP_BUILD_SCRIPT=$(pwd)/FreeImage/Android.mk \
-	APP_STL="c++_static" \
-	APP_PLATFORM=android-19 \
-	APP_ABI=arm64-v8a \
-	NDK_OUT=$(pwd)/obj \
-	NDK_LIBS_OUT=$(pwd)/libs
+   -C FreeImage \
+   -j${NUM_PROC} \
+   NDK_PROJECT_PATH=$ANDROID_NDK_HOME \
+   APP_BUILD_SCRIPT=$(pwd)/FreeImage/Android.mk \
+   APP_STL="c++_static" \
+   APP_PLATFORM=android-19 \
+   APP_ABI=arm64-v8a \
+   NDK_OUT=$(pwd)/obj \
+   NDK_LIBS_OUT=$(pwd)/libs
 
 cp libs/arm64-v8a/libFreeImage.so ../external/lib
 
@@ -83,14 +85,14 @@ unzip SDL2-${SDL2_VERSION}.zip
 cp -r SDL2-${SDL2_VERSION}/include ../external/include/SDL2
 
 $ANDROID_NDK_HOME/ndk-build \
-	-C SDL2-${SDL2_VERSION} \
-	-j${NUM_PROC} \
-	NDK_PROJECT_PATH=$ANDROID_NDK_HOME \
-	APP_BUILD_SCRIPT=$(pwd)/SDL2-${SDL2_VERSION}/Android.mk \
-	APP_PLATFORM=android-19 \
-	APP_ABI=arm64-v8a \
-	NDK_OUT=$(pwd)/obj \
-	NDK_LIBS_OUT=$(pwd)/libs
+   -C SDL2-${SDL2_VERSION} \
+   -j${NUM_PROC} \
+   NDK_PROJECT_PATH=$ANDROID_NDK_HOME \
+   APP_BUILD_SCRIPT=$(pwd)/SDL2-${SDL2_VERSION}/Android.mk \
+   APP_PLATFORM=android-19 \
+   APP_ABI=arm64-v8a \
+   NDK_OUT=$(pwd)/obj \
+   NDK_LIBS_OUT=$(pwd)/libs
 
 cp libs/arm64-v8a/libSDL2.so ../external/lib
 
@@ -113,17 +115,48 @@ sed -e $'/(call my-dir)/a\\\n'"$MK_ADDON" SDL2_image-${SDL2_IMAGE_VERSION}/Andro
 cp tmp_mk SDL2_image-${SDL2_IMAGE_VERSION}/Android.mk
 
 $ANDROID_NDK_HOME/ndk-build \
-	-C SDL2_image-${SDL2_IMAGE_VERSION} \
-	-j${NUM_PROC} \
-	NDK_PROJECT_PATH=$ANDROID_NDK_HOME \
-	APP_BUILD_SCRIPT="$(pwd)/SDL2_image-${SDL2_IMAGE_VERSION}/Android.mk" \
-	APP_PLATFORM=android-19 \
-	APP_ABI=arm64-v8a \
-	APP_ALLOW_MISSING_DEPS=true \
-	NDK_OUT=$(pwd)/obj \
-	NDK_LIBS_OUT=$(pwd)/libs
+   -C SDL2_image-${SDL2_IMAGE_VERSION} \
+   -j${NUM_PROC} \
+   NDK_PROJECT_PATH=$ANDROID_NDK_HOME \
+   APP_BUILD_SCRIPT="$(pwd)/SDL2_image-${SDL2_IMAGE_VERSION}/Android.mk" \
+   APP_PLATFORM=android-19 \
+   APP_ABI=arm64-v8a \
+   APP_ALLOW_MISSING_DEPS=true \
+   NDK_OUT=$(pwd)/obj \
+   NDK_LIBS_OUT=$(pwd)/libs
 
 cp libs/arm64-v8a/libSDL2_image.so ../external/lib
+
+#
+# build SDL2_ttf and copy to external
+# (derived from: https://github.com/AlexanderAgd/SDL2-Android)
+#
+
+curl -sL https://github.com/libsdl-org/SDL_ttf/releases/download/release-${SDL2_TTF_VERSION}/SDL2_ttf-${SDL2_TTF_VERSION}.zip -o SDL2_ttf-${SDL2_TTF_VERSION}.zip
+unzip SDL2_ttf-${SDL2_TTF_VERSION}.zip
+cp -r SDL2_ttf-${SDL2_TTF_VERSION}/SDL_ttf.h ../external/include/SDL2
+
+MK_ADDON=$'include $(CLEAR_VARS)\\\n'
+MK_ADDON+=$'LOCAL_MODULE := SDL2\\\n'
+MK_ADDON+=$'LOCAL_SRC_FILES := '"$(pwd)/libs/arm64-v8a"$'/libSDL2.so\\\n'
+MK_ADDON+=$'LOCAL_EXPORT_C_INCLUDES += '"$(pwd)/SDL2-${SDL2_VERSION}/include"$'\\\n'
+MK_ADDON+="include \$(PREBUILT_SHARED_LIBRARY)"
+
+sed -e $'/(call my-dir)/a\\\n'"$MK_ADDON" SDL2_ttf-${SDL2_TTF_VERSION}/Android.mk > tmp_mk
+cp tmp_mk SDL2_ttf-${SDL2_TTF_VERSION}/Android.mk
+
+$ANDROID_NDK_HOME/ndk-build \
+   -C SDL2_ttf-${SDL2_TTF_VERSION} \
+   -j${NUM_PROC} \
+   NDK_PROJECT_PATH=$ANDROID_NDK_HOME \
+   APP_BUILD_SCRIPT="$(pwd)/SDL2_ttf-${SDL2_TTF_VERSION}/Android.mk" \
+   APP_PLATFORM=android-19 \
+   APP_ABI=arm64-v8a \
+   APP_ALLOW_MISSING_DEPS=true \
+   NDK_OUT=$(pwd)/obj \
+   NDK_LIBS_OUT=$(pwd)/libs
+
+cp libs/arm64-v8a/libSDL2_ttf.so ../external/lib
 
 #
 # build libpinmame and copy to external

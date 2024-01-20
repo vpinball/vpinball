@@ -636,6 +636,7 @@ target_link_libraries(vpinball PUBLIC
    freeimage
    -l:libSDL2-2.0.so.0
    -l:libSDL2_image-2.0.so.0
+   -l:libSDL2_ttf-2.0.so
    bass
    -l:libpinmame.so.3.6
    -l:libaltsound.so.0.1.0
@@ -676,6 +677,7 @@ add_custom_command(TARGET vpinball POST_BUILD
    COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/standalone/inc/flexdmd/resources" "$<TARGET_FILE_DIR:vpinball>/flexdmd"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/rpi/external/lib/libSDL2-2.0.so.0" "$<TARGET_FILE_DIR:vpinball>"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/rpi/external/lib/libSDL2_image-2.0.so.0" "$<TARGET_FILE_DIR:vpinball>"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/rpi/external/lib/libSDL2_ttf-2.0.so" "$<TARGET_FILE_DIR:vpinball>"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/rpi/external/lib/libbass.so" "$<TARGET_FILE_DIR:vpinball>"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/rpi/external/lib/libpinmame.so.3.6" "$<TARGET_FILE_DIR:vpinball>"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/rpi/external/lib/libaltsound.so.0.1.0" "$<TARGET_FILE_DIR:vpinball>"

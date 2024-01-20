@@ -637,6 +637,7 @@ target_link_libraries(vpinball
    glad
    SDL2
    SDL2_image
+   SDL2_ttf
    FreeImage
    bass
    pinmame.3.6
@@ -680,6 +681,7 @@ add_custom_command(TARGET vpinball POST_BUILD
    COMMAND "${CMAKE_COMMAND}" -E make_directory "${CMAKE_SOURCE_DIR}/standalone/android/android-project/app/src/main/assets/pinmame/nvram"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/android/external/lib/libSDL2.so" "${CMAKE_SOURCE_DIR}/standalone/android/android-project/app/src/main/jniLibs/arm64-v8a"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/android/external/lib/libSDL2_image.so" "${CMAKE_SOURCE_DIR}/standalone/android/android-project/app/src/main/jniLibs/arm64-v8a"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/android/external/lib/libSDL2_ttf.so" "${CMAKE_SOURCE_DIR}/standalone/android/android-project/app/src/main/jniLibs/arm64-v8a"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/android/external/lib/libFreeImage.so" "${CMAKE_SOURCE_DIR}/standalone/android/android-project/app/src/main/jniLibs/arm64-v8a"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/android/external/lib/libbass.so" "${CMAKE_SOURCE_DIR}/standalone/android/android-project/app/src/main/jniLibs/arm64-v8a"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/android/external/lib/libpinmame.3.6.so" "${CMAKE_SOURCE_DIR}/standalone/android/android-project/app/src/main/jniLibs/arm64-v8a"
