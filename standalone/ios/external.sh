@@ -4,6 +4,7 @@ set -e
 
 SDL2_VERSION=2.28.5
 SDL2_IMAGE_VERSION=2.6.3
+SDL2_TTF_VERSION=2.20.2
 
 PINMAME_SHA=beec0c3cda92d3df1caeeb8af83ef14b05e1cf06
 LIBALTSOUND_SHA=cc1b66f4f8784acd028565c79ebdc335da3c6749
@@ -14,6 +15,7 @@ NUM_PROCS=$(sysctl -n hw.ncpu)
 echo "Building external libraries..."
 echo "  SDL2_VERSION: ${SDL2_VERSION}"
 echo "  SDL2_IMAGE_VERSION: ${SDL2_IMAGE_VERSION}"
+echo "  SDL2_TTF_VERSION: ${SDL2_TTF_VERSION}"
 echo "  PINMAME_SHA: ${PINMAME_SHA}"
 echo "  LIBALTSOUND_SHA: ${LIBALTSOUND_SHA}"
 echo "  LIBDMDUTIL_SHA: ${LIBDMDUTIL_SHA}"
@@ -79,6 +81,17 @@ cp -r SDL2_image-${SDL2_IMAGE_VERSION}/SDL_image.h ../external/include/SDL2
 
 xcrun xcodebuild -project "SDL2_image-${SDL2_IMAGE_VERSION}/Xcode/SDL_image.xcodeproj" -target "Static Library" -sdk iphoneos -configuration Release clean build CONFIGURATION_BUILD_DIR="$(pwd)/sdl_image-build"
 cp sdl_image-build/libSDL2_image.a ../external/lib
+
+#
+# build SDL2_ttf and copy to external
+#
+
+curl -sL https://github.com/libsdl-org/SDL_ttf/releases/download/release-${SDL2_TTF_VERSION}/SDL2_ttf-${SDL2_TTF_VERSION}.zip -o SDL2_ttf-${SDL2_TTF_VERSION}.zip
+unzip SDL2_ttf-${SDL2_TTF_VERSION}.zip
+cp -r SDL2_ttf-${SDL2_TTF_VERSION}/SDL_ttf.h ../external/include/SDL2
+
+xcrun xcodebuild -project "SDL2_ttf-${SDL2_TTF_VERSION}/Xcode/SDL_ttf.xcodeproj" -target "Static Library" -sdk iphoneos -configuration Release clean build CONFIGURATION_BUILD_DIR="$(pwd)/sdl_ttf-build"
+cp sdl_ttf-build/libSDL2_ttf.a ../external/lib
 
 #
 # build libpinmame and copy to external

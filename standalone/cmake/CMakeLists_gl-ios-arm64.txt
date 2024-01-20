@@ -676,6 +676,7 @@ target_link_libraries(vpinball PUBLIC
    "-ldmdutil"
    "-lSDL2"
    "-lSDL2_image"
+   "-lSDL2_ttf"
 )
 
 set_target_properties(vpinball PROPERTIES
