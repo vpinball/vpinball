@@ -7714,6 +7714,9 @@ bool PinTable::AuditTable() const
    if (m_glassBottomHeight < INCHESTOVPU(2) || m_glassTopHeight < INCHESTOVPU(2))
       ss << ". Warning: Glass height seems invalid: glass is below 2\"\n";
 
+   if (m_ballSphericalMapping)
+      ss << ". Warning: Ball uses legacy 'spherical mapping', it will be rendered like a 2D object and therefore will look bad in VR, stereo or headtracking\n";
+
    // Search for inconsistencies in the table parts
    for (auto part : m_vedit)
    {
@@ -7725,6 +7728,30 @@ bool PinTable::AuditTable() const
       if (type == eItemPrimitive && prim->m_d.m_staticRendering && FindIndexOf(identifiers, string(prim->GetName())) != -1) 
          ss << ". Warning: Primitive '" << prim->GetName() << "' seems to be referenced from the script while it is marked as static (most properties of a static object may not be modified at runtime).\n";
 
+      // Warning on very fast timers (lower than 5ms)
+      TimerDataRoot *tdr = nullptr;
+      switch (type)
+      {
+      case eItemPrimitive: tdr = &prim->m_d.m_tdr; break; // Note: primitive have timers but they are not exposed to the UI
+      case eItemSurface: tdr = &surf->m_d.m_tdr; break;
+      case eItemTimer: tdr = &((Timer *)part)->m_d.m_tdr; break;
+      case eItemLight: tdr = &((Light *)part)->m_d.m_tdr; break;
+      case eItemRamp: tdr = &((Ramp *)part)->m_d.m_tdr; break;
+      case eItemPlunger: tdr = &((Plunger *)part)->m_d.m_tdr; break;
+      case eItemSpinner: tdr = &((Plunger *)part)->m_d.m_tdr; break;
+      case eItemTrigger: tdr = &((Trigger *)part)->m_d.m_tdr; break;
+      case eItemKicker: tdr = &((Kicker *)part)->m_d.m_tdr; break;
+      case eItemRubber: tdr = &((Rubber *)part)->m_d.m_tdr; break;
+      case eItemFlasher: tdr = &((Flasher *)part)->m_d.m_tdr; break;
+      case eItemLightSeq: tdr = &((LightSeq *)part)->m_d.m_tdr; break;
+      case eItemHitTarget: tdr = &((HitTarget *)part)->m_d.m_tdr; break;
+      case eItemBumper: tdr = &((Bumper *)part)->m_d.m_tdr; break;
+      case eItemFlipper: tdr = &((Flipper *)part)->m_d.m_tdr; break;
+      case eItemGate: tdr = &((Gate *)part)->m_d.m_tdr; break;
+      }
+      if (tdr && tdr->m_TimerEnabled && tdr->m_TimerInterval < 5)
+         ss << ". Warning: Part '" << part->GetName() << "' uses a timer with a very short period of " << tdr->m_TimerInterval << "ms. This will likely causes lag and the table will not support 'frame pacing'.\n";
+
       // Enabling translucency (light from below) won't work with static parts: otherwise the rendering will be different in VR/Headtracked vs desktop modes. It also needs a non opaque alpha.
       if (type == eItemPrimitive && prim->m_d.m_disableLightingBelow != 1.f && !prim->m_d.m_staticRendering
          && (!GetMaterial(prim->m_d.m_szMaterial)->m_bOpacityActive || GetMaterial(prim->m_d.m_szMaterial)->m_fOpacity == 1.f)
@@ -7735,6 +7762,12 @@ bool PinTable::AuditTable() const
       //   ss << ". Warning: Primitive '" << prim->GetName() << "' has translucency enabled but is also marked as static. Translucency will not be applied on desktop, and it will look different between VR/headtracked and desktop.\n";
       //if (type == eItemSurface && surf->m_d.m_disableLightingBelow != 1.f && surf->StaticRendering()) 
       //   ss << ". Warning: Wall '" << surf->GetName() << "' has translucency enabled but will be staticly rendered (not droppable with opaque materials). Translucency will not be applied on desktop, and it will look different between VR/headtracked and desktop.\n";
+   }
+
+   for (auto image : m_vimage)
+   {
+      if (image->m_ppb == nullptr)
+         ss << " Warning: Image '" << image->m_szName << "' uses legacy encoding causing waste of memory / file size. It should be converted to WEBP file format.\n";
    }
 
    bool hasIssues = !ss.str().empty();
