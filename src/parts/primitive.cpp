@@ -622,10 +622,10 @@ void Primitive::SetupHitObject(vector<HitObject*> &pvho, HitObject * obj)
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szPhysicsMaterial);
    if (m_d.m_useAsPlayfield)
    {
-      obj->m_elasticity = m_ptable->m_elasticity;
-      obj->m_elasticityFalloff = m_ptable->m_elasticityFalloff;
-      obj->SetFriction(m_ptable->m_friction);
-      obj->m_scatter = ANGTORAD(m_ptable->m_scatter);
+      obj->SetFriction(m_ptable->m_overridePhysics ? m_ptable->m_fOverrideContactFriction : m_ptable->m_friction);
+      obj->m_elasticity = m_ptable->m_overridePhysics ? m_ptable->m_fOverrideElasticity : m_ptable->m_elasticity;
+      obj->m_elasticityFalloff = m_ptable->m_overridePhysics ? m_ptable->m_fOverrideElasticityFalloff : m_ptable->m_elasticityFalloff;
+      obj->m_scatter = ANGTORAD(m_ptable->m_overridePhysics ? m_ptable->m_fOverrideScatterAngle : m_ptable->m_scatter);
    }
    else if (mat != nullptr && !m_d.m_overwritePhysics)
    {
