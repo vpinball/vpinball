@@ -136,9 +136,9 @@ INT_PTR DimensionDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
    {
       case WM_COMMAND:
       {
-         char textBuf[MAXNAMEBUFFER];
          if (!m_discardChangeNotification && HIWORD(wParam) == EN_CHANGE)
          {
+            char textBuf[MAXNAMEBUFFER];
             m_discardChangeNotification = true;
             float sizeWidth, sizeHeight;
             float vpWidth, vpHeight;

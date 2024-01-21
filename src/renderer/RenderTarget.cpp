@@ -322,7 +322,7 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
       m_depth_sampler = sharedDepth->m_depth_sampler;
    }
    m_use_alternate_depth = m_rd->m_useNvidiaApi || !m_rd->m_INTZ_support;
-   const D3DFORMAT depthFormat = D3DFMT_D16; // Some VR room needs more depth precision but since DX9 build is not meant for VR we keep it like this for the time being
+   constexpr D3DFORMAT depthFormat = D3DFMT_D16; // Some VR room needs more depth precision but since DX9 build is not meant for VR we keep it like this for the time being
    if (nMSAASamples > 1)
    {
       // MSAA is made through a rendering surface that must be resolved a texture to be sampled

@@ -166,7 +166,7 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
    {
       quadrant = (int)mViewportRotation - ((int)mViewportRotation / 360) * 360;
       quadrant = (viewportWidth < viewportHeight ? 0 : 3) + (quadrant < 0 ? quadrant + 360 : quadrant) / 90; // 0 / 90 / 180 / 270
-      rotation = ANGTORAD(quadrant * 90);
+      rotation = ANGTORAD((float)(quadrant * 90));
    }
    else
    {

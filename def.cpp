@@ -203,7 +203,7 @@ string MakeString(const wstring &wz)
    const int len = (int)wz.length();
    char *const szT = new char[len + 1];
    WideCharToMultiByteNull(CP_ACP, 0, wz.c_str(), -1, szT, len + 1, nullptr, nullptr);
-   const string result(szT);
+   /*const*/ string result(szT); // const removed for auto-move
    delete [] szT;
    return result;
 }
@@ -214,7 +214,7 @@ wstring MakeWString(const string &sz)
    const int len = (int)sz.length();
    WCHAR *const wzT = new WCHAR[len + 1];
    MultiByteToWideCharNull(CP_ACP, 0, sz.c_str(), -1, wzT, len + 1);
-   const wstring result(wzT);
+   /*const*/ wstring result(wzT); // const removed for auto-move
    delete [] wzT;
    return result;
 }
@@ -243,14 +243,14 @@ HRESULT OpenURL(const string& szURL)
    IUniformResourceLocator* pURL;
 
    HRESULT hres = CoCreateInstance(CLSID_InternetShortcut, nullptr, CLSCTX_INPROC_SERVER, IID_IUniformResourceLocator, (void**)&pURL);
-   if (!SUCCEEDED(hres))
+   if (FAILED(hres))
    {
       return hres;
    }
 
    hres = pURL->SetURL(szURL.c_str(), IURL_SETURL_FL_GUESS_PROTOCOL);
 
-   if (!SUCCEEDED(hres))
+   if (FAILED(hres))
    {
       pURL->Release();
       return hres;

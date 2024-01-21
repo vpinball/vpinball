@@ -841,7 +841,7 @@ Vertex3Ds Renderer::Get3DPointFrom2D(const POINT& p)
    const Vertex3Ds pFar ((float)p.x,(float)p.y,m_viewPort.MaxZ);
    const Vertex3Ds p1 = Unproject(pNear);
    const Vertex3Ds p2 = Unproject(pFar);
-   const float wz = 0.f;
+   constexpr float wz = 0.f;
    const float wx = ((wz - p1.z)*(p2.x - p1.x)) / (p2.z - p1.z) + p1.x;
    const float wy = ((wz - p1.z)*(p2.y - p1.y)) / (p2.z - p1.z) + p1.y;
    const Vertex3Ds vertex(wx, wy, wz);
