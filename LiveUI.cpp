@@ -1103,10 +1103,10 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
          m_tweakState[activeTweakSetting] = 0;
          if (keyEvent != 1) // Only keydown
             return;
-         int step = up ? TP_Count - 1 : 1;
-         m_activeTweakPage = (TweakPage)((m_activeTweakPage + step) % TP_Count);
+         int stepi = up ? TP_Count - 1 : 1;
+         m_activeTweakPage = (TweakPage)((m_activeTweakPage + stepi) % TP_Count);
          if (m_activeTweakPage == TP_Rules && m_table->m_szRules.empty())
-            m_activeTweakPage = (TweakPage)((m_activeTweakPage + step) % TP_Count);
+            m_activeTweakPage = (TweakPage)((m_activeTweakPage + stepi) % TP_Count);
          m_activeTweakIndex = 0;
          UpdateTweakPage();
          break;
@@ -1650,7 +1650,7 @@ void LiveUI::UpdateTweakModeUI()
    if (m_activeTweakPage == TP_Rules)
    {
       ImGui::NewLine();
-      HelpTextCentered(m_table->m_szRules.c_str());
+      HelpTextCentered(m_table->m_szRules);
       ImGui::NewLine();
    }
    else if (m_activeTweakPage == TP_Info)

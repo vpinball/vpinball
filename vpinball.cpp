@@ -1122,7 +1122,7 @@ CComObject<PinTable> *VPinball::GetActiveTable()
 
 bool VPinball::CanClose()
 {
-   while (m_vtable.size())
+   while (!m_vtable.empty())
    {
       if (!m_vtable[0]->GetMDITable()->CanClose())
          return false;

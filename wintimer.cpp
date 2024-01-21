@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include <time.h>
+#include <ctime>
 
 FrameProfiler g_frameProfiler;
 

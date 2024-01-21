@@ -132,7 +132,7 @@ void BallEx::Render(const unsigned int renderMask)
    };
    CLight l[MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES];
    float *pLightPos = (float *)l, *pLightEm = (float *)l;
-   const int lightStride = 6, lightOfs = 3;
+   constexpr int lightStride = 6, lightOfs = 3;
    #endif
    vec4 emission = convertColor(g_pplayer->m_ptable->m_Light[0].emission);
    emission.x *= g_pplayer->m_ptable->m_lightEmissionScale * g_pplayer->m_globalEmissionScale;

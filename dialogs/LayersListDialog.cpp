@@ -142,9 +142,9 @@ void LayersListDialog::UpdateLayerList(const string& name)
    else
    {
       ExpandLayers();
-      for (const auto& item : visItemList)
+      for (const auto& l_item : visItemList)
       {
-         m_layerTreeView.Expand(item, TVE_EXPAND);
+         m_layerTreeView.Expand(l_item, TVE_EXPAND);
       }
    }
 }
@@ -741,6 +741,7 @@ vector<string> LayerTreeView::GetAllLayerNames()
       item = GetNextItem(item, TVGN_NEXT);
    }
    vector<string> layerList;
+   layerList.reserve(children.size());
    for (auto& layer : children) 
    { 
       layerList.push_back(GetItemText(layer).c_str());

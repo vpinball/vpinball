@@ -212,8 +212,7 @@ void Anaglyph::SetPhotoCalibration(const Matrix3& display, const Matrix3& leftFi
    m_rgb2Yr = vec3(rightFilter._21, rightFilter._22, rightFilter._23);
 
    // For Dubois filter, we perform the proposed projection in the paper from our calibration data (matrices have the same name as in the paper)
-   float dMat[6 * 6]; // D matrix is the 6x6 display transmission made from [[C, 0][0, C]]
-   memset(dMat, 0, 6 * 6 * sizeof(float));
+   float dMat[6 * 6] = {}; // D matrix is the 6x6 display transmission made from [[C, 0][0, C]]
    for (int i = 0; i < 3; i++)
       for (int j = 0; j < 3; j++)
          dMat[j + i * 6] = display.m_d[i][j];
@@ -230,20 +229,17 @@ void Anaglyph::SetPhotoCalibration(const Matrix3& display, const Matrix3& leftFi
          for (int k = 0; k < 6; k++)
             bMat.m_d[i][j] += rMat[i + k * 3] * rMat[j + k * 3];
    bMat.Invert(); // B = inverse(B)
-   float b2Mat[3 * 6]; // B2 = B x transpose(R)
-   memset(b2Mat, 0, 3 * 6 * sizeof(float));
+   float b2Mat[3 * 6] = {}; // B2 = B x transpose(R)
    for (int i = 0; i < 3; i++)
       for (int j = 0; j < 6; j++)
          for (int k = 0; k < 3; k++)
             b2Mat[j + i * 6] += bMat.m_d[i][k] * rMat[k + j * 3];
-   float b3Mat[3 * 6]; // B3 = B2 x D
-   memset(b3Mat, 0, 3 * 6 * sizeof(float));
+   float b3Mat[3 * 6] = {}; // B3 = B2 x D
    for (int i = 0; i < 3; i++)
       for (int j = 0; j < 6; j++)
          for (int k = 0; k < 6; k++)
             b3Mat[j + i * 6] += b2Mat[k + i * 6] * dMat[j + k * 6];
-   float rowNorm[3]; // Sum of each row for matrix normalization
-   memset(rowNorm, 0, 3 * sizeof(float));
+   float rowNorm[3] = {}; // Sum of each row for matrix normalization
    for (int i = 0; i < 3; i++)
       for (int j = 0; j < 6; j++)
          rowNorm[i] += b3Mat[j + i * 6];

@@ -5464,7 +5464,7 @@ LRESULT PinTable::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     break;
                 case SB_THUMBTRACK:
                 {
-                    const int delta = (int)(m_offset.x - si.nPos);
+                    const int delta = (int)(m_offset.x - (float)si.nPos);
                     m_offset.x = (float)((short)HIWORD(wParam) + delta);
                     break;
                 }
@@ -5495,7 +5495,7 @@ LRESULT PinTable::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     break;
                 case SB_THUMBTRACK:
                 {
-                    const int delta = (int)(m_offset.y - si.nPos);
+                    const int delta = (int)(m_offset.y - (float)si.nPos);
                     m_offset.y = (float)((short)HIWORD(wParam) + delta);
                     break;
                 }

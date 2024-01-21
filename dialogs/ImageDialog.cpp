@@ -192,7 +192,7 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                   ListView_GetItem(GetDlgItem(IDC_SOUNDLIST).GetHwnd(), &lvitem);
                   Texture * const ppi = (Texture *)lvitem.lParam;
                   if (ppi != nullptr)
-                     SetDlgItemText(IDC_ALPHA_MASK_EDIT, std::to_string((int)(255.f * ppi->m_alphaTestValue)).c_str());
+                     SetDlgItemText(IDC_ALPHA_MASK_EDIT, std::to_string(255.f * ppi->m_alphaTestValue).c_str());
                }
                ::InvalidateRect(GetDlgItem(IDC_PICTUREPREVIEW).GetHwnd(), nullptr, fTrue);
             }
@@ -214,7 +214,7 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             if (ppi != nullptr)
             {
                const float v = sz2f(GetDlgItemText(IDC_ALPHA_MASK_EDIT).c_str());
-               if ((int)(ppi->m_alphaTestValue * 255.f) != v)
+               if ((ppi->m_alphaTestValue * 255.f) != v)
                {
                   ppi->m_alphaTestValue = v / 255.f;
                   CCO(PinTable) * const pt = g_pvp->GetActiveTable();
@@ -262,12 +262,12 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                if (aspect > controlaspect)
                {
                   width = xsize;
-                  height = (int)(xsize / aspect + 0.5f);
+                  height = (int)((float)xsize / aspect + 0.5f);
                }
                else
                {
                   height = ysize;
-                  width = (int)(ysize*aspect + 0.5f);
+                  width = (int)((float)ysize*aspect + 0.5f);
                }
 
                const int x = (xsize - width) / 2;
@@ -335,7 +335,7 @@ void ImageDialog::UpdateImages()
             if (ppi != nullptr)
             {
                 const float v = sz2f(GetDlgItemText(IDC_ALPHA_MASK_EDIT).c_str());
-                if ((int)(ppi->m_alphaTestValue * 255.f) != v)
+                if ((ppi->m_alphaTestValue * 255.f) != v)
                 {
                     ppi->m_alphaTestValue = v / 255.f;
                     CCO(PinTable) * const pt = g_pvp->GetActiveTable();
