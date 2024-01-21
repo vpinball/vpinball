@@ -5,6 +5,35 @@
 
 class Ball;
 
+// Helper class used for projecting sphere points, which is then used to compensate for projection stretch if anti-ball-stretch is enabled
+class AntiStretchHelper
+{
+public:
+   // The number of points matters: 12 points are not enough, 35 and more seems to give good results
+   static constexpr int npts = 35;
+   float m_stretchFitPoints[3 * npts];
+
+   AntiStretchHelper()
+   {
+      const double a = 4.0 * M_PI / npts, d = sqrt(a);
+      const int nTheta = (int)round(M_PI / d);
+      const double dTheta = M_PI / nTheta, dPhi = a / dTheta;
+      for (int pos = 0, j = 0; j < nTheta; j++)
+      {
+         const double theta = ((double)j + 0.5) * M_PI / (double)nTheta;
+         const int nPhi = (int)round(2.0 * M_PI * sin(theta) / dPhi);
+         for (int i = 0; i < nPhi; i++)
+         {
+            const double phi = (double)i * (2.0 * M_PI) / (double)nPhi;
+            m_stretchFitPoints[pos++] = (float)(sin(theta) * cos(phi));
+            m_stretchFitPoints[pos++] = (float)(sin(theta) * sin(phi));
+            m_stretchFitPoints[pos++] = (float)cos(theta);
+         }
+         // npts = pos / 3;
+      }
+   }
+};
+
 class BallEx :
    public CComObjectRootEx<CComSingleThreadModel>,
    public CComCoClass<BallEx, &CLSID_Ball>,
@@ -31,16 +60,16 @@ public:
       COM_INTERFACE_ENTRY(IDispatch)
    END_COM_MAP()
 
-	virtual void RenderSetup(RenderDevice *device);
-	virtual void UpdateAnimation(const float diff_time_msec);
-	virtual void Render(const unsigned int renderMask);
-	virtual void RenderRelease();
+   virtual void RenderSetup(RenderDevice *device);
+   virtual void UpdateAnimation(const float diff_time_msec);
+   virtual void Render(const unsigned int renderMask);
+   virtual void RenderRelease();
 
    bool m_antiStretch = false;
 
 private:
    RenderDevice *m_rd = nullptr;
-   float m_stretchFitPoints[3 * 35] = { 2.f };
+   static AntiStretchHelper m_ash;
 
    // IBall
 public:
