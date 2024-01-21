@@ -2,6 +2,8 @@
 #include "vpinball.h"
 #include "meshes/ballMesh.h"
 
+AntiStretchHelper BallEx::m_ash;
+
 BallEx::BallEx()
 {
    m_pball = nullptr;
@@ -191,35 +193,14 @@ void BallEx::Render(const unsigned int renderMask)
       // This is somewhat overkill but the maths to do it directly would be fairly complicated to accomodate for the 3 view setup projections
       // and tests did not show a real performance impact (likely because VPX is mainly GPU bound, not CPU)
       // Note that this will only work if view is screen aligned (x axis is left-right, yz is top-down). If view has some free rotation this will fail.
-      // The number of points matters: 12 points are not enough, 35 and more seems to give good results
-      const int npts = 35;
-      if (m_stretchFitPoints[0] > 1.f)
-      {
-         double a = 4.0 * M_PI / npts, d = sqrt(a);
-         int nTheta = (int)round(M_PI / d);
-         double dTheta = M_PI / nTheta, dPhi = a / dTheta;
-         for (int pos = 0, j = 0; j < nTheta; j++)
-         {
-            const double theta = ((double) j + 0.5) * M_PI / (double)nTheta;
-            const int nPhi = (int)round(2.0 * M_PI * sin(theta) / dPhi);
-            for (int i = 0; i < nPhi; i++)
-            {
-               const double phi = (double) i * (2.0 * M_PI) / (double)nPhi;
-               m_stretchFitPoints[pos++] = sin(theta) * cos(phi);
-               m_stretchFitPoints[pos++] = sin(theta) * sin(phi);
-               m_stretchFitPoints[pos++] = cos(theta);
-            }
-            // npts = pos / 3;
-         }
-      }
       const Matrix3D &mvp = g_pplayer->m_pin3d.GetMVP().GetModelViewProj(0);
       bool invalid = false;
       float xMin = FLT_MAX, yMin = FLT_MAX, xMax = -FLT_MAX, yMax = -FLT_MAX;
-      for (int i = 0; i < npts * 3; i += 3)
+      for (int i = 0; i < AntiStretchHelper::npts * 3; i += 3)
       {
-         const float px = m_pball->m_d.m_pos.x + m_stretchFitPoints[i];
-         const float py = m_pball->m_d.m_pos.y + m_stretchFitPoints[i + 1];
-         const float pz = zheight + m_stretchFitPoints[i + 2];
+         const float px = m_pball->m_d.m_pos.x + m_ash.m_stretchFitPoints[i];
+         const float py = m_pball->m_d.m_pos.y + m_ash.m_stretchFitPoints[i + 1];
+         const float pz = zheight + m_ash.m_stretchFitPoints[i + 2];
                float xp = mvp._11 * px + mvp._21 * py + mvp._31 * pz + mvp._41;
                float yp = mvp._12 * px + mvp._22 * py + mvp._32 * pz + mvp._42;
          const float wp = mvp._14 * px + mvp._24 * py + mvp._34 * pz + mvp._44;
@@ -235,6 +216,7 @@ void BallEx::Render(const unsigned int renderMask)
          else
          {
             invalid = true;
+            break;
          }
       }
       if (!invalid)
