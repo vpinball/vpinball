@@ -69,7 +69,7 @@ public:
 
 private:
    RenderDevice *m_rd = nullptr;
-   static AntiStretchHelper m_ash;
+   static const AntiStretchHelper m_ash;
 
    // IBall
 public:

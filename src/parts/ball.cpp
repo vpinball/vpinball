@@ -4,7 +4,7 @@
 #endif
 #include "meshes/ballMesh.h"
 
-AntiStretchHelper BallEx::m_ash;
+const AntiStretchHelper BallEx::m_ash;
 
 BallEx::BallEx()
 {

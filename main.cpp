@@ -1282,7 +1282,7 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
    {
       PLOGI << "Restoring NVIDIA Threaded Optimization";
       SetNVIDIAThreadOptimization(s_OriginalNVidiaThreadOptimization);
-   };
+   }
    #endif
 #endif
 

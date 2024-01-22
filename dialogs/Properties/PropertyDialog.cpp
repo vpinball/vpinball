@@ -542,7 +542,7 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> &pvsel)
       m_elementTypeName.ShowWindow(SW_HIDE);
       m_tab.ShowWindow(SW_HIDE);
       while (m_tab.GetItemCount() > 0)
-            m_tab.RemoveTabPage(0);
+         m_tab.RemoveTabPage(0);
       memset(m_tabs, 0, sizeof(m_tabs));
       m_previousType = eItemTypeCount;
       return;
