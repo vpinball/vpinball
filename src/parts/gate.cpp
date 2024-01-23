@@ -449,13 +449,13 @@ void Gate::Render(const unsigned int renderMask)
       Matrix3D fullMatrix, tempMat;
       fullMatrix.SetRotateX(m_d.m_twoWay ? m_phitgate->m_gateMover.m_angle : -m_phitgate->m_gateMover.m_angle);
       tempMat.SetRotateZ(ANGTORAD(m_d.m_rotation));
-      tempMat.Multiply(fullMatrix, fullMatrix);
+      fullMatrix = fullMatrix * tempMat;
 
       Matrix3D vertMatrix;
       tempMat.SetScaling(m_d.m_length, m_d.m_length, m_d.m_length);
-      tempMat.Multiply(fullMatrix, vertMatrix);
+      vertMatrix = fullMatrix * tempMat;
       tempMat.SetTranslation(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_height + m_baseHeight);
-      tempMat.Multiply(vertMatrix, vertMatrix);
+      vertMatrix = vertMatrix * tempMat;
 
       Vertex3D_NoTex2 *buf;
       m_wireMeshBuffer->m_vb->lock(0, 0, (void **)&buf, VertexBuffer::DISCARDCONTENTS);

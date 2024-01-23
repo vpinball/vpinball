@@ -693,22 +693,20 @@ void Primitive::RecalculateMatrices()
 
    Matrix3D tempMatrix;
    tempMatrix.SetRotateZ(ANGTORAD(m_d.m_aRotAndTra[2]));
-   tempMatrix.Multiply(RTmatrix, RTmatrix);
+   RTmatrix = RTmatrix * tempMatrix;
    tempMatrix.SetRotateY(ANGTORAD(m_d.m_aRotAndTra[1]));
-   tempMatrix.Multiply(RTmatrix, RTmatrix);
+   RTmatrix = RTmatrix * tempMatrix;
    tempMatrix.SetRotateX(ANGTORAD(m_d.m_aRotAndTra[0]));
-   tempMatrix.Multiply(RTmatrix, RTmatrix);
+   RTmatrix = RTmatrix * tempMatrix;
 
    tempMatrix.SetRotateZ(ANGTORAD(m_d.m_aRotAndTra[8]));
-   tempMatrix.Multiply(RTmatrix, RTmatrix);
+   RTmatrix = RTmatrix * tempMatrix;
    tempMatrix.SetRotateY(ANGTORAD(m_d.m_aRotAndTra[7]));
-   tempMatrix.Multiply(RTmatrix, RTmatrix);
+   RTmatrix = RTmatrix * tempMatrix;
    tempMatrix.SetRotateX(ANGTORAD(m_d.m_aRotAndTra[6]));
-   tempMatrix.Multiply(RTmatrix, RTmatrix);
+   RTmatrix = RTmatrix * tempMatrix;
 
-   m_fullMatrix = Smatrix;
-   RTmatrix.Multiply(m_fullMatrix, m_fullMatrix);
-   Tmatrix.Multiply(m_fullMatrix, m_fullMatrix);        // m_fullMatrix = RTmatrix * Tmatrix
+   m_fullMatrix = (Smatrix * RTmatrix) * Tmatrix;
 }
 
 //
@@ -1200,8 +1198,7 @@ void Primitive::ExportMesh(ObjLoader& loader)
       for (size_t i = 0; i < m_mesh.NumVertices(); i++)
       {
          const Vertex3D_NoTex2 &v = m_mesh.m_vertices[i];
-         Vertex3Ds vert(v.x, v.y, v.z);
-         vert = m_fullMatrix.MultiplyVector(vert);
+         Vertex3Ds vert = m_fullMatrix * Vertex3Ds{v.x, v.y, v.z};
          buf[i].x = vert.x;
          buf[i].y = vert.y;
          buf[i].z = vert.z;

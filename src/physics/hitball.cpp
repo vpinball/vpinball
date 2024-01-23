@@ -24,7 +24,7 @@ Ball::Ball()
    m_angularmomentum.SetZero();
    m_d.m_mass = 1.0f;
    m_d.m_radius = 25.0f;
-   m_orientation.Identity();
+   m_orientation.SetIdentity();
    m_bulb_intensity_scale = 1.0f;
    m_playfieldReflectionStrength = 1.0f;
    m_reflectionEnabled = true;
@@ -41,7 +41,7 @@ void Ball::Init(const float mass)
    // Only called by real balls, not temporary objects created for physics/rendering
    m_d.m_mass = mass;
 
-   m_orientation.Identity();
+   m_orientation.SetIdentity();
    m_angularmomentum.SetZero();
 
    m_mover.m_pball = this;
@@ -508,7 +508,7 @@ void Ball::UpdateDisplacements(const float dtime)
       Matrix3 addedorientation;
       addedorientation.MulMatricesAndMulScalar(mat3, m_orientation, dtime);
 
-      m_orientation.AddMatrix(addedorientation);
+      m_orientation = m_orientation+addedorientation;
       m_orientation.OrthoNormalize();
    }
 }

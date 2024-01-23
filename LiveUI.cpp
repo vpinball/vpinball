@@ -800,7 +800,7 @@ void LiveUI::Render()
             case 2: matTranslate.SetTranslation(ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y, 0); break;
             case 3: matTranslate.SetTranslation(0, ImGui::GetIO().DisplaySize.x, 0); break;
             }
-            matTranslate.Multiply(matRotate, matTranslate);
+            matTranslate = matRotate * matTranslate;
 #ifdef ENABLE_SDL
             const float L = 0, R = (lui->m_rotate == 1 || lui->m_rotate == 3) ? ImGui::GetIO().DisplaySize.y : ImGui::GetIO().DisplaySize.x;
             const float T = 0, B = (lui->m_rotate == 1 || lui->m_rotate == 3) ? ImGui::GetIO().DisplaySize.x : ImGui::GetIO().DisplaySize.y;
@@ -809,7 +809,7 @@ void LiveUI::Render()
                0.0f, 2.0f / (T - B), 0.0f, 0.0f, 
                0.0f, 0.0f, -1.0f, 0.0f, 
                (R + L) / (L - R), (T + B) / (B - T), 0.0f, 1.0f);
-            matProj.Multiply(matTranslate, matProj);
+            matProj = matTranslate * matProj;
             GLint shaderHandle;
             glGetIntegerv(GL_CURRENT_PROGRAM, &shaderHandle);
             GLuint attribLocationProjMtx = glGetUniformLocation(shaderHandle, "ProjMtx");
@@ -2238,12 +2238,9 @@ bool LiveUI::GetSelectionTransform(Matrix3D& transform)
       Matrix3D tempMatrix;
       Rmatrix.SetRotateZ(ANGTORAD(p->m_d.m_aRotAndTra[2]));
       tempMatrix.SetRotateY(ANGTORAD(p->m_d.m_aRotAndTra[1]));
-      tempMatrix.Multiply(Rmatrix, Rmatrix);
+      Rmatrix = Rmatrix * tempMatrix;
       tempMatrix.SetRotateX(ANGTORAD(p->m_d.m_aRotAndTra[0]));
-      tempMatrix.Multiply(Rmatrix, Rmatrix);
-      transform = Smatrix;
-      Rmatrix.Multiply(transform, transform);
-      Tmatrix.Multiply(transform, transform); // fullMatrix = Scale * Rotate * Translate
+      transform = (Smatrix * (Rmatrix * tempMatrix)) * Tmatrix; // fullMatrix = Scale * Rotate * Translate
       return true;
    }
 

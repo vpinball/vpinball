@@ -1454,15 +1454,15 @@ void Rubber::UpdateRubber(const bool updateVB, const float height)
    Matrix3D fullMatrix,tempMat;
    fullMatrix.SetRotateZ(ANGTORAD(m_d.m_rotZ));
    tempMat.SetRotateY(ANGTORAD(m_d.m_rotY));
-   tempMat.Multiply(fullMatrix, fullMatrix);
+   fullMatrix = fullMatrix * tempMat;
    tempMat.SetRotateX(ANGTORAD(m_d.m_rotX));
-   tempMat.Multiply(fullMatrix, fullMatrix);
+   fullMatrix = fullMatrix * tempMat;
 
    Matrix3D vertMatrix;
    tempMat.SetTranslation(-m_middlePoint.x, -m_middlePoint.y, -m_middlePoint.z);
-   fullMatrix.Multiply(tempMat, vertMatrix);
+   vertMatrix = tempMat * fullMatrix;
    tempMat.SetTranslation(m_middlePoint.x, m_middlePoint.y, height);
-   tempMat.Multiply(vertMatrix, vertMatrix);
+   vertMatrix = vertMatrix * tempMat;
 
    Vertex3D_NoTex2 *buf;
    if (updateVB)
@@ -1472,8 +1472,7 @@ void Rubber::UpdateRubber(const bool updateVB, const float height)
 
    for (int i = 0; i < m_numVertices; i++)
    {
-      Vertex3Ds vert(m_vertices[i].x, m_vertices[i].y, m_vertices[i].z);
-      vert = vertMatrix.MultiplyVector(vert);
+      Vertex3Ds vert = vertMatrix * Vertex3Ds{m_vertices[i].x, m_vertices[i].y, m_vertices[i].z};
       buf[i].x = vert.x;
       buf[i].y = vert.y;
       buf[i].z = vert.z;

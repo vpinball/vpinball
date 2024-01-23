@@ -268,7 +268,7 @@ void HitTarget::GetHitShapes(vector<HitObject*> &pvho)
        fullMatrix.SetIdentity();
        tempMatrix.SetIdentity();
        tempMatrix.SetRotateZ(ANGTORAD(m_d.m_rotZ));
-       tempMatrix.Multiply(fullMatrix, fullMatrix);
+       fullMatrix = fullMatrix * tempMatrix;
 
        // add the normal drop target as collidable but without hit event
        for (unsigned i = 0; i < m_numIndices; i += 3)
@@ -309,7 +309,7 @@ void HitTarget::GetHitShapes(vector<HitObject*> &pvho)
              vert.x *= m_d.m_vSize.x;
              vert.y *= m_d.m_vSize.y;
              vert.z *= m_d.m_vSize.z;
-             vert = fullMatrix.MultiplyVector(vert);
+             vert = fullMatrix * vert;
 
              rgv3D[i].x = vert.x + m_d.m_vPosition.x;
              rgv3D[i].y = vert.y + m_d.m_vPosition.y;
@@ -432,7 +432,7 @@ void HitTarget::GenerateMesh(vector<Vertex3D_NoTex2> &buf)
    fullMatrix.SetIdentity();
    tempMatrix.SetIdentity();
    tempMatrix.SetRotateZ(ANGTORAD(m_d.m_rotZ));
-   tempMatrix.Multiply(fullMatrix, fullMatrix);
+   fullMatrix = fullMatrix * tempMatrix;
 
    for (unsigned int i = 0; i < m_numVertices; i++)
    {
@@ -440,7 +440,7 @@ void HitTarget::GenerateMesh(vector<Vertex3D_NoTex2> &buf)
       vert.x *= m_d.m_vSize.x;
       vert.y *= m_d.m_vSize.y;
       vert.z *= m_d.m_vSize.z;
-      vert = fullMatrix.MultiplyVector(vert);
+      vert = fullMatrix * vert;
 
       buf[i].x = vert.x + m_d.m_vPosition.x;
       buf[i].y = vert.y + m_d.m_vPosition.y;
@@ -466,7 +466,7 @@ void HitTarget::TransformVertices()
    fullMatrix.SetIdentity();
    tempMatrix.SetIdentity();
    tempMatrix.SetRotateZ(ANGTORAD(m_d.m_rotZ));
-   tempMatrix.Multiply(fullMatrix, fullMatrix);
+   fullMatrix = fullMatrix * tempMatrix;
 
    for (unsigned i = 0; i < m_numVertices; i++)
    {
@@ -474,7 +474,7 @@ void HitTarget::TransformVertices()
       vert.x *= m_d.m_vSize.x;
       vert.y *= m_d.m_vSize.y;
       vert.z *= m_d.m_vSize.z;
-      vert = fullMatrix.MultiplyVector(vert);
+      vert = fullMatrix * vert;
 
       m_hitUIVertices[i].x = vert.x + m_d.m_vPosition.x;
       m_hitUIVertices[i].y = vert.y + m_d.m_vPosition.y;
@@ -772,19 +772,18 @@ void HitTarget::UpdateTarget()
        Matrix3D fullMatrix, tempMatrix;
        fullMatrix.SetRotateX(ANGTORAD(m_moveAnimationOffset));
        tempMatrix.SetRotateZ(ANGTORAD(m_d.m_rotZ));
-       tempMatrix.Multiply(fullMatrix, fullMatrix);
+       fullMatrix = fullMatrix * tempMatrix;
 
        Matrix3D vertMatrix;
        vertMatrix.SetScaling(m_d.m_vSize.x, m_d.m_vSize.y, m_d.m_vSize.z);
-       fullMatrix.Multiply(vertMatrix, vertMatrix);
+       vertMatrix = vertMatrix * fullMatrix;
        tempMatrix.SetTranslation(m_d.m_vPosition.x, m_d.m_vPosition.y, m_d.m_vPosition.z);
-       tempMatrix.Multiply(vertMatrix, vertMatrix);
+       vertMatrix = vertMatrix * tempMatrix;
 
        //TODO Update object Matrix instead
        for (unsigned int i = 0; i < m_numVertices; i++)
        {
-           Vertex3Ds vert(m_vertices[i].x, m_vertices[i].y, m_vertices[i].z);
-           vert = vertMatrix.MultiplyVector(vert);           
+           Vertex3Ds vert = vertMatrix * Vertex3Ds{m_vertices[i].x, m_vertices[i].y, m_vertices[i].z};
            buf[i].x = vert.x;
            buf[i].y = vert.y;
            buf[i].z = vert.z;

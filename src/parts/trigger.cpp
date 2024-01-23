@@ -815,34 +815,33 @@ void Trigger::GenerateMesh()
       Matrix3D tempMatrix;
       fullMatrix.SetRotateX(ANGTORAD(-23.f));
       tempMatrix.SetRotateZ(ANGTORAD(m_d.m_rotation));
-      tempMatrix.Multiply(fullMatrix, fullMatrix);
+      fullMatrix = fullMatrix * tempMatrix;
    }
    else if (m_d.m_shape == TriggerWireC)
    {
       Matrix3D tempMatrix;
       fullMatrix.SetRotateX(ANGTORAD(140.f));
       tempMatrix.SetRotateZ(ANGTORAD(m_d.m_rotation));
-      tempMatrix.Multiply(fullMatrix, fullMatrix);
+      fullMatrix = fullMatrix * tempMatrix;
    }
    else
       fullMatrix.SetRotateZ(ANGTORAD(m_d.m_rotation));
 
    for (int i = 0; i < m_numVertices; i++)
    {
-      Vertex3Ds vert(verts[i].x, verts[i].y, verts[i].z);
-      vert = fullMatrix.MultiplyVector(vert);
+      Vertex3Ds vert = fullMatrix * Vertex3Ds{verts[i].x, verts[i].y, verts[i].z};
 
       if (m_d.m_shape == TriggerButton || m_d.m_shape == TriggerStar)
       {
-         m_triggerVertices[i].x = (vert.x*m_d.m_radius) + m_d.m_vCenter.x;
-         m_triggerVertices[i].y = (vert.y*m_d.m_radius) + m_d.m_vCenter.y;
-         m_triggerVertices[i].z = (vert.z*m_d.m_radius) + baseHeight+zoffset;
+         m_triggerVertices[i].x = vert.x*m_d.m_radius + m_d.m_vCenter.x;
+         m_triggerVertices[i].y = vert.y*m_d.m_radius + m_d.m_vCenter.y;
+         m_triggerVertices[i].z = vert.z*m_d.m_radius + baseHeight+zoffset;
       }
       else 
       {
-         m_triggerVertices[i].x = (vert.x*m_d.m_scaleX) + m_d.m_vCenter.x;
-         m_triggerVertices[i].y = (vert.y*m_d.m_scaleY) + m_d.m_vCenter.y;
-         m_triggerVertices[i].z = (vert.z*1.0f) + baseHeight+zoffset;
+         m_triggerVertices[i].x = vert.x*m_d.m_scaleX + m_d.m_vCenter.x;
+         m_triggerVertices[i].y = vert.y*m_d.m_scaleY + m_d.m_vCenter.y;
+         m_triggerVertices[i].z = vert.z*1.0f + baseHeight+zoffset;
       }
 
       vert = Vertex3Ds(verts[i].nx, verts[i].ny, verts[i].nz);

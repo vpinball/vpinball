@@ -831,7 +831,7 @@ Vertex3Ds Renderer::Unproject(const Vertex3Ds& point)
        2.0f * (point.x - (float)m_viewPort.X) / (float)m_viewPort.Width - 1.0f,
        1.0f - 2.0f * (point.y - (float)m_viewPort.Y) / (float)m_viewPort.Height,
        (point.z - m_viewPort.MinZ) / (m_viewPort.MaxZ - m_viewPort.MinZ));
-   const Vertex3Ds p3 = m2.MultiplyVector(p);
+   const Vertex3Ds p3 = m2 * p;
    return p3;
 }
 

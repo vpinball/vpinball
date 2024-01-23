@@ -603,7 +603,7 @@ void Flipper::ExportMesh(ObjLoader& loader)
    matTrafo._41 = m_d.m_Center.x;
    matTrafo._42 = m_d.m_Center.y;
    matTemp.SetRotateZ(ANGTORAD(m_d.m_StartAngle));
-   matTrafo.Multiply(matTemp, matTrafo);
+   matTrafo = matTemp * matTrafo;
 
    Vertex3D_NoTex2 flipper[flipperBaseVertices*2];
    GenerateBaseMesh(flipper);
@@ -612,8 +612,7 @@ void Flipper::ExportMesh(ObjLoader& loader)
    Vertex3D_NoTex2 *const buf = flipper;
    for (unsigned int i = 0; i < flipperBaseVertices; i++)
    {
-      Vertex3Ds vert(buf[i].x, buf[i].y, buf[i].z);
-      vert = matTrafo.MultiplyVector(vert);
+      Vertex3Ds vert = matTrafo * Vertex3Ds{buf[i].x, buf[i].y, buf[i].z};
       buf[i].x = vert.x;
       buf[i].y = vert.y;
       buf[i].z = vert.z;
@@ -639,8 +638,7 @@ void Flipper::ExportMesh(ObjLoader& loader)
       Vertex3D_NoTex2 * const buf = &flipper[flipperBaseVertices];
       for (unsigned int i = 0; i < flipperBaseVertices; i++)
       {
-         Vertex3Ds vert(buf[i].x, buf[i].y, buf[i].z);
-         vert = matTrafo.MultiplyVector(vert);
+         Vertex3Ds vert = matTrafo * Vertex3Ds{buf[i].x, buf[i].y, buf[i].z};
          buf[i].x = vert.x;
          buf[i].y = vert.y;
          buf[i].z = vert.z;
@@ -735,7 +733,7 @@ void Flipper::GenerateBaseMesh(Vertex3D_NoTex2 *buf)
    }
    for (unsigned int i = 0; i < flipperBaseVertices; i++)
    {
-      Vertex3Ds vert = fullMatrix.MultiplyVector(Vertex3Ds(temp[i].x, temp[i].y, temp[i].z));
+      Vertex3Ds vert = fullMatrix * Vertex3Ds{temp[i].x, temp[i].y, temp[i].z};
       buf[i].x = vert.x;
       buf[i].y = vert.y;
       buf[i].z = vert.z*m_d.m_height + height;
@@ -769,7 +767,7 @@ void Flipper::GenerateBaseMesh(Vertex3D_NoTex2 *buf)
 
       for (unsigned int i = 0; i < flipperBaseVertices; i++)
       {
-         Vertex3Ds vert = fullMatrix.MultiplyVector(Vertex3Ds(temp[i].x, temp[i].y, temp[i].z));
+         Vertex3Ds vert = fullMatrix * Vertex3Ds{temp[i].x, temp[i].y, temp[i].z};
          buf[i + flipperBaseVertices].x = vert.x;
          buf[i + flipperBaseVertices].y = vert.y;
          buf[i + flipperBaseVertices].z = vert.z*m_d.m_rubberwidth + (height + m_d.m_rubberheight);
@@ -855,7 +853,7 @@ void Flipper::Render(const unsigned int renderMask)
    {
       Matrix3D matTemp;
       matTemp.SetRotateZ(m_phitflipper->m_flipperMover.m_angleCur);
-      matTrafo.Multiply(matTemp, matTrafo);
+      matTrafo = matTemp * matTrafo;
    }
    g_pplayer->m_renderer->UpdateBasicShaderMatrix(matTrafo);
    Texture * const pin = m_ptable->GetImage(m_d.m_szImage);

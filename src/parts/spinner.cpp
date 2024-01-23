@@ -274,8 +274,7 @@ void Spinner::ExportMesh(ObjLoader& loader)
 
       for (unsigned int i = 0; i < spinnerBracketNumVertices; i++)
       {
-         Vertex3Ds vert(spinnerBracket[i].x, spinnerBracket[i].y, spinnerBracket[i].z);
-         vert = m_fullMatrix.MultiplyVector(vert);
+         Vertex3Ds vert = m_fullMatrix * Vertex3Ds{spinnerBracket[i].x, spinnerBracket[i].y, spinnerBracket[i].z};
          transformedVertices[i].x = vert.x*m_d.m_length + m_d.m_vCenter.x;
          transformedVertices[i].y = vert.y*m_d.m_length + m_d.m_vCenter.y;
          transformedVertices[i].z = vert.z*m_d.m_length + m_posZ;
@@ -333,8 +332,7 @@ void Spinner::RenderSetup(RenderDevice *device)
    bracketVertexBuffer->lock(0, 0, (void **)&buf, VertexBuffer::WRITEONLY);
    for (unsigned int i = 0; i < spinnerBracketNumVertices; i++)
    {
-      Vertex3Ds vert(spinnerBracket[i].x, spinnerBracket[i].y, spinnerBracket[i].z);
-      vert = m_fullMatrix.MultiplyVector(vert);
+      Vertex3Ds vert = m_fullMatrix * Vertex3Ds{spinnerBracket[i].x, spinnerBracket[i].y, spinnerBracket[i].z};
       buf[i].x = vert.x*m_d.m_length + m_d.m_vCenter.x;
       buf[i].y = vert.y*m_d.m_length + m_d.m_vCenter.y;
       buf[i].z = vert.z*m_d.m_length + m_posZ;
@@ -433,9 +431,9 @@ void Spinner::UpdatePlate(Vertex3D_NoTex2 * const vertBuffer)
 
    fullMatrix.SetIdentity();
    rotxMat.SetRotateX(-m_phitspinner->m_spinnerMover.m_angle);
-   rotxMat.Multiply(fullMatrix, fullMatrix);
+   fullMatrix = fullMatrix * rotxMat;
    rotzMat.SetRotateZ(ANGTORAD(m_d.m_rotation));
-   rotzMat.Multiply(fullMatrix, fullMatrix);
+   fullMatrix = fullMatrix * rotzMat;
 
    Vertex3D_NoTex2 *buf;
    if (vertBuffer == nullptr)
@@ -445,8 +443,7 @@ void Spinner::UpdatePlate(Vertex3D_NoTex2 * const vertBuffer)
 
    for (unsigned int i = 0; i < spinnerPlateNumVertices; i++)
    {
-      Vertex3Ds vert(spinnerPlate[i].x, spinnerPlate[i].y, spinnerPlate[i].z);
-      vert = fullMatrix.MultiplyVector(vert);
+      Vertex3Ds vert = fullMatrix * Vertex3Ds{spinnerPlate[i].x, spinnerPlate[i].y, spinnerPlate[i].z};
       buf[i].x = vert.x*m_d.m_length + m_d.m_vCenter.x;
       buf[i].y = vert.y*m_d.m_length + m_d.m_vCenter.y;
       buf[i].z = vert.z*m_d.m_length + m_posZ;

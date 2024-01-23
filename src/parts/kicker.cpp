@@ -520,8 +520,7 @@ void Kicker::GenerateMesh(Vertex3D_NoTex2 *const buf)
 
    for (int i = 0; i < num_vertices; i++)
    {
-      Vertex3Ds vert(vertices[i].x, vertices[i].y, vertices[i].z + zoffset);
-      vert = fullMatrix.MultiplyVector(vert);
+      Vertex3Ds vert = fullMatrix * Vertex3Ds{vertices[i].x, vertices[i].y, vertices[i].z + zoffset};
 
       buf[i].x = vert.x*m_d.m_radius + m_d.m_vCenter.x;
       buf[i].y = vert.y*m_d.m_radius + m_d.m_vCenter.y;

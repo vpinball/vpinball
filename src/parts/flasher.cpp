@@ -1258,18 +1258,18 @@ void Flasher::Render(const unsigned int renderMask)
       Matrix3D tempMatrix, TMatrix;
       TMatrix.SetRotateZ(ANGTORAD(m_d.m_rotZ));
       tempMatrix.SetRotateY(ANGTORAD(m_d.m_rotY));
-      tempMatrix.Multiply(TMatrix, TMatrix);
+      TMatrix = TMatrix * tempMatrix;
       tempMatrix.SetRotateX(ANGTORAD(m_d.m_rotX));
-      tempMatrix.Multiply(TMatrix, TMatrix);
+      TMatrix = TMatrix * tempMatrix;
 
       tempMatrix.SetTranslation(m_d.m_vCenter.x,m_d.m_vCenter.y,height);
-      tempMatrix.Multiply(TMatrix, tempMatrix);
+      tempMatrix = TMatrix * tempMatrix;
 
       TMatrix.SetTranslation(
           -movx, //-m_d.m_vCenter.x,
           -movy, //-m_d.m_vCenter.y,
           0.f);
-      tempMatrix.Multiply(TMatrix, tempMatrix);
+      tempMatrix = TMatrix * tempMatrix;
 
       Vertex3D_NoTex2 *buf;
       m_meshBuffer->m_vb->lock(0, 0, (void **)&buf, VertexBuffer::DISCARDCONTENTS);

@@ -344,8 +344,8 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
          * lookat * rotz * Matrix3D::MatrixScale(1.f, -1.f, -1.f) // Camera pos and inclination, vieport rotation
          * Matrix3D::MatrixPerspectiveFovLH(90.f, 1.0f, zNear, zFar); // For fitting, we use a vertical FOV of 90°, leading to a yspan of 2, and an aspect ratio of 1, also leading to a xspan of 2
       const float centerAxis = 0.5f * (table->m_left + table->m_right);
-      const Vertex3Ds top = fit.MultiplyVector(Vertex3Ds(centerAxis, table->m_top, windowTopZ));
-      const Vertex3Ds bottom = fit.MultiplyVector(Vertex3Ds(centerAxis, table->m_bottom, windowBotZ));
+      const Vertex3Ds top = fit * Vertex3Ds{centerAxis, table->m_top, windowTopZ};
+      const Vertex3Ds bottom = fit * Vertex3Ds{centerAxis, table->m_bottom, windowBotZ};
       const float xmin = zNear * min(bottom.x, top.x), xmax = zNear * max(bottom.x, top.x);
       const float ymin = zNear * min(bottom.y, top.y), ymax = zNear * max(bottom.y, top.y);
       const float screenHeight = table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenWidth"s, 0.0f); // Physical width (always measured in landscape orientation) is the height in window mode
@@ -391,7 +391,7 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
       // - for camera mode, we place the 0 depth line on the lower third of the playfield
       // This way, we don't have negative parallax (objects closer than projection plane) and all the artefact they may cause
       const float zNullSeparation = mMode == VLM_WINDOW ? (mViewZ - windowBotZ) * cosf(inc) + mViewY * sinf(inc)
-                                                        : -lookat.MultiplyVector(Vertex3Ds(0.5f * (table->m_left + table->m_right), table->m_bottom * 0.66f /* For flipper bats: 1800.f / 2150.f*/, 0.f)).z;
+                                                        : -(lookat * Vertex3Ds{0.5f * (table->m_left + table->m_right), table->m_bottom * 0.66f /* For flipper bats: 1800.f / 2150.f*/, 0.f}).z;
       const float ofs = 0.5f * eyeSeparation * zNear / zNullSeparation;
       const float xOfs = ofs * cosf(rotation);
       const float yOfs = ofs * sinf(rotation);
@@ -458,7 +458,7 @@ vec3 ViewSetup::FitCameraToVertices(const vector<Vertex3Ds>& pvvertex3D, const f
 
    for (size_t i = 0; i < pvvertex3D.size(); ++i)
    {
-      Vertex3Ds v = laybackTrans.MultiplyVector(pvvertex3D[i]);
+      Vertex3Ds v = laybackTrans * pvvertex3D[i];
 
       // Rotate vertex about x axis according to incoming inclination
       float temp = v.y;

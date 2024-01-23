@@ -32,19 +32,6 @@ public:
       _31 = __31; _32 = __32; _33 = __33;
    }
 
-   void scaleX(const float factor)
-   {
-      m_d[0][0] *= factor;
-   }
-   void scaleY(const float factor)
-   {
-      m_d[1][1] *= factor;
-   }
-   void scaleZ(const float factor)
-   {
-      m_d[2][2] *= factor;
-   }
-
 //
 // license:GPLv3+
 // Ported at: VisualPinball.Engine/Math/Matrix2D.cs
@@ -70,14 +57,14 @@ public:
 
    Matrix3 operator+ (const Matrix3& m) const
    {
-      return Matrix3(_11 + m._11, _12 + m._12, _13 + m._13,
+      return Matrix3{_11 + m._11, _12 + m._12, _13 + m._13,
                      _21 + m._21, _22 + m._22, _23 + m._23,
-                     _31 + m._31, _32 + m._32, _33 + m._33);
+                     _31 + m._31, _32 + m._32, _33 + m._33};
    }
 
    Matrix3 operator* (const Matrix3& m) const
    {
-      return Matrix3(
+      return Matrix3{
          m_d[0][0] * m.m_d[0][0] + m_d[1][0] * m.m_d[0][1] + m_d[2][0] * m.m_d[0][2],
          m_d[0][0] * m.m_d[1][0] + m_d[1][0] * m.m_d[1][1] + m_d[2][0] * m.m_d[1][2],
          m_d[0][0] * m.m_d[2][0] + m_d[1][0] * m.m_d[2][1] + m_d[2][0] * m.m_d[2][2],
@@ -87,49 +74,26 @@ public:
          m_d[0][2] * m.m_d[0][0] + m_d[1][2] * m.m_d[0][1] + m_d[2][2] * m.m_d[0][2],
          m_d[0][2] * m.m_d[1][0] + m_d[1][2] * m.m_d[1][1] + m_d[2][2] * m.m_d[1][2],
          m_d[0][2] * m.m_d[2][0] + m_d[1][2] * m.m_d[2][1] + m_d[2][2] * m.m_d[2][2]
-      );
+      };
    }
 
    template <class VecType>
    Vertex3Ds operator* (const VecType& v) const
    {
-      return Vertex3Ds(
+      return Vertex3Ds{
          m_d[0][0] * v.x + m_d[0][1] * v.y + m_d[0][2] * v.z,
          m_d[1][0] * v.x + m_d[1][1] * v.y + m_d[1][2] * v.z,
-         m_d[2][0] * v.x + m_d[2][1] * v.y + m_d[2][2] * v.z);
-   }
-
-   template <class VecType>
-   Vertex3Ds MulVector(const VecType& v) const
-   {
-      return (*this) * v;
-   }
-
-   template <class VecType>
-   Vertex3Ds MultiplyVector(const VecType& v) const
-   {
-      return (*this) * v;
+         m_d[2][0] * v.x + m_d[2][1] * v.y + m_d[2][2] * v.z};
    }
 
    // multiply vector with matrix transpose
    template <class VecType>
    Vertex3Ds MulVectorT(const VecType& v) const
    {
-      return Vertex3Ds(
+      return Vertex3Ds{
          m_d[0][0] * v.x + m_d[1][0] * v.y + m_d[2][0] * v.z,
          m_d[0][1] * v.x + m_d[1][1] * v.y + m_d[2][1] * v.z,
-         m_d[0][2] * v.x + m_d[1][2] * v.y + m_d[2][2] * v.z);
-   }
-
-   void MulMatrices(const Matrix3& pmat1, const Matrix3& pmat2)
-   {
-      Matrix3 matans;
-      for (int i = 0; i < 3; ++i)
-         for (int l = 0; l < 3; ++l)
-            matans.m_d[i][l] = pmat1.m_d[i][0] * pmat2.m_d[0][l] +
-                               pmat1.m_d[i][1] * pmat2.m_d[1][l] +
-                               pmat1.m_d[i][2] * pmat2.m_d[2][l];
-      *this = matans;
+         m_d[0][2] * v.x + m_d[1][2] * v.y + m_d[2][2] * v.z};
    }
 
    void MulMatricesAndMulScalar(const Matrix3& pmat1, const Matrix3& pmat2, const float scalar)
@@ -141,13 +105,6 @@ public:
                                 pmat1.m_d[i][1] * pmat2.m_d[1][l] +
                                 pmat1.m_d[i][2] * pmat2.m_d[2][l])*scalar;
       *this = matans;
-   }
-
-   void AddMatrix(const Matrix3& pmat)
-   {
-      for (int i = 0; i < 3; ++i)
-         for (int l = 0; l < 3; ++l)
-            m_d[i][l] += pmat.m_d[i][l];
    }
 
    void OrthoNormalize()
@@ -165,17 +122,7 @@ public:
       m_d[2][0] = vX.z; m_d[2][1] = vY.z; m_d[2][2] = vZ.z;
    }
 
-   /*void Transpose(Matrix3 * const pmatOut) const
-   {
-      for (int i = 0; i < 3; ++i)
-      {
-         pmatOut->m_d[0][i] = m_d[i][0];
-         pmatOut->m_d[1][i] = m_d[i][1];
-         pmatOut->m_d[2][i] = m_d[i][2];
-      }
-   }*/
-
-   void Identity(const float value = 1.0f)
+   void SetIdentity(const float value = 1.0f)
    {
       m_d[0][0] = m_d[1][1] = m_d[2][2] = value;
       m_d[0][1] = m_d[0][2] =
@@ -674,33 +621,6 @@ public:
       *this = tmp;
    }
 
-   // premultiply the given matrix, i.e., result = mult * (*this)
-   void Multiply(const Matrix3D &mult, Matrix3D &result) const
-   {
-      Matrix3D matrixT;
-#ifdef ENABLE_SSE_OPTIMIZATIONS
-      // could replace the loadu/storeu's if alignment would be stricter
-      for (int i = 0; i < 16; i += 4) {
-         // unroll first step of the loop
-         __m128 a = _mm_loadu_ps(&_11);
-         __m128 b = _mm_set1_ps((&mult._11)[i]);
-         __m128 r = _mm_mul_ps(a, b);
-         for (int j = 1; j < 4; j++) {
-            a = _mm_loadu_ps((&_11)+j * 4);
-            b = _mm_set1_ps((&mult._11)[i + j]);
-            r = _mm_add_ps(_mm_mul_ps(a, b), r);
-         }
-         _mm_storeu_ps((&matrixT._11)+i, r);
-      }
-#else
-#pragma message ("Warning: No SSE matrix mul")
-      for (int i = 0; i < 4; ++i)
-         for (int l = 0; l < 4; ++l)
-            matrixT.m[i][l] = (m[0][l] * mult.m[i][0]) + (m[1][l] * mult.m[i][1]) + (m[2][l] * mult.m[i][2]) + (m[3][l] * mult.m[i][3]);
-#endif
-      result = matrixT;
-   }
-
    Matrix3D operator*(const Matrix3D& mult) const
    {
       Matrix3D matrixT;
@@ -729,17 +649,32 @@ public:
 
    Matrix3D operator+(const Matrix3D& _m) const
    {
-      return Matrix3D(_11 + _m._11, _12 + _m._12, _13 + _m._13, _14 + _m._14,
+#ifdef ENABLE_SSE_OPTIMIZATIONS
+      Matrix3D matrixT;
+      _mm_storeu_ps(&matrixT._11, _mm_add_ps(_mm_loadu_ps(&_11),_mm_loadu_ps(&_m._11)));
+      _mm_storeu_ps(&matrixT._21, _mm_add_ps(_mm_loadu_ps(&_21),_mm_loadu_ps(&_m._21)));
+      _mm_storeu_ps(&matrixT._31, _mm_add_ps(_mm_loadu_ps(&_31),_mm_loadu_ps(&_m._31)));
+      _mm_storeu_ps(&matrixT._41, _mm_add_ps(_mm_loadu_ps(&_41),_mm_loadu_ps(&_m._41)));
+      return matrixT;
+#else
+      return Matrix3D{_11 + _m._11, _12 + _m._12, _13 + _m._13, _14 + _m._14,
                       _21 + _m._21, _22 + _m._22, _23 + _m._23, _24 + _m._24,
                       _31 + _m._31, _32 + _m._32, _33 + _m._33, _34 + _m._34,
-                      _41 + _m._41, _42 + _m._42, _43 + _m._43, _44 + _m._44);
+                      _41 + _m._41, _42 + _m._42, _43 + _m._43, _44 + _m._44};
+#endif
    }
    
    void Scale(const float x, const float y, const float z)
    {
+#ifdef ENABLE_SSE_OPTIMIZATIONS
+      _mm_storeu_ps(&_11, _mm_mul_ps(_mm_loadu_ps(&_11),_mm_set_ps(1.0f,x,x,x)));
+      _mm_storeu_ps(&_21, _mm_mul_ps(_mm_loadu_ps(&_21),_mm_set_ps(1.0f,y,y,y)));
+      _mm_storeu_ps(&_31, _mm_mul_ps(_mm_loadu_ps(&_31),_mm_set_ps(1.0f,z,z,z)));
+#else
       _11 *= x; _12 *= x; _13 *= x;
       _21 *= y; _22 *= y; _23 *= y;
       _31 *= z; _32 *= z; _33 *= z;
+#endif
    }
 
    // Normalize the 3 defining vector of an orthogonal matrix
@@ -760,28 +695,28 @@ public:
    {
       Matrix3D matTrans;
       matTrans.SetTranslation(x, y, z);
-      Multiply(matTrans, *this);
+      *this = matTrans * *this;
    }
 
    void RotateX(const float angRad)
    {
       Matrix3D rot;
       rot.SetRotateX(angRad);
-      Multiply(rot, *this);
+      *this = rot * *this;
    }
 
    void RotateY(const float angRad)
    {
       Matrix3D rot;
       rot.SetRotateY(angRad);
-      Multiply(rot, *this);
+      *this = rot * *this;
    }
 
    void RotateZ(const float angRad)
    {
       Matrix3D rot;
       rot.SetRotateZ(angRad);
-      Multiply(rot, *this);
+      *this = rot * *this;
    }
 
 #pragma endregion MatrixOperations
@@ -829,7 +764,8 @@ public:
 // Ported at: VisualPinball.Engine/Math/Matrix3D.cs
 //
 
-   Vertex3Ds MultiplyVector(const Vertex3Ds &v) const
+   template <class VecType>
+   Vertex3Ds operator* (const VecType& v) const
    {
       // Transform it through the current matrix set
       const float xp = _11*v.x + _21*v.y + _31*v.z + _41;
