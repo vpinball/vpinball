@@ -155,7 +155,7 @@ platforms/linux/aarch64/external.sh
 cmake -DPLATFORM=linux -DARCH=aarch64 -DBUILD_STATIC=OFF -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -B build
 cmake --build build -- -j${NUM_PROCS}
 cp third-party/runtime-libs/linux/aarch64/libserum.so.1.6.2 ../../external/lib
-cp third-party/runtime-libs/linux/aarch64/libzedmd.so.0.4.1 ../../external/lib
+cp third-party/runtime-libs/linux/aarch64/libzedmd.so.0.5.0 ../../external/lib
 cp third-party/runtime-libs/linux/aarch64/libserialport.so.0 ../../external/lib
 cp build/libdmdutil.so.0.1.0 ../../external/lib
 cd ..

@@ -162,7 +162,7 @@ platforms/macos/arm64/external.sh
 cmake -DPLATFORM=macos -DARCH=arm64 -DBUILD_STATIC=OFF -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -B build
 cmake --build build -- -j${NUM_PROCS}
 cp third-party/runtime-libs/macos/arm64/libserum.1.6.2.dylib ../../external/lib
-cp third-party/runtime-libs/macos/arm64/libzedmd.0.4.1.dylib ../../external/lib
+cp third-party/runtime-libs/macos/arm64/libzedmd.0.5.0.dylib ../../external/lib
 cp third-party/runtime-libs/macos/arm64/libserialport.dylib ../../external/lib
 cp build/libdmdutil.0.1.0.dylib ../../external/lib
 cd ..

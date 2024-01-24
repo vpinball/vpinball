@@ -639,7 +639,7 @@ target_link_libraries(vpinball PUBLIC
    bass
    -l:libpinmame.so.3.6
    -l:libaltsound.so.0.1.0
-   -l:libzedmd.so.0.4.1
+   -l:libzedmd.so.0.5.0
    -l:libserum.so.1.6.2
    -l:libdmdutil.so.0.1.0
 )
@@ -680,7 +680,7 @@ add_custom_command(TARGET vpinball POST_BUILD
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/linux/external/lib/libbass.so" "$<TARGET_FILE_DIR:vpinball>"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/linux/external/lib/libpinmame.so.3.6" "$<TARGET_FILE_DIR:vpinball>"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/linux/external/lib/libaltsound.so.0.1.0" "$<TARGET_FILE_DIR:vpinball>"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/linux/external/lib/libzedmd.so.0.4.1" "$<TARGET_FILE_DIR:vpinball>"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/linux/external/lib/libzedmd.so.0.5.0" "$<TARGET_FILE_DIR:vpinball>"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/linux/external/lib/libserum.so.1.6.2" "$<TARGET_FILE_DIR:vpinball>"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/linux/external/lib/libdmdutil.so.0.1.0" "$<TARGET_FILE_DIR:vpinball>"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/linux/external/lib/libserialport.so.0" "$<TARGET_FILE_DIR:vpinball>"
