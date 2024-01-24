@@ -11,10 +11,10 @@ Private Sub LoadCore
 	On Error Resume Next
 	If VPBuildVersion < 0 Or Err Then
 		Dim fso : Set fso = CreateObject("Scripting.FileSystemObject") : Err.Clear
-		ExecuteGlobal fso.OpenTextFile("core.vbs", 1).ReadAll	 : If Err Then MsgBox "Can't open ""core.vbs""" : Exit Sub
+		ExecuteGlobal fso.OpenTextFile("core.vbs", 1).ReadAll    : If Err Then MsgBox "Can't open ""core.vbs""" : Exit Sub
 		ExecuteGlobal fso.OpenTextFile("VPMKeys.vbs", 1).ReadAll : If Err Then MsgBox "Can't open ""vpmkeys.vbs""" : Exit Sub
 	Else
-		ExecuteGlobal GetTextFile("core.vbs")	 : If Err Then MsgBox "Can't open ""core.vbs"""	   : Exit Sub
+		ExecuteGlobal GetTextFile("core.vbs")    : If Err Then MsgBox "Can't open ""core.vbs"""    : Exit Sub
 		ExecuteGlobal GetTextFile("VPMKeys.vbs") : If Err Then MsgBox "Can't open ""vpmkeys.vbs""" : Exit Sub
 	End If
 End Sub
@@ -60,7 +60,7 @@ Const swLLFlip = 114
 Const swURFlip = 116
 Const swULFlip = 118
 
-' Help window
+' Help Window
 vpmSystemHelp = "Williams WPC keys:" & vbNewLine &_
   vpmKeyName(keyInsertCoin1) & vbTab & "Insert Coin #1" & vbNewLine &_
   vpmKeyName(keyInsertCoin2) & vbTab & "Insert Coin #2" & vbNewLine &_
@@ -73,19 +73,19 @@ vpmSystemHelp = "Williams WPC keys:" & vbNewLine &_
   vpmKeyName(keySlamDoorHit) & vbTab & "Slam Tilt" & vbNewLine &_
   vpmKeyName(keyCoinDoor) & vbTab & "Open/Close Coin Door"
 
-' Dips Switch / Options Menu
+' Dip Switch / Options Menu
 Private Sub wpcShowDips
 	If Not IsObject(vpmDips) Then ' First time
 		Set vpmDips = New cvpmDips
-	With vpmDips
-		.AddForm 100, 240, "DIP Switches"
-		.AddFrame 0,190, 80, "Misc", 0, Array("W20",&H04,"W19",&H08)
-		.AddFrame 0, 0, 80, "Country", &Hf0,_
-			Array("USA", &H00, "USA", &Hf0, "European", &Hd0,_
-				  "Export", &Ha0, "Export Alt", &H80, "France", &Hb0,_
-				  "France 1", &H10, "France 2", &H30, "France 3", &H90,_
-				  "Germany", &H20, "Spain",		&He0, "UK", &Hc0)
-	End With
+		With vpmDips
+			.AddForm 100, 240, "DIP Switches"
+			.AddFrame 0,190, 80, "Misc", 0, Array("W20",&H04,"W19",&H08)
+			.AddFrame 0, 0, 80, "Country", &Hf0,_
+				Array("USA", &H00, "USA", &Hf0, "European", &Hd0,_
+					  "Export", &Ha0, "Export Alt", &H80, "France", &Hb0,_
+					  "France 1", &H10, "France 2", &H30, "France 3", &H90,_
+					  "Germany", &H20, "Spain", &He0, "UK", &Hc0)
+		End With
 	End If
 	vpmDips.ViewDips
 End Sub
@@ -113,10 +113,10 @@ Function vpmKeyDown(ByVal keycode)
 				End If
 			Case keyStagedFlipperL vpmFlips.FlipUL True : If cSingleLFlip Or Err Then .Switch(swULFlip) = True
 			Case keyStagedFlipperR vpmFlips.FlipUR True : If cSingleRFlip Or Err Then .Switch(swURFlip) = True
-			Case keyInsertCoin1	 vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin1'" : Playsound SCoin
-			Case keyInsertCoin2	 vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin2'" : Playsound SCoin
-			Case keyInsertCoin3	 vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin3'" : Playsound SCoin
-			Case keyInsertCoin4	 vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin4'" : Playsound SCoin
+			Case keyInsertCoin1  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin1'" : Playsound SCoin
+			Case keyInsertCoin2  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin2'" : Playsound SCoin
+			Case keyInsertCoin3  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin3'" : Playsound SCoin
+			Case keyInsertCoin4  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin4'" : Playsound SCoin
 			Case StartGameKey	 swCopy = swStartButtonX : .Switch(swCopy) = True
 			Case keyCancel		 swCopy = swCancel :	   .Switch(swCopy) = True
 			Case keyDown		 swCopy = swDown :		   .Switch(swCopy) = True
@@ -124,10 +124,10 @@ Function vpmKeyDown(ByVal keycode)
 			Case keyEnter		 swCopy = swEnter :		   .Switch(swCopy) = True
 			Case keySlamDoorHit	 swCopy = swSlamTiltX :	   .Switch(swCopy) = True
 			Case keyCoinDoor	 swCopy = swCoinDoorX :	   If toggleKeyCoinDoor Then .Switch(swCopy) = Not .Switch(swCopy) Else .Switch(swCopy) = Not inverseKeyCoinDoor
-			Case keyBangBack	 vpmNudge.DoNudge	0,6
-			Case LeftTiltKey	 vpmNudge.DoNudge  75,2
-			Case RightTiltKey	 vpmNudge.DoNudge 285,2
-			Case CenterTiltKey	 vpmNudge.DoNudge	0,2
+			Case keyBangBack	 vpmNudge.DoNudge   0, 6
+			Case LeftTiltKey	 vpmNudge.DoNudge  75, 2
+			Case RightTiltKey	 vpmNudge.DoNudge 285, 2
+			Case CenterTiltKey	 vpmNudge.DoNudge   0, 2
 			Case keyVPMVolume	 vpmVol
 			Case Else			 vpmKeyDown = False
 		End Select

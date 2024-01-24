@@ -35,9 +35,9 @@ Const swDiagnostic  = -8
 Const swTilt        = -7
 Const swSlamTilt    = -6
 
-' Help window
+' Help Window
 vpmSystemHelp = "Class Of 1812 keys:" & vbNewLine &_
-  vpmKeyName(StartGameKey)  & vbTab & "Start Gane" & vbNewLine &_
+  vpmKeyName(StartGameKey)  & vbTab & "Start Game" & vbNewLine &_
   vpmKeyName(keyInsertCoin1)  & vbTab & "Left Coin Chute" & vbNewLine &_
   vpmKeyName(keyInsertCoin2)  & vbTab & "Right Coin Chute" & vbNewLine &_
   vpmKeyName(keyInsertCoin3)  & vbTab & "Center Coin Chute" & vbNewLine &_
@@ -46,7 +46,7 @@ vpmSystemHelp = "Class Of 1812 keys:" & vbNewLine &_
   vpmKeyName(keyUp)  & vbTab & "Right Advance Button" & vbNewLine &_
   vpmKeyName(keySlamDoorHit)  & vbTab & "Slam Tilt"
 
-' Option Menu (No Dips)
+' Options Menu (No Dips)
 Private Sub Class1812ShowDips
 	If Not IsObject(vpmDips) Then ' First time
 		Set vpmDips = New cvpmDips
@@ -66,8 +66,8 @@ Function vpmKeyDown(ByVal keycode)
 	vpmKeyDown = True ' assume we handle the key
 	With Controller
 		Select Case keycode
-			Case LeftFlipperKey  .Switch(swLLFlip) = True : vpmKeyDown = False :  vpmFlips.FlipL True : if keycode = keyStagedFlipperL then vpmFlips.FlipUL True
-			Case RightFlipperKey .Switch(swLRFlip) = True : vpmKeyDown = False :  vpmFlips.FlipR True : if keycode = keyStagedFlipperR then vpmFlips.FlipUR True
+			Case LeftFlipperKey  .Switch(swLLFlip) = True : vpmKeyDown = False : vpmFlips.FlipL True : if keycode = keyStagedFlipperL then vpmFlips.FlipUL True
+			Case RightFlipperKey .Switch(swLRFlip) = True : vpmKeyDown = False : vpmFlips.FlipR True : if keycode = keyStagedFlipperR then vpmFlips.FlipUR True
 			Case keyStagedFlipperL vpmFlips.FlipUL True
 			Case keyStagedFlipperR vpmFlips.FlipUR True
 			Case keyInsertCoin1  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin1'" : Playsound SCoin
@@ -78,10 +78,10 @@ Function vpmKeyDown(ByVal keycode)
 			Case keySlamDoorHit  .Switch(swSlamTilt)    = True
 			Case keyDown         .Switch(swLeftAdvance) = True
 			Case keyUp           .Switch(swRightAdvance) = True
-			Case keyBangBack     vpmNudge.DoNudge   0,6
-			Case LeftTiltKey     vpmNudge.DoNudge  75,2
-			Case RightTiltKey    vpmNudge.DoNudge 285,2
-			Case CenterTiltKey   vpmNudge.DoNudge   0,2
+			Case keyBangBack     vpmNudge.DoNudge   0, 6
+			Case LeftTiltKey     vpmNudge.DoNudge  75, 2
+			Case RightTiltKey    vpmNudge.DoNudge 285, 2
+			Case CenterTiltKey   vpmNudge.DoNudge   0, 2
 			Case keyVPMVolume    vpmVol
 			Case Else            vpmKeyDown = False
 		End Select
@@ -94,8 +94,8 @@ Function vpmKeyUp(ByVal keycode)
 	vpmKeyUp = True ' assume we handle the key
 	With Controller
 		Select Case keycode
-			Case LeftFlipperKey  .Switch(swLLFlip) = False : vpmKeyUp = False :  vpmFlips.FlipL False : if keycode = keyStagedFlipperL then vpmFlips.FlipUL False
-			Case RightFlipperKey .Switch(swLRFlip) = False : vpmKeyUp = False :  vpmFlips.FlipR False : if keycode = keyStagedFlipperR then vpmFlips.FlipUR False
+			Case LeftFlipperKey  .Switch(swLLFlip) = False : vpmKeyUp = False : vpmFlips.FlipL False : if keycode = keyStagedFlipperL then vpmFlips.FlipUL False
+			Case RightFlipperKey .Switch(swLRFlip) = False : vpmKeyUp = False : vpmFlips.FlipR False : if keycode = keyStagedFlipperR then vpmFlips.FlipUR False
 			Case keyStagedFlipperL vpmFlips.FlipUL False
 			Case keyStagedFlipperR vpmFlips.FlipUR False
 			Case keyDown         .Switch(swLeftAdvance) = False

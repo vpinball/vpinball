@@ -1,4 +1,4 @@
-'Last Updated in VBS v3.56
+'Last Updated in VBS v3.61
 
 Option Explicit
 LoadCore
@@ -13,6 +13,7 @@ Private Sub LoadCore
 		ExecuteGlobal GetTextFile("VPMKeys.vbs") : If Err Then MsgBox "Can't open ""vpmkeys.vbs""" : Exit Sub
 	End If
 End Sub
+
 '-------------------------
 ' Hankin Data
 '-------------------------
@@ -30,6 +31,8 @@ Const swStartButton  =  3
 
 Const swLRFlip       = 82
 Const swLLFlip       = 84
+Const swURFlip       = 81
+Const swULFlip       = 83
 
 ' Help Window
 vpmSystemHelp = "Hankin keys:" & vbNewLine &_
@@ -39,7 +42,7 @@ vpmSystemHelp = "Hankin keys:" & vbNewLine &_
   vpmKeyName(keySoundDiag)   & vbTab & "Sound Diagnostic" & vbNewLine &_
   vpmKeyName(keySlamDoorHit) & vbTab & "Slam Tilt"
 
-' Dips Switch / Options Menu
+' Dip Switch / Options Menu
 Private Sub HankinShowDips
 	If Not IsObject(vpmDips) Then ' First time
 		Set vpmDips = New cvpmDips
@@ -47,7 +50,7 @@ Private Sub HankinShowDips
 			.AddForm 200, 245, "DIP Switches"
 			.AddFrame 0, 0, 95, "Credit/Coins", &H07,_
 			  Array("1/1",&H00,"1/2",&H01,"1/3",&H02,"1/4",&H03,_
-				"1/1, 3/2",&H04,"1/2, 2/3",&H05,"2/3, 4/5",&H06,"2/5",&H07)
+			        "1/1, 3/2",&H04,"1/2, 2/3",&H05,"2/3, 4/5",&H06,"2/5",&H07)
 			.AddFrame 0, 132, 95, "High Score Award", &H60,_
 			  Array("No award",&H00,"1 free game",&H20,"2 free games",&H40,"3 free games",&H60)
 			.AddFrame 0, 209, 95, "Maximum Credits", &H60000,_
@@ -56,15 +59,15 @@ Private Sub HankinShowDips
 			.AddFrame 110, 0, 190, "Misc",0,_
 			  Array("High score: Free Games/Extra Ball",&H00000008,_
 			        "Match Feature",&H00000010,_
-				"Game Over Tune",&H00000080,_
+			        "Game Over Tune",&H00000080,_
 			        "Coin Alarm Sound",&H00000100,_
-				"'4' Target memory",&H00000200,_
-				"Background Sound",&H00000400,_
-				"Coin Alarm",&H00004000,_
-				"3/5 Balls",32768,_
-				"Free Game Sound",&H00200000,_
-				"Coin Counter Reset",&H00400000,_
-				"Time Out Feature",&H00800000)
+			        "'4' Target memory",&H00000200,_
+			        "Background Sound",&H00000400,_
+			        "Coin Alarm",&H00004000,_
+			        "3/5 Balls",32768,_
+			        "Free Game Sound",&H00200000,_
+			        "Coin Counter Reset",&H00400000,_
+			        "Time Out Feature",&H00800000)
 		End With
 	End If
 	vpmDips.ViewDips
@@ -78,10 +81,20 @@ Function vpmKeyDown(ByVal keycode)
 	vpmKeyDown = True ' Assume we handle the key
 	With Controller
 		Select Case keycode
-			Case LeftFlipperKey  .Switch(swLLFlip) = True : vpmKeyDown = False :  vpmFlips.FlipL True : if keycode = keyStagedFlipperL then vpmFlips.FlipUL True
-			Case RightFlipperKey .Switch(swLRFlip) = True : vpmKeyDown = False :  vpmFlips.FlipR True : if keycode = keyStagedFlipperR then vpmFlips.FlipUR True
-			Case keyStagedFlipperL vpmFlips.FlipUL True
-			Case keyStagedFlipperR vpmFlips.FlipUR True
+			Case LeftFlipperKey
+				.Switch(swLLFlip) = True : vpmKeyDown = False : vpmFlips.FlipL True
+				If keycode = keyStagedFlipperL Then ' as vbs will not evaluate the Case keyStagedFlipperL then, also handle it here
+					vpmFlips.FlipUL True
+					If cSingleLFlip Or Err Then .Switch(swULFlip) = True
+				End If
+			Case RightFlipperKey
+				.Switch(swLRFlip) = True : vpmKeyDown = False : vpmFlips.FlipR True
+				If keycode = keyStagedFlipperR Then ' as vbs will not evaluate the Case keyStagedFlipperR then, also handle it here
+					vpmFlips.FlipUR True
+					If cSingleRFlip Or Err Then .Switch(swURFlip) = True
+				End If
+			Case keyStagedFlipperL vpmFlips.FlipUL True : If cSingleLFlip Or Err Then .Switch(swULFlip) = True
+			Case keyStagedFlipperR vpmFlips.FlipUR True : If cSingleRFlip Or Err Then .Switch(swURFlip) = True
 			Case keyInsertCoin1  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin1'" : Playsound SCoin
 			Case keyInsertCoin2  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin1'" : Playsound SCoin ' dupe of keyInsertCoin1 as only 2 coin slots
 			Case keyInsertCoin3  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin1'" : Playsound SCoin ' dto.
@@ -107,10 +120,20 @@ Function vpmKeyUp(ByVal keycode)
 	vpmKeyUp = True ' Assume we handle the key
 	With Controller
 		Select Case keycode
-			Case LeftFlipperKey  .Switch(swLLFlip) = False : vpmKeyUp = False :  vpmFlips.FlipL False : if keycode = keyStagedFlipperL then vpmFlips.FlipUL False
-			Case RightFlipperKey .Switch(swLRFlip) = False : vpmKeyUp = False :  vpmFlips.FlipR False : if keycode = keyStagedFlipperR then vpmFlips.FlipUR False
-			Case keyStagedFlipperL vpmFlips.FlipUL False
-			Case keyStagedFlipperR vpmFlips.FlipUR False
+			Case LeftFlipperKey
+				.Switch(swLLFlip) = False : vpmKeyUp = False : vpmFlips.FlipL False
+				If keycode = keyStagedFlipperL Then ' as vbs will not evaluate the Case keyStagedFlipperL then, also handle it here
+					vpmFlips.FlipUL False
+					If cSingleLFlip Or Err Then .Switch(swULFlip) = False
+				End If
+			Case RightFlipperKey
+				.Switch(swLRFlip) = False : vpmKeyUp = False : vpmFlips.FlipR False
+				If keycode = keyStagedFlipperR Then ' as vbs will not evaluate the Case keyStagedFlipperR then, also handle it here
+					vpmFlips.FlipUR False
+					If cSingleRFlip Or Err Then .Switch(swURFlip) = False
+				End If
+			Case keyStagedFlipperL vpmFlips.FlipUL False : If cSingleLFlip Or Err Then .Switch(swULFlip) = False
+			Case keyStagedFlipperR vpmFlips.FlipUR False : If cSingleRFlip Or Err Then .Switch(swURFlip) = False
 			Case StartGameKey    .Switch(swStartButton) = False
 			Case keySelfTest     .Switch(swSelfTest)    = False
 			Case keyCPUDiag      .Switch(swCPUDiag)     = False

@@ -1,5 +1,6 @@
 'Last Updated in VBS v3.58
 ' Written by Wiesshund to run Pecmen ROM, feel free to improve this
+
 Option Explicit
 LoadCore
 Private Sub LoadCore
@@ -47,7 +48,7 @@ Private Sub LTDShowDips
 		Set vpmDips = New cvpmDips
 		With vpmDips
 			.AddForm 150, 245, "DIP Switches"
-			.AddFrame  0,0, 60, "", 0,_
+			.AddFrame 0, 0, 60, "", 0,_
 			  Array("DIP  1",&H00000001,"DIP  2",&H00000002,"DIP  3",&H00000004,"DIP  4",&H00000008,_
 			        "DIP  5",&H00000010,"DIP  6",&H00000020,"DIP  7",&H00000040,"DIP  8",&H00000080,_
 			        "DIP  9",&H00000100,"DIP 10",&H00000200,"DIP 11",&H00000400,"DIP 12",&H00000800,_
@@ -70,8 +71,8 @@ Function vpmKeyDown(ByVal keycode)
 	vpmKeyDown = True ' Assume we handle the key
 	With Controller
 		Select Case keycode
-			Case RightFlipperKey .Switch(MazeMove) = 1 : .Switch(swRFlip) = 1: .Switch(swRflipHold) = 1 : vpmKeyDown = False '
-			Case LeftFlipperKey  .Switch(MazeDirection) = 1 : .Switch(swLFlip) = 1: .Switch(swLflipHold) = 1  : vpmKeyDown = False ' 
+			Case RightFlipperKey .Switch(MazeMove) = 1 : .Switch(swRFlip) = 1 : .Switch(swRflipHold) = 1 : vpmKeyDown = False '
+			Case LeftFlipperKey  .Switch(MazeDirection) = 1 : .Switch(swLFlip) = 1 : .Switch(swLflipHold) = 1  : vpmKeyDown = False ' 
 			Case keyInsertCoin1  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin1'" : Playsound SCoin
 			Case keyInsertCoin2  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin2'" : Playsound SCoin
 			Case keyInsertCoin3  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin2'" : Playsound SCoin
@@ -94,8 +95,8 @@ Function vpmKeyUp(ByVal keycode)
 	vpmKeyUp = True ' Assume we handle the key
 	With Controller
 		Select Case keycode
-			Case RightFlipperKey .Switch(MazeMove) = 0 : .Switch(swRFlip) = 0: .Switch(swRflipHold) = 0 : vpmKeyUp = False '
-			Case LeftFlipperKey  .Switch(MazeDirection) = 0 : .Switch(swLFlip) = 0: .Switch(swLflipHold) = 0 : vpmKeyUp = False '
+			Case RightFlipperKey .Switch(MazeMove) = 0 : .Switch(swRFlip) = 0 : .Switch(swRflipHold) = 0 : vpmKeyUp = False '
+			Case LeftFlipperKey  .Switch(MazeDirection) = 0 : .Switch(swLFlip) = 0 : .Switch(swLflipHold) = 0 : vpmKeyUp = False '
 			Case StartGameKey    .Switch(swStartButton) = False
 			Case keySelfTest     .Switch(swSelfTest)    = False
 			Case keyEnter        .Switch(swEnter)       = False

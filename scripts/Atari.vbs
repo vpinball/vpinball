@@ -1,5 +1,5 @@
 'Last Updated in VBS v3.36
-'
+
 'Note: This VBS file is now obsolete as of VBS V3.18.  It is included in the VBS pack only for
 '      backwards compatability with any existing tables that might be using it.
 '      You should now use either Atari1(b).vbs (for Generation 1 Atari Tables)
@@ -46,7 +46,7 @@ Private Sub atariShowDips
 		Set vpmDips = New cvpmDips
 		With vpmDips
 			.AddForm 150, 245, "DIP Switches"
-			.AddFrame  0,0, 60, "", 0,_
+			.AddFrame 0, 0, 60, "", 0,_
 			  Array("DIP  1",&H00000001,"DIP  2",&H00000002,"DIP  3",&H00000004,"DIP  4",&H00000008,_
 			        "DIP  5",&H00000010,"DIP  6",&H00000020,"DIP  7",&H00000040,"DIP  8",&H00000080,_
 			        "DIP  9",&H00000100,"DIP 10",&H00000200,"DIP 11",&H00000400,"DIP 12",&H00000800,_
@@ -69,8 +69,8 @@ Function vpmKeyDown(ByVal keycode)
 	vpmKeyDown = True ' Assume we handle the key
 	With Controller
 		Select Case keycode
-			Case LeftFlipperKey  .Switch(swLLFlip) = True : vpmKeyDown = False :  vpmFlips.FlipL True : if keycode = keyStagedFlipperL then vpmFlips.FlipUL True
-			Case RightFlipperKey .Switch(swLRFlip) = True : vpmKeyDown = False :  vpmFlips.FlipR True : if keycode = keyStagedFlipperR then vpmFlips.FlipUR True
+			Case LeftFlipperKey  .Switch(swLLFlip) = True : vpmKeyDown = False : vpmFlips.FlipL True : if keycode = keyStagedFlipperL then vpmFlips.FlipUL True
+			Case RightFlipperKey .Switch(swLRFlip) = True : vpmKeyDown = False : vpmFlips.FlipR True : if keycode = keyStagedFlipperR then vpmFlips.FlipUR True
 			Case keyStagedFlipperL vpmFlips.FlipUL True
 			Case keyStagedFlipperR vpmFlips.FlipUR True
 			Case keyInsertCoin1  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin1'" : Playsound SCoin
@@ -94,8 +94,8 @@ Function vpmKeyUp(ByVal keycode)
 	vpmKeyUp = True ' Assume we handle the key
 	With Controller
 		Select Case keycode
-			Case LeftFlipperKey  .Switch(swLLFlip) = False : vpmKeyUp = False :  vpmFlips.FlipL False : if keycode = keyStagedFlipperL then vpmFlips.FlipUL False
-			Case RightFlipperKey .Switch(swLRFlip) = False : vpmKeyUp = False :  vpmFlips.FlipR False : if keycode = keyStagedFlipperR then vpmFlips.FlipUR False
+			Case LeftFlipperKey  .Switch(swLLFlip) = False : vpmKeyUp = False : vpmFlips.FlipL False : if keycode = keyStagedFlipperL then vpmFlips.FlipUL False
+			Case RightFlipperKey .Switch(swLRFlip) = False : vpmKeyUp = False : vpmFlips.FlipR False : if keycode = keyStagedFlipperR then vpmFlips.FlipUR False
 			Case keyStagedFlipperL vpmFlips.FlipUL False
 			Case keyStagedFlipperR vpmFlips.FlipUR False
 			Case StartGameKey    .Switch(swStartButton) = False

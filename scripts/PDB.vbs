@@ -34,18 +34,18 @@ If swSlamTilt    = 21 Or Err Then swSlamTiltX    = 21 Else swSlamTiltX    = swSl
 On Error Goto 0
 
 
-' Help window
+' Help Window
 vpmSystemHelp = "P-ROC PDb Keys:" & vbNewLine &_
-  vpmKeyName(keyInsertCoin1)  & vbTab & "Insert Coin #1" & vbNewLine &_
-  vpmKeyName(keyInsertCoin2)  & vbTab & "Insert Coin #2" & vbNewLine &_
-  vpmKeyName(keyInsertCoin3)  & vbTab & "Insert Coin #3" & vbNewLine &_
-  vpmKeyName(keyInsertCoin4)  & vbTab & "Insert Coin #4" & vbNewLine &_
-  vpmKeyName(keyCancel) & vbTab & "Escape (Coin Door)" & vbNewLine &_
-  vpmKeyName(keyDown)  & vbTab & "Down (Coin Door)" & vbNewLine &_
-  vpmKeyName(keyUp)  & vbTab & "Up (Coin Door)" & vbNewLine &_
-  vpmKeyName(keyEnter)  & vbTab & "Enter (Coin Door)" & vbNewLine &_
-  vpmKeyName(keySlamDoorHit) & vbTab & "Slam Tilt" & vbNewLine &_
-  vpmKeyName(keyCoinDoor) & vbTab & "Open/Close Coin Door"
+  vpmKeyName(keyInsertCoin1)  & vbTab & "Insert Coin #1"     & vbNewLine &_
+  vpmKeyName(keyInsertCoin2)  & vbTab & "Insert Coin #2"     & vbNewLine &_
+  vpmKeyName(keyInsertCoin3)  & vbTab & "Insert Coin #3"     & vbNewLine &_
+  vpmKeyName(keyInsertCoin4)  & vbTab & "Insert Coin #4"     & vbNewLine &_
+  vpmKeyName(keyCancel)       & vbTab & "Escape (Coin Door)" & vbNewLine &_
+  vpmKeyName(keyDown)         & vbTab & "Down (Coin Door)"   & vbNewLine &_
+  vpmKeyName(keyUp)           & vbTab & "Up (Coin Door)"     & vbNewLine &_
+  vpmKeyName(keyEnter)        & vbTab & "Enter (Coin Door)"  & vbNewLine &_
+  vpmKeyName(keySlamDoorHit)  & vbTab & "Slam Tilt"          & vbNewLine &_
+  vpmKeyName(keyCoinDoor)     & vbTab & "Open/Close Coin Door"
 
 ' Keyboard handlers
 Function vpmKeyDown(ByVal keycode)
@@ -69,10 +69,10 @@ Function vpmKeyDown(ByVal keycode)
 			Case keyEnter        swCopy = swEnter :        .Switch(swCopy) = True
 			Case keySlamDoorHit  swCopy = swSlamTiltX :    .Switch(swCopy) = True
 			Case keyCoinDoor     swCopy = swCoinDoorX :    If toggleKeyCoinDoor Then .Switch(swCopy) = Not .Switch(swCopy) Else .Switch(swCopy) = Not inverseKeyCoinDoor
-			Case keyBangBack     vpmNudge.DoNudge   0,6
-			Case LeftTiltKey     vpmNudge.DoNudge  75,2
-			Case RightTiltKey    vpmNudge.DoNudge 285,2
-			Case CenterTiltKey   vpmNudge.DoNudge   0,2
+			Case keyBangBack     vpmNudge.DoNudge   0, 6
+			Case LeftTiltKey     vpmNudge.DoNudge  75, 2
+			Case RightTiltKey    vpmNudge.DoNudge 285, 2
+			Case CenterTiltKey   vpmNudge.DoNudge   0, 2
 			Case keyVPMVolume    vpmVol
 			Case Else            vpmKeyDown = False
 		End Select

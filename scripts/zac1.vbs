@@ -36,13 +36,13 @@ vpmSystemHelp = "Zaccaria keys:" & vbNewLine &_
   vpmKeyName(keyInsertCoin3) & vbTab & "Insert Coin #3" & vbNewLine &_
   vpmKeyName(keySelfTest)    & vbTab & "Diagnostics"
 
-' Option Menu / Dip Menu
+' Dip Switch / Options Menu
 Private Sub zac1ShowDips
 	If Not IsObject(vpmDips) Then ' First time
 		Set vpmDips = New cvpmDips
 		With vpmDips
-	  	.AddForm  80, 0, "Option Menu"
-		.AddLabel 0,0,250,20,"No Options In This Table At This Time"
+			.AddForm  80, 0, "Option Menu"
+			.AddLabel 0,0,250,20,"No Options In This Table At This Time"
 		End With
 	End If
 	vpmDips.ViewDips

@@ -1,4 +1,4 @@
-'Last Updated in VBS v3.36
+'Last Updated in VBS v3.61
 
 Option Explicit
 LoadCore
@@ -28,10 +28,12 @@ Const swStartButton = 47
 Const swTilt        = 57
 Const swSlamTilt    = -1
 
-Const swLRFlip = 112
-Const swLLFlip = 114
+Const swLRFlip      = 112
+Const swLLFlip      = 114
+Const swURFlip      = 113
+Const swULFlip      = 115
 
-' Help window
+' Help Window
 vpmSystemHelp = "Gottlieb System 80 keys" & vbNewLine &_
   vpmKeyName(keyInsertCoin1)  & vbTab & "Insert Coin #1" & vbNewLine &_
   vpmKeyName(keyInsertCoin2)  & vbTab & "Insert Coin #2" & vbNewLine &_
@@ -45,12 +47,12 @@ Private Sub Sys80ShowDips
 		Set vpmDips = New cvpmDips
 		With vpmDips
 			.AddForm 280, 245, "DIP Switches"
-			.AddFrame  0,0, 60, "", 0,_
+			.AddFrame 0, 0, 60, "", 0,_
 			  Array("DIP  1",&H00000001,"DIP  2",&H00000002,"DIP  3",&H00000004,"DIP  4",&H00000008,_
 			        "DIP  5",&H00000010,"DIP  6",&H00000020,"DIP  7",&H00000040,"DIP  8",&H00000080,_
 			        "DIP  9",&H00000100,"DIP 10",&H00000200,"DIP 11",&H00000400,"DIP 12",&H00000800,_
 			        "DIP 13",&H00001000,"DIP 14",&H00002000,"DIP 15",&H00004000,"DIP 16",32768)
-			.AddFrame 80,0, 60, "", 0,_
+			.AddFrame 80, 0, 60, "", 0,_
 			  Array("DIP 17",&H00010000,"DIP 18",&H00020000,"DIP 19",&H00040000,"DIP 20",&H00080000,_
 			        "DIP 21",&H00100000,"DIP 22",&H00200000,"DIP 23",&H00400000,"DIP 24",&H00800000,_
 			        "DIP 25",&H01000000,"DIP 26",&H02000000,"DIP 27",&H04000000,"DIP 28",&H08000000,_
@@ -82,20 +84,30 @@ Function vpmKeyDown(ByVal keycode)
 	vpmKeyDown = True ' assume we handle the key
 	With Controller
 		Select Case keycode
-			Case LeftFlipperKey  .Switch(swLLFlip) = True : vpmKeyDown = False :  vpmFlips.FlipL True : if keycode = keyStagedFlipperL then vpmFlips.FlipUL True
-			Case RightFlipperKey .Switch(swLRFlip) = True : vpmKeyDown = False :  vpmFlips.FlipR True : if keycode = keyStagedFlipperR then vpmFlips.FlipUR True
-			Case keyStagedFlipperL vpmFlips.FlipUL True
-			Case keyStagedFlipperR vpmFlips.FlipUR True
+			Case LeftFlipperKey
+				.Switch(swLLFlip) = True : vpmKeyDown = False : vpmFlips.FlipL True
+				If keycode = keyStagedFlipperL Then ' as vbs will not evaluate the Case keyStagedFlipperL then, also handle it here
+					vpmFlips.FlipUL True
+					If cSingleLFlip Or Err Then .Switch(swULFlip) = True
+				End If
+			Case RightFlipperKey
+				.Switch(swLRFlip) = True : vpmKeyDown = False : vpmFlips.FlipR True
+				If keycode = keyStagedFlipperR Then ' as vbs will not evaluate the Case keyStagedFlipperR then, also handle it here
+					vpmFlips.FlipUR True
+					If cSingleRFlip Or Err Then .Switch(swURFlip) = True
+				End If
+			Case keyStagedFlipperL vpmFlips.FlipUL True : If cSingleLFlip Or Err Then .Switch(swULFlip) = True
+			Case keyStagedFlipperR vpmFlips.FlipUR True : If cSingleRFlip Or Err Then .Switch(swURFlip) = True
 			Case keyInsertCoin1  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin1'" : Playsound SCoin
 			Case keyInsertCoin2  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin2'" : Playsound SCoin
 			Case keyInsertCoin3  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin3'" : Playsound SCoin
 			Case StartGameKey    .Switch(swStartButton) = True
 			Case keySelfTest     .Switch(swTest)        = True
 			Case keySlamDoorHit  .Switch(swSlamTilt)    = True
-			Case keyBangBack     vpmNudge.DoNudge   0,6
-			Case LeftTiltKey     vpmNudge.DoNudge  75,2
-			Case RightTiltKey    vpmNudge.DoNudge 285,2
-			Case CenterTiltKey   vpmNudge.DoNudge   0,2
+			Case keyBangBack     vpmNudge.DoNudge   0, 6
+			Case LeftTiltKey     vpmNudge.DoNudge  75, 2
+			Case RightTiltKey    vpmNudge.DoNudge 285, 2
+			Case CenterTiltKey   vpmNudge.DoNudge   0, 2
 			Case keyVPMVolume    vpmVol
 			Case Else            vpmKeyDown = False
 		End Select
@@ -108,10 +120,20 @@ Function vpmKeyUp(ByVal keycode)
 	vpmKeyUp = True ' assume we handle the key
 	With Controller
 		Select Case keycode
-			Case LeftFlipperKey  .Switch(swLLFlip) = False : vpmKeyUp = False :  vpmFlips.FlipL False : if keycode = keyStagedFlipperL then vpmFlips.FlipUL False
-			Case RightFlipperKey .Switch(swLRFlip) = False : vpmKeyUp = False :  vpmFlips.FlipR False : if keycode = keyStagedFlipperR then vpmFlips.FlipUR False
-			Case keyStagedFlipperL vpmFlips.FlipUL False
-			Case keyStagedFlipperR vpmFlips.FlipUR False
+			Case LeftFlipperKey
+				.Switch(swLLFlip) = False : vpmKeyUp = False : vpmFlips.FlipL False
+				If keycode = keyStagedFlipperL Then ' as vbs will not evaluate the Case keyStagedFlipperL then, also handle it here
+					vpmFlips.FlipUL False
+					If cSingleLFlip Or Err Then .Switch(swULFlip) = False
+				End If
+			Case RightFlipperKey
+				.Switch(swLRFlip) = False : vpmKeyUp = False : vpmFlips.FlipR False
+				If keycode = keyStagedFlipperR Then ' as vbs will not evaluate the Case keyStagedFlipperR then, also handle it here
+					vpmFlips.FlipUR False
+					If cSingleRFlip Or Err Then .Switch(swURFlip) = False
+				End If
+			Case keyStagedFlipperL vpmFlips.FlipUL False : If cSingleLFlip Or Err Then .Switch(swULFlip) = False
+			Case keyStagedFlipperR vpmFlips.FlipUR False : If cSingleRFlip Or Err Then .Switch(swURFlip) = False
 			Case StartGameKey    .Switch(swStartButton) = False
 			Case keySelfTest     .Switch(swTest)        = False
 			Case keySlamDoorHit  .Switch(swSlamTilt)    = False

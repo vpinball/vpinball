@@ -21,41 +21,41 @@ End Sub
 ' Flipper Solenoid
 Const GameOnSolenoid = 1
 ' Cabinet switches
-Const swStartButton	 = 7 'ok
-Const swCoin1     	 = 1 'ok
-Const swCoin2	     = 2 'ok
-Const swCoin3	     = 3 'ok
-Const swTilt	     = 4 'ok
+Const swStartButton  = 7 'ok
+Const swCoin1        = 1 'ok
+Const swCoin2        = 2 'ok
+Const swCoin3        = 3 'ok
+Const swTilt         = 4 'ok
 Const swBallRollTilt = 4 'ok
 'Const swSlamTilt    = -4 'ok
 
-Const swLRFlip	     = 102'ok
-Const swLLFlip    	 = 104'ok
+Const swLRFlip       = 102'ok
+Const swLLFlip       = 104'ok
 
 ' Help Window
-vpmSystemHelp="Iron Balls Keys:"&vbNewLine&_
-  vpmKeyName(keyInsertCoin1)  & vbTab & "Insert Coin #1" & vbNewLine &_
-  vpmKeyName(keyInsertCoin2)  & vbTab & "Insert Coin #2" & vbNewLine &_
-  vpmKeyName(keyInsertCoin3)  & vbTab & "Insert Coin #3"
-'  vpmKeyName(keySlamDoorHit)  & vbTab & "Slam Tilt"
+vpmSystemHelp = "Iron Balls keys:" & vbNewLine &_
+  vpmKeyName(keyInsertCoin1) & vbTab & "Insert Coin #1" & vbNewLine &_
+  vpmKeyName(keyInsertCoin2) & vbTab & "Insert Coin #2" & vbNewLine &_
+  vpmKeyName(keyInsertCoin3) & vbTab & "Insert Coin #3"
+'  vpmKeyName(keySlamDoorHit) & vbTab & "Slam Tilt"
 
-' Keyboard Handlers
-Function vpmKeyDown(ByVal KeyCode)
+' Keyboard handlers
+Function vpmKeyDown(ByVal keycode)
 	On Error Resume Next
-	vpmKeyDown=True ' Assume we handle the key
+	vpmKeyDown = True ' Assume we handle the key
 	With Controller
-		Select Case KeyCode
-			Case LeftFlipperKey  .Switch(swLLFlip) = True : vpmKeyDown = False :  vpmFlips.FlipL True
-			Case RightFlipperKey .Switch(swLRFlip) = True : vpmKeyDown = False :  vpmFlips.FlipR True
-			Case keyInsertCoin1  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin1'":Playsound SCoin
-			Case keyInsertCoin2  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin2'":Playsound SCoin
-			Case keyInsertCoin3  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin3'":Playsound SCoin
+		Select Case keycode
+			Case LeftFlipperKey  .Switch(swLLFlip) = True : vpmKeyDown = False : vpmFlips.FlipL True
+			Case RightFlipperKey .Switch(swLRFlip) = True : vpmKeyDown = False : vpmFlips.FlipR True
+			Case keyInsertCoin1  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin1'" : Playsound SCoin
+			Case keyInsertCoin2  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin2'" : Playsound SCoin
+			Case keyInsertCoin3  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin3'" : Playsound SCoin
 			Case StartGameKey    .Switch(swStartButton) =True
 '			Case keySlamDoorHit  .Switch(swSlamTilt)    =True
-			Case keyBangBack     vpmNudge.DoNudge   0,6
-			Case LeftTiltKey     vpmNudge.DoNudge  75,2
-			Case RightTiltKey    vpmNudge.DoNudge 285,2
-			Case CenterTiltKey   vpmNudge.DoNudge   0,2
+			Case keyBangBack     vpmNudge.DoNudge   0, 6
+			Case LeftTiltKey     vpmNudge.DoNudge  75, 2
+			Case RightTiltKey    vpmNudge.DoNudge 285, 2
+			Case CenterTiltKey   vpmNudge.DoNudge   0, 2
 			Case keyVPMVolume    vpmVol
 			Case Else            vpmKeyDown = False
 		End Select
@@ -63,13 +63,13 @@ Function vpmKeyDown(ByVal KeyCode)
 	On Error Goto 0
 End Function
 
-Function vpmKeyUp(ByVal KeyCode)
+Function vpmKeyUp(ByVal keycode)
 	On Error Resume Next
-	vpmKeyUp=True ' Assume we handle the key
+	vpmKeyUp = True ' Assume we handle the key
 	With Controller
-		Select Case KeyCode
-			Case LeftFlipperKey  .Switch(swLLFlip) = False : vpmKeyUp = False :  vpmFlips.FlipL False
-			Case RightFlipperKey .Switch(swLRFlip) = False : vpmKeyUp = False :  vpmFlips.FlipR False
+		Select Case keycode
+			Case LeftFlipperKey  .Switch(swLLFlip) = False : vpmKeyUp = False : vpmFlips.FlipL False
+			Case RightFlipperKey .Switch(swLRFlip) = False : vpmKeyUp = False : vpmFlips.FlipR False
 			Case StartGameKey    .Switch(swStartButton) = False
 '			Case keySlamDoorHit  .Switch(swSlamTilt)    = False
 			Case keyShowOpts     .Pause = True : vpmShowOptions : .Pause = False

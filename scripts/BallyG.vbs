@@ -43,7 +43,7 @@ vpmSystemHelp = "Bally -17/-35 keys:" & vbNewLine &_
   vpmKeyName(keySoundDiag)   & vbTab & "Sound Diagnostic" & vbNewLine &_
   vpmKeyName(keySlamDoorHit) & vbTab & "Slam Tilt"
 
-'Dip Switch / Options Menu
+' Dip Switch / Options Menu
 Private Sub ballyShowDips
 	If Not IsObject(vpmDips) Then ' First time
 		Set vpmDips = New cvpmDips
