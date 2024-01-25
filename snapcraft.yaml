@@ -1,0 +1,129 @@
+name: vpinball
+version: '10.8.1-git'
+summary: Pinball table editor and simulator
+description: |
+    Just a test
+    Some interfaces need to be connected manually:
+
+        $ sudo snap connect vpinball:alsa
+  
+    This is equivalent to direct driver access to your audio hardware and may block other applications from recording or playing sound.
+    see https://snapcraft.io/docs/alsa-interface for details.
+
+confinement: devmode
+base: core22
+
+layout:
+  /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/alsa-lib:
+    bind: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/alsa-lib
+  /usr/share/alsa:
+    bind: $SNAP/usr/share/alsa
+
+parts:
+  vpinball:
+    after: [alsa-mixin]
+    source: .
+    plugin: cmake
+    cmake-parameters:
+      - "-DCMAKE_BUILD_TYPE=Release"
+    build-packages:
+      - automake
+      - bison
+      - unzip
+      - libtool
+      - cmake
+      - zlib1g-dev
+      - libdrm-dev
+      - libgbm-dev
+      - libglu1-mesa-dev
+      - libegl-dev
+      - libudev-dev
+      - libx11-dev
+      - libxrandr-dev
+      - libwayland-dev
+    stage-packages:
+        - zlib1g
+        - libdrm2
+        - libgbm1
+        - libglu1-mesa
+        - libegl1
+        - libudev1
+        - libx11-6
+        - libxrandr2
+#        - libwayland-client0
+#        - libwayland-egl1
+#        - libwayland-cursor0
+        # bass dependencies, what a mess to get alsa working in snaps, bass should just use pulseaudio or pipewire
+        # TODO check https://snapcraft-alsa.readthedocs.io/en/latest/snapcraft_usage.html
+        # TODO check https://github.com/scummvm/scummvm/blob/aa8325243abcc54ed50f36485edd1024197fd9d5/dists/snap/snap/snapcraft.yaml
+        # - libasound2
+        - libpulse0
+        # how do we add pipewire?
+    override-pull: |
+      craftctl default
+      # We need latest cmake for the external libs and for the main build
+      apt-get install -y ca-certificates gpg wget
+      wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | tee /usr/share/keyrings/kitware-archive-keyring.gpg >/dev/null
+      echo 'deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] https://apt.kitware.com/ubuntu/ jammy main' | tee /etc/apt/sources.list.d/kitware.list >/dev/null
+      apt-get update
+      apt-get install -y cmake
+      cd standalone/linux
+      ./external.sh
+      cd ../..
+      cp standalone/cmake/CMakeLists_gl-linux-x64.txt CMakeLists.txt
+
+
+  alsa-mixin:
+    plugin: dump
+    source: https://github.com/diddlesnaps/snapcraft-alsa.git
+    source-subdir: snapcraft-assets
+    build-packages:
+      - libasound2-dev
+    stage-packages:
+      - libasound2
+      - libasound2-plugins
+      - yad
+    stage:
+      # restrict to only audio-related files - you need to ensure
+      # that gtk3 is staged for yad to work correctly, to prompt
+      # users to connect the alsa plug or proceed with pulseaudio.
+      #
+      # This helps prevent symbol conflicts in situations where
+      # you're using a non-default library, such as those that the
+      # gnome-3-34 extension for core18 provides.
+      - etc/asound.conf
+      - snap/command-chain/alsa-launch
+      - usr/bin/yad*
+      - usr/lib/$SNAPCRAFT_ARCH_TRIPLET/alsa-lib
+      - usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libasound*
+      - usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libdnsfile*
+      - usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libFLAC*
+      - usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libjack*
+      - usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libpulse*
+      - usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libsamplerate*
+      - usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libspeex*
+      - usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libvorbis*
+      - usr/lib/$SNAPCRAFT_ARCH_TRIPLET/pulseaudio
+
+apps:
+  vpinball:
+    command: usr/local/VPinballX_GL
+    command-chain:
+      - snap/command-chain/alsa-launch
+      - snap/command-chain/desktop-launch
+    extensions:
+      # this adds desktop-launch to the command-chain
+      - gnome
+    plugs:
+      - home
+      - x11
+#      - wayland
+      - opengl
+      - alsa
+      - pulseaudio
+      - audio-playback
+      - desktop-launch
+      - desktop-legacy
+    environment:
+      ALWAYS_USE_PULSEAUDIO: '1'
+

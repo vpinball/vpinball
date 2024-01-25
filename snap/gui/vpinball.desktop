@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Visual Pinball
+Comment=Pinball table editor and simulator.
+Keywords=pinball;game;editor;simulator;
+Exec=vpinball
+Icon=${SNAP}/meta/gui/vpinball.png
+Terminal=true
+Categories=Game;ArcadeGame;
