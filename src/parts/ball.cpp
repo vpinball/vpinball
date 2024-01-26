@@ -238,14 +238,13 @@ void BallEx::Render(const unsigned int renderMask)
       m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
    }
 
-   Matrix3D scale, trans, m3D_full;
    Matrix3D rot(m_pball->m_orientation.m_d[0][0], m_pball->m_orientation.m_d[1][0], m_pball->m_orientation.m_d[2][0], 0.0f,
                 m_pball->m_orientation.m_d[0][1], m_pball->m_orientation.m_d[1][1], m_pball->m_orientation.m_d[2][1], 0.0f,
                 m_pball->m_orientation.m_d[0][2], m_pball->m_orientation.m_d[1][2], m_pball->m_orientation.m_d[2][2], 0.0f,
                 0.f, 0.f, 0.f, 1.f);
-   scale.SetScaling(m_pball->m_d.m_radius * antiStretch.x, m_pball->m_d.m_radius * antiStretch.y, m_pball->m_d.m_radius * antiStretch.y);
-   trans.SetTranslation(m_pball->m_d.m_pos.x, m_pball->m_d.m_pos.y, zheight);
-   m3D_full = rot * scale * trans;
+   Matrix3D scale = Matrix3D::MatrixScale(m_pball->m_d.m_radius * antiStretch.x, m_pball->m_d.m_radius * antiStretch.y, m_pball->m_d.m_radius * antiStretch.y);
+   Matrix3D trans = Matrix3D::MatrixTranslate(m_pball->m_d.m_pos.x, m_pball->m_d.m_pos.y, zheight);
+   Matrix3D m3D_full = rot * scale * trans;
    m_rd->m_ballShader->SetMatrix(SHADER_orientation, &m3D_full);
 
    m_rd->m_ballShader->SetVector(SHADER_w_h_disableLighting, 

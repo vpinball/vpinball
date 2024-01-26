@@ -246,7 +246,7 @@ void Bumper::RenderSetup(RenderDevice *device)
 
    m_baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
-   m_fullMatrix.SetRotateZ(ANGTORAD(m_d.m_orientation));
+   m_fullMatrix = Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_orientation));
    if (m_d.m_baseVisible)
    {
       m_baseTexture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "BumperBase.webp");
@@ -425,16 +425,9 @@ void Bumper::UpdateSkirt(const bool doCalculation)
          roty = -roty;
    }
 
-   Matrix3D tempMatrix, rMatrix;
-   rMatrix.SetIdentity();
-
-   tempMatrix.SetRotateZ(ANGTORAD(m_d.m_orientation));
-   rMatrix = rMatrix * tempMatrix;
-
-   tempMatrix.SetRotateY(ANGTORAD(roty));
-   rMatrix = rMatrix * tempMatrix;
-   tempMatrix.SetRotateX(ANGTORAD(rotx));
-   rMatrix = rMatrix * tempMatrix;
+   const Matrix3D rMatrix = (Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_orientation))
+                           * Matrix3D::MatrixRotateY(ANGTORAD(roty)))
+                           * Matrix3D::MatrixRotateX(ANGTORAD(rotx));
 
    Vertex3D_NoTex2 *buf;
    m_socketMeshBuffer->m_vb->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
@@ -445,8 +438,7 @@ void Bumper::UpdateSkirt(const bool doCalculation)
       buf[i].y = vert.y*scalexy + m_d.m_vCenter.y;
       buf[i].z = vert.z*m_d.m_heightScale + (m_baseHeight+5.0f);
 
-      vert = Vertex3Ds(bumperSocket[i].nx, bumperSocket[i].ny, bumperSocket[i].nz);
-      vert = rMatrix.MultiplyVectorNoTranslate(vert);
+      vert = rMatrix.MultiplyVectorNoTranslate(Vertex3Ds{bumperSocket[i].nx, bumperSocket[i].ny, bumperSocket[i].nz});
       buf[i].nx = vert.x;
       buf[i].ny = vert.y;
       buf[i].nz = vert.z;
@@ -462,7 +454,7 @@ void Bumper::ExportMesh(ObjLoader& loader)
    WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), nullptr, nullptr);
 
    m_baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
-   m_fullMatrix.SetRotateZ(ANGTORAD(m_d.m_orientation));
+   m_fullMatrix = Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_orientation));
 
    if (m_d.m_baseVisible)
    {

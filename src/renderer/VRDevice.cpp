@@ -52,8 +52,7 @@ VRDevice::VRDevice()
    Matrix3D sceneScale = Matrix3D::MatrixScale(m_scale);
 
    // Convert from VPX coords to VR (270deg rotation around X axis, and flip x axis)
-   Matrix3D coords;
-   coords.SetIdentity();
+   Matrix3D coords = Matrix3D::MatrixIdentity();
    coords._11 = -1.f; coords._12 = 0.f; coords._13 =  0.f;
    coords._21 =  0.f; coords._22 = 0.f; coords._23 = -1.f;
    coords._31 =  0.f; coords._32 = 1.f; coords._33 =  0.f;
@@ -74,8 +73,7 @@ VRDevice::VRDevice()
       m_eyeHeight = eye_height;
       for (int i = 0; i < 2; i++)
       {
-         Matrix3D proj;
-         proj.SetPerspectiveFovLH(90.f, 1.f, zNear, zFar);
+         const Matrix3D proj = Matrix3D::MatrixPerspectiveFovLH(90.f, 1.f, zNear, zFar);
          m_vrMatProj[i] = coords * sceneScale * proj;
       }
    }
@@ -90,10 +88,8 @@ VRDevice::VRDevice()
       vr::HmdMatrix44_t left_eye_proj = m_pHMD->GetProjectionMatrix(vr::Eye_Left, zNear, zFar);
       vr::HmdMatrix44_t right_eye_proj = m_pHMD->GetProjectionMatrix(vr::Eye_Right, zNear, zFar);
 
-      Matrix3D matEye2Head, matProjection;
-
       //Calculate left EyeProjection Matrix relative to HMD position
-      matEye2Head.SetIdentity();
+      Matrix3D matEye2Head = Matrix3D::MatrixIdentity();
       for (int i = 0; i < 3; i++)
          for (int j = 0;j < 4;j++)
             matEye2Head.m[j][i] = left_eye_pos.m[i][j];
@@ -101,6 +97,7 @@ VRDevice::VRDevice()
 
       left_eye_proj.m[2][2] = -1.0f;
       left_eye_proj.m[2][3] = -zNear;
+      Matrix3D matProjection;
       for (int i = 0;i < 4;i++)
          for (int j = 0;j < 4;j++)
             matProjection.m[j][i] = left_eye_proj.m[i][j];
@@ -108,7 +105,7 @@ VRDevice::VRDevice()
       m_vrMatProj[0] = coords * sceneScale * matEye2Head * matProjection;
 
       //Calculate right EyeProjection Matrix relative to HMD position
-      matEye2Head.SetIdentity();
+      matEye2Head = Matrix3D::MatrixIdentity();
       for (int i = 0; i < 3; i++)
          for (int j = 0;j < 4;j++)
             matEye2Head.m[j][i] = right_eye_pos.m[i][j];
@@ -238,8 +235,7 @@ void VRDevice::UpdateVRPosition(ModelViewProj& mvp)
    mvp.SetProj(0, m_vrMatProj[0]);
    mvp.SetProj(1, m_vrMatProj[1]);
 
-   Matrix3D matView;
-   matView.SetIdentity();
+   Matrix3D matView = Matrix3D::MatrixIdentity();
 
    #ifdef ENABLE_VR
    if (IsVRReady())
@@ -262,12 +258,11 @@ void VRDevice::UpdateVRPosition(ModelViewProj& mvp)
                matView.m[3][i] /= m_scale;
 
             // Convert from VPX coords to VR and back (270deg rotation around X axis, and flip x axis)
-            Matrix3D coords, revCoords;
-            coords.SetIdentity();
+            Matrix3D coords = Matrix3D::MatrixIdentity();
             coords._11 = -1.f; coords._12 = 0.f; coords._13 =  0.f;
             coords._21 =  0.f; coords._22 = 0.f; coords._23 = -1.f;
             coords._31 =  0.f; coords._32 = 1.f; coords._33 =  0.f;
-            revCoords.SetIdentity();
+            Matrix3D revCoords = Matrix3D::MatrixIdentity();
             revCoords._11 = -1.f; revCoords._12 =  0.f; revCoords._13 = 0.f;
             revCoords._21 =  0.f; revCoords._22 =  0.f; revCoords._23 = 1.f;
             revCoords._31 =  0.f; revCoords._32 = -1.f; revCoords._33 = 0.f;
@@ -283,15 +278,11 @@ void VRDevice::UpdateVRPosition(ModelViewProj& mvp)
    if (m_tableWorldDirty)
    {
       m_tableWorldDirty = false;
-      Matrix3D rotx, rotz, trans;
-      // Tilt playfield.
-      rotx.SetRotateX(ANGTORAD(-m_slope));
-      // Rotate table around VR height axis
-      rotz.SetRotateZ(ANGTORAD(180.f + m_orientation));
       // Locate front left corner of the table in the room -x is to the right, -y is up and -z is back - all units in meters
       const float inv_transScale = 1.0f / (100.0f * m_scale);
-      trans.SetTranslation(-m_tablex * inv_transScale, m_tabley * inv_transScale, m_tablez * inv_transScale);
-      m_tableWorld = rotx * rotz * trans;
+      m_tableWorld = Matrix3D::MatrixRotateX(ANGTORAD(-m_slope)) // Tilt playfield
+                   * Matrix3D::MatrixRotateZ(ANGTORAD(180.f + m_orientation)) // Rotate table around VR height axis
+                   * Matrix3D::MatrixTranslate(-m_tablex * inv_transScale, m_tabley * inv_transScale, m_tablez * inv_transScale);
    }
    
    mvp.SetView(m_tableWorld * matView);

@@ -819,8 +819,7 @@ void Decal::Render(const unsigned int renderMask)
 
    if (m_backglass)
    {
-      Matrix3D matWorldViewProj; // MVP to move from back buffer space (0..w, 0..h) to clip space (-1..1, -1..1)
-      matWorldViewProj.SetIdentity();
+      Matrix3D matWorldViewProj = Matrix3D::MatrixIdentity(); // MVP to move from back buffer space (0..w, 0..h) to clip space (-1..1, -1..1)
       matWorldViewProj._11 = 2.0f / (float)m_rd->GetMSAABackBufferTexture()->GetWidth();
       matWorldViewProj._41 = -1.0f;
       matWorldViewProj._22 = -2.0f / (float)m_rd->GetMSAABackBufferTexture()->GetHeight();

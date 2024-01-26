@@ -93,12 +93,10 @@ void Trigger::UpdateStatusBarInfo()
       }
 
       m_vertices.resize(m_numVertices);
-      Matrix3D fullMatrix;
-      fullMatrix.SetRotateZ(ANGTORAD(m_d.m_rotation));
+      const Matrix3D fullMatrix = Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotation));
       for (int i = 0; i < m_numVertices; i++)
       {
-         Vertex3Ds vert(meshVertices[i].x, meshVertices[i].y, meshVertices[i].z);
-         fullMatrix.MultiplyVector(vert, m_vertices[i]);
+         fullMatrix.MultiplyVector(Vertex3Ds{meshVertices[i].x, meshVertices[i].y, meshVertices[i].z}, m_vertices[i]);
          if (m_d.m_shape != TriggerStar && m_d.m_shape != TriggerButton)
          {
             m_vertices[i].x *= m_d.m_scaleX;
@@ -812,20 +810,16 @@ void Trigger::GenerateMesh()
    Matrix3D fullMatrix;
    if (m_d.m_shape == TriggerWireB)
    {
-      Matrix3D tempMatrix;
-      fullMatrix.SetRotateX(ANGTORAD(-23.f));
-      tempMatrix.SetRotateZ(ANGTORAD(m_d.m_rotation));
-      fullMatrix = fullMatrix * tempMatrix;
+      fullMatrix = Matrix3D::MatrixRotateX(ANGTORAD(-23.f))
+                 * Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotation));
    }
    else if (m_d.m_shape == TriggerWireC)
    {
-      Matrix3D tempMatrix;
-      fullMatrix.SetRotateX(ANGTORAD(140.f));
-      tempMatrix.SetRotateZ(ANGTORAD(m_d.m_rotation));
-      fullMatrix = fullMatrix * tempMatrix;
+      fullMatrix = Matrix3D::MatrixRotateX(ANGTORAD(140.f))
+                 * Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotation));
    }
    else
-      fullMatrix.SetRotateZ(ANGTORAD(m_d.m_rotation));
+      fullMatrix = Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotation));
 
    for (int i = 0; i < m_numVertices; i++)
    {

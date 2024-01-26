@@ -446,16 +446,11 @@ void Gate::Render(const unsigned int renderMask)
    {
       m_vertexbuffer_angle = m_phitgate->m_gateMover.m_angle;
 
-      Matrix3D fullMatrix, tempMat;
-      fullMatrix.SetRotateX(m_d.m_twoWay ? m_phitgate->m_gateMover.m_angle : -m_phitgate->m_gateMover.m_angle);
-      tempMat.SetRotateZ(ANGTORAD(m_d.m_rotation));
-      fullMatrix = fullMatrix * tempMat;
-
-      Matrix3D vertMatrix;
-      tempMat.SetScaling(m_d.m_length, m_d.m_length, m_d.m_length);
-      vertMatrix = fullMatrix * tempMat;
-      tempMat.SetTranslation(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_height + m_baseHeight);
-      vertMatrix = vertMatrix * tempMat;
+      const Matrix3D fullMatrix = Matrix3D::MatrixRotateX(m_d.m_twoWay ? m_phitgate->m_gateMover.m_angle : -m_phitgate->m_gateMover.m_angle)
+                                * Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotation));
+      const Matrix3D vertMatrix = (fullMatrix
+                                 * Matrix3D::MatrixScale(m_d.m_length, m_d.m_length, m_d.m_length))
+                                 * Matrix3D::MatrixTranslate(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_height + m_baseHeight);
 
       Vertex3D_NoTex2 *buf;
       m_wireMeshBuffer->m_vb->lock(0, 0, (void **)&buf, VertexBuffer::DISCARDCONTENTS);

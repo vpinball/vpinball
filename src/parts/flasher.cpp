@@ -1255,21 +1255,13 @@ void Flasher::Render(const unsigned int renderMask)
       const float movx = m_minx + (m_maxx - m_minx)*0.5f;
       const float movy = m_miny + (m_maxy - m_miny)*0.5f;
 
-      Matrix3D tempMatrix, TMatrix;
-      TMatrix.SetRotateZ(ANGTORAD(m_d.m_rotZ));
-      tempMatrix.SetRotateY(ANGTORAD(m_d.m_rotY));
-      TMatrix = TMatrix * tempMatrix;
-      tempMatrix.SetRotateX(ANGTORAD(m_d.m_rotX));
-      TMatrix = TMatrix * tempMatrix;
-
-      tempMatrix.SetTranslation(m_d.m_vCenter.x,m_d.m_vCenter.y,height);
-      tempMatrix = TMatrix * tempMatrix;
-
-      TMatrix.SetTranslation(
-          -movx, //-m_d.m_vCenter.x,
-          -movy, //-m_d.m_vCenter.y,
-          0.f);
-      tempMatrix = TMatrix * tempMatrix;
+      const Matrix3D tempMatrix = Matrix3D::MatrixTranslate(-movx, //-m_d.m_vCenter.x,
+                                                            -movy, //-m_d.m_vCenter.y,
+                                                            0.f)
+                      * (((Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotZ))
+                         * Matrix3D::MatrixRotateY(ANGTORAD(m_d.m_rotY)))
+                         * Matrix3D::MatrixRotateX(ANGTORAD(m_d.m_rotX)))
+                         * Matrix3D::MatrixTranslate(m_d.m_vCenter.x, m_d.m_vCenter.y, height));
 
       Vertex3D_NoTex2 *buf;
       m_meshBuffer->m_vb->lock(0, 0, (void **)&buf, VertexBuffer::DISCARDCONTENTS);

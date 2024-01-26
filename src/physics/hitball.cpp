@@ -506,7 +506,7 @@ void Ball::UpdateDisplacements(const float dtime)
       mat3.SkewSymmetric(m_angularmomentum / Inertia());
 
       Matrix3 addedorientation;
-      addedorientation.MulMatricesAndMulScalar(mat3, m_orientation, dtime);
+      addedorientation = Matrix3::MulMatricesAndMulScalar(mat3, m_orientation, dtime);
 
       m_orientation = m_orientation+addedorientation;
       m_orientation.OrthoNormalize();

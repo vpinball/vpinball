@@ -679,34 +679,20 @@ void Primitive::EndPlay()
 
 void Primitive::RecalculateMatrices()
 {
-   // scale matrix
-   Matrix3D Smatrix;
-   Smatrix.SetScaling(m_d.m_vSize.x, m_d.m_vSize.y, m_d.m_vSize.z);
-
-   // translation matrix
-   Matrix3D Tmatrix;
-   Tmatrix.SetTranslation(m_d.m_vPosition.x, m_d.m_vPosition.y, m_d.m_vPosition.z);
+   // scale * rotation * translation
 
    // translation + rotation matrix
-   Matrix3D RTmatrix;
-   RTmatrix.SetTranslation(m_d.m_aRotAndTra[3], m_d.m_aRotAndTra[4], m_d.m_aRotAndTra[5]);
-
-   Matrix3D tempMatrix;
-   tempMatrix.SetRotateZ(ANGTORAD(m_d.m_aRotAndTra[2]));
-   RTmatrix = RTmatrix * tempMatrix;
-   tempMatrix.SetRotateY(ANGTORAD(m_d.m_aRotAndTra[1]));
-   RTmatrix = RTmatrix * tempMatrix;
-   tempMatrix.SetRotateX(ANGTORAD(m_d.m_aRotAndTra[0]));
-   RTmatrix = RTmatrix * tempMatrix;
-
-   tempMatrix.SetRotateZ(ANGTORAD(m_d.m_aRotAndTra[8]));
-   RTmatrix = RTmatrix * tempMatrix;
-   tempMatrix.SetRotateY(ANGTORAD(m_d.m_aRotAndTra[7]));
-   RTmatrix = RTmatrix * tempMatrix;
-   tempMatrix.SetRotateX(ANGTORAD(m_d.m_aRotAndTra[6]));
-   RTmatrix = RTmatrix * tempMatrix;
-
-   m_fullMatrix = (Smatrix * RTmatrix) * Tmatrix;
+   Matrix3D RTmatrix = ((Matrix3D::MatrixTranslate(m_d.m_aRotAndTra[3], m_d.m_aRotAndTra[4], m_d.m_aRotAndTra[5])
+                       * Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_aRotAndTra[2])))
+                       * Matrix3D::MatrixRotateY(ANGTORAD(m_d.m_aRotAndTra[1])))
+                       * Matrix3D::MatrixRotateX(ANGTORAD(m_d.m_aRotAndTra[0]));
+   RTmatrix = ((RTmatrix
+              * Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_aRotAndTra[8])))
+              * Matrix3D::MatrixRotateY(ANGTORAD(m_d.m_aRotAndTra[7])))
+              * Matrix3D::MatrixRotateX(ANGTORAD(m_d.m_aRotAndTra[6]));
+   m_fullMatrix = (Matrix3D::MatrixScale(m_d.m_vSize.x, m_d.m_vSize.y, m_d.m_vSize.z)
+                 * RTmatrix)
+                 * Matrix3D::MatrixTranslate(m_d.m_vPosition.x, m_d.m_vPosition.y, m_d.m_vPosition.z);
 }
 
 //

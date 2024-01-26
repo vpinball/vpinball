@@ -268,7 +268,7 @@ void Spinner::ExportMesh(ObjLoader& loader)
       const string subObjName = name + "Bracket"s;
       loader.WriteObjectName(subObjName);
 
-      m_fullMatrix.SetRotateZ(ANGTORAD(m_d.m_rotation));
+      m_fullMatrix = Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotation));
 
       transformedVertices.resize(spinnerBracketNumVertices);
 
@@ -326,7 +326,7 @@ void Spinner::RenderSetup(RenderDevice *device)
    VertexBuffer *bracketVertexBuffer = new VertexBuffer(m_rd, spinnerBracketNumVertices);
    m_bracketMeshBuffer = new MeshBuffer(m_wzName + L".Bracket"s, bracketVertexBuffer, bracketIndexBuffer, true);
 
-   m_fullMatrix.SetRotateZ(ANGTORAD(m_d.m_rotation));
+   m_fullMatrix = Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotation));
 
    Vertex3D_NoTex2 *buf;
    bracketVertexBuffer->lock(0, 0, (void **)&buf, VertexBuffer::WRITEONLY);
@@ -337,8 +337,7 @@ void Spinner::RenderSetup(RenderDevice *device)
       buf[i].y = vert.y*m_d.m_length + m_d.m_vCenter.y;
       buf[i].z = vert.z*m_d.m_length + m_posZ;
 
-      vert = Vertex3Ds(spinnerBracket[i].nx, spinnerBracket[i].ny, spinnerBracket[i].nz);
-      vert = m_fullMatrix.MultiplyVectorNoTranslate(vert);
+      vert = m_fullMatrix.MultiplyVectorNoTranslate(Vertex3Ds{spinnerBracket[i].nx, spinnerBracket[i].ny, spinnerBracket[i].nz});
       buf[i].nx = vert.x;
       buf[i].ny = vert.y;
       buf[i].nz = vert.z;
@@ -426,14 +425,8 @@ void Spinner::UpdatePlate(Vertex3D_NoTex2 * const vertBuffer)
 
    m_vertexBuffer_spinneranimangle = m_phitspinner->m_spinnerMover.m_angle;
 
-   Matrix3D fullMatrix;
-   Matrix3D rotzMat, rotxMat;
-
-   fullMatrix.SetIdentity();
-   rotxMat.SetRotateX(-m_phitspinner->m_spinnerMover.m_angle);
-   fullMatrix = fullMatrix * rotxMat;
-   rotzMat.SetRotateZ(ANGTORAD(m_d.m_rotation));
-   fullMatrix = fullMatrix * rotzMat;
+   const Matrix3D fullMatrix = Matrix3D::MatrixRotateX(-m_phitspinner->m_spinnerMover.m_angle)
+                             * Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotation));
 
    Vertex3D_NoTex2 *buf;
    if (vertBuffer == nullptr)
@@ -448,8 +441,7 @@ void Spinner::UpdatePlate(Vertex3D_NoTex2 * const vertBuffer)
       buf[i].y = vert.y*m_d.m_length + m_d.m_vCenter.y;
       buf[i].z = vert.z*m_d.m_length + m_posZ;
 
-      vert = Vertex3Ds(spinnerPlate[i].nx, spinnerPlate[i].ny, spinnerPlate[i].nz);
-      vert = fullMatrix.MultiplyVectorNoTranslate(vert);
+      vert = fullMatrix.MultiplyVectorNoTranslate(Vertex3Ds{spinnerPlate[i].nx, spinnerPlate[i].ny, spinnerPlate[i].nz});
       buf[i].nx = vert.x;
       buf[i].ny = vert.y;
       buf[i].nz = vert.z;

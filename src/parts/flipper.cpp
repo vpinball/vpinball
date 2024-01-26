@@ -597,13 +597,10 @@ void Flipper::ExportMesh(ObjLoader& loader)
    char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
    WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), nullptr, nullptr);
 
-   Matrix3D matTrafo, matTemp;
-   matTrafo.SetIdentity();
-   matTemp.SetIdentity();
+   Matrix3D matTrafo = Matrix3D::MatrixIdentity();
    matTrafo._41 = m_d.m_Center.x;
    matTrafo._42 = m_d.m_Center.y;
-   matTemp.SetRotateZ(ANGTORAD(m_d.m_StartAngle));
-   matTrafo = matTemp * matTrafo;
+   matTrafo = Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_StartAngle)) * matTrafo;
 
    Vertex3D_NoTex2 flipper[flipperBaseVertices*2];
    GenerateBaseMesh(flipper);
@@ -699,9 +696,7 @@ static void ApplyFix(Vertex3D_NoTex2& vert, const Vertex2D& center, const float 
 
 void Flipper::GenerateBaseMesh(Vertex3D_NoTex2 *buf)
 {
-   Matrix3D fullMatrix;
-
-   fullMatrix.SetRotateZ(ANGTORAD(180.0f));
+   const Matrix3D fullMatrix = Matrix3D::MatrixRotateZ(ANGTORAD(180.0f));
 
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_Center.x, m_d.m_Center.y);
    m_boundingSphereCenter.Set(m_d.m_Center.x, m_d.m_Center.y, height);
@@ -845,15 +840,12 @@ void Flipper::Render(const unsigned int renderMask)
       return;
 
    m_rd->ResetRenderState();
-   Matrix3D matTrafo;
-   matTrafo.SetIdentity();
+   Matrix3D matTrafo = Matrix3D::MatrixIdentity();
    matTrafo._41 = m_d.m_Center.x;
    matTrafo._42 = m_d.m_Center.y;
    if (m_phitflipper)
    {
-      Matrix3D matTemp;
-      matTemp.SetRotateZ(m_phitflipper->m_flipperMover.m_angleCur);
-      matTrafo = matTemp * matTrafo;
+      matTrafo = Matrix3D::MatrixRotateZ(m_phitflipper->m_flipperMover.m_angleCur) * matTrafo;
    }
    g_pplayer->m_renderer->UpdateBasicShaderMatrix(matTrafo);
    Texture * const pin = m_ptable->GetImage(m_d.m_szImage);

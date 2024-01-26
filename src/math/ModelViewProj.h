@@ -36,10 +36,9 @@ private:
       if (m_dirty)
       {
          m_dirty = false;
-         m_matModelView = m_matModel * m_matView;
-         memcpy(&m_matModelViewInverse.m[0][0], &m_matModelView.m[0][0], 4 * 4 * sizeof(float));
+         m_matModelViewInverse = m_matModelView = m_matModel * m_matView;
          m_matModelViewInverse.Invert();
-         memcpy(&m_matModelViewInverseTranspose.m[0][0], &m_matModelViewInverse.m[0][0], 4 * 4 * sizeof(float));
+         m_matModelViewInverseTranspose = m_matModelViewInverse;
          m_matModelViewInverseTranspose.Transpose();
          switch (m_flip)
          {
@@ -66,9 +65,8 @@ private:
          }
          Matrix3D temp = m_matView;
          temp.Invert();
-         Matrix3D viewRot;
-         temp.GetRotationPart(viewRot);
-         viewRot.MultiplyVector(Vertex3Ds(0, 0, 1), m_viewVec);
+         const Matrix3D viewRot = temp.GetRotationPart();
+         viewRot.MultiplyVector(Vertex3Ds{0, 0, 1}, m_viewVec);
          m_viewVec.NormalizeSafe();
       }
    }

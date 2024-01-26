@@ -48,11 +48,19 @@ public:
 // end of license:GPLv3+, back to 'old MAME'-like
 //
 
-   void MulScalar(const float scalar)
+   Matrix3 operator* (const float scalar) const
    {
-      for (int i = 0; i < 3; ++i)
-         for (int l = 0; l < 3; ++l)
-            m_d[i][l] *= scalar;
+      return Matrix3{
+         m_d[0][0]*scalar,
+         m_d[0][1]*scalar,
+         m_d[0][2]*scalar,
+         m_d[1][0]*scalar,
+         m_d[1][1]*scalar,
+         m_d[1][2]*scalar,
+         m_d[2][0]*scalar,
+         m_d[2][1]*scalar,
+         m_d[2][2]*scalar
+      };
    }
 
    Matrix3 operator+ (const Matrix3& m) const
@@ -96,15 +104,15 @@ public:
          m_d[0][2] * v.x + m_d[1][2] * v.y + m_d[2][2] * v.z};
    }
 
-   void MulMatricesAndMulScalar(const Matrix3& pmat1, const Matrix3& pmat2, const float scalar)
+   static Matrix3 MulMatricesAndMulScalar(const Matrix3& pmat1, const Matrix3& pmat2, const float scalar)
    {
-      Matrix3 matans;
+      Matrix3 m;
       for (int i = 0; i < 3; ++i)
          for (int l = 0; l < 3; ++l)
-            matans.m_d[i][l] = (pmat1.m_d[i][0] * pmat2.m_d[0][l] +
-                                pmat1.m_d[i][1] * pmat2.m_d[1][l] +
-                                pmat1.m_d[i][2] * pmat2.m_d[2][l])*scalar;
-      *this = matans;
+            m.m_d[i][l] = (pmat1.m_d[i][0] * pmat2.m_d[0][l] +
+                           pmat1.m_d[i][1] * pmat2.m_d[1][l] +
+                           pmat1.m_d[i][2] * pmat2.m_d[2][l])*scalar;
+      return m;
    }
 
    void OrthoNormalize()
@@ -207,15 +215,7 @@ public:
       mat3D.m_d[ipvt[2]][1] = m_d[2][1];
       mat3D.m_d[ipvt[2]][2] = m_d[2][2];
 
-      m_d[0][0] = mat3D.m_d[0][0];
-      m_d[0][1] = mat3D.m_d[0][1];
-      m_d[0][2] = mat3D.m_d[0][2];
-      m_d[1][0] = mat3D.m_d[1][0];
-      m_d[1][1] = mat3D.m_d[1][1];
-      m_d[1][2] = mat3D.m_d[1][2];
-      m_d[2][0] = mat3D.m_d[2][0];
-      m_d[2][1] = mat3D.m_d[2][1];
-      m_d[2][2] = mat3D.m_d[2][2];
+      memcpy(&m_d[0][0], &mat3D.m_d[0][0], 3 * 3 * sizeof(float));
    }
 
    // Create matrix for rotating around an arbitrary vector
@@ -497,8 +497,20 @@ public:
 
    static Matrix3D MatrixIdentity()
    {
+      return Matrix3D{1.0f,0.0f,0.0f,0.0f,0.0f,1.0f,0.0f,0.0f,0.0f,0.0f,1.0f,0.0f,0.0f,0.0f,0.0f,1.0f};
+   }
+
+   static Matrix3D MatrixRotateX(const float angRad)
+   {
       Matrix3D result;
-      result.SetIdentity();
+      result.SetRotateX(angRad);
+      return result;
+   }
+
+   static Matrix3D MatrixRotateY(const float angRad)
+   {
+      Matrix3D result;
+      result.SetRotateY(angRad);
       return result;
    }
 
@@ -530,6 +542,13 @@ public:
       return result;
    }
 
+   template <class Vec> static Matrix3D MatrixTranslate(const Vec& t)
+   {
+      Matrix3D result;
+      result.SetTranslation(t);
+      return result;
+   }
+
    static Matrix3D MatrixPlaneReflection(const Vertex3Ds& n, const float d)
    {
       Matrix3D result;
@@ -548,6 +567,13 @@ public:
    {
       Matrix3D result;
       result.SetLookAtRH(eye, at, up);
+      return result;
+   }
+
+   static Matrix3D MatrixOrthoOffCenterRH(const float l, const float r, const float b, const float t, const float zn, const float zf)
+   {
+      Matrix3D result;
+      result.SetOrthoOffCenterRH(l, r, b, t, zn, zf);
       return result;
    }
 
@@ -693,30 +719,22 @@ public:
 
    void Translate(const float x, const float y, const float z)
    {
-      Matrix3D matTrans;
-      matTrans.SetTranslation(x, y, z);
-      *this = matTrans * *this;
+      *this = MatrixTranslate(x, y, z) * *this;
    }
 
    void RotateX(const float angRad)
    {
-      Matrix3D rot;
-      rot.SetRotateX(angRad);
-      *this = rot * *this;
+      *this = MatrixRotateX(angRad) * *this;
    }
 
    void RotateY(const float angRad)
    {
-      Matrix3D rot;
-      rot.SetRotateY(angRad);
-      *this = rot * *this;
+      *this = MatrixRotateY(angRad) * *this;
    }
 
    void RotateZ(const float angRad)
    {
-      Matrix3D rot;
-      rot.SetRotateZ(angRad);
-      *this = rot * *this;
+      *this = MatrixRotateZ(angRad) * *this;
    }
 
 #pragma endregion MatrixOperations
@@ -735,12 +753,14 @@ public:
    Vertex3Ds GetOrthoNormalPos() const   { return Vertex3Ds{ _41, _42, _43 }; }
 
    // extract the matrix corresponding to the 3x3 rotation part
-   void GetRotationPart(Matrix3D& rot)
+   Matrix3D GetRotationPart() const
    {
+      Matrix3D rot;
       rot._11 = _11; rot._12 = _12; rot._13 = _13; rot._14 = 0.0f;
       rot._21 = _21; rot._22 = _22; rot._23 = _23; rot._24 = 0.0f;
       rot._31 = _31; rot._32 = _32; rot._33 = _33; rot._34 = 0.0f;
       rot._41 = rot._42 = rot._43 = 0.0f; rot._44 = 1.0f;
+      return rot;
    }
 
    // generic multiply function for everything that has .x, .y and .z

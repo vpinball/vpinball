@@ -17,9 +17,9 @@ void ViewSetup::SetWindowModeFromSettings(const PinTable* const table)
    float inclination = table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenInclination"s, 0.0f);
    float screenBotZ = GetWindowBottomZOFfset(table);
    float screenTopZ = GetWindowTopZOFfset(table);
-   Matrix3D rotx; // Rotate by the angle between playfield and real world horizontal (scale on Y and Z axis are equal and can be ignored)
-   //rotx.SetRotateX(atan2f(mSceneScaleZ * (screenTopZ - screenBotZ), mSceneScaleY * table->m_bottom) - ANGTORAD(inclination));
-   rotx.SetRotateX(atan2f(screenTopZ - screenBotZ, table->m_bottom) - ANGTORAD(inclination));
+   const Matrix3D rotx = // Rotate by the angle between playfield and real world horizontal (scale on Y and Z axis are equal and can be ignored)
+      //Matrix3D::MatrixRotateX(atan2f(mSceneScaleZ * (screenTopZ - screenBotZ), mSceneScaleY * table->m_bottom) - ANGTORAD(inclination));
+      Matrix3D::MatrixRotateX(atan2f(screenTopZ - screenBotZ, table->m_bottom) - ANGTORAD(inclination));
    rotx.TransformVec3(playerPos);
    mViewX = playerPos.x;
    mViewY = playerPos.y;
@@ -234,13 +234,12 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
    //
    // This seems ok for 'camera' mode since the view is orthonormal (it transforms normals and points without changing their length or relative angle).
 
-   Matrix3D matWorld;
-   matWorld.SetIdentity();
+   const Matrix3D matWorld = Matrix3D::MatrixIdentity();
    mvp.SetModel(matWorld);
 
-   Matrix3D scale, coords, lookat, rotz, proj, projTrans, layback, matView;
-   projTrans.SetTranslation((float)((double)xpixoff / (double)viewportWidth), (float)((double)ypixoff / (double)viewportHeight), 0.f); // in-pixel offset for manual oversampling
-   rotz.SetRotateZ(rotation); // Viewport rotation
+   Matrix3D scale, coords, lookat, layback, matView;
+   const Matrix3D projTrans = Matrix3D::MatrixTranslate((float)((double)xpixoff / (double)viewportWidth), (float)((double)ypixoff / (double)viewportHeight), 0.f); // in-pixel offset for manual oversampling
+   const Matrix3D rotz = Matrix3D::MatrixRotateZ(rotation); // Viewport rotation
 
    vector<Vertex3Ds> bounds, legacy_bounds;
    bounds.reserve(table->m_vedit.size() * 8); // upper bound estimate
@@ -254,40 +253,39 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
    if (isLegacy)
    {
       // Layback to skew the view backward
-      layback.SetIdentity();
+      layback = Matrix3D::MatrixIdentity();
       layback._32 = -tanf(0.5f * ANGTORAD(mLayback));
 
        // Revert Y and Z axis to convert to D3D coordinate system and perform scaling as a last step
-      scale.SetIdentity();
-      coords.SetScaling(mSceneScaleX, -mSceneScaleY, -mSceneScaleZ);
+      coords = Matrix3D::MatrixScale(mSceneScaleX, -mSceneScaleY, -mSceneScaleZ);
 
-      vec3 fit = FitCameraToVertices(legacy_bounds, aspect, rotation, inc, FOV, mViewZ, mLayback);
+      const vec3 fit = FitCameraToVertices(legacy_bounds, aspect, rotation, inc, FOV, mViewZ, mLayback);
       legacy_bounds.clear();
       vec3 pos = vec3(mViewX - fit.x + camx, mViewY - fit.y + camy, -fit.z + camz);
       // For some reason I don't get, viewport rotation (rotz) and head inclination (rotx) used to be swapped when in camera mode on desktop.
       // This is no more applied and we always consider this order: rotx * rotz * trans which we swap to apply it as trans * rotx * rotz
-      Matrix3D rot, trans, rotx;
-      rot.SetRotateZ(-rotation); // convert position to swap trans and rotz (rotz * trans => trans * rotz)
+      Matrix3D rot = Matrix3D::MatrixRotateZ(-rotation); // convert position to swap trans and rotz (rotz * trans => trans * rotz)
       rot.TransformVec3(pos);
-      rot.SetRotateX(-inc); // convert position to swap trans and rotx (rotx * trans => trans * rotx)
+      rot = Matrix3D::MatrixRotateX(-inc); // convert position to swap trans and rotx (rotx * trans => trans * rotx)
       rot.TransformVec3(pos);
-      trans.SetTranslation(pos.x, pos.y, pos.z);
-      rotx.SetRotateX(inc); // Player head inclination (0 is looking straight to playfield)
+      const Matrix3D trans = Matrix3D::MatrixTranslate(pos.x, pos.y, pos.z);
+      const Matrix3D rotx = Matrix3D::MatrixRotateX(inc); // Player head inclination (0 is looking straight to playfield)
       lookat = trans * rotx;
-      matView = layback * scale * trans * rotx * rotz * coords;
+      scale = Matrix3D::MatrixIdentity();
+      matView = layback /** scale*/ * trans * rotx * rotz * coords;
    }
    else
    {
-      // The transform are applied in this order: scale, then translation, then X rotation (aka inclination)
-      Matrix3D trans, rotx;
+      // The transforms are applied in this order: scale, then translation, then X rotation (aka inclination)
+
       // Scale transform table model into a scaled version, at real world scale: therefore transformations applied afterward are in 'real world scale' (user scale)
       scale = Matrix3D::MatrixTranslate(-0.5f * table->m_right, -0.5f * table->m_bottom, -windowBotZ)
-         * Matrix3D::MatrixScale(mSceneScaleX / realToVirtual, mSceneScaleY / realToVirtual, isWindow ? mSceneScaleY / realToVirtual : mSceneScaleZ)
-         * Matrix3D::MatrixTranslate(0.5f * table->m_right, 0.5f * table->m_bottom, windowBotZ); // Global scene scale (using bottom center of the playfield as origin)
+            * Matrix3D::MatrixScale(mSceneScaleX / realToVirtual, mSceneScaleY / realToVirtual, isWindow ? mSceneScaleY / realToVirtual : mSceneScaleZ)
+            * Matrix3D::MatrixTranslate(0.5f * table->m_right, 0.5f * table->m_bottom, windowBotZ); // Global scene scale (using bottom center of the playfield as origin)
       // mView is in real world scale (like the actual display size), it is applied after scale which scale the table to the user's real world scale
-      trans.SetTranslation(-mViewX + cam.x - 0.5f * table->m_right, -mViewY + cam.y - table->m_bottom, -mViewZ + cam.z);
-      rotx.SetRotateX(inc); // Player head inclination (0 is looking straight to playfield)
-      coords.SetScaling(1.f, -1.f, -1.f); // Revert Y and Z axis to convert to D3D coordinate system
+      Matrix3D trans = Matrix3D::MatrixTranslate(-mViewX + cam.x - 0.5f * table->m_right, -mViewY + cam.y - table->m_bottom, -mViewZ + cam.z);
+      Matrix3D rotx = Matrix3D::MatrixRotateX(inc); // Player head inclination (0 is looking straight to playfield)
+      coords = Matrix3D::MatrixScale(1.f, -1.f, -1.f); // Revert Y and Z axis to convert to D3D coordinate system
       lookat = trans * rotx;
       matView = scale * trans * rotx * rotz * coords;
    }
@@ -397,22 +395,22 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
       const float yOfs = ofs * sinf(rotation);
 
       // Compute the view orthonormal basis
-      Matrix3D eyeShift, invView(mvp.GetView());
+      const Matrix3D invView(mvp.GetView());
       const vec3 right = invView.GetOrthoNormalRight();
 
       // Left eye
-      eyeShift.SetTranslation(0.5f * eyeSeparation * right);
-      proj.SetPerspectiveOffCenterLH(xcenter - xspan + xOfs, xcenter + xspan + xOfs, ycenter - yspan - yOfs, ycenter + yspan - yOfs, zNear, zFar);
+      Matrix3D eyeShift = Matrix3D::MatrixTranslate(0.5f * eyeSeparation * right);
+      Matrix3D proj = Matrix3D::MatrixPerspectiveOffCenterLH(xcenter - xspan + xOfs, xcenter + xspan + xOfs, ycenter - yspan - yOfs, ycenter + yspan - yOfs, zNear, zFar);
       mvp.SetProj(0, scale * eyeShift * rotz * coords * proj * projTrans);
 
       // Right eye
-      eyeShift.SetTranslation(-0.5f * eyeSeparation * right);
-      proj.SetPerspectiveOffCenterLH(xcenter - xspan - xOfs, xcenter + xspan - xOfs, ycenter - yspan + yOfs, ycenter + yspan + yOfs, zNear, zFar);
+      eyeShift = Matrix3D::MatrixTranslate(-0.5f * eyeSeparation * right);
+      proj = Matrix3D::MatrixPerspectiveOffCenterLH(xcenter - xspan - xOfs, xcenter + xspan - xOfs, ycenter - yspan + yOfs, ycenter + yspan + yOfs, zNear, zFar);
       mvp.SetProj(1, scale * eyeShift * rotz * coords * proj * projTrans);
    }
    else
    {
-      proj.SetPerspectiveOffCenterLH(xcenter - xspan, xcenter + xspan, ycenter - yspan, ycenter + yspan, zNear, zFar);
+      const Matrix3D proj = Matrix3D::MatrixPerspectiveOffCenterLH(xcenter - xspan, xcenter + xspan, ycenter - yspan, ycenter + yspan, zNear, zFar);
       mvp.SetProj(0, scale * rotz * coords * proj * projTrans);
    }
 
@@ -452,8 +450,7 @@ vec3 ViewSetup::FitCameraToVertices(const vector<Vertex3Ds>& pvvertex3D, const f
    float maxxintercept = -FLT_MAX;
    float minxintercept = FLT_MAX;
 
-   Matrix3D laybackTrans;
-   laybackTrans.SetIdentity();
+   Matrix3D laybackTrans = Matrix3D::MatrixIdentity();
    laybackTrans._32 = -tanf(0.5f * ANGTORAD(layback));
 
    for (size_t i = 0; i < pvvertex3D.size(); ++i)

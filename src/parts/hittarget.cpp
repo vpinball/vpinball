@@ -264,11 +264,7 @@ void HitTarget::GetHitShapes(vector<HitObject*> &pvho)
     {
        robin_hood::unordered_set<robin_hood::pair<unsigned, unsigned>> addedEdges;
 
-       Matrix3D fullMatrix, tempMatrix;
-       fullMatrix.SetIdentity();
-       tempMatrix.SetIdentity();
-       tempMatrix.SetRotateZ(ANGTORAD(m_d.m_rotZ));
-       fullMatrix = fullMatrix * tempMatrix;
+       const Matrix3D fullMatrix = Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotZ));
 
        // add the normal drop target as collidable but without hit event
        for (unsigned i = 0; i < m_numIndices; i += 3)
@@ -428,11 +424,7 @@ void HitTarget::GenerateMesh(vector<Vertex3D_NoTex2> &buf)
 {
    SetMeshType(m_d.m_targetType);
 
-   Matrix3D fullMatrix, tempMatrix;
-   fullMatrix.SetIdentity();
-   tempMatrix.SetIdentity();
-   tempMatrix.SetRotateZ(ANGTORAD(m_d.m_rotZ));
-   fullMatrix = fullMatrix * tempMatrix;
+   const Matrix3D fullMatrix = Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotZ));
 
    for (unsigned int i = 0; i < m_numVertices; i++)
    {
@@ -461,12 +453,8 @@ void HitTarget::TransformVertices()
 {
    SetMeshType(m_d.m_targetType);
 
-   Matrix3D fullMatrix, tempMatrix;
    m_hitUIVertices.resize(m_numVertices);
-   fullMatrix.SetIdentity();
-   tempMatrix.SetIdentity();
-   tempMatrix.SetRotateZ(ANGTORAD(m_d.m_rotZ));
-   fullMatrix = fullMatrix * tempMatrix;
+   const Matrix3D fullMatrix = Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotZ));
 
    for (unsigned i = 0; i < m_numVertices; i++)
    {
@@ -769,16 +757,11 @@ void HitTarget::UpdateTarget()
    }
    else
    {
-       Matrix3D fullMatrix, tempMatrix;
-       fullMatrix.SetRotateX(ANGTORAD(m_moveAnimationOffset));
-       tempMatrix.SetRotateZ(ANGTORAD(m_d.m_rotZ));
-       fullMatrix = fullMatrix * tempMatrix;
-
-       Matrix3D vertMatrix;
-       vertMatrix.SetScaling(m_d.m_vSize.x, m_d.m_vSize.y, m_d.m_vSize.z);
-       vertMatrix = vertMatrix * fullMatrix;
-       tempMatrix.SetTranslation(m_d.m_vPosition.x, m_d.m_vPosition.y, m_d.m_vPosition.z);
-       vertMatrix = vertMatrix * tempMatrix;
+       const Matrix3D fullMatrix = Matrix3D::MatrixRotateX(ANGTORAD(m_moveAnimationOffset))
+                                 * Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotZ));
+       const Matrix3D vertMatrix = (Matrix3D::MatrixScale(m_d.m_vSize.x, m_d.m_vSize.y, m_d.m_vSize.z)
+                                  * fullMatrix)
+                                  * Matrix3D::MatrixTranslate(m_d.m_vPosition.x, m_d.m_vPosition.y, m_d.m_vPosition.z);
 
        //TODO Update object Matrix instead
        for (unsigned int i = 0; i < m_numVertices; i++)
@@ -788,8 +771,7 @@ void HitTarget::UpdateTarget()
            buf[i].y = vert.y;
            buf[i].z = vert.z;
 
-           vert = Vertex3Ds(m_vertices[i].nx, m_vertices[i].ny, m_vertices[i].nz);
-           vert = fullMatrix.MultiplyVectorNoTranslate(vert);
+           vert = fullMatrix.MultiplyVectorNoTranslate(Vertex3Ds{m_vertices[i].nx, m_vertices[i].ny, m_vertices[i].nz});
            buf[i].nx = vert.x;
            buf[i].ny = vert.y;
            buf[i].nz = vert.z;

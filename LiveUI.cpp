@@ -703,7 +703,7 @@ LiveUI::LiveUI(RenderDevice *const rd)
    const vec3 eye(m_live_table->m_right * 0.5f, m_live_table->m_bottom * 0.5f, -m_camDistance);
    const vec3 at(m_live_table->m_right * 0.5f, m_live_table->m_bottom * 0.5f, 0.f);
    const vec3 up(0.f, -1.f, 0.f);
-   m_camView.SetLookAtRH(eye, at, up);
+   m_camView = Matrix3D::MatrixLookAtRH(eye, at, up);
    ImGuizmo::AllowAxisFlip(false);
 
 #ifndef __STANDALONE__
@@ -792,13 +792,13 @@ void LiveUI::Render()
          [](const ImDrawList *parent_list, const ImDrawCmd *cmd)
          {
             LiveUI *const lui = (LiveUI *)cmd->UserCallbackData;
-            Matrix3D matRotate, matTranslate;
-            matRotate.SetRotateZ((float)(lui->m_rotate * (M_PI / 2.0)));
+            const Matrix3D matRotate = Matrix3D::MatrixRotateZ((float)(lui->m_rotate * (M_PI / 2.0)));
+            Matrix3D matTranslate;
             switch (lui->m_rotate)
             {
-            case 1: matTranslate.SetTranslation(ImGui::GetIO().DisplaySize.y, 0, 0); break;
-            case 2: matTranslate.SetTranslation(ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y, 0); break;
-            case 3: matTranslate.SetTranslation(0, ImGui::GetIO().DisplaySize.x, 0); break;
+            case 1: matTranslate = Matrix3D::MatrixTranslate(ImGui::GetIO().DisplaySize.y, 0, 0); break;
+            case 2: matTranslate = Matrix3D::MatrixTranslate(ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y, 0); break;
+            case 3: matTranslate = Matrix3D::MatrixTranslate(0, ImGui::GetIO().DisplaySize.x, 0); break;
             }
             matTranslate = matRotate * matTranslate;
 #ifdef ENABLE_SDL
@@ -1897,9 +1897,8 @@ void LiveUI::UpdateMainUI()
    {
       // Convert from right handed (ImGuizmo view manipulate is right handed) to VPX's left handed coordinate system
       // Right Hand to Left Hand (note that RH2LH = inverse(RH2LH), so RH2LH.RH2LH is identity, which property is used below)
-      Matrix3D RH2LH, YAxis; 
-      RH2LH.SetScaling(1.f, 1.f, -1.f);
-      YAxis.SetScaling(1.f, -1.f, -1.f);
+      const Matrix3D RH2LH = Matrix3D::MatrixScale(1.f,  1.f, -1.f);
+      const Matrix3D YAxis = Matrix3D::MatrixScale(1.f, -1.f, -1.f);
       float zNear, zFar;
       m_live_table->ComputeNearFarPlane(RH2LH * m_camView * YAxis, 1.f, zNear, zFar);
 
@@ -1908,11 +1907,11 @@ void LiveUI::UpdateMainUI()
       {
          float viewHeight = m_camDistance;
          float viewWidth = viewHeight * io.DisplaySize.x / io.DisplaySize.y;
-         m_camProj.SetOrthoOffCenterRH(-viewWidth, viewWidth, -viewHeight, viewHeight, zNear, -zFar);
+         m_camProj = Matrix3D::MatrixOrthoOffCenterRH(-viewWidth, viewWidth, -viewHeight, viewHeight, zNear, -zFar);
       }
       else
       {
-         m_camProj.SetPerspectiveFovRH(39.6f, io.DisplaySize.x / io.DisplaySize.y, zNear, zFar);
+         m_camProj = Matrix3D::MatrixPerspectiveFovRH(39.6f, io.DisplaySize.x / io.DisplaySize.y, zNear, zFar);
       }
       float * const cameraView = (float *)(m_camView.m);
       float * const cameraProjection = (float *)(m_camProj.m);
@@ -1986,7 +1985,7 @@ void LiveUI::UpdateMainUI()
          const vec3 camTarget = pos - dir * m_camDistance;
          m_camDistance *= (float) pow(1.1, -ImGui::GetIO().MouseWheel);
          const vec3 newEye = camTarget + dir * m_camDistance;
-         m_camView.SetLookAtRH(newEye, camTarget, up);
+         m_camView = Matrix3D::MatrixLookAtRH(newEye, camTarget, up);
       }
 
       // Pan mouse
@@ -2002,7 +2001,7 @@ void LiveUI::UpdateMainUI()
          {
             m_useEditorCam = true;
             camTarget = camTarget - right * drag.x + up * drag.y;
-            m_camView.SetLookAtRH(pos - right * drag.x + up * drag.y, camTarget, up);
+            m_camView = Matrix3D::MatrixLookAtRH(pos - right * drag.x + up * drag.y, camTarget, up);
          }
       }
 
@@ -2046,9 +2045,8 @@ void LiveUI::UpdateMainUI()
          }
       }
       /* { // debug code to visualize the ray cast
-         Matrix3D RH2LH, YAxis;
-         RH2LH.SetScaling(1.f, 1.f, -1.f);
-         YAxis.SetScaling(1.f, -1.f, 1.f);
+         const Matrix3D RH2LH = Matrix3D::MatrixScale(1.f,  1.f, -1.f);
+         const Matrix3D YAxis = Matrix3D::MatrixScale(1.f, -1.f, 1.f);
          const Matrix3D view = RH2LH * m_renderer->GetMVP().GetView() * YAxis;
          const Matrix3D proj = YAxis * m_renderer->GetMVP().GetProj(0);
          float camViewLH[16];
@@ -2062,7 +2060,7 @@ void LiveUI::UpdateMainUI()
          for (int i = 0; i < ((30 * m) / 128); i++)
          {
             const float p = i / 29.f;
-            transform.SetTranslation(v3d.x + p * (v3d2.x - v3d.x), v3d.y + p * (v3d2.y - v3d.y), v3d.z + p * (v3d2.z - v3d.z));
+            transform = Matrix3D::MatrixTranslate(v3d.x + p * (v3d2.x - v3d.x), v3d.y + p * (v3d2.y - v3d.y), v3d.z + p * (v3d2.z - v3d.z));
             ImGuizmo::Manipulate(camViewLH, cameraProjection, ImGuizmo::OPERATION::NONE, ImGuizmo::MODE::LOCAL, (float *)(transform.m));
          }
       }*/
@@ -2156,7 +2154,7 @@ void LiveUI::UpdateMainUI()
             if (GetSelectionTransform(transform))
                newTarget = vec3(transform._41, transform._42, transform._43);
             const vec3 newEye = newTarget + dir * m_camDistance;
-            m_camView.SetLookAtRH(newEye, newTarget, up);
+            m_camView = Matrix3D::MatrixLookAtRH(newEye, newTarget, up);
          }
          else if (ImGui::IsKeyPressed(ImGuiKey_Keypad7))
          {
@@ -2170,7 +2168,7 @@ void LiveUI::UpdateMainUI()
             const vec3 newUp(0.f, -1.f, 0.f);
             const vec3 newDir(0.f, 0.f, ImGui::GetIO().KeyCtrl ? 1.f : -1.f);
             const vec3 newEye = camTarget + newDir * m_camDistance;
-            m_camView.SetLookAtRH(newEye, camTarget, newUp);
+            m_camView = Matrix3D::MatrixLookAtRH(newEye, camTarget, newUp);
          }
          else if (ImGui::IsKeyPressed(ImGuiKey_Keypad1))
          {
@@ -2184,7 +2182,7 @@ void LiveUI::UpdateMainUI()
             const vec3 newUp(0.f, 0.f, -1.f);
             const vec3 newDir(0.f, ImGui::GetIO().KeyCtrl ? -1.f : 1.f, 0.f);
             const vec3 newEye = camTarget + newDir * m_camDistance;
-            m_camView.SetLookAtRH(newEye, camTarget, newUp);
+            m_camView = Matrix3D::MatrixLookAtRH(newEye, camTarget, newUp);
          }
          else if (ImGui::IsKeyPressed(ImGuiKey_Keypad3))
          {
@@ -2198,14 +2196,13 @@ void LiveUI::UpdateMainUI()
             const vec3 newUp(0.f, 0.f, -1.f);
             const vec3 newDir(ImGui::GetIO().KeyCtrl ? 1.f : -1.f, 0.f, 0.f);
             const vec3 newEye = camTarget + newDir * m_camDistance;
-            m_camView.SetLookAtRH(newEye, camTarget, newUp);
+            m_camView = Matrix3D::MatrixLookAtRH(newEye, camTarget, newUp);
          }
       }
    }
 
-   Matrix3D RH2LH, YAxis;
-   RH2LH.SetScaling(1.f, 1.f, -1.f);
-   YAxis.SetScaling(1.f, -1.f, 1.f);
+   const Matrix3D RH2LH = Matrix3D::MatrixScale(1.f,  1.f, -1.f);
+   const Matrix3D YAxis = Matrix3D::MatrixScale(1.f, -1.f, 1.f);
    if (m_useEditorCam)
    {
       // Apply editor camera to renderer (move view/projection from right handed to left handed)
@@ -2230,28 +2227,22 @@ bool LiveUI::GetSelectionTransform(Matrix3D& transform)
    if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemPrimitive)
    {
       Primitive *p = (Primitive *)m_selection.editable;
-      Matrix3D Smatrix;
-      Smatrix.SetScaling(p->m_d.m_vSize.x, p->m_d.m_vSize.y, p->m_d.m_vSize.z);
-      Matrix3D Tmatrix;
-      Tmatrix.SetTranslation(p->m_d.m_vPosition.x, p->m_d.m_vPosition.y, p->m_d.m_vPosition.z);
-      Matrix3D Rmatrix;
-      Matrix3D tempMatrix;
-      Rmatrix.SetRotateZ(ANGTORAD(p->m_d.m_aRotAndTra[2]));
-      tempMatrix.SetRotateY(ANGTORAD(p->m_d.m_aRotAndTra[1]));
-      Rmatrix = Rmatrix * tempMatrix;
-      tempMatrix.SetRotateX(ANGTORAD(p->m_d.m_aRotAndTra[0]));
-      transform = (Smatrix * (Rmatrix * tempMatrix)) * Tmatrix; // fullMatrix = Scale * Rotate * Translate
+      const Matrix3D Smatrix = Matrix3D::MatrixScale(p->m_d.m_vSize.x, p->m_d.m_vSize.y, p->m_d.m_vSize.z);
+      const Matrix3D Tmatrix = Matrix3D::MatrixTranslate(p->m_d.m_vPosition.x, p->m_d.m_vPosition.y, p->m_d.m_vPosition.z);
+      const Matrix3D Rmatrix = (Matrix3D::MatrixRotateZ(ANGTORAD(p->m_d.m_aRotAndTra[2]))
+                              * Matrix3D::MatrixRotateY(ANGTORAD(p->m_d.m_aRotAndTra[1])))
+                              * Matrix3D::MatrixRotateX(ANGTORAD(p->m_d.m_aRotAndTra[0]));
+      transform = (Smatrix * Rmatrix) * Tmatrix; // fullMatrix = Scale * Rotate * Translate
       return true;
    }
 
    if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemFlasher)
    {
       Flasher * const p = (Flasher *)m_selection.editable;
-      Matrix3D rotx, roty, rotz, trans;
-      trans.SetTranslation(p->m_d.m_vCenter.x, p->m_d.m_vCenter.y, p->m_d.m_height);
-      rotx.SetRotateX(ANGTORAD(p->m_d.m_rotX));
-      roty.SetRotateY(ANGTORAD(p->m_d.m_rotY));
-      rotz.SetRotateZ(ANGTORAD(p->m_d.m_rotZ));
+      const Matrix3D trans = Matrix3D::MatrixTranslate(p->m_d.m_vCenter.x, p->m_d.m_vCenter.y, p->m_d.m_height);
+      const Matrix3D rotx = Matrix3D::MatrixRotateX(ANGTORAD(p->m_d.m_rotX));
+      const Matrix3D roty = Matrix3D::MatrixRotateY(ANGTORAD(p->m_d.m_rotY));
+      const Matrix3D rotz = Matrix3D::MatrixRotateZ(ANGTORAD(p->m_d.m_rotZ));
       transform = rotz * roty * rotx * trans;
       return true;
    }
@@ -2260,14 +2251,14 @@ bool LiveUI::GetSelectionTransform(Matrix3D& transform)
    {
       Light * const l = (Light *)m_selection.editable;
       const float height = (m_selection.is_live ? m_live_table : m_table)->GetSurfaceHeight(l->m_d.m_szSurface, l->m_d.m_vCenter.x, l->m_d.m_vCenter.y);
-      transform.SetTranslation(l->m_d.m_vCenter.x, l->m_d.m_vCenter.y, height + l->m_d.m_height);
+      transform = Matrix3D::MatrixTranslate(l->m_d.m_vCenter.x, l->m_d.m_vCenter.y, height + l->m_d.m_height);
       return true;
    }
 
    if (m_selection.type == LiveUI::Selection::SelectionType::S_BALL)
    {
       Ball * const ball = m_player->m_vball[m_selection.ball_index];
-      transform.SetTranslation(ball->m_d.m_pos);
+      transform = Matrix3D::MatrixTranslate(ball->m_d.m_pos);
       return true;
    }
 

@@ -1451,18 +1451,12 @@ void Rubber::GenerateMesh(const int _accuracy, const bool createHitShape) //!! h
 
 void Rubber::UpdateRubber(const bool updateVB, const float height)
 {
-   Matrix3D fullMatrix,tempMat;
-   fullMatrix.SetRotateZ(ANGTORAD(m_d.m_rotZ));
-   tempMat.SetRotateY(ANGTORAD(m_d.m_rotY));
-   fullMatrix = fullMatrix * tempMat;
-   tempMat.SetRotateX(ANGTORAD(m_d.m_rotX));
-   fullMatrix = fullMatrix * tempMat;
-
-   Matrix3D vertMatrix;
-   tempMat.SetTranslation(-m_middlePoint.x, -m_middlePoint.y, -m_middlePoint.z);
-   vertMatrix = tempMat * fullMatrix;
-   tempMat.SetTranslation(m_middlePoint.x, m_middlePoint.y, height);
-   vertMatrix = vertMatrix * tempMat;
+   const Matrix3D fullMatrix = (Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotZ))
+                              * Matrix3D::MatrixRotateY(ANGTORAD(m_d.m_rotY)))
+                              * Matrix3D::MatrixRotateX(ANGTORAD(m_d.m_rotX));
+   const Matrix3D vertMatrix = (Matrix3D::MatrixTranslate(-m_middlePoint.x, -m_middlePoint.y, -m_middlePoint.z)
+                              * fullMatrix)
+                              * Matrix3D::MatrixTranslate(m_middlePoint.x, m_middlePoint.y, height);
 
    Vertex3D_NoTex2 *buf;
    if (updateVB)

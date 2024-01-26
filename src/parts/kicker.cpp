@@ -515,8 +515,7 @@ void Kicker::GenerateMesh(Vertex3D_NoTex2 *const buf)
        break;
    }
 
-   Matrix3D fullMatrix;
-   fullMatrix.SetRotateZ(ANGTORAD(zrot));
+   const Matrix3D fullMatrix = Matrix3D::MatrixRotateZ(ANGTORAD(zrot));
 
    for (int i = 0; i < num_vertices; i++)
    {
@@ -525,8 +524,8 @@ void Kicker::GenerateMesh(Vertex3D_NoTex2 *const buf)
       buf[i].x = vert.x*m_d.m_radius + m_d.m_vCenter.x;
       buf[i].y = vert.y*m_d.m_radius + m_d.m_vCenter.y;
       buf[i].z = vert.z*m_d.m_radius + m_baseHeight;
-      vert = Vertex3Ds(vertices[i].nx, vertices[i].ny, vertices[i].nz);
-      vert = fullMatrix.MultiplyVectorNoTranslate(vert);
+
+      vert = fullMatrix.MultiplyVectorNoTranslate(Vertex3Ds{vertices[i].nx, vertices[i].ny, vertices[i].nz});
       buf[i].nx = vert.x;
       buf[i].ny = vert.y;
       buf[i].nz = vert.z;

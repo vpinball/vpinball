@@ -247,8 +247,7 @@ void Anaglyph::SetPhotoCalibration(const Matrix3& display, const Matrix3& leftFi
       for (int j = 0; j < 6; j++)
          b3Mat[j + i * 6] /= rowNorm[i];
    // Derive left/right matrices from the resulting [3x6] matrix
-   m_rgb2AnaglyphLeft.SetIdentity();
-   m_rgb2AnaglyphRight.SetIdentity();
+   m_rgb2AnaglyphLeft = m_rgb2AnaglyphRight = Matrix3D::MatrixIdentity();
    for (int i = 0; i < 3; i++)
       for (int j = 0; j < 3; j++)
       {
@@ -363,8 +362,7 @@ void Anaglyph::Update()
       }
       vec3 rgb2Yl(m_reversedColorPair ? m_rgb2Yr : m_rgb2Yl);
       vec3 rgb2Yr(m_reversedColorPair ? m_rgb2Yl : m_rgb2Yr);
-      Matrix3D matYYC2RGB;
-      matYYC2RGB.SetIdentity();
+      Matrix3D matYYC2RGB = Matrix3D::MatrixIdentity();
       matYYC2RGB.m[0][0] = rgb2Yl.x;
       matYYC2RGB.m[0][1] = rgb2Yl.y;
       matYYC2RGB.m[0][2] = rgb2Yl.z;

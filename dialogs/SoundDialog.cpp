@@ -214,7 +214,7 @@ BOOL SoundDialog::OnCommand( WPARAM wParam, LPARAM lParam )
                 const float front_rear_fade = dequantizeSignedPercent(pps->m_fade);
                 pps->Play((1.0f + volume) * 100.0f, 0.0f, 0, pan, front_rear_fade, 0, false);
 
-                GetDlgItem(IDC_STOP).EnableWindow(fTrue);
+                GetDlgItem(IDC_STOP).EnableWindow(TRUE);
             }
             break;
         }
