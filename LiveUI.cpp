@@ -2020,11 +2020,10 @@ void LiveUI::UpdateMainUI()
          // screen pixel the user clicked on is at.  Get the point at the near
          // clipping plane (z=0) and the far clipping plane (z=1) to get the whole
          // range we need to hit test
-         Vertex3Ds v3d, v3d2;
          Matrix3D invMVP = m_renderer->GetMVP().GetModelViewProj(0);
          invMVP.Invert();
-         invMVP.MultiplyVector(Vertex3Ds(xcoord, ycoord, 0.f), v3d);
-         invMVP.MultiplyVector(Vertex3Ds(xcoord, ycoord, 1.f), v3d2);
+         const Vertex3Ds v3d  = invMVP * Vertex3Ds{xcoord, ycoord, 0.f};
+         const Vertex3Ds v3d2 = invMVP * Vertex3Ds{xcoord, ycoord, 1.f};
          
          // FIXME this is not working as intended (ball are always picked ok - likely because they live in a different quadtree - but not other parts)
          vector<HitObject *> vhoHit;

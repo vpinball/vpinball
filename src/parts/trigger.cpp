@@ -96,7 +96,7 @@ void Trigger::UpdateStatusBarInfo()
       const Matrix3D fullMatrix = Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotation));
       for (int i = 0; i < m_numVertices; i++)
       {
-         fullMatrix.MultiplyVector(Vertex3Ds{meshVertices[i].x, meshVertices[i].y, meshVertices[i].z}, m_vertices[i]);
+         m_vertices[i] = fullMatrix * meshVertices[i];
          if (m_d.m_shape != TriggerStar && m_d.m_shape != TriggerButton)
          {
             m_vertices[i].x *= m_d.m_scaleX;

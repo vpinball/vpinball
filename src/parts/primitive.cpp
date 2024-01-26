@@ -321,10 +321,10 @@ void Primitive::CreateRenderGroup(const Collection * const collection)
       for (size_t t = 0; t < m.NumVertices(); t++)
       {
          Vertex3D_NoTex2 vt = m.m_vertices[t];
-         renderedPrims[i]->m_fullMatrix.MultiplyVector(vt, vt);
+         renderedPrims[i]->m_fullMatrix.MultiplyVector(vt);
 
-         Vertex3Ds n;
-         renderedPrims[i]->m_fullMatrix.MultiplyVectorNoTranslateNormal(vt, n);
+         const Vertex3Ds n = renderedPrims[i]->m_fullMatrix.MultiplyVectorNoTranslateNormal(vt);
+         //!! Normalize?
          vt.nx = n.x; vt.ny = n.y; vt.nz = n.z;
          buf[ofs] = vt;
          ofs++;
@@ -707,9 +707,8 @@ void Primitive::TransformVertices()
 
    for (size_t i = 0; i < m_mesh.NumVertices(); i++)
    {
-      m_fullMatrix.MultiplyVector(m_mesh.m_vertices[i], m_vertices[i]);
-      Vertex3Ds n;
-      m_fullMatrix.MultiplyVectorNoTranslateNormal(m_mesh.m_vertices[i], n);
+      m_vertices[i] = m_fullMatrix * m_mesh.m_vertices[i];
+      Vertex3Ds n = m_fullMatrix.MultiplyVectorNoTranslateNormal(m_mesh.m_vertices[i]);
       n.Normalize();
       m_normals[i] = n.z;
    }
@@ -942,10 +941,8 @@ void Primitive::GetBoundingVertices(vector<Vertex3Ds> &bounds, vector<Vertex3Ds>
       m_mesh.UpdateBounds();
       if (m_mesh.m_minAABound.x != FLT_MAX)
       {
-         Vertex3Ds minBound(m_mesh.m_minAABound);
-         Vertex3Ds maxBound(m_mesh.m_maxAABound);
-         m_fullMatrix.TransformVec3(minBound);
-         m_fullMatrix.TransformVec3(maxBound);
+         const Vertex3Ds minBound = m_fullMatrix.MultiplyVectorNoPerspective(m_mesh.m_minAABound);
+         const Vertex3Ds maxBound = m_fullMatrix.MultiplyVectorNoPerspective(m_mesh.m_maxAABound);
          bounds.push_back(Vertex3Ds(minBound.x, minBound.y, minBound.z));
          bounds.push_back(Vertex3Ds(minBound.x, minBound.y, maxBound.z));
          bounds.push_back(Vertex3Ds(minBound.x, maxBound.y, minBound.z));
@@ -1433,10 +1430,10 @@ void Primitive::Render(const unsigned int renderMask)
          {
             reflection_probe->ExtendAreaOfInterest(xMin, xMax, yMin, yMax);
             m_rd->AddRenderTargetDependency(reflections);
-            vec3 plane_normal;
+            Vertex3Ds plane_normal;
             reflection_probe->GetReflectionPlaneNormal(plane_normal);
             Matrix3D matWorldViewInverseTranspose = g_pplayer->m_renderer->GetMVP().GetModelViewInverseTranspose();
-            matWorldViewInverseTranspose.MultiplyVectorNoTranslate(plane_normal, plane_normal);
+            plane_normal = matWorldViewInverseTranspose.MultiplyVectorNoTranslate(plane_normal);
             Vertex3Ds n(plane_normal.x, plane_normal.y, plane_normal.z);
             n.Normalize();
             m_rd->m_basicShader->SetVector(SHADER_mirrorNormal_factor, n.x, n.y, n.z, m_d.m_reflectionStrength);

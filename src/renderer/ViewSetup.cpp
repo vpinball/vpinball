@@ -20,7 +20,7 @@ void ViewSetup::SetWindowModeFromSettings(const PinTable* const table)
    const Matrix3D rotx = // Rotate by the angle between playfield and real world horizontal (scale on Y and Z axis are equal and can be ignored)
       //Matrix3D::MatrixRotateX(atan2f(mSceneScaleZ * (screenTopZ - screenBotZ), mSceneScaleY * table->m_bottom) - ANGTORAD(inclination));
       Matrix3D::MatrixRotateX(atan2f(screenTopZ - screenBotZ, table->m_bottom) - ANGTORAD(inclination));
-   rotx.TransformVec3(playerPos);
+   playerPos = rotx.MultiplyVectorNoPerspective(playerPos);
    mViewX = playerPos.x;
    mViewY = playerPos.y;
    mViewZ = playerPos.z + screenBotZ * mSceneScaleY / realToVirtual;
@@ -265,9 +265,9 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
       // For some reason I don't get, viewport rotation (rotz) and head inclination (rotx) used to be swapped when in camera mode on desktop.
       // This is no more applied and we always consider this order: rotx * rotz * trans which we swap to apply it as trans * rotx * rotz
       Matrix3D rot = Matrix3D::MatrixRotateZ(-rotation); // convert position to swap trans and rotz (rotz * trans => trans * rotz)
-      rot.TransformVec3(pos);
+      pos = rot.MultiplyVectorNoPerspective(pos);
       rot = Matrix3D::MatrixRotateX(-inc); // convert position to swap trans and rotx (rotx * trans => trans * rotx)
-      rot.TransformVec3(pos);
+      pos = rot.MultiplyVectorNoPerspective(pos);
       const Matrix3D trans = Matrix3D::MatrixTranslate(pos.x, pos.y, pos.z);
       const Matrix3D rotx = Matrix3D::MatrixRotateX(inc); // Player head inclination (0 is looking straight to playfield)
       lookat = trans * rotx;

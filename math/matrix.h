@@ -313,27 +313,6 @@ public:
       _31 = _32 = _34 = _43 = 0.0f;
    }
    
-   void SetTranslation(const float tx, const float ty, const float tz)
-   {
-      SetIdentity();
-      _41 = tx;
-      _42 = ty;
-      _43 = tz;
-   }
-   
-   template <class Vec> void SetTranslation(const Vec& t)
-   {
-      SetTranslation(t.x, t.y, t.z);
-   }
-
-   void SetScaling(const float sx, const float sy, const float sz)
-   {
-      SetIdentity();
-      _11 = sx;
-      _22 = sy;
-      _33 = sz;
-   }
-
    void SetRotateX(const float angRad)
    {
       SetIdentity();
@@ -366,39 +345,41 @@ public:
       _12 = -2.0f * n.x * n.y;
       _13 = -2.0f * n.x * n.z;
 
-      _21 = -2.0f * n.y * n.x;
+      _21 = _12;
       _22 = 1.0f - 2.0f * n.y * n.y;
       _23 = -2.0f * n.y * n.z;
 
-      _31 = -2.0f * n.z * n.x;
-      _32 = -2.0f * n.z * n.y;
+      _31 = _13;
+      _32 = _23;
       _33 = 1.0f - 2.0f * n.z * n.z;
 
-      _41 = -2.0f * n.x * d;
-      _42 = -2.0f * n.y * d;
-      _43 = -2.0f * n.z * d;
+      _41 = -2.0f * d * n.x;
+      _42 = -2.0f * d * n.y;
+      _43 = -2.0f * d * n.z;
    }
 
-   void SetOrthoOffCenterRH(const float l, const float r, const float b, const float t, const float zn, const float zf)
+   void SetOrthoOffCenterRH(const float left, const float right, const float bottom, const float top, const float znear, const float zfar)
    {
-      _11 = 2.f / (r - l);
+      const float r_l = right - left;
+      const float t_b = top - bottom;
+      _11 = 2.f / r_l;
       _12 = 0.0f;
       _13 = 0.0f;
       _14 = 0.0f;
 
       _21 = 0.0f;
-      _22 = 2.f / (t - b);
+      _22 = 2.f / t_b;
       _23 = 0.0f;
       _24 = 0.0f;
 
       _31 = 0.0f;
       _32 = 0.0f;
-      _33 = 1.0f / (zf - zn);
+      _33 = 1.0f / (zfar - znear);
       _34 = 0.0f;
 
-      _41 = (l + r) / (l - r);
-      _42 = (t + b) / (b - t);
-      _43 = zn / (zn - zf);
+      _41 = (left + right) / -r_l;
+      _42 = (top + bottom) / -t_b;
+      _43 = znear * -_33;
       _44 = 1.0f;
    }
 
@@ -406,7 +387,6 @@ public:
    {
       const float r_l = right - left;
       const float t_b = top - bottom;
-      const float zn_zf = znear - zfar;
       _11 = 2.0f * znear / r_l;
       _12 = 0.0f;
       _13 = 0.0f;
@@ -417,11 +397,11 @@ public:
       _24 = 0.0f;
       _31 = (right + left) / r_l;
       _32 = (top + bottom) / t_b;
-      _33 = zfar / zn_zf;
+      _33 = zfar / (znear - zfar);
       _34 = -1.0f;
       _41 = 0.0f;
       _42 = 0.0f;
-      _43 = znear * zfar / zn_zf;
+      _43 = znear * _33;
       _44 = 0.0f;
    }
 
@@ -429,7 +409,6 @@ public:
    {
       const float r_l = right - left;
       const float t_b = top - bottom;
-      const float zn_zf = znear - zfar;
       _11 = 2.0f * znear / r_l;
       _12 = 0.0f;
       _13 = 0.0f;
@@ -440,52 +419,12 @@ public:
       _24 = 0.0f;
       _31 = -(right + left) / r_l;
       _32 = -(top + bottom) / t_b;
-      _33 = -zfar / zn_zf;
+      _33 = -zfar / (znear - zfar);
       _34 = 1.0f;
       _41 = 0.0f;
       _42 = 0.0f;
-      _43 = znear * zfar / zn_zf;
+      _43 = znear * -_33;
       _44 = 0.0f;
-   }
-
-   void SetPerspectiveFovRH(const float fovyInDegrees, const float aspectRatio, const float znear, const float zfar)
-   {
-      const float ymax = znear * tanf(0.5f * ANGTORAD(fovyInDegrees));
-      const float xmax = ymax * aspectRatio;
-      SetPerspectiveOffCenterRH(-xmax, xmax, -ymax, ymax, znear, zfar);
-   }
-
-   void SetPerspectiveFovLH(const float fovyInDegrees, const float aspectRatio, const float znear, const float zfar)
-   {
-      const float ymax = znear * tanf(0.5f * ANGTORAD(fovyInDegrees));
-      const float xmax = ymax * aspectRatio;
-      SetPerspectiveOffCenterLH(-xmax, xmax, -ymax, ymax, znear, zfar);
-   }
-
-   void SetLookAtRH(const Vertex3Ds& eye, const Vertex3Ds& at, const Vertex3Ds& up)
-   {
-      Vertex3Ds zaxis = eye - at;
-      zaxis.NormalizeSafe();
-      Vertex3Ds xaxis = CrossProduct(up, zaxis);
-      xaxis.NormalizeSafe();
-      const Vertex3Ds yaxis = CrossProduct(zaxis, xaxis);
-      const float dotX = xaxis.Dot(eye);
-      const float dotY = yaxis.Dot(eye);
-      const float dotZ = zaxis.Dot(eye);
-      *this = Matrix3D{xaxis.x, yaxis.x, zaxis.x, 0.f, xaxis.y, yaxis.y, zaxis.y, 0.f, xaxis.z, yaxis.z, zaxis.z, 0.f, -dotX, -dotY, -dotZ, 1.f};
-   }
-
-   void SetLookAtLH(const Vertex3Ds& eye, const Vertex3Ds& at, const Vertex3Ds& up)
-   {
-      Vertex3Ds zaxis = at - eye;
-      zaxis.NormalizeSafe();
-      Vertex3Ds xaxis = CrossProduct(up, zaxis);
-      xaxis.NormalizeSafe();
-      const Vertex3Ds yaxis = CrossProduct(zaxis, xaxis);
-      const float dotX = xaxis.Dot(eye);
-      const float dotY = yaxis.Dot(eye);
-      const float dotZ = zaxis.Dot(eye);
-      *this = Matrix3D{xaxis.x, yaxis.x, zaxis.x, 0.f, xaxis.y, yaxis.y, zaxis.y, 0.f, xaxis.z, yaxis.z, zaxis.z, 0.f, -dotX, -dotY, -dotZ, 1.f};
    }
 
 #pragma endregion SetMatrix
@@ -523,30 +462,22 @@ public:
 
    static Matrix3D MatrixScale(float scale)
    {
-      Matrix3D result;
-      result.SetScaling(scale, scale, scale);
-      return result;
+      return Matrix3D{scale,0.0f,0.0f,0.0f,0.0f,scale,0.0f,0.0f,0.0f,0.0f,scale,0.0f,0.0f,0.0f,0.0f,1.0f};
    }
 
    static Matrix3D MatrixScale(float sx, float sy, float sz)
    {
-      Matrix3D result;
-      result.SetScaling(sx, sy, sz);
-      return result;
+      return Matrix3D{sx,0.0f,0.0f,0.0f,0.0f,sy,0.0f,0.0f,0.0f,0.0f,sz,0.0f,0.0f,0.0f,0.0f,1.0f};
    }
 
    static Matrix3D MatrixTranslate(float x, float y, float z)
    {
-      Matrix3D result;
-      result.SetTranslation(x, y, z);
-      return result;
+      return Matrix3D{1.0f,0.0f,0.0f,0.0f,0.0f,1.0f,0.0f,0.0f,0.0f,0.0f,1.0f,0.0f,x,y,z,1.0f};
    }
 
    template <class Vec> static Matrix3D MatrixTranslate(const Vec& t)
    {
-      Matrix3D result;
-      result.SetTranslation(t);
-      return result;
+      return Matrix3D{1.0f,0.0f,0.0f,0.0f,0.0f,1.0f,0.0f,0.0f,0.0f,0.0f,1.0f,0.0f,t.x,t.y,t.z,1.0f};
    }
 
    static Matrix3D MatrixPlaneReflection(const Vertex3Ds& n, const float d)
@@ -558,16 +489,36 @@ public:
 
    static Matrix3D MatrixLookAtLH(const Vertex3Ds& eye, const Vertex3Ds& at, const Vertex3Ds& up)
    {
-      Matrix3D result;
-      result.SetLookAtLH(eye, at, up);
-      return result;
+      Vertex3Ds zaxis = at - eye;
+      zaxis.NormalizeSafe();
+      Vertex3Ds xaxis = CrossProduct(up, zaxis);
+      xaxis.NormalizeSafe();
+      const Vertex3Ds yaxis = CrossProduct(zaxis, xaxis);
+      const float dotX = xaxis.Dot(eye);
+      const float dotY = yaxis.Dot(eye);
+      const float dotZ = zaxis.Dot(eye);
+      return Matrix3D{
+         xaxis.x, yaxis.x, zaxis.x, 0.f,
+         xaxis.y, yaxis.y, zaxis.y, 0.f,
+         xaxis.z, yaxis.z, zaxis.z, 0.f,
+         -dotX, -dotY, -dotZ, 1.f};
    }
 
    static Matrix3D MatrixLookAtRH(const Vertex3Ds& eye, const Vertex3Ds& at, const Vertex3Ds& up)
    {
-      Matrix3D result;
-      result.SetLookAtRH(eye, at, up);
-      return result;
+      Vertex3Ds zaxis = eye - at;
+      zaxis.NormalizeSafe();
+      Vertex3Ds xaxis = CrossProduct(up, zaxis);
+      xaxis.NormalizeSafe();
+      const Vertex3Ds yaxis = CrossProduct(zaxis, xaxis);
+      const float dotX = xaxis.Dot(eye);
+      const float dotY = yaxis.Dot(eye);
+      const float dotZ = zaxis.Dot(eye);
+      return Matrix3D{
+         xaxis.x, yaxis.x, zaxis.x, 0.f,
+         xaxis.y, yaxis.y, zaxis.y, 0.f,
+         xaxis.z, yaxis.z, zaxis.z, 0.f,
+         -dotX, -dotY, -dotZ, 1.f};
    }
 
    static Matrix3D MatrixOrthoOffCenterRH(const float l, const float r, const float b, const float t, const float zn, const float zf)
@@ -577,17 +528,21 @@ public:
       return result;
    }
 
-   static Matrix3D MatrixPerspectiveFovLH(const float fovy, const float aspect, const float zn, const float zf)
+   static Matrix3D MatrixPerspectiveFovLH(const float fovyInDegrees, const float aspectRatio, const float znear, const float zfar)
    {
+      const float ymax = znear * tanf(0.5f * ANGTORAD(fovyInDegrees));
+      const float xmax = ymax * aspectRatio;
       Matrix3D result;
-      result.SetPerspectiveFovLH(fovy, aspect, zn, zf);
+      result.SetPerspectiveOffCenterLH(-xmax, xmax, -ymax, ymax, znear, zfar);
       return result;
    }
 
-   static Matrix3D MatrixPerspectiveFovRH(const float fovy, const float aspect, const float zn, const float zf)
+   static Matrix3D MatrixPerspectiveFovRH(const float fovyInDegrees, const float aspectRatio, const float znear, const float zfar)
    {
+      const float ymax = znear * tanf(0.5f * ANGTORAD(fovyInDegrees));
+      const float xmax = ymax * aspectRatio;
       Matrix3D result;
-      result.SetPerspectiveFovRH(fovy, aspect, zn, zf);
+      result.SetPerspectiveOffCenterRH(-xmax, xmax, -ymax, ymax, znear, zfar);
       return result;
    }
 
@@ -609,7 +564,7 @@ public:
       //!! This code should be validated!
       return Matrix3D{
          cr * cy, sr, cr * sy, 0.0f, 
-         -sr * cp * sy - sp * sy, cr * cp, sr * cp * sy + sp * cy, 0.0f, 
+         sy * (-sr * cp - sp), cr * cp, sr * cp * sy + sp * cy, 0.0f, 
          -sr * sp * cy - cp * sy, -cr * sp, -sr * sp * sy + cp * cy, 0.0f, 
          0.0f, 0.0f, 0.0f, 1.0f};
    }
@@ -717,26 +672,6 @@ public:
       _31 = dir.x; _32 = dir.y; _33 = dir.z;
    }
 
-   void Translate(const float x, const float y, const float z)
-   {
-      *this = MatrixTranslate(x, y, z) * *this;
-   }
-
-   void RotateX(const float angRad)
-   {
-      *this = MatrixRotateX(angRad) * *this;
-   }
-
-   void RotateY(const float angRad)
-   {
-      *this = MatrixRotateY(angRad) * *this;
-   }
-
-   void RotateZ(const float angRad)
-   {
-      *this = MatrixRotateZ(angRad) * *this;
-   }
-
 #pragma endregion MatrixOperations
 
 //
@@ -755,28 +690,26 @@ public:
    // extract the matrix corresponding to the 3x3 rotation part
    Matrix3D GetRotationPart() const
    {
-      Matrix3D rot;
-      rot._11 = _11; rot._12 = _12; rot._13 = _13; rot._14 = 0.0f;
-      rot._21 = _21; rot._22 = _22; rot._23 = _23; rot._24 = 0.0f;
-      rot._31 = _31; rot._32 = _32; rot._33 = _33; rot._34 = 0.0f;
-      rot._41 = rot._42 = rot._43 = 0.0f; rot._44 = 1.0f;
-      return rot;
+      return Matrix3D{_11,_12,_13,0.0f,
+                      _21,_22,_23,0.0f,
+                      _31,_32,_33,0.0f,
+                       0.0f,0.0f,0.0f,1.0f};
    }
 
    // generic multiply function for everything that has .x, .y and .z
-   template <class VecIn, class VecOut>
-   void MultiplyVector(const VecIn& vIn, VecOut& vOut) const
+   template <class VecType>
+   void MultiplyVector(VecType& v) const
    {
       // Transform it through the current matrix set
-      const float xp = _11*vIn.x + _21*vIn.y + _31*vIn.z + _41;
-      const float yp = _12*vIn.x + _22*vIn.y + _32*vIn.z + _42;
-      const float zp = _13*vIn.x + _23*vIn.y + _33*vIn.z + _43;
-      const float wp = _14*vIn.x + _24*vIn.y + _34*vIn.z + _44;
+      const float xp = _11*v.x + _21*v.y + _31*v.z + _41;
+      const float yp = _12*v.x + _22*v.y + _32*v.z + _42;
+      const float zp = _13*v.x + _23*v.y + _33*v.z + _43;
+      const float wp = _14*v.x + _24*v.y + _34*v.z + _44;
 
       const float inv_wp = 1.0f / wp;
-      vOut.x = xp*inv_wp;
-      vOut.y = yp*inv_wp;
-      vOut.z = zp*inv_wp;
+      v.x = xp*inv_wp;
+      v.y = yp*inv_wp;
+      v.z = zp*inv_wp;
    }
 
 //
@@ -797,7 +730,8 @@ public:
       return Vertex3Ds{xp*inv_wp,yp*inv_wp,zp*inv_wp};
    }
 
-   Vertex3Ds MultiplyVectorNoTranslate(const Vertex3Ds &v) const
+   template <class VecType>
+   Vertex3Ds MultiplyVectorNoTranslate(const VecType& v) const
    {
       // Transform it through the current matrix set
       const float xp = _11*v.x + _21*v.y + _31*v.z;
@@ -811,40 +745,24 @@ public:
 // end of license:GPLv3+, back to 'old MAME'-like
 //
 
-   template <class VecIn, class VecOut>
-   void MultiplyVectorNoTranslate(const VecIn& vIn, VecOut& vOut) const
-   {
-      // Transform it through the current matrix set
-      const float xp = _11*vIn.x + _21*vIn.y + _31*vIn.z;
-      const float yp = _12*vIn.x + _22*vIn.y + _32*vIn.z;
-      const float zp = _13*vIn.x + _23*vIn.y + _33*vIn.z;
 
-      vOut.x = xp;
-      vOut.y = yp;
-      vOut.z = zp;
-   }
-
-   template <class VecIn, class VecOut>
-   void MultiplyVectorNoTranslateNormal(const VecIn& vIn, VecOut& vOut) const
+   template <class VecType>
+   Vertex3Ds MultiplyVectorNoTranslateNormal(const VecType& vIn) const
    {
       // Transform it through the current matrix set
       const float xp = _11*vIn.nx + _21*vIn.ny + _31*vIn.nz;
       const float yp = _12*vIn.nx + _22*vIn.ny + _32*vIn.nz;
       const float zp = _13*vIn.nx + _23*vIn.ny + _33*vIn.nz;
 
-      vOut.x = xp;
-      vOut.y = yp;
-      vOut.z = zp;
+      return Vertex3Ds{xp,yp,zp};
    }
 
-   template <class T> void TransformVec3(T& v) const
+   Vertex3Ds MultiplyVectorNoPerspective(const Vertex3Ds& v) const
    {
-      const float x = v.x;
-      const float y = v.y;
-      const float z = v.z;
-      v.x = _11 * x + _21 * y + _31 * z + _41;
-      v.y = _12 * x + _22 * y + _32 * z + _42;
-      v.z = _13 * x + _23 * y + _33 * z + _43;
+      return Vertex3Ds{
+         _11 * v.x + _21 * v.y + _31 * v.z + _41,
+         _12 * v.x + _22 * v.y + _32 * v.z + _42,
+         _13 * v.x + _23 * v.y + _33 * v.z + _43};
    }
 
    void TransformVertices(const Vertex3D_NoTex2* const __restrict inVerts, Vertex3D_NoTex2* const __restrict outVerts, const int count) const
@@ -924,7 +842,7 @@ public:
          // y-components are transformed from device coords to screen coords.
          // Note 1: device coords range from -1 to +1 in the viewport.
          const float inv_wp = 1.0f / wp;
-         const float vTx = (1.0f + xp * inv_wp) * rClipWidth + xoffset;
+         const float vTx = (1.0f + xp * inv_wp) * rClipWidth  + xoffset;
          const float vTy = (1.0f - yp * inv_wp) * rClipHeight + yoffset;
 
          rgvout[l].x = vTx;

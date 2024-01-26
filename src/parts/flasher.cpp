@@ -1268,7 +1268,7 @@ void Flasher::Render(const unsigned int renderMask)
       for (unsigned int i = 0; i < m_numVertices; i++)
       {
          Vertex3D_NoTex2 vert = m_vertices[i];
-         tempMatrix.MultiplyVector(vert, vert);
+         tempMatrix.MultiplyVector(vert);
          buf[i] = vert;
       }
       m_meshBuffer->m_vb->unlock();

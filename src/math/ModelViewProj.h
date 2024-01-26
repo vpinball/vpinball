@@ -66,7 +66,7 @@ private:
          Matrix3D temp = m_matView;
          temp.Invert();
          const Matrix3D viewRot = temp.GetRotationPart();
-         viewRot.MultiplyVector(Vertex3Ds{0, 0, 1}, m_viewVec);
+         m_viewVec = viewRot * Vertex3Ds{0, 0, 1};
          m_viewVec.NormalizeSafe();
       }
    }
