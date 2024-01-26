@@ -1,4 +1,9 @@
 #include "stdafx.h"
+#ifdef __STANDALONE__
+#include "imgui/imgui_impl_sdl2.h"
+#endif
+
+#include "core/TableDB.h"
 
 // from dinput.h, modernized to please clang
 #undef DIJOFS_X
@@ -101,6 +106,22 @@ PinInput::PinInput()
    m_joytablerecenter = 0;
    m_joytableup = 0;
    m_joytabledown = 0;
+
+#ifdef __STANDALONE__
+   m_joylflipkey = SDL_CONTROLLER_BUTTON_LEFTSHOULDER + 1;
+   m_joyrflipkey = SDL_CONTROLLER_BUTTON_RIGHTSHOULDER + 1;
+   m_joylmagnasave = SDL_CONTROLLER_BUTTON_LEFTSTICK + 1;
+   m_joyrmagnasave = SDL_CONTROLLER_BUTTON_RIGHTSTICK + 1;
+   m_joyplungerkey = SDL_CONTROLLER_BUTTON_DPAD_DOWN + 1;
+   m_joyaddcreditkey = SDL_CONTROLLER_BUTTON_A + 1;
+   m_joystartgamekey = SDL_CONTROLLER_BUTTON_B + 1;
+   m_joypmcancel = SDL_CONTROLLER_BUTTON_Y + 1;
+   m_joyframecount = SDL_CONTROLLER_BUTTON_X + 1;
+   m_joycentertilt = SDL_CONTROLLER_BUTTON_DPAD_UP + 1;
+   m_joylefttilt = SDL_CONTROLLER_BUTTON_DPAD_LEFT + 1;
+   m_joyrighttilt = SDL_CONTROLLER_BUTTON_DPAD_RIGHT + 1;
+   m_joylockbar = SDL_CONTROLLER_BUTTON_GUIDE + 1;
+#endif
 
    m_firedautostart = 0;
 
@@ -725,8 +746,45 @@ void PinInput::HandleInputSDL(DIDEVICEOBJECTDATA *didod)
    int j = 0;
    while (SDL_PollEvent(&e) != 0 && j<32)
    {
+#ifdef __STANDALONE__
+       ImGui_ImplSDL2_ProcessEvent(&e);
+#endif
       //User requests quit
       switch (e.type) {
+#ifdef __STANDALONE__
+      case SDL_WINDOWEVENT:
+         switch (e.window.event) {
+         case SDL_WINDOWEVENT_FOCUS_GAINED:
+            g_pplayer->m_gameWindowActive = true;
+            break;
+         case SDL_WINDOWEVENT_FOCUS_LOST:
+            g_pplayer->m_gameWindowActive = false;
+            break;
+         case SDL_WINDOWEVENT_CLOSE:
+            g_pvp->QuitPlayer(Player::CloseState::CS_USER_INPUT);
+            break;
+         }
+         break;
+#if (defined(__APPLE__) && (defined(TARGET_OS_IOS) && TARGET_OS_IOS)) || defined(__ANDROID__)
+      case SDL_FINGERDOWN:
+      case SDL_FINGERUP: {
+         POINT point;
+         point.x = (int)((float)g_pplayer->m_wnd_width * e.tfinger.x);
+         point.y = (int)((float)g_pplayer->m_wnd_height * e.tfinger.y);
+
+         for (unsigned int i = 0; i < MAX_TOUCHREGION; ++i)
+            if ((g_pplayer->m_touchregion_pressed[i] != (e.type == SDL_FINGERDOWN)) && Intersect(touchregion[i], g_pplayer->m_wnd_width, g_pplayer->m_wnd_height, point, fmodf(g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].mViewportRotation, 360.0f) != 0.f)) {
+               g_pplayer->m_touchregion_pressed[i] = (e.type == SDL_FINGERDOWN);
+
+               DIDEVICEOBJECTDATA didod;
+               didod.dwOfs = g_pplayer->m_rgKeys[touchkeymap[i]];
+               didod.dwData = g_pplayer->m_touchregion_pressed[i] ? 0x80 : 0;
+               PushQueue(&didod, APP_TOUCH/*, curr_time_msec*/);
+            }
+         break;
+      }
+#endif
+#endif
       case SDL_QUIT:
          //Open Exit dialog
          break;
@@ -804,6 +862,21 @@ void PinInput::HandleInputSDL(DIDEVICEOBJECTDATA *didod)
             didod[j].dwData = e.type == SDL_CONTROLLERBUTTONDOWN ? 0x80 : 0x00;
             PushQueue(&didod[j], APP_JOYSTICK(0));
             j++;
+         }
+         break;
+#endif
+#ifdef __STANDALONE__
+      case SDL_KEYUP:
+      case SDL_KEYDOWN:
+         if (e.key.repeat == 0) {
+            const unsigned int dik = get_dik_from_sdlk(e.key.keysym.sym);
+            if (dik != ~0u) {
+               didod[j].dwOfs = dik;
+               didod[j].dwData = e.type == SDL_KEYDOWN ? 0x80 : 0;
+               //didod[j].dwTimeStamp = curr_time_msec;
+               PushQueue(&didod[j], APP_KEYBOARD/*, curr_time_msec*/);
+               j++; 
+            }
          }
          break;
 #endif
@@ -936,6 +1009,10 @@ void PinInput::Init(const HWND hwnd)
    uShockType = 0;
 
    m_inputApi = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "InputApi"s, 0);
+
+#ifdef __STANDALONE__
+   m_inputApi = 2;
+#endif
 
    switch (m_inputApi) {
    case 1: //xInput
@@ -1616,6 +1693,7 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
         else
             FireKeyEvent(updown, input->dwOfs | 0x01000000); // unknown button events
     }
+#ifndef __STANDALONE__
     else //end joy buttons
     {
         // Axis Deadzone
@@ -1840,6 +1918,7 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
                 break;
         }
     }
+#endif
 }
 
 
@@ -1944,8 +2023,7 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
                FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[ePlungerKey]);
          }
       }
-
-      if (input->dwSequence == APP_KEYBOARD && (g_pplayer == nullptr || !g_pplayer->m_liveUI->HasKeyboardCapture()))
+      else if (input->dwSequence == APP_KEYBOARD && (g_pplayer == nullptr || !g_pplayer->m_liveUI->HasKeyboardCapture()))
       {
          // Camera mode fly around:
          if (g_pplayer && g_pplayer->m_liveUI->IsTweakMode() && m_enableCameraModeFlyAround)
@@ -2080,6 +2158,10 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
                   // Open UI on key up since a long press should not trigger the UI (direct exit from the app)
                   g_pplayer->m_closing = Player::CS_USER_INPUT;
                   m_exit_stamp = 0;
+#ifdef __STANDALONE__
+                  if (input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eExitGame])
+                     g_pplayer->m_closing = Player::CS_CLOSE_APP;
+#endif
                }
             }
          }
@@ -2090,6 +2172,15 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
          }
          else
             FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, input->dwOfs);
+      }
+      else if (input->dwSequence == APP_TOUCH && g_pplayer)
+      {
+          if (input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eEscape] && !m_disable_esc) {
+             if ((input->dwData & 0x80) == 0)
+                g_pplayer->m_closing = Player::CS_USER_INPUT;
+          }
+          else
+             FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, input->dwOfs);
       }
       else if (input->dwSequence >= APP_JOYSTICKMN && input->dwSequence <= APP_JOYSTICKMX)
           ProcessJoystick(input, curr_time_msec);
@@ -2126,6 +2217,7 @@ int PinInput::GetNextKey() // return last valid keyboard key
 #else
    for (unsigned int i = 0; i < 0xFF; ++i)
    {
+#ifndef __STANDALONE__
       const SHORT keyState = GetAsyncKeyState(i);
       if (keyState & 1)
       {
@@ -2133,6 +2225,7 @@ int PinInput::GetNextKey() // return last valid keyboard key
          if (dik != ~0u)
             return dik;
       }
+#endif
    }
 #endif
 
