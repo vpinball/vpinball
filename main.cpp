@@ -857,6 +857,15 @@ public:
                      << " (depth=" << mode.depth << ", refreshRate=" << mode.refreshrate << ')';
             }
          }
+
+         PLOGI << "Available window fullscreen desktop resolutions:";
+         for (int display = 0; display < displays; display++) {
+            SDL_DisplayMode displayMode;
+            if (!SDL_GetDesktopDisplayMode(display, &displayMode)) {
+               PLOGI << "display " << display << ": " << displayMode.w << "x" << displayMode.h
+                     << " (refreshRate=" << displayMode.refresh_rate << ")";
+            }
+         }
       }
 
       if (m_listSnd) {

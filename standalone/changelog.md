@@ -4,6 +4,23 @@ To keep up with all the changes in master, and make it easier to rebase, this br
 
 The downside of this approach is not accurately keeping track of history:
 
+* 01/27/24
+    * Fixed resolution switching on MacOS when using FullScreen = 1
+    * Added `Available window fullscreen desktop resolutions` to `-listres`
+    * Update PinMAME to a157ac7dc5a4020f7b4af6353b5809f4220ec3d3
+    * Added new `VBScript Issues` document
+
+* 01/21/24
+    * Split out changelog from readme (@Somatik)
+    * Update PinMAME to de133ce281e3cf1c6b0a1ca9595abcf0a19a0af8
+
+* 01/19/24
+    * Re-add SDL2_ttf to prep for PuP work
+
+* 01/16/24
+    * Revert PinMAME to 893da424f82797d9fa37854691505527353f088a
+    * Update libdmdutil to 5d1b7728a031d991b62177d178d95bc135fe5a95
+
 * 01/11/24
     * Handle tiny negative values in GLES codepath (@toxie)
 

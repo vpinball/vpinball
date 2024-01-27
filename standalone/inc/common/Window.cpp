@@ -53,7 +53,7 @@ Window::Window(const string& szTitle, SDL_Window* pWindow, SDL_Renderer* pRender
    int w2, h2;
    SDL_GetWindowPosition(m_pWindow, &m_x, &m_y);
    SDL_GetWindowSize(m_pWindow, &w2, &h2);
-   PLOGI.printf("Window created: title=%s, %dx%d (%dx%d)", m_szTitle.c_str(), m_x, m_y, w2, h2);
+   PLOGI.printf("Window created: title=%s, size=%dx%d, pos=%d,%d", m_szTitle.c_str(), w2, h2, m_x, m_y);
 
    SDL_RenderSetLogicalSize(m_pRenderer, w2, h2);
 
@@ -117,7 +117,7 @@ void Window::TimerElapsed(VP::Timer* pTimer)
       m_x = x;
       m_y = y;
 
-      PLOGI.printf("%s window moved to: %d, %d", m_szTitle.c_str(), m_x, m_y);
+      PLOGI.printf("Window moved: title=%s, pos=%d,%d", m_szTitle.c_str(), m_x, m_y);
    }
 }
 

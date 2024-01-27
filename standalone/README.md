@@ -69,7 +69,7 @@ To make a successful port, we would need tackle several tasks:
 >   - ~~[Bug 55185](https://bugs.winehq.org/show_bug.cgi?id=55185) - vbscript round does not handle numdecimalplaces argument~~
 >   - ~~[Bug 55931](https://bugs.winehq.org/show_bug.cgi?id=55931) - vbscript: empty MOD 100000 returns garbage instead of 0~~
 >   - ~~[Bug 55969](https://bugs.winehq.org/show_bug.cgi?id=55969) - vbscript fails to return TypeName for Nothing~~
->   - [Bug 56139](https://bugs.winehq.org/show_bug.cgi?id=56139) - scrrun: Dictionary does not allow storing at key Undefined
+>   - ~~[Bug 56139](https://bugs.winehq.org/show_bug.cgi?id=56139) - scrrun: Dictionary does not allow storing at key Undefined~~
 
 > - Add support for `Scripting.FileSystemObject` and `Scripting.Dictionary` leveraging Wine's `scrrun` code.
 > - Add support for `E_NOTIMPL` commands to Wine's VBScript engine:
@@ -134,7 +134,7 @@ To make a successful port, we would need tackle several tasks:
 
 In a terminal execute the following:
 ```
-brew install cmake bison curl
+brew install autoconf automake cmake bison curl
 export PATH="$(brew --prefix bison)/bin:$PATH"
 git clone -b standalone https://github.com/vpinball/vpinball
 cd vpinball/standalone/macos-arm64
@@ -151,7 +151,7 @@ cmake --build build -- -j$(sysctl -n hw.ncpu)
 
 In a terminal execute the following:
 ```
-brew install cmake bison curl
+brew install autoconf automake cmake bison curl
 export PATH="$(brew --prefix bison)/bin:$PATH"
 git clone -b standalone https://github.com/vpinball/vpinball
 cd vpinball/standalone/macos-x64
@@ -222,7 +222,7 @@ $ANDROID_HOME/platform-tools/adb -d logcat org.vpinball.app
 
 In a terminal execute the following:
 ```
-sudo apt install git build-essential cmake bison curl zlib1g-dev libdrm-dev libgbm-dev libglu1-mesa-dev libegl-dev libudev-dev libx11-dev libxrandr-dev
+sudo apt install git build-essential autoconf automake cmake bison curl zlib1g-dev libdrm-dev libgbm-dev libglu1-mesa-dev libegl-dev libudev-dev libx11-dev libxrandr-dev
 git clone -b standalone https://github.com/vpinball/vpinball
 cd vpinball/standalone/linux
 ./external.sh
@@ -237,7 +237,7 @@ cmake --build build -- -j$(nproc)
 In a terminal execute the following:
 ```
 sudo dnf groupinstall "Development Tools"
-sudo dnf install gcc-c++ cmake bison curl
+sudo dnf install gcc-c++ autoconf automake cmake bison curl
 git clone -b standalone https://github.com/vpinball/vpinball
 cd vpinball/standalone/linux
 ./external.sh
@@ -258,7 +258,7 @@ sudo add-apt-repository ppa:liujianfeng1994/rockchip-multimedia
 sudo apt update
 sudo apt dist-upgrade
 sudo apt install mali-g610-firmware rockchip-multimedia-config
-sudo apt-get install git pkg-config cmake bison zlib1g-dev libdrm-dev libgbm-dev libgles2-mesa-dev libgles2-mesa libudev-dev
+sudo apt-get install git pkg-config autoconf automake cmake bison zlib1g-dev libdrm-dev libgbm-dev libgles2-mesa-dev libgles2-mesa libudev-dev
 git clone -b standalone https://github.com/vpinball/vpinball
 cd vpinball/standalone/rk3588
 ./external.sh
@@ -272,7 +272,7 @@ cmake --build build
 
 Start with a [Raspberry Pi OS Lite (64-Bit)](https://www.raspberrypi.com/software/operating-systems/#raspberry-pi-os-64-bit) image and execute the following:
 ```
-sudo apt-get install git pkg-config cmake bison zlib1g-dev libdrm-dev libgbm-dev libgles2-mesa-dev libgles2-mesa libudev-dev
+sudo apt-get install git pkg-config autoconf automake cmake bison zlib1g-dev libdrm-dev libgbm-dev libgles2-mesa-dev libgles2-mesa libudev-dev
 git clone -b standalone https://github.com/vpinball/vpinball
 cd vpinball/standalone/rpi
 ./external.sh
@@ -309,7 +309,7 @@ To extract a table script, execute the following:
 ./VPinballX_GL -extractvbs <table.vpx>
 ```
 
-To list all available fullscreen resolutions, execute the following: 
+To list all available fullscreen resolutions and window fullscreen desktop resolutions, execute the following: 
 ```
 ./VPinballX_GL -listres
 ```
@@ -594,7 +594,6 @@ Notes:
 - Replace the `FlexDMD` variable accordingly.
 - Replace `DMDColoredPixels` with `DMDPixels` if your FlexDMD is not RGB24.
 
-
 ### DTArray (Drop Targets)
 
 Wine's vbscript engine cannot handle multi-dimension array assignments. For example:
@@ -794,6 +793,10 @@ export PATH=/opt/homebrew/opt/llvm/bin:/opt/homebrew/opt/bison/bin:/System/Crypt
 make -j10
 tools/widl/widl -o ../vpinmame_i.h --nostdinc -Ldlls/\* -Iinclude -D__WINESRC__ -D_UCRT ../pinmame/src/win32com/VPinMAME.idl
 ```
+
+## VBScript Issues
+
+See [vbscript-issues](vbscript.md) for more information.
 
 ## Table Patches
 

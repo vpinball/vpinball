@@ -488,9 +488,13 @@ void Player::CreateWnd(HWND parent /* = 0 */)
 
    if (m_fullScreen)
    {
+#ifndef __STANDALONE__
       //FIXME we have a bug somewhere that will prevent SDL from keeping the focus when in fullscreen mode, so we just run in scaled windowed mode...
       //m_sdl_playfieldHwnd = SDL_CreateWindow(cs.lpszName, displayX, displayY, m_wnd_width, m_wnd_height, flags | SDL_WINDOW_FULLSCREEN);
       m_sdl_playfieldHwnd = SDL_CreateWindow(cs.lpszName, displayX, displayY, displayWidth, displayHeight, flags | SDL_WINDOW_FULLSCREEN);
+#else
+      m_sdl_playfieldHwnd = SDL_CreateWindow(cs.lpszName, displayX, displayY, m_wnd_width, m_wnd_height, flags | SDL_WINDOW_FULLSCREEN);
+#endif
       // Adjust refresh rate
       SDL_DisplayMode mode;
       SDL_GetWindowDisplayMode(m_sdl_playfieldHwnd, &mode);
@@ -499,8 +503,12 @@ void Player::CreateWnd(HWND parent /* = 0 */)
       for (int index = 0; index < SDL_GetNumDisplayModes(adapter); index++)
       {
          SDL_GetDisplayMode(adapter, index, &mode);
+#ifndef __STANDALONE__
          // if (mode.w == m_wnd_width && mode.h == m_wnd_height && mode.refresh_rate == m_refreshrate && mode.format == format)
          if (mode.w == displayWidth && mode.h == displayHeight && mode.refresh_rate == m_refreshrate && mode.format == format)
+#else
+         if (mode.w == m_wnd_width && mode.h == m_wnd_height && mode.refresh_rate == m_refreshrate && mode.format == format)
+#endif
          {
             SDL_SetWindowDisplayMode(m_sdl_playfieldHwnd, &mode);
             found = true;
