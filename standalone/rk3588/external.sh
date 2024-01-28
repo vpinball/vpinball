@@ -74,7 +74,9 @@ cmake -DSDL_SHARED=ON \
    -DCMAKE_BUILD_TYPE=Release \
    -B build
 cmake --build build -- -j${NUM_PROCS}
-cp build/libSDL2-2.0.so.0 ../../external/lib
+# cmake does not make a symbolic link for libSDL2.so
+ln -s libSDL2-2.0.so build/libSDL2.so
+cp -P build/*.{so,so.*} ../../external/lib
 cd ..
 
 #
@@ -85,14 +87,15 @@ curl -sL https://github.com/libsdl-org/SDL_image/releases/download/release-${SDL
 unzip SDL2_image-${SDL2_IMAGE_VERSION}.zip
 cp -r SDL2_image-${SDL2_IMAGE_VERSION}/SDL_image.h ../external/include/SDL2
 cd SDL2_image-${SDL2_IMAGE_VERSION}
+touch cmake/FindSDL2.cmake # force cmake to use the SDL2 we just built
 cmake -DBUILD_SHARED_LIBS=ON \
    -DSDL2IMAGE_SAMPLES=OFF \
    -DSDL2_INCLUDE_DIR=$(pwd)/../SDL2-${SDL2_VERSION}/include \
-   -DSDL2_LIBRARY=$(pwd)/../SDL2-${SDL2_VERSION}/build/libSDL2-2.0.so \
+   -DSDL2_LIBRARY=$(pwd)/../SDL2-${SDL2_VERSION}/build/libSDL2.so \
    -DCMAKE_BUILD_TYPE=Release \
    -B build
 cmake --build build -- -j${NUM_PROCS}
-cp build/libSDL2_image-2.0.so.0 ../../external/lib
+cp -P build/*.{so,so.*} ../../external/lib
 cd ..
 
 #
@@ -103,16 +106,17 @@ curl -sL https://github.com/libsdl-org/SDL_ttf/releases/download/release-${SDL2_
 unzip SDL2_ttf-${SDL2_TTF_VERSION}.zip
 cp -r SDL2_ttf-${SDL2_TTF_VERSION}/SDL_ttf.h ../external/include/SDL2
 cd SDL2_ttf-${SDL2_TTF_VERSION}
+touch cmake/FindSDL2.cmake # force cmake to use the SDL2 we just built
 cmake -DBUILD_SHARED_LIBS=ON \
    -DSDL2TTF_SAMPLES=OFF \
    -DSDL2_INCLUDE_DIR=$(pwd)/../SDL2-${SDL2_VERSION}/include \
-   -DSDL2_LIBRARY=$(pwd)/../SDL2-${SDL2_VERSION}/build/libSDL2-2.0.so \
+   -DSDL2_LIBRARY=$(pwd)/../SDL2-${SDL2_VERSION}/build/libSDL2.so \
    -DSDL2TTF_VENDORED=ON \
    -DSDL2TTF_HARFBUZZ=ON \
    -DCMAKE_BUILD_TYPE=Release \
    -B build
 cmake --build build -- -j${NUM_PROCS}
-cp build/libSDL2_ttf-2.0.so ../../external/lib
+cp -P build/*.{so,so.*} ../../external/lib
 cd ..
 
 #

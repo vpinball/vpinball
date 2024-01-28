@@ -19,7 +19,7 @@ jobs:
       sha7: ${{ steps.version.outputs.sha7 }}
       tag: ${{ steps.version.outputs.tag }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - id: version
@@ -46,7 +46,7 @@ jobs:
         config: [ Release ]  
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: |
             standalone/rpi/external
@@ -59,6 +59,7 @@ jobs:
           cpu: cortex-a53
           cpu_info: cpuinfo/raspberrypi_zero2_w_arm64
           bind_mount_repository: true
+          shell: /bin/bash
           commands: |
             apt-get update -y --allow-releaseinfo-change
             apt-get install --no-install-recommends -y pkg-config cmake bison autoconf automake libtool zlib1g-dev libdrm-dev libgbm-dev libgles2-mesa libgles2-mesa-dev libudev-dev
@@ -75,8 +76,7 @@ jobs:
             cmake --build build/${{ matrix.config }} -- -j${NUM_PROCS}
             mkdir tmp
             cp build/${{ matrix.config }}/VPinballX_GL tmp
-            cp build/${{ matrix.config }}/*.so tmp
-            cp build/${{ matrix.config }}/*.so.* tmp
+            cp -P build/${{ matrix.config }}/*.{so,so.*} tmp
             cp -r build/${{ matrix.config }}/shader${{ needs.version.outputs.version_short }} tmp
             cp -r build/${{ matrix.config }}/assets tmp
             cp -r build/${{ matrix.config }}/scripts tmp
@@ -84,7 +84,7 @@ jobs:
             cp -r build/${{ matrix.config }}/docs tmp
             cd tmp
             tar -czf ../VPinballX_GL-${{ needs.version.outputs.tag }}-${{ matrix.config }}-rpi-aarch64.tar.gz *
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: VPinballX_GL-${{ needs.version.outputs.tag }}-${{ matrix.config }}-rpi-aarch64
           path: VPinballX_GL-${{ needs.version.outputs.tag }}-${{ matrix.config }}-rpi-aarch64.tar.gz
@@ -99,7 +99,7 @@ jobs:
         config: [ Release ]  
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: |
             standalone/rk3588/external
@@ -112,6 +112,7 @@ jobs:
           cpu: cortex-a53
           cpu_info: cpuinfo/raspberrypi_zero2_w_arm64
           bind_mount_repository: true
+          shell: /bin/bash
           commands: |
             apt-get update -y --allow-releaseinfo-change
             apt-get install --no-install-recommends -y pkg-config cmake bison autoconf automake libtool zlib1g-dev libdrm-dev libgbm-dev libgles2-mesa libgles2-mesa-dev libudev-dev
@@ -128,8 +129,7 @@ jobs:
             cmake --build build/${{ matrix.config }} -- -j${NUM_PROCS}
             mkdir tmp
             cp build/${{ matrix.config }}/VPinballX_GL tmp
-            cp build/${{ matrix.config }}/*.so tmp
-            cp build/${{ matrix.config }}/*.so.* tmp
+            cp -P build/${{ matrix.config }}/*.{so,so.*} tmp
             cp -r build/${{ matrix.config }}/shader${{ needs.version.outputs.version_short }} tmp
             cp -r build/${{ matrix.config }}/assets tmp
             cp -r build/${{ matrix.config }}/scripts tmp
@@ -137,7 +137,7 @@ jobs:
             cp -r build/${{ matrix.config }}/docs tmp
             cd tmp
             tar -czf ../VPinballX_GL-${{ needs.version.outputs.tag }}-${{ matrix.config }}-rk3588-aarch64.tar.gz *
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: VPinballX_GL-${{ needs.version.outputs.tag }}-${{ matrix.config }}-rk3588-aarch64
           path: VPinballX_GL-${{ needs.version.outputs.tag }}-${{ matrix.config }}-rk3588-aarch64.tar.gz

@@ -1,4 +1,6 @@
-cmake_minimum_required(VERSION 3.18)
+cmake_minimum_required(VERSION 3.25)
+
+option(POST_BUILD_COPY_EXT_LIBS "Copy external libraries to build directory" ON)
 
 file(READ vpversion.h version)
 string(REGEX MATCH "VP_VERSION_MAJOR[ ]+([0-9]+)" _tmp ${version})
@@ -634,9 +636,9 @@ target_link_directories(vpinball PUBLIC
 target_link_libraries(vpinball PUBLIC
    glad
    freeimage
-   -l:libSDL2-2.0.so.0
-   -l:libSDL2_image-2.0.so.0
-   -l:libSDL2_ttf-2.0.so
+   SDL2
+   SDL2_image
+   SDL2_ttf
    bass
    -l:libpinmame.so.3.6
    -l:libaltsound.so.0.1.0
@@ -675,14 +677,11 @@ add_custom_command(TARGET vpinball POST_BUILD
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/SSR_GL.fxh" "$<TARGET_FILE_DIR:vpinball>/shader${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/Stereo.fxh" "$<TARGET_FILE_DIR:vpinball>/shader${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}"
    COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/standalone/inc/flexdmd/resources" "$<TARGET_FILE_DIR:vpinball>/flexdmd"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/rpi/external/lib/libSDL2-2.0.so.0" "$<TARGET_FILE_DIR:vpinball>"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/rpi/external/lib/libSDL2_image-2.0.so.0" "$<TARGET_FILE_DIR:vpinball>"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/rpi/external/lib/libSDL2_ttf-2.0.so" "$<TARGET_FILE_DIR:vpinball>"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/rpi/external/lib/libbass.so" "$<TARGET_FILE_DIR:vpinball>"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/rpi/external/lib/libpinmame.so.3.6" "$<TARGET_FILE_DIR:vpinball>"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/rpi/external/lib/libaltsound.so.0.1.0" "$<TARGET_FILE_DIR:vpinball>"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/rpi/external/lib/libzedmd.so.0.5.0" "$<TARGET_FILE_DIR:vpinball>"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/rpi/external/lib/libserum.so.1.6.2" "$<TARGET_FILE_DIR:vpinball>"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/rpi/external/lib/libdmdutil.so.0.1.0" "$<TARGET_FILE_DIR:vpinball>"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/rpi/external/lib/libserialport.so.0" "$<TARGET_FILE_DIR:vpinball>"
 )
+
+if(POST_BUILD_COPY_EXT_LIBS)
+   add_custom_command(TARGET vpinball POST_BUILD
+      COMMAND cp -P "${CMAKE_SOURCE_DIR}/standalone/rpi/external/lib/*.so" "$<TARGET_FILE_DIR:vpinball>"
+      COMMAND cp -P "${CMAKE_SOURCE_DIR}/standalone/rpi/external/lib/*.so.*" "$<TARGET_FILE_DIR:vpinball>"
+   )
+endif()

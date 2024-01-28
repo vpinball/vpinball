@@ -41,7 +41,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - id: cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: DXSDK
           key: cache-dxsdk
@@ -66,7 +66,7 @@ jobs:
         config: [ Release, Debug ]
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: DXSDK
           key: cache-dxsdk
@@ -97,7 +97,7 @@ jobs:
           cp -r build/${{ matrix.config }}/scripts tmp
           cp -r build/${{ matrix.config }}/tables tmp
           cp -r build/${{ matrix.config }}/docs tmp
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: VPinballX-${{ needs.version.outputs.tag }}-${{ matrix.config }}-${{ matrix.platform }}
           path: tmp
@@ -113,7 +113,7 @@ jobs:
         config: [ Release, Debug ]
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: DXSDK
           key: cache-dxsdk
@@ -140,11 +140,10 @@ jobs:
           cp build/${{ matrix.config }}/*.dll tmp
           cp -r build/${{ matrix.config }}/assets tmp
           cp -r build/${{ matrix.config }}/shader${{ needs.version.outputs.version_short }} tmp
-          cp -r build/${{ matrix.config }}/assets tmp
           cp -r build/${{ matrix.config }}/scripts tmp
           cp -r build/${{ matrix.config }}/tables tmp
           cp -r build/${{ matrix.config }}/docs tmp
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: VPinballX_GL-${{ needs.version.outputs.tag }}-${{ matrix.config }}-${{ matrix.platform }}
           path: tmp
@@ -162,7 +161,7 @@ jobs:
           brew install bison autoconf automake
           echo "/usr/local/opt/bison/bin" >> $GITHUB_PATH
       - uses: actions/checkout@v4
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: |
             standalone/macos-arm64/external
@@ -200,7 +199,7 @@ jobs:
       - run: |
           mkdir tmp
           cp build/${{ matrix.config }}/*.dmg tmp
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: VPinballX_GL-${{ needs.version.outputs.tag }}-${{ matrix.config }}-macos-arm64
           path: tmp
@@ -218,7 +217,7 @@ jobs:
           brew install bison autoconf automake
           echo "/usr/local/opt/bison/bin" >> $GITHUB_PATH
       - uses: actions/checkout@v4
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: |
             standalone/macos-x64/external
@@ -256,7 +255,7 @@ jobs:
       - run: |
           mkdir tmp
           cp build/${{ matrix.config }}/*.dmg tmp
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: VPinballX_GL-${{ needs.version.outputs.tag }}-${{ matrix.config }}-macos-x64
           path: tmp
@@ -273,12 +272,12 @@ jobs:
       - run: |
           sudo apt install bison
       - uses: actions/checkout@v4
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: |
             standalone/android/external
           key: ${{ matrix.config }}-android-arm64-v8a-external-${{ hashFiles('standalone/android/external.sh') }}
-      - uses: actions/setup-java@v3
+      - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
@@ -305,7 +304,7 @@ jobs:
       - run: |
           mkdir tmp
           cp standalone/android/android-project/app/build/outputs/apk/debug/VPinballX_GL-*.apk tmp
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: VPinballX_GL-${{ needs.version.outputs.tag }}-${{ matrix.config }}-android-arm64-v8a
           path: tmp
@@ -326,7 +325,7 @@ jobs:
           sudo apt-get update
           sudo apt install cmake bison zlib1g-dev libdrm-dev libgbm-dev libglu1-mesa-dev libegl-dev libudev-dev libx11-dev libxrandr-dev
       - uses: actions/checkout@v4
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: |
             standalone/linux/external
@@ -348,8 +347,7 @@ jobs:
       - run: |
           mkdir tmp
           cp build/${{ matrix.config }}/VPinballX_GL tmp
-          cp build/${{ matrix.config }}/*.so tmp
-          cp build/${{ matrix.config }}/*.so.* tmp
+          cp -P build/${{ matrix.config }}/*.{so,so.*} tmp
           cp -r build/${{ matrix.config }}/flexdmd tmp
           cp -r build/${{ matrix.config }}/shader${{ needs.version.outputs.version_short }} tmp
           cp -r build/${{ matrix.config }}/assets tmp
@@ -359,7 +357,7 @@ jobs:
       - run: |
           cd tmp
           tar -czf ../VPinballX_GL-${{ needs.version.outputs.tag }}-${{ matrix.config }}-linux-x64.tar.gz *
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: VPinballX_GL-${{ needs.version.outputs.tag }}-${{ matrix.config }}-linux-x64
           path: VPinballX_GL-${{ needs.version.outputs.tag }}-${{ matrix.config }}-linux-x64.tar.gz

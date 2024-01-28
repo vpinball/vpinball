@@ -4,6 +4,9 @@ To keep up with all the changes in master, and make it easier to rebase, this br
 
 The downside of this approach is not accurately keeping track of history:
 
+* 01/28/24
+    * Rework linux/sbc CMakeLists.txt to copy external libraries based on option
+
 * 01/27/24
     * Fixed resolution switching on MacOS when using FullScreen = 1
     * Added `Available window fullscreen desktop resolutions` to `-listres`
