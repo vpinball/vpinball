@@ -680,7 +680,7 @@ add_custom_command(TARGET vpinball POST_BUILD
 
 if(POST_BUILD_COPY_EXT_LIBS)
    add_custom_command(TARGET vpinball POST_BUILD
-      COMMAND cp -P "${CMAKE_SOURCE_DIR}/standalone/rk3588/external/lib/*.so" "$<TARGET_FILE_DIR:vpinball>"
-      COMMAND cp -P "${CMAKE_SOURCE_DIR}/standalone/rk3588/external/lib/*.so.*" "$<TARGET_FILE_DIR:vpinball>"
+      COMMAND cp -P "${CMAKE_SOURCE_DIR}/standalone/linux/external/lib/*.so" "$<TARGET_FILE_DIR:vpinball>"
+      COMMAND cp -P "${CMAKE_SOURCE_DIR}/standalone/linux/external/lib/*.so.*" "$<TARGET_FILE_DIR:vpinball>"
    )
 endif()

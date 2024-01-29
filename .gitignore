@@ -27,3 +27,4 @@ standalone/android/android-project/app/src/main/assets
 standalone/android/android-project/app/src/main/jniLibs
 standalone/linux/external
 standalone/rpi/external
+standalone/rk3588/external
