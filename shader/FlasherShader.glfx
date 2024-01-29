@@ -120,7 +120,6 @@ void main()
    if (amount_blend_modulate_vs_add_flasherMode.z == 0.) // Mode 0 mods it by Texture
    {
       result *= pixel1;
-      result.a = clamp(result.a, 0.0, 200.0); // Need to clamp here or we get some saturation artifacts on some tables
    }
 
    BRANCH if (amount_blend_modulate_vs_add_flasherMode.z == 1.) // Mode 1 allows blends between Tex 1 & 2, and then mods the staticColor with it
@@ -144,7 +143,7 @@ void main()
    }
 
    if (alphaTestValueAB_filterMode_addBlend.w == 0.)
-      color = result;
+      color = float4(result.xyz, saturate(result.a)); // Need to clamp here or we get some saturation artifacts on some tables
    else
       color = float4(result.xyz*(-amount_blend_modulate_vs_add_flasherMode.y*result.a), // negative as it will be blended with '1.0-thisvalue' (the 1.0 is needed to modulate the underlying elements correctly, but not wanted for the term below)
                      1.0/amount_blend_modulate_vs_add_flasherMode.y - 1.0);
