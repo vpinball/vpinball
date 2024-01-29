@@ -80,7 +80,7 @@ float4 ps_main_noLight(const in VS_OUTPUT_2D IN)
    float4 result = staticColor_Alpha; // Mode 2 wires this through
 
    if (amount_blend_modulate_vs_add_flasherMode.z == 0.) // Mode 0 mods it by Texture
-      result *= pixel1; //!! gl has clamp for alpha
+      result *= pixel1;
 
    BRANCH if (amount_blend_modulate_vs_add_flasherMode.z == 1.) // Mode 1 allows blends between Tex 1 & 2, and then mods the staticColor with it
    {
@@ -103,7 +103,7 @@ float4 ps_main_noLight(const in VS_OUTPUT_2D IN)
    }
 
    if (alphaTestValueAB_filterMode_addBlend.w == 0.)
-      return result;
+      return float4(result.xyz, saturate(result.a)); // Need to clamp here or we get some saturation artifacts on some tables
    else
       return float4(result.xyz*(-amount_blend_modulate_vs_add_flasherMode.y*result.a), // negative as it will be blended with '1.0-thisvalue' (the 1.0 is needed to modulate the underlying elements correctly, but not wanted for the term below)
                     1.0/amount_blend_modulate_vs_add_flasherMode.y - 1.0);
