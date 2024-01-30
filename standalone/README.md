@@ -145,7 +145,12 @@ cmake -DCMAKE_BUILD_TYPE=Release -B build
 cmake --build build -- -j$(sysctl -n hw.ncpu)
 ```
 
-*Note:* Make sure `SDL2`, `SDL2_image`, and `freeimage` are not installed by `brew`, otherwise you may have compile issues
+*Note 1:* Make sure `SDL2`, `SDL2_image`, and `freeimage` are not installed by `brew`, otherwise you may have compile issues
+*Note 2:* if 'cmake -DCMAKE_BUILD_TYPE=Release -B build' fails because the bison version is too old, you can point to a specific bison:
+```
+# use the path to your bison 3.8.2 homebrew install
+cmake -DCMAKE_BUILD_TYPE=Release -DBISON_EXECUTABLE=/opt/homebrew/bin/bison -B build
+```
 
 ### MacOS (x64)
 
