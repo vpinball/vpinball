@@ -250,6 +250,11 @@ public:
    STDMETHOD(get_Color)(/*[out, retval]*/ OLE_COLOR *pVal);
    STDMETHOD(put_Color)(/*[in]*/ OLE_COLOR newVal);
 
+   STDMETHOD(get_ReflectionProbe)(/*[out, retval]*/ BSTR *pVal);
+   STDMETHOD(put_ReflectionProbe)(/*[in]*/ BSTR newVal);
+   STDMETHOD(get_RefractionProbe)(/*[out, retval]*/ BSTR *pVal);
+   STDMETHOD(put_RefractionProbe)(/*[in]*/ BSTR newVal);
+
    Primitive();
    virtual ~Primitive();
 

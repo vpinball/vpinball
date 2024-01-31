@@ -142,10 +142,6 @@ public:
 
    void WriteRegDefaults() final;
 
-   STDMETHOD(GetInPlayState)(/*[out, retval]*/ float* pVal);
-   STDMETHOD(GetInPlayStateBool)(/*[out, retval]*/ VARIANT_BOOL* pVal);
-   STDMETHOD(GetInPlayIntensity)(/*[out, retval]*/ float *pVal);
-
    void InitShape();
    void setInPlayState(const float newVal);
 
@@ -289,6 +285,10 @@ public:
    STDMETHOD(put_Visible)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(Duration)(/*[in]*/float startState, /*[in]*/long newVal, /*[in]*/float endState);
    STDMETHOD(get_FilamentTemperature)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(GetInPlayState)(/*[out, retval]*/ float* pVal);
+   STDMETHOD(GetInPlayStateBool)(/*[out, retval]*/ VARIANT_BOOL* pVal);
+   STDMETHOD(GetInPlayIntensity)(/*[out, retval]*/ float *pVal);
+
 
    // was: class IBlink
 private:
