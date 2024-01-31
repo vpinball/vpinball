@@ -477,6 +477,7 @@ DMDColoredPixels = myDMDdata
 | *Image | string | 
 | ImageMode | bool |  if true, passthrough Image (as if it would be fully emissive), otherwise light image with global lighting using the attached Surface material
 | DepthBias | float | 
+| Fader | enum |  Fader used to fade intensity between states: 0 = None, 1 = Linear, 2 = Incandescent
 | FadeSpeedUp | float |  speed to fade into on state (value is intensity per ms)
 | FadeSpeedDown | float |  speed to fade into off state (value is intensity per ms)
 | Bulb | bool | 
@@ -604,6 +605,9 @@ DMDColoredPixels = myDMDdata
 | RotAndTra6 | float |  Legacy. Replaced by ObjRotX
 | RotAndTra7 | float |  Legacy. Replaced by ObjRotY
 | RotAndTra8 | float |  Legacy. Replaced by ObjRotZ
+| ReflectionProbe | string |  name of reflection probe to be used for mirror reflection
+| RefractionProbe | string |  name of refraction probe to be used for transparency
+
 
 ### Methods
 The following methods only applies to mesh primitives with an animation sequence

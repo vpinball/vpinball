@@ -630,6 +630,7 @@ UserValue(any) - can store any user defined value for re-use later-on
 *Image(string)
 ImageMode(bool) - if true, passthrough Image (as if it would be fully emissive), otherwise light image with global lighting using the attached Surface material
 DepthBias(float)
+Fader(enum) - Fader used to fade intensity between states: 0 = None, 1 = Linear, 2 = Incandescent
 FadeSpeedUp(float) - speed to fade into on state (value is intensity per ms)
 FadeSpeedDown(float) - speed to fade into off state (value is intensity per ms)
 Bulb(bool)
@@ -757,6 +758,8 @@ Opacity(float) - lets you define the blend amount 0..100% (you can use values >1
 Color - defines the color of the element in the editor. If you don't want to colorize the image set the color to blank white (RGB 255,255,255)
 AddBlend(bool) - use additive alpha blending instead of classical alpha blending (also disable depth buffer writing)
 EnableDepthMask(bool) - enables/disables depth masking
+ReflectionProbe(string) - name of reflection probe to be used for mirror reflection
+RefractionProbe(string) - name of refraction probe to be used for transparency
 
 The following only applies to mesh primitives with an animation sequence
 ------------------------------------------------------------------------

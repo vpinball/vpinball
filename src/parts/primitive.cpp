@@ -3115,3 +3115,37 @@ void Primitive::setInPlayState(const bool newVal)
 {
     m_inPlayState = newVal;
 }
+
+STDMETHODIMP Primitive::get_ReflectionProbe(BSTR *pVal)
+{
+   WCHAR wz[MAXTOKEN];
+   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szReflectionProbe.c_str(), -1, wz, MAXTOKEN);
+   *pVal = SysAllocString(wz);
+   return S_OK;
+}
+
+STDMETHODIMP Primitive::put_ReflectionProbe(BSTR newVal)
+{
+   char szProbe[MAXTOKEN];
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szProbe, MAXTOKEN, nullptr, nullptr);
+   m_d.m_szReflectionProbe = szProbe;
+
+   return S_OK;
+}
+
+STDMETHODIMP Primitive::get_RefractionProbe(BSTR *pVal)
+{
+   WCHAR wz[MAXTOKEN];
+   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szRefractionProbe.c_str(), -1, wz, MAXTOKEN);
+   *pVal = SysAllocString(wz);
+   return S_OK;
+}
+
+STDMETHODIMP Primitive::put_RefractionProbe(BSTR newVal)
+{
+   char szProbe[MAXTOKEN];
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szProbe, MAXTOKEN, nullptr, nullptr);
+   m_d.m_szRefractionProbe = szProbe;
+
+   return S_OK;
+}
