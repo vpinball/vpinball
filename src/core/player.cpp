@@ -3040,8 +3040,8 @@ void Player::DrawBulbLightBuffer()
       if (hitable->HitableGetItemType() == eItemLight)
          hitable->Render(m_render_mask);
    m_render_mask &= ~LIGHT_BUFFER;
-
    bool hasLight = p3dDevice->GetCurrentPass()->GetCommandCount() > 0;
+
    if (hasLight)
    { // Only apply blur if we have actually rendered some lights
       RenderPass* renderPass = p3dDevice->GetCurrentPass();
