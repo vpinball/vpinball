@@ -84,9 +84,18 @@ float4 ps_main_DMD_no(const in VS_OUTPUT IN) : COLOR
 }
 #endif
 
+#if 0
 float nrand(const float2 uv)
 {
    return frac(sin(dot(uv, float2(12.9898, 78.233))) * 43758.5453);
+}
+#endif
+
+float2 hash22(const float2 uv)
+{
+   float3 p3 = frac(uv.xyx * float3(.1031, .1030, .0973));
+   p3 += dot(p3, p3.yzx + 33.33);
+   return frac((p3.xx + p3.yz)*p3.zy);
 }
 
 #if 0
@@ -126,22 +135,24 @@ float4 ps_main_DMD(const in VS_OUTPUT IN) : COLOR
    const float2 ddxs = ddx(IN.tex0)*blur; // use ddx and ddy to help the oversampling below/make filtering radius dependent on projected 'dots'/texel
    const float2 ddys = ddy(IN.tex0)*blur;
 
-   const float2 offs = float2(nrand(IN.tex0 + vRes_Alpha_time.w), nrand(IN.tex0 + (2048.0 + vRes_Alpha_time.w))); // random offset for the oversampling
+   const float dist_factor = clamp(1.-length(ddxs+ddys)*6.66, 0.4,1.0); // fades the smooth dots to unicolored rectangles for less aliasing
+
+   const float2 offs = hash22(IN.tex0 + vRes_Alpha_time.w); //float2(nrand(IN.tex0 + vRes_Alpha_time.w), nrand(IN.tex0 + (2048.0 + vRes_Alpha_time.w))); // random offset for the oversampling
 
    // brute force oversampling of DMD-texture and especially the dot-function (using 25 samples)
    float3 color2 = float3(0., 0., 0.);
 
-   const int samples = 21; //4,8,9,13,21,25,32 korobov,fibonacci
+   const int samples = 13; //4,8,9,13,21,25,32 korobov,fibonacci
    [unroll] for (int i = 0; i < samples; ++i) // oversample the dots
    {
-      const float2 xi = float2(frac(i* (1.0 / samples) + offs.x), frac(i* (13.0 / samples) + offs.y)); //1,5,2,8,13,7,7 korobov,fibonacci
+      const float2 xi = float2(frac(i* (1.0 / samples) + offs.x), frac(i* (8.0 / samples) + offs.y)); //1,5,2,8,13,7,7 korobov,fibonacci
       //const float2 gxi = gaussianPDF(xi);
       const float2 uv = IN.tex0 + /*gxi.x*ddxs + gxi.y*ddys; /*/ triangularPDF(xi.x)*ddxs + triangularPDF(xi.y)*ddys; //!! lots of ALU
 
       const float4 rgba = tex2Dlod(texSampler0, float4(uv, 0., 0.)); //!! lots of tex access by doing this all the time, but (tex) cache should be able to catch all of it
 
       // simulate dot within the sampled texel
-      const float2 dist = frac(uv*vRes_Alpha_time.xy)*2.2 - 1.1;
+      const float2 dist = (frac(uv*vRes_Alpha_time.xy)*2.2 - 1.1) * dist_factor;
       const float d = smoothstep(0., 1., 1.0 - sqr(dist.x*dist.x + dist.y*dist.y));
 
       if (rgba.a != 0.0)
@@ -149,7 +160,7 @@ float4 ps_main_DMD(const in VS_OUTPUT IN) : COLOR
       else
          color2 += rgba.r * (255.9 / 100.) * d;
    }
-   color2 *= vColor_Intensity.xyz * (vColor_Intensity.w/samples); //!! create function that resembles LUT from VPM?
+   color2 *= vColor_Intensity.xyz * (vColor_Intensity.w/samples) * dist_factor; //!! create function that resembles LUT from VPM?
 
    /*float3 colorg = float3(0,0,0);
    [unroll] for(int j = -1; j <= 1; ++j)
