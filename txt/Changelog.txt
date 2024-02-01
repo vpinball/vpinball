@@ -238,6 +238,8 @@ FIXES:
 
 - fix overbrightness in F6 (interactive camera/light editing) mode
 
+- fix noise on small-scaled DMDs (e.g. on FSS setups)
+
 - fix swapped red & blue channels when exporting from BMPs
 
 - handle broken tables better and try to load as much as possible
@@ -299,6 +301,8 @@ FIXES:
 - fix some problems with playing sounds via BASS: pitch/frequency change and loop/restart should now be matching the 'old' player
 
 - fix longstanding textbox font size bug
+
+- fix noise on small-scaled DMDs (e.g. on FSS setups)
 
 - fix swapped red & blue channels when exporting from BMPs
 
