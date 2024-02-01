@@ -5,7 +5,8 @@ To keep up with all the changes in master, and make it easier to rebase, this br
 The downside of this approach is not accurately keeping track of history:
 
 * 02/01/24
-    * Bump PinMAME to 66be20f6f598cb0453196178bfa2a937db819ceb
+    * Bump PinMAME to 982662bec31a63c0e31423e49da5b57d574a3130
+    * Revert normalizing PinMAME lamps to support PWM
 
 * 01/28/24
     * Rework linux/sbc CMakeLists.txt to copy external libraries based on option
