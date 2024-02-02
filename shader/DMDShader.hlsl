@@ -139,7 +139,7 @@ float4 ps_main_DMD(const in VS_OUTPUT IN) : COLOR
    const float2 ddxs = ddx(IN.tex0)*blur; // use ddx and ddy to help the oversampling below/make filtering radius dependent on projected 'dots'/texel
    const float2 ddys = ddy(IN.tex0)*blur;
 
-   const float dist_factor = clamp(1.-length(ddxs+ddys)*6.66, 0.4,1.0); // fades the smooth dots to unicolored rectangles for less aliasing
+   const float dist_factor = clamp((1.-length(ddxs+ddys)*6.66)*sqrt(128./vRes_Alpha_time.x), 0.4,1.0); // fades the smooth dots to unicolored rectangles for less aliasing
 
    const float2 offs = hash22(IN.tex0 + vRes_Alpha_time.w); //float2(nrand(IN.tex0 + vRes_Alpha_time.w), nrand(IN.tex0 + (2048.0 + vRes_Alpha_time.w))); // random offset for the oversampling
 
