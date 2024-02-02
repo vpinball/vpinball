@@ -70,6 +70,8 @@ To make a successful port, we would need tackle several tasks:
 >   - ~~[Bug 55931](https://bugs.winehq.org/show_bug.cgi?id=55931) - vbscript: empty MOD 100000 returns garbage instead of 0~~
 >   - ~~[Bug 55969](https://bugs.winehq.org/show_bug.cgi?id=55969) - vbscript fails to return TypeName for Nothing~~
 >   - ~~[Bug 56139](https://bugs.winehq.org/show_bug.cgi?id=56139) - scrrun: Dictionary does not allow storing at key Undefined~~
+>   - [Bug 56280](https://bugs.winehq.org/show_bug.cgi?id=56280) - vbscript: String coerced to Integer instead of Long?
+>   - [Bug 56281](https://bugs.winehq.org/show_bug.cgi?id=56281) - vbscript: String number converted to ascii value instead of parsed value
 
 > - Add support for `Scripting.FileSystemObject` and `Scripting.Dictionary` leveraging Wine's `scrrun` code.
 > - Add support for `E_NOTIMPL` commands to Wine's VBScript engine:
