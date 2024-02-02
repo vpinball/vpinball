@@ -204,7 +204,6 @@ private:
    vector<VPinMAMEDisplay*> m_displays;
    bool m_hidden;
 
-   bool m_rgb;
    OLE_COLOR m_dmdColor;
    int m_enableSound;
    AudioPlayer* m_pAudioPlayer;

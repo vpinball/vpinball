@@ -175,7 +175,6 @@ VPinMAMEController::VPinMAMEController()
    m_pPinmameGame = NULL;
    m_pPinmameMechConfig = NULL;
 
-   m_rgb = false;
    m_hidden = true;
 
    m_pWindow = nullptr;
@@ -302,8 +301,6 @@ STDMETHODIMP VPinMAMEController::Run(/*[in]*/ LONG_PTR hParentWnd, /*[in,default
             timeout++;
          }
 
-         m_rgb = (PinmameGetHardwareGen() == PINMAME_HARDWARE_GEN_SAM);
-
          Settings* const pSettings = &g_pplayer->m_ptable->m_settings;
 
          if (pSettings->LoadValueWithDefault(Settings::Standalone, "AltSound"s, true)) {
@@ -371,8 +368,6 @@ STDMETHODIMP VPinMAMEController::Stop()
    }
 
    m_displays.clear();
-
-   m_rgb = false;
 
    m_hidden = true;
 
@@ -698,12 +693,7 @@ STDMETHODIMP VPinMAMEController::get_ChangedLamps(VARIANT* pVal)
       V_I4(&varValue) = m_pLampBuffer[ix[0]].lampNo;
       SafeArrayPutElement(psa, ix, &varValue);
       ix[1] = 1;
-
-      if (m_rgb && m_pLampBuffer[ix[0]].lampNo >= 81)
-         V_I4(&varValue) = m_pLampBuffer[ix[0]].state;
-      else
-         V_I4(&varValue) = (m_pLampBuffer[ix[0]].state) ? 1 : 0;
-
+      V_I4(&varValue) = m_pLampBuffer[ix[0]].state;
       SafeArrayPutElement(psa, ix, &varValue);
    }
 
