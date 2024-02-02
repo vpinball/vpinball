@@ -10,6 +10,8 @@ assignees: ''
 **Describe the bug**
 A clear and concise description of what the bug is.
 
+*Note:* If your bug is in **ANY WAY** related to Visual Pinball Standalone, first seek support on the [Virtual Pinball Chat Discord Server](https://discord.com/invite/YHcBrtT), channel `#vpx-standalone`. If your table immediately crashes on launch, please refer to [here](https://github.com/jsm174/vpx-standalone-scripts) and [here](https://github.com/vpinball/vpinball/blob/standalone/standalone/vbscript.md).
+
 **To Reproduce**
 Steps to reproduce the behavior:
 1. Go to '...'
