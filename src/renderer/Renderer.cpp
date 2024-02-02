@@ -1123,7 +1123,7 @@ void Renderer::DrawBulbLightBuffer()
          hitable->Render(m_render_mask);
    m_render_mask &= ~Renderer::LIGHT_BUFFER;
 
-   bool hasLight = p3dDevice->GetCurrentPass()->GetCommandCount() > 1;
+   bool hasLight = p3dDevice->GetCurrentPass()->GetCommandCount() > 0;
    if (hasLight)
    { // Only apply blur if we have actually rendered some lights
       RenderPass* renderPass = p3dDevice->GetCurrentPass();
@@ -1144,6 +1144,10 @@ void Renderer::DrawBulbLightBuffer()
    // Restore state and render target
    p3dDevice->SetRenderTarget(initial_rt->m_name + '+', initial_rt->m_rt);
 
+   #ifndef ENABLE_SDL
+   // For some reason, DirectX 9 will not handle correctly the null texture, so we just disable this optimization
+   hasLight = true;
+   #endif
    if (hasLight)
    {
       // Declare dependency on Bulb Light buffer (actually rendered to the bloom buffer texture)
