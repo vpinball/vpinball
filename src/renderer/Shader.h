@@ -384,10 +384,12 @@ public:
    public:
       ShaderState(Shader* shader)
          : m_shader(shader)
+         , m_stateSize(shader->m_stateSize)
          , m_state(new BYTE[shader->m_stateSize])
       {
       }
       ~ShaderState() { delete[] m_state; }
+      void Reset(Shader* shader) { assert(shader->m_stateSize <= m_stateSize); m_shader = shader; }
       void CopyTo(const bool copyTo, ShaderState* other, const ShaderTechniques technique = SHADER_TECHNIQUE_INVALID)
       {
          assert(other->m_shader == m_shader);
@@ -501,10 +503,12 @@ public:
          #endif
       }
 
-      Shader* const m_shader;
+      Shader* m_shader;
       BYTE* const m_state;
+      const unsigned int m_stateSize;
    };
 
+   unsigned int GetStateSize() const { return m_stateSize; };
    ShaderState* m_state = nullptr; // State that will be applied for the next begin/end pair
 
 private:
