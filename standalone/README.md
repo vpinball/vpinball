@@ -73,7 +73,6 @@ To make a successful port, we would need tackle several tasks:
 >   - [Bug 56280](https://bugs.winehq.org/show_bug.cgi?id=56280) - vbscript: String coerced to Integer instead of Long?
 >   - [Bug 56281](https://bugs.winehq.org/show_bug.cgi?id=56281) - vbscript: String number converted to ascii value instead of parsed value
 
-
 > - Add support for `Scripting.FileSystemObject` and `Scripting.Dictionary` leveraging Wine's `scrrun` code.
 > - Add support for `E_NOTIMPL` commands to Wine's VBScript engine:
 >   - `Execute`
