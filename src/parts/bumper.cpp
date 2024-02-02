@@ -251,7 +251,7 @@ void Bumper::RenderSetup(RenderDevice *device)
    if (m_d.m_baseVisible)
    {
       m_baseTexture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "BumperBase.webp");
-      m_baseTexture.m_alphaTestValue = -1.0f;
+      m_baseTexture.m_alphaTestValue = (float)(-1.0 / 255.0);
       IndexBuffer* baseIndexBuffer = new IndexBuffer(m_rd, bumperBaseNumIndices, bumperBaseIndices);
       VertexBuffer* baseVertexBuffer = new VertexBuffer(m_rd, bumperBaseNumVertices);
       Vertex3D_NoTex2 *buf;
@@ -265,7 +265,7 @@ void Bumper::RenderSetup(RenderDevice *device)
    if (m_d.m_skirtVisible)
    {
       m_skirtTexture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "BumperSkirt.webp");
-      m_skirtTexture.m_alphaTestValue = -1.0f;
+      m_skirtTexture.m_alphaTestValue = (float)(-1.0 / 255.0);
       IndexBuffer* socketIndexBuffer = new IndexBuffer(m_rd, bumperSocketNumIndices, bumperSocketIndices);
       VertexBuffer* socketVertexBuffer = new VertexBuffer(m_rd, bumperSocketNumVertices, nullptr, true);
       Vertex3D_NoTex2 *buf;
@@ -279,7 +279,7 @@ void Bumper::RenderSetup(RenderDevice *device)
    if (m_d.m_ringVisible)
    {
       m_ringTexture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "BumperRing.webp");
-      m_ringTexture.m_alphaTestValue = -1.0f;
+      m_ringTexture.m_alphaTestValue = (float)(-1.0 / 255.0);
       IndexBuffer* ringIndexBuffer = new IndexBuffer(m_rd, bumperRingNumIndices, bumperRingIndices);
       VertexBuffer *ringVertexBuffer = new VertexBuffer(m_rd, bumperRingNumVertices, nullptr, true);
       m_ringVertices = new Vertex3D_NoTex2[bumperRingNumVertices];
@@ -295,7 +295,7 @@ void Bumper::RenderSetup(RenderDevice *device)
    if (m_d.m_capVisible)
    {
       m_capTexture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "BumperCap.webp");
-      m_capTexture.m_alphaTestValue = -1.0f;
+      m_capTexture.m_alphaTestValue = (float)(-1.0 / 255.0);
       IndexBuffer* capIndexBuffer = new IndexBuffer(m_rd, bumperCapNumIndices, bumperCapIndices);
       VertexBuffer* capVertexBuffer = new VertexBuffer(m_rd, bumperCapNumVertices);
       Vertex3D_NoTex2 *buf;
@@ -605,7 +605,7 @@ void Bumper::GenerateCapMesh(Vertex3D_NoTex2 *buf)
       vert = m_fullMatrix.MultiplyVector(vert);
       buf[i].x = vert.x*scalexy + m_d.m_vCenter.x;
       buf[i].y = vert.y*scalexy + m_d.m_vCenter.y;
-      buf[i].z = (vert.z*m_d.m_heightScale + m_d.m_heightScale) + m_baseHeight;
+      buf[i].z = vert.z*m_d.m_heightScale + (m_d.m_heightScale + m_baseHeight);
 
       vert = Vertex3Ds(bumperCap[i].nx, bumperCap[i].ny, bumperCap[i].nz);
       vert = m_fullMatrix.MultiplyVectorNoTranslate(vert);
