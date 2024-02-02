@@ -160,7 +160,7 @@ float4 ps_main_DMD(const in VS_OUTPUT IN) : COLOR
       else
          color2 += rgba.r * (255.9 / 100.) * d;
    }
-   color2 *= vColor_Intensity.xyz * (vColor_Intensity.w/samples) * dist_factor; //!! create function that resembles LUT from VPM?
+   color2 *= vColor_Intensity.xyz * ((vColor_Intensity.w/samples) * sqr(dist_factor)); //!! create function that resembles LUT from VPM?
 
    /*float3 colorg = float3(0,0,0);
    [unroll] for(int j = -1; j <= 1; ++j)
