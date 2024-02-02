@@ -166,10 +166,7 @@ bool RenderFrame::Execute(const bool log)
    #endif
    bool rendered = false;
    for (RenderPass* pass : sortedPasses)
-   {
       rendered |= pass->Execute(log);
-      pass->RecycleCommands(m_commandPool);
-   }
    #ifdef ENABLE_SDL
    if (rendered)
       glFlush(); // Push command queue to the GPU without blocking (tells the GPU that the render queue is ready to be executed)
@@ -177,7 +174,9 @@ bool RenderFrame::Execute(const bool log)
    CHECKD3D(m_rd->GetCoreDevice()->EndScene());
    #endif
 
-   // Recycle passes
+   // Recycle commands & passes
+   for (RenderPass* pass : m_passes)
+      pass->RecycleCommands(m_commandPool);
    m_passPool.insert(m_passPool.end(), m_passes.begin(), m_passes.end());
    m_passes.clear();
 

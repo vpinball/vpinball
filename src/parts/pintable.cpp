@@ -1446,6 +1446,9 @@ PinTable::~PinTable()
    for (size_t i = 0; i < m_materials.size(); ++i)
       delete m_materials[i];
 
+   for (size_t i = 0; i < m_vrenderprobe.size(); ++i)
+      delete m_vrenderprobe[i];
+
    for (int i = 0; i < m_vcollection.size(); i++)
       m_vcollection.ElementAt(i)->Release();
 
