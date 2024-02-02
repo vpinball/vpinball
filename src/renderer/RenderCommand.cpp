@@ -357,11 +357,13 @@ void RenderCommand::SetDrawMesh(
    m_shader = shader;
    m_shaderTechnique = m_shader->GetCurrentTechnique();
    assert(m_shaderTechnique < SHADER_TECHNIQUE_INVALID);
-   if (m_shaderState == nullptr || m_shaderState->m_shader != m_shader)
+   if (m_shaderState == nullptr || m_shader->GetStateSize() > m_shaderState->m_stateSize)
    {
       delete m_shaderState;
       m_shaderState = new Shader::ShaderState(m_shader);
    }
+   else
+      m_shaderState->Reset(m_shader);
    m_shader->m_state->CopyTo(true, m_shaderState, m_shaderTechnique);
 }
 
@@ -374,11 +376,13 @@ void RenderCommand::SetDrawTexturedQuad(Shader* shader, const Vertex3D_TexelOnly
    m_isTransparent = false; // FIXME
    m_shader = shader;
    m_shaderTechnique = m_shader->GetCurrentTechnique();
-   if (m_shaderState == nullptr || m_shaderState->m_shader != m_shader)
+   if (m_shaderState == nullptr || m_shader->GetStateSize() > m_shaderState->m_stateSize)
    {
       delete m_shaderState;
       m_shaderState = new Shader::ShaderState(m_shader);
    }
+   else
+      m_shaderState->Reset(m_shader);
    m_shader->m_state->CopyTo(true, m_shaderState, m_shaderTechnique);
 }
 
@@ -391,10 +395,12 @@ void RenderCommand::SetDrawTexturedQuad(Shader* shader, const Vertex3D_NoTex2* v
    m_isTransparent = false; // FIXME
    m_shader = shader;
    m_shaderTechnique = m_shader->GetCurrentTechnique();
-   if (m_shaderState == nullptr || m_shaderState->m_shader != m_shader)
+   if (m_shaderState == nullptr || m_shader->GetStateSize() > m_shaderState->m_stateSize)
    {
       delete m_shaderState;
       m_shaderState = new Shader::ShaderState(m_shader);
    }
+   else
+      m_shaderState->Reset(m_shader);
    m_shader->m_state->CopyTo(true, m_shaderState, m_shaderTechnique);
 }
