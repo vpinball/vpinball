@@ -192,7 +192,7 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                   ListView_GetItem(GetDlgItem(IDC_SOUNDLIST).GetHwnd(), &lvitem);
                   Texture * const ppi = (Texture *)lvitem.lParam;
                   if (ppi != nullptr)
-                     SetDlgItemText(IDC_ALPHA_MASK_EDIT, std::to_string(255.f * ppi->m_alphaTestValue).c_str());
+                     SetDlgItemText(IDC_ALPHA_MASK_EDIT, f2sz(255.f * ppi->m_alphaTestValue).c_str());
                }
                ::InvalidateRect(GetDlgItem(IDC_PICTUREPREVIEW).GetHwnd(), nullptr, fTrue);
             }
@@ -213,10 +213,10 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             Texture * const ppi = (Texture *)lvitem.lParam;
             if (ppi != nullptr)
             {
-               const float v = sz2f(GetDlgItemText(IDC_ALPHA_MASK_EDIT).c_str());
-               if ((ppi->m_alphaTestValue * 255.f) != v)
+               const float v = sz2f(GetDlgItemText(IDC_ALPHA_MASK_EDIT).c_str())/255.f;
+               if (ppi->m_alphaTestValue != v)
                {
-                  ppi->m_alphaTestValue = v / 255.f;
+                  ppi->m_alphaTestValue = v;
                   CCO(PinTable) * const pt = g_pvp->GetActiveTable();
                   pt->SetNonUndoableDirty(eSaveDirty);
                }
@@ -334,10 +334,10 @@ void ImageDialog::UpdateImages()
             Texture * const ppi = (Texture *)lvitem.lParam;
             if (ppi != nullptr)
             {
-                const float v = sz2f(GetDlgItemText(IDC_ALPHA_MASK_EDIT).c_str());
-                if ((ppi->m_alphaTestValue * 255.f) != v)
+                const float v = sz2f(GetDlgItemText(IDC_ALPHA_MASK_EDIT).c_str())/255.f;
+                if (ppi->m_alphaTestValue != v)
                 {
-                    ppi->m_alphaTestValue = v / 255.f;
+                    ppi->m_alphaTestValue = v;
                     CCO(PinTable) * const pt = g_pvp->GetActiveTable();
                     pt->SetNonUndoableDirty(eSaveDirty);
                 }

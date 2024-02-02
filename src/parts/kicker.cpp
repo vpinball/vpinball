@@ -278,7 +278,7 @@ void Kicker::RenderSetup(RenderDevice *device)
        case KickerCup:
        {
           m_texture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "KickerCup.webp");
-          m_texture.m_alphaTestValue = -1.f;
+          m_texture.m_alphaTestValue = (float)(-1.0 / 255.0);
           m_numIndices = kickerCupNumIndices;
           m_numVertices = kickerCupNumVertices;
           indices = kickerCupIndices;
@@ -287,7 +287,7 @@ void Kicker::RenderSetup(RenderDevice *device)
        case KickerWilliams:
        {
           m_texture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "KickerWilliams.webp");
-          m_texture.m_alphaTestValue = -1.f;
+          m_texture.m_alphaTestValue = (float)(-1.0 / 255.0);
           m_numIndices = kickerWilliamsNumIndices;
           m_numVertices = kickerWilliamsNumVertices;
           indices = kickerWilliamsIndices;
@@ -296,7 +296,7 @@ void Kicker::RenderSetup(RenderDevice *device)
        case KickerGottlieb:
        {
           m_texture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "KickerGottlieb.webp");
-          m_texture.m_alphaTestValue = -1.f;
+          m_texture.m_alphaTestValue = (float)(-1.0 / 255.0);
           m_numIndices = kickerGottliebNumIndices;
           m_numVertices = kickerGottliebNumVertices;
           indices = kickerGottliebIndices;
@@ -305,7 +305,7 @@ void Kicker::RenderSetup(RenderDevice *device)
        case KickerCup2:
        {
           m_texture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "KickerT1.webp");
-          m_texture.m_alphaTestValue = -1.f;
+          m_texture.m_alphaTestValue = (float)(-1.0 / 255.0);
           m_numIndices = kickerT1NumIndices;
           m_numVertices = kickerT1NumVertices;
           indices = kickerT1Indices;
@@ -314,7 +314,7 @@ void Kicker::RenderSetup(RenderDevice *device)
        case KickerHole:
        {
           m_texture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "KickerHoleWood.webp");
-          m_texture.m_alphaTestValue = -1.f;
+          m_texture.m_alphaTestValue = (float)(-1.0 / 255.0);
           m_numIndices = kickerHoleNumIndices;
           m_numVertices = kickerHoleNumVertices;
           indices = kickerHoleIndices;
@@ -324,7 +324,7 @@ void Kicker::RenderSetup(RenderDevice *device)
        case KickerHoleSimple:
        {
           m_texture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "KickerHoleWood.webp");
-          m_texture.m_alphaTestValue = -1.f;
+          m_texture.m_alphaTestValue = (float)(-1.0 / 255.0);
           m_numIndices = kickerSimpleHoleNumIndices;
           m_numVertices = kickerSimpleHoleNumVertices;
           indices = kickerSimpleHoleIndices;

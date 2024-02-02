@@ -518,7 +518,7 @@ void Textbox::Render(const unsigned int renderMask)
       const vec4 c = convertColor(m_d.m_fontcolor, m_d.m_intensity_scale);
       m_rd->m_DMDShader->SetVector(SHADER_vColor_Intensity, &c);
       #ifdef DMD_UPSCALE
-      const vec4 r((float)(m_dmd.x * 3), (float)(m_dmd.y * 3), 1.f, (float)(m_overall_frames % 2048));
+      const vec4 r((float)(g_pplayer->m_dmd.x * 3), (float)(g_pplayer->m_dmd.y * 3), 1.f, (float)(g_pplayer->m_overall_frames % 2048));
       #else
       const vec4 r((float)g_pplayer->m_dmd.x, (float)g_pplayer->m_dmd.y, 1.f, (float)(g_pplayer->m_overall_frames % 2048));
       #endif
