@@ -8169,6 +8169,7 @@ bool PinTable::AuditTable() const
       case eItemBumper: tdr = &((Bumper *)part)->m_d.m_tdr; break;
       case eItemFlipper: tdr = &((Flipper *)part)->m_d.m_tdr; break;
       case eItemGate: tdr = &((Gate *)part)->m_d.m_tdr; break;
+      default: break;
       }
       if (tdr && tdr->m_TimerEnabled && tdr->m_TimerInterval != -1 && tdr->m_TimerInterval != -2 && tdr->m_TimerInterval < 5)
          ss << ". Warning: Part '" << part->GetName() << "' uses a timer with a very short period of " << tdr->m_TimerInterval << "ms. This will likely causes lag and the table will not support 'frame pacing'.\n";

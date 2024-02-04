@@ -3,17 +3,10 @@
 #include "libpinmame.h"
 #include "altsound.h"
 #include "DMDUtil/DMDUtil.h"
-
 #include "vpinmame_i.h"
+#include "VPinMAMEWindow.h"
 
 #include <map>
-
-#include "../common/Window.h"
-
-#define SETTINGS_PINMAME_WINDOW_X      15
-#define SETTINGS_PINMAME_WINDOW_Y      30 + 218 + 5 + 75 + 5
-#define SETTINGS_PINMAME_WINDOW_WIDTH  290
-#define SETTINGS_PINMAME_WINDOW_HEIGHT 75
 
 class VPinMAMEGames;
 
@@ -22,7 +15,7 @@ typedef struct {
    UINT8 r;
    UINT8 g;
    UINT8 b;
-   DMDUtil::DMD* pDmd;
+   DMDUtil::DMD* pDMD;
 } VPinMAMEDisplay;
 
 class VPinMAMEController : public IController
@@ -187,9 +180,6 @@ public:
    string GetIniPath() { return m_szIniPath; }
 
 private:
-   DMDUtil::DMD* GetActiveDMD();
-   void RenderLoop();
-
    string m_szPath;
    string m_szIniPath;
    string m_szSplashInfoLine;
@@ -203,13 +193,12 @@ private:
    VPinMAMEGames* m_pGames;
    vector<VPinMAMEDisplay*> m_displays;
    bool m_hidden;
-
    OLE_COLOR m_dmdColor;
    int m_enableSound;
    AudioPlayer* m_pAudioPlayer;
    int m_audioChannels;
-
-   VP::Window* m_pWindow;
+   VPinMAMEWindow* m_pWindow;
+   DMDUtil::VirtualDMD* m_pVirtualDMD;
    std::thread* m_pThread;
    bool m_running;
 

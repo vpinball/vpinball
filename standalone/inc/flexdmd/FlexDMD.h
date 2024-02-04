@@ -3,16 +3,10 @@
 #include "flexdmd_i.h"
 #include "AssetManager.h"
 #include "../common/Graphics.h"
-#include "../common/Window.h"
-
 #include "DMDUtil/DMDUtil.h"
+#include "FlexDMDWindow.h"
 
 #include <thread>
-
-#define SETTINGS_FLEXDMD_WINDOW_X      15
-#define SETTINGS_FLEXDMD_WINDOW_Y      30 + 218 + 5 + 75 + 5
-#define SETTINGS_FLEXDMD_WINDOW_WIDTH  290
-#define SETTINGS_FLEXDMD_WINDOW_HEIGHT 75
 
 class Group;
 class AnimatedActor;
@@ -134,9 +128,8 @@ private:
    RenderMode m_renderMode;
    OLE_COLOR m_dmdColor;
    AssetManager* m_pAssetManager;
-   DMDUtil::DMD* m_pDmd;
-
-   VP::Window* m_pWindow;
+   FlexDMDWindow* m_pWindow;
+   DMDUtil::VirtualDMD* m_pVirtualDMD;
 
    ULONG m_dwRef = 0;
 };

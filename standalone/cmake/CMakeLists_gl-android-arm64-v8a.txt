@@ -309,6 +309,8 @@ add_library(vpinball SHARED
    standalone/PoleStream.cpp
    standalone/PoleStorage.cpp
 
+   standalone/inc/vpinmame/VPinMAMEWindow.cpp
+   standalone/inc/vpinmame/VPinMAMEWindow.h
    standalone/inc/vpinmame/VPinMAMEController.cpp
    standalone/inc/vpinmame/VPinMAMEController.h
    standalone/inc/vpinmame/VPinMAMEControllerSettings.cpp
@@ -405,6 +407,8 @@ add_library(vpinball SHARED
    standalone/inc/flexdmd/filters/DotFilter.h
    standalone/inc/flexdmd/filters/AdditiveFilter.cpp
    standalone/inc/flexdmd/filters/AdditiveFilter.h
+   standalone/inc/flexdmd/FlexDMDWindow.cpp
+   standalone/inc/flexdmd/FlexDMDWindow.h
    standalone/inc/flexdmd/FlexDMD.cpp
    standalone/inc/flexdmd/FlexDMD.h
    standalone/inc/flexdmd/AssetSrc.cpp
@@ -525,6 +529,8 @@ add_library(vpinball SHARED
    standalone/inc/b2s/dream7/SegmentNumber.h
    standalone/inc/b2s/dream7/SegmentStyle.cpp
    standalone/inc/b2s/dream7/SegmentStyle.h
+   standalone/inc/b2s/forms/FormWindow.cpp
+   standalone/inc/b2s/forms/FormWindow.h
    standalone/inc/b2s/forms/Form.cpp
    standalone/inc/b2s/forms/Form.h
    standalone/inc/b2s/forms/FormBackglass.cpp
@@ -551,6 +557,8 @@ add_library(vpinball SHARED
    standalone/inc/pup/pinupplayer_i.c
    standalone/inc/pup/pinupplayer_i.h
 
+   standalone/inc/common/WindowManager.cpp
+   standalone/inc/common/WindowManager.h
    standalone/inc/common/Window.cpp
    standalone/inc/common/Window.h
    standalone/inc/common/Graphics.cpp

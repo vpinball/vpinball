@@ -1,6 +1,7 @@
 #include "stdafx.h"
 
 #include "Form.h"
+#include "FormWindow.h"
 
 Form::Form()
 {
@@ -10,8 +11,7 @@ Form::Form()
 
 Form::~Form()
 {
-   if (m_pWindow)
-      delete m_pWindow;
+   delete m_pWindow;
 }
 
 void Form::Show()
@@ -26,12 +26,10 @@ void Form::Hide()
       m_pWindow->Hide();
 }
 
-void Form::Render()
+void Form::Render(VP::Graphics* pGraphics)
 {
-   if (!m_pWindow || !m_pWindow->GetGraphics() || !IsInvalidated())
+   if (!IsInvalidated())
       return;
-
-   VP::Graphics* pGraphics = m_pWindow->GetGraphics();
 
    pGraphics->SetColor(RGB(0, 0, 0));
    pGraphics->Clear();

@@ -4,6 +4,10 @@ To keep up with all the changes in master, and make it easier to rebase, this br
 
 The downside of this approach is not accurately keeping track of history:
 
+* 02/03/24
+    * Add `WindowManager` to automatically handle external window z-order
+    * Update libdmdutil to use new `VirtualDMD`
+
 * 02/01/24
     * Bump PinMAME to 982662bec31a63c0e31423e49da5b57d574a3130
     * Revert normalizing PinMAME lamps to support PWM

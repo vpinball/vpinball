@@ -2,6 +2,7 @@
 
 #include "FormBackglass.h"
 #include "FormDMD.h"
+#include "FormWindow.h"
 #include "../classes/B2SScreen.h"
 #include "../classes/B2SAnimation.h"
 #include "../classes/AnimationInfo.h"
@@ -13,6 +14,7 @@
 #include "../controls/B2SReelBox.h"
 #include "../classes/ControlInfo.h"
 #include "../dream7/Dream7Display.h"
+#include "../../common/WindowManager.h"
 
 #include <SDL2/SDL_image.h>
 #include "tinyxml2/tinyxml2.h"
@@ -85,14 +87,18 @@ FormBackglass::FormBackglass()
 
    if (!pSettings->LoadValueWithDefault(Settings::Standalone, "B2SWindows"s, true)) {
       PLOGI.printf("B2S Backglass window disabled");
-      return;
+      return; 
    }
 
-   m_pWindow = VP::Window::Create("B2SBackglass",
-      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SBackglassX"s, SETTINGS_B2S_BACKGLASSX),
-      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SBackglassY"s, SETTINGS_B2S_BACKGLASSY),
-      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SBackglassWidth"s, SETTINGS_B2S_BACKGLASSWIDTH),
-      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SBackglassHeight"s, SETTINGS_B2S_BACKGLASSHEIGHT));
+   m_pWindow = FormWindow::Create("B2SBackglass",
+      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SBackglassX"s, B2S_SETTINGS_BACKGLASSX),
+      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SBackglassY"s, B2S_SETTINGS_BACKGLASSY),
+      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SBackglassWidth"s, B2S_SETTINGS_BACKGLASSWIDTH),
+      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SBackglassHeight"s, B2S_SETTINGS_BACKGLASSHEIGHT),
+      B2S_BACKGLASS_ZORDER);
+
+   if (m_pWindow)
+      m_pWindow->SetForm(this);
 }
 
 FormBackglass::~FormBackglass()

@@ -2,6 +2,7 @@
 #include "renderer/VRDevice.h"
 #ifdef __STANDALONE__
 #include "imgui/imgui_impl_sdl2.h"
+#include "standalone/inc/common/WindowManager.h"
 #endif
 
 // from dinput.h, modernized to please clang
@@ -745,6 +746,7 @@ void PinInput::HandleInputSDL(DIDEVICEOBJECTDATA *didod)
    {
 #ifdef __STANDALONE__
        ImGui_ImplSDL2_ProcessEvent(&e);
+       g_pplayer->m_pWindowManager->ProcessEvent(&e);
 #endif
       //User requests quit
       switch (e.type) {
@@ -879,6 +881,9 @@ void PinInput::HandleInputSDL(DIDEVICEOBJECTDATA *didod)
 #endif
       }
    }
+#ifdef __STANDALONE__
+   g_pplayer->m_pWindowManager->HandleUpdates();
+#endif
 #endif
 }
 

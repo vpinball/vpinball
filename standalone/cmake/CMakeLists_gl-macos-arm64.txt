@@ -314,6 +314,8 @@ add_executable(vpinball
    standalone/PoleStream.cpp
    standalone/PoleStorage.cpp
 
+   standalone/inc/vpinmame/VPinMAMEWindow.cpp
+   standalone/inc/vpinmame/VPinMAMEWindow.h
    standalone/inc/vpinmame/VPinMAMEController.cpp
    standalone/inc/vpinmame/VPinMAMEController.h
    standalone/inc/vpinmame/VPinMAMEControllerSettings.cpp
@@ -410,6 +412,8 @@ add_executable(vpinball
    standalone/inc/flexdmd/filters/DotFilter.h
    standalone/inc/flexdmd/filters/AdditiveFilter.cpp
    standalone/inc/flexdmd/filters/AdditiveFilter.h
+   standalone/inc/flexdmd/FlexDMDWindow.cpp
+   standalone/inc/flexdmd/FlexDMDWindow.h
    standalone/inc/flexdmd/FlexDMD.cpp
    standalone/inc/flexdmd/FlexDMD.h
    standalone/inc/flexdmd/AssetSrc.cpp
@@ -530,6 +534,8 @@ add_executable(vpinball
    standalone/inc/b2s/dream7/SegmentNumber.h
    standalone/inc/b2s/dream7/SegmentStyle.cpp
    standalone/inc/b2s/dream7/SegmentStyle.h
+   standalone/inc/b2s/forms/FormWindow.cpp
+   standalone/inc/b2s/forms/FormWindow.h
    standalone/inc/b2s/forms/Form.cpp
    standalone/inc/b2s/forms/Form.h
    standalone/inc/b2s/forms/FormBackglass.cpp
@@ -556,6 +562,8 @@ add_executable(vpinball
    standalone/inc/pup/pinupplayer_i.c
    standalone/inc/pup/pinupplayer_i.h
 
+   standalone/inc/common/WindowManager.cpp
+   standalone/inc/common/WindowManager.h
    standalone/inc/common/Window.cpp
    standalone/inc/common/Window.h
    standalone/inc/common/Graphics.cpp
@@ -649,7 +657,7 @@ target_link_libraries(vpinball PUBLIC
    altsound.0.1.0
    zedmd.0.5.0
    serum.1.6.2
-   dmdutil.0.1.0
+   dmdutil.0.2.0
    "-framework AppKit"
 )
 
@@ -692,7 +700,7 @@ add_custom_command(TARGET vpinball POST_BUILD
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/macos-arm64/external/lib/libaltsound.0.1.0.dylib" "$<TARGET_FILE_DIR:vpinball>/../Frameworks"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/macos-arm64/external/lib/libzedmd.0.5.0.dylib" "$<TARGET_FILE_DIR:vpinball>/../Frameworks"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/macos-arm64/external/lib/libserum.1.6.2.dylib" "$<TARGET_FILE_DIR:vpinball>/../Frameworks"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/macos-arm64/external/lib/libdmdutil.0.1.0.dylib" "$<TARGET_FILE_DIR:vpinball>/../Frameworks"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/macos-arm64/external/lib/libdmdutil.0.2.0.dylib" "$<TARGET_FILE_DIR:vpinball>/../Frameworks"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/macos-arm64/external/lib/libserialport.dylib" "$<TARGET_FILE_DIR:vpinball>/../Frameworks"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/macos-arm64/VPinballX_GL.icns" "$<TARGET_FILE_DIR:vpinball>/../Resources"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/macos-arm64/Info.plist" "$<TARGET_FILE_DIR:vpinball>/.."
@@ -713,7 +721,7 @@ if(OPT_CODESIGN)
       COMMAND codesign --sign "${CODESIGN_DEVELOPER_ID}" --timestamp --options runtime ${PATH_APP}/Contents/Frameworks/libaltsound.0.1.0.dylib
       COMMAND codesign --sign "${CODESIGN_DEVELOPER_ID}" --timestamp --options runtime ${PATH_APP}/Contents/Frameworks/libzedmd.0.5.0.dylib
       COMMAND codesign --sign "${CODESIGN_DEVELOPER_ID}" --timestamp --options runtime ${PATH_APP}/Contents/Frameworks/libserum.1.6.2.dylib
-      COMMAND codesign --sign "${CODESIGN_DEVELOPER_ID}" --timestamp --options runtime ${PATH_APP}/Contents/Frameworks/libdmdutil.0.1.0.dylib
+      COMMAND codesign --sign "${CODESIGN_DEVELOPER_ID}" --timestamp --options runtime ${PATH_APP}/Contents/Frameworks/libdmdutil.0.2.0.dylib
       COMMAND codesign --sign "${CODESIGN_DEVELOPER_ID}" --timestamp --options runtime ${PATH_APP}/Contents/Frameworks/libserialport.dylib
       COMMAND codesign --sign "${CODESIGN_DEVELOPER_ID}" --timestamp --options runtime ${PATH_APP}
       COMMAND ditto -c -k --keepParent ${PATH_APP} ${PATH_APP_ZIPPED}
