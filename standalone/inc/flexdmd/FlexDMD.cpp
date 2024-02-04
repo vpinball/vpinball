@@ -14,6 +14,8 @@
 
 #include "AssetManager.h"
 
+#include "../common/WindowManager.h"
+
 FlexDMD::FlexDMD()
 {
    m_width = 128;
@@ -32,22 +34,10 @@ FlexDMD::FlexDMD()
    m_pStage->AddRef();
    m_renderMode = RenderMode_DMD_GRAY_4;
    m_dmdColor = RGB(255, 88, 32);
-   m_pAssetManager = new AssetManager();
-   m_pDmd = NULL;
-   m_pWindow = nullptr;
+   m_pAssetManager = new AssetManager();;
 
-   Settings* const pSettings = &g_pplayer->m_ptable->m_settings;
-
-   if (!pSettings->LoadValueWithDefault(Settings::Standalone, "FlexDMDWindow"s, true)) {
-      PLOGI.printf("FlexDMD window disabled");
-      return;
-   }
-
-   m_pWindow = VP::Window::Create("FlexDMD",
-      pSettings->LoadValueWithDefault(Settings::Standalone, "FlexDMDWindowX"s, SETTINGS_FLEXDMD_WINDOW_X),
-      pSettings->LoadValueWithDefault(Settings::Standalone, "FlexDMDWindowY"s, SETTINGS_FLEXDMD_WINDOW_Y),
-      pSettings->LoadValueWithDefault(Settings::Standalone, "FlexDMDWindowWidth"s, SETTINGS_FLEXDMD_WINDOW_WIDTH),
-      pSettings->LoadValueWithDefault(Settings::Standalone, "FlexDMDWindowHeight"s, SETTINGS_FLEXDMD_WINDOW_HEIGHT));
+   m_pVirtualDMD = nullptr;
+   m_pWindow = FlexDMDWindow::Create();
 }
 
 FlexDMD::~FlexDMD()
@@ -65,9 +55,6 @@ FlexDMD::~FlexDMD()
    m_pStage->Release();
 
    delete m_pAssetManager;
-
-   if (m_pDmd)
-      delete m_pDmd;
 }
 
 STDMETHODIMP FlexDMD::get_Version(LONG *pRetVal)
@@ -272,58 +259,64 @@ STDMETHODIMP FlexDMD::put_Clear(VARIANT_BOOL pRetVal)
 
 STDMETHODIMP FlexDMD::get_DmdColoredPixels(VARIANT* pRetVal)
 {
-   if (!m_pDmd || !m_pDmd->IsUpdated())
+   const UINT8* pRGB24Data = m_pVirtualDMD ? m_pVirtualDMD->GetRGB24Data() : nullptr;
+
+   if (!pRGB24Data)
       return S_FALSE;
 
-   const int end = m_pDmd->GetLength();
+   const int end = m_pVirtualDMD->GetLength();
 
    SAFEARRAY* psa = SafeArrayCreateVector(VT_VARIANT, 0, end);
    VARIANT* pData;
 
    SafeArrayAccessData(psa, (void **)&pData);
 
-   const UINT32* pRGB32Data = m_pDmd->GetRGB32Data();
-
    for (int i = 0; i < end; i++) {
+      int pos = i * 3;
+      UINT8 r = pRGB24Data[pos];
+      UINT8 g = pRGB24Data[pos + 1];
+      UINT8 b = pRGB24Data[pos + 2];
+
       V_VT(&pData[i]) = VT_UI4;
-      V_UI4(&pData[i]) = pRGB32Data[i];
+      V_UI4(&pData[i]) = r | g << 8 | b << 16;
    }
 
    SafeArrayUnaccessData(psa);
 
    V_VT(pRetVal) = VT_ARRAY | VT_VARIANT;
    V_ARRAY(pRetVal) = psa;
-
-   m_pDmd->ResetUpdated();
 
    return S_OK;
 }
 
 STDMETHODIMP FlexDMD::get_DmdPixels(VARIANT* pRetVal)
 {
-   if (!m_pDmd || !m_pDmd->IsUpdated())
+   const UINT8* pRGB24Data = m_pVirtualDMD ? m_pVirtualDMD->GetRGB24Data() : nullptr;
+
+   if (!pRGB24Data)
       return S_FALSE;
 
-   const int end = m_pDmd->GetLength();
+   const int end = m_pVirtualDMD->GetLength();
 
    SAFEARRAY* psa = SafeArrayCreateVector(VT_VARIANT, 0, end);
    VARIANT* pData;
 
    SafeArrayAccessData(psa, (void **)&pData);
 
-   const UINT32* pRGB32Data = m_pDmd->GetRGB32Data();
-
    for (int i = 0; i < end; i++) {
+      int pos = i * 3;
+      UINT8 r = pRGB24Data[pos];
+      UINT8 g = pRGB24Data[pos + 1];
+      UINT8 b = pRGB24Data[pos + 2];
+
       V_VT(&pData[i]) = VT_UI1;
-      V_UI1(&pData[i]) = pRGB32Data[i];
+      V_UI1(&pData[i]) = r | g << 8 | b << 16;
    }
 
    SafeArrayUnaccessData(psa);
 
    V_VT(pRetVal) = VT_ARRAY | VT_VARIANT;
    V_ARRAY(pRetVal) = psa;
-
-   m_pDmd->ResetUpdated();
 
    return S_OK;
 }
@@ -479,7 +472,11 @@ void FlexDMD::ShowDMD(bool show)
 
 void FlexDMD::RenderLoop()
 {
-   m_pDmd = new DMDUtil::DMD(m_width, m_height, 24);
+   DMDUtil::DMD* pDMD = new DMDUtil::DMD(m_width, m_height, 24);
+   m_pVirtualDMD = pDMD->CreateVirtualDMD();
+
+   if (m_pWindow)
+      m_pWindow->SetDMD(pDMD);
 
    SDL_Surface* pSurface = SDL_CreateRGBSurfaceWithFormat(0, m_width, m_height, 24, SDL_PIXELFORMAT_RGB24);
    m_pGraphics = new VP::Graphics(pSurface);
@@ -501,16 +498,16 @@ void FlexDMD::RenderLoop()
          m_pStage->Update((float)(elapsedMs / 1000.0));
          m_pStage->Draw(m_pGraphics);
 
-         if (m_pDmd) {
+         if (pDMD) {
             switch (m_renderMode) {
                case RenderMode_DMD_GRAY_2:
-                  m_pDmd->UpdateRGB24Data((UINT8*)pSurface->pixels, 2, GetRValue(m_dmdColor), GetGValue(m_dmdColor), GetBValue(m_dmdColor));
+                  pDMD->UpdateRGB24Data((UINT8*)pSurface->pixels, 2, GetRValue(m_dmdColor), GetGValue(m_dmdColor), GetBValue(m_dmdColor));
                   break;
                case RenderMode_DMD_GRAY_4:
-                   m_pDmd->UpdateRGB24Data((UINT8*)pSurface->pixels, 4, GetRValue(m_dmdColor), GetGValue(m_dmdColor), GetBValue(m_dmdColor));
+                   pDMD->UpdateRGB24Data((UINT8*)pSurface->pixels, 4, GetRValue(m_dmdColor), GetGValue(m_dmdColor), GetBValue(m_dmdColor));
                   break;
                case RenderMode_DMD_RGB:
-                  m_pDmd->UpdateRGB24Data((UINT8*)pSurface->pixels, 24, 0, 0, 0);
+                  pDMD->UpdateRGB24Data((UINT8*)pSurface->pixels, 24, 0, 0, 0);
                   break;
                case RenderMode_SEG_2x16Alpha:
                case RenderMode_SEG_2x20Alpha:
@@ -526,13 +523,10 @@ void FlexDMD::RenderLoop()
                case RenderMode_SEG_6x4Num_4x1Num:
                case RenderMode_SEG_2x7Num_4x1Num_1x16Alpha:
                case RenderMode_SEG_1x16Alpha_1x16Num_1x7Num:
-                  m_pDmd->UpdateAlphaNumericData((DMDUtil::AlphaNumericLayout)(m_renderMode - 2), m_segData1, m_segData2, GetRValue(m_dmdColor), GetGValue(m_dmdColor), GetBValue(m_dmdColor));
+                  pDMD->UpdateAlphaNumericData((DMDUtil::AlphaNumericLayout)(m_renderMode - 2), m_segData1, m_segData2, GetRValue(m_dmdColor), GetGValue(m_dmdColor), GetBValue(m_dmdColor));
                   break;
                default: break;
             }
-
-            if (m_pWindow)
-               m_pWindow->Render(m_pDmd);
          }
       }
 
@@ -560,10 +554,11 @@ void FlexDMD::RenderLoop()
    delete m_pGraphics;
    m_pGraphics = NULL;
 
-   if (m_pDmd) {
-      delete m_pDmd;
-      m_pDmd = NULL;
-   }
+   if (m_pWindow)
+      m_pWindow->SetDMD(nullptr);
+
+   delete pDMD;
+   m_pVirtualDMD = nullptr;
 }
 
 Font* FlexDMD::NewFont(string font, OLE_COLOR tint, OLE_COLOR borderTint, LONG borderSize)

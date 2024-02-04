@@ -11,9 +11,6 @@
 
 B2SScreen::B2SScreen()
 {
-   m_running = false;
-   m_pThread = nullptr;
-
    m_pFormBackglass = NULL;
    m_pFormDMD = NULL;
    m_playfieldSize = { 0, 0, 0, 0 };
@@ -41,11 +38,6 @@ B2SScreen::B2SScreen()
 
 B2SScreen::~B2SScreen()
 {
-   if (m_pThread) {
-      m_running = false;
-      m_pThread->join();
-      delete m_pThread;
-   }
 }
 
 void B2SScreen::Start(Form* pFormBackglass)
@@ -86,20 +78,20 @@ void B2SScreen::ReadB2SSettingsFromFile()
    Settings* const pSettings = &g_pplayer->m_ptable->m_settings;
 
    m_backglassSize = { 0, 0,
-      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SBackglassWidth"s, SETTINGS_B2S_BACKGLASSWIDTH),
-      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SBackglassHeight"s, SETTINGS_B2S_BACKGLASSHEIGHT) };
+      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SBackglassWidth"s, B2S_SETTINGS_BACKGLASSWIDTH),
+      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SBackglassHeight"s, B2S_SETTINGS_BACKGLASSHEIGHT) };
 
    m_backglassLocation = { 
-      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SBackglassX"s, SETTINGS_B2S_BACKGLASSX),
-      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SBackglassY"s, SETTINGS_B2S_BACKGLASSY) };
+      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SBackglassX"s, B2S_SETTINGS_BACKGLASSX),
+      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SBackglassY"s, B2S_SETTINGS_BACKGLASSY) };
   
    m_dmdSize = { 0, 0,
-      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SDMDWidth"s, SETTINGS_B2S_DMDWIDTH),
-      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SDMDHeight"s, SETTINGS_B2S_DMDHEIGHT) };
+      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SDMDWidth"s, B2S_SETTINGS_DMDWIDTH),
+      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SDMDHeight"s, B2S_SETTINGS_DMDHEIGHT) };
 
    m_dmdLocation = {
-      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SDMDX"s, SETTINGS_B2S_DMDX),
-      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SDMDY"s, SETTINGS_B2S_DMDY) };
+      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SDMDX"s, B2S_SETTINGS_DMDX),
+      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SDMDY"s, B2S_SETTINGS_DMDY) };
 
    m_dmdFlipY = pSettings->LoadValueWithDefault(Settings::Standalone, "B2SDMDFlipY"s, false);
 }
@@ -259,39 +251,7 @@ void B2SScreen::Show()
       m_pFormDMD->BringToFront();
       m_pFormDMD->SetTopMost(true);
    }
-
-   PLOGI.printf("Starting render thread");
-
-   m_running = true;
-
-   m_pThread = new std::thread([this]() {
-      RenderLoop();
-
-      PLOGI.printf("Render thread finished");
-   });
 }
-
-void B2SScreen::RenderLoop()
-{
-    const UINT32 targetFrameTime = 1000 / 60;
-
-    while (m_running) {
-        UINT32 frameStartTime = SDL_GetTicks();
-
-        if (m_pFormBackglass)
-           m_pFormBackglass->Render();
-
-        if (m_pFormDMD)
-           m_pFormDMD->Render();
-
-        UINT32 frameEndTime = SDL_GetTicks();
-        UINT32 frameDuration = frameEndTime - frameStartTime;
-
-        if (frameDuration < targetFrameTime)
-           SDL_Delay(targetFrameTime - frameDuration);
-    }
-}
-
 
 void B2SScreen::ScaleAllControls(float rescaleX, float rescaleY, float rescaleDMDX, float rescaleDMDY)
 {

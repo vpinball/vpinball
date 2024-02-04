@@ -484,6 +484,11 @@ void Player::CreateWnd(HWND parent /* = 0 */)
    SDL_SetHint(SDL_HINT_ALLOW_TOPMOST, "0");
 #endif
 
+   // Prevent full screen window from minimizing when re-arranging external windows
+#ifdef __STANDALONE__
+   SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
+#endif
+
    PLOGI << "Creating main window"; // For profiling (SDL create window is fairly slow, can be more than 1 second, but there doesn't seem to be any workaround)
 
    if (m_fullScreen)
@@ -507,7 +512,7 @@ void Player::CreateWnd(HWND parent /* = 0 */)
          // if (mode.w == m_wnd_width && mode.h == m_wnd_height && mode.refresh_rate == m_refreshrate && mode.format == format)
          if (mode.w == displayWidth && mode.h == displayHeight && mode.refresh_rate == m_refreshrate && mode.format == format)
 #else
-         if (mode.w == m_wnd_width && mode.h == m_wnd_height && mode.refresh_rate == m_refreshrate && mode.format == format)
+         if (mode.w == m_wnd_width && mode.h == m_wnd_height && (m_refreshrate == 0 || mode.refresh_rate == m_refreshrate) && mode.format == format)
 #endif
          {
             SDL_SetWindowDisplayMode(m_sdl_playfieldHwnd, &mode);

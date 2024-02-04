@@ -1,7 +1,10 @@
 #include "stdafx.h"
 
 #include "FormDMD.h"
+#include "FormWindow.h"
 #include "../controls/B2SPictureBox.h"
+
+#include "../../common/WindowManager.h"
 
 FormDMD::FormDMD()
 {
@@ -16,11 +19,15 @@ FormDMD::FormDMD()
       return;
    }
 
-   m_pWindow = VP::Window::Create("B2SDMD",
-      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SDMDX"s, SETTINGS_B2S_DMDX),
-      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SDMDY"s, SETTINGS_B2S_DMDY),
-      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SDMDWidth"s, SETTINGS_B2S_DMDWIDTH),
-      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SDMDHeight"s, SETTINGS_B2S_DMDHEIGHT));
+   m_pWindow = FormWindow::Create("B2SDMD",
+      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SDMDX"s, B2S_SETTINGS_DMDX),
+      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SDMDY"s, B2S_SETTINGS_DMDY),
+      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SDMDWidth"s, B2S_SETTINGS_DMDWIDTH),
+      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SDMDHeight"s, B2S_SETTINGS_DMDHEIGHT),
+      B2S_DMD_ZORDER);
+
+   if (m_pWindow)
+      m_pWindow->SetForm(this);
 }
 
 FormDMD::~FormDMD()

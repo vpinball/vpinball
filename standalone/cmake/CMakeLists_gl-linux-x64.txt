@@ -307,6 +307,8 @@ add_executable(vpinball
    standalone/PoleStream.cpp
    standalone/PoleStorage.cpp
 
+   standalone/inc/vpinmame/VPinMAMEWindow.cpp
+   standalone/inc/vpinmame/VPinMAMEWindow.h
    standalone/inc/vpinmame/VPinMAMEController.cpp
    standalone/inc/vpinmame/VPinMAMEController.h
    standalone/inc/vpinmame/VPinMAMEControllerSettings.cpp
@@ -403,6 +405,8 @@ add_executable(vpinball
    standalone/inc/flexdmd/filters/DotFilter.h
    standalone/inc/flexdmd/filters/AdditiveFilter.cpp
    standalone/inc/flexdmd/filters/AdditiveFilter.h
+   standalone/inc/flexdmd/FlexDMDWindow.cpp
+   standalone/inc/flexdmd/FlexDMDWindow.h
    standalone/inc/flexdmd/FlexDMD.cpp
    standalone/inc/flexdmd/FlexDMD.h
    standalone/inc/flexdmd/AssetSrc.cpp
@@ -523,6 +527,8 @@ add_executable(vpinball
    standalone/inc/b2s/dream7/SegmentNumber.h
    standalone/inc/b2s/dream7/SegmentStyle.cpp
    standalone/inc/b2s/dream7/SegmentStyle.h
+   standalone/inc/b2s/forms/FormWindow.cpp
+   standalone/inc/b2s/forms/FormWindow.h
    standalone/inc/b2s/forms/Form.cpp
    standalone/inc/b2s/forms/Form.h
    standalone/inc/b2s/forms/FormBackglass.cpp
@@ -549,6 +555,8 @@ add_executable(vpinball
    standalone/inc/pup/pinupplayer_i.c
    standalone/inc/pup/pinupplayer_i.h
 
+   standalone/inc/common/WindowManager.cpp
+   standalone/inc/common/WindowManager.h
    standalone/inc/common/Window.cpp
    standalone/inc/common/Window.h
    standalone/inc/common/Graphics.cpp
@@ -643,7 +651,7 @@ target_link_libraries(vpinball PUBLIC
    -l:libaltsound.so.0.1.0
    -l:libzedmd.so.0.5.0
    -l:libserum.so.1.6.2
-   -l:libdmdutil.so.0.1.0
+   -l:libdmdutil.so.0.2.0
 )
 
 set_target_properties(vpinball PROPERTIES

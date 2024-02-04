@@ -136,7 +136,8 @@ To make a successful port, we would need tackle several tasks:
 
 In a terminal execute the following:
 ```
-brew install autoconf automake cmake bison curl
+sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
+brew install autoconf automake libtool cmake bison curl
 export PATH="$(brew --prefix bison)/bin:$PATH"
 git clone -b standalone https://github.com/vpinball/vpinball
 cd vpinball/standalone/macos-arm64
@@ -153,7 +154,8 @@ cmake --build build -- -j$(sysctl -n hw.ncpu)
 
 In a terminal execute the following:
 ```
-brew install autoconf automake cmake bison curl
+sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
+brew install autoconf automake libtool cmake bison curl
 export PATH="$(brew --prefix bison)/bin:$PATH"
 git clone -b standalone https://github.com/vpinball/vpinball
 cd vpinball/standalone/macos-x64
