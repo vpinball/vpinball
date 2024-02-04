@@ -2,8 +2,8 @@
 
 #include "VPinMAMEWindow.h"
 
-VPinMAMEWindow::VPinMAMEWindow(const std::string& szTitle, int x, int y, int w, int h, int z, bool highDpi)
-    : VP::Window(szTitle, x, y, w, h, z, highDpi)
+VPinMAMEWindow::VPinMAMEWindow(const std::string& szTitle, VP::Window::RenderMode renderMode, int x, int y, int w, int h, int z, bool highDpi)
+    : VP::Window(szTitle, renderMode, x, y, w, h, z, highDpi)
 {
    m_pDMD = nullptr;
    m_pVirtualDMD = nullptr;
@@ -27,6 +27,7 @@ VPinMAMEWindow* VPinMAMEWindow::Create()
    }
 
    VPinMAMEWindow* pWindow = new VPinMAMEWindow("PinMAME", 
+      (VP::Window::RenderMode)pSettings->LoadValueWithDefault(Settings::Standalone, "PinMAMEWindowRenderMode"s, VP::Window::RenderMode_Default),
       pSettings->LoadValueWithDefault(Settings::Standalone, "PinMAMEWindowX"s, PINMAME_SETTINGS_WINDOW_X),
       pSettings->LoadValueWithDefault(Settings::Standalone, "PinMAMEWindowY"s, PINMAME_SETTINGS_WINDOW_Y),
       pSettings->LoadValueWithDefault(Settings::Standalone, "PinMAMEWindowWidth"s, PINMAME_SETTINGS_WINDOW_WIDTH),

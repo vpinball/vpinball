@@ -2116,6 +2116,10 @@ void Player::FinishFrame()
          m_liveUI->OpenMainSplash();
    }
 
+#ifdef __STANDALONE__
+   m_pWindowManager->Render();
+#endif
+
    // Brute force stop: blast into space
    if (m_closing == CS_FORCE_STOP)
       exit(-9999); 

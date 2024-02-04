@@ -91,6 +91,7 @@ FormBackglass::FormBackglass()
    }
 
    m_pWindow = FormWindow::Create("B2SBackglass",
+      (VP::Window::RenderMode)pSettings->LoadValueWithDefault(Settings::Standalone, "B2SWindowsRenderMode"s, VP::Window::RenderMode_Default),
       pSettings->LoadValueWithDefault(Settings::Standalone, "B2SBackglassX"s, B2S_SETTINGS_BACKGLASSX),
       pSettings->LoadValueWithDefault(Settings::Standalone, "B2SBackglassY"s, B2S_SETTINGS_BACKGLASSY),
       pSettings->LoadValueWithDefault(Settings::Standalone, "B2SBackglassWidth"s, B2S_SETTINGS_BACKGLASSWIDTH),

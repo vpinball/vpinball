@@ -2,8 +2,8 @@
 
 #include "FlexDMDWindow.h"
 
-FlexDMDWindow::FlexDMDWindow(const std::string& szTitle, int x, int y, int w, int h, int z, bool highDpi)
-    : VP::Window(szTitle, x, y, w, h, z, highDpi)
+FlexDMDWindow::FlexDMDWindow(const std::string& szTitle, VP::Window::RenderMode renderMode, int x, int y, int w, int h, int z, bool highDpi)
+    : VP::Window(szTitle, renderMode, x, y, w, h, z, highDpi)
 {
    m_pDMD = nullptr;
    m_pVirtualDMD = nullptr;
@@ -27,6 +27,7 @@ FlexDMDWindow* FlexDMDWindow::Create()
    }
 
    FlexDMDWindow* pWindow = new FlexDMDWindow("FlexDMD", 
+      (VP::Window::RenderMode)pSettings->LoadValueWithDefault(Settings::Standalone, "FlexDMDWindowRenderMode"s, VP::Window::RenderMode_Default),
       pSettings->LoadValueWithDefault(Settings::Standalone, "FlexDMDWindowX"s, FLEXDMD_SETTINGS_WINDOW_X),
       pSettings->LoadValueWithDefault(Settings::Standalone, "FlexDMDWindowY"s, FLEXDMD_SETTINGS_WINDOW_Y),
       pSettings->LoadValueWithDefault(Settings::Standalone, "FlexDMDWindowWidth"s, FLEXDMD_SETTINGS_WINDOW_WIDTH),

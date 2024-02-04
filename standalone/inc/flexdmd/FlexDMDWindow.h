@@ -19,7 +19,7 @@ public:
    void Render() override;
 
 private:
-   FlexDMDWindow(const std::string& szTitle, int x, int y, int w, int h, int z, bool highDpi);
+   FlexDMDWindow(const std::string& szTitle, VP::Window::RenderMode renderMode, int x, int y, int w, int h, int z, bool highDpi);
 
    DMDUtil::DMD* m_pDMD;
    DMDUtil::VirtualDMD* m_pVirtualDMD;
