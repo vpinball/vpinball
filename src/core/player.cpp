@@ -581,6 +581,10 @@ void Player::CreateWnd(HWND parent /* = 0 */)
    PLOGI << "Creating main window"; // For profiling
    Create();
 #endif // ENABLE_SDL
+
+#ifdef __STANDALONE__
+   m_pWindowManager = VP::WindowManager::GetInstance();
+#endif
 }
 
 void Player::OnInitialUpdate()
