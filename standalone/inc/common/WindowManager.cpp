@@ -34,14 +34,15 @@ WindowManager::WindowManager()
    m_windows.clear();
 }
 
-void WindowManager::RegisterWindow(Window* pWindow, int z)
+void WindowManager::RegisterWindow(Window* pWindow)
 {
    if (!pWindow)
       return;
 
    WindowData* pWindowData = new WindowData();
    pWindowData->m_pWindow = pWindow;
-   pWindowData->z = z;
+   pWindowData->renderMode = pWindow->GetRenderMode();
+   pWindowData->z = pWindow->GetZ();
    m_windows.push_back(pWindowData);
 
    std::sort(m_windows.begin(), m_windows.end(), [](const WindowData* pWindowData1, const WindowData* pWindowData2) {
@@ -100,8 +101,10 @@ void WindowManager::Update()
 
 void WindowManager::Render()
 {
-   for (WindowData* pWindowData : m_windows)
-      pWindowData->m_pWindow->Render();
+   for (WindowData* pWindowData : m_windows) {
+      if (pWindowData->renderMode == Window::RenderMode_MainThread)
+         pWindowData->m_pWindow->Render();
+   }
 }
 
 }

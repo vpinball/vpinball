@@ -4,7 +4,7 @@
 
 namespace VP {
 
-Window::Window(const string& szTitle, int x, int y, int w, int h, int z, bool highDpi)
+Window::Window(const string& szTitle, RenderMode renderMode, int x, int y, int w, int h, int z, bool highDpi)
 {
    m_pWindow = nullptr;
    m_pRenderer = nullptr;
@@ -28,23 +28,25 @@ Window::Window(const string& szTitle, int x, int y, int w, int h, int z, bool hi
          m_pWindow = pWindow;
          m_pRenderer = pRenderer;
          m_id = SDL_GetWindowID(pWindow);
-
+         m_renderMode = renderMode;
          SDL_GetWindowPosition(m_pWindow, &m_x, &m_y);
          SDL_GetWindowSize(m_pWindow, &m_w, &m_h);
-         PLOGI.printf("Window created: title=%s, size=%dx%d, pos=%d,%d", szTitle.c_str(), m_w, m_h, m_x, m_y);
+         m_z = z;
+         PLOGI.printf("Window created: title=%s, size=%dx%d, pos=%d,%d, z=%d", szTitle.c_str(), m_w, m_h, m_x, m_y, m_z);
 
          SDL_RenderSetLogicalSize(m_pRenderer, m_w, m_h);
 
-         VP::WindowManager::GetInstance()->RegisterWindow(this, z);
+         VP::WindowManager::GetInstance()->RegisterWindow(this);
 
-         Run();
+         if (renderMode == RenderMode_Default)
+            Run();
       }
       else
          SDL_DestroyWindow(pWindow);
    }
 
    if (!m_pWindow) {
-      PLOGE.printf("Unable to create window: title=%s, size=%dx%d, pos=%d,%d", szTitle.c_str(), w, h, x, y);
+      PLOGE.printf("Unable to create window: title=%s, size=%dx%d, pos=%d,%d, z=%d", szTitle.c_str(), w, h, x, y, z);
    }
 }
 
@@ -117,7 +119,7 @@ void Window::HandleUpdate()
       m_x = x;
       m_y = y;
 
-      PLOGI.printf("Window moved: title=%s, size=%dx%d, pos=%d,%d", m_szTitle.c_str(), m_w, m_h, m_x, m_y);
+      PLOGI.printf("Window moved: title=%s, size=%dx%d, pos=%d,%d, z=%d", m_szTitle.c_str(), m_w, m_h, m_x, m_y, m_z);
    }
 }
 

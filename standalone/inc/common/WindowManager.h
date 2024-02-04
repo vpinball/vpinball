@@ -1,11 +1,12 @@
 #pragma once
 
-namespace VP {
+#include "Window.h"
 
-class Window;
+namespace VP {
 
 typedef struct {
    Window* m_pWindow;
+   Window::RenderMode renderMode;
    int z;
 } WindowData;
 
@@ -14,7 +15,7 @@ class WindowManager final
 public:
    static WindowManager* GetInstance();
 
-   void RegisterWindow(Window* pWindow, int z);
+   void RegisterWindow(Window* pWindow);
    void UnregisterWindow(Window* pWindow);
 
    void ProcessEvent(const SDL_Event* event);

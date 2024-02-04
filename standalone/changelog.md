@@ -4,6 +4,9 @@ To keep up with all the changes in master, and make it easier to rebase, this br
 
 The downside of this approach is not accurately keeping track of history:
 
+* 02/04/24
+    * Added RenderMode to external windows to solve stutter on MacOS
+
 * 02/03/24
     * Add `WindowManager` to automatically handle external window z-order
     * Update libdmdutil to use new `VirtualDMD`

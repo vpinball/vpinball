@@ -19,7 +19,7 @@ public:
    void Render() override;
 
 private:
-   VPinMAMEWindow(const std::string& szTitle, int x, int y, int w, int h, int z, bool highDpi);
+   VPinMAMEWindow(const std::string& szTitle, VP::Window::RenderMode renderMode, int x, int y, int w, int h, int z, bool highDpi);
 
    DMDUtil::DMD* m_pDMD;
    DMDUtil::VirtualDMD* m_pVirtualDMD;

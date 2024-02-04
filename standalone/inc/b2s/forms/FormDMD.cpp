@@ -20,6 +20,7 @@ FormDMD::FormDMD()
    }
 
    m_pWindow = FormWindow::Create("B2SDMD",
+      (VP::Window::RenderMode)pSettings->LoadValueWithDefault(Settings::Standalone, "B2SWindowsRenderMode"s, VP::Window::RenderMode_Default),
       pSettings->LoadValueWithDefault(Settings::Standalone, "B2SDMDX"s, B2S_SETTINGS_DMDX),
       pSettings->LoadValueWithDefault(Settings::Standalone, "B2SDMDY"s, B2S_SETTINGS_DMDY),
       pSettings->LoadValueWithDefault(Settings::Standalone, "B2SDMDWidth"s, B2S_SETTINGS_DMDWIDTH),
