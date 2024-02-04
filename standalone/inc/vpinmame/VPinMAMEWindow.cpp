@@ -8,6 +8,7 @@ VPinMAMEWindow::VPinMAMEWindow(const std::string& szTitle, VP::Window::RenderMod
    m_pDMD = nullptr;
    m_pVirtualDMD = nullptr;
    m_pitch = 0;
+   m_startTime = 0;
    m_pTexture = NULL;
 }
 
@@ -57,10 +58,14 @@ void VPinMAMEWindow::SetDMD(DMDUtil::DMD* pDMD)
    }
 
    m_pDMD = pDMD;
+   m_startTime = SDL_GetTicks64();
 }
 
 void VPinMAMEWindow::Render()
 {
+   if (SDL_GetTicks64() - m_startTime < 500)
+      return;
+
    const UINT8* pRGB24Data = m_pVirtualDMD ? m_pVirtualDMD->GetRGB24Data() : nullptr;
 
    if (pRGB24Data) {

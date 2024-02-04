@@ -24,5 +24,6 @@ private:
    DMDUtil::DMD* m_pDMD;
    DMDUtil::VirtualDMD* m_pVirtualDMD;
    int m_pitch;
+   Uint64 m_startTime;
    SDL_Texture* m_pTexture;
 };

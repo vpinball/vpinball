@@ -31,7 +31,7 @@ private:
    static WindowManager* m_pInstance;
 
    bool m_updateLock;
-   Uint32 m_lastEventTime;
+   Uint64 m_lastEventTime;
 };
 
 }

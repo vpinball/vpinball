@@ -76,17 +76,15 @@ void Window::Run()
    m_running = true;
 
    m_pThread = new std::thread([this]() {
-      const UINT32 targetFrameTime = 1000 / 60;
-
-      SDL_Delay(3000);
+      const Uint64 targetFrameTime = 1000 / 60;
 
       while (m_running) {
-         UINT32 frameStartTime = SDL_GetTicks();
+         Uint64 frameStartTime = SDL_GetTicks64();
 
          Render();
 
-         UINT32 frameEndTime = SDL_GetTicks();
-         UINT32 frameDuration = frameEndTime - frameStartTime;
+         Uint64 frameEndTime = SDL_GetTicks64();
+         Uint64 frameDuration = frameEndTime - frameStartTime;
 
          if (frameDuration < targetFrameTime)
             SDL_Delay(targetFrameTime - frameDuration);

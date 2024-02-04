@@ -72,7 +72,7 @@ void WindowManager::ProcessEvent(const SDL_Event* event)
 
    if (event->type == SDL_WINDOWEVENT &&
       (event->window.event == SDL_WINDOWEVENT_FOCUS_GAINED || event->window.event == SDL_WINDOWEVENT_MOVED))
-      m_lastEventTime = SDL_GetTicks();
+      m_lastEventTime = SDL_GetTicks64();
 }
 
 void WindowManager::HandleUpdates()
@@ -80,7 +80,7 @@ void WindowManager::HandleUpdates()
    if (m_lastEventTime == 0)
       return;
 
-   Uint32 now = SDL_GetTicks();
+   Uint64 now = SDL_GetTicks64();
    if (now - m_lastEventTime > 250) {
       if (now - m_lastEventTime > 500) {
          m_updateLock = false;
