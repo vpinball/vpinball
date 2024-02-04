@@ -2,6 +2,13 @@
 
 class Surface;
 
+#ifdef __STANDALONE__
+class Bumper;
+class Spinner;
+class Gate;
+class Trigger;
+#endif
+
 class BumperHitCircle : public HitCircle
 {
 public:

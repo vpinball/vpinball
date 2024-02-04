@@ -118,6 +118,13 @@ class Primitive :
    public IFireEvents,
    public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
 {
+#ifdef __STANDALONE__
+public:
+   STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);
+   STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
+   STDMETHOD(GetDocumentation)(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
+   virtual HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) override;
+#endif
 public:
    static constexpr int Max_Primitive_Sides = 100; //!! 100 works for sleepy, 99 doesn't
 
@@ -293,7 +300,7 @@ public:
    bool LoadMeshDialog() final;
    void ExportMeshDialog() final;
 
-   bool IsPlayfield() const { return _wcsicmp(m_wzName, L"playfield_mesh") == 0; }
+   bool IsPlayfield() const { return wcsicmp(m_wzName, L"playfield_mesh") == 0; }
    bool IsBackglass() const { return lstrcmpi(m_d.m_szImage.c_str(), "backglassimage") == 0; }
 
    float GetAlpha() const { return m_d.m_alpha; }
