@@ -4,6 +4,7 @@
 
 #include "imgui/imgui.h"
 #include "imgui/ImGuizmo.h"
+#include "imgui_markdown/imgui_markdown.h"
 
 class LiveUI
 {
@@ -111,6 +112,11 @@ private:
    // Enter/Exit edit mode (manage table backup, dynamic mode,...)
    void CloseTweakMode();
    void ResetCameraFromPlayer();
+
+   // MarkDown support
+   static ImGui::MarkdownConfig markdown_config;
+   static void MarkdownLinkCallback(ImGui::MarkdownLinkCallbackData data);
+   static ImGui::MarkdownImageData MarkdownImageCallback(ImGui::MarkdownLinkCallbackData data);
 
    // UI Context
    VPinball *m_app;
