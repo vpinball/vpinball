@@ -20,6 +20,7 @@
 #endif
 #else
 #include "imgui/imgui_impl_dx9.h"
+#include <shellapi.h>
 #endif
 #ifndef __STANDALONE__
 #include "imgui/imgui_impl_win32.h"
@@ -27,6 +28,7 @@
 #include "imgui/implot/implot.h"
 #include "imgui/imgui_stdlib.h"
 #include "imgui/ImGuizmo.h"
+#include "imgui_markdown/imgui_markdown.h"
 
 #ifdef __STANDALONE__
 #include <unordered_map>
@@ -675,6 +677,10 @@ static void HelpEditableHeader(bool is_live, IEditable *editable, IEditable *liv
    ImGui::Separator();
 }
 
+
+
+ImGui::MarkdownConfig LiveUI::markdown_config;
+
 LiveUI::LiveUI(RenderDevice *const rd)
    : m_rd(rd)
 {
@@ -742,6 +748,19 @@ LiveUI::LiveUI(RenderDevice *const rd)
    static constexpr ImWchar icons_ranges[] = { ICON_MIN_FK, ICON_MAX_16_FK, 0 };
    io.Fonts->AddFontFromMemoryCompressedTTF(fork_awesome_compressed_data, fork_awesome_compressed_size, 13.0f * m_dpi, &icons_config, icons_ranges);
 
+   ImFont *H1 = io.Fonts->AddFontFromMemoryCompressedTTF(droidsans_compressed_data, droidsans_compressed_size, 20.0f * m_dpi);
+   ImFont *H2 = io.Fonts->AddFontFromMemoryCompressedTTF(droidsans_compressed_data, droidsans_compressed_size, 18.0f * m_dpi);
+   ImFont *H3 = io.Fonts->AddFontFromMemoryCompressedTTF(droidsans_compressed_data, droidsans_compressed_size, 15.0f * m_dpi);
+   markdown_config.linkCallback = MarkdownLinkCallback;
+   markdown_config.tooltipCallback = NULL;
+   markdown_config.imageCallback = MarkdownImageCallback;
+   //markdown_config.linkIcon = ICON_FA_LINK;
+   markdown_config.headingFormats[0] = { H1, true };
+   markdown_config.headingFormats[1] = { H2, true };
+   markdown_config.headingFormats[2] = { H3, false };
+   markdown_config.userData = this;
+   //markdown_config.formatCallback = MarkdownFormatCallback;
+
 #ifdef ENABLE_SDL
    ImGui_ImplOpenGL3_Init();
 #else
@@ -769,8 +788,46 @@ LiveUI::~LiveUI()
    }
 }
 
-bool LiveUI::HasKeyboardCapture() const
+
+void LiveUI::MarkdownLinkCallback(ImGui::MarkdownLinkCallbackData data)
 {
+   if (!data.isImage)
+   {
+      std::string url(data.link, data.linkLength);
+      #ifdef ENABLE_SDL
+      SDL_OpenURL(url.c_str());
+      #else
+      ShellExecuteA(NULL, "open", url.c_str(), NULL, NULL, SW_SHOWNORMAL);
+      #endif
+   }
+}
+
+ImGui::MarkdownImageData LiveUI::MarkdownImageCallback(ImGui::MarkdownLinkCallbackData data)
+{
+   LiveUI *ui = (LiveUI *)data.userData;
+   Texture *const ppi = ui->m_live_table->GetImage(std::string(data.link, data.linkLength));
+   if (ppi == nullptr)
+      return ImGui::MarkdownImageData {};
+   Sampler *sampler = g_pplayer->m_pin3d.m_pd3dPrimaryDevice->m_texMan.LoadTexture(ppi->m_pdsBuffer, SamplerFilter::SF_BILINEAR, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, false);
+   if (sampler == nullptr)
+      return ImGui::MarkdownImageData {};
+   #ifdef ENABLE_SDL
+   ImTextureID image = (void *)(intptr_t)sampler->GetCoreTexture();
+   #else
+   ImTextureID image = (void *)sampler->GetCoreTexture();
+   #endif
+   ImGui::MarkdownImageData imageData { true, false, image, ImVec2((float)sampler->GetWidth(), (float)sampler->GetHeight()) };
+   ImVec2 const contentSize = ImGui::GetContentRegionAvail();
+   if (imageData.size.x > contentSize.x)
+   {
+      float const ratio = imageData.size.y / imageData.size.x;
+      imageData.size.x = contentSize.x;
+      imageData.size.y = contentSize.x * ratio;
+   }
+   return imageData;
+}
+
+bool LiveUI::HasKeyboardCapture() const {
    return ImGui::GetIO().WantCaptureKeyboard;
 }
 
@@ -1605,7 +1662,7 @@ void LiveUI::UpdateTweakModeUI()
    constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
    ImGui::SetNextWindowBgAlpha(0.35f);
    ImGui::SetNextWindowPos(ImVec2(0.5f * ImGui::GetIO().DisplaySize.x, 0.8f * ImGui::GetIO().DisplaySize.y), 0, ImVec2(0.5f, 1.f));
-   ImGui::SetNextWindowSizeConstraints(ImVec2(min(ImGui::GetIO().DisplaySize.x, m_dpi * 400.f), 0.f), ImGui::GetIO().DisplaySize);
+   ImGui::SetNextWindowSizeConstraints(ImVec2(min(ImGui::GetIO().DisplaySize.x, m_dpi * 500.f), 0.f), ImGui::GetIO().DisplaySize);
    ImGui::Begin("TweakUI", nullptr, window_flags);
 
    ViewSetupID vsId = table->m_BG_current_set;
@@ -1741,7 +1798,8 @@ void LiveUI::UpdateTweakModeUI()
    if (m_activeTweakPage == TP_Rules)
    {
       ImGui::NewLine();
-      HelpTextCentered(m_table->m_szRules);
+      ImGui::Markdown(m_table->m_szRules.c_str(), m_table->m_szRules.length(), markdown_config);
+      //HelpTextCentered(m_table->m_szRules);
       ImGui::NewLine();
    }
    else if (m_activeTweakPage == TP_Info)
@@ -1769,25 +1827,28 @@ void LiveUI::UpdateTweakModeUI()
 
    ImGui::NewLine();
    vector<string> infos;
-   infos.push_back("Plunger Key:   Reset page to defaults"s);
-   if (m_app->m_povEdit)
+   if (m_activeTweakPage != TP_Rules && m_activeTweakPage != TP_Info)
    {
-      infos.push_back("Start Key:   Export settings and quit"s);
-      infos.push_back("Credit Key:   Quit without export"s);
+      infos.push_back("Plunger Key:   Reset page to defaults"s);
+      if (m_app->m_povEdit)
+      {
+         infos.push_back("Start Key:   Export settings and quit"s);
+         infos.push_back("Credit Key:   Quit without export"s);
+      }
+      else
+      {
+         infos.push_back("Start Key:   Export settings file"s);
+         infos.push_back("Credit Key:   Reset page to old values"s);
+      }
+      infos.push_back("Magna save keys:   Previous/Next option"s);
+      if (m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "EnableCameraModeFlyAround"s, false))
+      {
+         infos.push_back("Nudge key:   Rotate table orientation"s);
+         infos.push_back("Arrows & Left Alt Key:   Navigate around"s);
+      }
    }
-   else
-   {
-      infos.push_back("Start Key:   Export settings file"s);
-      infos.push_back("Credit Key:   Reset page to old values"s);
-   }
-   infos.push_back("Flipper keys:   Adjust highlighted value"s);
-   infos.push_back("Magna save keys:   Previous/Next option"s);
-   if (m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "EnableCameraModeFlyAround"s, false))
-   {
-      infos.push_back("Nudge key:   Rotate table orientation"s);
-      infos.push_back("Arrows & Left Alt Key:   Navigate around"s);
-   }
-   const int info = (((int)((msec() - m_StartTime_msec) / 2000ull)))  % (int)infos.size();
+   infos.push_back(activeTweakSetting == BS_Page ? "Flipper keys:   Previous/Next page"s : "Flipper keys:   Adjust highlighted value"s);
+   const int info = (((int)((msec() - m_StartTime_msec) / 2000ull))) % (int)infos.size();
    HelpTextCentered(infos[info]);
 
    ImGui::End();
