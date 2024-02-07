@@ -48,7 +48,7 @@ public:
 
    void SetScaling(Scaling scaling) { m_scaling = scaling; }
    void SetAlignment(Alignment alignment) { m_alignment = alignment; }
-   void Draw(VP::Graphics* pGraphics) override;
+   void Draw(VP::SurfaceGraphics* pGraphics) override;
    void OnStageStateChanged() override;
 
 private:

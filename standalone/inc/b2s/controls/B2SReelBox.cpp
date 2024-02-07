@@ -31,7 +31,7 @@ B2SReelBox::~B2SReelBox()
    delete m_pTimer;
 }
 
-void B2SReelBox::OnPaint(VP::Graphics* pGraphics)
+void B2SReelBox::OnPaint(VP::RendererGraphics* pGraphics)
 {
    if (IsVisible()) {
       if (!m_szReelIndex.empty()) {

@@ -562,8 +562,10 @@ add_executable(vpinball
    standalone/inc/common/WindowManager.h
    standalone/inc/common/Window.cpp
    standalone/inc/common/Window.h
-   standalone/inc/common/Graphics.cpp
-   standalone/inc/common/Graphics.h
+   standalone/inc/common/RendererGraphics.cpp
+   standalone/inc/common/RendererGraphics.h
+   standalone/inc/common/SurfaceGraphics.cpp
+   standalone/inc/common/SurfaceGraphics.h
    standalone/inc/common/GraphicsPath.cpp
    standalone/inc/common/GraphicsPath.h
    standalone/inc/common/Matrix.cpp

@@ -43,7 +43,7 @@ void SegmentNumber::AssignStyle()
    OnInvalidated();
 }
 
-void SegmentNumber::Draw(VP::Graphics* pGraphics)
+void SegmentNumber::Draw(VP::RendererGraphics* pGraphics)
 {
    pGraphics->ResetTransform();
 

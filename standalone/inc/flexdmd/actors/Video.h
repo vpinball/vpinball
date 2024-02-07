@@ -14,7 +14,7 @@ public:
    void SetVisible(bool visible) { AnimatedActor::SetVisible(visible); OnStageStateChanged(); }
    void Rewind() override;
    void ReadNextFrame() override;
-   void Draw(VP::Graphics* pGraphics) override;
+   void Draw(VP::SurfaceGraphics* pGraphics) override;
    void OnStageStateChanged() override;
 
 private:

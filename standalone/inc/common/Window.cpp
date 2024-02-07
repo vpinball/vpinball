@@ -31,8 +31,9 @@ bool Window::Init()
    m_pWindow = SDL_CreateWindow(m_szTitle.c_str(), m_x, m_y, m_w, m_h, flags);
    if (m_pWindow) {
       m_pRenderer = SDL_CreateRenderer(m_pWindow, -1, SDL_RENDERER_ACCELERATED);
-
       if (m_pRenderer) {
+         SDL_RenderSetLogicalSize(m_pRenderer, m_w, m_h);
+
          m_id = SDL_GetWindowID(m_pWindow);
 
          PLOGI.printf("Window initialized: title=%s, id=%d, size=%dx%d, pos=%d,%d, z=%d, visible=%d", m_szTitle.c_str(), m_id, m_w, m_h, m_x, m_y, m_z, m_visible);

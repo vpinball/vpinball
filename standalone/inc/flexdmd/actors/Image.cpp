@@ -58,7 +58,7 @@ STDMETHODIMP Image::putref_Bitmap(_Bitmap *pRetVal)
    return S_OK;
 }
 
-void Image::Draw(VP::Graphics* pGraphics)
+void Image::Draw(VP::SurfaceGraphics* pGraphics)
 {
    if (GetVisible() && m_pBitmap && m_pBitmap->GetSurface()) {
       float w = 0;

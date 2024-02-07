@@ -27,7 +27,7 @@ Dream7Display::~Dream7Display()
       delete m_pMatrix;
 }
 
-void Dream7Display::OnPaint(VP::Graphics* pGraphics)
+void Dream7Display::OnPaint(VP::RendererGraphics* pGraphics)
 {
    if (IsVisible()) {
       pGraphics->SetColor(RGB(0, 0, 0));

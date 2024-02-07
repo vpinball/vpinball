@@ -44,7 +44,7 @@ void B2SLEDBox::OnResize()
     }
 }
 
-void B2SLEDBox::OnPaint(VP::Graphics* pGraphics)
+void B2SLEDBox::OnPaint(VP::RendererGraphics* pGraphics)
 {
    if (IsVisible()) {
       pGraphics->TranslateTransform(GetLeft(), GetTop());

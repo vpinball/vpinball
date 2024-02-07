@@ -12,14 +12,13 @@
 
 namespace VP {
 
-class Graphics final {
+class RendererGraphics final {
 public:
-   Graphics(SDL_Renderer* pRenderer);
-   Graphics(SDL_Surface* pSurface);
-   ~Graphics();
+   RendererGraphics(SDL_Renderer* pRenderer);
+   ~RendererGraphics();
 
    SDL_Renderer* GetRenderer() const { return m_pRenderer; }
-   SDL_Surface* GetSurface() { return m_pSurface; }
+
    void Clear();
    void Present();
    void SetColor(OLE_COLOR color, UINT8 alpha = 255);
@@ -30,8 +29,6 @@ public:
    void DrawImage(SDL_Surface* pImage, SDL_Rect* pSrcRect, SDL_Rect* pDstRect);
    void DrawTexture(SDL_Texture* pTexture, SDL_Rect* pSrcRect, SDL_Rect* pDstRect);
    void FillRectangle(const SDL_Rect& rect);
-   void SetClip(const SDL_Rect& rect);
-   void ResetClip();
    void TranslateTransform(int x, int y);
    void ResetTransform();
    Matrix* GetTransform() const { return m_pModelMatrix; }
@@ -41,7 +38,6 @@ public:
 
 private:
    SDL_Renderer* m_pRenderer;
-   SDL_Surface* m_pSurface;
 
    int m_width;
    int m_height;

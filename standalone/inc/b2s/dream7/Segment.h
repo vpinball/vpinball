@@ -4,7 +4,7 @@
 
 #include "SegmentStyle.h"
 #include "../../common/Matrix.h"
-#include "../../common/Graphics.h"
+#include "../../common/RendererGraphics.h"
 #include "../../common/GraphicsPath.h"
 
 enum SegmentCap { 
@@ -32,8 +32,8 @@ public:
    GraphicsPath* GetGlassPath();
    GraphicsPath* GetGlassPathTransformed();
    void AssignStyle();
-   void Draw(VP::Graphics* pGraphics);
-   void DrawLight(VP::Graphics* pGraphics);
+   void Draw(VP::RendererGraphics* pGraphics);
+   void DrawLight(VP::RendererGraphics* pGraphics);
    void Transform(VP::Matrix* pMatrix);
 
 private:
@@ -42,11 +42,11 @@ private:
    void CreateLightData();
    void SetBulbSize();
    void LeftRightFromCap(SegmentCap nCap, float nWidth, float nCapangle, float& nLeft, float& nRight, float& nDelta);
-   void PaintSegment(VP::Graphics* pGraphics, GraphicsPath* pPath);
+   void PaintSegment(VP::RendererGraphics* pGraphics, GraphicsPath* pPath);
    void GetGlassData();
    void GetLightData();
    void ResetCacheData();
-   void SetTransform(VP::Graphics* pGraphics);
+   void SetTransform(VP::RendererGraphics* pGraphics);
 
    SDL_FPoint m_focusScales;
    vector<SDL_FPoint> m_lights;

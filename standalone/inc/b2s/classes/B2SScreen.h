@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../b2s_i.h"
-#include "../../common/Graphics.h"
+#include "../../common/RendererGraphics.h"
 
 class Form;
 class B2SSettings;

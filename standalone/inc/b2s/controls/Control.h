@@ -2,14 +2,14 @@
 
 #include <vector>
 
-#include "../../common/Graphics.h"
+#include "../../common/RendererGraphics.h"
 
 class Control {
 public:
    Control();
    virtual ~Control();
 
-   virtual void OnPaint(VP::Graphics* pGraphics);
+   virtual void OnPaint(VP::RendererGraphics* pGraphics);
    virtual void OnHandleCreated();
 
    Control* GetParent() const { return m_pParent; }

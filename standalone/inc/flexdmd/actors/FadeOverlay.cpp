@@ -13,7 +13,7 @@ FadeOverlay::~FadeOverlay()
 {
 }
 
-void FadeOverlay::Draw(VP::Graphics* pGraphics)
+void FadeOverlay::Draw(VP::SurfaceGraphics* pGraphics)
 {
    Actor::Draw(pGraphics);
 

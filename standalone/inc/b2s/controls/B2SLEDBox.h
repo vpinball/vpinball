@@ -9,7 +9,7 @@ class B2SLEDBox : public B2SBaseBox
 public:
    B2SLEDBox();
 
-   void OnPaint(VP::Graphics* pGraphics) override;
+   void OnPaint(VP::RendererGraphics* pGraphics) override;
    void OnResize();
 
    OLE_COLOR GetLitLEDSegmentColor() const { return m_litLEDSegmentColor; }

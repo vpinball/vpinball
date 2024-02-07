@@ -7,11 +7,13 @@
 
 #include "stdafx.h"
 
-#include "Graphics.h"
+#include "RendererGraphics.h"
 
 #include <SDL2/SDL_image.h>
 
 #define MAX_GRAPHICS_POLYSIZE 16384
+
+namespace VP {
 
 static int GraphicsCompareFloat(const void *a, const void *b)
 {
@@ -21,12 +23,9 @@ static int GraphicsCompareFloat(const void *a, const void *b)
    return (diff > 0.f) - (diff < 0.f);
 }
 
-namespace VP {
-
-Graphics::Graphics(SDL_Renderer* pRenderer)
+RendererGraphics::RendererGraphics(SDL_Renderer* pRenderer)
 {
    m_pRenderer = pRenderer;
-   m_pSurface = nullptr;
 
    SDL_RenderGetLogicalSize(pRenderer, &m_width, &m_height);
    m_color = RGB(0, 0, 0);
@@ -37,69 +36,42 @@ Graphics::Graphics(SDL_Renderer* pRenderer)
    m_translateY = 0;
 }
 
-Graphics::Graphics(SDL_Surface* pSurface)
-{
-   m_pSurface = pSurface;
-   m_pRenderer = nullptr;
-
-   m_width = pSurface->w;
-   m_height = pSurface->h;
-   m_color = RGB(0, 0, 0);
-   m_alpha = 255;
-
-   m_pModelMatrix = new Matrix();
-   m_translateX = 0;
-   m_translateY = 0;
-}
-
-Graphics::~Graphics()
+RendererGraphics::~RendererGraphics()
 {
    delete m_pModelMatrix;
 }
 
-void Graphics::SetColor(OLE_COLOR color, UINT8 alpha)
+void RendererGraphics::SetColor(OLE_COLOR color, UINT8 alpha)
 {
    m_color = color;
    m_alpha = alpha;
 }
 
-void Graphics::SetBlendMode(SDL_BlendMode blendMode)
+void RendererGraphics::SetBlendMode(SDL_BlendMode blendMode)
 {
-   if (m_pRenderer)
-      SDL_SetRenderDrawBlendMode(m_pRenderer, blendMode);
+   SDL_SetRenderDrawBlendMode(m_pRenderer, blendMode);
 }
 
-SDL_BlendMode Graphics::GetBlendMode()
+SDL_BlendMode RendererGraphics::GetBlendMode()
 {
    SDL_BlendMode blendMode = SDL_BLENDMODE_NONE;
-   if (m_pRenderer)
-      SDL_GetRenderDrawBlendMode(m_pRenderer, &blendMode);
+   SDL_GetRenderDrawBlendMode(m_pRenderer, &blendMode);
    return blendMode;
 }
 
-void Graphics::Clear()
+void RendererGraphics::Clear()
 {
-   if (m_pRenderer) {
-      SDL_SetRenderDrawColor(m_pRenderer, GetRValue(m_color), GetGValue(m_color), GetBValue(m_color), m_alpha);
-      SDL_RenderClear(m_pRenderer);
-   }
-   else if (m_pSurface)
-      FillRectangle({ 0, 0, m_pSurface->w, m_pSurface->h });
+   SDL_SetRenderDrawColor(m_pRenderer, GetRValue(m_color), GetGValue(m_color), GetBValue(m_color), m_alpha);
+   SDL_RenderClear(m_pRenderer);
 }
 
-void Graphics::Present()
+void RendererGraphics::Present()
 {
-   if (!m_pRenderer)
-      return;
-
    SDL_RenderPresent(m_pRenderer);
 }
 
-void Graphics::DrawPath(GraphicsPath* pPath)
+void RendererGraphics::DrawPath(GraphicsPath* pPath)
 {
-   if (!m_pRenderer)
-      return;
-
    const std::vector<SDL_FPoint>* const pPoints = pPath->GetPoints();
    if (pPoints->size() < 2)
       return;
@@ -135,11 +107,8 @@ void Graphics::DrawPath(GraphicsPath* pPath)
    SDL_RenderDrawLine(m_pRenderer, (int)p1.x + m_translateX, (int)p1.y + m_translateY, (int)p2.x + m_translateX, (int)p2.y + m_translateY);
 }
 
-void Graphics::FillPath(GraphicsPath* pPath)
+void RendererGraphics::FillPath(GraphicsPath* pPath)
 {
-   if (!m_pRenderer)
-      return;
-
    const std::vector<SDL_FPoint>* const pPoints = pPath->GetPoints();
 
    int n = pPoints->size();
@@ -327,76 +296,39 @@ void Graphics::FillPath(GraphicsPath* pPath)
    free(strip);
 }
 
-void Graphics::DrawImage(SDL_Surface* pImage, SDL_Rect* pSrcRect, SDL_Rect* pDstRect)
+void RendererGraphics::DrawImage(SDL_Surface* pImage, SDL_Rect* pSrcRect, SDL_Rect* pDstRect)
 {
-   if (m_pRenderer) {
-      SDL_Texture* pTexture = SDL_CreateTextureFromSurface(m_pRenderer, pImage);
-      SDL_RenderCopy(m_pRenderer, pTexture, pSrcRect, pDstRect);
-      SDL_DestroyTexture(pTexture);
-   }
-   else if (m_pSurface) {
-      SDL_Rect rect = { pDstRect->x + m_translateX, pDstRect->y + m_translateY, pDstRect->w, pDstRect->h };
-      SDL_BlitScaled(pImage, pSrcRect, m_pSurface, &rect);
-   }
+   SDL_Texture* pTexture = SDL_CreateTextureFromSurface(m_pRenderer, pImage);
+   SDL_RenderCopy(m_pRenderer, pTexture, pSrcRect, pDstRect);
+   SDL_DestroyTexture(pTexture);
 }
 
-void Graphics::DrawTexture(SDL_Texture* pTexture, SDL_Rect* pSrcRect, SDL_Rect* pDstRect)
+void RendererGraphics::DrawTexture(SDL_Texture* pTexture, SDL_Rect* pSrcRect, SDL_Rect* pDstRect)
 {
-   if (!m_pRenderer || !pTexture)
+   if (!pTexture)
       return;
 
    SDL_RenderCopy(m_pRenderer, pTexture, pSrcRect, pDstRect);
 }
 
-void Graphics::FillRectangle(const SDL_Rect& rect)
+void RendererGraphics::FillRectangle(const SDL_Rect& rect)
 {
-   if (m_pRenderer) {
-      SDL_SetRenderDrawColor(m_pRenderer, GetRValue(m_color), GetGValue(m_color), GetBValue(m_color), m_alpha);
-      SDL_RenderFillRect(m_pRenderer, &rect);
-   }
-   else if (m_pSurface) {
-      SDL_Rect dstRect = { rect.x + m_translateX, rect.y + m_translateY, rect.w, rect.h };
-
-      if (m_alpha == 255)
-         SDL_FillRect(m_pSurface, &dstRect, SDL_MapRGB(m_pSurface->format, GetRValue(m_color), GetGValue(m_color), GetBValue(m_color)));
-      else {
-         SDL_Surface* pSource = SDL_CreateRGBSurfaceWithFormat(0, m_pSurface->w, m_pSurface->h, 32, SDL_PIXELFORMAT_RGBA32);
-         SDL_FillRect(pSource, NULL, SDL_MapRGBA(pSource->format, GetRValue(m_color), GetGValue(m_color), GetBValue(m_color), m_alpha));
-         SDL_BlitScaled(pSource, NULL, m_pSurface, &dstRect);
-         SDL_FreeSurface(pSource);
-      }
-   }
+   SDL_SetRenderDrawColor(m_pRenderer, GetRValue(m_color), GetGValue(m_color), GetBValue(m_color), m_alpha);
+   SDL_RenderFillRect(m_pRenderer, &rect);
 }
 
-void Graphics::SetClip(const SDL_Rect& rect)
-{
-   if (!m_pSurface)
-      return;
-
-   SDL_Rect dstRect = { m_translateX + rect.x, m_translateY + rect.y, rect.w, rect.h };
-   SDL_SetClipRect(m_pSurface, &dstRect);
-}
-
-void Graphics::ResetClip()
-{
-   if (!m_pSurface)
-      return;
-
-   SDL_SetClipRect(m_pSurface, nullptr);
-}
-
-void Graphics::TranslateTransform(int x, int y)
+void RendererGraphics::TranslateTransform(int x, int y)
 {
    m_translateX += x;
    m_translateY += y;
 }
 
-void Graphics::ResetTransform()
+void RendererGraphics::ResetTransform()
 {
    m_pModelMatrix->Reset();
 }
 
-void Graphics::SetTransform(Matrix* pModelMatrix)
+void RendererGraphics::SetTransform(Matrix* pModelMatrix)
 {
    delete m_pModelMatrix;
    m_pModelMatrix = pModelMatrix->Clone();

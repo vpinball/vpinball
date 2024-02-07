@@ -59,7 +59,7 @@ void ImageSequence::ReadNextFrame()
     }
 }
 
-void ImageSequence::Draw(VP::Graphics* pGraphics)
+void ImageSequence::Draw(VP::SurfaceGraphics* pGraphics)
 {
    AnimatedActor::Draw(pGraphics);
    if (GetVisible()) {

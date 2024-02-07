@@ -13,7 +13,7 @@ public:
    FormDMD();
    ~FormDMD();
 
-   void OnPaint(VP::Graphics* pGraphics) override;
+   void OnPaint(VP::RendererGraphics* pGraphics) override;
 
 private:
    B2SData* m_pB2SData;

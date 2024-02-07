@@ -31,7 +31,7 @@ FormDMD::~FormDMD()
 {
 }
 
-void FormDMD::OnPaint(VP::Graphics* pGraphics)
+void FormDMD::OnPaint(VP::RendererGraphics* pGraphics)
 {
    if (IsVisible() && GetBackgroundImage()) {
       // draw background image

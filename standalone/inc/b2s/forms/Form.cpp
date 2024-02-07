@@ -26,7 +26,7 @@ void Form::Hide()
       m_pWindow->Hide();
 }
 
-void Form::Render(VP::Graphics* pGraphics)
+void Form::Render(VP::RendererGraphics* pGraphics)
 {
    if (!IsInvalidated())
       return;

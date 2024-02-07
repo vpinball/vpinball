@@ -15,7 +15,7 @@ public:
    bool IsFinished();
    Scene* GetActiveScene() { return m_pActiveScene; };
    void Update(float delta) override;
-   void Draw(VP::Graphics* pGraphics) override;
+   void Draw(VP::SurfaceGraphics* pGraphics) override;
 
 private:
    vector<Scene*> m_pendingScenes;

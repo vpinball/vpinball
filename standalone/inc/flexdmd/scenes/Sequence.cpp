@@ -61,7 +61,7 @@ void Sequence::Update(float delta)
    m_finished = !m_pActiveScene && m_pendingScenes.size() == 0;
 }
 
-void Sequence::Draw(VP::Graphics* pGraphics)
+void Sequence::Draw(VP::SurfaceGraphics* pGraphics)
 {
    if (GetVisible() && m_pActiveScene) {
       pGraphics->SetColor(RGB(0, 0, 0));

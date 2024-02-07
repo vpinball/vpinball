@@ -6,7 +6,7 @@
 #include "../Layout.h"
 #include "../actions/ActionFactory.h"
 #include "../actions/Action.h"
-#include "../../common/Graphics.h"
+#include "../../common/RendererGraphics.h"
 
 class Actor : public IDispatch
 {
@@ -127,7 +127,7 @@ public:
 
    virtual void OnStageStateChanged() { }
    virtual void Update(float secondsElapsed);
-   virtual void Draw(VP::Graphics* pGraphics);
+   virtual void Draw(VP::SurfaceGraphics* pGraphics);
 
 protected:
    ActionFactory* m_pActionFactory;

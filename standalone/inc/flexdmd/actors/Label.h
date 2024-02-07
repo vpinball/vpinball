@@ -55,7 +55,7 @@ public:
    void SetText(const string& szText);
    single GetPrefWidth() override { return m_textWidth; }
    single GetPrefHeight() override { return m_textHeight; }
-   void Draw(VP::Graphics* pGraphics) override;
+   void Draw(VP::SurfaceGraphics* pGraphics) override;
 
 private:
    void ProcessText();

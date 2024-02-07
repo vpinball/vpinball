@@ -12,7 +12,7 @@ public:
    B2SReelBox();
    virtual ~B2SReelBox();
 
-   void OnPaint(VP::Graphics* pGraphics) override;
+   void OnPaint(VP::RendererGraphics* pGraphics) override;
 
    int GetSetID() const { return m_setID; }
    void SetSetID(int setID) { m_setID = setID; }

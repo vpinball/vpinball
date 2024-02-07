@@ -17,7 +17,7 @@ Control::~Control()
 {
 }
 
-void Control::OnPaint(VP::Graphics* pGraphics)
+void Control::OnPaint(VP::RendererGraphics* pGraphics)
 {
    for (Control* child : m_children)
       child->OnPaint(pGraphics);
