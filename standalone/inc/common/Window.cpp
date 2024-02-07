@@ -4,110 +4,102 @@
 
 namespace VP {
 
-Window::Window(const string& szTitle, RenderMode renderMode, int x, int y, int w, int h, int z, bool highDpi)
+Window::Window(const string& szTitle, int x, int y, int w, int h, int z)
 {
    m_pWindow = nullptr;
-   m_pRenderer = nullptr;
-   m_visible = false;
    m_id = 0;
-   m_running = false;
-   m_pThread = nullptr;
+   m_pRenderer = nullptr;
+   m_szTitle = szTitle;
+   m_x = x;
+   m_y = y;
+   m_h = h;
+   m_w = w;
+   m_z = z;
+   m_visible = false;
+   m_init = false;
 
+   VP::WindowManager::GetInstance()->RegisterWindow(this);
+}
+
+bool Window::Init()
+{
    UINT32 flags = SDL_WINDOW_SKIP_TASKBAR | SDL_WINDOW_BORDERLESS | SDL_WINDOW_HIDDEN | SDL_WINDOW_UTILITY | SDL_WINDOW_ALWAYS_ON_TOP;
 
-   if (highDpi)
+   if (g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Standalone, "HighDPI"s, true))
       flags |= SDL_WINDOW_ALLOW_HIGHDPI;
 
-   SDL_Window* pWindow = SDL_CreateWindow(szTitle.c_str(), x, y, w, h, flags);
+   m_pWindow = SDL_CreateWindow(m_szTitle.c_str(), m_x, m_y, m_w, m_h, flags);
+   if (m_pWindow) {
+      m_pRenderer = SDL_CreateRenderer(m_pWindow, -1, SDL_RENDERER_ACCELERATED);
 
-   if (pWindow) {
-      SDL_Renderer* pRenderer = SDL_CreateRenderer(pWindow, -1, SDL_RENDERER_ACCELERATED);
+      if (m_pRenderer) {
+         m_id = SDL_GetWindowID(m_pWindow);
 
-      if (pRenderer) {
-         m_szTitle = szTitle;
-         m_pWindow = pWindow;
-         m_pRenderer = pRenderer;
-         m_id = SDL_GetWindowID(pWindow);
-         m_renderMode = renderMode;
-         SDL_GetWindowPosition(m_pWindow, &m_x, &m_y);
-         SDL_GetWindowSize(m_pWindow, &m_w, &m_h);
-         m_z = z;
-         PLOGI.printf("Window created: title=%s, size=%dx%d, pos=%d,%d, z=%d", szTitle.c_str(), m_w, m_h, m_x, m_y, m_z);
+         PLOGI.printf("Window initialized: title=%s, id=%d, size=%dx%d, pos=%d,%d, z=%d, visible=%d", m_szTitle.c_str(), m_id, m_w, m_h, m_x, m_y, m_z, m_visible);
 
-         SDL_RenderSetLogicalSize(m_pRenderer, m_w, m_h);
+         if (m_visible)
+            SDL_ShowWindow(m_pWindow);
 
-         VP::WindowManager::GetInstance()->RegisterWindow(this);
+         m_init = true;
 
-         if (renderMode == RenderMode_Default)
-            Run();
+         return true;
       }
-      else
-         SDL_DestroyWindow(pWindow);
+      else {
+        SDL_DestroyWindow(m_pWindow);
+        m_pWindow = nullptr;
+      }
    }
 
-   if (!m_pWindow) {
-      PLOGE.printf("Unable to create window: title=%s, size=%dx%d, pos=%d,%d, z=%d", szTitle.c_str(), w, h, x, y, z);
-   }
+   PLOGE.printf("Failed to initialize window: title=%s", m_szTitle.c_str());
+
+   return false;
 }
 
 Window::~Window()
 {
-   if (m_pThread) {
-      m_running = false;
-      m_pThread->join();
-      delete m_pThread;
-   }
+   VP::WindowManager::GetInstance()->UnregisterWindow(this);
 
    if (m_pRenderer)
       SDL_DestroyRenderer(m_pRenderer);
 
    if (m_pWindow) {
-      VP::WindowManager::GetInstance()->UnregisterWindow(this);
-
       SDL_DestroyWindow(m_pWindow);
    }
 }
 
-void Window::Run()
-{
-   if (m_running)
-      return;
-
-   m_running = true;
-
-   m_pThread = new std::thread([this]() {
-      const Uint64 targetFrameTime = 1000 / 60;
-
-      while (m_running) {
-         Uint64 frameStartTime = SDL_GetTicks64();
-
-         Render();
-
-         Uint64 frameEndTime = SDL_GetTicks64();
-         Uint64 frameDuration = frameEndTime - frameStartTime;
-
-         if (frameDuration < targetFrameTime)
-            SDL_Delay(targetFrameTime - frameDuration);
-      }
-   });
-}
-
 void Window::Show()
 {
+   if (m_visible)
+      return;
+
    m_visible = true;
 
-   SDL_ShowWindow(m_pWindow);
+   if (m_init) {
+      SDL_ShowWindow(m_pWindow);
+
+      PLOGI.printf("Window updated: title=%s, id=%d, size=%dx%d, pos=%d,%d, z=%d, visible=%d", m_szTitle.c_str(), m_id, m_w, m_h, m_x, m_y, m_z, m_visible);
+   }
 }
 
 void Window::Hide()
 {
+   if (!m_visible)
+      return;
+
    m_visible = false;
 
-   SDL_HideWindow(m_pWindow);
+   if (m_pWindow) {
+      SDL_HideWindow(m_pWindow);
+
+      PLOGI.printf("Window updated: title=%s, id=%d, size=%dx%d, pos=%d,%d, z=%d, visible=%d", m_szTitle.c_str(), m_id, m_w, m_h, m_x, m_y, m_z, m_visible);
+   }
 }
 
-void Window::HandleUpdate()
+void Window::OnUpdate()
 {
+   if (!m_init || !m_visible)
+      return;
+
    SDL_RaiseWindow(m_pWindow);
 
    int x, y;
@@ -117,7 +109,22 @@ void Window::HandleUpdate()
       m_x = x;
       m_y = y;
 
-      PLOGI.printf("Window moved: title=%s, size=%dx%d, pos=%d,%d, z=%d", m_szTitle.c_str(), m_w, m_h, m_x, m_y, m_z);
+      PLOGI.printf("Window moved: title=%s, id=%d, size=%dx%d, pos=%d,%d, z=%d", m_szTitle.c_str(), m_id, m_w, m_h, m_x, m_y, m_z);
+   }
+}
+
+void Window::OnRender()
+{
+   if (m_init && m_visible) {
+      Uint64 now = SDL_GetTicks64();
+      Uint64 timeSinceLastRender = now - m_lastRenderTime;
+
+      if(timeSinceLastRender < m_frameDuration)
+         return;
+
+       Render();
+
+       m_lastRenderTime = now;
    }
 }
 

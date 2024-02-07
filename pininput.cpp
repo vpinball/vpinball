@@ -882,7 +882,7 @@ void PinInput::HandleInputSDL(DIDEVICEOBJECTDATA *didod)
       }
    }
 #ifdef __STANDALONE__
-   g_pplayer->m_pWindowManager->HandleUpdates();
+   g_pplayer->m_pWindowManager->ProcessUpdates();
 #endif
 #endif
 }

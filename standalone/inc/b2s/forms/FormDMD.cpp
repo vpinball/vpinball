@@ -19,16 +19,12 @@ FormDMD::FormDMD()
       return;
    }
 
-   m_pWindow = FormWindow::Create("B2SDMD",
-      (VP::Window::RenderMode)pSettings->LoadValueWithDefault(Settings::Standalone, "B2SWindowsRenderMode"s, VP::Window::RenderMode_Default),
+   m_pWindow = new FormWindow(this, "B2SDMD",
       pSettings->LoadValueWithDefault(Settings::Standalone, "B2SDMDX"s, B2S_SETTINGS_DMDX),
       pSettings->LoadValueWithDefault(Settings::Standalone, "B2SDMDY"s, B2S_SETTINGS_DMDY),
       pSettings->LoadValueWithDefault(Settings::Standalone, "B2SDMDWidth"s, B2S_SETTINGS_DMDWIDTH),
       pSettings->LoadValueWithDefault(Settings::Standalone, "B2SDMDHeight"s, B2S_SETTINGS_DMDHEIGHT),
       B2S_DMD_ZORDER);
-
-   if (m_pWindow)
-      m_pWindow->SetForm(this);
 }
 
 FormDMD::~FormDMD()

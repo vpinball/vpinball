@@ -7,6 +7,12 @@
 
 #include "../common/WindowManager.h"
 
+#define PINMAME_SETTINGS_WINDOW_X      15
+#define PINMAME_SETTINGS_WINDOW_Y      30 + 218 + 5 + 75 + 5
+#define PINMAME_SETTINGS_WINDOW_WIDTH  290
+#define PINMAME_SETTINGS_WINDOW_HEIGHT 75
+#define PINMAME_ZORDER                 200
+
 void PINMAMECALLBACK VPinMAMEController::GetGameCallback(PinmameGame* pPinmameGame, const void* pUserData)
 {
    VPinMAMEController* pController = (VPinMAMEController*)pUserData;
@@ -188,11 +194,23 @@ VPinMAMEController::VPinMAMEController()
 
    m_hidden = true;
 
-   m_pVirtualDMD = nullptr;
-   m_pWindow = VPinMAMEWindow::Create();
-
    m_running = false;
    m_pThread = nullptr;
+
+   m_pVirtualDMD = nullptr;
+   m_pWindow = nullptr;
+
+   if (pSettings->LoadValueWithDefault(Settings::Standalone, "PinMAMEWindow"s, true)) {
+      m_pWindow = new VP::DMDWindow("PinMAME",
+         pSettings->LoadValueWithDefault(Settings::Standalone, "PinMAMEWindowX"s, PINMAME_SETTINGS_WINDOW_X),
+         pSettings->LoadValueWithDefault(Settings::Standalone, "PinMAMEWindowY"s, PINMAME_SETTINGS_WINDOW_Y),
+         pSettings->LoadValueWithDefault(Settings::Standalone, "PinMAMEWindowWidth"s, PINMAME_SETTINGS_WINDOW_WIDTH),
+         pSettings->LoadValueWithDefault(Settings::Standalone, "PinMAMEWindowHeight"s, PINMAME_SETTINGS_WINDOW_HEIGHT),
+         PINMAME_ZORDER);
+   }
+   else {
+      PLOGI.printf("PinMAME window disabled");
+   }
 }
 
 VPinMAMEController::~VPinMAMEController()

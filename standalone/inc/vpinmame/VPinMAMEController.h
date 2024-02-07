@@ -3,8 +3,9 @@
 #include "libpinmame.h"
 #include "altsound.h"
 #include "DMDUtil/DMDUtil.h"
+
 #include "vpinmame_i.h"
-#include "VPinMAMEWindow.h"
+#include "../common/DMDWindow.h"
 
 #include <map>
 
@@ -197,8 +198,8 @@ private:
    int m_enableSound;
    AudioPlayer* m_pAudioPlayer;
    int m_audioChannels;
-   VPinMAMEWindow* m_pWindow;
    DMDUtil::VirtualDMD* m_pVirtualDMD;
+   VP::DMDWindow* m_pWindow;
    std::thread* m_pThread;
    bool m_running;
 

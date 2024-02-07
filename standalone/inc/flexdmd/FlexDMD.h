@@ -1,10 +1,11 @@
 #pragma once
 
+#include "DMDUtil/DMDUtil.h"
+
 #include "flexdmd_i.h"
 #include "AssetManager.h"
 #include "../common/Graphics.h"
-#include "DMDUtil/DMDUtil.h"
-#include "FlexDMDWindow.h"
+#include "../common/DMDWindow.h"
 
 #include <thread>
 
@@ -128,8 +129,8 @@ private:
    RenderMode m_renderMode;
    OLE_COLOR m_dmdColor;
    AssetManager* m_pAssetManager;
-   FlexDMDWindow* m_pWindow;
    DMDUtil::VirtualDMD* m_pVirtualDMD;
+   VP::DMDWindow* m_pWindow;
 
    ULONG m_dwRef = 0;
 };

@@ -28,6 +28,7 @@ WindowManager* WindowManager::GetInstance()
 
 WindowManager::WindowManager()
 {
+   m_init = false;
    m_updateLock = false;
    m_lastEventTime = 0;
    
@@ -39,35 +40,40 @@ void WindowManager::RegisterWindow(Window* pWindow)
    if (!pWindow)
       return;
 
-   WindowData* pWindowData = new WindowData();
-   pWindowData->m_pWindow = pWindow;
-   pWindowData->renderMode = pWindow->GetRenderMode();
-   pWindowData->z = pWindow->GetZ();
-   m_windows.push_back(pWindowData);
+   m_windows.push_back(pWindow);
 
-   std::sort(m_windows.begin(), m_windows.end(), [](const WindowData* pWindowData1, const WindowData* pWindowData2) {
-      return pWindowData1->z < pWindowData2->z;
+   std::sort(m_windows.begin(), m_windows.end(), [](Window* pWindow1, Window* pWindow2) {
+      return pWindow1->GetZ() < pWindow2->GetZ();
    });
-
-   SDL_SetWindowHitTest(SDL_GetWindowFromID(pWindow->GetId()), WindowHitTest, NULL);
-
-   Update();
-   SDL_RaiseWindow(g_pplayer->m_sdl_playfieldHwnd);
 }
 
 void WindowManager::UnregisterWindow(Window* pWindow)
 {
    auto newEnd = std::remove_if(m_windows.begin(), m_windows.end(),
-      [pWindow](const WindowData* pWindowData) {
-         return pWindowData->m_pWindow == pWindow;
-      });
+      [pWindow](Window* pCurrentWindow) {
+         return pCurrentWindow == pWindow;
+   });
 
    m_windows.erase(newEnd, m_windows.end());
 }
 
+void WindowManager::Startup()
+{
+   for (Window* pWindow : m_windows) {
+      if (pWindow->Init()) {
+         SDL_Window* pSDLWindow = SDL_GetWindowFromID(pWindow->GetId());
+         SDL_SetWindowHitTest(pSDLWindow, WindowHitTest, NULL);
+      }
+   }
+
+   SDL_GL_MakeCurrent(g_pplayer->m_sdl_playfieldHwnd, g_pplayer->m_renderer->m_pd3dPrimaryDevice->m_sdl_context);
+
+   m_init = true;
+}
+
 void WindowManager::ProcessEvent(const SDL_Event* event)
 {
-   if (m_updateLock)
+   if (!m_init || m_updateLock)
       return;
 
    if (event->type == SDL_WINDOWEVENT &&
@@ -75,9 +81,9 @@ void WindowManager::ProcessEvent(const SDL_Event* event)
       m_lastEventTime = SDL_GetTicks64();
 }
 
-void WindowManager::HandleUpdates()
+void WindowManager::ProcessUpdates()
 {
-   if (m_lastEventTime == 0)
+   if (!m_init || m_lastEventTime == 0)
       return;
 
    Uint64 now = SDL_GetTicks64();
@@ -88,23 +94,22 @@ void WindowManager::HandleUpdates()
       }
       else if (!m_updateLock) {
          m_updateLock = true;
-         Update();
+
+         for (Window* pWindow : m_windows)
+            pWindow->OnUpdate();
       }
    }
 }
 
-void WindowManager::Update()
-{
-   for (WindowData* pWindowData : m_windows)
-      pWindowData->m_pWindow->HandleUpdate();
-}
-
 void WindowManager::Render()
 {
-   for (WindowData* pWindowData : m_windows) {
-      if (pWindowData->renderMode == Window::RenderMode_MainThread)
-         pWindowData->m_pWindow->Render();
-   }
+   if (!m_init)
+      return;
+
+   for (Window* pWindow: m_windows)
+      pWindow->OnRender();
+
+   SDL_GL_MakeCurrent(g_pplayer->m_sdl_playfieldHwnd, g_pplayer->m_renderer->m_pd3dPrimaryDevice->m_sdl_context);
 }
 
 }

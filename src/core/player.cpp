@@ -561,6 +561,8 @@ void Player::CreateWnd(HWND parent /* = 0 */)
    // Attach it (raise a WM_CREATE which in turns call OnInitialUpdate)
    Attach(wmInfo.info.win.window);
 #else
+   m_pWindowManager = VP::WindowManager::GetInstance();
+
    OnInitialUpdate();
 #endif
 
@@ -581,10 +583,6 @@ void Player::CreateWnd(HWND parent /* = 0 */)
    PLOGI << "Creating main window"; // For profiling
    Create();
 #endif // ENABLE_SDL
-
-#ifdef __STANDALONE__
-   m_pWindowManager = VP::WindowManager::GetInstance();
-#endif
 }
 
 void Player::OnInitialUpdate()
@@ -1272,6 +1270,10 @@ HRESULT Player::Init()
 #endif
 
    PLOGI << "Startup done"; // For profiling
+
+#ifdef __STANDALONE__
+   m_pWindowManager->Startup();
+#endif
 
 #ifndef __STANDALONE__
    g_pvp->GetPropertiesDocker()->EnableWindow(FALSE);
@@ -2038,6 +2040,10 @@ void Player::SubmitFrame()
 void Player::FinishFrame()
 {
    m_physics->OnFinishFrame();
+
+/*#ifdef __STANDALONE__
+   m_pWindowManager->Render();
+#endif*/
 
    if (GetProfilingMode() != PF_DISABLED)
       m_renderer->m_gpu_profiler.EndFrame();

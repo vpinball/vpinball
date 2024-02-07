@@ -90,16 +90,12 @@ FormBackglass::FormBackglass()
       return; 
    }
 
-   m_pWindow = FormWindow::Create("B2SBackglass",
-      (VP::Window::RenderMode)pSettings->LoadValueWithDefault(Settings::Standalone, "B2SWindowsRenderMode"s, VP::Window::RenderMode_Default),
+   m_pWindow = new FormWindow(this, "B2SBackglass",
       pSettings->LoadValueWithDefault(Settings::Standalone, "B2SBackglassX"s, B2S_SETTINGS_BACKGLASSX),
       pSettings->LoadValueWithDefault(Settings::Standalone, "B2SBackglassY"s, B2S_SETTINGS_BACKGLASSY),
       pSettings->LoadValueWithDefault(Settings::Standalone, "B2SBackglassWidth"s, B2S_SETTINGS_BACKGLASSWIDTH),
       pSettings->LoadValueWithDefault(Settings::Standalone, "B2SBackglassHeight"s, B2S_SETTINGS_BACKGLASSHEIGHT),
       B2S_BACKGLASS_ZORDER);
-
-   if (m_pWindow)
-      m_pWindow->SetForm(this);
 }
 
 FormBackglass::~FormBackglass()
