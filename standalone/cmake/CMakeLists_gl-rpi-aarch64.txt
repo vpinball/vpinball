@@ -309,8 +309,6 @@ add_executable(vpinball
    standalone/PoleStream.cpp
    standalone/PoleStorage.cpp
 
-   standalone/inc/vpinmame/VPinMAMEWindow.cpp
-   standalone/inc/vpinmame/VPinMAMEWindow.h
    standalone/inc/vpinmame/VPinMAMEController.cpp
    standalone/inc/vpinmame/VPinMAMEController.h
    standalone/inc/vpinmame/VPinMAMEControllerSettings.cpp
@@ -407,8 +405,6 @@ add_executable(vpinball
    standalone/inc/flexdmd/filters/DotFilter.h
    standalone/inc/flexdmd/filters/AdditiveFilter.cpp
    standalone/inc/flexdmd/filters/AdditiveFilter.h
-   standalone/inc/flexdmd/FlexDMDWindow.cpp
-   standalone/inc/flexdmd/FlexDMDWindow.h
    standalone/inc/flexdmd/FlexDMD.cpp
    standalone/inc/flexdmd/FlexDMD.h
    standalone/inc/flexdmd/AssetSrc.cpp
@@ -557,6 +553,8 @@ add_executable(vpinball
    standalone/inc/pup/pinupplayer_i.c
    standalone/inc/pup/pinupplayer_i.h
 
+   standalone/inc/common/DMDWindow.cpp
+   standalone/inc/common/DMDWindow.h
    standalone/inc/common/WindowManager.cpp
    standalone/inc/common/WindowManager.h
    standalone/inc/common/Window.cpp

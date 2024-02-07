@@ -548,6 +548,8 @@ STDMETHODIMP ScriptGlobalTable::GetTextFile(BSTR FileName, BSTR *pContents)
       if(GetTextFileFromDirectory(defaultFileNameSearch[i] + szFileName, defaultPathSearch[i], pContents))
          return S_OK;
 
+   PLOGE.printf("Unable to load file: %s", szFileName);
+
    return S_FALSE;
 }
 

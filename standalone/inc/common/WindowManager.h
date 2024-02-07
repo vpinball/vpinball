@@ -4,12 +4,6 @@
 
 namespace VP {
 
-typedef struct {
-   Window* m_pWindow;
-   Window::RenderMode renderMode;
-   int z;
-} WindowData;
-
 class WindowManager final
 {
 public:
@@ -17,19 +11,17 @@ public:
 
    void RegisterWindow(Window* pWindow);
    void UnregisterWindow(Window* pWindow);
-
+   void Startup();
    void ProcessEvent(const SDL_Event* event);
-   void HandleUpdates();
-   void Update();
-
+   void ProcessUpdates();
    void Render();
 
 private:
    WindowManager();
 
-   vector<WindowData*> m_windows;
    static WindowManager* m_pInstance;
-
+   vector<Window*> m_windows;
+   bool m_init;
    bool m_updateLock;
    Uint64 m_lastEventTime;
 };

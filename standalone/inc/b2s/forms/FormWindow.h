@@ -8,16 +8,13 @@
 class FormWindow : public VP::Window
 {
 public:
+   FormWindow(Form* pForm, const std::string& szTitle, int x, int y, int w, int h, int z);
    ~FormWindow();
 
-   static FormWindow* Create(const std::string& szTitle, VP::Window::RenderMode renderMode, int x, int y, int w, int h, int z);
-
-   void SetForm(Form* pForm);
+   bool Init() override;
    void Render() override;
 
 private:
-   FormWindow(const std::string& szTitle, VP::Window::RenderMode renderMode, int x, int y, int w, int h, int z, bool highDpi);
-
    Form* m_pForm;
    VP::Graphics* m_pGraphics;
 };

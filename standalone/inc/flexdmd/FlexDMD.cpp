@@ -16,6 +16,12 @@
 
 #include "../common/WindowManager.h"
 
+#define FLEXDMD_SETTINGS_WINDOW_X      15
+#define FLEXDMD_SETTINGS_WINDOW_Y      30 + 218 + 5 + 75 + 5
+#define FLEXDMD_SETTINGS_WINDOW_WIDTH  290
+#define FLEXDMD_SETTINGS_WINDOW_HEIGHT 75
+#define FLEXDMD_ZORDER                 200
+
 FlexDMD::FlexDMD()
 {
    m_width = 128;
@@ -34,10 +40,24 @@ FlexDMD::FlexDMD()
    m_pStage->AddRef();
    m_renderMode = RenderMode_DMD_GRAY_4;
    m_dmdColor = RGB(255, 88, 32);
-   m_pAssetManager = new AssetManager();;
+   m_pAssetManager = new AssetManager();
 
    m_pVirtualDMD = nullptr;
-   m_pWindow = FlexDMDWindow::Create();
+   m_pWindow = nullptr;
+
+   Settings* const pSettings = &g_pplayer->m_ptable->m_settings;
+
+   if (pSettings->LoadValueWithDefault(Settings::Standalone, "FlexDMDWindow"s, true)) {
+      m_pWindow = new VP::DMDWindow("FlexDMD",
+         pSettings->LoadValueWithDefault(Settings::Standalone, "FlexDMDWindowX"s, FLEXDMD_SETTINGS_WINDOW_X),
+         pSettings->LoadValueWithDefault(Settings::Standalone, "FlexDMDWindowY"s, FLEXDMD_SETTINGS_WINDOW_Y),
+         pSettings->LoadValueWithDefault(Settings::Standalone, "FlexDMDWindowWidth"s, FLEXDMD_SETTINGS_WINDOW_WIDTH),
+         pSettings->LoadValueWithDefault(Settings::Standalone, "FlexDMDWindowHeight"s, FLEXDMD_SETTINGS_WINDOW_HEIGHT),
+         FLEXDMD_ZORDER);
+   }
+   else {
+      PLOGI.printf("FlexDMD window disabled");
+   }
 }
 
 FlexDMD::~FlexDMD()
@@ -49,8 +69,7 @@ FlexDMD::~FlexDMD()
       delete m_pThread;
    }
 
-   if (m_pWindow)
-      delete m_pWindow;
+   delete m_pWindow;
 
    m_pStage->Release();
 
