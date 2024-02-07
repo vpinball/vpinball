@@ -992,6 +992,7 @@
 #define EXR_FILE                        672
 #define IDC_JOYSTAGEDLFLIPCOMBO         673
 #define IDC_JOYSTAGEDRFLIPCOMBO         674
+#define IDD_INFOTEXT                    675
 #define IDC_CVP_BUT_CANCEL              701
 #define IDC_CVP_BUT_OK                  702
 #define IDC_CVP_BUT_COL_COMPS           703
@@ -1256,6 +1257,7 @@
 #define IDC_TONEMAPPER                  923
 #define IDC_AR_LABEL2                   924
 #define IDC_SAVE_OVERRIDES              925
+#define IDC_INFOTEXT_EDIT               926
 #define IDC_LAYBACK_EDIT                1040
 #define IDC_3D_STEREO_SEPARATION_EDIT   1041
 #define IDC_3D_STEREO_ZPD_EDIT          1042
@@ -1450,9 +1452,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        675
+#define _APS_NEXT_RESOURCE_VALUE        677
 #define _APS_NEXT_COMMAND_VALUE         4030
-#define _APS_NEXT_CONTROL_VALUE         926
+#define _APS_NEXT_CONTROL_VALUE         927
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif
