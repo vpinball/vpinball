@@ -808,7 +808,7 @@ ImGui::MarkdownImageData LiveUI::MarkdownImageCallback(ImGui::MarkdownLinkCallba
    Texture *const ppi = ui->m_live_table->GetImage(std::string(data.link, data.linkLength));
    if (ppi == nullptr)
       return ImGui::MarkdownImageData {};
-   Sampler *sampler = g_pplayer->m_pin3d.m_pd3dPrimaryDevice->m_texMan.LoadTexture(ppi->m_pdsBuffer, SamplerFilter::SF_BILINEAR, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, false);
+   Sampler *sampler = g_pplayer->m_renderer->m_pd3dPrimaryDevice->m_texMan.LoadTexture(ppi->m_pdsBuffer, SamplerFilter::SF_BILINEAR, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, false);
    if (sampler == nullptr)
       return ImGui::MarkdownImageData {};
    #ifdef ENABLE_SDL
