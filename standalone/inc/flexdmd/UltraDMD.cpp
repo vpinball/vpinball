@@ -156,7 +156,7 @@ STDMETHODIMP UltraDMD::CancelRenderingWithId(BSTR sceneId)
 
 STDMETHODIMP UltraDMD::Clear()
 {
-   VP::Graphics* pGraphics = m_pFlexDMD->GetGraphics();
+   VP::SurfaceGraphics* pGraphics = m_pFlexDMD->GetGraphics();
    pGraphics->SetColor(RGB(0, 0, 0));
    pGraphics->Clear();
    m_pScoreBoard->SetVisible(false);

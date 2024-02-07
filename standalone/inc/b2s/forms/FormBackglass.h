@@ -15,7 +15,7 @@ public:
    FormBackglass();
    ~FormBackglass();
 
-   void OnPaint(VP::Graphics* pGraphics) override;
+   void OnPaint(VP::RendererGraphics* pGraphics) override;
 
    void StartAnimation(const string& szName, bool playReverse = false);
    void StopAnimation(const string& szName);
@@ -55,7 +55,7 @@ public:
    bool IsSecondRomInverted() { return m_pB2SSettings->GetCurrentDualMode() == eDualMode_Fantasy ? m_secondRomInverted4Fantasy : m_secondRomInverted4Authentic; }
 
 private:
-   void DrawImage(VP::Graphics* pGraphics, B2SPictureBox* pPicbox);
+   void DrawImage(VP::RendererGraphics* pGraphics, B2SPictureBox* pPicbox);
    void StartupTimerTick(VP::Timer* pTimer);
    void RotateTimerTick(VP::Timer* pTimer);
    eLEDTypes GetLEDType();

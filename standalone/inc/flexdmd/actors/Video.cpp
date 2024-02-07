@@ -53,7 +53,7 @@ void Video::ReadNextFrame()
 {
 }
 
-void Video::Draw(VP::Graphics* pGraphics)
+void Video::Draw(VP::SurfaceGraphics* pGraphics)
 {
    if (GetVisible()) {
       float w = 0;

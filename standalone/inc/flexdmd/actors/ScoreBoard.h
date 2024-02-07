@@ -17,7 +17,7 @@ public:
    void SetHighlightedPlayer(int player);
    void SetScore(LONG score1, LONG score2, LONG score3, LONG score4);
    void Update(float delta) override;
-   void Draw(VP::Graphics* pGraphics) override;
+   void Draw(VP::SurfaceGraphics* pGraphics) override;
 
 private:
    Font* m_pScoreFont;

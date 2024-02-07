@@ -15,7 +15,7 @@ public:
    Dream7Display();
    virtual ~Dream7Display();
 
-   void OnPaint(VP::Graphics* pGraphics) override;
+   void OnPaint(VP::RendererGraphics* pGraphics) override;
    void OnHandleCreated() override;
 
    bool IsHidden() const { return m_hidden; }

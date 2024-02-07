@@ -58,7 +58,7 @@ public:
    void RemoveActor(Actor* actor);
    vector<Actor*> GetChildren() { return m_children; }
    void Update(float delta) override;
-   void Draw(VP::Graphics* pGraphics) override;
+   void Draw(VP::SurfaceGraphics* pGraphics) override;
    void OnStageStateChanged() override;
 
 private:

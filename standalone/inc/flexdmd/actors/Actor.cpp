@@ -272,7 +272,7 @@ void Actor::Update(float secondsElapsed)
       SetBounds(0, 0, m_parent->m_width, m_parent->m_height);
 }
 
-void Actor::Draw(VP::Graphics* pGraphics)
+void Actor::Draw(VP::SurfaceGraphics* pGraphics)
 {
    if (!m_onStage) assert("Update was called on an actor which is not on stage.");
    if (m_visible && m_clearBackground) {

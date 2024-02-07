@@ -498,7 +498,7 @@ void FlexDMD::RenderLoop()
       m_pWindow->SetDMD(pDMD);
 
    SDL_Surface* pSurface = SDL_CreateRGBSurfaceWithFormat(0, m_width, m_height, 24, SDL_PIXELFORMAT_RGB24);
-   m_pGraphics = new VP::Graphics(pSurface);
+   m_pGraphics = new VP::SurfaceGraphics(pSurface);
 
    m_pStage->SetSize(m_width, m_height);
    m_pStage->SetOnStage(true);

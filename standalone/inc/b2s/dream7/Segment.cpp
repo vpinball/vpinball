@@ -89,7 +89,7 @@ void Segment::AssignStyle()
    ResetCacheData();
 }
 
-void Segment::Draw(VP::Graphics* pGraphics)
+void Segment::Draw(VP::RendererGraphics* pGraphics)
 {
    SetTransform(pGraphics);
    GetGlassData();
@@ -104,7 +104,7 @@ void Segment::Draw(VP::Graphics* pGraphics)
    pGraphics->ResetTransform();
 }
 
-void Segment::DrawLight(VP::Graphics* pGraphics)
+void Segment::DrawLight(VP::RendererGraphics* pGraphics)
 {
    if (!m_on)
       return;
@@ -221,7 +221,7 @@ void Segment::LeftRightFromCap(SegmentCap nCap, float nWidth, float nCapangle, f
     nRight = tan(nCapangle / 180.0f * M_PI) * nRight;
 }
  
-void Segment::PaintSegment(VP::Graphics* pGraphics, GraphicsPath* pPath)
+void Segment::PaintSegment(VP::RendererGraphics* pGraphics, GraphicsPath* pPath)
 {
    if (m_pStyle->IsWireFrame())
       pGraphics->DrawPath(pPath);
@@ -267,7 +267,7 @@ void Segment::ResetCacheData()
    }
 }
 
-void Segment::SetTransform(VP::Graphics* pGraphics)
+void Segment::SetTransform(VP::RendererGraphics* pGraphics)
 {
    VP::Matrix* pMatrix;
    if (!m_pExternMatrix)

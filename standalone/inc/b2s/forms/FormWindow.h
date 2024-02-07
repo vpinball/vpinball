@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../../common/Window.h"
-#include "../../common/Graphics.h"
+#include "../../common/RendererGraphics.h"
 
 #include "Form.h"
 
@@ -16,5 +16,5 @@ public:
 
 private:
    Form* m_pForm;
-   VP::Graphics* m_pGraphics;
+   VP::RendererGraphics* m_pGraphics;
 };

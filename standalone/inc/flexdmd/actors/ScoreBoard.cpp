@@ -128,7 +128,7 @@ void ScoreBoard::Update(float delta)
     m_pLowerRight->SetAlignedPosition(GetWidth() - 1, yText, Alignment_TopRight);
 }
 
-void ScoreBoard::Draw(VP::Graphics* pGraphics)
+void ScoreBoard::Draw(VP::SurfaceGraphics* pGraphics)
 {
    if (GetVisible()) {
       pGraphics->SetColor(RGB(0, 0, 0));

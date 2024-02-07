@@ -119,7 +119,7 @@ void Label::UpdateBounds()
       Pack();
 }
 
-void Label::Draw(VP::Graphics* pGraphics)
+void Label::Draw(VP::SurfaceGraphics* pGraphics)
 {
    Actor::Draw(pGraphics);
    if (GetVisible() && m_pFont) {

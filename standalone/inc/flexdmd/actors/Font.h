@@ -2,7 +2,7 @@
 
 #include "../FlexDMD.h"
 #include "../bmfonts/BitmapFont.h"
-#include "../../common/Graphics.h"
+#include "../../common/RendererGraphics.h"
 
 class AssetManager;
 
@@ -46,9 +46,9 @@ public:
    Font(AssetManager* pAssetManager, AssetSrc* pAssetSrc);
    ~Font();
 
-   void DrawCharacter(VP::Graphics* pGraphics, char character, char previousCharacter, float& x, float& y);
+   void DrawCharacter(VP::SurfaceGraphics* pGraphics, char character, char previousCharacter, float& x, float& y);
    SDL_Rect MeasureFont(const string& text);
-   void DrawText_(VP::Graphics* pGraphics, float x, float y, const string& text);
+   void DrawText_(VP::SurfaceGraphics* pGraphics, float x, float y, const string& text);
    BitmapFont* GetBitmapFont() { return m_pBitmapFont; }
 
 private:

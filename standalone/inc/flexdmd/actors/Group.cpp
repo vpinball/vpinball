@@ -34,7 +34,7 @@ void Group::Update(float delta)
    }
 }
 
-void Group::Draw(VP::Graphics* pGraphics)
+void Group::Draw(VP::SurfaceGraphics* pGraphics)
 {
    if (GetVisible()) {
       pGraphics->TranslateTransform(GetX(), GetY());

@@ -76,7 +76,7 @@ void GIFImage::UpdateFrame()
       m_pActiveFrameSurface = m_pBitmap->GetFrameSurface(m_pos);
 }
 
-void GIFImage::Draw(VP::Graphics* pGraphics)
+void GIFImage::Draw(VP::SurfaceGraphics* pGraphics)
 {
    if (!m_pBitmap)
       return;

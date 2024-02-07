@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Graphics.h"
+#include "RendererGraphics.h"
 #include "Timer.h"
 
 #include "DMDUtil/DMDUtil.h"

@@ -13,7 +13,7 @@ public:
    void Rewind() override;
    void ReadNextFrame() override;
    void UpdateFrame();
-   void Draw(VP::Graphics* pGraphics) override;
+   void Draw(VP::SurfaceGraphics* pGraphics) override;
    void OnStageStateChanged() override;
 
 private:

@@ -49,7 +49,7 @@ public:
    STDMETHOD(get_FillColor)(OLE_COLOR *pRetVal);
    STDMETHOD(put_FillColor)(OLE_COLOR pRetVal);
 
-   void Draw(VP::Graphics* pGraphics) override;
+   void Draw(VP::SurfaceGraphics* pGraphics) override;
 
 private:
    int m_thickness;

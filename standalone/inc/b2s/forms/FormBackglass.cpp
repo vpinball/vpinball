@@ -106,7 +106,7 @@ FormBackglass::~FormBackglass()
     delete m_pB2SAnimation;
 }
 
-void FormBackglass::OnPaint(VP::Graphics* pGraphics)
+void FormBackglass::OnPaint(VP::RendererGraphics* pGraphics)
 {
    if (IsVisible() && GetBackgroundImage()) {
       // draw background image
@@ -136,7 +136,7 @@ void FormBackglass::OnPaint(VP::Graphics* pGraphics)
    Control::OnPaint(pGraphics);
 }
 
-void FormBackglass::DrawImage(VP::Graphics* pGraphics, B2SPictureBox* pPicbox)
+void FormBackglass::DrawImage(VP::RendererGraphics* pGraphics, B2SPictureBox* pPicbox)
 {
    if (pPicbox) {
       SDL_FRect rectf = pPicbox->GetRectangleF();

@@ -16,7 +16,7 @@ public:
    float GetLength() override { return m_frames.size() * GetFrameDuration(); };
    void Rewind() override;
    void ReadNextFrame() override;
-   void Draw(VP::Graphics* pGraphics) override;
+   void Draw(VP::SurfaceGraphics* pGraphics) override;
    void OnStageStateChanged() override;
 
 private:

@@ -15,7 +15,7 @@ bool FormWindow::Init()
    if (!VP::Window::Init())
       return false;
 
-   m_pGraphics = new VP::Graphics(m_pRenderer);
+   m_pGraphics = new VP::RendererGraphics(m_pRenderer);
 
    return true;
 }

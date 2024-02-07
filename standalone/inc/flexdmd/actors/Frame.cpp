@@ -70,7 +70,7 @@ STDMETHODIMP Frame::put_FillColor(OLE_COLOR pRetVal)
    return S_OK;
 }
 
-void Frame::Draw(VP::Graphics* pGraphics)
+void Frame::Draw(VP::SurfaceGraphics* pGraphics)
 {
    Actor::Draw(pGraphics);
 

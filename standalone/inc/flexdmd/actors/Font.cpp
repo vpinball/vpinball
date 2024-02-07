@@ -158,7 +158,7 @@ Font::~Font()
    }
 }
 
-void Font::DrawCharacter(VP::Graphics* pGraphics, char character, char previousCharacter, float& x, float& y)
+void Font::DrawCharacter(VP::SurfaceGraphics* pGraphics, char character, char previousCharacter, float& x, float& y)
 {
    if (character == '\n') {
       x = 0;
@@ -197,7 +197,7 @@ SDL_Rect Font::MeasureFont(const string& text)
    return m_pBitmapFont->MeasureFont(text);
 }
 
-void Font::DrawText_(VP::Graphics* pGraphics, float x, float y, const string& text)
+void Font::DrawText_(VP::SurfaceGraphics* pGraphics, float x, float y, const string& text)
 {
    char previousCharacter = ' ';
    for (int i = 0; i < text.length(); i++) {

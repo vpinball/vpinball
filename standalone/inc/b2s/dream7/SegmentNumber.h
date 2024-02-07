@@ -5,7 +5,7 @@
 #include "SegmentList.h"
 #include "SegmentStyle.h"
 
-#include "../../common/Graphics.h"
+#include "../../common/RendererGraphics.h"
 
 class Dream7Display;
 
@@ -18,7 +18,7 @@ public:
    void OnInvalidated();
    void Init(const SDL_FPoint& location, SegmentNumberType type, VP::Matrix* pMatrix, float thickness);
    void AssignStyle();
-   void Draw(VP::Graphics* pGraphics);
+   void Draw(VP::RendererGraphics* pGraphics);
    GraphicsPath* GetBounds();
    SegmentStyle* GetStyle() const { return m_pStyle; }
    const string& GetCharacter() const { return m_szCharacter; }

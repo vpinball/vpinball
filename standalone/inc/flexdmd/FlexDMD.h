@@ -4,7 +4,7 @@
 
 #include "flexdmd_i.h"
 #include "AssetManager.h"
-#include "../common/Graphics.h"
+#include "../common/SurfaceGraphics.h"
 #include "../common/DMDWindow.h"
 
 #include <thread>
@@ -103,7 +103,7 @@ public:
    void SetRenderMode(RenderMode renderMode) { m_renderMode = renderMode; }
    OLE_COLOR GetDMDColor() { return m_dmdColor; }
    void SetDMDColor(OLE_COLOR dmdColor) { m_dmdColor = dmdColor; }
-   VP::Graphics* GetGraphics() { return m_pGraphics; }
+   VP::SurfaceGraphics* GetGraphics() { return m_pGraphics; }
    Group* GetStage() { return m_pStage; }
    AssetManager* GetAssetManager() { return m_pAssetManager; }
 
@@ -124,7 +124,7 @@ private:
    std::thread* m_pThread;
    int m_width;
    int m_height;
-   VP::Graphics* m_pGraphics;
+   VP::SurfaceGraphics* m_pGraphics;
    Group* m_pStage;
    RenderMode m_renderMode;
    OLE_COLOR m_dmdColor;
