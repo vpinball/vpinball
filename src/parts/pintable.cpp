@@ -7623,6 +7623,25 @@ PinBinary *PinTable::GetImageLinkBinary(const int id)
    return nullptr;
 }
 
+class InfoDialog : public CDialog
+{
+public:
+   InfoDialog(const string &message)
+      : CDialog(IDD_INFOTEXT)
+      , m_message(message)
+   {
+   }
+
+   virtual BOOL OnInitDialog() override
+   {
+      SetDlgItemText(IDC_INFOTEXT_EDIT, m_message.c_str());
+	   return TRUE;
+   }
+
+   string m_message;
+};
+
+
 bool PinTable::AuditTable() const
 {
    // Perform a simple table audit (disable lighting vs static, script reference of static parts, png vs webp, hdr vs exr,...)
@@ -7648,9 +7667,12 @@ bool PinTable::AuditTable() const
          isInString = !isInString;
       else if (!isInString)
       {
+         // Detect comments
          if (wordPos[0] == '\'')
             isInComment = true;
-         else if (wordPos[0] == ' ' || wordPos[0] == '\r' || wordPos[0] == '\n' || wordPos[0] == '.' || wordPos[0] == '(' || wordPos[0] == ')' || wordPos[0] == '[' || wordPos[0] == ']')
+         // Split identifiers (eventually class/function identifier)
+         else if (wordPos[0] == ' ' || wordPos[0] == '\r' || wordPos[0] == '\t' || wordPos[0] == '\n' || wordPos[0] == '.' 
+               || wordPos[0] == ':' || wordPos[0] == '('  || wordPos[0] == ')'  || wordPos[0] == '['  || wordPos[0] == ']')
          {
             if (wordStart)
             {
@@ -7681,13 +7703,13 @@ bool PinTable::AuditTable() const
                         inClass = word;
                      else if (nextIsFunc)
                      {
-                        //ss << "- " << word << ", line=" << (line + 1) << ", class=" << inClass << '\n';
+                        //ss << "- " << word << ", line=" << (line + 1) << ", class=" << inClass << '\r\n';
                         if (FindIndexOf(functions, inClass + '.' + word) != -1)
-                           ss << ". Duplicate declaration of '" << string(wordStart, (int)(wordPos - wordStart)) << "' in script at line " << line << '\n';
+                           ss << ". Duplicate declaration of '" << word << "' in script at line " << line << "\r\n";
                         else
                            functions.push_back(inClass + '.' + word);
                      }
-                     else
+                     else if (FindIndexOf(identifiers, word) == -1)
                         identifiers.push_back(word);
                   }
                   nextIsFunc = false;
@@ -7700,7 +7722,7 @@ bool PinTable::AuditTable() const
          else if (wordStart == nullptr)
             wordStart = wordPos;
       }
-
+      // Next line
       if (wordPos[0] == '\n')
       {
          isInComment = false;
@@ -7710,15 +7732,18 @@ bool PinTable::AuditTable() const
       wordPos++;
    }
    delete[] szText;
+   
+   if ((FindIndexOf(identifiers, "vpminit"s) == -1) && ((FindIndexOf(identifiers, "loadvpm"s) != -1) || (FindIndexOf(identifiers, "loadvpmalt"s) != -1)))
+      ss << ". Warning: VPM controller is used but vpmInit is not called. pause/resume/exit will likely exhibit bugs and physic outputs won't be supported.\r\n";
 
    if (m_glassBottomHeight > m_glassTopHeight)
-      ss << ". Warning: Glass height seems invalid: bottom is higher than top\n";
+      ss << ". Warning: Glass height seems invalid: bottom is higher than top\r\n";
 
    if (m_glassBottomHeight < INCHESTOVPU(2) || m_glassTopHeight < INCHESTOVPU(2))
-      ss << ". Warning: Glass height seems invalid: glass is below 2\"\n";
+      ss << ". Warning: Glass height seems invalid: glass is below 2\"\r\n";
 
    if (m_ballSphericalMapping)
-      ss << ". Warning: Ball uses legacy 'spherical mapping', it will be rendered like a 2D object and therefore will look bad in VR, stereo or headtracking\n";
+      ss << ". Warning: Ball uses legacy 'spherical mapping', it will be rendered like a 2D object and therefore will look bad in VR, stereo or headtracking\r\n";
 
    // Search for inconsistencies in the table parts
    for (auto part : m_vedit)
@@ -7729,7 +7754,7 @@ bool PinTable::AuditTable() const
 
       // Referencing a static object from script (ok if it is for reading properties, not for writing)
       if (type == eItemPrimitive && prim->m_d.m_staticRendering && FindIndexOf(identifiers, string(prim->GetName())) != -1) 
-         ss << ". Warning: Primitive '" << prim->GetName() << "' seems to be referenced from the script while it is marked as static (most properties of a static object may not be modified at runtime).\n";
+         ss << ". Warning: Primitive '" << prim->GetName() << "' seems to be referenced from the script while it is marked as static (most properties of a static object may not be modified at runtime).\r\n";
 
       // Warning on very fast timers (lower than 5ms)
       TimerDataRoot *tdr = nullptr;
@@ -7753,24 +7778,24 @@ bool PinTable::AuditTable() const
       case eItemGate: tdr = &((Gate *)part)->m_d.m_tdr; break;
       }
       if (tdr && tdr->m_TimerEnabled && tdr->m_TimerInterval != -1 && tdr->m_TimerInterval != -2 && tdr->m_TimerInterval < 5)
-         ss << ". Warning: Part '" << part->GetName() << "' uses a timer with a very short period of " << tdr->m_TimerInterval << "ms. This will likely causes lag and the table will not support 'frame pacing'.\n";
+         ss << ". Warning: Part '" << part->GetName() << "' uses a timer with a very short period of " << tdr->m_TimerInterval << "ms. This will likely causes lag and the table will not support 'frame pacing'.\r\n";
 
       // Enabling translucency (light from below) won't work with static parts: otherwise the rendering will be different in VR/Headtracked vs desktop modes. It also needs a non opaque alpha.
       if (type == eItemPrimitive && prim->m_d.m_disableLightingBelow != 1.f && !prim->m_d.m_staticRendering
          && (!GetMaterial(prim->m_d.m_szMaterial)->m_bOpacityActive || GetMaterial(prim->m_d.m_szMaterial)->m_fOpacity == 1.f)
          && (GetImage(prim->m_d.m_szImage) == nullptr || GetImage(prim->m_d.m_szImage)->m_pdsBuffer->IsOpaque()))
-         ss << ". Warning: Primitive '" << prim->GetName() << "' uses translucency (lighting from below) but it is fully opaque.\n";
+         ss << ". Warning: Primitive '" << prim->GetName() << "' uses translucency (lighting from below) but it is fully opaque.\r\n";
       // Disabled as this is now enforced in the rendering
       //if (type == eItemPrimitive && prim->m_d.m_disableLightingBelow != 1.f && prim->m_d.m_staticRendering) 
-      //   ss << ". Warning: Primitive '" << prim->GetName() << "' has translucency enabled but is also marked as static. Translucency will not be applied on desktop, and it will look different between VR/headtracked and desktop.\n";
+      //   ss << ". Warning: Primitive '" << prim->GetName() << "' has translucency enabled but is also marked as static. Translucency will not be applied on desktop, and it will look different between VR/headtracked and desktop.\r\n";
       //if (type == eItemSurface && surf->m_d.m_disableLightingBelow != 1.f && surf->StaticRendering()) 
-      //   ss << ". Warning: Wall '" << surf->GetName() << "' has translucency enabled but will be staticly rendered (not droppable with opaque materials). Translucency will not be applied on desktop, and it will look different between VR/headtracked and desktop.\n";
+      //   ss << ". Warning: Wall '" << surf->GetName() << "' has translucency enabled but will be staticly rendered (not droppable with opaque materials). Translucency will not be applied on desktop, and it will look different between VR/headtracked and desktop.\r\n";
    }
 
    for (auto image : m_vimage)
    {
       if (image->m_ppb == nullptr)
-         ss << " Warning: Image '" << image->m_szName << "' uses legacy encoding causing waste of memory / file size. It should be converted to WEBP file format.\n";
+         ss << " Warning: Image '" << image->m_szName << "' uses legacy encoding causing waste of memory / file size. It should be converted to WEBP file format.\r\n";
    }
 
    bool hasIssues = !ss.str().empty();
@@ -7779,23 +7804,28 @@ bool PinTable::AuditTable() const
    unsigned long totalSize = 0, totalGpuSize = 0;
    for (auto sound : m_vsound)
    {
-      //ss << "  . Sound: '" << sound->m_szName << "', size: " << (sound->m_cdata / 1024) << "KiB\n";
+      //ss << "  . Sound: '" << sound->m_szName << "', size: " << (sound->m_cdata / 1024) << "KiB\r\n";
       totalSize += sound->m_cdata;
    }
-   ss << ". Total sound size: " <<  (totalSize / (1024 * 1024)) << "MiB\n";
+   ss << ". Total sound size: " <<  (totalSize / (1024 * 1024)) << "MiB\r\n";
 
    totalSize = 0;
    for (auto image : m_vimage)
    {
       unsigned int imageSize = image->m_ppb != nullptr ? image->m_ppb->m_cdata : image->m_pdsBuffer->height() * image->m_pdsBuffer->pitch();
       unsigned int gpuSize = image->m_pdsBuffer->height() * image->m_pdsBuffer->pitch();
-      //ss << "  . Image: '" << image->m_szName << "', size: " << (imageSize / 1024) << "KiB, GPU mem size: " << (gpuSize / 1024) << "KiB\n";
+      //ss << "  . Image: '" << image->m_szName << "', size: " << (imageSize / 1024) << "KiB, GPU mem size: " << (gpuSize / 1024) << "KiB\r\n";
       totalSize += imageSize;
       totalGpuSize += gpuSize;
    }
-   ss << ". Total image size stored in VPX file: " << (totalSize / (1024 * 1024)) << "MiB, in GPU memory when played: " << (totalGpuSize / (1024 * 1024)) << "MiB\n";
+   ss << ". Total image size stored in VPX file: " << (totalSize / (1024 * 1024)) << "MiB, in GPU memory when played: " << (totalGpuSize / (1024 * 1024)) << "MiB\r\n";
 
-   PLOGI << "Table audit:\n" << ss.str();
+   PLOGI << "Table audit:\r\n" << ss.str();
+
+   if (hasIssues) {
+      InfoDialog info("Table audit:\r\n" + ss.str());
+      info.DoModal();
+   }
 
    return hasIssues;
 }
