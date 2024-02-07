@@ -2371,14 +2371,15 @@ Sub PinMAMETimer_Init : Me.Interval = PinMAMEInterval : Me.Enabled = True : End 
 ' Init function called from Table_Init event
 '---------------------------------------------
 Public Sub vpmInit(aTable)
-	Set vpmTable = aTable
 	If vpmVPVer >= 6000 Then
 		On Error Resume Next
 		If Not IsObject(GetRef(aTable.name & "_Paused")) Or Err Then Err.Clear : vpmBuildEvent aTable, "Paused", "Controller.Pause = True"
 		If Not IsObject(GetRef(aTable.name & "_UnPaused")) Or Err Then Err.Clear : vpmBuildEvent aTable, "UnPaused", "Controller.Pause = False"
 		If Not IsObject(GetRef(aTable.name & "_Exit")) Or Err Then Err.Clear : vpmBuildEvent aTable, "Exit", "Controller.Pause = False:Controller.Stop"
 	End If
-	if UseModSol Then
+	
+	' FIXME PROC does not support Modulated solenoid and will fail
+	If UseModSol Then
 		If Controller.Version >= 03060000 Then
 			Controller.SolMask(2)=UseModSol ' 1 for modulated solenoids or 2 for new physical lamps/GI/AlphaNumSegments/solenoids
 		ElseIf Controller.Version >= 02080000 Then
@@ -2389,7 +2390,9 @@ Public Sub vpmInit(aTable)
 			UseModSol=0
 		End If
 	End If
-	'InitVpmFlips	'have vpmtimer doing this atm
+	
+	' Legacy: this is performed through vpmtimer atm
+	'InitVpmFlips
 End Sub
 
 ' Exit function called in Table_Exit event
@@ -2426,7 +2429,6 @@ Else
 End If
 
 Private vpmTrough ' Default Trough. Used to clear up missing balls
-Private vpmTable  ' Table object
 
 '-------------------
 ' Main Loop

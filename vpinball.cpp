@@ -693,16 +693,7 @@ bool VPinball::ParseCommand(const size_t code, const bool notify)
             if (IDYES == MessageBox("This will lock the table to prevent unexpected modifications.\n\nAre you sure you want to lock the table ?", "Table locking", MB_YESNO | MB_ICONINFORMATION))
             {
                ptCur->ToggleLock();
-               if (ptCur->AuditTable())
-               {
-                  if (g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "EnableLog"s, false))
-                     MessageBox("Table lock has been defined.\n\nThe table was analyzed before locking. The result of this analysis is available in the log file.", "Table locking",
-                        MB_OK | MB_ICONINFORMATION);
-                  else
-                     MessageBox(
-                        "Table lock has been defined.\n\nSince logging is disabled (in editor settings), the table was not analyzed. Enable logging to get a table analysis upon next lock.",
-                        "Table locking", MB_OK | MB_ICONEXCLAMATION);
-               }
+               ptCur->AuditTable();
             }
          }
          ptCur->ClearMultiSel(nullptr);
