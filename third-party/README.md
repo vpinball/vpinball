@@ -3,7 +3,7 @@
 
 ## BAM
 
-- Upstream: closed source => not a third party ?
+- Upstream: closed source except part shared inside VPX => not a third party ?
 - Version: ?
 - License: ?
 
@@ -70,6 +70,12 @@ Using generator from https://github.com/juliettef/IconFontCppHeaders
 
 - Upstream: https://github.com/CedricGuillemet/ImGuizmo
 - Version: ?
+- License: MIT
+
+## implot
+
+- Upstream: https://github.com/epezent/implot
+- Version: head at ? (0.17 dev cycle)
 - License: MIT
 
 ## mINI

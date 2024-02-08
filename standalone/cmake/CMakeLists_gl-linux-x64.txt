@@ -55,25 +55,25 @@ add_executable(vpinball
    bulb.h
    codeviewedit.cpp
    codeviewedit.h
-   imgui/imconfig.h
-   imgui/imgui.cpp
-   imgui/imgui.h
-   imgui/imgui_draw.cpp
-   imgui/imgui_impl_opengl3.cpp
-   imgui/imgui_impl_opengl3.h
-   imgui/imgui_impl_sdl2.cpp
-   imgui/imgui_impl_sdl2.h
-   imgui/imgui_stdlib.cpp
-   imgui/imgui_stdlib.h
-   imgui/imgui_tables.cpp
-   imgui/imgui_widgets.cpp
-   imgui/imgui_internal.h
-   imgui/ImGuizmo.cpp
-   imgui/ImGuizmo.h
-   imgui/implot/implot.cpp
-   imgui/implot/implot.h
-   imgui/implot/implot_items.cpp
-   imgui/implot/implot_internal.h
+   third-party/include/imgui/imconfig.h
+   third-party/include/imgui/imgui.cpp
+   third-party/include/imgui/imgui.h
+   third-party/include/imgui/imgui_draw.cpp
+   third-party/include/imgui/imgui_impl_opengl3.cpp
+   third-party/include/imgui/imgui_impl_opengl3.h
+   third-party/include/imgui/imgui_impl_sdl2.cpp
+   third-party/include/imgui/imgui_impl_sdl2.h
+   third-party/include/imgui/imgui_stdlib.cpp
+   third-party/include/imgui/imgui_stdlib.h
+   third-party/include/imgui/imgui_tables.cpp
+   third-party/include/imgui/imgui_widgets.cpp
+   third-party/include/imgui/imgui_internal.h
+   third-party/include/imguizmo/ImGuizmo.cpp
+   third-party/include/imguizmo/ImGuizmo.h
+   third-party/include/implot/implot.cpp
+   third-party/include/implot/implot.h
+   third-party/include/implot/implot_items.cpp
+   third-party/include/implot/implot_internal.h
    third-party/include/gpuprofiler.cpp
    third-party/include/gpuprofiler.h
    third-party/include/progmesh.cpp

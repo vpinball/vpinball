@@ -474,37 +474,37 @@
     <ClCompile Include="third-party\include\BAM\BAMView.cpp">
       <Filter>third-party\BAM</Filter>
     </ClCompile>
-    <ClCompile Include="imgui\imgui_impl_win32.cpp">
+    <ClCompile Include="third-party\include\imgui\imgui_impl_win32.cpp">
       <Filter>third-party\imgui</Filter>
     </ClCompile>
-    <ClCompile Include="imgui\imgui_widgets.cpp">
+    <ClCompile Include="third-party\include\imgui\imgui_widgets.cpp">
       <Filter>third-party\imgui</Filter>
     </ClCompile>
-    <ClCompile Include="imgui\imgui_impl_dx9.cpp">
+    <ClCompile Include="third-party\include\imgui\imgui_impl_dx9.cpp">
       <Filter>third-party\imgui</Filter>
     </ClCompile>
-    <ClCompile Include="imgui\imgui.cpp">
+    <ClCompile Include="third-party\include\imgui\imgui.cpp">
       <Filter>third-party\imgui</Filter>
     </ClCompile>
-    <ClCompile Include="imgui\imgui_draw.cpp">
+    <ClCompile Include="third-party\include\imgui\imgui_draw.cpp">
       <Filter>third-party\imgui</Filter>
     </ClCompile>
-    <ClCompile Include="imgui\imgui_tables.cpp">
+    <ClCompile Include="third-party\include\imgui\imgui_tables.cpp">
       <Filter>third-party\imgui</Filter>
     </ClCompile>
-    <ClCompile Include="imgui\imgui_impl_opengl3.cpp">
+    <ClCompile Include="third-party\include\imgui\imgui_impl_opengl3.cpp">
       <Filter>third-party\imgui</Filter>
     </ClCompile>
-    <ClCompile Include="imgui\imgui_stdlib.cpp">
+    <ClCompile Include="third-party\include\imgui\imgui_stdlib.cpp">
       <Filter>third-party\imgui</Filter>
     </ClCompile>
-    <ClCompile Include="imgui\ImGuizmo.cpp">
+    <ClCompile Include="third-party\include\imguizmo\ImGuizmo.cpp">
       <Filter>third-party\imgui</Filter>
     </ClCompile>
-    <ClCompile Include="imgui\implot\implot.cpp">
+    <ClCompile Include="third-party\include\implot\implot.cpp">
       <Filter>third-party\imgui</Filter>
     </ClCompile>
-    <ClCompile Include="imgui\implot\implot_items.cpp">
+    <ClCompile Include="third-party\include\implot\implot_items.cpp">
       <Filter>third-party\imgui</Filter>
     </ClCompile>
     <ClCompile Include="third-party\include\tinyxml2\tinyxml2.cpp">
@@ -1181,37 +1181,37 @@
     <ClInclude Include="third-party\include\hidusage.h">
       <Filter>third-party\hid</Filter>
     </ClInclude>
-    <ClInclude Include="imgui\imgui_impl_win32.h">
+    <ClInclude Include="third-party\include\imgui\imgui_impl_win32.h">
       <Filter>third-party\imgui</Filter>
     </ClInclude>
-    <ClInclude Include="imgui\imgui_internal.h">
+    <ClInclude Include="third-party\include\imgui\imgui_internal.h">
       <Filter>third-party\imgui</Filter>
     </ClInclude>
-    <ClInclude Include="imgui\imgui_impl_dx9.h">
+    <ClInclude Include="third-party\include\imgui\imgui_impl_dx9.h">
       <Filter>third-party\imgui</Filter>
     </ClInclude>
-    <ClInclude Include="imgui\imconfig.h">
+    <ClInclude Include="third-party\include\imgui\imconfig.h">
       <Filter>third-party\imgui</Filter>
     </ClInclude>
-    <ClInclude Include="imgui\imgui.h">
+    <ClInclude Include="third-party\include\imgui\imgui.h">
       <Filter>third-party\imgui</Filter>
     </ClInclude>
-    <ClInclude Include="imgui\implot\implot.h">
+    <ClInclude Include="third-party\include\implot\implot.h">
       <Filter>third-party\imgui</Filter>
     </ClInclude>
-    <ClInclude Include="imgui\implot\implot_internal.h">
+    <ClInclude Include="third-party\include\implot\implot_internal.h">
       <Filter>third-party\imgui</Filter>
     </ClInclude>
-    <ClInclude Include="imgui\imgui_impl_opengl3.h">
+    <ClInclude Include="third-party\include\imgui\imgui_impl_opengl3.h">
       <Filter>third-party\imgui</Filter>
     </ClInclude>
-    <ClInclude Include="imgui\imgui_impl_opengl3_loader.h">
+    <ClInclude Include="third-party\include\imgui\imgui_impl_opengl3_loader.h">
       <Filter>third-party\imgui</Filter>
     </ClInclude>
-    <ClInclude Include="imgui\imgui_stdlib.h">
+    <ClInclude Include="third-party\include\imgui\imgui_stdlib.h">
       <Filter>third-party\imgui</Filter>
     </ClInclude>
-    <ClInclude Include="imgui\ImGuizmo.h">
+    <ClInclude Include="third-party\include\imguizmo\ImGuizmo.h">
       <Filter>third-party\imgui</Filter>
     </ClInclude>
     <ClInclude Include="third-party\include\nvapi\nvapi.h">
