@@ -226,13 +226,12 @@ float4 psBall( const in vout IN, uniform bool equirectangularMap, uniform bool d
     // we don't clamp sampling outside the playfield (costly and no real visual impact)
     // const float2 uv = (matWorldViewInverse * float4(playfield_hit, 1.0)).xy * invTableRes_reflection.xy;
     // && !(uv.x < 0.1 && uv.y < 0.1 && uv.x > 0.9 && uv.y > 0.9)
-    BRANCH if (!(NdotR <= 0.) // Reversed reflection => discard
-     && !(uvp.x < 0. || uvp.x > 1. || uvp.y < 0. || uvp.y > 1.) // outside of previous render => discard (we could use sampling techniques to optimize a bit)
-     && !(t <= 0.)) // t < 0.0 may happen in some situation where ball intersects the playfield and the reflected point is inside the ball (like in kicker)
+    BRANCH if (!(uvp.x < 0. || uvp.x > 1. || uvp.y < 0. || uvp.y > 1.) // outside of previous render => discard (we could use sampling techniques to optimize a bit)
+            && !(t <= 0.)) // t < 0.0 may happen in some situation where ball intersects the playfield and the reflected point is inside the ball (like in kicker)
     {
-        // NdotR * NdotR is a magic falloff between playfield (down) and environment (up)
+        // NdotR allows to fade between playfield (down) and environment (up)
         // We can face infinite reflections (ball->playfield->ball->playfield->...) which would overflow, so we saturate to an arbitrary value
-        ballImageColor = lerp(ballImageColor, min(playfieldColor, float3(15., 15., 15.)), NdotR * NdotR);
+	    ballImageColor = lerp(ballImageColor, min(playfieldColor, float3(15., 15., 15.)), smoothstep(-0.1, 0.1, NdotR));
     }
 
     float3 diffuse = cBase_Alpha.rgb*0.075;
