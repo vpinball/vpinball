@@ -1418,7 +1418,7 @@ void Player::DeferTimerStateChange(HitTimer * const hittimer, bool enabled)
    // fakes the disabling of the timer, until it will be catched by the cleanup via m_changed_vht
    hittimer->m_nextfire = enabled ? m_time_msec + hittimer->m_interval : 0xFFFFFFFF;
    // to avoid problems with timers dis/enabling themselves, store all the changes in a list
-   for (auto changed_ht : m_changed_vht)
+   for (auto& changed_ht : m_changed_vht)
       if (changed_ht.m_timer == hittimer)
       {
          changed_ht.m_enabled = enabled;
