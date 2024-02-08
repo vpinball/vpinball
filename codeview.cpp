@@ -100,6 +100,7 @@ void CodeViewer::Init(IScriptableHost *psh)
    m_findreplaceold.lStructSize = 0; // So we know nothing has been searched for yet
 
    m_errorLineNumber = -1;
+   m_scriptError = false;
 }
 
 CodeViewer::~CodeViewer()
@@ -348,17 +349,17 @@ static size_t FindOrInsertUD(fi_vector<UserData>& ListIn, const UserData& udIn)
 // can potentially return a static variable, i.e. use the pointer before the next call
 static const UserData* GetUDfromUniqueKey(const fi_vector<UserData>& ListIn, const string& UniKey)
 {
-	static UserData RetVal;
-	RetVal.eTyping = eUnknown;
+	static UserData retUserData;
+	retUserData.eTyping = eUnknown;
 	const size_t ListSize = ListIn.size();
 	for (size_t i = 0; i < ListSize; ++i)
 		if (UniKey == ListIn[i].m_uniqueKey)
 		{
 			if (ListIn[i].eTyping != eUnknown)
 				return &ListIn[i];
-			RetVal = ListIn[i];
+			retUserData = ListIn[i];
 		}
-	return &RetVal;
+	return &retUserData;
 }
 
 //TODO: Needs speeding up.
