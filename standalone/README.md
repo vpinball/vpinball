@@ -226,7 +226,7 @@ $ANDROID_HOME/platform-tools/adb -d logcat org.vpinball.app
 
 In a terminal execute the following:
 ```
-sudo apt install git build-essential autoconf automake cmake bison curl zlib1g-dev libdrm-dev libgbm-dev libglu1-mesa-dev libegl-dev libudev-dev libx11-dev libxrandr-dev
+sudo apt install git build-essential autoconf automake cmake bison curl libtool zlib1g-dev libdrm-dev libgbm-dev libglu1-mesa-dev libegl-dev libudev-dev libx11-dev libxrandr-dev
 git clone -b standalone https://github.com/vpinball/vpinball
 cd vpinball/standalone/linux
 ./external.sh
