@@ -8050,7 +8050,9 @@ public:
 
    virtual BOOL OnInitDialog() override
    {
+#ifndef __STANDALONE__
       SetDlgItemText(IDC_INFOTEXT_EDIT, m_message.c_str());
+#endif
 	   return TRUE;
    }
 
@@ -8244,8 +8246,10 @@ bool PinTable::AuditTable() const
    PLOGI << "Table audit:\r\n" << ss.str();
 
    if (hasIssues) {
+#ifndef __STANDALONE__
       InfoDialog info("Table audit:\r\n" + ss.str());
       info.DoModal();
+#endif
    }
 
    return hasIssues;
