@@ -491,25 +491,6 @@ add_executable(vpinball WIN32
    res/trigger.rgs
    res/vpinball.rgs
 
-   imgui/imconfig.h
-   imgui/imgui.cpp
-   imgui/imgui.h
-   imgui/imgui_draw.cpp
-   imgui/imgui_impl_dx9.cpp
-   imgui/imgui_impl_dx9.h
-   imgui/imgui_impl_win32.cpp
-   imgui/imgui_impl_win32.h
-   imgui/imgui_stdlib.cpp
-   imgui/imgui_stdlib.h
-   imgui/imgui_tables.cpp
-   imgui/imgui_widgets.cpp
-   imgui/imgui_internal.h
-   imgui/ImGuizmo.cpp
-   imgui/ImGuizmo.h
-   imgui/implot/implot.cpp
-   imgui/implot/implot.h
-   imgui/implot/implot_items.cpp
-   imgui/implot/implot_internal.h
    third-party/include/BAM/BAMView.cpp
    third-party/include/BAM/BAMView.h
    third-party/include/BAM/BAM_Tracker.h
@@ -524,6 +505,26 @@ add_executable(vpinball WIN32
    third-party/include/hidpi.h
    third-party/include/hidsdi.h
    third-party/include/hidusage.h
+   third-party/include/imgui/imconfig.h
+   third-party/include/imgui/imgui.cpp
+   third-party/include/imgui/imgui.h
+   third-party/include/imgui/imgui_draw.cpp
+   third-party/include/imgui/imgui_impl_dx9.cpp
+   third-party/include/imgui/imgui_impl_dx9.h
+   third-party/include/imgui/imgui_impl_win32.cpp
+   third-party/include/imgui/imgui_impl_win32.h
+   third-party/include/imgui/imgui_stdlib.cpp
+   third-party/include/imgui/imgui_stdlib.h
+   third-party/include/imgui/imgui_tables.cpp
+   third-party/include/imgui/imgui_widgets.cpp
+   third-party/include/imgui/imgui_internal.h
+   third-party/include/imgui_markdown/imgui_markdown.h
+   third-party/include/imguizmo/ImGuizmo.cpp
+   third-party/include/imguizmo/ImGuizmo.h
+   third-party/include/implot/implot.cpp
+   third-party/include/implot/implot.h
+   third-party/include/implot/implot_items.cpp
+   third-party/include/implot/implot_internal.h
    third-party/include/nvapi/nvapi.h
    third-party/include/nvapi/nvapi_lite_common.h
    third-party/include/nvapi/nvapi_lite_d3dext.h

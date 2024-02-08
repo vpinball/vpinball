@@ -3,7 +3,7 @@
 #include "stdafx.h"
 
 #include "imgui/imgui.h"
-#include "imgui/ImGuizmo.h"
+#include "imguizmo/ImGuizmo.h"
 #include "imgui_markdown/imgui_markdown.h"
 
 class LiveUI

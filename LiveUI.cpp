@@ -25,9 +25,9 @@
 #ifndef __STANDALONE__
 #include "imgui/imgui_impl_win32.h"
 #endif
-#include "imgui/implot/implot.h"
+#include "implot/implot.h"
 #include "imgui/imgui_stdlib.h"
-#include "imgui/ImGuizmo.h"
+#include "imguizmo/ImGuizmo.h"
 #include "imgui_markdown/imgui_markdown.h"
 
 #ifdef __STANDALONE__
