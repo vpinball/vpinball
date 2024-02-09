@@ -89,6 +89,7 @@ void CodeViewer::Init(IScriptableHost *psh)
    m_findreplaceold.lStructSize = 0; // So we know nothing has been searched for yet
 
    m_errorLineNumber = -1;
+   m_scriptError = false;
 }
 
 CodeViewer::~CodeViewer()
@@ -333,17 +334,17 @@ static size_t FindOrInsertUD(fi_vector<UserData>& ListIn, const UserData& udIn)
 // can potentially return a static variable, i.e. use the pointer before the next call
 static const UserData* GetUDfromUniqueKey(const fi_vector<UserData>& ListIn, const string& UniKey)
 {
-	static UserData RetVal;
-	RetVal.eTyping = eUnknown;
+	static UserData retUserData;
+	retUserData.eTyping = eUnknown;
 	const size_t ListSize = ListIn.size();
 	for (size_t i = 0; i < ListSize; ++i)
 		if (UniKey == ListIn[i].m_uniqueKey)
 		{
 			if (ListIn[i].eTyping != eUnknown)
 				return &ListIn[i];
-			RetVal = ListIn[i];
+			retUserData = ListIn[i];
 		}
-	return &RetVal;
+	return &retUserData;
 }
 
 //TODO: Needs speeding up.
@@ -400,13 +401,13 @@ static bool FindOrInsertStringIntoAutolist(vector<string>& ListIn, const string 
 		return true;
 	}
 	const unsigned int ListSize = (unsigned int)ListIn.size();
-	UINT32 iNewPos = 1u << 31;
+	unsigned int iNewPos = 1u << 31;
 	while (!(iNewPos & ListSize) && (iNewPos > 1))
 		iNewPos >>= 1;
 	int iJumpDelta = iNewPos >> 1;
 	--iNewPos; //Zero Base
 	const string strSearchData = lowerCase(strIn);
-	UINT32 iCurPos;
+	unsigned int iCurPos;
 	int result;
 	while (true)
 	{
@@ -3002,7 +3003,6 @@ void CodeViewer::ParseVPCore()
 	}
 
 	//initialize Parent child
-///////////////////////
 	m_parentLevel = 0; //root
 	m_currentParentKey.clear();
 	m_stopErrorDisplay = true;/// WIP BRANDREW (was set to false)
