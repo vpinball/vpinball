@@ -146,7 +146,7 @@ FEATURES:
     Dim mod2: mod2 = Table1.Option("Percent", 0, 1, 0.01, 0.5, 1)
     ' Adjust table according to the value of 'mod1' and 'mod2'. Note that mod1 is a value between 1 and 4. mod2 is a value between 0 and 1 (displayed as a percent in the UI).
   End Sub
-  Tweak mode also allows to view information and rules from the table. Rules supports a limited markdown syntax allowing for headers, horizontal rule, lists and images (for example rule card).
+  Tweak mode also allows to view information and rules from the table. 'Rules' supports a limited markdown syntax allowing for headers, horizontal rule, lists and images (for example rule card).
 
 - remove Anti-Aliasing and Postprocessed Anti-Aliasing options from the table properties (and use an .ini based override instead)
 

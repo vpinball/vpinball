@@ -8053,7 +8053,7 @@ public:
 #ifndef __STANDALONE__
       SetDlgItemText(IDC_INFOTEXT_EDIT, m_message.c_str());
 #endif
-	   return TRUE;
+      return TRUE;
    }
 
    string m_message;

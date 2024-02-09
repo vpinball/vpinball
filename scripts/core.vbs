@@ -2377,7 +2377,7 @@ Public Sub vpmInit(aTable)
 		If Not IsObject(GetRef(aTable.name & "_UnPaused")) Or Err Then Err.Clear : vpmBuildEvent aTable, "UnPaused", "Controller.Pause = False"
 		If Not IsObject(GetRef(aTable.name & "_Exit")) Or Err Then Err.Clear : vpmBuildEvent aTable, "Exit", "Controller.Pause = False:Controller.Stop"
 	End If
-	
+
 	' FIXME PROC does not support Modulated solenoid and will fail
 	If UseModSol Then
 		If Controller.Version >= 03060000 Then
@@ -2390,7 +2390,7 @@ Public Sub vpmInit(aTable)
 			UseModSol=0
 		End If
 	End If
-	
+
 	' Legacy: this is performed through vpmtimer atm
 	'InitVpmFlips
 End Sub
