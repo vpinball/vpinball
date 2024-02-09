@@ -30,6 +30,11 @@
 #define INPUT_BUFFER_SIZE MAX_KEYQUEUE_SIZE
 #define BALLCONTROL_DOUBLECLICK_THRESHOLD_USEC (500 * 1000)
 
+constexpr DWORD D_MOUSE_DRAGGED_LEFT = 1;
+constexpr DWORD D_MOUSE_DRAGGED_RIGHT = 2;
+constexpr DWORD D_MOUSE_DRAGGED_MIDDLE = 3;
+constexpr DWORD D_MOUSE_MOVED_LEFT_DOWN = 4;
+
 
 PinInput::PinInput()
 {
@@ -510,7 +515,7 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
                   GetCursorPos(&curPos);
                   m_mouseDX = curPos.x - m_mouseX;
                   m_mouseDY = curPos.y - m_mouseY;
-                  didod[0].dwData = 1;
+                  didod[0].dwData = D_MOUSE_DRAGGED_LEFT;
                   PushQueue(didod, APP_MOUSE);
                   m_leftMouseButtonDown = false;
                }
@@ -528,7 +533,7 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
                   GetCursorPos(&curPos);
                   m_mouseDX = curPos.x - m_mouseX;
                   m_mouseDY = curPos.y - m_mouseY;
-                  didod[0].dwData = 2;
+                  didod[0].dwData = D_MOUSE_DRAGGED_RIGHT;
                   PushQueue(didod, APP_MOUSE);
                   m_rightMouseButtonDown = false;
                }
@@ -546,7 +551,7 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
                   GetCursorPos(&curPos);
                   m_mouseDX = curPos.x - m_mouseX;
                   m_mouseDY = curPos.y - m_mouseY;
-                  didod[0].dwData = 3;
+                  didod[0].dwData = D_MOUSE_DRAGGED_MIDDLE;
                   PushQueue(didod, APP_MOUSE);
                   m_middleMouseButtonDown = false;
                }
@@ -554,7 +559,7 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
                {
                   POINT curPos;
                   GetCursorPos(&curPos);
-                  didod[0].dwData = 4;
+                  didod[0].dwData = D_MOUSE_MOVED_LEFT_DOWN;
                   m_mouseX = curPos.x;
                   m_mouseY = curPos.y;
                   PushQueue(didod, APP_MOUSE);
@@ -735,6 +740,16 @@ void PinInput::HandleInputXI(DIDEVICEOBJECTDATA *didod)
 #endif
 }
 
+#ifdef ENABLE_SDL_INPUT
+void PinInput::SdlScaleHidpi(const Sint32 x, const Sint32 y, Sint32* ox, Sint32* oy)
+{
+   // Precision is not great because the events need float coordinates
+   // Fixed in SDL3 https://github.com/libsdl-org/SDL/issues/2999
+   *ox = static_cast<Sint32>(g_pplayer->m_wnd_scale_x * x);
+   *oy = static_cast<Sint32>(g_pplayer->m_wnd_scale_y * y);
+}
+#endif
+
 void PinInput::HandleInputSDL(DIDEVICEOBJECTDATA *didod)
 {
 #ifdef ENABLE_SDL_INPUT
@@ -753,6 +768,10 @@ void PinInput::HandleInputSDL(DIDEVICEOBJECTDATA *didod)
 #ifdef __STANDALONE__
       case SDL_WINDOWEVENT:
          switch (e.window.event) {
+         case SDL_WINDOWEVENT_RESIZED:
+               g_pplayer->m_wnd_scale_x = static_cast<float>(g_pplayer->m_wnd_width) / static_cast<float>(e.window.data1);
+               g_pplayer->m_wnd_scale_y = static_cast<float>(g_pplayer->m_wnd_height) / static_cast<float>(e.window.data2);
+               break;
          case SDL_WINDOWEVENT_FOCUS_GAINED:
             g_pplayer->m_gameWindowActive = true;
             break;
@@ -875,6 +894,67 @@ void PinInput::HandleInputSDL(DIDEVICEOBJECTDATA *didod)
                //didod[j].dwTimeStamp = curr_time_msec;
                PushQueue(&didod[j], APP_KEYBOARD/*, curr_time_msec*/);
                j++; 
+            }
+         }
+      case SDL_MOUSEMOTION:
+         if (g_pplayer->m_throwBalls || g_pplayer->m_ballControl)
+         {
+            if (g_pplayer->m_ballControl && !g_pplayer->m_throwBalls && m_leftMouseButtonDown && !m_rightMouseButtonDown && !m_middleMouseButtonDown)
+            {
+               didod[0].dwData = D_MOUSE_MOVED_LEFT_DOWN;
+               Sint32 x, y;
+               SdlScaleHidpi(e.motion.x, e.motion.y, &x, &y);
+               m_mouseX = x;
+               m_mouseY = y;
+               PushQueue(didod, APP_MOUSE);
+            }
+         }
+         break;
+      case SDL_MOUSEBUTTONDOWN:
+         if (g_pplayer->m_throwBalls || g_pplayer->m_ballControl)
+         {
+            if (e.button.button == SDL_BUTTON_LEFT)
+               m_leftMouseButtonDown = true;
+            else if (e.button.button == SDL_BUTTON_MIDDLE)
+               m_middleMouseButtonDown = true;
+            else if (e.button.button == SDL_BUTTON_RIGHT)
+               m_rightMouseButtonDown = true;
+            Sint32 x, y;
+            SdlScaleHidpi(e.button.x, e.button.y, &x, &y);
+            m_mouseX = x;
+            m_mouseY = y;
+         }
+         break;
+      case SDL_MOUSEBUTTONUP:
+         if (g_pplayer->m_throwBalls || g_pplayer->m_ballControl)
+         {
+            if (e.button.button == SDL_BUTTON_LEFT)
+            {
+               m_leftMouseButtonDown = false;
+               Sint32 x, y;
+               SdlScaleHidpi(e.button.x, e.button.y, &x, &y);
+               m_mouseDX = x - m_mouseX;
+               m_mouseDY = y - m_mouseY;
+               didod[0].dwData = D_MOUSE_DRAGGED_LEFT;
+               PushQueue(didod, APP_MOUSE);
+            } else if (e.button.button == SDL_BUTTON_MIDDLE)
+            {
+               m_middleMouseButtonDown = false;
+               Sint32 x, y;
+               SdlScaleHidpi(e.button.x, e.button.y, &x, &y);
+               m_mouseDX = x - m_mouseX;
+               m_mouseDY = y - m_mouseY;
+               didod[0].dwData = D_MOUSE_DRAGGED_MIDDLE;
+               PushQueue(didod, APP_MOUSE);
+            } else if (e.button.button == SDL_BUTTON_RIGHT)
+            {
+               m_rightMouseButtonDown = false;
+               Sint32 x, y;
+               SdlScaleHidpi(e.button.x, e.button.y, &x, &y);
+               m_mouseDX = x - m_mouseX;
+               m_mouseDY = y - m_mouseY;
+               didod[0].dwData = D_MOUSE_DRAGGED_RIGHT;
+               PushQueue(didod, APP_MOUSE);
             }
          }
          break;
@@ -1384,13 +1464,13 @@ void PinInput::Joy(const unsigned int n, const int updown, const bool start)
 
 void PinInput::ProcessBallControl(const DIDEVICEOBJECTDATA * __restrict input)
 {
-	if (input->dwData == 1 || input->dwData == 3 || input->dwData == 4)
+	if (input->dwData == D_MOUSE_DRAGGED_LEFT || input->dwData == D_MOUSE_DRAGGED_MIDDLE || input->dwData == D_MOUSE_MOVED_LEFT_DOWN)
 	{
 		POINT point = { m_mouseX, m_mouseY };
 		ScreenToClient(m_hwnd, &point);
 		delete g_pplayer->m_pBCTarget;
 		g_pplayer->m_pBCTarget = new Vertex3Ds(g_pplayer->m_renderer->Get3DPointFrom2D(point));
-		if (input->dwData == 1 || input->dwData == 3)
+		if (input->dwData == D_MOUSE_DRAGGED_LEFT || input->dwData == D_MOUSE_DRAGGED_MIDDLE)
 		{
 			const uint64_t cur = usec();
 			if (m_lastclick_ballcontrol_usec + BALLCONTROL_DOUBLECLICK_THRESHOLD_USEC > cur)
@@ -1417,7 +1497,7 @@ void PinInput::ProcessBallControl(const DIDEVICEOBJECTDATA * __restrict input)
 
 void PinInput::ProcessThrowBalls(const DIDEVICEOBJECTDATA * __restrict input)
 {
-   if (input->dwData == 1 || input->dwData == 3)
+   if (input->dwData == D_MOUSE_DRAGGED_LEFT || input->dwData == D_MOUSE_DRAGGED_MIDDLE)
    {
       POINT point = { m_mouseX, m_mouseY };
       ScreenToClient(m_hwnd, &point);
@@ -1455,7 +1535,7 @@ void PinInput::ProcessThrowBalls(const DIDEVICEOBJECTDATA * __restrict input)
 		else
 		{
 			bool ballGrabbed = false;
-			if (input->dwData == 1)
+			if (input->dwData == D_MOUSE_DRAGGED_LEFT)
 			{
 				for (size_t i = 0; i < g_pplayer->m_vball.size(); i++)
 				{
@@ -1476,13 +1556,13 @@ void PinInput::ProcessThrowBalls(const DIDEVICEOBJECTDATA * __restrict input)
 			}
 			if (!ballGrabbed)
 			{
-				const float z = (input->dwData == 3) ? g_pplayer->m_ptable->m_glassTopHeight : 0.f;
+				const float z = (input->dwData == D_MOUSE_DRAGGED_MIDDLE) ? g_pplayer->m_ptable->m_glassTopHeight : 0.f;
 				Ball * const pball = g_pplayer->CreateBall(vertex.x, vertex.y, z, vx, vy, 0, (float)g_pplayer->m_debugBallSize*0.5f, g_pplayer->m_debugBallMass);
 				pball->m_pballex->AddRef();
 			}
 		}
     }
-    else if (input->dwData == 2)
+    else if (input->dwData == D_MOUSE_DRAGGED_RIGHT)
     {
         POINT point = { m_mouseX, m_mouseY };
         ScreenToClient(m_hwnd, &point);

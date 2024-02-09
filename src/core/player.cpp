@@ -219,6 +219,11 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    m_texdmd = nullptr;
 
    m_implicitPlayfieldMesh = nullptr;
+
+#ifdef ENABLE_SDL_INPUT
+   m_wnd_scale_x=0;
+   m_wnd_scale_y=0;
+#endif
 }
 
 Player::~Player()
@@ -941,6 +946,10 @@ HRESULT Player::Init()
 #ifdef ENABLE_SDL
    SDL_GL_GetDrawableSize(m_sdl_playfieldHwnd, &m_wnd_width, &m_wnd_height);
    PLOGI.printf("Drawable Size: width=%d, height=%d", m_wnd_width, m_wnd_height);
+   int realWindowWidth, realWindowHeight;
+   SDL_GetWindowSize(g_pplayer->m_sdl_playfieldHwnd, &realWindowWidth, &realWindowHeight);
+   m_wnd_scale_x = static_cast<float>(m_wnd_width) / realWindowWidth;
+   m_wnd_scale_y = static_cast<float>(m_wnd_height) / realWindowHeight;
 #endif
 
    // colordepth & refreshrate are only defined if fullscreen is true.
