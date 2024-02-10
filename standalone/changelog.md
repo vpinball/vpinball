@@ -4,6 +4,15 @@ To keep up with all the changes in master, and make it easier to rebase, this br
 
 The downside of this approach is not accurately keeping track of history:
 
+* 02/09/24
+    * Added ball control support (@francisdb)
+
+* 02/08/24
+    * Fix random return codes on Linux (@francisdb)
+
+* 02/07/24
+    * Revert RenderMode. Redesign external windows again
+
 * 02/04/24
     * Added RenderMode to external windows to solve stutter on MacOS
 
@@ -127,7 +136,7 @@ The downside of this approach is not accurately keeping track of history:
     * Fixed not loading `[Standalone]` settings from table ini
 
 * 10/23/23
-    * Fixed missing Hankin AlphaNumeric layout (@freezy, @toxie, @somatik)
+    * Fixed missing Hankin AlphaNumeric layout (@freezy, @toxie, @francisdb)
     * Added version information to logs (@ClarkKent)
 
 * 10/18/23
@@ -321,7 +330,7 @@ The downside of this approach is not accurately keeping track of history:
     * Bump Android java files to SDL 2.18.2
 
 * 07/03/23
-    * Wine hack to support `numdecimalplaces` in `Global_Round` (@somatik)
+    * Wine hack to support `numdecimalplaces` in `Global_Round` (@francisdb)
 
 * 06/30/23
     * Start to implement UltraDMD
@@ -351,7 +360,7 @@ The downside of this approach is not accurately keeping track of history:
     * Implement `NewSoundCommands` in `VPinMAMEController`
     * More work on Clang vs GCC floating point compiler options
     * Implement [official](https://gitlab.winehq.org/wine/wine/-/merge_requests/3132) stack_pop_bool wine fix
-    * Replace `E_NOTIMPL` with `PLOGW` for PuP (@somatik)
+    * Replace `E_NOTIMPL` with `PLOGW` for PuP (@francisdb)
 
 * 06/19/23
     * Updated `VS_EYE` and `VS_OUT_EYE` shader macros to work on Android shader compilers
@@ -415,7 +424,7 @@ The downside of this approach is not accurately keeping track of history:
 
 * 05/23/23
     * Work on embedded web server based on Mongoose
-    * Add a Paths section to this readme (@somatik)
+    * Add a Paths section to this readme (@francisdb)
 
 * 05/22/23
     * Bump `libserum` to `1.5.1`. Rotations finally fixed!
