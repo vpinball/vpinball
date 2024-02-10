@@ -148,7 +148,7 @@ static const string defaultPathSearch[] = { string(), "user"s +PATH_SEPARATOR_CH
 //#include <wxx_shared_ptr.h>		// Add Shared_Ptr
 //#include <wxx_socket.h>			// Add CSocket
 //#include <wxx_statusbar.h>		// Add CStatusBar
-//#include <wxx_stdcontrols.h>	// Add CButton, CEdit, CListBox
+#include <wxx_stdcontrols.h>	// Add CButton, CEdit, CListBox
 //#include <wxx_tab.h>			// Add CTab, CTabbedMDI
 //#include <wxx_taskdialog.h>	// Add CTaskDialog
 //#include <wxx_time.h>			// Add CTime
