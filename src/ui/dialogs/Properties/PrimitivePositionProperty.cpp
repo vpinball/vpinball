@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "Properties/PrimitivePositionProperty.h"
+#include "ui/dialogs/Properties/PrimitivePositionProperty.h"
 #include <WindowsX.h>
 
 PrimitivePositionProperty::PrimitivePositionProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPPRIMITIVE_POSITION, pvsel)

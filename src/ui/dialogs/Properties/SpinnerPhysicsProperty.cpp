@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "Properties/SpinnerPhysicsProperty.h"
+#include "ui/dialogs/Properties/SpinnerPhysicsProperty.h"
 #include <WindowsX.h>
 
 SpinnerPhysicsProperty::SpinnerPhysicsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPSPINNER_PHYSICS, pvsel)

@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "Properties/PlungerVisualsProperty.h"
+#include "ui/dialogs/Properties/PlungerVisualsProperty.h"
 #include <WindowsX.h>
 
 PlungerVisualsProperty::PlungerVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPPLUNGER_VISUALS, pvsel)

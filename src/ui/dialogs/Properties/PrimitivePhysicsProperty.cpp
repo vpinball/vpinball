@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "Properties/PrimitivePhysicsProperty.h"
+#include "ui/dialogs/Properties/PrimitivePhysicsProperty.h"
 #include <WindowsX.h>
 
 PrimitivePhysicsProperty::PrimitivePhysicsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPPRIMITIVE_PHYSICS, pvsel)

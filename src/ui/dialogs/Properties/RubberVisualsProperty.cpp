@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "Properties/RubberVisualsProperty.h"
+#include "ui/dialogs/Properties/RubberVisualsProperty.h"
 #include <WindowsX.h>
 
 RubberVisualsProperty::RubberVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPRUBBER_VISUALS, pvsel)

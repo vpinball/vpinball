@@ -6,7 +6,7 @@
 #include <atlcom.h>
 #include "codeviewedit.h"
 #ifndef __STANDALONE__
-#include "ScriptErrorDialog.h"
+#include "ui/dialogs/ScriptErrorDialog.h"
 #include "scintilla.h"
 #endif
 

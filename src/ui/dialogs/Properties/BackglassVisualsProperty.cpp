@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "Properties/BackglassVisualsProperty.h"
+#include "ui/dialogs/Properties/BackglassVisualsProperty.h"
 #include <WindowsX.h>
 
 BackglassVisualsProperty::BackglassVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPBACKGLASS_VISUALS, pvsel)

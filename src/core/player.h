@@ -1,11 +1,11 @@
 #pragma once
 
+#include "renderer/typedefs3D.h"
 #include "renderer/Renderer.h"
 #include "physics/PhysicsEngine.h"
-#include "Debugger.h"
-#include "typedefs3D.h"
+#include "ui/Debugger.h"
+#include "ui/LiveUI.h"
 #include "pininput.h"
-#include "LiveUI.h"
 
 #ifdef __STANDALONE__
 #include "standalone/inc/common/WindowManager.h"

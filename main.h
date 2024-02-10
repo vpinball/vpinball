@@ -267,7 +267,7 @@ class SCNotification { };
 #include "standalone/inc/win32xx/win32xx.h"
 #endif
 
-#include "helpers.h"
+#include "utils/helpers.h"
 
 #ifdef __STANDALONE__
 #include <cstdint>
@@ -282,13 +282,13 @@ class SCNotification { };
 
 #include "resource.h"
 
-#include "memutil.h"
+#include "utils/memutil.h"
 
 #include "dispid.h"
 
-#include "variant.h"
-#include "vector.h"
-#include "vectorsort.h"
+#include "utils/variant.h"
+#include "utils/vector.h"
+#include "utils/vectorsort.h"
 #ifndef __STANDALONE__
 #include "vpinball.h"
 #else
@@ -303,15 +303,15 @@ class SCNotification { };
 #include "worker.h"
 
 #include "audio/audioplayer.h"
-#include "media/fileio.h"
+#include "utils/fileio.h"
 #include "pinundo.h"
 #include "iselect.h"
 
 #include "ieditable.h"
-#include "codeview.h"
+#include "ui/codeview.h"
 
-#include "media/lzwreader.h"
-#include "media/lzwwriter.h"
+#include "utils/lzwreader.h"
+#include "utils/lzwwriter.h"
 
 #ifndef __STANDALONE__
 #include "audio/wavread.h"
@@ -329,10 +329,10 @@ class SCNotification { };
 #include "physics/collide.h"
 #include "renderer/Renderer.h"
 
-#include "sur.h"
-#include "paintsur.h"
-#include "hitsur.h"
-#include "hitrectsur.h"
+#include "ui/sur.h"
+#include "ui/paintsur.h"
+#include "ui/hitsur.h"
+#include "ui/hitrectsur.h"
 
 #include "parts/ball.h"
 
@@ -344,7 +344,7 @@ class SCNotification { };
 #include "physics/hitplunger.h"
 #include "core/player.h"
 
-#include "color.h"
+#include "utils/color.h"
 
 #include "dragpoint.h"
 #include "parts/timer.h"
@@ -371,7 +371,7 @@ class SCNotification { };
 
 #include "physics/kdtree.h"
 
-#include "trace.h"
+#include "renderer/trace.h"
 
 inline void ShowError(const char * const sz)
 {

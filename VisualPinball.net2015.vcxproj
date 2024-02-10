@@ -733,72 +733,72 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="src/core/player.cpp" />
     <ClCompile Include="src/core/Settings.cpp" />
     <ClCompile Include="src/core/TableDB.cpp" />
-    <ClCompile Include="dialogs\AboutDialog.cpp" />
-    <ClCompile Include="dialogs\AudioOptionsDialog.cpp" />
-    <ClCompile Include="dialogs\CollectionManagerDialog.cpp" />
-    <ClCompile Include="dialogs\DimensionDialog.cpp" />
-    <ClCompile Include="dialogs\DrawingOrderDialog.cpp" />
-    <ClCompile Include="dialogs\EditorOptionsDialog.cpp" />
-    <ClCompile Include="dialogs\ImageDialog.cpp" />
-    <ClCompile Include="dialogs\KeysConfigDialog.cpp" />
-    <ClCompile Include="dialogs\LayersListDialog.cpp" />
-    <ClCompile Include="dialogs\MaterialDialog.cpp" />
-    <ClCompile Include="dialogs\NotesDialog.cpp" />
-    <ClCompile Include="dialogs\PhysicsOptionsDialog.cpp" />
-    <ClCompile Include="dialogs\RenderProbeDialog.cpp" />
-    <ClCompile Include="dialogs\ScriptErrorDialog.cpp" />
-    <ClCompile Include="dialogs\SearchSelectDialog.cpp" />
-    <ClCompile Include="dialogs\SoundDialog.cpp" />
-    <ClCompile Include="dialogs\TableInfoDialog.cpp" />
-    <ClCompile Include="dialogs\ToolbarDialog.cpp" />
-    <ClCompile Include="dialogs\VideoOptionsDialog.cpp" />
-    <ClCompile Include="dialogs\VROptionsDialog.cpp" />
-    <ClCompile Include="dialogs\Properties\BackglassCameraProperty.cpp" />
-    <ClCompile Include="dialogs\Properties\BackglassVisualsProperty.cpp" />
-    <ClCompile Include="dialogs\Properties\BumperPhysicsProperty.cpp" />
-    <ClCompile Include="dialogs\Properties\BumperVisualsProperty.cpp" />
-    <ClCompile Include="dialogs\Properties\DecalVisualsProperty.cpp" />
-    <ClCompile Include="dialogs\Properties\DispreelStateProperty.cpp" />
-    <ClCompile Include="dialogs\Properties\DispreelVisualsProperty.cpp" />
-    <ClCompile Include="dialogs\Properties\DragpointVisualsProperty.cpp" />
-    <ClCompile Include="dialogs\Properties\FlasherVisualsProperty.cpp" />
-    <ClCompile Include="dialogs\Properties\FlipperPhysicsProperty.cpp" />
-    <ClCompile Include="dialogs\Properties\FlipperVisualsProperty.cpp" />
-    <ClCompile Include="dialogs\Properties\GatePhysicsProperty.cpp" />
-    <ClCompile Include="dialogs\Properties\GateVisualsProperty.cpp" />
-    <ClCompile Include="dialogs\Properties\HitTargetPhysicsProperty.cpp" />
-    <ClCompile Include="dialogs\Properties\HitTargetVisualsProperty.cpp" />
-    <ClCompile Include="dialogs\Properties\KickerPhysicsProperty.cpp" />
-    <ClCompile Include="dialogs\Properties\KickerVisualsProperty.cpp" />
-    <ClCompile Include="dialogs\Properties\LightseqStatesProperty.cpp" />
-    <ClCompile Include="dialogs\Properties\LightStatesProperty.cpp" />
-    <ClCompile Include="dialogs\Properties\LightVisualsProperty.cpp" />
-    <ClCompile Include="dialogs\Properties\PlungerPhysicsProperty.cpp" />
-    <ClCompile Include="dialogs\Properties\PlungerVisualsProperty.cpp" />
-    <ClCompile Include="dialogs\Properties\PrimitivePhysicsProperty.cpp" />
-    <ClCompile Include="dialogs\Properties\PrimitivePositionProperty.cpp" />
-    <ClCompile Include="dialogs\Properties\PrimitiveVisualsProperty.cpp" />
-    <ClCompile Include="dialogs\Properties\PropertyDialog.cpp" />
-    <ClCompile Include="dialogs\Properties\RampPhysicsProperty.cpp" />
-    <ClCompile Include="dialogs\Properties\RampVisualsProperty.cpp" />
-    <ClCompile Include="dialogs\Properties\RubberPhysicsProperty.cpp" />
-    <ClCompile Include="dialogs\Properties\RubberVisualsProperty.cpp" />
-    <ClCompile Include="dialogs\Properties\SpinnerPhysicsProperty.cpp" />
-    <ClCompile Include="dialogs\Properties\SpinnerVisualsProperty.cpp" />
-    <ClCompile Include="dialogs\Properties\TableAudioProperty.cpp" />
-    <ClCompile Include="dialogs\Properties\TableLightsProperty.cpp" />
-    <ClCompile Include="dialogs\Properties\TablePhysicsProperty.cpp" />
-    <ClCompile Include="dialogs\Properties\TableVisualsProperty.cpp" />
-    <ClCompile Include="dialogs\Properties\TextboxVisualsProperty.cpp" />
-    <ClCompile Include="dialogs\Properties\TriggerPhysicsProperty.cpp" />
-    <ClCompile Include="dialogs\Properties\TriggerVisualsProperty.cpp" />
-    <ClCompile Include="dialogs\Properties\WallPhysicsProperty.cpp" />
-    <ClCompile Include="dialogs\Properties\WallVisualsProperty.cpp" />
+    <ClCompile Include="src/ui/dialogs/AboutDialog.cpp" />
+    <ClCompile Include="src/ui/dialogs/AudioOptionsDialog.cpp" />
+    <ClCompile Include="src/ui/dialogs/CollectionManagerDialog.cpp" />
+    <ClCompile Include="src/ui/dialogs/DimensionDialog.cpp" />
+    <ClCompile Include="src/ui/dialogs/DrawingOrderDialog.cpp" />
+    <ClCompile Include="src/ui/dialogs/EditorOptionsDialog.cpp" />
+    <ClCompile Include="src/ui/dialogs/ImageDialog.cpp" />
+    <ClCompile Include="src/ui/dialogs/KeysConfigDialog.cpp" />
+    <ClCompile Include="src/ui/dialogs/LayersListDialog.cpp" />
+    <ClCompile Include="src/ui/dialogs/MaterialDialog.cpp" />
+    <ClCompile Include="src/ui/dialogs/NotesDialog.cpp" />
+    <ClCompile Include="src/ui/dialogs/PhysicsOptionsDialog.cpp" />
+    <ClCompile Include="src/ui/dialogs/RenderProbeDialog.cpp" />
+    <ClCompile Include="src/ui/dialogs/ScriptErrorDialog.cpp" />
+    <ClCompile Include="src/ui/dialogs/SearchSelectDialog.cpp" />
+    <ClCompile Include="src/ui/dialogs/SoundDialog.cpp" />
+    <ClCompile Include="src/ui/dialogs/TableInfoDialog.cpp" />
+    <ClCompile Include="src/ui/dialogs/ToolbarDialog.cpp" />
+    <ClCompile Include="src/ui/dialogs/VideoOptionsDialog.cpp" />
+    <ClCompile Include="src/ui/dialogs/VROptionsDialog.cpp" />
+    <ClCompile Include="src/ui/dialogs/Properties/BackglassCameraProperty.cpp" />
+    <ClCompile Include="src/ui/dialogs/Properties/BackglassVisualsProperty.cpp" />
+    <ClCompile Include="src/ui/dialogs/Properties/BumperPhysicsProperty.cpp" />
+    <ClCompile Include="src/ui/dialogs/Properties/BumperVisualsProperty.cpp" />
+    <ClCompile Include="src/ui/dialogs/Properties/DecalVisualsProperty.cpp" />
+    <ClCompile Include="src/ui/dialogs/Properties/DispreelStateProperty.cpp" />
+    <ClCompile Include="src/ui/dialogs/Properties/DispreelVisualsProperty.cpp" />
+    <ClCompile Include="src/ui/dialogs/Properties/DragpointVisualsProperty.cpp" />
+    <ClCompile Include="src/ui/dialogs/Properties/FlasherVisualsProperty.cpp" />
+    <ClCompile Include="src/ui/dialogs/Properties/FlipperPhysicsProperty.cpp" />
+    <ClCompile Include="src/ui/dialogs/Properties/FlipperVisualsProperty.cpp" />
+    <ClCompile Include="src/ui/dialogs/Properties/GatePhysicsProperty.cpp" />
+    <ClCompile Include="src/ui/dialogs/Properties/GateVisualsProperty.cpp" />
+    <ClCompile Include="src/ui/dialogs/Properties/HitTargetPhysicsProperty.cpp" />
+    <ClCompile Include="src/ui/dialogs/Properties/HitTargetVisualsProperty.cpp" />
+    <ClCompile Include="src/ui/dialogs/Properties/KickerPhysicsProperty.cpp" />
+    <ClCompile Include="src/ui/dialogs/Properties/KickerVisualsProperty.cpp" />
+    <ClCompile Include="src/ui/dialogs/Properties/LightseqStatesProperty.cpp" />
+    <ClCompile Include="src/ui/dialogs/Properties/LightStatesProperty.cpp" />
+    <ClCompile Include="src/ui/dialogs/Properties/LightVisualsProperty.cpp" />
+    <ClCompile Include="src/ui/dialogs/Properties/PlungerPhysicsProperty.cpp" />
+    <ClCompile Include="src/ui/dialogs/Properties/PlungerVisualsProperty.cpp" />
+    <ClCompile Include="src/ui/dialogs/Properties/PrimitivePhysicsProperty.cpp" />
+    <ClCompile Include="src/ui/dialogs/Properties/PrimitivePositionProperty.cpp" />
+    <ClCompile Include="src/ui/dialogs/Properties/PrimitiveVisualsProperty.cpp" />
+    <ClCompile Include="src/ui/dialogs/Properties/PropertyDialog.cpp" />
+    <ClCompile Include="src/ui/dialogs/Properties/RampPhysicsProperty.cpp" />
+    <ClCompile Include="src/ui/dialogs/Properties/RampVisualsProperty.cpp" />
+    <ClCompile Include="src/ui/dialogs/Properties/RubberPhysicsProperty.cpp" />
+    <ClCompile Include="src/ui/dialogs/Properties/RubberVisualsProperty.cpp" />
+    <ClCompile Include="src/ui/dialogs/Properties/SpinnerPhysicsProperty.cpp" />
+    <ClCompile Include="src/ui/dialogs/Properties/SpinnerVisualsProperty.cpp" />
+    <ClCompile Include="src/ui/dialogs/Properties/TableAudioProperty.cpp" />
+    <ClCompile Include="src/ui/dialogs/Properties/TableLightsProperty.cpp" />
+    <ClCompile Include="src/ui/dialogs/Properties/TablePhysicsProperty.cpp" />
+    <ClCompile Include="src/ui/dialogs/Properties/TableVisualsProperty.cpp" />
+    <ClCompile Include="src/ui/dialogs/Properties/TextboxVisualsProperty.cpp" />
+    <ClCompile Include="src/ui/dialogs/Properties/TriggerPhysicsProperty.cpp" />
+    <ClCompile Include="src/ui/dialogs/Properties/TriggerVisualsProperty.cpp" />
+    <ClCompile Include="src/ui/dialogs/Properties/WallPhysicsProperty.cpp" />
+    <ClCompile Include="src/ui/dialogs/Properties/WallVisualsProperty.cpp" />
     <ClCompile Include="math\math.cpp" />
     <ClCompile Include="math\matrix.cpp" />
-    <ClCompile Include="media\fileio.cpp" />
-    <ClCompile Include="media\lzwreader.cpp" />
-    <ClCompile Include="media\lzwwriter.cpp" />
+    <ClCompile Include="src/utils/fileio.cpp" />
+    <ClCompile Include="src/utils/lzwreader.cpp" />
+    <ClCompile Include="src/utils/lzwwriter.cpp" />
     <ClCompile Include="src/parts/ball.cpp" />
     <ClCompile Include="src/parts/bumper.cpp" />
     <ClCompile Include="src/parts/decal.cpp" />
@@ -850,63 +850,63 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="LiveUI.cpp" />
-    <ClCompile Include="MemoryStatus.cpp" />
-    <ClCompile Include="hash.cpp" />
-    <ClCompile Include="objloader.cpp" />
-    <ClCompile Include="codeview.cpp" />
+    <ClCompile Include="src/ui/LiveUI.cpp" />
+    <ClCompile Include="src/utils/MemoryStatus.cpp" />
+    <ClCompile Include="src/utils/hash.cpp" />
+    <ClCompile Include="src/utils/objloader.cpp" />
+    <ClCompile Include="src/ui/codeview.cpp" />
     <ClCompile Include="def.cpp" />
     <ClCompile Include="dragpoint.cpp" />
     <ClCompile Include="extern.cpp" />
     <ClCompile Include="hid.cpp" />
-    <ClCompile Include="hitrectsur.cpp" />
-    <ClCompile Include="hitsur.cpp" />
+    <ClCompile Include="src/ui/hitrectsur.cpp" />
+    <ClCompile Include="src/ui/hitsur.cpp" />
     <ClCompile Include="ieditable.cpp" />
     <ClCompile Include="iselect.cpp" />
-    <ClCompile Include="memutil.cpp" />
+    <ClCompile Include="src/utils/memutil.cpp" />
     <ClCompile Include="mixer.cpp" />
-    <ClCompile Include="paintsur.cpp" />
+    <ClCompile Include="src/ui/paintsur.cpp" />
     <ClCompile Include="pinbinary.cpp" />
     <ClCompile Include="pininput.cpp" />
     <ClCompile Include="pinundo.cpp" />
-    <ClCompile Include="StackTrace.cpp" />
-    <ClCompile Include="variant.cpp" />
+    <ClCompile Include="src/utils/StackTrace.cpp" />
+    <ClCompile Include="src/utils/variant.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="vpinball.cpp" />
     <ClCompile Include="wintimer.cpp" />
     <ClCompile Include="worker.cpp" />
     <ClCompile Include="backGlass.cpp" />
-    <ClCompile Include="BlackBox.cpp" />
+    <ClCompile Include="src/utils/BlackBox.cpp" />
     <ClCompile Include="bulb.cpp" />
     <ClCompile Include="captureExt.cpp" />
-    <ClCompile Include="codeviewedit.cpp" />
-    <ClCompile Include="CrashHandler.cpp" />
-    <ClCompile Include="Debugger.cpp" />
-    <ClCompile Include="third-party\include\imgui\imgui.cpp" />
-    <ClCompile Include="third-party\include\imgui\imgui_draw.cpp" />
-    <ClCompile Include="third-party\include\imgui\imgui_impl_win32.cpp" />
-    <ClCompile Include="third-party\include\imgui\imgui_tables.cpp" />
-    <ClCompile Include="third-party\include\imgui\imgui_widgets.cpp" />
-    <ClCompile Include="third-party\include\imgui\imgui_stdlib.cpp" />
-    <ClCompile Include="third-party\include\imguizmo\ImGuizmo.cpp" />
-    <ClCompile Include="third-party\include\implot\implot.cpp" />
-    <ClCompile Include="third-party\include\implot\implot_items.cpp" />
-    <ClCompile Include="third-party\include\imgui\imgui_impl_opengl3.cpp">
+    <ClCompile Include="src/ui/codeviewedit.cpp" />
+    <ClCompile Include="src/utils/CrashHandler.cpp" />
+    <ClCompile Include="src/ui/Debugger.cpp" />
+    <ClCompile Include="third-party/include/imgui/imgui.cpp" />
+    <ClCompile Include="third-party/include/imgui/imgui_draw.cpp" />
+    <ClCompile Include="third-party/include/imgui/imgui_impl_win32.cpp" />
+    <ClCompile Include="third-party/include/imgui/imgui_tables.cpp" />
+    <ClCompile Include="third-party/include/imgui/imgui_widgets.cpp" />
+    <ClCompile Include="third-party/include/imgui/imgui_stdlib.cpp" />
+    <ClCompile Include="third-party/include/imguizmo/ImGuizmo.cpp" />
+    <ClCompile Include="third-party/include/implot\implot.cpp" />
+    <ClCompile Include="third-party/include/implot\implot_items.cpp" />
+    <ClCompile Include="third-party/include/imgui/imgui_impl_opengl3.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="third-party\include\imgui\imgui_impl_dx9.cpp">
+    <ClCompile Include="third-party/include/imgui/imgui_impl_dx9.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_GL|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_GL|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_GL|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_GL|x64'">true</ExcludedFromBuild>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="third-party\include\BAM\BAMView.cpp" />
-    <ClCompile Include="third-party\include\glad\src\gl.c">
+    <ClCompile Include="third-party/include/BAM\BAMView.cpp" />
+    <ClCompile Include="third-party/include/glad\src\gl.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
@@ -914,14 +914,14 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
     </ClCompile>
-    <ClCompile Include="third-party\include\gpuprofiler.cpp" />
-    <ClCompile Include="third-party\include\miniz\miniz.c">
+    <ClCompile Include="third-party/include/gpuprofiler.cpp" />
+    <ClCompile Include="third-party/include/miniz\miniz.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
     </ClCompile>
-    <ClCompile Include="third-party\include\progmesh.cpp" />
-    <ClCompile Include="third-party\include\serial.cpp" />
-    <ClCompile Include="third-party\include\tinyxml2\tinyxml2.cpp" />
+    <ClCompile Include="third-party/include/progmesh.cpp" />
+    <ClCompile Include="third-party/include/serial.cpp" />
+    <ClCompile Include="third-party/include/tinyxml2\tinyxml2.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="vpinball.idl" />
@@ -979,140 +979,140 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="shader\FBShader.fxh" />
-    <None Include="src\assets\Default VPinballX.ini" />
-    <None Include="shader\SMAA.fxh" />
-    <None Include="shader\BallShader.glfx" />
-    <None Include="shader\BallShadows.fxh" />
-    <None Include="shader\BasicShader.glfx" />
-    <None Include="shader\ClassicLightShader.glfx" />
-    <None Include="shader\DMDShader.glfx" />
-    <None Include="shader\DMDShaderVR.glfx" />
-    <None Include="shader\FBShader.glfx" />
-    <None Include="shader\FlasherShader.glfx" />
-    <None Include="shader\FXAAStereoAO_GL.fxh" />
-    <None Include="shader\LightShader.glfx" />
-    <None Include="shader\Material_GL.fxh" />
-    <None Include="shader\SMAA.glfx" />
-    <None Include="shader\SSR_GL.fxh" />
-    <None Include="shader\Stereo.fxh" />
-    <None Include="shader\StereoShader.glfx" />
-    <None Include="res\ball.rgs" />
-    <None Include="src\assets\blankTable.vpx" />
-    <None Include="res\bumper.rgs" />
-    <None Include="src\assets\exampleTable.vpx" />
-    <None Include="res\gate.cur" />
-    <None Include="res\flasher.cur" />
-    <None Include="res\hittarget.rgs" />
-    <None Include="src\assets\lightSeqTable.vpx" />
-    <None Include="res\rubber.cur" />
-    <None Include="res\kicker.cur" />
-    <None Include="res\spinner.cur" />
-    <None Include="res\dispreel.cur" />
-    <None Include="res\SplitH.cur" />
-    <None Include="res\SplitV.cur" />
-    <None Include="src\assets\strippedTable.vpx" />
-    <None Include="res\trigger.cur" />
-    <None Include="res\timer.cur" />
-    <None Include="res\target.cur" />
-    <None Include="res\flipper.cur" />
-    <None Include="res\lightseq.cur" />
-    <None Include="res\textbox.cur" />
-    <None Include="res\primitive.cur" />
-    <None Include="res\ramp.cur" />
-    <None Include="res\decal.cur" />
-    <None Include="res\bumper.cur" />
-    <None Include="res\plunger.cur" />
-    <None Include="res\wall.cur" />
-    <None Include="res\magnify.cur" />
-    <None Include="res\dispreel.rgs" />
-    <None Include="res\dragpoint.rgs" />
-    <None Include="res\flasher.rgs" />
-    <None Include="res\rubber.rgs" />
-    <None Include="res\flipper.rgs" />
-    <None Include="res\gate.rgs" />
-    <None Include="res\kicker.rgs" />
-    <None Include="res\light.rgs" />
-    <None Include="res\lightseq.rgs" />
-    <None Include="res\pieventhandler.rgs" />
-    <None Include="res\plunger.rgs" />
-    <None Include="res\primitive.rgs" />
-    <None Include="res\ramp.rgs" />
-    <None Include="res\spinner.rgs" />
-    <None Include="res\surface.rgs" />
-    <None Include="res\textbox.rgs" />
-    <None Include="res\timer.rgs" />
-    <None Include="res\trigger.rgs" />
-    <None Include="res\vpinball.rgs" />
-    <None Include="res\light.cur" />
-    <None Include="shader\FXAAStereoAO.fxh" />
-    <None Include="shader\Helpers.fxh" />
-    <None Include="shader\Material.fxh" />
-    <None Include="shader\SSR.fxh" />
-    <None Include="src\assets\TableSizes.csv" />
-    <None Include="src\assets\tony_mc_mapface_unrolled.exr" />
+    <None Include="shader/FBShader.fxh" />
+    <None Include="src/assets/Default VPinballX.ini" />
+    <None Include="shader/SMAA.fxh" />
+    <None Include="shader/BallShader.glfx" />
+    <None Include="shader/BallShadows.fxh" />
+    <None Include="shader/BasicShader.glfx" />
+    <None Include="shader/ClassicLightShader.glfx" />
+    <None Include="shader/DMDShader.glfx" />
+    <None Include="shader/DMDShaderVR.glfx" />
+    <None Include="shader/FBShader.glfx" />
+    <None Include="shader/FlasherShader.glfx" />
+    <None Include="shader/FXAAStereoAO_GL.fxh" />
+    <None Include="shader/LightShader.glfx" />
+    <None Include="shader/Material_GL.fxh" />
+    <None Include="shader/SMAA.glfx" />
+    <None Include="shader/SSR_GL.fxh" />
+    <None Include="shader/Stereo.fxh" />
+    <None Include="shader/StereoShader.glfx" />
+    <None Include="res/ball.rgs" />
+    <None Include="src/assets/blankTable.vpx" />
+    <None Include="res/bumper.rgs" />
+    <None Include="src/assets/exampleTable.vpx" />
+    <None Include="res/gate.cur" />
+    <None Include="res/flasher.cur" />
+    <None Include="res/hittarget.rgs" />
+    <None Include="src/assets/lightSeqTable.vpx" />
+    <None Include="res/rubber.cur" />
+    <None Include="res/kicker.cur" />
+    <None Include="res/spinner.cur" />
+    <None Include="res/dispreel.cur" />
+    <None Include="res/SplitH.cur" />
+    <None Include="res/SplitV.cur" />
+    <None Include="src/assets/strippedTable.vpx" />
+    <None Include="res/trigger.cur" />
+    <None Include="res/timer.cur" />
+    <None Include="res/target.cur" />
+    <None Include="res/flipper.cur" />
+    <None Include="res/lightseq.cur" />
+    <None Include="res/textbox.cur" />
+    <None Include="res/primitive.cur" />
+    <None Include="res/ramp.cur" />
+    <None Include="res/decal.cur" />
+    <None Include="res/bumper.cur" />
+    <None Include="res/plunger.cur" />
+    <None Include="res/wall.cur" />
+    <None Include="res/magnify.cur" />
+    <None Include="res/dispreel.rgs" />
+    <None Include="res/dragpoint.rgs" />
+    <None Include="res/flasher.rgs" />
+    <None Include="res/rubber.rgs" />
+    <None Include="res/flipper.rgs" />
+    <None Include="res/gate.rgs" />
+    <None Include="res/kicker.rgs" />
+    <None Include="res/light.rgs" />
+    <None Include="res/lightseq.rgs" />
+    <None Include="res/pieventhandler.rgs" />
+    <None Include="res/plunger.rgs" />
+    <None Include="res/primitive.rgs" />
+    <None Include="res/ramp.rgs" />
+    <None Include="res/spinner.rgs" />
+    <None Include="res/surface.rgs" />
+    <None Include="res/textbox.rgs" />
+    <None Include="res/timer.rgs" />
+    <None Include="res/trigger.rgs" />
+    <None Include="res/vpinball.rgs" />
+    <None Include="res/light.cur" />
+    <None Include="shader/FXAAStereoAO.fxh" />
+    <None Include="shader/Helpers.fxh" />
+    <None Include="shader/Material.fxh" />
+    <None Include="shader/SSR.fxh" />
+    <None Include="src/assets/TableSizes.csv" />
+    <None Include="src/assets/tony_mc_mapface_unrolled.exr" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="res\add.ico" />
-    <Image Include="src\assets\AOdither.webp" />
-    <Image Include="res\assign.ico" />
-    <Image Include="res\backglass.ico" />
-    <Image Include="src\assets\BallEnv.exr" />
-    <Image Include="res\bumper.ico" />
-    <Image Include="src\assets\bumperbase.webp" />
-    <Image Include="src\assets\bumperCap.webp" />
-    <Image Include="src\assets\bumperring.webp" />
-    <Image Include="src\assets\bumperskirt.webp" />
-    <Image Include="res\camera.ico" />
-    <Image Include="res\chevron.bmp" />
-    <Image Include="res\decal.ico" />
-    <Image Include="src\assets\envmap.webp" />
-    <Image Include="res\expandcolapse.ico" />
-    <Image Include="res\flasher.ico" />
-    <Image Include="res\flipper.ico" />
-    <Image Include="res\gate.ico" />
-    <Image Include="res\kicker.ico" />
-    <Image Include="src\assets\kickerCup.webp" />
-    <Image Include="src\assets\kickerGottlieb.webp" />
-    <Image Include="src\assets\kickerHoleWood.webp" />
-    <Image Include="src\assets\kickerT1.webp" />
-    <Image Include="src\assets\kickerWilliams.webp" />
-    <Image Include="res\layerIcons16.bmp" />
-    <Image Include="res\layerIcons32.bmp" />
-    <Image Include="res\layers.ico" />
-    <Image Include="res\light.ico" />
-    <Image Include="res\lightseq.ico" />
-    <Image Include="res\magnify.ico" />
-    <Image Include="res\options.ico" />
-    <Image Include="res\PlayWarning.bmp" />
-    <Image Include="res\plunger.ico" />
-    <Image Include="res\primitive.ico" />
-    <Image Include="res\ramp.ico" />
-    <Image Include="res\reel.ico" />
-    <Image Include="res\remove.ico" />
-    <Image Include="res\rubber.ico" />
-    <Image Include="res\script.ico" />
-    <Image Include="res\SDbottom.bmp" />
-    <Image Include="res\SDcenter.bmp" />
-    <Image Include="res\SDleft.bmp" />
-    <Image Include="res\SDmiddle.bmp" />
-    <Image Include="res\SDright.bmp" />
-    <Image Include="res\SDtop.bmp" />
-    <Image Include="res\select.ico" />
-    <Image Include="res\spinner.ico" />
-    <Image Include="res\target.ico" />
-    <Image Include="res\textbox.ico" />
-    <Image Include="res\timer.ico" />
-    <Image Include="res\toolbar.ico" />
-    <Image Include="res\trigger.ico" />
-    <Image Include="res\vpinball.ico" />
-    <Image Include="res\logo.bmp" />
-    <Image Include="res\step.ico" />
-    <Image Include="res\pause.ico" />
-    <Image Include="res\play.ico" />
-    <Image Include="res\table.ico" />
-    <Image Include="res\toolbar.bmp" />
-    <Image Include="res\wall.ico" />
+    <Image Include="res/add.ico" />
+    <Image Include="src/assets/AOdither.webp" />
+    <Image Include="res/assign.ico" />
+    <Image Include="res/backglass.ico" />
+    <Image Include="src/assets/BallEnv.exr" />
+    <Image Include="res/bumper.ico" />
+    <Image Include="src/assets/bumperbase.webp" />
+    <Image Include="src/assets/bumperCap.webp" />
+    <Image Include="src/assets/bumperring.webp" />
+    <Image Include="src/assets/bumperskirt.webp" />
+    <Image Include="res/camera.ico" />
+    <Image Include="res/chevron.bmp" />
+    <Image Include="res/decal.ico" />
+    <Image Include="src/assets/envmap.webp" />
+    <Image Include="res/expandcolapse.ico" />
+    <Image Include="res/flasher.ico" />
+    <Image Include="res/flipper.ico" />
+    <Image Include="res/gate.ico" />
+    <Image Include="res/kicker.ico" />
+    <Image Include="src/assets/kickerCup.webp" />
+    <Image Include="src/assets/kickerGottlieb.webp" />
+    <Image Include="src/assets/kickerHoleWood.webp" />
+    <Image Include="src/assets/kickerT1.webp" />
+    <Image Include="src/assets/kickerWilliams.webp" />
+    <Image Include="res/layerIcons16.bmp" />
+    <Image Include="res/layerIcons32.bmp" />
+    <Image Include="res/layers.ico" />
+    <Image Include="res/light.ico" />
+    <Image Include="res/lightseq.ico" />
+    <Image Include="res/magnify.ico" />
+    <Image Include="res/options.ico" />
+    <Image Include="res/PlayWarning.bmp" />
+    <Image Include="res/plunger.ico" />
+    <Image Include="res/primitive.ico" />
+    <Image Include="res/ramp.ico" />
+    <Image Include="res/reel.ico" />
+    <Image Include="res/remove.ico" />
+    <Image Include="res/rubber.ico" />
+    <Image Include="res/script.ico" />
+    <Image Include="res/SDbottom.bmp" />
+    <Image Include="res/SDcenter.bmp" />
+    <Image Include="res/SDleft.bmp" />
+    <Image Include="res/SDmiddle.bmp" />
+    <Image Include="res/SDright.bmp" />
+    <Image Include="res/SDtop.bmp" />
+    <Image Include="res/select.ico" />
+    <Image Include="res/spinner.ico" />
+    <Image Include="res/target.ico" />
+    <Image Include="res/textbox.ico" />
+    <Image Include="res/timer.ico" />
+    <Image Include="res/toolbar.ico" />
+    <Image Include="res/trigger.ico" />
+    <Image Include="res/vpinball.ico" />
+    <Image Include="res/logo.bmp" />
+    <Image Include="res/step.ico" />
+    <Image Include="res/pause.ico" />
+    <Image Include="res/play.ico" />
+    <Image Include="res/table.ico" />
+    <Image Include="res/toolbar.bmp" />
+    <Image Include="res/wall.ico" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src/audio/audioplayer.h" />
@@ -1121,75 +1121,75 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="src/core/player.h" />
     <ClInclude Include="src/core/Settings.h" />
     <ClInclude Include="src/core/TableDB.h" />
-    <ClInclude Include="dialogs\AboutDialog.h" />
-    <ClInclude Include="dialogs\AudioOptionsDialog.h" />
-    <ClInclude Include="dialogs\CollectionManagerDialog.h" />
-    <ClInclude Include="dialogs\DimensionDialog.h" />
-    <ClInclude Include="dialogs\DrawingOrderDialog.h" />
-    <ClInclude Include="dialogs\EditorOptionsDialog.h" />
-    <ClInclude Include="dialogs\ImageDialog.h" />
-    <ClInclude Include="dialogs\KeysConfigDialog.h" />
-    <ClInclude Include="dialogs\LayersListDialog.h" />
-    <ClInclude Include="dialogs\MaterialDialog.h" />
-    <ClInclude Include="dialogs\NotesDialog.h" />
-    <ClInclude Include="dialogs\RenderProbeDialog.h" />
-    <ClInclude Include="dialogs\ScriptErrorDialog.h" />
-    <ClInclude Include="dialogs\PhysicsOptionsDialog.h" />
-    <ClInclude Include="dialogs\Properties\BackglassCameraProperty.h" />
-    <ClInclude Include="dialogs\Properties\BackglassVisualsProperty.h" />
-    <ClInclude Include="dialogs\Properties\BumperPhysicsProperty.h" />
-    <ClInclude Include="dialogs\Properties\BumperVisualsProperty.h" />
-    <ClInclude Include="dialogs\Properties\DecalVisualsProperty.h" />
-    <ClInclude Include="dialogs\Properties\DispreelStateProperty.h" />
-    <ClInclude Include="dialogs\Properties\DispreelVisualsProperty.h" />
-    <ClInclude Include="dialogs\Properties\DragpointVisualsProperty.h" />
-    <ClInclude Include="dialogs\Properties\FlasherVisualsProperty.h" />
-    <ClInclude Include="dialogs\Properties\FlipperPhysicsProperty.h" />
-    <ClInclude Include="dialogs\Properties\FlipperVisualsProperty.h" />
-    <ClInclude Include="dialogs\Properties\GatePhysicsProperty.h" />
-    <ClInclude Include="dialogs\Properties\GateVisualsProperty.h" />
-    <ClInclude Include="dialogs\Properties\HitTargetPhysicsProperty.h" />
-    <ClInclude Include="dialogs\Properties\HitTargetVisualsProperty.h" />
-    <ClInclude Include="dialogs\Properties\KickerPhysicsProperty.h" />
-    <ClInclude Include="dialogs\Properties\KickerVisualsProperty.h" />
-    <ClInclude Include="dialogs\Properties\LightseqStatesProperty.h" />
-    <ClInclude Include="dialogs\Properties\LightStatesProperty.h" />
-    <ClInclude Include="dialogs\Properties\LightVisualsProperty.h" />
-    <ClInclude Include="dialogs\Properties\PlungerPhysicsProperty.h" />
-    <ClInclude Include="dialogs\Properties\PlungerVisualsProperty.h" />
-    <ClInclude Include="dialogs\Properties\PrimitivePhysicsProperty.h" />
-    <ClInclude Include="dialogs\Properties\PrimitivePositionProperty.h" />
-    <ClInclude Include="dialogs\Properties\PrimitiveVisualsProperty.h" />
-    <ClInclude Include="dialogs\Properties\PropertyDialog.h" />
-    <ClInclude Include="dialogs\Properties\RampPhysicsProperty.h" />
-    <ClInclude Include="dialogs\Properties\RampVisualsProperty.h" />
-    <ClInclude Include="dialogs\Properties\RubberPhysicsProperty.h" />
-    <ClInclude Include="dialogs\Properties\RubberVisualsProperty.h" />
-    <ClInclude Include="dialogs\Properties\SpinnerPhysicsProperty.h" />
-    <ClInclude Include="dialogs\Properties\SpinnerVisualsProperty.h" />
-    <ClInclude Include="dialogs\Properties\TableAudioProperty.h" />
-    <ClInclude Include="dialogs\Properties\TableLightsProperty.h" />
-    <ClInclude Include="dialogs\Properties\TablePhysicsProperty.h" />
-    <ClInclude Include="dialogs\Properties\TableVisualsProperty.h" />
-    <ClInclude Include="dialogs\Properties\TextboxVisualsProperty.h" />
-    <ClInclude Include="dialogs\Properties\TriggerPhysicsProperty.h" />
-    <ClInclude Include="dialogs\Properties\TriggerVisualsProperty.h" />
-    <ClInclude Include="dialogs\Properties\WallPhysicsProperty.h" />
-    <ClInclude Include="dialogs\Properties\WallVisualsProperty.h" />
-    <ClInclude Include="dialogs\SearchSelectDialog.h" />
-    <ClInclude Include="dialogs\SoundDialog.h" />
-    <ClInclude Include="dialogs\TableInfoDialog.h" />
-    <ClInclude Include="dialogs\ToolbarDialog.h" />
-    <ClInclude Include="dialogs\VideoOptionsDialog.h" />
-    <ClInclude Include="dialogs\VROptionsDialog.h" />
+    <ClInclude Include="src/ui/dialogs/AboutDialog.h" />
+    <ClInclude Include="src/ui/dialogs/AudioOptionsDialog.h" />
+    <ClInclude Include="src/ui/dialogs/CollectionManagerDialog.h" />
+    <ClInclude Include="src/ui/dialogs/DimensionDialog.h" />
+    <ClInclude Include="src/ui/dialogs/DrawingOrderDialog.h" />
+    <ClInclude Include="src/ui/dialogs/EditorOptionsDialog.h" />
+    <ClInclude Include="src/ui/dialogs/ImageDialog.h" />
+    <ClInclude Include="src/ui/dialogs/KeysConfigDialog.h" />
+    <ClInclude Include="src/ui/dialogs/LayersListDialog.h" />
+    <ClInclude Include="src/ui/dialogs/MaterialDialog.h" />
+    <ClInclude Include="src/ui/dialogs/NotesDialog.h" />
+    <ClInclude Include="src/ui/dialogs/RenderProbeDialog.h" />
+    <ClInclude Include="src/ui/dialogs/ScriptErrorDialog.h" />
+    <ClInclude Include="src/ui/dialogs/PhysicsOptionsDialog.h" />
+    <ClInclude Include="src/ui/dialogs/Properties/BackglassCameraProperty.h" />
+    <ClInclude Include="src/ui/dialogs/Properties/BackglassVisualsProperty.h" />
+    <ClInclude Include="src/ui/dialogs/Properties/BumperPhysicsProperty.h" />
+    <ClInclude Include="src/ui/dialogs/Properties/BumperVisualsProperty.h" />
+    <ClInclude Include="src/ui/dialogs/Properties/DecalVisualsProperty.h" />
+    <ClInclude Include="src/ui/dialogs/Properties/DispreelStateProperty.h" />
+    <ClInclude Include="src/ui/dialogs/Properties/DispreelVisualsProperty.h" />
+    <ClInclude Include="src/ui/dialogs/Properties/DragpointVisualsProperty.h" />
+    <ClInclude Include="src/ui/dialogs/Properties/FlasherVisualsProperty.h" />
+    <ClInclude Include="src/ui/dialogs/Properties/FlipperPhysicsProperty.h" />
+    <ClInclude Include="src/ui/dialogs/Properties/FlipperVisualsProperty.h" />
+    <ClInclude Include="src/ui/dialogs/Properties/GatePhysicsProperty.h" />
+    <ClInclude Include="src/ui/dialogs/Properties/GateVisualsProperty.h" />
+    <ClInclude Include="src/ui/dialogs/Properties/HitTargetPhysicsProperty.h" />
+    <ClInclude Include="src/ui/dialogs/Properties/HitTargetVisualsProperty.h" />
+    <ClInclude Include="src/ui/dialogs/Properties/KickerPhysicsProperty.h" />
+    <ClInclude Include="src/ui/dialogs/Properties/KickerVisualsProperty.h" />
+    <ClInclude Include="src/ui/dialogs/Properties/LightseqStatesProperty.h" />
+    <ClInclude Include="src/ui/dialogs/Properties/LightStatesProperty.h" />
+    <ClInclude Include="src/ui/dialogs/Properties/LightVisualsProperty.h" />
+    <ClInclude Include="src/ui/dialogs/Properties/PlungerPhysicsProperty.h" />
+    <ClInclude Include="src/ui/dialogs/Properties/PlungerVisualsProperty.h" />
+    <ClInclude Include="src/ui/dialogs/Properties/PrimitivePhysicsProperty.h" />
+    <ClInclude Include="src/ui/dialogs/Properties/PrimitivePositionProperty.h" />
+    <ClInclude Include="src/ui/dialogs/Properties/PrimitiveVisualsProperty.h" />
+    <ClInclude Include="src/ui/dialogs/Properties/PropertyDialog.h" />
+    <ClInclude Include="src/ui/dialogs/Properties/RampPhysicsProperty.h" />
+    <ClInclude Include="src/ui/dialogs/Properties/RampVisualsProperty.h" />
+    <ClInclude Include="src/ui/dialogs/Properties/RubberPhysicsProperty.h" />
+    <ClInclude Include="src/ui/dialogs/Properties/RubberVisualsProperty.h" />
+    <ClInclude Include="src/ui/dialogs/Properties/SpinnerPhysicsProperty.h" />
+    <ClInclude Include="src/ui/dialogs/Properties/SpinnerVisualsProperty.h" />
+    <ClInclude Include="src/ui/dialogs/Properties/TableAudioProperty.h" />
+    <ClInclude Include="src/ui/dialogs/Properties/TableLightsProperty.h" />
+    <ClInclude Include="src/ui/dialogs/Properties/TablePhysicsProperty.h" />
+    <ClInclude Include="src/ui/dialogs/Properties/TableVisualsProperty.h" />
+    <ClInclude Include="src/ui/dialogs/Properties/TextboxVisualsProperty.h" />
+    <ClInclude Include="src/ui/dialogs/Properties/TriggerPhysicsProperty.h" />
+    <ClInclude Include="src/ui/dialogs/Properties/TriggerVisualsProperty.h" />
+    <ClInclude Include="src/ui/dialogs/Properties/WallPhysicsProperty.h" />
+    <ClInclude Include="src/ui/dialogs/Properties/WallVisualsProperty.h" />
+    <ClInclude Include="src/ui/dialogs/SearchSelectDialog.h" />
+    <ClInclude Include="src/ui/dialogs/SoundDialog.h" />
+    <ClInclude Include="src/ui/dialogs/TableInfoDialog.h" />
+    <ClInclude Include="src/ui/dialogs/ToolbarDialog.h" />
+    <ClInclude Include="src/ui/dialogs/VideoOptionsDialog.h" />
+    <ClInclude Include="src/ui/dialogs/VROptionsDialog.h" />
     <ClInclude Include="math\bbox.h" />
     <ClInclude Include="math\math.h" />
     <ClInclude Include="math\matrix.h" />
     <ClInclude Include="math\vector.h" />
     <ClInclude Include="src/math/ModelViewProj.h" />
-    <ClInclude Include="media\fileio.h" />
-    <ClInclude Include="media\lzwreader.h" />
-    <ClInclude Include="media\lzwwriter.h" />
+    <ClInclude Include="src/utils/fileio.h" />
+    <ClInclude Include="src/utils/lzwreader.h" />
+    <ClInclude Include="src/utils/lzwwriter.h" />
     <ClInclude Include="src/meshes/ballMesh.h" />
     <ClInclude Include="src/meshes/bulbLightMesh.h" />
     <ClInclude Include="src/meshes/bulbSocketMesh.h" />
@@ -1272,41 +1272,41 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="src/renderer/ViewSetup.h" />
     <ClInclude Include="src/renderer/VRDevice.h" />
     <ClInclude Include="backGlass.h" />
-    <ClInclude Include="BlackBox.h" />
+    <ClInclude Include="src/utils/BlackBox.h" />
     <ClInclude Include="bulb.h" />
     <ClInclude Include="captureExt.h" />
-    <ClInclude Include="codeview.h" />
-    <ClInclude Include="codeviewedit.h" />
-    <ClInclude Include="CrashHandler.h" />
-    <ClInclude Include="Debugger.h" />
+    <ClInclude Include="src/ui/codeview.h" />
+    <ClInclude Include="src/ui/codeviewedit.h" />
+    <ClInclude Include="src/utils/CrashHandler.h" />
+    <ClInclude Include="src/ui/Debugger.h" />
     <ClInclude Include="def.h" />
     <ClInclude Include="dispid.h" />
     <ClInclude Include="dragpoint.h" />
     <ClInclude Include="editablereg.h" />
     <ClInclude Include="eventproxy.h" />
     <ClInclude Include="extern.h" />
-    <ClInclude Include="hash.h" />
+    <ClInclude Include="src/utils/hash.h" />
     <ClInclude Include="helpers.h" />
     <ClInclude Include="hid.h" />
-    <ClInclude Include="hitrectsur.h" />
-    <ClInclude Include="hitsur.h" />
+    <ClInclude Include="src/ui/hitrectsur.h" />
+    <ClInclude Include="src/ui/hitsur.h" />
     <ClInclude Include="ieditable.h" />
     <ClInclude Include="iselect.h" />
     <ClInclude Include="LiveUI.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="MemoryStatus.h" />
-    <ClInclude Include="memutil.h" />
+    <ClInclude Include="src/utils/memutil.h" />
     <ClInclude Include="mesh.h" />
     <ClInclude Include="mixer.h" />
-    <ClInclude Include="objloader.h" />
-    <ClInclude Include="paintsur.h" />
+    <ClInclude Include="src/utils/objloader.h" />
+    <ClInclude Include="src/ui/paintsur.h" />
     <ClInclude Include="physconst.h" />
     <ClInclude Include="pinbinary.h" />
     <ClInclude Include="pininput.h" />
     <ClInclude Include="pinundo.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="StackTrace.h" />
+    <ClInclude Include="src/utils/StackTrace.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="sur.h" />
     <ClInclude Include="trace.h" />
@@ -1319,108 +1319,108 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="vpversion.h" />
     <ClInclude Include="wintimer.h" />
     <ClInclude Include="worker.h" />
-    <ClInclude Include="third-party\include\imgui\imconfig.h" />
-    <ClInclude Include="third-party\include\imgui\imgui.h" />
-    <ClInclude Include="third-party\include\imguizmo\ImGuizmo.h" />
-    <ClInclude Include="third-party\include\imgui\imgui_impl_opengl3.h">
+    <ClInclude Include="third-party/include/imgui/imconfig.h" />
+    <ClInclude Include="third-party/include/imgui/imgui.h" />
+    <ClInclude Include="third-party/include/imguizmo/ImGuizmo.h" />
+    <ClInclude Include="third-party/include/imgui/imgui_impl_opengl3.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClInclude>
-    <ClInclude Include="third-party\include\imgui\imgui_impl_dx9.h">
+    <ClInclude Include="third-party/include/imgui/imgui_impl_dx9.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_GL|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_GL|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_GL|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_GL|x64'">true</ExcludedFromBuild>
     </ClInclude>
-    <ClInclude Include="third-party\include\imgui\imgui_impl_opengl3_loader.h" />
-    <ClInclude Include="third-party\include\imgui\imgui_impl_win32.h" />
-    <ClInclude Include="third-party\include\imgui\imgui_internal.h" />
-    <ClInclude Include="third-party\include\imgui\imgui_stdlib.h" />
-    <ClInclude Include="third-party\include\implot\implot.h" />
-    <ClInclude Include="third-party\include\implot\implot_internal.h" />
-    <ClInclude Include="third-party\include\BAM\BAMView.h" />
-    <ClInclude Include="third-party\include\BAM\BAM_Tracker.h" />
-    <ClInclude Include="third-party\include\BAM\BAM_ViewPortSetup.h" />
-    <ClInclude Include="third-party\include\bass.h" />
-    <ClInclude Include="third-party\include\forsyth.h" />
-    <ClInclude Include="third-party\include\freeimage.h" />
-    <ClInclude Include="third-party\include\glad\include\glad\gl.h" />
-    <ClInclude Include="third-party\include\gpuprofiler.h" />
-    <ClInclude Include="third-party\include\hidpi.h" />
-    <ClInclude Include="third-party\include\hidsdi.h" />
-    <ClInclude Include="third-party\include\hidusage.h" />
-    <ClInclude Include="third-party\include\nvapi\nvapi.h" />
-    <ClInclude Include="third-party\include\nvapi\nvapi_lite_common.h" />
-    <ClInclude Include="third-party\include\nvapi\nvapi_lite_d3dext.h" />
-    <ClInclude Include="third-party\include\nvapi\nvapi_lite_salend.h" />
-    <ClInclude Include="third-party\include\nvapi\nvapi_lite_salstart.h" />
-    <ClInclude Include="third-party\include\nvapi\nvapi_lite_sli.h" />
-    <ClInclude Include="third-party\include\nvapi\nvapi_lite_stereo.h" />
-    <ClInclude Include="third-party\include\nvapi\nvapi_lite_surround.h" />
-    <ClInclude Include="third-party\include\progmesh.h" />
-    <ClInclude Include="third-party\include\progmesh_vecmatquat_minimal.h" />
-    <ClInclude Include="third-party\include\scilexer.h" />
-    <ClInclude Include="third-party\include\scintilla.h" />
-    <ClInclude Include="third-party\include\Sci_Position.h" />
-    <ClInclude Include="third-party\include\serial.h" />
-    <ClInclude Include="third-party\include\stb_image.h" />
-    <ClInclude Include="third-party\include\ThreadPool.h" />
-    <ClInclude Include="third-party\include\tinyxml2\tinyxml2.h" />
-    <ClInclude Include="third-party\include\win32xx\include\default_resource.h" />
-    <ClInclude Include="third-party\include\win32xx\include\wxx_appcore.h" />
-    <ClInclude Include="third-party\include\win32xx\include\wxx_appcore0.h" />
-    <ClInclude Include="third-party\include\win32xx\include\wxx_archive.h" />
-    <ClInclude Include="third-party\include\win32xx\include\wxx_commondlg.h" />
-    <ClInclude Include="third-party\include\win32xx\include\wxx_controls.h" />
-    <ClInclude Include="third-party\include\win32xx\include\wxx_cstring.h" />
-    <ClInclude Include="third-party\include\win32xx\include\wxx_ddx.h" />
-    <ClInclude Include="third-party\include\win32xx\include\wxx_dialog.h" />
-    <ClInclude Include="third-party\include\win32xx\include\wxx_dockframe.h" />
-    <ClInclude Include="third-party\include\win32xx\include\wxx_docking.h" />
-    <ClInclude Include="third-party\include\win32xx\include\wxx_exception.h" />
-    <ClInclude Include="third-party\include\win32xx\include\wxx_file.h" />
-    <ClInclude Include="third-party\include\win32xx\include\wxx_filefind.h" />
-    <ClInclude Include="third-party\include\win32xx\include\wxx_folderdialog.h" />
-    <ClInclude Include="third-party\include\win32xx\include\wxx_frame.h" />
-    <ClInclude Include="third-party\include\win32xx\include\wxx_gdi.h" />
-    <ClInclude Include="third-party\include\win32xx\include\wxx_imagelist.h" />
-    <ClInclude Include="third-party\include\win32xx\include\wxx_listview.h" />
-    <ClInclude Include="third-party\include\win32xx\include\wxx_mdi.h" />
-    <ClInclude Include="third-party\include\win32xx\include\wxx_menu.h" />
-    <ClInclude Include="third-party\include\win32xx\include\wxx_menubar.h" />
-    <ClInclude Include="third-party\include\win32xx\include\wxx_metafile.h" />
-    <ClInclude Include="third-party\include\win32xx\include\wxx_mutex.h" />
-    <ClInclude Include="third-party\include\win32xx\include\wxx_preview.h" />
-    <ClInclude Include="third-party\include\win32xx\include\wxx_printdialogex.h" />
-    <ClInclude Include="third-party\include\win32xx\include\wxx_printdialogs.h" />
-    <ClInclude Include="third-party\include\win32xx\include\wxx_propertysheet.h" />
-    <ClInclude Include="third-party\include\win32xx\include\wxx_rebar.h" />
-    <ClInclude Include="third-party\include\win32xx\include\wxx_rect.h" />
-    <ClInclude Include="third-party\include\win32xx\include\wxx_regkey.h" />
-    <ClInclude Include="third-party\include\win32xx\include\wxx_ribbon.h" />
-    <ClInclude Include="third-party\include\win32xx\include\wxx_richedit.h" />
-    <ClInclude Include="third-party\include\win32xx\include\wxx_scrollview.h" />
-    <ClInclude Include="third-party\include\win32xx\include\wxx_shared_ptr.h" />
-    <ClInclude Include="third-party\include\win32xx\include\wxx_socket.h" />
-    <ClInclude Include="third-party\include\win32xx\include\wxx_statusbar.h" />
-    <ClInclude Include="third-party\include\win32xx\include\wxx_stdcontrols.h" />
-    <ClInclude Include="third-party\include\win32xx\include\wxx_tab.h" />
-    <ClInclude Include="third-party\include\win32xx\include\wxx_taskdialog.h" />
-    <ClInclude Include="third-party\include\win32xx\include\wxx_textconv.h" />
-    <ClInclude Include="third-party\include\win32xx\include\wxx_themes.h" />
-    <ClInclude Include="third-party\include\win32xx\include\wxx_time.h" />
-    <ClInclude Include="third-party\include\win32xx\include\wxx_toolbar.h" />
-    <ClInclude Include="third-party\include\win32xx\include\wxx_treeview.h" />
-    <ClInclude Include="third-party\include\win32xx\include\wxx_wceframe.h" />
-    <ClInclude Include="third-party\include\win32xx\include\wxx_wcestddef.h" />
-    <ClInclude Include="third-party\include\win32xx\include\wxx_webbrowser.h" />
-    <ClInclude Include="third-party\include\win32xx\include\wxx_wincore.h" />
-    <ClInclude Include="third-party\include\win32xx\include\wxx_wincore0.h" />
+    <ClInclude Include="third-party/include/imgui/imgui_impl_opengl3_loader.h" />
+    <ClInclude Include="third-party/include/imgui/imgui_impl_win32.h" />
+    <ClInclude Include="third-party/include/imgui/imgui_internal.h" />
+    <ClInclude Include="third-party/include/imgui/imgui_stdlib.h" />
+    <ClInclude Include="third-party/include/implot\implot.h" />
+    <ClInclude Include="third-party/include/implot\implot_internal.h" />
+    <ClInclude Include="third-party/include/BAM\BAMView.h" />
+    <ClInclude Include="third-party/include/BAM\BAM_Tracker.h" />
+    <ClInclude Include="third-party/include/BAM\BAM_ViewPortSetup.h" />
+    <ClInclude Include="third-party/include/bass.h" />
+    <ClInclude Include="third-party/include/forsyth.h" />
+    <ClInclude Include="third-party/include/freeimage.h" />
+    <ClInclude Include="third-party/include/glad\include\glad\gl.h" />
+    <ClInclude Include="third-party/include/gpuprofiler.h" />
+    <ClInclude Include="third-party/include/hidpi.h" />
+    <ClInclude Include="third-party/include/hidsdi.h" />
+    <ClInclude Include="third-party/include/hidusage.h" />
+    <ClInclude Include="third-party/include/nvapi\nvapi.h" />
+    <ClInclude Include="third-party/include/nvapi\nvapi_lite_common.h" />
+    <ClInclude Include="third-party/include/nvapi\nvapi_lite_d3dext.h" />
+    <ClInclude Include="third-party/include/nvapi\nvapi_lite_salend.h" />
+    <ClInclude Include="third-party/include/nvapi\nvapi_lite_salstart.h" />
+    <ClInclude Include="third-party/include/nvapi\nvapi_lite_sli.h" />
+    <ClInclude Include="third-party/include/nvapi\nvapi_lite_stereo.h" />
+    <ClInclude Include="third-party/include/nvapi\nvapi_lite_surround.h" />
+    <ClInclude Include="third-party/include/progmesh.h" />
+    <ClInclude Include="third-party/include/progmesh_vecmatquat_minimal.h" />
+    <ClInclude Include="third-party/include/scilexer.h" />
+    <ClInclude Include="third-party/include/scintilla.h" />
+    <ClInclude Include="third-party/include/Sci_Position.h" />
+    <ClInclude Include="third-party/include/serial.h" />
+    <ClInclude Include="third-party/include/stb_image.h" />
+    <ClInclude Include="third-party/include/ThreadPool.h" />
+    <ClInclude Include="third-party/include/tinyxml2\tinyxml2.h" />
+    <ClInclude Include="third-party/include/win32xx/include/default_resource.h" />
+    <ClInclude Include="third-party/include/win32xx/include/wxx_appcore.h" />
+    <ClInclude Include="third-party/include/win32xx/include/wxx_appcore0.h" />
+    <ClInclude Include="third-party/include/win32xx/include/wxx_archive.h" />
+    <ClInclude Include="third-party/include/win32xx/include/wxx_commondlg.h" />
+    <ClInclude Include="third-party/include/win32xx/include/wxx_controls.h" />
+    <ClInclude Include="third-party/include/win32xx/include/wxx_cstring.h" />
+    <ClInclude Include="third-party/include/win32xx/include/wxx_ddx.h" />
+    <ClInclude Include="third-party/include/win32xx/include/wxx_dialog.h" />
+    <ClInclude Include="third-party/include/win32xx/include/wxx_dockframe.h" />
+    <ClInclude Include="third-party/include/win32xx/include/wxx_docking.h" />
+    <ClInclude Include="third-party/include/win32xx/include/wxx_exception.h" />
+    <ClInclude Include="third-party/include/win32xx/include/wxx_file.h" />
+    <ClInclude Include="third-party/include/win32xx/include/wxx_filefind.h" />
+    <ClInclude Include="third-party/include/win32xx/include/wxx_folderdialog.h" />
+    <ClInclude Include="third-party/include/win32xx/include/wxx_frame.h" />
+    <ClInclude Include="third-party/include/win32xx/include/wxx_gdi.h" />
+    <ClInclude Include="third-party/include/win32xx/include/wxx_imagelist.h" />
+    <ClInclude Include="third-party/include/win32xx/include/wxx_listview.h" />
+    <ClInclude Include="third-party/include/win32xx/include/wxx_mdi.h" />
+    <ClInclude Include="third-party/include/win32xx/include/wxx_menu.h" />
+    <ClInclude Include="third-party/include/win32xx/include/wxx_menubar.h" />
+    <ClInclude Include="third-party/include/win32xx/include/wxx_metafile.h" />
+    <ClInclude Include="third-party/include/win32xx/include/wxx_mutex.h" />
+    <ClInclude Include="third-party/include/win32xx/include/wxx_preview.h" />
+    <ClInclude Include="third-party/include/win32xx/include/wxx_printdialogex.h" />
+    <ClInclude Include="third-party/include/win32xx/include/wxx_printdialogs.h" />
+    <ClInclude Include="third-party/include/win32xx/include/wxx_propertysheet.h" />
+    <ClInclude Include="third-party/include/win32xx/include/wxx_rebar.h" />
+    <ClInclude Include="third-party/include/win32xx/include/wxx_rect.h" />
+    <ClInclude Include="third-party/include/win32xx/include/wxx_regkey.h" />
+    <ClInclude Include="third-party/include/win32xx/include/wxx_ribbon.h" />
+    <ClInclude Include="third-party/include/win32xx/include/wxx_richedit.h" />
+    <ClInclude Include="third-party/include/win32xx/include/wxx_scrollview.h" />
+    <ClInclude Include="third-party/include/win32xx/include/wxx_shared_ptr.h" />
+    <ClInclude Include="third-party/include/win32xx/include/wxx_socket.h" />
+    <ClInclude Include="third-party/include/win32xx/include/wxx_statusbar.h" />
+    <ClInclude Include="third-party/include/win32xx/include/wxx_stdcontrols.h" />
+    <ClInclude Include="third-party/include/win32xx/include/wxx_tab.h" />
+    <ClInclude Include="third-party/include/win32xx/include/wxx_taskdialog.h" />
+    <ClInclude Include="third-party/include/win32xx/include/wxx_textconv.h" />
+    <ClInclude Include="third-party/include/win32xx/include/wxx_themes.h" />
+    <ClInclude Include="third-party/include/win32xx/include/wxx_time.h" />
+    <ClInclude Include="third-party/include/win32xx/include/wxx_toolbar.h" />
+    <ClInclude Include="third-party/include/win32xx/include/wxx_treeview.h" />
+    <ClInclude Include="third-party/include/win32xx/include/wxx_wceframe.h" />
+    <ClInclude Include="third-party/include/win32xx/include/wxx_wcestddef.h" />
+    <ClInclude Include="third-party/include/win32xx/include/wxx_webbrowser.h" />
+    <ClInclude Include="third-party/include/win32xx/include/wxx_wincore.h" />
+    <ClInclude Include="third-party/include/win32xx/include/wxx_wincore0.h" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="shader\BallShader.hlsl">
+    <FxCompile Include="shader/BallShader.hlsl">
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">ballShaderCode</EntryPointName>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release_GL|Win32'">ballShaderCode</EntryPointName>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Effect</ShaderType>
@@ -1474,7 +1474,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_GL|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_GL|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="shader\BasicShader.hlsl">
+    <FxCompile Include="shader/BasicShader.hlsl">
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">shader\%(Filename).h</HeaderFileOutput>
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release_GL|Win32'">shader\%(Filename).h</HeaderFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -1528,7 +1528,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_GL|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_GL|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="shader\DMDShader.hlsl">
+    <FxCompile Include="shader/DMDShader.hlsl">
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">shader\%(Filename).h</HeaderFileOutput>
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release_GL|Win32'">shader\%(Filename).h</HeaderFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -1582,7 +1582,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_GL|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_GL|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="shader\FBShader.hlsl">
+    <FxCompile Include="shader/FBShader.hlsl">
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">shader\%(Filename).h</HeaderFileOutput>
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release_GL|Win32'">shader\%(Filename).h</HeaderFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -1636,7 +1636,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_GL|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_GL|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="shader\FlasherShader.hlsl">
+    <FxCompile Include="shader/FlasherShader.hlsl">
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">shader\%(Filename).h</HeaderFileOutput>
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release_GL|Win32'">shader\%(Filename).h</HeaderFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -1690,7 +1690,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_GL|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_GL|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="shader\LightShader.hlsl">
+    <FxCompile Include="shader/LightShader.hlsl">
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">shader\%(Filename).h</HeaderFileOutput>
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release_GL|Win32'">shader\%(Filename).h</HeaderFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -1744,7 +1744,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_GL|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_GL|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="shader\StereoShader.hlsl">
+    <FxCompile Include="shader/StereoShader.hlsl">
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">shader\%(Filename).h</HeaderFileOutput>
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release_GL|Win32'">shader\%(Filename).h</HeaderFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -1798,7 +1798,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_GL|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_GL|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="shader\ClassicLightShader.hlsl">
+    <FxCompile Include="shader/ClassicLightShader.hlsl">
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">shader\%(Filename).h</HeaderFileOutput>
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release_GL|Win32'">shader\%(Filename).h</HeaderFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -1859,7 +1859,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <ContentWithTargetPath Include="src\assets\**">
+    <ContentWithTargetPath Include="src/assets/**">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <TargetPath>assets\%(RecursiveDir)\%(Filename)%(Extension)</TargetPath>
     </ContentWithTargetPath>
@@ -1883,7 +1883,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     </ContentWithTargetPath>
   </ItemGroup>
   <ItemGroup>
-    <ContentWithTargetPath Include="shader\**">
+    <ContentWithTargetPath Include="shader/**">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <TargetPath>shader10.8.1\%(RecursiveDir)\%(Filename)%(Extension)</TargetPath>
     </ContentWithTargetPath>

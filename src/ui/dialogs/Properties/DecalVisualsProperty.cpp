@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "Properties/DecalVisualsProperty.h"
+#include "ui/dialogs/Properties/DecalVisualsProperty.h"
 #include <WindowsX.h>
 
 DecalVisualsProperty::DecalVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPDECAL_VISUALS, pvsel), m_font(nullptr)

@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "typedefs3D.h"
+#include "renderer/typedefs3D.h"
 #include <math/vector.h>
 
 #ifdef ENABLE_SDL

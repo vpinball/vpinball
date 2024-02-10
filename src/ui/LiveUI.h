@@ -2,6 +2,8 @@
 
 #include "stdafx.h"
 
+#include "pininput.h"
+
 #include "imgui/imgui.h"
 #include "imguizmo/ImGuizmo.h"
 #include "imgui_markdown/imgui_markdown.h"

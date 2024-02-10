@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "Properties/RubberPhysicsProperty.h"
+#include "ui/dialogs/Properties/RubberPhysicsProperty.h"
 #include <WindowsX.h>
 
 RubberPhysicsProperty::RubberPhysicsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPRUBBER_PHYSICS, pvsel)
