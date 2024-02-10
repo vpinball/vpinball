@@ -8,6 +8,7 @@
 #include "core/TableDB.h"
 
 #include "fonts/DroidSans.h"
+#include "fonts/DroidSansBold.h"
 #include "fonts/IconsForkAwesome.h"
 #include "fonts/ForkAwesome.h"
 
@@ -740,7 +741,10 @@ LiveUI::LiveUI(RenderDevice *const rd)
    m_overlayFont = io.Fonts->AddFontFromMemoryCompressedTTF(droidsans_compressed_data, droidsans_compressed_size, 13.0f * m_dpi);
 #endif
 
+   m_boldFont = io.Fonts->AddFontFromMemoryCompressedTTF(droidsansbold_compressed_data, droidsansbold_compressed_size, overlaySize);
+
    m_baseFont = io.Fonts->AddFontFromMemoryCompressedTTF(droidsans_compressed_data, droidsans_compressed_size, 13.0f * m_dpi);
+
    ImFontConfig icons_config;
    icons_config.MergeMode = true;
    icons_config.PixelSnapH = true;
@@ -748,9 +752,9 @@ LiveUI::LiveUI(RenderDevice *const rd)
    static constexpr ImWchar icons_ranges[] = { ICON_MIN_FK, ICON_MAX_16_FK, 0 };
    io.Fonts->AddFontFromMemoryCompressedTTF(fork_awesome_compressed_data, fork_awesome_compressed_size, 13.0f * m_dpi, &icons_config, icons_ranges);
 
-   ImFont *H1 = io.Fonts->AddFontFromMemoryCompressedTTF(droidsans_compressed_data, droidsans_compressed_size, 20.0f * m_dpi);
-   ImFont *H2 = io.Fonts->AddFontFromMemoryCompressedTTF(droidsans_compressed_data, droidsans_compressed_size, 18.0f * m_dpi);
-   ImFont *H3 = io.Fonts->AddFontFromMemoryCompressedTTF(droidsans_compressed_data, droidsans_compressed_size, 15.0f * m_dpi);
+   ImFont *H1 = io.Fonts->AddFontFromMemoryCompressedTTF(droidsansbold_compressed_data, droidsansbold_compressed_size, 20.0f * m_dpi);
+   ImFont *H2 = io.Fonts->AddFontFromMemoryCompressedTTF(droidsansbold_compressed_data, droidsansbold_compressed_size, 18.0f * m_dpi);
+   ImFont *H3 = io.Fonts->AddFontFromMemoryCompressedTTF(droidsansbold_compressed_data, droidsansbold_compressed_size, 15.0f * m_dpi);
    markdown_config.linkCallback = MarkdownLinkCallback;
    markdown_config.tooltipCallback = NULL;
    markdown_config.imageCallback = MarkdownImageCallback;
@@ -759,7 +763,7 @@ LiveUI::LiveUI(RenderDevice *const rd)
    markdown_config.headingFormats[1] = { H2, true };
    markdown_config.headingFormats[2] = { H3, false };
    markdown_config.userData = this;
-   //markdown_config.formatCallback = MarkdownFormatCallback;
+   markdown_config.formatCallback = MarkdownFormatCallback;
 
 #ifdef ENABLE_SDL
    ImGui_ImplOpenGL3_Init();
@@ -788,6 +792,63 @@ LiveUI::~LiveUI()
    }
 }
 
+void LiveUI::MarkdownFormatCallback(const ImGui::MarkdownFormatInfo &markdownFormatInfo, bool start)
+{
+   LiveUI *ui = (LiveUI *)(markdownFormatInfo.config->userData);
+   switch (markdownFormatInfo.type)
+   {
+   case ImGui::MarkdownFormatType::EMPHASIS:
+      ImGui::defaultMarkdownFormatCallback(markdownFormatInfo, start);
+      if (markdownFormatInfo.level == 1)
+      { // normal emphasis
+         if (start)
+            ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyle().Colors[ImGuiCol_TextDisabled]);
+         else
+            ImGui::PopStyleColor();
+      }
+      else
+      { // strong emphasis
+         if (start)
+            ImGui::PushFont(ui->m_boldFont);
+         else
+            ImGui::PopFont();
+      }
+      break;
+   case ImGui::MarkdownFormatType::HEADING:
+   {
+      ImGui::MarkdownHeadingFormat fmt;
+      if (markdownFormatInfo.level > ImGui::MarkdownConfig::NUMHEADINGS)
+         fmt = markdownFormatInfo.config->headingFormats[ImGui::MarkdownConfig::NUMHEADINGS - 1];
+      else
+         fmt = markdownFormatInfo.config->headingFormats[markdownFormatInfo.level - 1];
+      if (start)
+      {
+         if (fmt.font)
+            ImGui::PushFont(fmt.font);
+         if (ImGui::GetItemID() != ui->markdown_start_id)
+            ImGui::NewLine();
+      }
+      else
+      {
+         if (fmt.separator)
+         {
+            ImGui::PushStyleColor(ImGuiCol_Separator, ImVec4(1.f, 1.f, 1.f, 1.f));
+            ImGui::Separator();
+            ImGui::PopStyleColor();
+            ImGui::NewLine();
+         }
+         else
+         {
+            ImGui::NewLine();
+         }
+         if (fmt.font)
+            ImGui::PopFont();
+      }
+      break;
+   }
+   default: ImGui::defaultMarkdownFormatCallback(markdownFormatInfo, start); break;
+   }
+}
 
 void LiveUI::MarkdownLinkCallback(ImGui::MarkdownLinkCallbackData data)
 {
@@ -1144,7 +1205,7 @@ void LiveUI::OpenTweakMode()
    m_ShowSplashModal = false;
    m_renderer->DisableStaticPrePass(true);
    m_tweakMode = true;
-   m_activeTweakPage = TP_PointOfView;
+   m_activeTweakPage = m_table->m_szRules.empty()  ? TP_PointOfView : TP_Rules;
    m_activeTweakIndex = 0;
    UpdateTweakPage();
 }
@@ -1254,6 +1315,8 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
          int stepi = up ? TP_Count - 1 : 1;
          m_activeTweakPage = (TweakPage)((m_activeTweakPage + stepi) % TP_Count);
          if (m_activeTweakPage == TP_Rules && m_table->m_szRules.empty())
+            m_activeTweakPage = (TweakPage)((m_activeTweakPage + stepi) % TP_Count);
+         if (m_activeTweakPage == TP_Info && m_table->m_szRules.empty())
             m_activeTweakPage = (TweakPage)((m_activeTweakPage + stepi) % TP_Count);
          m_activeTweakIndex = 0;
          UpdateTweakPage();
@@ -1797,9 +1860,8 @@ void LiveUI::UpdateTweakModeUI()
 
    if (m_activeTweakPage == TP_Rules)
    {
-      ImGui::NewLine();
+      markdown_start_id = ImGui::GetItemID();
       ImGui::Markdown(m_table->m_szRules.c_str(), m_table->m_szRules.length(), markdown_config);
-      //HelpTextCentered(m_table->m_szRules);
       ImGui::NewLine();
    }
    else if (m_activeTweakPage == TP_Info)
