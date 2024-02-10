@@ -126,7 +126,7 @@ static const string defaultPathSearch[] = { string(), "user"s +PATH_SEPARATOR_CH
 //#include <wxx_archive.h>		// Add CArchive
 #include <wxx_commondlg.h>		// Add CCommonDialog, CColorDialog, CFileDialog, CFindReplace, CFontDialog 
 #include <wxx_scrollview.h>
-//#include <wxx_controls.h>		// Add CAnimation, CComboBox, CComboBoxEx, CDateTime, CHeader, CHotKey, CIPAddress, CProgressBar, CSpinButton, CScrollBar, CSlider, CToolTip
+#include <wxx_controls.h>		// Add CAnimation, CComboBox, CComboBoxEx, CDateTime, CHeader, CHotKey, CIPAddress, CProgressBar, CSpinButton, CScrollBar, CSlider, CToolTip
 //#include <wxx_cstring.h>		// Add CString, CStringA, CStringW
 //#include <wxx_ddx.h>			// Add CDataExchange
 //#include <wxx_dialog.h>			// Add CDialog, CResizer
