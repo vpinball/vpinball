@@ -661,14 +661,8 @@ LiveUI::LiveUI(RenderDevice *const rd)
    m_dpi = ImGui_ImplWin32_GetDpiScaleForHwnd(rd->getHwnd());
    ImGui::GetStyle().ScaleAllSizes(m_dpi);
 
-   // Overlays are displayed in the VR headset for which we do not have a meaningful DPI. This is somewhat hacky but we would really need 2 UI for VR.
-   const float overlaySize = rd->m_stereo3D == STEREO_VR ? 20.0f : min(32.f * m_dpi, (float)min(m_player->m_wnd_width, m_player->m_wnd_height) / (26.f * 2.0f)); // Fit 26 lines of text on screen
-   m_overlayFont = io.Fonts->AddFontFromMemoryCompressedTTF(droidsans_compressed_data, droidsans_compressed_size, overlaySize);
-
-   m_boldFont = io.Fonts->AddFontFromMemoryCompressedTTF(droidsansbold_compressed_data, droidsansbold_compressed_size, overlaySize);
-
+   // UI fonts
    m_baseFont = io.Fonts->AddFontFromMemoryCompressedTTF(droidsans_compressed_data, droidsans_compressed_size, 13.0f * m_dpi);
-
    ImFontConfig icons_config;
    icons_config.MergeMode = true;
    icons_config.PixelSnapH = true;
@@ -676,9 +670,13 @@ LiveUI::LiveUI(RenderDevice *const rd)
    static constexpr ImWchar icons_ranges[] = { ICON_MIN_FK, ICON_MAX_16_FK, 0 };
    io.Fonts->AddFontFromMemoryCompressedTTF(fork_awesome_compressed_data, fork_awesome_compressed_size, 13.0f * m_dpi, &icons_config, icons_ranges);
 
-   ImFont *H1 = io.Fonts->AddFontFromMemoryCompressedTTF(droidsansbold_compressed_data, droidsansbold_compressed_size, 20.0f * m_dpi);
-   ImFont *H2 = io.Fonts->AddFontFromMemoryCompressedTTF(droidsansbold_compressed_data, droidsansbold_compressed_size, 18.0f * m_dpi);
-   ImFont *H3 = io.Fonts->AddFontFromMemoryCompressedTTF(droidsansbold_compressed_data, droidsansbold_compressed_size, 15.0f * m_dpi);
+   // Overlays are displayed in the VR headset for which we do not have a meaningful DPI. This is somewhat hacky but we would really need 2 UI for VR.
+   const float overlaySize = rd->m_stereo3D == STEREO_VR ? 20.0f : min(32.f * m_dpi, (float)min(m_player->m_wnd_width, m_player->m_wnd_height) / (26.f * 2.0f)); // Fit 26 lines of text on screen
+   m_overlayFont = io.Fonts->AddFontFromMemoryCompressedTTF(droidsans_compressed_data, droidsans_compressed_size, overlaySize);
+   m_overlayBoldFont = io.Fonts->AddFontFromMemoryCompressedTTF(droidsansbold_compressed_data, droidsansbold_compressed_size, overlaySize);
+   ImFont *H1 = io.Fonts->AddFontFromMemoryCompressedTTF(droidsansbold_compressed_data, droidsansbold_compressed_size, overlaySize * 20.0f / 13.f);
+   ImFont *H2 = io.Fonts->AddFontFromMemoryCompressedTTF(droidsansbold_compressed_data, droidsansbold_compressed_size, overlaySize * 18.0f / 13.f);
+   ImFont *H3 = io.Fonts->AddFontFromMemoryCompressedTTF(droidsansbold_compressed_data, droidsansbold_compressed_size, overlaySize * 15.0f / 13.f);
    markdown_config.linkCallback = MarkdownLinkCallback;
    markdown_config.tooltipCallback = NULL;
    markdown_config.imageCallback = MarkdownImageCallback;
@@ -729,7 +727,7 @@ void LiveUI::MarkdownFormatCallback(const ImGui::MarkdownFormatInfo &markdownFor
       else
       { // strong emphasis
          if (start)
-            ImGui::PushFont(ui->m_boldFont);
+            ImGui::PushFont(ui->m_overlayBoldFont);
          else
             ImGui::PopFont();
       }
@@ -1634,7 +1632,8 @@ void LiveUI::UpdateTweakModeUI()
    constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
    ImGui::SetNextWindowBgAlpha(0.35f);
    ImGui::SetNextWindowPos(ImVec2(0.5f * ImGui::GetIO().DisplaySize.x, 0.8f * ImGui::GetIO().DisplaySize.y), 0, ImVec2(0.5f, 1.f));
-   ImGui::SetNextWindowSizeConstraints(ImVec2(min(ImGui::GetIO().DisplaySize.x, m_dpi * 500.f), 0.f), ImGui::GetIO().DisplaySize);
+   ImVec2 size(min(m_overlayFont->FontSize * (m_activeTweakPage == TP_Rules ? 35.f : m_activeTweakPage == TP_Info ? 45.0f : 30.0f), min(ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y)), 0.f);
+   ImGui::SetNextWindowSizeConstraints(size, ImGui::GetIO().DisplaySize);
    ImGui::Begin("TweakUI", nullptr, window_flags);
 
    ViewSetupID vsId = table->m_BG_current_set;
