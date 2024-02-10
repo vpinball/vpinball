@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include <hash.h>
+#include "utils/hash.h"
 #include "objloader.h"
 
 // not thread safe!

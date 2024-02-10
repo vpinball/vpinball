@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "Properties/GateVisualsProperty.h"
+#include "ui/dialogs/Properties/GateVisualsProperty.h"
 #include <WindowsX.h>
 
 GateVisualsProperty::GateVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPGATE_VISUALS, pvsel)

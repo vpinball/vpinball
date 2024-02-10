@@ -8,9 +8,9 @@
 #include "robin_hood.h"
 
 #include <atomic>
-#include "hash.h"
+#include "utils/hash.h"
 #ifndef __STANDALONE__
-#include "SearchSelectDialog.h"
+#include "ui/dialogs/SearchSelectDialog.h"
 #endif
 #include "renderer/RenderProbe.h"
 #include "renderer/ViewSetup.h"

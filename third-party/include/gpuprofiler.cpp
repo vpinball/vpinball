@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "gpuprofiler.h"
-#include "typedefs3D.h"
+#include "renderer/typedefs3D.h"
 
 #define FLUSH_DATA /*0*/ D3DGETDATA_FLUSH // latter should be a bit less accurate but leading to less failures when getting the data
 #define GET_DATA_RETRIES 10

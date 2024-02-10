@@ -1,12 +1,12 @@
 #include "stdafx.h"
 #include "vpversion.h"
 #include "resource.h"
-#include "hash.h"
+#include "utils/hash.h"
 #include <algorithm>
 #ifndef __STANDALONE__
 #include <atlsafe.h>
 #endif
-#include "objloader.h"
+#include "utils/objloader.h"
 #include "tinyxml2/tinyxml2.h"
 #include <fstream>
 #include <sstream>

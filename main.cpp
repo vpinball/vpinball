@@ -5,9 +5,9 @@
 #include "vpversion.h"
 
 #ifdef CRASH_HANDLER
-#include "StackTrace.h"
-#include "CrashHandler.h"
-#include "BlackBox.h"
+#include "utils/StackTrace.h"
+#include "utils/CrashHandler.h"
+#include "utils/BlackBox.h"
 #endif
 
 #include "resource.h"

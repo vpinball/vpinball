@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "Properties/BackglassCameraProperty.h"
+#include "ui/dialogs/Properties/BackglassCameraProperty.h"
 #include <WindowsX.h>
 
 

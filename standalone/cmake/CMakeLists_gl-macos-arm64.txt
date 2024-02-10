@@ -58,54 +58,6 @@ add_executable(vpinball
    backGlass.h
    bulb.cpp
    bulb.h
-   codeviewedit.cpp
-   codeviewedit.h
-   third-party/include/imgui/imconfig.h
-   third-party/include/imgui/imgui.cpp
-   third-party/include/imgui/imgui.h
-   third-party/include/imgui/imgui_draw.cpp
-   third-party/include/imgui/imgui_impl_opengl3.cpp
-   third-party/include/imgui/imgui_impl_opengl3.h
-   third-party/include/imgui/imgui_impl_sdl2.cpp
-   third-party/include/imgui/imgui_impl_sdl2.h
-   third-party/include/imgui/imgui_stdlib.cpp
-   third-party/include/imgui/imgui_stdlib.h
-   third-party/include/imgui/imgui_tables.cpp
-   third-party/include/imgui/imgui_widgets.cpp
-   third-party/include/imgui/imgui_internal.h
-   third-party/include/imguizmo/ImGuizmo.cpp
-   third-party/include/imguizmo/ImGuizmo.h
-   third-party/include/implot/implot.cpp
-   third-party/include/implot/implot.h
-   third-party/include/implot/implot_items.cpp
-   third-party/include/implot/implot_internal.h
-   third-party/include/gpuprofiler.cpp
-   third-party/include/gpuprofiler.h
-   third-party/include/progmesh.cpp
-   third-party/include/progmesh.h
-   third-party/include/ThreadPool.h
-   third-party/include/mINI/ini.h
-   third-party/include/tinyxml2/tinyxml2.cpp
-   third-party/include/tinyxml2/tinyxml2.h
-   third-party/include/miniz/miniz.c
-   third-party/include/miniz/miniz.h   
-   third-party/include/robin_hood.h
-   math/bbox.h
-   math/math.cpp
-   math/math.h
-   math/matrix.cpp
-   math/matrix.h
-   math/vector.h
-   media/fileio.cpp
-   media/fileio.h
-   media/lzwreader.cpp
-   media/lzwreader.h
-   media/lzwwriter.cpp
-   media/lzwwriter.h
-   objloader.cpp
-   objloader.h
-   codeview.cpp
-   codeview.h
    def.cpp
    def.h
    dispid.h
@@ -117,45 +69,27 @@ add_executable(vpinball
    extern.h
    hid.cpp
    hid.h
-   hitrectsur.cpp
-   hitrectsur.h
-   hitsur.cpp
-   hitsur.h
    ieditable.cpp
    ieditable.h
    iselect.cpp
    iselect.h
-   LiveUI.cpp
-   LiveUI.h
    Material.h
    mesh.h
    mixer.cpp
    mixer.h
-   physconst.h
    pinbinary.cpp
    pinbinary.h
    pininput.cpp
    pininput.h
    pinundo.cpp
    pinundo.h
-   variant.cpp
-   variant.h
-   vector.h
-   vectorsort.h
-   main.h
    main.cpp
+   main.h
    vpinball.cpp
+   vpinball_h.h
+   vpversion.h
    wintimer.cpp
    wintimer.h
-
-   standalone/macos-arm64/main.mm
-
-   typedefs3D.h
-
-   vpinball_h.h
-   standalone/vpinball_standalone_i.c
-   standalone/vpinball_standalone_i.h
-   standalone/vpinball_standalone_i_proxy.cpp
 
    src/audio/audioplayer.cpp
    src/audio/audioplayer.h
@@ -169,6 +103,12 @@ add_executable(vpinball
    src/core/TableDB.cpp
    src/core/TableDB.h
 
+   math/bbox.h
+   math/math.cpp
+   math/math.h
+   math/matrix.cpp
+   math/matrix.h
+   math/vector.h
    src/math/ModelViewProj.h
 
    src/meshes/ballMesh.h
@@ -245,6 +185,7 @@ add_executable(vpinball
    src/parts/trigger.cpp
    src/parts/trigger.h
 
+   src/physics/physconst.h
    src/physics/collide.cpp
    src/physics/collide.h
    src/physics/collideex.cpp
@@ -303,6 +244,70 @@ add_executable(vpinball
    src/renderer/ViewSetup.h
    src/renderer/VRDevice.cpp
    src/renderer/VRDevice.h
+
+   src/ui/codeview.cpp
+   src/ui/codeview.h
+   src/ui/codeviewedit.cpp
+   src/ui/codeviewedit.h
+   src/ui/LiveUI.cpp
+   src/ui/LiveUI.h
+   src/ui/hitrectsur.cpp
+   src/ui/hitrectsur.h
+   src/ui/hitsur.cpp
+   src/ui/hitsur.h
+
+   src/utils/helpers.h
+   src/utils/variant.cpp
+   src/utils/variant.h
+   src/utils/vector.h
+   src/utils/vectorsort.h
+   src/utils/fileio.cpp
+   src/utils/fileio.h
+   src/utils/lzwreader.cpp
+   src/utils/lzwreader.h
+   src/utils/lzwwriter.cpp
+   src/utils/lzwwriter.h
+   src/utils/hash.cpp
+   src/utils/hash.h
+   src/utils/objloader.cpp
+   src/utils/objloader.h
+
+   third-party/include/imgui/imconfig.h
+   third-party/include/imgui/imgui.cpp
+   third-party/include/imgui/imgui.h
+   third-party/include/imgui/imgui_draw.cpp
+   third-party/include/imgui/imgui_impl_opengl3.cpp
+   third-party/include/imgui/imgui_impl_opengl3.h
+   third-party/include/imgui/imgui_impl_sdl2.cpp
+   third-party/include/imgui/imgui_impl_sdl2.h
+   third-party/include/imgui/imgui_stdlib.cpp
+   third-party/include/imgui/imgui_stdlib.h
+   third-party/include/imgui/imgui_tables.cpp
+   third-party/include/imgui/imgui_widgets.cpp
+   third-party/include/imgui/imgui_internal.h
+   third-party/include/imguizmo/ImGuizmo.cpp
+   third-party/include/imguizmo/ImGuizmo.h
+   third-party/include/implot/implot.cpp
+   third-party/include/implot/implot.h
+   third-party/include/implot/implot_items.cpp
+   third-party/include/implot/implot_internal.h
+   third-party/include/gpuprofiler.cpp
+   third-party/include/gpuprofiler.h
+   third-party/include/progmesh.cpp
+   third-party/include/progmesh.h
+   third-party/include/ThreadPool.h
+   third-party/include/mINI/ini.h
+   third-party/include/tinyxml2/tinyxml2.cpp
+   third-party/include/tinyxml2/tinyxml2.h
+   third-party/include/miniz/miniz.c
+   third-party/include/miniz/miniz.h   
+   third-party/include/robin_hood.h
+
+   standalone/macos-arm64/main.mm
+
+   standalone/vpinball_standalone_i.c
+   standalone/vpinball_standalone_i.h
+   standalone/vpinball_standalone_i_proxy.cpp
 
    standalone/inc/webserver/mongoose.c
    standalone/inc/webserver/mongoose.h

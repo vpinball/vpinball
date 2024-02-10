@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "objloader.h"
+#include "utils/objloader.h"
 #include "meshes/gateBracketMesh.h"
 #include "meshes/gateWireMesh.h"
 #include "meshes/gateLongPlateMesh.h"

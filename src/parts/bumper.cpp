@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "objloader.h"
+#include "utils/objloader.h"
 #include "meshes/bumperBaseMesh.h"
 #include "meshes/bumperRingMesh.h"
 #include "meshes/bumperCapMesh.h"

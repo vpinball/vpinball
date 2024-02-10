@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "Properties/LightStatesProperty.h"
+#include "ui/dialogs/Properties/LightStatesProperty.h"
 #include <WindowsX.h>
 
 LightStatesProperty::LightStatesProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPLIGHT_STATE, pvsel)

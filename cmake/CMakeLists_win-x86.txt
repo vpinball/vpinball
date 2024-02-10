@@ -95,163 +95,18 @@ set_source_files_properties(shader/StereoShader.hlsl PROPERTIES
 )
 
 add_executable(vpinball WIN32
-   backGlass.cpp
-   backGlass.h
-   BlackBox.cpp
-   BlackBox.h
-   bulb.cpp
-   bulb.h
+   stdafx.cpp
+   stdafx.h
+   resource.h
    captureExt.cpp
    captureExt.h
-   codeviewedit.cpp
-   codeviewedit.h
-   CrashHandler.cpp
-   CrashHandler.h
-   Debugger.cpp
-   Debugger.h
-   dialogs/AboutDialog.cpp
-   dialogs/AboutDialog.h
-   dialogs/AudioOptionsDialog.cpp
-   dialogs/AudioOptionsDialog.h
-   dialogs/CollectionManagerDialog.cpp
-   dialogs/CollectionManagerDialog.h
-   dialogs/DimensionDialog.cpp
-   dialogs/DimensionDialog.h
-   dialogs/DrawingOrderDialog.cpp
-   dialogs/DrawingOrderDialog.h
-   dialogs/EditorOptionsDialog.cpp
-   dialogs/EditorOptionsDialog.h
-   dialogs/ImageDialog.cpp
-   dialogs/ImageDialog.h
-   dialogs/KeysConfigDialog.cpp
-   dialogs/KeysConfigDialog.h
-   dialogs/LayersListDialog.cpp
-   dialogs/LayersListDialog.h
-   dialogs/MaterialDialog.cpp
-   dialogs/MaterialDialog.h
-   dialogs/NotesDialog.cpp
-   dialogs/NotesDialog.h
-   dialogs/ScriptErrorDialog.cpp
-   dialogs/ScriptErrorDialog.h
-   dialogs/RenderProbeDialog.cpp
-   dialogs/RenderProbeDialog.h
-   dialogs/PhysicsOptionsDialog.cpp
-   dialogs/PhysicsOptionsDialog.h
-   dialogs/VROptionsDialog.cpp
-   dialogs/VROptionsDialog.h
-   dialogs/Properties/BackglassCameraProperty.cpp
-   dialogs/Properties/BackglassCameraProperty.h
-   dialogs/Properties/BackglassVisualsProperty.cpp
-   dialogs/Properties/BackglassVisualsProperty.h
-   dialogs/Properties/BumperPhysicsProperty.cpp
-   dialogs/Properties/BumperPhysicsProperty.h
-   dialogs/Properties/BumperVisualsProperty.cpp
-   dialogs/Properties/BumperVisualsProperty.h
-   dialogs/Properties/DecalVisualsProperty.cpp
-   dialogs/Properties/DecalVisualsProperty.h
-   dialogs/Properties/DispreelStateProperty.cpp
-   dialogs/Properties/DispreelStateProperty.h
-   dialogs/Properties/DispreelVisualsProperty.cpp
-   dialogs/Properties/DispreelVisualsProperty.h
-   dialogs/Properties/DragpointVisualsProperty.cpp
-   dialogs/Properties/DragpointVisualsProperty.h
-   dialogs/Properties/FlasherVisualsProperty.cpp
-   dialogs/Properties/FlasherVisualsProperty.h
-   dialogs/Properties/FlipperPhysicsProperty.cpp
-   dialogs/Properties/FlipperVisualsProperty.h
-   dialogs/Properties/FlipperPhysicsProperty.h
-   dialogs/Properties/FlipperVisualsProperty.cpp
-   dialogs/Properties/GatePhysicsProperty.cpp
-   dialogs/Properties/GatePhysicsProperty.h
-   dialogs/Properties/GateVisualsProperty.cpp
-   dialogs/Properties/GateVisualsProperty.h
-   dialogs/Properties/HitTargetPhysicsProperty.cpp
-   dialogs/Properties/HitTargetPhysicsProperty.h
-   dialogs/Properties/HitTargetVisualsProperty.cpp
-   dialogs/Properties/HitTargetVisualsProperty.h
-   dialogs/Properties/KickerPhysicsProperty.cpp
-   dialogs/Properties/KickerPhysicsProperty.h
-   dialogs/Properties/KickerVisualsProperty.cpp
-   dialogs/Properties/KickerVisualsProperty.h
-   dialogs/Properties/LightseqStatesProperty.cpp
-   dialogs/Properties/LightseqStatesProperty.h
-   dialogs/Properties/LightStatesProperty.cpp
-   dialogs/Properties/LightStatesProperty.h
-   dialogs/Properties/LightVisualsProperty.cpp
-   dialogs/Properties/LightVisualsProperty.h
-   dialogs/Properties/PlungerPhysicsProperty.cpp
-   dialogs/Properties/PlungerPhysicsProperty.h
-   dialogs/Properties/PlungerVisualsProperty.cpp
-   dialogs/Properties/PlungerVisualsProperty.h
-   dialogs/Properties/PrimitivePhysicsProperty.cpp
-   dialogs/Properties/PrimitivePhysicsProperty.h
-   dialogs/Properties/PrimitivePositionProperty.cpp
-   dialogs/Properties/PrimitivePositionProperty.h
-   dialogs/Properties/PrimitiveVisualsProperty.cpp
-   dialogs/Properties/PrimitiveVisualsProperty.h
-   dialogs/Properties/PropertyDialog.cpp
-   dialogs/Properties/PropertyDialog.h
-   dialogs/Properties/RampPhysicsProperty.cpp
-   dialogs/Properties/RampPhysicsProperty.h
-   dialogs/Properties/RampVisualsProperty.cpp
-   dialogs/Properties/RampVisualsProperty.h
-   dialogs/Properties/RubberPhysicsProperty.cpp
-   dialogs/Properties/RubberPhysicsProperty.h
-   dialogs/Properties/RubberVisualsProperty.cpp
-   dialogs/Properties/RubberVisualsProperty.h
-   dialogs/Properties/SpinnerPhysicsProperty.cpp
-   dialogs/Properties/SpinnerVisualsProperty.h
-   dialogs/Properties/SpinnerVisualsProperty.cpp
-   dialogs/Properties/SpinnerPhysicsProperty.h
-   dialogs/Properties/TableAudioProperty.cpp
-   dialogs/Properties/TableAudioProperty.h
-   dialogs/Properties/TableLightsProperty.cpp
-   dialogs/Properties/TableLightsProperty.h
-   dialogs/Properties/TablePhysicsProperty.cpp
-   dialogs/Properties/TablePhysicsProperty.h
-   dialogs/Properties/TableVisualsProperty.cpp
-   dialogs/Properties/TableVisualsProperty.h
-   dialogs/Properties/TextboxVisualsProperty.cpp
-   dialogs/Properties/TextboxVisualsProperty.h
-   dialogs/Properties/TriggerPhysicsProperty.cpp
-   dialogs/Properties/TriggerPhysicsProperty.h
-   dialogs/Properties/TriggerVisualsProperty.cpp
-   dialogs/Properties/TriggerVisualsProperty.h
-   dialogs/Properties/WallPhysicsProperty.cpp
-   dialogs/Properties/WallPhysicsProperty.h
-   dialogs/Properties/WallVisualsProperty.cpp
-   dialogs/Properties/WallVisualsProperty.h
-   dialogs/SearchSelectDialog.cpp
-   dialogs/SearchSelectDialog.h
-   dialogs/SoundDialog.cpp
-   dialogs/SoundDialog.h
-   dialogs/TableInfoDialog.cpp
-   dialogs/TableInfoDialog.h
-   dialogs/ToolbarDialog.cpp
-   dialogs/ToolbarDialog.h
-   dialogs/VideoOptionsDialog.cpp
-   dialogs/VideoOptionsDialog.h
+   worker.cpp
+   worker.h
 
-   math/bbox.h
-   math/math.cpp
-   math/math.h
-   math/matrix.cpp
-   math/matrix.h
-   math/vector.h
-   media/fileio.cpp
-   media/fileio.h
-   media/lzwreader.cpp
-   media/lzwreader.h
-   media/lzwwriter.cpp
-   media/lzwwriter.h
-   MemoryStatus.cpp
-   MemoryStatus.h
-   hash.cpp
-   hash.h
-   objloader.cpp
-   objloader.h
-   codeview.cpp
-   codeview.h
+   backGlass.cpp
+   backGlass.h
+   bulb.cpp
+   bulb.h
    def.cpp
    def.h
    dispid.h
@@ -261,44 +116,22 @@ add_executable(vpinball WIN32
    eventproxy.h
    extern.cpp
    extern.h
-   helpers.h
    hid.cpp
    hid.h
-   hitrectsur.cpp
-   hitrectsur.h
-   hitsur.cpp
-   hitsur.h
    ieditable.cpp
    ieditable.h
    iselect.cpp
    iselect.h
-   LiveUI.cpp
-   LiveUI.h
    Material.h
-   memutil.cpp
-   memutil.h
    mesh.h
    mixer.cpp
    mixer.h
-   paintsur.cpp
-   paintsur.h
-   physconst.h
    pinbinary.cpp
    pinbinary.h
    pininput.cpp
    pininput.h
    pinundo.cpp
    pinundo.h
-   resource.h
-   StackTrace.cpp
-   StackTrace.h
-   stdafx.cpp
-   stdafx.h
-   trace.h
-   variant.cpp
-   variant.h
-   vector.h
-   vectorsort.h
    main.cpp
    main.h
    vpinball.cpp
@@ -306,8 +139,6 @@ add_executable(vpinball WIN32
    vpversion.h
    wintimer.cpp
    wintimer.h
-   worker.cpp
-   worker.h
 
    src/audio/audioplayer.cpp
    src/audio/audioplayer.h
@@ -323,6 +154,12 @@ add_executable(vpinball WIN32
    src/core/TableDB.cpp
    src/core/TableDB.h
 
+   math/bbox.h
+   math/math.cpp
+   math/math.h
+   math/matrix.cpp
+   math/matrix.h
+   math/vector.h
    src/math/ModelViewProj.h
 
    src/meshes/ballMesh.h
@@ -399,6 +236,7 @@ add_executable(vpinball WIN32
    src/parts/trigger.cpp
    src/parts/trigger.h
 
+   src/physics/physconst.h
    src/physics/collide.cpp
    src/physics/collide.h
    src/physics/collideex.cpp
@@ -420,6 +258,7 @@ add_executable(vpinball WIN32
    src/physics/quadtree.cpp
    src/physics/quadtree.h
 
+   src/renderer/trace.h
    src/renderer/Anaglyph.cpp
    src/renderer/Anaglyph.h
    src/renderer/IndexBuffer.cpp
@@ -457,6 +296,170 @@ add_executable(vpinball WIN32
    src/renderer/ViewSetup.h
    src/renderer/VRDevice.cpp
    src/renderer/VRDevice.h
+
+   src/ui/codeview.cpp
+   src/ui/codeview.h
+   src/ui/codeviewedit.cpp
+   src/ui/codeviewedit.h
+   src/ui/LiveUI.cpp
+   src/ui/LiveUI.h
+   src/ui/hitrectsur.cpp
+   src/ui/hitrectsur.h
+   src/ui/hitsur.cpp
+   src/ui/hitsur.h
+   src/ui/paintsur.cpp
+   src/ui/paintsur.h
+
+   src/ui/Debugger.cpp
+   src/ui/Debugger.h
+   src/ui/dialogs/AboutDialog.cpp
+   src/ui/dialogs/AboutDialog.h
+   src/ui/dialogs/AudioOptionsDialog.cpp
+   src/ui/dialogs/AudioOptionsDialog.h
+   src/ui/dialogs/CollectionManagerDialog.cpp
+   src/ui/dialogs/CollectionManagerDialog.h
+   src/ui/dialogs/DimensionDialog.cpp
+   src/ui/dialogs/DimensionDialog.h
+   src/ui/dialogs/DrawingOrderDialog.cpp
+   src/ui/dialogs/DrawingOrderDialog.h
+   src/ui/dialogs/EditorOptionsDialog.cpp
+   src/ui/dialogs/EditorOptionsDialog.h
+   src/ui/dialogs/ImageDialog.cpp
+   src/ui/dialogs/ImageDialog.h
+   src/ui/dialogs/KeysConfigDialog.cpp
+   src/ui/dialogs/KeysConfigDialog.h
+   src/ui/dialogs/LayersListDialog.cpp
+   src/ui/dialogs/LayersListDialog.h
+   src/ui/dialogs/MaterialDialog.cpp
+   src/ui/dialogs/MaterialDialog.h
+   src/ui/dialogs/NotesDialog.cpp
+   src/ui/dialogs/NotesDialog.h
+   src/ui/dialogs/ScriptErrorDialog.cpp
+   src/ui/dialogs/ScriptErrorDialog.h
+   src/ui/dialogs/RenderProbeDialog.cpp
+   src/ui/dialogs/RenderProbeDialog.h
+   src/ui/dialogs/PhysicsOptionsDialog.cpp
+   src/ui/dialogs/PhysicsOptionsDialog.h
+   src/ui/dialogs/VROptionsDialog.cpp
+   src/ui/dialogs/VROptionsDialog.h
+   src/ui/dialogs/Properties/BackglassCameraProperty.cpp
+   src/ui/dialogs/Properties/BackglassCameraProperty.h
+   src/ui/dialogs/Properties/BackglassVisualsProperty.cpp
+   src/ui/dialogs/Properties/BackglassVisualsProperty.h
+   src/ui/dialogs/Properties/BumperPhysicsProperty.cpp
+   src/ui/dialogs/Properties/BumperPhysicsProperty.h
+   src/ui/dialogs/Properties/BumperVisualsProperty.cpp
+   src/ui/dialogs/Properties/BumperVisualsProperty.h
+   src/ui/dialogs/Properties/DecalVisualsProperty.cpp
+   src/ui/dialogs/Properties/DecalVisualsProperty.h
+   src/ui/dialogs/Properties/DispreelStateProperty.cpp
+   src/ui/dialogs/Properties/DispreelStateProperty.h
+   src/ui/dialogs/Properties/DispreelVisualsProperty.cpp
+   src/ui/dialogs/Properties/DispreelVisualsProperty.h
+   src/ui/dialogs/Properties/DragpointVisualsProperty.cpp
+   src/ui/dialogs/Properties/DragpointVisualsProperty.h
+   src/ui/dialogs/Properties/FlasherVisualsProperty.cpp
+   src/ui/dialogs/Properties/FlasherVisualsProperty.h
+   src/ui/dialogs/Properties/FlipperPhysicsProperty.cpp
+   src/ui/dialogs/Properties/FlipperVisualsProperty.h
+   src/ui/dialogs/Properties/FlipperPhysicsProperty.h
+   src/ui/dialogs/Properties/FlipperVisualsProperty.cpp
+   src/ui/dialogs/Properties/GatePhysicsProperty.cpp
+   src/ui/dialogs/Properties/GatePhysicsProperty.h
+   src/ui/dialogs/Properties/GateVisualsProperty.cpp
+   src/ui/dialogs/Properties/GateVisualsProperty.h
+   src/ui/dialogs/Properties/HitTargetPhysicsProperty.cpp
+   src/ui/dialogs/Properties/HitTargetPhysicsProperty.h
+   src/ui/dialogs/Properties/HitTargetVisualsProperty.cpp
+   src/ui/dialogs/Properties/HitTargetVisualsProperty.h
+   src/ui/dialogs/Properties/KickerPhysicsProperty.cpp
+   src/ui/dialogs/Properties/KickerPhysicsProperty.h
+   src/ui/dialogs/Properties/KickerVisualsProperty.cpp
+   src/ui/dialogs/Properties/KickerVisualsProperty.h
+   src/ui/dialogs/Properties/LightseqStatesProperty.cpp
+   src/ui/dialogs/Properties/LightseqStatesProperty.h
+   src/ui/dialogs/Properties/LightStatesProperty.cpp
+   src/ui/dialogs/Properties/LightStatesProperty.h
+   src/ui/dialogs/Properties/LightVisualsProperty.cpp
+   src/ui/dialogs/Properties/LightVisualsProperty.h
+   src/ui/dialogs/Properties/PlungerPhysicsProperty.cpp
+   src/ui/dialogs/Properties/PlungerPhysicsProperty.h
+   src/ui/dialogs/Properties/PlungerVisualsProperty.cpp
+   src/ui/dialogs/Properties/PlungerVisualsProperty.h
+   src/ui/dialogs/Properties/PrimitivePhysicsProperty.cpp
+   src/ui/dialogs/Properties/PrimitivePhysicsProperty.h
+   src/ui/dialogs/Properties/PrimitivePositionProperty.cpp
+   src/ui/dialogs/Properties/PrimitivePositionProperty.h
+   src/ui/dialogs/Properties/PrimitiveVisualsProperty.cpp
+   src/ui/dialogs/Properties/PrimitiveVisualsProperty.h
+   src/ui/dialogs/Properties/PropertyDialog.cpp
+   src/ui/dialogs/Properties/PropertyDialog.h
+   src/ui/dialogs/Properties/RampPhysicsProperty.cpp
+   src/ui/dialogs/Properties/RampPhysicsProperty.h
+   src/ui/dialogs/Properties/RampVisualsProperty.cpp
+   src/ui/dialogs/Properties/RampVisualsProperty.h
+   src/ui/dialogs/Properties/RubberPhysicsProperty.cpp
+   src/ui/dialogs/Properties/RubberPhysicsProperty.h
+   src/ui/dialogs/Properties/RubberVisualsProperty.cpp
+   src/ui/dialogs/Properties/RubberVisualsProperty.h
+   src/ui/dialogs/Properties/SpinnerPhysicsProperty.cpp
+   src/ui/dialogs/Properties/SpinnerVisualsProperty.h
+   src/ui/dialogs/Properties/SpinnerVisualsProperty.cpp
+   src/ui/dialogs/Properties/SpinnerPhysicsProperty.h
+   src/ui/dialogs/Properties/TableAudioProperty.cpp
+   src/ui/dialogs/Properties/TableAudioProperty.h
+   src/ui/dialogs/Properties/TableLightsProperty.cpp
+   src/ui/dialogs/Properties/TableLightsProperty.h
+   src/ui/dialogs/Properties/TablePhysicsProperty.cpp
+   src/ui/dialogs/Properties/TablePhysicsProperty.h
+   src/ui/dialogs/Properties/TableVisualsProperty.cpp
+   src/ui/dialogs/Properties/TableVisualsProperty.h
+   src/ui/dialogs/Properties/TextboxVisualsProperty.cpp
+   src/ui/dialogs/Properties/TextboxVisualsProperty.h
+   src/ui/dialogs/Properties/TriggerPhysicsProperty.cpp
+   src/ui/dialogs/Properties/TriggerPhysicsProperty.h
+   src/ui/dialogs/Properties/TriggerVisualsProperty.cpp
+   src/ui/dialogs/Properties/TriggerVisualsProperty.h
+   src/ui/dialogs/Properties/WallPhysicsProperty.cpp
+   src/ui/dialogs/Properties/WallPhysicsProperty.h
+   src/ui/dialogs/Properties/WallVisualsProperty.cpp
+   src/ui/dialogs/Properties/WallVisualsProperty.h
+   src/ui/dialogs/SearchSelectDialog.cpp
+   src/ui/dialogs/SearchSelectDialog.h
+   src/ui/dialogs/SoundDialog.cpp
+   src/ui/dialogs/SoundDialog.h
+   src/ui/dialogs/TableInfoDialog.cpp
+   src/ui/dialogs/TableInfoDialog.h
+   src/ui/dialogs/ToolbarDialog.cpp
+   src/ui/dialogs/ToolbarDialog.h
+   src/ui/dialogs/VideoOptionsDialog.cpp
+   src/ui/dialogs/VideoOptionsDialog.h
+
+   src/utils/helpers.h
+   src/utils/memutil.cpp
+   src/utils/memutil.h
+   src/utils/StackTrace.cpp
+   src/utils/StackTrace.h
+   src/utils/variant.cpp
+   src/utils/variant.h
+   src/utils/vector.h
+   src/utils/vectorsort.h
+   src/utils/fileio.cpp
+   src/utils/fileio.h
+   src/utils/lzwreader.cpp
+   src/utils/lzwreader.h
+   src/utils/lzwwriter.cpp
+   src/utils/lzwwriter.h
+   src/utils/MemoryStatus.cpp
+   src/utils/MemoryStatus.h
+   src/utils/hash.cpp
+   src/utils/hash.h
+   src/utils/objloader.cpp
+   src/utils/objloader.h
+   src/utils/BlackBox.cpp
+   src/utils/BlackBox.h
+   src/utils/CrashHandler.cpp
+   src/utils/CrashHandler.h
 
    vpinball.rc
    vpinball.idl

@@ -636,7 +636,7 @@ char* replace(const char* const original, const char* const pattern, const char*
 bool IsOnWine();
 
 #ifdef __STANDALONE__
-#include "typedefs3D.h"
+#include "renderer/typedefs3D.h"
 
 #include <filesystem>
 #include <fstream>

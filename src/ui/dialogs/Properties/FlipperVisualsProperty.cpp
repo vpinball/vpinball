@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "Properties/FlipperVisualsProperty.h"
+#include "ui/dialogs/Properties/FlipperVisualsProperty.h"
 #include <WindowsX.h>
 
 FlipperVisualsProperty::FlipperVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPFLIPPER_VISUALS, pvsel)

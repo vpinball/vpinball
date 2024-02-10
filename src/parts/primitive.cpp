@@ -4,7 +4,7 @@
 
 #include "stdafx.h" 
 #include "forsyth.h"
-#include "objloader.h"
+#include "utils/objloader.h"
 #include "miniz/miniz.h"
 #include "progmesh.h"
 #include "ThreadPool.h"

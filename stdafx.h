@@ -52,7 +52,7 @@
 
 #define THREADS_PAUSE 1000 // msecs/time to wait for threads to finish up
 
-#include "physconst.h"
+#include "physics/physconst.h"
 
 //
 

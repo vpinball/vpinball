@@ -27,7 +27,7 @@
 #include "renderer/Shader.h"
 #include "renderer/Anaglyph.h"
 #include "renderer/VRDevice.h"
-#include "typedefs3D.h"
+#include "renderer/typedefs3D.h"
 #ifndef __STANDALONE__
 #include "captureExt.h"
 #endif

@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "meshes/flipperBase.h"
-#include "objloader.h"
+#include "utils/objloader.h"
 #include "renderer/Shader.h"
 #include "renderer/IndexBuffer.h"
 #include "renderer/VertexBuffer.h"

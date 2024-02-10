@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "Properties/TableAudioProperty.h"
+#include "ui/dialogs/Properties/TableAudioProperty.h"
 #include <WindowsX.h>
 
 TableAudioProperty::TableAudioProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPTABLE_AUDIO, pvsel)

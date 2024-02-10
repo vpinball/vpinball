@@ -5,7 +5,7 @@
 #include "stdafx.h"
 #include "resource.h"
 #ifndef __STANDALONE__
-#include "KeysConfigDialog.h"
+#include "ui/dialogs/KeysConfigDialog.h"
 #endif
 
 #ifdef __STANDALONE__

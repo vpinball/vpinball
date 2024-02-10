@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "objloader.h"
+#include "utils/objloader.h"
 #include "meshes/spinnerBracketMesh.h"
 #include "meshes/spinnerPlateMesh.h"
 #include "renderer/Shader.h"

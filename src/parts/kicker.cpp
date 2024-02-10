@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "objloader.h"
+#include "utils/objloader.h"
 
 #include "meshes/kickerCupMesh.h"
 #include "meshes/kickerHoleMesh.h"

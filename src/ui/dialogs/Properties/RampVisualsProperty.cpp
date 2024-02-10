@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "Properties/RampVisualsProperty.h"
+#include "ui/dialogs/Properties/RampVisualsProperty.h"
 #include <WindowsX.h>
 
 RampVisualsProperty::RampVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPRAMP_VISUALS, pvsel)

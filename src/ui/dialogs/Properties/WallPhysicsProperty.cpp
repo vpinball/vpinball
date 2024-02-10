@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "Properties/WallPhysicsProperty.h"
+#include "ui/dialogs/Properties/WallPhysicsProperty.h"
 #include <WindowsX.h>
 
 WallPhysicsProperty::WallPhysicsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPWALL_PHYSICS, pvsel)

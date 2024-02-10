@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "Properties/FlipperPhysicsProperty.h"
+#include "ui/dialogs/Properties/FlipperPhysicsProperty.h"
 #include <WindowsX.h>
 
 FlipperPhysicsProperty::FlipperPhysicsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPFLIPPER_PHYSICS, pvsel)

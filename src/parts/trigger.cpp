@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "objloader.h"
+#include "utils/objloader.h"
 #include "meshes/triggerSimpleMesh.h"
 #include "meshes/triggerStarMesh.h"
 #include "meshes/triggerButtonMesh.h"
