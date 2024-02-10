@@ -44,7 +44,7 @@ private:
       TweakOption(TweakType _type, float _min, float _max, float _step, float _def, const string& _name, const string& _unit, std::initializer_list<string> _options): 
          type(_type), min(_min), max(_max), step(_step), def(_def), name(_name), unit(_unit), options(_options) { }
    };
-   enum TweakPage { TP_PointOfView, TP_TableOption, TP_Rules, TP_Info, TP_Count };
+   enum TweakPage { TP_Info, TP_Rules, TP_PointOfView, TP_TableOption, TP_Count };
    enum BackdropSetting
    {
       BS_Page,
@@ -111,7 +111,9 @@ private:
    void ResetCameraFromPlayer();
 
    // MarkDown support
+   ImGuiID markdown_start_id;
    static ImGui::MarkdownConfig markdown_config;
+   static void MarkdownFormatCallback(const ImGui::MarkdownFormatInfo &markdownFormatInfo, bool start);
    static void MarkdownLinkCallback(ImGui::MarkdownLinkCallbackData data);
    static ImGui::MarkdownImageData MarkdownImageCallback(ImGui::MarkdownLinkCallbackData data);
 
@@ -183,6 +185,7 @@ private:
    int m_rotate = 0;
    float m_dpi = 1.0f;
    ImFont *m_baseFont = nullptr;
+   ImFont *m_boldFont = nullptr;
    ImFont *m_overlayFont = nullptr;
    float m_menubar_height = 0.0f;
    float m_toolbar_height = 0.0f;
