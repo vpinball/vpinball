@@ -1,12 +1,12 @@
-// Win32++   Version 9.4
-// Release Date: 25th September 2023
+// Win32++   Version 9.5
+// Release Date: 9th February 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2023  David Nash
+// Copyright (c) 2005-2024  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -48,9 +48,6 @@
 
 
 #include "wxx_wincore0.h"
-#include "wxx_stdcontrols.h"
-#include "wxx_imagelist.h"
-#include "wxx_ddx.h"
 
 
 namespace Win32xx
@@ -81,7 +78,7 @@ namespace Win32xx
 
     private:
         CAnimation(const CAnimation&);              // Disable copy construction
-        CAnimation& operator = (const CAnimation&); // Disable assignment operator
+        CAnimation& operator=(const CAnimation&);   // Disable assignment operator
     };
 
 
@@ -148,8 +145,8 @@ namespace Win32xx
         virtual void PreRegisterClass(WNDCLASS& wc) { wc.lpszClassName = _T("ComboBox"); }
 
     private:
-        CComboBox(const CComboBox&);                // Disable copy construction
-        CComboBox& operator = (const CComboBox&);   // Disable assignment operator
+        CComboBox(const CComboBox&);               // Disable copy construction
+        CComboBox& operator=(const CComboBox&);    // Disable assignment operator
     };
 
 
@@ -170,7 +167,7 @@ namespace Win32xx
         BOOL    GetItem(COMBOBOXEXITEM& item) const;
         BOOL    HasEditChanged () const;
         int     InsertItem(const COMBOBOXEXITEM& item) const;
-        HIMAGELIST SetImageList(HIMAGELIST images) const;
+        CImageList SetImageList(HIMAGELIST images);
         BOOL    SetItem(const COMBOBOXEXITEM& item) const;
         DWORD   GetExtendedStyle() const;
         DWORD   SetExtendedStyle(DWORD exMask, DWORD exStyles) const;
@@ -180,8 +177,10 @@ namespace Win32xx
         virtual void PreRegisterClass(WNDCLASS& wc) { wc.lpszClassName = WC_COMBOBOXEX; }
 
     private:
-        CComboBoxEx(const CComboBoxEx&);                // Disable copy construction
-        CComboBoxEx& operator = (const CComboBoxEx&);   // Disable assignment operator
+        CComboBoxEx(const CComboBoxEx&);               // Disable copy construction
+        CComboBoxEx& operator=(const CComboBoxEx&);    // Disable assignment operator
+
+        CImageList m_images;
     };
 
 
@@ -203,7 +202,7 @@ namespace Win32xx
         CRect   GetItemRect(int index) const;
         BOOL    GetOrderArray(LPINT pArray, int count) const;
         int     OrderToIndex(int order) const;
-        HIMAGELIST SetImageList(HIMAGELIST images) const;
+        CImageList SetImageList(HIMAGELIST images);
         BOOL    SetItem(int pos, const HDITEM& item) const;
         BOOL    SetOrderArray(int count, LPINT pArray) const;
         int     GetBitmapMargin() const;
@@ -230,8 +229,10 @@ namespace Win32xx
         virtual void PreRegisterClass(WNDCLASS& wc) { wc.lpszClassName = WC_HEADER ; }
 
     private:
-        CHeader(const CHeader&);                // Disable copy construction
-        CHeader& operator = (const CHeader&);   // Disable assignment operator
+        CHeader(const CHeader&);               // Disable copy construction
+        CHeader& operator=(const CHeader&);    // Disable assignment operator
+
+        CImageList m_images;
     };
 
 
@@ -255,8 +256,8 @@ namespace Win32xx
         virtual void PreRegisterClass(WNDCLASS& wc) { wc.lpszClassName = HOTKEY_CLASS; }
 
     private:
-        CHotKey(const CHotKey&);                // Disable copy construction
-        CHotKey& operator = (const CHotKey&);   // Disable assignment operator
+        CHotKey(const CHotKey&);               // Disable copy construction
+        CHotKey& operator=(const CHotKey&);    // Disable assignment operator
     };
 
 
@@ -286,7 +287,7 @@ namespace Win32xx
 
     private:
         CIPAddress(const CIPAddress&);              // Disable copy construction
-        CIPAddress& operator = (const CIPAddress&); // Disable assignment operator
+        CIPAddress& operator=(const CIPAddress&);   // Disable assignment operator
     };
 
 
@@ -330,7 +331,7 @@ namespace Win32xx
 
     private:
         CMonthCalendar(const CMonthCalendar&);              // Disable copy construction
-        CMonthCalendar& operator = (const CMonthCalendar&); // Disable assignment operator
+        CMonthCalendar& operator=(const CMonthCalendar&);   // Disable assignment operator
     };
 
     ///////////////////////////////////////////////////////////
@@ -361,8 +362,8 @@ namespace Win32xx
         virtual void PreRegisterClass(WNDCLASS& wc) { wc.lpszClassName = DATETIMEPICK_CLASS; }
 
     private:
-        CDateTime(const CDateTime&);                // Disable copy construction
-        CDateTime& operator = (const CDateTime&);   // Disable assignment operator
+        CDateTime(const CDateTime&);               // Disable copy construction
+        CDateTime& operator=(const CDateTime&);    // Disable assignment operator
     };
 
 
@@ -391,7 +392,7 @@ namespace Win32xx
 
     private:
         CProgressBar(const CProgressBar&);              // Disable copy construction
-        CProgressBar& operator = (const CProgressBar&); // Disable assignment operator
+        CProgressBar& operator=(const CProgressBar&);   // Disable assignment operator
     };
 
 
@@ -422,7 +423,7 @@ namespace Win32xx
 
     private:
         CScrollBar(const CScrollBar&);              // Disable copy construction
-        CScrollBar& operator = (const CScrollBar&); // Disable assignment operator
+        CScrollBar& operator=(const CScrollBar&);   // Disable assignment operator
     };
 
     ///////////////////////////////////////////////////////////////////
@@ -471,8 +472,8 @@ namespace Win32xx
         virtual void PreRegisterClass(WNDCLASS& wc) { wc.lpszClassName = TRACKBAR_CLASS; }
 
     private:
-        CSlider(const CSlider&);                // Disable copy construction
-        CSlider& operator = (const CSlider&);   // Disable assignment operator
+        CSlider(const CSlider&);               // Disable copy construction
+        CSlider& operator=(const CSlider&);    // Disable assignment operator
     };
 
     ////////////////////////////////////////////////////////////
@@ -504,8 +505,8 @@ namespace Win32xx
         virtual void PreRegisterClass(WNDCLASS& wc);
 
     private:
-        CSpinButton(const CSpinButton&);                // Disable copy construction
-        CSpinButton& operator = (const CSpinButton&);   // Disable assignment operator
+        CSpinButton(const CSpinButton&);               // Disable copy construction
+        CSpinButton& operator=(const CSpinButton&);    // Disable assignment operator
     };
 
 
@@ -571,7 +572,7 @@ namespace Win32xx
         virtual void PreRegisterClass(WNDCLASS& wc);
     private:
         CToolTip(const CToolTip&);              // Disable copy construction
-        CToolTip& operator = (const CToolTip&); // Disable assignment operator
+        CToolTip& operator=(const CToolTip&);   // Disable assignment operator
 
     };
 
@@ -1151,11 +1152,12 @@ namespace Win32xx
 
     // Sets an image list for the ComboBoxEx control.
     // Refer to CBEM_SETIMAGELIST in the Windows API documentation for more information.
-    inline HIMAGELIST CComboBoxEx::SetImageList(HIMAGELIST images) const
+    inline CImageList CComboBoxEx::SetImageList(HIMAGELIST images)
     {
         assert(IsWindow());
         LPARAM lparam = reinterpret_cast<LPARAM>(images);
         HIMAGELIST oldImages = reinterpret_cast<HIMAGELIST>(SendMessage(CBEM_SETIMAGELIST, 0, lparam));
+        m_images = images;
         return oldImages;
     }
 
@@ -1299,8 +1301,9 @@ namespace Win32xx
     inline CImageList CHeader::CreateDragImage(int index) const
     {
         assert(IsWindow());
-        HIMAGELIST images = Header_CreateDragImage(*this, index);
-        return CImageList(images);
+        CImageList images;
+        images.CreateDragImage(*this, index);
+        return images;
     }
 
     // Deletes an item from the header control.
@@ -1404,10 +1407,11 @@ namespace Win32xx
 
     // Assigns an image list to the header control.
     // Refer to Header_SetImageList in the Windows API documentation for more information.
-    inline HIMAGELIST CHeader::SetImageList(HIMAGELIST images) const
+    inline CImageList CHeader::SetImageList(HIMAGELIST images)
     {
         assert(IsWindow());
         HIMAGELIST oldImages = Header_SetImageList(*this, images);
+        m_images = images;
         return oldImages;
     }
 

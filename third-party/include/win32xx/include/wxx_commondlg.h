@@ -1,12 +1,12 @@
-// Win32++   Version 9.4
-// Release Date: 25th September 2023
+// Win32++   Version 9.5
+// Release Date: 9th February 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2023  David Nash
+// Copyright (c) 2005-2024  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -50,7 +50,6 @@
 
 #include "wxx_dialog.h"
 #include "wxx_richedit.h"
-
 
 
 ///////////////////////////////////////////////////////////////////
@@ -98,7 +97,7 @@ namespace Win32xx
 
     private:
         CCommonDialog(const CCommonDialog&);              // Disable copy construction
-        CCommonDialog& operator = (const CCommonDialog&); // Disable assignment operator
+        CCommonDialog& operator=(const CCommonDialog&);   // Disable assignment operator
     };
 
 
@@ -127,7 +126,7 @@ namespace Win32xx
 
     private:
         CColorDialog(const CColorDialog&);              // Disable copy construction
-        CColorDialog& operator = (const CColorDialog&); // Disable assignment operator
+        CColorDialog& operator=(const CColorDialog&);   // Disable assignment operator
 
         CHOOSECOLOR     m_cc;                    // ChooseColor parameters
         COLORREF        m_customColors[16];      // Custom colors array
@@ -189,7 +188,7 @@ namespace Win32xx
 
     private:
         CFileDialog(const CFileDialog&);              // Disable copy construction
-        CFileDialog& operator = (const CFileDialog&); // Disable assignment operator
+        CFileDialog& operator=(const CFileDialog&);   // Disable assignment operator
 
         BOOL            m_isOpenFileDialog;  // TRUE = open, FALSE = save
         CString         m_filter;          // File filter string
@@ -241,7 +240,7 @@ namespace Win32xx
 
     private:
         CFindReplaceDialog(const CFindReplaceDialog&);              // Disable copy construction
-        CFindReplaceDialog& operator = (const CFindReplaceDialog&); // Disable assignment operator
+        CFindReplaceDialog& operator=(const CFindReplaceDialog&);   // Disable assignment operator
 
         FINDREPLACE     m_fr;               // FindReplace parameters
         BOOL            m_isFindDialogOnly; // TRUE for a find only dialog
@@ -287,7 +286,7 @@ namespace Win32xx
 
     private:
         CFontDialog(const CFontDialog&);              // Disable copy construction
-        CFontDialog& operator = (const CFontDialog&); // Disable assignment operator
+        CFontDialog& operator=(const CFontDialog&);   // Disable assignment operator
         DWORD FillInLogFont(const CHARFORMAT& cf);
 
         // private data
@@ -330,7 +329,7 @@ namespace Win32xx
     {
         // Find the CWnd pointer mapped to this HWND
         CCommonDialog* pCommonDlg = static_cast<CCommonDialog*>(GetCWndPtr(wnd));
-        if (pCommonDlg == 0)
+        if (pCommonDlg == NULL)
         {
             // The HWND wasn't in the map, so add it now
             TLSData* pTLSData = GetApp()->GetTlsData();
@@ -339,7 +338,7 @@ namespace Win32xx
 
             // Retrieve pointer to CWnd object from Thread Local Storage TLS
             pCommonDlg = static_cast<CCommonDialog*>(pTLSData->pWnd);
-            if (pCommonDlg)
+            if (pCommonDlg != NULL)
             {
                 pTLSData->pWnd = NULL;
 
@@ -349,11 +348,10 @@ namespace Win32xx
             }
         }
 
-        if (pCommonDlg == 0)
+        assert(pCommonDlg != NULL);
+        if (pCommonDlg == NULL)
         {
             // Got a message for a window that's not in the map.
-            // We should never get here.
-            TRACE("*** Warning in CCommonDialog::CDHookProc: HWND not in window map ***\n");
             return 0;
         }
 

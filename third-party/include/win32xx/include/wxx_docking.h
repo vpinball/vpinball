@@ -1,12 +1,12 @@
-// Win32++   Version 9.4
-// Release Date: 25th September 2023
+// Win32++   Version 9.5
+// Release Date: 9th February 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2023  David Nash
+// Copyright (c) 2005-2024  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -126,10 +126,11 @@ namespace Win32xx
     // When a container is docked within another container, it is hidden,
     // along with its parent docker window. The container parent becomes
     // the parent window for the view windows of these child containers.
+    // GetContainerParent returns a pointer to the container parent.
     //
     // When a container docked within another container is undocked, the
     // undocked container window and its parent docker window become visible.
-    // The container also resumes beingg the parent window of its view
+    // The container also resumes being the parent window of its view
     // window.
     class CDockContainer : public CTab
     {
@@ -164,7 +165,7 @@ namespace Win32xx
 
         private:
             CViewPage(const CViewPage&);              // Disable copy construction
-            CViewPage& operator = (const CViewPage&); // Disable assignment operator
+            CViewPage& operator=(const CViewPage&);   // Disable assignment operator
 
             CToolBar m_toolBar;
             CToolBar* m_pToolBar;
@@ -186,6 +187,8 @@ namespace Win32xx
         virtual void RemoveContainer(CDockContainer* pWnd, BOOL updateParent = TRUE);
         virtual void SelectPage(int page);
         virtual void SwapTabs(int tab1, int tab2);
+        virtual void SetTabsFontSize(int fontSize = 9);
+        virtual void SetTabsIconSize(int iconSize = 16);
         virtual void UpdateTabs();
 
         // Accessors and mutators
@@ -230,31 +233,26 @@ namespace Win32xx
         virtual LRESULT OnTCNSelChange(LPNMHDR pNMHDR);
         virtual LRESULT OnDpiChangedBeforeParent(UINT, WPARAM, LPARAM);
         virtual void PreCreate(CREATESTRUCT& cs);
-        virtual void SetTBImageList(CToolBar& toolBar, CImageList& imageList, UINT id, COLORREF mask);
-        virtual void SetTBImageListDis(CToolBar& toolBar, CImageList& imageList, UINT id, COLORREF mask);
-        virtual void SetTBImageListHot(CToolBar& toolBar, CImageList& imageList, UINT id, COLORREF mask);
+        virtual void SetTBImageList(CToolBar& toolBar, UINT id, COLORREF mask);
+        virtual void SetTBImageListDis(CToolBar& toolBar, UINT id, COLORREF mask);
+        virtual void SetTBImageListHot(CToolBar& toolBar, UINT id, COLORREF mask);
         virtual void SetupToolBar();
 
         LRESULT WndProcDefault(UINT msg, WPARAM wparam, LPARAM lparam);
 
     private:
         CDockContainer(const CDockContainer&);              // Disable copy construction
-        CDockContainer& operator = (const CDockContainer&); // Disable assignment operator
+        CDockContainer& operator=(const CDockContainer&);   // Disable assignment operator
 
         int GetDockTabImageID(int tab) const;
         CString GetDockTabText(int tab) const;
-        CSize GetTBImageSize(CBitmap* pBitmap);
-        void SetTabsDpiFont();
-        void SetTabsDpiIcons();
+        CSize GetTBImageSize(CBitmap* pBitmap) const;
 
         std::vector<ContainerInfo>& GetAll() const {return m_pContainerParent->m_allInfo;}
         std::vector<ContainerInfo> m_allInfo;          // vector of ContainerInfo structs
         std::vector<UINT> m_toolBarData;               // vector of resource IDs for ToolBar buttons
         CString m_tabText;
         CString m_caption;
-        CImageList m_normalImages;
-        CImageList m_hotImages;
-        CImageList m_disabledImages;
 
         CViewPage m_viewPage;
         CViewPage* m_pViewPage;
@@ -320,7 +318,7 @@ namespace Win32xx
 
         private:
             CDockBar(const CDockBar&);              // Disable copy construction
-            CDockBar& operator = (const CDockBar&); // Disable assignment operator
+            CDockBar& operator=(const CDockBar&);   // Disable assignment operator
 
             void SendNotify(UINT messageID);
 
@@ -368,8 +366,8 @@ namespace Win32xx
             LRESULT WndProcDefault(UINT msg, WPARAM wparam, LPARAM lparam);
 
         private:
-            CDockClient(const CDockClient&);                // Disable copy construction
-            CDockClient& operator = (const CDockClient&);   // Disable assignment operator
+            CDockClient(const CDockClient&);               // Disable copy construction
+            CDockClient& operator=(const CDockClient&);    // Disable assignment operator
 
             LRESULT MouseMove(UINT msg, WPARAM wparam, LPARAM lparam);
             void SendNotify(UINT messageID);
@@ -406,8 +404,8 @@ namespace Win32xx
             virtual void PreCreate(CREATESTRUCT& cs);
 
         private:
-            CDockHint(const CDockHint&);                // Disable copy construction
-            CDockHint& operator = (const CDockHint&);   // Disable assignment operator
+            CDockHint(const CDockHint&);               // Disable copy construction
+            CDockHint& operator=(const CDockHint&);    // Disable assignment operator
 
             CBitmap m_bmBlueTint;
             UINT m_uDockSideOld;
@@ -428,7 +426,7 @@ namespace Win32xx
 
         private:
             CTarget(const CTarget&);                // Disable copy construction
-            CTarget& operator = (const CTarget&);   // Disable assignment operator
+            CTarget& operator=(const CTarget&);   // Disable assignment operator
 
         };
 
@@ -449,12 +447,11 @@ namespace Win32xx
             virtual void OnDraw(CDC& dc);
 
         private:
-            CTargetCentre(const CTargetCentre&);                // Disable copy construction
-            CTargetCentre& operator = (const CTargetCentre&);   // Disable assignment operator
+            CTargetCentre(const CTargetCentre&);               // Disable copy construction
+            CTargetCentre& operator=(const CTargetCentre&);    // Disable assignment operator
 
             BOOL m_isOverContainer;
             CDocker* m_pOldDockTarget;
-            CBitmap m_dpiImage;
         };
 
         // This nested class is draws the left dock target.
@@ -465,8 +462,8 @@ namespace Win32xx
             BOOL CheckTarget(LPDRAGPOS pDragPos);
 
         private:
-            CTargetLeft(const CTargetLeft&);                // Disable copy construction
-            CTargetLeft& operator = (const CTargetLeft&);   // Disable assignment operator
+            CTargetLeft(const CTargetLeft&);               // Disable copy construction
+            CTargetLeft& operator=(const CTargetLeft&);    // Disable assignment operator
         };
 
         // This nested class is draws the top dock target.
@@ -478,7 +475,7 @@ namespace Win32xx
 
         private:
             CTargetTop(const CTargetTop&);              // Disable copy construction
-            CTargetTop& operator = (const CTargetTop&); // Disable assignment operator
+            CTargetTop& operator=(const CTargetTop&);   // Disable assignment operator
         };
 
         // This nested class is draws the right dock target.
@@ -490,7 +487,7 @@ namespace Win32xx
 
         private:
             CTargetRight(const CTargetRight&);              // Disable copy construction
-            CTargetRight& operator = (const CTargetRight&); // Disable assignment operator
+            CTargetRight& operator=(const CTargetRight&);   // Disable assignment operator
         };
 
         // This nested class is draws the bottom dock target.
@@ -502,7 +499,7 @@ namespace Win32xx
 
         private:
             CTargetBottom(const CTargetBottom&);              // Disable copy construction
-            CTargetBottom& operator = (const CTargetBottom&); // Disable assignment operator
+            CTargetBottom& operator=(const CTargetBottom&);   // Disable assignment operator
         };
 
         // These classes can access private members of CDocker.
@@ -538,9 +535,9 @@ namespace Win32xx
         virtual BOOL VerifyDockers();
 
         // Accessors and mutators
-        const std::vector <DockPtr> & GetAllDockChildren() const    {return GetDockAncestor()->m_allDockChildren;}
-        const std::vector <CDocker*> & GetDockChildren() const      {return m_dockChildren;}
-        const std::vector <CDocker*> & GetAllDockers()  const       {return m_allDockers;}
+        const std::vector<DockPtr>& GetAllDockChildren() const    {return GetDockAncestor()->m_allDockChildren;}
+        const std::vector<CDocker*>& GetDockChildren() const      {return m_dockChildren;}
+        const std::vector<CDocker*>& GetAllDockers()  const       {return m_allDockers;}
 
         CDocker* GetActiveDocker() const;
         CWnd*    GetActiveView() const;
@@ -617,8 +614,8 @@ namespace Win32xx
         virtual LRESULT OnWindowPosChanged(UINT msg, WPARAM wparam, LPARAM lparam);
 
     private:
-        CDocker(const CDocker&);                // Disable copy construction
-        CDocker& operator = (const CDocker&);   // Disable assignment operator
+        CDocker(const CDocker&);               // Disable copy construction
+        CDocker& operator=(const CDocker&);    // Disable assignment operator
         std::vector <DockPtr> & GetAllChildren() const {return GetDockAncestor()->m_allDockChildren;}
         virtual CDocker* GetDockUnderDragPoint(POINT pt);
         void CheckAllTargets(LPDRAGPOS pDragPos);
@@ -961,33 +958,33 @@ namespace Win32xx
                     {
                         // Draw a grey box for the normal button using two special characters.
                         drawDC.SetTextColor(grey);
-                        drawDC.DrawText(_T("c"), 1, rcClose, DT_CENTER | DT_SINGLELINE | DT_VCENTER);
-                        drawDC.DrawText(_T("d"), 1, rcClose, DT_CENTER | DT_SINGLELINE | DT_VCENTER);
+                        drawDC.TextOut(rcClose.left, rcClose.top, _T("\x63"), 1);
+                        drawDC.TextOut(rcClose.left, rcClose.top, _T("\x64"), 1);
                         break;
                     }
                     case 1:
                     {
                         // Draw popped up button, black on right and bottom.
                         drawDC.SetTextColor(white);
-                        drawDC.DrawText(_T("c"), 1, rcClose, DT_CENTER | DT_SINGLELINE | DT_VCENTER);
+                        drawDC.TextOut(rcClose.left, rcClose.top, _T("\x63"), 1);
                         drawDC.SetTextColor(black);
-                        drawDC.DrawText(_T("d"), 1, rcClose, DT_CENTER | DT_SINGLELINE | DT_VCENTER);
+                        drawDC.TextOut(rcClose.left, rcClose.top, _T("\x64"), 1);
                         break;
                     }
                     case 2:
                     {
                         // Draw pressed button, black on left and top.
                         drawDC.SetTextColor(black);
-                        drawDC.DrawText(_T("c"), 1, rcClose, DT_CENTER | DT_SINGLELINE | DT_VCENTER);
+                        drawDC.TextOut(rcClose.left, rcClose.top, _T("\x63"), 1);
                         drawDC.SetTextColor(white);
-                        drawDC.DrawText(_T("d"), 1, rcClose, DT_CENTER | DT_SINGLELINE | DT_VCENTER);
+                        drawDC.TextOut(rcClose.left, rcClose.top, _T("\x64"), 1);
                         break;
                     }
                     }
 
                     // Draw the close button (a Marlett "r" looks like "X").
                     drawDC.SetTextColor(black);
-                    drawDC.DrawText(_T("r"), 1, rcClose, DT_CENTER | DT_SINGLELINE | DT_VCENTER);
+                    drawDC.TextOut(rcClose.left, rcClose.top, _T("\x72"), 1);
                 }
             }
         }
@@ -998,7 +995,7 @@ namespace Win32xx
     {
         CRect rcClose;
 
-        int gap = DpiScaleInt(4);
+        int gap = DpiScaleInt(1);
         CRect rc = GetWindowRect();
         int cx = GetSystemMetrics(SM_CXSMICON) * GetWindowDpi(*this) / GetWindowDpi(HWND_DESKTOP);
         int cy = GetSystemMetrics(SM_CYSMICON) * GetWindowDpi(*this) / GetWindowDpi(HWND_DESKTOP);
@@ -1615,7 +1612,7 @@ namespace Win32xx
                 return;
 
             // Save the Dock window's blue tinted bitmap.
-            CClientDC dcDesktop(*this);
+            CClientDC dcDesktop(HWND_DESKTOP);
             CMemDC memDC(dcDesktop);
             CRect rcBitmap = rcHint;
             CRect rcTarget = rcHint;
@@ -1643,7 +1640,7 @@ namespace Win32xx
                     CRgn Rgn;
                     int gap = DpiScaleInt(8);
                     int tabHeight = pDragged->GetTabHeight();
-                    CSize imageSize = pDragged->GetODImageList().GetIconSize();
+                    CSize imageSize = pDragged->GetImages().GetIconSize();
                     CSize textSize1 = pDragged->GetMaxTabTextSize();
                     CSize textSize2 = pTarget->GetMaxTabTextSize();
                     int tabWidth = imageSize.cx + MAX(textSize1.cx, textSize2.cx) + gap;
@@ -2187,6 +2184,7 @@ namespace Win32xx
                 TRACE("**WARNING** Docking container bitmap resource missing\n");
         }
 
+        RecalcDockLayout();
         return pDocker;
     }
 
@@ -2286,7 +2284,7 @@ namespace Win32xx
             for (iter = AllContainers.begin(); iter != AllContainers.end(); ++iter)
             {
                 if (GetContainer() != (*iter).pContainer)
-                    GetContainer()->RemoveContainer((*iter).pContainer);
+                    GetContainer()->RemoveContainer((*iter).pContainer, FALSE);
             }
         }
 
@@ -2394,7 +2392,7 @@ namespace Win32xx
 
             std::vector<ContainerInfo>::reverse_iterator riter;
             std::vector<ContainerInfo> allContainers = pContainerSource->GetAllContainers();
-            for (riter = allContainers.rbegin(); riter < allContainers.rend(); ++riter)
+            for (riter = allContainers.rbegin(); riter != allContainers.rend(); ++riter)
             {
                 CDockContainer* pContainerChild = (*riter).pContainer;
                 if (pContainerChild != pContainerSource)
@@ -2421,7 +2419,7 @@ namespace Win32xx
             pDocker->GetDockBar().SetParent(*GetDockAncestor());
 
             // Insert the containers in reverse order.
-            for (riter = allContainers.rbegin(); riter < allContainers.rend(); ++riter)
+            for (riter = allContainers.rbegin(); riter != allContainers.rend(); ++riter)
             {
                 pContainer->AddContainer( (*riter).pContainer, TRUE, selectPage);
             }
@@ -2483,6 +2481,7 @@ namespace Win32xx
                 pDocker->GetView().SetFocus();
 
             GetTopmostDocker()->SetRedraw(FALSE);
+            pDocker->SetDefaultCaptionHeight();
             RecalcDockLayout();
             GetTopmostDocker()->SetRedraw(TRUE);
             GetTopmostDocker()->RedrawWindow();
@@ -2700,6 +2699,8 @@ namespace Win32xx
     // This function uses the GetDpiForMonitor function.
     inline int CDocker::GetMonitorDpi(HWND wnd)
     {
+        UNREFERENCED_PARAMETER(wnd);
+
         // Retrieve desktop's dpi as a fallback.
         CClientDC desktopDC(HWND_DESKTOP);
         int dpi = GetDeviceCaps(desktopDC, LOGPIXELSX);
@@ -2711,8 +2712,9 @@ namespace Win32xx
         HMODULE shcore = GetModuleHandle(_T("shcore"));
         if (shcore)
         {
-            GETDPIFORMONITOR* pGetDpiForMonitor =
-                reinterpret_cast<GETDPIFORMONITOR*>(GetProcAddress(shcore, "GetDpiForMonitor"));
+            GETDPIFORMONITOR* pGetDpiForMonitor = reinterpret_cast<GETDPIFORMONITOR*>(
+                reinterpret_cast<void*>(::GetProcAddress(shcore, "GetDpiForMonitor")));
+
             if (pGetDpiForMonitor)
             {
                 HMONITOR hMonitor = MonitorFromWindow(wnd, MONITOR_DEFAULTTOPRIMARY);
@@ -3249,7 +3251,7 @@ namespace Win32xx
                 // This container has children, so destroy them now.
                 const std::vector<ContainerInfo>& AllContainers = pContainer->GetAllContainers();
                 std::vector<ContainerInfo>::const_iterator iter1;
-                for (iter1 = AllContainers.begin(); iter1 < AllContainers.end(); ++iter1)
+                for (iter1 = AllContainers.begin(); iter1 != AllContainers.end(); ++iter1)
                 {
                     if ((*iter1).pContainer != pContainer)
                     {
@@ -3270,19 +3272,28 @@ namespace Win32xx
 
         GetDockBar().Destroy();
 
-        // Post a docker destroyed message.
-        if ( GetDockAncestor()->IsWindow() )
-            GetDockAncestor()->PostMessage(UWM_DOCKDESTROYED, reinterpret_cast<WPARAM>(this), 0);
+        if (this == GetDockAncestor())
+        {
+            m_dockChildren.clear();
+            m_allDockers.clear();
+            m_allDockChildren.clear();
+        }
+        else
+        {
+            // Post a docker destroyed message.
+            if (GetDockAncestor()->IsWindow())
+                GetDockAncestor()->PostMessage(UWM_DOCKDESTROYED, reinterpret_cast<WPARAM>(this), 0);
+        }
     }
 
     // Called in response to a UWM_DOCKACTIVATE message.
-    inline LRESULT CDocker::OnDockActivated(UINT msg, WPARAM wparam, LPARAM lparam)
+    inline LRESULT CDocker::OnDockActivated(UINT, WPARAM, LPARAM)
     {
         // Redraw captions to take account of focus change
         if (this == GetDockAncestor())
             DrawAllCaptions();
 
-        return CWnd::WndProcDefault(msg, wparam, lparam);
+        return 0;
     }
 
     // Called when this docker is destroyed.
@@ -3400,11 +3411,8 @@ namespace Win32xx
         {
             // An undocked docker has moved to a different monitor.
             LPRECT prc = reinterpret_cast<LPRECT>(lparam);
-            SetWindowPos(HWND_TOP, *prc, SWP_SHOWWINDOW);
             SetRedraw(FALSE);
-
-            RecalcDockLayout();
-
+            SetWindowPos(HWND_TOP, *prc, SWP_SHOWWINDOW);
             SetRedraw(TRUE);
             RedrawWindow();
         }
@@ -3421,10 +3429,7 @@ namespace Win32xx
 
         // Reset the docker size.
         if (GetDockAncestor() != GetTopmostDocker())
-        {
             m_dockStartSize = m_dockStartSize * GetTopmostDocker()->m_newDpi / GetTopmostDocker()->m_oldDpi;
-        }
-        RecalcDockLayout();
 
         return 0;
     }
@@ -3545,7 +3550,7 @@ namespace Win32xx
     }
 
     // Called when the docker is resized.
-    inline LRESULT CDocker::OnSize(UINT msg, WPARAM wparam, LPARAM lparam)
+    inline LRESULT CDocker::OnSize(UINT, WPARAM, LPARAM)
     {
         if (this == GetTopmostDocker())
         {
@@ -3554,7 +3559,7 @@ namespace Win32xx
                 RecalcDockLayout();
         }
 
-        return CWnd::WndProcDefault(msg, wparam, lparam);
+        return 0;
     }
 
     // Called when the system colors are changed.
@@ -3762,7 +3767,7 @@ namespace Win32xx
         for (iter = m_dockChildren.begin(); iter != m_dockChildren.end(); ++iter)
         {
             CRect rcChild = rc;
-            double dockSize = (*iter)->m_dockStartSize;
+            int dockSize = (*iter)->m_dockStartSize;
             int minSize = 30;
 
             // Calculate the size of the Docker children
@@ -3771,13 +3776,13 @@ namespace Win32xx
             case DS_DOCKED_LEFT:
                 if (isRTL)
                 {
-                    rcChild.left = rcChild.right - static_cast<int>(dockSize);
+                    rcChild.left = rcChild.right - dockSize;
                     rcChild.left = MIN(rcChild.left, rc.right - minSize);
                     rcChild.left = MAX(rcChild.left, rc.left + minSize);
                 }
                 else
                 {
-                    rcChild.right = rcChild.left + static_cast<int>(dockSize);
+                    rcChild.right = rcChild.left + dockSize;
                     rcChild.right = MAX(rcChild.right, rc.left + minSize);
                     rcChild.right = MIN(rcChild.right, rc.right - minSize);
                 }
@@ -3785,25 +3790,25 @@ namespace Win32xx
             case DS_DOCKED_RIGHT:
                 if (isRTL)
                 {
-                    rcChild.right = rcChild.left + static_cast<int>(dockSize);
+                    rcChild.right = rcChild.left + dockSize;
                     rcChild.right = MAX(rcChild.right, rc.left + minSize);
                     rcChild.right = MIN(rcChild.right, rc.right - minSize);
                 }
                 else
                 {
-                    rcChild.left = rcChild.right - static_cast<int>(dockSize);
+                    rcChild.left = rcChild.right - dockSize;
                     rcChild.left = MIN(rcChild.left, rc.right - minSize);
                     rcChild.left = MAX(rcChild.left, rc.left + minSize);
                 }
 
                 break;
             case DS_DOCKED_TOP:
-                rcChild.bottom = rcChild.top + static_cast<int>(dockSize);
+                rcChild.bottom = rcChild.top + dockSize;
                 rcChild.bottom = MAX(rcChild.bottom, rc.top + minSize);
                 rcChild.bottom = MIN(rcChild.bottom, rc.bottom - minSize);
                 break;
             case DS_DOCKED_BOTTOM:
-                rcChild.top = rcChild.bottom - static_cast<int>(dockSize);
+                rcChild.top = rcChild.bottom - dockSize;
                 rcChild.top = MIN(rcChild.top, rc.bottom - minSize);
                 rcChild.top = MAX(rcChild.top, rc.top + minSize);
 
@@ -4148,11 +4153,6 @@ namespace Win32xx
     inline void CDocker::SetCaptionHeight(int height)
     {
         m_ncHeight = height;
-        if (IsWindow())
-        {
-            RedrawWindow();
-            RecalcDockLayout();
-        }
     }
 
     // Sets the caption height based on the current text height.
@@ -4165,7 +4165,6 @@ namespace Win32xx
     inline void CDocker::SetDockSize(int dockSize)
     {
         m_dockStartSize = dockSize;
-        RecalcDockLayout();
     }
 
     // Sets the docker's style from one or more of the following:
@@ -4283,13 +4282,13 @@ namespace Win32xx
 
         // Add dockers docked in containers.
         std::vector<CDocker*> vDockContainers;
-        for (itSort = vSorted.begin(); itSort < vSorted.end(); ++itSort)
+        for (itSort = vSorted.begin(); itSort != vSorted.end(); ++itSort)
         {
             if ((*itSort)->GetContainer())
                 vDockContainers.push_back(*itSort);
         }
 
-        for (itSort = vDockContainers.begin(); itSort < vDockContainers.end(); ++itSort)
+        for (itSort = vDockContainers.begin(); itSort != vDockContainers.end(); ++itSort)
         {
             CDockContainer* pContainer = (*itSort)->GetContainer();
 
@@ -4607,7 +4606,7 @@ namespace Win32xx
         ContainerInfo ci;
         ci.pContainer = pContainer;
         ci.tabText = pContainer->GetTabText();
-        ci.tabImage = GetODImageList().Add( pContainer->GetTabIcon() );
+        ci.tabImage = GetImages().Add( pContainer->GetTabIcon() );
         int newPage = 0;
         if (insert)
         {
@@ -4659,6 +4658,7 @@ namespace Win32xx
         // Create the toolbar.
         if (GetViewPage().IsWindow())
         {
+            m_toolBarData.clear();
             GetToolBar().Create(GetViewPage());
             DWORD style = GetToolBar().GetStyle();
             style |= CCS_NODIVIDER;
@@ -4702,7 +4702,7 @@ namespace Win32xx
                 dc.CreatePen(PS_SOLID, 1, RGB(160, 160, 160));
                 dc.RoundRect(rcItem.left, rcItem.top, rcItem.right + 1, rcItem.bottom, 6, 6);
 
-                CSize szImage = GetODImageList().GetIconSize();
+                CSize szImage = GetImages().GetIconSize();
                 int padding = DpiScaleInt(4);
 
                 if (rcItem.Width() >= szImage.cx + 2 * padding)
@@ -4714,7 +4714,7 @@ namespace Win32xx
                     // Draw the icon.
                     int drawleft = rcItem.left + padding;
                     int drawtop = rcItem.top + yOffset;
-                    GetODImageList().Draw(dc, image, CPoint(drawleft, drawtop), ILD_NORMAL);
+                    GetImages().Draw(dc, image, CPoint(drawleft, drawtop), ILD_NORMAL);
 
                     // Calculate the size of the text.
                     CRect rcText = rcItem;
@@ -4836,7 +4836,7 @@ namespace Win32xx
     }
 
     // Returns the size of a bitmap image.
-    inline CSize CDockContainer::GetTBImageSize(CBitmap* pBitmap)
+    inline CSize CDockContainer::GetTBImageSize(CBitmap* pBitmap) const
     {
         assert(pBitmap);
         if (!pBitmap) return CSize(0, 0);
@@ -4852,13 +4852,16 @@ namespace Win32xx
     // Called when a HWND is attached to this CWnd.
     inline void CDockContainer::OnAttach()
     {
+        m_allInfo.clear();
+
+        // The parent window must be a docker.
         m_pDocker = reinterpret_cast<CDocker*>((GetParent().GetParent().SendMessage(UWM_GETCDOCKER)));
         assert(dynamic_cast<CDocker*>(m_pDocker));
 
         // Create and assign the tab's image list.
         int iconHeight = DpiScaleInt(16);
         iconHeight = iconHeight - iconHeight % 8;
-        GetODImageList().Create(iconHeight, iconHeight, ILC_MASK | ILC_COLOR32, 0, 0);
+        GetImages().Create(iconHeight, iconHeight, ILC_MASK | ILC_COLOR32, 0, 0);
 
         // Update the font and icons in the tabs.
         UpdateTabs();
@@ -4871,7 +4874,7 @@ namespace Win32xx
             ContainerInfo ci;
             ci.pContainer = this;
             ci.tabText = GetTabText();
-            ci.tabImage = GetODImageList().Add(GetTabIcon());
+            ci.tabImage = GetImages().Add(GetTabIcon());
             m_allInfo.push_back(ci);
 
             // Create the page window.
@@ -5073,6 +5076,9 @@ namespace Win32xx
         assert(pWnd);
         if (!pWnd) return;
 
+        // Must be called from the container parent.
+        assert(this == GetContainerParent());
+
         // Remove the tab.
         int tab = GetContainerIndex(pWnd);
         DeleteItem(tab);
@@ -5108,7 +5114,6 @@ namespace Win32xx
 
             RecalcLayout();
         }
-
     }
 
     // Activates the specified page number.
@@ -5182,48 +5187,47 @@ namespace Win32xx
         SetTabIcon(icon);
     }
 
-    // Updates the tab font based on the window's DPI.
-    inline void CDockContainer::SetTabsDpiFont()
+    // Updates the tabs font based on the window's DPI.
+    inline void CDockContainer::SetTabsFontSize(int fontSize)
     {
         // Set the font used in the tabs.
         CFont font;
         NONCLIENTMETRICS info = GetNonClientMetrics();
         int dpi = GetWindowDpi(*this);
         LOGFONT lf = info.lfStatusFont;
-        lf.lfHeight = -MulDiv(9, dpi, POINTS_PER_INCH);
+        lf.lfHeight = -MulDiv(fontSize, dpi, POINTS_PER_INCH);
         font.CreateFontIndirect(lf);
         SetTabFont(font);
         RecalcLayout();
     }
 
-    // Updates the tab icons based on the window's DPI.
-    inline void CDockContainer::SetTabsDpiIcons()
+    // Updates the tabs icon size based on the window's DPI.
+    inline void CDockContainer::SetTabsIconSize(int iconSize)
     {
-        int iconHeight = GetContainerParent()->DpiScaleInt(16);
+        int iconHeight = GetContainerParent()->DpiScaleInt(iconSize);
         iconHeight = iconHeight - iconHeight % 8;
 
         if (this == GetContainerParent())
         {
             std::vector<ContainerInfo>& v = GetAll();
-            GetODImageList().DeleteImageList();
-            GetODImageList().Create(iconHeight, iconHeight, ILC_MASK | ILC_COLOR32, 0, 0);
+            GetImages().Create(iconHeight, iconHeight, ILC_MASK | ILC_COLOR32, 0, 0);
             for (size_t i = 0; i < v.size(); ++i)
             {
                 // Set the icons for the container parent.
                 CDockContainer* pContainer = GetContainerFromIndex(i);
-                v[i].tabImage = GetODImageList().Add(pContainer->GetTabIcon());
+                v[i].tabImage = GetImages().Add(pContainer->GetTabIcon());
             }
         }
         else
         {
             // Set the icons for the container children, used if the container is undocked.
-            GetODImageList().DeleteImageList();
-            GetODImageList().Create(iconHeight, iconHeight, ILC_MASK | ILC_COLOR32, 0, 0);
-            GetODImageList().Add(GetTabIcon());
+            GetImages().Create(iconHeight, iconHeight, ILC_MASK | ILC_COLOR32, 0, 0);
+            GetImages().Add(GetTabIcon());
         }
+        RecalcLayout();
     }
 
-    // Sets the size of the tabs to accommodate the tab's text.
+    // Sets the size of the tabs to accommodate the tab's icon and text.
     inline void CDockContainer::SetTabSize()
     {
         CRect rc = GetClientRect();
@@ -5234,7 +5238,7 @@ namespace Win32xx
         int itemWidth = 0;
         int itemHeight = 1;
 
-        CSize szImage = GetODImageList().GetIconSize();
+        CSize szImage = GetImages().GetIconSize();
         int padding = DpiScaleInt(4);
         szImage.cx = szImage.cx + 2 * padding;
 
@@ -5243,12 +5247,13 @@ namespace Win32xx
             itemWidth = MIN(szImage.cx + GetMaxTabTextSize().cx + padding, (rc.Width() - 2) / static_cast<int>(m_allInfo.size()));
             itemHeight = MAX(szImage.cy, GetTextHeight()) + padding;
         }
-        SendMessage(TCM_SETITEMSIZE, 0, MAKELPARAM(itemWidth, itemHeight));
+
+        SetItemSize(itemWidth, itemHeight);
     }
 
     // Sets the Image List for toolbars.
     // A Disabled image list is created from ToolBarID if one doesn't already exist.
-    inline void CDockContainer::SetTBImageList(CToolBar& toolBar, CImageList& imageList, UINT id, COLORREF mask)
+    inline void CDockContainer::SetTBImageList(CToolBar& toolBar, UINT id, COLORREF mask)
     {
         // Get the image size.
         CBitmap bm(id);
@@ -5261,66 +5266,50 @@ namespace Win32xx
         CSize sz = GetTBImageSize(&dpiImage);
 
         // Set the toolbar's image list.
-        imageList.DeleteImageList();
+        CImageList imageList;
         imageList.Create(sz.cx, sz.cy, ILC_COLOR32 | ILC_MASK, 0, 0);
         imageList.Add(dpiImage, mask);
         toolBar.SetImageList(imageList);
     }
 
     // Sets the disabled Image List for toolbars.
-    inline void CDockContainer::SetTBImageListDis(CToolBar& toolBar, CImageList& imageList, UINT id, COLORREF mask)
+    inline void CDockContainer::SetTBImageListDis(CToolBar& toolBar, UINT id, COLORREF mask)
     {
-        if (id != 0)
-        {
-            // Get the image size.
-            CBitmap bm(id);
+        // Get the image size.
+        CBitmap bm(id);
 
-            // Assert if we failed to load the bitmap.
-            assert(bm.GetHandle() != 0);
+        // Assert if we failed to load the bitmap.
+        assert(bm.GetHandle() != 0);
 
-            // Scale the bitmap to the window's DPI.
-            CBitmap dpiImage = DpiScaleUpBitmap(bm);
-            CSize sz = GetTBImageSize(&dpiImage);
+        // Scale the bitmap to the window's DPI.
+        CBitmap dpiImage = DpiScaleUpBitmap(bm);
+        CSize sz = GetTBImageSize(&dpiImage);
 
-            // Set the toolbar's image list.
-            imageList.DeleteImageList();
-            imageList.Create(sz.cx, sz.cy, ILC_COLOR32 | ILC_MASK, 0, 0);
-            imageList.Add(dpiImage, mask);
-            toolBar.SetDisableImageList(imageList);
-        }
-        else
-        {
-            imageList.DeleteImageList();
-            toolBar.SetDisableImageList(0);
-        }
+        // Set the toolbar's image list.
+        CImageList imageList;
+        imageList.Create(sz.cx, sz.cy, ILC_COLOR32 | ILC_MASK, 0, 0);
+        imageList.Add(dpiImage, mask);
+        toolBar.SetDisableImageList(imageList);
     }
 
     // Sets the Hot Image List for additional toolbars.
-    inline void CDockContainer::SetTBImageListHot(CToolBar& toolBar, CImageList& imageList, UINT id, COLORREF mask)
+    inline void CDockContainer::SetTBImageListHot(CToolBar& toolBar, UINT id, COLORREF mask)
     {
-        if (id != 0)
-        {
-            // Get the image size.
-            CBitmap bm(id);
+        // Get the image size.
+        CBitmap bm(id);
 
-            // Assert if we failed to load the bitmap.
-            assert(bm.GetHandle() != 0);
+        // Assert if we failed to load the bitmap.
+        assert(bm.GetHandle() != 0);
 
-            // Scale the bitmap to the window's DPI.
-            CBitmap dpiImage = DpiScaleUpBitmap(bm);
-            CSize sz = GetTBImageSize(&dpiImage);
+        // Scale the bitmap to the window's DPI.
+        CBitmap dpiImage = DpiScaleUpBitmap(bm);
+        CSize sz = GetTBImageSize(&dpiImage);
 
-            // Set the toolbar's image list
-            imageList.DeleteImageList();
-            imageList.Create(sz.cx, sz.cy, ILC_COLOR32 | ILC_MASK, 0, 0);
-            imageList.Add(dpiImage, mask);
-            toolBar.SetHotImageList(imageList);
-        }
-        else
-        {
-            imageList.DeleteImageList();
-            toolBar.SetHotImageList(0);
-        }
+        // Set the toolbar's image list.
+        CImageList imageList;
+        imageList.Create(sz.cx, sz.cy, ILC_COLOR32 | ILC_MASK, 0, 0);
+        imageList.Add(dpiImage, mask);
+        toolBar.SetHotImageList(imageList);
     }
 
     // Either sets the imagelist or adds/replaces bitmap depending on ComCtl32.dll version
@@ -5340,10 +5329,24 @@ namespace Win32xx
             return;
         }
 
-        // Set the button images
-        SetTBImageList(GetToolBar(), m_normalImages, normalID, mask);
-        SetTBImageListHot(GetToolBar(), m_hotImages, hotID, mask);
-        SetTBImageListDis(GetToolBar(), m_disabledImages, disabledID, mask);
+        // Set the normal button images.
+        SetTBImageList(GetToolBar(), normalID, mask);
+
+        // Set the hot button images.
+        if (hotID != 0)
+            SetTBImageListHot(GetToolBar(), hotID, mask);
+        else
+            SetTBImageListHot(GetToolBar(), normalID, mask);
+
+        // Set the disabled button images.
+        if (disabledID != 0)
+            SetTBImageListDis(GetToolBar(), disabledID, mask);
+        else
+        {
+            CImageList toolBarDisabledImages;
+            toolBarDisabledImages.CreateDisabledImageList(GetToolBar().GetImageList());
+            GetToolBar().SetDisableImageList(toolBarDisabledImages);
+        }
     }
 
     // Use this function to set the Resource IDs for the toolbar(s).
@@ -5408,8 +5411,8 @@ namespace Win32xx
     // Updates the font and icons in the tabs.
     inline void CDockContainer::UpdateTabs()
     {
-        SetTabsDpiFont();
-        SetTabsDpiIcons();
+        SetTabsFontSize();
+        SetTabsIconSize();
     }
 
     // Process the window's messages.

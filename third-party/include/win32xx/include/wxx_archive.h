@@ -1,12 +1,12 @@
-// Win32++   Version 9.4
-// Release Date: 25th September 2023
+// Win32++   Version 9.5
+// Release Date: 9th February 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2023  David Nash
+// Copyright (c) 2005-2024  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -181,7 +181,7 @@ namespace Win32xx
 
     private:
         CArchive(const CArchive&);              // Disable copy construction
-        CArchive& operator = (const CArchive&); // Disable assignment operator
+        CArchive& operator=(const CArchive&);   // Disable assignment operator
 
         // private data members
         CFile*  m_pFile;            // archive file FILE

@@ -1,12 +1,12 @@
-// Win32++   Version 9.4
-// Release Date: 25th September 2023
+// Win32++   Version 9.5
+// Release Date: 9th February 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2023  David Nash
+// Copyright (c) 2005-2024  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -39,12 +39,7 @@
 #define _WIN32XX_MENUBAR_H_
 
 #include "wxx_wincore.h"
-#include "wxx_gdi.h"
-#include "wxx_controls.h"
 #include "wxx_toolbar.h"
-
-
-
 
 
 namespace Win32xx
@@ -99,7 +94,7 @@ namespace Win32xx
 
     private:
         CMenuBar(const CMenuBar&);              // Disable copy construction
-        CMenuBar& operator = (const CMenuBar&); // Disable assignment operator
+        CMenuBar& operator=(const CMenuBar&);   // Disable assignment operator
 
         void Press(int buttonID, BOOL press) const
         {
@@ -257,22 +252,22 @@ namespace Win32xx
             case 0:
                 // Draw a grey box for the normal button to erase other highlighting.
                 drawDC.SetTextColor(grey);
-                drawDC.DrawText(_T("c"), 1, m_mdiRect[button], DT_CENTER | DT_SINGLELINE | DT_VCENTER);
-                drawDC.DrawText(_T("d"), 1, m_mdiRect[button], DT_CENTER | DT_SINGLELINE | DT_VCENTER);
+                drawDC.TextOut(m_mdiRect[button].left, m_mdiRect[button].top, _T("\x63"), 1);
+                drawDC.TextOut(m_mdiRect[button].left, m_mdiRect[button].top, _T("\x64"), 1);
                 break;
             case 1:
                 // Draw popped up button, black on right and bottom.
                 drawDC.SetTextColor(white);
-                drawDC.DrawText(_T("c"), 1, m_mdiRect[button], DT_CENTER | DT_SINGLELINE | DT_VCENTER);
+                drawDC.TextOut(m_mdiRect[button].left, m_mdiRect[button].top, _T("\x63"), 1);
                 drawDC.SetTextColor(black);
-                drawDC.DrawText(_T("d"), 1, m_mdiRect[button], DT_CENTER | DT_SINGLELINE | DT_VCENTER);
+                drawDC.TextOut(m_mdiRect[button].left, m_mdiRect[button].top, _T("\x64"), 1);
                 break;
             case 2:
                 // Draw pressed button, black on left and top.
                 drawDC.SetTextColor(black);
-                drawDC.DrawText(_T("c"), 1, m_mdiRect[button], DT_CENTER | DT_SINGLELINE | DT_VCENTER);
+                drawDC.TextOut(m_mdiRect[button].left, m_mdiRect[button].top, _T("\x63"), 1);
                 drawDC.SetTextColor(white);
-                drawDC.DrawText(_T("d"), 1, m_mdiRect[button], DT_CENTER | DT_SINGLELINE | DT_VCENTER);
+                drawDC.TextOut(m_mdiRect[button].left, m_mdiRect[button].top, _T("\x64"), 1);
                 break;
             }
 
@@ -285,7 +280,7 @@ namespace Win32xx
                 rc.OffsetRect(DpiScaleInt(1), 0);
 
                 drawDC.SetTextColor(black);
-                drawDC.DrawText(_T("0"), 1, rc, DT_CENTER | DT_SINGLELINE | DT_VCENTER);
+                drawDC.TextOut(rc.left, rc.top, _T("\x30"), 1);
                 break;
             }
             case MDI_RESTORE:
@@ -295,14 +290,14 @@ namespace Win32xx
                 rc.OffsetRect(1, 0);
 
                 drawDC.SetTextColor(black);
-                drawDC.DrawText(_T("2"), 1, rc, DT_CENTER | DT_SINGLELINE | DT_VCENTER);
+                drawDC.TextOut(rc.left, rc.top, _T("\x32"), 1);
                 break;
             }
             case MDI_CLOSE:
             {
                 // Draw the close button (a Marlett "r" looks like "X").
                 drawDC.SetTextColor(black);
-                drawDC.DrawText(_T("r"), 1, m_mdiRect[2], DT_CENTER | DT_SINGLELINE | DT_VCENTER);
+                drawDC.TextOut(m_mdiRect[2].left, m_mdiRect[2].top, _T("\x72"), 1);
                 break;
             }
 

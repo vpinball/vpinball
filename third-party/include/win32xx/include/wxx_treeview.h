@@ -1,12 +1,12 @@
-// Win32++   Version 9.4
-// Release Date: 25th September 2023
+// Win32++   Version 9.5
+// Release Date: 9th February 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2023  David Nash
+// Copyright (c) 2005-2024  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -40,8 +40,6 @@
 #define _WIN32XX_TREEVIEW_H_
 
 #include "wxx_wincore.h"
-#include "wxx_controls.h"
-#include <Commctrl.h>
 
 
 // Disable macros from Windowsx.h
@@ -93,7 +91,7 @@ namespace Win32xx
         UINT    GetVisibleCount() const;
         BOOL    ItemHasChildren(HTREEITEM item) const;
         COLORREF SetBkColor(COLORREF color) const;
-        HIMAGELIST SetImageList(HIMAGELIST images, int type = TVSIL_NORMAL) const;
+        CImageList SetImageList(HIMAGELIST images, int type = TVSIL_NORMAL);
         void    SetIndent(int indent) const;
         BOOL    SetInsertMark(HTREEITEM item, BOOL after = TRUE) const;
         COLORREF SetInsertMarkColor(COLORREF color) const;
@@ -134,9 +132,11 @@ namespace Win32xx
         BOOL    SortChildrenCB(TVSORTCB* pSortFn, BOOL recurse) const;
 
     private:
-        CTreeView(const CTreeView&);                // Disable copy construction
-        CTreeView& operator = (const CTreeView&); // Disable assignment operator
+        CTreeView(const CTreeView&);              // Disable copy construction
+        CTreeView& operator=(const CTreeView&);   // Disable assignment operator
 
+        CImageList m_normalImages;
+        CImageList m_stateImages;
     };
 
 }
@@ -148,13 +148,13 @@ namespace Win32xx
 
     // Creates a dragging bitmap for the specified item in a tree-view control.
     // It also creates an image list for the bitmap and adds the bitmap to the image list.
-    // An application can display the image when dragging the item by using the image list functions.
     // Refer to TreeView_CreateDragImage in the Windows API documentation for more information.
     inline CImageList CTreeView::CreateDragImage(HTREEITEM item) const
     {
         assert(IsWindow());
-        HIMAGELIST images = TreeView_CreateDragImage(*this, item);
-        return CImageList(images);
+        CImageList images;
+        images.CreateDragImage(*this, item);
+        return images;
     }
 
     // Deletes all items from a tree-view control.
@@ -632,11 +632,16 @@ namespace Win32xx
     // Sets the normal or state image list for a tree-view control
     // and redraws the control using the new images.
     // Refer to TreeView_SetImageList in the Windows API documentation for more information.
-    inline HIMAGELIST CTreeView::SetImageList(HIMAGELIST images, int type /*= TVSIL_NORMAL*/) const
+    inline CImageList CTreeView::SetImageList(HIMAGELIST images, int type /*= TVSIL_NORMAL*/)
     {
         assert(IsWindow());
         WPARAM wparam = static_cast<WPARAM>(type);
-        HIMAGELIST oldImages = TreeView_SetImageList( *this, images, wparam);
+        CImageList oldImages = TreeView_SetImageList( *this, images, wparam);
+        if (type == TVSIL_STATE)
+            m_stateImages = images;
+        else
+            m_normalImages = images;
+
         return oldImages;
     }
 

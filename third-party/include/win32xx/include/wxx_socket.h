@@ -1,12 +1,12 @@
-// Win32++   Version 9.4
-// Release Date: 25th September 2023
+// Win32++   Version 9.5
+// Release Date: 9th February 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2023  David Nash
+// Copyright (c) 2005-2024  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -206,8 +206,8 @@ namespace Win32xx
         operator SOCKET() const {return m_socket;}
 
     private:
-        CSocket(const CSocket&);                // Disable copy construction
-        CSocket& operator = (const CSocket&);   // Disable assignment operator
+        CSocket(const CSocket&);               // Disable copy construction
+        CSocket& operator=(const CSocket&);    // Disable assignment operator
         static UINT WINAPI EventThread(LPVOID pThis);
 
         SOCKET m_socket;

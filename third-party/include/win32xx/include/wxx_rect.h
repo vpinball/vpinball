@@ -1,12 +1,12 @@
-// Win32++   Version 9.4
-// Release Date: 25th September 2023
+// Win32++   Version 9.5
+// Release Date: 9th February 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2023  David Nash
+// Copyright (c) 2005-2024  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -78,23 +78,23 @@ namespace Win32xx
 
         // Operators
         operator LPSIZE()                   { return this; }
-        bool operator == (CSize sz) const   { return (cx == sz.cx && cy == sz.cy); }
-        bool operator != (CSize sz) const   { return (cx != sz.cx || cy != sz.cy); }
-        void operator += (SIZE sz)          { cx += sz.cx; cy += sz.cy; }
-        void operator -= (SIZE sz)          { cx -= sz.cx; cy -= sz.cy; }
+        bool operator==(CSize sz) const     { return (cx == sz.cx && cy == sz.cy); }
+        bool operator!=(CSize sz) const     { return (cx != sz.cx || cy != sz.cy); }
+        void operator+=(SIZE sz)            { cx += sz.cx; cy += sz.cy; }
+        void operator-=(SIZE sz)            { cx -= sz.cx; cy -= sz.cy; }
 
         // Operators returning CSize
-        CSize operator - () const           { return CSize (-cx, -cy); }
-        CSize operator + (SIZE sz) const    { return CSize (cx + sz.cx, cy + sz.cy); }
-        CSize operator - (SIZE sz) const    { return CSize (cx - sz.cx, cy - sz.cy); }
+        CSize operator-() const             { return CSize (-cx, -cy); }
+        CSize operator+(SIZE sz) const      { return CSize (cx + sz.cx, cy + sz.cy); }
+        CSize operator-(SIZE sz) const      { return CSize (cx - sz.cx, cy - sz.cy); }
 
         // Operators returning CPoint
-        CPoint operator + (POINT point) const;
-        CPoint operator - (POINT point) const;
+        CPoint operator+(POINT point) const;
+        CPoint operator-(POINT point) const;
 
         // Operators returning CRect
-        CRect operator + (LPCRECT prc) const;
-        CRect operator - (LPCRECT prc) const;
+        CRect operator+(LPCRECT prc) const;
+        CRect operator-(LPCRECT prc) const;
     };
 
 
@@ -117,23 +117,23 @@ namespace Win32xx
 
         // Operators
         operator LPPOINT()                  { return this; }
-        bool operator == (CPoint pt) const  { return ((x == pt.x) && (y == pt.y)); }
-        bool operator != (CPoint pt) const  { return ((x != pt.x) || (y != pt.y)); }
-        void operator += (SIZE sz)          { x += sz.cx; y += sz.cy; }
-        void operator -= (SIZE sz)          { x -= sz.cx; y -= sz.cy; }
-        void operator += (POINT pt)         { x += pt.x; y += pt.y; }
-        void operator -= (POINT pt)         { x -= pt.x; y -= pt.y; }
+        bool operator==(CPoint pt) const    { return ((x == pt.x) && (y == pt.y)); }
+        bool operator!=(CPoint pt) const    { return ((x != pt.x) || (y != pt.y)); }
+        void operator+=(SIZE sz)            { x += sz.cx; y += sz.cy; }
+        void operator-=(SIZE sz)            { x -= sz.cx; y -= sz.cy; }
+        void operator+=(POINT pt)           { x += pt.x; y += pt.y; }
+        void operator-=(POINT pt)           { x -= pt.x; y -= pt.y; }
 
         // Operators returning CPoint
-        CPoint operator - () const          { return CPoint(-x, -y); }
-        CPoint operator + (SIZE sz) const   { return CPoint(x + sz.cx, y + sz.cy); }
-        CPoint operator - (SIZE sz) const   { return CPoint(x - sz.cx, y - sz.cy); }
-        CPoint operator + (POINT pt) const  { return CPoint(x + pt.x, y + pt.y); }
-        CPoint operator - (POINT pt) const  { return CPoint(x - pt.x, y - pt.y); }
+        CPoint operator-() const            { return CPoint(-x, -y); }
+        CPoint operator+(SIZE sz) const     { return CPoint(x + sz.cx, y + sz.cy); }
+        CPoint operator-(SIZE sz) const     { return CPoint(x - sz.cx, y - sz.cy); }
+        CPoint operator+(POINT pt) const    { return CPoint(x + pt.x, y + pt.y); }
+        CPoint operator-(POINT pt) const    { return CPoint(x - pt.x, y - pt.y); }
 
         // Operators returning CRect
-        CRect operator + (LPCRECT prc) const;
-        CRect operator - (LPCRECT prc) const;
+        CRect operator+(LPCRECT prc) const;
+        CRect operator-(LPCRECT prc) const;
     };
 
 
@@ -192,37 +192,37 @@ namespace Win32xx
         // operators
         operator LPRECT()                           { return this; }
         operator LPCRECT() const                    { return this; }
-        bool operator == (const CRect& rc) const    { return (::EqualRect(this, &rc) != 0); }
-        bool operator != (const CRect& rc) const    { return (::EqualRect(this, &rc) == 0); }
-        void operator += (POINT pt)                 { ::OffsetRect(this, pt.x, pt.y); }
-        void operator += (SIZE size)                { ::OffsetRect(this, size.cx, size.cy); }
-        void operator += (LPCRECT prc)              { ::InflateRect(this, prc->right - prc->left, prc->bottom - prc->top); }
-        void operator -= (LPCRECT prc)              { ::InflateRect(this, prc->left - prc->right, prc->top - prc->bottom); }
-        void operator -= (POINT pt)                 { ::OffsetRect(this, -pt.x, -pt.y); }
-        void operator -= (SIZE sz)                  { ::OffsetRect(this, -sz.cx, -sz.cy); }
-        void operator &= (const RECT& rc)           { ::IntersectRect(this, this, &rc); }
-        void operator |= (const RECT& rc)           { ::UnionRect(this, this, &rc); }
+        bool operator==(const CRect& rc) const      { return (::EqualRect(this, &rc) != 0); }
+        bool operator!=(const CRect& rc) const      { return (::EqualRect(this, &rc) == 0); }
+        void operator+=(POINT pt)                   { ::OffsetRect(this, pt.x, pt.y); }
+        void operator+=(SIZE size)                  { ::OffsetRect(this, size.cx, size.cy); }
+        void operator+=(LPCRECT prc)                { ::InflateRect(this, prc->right - prc->left, prc->bottom - prc->top); }
+        void operator-=(LPCRECT prc)                { ::InflateRect(this, prc->left - prc->right, prc->top - prc->bottom); }
+        void operator-=(POINT pt)                   { ::OffsetRect(this, -pt.x, -pt.y); }
+        void operator-=(SIZE sz)                    { ::OffsetRect(this, -sz.cx, -sz.cy); }
+        void operator&=(const RECT& rc)             { ::IntersectRect(this, this, &rc); }
+        void operator|=(const RECT& rc)             { ::UnionRect(this, this, &rc); }
 
         // Operators returning CRect
-        CRect operator + (POINT pt) const           { CRect rc(*this); ::OffsetRect(&rc, pt.x, pt.y); return rc; }
-        CRect operator - (POINT pt) const           { CRect rc(*this); ::OffsetRect(&rc, -pt.x, -pt.y); return rc; }
-        CRect operator + (SIZE sz) const            { CRect rc(*this); ::OffsetRect(&rc, sz.cx, sz.cy); return rc; }
-        CRect operator - (SIZE sz) const            { CRect rc(*this); ::OffsetRect(&rc, -sz.cx, -sz.cy); return rc; }
-        CRect operator + (LPRECT prc) const         { CRect rc1(*this); rc1.InflateRect(prc); return rc1; }
-        CRect operator - (LPRECT prc) const         { CRect rc1(*this); rc1.DeflateRect(prc); return rc1; }
-        CRect operator & (const RECT& rc) const     { CRect rc1; ::IntersectRect(&rc1, this, &rc); return rc1; }
-        CRect operator | (const RECT& rc) const     { CRect rc1; ::UnionRect(&rc1, this, &rc); return rc1; }
+        CRect operator+(POINT pt) const             { CRect rc(*this); ::OffsetRect(&rc, pt.x, pt.y); return rc; }
+        CRect operator-(POINT pt) const             { CRect rc(*this); ::OffsetRect(&rc, -pt.x, -pt.y); return rc; }
+        CRect operator+(SIZE sz) const              { CRect rc(*this); ::OffsetRect(&rc, sz.cx, sz.cy); return rc; }
+        CRect operator-(SIZE sz) const              { CRect rc(*this); ::OffsetRect(&rc, -sz.cx, -sz.cy); return rc; }
+        CRect operator+(LPRECT prc) const           { CRect rc1(*this); rc1.InflateRect(prc); return rc1; }
+        CRect operator-(LPRECT prc) const           { CRect rc1(*this); rc1.DeflateRect(prc); return rc1; }
+        CRect operator&(const RECT& rc) const       { CRect rc1; ::IntersectRect(&rc1, this, &rc); return rc1; }
+        CRect operator|(const RECT& rc) const       { CRect rc1; ::UnionRect(&rc1, this, &rc); return rc1; }
     };
 
     // CSize member function definitions
-    inline CPoint CSize::operator + (POINT pt) const    { return CPoint(cx + pt.x, cy + pt.y); }
-    inline CPoint CSize::operator - (POINT pt) const    { return CPoint(cx - pt.x, cy - pt.y); }
-    inline CRect CSize::operator + (LPCRECT prc) const  { return CRect(*prc) + *this; }
-    inline CRect CSize::operator - (LPCRECT prc) const  { return CRect(*prc) - *this; }
+    inline CPoint CSize::operator+(POINT pt) const    { return CPoint(cx + pt.x, cy + pt.y); }
+    inline CPoint CSize::operator-(POINT pt) const    { return CPoint(cx - pt.x, cy - pt.y); }
+    inline CRect CSize::operator+(LPCRECT prc) const  { return CRect(*prc) + *this; }
+    inline CRect CSize::operator-(LPCRECT prc) const  { return CRect(*prc) - *this; }
 
     // CPoint member function definitions
-    inline CRect CPoint::operator + (LPCRECT prc) const { return CRect(*prc) + *this; }
-    inline CRect CPoint::operator - (LPCRECT prc) const { return CRect(*prc) - *this; }
+    inline CRect CPoint::operator+(LPCRECT prc) const { return CRect(*prc) + *this; }
+    inline CRect CPoint::operator-(LPCRECT prc) const { return CRect(*prc) - *this; }
 
 
     ////////////////////////////////////////

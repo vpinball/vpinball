@@ -1,12 +1,12 @@
-// Win32++   Version 9.4
-// Release Date: 25th September 2023
+// Win32++   Version 9.5
+// Release Date: 9th February 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2023  David Nash
+// Copyright (c) 2005-2024  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -46,10 +46,8 @@
 
 // The layout of a dialog is typically defined in a resource script file
 // (often Resource.rc). While this script file can be constructed manually,
-// it is often created using a resource editor. If your compiler doesn't
-// include a resource editor, you might find ResEdit useful. It is a free
-// resource editor available for download at:
-// http://www.resedit.net/
+// it is often created using a resource editor.  A resource editor is included
+// with Microsoft's Visual Studio Studio Community.
 
 // CDialog supports modal and modeless dialogs. It also supports the creation
 // of dialogs defined in a resource script file, as well as those defined in
@@ -134,7 +132,7 @@ namespace Win32xx
         using CWnd::WndProc;                  // Make WndProc private
         using CWnd::WndProcDefault;           // Make WndProcDefault private
         CDialog(const CDialog&);              // Disable copy construction
-        CDialog& operator = (const CDialog&); // Disable assignment operator
+        CDialog& operator=(const CDialog&);   // Disable assignment operator
 
         static INT_PTR CALLBACK StaticDialogProc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam);
         static LRESULT CALLBACK StaticMsgHook(int code, WPARAM wparam, LPARAM lparam);
@@ -205,7 +203,7 @@ namespace Win32xx
 
     private:
         CResizer(const CResizer&);              // Disable copy construction
-        CResizer& operator = (const CResizer&); // Disable assignment operator
+        CResizer& operator=(const CResizer&);   // Disable assignment operator
 
         static BOOL CALLBACK EnumWindowsProc(HWND wnd, LPARAM lparam);
         void ScaleRect(CRect& rc, double scale);
@@ -694,7 +692,7 @@ namespace Win32xx
     {
         // Find the CWnd pointer mapped to this HWND
         CDialog* pDialog = static_cast<CDialog*>(GetCWndPtr(wnd));
-        if (pDialog == 0)
+        if (pDialog == NULL)
         {
             // The HWND wasn't in the map, so add it now
             TLSData* pTLSData = GetApp()->GetTlsData();
@@ -714,11 +712,10 @@ namespace Win32xx
             }
         }
 
-        if (pDialog == 0)
+        assert(pDialog != NULL);
+        if (pDialog == NULL)
         {
             // Got a message for a window that's not in the map.
-            // We should never get here.
-            TRACE("*** Warning in CDialog::StaticDialogProc: HWND not in window map ***\n");
             return 0;
         }
 
@@ -769,11 +766,10 @@ namespace Win32xx
         }
 
         TLSData* pTLSData = GetApp()->GetTlsData();
-        if (pTLSData == 0)
+        assert(pTLSData != NULL);
+        if (pTLSData == NULL)
         {
             // Thread Local Storage data isn't assigned.
-            // We should never get here.
-            TRACE("*** Warning in CDialog::StaticMsgHook: TLS not assigned ***\n");
             return 0;
         }
 

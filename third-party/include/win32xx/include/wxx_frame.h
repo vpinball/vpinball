@@ -1,12 +1,12 @@
-// Win32++   Version 9.4
-// Release Date: 25th September 2023
+// Win32++   Version 9.5
+// Release Date: 9th February 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2023  David Nash
+// Copyright (c) 2005-2024  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -80,7 +80,6 @@
 
 #include "wxx_dialog.h"
 #include "wxx_docking.h"
-#include "wxx_gdi.h"
 #include "wxx_menubar.h"
 #include "wxx_menumetrics.h"
 #include "wxx_rebar.h"
@@ -268,11 +267,12 @@ namespace Win32xx
         virtual UINT SetMenuIcons(const std::vector<UINT>& menuData, COLORREF mask, UINT toolBarID, UINT toolBarDisabledID = 0);
         virtual void SetStatusIndicators();
         virtual void SetStatusParts();
-        virtual void SetTBImageList(CToolBar& toolBar, CImageList& imageList, UINT id, COLORREF mask);
-        virtual void SetTBImageListDis(CToolBar& toolBar, CImageList& imageList, UINT id, COLORREF mask);
-        virtual void SetTBImageListHot(CToolBar& toolBar, CImageList& imageList, UINT id, COLORREF mask);
+        virtual void SetTBImageList(CToolBar& toolBar, UINT id, COLORREF mask);
+        virtual void SetTBImageListDis(CToolBar& toolBar, UINT id, COLORREF mask);
+        virtual void SetTBImageListHot(CToolBar& toolBar, UINT id, COLORREF mask);
         virtual void SetTheme();
         virtual void SetToolBarImages(COLORREF mask, UINT toolBarID, UINT toolBarHotID = 0, UINT toolBarDisabledID = 0);
+        virtual void SetToolBarImages(CToolBar& toolbar, COLORREF mask, UINT toolBarID, UINT toolBarHotID = 0, UINT toolBarDisabledID = 0);
         virtual void SetupMenuIcons();
         virtual void SetupToolBar();
         virtual void ShowMenu(BOOL show);
@@ -307,9 +307,9 @@ namespace Win32xx
     private:
         typedef std::vector<MenuItemDataPtr> MenuData;     // all menu item data for a popup menu
 
-        CFrameT(const CFrameT&);                // Disable copy construction
-        CFrameT& operator = (const CFrameT&);   // Disable assignment operator
-        CSize GetTBImageSize(CBitmap* pBitmap);
+        CFrameT(const CFrameT&);               // Disable copy construction
+        CFrameT& operator=(const CFrameT&);    // Disable assignment operator
+        CSize GetTBImageSize(CBitmap* pBitmap) const;
         void UpdateMenuBarBandSize();
         static LRESULT CALLBACK StaticKeyboardProc(int code, WPARAM wparam, LPARAM lparam);
 
@@ -331,9 +331,6 @@ namespace Win32xx
         CMenu m_menu;                       // The menu used by the menubar or the frame's window
         CFont m_menuFont;                   // Menu and menubar font
         CFont m_statusBarFont;              // StatusBar font
-        CImageList m_toolBarImages;         // Image list for the ToolBar buttons
-        CImageList m_toolBarDisabledImages; // Image list for the Disabled ToolBar buttons
-        CImageList m_toolBarHotImages;      // Image list for the Hot ToolBar buttons
         CString m_keyName;                  // CString for Registry key name
         CString m_statusText;               // CString for status text
         CString m_tooltip;                  // CString for tool tips
@@ -375,7 +372,7 @@ namespace Win32xx
 
     private:
         CFrame(const CFrame&);              // Disable copy construction
-        CFrame& operator = (const CFrame&); // Disable assignment operator
+        CFrame& operator=(const CFrame&);   // Disable assignment operator
     };
 
 }
@@ -685,8 +682,6 @@ namespace Win32xx
     template <class T>
     inline void CFrameT<T>::ClearMenuIcons()
     {
-        m_menuImages.DeleteImageList();
-        m_menuDisabledImages.DeleteImageList();
         m_menuItemIDs.clear();
     }
 
@@ -702,16 +697,21 @@ namespace Win32xx
         else
             GetToolBar().Create(*this); // Create the toolbar without a rebar.
 
-        // Set a default ImageList for the ToolBar.
-        CBitmap bm(IDW_MAIN);
-        if (bm.GetHandle() != 0)
-            SetToolBarImages(RGB(192,192,192), IDW_MAIN, 0, 0);
-
         SetupToolBar();
 
-        if (GetToolBarData().size() == 0)
+        if (GetToolBarData().size() > 0)
+        {
+            // Load the default images if no images are loaded.
+            // A mask of 192,192,192 is compatible with AddBitmap (for Win95).
+            if (!GetToolBar().SendMessage(TB_GETIMAGELIST, 0, 0))
+                SetToolBarImages(RGB(192, 192, 192), IDW_MAIN, 0, 0);
+
+            GetToolBar().Autosize();
+        }
+        else
         {
             TRACE("Warning ... No resource IDs assigned to the toolbar\n");
+            ShowToolBar(FALSE);
         }
 
         if (GetReBar().IsWindow())
@@ -767,11 +767,11 @@ namespace Win32xx
                         UINT buttonState = pMenubar->GetButtonState(item);
                         if ((state & CDIS_SELECTED) || (buttonState & TBSTATE_PRESSED))
                         {
-                            drawDC.GradientFill(GetMenuBarTheme().clrPressed1, GetMenuBarTheme().clrPressed2, rc, FALSE);
+                            drawDC.GradientFill(GetMenuBarTheme().clrPressed1, GetMenuBarTheme().clrPressed2, rc, TRUE);
                         }
                         else if (state & CDIS_HOT)
                         {
-                            drawDC.GradientFill(GetMenuBarTheme().clrHot1, GetMenuBarTheme().clrHot2, rc, FALSE);
+                            drawDC.GradientFill(GetMenuBarTheme().clrHot1, GetMenuBarTheme().clrHot2, rc, TRUE);
                         }
 
                         // Draw border.
@@ -868,11 +868,11 @@ namespace Win32xx
                         bool isPressed = (pTB->GetButtonState(item) & TBSTATE_PRESSED) != 0;
                         if (isPressed)
                         {
-                            drawDC.GradientFill(GetToolBarTheme().clrPressed1, GetToolBarTheme().clrPressed2, rc, FALSE);
+                            drawDC.GradientFill(GetToolBarTheme().clrPressed1, GetToolBarTheme().clrPressed2, rc, TRUE);
                         }
                         else if (isHot)
                         {
-                            drawDC.GradientFill(GetToolBarTheme().clrHot1, GetToolBarTheme().clrHot2, rc, FALSE);
+                            drawDC.GradientFill(GetToolBarTheme().clrHot1, GetToolBarTheme().clrHot2, rc, TRUE);
                         }
 
                         // Get the appropriate image list depending on the button state.
@@ -882,12 +882,18 @@ namespace Win32xx
                         {
                             toolBarImages = pTB->GetDisabledImageList();
                             if (toolBarImages.GetHandle() == 0)
-                                toolBarImages.CreateDisabledImageList(pTB->GetImageList());
+                            {
+                                CImageList toolBarDisabledImages;
+                                toolBarDisabledImages.CreateDisabledImageList(pTB->GetImageList());
+                                pTB->SetDisableImageList(toolBarDisabledImages);
+                                toolBarImages = pTB->GetDisabledImageList();
+                            }
                         }
                         else if (isHot)
                         {
                             toolBarImages = pTB->GetHotImageList();
                             if (toolBarImages.GetHandle() == 0)
+                                // Use normal images as hot images.
                                 toolBarImages = pTB->GetImageList();
                         }
                         else
@@ -960,7 +966,7 @@ namespace Win32xx
                             {
                                 CRect arrowRect = rc;
                                 arrowRect.left = arrowRect.right - dropDownWidth;
-                                drawDC.GradientFill(GetToolBarTheme().clrPressed1, GetToolBarTheme().clrPressed2, arrowRect, FALSE);
+                                drawDC.GradientFill(GetToolBarTheme().clrPressed1, GetToolBarTheme().clrPressed2, arrowRect, TRUE);
                             }
 
                             // Draw the dropdown arrow.
@@ -1085,7 +1091,7 @@ namespace Win32xx
             if (IsUsingThemes())
             {
                 const MenuTheme& mbt = GetMenuBarTheme();
-                memDC.GradientFill(mbt.clrPressed1, mbt.clrPressed2, gutter, TRUE);
+                memDC.GradientFill(mbt.clrPressed1, mbt.clrPressed2, gutter, FALSE);
             }
             else
             {
@@ -1177,8 +1183,8 @@ namespace Win32xx
         MenuItemData* pmid = reinterpret_cast<MenuItemData*>(pDrawItem->itemData);
         UINT buttonType = pmid->mii.fType;
         const MenuTheme& mbt = GetMenuBarTheme();
-        int cxCheck = 16;
-        int cyCheck = 16;
+        int cxCheck = T::DpiScaleInt(16);
+        int cyCheck = T::DpiScaleInt(16);
         CRect gutter = GetMenuMetrics().GetGutterRect(rc);
         int left = (gutter.Width() - cxCheck) / 2;
         int top = rc.top + (rc.Height() - cyCheck) / 2;
@@ -1207,7 +1213,7 @@ namespace Win32xx
         else
             maskDC.DrawFrameControl(checkRect, DFC_MENU, DFCS_MENUCHECK);
 
-        int xoffset = 1;
+        int xoffset = (buttonType == MFT_RADIOCHECK)? 1 : 2;
         int yoffset = 0;
 
         if (GetWinVersion() <= 2500 && (buttonType != MFT_RADIOCHECK))
@@ -1358,7 +1364,7 @@ namespace Win32xx
             memDC.SolidFill(rt.clrBkgnd2, rebarRect);
             CRect rcBkGnd = rebarRect;
             rcBkGnd.right = 600;
-            memDC.GradientFill(rt.clrBkgnd1, rt.clrBkgnd2, rebarRect, TRUE);
+            memDC.GradientFill(rt.clrBkgnd1, rt.clrBkgnd2, rebarRect, FALSE);
 
             if (rt.clrBand1 || rt.clrBand2)
             {
@@ -1409,7 +1415,7 @@ namespace Win32xx
                             // Fill the Source CDC with the band's background.
                             CMemDC sourceDC(dc);
                             sourceDC.CreateCompatibleBitmap(dc, width, height);
-                            sourceDC.GradientFill(rt.clrBand1, rt.clrBand2, drawRect, isVertical);
+                            sourceDC.GradientFill(rt.clrBand1, rt.clrBand2, drawRect, !isVertical);
 
                             // Set Curve amount for rounded edges.
                             int curve = rt.RoundBorders? T::DpiScaleInt(12) : 0;
@@ -1512,7 +1518,7 @@ namespace Win32xx
                 memDC.CreateCompatibleBitmap(dc, width, height);
 
                 // Fill the background with a color gradient.
-                memDC.GradientFill(sbTheme.clrBkgnd1, sbTheme.clrBkgnd2, statusbar.GetClientRect(), TRUE);
+                memDC.GradientFill(sbTheme.clrBkgnd1, sbTheme.clrBkgnd2, statusbar.GetClientRect(), FALSE);
 
                 // Copy the Memory DC to the window's DC.
                 dc.BitBlt(0, 0, width, height, memDC, 0, 0, SRCCOPY);
@@ -1657,7 +1663,7 @@ namespace Win32xx
 
     // Returns the size of a bitmap image.
     template <class T>
-    inline CSize CFrameT<T>::GetTBImageSize(CBitmap* pBitmap)
+    inline CSize CFrameT<T>::GetTBImageSize(CBitmap* pBitmap) const
     {
         assert(pBitmap);
         if (!pBitmap) return CSize(0, 0);
@@ -3207,10 +3213,9 @@ namespace Win32xx
         RecalcLayout();
     }
 
-    // Sets the Image List for toolbars.
-    // A Disabled image list is created from ToolBarID if one doesn't already exist.
+    // Sets the Image List for additional toolbars.
     template <class T>
-    inline void CFrameT<T>::SetTBImageList(CToolBar& toolBar, CImageList& imageList, UINT id, COLORREF mask)
+    inline void CFrameT<T>::SetTBImageList(CToolBar& toolBar, UINT id, COLORREF mask)
     {
         // Get the image size.
         CBitmap bm(id);
@@ -3223,7 +3228,7 @@ namespace Win32xx
         CSize sz = GetTBImageSize(&dpiImage);
 
         // Set the toolbar's image list.
-        imageList.DeleteImageList();
+        CImageList imageList;
         imageList.Create(sz.cx, sz.cy, ILC_COLOR32 | ILC_MASK, 0, 0);
         imageList.Add(dpiImage, mask);
         toolBar.SetImageList(imageList);
@@ -3231,40 +3236,32 @@ namespace Win32xx
         // Inform the Rebar of the change to the Toolbar.
         if (GetReBar().IsWindow())
         {
-            SIZE MaxSize = toolBar.GetMaxSize();
+            SIZE maxSize = toolBar.GetMaxSize();
             WPARAM wparam = reinterpret_cast<WPARAM>(toolBar.GetHwnd());
-            LPARAM lparam = reinterpret_cast<LPARAM>(&MaxSize);
+            LPARAM lparam = reinterpret_cast<LPARAM>(&maxSize);
             GetReBar().SendMessage(UWM_TBRESIZE, wparam, lparam);
         }
     }
 
-    // Sets the Disabled Image List for toolbars.
+    // Sets the Disabled Image List for additional toolbars.
     template <class T>
-    inline void CFrameT<T>::SetTBImageListDis(CToolBar& toolBar, CImageList& imageList, UINT id, COLORREF mask)
+    inline void CFrameT<T>::SetTBImageListDis(CToolBar& toolBar, UINT id, COLORREF mask)
     {
-        if (id != 0)
-        {
-            // Get the image size.
-            CBitmap bm(id);
+        // Get the image size.
+        CBitmap bm(id);
 
-            // Assert if we failed to load the bitmap.
-            assert(bm.GetHandle() != 0);
+        // Assert if we failed to load the bitmap.
+        assert(bm.GetHandle() != 0);
 
-            // Scale the bitmap to the window's DPI.
-            CBitmap dpiImage = T::DpiScaleUpBitmap(bm);
-            CSize sz = GetTBImageSize(&dpiImage);
+        // Scale the bitmap to the window's DPI.
+        CBitmap dpiImage = T::DpiScaleUpBitmap(bm);
+        CSize sz = GetTBImageSize(&dpiImage);
 
-            // Set the toolbar's disabled image list.
-            imageList.DeleteImageList();
-            imageList.Create(sz.cx, sz.cy, ILC_COLOR32 | ILC_MASK, 0, 0);
-            imageList.Add(dpiImage, mask);
-            toolBar.SetDisableImageList(imageList);
-        }
-        else
-        {
-            imageList.DeleteImageList();
-            toolBar.SetDisableImageList(0);
-        }
+        // Set the toolbar's disabled image list.
+        CImageList imageList;
+        imageList.Create(sz.cx, sz.cy, ILC_COLOR32 | ILC_MASK, 0, 0);
+        imageList.Add(dpiImage, mask);
+        toolBar.SetDisableImageList(imageList);
 
         // Inform the Rebar of the change to the Toolbar.
         if (GetReBar().IsWindow())
@@ -3278,31 +3275,23 @@ namespace Win32xx
 
     // Sets the Hot Image List for additional toolbars.
     template <class T>
-    inline void CFrameT<T>::SetTBImageListHot(CToolBar& toolBar, CImageList& imageList, UINT id, COLORREF mask)
+    inline void CFrameT<T>::SetTBImageListHot(CToolBar& toolBar, UINT id, COLORREF mask)
     {
-        if (id != 0)
-        {
-            // Get the image size.
-            CBitmap bm(id);
+        // Get the image size.
+        CBitmap bm(id);
 
-            // Assert if we failed to load the bitmap.
-            assert(bm.GetHandle() != 0);
+        // Assert if we failed to load the bitmap.
+        assert(bm.GetHandle() != 0);
 
-            // Scale the bitmap to the window's DPI.
-            CBitmap dpiImage = T::DpiScaleUpBitmap(bm);
-            CSize sz = GetTBImageSize(&dpiImage);
+        // Scale the bitmap to the window's DPI.
+        CBitmap dpiImage = T::DpiScaleUpBitmap(bm);
+        CSize sz = GetTBImageSize(&dpiImage);
 
-            // Set the toolbar's hot image list
-            imageList.DeleteImageList();
-            imageList.Create(sz.cx, sz.cy, ILC_COLOR32 | ILC_MASK, 0, 0);
-            imageList.Add(dpiImage, mask);
-            toolBar.SetHotImageList(imageList);
-        }
-        else
-        {
-            imageList.DeleteImageList();
-            toolBar.SetHotImageList(0);
-        }
+        // Set the toolbar's hot image list
+        CImageList imageList;
+        imageList.Create(sz.cx, sz.cy, ILC_COLOR32 | ILC_MASK, 0, 0);
+        imageList.Add(dpiImage, mask);
+        toolBar.SetHotImageList(imageList);
 
         // Inform the Rebar of the change to the Toolbar.
         if (GetReBar().IsWindow())
@@ -3320,22 +3309,50 @@ namespace Win32xx
     // The color mask is ignored for 32bit bitmaps, but is required for 24bit bitmaps
     // The color mask is often gray RGB(192,192,192) or magenta (255,0,255)
     // The Hot and disabled bitmap resources can be 0.
-    // A Disabled image list is created from ToolBarID if one isn't provided.
+    // A Disabled image list is created from toolBarID if one isn't provided.
     template <class T>
-    inline void CFrameT<T>::SetToolBarImages(COLORREF mask, UINT toolBarID, UINT toolBarHotID, UINT toolBarDisabledID)
+    inline void CFrameT<T>::SetToolBarImages(CToolBar& toolbar, COLORREF mask, UINT toolBarID, UINT toolBarHotID, UINT toolBarDisabledID)
     {
         if (GetComCtlVersion() < 470)   // only on Win95
         {
             // We are using COMCTL32.DLL version 4.0, so we can't use an ImageList.
             // Instead we simply set the bitmap.
-            GetToolBar().AddReplaceBitmap(toolBarID);
+            toolbar.AddReplaceBitmap(toolBarID);
             return;
         }
 
-        // Set the button images
-        SetTBImageList(GetToolBar(),    m_toolBarImages, toolBarID, mask);
-        SetTBImageListHot(GetToolBar(), m_toolBarHotImages, toolBarHotID, mask);
-        SetTBImageListDis(GetToolBar(), m_toolBarDisabledImages, toolBarDisabledID, mask);
+        // Set the normal imagelist.
+        SetTBImageList(toolbar, toolBarID, mask);
+
+        // Set the hot imagelist.
+        if (toolBarHotID != 0)
+        {
+            SetTBImageListHot(toolbar, toolBarHotID, mask);
+        }
+
+        if (toolBarDisabledID != 0)
+        {
+            SetTBImageListDis(toolbar, toolBarDisabledID, mask);
+        }
+        else
+        {
+            CImageList toolBarDisabledImages;
+            toolBarDisabledImages.CreateDisabledImageList(toolbar.GetImageList());
+            toolbar.SetDisableImageList(toolBarDisabledImages);
+        }
+    }
+
+    // Either sets the imagelist or adds/replaces bitmap depending on ComCtl32.dll version
+    // The ToolBarIDs are bitmap resources containing a set of toolbar button images.
+    // Each toolbar button image must have a minimum height of 16. Its height must equal its width.
+    // The color mask is ignored for 32bit bitmaps, but is required for 24bit bitmaps
+    // The color mask is often gray RGB(192,192,192) or magenta (255,0,255)
+    // The Hot and disabled bitmap resources can be 0.
+    // A Disabled image list is created from toolBarID if one isn't provided.
+    template <class T>
+    inline void CFrameT<T>::SetToolBarImages(COLORREF mask, UINT toolBarID, UINT toolBarHotID, UINT toolBarDisabledID)
+    {
+        SetToolBarImages(GetToolBar(), mask, toolBarID, toolBarHotID, toolBarDisabledID);
     }
 
     // Assigns icons to the dropdown menu items. By default the toolbar icons are
@@ -3463,7 +3480,6 @@ namespace Win32xx
 
         // Reposition the windows.
         RecalcLayout();
-        T::RedrawWindow();
     }
 
     // Hides or shows the tool bar.
@@ -3496,7 +3512,6 @@ namespace Win32xx
 
         // Reposition the windows.
         RecalcLayout();
-        T::RedrawWindow();
     }
 
     // Called by the keyboard hook to update status information.
@@ -3681,7 +3696,6 @@ namespace Win32xx
         case WM_SYSCOLORCHANGE: return OnSysColorChange(msg, wparam, lparam);
         case WM_SYSCOMMAND:     return OnSysCommand(msg, wparam, lparam);
         case WM_UNINITMENUPOPUP:  return OnUnInitMenuPopup(msg, wparam, lparam);
-        case WM_WINDOWPOSCHANGED: return CWnd::WndProcDefault(msg, wparam, lparam);
 
         // Messages defined by Win32++
         case UWM_GETFRAMEVIEW:      return reinterpret_cast<LRESULT>(GetView().GetHwnd());

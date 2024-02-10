@@ -1,12 +1,12 @@
-// Win32++   Version 9.4
-// Release Date: 25th September 2023
+// Win32++   Version 9.5
+// Release Date: 9th February 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2023  David Nash
+// Copyright (c) 2005-2024  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -70,7 +70,7 @@ namespace Win32xx
 
     private:
         CThreadT(const CThreadT&);              // Disable copy construction
-        CThreadT& operator = (const CThreadT&); // Disable assignment operator
+        CThreadT& operator=(const CThreadT&);   // Disable assignment operator
 
         THREADPROC* m_pfnThreadProc;    // Thread callback function
         LPVOID m_pThreadParams;         // Thread parameter
@@ -94,8 +94,8 @@ namespace Win32xx
         virtual ~CWorkThread() {}
 
     private:
-        CWorkThread(const CWorkThread&);              // Disable copy construction
-        CWorkThread& operator = (const CWorkThread&); // Disable assignment operator
+        CWorkThread(const CWorkThread&);            // Disable copy construction
+        CWorkThread& operator=(const CWorkThread&); // Disable assignment operator
     };
 
 
@@ -114,8 +114,8 @@ namespace Win32xx
         virtual ~CWinThread();
 
     private:
-        CWinThread(const CWinThread&);              // Disable copy construction
-        CWinThread& operator = (const CWinThread&); // Disable assignment operator
+        CWinThread(const CWinThread&);            // Disable copy construction
+        CWinThread& operator=(const CWinThread&); // Disable assignment operator
 
         static  UINT WINAPI StaticThreadProc(LPVOID pCThread);
     };

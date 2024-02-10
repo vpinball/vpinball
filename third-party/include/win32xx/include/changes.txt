@@ -1,3 +1,59 @@
+Version 9.5
+===========
+This version adds a CustomPrintDlg sample. This sample provides an
+alternative to the PrintDlg and PrintDlgEx common dialogs which have had 
+their functionality downgraded in Windows 11.
+
+New Features and Enhancements
+-----------------------------
+* Added the CustomPrintDlg sample to provide an alternative to PrintDlg
+  and PrintDlgEx.
+* Added a new feature to the Themes sample. This sample now demonstrates 
+  how to specify the window's caption color on Windows 11.
+* CComboBoxEx, CHeader, CListView, CToolbar, and CTreeView now manage their
+  own image lists. There is no longer any need to keep a local copy of the
+  image list assigned to these controls to keep the image list in scope.
+* Updated CImageList.
+* Updated CTab and the TabDemo sample.
+* Optimized the redrawing of frames and dockers when moving windows between
+  monitors with different display settings.
+* Simplified support for additional toolbars in frames.
+
+Changes in detail
+-----------------
+Added CDockContainer::SetTabsFontSize
+Added CDockContainer::SetTabsIconSize
+Added CFrameT::SetToolBarImages       Added overload for additional toolbars
+Added CImageList::CreateDragImage
+Added CPrintPreview::CPrintPreview    Additional constructor
+Added CTab::SetTabsFontSize
+Added CTab::SetTabsIconSize
+Added CWinApp::GetHDevMode
+Added CWinApp::GetHDevNames
+Added CWinApp::ResetPrinterMemory
+Added CWinApp::UpdateDefaultPrinter
+Added CWinApp::UpdatePrinterMemory
+
+Modified CDockContainer::SetTBImageList        removed CImageList& argument
+Modified CDockContainer::SetTBImageListDis     removed CImageList& argument
+Modified CDockContainer::SetTBImageListHot     removed CImageList& argument
+Modified CFrameT::SetTBImageList               removed CImageList& argument
+Modified CFrameT::SetTBImageListDis            removed CImageList& argument
+Modified CFrameT::SetTBImageListHot            removed CImageList& argument
+Modified CComboBoxEx::SetImageList             returns CImageList
+Modified CHeader::SetImageList                 returns CImageList
+Modified CListView::SetImageList               returns CImageList
+Modified CTab::SetImageList                    returns CImageList
+Modified CToolBar::SetDisableImageList         returns CImageList
+Modified CToolBar::SetHotImageList             returns CImageList
+Modified CToolBar::SetImageList                returns CImageList
+Modified CTreeView::SetImageList               returns CImageList
+
+Removed CTab::SetTabHeight
+Removed the PrintDialogEx sample
+Removed the MDIDockFrame sample
+
+
 Version 9.4
 ===========
 This version adds support for the Microsoft Edge browser.
@@ -258,7 +314,7 @@ Changes in Detail
 Added    CComboBox::GetComboBoxInfo
 Added    CEdit::GetTextLength
 Added    CFrameT::GetMenuIconHeight
-Added    CString::Remove             additional overload for a single character
+Added    CString::Remove                additional overload for a single character
 Added    CToolbar::SetButtonInfo        additional overload
 Modified CDialog::EndDialog             now only closes a modal dialog
 Modified CFrameT::AddDisabledMenuImage  removed iconWidth parameter
@@ -391,12 +447,12 @@ Removed CDocker::SetDragAutoResize                             member function
 Removed CRegKey::SetKeyValue                                   member function
 Removed CString(int)                                           constructor
 Removed CString(double)                                        constructor
-Removed CString operator + (const CString&, int)               global operator overload
-Removed CString operator + (const CString&, double)            global operator overload
-Removed CString operator + (int, const CString&)               global operator overload
-Removed CString operator + (double, const CString&)            global operator overload
-Removed CString& operator += (int)                             global operator overload
-Removed CString& operator += (double)                          global operator overload
+Removed CString operator+(const CString&, int)               global operator overload
+Removed CString operator+(const CString&, double)            global operator overload
+Removed CString operator+(int, const CString&)               global operator overload
+Removed CString operator+(double, const CString&)            global operator overload
+Removed CString& operator+=(int)                             global operator overload
+Removed CString& operator+=(double)                          global operator overload
 Removed CString& operator << (CString&, const TCHAR*)          global operator overload
 Removed CString& operator << (CString&, TCHAR)                 global operator overload
 Removed CString& operator << (CString&, int)                   global operator overload

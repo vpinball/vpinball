@@ -1,12 +1,12 @@
-// Win32++   Version 9.4
-// Release Date: 25th September 2023
+// Win32++   Version 9.5
+// Release Date: 9th February 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2023  David Nash
+// Copyright (c) 2005-2024  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -40,8 +40,6 @@
 #define _WIN32XX_LISTVIEW_H_
 
 #include "wxx_wincore.h"
-#include "wxx_controls.h"
-#include <commctrl.h>
 
 
 namespace Win32xx
@@ -109,7 +107,7 @@ namespace Win32xx
         DWORD   SetHoverTime( DWORD hoverTime = static_cast<DWORD>(-1) ) const;
         CSize   SetIconSpacing( int cx, int cy ) const;
         CSize   SetIconSpacing( CSize sz ) const;
-        HIMAGELIST SetImageList( HIMAGELIST images, int imageListType ) const;
+        CImageList SetImageList( HIMAGELIST images, int imageListType );
         BOOL    SetItem( LVITEM& itemInfo ) const;
         BOOL    SetItem( int item, int subItem, UINT mask, LPCTSTR text, int image,
                         UINT state, UINT stateMask, LPARAM lparam, int indent ) const;
@@ -153,8 +151,11 @@ namespace Win32xx
 
     private:
         CListView(const CListView&);              // Disable copy construction
-        CListView& operator = (const CListView&); // Disable assignment operator
+        CListView& operator=(const CListView&);   // Disable assignment operator
 
+        CImageList m_normalImages;
+        CImageList m_smallImages;
+        CImageList m_stateImages;
     };
 
 }
@@ -185,8 +186,9 @@ namespace Win32xx
     inline CImageList CListView::CreateDragImage(int item, CPoint& pt) const
     {
         assert(IsWindow());
-        HIMAGELIST images = ListView_CreateDragImage(*this, item, &pt);
-        return CImageList(images);
+        CImageList images;
+        images.CreateDragImage(*this, item, pt);
+        return images;
     }
 
     // Removes all items from the list-view control.
@@ -818,10 +820,17 @@ namespace Win32xx
     // Assigns an image list to the list-view control.
     // Valid imageListType values: LVSIL_NORMAL, LVSIL_SMALL, LVSIL_STATE.
     // Refer to ListView_SetImageList in the Windows API documentation for more information.
-    inline HIMAGELIST CListView::SetImageList( HIMAGELIST images, int imageListType ) const
+    inline CImageList CListView::SetImageList( HIMAGELIST images, int imageListType )
     {
         assert(IsWindow());
-        HIMAGELIST oldImages = ListView_SetImageList( *this, images, imageListType );
+        CImageList oldImages = ListView_SetImageList( *this, images, imageListType );
+        if (imageListType == LVSIL_STATE)
+            m_stateImages = images;
+        else if (imageListType == LVSIL_SMALL)
+            m_smallImages = images;
+        else
+            m_normalImages = images;
+
         return oldImages;
     }
 

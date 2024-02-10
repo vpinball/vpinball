@@ -1,12 +1,12 @@
-// Win32++   Version 9.4
-// Release Date: 25th September 2023
+// Win32++   Version 9.5
+// Release Date: 9th February 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2023  David Nash
+// Copyright (c) 2005-2024  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -45,6 +45,7 @@
 
 #include "wxx_wincore.h"
 #include "wxx_dialog.h"
+#include "wxx_stdcontrols.h"
 #include "wxx_printdialogs.h"
 #include "default_resource.h"
 
@@ -62,6 +63,7 @@
 // 2) Specify values for the string resources used by CPrintPreview in
 //    resource.rc.
 // 3) Use SetSource to specify to where to call the PrintPage function.
+//    Alternatively, specify the source in CPrintPreview's constructor.
 // 4) Declare a PrintPage function in the source for printing and previewing:
 //     void  PrintPage(CDC& dc, UINT page);
 // 5) Call DoPrintPreview(HWND ownerWindow, UINT maxPage = 1) to initiate the
@@ -139,7 +141,7 @@ namespace Win32xx
 
     private:
         CPreviewPane(const CPreviewPane&);               // Disable copy construction
-        CPreviewPane& operator = (const CPreviewPane&);  // Disable assignment operator
+        CPreviewPane& operator=(const CPreviewPane&);    // Disable assignment operator
         CBitmap m_bitmap;
     };
 
@@ -153,6 +155,7 @@ namespace Win32xx
     {
     public:
         CPrintPreview();
+        CPrintPreview(T& source);
         virtual ~CPrintPreview();
 
         CPreviewPane& GetPreviewPane() const { return *m_pPreviewPane; }
@@ -177,7 +180,7 @@ namespace Win32xx
 
     private:
         CPrintPreview(const CPrintPreview&);               // Disable copy construction
-        CPrintPreview& operator = (const CPrintPreview&);  // Disable assignment operator
+        CPrintPreview& operator=(const CPrintPreview&);    // Disable assignment operator
         CPreviewPane m_previewPane;               // Default CPreviewPane object
         CPreviewPane* m_pPreviewPane;             // Pointer to the CPreviewPane object we actually use
         CResizer m_resizer;
@@ -340,6 +343,15 @@ namespace Win32xx
         m_pSource(0), m_currentPage(0), m_maxPage(1), m_ownerWindow(0)
     {
         m_pPreviewPane = &m_previewPane;
+    }
+
+    template <typename T>
+    inline CPrintPreview<T>::CPrintPreview(T& source)
+        : CDialog((LPCDLGTEMPLATE)previewTemplate),
+        m_pSource(0), m_currentPage(0), m_maxPage(1), m_ownerWindow(0)
+    {
+        m_pPreviewPane = &m_previewPane;
+        SetSource(source);
     }
 
     // Destructor.

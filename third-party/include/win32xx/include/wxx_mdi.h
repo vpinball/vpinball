@@ -1,12 +1,12 @@
-// Win32++   Version 9.4
-// Release Date: 25th September 2023
+// Win32++   Version 9.5
+// Release Date: 9th February 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2023  David Nash
+// Copyright (c) 2005-2024  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -62,7 +62,7 @@
 //    MDI frame. Inherit your CMainFrame class from CMDIFrame to create a MDI
 //    frame.
 //
-// 5) CMDIDockFrame: This clas inherits from CMDIFrameT<CDockFrame>. It provides
+// 5) CMDIDockFrame: This class inherits from CMDIFrameT<CDockFrame>. It provides
 //    a MDI frame that supports docking. Inherit your CMainFrame from CMDIDockFrame
 //    to create a MDI frame that supports docking.
 
@@ -119,7 +119,7 @@ namespace Win32xx
 
     private:
         CMDIChild(const CMDIChild&);              // Disable copy construction
-        CMDIChild& operator = (const CMDIChild&); // Disable assignment operator
+        CMDIChild& operator=(const CMDIChild&);   // Disable assignment operator
 
         CWnd* m_pView;              // pointer to the View CWnd object
         CMenu m_childMenu;
@@ -146,7 +146,7 @@ namespace Win32xx
 
     private:
         CMDIClient(const CMDIClient&);              // Disable copy construction
-        CMDIClient& operator = (const CMDIClient&); // Disable assignment operator
+        CMDIClient& operator=(const CMDIClient&);   // Disable assignment operator
     };
 
     /////////////////////////////////////
@@ -162,7 +162,7 @@ namespace Win32xx
         // Override these functions as required.
         virtual CMDIChild* AddMDIChild(CMDIChild* pMDIChild);
         virtual HWND Create(HWND parent = 0);
-        virtual void RemoveMDIChild(HWND wnd);
+        virtual void RemoveMDIChild(CMDIChild* pChild);
         virtual BOOL RemoveAllMDIChildren();
 
         // These functions aren't virtual. Don't override these.
@@ -203,7 +203,7 @@ namespace Win32xx
 
     private:
         CMDIFrameT(const CMDIFrameT&);              // Disable copy construction
-        CMDIFrameT& operator = (const CMDIFrameT&); // Disable assignment operator
+        CMDIFrameT& operator=(const CMDIFrameT&);   // Disable assignment operator
         void UpdateMDIMenu(CMenu menuWindow);
 
         std::vector<MDIChildPtr> m_mdiChildren;
@@ -224,7 +224,7 @@ namespace Win32xx
 
     private:
         CMDIFrame(const CMDIFrame&);              // Disable copy construction
-        CMDIFrame& operator = (const CMDIFrame&); // Disable assignment operator
+        CMDIFrame& operator=(const CMDIFrame&);   // Disable assignment operator
     };
 
 }
@@ -298,9 +298,9 @@ namespace Win32xx
         // Allocate an iterator for our MDIChild vector
         std::vector<MDIChildPtr>::const_iterator v;
 
-        for (v = GetAllMDIChildren().begin(); v < GetAllMDIChildren().end(); ++v)
+        for (v = GetAllMDIChildren().begin(); v != GetAllMDIChildren().end(); ++v)
         {
-            if ((*v)->IsWindowVisible())
+            if ((*v)->IsWindow())
             {
                 // Add Separator
                 if (window == 0)
@@ -610,7 +610,7 @@ namespace Win32xx
     template <class T>
     inline LRESULT CMDIFrameT<T>::OnMDIDestroyed(UINT, WPARAM wparam, LPARAM)
     {
-        RemoveMDIChild(reinterpret_cast<HWND>(wparam));
+        RemoveMDIChild(reinterpret_cast<CMDIChild*>(wparam));
         return 0;
     }
 
@@ -700,14 +700,14 @@ namespace Win32xx
 
     // Removes an individual MDI child.
     template <class T>
-    inline void CMDIFrameT<T>::RemoveMDIChild(HWND wnd)
+    inline void CMDIFrameT<T>::RemoveMDIChild(CMDIChild* pChild)
     {
         // Allocate an iterator for our HWND map
         std::vector<MDIChildPtr>::iterator v;
 
         for (v = m_mdiChildren.begin(); v!= m_mdiChildren.end(); ++v)
         {
-            if ((*v)->GetHwnd() == wnd)
+            if ((*v).get() == pChild)
             {
                 m_mdiChildren.erase(v);
                 break;
@@ -847,11 +847,13 @@ namespace Win32xx
     template <class T>
     inline LRESULT CMDIClient<T>::OnMDIDestroy(UINT msg, WPARAM wparam, LPARAM lparam)
     {
+        CWnd* pWnd = T::GetCWndPtr(reinterpret_cast<HWND>(wparam));
+
         // Do default processing first
         T::FinalWindowProc(msg, wparam, lparam);
 
         // Now remove MDI child
-        T::GetParent().SendMessage(UWM_MDIDESTROYED, wparam, 0);
+        T::GetParent().SendMessage(UWM_MDIDESTROYED, reinterpret_cast<WPARAM>(pWnd), 0);
 
         return 0;
     }

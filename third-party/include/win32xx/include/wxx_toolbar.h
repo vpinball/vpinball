@@ -1,12 +1,12 @@
-// Win32++   Version 9.4
-// Release Date: 25th September 2023
+// Win32++   Version 9.5
+// Release Date: 9th February 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2023  David Nash
+// Copyright (c) 2005-2024  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -39,8 +39,6 @@
 #define _WIN32XX_TOOLBAR_H_
 
 #include "wxx_wincore.h"
-#include "wxx_gdi.h"
-#include "wxx_controls.h"
 
 
 namespace Win32xx
@@ -114,12 +112,12 @@ namespace Win32xx
         BOOL  SetButtonStyle(UINT buttonID, BYTE style) const;
         BOOL  SetButtonWidth(UINT buttonID, int width) const;
         BOOL  SetCommandID(int index, UINT buttonID) const;
-        HIMAGELIST SetDisableImageList(HIMAGELIST disabledImages);
+        CImageList SetDisableImageList(HIMAGELIST disabledImages);
         DWORD SetDrawTextFlags(DWORD mask, DWORD flags) const;
         DWORD SetExtendedStyle(DWORD exStyle) const;
-        HIMAGELIST SetHotImageList(HIMAGELIST hotImages);
+        CImageList SetHotImageList(HIMAGELIST hotImages);
         int   SetHotItem(int index) const;
-        HIMAGELIST SetImageList(HIMAGELIST normalImages);
+        CImageList SetImageList(HIMAGELIST normalImages);
         BOOL  SetIndent(int indent) const;
         BOOL  SetMaxTextRows(int maxRows) const;
         BOOL  SetPadding(int cx, int cy) const;
@@ -140,11 +138,14 @@ namespace Win32xx
         using CWnd::SetMenu;                    // Make SetMenu private
 
         CToolBar(const CToolBar&);              // Disable copy construction
-        CToolBar& operator = (const CToolBar&); // Disable assignment operator
+        CToolBar& operator=(const CToolBar&);   // Disable assignment operator
 
         std::map<CString, int> m_stringMap;     // a map of strings used in SetButtonText
 
-        UINT m_oldBitmapID;                      // Bitmap Resource ID, used in AddBitmap/ReplaceBitmap
+        UINT m_oldBitmapID;                     // Bitmap Resource ID, used in AddBitmap/ReplaceBitmap
+        CImageList m_normalImages;              // Image-list for normal buttons
+        CImageList m_hotImages;                 // Image-list for hot buttons
+        CImageList m_disabledImages;            // Image-list for disabled buttons
 
     };  // class CToolBar
 
@@ -1050,11 +1051,12 @@ namespace Win32xx
 
     // Sets the ImageList that the ToolBar control will use to display disabled buttons.
     // Refer to TB_SETDISABLEDIMAGELIST in the Windows API documentation for more information.
-    inline HIMAGELIST CToolBar::SetDisableImageList(HIMAGELIST disabledImages)
+    inline CImageList CToolBar::SetDisableImageList(HIMAGELIST disabledImages)
     {
         assert(IsWindow());
         LPARAM lparam = reinterpret_cast<LPARAM>(disabledImages);
-        HIMAGELIST images = reinterpret_cast<HIMAGELIST>(SendMessage(TB_SETDISABLEDIMAGELIST, 0, lparam));
+        CImageList images = reinterpret_cast<HIMAGELIST>(SendMessage(TB_SETDISABLEDIMAGELIST, 0, lparam));
+        m_disabledImages = disabledImages;
         return images;
     }
 
@@ -1080,11 +1082,12 @@ namespace Win32xx
 
     // Sets the image list that the ToolBar control will use to display hot buttons.
     // Refer to TB_SETHOTIMAGELIST in the Windows API documentation for more information.
-    inline HIMAGELIST CToolBar::SetHotImageList(HIMAGELIST hotImages)
+    inline CImageList CToolBar::SetHotImageList(HIMAGELIST hotImages)
     {
         assert(IsWindow());
         LPARAM lparam = reinterpret_cast<LPARAM>(hotImages);
-        HIMAGELIST images = reinterpret_cast<HIMAGELIST>(SendMessage(TB_SETHOTIMAGELIST, 0, lparam));
+        CImageList images = reinterpret_cast<HIMAGELIST>(SendMessage(TB_SETHOTIMAGELIST, 0, lparam));
+        m_hotImages = hotImages;
         return images;
     }
 
@@ -1099,11 +1102,12 @@ namespace Win32xx
 
     // Sets the image list that the ToolBar will use to display buttons that are in their default state.
     // Refer to TB_SETIMAGELIST in the Windows API documentation for more information.
-    inline HIMAGELIST CToolBar::SetImageList(HIMAGELIST normalImages)
+    inline CImageList CToolBar::SetImageList(HIMAGELIST normalImages)
     {
         assert(IsWindow());
         LPARAM lparam = reinterpret_cast<LPARAM>(normalImages);
-        HIMAGELIST images = reinterpret_cast<HIMAGELIST>(SendMessage(TB_SETIMAGELIST, 0, lparam));
+        CImageList images = reinterpret_cast<HIMAGELIST>(SendMessage(TB_SETIMAGELIST, 0, lparam));
+        m_normalImages = normalImages;
         return images;
     }
 

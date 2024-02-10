@@ -1,12 +1,12 @@
-// Win32++   Version 9.4
-// Release Date: 25th September 2023
+// Win32++   Version 9.5
+// Release Date: 9th February 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2023  David Nash
+// Copyright (c) 2005-2024  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -84,8 +84,8 @@ namespace Win32xx
         virtual void PreRegisterClass(WNDCLASS& wc);
 
     private:
-        CButton(const CButton&);                // Disable copy construction
-        CButton& operator = (const CButton&);   // Disable assignment operator
+        CButton(const CButton&);               // Disable copy construction
+        CButton& operator=(const CButton&);    // Disable assignment operator
     };
 
 
@@ -155,8 +155,8 @@ namespace Win32xx
         virtual void PreRegisterClass(WNDCLASS& wc);
 
     private:
-        CEdit(const CEdit&);                // Disable copy construction
-        CEdit& operator = (const CEdit&);   // Disable assignment operator
+        CEdit(const CEdit&);               // Disable copy construction
+        CEdit& operator=(const CEdit&);    // Disable assignment operator
     };
 
 
@@ -227,7 +227,7 @@ namespace Win32xx
 
     private:
         CListBox(const CListBox&);              // Disable copy construction
-        CListBox& operator = (const CListBox&); // Disable assignment operator
+        CListBox& operator=(const CListBox&);   // Disable assignment operator
     };
 
 
@@ -256,8 +256,8 @@ namespace Win32xx
         virtual void PreRegisterClass(WNDCLASS& wc);
 
     private:
-        CStatic(const CStatic&);                // Disable copy construction
-        CStatic& operator = (const CStatic&);   // Disable assignment operator
+        CStatic(const CStatic&);               // Disable copy construction
+        CStatic& operator=(const CStatic&);    // Disable assignment operator
     };
 
 }

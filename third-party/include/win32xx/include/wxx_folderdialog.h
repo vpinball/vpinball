@@ -1,12 +1,12 @@
-// Win32++   Version 9.4
-// Release Date: 25th September 2023
+// Win32++   Version 9.5
+// Release Date: 9th February 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2023  David Nash
+// Copyright (c) 2005-2024  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -156,7 +156,7 @@ namespace Win32xx
 
         CString GetDisplayName() const       { return m_displayName; }
         CString GetFolderPath() const;
-        LPITEMIDLIST GetFolderPidl() const   { return m_fullPidl.back(); }
+        LPITEMIDLIST GetFolderPidl() const   { return m_fullPidl; }
         int  GetImageIndex() const           { return m_imageIndex; }
         UINT GetFlags() const                { return m_flags; }
         void EnableOK(BOOL enable = TRUE);
@@ -180,7 +180,7 @@ namespace Win32xx
 
     private:
         CFolderDialog(const CFolderDialog&);              // Disable copy construction.
-        CFolderDialog& operator = (const CFolderDialog&); // Disable assignment operator.
+        CFolderDialog& operator=(const CFolderDialog&);   // Disable assignment operator.
 
         static int CALLBACK BrowseCallbackProc(HWND wnd, UINT msg, LPARAM param1, LPARAM lparam2);
 
@@ -188,9 +188,9 @@ namespace Win32xx
         CString m_title;
         BROWSEINFO m_bi;
         LPITEMIDLIST m_pidlRoot;
+        LPITEMIDLIST m_fullPidl;
         int m_imageIndex;
         UINT m_flags;
-        std::vector<LPITEMIDLIST> m_fullPidl;
     };
 
 }
@@ -202,7 +202,7 @@ namespace Win32xx
 namespace Win32xx
 {
 
-    inline CFolderDialog::CFolderDialog() : m_pidlRoot(0), m_imageIndex(0)
+    inline CFolderDialog::CFolderDialog() : m_pidlRoot(NULL), m_fullPidl(NULL), m_imageIndex(0)
     {
         ZeroMemory(&m_bi, sizeof(m_bi));
         m_bi.lpfn = BrowseCallbackProc;
@@ -218,12 +218,10 @@ namespace Win32xx
     inline CFolderDialog::~CFolderDialog()
     {
         // Free the memory allocated to our pidls.
-        std::vector<LPITEMIDLIST>::iterator it;
-        for (it = m_fullPidl.begin(); it != m_fullPidl.end(); ++it)
-            CoTaskMemFree(*it);
+        CoTaskMemFree(m_fullPidl);
     }
 
-    // The callback function used used to send messages to and process messages
+    // The callback function used to send messages to and process messages
     // from a Browse dialog box displayed in response to a call to SHBrowseForFolder.
     inline int CALLBACK CFolderDialog::BrowseCallbackProc(HWND wnd, UINT msg, LPARAM param1, LPARAM param2)
     {
@@ -258,6 +256,9 @@ namespace Win32xx
     // Displays the folder browser dialog.
     inline INT_PTR CFolderDialog::DoModal(HWND parent)
     {
+        if (m_fullPidl != NULL)
+            CoTaskMemFree(m_fullPidl);
+        m_fullPidl = NULL;
         m_bi.lpszTitle = m_title.c_str();
         m_bi.pszDisplayName = m_displayName.GetBuffer(MAX_PATH);
         m_bi.ulFlags = m_flags;
@@ -270,7 +271,7 @@ namespace Win32xx
         INT_PTR result = 0;
         if (pidl)
         {
-            m_fullPidl.push_back(pidl);
+            m_fullPidl = pidl;
             result = IDOK;
             OnOK();
         }
@@ -297,7 +298,7 @@ namespace Win32xx
     inline CString CFolderDialog::GetFolderPath() const
     {
         CString str;
-        SHGetPathFromIDList(m_fullPidl.back(), str.GetBuffer(MAX_PATH));
+        SHGetPathFromIDList(m_fullPidl, str.GetBuffer(MAX_PATH));
         str.ReleaseBuffer();
 
         return str;

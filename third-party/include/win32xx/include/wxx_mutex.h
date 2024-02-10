@@ -1,12 +1,12 @@
-// Win32++   Version 9.4
-// Release Date: 25th September 2023
+// Win32++   Version 9.5
+// Release Date: 9th February 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2023  David Nash
+// Copyright (c) 2005-2024  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -87,7 +87,7 @@ namespace Win32xx
 
     private:
         CEvent(const CEvent&);              // Disable copy construction
-        CEvent& operator = (const CEvent&); // Disable assignment operator
+        CEvent& operator=(const CEvent&);   // Disable assignment operator
 
         HANDLE m_event;
     };
@@ -109,7 +109,7 @@ namespace Win32xx
 
     private:
         CMutex(const CMutex&);              // Disable copy construction
-        CMutex& operator = (const CMutex&); // Disable assignment operator
+        CMutex& operator=(const CMutex&);   // Disable assignment operator
 
         HANDLE m_mutex;
     };
@@ -132,7 +132,7 @@ namespace Win32xx
 
     private:
         CSemaphore(const CSemaphore&);              // Disable copy construction
-        CSemaphore& operator = (const CSemaphore&); // Disable assignment operator
+        CSemaphore& operator=(const CSemaphore&);   // Disable assignment operator
 
         HANDLE m_semaphore;
     };

@@ -1,12 +1,12 @@
-// Win32++   Version 9.4
-// Release Date: 25th September 2023
+// Win32++   Version 9.5
+// Release Date: 9th February 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2023  David Nash
+// Copyright (c) 2005-2024  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -61,6 +61,7 @@ namespace Win32xx
     // Forward declaration
     class CBitmap;
 
+
     ///////////////////////////////////////
     // The CImageList class that provides the functionality of image lists.
     // An image list is a collection of images of the same size, each of
@@ -74,8 +75,8 @@ namespace Win32xx
         CImageList();
         CImageList(HIMAGELIST images);
         CImageList(const CImageList& rhs);
-        CImageList& operator = (const CImageList& rhs);
-        void operator = (const HIMAGELIST rhs);
+        CImageList& operator=(const CImageList& rhs);
+        CImageList& operator=(HIMAGELIST rhs);
         virtual ~CImageList();
 
         // Initialization
@@ -84,7 +85,9 @@ namespace Win32xx
         BOOL Create(LPCTSTR resourceName, int cx, int grow, COLORREF mask);
         BOOL Create(HIMAGELIST images);
         BOOL CreateDisabledImageList(HIMAGELIST normalImages);
-
+        void CreateDragImage(HWND header, int index);
+        void CreateDragImage(HWND listView, int item, CPoint& pt);
+        void CreateDragImage(HWND treeView, HTREEITEM item);
 
         // Operations
         int Add(HBITMAP bitmap) const;
@@ -161,7 +164,7 @@ namespace Win32xx
     }
 
     // Note: A copy of a CImageList is a clone of the original.
-    inline CImageList& CImageList::operator = (const CImageList& rhs)
+    inline CImageList& CImageList::operator=(const CImageList& rhs)
     {
         if (this != &rhs)
         {
@@ -174,9 +177,10 @@ namespace Win32xx
         return *this;
     }
 
-    inline void CImageList::operator = (const HIMAGELIST rhs)
+    inline CImageList& CImageList::operator=(HIMAGELIST rhs)
     {
         Attach(rhs);
+        return *this;
     }
 
     inline CImageList::~CImageList()
@@ -373,14 +377,60 @@ namespace Win32xx
         return (copyImages != 0) ? TRUE : FALSE;
     }
 
+    // Creates a transparent version of an item image within the header control.
+    // Refer to Header_CreateDragImage in the Windows API documentation for more information.
+    inline void CImageList::CreateDragImage(HWND header, int index)
+    {
+        assert(::IsWindow(header));
+        HIMAGELIST images = Header_CreateDragImage(header, index);
+
+        if (images == 0)
+            throw CResourceException(GetApp()->MsgGdiImageList());
+
+        Assign(images);
+    }
+
+    // Creates a drag image list for the specified item.
+    // Refer to ListView_CreateDragImage in the Windows API documentation for more information.
+    inline void CImageList::CreateDragImage(HWND listView, int item, CPoint& pt)
+    {
+        assert(::IsWindow(listView));
+        HIMAGELIST images = ListView_CreateDragImage(listView, item, &pt);
+
+        if (images == 0)
+            throw CResourceException(GetApp()->MsgGdiImageList());
+
+        Assign(images);
+    }
+
+    // Creates a dragging bitmap for the specified item in a tree-view control.
+    // It also creates an image list for the bitmap and adds the bitmap to the image list.
+    // Refer to TreeView_CreateDragImage in the Windows API documentation for more information.
+    inline void CImageList::CreateDragImage(HWND treeView, HTREEITEM item)
+    {
+        assert(::IsWindow(treeView));
+        HIMAGELIST images = TreeView_CreateDragImage(treeView, item);
+
+        if (images == 0)
+            throw CResourceException(GetApp()->MsgGdiImageList());
+
+        Assign(images);
+    }
+
     // Destroys an image list.
     inline void CImageList::DeleteImageList()
     {
         assert(m_pData);
 
-        if (m_pData->images != 0)
+        CThreadLock mapLock(GetApp()->m_gdiLock);
+
+        if (m_pData && m_pData->images != 0)
         {
-            ImageList_Destroy(Detach());
+            RemoveFromMap();
+
+            ImageList_Destroy(m_pData->images);
+            m_pData->images = 0;
+            m_pData->isManagedHiml = false;
         }
     }
 
@@ -710,7 +760,7 @@ namespace Win32xx
                 // Draw the image on the memory DC
                 ImageList_Draw(normalImages, i, memDC, 0, 0, ILD_NORMAL);
 
-                // Detach the bitmap so we can use it.
+                // Convert the bitmap to grayscale and add it to the imagelist.
                 CBitmap bitmap = memDC.DetachBitmap();
                 bitmap.ConvertToDisabled(mask);
                 Add(bitmap, mask);

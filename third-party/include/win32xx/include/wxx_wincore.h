@@ -1,12 +1,12 @@
-// Win32++   Version 9.4
-// Release Date: 25th September 2023
+// Win32++   Version 9.5
+// Release Date: 9th February 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2023  David Nash
+// Copyright (c) 2005-2024  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -94,6 +94,7 @@ int APIENTRY WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 #include "wxx_appcore.h"
 #include "wxx_wincore0.h"
 #include "wxx_gdi.h"
+#include "wxx_imagelist.h"
 #include "wxx_menu.h"
 #include "wxx_ddx.h"
 
@@ -239,8 +240,9 @@ namespace Win32xx
         HMODULE user = GetModuleHandle(_T("user32.dll"));
         if (user && ::IsWindow(wnd))
         {
-            GETDPIFORWINDOW* pGetDpiForWindow =
-                reinterpret_cast<GETDPIFORWINDOW*>(GetProcAddress(user, "GetDpiForWindow"));
+            GETDPIFORWINDOW* pGetDpiForWindow = reinterpret_cast<GETDPIFORWINDOW*>(
+                reinterpret_cast<void*>(::GetProcAddress(user, "GetDpiForWindow")));
+
             if (pGetDpiForWindow)
             {
                 dpi = static_cast<int>(pGetDpiForWindow(wnd));
@@ -528,6 +530,7 @@ namespace Win32xx
                                HMENU idOrMenu, LPVOID lparam /*= NULL*/)
     {
         assert( !IsWindow() );     // Only one window per CWnd instance allowed.
+        Cleanup();
 
         // Ensure a window class is registered.
         CString classString;
@@ -1200,11 +1203,10 @@ namespace Win32xx
             }
         }
 
+        assert(w != 0);
         if (w == 0)
         {
             // Got a message for a window that's not in the map.
-            // We should never get here.
-            TRACE("*** Warning in CWnd::StaticWindowProc: HWND not in window map ***\n");
             return 0;
         }
 
@@ -2666,8 +2668,6 @@ namespace Win32xx
     }
 
     #endif
-
-
 
 
 }

@@ -1,12 +1,12 @@
-// Win32++   Version 9.4
-// Release Date: 25th September 2023
+// Win32++   Version 9.5
+// Release Date: 9th February 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2023  David Nash
+// Copyright (c) 2005-2024  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -57,6 +57,123 @@
 
 namespace Win32xx
 {
+    template <class T>
+    CGlobalLock<T>::CGlobalLock(const CGlobalLock& rhs)
+    {
+        m_h = rhs.m_h;
+        m_p = rhs.m_p;
+    }
+
+    // Assignment operator.
+    template <class T>
+    CGlobalLock<T>& CGlobalLock<T>::operator= (const CGlobalLock& rhs)
+    {
+        m_h = rhs.m_h;
+        m_p = rhs.m_p;
+        return *this;
+    }
+
+    // Assignment operator.
+    template <class T>
+    CGlobalLock<T>& CGlobalLock<T>::operator=(HANDLE h)
+    {
+        if (h != m_h)
+        {
+            Unlock();
+            m_h = h;
+            Lock();
+        }
+        return *this;
+    }
+
+    // Lock the handle.
+    template <class T>
+    inline void CGlobalLock<T>::Lock()
+    {
+        if (m_h != 0)
+        {
+            m_p = reinterpret_cast<T*>(::GlobalLock(m_h));
+            // Did the lock succeed?
+            if (m_p == 0)
+            {
+                // The handle is probably invalid
+                throw CWinException(GetApp()->MsgWndGlobalLock());
+            }
+        }
+        else
+            m_p = 0;
+    }
+
+    // Unlock the handle.
+    template <class T>
+    inline void CGlobalLock<T>::Unlock()
+    {
+        if (m_h != 0)
+        {
+            ::GlobalUnlock(m_h);
+            m_h = 0;
+        }
+    }
+
+    template <>
+    inline LPCTSTR CGlobalLock<DEVNAMES>::c_str() const
+    {
+        assert(m_p != NULL);
+        return reinterpret_cast<LPCTSTR>(m_p);
+    }
+
+    template <>
+    inline LPTSTR CGlobalLock<DEVNAMES>::GetString() const
+    {
+        assert(m_p != NULL);
+        return reinterpret_cast<LPTSTR>(m_p);
+    }
+
+    template<>
+    inline CString CGlobalLock<DEVNAMES>::GetDeviceName() const
+    {
+        return (m_p != NULL) ? c_str() + (*this)->wDeviceOffset : _T("");
+    }
+
+    template<>
+    inline CString CGlobalLock<DEVNAMES>::GetDriverName() const
+    {
+        return (m_p != NULL) ? c_str() + (*this)->wDriverOffset : _T("");
+    }
+
+    template<>
+    inline CString CGlobalLock<DEVNAMES>::GetPortName() const
+    {
+        return (m_p != NULL) ? c_str() + (*this)->wOutputOffset : _T("");
+    }
+
+    template<>
+    inline bool CGlobalLock<DEVNAMES>::IsDefaultPrinter() const
+    {
+        return (m_p != NULL) ? ((*this)->wDefault & DN_DEFAULTPRN) : false;
+    }
+
+
+
+    //////////////////////////////////////////////////////////////////////
+    // A set of typedefs to simplify the use of CGlobalLock.
+    // These provide self unlocking objects that can be used for pointers
+    // to global memory. Using these typedefs eliminate the need to manually
+    // lock or unlock the global memory handles.
+    // Note: In the examples below, hDevMode and hDevNames can be either a raw
+    //       global memory handle, or a CHGlobal object.
+    //
+    // Example usage:
+    //   CDevMode  pDevMode(hDevMode);      // and use pDevMode as if it were a LPDEVMODE
+    //   CDevNames pDevNames(hDevNames);    // and use pDevNames as if it were a LPDEVNAMES
+    //   assert(pDevNames.Get());           // Get can be used to access the underlying pointer
+    //   CDevNames(hDevNames).GetDeviceName // Returns a CString containing the device name.
+    //
+    /////////////////////////////////////////////////////////////////////
+
+    typedef CGlobalLock<DEVMODE>    CDevMode;
+    typedef CGlobalLock<DEVNAMES>   CDevNames;
+
 
     ////////////////////////////////////
     // Definitions for the CWinApp class
@@ -68,9 +185,19 @@ namespace Win32xx
         static CCriticalSection cs;
         CThreadLock appLock(cs);
 
+        // This assert fails if Win32++ has already been started.
+        // There should only be one instance of CWinApp running at a time.
+        assert(SetnGetThis() == 0);
+
         if (SetnGetThis() == 0)
         {
             m_tlsData = ::TlsAlloc();
+
+            // This assert fails if all TLS indexes are already allocated by this app.
+            // At least 64 TLS indexes per process are allowed.
+            // Win32++ requires only one TLS index.
+            assert(m_tlsData != TLS_OUT_OF_INDEXES);
+
             if (m_tlsData != TLS_OUT_OF_INDEXES)
             {
                 SetnGetThis(this);
@@ -78,8 +205,8 @@ namespace Win32xx
                 // Set the instance handle
                 MEMORY_BASIC_INFORMATION mbi;
                 ZeroMemory(&mbi, sizeof(mbi));
-                static int Address = 0;
-                VirtualQuery(&Address, &mbi, sizeof(mbi));
+                static int address = 0;
+                VirtualQuery(&address, &mbi, sizeof(mbi));
                 assert(mbi.AllocationBase);
                 m_instance = (HINSTANCE)mbi.AllocationBase;
 
@@ -95,21 +222,6 @@ namespace Win32xx
                 //       for other OLE functionality.
                 VERIFY(SUCCEEDED(OleInitialize(NULL)));
             }
-            else
-            {
-                // Should not get here.
-                // All TLS indexes are already allocated by this app.
-                // At least 64 TLS indexes per process are allowed.
-                // Win32++ requires only one TLS index.
-                TRACE("\n*** Error: Unable to allocate Thread Local Storage. ***");
-                TRACE("\n*** Error: Win32++ hasn't been started. ***\n\n");
-            }
-        }
-        else
-        {
-            // Should not get here.
-            TRACE("\n*** Warning: Win32++ has already been started. ***");
-            TRACE("\n*** Warning: This instance of CWinApp has been ignored. ***\n\n");
         }
     }
 
@@ -157,7 +269,7 @@ namespace Win32xx
         m_mapCGDIData.insert(std::make_pair(gdi, pData));
     }
 
-    // Adds a HIMAGELIST and Ciml_Data* pair to the map.
+    // Adds a HIMAGELIST and CIml_Data* pair to the map.
     inline void CWinApp::AddCImlData(HIMAGELIST images, CIml_Data* pData)
     {
         CThreadLock mapLock(m_wndLock);
@@ -342,6 +454,13 @@ namespace Win32xx
         return ::LoadImage(GetResourceHandle(), MAKEINTRESOURCE (imageID), type, cx, cy, flags);
     }
 
+    // Frees the global memory handles for the application's printer.
+    inline void CWinApp::ResetPrinterMemory()
+    {
+        m_devMode.Free();
+        m_devNames.Free();
+    }
+
     // Registers a temporary window class so we can get the callback
     // address of CWnd::StaticWindowProc.
     inline void CWinApp::SetCallback()
@@ -443,6 +562,73 @@ namespace Win32xx
         }
     }
 
+    // Updates the printer global memory if we were using the default printer,
+    // and the default printer has changed.
+    inline void CWinApp::UpdateDefaultPrinter()
+    {
+        CThreadLock lock(GetApp()->m_printLock);
+
+        if (m_devNames.Get() == 0)
+        {
+            // Allocate global printer memory by specifying the default printer.
+            PRINTDLG pd;
+            ZeroMemory(&pd, sizeof(pd));
+            pd.Flags = PD_RETURNDEFAULT;
+            pd.lStructSize = sizeof(pd);
+            ::PrintDlg(&pd);
+            m_devMode.Reassign(pd.hDevMode);
+            m_devNames.Reassign(pd.hDevNames);
+        }
+        else
+        {
+            // Global memory has already been allocated
+            if (CDevNames(m_devNames).IsDefaultPrinter())
+            {
+                // Get current default printer
+                PRINTDLG pd;
+                ZeroMemory(&pd, sizeof(pd));
+                pd.lStructSize = sizeof(pd);
+                pd.Flags = PD_RETURNDEFAULT;
+                ::PrintDlg(&pd);
+
+                if (pd.hDevNames == 0)
+                {
+                    // Printer was default, but now there are no printers.
+                    m_devMode.Free();
+                    m_devNames.Free();
+                }
+                else
+                {
+                    // Compare current default printer to the one in global memory
+                    if (CDevNames(m_devNames).GetDeviceName() != CDevNames(pd.hDevNames).GetDeviceName() ||
+                        CDevNames(m_devNames).GetDriverName() != CDevNames(pd.hDevNames).GetDriverName() ||
+                        CDevNames(m_devNames).GetPortName()   != CDevNames(pd.hDevNames).GetPortName())
+                    {
+                        // Default printer has changed. Reset the global memory.
+                        m_devMode.Free();
+                        m_devNames.Free();
+                        m_devMode.Reassign(pd.hDevMode);
+                        m_devNames.Reassign(pd.hDevNames);
+                    }
+                    else
+                    {
+                        ::GlobalFree(pd.hDevMode);
+                        ::GlobalFree(pd.hDevNames);
+                    }
+                }
+            }
+        }
+    }
+
+    // Updates the current printer global memory with the specified memory
+    // handles. This function assumes the old global memory has already
+    // been freed.
+    inline void CWinApp::UpdatePrinterMemory(HGLOBAL hDevMode, HGLOBAL hDevNames)
+    {
+        m_devMode.Reassign(hDevMode);
+        m_devNames.Reassign(hDevNames);
+    }
+
     // Messages used for exceptions.
     inline CString CWinApp::MsgAppThread() const
     { return _T("Failed to create thread."); }
@@ -541,6 +727,9 @@ namespace Win32xx
 
     inline CString CWinApp::MsgGdiFont() const
     { return _T("Failed to create font."); }
+
+    inline CString CWinApp::MsgGdiImageList() const
+    { return _T("Failed to create image list."); }
 
     inline CString CWinApp::MsgGdiPalette() const
     { return _T("Failed to create palette."); }
@@ -717,6 +906,7 @@ namespace Win32xx
         str.LoadString(id);
         return str;
     }
+
 
 } // namespace Win32xx
 
