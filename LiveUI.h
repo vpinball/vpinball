@@ -185,7 +185,7 @@ private:
    int m_rotate = 0;
    float m_dpi = 1.0f;
    ImFont *m_baseFont = nullptr;
-   ImFont *m_boldFont = nullptr;
+   ImFont *m_overlayBoldFont = nullptr;
    ImFont *m_overlayFont = nullptr;
    float m_menubar_height = 0.0f;
    float m_toolbar_height = 0.0f;
