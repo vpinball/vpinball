@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "ui/dialogs/Properties/PlungerPhysicsProperty.h"
+#include "ui/properties/PlungerPhysicsProperty.h"
 #include <WindowsX.h>
 
 PlungerPhysicsProperty::PlungerPhysicsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPPLUNGER_PHYSICS, pvsel)

@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "ui/dialogs/Properties/FlasherVisualsProperty.h"
+#include "ui/properties/FlasherVisualsProperty.h"
 #include <WindowsX.h>
 
 FlasherVisualsProperty::FlasherVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPFLASHER_VISUALS, pvsel)

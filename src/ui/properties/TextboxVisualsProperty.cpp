@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "ui/dialogs/Properties/TextboxVisualsProperty.h"
+#include "ui/properties/TextboxVisualsProperty.h"
 #include <WindowsX.h>
 
 TextboxVisualsProperty::TextboxVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPTEXTBOX_VISUALS, pvsel)

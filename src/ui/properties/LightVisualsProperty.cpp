@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "ui/dialogs/Properties/LightVisualsProperty.h"
+#include "ui/properties/LightVisualsProperty.h"
 #include <WindowsX.h>
 
 LightVisualsProperty::LightVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPLIGHT_VISUALS, pvsel)

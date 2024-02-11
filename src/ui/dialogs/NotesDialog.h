@@ -6,7 +6,7 @@
 #include <wxx_appcore.h>		// Add CCriticalSection, CObject, CWinThread, CWinApp
 #include <wxx_commondlg.h>		// Add CCommonDialog, CColorDialog, CFileDialog, CFindReplace, CFontDialog 
 #include <wxx_richedit.h>
-#include "ui/dialogs/Properties/PropertyDialog.h"
+#include "ui/properties/PropertyDialog.h"
 
 class NotesEdit : public CEdit
 {

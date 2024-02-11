@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "ui/dialogs/Properties/LightseqStatesProperty.h"
+#include "ui/properties/LightseqStatesProperty.h"
 #include <WindowsX.h>
 
 LightseqStatesProperty::LightseqStatesProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPLIGHTSEQ_STATE, pvsel)

@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "ui/dialogs/Properties/TableVisualsProperty.h"
+#include "ui/properties/TableVisualsProperty.h"
 #include <WindowsX.h>
 
 TableVisualsProperty::TableVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPTABLE_VISUALS, pvsel)

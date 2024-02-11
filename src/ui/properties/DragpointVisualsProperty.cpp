@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "ui/dialogs/Properties/DragpointVisualsProperty.h"
+#include "ui/properties/DragpointVisualsProperty.h"
 #include <WindowsX.h>
 
 

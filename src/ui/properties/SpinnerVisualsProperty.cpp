@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "ui/dialogs/Properties/SpinnerVisualsProperty.h"
+#include "ui/properties/SpinnerVisualsProperty.h"
 #include <WindowsX.h>
 
 SpinnerVisualsProperty::SpinnerVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPSPINNER_VISUALS, pvsel)

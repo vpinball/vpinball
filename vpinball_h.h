@@ -28,7 +28,7 @@
 #include "ui/dialogs/ToolbarDialog.h"
 #include "ui/dialogs/LayersListDialog.h"
 #include "ui/dialogs/NotesDialog.h"
-#include "ui/dialogs/Properties/PropertyDialog.h"
+#include "ui/properties/PropertyDialog.h"
 #ifdef ENABLE_SDL
 #include "ui/dialogs/VROptionsDialog.h"
 #endif

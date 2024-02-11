@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "ui/dialogs/Properties/TablePhysicsProperty.h"
+#include "ui/properties/TablePhysicsProperty.h"
 #include <WindowsX.h>
 
 TablePhysicsProperty::TablePhysicsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPTABLE_PHYSICS, pvsel)

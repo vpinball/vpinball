@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "ui/dialogs/Properties/TriggerPhysicsProperty.h"
+#include "ui/properties/TriggerPhysicsProperty.h"
 #include <WindowsX.h>
 
 TriggerPhysicsProperty::TriggerPhysicsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPTRIGGER_STATE, pvsel)

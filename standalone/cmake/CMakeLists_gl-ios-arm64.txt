@@ -74,8 +74,6 @@ add_executable(vpinball
    iselect.h
    Material.h
    mesh.h
-   mixer.cpp
-   mixer.h
    pinbinary.cpp
    pinbinary.h
    pininput.cpp
@@ -94,6 +92,8 @@ add_executable(vpinball
 
    src/audio/audioplayer.cpp
    src/audio/audioplayer.h
+   src/audio/mixer.cpp
+   src/audio/mixer.h
    src/audio/pinsound.cpp
    src/audio/pinsound.h
 
@@ -104,12 +104,12 @@ add_executable(vpinball
    src/core/TableDB.cpp
    src/core/TableDB.h
 
-   math/bbox.h
-   math/math.cpp
-   math/math.h
-   math/matrix.cpp
-   math/matrix.h
-   math/vector.h
+   src/math/bbox.h
+   src/math/math.cpp
+   src/math/math.h
+   src/math/matrix.cpp
+   src/math/matrix.h
+   src/math/vector.h
    src/math/ModelViewProj.h
 
    src/meshes/ballMesh.h

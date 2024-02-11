@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "ui/dialogs/Properties/HitTargetVisualsProperty.h"
+#include "ui/properties/HitTargetVisualsProperty.h"
 #include <WindowsX.h>
 
 HitTargetVisualsProperty::HitTargetVisualsProperty(const VectorProtected<ISelect> *pvsel):BasePropertyDialog(IDD_PROPHITTARGET_VISUALS, pvsel)
