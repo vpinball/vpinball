@@ -1219,11 +1219,11 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
          m_tweakState[activeTweakSetting] = 0;
          if (keyEvent != 1) // Only keydown
             return;
-         int stepi = up ? TP_Count - 1 : 1;
+         int stepi = up ? 1 : TP_Count - 1;
          m_activeTweakPage = (TweakPage)((m_activeTweakPage + stepi) % TP_Count);
          if (m_activeTweakPage == TP_Rules && m_table->m_szRules.empty())
             m_activeTweakPage = (TweakPage)((m_activeTweakPage + stepi) % TP_Count);
-         if (m_activeTweakPage == TP_Info && m_table->m_szRules.empty())
+         if (m_activeTweakPage == TP_Rules && m_table->m_szDescription.empty())
             m_activeTweakPage = (TweakPage)((m_activeTweakPage + stepi) % TP_Count);
          m_activeTweakIndex = 0;
          UpdateTweakPage();
@@ -1630,7 +1630,7 @@ void LiveUI::UpdateTweakModeUI()
 {
    PinTable* const table = m_live_table;
    constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
-   ImGui::SetNextWindowBgAlpha(0.35f);
+   ImGui::SetNextWindowBgAlpha(0.5f);
    ImGui::SetNextWindowPos(ImVec2(0.5f * ImGui::GetIO().DisplaySize.x, 0.8f * ImGui::GetIO().DisplaySize.y), 0, ImVec2(0.5f, 1.f));
    ImVec2 size(min(m_overlayFont->FontSize * (m_activeTweakPage == TP_Rules ? 35.f : m_activeTweakPage == TP_Info ? 45.0f : 30.0f), min(ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y)), 0.f);
    ImGui::SetNextWindowSizeConstraints(size, ImGui::GetIO().DisplaySize);
@@ -1661,6 +1661,7 @@ void LiveUI::UpdateTweakModeUI()
          ImGui::Text("%s", m_tweakState[id] == 0 ? "  " : m_tweakState[id] == 1 ? " **" : " *"); ImGui::TableNextRow(); \
       }
       #define CM_SKIP_LINE {ImGui::TableNextColumn(); ImGui::Dummy(ImVec2(0.f, m_dpi * 3.f)); ImGui::TableNextRow();}
+      const int nTweakPages = 2 + (m_table->m_szRules.empty() ? 0 : 1) + (m_table->m_szDescription.empty() ? 0 : 1);
       const float realToVirtual = viewSetup.GetRealToVirtualScale(table);
       for (int setting : m_tweakPageOptions)
       {
@@ -1694,7 +1695,9 @@ void LiveUI::UpdateTweakModeUI()
          else switch (setting)
          {
          case BS_Page:
-               CM_ROW(setting, "Option Page:", "%s",
+               CM_ROW(setting,
+                  "Page "s.append(std::to_string(m_activeTweakPage + 1 - (m_table->m_szRules.empty() ? 1 : 0) - (m_table->m_szDescription.empty() ? 1 : 0)))
+                     .append("/").append(std::to_string(nTweakPages)).c_str(),"%s",
                   m_activeTweakPage == TP_TableOption      ? "Table Options"
                      : m_activeTweakPage == TP_PointOfView ? "Point of View"
                      : m_activeTweakPage == TP_Rules       ? "Rules"
@@ -1774,24 +1777,8 @@ void LiveUI::UpdateTweakModeUI()
    }
    else if (m_activeTweakPage == TP_Info)
    {
-      std::ostringstream info;
-      if (!m_table->m_szTableName.empty())
-         info << m_table->m_szTableName;
-      else
-         info << "Table";
-      if (!m_table->m_szAuthor.empty())
-         info << " by " << m_table->m_szAuthor;
-      if (!m_table->m_szVersion.empty())
-         info << " (" << m_table->m_szVersion << ')';
-      info << " (" << (!m_table->m_szDateSaved.empty() ? m_table->m_szDateSaved : "N.A.") << " Revision " << m_table->m_numTimesSaved << ")\n";
-      const size_t line_length = info.str().size();
-      info << std::string(line_length, '=') << '\n';
-      if (!m_table->m_szBlurb.empty())
-         info << m_table->m_szBlurb << std::string(line_length, '=') << '\n';
-      if (!m_table->m_szDescription.empty())
-         info << m_table->m_szDescription;
-      ImGui::NewLine();
-      HelpTextCentered(info.str());
+      markdown_start_id = ImGui::GetItemID();
+      ImGui::Markdown(m_table->m_szDescription.c_str(), m_table->m_szDescription.length(), markdown_config);
       ImGui::NewLine();
    }
 
@@ -1819,7 +1806,9 @@ void LiveUI::UpdateTweakModeUI()
    }
    infos.push_back(activeTweakSetting == BS_Page ? "Flipper keys:   Previous/Next page"s : "Flipper keys:   Adjust highlighted value"s);
    const int info = (((int)((msec() - m_StartTime_msec) / 2000ull))) % (int)infos.size();
+   ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyle().Colors[ImGuiCol_TextDisabled]);
    HelpTextCentered(infos[info]);
+   ImGui::PopStyleColor();
 
    ImGui::End();
 }
@@ -3044,31 +3033,35 @@ void LiveUI::UpdateMainSplashModal()
    // Display table name,author,version and blurb and description
    {
       std::ostringstream info;
+
       if (m_ShowUI) // Move below menu & toolbar
          info << "\n\n\n\n";
+
       if (!m_table->m_szTableName.empty())
-         info << m_table->m_szTableName;
+         info << "# " << m_table->m_szTableName << "\n";
       else
-         info << "Table";
-      if (!m_table->m_szAuthor.empty())
-         info << " by " << m_table->m_szAuthor;
-      if (!m_table->m_szVersion.empty())
-         info << " (" << m_table->m_szVersion << ")";
-      //info << std::format(" ({:s} Revision {:d})\n", !m_table->m_szDateSaved.empty() ? m_table->m_szDateSaved : "N.A.", m_table->m_numTimesSaved);
-      info << " (" << (!m_table->m_szDateSaved.empty() ? m_table->m_szDateSaved : "N.A.") << " Revision " << m_table->m_numTimesSaved << ")\n";
+         info << "# Table\n";
+
       const size_t line_length = info.str().size();
-      info << std::string(line_length, '=') << "\n";
       if (!m_table->m_szBlurb.empty())
-         info << m_table->m_szBlurb << std::string(line_length, '=') << "\n";
+         info << m_table->m_szBlurb << std::string(line_length, '=') << '\n';
       if (!m_table->m_szDescription.empty())
          info << m_table->m_szDescription;
-      constexpr ImGuiWindowFlags window_flags
-         = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
+
+      info << "\n\n  ";
+      if (!m_table->m_szAuthor.empty())
+         info << "By " << m_table->m_szAuthor << ", ";
+      if (!m_table->m_szVersion.empty())
+         info << "Version: " << m_table->m_szVersion;
+      info << " (" << (!m_table->m_szDateSaved.empty() ? m_table->m_szDateSaved : "N.A.") << " Revision " << m_table->m_numTimesSaved << ")\n";
+
+      constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
       ImGui::SetNextWindowBgAlpha(0.5f);
       ImGui::SetNextWindowPos(ImVec2(0, 0));
       ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
       ImGui::Begin("Table Info", nullptr, window_flags);
-      HelpTextCentered(info.str());
+      markdown_start_id = ImGui::GetItemID();
+      ImGui::Markdown(info.str().c_str(), info.str().length(), markdown_config);
       ImGui::End();
    }
 
