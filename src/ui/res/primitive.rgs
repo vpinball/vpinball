@@ -1,0 +1,21 @@
+HKCR
+{
+	VPinball.Primitive.1 = s 'Primitive Class'
+	{
+		CLSID = s '{61DFD108-76D5-410A-ADBC-33B11A6A36EE}'
+	}
+	VPinball.Primitive = s 'Primitive Class'
+	{
+		CLSID = s '{61DFD108-76D5-410A-ADBC-33B11A6A36EE}'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {61DFD108-76D5-410A-ADBC-33B11A6A36EE} = s 'Primitive Class'
+		{
+			ProgID = s 'VPinball.Primitive.1'
+			VersionIndependentProgID = s 'VPinball.Primitive'
+			val AppID = s '{61DFD108-76D5-410A-ADBC-33B11A6A36EE}'
+			LocalServer32 = s '%Module%'
+		}
+	}
+}

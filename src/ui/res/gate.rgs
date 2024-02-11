@@ -1,0 +1,21 @@
+HKCR
+{
+	VPinball.Gate.1 = s 'Gate Class'
+	{
+		CLSID = s '{5692B7A1-B753-4F59-A9F9-8EE85E1A1C3D}'
+	}
+	VPinball.Gate = s 'Gate Class'
+	{
+		CLSID = s '{5692B7A1-B753-4F59-A9F9-8EE85E1A1C3D}'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {5692B7A1-B753-4F59-A9F9-8EE85E1A1C3D} = s 'Gate Class'
+		{
+			ProgID = s 'VPinball.Gate.1'
+			VersionIndependentProgID = s 'VPinball.Gate'
+			val AppID = s '{62843C46-5699-4DF7-80C3-D82827FC0363}'
+			LocalServer32 = s '%Module%'
+		}
+	}
+}

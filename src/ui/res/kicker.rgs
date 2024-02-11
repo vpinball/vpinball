@@ -1,0 +1,21 @@
+HKCR
+{
+	VPinball.Kicker.1 = s 'Kicker Class'
+	{
+		CLSID = s '{498EB992-C01F-4CD4-B710-E4E1D268C994}'
+	}
+	VPinball.Kicker = s 'Kicker Class'
+	{
+		CLSID = s '{498EB992-C01F-4CD4-B710-E4E1D268C994}'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {498EB992-C01F-4CD4-B710-E4E1D268C994} = s 'Kicker Class'
+		{
+			ProgID = s 'VPinball.Kicker.1'
+			VersionIndependentProgID = s 'VPinball.Kicker'
+			val AppID = s '{62843C46-5699-4DF7-80C3-D82827FC0363}'
+			LocalServer32 = s '%Module%'
+		}
+	}
+}

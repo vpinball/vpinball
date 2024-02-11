@@ -1,0 +1,21 @@
+HKCR
+{
+	VPinball.Light.1 = s 'Light Class'
+	{
+		CLSID = s '{31DD37E7-DB9B-4AB1-94C9-FAA06B252DFA}'
+	}
+	VPinball.Light = s 'Light Class'
+	{
+		CLSID = s '{31DD37E7-DB9B-4AB1-94C9-FAA06B252DFA}'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {31DD37E7-DB9B-4AB1-94C9-FAA06B252DFA} = s 'Light Class'
+		{
+			ProgID = s 'VPinball.Light.1'
+			VersionIndependentProgID = s 'VPinball.Light'
+			val AppID = s '{62843C46-5699-4DF7-80C3-D82827FC0363}'
+			LocalServer32 = s '%Module%'
+		}
+	}
+}

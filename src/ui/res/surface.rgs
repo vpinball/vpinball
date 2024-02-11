@@ -1,0 +1,24 @@
+HKCR
+{
+	VPinball.Surface.1 = s 'Surface Class'
+	{
+		CLSID = s '{CF3B5615-2271-4FE4-A1BF-E77D81B88C5D}'
+	}
+	VPinball.Surface = s 'Surface Class'
+	{
+		CLSID = s '{CF3B5615-2271-4FE4-A1BF-E77D81B88C5D}'
+		CurVer = s 'VPinball.Surface.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {CF3B5615-2271-4FE4-A1BF-E77D81B88C5D} = s 'Surface Class'
+		{
+			ProgID = s 'VPinball.Surface.1'
+			VersionIndependentProgID = s 'VPinball.Surface'
+			ForceRemove 'Programmable'
+			LocalServer32 = s '%MODULE%'
+			val AppID = s '{62843C46-5699-4DF7-80C3-D82827FC0363}'
+			'TypeLib' = s '{384DF69D-3592-4041-848D-9A2D5CD081A0}'
+		}
+	}
+}

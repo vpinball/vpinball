@@ -1,0 +1,11 @@
+HKCR
+{
+	NoRemove AppID
+	{
+		{62843C46-5699-4DF7-80C3-D82827FC0363} = s 'VPinball'
+		'vpinball.exe'
+		{
+			val AppID = s {62843C46-5699-4DF7-80C3-D82827FC0363}
+		}
+	}
+}

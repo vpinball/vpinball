@@ -1,0 +1,21 @@
+HKCR
+{
+	VPinball.LightSeq.1 = s 'LightSeq Class'
+	{
+		CLSID = s '{F4758E77-AD9A-49A6-8146-AB94540F0102}'
+	}
+	VPinball.LightSeq = s 'LightSeq Class'
+	{
+		CLSID = s '{F4758E77-AD9A-49A6-8146-AB94540F0102}'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {F4758E77-AD9A-49A6-8146-AB94540F0102} = s 'LightSeq Class'
+		{
+			ProgID = s 'VPinball.LightSeq.1'
+			VersionIndependentProgID = s 'VPinball.LightSeq'
+			val AppID = s '{62843C46-5699-4DF7-80C3-D82827FC0363}'
+			LocalServer32 = s '%Module%'
+		}
+	}
+}

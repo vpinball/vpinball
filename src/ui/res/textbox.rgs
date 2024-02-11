@@ -1,0 +1,21 @@
+HKCR
+{
+	VPinball.Textbox.1 = s 'Textbox Class'
+	{
+		CLSID = s '{CB6071D5-E0E5-4CF9-B114-BB84EA701E9C}'
+	}
+	VPinball.Textbox = s 'Textbox Class'
+	{
+		CLSID = s '{CB6071D5-E0E5-4CF9-B114-BB84EA701E9C}'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {CB6071D5-E0E5-4CF9-B114-BB84EA701E9C} = s 'Textbox Class'
+		{
+			ProgID = s 'VPinball.Textbox.1'
+			VersionIndependentProgID = s 'VPinball.Textbox'
+			val AppID = s '{62843C46-5699-4DF7-80C3-D82827FC0363}'
+			LocalServer32 = s '%Module%'
+		}
+	}
+}

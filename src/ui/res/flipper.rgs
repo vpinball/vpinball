@@ -1,0 +1,21 @@
+HKCR
+{
+	VPinball.Flipper.1 = s 'Flipper Class'
+	{
+		CLSID = s '{68AB2BBC-8209-40F3-B6F4-54F8ADAA0DC7}'
+	}
+	VPinball.Flipper = s 'Flipper Class'
+	{
+		CLSID = s '{68AB2BBC-8209-40F3-B6F4-54F8ADAA0DC7}'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {68AB2BBC-8209-40F3-B6F4-54F8ADAA0DC7} = s 'Flipper Class'
+		{
+			ProgID = s 'VPinball.Flipper.1'
+			VersionIndependentProgID = s 'VPinball.Flipper'
+			val AppID = s '{62843C46-5699-4DF7-80C3-D82827FC0363}'
+			LocalServer32 = s '%Module%'
+		}
+	}
+}
