@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "ui/dialogs/Properties/KickerVisualsProperty.h"
+#include "ui/properties/KickerVisualsProperty.h"
 #include <WindowsX.h>
 
 KickerVisualsProperty::KickerVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPKICKER_VISUALS, pvsel)

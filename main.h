@@ -366,7 +366,7 @@ class SCNotification { };
 #include "parts/ramp.h"
 #include "parts/flasher.h"
 #include "parts/rubber.h"
-#include "mixer.h"
+#include "audio/mixer.h"
 #include "hid.h"
 
 #include "physics/kdtree.h"

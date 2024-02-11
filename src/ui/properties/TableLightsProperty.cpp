@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "ui/dialogs/Properties/TableLightsProperty.h"
+#include "ui/properties/TableLightsProperty.h"
 #include <WindowsX.h>
 
 TableLightsProperty::TableLightsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPTABLE_LIGHTSOURCES, pvsel)

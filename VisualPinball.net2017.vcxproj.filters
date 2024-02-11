@@ -40,7 +40,7 @@
     <Filter Include="ui\dialogs">
       <UniqueIdentifier>{2890089b-1408-4cfb-a6ce-93c682c026da}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ui\dialogs\Properties">
+    <Filter Include="ui\properties">
       <UniqueIdentifier>{448abbef-cfdb-46d4-8f5d-12a4e59cb1dc}</UniqueIdentifier>
     </Filter>
     <Filter Include="utils">
@@ -69,6 +69,26 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="def.cpp" />
+    <ClCompile Include="dragpoint.cpp" />
+    <ClCompile Include="extern.cpp" />
+    <ClCompile Include="hid.cpp" />
+    <ClCompile Include="ieditable.cpp" />
+    <ClCompile Include="iselect.cpp" />
+    <ClCompile Include="pinbinary.cpp" />
+    <ClCompile Include="pininput.cpp" />
+    <ClCompile Include="pinundo.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="vpinball.cpp" />
+    <ClCompile Include="wintimer.cpp" />
+    <ClCompile Include="worker.cpp" />
+    <ClCompile Include="bulb.cpp" />
+    <ClCompile Include="stdafx.cpp">
+      <Filter>headers</Filter>
+    </ClCompile>
+    <ClCompile Include="src/audio/mixer.cpp">
+      <Filter>audio</Filter>
+    </ClCompile>
     <ClCompile Include="src/audio/audioplayer.cpp">
       <Filter>audio</Filter>
     </ClCompile>
@@ -87,193 +107,10 @@
     <ClCompile Include="src/core/TableDB.cpp">
       <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/dialogs/AboutDialog.cpp">
-      <Filter>ui\dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/dialogs/DimensionDialog.cpp">
-      <Filter>ui\dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/dialogs/DrawingOrderDialog.cpp">
-      <Filter>ui\dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/dialogs/ImageDialog.cpp">
-      <Filter>ui\dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/dialogs/MaterialDialog.cpp">
-      <Filter>ui\dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/dialogs/SearchSelectDialog.cpp">
-      <Filter>ui\dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/dialogs/SoundDialog.cpp">
-      <Filter>ui\dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/dialogs/TableInfoDialog.cpp">
-      <Filter>ui\dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/dialogs/EditorOptionsDialog.cpp">
-      <Filter>ui\dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/dialogs/AudioOptionsDialog.cpp">
-      <Filter>ui\dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/dialogs/VideoOptionsDialog.cpp">
-      <Filter>ui\dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/dialogs/CollectionManagerDialog.cpp">
-      <Filter>ui\dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/dialogs/NotesDialog.cpp">
-      <Filter>ui\dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/dialogs/PhysicsOptionsDialog.cpp">
-      <Filter>ui\dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/dialogs/KeysConfigDialog.cpp">
-      <Filter>ui\dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/dialogs/ScriptErrorDialog.cpp">
-      <Filter>ui\dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/dialogs/ToolbarDialog.cpp">
-      <Filter>ui\dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/dialogs/Properties/PropertyDialog.cpp">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/dialogs/Properties/WallVisualsProperty.cpp">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/dialogs/Properties/GateVisualsProperty.cpp">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/dialogs/Properties/GatePhysicsProperty.cpp">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/dialogs/Properties/WallPhysicsProperty.cpp">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/dialogs/Properties/RampPhysicsProperty.cpp">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/dialogs/Properties/RampVisualsProperty.cpp">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/dialogs/Properties/FlipperPhysicsProperty.cpp">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/dialogs/Properties/FlipperVisualsProperty.cpp">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/dialogs/Properties/DragpointVisualsProperty.cpp">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/dialogs/Properties/PlungerPhysicsProperty.cpp">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/dialogs/Properties/PlungerVisualsProperty.cpp">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/dialogs/Properties/BumperPhysicsProperty.cpp">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/dialogs/Properties/BumperVisualsProperty.cpp">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/dialogs/Properties/SpinnerPhysicsProperty.cpp">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/dialogs/Properties/SpinnerVisualsProperty.cpp">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/dialogs/Properties/TriggerVisualsProperty.cpp">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/dialogs/Properties/TriggerPhysicsProperty.cpp">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/dialogs/Properties/LightStatesProperty.cpp">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/dialogs/Properties/LightVisualsProperty.cpp">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/dialogs/Properties/HitTargetPhysicsProperty.cpp">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/dialogs/Properties/HitTargetVisualsProperty.cpp">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/dialogs/Properties/KickerPhysicsProperty.cpp">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/dialogs/Properties/KickerVisualsProperty.cpp">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/dialogs/Properties/DecalVisualsProperty.cpp">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/dialogs/Properties/TextboxVisualsProperty.cpp">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/dialogs/Properties/DispreelVisualsProperty.cpp">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/dialogs/Properties/DispreelStateProperty.cpp">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/dialogs/Properties/LightseqStatesProperty.cpp">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/dialogs/Properties/PrimitiveVisualsProperty.cpp">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/dialogs/Properties/PrimitivePhysicsProperty.cpp">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/dialogs/Properties/PrimitivePositionProperty.cpp">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/dialogs/Properties/FlasherVisualsProperty.cpp">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/dialogs/Properties/RubberVisualsProperty.cpp">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/dialogs/Properties/RubberPhysicsProperty.cpp">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/dialogs/Properties/BackglassVisualsProperty.cpp">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/dialogs/Properties/BackglassCameraProperty.cpp">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/dialogs/Properties/TableAudioProperty.cpp">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/dialogs/Properties/TableVisualsProperty.cpp">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/dialogs/Properties/TablePhysicsProperty.cpp">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/dialogs/Properties/TableLightsProperty.cpp">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/dialogs/LayersListDialog.cpp">
-      <Filter>ui\dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/dialogs/VROptionsDialog.cpp">
-      <Filter>ui\dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/dialogs/RenderProbeDialog.cpp">
-      <Filter>ui\dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="math\math.cpp">
+    <ClCompile Include="src/math/math.cpp">
       <Filter>math</Filter>
     </ClCompile>
-    <ClCompile Include="math\matrix.cpp">
+    <ClCompile Include="src/math/matrix.cpp">
       <Filter>math</Filter>
     </ClCompile>
     <ClCompile Include="src/utils/fileio.cpp">
@@ -435,45 +272,12 @@
     <ClCompile Include="src/renderer/VRDevice.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
-    <ClCompile Include="src/utils/hash.cpp">
-      <Filter>utils</Filter>
-    </ClCompile>
-    <ClCompile Include="src/utils/objloader.cpp">
-      <Filter>utils</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/codeview.cpp">
-      <Filter>ui</Filter>
-    </ClCompile>
-    <ClCompile Include="def.cpp" />
-    <ClCompile Include="dragpoint.cpp" />
-    <ClCompile Include="extern.cpp" />
-    <ClCompile Include="hid.cpp" />
-    <ClCompile Include="src/ui/hitrectsur.cpp">
-      <Filter>ui</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/hitsur.cpp">
-      <Filter>ui</Filter>
-    </ClCompile>
-    <ClCompile Include="ieditable.cpp" />
-    <ClCompile Include="iselect.cpp" />
     <ClCompile Include="src/utils/memutil.cpp">
       <Filter>utils</Filter>
     </ClCompile>
-    <ClCompile Include="mixer.cpp" />
-    <ClCompile Include="src/ui/paintsur.cpp">
-      <Filter>ui</Filter>
+    <ClCompile Include="src/utils/variant.cpp">
+      <Filter>utils</Filter>
     </ClCompile>
-    <ClCompile Include="pinbinary.cpp" />
-    <ClCompile Include="pininput.cpp" />
-    <ClCompile Include="pinundo.cpp" />
-    <ClCompile Include="stdafx.cpp">
-      <Filter>headers</Filter>
-    </ClCompile>
-    <ClCompile Include="src/utils/variant.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="vpinball.cpp" />
-    <ClCompile Include="wintimer.cpp" />
-    <ClCompile Include="worker.cpp" />
     <ClCompile Include="src/utils/BlackBox.cpp">
       <Filter>utils</Filter>
     </ClCompile>
@@ -486,15 +290,215 @@
     <ClCompile Include="src/utils/StackTrace.cpp">
       <Filter>utils</Filter>
     </ClCompile>
+    <ClCompile Include="src/utils/hash.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src/utils/objloader.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/hitrectsur.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/hitsur.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/paintsur.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
     <ClCompile Include="src/ui/codeviewedit.cpp">
       <Filter>ui</Filter>
     </ClCompile>
     <ClCompile Include="src/ui/Debugger.cpp">
       <Filter>ui</Filter>
     </ClCompile>
-    <ClCompile Include="bulb.cpp" />
     <ClCompile Include="src/ui/LiveUI.cpp">
       <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/codeview.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/dialogs/AboutDialog.cpp">
+      <Filter>ui\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/dialogs/DimensionDialog.cpp">
+      <Filter>ui\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/dialogs/DrawingOrderDialog.cpp">
+      <Filter>ui\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/dialogs/ImageDialog.cpp">
+      <Filter>ui\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/dialogs/MaterialDialog.cpp">
+      <Filter>ui\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/dialogs/SearchSelectDialog.cpp">
+      <Filter>ui\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/dialogs/SoundDialog.cpp">
+      <Filter>ui\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/dialogs/TableInfoDialog.cpp">
+      <Filter>ui\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/dialogs/EditorOptionsDialog.cpp">
+      <Filter>ui\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/dialogs/AudioOptionsDialog.cpp">
+      <Filter>ui\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/dialogs/VideoOptionsDialog.cpp">
+      <Filter>ui\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/dialogs/CollectionManagerDialog.cpp">
+      <Filter>ui\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/dialogs/NotesDialog.cpp">
+      <Filter>ui\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/dialogs/PhysicsOptionsDialog.cpp">
+      <Filter>ui\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/dialogs/KeysConfigDialog.cpp">
+      <Filter>ui\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/dialogs/ScriptErrorDialog.cpp">
+      <Filter>ui\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/dialogs/ToolbarDialog.cpp">
+      <Filter>ui\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/properties/PropertyDialog.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/properties/WallVisualsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/properties/GateVisualsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/properties/GatePhysicsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/properties/WallPhysicsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/properties/RampPhysicsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/properties/RampVisualsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/properties/FlipperPhysicsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/properties/FlipperVisualsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/properties/DragpointVisualsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/properties/PlungerPhysicsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/properties/PlungerVisualsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/properties/BumperPhysicsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/properties/BumperVisualsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/properties/SpinnerPhysicsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/properties/SpinnerVisualsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/properties/TriggerVisualsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/properties/TriggerPhysicsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/properties/LightStatesProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/properties/LightVisualsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/properties/HitTargetPhysicsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/properties/HitTargetVisualsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/properties/KickerPhysicsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/properties/KickerVisualsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/properties/DecalVisualsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/properties/TextboxVisualsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/properties/DispreelVisualsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/properties/DispreelStateProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/properties/LightseqStatesProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/properties/PrimitiveVisualsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/properties/PrimitivePhysicsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/properties/PrimitivePositionProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/properties/FlasherVisualsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/properties/RubberVisualsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/properties/RubberPhysicsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/properties/BackglassVisualsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/properties/BackglassCameraProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/properties/TableAudioProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/properties/TableVisualsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/properties/TablePhysicsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/properties/TableLightsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/dialogs/LayersListDialog.cpp">
+      <Filter>ui\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/dialogs/VROptionsDialog.cpp">
+      <Filter>ui\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/dialogs/RenderProbeDialog.cpp">
+      <Filter>ui\dialogs</Filter>
     </ClCompile>
     <ClCompile Include="third-party/include/gpuprofiler.cpp">
       <Filter>third-party</Filter>
@@ -552,6 +556,73 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="bulb.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="def.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="dispid.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="dragpoint.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="editablereg.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="eventproxy.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="extern.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="hid.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="ieditable.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="iselect.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="main.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Material.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="pinbinary.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="pininput.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="pinundo.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="vpinball_h.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="vpinball.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="vpversion.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="wintimer.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="worker.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+
     <ClInclude Include="src/audio/audioplayer.h">
       <Filter>audio</Filter>
     </ClInclude>
@@ -559,6 +630,9 @@
       <Filter>audio</Filter>
     </ClInclude>
     <ClInclude Include="src/audio/wavread.h">
+      <Filter>audio</Filter>
+    </ClInclude>
+    <ClInclude Include="src/audio/mixer.h">
       <Filter>audio</Filter>
     </ClInclude>
     <ClInclude Include="src/core/player.h">
@@ -570,215 +644,23 @@
     <ClInclude Include="src/core/TableDB.h">
       <Filter>core</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/dialogs/AboutDialog.h">
-      <Filter>ui\dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/dialogs/DimensionDialog.h">
-      <Filter>ui\dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/dialogs/DrawingOrderDialog.h">
-      <Filter>ui\dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/dialogs/ImageDialog.h">
-      <Filter>ui\dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/dialogs/SearchSelectDialog.h">
-      <Filter>ui\dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/dialogs/SoundDialog.h">
-      <Filter>ui\dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/dialogs/TableInfoDialog.h">
-      <Filter>ui\dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/dialogs/EditorOptionsDialog.h">
-      <Filter>ui\dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/dialogs/AudioOptionsDialog.h">
-      <Filter>ui\dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/dialogs/VideoOptionsDialog.h">
-      <Filter>ui\dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/dialogs/CollectionManagerDialog.h">
-      <Filter>ui\dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/dialogs/PhysicsOptionsDialog.h">
-      <Filter>ui\dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/dialogs/MaterialDialog.h">
-      <Filter>ui\dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/dialogs/KeysConfigDialog.h">
-      <Filter>ui\dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/dialogs/VROptionsDialog.h">
-      <Filter>ui\dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/dialogs/ToolbarDialog.h">
-      <Filter>ui\dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/dialogs/LayersListDialog.h">
-      <Filter>ui\dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/dialogs/NotesDialog.h">
-      <Filter>ui\dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/dialogs/RenderProbeDialog.h">
-      <Filter>ui\dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/dialogs/ScriptErrorDialog.h">
-      <Filter>ui\dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/dialogs/Properties/PropertyDialog.h">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/dialogs/Properties/WallVisualsProperty.h">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/dialogs/Properties/GateVisualsProperty.h">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/dialogs/Properties/GatePhysicsProperty.h">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/dialogs/Properties/WallPhysicsProperty.h">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/dialogs/Properties/RampPhysicsProperty.h">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/dialogs/Properties/RampVisualsProperty.h">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/dialogs/Properties/FlipperPhysicsProperty.h">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/dialogs/Properties/FlipperVisualsProperty.h">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/dialogs/Properties/DragpointVisualsProperty.h">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/dialogs/Properties/PlungerPhysicsProperty.h">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/dialogs/Properties/PlungerVisualsProperty.h">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/dialogs/Properties/BumperPhysicsProperty.h">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/dialogs/Properties/BumperVisualsProperty.h">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/dialogs/Properties/SpinnerPhysicsProperty.h">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/dialogs/Properties/SpinnerVisualsProperty.h">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/dialogs/Properties/TriggerVisualsProperty.h">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/dialogs/Properties/TriggerPhysicsProperty.h">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/dialogs/Properties/LightStatesProperty.h">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/dialogs/Properties/LightVisualsProperty.h">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/dialogs/Properties/HitTargetPhysicsProperty.h">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/dialogs/Properties/HitTargetVisualsProperty.h">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/dialogs/Properties/KickerPhysicsProperty.h">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/dialogs/Properties/KickerVisualsProperty.h">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/dialogs/Properties/DecalVisualsProperty.h">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/dialogs/Properties/TextboxVisualsProperty.h">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/dialogs/Properties/DispreelVisualsProperty.h">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/dialogs/Properties/DispreelStateProperty.h">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/dialogs/Properties/LightseqStatesProperty.h">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/dialogs/Properties/PrimitiveVisualsProperty.h">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/dialogs/Properties/PrimitivePhysicsProperty.h">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/dialogs/Properties/PrimitivePositionProperty.h">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/dialogs/Properties/FlasherVisualsProperty.h">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/dialogs/Properties/RubberVisualsProperty.h">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/dialogs/Properties/RubberPhysicsProperty.h">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/dialogs/Properties/BackglassVisualsProperty.h">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/dialogs/Properties/BackglassCameraProperty.h">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/dialogs/Properties/TableAudioProperty.h">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/dialogs/Properties/TableVisualsProperty.h">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/dialogs/Properties/TablePhysicsProperty.h">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/dialogs/Properties/TableLightsProperty.h">
-      <Filter>ui\dialogs\Properties</Filter>
-    </ClInclude>
-    <ClInclude Include="math\bbox.h">
+    <ClInclude Include="src/math/bbox.h">
       <Filter>math</Filter>
     </ClInclude>
-    <ClInclude Include="math\math.h">
+    <ClInclude Include="src/math/math.h">
       <Filter>math</Filter>
     </ClInclude>
-    <ClInclude Include="math\matrix.h">
+    <ClInclude Include="src/math/matrix.h">
       <Filter>math</Filter>
     </ClInclude>
     <ClInclude Include="mesh.h">
       <Filter>math</Filter>
     </ClInclude>
-    <ClInclude Include="math\vector.h">
+    <ClInclude Include="src/math/vector.h">
       <Filter>math</Filter>
     </ClInclude>
     <ClInclude Include="src/math/ModelViewProj.h">
       <Filter>math</Filter>
-    </ClInclude>
-    <ClInclude Include="src/utils/lzwwriter.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="src/utils/lzwreader.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="src/utils/fileio.h">
-      <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="src/meshes/ballMesh.h">
       <Filter>assets\meshes</Filter>
@@ -937,13 +819,13 @@
       <Filter>parts</Filter>
     </ClInclude>
     <ClInclude Include="src/physics/collide.h">
-      <Filter>headers</Filter>
+      <Filter>physics</Filter>
     </ClInclude>
     <ClInclude Include="src/physics/collideex.h">
       <Filter>physics</Filter>
     </ClInclude>
     <ClInclude Include="src/physics/hitball.h">
-      <Filter>headers</Filter>
+      <Filter>physics</Filter>
     </ClInclude>
     <ClInclude Include="src/physics/hitflipper.h">
       <Filter>physics</Filter>
@@ -957,7 +839,7 @@
     <ClInclude Include="src/physics/hittimer.h">
       <Filter>physics</Filter>
     </ClInclude>
-    <ClInclude Include="physconst.h">
+    <ClInclude Include="src/physics/physconst.h">
       <Filter>physics</Filter>
     </ClInclude>
     <ClInclude Include="src/physics/kdtree.h">
@@ -1023,7 +905,10 @@
     <ClInclude Include="src/renderer/TextureManager.h">
       <Filter>renderer</Filter>
     </ClInclude>
-    <ClInclude Include="typedefs3D.h">
+    <ClInclude Include="src/renderer/trace.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src/renderer/typedefs3D.h">
       <Filter>renderer</Filter>
     </ClInclude>
     <ClInclude Include="src/renderer/VertexBuffer.h">
@@ -1035,134 +920,254 @@
     <ClInclude Include="src/renderer/VRDevice.h">
       <Filter>renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/Debugger.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="bulb.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="LiveUI.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/codeview.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="def.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="dispid.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="dragpoint.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="editablereg.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="eventproxy.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="extern.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="resource.h">
-      <Filter>headers</Filter>
-    </ClInclude>
     <ClInclude Include="src/utils/hash.h">
-      <Filter>headers</Filter>
+      <Filter>utils</Filter>
     </ClInclude>
-    <ClInclude Include="helpers.h">
-      <Filter>headers</Filter>
+    <ClInclude Include="src/utils/lzwwriter.h">
+      <Filter>utils</Filter>
     </ClInclude>
-    <ClInclude Include="hid.h">
-      <Filter>headers</Filter>
+    <ClInclude Include="src/utils/lzwreader.h">
+      <Filter>utils</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/hitrectsur.h">
-      <Filter>headers</Filter>
+    <ClInclude Include="src/utils/fileio.h">
+      <Filter>utils</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/hitsur.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="ieditable.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="iselect.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="main.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Material.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="src/utils/memutil.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="mixer.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/paintsur.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="pinbinary.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="pininput.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="stdafx.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="pinundo.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="sur.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="trace.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="variant.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="vector.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="vectorsort.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="vpinball_h.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="vpinball.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="vpversion.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="wintimer.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="worker.h">
-      <Filter>headers</Filter>
+    <ClInclude Include="src/utils/helpers.h">
+      <Filter>utils</Filter>
     </ClInclude>
     <ClInclude Include="src/utils/BlackBox.h">
-      <Filter>headers</Filter>
+      <Filter>utils</Filter>
     </ClInclude>
     <ClInclude Include="src/utils/CrashHandler.h">
-      <Filter>headers</Filter>
+      <Filter>utils</Filter>
     </ClInclude>
-    <ClInclude Include="MemoryStatus.h">
-      <Filter>headers</Filter>
+    <ClInclude Include="src/utils/MemoryStatus.h">
+      <Filter>utils</Filter>
     </ClInclude>
     <ClInclude Include="src/utils/StackTrace.h">
-      <Filter>headers</Filter>
+      <Filter>utils</Filter>
     </ClInclude>
     <ClInclude Include="src/utils/objloader.h">
-      <Filter>headers</Filter>
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src/utils/variant.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src/utils/vector.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src/utils/vectorsort.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src/utils/memutil.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/LiveUI.h">
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/Debugger.h">
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/codeview.h">
+      <Filter>ui</Filter>
     </ClInclude>
     <ClInclude Include="src/ui/codeviewedit.h">
-      <Filter>headers</Filter>
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/paintsur.h">
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/sur.h">
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/hitrectsur.h">
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/hitsur.h">
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/dialogs/AboutDialog.h">
+      <Filter>ui\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/dialogs/DimensionDialog.h">
+      <Filter>ui\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/dialogs/DrawingOrderDialog.h">
+      <Filter>ui\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/dialogs/ImageDialog.h">
+      <Filter>ui\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/dialogs/SearchSelectDialog.h">
+      <Filter>ui\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/dialogs/SoundDialog.h">
+      <Filter>ui\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/dialogs/TableInfoDialog.h">
+      <Filter>ui\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/dialogs/EditorOptionsDialog.h">
+      <Filter>ui\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/dialogs/AudioOptionsDialog.h">
+      <Filter>ui\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/dialogs/VideoOptionsDialog.h">
+      <Filter>ui\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/dialogs/CollectionManagerDialog.h">
+      <Filter>ui\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/dialogs/PhysicsOptionsDialog.h">
+      <Filter>ui\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/dialogs/MaterialDialog.h">
+      <Filter>ui\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/dialogs/KeysConfigDialog.h">
+      <Filter>ui\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/dialogs/VROptionsDialog.h">
+      <Filter>ui\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/dialogs/ToolbarDialog.h">
+      <Filter>ui\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/dialogs/LayersListDialog.h">
+      <Filter>ui\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/dialogs/NotesDialog.h">
+      <Filter>ui\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/dialogs/RenderProbeDialog.h">
+      <Filter>ui\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/dialogs/ScriptErrorDialog.h">
+      <Filter>ui\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/properties/PropertyDialog.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/properties/WallVisualsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/properties/GateVisualsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/properties/GatePhysicsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/properties/WallPhysicsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/properties/RampPhysicsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/properties/RampVisualsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/properties/FlipperPhysicsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/properties/FlipperVisualsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/properties/DragpointVisualsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/properties/PlungerPhysicsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/properties/PlungerVisualsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/properties/BumperPhysicsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/properties/BumperVisualsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/properties/SpinnerPhysicsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/properties/SpinnerVisualsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/properties/TriggerVisualsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/properties/TriggerPhysicsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/properties/LightStatesProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/properties/LightVisualsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/properties/HitTargetPhysicsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/properties/HitTargetVisualsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/properties/KickerPhysicsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/properties/KickerVisualsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/properties/DecalVisualsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/properties/TextboxVisualsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/properties/DispreelVisualsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/properties/DispreelStateProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/properties/LightseqStatesProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/properties/PrimitiveVisualsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/properties/PrimitivePhysicsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/properties/PrimitivePositionProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/properties/FlasherVisualsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/properties/RubberVisualsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/properties/RubberPhysicsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/properties/BackglassVisualsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/properties/BackglassCameraProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/properties/TableAudioProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/properties/TableVisualsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/properties/TablePhysicsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/properties/TableLightsProperty.h">
+      <Filter>ui\properties</Filter>
     </ClInclude>
     <ClInclude Include="third-party/include/bass.h">
       <Filter>third-party</Filter>
@@ -1512,276 +1517,276 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="res/chevron.bmp">
+    <Image Include="src/ui/res/chevron.bmp">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="res/logo.bmp">
+    <Image Include="src/ui/res/logo.bmp">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="res/pause.ico">
+    <Image Include="src/ui/res/pause.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="res/play.ico">
+    <Image Include="src/ui/res/play.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="res/script.ico">
+    <Image Include="src/ui/res/script.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="res/step.ico">
+    <Image Include="src/ui/res/step.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="res/table.ico">
+    <Image Include="src/ui/res/table.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="res/toolbar.bmp">
+    <Image Include="src/ui/res/toolbar.bmp">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="res/vpinball.ico">
+    <Image Include="src/ui/res/vpinball.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="res/backglass.ico">
+    <Image Include="src/ui/res/backglass.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="res/bumper.ico">
+    <Image Include="src/ui/res/bumper.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="res/decal.ico">
+    <Image Include="src/ui/res/decal.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="res/flasher.ico">
+    <Image Include="src/ui/res/flasher.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="res/flipper.ico">
+    <Image Include="src/ui/res/flipper.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="res/gate.ico">
+    <Image Include="src/ui/res/gate.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="res/kicker.ico">
+    <Image Include="src/ui/res/kicker.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="res/light.ico">
+    <Image Include="src/ui/res/light.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="res/lightseq.ico">
+    <Image Include="src/ui/res/lightseq.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="res/magnify.ico">
+    <Image Include="src/ui/res/magnify.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="res/options.ico">
+    <Image Include="src/ui/res/options.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="res/plunger.ico">
+    <Image Include="src/ui/res/plunger.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="res/primitive.ico">
+    <Image Include="src/ui/res/primitive.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="res/ramp.ico">
+    <Image Include="src/ui/res/ramp.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="res/reel.ico">
+    <Image Include="src/ui/res/reel.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="res/rubber.ico">
+    <Image Include="src/ui/res/rubber.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="res/select.ico">
+    <Image Include="src/ui/res/select.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="res/spinner.ico">
+    <Image Include="src/ui/res/spinner.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="res/target.ico">
+    <Image Include="src/ui/res/target.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="res/textbox.ico">
+    <Image Include="src/ui/res/textbox.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="res/timer.ico">
+    <Image Include="src/ui/res/timer.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="res/trigger.ico">
+    <Image Include="src/ui/res/trigger.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="res/wall.ico">
+    <Image Include="src/ui/res/wall.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="res/SDbottom.bmp">
+    <Image Include="src/ui/res/SDbottom.bmp">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="res/SDcenter.bmp">
+    <Image Include="src/ui/res/SDcenter.bmp">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="res/SDleft.bmp">
+    <Image Include="src/ui/res/SDleft.bmp">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="res/SDmiddle.bmp">
+    <Image Include="src/ui/res/SDmiddle.bmp">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="res/SDright.bmp">
+    <Image Include="src/ui/res/SDright.bmp">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="res/SDtop.bmp">
+    <Image Include="src/ui/res/SDtop.bmp">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="res/add.ico">
+    <Image Include="src/ui/res/add.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="res/assign.ico">
+    <Image Include="src/ui/res/assign.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="res/expandcolapse.ico">
+    <Image Include="src/ui/res/expandcolapse.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="res/layerIcons16.bmp">
+    <Image Include="src/ui/res/layerIcons16.bmp">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="res/layerIcons32.bmp">
+    <Image Include="src/ui/res/layerIcons32.bmp">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="res/remove.ico">
+    <Image Include="src/ui/res/remove.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="res/layers.ico">
+    <Image Include="src/ui/res/layers.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="res/toolbar.ico">
+    <Image Include="src/ui/res/toolbar.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="res/camera.ico">
+    <Image Include="src/ui/res/camera.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="res/PlayWarning.bmp">
+    <Image Include="src/ui/res/PlayWarning.bmp">
       <Filter>ui\res</Filter>
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <None Include="res/vpinball.rgs">
+    <None Include="src/ui/res/vpinball.rgs">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="res/hittarget.rgs">
+    <None Include="src/ui/res/hittarget.rgs">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="res/ball.rgs">
+    <None Include="src/ui/res/ball.rgs">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="res/bumper.cur">
+    <None Include="src/ui/res/bumper.cur">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="res/bumper.rgs">
+    <None Include="src/ui/res/bumper.rgs">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="res/decal.cur">
+    <None Include="src/ui/res/decal.cur">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="res/dispreel.cur">
+    <None Include="src/ui/res/dispreel.cur">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="res/dispreel.rgs">
+    <None Include="src/ui/res/dispreel.rgs">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="res/dragpoint.rgs">
+    <None Include="src/ui/res/dragpoint.rgs">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="res/flasher.cur">
+    <None Include="src/ui/res/flasher.cur">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="res/flasher.rgs">
+    <None Include="src/ui/res/flasher.rgs">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="res/flipper.cur">
+    <None Include="src/ui/res/flipper.cur">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="res/flipper.rgs">
+    <None Include="src/ui/res/flipper.rgs">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="res/gate.cur">
+    <None Include="src/ui/res/gate.cur">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="res/gate.rgs">
+    <None Include="src/ui/res/gate.rgs">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="res/kicker.cur">
+    <None Include="src/ui/res/kicker.cur">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="res/kicker.rgs">
+    <None Include="src/ui/res/kicker.rgs">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="res/light.cur">
+    <None Include="src/ui/res/light.cur">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="res/light.rgs">
+    <None Include="src/ui/res/light.rgs">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="res/lightseq.cur">
+    <None Include="src/ui/res/lightseq.cur">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="res/lightseq.rgs">
+    <None Include="src/ui/res/lightseq.rgs">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="res/magnify.cur">
+    <None Include="src/ui/res/magnify.cur">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="res/pieventhandler.rgs">
+    <None Include="src/ui/res/pieventhandler.rgs">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="res/plunger.cur">
+    <None Include="src/ui/res/plunger.cur">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="res/plunger.rgs">
+    <None Include="src/ui/res/plunger.rgs">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="res/primitive.cur">
+    <None Include="src/ui/res/primitive.cur">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="res/primitive.rgs">
+    <None Include="src/ui/res/primitive.rgs">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="res/ramp.cur">
+    <None Include="src/ui/res/ramp.cur">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="res/ramp.rgs">
+    <None Include="src/ui/res/ramp.rgs">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="res/rubber.cur">
+    <None Include="src/ui/res/rubber.cur">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="res/rubber.rgs">
+    <None Include="src/ui/res/rubber.rgs">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="res/spinner.cur">
+    <None Include="src/ui/res/spinner.cur">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="res/spinner.rgs">
+    <None Include="src/ui/res/spinner.rgs">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="res/surface.rgs">
+    <None Include="src/ui/res/surface.rgs">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="res/target.cur">
+    <None Include="src/ui/res/target.cur">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="res/textbox.cur">
+    <None Include="src/ui/res/textbox.cur">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="res/textbox.rgs">
+    <None Include="src/ui/res/textbox.rgs">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="res/timer.cur">
+    <None Include="src/ui/res/timer.cur">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="res/timer.rgs">
+    <None Include="src/ui/res/timer.rgs">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="res/trigger.cur">
+    <None Include="src/ui/res/trigger.cur">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="res/trigger.rgs">
+    <None Include="src/ui/res/trigger.rgs">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="res/wall.cur">
+    <None Include="src/ui/res/wall.cur">
       <Filter>ui\res</Filter>
     </None>
     <None Include="shader/FXAAStereoAO.fxh">
@@ -1796,10 +1801,10 @@
     <None Include="shader/SSR.fxh">
       <Filter>shaders</Filter>
     </None>
-    <None Include="res/SplitH.cur">
+    <None Include="src/ui/res/SplitH.cur">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="res/SplitV.cur">
+    <None Include="src/ui/res/SplitV.cur">
       <Filter>ui\res</Filter>
     </None>
     <None Include="shader/BasicShader.glfx">

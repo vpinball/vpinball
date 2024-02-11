@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "ui/dialogs/Properties/PrimitiveVisualsProperty.h"
+#include "ui/properties/PrimitiveVisualsProperty.h"
 #include <WindowsX.h>
 
 PrimitiveVisualsProperty::PrimitiveVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPPRIMITIVE_VISUALS, pvsel)

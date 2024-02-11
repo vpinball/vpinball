@@ -53,7 +53,7 @@ END
 // REGISTRY
 //
 
-IDR_BALL                REGISTRY DISCARDABLE    "res\\ball.rgs"
+IDR_BALL                REGISTRY DISCARDABLE    "src\\ui\\res\\ball.rgs"
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 

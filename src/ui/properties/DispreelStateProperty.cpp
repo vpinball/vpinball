@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "ui/dialogs/Properties/DispreelStateProperty.h"
+#include "ui/properties/DispreelStateProperty.h"
 #include <WindowsX.h>
 
 DispreelStateProperty::DispreelStateProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPDISPREEL_STATE, pvsel)

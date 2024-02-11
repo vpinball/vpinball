@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "ui/dialogs/Properties/GatePhysicsProperty.h"
+#include "ui/properties/GatePhysicsProperty.h"
 #include <WindowsX.h>
 
 GatePhysicsProperty::GatePhysicsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPGATE_PHYSICS, pvsel)

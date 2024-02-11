@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "ui/dialogs/Properties/TriggerVisualsProperty.h"
+#include "ui/properties/TriggerVisualsProperty.h"
 #include <WindowsX.h>
 
 TriggerVisualsProperty::TriggerVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPTRIGGER_VISUALS, pvsel)

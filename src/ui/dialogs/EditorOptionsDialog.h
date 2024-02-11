@@ -5,7 +5,7 @@
 #include <cderr.h>
 #include <wxx_appcore.h>		// Add CCriticalSection, CObject, CWinThread, CWinApp
 #include <wxx_commondlg.h>		// Add CCommonDialog, CColorDialog, CFileDialog, CFindReplace, CFontDialog 
-#include "ui/dialogs/Properties/PropertyDialog.h"
+#include "ui/properties/PropertyDialog.h"
 #include <WindowsX.h>
 
 class EditorOptionsDialog : public CDialog
