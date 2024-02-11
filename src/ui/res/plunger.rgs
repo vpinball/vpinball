@@ -1,0 +1,21 @@
+HKCR
+{
+	VPinball.Plunger.1 = s 'Plunger Class'
+	{
+		CLSID = s '{4C43960F-E04C-4A51-9FBD-83AE50EECC7B}'
+	}
+	VPinball.Plunger = s 'Plunger Class'
+	{
+		CLSID = s '{4C43960F-E04C-4A51-9FBD-83AE50EECC7B}'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {4C43960F-E04C-4A51-9FBD-83AE50EECC7B} = s 'Plunger Class'
+		{
+			ProgID = s 'VPinball.Plunger.1'
+			VersionIndependentProgID = s 'VPinball.Plunger'
+			val AppID = s '{62843C46-5699-4DF7-80C3-D82827FC0363}'
+			LocalServer32 = s '%Module%'
+		}
+	}
+}

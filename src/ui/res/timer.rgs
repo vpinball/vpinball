@@ -1,0 +1,21 @@
+HKCR
+{
+	VPinball.Timer.1 = s 'Timer Class'
+	{
+		CLSID = s '{A0B914E6-56A8-4CC1-A846-45FFF4D8CA17}'
+	}
+	VPinball.Timer = s 'Timer Class'
+	{
+		CLSID = s '{A0B914E6-56A8-4CC1-A846-45FFF4D8CA17}'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {A0B914E6-56A8-4CC1-A846-45FFF4D8CA17} = s 'Timer Class'
+		{
+			ProgID = s 'VPinball.Timer.1'
+			VersionIndependentProgID = s 'VPinball.Timer'
+			val AppID = s '{62843C46-5699-4DF7-80C3-D82827FC0363}'
+			LocalServer32 = s '%Module%'
+		}
+	}
+}

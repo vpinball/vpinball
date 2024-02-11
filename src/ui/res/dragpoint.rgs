@@ -1,0 +1,21 @@
+HKCR
+{
+	VPinball.DragPoint.1 = s 'DragPoint Class'
+	{
+		CLSID = s '{83296774-CAA2-4A0D-B330-98DA6495DFE0}'
+	}
+	VPinball.DragPoint = s 'DragPoint Class'
+	{
+		CLSID = s '{83296774-CAA2-4A0D-B330-98DA6495DFE0}'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {83296774-CAA2-4A0D-B330-98DA6495DFE0} = s 'DragPoint Class'
+		{
+			ProgID = s 'VPinball.DragPoint.1'
+			VersionIndependentProgID = s 'VPinball.DragPoint'
+			val AppID = s '{62843C46-5699-4DF7-80C3-D82827FC0363}'
+			LocalServer32 = s '%Module%'
+		}
+	}
+}

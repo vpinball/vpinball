@@ -1,0 +1,21 @@
+HKCR
+{
+	VPinball.DispReel.1 = s 'DispReel Class'
+	{
+		CLSID = s '{47B68E91-098C-44EE-B2B1-04C87654CF5E}'
+	}
+	VPinball.DispReel = s 'DispReel Class'
+	{
+		CLSID = s '{47B68E91-098C-44EE-B2B1-04C87654CF5E}'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {47B68E91-098C-44EE-B2B1-04C87654CF5E} = s 'DispReel Class'
+		{
+			ProgID = s 'VPinball.DispReel.1'
+			VersionIndependentProgID = s 'VPinball.DispReel'
+			val AppID = s '{62843C46-5699-4DF7-80C3-D82827FC0363}'
+			LocalServer32 = s '%Module%'
+		}
+	}
+}

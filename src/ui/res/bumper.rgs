@@ -1,0 +1,21 @@
+HKCR
+{
+	VPinball.Bumper.1 = s 'Bumper Class'
+	{
+		CLSID = s '{C242DDFF-0D79-4C56-967F-765A30DE8ED6}'
+	}
+	VPinball.Bumper = s 'Bumper Class'
+	{
+		CLSID = s '{C242DDFF-0D79-4C56-967F-765A30DE8ED6}'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {C242DDFF-0D79-4C56-967F-765A30DE8ED6} = s 'Bumper Class'
+		{
+			ProgID = s 'VPinball.Bumper.1'
+			VersionIndependentProgID = s 'VPinball.Bumper'
+			val AppID = s '{62843C46-5699-4DF7-80C3-D82827FC0363}'
+			LocalServer32 = s '%Module%'
+		}
+	}
+}

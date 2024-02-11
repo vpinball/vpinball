@@ -1,0 +1,21 @@
+HKCR
+{
+	VPinball.Trigger.1 = s 'Trigger Class'
+	{
+		CLSID = s '{44D58C78-14BA-47F3-B82C-425853ABB698}'
+	}
+	VPinball.Trigger = s 'Trigger Class'
+	{
+		CLSID = s '{44D58C78-14BA-47F3-B82C-425853ABB698}'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {44D58C78-14BA-47F3-B82C-425853ABB698} = s 'Trigger Class'
+		{
+			ProgID = s 'VPinball.Trigger.1'
+			VersionIndependentProgID = s 'VPinball.Trigger'
+			val AppID = s '{62843C46-5699-4DF7-80C3-D82827FC0363}'
+			LocalServer32 = s '%Module%'
+		}
+	}
+}

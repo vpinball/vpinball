@@ -1,0 +1,21 @@
+HKCR
+{
+	VPinball.Ramp.1 = s 'Ramp Class'
+	{
+		CLSID = s '{374F02B0-57A4-40BC-8730-D351C858B9D3}'
+	}
+	VPinball.Ramp = s 'Ramp Class'
+	{
+		CLSID = s '{374F02B0-57A4-40BC-8730-D351C858B9D3}'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {374F02B0-57A4-40BC-8730-D351C858B9D3} = s 'Ramp Class'
+		{
+			ProgID = s 'VPinball.Ramp.1'
+			VersionIndependentProgID = s 'VPinball.Ramp'
+			val AppID = s '{62843C46-5699-4DF7-80C3-D82827FC0363}'
+			LocalServer32 = s '%Module%'
+		}
+	}
+}

@@ -1,0 +1,21 @@
+HKCR
+{
+	VPinball.Spinner.1 = s 'Spinner Class'
+	{
+		CLSID = s '{355FA5FF-DB59-4D94-99E3-16D3B993D6B5}'
+	}
+	VPinball.Spinner = s 'Spinner Class'
+	{
+		CLSID = s '{355FA5FF-DB59-4D94-99E3-16D3B993D6B5}'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {355FA5FF-DB59-4D94-99E3-16D3B993D6B5} = s 'Spinner Class'
+		{
+			ProgID = s 'VPinball.Spinner.1'
+			VersionIndependentProgID = s 'VPinball.Spinner'
+			val AppID = s '{62843C46-5699-4DF7-80C3-D82827FC0363}'
+			LocalServer32 = s '%Module%'
+		}
+	}
+}

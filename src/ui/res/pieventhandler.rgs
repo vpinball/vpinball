@@ -1,0 +1,21 @@
+HKCR
+{
+	VPinball.PIEventHandler.1 = s 'PIEventHandler Class'
+	{
+		CLSID = s '{51F8984E-D828-429A-8246-2CDB4A24DDF3}'
+	}
+	VPinball.PIEventHandler = s 'PIEventHandler Class'
+	{
+		CLSID = s '{51F8984E-D828-429A-8246-2CDB4A24DDF3}'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {51F8984E-D828-429A-8246-2CDB4A24DDF3} = s 'PIEventHandler Class'
+		{
+			ProgID = s 'VPinball.PIEventHandler.1'
+			VersionIndependentProgID = s 'VPinball.PIEventHandler'
+			val AppID = s '{62843C46-5699-4DF7-80C3-D82827FC0363}'
+			LocalServer32 = s '%Module%'
+		}
+	}
+}
