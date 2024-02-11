@@ -221,7 +221,7 @@ float4 psBall( const in vout IN, uniform bool equirectangularMap, uniform bool d
         + tex2D(tex_ball_playfield, uvp - float2(w_h_disableLighting.x, 0.)).rgb
         + tex2D(tex_ball_playfield, uvp + float2(0., w_h_disableLighting.y)).rgb
         + tex2D(tex_ball_playfield, uvp - float2(0., w_h_disableLighting.y)).rgb
-    ) * invTableRes_reflection.z; // a bit of supersampling, not strictly needed, but a bit better and not that costly
+    ); // a bit of supersampling, not strictly needed, but a bit better and not that costly
 
     // we don't clamp sampling outside the playfield (costly and no real visual impact)
     // const float2 uv = (matWorldViewInverse * float4(playfield_hit, 1.0)).xy * invTableRes_reflection.xy;
@@ -231,7 +231,7 @@ float4 psBall( const in vout IN, uniform bool equirectangularMap, uniform bool d
     {
         // NdotR allows to fade between playfield (down) and environment (up)
         // We can face infinite reflections (ball->playfield->ball->playfield->...) which would overflow, so we saturate to an arbitrary value
-	    ballImageColor = lerp(ballImageColor, min(playfieldColor, float3(15., 15., 15.)), smoothstep(-0.1, 0.1, NdotR));
+        ballImageColor = lerp(ballImageColor, min(playfieldColor, float3(15., 15., 15.)), smoothstep(0.0, 0.15, NdotR) * invTableRes_reflection.z);
     }
 
     float3 diffuse = cBase_Alpha.rgb*0.075;
