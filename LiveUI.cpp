@@ -3086,7 +3086,7 @@ void LiveUI::UpdateMainSplashModal()
          HideUI();
       }
       ImGui::SetItemDefaultFocus();
-      if (m_player->m_stereo3D != STEREO_VR && ImGui::Button("Adjust Camera", size))
+      if (m_player->m_stereo3D != STEREO_VR && ImGui::Button("Table Options", size))
       {
          ImGui::CloseCurrentPopup();
          OpenTweakMode();

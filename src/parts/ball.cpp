@@ -114,7 +114,7 @@ void BallEx::Render(const unsigned int renderMask)
    m_rd->m_ballShader->SetVector(SHADER_invTableRes_reflection, 
       1.0f / (g_pplayer->m_ptable->m_right - g_pplayer->m_ptable->m_left),
       1.0f / (g_pplayer->m_ptable->m_bottom - g_pplayer->m_ptable->m_top), 
-      g_pplayer->m_ptable->m_ballPlayfieldReflectionStrength * m_pball->m_playfieldReflectionStrength, 0.f);
+      clamp(g_pplayer->m_ptable->m_ballPlayfieldReflectionStrength * m_pball->m_playfieldReflectionStrength, 0.f, 1.f), 0.f);
 
    // collect the x nearest lights that can reflect on balls
    Light* light_nearest[MAX_BALL_LIGHT_SOURCES];
