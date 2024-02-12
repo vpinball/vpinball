@@ -263,9 +263,11 @@ void main()
             && !(t <= 0.)) // t < 0.0 may happen in some situation where ball intersects the playfield and the reflected point is inside the ball (like in kicker)
     {
         // NdotR allows to fade between playfield (down) and environment (up)
-        // We can face infinite reflections (ball->playfield->ball->playfield->...) which would overflow, so we saturate to an arbitrary value
-	    ballImageColor = lerp(ballImageColor, min(playfieldColor, float3(15., 15., 15.)), smoothstep(0.0, 0.15, NdotR) * invTableRes_reflection.z);
+	    ballImageColor = lerp(ballImageColor, playfieldColor, smoothstep(0.0, 0.15, NdotR) * invTableRes_reflection.z);
     }
+
+	// We can face infinite reflections (ball->playfield->ball->playfield->...) which would overflow, or very bright dots that would cause lighting artefacts, so we saturate to an arbitrary value
+	ballImageColor = min(ballImageColor, float3(15., 15., 15.));
 
     float3 diffuse = cBase_Alpha.rgb*0.075;
     if(!%PARAM1%) // decalMode

@@ -1328,9 +1328,9 @@ HRESULT Player::Init()
                                     "lower left/right for Flippers, upper left/right for Magna buttons, top left for Credits and (hold) top right to Exit"s, 12000);
    }
 
-   if (m_playMode == 1)
+   if (m_playMode == 1 && m_stereo3D != STEREO_VR)
       m_liveUI->OpenTweakMode();
-   else if (m_playMode == 2)
+   else if (m_playMode == 2 && m_stereo3D != STEREO_VR)
       m_liveUI->OpenLiveUI();
 
    return S_OK;
@@ -2125,7 +2125,7 @@ void Player::FinishFrame()
    if (m_closing == CS_USER_INPUT)
    {
       m_closing = CS_PLAYING;
-      if (g_pvp->m_disable_pause_menu)
+      if (g_pvp->m_disable_pause_menu || m_stereo3D == STEREO_VR)
          m_closing = CS_STOP_PLAY;
       else
          m_liveUI->OpenMainSplash();
