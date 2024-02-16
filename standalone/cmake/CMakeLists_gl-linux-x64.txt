@@ -302,6 +302,7 @@ add_executable(vpinball
    third-party/include/miniz/miniz.c
    third-party/include/miniz/miniz.h   
    third-party/include/robin_hood.h
+   third-party/include/RSJparser/RSJparser.tcc
 
    standalone/vpinball_standalone_i.c
    standalone/vpinball_standalone_i.h
@@ -567,6 +568,8 @@ add_executable(vpinball
    standalone/inc/pup/PUPTrigger.h
    standalone/inc/pup/PUPScreen.cpp
    standalone/inc/pup/PUPScreen.h
+   standalone/inc/pup/PUPLabel.cpp
+   standalone/inc/pup/PUPLabel.h
    standalone/inc/pup/PUPCustomPos.cpp
    standalone/inc/pup/PUPCustomPos.h
    standalone/inc/pup/PUPPlugin.cpp
@@ -631,7 +634,6 @@ target_include_directories(vpinball PUBLIC
    ${CMAKE_SOURCE_DIR}
    third-party/include
    standalone/inc/pole
-   standalone/inc/wine/include
    standalone/inc/wine/include
    standalone/inc/wine/dlls/atl
    standalone/inc/wine/dlls/vbscript

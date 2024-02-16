@@ -1,16 +1,19 @@
 #pragma once
 
-#include "PUPManager.h"
-
 #if !((defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__))
 #define VIDEO_WINDOW_HAS_FFMPEG_LIBS 1
 #endif
+
+#include "PUPManager.h"
+
+#include <set>
 
 class PUPCustomPos;
 class PUPTrigger;
 #ifdef VIDEO_WINDOW_HAS_FFMPEG_LIBS
 class PUPMediaPlayer;
 #endif
+class PUPLabel;
 
 class PUPScreen {
 public:
@@ -30,10 +33,15 @@ public:
    const vector<PUPScreen*>& GetChildren() const { return m_children; }
    void AddTrigger(PUPTrigger* pTrigger);
    void Init(SDL_Renderer* pRenderer, int w, int h);
+   void AddLabel(const string& labelName, PUPLabel* pLabel, int pageNum);
+   PUPLabel* GetLabel(const string& labelName);
    void Render();
    const SDL_Rect& GetRect() const { return m_rect; }
-   string ToString() const;
+   void SetCurrentPage(int pageNum) { m_currentPage = pageNum; }
+   void SetDefaultPageNum(int pageNum) { m_defaultPageNum = pageNum; }
+   void SetLabelPageSeconds(int seconds) { m_labelPageSeconds = seconds; }
    void Trigger(const string& szTrigger);
+   string ToString() const;
 
 private:
    PUPScreen(PUPManager* m_pManager);
@@ -50,11 +58,14 @@ private:
    SDL_Rect m_rect;
    vector<PUPScreen*> m_children;
    std::map<string, PUPTrigger*> m_triggerMap;
+   std::map<string, PUPLabel*> m_labelMap;
 #ifdef VIDEO_WINDOW_HAS_FFMPEG_LIBS
    PUPMediaPlayer* m_pMediaPlayer;
 #endif
    SDL_Renderer* m_pRenderer;
    SDL_Surface* m_pOverlay;
    SDL_Texture* m_pOverlayTexture;
+   int m_currentPage;
+   int m_defaultPageNum;
+   int m_labelPageSeconds;
 };
-
