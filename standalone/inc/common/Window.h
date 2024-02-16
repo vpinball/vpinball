@@ -21,6 +21,10 @@ public:
    void OnUpdate();
    void OnRender();
    virtual void Render() { };
+   VP::Graphics* GetGraphics() { return m_pGraphics; }
+   SDL_Point GetPosition() { return SDL_Point { m_x, m_y }; }
+   int GetWidth();
+   int GetHeight();
 
 private:
    SDL_Window* m_pWindow;

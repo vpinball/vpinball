@@ -166,3 +166,4 @@ cp third-party/runtime-libs/macos/arm64/libzedmd.0.5.0.dylib ../../external/lib
 cp third-party/runtime-libs/macos/arm64/libserialport.dylib ../../external/lib
 cp build/libdmdutil.0.2.0.dylib ../../external/lib
 cd ..
+

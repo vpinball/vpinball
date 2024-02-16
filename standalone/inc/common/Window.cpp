@@ -129,4 +129,32 @@ void Window::OnRender()
    }
 }
 
+int Window::GetWidth()
+{
+   int w;
+   SDL_GetWindowSize(m_pWindow, &w, nullptr);
+   return w;
+}
+
+int Window::GetHeight()
+{
+   int h;
+   SDL_GetWindowSize(m_pWindow, nullptr, &h);
+   return h;
+}
+
+int Window::GetWidth()
+{
+   int w;
+   SDL_GetWindowSize(m_pWindow, &w, nullptr);
+   return w;
+}
+
+int Window::GetHeight()
+{
+   int h;
+   SDL_GetWindowSize(m_pWindow, nullptr, &h);
+   return h;
+}
+
 }
