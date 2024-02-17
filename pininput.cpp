@@ -873,6 +873,15 @@ void PinInput::HandleInputSDL(DIDEVICEOBJECTDATA *didod)
       case SDL_CONTROLLERDEVICEREMOVED:
          SetupSDLGameController();
          break;
+      case SDL_CONTROLLERAXISMOTION:
+         if (e.caxis.axis < 6) {
+              didod[j].dwOfs = axes[e.caxis.axis];
+              const int value = e.caxis.value * axisMultiplier[e.caxis.axis];
+              didod[j].dwData = (DWORD)(value);
+              PushQueue(&didod[j], APP_JOYSTICK(0));
+              j++;
+          }
+          break;
       case SDL_CONTROLLERBUTTONDOWN:
       case SDL_CONTROLLERBUTTONUP:
          if (e.cbutton.button < 32) {
@@ -1122,10 +1131,10 @@ void PinInput::Init(const HWND hwnd)
             }
          }
       }
-      uShockType = USHOCKTYPE_GENERIC;
 #else
       SetupSDLGameController();
 #endif
+      uShockType = USHOCKTYPE_GENERIC;
 #else
       m_inputApi = 0;
 #endif
@@ -1759,7 +1768,7 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
         else
             FireKeyEvent(updown, input->dwOfs | 0x01000000); // unknown button events
     }
-#ifndef __STANDALONE__
+#if !defined(__STANDALONE__) || defined(ENABLE_SDL_GAMECONTROLLER)
     else //end joy buttons
     {
         // Axis Deadzone
