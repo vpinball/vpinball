@@ -194,6 +194,23 @@ void VPinball::GetMyPath()
    m_wzMyPath = wzPath;
 }
 
+#ifdef __ANDROID__
+void VPinball::UpdateMyPath(std::string path)
+{
+   m_szMyPath = path;
+
+   if (!m_szMyPath.ends_with("/"))
+   {
+      m_szMyPath += "/";
+   }
+
+   // store 2x
+   WCHAR wzPath[MAX_PATH];
+   MultiByteToWideCharNull(CP_ACP, 0, m_szMyPath.c_str(), -1, wzPath, MAX_PATH);
+   m_wzMyPath = wzPath;
+}
+#endif
+
 void VPinball::GetMyPrefPath()
 {
 #ifdef _WIN32
@@ -1081,7 +1098,11 @@ void VPinball::LoadFileName(const string& szFileName, const bool updateEditor)
    if (firstRun)
       OnInitialUpdate();
 
+#ifndef __ANDROID__
    m_currentTablePath = PathFromFilename(szFileName);
+#else
+   m_currentTablePath = "./tables/";
+#endif
    CloseAllDialogs();
 
    PinTableMDI * const mdiTable = new PinTableMDI(this);
