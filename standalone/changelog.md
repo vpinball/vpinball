@@ -9,6 +9,7 @@ The downside of this approach is not accurately keeping track of history:
     * Add documentation on compiling linux version using Docker
     * Simplified MacOS dylibs in CMakeLists and CPack
     * Add analog input support for game controllers (@TheToon)
+    * Add support for both a joystick and game controller
 
 * 02/09/24
     * Added ball control support (@francisdb)
