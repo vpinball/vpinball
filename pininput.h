@@ -200,13 +200,10 @@ private:
 #endif
 #ifdef ENABLE_SDL_INPUT
    static void SdlScaleHidpi(Sint32 x, Sint32 y, Sint32 *ox, Sint32 *oy);
-#ifndef ENABLE_SDL_GAMECONTROLLER
-   SDL_Joystick* m_inputDeviceSDL;
-   SDL_Haptic* m_rumbleDeviceSDL;
-#else
-   SDL_GameController* m_gameController;
-   void SetupSDLGameController();
-#endif
+   SDL_Joystick* m_pSDLJoystick;
+   SDL_Haptic* m_pSDLRumbleDevice;
+   SDL_GameController* m_pSDLGameController;
+   void RefreshSDLJoystickAndGameController();
 #endif
 #ifdef ENABLE_IGAMECONTROLLER
 #endif

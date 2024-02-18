@@ -36,7 +36,6 @@ add_compile_definitions(
 
    ENABLE_SDL
    ENABLE_SDL_INPUT
-   ENABLE_SDL_GAMECONTROLLER
    ENABLE_INI_SETTINGS
 
    __WINESRC__
