@@ -866,6 +866,15 @@ public:
                      << " (refreshRate=" << displayMode.refresh_rate << ")";
             }
          }
+
+         PLOGI << "Available external window renderers:";
+         int numRenderers = SDL_GetNumRenderDrivers();
+         for (int renderer = 0; renderer < SDL_GetNumRenderDrivers(); renderer++) {
+            SDL_RendererInfo rendererInfo;
+            if (!SDL_GetRenderDriverInfo(renderer, &rendererInfo)) {
+               PLOGI << "Renderer " << renderer << ": " << rendererInfo.name;
+            }
+         }
       }
 
       if (m_listSnd) {

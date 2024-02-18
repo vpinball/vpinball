@@ -4,6 +4,12 @@ To keep up with all the changes in master, and make it easier to rebase, this br
 
 The downside of this approach is not accurately keeping track of history:
 
+* 02/18/24
+    * Update SDL2, SDL2_image, and SDL2_ttf
+    * Add documentation on compiling linux version using Docker
+    * Simplified MacOS dylibs in CMakeLists and CPack
+    * Add analog input support for game controllers (@TheToon)
+
 * 02/09/24
     * Added ball control support (@francisdb)
 
