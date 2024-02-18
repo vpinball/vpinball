@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "core/stdafx.h"
 #include "RenderState.h"
 
 #define RENDER_STATE(name, bitpos, bitsize)                                                                                                                                                  \

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "stdafx.h"
+#include "core/stdafx.h"
 #include "typedefs3D.h"
 
 template<class Fmt, class Buf>

@@ -1,6 +1,6 @@
 // license:GPLv3+
 
-#include "stdafx.h"
+#include "core/stdafx.h"
 #include "matrix.h"
 
 void Matrix3D::Invert()

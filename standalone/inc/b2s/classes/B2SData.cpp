@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "core/stdafx.h"
 
 #include "B2SData.h"
 #include "B2SSettings.h"

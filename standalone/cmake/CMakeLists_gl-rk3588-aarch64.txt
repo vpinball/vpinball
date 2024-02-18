@@ -50,48 +50,36 @@ add_definitions(
 )
 
 add_executable(vpinball
-   backGlass.cpp
-   backGlass.h
-   bulb.cpp
-   bulb.h
-   def.cpp
    def.h
-   dispid.h
    dragpoint.cpp
-   dragpoint.h
-   editablereg.h
    eventproxy.h
-   extern.cpp
-   extern.h
-   hid.cpp
-   hid.h
-   ieditable.cpp
-   ieditable.h
-   iselect.cpp
-   iselect.h
-   Material.h
-   mesh.h
-   pinbinary.cpp
-   pinbinary.h
+   backGlass.cpp
    pininput.cpp
-   pininput.h
-   pinundo.cpp
-   pinundo.h
-   main.cpp
-   main.h
-   vpinball.cpp
-   vpinball_h.h
+   pinbinary.cpp
    vpversion.h
-   wintimer.cpp
-   wintimer.h
 
-   src/audio/audioplayer.cpp
-   src/audio/audioplayer.h
    src/audio/mixer.cpp
    src/audio/mixer.h
+   src/audio/audioplayer.cpp
+   src/audio/audioplayer.h
    src/audio/pinsound.cpp
    src/audio/pinsound.h
 
+   src/core/dispid.h
+   src/core/editablereg.h
+   src/core/extern.cpp
+   src/core/extern.h
+   src/core/ieditable.cpp
+   src/core/ieditable.h
+   src/core/iselect.cpp
+   src/core/iselect.h
+   src/core/pininput.h
+   src/core/pinundo.cpp
+   src/core/pinundo.h
+   src/core/main.cpp
+   src/core/main.h
+   src/core/vpinball.cpp
+   src/core/vpinball_h.h
    src/core/player.cpp
    src/core/player.h
    src/core/Settings.cpp
@@ -105,6 +93,7 @@ add_executable(vpinball
    src/math/matrix.cpp
    src/math/matrix.h
    src/math/vector.h
+   src/math/mesh.h
    src/math/ModelViewProj.h
 
    src/meshes/ballMesh.h
@@ -138,6 +127,10 @@ add_executable(vpinball
    src/meshes/triggerSimpleMesh.h
    src/meshes/triggerStarMesh.h
 
+   src/parts/backGlass.h
+   src/parts/dragpoint.h
+   src/parts/Material.h
+   src/parts/pinbinary.h
    src/parts/ball.cpp
    src/parts/ball.h
    src/parts/bumper.cpp
@@ -203,6 +196,7 @@ add_executable(vpinball
    src/physics/quadtree.cpp
    src/physics/quadtree.h
 
+   src/renderer/trace.h
    src/renderer/Anaglyph.cpp
    src/renderer/Anaglyph.h
    src/renderer/IndexBuffer.cpp
@@ -252,6 +246,13 @@ add_executable(vpinball
    src/ui/hitsur.cpp
    src/ui/hitsur.h
 
+   src/utils/bulb.cpp
+   src/utils/bulb.h
+   src/utils/def.cpp
+   src/utils/hid.cpp
+   src/utils/hid.h
+   wintimer.cpp
+   src/utils/wintimer.h
    src/utils/variant.cpp
    src/utils/variant.h
    src/utils/vector.h

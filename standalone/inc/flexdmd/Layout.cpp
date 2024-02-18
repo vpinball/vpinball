@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "core/stdafx.h"
 #include "Layout.h"
 
 void Layout::Scale(Scaling mode, float sourceWidth, float sourceHeight, float targetWidth, float targetHeight, float& width, float& height)

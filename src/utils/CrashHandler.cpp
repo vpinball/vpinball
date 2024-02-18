@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "core/stdafx.h"
 #include "CrashHandler.h"
 #include "BlackBox.h"
 #include "MemoryStatus.h"

@@ -7,7 +7,7 @@
  *  See the header file progmesh.h for a description of this module
  */
 
-#include "stdafx.h"
+#include "core/stdafx.h"
 
 #include <cstdio>
 #include <cmath>

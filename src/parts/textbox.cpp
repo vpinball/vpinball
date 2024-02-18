@@ -1,7 +1,7 @@
-#include "stdafx.h"
+#include "core/stdafx.h"
 #include "renderer/Shader.h"
 #ifndef __STANDALONE__
-#include "captureExt.h"
+#include "renderer/captureExt.h"
 #endif
 
 Textbox::Textbox()

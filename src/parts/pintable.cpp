@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "core/stdafx.h"
 #include "vpversion.h"
 #include "resource.h"
 #include "utils/hash.h"
@@ -12,7 +12,7 @@
 #include <sstream>
 #include "renderer/Shader.h"
 #ifndef __STANDALONE__
-#include "captureExt.h"
+#include "renderer/captureExt.h"
 #endif
 #include "freeimage.h"
 #include "ThreadPool.h"

@@ -1,10 +1,10 @@
-#include "stdafx.h"
+#include "core/stdafx.h"
 #include "meshes/bulbLightMesh.h"
 #include "meshes/bulbSocketMesh.h"
 #include "renderer/Shader.h"
 #include "renderer/IndexBuffer.h"
 #include "renderer/VertexBuffer.h"
-#include "bulb.h"
+#include "utils/bulb.h"
 
 // Light state can be either a float between 0...1, or 2 for the blinking state.
 // Some old tables would set it to 255 or 'TRUE' (-1) for the full on state, so we perform this 'clamping'

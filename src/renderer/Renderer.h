@@ -4,7 +4,7 @@
 #include "math/ModelViewProj.h"
 #include "renderer/RenderDevice.h"
 #include "renderer/Texture.h"
-#include "backGlass.h"
+#include "parts/backGlass.h"
 
 class FrameQueueLimiter;
 

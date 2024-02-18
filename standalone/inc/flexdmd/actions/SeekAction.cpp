@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "core/stdafx.h"
 #include "SeekAction.h"
 
 SeekAction::SeekAction(AnimatedActor* pTarget, float position)

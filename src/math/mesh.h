@@ -3,9 +3,6 @@
 
 #pragma once
 
-#include "Material.h"
-#include "renderer/Texture.h"
-
 /*
  * Compute coefficients for a cubic polynomial
  *   p(s) = c0 + c1*s + c2*s^2 + c3*s^3

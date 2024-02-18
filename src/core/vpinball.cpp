@@ -2,7 +2,7 @@
 //
 ////////////////////////////////////////////////////////
 
-#include "stdafx.h"
+#include "core/stdafx.h"
 #include "resource.h"
 #ifndef __STANDALONE__
 #include "ui/dialogs/KeysConfigDialog.h"

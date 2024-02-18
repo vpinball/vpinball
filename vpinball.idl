@@ -9,7 +9,7 @@
         midl_pragma warning( disable: 2362 )
 #endif
 
-#include "dispid.h"
+#include "src/core/dispid.h"
 
 #define DISPID_Name                     (0x80010000)
 #define DISPID_Delete                   (0x80010008)

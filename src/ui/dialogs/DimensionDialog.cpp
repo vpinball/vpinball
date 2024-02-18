@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "core/stdafx.h"
 #include "resource.h"
 #include "DimensionDialog.h"
 #include <iostream>

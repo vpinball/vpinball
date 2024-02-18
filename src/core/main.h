@@ -296,11 +296,11 @@ class SCNotification { };
 #endif
 #include "core/Settings.h"
 
-#include "wintimer.h"
+#include "utils/wintimer.h"
 
 #include "eventproxy.h"
 
-#include "worker.h"
+#include "ui/worker.h"
 
 #include "audio/audioplayer.h"
 #include "utils/fileio.h"
@@ -318,14 +318,14 @@ class SCNotification { };
 #endif
 
 #include "audio/pinsound.h"
-#include "pinbinary.h"
+#include "parts/pinbinary.h"
 
 #include "extern.h"
 
 #include "vpinball_h.h"
 #include "parts/pintable.h"
 
-#include "mesh.h"
+#include "math/mesh.h"
 #include "physics/collide.h"
 #include "renderer/Renderer.h"
 
@@ -346,7 +346,7 @@ class SCNotification { };
 
 #include "utils/color.h"
 
-#include "dragpoint.h"
+#include "parts/dragpoint.h"
 #include "parts/timer.h"
 #include "parts/flipper.h"
 #include "parts/plunger.h"
@@ -367,7 +367,7 @@ class SCNotification { };
 #include "parts/flasher.h"
 #include "parts/rubber.h"
 #include "audio/mixer.h"
-#include "hid.h"
+#include "utils/hid.h"
 
 #include "physics/kdtree.h"
 

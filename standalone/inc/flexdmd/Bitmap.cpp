@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "core/stdafx.h"
 #include "Bitmap.h"
 
 Bitmap::Bitmap(void* pData, AssetType assetType)

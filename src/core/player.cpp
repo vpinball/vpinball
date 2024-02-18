@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "core/stdafx.h"
 
 #ifdef ENABLE_SDL
 #include <SDL2/SDL_syswm.h>
@@ -29,7 +29,7 @@
 #include "renderer/VRDevice.h"
 #include "renderer/typedefs3D.h"
 #ifndef __STANDALONE__
-#include "captureExt.h"
+#include "renderer/captureExt.h"
 #endif
 #ifdef _MSC_VER
 #include "winsdk/legacy_touch.h"

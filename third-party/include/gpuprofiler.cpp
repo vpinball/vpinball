@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "core/stdafx.h"
 #include "gpuprofiler.h"
 #include "renderer/typedefs3D.h"
 

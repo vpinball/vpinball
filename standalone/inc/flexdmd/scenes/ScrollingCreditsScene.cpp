@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "core/stdafx.h"
 
 #include "ScrollingCreditsScene.h"
 #include "../actors/Label.h"

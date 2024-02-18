@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "core/stdafx.h"
 #include "RenderProbe.h"
 #include "RenderCommand.h"
 #include "Shader.h"

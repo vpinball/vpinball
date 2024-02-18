@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "core/stdafx.h"
 #include "VPinMAMEGameSettings.h"
 #include "VPinMAMEGame.h"
 #include "mINI/ini.h"

@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "core/stdafx.h"
 #include "BAM/BAM_ViewPortSetup.h"
 #include "BAM/BAM_Tracker.h"
 #include "imgui/imgui.h"

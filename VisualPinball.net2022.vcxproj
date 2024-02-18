@@ -221,7 +221,7 @@
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>core/stdafx.h</PrecompiledHeaderFile>
       <GenerateXMLDocumentationFiles>true</GenerateXMLDocumentationFiles>
       <XMLDocumentationFileName>$(IntDir)</XMLDocumentationFileName>
       <WarningLevel>Level3</WarningLevel>
@@ -283,7 +283,7 @@
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>core/stdafx.h</PrecompiledHeaderFile>
       <GenerateXMLDocumentationFiles>true</GenerateXMLDocumentationFiles>
       <XMLDocumentationFileName>$(IntDir)</XMLDocumentationFileName>
       <WarningLevel>Level3</WarningLevel>
@@ -352,7 +352,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>core/stdafx.h</PrecompiledHeaderFile>
       <GenerateXMLDocumentationFiles>true</GenerateXMLDocumentationFiles>
       <XMLDocumentationFileName>$(IntDir)</XMLDocumentationFileName>
       <BrowseInformation>false</BrowseInformation>
@@ -413,7 +413,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>core/stdafx.h</PrecompiledHeaderFile>
       <GenerateXMLDocumentationFiles>true</GenerateXMLDocumentationFiles>
       <XMLDocumentationFileName>$(IntDir)</XMLDocumentationFileName>
       <BrowseInformation>false</BrowseInformation>
@@ -483,7 +483,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <FloatingPointModel>Fast</FloatingPointModel>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>core/stdafx.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -547,7 +547,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <FloatingPointModel>Fast</FloatingPointModel>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>core/stdafx.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -619,7 +619,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <FloatingPointModel>Fast</FloatingPointModel>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>core/stdafx.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>
@@ -690,7 +690,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <FloatingPointModel>Fast</FloatingPointModel>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>core/stdafx.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>
@@ -742,25 +742,25 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="stdafx.cpp">
+    <ClCompile Include="src/core/stdafx.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="def.cpp" />
+    <ClCompile Include="src/utils/def.cpp" />
     <ClCompile Include="dragpoint.cpp" />
-    <ClCompile Include="extern.cpp" />
-    <ClCompile Include="hid.cpp" />
-    <ClCompile Include="ieditable.cpp" />
-    <ClCompile Include="iselect.cpp" />
+    <ClCompile Include="src/core/extern.cpp" />
+    <ClCompile Include="src/utils/hid.cpp" />
+    <ClCompile Include="src/core/ieditable.cpp" />
+    <ClCompile Include="src/core/iselect.cpp" />
     <ClCompile Include="pinbinary.cpp" />
     <ClCompile Include="pininput.cpp" />
-    <ClCompile Include="pinundo.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="vpinball.cpp" />
+    <ClCompile Include="src/core/pinundo.cpp" />
+    <ClCompile Include="src/core/main.cpp" />
+    <ClCompile Include="src/core/vpinball.cpp" />
     <ClCompile Include="wintimer.cpp" />
-    <ClCompile Include="worker.cpp" />
+    <ClCompile Include="src/ui/worker.cpp" />
     <ClCompile Include="backGlass.cpp" />
-    <ClCompile Include="bulb.cpp" />
-    <ClCompile Include="captureExt.cpp" />
+    <ClCompile Include="src/utils/bulb.cpp" />
+    <ClCompile Include="src/renderer/captureExt.cpp" />
     <ClCompile Include="src/audio/mixer.cpp" />
     <ClCompile Include="src/audio/audioplayer.cpp" />
     <ClCompile Include="src/audio/pinsound.cpp" />
@@ -904,8 +904,8 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="third-party/include/imgui/imgui_widgets.cpp" />
     <ClCompile Include="third-party/include/imgui/imgui_stdlib.cpp" />
     <ClCompile Include="third-party/include/imguizmo/ImGuizmo.cpp" />
-    <ClCompile Include="third-party/include/implot\implot.cpp" />
-    <ClCompile Include="third-party/include/implot\implot_items.cpp" />
+    <ClCompile Include="third-party/include/implot/implot.cpp" />
+    <ClCompile Include="third-party/include/implot/implot_items.cpp" />
     <ClCompile Include="third-party/include/imgui/imgui_impl_opengl3.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -920,8 +920,8 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_GL|x64'">true</ExcludedFromBuild>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="third-party/include/BAM\BAMView.cpp" />
-    <ClCompile Include="third-party/include/glad\src\gl.c">
+    <ClCompile Include="third-party/include/BAM/BAMView.cpp" />
+    <ClCompile Include="third-party/include/glad/src/gl.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
@@ -930,13 +930,13 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
     </ClCompile>
     <ClCompile Include="third-party/include/gpuprofiler.cpp" />
-    <ClCompile Include="third-party/include/miniz\miniz.c">
+    <ClCompile Include="third-party/include/miniz/miniz.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
     </ClCompile>
     <ClCompile Include="third-party/include/progmesh.cpp" />
     <ClCompile Include="third-party/include/serial.cpp" />
-    <ClCompile Include="third-party/include/tinyxml2\tinyxml2.cpp" />
+    <ClCompile Include="third-party/include/tinyxml2/tinyxml2.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="vpinball.idl" />
@@ -1130,31 +1130,31 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <Image Include="src/ui/res/wall.ico" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="backGlass.h" />
-    <ClInclude Include="bulb.h" />
-    <ClInclude Include="captureExt.h" />
+    <ClInclude Include="src/parts/backGlass.h" />
+    <ClInclude Include="src/utils/bulb.h" />
+    <ClInclude Include="src/renderer/captureExt.h" />
     <ClInclude Include="def.h" />
-    <ClInclude Include="dispid.h" />
-    <ClInclude Include="dragpoint.h" />
-    <ClInclude Include="editablereg.h" />
+    <ClInclude Include="src/core/dispid.h" />
+    <ClInclude Include="src/parts/dragpoint.h" />
+    <ClInclude Include="src/core/editablereg.h" />
     <ClInclude Include="eventproxy.h" />
-    <ClInclude Include="extern.h" />
-    <ClInclude Include="hid.h" />
-    <ClInclude Include="ieditable.h" />
-    <ClInclude Include="iselect.h" />
-    <ClInclude Include="main.h" />
-    <ClInclude Include="Material.h" />
-    <ClInclude Include="mesh.h" />
-    <ClInclude Include="pinbinary.h" />
-    <ClInclude Include="pininput.h" />
-    <ClInclude Include="pinundo.h" />
+    <ClInclude Include="src/core/extern.h" />
+    <ClInclude Include="src/utils/hid.h" />
+    <ClInclude Include="src/core/ieditable.h" />
+    <ClInclude Include="src/core/iselect.h" />
+    <ClInclude Include="src/core/main.h" />
+    <ClInclude Include="src/parts/Material.h" />
+    <ClInclude Include="src/math/mesh.h" />
+    <ClInclude Include="src/parts/pinbinary.h" />
+    <ClInclude Include="src/core/pininput.h" />
+    <ClInclude Include="src/core/pinundo.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="stdafx.h" />
-    <ClInclude Include="vpinball_h.h" />
+    <ClInclude Include="src/core/stdafx.h" />
+    <ClInclude Include="src/core/vpinball_h.h" />
     <ClInclude Include="vpinball.h" />
     <ClInclude Include="vpversion.h" />
-    <ClInclude Include="wintimer.h" />
-    <ClInclude Include="worker.h" />
+    <ClInclude Include="src/utils/wintimer.h" />
+    <ClInclude Include="src/ui/worker.h" />
     <ClInclude Include="src/audio/mixer.h" />
     <ClInclude Include="src/audio/audioplayer.h" />
     <ClInclude Include="src/audio/pinsound.h" />
@@ -1353,27 +1353,27 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="third-party/include/imgui/imgui_impl_win32.h" />
     <ClInclude Include="third-party/include/imgui/imgui_internal.h" />
     <ClInclude Include="third-party/include/imgui/imgui_stdlib.h" />
-    <ClInclude Include="third-party/include/implot\implot.h" />
-    <ClInclude Include="third-party/include/implot\implot_internal.h" />
-    <ClInclude Include="third-party/include/BAM\BAMView.h" />
-    <ClInclude Include="third-party/include/BAM\BAM_Tracker.h" />
-    <ClInclude Include="third-party/include/BAM\BAM_ViewPortSetup.h" />
+    <ClInclude Include="third-party/include/implot/implot.h" />
+    <ClInclude Include="third-party/include/implot/implot_internal.h" />
+    <ClInclude Include="third-party/include/BAM/BAMView.h" />
+    <ClInclude Include="third-party/include/BAM/BAM_Tracker.h" />
+    <ClInclude Include="third-party/include/BAM/BAM_ViewPortSetup.h" />
     <ClInclude Include="third-party/include/bass.h" />
     <ClInclude Include="third-party/include/forsyth.h" />
     <ClInclude Include="third-party/include/freeimage.h" />
-    <ClInclude Include="third-party/include/glad\include\glad\gl.h" />
+    <ClInclude Include="third-party/include/glad/include/glad/gl.h" />
     <ClInclude Include="third-party/include/gpuprofiler.h" />
     <ClInclude Include="third-party/include/hidpi.h" />
     <ClInclude Include="third-party/include/hidsdi.h" />
     <ClInclude Include="third-party/include/hidusage.h" />
-    <ClInclude Include="third-party/include/nvapi\nvapi.h" />
-    <ClInclude Include="third-party/include/nvapi\nvapi_lite_common.h" />
-    <ClInclude Include="third-party/include/nvapi\nvapi_lite_d3dext.h" />
-    <ClInclude Include="third-party/include/nvapi\nvapi_lite_salend.h" />
-    <ClInclude Include="third-party/include/nvapi\nvapi_lite_salstart.h" />
-    <ClInclude Include="third-party/include/nvapi\nvapi_lite_sli.h" />
-    <ClInclude Include="third-party/include/nvapi\nvapi_lite_stereo.h" />
-    <ClInclude Include="third-party/include/nvapi\nvapi_lite_surround.h" />
+    <ClInclude Include="third-party/include/nvapi/nvapi.h" />
+    <ClInclude Include="third-party/include/nvapi/nvapi_lite_common.h" />
+    <ClInclude Include="third-party/include/nvapi/nvapi_lite_d3dext.h" />
+    <ClInclude Include="third-party/include/nvapi/nvapi_lite_salend.h" />
+    <ClInclude Include="third-party/include/nvapi/nvapi_lite_salstart.h" />
+    <ClInclude Include="third-party/include/nvapi/nvapi_lite_sli.h" />
+    <ClInclude Include="third-party/include/nvapi/nvapi_lite_stereo.h" />
+    <ClInclude Include="third-party/include/nvapi/nvapi_lite_surround.h" />
     <ClInclude Include="third-party/include/progmesh.h" />
     <ClInclude Include="third-party/include/progmesh_vecmatquat_minimal.h" />
     <ClInclude Include="third-party/include/scilexer.h" />
@@ -1382,7 +1382,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="third-party/include/serial.h" />
     <ClInclude Include="third-party/include/stb_image.h" />
     <ClInclude Include="third-party/include/ThreadPool.h" />
-    <ClInclude Include="third-party/include/tinyxml2\tinyxml2.h" />
+    <ClInclude Include="third-party/include/tinyxml2/tinyxml2.h" />
     <ClInclude Include="third-party/include/win32xx/include/default_resource.h" />
     <ClInclude Include="third-party/include/win32xx/include/wxx_appcore.h" />
     <ClInclude Include="third-party/include/win32xx/include/wxx_appcore0.h" />

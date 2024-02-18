@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "core/stdafx.h"
 #include "ShowAction.h"
 
 ShowAction::ShowAction(Actor* pTarget, bool visible)

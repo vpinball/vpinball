@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "core/stdafx.h"
 #include "ui/properties/DispreelVisualsProperty.h"
 #include <WindowsX.h>
 

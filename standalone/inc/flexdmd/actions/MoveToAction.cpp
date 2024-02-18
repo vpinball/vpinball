@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "core/stdafx.h"
 #include "MoveToAction.h"
 
 MoveToAction::MoveToAction(Actor* pTarget, float x, float y, float duration) : TweenAction::TweenAction(pTarget, duration)

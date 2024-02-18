@@ -5,7 +5,7 @@
  * https://github.com/rtrussell/BBCSDL/blob/master/src/SDL2_gfxPrimitives.c
  */
 
-#include "stdafx.h"
+#include "core/stdafx.h"
 
 #include "RendererGraphics.h"
 

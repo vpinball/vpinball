@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "core/stdafx.h"
 
 #include "Scene.h"
 #include "../actors/FadeOverlay.h"

@@ -186,7 +186,7 @@ Index of this file:
 // [SECTION] Header mess
 //-----------------------------------------------------------------------------
 
-#include "stdafx.h"
+#include "core/stdafx.h"
 
 #if defined(_MSC_VER) && !defined(_CRT_SECURE_NO_WARNINGS)
 #define _CRT_SECURE_NO_WARNINGS

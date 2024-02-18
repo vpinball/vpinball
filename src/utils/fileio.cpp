@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "core/stdafx.h"
 
 #include <mutex>
 static std::mutex mtx; //!! only used for Wine multithreading bug workaround

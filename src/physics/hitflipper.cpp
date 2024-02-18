@@ -20,7 +20,7 @@
 //   - flipper button presses for tricks, tap passes, etc, have to be very short. As such, for a true simulation, the button press has to be sampled at as high a rate as possible (1mS = 1000Hz, or faster) to detect the press and, very shortly after, the release
 //   - flipper button press to coil drive is even shorter - again suggesting a faster sample rate of the button is better
 
-#include "stdafx.h"
+#include "core/stdafx.h"
 
 //
 // license:GPLv3+

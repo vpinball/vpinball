@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "core/stdafx.h"
 #include "VRDevice.h"
 
 // Undefine this if you want to debug VR mode without a VR headset

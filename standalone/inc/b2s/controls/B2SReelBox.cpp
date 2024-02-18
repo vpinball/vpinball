@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "core/stdafx.h"
 
 #include "B2SReelBox.h"
 #include "../classes/B2SData.h"

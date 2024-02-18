@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "core/stdafx.h"
 
 Vertex3Ds DragPoint::m_copyPoint;
 bool      DragPoint::m_pointCopied = false;
