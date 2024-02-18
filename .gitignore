@@ -4,6 +4,7 @@
 .settings
 .idea
 .DS_Store
+.vscode
 
 .github/workflows
 

@@ -86,6 +86,9 @@ private:
 
 public:
    void GetMyPrefPath();
+#ifdef __ANDROID__
+   void UpdateMyPath(const string path);
+#endif
    void AddMDITable(PinTableMDI* mdiTable);
    CMenu GetMainMenu(int id);
    void CloseAllDialogs();
@@ -235,7 +238,7 @@ public:
    wstring m_wzMyPath;
    string m_szMyPrefPath;
    string m_currentTablePath;
-   
+
    int m_autosaveTime;
 
    Material m_dummyMaterial;
