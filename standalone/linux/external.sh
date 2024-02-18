@@ -2,11 +2,11 @@
 
 set -e
 
-SDL2_VERSION=2.28.5
-SDL2_IMAGE_VERSION=2.6.3
-SDL2_TTF_VERSION=2.20.2
+SDL2_VERSION=2.30.0
+SDL2_IMAGE_VERSION=2.8.2
+SDL2_TTF_VERSION=2.22.0
 
-PINMAME_SHA=4a2a21c6bec1c2227af20418278dd7c6dacd61fa
+PINMAME_SHA=90d5d1ae96fb43fc7e01ff49a2bf43deb1e2add0
 LIBALTSOUND_SHA=9ac08a76e2aabc1fba57d3e5a3b87e7f63c09e07
 LIBDMDUTIL_SHA=342f687a9067f4f3ae2fb7863ef296b3f44253e0
 
@@ -83,7 +83,7 @@ cd ..
 
 curl -sL https://github.com/libsdl-org/SDL_image/releases/download/release-${SDL2_IMAGE_VERSION}/SDL2_image-${SDL2_IMAGE_VERSION}.zip -o SDL2_image-${SDL2_IMAGE_VERSION}.zip
 unzip SDL2_image-${SDL2_IMAGE_VERSION}.zip
-cp -r SDL2_image-${SDL2_IMAGE_VERSION}/SDL_image.h ../external/include/SDL2
+cp SDL2_image-${SDL2_IMAGE_VERSION}/include/SDL_image.h ../external/include/SDL2
 cd SDL2_image-${SDL2_IMAGE_VERSION}
 touch cmake/FindSDL2.cmake # force cmake to use the SDL2 we just built
 cmake -DBUILD_SHARED_LIBS=ON \
