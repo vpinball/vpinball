@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "core/stdafx.h"
 #include "ui/properties/BackglassVisualsProperty.h"
 #include <WindowsX.h>
 

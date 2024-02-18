@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "core/stdafx.h"
 
 extern bool bass_init;
 extern int bass_BG_idx;

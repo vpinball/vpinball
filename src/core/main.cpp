@@ -1,6 +1,6 @@
 // VPinball.cpp : Implementation of WinMain
 
-#include "stdafx.h"
+#include "core/stdafx.h"
 
 #include "vpversion.h"
 

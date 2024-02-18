@@ -16,7 +16,7 @@
 // - Documentation        https://dearimgui.com/docs (same as your local docs/ folder).
 // - Introduction, links and more at the top of imgui.cpp
 
-#include "stdafx.h"
+#include "core/stdafx.h"
 #include "imgui.h"
 #ifndef IMGUI_DISABLE
 #include "imgui_impl_win32.h"

@@ -20,7 +20,7 @@ must not be misrepresented as being the original software.
 3. This notice may not be removed or altered from any source
 distribution.
 */
-#include "stdafx.h"
+#include "core/stdafx.h"
 #define _HAS_ITERATOR_DEBUGGING 0
 #include "tinyxml2.h"
 

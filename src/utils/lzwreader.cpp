@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "core/stdafx.h"
 
 #define OUT_OF_MEMORY -10
 #define BAD_CODE_SIZE -20

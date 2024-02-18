@@ -24,7 +24,7 @@
 // SOFTWARE.
 //
 
-#include "stdafx.h"
+#include "core/stdafx.h"
 
 #ifndef IMGUI_DEFINE_MATH_OPERATORS
 #define IMGUI_DEFINE_MATH_OPERATORS

@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "core/stdafx.h"
 #include "PoleStream.h"
 
 HRESULT PoleStream::Create(PoleStorage* pStorage, const string& szName, IStream** ppstm)

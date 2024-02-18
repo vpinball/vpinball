@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "core/stdafx.h"
 #include "VideoDef.h"
 
 VideoDef::VideoDef(const string& videoFilename, bool loop)

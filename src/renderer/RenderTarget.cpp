@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "core/stdafx.h"
 #include "RenderTarget.h"
 #include "RenderDevice.h"
 

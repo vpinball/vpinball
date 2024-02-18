@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "core/stdafx.h"
 #include "VertexBuffer.h"
 #include "RenderDevice.h"
 #include "Shader.h"

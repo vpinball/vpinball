@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "core/stdafx.h"
 #include "ui/properties/TableAudioProperty.h"
 #include <WindowsX.h>
 

@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "core/stdafx.h"
 #include <ctime>
 
 FrameProfiler g_frameProfiler;

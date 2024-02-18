@@ -1,8 +1,8 @@
 #pragma once
 
-#include "stdafx.h"
+#include "core/stdafx.h"
 
-#include "pininput.h"
+#include "core/pininput.h"
 
 #include "imgui/imgui.h"
 #include "imguizmo/ImGuizmo.h"

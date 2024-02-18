@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "core/stdafx.h"
 #include "BlinkAction.h"
 
 BlinkAction::BlinkAction(Actor* pTarget, float secondsShow, float secondsHide, int repeat)

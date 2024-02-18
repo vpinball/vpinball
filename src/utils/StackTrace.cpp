@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "core/stdafx.h"
 #include "StackTrace.h"
 
 #define WIN32_LEAN_AND_MEAN

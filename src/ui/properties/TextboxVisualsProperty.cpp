@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "core/stdafx.h"
 #include "ui/properties/TextboxVisualsProperty.h"
 #include <WindowsX.h>
 

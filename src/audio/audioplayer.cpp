@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "core/stdafx.h"
 
 /*static*/ bool bass_init = false; //!! meh
 int bass_BG_idx = -1;

@@ -127,7 +127,7 @@ You can read releases logs https://github.com/epezent/implot/releases for more d
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 
-#include "stdafx.h"
+#include "core/stdafx.h"
 
 #include "implot.h"
 #include "implot_internal.h"

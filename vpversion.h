@@ -1,6 +1,6 @@
 #pragma once
 
-#include "git_version.h"
+#include "core/git_version.h"
 
 #define VP_VERSION_MAJOR    10 // X Digits
 #define VP_VERSION_MINOR    8  // Max 2 Digits

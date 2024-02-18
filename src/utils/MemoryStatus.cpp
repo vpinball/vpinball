@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "core/stdafx.h"
 #include "MemoryStatus.h"
 
 #define WIN32_LEAN_AND_MEAN

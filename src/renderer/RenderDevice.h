@@ -3,7 +3,7 @@
 #include "robin_hood.h"
 #include "typedefs3D.h"
 
-#include "Material.h"
+#include "parts/Material.h"
 #include "Texture.h"
 #include "Sampler.h"
 #include "RenderTarget.h"

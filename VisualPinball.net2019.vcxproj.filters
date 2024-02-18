@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="headers">
-      <UniqueIdentifier>{7753e061-8049-4205-aff5-172e23e728ad}</UniqueIdentifier>
-    </Filter>
     <Filter Include="third-party">
       <UniqueIdentifier>{ba1f1ac4-658a-4269-9aa3-1a5f1b5a4784}</UniqueIdentifier>
     </Filter>
@@ -69,22 +66,50 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="def.cpp" />
-    <ClCompile Include="dragpoint.cpp" />
-    <ClCompile Include="extern.cpp" />
-    <ClCompile Include="hid.cpp" />
-    <ClCompile Include="ieditable.cpp" />
-    <ClCompile Include="iselect.cpp" />
-    <ClCompile Include="pinbinary.cpp" />
-    <ClCompile Include="pininput.cpp" />
-    <ClCompile Include="pinundo.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="vpinball.cpp" />
-    <ClCompile Include="wintimer.cpp" />
-    <ClCompile Include="worker.cpp" />
-    <ClCompile Include="bulb.cpp" />
-    <ClCompile Include="stdafx.cpp">
-      <Filter>headers</Filter>
+    <ClCompile Include="src/utils/def.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="dragpoint.cpp">
+      <Filter>parts</Filter>
+    </ClCompile>
+    <ClCompile Include="src/core/extern.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="src/utils/hid.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src/core/ieditable.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="src/core/iselect.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="pinbinary.cpp">
+      <Filter>parts</Filter>
+    </ClCompile>
+    <ClCompile Include="pininput.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="src/core/pinundo.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="src/core/main.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="src/core/vpinball.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="wintimer.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/worker.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="src/utils/bulb.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src/core/stdafx.cpp">
+      <Filter>core</Filter>
     </ClCompile>
     <ClCompile Include="src/audio/mixer.cpp">
       <Filter>audio</Filter>
@@ -218,7 +243,7 @@
     <ClCompile Include="src/renderer/Anaglyph.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
-    <ClCompile Include="captureExt.cpp">
+    <ClCompile Include="src/renderer/captureExt.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
     <ClCompile Include="src/renderer/IndexBuffer.cpp">
@@ -506,16 +531,16 @@
     <ClCompile Include="third-party/include/progmesh.cpp">
       <Filter>third-party</Filter>
     </ClCompile>
-    <ClCompile Include="third-party/include/miniz\miniz.c">
+    <ClCompile Include="third-party/include/miniz/miniz.c">
       <Filter>third-party</Filter>
     </ClCompile>
     <ClCompile Include="third-party/include/serial.cpp">
       <Filter>third-party</Filter>
     </ClCompile>
-    <ClCompile Include="third-party/include/glad\src\gl.c">
+    <ClCompile Include="third-party/include/glad/src/gl.c">
       <Filter>third-party</Filter>
     </ClCompile>
-    <ClCompile Include="third-party/include/BAM\BAMView.cpp">
+    <ClCompile Include="third-party/include/BAM/BAMView.cpp">
       <Filter>third-party\BAM</Filter>
     </ClCompile>
     <ClCompile Include="third-party/include/imgui/imgui_impl_win32.cpp">
@@ -545,82 +570,31 @@
     <ClCompile Include="third-party/include/imguizmo/ImGuizmo.cpp">
       <Filter>third-party\imgui</Filter>
     </ClCompile>
-    <ClCompile Include="third-party/include/implot\implot.cpp">
+    <ClCompile Include="third-party/include/implot/implot.cpp">
       <Filter>third-party\imgui</Filter>
     </ClCompile>
-    <ClCompile Include="third-party/include/implot\implot_items.cpp">
+    <ClCompile Include="third-party/include/implot/implot_items.cpp">
       <Filter>third-party\imgui</Filter>
     </ClCompile>
-    <ClCompile Include="third-party/include/tinyxml2\tinyxml2.cpp">
+    <ClCompile Include="third-party/include/tinyxml2/tinyxml2.cpp">
       <Filter>third-party\tinyxml2</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="bulb.h">
-      <Filter>headers</Filter>
-    </ClInclude>
     <ClInclude Include="def.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="dispid.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="dragpoint.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="editablereg.h">
-      <Filter>headers</Filter>
+      <Filter>core</Filter>
     </ClInclude>
     <ClInclude Include="eventproxy.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="extern.h">
-      <Filter>headers</Filter>
+      <Filter>utils</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="hid.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="ieditable.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="iselect.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="main.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Material.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="pinbinary.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="pininput.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="stdafx.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="pinundo.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="vpinball_h.h">
-      <Filter>headers</Filter>
+      <Filter>ui</Filter>
     </ClInclude>
     <ClInclude Include="vpinball.h">
-      <Filter>headers</Filter>
+      <Filter>core</Filter>
     </ClInclude>
     <ClInclude Include="vpversion.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="wintimer.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="worker.h">
-      <Filter>headers</Filter>
+      <Filter>core</Filter>
     </ClInclude>
 
     <ClInclude Include="src/audio/audioplayer.h">
@@ -634,6 +608,36 @@
     </ClInclude>
     <ClInclude Include="src/audio/mixer.h">
       <Filter>audio</Filter>
+    </ClInclude>
+    <ClInclude Include="src/core/extern.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="src/core/dispid.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="src/core/editablereg.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="src/core/ieditable.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="src/core/iselect.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="src/core/main.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="src/core/pininput.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="src/core/stdafx.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="src/core/pinundo.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="src/core/vpinball_h.h">
+      <Filter>core</Filter>
     </ClInclude>
     <ClInclude Include="src/core/player.h">
       <Filter>core</Filter>
@@ -653,7 +657,7 @@
     <ClInclude Include="src/math/matrix.h">
       <Filter>math</Filter>
     </ClInclude>
-    <ClInclude Include="mesh.h">
+    <ClInclude Include="src/math/mesh.h">
       <Filter>math</Filter>
     </ClInclude>
     <ClInclude Include="src/math/vector.h">
@@ -752,7 +756,7 @@
     <ClInclude Include="src/meshes/kickerSimpleHoleMesh.h">
       <Filter>assets\meshes</Filter>
     </ClInclude>
-    <ClInclude Include="backGlass.h">
+    <ClInclude Include="src/parts/backGlass.h">
       <Filter>parts</Filter>
     </ClInclude>
     <ClInclude Include="src/parts/ball.h">
@@ -762,6 +766,15 @@
       <Filter>parts</Filter>
     </ClInclude>
     <ClInclude Include="src/parts/decal.h">
+      <Filter>parts</Filter>
+    </ClInclude>
+    <ClInclude Include="src/parts/Material.h">
+      <Filter>parts</Filter>
+    </ClInclude>
+    <ClInclude Include="src/parts/pinbinary.h">
+      <Filter>parts</Filter>
+    </ClInclude>
+    <ClInclude Include="src/parts/dragpoint.h">
       <Filter>parts</Filter>
     </ClInclude>
     <ClInclude Include="src/parts/dispreel.h">
@@ -857,7 +870,7 @@
     <ClInclude Include="src/renderer/Anaglyph.h">
       <Filter>renderer</Filter>
     </ClInclude>
-    <ClInclude Include="captureExt.h">
+    <ClInclude Include="src/renderer/captureExt.h">
       <Filter>renderer</Filter>
     </ClInclude>
     <ClInclude Include="src/renderer/IndexBuffer.h">
@@ -961,6 +974,18 @@
     </ClInclude>
     <ClInclude Include="src/utils/memutil.h">
       <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src/utils/wintimer.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src/utils/bulb.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src/utils/hid.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/worker.h">
+      <Filter>ui</Filter>
     </ClInclude>
     <ClInclude Include="src/ui/LiveUI.h">
       <Filter>ui</Filter>
@@ -1205,16 +1230,16 @@
     <ClInclude Include="third-party/include/stb_image.h">
       <Filter>third-party</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/glad\include\glad\gl.h">
+    <ClInclude Include="third-party/include/glad/include/glad/gl.h">
       <Filter>third-party</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/BAM\BAM_Tracker.h">
+    <ClInclude Include="third-party/include/BAM/BAM_Tracker.h">
       <Filter>third-party\BAM</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/BAM\BAM_ViewPortSetup.h">
+    <ClInclude Include="third-party/include/BAM/BAM_ViewPortSetup.h">
       <Filter>third-party\BAM</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/BAM\BAMView.h">
+    <ClInclude Include="third-party/include/BAM/BAMView.h">
       <Filter>third-party\BAM</Filter>
     </ClInclude>
     <ClInclude Include="third-party/include/hidpi.h">
@@ -1241,10 +1266,10 @@
     <ClInclude Include="third-party/include/imgui/imgui.h">
       <Filter>third-party\imgui</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/implot\implot.h">
+    <ClInclude Include="third-party/include/implot/implot.h">
       <Filter>third-party\imgui</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/implot\implot_internal.h">
+    <ClInclude Include="third-party/include/implot/implot_internal.h">
       <Filter>third-party\imgui</Filter>
     </ClInclude>
     <ClInclude Include="third-party/include/imgui/imgui_impl_opengl3.h">
@@ -1259,31 +1284,31 @@
     <ClInclude Include="third-party/include/imguizmo/ImGuizmo.h">
       <Filter>third-party\imgui</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/nvapi\nvapi.h">
+    <ClInclude Include="third-party/include/nvapi/nvapi.h">
       <Filter>third-party\nvapi</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/nvapi\nvapi_lite_common.h">
+    <ClInclude Include="third-party/include/nvapi/nvapi_lite_common.h">
       <Filter>third-party\nvapi</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/nvapi\nvapi_lite_d3dext.h">
+    <ClInclude Include="third-party/include/nvapi/nvapi_lite_d3dext.h">
       <Filter>third-party\nvapi</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/nvapi\nvapi_lite_salend.h">
+    <ClInclude Include="third-party/include/nvapi/nvapi_lite_salend.h">
       <Filter>third-party\nvapi</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/nvapi\nvapi_lite_salstart.h">
+    <ClInclude Include="third-party/include/nvapi/nvapi_lite_salstart.h">
       <Filter>third-party\nvapi</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/nvapi\nvapi_lite_sli.h">
+    <ClInclude Include="third-party/include/nvapi/nvapi_lite_sli.h">
       <Filter>third-party\nvapi</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/nvapi\nvapi_lite_stereo.h">
+    <ClInclude Include="third-party/include/nvapi/nvapi_lite_stereo.h">
       <Filter>third-party\nvapi</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/nvapi\nvapi_lite_surround.h">
+    <ClInclude Include="third-party/include/nvapi/nvapi_lite_surround.h">
       <Filter>third-party\nvapi</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/tinyxml2\tinyxml2.h">
+    <ClInclude Include="third-party/include/tinyxml2/tinyxml2.h">
       <Filter>third-party\tinyxml2</Filter>
     </ClInclude>
     <ClInclude Include="third-party/include/win32xx/include/default_resource.h">

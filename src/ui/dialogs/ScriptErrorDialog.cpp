@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "core/stdafx.h"
 #include "ScriptErrorDialog.h"
 
 ScriptErrorDialog::ScriptErrorDialog(const wstring &message) :

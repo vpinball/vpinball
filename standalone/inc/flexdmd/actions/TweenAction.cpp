@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "core/stdafx.h"
 #include "TweenAction.h"
 
 TweenAction::TweenAction(Actor* pTarget, float duration)

@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "core/stdafx.h"
 
 #ifndef __STANDALONE__
 #include "scilexer.h"

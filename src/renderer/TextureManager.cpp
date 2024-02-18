@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "core/stdafx.h"
 
 #include "TextureManager.h"
 #include "RenderDevice.h"

@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "core/stdafx.h"
 
 #include "../classes/AnimationInfo.h"
 #include "AnimationCollection.h"

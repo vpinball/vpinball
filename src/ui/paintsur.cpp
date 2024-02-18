@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "core/stdafx.h"
 
 #include <WinGDI.h> // for AlphaBlend()
 #pragma comment(lib, "Msimg32.lib") // dto.

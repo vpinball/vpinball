@@ -1,2 +1,2 @@
-#include "stdafx.h"
+#include "core/stdafx.h"
 #include "BaseDef.h"

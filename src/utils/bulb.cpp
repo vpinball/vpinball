@@ -1,5 +1,5 @@
 // license:GPLv3+
-#include "stdafx.h"
+#include "core/stdafx.h"
 
 #include <cmath>
 #include "bulb.h"

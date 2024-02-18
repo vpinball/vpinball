@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "core/stdafx.h"
 #include "ThreadPool.h"
 #ifndef __STANDALONE__
 #include "BAM/BAMView.h"

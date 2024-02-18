@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "core/stdafx.h"
 #include "renderer/VRDevice.h"
 #ifdef __STANDALONE__
 #include "imgui/imgui_impl_sdl2.h"

@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "core/stdafx.h"
 
 #ifdef USE_EMBREE
 #include <mutex>

@@ -1,6 +1,6 @@
 // license:GPLv3+
 
-#include "stdafx.h"
+#include "core/stdafx.h"
 
 bool SolveQuadraticEq(const float a, const float b, const float c, float& sol1, float& sol2)
 {

@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "core/stdafx.h"
 
 #include "ReelDisplayReelBoxCollection.h"
 #include "../controls/B2SReelBox.h"

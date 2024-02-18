@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "core/stdafx.h"
 
 #ifndef __STANDALONE__
 #include <DxErr.h>
@@ -26,7 +26,7 @@
 #endif
 
 #else // DirectX 9
-#include "Material.h"
+#include "parts/Material.h"
 #include "BasicShader.h"
 #include "DMDShader.h"
 #include "FBShader.h"

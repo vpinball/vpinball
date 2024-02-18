@@ -1,11 +1,10 @@
-#include "stdafx.h"
+#include "core/stdafx.h"
 
-#include "backGlass.h"
+#include "parts/backGlass.h"
 #include "renderer/RenderDevice.h"
 #include "renderer/Shader.h"
 #ifndef __STANDALONE__
-#include "captureExt.h"
-#include "backGlass.h"
+#include "renderer/captureExt.h"
 #ifdef ENABLE_VR
 #include <fstream>
 #include "tinyxml2/tinyxml2.h"

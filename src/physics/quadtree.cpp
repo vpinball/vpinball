@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "core/stdafx.h"
 #include "quadtree.h"
 
 #ifdef ENABLE_SSE_OPTIMIZATIONS

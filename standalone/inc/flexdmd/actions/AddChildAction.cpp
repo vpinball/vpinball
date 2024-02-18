@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "core/stdafx.h"
 #include "AddChildAction.h"
 
 AddChildAction::AddChildAction(Group* pTarget, Actor* pChild, bool add)

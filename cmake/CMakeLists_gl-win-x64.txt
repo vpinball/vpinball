@@ -60,48 +60,21 @@ set_source_files_properties(
 )
 
 add_executable(vpinball WIN32
-   stdafx.cpp
-   stdafx.h
+   src/core/stdafx.cpp
+   src/core/stdafx.h
+   src/renderer/captureExt.cpp
+   src/renderer/captureExt.h
+   src/ui/worker.cpp
+   src/ui/worker.h
    resource.h
-   captureExt.cpp
-   captureExt.h
-   worker.cpp
-   worker.h
 
-   backGlass.cpp
-   backGlass.h
-   bulb.cpp
-   bulb.h
-   def.cpp
    def.h
-   dispid.h
    dragpoint.cpp
-   dragpoint.h
-   editablereg.h
    eventproxy.h
-   extern.cpp
-   extern.h
-   hid.cpp
-   hid.h
-   ieditable.cpp
-   ieditable.h
-   iselect.cpp
-   iselect.h
-   Material.h
-   mesh.h
+   backGlass.cpp
    pinbinary.cpp
-   pinbinary.h
    pininput.cpp
-   pininput.h
-   pinundo.cpp
-   pinundo.h
-   main.cpp
-   main.h
-   vpinball.cpp
-   vpinball_h.h
    vpversion.h
-   wintimer.cpp
-   wintimer.h
 
    src/audio/mixer.cpp
    src/audio/mixer.h
@@ -112,6 +85,21 @@ add_executable(vpinball WIN32
    src/audio/wavread.cpp
    src/audio/wavread.h
 
+   src/core/dispid.h
+   src/core/editablereg.h
+   src/core/extern.cpp
+   src/core/extern.h
+   src/core/ieditable.cpp
+   src/core/ieditable.h
+   src/core/iselect.cpp
+   src/core/iselect.h
+   src/core/pininput.h
+   src/core/pinundo.cpp
+   src/core/pinundo.h
+   src/core/main.cpp
+   src/core/main.h
+   src/core/vpinball.cpp
+   src/core/vpinball_h.h
    src/core/player.cpp
    src/core/player.h
    src/core/Settings.cpp
@@ -125,6 +113,7 @@ add_executable(vpinball WIN32
    src/math/matrix.cpp
    src/math/matrix.h
    src/math/vector.h
+   src/math/mesh.h
    src/math/ModelViewProj.h
 
    src/meshes/ballMesh.h
@@ -158,6 +147,10 @@ add_executable(vpinball WIN32
    src/meshes/triggerSimpleMesh.h
    src/meshes/triggerStarMesh.h
 
+   src/parts/backGlass.h
+   src/parts/dragpoint.h
+   src/parts/Material.h
+   src/parts/pinbinary.h
    src/parts/ball.cpp
    src/parts/ball.h
    src/parts/bumper.cpp
@@ -400,6 +393,13 @@ add_executable(vpinball WIN32
    src/ui/properties/WallVisualsProperty.cpp
    src/ui/properties/WallVisualsProperty.h
 
+   src/utils/bulb.cpp
+   src/utils/bulb.h
+   src/utils/def.cpp
+   src/utils/hid.cpp
+   src/utils/hid.h
+   wintimer.cpp
+   src/utils/wintimer.h
    src/utils/helpers.h
    src/utils/memutil.cpp
    src/utils/memutil.h
@@ -573,7 +573,7 @@ target_include_directories(vpinball PUBLIC
 )
 
 target_precompile_headers(vpinball PUBLIC
-   stdafx.h
+   src/core/stdafx.h
 )
 
 set(OPT_COMMON /Ob2 /O2 /Oi /fp:fast /fp:except- /Ot /GF /GS- /Gy /GR- /Oy /GT /GL /w44005 /Zc:__cplusplus /std:c++20)
