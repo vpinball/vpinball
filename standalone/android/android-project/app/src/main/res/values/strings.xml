@@ -9,4 +9,5 @@
     <string name="main_title">Visual Pinball Tables</string>
     <string name="button_refresh">Refresh</string>
     <string name="button_new_dir">Switch Table Dir</string>
+    <string name="copying_assets_message">Copying all required files to the VPX directory. This can take a minute. Please wait.</string>
 </resources>
