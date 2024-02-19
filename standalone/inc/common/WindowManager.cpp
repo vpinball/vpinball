@@ -28,11 +28,32 @@ WindowManager* WindowManager::GetInstance()
 
 WindowManager::WindowManager()
 {
+#ifdef __APPLE__
+   m_renderMode = (RenderMode)g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Standalone, "WindowRenderMode"s, (int)RenderMode::Default);
+#else
+   m_renderMode = (RenderMode)g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Standalone, "WindowRenderMode"s, (int)RenderMode::Threaded);
+#endif
+
    m_init = false;
    m_updateLock = false;
    m_lastEventTime = 0;
-   
+   m_lastRenderTime = 0;
+   m_running = false;
+   m_pThread = nullptr;
    m_windows.clear();
+}
+
+WindowManager::~WindowManager()
+{
+   m_running = false;
+
+   if (m_pThread) {
+      m_pThread->join();
+      delete m_pThread;
+   }
+
+   for (Window* pWindow : m_windows)
+      delete pWindow;
 }
 
 void WindowManager::RegisterWindow(Window* pWindow)
@@ -68,6 +89,9 @@ void WindowManager::Startup()
 
    SDL_GL_MakeCurrent(g_pplayer->m_sdl_playfieldHwnd, g_pplayer->m_renderer->m_pd3dPrimaryDevice->m_sdl_context);
 
+   if (m_renderMode == RenderMode::Threaded)
+      ThreadedRender();
+
    m_init = true;
 }
 
@@ -101,15 +125,50 @@ void WindowManager::ProcessUpdates()
    }
 }
 
+void WindowManager::ThreadedRender()
+{
+   if (m_running)
+      return;
+
+   m_running = true;
+
+   PLOGI.printf("Starting render thread");
+
+   m_pThread = new std::thread([this]() {
+      while (m_running) {
+         Uint64 startTime = SDL_GetTicks64();
+
+         for (Window* pWindow: m_windows)
+            pWindow->OnRender();
+
+         double renderingDuration = SDL_GetTicks64() - startTime;
+
+         int sleepMs = (1000 / 60) - (int)renderingDuration;
+
+         if (sleepMs > 1)
+            SDL_Delay(sleepMs);
+      }
+
+      PLOGI.printf("Render thread finished");
+   });
+}
+
 void WindowManager::Render()
 {
-   if (!m_init)
+   if (!m_init || !g_pplayer)
+      return;
+
+   Uint64 startTime = SDL_GetTicks64();
+
+   if (startTime - m_lastRenderTime < (1000 / 60))
       return;
 
    for (Window* pWindow: m_windows)
       pWindow->OnRender();
 
    SDL_GL_MakeCurrent(g_pplayer->m_sdl_playfieldHwnd, g_pplayer->m_renderer->m_pd3dPrimaryDevice->m_sdl_context);
+
+   m_lastRenderTime = startTime;
 }
 
 }

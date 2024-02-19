@@ -24,7 +24,8 @@ FormDMD::FormDMD()
       pSettings->LoadValueWithDefault(Settings::Standalone, "B2SDMDY"s, B2S_SETTINGS_DMDY),
       pSettings->LoadValueWithDefault(Settings::Standalone, "B2SDMDWidth"s, B2S_SETTINGS_DMDWIDTH),
       pSettings->LoadValueWithDefault(Settings::Standalone, "B2SDMDHeight"s, B2S_SETTINGS_DMDHEIGHT),
-      B2S_DMD_ZORDER);
+      B2S_DMD_ZORDER,
+      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SDMDRotation"s, 0));
 }
 
 FormDMD::~FormDMD()

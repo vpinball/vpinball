@@ -8,17 +8,22 @@ namespace VP {
 class DMDWindow : public VP::Window
 {
 public:
-   DMDWindow(const std::string& szTitle, int x, int y, int w, int h, int z);
+   DMDWindow(const std::string& szTitle, int x, int y, int w, int h, int rotation, int z);
    ~DMDWindow();
 
-   void SetDMD(DMDUtil::DMD* pDMD);
+   bool Init() override;
+   void AttachDMD(DMDUtil::DMD* pDMD, int width, int height);
+   void DetachDMD();
    void Render() override;
 
 private:
+   SDL_FRect m_destRect;
+   int m_angle;
    DMDUtil::DMD* m_pDMD;
-   DMDUtil::VirtualDMD* m_pVirtualDMD;
+   DMDUtil::RGB24DMD* m_pRGB24DMD;
    int m_pitch;
    SDL_Texture* m_pTexture;
+   bool m_attached;
 };
 
 }

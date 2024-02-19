@@ -47,17 +47,16 @@ void PINMAMECALLBACK VPinMAMEController::OnDisplayAvailable(int index, int displ
    pDisplay->b = GetBValue(pController->m_dmdColor);
 
    if ((p_displayLayout->type & PINMAME_DISPLAY_TYPE_DMD) == PINMAME_DISPLAY_TYPE_DMD) {
-      bool isSAM = ((PinmameGetHardwareGen() & (PINMAME_HARDWARE_GEN_SAM | PINMAME_HARDWARE_GEN_SPA)) > 0);
-      DMDUtil::DMD* pDMD = new DMDUtil::DMD(p_displayLayout->width, p_displayLayout->height, isSAM, pController->m_pPinmameGame->name);
+      pDisplay->pDMD = new DMDUtil::DMD();
 
-      if (!pController->m_pVirtualDMD) {
-         pController->m_pVirtualDMD = pDMD->CreateVirtualDMD();
+      if (!pController->m_pActiveDisplay) {
+         pController->m_pActiveDisplay = pDisplay;
+         if (pController->m_pDMDWindow)
+            pController->m_pDMDWindow->AttachDMD(pDisplay->pDMD, pDisplay->layout.width, pDisplay->layout.height);
 
-         if (pController->m_pWindow)
-            pController->m_pWindow->SetDMD(pDMD);
+         if (g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Standalone, "FindDisplays"s, true))
+            pDisplay->pDMD->FindDisplays();
       }
-
-      pDisplay->pDMD = pDMD;
    }
 
    pController->m_displays.push_back(pDisplay);
@@ -67,8 +66,10 @@ void PINMAMECALLBACK VPinMAMEController::OnDisplayUpdated(int index, void* p_dis
 {
    VPinMAMEDisplay* pDisplay = ((VPinMAMEController*)pUserData)->m_displays[index];
 
-   if (pDisplay->pDMD)
-      pDisplay->pDMD->UpdateData((const UINT8*)p_displayData, pDisplay->layout.depth, pDisplay->r, pDisplay->g, pDisplay->b);
+   if (pDisplay->pDMD && p_displayData) {
+      VPinMAMEController* pController = (VPinMAMEController*)pUserData;
+      pDisplay->pDMD->UpdateData((const UINT8*)p_displayData, pDisplay->layout.depth, pDisplay->layout.width, pDisplay->layout.height, pDisplay->r, pDisplay->g, pDisplay->b, pController->m_pPinmameGame->name);
+   }
 }
 
 int PINMAMECALLBACK VPinMAMEController::OnAudioAvailable(PinmameAudioInfo* p_audioInfo, const void* pUserData)
@@ -192,25 +193,30 @@ VPinMAMEController::VPinMAMEController()
    m_pPinmameGame = NULL;
    m_pPinmameMechConfig = NULL;
 
-   m_hidden = true;
+   m_pActiveDisplay = nullptr;
 
-   m_running = false;
-   m_pThread = nullptr;
-
-   m_pVirtualDMD = nullptr;
-   m_pWindow = nullptr;
+   m_pDMDWindow = nullptr;
 
    if (pSettings->LoadValueWithDefault(Settings::Standalone, "PinMAMEWindow"s, true)) {
-      m_pWindow = new VP::DMDWindow("PinMAME",
+      m_pDMDWindow = new VP::DMDWindow("PinMAME",
          pSettings->LoadValueWithDefault(Settings::Standalone, "PinMAMEWindowX"s, PINMAME_SETTINGS_WINDOW_X),
          pSettings->LoadValueWithDefault(Settings::Standalone, "PinMAMEWindowY"s, PINMAME_SETTINGS_WINDOW_Y),
          pSettings->LoadValueWithDefault(Settings::Standalone, "PinMAMEWindowWidth"s, PINMAME_SETTINGS_WINDOW_WIDTH),
          pSettings->LoadValueWithDefault(Settings::Standalone, "PinMAMEWindowHeight"s, PINMAME_SETTINGS_WINDOW_HEIGHT),
-         PINMAME_ZORDER);
+         PINMAME_ZORDER,
+         pSettings->LoadValueWithDefault(Settings::Standalone, "PinMAMEWindowRotation"s, 0));
    }
    else {
       PLOGI.printf("PinMAME window disabled");
    }
+
+   m_hidden = true;
+
+   m_pRGB24DMD = nullptr;
+   m_pLevelDMD = nullptr;
+
+   m_running = false;
+   m_pThread = nullptr;
 }
 
 VPinMAMEController::~VPinMAMEController()
@@ -218,14 +224,14 @@ VPinMAMEController::~VPinMAMEController()
    if (PinmameIsRunning())
       PinmameStop();
 
-   if (m_pThread) {
-      m_running = false;
+   m_running = false;
 
+   if (m_pThread) {
       m_pThread->join();
       delete m_pThread;
    }
 
-   delete m_pWindow;
+   delete m_pDMDWindow;
 
    for (auto pDisplay : m_displays) {
       if (pDisplay->pDMD)
@@ -302,11 +308,11 @@ STDMETHODIMP VPinMAMEController::Run(/*[in]*/ LONG_PTR hParentWnd, /*[in,default
              }
          }
 
-         if (m_pWindow) {
+         if (m_pDMDWindow) {
             if (!m_hidden)
-               m_pWindow->Show();
+               m_pDMDWindow->Show();
             else
-               m_pWindow->Hide();
+               m_pDMDWindow->Hide();
          }
 
          return S_OK;
@@ -333,6 +339,13 @@ STDMETHODIMP VPinMAMEController::Stop()
       m_pThread = nullptr;
    }
 
+   m_pActiveDisplay = nullptr;
+   m_pLevelDMD = nullptr;
+   m_pRGB24DMD = nullptr;
+
+   if (m_pDMDWindow)
+      m_pDMDWindow->DetachDMD();
+
    for (auto pDisplay : m_displays) {
       if (pDisplay->pDMD)
          delete pDisplay->pDMD;
@@ -342,8 +355,8 @@ STDMETHODIMP VPinMAMEController::Stop()
 
    m_hidden = true;
 
-   if (m_pWindow)
-      m_pWindow->Hide();
+   if (m_pDMDWindow)
+      m_pDMDWindow->Hide();
 
    return S_OK;
 }
@@ -408,14 +421,14 @@ STDMETHODIMP VPinMAMEController::get_Lamps(VARIANT* pVal)
 
 STDMETHODIMP VPinMAMEController::get_RawDmdWidth(int *pVal)
 {
-   *pVal = m_pVirtualDMD ? m_pVirtualDMD->GetWidth() : 0;
+   *pVal = m_pActiveDisplay ? m_pActiveDisplay->layout.width : 0;
 
    return S_OK;
 }
 
 STDMETHODIMP VPinMAMEController::get_RawDmdHeight(int *pVal)
 {
-   *pVal = m_pVirtualDMD ? m_pVirtualDMD->GetHeight() : 0;
+   *pVal = m_pActiveDisplay ? m_pActiveDisplay->layout.height : 0;
 
    return S_OK;
 }
@@ -436,12 +449,21 @@ STDMETHODIMP VPinMAMEController::get_ChangedNVRAM(VARIANT* pVal)
 
 STDMETHODIMP VPinMAMEController::get_RawDmdPixels(VARIANT* pVal)
 {
-   const UINT8* pLevelData = m_pVirtualDMD ? m_pVirtualDMD->GetLevelData() : nullptr;
+   if (!m_pActiveDisplay)
+      return S_FALSE;
+
+   if (!m_pLevelDMD) {
+        bool isSAM = ((PinmameGetHardwareGen() & (PINMAME_HARDWARE_GEN_SAM | PINMAME_HARDWARE_GEN_SPA)) > 0);
+        m_pLevelDMD = m_pActiveDisplay->pDMD->CreateLevelDMD(m_pActiveDisplay->layout.width, m_pActiveDisplay->layout.height, isSAM);
+        return S_FALSE;
+   }
+
+   const UINT8* pLevelData = m_pLevelDMD->GetData();
  
    if (!pLevelData)
       return S_FALSE;
 
-   const int end = m_pVirtualDMD->GetLength();
+   const int end = m_pLevelDMD->GetLength();
 
    SAFEARRAY* psa = SafeArrayCreateVector(VT_VARIANT, 0, end);
    VARIANT* pData;
@@ -463,12 +485,20 @@ STDMETHODIMP VPinMAMEController::get_RawDmdPixels(VARIANT* pVal)
 
 STDMETHODIMP VPinMAMEController::get_RawDmdColoredPixels(VARIANT* pVal)
 {
-   const UINT8* pRGB24Data = m_pVirtualDMD ? m_pVirtualDMD->GetRGB24Data() : nullptr;
+   if (!m_pActiveDisplay)
+      return S_FALSE;
+
+   if (!m_pRGB24DMD) {
+      m_pRGB24DMD = m_pActiveDisplay->pDMD->CreateRGB24DMD(m_pActiveDisplay->layout.width, m_pActiveDisplay->layout.height);
+      return S_FALSE;
+   }
+
+   const UINT8* pRGB24Data = m_pRGB24DMD->GetData();
 
    if (!pRGB24Data)
       return S_FALSE;
 
-   const int end = m_pVirtualDMD->GetLength();
+   const int end = m_pRGB24DMD->GetLength();
 
    SAFEARRAY* psa = SafeArrayCreateVector(VT_VARIANT, 0, end);
    VARIANT* pData;
@@ -1116,11 +1146,11 @@ STDMETHODIMP VPinMAMEController::put_Hidden(VARIANT_BOOL newVal)
 {
    m_hidden = (newVal == VARIANT_TRUE);
 
-   if (m_pWindow) {
+   if (m_pDMDWindow) {
       if (!m_hidden)
-         m_pWindow->Show();
+         m_pDMDWindow->Show();
       else
-         m_pWindow->Hide();
+         m_pDMDWindow->Hide();
    }
 
    return S_OK;

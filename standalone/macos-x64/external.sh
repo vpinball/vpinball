@@ -6,9 +6,9 @@ SDL2_VERSION=2.30.0
 SDL2_IMAGE_VERSION=2.8.2
 SDL2_TTF_VERSION=2.22.0
 
-PINMAME_SHA=90d5d1ae96fb43fc7e01ff49a2bf43deb1e2add0
+PINMAME_SHA=6a03362169722e5abb529e311ab5db0de710dd89
 LIBALTSOUND_SHA=9ac08a76e2aabc1fba57d3e5a3b87e7f63c09e07
-LIBDMDUTIL_SHA=342f687a9067f4f3ae2fb7863ef296b3f44253e0
+LIBDMDUTIL_SHA=950527818a60659f6b34cac736cb4da256025dec
 
 NUM_PROCS=$(sysctl -n hw.ncpu)
 
@@ -165,5 +165,5 @@ cmake --build build -- -j${NUM_PROCS}
 cp third-party/runtime-libs/macos/x64/libserum.1.6.2.dylib ../../external/lib
 cp third-party/runtime-libs/macos/x64/libzedmd.0.5.0.dylib ../../external/lib
 cp third-party/runtime-libs/macos/x64/libserialport.dylib ../../external/lib
-cp build/libdmdutil.0.2.0.dylib ../../external/lib
+cp build/libdmdutil.0.3.0.dylib ../../external/lib
 cd ..

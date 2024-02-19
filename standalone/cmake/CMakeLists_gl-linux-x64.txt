@@ -657,7 +657,7 @@ target_link_libraries(vpinball PUBLIC
    -l:libaltsound.so.0.1.0
    -l:libzedmd.so.0.5.0
    -l:libserum.so.1.6.2
-   -l:libdmdutil.so.0.2.0
+   -l:libdmdutil.so.0.3.0
 )
 
 set_target_properties(vpinball PROPERTIES

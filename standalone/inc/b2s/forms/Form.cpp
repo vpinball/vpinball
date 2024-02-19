@@ -7,6 +7,7 @@ Form::Form()
 {
    m_topMost = false;
    m_pWindow = nullptr;
+   m_pGraphics = nullptr;
 }
 
 Form::~Form()
@@ -26,17 +27,15 @@ void Form::Hide()
       m_pWindow->Hide();
 }
 
-void Form::Render(VP::RendererGraphics* pGraphics)
+bool Form::Render()
 {
-   if (!IsInvalidated())
-      return;
+   if (!m_pGraphics || !IsInvalidated())
+      return false;
 
-   pGraphics->SetColor(RGB(0, 0, 0));
-   pGraphics->Clear();
+   m_pGraphics->SetColor(RGB(0, 0, 0));
+   m_pGraphics->Clear();
+   m_pGraphics->SetBlendMode(SDL_BLENDMODE_BLEND);
+   OnPaint(m_pGraphics);
 
-   pGraphics->SetBlendMode(SDL_BLENDMODE_BLEND);
-
-   OnPaint(pGraphics);
-
-   pGraphics->Present();
+   return true;
 }

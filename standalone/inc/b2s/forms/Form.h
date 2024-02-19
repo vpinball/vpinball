@@ -16,12 +16,13 @@ public:
    void Hide();
    void SetTopMost(bool topMost) { m_topMost = topMost; }
    bool IsTopMost() const { return m_topMost; }
-   void Render(VP::RendererGraphics* pGraphics);
+   void SetGraphics(VP::RendererGraphics* pGraphics) { m_pGraphics = pGraphics; }
+   bool Render();
 
 protected:
    FormWindow* m_pWindow;
 
 private:
    bool m_topMost;
-
+   VP::RendererGraphics* m_pGraphics;
 };

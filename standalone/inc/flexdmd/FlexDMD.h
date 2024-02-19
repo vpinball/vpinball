@@ -114,14 +114,11 @@ private:
    string m_szGameName;
    string m_szTableFile;
    int m_frameRate;
-   bool m_run;
-   bool m_show;
    LONG m_runtimeVersion;
    bool m_clear;
    int m_renderLockCount;
    UINT16 m_segData1[128];
    UINT16 m_segData2[128];
-   std::thread* m_pThread;
    int m_width;
    int m_height;
    VP::SurfaceGraphics* m_pGraphics;
@@ -129,8 +126,12 @@ private:
    RenderMode m_renderMode;
    OLE_COLOR m_dmdColor;
    AssetManager* m_pAssetManager;
-   DMDUtil::VirtualDMD* m_pVirtualDMD;
-   VP::DMDWindow* m_pWindow;
+   VP::DMDWindow* m_pDMDWindow;
+   bool m_show;
+   DMDUtil::DMD* m_pDMD;
+   DMDUtil::RGB24DMD* m_pRGB24DMD;
+   std::thread* m_pThread;
+   bool m_run;
 
    ULONG m_dwRef = 0;
 };

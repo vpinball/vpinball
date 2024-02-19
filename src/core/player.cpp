@@ -2055,10 +2055,6 @@ void Player::FinishFrame()
 {
    m_physics->OnFinishFrame();
 
-/*#ifdef __STANDALONE__
-   m_pWindowManager->Render();
-#endif*/
-
    if (GetProfilingMode() != PF_DISABLED)
       m_renderer->m_gpu_profiler.EndFrame();
 
@@ -2137,7 +2133,8 @@ void Player::FinishFrame()
    }
 
 #ifdef __STANDALONE__
-   m_pWindowManager->Render();
+   if (m_pWindowManager->m_renderMode == VP::WindowManager::RenderMode::Default)
+      m_pWindowManager->Render();
 #endif
 
    // Brute force stop: blast into space
