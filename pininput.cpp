@@ -113,6 +113,7 @@ PinInput::PinInput()
    m_joytabledown = 0;
 
 #ifdef ENABLE_SDL_INPUT
+#ifdef ENABLE_SDL_GAMECONTROLLER
    m_joylflipkey = SDL_CONTROLLER_BUTTON_LEFTSHOULDER + 1;
    m_joyrflipkey = SDL_CONTROLLER_BUTTON_RIGHTSHOULDER + 1;
    m_joylmagnasave = SDL_CONTROLLER_BUTTON_LEFTSTICK + 1;
@@ -126,6 +127,7 @@ PinInput::PinInput()
    m_joylefttilt = SDL_CONTROLLER_BUTTON_DPAD_LEFT + 1;
    m_joyrighttilt = SDL_CONTROLLER_BUTTON_DPAD_RIGHT + 1;
    m_joylockbar = SDL_CONTROLLER_BUTTON_GUIDE + 1;
+#endif
 #endif
 
    m_firedautostart = 0;
@@ -152,21 +154,27 @@ PinInput::PinInput()
    m_mixerKeyUp = false;
 
 #ifdef ENABLE_SDL_INPUT
+#ifdef ENABLE_SDL_GAMECONTROLLER
+   m_pSDLGameController = nullptr;
+#else
    m_pSDLJoystick = nullptr;
    m_pSDLRumbleDevice = nullptr;
-   m_pSDLGameController = nullptr;
+#endif
 #endif
 }
 
 PinInput::~PinInput()
 {
 #ifdef ENABLE_SDL_INPUT
+#ifdef ENABLE_SDL_GAMECONTROLLER
+   if (m_pSDLGameController)
+      SDL_GameControllerClose(m_pSDLGameController);
+#else
    if (m_pSDLRumbleDevice)
       SDL_HapticClose(m_pSDLRumbleDevice);
    if (m_pSDLJoystick)
       SDL_JoystickClose(m_pSDLJoystick);
-   if (m_pSDLGameController)
-      SDL_GameControllerClose(m_pSDLGameController);
+#endif
 #endif
 }
 
@@ -230,7 +238,37 @@ void PinInput::LoadSettings(const Settings& settings)
 }
 
 #ifdef ENABLE_SDL_INPUT
-void PinInput::RefreshSDLJoystickAndGameController()
+#ifdef ENABLE_SDL_GAMECONTROLLER
+void PinInput::RefreshSDLGameController()
+{
+   if (m_pSDLGameController) {
+      SDL_GameControllerClose(m_pSDLGameController);
+      m_pSDLGameController = nullptr;
+   }
+   m_num_joy = 0;
+   if(SDL_NumJoysticks() > 0) {
+      for (int idx = 0; idx < SDL_NumJoysticks(); ++idx) {
+         if (SDL_IsGameController(idx)) {
+#if defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))
+            if (!lstrcmpi(SDL_GameControllerNameForIndex(idx), "Remote")) continue;
+#endif
+            m_pSDLGameController = SDL_GameControllerOpen(idx);
+            if (m_pSDLGameController) {
+               m_num_joy = 1;
+               PLOGI.printf("Game controller found: name=%s, rumble=%s",
+                  SDL_GameControllerName(m_pSDLGameController),
+                  SDL_GameControllerHasRumble(m_pSDLGameController) ? "true" : "false");
+               break;
+            }
+         }
+      }
+   }
+   else {
+      PLOGI.printf("No game controllers connected!");
+   }
+}
+#else
+void PinInput::RefreshSDLJoystick()
 {
    if (m_pSDLRumbleDevice) {
       SDL_HapticClose(m_pSDLRumbleDevice);
@@ -241,26 +279,10 @@ void PinInput::RefreshSDLJoystickAndGameController()
       m_pSDLJoystick = nullptr;
    }
    m_num_joy = 0;
-   if (m_pSDLGameController) {
-      SDL_GameControllerClose(m_pSDLGameController);
-      m_pSDLGameController = nullptr;
-   }
-
    if(SDL_NumJoysticks() > 0) {
-      for (int idx = 0; idx < SDL_NumJoysticks() && !(m_pSDLJoystick && m_pSDLGameController); ++idx) {
-         if (SDL_IsGameController(idx)) {
-#if defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))
-            if (!lstrcmpi(SDL_GameControllerNameForIndex(idx), "Remote")) continue;
-#endif
-            if (!m_pSDLGameController) {
-               m_pSDLGameController = SDL_GameControllerOpen(idx);
-               PLOGI.printf("Game controller found: name=%s, rumble=%s",
-                  SDL_GameControllerName(m_pSDLGameController),
-                  SDL_GameControllerHasRumble(m_pSDLGameController) ? "true" : "false");
-            }
-         }
-         else if (!m_pSDLJoystick) {
-            m_pSDLJoystick = SDL_JoystickOpen(idx);
+      for (int idx = 0; idx < SDL_NumJoysticks(); ++idx) {
+         m_pSDLJoystick = SDL_JoystickOpen(idx);
+         if (m_pSDLJoystick) {
             m_num_joy = 1;
             if (SDL_JoystickIsHaptic(m_pSDLJoystick)) {
                m_pSDLRumbleDevice = SDL_HapticOpenFromJoystick(m_pSDLJoystick);
@@ -270,10 +292,10 @@ void PinInput::RefreshSDLJoystickAndGameController()
                   m_pSDLRumbleDevice = nullptr;
                }
             }
-
             PLOGI.printf("Joystick found: name=%s, rumble=%s",
                SDL_JoystickName(m_pSDLJoystick),
                m_pSDLRumbleDevice ? "true" : "false");
+            break;
          }
       }
    }
@@ -281,6 +303,7 @@ void PinInput::RefreshSDLJoystickAndGameController()
       PLOGI.printf("No joysticks connected!");
    }   
 }
+#endif
 #endif
 
 //
@@ -830,31 +853,10 @@ void PinInput::HandleInputSDL(DIDEVICEOBJECTDATA *didod)
       case SDL_QUIT:
          //Open Exit dialog
          break;
-      case SDL_JOYDEVICEADDED:
-      case SDL_JOYDEVICEREMOVED:
-         RefreshSDLJoystickAndGameController();
-         break;
-      case SDL_JOYAXISMOTION:
-         if (e.jaxis.axis < 6) {
-            didod[j].dwOfs = axes[e.jaxis.axis];
-            const int value = e.jaxis.value * axisMultiplier[e.jaxis.axis];
-            didod[j].dwData = (DWORD)(value);
-            PushQueue(&didod[j], APP_JOYSTICK(0));
-            j++;
-         }
-         break;
-      case SDL_JOYBUTTONDOWN:
-      case SDL_JOYBUTTONUP:
-         if (e.jbutton.button < 32) {
-            didod[j].dwOfs = DIJOFS_BUTTON0 + (DWORD)e.jbutton.button;
-            didod[j].dwData = e.type == SDL_JOYBUTTONDOWN ? 0x80 : 0x00;
-            PushQueue(&didod[j], APP_JOYSTICK(0));
-            j++;
-         }
-         break;
+#ifdef ENABLE_SDL_GAMECONTROLLER
       case SDL_CONTROLLERDEVICEADDED:
       case SDL_CONTROLLERDEVICEREMOVED:
-         RefreshSDLJoystickAndGameController();
+         RefreshSDLGameController();
          break;
       case SDL_CONTROLLERAXISMOTION:
          if (e.caxis.axis < 6) {
@@ -874,6 +876,30 @@ void PinInput::HandleInputSDL(DIDEVICEOBJECTDATA *didod)
             j++;
          }
          break;
+#else
+      case SDL_JOYDEVICEADDED:
+      case SDL_JOYDEVICEREMOVED:
+         RefreshSDLJoystick();
+         break;
+      case SDL_JOYAXISMOTION:
+         if (e.jaxis.axis < 6) {
+            didod[j].dwOfs = axes[e.jaxis.axis];
+            const int value = e.jaxis.value * axisMultiplier[e.jaxis.axis];
+            didod[j].dwData = (DWORD)(value);
+            PushQueue(&didod[j], APP_JOYSTICK(0));
+            j++;
+         }
+         break;
+      case SDL_JOYBUTTONDOWN:
+      case SDL_JOYBUTTONUP:
+         if (e.jbutton.button < 32) {
+            didod[j].dwOfs = DIJOFS_BUTTON0 + (DWORD)e.jbutton.button;
+            didod[j].dwData = e.type == SDL_JOYBUTTONDOWN ? 0x80 : 0x00;
+            PushQueue(&didod[j], APP_JOYSTICK(0));
+            j++;
+         }
+         break;
+#endif
 #ifdef __STANDALONE__
       case SDL_KEYUP:
       case SDL_KEYDOWN:
@@ -987,10 +1013,13 @@ void PinInput::PlayRumble(const float lowFrequencySpeed, const float highFrequen
       break;
    case 2: //SDL2
 #ifdef ENABLE_SDL_INPUT
-      if (m_pSDLRumbleDevice)
-         SDL_HapticRumblePlay(m_pSDLRumbleDevice, saturate(max(lowFrequencySpeed, highFrequencySpeed)), ms_duration); //!! meh
+#ifdef ENABLE_SDL_GAMECONTROLLER
       if (m_pSDLGameController && SDL_GameControllerHasRumble(m_pSDLGameController))
          SDL_GameControllerRumble(m_pSDLGameController, (Uint16)(saturate(lowFrequencySpeed) * 65535.f), (Uint16)(saturate(highFrequencySpeed) * 65535.f), ms_duration);
+#else
+      if (m_pSDLRumbleDevice)
+         SDL_HapticRumblePlay(m_pSDLRumbleDevice, saturate(max(lowFrequencySpeed, highFrequencySpeed)), ms_duration); //!! meh
+#endif
 #endif
       break;
    case 3: //IGameController
@@ -1005,7 +1034,21 @@ void PinInput::Init(const HWND hwnd)
    m_hwnd = hwnd;
 
 #if defined(ENABLE_SDL_INPUT)
-   SDL_InitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC);
+#ifdef ENABLE_SDL_GAMECONTROLLER
+   SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC);
+   string path = g_pvp->m_szMyPrefPath + "gamecontrollerdb.txt";
+   if (!std::filesystem::exists(path))
+      std::filesystem::copy(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "Default gamecontrollerdb.txt", path);
+   int count = SDL_GameControllerAddMappingsFromFile(path.c_str());
+   if (count > 0) {
+      PLOGI.printf("Game controller mappings added: count=%d, path=%s", count, path.c_str());
+   }
+   else {
+      PLOGI.printf("No game controller mappings added: path=%s", path.c_str());
+   }
+#else
+   SDL_InitSubSystem(SDL_INIT_JOYSTICK);
+#endif
 #endif
 
 #ifdef _WIN32
@@ -1092,9 +1135,12 @@ void PinInput::Init(const HWND hwnd)
       break;
    case 2: //SDL2
 #ifdef ENABLE_SDL_INPUT
+#ifdef ENABLE_SDL_GAMECONTROLLER
+      RefreshSDLGameController();
+#else
+      RefreshSDLJoystick();
+#endif
       uShockType = USHOCKTYPE_GENERIC;
-
-      RefreshSDLJoystickAndGameController();
 #else
       m_inputApi = 0;
 #endif
