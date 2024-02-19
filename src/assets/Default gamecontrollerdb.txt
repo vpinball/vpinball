@@ -1,0 +1,1 @@
+03000000fafa0000f00000000a000000,mjrnet Pinscape Controller,platform:Mac OS X,crc:804c,leftx:a0~,lefty:a1~
