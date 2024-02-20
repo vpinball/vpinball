@@ -13,7 +13,7 @@ bool HasDMDCapture();
 bool HasPUPCapture();
 
 // Disabled for DX9 since it causes conflict with DX9
-#ifdef ENABLE_SDL
+#ifdef EXT_CAPTURE
 #include <d3d11.h>
 #include <dxgi1_2.h>
 #include <dxgi1_5.h>

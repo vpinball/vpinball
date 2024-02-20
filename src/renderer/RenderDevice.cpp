@@ -17,7 +17,7 @@
 #include "shader/AreaTex.h"
 #include "shader/SearchTex.h"
 
-#if defined(ENABLE_SDL) // OpenGL
+#if defined(ENABLE_OPENGL) // OpenGL
 #include "typedefs3D.h"
 #include "TextureManager.h"
 #include <SDL2/SDL_syswm.h>
@@ -37,7 +37,7 @@
 #endif
 
 
-#if defined(ENABLE_SDL) // OpenGL
+#if defined(ENABLE_OPENGL) // OpenGL
 GLuint RenderDevice::m_samplerStateCache[3 * 3 * 5];
 
 #else // DirectX 9
@@ -137,7 +137,7 @@ static unsigned int ComputePrimitiveCount(const RenderDevice::PrimitiveTypes typ
    }
 }
 
-#ifdef ENABLE_SDL
+#ifdef ENABLE_OPENGL
 static const char* glErrorToString(const int error) {
    switch (error) {
    case GL_INVALID_ENUM: return "GL_INVALID_ENUM";
@@ -157,7 +157,7 @@ static const char* glErrorToString(const int error) {
 void ReportFatalError(const HRESULT hr, const char *file, const int line)
 {
    char msg[2176];
-#ifdef ENABLE_SDL
+#ifdef ENABLE_OPENGL
    sprintf_s(msg, sizeof(msg), "GL Fatal Error 0x%08X %s in %s:%d", hr, glErrorToString(hr), file, line);
 #else
    sprintf_s(msg, sizeof(msg), "Fatal error %s (0x%x: %s) at %s:%d", DXGetErrorString(hr), hr, DXGetErrorDescription(hr), file, line);
@@ -170,7 +170,7 @@ void ReportFatalError(const HRESULT hr, const char *file, const int line)
 void ReportError(const char *errorText, const HRESULT hr, const char *file, const int line)
 {
    char msg[16384];
-#ifdef ENABLE_SDL
+#ifdef ENABLE_OPENGL
    sprintf_s(msg, sizeof(msg), "GL Error 0x%08X %s in %s:%d\n%s", hr, glErrorToString(hr), file, line, errorText);
    ShowError(msg);
 #else
@@ -180,7 +180,7 @@ void ReportError(const char *errorText, const HRESULT hr, const char *file, cons
 #endif
 }
 
-#if 0 //def ENABLE_SDL // not used anymore
+#if 0 //def ENABLE_OPENGL // not used anymore
 void checkGLErrors(const char *file, const int line) {
    GLenum err;
    unsigned int count = 0;
@@ -195,7 +195,7 @@ void checkGLErrors(const char *file, const int line) {
 #endif
 
 // Callback function for printing debug statements
-#if defined(ENABLE_SDL) && defined(_DEBUG) && !defined(__OPENGLES__)
+#if defined(ENABLE_OPENGL) && defined(_DEBUG) && !defined(__OPENGLES__)
 void APIENTRY GLDebugMessageCallback(GLenum source, GLenum type, GLuint id,
                                      GLenum severity, GLsizei length,
                                      const GLchar *msg, const void *data)
@@ -247,7 +247,7 @@ void APIENTRY GLDebugMessageCallback(GLenum source, GLenum type, GLuint id,
 
 int getNumberOfDisplays()
 {
-#ifdef ENABLE_SDL
+#ifdef ENABLE_OPENGL
    return SDL_GetNumVideoDisplays();
 #else
    return GetSystemMetrics(SM_CMONITORS);
@@ -264,7 +264,7 @@ void EnumerateDisplayModes(const int display, vector<VideoMode>& modes)
       return;
    const int adapter = displays[display].adapter;
 
-#ifdef ENABLE_SDL
+#ifdef ENABLE_OPENGL
    const int amount = SDL_GetNumDisplayModes(adapter);
    for (int mode = 0; mode < amount; ++mode) {
       SDL_DisplayMode sdlMode;
@@ -362,7 +362,7 @@ int getDisplayList(vector<DisplayConfig>& displays)
 {
    displays.clear();
 
-#if defined(ENABLE_SDL) && defined(_WIN32)
+#if defined(ENABLE_OPENGL) && defined(_WIN32)
    // Windows and SDL order of display enumeration do not match, therefore the display identifier will not match between DX and OpenGL version
    // SDL2 display identifier do not match the id of the native Windows settings
    // SDL2 does not offer a way to get the adapter (i.e. Graphics Card) associated with a display (i.e. Monitor) so we use the monitor name for both
@@ -396,7 +396,7 @@ int getDisplayList(vector<DisplayConfig>& displays)
       }
       i++;
    }
-#elif defined(ENABLE_SDL)
+#elif defined(ENABLE_OPENGL)
    int i = 0;
    for (; i < SDL_GetNumVideoDisplays(); ++i)
    {
@@ -514,7 +514,7 @@ RenderDeviceState::~RenderDeviceState()
 
 ////////////////////////////////////////////////////////////////////
 
-#ifndef ENABLE_SDL
+#ifndef ENABLE_OPENGL
 typedef HRESULT(WINAPI *pD3DC9Ex)(UINT SDKVersion, IDirect3D9Ex**);
 static pD3DC9Ex mDirect3DCreate9Ex = nullptr;
 #endif
@@ -534,7 +534,7 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
     : m_windowHwnd(hwnd), m_width(width), m_height(height), m_fullscreen(fullscreen), m_colorDepth(colordepth), 
       m_AAfactor(AAfactor), m_stereo3D(stereo3D), m_texMan(*this), m_renderFrame(this)
 {
-   #ifndef ENABLE_SDL
+   #ifndef ENABLE_OPENGL
     m_useNvidiaApi = useNvidiaApi;
     m_INTZ_support = false;
     NVAPIinit = false;
@@ -570,7 +570,7 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
    assert(g_pplayer != nullptr); // Player must be created to give access to the output window
    colorFormat back_buffer_format;
 
-#ifdef ENABLE_SDL
+#ifdef ENABLE_OPENGL
    ///////////////////////////////////
    // OpenGL device initialization
    const int displays = SDL_GetNumVideoDisplays();
@@ -945,7 +945,7 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
    // Retrieve a reference to the back buffer.
    m_pBackBuffer = new RenderTarget(this, m_width, m_height, back_buffer_format);
 
-#ifdef ENABLE_SDL
+#ifdef ENABLE_OPENGL
 #ifndef __OPENGLES__
    const colorFormat render_format = ((BWrendering == 1) ? colorFormat::RG16F : ((BWrendering == 2) ? colorFormat::RED16F : colorFormat::RGB16F));
 #else
@@ -959,13 +959,13 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
    int m_height_aa = (int)((float)m_height * m_AAfactor);
 
    // alloc float buffer for rendering
-#ifdef ENABLE_SDL
+#ifdef ENABLE_OPENGL
    int maxSamples;
    glGetIntegerv(GL_MAX_SAMPLES, &maxSamples);
    nMSAASamples = min(maxSamples, nMSAASamples);
 #endif
 
-   #ifdef ENABLE_SDL
+   #ifdef ENABLE_OPENGL
    SurfaceType rtType = m_stereo3D == STEREO_OFF ? SurfaceType::RT_DEFAULT : SurfaceType::RT_STEREO;
    #else
    // For the time being DirectX 9 does not support any fancy stereo
@@ -986,7 +986,7 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
    m_pBloomBufferTexture = new RenderTarget(this, rtType, "BloomBuffer1"s, m_width / 4, m_height / 4, render_format, false, 1, "Fatal Error: unable to create bloom buffer!");
    m_pBloomTmpBufferTexture = m_pBloomBufferTexture->Duplicate("BloomBuffer2"s);
 
-   #ifdef ENABLE_SDL
+   #ifdef ENABLE_OPENGL
    if (m_stereo3D == STEREO_VR) {
       //AMD Debugging
       colorFormat renderBufferFormatVR;
@@ -1011,7 +1011,7 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
    }
    #endif
 
-#ifndef ENABLE_SDL
+#ifndef ENABLE_OPENGL
    // create default vertex declarations for shaders
    CHECKD3D(m_pD3DDevice->CreateVertexDeclaration(VertexTexelElement, &m_pVertexTexelDeclaration));
    CHECKD3D(m_pD3DDevice->CreateVertexDeclaration(VertexNormalTexelElement, &m_pVertexNormalTexelDeclaration));
@@ -1029,7 +1029,7 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
    VertexBuffer* quadVertexBuffer = new VertexBuffer(this, 4, verts, false, VertexFormat::VF_POS_TEX);
    m_quadMeshBuffer = new MeshBuffer(L"Fullscreen Quad"s, quadVertexBuffer);
 
-#ifdef ENABLE_SDL
+#ifdef ENABLE_OPENGL
    delete m_quadPNTDynMeshBuffer;
    VertexBuffer* quadPNTDynVertexBuffer = new VertexBuffer(this, 4, nullptr, true, VertexFormat::VF_POS_NORMAL_TEX);
    m_quadPNTDynMeshBuffer = new MeshBuffer(quadPNTDynVertexBuffer);
@@ -1056,14 +1056,14 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
       PLOGI << "VSync source set to Desktop compositor (DwmFlush)";
       hasVSync = true;
    }
-   #ifndef ENABLE_SDL
+   #ifndef ENABLE_OPENGL
    else if (m_pD3DDeviceEx != nullptr)
    {
       PLOGI << "VSync source set to DX9Ex WaitForBlank";
       hasVSync = true;
    }
    #endif
-   #ifdef ENABLE_SDL
+   #ifdef ENABLE_OPENGL
    // DXGI VSync source (Windows 7+, only used in OpenGL build)
    else if (syncMode == VideoSyncMode::VSM_FRAME_PACING)
    {
@@ -1087,12 +1087,12 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
       ShowError("Failed to create the synchronization device.\r\nSynchronization switched to adaptive sync.");
       PLOGE << "Failed to create the synchronization device for frame pacing. Synchronization switched to adaptive sync.";
       syncMode = VideoSyncMode::VSM_ADAPTIVE_VSYNC;
-      #ifdef ENABLE_SDL
+      #ifdef ENABLE_OPENGL
       SDL_GL_SetSwapInterval(-1);
       #endif
    }
 
-   #ifdef ENABLE_SDL // OpenGL
+   #ifdef ENABLE_OPENGL // OpenGL
    m_basicShader = new Shader(this, "BasicShader.glfx"s);
    m_DMDShader = new Shader(this, m_stereo3D == STEREO_VR ? "DMDShaderVR.glfx"s : "DMDShader.glfx"s);
 #ifndef __OPENGLES__
@@ -1138,7 +1138,7 @@ RenderDevice::~RenderDevice()
    delete m_quadPNTDynMeshBuffer;
    delete m_nullTexture;
 
-#ifndef ENABLE_SDL
+#ifndef ENABLE_OPENGL
    m_pD3DDevice->SetStreamSource(0, nullptr, 0, 0);
    m_pD3DDevice->SetIndices(nullptr);
    m_pD3DDevice->SetVertexShader(nullptr);
@@ -1184,7 +1184,7 @@ RenderDevice::~RenderDevice()
    delete m_SMAAareaTexture;
    delete m_SMAAsearchTexture;
 
-#ifndef ENABLE_SDL
+#ifndef ENABLE_OPENGL
 
    // Check for resource leak on debug builds
 #ifdef _DEBUG
@@ -1339,7 +1339,7 @@ void RenderDevice::ResolveMSAA()
 
 bool RenderDevice::DepthBufferReadBackAvailable()
 {
-#ifdef ENABLE_SDL
+#ifdef ENABLE_OPENGL
    return true;
 #else
     if (m_INTZ_support && !m_useNvidiaApi)
@@ -1383,7 +1383,7 @@ void RenderDevice::UnbindSampler(Sampler* sampler)
 
 bool RenderDevice::SetMaximumPreRenderedFrames(const DWORD frames)
 {
-#ifndef ENABLE_SDL
+#ifndef ENABLE_OPENGL
    if (m_pD3DEx && frames > 0 && frames <= 20) // frames can range from 1 to 20, 0 resets to default DX
    {
       CHECKD3D(m_pD3DDeviceEx->SetMaximumFrameLatency(frames));
@@ -1404,7 +1404,7 @@ void RenderDevice::WaitForVSync(const bool asynchronous)
 #ifndef __STANDALONE__
       if (m_dwm_enabled && mDwmFlush != nullptr)
          mDwmFlush(); // Flush all commands submited by this process including the 'Present' command. This actually sync to the vertical blank
-      #ifdef ENABLE_SDL
+      #ifdef ENABLE_OPENGL
       else if (m_DXGIOutput != nullptr)
          m_DXGIOutput->WaitForVBlank();
       #else
@@ -1443,7 +1443,7 @@ void RenderDevice::Flip()
    // Schedule frame presentation (non blocking call, simply queueing the present command in the driver's render queue with a schedule for execution)
    if (m_stereo3D != STEREO_VR)
       g_frameProfiler.OnPresent();
-   #ifdef ENABLE_SDL
+   #ifdef ENABLE_OPENGL
    SDL_GL_SwapWindow(m_sdl_playfieldHwnd);
    #else
    CHECKD3D(m_pD3DDevice->Present(nullptr, nullptr, nullptr, nullptr));
@@ -1477,7 +1477,7 @@ void RenderDevice::UploadAndSetSMAATextures()
    m_SMAAsearchTexture->SetName("SMAA Search"s);
    delete searchBaseTex;*/
 
-#ifdef ENABLE_SDL
+#ifdef ENABLE_OPENGL
    auto tex_unit = m_samplerBindings.back();
    if (tex_unit->sampler != nullptr)
       tex_unit->sampler->m_bindings.erase(tex_unit);
@@ -1560,7 +1560,7 @@ void RenderDevice::UploadAndSetSMAATextures()
 
 void RenderDevice::SetSamplerState(int unit, SamplerFilter filter, SamplerAddressMode clamp_u, SamplerAddressMode clamp_v)
 {
-#ifdef ENABLE_SDL
+#ifdef ENABLE_OPENGL
    assert(sizeof(m_samplerStateCache)/sizeof(m_samplerStateCache[0]) == 3*3*5);
    int samplerStateId = min((int)clamp_u, 2) * 5 * 3
                       + min((int)clamp_v, 2) * 5
@@ -1732,7 +1732,7 @@ void RenderDevice::CopyRenderStates(const bool copyTo, RenderDeviceState& state)
 
 void RenderDevice::SetClipPlane(const vec4 &plane)
 {
-#ifdef ENABLE_SDL
+#ifdef ENABLE_OPENGL
    m_DMDShader->SetVector(SHADER_clip_plane, &plane);
    m_basicShader->SetVector(SHADER_clip_plane, &plane);
    m_lightShader->SetVector(SHADER_clip_plane, &plane);
@@ -1966,13 +1966,13 @@ void RenderDevice::SetMainTextureDefaultFiltering(const SamplerFilter filter)
    Shader::SetDefaultSamplerFilter(SHADER_tex_base_normalmap, filter);
 }
 
-#ifdef ENABLE_SDL
+#ifdef ENABLE_OPENGL
 static ViewPort viewPort;
 #endif
 
 void RenderDevice::SetViewport(const ViewPort* p1)
 {
-#ifdef ENABLE_SDL
+#ifdef ENABLE_OPENGL
    memcpy(&viewPort, p1, sizeof(ViewPort));
 #else
    CHECKD3D(m_pD3DDevice->SetViewport((D3DVIEWPORT9*)p1));
@@ -1981,7 +1981,7 @@ void RenderDevice::SetViewport(const ViewPort* p1)
 
 void RenderDevice::GetViewport(ViewPort* p1)
 {
-#ifdef ENABLE_SDL
+#ifdef ENABLE_OPENGL
    memcpy(p1, &viewPort, sizeof(ViewPort));
 #else
    CHECKD3D(m_pD3DDevice->GetViewport((D3DVIEWPORT9*)p1));

@@ -1,6 +1,8 @@
 #pragma once
 
-#ifdef ENABLE_SDL
+#if defined(ENABLE_BGFX)
+
+#elif defined(ENABLE_OPENGL)
 #ifndef __OPENGLES__
  #include <glad/gl.h>
 #else
@@ -10,7 +12,8 @@
  #include <SDL2/SDL_opengl.h>
 #endif
  #include <SDL2/SDL.h>
-#else
+
+#elif defined(ENABLE_DX9)
  #include "minid3d9.h"
  #include <d3dx9.h>
 #endif
@@ -71,7 +74,107 @@ enum VRPreviewMode
    VRPREVIEW_BOTH
 };
 
-#ifdef ENABLE_SDL
+#if defined(ENABLE_BGFX)
+
+#include "bgfx/bgfx.h"
+
+typedef bgfx::VertexLayout VertexDeclaration;
+
+// FIXME all the define below are mock copied from OpenGL implementation to be removed in favor of the BGFX one
+#define MAX_DEVICE_IDENTIFIER_STRING 512
+#define D3DADAPTER_DEFAULT 0
+
+#ifndef GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM
+#define GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM 0x8E8D
+#endif
+
+enum colorFormat
+{
+   GREY8,
+   RED16F,
+
+   GREY_ALPHA,
+   RG16F,
+
+   RGB5,
+   RGB,
+   RGB8,
+   RGB10,
+   RGB16F,
+   RGB32F,
+
+   SRGB,
+   SRGB8,
+
+   RGBA16F,
+   RGBA32F,
+   RGBA,
+   RGBA8,
+   RGBA10,
+   DXT5,
+#ifdef GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT
+   BC6S = GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT,
+   BC6U = GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT,
+   BC7 = GL_COMPRESSED_RGBA_BPTC_UNORM,
+#else
+   BC6S,
+   BC6U,
+   BC7,
+#endif
+
+   SRGBA,
+   SRGBA8,
+   SDXT5 = 0x8C4F, // GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT,
+   SBC7 = GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM
+};
+
+enum textureUsage
+{
+   RENDERTARGET = 8,
+   RENDERTARGET_DEPTH = 12,
+   RENDERTARGET_MSAA = 14,
+   RENDERTARGET_MSAA_DEPTH = 16,
+   DEPTH = 4,
+   AUTOMIPMAP = 2,
+   STATIC = 0,
+   DYNAMIC = 1
+};
+
+struct ViewPort
+{
+   union
+   {
+      struct
+      {
+         //SDL_Rect sdl_rect;
+         float front;
+         float rear;
+      };
+      struct
+      {
+         DWORD X;
+         DWORD Y;
+         DWORD Width;
+         DWORD Height;
+         float MinZ;
+         float MaxZ;
+      };
+   };
+};
+
+enum memoryPool
+{
+   SYSTEM = 0,
+   DEFAULT = 1
+};
+
+enum clearType
+{
+   ZBUFFER = BGFX_CLEAR_DEPTH,
+   TARGET = BGFX_CLEAR_COLOR
+};
+
+#elif defined(ENABLE_OPENGL)
 
 #define MAX_DEVICE_IDENTIFIER_STRING 512
 #define D3DADAPTER_DEFAULT 0
@@ -168,7 +271,7 @@ enum clearType {
    TARGET = GL_COLOR_BUFFER_BIT
 };
 
-#else
+#elif defined(ENABLE_DX9)
 
 typedef D3DVIEWPORT9 ViewPort;
 

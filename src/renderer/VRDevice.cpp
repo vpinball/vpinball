@@ -149,7 +149,7 @@ VRDevice::~VRDevice()
 
 void VRDevice::SaveVRSettings(Settings& settings) const
 {
-   #if defined(ENABLE_VR) && defined(ENABLE_SDL)
+   #if defined(ENABLE_VR) && defined(ENABLE_OPENGL)
    settings.SaveValue(Settings::PlayerVR, "Slope"s, m_slope);
    settings.SaveValue(Settings::PlayerVR, "Orientation"s, m_orientation);
    settings.SaveValue(Settings::PlayerVR, "TableX"s, m_tablex);
@@ -209,7 +209,7 @@ bool VRDevice::IsVRReady() const
 
 void VRDevice::SubmitFrame(Sampler* leftEye, Sampler* rightEye)
 {
-   #if defined(ENABLE_VR) && defined (ENABLE_SDL)
+   #if defined(ENABLE_VR) && defined (ENABLE_OPENGL)
    vr::Texture_t leftEyeTexture = { (void*)(__int64)leftEye->GetCoreTexture(), vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
    vr::EVRCompositorError errorLeft = vr::VRCompositor()->Submit(vr::Eye_Left, &leftEyeTexture);
    if (errorLeft != vr::VRCompositorError_None)

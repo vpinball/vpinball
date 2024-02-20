@@ -34,7 +34,7 @@ void RenderCommand::Execute(const int nInstances, const bool log)
       m_renderState.Apply(m_rd);
       constexpr D3DVALUE z = 1.0f;
       constexpr DWORD stencil = 0L;
-      #ifdef ENABLE_SDL
+      #ifdef ENABLE_OPENGL
          // Default OpenGL Values
          static GLfloat clear_z = 1.f;
          static GLint clear_s = 0;
@@ -73,13 +73,13 @@ void RenderCommand::Execute(const int nInstances, const bool log)
 
       // Original VPX code state that on DirectX 9 StretchRect must not be called between BeginScene/EndScene.
       // This does not seem to appear in Microsoft's docs and I could not find any glitch.
-      #ifndef ENABLE_SDL
+      #ifndef ENABLE_OPENGL
       //CHECKD3D(m_rd->GetCoreDevice()->EndScene());
       #endif
       m_copyFrom->CopyTo(m_copyTo, m_copyColor, m_copyDepth,
          (int) m_copySrcRect.x, (int) m_copySrcRect.y, (int) m_copySrcRect.z, (int) m_copySrcRect.w, 
          (int) m_copyDstRect.x, (int) m_copyDstRect.y, (int) m_copyDstRect.z, (int) m_copyDstRect.w, m_copySrcLayer);
-      #ifndef ENABLE_SDL
+      #ifndef ENABLE_OPENGL
       //CHECKD3D(m_rd->GetCoreDevice()->BeginScene());
       #endif
       break;
@@ -90,7 +90,7 @@ void RenderCommand::Execute(const int nInstances, const bool log)
       if (log) {
          PLOGI << "> Submit VR";
       }
-      #if defined(ENABLE_VR) && defined(ENABLE_SDL)
+      #if defined(ENABLE_VR) && defined(ENABLE_OPENGL)
       if (g_pplayer->m_vrDevice && g_pplayer->m_vrDevice->IsVRReady())
       {
          g_frameProfiler.OnPresent();
@@ -138,7 +138,7 @@ void RenderCommand::Execute(const int nInstances, const bool log)
       case RC_DRAW_QUAD_PT:
       {
          m_rd->m_curDrawnTriangles += 2;
-         #ifdef ENABLE_SDL
+         #ifdef ENABLE_OPENGL
             void* bufvb;
             m_rd->m_quadPTDynMeshBuffer->m_vb->lock(0, 0, &bufvb, VertexBuffer::DISCARDCONTENTS);
             memcpy(bufvb, m_vertices, 4 * sizeof(Vertex3D_TexelOnly));
@@ -165,7 +165,7 @@ void RenderCommand::Execute(const int nInstances, const bool log)
       case RC_DRAW_QUAD_PNT:
       {
          m_rd->m_curDrawnTriangles += 2;
-         #ifdef ENABLE_SDL
+         #ifdef ENABLE_OPENGL
          void* bufvb;
          m_rd->m_quadPNTDynMeshBuffer->m_vb->lock(0, 0, &bufvb, VertexBuffer::DISCARDCONTENTS);
          memcpy(bufvb, m_vertices, 4 * sizeof(Vertex3D_NoTex2));
@@ -208,7 +208,7 @@ void RenderCommand::Execute(const int nInstances, const bool log)
 
          if (m_mb->m_ib == nullptr)
          {
-            #ifdef ENABLE_SDL
+            #ifdef ENABLE_OPENGL
             assert(0 <= m_mb->m_vb->GetVertexOffset() && m_mb->m_vb->GetVertexOffset() + m_indicesCount <= m_mb->m_vb->GetSharedBuffer()->GetCount());
             if (instanceCount > 1)
                glDrawArraysInstanced(m_primitiveType, m_mb->m_vb->GetVertexOffset() + m_startIndex, m_indicesCount, instanceCount);
@@ -221,7 +221,7 @@ void RenderCommand::Execute(const int nInstances, const bool log)
          else
          {
             const int vertexOffset = m_mb->m_isVBOffsetApplied ? 0 : m_mb->m_vb->GetOffset();
-            #ifdef ENABLE_SDL
+            #ifdef ENABLE_OPENGL
             const int indexOffset = m_mb->m_ib->GetOffset() + m_startIndex * m_mb->m_ib->m_sizePerIndex;
             const GLenum indexType = m_mb->m_ib->m_indexFormat == IndexBuffer::FMT_INDEX16 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT;
             #if defined(DEBUG) && 0

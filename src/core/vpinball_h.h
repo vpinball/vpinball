@@ -29,7 +29,7 @@
 #include "ui/dialogs/LayersListDialog.h"
 #include "ui/dialogs/NotesDialog.h"
 #include "ui/properties/PropertyDialog.h"
-#ifdef ENABLE_SDL
+#ifdef ENABLE_VR
 #include "ui/dialogs/VROptionsDialog.h"
 #endif
 #endif
@@ -314,7 +314,7 @@ private:
    RenderProbeDialog m_renderProbeDialog;
    MaterialDialog m_materialDialog;
    AboutDialog m_aboutDialog;
-#ifdef ENABLE_SDL
+#ifdef ENABLE_VR
    VROptionsDialog m_vrOptDialog;
 #endif
 

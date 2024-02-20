@@ -12,13 +12,13 @@ class VertexBuffer final
 public:
    enum LockFlags
    {
-#ifdef ENABLE_SDL
+      #if defined(ENABLE_OPENGL) || defined(ENABLE_BGFX)
       WRITEONLY,
       DISCARDCONTENTS
-#else
+      #elif defined(ENABLE_DX9)
       WRITEONLY = 0,                        // in DX9, this is specified during VB creation
       DISCARDCONTENTS = D3DLOCK_DISCARD     // discard previous contents; only works with dynamic VBs
-#endif
+      #endif
    };
 
    VertexBuffer(RenderDevice* rd, const unsigned int vertexCount, const float* verts = nullptr, const bool isDynamic = false, const VertexFormat fvf = VertexFormat::VF_POS_NORMAL_TEX);
@@ -39,10 +39,13 @@ public:
    const unsigned int m_sizePerVertex; // Size of each vertex
    const unsigned int m_size; // Size in bytes of the array
 
-   #ifdef ENABLE_SDL
+   #if defined(ENABLE_BGFX)
+
+   #elif defined(ENABLE_OPENGL)
    GLuint GetBuffer() const;
    void Bind() const;
-   #else
+   
+   #elif defined(ENABLE_DX9)
    IDirect3DVertexBuffer9* GetBuffer() const;
    #endif
 
@@ -62,13 +65,20 @@ public:
    SharedVertexBuffer(VertexFormat fmt, bool stat) : SharedBuffer(fmt, fmt ==  VertexFormat::VF_POS_NORMAL_TEX ? sizeof(Vertex3D_NoTex2) : sizeof(Vertex3D_TexelOnly), stat) {}
    ~SharedVertexBuffer();
    void Upload() override;
-   bool IsUploaded() const override { return m_vb; }
 
-   #ifdef ENABLE_SDL
+   #if defined(ENABLE_BGFX)
+   bgfx::VertexBufferHandle m_vb = BGFX_INVALID_HANDLE;
+   bgfx::DynamicVertexBufferHandle m_dvb = BGFX_INVALID_HANDLE;
+   bool IsUploaded() const override { return m_isStatic ? bgfx::isValid(m_vb) : bgfx::isValid(m_dvb); }
+   
+   #elif defined(ENABLE_OPENGL)
    GLuint m_vb = 0;
    void Bind() const;
-   #else
+   bool IsUploaded() const override { return m_vb; }
+
+   #elif defined(ENABLE_DX9)
    IDirect3DVertexBuffer9* m_vb = nullptr;
+   bool IsUploaded() const override { return m_vb; }
    #endif
 };
 

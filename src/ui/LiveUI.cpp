@@ -14,7 +14,7 @@
 
 #include "imgui/imgui.h"
 #include "imgui/imgui_internal.h" // Needed for FindRenderedTextEnd in HelpSplash (should be adapted when this function will refactored in ImGui)
-#ifdef ENABLE_SDL
+#ifdef ENABLE_OPENGL
 #include "imgui/imgui_impl_opengl3.h"
 #ifdef __STANDALONE__
   #include "imgui/imgui_impl_sdl2.h"
@@ -763,7 +763,7 @@ LiveUI::LiveUI(RenderDevice *const rd)
    markdown_config.userData = this;
    markdown_config.formatCallback = MarkdownFormatCallback;
 
-#ifdef ENABLE_SDL
+#ifdef ENABLE_OPENGL
    ImGui_ImplOpenGL3_Init();
 #else
    ImGui_ImplDX9_Init(rd->GetCoreDevice());
@@ -775,7 +775,7 @@ LiveUI::~LiveUI()
    HideUI();
    if (ImGui::GetCurrentContext())
    {
-#ifdef ENABLE_SDL
+#ifdef ENABLE_OPENGL
       ImGui_ImplOpenGL3_Shutdown();
 #else
       ImGui_ImplDX9_Shutdown();
@@ -853,7 +853,7 @@ void LiveUI::MarkdownLinkCallback(ImGui::MarkdownLinkCallbackData data)
    if (!data.isImage)
    {
       std::string url(data.link, data.linkLength);
-      #ifdef ENABLE_SDL
+      #ifdef ENABLE_OPENGL
       SDL_OpenURL(url.c_str());
       #else
       ShellExecuteA(NULL, "open", url.c_str(), NULL, NULL, SW_SHOWNORMAL);
@@ -870,7 +870,7 @@ ImGui::MarkdownImageData LiveUI::MarkdownImageCallback(ImGui::MarkdownLinkCallba
    Sampler *sampler = g_pplayer->m_renderer->m_pd3dPrimaryDevice->m_texMan.LoadTexture(ppi->m_pdsBuffer, SamplerFilter::SF_BILINEAR, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, false);
    if (sampler == nullptr)
       return ImGui::MarkdownImageData {};
-   #ifdef ENABLE_SDL
+   #ifdef ENABLE_OPENGL
    ImTextureID image = (void *)(intptr_t)sampler->GetCoreTexture();
    #else
    ImTextureID image = (void *)sampler->GetCoreTexture();
@@ -917,7 +917,7 @@ void LiveUI::Render()
             case 3: matTranslate = Matrix3D::MatrixTranslate(0, ImGui::GetIO().DisplaySize.x, 0); break;
             }
             matTranslate = matRotate * matTranslate;
-#ifdef ENABLE_SDL
+#ifdef ENABLE_OPENGL
             const float L = 0, R = (lui->m_rotate == 1 || lui->m_rotate == 3) ? ImGui::GetIO().DisplaySize.y : ImGui::GetIO().DisplaySize.x;
             const float T = 0, B = (lui->m_rotate == 1 || lui->m_rotate == 3) ? ImGui::GetIO().DisplaySize.x : ImGui::GetIO().DisplaySize.y;
             Matrix3D matProj(
@@ -946,7 +946,7 @@ void LiveUI::Render()
       draw_data->DisplaySize.x = draw_data->DisplaySize.y;
       draw_data->DisplaySize.y = tmp;
    }
-#ifdef ENABLE_SDL
+#ifdef ENABLE_OPENGL
 #ifndef __OPENGLES__
    if (GLAD_GL_VERSION_4_3)
       glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "ImGui");
@@ -1014,7 +1014,7 @@ void LiveUI::Update(const RenderTarget *rt)
 
    m_rotation_callback_added = false;
 
-#ifdef ENABLE_SDL
+#ifdef ENABLE_OPENGL
    ImGui_ImplOpenGL3_NewFrame();
 #else
    ImGui_ImplDX9_NewFrame();
@@ -3071,7 +3071,7 @@ void LiveUI::UpdateRendererInspectionModal()
       ImGui::Text("Display single render pass:");
       static int pass_selection = IF_FPS;
       ImGui::RadioButton("Disabled", &pass_selection, IF_FPS);
-      #ifndef ENABLE_SDL // No GPU profiler for OpenGL
+      #ifndef ENABLE_OPENGL // No GPU profiler for OpenGL
       ImGui::RadioButton("Profiler", &pass_selection, IF_PROFILING);
       #endif
       ImGui::RadioButton("Static prerender pass", &pass_selection, IF_STATIC_ONLY);
@@ -3376,7 +3376,7 @@ void LiveUI::UpdateMainSplashModal()
 
             const ImVec2 drag = ImGui::GetMouseDragDelta();
             int x, y;
-#ifdef ENABLE_SDL
+#ifdef ENABLE_OPENGL
             SDL_GetWindowPosition(m_player->m_sdl_playfieldHwnd, &x, &y);
             x += (int)drag.x;
             y += (int)drag.y;

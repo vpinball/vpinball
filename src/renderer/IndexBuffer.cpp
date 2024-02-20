@@ -9,7 +9,7 @@ void SharedIndexBuffer::Upload()
       unsigned int size = m_count * m_bytePerElement;
 
       // Create data block
-      #if defined(ENABLE_SDL) // OpenGL
+      #if defined(ENABLE_OPENGL) // OpenGL
       UINT8* data = (UINT8*)malloc(size);
       #else // DirectX 9
       CHECKD3D(m_buffers[0]->m_rd->GetCoreDevice()->CreateIndexBuffer(size, D3DUSAGE_WRITEONLY | (m_isStatic ? 0 : D3DUSAGE_DYNAMIC), m_format == IndexBuffer::FMT_INDEX16 ? D3DFMT_INDEX16 : D3DFMT_INDEX32, D3DPOOL_DEFAULT, &m_ib, nullptr));
@@ -28,7 +28,7 @@ void SharedIndexBuffer::Upload()
       m_pendingUploads.clear();
 
       // Upload data block
-      #if defined(ENABLE_SDL) // OpenGL && OpenGL ES
+      #if defined(ENABLE_OPENGL) // OpenGL && OpenGL ES
       #ifndef __OPENGLES__
       if (GLAD_GL_VERSION_4_5)
       {
@@ -57,7 +57,7 @@ void SharedIndexBuffer::Upload()
    {
       for (PendingUpload upload : m_pendingUploads)
       {
-         #if defined(ENABLE_SDL) // OpenGL
+         #if defined(ENABLE_OPENGL) // OpenGL
          #ifndef __OPENGLES__
          if (GLAD_GL_VERSION_4_5)
             glNamedBufferSubData(m_ib, upload.offset, upload.size, upload.data);
@@ -82,7 +82,7 @@ void SharedIndexBuffer::Upload()
    }
 }
 
-#ifdef ENABLE_SDL
+#ifdef ENABLE_OPENGL
 void SharedIndexBuffer::Bind() const
 {
    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ib);
@@ -93,7 +93,7 @@ SharedIndexBuffer::~SharedIndexBuffer()
 {
    if (IsUploaded())
    {
-      #if defined(ENABLE_SDL) // OpenGL
+      #if defined(ENABLE_OPENGL) // OpenGL
       glDeleteBuffers(1, &m_ib);
       #else // DirectX 9
       SAFE_RELEASE(m_ib);
@@ -169,7 +169,7 @@ IndexBuffer::~IndexBuffer()
 
 bool IndexBuffer::IsSharedBuffer() const { return m_sharedBuffer->IsShared(); }
 
-#ifdef ENABLE_SDL
+#ifdef ENABLE_OPENGL
 GLuint IndexBuffer::GetBuffer() const { return m_sharedBuffer->m_ib; }
 void IndexBuffer::Bind() const { m_sharedBuffer->Bind(); }
 #else

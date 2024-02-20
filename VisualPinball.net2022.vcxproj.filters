@@ -64,6 +64,51 @@
     <Filter Include="renderer">
       <UniqueIdentifier>{3d81e6c0-9785-4460-bd19-c8c25e24ae1b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="third-party\glad">
+      <UniqueIdentifier>{eb774f26-7da3-495d-80cc-8eb48d6f1593}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third-party\progmesh">
+      <UniqueIdentifier>{f1b84f0b-89cf-4e24-b82c-a6aa26a235e6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third-party\scintilla">
+      <UniqueIdentifier>{b8b61905-2d58-4daf-92fd-b57d299e5dd1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third-party\gpuprofiler">
+      <UniqueIdentifier>{8aacfaf1-764f-4635-b401-c610ca901d7e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third-party\serial">
+      <UniqueIdentifier>{de0cf113-92b0-4b46-a761-2db6a8318f96}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third-party\imgui\bgfx">
+      <UniqueIdentifier>{e966d012-e5d4-48a9-9771-e71ba51d1128}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third-party\imgui\dx9">
+      <UniqueIdentifier>{f2163d36-4d3c-49c3-b6ce-4a93b6ea61ef}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third-party\imgui\opengl">
+      <UniqueIdentifier>{5db81c88-4948-4fb4-8a67-a75c9d10bd25}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third-party\imgui\win32">
+      <UniqueIdentifier>{c5435e02-7115-480d-9dfd-2a73d70adc19}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third-party\imgui\implot">
+      <UniqueIdentifier>{2162f4c7-dd01-42ad-8bb7-0ee3ffba7b8d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third-party\imgui\ImGuizmo">
+      <UniqueIdentifier>{cfa580c8-9f5b-459d-bd2a-8117a56df968}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third-party\bimg">
+      <UniqueIdentifier>{1eb7da9e-d408-45d0-a562-cc2bb3edbbd4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third-party\bx">
+      <UniqueIdentifier>{7b831416-6648-4f68-812c-ec139bd0ca41}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third-party\bgfx">
+      <UniqueIdentifier>{acdc1b9e-8fcf-42b6-8a74-9a548cb799d1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third-party\compat">
+      <UniqueIdentifier>{c2eb4c3c-96b3-47e6-8e90-928d612397fb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src/utils/def.cpp">
@@ -525,31 +570,13 @@
     <ClCompile Include="src/ui/dialogs/RenderProbeDialog.cpp">
       <Filter>ui\dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="third-party/include/gpuprofiler.cpp">
-      <Filter>third-party</Filter>
-    </ClCompile>
-    <ClCompile Include="third-party/include/progmesh.cpp">
-      <Filter>third-party</Filter>
-    </ClCompile>
     <ClCompile Include="third-party/include/miniz/miniz.c">
-      <Filter>third-party</Filter>
-    </ClCompile>
-    <ClCompile Include="third-party/include/serial.cpp">
-      <Filter>third-party</Filter>
-    </ClCompile>
-    <ClCompile Include="third-party/include/glad/src/gl.c">
       <Filter>third-party</Filter>
     </ClCompile>
     <ClCompile Include="third-party/include/BAM/BAMView.cpp">
       <Filter>third-party\BAM</Filter>
     </ClCompile>
-    <ClCompile Include="third-party/include/imgui/imgui_impl_win32.cpp">
-      <Filter>third-party\imgui</Filter>
-    </ClCompile>
     <ClCompile Include="third-party/include/imgui/imgui_widgets.cpp">
-      <Filter>third-party\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="third-party/include/imgui/imgui_impl_dx9.cpp">
       <Filter>third-party\imgui</Filter>
     </ClCompile>
     <ClCompile Include="third-party/include/imgui/imgui.cpp">
@@ -561,23 +588,44 @@
     <ClCompile Include="third-party/include/imgui/imgui_tables.cpp">
       <Filter>third-party\imgui</Filter>
     </ClCompile>
-    <ClCompile Include="third-party/include/imgui/imgui_impl_opengl3.cpp">
-      <Filter>third-party\imgui</Filter>
-    </ClCompile>
     <ClCompile Include="third-party/include/imgui/imgui_stdlib.cpp">
-      <Filter>third-party\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="third-party/include/imguizmo/ImGuizmo.cpp">
-      <Filter>third-party\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="third-party/include/implot/implot.cpp">
-      <Filter>third-party\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="third-party/include/implot/implot_items.cpp">
       <Filter>third-party\imgui</Filter>
     </ClCompile>
     <ClCompile Include="third-party/include/tinyxml2/tinyxml2.cpp">
       <Filter>third-party\tinyxml2</Filter>
+    </ClCompile>
+    <ClCompile Include="third-party/include/gpuprofiler.cpp">
+      <Filter>third-party\gpuprofiler</Filter>
+    </ClCompile>
+    <ClCompile Include="third-party/include/glad/src/gl.c">
+      <Filter>third-party\glad</Filter>
+    </ClCompile>
+    <ClCompile Include="third-party/include/progmesh.cpp">
+      <Filter>third-party\progmesh</Filter>
+    </ClCompile>
+    <ClCompile Include="third-party/include/serial.cpp">
+      <Filter>third-party\serial</Filter>
+    </ClCompile>
+    <ClCompile Include="third-party/include/bgfx-imgui/imgui_impl_bgfx.cpp">
+      <Filter>third-party\imgui\bgfx</Filter>
+    </ClCompile>
+    <ClCompile Include="third-party/include/imgui/imgui_impl_win32.cpp">
+      <Filter>third-party\imgui\win32</Filter>
+    </ClCompile>
+    <ClCompile Include="third-party/include/imgui/imgui_impl_dx9.cpp">
+      <Filter>third-party\imgui\dx9</Filter>
+    </ClCompile>
+    <ClCompile Include="third-party/include/imgui/imgui_impl_opengl3.cpp">
+      <Filter>third-party\imgui\opengl</Filter>
+    </ClCompile>
+    <ClCompile Include="third-party/include/implot/implot_items.cpp">
+      <Filter>third-party\imgui\implot</Filter>
+    </ClCompile>
+    <ClCompile Include="third-party/include/implot/implot.cpp">
+      <Filter>third-party\imgui\implot</Filter>
+    </ClCompile>
+    <ClCompile Include="third-party/include/imguizmo/ImGuizmo.cpp">
+      <Filter>third-party\imgui\ImGuizmo</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -596,7 +644,6 @@
     <ClInclude Include="vpversion.h">
       <Filter>core</Filter>
     </ClInclude>
-
     <ClInclude Include="src/audio/audioplayer.h">
       <Filter>audio</Filter>
     </ClInclude>
@@ -1200,37 +1247,13 @@
     <ClInclude Include="third-party/include/freeimage.h">
       <Filter>third-party</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/scilexer.h">
-      <Filter>third-party</Filter>
-    </ClInclude>
-    <ClInclude Include="third-party/include/scintilla.h">
-      <Filter>third-party</Filter>
-    </ClInclude>
     <ClInclude Include="third-party/include/ThreadPool.h">
       <Filter>third-party</Filter>
     </ClInclude>
     <ClInclude Include="third-party/include/forsyth.h">
       <Filter>third-party</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/progmesh.h">
-      <Filter>third-party</Filter>
-    </ClInclude>
-    <ClInclude Include="third-party/include/progmesh_vecmatquat_minimal.h">
-      <Filter>third-party</Filter>
-    </ClInclude>
-    <ClInclude Include="third-party/include/Sci_Position.h">
-      <Filter>third-party</Filter>
-    </ClInclude>
-    <ClInclude Include="third-party/include/serial.h">
-      <Filter>third-party</Filter>
-    </ClInclude>
-    <ClInclude Include="third-party/include/gpuprofiler.h">
-      <Filter>third-party</Filter>
-    </ClInclude>
     <ClInclude Include="third-party/include/stb_image.h">
-      <Filter>third-party</Filter>
-    </ClInclude>
-    <ClInclude Include="third-party/include/glad/include/glad/gl.h">
       <Filter>third-party</Filter>
     </ClInclude>
     <ClInclude Include="third-party/include/BAM/BAM_Tracker.h">
@@ -1251,13 +1274,7 @@
     <ClInclude Include="third-party/include/hidusage.h">
       <Filter>third-party\hid</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/imgui/imgui_impl_win32.h">
-      <Filter>third-party\imgui</Filter>
-    </ClInclude>
     <ClInclude Include="third-party/include/imgui/imgui_internal.h">
-      <Filter>third-party\imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="third-party/include/imgui/imgui_impl_dx9.h">
       <Filter>third-party\imgui</Filter>
     </ClInclude>
     <ClInclude Include="third-party/include/imgui/imconfig.h">
@@ -1266,22 +1283,7 @@
     <ClInclude Include="third-party/include/imgui/imgui.h">
       <Filter>third-party\imgui</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/implot/implot.h">
-      <Filter>third-party\imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="third-party/include/implot/implot_internal.h">
-      <Filter>third-party\imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="third-party/include/imgui/imgui_impl_opengl3.h">
-      <Filter>third-party\imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="third-party/include/imgui/imgui_impl_opengl3_loader.h">
-      <Filter>third-party\imgui</Filter>
-    </ClInclude>
     <ClInclude Include="third-party/include/imgui/imgui_stdlib.h">
-      <Filter>third-party\imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="third-party/include/imguizmo/ImGuizmo.h">
       <Filter>third-party\imgui</Filter>
     </ClInclude>
     <ClInclude Include="third-party/include/nvapi/nvapi.h">
@@ -1460,6 +1462,207 @@
     </ClInclude>
     <ClInclude Include="third-party/include/win32xx/include/wxx_wincore0.h">
       <Filter>third-party\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party/include/gpuprofiler.h">
+      <Filter>third-party\gpuprofiler</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party/include/glad/include/glad/gl.h">
+      <Filter>third-party\glad</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party/include/progmesh.h">
+      <Filter>third-party\progmesh</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party/include/progmesh_vecmatquat_minimal.h">
+      <Filter>third-party\progmesh</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party/include/Sci_Position.h">
+      <Filter>third-party\scintilla</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party/include/scilexer.h">
+      <Filter>third-party\scintilla</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party/include/scintilla.h">
+      <Filter>third-party\scintilla</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party/include/serial.h">
+      <Filter>third-party\serial</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party/include/bgfx-imgui/fs_ocornut_imgui.bin.h">
+      <Filter>third-party\imgui\bgfx</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party/include/bgfx-imgui/vs_ocornut_imgui.bin.h">
+      <Filter>third-party\imgui\bgfx</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party/include/bgfx-imgui/imgui_impl_bgfx.h">
+      <Filter>third-party\imgui\bgfx</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party/include/imgui/imgui_impl_win32.h">
+      <Filter>third-party\imgui\win32</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party/include/imgui/imgui_impl_dx9.h">
+      <Filter>third-party\imgui\dx9</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party/include/imgui/imgui_impl_opengl3.h">
+      <Filter>third-party\imgui\opengl</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party/include/imgui/imgui_impl_opengl3_loader.h">
+      <Filter>third-party\imgui\opengl</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party/include/implot/implot.h">
+      <Filter>third-party\imgui\implot</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party/include/implot/implot_internal.h">
+      <Filter>third-party\imgui\implot</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party/include/imguizmo/ImGuizmo.h">
+      <Filter>third-party\imgui\ImGuizmo</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\include\bimg\bimg.h">
+      <Filter>third-party\bimg</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\include\bimg\decode.h">
+      <Filter>third-party\bimg</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\include\bgfx\bgfx.h">
+      <Filter>third-party\bgfx</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\include\bgfx\defines.h">
+      <Filter>third-party\bgfx</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\include\bgfx\embedded_shader.h">
+      <Filter>third-party\bgfx</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\include\bgfx\platform.h">
+      <Filter>third-party\bgfx</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\include\bx\allocator.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\include\bx\bounds.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\include\bx\bx.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\include\bx\commandline.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\include\bx\config.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\include\bx\constants.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\include\bx\cpu.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\include\bx\debug.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\include\bx\easing.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\include\bx\endian.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\include\bx\error.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\include\bx\file.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\include\bx\filepath.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\include\bx\float4x4_t.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\include\bx\handlealloc.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\include\bx\hash.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\include\bx\macros.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\include\bx\maputil.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\include\bx\math.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\include\bx\mpscqueue.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\include\bx\mutex.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\include\bx\os.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\include\bx\pixelformat.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\include\bx\platform.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\include\bx\process.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\include\bx\readerwriter.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\include\bx\ringbuffer.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\include\bx\rng.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\include\bx\semaphore.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\include\bx\settings.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\include\bx\simd_t.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\include\bx\sort.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\include\bx\spscqueue.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\include\bx\string.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\include\bx\thread.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\include\bx\timer.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\include\bx\typetraits.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\include\bx\uint32_t.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\include\bx\url.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\include\compat\msvc\alloca.h">
+      <Filter>third-party\compat</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\include\compat\msvc\dirent.h">
+      <Filter>third-party\compat</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\include\compat\msvc\inttypes.h">
+      <Filter>third-party\compat</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\include\compat\msvc\stdbool.h">
+      <Filter>third-party\compat</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

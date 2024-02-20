@@ -8,7 +8,7 @@
 
 #include "vpversion.h"
 
-#ifdef ENABLE_SDL
+#ifdef ENABLE_OPENGL
 #include <windows.h>
 #include <iostream>
 #include <fstream>
@@ -191,7 +191,7 @@ Shader::ShaderUniform Shader::shaderUniformNames[SHADER_UNIFORM_COUNT] {
    SHADER_UNIFORM(SUT_Float, alphaTestValue, 1),
    SHADER_UNIFORM(SUT_Float4x4, matProj, 1), // +1 Matrix for stereo
    SHADER_UNIFORM(SUT_Float4x4, matWorldViewProj, 1), // +1 Matrix for stereo
-   #ifdef ENABLE_SDL // OpenGL
+   #ifdef ENABLE_OPENGL // OpenGL
    SHADER_UNIFORM(SUT_DataBlock, basicMatrixBlock, 5 * 16 * 4), // +1 Matrix for stereo
    SHADER_UNIFORM(SUT_DataBlock, ballMatrixBlock, 4 * 16 * 4), // +1 Matrix for stereo
    #else // DirectX 9
@@ -207,7 +207,7 @@ Shader::ShaderUniform Shader::shaderUniformNames[SHADER_UNIFORM_COUNT] {
    SHADER_UNIFORM(SUT_Float4, w_h_height, 1), // Post process & Basic (for screen space reflection/refraction)
 
    // Shared material for Ball, Basic and Classic light shaders
-   #ifdef ENABLE_SDL // OpenGL
+   #ifdef ENABLE_OPENGL // OpenGL
    SHADER_UNIFORM(SUT_Float4, clip_plane, 1),
    SHADER_UNIFORM(SUT_Float4v, basicLightEmission, 2),
    SHADER_UNIFORM(SUT_Float4v, basicLightPos, 2),
@@ -230,7 +230,7 @@ Shader::ShaderUniform Shader::shaderUniformNames[SHADER_UNIFORM_COUNT] {
    // Basic Shader
    SHADER_UNIFORM(SUT_Float4, cClearcoat_EdgeAlpha, 1),
    SHADER_UNIFORM(SUT_Float4, cGlossy_ImageLerp, 1),
-   #ifdef ENABLE_SDL // OpenGL
+   #ifdef ENABLE_OPENGL // OpenGL
    SHADER_UNIFORM(SUT_Bool, doRefractions, 1),
    #endif
    SHADER_UNIFORM(SUT_Float4, refractionTint_thickness, 1),
@@ -345,7 +345,7 @@ Shader* Shader::GetCurrentShader() { return current_shader;  }
 Shader::Shader(RenderDevice* renderDevice, const std::string& src1, const std::string& src2, const BYTE* code, unsigned int codeSize):
    m_renderDevice(renderDevice)
 {
-   #ifdef ENABLE_SDL
+   #ifdef ENABLE_OPENGL
    if (renderDevice->m_stereo3D != STEREO_OFF)
    {
       shaderUniformNames[SHADER_matProj].count = 2;
@@ -363,7 +363,7 @@ Shader::Shader(RenderDevice* renderDevice, const std::string& src1, const std::s
    #endif
 
    m_technique = SHADER_TECHNIQUE_INVALID;
-   #ifdef ENABLE_SDL // OpenGL
+   #ifdef ENABLE_OPENGL // OpenGL
    memset(m_techniques, 0, sizeof(ShaderTechnique*) * SHADER_TECHNIQUE_COUNT);
    #else // DirectX 9
    memset(m_boundTexture, 0, sizeof(IDirect3DTexture9*) * TEXTURESET_STATE_CACHE_SIZE);
@@ -408,7 +408,7 @@ Shader::Shader(RenderDevice* renderDevice, const std::string& src1, const std::s
          }
    m_state = new ShaderState(this);
    memset(m_state->m_state, 0, m_stateSize);
-   #ifdef ENABLE_SDL // OpenGL
+   #ifdef ENABLE_OPENGL // OpenGL
    for (int i = 0; i < SHADER_TECHNIQUE_COUNT; i++)
       if (m_techniques[i] != nullptr)
       {
@@ -447,7 +447,7 @@ Shader::Shader(RenderDevice* renderDevice, const std::string& src1, const std::s
 Shader::~Shader()
 {
    delete m_state;
-#ifdef ENABLE_SDL // OpenGL
+#ifdef ENABLE_OPENGL // OpenGL
    for (int j = 0; j < SHADER_TECHNIQUE_COUNT; ++j)
    {
       if (m_techniques[j] != nullptr)
@@ -465,7 +465,7 @@ Shader::~Shader()
 
 void Shader::UnbindSampler(Sampler* sampler)
 {
-   #if !defined(ENABLE_SDL)
+   #if !defined(ENABLE_OPENGL)
    for (const auto& uniform : m_uniforms[0])
    {
       const auto& desc = m_uniform_desc[uniform];
@@ -487,7 +487,7 @@ void Shader::Begin()
    {
       m_renderDevice->m_curTechniqueChanges++;
       m_boundTechnique = m_technique;
-#ifdef ENABLE_SDL
+#ifdef ENABLE_OPENGL
       glUseProgram(m_techniques[m_technique]->program);
 #else
       CHECKD3D(m_shader->SetTechnique((D3DXHANDLE)shaderTechniqueNames[m_technique].c_str()));
@@ -495,7 +495,7 @@ void Shader::Begin()
    }
    for (const auto& uniformName : m_uniforms[m_technique])
       ApplyUniform(uniformName);
-#ifndef ENABLE_SDL
+#ifndef ENABLE_OPENGL
    unsigned int cPasses;
    CHECKD3D(m_shader->Begin(&cPasses, 0));
    CHECKD3D(m_shader->BeginPass(0));
@@ -506,7 +506,7 @@ void Shader::End()
 {
    assert(current_shader == this);
    current_shader = nullptr;
-#ifndef ENABLE_SDL
+#ifndef ENABLE_OPENGL
    CHECKD3D(m_shader->EndPass());
    CHECKD3D(m_shader->End());
 #endif
@@ -623,7 +623,7 @@ void Shader::SetTechniqueMaterial(ShaderTechniques technique, const Material& ma
 {
    ShaderTechniques tech = technique;
    const bool isMetal = mat.m_type == Material::MaterialType::METAL;
-   #ifdef ENABLE_SDL
+   #ifdef ENABLE_OPENGL
    // For OpenGL doReflections is computed from the reflection factor
    SetBool(SHADER_is_metal, isMetal);
    SetBool(SHADER_doNormalMapping, doNormalMapping);
@@ -702,7 +702,7 @@ void Shader::SetTechnique(ShaderTechniques technique)
 {
    assert(current_shader != this); // Changing the technique of a used shader is not allowed (between Begin/End)
    assert(0 <= technique && technique < SHADER_TECHNIQUE_COUNT);
-#ifdef ENABLE_SDL
+#ifdef ENABLE_OPENGL
    if (m_techniques[technique] == nullptr)
    {
       m_technique = SHADER_TECHNIQUE_INVALID;
@@ -734,7 +734,7 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
    assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
    assert(m_stateOffsets[uniformName] != -1);
 
-#ifdef ENABLE_SDL
+#ifdef ENABLE_OPENGL
    ShaderState* const __restrict boundState = m_boundState[m_technique];
    // For OpenGL uniform binding state is per technique (i.e. program)
    const UniformDesc& desc = m_techniques[m_technique]->uniform_desc[uniformName];
@@ -748,7 +748,7 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
    void* const src = m_state->m_state + m_stateOffsets[uniformName];
    void* const dst = boundState->m_state + m_stateOffsets[uniformName];
 
-   #ifdef ENABLE_SDL
+   #ifdef ENABLE_OPENGL
    if (desc.uniform.type == SUT_Sampler)
    {
       // DX9 implementation uses preaffected texture units, not samplers, so these can not be used for OpenGL. This would cause some collisions.
@@ -827,7 +827,7 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
 
    if (memcmp(dst, src, m_stateSizes[uniformName]) == 0)
    {
-      #ifdef ENABLE_SDL
+      #ifdef ENABLE_OPENGL
       if (desc.uniform.type == SUT_DataBlock)
       {
          glUniformBlockBinding(m_techniques[m_technique]->program, desc.location, 0);
@@ -841,7 +841,7 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
    switch (desc.uniform.type)
    {
    case SUT_DataBlock: // Uniform blocks
-      #ifdef ENABLE_SDL
+      #ifdef ENABLE_OPENGL
       glBindBuffer(GL_UNIFORM_BUFFER, desc.blockBuffer);
       glBufferData(GL_UNIFORM_BUFFER, m_stateSizes[uniformName], src, GL_STREAM_DRAW);
       glUniformBlockBinding(m_techniques[m_technique]->program, desc.location, 0);
@@ -855,7 +855,7 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
          assert(desc.uniform.count == 1);
          bool val = *(bool*)src;
          *(bool*)dst = val;
-         #ifdef ENABLE_SDL
+         #ifdef ENABLE_OPENGL
          glUniform1i(desc.location, val);
          #else
          CHECKD3D(m_shader->SetBool(desc.handle, val));
@@ -867,7 +867,7 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
          assert(desc.uniform.count == 1);
          int val = *(int*)src;
          *(int*)dst = val;
-         #ifdef ENABLE_SDL
+         #ifdef ENABLE_OPENGL
          glUniform1i(desc.location, val);
          #else
          CHECKD3D(m_shader->SetInt(desc.handle, val));
@@ -879,7 +879,7 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
          assert(desc.uniform.count == 1);
          float val = *(float*)src;
          *(float*)dst = val;
-         #ifdef ENABLE_SDL
+         #ifdef ENABLE_OPENGL
          glUniform1f(desc.location, val);
          #else
          CHECKD3D(m_shader->SetFloat(desc.handle, val));
@@ -889,7 +889,7 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
    case SUT_Float2:
       assert(desc.uniform.count == 1);
       memcpy(dst, src, m_stateSizes[uniformName]);
-      #ifdef ENABLE_SDL
+      #ifdef ENABLE_OPENGL
       glUniform2fv(desc.location, 1, (const GLfloat*)src);
       #else
       CHECKD3D(m_shader->SetVector(desc.handle, (D3DXVECTOR4*)src));
@@ -898,7 +898,7 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
    case SUT_Float3:
       assert(desc.uniform.count == 1);
       memcpy(dst, src, m_stateSizes[uniformName]);
-      #ifdef ENABLE_SDL
+      #ifdef ENABLE_OPENGL
       glUniform3fv(desc.location, 1, (const GLfloat*)src);
       #else
       CHECKD3D(m_shader->SetVector(desc.handle, (D3DXVECTOR4*)src));
@@ -907,7 +907,7 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
    case SUT_Float4:
       assert(desc.uniform.count == 1);
       memcpy(dst, src, m_stateSizes[uniformName]);
-      #ifdef ENABLE_SDL
+      #ifdef ENABLE_OPENGL
       glUniform4fv(desc.location, 1, (const GLfloat*)src);
       #else
       CHECKD3D(m_shader->SetVector(desc.handle, (D3DXVECTOR4*)src));
@@ -915,7 +915,7 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
       break;
    case SUT_Float4v:
       memcpy(dst, src, m_stateSizes[uniformName]);
-      #ifdef ENABLE_SDL
+      #ifdef ENABLE_OPENGL
       glUniform4fv(desc.location, desc.uniform.count, (const GLfloat*)src);
       #else
       CHECKD3D(m_shader->SetFloatArray(desc.handle, (float*) src, desc.uniform.count * 4));
@@ -925,14 +925,14 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
    case SUT_Float4x3:
    case SUT_Float4x4:
       memcpy(dst, src, m_stateSizes[uniformName]);
-      #ifdef ENABLE_SDL
+      #ifdef ENABLE_OPENGL
       glUniformMatrix4fv(desc.location, desc.uniform.count, GL_FALSE, (const GLfloat*)src);
       #else
       assert(desc.uniform.count == 1);
       /*CHECKD3D(*/ m_shader->SetMatrix(desc.handle, (D3DXMATRIX*) src) /*)*/; // leads to invalid calls when setting some of the matrices (as hlsl compiler optimizes some down to less than 4x4)
       #endif
       break;
-#ifndef ENABLE_SDL
+#ifndef ENABLE_OPENGL
    case SUT_Sampler:
       {
          // A sampler bind performs 3 things:
@@ -987,7 +987,7 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
    }
 }
 
-#ifdef ENABLE_SDL
+#ifdef ENABLE_OPENGL
 ///////////////////////////////////////////////////////////////////////////////
 // OpenGL specific implementation
 

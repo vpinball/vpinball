@@ -21,7 +21,7 @@ void SharedVertexBuffer::Upload()
       unsigned int size = m_count * m_bytePerElement;
 
       // Create data block
-      #if defined(ENABLE_SDL) // OpenGL
+      #if defined(ENABLE_OPENGL) // OpenGL
       UINT8* data = (UINT8*)malloc(size);
       #else // DirectX 9
       // NB: We always specify WRITEONLY since MSDN states,
@@ -43,7 +43,7 @@ void SharedVertexBuffer::Upload()
       m_pendingUploads.clear();
 
       // Upload data block
-      #if defined(ENABLE_SDL) // OpenGL
+      #if defined(ENABLE_OPENGL) // OpenGL
       #ifndef __OPENGLES__
       if (GLAD_GL_VERSION_4_5)
       {
@@ -72,7 +72,7 @@ void SharedVertexBuffer::Upload()
    {
       for (PendingUpload upload : m_pendingUploads)
       {
-         #if defined(ENABLE_SDL) // OpenGL
+         #if defined(ENABLE_OPENGL) // OpenGL
          #ifndef __OPENGLES__
          if (GLAD_GL_VERSION_4_5)
             glNamedBufferSubData(m_vb, upload.offset, upload.size, upload.data);
@@ -95,7 +95,7 @@ void SharedVertexBuffer::Upload()
    }
 }
 
-#ifdef ENABLE_SDL
+#ifdef ENABLE_OPENGL
 void SharedVertexBuffer::Bind() const
 {
    glBindBuffer(GL_ARRAY_BUFFER, m_vb);
@@ -106,7 +106,7 @@ SharedVertexBuffer::~SharedVertexBuffer()
 {
    if (IsUploaded())
    {
-      #if defined(ENABLE_SDL) // OpenGL
+      #if defined(ENABLE_OPENGL) // OpenGL
       glDeleteBuffers(1, &m_vb);
       #else // DirectX 9
       SAFE_RELEASE(m_vb);
@@ -163,7 +163,7 @@ VertexBuffer::~VertexBuffer()
 
 bool VertexBuffer::IsSharedBuffer() const { return m_sharedBuffer->IsShared(); }
 
-#ifdef ENABLE_SDL
+#ifdef ENABLE_OPENGL
 GLuint VertexBuffer::GetBuffer() const { return m_sharedBuffer->m_vb; }
 void VertexBuffer::Bind() const { m_sharedBuffer->Bind(); }
 #else

@@ -2,7 +2,7 @@
 #include "RenderTarget.h"
 #include "RenderDevice.h"
 
-#ifdef ENABLE_SDL
+#ifdef ENABLE_OPENGL
 #include "Shader.h"
 #endif
 
@@ -31,7 +31,7 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const int width, const int he
 {
    m_color_sampler = nullptr;
    m_depth_sampler = nullptr;
-#ifdef ENABLE_SDL
+#ifdef ENABLE_OPENGL
    glGetIntegerv(GL_FRAMEBUFFER_BINDING, (GLint*)&m_framebuffer); // Not sure about this (taken from VPVR original implementation). Doesn't the back buffer always bind to 0 on OpenGL ?
    m_color_tex = 0;
    m_depth_tex = 0;
@@ -70,7 +70,7 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
 
    m_color_sampler = nullptr;
    m_depth_sampler = nullptr;
-#ifdef ENABLE_SDL
+#ifdef ENABLE_OPENGL
    const GLuint col_type = ((format == RGBA32F) || (format == RGB32F)) ? GL_FLOAT : ((format == RGB16F) || (format == RGBA16F)) ? GL_HALF_FLOAT : GL_UNSIGNED_BYTE;
    const GLuint col_format = ((format == GREY8) || (format == RED16F))                                                                                                      ? GL_RED
       : ((format == GREY_ALPHA) || (format == RG16F))                                                                                                                       ? GL_RG
@@ -370,7 +370,7 @@ RenderTarget::~RenderTarget()
    delete m_color_sampler;
    if (!m_shared_depth)
       delete m_depth_sampler;
-#ifdef ENABLE_SDL
+#ifdef ENABLE_OPENGL
    glDeleteTextures(1, &m_color_tex);
    if (m_depth_tex && !m_shared_depth)
       glDeleteTextures(1, &m_depth_tex);
@@ -407,7 +407,7 @@ RenderTarget::~RenderTarget()
    
 void RenderTarget::UpdateDepthSampler(bool insideBeginEnd)
 {
-#if !defined(DISABLE_FORCE_NVIDIA_OPTIMUS) && !defined(ENABLE_SDL)
+#if !defined(DISABLE_FORCE_NVIDIA_OPTIMUS) && !defined(ENABLE_OPENGL)
    if (m_has_depth && m_use_alternate_depth && m_rd->NVAPIinit)
    {
       // do not put inside BeginScene/EndScene Block
@@ -439,7 +439,7 @@ void RenderTarget::CopyTo(RenderTarget* dest, const bool copyColor, const bool c
    int pw2 = w2 == -1 ? dest->GetWidth() : w2, ph2 = h2 == -1 ? dest->GetHeight() : h2;
    int nLayers = srcLayer == -1 ? m_nLayers : 1;
    assert(srcLayer != -1 || dstLayer != -1 || m_nLayers == dest->m_nLayers); // Either we copy a single layer or the full set in which case they must match
-#ifdef ENABLE_SDL
+#ifdef ENABLE_OPENGL
    #ifndef __OPENGLES__
    if (GLAD_GL_VERSION_4_3 && m_texTarget == dest->m_texTarget && pw1 == pw2 && ph1 == ph2)
    {
@@ -485,7 +485,7 @@ void RenderTarget::Activate(const int layer)
    current_render_target = this;
    current_render_layer = layer;
    
-#ifdef ENABLE_SDL
+#ifdef ENABLE_OPENGL
    if (m_color_sampler)
       m_color_sampler->Unbind();
    if (m_depth_sampler)

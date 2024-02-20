@@ -355,7 +355,7 @@ public:
    VRDevice *m_vrDevice = nullptr;
    StereoMode m_stereo3D = STEREO_OFF;
    bool m_headTracking = false;
-   #ifdef ENABLE_SDL
+   #ifdef ENABLE_SDL_VIDEO
    SDL_Window  *m_sdl_playfieldHwnd = nullptr;
    #endif
    bool m_scaleFX_DMD = false;

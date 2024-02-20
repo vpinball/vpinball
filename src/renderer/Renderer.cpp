@@ -12,7 +12,7 @@
 #include "renderer/RenderDevice.h"
 #include "renderer/VRDevice.h"
 
-#ifndef ENABLE_SDL
+#ifndef ENABLE_OPENGL
 // Note: Nowadays the original code seems to be counter-productive, so we use the official
 // pre-rendered frame mechanism instead where possible
 // (e.g. all windows versions except for XP and no "EnableLegacyMaximumPreRenderedFrames" set in the registry)
@@ -113,7 +113,7 @@ Renderer::Renderer(PinTable* const table, const bool fullScreen, const int width
 {
    m_stereo3Denabled = m_table->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DEnabled"s, (m_stereo3D != STEREO_OFF));
    m_stereo3DfakeStereo = stereo3D == STEREO_VR ? false : m_table->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DFake"s, false);
-   #ifndef ENABLE_SDL // DirectX does not support stereo rendering
+   #ifndef ENABLE_OPENGL // DirectX does not support stereo rendering
    m_stereo3DfakeStereo = true;
    #endif
    m_BWrendering = m_table->m_settings.LoadValueWithDefault(Settings::Player, "BWRendering"s, 0);
@@ -213,7 +213,7 @@ Renderer::Renderer(PinTable* const table, const bool fullScreen, const int width
       if (display == dispConf->display)
          adapter = dispConf->adapter;
 
-   #ifdef ENABLE_SDL
+   #ifdef ENABLE_OPENGL
    const int nMSAASamples = m_table->m_settings.LoadValueWithDefault(Settings::Player, "MSAASamples"s, 1);
    #else
    // Sadly DX9 does not support resolving an MSAA depth buffer, making MSAA implementation complex for it. So just disable for now
@@ -290,7 +290,7 @@ Renderer::Renderer(PinTable* const table, const bool fullScreen, const int width
    m_builtinEnvTexture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "EnvMap.webp");
    m_envTexture = m_table->GetImage(m_table->m_envImage);
    PLOGI << "Computing environment map radiance"; // For profiling
-   #ifdef ENABLE_SDL // OpenGL
+   #ifdef ENABLE_OPENGL // OpenGL
    Texture* const envTex = m_envTexture ? m_envTexture : &m_builtinEnvTexture;
    const int envTexHeight = min(envTex->m_pdsBuffer->height(), 256u) / 8;
    const int envTexWidth = envTexHeight * 2;
@@ -368,7 +368,7 @@ Renderer::Renderer(PinTable* const table, const bool fullScreen, const int width
    }
 
    m_pd3dPrimaryDevice->ResetRenderState();
-   #ifndef ENABLE_SDL
+   #ifndef ENABLE_OPENGL
    CHECKD3D(m_pd3dPrimaryDevice->GetCoreDevice()->SetRenderState(D3DRS_LIGHTING, FALSE));
    CHECKD3D(m_pd3dPrimaryDevice->GetCoreDevice()->SetRenderState(D3DRS_CLIPPING, FALSE));
    CHECKD3D(m_pd3dPrimaryDevice->GetCoreDevice()->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1));
@@ -812,7 +812,7 @@ void Renderer::InitLayout(const float xpixoff, const float ypixoff)
 {
    TRACE_FUNCTION();
    ViewSetup& viewSetup = m_table->mViewSetups[m_table->m_BG_current_set];
-   #ifdef ENABLE_SDL
+   #ifdef ENABLE_OPENGL
    bool stereo = m_stereo3D != STEREO_OFF && m_stereo3D != STEREO_VR && m_stereo3Denabled;
    #else
    bool stereo = false;
@@ -883,7 +883,7 @@ void Renderer::SetupShaders()
    emission.y *= m_table->m_lightEmissionScale * m_globalEmissionScale;
    emission.z *= m_table->m_lightEmissionScale * m_globalEmissionScale;
 
-#ifdef ENABLE_SDL
+#ifdef ENABLE_OPENGL
    float lightPos[MAX_LIGHT_SOURCES][4] = { 0.f };
    float lightEmission[MAX_LIGHT_SOURCES][4] = { 0.f };
 
@@ -929,7 +929,7 @@ void Renderer::UpdateBasicShaderMatrix(const Matrix3D& objectTrafo)
    matrices.matWorldView = GetMVP().GetModelView();
    matrices.matWorldViewInverseTranspose = GetMVP().GetModelViewInverseTranspose();
 
-#ifdef ENABLE_SDL // OpenGL
+#ifdef ENABLE_OPENGL // OpenGL
    const int nEyes = m_pd3dPrimaryDevice->m_stereo3D != STEREO_OFF ? 2 : 1;
    for (int eye = 0; eye < nEyes; eye++)
       matrices.matWorldViewProj[eye] = GetMVP().GetModelViewProj(eye);
@@ -964,7 +964,7 @@ void Renderer::UpdateBallShaderMatrix()
    matrices.matView = GetMVP().GetView();
    matrices.matWorldView = GetMVP().GetModelView();
    matrices.matWorldViewInverse = GetMVP().GetModelViewInverse();
-#ifdef ENABLE_SDL
+#ifdef ENABLE_OPENGL
    const int nEyes = m_pd3dPrimaryDevice->m_stereo3D != STEREO_OFF ? 2 : 1;
    for (int eye = 0; eye < nEyes; eye++)
       matrices.matWorldViewProj[eye] = GetMVP().GetModelViewProj(eye);
@@ -1002,7 +1002,7 @@ void Renderer::UpdateStereoShaderState()
    }
    
    RenderTarget *renderedRT = m_pd3dPrimaryDevice->GetPostProcessRenderTarget1();
-   #ifdef ENABLE_SDL
+   #ifdef ENABLE_OPENGL
    if (m_stereo3DfakeStereo) // OpenGL strip down this uniform which is only needed for interlaced mode on DirectX 9
    #endif
    m_pd3dPrimaryDevice->m_stereoShader->SetVector(SHADER_w_h_height, (float)(1.0 / renderedRT->GetWidth()), (float)(1.0 / renderedRT->GetHeight()), (float)renderedRT->GetHeight(), m_table->Get3DOffset());
@@ -1144,7 +1144,7 @@ void Renderer::DrawBulbLightBuffer()
    // Restore state and render target
    p3dDevice->SetRenderTarget(initial_rt->m_name + '+', initial_rt->m_rt);
 
-   #ifndef ENABLE_SDL
+   #ifndef ENABLE_OPENGL
    // For some reason, DirectX 9 will not handle correctly the null texture, so we just disable this optimization
    hasLight = true;
    #endif
@@ -1482,7 +1482,7 @@ void Renderer::RenderDynamics()
 
    // Setup the projection matrices used for refraction
    Matrix3D matProj[2];
-   #ifdef ENABLE_SDL
+   #ifdef ENABLE_OPENGL
    const int nEyes = m_pd3dPrimaryDevice->m_stereo3D != STEREO_OFF ? 2 : 1;
    for (int eye = 0; eye < nEyes; eye++)
       matProj[eye] = GetMVP().GetProj(eye);
@@ -1787,7 +1787,7 @@ void Renderer::PrepareVideoBuffers()
       for (size_t i = 0; i < (size_t)renderedRT->GetWidth() * renderedRT->GetHeight(); ++i)
       {
          size_t y = i / renderedRT->GetWidth();
-         #ifdef ENABLE_SDL
+         #ifdef ENABLE_OPENGL
          y = renderedRT->GetHeight() - 1 - y;
          #endif
          pdest[i * 3 + 0] = ((i & 1) == 0 && (y & 1) == 0) ? 0x00 : 0xFF;
@@ -1907,7 +1907,7 @@ void Renderer::PrepareVideoBuffers()
    // Apply stereo
    if (stereo)
    {
-      #if defined(ENABLE_SDL) && defined(ENABLE_VR)
+      #if defined(ENABLE_OPENGL) && defined(ENABLE_VR)
       // For STEREO_OFF, STEREO_TB, STEREO_SBS, this won't do anything. The previous postprocess steps should already have written to OutputBackBuffer
       // For VR, copy each eye to the HMD texture and render the wanted preview if activated
       if (m_stereo3D == STEREO_VR)

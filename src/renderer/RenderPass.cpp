@@ -273,7 +273,7 @@ bool RenderPass::Execute(const bool log)
       assert((left <= right) && (bottom <= top));
       if (left == right || bottom == top)
          return false;
-      #ifdef ENABLE_SDL
+      #ifdef ENABLE_OPENGL
       glEnable(GL_SCISSOR_TEST);
       glScissor((GLint)left, (GLint)bottom, (GLsizei)(right - left), (GLsizei)(top - bottom));
       #else
@@ -283,7 +283,7 @@ bool RenderPass::Execute(const bool log)
       #endif
    }
 
-#ifdef ENABLE_SDL
+#ifdef ENABLE_OPENGL
 #ifndef __OPENGLES__
    if (GLAD_GL_VERSION_4_3)
    {
@@ -319,7 +319,7 @@ bool RenderPass::Execute(const bool log)
       m_rt->Activate();
       for (RenderCommand* cmd : m_commands)
       {
-         #ifdef ENABLE_SDL // Layered rendering is not yet implemented for DirectX
+         #ifdef ENABLE_OPENGL // Layered rendering is not yet implemented for DirectX
          Shader::ShaderState* state = cmd->GetShaderState();
          if (state)
             state->SetInt(SHADER_layer, 0);
@@ -333,7 +333,7 @@ bool RenderPass::Execute(const bool log)
       m_rt->Activate(m_singleLayerRendering);
       for (RenderCommand* cmd : m_commands)
       {
-         #ifdef ENABLE_SDL // Layered rendering is not yet implemented for DirectX
+         #ifdef ENABLE_OPENGL // Layered rendering is not yet implemented for DirectX
          Shader::ShaderState* state = cmd->GetShaderState();
          if (state)
             state->SetInt(SHADER_layer, m_singleLayerRendering);
@@ -348,7 +348,7 @@ bool RenderPass::Execute(const bool log)
          m_rt->Activate(layer);
          for (RenderCommand* cmd : m_commands)
          {
-            #ifdef ENABLE_SDL // Layered rendering is not yet implemented for DirectX
+            #ifdef ENABLE_OPENGL // Layered rendering is not yet implemented for DirectX
             Shader::ShaderState* state = cmd->GetShaderState();
             if (state)
                state->SetInt(SHADER_layer, layer);
@@ -360,7 +360,7 @@ bool RenderPass::Execute(const bool log)
 
    if (m_areaOfInterest.x != FLT_MAX)
    {
-      #ifdef ENABLE_SDL
+      #ifdef ENABLE_OPENGL
       glDisable(GL_SCISSOR_TEST);
       #else
       m_rt->GetRenderDevice()->GetCoreDevice()->SetRenderState(D3DRS_SCISSORTESTENABLE, FALSE);
@@ -370,7 +370,7 @@ bool RenderPass::Execute(const bool log)
    if (m_depthReadback)
       m_rt->UpdateDepthSampler(true);
 
-   #ifdef ENABLE_SDL
+   #ifdef ENABLE_OPENGL
 #ifndef __OPENGLES__
    if (GLAD_GL_VERSION_4_3)
       glPopDebugGroup();

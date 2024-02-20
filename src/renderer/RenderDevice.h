@@ -15,13 +15,13 @@
 #include "RenderFrame.h"
 #include "RenderPass.h"
 
-#ifdef ENABLE_SDL
+#ifdef ENABLE_OPENGL
 #ifndef __STANDALONE__
 #include <d3d11.h> // Used to get a VSync source if DWM is not available
 #endif
 #endif
 
-#ifndef ENABLE_SDL
+#ifndef ENABLE_OPENGL
 #define CHECKNVAPI(s) { NvAPI_Status hr = (s); if (hr != NVAPI_OK) { NvAPI_ShortString ss; NvAPI_GetErrorMessage(hr,ss); g_pvp->MessageBox(ss, "NVAPI", MB_OK | MB_ICONEXCLAMATION); } }
 #endif
 
@@ -29,10 +29,10 @@ void ReportFatalError(const HRESULT hr, const char *file, const int line);
 void ReportError(const char *errorText, const HRESULT hr, const char *file, const int line);
 
 #if 1//def _DEBUG
-#ifdef ENABLE_SDL
+#ifdef ENABLE_OPENGL
 //void checkGLErrors(const char *file, const int line);
 #define CHECKD3D(s) { s; } //checkGLErrors(__FILE__, __LINE__); } // by now the callback is used instead
-#else //ENABLE_SDL
+#else //ENABLE_OPENGL
 #define CHECKD3D(s) { const HRESULT hrTmp = (s); if (FAILED(hrTmp)) ReportFatalError(hrTmp, __FILE__, __LINE__); }
 #endif
 #else //_DEBUG
@@ -92,7 +92,18 @@ public:
 class RenderDevice final
 {
 public:
-#ifdef ENABLE_SDL
+#if defined(ENABLE_BGFX) 
+   enum PrimitiveTypes
+   {
+      TRIANGLEFAN,
+      TRIANGLESTRIP,
+      TRIANGLELIST,
+      POINTLIST,
+      LINELIST,
+      LINESTRIP
+   };
+
+#elif defined(ENABLE_OPENGL)
    enum PrimitiveTypes
    {
       TRIANGLEFAN = GL_TRIANGLE_FAN,
@@ -109,7 +120,7 @@ public:
    IDXGIOutput* m_DXGIOutput = nullptr;
 #endif
 
-#else
+#elif defined(ENABLE_DX9)
    enum PrimitiveTypes
    {
       TRIANGLEFAN = D3DPT_TRIANGLEFAN,
@@ -153,11 +164,14 @@ public:
 
    bool SupportLayeredRendering() const
    {
-      #ifdef ENABLE_SDL // OpenGL
+      #if defined(ENABLE_BGFX)
+      // TODO actually use BGFX layered rendering
+      return false;
+      #elif defined(ENABLE_OPENGL)
       // TODO remove geometry shader, and only support layered rendering on driver supporting ARB_shader_viewport_layer_array (all GPU starting GTX950+),
       // the performance impact will be positive for normal rendering, limited for VR/stereo and these old GPU are not really able to render in VR/Stereo
       return true;
-      #else // DirectX 9
+      #elif defined(ENABLE_DX9)
       return false;
       #endif
    }
@@ -217,11 +231,12 @@ public:
    unsigned int Perf_GetNumTextureUploads() const   { return m_frameTextureUpdates; }
    unsigned int Perf_GetNumLockCalls() const        { return m_frameLockCalls; }
 
-#ifdef ENABLE_SDL
+   #if defined(ENABLE_BGFX)
+   #elif defined(ENABLE_OPENGL)
    int getGLVersion() const { return m_GLversion; }
-#else
+   #elif defined(ENABLE_DX9)
    IDirect3DDevice9* GetCoreDevice() const { return m_pD3DDevice; }
-#endif
+   #endif
 
    HWND getHwnd() const { return m_windowHwnd; }
 
@@ -243,7 +258,7 @@ public:
    Sampler* m_nullTexture = nullptr;
 
 private:
-#ifndef ENABLE_SDL
+#if defined(ENABLE_DX9)
    IDirect3D9Ex* m_pD3DEx;
    IDirect3DDevice9Ex* m_pD3DDeviceEx;
    IDirect3D9* m_pD3D;
@@ -271,7 +286,7 @@ public:
    void SetSamplerState(int unit, SamplerFilter filter, SamplerAddressMode clamp_u, SamplerAddressMode clamp_v);
 
 private:
-#ifdef ENABLE_SDL
+#ifdef ENABLE_OPENGL
    GLfloat m_maxaniso;
    int m_GLversion;
    static GLuint m_samplerStateCache[3 * 3 * 5];
@@ -306,7 +321,7 @@ public:
    vector<SharedIndexBuffer*> m_pendingSharedIndexBuffers;
    vector<SharedVertexBuffer*> m_pendingSharedVertexBuffers;
 
-#ifdef ENABLE_SDL
+#ifdef ENABLE_OPENGL
    vector<MeshBuffer::SharedVAO*> m_sharedVAOs;
 #else
    bool m_useNvidiaApi;
@@ -342,11 +357,13 @@ private :
    RenderPass* m_nextRenderCommandDependency = nullptr;
 
 public:
-#if defined(ENABLE_SDL) // OpenGL
+#if defined(ENABLE_BGFX)
+
+#elif defined(ENABLE_OPENGL)
    std::vector<SamplerBinding*> m_samplerBindings;
    GLuint m_curVAO = 0;
    
-#else // DirectX9
+#elif defined(ENABLE_DX9)
    IDirect3DVertexBuffer9* m_curVertexBuffer = nullptr;
    IDirect3DIndexBuffer9* m_curIndexBuffer = nullptr;
    IDirect3DVertexDeclaration9* m_currentVertexDeclaration = nullptr;

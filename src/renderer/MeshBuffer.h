@@ -20,7 +20,9 @@ public:
    IndexBuffer* const m_ib;
    const bool m_isVBOffsetApplied; // True if vertex buffer offset is already applied to index buffer
 
-#if defined(ENABLE_SDL) // OpenGL
+#if defined(ENABLE_BGFX)
+
+#elif defined(ENABLE_OPENGL)
    struct SharedVAO
    {
       GLuint vb, ib, vao, ref_count;
@@ -28,7 +30,8 @@ public:
 private:
    GLuint m_vao = 0;
    SharedVAO* m_sharedVAO = nullptr;
-#else // DirectX 9
+
+#elif defined(ENABLE_DX9)
    IDirect3DVertexDeclaration9* const m_vertexDeclaration;
 #endif
 };

@@ -18,7 +18,7 @@
 #define VP_VERSION_STRING_COMMAS STR(VP_VERSION_MAJOR) ", " STR(VP_VERSION_MINOR) ", " STR(VP_VERSION_REV) ", 0"
 
 // Complete version string for log, crash handler,...
-#ifdef ENABLE_SDL
+#ifdef ENABLE_OPENGL
 #define VP_VERSION_STRING_FULL_LITERAL "v" STR(VP_VERSION_MAJOR) "." STR(VP_VERSION_MINOR) "." STR(VP_VERSION_REV) \
 	" Beta (Rev. " STR(GIT_REVISION) " (" GIT_SHA "), " GET_PLATFORM_OS " OpenGL " GET_PLATFORM_BITS "bits)"
 #else

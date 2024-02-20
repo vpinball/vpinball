@@ -918,7 +918,7 @@ bool VPinball::ParseCommand(const size_t code, const bool notify)
       m_videoOptDialog.DoModal(GetHwnd());
       return true;
    }
-#ifdef ENABLE_SDL
+#ifdef ENABLE_VR
    case ID_EDIT_VROPTIONS:
    {
       m_vrOptDialog.DoModal(GetHwnd());
@@ -2442,7 +2442,7 @@ void VPinball::CloseAllDialogs()
       m_materialDialog.Destroy();
    if (m_aboutDialog.IsWindow())
       m_aboutDialog.Destroy();
-#ifdef ENABLE_SDL
+#ifdef ENABLE_VR
    if (m_vrOptDialog.IsWindow())
       m_vrOptDialog.Destroy();
 #endif
