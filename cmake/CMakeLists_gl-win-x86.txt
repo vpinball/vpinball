@@ -26,9 +26,9 @@ set_target_properties(glad PROPERTIES
 )
 
 add_compile_definitions(
-   ENABLE_INI_SETTINGS
    ENABLE_SDL_INPUT
-   ENABLE_SDL
+   ENABLE_SDL_VIDEO
+   ENABLE_OPENGL
    USE_DINPUT8
 )
 

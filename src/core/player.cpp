@@ -1,6 +1,6 @@
 #include "core/stdafx.h"
 
-#ifdef ENABLE_SDL
+#ifdef ENABLE_SDL_VIDEO
 #include <SDL2/SDL_syswm.h>
 #endif
 
@@ -382,7 +382,7 @@ void Player::PreCreate(CREATESTRUCT& cs)
 
 void Player::CreateWnd(HWND parent /* = 0 */)
 {
-#ifdef ENABLE_SDL
+#ifdef ENABLE_SDL_VIDEO
    // SDL needs to create the window (as of SDL 2.0.22, SDL_CreateWindowFrom does not support OpenGL contexts) so we create it through SDL and attach it to win32++
    WNDCLASS wc;
    ZeroMemory(&wc, sizeof(wc));
@@ -587,7 +587,7 @@ void Player::CreateWnd(HWND parent /* = 0 */)
 #else
    PLOGI << "Creating main window"; // For profiling
    Create();
-#endif // ENABLE_SDL
+#endif // ENABLE_SDL_VIDEO
 }
 
 void Player::OnInitialUpdate()
@@ -753,11 +753,9 @@ void Player::Shutdown()
     mixer_shutdown();
     hid_shutdown();
 
-#ifndef __STANDALONE__
+#ifdef EXT_CAPTURE
     StopCaptures();
-#ifdef ENABLE_SDL
-   g_DXGIRegistry.ReleaseAll();
-#endif
+    g_DXGIRegistry.ReleaseAll();
 #endif
 
    delete m_liveUI;
@@ -943,7 +941,7 @@ HRESULT Player::Init()
 
    PLOGI << "Initializing renderer (global states & resources)"; // For profiling
 
-#ifdef ENABLE_SDL
+#ifdef ENABLE_SDL_VIDEO
    SDL_GL_GetDrawableSize(m_sdl_playfieldHwnd, &m_wnd_width, &m_wnd_height);
    PLOGI.printf("Drawable Size: width=%d, height=%d", m_wnd_width, m_wnd_height);
    int realWindowWidth, realWindowHeight;
@@ -1201,8 +1199,7 @@ HRESULT Player::Init()
    const bool forceAniso = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "ForceAnisotropicFiltering"s, true);
    m_renderer->m_pd3dPrimaryDevice->SetMainTextureDefaultFiltering(forceAniso ? SF_ANISOTROPIC : SF_TRILINEAR);
 
-#ifndef __STANDALONE__
-   #ifdef ENABLE_SDL
+   #if defined(EXT_CAPTURE)
    if (m_stereo3D == STEREO_VR)
    {
       if (m_capExtDMD)
@@ -1211,7 +1208,6 @@ HRESULT Player::Init()
          StartPUPCapture();
    }
    #endif
-#endif
 
 #ifdef __STANDALONE__
    Settings* const pSettings = &m_ptable->m_settings;
@@ -1715,7 +1711,7 @@ string Player::GetPerfInfo()
 
    // Draw performance readout - at end of CPU frame, so hopefully the previous frame
    //  (whose data we're getting) will have finished on the GPU by now.
-   #ifndef ENABLE_SDL // No GPU profiler for OpenGL
+   #if defined(ENABLE_DX9) // No GPU profiler for OpenGL / BGFX
    if (GetProfilingMode() != PF_DISABLED && m_closing == CS_PLAYING)
    {
       info << "\n";
@@ -1936,7 +1932,7 @@ void Player::OnIdle()
       // Present & VSync
       g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_GPU_FLIP);
       m_renderer->m_pd3dPrimaryDevice->Flip();
-      #ifndef ENABLE_SDL // DirectX 9 does not support native adaptive sync, so we must emulate it at the application level
+      #if defined(ENABLE_DX9) // DirectX 9 does not support native adaptive sync, so we must emulate it at the application level
       if (m_videoSyncMode == VideoSyncMode::VSM_ADAPTIVE_VSYNC && m_fps > m_maxFramerate * ADAPT_VSYNC_FACTOR)
          m_renderer->m_pd3dPrimaryDevice->WaitForVSync(false);
       #endif
@@ -2002,10 +1998,10 @@ void Player::PrepareFrame()
    if (m_infoMode != IF_PROFILING)
       m_renderer->m_gpu_profiler.Shutdown();
 
-#ifndef ENABLE_SDL
+   #if defined(ENABLE_DX9)
    if (GetProfilingMode() == PF_ENABLED)
       m_renderer->m_gpu_profiler.BeginFrame(m_renderer->m_pd3dPrimaryDevice->GetCoreDevice());
-#endif
+   #endif
 
    g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_GPU_COLLECT);
    
@@ -2042,13 +2038,11 @@ void Player::SubmitFrame()
 {
    m_renderer->SubmitFrame();
 
-#ifndef __STANDALONE__
+   #ifdef EXT_CAPTURE
    // Trigger captures
-   #ifdef ENABLE_SDL
    if (m_stereo3D == STEREO_VR)
       UpdateExtCaptures();
    #endif
-#endif
 }
 
 void Player::FinishFrame()

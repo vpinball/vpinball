@@ -2,7 +2,7 @@
 #include "captureExt.h"
 #include "comdef.h"
 
-#if defined(ENABLE_SDL)
+#if defined(EXT_CAPTURE)
 DXGIRegistry g_DXGIRegistry;
 ExtCaptureManager g_ExtCaptureManager;
 

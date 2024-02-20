@@ -13,6 +13,12 @@
 - Version: ?
 - License: ?
 
+## BX/BGFX/BIMG
+
+- Upstream: https://github.com/bkaradzic/bgfx https://github.com/bkaradzic/bimg https://github.com/bkaradzic/bx
+- Version: head on 2024/02/20
+- License: BSD-2-Clause license
+
 ## Fonts
 
 DroidSans

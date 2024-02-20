@@ -91,10 +91,10 @@ public:
 	CGpuProfiler();
 	~CGpuProfiler();
 
-#ifdef ENABLE_SDL
+#if defined(ENABLE_OPENGL) || defined(ENABLE_BGFX)
 	bool Init(void* const pDevice); // optional init, otherwise (first) BeginFrame will do it lazily
 	void BeginFrame();
-#else
+#elif defined(ENABLE_DX9)
 	bool Init(IDirect3DDevice9 * const pDevice); // optional init, otherwise (first) BeginFrame will do it lazily
 	void BeginFrame(IDirect3DDevice9 * const pDevice);
 #endif
@@ -116,7 +116,7 @@ protected:
 
 	int m_iFrameQuery;							// Which of the two sets of queries are we currently issuing?
 	int m_iFrameCollect;						// Which of the two did we last collect?
-#ifndef ENABLE_SDL
+#if defined(ENABLE_DX9)
 	IDirect3DQuery9 * m_apQueryTsDisjoint[2];	// "Timestamp disjoint" query; records whether timestamps are valid
 	IDirect3DQuery9 * m_apQueryTs[GTS_Max][2];	// Individual timestamp queries for each relevant point in the frame
 	IDirect3DQuery9 * m_frequencyQuery;
@@ -130,7 +130,7 @@ protected:
 	int m_frameCountAvg;						// Frames rendered in current averaging period
 	double m_tBeginAvg;							// Time at which current averaging period started
 
-#ifndef ENABLE_SDL
+#if defined(ENABLE_DX9)
 	IDirect3DDevice9 * m_device;
 #endif
 };

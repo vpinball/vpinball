@@ -853,7 +853,7 @@ void Light::Render(const unsigned int renderMask)
          matWorldViewProj[0]._41 = -1.0f;
          matWorldViewProj[0]._22 = -2.0f / (float)m_rd->GetMSAABackBufferTexture()->GetHeight();
          matWorldViewProj[0]._42 = 1.0f;
-         #ifdef ENABLE_SDL
+         #ifdef ENABLE_OPENGL
          if (shader == m_rd->m_lightShader)
          {
             const int eyes = m_rd->GetCurrentRenderTarget()->m_nLayers;

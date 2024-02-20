@@ -11,8 +11,10 @@
 #endif
 
 // Attempt to speed up STL which is very CPU costly, maybe we should look into using EASTL instead? http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2271.html https://github.com/electronicarts/EASTL
+#ifndef ENABLE_BGFX
 #define _SECURE_SCL 0
 #define _HAS_ITERATOR_DEBUGGING 0
+#endif
 
 #include <string>
 
@@ -200,7 +202,7 @@ enum ShaderUniforms
    SHADER_UNIFORM(SUT_Float, alphaTestValue, 1),
    SHADER_UNIFORM(SUT_Float4x4, matProj, 1), // +1 Matrix for stereo
    SHADER_UNIFORM(SUT_Float4x4, matWorldViewProj, 1), // +1 Matrix for stereo
-   #ifdef ENABLE_SDL // OpenGL
+   #ifdef ENABLE_OPENGL // OpenGL
    SHADER_UNIFORM(SUT_DataBlock, basicMatrixBlock, 5 * 16 * 4), // +1 Matrix for stereo
    SHADER_UNIFORM(SUT_DataBlock, ballMatrixBlock, 4 * 16 * 4), // +1 Matrix for stereo
    #else // DirectX 9
@@ -216,7 +218,7 @@ enum ShaderUniforms
    SHADER_UNIFORM(SUT_Float4, w_h_height, 1), // Post process & Basic (for screen space reflection/refraction)
 
 // Shared material for Ball, Basic and Classic light shaders
-#ifdef ENABLE_SDL // OpenGL
+#ifdef ENABLE_OPENGL // OpenGL
    SHADER_UNIFORM(SUT_Float4, clip_plane, 1),
    SHADER_UNIFORM(SUT_Float4v, basicLightEmission, 2),
    SHADER_UNIFORM(SUT_Float4v, basicLightPos, 2),
@@ -239,7 +241,7 @@ enum ShaderUniforms
    // Basic Shader
    SHADER_UNIFORM(SUT_Float4, cClearcoat_EdgeAlpha, 1),
    SHADER_UNIFORM(SUT_Float4, cGlossy_ImageLerp, 1),
-#ifdef ENABLE_SDL // OpenGL
+#ifdef ENABLE_OPENGL // OpenGL
    SHADER_UNIFORM(SUT_Bool, doRefractions, 1),
 #endif
    SHADER_UNIFORM(SUT_Float4, refractionTint_thickness, 1),
@@ -337,7 +339,7 @@ private:
    bool Load(const std::string& name, const BYTE* code, unsigned int codeSize);
 
 public:
-   #ifdef ENABLE_SDL // OpenGL
+   #ifdef ENABLE_OPENGL // OpenGL
    Shader(RenderDevice *renderDevice, const std::string& src1, const std::string& src2 = ""s) : Shader(renderDevice, src1, src2, nullptr, 0) { }
    #else // DirectX 9
    Shader(RenderDevice *renderDevice, const std::string& name, const BYTE* code, unsigned int codeSize) : Shader(renderDevice, name, ""s, code, codeSize) { }
@@ -374,9 +376,9 @@ public:
    void SetInt(const ShaderUniforms uniformName, const int i) { m_state->SetInt(uniformName, i); }
    void SetBool(const ShaderUniforms uniformName, const bool b) { m_state->SetBool(uniformName, b); }
    void SetUniformBlock(const ShaderUniforms uniformName, const float* pMatrix) { m_state->SetUniformBlock(uniformName, pMatrix); }
-#ifndef ENABLE_SDL
+   #if defined(ENABLE_DX9)
    void SetMatrix(const ShaderUniforms uniformName, const D3DXMATRIX* pMatrix, const unsigned int count = 1) { SetMatrix(uniformName, &(pMatrix->m[0][0]), count); }
-#endif
+   #endif
    void SetMatrix(const ShaderUniforms uniformName, const Matrix3D* pMatrix, const unsigned int count = 1) { SetMatrix(uniformName, &(pMatrix->m[0][0]), count); }
    void SetVector(const ShaderUniforms uniformName, const vec4* pVector) { m_state->SetVector(uniformName, pVector); }
    void SetVector(const ShaderUniforms uniformName, const float x, const float y, const float z, const float w) { const vec4 v(x, y, z, w); m_state->SetVector(uniformName, &v); }
@@ -445,11 +447,11 @@ public:
          assert(m_shader->m_stateOffsets[uniformName] != -1);
          assert(shaderUniformNames[uniformName].type == SUT_Float);
          assert(shaderUniformNames[uniformName].count == 1);
-#ifndef __OPENGLES__
+         #ifndef __OPENGLES__
          *(float*)(m_state + m_shader->m_stateOffsets[uniformName]) = f;
-#else
+         #else
          *(float*)(m_state + m_shader->m_stateOffsets[uniformName]) = (f > 0 && f < FLT_MIN_VALUE) ? FLT_MIN_VALUE : (f < 0 && f > -FLT_MIN_VALUE) ? -FLT_MIN_VALUE : f;
-#endif
+         #endif
       }
       float GetFloat(const ShaderUniforms uniformName)
       {
@@ -468,7 +470,7 @@ public:
          assert(shaderUniformNames[uniformName].type == SUT_Float2 || shaderUniformNames[uniformName].type == SUT_Float3 || shaderUniformNames[uniformName].type == SUT_Float4 || shaderUniformNames[uniformName].type == SUT_Float4v);
          assert(shaderUniformNames[uniformName].count == count);
          const int n = shaderUniformNames[uniformName].type == SUT_Float2 ? 2 : shaderUniformNames[uniformName].type == SUT_Float3 ? 3 : 4;
-#ifdef __OPENGLES__
+         #ifdef __OPENGLES__
          for (int i = 0; i < count; i++) {
              vec4* p = const_cast<vec4*>(&pData[i]);
              if (p->x > 0 && p->x < FLT_MIN_VALUE) p->x = FLT_MIN_VALUE;
@@ -480,7 +482,7 @@ public:
              if (n > 3 && p->w > 0 && p->w < FLT_MIN_VALUE) p->w = FLT_MIN_VALUE;
              if (n > 3 && p->w < 0 && p->w > -FLT_MIN_VALUE) p->w = -FLT_MIN_VALUE;
          }
-#endif
+         #endif
          memcpy(m_state + m_shader->m_stateOffsets[uniformName], pData, count * n * sizeof(float));
       }
       vec4 GetVector(const ShaderUniforms uniformName)
@@ -504,13 +506,13 @@ public:
          assert(m_shader->m_stateOffsets[uniformName] != -1);
          assert(shaderUniformNames[uniformName].type == SUT_Float3x4 || shaderUniformNames[uniformName].type == SUT_Float4x3 || shaderUniformNames[uniformName].type == SUT_Float4x4);
          assert(count == shaderUniformNames[uniformName].count);
-#ifdef __OPENGLES__
+         #ifdef __OPENGLES__
          for (int i = 0; i < count * 16; i++) {
              float* const p = const_cast<float*>(&pMatrix[i]);
              if (*p > 0 && *p < FLT_MIN_VALUE) *p = FLT_MIN_VALUE;
              if (*p < 0 && *p > -FLT_MIN_VALUE) *p = -FLT_MIN_VALUE;
          }
-#endif
+         #endif
          memcpy(m_state + m_shader->m_stateOffsets[uniformName], pMatrix, count * 16 * sizeof(float));
       }
       void SetUniformBlock(const ShaderUniforms uniformName, const float* pMatrix)
@@ -527,10 +529,11 @@ public:
          assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
          assert(shaderUniformNames[uniformName].type == SUT_Sampler);
          assert(sampler != nullptr);
-         #ifdef ENABLE_SDL // OpenGL
+         #if defined(ENABME_BGFX)
+         #elif defined(ENABLE_OPENGL)
          assert(m_shader->m_stateOffsets[uniformName] != -1);
          *(Sampler**)(m_state + m_shader->m_stateOffsets[uniformName]) = sampler;
-         #else // DirectX 9
+         #elif defined(ENABLE_DX9)
          ShaderUniforms alias = m_shader->m_uniform_desc[uniformName].tex_alias;
          assert(m_shader->m_stateOffsets[alias] != -1);
          *(Sampler**)(m_state + m_shader->m_stateOffsets[alias]) = sampler;
@@ -578,7 +581,8 @@ private:
    vector<ShaderUniforms> m_uniforms[SHADER_TECHNIQUE_COUNT]; // Uniforms used by each technique
    
    // caches
-#ifdef ENABLE_SDL // OpenGL
+#if defined(ENABME_BGFX)
+#elif defined(ENABLE_OPENGL)
    ShaderState* m_boundState[SHADER_TECHNIQUE_COUNT]; // The state currently applied to the backend (per technique for OpenGL)
    static ShaderTechniques m_boundTechnique; // This is global for OpenGL
    struct UniformDesc
@@ -605,7 +609,7 @@ private:
    string preprocessGLShader(const string& shaderCode);
 #endif
 
-#else // DirectX 9
+#elif defined(ENABLE_DX9)
    struct UniformDesc
    {
       ShaderUniform uniform;

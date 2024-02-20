@@ -824,7 +824,7 @@ void Decal::Render(const unsigned int renderMask)
       matWorldViewProj._41 = -1.0f;
       matWorldViewProj._22 = -2.0f / (float)m_rd->GetMSAABackBufferTexture()->GetHeight();
       matWorldViewProj._42 = 1.0f;
-      #ifdef ENABLE_SDL
+      #ifdef ENABLE_OPENGL
       struct
       {
          Matrix3D matWorld;

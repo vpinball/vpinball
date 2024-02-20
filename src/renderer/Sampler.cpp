@@ -13,7 +13,7 @@ Sampler::Sampler(RenderDevice* rd, BaseTexture* const surf, const bool force_lin
    m_clampv(clampv),
    m_filter(filter)
 {
-#ifdef ENABLE_SDL
+#ifdef ENABLE_OPENGL
    m_texTarget = GL_TEXTURE_2D;
    colorFormat format;
    if (surf->m_format == BaseTexture::RGB)
@@ -66,7 +66,7 @@ Sampler::Sampler(RenderDevice* rd, BaseTexture* const surf, const bool force_lin
 #endif
 }
 
-#ifdef ENABLE_SDL
+#ifdef ENABLE_OPENGL
 Sampler::Sampler(RenderDevice* rd, SurfaceType type, GLuint glTexture, bool ownTexture, bool force_linear_rgb, const SamplerAddressMode clampu, const SamplerAddressMode clampv, const SamplerFilter filter)
    : m_type(type)
    , m_rd(rd)
@@ -121,7 +121,7 @@ Sampler::Sampler(RenderDevice* rd, IDirect3DTexture9* dx9Texture, bool ownTextur
 Sampler::~Sampler()
 {
    m_rd->UnbindSampler(this);
-#ifdef ENABLE_SDL
+#ifdef ENABLE_OPENGL
    Unbind();
    if (m_ownTexture)
       glDeleteTextures(1, &m_texture);
@@ -133,7 +133,7 @@ Sampler::~Sampler()
 
 void Sampler::Unbind()
 {
-#ifdef ENABLE_SDL
+#ifdef ENABLE_OPENGL
    for (auto binding : m_bindings)
    {
       binding->sampler = nullptr;
@@ -146,7 +146,7 @@ void Sampler::Unbind()
 
 void Sampler::UpdateTexture(BaseTexture* const surf, const bool force_linear_rgb)
 {
-#ifdef ENABLE_SDL
+#ifdef ENABLE_OPENGL
    colorFormat format;
    if (surf->m_format == BaseTexture::RGB)
       format = colorFormat::RGB;
@@ -212,7 +212,7 @@ void Sampler::SetFilter(const SamplerFilter filter)
 
 void Sampler::SetName(const string& name)
 {
-   #ifdef ENABLE_SDL
+   #ifdef ENABLE_OPENGL
 #ifndef __OPENGLES__
    if (GLAD_GL_VERSION_4_3)
       glObjectLabel(GL_TEXTURE, m_texture, (GLsizei) name.length(), name.c_str());
@@ -220,7 +220,7 @@ void Sampler::SetName(const string& name)
    #endif
 }
 
-#ifdef ENABLE_SDL
+#ifdef ENABLE_OPENGL
 GLuint Sampler::CreateTexture(BaseTexture* const surf, unsigned int Levels, colorFormat Format, int stereo)
 {
    unsigned int Width = surf->width();

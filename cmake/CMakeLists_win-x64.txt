@@ -14,7 +14,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_C_STANDARD 99)
 
 add_compile_definitions(
-   ENABLE_INI_SETTINGS
+   ENABLE_DX9
 )
 
 set_source_files_properties(

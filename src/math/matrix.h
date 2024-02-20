@@ -5,7 +5,7 @@
 #include "renderer/typedefs3D.h"
 #include <math/vector.h>
 
-#ifdef ENABLE_SDL
+#if !defined(ENABLE_DX9)
 class alignas(16) D3DMATRIX {
 public:
    union {

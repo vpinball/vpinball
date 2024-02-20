@@ -18,7 +18,7 @@ MeshBuffer::MeshBuffer(const wstring& name, VertexBuffer* vb, IndexBuffer* ib, c
    , m_vb(vb)
    , m_ib(ib)
    , m_isVBOffsetApplied(applyVertexBufferOffsetToIndexBuffer)
-#ifndef ENABLE_SDL
+#ifndef ENABLE_OPENGL
    , m_vertexDeclaration(
       vb->m_vertexFormat == VertexFormat::VF_POS_NORMAL_TEX ? m_vb->m_rd->m_pVertexNormalTexelDeclaration :
       vb->m_vertexFormat == VertexFormat::VF_POS_TEX ? m_vb->m_rd->m_pVertexTexelDeclaration : nullptr)
@@ -30,7 +30,7 @@ MeshBuffer::MeshBuffer(const wstring& name, VertexBuffer* vb, IndexBuffer* ib, c
 
 MeshBuffer::~MeshBuffer()
 {
-#ifdef ENABLE_SDL
+#ifdef ENABLE_OPENGL
    if (m_sharedVAO != nullptr)
    {
       m_sharedVAO->ref_count--;
@@ -52,7 +52,7 @@ MeshBuffer::~MeshBuffer()
 
 unsigned int MeshBuffer::GetSortKey() const
 {
-   #ifdef ENABLE_SDL // OpenGL
+   #ifdef ENABLE_OPENGL // OpenGL
    return m_vao;
    #else // DirectX 9
    return (unsigned int) ((reinterpret_cast<uintptr_t>(m_vb)) ^ (reinterpret_cast<uintptr_t>(m_ib)));
@@ -62,7 +62,7 @@ unsigned int MeshBuffer::GetSortKey() const
 void MeshBuffer::bind()
 {
    RenderDevice* const rd = m_vb->m_rd;
-#ifdef ENABLE_SDL
+#ifdef ENABLE_OPENGL
    if (m_vao == 0)
    {
       // If index & vertex buffer are using shared buffers (for static objects), then we can also use a shared VAO

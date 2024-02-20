@@ -6,16 +6,24 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VPinball", "VisualPinball.n
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug_BGFX|x64 = Debug_BGFX|x64
+		Debug_BGFX|x86 = Debug_BGFX|x86
 		Debug_GL|x64 = Debug_GL|x64
 		Debug_GL|x86 = Debug_GL|x86
 		Debug|x64 = Debug|x64
 		Debug|x86 = Debug|x86
+		Release_BGFX|x64 = Release_BGFX|x64
+		Release_BGFX|x86 = Release_BGFX|x86
 		Release_GL|x64 = Release_GL|x64
 		Release_GL|x86 = Release_GL|x86
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}.Debug_BGFX|x64.ActiveCfg = Debug_BGFX|x64
+		{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}.Debug_BGFX|x64.Build.0 = Debug_BGFX|x64
+		{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}.Debug_BGFX|x86.ActiveCfg = Debug_BGFX|Win32
+		{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}.Debug_BGFX|x86.Build.0 = Debug_BGFX|Win32
 		{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}.Debug_GL|x64.ActiveCfg = Debug_GL|x64
 		{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}.Debug_GL|x64.Build.0 = Debug_GL|x64
 		{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}.Debug_GL|x86.ActiveCfg = Debug_GL|Win32
@@ -24,6 +32,10 @@ Global
 		{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}.Debug|x64.Build.0 = Debug|x64
 		{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}.Debug|x86.ActiveCfg = Debug|Win32
 		{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}.Debug|x86.Build.0 = Debug|Win32
+		{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}.Release_BGFX|x64.ActiveCfg = Release_BGFX|x64
+		{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}.Release_BGFX|x64.Build.0 = Release_BGFX|x64
+		{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}.Release_BGFX|x86.ActiveCfg = Release_BGFX|Win32
+		{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}.Release_BGFX|x86.Build.0 = Release_BGFX|Win32
 		{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}.Release_GL|x64.ActiveCfg = Release_GL|x64
 		{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}.Release_GL|x64.Build.0 = Release_GL|x64
 		{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}.Release_GL|x86.ActiveCfg = Release_GL|Win32

@@ -1118,12 +1118,11 @@ public:
    }
 };
 
-#if defined(ENABLE_SDL)
+#if defined(ENABLE_OPENGL) && !defined(__STANDALONE__)
 // The OpenGL implementation will fail on NVIDIA drivers when Threaded Optimization is enabled so we disable it for this app
 // Note: There are quite a lot of applications doing this, but I think this may hide an incorrect OpenGL call somewhere
 // that the threaded optimization of NVIDIA drivers ends up to crash. This would be good to find the root cause, if any.
 
-#ifndef __STANDALONE__
 #include "nvapi/nvapi.h"
 #include "nvapi/NvApiDriverSettings.h"
 #pragma warning(push)
@@ -1243,7 +1242,6 @@ static void SetNVIDIAThreadOptimization(NvThreadOptimization threadedOptimizatio
    NvAPI_DRS_DestroySession(hSession);
 }
 #endif
-#endif
 
 class DebugAppender : public plog::IAppender
 {
@@ -1309,17 +1307,14 @@ void SetupLogger(const bool enable)
 
 extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR /*lpCmdLine*/, int /*nShowCmd*/)
 {
-#ifndef __STANDALONE__
-   #if defined(ENABLE_SDL)
+   #if defined(ENABLE_OPENGL) && !defined(__STANDALONE__)
    static NvThreadOptimization s_OriginalNVidiaThreadOptimization = NV_THREAD_OPTIMIZATION_NO_SUPPORT;
    #endif
-#endif
 
    int retval;
    try
    {
-#ifndef __STANDALONE__
-      #if defined(ENABLE_SDL)
+      #if defined(ENABLE_OPENGL) && !defined(__STANDALONE__)
       s_OriginalNVidiaThreadOptimization = GetNVIDIAThreadOptimization();
       if (s_OriginalNVidiaThreadOptimization != NV_THREAD_OPTIMIZATION_NO_SUPPORT && s_OriginalNVidiaThreadOptimization != NV_THREAD_OPTIMIZATION_DISABLE)
       {
@@ -1327,11 +1322,10 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
          SetNVIDIAThreadOptimization(NV_THREAD_OPTIMIZATION_DISABLE);
       }
       #endif
-#endif
 
-      #if defined(ENABLE_SDL) || defined(ENABLE_SDL_INPUT)
+      #if defined(ENABLE_SDL_VIDEO) || defined(ENABLE_SDL_INPUT)
       SDL_Init(0
-         #ifdef ENABLE_SDL
+         #ifdef ENABLE_SDL_VIDEO
             | SDL_INIT_VIDEO
          #endif
          #ifdef ENABLE_SDL_INPUT
@@ -1361,36 +1355,30 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
 
       retval = -1;
    }
-   #if defined(ENABLE_SDL) || defined(ENABLE_SDL_INPUT)
+   #if defined(ENABLE_SDL_VIDEO) || defined(ENABLE_SDL_INPUT)
    SDL_Quit();
    #endif
 
-#ifndef __STANDALONE__
-   #if defined(ENABLE_SDL)
+   #if defined(ENABLE_OPENGL) && !defined(__STANDALONE__) 
    if (s_OriginalNVidiaThreadOptimization != NV_THREAD_OPTIMIZATION_NO_SUPPORT && s_OriginalNVidiaThreadOptimization != NV_THREAD_OPTIMIZATION_DISABLE)
    {
       PLOGI << "Restoring NVIDIA Threaded Optimization";
       SetNVIDIAThreadOptimization(s_OriginalNVidiaThreadOptimization);
    }
    #endif
-#endif
 
    PLOGI << "Closing VPX...";
-#ifdef __STANDALONE__
-#if (defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__)
+   #if (defined(__STANDALONE__) && (defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__))
    exit(retval);
-#endif
-#endif
+   #endif
    return retval;
 }
 
-#ifdef __STANDALONE__
-#if (defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__) || defined(__linux__)
+#if (defined(__STANDALONE__) && (defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__) || defined(__linux__))
 int main(int argc, char** argv) {
    g_argc = argc;
    g_argv = argv;
 
    return WinMain(NULL, NULL, NULL, 0);
 }
-#endif
 #endif

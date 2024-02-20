@@ -3,13 +3,12 @@
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 
-#ifdef ENABLE_SDL
-#ifndef __STANDALONE__
- #include <d3d11_1.h>
- #include <dxgi1_2.h>
- #pragma comment(lib,"d3d11.lib")
- #pragma comment(lib,"dxgi.lib")
-#endif
+#if defined(ENABLE_OPENGL) && !defined(__STANDALONE__)
+// Needed for external capture for VR on Windows
+#include <d3d11_1.h>
+#include <dxgi1_2.h>
+#pragma comment(lib, "d3d11.lib")
+#pragma comment(lib, "dxgi.lib")
 #endif
 
 #ifdef __STANDALONE__
@@ -35,7 +34,7 @@
 #endif
 #include <dinput.h>
 
-#ifndef ENABLE_SDL
+#if defined(ENABLE_DX9)
  #ifdef _DEBUG
   #define D3D_DEBUG_INFO
  #endif
@@ -373,7 +372,7 @@ class SCNotification { };
 
 #include "renderer/trace.h"
 
-inline void ShowError(const char * const sz)
+inline void ShowError(const char* const sz)
 {
    if(g_pvp)
       g_pvp->MessageBox(sz, "Visual Pinball Error", MB_OK | MB_ICONEXCLAMATION);

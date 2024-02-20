@@ -148,6 +148,52 @@ jobs:
           name: VPinballX_GL-${{ needs.version.outputs.tag }}-${{ matrix.config }}-${{ matrix.platform }}
           path: tmp
 
+  # build-bgfx:
+    # name: Build VPinballX_BGFX-${{ matrix.config }}-${{ matrix.platform }}
+    # runs-on: windows-2022
+    # needs: [ version, dxsdk ]
+    # strategy:
+      # fail-fast: false
+      # matrix:
+        # platform: [ win-x64, win-x86 ]
+        # config: [ Release, Debug ]
+    # steps:
+      # - uses: actions/checkout@v4
+      # - uses: actions/cache@v4
+        # with:
+          # path: DXSDK
+          # key: cache-dxsdk
+      # - run: |
+          # perl -i -pe"s/0/${{ needs.version.outputs.revision }}/g" git_version.h
+          # perl -i -pe"s/unknown/${{ needs.version.outputs.sha7 }}/g" git_version.h
+      # - name: Build
+        # run: |
+          # export DXSDK_DIR="${GITHUB_WORKSPACE}/DXSDK"
+          # cp cmake/CMakeLists_bgfx-${{ matrix.platform}}.txt CMakeLists.txt
+          # if [[ "${{ matrix.platform }}" == "win-x64" ]]; then
+            # cmake -G "Visual Studio 17 2022" -A x64 -B build
+          # else
+            # cmake -G "Visual Studio 17 2022" -A Win32 -B build
+          # fi
+          # cmake --build build --config ${{ matrix.config }}
+      # - run: |
+          # mkdir tmp
+          # if [[ "${{ matrix.platform }}" == "win-x64" ]]; then
+            # cp build/${{ matrix.config }}/VPinballX_BGFX64.exe tmp
+          # else
+            # cp build/${{ matrix.config }}/VPinballX_BGFX.exe tmp
+          # fi
+          # cp build/${{ matrix.config }}/*.dll tmp
+          # cp -r build/${{ matrix.config }}/assets tmp
+          # cp -r build/${{ matrix.config }}/shader${{ needs.version.outputs.version_short }} tmp
+          # cp -r build/${{ matrix.config }}/scripts tmp
+          # cp -r build/${{ matrix.config }}/tables tmp
+          # cp -r build/${{ matrix.config }}/docs tmp
+      # - uses: actions/upload-artifact@v4
+        # with:
+          # name: VPinballX_BGFX-${{ needs.version.outputs.tag }}-${{ matrix.config }}-${{ matrix.platform }}
+          # path: tmp
+
   build-gl-macos-arm64:
     name: Build VPinballX_GL-${{ matrix.config }}-macos-arm64
     runs-on: macos-12

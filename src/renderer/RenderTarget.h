@@ -33,9 +33,10 @@ public:
    colorFormat GetColorFormat() const { return m_format; }
    RenderDevice* GetRenderDevice() const { return m_rd; }
 
-#ifdef ENABLE_SDL
+#if defined(ENABLE_BGFX)
+#elif defined(ENABLE_OPENGL)
    GLuint GetCoreFrameBuffer() const { return m_framebuffer; }
-#else
+#elif defined(ENABLE_DX9)
    IDirect3DSurface9* GetCoreColorSurface() { return m_color_surface; }
 #endif
 
@@ -60,13 +61,14 @@ private:
    static RenderTarget* current_render_target;
    static int current_render_layer;
 
-#ifdef ENABLE_SDL
+#if defined(ENABME_BGFX)
+#elif defined(ENABLE_OPENGL)
    GLuint m_framebuffer;
    GLenum m_texTarget = 0;
    GLuint m_color_tex;
    GLuint m_depth_tex;
    GLuint m_framebuffer_layers[6];
-#else
+#elif defined(ENABLE_DX9)
    bool m_use_alternate_depth;
    IDirect3DSurface9* m_color_surface;
    IDirect3DTexture9* m_color_tex;

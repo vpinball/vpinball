@@ -86,10 +86,10 @@ public:
 
    enum LockFlags
    {
-#ifdef ENABLE_SDL
+#if defined(ENABLE_BGFX) || defined(ENABLE_OPENGL)
       WRITEONLY,
       DISCARDCONTENTS
-#else
+#elif defined(ENABLE_DX9)
       WRITEONLY = 0, // in DX9, this is specified during VB creation
       DISCARDCONTENTS = D3DLOCK_DISCARD // discard previous contents; only works with dynamic VBs
 #endif
@@ -118,10 +118,13 @@ public:
    const bool m_isStatic;
    const unsigned int m_size;
 
-   #ifdef ENABLE_SDL
+   #if defined(ENABLE_BGFX)
+
+   #elif defined(ENABLE_OPENGL)
    GLuint GetBuffer() const;
    void Bind() const;
-   #else
+
+   #elif defined(ENABLE_DX9)
    IDirect3DIndexBuffer9* GetBuffer() const;
    #endif
 
@@ -138,13 +141,20 @@ public:
    SharedIndexBuffer(IndexBuffer::Format fmt, bool stat) : SharedBuffer(fmt, fmt == IndexBuffer::Format::FMT_INDEX16 ? 2 : 4, stat) {}
    ~SharedIndexBuffer();
    void Upload() override;
-   bool IsUploaded() const override { return m_ib; }
 
-   #ifdef ENABLE_SDL
+   #if defined(ENABLE_BGFX)
+   bgfx::IndexBufferHandle m_ib = BGFX_INVALID_HANDLE;
+   bgfx::DynamicIndexBufferHandle m_dib = BGFX_INVALID_HANDLE;
+   bool IsUploaded() const override { return m_isStatic ? bgfx::isValid(m_ib) : bgfx::isValid(m_dib); }
+   
+   #elif defined(ENABLE_OPENGL)
    GLuint m_ib = 0;
    void Bind() const;
-   #else
+   bool IsUploaded() const override { return m_ib; }
+
+   #elif defined(ENABLE_DX9)
    IDirect3DIndexBuffer9* m_ib = nullptr;
+   bool IsUploaded() const override { return m_ib; }
+
    #endif
 };
-

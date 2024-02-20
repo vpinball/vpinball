@@ -119,12 +119,55 @@ const string RenderState::GetLog() const
 
 void RenderState::Apply(RenderDevice* device)
 {
-#if defined(ENABLE_SDL) // OpenGL
+#if defined(ENABLE_BGFX)
+   uint64_t bgfx_state = BGFX_STATE_MSAA;
+
+   if (m_state & RENDER_STATE_MASK_ALPHABLENDENABLE)
+   {
+      int op = (m_state & RENDER_STATE_MASK_BLENDOP) >> RENDER_STATE_SHIFT_BLENDOP;
+      int src = (m_state & RENDER_STATE_MASK_SRCBLEND) >> RENDER_STATE_SHIFT_SRCBLEND;
+      int dst = (m_state & RENDER_STATE_MASK_DESTBLEND) >> RENDER_STATE_SHIFT_DESTBLEND;
+      constexpr uint64_t blend_functions[]
+         = { BGFX_STATE_BLEND_ZERO, BGFX_STATE_BLEND_ONE, BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_DST_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_COLOR };
+      bgfx_state |= BGFX_STATE_BLEND_FUNC(blend_functions[src], blend_functions[dst]);
+      constexpr uint64_t blend_modes[] = { BGFX_STATE_BLEND_EQUATION_MAX, BGFX_STATE_BLEND_EQUATION_ADD, BGFX_STATE_BLEND_EQUATION_REVSUB };
+      bgfx_state |= blend_modes[op];
+   }
+
+   if (m_state & RENDER_STATE_MASK_ZENABLE)
+   {
+      constexpr uint64_t depth_functions[]
+         = { BGFX_STATE_DEPTH_TEST_ALWAYS, BGFX_STATE_DEPTH_TEST_LESS, BGFX_STATE_DEPTH_TEST_LEQUAL, BGFX_STATE_DEPTH_TEST_GREATER, BGFX_STATE_DEPTH_TEST_GEQUAL };
+      unsigned int zmode = (m_state & RENDER_STATE_MASK_ZFUNC) >> RENDER_STATE_SHIFT_ZFUNC;
+      bgfx_state |= depth_functions[zmode];
+   }
+
+   if (m_state & RENDER_STATE_MASK_ZWRITEENABLE)
+      bgfx_state |= BGFX_STATE_WRITE_Z;
+
+   unsigned int cull = (m_state & RENDER_STATE_MASK_CULLMODE) >> RENDER_STATE_SHIFT_CULLMODE;
+   constexpr uint64_t cull_modes[] = { 0, BGFX_STATE_CULL_CW, BGFX_STATE_CULL_CCW };
+   bgfx_state |= cull_modes[cull];
+
+   unsigned int rgba = (m_state & RENDER_STATE_MASK_COLORWRITEENABLE) >> RENDER_STATE_SHIFT_COLORWRITEENABLE;
+   if (rgba & 1)
+      bgfx_state |= BGFX_STATE_WRITE_R;
+   if (rgba & 2)
+      bgfx_state |= BGFX_STATE_WRITE_G;
+   if (rgba & 4)
+      bgfx_state |= BGFX_STATE_WRITE_B;
+   if (rgba & 8)
+      bgfx_state |= BGFX_STATE_WRITE_A;
+
+   device->m_bgfxState = bgfx_state;
+
+#elif defined(ENABLE_OPENGL)
    constexpr int cull_modes[] = { 0, GL_CW, GL_CCW };
    constexpr int functions[] = { GL_ALWAYS, GL_LESS, GL_LEQUAL, GL_GREATER, GL_GEQUAL };
    constexpr int blend_modes[] = { GL_MAX, GL_FUNC_ADD, GL_FUNC_REVERSE_SUBTRACT };
    constexpr int blend_functions[] = { GL_ZERO, GL_ONE, GL_SRC_ALPHA, GL_DST_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE_MINUS_SRC_COLOR };
-#else // DirectX 9
+
+#elif defined(ENABLE_DX9)
    constexpr int cull_modes[] = { D3DCULL_NONE, D3DCULL_CW, D3DCULL_CCW };
    constexpr int functions[] = { D3DCMP_ALWAYS, D3DCMP_LESS, D3DCMP_LESSEQUAL, D3DCMP_GREATER, D3DCMP_GREATEREQUAL };
    constexpr int blend_modes[] = { D3DBLENDOP_MAX, D3DBLENDOP_ADD, D3DBLENDOP_REVSUBTRACT };
@@ -136,6 +179,8 @@ void RenderState::Apply(RenderDevice* device)
    RenderState& active_state = device->GetActiveRenderState();
    const unsigned previous_state = active_state.m_state;
    unsigned new_state = m_state;
+
+#if defined(ENABLE_DX9) || defined(ENABLE_OPENGL)
    unsigned renderstate_mask = previous_state ^ m_state; // Identify differences
    while (renderstate_mask)
    {
@@ -146,7 +191,7 @@ void RenderState::Apply(RenderDevice* device)
       case RENDER_STATE_MASK_ALPHABLENDENABLE:
          renderstate_mask &= RENDER_STATE_CLEAR_MASK_ALPHABLENDENABLE;
          val = m_state & RENDER_STATE_MASK_ALPHABLENDENABLE;
-         #ifdef ENABLE_SDL
+         #ifdef ENABLE_OPENGL
          if (val) glEnable(GL_BLEND); else glDisable(GL_BLEND);
          #else
          CHECKD3D(d3dDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, val ? TRUE : FALSE));
@@ -156,7 +201,7 @@ void RenderState::Apply(RenderDevice* device)
       case RENDER_STATE_MASK_ZENABLE:
          renderstate_mask &= RENDER_STATE_CLEAR_MASK_ZENABLE;
          val = m_state & RENDER_STATE_MASK_ZENABLE;
-         #ifdef ENABLE_SDL
+         #ifdef ENABLE_OPENGL
          if (val) glEnable(GL_DEPTH_TEST); else glDisable(GL_DEPTH_TEST);
          #else
          CHECKD3D(d3dDevice->SetRenderState(D3DRS_ZENABLE, val ? TRUE : FALSE));
@@ -170,7 +215,7 @@ void RenderState::Apply(RenderDevice* device)
          if (m_state & RENDER_STATE_MASK_ALPHABLENDENABLE)
          { // Only apply if blending is enabled
             val = (m_state & RENDER_STATE_MASK_BLENDOP) >> RENDER_STATE_SHIFT_BLENDOP;
-            #ifdef ENABLE_SDL
+            #ifdef ENABLE_OPENGL
             glBlendEquation(blend_modes[val]);
             #else
             CHECKD3D(d3dDevice->SetRenderState(D3DRS_BLENDOP, blend_modes[val]));
@@ -186,7 +231,7 @@ void RenderState::Apply(RenderDevice* device)
       case RENDER_STATE_MASK_CLIPPLANEENABLE:
          renderstate_mask &= RENDER_STATE_CLEAR_MASK_CLIPPLANEENABLE;
          val = m_state & RENDER_STATE_MASK_CLIPPLANEENABLE;
-         #ifdef ENABLE_SDL
+         #ifdef ENABLE_OPENGL
 #ifndef __OPENGLES__
          if (val) glEnable(GL_CLIP_DISTANCE0); else glDisable(GL_CLIP_DISTANCE0);
 #endif
@@ -200,7 +245,7 @@ void RenderState::Apply(RenderDevice* device)
       case 0x00000040u:
          renderstate_mask &= RENDER_STATE_CLEAR_MASK_CULLMODE;
          val = (m_state & RENDER_STATE_MASK_CULLMODE) >> RENDER_STATE_SHIFT_CULLMODE;
-         #ifdef ENABLE_SDL
+         #ifdef ENABLE_OPENGL
          if (val == 0)
             glDisable(GL_CULL_FACE);
          else
@@ -221,7 +266,7 @@ void RenderState::Apply(RenderDevice* device)
          renderstate_mask &= RENDER_STATE_CLEAR_MASK_DESTBLEND;
          if (m_state & RENDER_STATE_MASK_ALPHABLENDENABLE)
          { // Only apply if blending is enabled
-            #ifdef ENABLE_SDL
+            #ifdef ENABLE_OPENGL
             {
                renderstate_mask &= RENDER_STATE_CLEAR_MASK_SRCBLEND; // Both are performed together for OpenGL
                int src = (m_state & RENDER_STATE_MASK_SRCBLEND) >> RENDER_STATE_SHIFT_SRCBLEND;
@@ -247,7 +292,7 @@ void RenderState::Apply(RenderDevice* device)
          renderstate_mask &= RENDER_STATE_CLEAR_MASK_SRCBLEND;
          if (m_state & RENDER_STATE_MASK_ALPHABLENDENABLE)
          { // Only apply if blending is enabled
-            #ifdef ENABLE_SDL
+            #ifdef ENABLE_OPENGL
             {
                const int src = (m_state & RENDER_STATE_MASK_SRCBLEND) >> RENDER_STATE_SHIFT_SRCBLEND;
                const int dst = (m_state & RENDER_STATE_MASK_DESTBLEND) >> RENDER_STATE_SHIFT_DESTBLEND;
@@ -273,7 +318,7 @@ void RenderState::Apply(RenderDevice* device)
          if (m_state & RENDER_STATE_MASK_ZENABLE)
          { // Only apply if depth testing is enabled
             val = (m_state & RENDER_STATE_MASK_ZFUNC) >> RENDER_STATE_SHIFT_ZFUNC;
-            #ifdef ENABLE_SDL
+            #ifdef ENABLE_OPENGL
             glDepthFunc(functions[val]);
             #else
             CHECKD3D(d3dDevice->SetRenderState(D3DRS_ZFUNC, functions[val]));
@@ -289,7 +334,7 @@ void RenderState::Apply(RenderDevice* device)
       case RENDER_STATE_MASK_ZWRITEENABLE:
          renderstate_mask &= RENDER_STATE_CLEAR_MASK_ZWRITEENABLE;
          val = m_state & RENDER_STATE_MASK_ZWRITEENABLE;
-         #ifdef ENABLE_SDL
+         #ifdef ENABLE_OPENGL
          glDepthMask(val ? GL_TRUE : GL_FALSE);
          #else
          CHECKD3D(d3dDevice->SetRenderState(D3DRS_ZWRITEENABLE, val ? TRUE : FALSE));
@@ -303,7 +348,7 @@ void RenderState::Apply(RenderDevice* device)
       case 0x00100000u:
          renderstate_mask &= RENDER_STATE_CLEAR_MASK_COLORWRITEENABLE;
          val = (m_state & RENDER_STATE_MASK_COLORWRITEENABLE) >> RENDER_STATE_SHIFT_COLORWRITEENABLE;
-         #ifdef ENABLE_SDL
+         #ifdef ENABLE_OPENGL
          glColorMask((val & 1) ? GL_TRUE : GL_FALSE, (val & 2) ? GL_TRUE : GL_FALSE, (val & 4) ? GL_TRUE : GL_FALSE, (val & 8) ? GL_TRUE : GL_FALSE);
          #else
          CHECKD3D(d3dDevice->SetRenderState(D3DRS_COLORWRITEENABLE, val));
@@ -315,13 +360,16 @@ void RenderState::Apply(RenderDevice* device)
       }
       device->m_curStateChanges++;
    }
+#endif
+
    active_state.m_state = new_state;
 
    if (active_state.m_depthBias != m_depthBias)
    {
       active_state.m_depthBias = m_depthBias;
       device->m_curStateChanges++;
-      #ifdef ENABLE_SDL
+      #if defined(ENABLE_BGFX)
+      #elif defined(ENABLE_OPENGL)
       if (m_depthBias == 0.0f)
          glDisable(GL_POLYGON_OFFSET_FILL);
       else
@@ -329,7 +377,7 @@ void RenderState::Apply(RenderDevice* device)
          glEnable(GL_POLYGON_OFFSET_FILL);
          glPolygonOffset(0.0f, m_depthBias);
       }
-      #else
+      #elif defined(ENABLE_DX9)
       CHECKD3D(d3dDevice->SetRenderState(D3DRS_DEPTHBIAS, float_as_uint(m_depthBias * BASEDEPTHBIAS)));
       #endif
    }

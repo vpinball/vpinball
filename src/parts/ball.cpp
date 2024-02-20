@@ -105,7 +105,7 @@ void BallEx::Render(const unsigned int renderMask)
    // collect the x nearest lights that can reflect on balls
    Light* light_nearest[MAX_BALL_LIGHT_SOURCES];
    search_for_nearest(m_pball, g_pplayer->m_renderer->m_ballReflectedLights, light_nearest);
-   #ifdef ENABLE_SDL
+   #ifdef ENABLE_OPENGL
    float lightPos[MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES][4] = { 0.0f, 0.0f, 0.0f, 0.0f };
    float lightEmission[MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES][4] = { 0.0f, 0.0f, 0.0f, 0.0f };
    float *pLightPos = (float *)lightPos, *pLightEm = (float *)lightEmission;
@@ -154,7 +154,7 @@ void BallEx::Render(const unsigned int renderMask)
          pLightEm[pEm + 2] = 0.0f;
       }
    }
-   #ifdef ENABLE_SDL
+   #ifdef ENABLE_OPENGL
    m_rd->m_ballShader->SetFloat4v(SHADER_ballLightPos, (vec4 *)lightPos, MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES);
    m_rd->m_ballShader->SetFloat4v(SHADER_ballLightEmission, (vec4 *)lightEmission, MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES);
    #else
@@ -279,9 +279,11 @@ void BallEx::Render(const unsigned int renderMask)
    {
       const float pointSize = 5.f * (float)m_rd->GetCurrentRenderTarget()->GetWidth() / 1920.0f;
       // this is buggy as we set the point size directly while the render command is used later on, but this is the only place where point rendering is used so it's ok for now
-      #if defined(ENABLE_SDL)
+      #if defined(ENABLE_BGFX)
+      // FIXME implement
+      #elif defined(ENABLE_OPENGL)
       glPointSize(pointSize);
-      #else
+      #elif defined(ENABLE_DX9)
       CHECKD3D(m_rd->GetCoreDevice()->SetRenderState(D3DRS_POINTSIZE, float_as_uint(pointSize)));
       #endif
       m_rd->ResetRenderState();

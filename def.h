@@ -256,11 +256,19 @@ static const string platform_renderer[2] = { "dx"s, "gl"s }; // gles necessary, 
  #define GET_PLATFORM_OS "android" 
 #endif
 
-#ifdef ENABLE_SDL
+#if defined(ENABLE_BGFX)
+ #define GET_PLATFORM_RENDERER_ENUM 2
+#elif defined(ENABLE_OPENGL)
  #define GET_PLATFORM_RENDERER_ENUM 1
 #else
  #define GET_PLATFORM_RENDERER_ENUM 0
 #endif
+
+#if !defined(EXT_CAPTURE) && !defined(__STANDALONE__) && defined(ENABLE_OPENGL)
+// External captures for VR is a hack, only available for the full windows build using OpenGL
+#define EXT_CAPTURE
+#endif
+
 
 #ifdef ENABLE_SSE_OPTIMIZATIONS
 __forceinline __m128 rcpps(const __m128 &T) //Newton Raphson

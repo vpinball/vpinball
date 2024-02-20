@@ -7,7 +7,7 @@
 
 //#define DISABLE_FORCE_AMD_HIGHPERF // do not enable AMD high performance device (on Laptops, etc) by default
 
-#ifdef ENABLE_SDL
+#ifdef ENABLE_OPENGL
 #define DISABLE_FORCE_NVIDIA_OPTIMUS
 #else
 
@@ -108,11 +108,9 @@
 
 //VR Support
 
-#ifdef ENABLE_SDL
-#ifndef __STANDALONE__
-//No VR support with DX9 possible, only with DX11 and OpenGL
+#if !defined(__STANDALONE__) && defined(ENABLE_OPENGL)
+// No VR support with DX9 possible, only with DX11 and OpenGL, to be implemented for BGFX
 #define ENABLE_VR
-#endif
 #endif
 
 //
@@ -122,8 +120,10 @@
 
 #define _WINSOCKAPI_ // workaround some issue where windows.h is included before winsock2.h in some of the various includes
 
+#ifndef ENABLE_BGFX
 #define _SECURE_SCL 0
 #define _HAS_ITERATOR_DEBUGGING 0
+#endif
 
 #define STRICT
 
