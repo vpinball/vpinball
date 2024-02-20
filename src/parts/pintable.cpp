@@ -1964,7 +1964,7 @@ void PinTable::Render3DProjection(Sur * const psur)
    ModelViewProj mvp;
    if (mViewSetups[m_currentBackglassMode].mMode == VLM_WINDOW)
       mViewSetups[m_currentBackglassMode].SetWindowModeFromSettings(this);
-   mViewSetups[m_currentBackglassMode].ComputeMVP(this, EDITOR_BG_WIDTH, EDITOR_BG_HEIGHT, false, mvp);
+   mViewSetups[m_currentBackglassMode].ComputeMVP(this, (float)EDITOR_BG_WIDTH / (float)EDITOR_BG_HEIGHT, false, mvp);
 
    Vertex3Ds rgvIn[8];
    rgvIn[0].x = m_left;  rgvIn[0].y = m_top;    rgvIn[0].z = 50.0f;

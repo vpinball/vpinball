@@ -619,7 +619,10 @@ void Pin3D::InitLayout(const float xpixoff, const float ypixoff)
    #endif
    if (viewSetup.mMode == VLM_WINDOW)
       viewSetup.SetWindowModeFromSettings(g_pplayer->m_ptable);
-   viewSetup.ComputeMVP(g_pplayer->m_ptable, m_viewPort.Width, m_viewPort.Height, stereo, *m_mvp, vec3(m_cam.x, m_cam.y, m_cam.z), m_inc, xpixoff, ypixoff);
+   viewSetup.ComputeMVP(g_pplayer->m_ptable, 
+      (float)((double)m_pd3dPrimaryDevice->GetBackBufferTexture()->GetWidth() / (double)m_pd3dPrimaryDevice->GetBackBufferTexture()->GetHeight()),
+      stereo, *m_mvp, vec3(m_cam.x, m_cam.y, m_cam.z), m_inc,
+      xpixoff / (float)m_pd3dPrimaryDevice->GetBackBufferTexture()->GetWidth(), ypixoff / (float)m_pd3dPrimaryDevice->GetBackBufferTexture()->GetHeight());
    InitLights();
 }
 
