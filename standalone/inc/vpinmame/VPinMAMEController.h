@@ -193,13 +193,15 @@ private:
    PinmameSoundCommand* m_pSoundCommandBuffer;
    VPinMAMEGames* m_pGames;
    vector<VPinMAMEDisplay*> m_displays;
-   bool m_hidden;
    OLE_COLOR m_dmdColor;
    int m_enableSound;
    AudioPlayer* m_pAudioPlayer;
    int m_audioChannels;
-   DMDUtil::VirtualDMD* m_pVirtualDMD;
-   VP::DMDWindow* m_pWindow;
+   VPinMAMEDisplay* m_pActiveDisplay;
+   VP::DMDWindow* m_pDMDWindow;
+   bool m_hidden;
+   DMDUtil::RGB24DMD* m_pRGB24DMD;
+   DMDUtil::LevelDMD* m_pLevelDMD;
    std::thread* m_pThread;
    bool m_running;
 

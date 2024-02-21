@@ -230,7 +230,7 @@ jobs:
           NUM_PROCS=$(sysctl -n hw.ncpu)
           cd standalone/macos-arm64
           if [ ! -d "external" ]; then
-             ./external.sh
+             BUILD_TYPE=${{ matrix.config }} ./external.sh
           fi
           cd ../..
           cp standalone/cmake/CMakeLists_gl-macos-arm64.txt CMakeLists.txt
@@ -286,7 +286,7 @@ jobs:
           NUM_PROCS=$(sysctl -n hw.ncpu)
           cd standalone/macos-x64
           if [ ! -d "external" ]; then
-             ./external.sh
+             BUILD_TYPE=${{ matrix.config }} ./external.sh
           fi
           cd ../..
           cp standalone/cmake/CMakeLists_gl-macos-x64.txt CMakeLists.txt
@@ -339,7 +339,7 @@ jobs:
           NUM_PROCS=$(nproc)
           cd standalone/android
           if [ ! -d "external" ]; then
-             ./external.sh
+             BUILD_TYPE=${{ matrix.config }} ./external.sh
           fi
           cd ../..
           cp standalone/cmake/CMakeLists_gl-android-arm64-v8a.txt CMakeLists.txt
@@ -384,7 +384,7 @@ jobs:
           NUM_PROCS=$(nproc)
           cd standalone/linux
           if [ ! -d "external" ]; then
-             ./external.sh
+             BUILD_TYPE=${{ matrix.config }} ./external.sh
           fi
           cd ../..
           cp standalone/cmake/CMakeLists_gl-linux-x64.txt CMakeLists.txt

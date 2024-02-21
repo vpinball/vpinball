@@ -1929,10 +1929,6 @@ void Server::MyB2SSetData(int id, int value)
    if (!m_pB2SData->IsValid())
       return;
 
-   if (id == 99) {
-      int i = 5;
-   }
-
    // illumination stuff
    if ((m_pFormBackglass->GetTopRomIDType() == eRomIDType_Lamp && m_pFormBackglass->GetTopRomID() == id) || (m_pFormBackglass->GetSecondRomIDType() == eRomIDType_Lamp && m_pFormBackglass->GetSecondRomID() == id)) {
       bool topvisible = m_lastTopVisible;

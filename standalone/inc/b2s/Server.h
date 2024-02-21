@@ -172,7 +172,6 @@ public:
    STDMETHOD(B2SMapSound)(VARIANT digit, BSTR soundname);
 
 private:
-   void RenderLoop();
    void TimerElapsed(VP::Timer* pTimer);
    void CheckGetMech(int number, int mech);
    void CheckLamps(SAFEARRAY* psa);

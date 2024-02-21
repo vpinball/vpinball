@@ -8,13 +8,16 @@
 class FormWindow : public VP::Window
 {
 public:
-   FormWindow(Form* pForm, const std::string& szTitle, int x, int y, int w, int h, int z);
+   FormWindow(Form* pForm, const std::string& szTitle, int x, int y, int w, int h, int z, int rotation);
    ~FormWindow();
 
    bool Init() override;
    void Render() override;
 
 private:
+   SDL_FRect m_destRect;
+   int m_angle;
    Form* m_pForm;
    VP::RendererGraphics* m_pGraphics;
+   SDL_Texture* m_pTexture;
 };

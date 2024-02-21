@@ -27,14 +27,11 @@ FlexDMD::FlexDMD()
    m_width = 128;
    m_height = 32;
    m_frameRate = 60;
-   m_run = false;
-   m_show = true;
    m_runtimeVersion = 1008;
    m_clear = false;
    m_renderLockCount = 0;
    memset(m_segData1, 0, 128 * sizeof(UINT16));
    memset(m_segData2, 0, 128 * sizeof(UINT16));
-   m_pThread = NULL;
    m_pGraphics = NULL;
    m_pStage = new Group(this, "Stage");
    m_pStage->AddRef();
@@ -42,22 +39,30 @@ FlexDMD::FlexDMD()
    m_dmdColor = RGB(255, 88, 32);
    m_pAssetManager = new AssetManager();
 
-   m_pVirtualDMD = nullptr;
-   m_pWindow = nullptr;
+   m_pDMDWindow = nullptr;
 
    Settings* const pSettings = &g_pplayer->m_ptable->m_settings;
 
    if (pSettings->LoadValueWithDefault(Settings::Standalone, "FlexDMDWindow"s, true)) {
-      m_pWindow = new VP::DMDWindow("FlexDMD",
+      m_pDMDWindow = new VP::DMDWindow("FlexDMD",
          pSettings->LoadValueWithDefault(Settings::Standalone, "FlexDMDWindowX"s, FLEXDMD_SETTINGS_WINDOW_X),
          pSettings->LoadValueWithDefault(Settings::Standalone, "FlexDMDWindowY"s, FLEXDMD_SETTINGS_WINDOW_Y),
          pSettings->LoadValueWithDefault(Settings::Standalone, "FlexDMDWindowWidth"s, FLEXDMD_SETTINGS_WINDOW_WIDTH),
          pSettings->LoadValueWithDefault(Settings::Standalone, "FlexDMDWindowHeight"s, FLEXDMD_SETTINGS_WINDOW_HEIGHT),
-         FLEXDMD_ZORDER);
+         FLEXDMD_ZORDER,
+         pSettings->LoadValueWithDefault(Settings::Standalone, "FlexDMDWindowRotation"s, 0));
    }
    else {
       PLOGI.printf("FlexDMD window disabled");
    }
+
+   m_show = true;
+
+   m_pDMD = nullptr;
+   m_pRGB24DMD = nullptr;
+
+   m_run = false;
+   m_pThread = NULL;
 }
 
 FlexDMD::~FlexDMD()
@@ -69,7 +74,7 @@ FlexDMD::~FlexDMD()
       delete m_pThread;
    }
 
-   delete m_pWindow;
+   delete m_pDMDWindow;
 
    m_pStage->Release();
 
@@ -117,20 +122,13 @@ STDMETHODIMP FlexDMD::put_Run(VARIANT_BOOL pRetVal)
    if (m_run) {
       ShowDMD(m_show);
 
-      PLOGI.printf("Starting render thread");
-
-      m_pThread = new std::thread([this](){
-         RenderLoop();
-
-         PLOGI.printf("Render thread finished");
-      });
+      RenderLoop();
    }
    else {
       PLOGI.printf("Stopping render thread");
 
       m_pThread->join();
       delete m_pThread;
-
       m_pThread = NULL;
 
       ShowDMD(false);
@@ -278,12 +276,20 @@ STDMETHODIMP FlexDMD::put_Clear(VARIANT_BOOL pRetVal)
 
 STDMETHODIMP FlexDMD::get_DmdColoredPixels(VARIANT* pRetVal)
 {
-   const UINT8* pRGB24Data = m_pVirtualDMD ? m_pVirtualDMD->GetRGB24Data() : nullptr;
+   if (!m_pDMD)
+      return S_FALSE;
+
+   if (!m_pRGB24DMD) {
+      m_pRGB24DMD = m_pDMD->CreateRGB24DMD(m_width, m_height);
+      return S_FALSE;
+   }
+
+   const UINT8* pRGB24Data = m_pRGB24DMD->GetData();
 
    if (!pRGB24Data)
       return S_FALSE;
 
-   const int end = m_pVirtualDMD->GetLength();
+   const int end = m_pRGB24DMD->GetLength();
 
    SAFEARRAY* psa = SafeArrayCreateVector(VT_VARIANT, 0, end);
    VARIANT* pData;
@@ -310,12 +316,20 @@ STDMETHODIMP FlexDMD::get_DmdColoredPixels(VARIANT* pRetVal)
 
 STDMETHODIMP FlexDMD::get_DmdPixels(VARIANT* pRetVal)
 {
-   const UINT8* pRGB24Data = m_pVirtualDMD ? m_pVirtualDMD->GetRGB24Data() : nullptr;
+   if (!m_pDMD)
+      return S_FALSE;
+
+   if (!m_pRGB24DMD) {
+      m_pRGB24DMD = m_pDMD->CreateRGB24DMD(m_width, m_height);
+      return S_FALSE;
+   }
+
+   const UINT8* pRGB24Data = m_pRGB24DMD->GetData();
 
    if (!pRGB24Data)
       return S_FALSE;
 
-   const int end = m_pVirtualDMD->GetLength();
+   const int end = m_pRGB24DMD->GetLength();
 
    SAFEARRAY* psa = SafeArrayCreateVector(VT_VARIANT, 0, end);
    VARIANT* pData;
@@ -481,52 +495,56 @@ STDMETHODIMP FlexDMD::NewUltraDMD(IUltraDMD **pRetVal)
 
 void FlexDMD::ShowDMD(bool show)
 {
-   if (m_pWindow) {
+   if (m_pDMDWindow) {
       if (show)
-         m_pWindow->Show();
+         m_pDMDWindow->Show();
       else
-         m_pWindow->Hide();
+         m_pDMDWindow->Hide();
    }
 }
 
 void FlexDMD::RenderLoop()
 {
-   DMDUtil::DMD* pDMD = new DMDUtil::DMD(m_width, m_height, 24);
-   m_pVirtualDMD = pDMD->CreateVirtualDMD();
+   m_pDMD = new DMDUtil::DMD();
 
-   if (m_pWindow)
-      m_pWindow->SetDMD(pDMD);
+   if (m_pDMDWindow)
+      m_pDMDWindow->AttachDMD(m_pDMD, m_width, m_height);
 
-   SDL_Surface* pSurface = SDL_CreateRGBSurfaceWithFormat(0, m_width, m_height, 24, SDL_PIXELFORMAT_RGB24);
-   m_pGraphics = new VP::SurfaceGraphics(pSurface);
+   if (g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Standalone, "FindDisplays"s, true))
+      m_pDMD->FindDisplays();
 
-   m_pStage->SetSize(m_width, m_height);
-   m_pStage->SetOnStage(true);
+   PLOGI.printf("Starting render thread");
 
-   double elapsedMs = 0.0;
+   m_pThread = new std::thread([this]() {
+      SDL_Surface* pSurface = SDL_CreateRGBSurfaceWithFormat(0, m_width, m_height, 24, SDL_PIXELFORMAT_RGB24);
+      m_pGraphics = new VP::SurfaceGraphics(pSurface);
 
-   while (m_run) {
-      Uint64 startTime = SDL_GetTicks64();
+      m_pStage->SetSize(m_width, m_height);
+      m_pStage->SetOnStage(true);
 
-      if (!m_renderLockCount) {
-         if (m_clear) {
-            m_pGraphics->SetColor(RGB(0, 0, 0));
-            m_pGraphics->Clear();
-         }
+      double elapsedMs = 0.0;
 
-         m_pStage->Update((float)(elapsedMs / 1000.0));
-         m_pStage->Draw(m_pGraphics);
+      while (m_run) {
+         Uint64 startTime = SDL_GetTicks64();
 
-         if (pDMD) {
+         if (!m_renderLockCount) {
+            if (m_clear) {
+               m_pGraphics->SetColor(RGB(0, 0, 0));
+               m_pGraphics->Clear();
+            }
+
+            m_pStage->Update((float)(elapsedMs / 1000.0));
+            m_pStage->Draw(m_pGraphics);
+
             switch (m_renderMode) {
                case RenderMode_DMD_GRAY_2:
-                  pDMD->UpdateRGB24Data((UINT8*)pSurface->pixels, 2, GetRValue(m_dmdColor), GetGValue(m_dmdColor), GetBValue(m_dmdColor));
+                  m_pDMD->UpdateRGB24Data((UINT8*)pSurface->pixels, 2, m_width, m_height, GetRValue(m_dmdColor), GetGValue(m_dmdColor), GetBValue(m_dmdColor));
                   break;
                case RenderMode_DMD_GRAY_4:
-                   pDMD->UpdateRGB24Data((UINT8*)pSurface->pixels, 4, GetRValue(m_dmdColor), GetGValue(m_dmdColor), GetBValue(m_dmdColor));
+                  m_pDMD->UpdateRGB24Data((UINT8*)pSurface->pixels, 4, m_width, m_height, GetRValue(m_dmdColor), GetGValue(m_dmdColor), GetBValue(m_dmdColor));
                   break;
                case RenderMode_DMD_RGB:
-                  pDMD->UpdateRGB24Data((UINT8*)pSurface->pixels, 24, 0, 0, 0);
+                  m_pDMD->UpdateRGB24Data((UINT8*)pSurface->pixels, m_width, m_height);
                   break;
                case RenderMode_SEG_2x16Alpha:
                case RenderMode_SEG_2x20Alpha:
@@ -542,42 +560,46 @@ void FlexDMD::RenderLoop()
                case RenderMode_SEG_6x4Num_4x1Num:
                case RenderMode_SEG_2x7Num_4x1Num_1x16Alpha:
                case RenderMode_SEG_1x16Alpha_1x16Num_1x7Num:
-                  pDMD->UpdateAlphaNumericData((DMDUtil::AlphaNumericLayout)(m_renderMode - 2), m_segData1, m_segData2, GetRValue(m_dmdColor), GetGValue(m_dmdColor), GetBValue(m_dmdColor));
+                  m_pDMD->UpdateAlphaNumericData((DMDUtil::AlphaNumericLayout)(m_renderMode - 2), m_segData1, m_segData2, GetRValue(m_dmdColor), GetGValue(m_dmdColor), GetBValue(m_dmdColor));
                   break;
                default: break;
             }
          }
+
+         double renderingDuration = SDL_GetTicks64() - startTime;
+
+         int sleepMs = (1000 / m_frameRate) - (int)renderingDuration;
+
+         if (sleepMs > 1)
+            SDL_Delay(sleepMs);
+
+         elapsedMs = SDL_GetTicks64() - startTime;
+
+         if (elapsedMs > 4000 / m_frameRate) {
+            PLOGI.printf("Abnormally long elapsed time between frames of %fs (rendering lasted %fms, sleeping was %dms), limiting to %dms", 
+               elapsedMs / 1000.0, renderingDuration, std::max(0, sleepMs), 4000 / m_frameRate);
+
+            elapsedMs = 4000 / m_frameRate;
+         }
       }
 
-      double renderingDuration = SDL_GetTicks64() - startTime;
+      m_pStage->SetOnStage(false);
 
-      int sleepMs = (1000 / m_frameRate) - (int)renderingDuration;
+      SDL_FreeSurface(pSurface);
 
-      if (sleepMs > 1)
-         SDL_Delay(sleepMs);
+      delete m_pGraphics;
+      m_pGraphics = nullptr;
 
-      elapsedMs = SDL_GetTicks64() - startTime;
+      if (m_pDMDWindow)
+         m_pDMDWindow->DetachDMD();
 
-      if (elapsedMs > 4000 / m_frameRate) {
-         PLOGI.printf("Abnormally long elapsed time between frames of %fs (rendering lasted %fms, sleeping was %dms), limiting to %dms", 
-            elapsedMs / 1000.0, renderingDuration, std::max(0, sleepMs), 4000 / m_frameRate);
+      m_pRGB24DMD = nullptr;
 
-         elapsedMs = 4000 / m_frameRate;
-      }
-   }
+      delete m_pDMD;
+      m_pDMD = nullptr;
 
-   m_pStage->SetOnStage(false);
-
-   SDL_FreeSurface(pSurface);
-
-   delete m_pGraphics;
-   m_pGraphics = NULL;
-
-   if (m_pWindow)
-      m_pWindow->SetDMD(nullptr);
-
-   delete pDMD;
-   m_pVirtualDMD = nullptr;
+      PLOGI.printf("Render thread finished");
+   });
 }
 
 Font* FlexDMD::NewFont(string font, OLE_COLOR tint, OLE_COLOR borderTint, LONG borderSize)

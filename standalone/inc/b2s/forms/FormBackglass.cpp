@@ -95,7 +95,8 @@ FormBackglass::FormBackglass()
       pSettings->LoadValueWithDefault(Settings::Standalone, "B2SBackglassY"s, B2S_SETTINGS_BACKGLASSY),
       pSettings->LoadValueWithDefault(Settings::Standalone, "B2SBackglassWidth"s, B2S_SETTINGS_BACKGLASSWIDTH),
       pSettings->LoadValueWithDefault(Settings::Standalone, "B2SBackglassHeight"s, B2S_SETTINGS_BACKGLASSHEIGHT),
-      B2S_BACKGLASS_ZORDER);
+      B2S_BACKGLASS_ZORDER,
+      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SBackglassRotation"s, 0));
 }
 
 FormBackglass::~FormBackglass()

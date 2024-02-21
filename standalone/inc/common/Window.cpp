@@ -4,7 +4,7 @@
 
 namespace VP {
 
-Window::Window(const string& szTitle, int x, int y, int w, int h, int z)
+Window::Window(const string& szTitle, int x, int y, int w, int h, int z, int rotation)
 {
    m_pWindow = nullptr;
    m_id = 0;
@@ -15,6 +15,7 @@ Window::Window(const string& szTitle, int x, int y, int w, int h, int z)
    m_h = h;
    m_w = w;
    m_z = z;
+   m_rotation = rotation;
    m_visible = false;
    m_init = false;
 
@@ -30,13 +31,27 @@ bool Window::Init()
 
    m_pWindow = SDL_CreateWindow(m_szTitle.c_str(), m_x, m_y, m_w, m_h, flags);
    if (m_pWindow) {
-      m_pRenderer = SDL_CreateRenderer(m_pWindow, -1, SDL_RENDERER_ACCELERATED);
+      SDL_SetWindowPosition(m_pWindow, m_x, m_y);
+
+      int windowRenderer = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Standalone, "WindowRenderer"s, -1);
+
+      m_pRenderer = SDL_CreateRenderer(m_pWindow, windowRenderer, SDL_RENDERER_ACCELERATED);
       if (m_pRenderer) {
          SDL_RenderSetLogicalSize(m_pRenderer, m_w, m_h);
 
          m_id = SDL_GetWindowID(m_pWindow);
 
-         PLOGI.printf("Window initialized: title=%s, id=%d, size=%dx%d, pos=%d,%d, z=%d, visible=%d", m_szTitle.c_str(), m_id, m_w, m_h, m_x, m_y, m_z, m_visible);
+         char* pRendererName = NULL;
+
+         SDL_RendererInfo rendererInfo;
+         if (!SDL_GetRendererInfo(m_pRenderer, &rendererInfo))
+            pRendererName = (char*)rendererInfo.name;
+
+         if (m_rotation < 0 || m_rotation > 3)
+            m_rotation = 0;
+
+         PLOGI.printf("Window initialized: title=%s, id=%d, size=%dx%d, pos=%d,%d, z=%d, rotation=%d, visible=%d, renderer=%s",
+            m_szTitle.c_str(), m_id, m_w, m_h, m_x, m_y, m_z, m_rotation, m_visible, pRendererName ? pRendererName : "Unavailable");
 
          if (m_visible)
             SDL_ShowWindow(m_pWindow);
@@ -78,7 +93,8 @@ void Window::Show()
    if (m_init) {
       SDL_ShowWindow(m_pWindow);
 
-      PLOGI.printf("Window updated: title=%s, id=%d, size=%dx%d, pos=%d,%d, z=%d, visible=%d", m_szTitle.c_str(), m_id, m_w, m_h, m_x, m_y, m_z, m_visible);
+      PLOGI.printf("Window updated: title=%s, id=%d, size=%dx%d, pos=%d,%d, z=%d, rotation=%d, visible=%d", 
+         m_szTitle.c_str(), m_id, m_w, m_h, m_x, m_y, m_z, m_rotation, m_visible);
    }
 }
 
@@ -92,7 +108,8 @@ void Window::Hide()
    if (m_pWindow) {
       SDL_HideWindow(m_pWindow);
 
-      PLOGI.printf("Window updated: title=%s, id=%d, size=%dx%d, pos=%d,%d, z=%d, visible=%d", m_szTitle.c_str(), m_id, m_w, m_h, m_x, m_y, m_z, m_visible);
+      PLOGI.printf("Window updated: title=%s, id=%d, size=%dx%d, pos=%d,%d, z=%d, rotation=%d, visible=%d", 
+         m_szTitle.c_str(), m_id, m_w, m_h, m_x, m_y, m_z, m_rotation, m_visible);
    }
 }
 
@@ -110,23 +127,15 @@ void Window::OnUpdate()
       m_x = x;
       m_y = y;
 
-      PLOGI.printf("Window moved: title=%s, id=%d, size=%dx%d, pos=%d,%d, z=%d", m_szTitle.c_str(), m_id, m_w, m_h, m_x, m_y, m_z);
+      PLOGI.printf("Window moved: title=%s, id=%d, size=%dx%d, pos=%d,%d, z=%d, rotation=%d", 
+         m_szTitle.c_str(), m_id, m_w, m_h, m_x, m_y, m_z, m_rotation);
    }
 }
 
 void Window::OnRender()
 {
-   if (m_init && m_visible) {
-      Uint64 now = SDL_GetTicks64();
-      Uint64 timeSinceLastRender = now - m_lastRenderTime;
-
-      if(timeSinceLastRender < m_frameDuration)
-         return;
-
-       Render();
-
-       m_lastRenderTime = now;
-   }
+   if (m_init && m_visible)
+      Render();
 }
 
 }
