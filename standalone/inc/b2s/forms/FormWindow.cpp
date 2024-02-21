@@ -18,13 +18,6 @@ bool FormWindow::Init()
    if (!VP::Window::Init())
       return false;
 
-   m_pTexture = SDL_CreateTexture(m_pRenderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, GetWidth(), GetHeight());
-
-   if (!m_pTexture) {
-      PLOGE.printf("Unable to create form texture");
-      return false;
-   }
-
    int rotation = GetRotation();
 
    if (rotation == 0 || rotation == 2) {
@@ -56,6 +49,12 @@ FormWindow::~FormWindow()
 
 void FormWindow::Render()
 {
+   if (!m_pTexture) {
+      m_pTexture = SDL_CreateTexture(m_pRenderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, GetWidth(), GetHeight());
+      if (!m_pTexture)
+         return;
+   }
+
    SDL_SetRenderTarget(m_pRenderer, m_pTexture);
    bool update = m_pForm->Render();
    SDL_SetRenderTarget(m_pRenderer, NULL);
