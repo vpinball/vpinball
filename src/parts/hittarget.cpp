@@ -739,7 +739,7 @@ void HitTarget::Render(const unsigned int renderMask)
 void HitTarget::UpdateTarget()
 {
    Vertex3D_NoTex2 *buf;
-   m_meshBuffer->m_vb->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
+   m_meshBuffer->m_vb->Lock(buf);
    if (m_d.m_targetType == DropTargetBeveled || m_d.m_targetType == DropTargetSimple || m_d.m_targetType == DropTargetFlatSimple)
    {
        //TODO Update object Matrix instead
@@ -779,7 +779,7 @@ void HitTarget::UpdateTarget()
            buf[i].tv = m_vertices[i].tv;
        }
    }
-   m_meshBuffer->m_vb->unlock();
+   m_meshBuffer->m_vb->Unlock();
 }
 
 #pragma endregion

@@ -423,7 +423,7 @@ BOOL VideoOptionsDialog::OnInitDialog()
    SendMessage(hwndDNSlider, TBM_SETTHUMBLENGTH, 10, 0);
 
    // Disable unsupported features in UI
-#ifdef ENABLE_OPENGL
+#if defined(ENABLE_SDL_VIDEO)
    GetDlgItem(IDC_DISABLE_DWM).EnableWindow(false);
    GetDlgItem(IDC_10BIT_VIDEO).EnableWindow(false);
    GetDlgItem(IDC_3D_STEREO_ZPD).EnableWindow(false);
@@ -513,7 +513,7 @@ void VideoOptionsDialog::LoadSettings()
 
    const int maxPrerenderedFrames = settings.LoadValueWithDefault(Settings::Player, "MaxPrerenderedFrames"s, 0);
    SetDlgItemInt(IDC_MAX_PRE_FRAMES, maxPrerenderedFrames, FALSE);
-   #ifdef ENABLE_OPENGL
+   #if defined(ENABLE_SDL_VIDEO)
    GetDlgItem(IDC_MAX_PRE_FRAMES).EnableWindow(false); // OpenGL does not support this option
    #endif
 
@@ -584,9 +584,9 @@ void VideoOptionsDialog::LoadSettings()
    SendDlgItemMessage(IDC_BG_SET, BM_SETCHECK, (bgset != 0) ? BST_CHECKED : BST_UNCHECKED, 0);
 
    bool fakeStereo = true;
-   #ifdef ENABLE_OPENGL
+   #if defined(ENABLE_OPENGL)
    fakeStereo = settings.LoadValueWithDefault(Settings::Player, "Stereo3DFake"s, false);
-   #else
+   #elif defined(ENABLE_DX9) || defined(ENABLE_BGFX)
    GetDlgItem(IDC_FAKE_STEREO).EnableWindow(FALSE);
    #endif
    SendDlgItemMessage(IDC_FAKE_STEREO, BM_SETCHECK, fakeStereo ? BST_CHECKED : BST_UNCHECKED, 0);

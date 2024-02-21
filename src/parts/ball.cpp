@@ -105,12 +105,12 @@ void BallEx::Render(const unsigned int renderMask)
    // collect the x nearest lights that can reflect on balls
    Light* light_nearest[MAX_BALL_LIGHT_SOURCES];
    search_for_nearest(m_pball, g_pplayer->m_renderer->m_ballReflectedLights, light_nearest);
-   #ifdef ENABLE_OPENGL
+   #if defined(ENABLE_OPENGL) || defined(ENABLE_BGFX)
    float lightPos[MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES][4] = { 0.0f, 0.0f, 0.0f, 0.0f };
    float lightEmission[MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES][4] = { 0.0f, 0.0f, 0.0f, 0.0f };
    float *pLightPos = (float *)lightPos, *pLightEm = (float *)lightEmission;
    const int lightStride = 4, lightOfs = 0;
-   #else
+   #elif defined(ENABLE_DX9)
    struct CLight
    {
       float vPos[3];
@@ -154,10 +154,10 @@ void BallEx::Render(const unsigned int renderMask)
          pLightEm[pEm + 2] = 0.0f;
       }
    }
-   #ifdef ENABLE_OPENGL
+   #if defined(ENABLE_OPENGL) || defined(ENABLE_BGFX)
    m_rd->m_ballShader->SetFloat4v(SHADER_ballLightPos, (vec4 *)lightPos, MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES);
    m_rd->m_ballShader->SetFloat4v(SHADER_ballLightEmission, (vec4 *)lightEmission, MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES);
-   #else
+   #elif defined(ENABLE_DX9)
    m_rd->m_ballShader->SetFloat4v(SHADER_ballPackedLights, (vec4 *)l, sizeof(CLight) * (MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES) / (4 * sizeof(float)));
    #endif
 
@@ -372,10 +372,9 @@ void BallEx::Render(const unsigned int renderMask)
       if (nVertices > 0 && g_pplayer->m_renderer->m_ballTrailMeshBufferPos + nVertices <= g_pplayer->m_renderer->m_ballTrailMeshBuffer->m_vb->m_count)
       {
          Vertex3D_NoTex2 *bufvb;
-         g_pplayer->m_renderer->m_ballTrailMeshBuffer->m_vb->lock(
-            g_pplayer->m_renderer->m_ballTrailMeshBufferPos * sizeof(Vertex3D_NoTex2), nVertices * sizeof(Vertex3D_NoTex2), (void **)&bufvb, VertexBuffer::DISCARDCONTENTS);
+         g_pplayer->m_renderer->m_ballTrailMeshBuffer->m_vb->Lock(bufvb, g_pplayer->m_renderer->m_ballTrailMeshBufferPos * sizeof(Vertex3D_NoTex2), nVertices * sizeof(Vertex3D_NoTex2));
          memcpy(bufvb, vertices, nVertices * sizeof(Vertex3D_NoTex2));
-         g_pplayer->m_renderer->m_ballTrailMeshBuffer->m_vb->unlock();
+         g_pplayer->m_renderer->m_ballTrailMeshBuffer->m_vb->Unlock();
          m_rd->ResetRenderState();
          m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
          m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);

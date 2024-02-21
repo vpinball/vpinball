@@ -932,7 +932,7 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
       /*CHECKD3D(*/ m_shader->SetMatrix(desc.handle, (D3DXMATRIX*) src) /*)*/; // leads to invalid calls when setting some of the matrices (as hlsl compiler optimizes some down to less than 4x4)
       #endif
       break;
-#ifndef ENABLE_OPENGL
+#if defined(ENABLE_DX9)
    case SUT_Sampler:
       {
          // A sampler bind performs 3 things:

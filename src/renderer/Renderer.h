@@ -148,12 +148,8 @@ private:
 
    FrameQueueLimiter* m_limiter = nullptr;
 
-   #ifdef ENABLE_OPENGL
-#ifndef __OPENGLES__
+   #if defined(ENABLE_OPENGL) && !defined(__OPENGLES__)
    RenderTarget* m_envRadianceTexture = nullptr;
-#else
-   BaseTexture* m_envRadianceTexture = nullptr;
-#endif
    #else
    BaseTexture* m_envRadianceTexture = nullptr;
    #endif

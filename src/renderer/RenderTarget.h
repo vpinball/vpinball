@@ -34,6 +34,7 @@ public:
    RenderDevice* GetRenderDevice() const { return m_rd; }
 
 #if defined(ENABLE_BGFX)
+   bgfx::FrameBufferHandle GetCoreFrameBuffer() const { return m_framebuffer; }
 #elif defined(ENABLE_OPENGL)
    GLuint GetCoreFrameBuffer() const { return m_framebuffer; }
 #elif defined(ENABLE_DX9)
@@ -61,7 +62,10 @@ private:
    static RenderTarget* current_render_target;
    static int current_render_layer;
 
-#if defined(ENABME_BGFX)
+#if defined(ENABLE_BGFX)
+   bgfx::FrameBufferHandle m_framebuffer = BGFX_INVALID_HANDLE;
+   bgfx::TextureHandle m_color_tex = BGFX_INVALID_HANDLE;
+   bgfx::TextureHandle m_depth_tex = BGFX_INVALID_HANDLE;
 #elif defined(ENABLE_OPENGL)
    GLuint m_framebuffer;
    GLenum m_texTarget = 0;

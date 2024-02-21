@@ -1,7 +1,10 @@
 #include "core/stdafx.h"
 
 #ifdef ENABLE_SDL_VIDEO
-#include <SDL2/SDL_syswm.h>
+  #include <SDL2/SDL_syswm.h>
+  #include "imgui/imgui_impl_sdl2.h"
+#else
+  #include "imgui/imgui_impl_win32.h"
 #endif
 
 #ifdef __STANDALONE__
@@ -10,10 +13,6 @@
 
 #ifndef __STANDALONE__
 #include "BAM/BAMView.h"
-#endif
-
-#ifdef _MSC_VER
-#include "imgui/imgui_impl_win32.h"
 #endif
 
 #ifdef __STANDALONE__
@@ -2211,8 +2210,11 @@ void Player::UnpauseMusic()
 LRESULT Player::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 #ifndef __STANDALONE__
-    if (ImGui_ImplWin32_WndProcHandler(GetHwnd(), uMsg, wParam, lParam))
+
+   #ifndef ENABLE_SDL_VIDEO
+   if (ImGui_ImplWin32_WndProcHandler(GetHwnd(), uMsg, wParam, lParam))
       return true;
+   #endif
 
     switch (uMsg)
     {

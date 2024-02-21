@@ -463,8 +463,8 @@ add_executable(vpinball WIN32
    third-party/include/imgui/imgui.cpp
    third-party/include/imgui/imgui.h
    third-party/include/imgui/imgui_draw.cpp
-   third-party/include/imgui/imgui_impl_win32.cpp
-   third-party/include/imgui/imgui_impl_win32.h
+   third-party/include/imgui/imgui_impl_sdl2.cpp
+   third-party/include/imgui/imgui_impl_sdl2.h
    third-party/include/imgui/imgui_stdlib.cpp
    third-party/include/imgui/imgui_stdlib.h
    third-party/include/imgui/imgui_tables.cpp

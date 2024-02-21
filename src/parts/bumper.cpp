@@ -254,9 +254,9 @@ void Bumper::RenderSetup(RenderDevice *device)
       IndexBuffer* baseIndexBuffer = new IndexBuffer(m_rd, bumperBaseNumIndices, bumperBaseIndices);
       VertexBuffer* baseVertexBuffer = new VertexBuffer(m_rd, bumperBaseNumVertices);
       Vertex3D_NoTex2 *buf;
-      baseVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+      baseVertexBuffer->Lock(buf);
       GenerateBaseMesh(buf);
-      baseVertexBuffer->unlock();
+      baseVertexBuffer->Unlock();
       delete m_baseMeshBuffer;
       m_baseMeshBuffer = new MeshBuffer(m_wzName + L".Base"s, baseVertexBuffer, baseIndexBuffer, true);
    }
@@ -268,9 +268,9 @@ void Bumper::RenderSetup(RenderDevice *device)
       IndexBuffer* socketIndexBuffer = new IndexBuffer(m_rd, bumperSocketNumIndices, bumperSocketIndices);
       VertexBuffer* socketVertexBuffer = new VertexBuffer(m_rd, bumperSocketNumVertices, nullptr, true);
       Vertex3D_NoTex2 *buf;
-      socketVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+      socketVertexBuffer->Lock(buf);
       GenerateSocketMesh(buf);
-      socketVertexBuffer->unlock();
+      socketVertexBuffer->Unlock();
       delete m_socketMeshBuffer;
       m_socketMeshBuffer = new MeshBuffer(m_wzName + L".Socket"s, socketVertexBuffer, socketIndexBuffer, true);
    }
@@ -284,9 +284,9 @@ void Bumper::RenderSetup(RenderDevice *device)
       m_ringVertices = new Vertex3D_NoTex2[bumperRingNumVertices];
       GenerateRingMesh(m_ringVertices);
       Vertex3D_NoTex2 *buf;
-      ringVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
+      ringVertexBuffer->Lock(buf);
       memcpy(buf, m_ringVertices, bumperRingNumVertices*sizeof(Vertex3D_NoTex2));
-      ringVertexBuffer->unlock();
+      ringVertexBuffer->Unlock();
       delete m_ringMeshBuffer;
       m_ringMeshBuffer = new MeshBuffer(m_wzName + L".Ring"s, ringVertexBuffer, ringIndexBuffer, true);
    }
@@ -298,9 +298,9 @@ void Bumper::RenderSetup(RenderDevice *device)
       IndexBuffer* capIndexBuffer = new IndexBuffer(m_rd, bumperCapNumIndices, bumperCapIndices);
       VertexBuffer* capVertexBuffer = new VertexBuffer(m_rd, bumperCapNumVertices);
       Vertex3D_NoTex2 *buf;
-      capVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+      capVertexBuffer->Lock(buf);
       GenerateCapMesh(buf);
-      capVertexBuffer->unlock();
+      capVertexBuffer->Unlock();
       delete m_capMeshBuffer;
       m_capMeshBuffer = new MeshBuffer(m_wzName + L".Cap"s, capVertexBuffer, capIndexBuffer, true);
    }
@@ -430,7 +430,7 @@ void Bumper::UpdateSkirt(const bool doCalculation)
                            * Matrix3D::MatrixRotateX(ANGTORAD(rotx));
 
    Vertex3D_NoTex2 *buf;
-   m_socketMeshBuffer->m_vb->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
+   m_socketMeshBuffer->m_vb->Lock(buf);
    for (unsigned int i = 0; i < bumperSocketNumVertices; i++)
    {
       Vertex3Ds vert = rMatrix * Vertex3Ds{bumperSocket[i].x, bumperSocket[i].y, bumperSocket[i].z};
@@ -445,7 +445,7 @@ void Bumper::UpdateSkirt(const bool doCalculation)
       buf[i].tu = bumperSocket[i].tu;
       buf[i].tv = bumperSocket[i].tv;
    }
-   m_socketMeshBuffer->m_vb->unlock();
+   m_socketMeshBuffer->m_vb->Unlock();
 }
 
 void Bumper::ExportMesh(ObjLoader& loader)
@@ -652,7 +652,7 @@ void Bumper::UpdateAnimation(const float diff_time_msec)
          {
             //TODO update Worldmatrix instead.
             Vertex3D_NoTex2 *buf;
-            m_ringMeshBuffer->m_vb->lock(0, 0, (void **)&buf, VertexBuffer::DISCARDCONTENTS);
+            m_ringMeshBuffer->m_vb->Lock(buf);
             for (unsigned int i = 0; i < bumperRingNumVertices; i++)
             {
                buf[i].x = m_ringVertices[i].x;
@@ -664,7 +664,7 @@ void Bumper::UpdateAnimation(const float diff_time_msec)
                buf[i].tu = m_ringVertices[i].tu;
                buf[i].tv = m_ringVertices[i].tv;
             }
-            m_ringMeshBuffer->m_vb->unlock();
+            m_ringMeshBuffer->m_vb->Unlock();
          }
 
          FireGroupEvent(DISPID_AnimateEvents_Animate);

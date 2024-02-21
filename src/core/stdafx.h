@@ -7,14 +7,11 @@
 
 //#define DISABLE_FORCE_AMD_HIGHPERF // do not enable AMD high performance device (on Laptops, etc) by default
 
-#ifdef ENABLE_OPENGL
+#if defined(ENABLE_OPENGL)
 #define DISABLE_FORCE_NVIDIA_OPTIMUS
-#else
+#endif
 
 //#define TWOSIDED_TRANSPARENCY // transparent hit targets are rendered backsided first, then frontsided
-
-#define USE_D3D9EX // if enabled can use extended API, does not benefit on XP though // currently only allows to enable adaptive vsync again (on win vista/7 only, seems to be broken in win8)
-#endif
 
 // Needed by ImPlot when using ImGUI
 #define IMGUI_DEFINE_MATH_OPERATORS

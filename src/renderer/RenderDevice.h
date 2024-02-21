@@ -15,24 +15,28 @@
 #include "RenderFrame.h"
 #include "RenderPass.h"
 
-#ifdef ENABLE_OPENGL
-#ifndef __STANDALONE__
-#include <d3d11.h> // Used to get a VSync source if DWM is not available
-#endif
+#if defined(ENABLE_SDL_VIDEO)
+#include "sdl2/SDL.h"
 #endif
 
-#ifndef ENABLE_OPENGL
+#if defined(ENABLE_OPENGL) && !defined(__STANDALONE__)
+#include <d3d11.h> // Used to get a VSync source if DWM is not available
+#endif
+
+#if defined(ENABLE_DX9)
 #define CHECKNVAPI(s) { NvAPI_Status hr = (s); if (hr != NVAPI_OK) { NvAPI_ShortString ss; NvAPI_GetErrorMessage(hr,ss); g_pvp->MessageBox(ss, "NVAPI", MB_OK | MB_ICONEXCLAMATION); } }
 #endif
 
 void ReportFatalError(const HRESULT hr, const char *file, const int line);
 void ReportError(const char *errorText, const HRESULT hr, const char *file, const int line);
 
-#if 1//def _DEBUG
-#ifdef ENABLE_OPENGL
+#if 1//defined(_DEBUG)
+#if defined(ENABLE_BGFX)
+#define CHECKD3D(s) { s; } 
+#elif defined(ENABLE_OPENGL)
 //void checkGLErrors(const char *file, const int line);
 #define CHECKD3D(s) { s; } //checkGLErrors(__FILE__, __LINE__); } // by now the callback is used instead
-#else //ENABLE_OPENGL
+#elif defined(ENABLE_DX9)
 #define CHECKD3D(s) { const HRESULT hrTmp = (s); if (FAILED(hrTmp)) ReportFatalError(hrTmp, __FILE__, __LINE__); }
 #endif
 #else //_DEBUG
@@ -103,6 +107,8 @@ public:
       LINESTRIP
    };
 
+   SDL_Window* m_sdl_playfieldHwnd = nullptr;
+
 #elif defined(ENABLE_OPENGL)
    enum PrimitiveTypes
    {
@@ -116,9 +122,9 @@ public:
 
    SDL_Window* m_sdl_playfieldHwnd = nullptr;
    SDL_GLContext m_sdl_context = nullptr;
-#ifndef __STANDALONE__
+   #ifndef __STANDALONE__
    IDXGIOutput* m_DXGIOutput = nullptr;
-#endif
+   #endif
 
 #elif defined(ENABLE_DX9)
    enum PrimitiveTypes
@@ -232,8 +238,11 @@ public:
    unsigned int Perf_GetNumLockCalls() const        { return m_frameLockCalls; }
 
    #if defined(ENABLE_BGFX)
+   bgfx::ProgramHandle m_program = BGFX_INVALID_HANDLE; // Bound program for next draw submission
+   
    #elif defined(ENABLE_OPENGL)
    int getGLVersion() const { return m_GLversion; }
+   
    #elif defined(ENABLE_DX9)
    IDirect3DDevice9* GetCoreDevice() const { return m_pD3DDevice; }
    #endif
@@ -258,13 +267,6 @@ public:
    Sampler* m_nullTexture = nullptr;
 
 private:
-#if defined(ENABLE_DX9)
-   IDirect3D9Ex* m_pD3DEx;
-   IDirect3DDevice9Ex* m_pD3DDeviceEx;
-   IDirect3D9* m_pD3D;
-   IDirect3DDevice9* m_pD3DDevice;
-#endif
-
    RenderTarget* m_pBackBuffer = nullptr;
 
    RenderTarget* m_pOffscreenMSAABackBufferTexture = nullptr;
@@ -285,21 +287,6 @@ private:
 public:
    void SetSamplerState(int unit, SamplerFilter filter, SamplerAddressMode clamp_u, SamplerAddressMode clamp_v);
 
-private:
-#ifdef ENABLE_OPENGL
-   GLfloat m_maxaniso;
-   int m_GLversion;
-   static GLuint m_samplerStateCache[3 * 3 * 5];
-#else
-   DWORD m_maxaniso;
-   bool m_mag_aniso;
-   static constexpr DWORD TEXTURESET_STATE_CACHE_SIZE = 32;
-   SamplerFilter m_bound_filter[TEXTURESET_STATE_CACHE_SIZE];
-   SamplerAddressMode m_bound_clampu[TEXTURESET_STATE_CACHE_SIZE];
-   SamplerAddressMode m_bound_clampv[TEXTURESET_STATE_CACHE_SIZE];
-#endif
-
-public:
    bool m_autogen_mipmap;
    bool m_compress_textures;
 
@@ -320,14 +307,6 @@ public:
 
    vector<SharedIndexBuffer*> m_pendingSharedIndexBuffers;
    vector<SharedVertexBuffer*> m_pendingSharedVertexBuffers;
-
-#ifdef ENABLE_OPENGL
-   vector<MeshBuffer::SharedVAO*> m_sharedVAOs;
-#else
-   bool m_useNvidiaApi;
-   bool m_INTZ_support;
-   bool NVAPIinit;
-#endif
 
    // performance counters
    unsigned int m_curDrawCalls = 0, m_frameDrawCalls = 0;
@@ -356,18 +335,47 @@ private :
    RenderPass* m_currentPass = nullptr;
    RenderPass* m_nextRenderCommandDependency = nullptr;
 
-public:
 #if defined(ENABLE_BGFX)
-
+public:
+   bgfx::VertexLayout* m_pVertexTexelDeclaration = nullptr;
+   bgfx::VertexLayout* m_pVertexNormalTexelDeclaration = nullptr;
+   int m_activeViewId = -1;
+   uint64_t m_bgfxState = 0L;
+   
 #elif defined(ENABLE_OPENGL)
+public:
+   vector<MeshBuffer::SharedVAO*> m_sharedVAOs;
    std::vector<SamplerBinding*> m_samplerBindings;
    GLuint m_curVAO = 0;
-   
+
+private:
+   GLfloat m_maxaniso;
+   int m_GLversion;
+   static GLuint m_samplerStateCache[3 * 3 * 5];
+
 #elif defined(ENABLE_DX9)
+public:
    IDirect3DVertexBuffer9* m_curVertexBuffer = nullptr;
    IDirect3DIndexBuffer9* m_curIndexBuffer = nullptr;
    IDirect3DVertexDeclaration9* m_currentVertexDeclaration = nullptr;
    IDirect3DVertexDeclaration9* m_pVertexTexelDeclaration = nullptr;
    IDirect3DVertexDeclaration9* m_pVertexNormalTexelDeclaration = nullptr;
+
+   bool m_useNvidiaApi;
+   bool m_INTZ_support;
+   bool NVAPIinit;
+
+private:
+   IDirect3D9Ex* m_pD3DEx;
+   IDirect3DDevice9Ex* m_pD3DDeviceEx;
+   IDirect3D9* m_pD3D;
+   IDirect3DDevice9* m_pD3DDevice;
+
+   DWORD m_maxaniso;
+   bool m_mag_aniso;
+   static constexpr DWORD TEXTURESET_STATE_CACHE_SIZE = 32;
+   SamplerFilter m_bound_filter[TEXTURESET_STATE_CACHE_SIZE];
+   SamplerAddressMode m_bound_clampu[TEXTURESET_STATE_CACHE_SIZE];
+   SamplerAddressMode m_bound_clampv[TEXTURESET_STATE_CACHE_SIZE];
 #endif
 };

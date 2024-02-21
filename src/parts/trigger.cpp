@@ -659,7 +659,7 @@ void Trigger::Render(const unsigned int renderMask)
    {
       m_vertexBuffer_animHeightOffset = m_animHeightOffset;
       Vertex3D_NoTex2 *buf;
-      m_meshBuffer->m_vb->lock(0, 0, (void **)&buf, VertexBuffer::DISCARDCONTENTS);
+      m_meshBuffer->m_vb->Lock(buf);
       for (int i = 0; i < m_numVertices; i++)
       {
          buf[i].x = m_triggerVertices[i].x;
@@ -671,7 +671,7 @@ void Trigger::Render(const unsigned int renderMask)
          buf[i].tu = m_triggerVertices[i].tu;
          buf[i].tv = m_triggerVertices[i].tv;
       }
-      m_meshBuffer->m_vb->unlock();
+      m_meshBuffer->m_vb->Unlock();
    }
 
    m_rd->ResetRenderState();

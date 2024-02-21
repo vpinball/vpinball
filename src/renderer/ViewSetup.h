@@ -30,7 +30,7 @@ public:
    float GetRealToVirtualScale(const PinTable* const table) const;
    float GetRotation(const int viewportWidth, const int viewportHeight) const;
    
-   void ComputeMVP(const PinTable* const table, const int viewportWidth, const int viewportHeight, const bool stereo, ModelViewProj& mvp, 
+   void ComputeMVP(const PinTable* const table, const float aspect, const bool stereo, ModelViewProj& mvp,
       const vec3& cam = vec3(0.f, 0.f, 0.f), const float cam_inc = 0.f, const float xpixoff = 0.f, const float ypixoff = 0.f);
 
 private:

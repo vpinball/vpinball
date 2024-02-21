@@ -273,26 +273,27 @@ bool RenderPass::Execute(const bool log)
       assert((left <= right) && (bottom <= top));
       if (left == right || bottom == top)
          return false;
-      #ifdef ENABLE_OPENGL
+      #if defined(ENABLE_BGFX)
+      // FIXME implement BGFX
+      #elif defined(ENABLE_OPENGL)
       glEnable(GL_SCISSOR_TEST);
       glScissor((GLint)left, (GLint)bottom, (GLsizei)(right - left), (GLsizei)(top - bottom));
-      #else
+      #elif defined(ENABLE_DX9)
       const RECT r = { (LONG)left, (LONG)(m_rt->GetHeight() - top), (LONG)right, (LONG)(m_rt->GetHeight() - bottom) };
       m_rt->GetRenderDevice()->GetCoreDevice()->SetRenderState(D3DRS_SCISSORTESTENABLE, TRUE);
       m_rt->GetRenderDevice()->GetCoreDevice()->SetScissorRect(&r);
       #endif
    }
 
-#ifdef ENABLE_OPENGL
-#ifndef __OPENGLES__
+   #if defined(ENABLE_OPENGL) && !defined(__OPENGLES__)
    if (GLAD_GL_VERSION_4_3)
    {
       std::stringstream passName;
       passName << m_name << " [RT=" << m_rt->m_name << ']';
       glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, passName.str().c_str());
    }
-#endif
-#endif
+   #endif
+   
    if (log)
    {
       std::stringstream ss;
@@ -319,7 +320,7 @@ bool RenderPass::Execute(const bool log)
       m_rt->Activate();
       for (RenderCommand* cmd : m_commands)
       {
-         #ifdef ENABLE_OPENGL // Layered rendering is not yet implemented for DirectX
+         #if defined(ENABLE_OPENGL) // Layered rendering is not yet implemented for DirectX
          Shader::ShaderState* state = cmd->GetShaderState();
          if (state)
             state->SetInt(SHADER_layer, 0);
@@ -333,7 +334,7 @@ bool RenderPass::Execute(const bool log)
       m_rt->Activate(m_singleLayerRendering);
       for (RenderCommand* cmd : m_commands)
       {
-         #ifdef ENABLE_OPENGL // Layered rendering is not yet implemented for DirectX
+         #if defined(ENABLE_OPENGL) // Layered rendering is not yet implemented for DirectX
          Shader::ShaderState* state = cmd->GetShaderState();
          if (state)
             state->SetInt(SHADER_layer, m_singleLayerRendering);
@@ -348,7 +349,7 @@ bool RenderPass::Execute(const bool log)
          m_rt->Activate(layer);
          for (RenderCommand* cmd : m_commands)
          {
-            #ifdef ENABLE_OPENGL // Layered rendering is not yet implemented for DirectX
+            #if defined(ENABLE_OPENGL) // Layered rendering is not yet implemented for DirectX
             Shader::ShaderState* state = cmd->GetShaderState();
             if (state)
                state->SetInt(SHADER_layer, layer);
@@ -360,9 +361,11 @@ bool RenderPass::Execute(const bool log)
 
    if (m_areaOfInterest.x != FLT_MAX)
    {
-      #ifdef ENABLE_OPENGL
+      #if defined(ENABLE_BGFX)
+      // FIXME implement
+      #elif defined(ENABLE_OPENGL)
       glDisable(GL_SCISSOR_TEST);
-      #else
+      #elif defined(ENABLE_DX9)
       m_rt->GetRenderDevice()->GetCoreDevice()->SetRenderState(D3DRS_SCISSORTESTENABLE, FALSE);
       #endif
    }
@@ -370,11 +373,9 @@ bool RenderPass::Execute(const bool log)
    if (m_depthReadback)
       m_rt->UpdateDepthSampler(true);
 
-   #ifdef ENABLE_OPENGL
-#ifndef __OPENGLES__
+   #if defined(ENABLE_OPENGL) && !defined(__OPENGLES__)
    if (GLAD_GL_VERSION_4_3)
       glPopDebugGroup();
-#endif
    #endif
 
    return true;

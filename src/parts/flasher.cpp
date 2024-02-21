@@ -1148,9 +1148,9 @@ void Flasher::RenderSetup(RenderDevice *device)
    IndexBuffer* dynamicIndexBuffer = new IndexBuffer(m_rd, m_numPolys * 3, 0, IndexBuffer::FMT_INDEX16);
 
    WORD* bufi;
-   dynamicIndexBuffer->lock(0, 0, (void**)&bufi, IndexBuffer::WRITEONLY);
+   dynamicIndexBuffer->Lock(bufi);
    memcpy(bufi, vtri.data(), vtri.size()*sizeof(WORD));
-   dynamicIndexBuffer->unlock();
+   dynamicIndexBuffer->Unlock();
 
    VertexBuffer* dynamicVertexBuffer = new VertexBuffer(m_rd, m_numVertices, nullptr, true);
 
@@ -1264,14 +1264,14 @@ void Flasher::Render(const unsigned int renderMask)
                          * Matrix3D::MatrixTranslate(m_d.m_vCenter.x, m_d.m_vCenter.y, height));
 
       Vertex3D_NoTex2 *buf;
-      m_meshBuffer->m_vb->lock(0, 0, (void **)&buf, VertexBuffer::DISCARDCONTENTS);
+      m_meshBuffer->m_vb->Lock(buf);
       for (unsigned int i = 0; i < m_numVertices; i++)
       {
          Vertex3D_NoTex2 vert = m_vertices[i];
          tempMatrix.MultiplyVector(vert);
          buf[i] = vert;
       }
-      m_meshBuffer->m_vb->unlock();
+      m_meshBuffer->m_vb->Unlock();
    }
 
    m_rd->ResetRenderState();
