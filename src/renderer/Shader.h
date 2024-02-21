@@ -529,7 +529,7 @@ public:
          assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
          assert(shaderUniformNames[uniformName].type == SUT_Sampler);
          assert(sampler != nullptr);
-         #if defined(ENABME_BGFX)
+         #if defined(ENABLE_BGFX)
          #elif defined(ENABLE_OPENGL)
          assert(m_shader->m_stateOffsets[uniformName] != -1);
          *(Sampler**)(m_state + m_shader->m_stateOffsets[uniformName]) = sampler;
@@ -581,7 +581,7 @@ private:
    vector<ShaderUniforms> m_uniforms[SHADER_TECHNIQUE_COUNT]; // Uniforms used by each technique
    
    // caches
-#if defined(ENABME_BGFX)
+#if defined(ENABLE_BGFX)
 #elif defined(ENABLE_OPENGL)
    ShaderState* m_boundState[SHADER_TECHNIQUE_COUNT]; // The state currently applied to the backend (per technique for OpenGL)
    static ShaderTechniques m_boundTechnique; // This is global for OpenGL

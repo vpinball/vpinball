@@ -336,9 +336,9 @@ void Kicker::RenderSetup(RenderDevice *device)
 
    VertexBuffer *vertexBuffer = new VertexBuffer(m_rd, m_numVertices);
    Vertex3D_NoTex2 *buf;
-   vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+   vertexBuffer->Lock(buf);
    GenerateMesh(buf);
-   vertexBuffer->unlock();
+   vertexBuffer->Unlock();
    IndexBuffer *indexBuffer = new IndexBuffer(m_rd, m_numIndices, indices);
    m_meshBuffer = new MeshBuffer(m_wzName + L".Kicker"s, vertexBuffer, indexBuffer, true);
 }

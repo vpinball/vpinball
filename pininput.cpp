@@ -1,7 +1,11 @@
 #include "core/stdafx.h"
 #include "renderer/VRDevice.h"
-#ifdef __STANDALONE__
+
+#ifdef ENABLE_SDL_VIDEO
 #include "imgui/imgui_impl_sdl2.h"
+#endif
+
+#ifdef __STANDALONE__
 #include "standalone/inc/common/WindowManager.h"
 #endif
 
@@ -649,6 +653,16 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
       HandleInputDI(didod);
       break;
    }
+
+   #ifdef ENABLE_SDL_VIDEO
+   // Process events if they were not already processed
+   if (m_inputApi != 2)
+   {
+      SDL_Event e;
+      while (SDL_PollEvent(&e))
+         ImGui_ImplSDL2_ProcessEvent(&e);
+   }
+   #endif
 }
 
 void PinInput::HandleInputDI(DIDEVICEOBJECTDATA *didod)
@@ -806,13 +820,15 @@ void PinInput::HandleInputSDL(DIDEVICEOBJECTDATA *didod)
    int j = 0;
    while (SDL_PollEvent(&e) != 0 && j<32)
    {
-#ifdef __STANDALONE__
-       ImGui_ImplSDL2_ProcessEvent(&e);
-       g_pplayer->m_pWindowManager->ProcessEvent(&e);
-#endif
+      #ifdef ENABLE_SDL_VIDEO
+      ImGui_ImplSDL2_ProcessEvent(&e);
+      #ifdef __STANDALONE__
+      g_pplayer->m_pWindowManager->ProcessEvent(&e);
+      #endif
+      #endif
       //User requests quit
       switch (e.type) {
-#ifdef __STANDALONE__
+#ifdef ENABLE_SDL_VIDEO
       case SDL_WINDOWEVENT:
          switch (e.window.event) {
          case SDL_WINDOWEVENT_RESIZED:
@@ -900,7 +916,7 @@ void PinInput::HandleInputSDL(DIDEVICEOBJECTDATA *didod)
          }
          break;
 #endif
-#ifdef __STANDALONE__
+#ifdef ENABLE_SDL_VIDEO
       case SDL_KEYUP:
       case SDL_KEYDOWN:
          if (e.key.repeat == 0) {

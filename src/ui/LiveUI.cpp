@@ -14,18 +14,22 @@
 
 #include "imgui/imgui.h"
 #include "imgui/imgui_internal.h" // Needed for FindRenderedTextEnd in HelpSplash (should be adapted when this function will refactored in ImGui)
-#ifdef ENABLE_OPENGL
-#include "imgui/imgui_impl_opengl3.h"
-#ifdef __STANDALONE__
+
+#if defined(ENABLE_SDL_VIDEO)
   #include "imgui/imgui_impl_sdl2.h"
-#endif
 #else
-#include "imgui/imgui_impl_dx9.h"
-#include <shellapi.h>
+  #include "imgui/imgui_impl_win32.h"
 #endif
-#ifndef __STANDALONE__
-#include "imgui/imgui_impl_win32.h"
+
+#if defined(ENABLE_BGFX)
+  #include "bgfx-imgui/imgui_impl_bgfx.h"
+#elif defined(ENABLE_OPENGL)
+  #include "imgui/imgui_impl_opengl3.h"
+#elif defined(ENABLE_DX9)
+  #include "imgui/imgui_impl_dx9.h"
+  #include <shellapi.h>
 #endif
+
 #include "implot/implot.h"
 #include "imgui/imgui_stdlib.h"
 #include "imguizmo/ImGuizmo.h"
@@ -713,24 +717,23 @@ LiveUI::LiveUI(RenderDevice *const rd)
    m_camView = Matrix3D::MatrixLookAtRH(eye, at, up);
    ImGuizmo::AllowAxisFlip(false);
 
-#ifndef __STANDALONE__
-   ImGui_ImplWin32_Init(rd->getHwnd());
-#else
-   ImGui_ImplSDL2_InitForOpenGL(rd->m_sdl_playfieldHwnd, rd->m_sdl_context);
-#endif
-
-   SetupImGuiStyle(1.0f);
-
-#ifndef __STANDALONE__
-   m_dpi = ImGui_ImplWin32_GetDpiScaleForHwnd(rd->getHwnd());
-#else
-#ifdef __ANDROID__
+#if defined(ENABLE_SDL_VIDEO)
+   // using the specialized initializer is not needed
+   // ImGui_ImplSDL2_InitForOpenGL(rd->m_sdl_playfieldHwnd, rd->m_sdl_context);
+   ImGui_ImplSDL2_InitForOther(rd->m_sdl_playfieldHwnd);
+   #if defined(__ANDROID__) || defined(WIN32)
    int displayIndex = SDL_GetWindowDisplayIndex(rd->m_sdl_playfieldHwnd);
    float ddpi, hdpi, vdpi;
    if (SDL_GetDisplayDPI(displayIndex, &ddpi, &hdpi, &vdpi) == 0)
       m_dpi = (hdpi + vdpi) / 2.0f / 96.0f;
+   #endif
+#else
+   ImGui_ImplWin32_Init(rd->getHwnd());
+   m_dpi = ImGui_ImplWin32_GetDpiScaleForHwnd(rd->getHwnd());
 #endif
-#endif
+
+   SetupImGuiStyle(1.0f);
+
    ImGui::GetStyle().ScaleAllSizes(m_dpi);
 
    // UI fonts
@@ -763,9 +766,11 @@ LiveUI::LiveUI(RenderDevice *const rd)
    markdown_config.userData = this;
    markdown_config.formatCallback = MarkdownFormatCallback;
 
-#ifdef ENABLE_OPENGL
+#if defined(ENABLE_BGFX)
+   ImGui_Implbgfx_Init(255);
+#elif defined(ENABLE_OPENGL)
    ImGui_ImplOpenGL3_Init();
-#else
+#elif defined(ENABLE_DX9)
    ImGui_ImplDX9_Init(rd->GetCoreDevice());
 #endif
 }
@@ -775,16 +780,20 @@ LiveUI::~LiveUI()
    HideUI();
    if (ImGui::GetCurrentContext())
    {
-#ifdef ENABLE_OPENGL
+      #if defined(ENABLE_BGFX)
+      ImGui_Implbgfx_Shutdown();
+      #elif defined(ENABLE_OPENGL)
       ImGui_ImplOpenGL3_Shutdown();
-#else
+      #elif defined(ENABLE_DX9)
       ImGui_ImplDX9_Shutdown();
-#endif
-#ifndef __STANDALONE__
-      ImGui_ImplWin32_Shutdown();
-#else
+      #endif
+
+      #if defined(ENABLE_SDL_VIDEO)
       ImGui_ImplSDL2_Shutdown();
-#endif
+      #else
+      ImGui_ImplWin32_Shutdown();
+      #endif
+
       ImPlot::DestroyContext();
       ImGui::DestroyContext();
    }
@@ -853,7 +862,7 @@ void LiveUI::MarkdownLinkCallback(ImGui::MarkdownLinkCallbackData data)
    if (!data.isImage)
    {
       std::string url(data.link, data.linkLength);
-      #ifdef ENABLE_OPENGL
+      #ifdef ENABLE_SDL_VIDEO
       SDL_OpenURL(url.c_str());
       #else
       ShellExecuteA(NULL, "open", url.c_str(), NULL, NULL, SW_SHOWNORMAL);
@@ -870,9 +879,11 @@ ImGui::MarkdownImageData LiveUI::MarkdownImageCallback(ImGui::MarkdownLinkCallba
    Sampler *sampler = g_pplayer->m_renderer->m_pd3dPrimaryDevice->m_texMan.LoadTexture(ppi->m_pdsBuffer, SamplerFilter::SF_BILINEAR, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, false);
    if (sampler == nullptr)
       return ImGui::MarkdownImageData {};
-   #ifdef ENABLE_OPENGL
+   #if defined(ENABLE_BGFX)
+   // FIXME implement
+   #elif defined(ENABLE_OPENGL)
    ImTextureID image = (void *)(intptr_t)sampler->GetCoreTexture();
-   #else
+   #elif defined(ENABLE_DX9)
    ImTextureID image = (void *)sampler->GetCoreTexture();
    #endif
    ImGui::MarkdownImageData imageData { true, false, image, ImVec2((float)sampler->GetWidth(), (float)sampler->GetHeight()) };
@@ -917,7 +928,10 @@ void LiveUI::Render()
             case 3: matTranslate = Matrix3D::MatrixTranslate(0, ImGui::GetIO().DisplaySize.x, 0); break;
             }
             matTranslate = matRotate * matTranslate;
-#ifdef ENABLE_OPENGL
+            #if defined(ENABLE_BGFX)
+            // FIXME implement BGFX
+            
+            #elif defined(ENABLE_OPENGL)
             const float L = 0, R = (lui->m_rotate == 1 || lui->m_rotate == 3) ? ImGui::GetIO().DisplaySize.y : ImGui::GetIO().DisplaySize.x;
             const float T = 0, B = (lui->m_rotate == 1 || lui->m_rotate == 3) ? ImGui::GetIO().DisplaySize.x : ImGui::GetIO().DisplaySize.y;
             Matrix3D matProj(
@@ -931,10 +945,11 @@ void LiveUI::Render()
             GLuint attribLocationProjMtx = glGetUniformLocation(shaderHandle, "ProjMtx");
             glUniformMatrix4fv(attribLocationProjMtx, 1, GL_FALSE, &(matProj.m[0][0]));
             glDisable(GL_SCISSOR_TEST);
-#else
+            
+            #elif defined(ENABLE_DX9)
             lui->m_rd->GetCoreDevice()->SetTransform(D3DTS_WORLD, (const D3DXMATRIX *)&matTranslate);
             lui->m_rd->GetCoreDevice()->SetRenderState(D3DRS_SCISSORTESTENABLE, FALSE);
-#endif
+            #endif
 
          }, this);
    }
@@ -946,19 +961,24 @@ void LiveUI::Render()
       draw_data->DisplaySize.x = draw_data->DisplaySize.y;
       draw_data->DisplaySize.y = tmp;
    }
-#ifdef ENABLE_OPENGL
-#ifndef __OPENGLES__
+   
+   #if defined(ENABLE_BGFX)
+   ImGui_Implbgfx_RenderDrawLists(draw_data);
+
+   #elif defined(ENABLE_OPENGL)
+   #ifndef __OPENGLES__
    if (GLAD_GL_VERSION_4_3)
       glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "ImGui");
-#endif
+   #endif
    ImGui_ImplOpenGL3_RenderDrawData(draw_data);
-#ifndef __OPENGLES__
+   #ifndef __OPENGLES__
    if (GLAD_GL_VERSION_4_3)
       glPopDebugGroup();
-#endif
-#else
+   #endif
+
+   #elif defined(ENABLE_DX9)
    ImGui_ImplDX9_RenderDrawData(draw_data);
-#endif
+   #endif
 }
 
 void LiveUI::OpenMainSplash()
@@ -1014,45 +1034,38 @@ void LiveUI::Update(const RenderTarget *rt)
 
    m_rotation_callback_added = false;
 
-#ifdef ENABLE_OPENGL
+   #if defined(ENABLE_BGFX)
+   ImGui_Implbgfx_NewFrame();
+   #elif defined(ENABLE_OPENGL)
    ImGui_ImplOpenGL3_NewFrame();
-#else
+   #elif defined(ENABLE_DX9)
    ImGui_ImplDX9_NewFrame();
-#endif
-#ifndef __STANDALONE__
-   ImGui_ImplWin32_NewFrame();
-   
-   // The render size may not match the window size used by ImGui_ImplWin32_NewFrame (for example for VR)
-   ImGui::GetIO().DisplaySize = ImVec2((float)rt->GetWidth(), (float)rt->GetHeight());
-#else
-   ImGui_ImplSDL2_NewFrame();
-#endif
+   #endif
 
-   ImGui::NewFrame();
-   ImGui::GetIO().ConfigFlags &= ~ImGuiConfigFlags_NavEnableKeyboard; // We use it for main splash popup, but needs it to be disabled to allow keyboard shortcuts
-   const bool isInteractiveUI = m_ShowUI || m_ShowSplashModal || ImGui::IsPopupOpen(ID_BAM_SETTINGS);
-   if (isInteractiveUI)
-      m_rotate = 0;
-   else
+   #if defined(ENABLE_SDL_VIDEO)
+   ImGui_ImplSDL2_NewFrame();
+   #else
+   ImGui_ImplWin32_NewFrame();
+   #endif
+
+   ImGuiIO &io = ImGui::GetIO();
+   io.DisplaySize = ImVec2((float)rt->GetWidth(), (float)rt->GetHeight()); // The render size may not match the window size used by ImGui_ImplWin32_NewFrame (for example for VR)
+   io.ConfigFlags &= ~ImGuiConfigFlags_NavEnableKeyboard; // We use it for main splash popup, but needs it to be disabled to allow keyboard shortcuts
+   const bool isInteractiveUI = m_ShowUI || m_ShowSplashModal || m_ShowBAMModal;
+   // If we are only showing overlays (no mouse interaction), apply main camera rotation
+   m_rotate = isInteractiveUI ? 0 : ((int)(m_player->m_ptable->mViewSetups[m_player->m_ptable->m_BG_current_set].GetRotation((int)io.DisplaySize.x, (int)io.DisplaySize.y) / 90.0f));
+   if (m_rotate == 1 || m_rotate == 3)
    {
-      // If we are only showing overlays (no mouse interaction), apply main camera rotation
-      ImGuiIO &io = ImGui::GetIO();
-      m_rotate = (int)(m_player->m_ptable->mViewSetups[m_player->m_ptable->m_BG_current_set].GetRotation((int)io.DisplaySize.x, (int)io.DisplaySize.y) / 90.0f);
-      if (m_rotate == 1 || m_rotate == 3)
-      {
-         ImGui::EndFrame();
-         const float tmp = io.DisplaySize.x;
-         io.DisplaySize.x = io.DisplaySize.y;
-         io.DisplaySize.y = tmp;
-         ImGui::NewFrame();
-      }
+      const float tmp = io.DisplaySize.x;
+      io.DisplaySize.x = io.DisplaySize.y;
+      io.DisplaySize.y = tmp;
    }
+   ImGui::NewFrame();
 
    UpdateTouchUI();
 
    ImGuizmo::SetOrthographic(m_orthoCam);
    ImGuizmo::BeginFrame();
-   const ImGuiIO &io = ImGui::GetIO();
    ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
    ImGui::PushFont(m_baseFont);
 
@@ -1938,11 +1951,13 @@ void LiveUI::UpdateMainUI()
    bool popup_video_settings = false;
    bool popup_audio_settings = false;
 
+   m_ShowBAMModal = ImGui::IsPopupOpen(ID_BAM_SETTINGS);
+
    bool showFullUI = true;
    showFullUI &= !m_ShowSplashModal;
    showFullUI &= !m_RendererInspection;
    showFullUI &= !m_tweakMode;
-   showFullUI &= !ImGui::IsPopupOpen(ID_BAM_SETTINGS);
+   showFullUI &= !m_ShowBAMModal;
    showFullUI &= !ImGui::IsPopupOpen(ID_VIDEO_SETTINGS);
    showFullUI &= !ImGui::IsPopupOpen(ID_ANAGLYPH_CALIBRATION);
    showFullUI &= !m_flyMode;
@@ -3071,7 +3086,7 @@ void LiveUI::UpdateRendererInspectionModal()
       ImGui::Text("Display single render pass:");
       static int pass_selection = IF_FPS;
       ImGui::RadioButton("Disabled", &pass_selection, IF_FPS);
-      #ifndef ENABLE_OPENGL // No GPU profiler for OpenGL
+      #if defined(ENABLE_DX9) // No GPU profiler for OpenGL or BGFX for the time being
       ImGui::RadioButton("Profiler", &pass_selection, IF_PROFILING);
       #endif
       ImGui::RadioButton("Static prerender pass", &pass_selection, IF_STATIC_ONLY);
@@ -3376,17 +3391,20 @@ void LiveUI::UpdateMainSplashModal()
 
             const ImVec2 drag = ImGui::GetMouseDragDelta();
             int x, y;
-#ifdef ENABLE_OPENGL
+            
+            #ifdef ENABLE_SDL_VIDEO
             SDL_GetWindowPosition(m_player->m_sdl_playfieldHwnd, &x, &y);
             x += (int)drag.x;
             y += (int)drag.y;
             SDL_SetWindowPosition(m_player->m_sdl_playfieldHwnd, x, y);
-#else
+            
+            #else
             auto rect = m_player->GetWindowRect();
             x = rect.left + (int)drag.x;
             y = rect.top + (int)drag.y;
             m_player->SetWindowPos(nullptr, x, y, m_player->m_wnd_width, m_player->m_wnd_height, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
-#endif
+
+            #endif
             g_pvp->m_settings.SaveValue(m_player->m_stereo3D == STEREO_VR ? Settings::PlayerVR : Settings::Player, "WindowPosX"s, x);
             g_pvp->m_settings.SaveValue(m_player->m_stereo3D == STEREO_VR ? Settings::PlayerVR : Settings::Player, "WindowPosY"s, y);
          }

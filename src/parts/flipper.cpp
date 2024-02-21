@@ -790,16 +790,16 @@ void Flipper::RenderSetup(RenderDevice *device)
    m_rd = device;
    IndexBuffer *indexBuffer = new IndexBuffer(m_rd, flipperBaseNumIndices * 2);
    WORD *bufI;
-   indexBuffer->lock(0, 0, (void**)&bufI, IndexBuffer::WRITEONLY);
+   indexBuffer->Lock(bufI);
    memcpy(bufI, flipperBaseIndices, flipperBaseNumIndices * sizeof(flipperBaseIndices[0]));
    for (int i = 0; i < (int)flipperBaseNumIndices; i++)
       bufI[flipperBaseNumIndices + i] = flipperBaseIndices[i] + flipperBaseVertices;
-   indexBuffer->unlock();
+   indexBuffer->Unlock();
    VertexBuffer *vertexBuffer = new VertexBuffer(m_rd, flipperBaseVertices * 2);
    Vertex3D_NoTex2 *buf;
-   vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+   vertexBuffer->Lock(buf);
    GenerateBaseMesh(buf);
-   vertexBuffer->unlock();
+   vertexBuffer->Unlock();
    delete m_meshBuffer;
    m_meshBuffer = new MeshBuffer(m_wzName, vertexBuffer, indexBuffer, true);
    m_lastAngle = 123486.0f;

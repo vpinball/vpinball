@@ -146,13 +146,11 @@ float ViewSetup::GetRealToVirtualScale(const PinTable* const table) const
       return 1.f;
 }
 
-void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth, const int viewportHeight, const bool stereo, ModelViewProj& mvp, const vec3& cam, const float cam_inc,
-   const float xpixoff, const float ypixoff)
+void ViewSetup::ComputeMVP(const PinTable* const table, const float aspect, const bool stereo, ModelViewProj& mvp, const vec3& cam, const float cam_inc, const float xpixoff, const float ypixoff)
 {
    const float FOV = (mFOV < 1.0f) ? 1.0f : mFOV; // Can't have a real zero FOV, but this will look almost the same
    const bool isLegacy = mMode == VLM_LEGACY;
    const bool isWindow = mMode == VLM_WINDOW;
-   const float aspect = (float)((double)viewportWidth / (double)viewportHeight);
    float camx = cam.x, camy = cam.y, camz = cam.z;
    float windowBotZ = GetWindowBottomZOFfset(table), windowTopZ = GetWindowTopZOFfset(table);
 
@@ -165,7 +163,7 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
    if (isWindow)
    {
       quadrant = (int)mViewportRotation - ((int)mViewportRotation / 360) * 360;
-      quadrant = (viewportWidth < viewportHeight ? 0 : 3) + (quadrant < 0 ? quadrant + 360 : quadrant) / 90; // 0 / 90 / 180 / 270
+      quadrant = (aspect < 1.f ? 0 : 3) + (quadrant < 0 ? quadrant + 360 : quadrant) / 90; // 0 / 90 / 180 / 270
       rotation = ANGTORAD((float)(quadrant * 90));
    }
    else
@@ -195,7 +193,7 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
       inc += 0.2f;
       const int width = GetSystemMetrics(SM_CXSCREEN);
       const int height = GetSystemMetrics(SM_CYSCREEN);
-      if ((viewportWidth > viewportHeight) && (height < width))
+      if ((aspect > 1.f) && (height < width))
       {
          // layout landscape(game horz) in lanscape(LCD\LED horz)
          //inc += 0.1f;       // 0.05-best, 0.1-good, 0.2-bad > (0.2 terrible original)
@@ -238,7 +236,7 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const int viewportWidth,
    mvp.SetModel(matWorld);
 
    Matrix3D scale, coords, lookat, layback, matView;
-   const Matrix3D projTrans = Matrix3D::MatrixTranslate((float)((double)xpixoff / (double)viewportWidth), (float)((double)ypixoff / (double)viewportHeight), 0.f); // in-pixel offset for manual oversampling
+   const Matrix3D projTrans = Matrix3D::MatrixTranslate(xpixoff, ypixoff, 0.f); // in-pixel offset for manual oversampling
    const Matrix3D rotz = Matrix3D::MatrixRotateZ(rotation); // Viewport rotation
 
    vector<Vertex3Ds> bounds, legacy_bounds;

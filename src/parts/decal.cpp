@@ -689,7 +689,7 @@ void Decal::RenderSetup(RenderDevice *device)
 
    VertexBuffer *vertexBuffer = new VertexBuffer(m_rd, 4);
    Vertex3D_NoTex2 *vertices;
-   vertexBuffer->lock(0, 0, (void**)&vertices, VertexBuffer::WRITEONLY);
+   vertexBuffer->Lock(vertices);
    const float z = m_backglass ? 0.f : (height + 0.2f);
    const float xmult = m_backglass ? getBGxmult() : 1.f;
    const float ymult = m_backglass ? getBGymult() : 1.f;
@@ -731,7 +731,7 @@ void Decal::RenderSetup(RenderDevice *device)
    vertices[3].tu = 1.0f;
    vertices[3].tv = 1.0f;
 
-   vertexBuffer->unlock();
+   vertexBuffer->Unlock();
 
    delete m_meshBuffer;
    m_meshBuffer = new MeshBuffer(m_wzName, vertexBuffer);
@@ -824,7 +824,9 @@ void Decal::Render(const unsigned int renderMask)
       matWorldViewProj._41 = -1.0f;
       matWorldViewProj._22 = -2.0f / (float)m_rd->GetMSAABackBufferTexture()->GetHeight();
       matWorldViewProj._42 = 1.0f;
-      #ifdef ENABLE_OPENGL
+      #if defined(ENABLE_BGFX)
+      // FIXME implement
+      #elif defined(ENABLE_OPENGL)
       struct
       {
          Matrix3D matWorld;
@@ -836,7 +838,7 @@ void Decal::Render(const unsigned int renderMask)
       memcpy(&matrices.matWorldViewProj[0].m[0][0], &matWorldViewProj.m[0][0], 4 * 4 * sizeof(float));
       memcpy(&matrices.matWorldViewProj[1].m[0][0], &matWorldViewProj.m[0][0], 4 * 4 * sizeof(float));
       m_rd->m_basicShader->SetUniformBlock(SHADER_basicMatrixBlock, &matrices.matWorld.m[0][0]);
-      #else
+      #elif defined(ENABLE_DX9)
       m_rd->m_basicShader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj);
       #endif
    }

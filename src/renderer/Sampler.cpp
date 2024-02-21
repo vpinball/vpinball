@@ -2,6 +2,14 @@
 #include "Sampler.h"
 #include "RenderDevice.h"
 
+#if defined(ENABLE_BGFX)
+#include <bx/allocator.h>
+#include <bx/readerwriter.h>
+#include <bx/endian.h>
+#include <bx/math.h>
+#include <bimg/decode.h>
+#endif
+
 Sampler::Sampler(RenderDevice* rd, BaseTexture* const surf, const bool force_linear_rgb, const SamplerAddressMode clampu, const SamplerAddressMode clampv, const SamplerFilter filter) : 
    m_type(SurfaceType::RT_DEFAULT), 
    m_rd(rd),
@@ -13,7 +21,72 @@ Sampler::Sampler(RenderDevice* rd, BaseTexture* const surf, const bool force_lin
    m_clampv(clampv),
    m_filter(filter)
 {
-#ifdef ENABLE_OPENGL
+#if defined(ENABLE_BGFX)
+   BaseTexture* upload = surf;
+   bgfx::TextureFormat::Enum bgfx_format;
+   bool is_srgb = false, add_alpha = false;
+   switch (surf->m_format)
+   {
+   case BaseTexture::SRGBA: bgfx_format = bgfx::TextureFormat::Enum::RGBA8; is_srgb = true; break;
+   case BaseTexture::RGBA: bgfx_format = bgfx::TextureFormat::Enum::RGBA8; break;
+   case BaseTexture::SRGB: bgfx_format = bgfx::TextureFormat::Enum::RGBA8; is_srgb = true; add_alpha = true; break;
+   case BaseTexture::RGB: bgfx_format = bgfx::TextureFormat::Enum::RGB8; break;
+   case BaseTexture::RGBA_FP16: bgfx_format = bgfx::TextureFormat::Enum::RGBA16F; break;
+   case BaseTexture::RGB_FP16: bgfx_format = bgfx::TextureFormat::Enum::RGBA16F; add_alpha = true; break;
+   //case BaseTexture::RGB_FP32: bgfx_format = bimg::TextureFormat::Enum::RGB32F; break;
+   case BaseTexture::BW: bgfx_format = bgfx::TextureFormat::Enum::R8; break;
+   default: assert(false); // Unsupported texture format
+   }
+
+   // TODO this is overkill since this leads to allocating/copying evrything twice
+   if (add_alpha && upload != nullptr)
+   {
+      upload = new BaseTexture(m_width, m_height, surf->m_format);
+      memcpy(upload->data(), surf->data(), surf->pitch() * surf->height());
+      upload->AddAlpha();
+   }
+
+   const bgfx::Memory* data;
+   if (upload == nullptr)
+   {
+      data = NULL;
+   }
+   else if (upload == surf)
+   {
+      data = bgfx::copy(upload->data(), m_height * upload->pitch());
+   }
+   else
+   {
+      data = bgfx::makeRef(upload->data(), m_height * upload->pitch(), [](void* _ptr, void* _userData) { delete _userData; }, upload);
+   }
+
+   // Create base texture without mipmaps (BGFX does not support automatic mipmap gneration for textures)
+   uint64_t flags = BGFX_SAMPLER_NONE | (is_srgb ? BGFX_TEXTURE_SRGB : BGFX_TEXTURE_NONE);
+   m_texture = bgfx::createTexture2D(m_width, m_height, false, 1, bgfx_format, flags, data);
+   //m_mips_texture = bgfx::createTexture2D(m_width, m_height, false, 1, bgfx_format, flags, data);
+   
+   // Create a render target and blit texture on it to force BGFX mip map generation
+   // TODO This is fairly hacky, either adding mipmap generation at texture creation or doing a clean GPU mipmap generation with Kaiser filter would be better
+   //flags = BGFX_SAMPLER_NONE | BGFX_TEXTURE_RT | BGFX_TEXTURE_BLIT_DST | (is_srgb ? BGFX_TEXTURE_SRGB : BGFX_TEXTURE_NONE);
+   //m_texture = bgfx::createTexture2D(m_width, m_height, true, 1, bgfx_format, flags);
+   /* bgfx::Attachment m_mips_attachment;
+   m_mips_attachment.init(m_texture);
+   m_mips_framebuffer = bgfx::createFrameBuffer(1, &m_mips_attachment);
+   auto prevPass = m_rd->m_passName;
+   m_rd->NextPass("MipMap"s);
+   bgfx::setViewFrameBuffer(m_rd->m_activeViewId, m_mips_framebuffer);
+   bgfx::setViewRect(m_rd->m_activeViewId, 0, 0, m_width, m_height);
+   bgfx::setViewName(m_rd->m_activeViewId, "MipMaps");
+   bgfx::touch(m_rd->m_activeViewId);
+   bgfx::blit(m_rd->m_activeViewId, m_texture, 0, 0, m_mips_texture);
+   m_rd->NextPass(prevPass);*/
+
+   // FIXME release framebuffer and base texture without mipmaps, 2 frames after submit
+   m_mips_gpu_frame = bgfx::getStats()->gpuFrameNum;
+
+   // bgfx::setName(m_texture, ); */
+
+#elif defined(ENABLE_OPENGL)
    m_texTarget = GL_TEXTURE_2D;
    colorFormat format;
    if (surf->m_format == BaseTexture::RGB)
@@ -43,7 +116,8 @@ Sampler::Sampler(RenderDevice* rd, BaseTexture* const surf, const bool force_lin
    }
    m_texture = CreateTexture(surf, 0, format, 0);
    m_isLinear = format != colorFormat::SRGB && format != colorFormat::SRGBA;
-#else
+
+#elif defined(ENABLE_DX9)
    colorFormat texformat;
    IDirect3DTexture9* sysTex = CreateSystemTexture(surf, force_linear_rgb, texformat);
 
@@ -66,7 +140,23 @@ Sampler::Sampler(RenderDevice* rd, BaseTexture* const surf, const bool force_lin
 #endif
 }
 
-#ifdef ENABLE_OPENGL
+#if defined(ENABLE_BGFX)
+Sampler::Sampler(RenderDevice* rd, SurfaceType type, bgfx::TextureHandle bgfxTexture, int width, int height, bool ownTexture, bool linear_rgb, const SamplerAddressMode clampu, const SamplerAddressMode clampv, const SamplerFilter filter)
+   : m_type(type)
+   , m_rd(rd)
+   , m_dirty(false)
+   , m_ownTexture(ownTexture)
+   , m_clampu(clampu)
+   , m_clampv(clampv)
+   , m_filter(filter)
+   , m_texture(bgfxTexture)
+   , m_width(width)
+   , m_height(height)
+   , m_isLinear(linear_rgb)
+{
+}
+
+#elif defined(ENABLE_OPENGL)
 Sampler::Sampler(RenderDevice* rd, SurfaceType type, GLuint glTexture, bool ownTexture, bool force_linear_rgb, const SamplerAddressMode clampu, const SamplerAddressMode clampv, const SamplerFilter filter)
    : m_type(type)
    , m_rd(rd)
@@ -99,7 +189,8 @@ Sampler::Sampler(RenderDevice* rd, SurfaceType type, GLuint glTexture, bool ownT
    m_isLinear = !((internal_format == SRGB) || (internal_format == SRGBA) || (internal_format == SDXT5) || (internal_format == SBC7)) || force_linear_rgb;
    m_texture = glTexture;
 }
-#else
+
+#elif defined(ENABLE_DX9)
 Sampler::Sampler(RenderDevice* rd, IDirect3DTexture9* dx9Texture, bool ownTexture, bool force_linear_rgb, const SamplerAddressMode clampu, const SamplerAddressMode clampv, const SamplerFilter filter)
    : m_type(SurfaceType::RT_DEFAULT)
    , m_rd(rd)
@@ -121,14 +212,23 @@ Sampler::Sampler(RenderDevice* rd, IDirect3DTexture9* dx9Texture, bool ownTextur
 Sampler::~Sampler()
 {
    m_rd->UnbindSampler(this);
-#ifdef ENABLE_OPENGL
+   
+   #if defined(ENABLE_BGFX)
+   bgfx::destroy(m_texture);
+   if (bgfx::isValid(m_mips_framebuffer))
+      bgfx::destroy(m_mips_framebuffer);
+   if (bgfx::isValid(m_mips_texture))
+      bgfx::destroy(m_mips_texture);
+
+   #elif defined(ENABLE_OPENGL)
    Unbind();
    if (m_ownTexture)
       glDeleteTextures(1, &m_texture);
-#else
+   
+   #elif defined(ENABLE_DX9)
    if (m_ownTexture)
       SAFE_RELEASE(m_texture);
-#endif
+   #endif
 }
 
 void Sampler::Unbind()
@@ -146,7 +246,11 @@ void Sampler::Unbind()
 
 void Sampler::UpdateTexture(BaseTexture* const surf, const bool force_linear_rgb)
 {
-#ifdef ENABLE_OPENGL
+#if defined(ENABLE_BGFX)
+   // FIXME guarantee that surf->data won't be deallaocated for the 2 next frames
+   bgfx::updateTexture2D(m_texture, 0, 0, 0, 0, m_width, m_height, bgfx::makeRef(surf->data(), surf->height() * surf->pitch()));
+
+#elif defined(ENABLE_OPENGL)
    colorFormat format;
    if (surf->m_format == BaseTexture::RGB)
       format = colorFormat::RGB;
@@ -190,11 +294,13 @@ void Sampler::UpdateTexture(BaseTexture* const surf, const bool force_linear_rgb
    glTexSubImage2D(m_texTarget, 0, 0, 0, surf->width(), surf->height(), col_format, col_type, surf->data());
    glGenerateMipmap(m_texTarget); // Generate mip-maps
    glBindTexture(m_texTarget, 0);
-#else
+   
+#elif defined(ENABLE_DX9)
    colorFormat texformat;
    IDirect3DTexture9* sysTex = CreateSystemTexture(surf, force_linear_rgb, texformat);
    CHECKD3D(m_rd->GetCoreDevice()->UpdateTexture(sysTex, m_texture));
    SAFE_RELEASE(sysTex);
+   
 #endif
    m_rd->m_curTextureUpdates++;
 }
@@ -212,15 +318,17 @@ void Sampler::SetFilter(const SamplerFilter filter)
 
 void Sampler::SetName(const string& name)
 {
-   #ifdef ENABLE_OPENGL
-#ifndef __OPENGLES__
+   #if defined(ENABLE_BGFX)
+   bgfx::setName(m_texture, name.c_str());
+   #elif defined(ENABLE_OPENGL) && !defined(__OPENGLES__)
    if (GLAD_GL_VERSION_4_3)
       glObjectLabel(GL_TEXTURE, m_texture, (GLsizei) name.length(), name.c_str());
-#endif
    #endif
 }
 
-#ifdef ENABLE_OPENGL
+#if defined(ENABLE_BGFX)
+
+#elif defined(ENABLE_OPENGL)
 GLuint Sampler::CreateTexture(BaseTexture* const surf, unsigned int Levels, colorFormat Format, int stereo)
 {
    unsigned int Width = surf->width();
@@ -325,7 +433,7 @@ GLuint Sampler::CreateTexture(BaseTexture* const surf, unsigned int Levels, colo
    return texture;
 }
 
-#else
+#elif defined(ENABLE_DX9)
 
 IDirect3DTexture9* Sampler::CreateSystemTexture(BaseTexture* const surf, const bool force_linear_rgb, colorFormat& texformat)
 {

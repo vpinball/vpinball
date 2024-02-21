@@ -329,7 +329,7 @@ void Spinner::RenderSetup(RenderDevice *device)
    m_fullMatrix = Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotation));
 
    Vertex3D_NoTex2 *buf;
-   bracketVertexBuffer->lock(0, 0, (void **)&buf, VertexBuffer::WRITEONLY);
+   bracketVertexBuffer->Lock(buf);
    for (unsigned int i = 0; i < spinnerBracketNumVertices; i++)
    {
       Vertex3Ds vert = m_fullMatrix * Vertex3Ds{spinnerBracket[i].x, spinnerBracket[i].y, spinnerBracket[i].z};
@@ -345,7 +345,7 @@ void Spinner::RenderSetup(RenderDevice *device)
       buf[i].tu = spinnerBracket[i].tu;
       buf[i].tv = spinnerBracket[i].tv;
    }
-   bracketVertexBuffer->unlock();
+   bracketVertexBuffer->Unlock();
 
    IndexBuffer* plateIndexBuffer = new IndexBuffer(m_rd, spinnerPlateNumFaces, spinnerPlateIndices);
    VertexBuffer* plateVertexBuffer = new VertexBuffer(m_rd, spinnerPlateNumVertices, nullptr, true);
@@ -430,7 +430,7 @@ void Spinner::UpdatePlate(Vertex3D_NoTex2 * const vertBuffer)
 
    Vertex3D_NoTex2 *buf;
    if (vertBuffer == nullptr)
-      m_plateMeshBuffer->m_vb->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
+      m_plateMeshBuffer->m_vb->Lock(buf);
    else
       buf = vertBuffer;
 
@@ -450,7 +450,7 @@ void Spinner::UpdatePlate(Vertex3D_NoTex2 * const vertBuffer)
       buf[i].tv = spinnerPlate[i].tv;
    }
    if (vertBuffer == nullptr)
-      m_plateMeshBuffer->m_vb->unlock();
+      m_plateMeshBuffer->m_vb->Unlock();
 }
 
 #pragma endregion

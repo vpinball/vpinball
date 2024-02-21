@@ -893,17 +893,17 @@ void Surface::RenderSetup(RenderDevice *device)
 
       VertexBuffer *slingshotVBuffer = new VertexBuffer(m_rd, n_lines * 9);
       Vertex3D_NoTex2 *buf;
-      slingshotVBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+      slingshotVBuffer->Lock(buf);
       memcpy(buf, rgv3D, m_vlinesling.size() * 9 * sizeof(Vertex3D_NoTex2));
-      slingshotVBuffer->unlock();
+      slingshotVBuffer->Unlock();
       delete[] rgv3D;
 
       IndexBuffer *slingIBuffer = new IndexBuffer(m_rd, n_lines * 24);
       unsigned short *ibuf;
-      slingIBuffer->lock(0, 0, (void**)&ibuf, VertexBuffer::WRITEONLY);
+      slingIBuffer->Lock(ibuf);
       memcpy(ibuf, rgIdx, m_vlinesling.size() * 24 * sizeof(unsigned short));
       delete[] rgIdx;
-      slingIBuffer->unlock();
+      slingIBuffer->Unlock();
 
       m_slingshotMeshBuffer = new MeshBuffer(m_wzName + L".Slingshot"s, slingshotVBuffer, slingIBuffer, true);
    }
@@ -916,10 +916,10 @@ void Surface::RenderSetup(RenderDevice *device)
 
       VertexBuffer *VBuffer = new VertexBuffer(m_rd, static_cast<const unsigned int>(sideBuf.size() + topBottomBuf.size()));
       Vertex3D_NoTex2 *verts;
-      VBuffer->lock(0, 0, (void**)&verts, VertexBuffer::WRITEONLY);
+      VBuffer->Lock(verts);
       memcpy(verts, sideBuf.data(), sizeof(Vertex3D_NoTex2) * sideBuf.size());
       memcpy(verts + sideBuf.size(), topBottomBuf.data(), sizeof(Vertex3D_NoTex2) * topBottomBuf.size());
-      VBuffer->unlock();
+      VBuffer->Unlock();
 
       // Offset indices to directly point to the right vertices in the vertex buffer
       for (unsigned int i = 0; i < m_numPolys * 3; i++)
@@ -934,10 +934,10 @@ void Surface::RenderSetup(RenderDevice *device)
 
       IndexBuffer *IBuffer = new IndexBuffer(m_rd, (unsigned int)topBottomIndices.size() + (unsigned int)sideIndices.size());
       WORD* buf;
-      IBuffer->lock(0, 0, (void**)&buf, IndexBuffer::WRITEONLY);
+      IBuffer->Lock(buf);
       memcpy(buf, sideIndices.data(), sideIndices.size() * sizeof(WORD));
       memcpy(buf + sideIndices.size(), topBottomIndices.data(), topBottomIndices.size() * sizeof(WORD));
-      IBuffer->unlock();
+      IBuffer->Unlock();
 
       m_meshBuffer = new MeshBuffer(m_wzName, VBuffer, IBuffer, true);
    }

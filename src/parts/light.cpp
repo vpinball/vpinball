@@ -452,7 +452,7 @@ void Light::RenderSetup(RenderDevice *device)
       m_bulbLightMeshBuffer = new MeshBuffer(m_wzName + L".Bulb"s, bulbLightVBuffer, bulbLightIndexBuffer, true);
 
       Vertex3D_NoTex2 *buf;
-      bulbLightVBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+      bulbLightVBuffer->Lock(buf);
       for (unsigned int i = 0; i < bulbLightNumVertices; i++)
       {
          buf[i].x = bulbLight[i].x*m_d.m_meshRadius + m_d.m_vCenter.x;
@@ -464,13 +464,13 @@ void Light::RenderSetup(RenderDevice *device)
          buf[i].tu = bulbLight[i].tu;
          buf[i].tv = bulbLight[i].tv;
       }
-      bulbLightVBuffer->unlock();
+      bulbLightVBuffer->Unlock();
 
       IndexBuffer *bulbSocketIndexBuffer = new IndexBuffer(m_rd, bulbSocketNumFaces, bulbSocketIndices);
       VertexBuffer *bulbSocketVBuffer = new VertexBuffer(m_rd, bulbSocketNumVertices);
       m_bulbSocketMeshBuffer = new MeshBuffer(m_wzName + L".Socket"s, bulbSocketVBuffer, bulbSocketIndexBuffer, true);
 
-      bulbSocketVBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+      bulbSocketVBuffer->Lock(buf);
       for (unsigned int i = 0; i < bulbSocketNumVertices; i++)
       {
          buf[i].x = bulbSocket[i].x*m_d.m_meshRadius + m_d.m_vCenter.x;
@@ -482,7 +482,7 @@ void Light::RenderSetup(RenderDevice *device)
          buf[i].tu = bulbSocket[i].tu;
          buf[i].tv = bulbSocket[i].tv;
       }
-      bulbSocketVBuffer->unlock();
+      bulbSocketVBuffer->Unlock();
    }
 
    GetRgVertex(m_vvertex);
@@ -523,9 +523,9 @@ void Light::RenderSetup(RenderDevice *device)
    VertexBuffer *customMoverVBuffer = new VertexBuffer(m_rd, (unsigned int) m_vvertex.size(), nullptr, true);
    IndexBuffer* customMoverIBuffer = new IndexBuffer(m_rd, (unsigned int) vtri.size(), 0, IndexBuffer::FMT_INDEX16);
    WORD* bufi;
-   customMoverIBuffer->lock(0, 0, (void**)&bufi, IndexBuffer::WRITEONLY);
+   customMoverIBuffer->Lock(bufi);
    memcpy(bufi, vtri.data(), vtri.size()*sizeof(WORD));
-   customMoverIBuffer->unlock();
+   customMoverIBuffer->Unlock();
    m_lightmapMeshBuffer = new MeshBuffer(m_wzName + L".Lightmap"s, customMoverVBuffer, customMoverIBuffer, true);
    m_lightmapMeshBufferDirty = true;
 }
@@ -766,7 +766,7 @@ void Light::Render(const unsigned int renderMask)
          const float ymult = m_backglass ? getBGymult() : 1.f;
 
          Vertex3D_NoTex2 *buf;
-         m_lightmapMeshBuffer->m_vb->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+         m_lightmapMeshBuffer->m_vb->Lock(buf);
          for (unsigned int t = 0; t < m_vvertex.size(); t++)
          {
             const RenderVertex * const pv0 = &m_vvertex[t];
@@ -804,7 +804,7 @@ void Light::Render(const unsigned int renderMask)
             buf[t].ny = 0;
             buf[t].nz = 1.0f;
          }
-         m_lightmapMeshBuffer->m_vb->unlock();
+         m_lightmapMeshBuffer->m_vb->Unlock();
       }
 
       Shader *const shader = m_d.m_BulbLight ? m_rd->m_lightShader : m_rd->m_basicShader;
@@ -853,7 +853,9 @@ void Light::Render(const unsigned int renderMask)
          matWorldViewProj[0]._41 = -1.0f;
          matWorldViewProj[0]._22 = -2.0f / (float)m_rd->GetMSAABackBufferTexture()->GetHeight();
          matWorldViewProj[0]._42 = 1.0f;
-         #ifdef ENABLE_OPENGL
+         #if defined(ENABLE_BGFX)
+         // FIXME implement
+         #elif defined(ENABLE_OPENGL)
          if (shader == m_rd->m_lightShader)
          {
             const int eyes = m_rd->GetCurrentRenderTarget()->m_nLayers;
@@ -875,7 +877,7 @@ void Light::Render(const unsigned int renderMask)
             memcpy(&matrices.matWorldViewProj[1].m[0][0], &matWorldViewProj[0].m[0][0], 4 * 4 * sizeof(float));
             shader->SetUniformBlock(SHADER_basicMatrixBlock, &matrices.matWorld.m[0][0]);
          }
-         #else
+         #elif defined(ENABLE_DX9)
          shader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj[0]);
          #endif
       }

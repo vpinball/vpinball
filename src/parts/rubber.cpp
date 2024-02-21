@@ -1460,7 +1460,7 @@ void Rubber::UpdateRubber(const bool updateVB, const float height)
 
    Vertex3D_NoTex2 *buf;
    if (updateVB)
-      m_meshBuffer->m_vb->lock(0, 0, (void **)&buf, m_d.m_staticRendering ? VertexBuffer::WRITEONLY : VertexBuffer::DISCARDCONTENTS);
+      m_meshBuffer->m_vb->Lock(buf);
    else
       buf = m_vertices.data();
 
@@ -1482,7 +1482,7 @@ void Rubber::UpdateRubber(const bool updateVB, const float height)
 
    if (updateVB)
    {
-      m_meshBuffer->m_vb->unlock();
+      m_meshBuffer->m_vb->Unlock();
       m_dynamicVertexBufferRegenerate = false;
    }
 }

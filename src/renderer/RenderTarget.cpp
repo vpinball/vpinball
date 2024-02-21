@@ -2,7 +2,7 @@
 #include "RenderTarget.h"
 #include "RenderDevice.h"
 
-#ifdef ENABLE_OPENGL
+#if defined(ENABLE_OPENGL)
 #include "Shader.h"
 #endif
 
@@ -31,7 +31,11 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const int width, const int he
 {
    m_color_sampler = nullptr;
    m_depth_sampler = nullptr;
-#ifdef ENABLE_OPENGL
+   
+   #if defined(ENABLE_BGFX)
+   m_framebuffer = BGFX_INVALID_HANDLE; // Invalid handle is back buffer
+   
+   #elif defined(ENABLE_OPENGL)
    glGetIntegerv(GL_FRAMEBUFFER_BINDING, (GLint*)&m_framebuffer); // Not sure about this (taken from VPVR original implementation). Doesn't the back buffer always bind to 0 on OpenGL ?
    m_color_tex = 0;
    m_depth_tex = 0;
@@ -41,7 +45,8 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const int width, const int he
    SDL_GL_GetAttribute(SDL_GL_GREEN_SIZE, &gSize);
    SDL_GL_GetAttribute(SDL_GL_BLUE_SIZE, &bSize);
    PLOGI << "Backbuffer channel size: " << rSize << ", " << gSize << ", " << bSize;
-#else
+   
+   #elif defined(ENABLE_DX9)
    HRESULT hr = m_rd->GetCoreDevice()->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &m_color_surface);
    if (FAILED(hr))
       ReportError("Fatal Error: unable to create back buffer!", hr, __FILE__, __LINE__);
@@ -49,7 +54,7 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const int width, const int he
    m_color_tex = nullptr;
    m_depth_tex = nullptr;
    m_depth_surface = nullptr;
-#endif
+   #endif
 }
 
 RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const string& name, const int width, const int height, const colorFormat format, bool with_depth, int nMSAASamples, const char* failureMessage, RenderTarget* sharedDepth)
@@ -70,7 +75,52 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
 
    m_color_sampler = nullptr;
    m_depth_sampler = nullptr;
-#ifdef ENABLE_OPENGL
+
+#if defined(ENABLE_BGFX)
+   bgfx::TextureFormat::Enum fmt;
+   // FIXME most render target are not blit destination and are only used as write target (then GPU sampling, no readback)
+   uint64_t flags = BGFX_TEXTURE_NONE | BGFX_SAMPLER_NONE | BGFX_TEXTURE_RT | BGFX_TEXTURE_BLIT_DST;
+   switch (format)
+   {
+   case colorFormat::RED16F: fmt = bgfx::TextureFormat::R16F; break;
+   case colorFormat::RG16F: fmt = bgfx::TextureFormat::RG16F; break;
+   case colorFormat::RGB16F: fmt = bgfx::TextureFormat::RGBA16F; break;
+   case colorFormat::RGB5: fmt = bgfx::TextureFormat::RGB5A1; break;
+   case colorFormat::RGB8: fmt = bgfx::TextureFormat::RGB8; break;
+   case colorFormat::RGB10: fmt = bgfx::TextureFormat::RGB10A2; break;
+   case colorFormat::RGBA8: fmt = bgfx::TextureFormat::RGBA8; break;
+   case colorFormat::RGBA10: fmt = bgfx::TextureFormat::RGB10A2; break;
+   case colorFormat::GREY8: fmt = bgfx::TextureFormat::R8; break;
+   default: assert(false); // Unsupported texture format 
+   }
+   m_color_tex = bgfx::createTexture2D(m_width, m_height, false, 1, fmt, flags);
+   m_color_sampler = new Sampler(m_rd, m_type, m_color_tex, m_width, m_height, false, true);
+   m_color_sampler->SetName(name + ".Color"s);
+   if (m_shared_depth)
+   {
+      m_depth_tex = sharedDepth->m_depth_tex;
+      m_depth_sampler = sharedDepth->m_depth_sampler;
+   }
+   else if (with_depth)
+   {
+      m_depth_tex = bgfx::createTexture2D(m_width, m_height, false, 1, bgfx::TextureFormat::D24, flags);
+      m_depth_sampler = new Sampler(m_rd, m_type, m_depth_tex, m_width, m_height, false, true);
+      m_depth_sampler->SetName(name + ".Depth"s);
+   }
+
+   if (with_depth)
+   {
+      const bgfx::TextureHandle handles[] = { m_color_tex, m_depth_tex };
+      m_framebuffer = bgfx::createFrameBuffer(2, handles);
+   }
+   else
+   {
+      const bgfx::TextureHandle handles[] = { m_color_tex };
+      m_framebuffer = bgfx::createFrameBuffer(1, handles);
+   }
+   bgfx::setName(m_framebuffer, name.c_str());
+   
+#elif defined(ENABLE_OPENGL)
    const GLuint col_type = ((format == RGBA32F) || (format == RGB32F)) ? GL_FLOAT : ((format == RGB16F) || (format == RGBA16F)) ? GL_HALF_FLOAT : GL_UNSIGNED_BYTE;
    const GLuint col_format = ((format == GREY8) || (format == RED16F))                                                                                                      ? GL_RED
       : ((format == GREY_ALPHA) || (format == RG16F))                                                                                                                       ? GL_RG
@@ -309,7 +359,7 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
       glPopDebugGroup();
 #endif
 
-#else
+#elif defined(ENABLE_DX9)
    assert(m_type == RT_DEFAULT); // Layered rendering is not yet supported by the DX9 backend
    m_color_tex = nullptr;
    m_color_surface = nullptr;
@@ -370,14 +420,24 @@ RenderTarget::~RenderTarget()
    delete m_color_sampler;
    if (!m_shared_depth)
       delete m_depth_sampler;
-#ifdef ENABLE_OPENGL
+
+#if defined(ENABLE_BGFX)
+   if (bgfx::isValid(m_framebuffer))
+      bgfx::destroy(m_framebuffer);
+   if (bgfx::isValid(m_color_tex))
+      bgfx::destroy(m_color_tex);
+   if (bgfx::isValid(m_depth_tex))
+      bgfx::destroy(m_depth_tex);
+   
+#elif defined(ENABLE_OPENGL)
    glDeleteTextures(1, &m_color_tex);
    if (m_depth_tex && !m_shared_depth)
       glDeleteTextures(1, &m_depth_tex);
    glDeleteFramebuffers(1, &m_framebuffer);
    if (m_nLayers > 1)
       glDeleteFramebuffers(m_nLayers, m_framebuffer_layers);
-#else
+   
+#elif defined(ENABLE_DX9)
    // Texture share its refcount with surface, it must be decremented, but it won't be 0 until surface is also released
    SAFE_RELEASE_NO_RCC(m_color_tex);
    SAFE_RELEASE(m_color_surface);
@@ -385,13 +445,13 @@ RenderTarget::~RenderTarget()
    {
       if (m_use_alternate_depth)
       {
-#ifndef DISABLE_FORCE_NVIDIA_OPTIMUS
+   #ifndef DISABLE_FORCE_NVIDIA_OPTIMUS
          if (m_rd->NVAPIinit)
          {
             CHECKNVAPI(NvAPI_D3D9_UnregisterResource(m_depth_surface));
             CHECKNVAPI(NvAPI_D3D9_UnregisterResource(m_depth_tex));
          }
-#endif
+   #endif
          SAFE_RELEASE(m_depth_tex);
          SAFE_RELEASE(m_depth_surface);
       }
@@ -407,7 +467,7 @@ RenderTarget::~RenderTarget()
    
 void RenderTarget::UpdateDepthSampler(bool insideBeginEnd)
 {
-#if !defined(DISABLE_FORCE_NVIDIA_OPTIMUS) && !defined(ENABLE_OPENGL)
+#if !defined(DISABLE_FORCE_NVIDIA_OPTIMUS) && defined(ENABLE_DX9)
    if (m_has_depth && m_use_alternate_depth && m_rd->NVAPIinit)
    {
       // do not put inside BeginScene/EndScene Block
@@ -439,7 +499,22 @@ void RenderTarget::CopyTo(RenderTarget* dest, const bool copyColor, const bool c
    int pw2 = w2 == -1 ? dest->GetWidth() : w2, ph2 = h2 == -1 ? dest->GetHeight() : h2;
    int nLayers = srcLayer == -1 ? m_nLayers : 1;
    assert(srcLayer != -1 || dstLayer != -1 || m_nLayers == dest->m_nLayers); // Either we copy a single layer or the full set in which case they must match
-#ifdef ENABLE_OPENGL
+
+#if defined(ENABLE_BGFX)
+   if (w1 == w2 && h1 == h2)
+   {
+      if (copyColor)
+         bgfx::blit(m_rd->m_activeViewId, dest->m_color_tex, px2, py2, m_color_tex, px1, py1, w1, h1);
+      if (m_has_depth && dest->m_has_depth && copyDepth)
+         bgfx::blit(m_rd->m_activeViewId, dest->m_depth_tex, px2, py2, m_depth_tex, px1, py1, w1, h1);
+      bgfx::touch(m_rd->m_activeViewId);
+   }
+   else
+   {
+      assert(false); // Not yet implemented
+   }
+   
+#elif defined(ENABLE_OPENGL)
    #ifndef __OPENGLES__
    if (GLAD_GL_VERSION_4_3 && m_texTarget == dest->m_texTarget && pw1 == pw2 && ph1 == ph2)
    {
@@ -463,7 +538,8 @@ void RenderTarget::CopyTo(RenderTarget* dest, const bool copyColor, const bool c
       }
       glBindFramebuffer(GL_FRAMEBUFFER, current_render_target->m_framebuffer);
    }
-#else
+   
+#elif defined(ENABLE_DX9)
    assert(pw1 == pw2 && ph1 == ph2); // we do not support scaling (only used for VR preview)
    assert(srcLayer == -1); // Layered rendering is not supported for DirectX 9
    if (copyColor)
@@ -485,7 +561,11 @@ void RenderTarget::Activate(const int layer)
    current_render_target = this;
    current_render_layer = layer;
    
-#ifdef ENABLE_OPENGL
+   #if defined(ENABLE_BGFX)
+   bgfx::setViewFrameBuffer(m_rd->m_activeViewId, m_framebuffer);
+   bgfx::setViewRect(m_rd->m_activeViewId, 0, 0, m_width, m_height);
+
+   #elif defined(ENABLE_OPENGL)
    if (m_color_sampler)
       m_color_sampler->Unbind();
    if (m_depth_sampler)
@@ -493,7 +573,8 @@ void RenderTarget::Activate(const int layer)
    // Either bind all layers for instanced rendering or the only requested one for normal rendering (one pass per layer)
    glBindFramebuffer(GL_FRAMEBUFFER, (layer == -1 || m_nLayers == 1)  ? m_framebuffer : m_framebuffer_layers[layer]);
    glViewport(0, 0, m_width, m_height);
-#else
+   
+   #elif defined(ENABLE_DX9)
    static IDirect3DSurface9* currentColorSurface = nullptr;
    if (currentColorSurface != m_color_surface)
    {
@@ -506,5 +587,5 @@ void RenderTarget::Activate(const int layer)
       currentDepthSurface = m_depth_surface;
       CHECKD3D(m_rd->GetCoreDevice()->SetDepthStencilSurface(m_depth_surface));
    }
-#endif
+   #endif
 }

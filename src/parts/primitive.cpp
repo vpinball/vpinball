@@ -158,9 +158,9 @@ void Mesh::UploadToVB(VertexBuffer * vb, const float frame)
    }
 
    Vertex3D_NoTex2 *buf;
-   vb->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+   vb->Lock(buf);
    memcpy(buf, m_vertices.data(), sizeof(Vertex3D_NoTex2)*m_vertices.size());
-   vb->unlock();
+   vb->Unlock();
 }
 
 void Mesh::UpdateBounds()
@@ -313,7 +313,7 @@ void Primitive::CreateRenderGroup(const Collection * const collection)
    IndexBuffer *indexBuffer = new IndexBuffer(g_pplayer->m_renderer->m_pd3dPrimaryDevice, indices);
    unsigned int ofs = 0;
    Vertex3D_NoTex2 *buf;
-   vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+   vertexBuffer->Lock(buf);
    for (size_t i = 0; i < renderedPrims.size(); i++)
    {
       renderedPrims[i]->RecalculateMatrices();
@@ -330,7 +330,7 @@ void Primitive::CreateRenderGroup(const Collection * const collection)
          ofs++;
       }
    }
-   vertexBuffer->unlock();
+   vertexBuffer->Unlock();
    delete prims[0]->m_meshBuffer;
    prims[0]->m_meshBuffer = new MeshBuffer(m_wzName + L".RenderGroup"s, vertexBuffer, indexBuffer, true);
 }

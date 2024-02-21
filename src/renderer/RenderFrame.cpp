@@ -161,16 +161,18 @@ bool RenderFrame::Execute(const bool log)
       PLOGI << ss1.str() << ']';
    }
 
-   #ifndef ENABLE_OPENGL
+   #if defined(ENABLE_DX9)
    CHECKD3D(m_rd->GetCoreDevice()->BeginScene());
    #endif
+   
    bool rendered = false;
    for (RenderPass* pass : sortedPasses)
       rendered |= pass->Execute(log);
-   #ifdef ENABLE_OPENGL
+   
+   #if defined(ENABLE_OPENGL)
    if (rendered)
       glFlush(); // Push command queue to the GPU without blocking (tells the GPU that the render queue is ready to be executed)
-   #else
+   #elif defined(ENABLE_DX9)
    CHECKD3D(m_rd->GetCoreDevice()->EndScene());
    #endif
 

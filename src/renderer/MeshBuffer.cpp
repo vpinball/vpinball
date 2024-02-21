@@ -18,11 +18,6 @@ MeshBuffer::MeshBuffer(const wstring& name, VertexBuffer* vb, IndexBuffer* ib, c
    , m_vb(vb)
    , m_ib(ib)
    , m_isVBOffsetApplied(applyVertexBufferOffsetToIndexBuffer)
-#ifndef ENABLE_OPENGL
-   , m_vertexDeclaration(
-      vb->m_vertexFormat == VertexFormat::VF_POS_NORMAL_TEX ? m_vb->m_rd->m_pVertexNormalTexelDeclaration :
-      vb->m_vertexFormat == VertexFormat::VF_POS_TEX ? m_vb->m_rd->m_pVertexTexelDeclaration : nullptr)
-#endif
 {
    if (m_ib != nullptr && applyVertexBufferOffsetToIndexBuffer)
       m_ib->ApplyOffset(m_vb);
@@ -30,7 +25,7 @@ MeshBuffer::MeshBuffer(const wstring& name, VertexBuffer* vb, IndexBuffer* ib, c
 
 MeshBuffer::~MeshBuffer()
 {
-#ifdef ENABLE_OPENGL
+#if defined(ENABLE_OPENGL)
    if (m_sharedVAO != nullptr)
    {
       m_sharedVAO->ref_count--;
@@ -52,9 +47,12 @@ MeshBuffer::~MeshBuffer()
 
 unsigned int MeshBuffer::GetSortKey() const
 {
-   #ifdef ENABLE_OPENGL // OpenGL
+   #if defined(ENABLE_BGFX)
+   return ((m_vb->m_isStatic ? m_vb->GetStaticBuffer().idx : m_vb->GetDynamicBuffer().idx)
+      ^ (m_ib->m_isStatic ? m_ib->GetStaticBuffer().idx : m_ib->GetDynamicBuffer().idx));
+   #elif defined(ENABLE_OPENGL)
    return m_vao;
-   #else // DirectX 9
+   #elif defined(ENABLE_DX9)
    return (unsigned int) ((reinterpret_cast<uintptr_t>(m_vb)) ^ (reinterpret_cast<uintptr_t>(m_ib)));
    #endif
 }
@@ -62,7 +60,22 @@ unsigned int MeshBuffer::GetSortKey() const
 void MeshBuffer::bind()
 {
    RenderDevice* const rd = m_vb->m_rd;
-#ifdef ENABLE_OPENGL
+#if defined(ENABLE_BGFX)
+   m_vb->Upload();
+   /* if (m_vb->m_isStatic)
+      bgfx::setVertexBuffer(0, m_vb->GetStaticBuffer(), m_vb->GetVertexOffset(), m_vb->m_vertexCount);
+   else
+      bgfx::setVertexBuffer(0, m_vb->GetDynamicBuffer(), m_vb->GetVertexOffset(), m_vb->m_vertexCount); */
+   if (m_ib != nullptr)
+   {
+      m_ib->Upload();
+      /*if (m_ib->m_isStatic)
+         bgfx::setIndexBuffer(m_ib->GetStaticBuffer(), m_ib->GetIndexOffset(), m_ib->m_indexCount);
+      else
+         bgfx::setIndexBuffer(m_ib->GetDynamicBuffer(), m_ib->GetIndexOffset(), m_ib->m_indexCount);*/
+   }
+
+#elif defined(ENABLE_OPENGL)
    if (m_vao == 0)
    {
       // If index & vertex buffer are using shared buffers (for static objects), then we can also use a shared VAO
@@ -149,29 +162,13 @@ void MeshBuffer::bind()
    assert(m_ib == nullptr ? buffer == 0 : buffer == m_ib->GetBuffer());
    #endif
 
-#else
+#elif defined(ENABLE_DX9)
    m_vb->Upload();
-   IDirect3DVertexBuffer9 * vb = m_vb->GetBuffer();
-   if (rd->m_curVertexBuffer != vb)
-   {
-      CHECKD3D(rd->GetCoreDevice()->SetStreamSource(0, vb, 0, m_vb->m_sizePerVertex));
-      rd->m_curVertexBuffer = vb;
-   }
-   if (rd->m_currentVertexDeclaration != m_vertexDeclaration)
-   {
-      CHECKD3D(rd->GetCoreDevice()->SetVertexDeclaration(m_vertexDeclaration));
-      rd->m_currentVertexDeclaration = m_vertexDeclaration;
-      rd->m_curStateChanges++;
-   }
+   m_vb->Bind();
    if (m_ib != nullptr)
    {
       m_ib->Upload();
-      IDirect3DIndexBuffer9 * ib = m_ib->GetBuffer();
-      if (rd->m_curIndexBuffer != ib)
-      {
-         CHECKD3D(rd->GetCoreDevice()->SetIndices(ib));
-         rd->m_curIndexBuffer = ib;
-      }
+      m_ib->Bind();
    }
 #endif
 }

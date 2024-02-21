@@ -506,7 +506,7 @@ void Plunger::RenderSetup(RenderDevice *device)
    VertexBuffer *vertexBuffer = new VertexBuffer(m_rd, m_cframes * m_vtsPerFrame);
 
    Vertex3D_NoTex2 *buf;
-   vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+   vertexBuffer->Lock(buf);
 
    Vertex3D_NoTex2 *ptr = buf;
 
@@ -810,7 +810,7 @@ void Plunger::RenderSetup(RenderDevice *device)
          }
       }
    }
-   vertexBuffer->unlock();
+   vertexBuffer->Unlock();
 
    // create the new index buffer
    IndexBuffer* indexBuffer = new IndexBuffer(m_rd, k, indices);

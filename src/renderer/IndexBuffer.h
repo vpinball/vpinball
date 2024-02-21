@@ -16,7 +16,7 @@ public:
 
    unsigned int Add(Buf* buffer)
    {
-      assert(!IsUploaded());
+      assert(!IsCreated());
       unsigned int pos = m_count;
       m_buffers.push_back(buffer);
       m_count += buffer->m_count;
@@ -29,15 +29,24 @@ public:
       return IsEmpty();
    }
 
-   void Lock(Buf* buffer, const unsigned int offsetToLock, const unsigned int sizeToLock, void** dataBuffer)
+   void Lock(Buf* buffer, const unsigned int offset, const unsigned int size, void*& data)
    {
-      assert(!m_isStatic || !IsUploaded()); // Static buffers can't be locked after first upload
+      assert(!m_isStatic || !IsCreated()); // Static buffers can't be locked after first upload
       assert(m_lock.data == nullptr); // Lock is not reentrant
       m_lock.buffer = buffer;
-      m_lock.offset = offsetToLock;
-      m_lock.size = sizeToLock;
-      m_lock.data = new BYTE[m_lock.size];
-      *dataBuffer = m_lock.data;
+      m_lock.offset = offset;
+      m_lock.size = size;
+      #if defined(ENABLE_BGFX)
+      if (IsCreated()) {
+         m_lock.mem = bgfx::alloc(m_lock.size);
+         m_lock.data = m_lock.mem->data;
+      }
+      else
+      #endif
+      {
+         m_lock.data = new BYTE[m_lock.size];
+      }
+      data = m_lock.data;
    }
 
    void Unlock()
@@ -49,7 +58,7 @@ public:
 
    virtual void Upload() = 0;
 
-   virtual bool IsUploaded() const = 0;
+   virtual bool IsCreated() const = 0;
 
    const Fmt m_format;
    const unsigned int m_bytePerElement;
@@ -61,6 +70,9 @@ public:
       unsigned int offset;
       unsigned int size;
       BYTE* data;
+      #if defined(ENABLE_BGFX)
+      const bgfx::Memory* mem;
+      #endif
    };
    vector<PendingUpload> m_pendingUploads;
 
@@ -84,17 +96,6 @@ public:
       FMT_INDEX32
    };
 
-   enum LockFlags
-   {
-#if defined(ENABLE_BGFX) || defined(ENABLE_OPENGL)
-      WRITEONLY,
-      DISCARDCONTENTS
-#elif defined(ENABLE_DX9)
-      WRITEONLY = 0, // in DX9, this is specified during VB creation
-      DISCARDCONTENTS = D3DLOCK_DISCARD // discard previous contents; only works with dynamic VBs
-#endif
-   };
-
    IndexBuffer(RenderDevice* rd, const unsigned int numIndices, const bool isDynamic = false, const IndexBuffer::Format format = IndexBuffer::Format::FMT_INDEX16);
    IndexBuffer(RenderDevice* rd, const unsigned int numIndices, const unsigned int* indices);
    IndexBuffer(RenderDevice* rd, const unsigned int numIndices, const WORD* indices);
@@ -102,14 +103,17 @@ public:
    IndexBuffer(RenderDevice* rd, const vector<WORD>& indices);
    ~IndexBuffer();
 
+   // Position of buffer in a bigger shared data block
    unsigned int GetOffset() const { return m_offset; }
    unsigned int GetIndexOffset() const { return m_indexOffset; }
    bool IsSharedBuffer() const;
 
-   void lock(const unsigned int offsetToLock, const unsigned int sizeToLock, void** dataBuffer, const DWORD flags);
-   void unlock();
-   void ApplyOffset(VertexBuffer* vb);
+   // Initial loading (before creation) or updating (for dynamic buffers only)
+   template <typename T> void Lock(T*& data, const unsigned int offset = 0, const unsigned int size = 0) { LockUntyped((void*&)data, offset, size); }
+   void Unlock();
    void Upload();
+
+   void ApplyOffset(VertexBuffer* vb);
 
    RenderDevice* const m_rd;
    const unsigned int m_count;
@@ -119,6 +123,8 @@ public:
    const unsigned int m_size;
 
    #if defined(ENABLE_BGFX)
+   bgfx::IndexBufferHandle GetStaticBuffer() const;
+   bgfx::DynamicIndexBufferHandle GetDynamicBuffer() const;
 
    #elif defined(ENABLE_OPENGL)
    GLuint GetBuffer() const;
@@ -126,35 +132,12 @@ public:
 
    #elif defined(ENABLE_DX9)
    IDirect3DIndexBuffer9* GetBuffer() const;
+   void Bind() const;
    #endif
 
 private:
    unsigned int m_offset = 0; // Offset in bytes of the data inside the native GPU array
    unsigned int m_indexOffset = 0; // Offset in indices of the data inside the native GPU array
    SharedIndexBuffer* m_sharedBuffer = nullptr;
-};
-
-
-class SharedIndexBuffer : public SharedBuffer<IndexBuffer::Format, IndexBuffer>
-{
-public:
-   SharedIndexBuffer(IndexBuffer::Format fmt, bool stat) : SharedBuffer(fmt, fmt == IndexBuffer::Format::FMT_INDEX16 ? 2 : 4, stat) {}
-   ~SharedIndexBuffer();
-   void Upload() override;
-
-   #if defined(ENABLE_BGFX)
-   bgfx::IndexBufferHandle m_ib = BGFX_INVALID_HANDLE;
-   bgfx::DynamicIndexBufferHandle m_dib = BGFX_INVALID_HANDLE;
-   bool IsUploaded() const override { return m_isStatic ? bgfx::isValid(m_ib) : bgfx::isValid(m_dib); }
-   
-   #elif defined(ENABLE_OPENGL)
-   GLuint m_ib = 0;
-   void Bind() const;
-   bool IsUploaded() const override { return m_ib; }
-
-   #elif defined(ENABLE_DX9)
-   IDirect3DIndexBuffer9* m_ib = nullptr;
-   bool IsUploaded() const override { return m_ib; }
-
-   #endif
+   void LockUntyped(void*& data, const unsigned int offset = 0, const unsigned int size = 0);
 };

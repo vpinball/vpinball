@@ -12,7 +12,7 @@
 #include "renderer/RenderDevice.h"
 #include "renderer/VRDevice.h"
 
-#ifndef ENABLE_OPENGL
+#if defined(ENABLE_DX9)
 // Note: Nowadays the original code seems to be counter-productive, so we use the official
 // pre-rendered frame mechanism instead where possible
 // (e.g. all windows versions except for XP and no "EnableLegacyMaximumPreRenderedFrames" set in the registry)
@@ -86,10 +86,10 @@ public:
       // idea: locking a static vertex buffer stalls the pipeline if that VB is still
       // in the GPU render queue. In effect, this lets the GPU catch up.
       Vertex3D_NoTex2* buf;
-      m_buffers[m_curIdx]->m_vb->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+      m_buffers[m_curIdx]->m_vb->Lock(buf);
       memset(buf, 0, 3 * sizeof(buf[0]));
       buf[0].z = buf[1].z = buf[2].z = 1e5f;      // single triangle, degenerates to point far off screen
-      m_buffers[m_curIdx]->m_vb->unlock();
+      m_buffers[m_curIdx]->m_vb->Unlock();
    }
 
 private:
@@ -97,7 +97,7 @@ private:
    vector<MeshBuffer*> m_buffers;
    size_t m_curIdx;
 };
-#else
+#elif defined(ENABLE_BGFX) || defined(ENABLE_OPENGL)
 class FrameQueueLimiter
 {
 public:
@@ -113,7 +113,7 @@ Renderer::Renderer(PinTable* const table, const bool fullScreen, const int width
 {
    m_stereo3Denabled = m_table->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DEnabled"s, (m_stereo3D != STEREO_OFF));
    m_stereo3DfakeStereo = stereo3D == STEREO_VR ? false : m_table->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DFake"s, false);
-   #ifndef ENABLE_OPENGL // DirectX does not support stereo rendering
+   #if defined(ENABLE_DX9) || defined(ENABLE_BGFX) // DirectX 9 does not support stereo rendering, FIXME it is unimplemented for BGFX
    m_stereo3DfakeStereo = true;
    #endif
    m_BWrendering = m_table->m_settings.LoadValueWithDefault(Settings::Player, "BWRendering"s, 0);
@@ -213,9 +213,9 @@ Renderer::Renderer(PinTable* const table, const bool fullScreen, const int width
       if (display == dispConf->display)
          adapter = dispConf->adapter;
 
-   #ifdef ENABLE_OPENGL
+   #if defined(ENABLE_OPENGL) || defined(ENABLE_BGFX)
    const int nMSAASamples = m_table->m_settings.LoadValueWithDefault(Settings::Player, "MSAASamples"s, 1);
-   #else
+   #elif defined(ENABLE_DX9)
    // Sadly DX9 does not support resolving an MSAA depth buffer, making MSAA implementation complex for it. So just disable for now
    constexpr int nMSAASamples = 1;
    #endif
@@ -290,11 +290,12 @@ Renderer::Renderer(PinTable* const table, const bool fullScreen, const int width
    m_builtinEnvTexture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "EnvMap.webp");
    m_envTexture = m_table->GetImage(m_table->m_envImage);
    PLOGI << "Computing environment map radiance"; // For profiling
-   #ifdef ENABLE_OPENGL // OpenGL
+
+   #if defined(ENABLE_OPENGL) && !defined(__OPENGLES__) // Compute radiance on the GPU
+   // TODO implement for BGFX
    Texture* const envTex = m_envTexture ? m_envTexture : &m_builtinEnvTexture;
    const int envTexHeight = min(envTex->m_pdsBuffer->height(), 256u) / 8;
    const int envTexWidth = envTexHeight * 2;
-#ifndef __OPENGLES__
    const colorFormat rad_format = envTex->m_pdsBuffer->m_format == BaseTexture::RGB_FP32 ? colorFormat::RGBA32F : colorFormat::RGBA16F;
    m_envRadianceTexture = new RenderTarget(m_pd3dPrimaryDevice, SurfaceType::RT_DEFAULT, "Irradiance"s, envTexWidth, envTexHeight, rad_format, false, 1, "Failed to create irradiance render target");
    m_pd3dPrimaryDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_irradiance);
@@ -304,14 +305,8 @@ Renderer::Renderer(PinTable* const table, const bool fullScreen, const int width
    m_pd3dPrimaryDevice->FlushRenderFrame();
    m_pd3dPrimaryDevice->m_basicShader->SetTexture(SHADER_tex_diffuse_env, m_envRadianceTexture->GetColorSampler());
    m_pd3dPrimaryDevice->m_ballShader->SetTexture(SHADER_tex_diffuse_env, m_envRadianceTexture->GetColorSampler());
-#else
-   m_envRadianceTexture = EnvmapPrecalc(envTex, envTexWidth, envTexHeight);
-   m_pd3dPrimaryDevice->m_texMan.SetDirty(m_envRadianceTexture);
-   m_pd3dPrimaryDevice->m_basicShader->SetTexture(SHADER_tex_diffuse_env, m_envRadianceTexture);
-   m_pd3dPrimaryDevice->m_ballShader->SetTexture(SHADER_tex_diffuse_env, m_envRadianceTexture);
-#endif
-   #else // DirectX 9
-   // DirectX 9 does not support bitwise operation in shader, so radical_inverse is not implemented and therefore we use the slow CPU path instead of GPU
+
+   #else // DirectX 9 does not support bitwise operation in shader, so radical_inverse is not implemented and therefore we use the slow CPU path instead of GPU
    const Texture* const envTex = m_envTexture ? m_envTexture : &m_builtinEnvTexture;
    const unsigned int envTexHeight = min(envTex->m_pdsBuffer->height(), 256u) / 8;
    const unsigned int envTexWidth = envTexHeight * 2;
@@ -368,7 +363,7 @@ Renderer::Renderer(PinTable* const table, const bool fullScreen, const int width
    }
 
    m_pd3dPrimaryDevice->ResetRenderState();
-   #ifndef ENABLE_OPENGL
+   #if defined(ENABLE_DX9)
    CHECKD3D(m_pd3dPrimaryDevice->GetCoreDevice()->SetRenderState(D3DRS_LIGHTING, FALSE));
    CHECKD3D(m_pd3dPrimaryDevice->GetCoreDevice()->SetRenderState(D3DRS_CLIPPING, FALSE));
    CHECKD3D(m_pd3dPrimaryDevice->GetCoreDevice()->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1));
@@ -812,14 +807,17 @@ void Renderer::InitLayout(const float xpixoff, const float ypixoff)
 {
    TRACE_FUNCTION();
    ViewSetup& viewSetup = m_table->mViewSetups[m_table->m_BG_current_set];
-   #ifdef ENABLE_OPENGL
+   #if defined(ENABLE_OPENGL)
    bool stereo = m_stereo3D != STEREO_OFF && m_stereo3D != STEREO_VR && m_stereo3Denabled;
-   #else
+   #elif defined(ENABLE_DX9) || defined(ENABLE_BGFX) // TODO implement for BGFX
    bool stereo = false;
    #endif
    if (viewSetup.mMode == VLM_WINDOW)
       viewSetup.SetWindowModeFromSettings(m_table);
-   viewSetup.ComputeMVP(m_table, m_viewPort.Width, m_viewPort.Height, stereo, *m_mvp, vec3(m_cam.x, m_cam.y, m_cam.z), m_inc, xpixoff, ypixoff);
+   viewSetup.ComputeMVP(m_table, 
+      (float)((double)m_pd3dPrimaryDevice->GetBackBufferTexture()->GetWidth() / (double)m_pd3dPrimaryDevice->GetBackBufferTexture()->GetHeight()),
+      stereo, *m_mvp, vec3(m_cam.x, m_cam.y, m_cam.z), m_inc,
+      xpixoff / (float)m_pd3dPrimaryDevice->GetBackBufferTexture()->GetWidth(), ypixoff / (float)m_pd3dPrimaryDevice->GetBackBufferTexture()->GetHeight());
    SetupShaders();
 }
 
@@ -883,7 +881,7 @@ void Renderer::SetupShaders()
    emission.y *= m_table->m_lightEmissionScale * m_globalEmissionScale;
    emission.z *= m_table->m_lightEmissionScale * m_globalEmissionScale;
 
-#ifdef ENABLE_OPENGL
+#if defined(ENABLE_OPENGL) || defined(ENABLE_BGFX)
    float lightPos[MAX_LIGHT_SOURCES][4] = { 0.f };
    float lightEmission[MAX_LIGHT_SOURCES][4] = { 0.f };
 
@@ -895,7 +893,7 @@ void Renderer::SetupShaders()
 
    m_pd3dPrimaryDevice->m_basicShader->SetFloat4v(SHADER_basicLightPos, (vec4*)lightPos, MAX_LIGHT_SOURCES);
    m_pd3dPrimaryDevice->m_basicShader->SetFloat4v(SHADER_basicLightEmission, (vec4*)lightEmission, MAX_LIGHT_SOURCES);
-#else
+#elif defined(ENABLE_DX9)
    struct CLight
    {
       float vPos[3];
@@ -929,7 +927,17 @@ void Renderer::UpdateBasicShaderMatrix(const Matrix3D& objectTrafo)
    matrices.matWorldView = GetMVP().GetModelView();
    matrices.matWorldViewInverseTranspose = GetMVP().GetModelViewInverseTranspose();
 
-#ifdef ENABLE_OPENGL // OpenGL
+#if defined(ENABLE_BGFX)
+   m_pd3dPrimaryDevice->m_basicShader->SetMatrix(SHADER_matWorld, &matrices.matWorld);
+   m_pd3dPrimaryDevice->m_basicShader->SetMatrix(SHADER_matView, &matrices.matView);
+   m_pd3dPrimaryDevice->m_basicShader->SetMatrix(SHADER_matWorldView, &matrices.matWorldView);
+   m_pd3dPrimaryDevice->m_basicShader->SetMatrix(SHADER_matWorldViewInverseTranspose, &matrices.matWorldViewInverseTranspose);
+   m_pd3dPrimaryDevice->m_basicShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0]);
+   m_pd3dPrimaryDevice->m_flasherShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0]);
+   m_pd3dPrimaryDevice->m_lightShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0]);
+   m_pd3dPrimaryDevice->m_DMDShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0]);
+
+#elif defined(ENABLE_OPENGL)
    const int nEyes = m_pd3dPrimaryDevice->m_stereo3D != STEREO_OFF ? 2 : 1;
    for (int eye = 0; eye < nEyes; eye++)
       matrices.matWorldViewProj[eye] = GetMVP().GetModelViewProj(eye);
@@ -938,7 +946,7 @@ void Renderer::UpdateBasicShaderMatrix(const Matrix3D& objectTrafo)
    m_pd3dPrimaryDevice->m_DMDShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0], nEyes);
    m_pd3dPrimaryDevice->m_basicShader->SetUniformBlock(SHADER_basicMatrixBlock, &matrices.matWorld.m[0][0]);
 
-#else // DirectX 9
+#elif defined(ENABLE_DX9)
    matrices.matWorldViewProj[0] = GetMVP().GetModelViewProj(0);
    m_pd3dPrimaryDevice->m_basicShader->SetMatrix(SHADER_matWorld, &matrices.matWorld);
    m_pd3dPrimaryDevice->m_basicShader->SetMatrix(SHADER_matView, &matrices.matView);
@@ -964,12 +972,20 @@ void Renderer::UpdateBallShaderMatrix()
    matrices.matView = GetMVP().GetView();
    matrices.matWorldView = GetMVP().GetModelView();
    matrices.matWorldViewInverse = GetMVP().GetModelViewInverse();
-#ifdef ENABLE_OPENGL
+
+#if defined(ENABLE_BGFX)
+   m_pd3dPrimaryDevice->m_ballShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0]);
+   m_pd3dPrimaryDevice->m_ballShader->SetMatrix(SHADER_matWorldView, &matrices.matWorldView);
+   m_pd3dPrimaryDevice->m_ballShader->SetMatrix(SHADER_matWorldViewInverse, &matrices.matWorldViewInverse);
+   m_pd3dPrimaryDevice->m_ballShader->SetMatrix(SHADER_matView, &matrices.matView);
+
+#elif defined(ENABLE_OPENGL)
    const int nEyes = m_pd3dPrimaryDevice->m_stereo3D != STEREO_OFF ? 2 : 1;
    for (int eye = 0; eye < nEyes; eye++)
       matrices.matWorldViewProj[eye] = GetMVP().GetModelViewProj(eye);
    m_pd3dPrimaryDevice->m_ballShader->SetUniformBlock(SHADER_ballMatrixBlock, &matrices.matView.m[0][0]);
-#else
+
+#elif defined(ENABLE_DX9)
    matrices.matWorldViewProj[0] = GetMVP().GetModelViewProj(0);
    m_pd3dPrimaryDevice->m_ballShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0]);
    m_pd3dPrimaryDevice->m_ballShader->SetMatrix(SHADER_matWorldView, &matrices.matWorldView);
@@ -1002,7 +1018,7 @@ void Renderer::UpdateStereoShaderState()
    }
    
    RenderTarget *renderedRT = m_pd3dPrimaryDevice->GetPostProcessRenderTarget1();
-   #ifdef ENABLE_OPENGL
+   #if defined(ENABLE_OPENGL)
    if (m_stereo3DfakeStereo) // OpenGL strip down this uniform which is only needed for interlaced mode on DirectX 9
    #endif
    m_pd3dPrimaryDevice->m_stereoShader->SetVector(SHADER_w_h_height, (float)(1.0 / renderedRT->GetWidth()), (float)(1.0 / renderedRT->GetHeight()), (float)renderedRT->GetHeight(), m_table->Get3DOffset());
@@ -1037,13 +1053,14 @@ void Renderer::PrepareFrame()
       g_pplayer->m_vrDevice->UpdateVRPosition(GetMVP());
    else 
    #endif
+
    if (g_pplayer->m_headTracking)
    {
       Matrix3D m_matView;
       Matrix3D m_matProj[2];
-#ifndef __STANDALONE__
+      #ifndef __STANDALONE__
       BAMView::createProjectionAndViewMatrix(&m_matProj[0]._11, &m_matView._11);
-#endif
+      #endif
       m_mvp->SetView(m_matView);
       for (unsigned int eye = 0; eye < m_mvp->m_nEyes; eye++)
          m_mvp->SetProj(eye, m_matProj[eye]);
@@ -1144,7 +1161,7 @@ void Renderer::DrawBulbLightBuffer()
    // Restore state and render target
    p3dDevice->SetRenderTarget(initial_rt->m_name + '+', initial_rt->m_rt);
 
-   #ifndef ENABLE_OPENGL
+   #if defined(ENABLE_DX9)
    // For some reason, DirectX 9 will not handle correctly the null texture, so we just disable this optimization
    hasLight = true;
    #endif
@@ -1256,9 +1273,9 @@ void Renderer::RenderStaticPrepass()
    if (!m_isStaticPrepassDirty)
       return;
 
-#ifdef __STANDALONE__
+   #ifdef __STANDALONE__
    SDL_GL_MakeCurrent(g_pplayer->m_sdl_playfieldHwnd, g_pplayer->m_renderer->m_pd3dPrimaryDevice->m_sdl_context);
-#endif
+   #endif
 
    m_isStaticPrepassDirty = false;
 
@@ -1345,10 +1362,10 @@ void Renderer::RenderStaticPrepass()
 
       // Finish the frame.
       m_pd3dPrimaryDevice->FlushRenderFrame();
-#ifndef __STANDALONE__
+      #ifndef __STANDALONE__
       if (g_pplayer->m_pEditorTable->m_progressDialog.IsWindow())
          g_pplayer->m_pEditorTable->m_progressDialog.SetProgress(70 + (((30 * (n_iter + 1 - iter)) / (n_iter + 1))));
-#endif
+      #endif
    }
 
    if (accumulationSurface)
@@ -1482,13 +1499,14 @@ void Renderer::RenderDynamics()
 
    // Setup the projection matrices used for refraction
    Matrix3D matProj[2];
-   #ifdef ENABLE_OPENGL
+   #if defined(ENABLE_OPENGL)
    const int nEyes = m_pd3dPrimaryDevice->m_stereo3D != STEREO_OFF ? 2 : 1;
    for (int eye = 0; eye < nEyes; eye++)
       matProj[eye] = GetMVP().GetProj(eye);
    m_pd3dPrimaryDevice->m_basicShader->SetMatrix(SHADER_matProj, &matProj[0], nEyes);
    m_pd3dPrimaryDevice->m_ballShader->SetMatrix(SHADER_matProj, &matProj[0], nEyes);
-   #else
+   
+   #elif defined(ENABLE_DX9) || defined(ENABLE_BGFX)
    matProj[0] = GetMVP().GetProj(0);
    m_pd3dPrimaryDevice->m_basicShader->SetMatrix(SHADER_matProj, &matProj[0]);
    m_pd3dPrimaryDevice->m_ballShader->SetMatrix(SHADER_matProj, &matProj[0]);
@@ -1787,7 +1805,7 @@ void Renderer::PrepareVideoBuffers()
       for (size_t i = 0; i < (size_t)renderedRT->GetWidth() * renderedRT->GetHeight(); ++i)
       {
          size_t y = i / renderedRT->GetWidth();
-         #ifdef ENABLE_OPENGL
+         #if defined(ENABLE_OPENGL) || defined(ENABLE_BGFX)
          y = renderedRT->GetHeight() - 1 - y;
          #endif
          pdest[i * 3 + 0] = ((i & 1) == 0 && (y & 1) == 0) ? 0x00 : 0xFF;

@@ -2,19 +2,75 @@
 #include "IndexBuffer.h"
 #include "RenderDevice.h"
 
+
+class SharedIndexBuffer : public SharedBuffer<IndexBuffer::Format, IndexBuffer>
+{
+public:
+   SharedIndexBuffer(IndexBuffer::Format fmt, bool stat) : SharedBuffer(fmt, fmt == IndexBuffer::Format::FMT_INDEX16 ? 2 : 4, stat) {}
+   ~SharedIndexBuffer();
+   void Upload() override;
+
+   #if defined(ENABLE_BGFX)
+   bgfx::IndexBufferHandle m_ib = BGFX_INVALID_HANDLE;
+   bgfx::DynamicIndexBufferHandle m_dib = BGFX_INVALID_HANDLE;
+   bool IsCreated() const override { return m_isStatic ? bgfx::isValid(m_ib) : bgfx::isValid(m_dib); }
+   
+   #elif defined(ENABLE_OPENGL)
+   GLuint m_ib = 0;
+   void Bind() const { glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ib); };
+   bool IsCreated() const override { return m_ib; }
+
+   #elif defined(ENABLE_DX9)
+   IDirect3DIndexBuffer9* m_ib = nullptr;
+   bool IsCreated() const override { return m_ib; }
+
+   #endif
+};
+
+SharedIndexBuffer::~SharedIndexBuffer()
+{
+   if (IsCreated())
+   {
+      #if defined(ENABLE_BGFX)
+      if (bgfx::isValid(m_ib))
+         bgfx::destroy(m_ib);
+      if (bgfx::isValid(m_dib))
+         bgfx::destroy(m_dib);
+      #elif defined(ENABLE_OPENGL)
+      glDeleteBuffers(1, &m_ib);
+      #elif defined(ENABLE_DX9)
+      SAFE_RELEASE(m_ib);
+      #endif
+   }
+   #if defined(ENABLE_BGFX)
+   if (IsCreated())
+      for (PendingUpload upload : m_pendingUploads)
+         delete upload.mem;
+   else
+   #endif
+   for (PendingUpload upload : m_pendingUploads)
+      delete[] upload.data;
+}
+
 void SharedIndexBuffer::Upload()
 {
-   if (!IsUploaded())
+   if (!IsCreated())
    {
       unsigned int size = m_count * m_bytePerElement;
 
       // Create data block
-      #if defined(ENABLE_OPENGL) // OpenGL
+      #if defined(ENABLE_BGFX)
+      const bgfx::Memory* mem = bgfx::alloc(size);
+      UINT8* data = mem->data;
+      
+      #elif defined(ENABLE_OPENGL)
       UINT8* data = (UINT8*)malloc(size);
-      #else // DirectX 9
+      
+      #elif defined(ENABLE_DX9)
       CHECKD3D(m_buffers[0]->m_rd->GetCoreDevice()->CreateIndexBuffer(size, D3DUSAGE_WRITEONLY | (m_isStatic ? 0 : D3DUSAGE_DYNAMIC), m_format == IndexBuffer::FMT_INDEX16 ? D3DFMT_INDEX16 : D3DFMT_INDEX32, D3DPOOL_DEFAULT, &m_ib, nullptr));
       UINT8* data;
       CHECKD3D(m_ib->Lock(0, size, (void**)&data, 0));
+      
       #endif
 
       // Fill data block
@@ -28,28 +84,35 @@ void SharedIndexBuffer::Upload()
       m_pendingUploads.clear();
 
       // Upload data block
-      #if defined(ENABLE_OPENGL) // OpenGL && OpenGL ES
-      #ifndef __OPENGLES__
-      if (GLAD_GL_VERSION_4_5)
-      {
-         glCreateBuffers(1, &m_ib);
-         glNamedBufferStorage(m_ib, size, data, m_isStatic ? 0 : GL_DYNAMIC_STORAGE_BIT);
-      }
-      else if (GLAD_GL_VERSION_4_4)
-      {
-         glGenBuffers(1, &m_ib);
-         Bind();
-         glBufferStorage(GL_ELEMENT_ARRAY_BUFFER, size, data, m_isStatic ? 0 : GL_DYNAMIC_STORAGE_BIT);
-      }
+      #if defined(ENABLE_BGFX)
+      if (m_isStatic)
+         m_ib = bgfx::createIndexBuffer(mem, m_format == IndexBuffer::Format::FMT_INDEX16 ? BGFX_BUFFER_NONE : BGFX_BUFFER_INDEX32);
       else
-      #endif
+         m_dib = bgfx::createDynamicIndexBuffer(mem, m_format == IndexBuffer::Format::FMT_INDEX16 ? BGFX_BUFFER_NONE : BGFX_BUFFER_INDEX32);
+      
+      #elif defined(ENABLE_OPENGL)
+         #ifndef __OPENGLES__
+         if (GLAD_GL_VERSION_4_5)
+         {
+            glCreateBuffers(1, &m_ib);
+            glNamedBufferStorage(m_ib, size, data, m_isStatic ? 0 : GL_DYNAMIC_STORAGE_BIT);
+         }
+         else if (GLAD_GL_VERSION_4_4)
+         {
+            glGenBuffers(1, &m_ib);
+            Bind();
+            glBufferStorage(GL_ELEMENT_ARRAY_BUFFER, size, data, m_isStatic ? 0 : GL_DYNAMIC_STORAGE_BIT);
+         }
+         else
+         #endif
       {
          glGenBuffers(1, &m_ib);
          Bind();
          glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, data, m_isStatic ? GL_STATIC_DRAW : GL_DYNAMIC_DRAW);
       }
       free(data);
-      #else // DirectX 9
+      
+      #elif defined(ENABLE_DX9)
       CHECKD3D(m_ib->Unlock());
       #endif
    }
@@ -57,52 +120,35 @@ void SharedIndexBuffer::Upload()
    {
       for (PendingUpload upload : m_pendingUploads)
       {
-         #if defined(ENABLE_OPENGL) // OpenGL
-         #ifndef __OPENGLES__
-         if (GLAD_GL_VERSION_4_5)
-            glNamedBufferSubData(m_ib, upload.offset, upload.size, upload.data);
-         else
-         #endif
+         assert(!m_isStatic);
+         #if defined(ENABLE_BGFX)
+         bgfx::update(m_dib, upload.offset, upload.mem);
+         
+         #elif defined(ENABLE_OPENGL)
+            #ifndef __OPENGLES__
+            if (GLAD_GL_VERSION_4_5)
+               glNamedBufferSubData(m_ib, upload.offset, upload.size, upload.data);
+            else
+            #endif
          {
             Bind();
             glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, upload.offset, upload.size, upload.data);
          }
+         delete[] upload.data;
 
-         #else // DirectX 9
+         #elif defined(ENABLE_DX9)
          // It would be better to perform a single lock but in fact, I don't think there are situations where more than one update is pending
          UINT8* data;
          CHECKD3D(m_ib->Lock(upload.offset, upload.size, (void**)&data, 0));
          memcpy(data, upload.data, upload.size);
          CHECKD3D(m_ib->Unlock());
+         delete[] upload.data;
 
          #endif
-         delete[] upload.data;
       }
       m_pendingUploads.clear();
    }
 }
-
-#ifdef ENABLE_OPENGL
-void SharedIndexBuffer::Bind() const
-{
-   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ib);
-}
-#endif
-
-SharedIndexBuffer::~SharedIndexBuffer()
-{
-   if (IsUploaded())
-   {
-      #if defined(ENABLE_OPENGL) // OpenGL
-      glDeleteBuffers(1, &m_ib);
-      #else // DirectX 9
-      SAFE_RELEASE(m_ib);
-      #endif
-   }
-   for (PendingUpload upload : m_pendingUploads)
-      delete[] upload.data;
-}
-
 
 
 IndexBuffer::IndexBuffer(RenderDevice* rd, const unsigned int indexCount, const bool isDynamic, const IndexBuffer::Format format)
@@ -134,18 +180,18 @@ IndexBuffer::IndexBuffer(RenderDevice* rd, const unsigned int numIndices, const 
    : IndexBuffer(rd, numIndices, false, IndexBuffer::FMT_INDEX32)
 {
    void* buf;
-   lock(0, 0, &buf, WRITEONLY);
+   Lock(buf);
    memcpy(buf, indices, numIndices * sizeof(indices[0]));
-   unlock();
+   Unlock();
 }
 
 IndexBuffer::IndexBuffer(RenderDevice* rd, const unsigned int numIndices, const WORD* indices)
    : IndexBuffer(rd, numIndices, false, IndexBuffer::FMT_INDEX16)
 {
    void* buf;
-   lock(0, 0, &buf, WRITEONLY);
+   Lock(buf);
    memcpy(buf, indices, numIndices * sizeof(indices[0]));
-   unlock();
+   Unlock();
 }
 
 IndexBuffer::IndexBuffer(RenderDevice* rd, const vector<WORD>& indices)
@@ -169,20 +215,34 @@ IndexBuffer::~IndexBuffer()
 
 bool IndexBuffer::IsSharedBuffer() const { return m_sharedBuffer->IsShared(); }
 
-#ifdef ENABLE_OPENGL
+#if defined(ENABLE_BGFX)
+bgfx::IndexBufferHandle IndexBuffer::GetStaticBuffer() const { return m_sharedBuffer->m_ib; }
+bgfx::DynamicIndexBufferHandle IndexBuffer::GetDynamicBuffer() const { return m_sharedBuffer->m_dib; }
+
+#elif defined(ENABLE_OPENGL)
 GLuint IndexBuffer::GetBuffer() const { return m_sharedBuffer->m_ib; }
 void IndexBuffer::Bind() const { m_sharedBuffer->Bind(); }
-#else
-IDirect3DIndexBuffer9* IndexBuffer::GetBuffer() const { return m_sharedBuffer->m_ib; }
-#endif
 
-void IndexBuffer::lock(const unsigned int offsetToLock, const unsigned int sizeToLock, void** dataBuffer, const DWORD flags)
+#elif defined(ENABLE_DX9)
+IDirect3DIndexBuffer9* IndexBuffer::GetBuffer() const { return m_sharedBuffer->m_ib; }
+void IndexBuffer::Bind() const
 {
-   m_rd->m_curLockCalls++;
-   m_sharedBuffer->Lock(this, m_offset + offsetToLock, sizeToLock == 0 ? m_size : sizeToLock, dataBuffer);
+   if (m_rd->m_curIndexBuffer != m_sharedBuffer->m_ib)
+   {
+      CHECKD3D(m_rd->GetCoreDevice()->SetIndices(m_sharedBuffer->m_ib));
+      m_rd->m_curIndexBuffer = m_sharedBuffer->m_ib;
+   }
 }
 
-void IndexBuffer::unlock()
+#endif
+
+void IndexBuffer::LockUntyped(void*& data, const unsigned int offset, const unsigned int size)
+{
+   m_rd->m_curLockCalls++;
+   m_sharedBuffer->Lock(this, m_offset + offset, size == 0 ? m_size : size, data);
+}
+
+void IndexBuffer::Unlock()
 {
    m_sharedBuffer->Unlock();
 }
@@ -216,7 +276,7 @@ void IndexBuffer::ApplyOffset(VertexBuffer* vb)
 
 void IndexBuffer::Upload()
 {
-   if (!m_sharedBuffer->IsUploaded())
+   if (!m_sharedBuffer->IsCreated())
       RemoveFromVectorSingle(m_rd->m_pendingSharedIndexBuffers, m_sharedBuffer);
    m_sharedBuffer->Upload();
 }

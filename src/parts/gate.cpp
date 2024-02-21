@@ -393,16 +393,16 @@ void Gate::RenderSetup(RenderDevice *device)
    IndexBuffer *bracketIndexBuffer = new IndexBuffer(m_rd, gateBracketNumIndices, gateBracketIndices);
    VertexBuffer *bracketVertexBuffer = new VertexBuffer(m_rd, gateBracketNumVertices);
    Vertex3D_NoTex2 *buf;
-   bracketVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+   bracketVertexBuffer->Lock(buf);
    GenerateBracketMesh(buf);
-   bracketVertexBuffer->unlock();
+   bracketVertexBuffer->Unlock();
    m_bracketMeshBuffer = new MeshBuffer(m_wzName + L".Bracket"s, bracketVertexBuffer, bracketIndexBuffer, true);
 
    IndexBuffer *wireIndexBuffer = new IndexBuffer(m_rd, m_numIndices, m_indices);
    VertexBuffer *wireVertexBuffer = new VertexBuffer(m_rd, m_numVertices, nullptr, true);
-   wireVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
+   wireVertexBuffer->Lock(buf);
    GenerateWireMesh(buf);
-   wireVertexBuffer->unlock();
+   wireVertexBuffer->Unlock();
    m_wireMeshBuffer = new MeshBuffer(m_wzName + L".Wire"s, wireVertexBuffer, wireIndexBuffer, true);
 }
 
@@ -453,10 +453,10 @@ void Gate::Render(const unsigned int renderMask)
                                  * Matrix3D::MatrixTranslate(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_height + m_baseHeight);
 
       Vertex3D_NoTex2 *buf;
-      m_wireMeshBuffer->m_vb->lock(0, 0, (void **)&buf, VertexBuffer::DISCARDCONTENTS);
+      m_wireMeshBuffer->m_vb->Lock(buf);
       vertMatrix.TransformPositions(m_vertices, buf, m_numVertices);
       fullMatrix.TransformNormals(m_vertices, buf, m_numVertices);
-      m_wireMeshBuffer->m_vb->unlock();
+      m_wireMeshBuffer->m_vb->Unlock();
    }
 
    m_rd->ResetRenderState();
