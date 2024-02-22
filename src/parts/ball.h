@@ -1,6 +1,6 @@
 #pragma once
 
-#include "resource.h"
+#include "ui/resource.h"
 #include "renderer/Renderable.h"
 
 class Ball;

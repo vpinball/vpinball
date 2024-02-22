@@ -1,6 +1,6 @@
 #include "core/stdafx.h"
 #include "AboutDialog.h"
-#include "vpversion.h"
+#include "core/vpversion.h"
 #include <fstream>
 
 AboutDialog::AboutDialog() : CDialog(IDD_ABOUT)

@@ -117,7 +117,7 @@
     <ClCompile Include="src/utils/def.cpp">
       <Filter>utils</Filter>
     </ClCompile>
-    <ClCompile Include="dragpoint.cpp">
+    <ClCompile Include="src/parts/dragpoint.cpp">
       <Filter>parts</Filter>
     </ClCompile>
     <ClCompile Include="src/core/extern.cpp">
@@ -132,10 +132,10 @@
     <ClCompile Include="src/core/iselect.cpp">
       <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="pinbinary.cpp">
+    <ClCompile Include="src/parts/pinbinary.cpp">
       <Filter>parts</Filter>
     </ClCompile>
-    <ClCompile Include="pininput.cpp">
+    <ClCompile Include="src/core/pininput.cpp">
       <Filter>core</Filter>
     </ClCompile>
     <ClCompile Include="src/core/pinundo.cpp">
@@ -147,7 +147,7 @@
     <ClCompile Include="src/core/vpinball.cpp">
       <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="wintimer.cpp">
+    <ClCompile Include="src/utils/wintimer.cpp">
       <Filter>utils</Filter>
     </ClCompile>
     <ClCompile Include="src/ui/worker.cpp">
@@ -198,7 +198,7 @@
     <ClCompile Include="src/parts/ball.cpp">
       <Filter>parts</Filter>
     </ClCompile>
-    <ClCompile Include="backGlass.cpp">
+    <ClCompile Include="src/parts/backGlass.cpp">
       <Filter>parts</Filter>
     </ClCompile>
     <ClCompile Include="src/parts/bumper.cpp">
@@ -635,19 +635,19 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="def.h">
+    <ClInclude Include="src/core/def.h">
       <Filter>core</Filter>
     </ClInclude>
-    <ClInclude Include="eventproxy.h">
+    <ClInclude Include="src/utils/eventproxy.h">
       <Filter>utils</Filter>
     </ClInclude>
-    <ClInclude Include="resource.h">
+    <ClInclude Include="src/ui/resource.h">
       <Filter>ui</Filter>
     </ClInclude>
     <ClInclude Include="vpinball.h">
       <Filter>core</Filter>
     </ClInclude>
-    <ClInclude Include="vpversion.h">
+    <ClInclude Include="src/core/vpversion.h">
       <Filter>core</Filter>
     </ClInclude>
     <ClInclude Include="src/audio/audioplayer.h">
@@ -1675,19 +1675,19 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="vpinball.rc">
+    <ResourceCompile Include="src/ui/vpinball.rc">
       <Filter>ui\res</Filter>
     </ResourceCompile>
-    <ResourceCompile Include="vpinball_eng.rc">
+    <ResourceCompile Include="src/ui/vpinball_eng.rc">
       <Filter>ui\res</Filter>
     </ResourceCompile>
-    <ResourceCompile Include="vpinball_fre.rc">
+    <ResourceCompile Include="src/ui/vpinball_fre.rc">
       <Filter>ui\res</Filter>
     </ResourceCompile>
-    <ResourceCompile Include="vpinball_ger.rc">
+    <ResourceCompile Include="src/ui/vpinball_ger.rc">
       <Filter>ui\res</Filter>
     </ResourceCompile>
-    <ResourceCompile Include="vpinball_spa.rc">
+    <ResourceCompile Include="src/ui/vpinball_spa.rc">
       <Filter>ui\res</Filter>
     </ResourceCompile>
   </ItemGroup>

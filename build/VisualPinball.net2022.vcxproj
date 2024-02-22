@@ -80,6 +80,7 @@
     <PlatformToolset>v143</PlatformToolset>
     <UseOfMfc>false</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -102,6 +103,7 @@
     <PlatformToolset>v143</PlatformToolset>
     <UseOfMfc>false</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -1113,19 +1115,19 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="src/utils/def.cpp" />
-    <ClCompile Include="dragpoint.cpp" />
+    <ClCompile Include="src/parts/dragpoint.cpp" />
     <ClCompile Include="src/core/extern.cpp" />
     <ClCompile Include="src/utils/hid.cpp" />
     <ClCompile Include="src/core/ieditable.cpp" />
     <ClCompile Include="src/core/iselect.cpp" />
-    <ClCompile Include="pinbinary.cpp" />
-    <ClCompile Include="pininput.cpp" />
+    <ClCompile Include="src/parts/pinbinary.cpp" />
+    <ClCompile Include="src/core/pininput.cpp" />
     <ClCompile Include="src/core/pinundo.cpp" />
     <ClCompile Include="src/core/main.cpp" />
     <ClCompile Include="src/core/vpinball.cpp" />
-    <ClCompile Include="wintimer.cpp" />
+    <ClCompile Include="src/utils/wintimer.cpp" />
     <ClCompile Include="src/ui/worker.cpp" />
-    <ClCompile Include="backGlass.cpp" />
+    <ClCompile Include="src/parts/backGlass.cpp" />
     <ClCompile Include="src/utils/bulb.cpp" />
     <ClCompile Include="src/renderer/captureExt.cpp" />
     <ClCompile Include="src/audio/mixer.cpp" />
@@ -1327,19 +1329,19 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <Midl Include="vpinball.idl" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="vpinball.rc">
+    <ResourceCompile Include="src/ui/vpinball.rc">
       <AdditionalIncludeDirectories>$(OUTDIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
-    <ResourceCompile Include="vpinball_eng.rc">
+    <ResourceCompile Include="src/ui/vpinball_eng.rc">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ResourceCompile>
-    <ResourceCompile Include="vpinball_fre.rc">
+    <ResourceCompile Include="src/ui/vpinball_fre.rc">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ResourceCompile>
-    <ResourceCompile Include="vpinball_ger.rc">
+    <ResourceCompile Include="src/ui/vpinball_ger.rc">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ResourceCompile>
-    <ResourceCompile Include="vpinball_spa.rc">
+    <ResourceCompile Include="src/ui/vpinball_spa.rc">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ResourceCompile>
   </ItemGroup>
@@ -1483,11 +1485,11 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="src/parts/backGlass.h" />
     <ClInclude Include="src/utils/bulb.h" />
     <ClInclude Include="src/renderer/captureExt.h" />
-    <ClInclude Include="def.h" />
+    <ClInclude Include="src/core/def.h" />
     <ClInclude Include="src/core/dispid.h" />
     <ClInclude Include="src/parts/dragpoint.h" />
     <ClInclude Include="src/core/editablereg.h" />
-    <ClInclude Include="eventproxy.h" />
+    <ClInclude Include="src/utils/eventproxy.h" />
     <ClInclude Include="src/core/extern.h" />
     <ClInclude Include="src/utils/hid.h" />
     <ClInclude Include="src/core/ieditable.h" />
@@ -1498,7 +1500,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="src/parts/pinbinary.h" />
     <ClInclude Include="src/core/pininput.h" />
     <ClInclude Include="src/core/pinundo.h" />
-    <ClInclude Include="resource.h" />
+    <ClInclude Include="src/ui/resource.h" />
     <ClInclude Include="src/core/stdafx.h" />
     <ClInclude Include="src/core/vpinball_h.h" />
     <ClInclude Include="third-party\include\bgfx\bgfx.h" />
@@ -1551,7 +1553,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="third-party\include\compat\msvc\inttypes.h" />
     <ClInclude Include="third-party\include\compat\msvc\stdbool.h" />
     <ClInclude Include="vpinball.h" />
-    <ClInclude Include="vpversion.h" />
+    <ClInclude Include="src/core/vpversion.h" />
     <ClInclude Include="src/utils/wintimer.h" />
     <ClInclude Include="src/ui/worker.h" />
     <ClInclude Include="src/audio/mixer.h" />
@@ -1995,7 +1997,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
   </ImportGroup>
   <ProjectExtensions>
     <VisualStudio>
-      <UserProperties DevPartner_IsInstrumented="1" RESOURCE_FILE="vpinball.rc" />
+      <UserProperties DevPartner_IsInstrumented="1" RESOURCE_FILE="src/ui/vpinball.rc" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>

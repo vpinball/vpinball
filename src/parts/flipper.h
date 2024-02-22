@@ -5,7 +5,7 @@
 #if !defined(AFX_FLIPPER_H__D65AA2A2_9F89_4AA4_88F3_D325B1001825__INCLUDED_)
 #define AFX_FLIPPER_H__D65AA2A2_9F89_4AA4_88F3_D325B1001825__INCLUDED_
 
-#include "resource.h"  
+#include "ui/resource.h"  
 /////////////////////////////////////////////////////////////////////////////
 // Flipper     // main symbols
 

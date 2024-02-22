@@ -1,7 +1,7 @@
 #include "core/stdafx.h"
-#include "resource.h"
+#include "ui/resource.h"
 #include "ImageDialog.h"
-#include "vpversion.h"
+#include "core/vpversion.h"
 
 typedef struct _tagSORTDATA
 {

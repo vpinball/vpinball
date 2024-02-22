@@ -9,7 +9,7 @@
 #include <windows.h>
 #include <dbghelp.h>
 #include <cassert>
-#include "vpversion.h"
+#include "core/vpversion.h"
 
 namespace
 {

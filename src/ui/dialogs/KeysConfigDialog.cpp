@@ -1,5 +1,5 @@
 #include "core/stdafx.h"
-#include "resource.h"
+#include "ui/resource.h"
 #include "KeysConfigDialog.h"
 
 static char rgszKeyName[][10] = {

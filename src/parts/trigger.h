@@ -5,7 +5,7 @@
 #if !defined(AFX_TRIGGER_H__2CA7256C_4072_43C3_9D65_AE091B601377__INCLUDED_)
 #define AFX_TRIGGER_H__2CA7256C_4072_43C3_9D65_AE091B601377__INCLUDED_
 
-#include "resource.h"
+#include "ui/resource.h"
 
 class TriggerData final : public BaseProperty
 {
