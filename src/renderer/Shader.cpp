@@ -1150,19 +1150,20 @@ static const bgfx::Memory* loadMem(bx::FileReaderI* _reader, const char* _filePa
 
 static bgfx::ShaderHandle loadShader(bx::FileReaderI *reader, const char *name)
 {
-   const char* shaderPath = "";
+   const string prefix = g_pvp->m_szMyPath + ("shaders-" + std::to_string(VP_VERSION_MAJOR) + '.' + std::to_string(VP_VERSION_MINOR) + '.' + std::to_string(VP_VERSION_REV) + PATH_SEPARATOR_CHAR);
+   string shaderPath = "";
    switch (bgfx::getRendererType())
    {
    case bgfx::RendererType::Noop:
    case bgfx::RendererType::Direct3D11:
-   case bgfx::RendererType::Direct3D12: shaderPath = "shaders-bgfx/dx11/"; break;
+   case bgfx::RendererType::Direct3D12: shaderPath = prefix + "bgfx-hlsl" + PATH_SEPARATOR_CHAR; break;
    case bgfx::RendererType::Agc:
-   case bgfx::RendererType::Gnm: shaderPath = "shaders-bgfx/pssl/"; break;
-   case bgfx::RendererType::Metal: shaderPath = "shaders-bgfx/metal/"; break;
-   case bgfx::RendererType::Nvn: shaderPath = "shaders-bgfx/nvn/"; break;
-   case bgfx::RendererType::OpenGL: shaderPath = "shaders-bgfx/glsl/"; break;
-   case bgfx::RendererType::OpenGLES: shaderPath = "shaders-bgfx/essl/"; break;
-   case bgfx::RendererType::Vulkan: shaderPath = "shaders-bgfx/spirv/"; break;
+   case bgfx::RendererType::Gnm: shaderPath = prefix + "bgfx-pssl" + PATH_SEPARATOR_CHAR; break;
+   case bgfx::RendererType::Metal: shaderPath = prefix + "bgfx-metal" + PATH_SEPARATOR_CHAR; break;
+   case bgfx::RendererType::Nvn: shaderPath = prefix + "bgfx-nvn" + PATH_SEPARATOR_CHAR; break;
+   case bgfx::RendererType::OpenGL: shaderPath = prefix + "bgfx-glsl" + PATH_SEPARATOR_CHAR; break;
+   case bgfx::RendererType::OpenGLES: shaderPath = prefix + "bgfx-essl" + PATH_SEPARATOR_CHAR; break;
+   case bgfx::RendererType::Vulkan: shaderPath = prefix + "bgfx-spirv" + PATH_SEPARATOR_CHAR; break;
    case bgfx::RendererType::Count: BX_ASSERT(false, "You should not be here!"); break;
    }
 
@@ -1170,13 +1171,11 @@ static bgfx::ShaderHandle loadShader(bx::FileReaderI *reader, const char *name)
    bx::strCopy(fileName, BX_COUNTOF(fileName), name);
    bx::strCat(fileName, BX_COUNTOF(fileName), ".bin");
 
-   char basePath[MAX_PATH];
-   /*DWORD length =*/GetModuleFileName(nullptr, basePath, MAX_PATH);
-   bx::FilePath path(bx::FilePath(basePath).getPath());
-   path.join(bx::FilePath(shaderPath));
+   bx::FilePath path(bx::FilePath(shaderPath.c_str()).getPath());
    path.join(bx::FilePath(fileName));
 
-   bgfx::ShaderHandle handle = bgfx::createShader(loadMem(reader, path.getCPtr()));
+   const bgfx::Memory* shader = loadMem(reader, path.getCPtr());
+   bgfx::ShaderHandle handle = bgfx::createShader(shader);
    bgfx::setName(handle, name);
 
    return handle;
@@ -1236,7 +1235,7 @@ bool Shader::Load(const std::string& name, const BYTE* code, unsigned int codeSi
    bgfx::ShaderHandle vsh = loadShader(reader, "vs_debug");
    bgfx::ShaderHandle fsh = loadShader(reader, "fs_debug");
    m_debugProgramHandle = bgfx::createProgram(vsh, fsh, true /* destroy shaders when program is destroyed */);
-   if (name == "BasicShader"s)
+   /* if (name == "BasicShader"s)
    {
       loadProgram(reader, SHADER_TECHNIQUE_basic_with_texture, "vs_basic_tex", "fs_basic_tex_norefl");
       loadProgram(reader, SHADER_TECHNIQUE_basic_without_texture, "vs_basic_notex", "fs_basic_notex_norefl");
@@ -1318,10 +1317,9 @@ bool Shader::Load(const std::string& name, const BYTE* code, unsigned int codeSi
    }
    else if (name == "DMDShader"s)
    {
-      /*  
-   SHADER_TECHNIQUE(basic_DMD_ext),
-   SHADER_TECHNIQUE(basic_DMD_world_ext),
-   SHADER_TECHNIQUE(basic_noDMD_notex),*/
+      // SHADER_TECHNIQUE(basic_DMD_ext),
+      // SHADER_TECHNIQUE(basic_DMD_world_ext),
+      // SHADER_TECHNIQUE(basic_noDMD_notex),
       loadProgram(reader, SHADER_TECHNIQUE_basic_DMD, "vs_basic_dmd_noworld", "fs_basic_dmd");
       loadProgram(reader, SHADER_TECHNIQUE_basic_DMD_world, "vs_basic_dmd_world", "fs_basic_dmd");
       loadProgram(reader, SHADER_TECHNIQUE_basic_noDMD, "vs_basic_dmd_noworld", "fs_basic_sprite");
@@ -1332,7 +1330,7 @@ bool Shader::Load(const std::string& name, const BYTE* code, unsigned int codeSi
    }
    else if (name == "StereoShader"s)
    {
-   }
+   }*/
    delete reader;
    return true;
 }
@@ -1769,7 +1767,8 @@ string Shader::preprocessGLShader(const string& shaderCode) {
 bool Shader::Load(const std::string& name, const BYTE* code, unsigned int codeSize)
 {
    m_shaderCodeName = name;
-   m_shaderPath = g_pvp->m_szMyPath + ("shader" + std::to_string(VP_VERSION_MAJOR) + '.' + std::to_string(VP_VERSION_MINOR) + '.' + std::to_string(VP_VERSION_REV) + PATH_SEPARATOR_CHAR);
+   m_shaderPath = g_pvp->m_szMyPath
+      + ("shaders-" + std::to_string(VP_VERSION_MAJOR) + '.' + std::to_string(VP_VERSION_MINOR) + '.' + std::to_string(VP_VERSION_REV) + PATH_SEPARATOR_CHAR + "opengl" + PATH_SEPARATOR_CHAR);
    PLOGI << "Parsing file " << name;
    robin_hood::unordered_map<string, string> values;
    const bool parsing = parseFile(m_shaderCodeName, m_shaderCodeName, 0, values, "GLOBAL"s);
