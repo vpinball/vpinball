@@ -1,5 +1,9 @@
 #pragma once
 
+#if defined(ENABLE_BGFX)
+#include "bx/readerwriter.h"
+
+#elif defined(ENABLE_OPENGL)
 #ifdef _DEBUG
 // Writes all compile/parse errors/warnings to the application log. (0=never, 1=only errors, 2=warnings, 3=info)
 #define DEBUG_LEVEL_LOG 1
@@ -9,6 +13,7 @@
 #define DEBUG_LEVEL_LOG 0
 #define WRITE_SHADER_FILES 1
 #endif
+#endif
 
 // Attempt to speed up STL which is very CPU costly, maybe we should look into using EASTL instead? http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2271.html https://github.com/electronicarts/EASTL
 #ifndef ENABLE_BGFX
@@ -16,13 +21,13 @@
 #define _HAS_ITERATOR_DEBUGGING 0
 #endif
 
-#include <string>
-
 #ifdef __OPENGLES__
 #define FLT_MIN_VALUE 0.00006103515625
 #else
 #define FLT_MIN_VALUE 0.0000001
 #endif
+
+#include <string>
 
 // Declaration of all available techniques (shader program)
 // When changed, this list must also be copied unchanged to Shader.cpp (for its implementation)
@@ -202,23 +207,23 @@ enum ShaderUniforms
    SHADER_UNIFORM(SUT_Float, alphaTestValue, 1),
    SHADER_UNIFORM(SUT_Float4x4, matProj, 1), // +1 Matrix for stereo
    SHADER_UNIFORM(SUT_Float4x4, matWorldViewProj, 1), // +1 Matrix for stereo
-   #ifdef ENABLE_OPENGL // OpenGL
+   #if defined(ENABLE_OPENGL)
    SHADER_UNIFORM(SUT_DataBlock, basicMatrixBlock, 5 * 16 * 4), // +1 Matrix for stereo
    SHADER_UNIFORM(SUT_DataBlock, ballMatrixBlock, 4 * 16 * 4), // +1 Matrix for stereo
-   #else // DirectX 9
+   #elif defined(ENABLE_DX9) || defined(ENABLE_BGFX)
    SHADER_UNIFORM(SUT_Float4x4, matWorld, 1),
    SHADER_UNIFORM(SUT_Float4x3, matView, 1),
    SHADER_UNIFORM(SUT_Float4x4, matWorldView, 1),
    SHADER_UNIFORM(SUT_Float4x3, matWorldViewInverse, 1),
    SHADER_UNIFORM(SUT_Float3x4, matWorldViewInverseTranspose, 1),
-#endif
+   #endif
    SHADER_UNIFORM(SUT_Float4, lightCenter_doShadow, 1), // Basic & Flasher (for ball shadows)
    SHADER_UNIFORM(SUT_Float4v, balls, 8), // Basic & Flasher (for ball shadows)
    SHADER_UNIFORM(SUT_Float4, staticColor_Alpha, 1), // Basic & Flasher
    SHADER_UNIFORM(SUT_Float4, w_h_height, 1), // Post process & Basic (for screen space reflection/refraction)
 
-// Shared material for Ball, Basic and Classic light shaders
-#ifdef ENABLE_OPENGL // OpenGL
+   // Shared material for Ball, Basic and Classic light shaders
+   #if defined(ENABLE_OPENGL) || defined(ENABLE_BGFX)
    SHADER_UNIFORM(SUT_Float4, clip_plane, 1),
    SHADER_UNIFORM(SUT_Float4v, basicLightEmission, 2),
    SHADER_UNIFORM(SUT_Float4v, basicLightPos, 2),
@@ -226,10 +231,10 @@ enum ShaderUniforms
    SHADER_UNIFORM(SUT_Float4v, ballLightPos, 10),
    SHADER_UNIFORM(SUT_Bool, is_metal, 1), // OpenGL only [managed by DirectX Effect framework on DirectX]
    SHADER_UNIFORM(SUT_Bool, doNormalMapping, 1), // OpenGL only [managed by DirectX Effect framework on DirectX]
-#else // DirectX 9
+   #elif defined(ENABLE_DX9)
    SHADER_UNIFORM(SUT_Float4v, basicPackedLights, 3),
    SHADER_UNIFORM(SUT_Float4v, ballPackedLights, 15),
-#endif
+   #endif
    SHADER_UNIFORM(SUT_Float4, Roughness_WrapL_Edge_Thickness, 1),
    SHADER_UNIFORM(SUT_Float4, cBase_Alpha, 1),
    SHADER_UNIFORM(SUT_Float2, fDisableLighting_top_below, 1),
@@ -241,9 +246,9 @@ enum ShaderUniforms
    // Basic Shader
    SHADER_UNIFORM(SUT_Float4, cClearcoat_EdgeAlpha, 1),
    SHADER_UNIFORM(SUT_Float4, cGlossy_ImageLerp, 1),
-#ifdef ENABLE_OPENGL // OpenGL
+   #if defined(ENABLE_OPENGL) || defined(ENABLE_BGFX)
    SHADER_UNIFORM(SUT_Bool, doRefractions, 1),
-#endif
+   #endif
    SHADER_UNIFORM(SUT_Float4, refractionTint_thickness, 1),
    SHADER_UNIFORM(SUT_Float4, mirrorNormal_factor, 1),
    SHADER_UNIFORM(SUT_Bool, objectSpaceNormalMap, 1),
@@ -339,9 +344,9 @@ private:
    bool Load(const std::string& name, const BYTE* code, unsigned int codeSize);
 
 public:
-   #ifdef ENABLE_OPENGL // OpenGL
+   #if defined(ENABLE_OPENGL) || defined(ENABLE_BGFX)
    Shader(RenderDevice *renderDevice, const std::string& src1, const std::string& src2 = ""s) : Shader(renderDevice, src1, src2, nullptr, 0) { }
-   #else // DirectX 9
+   #elif defined(ENABLE_DX9)
    Shader(RenderDevice *renderDevice, const std::string& name, const BYTE* code, unsigned int codeSize) : Shader(renderDevice, name, ""s, code, codeSize) { }
    #endif
    ~Shader();
@@ -529,8 +534,7 @@ public:
          assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
          assert(shaderUniformNames[uniformName].type == SUT_Sampler);
          assert(sampler != nullptr);
-         #if defined(ENABLE_BGFX)
-         #elif defined(ENABLE_OPENGL)
+         #if defined(ENABLE_BGFX) || defined(ENABLE_OPENGL)
          assert(m_shader->m_stateOffsets[uniformName] != -1);
          *(Sampler**)(m_state + m_shader->m_stateOffsets[uniformName]) = sampler;
          #elif defined(ENABLE_DX9)
@@ -582,9 +586,30 @@ private:
    
    // caches
 #if defined(ENABLE_BGFX)
+   ShaderState* m_boundState[SHADER_TECHNIQUE_COUNT]; // The state currently applied to the backend (per program, so per technique)
+   static ShaderTechniques m_boundTechnique; // TODO => move to render device ? This is global 
+   struct UniformDesc
+   {
+      ShaderUniform uniform;
+      bgfx::UniformHandle handle;
+   };
+
+   struct ShaderTechnique
+   {
+      bgfx::ProgramHandle program;
+      UniformDesc uniform_desc[SHADER_UNIFORM_COUNT];
+   };
+   ShaderTechnique* m_techniques[SHADER_TECHNIQUE_COUNT];
+   bgfx::ProgramHandle m_debugProgramHandle = BGFX_INVALID_HANDLE;
+
+   void loadProgram(bx::FileReaderI* reader, ShaderTechniques tech, const char* vsName, const char* fsName);
+
+public:
+   bgfx::ProgramHandle GetCore() const { return m_techniques[m_technique] == nullptr ? m_debugProgramHandle : m_techniques[m_technique]->program; }
+
 #elif defined(ENABLE_OPENGL)
    ShaderState* m_boundState[SHADER_TECHNIQUE_COUNT]; // The state currently applied to the backend (per technique for OpenGL)
-   static ShaderTechniques m_boundTechnique; // This is global for OpenGL
+   static ShaderTechniques m_boundTechnique; // TODO => move to render device ? This is global for OpenGL
    struct UniformDesc
    {
       ShaderUniform uniform;
@@ -605,9 +630,9 @@ private:
    bool parseFile(const string& fileNameRoot, const string& fileName, int level, robin_hood::unordered_map<string, string>& values, const string& parentMode);
    string analyzeFunction(const string& shaderCodeName, const string& technique, const string& functionName, const robin_hood::unordered_map<string, string>& values);
    ShaderTechnique* compileGLShader(const ShaderTechniques technique, const string& fileNameRoot, const string& shaderCodeName, const string& vertex, const string& geometry, const string& fragment);
-#ifdef __STANDALONE__
+   #ifdef __STANDALONE__
    string preprocessGLShader(const string& shaderCode);
-#endif
+   #endif
 
 #elif defined(ENABLE_DX9)
    struct UniformDesc

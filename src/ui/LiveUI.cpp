@@ -881,6 +881,7 @@ ImGui::MarkdownImageData LiveUI::MarkdownImageCallback(ImGui::MarkdownLinkCallba
       return ImGui::MarkdownImageData {};
    #if defined(ENABLE_BGFX)
    // FIXME implement
+   ImTextureID image = (void *)nullptr;
    #elif defined(ENABLE_OPENGL)
    ImTextureID image = (void *)(intptr_t)sampler->GetCoreTexture();
    #elif defined(ENABLE_DX9)

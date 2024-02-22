@@ -18,7 +18,8 @@ add_compile_definitions(
    ENABLE_SDL_VIDEO
    ENABLE_BGFX
    USE_DINPUT8
-   BX_CONFIG_DEBUG
+   $<$<CONFIG:DEBUG>:BX_CONFIG_DEBUG=1>
+   $<$<CONFIG:RELEASE>:BX_CONFIG_DEBUG=0>
 )
 
 set_source_files_properties(
@@ -556,6 +557,7 @@ target_include_directories(vpinball PUBLIC
    ${CMAKE_CURRENT_SOURCE_DIR}
    ${CMAKE_CURRENT_BINARY_DIR}/$(IntDir)
    third-party/include
+   third-party/include/compat/msvc
    third-party/include/win32xx/include
    dialogs
    media
@@ -598,9 +600,12 @@ target_link_libraries(vpinball
    SDL2main.lib
    dinput8.lib
 
-   bgfxDebug.lib
-   bimgDebug.lib
-   bxDebug.lib
+   $<$<CONFIG:DEBUG>:bgfxDebug.lib>
+   $<$<CONFIG:DEBUG>:bimgDebug.lib>
+   $<$<CONFIG:DEBUG>:bxDebug.lib>
+   $<$<CONFIG:RELEASE>:bgfxRelease.lib>
+   $<$<CONFIG:RELEASE>:bimgRelease.lib>
+   $<$<CONFIG:RELEASE>:bxRelease.lib>
 )
 
 target_link_options(vpinball PUBLIC
@@ -625,8 +630,9 @@ add_custom_command(TARGET vpinball POST_BUILD
    COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/tables" "$<TARGET_FILE_DIR:vpinball>/tables"
    COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/txt" "$<TARGET_FILE_DIR:vpinball>/docs"
 
-   COMMAND "${CMAKE_COMMAND}" -E make_directory "$<TARGET_FILE_DIR:vpinball>/shader${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}"
-   COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/src/shader/bgfx" "$<TARGET_FILE_DIR:vpinball>/shader${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}"
+   COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/src/shaders/bgfx/hlsl" "$<TARGET_FILE_DIR:vpinball>/shader${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/hlsl"
+   COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/src/shaders/bgfx/glsl" "$<TARGET_FILE_DIR:vpinball>/shader${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/glsl"
+   COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/src/shaders/bgfx/spirv" "$<TARGET_FILE_DIR:vpinball>/shader${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/spirv"
 
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x64/Bass64.dll" "$<TARGET_FILE_DIR:vpinball>"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x64/SDL264.dll" "$<TARGET_FILE_DIR:vpinball>"
