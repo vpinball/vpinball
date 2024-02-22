@@ -8,7 +8,6 @@
 
 .github/workflows
 
-build
 tmp
 
 CMakeLists.txt
@@ -29,3 +28,8 @@ standalone/android/android-project/app/src/main/jniLibs
 standalone/linux/external
 standalone/rpi/external
 standalone/rk3588/external
+
+# local Microsoft Visual Studio files
+VisualPinball.sln
+VisualPinball.vcxproj
+VisualPinball.vcxproj.filters
