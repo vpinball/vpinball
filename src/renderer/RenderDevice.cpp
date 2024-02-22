@@ -576,7 +576,7 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
 #if defined(ENABLE_BGFX)
    ///////////////////////////////////
    // BGFX device initialization
-bool video10bit = false;
+   bool video10bit = false;
 
    bgfx::Init init;
    
