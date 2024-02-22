@@ -109,6 +109,9 @@
     <Filter Include="third-party\compat">
       <UniqueIdentifier>{c2eb4c3c-96b3-47e6-8e90-928d612397fb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="third-party\imgui\sdl2">
+      <UniqueIdentifier>{777c0a63-2218-4595-a266-4036fb727996}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src/utils/def.cpp">
@@ -626,6 +629,9 @@
     </ClCompile>
     <ClCompile Include="third-party/include/imguizmo/ImGuizmo.cpp">
       <Filter>third-party\imgui\ImGuizmo</Filter>
+    </ClCompile>
+    <ClCompile Include="third-party/include/imgui/imgui_impl_sdl2.cpp">
+      <Filter>third-party\imgui\sdl2</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1663,6 +1669,9 @@
     </ClInclude>
     <ClInclude Include="third-party\include\compat\msvc\stdbool.h">
       <Filter>third-party\compat</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party/include/imgui/imgui_impl_sdl2.h">
+      <Filter>third-party\imgui\sdl2</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
