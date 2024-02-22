@@ -139,7 +139,7 @@ jobs:
           fi
           cp build/${{ matrix.config }}/*.dll tmp
           cp -r build/${{ matrix.config }}/assets tmp
-          cp -r build/${{ matrix.config }}/shader${{ needs.version.outputs.version_short }} tmp
+          cp -r build/${{ matrix.config }}/shaders-${{ needs.version.outputs.version_short }} tmp
           cp -r build/${{ matrix.config }}/scripts tmp
           cp -r build/${{ matrix.config }}/tables tmp
           cp -r build/${{ matrix.config }}/docs tmp
@@ -185,7 +185,7 @@ jobs:
           fi
           cp build/${{ matrix.config }}/*.dll tmp
           cp -r build/${{ matrix.config }}/assets tmp
-          cp -r build/${{ matrix.config }}/shader${{ needs.version.outputs.version_short }} tmp
+          cp -r build/${{ matrix.config }}/shaders-${{ needs.version.outputs.version_short }} tmp
           cp -r build/${{ matrix.config }}/scripts tmp
           cp -r build/${{ matrix.config }}/tables tmp
           cp -r build/${{ matrix.config }}/docs tmp
@@ -395,7 +395,7 @@ jobs:
           cp build/${{ matrix.config }}/VPinballX_GL tmp
           cp -P build/${{ matrix.config }}/*.{so,so.*} tmp
           cp -r build/${{ matrix.config }}/flexdmd tmp
-          cp -r build/${{ matrix.config }}/shader${{ needs.version.outputs.version_short }} tmp
+          cp -r build/${{ matrix.config }}/shaders-${{ needs.version.outputs.version_short }} tmp
           cp -r build/${{ matrix.config }}/assets tmp
           cp -r build/${{ matrix.config }}/scripts tmp
           cp -r build/${{ matrix.config }}/tables tmp

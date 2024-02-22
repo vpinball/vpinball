@@ -1987,9 +1987,27 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     </ContentWithTargetPath>
   </ItemGroup>
   <ItemGroup>
-    <ContentWithTargetPath Include="shader/**">
+    <ContentWithTargetPath Include="shader/*.glfx" Condition="('$(Configuration)'=='Debug_GL')or('$(Configuration)'=='Release_GL')">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <TargetPath>shader10.8.1\%(RecursiveDir)\%(Filename)%(Extension)</TargetPath>
+      <TargetPath>shaders-10.8.1\opengl\%(RecursiveDir)\%(Filename)%(Extension)</TargetPath>
+    </ContentWithTargetPath>
+    <ContentWithTargetPath Include="shader/*.fxh" Condition="('$(Configuration)'=='Debug_GL')or('$(Configuration)'=='Release_GL')">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>shaders-10.8.1\opengl\%(RecursiveDir)\%(Filename)%(Extension)</TargetPath>
+    </ContentWithTargetPath>
+  </ItemGroup>
+  <ItemGroup>
+    <ContentWithTargetPath Include="src/shaders/bgfx/glsl/**" Condition="('$(Configuration)'=='Debug_BGFX')or('$(Configuration)'=='Release_BGFX')">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>shaders-10.8.1\bgfx-glsl\%(RecursiveDir)\%(Filename)%(Extension)</TargetPath>
+    </ContentWithTargetPath>
+    <ContentWithTargetPath Include="src/shaders/bgfx/hlsl/**" Condition="('$(Configuration)'=='Debug_BGFX')or('$(Configuration)'=='Release_BGFX')">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>shaders-10.8.1\bgfx-hlsl\%(RecursiveDir)\%(Filename)%(Extension)</TargetPath>
+    </ContentWithTargetPath>
+    <ContentWithTargetPath Include="src/shaders/bgfx/spirv/**" Condition="('$(Configuration)'=='Debug_BGFX')or('$(Configuration)'=='Release_BGFX')">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>shaders-10.8.1\bgfx-spirv\%(RecursiveDir)\%(Filename)%(Extension)</TargetPath>
     </ContentWithTargetPath>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

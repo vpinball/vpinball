@@ -77,15 +77,16 @@ mat3 TBN_trafo(const vec3 N, const vec3 V, const vec2 uv)
 
 vec3 normal_map(const vec3 N, const vec3 V, const vec2 uv)
 {
-   vec3 tn = texture2D(tex_base_normalmap, uv).xyz * (255./127.) - (128./127.); // Note that Blender apparently does export tangent space normalmaps for Z (Blue) at full range, so 0..255 -> 0..1, which misses an option for here!
+   const vec3 tn = texture2D(tex_base_normalmap, uv).xyz * (255./127.) - (128./127.);
 
    BRANCH if (objectSpaceNormalMap.x != 0.0)
-   {
-      tn.z = -tn.z; // this matches the object space, +X +Y +Z, export/baking in Blender with our trafo setup
-      return normalize( mul(tn, matWorldViewInverseTranspose).xyz );
-      // return normalize(mul(inverse(matView), vec4(tn, 0.0)).xyz);
-   } else // tangent space
-      return normalize(( mul(tn, TBN_trafo(N, V, uv)) ).xyz);  // !! The order of tn, and TBN_trainfo matters here?  Ship on FishTales gets blown out if you reverse them 
+   { // Object space: this matches the object space, +X +Y +Z, export/baking in Blender with our trafo setup
+      return normalize(mul(matWorldViewInverseTranspose, float3(tn.x, tn.y, -tn.z)).xyz);
+   }
+   else
+   { // Tangent space
+      return normalize(mul(TBN_trafo(N, V, uv), tn).xyz);
+   }
 }
 
 // Compute reflections from reflection probe (screen space coordinates)
@@ -100,14 +101,10 @@ vec3 compute_reflection(const vec2 screenSpace, const vec3 N)
 }
 
 // Compute refractions from screen space probe
-#ifdef DX9
-vec3 compute_refraction(const vec3 pos, const vec2 screenSpace, const vec3 N, const vec3 V)
-#else
 vec3 compute_refraction(const vec3 pos, const vec2 screenSpace, const vec3 N, const vec3 V, const vec4 fragCoord)
-#endif
 {
    // Compute refracted visible position then project from world view position to probe UV
-   // const vec4x4 matProj = mul(inverse4x4(matWorldView), matWorldViewProj[0]); // this has been moved to the matrix uniform stack for performance reasons
+   // const vec4x4 matProj = mul(inverse4x4(matWorldView), matWorldViewProj[int(eye)]); // this has been moved to the matrix uniform stack for performance reasons
    const vec3 R = refract(V, N, 1.0 / 1.5); // n1 = 1.0 (air), n2 = 1.5 (plastic), eta = n1 / n2
    const vec3 refracted_pos = pos + refractionThickness.x * R; // Shift ray by the thickness of the material
    const vec4 proj = mul(matProj, vec4(refracted_pos, 1.0));
@@ -116,15 +113,8 @@ vec3 compute_refraction(const vec3 pos, const vec2 screenSpace, const vec3 N, co
    // Check if the sample position is behind the object pos. If not take don't perform refraction as it would lead to refract things above us (so reflect)
    const float d = texture2D(tex_probe_depth, uv).x;
 
-#ifdef DX9
-   // Sadly DX9 does not give access to transformed fragment position and we need to project it again here...
-   const vec4 proj_base = mul(vec4(pos, 1.0), matProj); 
-   if (d < proj_base.z / proj_base.w)
-      uv = screenSpace;
-#else
    if (d < fragCoord.z)
       uv = screenSpace;
-#endif
    // The following code gives a smoother transition but depends too much on the POV since it uses homogeneous depth to lerp instead of fragment's world depth
    //const vec3 unbiased = vec3(1.0, 0.0, 0.0);
    //const vec3 biased = vec3(0.0, 1.0, 0.0);
