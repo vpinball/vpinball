@@ -109,6 +109,7 @@ void DMDWindow::Render()
       }
       if (SDL_UpdateTexture(m_pTexture, NULL, pRGB24Data, m_pitch))
          return;
+      SDL_SetRenderDrawColor(m_pRenderer, 0, 0, 0, 255);
       SDL_RenderClear(m_pRenderer);
       SDL_RenderCopyExF(m_pRenderer, m_pTexture, NULL, &m_destRect, m_angle, NULL, SDL_FLIP_NONE);
       SDL_RenderPresent(m_pRenderer);

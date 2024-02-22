@@ -16,7 +16,7 @@
 #include "RenderPass.h"
 
 #if defined(ENABLE_SDL_VIDEO)
-#include "sdl2/SDL.h"
+#include "SDL2/SDL.h"
 #endif
 
 #if defined(ENABLE_OPENGL) && !defined(__STANDALONE__)
