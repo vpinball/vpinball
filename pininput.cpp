@@ -1054,7 +1054,11 @@ void PinInput::Init(const HWND hwnd)
    SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC);
    string path = g_pvp->m_szMyPrefPath + "gamecontrollerdb.txt";
    if (!std::filesystem::exists(path))
+#ifndef __ANDROID__
       std::filesystem::copy(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "Default gamecontrollerdb.txt", path);
+#else
+      std::filesystem::copy(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "Default_gamecontrollerdb.txt", path);
+#endif
    int count = SDL_GameControllerAddMappingsFromFile(path.c_str());
    if (count > 0) {
       PLOGI.printf("Game controller mappings added: count=%d, path=%s", count, path.c_str());

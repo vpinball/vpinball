@@ -252,8 +252,8 @@ class VpxLauncherActivity : ComponentActivity() {
 
             try {
                 val inputStream = assets.open(srcPath)
-                dstFile = dstDir.createFile("application/octet-stream", filename)!!
-                Log.v(TAG, "Copying $srcPath to $dstFile")
+                dstFile = dstDir.createFile("application/octet-stream", filename.replace(' ', '_'))!!
+                Log.v(TAG, "Copying $srcPath to '${dstFile.name}'")
                 copyFile(inputStream, dstFile)
             } catch (e: FileNotFoundException) {
                 // Create the directory if it doesn't exist
@@ -385,7 +385,7 @@ fun PinballTables(tablesList: SnapshotStateList<String>) {
             modifier = Modifier
                 .padding(8.dp)
                 .fillMaxWidth()) {
-            ElevatedButton(onClick = { activity.openVpxDirectory(true) }) {
+            ElevatedButton(onClick = { activity.openVpxDirectory(false) }) {
                 Text(stringResource(R.string.button_refresh))
             }
 

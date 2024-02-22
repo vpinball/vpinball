@@ -35,6 +35,7 @@
 
 #ifdef __ANDROID__
 #include <android/log.h>
+#include <regex>
 
 #define APPNAME "VPX"
 #define ALOGD(...) __android_log_print(ANDROID_LOG_DEBUG, APPNAME, __VA_ARGS__);
@@ -715,8 +716,25 @@ public:
             char buf[PATH_MAX];
             auto fdFilename = "/proc/self/fd/" + std::to_string(prefPathFD);
             auto nbytes = readlink(fdFilename.c_str(), buf, PATH_MAX);
-
             m_szPrefPath = std::string(buf, nbytes);
+            ALOGD("SAF directory %s", m_szPrefPath.c_str());
+
+            // If the SAF path was in the mounted /sdcard
+            // the path must use /sdcard instead of the physical path
+            // otherwise Android will deny access to all files
+            std::regex sdcardRegex("\\/mnt\\/user\\/\\d\\/emulated\\/\\d",
+                  std::regex_constants::ECMAScript | std::regex_constants::icase);
+
+            // This logic may be handling external sdcards
+            if (std::regex_search(m_szPrefPath, sdcardRegex)) 
+            {
+               ALOGD("SAF pointing to a sdcard dir");
+               auto begin = std::sregex_iterator(m_szPrefPath.begin(), m_szPrefPath.end(), sdcardRegex);
+               std::smatch match = *begin;
+               auto match_str = match.str();
+               m_szPrefPath = "/sdcard" + m_szPrefPath.substr(match_str.size());
+            }
+
             ALOGD("VPX path is %s", m_szPrefPath.c_str());
 
             m_vpinball.UpdateMyPath(m_szPrefPath);
@@ -855,6 +873,7 @@ public:
       if (!m_szPrefPath.ends_with(PATH_SEPARATOR_CHAR))
          m_szPrefPath += PATH_SEPARATOR_CHAR;
 
+#ifndef __ANDROID__
       if (!DirExists(m_szPrefPath)) {
          try {
             std::filesystem::create_directory(m_szPrefPath);
@@ -868,7 +887,7 @@ public:
             exit(1);
          }
       }
-
+#endif
       m_vpinball.m_szMyPrefPath = m_szPrefPath;
    }
 #endif
