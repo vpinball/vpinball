@@ -1,6 +1,6 @@
 #include "core/stdafx.h"
-#include "vpversion.h"
-#include "resource.h"
+#include "core/vpversion.h"
+#include "ui/resource.h"
 #include "utils/hash.h"
 #include <algorithm>
 #ifndef __STANDALONE__

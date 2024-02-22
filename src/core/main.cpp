@@ -10,7 +10,7 @@
 #include "utils/BlackBox.h"
 #endif
 
-#include "resource.h"
+#include "ui/resource.h"
 #include <initguid.h>
 
 #define  SET_CRT_DEBUG_FIELD(a)   _CrtSetDbgFlag((a) | _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG))

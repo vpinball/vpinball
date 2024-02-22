@@ -5,7 +5,7 @@
 #if !defined(AFX_PRIMITIVE_H__31CD2D6B_9BDD_4B1B_BC62_B9DE588A0CAA__INCLUDED_)
 #define AFX_PRIMITIVE_H__31CD2D6B_9BDD_4B1B_BC62_B9DE588A0CAA__INCLUDED_
 
-#include "resource.h"
+#include "ui/resource.h"
 #include "robin_hood.h"
 
 class Mesh final

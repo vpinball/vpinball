@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////
 
 #include "core/stdafx.h"
-#include "resource.h"
+#include "ui/resource.h"
 #ifndef __STANDALONE__
 #include "ui/dialogs/KeysConfigDialog.h"
 #endif

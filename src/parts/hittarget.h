@@ -5,7 +5,7 @@
 #if !defined(AFX_HITTARGET_H__A67DE998_7D97_4E03_BE91_55BFD3A48DB6__INCLUDED_)
 #define AFX_HITTARGET_H__A67DE998_7D97_4E03_BE91_55BFD3A48DB6__INCLUDED_
 
-#include "resource.h"
+#include "ui/resource.h"
 #include "robin_hood.h"
 
 // Indices for RotAndTra:

@@ -5,7 +5,7 @@
 #if !defined(AFX_TIMER_H__932D477C_A594_4941_906D_8BF11A68C838__INCLUDED_)
 #define AFX_TIMER_H__932D477C_A594_4941_906D_8BF11A68C838__INCLUDED_
 
-#include "resource.h"       // main symbols
+#include "ui/resource.h"       // main symbols
 
 /////////////////////////////////////////////////////////////////////////////
 // Timer

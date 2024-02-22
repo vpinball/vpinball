@@ -1,5 +1,5 @@
 #include "core/stdafx.h"
-#include "resource.h"
+#include "ui/resource.h"
 #include "NotesDialog.h"
 
 LRESULT NotesEdit::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)

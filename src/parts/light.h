@@ -5,7 +5,7 @@
 #if !defined(AFX_LIGHT_H__7445FDB1_1FBE_4975_9AB6_367E6D16098F__INCLUDED_)
 #define AFX_LIGHT_H__7445FDB1_1FBE_4975_9AB6_367E6D16098F__INCLUDED_
 
-#include "resource.h"       // main symbols
+#include "ui/resource.h"       // main symbols
 #include "renderer/RenderDevice.h"
 
 #define NUM_RGB_BLINK_PATTERN 33 //!! remove

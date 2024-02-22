@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.25)
 
-file(READ vpversion.h version)
+file(READ src/core/vpversion.h version)
 string(REGEX MATCH "VP_VERSION_MAJOR[ ]+([0-9]+)" _tmp ${version})
 set(VERSION_MAJOR "${CMAKE_MATCH_1}")
 string(REGEX MATCH "VP_VERSION_MINOR[ ]+([0-9]+)" _tmp ${version})
@@ -54,13 +54,13 @@ add_definitions(
 )
 
 add_executable(vpinball 
-   def.h
-   dragpoint.cpp
-   eventproxy.h
-   backGlass.cpp
-   pininput.cpp
-   pinbinary.cpp
-   vpversion.h
+   src/core/def.h
+   src/parts/dragpoint.cpp
+   src/utils/eventproxy.h
+   src/parts/backGlass.cpp
+   src/core/pininput.cpp
+   src/parts/pinbinary.cpp
+   src/core/vpversion.h
 
    src/audio/mixer.cpp
    src/audio/mixer.h
@@ -255,7 +255,7 @@ add_executable(vpinball
    src/utils/def.cpp
    src/utils/hid.cpp
    src/utils/hid.h
-   wintimer.cpp
+   src/utils/wintimer.cpp
    src/utils/wintimer.h
    src/utils/helpers.h
    src/utils/variant.cpp

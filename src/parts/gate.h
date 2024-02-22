@@ -5,7 +5,7 @@
 #if !defined(AFX_GATE_H__EDC63CB2_226F_4606_99A9_0C2DB8FE1E3B__INCLUDED_)
 #define AFX_GATE_H__EDC63CB2_226F_4606_99A9_0C2DB8FE1E3B__INCLUDED_
 
-#include "resource.h"       // main symbols
+#include "ui/resource.h"       // main symbols
 
 /////////////////////////////////////////////////////////////////////////////
 // Gate

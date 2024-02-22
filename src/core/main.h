@@ -279,7 +279,7 @@ class SCNotification { };
 #include "math/matrix.h"
 #include "math/bbox.h"
 
-#include "resource.h"
+#include "ui/resource.h"
 
 #include "utils/memutil.h"
 
@@ -297,7 +297,7 @@ class SCNotification { };
 
 #include "utils/wintimer.h"
 
-#include "eventproxy.h"
+#include "utils/eventproxy.h"
 
 #include "ui/worker.h"
 

@@ -5,7 +5,7 @@
 #if !defined(AFX_FLASHER_H__87DAB93E_7D6F_4fe4_A5F9_632FD82BDB4A__INCLUDED_)
 #define AFX_FLASHER_H__87DAB93E_7D6F_4fe4_A5F9_632FD82BDB4A__INCLUDED_
 
-#include "resource.h"       // main symbols
+#include "ui/resource.h"       // main symbols
 
 class FlasherData final
 {

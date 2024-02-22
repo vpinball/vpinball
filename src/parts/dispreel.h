@@ -5,7 +5,7 @@
 #if !defined(AFX_DISPREEL_H__1052EB33_4F53_460B_AAB8_09D3C517F225__INCLUDED_)
 #define AFX_DISPREEL_H__1052EB33_4F53_460B_AAB8_09D3C517F225__INCLUDED_
 
-#include "resource.h"       // main symbols
+#include "ui/resource.h"       // main symbols
 
 /////////////////////////////////////////////////////////////////////////////
 // DispReel

@@ -1,7 +1,7 @@
 #pragma once
 // Surface.h : Declaration of the Surface
 
-#include "resource.h"       // main symbols
+#include "ui/resource.h"       // main symbols
 
 class SurfaceData final : public BaseProperty
 {

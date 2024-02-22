@@ -1,5 +1,5 @@
 #include "core/stdafx.h"
-#include "resource.h"
+#include "ui/resource.h"
 #include "DrawingOrderDialog.h"
 
 DrawingOrderDialog::DrawingOrderDialog(bool select) : CDialog(IDD_DRAWING_ORDER)

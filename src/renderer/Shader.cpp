@@ -6,7 +6,7 @@
 #include <plog/Log.h>
 #include <plog/Initializers/RollingFileInitializer.h>
 
-#include "vpversion.h"
+#include "core/vpversion.h"
 
 #if defined(ENABLE_BGFX)
 #include "bx/timer.h"
