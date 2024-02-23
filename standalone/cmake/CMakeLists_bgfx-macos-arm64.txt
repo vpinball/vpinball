@@ -667,7 +667,7 @@ target_link_libraries(vpinball PUBLIC
 set_target_properties(vpinball PROPERTIES
    RUNTIME_OUTPUT_NAME "${APP_NAME}"
    MACOSX_BUNDLE YES
-   MACOSX_BUNDLE_INFO_PLIST "${CMAKE_SOURCE_DIR}/standalone/macos-arm64/Info.plist"
+   MACOSX_BUNDLE_INFO_PLIST "${CMAKE_SOURCE_DIR}/standalone/macos-arm64/Info_BGFX.plist"
 )
 
 add_custom_command(TARGET vpinball POST_BUILD
@@ -683,7 +683,6 @@ add_custom_command(TARGET vpinball POST_BUILD
    COMMAND "${CMAKE_COMMAND}" -E make_directory "$<TARGET_FILE_DIR:vpinball>/../Frameworks"
    COMMAND cp -P "${CMAKE_SOURCE_DIR}/standalone/macos-arm64/external/lib/*.dylib" "$<TARGET_FILE_DIR:vpinball>/../Frameworks"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/macos-arm64/VPinballX.icns" "$<TARGET_FILE_DIR:vpinball>/../Resources"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/macos-arm64/Info.plist" "$<TARGET_FILE_DIR:vpinball>/.."
    COMMAND /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString ${CMAKE_PROJECT_VERSION}" $<TARGET_FILE_DIR:vpinball>/../Info.plist
    COMMAND /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${CMAKE_PROJECT_VERSION}" $<TARGET_FILE_DIR:vpinball>/../Info.plist
 )
