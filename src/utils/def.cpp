@@ -579,8 +579,7 @@ vector<unsigned char> base64_decode(const string &encoded_string)
    return ret;
 }
 
-
-
+#ifdef ENABLE_OPENGL
 const char* gl_to_string(GLuint value)
 {
    static robin_hood::unordered_map<GLuint, const char*> value_map = {
@@ -601,6 +600,7 @@ const char* gl_to_string(GLuint value)
    }
    return (const char*)"Unknown";
 }
+#endif
 
 vector<string> add_line_numbers(const char* src)
 {

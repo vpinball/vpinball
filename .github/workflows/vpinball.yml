@@ -76,7 +76,7 @@ jobs:
       - name: Build
         run: |
           export DXSDK_DIR="${GITHUB_WORKSPACE}/DXSDK"
-          cp build/CMakeLists_dx9-${{ matrix.platform}}.txt CMakeLists.txt
+          cp build/CMakeLists_dx9-${{ matrix.platform }}.txt CMakeLists.txt
           # cmake can't find fxc.exe so copy one into the a directory in the path
           cp "/c/Program Files (x86)/Windows Kits/10/bin/10.0.19041.0/x86/fxc.exe" /mingw64/bin
           if [[ "${{ matrix.platform }}" == "win-x64" ]]; then
@@ -123,7 +123,7 @@ jobs:
       - name: Build
         run: |
           export DXSDK_DIR="${GITHUB_WORKSPACE}/DXSDK"
-          cp build/CMakeLists_gl-${{ matrix.platform}}.txt CMakeLists.txt
+          cp build/CMakeLists_gl-${{ matrix.platform }}.txt CMakeLists.txt
           if [[ "${{ matrix.platform }}" == "win-x64" ]]; then
             cmake -G "Visual Studio 17 2022" -A x64 -B build
           else
@@ -169,7 +169,7 @@ jobs:
       - name: Build
         run: |
           export DXSDK_DIR="${GITHUB_WORKSPACE}/DXSDK"
-          cp build/CMakeLists_bgfx-${{ matrix.platform}}.txt CMakeLists.txt
+          cp build/CMakeLists_bgfx-${{ matrix.platform }}.txt CMakeLists.txt
           if [[ "${{ matrix.platform }}" == "win-x64" ]]; then
             cmake -G "Visual Studio 17 2022" -A x64 -B build
           else
@@ -194,14 +194,16 @@ jobs:
           name: VPinballX_BGFX-${{ needs.version.outputs.tag }}-${{ matrix.config }}-${{ matrix.platform }}
           path: tmp
 
-  build-gl-macos-arm64:
-    name: Build VPinballX_GL-${{ matrix.config }}-macos-arm64
+  build-macos:
+    name: Build VPinballX_${{ matrix.type }}-${{ matrix.config }}-macos-${{ matrix.arch }}
     runs-on: macos-12
     needs: [ version ]
     strategy:
       fail-fast: false
       matrix:
+        type: [ GL, BGFX ]
         config: [ Release ]  
+        arch: [ arm64, x64 ]
     steps:
       - run: |
           brew install bison autoconf automake
@@ -210,8 +212,8 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: |
-            standalone/macos-arm64/external
-          key: ${{ matrix.config }}-macos-arm64-${{ hashFiles('standalone/macos-arm64/external.sh') }}
+            standalone/${{ matrix.type }}-macos-${{ matrix.arch }}/external
+          key: ${{ matrix.config }}-macos-${{ matrix.arch }}-${{ hashFiles('standalone/macos-${{ matrix.arch }}/external.sh') }}
       - run: |
           perl -i -pe"s/0/${{ needs.version.outputs.revision }}/g" git_version.h
           perl -i -pe"s/unknown/${{ needs.version.outputs.sha7 }}/g" git_version.h
@@ -228,12 +230,13 @@ jobs:
       - name: Build
         run: |
           NUM_PROCS=$(sysctl -n hw.ncpu)
-          cd standalone/macos-arm64
+          cd standalone/macos-${{ matrix.arch }}
           if [ ! -d "external" ]; then
              BUILD_TYPE=${{ matrix.config }} ./external.sh
           fi
           cd ../..
-          cp standalone/cmake/CMakeLists_gl-macos-arm64.txt CMakeLists.txt
+          TYPE=$(echo "${{ matrix.type }}" | tr '[:upper:]' '[:lower:]')
+          cp standalone/cmake/CMakeLists_${TYPE}-macos-${{ matrix.arch }}.txt CMakeLists.txt
           if [ "${{ github.repository }}" == "vpinball/vpinball" ]; then
              cmake -DCMAKE_BUILD_TYPE=${{ matrix.config }} -DOPT_CODESIGN=ON -DCODESIGN_DEVELOPER_ID="${{ secrets.MACOS_CODESIGN_DEVELOPER_ID }}" -DCODESIGN_APPLE_ID="${{ secrets.MACOS_CODESIGN_APPLE_ID }}" -DCODESIGN_PASSWORD="${{ secrets.MACOS_CODESIGN_PASSWORD }}" -DCODESIGN_TEAM_ID="${{ secrets.MACOS_CODESIGN_TEAM_ID }}" -B build/${{ matrix.config }}
           else
@@ -247,63 +250,7 @@ jobs:
           cp build/${{ matrix.config }}/*.dmg tmp
       - uses: actions/upload-artifact@v4
         with:
-          name: VPinballX_GL-${{ needs.version.outputs.tag }}-${{ matrix.config }}-macos-arm64
-          path: tmp
-
-  build-gl-macos-x64:
-    name: Build VPinballX_GL-${{ matrix.config }}-macos-x64
-    runs-on: macos-12
-    needs: [ version ]
-    strategy:
-      fail-fast: false
-      matrix:
-        config: [ Release ]  
-    steps:
-      - run: |
-          brew install bison autoconf automake
-          echo "/usr/local/opt/bison/bin" >> $GITHUB_PATH
-      - uses: actions/checkout@v4
-      - uses: actions/cache@v4
-        with:
-          path: |
-            standalone/macos-x64/external
-          key: ${{ matrix.config }}-macos-x64-${{ hashFiles('standalone/macos-x64/external.sh') }}
-      - run: |
-          perl -i -pe"s/0/${{ needs.version.outputs.revision }}/g" git_version.h
-          perl -i -pe"s/unknown/${{ needs.version.outputs.sha7 }}/g" git_version.h
-      - run: |
-          if [ "${{ github.repository }}" == "vpinball/vpinball" ]; then
-             KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
-             echo "${{ secrets.MACOS_CODESIGN_P12 }}" | base64 --decode > certificate.p12
-             security create-keychain -p "${{ secrets.MACOS_CODESIGN_P12_PASSWORD }}" $KEYCHAIN_PATH
-             security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
-             security unlock-keychain -p "${{ secrets.MACOS_CODESIGN_P12_PASSWORD }}" $KEYCHAIN_PATH
-             security import certificate.p12 -P "${{ secrets.MACOS_CODESIGN_P12_PASSWORD }}" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
-             security list-keychain -d user -s $KEYCHAIN_PATH
-          fi
-      - name: Build
-        run: |
-          NUM_PROCS=$(sysctl -n hw.ncpu)
-          cd standalone/macos-x64
-          if [ ! -d "external" ]; then
-             BUILD_TYPE=${{ matrix.config }} ./external.sh
-          fi
-          cd ../..
-          cp standalone/cmake/CMakeLists_gl-macos-x64.txt CMakeLists.txt
-          if [ "${{ github.repository }}" == "vpinball/vpinball" ]; then
-             cmake -DCMAKE_BUILD_TYPE=${{ matrix.config }} -DOPT_CODESIGN=ON -DCODESIGN_DEVELOPER_ID="${{ secrets.MACOS_CODESIGN_DEVELOPER_ID }}" -DCODESIGN_APPLE_ID="${{ secrets.MACOS_CODESIGN_APPLE_ID }}" -DCODESIGN_PASSWORD="${{ secrets.MACOS_CODESIGN_PASSWORD }}" -DCODESIGN_TEAM_ID="${{ secrets.MACOS_CODESIGN_TEAM_ID }}" -B build/${{ matrix.config }}
-          else
-             cmake -DCMAKE_BUILD_TYPE=${{ matrix.config }} -B build/${{ matrix.config }}
-          fi
-          cmake --build build/${{ matrix.config }} -- -j${NUM_PROCS}
-          cd build/${{ matrix.config }}
-          cpack
-      - run: |
-          mkdir tmp
-          cp build/${{ matrix.config }}/*.dmg tmp
-      - uses: actions/upload-artifact@v4
-        with:
-          name: VPinballX_GL-${{ needs.version.outputs.tag }}-${{ matrix.config }}-macos-x64
+          name: VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}-${{ matrix.config }}-macos-${{ matrix.arch }}
           path: tmp
 
   build-gl-android:

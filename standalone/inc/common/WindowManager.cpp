@@ -87,7 +87,9 @@ void WindowManager::Startup()
       }
    }
 
+#ifdef ENABLE_OPENGL
    SDL_GL_MakeCurrent(g_pplayer->m_sdl_playfieldHwnd, g_pplayer->m_renderer->m_pd3dPrimaryDevice->m_sdl_context);
+#endif
 
    if (m_renderMode == RenderMode::Threaded)
       ThreadedRender();
@@ -166,7 +168,9 @@ void WindowManager::Render()
    for (Window* pWindow: m_windows)
       pWindow->OnRender();
 
+#ifdef ENABLE_OPENGL
    SDL_GL_MakeCurrent(g_pplayer->m_sdl_playfieldHwnd, g_pplayer->m_renderer->m_pd3dPrimaryDevice->m_sdl_context);
+#endif
 
    m_lastRenderTime = startTime;
 }

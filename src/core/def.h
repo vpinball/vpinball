@@ -665,7 +665,9 @@ bool string_starts_with_case_insensitive(const std::string& str, const std::stri
 vector<string> add_line_numbers(const char* src);
 string create_hex_dump(const UINT8* buffer, size_t size);
 vector<unsigned char> base64_decode(const string &encoded_string);
+#ifdef ENABLE_OPENGL
 const char* gl_to_string(GLuint value);
+#endif
 
 extern "C" HRESULT external_open_storage(const OLECHAR* pwcsName, IStorage* pstgPriority, DWORD grfMode, SNB snbExclude, DWORD reserved, IStorage **ppstgOpen);
 extern "C" HRESULT external_create_object(const WCHAR *progid, IClassFactory* cf, IUnknown* obj);
