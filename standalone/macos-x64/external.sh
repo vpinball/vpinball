@@ -8,9 +8,9 @@ SDL2_VERSION=2.30.0
 SDL2_IMAGE_VERSION=2.8.2
 SDL2_TTF_VERSION=2.22.0
 
-PINMAME_SHA=6a03362169722e5abb529e311ab5db0de710dd89
+PINMAME_SHA=7b0aafb49b6dbe7127261e3ba3737afe76e88e8b
 LIBALTSOUND_SHA=9ac08a76e2aabc1fba57d3e5a3b87e7f63c09e07
-LIBDMDUTIL_SHA=74da2877c558ddeed265485b78bdf9a1c640ae20
+LIBDMDUTIL_SHA=2cf6bb3946acd70f00a02d753b478d9493a86148
 
 NUM_PROCS=$(sysctl -n hw.ncpu)
 
@@ -48,6 +48,9 @@ cd tmp
 curl -sL https://github.com/bkaradzic/bgfx.cmake/releases/download/v${BGFX_CMAKE_VERSION}/bgfx.cmake.v${BGFX_CMAKE_VERSION}.tar.gz -o bgfx.cmake.v${BGFX_CMAKE_VERSION}.tar.gz
 tar -xvzf bgfx.cmake.v${BGFX_CMAKE_VERSION}.tar.gz
 cd bgfx.cmake
+cp -r bgfx/include/bgfx ../../external/include
+cp -r bimg/include/bimg ../../external/include
+cp -r bx/include/bx ../../external/include
 cmake -S. \
    -DBGFX_LIBRARY_TYPE=SHARED \
    -DBGFX_BUILD_EXAMPLES=OFF \
@@ -184,7 +187,7 @@ platforms/macos/x64/external.sh
 cmake -DPLATFORM=macos -DARCH=x64 -DBUILD_STATIC=OFF -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -B build
 cmake --build build -- -j${NUM_PROCS}
 cp third-party/runtime-libs/macos/x64/libserum.1.6.2.dylib ../../external/lib
-cp third-party/runtime-libs/macos/x64/libzedmd.0.5.0.dylib ../../external/lib
+cp third-party/runtime-libs/macos/x64/libzedmd.0.6.0.dylib ../../external/lib
 cp third-party/runtime-libs/macos/x64/libserialport.dylib ../../external/lib
 cp build/libdmdutil.0.3.0.dylib ../../external/lib
 cd ..

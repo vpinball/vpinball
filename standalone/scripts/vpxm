@@ -163,65 +163,65 @@ generate_build_ios() {
 
 generate_build_android() {
   if [ -n "$TABLE" ]; then
-    cp "$TABLE" standalone/android/android-project/app/src/main/assets/tables
+    cp "$TABLE" standalone/android-arm64-v8a/android-project/app/src/main/assets/tables
 
-    perl -i -pe"s/LaunchTable = assets\/exampleTable.vpx/LaunchTable = tables\/${TABLE##*/}/g" "standalone/android/android-project/app/src/main/assets/Default VPinballX.ini"
+    perl -i -pe"s/LaunchTable = assets\/exampleTable.vpx/LaunchTable = tables\/${TABLE##*/}/g" "standalone/android-arm64-v8a/android-project/app/src/main/assets/Default VPinballX.ini"
 
     if [ -n "$VBS" ]; then
-      cp "$VBS" standalone/android/android-project/app/src/main/assets/tables
+      cp "$VBS" standalone/android-arm64-v8a/android-project/app/src/main/assets/tables
     fi
 
     if [ -n "$POV" ]; then
-      cp "$POV" standalone/android/android-project/app/src/main/assets/tables
+      cp "$POV" standalone/android-arm64-v8a/android-project/app/src/main/assets/tables
     fi
 
     if [ -n "$FLEXDMD_DIR" ]; then
-      cp -r "$FLEXDMD_DIR" standalone/android/android-project/app/src/main/assets/tables
+      cp -r "$FLEXDMD_DIR" standalone/android-arm64-v8a/android-project/app/src/main/assets/tables
     fi
   fi
 
   for music in "${MUSIC[@]}"
   do
     if [ -d "$music" ]; then
-      cp -r "$music" standalone/android/android-project/app/src/main/assets/music
+      cp -r "$music" standalone/android-arm64-v8a/android-project/app/src/main/assets/music
     else
-      cp "$music" standalone/android/android-project/app/src/main/assets/music
+      cp "$music" standalone/android-arm64-v8a/android-project/app/src/main/assets/music
     fi
   done
 
   if [ -n "$ROM" ]; then
-    cp "$ROM" standalone/android/android-project/app/src/main/assets/pinmame/roms
+    cp "$ROM" standalone/android-arm64-v8a/android-project/app/src/main/assets/pinmame/roms
   fi
 
   if [ -n "$NVRAM" ]; then
-    cp "$NVRAM" standalone/android/android-project/app/src/main/assets/pinmame/nvram
+    cp "$NVRAM" standalone/android-arm64-v8a/android-project/app/src/main/assets/pinmame/nvram
   fi
 
   if [ -n "$ALTCOLOR" ]; then
      NAME=$(basename "$ALTCOLOR")
      NAME="${NAME%.*}"
-     mkdir "standalone/android/android-project/app/src/main/assets/pinmame/altcolor/${NAME}"
-     cp "$ALTCOLOR" "standalone/android/android-project/app/src/main/assets/pinmame/altcolor/${NAME}"
+     mkdir "standalone/android-arm64-v8a/android-project/app/src/main/assets/pinmame/altcolor/${NAME}"
+     cp "$ALTCOLOR" "standalone/android-arm64-v8a/android-project/app/src/main/assets/pinmame/altcolor/${NAME}"
   fi
 
   if [ -n "$MAX_TEX" ]; then
-     perl -i -pe"s/MaxTexDimension = 1024/MaxTexDimension = ${MAX_TEX}/g" "standalone/android/android-project/app/src/main/assets/Default VPinballX.ini"
+     perl -i -pe"s/MaxTexDimension = 1024/MaxTexDimension = ${MAX_TEX}/g" "standalone/android-arm64-v8a/android-project/app/src/main/assets/Default VPinballX.ini"
   fi
 
   if [ -n "$APP_ID" ]; then
-    perl -i -pe"s/org.vpinball.app/$APP_ID/g" standalone/android/android-project/app/build.gradle
+    perl -i -pe"s/org.vpinball.app/$APP_ID/g" standalone/android-arm64-v8a/android-project/app/build.gradle
   else
     APP_ID="org.vpinball.app"
   fi
 
   if [ -n "$OUTPUT_NAME" ]; then
-    perl -i -pe"s/VPinballX_GL.apk/$OUTPUT_NAME/g" standalone/android/android-project/app/build.gradle
+    perl -i -pe"s/VPinballX_GL.apk/$OUTPUT_NAME/g" standalone/android-arm64-v8a/android-project/app/build.gradle
   else
     OUTPUT_NAME="VPinballX_GL.apk"
   fi
 
   if [ -n "$APP_NAME" ]; then
-    perl -i -pe"s/VPinballX_GL/$APP_NAME/g" standalone/android/android-project/app/src/main/res/values/strings.xml
+    perl -i -pe"s/VPinballX_GL/$APP_NAME/g" standalone/android-arm64-v8a/android-project/app/src/main/res/values/strings.xml
   fi
 
   cd standalone/android
@@ -238,7 +238,7 @@ generate_build_android() {
   cmake -DCMAKE_BUILD_TYPE=Release -B build
   cmake --build build -- -j${NUM_PROCS}
 
-  cd standalone/android/android-project
+  cd standalone/android-arm64-v8a/android-project
   ./gradlew assembleDebug
 
   if [ -n "$DEST_DIR" ]; then

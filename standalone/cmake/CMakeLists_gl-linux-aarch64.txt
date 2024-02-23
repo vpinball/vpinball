@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.25)
 
+option(BUILD_RPI "Build for Raspberry PI" OFF)
+option(BUILD_RK3588 "Build for RK3588" OFF)
 option(POST_BUILD_COPY_EXT_LIBS "Copy external libraries to build directory" ON)
 
 file(READ src/core/vpversion.h version)
@@ -9,13 +11,15 @@ string(REGEX MATCH "VP_VERSION_MINOR[ ]+([0-9]+)" _tmp ${version})
 set(VERSION_MINOR "${CMAKE_MATCH_1}")
 string(REGEX MATCH "VP_VERSION_REV[ ]+([0-9]+)" _tmp ${version})
 set(VERSION_REV "${CMAKE_MATCH_1}")
+set(APP_NAME "VPinballX_GL")
 
 project(vpinball VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}")
 
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_C_STANDARD 99)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 set(CMAKE_INSTALL_RPATH "$ORIGIN")
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_C_STANDARD 99)
 
 add_library(glad
    third-party/include/glad/src/gles2.c
@@ -32,7 +36,6 @@ bison_target(vbsparser ${CMAKE_SOURCE_DIR}/standalone/inc/wine/dlls/vbscript/par
 add_compile_definitions(
    __STANDALONE__
    __OPENGLES__
-   __RPI__
 
    ENABLE_OPENGL
    ENABLE_SDL_VIDEO
@@ -45,6 +48,16 @@ add_compile_definitions(
    WINE_NO_TRACE_MSGS
    WINE_NO_DEBUG_MSGS
 )
+
+if(BUILD_RPI)
+   add_compile_definitions(
+      __RPI__
+   )
+elseif(BUILD_RK3588)
+   add_compile_definitions(
+      __RK3588__
+   )
+endif()
 
 add_definitions( 
    "-D__forceinline=__attribute__((always_inline)) inline" 
@@ -254,8 +267,7 @@ add_executable(vpinball
    src/utils/hid.h
    src/utils/wintimer.cpp
    src/utils/wintimer.h
-   src/utils/memutil.cpp
-   src/utils/memutil.h
+   src/utils/helpers.h
    src/utils/variant.cpp
    src/utils/variant.h
    src/utils/vector.h
@@ -607,8 +619,8 @@ add_executable(vpinball
 )
 
 target_include_directories(vpinball PUBLIC
-   ${CMAKE_SOURCE_DIR}/standalone/rpi/external/include
-   ${CMAKE_SOURCE_DIR}/standalone/rpi/external/include/SDL2
+   ${CMAKE_SOURCE_DIR}/standalone/linux-aarch64/external/include
+   ${CMAKE_SOURCE_DIR}/standalone/linux-aarch64/external/include/SDL2
    ${CMAKE_SOURCE_DIR}
    third-party/include
    standalone/inc/pole
@@ -645,7 +657,7 @@ target_compile_options(vpinball PUBLIC
 )
 
 target_link_directories(vpinball PUBLIC
-   ${CMAKE_SOURCE_DIR}/standalone/rpi/external/lib
+   ${CMAKE_SOURCE_DIR}/standalone/linux-aarch64/external/lib
 )
 
 target_link_libraries(vpinball PUBLIC
@@ -657,13 +669,13 @@ target_link_libraries(vpinball PUBLIC
    bass
    -l:libpinmame.so.3.6
    -l:libaltsound.so.0.1.0
-   -l:libzedmd.so.0.5.0
+   -l:libzedmd.so.0.6.0
    -l:libserum.so.1.6.2
    -l:libdmdutil.so.0.3.0
 )
 
 set_target_properties(vpinball PROPERTIES
-   RUNTIME_OUTPUT_NAME "VPinballX_GL"
+   RUNTIME_OUTPUT_NAME "${APP_NAME}"
    LINK_FLAGS "-Wl,--copy-dt-needed-entries"
 )
 
@@ -696,7 +708,7 @@ add_custom_command(TARGET vpinball POST_BUILD
 
 if(POST_BUILD_COPY_EXT_LIBS)
    add_custom_command(TARGET vpinball POST_BUILD
-      COMMAND cp -P "${CMAKE_SOURCE_DIR}/standalone/rpi/external/lib/*.so" "$<TARGET_FILE_DIR:vpinball>"
-      COMMAND cp -P "${CMAKE_SOURCE_DIR}/standalone/rpi/external/lib/*.so.*" "$<TARGET_FILE_DIR:vpinball>"
+      COMMAND cp -P "${CMAKE_SOURCE_DIR}/standalone/linux-aarch64/external/lib/*.so" "$<TARGET_FILE_DIR:vpinball>"
+      COMMAND cp -P "${CMAKE_SOURCE_DIR}/standalone/linux-aarch64/external/lib/*.so.*" "$<TARGET_FILE_DIR:vpinball>"
    )
 endif()

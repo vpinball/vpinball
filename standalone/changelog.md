@@ -4,6 +4,10 @@ To keep up with all the changes in master, and make it easier to rebase, this br
 
 The downside of this approach is not accurately keeping track of history:
 
+* 02/24/24
+    * Add support for BGFX builds for MacOS, Linux, and SBCs
+    * Update libdmdutil, libpinmame, and libzedmd
+
 * 02/20/24
     * Add rotation support for all external windows (@walknight/@cth77)
     * Add Pinscape mappings to gamecontrollerdb.txt
