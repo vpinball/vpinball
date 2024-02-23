@@ -2,6 +2,8 @@
 
 set -e
 
+BGFX_CMAKE_VERSION=1.125.8678-462
+
 SDL2_VERSION=2.30.0
 SDL2_IMAGE_VERSION=2.8.2
 SDL2_TTF_VERSION=2.22.0
@@ -13,6 +15,7 @@ LIBDMDUTIL_SHA=74da2877c558ddeed265485b78bdf9a1c640ae20
 NUM_PROCS=$(sysctl -n hw.ncpu)
 
 echo "Building external libraries..."
+echo "  BGFX_CMAKE_VERSION: ${BGFX_CMAKE_VERSION}"
 echo "  SDL2_VERSION: ${SDL2_VERSION}"
 echo "  SDL2_IMAGE_VERSION: ${SDL2_IMAGE_VERSION}"
 echo "  SDL2_TTF_VERSION: ${SDL2_TTF_VERSION}"
@@ -37,6 +40,24 @@ mkdir external/lib
 rm -rf tmp
 mkdir tmp
 cd tmp
+
+#
+# build bgfx and copy to external
+#
+
+curl -sL https://github.com/bkaradzic/bgfx.cmake/releases/download/v${BGFX_CMAKE_VERSION}/bgfx.cmake.v${BGFX_CMAKE_VERSION}.tar.gz -o bgfx.cmake.v${BGFX_CMAKE_VERSION}.tar.gz
+tar -xvzf bgfx.cmake.v${BGFX_CMAKE_VERSION}.tar.gz
+cd bgfx.cmake
+cmake -S. \
+   -DBGFX_LIBRARY_TYPE=SHARED \
+   -DBGFX_BUILD_EXAMPLES=OFF \
+   -DCMAKE_OSX_ARCHITECTURES=x86_64 \
+   -DCMAKE_OSX_DEPLOYMENT_TARGET=13.0 \
+   -DCMAKE_BUILD_TYPE=Release \
+   -B build
+cmake --build build -- -j${NUM_PROCS}
+cp -P build/cmake/bgfx/libbgfx.dylib ../../external/lib
+cd ..
 
 #
 # build freeimage and copy to external

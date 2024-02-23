@@ -700,7 +700,7 @@ add_custom_command(TARGET vpinball POST_BUILD
    COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/standalone/inc/flexdmd/resources" "$<TARGET_FILE_DIR:vpinball>/../Resources/flexdmd"
    COMMAND "${CMAKE_COMMAND}" -E make_directory "$<TARGET_FILE_DIR:vpinball>/../Frameworks"
    COMMAND cp -P "${CMAKE_SOURCE_DIR}/standalone/macos-x64/external/lib/*.dylib" "$<TARGET_FILE_DIR:vpinball>/../Frameworks"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/macos-x64/VPinballX_GL.icns" "$<TARGET_FILE_DIR:vpinball>/../Resources"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/macos-x64/VPinballX.icns" "$<TARGET_FILE_DIR:vpinball>/../Resources"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/macos-x64/Info.plist" "$<TARGET_FILE_DIR:vpinball>/.."
    COMMAND /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString ${CMAKE_PROJECT_VERSION}" $<TARGET_FILE_DIR:vpinball>/../Info.plist
    COMMAND /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${CMAKE_PROJECT_VERSION}" $<TARGET_FILE_DIR:vpinball>/../Info.plist
@@ -735,5 +735,5 @@ install(TARGETS vpinball
 set(CPACK_GENERATOR DragNDrop)
 set(CPACK_PACKAGE_FILE_NAME VPinballX_GL-${CMAKE_PROJECT_VERSION}-macos-x64)
 set(CPACK_DMG_VOLUME_NAME "VPinballX_GL ${CMAKE_PROJECT_VERSION}")
-set(CPACK_PACKAGE_ICON ${CMAKE_CURRENT_SOURCE_DIR}/standalone/macos-x64/VPinballX_GL.icns)
+set(CPACK_PACKAGE_ICON ${CMAKE_CURRENT_SOURCE_DIR}/standalone/macos-x64/VPinballX.icns)
 include(CPack)

@@ -7,14 +7,14 @@ string(REGEX MATCH "VP_VERSION_MINOR[ ]+([0-9]+)" _tmp ${version})
 set(VERSION_MINOR "${CMAKE_MATCH_1}")
 string(REGEX MATCH "VP_VERSION_REV[ ]+([0-9]+)" _tmp ${version})
 set(VERSION_REV "${CMAKE_MATCH_1}")
-set(APP_NAME "VPinballX_GL")
+set(APP_NAME "VPinballX_BGFX")
 
 option(OPT_CODESIGN "Option to code sign" OFF)
 
 project(vpinball VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}")
 
 set(CMAKE_OSX_DEPLOYMENT_TARGET 13.0)
-set(CMAKE_OSX_ARCHITECTURES arm64)
+set(CMAKE_OSX_ARCHITECTURES x86_64)
 
 set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 set(CMAKE_INSTALL_RPATH "@executable_path/../Frameworks")
@@ -22,22 +22,14 @@ set(CMAKE_INSTALL_RPATH "@executable_path/../Frameworks")
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_C_STANDARD 99)
 
-add_library(glad
-   third-party/include/glad/src/gl.c
-)
-
-target_include_directories(glad PUBLIC
-   third-party/include/glad/include
-)
-
 find_package(BISON 3.8.2 REQUIRED)
 bison_target(vbsparser ${CMAKE_SOURCE_DIR}/standalone/inc/wine/dlls/vbscript/parser.y ${CMAKE_SOURCE_DIR}/standalone/inc/wine/dlls/vbscript/parser.tab.c 
 	     DEFINES_FILE ${CMAKE_SOURCE_DIR}/standalone/inc/wine/dlls/vbscript/parser.tab.h)
 
 add_compile_definitions(
    __STANDALONE__
-  
-   ENABLE_OPENGL
+
+   ENABLE_BGFX
    ENABLE_SDL_VIDEO
    ENABLE_SDL_INPUT
    ENABLE_SDL_GAMECONTROLLER
@@ -47,6 +39,9 @@ add_compile_definitions(
 
    WINE_NO_TRACE_MSGS
    WINE_NO_DEBUG_MSGS
+
+   $<$<CONFIG:DEBUG>:BX_CONFIG_DEBUG=1>
+   $<$<CONFIG:RELEASE>:BX_CONFIG_DEBUG=0>
 )
 
 add_definitions( 
@@ -277,8 +272,6 @@ add_executable(vpinball
    third-party/include/imgui/imgui.cpp
    third-party/include/imgui/imgui.h
    third-party/include/imgui/imgui_draw.cpp
-   third-party/include/imgui/imgui_impl_opengl3.cpp
-   third-party/include/imgui/imgui_impl_opengl3.h
    third-party/include/imgui/imgui_impl_sdl2.cpp
    third-party/include/imgui/imgui_impl_sdl2.h
    third-party/include/imgui/imgui_stdlib.cpp
@@ -292,6 +285,10 @@ add_executable(vpinball
    third-party/include/implot/implot.h
    third-party/include/implot/implot_items.cpp
    third-party/include/implot/implot_internal.h
+   third-party/include/bgfx-imgui/imgui_impl_bgfx.cpp
+   third-party/include/bgfx-imgui/imgui_impl_bgfx.h
+   third-party/include/bgfx-imgui/fs_ocornut_imgui.bin.h
+   third-party/include/bgfx-imgui/vs_ocornut_imgui.bin.h   
    third-party/include/gpuprofiler.cpp
    third-party/include/gpuprofiler.h
    third-party/include/progmesh.cpp
@@ -304,7 +301,7 @@ add_executable(vpinball
    third-party/include/miniz/miniz.h   
    third-party/include/robin_hood.h
 
-   standalone/macos-arm64/main.mm
+   standalone/macos-x64/main.mm
 
    standalone/vpinball_standalone_i.c
    standalone/vpinball_standalone_i.h
@@ -611,8 +608,8 @@ add_executable(vpinball
 )
 
 target_include_directories(vpinball PUBLIC
-   ${CMAKE_SOURCE_DIR}/standalone/macos-arm64/external/include
-   ${CMAKE_SOURCE_DIR}/standalone/macos-arm64/external/include/SDL2
+   ${CMAKE_SOURCE_DIR}/standalone/macos-x64/external/include
+   ${CMAKE_SOURCE_DIR}/standalone/macos-x64/external/include/SDL2
    ${CMAKE_SOURCE_DIR}
    third-party/include
    standalone/inc/pole
@@ -649,11 +646,11 @@ target_compile_options(vpinball PUBLIC
 )
 
 target_link_directories(vpinball PUBLIC
-   "${CMAKE_SOURCE_DIR}/standalone/macos-arm64/external/lib"
+   "${CMAKE_SOURCE_DIR}/standalone/macos-x64/external/lib"
 )
 
 target_link_libraries(vpinball PUBLIC
-   glad
+   bgfx
    SDL2
    SDL2_image
    SDL2_ttf
@@ -670,7 +667,7 @@ target_link_libraries(vpinball PUBLIC
 set_target_properties(vpinball PROPERTIES
    RUNTIME_OUTPUT_NAME "${APP_NAME}"
    MACOSX_BUNDLE YES
-   MACOSX_BUNDLE_INFO_PLIST "${CMAKE_SOURCE_DIR}/standalone/macos-arm64/Info.plist"
+   MACOSX_BUNDLE_INFO_PLIST "${CMAKE_SOURCE_DIR}/standalone/macos-x64/Info.plist"
 )
 
 add_custom_command(TARGET vpinball POST_BUILD
@@ -678,29 +675,14 @@ add_custom_command(TARGET vpinball POST_BUILD
    COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/scripts" "$<TARGET_FILE_DIR:vpinball>/../Resources/scripts"
    COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/tables" "$<TARGET_FILE_DIR:vpinball>/../Resources/tables"
    COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/txt" "$<TARGET_FILE_DIR:vpinball>/../Resources/docs"
-   COMMAND "${CMAKE_COMMAND}" -E make_directory "$<TARGET_FILE_DIR:vpinball>/../Resources/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/BasicShader.glfx" "$<TARGET_FILE_DIR:vpinball>/../Resources/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/DMDShader.glfx" "$<TARGET_FILE_DIR:vpinball>/../Resources/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/FBShader.glfx" "$<TARGET_FILE_DIR:vpinball>/../Resources/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/SMAA.glfx" "$<TARGET_FILE_DIR:vpinball>/../Resources/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"  
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/FlasherShader.glfx" "$<TARGET_FILE_DIR:vpinball>/../Resources/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/LightShader.glfx" "$<TARGET_FILE_DIR:vpinball>/../Resources/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/BallShader.glfx" "$<TARGET_FILE_DIR:vpinball>/../Resources/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/ClassicLightShader.glfx" "$<TARGET_FILE_DIR:vpinball>/../Resources/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/StereoShader.glfx" "$<TARGET_FILE_DIR:vpinball>/../Resources/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/Helpers.fxh" "$<TARGET_FILE_DIR:vpinball>/../Resources/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/FBShader.fxh" "$<TARGET_FILE_DIR:vpinball>/../Resources/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/Material_GL.fxh" "$<TARGET_FILE_DIR:vpinball>/../Resources/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/BallShadows.fxh" "$<TARGET_FILE_DIR:vpinball>/../Resources/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/SMAA.fxh" "$<TARGET_FILE_DIR:vpinball>/../Resources/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/FXAAStereoAO_GL.fxh" "$<TARGET_FILE_DIR:vpinball>/../Resources/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/SSR_GL.fxh" "$<TARGET_FILE_DIR:vpinball>/../Resources/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/Stereo.fxh" "$<TARGET_FILE_DIR:vpinball>/../Resources/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
+   COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/src/shaders/bgfx/hlsl" "$<TARGET_FILE_DIR:vpinball>/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/bgfx-hlsl"
+   COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/src/shaders/bgfx/glsl" "$<TARGET_FILE_DIR:vpinball>/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/bgfx-glsl"
+   COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/src/shaders/bgfx/spirv" "$<TARGET_FILE_DIR:vpinball>/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/bgfx-spirv"
    COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/standalone/inc/flexdmd/resources" "$<TARGET_FILE_DIR:vpinball>/../Resources/flexdmd"
    COMMAND "${CMAKE_COMMAND}" -E make_directory "$<TARGET_FILE_DIR:vpinball>/../Frameworks"
-   COMMAND cp -P "${CMAKE_SOURCE_DIR}/standalone/macos-arm64/external/lib/*.dylib" "$<TARGET_FILE_DIR:vpinball>/../Frameworks"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/macos-arm64/VPinballX.icns" "$<TARGET_FILE_DIR:vpinball>/../Resources"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/macos-arm64/Info.plist" "$<TARGET_FILE_DIR:vpinball>/.."
+   COMMAND cp -P "${CMAKE_SOURCE_DIR}/standalone/macos-x64/external/lib/*.dylib" "$<TARGET_FILE_DIR:vpinball>/../Frameworks"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/macos-x64/VPinballX.icns" "$<TARGET_FILE_DIR:vpinball>/../Resources"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/macos-x64/Info.plist" "$<TARGET_FILE_DIR:vpinball>/.."
    COMMAND /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString ${CMAKE_PROJECT_VERSION}" $<TARGET_FILE_DIR:vpinball>/../Info.plist
    COMMAND /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${CMAKE_PROJECT_VERSION}" $<TARGET_FILE_DIR:vpinball>/../Info.plist
 )
@@ -732,7 +714,7 @@ install(TARGETS vpinball
 )
 
 set(CPACK_GENERATOR DragNDrop)
-set(CPACK_PACKAGE_FILE_NAME VPinballX_GL-${CMAKE_PROJECT_VERSION}-macos-arm64)
-set(CPACK_DMG_VOLUME_NAME "VPinballX_GL ${CMAKE_PROJECT_VERSION}")
-set(CPACK_PACKAGE_ICON ${CMAKE_CURRENT_SOURCE_DIR}/standalone/macos-arm64/VPinballX.icns)
+set(CPACK_PACKAGE_FILE_NAME VPinballX_BGFX-${CMAKE_PROJECT_VERSION}-macos-x64)
+set(CPACK_DMG_VOLUME_NAME "VPinballX_BGFX ${CMAKE_PROJECT_VERSION}")
+set(CPACK_PACKAGE_ICON ${CMAKE_CURRENT_SOURCE_DIR}/standalone/macos-x64/VPinballX.icns)
 include(CPack)

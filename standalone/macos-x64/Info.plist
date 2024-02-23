@@ -13,7 +13,7 @@
     <key>CFBundleName</key>
     <string>VPinballX_GL</string>
     <key>CFBundleIconFile</key>
-    <string>VPinballX_GL.icns</string>
+    <string>VPinballX.icns</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleShortVersionString</key>

@@ -1,7 +1,15 @@
 #pragma once
 
 #if defined(ENABLE_BGFX)
+
+#ifdef __STANDALONE__
+#pragma push_macro("_far")
+#undef _far
+#endif
 #include "bx/readerwriter.h"
+#ifdef __STANDALONE__
+#pragma pop_macro("_far")
+#endif
 
 #elif defined(ENABLE_OPENGL)
 #ifdef _DEBUG
