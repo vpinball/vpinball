@@ -971,18 +971,22 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
                // flags |= BGFX_SAMPLER_MIN_ANISOTROPIC;
                // flags |= BGFX_SAMPLER_MAG_ANISOTROPIC;
                break;
+            default:
+               break;
             }
             switch (clampu)
             {
             case SA_CLAMP: flags |= BGFX_SAMPLER_U_CLAMP; break;
             case SA_MIRROR: flags |= BGFX_SAMPLER_U_MIRROR; break;
             case SA_REPEAT: /* Default mode, no flag to set */ break;
+            default: break;
             }
             switch (clampv)
             {
             case SA_CLAMP: flags |= BGFX_SAMPLER_V_CLAMP; break;
             case SA_MIRROR: flags |= BGFX_SAMPLER_V_MIRROR; break;
             case SA_REPEAT: /* Default mode, no flag to set */ break;
+            default: break;
             }
             auto tex_name = shaderUniformNames[uniformName].tex_name;
             if (std::string(tex_name).rfind("Texture"s, 0) == 0)
