@@ -1081,26 +1081,12 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
    else
 #endif
 
-   if (keycode == g_pplayer->m_rgKeys[eLeftFlipperKey] && dispid == DISPID_GameEvents_KeyDown)
-      m_keyPressedState[eLeftFlipperKey] = true;
-   else if (keycode == g_pplayer->m_rgKeys[eRightFlipperKey] && dispid == DISPID_GameEvents_KeyDown)
-      m_keyPressedState[eRightFlipperKey] = true;
-   else if (keycode == g_pplayer->m_rgKeys[eLeftTiltKey] && dispid == DISPID_GameEvents_KeyDown)
-      m_keyPressedState[eLeftTiltKey] = true;
-   else if (keycode == g_pplayer->m_rgKeys[eRightTiltKey] && dispid == DISPID_GameEvents_KeyDown)
-      m_keyPressedState[eRightTiltKey] = true;
-   else if (keycode == g_pplayer->m_rgKeys[eLockbarKey] && dispid == DISPID_GameEvents_KeyDown)
-      m_keyPressedState[eLockbarKey] = true;
-   else if (keycode == g_pplayer->m_rgKeys[eLeftFlipperKey] && dispid == DISPID_GameEvents_KeyUp)
-      m_keyPressedState[eLeftFlipperKey] = false;
-   else if (keycode == g_pplayer->m_rgKeys[eRightFlipperKey] && dispid == DISPID_GameEvents_KeyUp)
-      m_keyPressedState[eRightFlipperKey] = false;
-   else if (keycode == g_pplayer->m_rgKeys[eLeftTiltKey] && dispid == DISPID_GameEvents_KeyUp)
-      m_keyPressedState[eLeftTiltKey] = false;
-   else if (keycode == g_pplayer->m_rgKeys[eRightTiltKey] && dispid == DISPID_GameEvents_KeyUp)
-      m_keyPressedState[eRightTiltKey] = false;
-   else if (keycode == g_pplayer->m_rgKeys[eLockbarKey] && dispid == DISPID_GameEvents_KeyUp)
-      m_keyPressedState[eLockbarKey] = false;
+   for (int i = 0; i < eCKeys; i++)
+      if (keycode == g_pplayer->m_rgKeys[i])
+         if (dispid == DISPID_GameEvents_KeyDown)
+            m_keyPressedState[i] = true;
+         else if (dispid == DISPID_GameEvents_KeyUp)
+            m_keyPressedState[i] = false;
       
    if (g_pplayer->m_liveUI->IsTweakMode())
    {
@@ -1910,16 +1896,9 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
 
             // Table tweaks, continuous actions
             if (g_pplayer->m_liveUI->IsTweakMode())
-            {
-               if (m_keyPressedState[eLeftFlipperKey])
-                  g_pplayer->m_liveUI->OnTweakModeEvent(0, g_pplayer->m_rgKeys[eLeftFlipperKey]);
-               if (m_keyPressedState[eRightFlipperKey])
-                  g_pplayer->m_liveUI->OnTweakModeEvent(0, g_pplayer->m_rgKeys[eRightFlipperKey]);
-               if (m_keyPressedState[eLeftTiltKey])
-                  g_pplayer->m_liveUI->OnTweakModeEvent(0, g_pplayer->m_rgKeys[eLeftTiltKey]);
-               if (m_keyPressedState[eRightTiltKey])
-                  g_pplayer->m_liveUI->OnTweakModeEvent(0, g_pplayer->m_rgKeys[eRightTiltKey]);
-            }
+               for (int i = 0; i < eCKeys; i++)
+                  if (m_keyPressedState[i])
+                     g_pplayer->m_liveUI->OnTweakModeEvent(0, g_pplayer->m_rgKeys[i]);
          }
          return;
       }
