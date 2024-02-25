@@ -61,6 +61,7 @@ private:
    int m_tweakState[BS_Custom + 100]; // 0 = unmodified, 1 = modified, 2 = resetted
    vector<BackdropSetting> m_tweakPageOptions;
    bool m_tweakMode = false;
+   float m_tweakScroll = 0.f;
    void UpdateTweakPage();
    void UpdateTweakModeUI();
 
