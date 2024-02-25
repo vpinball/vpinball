@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.25)
 
-set (CMAKE_SYSTEM_NAME tvOS)
-
 file(READ src/core/vpversion.h version)
 string(REGEX MATCH "VP_VERSION_MAJOR[ ]+([0-9]+)" _tmp ${version})
 set(VERSION_MAJOR "${CMAKE_MATCH_1}")
@@ -9,27 +7,21 @@ string(REGEX MATCH "VP_VERSION_MINOR[ ]+([0-9]+)" _tmp ${version})
 set(VERSION_MINOR "${CMAKE_MATCH_1}")
 string(REGEX MATCH "VP_VERSION_REV[ ]+([0-9]+)" _tmp ${version})
 set(VERSION_REV "${CMAKE_MATCH_1}")
-set(APP_NAME "VPinballX_GL")
+set(APP_NAME "VPinballX_BGFX")
 
 option(OPT_CODESIGN "Option to code sign" OFF)
 
 project(vpinball VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}")
 
+set(CMAKE_OSX_SYSROOT "iphoneos")
 set(CMAKE_OSX_DEPLOYMENT_TARGET 16.0)
 set(CMAKE_OSX_ARCHITECTURES "arm64")
+set(CMAKE_XCODE_EFFECTIVE_PLATFORMS "-iphoneos")
 
 set(CMAKE_SKIP_RPATH TRUE)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_C_STANDARD 99)
-
-add_library(glad
-   third-party/include/glad/src/gles2.c
-)
-
-target_include_directories(glad PUBLIC
-   third-party/include/glad/include
-)
 
 find_package(BISON 3.8.2 REQUIRED)
 bison_target(vbsparser ${CMAKE_SOURCE_DIR}/standalone/inc/wine/dlls/vbscript/parser.y ${CMAKE_SOURCE_DIR}/standalone/inc/wine/dlls/vbscript/parser.tab.c 
@@ -37,11 +29,8 @@ bison_target(vbsparser ${CMAKE_SOURCE_DIR}/standalone/inc/wine/dlls/vbscript/par
 
 add_compile_definitions(
    __STANDALONE__
-   __OPENGLES__
    
-   GLES_SILENCE_DEPRECATION
-
-   ENABLE_OPENGL
+   ENABLE_BGFX
    ENABLE_SDL_VIDEO
    ENABLE_SDL_INPUT
    ENABLE_SDL_GAMECONTROLLER
@@ -51,6 +40,9 @@ add_compile_definitions(
 
    WINE_NO_TRACE_MSGS
    WINE_NO_DEBUG_MSGS
+
+   $<$<CONFIG:DEBUG>:BX_CONFIG_DEBUG=1>
+   $<$<CONFIG:RELEASE>:BX_CONFIG_DEBUG=0>
 )
 
 add_definitions( 
@@ -281,8 +273,6 @@ add_executable(vpinball
    third-party/include/imgui/imgui.cpp
    third-party/include/imgui/imgui.h
    third-party/include/imgui/imgui_draw.cpp
-   third-party/include/imgui/imgui_impl_opengl3.cpp
-   third-party/include/imgui/imgui_impl_opengl3.h
    third-party/include/imgui/imgui_impl_sdl2.cpp
    third-party/include/imgui/imgui_impl_sdl2.h
    third-party/include/imgui/imgui_stdlib.cpp
@@ -296,6 +286,10 @@ add_executable(vpinball
    third-party/include/implot/implot.h
    third-party/include/implot/implot_items.cpp
    third-party/include/implot/implot_internal.h
+   third-party/include/bgfx-imgui/imgui_impl_bgfx.cpp
+   third-party/include/bgfx-imgui/imgui_impl_bgfx.h
+   third-party/include/bgfx-imgui/fs_ocornut_imgui.bin.h
+   third-party/include/bgfx-imgui/vs_ocornut_imgui.bin.h   
    third-party/include/gpuprofiler.cpp
    third-party/include/gpuprofiler.h
    third-party/include/progmesh.cpp
@@ -611,24 +605,26 @@ add_executable(vpinball
 
    standalone/inc/wine/wine.c
 
-   standalone/tvos-arm64/tvos-project/sdl_main.c
+   standalone/ios-arm64/ios-project/sdl_main.c
 )
 
 target_sources(vpinball PRIVATE
-    standalone/tvos-arm64/tvos-project/assets
-    standalone/tvos-arm64/tvos-project/Assets.xcassets
+    standalone/ios-arm64/ios-project/assets
+    standalone/ios-arm64/ios-project/Assets.xcassets
+    standalone/ios-arm64/ios-project/LaunchScreen.storyboard
 )
 
 set_source_files_properties(
-    standalone/tvos-arm64/tvos-project/assets
-    standalone/tvos-arm64/tvos-project/Assets.xcassets
+    standalone/ios-arm64/ios-project/assets
+    standalone/ios-arm64/ios-project/Assets.xcassets
+    standalone/ios-arm64/ios-project/LaunchScreen.storyboard
 
     PROPERTIES MACOSX_PACKAGE_LOCATION Resources
 )
 
 target_include_directories(vpinball PUBLIC
-   ${CMAKE_SOURCE_DIR}/standalone/tvos-arm64/external/include
-   ${CMAKE_SOURCE_DIR}/standalone/tvos-arm64/external/include/SDL2
+   ${CMAKE_SOURCE_DIR}/standalone/ios-arm64/external/include
+   ${CMAKE_SOURCE_DIR}/standalone/ios-arm64/external/include/SDL2
    ${CMAKE_SOURCE_DIR}
    third-party/include
    standalone/inc/pole
@@ -665,16 +661,20 @@ target_compile_options(vpinball PUBLIC
 )
 
 target_link_directories(vpinball PUBLIC
-   "${CMAKE_SOURCE_DIR}/standalone/tvos-arm64/external/lib"
+   "${CMAKE_SOURCE_DIR}/standalone/ios-arm64/external/lib"
 )
 
 target_link_libraries(vpinball PUBLIC
-   glad
+   bgfx
+   bimg
+   bimg_decode
+   bx
    "-framework OpenGLES"
    "-framework AVFAudio"
    "-framework Metal"
    "-framework Foundation"
    "-framework QuartzCore"
+   "-framework CoreMotion"
    "-framework CoreGraphics"
    "-framework GameController"
    "-framework AudioToolbox"
@@ -689,6 +689,7 @@ target_link_libraries(vpinball PUBLIC
    "-laltsound"
    "-lzedmd"
    "-lserum"
+   "-ldmdutil"
    "-lSDL2"
    "-lSDL2_image"
    "-lSDL2_ttf"
@@ -696,20 +697,22 @@ target_link_libraries(vpinball PUBLIC
 
 set(TARGET_PROPERTIES
    MACOSX_BUNDLE YES
-   MACOSX_BUNDLE_INFO_PLIST "standalone/tvos-arm64/tvos-project/Info.plist"
+   MACOSX_BUNDLE_INFO_PLIST "standalone/ios-arm64/ios-project/Info.plist"
    MACOSX_BUNDLE_EXECUTABLE_NAME "${APP_NAME}" 
-   XCODE_ATTRIBUTE_ASSETCATALOG_COMPILER_APPICON_NAME "App Icon & Top Shelf Image"
-   XCODE_ATTRIBUTE_TARGETED_DEVICE_FAMILY "3"
+   XCODE_ATTRIBUTE_ASSETCATALOG_COMPILER_APPICON_NAME "AppIcon"
+   XCODE_ATTRIBUTE_LAUNCH_STORYBOARD_NAME "standalone/ios-arm64/ios-project/LaunchScreen.storyboard"
+   XCODE_ATTRIBUTE_TARGETED_DEVICE_FAMILY "1,2"
    XCODE_ATTRIBUTE_CLANG_ENABLE_OBJC_ARC YES
    XCODE_ATTRIBUTE_COMBINE_HIDPI_IMAGES "NO"
    XCODE_ATTRIBUTE_PRODUCT_NAME "${APP_NAME}"
-   XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER "org.vpinball.vpinballx-gl"
+   XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER "org.vpinball.vpinballx-bgfx"
    XCODE_ATTRIBUTE_CURRENT_PROJECT_VERSION "${CMAKE_PROJECT_VERSION}"
    XCODE_ATTRIBUTE_MARKETING_VERSION "${CMAKE_PROJECT_VERSION}"
    XCODE_ATTRIBUTE_INSTALL_PATH "/Applications"
-   XCODE_ATTRIBUTE_FRAMEWORK_SEARCH_PATHS "${CMAKE_SOURCE_DIR}/standalone/tvos-arm64/external/framework"
+   XCODE_ATTRIBUTE_FRAMEWORK_SEARCH_PATHS "${CMAKE_SOURCE_DIR}/standalone/ios-arm64/external/framework"
    XCODE_ATTRIBUTE_LD_RUNPATH_SEARCH_PATHS "@executable_path/Frameworks"
-   XCODE_EMBED_FRAMEWORKS "${CMAKE_SOURCE_DIR}/standalone/tvos-arm64/external/framework/bass.framework"
+   XCODE_EMBED_FRAMEWORKS "${CMAKE_SOURCE_DIR}/standalone/ios-arm64/external/framework/bass.framework"
+   XCODE_ATTRIBUTE_CODE_SIGN_ENTITLEMENTS "standalone/ios-arm64/ios-project/App.entitlements"
 )
 
 if(OPT_CODESIGN)
@@ -728,27 +731,13 @@ endif()
 set_target_properties(vpinball PROPERTIES ${TARGET_PROPERTIES})
 
 add_custom_command(TARGET vpinball PRE_BUILD
-   COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/src/assets" "${CMAKE_SOURCE_DIR}/standalone/tvos-arm64/tvos-project/assets/assets"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/tvos-arm64/tvos-project/assets/Default VPinballX.ini" "${CMAKE_SOURCE_DIR}/standalone/tvos-arm64/tvos-project/assets/assets"
-   COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/scripts" "${CMAKE_SOURCE_DIR}/standalone/tvos-arm64/tvos-project/assets/scripts"
-   COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/tables" "${CMAKE_SOURCE_DIR}/standalone/tvos-arm64/tvos-project/assets/tables"
-   COMMAND "${CMAKE_COMMAND}" -E make_directory "${CMAKE_SOURCE_DIR}/standalone/tvos-arm64/tvos-project/assets/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/BasicShader.glfx" "${CMAKE_SOURCE_DIR}/standalone/tvos-arm64/tvos-project/assets/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/DMDShader.glfx" "${CMAKE_SOURCE_DIR}/standalone/tvos-arm64/tvos-project/assets/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/FBShader.glfx" "${CMAKE_SOURCE_DIR}/standalone/tvos-arm64/tvos-project/assets/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/SMAA.glfx" "${CMAKE_SOURCE_DIR}/standalone/tvos-arm64/tvos-project/assets/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"  
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/FlasherShader.glfx" "${CMAKE_SOURCE_DIR}/standalone/tvos-arm64/tvos-project/assets/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/LightShader.glfx" "${CMAKE_SOURCE_DIR}/standalone/tvos-arm64/tvos-project/assets/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/BallShader.glfx" "${CMAKE_SOURCE_DIR}/standalone/tvos-arm64/tvos-project/assets/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/ClassicLightShader.glfx" "${CMAKE_SOURCE_DIR}/standalone/tvos-arm64/tvos-project/assets/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/StereoShader.glfx" "${CMAKE_SOURCE_DIR}/standalone/tvos-arm64/tvos-project/assets/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/Helpers.fxh" "${CMAKE_SOURCE_DIR}/standalone/tvos-arm64/tvos-project/assets/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/FBShader.fxh" "${CMAKE_SOURCE_DIR}/standalone/tvos-arm64/tvos-project/assets/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/Material_GL.fxh" "${CMAKE_SOURCE_DIR}/standalone/tvos-arm64/tvos-project/assets/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/BallShadows.fxh" "${CMAKE_SOURCE_DIR}/standalone/tvos-arm64/tvos-project/assets/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/SMAA.fxh" "${CMAKE_SOURCE_DIR}/standalone/tvos-arm64/tvos-project/assets/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/FXAAStereoAO_GL.fxh" "${CMAKE_SOURCE_DIR}/standalone/tvos-arm64/tvos-project/assets/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/SSR_GL.fxh" "${CMAKE_SOURCE_DIR}/standalone/tvos-arm64/tvos-project/assets/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/Stereo.fxh" "${CMAKE_SOURCE_DIR}/standalone/tvos-arm64/tvos-project/assets/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
-   COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/standalone/inc/flexdmd/resources" "${CMAKE_SOURCE_DIR}/standalone/tvos-arm64/tvos-project/assets/flexdmd"
+   COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/src/assets" "${CMAKE_SOURCE_DIR}/standalone/ios-arm64/ios-project/assets/assets"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/ios-arm64/ios-project/assets/Default VPinballX.ini" "${CMAKE_SOURCE_DIR}/standalone/ios-arm64/ios-project/assets/assets"
+   COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/scripts" "${CMAKE_SOURCE_DIR}/standalone/ios-arm64/ios-project/assets/scripts"
+   COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/tables" "${CMAKE_SOURCE_DIR}/standalone/ios-arm64/ios-project/assets/tables"
+   COMMAND "${CMAKE_COMMAND}" -E make_directory "${CMAKE_SOURCE_DIR}/standalone/ios-arm64/ios-project/assets/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}"
+   COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/src/shaders/bgfx/hlsl" "${CMAKE_SOURCE_DIR}/standalone/ios-arm64/ios-project/assets/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/bgfx-hlsl"
+   COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/src/shaders/bgfx/glsl" "${CMAKE_SOURCE_DIR}/standalone/ios-arm64/ios-project/assets/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/bgfx-glsl"
+   COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/src/shaders/bgfx/spirv" "${CMAKE_SOURCE_DIR}/standalone/ios-arm64/ios-project/assets/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/bgfx-spirv"
+   COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/standalone/inc/flexdmd/resources" "${CMAKE_SOURCE_DIR}/standalone/ios-arm64/ios-project/assets/flexdmd"
 )

@@ -175,7 +175,7 @@ In a terminal execute the following:
 brew install cmake bison curl ios-deploy fastlane
 export PATH="$(brew --prefix bison)/bin:$PATH"
 git clone -b standalone https://github.com/vpinball/vpinball
-cd vpinball/standalone/ios
+cd vpinball/standalone/ios-arm64
 ./external.sh
 cd ../..
 cp standalone/cmake/CMakeLists_gl-ios-arm64.txt CMakeLists.txt
@@ -190,7 +190,7 @@ In a terminal execute the following:
 brew install cmake bison curl ios-deploy fastlane
 export PATH="$(brew --prefix bison)/bin:$PATH"
 git clone -b standalone https://github.com/vpinball/vpinball
-cd vpinball/standalone/tvos
+cd vpinball/standalone/tvos-arm64
 ./external.sh
 cd ../..
 cp standalone/cmake/CMakeLists_gl-tvos-arm64.txt CMakeLists.txt
