@@ -419,7 +419,7 @@ public:
    Light *GetLight(const string &szName) const;
    RenderProbe *GetRenderProbe(const string &szName) const;
 
-   bool AuditTable() const;
+   void AuditTable() const;
 
    void ListCustomInfo(HWND hwndListView);
    int AddListItem(HWND hwndListView, const string &szName, const string &szValue1, LPARAM lparam);

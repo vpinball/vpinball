@@ -8060,7 +8060,7 @@ public:
 };
 
 
-bool PinTable::AuditTable() const
+void PinTable::AuditTable() const
 {
    // Perform a simple table audit (disable lighting vs static, script reference of static parts, png vs webp, hdr vs exr,...)
    std::stringstream ss;
@@ -8188,7 +8188,7 @@ bool PinTable::AuditTable() const
       case eItemLight: tdr = &((Light *)part)->m_d.m_tdr; break;
       case eItemRamp: tdr = &((Ramp *)part)->m_d.m_tdr; break;
       case eItemPlunger: tdr = &((Plunger *)part)->m_d.m_tdr; break;
-      case eItemSpinner: tdr = &((Plunger *)part)->m_d.m_tdr; break;
+      case eItemSpinner: tdr = &((Spinner *)part)->m_d.m_tdr; break;
       case eItemTrigger: tdr = &((Trigger *)part)->m_d.m_tdr; break;
       case eItemKicker: tdr = &((Kicker *)part)->m_d.m_tdr; break;
       case eItemRubber: tdr = &((Rubber *)part)->m_d.m_tdr; break;
@@ -8203,12 +8203,14 @@ bool PinTable::AuditTable() const
       if (tdr && tdr->m_TimerEnabled && tdr->m_TimerInterval != -1 && tdr->m_TimerInterval != -2 && tdr->m_TimerInterval < 5)
          ss << ". Warning: Part '" << part->GetName() << "' uses a timer with a very short period of " << tdr->m_TimerInterval << "ms. This will likely causes lag and the table will not support 'frame pacing'.\r\n";
 
-      // Enabling translucency (light from below) won't work with static parts: otherwise the rendering will be different in VR/Headtracked vs desktop modes. It also needs a non opaque alpha.
-      if (type == eItemPrimitive && prim->m_d.m_disableLightingBelow != 1.f && !prim->m_d.m_staticRendering
+      if (type == eItemPrimitive && prim->m_d.m_visible
+         && prim->m_d.m_disableLightingBelow != 1.f && !prim->m_d.m_staticRendering 
          && (!GetMaterial(prim->m_d.m_szMaterial)->m_bOpacityActive || GetMaterial(prim->m_d.m_szMaterial)->m_fOpacity == 1.f)
          && (GetImage(prim->m_d.m_szImage) == nullptr || GetImage(prim->m_d.m_szImage)->m_pdsBuffer->IsOpaque()))
-         ss << ". Warning: Primitive '" << prim->GetName() << "' uses translucency (lighting from below) but it is fully opaque.\r\n";
+         ss << ". Warning: Primitive '" << prim->GetName() << "' uses translucency (lighting from below) while it is fully opaque. Translucency will be discarded.\r\n";
+
       // Disabled as this is now enforced in the rendering
+      // Enabling translucency (light from below) won't work with static parts: otherwise the rendering will be different in VR/Headtracked vs desktop modes. It also needs a non opaque alpha.
       //if (type == eItemPrimitive && prim->m_d.m_disableLightingBelow != 1.f && prim->m_d.m_staticRendering) 
       //   ss << ". Warning: Primitive '" << prim->GetName() << "' has translucency enabled but is also marked as static. Translucency will not be applied on desktop, and it will look different between VR/headtracked and desktop.\r\n";
       //if (type == eItemSurface && surf->m_d.m_disableLightingBelow != 1.f && surf->StaticRendering()) 
@@ -8221,7 +8223,8 @@ bool PinTable::AuditTable() const
          ss << " Warning: Image '" << image->m_szName << "' uses legacy encoding causing waste of memory / file size. It should be converted to WEBP file format.\r\n";
    }
 
-   bool hasIssues = !ss.str().empty();
+   if (ss.str().empty())
+      ss << "No issue identified.\n";
 
    // Also output a log of the table file content to allow easier size optimization
    unsigned long totalSize = 0, totalGpuSize = 0;
@@ -8241,18 +8244,24 @@ bool PinTable::AuditTable() const
       totalSize += imageSize;
       totalGpuSize += gpuSize;
    }
-   ss << ". Total image size stored in VPX file: " << (totalSize / (1024 * 1024)) << "MiB, in GPU memory when played: " << (totalGpuSize / (1024 * 1024)) << "MiB\r\n";
+   ss << ". Total image size: " << (totalSize / (1024 * 1024)) << "MiB in VPX file, at least " << (totalGpuSize / (1024 * 1024)) << "MiB in GPU memory when played\r\n";
 
-   PLOGI << "Table audit:\r\n" << ss.str();
+   int nPrimTris = 0, primMemSize = 0;
+   for (auto part : m_vedit)
+      if (part->GetItemType() == eItemPrimitive && ((Primitive *)part)->m_d.m_use3DMesh /* && ((Primitive *)part)->m_d.m_visible */ )
+      {
+         primMemSize += (((Primitive *)part)->m_mesh.NumIndices() > 65536 ? 4 : 2) * (int) ((Primitive *)part)->m_mesh.NumIndices();
+         primMemSize += (int) ((Primitive *)part)->m_mesh.NumVertices() * sizeof(Vertex3D_NoTex2);
+         nPrimTris += (int) ((Primitive *)part)->m_mesh.NumIndices() / 3;
+      }
+   ss << ". Total number of faces used in primitives: " << nPrimTris << ", needing " << (primMemSize / (1024 * 1024)) << "MiB in GPU memory when played\r\n ";
 
-   if (hasIssues) {
+   string msg = "Table audit:\r\n" + ss.str();
+   PLOGI << msg;
 #ifndef __STANDALONE__
-      InfoDialog info("Table audit:\r\n" + ss.str());
-      info.DoModal();
+   InfoDialog info(msg);
+   info.DoModal();
 #endif
-   }
-
-   return hasIssues;
 }
 
 void PinTable::ListCustomInfo(HWND hwndListView)
