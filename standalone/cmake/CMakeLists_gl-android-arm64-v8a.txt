@@ -606,8 +606,8 @@ add_library(vpinball SHARED
 )
 
 target_include_directories(vpinball PUBLIC
-   ${CMAKE_SOURCE_DIR}/standalone/android/external/include
-   ${CMAKE_SOURCE_DIR}/standalone/android/external/include/SDL2
+   ${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/external/include
+   ${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/external/include/SDL2
    ${CMAKE_SOURCE_DIR}
    third-party/include
    standalone/inc/pole
@@ -644,7 +644,7 @@ target_compile_options(vpinball PUBLIC
 )
 
 target_link_directories(vpinball PUBLIC
-   ${CMAKE_SOURCE_DIR}/standalone/android/external/lib
+   ${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/external/lib
 )
 
 target_link_libraries(vpinball 
@@ -664,43 +664,43 @@ target_link_libraries(vpinball
 )
 
 add_custom_command(TARGET vpinball POST_BUILD
-   COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/src/assets" "${CMAKE_SOURCE_DIR}/standalone/android/android-project/app/src/main/assets/assets"
-   COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/scripts" "${CMAKE_SOURCE_DIR}/standalone/android/android-project/app/src/main/assets/scripts"
-   COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/tables" "${CMAKE_SOURCE_DIR}/standalone/android/android-project/app/src/main/assets/tables"
-   COMMAND "${CMAKE_COMMAND}" -E make_directory "${CMAKE_SOURCE_DIR}/standalone/android/android-project/app/src/main/assets/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/BasicShader.glfx" "${CMAKE_SOURCE_DIR}/standalone/android/android-project/app/src/main/assets/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/DMDShader.glfx" "${CMAKE_SOURCE_DIR}/standalone/android/android-project/app/src/main/assets/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/FBShader.glfx" "${CMAKE_SOURCE_DIR}/standalone/android/android-project/app/src/main/assets/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/SMAA.glfx" "${CMAKE_SOURCE_DIR}/standalone/android/android-project/app/src/main/assets/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"  
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/FlasherShader.glfx" "${CMAKE_SOURCE_DIR}/standalone/android/android-project/app/src/main/assets/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/LightShader.glfx" "${CMAKE_SOURCE_DIR}/standalone/android/android-project/app/src/main/assets/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/BallShader.glfx" "${CMAKE_SOURCE_DIR}/standalone/android/android-project/app/src/main/assets/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/ClassicLightShader.glfx" "${CMAKE_SOURCE_DIR}/standalone/android/android-project/app/src/main/assets/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/StereoShader.glfx" "${CMAKE_SOURCE_DIR}/standalone/android/android-project/app/src/main/assets/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/Helpers.fxh" "${CMAKE_SOURCE_DIR}/standalone/android/android-project/app/src/main/assets/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/FBShader.fxh" "${CMAKE_SOURCE_DIR}/standalone/android/android-project/app/src/main/assets/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/Material_GL.fxh" "${CMAKE_SOURCE_DIR}/standalone/android/android-project/app/src/main/assets/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/BallShadows.fxh" "${CMAKE_SOURCE_DIR}/standalone/android/android-project/app/src/main/assets/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/SMAA.fxh" "${CMAKE_SOURCE_DIR}/standalone/android/android-project/app/src/main/assets/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/FXAAStereoAO_GL.fxh" "${CMAKE_SOURCE_DIR}/standalone/android/android-project/app/src/main/assets/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/SSR_GL.fxh" "${CMAKE_SOURCE_DIR}/standalone/android/android-project/app/src/main/assets/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/Stereo.fxh" "${CMAKE_SOURCE_DIR}/standalone/android/android-project/app/src/main/assets/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
-   COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/standalone/inc/flexdmd/resources" "${CMAKE_SOURCE_DIR}/standalone/android/android-project/app/src/main/assets/flexdmd"
-   COMMAND "${CMAKE_COMMAND}" -E make_directory "${CMAKE_SOURCE_DIR}/standalone/android/android-project/app/src/main/assets/music"
-   COMMAND "${CMAKE_COMMAND}" -E make_directory "${CMAKE_SOURCE_DIR}/standalone/android/android-project/app/src/main/assets/pinmame"
-   COMMAND "${CMAKE_COMMAND}" -E make_directory "${CMAKE_SOURCE_DIR}/standalone/android/android-project/app/src/main/assets/pinmame/roms"
-   COMMAND "${CMAKE_COMMAND}" -E make_directory "${CMAKE_SOURCE_DIR}/standalone/android/android-project/app/src/main/assets/pinmame/altcolor"
-   COMMAND "${CMAKE_COMMAND}" -E make_directory "${CMAKE_SOURCE_DIR}/standalone/android/android-project/app/src/main/assets/pinmame/altsound"
-   COMMAND "${CMAKE_COMMAND}" -E make_directory "${CMAKE_SOURCE_DIR}/standalone/android/android-project/app/src/main/assets/pinmame/nvram"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/android/external/lib/libSDL2.so" "${CMAKE_SOURCE_DIR}/standalone/android/android-project/app/src/main/jniLibs/arm64-v8a"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/android/external/lib/libSDL2_image.so" "${CMAKE_SOURCE_DIR}/standalone/android/android-project/app/src/main/jniLibs/arm64-v8a"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/android/external/lib/libSDL2_ttf.so" "${CMAKE_SOURCE_DIR}/standalone/android/android-project/app/src/main/jniLibs/arm64-v8a"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/android/external/lib/libFreeImage.so" "${CMAKE_SOURCE_DIR}/standalone/android/android-project/app/src/main/jniLibs/arm64-v8a"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/android/external/lib/libbass.so" "${CMAKE_SOURCE_DIR}/standalone/android/android-project/app/src/main/jniLibs/arm64-v8a"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/android/external/lib/libpinmame.3.6.so" "${CMAKE_SOURCE_DIR}/standalone/android/android-project/app/src/main/jniLibs/arm64-v8a"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/android/external/lib/libaltsound.so" "${CMAKE_SOURCE_DIR}/standalone/android/android-project/app/src/main/jniLibs/arm64-v8a"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/android/external/lib/libzedmd.so" "${CMAKE_SOURCE_DIR}/standalone/android/android-project/app/src/main/jniLibs/arm64-v8a"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/android/external/lib/libserum.so" "${CMAKE_SOURCE_DIR}/standalone/android/android-project/app/src/main/jniLibs/arm64-v8a"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/android/external/lib/libdmdutil.so" "${CMAKE_SOURCE_DIR}/standalone/android/android-project/app/src/main/jniLibs/arm64-v8a"
-   COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE_DIR:vpinball>/libvpinball.so" "${CMAKE_SOURCE_DIR}/standalone/android/android-project/app/src/main/jniLibs/arm64-v8a"
+   COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/src/assets" "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/android-project/app/src/main/assets/assets"
+   COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/scripts" "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/android-project/app/src/main/assets/scripts"
+   COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/tables" "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/android-project/app/src/main/assets/tables"
+   COMMAND "${CMAKE_COMMAND}" -E make_directory "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/android-project/app/src/main/assets/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/BasicShader.glfx" "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/android-project/app/src/main/assets/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/DMDShader.glfx" "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/android-project/app/src/main/assets/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/FBShader.glfx" "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/android-project/app/src/main/assets/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/SMAA.glfx" "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/android-project/app/src/main/assets/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"  
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/FlasherShader.glfx" "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/android-project/app/src/main/assets/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/LightShader.glfx" "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/android-project/app/src/main/assets/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/BallShader.glfx" "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/android-project/app/src/main/assets/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/ClassicLightShader.glfx" "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/android-project/app/src/main/assets/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/StereoShader.glfx" "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/android-project/app/src/main/assets/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/Helpers.fxh" "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/android-project/app/src/main/assets/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/FBShader.fxh" "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/android-project/app/src/main/assets/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/Material_GL.fxh" "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/android-project/app/src/main/assets/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/BallShadows.fxh" "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/android-project/app/src/main/assets/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/SMAA.fxh" "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/android-project/app/src/main/assets/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/FXAAStereoAO_GL.fxh" "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/android-project/app/src/main/assets/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/SSR_GL.fxh" "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/android-project/app/src/main/assets/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/Stereo.fxh" "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/android-project/app/src/main/assets/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/opengl"
+   COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/standalone/inc/flexdmd/resources" "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/android-project/app/src/main/assets/flexdmd"
+   COMMAND "${CMAKE_COMMAND}" -E make_directory "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/android-project/app/src/main/assets/music"
+   COMMAND "${CMAKE_COMMAND}" -E make_directory "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/android-project/app/src/main/assets/pinmame"
+   COMMAND "${CMAKE_COMMAND}" -E make_directory "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/android-project/app/src/main/assets/pinmame/roms"
+   COMMAND "${CMAKE_COMMAND}" -E make_directory "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/android-project/app/src/main/assets/pinmame/altcolor"
+   COMMAND "${CMAKE_COMMAND}" -E make_directory "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/android-project/app/src/main/assets/pinmame/altsound"
+   COMMAND "${CMAKE_COMMAND}" -E make_directory "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/android-project/app/src/main/assets/pinmame/nvram"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/external/lib/libSDL2.so" "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/android-project/app/src/main/jniLibs/arm64-v8a"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/external/lib/libSDL2_image.so" "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/android-project/app/src/main/jniLibs/arm64-v8a"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/external/lib/libSDL2_ttf.so" "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/android-project/app/src/main/jniLibs/arm64-v8a"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/external/lib/libFreeImage.so" "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/android-project/app/src/main/jniLibs/arm64-v8a"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/external/lib/libbass.so" "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/android-project/app/src/main/jniLibs/arm64-v8a"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/external/lib/libpinmame.3.6.so" "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/android-project/app/src/main/jniLibs/arm64-v8a"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/external/lib/libaltsound.so" "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/android-project/app/src/main/jniLibs/arm64-v8a"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/external/lib/libzedmd.so" "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/android-project/app/src/main/jniLibs/arm64-v8a"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/external/lib/libserum.so" "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/android-project/app/src/main/jniLibs/arm64-v8a"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/external/lib/libdmdutil.so" "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/android-project/app/src/main/jniLibs/arm64-v8a"
+   COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE_DIR:vpinball>/libvpinball.so" "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/android-project/app/src/main/jniLibs/arm64-v8a"
 )

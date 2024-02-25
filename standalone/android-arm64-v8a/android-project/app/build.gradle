@@ -35,7 +35,7 @@ android {
     applicationVariants.all { variant ->
         tasks["merge${variant.name.capitalize()}Assets"]
         variant.outputs.all {
-           outputFileName = "VPinballX_GL.apk"
+           outputFileName = "VPinballX.apk"
         }
     }
 

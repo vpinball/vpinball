@@ -2,17 +2,20 @@
 
 set -e
 
+BGFX_CMAKE_VERSION=1.125.8678-462
+
 SDL2_VERSION=2.30.0
 SDL2_IMAGE_VERSION=2.8.2
 SDL2_TTF_VERSION=2.22.0
 
-PINMAME_SHA=6a03362169722e5abb529e311ab5db0de710dd89
+PINMAME_SHA=7b0aafb49b6dbe7127261e3ba3737afe76e88e8b
 LIBALTSOUND_SHA=9ac08a76e2aabc1fba57d3e5a3b87e7f63c09e07
-LIBDMDUTIL_SHA=74da2877c558ddeed265485b78bdf9a1c640ae20
+LIBDMDUTIL_SHA=2cf6bb3946acd70f00a02d753b478d9493a86148
 
 NUM_PROCS=$(nproc)
 
 echo "Building external libraries..."
+echo "  BGFX_CMAKE_VERSION: ${BGFX_CMAKE_VERSION}"
 echo "  SDL2_VERSION: ${SDL2_VERSION}"
 echo "  SDL2_IMAGE_VERSION: ${SDL2_IMAGE_VERSION}"
 echo "  SDL2_TTF_VERSION: ${SDL2_TTF_VERSION}"
@@ -37,6 +40,25 @@ mkdir external/lib
 rm -rf tmp
 mkdir tmp
 cd tmp
+
+#
+# build bgfx and copy to external
+#
+
+curl -sL https://github.com/bkaradzic/bgfx.cmake/releases/download/v${BGFX_CMAKE_VERSION}/bgfx.cmake.v${BGFX_CMAKE_VERSION}.tar.gz -o bgfx.cmake.v${BGFX_CMAKE_VERSION}.tar.gz
+tar -xvzf bgfx.cmake.v${BGFX_CMAKE_VERSION}.tar.gz
+cd bgfx.cmake
+cp -r bgfx/include/bgfx ../../external/include
+cp -r bimg/include/bimg ../../external/include
+cp -r bx/include/bx ../../external/include
+cmake -S. \
+   -DBGFX_LIBRARY_TYPE=SHARED \
+   -DBGFX_BUILD_EXAMPLES=OFF \
+   -DCMAKE_BUILD_TYPE=Release \
+   -B build
+cmake --build build -- -j${NUM_PROCS}
+cp -P build/cmake/bgfx/libbgfx.so ../../external/lib
+cd ..
 
 #
 # build freeimage and copy to external
@@ -159,7 +181,7 @@ platforms/linux/aarch64/external.sh
 cmake -DPLATFORM=linux -DARCH=aarch64 -DBUILD_STATIC=OFF -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -B build
 cmake --build build -- -j${NUM_PROCS}
 cp third-party/runtime-libs/linux/aarch64/libserum.so.1.6.2 ../../external/lib
-cp third-party/runtime-libs/linux/aarch64/libzedmd.so.0.5.0 ../../external/lib
+cp third-party/runtime-libs/linux/aarch64/libzedmd.so.0.6.0 ../../external/lib
 cp third-party/runtime-libs/linux/aarch64/libserialport.so.0 ../../external/lib
 cp build/libdmdutil.so.0.3.0 ../../external/lib
 cd ..

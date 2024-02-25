@@ -212,7 +212,7 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: |
-            standalone/${{ matrix.type }}-macos-${{ matrix.arch }}/external
+            standalone/macos-${{ matrix.arch }}/external
           key: ${{ matrix.config }}-macos-${{ matrix.arch }}-${{ hashFiles('standalone/macos-${{ matrix.arch }}/external.sh') }}
       - run: |
           perl -i -pe"s/0/${{ needs.version.outputs.revision }}/g" git_version.h
@@ -253,57 +253,8 @@ jobs:
           name: VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}-${{ matrix.config }}-macos-${{ matrix.arch }}
           path: tmp
 
-  build-gl-android:
-    name: Build VPinballX_GL-${{ matrix.config }}-android-arm64-v8a
-    runs-on: ubuntu-22.04
-    needs: [ version ]
-    strategy:
-      fail-fast: false
-      matrix:
-        config: [ Release ]  
-    steps:
-      - run: |
-          sudo apt install bison
-      - uses: actions/checkout@v4
-      - uses: actions/cache@v4
-        with:
-          path: |
-            standalone/android/external
-          key: ${{ matrix.config }}-android-arm64-v8a-external-${{ hashFiles('standalone/android/external.sh') }}
-      - uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-      - run: |
-          perl -i -pe"s/0/${{ needs.version.outputs.revision }}/g" git_version.h
-          perl -i -pe"s/unknown/${{ needs.version.outputs.sha7 }}/g" git_version.h
-      - run: |
-          perl -i -pe"s/versionCode [0-9]+/versionCode ${{ needs.version.outputs.revision }}/g" standalone/android/android-project/app/build.gradle
-          perl -i -pe"s/versionName \"[0-9\.]+\"/versionName \"${{ needs.version.outputs.tag }}\"/g" standalone/android/android-project/app/build.gradle
-          perl -i -pe"s/\"VPinballX_GL.apk\"/\"VPinballX_GL-${{ needs.version.outputs.tag }}.apk\"/g" standalone/android/android-project/app/build.gradle
-      - name: Build
-        run: |
-          NUM_PROCS=$(nproc)
-          cd standalone/android
-          if [ ! -d "external" ]; then
-             BUILD_TYPE=${{ matrix.config }} ./external.sh
-          fi
-          cd ../..
-          cp standalone/cmake/CMakeLists_gl-android-arm64-v8a.txt CMakeLists.txt
-          cmake -DCMAKE_BUILD_TYPE=${{ matrix.config }} -B build/${{ matrix.config }}
-          cmake --build build/${{ matrix.config }} -- -j${NUM_PROCS}
-          cd standalone/android/android-project
-          ./gradlew assembleDebug
-      - run: |
-          mkdir tmp
-          cp standalone/android/android-project/app/build/outputs/apk/debug/VPinballX_GL-*.apk tmp
-      - uses: actions/upload-artifact@v4
-        with:
-          name: VPinballX_GL-${{ needs.version.outputs.tag }}-${{ matrix.config }}-android-arm64-v8a
-          path: tmp
-
-  build-gl-linux:
-    name: Build VPinballX_GL-${{ matrix.config }}-linux-x64
+  build-linux:
+    name: Build VPinballX_${{ matrix.type }}-${{ matrix.config }}-linux-${{ matrix.arch }}
     env:
       CC: gcc-12
       CXX: g++-12
@@ -312,7 +263,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        type: [ GL, BGFX ]
         config: [ Release ]  
+        arch: [ x64 ]
     steps:
       - run: |
           sudo apt-get update
@@ -321,25 +274,26 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: |
-            standalone/linux/external
-          key: ${{ matrix.config }}-linux-x64-external-${{ hashFiles('standalone/linux/external.sh') }}
+            standalone/linux-${{ matrix.arch }}/external
+          key: ${{ matrix.config }}-linux-${{ matrix.arch }}-${{ hashFiles('standalone/linux-${{ matrix.arch }}/external.sh') }}
       - run: |
           perl -i -pe"s/0/${{ needs.version.outputs.revision }}/g" git_version.h
           perl -i -pe"s/unknown/${{ needs.version.outputs.sha7 }}/g" git_version.h
       - name: Build
         run: |
           NUM_PROCS=$(nproc)
-          cd standalone/linux
+          cd standalone/linux-${{ matrix.arch }}
           if [ ! -d "external" ]; then
              BUILD_TYPE=${{ matrix.config }} ./external.sh
           fi
           cd ../..
-          cp standalone/cmake/CMakeLists_gl-linux-x64.txt CMakeLists.txt
+          TYPE=$(echo "${{ matrix.type }}" | tr '[:upper:]' '[:lower:]')
+          cp standalone/cmake/CMakeLists_${TYPE}-linux-${{ matrix.arch }}.txt CMakeLists.txt
           cmake -DCMAKE_BUILD_TYPE=${{ matrix.config }} -B build/${{ matrix.config }}
           cmake --build build/${{ matrix.config }} -- -j${NUM_PROCS}
       - run: |
           mkdir tmp
-          cp build/${{ matrix.config }}/VPinballX_GL tmp
+          cp build/${{ matrix.config }}/VPinballX_${{ matrix.type }} tmp
           cp -P build/${{ matrix.config }}/*.{so,so.*} tmp
           cp -r build/${{ matrix.config }}/flexdmd tmp
           cp -r build/${{ matrix.config }}/shaders-${{ needs.version.outputs.version_short }} tmp
@@ -349,8 +303,60 @@ jobs:
           cp -r build/${{ matrix.config }}/docs tmp
       - run: |
           cd tmp
-          tar -czf ../VPinballX_GL-${{ needs.version.outputs.tag }}-${{ matrix.config }}-linux-x64.tar.gz *
+          tar -czf ../VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}-${{ matrix.config }}-linux-${{ matrix.arch }}.tar.gz *
       - uses: actions/upload-artifact@v4
         with:
-          name: VPinballX_GL-${{ needs.version.outputs.tag }}-${{ matrix.config }}-linux-x64
-          path: VPinballX_GL-${{ needs.version.outputs.tag }}-${{ matrix.config }}-linux-x64.tar.gz
+          name: VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}-${{ matrix.config }}-linux-${{ matrix.arch }}
+          path: VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}-${{ matrix.config }}-linux-${{ matrix.arch }}.tar.gz
+
+  build-android:
+    name: Build VPinballX_${{ matrix.type }}-${{ matrix.config }}-android-${{ matrix.arch }}
+    runs-on: ubuntu-22.04
+    needs: [ version ]
+    strategy:
+      fail-fast: false
+      matrix:
+        type: [ GL, BGFX ]
+        config: [ Release ]  
+        arch: [ arm64-v8a ]
+    steps:
+      - run: |
+          sudo apt install bison
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: |
+            standalone/android-${{ matrix.arch }}/external
+          key: ${{ matrix.config }}-android-${{ matrix.arch }}-external-${{ hashFiles('standalone/android-${{ matrix.arch }}/external.sh') }}
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      - run: |
+          perl -i -pe"s/0/${{ needs.version.outputs.revision }}/g" git_version.h
+          perl -i -pe"s/unknown/${{ needs.version.outputs.sha7 }}/g" git_version.h
+      - run: |
+          perl -i -pe"s/versionCode [0-9]+/versionCode ${{ needs.version.outputs.revision }}/g" standalone/android-${{ matrix.arch }}/android-project/app/build.gradle
+          perl -i -pe"s/versionName \"[0-9\.]+\"/versionName \"${{ needs.version.outputs.tag }}\"/g" standalone/android-${{ matrix.arch }}/android-project/app/build.gradle
+          perl -i -pe"s/\"VPinballX.apk\"/\"VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}.apk\"/g" standalone/android-${{ matrix.arch }}/android-project/app/build.gradle
+      - name: Build
+        run: |
+          NUM_PROCS=$(nproc)
+          cd standalone/android-${{ matrix.arch }}
+          if [ ! -d "external" ]; then
+             BUILD_TYPE=${{ matrix.config }} ./external.sh
+          fi
+          cd ../..
+          TYPE=$(echo "${{ matrix.type }}" | tr '[:upper:]' '[:lower:]')
+          cp standalone/cmake/CMakeLists_${TYPE}-android-${{ matrix.arch }}.txt CMakeLists.txt
+          cmake -DCMAKE_BUILD_TYPE=${{ matrix.config }} -B build/${{ matrix.config }}
+          cmake --build build/${{ matrix.config }} -- -j${NUM_PROCS}
+          cd standalone/android-${{ matrix.arch }}/android-project
+          ./gradlew assembleDebug
+      - run: |
+          mkdir tmp
+          cp standalone/android-${{ matrix.arch }}/android-project/app/build/outputs/apk/debug/VPinballX_${{ matrix.type }}-*.apk tmp
+      - uses: actions/upload-artifact@v4
+        with:
+          name: VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}-${{ matrix.config }}-android-${{ matrix.arch }}
+          path: tmp

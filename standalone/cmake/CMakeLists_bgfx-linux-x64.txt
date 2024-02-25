@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.25)
 
+option(POST_BUILD_COPY_EXT_LIBS "Copy external libraries to build directory" ON)
+
 file(READ src/core/vpversion.h version)
 string(REGEX MATCH "VP_VERSION_MAJOR[ ]+([0-9]+)" _tmp ${version})
 set(VERSION_MAJOR "${CMAKE_MATCH_1}")
@@ -9,20 +11,15 @@ string(REGEX MATCH "VP_VERSION_REV[ ]+([0-9]+)" _tmp ${version})
 set(VERSION_REV "${CMAKE_MATCH_1}")
 set(APP_NAME "VPinballX_BGFX")
 
-option(OPT_CODESIGN "Option to code sign" OFF)
-
 project(vpinball VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}")
 
-set(CMAKE_OSX_DEPLOYMENT_TARGET 13.0)
-set(CMAKE_OSX_ARCHITECTURES x86_64)
-
 set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
-set(CMAKE_INSTALL_RPATH "@executable_path/../Frameworks")
+set(CMAKE_INSTALL_RPATH "$ORIGIN")
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_C_STANDARD 99)
 
-find_package(BISON 3.8.2 REQUIRED)
+find_package(BISON 3.7.5 REQUIRED)
 bison_target(vbsparser ${CMAKE_SOURCE_DIR}/standalone/inc/wine/dlls/vbscript/parser.y ${CMAKE_SOURCE_DIR}/standalone/inc/wine/dlls/vbscript/parser.tab.c 
 	     DEFINES_FILE ${CMAKE_SOURCE_DIR}/standalone/inc/wine/dlls/vbscript/parser.tab.h)
 
@@ -48,7 +45,7 @@ add_definitions(
    "-D__forceinline=__attribute__((always_inline)) inline" 
 )
 
-add_executable(vpinball 
+add_executable(vpinball
    src/core/def.h
    src/parts/dragpoint.cpp
    src/utils/eventproxy.h
@@ -288,7 +285,7 @@ add_executable(vpinball
    third-party/include/bgfx-imgui/imgui_impl_bgfx.cpp
    third-party/include/bgfx-imgui/imgui_impl_bgfx.h
    third-party/include/bgfx-imgui/fs_ocornut_imgui.bin.h
-   third-party/include/bgfx-imgui/vs_ocornut_imgui.bin.h   
+   third-party/include/bgfx-imgui/vs_ocornut_imgui.bin.h
    third-party/include/gpuprofiler.cpp
    third-party/include/gpuprofiler.h
    third-party/include/progmesh.cpp
@@ -300,8 +297,6 @@ add_executable(vpinball
    third-party/include/miniz/miniz.c
    third-party/include/miniz/miniz.h   
    third-party/include/robin_hood.h
-
-   standalone/macos-x64/main.mm
 
    standalone/vpinball_standalone_i.c
    standalone/vpinball_standalone_i.h
@@ -608,8 +603,8 @@ add_executable(vpinball
 )
 
 target_include_directories(vpinball PUBLIC
-   ${CMAKE_SOURCE_DIR}/standalone/macos-x64/external/include
-   ${CMAKE_SOURCE_DIR}/standalone/macos-x64/external/include/SDL2
+   ${CMAKE_SOURCE_DIR}/standalone/linux-x64/external/include
+   ${CMAKE_SOURCE_DIR}/standalone/linux-x64/external/include/SDL2
    ${CMAKE_SOURCE_DIR}
    third-party/include
    standalone/inc/pole
@@ -628,6 +623,7 @@ target_precompile_headers(vpinball PUBLIC
 )
 
 target_compile_options(vpinball PUBLIC
+   -mssse3
    -fvisibility=hidden
    -Wno-inconsistent-missing-override
    -Wno-missing-exception-spec
@@ -646,75 +642,44 @@ target_compile_options(vpinball PUBLIC
 )
 
 target_link_directories(vpinball PUBLIC
-   "${CMAKE_SOURCE_DIR}/standalone/macos-x64/external/lib"
+   ${CMAKE_SOURCE_DIR}/standalone/linux-x64/external/lib
 )
 
 target_link_libraries(vpinball PUBLIC
    bgfx
+   freeimage
    SDL2
    SDL2_image
    SDL2_ttf
-   FreeImage
    bass
-   pinmame.3.6
-   altsound.0.1.0
-   zedmd.0.6.0
-   serum.1.6.2
-   dmdutil.0.3.0
-   "-framework AppKit"
+   -l:libpinmame.so.3.6
+   -l:libaltsound.so.0.1.0
+   -l:libzedmd.so.0.6.0
+   -l:libserum.so.1.6.2
+   -l:libdmdutil.so.0.3.0
 )
 
 set_target_properties(vpinball PROPERTIES
    RUNTIME_OUTPUT_NAME "${APP_NAME}"
-   MACOSX_BUNDLE YES
-   MACOSX_BUNDLE_INFO_PLIST "${CMAKE_SOURCE_DIR}/standalone/macos-x64/Info_BGFX.plist"
+   LINK_FLAGS "-Wl,--copy-dt-needed-entries"
 )
 
 add_custom_command(TARGET vpinball POST_BUILD
-   COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/src/assets" "$<TARGET_FILE_DIR:vpinball>/../Resources/assets"
-   COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/scripts" "$<TARGET_FILE_DIR:vpinball>/../Resources/scripts"
-   COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/tables" "$<TARGET_FILE_DIR:vpinball>/../Resources/tables"
-   COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/txt" "$<TARGET_FILE_DIR:vpinball>/../Resources/docs"
-   COMMAND "${CMAKE_COMMAND}" -E make_directory "$<TARGET_FILE_DIR:vpinball>/../Resources/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}"
-   COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/src/shaders/bgfx/hlsl" "$<TARGET_FILE_DIR:vpinball>/../Resources/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/bgfx-hlsl"
-   COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/src/shaders/bgfx/glsl" "$<TARGET_FILE_DIR:vpinball>/../Resources/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/bgfx-glsl"
-   COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/src/shaders/bgfx/spirv" "$<TARGET_FILE_DIR:vpinball>/../Resources/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/bgfx-spirv"
-   COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/standalone/inc/flexdmd/resources" "$<TARGET_FILE_DIR:vpinball>/../Resources/flexdmd"
-   COMMAND "${CMAKE_COMMAND}" -E make_directory "$<TARGET_FILE_DIR:vpinball>/../Frameworks"
-   COMMAND cp -P "${CMAKE_SOURCE_DIR}/standalone/macos-x64/external/lib/*.dylib" "$<TARGET_FILE_DIR:vpinball>/../Frameworks"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/macos-x64/VPinballX.icns" "$<TARGET_FILE_DIR:vpinball>/../Resources"
-   COMMAND /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString ${CMAKE_PROJECT_VERSION}" $<TARGET_FILE_DIR:vpinball>/../Info.plist
-   COMMAND /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${CMAKE_PROJECT_VERSION}" $<TARGET_FILE_DIR:vpinball>/../Info.plist
+   COMMAND "${CMAKE_COMMAND}" -E make_directory "$<TARGET_FILE_DIR:vpinball>/user"
+   COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/src/assets" "$<TARGET_FILE_DIR:vpinball>/assets"
+   COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/scripts" "$<TARGET_FILE_DIR:vpinball>/scripts"
+   COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/tables" "$<TARGET_FILE_DIR:vpinball>/tables"
+   COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/txt" "$<TARGET_FILE_DIR:vpinball>/docs"
+   COMMAND "${CMAKE_COMMAND}" -E make_directory "$<TARGET_FILE_DIR:vpinball>/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}"
+   COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/src/shaders/bgfx/hlsl" "$<TARGET_FILE_DIR:vpinball>/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/bgfx-hlsl"
+   COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/src/shaders/bgfx/glsl" "$<TARGET_FILE_DIR:vpinball>/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/bgfx-glsl"
+   COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/src/shaders/bgfx/spirv" "$<TARGET_FILE_DIR:vpinball>/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/bgfx-spirv"
+   COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/standalone/inc/flexdmd/resources" "$<TARGET_FILE_DIR:vpinball>/flexdmd"
 )
 
-if(OPT_CODESIGN)
-   set(SCRIPT_PATH "${CMAKE_BINARY_DIR}/codesign.sh")
-
-   file(WRITE ${SCRIPT_PATH} "#!/bin/sh\n")
-   file(APPEND ${SCRIPT_PATH} "find \"$1/Contents/Frameworks\" -name \"*.dylib\" | while read -r file; do\n")
-   file(APPEND ${SCRIPT_PATH} "  if [ ! -L \"$file\" ]; then\n")
-   file(APPEND ${SCRIPT_PATH} "    codesign --sign \"$2\" --timestamp --options runtime \"$file\"\n")
-   file(APPEND ${SCRIPT_PATH} "  fi\n")
-   file(APPEND ${SCRIPT_PATH} "done\n")
-   file(APPEND ${SCRIPT_PATH} "codesign --sign \"$2\" --timestamp --options runtime \"$1\"\n")
-   file(CHMOD ${SCRIPT_PATH} PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ)
-
-   set(PATH_APP "${CMAKE_BINARY_DIR}/${APP_NAME}.app")
-   set(PATH_APP_ZIPPED "${PATH_APP}.zip")
-
+if(POST_BUILD_COPY_EXT_LIBS)
    add_custom_command(TARGET vpinball POST_BUILD
-      COMMAND /bin/sh ${SCRIPT_PATH} ${PATH_APP} ${CODESIGN_DEVELOPER_ID}
-      COMMAND ditto -c -k --keepParent ${PATH_APP} ${PATH_APP_ZIPPED}
-      COMMAND xcrun notarytool submit ${PATH_APP_ZIPPED} --wait --apple-id "${CODESIGN_APPLE_ID}" --password "${CODESIGN_PASSWORD}" --team-id "${CODESIGN_TEAM_ID}"
+      COMMAND cp -P "${CMAKE_SOURCE_DIR}/standalone/linux-x64/external/lib/*.so" "$<TARGET_FILE_DIR:vpinball>"
+      COMMAND cp -P "${CMAKE_SOURCE_DIR}/standalone/linux-x64/external/lib/*.so.*" "$<TARGET_FILE_DIR:vpinball>"
    )
 endif()
-
-install(TARGETS vpinball
-   BUNDLE DESTINATION .
-)
-
-set(CPACK_GENERATOR DragNDrop)
-set(CPACK_PACKAGE_FILE_NAME VPinballX_BGFX-${CMAKE_PROJECT_VERSION}-macos-x64)
-set(CPACK_DMG_VOLUME_NAME "VPinballX_BGFX ${CMAKE_PROJECT_VERSION}")
-set(CPACK_PACKAGE_ICON ${CMAKE_CURRENT_SOURCE_DIR}/standalone/macos-x64/VPinballX.icns)
-include(CPack)

@@ -9,13 +9,15 @@ string(REGEX MATCH "VP_VERSION_MINOR[ ]+([0-9]+)" _tmp ${version})
 set(VERSION_MINOR "${CMAKE_MATCH_1}")
 string(REGEX MATCH "VP_VERSION_REV[ ]+([0-9]+)" _tmp ${version})
 set(VERSION_REV "${CMAKE_MATCH_1}")
+set(APP_NAME "VPinballX_GL")
 
 project(vpinball VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}")
 
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_C_STANDARD 99)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 set(CMAKE_INSTALL_RPATH "$ORIGIN")
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_C_STANDARD 99)
 
 add_library(glad
    third-party/include/glad/src/gl.c
@@ -604,8 +606,8 @@ add_executable(vpinball
 )
 
 target_include_directories(vpinball PUBLIC
-   ${CMAKE_SOURCE_DIR}/standalone/linux/external/include
-   ${CMAKE_SOURCE_DIR}/standalone/linux/external/include/SDL2
+   ${CMAKE_SOURCE_DIR}/standalone/linux-x64/external/include
+   ${CMAKE_SOURCE_DIR}/standalone/linux-x64/external/include/SDL2
    ${CMAKE_SOURCE_DIR}
    third-party/include
    standalone/inc/pole
@@ -643,7 +645,7 @@ target_compile_options(vpinball PUBLIC
 )
 
 target_link_directories(vpinball PUBLIC
-   ${CMAKE_SOURCE_DIR}/standalone/linux/external/lib
+   ${CMAKE_SOURCE_DIR}/standalone/linux-x64/external/lib
 )
 
 target_link_libraries(vpinball PUBLIC
@@ -655,13 +657,13 @@ target_link_libraries(vpinball PUBLIC
    bass
    -l:libpinmame.so.3.6
    -l:libaltsound.so.0.1.0
-   -l:libzedmd.so.0.5.0
+   -l:libzedmd.so.0.6.0
    -l:libserum.so.1.6.2
    -l:libdmdutil.so.0.3.0
 )
 
 set_target_properties(vpinball PROPERTIES
-   RUNTIME_OUTPUT_NAME "VPinballX_GL"
+   RUNTIME_OUTPUT_NAME "${APP_NAME}"
    LINK_FLAGS "-Wl,--copy-dt-needed-entries"
 )
 
@@ -694,7 +696,7 @@ add_custom_command(TARGET vpinball POST_BUILD
 
 if(POST_BUILD_COPY_EXT_LIBS)
    add_custom_command(TARGET vpinball POST_BUILD
-      COMMAND cp -P "${CMAKE_SOURCE_DIR}/standalone/linux/external/lib/*.so" "$<TARGET_FILE_DIR:vpinball>"
-      COMMAND cp -P "${CMAKE_SOURCE_DIR}/standalone/linux/external/lib/*.so.*" "$<TARGET_FILE_DIR:vpinball>"
+      COMMAND cp -P "${CMAKE_SOURCE_DIR}/standalone/linux-x64/external/lib/*.so" "$<TARGET_FILE_DIR:vpinball>"
+      COMMAND cp -P "${CMAKE_SOURCE_DIR}/standalone/linux-x64/external/lib/*.so.*" "$<TARGET_FILE_DIR:vpinball>"
    )
 endif()

@@ -661,7 +661,7 @@ target_link_libraries(vpinball PUBLIC
    bass
    pinmame.3.6
    altsound.0.1.0
-   zedmd.0.5.0
+   zedmd.0.6.0
    serum.1.6.2
    dmdutil.0.3.0
    "-framework AppKit"

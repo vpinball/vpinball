@@ -22,12 +22,11 @@ standalone/ios/external
 standalone/ios/ios-project/assets
 standalone/tvos/external
 standalone/tvos/tvos-project/assets
-standalone/android/external
-standalone/android/android-project/app/src/main/assets
-standalone/android/android-project/app/src/main/jniLibs
-standalone/linux/external
-standalone/rpi/external
-standalone/rk3588/external
+standalone/android-arm64-v8a/external
+standalone/android-arm64-v8a/android-project/app/src/main/assets
+standalone/android-arm64-v8a/android-project/app/src/main/jniLibs
+standalone/linux-x64/external
+standalone/linux-aarch64/external
 
 # local Microsoft Visual Studio files
 VisualPinball.sln

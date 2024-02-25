@@ -216,7 +216,7 @@ cd ../..
 cp standalone/cmake/CMakeLists_gl-android-arm64-v8a.txt CMakeLists.txt
 cmake -DCMAKE_BUILD_TYPE=Release -B build
 cmake --build build -- -j$(sysctl -n hw.ncpu)
-cd standalone/android/android-project
+cd standalone/android-arm64-v8a/android-project
 ./gradlew installDebug
 $ANDROID_HOME/platform-tools/adb shell am start -n org.vpinball.app/org.vpinball.app.VPinballActivity
 $ANDROID_HOME/platform-tools/adb -d logcat org.vpinball.app
@@ -228,7 +228,7 @@ In a terminal execute the following:
 ```
 sudo apt install git build-essential autoconf automake libtool cmake bison curl zlib1g-dev libdrm-dev libgbm-dev libglu1-mesa-dev libegl-dev libudev-dev libx11-dev libxrandr-dev
 git clone -b standalone https://github.com/vpinball/vpinball
-cd vpinball/standalone/linux
+cd vpinball/standalone/linux-x64
 ./external.sh
 cd ../..
 cp standalone/cmake/CMakeLists_gl-linux-x64.txt CMakeLists.txt
@@ -243,7 +243,7 @@ In a terminal execute the following:
 sudo dnf groupinstall "Development Tools"
 sudo dnf install gcc-c++ autoconf automake libtool cmake bison curl
 git clone -b standalone https://github.com/vpinball/vpinball
-cd vpinball/standalone/linux
+cd vpinball/standalone/linux-x64
 ./external.sh
 cd ../..
 cp standalone/cmake/CMakeLists_gl-linux-x64.txt CMakeLists.txt
@@ -264,11 +264,11 @@ sudo apt dist-upgrade
 sudo apt install mali-g610-firmware rockchip-multimedia-config
 sudo apt-get install git pkg-config autoconf automake libtool cmake bison zlib1g-dev libdrm-dev libgbm-dev libgles2-mesa-dev libgles2-mesa libudev-dev
 git clone -b standalone https://github.com/vpinball/vpinball
-cd vpinball/standalone/rk3588
+cd vpinball/standalone/linux-aarch64
 ./external.sh
 cd ../..
-cp standalone/cmake/CMakeLists_gl-rk3588-aarch64.txt CMakeLists.txt
-cmake -DCMAKE_BUILD_TYPE=Release -B build
+cp standalone/cmake/CMakeLists_gl-linux-aarch64.txt CMakeLists.txt
+cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_RK3588=ON -B build
 cmake --build build
 ```
 
@@ -278,11 +278,11 @@ Start with a [Raspberry Pi OS Lite (64-Bit)](https://www.raspberrypi.com/softwar
 ```
 sudo apt-get install git pkg-config autoconf automake libtool cmake bison zlib1g-dev libdrm-dev libgbm-dev libgles2-mesa-dev libgles2-mesa libudev-dev
 git clone -b standalone https://github.com/vpinball/vpinball
-cd vpinball/standalone/rpi
+cd vpinball/standalone/linux-aarch64
 ./external.sh
 cd ../..
-cp standalone/cmake/CMakeLists_gl-rpi-aarch64.txt CMakeLists.txt
-cmake -DCMAKE_BUILD_TYPE=Release -B build
+cp standalone/cmake/CMakeLists_gl-linux-aarch64.txt CMakeLists.txt
+cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_RPI=ON -B build
 cmake --build build
 ```
 
