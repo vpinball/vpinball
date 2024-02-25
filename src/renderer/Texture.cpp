@@ -14,12 +14,18 @@
 BaseTexture::BaseTexture(const unsigned int w, const unsigned int h, const Format format)
    : m_width(w)
    , m_height(h)
-   , m_data((format == RGBA || format == SRGBA || format == RGBA_FP16 ? 4 : (format == BW ? 1 : 3)) * (format == RGB_FP32 ? 4 : (format == RGB_FP16 || format == RGBA_FP16) ? 2 : 1) * w * h)
    , m_realWidth(w)
    , m_realHeight(h)
    , m_format(format)
 {
+    m_data = new BYTE[(format == RGBA || format == SRGBA || format == RGBA_FP16 ? 4 : (format == BW ? 1 : 3)) * (format == RGB_FP32 ? 4 : (format == RGB_FP16 || format == RGBA_FP16) ? 2 : 1) * w * h];
 }
+
+BaseTexture::~BaseTexture()
+{
+   delete[] m_data;
+}
+
 
 BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, bool resize_on_low_mem, unsigned int maxTexDim)
 {
@@ -68,7 +74,7 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, bool resize_on_low_
       }
 
       // failed to get mem?
-      if (!dibResized)
+      if (dibResized == nullptr)
       {
          if (!resize_on_low_mem)
          {
@@ -97,7 +103,7 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, bool resize_on_low_
             FreeImage_Unload(dibResized);
 
          // failed to get mem?
-         if (!dibConv)
+         if (dibConv == nullptr)
          {
             if (!resize_on_low_mem)
             {
@@ -370,7 +376,7 @@ void BaseTexture::UpdateOpaque() const
    if (m_format == RGBA || m_format == SRGBA)
    {
       // RGBA_FP16 could be transparent but for the time being, the alpha channel is always opaque, only added for driver's texture format support
-      BYTE* const __restrict pdst = (BYTE*)m_data.data();
+      BYTE* const __restrict pdst = m_data;
       constexpr unsigned int stride = 4;
       for (unsigned int y = 0; y < m_height && m_isOpaque; ++y)
       {
@@ -405,14 +411,15 @@ void BaseTexture::AddAlpha()
 
    size_t o = 0;
    if (m_format == SRGBA || m_format == RGBA) {
-      vector<BYTE2> new_data((size_t)width() * height() * 4);
-      copy_rgb_rgba<false>((unsigned int*)new_data.data(), data(), (size_t)width() * height());
-      m_data = std::move(new_data);
+      BYTE* new_data = new BYTE[(size_t)width() * height() * 4];
+      copy_rgb_rgba<false>((unsigned int*)new_data, data(), (size_t)width() * height());
+      delete[] m_data;
+      m_data = new_data;
    }
    else {
-      vector<BYTE2> new_data((size_t)8 * width() * height());
-      unsigned short* const __restrict dest_data16 = (unsigned short*)new_data.data();
-      const unsigned short* const __restrict src_data16 = (unsigned short*)m_data.data();
+      BYTE* new_data = new BYTE[(size_t)8 * width() * height()];
+      unsigned short* const __restrict dest_data16 = (unsigned short*)new_data;
+      const unsigned short* const __restrict src_data16 = (unsigned short*)m_data;
       for (unsigned int j = 0; j < height(); ++j)
          for (unsigned int i = 0; i < width(); ++i, ++o)
          {
@@ -421,7 +428,8 @@ void BaseTexture::AddAlpha()
             dest_data16[o * 4 + 2] = src_data16[o * 3 + 2];
             dest_data16[o * 4 + 3] = 0x3C00; //=1.f
          }
-      m_data = std::move(new_data);
+      delete[] m_data;
+      m_data = new_data;
    }
 }
 
@@ -441,7 +449,7 @@ void BaseTexture::RemoveAlpha()
    }
 
    size_t o = 0;
-   vector<BYTE2> new_data((size_t)3 * width() * height());
+   BYTE* new_data = new BYTE[(size_t)3 * width() * height()];
    for (unsigned int j = 0; j < height(); ++j)
       for (unsigned int i = 0; i < width(); ++i, ++o)
       {
@@ -449,7 +457,8 @@ void BaseTexture::RemoveAlpha()
          new_data[o * 3 + 1] = m_data[o * 4 + 1];
          new_data[o * 3 + 2] = m_data[o * 4 + 2];
       }
-   m_data = std::move(new_data);
+   delete[] m_data;
+   m_data = new_data;
 }
 
 BaseTexture* BaseTexture::ToBGRA()
@@ -952,5 +961,5 @@ void BaseTexture::UpdateMD5() const
    if (!m_isMD5Dirty)
       return;
    m_isMD5Dirty = false;
-   generateMD5((uint8_t*)m_data.data(), pitch() * height(), m_md5Hash);
+   generateMD5((uint8_t*)m_data, pitch() * height(), m_md5Hash);
 }
