@@ -1230,8 +1230,6 @@ void Primitive::RenderSetup(RenderDevice *device)
    //delete[] szT;
 
    m_lightmap = m_ptable->GetLight(m_d.m_szLightmap);
-   if (m_lightmap)
-      m_lightmap->AddLightmap(this);
 
    m_currentFrame = -1.f;
    m_d.m_isBackGlassImage = IsBackglass();
@@ -1252,8 +1250,6 @@ void Primitive::RenderRelease()
    assert(m_rd != nullptr);
    delete m_meshBuffer;
    m_meshBuffer = nullptr;
-   if (m_lightmap)
-      m_lightmap->RemoveLightmap(this);
    m_lightmap = nullptr;
    m_rd = nullptr;
 }
@@ -1295,13 +1291,18 @@ void Primitive::Render(const unsigned int renderMask)
    if (m_lockedByLS && !m_inPlayState)
       return;
    
-   if (m_d.m_addBlend && (m_d.m_color == 0 || m_d.m_alpha == 0.f))
-      return;
-
    // only render if we have dynamic reflections to render above the staticly prerendered primitive
    RenderTarget *const reflections = reflection_probe ? reflection_probe->Render(renderMask) : nullptr;
    if (isDynamicOnly && m_d.m_staticRendering && (reflections == nullptr))
       return; 
+
+   // Update lightmap before checking anything that uses alpha
+   if (m_lightmap)
+      SetAlpha(100.0f * m_lightmap->m_currentIntensity / (m_lightmap->m_d.m_intensity * m_lightmap->m_d.m_intensity_scale));
+
+   // don't render additive primitive if there is nothing to add
+   if (m_d.m_addBlend && (m_d.m_color == 0 || m_d.m_alpha == 0.f))
+      return;
 
    // Request probes before setting up state since this can trigger a renderprobe update which modifies the render state
    RenderProbe * const refraction_probe = m_ptable->GetRenderProbe(m_d.m_szRefractionProbe);

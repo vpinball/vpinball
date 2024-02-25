@@ -1100,8 +1100,6 @@ void Flasher::RenderSetup(RenderDevice *device)
    m_dmdSize = int2(0, 0);
 
    m_lightmap = m_ptable->GetLight(m_d.m_szLightmap);
-   if (m_lightmap)
-      m_lightmap->AddLightmap(this);
 
    vector<RenderVertex> vvertex;
    GetRgVertex(vvertex);
@@ -1196,8 +1194,6 @@ void Flasher::RenderRelease()
    m_vertices = nullptr;
    m_texdmd = nullptr;
    m_dmdSize = int2(0, 0);
-   if (m_lightmap)
-      m_lightmap->RemoveLightmap(this);
    m_lightmap = nullptr;
    m_rd = nullptr;
 }
@@ -1230,6 +1226,10 @@ void Flasher::Render(const unsigned int renderMask)
    BaseTexture *texdmd = m_texdmd != nullptr ? m_texdmd : g_pplayer->m_texdmd;
    if (m_d.m_isDMD && !texdmd)
       return;
+
+   // Update lightmap before checking anything that uses alpha
+   if (m_lightmap)
+      SetAlpha(100.0f * m_lightmap->m_currentIntensity / (m_lightmap->m_d.m_intensity * m_lightmap->m_d.m_intensity_scale));
 
    if (m_d.m_color == 0 || m_d.m_alpha == 0.0f || m_d.m_intensity_scale == 0.0f)
       return;

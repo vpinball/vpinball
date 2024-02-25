@@ -149,9 +149,6 @@ public:
 
    Light *CopyForPlay(PinTable *live_table);
 
-   void AddLightmap(IEditable *lightmap);
-   void RemoveLightmap(IEditable *lightmap);
-
    // Light definition
    LightData m_d;
 
@@ -219,8 +216,6 @@ private:
    bool  m_lightmapMeshBufferDirty = false;
 
    bool  m_roundLight; // pre-VPX compatibility
-
-   vector<IEditable *> m_lightmaps; // Populated when playing with primitives and flashers declared as lightmaps of this light
 
    Vertex3Ds m_boundingSphereCenter;
    //float m_boundingSphereRadius = -1.f;
