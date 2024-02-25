@@ -8,17 +8,6 @@
 
 struct FIBITMAP;
 
-// to avoid unnecessary zero-init/memset of texture data in here
-#pragma pack(push, 1)
-class BYTE2 final
-{
-   unsigned char c;
-public:
-   BYTE2() {}
-   operator unsigned char() const { return c; }
-};
-#pragma pack(pop)
-
 // texture stored in main memory in 24/32bit RGB/RGBA uchar format or 48/96bit RGB float
 class BaseTexture final
 {
@@ -36,12 +25,12 @@ public:
    };
 
    BaseTexture(const unsigned int w, const unsigned int h, const Format format);
-   ~BaseTexture() = default;
+   ~BaseTexture();
 
    unsigned int width() const  { return m_width; }
    unsigned int height() const { return m_height; }
    unsigned int pitch() const  { return (m_format == BW ? 1 : (has_alpha() ? 4 : 3)) * (m_format == RGB_FP32 ? 4 : (m_format == RGB_FP16 || m_format == RGBA_FP16) ? 2 : 1) * m_width; } // pitch in bytes
-   BYTE* data()                { return (BYTE*)m_data.data(); }
+   BYTE* data()                { return m_data; }
    bool has_alpha() const      { return m_format == RGBA || m_format == SRGBA || m_format == RGBA_FP16; }
 
    BaseTexture *ToBGRA(); // swap R and B channels, also tonemaps floating point buffers during conversion and adds an opaque alpha channel (if format with missing alpha)
@@ -71,7 +60,7 @@ private:
    void UpdateOpaque() const;
 
    const unsigned int m_width, m_height;
-   vector<BYTE2> m_data;
+   BYTE* m_data;
 
    // These field are (lazily) computed from the data, therefore they do not impact the constness of the object
    mutable bool m_isSigned = false;
