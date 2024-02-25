@@ -1201,6 +1201,17 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
       return;
    BackdropSetting activeTweakSetting = m_tweakPageOptions[m_activeTweakIndex];
    PinTable * const table = m_live_table;
+   
+   // Handle scrolling in rules/infos
+   if ((m_activeTweakPage == TP_Rules || m_activeTweakPage == TP_Info) && (keycode == g_pplayer->m_rgKeys[eRightMagnaSave] || keycode == g_pplayer->m_rgKeys[eLeftMagnaSave]) && (keyEvent != 2))
+   {
+      const float speed = m_overlayFont->FontSize * 0.5f;
+      if (keycode == g_pplayer->m_rgKeys[eLeftMagnaSave])
+         m_tweakScroll -= speed;
+      else if (keycode == g_pplayer->m_rgKeys[eRightMagnaSave])
+         m_tweakScroll += speed;
+   }
+
    if (keycode == g_pplayer->m_rgKeys[eLeftFlipperKey] || keycode == g_pplayer->m_rgKeys[eRightFlipperKey])
    {
       if (keyEvent == 2) // Do not react on key up (only key down or long press)
@@ -1223,9 +1234,10 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
          m_activeTweakPage = (TweakPage)((m_activeTweakPage + stepi) % TP_Count);
          if (m_activeTweakPage == TP_Rules && m_table->m_szRules.empty())
             m_activeTweakPage = (TweakPage)((m_activeTweakPage + stepi) % TP_Count);
-         if (m_activeTweakPage == TP_Rules && m_table->m_szDescription.empty())
+         if (m_activeTweakPage == TP_Info && m_table->m_szDescription.empty())
             m_activeTweakPage = (TweakPage)((m_activeTweakPage + stepi) % TP_Count);
          m_activeTweakIndex = 0;
+         m_tweakScroll = 0.f;
          UpdateTweakPage();
          break;
       }
@@ -1630,10 +1642,11 @@ void LiveUI::UpdateTweakModeUI()
 {
    PinTable* const table = m_live_table;
    constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
+   ImVec2 minSize(min(m_overlayFont->FontSize * (m_activeTweakPage == TP_Rules ? 35.f : m_activeTweakPage == TP_Info ? 45.0f : 30.0f), min(ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y)), 0.f);
+   ImVec2 maxSize(ImGui::GetIO().DisplaySize.x - 2.f * m_overlayFont->FontSize, 0.8f * ImGui::GetIO().DisplaySize.y - 1.f * m_overlayFont->FontSize);
    ImGui::SetNextWindowBgAlpha(0.5f);
    ImGui::SetNextWindowPos(ImVec2(0.5f * ImGui::GetIO().DisplaySize.x, 0.8f * ImGui::GetIO().DisplaySize.y), 0, ImVec2(0.5f, 1.f));
-   ImVec2 size(min(m_overlayFont->FontSize * (m_activeTweakPage == TP_Rules ? 35.f : m_activeTweakPage == TP_Info ? 45.0f : 30.0f), min(ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y)), 0.f);
-   ImGui::SetNextWindowSizeConstraints(size, ImGui::GetIO().DisplaySize);
+   ImGui::SetNextWindowSizeConstraints(minSize, maxSize);
    ImGui::Begin("TweakUI", nullptr, window_flags);
 
    ViewSetupID vsId = table->m_BG_current_set;
@@ -1771,14 +1784,34 @@ void LiveUI::UpdateTweakModeUI()
 
    if (m_activeTweakPage == TP_Rules)
    {
-      markdown_start_id = ImGui::GetItemID();
-      ImGui::Markdown(m_table->m_szRules.c_str(), m_table->m_szRules.length(), markdown_config);
+      static float lastHeight = 0.f, maxScroll = 0.f;
+      m_tweakScroll = clamp(m_tweakScroll, 0.f, maxScroll);
+      ImGui::SetNextWindowScroll(ImVec2(0.f, m_tweakScroll));
+      ImGui::SetNextWindowSizeConstraints(ImVec2(0.f, 0.f), ImVec2(FLT_MAX, lastHeight));
+      if (ImGui::BeginChild("Rules", ImVec2(0.f, 0.f), 0, ImGuiWindowFlags_NoBackground))
+      {
+         markdown_start_id = ImGui::GetItemID();
+         ImGui::Markdown(m_table->m_szRules.c_str(), m_table->m_szRules.length(), markdown_config);
+         lastHeight = ImGui::GetCursorPos().y - ImGui::GetCursorStartPos().y; // Height of content
+         maxScroll = ImGui::GetScrollMaxY();
+      }
+      ImGui::EndChild();
       ImGui::NewLine();
    }
    else if (m_activeTweakPage == TP_Info)
    {
-      markdown_start_id = ImGui::GetItemID();
-      ImGui::Markdown(m_table->m_szDescription.c_str(), m_table->m_szDescription.length(), markdown_config);
+      static float lastHeight = 0.f, maxScroll = 0.f;
+      m_tweakScroll = clamp(m_tweakScroll, 0.f, maxScroll);
+      ImGui::SetNextWindowScroll(ImVec2(0.f, m_tweakScroll));
+      ImGui::SetNextWindowSizeConstraints(ImVec2(0.f, 0.f), ImVec2(FLT_MAX, lastHeight));
+      if (ImGui::BeginChild("Info", ImVec2(0.f, 0.f), 0, ImGuiWindowFlags_NoBackground))
+      {
+         markdown_start_id = ImGui::GetItemID();
+         ImGui::Markdown(m_table->m_szDescription.c_str(), m_table->m_szDescription.length(), markdown_config);
+         lastHeight = ImGui::GetCursorPos().y - ImGui::GetCursorStartPos().y; // Height of content
+         maxScroll = ImGui::GetScrollMaxY();
+      }
+      ImGui::EndChild();
       ImGui::NewLine();
    }
 
