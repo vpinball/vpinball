@@ -316,7 +316,6 @@ void Light::EndPlay()
 {
    // ensure not locked just in case the player exits during a LS sequence
    m_lockedByLS = false;
-   m_lightmaps.clear();
    IEditable::EndPlay();
 }
 
@@ -333,20 +332,6 @@ void Light::UpdateBounds()
 void Light::ClearForOverwrite()
 {
    ClearPointsForOverwrite();
-}
-
-void Light::AddLightmap(IEditable *lightmap)
-{
-   m_lightmaps.push_back(lightmap);
-   if (lightmap->GetItemType() == ItemTypeEnum::eItemPrimitive)
-      ((Primitive *)lightmap)->put_Opacity(100.0f * m_currentIntensity / (m_d.m_intensity * m_d.m_intensity_scale));
-   else if (lightmap->GetItemType() == ItemTypeEnum::eItemFlasher)
-      ((Flasher *)lightmap)->put_Opacity((long)(100.0f * m_currentIntensity / (m_d.m_intensity * m_d.m_intensity_scale)));
-}
-
-void Light::RemoveLightmap(IEditable *lightmap)
-{
-   RemoveFromVectorSingle(m_lightmaps, lightmap);
 }
 
 void Light::UpdateAnimation(const float diff_time_msec)
@@ -405,14 +390,7 @@ void Light::UpdateAnimation(const float diff_time_msec)
    }
 
    if (m_previousIntensity != m_currentIntensity)
-   {
-      for (size_t i = 0; i < m_lightmaps.size(); ++i)
-         if (m_lightmaps[i]->GetItemType() == ItemTypeEnum::eItemPrimitive)
-            ((Primitive *)m_lightmaps[i])->put_Opacity(100.0f * m_currentIntensity / (m_d.m_intensity * m_d.m_intensity_scale));
-         else if (m_lightmaps[i]->GetItemType() == ItemTypeEnum::eItemFlasher)
-            ((Flasher *)m_lightmaps[i])->put_Opacity((long)(100.0f * m_currentIntensity / (m_d.m_intensity * m_d.m_intensity_scale)));
       FireGroupEvent(DISPID_AnimateEvents_Animate);
-   }
 }
 
 void Light::RenderSetup(RenderDevice *device)
