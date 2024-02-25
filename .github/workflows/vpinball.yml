@@ -196,7 +196,7 @@ jobs:
 
   build-macos:
     name: Build VPinballX_${{ matrix.type }}-${{ matrix.config }}-macos-${{ matrix.arch }}
-    runs-on: macos-12
+    runs-on: macos-13
     needs: [ version ]
     strategy:
       fail-fast: false
@@ -209,11 +209,13 @@ jobs:
           brew install bison autoconf automake
           echo "/usr/local/opt/bison/bin" >> $GITHUB_PATH
       - uses: actions/checkout@v4
+      - name: Calculate external hash
+        run: |
+          echo "EXTERNAL_PATH=standalone/macos-${{ matrix.arch }}/external.sh" >> $GITHUB_ENV
       - uses: actions/cache@v4
         with:
-          path: |
-            standalone/macos-${{ matrix.arch }}/external
-          key: ${{ matrix.config }}-macos-${{ matrix.arch }}-${{ hashFiles('standalone/macos-${{ matrix.arch }}/external.sh') }}
+          path: standalone/macos-${{ matrix.arch }}/external
+          key: ${{ matrix.config }}-macos-${{ matrix.arch }}-external-${{ hashFiles(env.EXTERNAL_PATH) }}
       - run: |
           perl -i -pe"s/0/${{ needs.version.outputs.revision }}/g" git_version.h
           perl -i -pe"s/unknown/${{ needs.version.outputs.sha7 }}/g" git_version.h
@@ -271,11 +273,13 @@ jobs:
           sudo apt-get update
           sudo apt install cmake bison zlib1g-dev libdrm-dev libgbm-dev libglu1-mesa-dev libegl-dev libudev-dev libx11-dev libxrandr-dev
       - uses: actions/checkout@v4
+      - name: Calculate external hash
+        run: |
+          echo "EXTERNAL_PATH=standalone/linux-${{ matrix.arch }}/external.sh" >> $GITHUB_ENV
       - uses: actions/cache@v4
         with:
-          path: |
-            standalone/linux-${{ matrix.arch }}/external
-          key: ${{ matrix.config }}-linux-${{ matrix.arch }}-${{ hashFiles('standalone/linux-${{ matrix.arch }}/external.sh') }}
+          path: standalone/linux-${{ matrix.arch }}/external
+          key: ${{ matrix.config }}-linux-${{ matrix.arch }}-external-${{ hashFiles(env.EXTERNAL_PATH) }}
       - run: |
           perl -i -pe"s/0/${{ needs.version.outputs.revision }}/g" git_version.h
           perl -i -pe"s/unknown/${{ needs.version.outputs.sha7 }}/g" git_version.h
@@ -323,11 +327,13 @@ jobs:
       - run: |
           sudo apt install bison
       - uses: actions/checkout@v4
+      - name: Calculate external hash
+        run: |
+          echo "EXTERNAL_PATH=standalone/android-${{ matrix.arch }}/external.sh" >> $GITHUB_ENV
       - uses: actions/cache@v4
         with:
-          path: |
-            standalone/android-${{ matrix.arch }}/external
-          key: ${{ matrix.config }}-android-${{ matrix.arch }}-external-${{ hashFiles('standalone/android-${{ matrix.arch }}/external.sh') }}
+          path: standalone/android-${{ matrix.arch }}/external
+          key: ${{ matrix.config }}-android-${{ matrix.arch }}-external-${{ hashFiles(env.EXTERNAL_PATH) }}
       - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
