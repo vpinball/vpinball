@@ -49,11 +49,13 @@ jobs:
         board: [ rpi, rk3588 ]
     steps:
       - uses: actions/checkout@v4
+      - name: Calculate external hash
+        run: |
+          echo "EXTERNAL_PATH=standalone/linux-${{ matrix.arch }}/external.sh" >> $GITHUB_ENV
       - uses: actions/cache@v4
         with:
-          path: |
-            standalone/linux-${{ matrix.arch }}/external
-          key: ${{ matrix.config }}-linux-${{ matrix.arch }}-${{ hashFiles('standalone/linux-${{ matrix.arch }}/external.sh') }}
+          path: standalone/linux-${{ matrix.arch }}/external
+          key: ${{ matrix.config }}-linux-${{ matrix.arch }}-external-${{ hashFiles(env.EXTERNAL_PATH) }}
       - uses: pguyot/arm-runner-action@v2
         id: arm_runner_make
         with:
