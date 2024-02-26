@@ -4,6 +4,8 @@
 #include <climits>
 #endif
 
+#include "robin_hood.h"
+
 // call if msec,usec or uSleep, etc. should be more precise
 void set_lowest_possible_win_timer_resolution();
 // and then call this after being finished with precise measurements to allow the OS to better save power
