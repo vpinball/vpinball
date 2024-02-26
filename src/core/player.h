@@ -219,7 +219,7 @@ public:
    virtual void PreRegisterClass(WNDCLASS& wc) override;
    virtual void PreCreate(CREATESTRUCT& cs) override;
    virtual void OnInitialUpdate() override;
-   void OnClose() override { Shutdown(); }
+   void OnClose() override;
    virtual LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
    void LockForegroundWindow(const bool enable);
 
@@ -230,7 +230,6 @@ public:
 
 private:
    HRESULT Init(); // Called from OnInitialUpdate callback (after native window creation)
-   void Shutdown(); // Only called from OnClose, causing destruction of player (window destroy, object destruction, calling destructor)
 
    const int m_playMode;
 

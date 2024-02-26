@@ -673,8 +673,10 @@ void Player::OnInitialUpdate()
         throw 0; //!! have a more specific code (that is catched in the VPinball PeekMessageA loop)?!
 }
 
-void Player::Shutdown()
+void Player::OnClose()
 {
+    g_frameProfiler.LogWorstFrame();
+
     // In Windows 10 1803, there may be a significant lag waiting for WM_DESTROY (msg sent by the delete call below) if script is not closed first.
     // signal the script that the game is now exited to allow any cleanup
     m_ptable->FireVoidEvent(DISPID_GameEvents_Exit);
@@ -821,15 +823,13 @@ void Player::Shutdown()
    delete player; // Win32xx call Window destroy for us from destructor, don't call it directly or it will crash due to dual destruction
 
    // Reactivate edited table or close application if requested
+#ifndef __STANDALONE__
    if (closing == CS_CLOSE_APP)
    {
-#ifndef __STANDALONE__
       g_pvp->PostMessage(WM_CLOSE, 0, 0);
-#endif
    }
    else
    {
-#ifndef __STANDALONE__
       g_pvp->GetPropertiesDocker()->EnableWindow();
       g_pvp->GetLayersDocker()->EnableWindow();
       g_pvp->GetToolbarDocker()->EnableWindow();
@@ -844,8 +844,8 @@ void Player::Shutdown()
       editedTable->SetDirtyDraw();
       editedTable->RefreshProperties();
       editedTable->BeginAutoSaveCounter();
-#endif
    }
+#endif
 }
 
 void Player::InitFPS()
@@ -2102,16 +2102,15 @@ void Player::FinishFrame()
    if (m_ptable->m_pcv->m_scriptError)
    {
       // Stop playing (send close window message)
+      m_pEditorTable->m_pcv->m_scriptError = true;
 #ifndef __STANDALONE__
-      SendMessage(WM_CLOSE, 0, 0);
-      return;
+      m_closing == CS_STOP_PLAY;
 #else
-#if (defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__)
+      m_closing = CS_CLOSE_APP;
+   #if (defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__)
       PLOGE.printf("Runtime error detected. Resetting LaunchTable to default.");
       g_pvp->m_settings.SaveValue(Settings::Standalone, "LaunchTable"s, "assets/exampleTable.vpx");
-#endif
-      m_pEditorTable->m_pcv->m_scriptError = true;
-      m_closing = CS_CLOSE_APP;
+   #endif
 #endif
    }
 
@@ -2136,11 +2135,10 @@ void Player::FinishFrame()
 
    // Close player (moving back to editor or to system is handled after player has been closed)
    if (m_closing == CS_STOP_PLAY || m_closing == CS_CLOSE_APP)
-#ifndef __STANDALONE__
-      PostMessage(WM_CLOSE, 0, 0);
-#else
+   {
       OnClose();
-#endif
+      return;
+   }
 
    // Open debugger window
    if (m_showDebugger && !g_pvp->m_disable_pause_menu && !m_ptable->IsLocked())
