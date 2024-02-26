@@ -29,7 +29,7 @@ class FrameProfiler
 public:
    enum ProfileSection
    {
-	  // Sections of a frame. Sum of the following sections should give the same as PROFILE_FRAME
+      // Sections of a frame. Sum of the following sections should give the same as PROFILE_FRAME
       PROFILE_MISC,        // Everything not covered below
       PROFILE_SCRIPT,      // Time spent in script (all events)
       PROFILE_PHYSICS,     // Time spent in the physics simulation
@@ -40,30 +40,69 @@ public:
       PROFILE_CUSTOM1,     // Use in conjunction with PROFILE_FUNCTION to perform custom profiling of sub sections of frames
       PROFILE_CUSTOM2,     // Use in conjunction with PROFILE_FUNCTION to perform custom profiling of sub sections of frames
       PROFILE_CUSTOM3,     // Use in conjunction with PROFILE_FUNCTION to perform custom profiling of sub sections of frames
-	  // Dedicated counters
+      // Dedicated counters
       PROFILE_FRAME,             // Overall frame length
-	  PROFILE_INPUT_POLL_PERIOD, // Time spent between 2 input processings.
-	  PROFILE_INPUT_TO_PRESENT,  // Time spent between the last input taen in account in a frame to the presentation of this frame
-	                             // The overall game lag is the sum of this lag with the present to display lag obtained using PresentMon tool
-	  PROFILE_COUNT
+      PROFILE_INPUT_POLL_PERIOD, // Time spent between 2 input processings.
+      PROFILE_INPUT_TO_PRESENT,  // Time spent between the last input taen in account in a frame to the presentation of this frame
+                                 // The overall game lag is the sum of this lag with the present to display lag obtained using PresentMon tool
+      PROFILE_COUNT
    };
 
    void Reset()
    { 
+      m_logWorstFrame = false;
       m_frameIndex = -1;
       m_processInputCount = 0;
       m_processInputTimeStamp = 0;
       m_prepareCount = 0;
       m_prepareTimeStamp = 0;
+      for (int i = 0; i < N_SAMPLES; i++)
+         memset(m_profileData[i], 0, sizeof(m_profileData[0]));
       for (int i = 0; i < PROFILE_COUNT; i++)
       {
          m_profileMinData[i] = ~0u;
          m_profileMaxData[i] = 0;
          m_profileTotalData[i] = 0;
       }
+      // Clear worst frames
+      m_leastWorstFrameLength = 0;
+      for (int i = 0; i < N_WORST; i++)
+         memset(m_profileWorstData[i], 0, sizeof(m_profileWorstData[0]));
    }
 
-   void NewFrame()
+   void EnableWorstFrameLogging(bool enable) { m_logWorstFrame = true; }
+
+   void LogWorstFrame()
+   {
+      if (!m_logWorstFrame)
+         return;
+      m_logWorstFrame = false;
+      const string labels[] = { 
+         "Misc:         ", 
+         "Script:       ", 
+         "Physics:      ", 
+         "GPU Collect:  ", 
+         "GPU Submit:   ", 
+         "GPU Flip:     ", 
+         "Sleep:        ", 
+         "Custom 1:     ", 
+         "Custom 2:     ", 
+         "Custom 3:     " };
+      for (int i = 0; i < N_WORST; i++)
+      {
+         if (m_profileWorstData[i][PROFILE_FRAME] == 0)
+            break;
+         PLOGI << "Long Frame #" << (i + 1) << " happened at game time " << (m_profileWorstGameTime[i] * 1e-3) << "ms :";
+         PLOGI << ". Frame Length: " << std::setw(6) << std::fixed << std::setprecision(1) << (m_profileWorstData[i][PROFILE_FRAME] * 1e-3) << "ms";
+         for (int j = PROFILE_MISC; j <= PROFILE_CUSTOM3; j++)
+            if (m_profileWorstData[i][j])
+            {
+               PLOGI << ".   " << labels[j] << std::setw(6) << std::fixed << std::setprecision(1) << (m_profileWorstData[i][j] * 1e-3) << "ms";
+            }
+      }
+   }
+
+   void NewFrame(U32 gametime)
    {
       assert(m_profileSectionStackPos == 0);
       m_frameIndex++;
@@ -72,6 +111,25 @@ public:
       {
          unsigned int frameLength = (unsigned int)(m_profileTimeStamp - m_frameTimeStamp);
          m_profileData[m_profileIndex][PROFILE_FRAME] = frameLength;
+         // Keep worst frames for easier inspection of stutter causes
+         if (frameLength >= m_leastWorstFrameLength)
+         {
+            unsigned int least_worst = INT_MAX;
+            for (int i = 0; i < N_WORST; i++)
+            {
+               if (m_profileWorstData[i][PROFILE_FRAME] < least_worst)
+               {
+                  least_worst = m_profileWorstData[i][PROFILE_FRAME];
+                  if (least_worst <= m_leastWorstFrameLength)
+                  {
+                     m_leastWorstFrameLength = 0;
+                     m_profileWorstGameTime[i] = gametime;
+                     memcpy(m_profileWorstData[i], m_profileData[m_profileIndex], sizeof(m_profileWorstData[0]));
+                  }
+               }
+            }
+            m_leastWorstFrameLength = least_worst;
+         }
          for (int i = 0; i < PROFILE_COUNT; i++)
          {
             unsigned int data = m_profileData[m_profileIndex][i];
@@ -112,15 +170,15 @@ public:
    unsigned int Get(ProfileSection section) const
    {
       return section == PROFILE_INPUT_POLL_PERIOD ? m_profileData[m_processInputIndex][PROFILE_INPUT_POLL_PERIOD]
-	       : section == PROFILE_INPUT_TO_PRESENT  ? m_profileData[m_prepareIndex][PROFILE_INPUT_TO_PRESENT]
-			                                      : m_profileData[m_profileIndex][section];
+           : section == PROFILE_INPUT_TO_PRESENT  ? m_profileData[m_prepareIndex][PROFILE_INPUT_TO_PRESENT]
+                                                  : m_profileData[m_profileIndex][section];
    }
    
    unsigned int GetPrev(ProfileSection section) const
    {
       return section == PROFILE_INPUT_POLL_PERIOD ? m_profileData[(m_processInputIndex + N_SAMPLES - 1) % N_SAMPLES][PROFILE_INPUT_POLL_PERIOD]
-	       : section == PROFILE_INPUT_TO_PRESENT  ? m_profileData[(m_prepareIndex + N_SAMPLES - 1) % N_SAMPLES][PROFILE_INPUT_TO_PRESENT]
-			                                      : m_profileData[(m_profileIndex + N_SAMPLES - 1) % N_SAMPLES][section];
+           : section == PROFILE_INPUT_TO_PRESENT  ? m_profileData[(m_prepareIndex + N_SAMPLES - 1) % N_SAMPLES][PROFILE_INPUT_TO_PRESENT]
+                                                  : m_profileData[(m_profileIndex + N_SAMPLES - 1) % N_SAMPLES][section];
    }
    
    unsigned int GetMin(ProfileSection section) const
@@ -136,14 +194,14 @@ public:
    double GetAvg(ProfileSection section) const
    {
       return section == PROFILE_INPUT_POLL_PERIOD ? (m_processInputCount <= 0 ? 0. : ((double)m_profileTotalData[PROFILE_INPUT_POLL_PERIOD] / (double)m_processInputCount))
-	       : section == PROFILE_INPUT_TO_PRESENT  ? (m_prepareCount <= 0 ? 0. : ((double)m_profileTotalData[PROFILE_INPUT_TO_PRESENT] / (double)m_prepareCount))
-			                                      : (m_frameIndex <= 0 ? 0. : ((double)m_profileTotalData[section] / (double)m_frameIndex));
+           : section == PROFILE_INPUT_TO_PRESENT  ? (m_prepareCount <= 0      ? 0. : ((double)m_profileTotalData[PROFILE_INPUT_TO_PRESENT] / (double)m_prepareCount))
+                                                  : (m_frameIndex <= 0        ? 0. : ((double)m_profileTotalData[section] / (double)m_frameIndex));
    }
    
    double GetRatio(ProfileSection section) const
    {
-	   assert(section <= PROFILE_FRAME); // Unimplemented and not meaningful for other sections 
-	   return m_profileTotalData[ProfileSection::PROFILE_FRAME] == 0 ? 0. : ((double)m_profileTotalData[section] / (double)m_profileTotalData[ProfileSection::PROFILE_FRAME]);
+      assert(section <= PROFILE_FRAME); // Unimplemented and not meaningful for other sections 
+      return m_profileTotalData[ProfileSection::PROFILE_FRAME] == 0 ? 0. : ((double)m_profileTotalData[section] / (double)m_profileTotalData[ProfileSection::PROFILE_FRAME]);
    }
    
    // (approximately) 1 second sliding average of frame sections
@@ -206,12 +264,12 @@ public:
          m_processInputIndex = (m_processInputIndex + 1) % N_SAMPLES;
          m_processInputCount++;
       }
-	   m_processInputTimeStamp = ts;
+      m_processInputTimeStamp = ts;
    }
    
    void OnPrepare()
    {
-	   m_prepareTimeStamp = m_processInputTimeStamp;
+      m_prepareTimeStamp = m_processInputTimeStamp;
    }
    
    void OnPresent()
@@ -229,9 +287,12 @@ public:
 
 private:
    constexpr static unsigned int N_SAMPLES = 1000; // Number of samples to store. Must be kept quite high to be able to do a 1s sliding average (so at 1000FPS, needs 100 samples)
+   constexpr static unsigned int N_WORST = 10; // Number of longest frames to keep detailed profile timing
    constexpr static unsigned int STACK_SIZE = 100;
 
-   // Frame profiling (seque,ce of section)
+   bool m_logWorstFrame = false;
+
+   // Frame profiling (sequence of section)
    unsigned int m_profileIndex = 0;
    unsigned long long m_profileTimeStamp;
    int m_profileSectionStackPos = 0;
@@ -242,7 +303,7 @@ private:
    unsigned int m_frameIndex = -1;
    unsigned long long m_frameTimeStamp;
 
-   // Input lag
+   // Input lag (polling frequency)
    unsigned int m_processInputIndex = 0;
    unsigned int m_processInputCount = 0;
    unsigned long long m_processInputTimeStamp;
@@ -257,6 +318,11 @@ private:
    unsigned int m_profileMaxData[PROFILE_COUNT];
    unsigned int m_profileMinData[PROFILE_COUNT];
    unsigned int m_profileTotalData[PROFILE_COUNT];
+
+   // Worst frames data
+   unsigned int m_leastWorstFrameLength;
+   unsigned int m_profileWorstData[N_WORST][PROFILE_COUNT];
+   unsigned int m_profileWorstGameTime[N_WORST];
 };
 
 extern FrameProfiler g_frameProfiler;
