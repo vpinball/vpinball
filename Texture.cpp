@@ -14,12 +14,18 @@
 BaseTexture::BaseTexture(const unsigned int w, const unsigned int h, const Format format)
    : m_width(w)
    , m_height(h)
-   , m_data((format == RGBA || format == SRGBA ? 4 : (format == BW ? 1 : 3)) * (format == RGB_FP32 ? 4 : format == RGB_FP16 ? 2 : 1) * w * h)
    , m_realWidth(w)
    , m_realHeight(h)
    , m_format(format)
 {
+    m_data = new BYTE[(format == RGBA || format == SRGBA ? 4 : (format == BW ? 1 : 3)) * (format == RGB_FP32 ? 4 : format == RGB_FP16 ? 2 : 1) * w * h];
 }
+
+BaseTexture::~BaseTexture()
+{
+   delete[] m_data;
+}
+
 
 BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, bool resize_on_low_mem)
 {
@@ -69,7 +75,7 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, bool resize_on_low_
       }
 
       // failed to get mem?
-      if (!dibResized)
+      if (dibResized == nullptr)
       {
          if (!resize_on_low_mem)
          {
@@ -98,7 +104,7 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, bool resize_on_low_
             FreeImage_Unload(dibResized);
 
          // failed to get mem?
-         if (!dibConv)
+         if (dibConv == nullptr)
          {
             if (!resize_on_low_mem)
             {
