@@ -681,8 +681,10 @@ void Player::OnInitialUpdate()
         throw 0; //!! have a more specific code (that is catched in the VPinball PeekMessageA loop)?!
 }
 
-void Player::Shutdown()
+void Player::OnClose()
 {
+    g_frameProfiler.LogWorstFrame();
+
     // In Windows 10 1803, there may be a significant lag waiting for WM_DESTROY (msg sent by the delete call below) if script is not closed first.
     // signal the script that the game is now exited to allow any cleanup
     m_ptable->FireVoidEvent(DISPID_GameEvents_Exit);
@@ -875,6 +877,7 @@ void Player::Shutdown()
    delete player; // Win32xx call Window destroy for us from destructor, don't call it directly or it will crash due to dual destruction
 
    // Reactivate edited table or close application if requested
+#ifndef __STANDALONE__
    if (closing == CS_CLOSE_APP)
    {
       g_pvp->PostMessage(WM_CLOSE, 0, 0);
@@ -896,6 +899,7 @@ void Player::Shutdown()
       editedTable->RefreshProperties();
       editedTable->BeginAutoSaveCounter();
    }
+#endif
 }
 
 void Player::InitFPS()
@@ -4185,8 +4189,16 @@ void Player::FinishFrame()
    if (m_ptable->m_pcv->m_scriptError)
    {
       // Stop playing (send close window message)
-      SendMessage(WM_CLOSE, 0, 0);
-      return;
+      m_pEditorTable->m_pcv->m_scriptError = true;
+#ifndef __STANDALONE__
+      m_closing == CS_STOP_PLAY;
+#else
+      m_closing = CS_CLOSE_APP;
+   #if (defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__)
+      PLOGE.printf("Runtime error detected. Resetting LaunchTable to default.");
+      g_pvp->m_settings.SaveValue(Settings::Standalone, "LaunchTable"s, "assets/exampleTable.vpx");
+   #endif
+#endif
    }
 
    // Close requested with user input
@@ -4205,7 +4217,10 @@ void Player::FinishFrame()
 
    // Close player (moving back to editor or to system is handled after player has been closed)
    if (m_closing == CS_STOP_PLAY || m_closing == CS_CLOSE_APP)
-      PostMessage(WM_CLOSE, 0, 0);
+   {
+      OnClose();
+      return;
+   }
 
    // Open debugger window
    if (m_showDebugger && !g_pvp->m_disable_pause_menu && !m_ptable->IsLocked())

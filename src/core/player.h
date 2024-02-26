@@ -761,11 +761,9 @@ public:
 private:
    // only called from ctor
    HRESULT Init();
-   // only called from OnClose, causing destruction of player (window destroy, object destruction, calling destructor)
-   void Shutdown();
 
 public:
-   void OnClose() override { Shutdown(); }
+   void OnClose() override;
 
 #ifdef STEPPING
    U32 m_pauseTimeTarget;
