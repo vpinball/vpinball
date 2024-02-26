@@ -1385,16 +1385,13 @@ void Player::DestroyBall(Ball *pball)
 void Player::FireSyncController()
 {
    // Legacy implementation: timers with magic interval value have special behaviors: -2 for controller sync event
-   g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_SCRIPT);
    for (HitTimer *const pht : m_vht)
       if (pht->m_interval == -2)
          pht->m_pfe->FireGroupEvent(DISPID_TimerEvents_Timer);
-   g_frameProfiler.ExitProfileSection();
 }
 
 void Player::FireTimers(const unsigned int simulationTime)
 {
-   g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_SCRIPT);
    Ball *const old_pactiveball = g_pplayer->m_pactiveball;
    g_pplayer->m_pactiveball = nullptr; // No ball is the active ball for timers/key events
    for (HitTimer *const pht : m_vht)
@@ -1414,7 +1411,6 @@ void Player::FireTimers(const unsigned int simulationTime)
       }
    }
    g_pplayer->m_pactiveball = old_pactiveball;
-   g_frameProfiler.ExitProfileSection();
 }
 
 void Player::DeferTimerStateChange(HitTimer * const hittimer, bool enabled)
@@ -1987,11 +1983,9 @@ void Player::PrepareFrame()
    FireSyncController();
 
    // New Frame event: Legacy implementation with timers with magic interval value have special behaviors, here -1 for onNewFrame event
-   g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_SCRIPT);
    for (HitTimer *const pht : m_vht)
       if (pht->m_interval == -1)
          pht->m_pfe->FireGroupEvent(DISPID_TimerEvents_Timer);
-   g_frameProfiler.ExitProfileSection();
 
    // Kill the profiler so that it does not affect performance
    if (m_infoMode != IF_PROFILING)
@@ -2104,7 +2098,7 @@ void Player::FinishFrame()
       // Stop playing (send close window message)
       m_pEditorTable->m_pcv->m_scriptError = true;
 #ifndef __STANDALONE__
-      m_closing == CS_STOP_PLAY;
+      m_closing = CS_STOP_PLAY;
 #else
       m_closing = CS_CLOSE_APP;
    #if (defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__)
