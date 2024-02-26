@@ -236,23 +236,6 @@ void VPinball::GetMyPrefPath()
       std::filesystem::create_directory(m_szMyPrefPath);
 }
 
-//Ensure that worker thread exists
-//Starts worker Thread otherwise
-void VPinball::EnsureWorkerThread()
-{
-   if (!m_workerthread)
-   {
-#ifndef __STANDALONE__
-      g_hWorkerStarted = CreateEvent(nullptr, TRUE, FALSE, nullptr);
-      m_workerthread = (HANDLE)_beginthreadex(nullptr, 0, VPWorkerThreadStart, 0, 0, &m_workerthreadid);
-      if (WaitForSingleObject(g_hWorkerStarted, 5000) == WAIT_TIMEOUT)
-      {
-      }
-      SetThreadPriority(m_workerthread, THREAD_PRIORITY_LOWEST);
-#endif
-   }
-}
-
 //Post Work to the worker Thread
 //Creates Worker-Thread if not present
 //See Worker::VPWorkerThreadStart for infos
@@ -261,13 +244,19 @@ void VPinball::EnsureWorkerThread()
 //returns Handle to Event that get ack. If event is finished (unsure)
 HANDLE VPinball::PostWorkToWorkerThread(int workid, LPARAM lParam)
 {
-   EnsureWorkerThread();										// Check if Workerthread was created once, otherwise create
-
 #ifndef __STANDALONE__
+   // Check if Workerthread was created once, otherwise create
+   if (!m_workerthread)
+   {
+      g_hWorkerStarted = CreateEvent(nullptr, TRUE, FALSE, nullptr);
+      m_workerthread = (HANDLE)_beginthreadex(nullptr, 0, VPWorkerThreadStart, 0, 0, &m_workerthreadid);
+      if (WaitForSingleObject(g_hWorkerStarted, 5000) == WAIT_TIMEOUT)
+      {
+      }
+      SetThreadPriority(m_workerthread, THREAD_PRIORITY_LOWEST);
+   }
    HANDLE hEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr);
-
    PostThreadMessage(m_workerthreadid, workid, (WPARAM)hEvent, lParam);
-
    return hEvent;
 #else
    return 0L;

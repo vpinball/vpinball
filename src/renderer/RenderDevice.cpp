@@ -1,8 +1,5 @@
 #include "core/stdafx.h"
 
-#ifndef __STANDALONE__
-#include <DxErr.h>
-#endif
 #include <thread>
 
 //#include "Dwmapi.h" // use when we get rid of XP at some point, get rid of the manual dll loads in here then
@@ -44,6 +41,7 @@
 GLuint RenderDevice::m_samplerStateCache[3 * 3 * 5];
 
 #elif defined(ENABLE_DX9)
+#include <DxErr.h>
 #if _MSC_VER >= 1900
  #pragma comment(lib, "legacy_stdio_definitions.lib") //dxerr.lib needs this
 #endif

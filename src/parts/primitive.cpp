@@ -1286,7 +1286,7 @@ void Primitive::Render(const unsigned int renderMask)
 
    // Update lightmap before checking anything that uses alpha
    if (m_lightmap)
-      SetAlpha(100.0f * m_lightmap->m_currentIntensity / (m_lightmap->m_d.m_intensity * m_lightmap->m_d.m_intensity_scale));
+      SetAlpha((int)(100.0f * m_lightmap->m_currentIntensity / (m_lightmap->m_d.m_intensity * m_lightmap->m_d.m_intensity_scale)));
 
    // don't render additive primitive if there is nothing to add
    if (m_d.m_addBlend && (m_d.m_color == 0 || m_d.m_alpha == 0.f))
