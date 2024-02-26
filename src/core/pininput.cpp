@@ -642,9 +642,6 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
    case 1:
       HandleInputXI(didod);
       break;
-   case 2:
-      HandleInputSDL(didod);
-      break;
    case 3:
       HandleInputIGC(didod);
       break;
@@ -654,15 +651,8 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
       break;
    }
 
-   #ifdef ENABLE_SDL_VIDEO
-   // Process events if they were not already processed
-   if (m_inputApi != 2)
-   {
-      SDL_Event e;
-      while (SDL_PollEvent(&e))
-         ImGui_ImplSDL2_ProcessEvent(&e);
-   }
-   #endif
+   // Always process events as they also need processing for windowing system
+   HandleSDLEvents(didod);
 }
 
 void PinInput::HandleInputDI(DIDEVICEOBJECTDATA *didod)
@@ -811,24 +801,30 @@ void PinInput::SdlScaleHidpi(const Sint32 x, const Sint32 y, Sint32* ox, Sint32*
 }
 #endif
 
-void PinInput::HandleInputSDL(DIDEVICEOBJECTDATA *didod)
+void PinInput::HandleSDLEvents(DIDEVICEOBJECTDATA* didod)
 {
-#ifdef ENABLE_SDL_INPUT
+#if defined(ENABLE_SDL_INPUT) || defined(ENABLE_SDL_VIDEO)
+   #if !defined(ENABLE_SDL_VIDEO)
+   if (m_inputApi != 2)
+      return;
+   #endif
    static constexpr DWORD axes[] = { DIJOFS_X, DIJOFS_Y, DIJOFS_RX, DIJOFS_RY, DIJOFS_Z , DIJOFS_RZ };
    static constexpr int axisMultiplier[] = { 2, 2, 2, 2, 256 , 256 };
    SDL_Event e;
    int j = 0;
    while (SDL_PollEvent(&e) != 0 && j<32)
    {
-      #ifdef ENABLE_SDL_VIDEO
+   #ifdef ENABLE_SDL_VIDEO
       ImGui_ImplSDL2_ProcessEvent(&e);
+
       #ifdef __STANDALONE__
       g_pplayer->m_pWindowManager->ProcessEvent(&e);
       #endif
-      #endif
-      //User requests quit
+
       switch (e.type) {
-#ifdef ENABLE_SDL_VIDEO
+      case SDL_QUIT:
+         g_pvp->QuitPlayer(Player::CloseState::CS_STOP_PLAY);
+         break;
       case SDL_WINDOWEVENT:
          switch (e.window.event) {
          case SDL_WINDOWEVENT_RESIZED:
@@ -842,81 +838,14 @@ void PinInput::HandleInputSDL(DIDEVICEOBJECTDATA *didod)
             g_pplayer->m_gameWindowActive = false;
             break;
          case SDL_WINDOWEVENT_CLOSE:
-            g_pvp->QuitPlayer(Player::CloseState::CS_USER_INPUT);
+            g_pvp->QuitPlayer(Player::CloseState::CS_STOP_PLAY);
             break;
          }
          break;
-#if (defined(__APPLE__) && (defined(TARGET_OS_IOS) && TARGET_OS_IOS)) || defined(__ANDROID__)
-      case SDL_FINGERDOWN:
-      case SDL_FINGERUP: {
-         POINT point;
-         point.x = (int)((float)g_pplayer->m_wnd_width * e.tfinger.x);
-         point.y = (int)((float)g_pplayer->m_wnd_height * e.tfinger.y);
+   #endif
 
-         for (unsigned int i = 0; i < MAX_TOUCHREGION; ++i)
-            if ((g_pplayer->m_touchregion_pressed[i] != (e.type == SDL_FINGERDOWN)) && Intersect(touchregion[i], g_pplayer->m_wnd_width, g_pplayer->m_wnd_height, point, fmodf(g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].mViewportRotation, 360.0f) != 0.f)) {
-               g_pplayer->m_touchregion_pressed[i] = (e.type == SDL_FINGERDOWN);
-
-               DIDEVICEOBJECTDATA didod;
-               didod.dwOfs = g_pplayer->m_rgKeys[touchkeymap[i]];
-               didod.dwData = g_pplayer->m_touchregion_pressed[i] ? 0x80 : 0;
-               PushQueue(&didod, APP_TOUCH/*, curr_time_msec*/);
-            }
-         break;
-      }
-#endif
-#endif
-      case SDL_QUIT:
-         //Open Exit dialog
-         break;
-#ifdef ENABLE_SDL_GAMECONTROLLER
-      case SDL_CONTROLLERDEVICEADDED:
-      case SDL_CONTROLLERDEVICEREMOVED:
-         RefreshSDLGameController();
-         break;
-      case SDL_CONTROLLERAXISMOTION:
-         if (e.caxis.axis < 6) {
-              didod[j].dwOfs = axes[e.caxis.axis];
-              const int value = e.caxis.value * axisMultiplier[e.caxis.axis];
-              didod[j].dwData = (DWORD)(value);
-              PushQueue(&didod[j], APP_JOYSTICK(0));
-              j++;
-          }
-          break;
-      case SDL_CONTROLLERBUTTONDOWN:
-      case SDL_CONTROLLERBUTTONUP:
-         if (e.cbutton.button < 32) {
-            didod[j].dwOfs = DIJOFS_BUTTON0 + (DWORD)e.cbutton.button;
-            didod[j].dwData = e.type == SDL_CONTROLLERBUTTONDOWN ? 0x80 : 0x00;
-            PushQueue(&didod[j], APP_JOYSTICK(0));
-            j++;
-         }
-         break;
-#else
-      case SDL_JOYDEVICEADDED:
-      case SDL_JOYDEVICEREMOVED:
-         RefreshSDLJoystick();
-         break;
-      case SDL_JOYAXISMOTION:
-         if (e.jaxis.axis < 6) {
-            didod[j].dwOfs = axes[e.jaxis.axis];
-            const int value = e.jaxis.value * axisMultiplier[e.jaxis.axis];
-            didod[j].dwData = (DWORD)(value);
-            PushQueue(&didod[j], APP_JOYSTICK(0));
-            j++;
-         }
-         break;
-      case SDL_JOYBUTTONDOWN:
-      case SDL_JOYBUTTONUP:
-         if (e.jbutton.button < 32) {
-            didod[j].dwOfs = DIJOFS_BUTTON0 + (DWORD)e.jbutton.button;
-            didod[j].dwData = e.type == SDL_JOYBUTTONDOWN ? 0x80 : 0x00;
-            PushQueue(&didod[j], APP_JOYSTICK(0));
-            j++;
-         }
-         break;
-#endif
-#ifdef ENABLE_SDL_VIDEO
+   #ifdef ENABLE_SDL_INPUT
+      if (m_inputApi == 2) switch (e.type) {
       case SDL_KEYUP:
       case SDL_KEYDOWN:
          if (e.key.repeat == 0) {
@@ -991,12 +920,81 @@ void PinInput::HandleInputSDL(DIDEVICEOBJECTDATA *didod)
             }
          }
          break;
-#endif
+      #if (defined(__APPLE__) && (defined(TARGET_OS_IOS) && TARGET_OS_IOS)) || defined(__ANDROID__)
+      case SDL_FINGERDOWN:
+      case SDL_FINGERUP: {
+         POINT point;
+         point.x = (int)((float)g_pplayer->m_wnd_width * e.tfinger.x);
+         point.y = (int)((float)g_pplayer->m_wnd_height * e.tfinger.y);
+
+         for (unsigned int i = 0; i < MAX_TOUCHREGION; ++i)
+            if ((g_pplayer->m_touchregion_pressed[i] != (e.type == SDL_FINGERDOWN)) && Intersect(touchregion[i], g_pplayer->m_wnd_width, g_pplayer->m_wnd_height, point, fmodf(g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].mViewportRotation, 360.0f) != 0.f)) {
+               g_pplayer->m_touchregion_pressed[i] = (e.type == SDL_FINGERDOWN);
+
+               DIDEVICEOBJECTDATA didod;
+               didod.dwOfs = g_pplayer->m_rgKeys[touchkeymap[i]];
+               didod.dwData = g_pplayer->m_touchregion_pressed[i] ? 0x80 : 0;
+               PushQueue(&didod, APP_TOUCH/*, curr_time_msec*/);
+            }
+         }
+         break;
+      #endif
       }
+      #ifdef ENABLE_SDL_GAMECONTROLLER
+      case SDL_CONTROLLERDEVICEADDED:
+      case SDL_CONTROLLERDEVICEREMOVED:
+         RefreshSDLGameController();
+         break;
+      case SDL_CONTROLLERAXISMOTION:
+         if (e.caxis.axis < 6) {
+              didod[j].dwOfs = axes[e.caxis.axis];
+              const int value = e.caxis.value * axisMultiplier[e.caxis.axis];
+              didod[j].dwData = (DWORD)(value);
+              PushQueue(&didod[j], APP_JOYSTICK(0));
+              j++;
+          }
+          break;
+      case SDL_CONTROLLERBUTTONDOWN:
+      case SDL_CONTROLLERBUTTONUP:
+         if (e.cbutton.button < 32) {
+            didod[j].dwOfs = DIJOFS_BUTTON0 + (DWORD)e.cbutton.button;
+            didod[j].dwData = e.type == SDL_CONTROLLERBUTTONDOWN ? 0x80 : 0x00;
+            PushQueue(&didod[j], APP_JOYSTICK(0));
+            j++;
+         }
+         break;
+      #else
+      case SDL_JOYDEVICEADDED:
+      case SDL_JOYDEVICEREMOVED:
+         RefreshSDLJoystick();
+         break;
+      case SDL_JOYAXISMOTION:
+         if (e.jaxis.axis < 6) {
+            didod[j].dwOfs = axes[e.jaxis.axis];
+            const int value = e.jaxis.value * axisMultiplier[e.jaxis.axis];
+            didod[j].dwData = (DWORD)(value);
+            PushQueue(&didod[j], APP_JOYSTICK(0));
+            j++;
+         }
+         break;
+      case SDL_JOYBUTTONDOWN:
+      case SDL_JOYBUTTONUP:
+         if (e.jbutton.button < 32) {
+            didod[j].dwOfs = DIJOFS_BUTTON0 + (DWORD)e.jbutton.button;
+            didod[j].dwData = e.type == SDL_JOYBUTTONDOWN ? 0x80 : 0x00;
+            PushQueue(&didod[j], APP_JOYSTICK(0));
+            j++;
+         }
+         break;
+      #endif
+      }
+   #endif
    }
-#ifdef __STANDALONE__
+
+   #ifdef __STANDALONE__
    g_pplayer->m_pWindowManager->ProcessUpdates();
-#endif
+   #endif
+
 #endif
 }
 
@@ -1272,7 +1270,6 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
       g_pplayer->m_vrDevice->TableUp();
    else if (keycode == g_pplayer->m_rgKeys[eTableDown] && dispid == DISPID_GameEvents_KeyUp)
       g_pplayer->m_vrDevice->TableDown();
-   else
 #endif
 
    for (int i = 0; i < eCKeys; i++)

@@ -124,8 +124,10 @@ private:
 
    void HandleInputDI(DIDEVICEOBJECTDATA *didod);
    void HandleInputXI(DIDEVICEOBJECTDATA *didod);
-   void HandleInputSDL(DIDEVICEOBJECTDATA *didod);
    void HandleInputIGC(DIDEVICEOBJECTDATA *didod);
+
+   // Handle SDLEvents (input but also video)
+   void HandleSDLEvents(DIDEVICEOBJECTDATA *didod);
 
 #ifdef _WIN32
 #ifdef USE_DINPUT8
