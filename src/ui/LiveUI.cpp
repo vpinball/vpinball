@@ -12,6 +12,8 @@
 #include "fonts/IconsForkAwesome.h"
 #include "fonts/ForkAwesome.h"
 
+#include "utils/wintimer.h"
+
 #include "imgui/imgui.h"
 #include "imgui/imgui_internal.h" // Needed for FindRenderedTextEnd in HelpSplash (should be adapted when this function will refactored in ImGui)
 
@@ -1015,10 +1017,13 @@ void LiveUI::OpenLiveUI()
 void LiveUI::ToggleFPS()
 {
    m_show_fps = (m_show_fps + 1) % 3;
+   if (m_show_fps == 1)
+   {
+      m_player->InitFPS();
+      g_frameProfiler.EnableWorstFrameLogging(true);
+   }
    if (m_show_fps == 0)
       m_rd->LogNextFrame();
-   if (m_show_fps == 1)
-      m_player->InitFPS();
 }
 
 void LiveUI::ResetCameraFromPlayer()

@@ -1828,7 +1828,7 @@ void Player::OnIdle()
       {
       case 0:
       {
-         g_frameProfiler.NewFrame();
+         g_frameProfiler.NewFrame(m_time_msec);
          PLOGI_IF(debugLog) << "Frame Collect [Last frame length: " << ((double)g_frameProfiler.GetPrev(FrameProfiler::PROFILE_FRAME) / 1000.0) << "ms] at " << usec();
          PrepareFrame();
          m_mainLoopPhase = 1;
@@ -1907,7 +1907,7 @@ void Player::OnIdle()
       // This also leads to filling up the GPU render queue leading to a few frame latency, depending on driver setup (hence the use of a limiter).
 
       // Collect stats from previous frame and starts profiling a new frame
-      g_frameProfiler.NewFrame();
+      g_frameProfiler.NewFrame(m_time_msec);
 
       // In pause mode: input, physics, animation and audio are not processed but rendering is still performed. This allows to modify properties (transform, visibility,..) using the debugger and get direct feedback
       if (!m_pause)
