@@ -2797,11 +2797,9 @@ void Player::UpdatePhysics()
          // If we're 3/4 of the way through the loop, fire a "controller sync" timer (timers with an interval set to -2) event so VPM can react to input.
          if (m_phys_iterations == 750 / ((int)m_fps + 1))
          {
-            g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_SCRIPT);
             for (HitTimer *const pht : m_vht)
                if (pht->m_interval == -2)
                   pht->m_pfe->FireGroupEvent(DISPID_TimerEvents_Timer);
-            g_frameProfiler.ExitProfileSection();
          }
          if (basetime < targettime)
          {
@@ -2854,7 +2852,6 @@ void Player::UpdatePhysics()
       {
          const unsigned int p_timeCur = (unsigned int)((m_curPhysicsFrameTime - m_StartTime_usec) / 1000); // milliseconds
 
-         g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_SCRIPT);
          for (size_t i = 0; i < m_vht.size(); i++)
          {
             HitTimer * const pht = m_vht[i];
@@ -2872,7 +2869,6 @@ void Player::UpdatePhysics()
                      pht->m_nextfire += pht->m_interval;
             }
          }
-         g_frameProfiler.ExitProfileSection();
       }
 
       m_pactiveball = old_pactiveball;
@@ -4191,7 +4187,7 @@ void Player::FinishFrame()
       // Stop playing (send close window message)
       m_pEditorTable->m_pcv->m_scriptError = true;
 #ifndef __STANDALONE__
-      m_closing == CS_STOP_PLAY;
+      m_closing = CS_STOP_PLAY;
 #else
       m_closing = CS_CLOSE_APP;
    #if (defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__)

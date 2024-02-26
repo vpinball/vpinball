@@ -84,10 +84,10 @@ public:
       {
          if (*pp != nullptr)
          {
-            g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_SCRIPT);
+            g_frameProfiler.EnterScriptSection(dispid);
             IDispatch* const pDispatch = reinterpret_cast<IDispatch*>(*pp);
             pDispatch->Invoke(dispid, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_METHOD, pdispparams, nullptr, nullptr, nullptr);
-            g_frameProfiler.ExitProfileSection();
+            g_frameProfiler.ExitScriptSection();
          }
          ++pp;
       }

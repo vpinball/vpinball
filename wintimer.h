@@ -60,10 +60,14 @@ public:
          m_profileMaxData[i] = 0;
          m_profileTotalData[i] = 0;
       }
+      m_scriptEventData.clear();
       // Clear worst frames
       m_leastWorstFrameLength = 0;
       for (int i = 0; i < N_WORST; i++)
+      {
          memset(m_profileWorstData[i], 0, sizeof(m_profileWorstData[0]));
+         m_worstScriptEventData[i].clear();
+      }
    }
 
    void EnableWorstFrameLogging(bool enable) { m_logWorstFrame = true; }
@@ -94,6 +98,38 @@ public:
             if (m_profileWorstData[i][j])
             {
                PLOGI << ".   " << labels[j] << std::setw(6) << std::fixed << std::setprecision(1) << (m_profileWorstData[i][j] * 1e-3) << "ms";
+               if (j == PROFILE_SCRIPT)
+               {
+                  for (auto v : m_worstScriptEventData[i])
+                  {
+                     string name;
+                     switch (v.first)
+                     {
+                     case 1000: name = "GameEvents:KeyDown"; break;
+                     case 1001: name = "GameEvents:KeyUp"; break;
+                     case 1002: name = "GameEvents:Init"; break;
+                     case 1003: name = "GameEvents:MusicDone"; break;
+                     case 1004: name = "GameEvents:Exit"; break;
+                     case 1005: name = "GameEvents:Paused"; break;
+                     case 1006: name = "GameEvents:UnPaused"; break;
+                     case 1007: name = "GameEvents:OptionEvent"; break;
+                     case 1101: name = "SurfaceEvents:Slingshot"; break;
+                     case 1200: name = "FlipperEvents:Collide"; break;
+                     case 1300: name = "TimerEvents:Timer"; break;
+                     case 1301: name = "SpinnerEvents:Spin"; break;
+                     case 1302: name = "TargetEvents:Dropped"; break;
+                     case 1303: name = "TargetEvents:Raised"; break;
+                     case 1320: name = "LightSeqEvents:PlayDone"; break;
+                     case 1400: name = "HitEvents:Hit"; break;
+                     case 1401: name = "HitEvents:Unhit"; break;
+                     case 1402: name = "LimitEvents:EOS"; break;
+                     case 1403: name = "LimitEvents:BOS"; break;
+                     case 1404: name = "AnimateEvents:Animate"; break;
+                     default: name = "DispID["s + std::to_string(v.first) + "]";
+                     }
+                     PLOGI << "    . " << std::setw(6) << std::fixed << std::setprecision(1) << (v.second.totalLength * 1e-3) << "ms spent in " << v.second.callCount << " calls of " << name;
+                  }
+               }
             }
       }
    }
@@ -121,6 +157,7 @@ public:
                      m_leastWorstFrameLength = 0;
                      m_profileWorstGameTime[i] = gametime;
                      memcpy(m_profileWorstData[i], m_profileData[m_profileIndex], sizeof(m_profileWorstData[0]));
+                     m_worstScriptEventData[i] = m_scriptEventData;
                   }
                }
             }
@@ -136,13 +173,14 @@ public:
       }
       m_profileIndex = (m_profileIndex + 1) % N_SAMPLES;
       memset(m_profileData[m_profileIndex], 0, sizeof(m_profileData[0]));
+      m_scriptEventData.clear();
       m_profileSection = FrameProfiler::PROFILE_MISC;
       m_frameTimeStamp = m_profileTimeStamp;
    }
 
    void SetProfileSection(ProfileSection section)
    {
-      unsigned long long ts = usec();
+      const unsigned long long ts = usec();
       m_profileData[m_profileIndex][m_profileSection] += (unsigned int) (ts - m_profileTimeStamp);
       m_profileTimeStamp = ts;
       m_profileSection = section;
@@ -161,6 +199,29 @@ public:
       assert(m_profileSectionStackPos >= 0);
       m_profileSectionStackPos--;
       SetProfileSection(m_profileSectionStack[m_profileSectionStackPos]);
+   }
+
+   void EnterScriptSection(DISPID id)
+   {
+      assert(m_profileSectionStackPos < STACK_SIZE);
+      m_profileSectionStack[m_profileSectionStackPos] = m_profileSection;
+      m_profileSectionStackPos++;
+      SetProfileSection(PROFILE_SCRIPT);
+      m_scriptEventDispID = id;
+   }
+
+   void ExitScriptSection()
+   {
+      assert(m_profileSectionStackPos >= 0);
+      m_profileSectionStackPos--;
+      const unsigned long long ts = usec();
+      const unsigned int length = (unsigned int)(ts - m_profileTimeStamp);
+      EventTick& et = m_scriptEventData[m_scriptEventDispID];
+      et.callCount++;
+      et.totalLength += length;
+      m_profileData[m_profileIndex][m_profileSection] += length;
+      m_profileTimeStamp = ts;
+      m_profileSection = m_profileSectionStack[m_profileSectionStackPos];
    }
 
    unsigned int Get(ProfileSection section) const
@@ -294,6 +355,13 @@ private:
    int m_profileSectionStackPos = 0;
    ProfileSection m_profileSectionStack[STACK_SIZE];
    ProfileSection m_profileSection = PROFILE_MISC;
+   struct EventTick
+   {
+      unsigned int callCount = 0;
+      unsigned int totalLength = 0;
+   };
+   DISPID m_scriptEventDispID = 0;
+   robin_hood::unordered_map<DISPID, EventTick> m_scriptEventData;
 
    // Overall frame
    unsigned int m_frameIndex = -1;
@@ -319,6 +387,7 @@ private:
    unsigned int m_leastWorstFrameLength;
    unsigned int m_profileWorstData[N_WORST][PROFILE_COUNT];
    unsigned int m_profileWorstGameTime[N_WORST];
+   robin_hood::unordered_map<DISPID, EventTick> m_worstScriptEventData[N_WORST];
 };
 
 extern FrameProfiler g_frameProfiler;
