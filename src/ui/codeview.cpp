@@ -733,8 +733,30 @@ STDMETHODIMP CodeViewer::CleanUpScriptEngine()
 {
    if (m_pScript)
    {
-      m_pScript->SetScriptState(SCRIPTSTATE_DISCONNECTED);
-      m_pScript->SetScriptState(SCRIPTSTATE_CLOSED);
+      //m_pScript->SetScriptState(SCRIPTSTATE_DISCONNECTED);
+      //m_pScript->SetScriptState(SCRIPTSTATE_CLOSED);
+      // Cleanly wait for the script to end to allow Exit event, triggered just before closing, to be processed
+      m_pScript->Close();
+      U32 startWaitTick = msec();
+      SCRIPTSTATE state;
+      m_pScript->GetScriptState(&state);
+      while ((msec() - startWaitTick < 5000) && (state != SCRIPTSTATE_CLOSED))
+      {
+         Sleep(16);
+         m_pScript->GetScriptState(&state);
+      }
+      if (state != SCRIPTSTATE_CLOSED)
+      {
+         PLOGE << "Script did not terminated within 5s after request. Forcing close.";
+         EXCEPINFO eiInterrupt = {};
+         const LocalString ls(IDS_HANG);
+         const WCHAR *const wzError = MakeWide(ls.m_szbuffer);
+         eiInterrupt.bstrDescription = SysAllocString(wzError);
+         //eiInterrupt.scode = E_NOTIMPL;
+         eiInterrupt.wCode = 2345;
+         delete[] wzError;
+         m_pScript->InterruptScriptThread(SCRIPTTHREADID_BASE /*SCRIPTTHREADID_ALL*/, &eiInterrupt, /*SCRIPTINTERRUPT_DEBUG*/ SCRIPTINTERRUPT_RAISEEXCEPTION);
+      }
       m_pScript->Release();
       m_pScriptParse->Release();
       m_pScriptDebug->Release();
