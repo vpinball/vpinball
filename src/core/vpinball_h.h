@@ -132,7 +132,6 @@ public:
    void ToggleToolbar();
    void SetEnableMenuItems();
 
-   void EnsureWorkerThread();
    HANDLE PostWorkToWorkerThread(int workid, LPARAM lParam);
 
    void SetAutoSaveMinutes(const int minutes);
