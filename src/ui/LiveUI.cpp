@@ -3234,7 +3234,7 @@ void LiveUI::UpdateMainSplashModal()
          info << "\n\n\n\n";
 
       if (!m_table->m_szTableName.empty())
-         info << "# " << m_table->m_szTableName << "\n";
+         info << "# " << m_table->m_szTableName << '\n';
       else
          info << "# Table\n";
 

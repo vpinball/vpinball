@@ -121,7 +121,7 @@ void PrimitiveVisualsProperty::UpdateLightmapComboBox(const PinTable *table, con
     if (!need_reset)
     {
         bool texelFound = false;
-           for (const auto texel : lights)
+        for (const auto texel : lights)
         {
            if (strncmp(texel->GetName(), selectName.c_str(), MAXTOKEN) == 0) //!! lstrcmpi?
               texelFound = true;

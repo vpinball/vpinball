@@ -1267,11 +1267,11 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
    }
 #ifdef ENABLE_VR
    if (keycode == g_pplayer->m_rgKeys[eTableRecenter] && dispid == DISPID_GameEvents_KeyUp)
-      g_pplayer->m_pin3d.m_pd3dPrimaryDevice->recenterTable();
+      g_pplayer->m_vrDevice->RecenterTable();
    else if (keycode == g_pplayer->m_rgKeys[eTableUp] && dispid == DISPID_GameEvents_KeyUp)
-      g_pplayer->m_pin3d.m_pd3dPrimaryDevice->tableUp();
+      g_pplayer->m_vrDevice->TableUp();
    else if (keycode == g_pplayer->m_rgKeys[eTableDown] && dispid == DISPID_GameEvents_KeyUp)
-      g_pplayer->m_pin3d.m_pd3dPrimaryDevice->tableDown();
+      g_pplayer->m_vrDevice->TableDown();
    else
 #endif
 
@@ -1281,7 +1281,7 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
             m_keyPressedState[i] = true;
          else if (dispid == DISPID_GameEvents_KeyUp)
             m_keyPressedState[i] = false;
-      
+
    if (g_pplayer->m_liveUI->IsTweakMode())
    {
       if (dispid == DISPID_GameEvents_KeyDown)
