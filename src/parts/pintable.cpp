@@ -7777,8 +7777,8 @@ void PinTable::AuditTable() const
       case eItemFlipper: tdr = &((Flipper *)part)->m_d.m_tdr; break;
       case eItemGate: tdr = &((Gate *)part)->m_d.m_tdr; break;
       }
-      if (tdr && tdr->m_TimerEnabled && tdr->m_TimerInterval != -1 && tdr->m_TimerInterval != -2 && tdr->m_TimerInterval < 5)
-         ss << ". Warning: Part '" << part->GetName() << "' uses a timer with a very short period of " << tdr->m_TimerInterval << "ms. This will likely causes lag and the table will not support 'frame pacing'.\r\n";
+      if (tdr && tdr->m_TimerEnabled && tdr->m_TimerInterval != -1 && tdr->m_TimerInterval != -2 && tdr->m_TimerInterval < 17)
+         ss << ". Warning: Part '" << part->GetName() << "' uses a timer with a very short period of " << tdr->m_TimerInterval << "ms, below a 60FPS framerate. This will likely cause stutters and the table will not support 'frame pacing'.\r\n";
 
       if (type == eItemPrimitive && prim->m_d.m_visible
          && prim->m_d.m_disableLightingBelow != 1.f && !prim->m_d.m_staticRendering 
