@@ -74,7 +74,12 @@ FlexDMD::~FlexDMD()
       delete m_pThread;
    }
 
-   delete m_pDMDWindow;
+   if (m_pDMDWindow) {
+      if (m_pDMDWindow->IsDMDAttached())
+         m_pDMDWindow->DetachDMD();
+
+      delete m_pDMDWindow;
+   }
 
    m_pStage->Release();
 
@@ -590,8 +595,10 @@ void FlexDMD::RenderLoop()
       delete m_pGraphics;
       m_pGraphics = nullptr;
 
-      if (m_pDMDWindow)
-         m_pDMDWindow->DetachDMD();
+      if (m_pDMDWindow) {
+         if (m_pDMDWindow->IsDMDAttached())
+            m_pDMDWindow->DetachDMD();
+      }
 
       m_pRGB24DMD = nullptr;
 

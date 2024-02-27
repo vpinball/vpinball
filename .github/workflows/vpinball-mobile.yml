@@ -81,10 +81,10 @@ jobs:
           cd build/${{ matrix.config }}-iphoneos
           mkdir Payload
           mv VPinballX_${{ matrix.type }}.app Payload
-          zip -r VPinballX_${{ matrix.type }}.ipa Payload
+          zip -r VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}.ipa Payload
       - run: |
           mkdir tmp
-          cp -r build/${{ matrix.config }}-iphoneos/VPinballX_${{ matrix.type }}.ipa tmp
+          cp build/${{ matrix.config }}-iphoneos/VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}.ipa tmp
       - uses: actions/upload-artifact@v4
         with:
           name: VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}-${{ matrix.config }}-ios-${{ matrix.arch }}

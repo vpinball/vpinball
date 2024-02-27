@@ -14,6 +14,7 @@ public:
    bool Init() override;
    void AttachDMD(DMDUtil::DMD* pDMD, int width, int height);
    void DetachDMD();
+   bool IsDMDAttached() const { return m_attached; }
    void Render() override;
 
 private:

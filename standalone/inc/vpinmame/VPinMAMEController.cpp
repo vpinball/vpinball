@@ -231,7 +231,12 @@ VPinMAMEController::~VPinMAMEController()
       delete m_pThread;
    }
 
-   delete m_pDMDWindow;
+   if (m_pDMDWindow) {
+      if (m_pDMDWindow->IsDMDAttached())
+         m_pDMDWindow->DetachDMD();
+
+      delete m_pDMDWindow;
+   }
 
    for (auto pDisplay : m_displays) {
       if (pDisplay->pDMD)
@@ -339,17 +344,19 @@ STDMETHODIMP VPinMAMEController::Stop()
       m_pThread = nullptr;
    }
 
-   m_pActiveDisplay = nullptr;
-   m_pLevelDMD = nullptr;
-   m_pRGB24DMD = nullptr;
-
-   if (m_pDMDWindow)
-      m_pDMDWindow->DetachDMD();
+   if (m_pDMDWindow) {
+      if (m_pDMDWindow->IsDMDAttached())
+         m_pDMDWindow->DetachDMD();
+   }
 
    for (auto pDisplay : m_displays) {
       if (pDisplay->pDMD)
          delete pDisplay->pDMD;
    }
+
+   m_pActiveDisplay = nullptr;
+   m_pLevelDMD = nullptr;
+   m_pRGB24DMD = nullptr;
 
    m_displays.clear();
 
