@@ -1,1 +1,0 @@
-table assets go here
