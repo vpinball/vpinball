@@ -2568,6 +2568,10 @@ void PinTable::Play(const int playMode)
       fOverrideContactScatterAngle = m_settings.LoadValueWithDefault(Settings::Player, "TablePhysicsContactScatterAngle"+std::to_string(live_table->m_overridePhysics - 1), DEFAULT_TABLE_SCATTERANGLE);
       c_hardScatter = ANGTORAD(live_table->m_overridePhysics ? fOverrideContactScatterAngle : live_table->m_defaultScatter);
 
+      #ifdef __STANDALONE__
+      AuditTable();
+      #endif
+
       // create Player and init that one
 
       PLOGI << "Creating player"; // For profiling
@@ -8063,7 +8067,9 @@ public:
 void PinTable::AuditTable() const
 {
    // Perform a simple table audit (disable lighting vs static, script reference of static parts, png vs webp, hdr vs exr,...)
+   PLOGI << "Performing table audit...";
    std::stringstream ss;
+   ss << "Table audit:" << std::endl;
 
    // Ultra basic parser to get a (somewhat) valid list of referenced parts
 #ifndef __STANDALONE__
@@ -8125,9 +8131,9 @@ void PinTable::AuditTable() const
                         inClass = word;
                      else if (nextIsFunc)
                      {
-                        //ss << "- " << word << ", line=" << (line + 1) << ", class=" << inClass << '\r\n';
+                        //ss << "- " << word << ", line=" << (line + 1) << ", class=" << inClass << std::endl;
                         if (FindIndexOf(functions, inClass + '.' + word) != -1)
-                           ss << ". Duplicate declaration of '" << word << "' in script at line " << line << "\r\n";
+                           ss << ". Duplicate declaration of '" << word << "' in script at line " << line << std::endl;
                         else
                            functions.push_back(inClass + '.' + word);
                      }
@@ -8159,13 +8165,13 @@ void PinTable::AuditTable() const
       ss << ". Warning: VPM controller is used but vpmInit is not called. pause/resume/exit will likely exhibit bugs and physic outputs won't be supported.\r\n";
 
    if (m_glassBottomHeight > m_glassTopHeight)
-      ss << ". Warning: Glass height seems invalid: bottom is higher than top\r\n";
+      ss << ". Warning: Glass height seems invalid: bottom is higher than top" << std::endl;
 
    if (m_glassBottomHeight < INCHESTOVPU(2) || m_glassTopHeight < INCHESTOVPU(2))
-      ss << ". Warning: Glass height seems invalid: glass is below 2\"\r\n";
+      ss << ". Warning: Glass height seems invalid: glass is below 2\"" << std::endl;
 
    if (m_ballSphericalMapping)
-      ss << ". Warning: Ball uses legacy 'spherical mapping', it will be rendered like a 2D object and therefore will look bad in VR, stereo or headtracking\r\n";
+      ss << ". Warning: Ball uses legacy 'spherical mapping', it will be rendered like a 2D object and therefore will look bad in VR, stereo or headtracking" << std::endl;
 
    // Search for inconsistencies in the table parts
    for (auto part : m_vedit)
@@ -8176,7 +8182,7 @@ void PinTable::AuditTable() const
 
       // Referencing a static object from script (ok if it is for reading properties, not for writing)
       if (type == eItemPrimitive && prim->m_d.m_staticRendering && FindIndexOf(identifiers, string(prim->GetName())) != -1) 
-         ss << ". Warning: Primitive '" << prim->GetName() << "' seems to be referenced from the script while it is marked as static (most properties of a static object may not be modified at runtime).\r\n";
+         ss << ". Warning: Primitive '" << prim->GetName() << "' seems to be referenced from the script while it is marked as static (most properties of a static object may not be modified at runtime)." << std::endl;
 
       // Warning on very fast timers (lower than 5ms)
       TimerDataRoot *tdr = nullptr;
@@ -8201,26 +8207,26 @@ void PinTable::AuditTable() const
       default: break;
       }
       if (tdr && tdr->m_TimerEnabled && tdr->m_TimerInterval != -1 && tdr->m_TimerInterval != -2 && tdr->m_TimerInterval < 17)
-         ss << ". Warning: Part '" << part->GetName() << "' uses a timer with a very short period of " << tdr->m_TimerInterval << "ms, below a 60FPS framerate. This will likely cause stutters and the table will not support 'frame pacing'.\r\n";
+         ss << ". Warning: Part '" << part->GetName() << "' uses a timer with a very short period of " << tdr->m_TimerInterval << "ms, below a 60FPS framerate. This will likely cause stutters and the table will not support 'frame pacing'." << std::endl;
 
       if (type == eItemPrimitive && prim->m_d.m_visible
          && prim->m_d.m_disableLightingBelow != 1.f && !prim->m_d.m_staticRendering 
          && (!GetMaterial(prim->m_d.m_szMaterial)->m_bOpacityActive || GetMaterial(prim->m_d.m_szMaterial)->m_fOpacity == 1.f)
          && (GetImage(prim->m_d.m_szImage) == nullptr || GetImage(prim->m_d.m_szImage)->m_pdsBuffer->IsOpaque()))
-         ss << ". Warning: Primitive '" << prim->GetName() << "' uses translucency (lighting from below) while it is fully opaque. Translucency will be discarded.\r\n";
+         ss << ". Warning: Primitive '" << prim->GetName() << "' uses translucency (lighting from below) while it is fully opaque. Translucency will be discarded." << std::endl;
 
       // Disabled as this is now enforced in the rendering
       // Enabling translucency (light from below) won't work with static parts: otherwise the rendering will be different in VR/Headtracked vs desktop modes. It also needs a non opaque alpha.
       //if (type == eItemPrimitive && prim->m_d.m_disableLightingBelow != 1.f && prim->m_d.m_staticRendering) 
-      //   ss << ". Warning: Primitive '" << prim->GetName() << "' has translucency enabled but is also marked as static. Translucency will not be applied on desktop, and it will look different between VR/headtracked and desktop.\r\n";
+      //   ss << ". Warning: Primitive '" << prim->GetName() << "' has translucency enabled but is also marked as static. Translucency will not be applied on desktop, and it will look different between VR/headtracked and desktop." << std::endl;
       //if (type == eItemSurface && surf->m_d.m_disableLightingBelow != 1.f && surf->StaticRendering()) 
-      //   ss << ". Warning: Wall '" << surf->GetName() << "' has translucency enabled but will be staticly rendered (not droppable with opaque materials). Translucency will not be applied on desktop, and it will look different between VR/headtracked and desktop.\r\n";
+      //   ss << ". Warning: Wall '" << surf->GetName() << "' has translucency enabled but will be staticly rendered (not droppable with opaque materials). Translucency will not be applied on desktop, and it will look different between VR/headtracked and desktop." << std::endl;
    }
 
    for (auto image : m_vimage)
    {
       if (image->m_ppb == nullptr)
-         ss << " Warning: Image '" << image->m_szName << "' uses legacy encoding causing waste of memory / file size. It should be converted to WEBP file format.\r\n";
+         ss << " Warning: Image '" << image->m_szName << "' uses legacy encoding causing waste of memory / file size. It should be converted to WEBP file format." << std::endl;
    }
 
    if (ss.str().empty())
@@ -8230,21 +8236,21 @@ void PinTable::AuditTable() const
    unsigned long totalSize = 0, totalGpuSize = 0;
    for (auto sound : m_vsound)
    {
-      //ss << "  . Sound: '" << sound->m_szName << "', size: " << (sound->m_cdata / 1024) << "KiB\r\n";
+      //ss << "  . Sound: '" << sound->m_szName << "', size: " << (sound->m_cdata / 1024) << "KiB" << std::endl;
       totalSize += sound->m_cdata;
    }
-   ss << ". Total sound size: " <<  (totalSize / (1024 * 1024)) << "MiB\r\n";
+   ss << ". Total sound size: " <<  (totalSize / (1024 * 1024)) << "MiB" << std::endl;
 
    totalSize = 0;
    for (auto image : m_vimage)
    {
       unsigned int imageSize = image->m_ppb != nullptr ? image->m_ppb->m_cdata : image->m_pdsBuffer->height() * image->m_pdsBuffer->pitch();
       unsigned int gpuSize = image->m_pdsBuffer->height() * image->m_pdsBuffer->pitch();
-      //ss << "  . Image: '" << image->m_szName << "', size: " << (imageSize / 1024) << "KiB, GPU mem size: " << (gpuSize / 1024) << "KiB\r\n";
+      //ss << "  . Image: '" << image->m_szName << "', size: " << (imageSize / 1024) << "KiB, GPU mem size: " << (gpuSize / 1024) << "KiB" << std::endl;
       totalSize += imageSize;
       totalGpuSize += gpuSize;
    }
-   ss << ". Total image size: " << (totalSize / (1024 * 1024)) << "MiB in VPX file, at least " << (totalGpuSize / (1024 * 1024)) << "MiB in GPU memory when played\r\n";
+   ss << ". Total image size: " << (totalSize / (1024 * 1024)) << "MiB in VPX file, at least " << (totalGpuSize / (1024 * 1024)) << "MiB in GPU memory when played" << std::endl;
 
    int nPrimTris = 0, primMemSize = 0;
    for (auto part : m_vedit)
@@ -8254,10 +8260,14 @@ void PinTable::AuditTable() const
          primMemSize += (int) ((Primitive *)part)->m_mesh.NumVertices() * sizeof(Vertex3D_NoTex2);
          nPrimTris += (int) ((Primitive *)part)->m_mesh.NumIndices() / 3;
       }
-   ss << ". Total number of faces used in primitives: " << nPrimTris << ", needing " << (primMemSize / (1024 * 1024)) << "MiB in GPU memory when played\r\n ";
+   ss << ". Total number of faces used in primitives: " << nPrimTris << ", needing " << (primMemSize / (1024 * 1024)) << "MiB in GPU memory when played" << std::endl;
 
-   string msg = "Table audit:\r\n" + ss.str();
-   PLOGI << msg;
+   string msg = ss.str();
+   // if the msg contains a warning, log it on warning level
+   if (ss.str().find("Warning:") != string::npos)
+      PLOGW << msg;
+   else
+      PLOGI << msg;
 #ifndef __STANDALONE__
    InfoDialog info(msg);
    info.DoModal();
