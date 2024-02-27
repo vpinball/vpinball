@@ -842,6 +842,7 @@ void PinInput::HandleSDLEvents(DIDEVICEOBJECTDATA* didod)
             break;
          }
          break;
+      }
    #endif
 
    #ifdef ENABLE_SDL_INPUT
@@ -939,7 +940,7 @@ void PinInput::HandleSDLEvents(DIDEVICEOBJECTDATA* didod)
          }
          break;
       #endif
-      }
+
       #ifdef ENABLE_SDL_GAMECONTROLLER
       case SDL_CONTROLLERDEVICEADDED:
       case SDL_CONTROLLERDEVICEREMOVED:
