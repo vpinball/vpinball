@@ -527,7 +527,7 @@ public:
 private:
    void PrepareFrame();
    void SubmitFrame();
-   void FinishFrame();
+   bool FinishFrame();
 
    void RenderStaticPrepass();
    void DrawBulbLightBuffer();
