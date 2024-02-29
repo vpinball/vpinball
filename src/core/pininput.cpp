@@ -821,27 +821,22 @@ void PinInput::HandleSDLEvents(DIDEVICEOBJECTDATA* didod)
       g_pplayer->m_pWindowManager->ProcessEvent(&e);
       #endif
 
-      switch (e.type) {
-      case SDL_QUIT:
-         g_pvp->QuitPlayer(Player::CloseState::CS_STOP_PLAY);
-         break;
+      switch (e.type)
+      {
+      case SDL_QUIT: g_pvp->QuitPlayer(Player::CloseState::CS_STOP_PLAY); break;
       case SDL_WINDOWEVENT:
-         switch (e.window.event) {
+         switch (e.window.event)
+         {
          case SDL_WINDOWEVENT_RESIZED:
-               g_pplayer->m_wnd_scale_x = static_cast<float>(g_pplayer->m_wnd_width) / static_cast<float>(e.window.data1);
-               g_pplayer->m_wnd_scale_y = static_cast<float>(g_pplayer->m_wnd_height) / static_cast<float>(e.window.data2);
-               break;
-         case SDL_WINDOWEVENT_FOCUS_GAINED:
-            g_pplayer->m_gameWindowActive = true;
+            g_pplayer->m_wnd_scale_x = static_cast<float>(g_pplayer->m_wnd_width) / static_cast<float>(e.window.data1);
+            g_pplayer->m_wnd_scale_y = static_cast<float>(g_pplayer->m_wnd_height) / static_cast<float>(e.window.data2);
             break;
-         case SDL_WINDOWEVENT_FOCUS_LOST:
-            g_pplayer->m_gameWindowActive = false;
-            break;
-         case SDL_WINDOWEVENT_CLOSE:
-            g_pvp->QuitPlayer(Player::CloseState::CS_STOP_PLAY);
-            break;
+         case SDL_WINDOWEVENT_FOCUS_GAINED: g_pplayer->m_gameWindowActive = true; break;
+         case SDL_WINDOWEVENT_FOCUS_LOST: g_pplayer->m_gameWindowActive = false; break;
+         case SDL_WINDOWEVENT_CLOSE: g_pvp->QuitPlayer(Player::CloseState::CS_STOP_PLAY); break;
          }
          break;
+      }
    #endif
 
    #ifdef ENABLE_SDL_INPUT
@@ -939,7 +934,6 @@ void PinInput::HandleSDLEvents(DIDEVICEOBJECTDATA* didod)
          }
          break;
       #endif
-      }
       #ifdef ENABLE_SDL_GAMECONTROLLER
       case SDL_CONTROLLERDEVICEADDED:
       case SDL_CONTROLLERDEVICEREMOVED:
