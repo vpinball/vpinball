@@ -7703,7 +7703,7 @@ void PinTable::AuditTable() const
                         inClass = word;
                      else if (nextIsFunc)
                      {
-                        //ss << "- " << word << ", line=" << (line + 1) << ", class=" << inClass << '\r\n';
+                        //ss << "- " << word << ", line=" << (line + 1) << ", class=" << inClass << "\r\n";
                         if (FindIndexOf(functions, inClass + '.' + word) != -1)
                            ss << ". Duplicate declaration of '" << word << "' in script at line " << line << "\r\n";
                         else
@@ -7733,9 +7733,6 @@ void PinTable::AuditTable() const
    }
    delete[] szText;
    
-   if ((FindIndexOf(identifiers, "vpminit"s) == -1) && ((FindIndexOf(identifiers, "loadvpm"s) != -1) || (FindIndexOf(identifiers, "loadvpmalt"s) != -1)))
-      ss << ". Warning: VPM controller is used but vpmInit is not called. pause/resume/exit will likely exhibit bugs and physic outputs won't be supported.\r\n";
-
    if (m_glassBottomHeight > m_glassTopHeight)
       ss << ". Warning: Glass height seems invalid: bottom is higher than top\r\n";
 
@@ -7746,6 +7743,7 @@ void PinTable::AuditTable() const
       ss << ". Warning: Ball uses legacy 'spherical mapping', it will be rendered like a 2D object and therefore will look bad in VR, stereo or headtracking\r\n";
 
    // Search for inconsistencies in the table parts
+   bool hasPulseTimer = false, hasPinMameTimer = false;
    for (auto part : m_vedit)
    {
       auto type = part->GetItemType();
@@ -7755,6 +7753,13 @@ void PinTable::AuditTable() const
       // Referencing a static object from script (ok if it is for reading properties, not for writing)
       if (type == eItemPrimitive && prim->m_d.m_staticRendering && FindIndexOf(identifiers, string(prim->GetName())) != -1) 
          ss << ". Warning: Primitive '" << prim->GetName() << "' seems to be referenced from the script while it is marked as static (most properties of a static object may not be modified at runtime).\r\n";
+
+      if (type == eItemTimer) {
+         string name = ((Timer *)part)->GetName();
+         StrToLower(name);
+         hasPulseTimer |= name == "pulsetimer";
+         hasPinMameTimer |= name == "pinmametimer";
+      }
 
       // Warning on very fast timers (lower than 5ms)
       TimerDataRoot *tdr = nullptr;
@@ -7794,6 +7799,17 @@ void PinTable::AuditTable() const
       //   ss << ". Warning: Wall '" << surf->GetName() << "' has translucency enabled but will be staticly rendered (not droppable with opaque materials). Translucency will not be applied on desktop, and it will look different between VR/headtracked and desktop.\r\n";
    }
 
+   if ((FindIndexOf(identifiers, "loadvpm"s) != -1) || (FindIndexOf(identifiers, "loadvpmalt"s) != -1))
+   {
+      if (!hasPinMameTimer)
+         ss << ". Warning: VPM controller is used but table is missing a Timer object named 'PinMAMETimer'.\r\n";
+      if (FindIndexOf(identifiers, "vpminit"s) == -1)
+         ss << ". Warning: VPM controller is used but vpmInit is not called. pause/resume/exit will likely exhibit bugs and physic outputs won't be supported.\r\n";
+   }
+
+   if (!hasPulseTimer && (FindIndexOf(identifiers, "vpmTimer"s) != -1))
+      ss << " Warning: script uses 'vpmTimer' but table is missing a Timer object named 'PulseTimer'. vpmTimer will not work as expected.\r\n";
+
    for (auto image : m_vimage)
    {
       if (image->m_ppb == nullptr)
@@ -7801,7 +7817,7 @@ void PinTable::AuditTable() const
    }
 
    if (ss.str().empty())
-      ss << "No issue identified.\n";
+      ss << "No issue identified.\r\n";
 
    // Also output a log of the table file content to allow easier size optimization
    unsigned long totalSize = 0, totalGpuSize = 0;
@@ -7810,7 +7826,7 @@ void PinTable::AuditTable() const
       //ss << "  . Sound: '" << sound->m_szName << "', size: " << (sound->m_cdata / 1024) << "KiB\r\n";
       totalSize += sound->m_cdata;
    }
-   ss << ". Total sound size: " <<  (totalSize / (1024 * 1024)) << "MiB\r\n";
+   ss << ". Total sound size: " << (totalSize / (1024 * 1024)) << "MiB\r\n";
 
    totalSize = 0;
    for (auto image : m_vimage)
@@ -7831,7 +7847,7 @@ void PinTable::AuditTable() const
          primMemSize += (int) ((Primitive *)part)->m_mesh.NumVertices() * sizeof(Vertex3D_NoTex2);
          nPrimTris += (int) ((Primitive *)part)->m_mesh.NumIndices() / 3;
       }
-   ss << ". Total number of faces used in primitives: " << nPrimTris << ", needing " << (primMemSize / (1024 * 1024)) << "MiB in GPU memory when played\r\n ";
+   ss << ". Total number of faces used in primitives: " << nPrimTris << ", needing " << (primMemSize / (1024 * 1024)) << "MiB in GPU memory when played\r\n";
 
    string msg = "Table audit:\r\n" + ss.str();
    PLOGI << msg;

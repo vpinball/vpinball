@@ -13,6 +13,7 @@ Sampler::Sampler(RenderDevice* rd, BaseTexture* const surf, const bool force_lin
    m_clampv(clampv),
    m_filter(filter)
 {
+   m_rd->m_curTextureUpdates++;
 #ifdef ENABLE_SDL
    m_texTarget = GL_TEXTURE_2D;
    colorFormat format;
@@ -54,7 +55,6 @@ Sampler::Sampler(RenderDevice* rd, BaseTexture* const surf, const bool force_lin
    if (FAILED(hr))
       ReportError("Fatal Error: out of VRAM!", hr, __FILE__, __LINE__);
 
-   m_rd->m_curTextureUpdates++;
    hr = m_rd->GetCoreDevice()->UpdateTexture(sysTex, m_texture);
    if (FAILED(hr))
       ReportError("Fatal Error: uploading texture failed!", hr, __FILE__, __LINE__);
