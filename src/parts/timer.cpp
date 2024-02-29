@@ -93,17 +93,9 @@ void Timer::RenderBlueprint(Sur *psur, const bool solid)
 void Timer::GetTimers(vector<HitTimer*> &pvht)
 {
    IEditable::BeginPlay();
-
-   HitTimer * const pht = new HitTimer();
-   pht->m_interval = m_d.m_tdr.m_TimerInterval >= 0 ? max(m_d.m_tdr.m_TimerInterval, MAX_TIMER_MSEC_INTERVAL) : -1;
-   pht->m_nextfire = pht->m_interval;
-
-   pht->m_pfe = (IFireEvents *)this;
-
-   m_phittimer = pht;
-
+   m_phittimer = new HitTimer(GetName(), m_d.m_tdr.m_TimerInterval, this);
    if (m_d.m_tdr.m_TimerEnabled)
-      pvht.push_back(pht);
+      pvht.push_back(m_phittimer);
 }
 
 #pragma region Physics

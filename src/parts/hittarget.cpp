@@ -1398,17 +1398,10 @@ STDMETHODIMP HitTarget::get_HitThreshold(float *pVal)
 
 void HitTarget::GetTimers(vector<HitTimer*> &pvht)
 {
-    IEditable::BeginPlay();
-
-    HitTimer * const pht = new HitTimer(); //!! claims to be leaking
-    pht->m_interval = m_d.m_tdr.m_TimerInterval >= 0 ? max(m_d.m_tdr.m_TimerInterval, MAX_TIMER_MSEC_INTERVAL) : -1;
-    pht->m_nextfire = pht->m_interval;
-    pht->m_pfe = (IFireEvents *)this;
-
-    m_phittimer = pht;
-
-    if (m_d.m_tdr.m_TimerEnabled)
-        pvht.push_back(pht);
+   IEditable::BeginPlay();
+   m_phittimer = new HitTimer(GetName(), m_d.m_tdr.m_TimerInterval, this); //!! claims to be leaking
+   if (m_d.m_tdr.m_TimerEnabled)
+      pvht.push_back(m_phittimer);
 }
 
 STDMETHODIMP HitTarget::get_RaiseDelay(long *pVal)
