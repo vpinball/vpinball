@@ -46,7 +46,9 @@ void PINMAMECALLBACK VPinMAMEController::OnDisplayAvailable(int index, int displ
    pDisplay->g = GetGValue(pController->m_dmdColor);
    pDisplay->b = GetBValue(pController->m_dmdColor);
 
-   if ((p_displayLayout->type & PINMAME_DISPLAY_TYPE_DMD) == PINMAME_DISPLAY_TYPE_DMD) {
+   if (p_displayLayout->type == PINMAME_DISPLAY_TYPE_DMD
+      || p_displayLayout->type == (PINMAME_DISPLAY_TYPE_DMD | PINMAME_DISPLAY_TYPE_DMDSEG)
+      || p_displayLayout->type == (PINMAME_DISPLAY_TYPE_DMD | PINMAME_DISPLAY_TYPE_DMDNOAA)) {
       pDisplay->pDMD = new DMDUtil::DMD();
 
       if (!pController->m_pActiveDisplay) {

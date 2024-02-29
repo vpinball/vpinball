@@ -32,7 +32,7 @@ private:
 
    static WindowManager* m_pInstance;
    vector<Window*> m_windows;
-   bool m_init;
+   bool m_startup;
    bool m_updateLock;
    Uint64 m_lastEventTime;
    bool m_running;

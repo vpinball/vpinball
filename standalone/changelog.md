@@ -4,6 +4,10 @@ To keep up with all the changes in master, and make it easier to rebase, this br
 
 The downside of this approach is not accurately keeping track of history:
 
+* 02/29/24
+    * Fix PinMAME games with video displays from crashing (fixes MotorShow)
+    * Allow external window registration after startup (fixes UT99CTGF_GE)
+
 * 02/26/24
     * Add arm64 suffix to iOS and tvOS folders
     * Add support for BGFX builds for iOS
@@ -11,7 +15,7 @@ The downside of this approach is not accurately keeping track of history:
     * Add unique `CFBundleVersion` for iOS workflow builds
     * Split workflows into vpinball, vpinball-mobile, vpinball-sbc
     * Replace asset README.md files with .gitkeep files
-    
+
 * 02/24/24
     * Add support for BGFX builds for MacOS, Linux, and SBCs
     * Update libdmdutil, libpinmame, and libzedmd
