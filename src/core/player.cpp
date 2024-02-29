@@ -3865,11 +3865,10 @@ void Player::OnIdle()
          m_pin3d.m_pd3dPrimaryDevice->Flip();
          m_pin3d.m_pd3dPrimaryDevice->WaitForVSync(true);
          g_frameProfiler.ExitProfileSection();
-         FinishFrame();
+         if (FinishFrame())
+            return;
          m_curFrameSyncOnVBlank = m_curFrameSyncOnFPS = false;
          m_mainLoopPhase = 0;
-         if (m_closing != CS_PLAYING)
-            return;
       }
       break;
 
@@ -3926,8 +3925,7 @@ void Player::OnIdle()
       #endif
       g_frameProfiler.ExitProfileSection();
 
-      FinishFrame();
-      if (m_closing != CS_PLAYING)
+      if (FinishFrame())
          return;
 
       // Adjust framerate if requested by user (i.e. not using a synchronization mode that will lead to blocking calls aligned to the display refresh rate)
@@ -4091,7 +4089,7 @@ void Player::SubmitFrame()
    #endif
 }
 
-void Player::FinishFrame()
+bool Player::FinishFrame()
 {
    // switch to texture output buffer again
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTextureNull(SHADER_tex_fb_filtered);
@@ -4215,7 +4213,7 @@ void Player::FinishFrame()
    if (m_closing == CS_STOP_PLAY || m_closing == CS_CLOSE_APP)
    {
       OnClose();
-      return;
+      return true;
    }
 
    // Open debugger window
@@ -4248,6 +4246,8 @@ void Player::FinishFrame()
                hVPMWnd, HWND_TOPMOST, 0, 0, 0, 0, (SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW | SWP_NOACTIVATE)); // in some strange cases the VPinMAME window is not on top, so enforce it
       }
    }
+
+   return false;
 }
 
 void Player::PauseMusic()
