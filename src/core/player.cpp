@@ -2799,7 +2799,11 @@ void Player::UpdatePhysics()
          {
             for (HitTimer *const pht : m_vht)
                if (pht->m_interval == -2)
+               {
+                  g_frameProfiler.EnterScriptSection(DISPID_TimerEvents_Timer, pht->m_name);
                   pht->m_pfe->FireGroupEvent(DISPID_TimerEvents_Timer);
+                  g_frameProfiler.ExitScriptSection(pht->m_name);
+               }
          }
          if (basetime < targettime)
          {
@@ -2857,6 +2861,7 @@ void Player::UpdatePhysics()
             HitTimer * const pht = m_vht[i];
             if (pht->m_interval >= 0 && pht->m_nextfire <= p_timeCur)
             {
+               g_frameProfiler.EnterScriptSection(DISPID_TimerEvents_Timer, pht->m_name);
                const unsigned int curnextfire = pht->m_nextfire;
                pht->m_pfe->FireGroupEvent(DISPID_TimerEvents_Timer);
                // Only add interval if the next fire time hasn't changed since the event was run. 
@@ -2867,6 +2872,7 @@ void Player::UpdatePhysics()
                if (curnextfire == pht->m_nextfire && pht->m_interval > 0)
                   while (pht->m_nextfire <= p_timeCur)
                      pht->m_nextfire += pht->m_interval;
+               g_frameProfiler.ExitScriptSection(pht->m_name);
             }
          }
       }
@@ -3991,7 +3997,11 @@ void Player::PrepareFrame()
    // Fire all '-1' (the ones which are synced to the refresh rate) and '-2' (the ones used to sync with the controller) timers after physics and animation update but before rendering, to avoid the script being one frame late
    for (HitTimer *const pht : m_vht)
       if (pht->m_interval < 0)
+      {
+         g_frameProfiler.EnterScriptSection(DISPID_TimerEvents_Timer, pht->m_name);
          pht->m_pfe->FireGroupEvent(DISPID_TimerEvents_Timer);
+         g_frameProfiler.ExitScriptSection(pht->m_name);
+      }
 
    // Kill the profiler so that it does not affect performance => FIXME move to player
    if (m_infoMode != IF_PROFILING)
@@ -4127,6 +4137,7 @@ bool Player::FinishFrame()
       HitTimer * const pht = m_vht[i];
       if (pht->m_interval >= 0 && pht->m_nextfire <= m_time_msec) 
       {
+         g_frameProfiler.EnterScriptSection(DISPID_TimerEvents_Timer, pht->m_name);
          const unsigned int curnextfire = pht->m_nextfire;
          pht->m_pfe->FireGroupEvent(DISPID_TimerEvents_Timer);
          // Only add interval if the next fire time hasn't changed since the event was run. 
@@ -4136,6 +4147,7 @@ bool Player::FinishFrame()
          //Timer1.Enabled = True
          if (curnextfire == pht->m_nextfire)
             pht->m_nextfire += pht->m_interval;
+         g_frameProfiler.ExitScriptSection(pht->m_name);
       }
    }
 
