@@ -362,7 +362,7 @@ public:
 private:
    void PrepareFrame();
    void SubmitFrame();
-   void FinishFrame();
+   bool FinishFrame();
 #pragma endregion
 
 
