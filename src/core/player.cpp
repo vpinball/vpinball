@@ -1387,7 +1387,11 @@ void Player::FireSyncController()
    // Legacy implementation: timers with magic interval value have special behaviors: -2 for controller sync event
    for (HitTimer *const pht : m_vht)
       if (pht->m_interval == -2)
+      {
+         g_frameProfiler.EnterScriptSection(DISPID_TimerEvents_Timer, pht->m_name); 
          pht->m_pfe->FireGroupEvent(DISPID_TimerEvents_Timer);
+         g_frameProfiler.ExitScriptSection(pht->m_name);
+      }
 }
 
 void Player::FireTimers(const unsigned int simulationTime)
@@ -1399,7 +1403,9 @@ void Player::FireTimers(const unsigned int simulationTime)
       if (pht->m_interval >= 0 && pht->m_nextfire <= simulationTime)
       {
          const unsigned int curnextfire = pht->m_nextfire;
+         g_frameProfiler.EnterScriptSection(DISPID_TimerEvents_Timer, pht->m_name);
          pht->m_pfe->FireGroupEvent(DISPID_TimerEvents_Timer);
+         g_frameProfiler.ExitScriptSection(pht->m_name);
          // Only add interval if the next fire time hasn't changed since the event was run. 
          // Handles corner case:
          //Timer1.Enabled = False
@@ -1982,8 +1988,11 @@ void Player::PrepareFrame()
 
    // New Frame event: Legacy implementation with timers with magic interval value have special behaviors, here -1 for onNewFrame event
    for (HitTimer *const pht : m_vht)
-      if (pht->m_interval == -1)
+      if (pht->m_interval == -1) {
+         g_frameProfiler.EnterScriptSection(DISPID_TimerEvents_Timer, pht->m_name); 
          pht->m_pfe->FireGroupEvent(DISPID_TimerEvents_Timer);
+         g_frameProfiler.ExitScriptSection(pht->m_name);
+      }
 
    // Kill the profiler so that it does not affect performance
    if (m_infoMode != IF_PROFILING)

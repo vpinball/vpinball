@@ -107,9 +107,11 @@ void RenderCommand::Execute(const int nInstances, const bool log)
       #if defined(ENABLE_VR) && defined(ENABLE_OPENGL)
       if (g_pplayer->m_vrDevice && g_pplayer->m_vrDevice->IsVRReady())
       {
+         g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_GPU_FLIP); 
          g_frameProfiler.OnPresent();
          g_pplayer->m_vrDevice->SubmitFrame(m_rd->GetOffscreenVR(0)->GetColorSampler(), m_rd->GetOffscreenVR(1)->GetColorSampler());
          //vr::VRCompositor()->PostPresentHandoff(); // PostPresentHandoff gives mixed results, improved GPU frametime for some, worse CPU frametime for others, troublesome enough to not warrants it's usage for now
+         g_frameProfiler.ExitProfileSection();
       }
       #endif
       break;
@@ -117,6 +119,7 @@ void RenderCommand::Execute(const int nInstances, const bool log)
 
    case RC_DRAW_LIVEUI:
    {
+      g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_MISC);
       if (log) {
          PLOGI << "> Draw LiveUI";
       }
@@ -133,6 +136,7 @@ void RenderCommand::Execute(const int nInstances, const bool log)
       }
       else
          g_pplayer->m_liveUI->Render();
+      g_frameProfiler.ExitProfileSection();
       break;
    }
 
