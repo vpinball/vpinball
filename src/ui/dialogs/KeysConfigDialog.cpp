@@ -457,8 +457,8 @@ BOOL KeysConfigDialog::OnInitDialog()
         ::SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
         ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"(none)");
         for (int j = 1; j <= 24; ++j)
-           ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)("Button "+std::to_string(j)).c_str());
-        if (item == IDC_JOYLFLIPCOMBO || item == IDC_JOYRFLIPCOMBO || item == IDC_JOYPLUNGERCOMBO)
+            ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)("Button "+std::to_string(j)).c_str());
+        if (item == IDC_JOYLFLIPCOMBO || item == IDC_JOYRFLIPCOMBO || item == IDC_JOYPLUNGERCOMBO || item == IDC_JOYLTILTCOMBO || item == IDC_JOYCTILTCOMBO || item == IDC_JOYRTILTCOMBO)
         {
             ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Left Mouse");
             ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Right Mouse");

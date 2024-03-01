@@ -2075,12 +2075,25 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
             ProcessBallControl(input);
          else
          {
-            if (input->dwOfs == 1 && m_joylflipkey == 25)
-               FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[eLeftFlipperKey]);
-            if (input->dwOfs == 2 && m_joyrflipkey == 26)
-               FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[eRightFlipperKey]);
-            if (input->dwOfs == 3 && m_joyplungerkey == 27)
-               FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[ePlungerKey]);
+            for(int i = 1; i <= 3; ++i)
+            {
+                const int mouseButton = (i == 1) ? m_LeftMouseButtonID : ((i == 2) ? m_RightMouseButtonID : m_MiddleMouseButtonID);
+                if (input->dwOfs == i)
+                {
+                   if (m_joylflipkey == mouseButton)
+                      FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[eLeftFlipperKey]);
+                   else if (m_joyrflipkey == mouseButton)
+                      FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[eRightFlipperKey]);
+                   else if (m_joyplungerkey == mouseButton)
+                      FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[ePlungerKey]);
+                   else if (m_joylefttilt == mouseButton)
+                      FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[eLeftTiltKey]);
+                   else if (m_joyrighttilt == mouseButton)
+                      FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[eRightTiltKey]);
+                   else if (m_joycentertilt == mouseButton)
+                      FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[eCenterTiltKey]);
+                }
+            }
          }
       }
       else if (input->dwSequence == APP_KEYBOARD && (g_pplayer == nullptr || !g_pplayer->m_liveUI->HasKeyboardCapture()))
