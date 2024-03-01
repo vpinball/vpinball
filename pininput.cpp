@@ -1915,12 +1915,51 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
             ProcessBallControl(input);
          else
          {
-            if (input->dwOfs == 1 && m_joylflipkey == 25)
-               FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[eLeftFlipperKey]);
-            if (input->dwOfs == 2 && m_joyrflipkey == 26)
-               FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[eRightFlipperKey]);
-            if (input->dwOfs == 3 && m_joyplungerkey == 27)
-               FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[ePlungerKey]);
+            if (input->dwOfs == 1)
+            {
+               if (m_joylflipkey == m_LeftMouseButtonID)
+                  FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[eLeftFlipperKey]);
+               else if (m_joyrflipkey == m_LeftMouseButtonID)
+                  FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[eRightFlipperKey]);
+               else if (m_joyplungerkey == m_LeftMouseButtonID)
+                  FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[ePlungerKey]);
+               else if (m_joylefttilt == m_LeftMouseButtonID)
+                  FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[eLeftTiltKey]);
+               else if (m_joyrighttilt == m_LeftMouseButtonID)
+                  FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[eRightTiltKey]);
+               else if (m_joycentertilt == m_LeftMouseButtonID)
+                  FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[eCenterTiltKey]);
+            }
+            if (input->dwOfs == 2)
+            {
+               if (m_joylflipkey == m_RightMouseButtonID)
+                  FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[eLeftFlipperKey]);
+               else if (m_joyrflipkey == m_RightMouseButtonID)
+                  FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[eRightFlipperKey]);
+               else if (m_joyplungerkey == m_RightMouseButtonID)
+                  FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[ePlungerKey]);
+               else if (m_joylefttilt == m_RightMouseButtonID)
+                  FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[eLeftTiltKey]);
+               else if (m_joyrighttilt == m_RightMouseButtonID)
+                  FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[eRightTiltKey]);
+               else if (m_joycentertilt == m_RightMouseButtonID)
+                  FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[eCenterTiltKey]);
+            }
+            if (input->dwOfs == 3)
+            {
+               if (m_joylflipkey == m_MiddleMouseButtonID)
+                  FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[eLeftFlipperKey]);
+               else if (m_joyrflipkey == m_MiddleMouseButtonID)
+                  FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[eRightFlipperKey]);
+               else if (m_joyplungerkey == m_MiddleMouseButtonID)
+                  FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[ePlungerKey]);
+               else if (m_joylefttilt == m_MiddleMouseButtonID)
+                  FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[eLeftTiltKey]);
+               else if (m_joyrighttilt == m_MiddleMouseButtonID)
+                  FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[eRightTiltKey]);
+               else if (m_joycentertilt == m_MiddleMouseButtonID)
+                  FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[eCenterTiltKey]);
+            }
          }
       }
 

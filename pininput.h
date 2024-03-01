@@ -195,6 +195,10 @@ private:
    int m_inputApi;   // 0=DirectInput 1=XInput, 2=SDL, 3=IGamecontroller
    int m_rumbleMode; // 0=Off, 1=Table only, 2=Generic only, 3=Table with generic as fallback
 
+   static const int m_LeftMouseButtonID = 25;
+   static const int m_RightMouseButtonID = 26;
+   static const int m_MiddleMouseButtonID = 27;
+
 #ifdef _WIN32
 #ifdef ENABLE_XINPUT
    int m_inputDeviceXI;
