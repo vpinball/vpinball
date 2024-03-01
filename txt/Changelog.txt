@@ -227,6 +227,9 @@ FIXES:
 
 - fix analogue nudge not working for joysticks/gamepads in XInput mode
 
+- implement support for mouse based left/center/right nudge
+  and cleaned up issue where flippers only worked with a respective fixed mouse button
+
 - fix wrong keyboard characters in dialogs for non QWERTY keyboards
 
 - fix saving of custom keys for joypad input
