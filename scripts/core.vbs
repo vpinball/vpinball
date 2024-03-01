@@ -17,8 +17,9 @@ Dim vpmMultiLights() : ReDim vpmMultiLights(0)
 Private gNextMechNo : gNextMechNo = 0 ' keep track of created mech handlers (would be nice with static members)
 
 ' Callbacks
-Dim SolCallback(68) ' Solenoids (parsed at Runtime)
-Dim SolModCallback(68) ' Solenoid modulated callbacks (parsed at Runtime)
+Dim SolCallback2    ' Called for each changed Solenoid
+Dim SolCallback(68) ' Solenoids (parsed at Runtime), deprecated since it uses 'Execute' which causes stutters
+Dim SolModCallback(68) ' Solenoid modulated callbacks (parsed at Runtime), deprecated since it uses 'Execute' which causes stutters
 Dim SolPrevState(68) ' When modulating solenoids are in use, needed to keep positive value levels from changing boolean state
 Dim LampCallback	' Called after lamps are updated
 Dim PDLedCallback	' Called after leds are updated
@@ -34,9 +35,9 @@ Dim UseColoredDMD:If IsEmpty(Eval("UseVPMColoredDMD"))=true Then UseColoredDMD=f
 Dim UseNVRAM:If IsEmpty(Eval("UseVPMNVRAM"))=true Then UseNVRAM=false Else UseNVRAM = UseVPMNVRAM
 Dim NVRAMCallback
 
-' Assign Null Default Sub so script won't error if only one is defined in a script (should redefine in your script)
-Set GICallback = GetRef("NullSub")
-Set GICallback2 = GetRef("NullSub")
+Set GICallback = Nothing
+Set GICallback2 = Nothing
+Set SolCallback2 = Nothing
 
 ' Game specific info
 Dim ExtraKeyHelp ' Help string for game specific keys
@@ -2477,7 +2478,7 @@ Sub PinMAMETimer_Timer
 		If UseLamps Then ChgLamp = Controller.ChangedLamps Else LampCallback
 		If UsePdbLeds Then ChgLed = Controller.ChangedPDLeds Else PDLedCallback
 		If UseSolenoids Then ChgSol = Controller.ChangedSolenoids
-		If isObject(GICallback) or isObject(GICallback2) Then ChgGI = Controller.ChangedGIStrings
+		If (Not GICallback is Nothing) Or (Not GICallback2 is Nothing) Then ChgGI = Controller.ChangedGIStrings
 		MotorCallback
 	On Error Goto 0
 
@@ -2485,6 +2486,7 @@ Sub PinMAMETimer_Timer
 
 	If Not IsEmpty(ChgSol) Then
 		SetLocale "en-us" ' Needed since we convert the decimal value to be parsed by Execute (some locals use a comma instead of a dot which would be parsed as a parameter separator)
+		Dim solScale: If UseModSol >= 1 Then solScale = 1.0 / 255.0 Else solScale = 1
 		For ii = 0 To UBound(ChgSol)
 			nsol = ChgSol(ii, 0)
 			tmp = SolCallback(nsol)
@@ -2500,6 +2502,7 @@ Sub PinMAMETimer_Timer
 			Else
 				If tmp <> "" Then Execute tmp & vpmTrueFalse(solon+1)
 			End If
+			If Not SolCallback2 is Nothing Then SolCallback2 ChgSol(ii, 0), ChgSol(ii, 1) * solScale
 			If UseSolenoids > 1 Then if nsol = vpmFlips.Solenoid then vpmFlips.TiltSol solon ': msgbox solon
 		Next
 	End If
@@ -2523,8 +2526,8 @@ Sub PinMAMETimer_Timer
 
 	If Not IsEmpty(ChgGI) Then
 		For ii = 0 To UBound(ChgGI)
-			GICallback ChgGI(ii, 0), CBool((ChgGI(ii, 1) * pwmScale) >= 0.5)
-			GICallback2 ChgGI(ii, 0), ChgGI(ii, 1) * pwmScale
+			If Not GICallback is Nothing Then GICallback ChgGI(ii, 0), CBool((ChgGI(ii, 1) * pwmScale) >= 0.5)
+			If Not GICallback2 is Nothing Then GICallback2 ChgGI(ii, 0), ChgGI(ii, 1) * pwmScale
 		Next
 	End If
 
@@ -2989,10 +2992,6 @@ Private Sub vpmShowOptions
 	If vpmVPVer >= 10800 Then ShowCursor = True
 	Controller.ShowOptsDialog GetPlayerHWnd
 	If vpmVPVer >= 10800 Then ShowCursor = False
-End Sub
-
-Private Sub NullSub(no,enabled)
-'Place Holder Sub
 End Sub
 
 'added thanks to Koadic
