@@ -5,8 +5,7 @@ New in 3.61 (Update by vbousquet, wiesshund)
 - Added staged flippers functionality to all kinds of machine .vbs files
 - Changed "UseVPMModSol" to match the new VPinMAME 3.6 PWM support:
   True or 1 for the previous/legacy modulated solenoids (0..255 value), or 2 for physical solenoids/lamps/GI/AlphaNumSegments (0..1 value)
-- Deprecated SolCallback and SolModCallback since internally they use VBS's 'Execute' function which is a very function in Microsoft VBScript interpreter, causing stutters
-- Added SolCallback2 that can be defined like GiCallback2. It will be called for each solenoid state change, with the solenoid state as a float value between 0 and 1
+- Added LampCallback2, SolCallback2 that can be defined like GiCallback2. They are called for each lamp/solenoid state change
 
 New in 3.60 (Update by toxie, wiesshund)
 - Added solarwars.vbs (based on peyper.vbs)
