@@ -2295,12 +2295,12 @@ Class cvpmFlips2 'test fastflips switches to rom control after 100ms or so delay
 
 	Public Property Let Flip(aIdx, ByVal aEnabled) 'Key Flip: Indexed base flip... may keep may not
 		aEnabled = abs(aEnabled) 'True / False is not region safe with execute. Convert to 1 or 0 instead.
-		ButtonState(aIDX) = aEnabled 'track flipper button states: the game-on sol flips immediately if the button is held down
+		ButtonState(aIdx) = aEnabled 'track flipper button states: the game-on sol flips immediately if the button is held down
 		'debug.print "Key Flip " & aIdx &" @ " & gametime & " FF ON: " & OnOff & " Circuit On? " & FlippersEnabled
 		Dim cb: Set cb = FlipperSubRef(aIdx)
 		If OnOff and FlippersEnabled or DebugOn then
 			If Not cb is Nothing Then cb aEnabled
-			FlipAt(aIDX) = GameTime
+			FlipAt(aIdx) = GameTime
 		end If
 	End Property
 
@@ -2312,7 +2312,7 @@ Class cvpmFlips2 'test fastflips switches to rom control after 100ms or so delay
 		aEnabled = abs(aEnabled)
 		SolState(aIdx) = aEnabled
 
-		Dim cb: Set cb = FlipperSubRef(idx)
+		Dim cb: Set cb = FlipperSubRef(aIdx)
 		If Not OnOff OR GameTime >= FlipAt(aIdx) + RomControlDelay And Not cb is Nothing Then
 			cb aEnabled
 			'tb.text = "Rom Flip " & aIdx & " state:" & aEnabled &vbnewline&_

@@ -1438,69 +1438,70 @@ STDMETHODIMP CodeViewer::OnScriptErrorDebug(
 		IDebugApplicationThread *thread;
 		errStackFrame->GetThread(&thread);
 
-		IEnumDebugStackFrames *stackFramesEnum;
-		thread->EnumStackFrames(&stackFramesEnum);
+      if (thread)
+      {
+         IEnumDebugStackFrames *stackFramesEnum;
+         thread->EnumStackFrames(&stackFramesEnum);
 
-		DebugStackFrameDescriptor stackFrames[128];
-		ULONG numStackFrames;
-		stackFramesEnum->Next(128, stackFrames, &numStackFrames);
+         DebugStackFrameDescriptor stackFrames[128];
+         ULONG numStackFrames;
+         stackFramesEnum->Next(128, stackFrames, &numStackFrames);
 
-		for (ULONG i = 0; i < numStackFrames; i++)
-		{
-			// The frame description is the name of the function in this stack frame
-			BSTR frameDesc;
-			stackFrames[i].pdsf->GetDescriptionString(TRUE, &frameDesc);
+         for (ULONG i = 0; i < numStackFrames; i++)
+         {
+            // The frame description is the name of the function in this stack frame
+            BSTR frameDesc;
+            stackFrames[i].pdsf->GetDescriptionString(TRUE, &frameDesc);
 
-			// Fetch local variables and args
-			IDebugProperty *debugProp;
-			stackFrames[i].pdsf->GetDebugProperty(&debugProp);
+            // Fetch local variables and args
+            IDebugProperty *debugProp;
+            stackFrames[i].pdsf->GetDebugProperty(&debugProp);
 
-			IEnumDebugPropertyInfo* propInfoEnum;
-			debugProp->EnumMembers(
-				PROP_INFO_FULLNAME | PROP_INFO_VALUE,
-				10, // Radix (for numerical info)
-				IID_IDebugPropertyEnumType_LocalsPlusArgs,
-				&propInfoEnum
-			);
+            IEnumDebugPropertyInfo *propInfoEnum;
+            debugProp->EnumMembers(PROP_INFO_FULLNAME | PROP_INFO_VALUE,
+               10, // Radix (for numerical info)
+               IID_IDebugPropertyEnumType_LocalsPlusArgs, &propInfoEnum);
 
-			DebugPropertyInfo infos[128];
-			ULONG numInfos;
-			propInfoEnum->Next(128, infos, &numInfos);
+            DebugPropertyInfo infos[128];
+            ULONG numInfos;
+            propInfoEnum->Next(128, infos, &numInfos);
 
-			std::wstringstream stackVariablesStream;
-			for (ULONG i2 = 0; i2 < numInfos; i2++)
-			{
-				stackVariablesStream << infos[i2].m_bstrFullName << L'=' << infos[i2].m_bstrValue;
-				// Add a comma if this isn't the last item in the list
-				if (i2 != numInfos - 1) stackVariablesStream << L", ";
-			}
+            std::wstringstream stackVariablesStream;
+            for (ULONG i2 = 0; i2 < numInfos; i2++)
+            {
+               stackVariablesStream << infos[i2].m_bstrFullName << L'=' << infos[i2].m_bstrValue;
+               // Add a comma if this isn't the last item in the list
+               if (i2 != numInfos - 1)
+                  stackVariablesStream << L", ";
+            }
 
-			propInfoEnum->Release();
-			debugProp->Release();
-			// End fetch local variables and args
+            propInfoEnum->Release();
+            debugProp->Release();
+            // End fetch local variables and args
 
-			errorStream << L"    " << frameDesc;
+            errorStream << L"    " << frameDesc;
 
-			// If there are any locals/args, add them to the end of the frame description
-			if (numInfos > 0)
-			{
-				errorStream << L" (";
-				errorStream << stackVariablesStream.str();
-				errorStream << L')';
-				PLOGE_(PLOG_NO_DBG_OUT_INSTANCE_ID) << "Stacktrace: " << frameDesc << " (" << stackVariablesStream.str() << ')';
-			}
-			else
-			{
-				PLOGE_(PLOG_NO_DBG_OUT_INSTANCE_ID) << "Stacktrace: " << frameDesc;
-			}
+            // If there are any locals/args, add them to the end of the frame description
+            if (numInfos > 0)
+            {
+               errorStream << L" (";
+               errorStream << stackVariablesStream.str();
+               errorStream << L')';
+               PLOGE_(PLOG_NO_DBG_OUT_INSTANCE_ID) << "Stacktrace: " << frameDesc << " (" << stackVariablesStream.str() << ')';
+            }
+            else
+            {
+               PLOGE_(PLOG_NO_DBG_OUT_INSTANCE_ID) << "Stacktrace: " << frameDesc;
+            }
 
-			errorStream << L"\r\n";
+            errorStream << L"\r\n";
 
-			SysFreeString(frameDesc);
-		}
+            SysFreeString(frameDesc);
+         }
 
-		stackFramesEnum->Release();
-		thread->Release();
+         stackFramesEnum->Release();
+         thread->Release();
+      }
 	}
 #endif
 
