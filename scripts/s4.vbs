@@ -72,7 +72,6 @@ Private vpmDips
 
 ' Keyboard handlers
 Function vpmKeyDown(ByVal keycode)
-	On Error Resume Next
 	vpmKeyDown = True ' Assume we handle the key
 	With Controller
 		Select Case keycode
@@ -80,19 +79,19 @@ Function vpmKeyDown(ByVal keycode)
 				.Switch(swLLFlip) = True : vpmKeyDown = False : vpmFlips.FlipL True
 				If keycode = keyStagedFlipperL Then ' as vbs will not evaluate the Case keyStagedFlipperL then, also handle it here
 					vpmFlips.FlipUL True
-					If cSingleLFlip Or Err Then .Switch(swULFlip) = True
+					If vpmFlips.FlipperSolNumber(2) <> 0 Then .Switch(swULFlip) = True
 				End If
 			Case RightFlipperKey
 				.Switch(swLRFlip) = True : vpmKeyDown = False : vpmFlips.FlipR True
 				If keycode = keyStagedFlipperR Then ' as vbs will not evaluate the Case keyStagedFlipperR then, also handle it here
 					vpmFlips.FlipUR True
-					If cSingleRFlip Or Err Then .Switch(swURFlip) = True
+					If vpmFlips.FlipperSolNumber(3) <> 0 Then .Switch(swURFlip) = True
 				End If
-			Case keyStagedFlipperL vpmFlips.FlipUL True : If cSingleLFlip Or Err Then .Switch(swULFlip) = True
-			Case keyStagedFlipperR vpmFlips.FlipUR True : If cSingleRFlip Or Err Then .Switch(swURFlip) = True
-			Case keyInsertCoin1  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin1'" : Playsound SCoin
-			Case keyInsertCoin2  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin2'" : Playsound SCoin
-			Case keyInsertCoin3  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin3'" : Playsound SCoin
+			Case keyStagedFlipperL vpmFlips.FlipUL True : If vpmFlips.FlipperSolNumber(2) <> 0 Then .Switch(swULFlip) = True
+			Case keyStagedFlipperR vpmFlips.FlipUR True : If vpmFlips.FlipperSolNumber(3) <> 0 Then .Switch(swURFlip) = True
+			Case keyInsertCoin1  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin1'" : If Not IsEmpty(Eval("SCoin")) Then Playsound SCoin
+			Case keyInsertCoin2  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin2'" : If Not IsEmpty(Eval("SCoin")) Then Playsound SCoin
+			Case keyInsertCoin3  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin3'" : If Not IsEmpty(Eval("SCoin")) Then Playsound SCoin
 			Case StartGameKey    .Switch(swStartButton)  = True
 			Case keyUpDown       .Switch(swUpDown)       = Not .Switch(swUpDown)
 			Case keyAdvance      .Switch(swAdvance)      = True
@@ -108,11 +107,9 @@ Function vpmKeyDown(ByVal keycode)
 			Case Else            vpmKeyDown = False
 		End Select
 	End With
-	On Error Goto 0
 End Function
 
 Function vpmKeyUp(ByVal keycode)
-	On Error Resume Next
 	vpmKeyUp = True ' Assume we handle the key
 	With Controller
 		Select Case keycode
@@ -120,16 +117,16 @@ Function vpmKeyUp(ByVal keycode)
 				.Switch(swLLFlip) = False : vpmKeyUp = False : vpmFlips.FlipL False
 				If keycode = keyStagedFlipperL Then ' as vbs will not evaluate the Case keyStagedFlipperL then, also handle it here
 					vpmFlips.FlipUL False
-					If cSingleLFlip Or Err Then .Switch(swULFlip) = False
+					If vpmFlips.FlipperSolNumber(2) <> 0 Then .Switch(swULFlip) = False
 				End If
 			Case RightFlipperKey
 				.Switch(swLRFlip) = False : vpmKeyUp = False : vpmFlips.FlipR False
 				If keycode = keyStagedFlipperR Then ' as vbs will not evaluate the Case keyStagedFlipperR then, also handle it here
 					vpmFlips.FlipUR False
-					If cSingleRFlip Or Err Then .Switch(swURFlip) = False
+					If vpmFlips.FlipperSolNumber(3) <> 0 Then .Switch(swURFlip) = False
 				End If
-			Case keyStagedFlipperL vpmFlips.FlipUL False : If cSingleLFlip Or Err Then .Switch(swULFlip) = False
-			Case keyStagedFlipperR vpmFlips.FlipUR False : If cSingleRFlip Or Err Then .Switch(swURFlip) = False
+			Case keyStagedFlipperL vpmFlips.FlipUL False : If vpmFlips.FlipperSolNumber(2) <> 0 Then .Switch(swULFlip) = False
+			Case keyStagedFlipperR vpmFlips.FlipUR False : If vpmFlips.FlipperSolNumber(3) <> 0 Then .Switch(swURFlip) = False
 			Case StartGameKey    .Switch(swStartButton)  = False
 			Case keyAdvance      .Switch(swAdvance)      = False
 			Case keyCPUDiag      .Switch(swCPUDiag)      = False
@@ -146,5 +143,4 @@ Function vpmKeyUp(ByVal keycode)
 			Case Else            vpmKeyUp = False
 		End Select
 	End With
-	On Error Goto 0
 End Function
