@@ -22,9 +22,7 @@ Dim SolModCallback(68) ' Solenoid modulated callbacks (parsed at Runtime)
 Dim SolCallbackRef(68) ' Parsed callbacks appended to script to avoid stutters caused by calling Execute
 Dim SolModCallbackRef(68) ' Parsed callbacks appended to script to avoid stutters caused by calling Execute
 Dim SolPrevState(68) ' When modulating solenoids are in use, needed to keep positive value levels from changing boolean state
-Dim SolCallback2    ' Called for each changed Solenoid
 Dim LampCallback	' Called after lamps are updated
-Dim LampCallback2   ' Called for each changed Lamp
 Dim PDLedCallback	' Called after leds are updated
 Dim GICallback		' Called for each changed GI String
 Dim GICallback2		' Called for each changed GI String
@@ -40,8 +38,6 @@ Dim NVRAMCallback
 
 Set GICallback = Nothing
 Set GICallback2 = Nothing
-Set SolCallback2 = Nothing
-Set LampCallback2 = Nothing
 
 ' Game specific info
 Dim ExtraKeyHelp ' Help string for game specific keys
@@ -2520,7 +2516,6 @@ Sub PinMAMETimer_Timer
 			Else
 				If Not cb Is Nothing Then cb CBool(solon)
 			End If
-			If Not SolCallback2 is Nothing Then SolCallback2 ChgSol(ii, 0), ChgSol(ii, 1) * pwmScale
 			If UseSolenoids > 1 Then if nsol = vpmFlips.Solenoid then vpmFlips.TiltSol solon
 		Next
 	End If
@@ -2534,7 +2529,6 @@ Sub PinMAMETimer_Timer
 				Else
 					Lights(idx).State = ChgLamp(ii, 1) * pwmScale
 				End If
-				If Not LampCallback2 is Nothing Then LampCallback2 ChgLamp(ii, 0), ChgLamp(ii, 1) * pwmScale
 			Next
 			For Each tmp In vpmMultiLights
 				For ii = 1 To UBound(tmp) : tmp(ii).State = tmp(0).State : Next
