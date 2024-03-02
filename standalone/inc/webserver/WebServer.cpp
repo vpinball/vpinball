@@ -1,5 +1,8 @@
 #include "core/stdafx.h"
 #include "WebServer.h"
+
+#include "miniz/miniz.h"
+
 #include <ifaddrs.h>
 
 void WebServer::EventHandler(struct mg_connection *c, int ev, void *ev_data, void *fn_data)
@@ -46,6 +49,42 @@ WebServer::~WebServer()
       m_pThread->join();
       delete m_pThread;
    }
+}
+
+bool WebServer::Unzip(const char* pSource)
+{
+   mz_zip_archive zip_archive;
+   memset(&zip_archive, 0, sizeof(zip_archive));
+
+   mz_bool status = mz_zip_reader_init_file(&zip_archive, pSource, 0);
+   if (!status) {
+      PLOGE.printf("Unable to unzip file: source=%s", pSource);
+      return false;
+   }
+
+   bool success = true;
+
+   int file_count = (int)mz_zip_reader_get_num_files(&zip_archive);
+
+   for (int i = 0; i < file_count; i++) {
+      mz_zip_archive_file_stat file_stat;
+      if (!mz_zip_reader_file_stat(&zip_archive, i, &file_stat))
+         success = false;
+
+      string path = std::filesystem::path(string(pSource)).parent_path().append(file_stat.m_filename);
+      if (mz_zip_reader_is_file_a_directory(&zip_archive, i))
+         std::filesystem::create_directories(path);
+      else {
+         if (!mz_zip_reader_extract_to_file(&zip_archive, i, path.c_str(), 0)) {
+            PLOGE.printf("Unable to extract file: %s", path.c_str());
+            success = false;
+         }
+      }
+   }
+
+   mz_zip_reader_end(&zip_archive);
+
+   return success;
 }
 
 void WebServer::Files(struct mg_connection *c, struct mg_http_message* hm)
@@ -144,7 +183,14 @@ void WebServer::Upload(struct mg_connection *c, struct mg_http_message* hm)
    string path = g_pvp->m_szMyPrefPath + q;
 
    if (!mg_http_upload(c, hm, &mg_fs_posix, path.c_str(), 1024 * 1024 * 500)) {
-      if (!strncmp(q, "VPinballX.ini", sizeof(q)))
+      if (extension_from_path(path) == "zip") {
+         if (Unzip(path.c_str())) {
+            PLOGI.printf("File unzipped: q=%s", path.c_str());
+         }
+
+         std::filesystem::remove(path);
+      }
+      else if (!strncmp(q, "VPinballX.ini", sizeof(q)))
          g_pvp->m_settings.LoadFromFile(path, false);
    }
 }
