@@ -2261,11 +2261,11 @@ Class cvpmFlips2 'test fastflips switches to rom control after 100ms or so delay
 	Public Property Let Callback(aIdx, aInput)
 		if Not IsEmpty(aInput) then
 			FlipperSub(aIDX) = aInput 'hold old flipper subs
-			SolCallback(FlipperSolNumber(aIdx)) = name & ".RomFlip(" & aIdx & ")="
-			SolCallbackInitialized = False
 			Dim cbs: cbs = "Sub XXXFlipperSub_" & aIdx & "(state): " & aInput & " state: End Sub"
 			ExecuteGlobal cbs
 			Set FlipperSubRef(aIDX) = GetRef("XXXFlipperSub_" & aIdx)
+			SolCallback(FlipperSolNumber(aIdx)) = name & ".RomFlip(" & aIdx & ")="
+			SolCallbackInitialized = False
 		end if
 	End Property
 	Public Property Get Callback(aIdx) : CallBack = FlipperSub(aIDX) : End Property
