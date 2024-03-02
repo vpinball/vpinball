@@ -205,7 +205,7 @@ Class cvpmTimer
 					If isObject(mQue(ii)(3)) Then
 						Call mQue(ii)(3)(mQue(ii)(2))
 					ElseIf varType(mQue(ii)(3)) = vbString Then
-						' TODO calling Execute is a direct cause of stutters since it triggers OS security. We should avoid using it here
+						' Warning: calling Execute is a direct cause of stutters since it triggers OS security. We should avoid using it here
 						If mQue(ii)(3) > "" Then Execute mQue(ii)(3) & " " & mQue(ii)(2) & " "
 					End If
 					mTimers = mTimers - 1
@@ -2159,7 +2159,6 @@ Class cvpmFlips2 'test fastflips switches to rom control after 100ms or so delay
 		err.clear
 
 		'Set Solenoid
-		if not UseSolenoids > 1 then exit sub
 		On Error Resume Next
 			'For some WPC games (IJ) that reuse upper flipper
 			'switch numbers, and legacy fast flip code, disable
@@ -2172,32 +2171,37 @@ Class cvpmFlips2 'test fastflips switches to rom control after 100ms or so delay
 				if err.number = 0 then NoUpperRightFlipper
 			End If
 			err.clear
-			If UseSolenoids > 2 Then
-				Solenoid = UseSolenoids
-			Else
-				err.clear
-				if IsEmpty(GameOnSolenoid) or Err then msgbox "VPMflips error: " & err.description
-				if err = 500 then 'Error 500 - Variable not defined
-					msgbox "UseSolenoids = 2 error!" & vbnewline & vbnewline & "GameOnSolenoid is not defined!" & vbnewline & _
-					"System may be incompatible (Check the compatibility list) or your system scripts may be out of date"
-				End If
-				Solenoid = GameOnSolenoid
-			End If
 		On Error Goto 0
 
-		'Set callbacks
-		dim idx : for idx = 0 to 3
-			If IsNumeric(FlipperSolNumber(idx)) then
-				Callback(idx) = SolCallback(abs(FlipperSolNumber(idx)))
-			end If
-		Next
+		If UseSolenoids >= 2 Then
+			On Error Resume Next
+				If UseSolenoids > 2 Then
+					Solenoid = UseSolenoids
+				Else
+					err.clear
+					if IsEmpty(GameOnSolenoid) or Err then msgbox "VPMflips error: " & err.description
+					if err = 500 then 'Error 500 - Variable not defined
+						msgbox "UseSolenoids = 2 error!" & vbnewline & vbnewline & "GameOnSolenoid is not defined!" & vbnewline & _
+						"System may be incompatible (Check the compatibility list) or your system scripts may be out of date"
+					End If
+					Solenoid = GameOnSolenoid
+				End If
+			On Error Goto 0
 
-		'dim str
-		'for idx = 0 to 3 : str = str & "Callback" & idx & ":" & Callback(idx) &vbnewline : Next
-		'str = "init successful" &vbnewline& _
-		'	"Sol=" & Solenoid & " " & sol &vbnewline& str
-		'msgbox str
-	'vpmFlips.DebugTestInit = True	'removed debug stuff for the moment
+			'Set callbacks
+			dim idx : for idx = 0 to 3
+				If IsNumeric(FlipperSolNumber(idx)) then
+					Callback(idx) = SolCallback(abs(FlipperSolNumber(idx)))
+				end If
+			Next
+
+			'dim str
+			'for idx = 0 to 3 : str = str & "Callback" & idx & ":" & Callback(idx) &vbnewline : Next
+			'str = "init successful" &vbnewline& _
+			'	"Sol=" & Solenoid & " " & sol &vbnewline& str
+			'msgbox str
+			'vpmFlips.DebugTestInit = True	'removed debug stuff for the moment
+		End If
 	End Sub
 
 	'Index based callbacks...
@@ -2354,6 +2358,8 @@ Public Sub vpmInit(aTable)
 			UseModSol=0
 		End If
 	End If
+	
+	vpmFlips.Init
 End Sub
 
 ' Exit function called in Table_Exit event

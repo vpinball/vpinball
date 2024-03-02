@@ -56,7 +56,6 @@ Private vpmDips
 
 ' Keyboard handlers
 Function vpmKeyDown(ByVal keycode)
-	On Error Resume Next
 	vpmKeyDown = True ' Assume we handle the key
 	With Controller
 		Select Case keycode
@@ -64,10 +63,10 @@ Function vpmKeyDown(ByVal keycode)
 			Case RightFlipperKey .Switch(swLRFlip) = True : vpmKeyDown = False : vpmFlips.FlipR True : if keycode = keyStagedFlipperR then vpmFlips.FlipUR True
 			Case keyStagedFlipperL vpmFlips.FlipUL True
 			Case keyStagedFlipperR vpmFlips.FlipUR True
-			Case keyInsertCoin1  .Switch(swCoin1)  = True : Playsound SCoin
-			Case keyInsertCoin2  .Switch(swCoin2)  = True : Playsound SCoin
-			Case keyInsertCoin3  .Switch(swCoin3)  = True : Playsound SCoin
-			Case keyInsertCoin4  vpmTimer.PulseSw swCreditService : Playsound SCoin
+			Case keyInsertCoin1  .Switch(swCoin1)  = True : If Not IsEmpty(Eval("SCoin")) Then Playsound SCoin
+			Case keyInsertCoin2  .Switch(swCoin2)  = True : If Not IsEmpty(Eval("SCoin")) Then Playsound SCoin
+			Case keyInsertCoin3  .Switch(swCoin3)  = True : If Not IsEmpty(Eval("SCoin")) Then Playsound SCoin
+			Case keyInsertCoin4  vpmTimer.PulseSw swCreditService : If Not IsEmpty(Eval("SCoin")) Then Playsound SCoin
 			Case StartGameKey    .Switch(swStartButton) = True
 			Case keySelfTest     vpmTimer.PulseSw swAdvanceTest
 			Case keyAdvance      vpmTimer.PulseSw swReturnTest
@@ -79,11 +78,9 @@ Function vpmKeyDown(ByVal keycode)
 			Case Else            vpmKeyDown = False
 		End Select
 	End With
-	On Error Goto 0
 End Function
 
 Function vpmKeyUp(ByVal keycode)
-	On Error Resume Next
 	vpmKeyUp = True ' Assume we handle the key
 	With Controller
 		Select Case keycode
@@ -91,9 +88,9 @@ Function vpmKeyUp(ByVal keycode)
 			Case RightFlipperKey .Switch(swLRFlip) = False : vpmKeyUp = False : vpmFlips.FlipR False : if keycode = keyStagedFlipperR then vpmFlips.FlipUR False
 			Case keyStagedFlipperL vpmFlips.FlipUL False
 			Case keyStagedFlipperR vpmFlips.FlipUR False
-			Case keyInsertCoin1  .Switch(swCoin1)  = False : Playsound SCoin
-			Case keyInsertCoin2  .Switch(swCoin2)  = False : Playsound SCoin
-			Case keyInsertCoin3  .Switch(swCoin3)  = False : Playsound SCoin
+			Case keyInsertCoin1  .Switch(swCoin1)  = False : If Not IsEmpty(Eval("SCoin")) Then Playsound SCoin
+			Case keyInsertCoin2  .Switch(swCoin2)  = False : If Not IsEmpty(Eval("SCoin")) Then Playsound SCoin
+			Case keyInsertCoin3  .Switch(swCoin3)  = False : If Not IsEmpty(Eval("SCoin")) Then Playsound SCoin
 			Case StartGameKey    .Switch(swStartButton) = False
 			Case keyShowOpts     .Pause = True : vpmShowOptions : .Pause = False
 			Case keyShowKeys     .Pause = True : vpmShowHelp : .Pause = False
@@ -105,5 +102,4 @@ Function vpmKeyUp(ByVal keycode)
 			Case Else            vpmKeyUp = False
 		End Select
 	End With
-	On Error Goto 0
 End Function
