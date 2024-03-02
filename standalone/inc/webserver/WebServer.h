@@ -16,6 +16,7 @@ public:
     string GetUrl();
 
 private:
+    bool Unzip(const char* pSource);
     void Files(struct mg_connection *c, struct mg_http_message* hm);
     void Download(struct mg_connection *c, struct mg_http_message* hm);
     void Upload(struct mg_connection *c, struct mg_http_message* hm);
