@@ -68,15 +68,14 @@ Private vpmDips
 
 ' Keyboard handlers
 Function vpmKeyDown(ByVal keycode)
-	On Error Resume Next
 	vpmKeyDown = True ' Assume we handle the key
 	With Controller
 		If keycode = RightFlipperKey Then .Switch(swLRFlip) = True
 		If keycode = LeftFlipperKey  Then .Switch(swLLFlip) = True
 		Select Case keycode
-			Case keyInsertCoin1  .Switch(swCoin1) = 1 : Playsound SCoin
-			Case keyInsertCoin2  .Switch(swCoin2) = 1 : Playsound SCoin
-			Case keyInsertCoin3  .Switch(swCoin3) = 1 : Playsound SCoin
+			Case keyInsertCoin1  .Switch(swCoin1) = 1 : If Not IsEmpty(Eval("SCoin")) Then Playsound SCoin
+			Case keyInsertCoin2  .Switch(swCoin2) = 1 : If Not IsEmpty(Eval("SCoin")) Then Playsound SCoin
+			Case keyInsertCoin3  .Switch(swCoin3) = 1 : If Not IsEmpty(Eval("SCoin")) Then Playsound SCoin
 			Case StartGameKey    .Switch(swStartButton) = True
 			Case keySelfTest     .Switch(swSelfTest)    = True
 			Case keyCPUDiag      .Switch(swCPUDiag)     = True
@@ -89,11 +88,9 @@ Function vpmKeyDown(ByVal keycode)
 			Case Else            vpmKeyDown = False
 		End Select
 	End With
-	On Error Goto 0
 End Function
 
 Function vpmKeyUp(ByVal keycode)
-	On Error Resume Next
 	vpmKeyUp = True ' Assume we handle the key
 	With Controller
 		If keycode = RightFlipperKey Then .Switch(swLRFlip) = False
@@ -117,5 +114,4 @@ Function vpmKeyUp(ByVal keycode)
 			Case Else            vpmKeyUp = False
 		End Select
 	End With
-	On Error Goto 0
 End Function

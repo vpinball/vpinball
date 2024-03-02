@@ -67,17 +67,26 @@ Private vpmDips
 
 ' Keyboard handlers
 Function vpmKeyDown(ByVal keycode)
-	On Error Resume Next
 	vpmKeyDown = True ' Assume we handle the key
 	With Controller
 		Select Case keycode
-			Case LeftFlipperKey  .Switch(swLLFlip) = True : vpmKeyDown = False : vpmFFlipsSam.FlipL true
-			Case RightFlipperKey .Switch(swLRFlip) = True : vpmKeyDown = False : vpmFFlipsSam.FlipR true
-			Case keyStagedFlipperL vpmFlips.FlipUL True : If cSingleLFlip Or Err Then .Switch(swULFlip) = True
-			Case keyStagedFlipperR vpmFlips.FlipUR True : If cSingleRFlip Or Err Then .Switch(swURFlip) = True
-			Case keyInsertCoin1  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin1'" : Playsound SCoin
-			Case keyInsertCoin2  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin2'" : Playsound SCoin
-			Case keyInsertCoin3  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin3'" : Playsound SCoin
+			Case LeftFlipperKey
+				.Switch(swLLFlip) = True : vpmKeyDown = False : vpmFFlipsSam.FlipL True
+				If keycode = keyStagedFlipperL Then ' as vbs will not evaluate the Case keyStagedFlipperL then, also handle it here
+					vpmFlips.FlipUL True
+					If vpmFlips.FlipperSolNumber(2) <> 0 Then .Switch(swULFlip) = True
+				End If
+			Case RightFlipperKey
+				.Switch(swLRFlip) = True : vpmKeyDown = False : : vpmFFlipsSam.FlipR True
+				If keycode = keyStagedFlipperR Then ' as vbs will not evaluate the Case keyStagedFlipperR then, also handle it here
+					vpmFlips.FlipUR True
+					If vpmFlips.FlipperSolNumber(3) <> 0 Then .Switch(swURFlip) = True
+				End If
+			Case keyStagedFlipperL vpmFlips.FlipUL True : If vpmFlips.FlipperSolNumber(2) <> 0 Then .Switch(swULFlip) = True
+			Case keyStagedFlipperR vpmFlips.FlipUR True : If vpmFlips.FlipperSolNumber(3) <> 0 Then .Switch(swURFlip) = True
+			Case keyInsertCoin1  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin1'" : If Not IsEmpty(Eval("SCoin")) Then Playsound SCoin
+			Case keyInsertCoin2  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin2'" : If Not IsEmpty(Eval("SCoin")) Then Playsound SCoin
+			Case keyInsertCoin3  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin3'" : If Not IsEmpty(Eval("SCoin")) Then Playsound SCoin
 			Case StartGameKey    .Switch(swStartButton) = True
 			Case keyCancel       .Switch(swCancel)      = True
 			Case keyDown         .Switch(swDown)        = True
@@ -91,18 +100,26 @@ Function vpmKeyDown(ByVal keycode)
 			Case Else            vpmKeyDown = False
 		End Select
 	End With
-	On Error Goto 0
 End Function
 
 Function vpmKeyUp(ByVal keycode)
-	On Error Resume Next
 	vpmKeyUp = True ' Assume we handle the key
 	With Controller
 		Select Case keycode
-			Case LeftFlipperKey  .Switch(swLLFlip) = False : vpmKeyUp = False : vpmFFlipsSam.FlipL false
-			Case RightFlipperKey .Switch(swLRFlip) = False : vpmKeyUp = False : vpmFFlipsSam.FlipR false
-			Case keyStagedFlipperL vpmFlips.FlipUL False : If cSingleLFlip Or Err Then .Switch(swULFlip) = False
-			Case keyStagedFlipperR vpmFlips.FlipUR False : If cSingleRFlip Or Err Then .Switch(swURFlip) = False
+			Case LeftFlipperKey
+				.Switch(swLLFlip) = False : vpmKeyUp = False : vpmFFlipsSam.FlipL False
+				If keycode = keyStagedFlipperL Then ' as vbs will not evaluate the Case keyStagedFlipperL then, also handle it here
+					vpmFlips.FlipUL False
+					If vpmFlips.FlipperSolNumber(2) <> 0 Then .Switch(swULFlip) = False
+				End If
+			Case RightFlipperKey
+				.Switch(swLRFlip) = False : vpmKeyUp = False : vpmFFlipsSam.FlipR False
+				If keycode = keyStagedFlipperR Then ' as vbs will not evaluate the Case keyStagedFlipperR then, also handle it here
+					vpmFlips.FlipUR False
+					If vpmFlips.FlipperSolNumber(3) <> 0 Then .Switch(swURFlip) = False
+				End If
+			Case keyStagedFlipperL vpmFlips.FlipUL False : If vpmFlips.FlipperSolNumber(2) <> 0 Then .Switch(swULFlip) = False
+			Case keyStagedFlipperR vpmFlips.FlipUR False : If vpmFlips.FlipperSolNumber(3) <> 0 Then .Switch(swURFlip) = False
 			Case StartGameKey    .Switch(swStartButton) = False
 			Case keyCancel       .Switch(swCancel)      = False
 			Case keyDown         .Switch(swDown)        = False
@@ -119,7 +136,6 @@ Function vpmKeyUp(ByVal keycode)
 			Case Else            vpmKeyUp = False
 		End Select
 	End With
-	On Error Goto 0
 End Function
 
 ' *********************************************************************
@@ -135,60 +151,71 @@ Sub InitVpmFFlipsSAM()
 	vpmFFlipsSAM.FlipperSolNumber(1) = 16
 	vpmFFlipsSAM.CallBackL = SolCallback(vpmFFlipsSAM.FlipperSolNumber(0))			'Lower Flippers
 	vpmFFlipsSAM.CallBackR = SolCallback(vpmFFlipsSAM.FlipperSolNumber(1))
-	On Error Resume Next
-		if cSingleLflip or Err then vpmFFlipsSAM.CallbackUL=SolCallback(vpmFFlipsSAM.FlipperSolNumber(2))
-		err.clear
-		if cSingleRflip or Err then vpmFFlipsSAM.CallbackUR=SolCallback(vpmFFlipsSAM.FlipperSolNumber(3))
-	On Error Goto 0
+	if vpmFlips.FlipperSolNumber(2) <> 0 then vpmFFlipsSAM.CallbackUL=SolCallback(vpmFFlipsSAM.FlipperSolNumber(2)) Else vpmFFlipsSAM.FlipperSolNumber(2) = 0
+	if vpmFlips.FlipperSolNumber(3) <> 0 then vpmFFlipsSAM.CallbackUR=SolCallback(vpmFFlipsSAM.FlipperSolNumber(3)) Else vpmFFlipsSAM.FlipperSolNumber(3) = 0
 	'msgbox "~Debug-Active Flipper subs~" & vbnewline & vpmFFlipsSAM.SubL &vbnewline& vpmFFlipsSAM.SubR &vbnewline& vpmFFlipsSAM.SubUL &vbnewline& vpmFFlipsSAM.SubUR' &
 End Sub
 
 
 Class cvpmFFlipsSAM	'test fastflips with support for both Rom and Game-On Solenoid flipping
 	Public TiltObjects, DebugOn, Name, Delay
-	Public SubL, SubUL, SubR, SubUR, FlippersEnabled,  LagCompensation, ButtonState(3), Sol	'set private
+	Public FlipperSub(3)	'Set to the flipper subs by .init
+	Public FlipperSubRef(3)	'Set to the flipper subs by .init
+	Public FlippersEnabled,  LagCompensation, ButtonState(3), Sol	'set private
 	Public RomMode,	SolState(3)'set private
 	Public FlipperSolNumber(3)	'0=left 1=right 2=Uleft 3=URight
 
 	Private Sub Class_Initialize()
-		dim idx :for idx = 0 to 3 :ButtonState(idx)=0:SolState(idx)=0: Next : Delay=0: FlippersEnabled=1: DebugOn=0 : LagCompensation=0 : Sol=0 : TiltObjects=1
-		SubL = "NullFunction": SubR = "NullFunction" : SubUL = "NullFunction": SubUR = "NullFunction"
-		RomMode=True :FlipperSolNumber(0)=sLLFlipper :FlipperSolNumber(1)=sLRFlipper :FlipperSolNumber(2)=sULFlipper :FlipperSolNumber(3)=sURFlipper
-		SolCallback(33)="vpmFFlipsSAM.RomControl = not "
+		dim idx: For idx = 0 to 3
+			ButtonState(idx) = False
+			SolState(idx) = False
+			FlipperSub(idx) = "NullFunction"
+			Set FlipperSubRef(idx) = Nothing
+		Next
+		Delay=0: FlippersEnabled=1: DebugOn=0 : LagCompensation=0 : Sol=0 : TiltObjects=1: RomMode=True
+		FlipperSolNumber(0)=sLLFlipper
+		FlipperSolNumber(1)=sLRFlipper
+		FlipperSolNumber(2)=sULFlipper
+		FlipperSolNumber(3)=sURFlipper
+		SolCallback(33)="vpmFFlipsSAM.RomControl = not"
+		SolCallbackInitialized = False
 	End Sub
 
 	'set callbacks
-	Public Property Let CallBackL(aInput) : if Not IsEmpty(aInput) then SubL  = aInput :SolCallback(FlipperSolNumber(0)) = name & ".RomFlip(0)=":end if :End Property	'execute
-	Public Property Let CallBackR(aInput) : if Not IsEmpty(aInput) then SubR  = aInput :SolCallback(FlipperSolNumber(1)) = name & ".RomFlip(1)=":end if :End Property
-	Public Property Let CallBackUL(aInput): if Not IsEmpty(aInput) then SubUL = aInput :SolCallback(FlipperSolNumber(2)) = name & ".RomFlip(2)=":end if :End Property	'this should no op if aInput is empty
-	Public Property Let CallBackUR(aInput): if Not IsEmpty(aInput) then SubUR = aInput :SolCallback(FlipperSolNumber(3)) = name & ".RomFlip(3)=":end if :End Property
+	Public Property Let CallBackL(aInput) : CallBack(0) = aInput: End Property
+	Public Property Let CallBackR(aInput) : CallBack(1) = aInput: End Property
+	Public Property Let CallBackUL(aInput) : CallBack(2) = aInput: End Property
+	Public Property Let CallBackUR(aInput) : CallBack(3) = aInput: End Property
+	Public Property Let CallBack(aIdx, aInput)
+		If Not IsEmpty(aInput) Then
+			FlipperSub(aIdx) = aInput
+			SolCallback(FlipperSolNumber(aIdx)) = name & ".RomFlip(" & aIdx & ")="
+			SolCallbackInitialized = False
+			Dim cbs: cbs = "Sub XXXSAMFlipperSub_" & aIdx & "(state): " & aInput & " state: End Sub"
+			ExecuteGlobal cbs
+			Set FlipperSubRef(aIdx) = GetRef("XXXSAMFlipperSub_" & aIdx)
+		End If
+	End Property
 
 	Public Property Let RomFlip(idx, ByVal aEnabled)
 		aEnabled = abs(aEnabled)
 		SolState(idx) = aEnabled
 		If Not RomMode then Exit Property
-		Select Case idx
-			Case 0 : execute subL & " " & aEnabled
-			Case 1 : execute subR & " " & aEnabled
-			Case 2 : execute subUL &" " & aEnabled
-			Case 3 : execute subUR &" " & aEnabled
-		End Select
+		Dim cb: Set cb = FlipperSubRef(idx)
+		If Not cb is Nothing Then cb aEnabled
 	End property
 
 	Public Property Let RomControl(aEnabled)	'todo improve choreography
 		'MsgBox "Rom Control " & CStr(aEnabled)
 		RomMode = aEnabled
-		If aEnabled then					'Switch to ROM solenoid states or button states
-			Execute SubL &" "& SolState(0)
-			Execute SubR &" "& SolState(1)
-			Execute SubUL &" "& SolState(2)
-			Execute SubUR &" "& SolState(3)
-		Else
-			Execute SubL &" "& ButtonState(0)
-			Execute SubR &" "& ButtonState(1)
-			Execute SubUL &" "& ButtonState(2)
-			Execute SubUR &" "& ButtonState(3)
-		End If
+		Dim idx, cb: For idx = 0 To 3
+			Set cb = FlipperSubRef(idx)
+			If aEnabled then					'Switch to ROM solenoid states or button states
+				If Not cb is Nothing Then cb SolState(idx)
+			Else
+				If Not cb is Nothing Then cb ButtonState(idx)
+			End If
+		Next
 	End Property
 	Public Property Get RomControl : RomControl = RomMode : End Property
 
@@ -198,26 +225,17 @@ Class cvpmFFlipsSAM	'test fastflips with support for both Rom and Game-On Soleno
 	Public Property Get Solenoid : Solenoid = sol : End Property
 
 	'call callbacks
-	Public Sub FlipL(ByVal aEnabled)
-		aEnabled = abs(aEnabled) 'True / False is not region safe with execute. Convert to 1 or 0 instead.
-		DebugTestKeys = 1
-		ButtonState(0) = aEnabled	'track flipper button states: the game-on sol flips immediately if the button is held down (1.1)
-		If FlippersEnabled and Not Romcontrol or DebugOn then execute subL & " " & aEnabled end If
-	End Sub
-
-	Public Sub FlipR(ByVal aEnabled)
-		aEnabled = abs(aEnabled) : ButtonState(1) = aEnabled : DebugTestKeys = 1
-		If FlippersEnabled and Not Romcontrol or DebugOn then execute subR & " " & aEnabled end If
-	End Sub
-
-	Public Sub FlipUL(ByVal aEnabled)
-		aEnabled = abs(aEnabled)  : ButtonState(2) = aEnabled
-		If FlippersEnabled and Not Romcontrol or DebugOn then execute subUL & " " & aEnabled end If
-	End Sub
-
-	Public Sub FlipUR(ByVal aEnabled)
-		aEnabled = abs(aEnabled)  : ButtonState(3) = aEnabled
-		If FlippersEnabled and Not Romcontrol or DebugOn then execute subUR & " " & aEnabled end If
+	Public Sub FlipL(ByVal aEnabled) : Flip 0, aEnabled : End Sub
+	Public Sub FlipR(ByVal aEnabled) : Flip 1, aEnabled : End Sub
+	Public Sub FlipUL(ByVal aEnabled) : Flip 2, aEnabled : End Sub
+	Public Sub FlipUR(ByVal aEnabled) : Flip 3, aEnabled : End Sub
+	Public Sub Flip(aIdx, ByVal aEnabled)
+		aEnabled = abs(aEnabled)
+		ButtonState(aIdx) = aEnabled
+		If FlippersEnabled and Not Romcontrol or DebugOn then
+			Dim cb: Set cb = FlipperSubRef(aIdx)
+			If Not cb is Nothing Then cb aEnabled
+		end If
 	End Sub
 
 	Public Sub TiltSol(aEnabled)	'Handle solenoid / Delay (if delayinit)
@@ -233,12 +251,20 @@ Class cvpmFFlipsSAM	'test fastflips with support for both Rom and Game-On Soleno
 	Sub FireDelay() : If LagCompensation then EnableFlippers 0 End If : End Sub
 
 	Public Sub EnableFlippers(aEnabled)	'private
-		If aEnabled then execute SubL &" "& ButtonState(0) :execute SubR &" "& ButtonState(1) :execute subUL &" "& ButtonState(2): execute subUR &" "& ButtonState(3)':end if
+		Dim idx, cb
+		If aEnabled then
+			For idx = 0 To 3
+				Set cb = FlipperSubRef(idx)
+				If Not cb is Nothing Then cb ButtonState(idx)
+			Next
+		End If
 		FlippersEnabled = aEnabled
 		If TiltObjects then vpmnudge.solgameon aEnabled
 		If Not aEnabled then
-			execute subL & " " & 0 : execute subR & " " & 0
-			execute subUL & " " & 0 : execute subUR & " " & 0
+			For idx = 0 To 3
+				Set cb = FlipperSubRef(idx)
+				If Not cb is Nothing Then cb False
+			Next
 		End If
 	End Sub
 End Class
