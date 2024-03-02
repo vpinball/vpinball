@@ -17,11 +17,14 @@ Dim vpmMultiLights() : ReDim vpmMultiLights(0)
 Private gNextMechNo : gNextMechNo = 0 ' keep track of created mech handlers (would be nice with static members)
 
 ' Callbacks
-Dim SolCallback2    ' Called for each changed Solenoid
-Dim SolCallback(68) ' Solenoids (parsed at Runtime), deprecated since it uses 'Execute' which causes stutters
-Dim SolModCallback(68) ' Solenoid modulated callbacks (parsed at Runtime), deprecated since it uses 'Execute' which causes stutters
+Dim SolCallback(68) ' Solenoids (parsed at Runtime)
+Dim SolModCallback(68) ' Solenoid modulated callbacks (parsed at Runtime)
+Dim SolCallbackRef(68) ' Parsed callbacks appended to script to avoid stutters caused by calling Execute
+Dim SolModCallbackRef(68) ' Parsed callbacks appended to script to avoid stutters caused by calling Execute
 Dim SolPrevState(68) ' When modulating solenoids are in use, needed to keep positive value levels from changing boolean state
+Dim SolCallback2    ' Called for each changed Solenoid
 Dim LampCallback	' Called after lamps are updated
+Dim LampCallback2   ' Called for each changed Lamp
 Dim PDLedCallback	' Called after leds are updated
 Dim GICallback		' Called for each changed GI String
 Dim GICallback2		' Called for each changed GI String
@@ -38,6 +41,7 @@ Dim NVRAMCallback
 Set GICallback = Nothing
 Set GICallback2 = Nothing
 Set SolCallback2 = Nothing
+Set LampCallback2 = Nothing
 
 ' Game specific info
 Dim ExtraKeyHelp ' Help string for game specific keys
@@ -2391,7 +2395,22 @@ Public Sub vpmInit(aTable)
 			UseModSol=0
 		End If
 	End If
-
+	
+	' Calling Execute can be an heavy operation depending on user setup as it seems that security programs like Microsoft Defender are triggered by this call
+	' Therefore we add the callbacks to the script during vpmInit using ExecuteGlobal to prevent stutters during play
+	Dim sol, cbs: cbs = ""
+	For sol = 0 To UBound(SolCallback)
+		Set SolCallbackRef(sol) = Nothing
+		Set SolModCallbackRef(sol) = Nothing
+		If SolCallback(sol) <> "" Then cbs = cbs & vblf & "Function XXXSolCallback_" & sol & "(state): " & SolCallback(sol) & " state: End Function"
+		If SolModCallback(sol) <> "" Then cbs = cbs & vblf & "Function XXXSolModCallback_" & sol & "(state): " & SolModCallback(sol) & " state: End Function"
+	Next
+	If cbs <> "" Then ExecuteGlobal cbs
+	For sol = 0 To UBound(SolCallback)
+		If SolCallback(sol) <> "" Then Set SolCallbackRef(sol) = GetRef("XXXSolCallback_" & sol)
+		If SolModCallback(sol) <> "" Then Set SolModCallbackRef(sol) = GetRef("XXXSolModCallback_" & sol)
+	Next
+	
 	' Legacy: this is performed through vpmtimer atm
 	'InitVpmFlips
 End Sub
@@ -2485,25 +2504,24 @@ Sub PinMAMETimer_Timer
 	Dim pwmScale: If UseModSol >= 2 Then pwmScale = 1.0 / 255.0 Else pwmScale = 1 ' User has activated physical output and expects a 0..1 value for solenoids/lamps/GI/AlphaNumSegments
 
 	If Not IsEmpty(ChgSol) Then
-		SetLocale "en-us" ' Needed since we convert the decimal value to be parsed by Execute (some locals use a comma instead of a dot which would be parsed as a parameter separator)
-		Dim solScale: If UseModSol >= 1 Then solScale = 1.0 / 255.0 Else solScale = 1
+		Dim cb
 		For ii = 0 To UBound(ChgSol)
 			nsol = ChgSol(ii, 0)
-			tmp = SolCallback(nsol)
 			solon = ChgSol(ii, 1)
 			If solon > 1 Then solon = 1
+			Set cb = SolCallbackRef(nsol)
 			If UseModSol >= 1 Then
 				If solon <> SolPrevState(nsol) Then
 					SolPrevState(nsol) = solon
-					If tmp <> "" Then Execute tmp & vpmTrueFalse(solon+1)
+					If Not cb Is Nothing Then cb CBool(solon)
 				End If
-				tmp = SolModCallback(nsol)
-				If tmp <> "" Then Execute tmp & " " & CDbl(ChgSol(ii, 1) * pwmScale)
+				Set cb = SolModCallbackRef(nsol)
+				If Not cb Is Nothing Then cb ChgSol(ii, 1) * pwmScale
 			Else
-				If tmp <> "" Then Execute tmp & vpmTrueFalse(solon+1)
+				If Not cb Is Nothing Then cb CBool(solon)
 			End If
-			If Not SolCallback2 is Nothing Then SolCallback2 ChgSol(ii, 0), ChgSol(ii, 1) * solScale
-			If UseSolenoids > 1 Then if nsol = vpmFlips.Solenoid then vpmFlips.TiltSol solon ': msgbox solon
+			If Not SolCallback2 is Nothing Then SolCallback2 ChgSol(ii, 0), ChgSol(ii, 1) * pwmScale
+			If UseSolenoids > 1 Then if nsol = vpmFlips.Solenoid then vpmFlips.TiltSol solon
 		Next
 	End If
 
@@ -2516,6 +2534,7 @@ Sub PinMAMETimer_Timer
 				Else
 					Lights(idx).State = ChgLamp(ii, 1) * pwmScale
 				End If
+				If Not LampCallback2 is Nothing Then LampCallback2 ChgLamp(ii, 0), ChgLamp(ii, 1) * pwmScale
 			Next
 			For Each tmp In vpmMultiLights
 				For ii = 1 To UBound(tmp) : tmp(ii).State = tmp(0).State : Next
