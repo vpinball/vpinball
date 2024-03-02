@@ -22,6 +22,7 @@ Dim SolModCallback(68) ' Solenoid modulated callbacks (parsed at Runtime)
 Dim SolCallbackRef(68) ' Parsed callbacks appended to script to avoid stutters caused by calling Execute
 Dim SolModCallbackRef(68) ' Parsed callbacks appended to script to avoid stutters caused by calling Execute
 Dim SolPrevState(68) ' When modulating solenoids are in use, needed to keep positive value levels from changing boolean state
+Dim SolCallbackInitialized ' Late initialization of solenoid callback
 Dim LampCallback	' Called after lamps are updated
 Dim PDLedCallback	' Called after leds are updated
 Dim GICallback		' Called for each changed GI String
@@ -38,6 +39,7 @@ Dim NVRAMCallback
 
 Set GICallback = Nothing
 Set GICallback2 = Nothing
+SolCallbackInitialized = False
 
 ' Game specific info
 Dim ExtraKeyHelp ' Help string for game specific keys
@@ -203,6 +205,7 @@ Class cvpmTimer
 					If isObject(mQue(ii)(3)) Then
 						Call mQue(ii)(3)(mQue(ii)(2))
 					ElseIf varType(mQue(ii)(3)) = vbString Then
+						' TODO calling Execute is a direct cause of stutters since it triggers OS security. We should avoid using it here
 						If mQue(ii)(3) > "" Then Execute mQue(ii)(3) & " " & mQue(ii)(2) & " "
 					End If
 					mTimers = mTimers - 1
@@ -2109,7 +2112,6 @@ If LoadScript("NudgePlugIn.vbs") Then Set vpmNudge = New cvpmNudge2 Else Set vpm
 '	-On SS games that reuse upper flipper COILS, call the appropriate helper subs from the table script: NoUpperLeftFlipper, NoUpperRightFlipper (for example AFM)
 '	-On SS games that reuse upper flipper SWITCHES, you will still need the cSingleLFlip/cSingleRFlip lines!
 '	-CSinglexFlip automatically disables flippers to retain legacy behavior
-'- Initializes using pulsetimer. VpmInit Me line no longer necessary (? may change)
 
 'Todo
 'test delay - works okay but a little weird if longer than romcontroldelay
@@ -2125,8 +2127,6 @@ Sub NoUpperRightFlipper() : vpmFlips.FlipperSolNumber(3) = 0 : End Sub
 
 Function NullFunction(a) : End Function
 
-vpmtimer.addtimer 40, "vpmFlips.Init'" 'this might be a dumb idea but it would replace the requirement for vpminit me 'this is done now in general to call this after 40ms
-
 Class cvpmFlips2 'test fastflips switches to rom control after 100ms or so delay
 	Public Name, Delay, TiltObjects, Sol, DebugOn
 	Public LagCompensation 'flag for solenoid jitter (may not be a problem anymore) set private
@@ -2137,6 +2137,7 @@ Class cvpmFlips2 'test fastflips switches to rom control after 100ms or so delay
 
 	'Public SubL, SubUL, SubR, SubUR 'may restore these to reduce nested calls. For now the script is compressed a bit.
 	Public FlipperSub(3)	'Set to the flipper subs by .init
+	Public FlipperSubRef(3)	'Set to the flipper subs by .init
 
 	Public FlippersEnabled	'Flipper Circuit State (from the ROM)
 	Public OnOff			'FastFlips Enabled. Separate from FlippersEnabled, which is the flipper circuit state	'private 'todo rename
@@ -2145,13 +2146,13 @@ Class cvpmFlips2 'test fastflips switches to rom control after 100ms or so delay
 	Public RomControlDelay	'Delay after flipping that Rom Controlled Flips are accepted (default 100ms)
 
 	Private Sub Class_Initialize()
-		dim idx :for idx = 0 to 3 :FlipperSub(idx) = "NullFunction" : OnOff=True: ButtonState(idx)=0:SolState(idx)=0: Next
+		dim idx :for idx = 0 to 3 :FlipperSub(idx) = "NullFunction" : Set FlipperSubRef(idx) = Nothing: OnOff=True: ButtonState(idx)=0:SolState(idx)=0: Next
 		Delay=0: FlippersEnabled=0: DebugOn=0 : LagCompensation=0 : Sol=0 : TiltObjects=1
 		RomControlDelay = 100	'RomControlDelay MS between switching to rom controlled flippers
 		FlipperSolNumber(0)=sLLFlipper :FlipperSolNumber(1)=sLRFlipper :FlipperSolNumber(2)=sULFlipper : FlipperSolNumber(3)=sURFlipper
 	End Sub
 
-	Sub Init()	'called by a timer, but previously was called by vpmInit sub
+	Sub Init()	'called by vpmInit sub
 		On Error Resume Next 'If there's no usesolenoids variable present, exit
 			call eval(UseSolenoids) : if err then exit Sub
 		On Error Goto 0
@@ -2204,6 +2205,10 @@ Class cvpmFlips2 'test fastflips switches to rom control after 100ms or so delay
 		if Not IsEmpty(aInput) then
 			FlipperSub(aIDX) = aInput 'hold old flipper subs
 			SolCallback(FlipperSolNumber(aIdx)) = name & ".RomFlip(" & aIdx & ")="
+			SolCallbackInitialized = False
+			Dim cbs: cbs = "Sub XXXFlipperSub_" & aIdx & "(state): " & aInput & " state: End Sub"
+			ExecuteGlobal cbs
+			Set FlipperSubRef(aIDX) = GetRef("XXXFlipperSub_" & aIdx)
 		end if
 	End Property
 	Public Property Get Callback(aIdx) : CallBack = FlipperSub(aIDX) : End Property
@@ -2212,13 +2217,17 @@ Class cvpmFlips2 'test fastflips switches to rom control after 100ms or so delay
 		aEnabled = cBool(aEnabled)
 		if aEnabled <> OnOff then 'disregard redundant updates
 			OnOff = aEnabled
-			dim idx
+			dim idx, cb
 			If aEnabled then 'Switch to ROM solenoid states or button states immediately
-				for idx = 0 to 3
-					if SolState(idx) <> ButtonState(idx) And FlippersEnabled Then Execute FlipperSub(idx) &" "& ButtonState(idx) end If
+				For idx = 0 To 3
+					Set cb = FlipperSubRef(idx)
+					If SolState(idx) <> ButtonState(idx) And FlippersEnabled And Not cb is Nothing Then cb ButtonState(idx)
 				Next
 			Else
-				for idx = 0 to 3 : if ButtonState(idx) <> SolState(idx) Then Execute FlipperSub(idx) &" "& SolState(idx) end if : Next
+				For idx = 0 To 3
+					Set cb = FlipperSubRef(idx)
+					If ButtonState(idx) <> SolState(idx) And Not cb is Nothing Then cb SolState(idx)
+				Next
 			End If
 		end If
 	End Property
@@ -2231,8 +2240,9 @@ Class cvpmFlips2 'test fastflips switches to rom control after 100ms or so delay
 		aEnabled = abs(aEnabled) 'True / False is not region safe with execute. Convert to 1 or 0 instead.
 		ButtonState(aIDX) = aEnabled 'track flipper button states: the game-on sol flips immediately if the button is held down
 		'debug.print "Key Flip " & aIdx &" @ " & gametime & " FF ON: " & OnOff & " Circuit On? " & FlippersEnabled
+		Dim cb: Set cb = FlipperSubRef(aIdx)
 		If OnOff and FlippersEnabled or DebugOn then
-			execute FlipperSub(aIdx) & " " & aEnabled
+			If Not cb is Nothing Then cb aEnabled
 			FlipAt(aIDX) = GameTime
 		end If
 	End Property
@@ -2245,8 +2255,9 @@ Class cvpmFlips2 'test fastflips switches to rom control after 100ms or so delay
 		aEnabled = abs(aEnabled)
 		SolState(aIdx) = aEnabled
 
-		If Not OnOff OR GameTime >= FlipAt(aIdx) + RomControlDelay Then
-			Execute FlipperSub(aIDX) & " " & aEnabled
+		Dim cb: Set cb = FlipperSubRef(idx)
+		If Not OnOff OR GameTime >= FlipAt(aIdx) + RomControlDelay And Not cb is Nothing Then
+			cb aEnabled
 			'tb.text = "Rom Flip " & aIdx & " state:" & aEnabled &vbnewline&_
 			'GameTime & " >= " & FlipAt(aIdx) & "+" & RomControlDelay
 			'debug.print "rom flip @ " & gametime & "solenoid:" & sol & ": " & FlippersEnabled
@@ -2268,15 +2279,20 @@ Class cvpmFlips2 'test fastflips switches to rom control after 100ms or so delay
 
 	Public Sub EnableFlippers(ByVal aEnabled) 'private
 		aEnabled = abs(aEnabled) 'Might fix TMNT issue with vpmnudge.solgameon?
-		dim idx
-		'If aEnabled then execute SubL &" "& ButtonState(0) :execute SubR &" "& ButtonState(1) :execute subUL &" "& ButtonState(2): execute subUR &" "& ButtonState(3)':end if
-		If aEnabled then : for idx = 0 to 3 : execute FlipperSub(idx) &" "& ButtonState(idx) : next : end If
+		dim idx, cb
+		If aEnabled Then
+			For idx = 0 to 3
+				Set cb = FlipperSubRef(idx)
+				If Not cb is Nothing Then cb ButtonState(idx)
+			Next
+		End If
 		FlippersEnabled = aEnabled
 		If TiltObjects then vpmnudge.solgameon aEnabled
 		If Not aEnabled then
-'			 execute subL & " " & 0 : execute subR & " " & 0
-'			 execute subUL & " " & 0 : execute subUR & " " & 0
-			for idx = 0 to 3 : execute FlipperSub(idx) &" "& 0 : Next
+			For idx = 0 To 3
+				Set cb = FlipperSubRef(idx)
+				If Not cb is Nothing Then cb 0
+			Next
 		End If
 	End Sub
 
@@ -2338,24 +2354,6 @@ Public Sub vpmInit(aTable)
 			UseModSol=0
 		End If
 	End If
-	
-	' Calling Execute can be an heavy operation depending on user setup as it seems that security programs like Microsoft Defender are triggered by this call
-	' Therefore we add the callbacks to the script during vpmInit using ExecuteGlobal to prevent stutters during play
-	Dim sol, cbs: cbs = ""
-	For sol = 0 To UBound(SolCallback)
-		Set SolCallbackRef(sol) = Nothing
-		Set SolModCallbackRef(sol) = Nothing
-		If SolCallback(sol) <> "" Then cbs = cbs & vblf & "Function XXXSolCallback_" & sol & "(state): " & SolCallback(sol) & " state: End Function"
-		If SolModCallback(sol) <> "" Then cbs = cbs & vblf & "Function XXXSolModCallback_" & sol & "(state): " & SolModCallback(sol) & " state: End Function"
-	Next
-	If cbs <> "" Then ExecuteGlobal cbs
-	For sol = 0 To UBound(SolCallback)
-		If SolCallback(sol) <> "" Then Set SolCallbackRef(sol) = GetRef("XXXSolCallback_" & sol)
-		If SolModCallback(sol) <> "" Then Set SolModCallbackRef(sol) = GetRef("XXXSolModCallback_" & sol)
-	Next
-	
-	' Legacy: this is performed through vpmtimer atm
-	'InitVpmFlips
 End Sub
 
 ' Exit function called in Table_Exit event
@@ -2400,8 +2398,31 @@ Private Const CHGNO = 0
 Private Const CHGSTATE = 1
 Private vpmTrueFalse : vpmTrueFalse = Array(" True", " False"," True")
 
+Sub InitSolCallbacks
+	If SolCallbackInitialized Then Exit Sub
+
+	' Calling Execute can be an heavy operation depending on user setup as it seems that security programs like Microsoft Defender are triggered by this call
+	' Therefore we add the callbacks to the script during vpmInit using ExecuteGlobal to prevent stutters during play
+	Dim sol, cbs: cbs = ""
+	For sol = 0 To UBound(SolCallback)
+		Set SolCallbackRef(sol) = Nothing
+		Set SolModCallbackRef(sol) = Nothing
+		If SolCallback(sol) <> "" Then cbs = cbs & vblf & "Sub XXXSolCallback_" & sol & "(state): " & SolCallback(sol) & " state: End Sub"
+		If SolModCallback(sol) <> "" Then cbs = cbs & vblf & "Sub XXXSolModCallback_" & sol & "(state): " & SolModCallback(sol) & " state: End Sub"
+	Next
+	If cbs <> "" Then ExecuteGlobal cbs
+	For sol = 0 To UBound(SolCallback)
+		If SolCallback(sol) <> "" Then Set SolCallbackRef(sol) = GetRef("XXXSolCallback_" & sol)
+		If SolModCallback(sol) <> "" Then Set SolModCallbackRef(sol) = GetRef("XXXSolModCallback_" & sol)
+	Next
+
+	SolCallbackInitialized = True
+End Sub
+
 Sub vpmDoSolCallback(aNo, aEnabled)
-	If SolCallback(aNo) <> "" Then Execute SolCallback(aNo) & vpmTrueFalse(aEnabled+1)
+	InitSolCallbacks
+	Dim cb: Set cb = SolCallbackRef(nsol)
+	If Not cb Is Nothing Then cb CBool(aEnabled)
 End Sub
 
 Sub vpmDoLampUpdate(aNo, aEnabled)
@@ -2409,7 +2430,7 @@ Sub vpmDoLampUpdate(aNo, aEnabled)
 End Sub
 
 Sub PinMAMETimer_Timer
-	Dim ChgLamp,ChgSol,ChgGI, ii, tmp, idx, nsol, solon, ChgLed
+	Dim ChgLamp, ChgSol,ChgGI, ii, tmp, idx, ChgLed
 	Dim DMDp
 	Dim ChgNVRAM
 
@@ -2447,23 +2468,22 @@ Sub PinMAMETimer_Timer
 	Dim pwmScale: If UseModSol >= 2 Then pwmScale = 1.0 / 255.0 Else pwmScale = 1 ' User has activated physical output and expects a 0..1 value for solenoids/lamps/GI/AlphaNumSegments
 
 	If Not IsEmpty(ChgSol) Then
-		Dim cb
+		InitSolCallbacks
+		Dim cb, nsol, state, bstate
 		For ii = 0 To UBound(ChgSol)
 			nsol = ChgSol(ii, 0)
-			solon = ChgSol(ii, 1)
-			If solon > 1 Then solon = 1
-			Set cb = SolCallbackRef(nsol)
-			If UseModSol >= 1 Then
-				If solon <> SolPrevState(nsol) Then
-					SolPrevState(nsol) = solon
-					If Not cb Is Nothing Then cb CBool(solon)
-				End If
-				Set cb = SolModCallbackRef(nsol)
-				If Not cb Is Nothing Then cb ChgSol(ii, 1) * pwmScale
-			Else
-				If Not cb Is Nothing Then cb CBool(solon)
+			state = ChgSol(ii, 1) * pwmScale
+			bstate = CBool(state >= 0.5)
+			If bstate <> SolPrevState(nsol) Then
+				SolPrevState(nsol) = bstate
+				Set cb = SolCallbackRef(nsol)
+				If Not cb Is Nothing Then cb bstate
 			End If
-			If UseSolenoids > 1 Then if nsol = vpmFlips.Solenoid then vpmFlips.TiltSol solon
+			If UseModSol >= 1 Then
+				Set cb = SolModCallbackRef(nsol)
+				If Not cb Is Nothing Then cb state
+			End If
+			If UseSolenoids > 1 Then If nsol = vpmFlips.Solenoid Then vpmFlips.TiltSol bstate
 		Next
 	End If
 
