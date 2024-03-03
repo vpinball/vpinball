@@ -912,7 +912,7 @@ bool LiveUI::HasMouseCapture() const
 void LiveUI::Render()
 {
    // For the time being, the UI is only available inside a running player
-   if (m_player == nullptr || m_player->m_closing != Player::CS_PLAYING)
+   if (m_player == nullptr || m_player->GetCloseState() != Player::CS_PLAYING)
       return;
    if (m_rotate != 0 && !m_rotation_callback_added)
    {
@@ -1035,7 +1035,7 @@ void LiveUI::ResetCameraFromPlayer()
 void LiveUI::Update(const RenderTarget *rt)
 {
    // For the time being, the UI is only available inside a running player
-   if (m_player == nullptr || m_player->m_closing != Player::CS_PLAYING)
+   if (m_player == nullptr || m_player->GetCloseState() != Player::CS_PLAYING)
       return;
 
    m_rotation_callback_added = false;
