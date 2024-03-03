@@ -227,6 +227,8 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
 
 Player::~Player()
 {
+   assert(g_pplayer == this);
+   m_closing = CS_CLOSED;
    m_ptable->StopPlaying();
    delete m_pBCTarget;
    delete m_ptable;
@@ -675,6 +677,15 @@ void Player::OnInitialUpdate()
 
 void Player::OnClose()
 {
+   if (g_pplayer == nullptr || g_pplayer->m_closing == CS_CLOSED)
+   {
+      PLOGI << "Player::OnClose discarded since player is already closing";
+      return;
+   }
+   assert(g_pplayer == this);
+   g_pplayer->m_closing = CS_CLOSED;
+   PLOGI << "Closing player... [Player's VBS intepreter is #" << m_ptable->m_pcv->m_pScript << "]";
+
     g_frameProfiler.LogWorstFrame();
 
     // In Windows 10 1803, there may be a significant lag waiting for WM_DESTROY (msg sent by the delete call below) if script is not closed first.
@@ -812,19 +823,9 @@ void Player::OnClose()
 
    LockForegroundWindow(false);
 
-   // Copy before deleting to process after player has been closed/deleted
-   CloseState closing = m_closing;
-   PinTable *editedTable = m_pEditorTable;
-
-   // Destroy this player
-   assert(g_pplayer == this);
-   volatile auto player = g_pplayer;
-   g_pplayer = nullptr;
-   delete player; // Win32xx call Window destroy for us from destructor, don't call it directly or it will crash due to dual destruction
-
    // Reactivate edited table or close application if requested
 #ifndef __STANDALONE__
-   if (closing == CS_CLOSE_APP)
+   if (m_closing == CS_CLOSE_APP)
    {
       g_pvp->PostMessage(WM_CLOSE, 0, 0);
    }
@@ -838,14 +839,19 @@ void Player::OnClose()
       g_pvp->ToggleToolbar();
       g_pvp->ShowWindow(SW_SHOW);
       g_pvp->SetForegroundWindow();
-      editedTable->EnableWindow();
-      editedTable->SetFocus();
-      editedTable->SetActiveWindow();
-      editedTable->SetDirtyDraw();
-      editedTable->RefreshProperties();
-      editedTable->BeginAutoSaveCounter();
+      m_pEditorTable->EnableWindow();
+      m_pEditorTable->SetFocus();
+      m_pEditorTable->SetActiveWindow();
+      m_pEditorTable->SetDirtyDraw();
+      m_pEditorTable->RefreshProperties();
+      m_pEditorTable->BeginAutoSaveCounter();
    }
 #endif
+
+   // Destroy this player
+   delete g_pplayer; // Win32xx call Window destroy for us from destructor, don't call it directly or it will crash due to dual destruction
+   g_pplayer = nullptr;
+   PLOGI << "Player closed.";
 }
 
 void Player::InitFPS()

@@ -1,9 +1,5 @@
 #include "core/stdafx.h"
 
-extern bool bass_init;
-extern int bass_BG_idx;
-extern int bass_STD_idx;
-
 float convert2decibelvolume(const float volume);
 
 void BASS_ErrorMapCode(const int code, string& text)
@@ -68,11 +64,6 @@ void BASS_ErrorMapCode(const int code, string& text)
 
 PinSound::PinSound() : PinDirectSoundWavCopy(this)
 {
-   if(!bass_init)
-   {
-      AudioPlayer ap; //!! just to get BASS init'ed, remove again as soon as all is unified!
-   }
-
    m_pDSBuffer = nullptr;
    m_pDS3DBuffer = nullptr;
    m_pdata = nullptr;
@@ -253,8 +244,8 @@ HRESULT PinSound::ReInitialize()
 
 void PinSound::SetDevice()
 {
-   const int bass_idx = (m_outputTarget == SNDOUT_BACKGLASS) ? bass_BG_idx : bass_STD_idx;
-   if (bass_idx != -1 && bass_STD_idx != bass_BG_idx) BASS_SetDevice(bass_idx);
+   const int bass_idx = (m_outputTarget == SNDOUT_BACKGLASS) ? g_pvp->m_ps.bass_BG_idx : g_pvp->m_ps.bass_STD_idx;
+   if (bass_idx != -1 && g_pvp->m_ps.bass_STD_idx != g_pvp->m_ps.bass_BG_idx) BASS_SetDevice(bass_idx);
 }
 
 void PinSound::Play(const float volume, const float randompitch, const int pitch, const float pan, const float front_rear_fade, const int flags, const bool restart)
@@ -472,6 +463,87 @@ void PinDirectSound::InitDirectSound(const HWND hwnd, const bool IsBackglass)
 #endif
 
    //return S_OK;
+}
+
+void AudioMusicPlayer::InitPinDirectSound(const Settings& settings, const HWND hwnd)
+{
+   const int DSidx1 = settings.LoadValueWithDefault(Settings::Player, "SoundDevice"s, 0);
+   const int DSidx2 = settings.LoadValueWithDefault(Settings::Player, "SoundDeviceBG"s, 0);
+   const SoundConfigTypes SoundMode3D = (SoundConfigTypes)settings.LoadValueWithDefault(Settings::Player, "Sound3D"s, (int)SNDCFG_SND3D2CH);
+
+   //---- Initialize BASS Audio Library
+
+   int prevBassStdIdx = bass_STD_idx;
+   int prevBassBGIdx = bass_BG_idx;
+   bass_STD_idx = -1;
+   bass_BG_idx = -1;
+   for (unsigned int idx = 0; idx < 2; ++idx)
+   {
+      const int DSidx = (idx == 0) ? DSidx1 : DSidx2;
+
+		// Match the Direct Sound device with the BASS device by name
+      if (DSidx != -1)
+      {
+         DSAudioDevices DSads;
+         if (!FAILED(DirectSoundEnumerate(DSEnumCallBack, &DSads)))
+         {
+            if ((size_t)DSidx < DSads.size() && DSads[DSidx]->guid != nullptr) // primary device has guid nullptr, so use BASS_idx = -1 in that case
+            {
+               BASS_DEVICEINFO dinfo;
+               for (int i = 1; BASS_GetDeviceInfo(i, &dinfo); i++) // 0 = no sound/no device
+                  if (dinfo.flags & BASS_DEVICE_ENABLED) // device must be enabled
+                     if (strcmp(dinfo.name, DSads[DSidx]->description.c_str()) == 0)
+                     {
+                        if (idx == 0)
+                           bass_STD_idx = (dinfo.flags & BASS_DEVICE_DEFAULT) ? -1 : i;
+                        else
+                           bass_BG_idx = (dinfo.flags & BASS_DEVICE_DEFAULT) ? -1 : i;
+                        break;
+                     }
+            }
+            for (size_t i = 0; i < DSads.size(); i++)
+               delete DSads[i];
+         }
+      }
+   }
+
+   //BASS_SetConfig(/*BASS_CONFIG_THREAD |*/ BASS_CONFIG_FLOATDSP, fTrue);
+   BASS_SetConfig(/*BASS_CONFIG_THREAD |*/ BASS_CONFIG_CURVE_PAN, fTrue); // logarithmic scale, similar to DSound (although BASS still takes a 0..1 range)
+   //!! BASS_CONFIG_THREAD so far only works on Net stuff, not these ones here..  :/
+   //BASS_SetConfig(/*BASS_CONFIG_THREAD |*/ BASS_CONFIG_CURVE_VOL, fTrue); // dto. // is now converted internally, as otherwise PinMAMEs altsound will also get affected! (note that pan is not used yet in PinMAME!)
+   BASS_SetConfig(/*BASS_CONFIG_THREAD |*/ BASS_CONFIG_VISTA_SPEAKERS, fTrue); // to make BASS_ChannelSetAttribute(.., BASS_ATTRIB_PAN, pan); work, needs Vista or later
+
+   for (unsigned int idx = 0; idx < 2; ++idx)
+   {
+      int deviceIdx = (idx == 0) ? bass_STD_idx : bass_BG_idx;
+		// REINIT is not needed since we do not want to keep previously defined config/samples/...
+      // bool isReInit = ((prevBassStdIdx != -2) && (deviceIdx == prevBassStdIdx)) || ((prevBassBGIdx != -2) && (deviceIdx == prevBassBGIdx));
+      if (!BASS_Init(deviceIdx, 44100, 
+				/* (isReInit ? BASS_DEVICE_REINIT : 0) |*/ ((SoundMode3D != SNDCFG_SND3D2CH) && (idx == 0) ? 0 /*| BASS_DEVICE_MONO*/ /*| BASS_DEVICE_DSOUND*/ : 0),
+            g_pvp->GetHwnd(), nullptr)) // note that sample rate is usually ignored and set depending on the input/file automatically
+      {
+         const int code = BASS_ErrorGetCode();
+         string bla;
+         BASS_ErrorMapCode(code, bla);
+         g_pvp->MessageBox(("BASS music/sound library initialization error " + std::to_string(code) + ": " + bla).c_str(), "Error", MB_ICONERROR);
+      }
+      if (/*SoundMode3D == SNDCFG_SND3D2CH &&*/ bass_STD_idx == bass_BG_idx) // skip 2nd device if it's the same and 3D is disabled //!!! for now try to just use one even if 3D! and then adapt channel settings if sample is a backglass sample
+         break;
+   }
+
+   //---- Initialize DirectSound
+   m_pds.InitDirectSound(hwnd, false);
+   // If these are the same device, and we are not in 3d mode, just point the backglass device to the main one.
+   // For 3D we want two separate instances, one in basic stereo for music, and the other surround mode.
+   if (SoundMode3D == SNDCFG_SND3D2CH && DSidx1 == DSidx2)
+   {
+      m_pbackglassds = &m_pds;
+   }
+   else
+   {
+      m_pbackglassds = new PinDirectSound();
+      m_pbackglassds->InitDirectSound(hwnd, true);
+   }
 }
 
 PinSound *AudioMusicPlayer::LoadFile(const string& strFileName)

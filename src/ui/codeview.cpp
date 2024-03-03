@@ -499,10 +499,6 @@ void CodeViewer::EndSession()
    CleanUpScriptEngine();
 
    InitializeScriptEngine();
-
-   for (size_t i = 0; i < m_vcvdTemp.size(); ++i)
-      delete m_vcvdTemp[i];
-   m_vcvdTemp.clear();
 }
 
 HRESULT CodeViewer::AddTemporaryItem(const BSTR bstr, IDispatch * const pdisp)
@@ -733,37 +729,48 @@ STDMETHODIMP CodeViewer::CleanUpScriptEngine()
 {
    if (m_pScript)
    {
-      //m_pScript->SetScriptState(SCRIPTSTATE_DISCONNECTED);
-      //m_pScript->SetScriptState(SCRIPTSTATE_CLOSED);
       // Cleanly wait for the script to end to allow Exit event, triggered just before closing, to be processed
-      m_pScript->Close();
-      const U32 startWaitTick = msec();
       SCRIPTSTATE state;
       m_pScript->GetScriptState(&state);
-      while ((msec() - startWaitTick < 5000) && (state != SCRIPTSTATE_CLOSED))
+      if (state != SCRIPTSTATE_CLOSED && state != SCRIPTSTATE_UNINITIALIZED)
       {
-         Sleep(16);
-         m_pScript->GetScriptState(&state);
+         PLOGI << "Sending Close to script interpreter #" << m_pScript;
+         m_pScript->Close();
+         U32 startWaitTick = msec();
+         while ((msec() - startWaitTick < 5000) && (state != SCRIPTSTATE_CLOSED))
+         {
+            Sleep(16);
+            m_pScript->GetScriptState(&state);
+         }
+         if (state != SCRIPTSTATE_CLOSED)
+         {
+            PLOGE << "Script did not terminate within 5s after request. Forcing close of interpreter #" << m_pScript;
+            EXCEPINFO eiInterrupt = {};
+            const LocalString ls(IDS_HANG);
+            const WCHAR *const wzError = MakeWide(ls.m_szbuffer);
+            eiInterrupt.bstrDescription = SysAllocString(wzError);
+            //eiInterrupt.scode = E_NOTIMPL;
+            eiInterrupt.wCode = 2345;
+            delete[] wzError;
+            m_pScript->InterruptScriptThread(SCRIPTTHREADID_BASE /*SCRIPTTHREADID_ALL*/, &eiInterrupt, /*SCRIPTINTERRUPT_DEBUG*/ SCRIPTINTERRUPT_RAISEEXCEPTION);
+         }
+         else
+         {
+            PLOGI << "Script interpreter state is now closed. Releasing interpreter #" << m_pScript;
+         }
       }
-      if (state != SCRIPTSTATE_CLOSED)
-      {
-         PLOGE << "Script did not terminate within 5s after request. Forcing close.";
-         EXCEPINFO eiInterrupt = {};
-         const LocalString ls(IDS_HANG);
-         const WCHAR *const wzError = MakeWide(ls.m_szbuffer);
-         eiInterrupt.bstrDescription = SysAllocString(wzError);
-         //eiInterrupt.scode = E_NOTIMPL;
-         eiInterrupt.wCode = 2345;
-         delete[] wzError;
-         m_pScript->InterruptScriptThread(SCRIPTTHREADID_BASE /*SCRIPTTHREADID_ALL*/, &eiInterrupt, /*SCRIPTINTERRUPT_DEBUG*/ SCRIPTINTERRUPT_RAISEEXCEPTION);
-      }
-      m_pScript->Release();
-      m_pScriptParse->Release();
-      m_pScriptDebug->Release();
+      SAFE_RELEASE_NO_RCC(m_pScript);
+      SAFE_RELEASE_NO_RCC(m_pScriptParse);
+      SAFE_RELEASE(m_pScriptDebug);
 #ifndef __STANDALONE__
       if (m_pProcessDebugManager != nullptr) m_pProcessDebugManager->Release();
 #endif
    }
+
+   for (size_t i = 0; i < m_vcvdTemp.size(); ++i)
+      delete m_vcvdTemp[i];
+   m_vcvdTemp.clear();
+
    return S_OK;
 }
 
