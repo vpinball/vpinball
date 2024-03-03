@@ -1464,22 +1464,19 @@ void VPinball::MainMsgLoop()
          }
          catch (...) // something failed on load/init
          {
-            volatile auto player = g_pplayer;
+            delete g_pplayer;
             g_pplayer = nullptr;
-            delete player;
-
             g_pvp->m_ptableActive->HandleLoadFailure();
          }
       }
-      else if (g_pplayer)
+      else if (g_pplayer && g_pplayer->m_closing != Player::CS_CLOSED)
       {
          // Let player do its job on idle
          g_pplayer->OnIdle();
       }
-      else if (m_table_played_via_SelectTableOnStart && !g_pplayer)
+      else if (!g_pplayer && m_table_played_via_SelectTableOnStart)
       {
          // If player has been closed in the meantime, check if we should display the file open dialog again to select/play the next table
-
          // first close the current table
          CComObject<PinTable> *const pt = GetActiveTable();
          if (pt)
@@ -1489,7 +1486,7 @@ void VPinball::MainMsgLoop()
          if (m_table_played_via_SelectTableOnStart)
             DoPlay(false);
       }
-      else if (m_open_minimized && !g_pplayer)
+      else if (!g_pplayer && m_open_minimized)
       {
          // If started to play and for whatever reason (end of play, frontend closing the player window, failed loading,...)
          // we do not have a player, just close back to system.
@@ -1581,7 +1578,9 @@ void VPinball::OnClose()
          Sleep(THREADS_PAUSE);
 
    if (g_pplayer)
-      g_pplayer->SendMessage(WM_CLOSE, 0, 0);
+      g_pplayer->OnClose();
+   while (g_pplayer)
+      Sleep(THREADS_PAUSE);
 
    const bool canClose = CanClose();
    if (canClose)

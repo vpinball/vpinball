@@ -895,26 +895,19 @@ void PinInput::Init(const HWND hwnd)
    hr = m_pKeyboard->SetProperty(DIPROP_BUFFERSIZE, &dipdw.diph);
 #endif
 
-   if (m_enableMouseInPlayer)
+   // Create mouse device
+   m_pMouse = nullptr;
+   if (m_enableMouseInPlayer && !FAILED(m_pDI->CreateDevice(GUID_SysMouse, &m_pMouse, nullptr)))
    {
-      // Create mouse device
-      if (!FAILED(m_pDI->CreateDevice(GUID_SysMouse, &m_pMouse, nullptr)))
-      {
-         hr = m_pMouse->SetDataFormat(&c_dfDIMouse2);
-
-         hr = m_pMouse->SetCooperativeLevel(hwnd, DISCL_NONEXCLUSIVE | DISCL_FOREGROUND);
-
-         DIPROPDWORD dipdwm;
-         dipdwm.diph.dwSize = sizeof(DIPROPDWORD);
-         dipdwm.diph.dwHeaderSize = sizeof(DIPROPHEADER);
-         dipdwm.diph.dwObj = 0;
-         dipdwm.diph.dwHow = DIPH_DEVICE;
-         dipdwm.dwData = INPUT_BUFFER_SIZE;
-
-         hr = m_pMouse->SetProperty(DIPROP_BUFFERSIZE, &dipdwm.diph);
-      }
-      else
-         m_pMouse = nullptr;
+      hr = m_pMouse->SetDataFormat(&c_dfDIMouse2);
+      hr = m_pMouse->SetCooperativeLevel(hwnd, DISCL_NONEXCLUSIVE | DISCL_FOREGROUND);
+      DIPROPDWORD dipdwm;
+      dipdwm.diph.dwSize = sizeof(DIPROPDWORD);
+      dipdwm.diph.dwHeaderSize = sizeof(DIPROPHEADER);
+      dipdwm.diph.dwObj = 0;
+      dipdwm.diph.dwHow = DIPH_DEVICE;
+      dipdwm.dwData = INPUT_BUFFER_SIZE;
+      hr = m_pMouse->SetProperty(DIPROP_BUFFERSIZE, &dipdwm.diph);
    }
 
    /* Disable Sticky Keys */
@@ -1044,11 +1037,7 @@ void PinInput::UnInit()
       }
 
    // Release any DirectInput objects.
-   if (m_pDI)
-   {
-      m_pDI->Release();
-      m_pDI = nullptr;
-   }
+   SAFE_RELEASE(m_pDI);
 #endif
 
    ZeroMemory(m_diq, sizeof(m_diq));
