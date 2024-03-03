@@ -43,7 +43,7 @@ bool Settings::LoadFromFile(const string& path, const bool createDefault)
       PLOGI << "Settings file was not found at '" << path << "' creating a default one";
 
       // Load failed: initialize from the default setting file
-      std::filesystem::copy(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "Default VPinballX.ini", path);
+      std::filesystem::copy(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "Default_VPinballX.ini", path);
       if (!file.read(m_ini))
       {
          PLOGE << "Loading of default settings file failed";

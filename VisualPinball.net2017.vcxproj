@@ -982,7 +982,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
   </ItemGroup>
   <ItemGroup>
     <None Include="shader\FBShader.fxh" />
-    <None Include="src\assets\Default VPinballX.ini" />
+    <None Include="src\assets\Default_VPinballX.ini" />
     <None Include="shader\SMAA.fxh" />
     <None Include="shader\BallShader.glfx" />
     <None Include="shader\BallShadows.fxh" />
