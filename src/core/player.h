@@ -394,11 +394,12 @@ public:
 
    enum CloseState
    {
-      CS_PLAYING = 0,   // Normal state
-      CS_USER_INPUT = 1,// Open UI to let user choose between debugger, quit,...
-      CS_STOP_PLAY = 2, // Stop play and get back to editor, if started without user input (minimized) then close the application
-      CS_CLOSE_APP = 3, // Close the application and get back to operating system
-      CS_FORCE_STOP = 4 // Force close the application and get back to operating system
+      CS_PLAYING = 0,    // Normal state
+      CS_USER_INPUT = 1, // Open UI to let user choose between debugger, quit,...
+      CS_STOP_PLAY = 2,  // Stop play and get back to editor, if started without user input (minimized) then close the application
+      CS_CLOSE_APP = 3,  // Close the application and get back to operating system
+      CS_FORCE_STOP = 4, // Force close the application and get back to operating system
+      CS_CLOSED = 5      // Closing (or closed is called from another thread, but g_pplayer is null when closed)
    };
    CloseState m_closing = CS_PLAYING;
 

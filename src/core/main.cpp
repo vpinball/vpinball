@@ -1132,8 +1132,6 @@ public:
          DestroyAcceleratorTable(g_haccel);
 
          _Module.RevokeClassObjects();
-#endif
-         Sleep(THREADS_PAUSE); //wait for any threads to finish
       }
       return retval;
    }
@@ -1388,7 +1386,7 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
    }
    #endif
 
-   PLOGI << "Closing VPX...";
+   PLOGI << "Closing VPX...\n\n";
    #if (defined(__STANDALONE__) && (defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__))
    exit(retval);
    #endif
