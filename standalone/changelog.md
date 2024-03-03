@@ -4,6 +4,9 @@ To keep up with all the changes in master, and make it easier to rebase, this br
 
 The downside of this approach is not accurately keeping track of history:
 
+* 03/03/24
+    * Add manual unzip button in web server
+
 * 03/01/24
     * Add support for unzipping uploads via web server
 

@@ -22,6 +22,7 @@ private:
     void Upload(struct mg_connection *c, struct mg_http_message* hm);
     void Delete(struct mg_connection *c, struct mg_http_message* hm);
     void Folder(struct mg_connection *c, struct mg_http_message* hm);
+    void Extract(struct mg_connection *c, struct mg_http_message* hm);
     void Activate(struct mg_connection *c, struct mg_http_message* hm);
     void Command(struct mg_connection *c, struct mg_http_message* hm);
     string GetIPAddress();

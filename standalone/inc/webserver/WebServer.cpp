@@ -22,6 +22,8 @@ void WebServer::EventHandler(struct mg_connection *c, int ev, void *ev_data, voi
          webServer->Delete(c, hm);
       else if (mg_http_match_uri(hm, "/folder"))
          webServer->Folder(c, hm);
+      else if (mg_http_match_uri(hm, "/extract"))
+         webServer->Extract(c, hm);
       else if (mg_http_match_uri(hm, "/activate"))
          webServer->Activate(c, hm);
       else if (mg_http_match_uri(hm, "/command"))
@@ -71,7 +73,11 @@ bool WebServer::Unzip(const char* pSource)
       if (!mz_zip_reader_file_stat(&zip_archive, i, &file_stat))
          success = false;
 
-      string path = std::filesystem::path(string(pSource)).parent_path().append(file_stat.m_filename);
+      string filename = file_stat.m_filename;
+      if (filename.starts_with("__MACOSX"))
+         continue;
+
+      string path = std::filesystem::path(string(pSource)).parent_path().append(filename);
       if (mz_zip_reader_is_file_a_directory(&zip_archive, i))
          std::filesystem::create_directories(path);
       else {
@@ -183,14 +189,7 @@ void WebServer::Upload(struct mg_connection *c, struct mg_http_message* hm)
    string path = g_pvp->m_szMyPrefPath + q;
 
    if (!mg_http_upload(c, hm, &mg_fs_posix, path.c_str(), 1024 * 1024 * 500)) {
-      if (extension_from_path(path) == "zip") {
-         if (Unzip(path.c_str())) {
-            PLOGI.printf("File unzipped: q=%s", path.c_str());
-         }
-
-         std::filesystem::remove(path);
-      }
-      else if (!strncmp(q, "VPinballX.ini", sizeof(q)))
+      if (!strncmp(q, "VPinballX.ini", sizeof(q)))
          g_pvp->m_settings.LoadFromFile(path, false);
    }
 }
@@ -241,6 +240,35 @@ void WebServer::Folder(struct mg_connection *c, struct mg_http_message* hm)
       mg_http_reply(c, 200, "", "OK");
    else
       mg_http_reply(c, 500, "", "Server error");
+}
+
+void WebServer::Extract(struct mg_connection *c, struct mg_http_message* hm)
+{
+   char q[1024];
+   mg_http_get_var(&hm->query, "q", q, sizeof(q));
+   mg_remove_double_dots(q);
+
+   if (*q == '\0') {
+      mg_http_reply(c, 400, "", "Bad request");
+      return;
+   }
+
+   string path = g_pvp->m_szMyPrefPath + q;
+
+   if (std::filesystem::is_regular_file(path)) {
+      if (extension_from_path(path) == "zip") {
+         if (Unzip(path.c_str())) {
+            PLOGI.printf("File unzipped: q=%s", path.c_str());
+            mg_http_reply(c, 200, "", "OK");
+         }
+         else
+            mg_http_reply(c, 500, "", "Server error");
+      }
+      else
+         mg_http_reply(c, 400, "", "Bad request");
+   }
+   else
+      mg_http_reply(c, 400, "", "Bad request");
 }
 
 void WebServer::Activate(struct mg_connection *c, struct mg_http_message* hm)
