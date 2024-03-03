@@ -2171,7 +2171,6 @@ If LoadScript("NudgePlugIn.vbs") Then Set vpmNudge = New cvpmNudge2 Else Set vpm
 'test more tables
 'test Red & Ted with the left side flippers
 'test region safety
-'update SAM.vbs ?
 
 dim vpmFlips : set vpmFlips = New cvpmFlips2 : vpmFlips.Name = "vpmFlips"
 
@@ -2253,7 +2252,7 @@ Class cvpmFlips2 'test fastflips switches to rom control after 100ms or so delay
 			'str = "init successful" &vbnewline& _
 			'	"Sol=" & Solenoid & " " & sol &vbnewline& str
 			'msgbox str
-			'vpmFlips.DebugTestInit = True	'removed debug stuff for the moment
+			'vpmFlips.DebugTestInit = True 'removed debug stuff for the moment
 		End If
 	End Sub
 
@@ -2411,7 +2410,7 @@ Public Sub vpmInit(aTable)
 			UseModSol=0
 		End If
 	End If
-	
+
 	vpmFlips.Init
 End Sub
 
@@ -2460,7 +2459,7 @@ Private vpmTrueFalse : vpmTrueFalse = Array(" True", " False"," True")
 Sub InitSolCallbacks
 	If SolCallbackInitialized Then Exit Sub
 
-	' Calling Execute can be an heavy operation depending on user setup as it seems that security programs like Microsoft Defender are triggered by this call
+	' Calling Execute can be a heavy operation depending on user setup as it seems that security programs like Microsoft Defender are triggered by this call
 	' Therefore we add the callbacks to the script during vpmInit using ExecuteGlobal to prevent stutters during play
 	Dim sol, cbs: cbs = ""
 	For sol = 0 To UBound(SolCallback)
@@ -2489,7 +2488,7 @@ Sub vpmDoLampUpdate(aNo, aEnabled)
 End Sub
 
 Sub PinMAMETimer_Timer
-	Dim ChgLamp, ChgSol,ChgGI, ii, tmp, idx, ChgLed
+	Dim ChgLamp,ChgSol,ChgGI,ChgLed, ii, tmp, idx
 	Dim DMDp
 	Dim ChgNVRAM
 

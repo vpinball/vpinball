@@ -44,7 +44,6 @@ vpmSystemHelp = "Williams System 7 keys:" & vbNewLine &_
 
 ' Keyboard handlers
 Function vpmKeyDown(ByVal keycode)
-	On Error Resume Next
 	vpmKeyDown = True ' Assume we handle the key
 	With Controller
 		Select Case keycode
@@ -71,11 +70,9 @@ Function vpmKeyDown(ByVal keycode)
 			Case Else            vpmKeyDown = False
 		End Select
 	End With
-	On Error Goto 0
 End Function
 
 Function vpmKeyUp(ByVal keycode)
-	On Error Resume Next
 	vpmKeyUp = True ' Assume we handle the key
 	With Controller
 		Select Case keycode
@@ -100,5 +97,4 @@ Function vpmKeyUp(ByVal keycode)
 			Case Else            vpmKeyUp = False
 		End Select
 	End With
-	On Error Goto 0
 End Function

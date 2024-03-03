@@ -98,7 +98,6 @@ Function vpmKeyDown(ByVal keycode)
 End Function
 
 Function vpmKeyUp(ByVal keycode)
-	On Error Resume Next
 	vpmKeyUp = True ' assume we handle the key
 	With Controller
 		Select Case keycode
@@ -126,9 +125,8 @@ Function vpmKeyUp(ByVal keycode)
 			Case keyReset        .Stop : BeginModal : .Run : vpmTimer.Reset : EndModal
 			Case keyFrame        .LockDisplay = Not .LockDisplay
 			Case keyDoubleSize   .DoubleSize  = Not .DoubleSize
-			case keyCPUDiag		 .Switch(swSwitch25)    = False
+			case keyCPUDiag      .Switch(swSwitch25)    = False
 			Case Else            vpmKeyUp = False
 		End Select
 	End With
-	On Error Goto 0
 End Function
