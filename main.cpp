@@ -762,7 +762,6 @@ public:
          DestroyAcceleratorTable(g_haccel);
 
          _Module.RevokeClassObjects();
-         Sleep(THREADS_PAUSE); //wait for any threads to finish
       }
       return 0;
    }
@@ -1001,6 +1000,6 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
    };
    #endif
 
-   PLOGI << "Closing VPX...";
+   PLOGI << "Closing VPX...\n\n";
    return retval;
 }

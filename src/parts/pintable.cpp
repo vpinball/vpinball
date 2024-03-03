@@ -194,8 +194,7 @@ STDMETHODIMP ScriptGlobalTable::PlayMusic(BSTR str, float volume)
 {
    if (g_pplayer && g_pplayer->m_PlayMusic)
    {
-      if (g_pplayer->m_audio)
-         EndMusic();
+      EndMusic();
 
       g_pplayer->m_audio = new AudioPlayer();
       const float MusicVolume = max(min((float)g_pplayer->m_MusicVolume*m_pt->m_TableMusicVolume*volume, 100.0f), 0.0f) * (float)(1.0/100.0);
@@ -215,12 +214,8 @@ STDMETHODIMP ScriptGlobalTable::PlayMusic(BSTR str, float volume)
 
 STDMETHODIMP ScriptGlobalTable::EndMusic()
 {
-   if (g_pplayer && g_pplayer->m_PlayMusic && g_pplayer->m_audio)
-   {
-      delete g_pplayer->m_audio;
-      g_pplayer->m_audio = nullptr;
-   }
-
+   delete g_pplayer->m_audio;
+   g_pplayer->m_audio = nullptr;
    return S_OK;
 }
 
@@ -2353,9 +2348,10 @@ void PinTable::Play(const int playMode)
 void PinTable::StopPlaying()
 {
    assert(g_pplayer == nullptr || g_pplayer->m_ptable == this);
+   assert(m_isLiveInstance);
 
-   // Unhook script connections
-   //m_pcv->m_pScript->SetScriptState(SCRIPTSTATE_INITIALIZED);
+   if (m_pcv)
+      m_pcv->CleanUpScriptEngine();
 
    // Stop all sounds
    // In case we were playing any of the main buffers
@@ -2364,8 +2360,6 @@ void PinTable::StopPlaying()
    // The usual case - copied sounds
    m_vpinball->m_ps.StopAndClearCopiedWavs();
 
-   if(m_pcv)
-      m_pcv->EndSession();
    m_textureMap.clear();
    m_materialMap.clear();
    m_lightMap.clear();

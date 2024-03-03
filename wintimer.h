@@ -447,7 +447,7 @@ private:
    unsigned int m_profileTotalData[PROFILE_COUNT];
    char m_profileTimers[MAX_TIMER_LOG];
    size_t m_profileTimersPos = 0;
-   unsigned int m_profileTimerTimeStamp;
+   unsigned long long m_profileTimerTimeStamp;
 
    // Worst frames data
    unsigned int m_leastWorstFrameLength;

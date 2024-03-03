@@ -308,6 +308,8 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
 
 Player::~Player()
 {
+   assert(g_pplayer == this);
+   m_closing = CS_CLOSED;
    m_ptable->StopPlaying();
    delete m_staticPrepassRT;
    delete m_ballImage;
@@ -683,6 +685,15 @@ void Player::OnInitialUpdate()
 
 void Player::OnClose()
 {
+   if (g_pplayer == nullptr || g_pplayer->m_closing == CS_CLOSED)
+   {
+      PLOGI << "Player::OnClose discarded since player is already closing";
+      return;
+   }
+   assert(g_pplayer == this);
+   g_pplayer->m_closing = CS_CLOSED;
+   PLOGI << "Closing player... [Player's VBS intepreter is #" << m_ptable->m_pcv->m_pScript << "]";
+
     g_frameProfiler.LogWorstFrame();
 
     // In Windows 10 1803, there may be a significant lag waiting for WM_DESTROY (msg sent by the delete call below) if script is not closed first.
@@ -726,7 +737,7 @@ void Player::OnClose()
       vector<BaseTexture *> textures = m_pin3d.m_pd3dPrimaryDevice->m_texMan.GetLoadedTextures();
       for (BaseTexture *memtex : textures)
       {
-         for (Texture *image : g_pplayer->m_ptable->m_vimage)
+         for (Texture *image : m_ptable->m_vimage)
          {
             if (image->m_pdsBuffer == memtex)
             {
@@ -866,19 +877,9 @@ void Player::OnClose()
 
    LockForegroundWindow(false);
 
-   // Copy before deleting to process after player has been closed/deleted
-   CloseState closing = m_closing;
-   PinTable *editedTable = m_pEditorTable;
-
-   // Destroy this player
-   assert(g_pplayer == this);
-   volatile auto player = g_pplayer;
-   g_pplayer = nullptr;
-   delete player; // Win32xx call Window destroy for us from destructor, don't call it directly or it will crash due to dual destruction
-
    // Reactivate edited table or close application if requested
 #ifndef __STANDALONE__
-   if (closing == CS_CLOSE_APP)
+   if (m_closing == CS_CLOSE_APP)
    {
       g_pvp->PostMessage(WM_CLOSE, 0, 0);
    }
@@ -892,14 +893,19 @@ void Player::OnClose()
       g_pvp->ToggleToolbar();
       g_pvp->ShowWindow(SW_SHOW);
       g_pvp->SetForegroundWindow();
-      editedTable->EnableWindow();
-      editedTable->SetFocus();
-      editedTable->SetActiveWindow();
-      editedTable->SetDirtyDraw();
-      editedTable->RefreshProperties();
-      editedTable->BeginAutoSaveCounter();
+      m_pEditorTable->EnableWindow();
+      m_pEditorTable->SetFocus();
+      m_pEditorTable->SetActiveWindow();
+      m_pEditorTable->SetDirtyDraw();
+      m_pEditorTable->RefreshProperties();
+      m_pEditorTable->BeginAutoSaveCounter();
    }
 #endif
+
+   // Destroy this player
+   delete g_pplayer; // Win32xx call Window destroy for us from destructor, don't call it directly or it will crash due to dual destruction
+   g_pplayer = nullptr;
+   PLOGI << "Player closed.";
 }
 
 void Player::InitFPS()
@@ -1309,7 +1315,7 @@ HRESULT Player::Init()
       || ((lflip != ~0u) && (rflip != ~0u) && (GetAsyncKeyState(lflip) & 0x8000) && (GetAsyncKeyState(rflip) & 0x8000)))
    {
       m_ptable->m_tblMirrorEnabled = true;
-      int rotation = (int)(g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].GetRotation(m_pin3d.m_pd3dPrimaryDevice->m_width, m_pin3d.m_pd3dPrimaryDevice->m_height)) / 90;
+      int rotation = (int)(m_ptable->mViewSetups[m_ptable->m_BG_current_set].GetRotation(m_pin3d.m_pd3dPrimaryDevice->m_width, m_pin3d.m_pd3dPrimaryDevice->m_height)) / 90;
       m_pin3d.GetMVP().SetFlip(rotation == 0 || rotation == 2 ? ModelViewProj::FLIPX : ModelViewProj::FLIPY);
    }
    else
@@ -2228,7 +2234,7 @@ float PlungerMoverObject::MechPlunger() const
       // scaling factor between physical units and joystick units must be the same on the
       // positive and negative sides.  (The maximum forward position is not calibrated.)
       const float m = (1.0f - m_restPos)*(float)(1.0 / JOYRANGEMX), b = m_restPos;
-      return m*g_pplayer->m_curMechPlungerPos + b;
+      return m * g_pplayer->m_curMechPlungerPos + b;
    }
    else
    {
@@ -2236,7 +2242,7 @@ float PlungerMoverObject::MechPlunger() const
       // position reads as 0, the fully retracted position reads as JOYRANGEMN, and the
       // full forward position reads as JOYRANGMN.
       const float range = (float)JOYRANGEMX * (1.0f - m_restPos) - (float)JOYRANGEMN *m_restPos; // final range limit
-      const float tmp = (g_pplayer->m_curMechPlungerPos < 0) ? g_pplayer->m_curMechPlungerPos*m_restPos : g_pplayer->m_curMechPlungerPos*(1.0f - m_restPos);
+      const float tmp = (g_pplayer->m_curMechPlungerPos < 0) ? g_pplayer->m_curMechPlungerPos * m_restPos : g_pplayer->m_curMechPlungerPos * (1.0f - m_restPos);
       return tmp / range + m_restPos;              //scale and offset
    }
 }

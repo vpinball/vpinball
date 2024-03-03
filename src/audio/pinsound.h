@@ -156,32 +156,20 @@ class AudioMusicPlayer
 {
 public:
 	AudioMusicPlayer() : m_pbackglassds(nullptr) {}
-	~AudioMusicPlayer() { if (m_pbackglassds != &m_pds) delete m_pbackglassds; }
-
-	void InitPinDirectSound(const Settings& settings, const HWND hwnd)
+	~AudioMusicPlayer()
 	{
-      const int DSidx1 = settings.LoadValueWithDefault(Settings::Player, "SoundDevice"s, 0);
-      const int DSidx2 = settings.LoadValueWithDefault(Settings::Player, "SoundDeviceBG"s, 0);
-		const SoundConfigTypes SoundMode3D = (SoundConfigTypes)settings.LoadValueWithDefault(Settings::Player, "Sound3D"s, (int)SNDCFG_SND3D2CH);
-
-		m_pds.InitDirectSound(hwnd, false);
-		// If these are the same device, and we are not in 3d mode, just point the backglass device to the main one.
-		// For 3D we want two separate instances, one in basic stereo for music, and the other surround mode.
-		if (SoundMode3D == SNDCFG_SND3D2CH && DSidx1 == DSidx2)
-		{
-			m_pbackglassds = &m_pds;
-		}
-		else
-		{
-			m_pbackglassds = new PinDirectSound();
-			m_pbackglassds->InitDirectSound(hwnd, true);
-		}
+		if (m_pbackglassds != &m_pds) delete m_pbackglassds;
+      BASS_Stop();
+      BASS_Free();
 	}
+
+	void InitPinDirectSound(const Settings& settings, const HWND hwnd);
 
 	void ReInitPinDirectSound(const Settings& settings, const HWND hwnd)
 	{
-		if (m_pbackglassds != &m_pds)
-			delete m_pbackglassds;
+		if (m_pbackglassds != &m_pds) delete m_pbackglassds;
+      BASS_Stop();
+      BASS_Free();
 
 		InitPinDirectSound(settings, hwnd);
 	}
@@ -292,6 +280,8 @@ public:
 	}
 
 	PinSound *LoadFile(const string& strFileName);
+
+   int bass_STD_idx = -2, bass_BG_idx = -2;
 
 private:
 	PinDirectSound m_pds;
