@@ -401,8 +401,12 @@ public:
       CS_FORCE_STOP = 4, // Force close the application and get back to operating system
       CS_CLOSED = 5      // Closing (or closed is called from another thread, but g_pplayer is null when closed)
    };
+   void SetCloseState(CloseState state) { if (m_closing != CS_CLOSED) m_closing = state; }
+   CloseState GetCloseState() const { return m_closing; }
+private:
    CloseState m_closing = CS_PLAYING;
 
+public:
    bool m_userDebugPaused;
    bool m_debugWindowActive;
 #ifndef __STANDALONE__

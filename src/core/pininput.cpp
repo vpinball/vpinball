@@ -1435,7 +1435,7 @@ void PinInput::Joy(const unsigned int n, const int updown, const bool start)
    if (m_joyexitgamekey == n)
    {
       if (DISPID_GameEvents_KeyDown == updown)
-         g_pplayer->m_closing = Player::CS_USER_INPUT;
+         g_pplayer->SetCloseState(Player::CS_USER_INPUT);
    }
    if (m_joyframecount == n)
    {
@@ -1646,7 +1646,7 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
             if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && !m_override_default_buttons) // pause menu
             {
                if (DISPID_GameEvents_KeyDown == updown)
-                  g_pplayer->m_closing = Player::CS_USER_INPUT;
+                  g_pplayer->SetCloseState(Player::CS_USER_INPUT);
             }
             else if ((uShockType == USHOCKTYPE_ULTRACADE) && !m_override_default_buttons) // volume down
                 FireKeyEvent(updown, g_pplayer->m_rgKeys[eVolumeDown]);
@@ -2218,7 +2218,7 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
                else
                {  //on key up only
                   // Open UI on key up since a long press should not trigger the UI (direct exit from the app)
-                  g_pplayer->m_closing = Player::CS_USER_INPUT;
+                  g_pplayer->SetCloseState(Player::CS_USER_INPUT);
                   m_exit_stamp = 0;
 #ifdef __STANDALONE__
                   if (input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eExitGame])
