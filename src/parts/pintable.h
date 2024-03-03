@@ -876,6 +876,7 @@ public:
    void SetTableWidth(const float value);
    float GetHeight() const;
    void SetHeight(const float value);
+   float GetPlayfieldSlope() const;
 
    void SetMDITable(PinTableMDI *const table) { m_mdiTable = table; }
    PinTableMDI *GetMDITable() const { return m_mdiTable; }
