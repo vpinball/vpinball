@@ -1469,7 +1469,7 @@ void VPinball::MainMsgLoop()
             g_pvp->m_ptableActive->HandleLoadFailure();
          }
       }
-      else if (g_pplayer && g_pplayer->m_closing != Player::CS_CLOSED)
+      else if (g_pplayer && g_pplayer->GetCloseState() != Player::CS_CLOSED)
       {
          // Let player do its job on idle
          g_pplayer->OnIdle();
@@ -1886,7 +1886,7 @@ STDMETHODIMP VPinball::QuitPlayer(int CloseType)
 {
    if (g_pplayer)
    {
-      g_pplayer->m_closing = (Player::CloseState) CloseType;
+      g_pplayer->SetCloseState((Player::CloseState)CloseType);
    }
    else
    {
