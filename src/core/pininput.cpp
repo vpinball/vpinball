@@ -2222,7 +2222,7 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
                   m_exit_stamp = 0;
 #ifdef __STANDALONE__
                   if (input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eExitGame])
-                     g_pplayer->m_closing = Player::CS_CLOSE_APP;
+                     g_pplayer->SetCloseState(Player::CS_CLOSE_APP);
 #endif
                }
             }
@@ -2239,7 +2239,7 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
       {
           if (input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eEscape] && !m_disable_esc) {
              if ((input->dwData & 0x80) == 0)
-                g_pplayer->m_closing = Player::CS_USER_INPUT;
+                g_pplayer->SetCloseState(Player::CS_USER_INPUT);
           }
           else
              FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, input->dwOfs);

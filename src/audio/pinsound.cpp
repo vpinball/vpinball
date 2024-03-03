@@ -475,8 +475,10 @@ void AudioMusicPlayer::InitPinDirectSound(const Settings& settings, const HWND h
 
    int prevBassStdIdx = bass_STD_idx;
    int prevBassBGIdx = bass_BG_idx;
-   bass_STD_idx = -1;
+#ifndef __STANDALONE__
+	bass_STD_idx = -1;
    bass_BG_idx = -1;
+
    for (unsigned int idx = 0; idx < 2; ++idx)
    {
       const int DSidx = (idx == 0) ? DSidx1 : DSidx2;
@@ -506,6 +508,10 @@ void AudioMusicPlayer::InitPinDirectSound(const Settings& settings, const HWND h
          }
       }
    }
+#else
+   bass_STD_idx = DSidx1;
+   bass_BG_idx = DSidx2;
+#endif
 
    //BASS_SetConfig(/*BASS_CONFIG_THREAD |*/ BASS_CONFIG_FLOATDSP, fTrue);
    BASS_SetConfig(/*BASS_CONFIG_THREAD |*/ BASS_CONFIG_CURVE_PAN, fTrue); // logarithmic scale, similar to DSound (although BASS still takes a 0..1 range)

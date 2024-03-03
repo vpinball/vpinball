@@ -1130,8 +1130,8 @@ public:
 
 #ifndef __STANDALONE__
          DestroyAcceleratorTable(g_haccel);
-
          _Module.RevokeClassObjects();
+#endif
       }
       return retval;
    }
