@@ -70,7 +70,7 @@ generate_build_ios() {
   if [ -n "$TABLE" ]; then
     cp "$TABLE" standalone/$PLATFORM/$PLATFORM-project/assets/tables
 
-    perl -i -pe"s/LaunchTable = assets\/exampleTable.vpx/LaunchTable = tables\/${TABLE##*/}/g" "standalone/$PLATFORM/$PLATFORM-project/assets/Default VPinballX.ini"
+    perl -i -pe"s/LaunchTable = assets\/exampleTable.vpx/LaunchTable = tables\/${TABLE##*/}/g" "standalone/$PLATFORM/$PLATFORM-project/assets/Default_VPinballX.ini"
 
     if [ -n "$VBS" ]; then
       cp "$VBS" standalone/$PLATFORM/$PLATFORM-project/assets/tables
@@ -110,7 +110,7 @@ generate_build_ios() {
   fi
   
   if [ -n "$MAX_TEX" ]; then
-     perl -i -pe"s/MaxTexDimension = 1024/MaxTexDimension = ${MAX_TEX}/g" "standalone/$PLATFORM/$PLATFORM-project/assets/Default VPinballX.ini"
+     perl -i -pe"s/MaxTexDimension = 1024/MaxTexDimension = ${MAX_TEX}/g" "standalone/$PLATFORM/$PLATFORM-project/assets/Default_VPinballX.ini"
   fi
 
   if [ -n "$APP_NAME" ]; then
@@ -165,7 +165,7 @@ generate_build_android() {
   if [ -n "$TABLE" ]; then
     cp "$TABLE" standalone/android-arm64-v8a/android-project/app/src/main/assets/tables
 
-    perl -i -pe"s/LaunchTable = assets\/exampleTable.vpx/LaunchTable = tables\/${TABLE##*/}/g" "standalone/android-arm64-v8a/android-project/app/src/main/assets/Default VPinballX.ini"
+    perl -i -pe"s/LaunchTable = assets\/exampleTable.vpx/LaunchTable = tables\/${TABLE##*/}/g" "standalone/android-arm64-v8a/android-project/app/src/main/assets/Default_VPinballX.ini"
 
     if [ -n "$VBS" ]; then
       cp "$VBS" standalone/android-arm64-v8a/android-project/app/src/main/assets/tables
@@ -205,7 +205,7 @@ generate_build_android() {
   fi
 
   if [ -n "$MAX_TEX" ]; then
-     perl -i -pe"s/MaxTexDimension = 1024/MaxTexDimension = ${MAX_TEX}/g" "standalone/android-arm64-v8a/android-project/app/src/main/assets/Default VPinballX.ini"
+     perl -i -pe"s/MaxTexDimension = 1024/MaxTexDimension = ${MAX_TEX}/g" "standalone/android-arm64-v8a/android-project/app/src/main/assets/Default_VPinballX.ini"
   fi
 
   if [ -n "$APP_ID" ]; then

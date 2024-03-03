@@ -1692,7 +1692,7 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="src/assets/Default VPinballX.ini">
+    <None Include="src/assets/Default_VPinballX.ini">
       <Filter>assets</Filter>
     </None>
     <Image Include="src/assets/AOdither.webp">

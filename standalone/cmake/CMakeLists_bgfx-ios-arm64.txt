@@ -732,7 +732,7 @@ set_target_properties(vpinball PROPERTIES ${TARGET_PROPERTIES})
 
 add_custom_command(TARGET vpinball PRE_BUILD
    COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/src/assets" "${CMAKE_SOURCE_DIR}/standalone/ios-arm64/ios-project/assets/assets"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/ios-arm64/ios-project/assets/Default VPinballX.ini" "${CMAKE_SOURCE_DIR}/standalone/ios-arm64/ios-project/assets/assets"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/ios-arm64/ios-project/assets/Default_VPinballX.ini" "${CMAKE_SOURCE_DIR}/standalone/ios-arm64/ios-project/assets/assets"
    COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/scripts" "${CMAKE_SOURCE_DIR}/standalone/ios-arm64/ios-project/assets/scripts"
    COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/tables" "${CMAKE_SOURCE_DIR}/standalone/ios-arm64/ios-project/assets/tables"
    COMMAND "${CMAKE_COMMAND}" -E make_directory "${CMAKE_SOURCE_DIR}/standalone/ios-arm64/ios-project/assets/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}"
