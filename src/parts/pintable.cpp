@@ -8154,7 +8154,10 @@ void PinTable::AuditTable() const
       wordPos++;
    }
    delete[] szText;
-   
+
+   if (FindIndexOf(identifiers, "execute"s) != -1)
+      ss << ". Warning: Scripts seems to use the 'Execute' command. This command triggers computer security checks and will likely causes stutters during play.\r\n";
+
    if (m_glassBottomHeight > m_glassTopHeight)
       ss << ". Warning: Glass height seems invalid: bottom is higher than top\r\n";
 
