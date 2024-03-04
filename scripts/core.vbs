@@ -2160,6 +2160,7 @@ Class cvpmFlips2 'test fastflips switches to rom control after 100ms or so delay
 			MsgBox "Table script bug: cvpmFlips2.Init is called twice." & vblf & vblf & "Maybe 'vpmInit Me' is duplicated in the code ?"
 			QuitPlayer 2 'CS_STOP_PLAY
 		End If
+		Initialized = True
 
 		On Error Resume Next 'If there's no usesolenoids variable present, exit
 			call eval(UseSolenoids) : if err then exit Sub
