@@ -182,11 +182,11 @@ Class cvpmFFlipsSAM	'test fastflips with support for both Rom and Game-On Soleno
 	End Sub
 
 	'set callbacks
-	Public Property Let CallBackL(aInput) : CallBack(0) = aInput: End Property
-	Public Property Let CallBackR(aInput) : CallBack(1) = aInput: End Property
-	Public Property Let CallBackUL(aInput) : CallBack(2) = aInput: End Property
-	Public Property Let CallBackUR(aInput) : CallBack(3) = aInput: End Property
-	Public Property Let CallBack(aIdx, aInput)
+	Public Property Let CallBackL(ByVal aInput) : CallBack(0) = aInput: End Property
+	Public Property Let CallBackR(ByVal aInput) : CallBack(1) = aInput: End Property
+	Public Property Let CallBackUL(ByVal aInput) : CallBack(2) = aInput: End Property
+	Public Property Let CallBackUR(ByVal aInput) : CallBack(3) = aInput: End Property
+	Public Property Let CallBack(aIdx, ByVal aInput)
 		If Not IsEmpty(aInput) Then
 			FlipperSub(aIdx) = aInput
 			SolCallback(FlipperSolNumber(aIdx)) = name & ".RomFlip(" & aIdx & ")="
@@ -205,7 +205,7 @@ Class cvpmFFlipsSAM	'test fastflips with support for both Rom and Game-On Soleno
 		If Not cb is Nothing Then cb aEnabled
 	End property
 
-	Public Property Let RomControl(aEnabled)	'todo improve choreography
+	Public Property Let RomControl(ByVal aEnabled)	'todo improve choreography
 		'MsgBox "Rom Control " & CStr(aEnabled)
 		RomMode = aEnabled
 		Dim idx, cb: For idx = 0 To 3
@@ -250,7 +250,7 @@ Class cvpmFFlipsSAM	'test fastflips with support for both Rom and Game-On Soleno
 
 	Sub FireDelay() : If LagCompensation then EnableFlippers 0 End If : End Sub
 
-	Public Sub EnableFlippers(aEnabled)	'private
+	Public Sub EnableFlippers(ByVal aEnabled)	'private
 		Dim idx, cb
 		If aEnabled then
 			For idx = 0 To 3
