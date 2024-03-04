@@ -2197,14 +2197,22 @@ Class cvpmFlips2 'test fastflips switches to rom control after 100ms or so delay
 	Public FlipAt(3)		'Flip Time in gametime	'private
 	Public RomControlDelay	'Delay after flipping that Rom Controlled Flips are accepted (default 100ms)
 
+	Public Initialized
+
 	Private Sub Class_Initialize()
 		dim idx :for idx = 0 to 3 :FlipperSub(idx) = "NullFunction" : Set FlipperSubRef(idx) = Nothing: OnOff=True: ButtonState(idx)=0:SolState(idx)=0: Next
 		Delay=0: FlippersEnabled=0: DebugOn=0 : LagCompensation=0 : Sol=0 : TiltObjects=1
 		RomControlDelay = 100	'RomControlDelay MS between switching to rom controlled flippers
 		FlipperSolNumber(0)=sLLFlipper :FlipperSolNumber(1)=sLRFlipper :FlipperSolNumber(2)=sULFlipper : FlipperSolNumber(3)=sURFlipper
+		Initialized = False
 	End Sub
 
 	Sub Init()	'called by vpmInit sub
+		If Initialized Then
+			MsgBox "Table script bug: cvpmFlips2.Init is called twice." & vblf & vblf & "Maybe 'vpmInit Me' is duplicated in the code ?"
+			QuitPlayer 2 'CS_STOP_PLAY
+		End If
+
 		On Error Resume Next 'If there's no usesolenoids variable present, exit
 			call eval(UseSolenoids) : if err then exit Sub
 		On Error Goto 0
@@ -2257,14 +2265,14 @@ Class cvpmFlips2 'test fastflips switches to rom control after 100ms or so delay
 	End Sub
 
 	'Index based callbacks...
-	Public Property Let Callback(aIdx, aInput)
+	Public Property Let Callback(aIdx, ByVal aInput)
 		if Not IsEmpty(aInput) then
+			SolCallback(FlipperSolNumber(aIdx)) = name & ".RomFlip(" & aIdx & ")="
+			SolCallbackInitialized = False
 			FlipperSub(aIDX) = aInput 'hold old flipper subs
 			Dim cbs: cbs = "Sub XXXFlipperSub_" & aIdx & "(state): " & aInput & " state: End Sub"
 			ExecuteGlobal cbs
 			Set FlipperSubRef(aIDX) = GetRef("XXXFlipperSub_" & aIdx)
-			SolCallback(FlipperSolNumber(aIdx)) = name & ".RomFlip(" & aIdx & ")="
-			SolCallbackInitialized = False
 		end if
 	End Property
 	Public Property Get Callback(aIdx) : CallBack = FlipperSub(aIDX) : End Property
