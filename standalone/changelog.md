@@ -6,6 +6,7 @@ The downside of this approach is not accurately keeping track of history:
 
 * 03/03/24
     * Add manual unzip button in web server
+    * Lock external windows prior to rendering (fixes TimonPumbaa)
 
 * 03/01/24
     * Add support for unzipping uploads via web server

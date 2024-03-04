@@ -2,6 +2,8 @@
 
 #include "Window.h"
 
+#include <mutex>
+
 namespace VP {
 
 class WindowManager final
@@ -32,6 +34,7 @@ private:
 
    static WindowManager* m_pInstance;
    vector<Window*> m_windows;
+   std::mutex m_mutex;
    bool m_startup;
    bool m_updateLock;
    Uint64 m_lastEventTime;

@@ -61,11 +61,13 @@ void WindowManager::RegisterWindow(Window* pWindow)
    if (!pWindow)
       return;
 
-   m_windows.push_back(pWindow);
-
-   std::sort(m_windows.begin(), m_windows.end(), [](Window* pWindow1, Window* pWindow2) {
-      return pWindow1->GetZ() < pWindow2->GetZ();
-   });
+   {
+      std::lock_guard<std::mutex> guard(m_mutex);
+      m_windows.push_back(pWindow);
+      std::sort(m_windows.begin(), m_windows.end(), [](Window* pWindow1, Window* pWindow2) {
+         return pWindow1->GetZ() < pWindow2->GetZ();
+      });
+   }
 
    if (m_startup) {
       if (pWindow->Init()) {
@@ -81,20 +83,28 @@ void WindowManager::RegisterWindow(Window* pWindow)
 
 void WindowManager::UnregisterWindow(Window* pWindow)
 {
-   auto newEnd = std::remove_if(m_windows.begin(), m_windows.end(),
-      [pWindow](Window* pCurrentWindow) {
-         return pCurrentWindow == pWindow;
-   });
+   if (!pWindow)
+      return;
 
-   m_windows.erase(newEnd, m_windows.end());
+   {
+      std::lock_guard<std::mutex> guard(m_mutex);
+      auto newEnd = std::remove_if(m_windows.begin(), m_windows.end(),
+         [pWindow](Window* pCurrentWindow) {
+            return pCurrentWindow == pWindow;
+      });
+      m_windows.erase(newEnd, m_windows.end());
+   }
 }
 
 void WindowManager::Startup()
 {
-   for (Window* pWindow : m_windows) {
-      if (pWindow->Init()) {
-         SDL_Window* pSDLWindow = SDL_GetWindowFromID(pWindow->GetId());
-         SDL_SetWindowHitTest(pSDLWindow, WindowHitTest, NULL);
+   {
+      std::lock_guard<std::mutex> guard(m_mutex);
+      for (Window* pWindow : m_windows) {
+         if (pWindow->Init()) {
+            SDL_Window* pSDLWindow = SDL_GetWindowFromID(pWindow->GetId());
+            SDL_SetWindowHitTest(pSDLWindow, WindowHitTest, NULL);
+         }
       }
    }
 
@@ -132,8 +142,11 @@ void WindowManager::ProcessUpdates()
       else if (!m_updateLock) {
          m_updateLock = true;
 
-         for (Window* pWindow : m_windows)
-            pWindow->OnUpdate();
+         {
+            std::lock_guard<std::mutex> guard(m_mutex);
+            for (Window* pWindow: m_windows)
+               pWindow->OnUpdate();
+         }
       }
    }
 }
@@ -151,8 +164,11 @@ void WindowManager::ThreadedRender()
       while (m_running) {
          Uint64 startTime = SDL_GetTicks64();
 
-         for (Window* pWindow: m_windows)
-            pWindow->OnRender();
+         {
+            std::lock_guard<std::mutex> guard(m_mutex);
+            for (Window* pWindow: m_windows)
+               pWindow->OnRender();
+         }
 
          double renderingDuration = SDL_GetTicks64() - startTime;
 
@@ -176,8 +192,11 @@ void WindowManager::Render()
    if (startTime - m_lastRenderTime < (1000 / 60))
       return;
 
-   for (Window* pWindow: m_windows)
-      pWindow->OnRender();
+   {
+      std::lock_guard<std::mutex> guard(m_mutex);
+      for (Window* pWindow: m_windows)
+         pWindow->OnRender();
+   }
 
 #ifdef ENABLE_OPENGL
    SDL_GL_MakeCurrent(g_pplayer->m_sdl_playfieldHwnd, g_pplayer->m_renderer->m_pd3dPrimaryDevice->m_sdl_context);
