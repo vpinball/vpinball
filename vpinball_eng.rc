@@ -2888,7 +2888,7 @@ BEGIN
             VALUE "OriginalFilename", "VPinballX.exe"
             VALUE "ProductName", "Visual Pinball"
 #endif
-            VALUE "FileVersion", VP_VERSION_STRING_POINTS
+            VALUE "FileVersion", VP_VERSION_STRING_COMMAS
             VALUE "InternalName", "Visual Pinball"
             VALUE "LegalCopyright", "Copyright 2000-2024"
             VALUE "ProductVersion", VP_VERSION_STRING_FULL_LITERAL 
