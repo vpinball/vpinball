@@ -1,4 +1,4 @@
-
+#include "vpversion.h"
 #ifdef IMGERMAN
 #include "vpinball_ger.rc"
 #elif IMSPANISH2
