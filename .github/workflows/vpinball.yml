@@ -19,7 +19,7 @@ jobs:
       sha7: ${{ steps.version.outputs.sha7 }}
       tag: ${{ steps.version.outputs.tag }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - id: version
@@ -41,7 +41,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - id: cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: DXSDK
           key: cache-dxsdk
@@ -65,8 +65,8 @@ jobs:
         platform: [win-x64, win-x86]
         config: [Release, Debug]
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/cache@v3
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
         with:
           path: DXSDK
           key: cache-dxsdk
@@ -97,7 +97,7 @@ jobs:
           cp -r build/${{ matrix.config }}/scripts tmp
           cp -r build/${{ matrix.config }}/tables tmp
           cp -r build/${{ matrix.config }}/docs tmp
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: VPinballX-${{ needs.version.outputs.tag }}-${{ matrix.config }}-${{ matrix.platform }}
           path: tmp
@@ -112,8 +112,8 @@ jobs:
         platform: [win-x64, win-x86]
         config: [Release, Debug]
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/cache@v3
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
         with:
           path: DXSDK
           key: cache-dxsdk
@@ -143,7 +143,7 @@ jobs:
           cp -r build/${{ matrix.config }}/scripts tmp
           cp -r build/${{ matrix.config }}/tables tmp
           cp -r build/${{ matrix.config }}/docs tmp
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: VPinballX_GL-${{ needs.version.outputs.tag }}-${{ matrix.config }}-${{ matrix.platform }}
           path: tmp

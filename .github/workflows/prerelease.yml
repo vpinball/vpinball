@@ -23,7 +23,7 @@ jobs:
            SHA7="${SHA::7}"
            echo "sha=${SHA}" >> $GITHUB_OUTPUT
            echo "sha7=${SHA7}" >> $GITHUB_OUTPUT
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: ${{ steps.sha.outputs.sha }}
           fetch-depth: 0
