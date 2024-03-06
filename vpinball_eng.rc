@@ -2863,8 +2863,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 10,8,0,0
- PRODUCTVERSION 10,8,0,0
+ FILEVERSION VP_VERSION_DIGITS
+ PRODUCTVERSION VP_VERSION_DIGITS
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -2888,10 +2888,10 @@ BEGIN
             VALUE "OriginalFilename", "VPinballX.exe"
             VALUE "ProductName", "Visual Pinball"
 #endif
-            VALUE "FileVersion", "10, 8, 0, 0"
+            VALUE "FileVersion", VP_VERSION_STRING_POINTS_FULL
             VALUE "InternalName", "Visual Pinball"
             VALUE "LegalCopyright", "Copyright 2000-2024"
-            VALUE "ProductVersion", "10, 8, 0, 0"
+            VALUE "ProductVersion", VP_VERSION_STRING_POINTS_FULL 
         END
     END
     BLOCK "VarFileInfo"

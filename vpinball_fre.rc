@@ -53,8 +53,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,3
- PRODUCTVERSION 1,0,0,3
+ FILEVERSION VP_VERSION_DIGITS
+ PRODUCTVERSION VP_VERSION_DIGITS
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -69,13 +69,19 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "FileDescription", "Visual Pinball"
-            VALUE "FileVersion", "1, 0, 0, 3"
-            VALUE "InternalName", "Visual Pinball"
-            VALUE "LegalCopyright", "Copyright 2000"
-            VALUE "OriginalFilename", "vpinball.exe"
+#ifdef ENABLE_SDL
+            VALUE "FileDescription", "Visual Pinball OpenGL 10.8.0"
+            VALUE "OriginalFilename", "VPinballX_GL.exe"
+            VALUE "ProductName", "Visual Pinball OpenGL"
+#else
+            VALUE "FileDescription", "Visual Pinball 10.8.0"
+            VALUE "OriginalFilename", "VPinballX.exe"
             VALUE "ProductName", "Visual Pinball"
-            VALUE "ProductVersion", "1, 0, 0, 3"
+#endif
+            VALUE "FileVersion", VP_VERSION_STRING_POINTS_FULL
+            VALUE "InternalName", "Visual Pinball"
+            VALUE "LegalCopyright", "Copyright 2000-2024"
+            VALUE "ProductVersion", VP_VERSION_STRING_POINTS_FULL 
         END
     END
     BLOCK "VarFileInfo"
