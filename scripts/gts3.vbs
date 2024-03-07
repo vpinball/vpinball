@@ -34,6 +34,13 @@ Const swURFlip      = 145
 Const swULFlip      = 147
 
 
+' Forgot these in earlier vbs files
+Private swStartButtonX
+On Error Resume Next
+If swStartButton = 4 Or Err Then swStartButtonX = 4 Else swStartButtonX = swStartButton
+On Error Goto 0
+
+
 ' Help Window
 vpmSystemHelp = "Gottlieb System 3 keys:" & vbNewLine &_
   vpmKeyName(keyInsertCoin1)  & vbTab & "Insert Coin #1" & vbNewLine &_
@@ -80,7 +87,7 @@ Function vpmKeyDown(ByVal keycode)
 			Case keyInsertCoin2  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin2'" : If Not IsEmpty(Eval("SCoin")) Then Playsound SCoin
 			Case keyInsertCoin3  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin3'" : If Not IsEmpty(Eval("SCoin")) Then Playsound SCoin
 			Case keyInsertCoin4  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin4'" : If Not IsEmpty(Eval("SCoin")) Then Playsound SCoin
-			Case StartGameKey    .Switch(swStartButton) = True
+			Case StartGameKey    .Switch(swStartButtonX) = True
 			Case keySelfTest     .Switch(swDiagnostic)  = True
 			Case keySlamDoorHit  .Switch(swSlamTilt)    = True
 			Case keyBangBack     vpmNudge.DoNudge   0, 6
@@ -111,7 +118,7 @@ Function vpmKeyUp(ByVal keycode)
 				End If
 			Case keyStagedFlipperL vpmFlips.FlipUL False : If vpmFlips.FlipperSolNumber(2) <> 0 Then .Switch(swULFlip) = False
 			Case keyStagedFlipperR vpmFlips.FlipUR False : If vpmFlips.FlipperSolNumber(3) <> 0 Then .Switch(swURFlip) = False
-			Case StartGameKey    .Switch(swStartButton) = False
+			Case StartGameKey    .Switch(swStartButtonX) = False
 			Case keySelfTest     .Switch(swDiagnostic)  = False
 			Case keySlamDoorHit  .Switch(swSlamTilt)    = False
 			Case keyShowOpts     .Pause = True : vpmShowOptions : .Pause = False
