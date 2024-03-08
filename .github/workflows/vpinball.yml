@@ -301,7 +301,7 @@ jobs:
       - run: |
           mkdir tmp
           cp build/${{ matrix.config }}/VPinballX_${{ matrix.type }} tmp
-          cp -P build/${{ matrix.config }}/*.{so,so.*} tmp
+          cp -a build/${{ matrix.config }}/*.{so,so.*} tmp
           cp -r build/${{ matrix.config }}/flexdmd tmp
           cp -r build/${{ matrix.config }}/shaders-${{ needs.version.outputs.version_short }} tmp
           cp -r build/${{ matrix.config }}/assets tmp

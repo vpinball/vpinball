@@ -8,7 +8,7 @@ SDL2_VERSION=2.30.0
 SDL2_IMAGE_VERSION=2.8.2
 SDL2_TTF_VERSION=2.22.0
 
-PINMAME_SHA=a4c6c31698566c10958f967b75e92dbeaab80b18
+PINMAME_SHA=e867f6e50e12238e0db658ccc9dde6d19a350c12
 LIBALTSOUND_SHA=9ac08a76e2aabc1fba57d3e5a3b87e7f63c09e07
 LIBDMDUTIL_SHA=6d13922dfd6678f7956a73dc651863c7ba0f78ce
 
@@ -57,7 +57,7 @@ cmake -S. \
    -DCMAKE_BUILD_TYPE=Release \
    -B build
 cmake --build build -- -j${NUM_PROCS}
-cp -P build/cmake/bgfx/libbgfx.so ../../external/lib
+cp -a build/cmake/bgfx/libbgfx.so ../../external/lib
 cd ..
 
 #
@@ -98,7 +98,7 @@ cmake -DSDL_SHARED=ON \
 cmake --build build -- -j${NUM_PROCS}
 # cmake does not make a symbolic link for libSDL2.so
 ln -s libSDL2-2.0.so build/libSDL2.so
-cp -P build/*.{so,so.*} ../../external/lib
+cp -a build/*.{so,so.*} ../../external/lib
 cd ..
 
 #
@@ -117,7 +117,7 @@ cmake -DBUILD_SHARED_LIBS=ON \
    -DCMAKE_BUILD_TYPE=Release \
    -B build
 cmake --build build -- -j${NUM_PROCS}
-cp -P build/*.{so,so.*} ../../external/lib
+cp -a build/*.{so,so.*} ../../external/lib
 cd ..
 
 #
@@ -138,7 +138,7 @@ cmake -DBUILD_SHARED_LIBS=ON \
    -DCMAKE_BUILD_TYPE=Release \
    -B build
 cmake --build build -- -j${NUM_PROCS}
-cp -P build/*.{so,so.*} ../../external/lib
+cp -a build/*.{so,so.*} ../../external/lib
 cd ..
 
 #

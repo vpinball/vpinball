@@ -681,7 +681,7 @@ add_custom_command(TARGET vpinball POST_BUILD
    COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/src/shaders/bgfx/spirv" "$<TARGET_FILE_DIR:vpinball>/../Resources/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}/bgfx-spirv"
    COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/standalone/inc/flexdmd/resources" "$<TARGET_FILE_DIR:vpinball>/../Resources/flexdmd"
    COMMAND "${CMAKE_COMMAND}" -E make_directory "$<TARGET_FILE_DIR:vpinball>/../Frameworks"
-   COMMAND cp -P "${CMAKE_SOURCE_DIR}/standalone/macos-arm64/external/lib/*.dylib" "$<TARGET_FILE_DIR:vpinball>/../Frameworks"
+   COMMAND cp -a "${CMAKE_SOURCE_DIR}/standalone/macos-arm64/external/lib/*.dylib" "$<TARGET_FILE_DIR:vpinball>/../Frameworks"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/macos-arm64/VPinballX.icns" "$<TARGET_FILE_DIR:vpinball>/../Resources"
    COMMAND /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString ${CMAKE_PROJECT_VERSION}" $<TARGET_FILE_DIR:vpinball>/../Info.plist
    COMMAND /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${CMAKE_PROJECT_VERSION}" $<TARGET_FILE_DIR:vpinball>/../Info.plist
