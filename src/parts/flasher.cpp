@@ -1235,10 +1235,11 @@ void Flasher::Render(const unsigned int renderMask)
       return;
 
    // Update lightmap before checking anything that uses alpha
+   float alpha = m_d.m_alpha;
    if (m_lightmap)
-      SetAlpha((int)(100.0f * m_lightmap->m_currentIntensity / (m_lightmap->m_d.m_intensity * m_lightmap->m_d.m_intensity_scale)));
+      alpha *= m_lightmap->m_currentIntensity / (m_lightmap->m_d.m_intensity * m_lightmap->m_d.m_intensity_scale);
 
-   if (m_d.m_color == 0 || m_d.m_alpha == 0.0f || m_d.m_intensity_scale == 0.0f)
+   if (m_d.m_color == 0 || alpha == 0.0f || m_d.m_intensity_scale == 0.0f)
       return;
 
    if (m_dynamicVertexBufferRegenerate)
@@ -1270,7 +1271,7 @@ void Flasher::Render(const unsigned int renderMask)
    m_rd->ResetRenderState();
    m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
 
-   const vec4 color = convertColor(m_d.m_color, (float)m_d.m_alpha*m_d.m_intensity_scale / 100.0f);
+   const vec4 color = convertColor(m_d.m_color, (float)alpha*m_d.m_intensity_scale / 100.0f);
    if (m_d.m_isDMD)
    {
       if (m_d.m_modulate_vs_add < 1.f)

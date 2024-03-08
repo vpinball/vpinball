@@ -1285,11 +1285,12 @@ void Primitive::Render(const unsigned int renderMask)
       return; 
 
    // Update lightmap before checking anything that uses alpha
+   float alpha = m_d.m_alpha;
    if (m_lightmap)
-      SetAlpha(100.0f * m_lightmap->m_currentIntensity / (m_lightmap->m_d.m_intensity * m_lightmap->m_d.m_intensity_scale));
+      alpha *= m_lightmap->m_currentIntensity / (m_lightmap->m_d.m_intensity * m_lightmap->m_d.m_intensity_scale);
 
    // don't render additive primitive if there is nothing to add
-   if (m_d.m_addBlend && (m_d.m_color == 0 || m_d.m_alpha == 0.f))
+   if (m_d.m_addBlend && (m_d.m_color == 0 || alpha == 0.f))
       return;
 
    // Request probes before setting up state since this can trigger a renderprobe update which modifies the render state
@@ -1351,16 +1352,16 @@ void Primitive::Render(const unsigned int renderMask)
       m_rd->m_basicShader->SetTexture(SHADER_tex_base_color, pin, pinf, SA_REPEAT, SA_REPEAT);
       m_rd->m_basicShader->SetTexture(SHADER_tex_base_normalmap, nMap, SF_UNDEFINED, SA_REPEAT, SA_REPEAT, true);
       m_rd->m_basicShader->SetBool(SHADER_objectSpaceNormalMap, m_d.m_objectSpaceNormalMap);
-      m_rd->m_basicShader->SetMaterial(mat, !pin->IsOpaque() || m_d.m_alpha != 100.f);
+      m_rd->m_basicShader->SetMaterial(mat, !pin->IsOpaque() || alpha != 100.f);
    }
    else if (pin)
    {
       m_rd->m_basicShader->SetTexture(SHADER_tex_base_color, pin, pinf, SA_REPEAT, SA_REPEAT);
-      m_rd->m_basicShader->SetMaterial(mat, !pin->IsOpaque() || m_d.m_alpha != 100.f);
+      m_rd->m_basicShader->SetMaterial(mat, !pin->IsOpaque() || alpha != 100.f);
    }
    else
    {
-      m_rd->m_basicShader->SetMaterial(mat, m_d.m_alpha != 100.f);
+      m_rd->m_basicShader->SetMaterial(mat, alpha != 100.f);
    }
 
    // set transform
@@ -1376,7 +1377,7 @@ void Primitive::Render(const unsigned int renderMask)
       // Additive blending is a special unlit mode with depth mask disabled
       m_rd->EnableAlphaBlend(true);
       m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
-      const vec4 color = convertColor(m_d.m_color, m_d.m_alpha * (float)(1.0 / 100.0));
+      const vec4 color = convertColor(m_d.m_color, alpha * (float)(1.0 / 100.0));
       m_rd->m_basicShader->SetVector(SHADER_staticColor_Alpha, color.x * color.w, color.y * color.w, color.z * color.w, color.w);
       m_rd->m_basicShader->SetTechnique(lightmap ? (pin ? SHADER_TECHNIQUE_unshaded_with_texture_shadow : SHADER_TECHNIQUE_unshaded_without_texture_shadow)
                                                  : (pin ? SHADER_TECHNIQUE_unshaded_with_texture : SHADER_TECHNIQUE_unshaded_without_texture));
@@ -1386,7 +1387,7 @@ void Primitive::Render(const unsigned int renderMask)
    {
       // Default lit primitive rendering
       m_rd->SetRenderState(RenderState::ZWRITEENABLE, depthMask ? RenderState::RS_TRUE : RenderState::RS_FALSE);
-      const vec4 color = convertColor(m_d.m_color, m_d.m_alpha * (float)(1.0 / 100.0));
+      const vec4 color = convertColor(m_d.m_color, alpha * (float)(1.0 / 100.0));
       m_rd->m_basicShader->SetVector(SHADER_staticColor_Alpha, &color);
       m_rd->m_basicShader->SetTechniqueMaterial(pin ? SHADER_TECHNIQUE_basic_with_texture : SHADER_TECHNIQUE_basic_without_texture, 
          *mat, pin ? pinAlphaTest >= 0.f && !pin->IsOpaque() : false, nMap, reflections, refractions);
