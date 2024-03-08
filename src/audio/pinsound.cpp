@@ -467,8 +467,13 @@ void PinDirectSound::InitDirectSound(const HWND hwnd, const bool IsBackglass)
 
 void AudioMusicPlayer::InitPinDirectSound(const Settings& settings, const HWND hwnd)
 {
+#ifndef __STANDALONE__
    const int DSidx1 = settings.LoadValueWithDefault(Settings::Player, "SoundDevice"s, 0);
    const int DSidx2 = settings.LoadValueWithDefault(Settings::Player, "SoundDeviceBG"s, 0);
+#else
+   const int DSidx1 = settings.LoadValueWithDefault(Settings::Player, "SoundDevice"s, -1);
+   const int DSidx2 = settings.LoadValueWithDefault(Settings::Player, "SoundDeviceBG"s, -1);
+#endif
    const SoundConfigTypes SoundMode3D = (SoundConfigTypes)settings.LoadValueWithDefault(Settings::Player, "Sound3D"s, (int)SNDCFG_SND3D2CH);
 
    //---- Initialize BASS Audio Library
@@ -476,7 +481,7 @@ void AudioMusicPlayer::InitPinDirectSound(const Settings& settings, const HWND h
    int prevBassStdIdx = bass_STD_idx;
    int prevBassBGIdx = bass_BG_idx;
 #ifndef __STANDALONE__
-	bass_STD_idx = -1;
+   bass_STD_idx = -1;
    bass_BG_idx = -1;
 
    for (unsigned int idx = 0; idx < 2; ++idx)
