@@ -650,16 +650,14 @@ target_link_directories(vpinball PUBLIC
 
 target_link_libraries(vpinball PUBLIC
    glad
-   freeimage
    SDL2
    SDL2_image
    SDL2_ttf
+   freeimage
    bass
    -l:libpinmame.so.3.6
-   -l:libaltsound.so.0.1.0
-   -l:libzedmd.so.0.6.0
-   -l:libserum.so.1.6.2
-   -l:libdmdutil.so.0.3.0
+   altsound
+   dmdutil
 )
 
 set_target_properties(vpinball PROPERTIES

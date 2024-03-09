@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.25)
 
+option(OPT_CODESIGN "Option to code sign" OFF)
+
 file(READ src/core/vpversion.h version)
 string(REGEX MATCH "VP_VERSION_MAJOR[ ]+([0-9]+)" _tmp ${version})
 set(VERSION_MAJOR "${CMAKE_MATCH_1}")
@@ -8,8 +10,6 @@ set(VERSION_MINOR "${CMAKE_MATCH_1}")
 string(REGEX MATCH "VP_VERSION_REV[ ]+([0-9]+)" _tmp ${version})
 set(VERSION_REV "${CMAKE_MATCH_1}")
 set(APP_NAME "VPinballX_GL")
-
-option(OPT_CODESIGN "Option to code sign" OFF)
 
 project(vpinball VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}")
 
@@ -661,10 +661,8 @@ target_link_libraries(vpinball PUBLIC
    FreeImage
    bass
    pinmame.3.6
-   altsound.0.1.0
-   zedmd.0.6.0
-   serum.1.6.2
-   dmdutil.0.3.0
+   altsound
+   dmdutil
    "-framework AppKit"
 )
 

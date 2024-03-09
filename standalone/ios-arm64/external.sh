@@ -10,7 +10,7 @@ SDL2_TTF_VERSION=2.22.0
 
 PINMAME_SHA=e867f6e50e12238e0db658ccc9dde6d19a350c12
 LIBALTSOUND_SHA=9ac08a76e2aabc1fba57d3e5a3b87e7f63c09e07
-LIBDMDUTIL_SHA=6d13922dfd6678f7956a73dc651863c7ba0f78ce
+LIBDMDUTIL_SHA=c6ab88089ab81b4a5bc676927369351059becde5
 
 NUM_PROCS=$(sysctl -n hw.ncpu)
 
@@ -148,7 +148,7 @@ cp build/libaltsound.a ../../external/lib
 cd ..
 
 #
-# build libdmdutil (and libserum, libzedmd) and copy to external
+# build libdmdutil (and deps) and copy to external
 #
 
 curl -sL https://github.com/vpinball/libdmdutil/archive/${LIBDMDUTIL_SHA}.zip -o libdmdutil.zip
@@ -156,9 +156,9 @@ unzip libdmdutil.zip
 cd libdmdutil-$LIBDMDUTIL_SHA
 cp -r include/DMDUtil ../../external/include
 platforms/ios/arm64/external.sh
+cp -r third-party/include/sockpp ../../external/include
 cmake -DPLATFORM=ios -DARCH=arm64 -DBUILD_SHARED=OFF -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -B build
 cmake --build build -- -j${NUM_PROCS}
-cp third-party/build-libs/ios/arm64/libserum.a ../../external/lib
-cp third-party/build-libs/ios/arm64/libzedmd.a ../../external/lib
+cp third-party/build-libs/ios/arm64/*.a ../../external/lib
 cp build/libdmdutil.a ../../external/lib
 cd ..

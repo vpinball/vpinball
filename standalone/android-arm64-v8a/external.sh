@@ -10,7 +10,7 @@ SDL2_TTF_VERSION=2.22.0
 
 PINMAME_SHA=e867f6e50e12238e0db658ccc9dde6d19a350c12
 LIBALTSOUND_SHA=9ac08a76e2aabc1fba57d3e5a3b87e7f63c09e07
-LIBDMDUTIL_SHA=6d13922dfd6678f7956a73dc651863c7ba0f78ce
+LIBDMDUTIL_SHA=c6ab88089ab81b4a5bc676927369351059becde5
 
 if [[ $(uname) == "Linux" ]]; then
    NUM_PROCS=$(nproc)
@@ -91,7 +91,7 @@ $ANDROID_NDK_HOME/ndk-build \
    NDK_OUT=$(pwd)/obj \
    NDK_LIBS_OUT=$(pwd)/libs
 
-cp libs/arm64-v8a/libFreeImage.so ../external/lib
+cp libs/arm64-v8a/*.so ../external/lib
 
 #
 # download bass24 and copy to external
@@ -120,7 +120,7 @@ $ANDROID_NDK_HOME/ndk-build \
    NDK_OUT=$(pwd)/obj \
    NDK_LIBS_OUT=$(pwd)/libs
 
-cp libs/arm64-v8a/libSDL2.so ../external/lib
+cp libs/arm64-v8a/*.so ../external/lib
 
 #
 # build SDL2_image and copy to external
@@ -151,7 +151,7 @@ $ANDROID_NDK_HOME/ndk-build \
    NDK_OUT=$(pwd)/obj \
    NDK_LIBS_OUT=$(pwd)/libs
 
-cp libs/arm64-v8a/libSDL2_image.so ../external/lib
+cp libs/arm64-v8a/*.so ../external/lib
 
 #
 # build SDL2_ttf and copy to external
@@ -182,7 +182,7 @@ $ANDROID_NDK_HOME/ndk-build \
    NDK_OUT=$(pwd)/obj \
    NDK_LIBS_OUT=$(pwd)/libs
 
-cp libs/arm64-v8a/libSDL2_ttf.so ../external/lib
+cp libs/arm64-v8a/*.so ../external/lib
 
 #
 # build libpinmame and copy to external
@@ -209,11 +209,11 @@ cp src/altsound.h ../../external/include
 platforms/android/arm64-v8a/external.sh
 cmake -DPLATFORM=android -DARCH=arm64-v8a -DBUILD_STATIC=OFF -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -B build
 cmake --build build -- -j${NUM_PROCS}
-cp build/libaltsound.so ../../external/lib
+cp build/*.so ../../external/lib
 cd ..
 
 #
-# build libdmdutil (libserum, and libzedmd) and copy to external
+# build libdmdutil (and deps) and copy to external
 #
 
 curl -sL https://github.com/vpinball/libdmdutil/archive/${LIBDMDUTIL_SHA}.zip -o libdmdutil.zip
@@ -221,9 +221,9 @@ unzip libdmdutil.zip
 cd libdmdutil-$LIBDMDUTIL_SHA
 cp -r include/DMDUtil ../../external/include
 platforms/android/arm64-v8a/external.sh
+cp -r third-party/include/sockpp ../../external/include
 cmake -DPLATFORM=android -DARCH=arm64-v8a -DBUILD_STATIC=OFF -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -B build
 cmake --build build -- -j${NUM_PROCS}
-cp third-party/runtime-libs/android/arm64-v8a/libserum.so ../../external/lib
-cp third-party/runtime-libs/android/arm64-v8a/libzedmd.so ../../external/lib
-cp build/libdmdutil.so ../../external/lib
+cp third-party/runtime-libs/android/arm64-v8a/*.so ../../external/lib
+cp build/*.so ../../external/lib
 cd ..

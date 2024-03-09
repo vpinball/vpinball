@@ -656,8 +656,6 @@ target_link_libraries(vpinball
    bass
    pinmame.3.6
    altsound
-   zedmd
-   serum
    dmdutil
    GLESv3
    log
@@ -692,15 +690,6 @@ add_custom_command(TARGET vpinball POST_BUILD
    COMMAND "${CMAKE_COMMAND}" -E make_directory "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/android-project/app/src/main/assets/pinmame/altcolor"
    COMMAND "${CMAKE_COMMAND}" -E make_directory "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/android-project/app/src/main/assets/pinmame/altsound"
    COMMAND "${CMAKE_COMMAND}" -E make_directory "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/android-project/app/src/main/assets/pinmame/nvram"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/external/lib/libSDL2.so" "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/android-project/app/src/main/jniLibs/arm64-v8a"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/external/lib/libSDL2_image.so" "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/android-project/app/src/main/jniLibs/arm64-v8a"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/external/lib/libSDL2_ttf.so" "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/android-project/app/src/main/jniLibs/arm64-v8a"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/external/lib/libFreeImage.so" "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/android-project/app/src/main/jniLibs/arm64-v8a"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/external/lib/libbass.so" "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/android-project/app/src/main/jniLibs/arm64-v8a"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/external/lib/libpinmame.3.6.so" "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/android-project/app/src/main/jniLibs/arm64-v8a"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/external/lib/libaltsound.so" "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/android-project/app/src/main/jniLibs/arm64-v8a"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/external/lib/libzedmd.so" "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/android-project/app/src/main/jniLibs/arm64-v8a"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/external/lib/libserum.so" "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/android-project/app/src/main/jniLibs/arm64-v8a"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/external/lib/libdmdutil.so" "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/android-project/app/src/main/jniLibs/arm64-v8a"
+   COMMAND cp -a "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/external/lib/*.so" "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/android-project/app/src/main/jniLibs/arm64-v8a"
    COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE_DIR:vpinball>/libvpinball.so" "${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/android-project/app/src/main/jniLibs/arm64-v8a"
 )
