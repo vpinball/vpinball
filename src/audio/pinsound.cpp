@@ -509,15 +509,17 @@ void AudioMusicPlayer::InitPinDirectSound(const Settings& settings, const HWND h
    for (unsigned int idx = 0; idx < 2; ++idx)
    {
       int deviceIdx = (idx == 0) ? bass_STD_idx : bass_BG_idx;
-		// REINIT is not needed since we do not want to keep previously defined config/samples/...
-      // bool isReInit = ((prevBassStdIdx != -2) && (deviceIdx == prevBassStdIdx)) || ((prevBassBGIdx != -2) && (deviceIdx == prevBassBGIdx));
+		BASS_INFO info;
+      const bool isReInit = BASS_SetDevice(deviceIdx) && BASS_GetInfo(&info);
+      PLOGI << "Initializing BASS device #" << deviceIdx << " [Reinit: " << isReInit << "]";
       if (!BASS_Init(deviceIdx, 44100, 
-				/* (isReInit ? BASS_DEVICE_REINIT : 0) |*/ ((SoundMode3D != SNDCFG_SND3D2CH) && (idx == 0) ? 0 /*| BASS_DEVICE_MONO*/ /*| BASS_DEVICE_DSOUND*/ : 0),
+				(isReInit ? BASS_DEVICE_REINIT : 0) | ((SoundMode3D != SNDCFG_SND3D2CH) && (idx == 0) ? 0 /*| BASS_DEVICE_MONO*/ /*| BASS_DEVICE_DSOUND*/ : 0),
             g_pvp->GetHwnd(), nullptr)) // note that sample rate is usually ignored and set depending on the input/file automatically
       {
          const int code = BASS_ErrorGetCode();
          string bla;
          BASS_ErrorMapCode(code, bla);
+         PLOGE << ("BASS music/sound library initialization error " + std::to_string(code) + ": " + bla).c_str();
          g_pvp->MessageBox(("BASS music/sound library initialization error " + std::to_string(code) + ": " + bla).c_str(), "Error", MB_ICONERROR);
       }
       if (/*SoundMode3D == SNDCFG_SND3D2CH &&*/ bass_STD_idx == bass_BG_idx) // skip 2nd device if it's the same and 3D is disabled //!!! for now try to just use one even if 3D! and then adapt channel settings if sample is a backglass sample
