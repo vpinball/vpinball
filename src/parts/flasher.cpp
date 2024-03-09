@@ -269,7 +269,6 @@ void Flasher::EndPlay()
    IEditable::EndPlay();
    // ensure not locked just in case the player exits during a LS sequence
    m_lockedByLS = false;
-   ResetVideoCap();
 }
 
 void Flasher::SetObjectPos()
@@ -1194,6 +1193,7 @@ void Flasher::RenderSetup(RenderDevice *device)
 void Flasher::RenderRelease()
 {
    assert(m_rd != nullptr);
+   ResetVideoCap();
    delete m_meshBuffer;
    delete[] m_vertices;
    delete m_texdmd;
