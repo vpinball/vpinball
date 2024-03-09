@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.25)
 
+set(CMAKE_SYSTEM_NAME iOS)
+
+option(OPT_CODESIGN "Option to code sign" OFF)
+
 file(READ src/core/vpversion.h version)
 string(REGEX MATCH "VP_VERSION_MAJOR[ ]+([0-9]+)" _tmp ${version})
 set(VERSION_MAJOR "${CMAKE_MATCH_1}")
@@ -9,14 +13,10 @@ string(REGEX MATCH "VP_VERSION_REV[ ]+([0-9]+)" _tmp ${version})
 set(VERSION_REV "${CMAKE_MATCH_1}")
 set(APP_NAME "VPinballX_BGFX")
 
-option(OPT_CODESIGN "Option to code sign" OFF)
-
 project(vpinball VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}")
 
-set(CMAKE_OSX_SYSROOT "iphoneos")
 set(CMAKE_OSX_DEPLOYMENT_TARGET 16.0)
 set(CMAKE_OSX_ARCHITECTURES "arm64")
-set(CMAKE_XCODE_EFFECTIVE_PLATFORMS "-iphoneos")
 
 set(CMAKE_SKIP_RPATH TRUE)
 
@@ -669,6 +669,17 @@ target_link_libraries(vpinball PUBLIC
    bimg
    bimg_decode
    bx
+   "-lSDL2"
+   "-lSDL2_image"
+   "-lSDL2_ttf"
+   "-lfreeimage"
+   "-framework Bass"
+   "-lpinmame.3.6"
+   "-laltsound"
+   "-lzedmd"
+   "-lserum"
+   "-ldmdutil"
+   "-lsockpp"
    "-framework OpenGLES"
    "-framework AVFAudio"
    "-framework Metal"
@@ -683,16 +694,6 @@ target_link_libraries(vpinball PUBLIC
    "-framework CoreServices"
    "-framework ImageIO"
    "-framework UIKit"
-   "-framework Bass"
-   "-lfreeimage"
-   "-lpinmame.3.6"
-   "-laltsound"
-   "-lzedmd"
-   "-lserum"
-   "-ldmdutil"
-   "-lSDL2"
-   "-lSDL2_image"
-   "-lSDL2_ttf"
 )
 
 set(TARGET_PROPERTIES

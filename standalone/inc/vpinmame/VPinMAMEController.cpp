@@ -51,6 +51,12 @@ void PINMAMECALLBACK VPinMAMEController::OnDisplayAvailable(int index, int displ
       || p_displayLayout->type == (PINMAME_DISPLAY_TYPE_DMD | PINMAME_DISPLAY_TYPE_DMDNOAA)) {
       pDisplay->pDMD = new DMDUtil::DMD();
 
+      if (g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Standalone, "AltColor"s, true)) {
+         string szAltColorPath = pController->m_szPath + "altcolor" + PATH_SEPARATOR_CHAR;
+         pDisplay->pDMD->SetAltColorPath(szAltColorPath.c_str());
+         pDisplay->pDMD->SetRomName(pController->m_pPinmameGame->name);
+      }
+
       if (!pController->m_pActiveDisplay) {
          pController->m_pActiveDisplay = pDisplay;
          if (pController->m_pDMDWindow)
@@ -70,7 +76,7 @@ void PINMAMECALLBACK VPinMAMEController::OnDisplayUpdated(int index, void* p_dis
 
    if (pDisplay->pDMD && p_displayData) {
       VPinMAMEController* pController = (VPinMAMEController*)pUserData;
-      pDisplay->pDMD->UpdateData((const UINT8*)p_displayData, pDisplay->layout.depth, pDisplay->layout.width, pDisplay->layout.height, pDisplay->r, pDisplay->g, pDisplay->b, pController->m_pPinmameGame->name);
+      pDisplay->pDMD->UpdateData((const UINT8*)p_displayData, pDisplay->layout.depth, pDisplay->layout.width, pDisplay->layout.height, pDisplay->r, pDisplay->g, pDisplay->b);
    }
 }
 
@@ -171,9 +177,6 @@ VPinMAMEController::VPinMAMEController()
       std::filesystem::create_directory(m_szIniPath);
 
    PLOGI.printf("PinMAME ini path set to: %s", m_szIniPath.c_str());
-
-   string szAltColorPath = m_szPath + "altcolor" + PATH_SEPARATOR_CHAR;
-   DMDUtil::Config::GetInstance()->SetAltColorPath(szAltColorPath.c_str());
 
    PinmameSetConfig(&config);
    PinmameSetUserData((void*)this);

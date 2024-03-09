@@ -10,7 +10,7 @@ SDL2_TTF_VERSION=2.22.0
 
 PINMAME_SHA=e867f6e50e12238e0db658ccc9dde6d19a350c12
 LIBALTSOUND_SHA=9ac08a76e2aabc1fba57d3e5a3b87e7f63c09e07
-LIBDMDUTIL_SHA=6d13922dfd6678f7956a73dc651863c7ba0f78ce
+LIBDMDUTIL_SHA=c6ab88089ab81b4a5bc676927369351059becde5
 
 NUM_PROCS=$(nproc)
 
@@ -166,11 +166,11 @@ cp src/altsound.h ../../external/include
 platforms/linux/aarch64/external.sh
 cmake -DPLATFORM=linux -DARCH=aarch64 -DBUILD_STATIC=OFF -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -B build
 cmake --build build -- -j${NUM_PROCS}
-cp build/libaltsound.so.0.1.0 ../../external/lib
+cp -a build/*.{so,so.*} ../../external/lib
 cd ..
 
 #
-# build libdmdutil (and libserialport, libserum, libzedmd) and copy to external
+# build libdmdutil (and deps) and copy to external
 #
 
 curl -sL https://github.com/vpinball/libdmdutil/archive/${LIBDMDUTIL_SHA}.zip -o libdmdutil.zip
@@ -178,10 +178,9 @@ unzip libdmdutil.zip
 cd libdmdutil-$LIBDMDUTIL_SHA
 cp -r include/DMDUtil ../../external/include
 platforms/linux/aarch64/external.sh
+cp -r third-party/include/sockpp ../../external/include
 cmake -DPLATFORM=linux -DARCH=aarch64 -DBUILD_STATIC=OFF -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -B build
 cmake --build build -- -j${NUM_PROCS}
-cp third-party/runtime-libs/linux/aarch64/libserum.so.1.6.2 ../../external/lib
-cp third-party/runtime-libs/linux/aarch64/libzedmd.so.0.6.0 ../../external/lib
-cp third-party/runtime-libs/linux/aarch64/libserialport.so.0 ../../external/lib
-cp build/libdmdutil.so.0.3.0 ../../external/lib
+cp third-party/runtime-libs/linux/aarch64/*.{so,so.*} ../../external/lib
+cp -a build/*.{so,so.*} ../../external/lib
 cd ..

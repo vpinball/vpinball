@@ -209,7 +209,7 @@ jobs:
         arch: [ arm64, x64 ]
     steps:
       - run: |
-          brew install bison autoconf automake
+          brew install bison autoconf automake nasm
           echo "/usr/local/opt/bison/bin" >> $GITHUB_PATH
       - uses: actions/checkout@v4
       - name: Calculate external hash

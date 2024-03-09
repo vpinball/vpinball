@@ -10,7 +10,8 @@ SDL2_TTF_VERSION=2.22.0
 
 PINMAME_SHA=e867f6e50e12238e0db658ccc9dde6d19a350c12
 LIBALTSOUND_SHA=9ac08a76e2aabc1fba57d3e5a3b87e7f63c09e07
-LIBDMDUTIL_SHA=6d13922dfd6678f7956a73dc651863c7ba0f78ce
+LIBDMDUTIL_SHA=c6ab88089ab81b4a5bc676927369351059becde5
+FFMPEG_SHA=e38092ef9395d7049f871ef4d5411eb410e283e0
 
 NUM_PROCS=$(sysctl -n hw.ncpu)
 
@@ -22,6 +23,7 @@ echo "  SDL2_TTF_VERSION: ${SDL2_TTF_VERSION}"
 echo "  PINMAME_SHA: ${PINMAME_SHA}"
 echo "  LIBALTSOUND_SHA: ${LIBALTSOUND_SHA}"
 echo "  LIBDMDUTIL_SHA: ${LIBDMDUTIL_SHA}"
+echo "  FFMPEG_SHA: ${FFMPEG_SHA}"
 echo ""
 
 if [ -z "${BUILD_TYPE}" ]; then
@@ -173,11 +175,11 @@ cp src/altsound.h ../../external/include
 platforms/macos/arm64/external.sh
 cmake -DPLATFORM=macos -DARCH=arm64 -DBUILD_STATIC=OFF -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -B build
 cmake --build build -- -j${NUM_PROCS}
-cp build/libaltsound.0.1.0.dylib ../../external/lib
+cp -a build/*.dylib ../../external/lib
 cd ..
 
 #
-# build libdmdutil (and libserialport, libserum, libzedmd) and copy to external
+# build libdmdutil (and deps) and copy to external
 #
 
 curl -sL https://github.com/vpinball/libdmdutil/archive/${LIBDMDUTIL_SHA}.zip -o libdmdutil.zip
@@ -185,10 +187,37 @@ unzip libdmdutil.zip
 cd libdmdutil-$LIBDMDUTIL_SHA
 cp -r include/DMDUtil ../../external/include
 platforms/macos/arm64/external.sh
+cp -r third-party/include/sockpp ../../external/include
 cmake -DPLATFORM=macos -DARCH=arm64 -DBUILD_STATIC=OFF -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -B build
 cmake --build build -- -j${NUM_PROCS}
-cp third-party/runtime-libs/macos/arm64/libserum.1.6.2.dylib ../../external/lib
-cp third-party/runtime-libs/macos/arm64/libzedmd.0.6.0.dylib ../../external/lib
-cp third-party/runtime-libs/macos/arm64/libserialport.dylib ../../external/lib
-cp build/libdmdutil.0.3.0.dylib ../../external/lib
+cp -a third-party/runtime-libs/macos/arm64/*.dylib ../../external/lib
+cp -a build/*.dylib ../../external/lib
+cd ..
+
+#
+# build FFMPEG libraries and copy to external
+#
+
+curl -sL https://github.com/FFmpeg/FFmpeg/archive/${FFMPEG_SHA}.zip -o ffmpeg.zip
+unzip ffmpeg.zip
+cd ffmpeg-$FFMPEG_SHA
+mkdir -p ../../external/include/lib{avcodec,avdevice,avformat,avutil,swresample,swscale}
+for lib in libavcodec libavdevice libavformat libavutil libswresample libswscale; do
+   cp $lib/*.h ../../external/include/$lib
+done
+./configure --enable-cross-compile \
+   --enable-shared \
+   --disable-static \
+   --disable-programs \
+   --disable-doc \
+   --enable-rpath \
+   --prefix=. \
+   --libdir=@rpath \
+   --arch=arm64 \
+   --cc='clang -arch arm64' \
+   --extra-ldflags='-Wl,-ld_classic'
+make -j${NUM_PROCS}
+for lib in libavcodec libavdevice libavformat libavutil libswresample libswscale; do
+   cp -a $lib/*.dylib ../../external/lib
+done
 cd ..
