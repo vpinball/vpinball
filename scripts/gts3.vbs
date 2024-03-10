@@ -34,11 +34,8 @@ Const swURFlip      = 145
 Const swULFlip      = 147
 
 
-' Forgot these in earlier vbs files
-Private swStartButtonX
-On Error Resume Next
-If swStartButton = 4 Or Err Then swStartButtonX = 4 Else swStartButtonX = swStartButton
-On Error Goto 0
+' Forgot these in earlier vbs files, some tables define it after loading this file, so delay initializations
+Private swGTSInitialized, swStartButtonX : swGTSInitialized = False
 
 
 ' Help Window
@@ -66,6 +63,12 @@ Private vpmDips
 
 ' Keyboard handlers
 Function vpmKeyDown(ByVal keycode)
+	If Not swGTSInitialized Then
+		swGTSInitialized = True
+		On Error Resume Next
+		If swStartButton = 4 Or Err Then swStartButtonX = 4 Else swStartButtonX = swStartButton
+		On Error Goto 0
+	End If
 	vpmKeyDown = True ' assume we handle the key
 	With Controller
 		Select Case keycode
