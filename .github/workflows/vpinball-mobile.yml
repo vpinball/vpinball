@@ -40,7 +40,7 @@ jobs:
           echo "tag=${TAG}" >> $GITHUB_OUTPUT
 
   build-ios:
-    name: Build VPinballX_${{ matrix.type }}-${{ matrix.config }}-ios-${{ matrix.arch }}
+    name: Build VPinballX_${{ matrix.type }}-ios-${{ matrix.arch }}-${{ matrix.config }}
     runs-on: macos-13
     needs: [ version ]
     strategy:
@@ -54,24 +54,29 @@ jobs:
           brew install bison autoconf automake
           echo "/usr/local/opt/bison/bin" >> $GITHUB_PATH
       - uses: actions/checkout@v4
-      - name: Calculate external hash
+      - name: Calculate timestamp
         run: |
-          echo "EXTERNAL_PATH=standalone/ios-${{ matrix.arch }}/external.sh" >> $GITHUB_ENV
-      - uses: actions/cache@v4
+          echo "TIMESTAMP=$(date +%s)" >> $GITHUB_ENV
+      - uses: actions/cache/restore@v4
         with:
-          path: standalone/ios-${{ matrix.arch }}/external
-          key: ${{ matrix.config }}-ios-${{ matrix.arch }}-external-${{ hashFiles(env.EXTERNAL_PATH) }}
-      - run: |
-          perl -i -pe"s/0/${{ needs.version.outputs.revision }}/g" src/core/git_version.h
-          perl -i -pe"s/unknown/${{ needs.version.outputs.sha7 }}/g" src/core/git_version.h
+          path: standalone/ios-${{ matrix.arch }}/external/cache
+          key: ${{ matrix.type }}-ios-${{ matrix.arch }}-${{ matrix.config }}-external-${{ env.TIMESTAMP }}
+          restore-keys: |
+             ${{ matrix.type }}-ios-${{ matrix.arch }}-${{ matrix.config }}-external-
+      - name: Build Deps
+        run: |
+          cd standalone/ios-${{ matrix.arch }}
+          BUILD_TYPE=${{ matrix.config }} ./external.sh
+      - uses: actions/cache/save@v4
+        if: always()
+        with:
+          path: standalone/ios-${{ matrix.arch }}/external/cache
+          key: ${{ matrix.type }}-ios-${{ matrix.arch }}-${{ matrix.config }}-external-${{ env.TIMESTAMP }}
       - name: Build
         run: |
+          perl -i -pe"s/0/${{ needs.version.outputs.revision }}/g" git_version.h
+          perl -i -pe"s/unknown/${{ needs.version.outputs.sha7 }}/g" git_version.h
           NUM_PROCS=$(sysctl -n hw.ncpu)
-          cd standalone/ios-${{ matrix.arch }}
-          if [ ! -d "external" ]; then
-             BUILD_TYPE=${{ matrix.config }} ./external.sh
-          fi
-          cd ../..
           TYPE=$(echo "${{ matrix.type }}" | tr '[:upper:]' '[:lower:]')
           cp standalone/cmake/CMakeLists_${TYPE}-ios-${{ matrix.arch }}.txt CMakeLists.txt
           /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString ${{ needs.version.outputs.version_short }}" "standalone/ios-${{ matrix.arch }}/ios-project/Info.plist"
@@ -91,7 +96,7 @@ jobs:
           path: tmp
 
   build-android:
-    name: Build VPinballX_${{ matrix.type }}-${{ matrix.config }}-android-${{ matrix.arch }}
+    name: Build VPinballX_${{ matrix.type }}-android-${{ matrix.arch }}-${{ matrix.config }}
     runs-on: ubuntu-22.04
     needs: [ version ]
     strategy:
@@ -103,37 +108,43 @@ jobs:
     steps:
       - run: |
           sudo apt install bison
-      - uses: actions/checkout@v4
-      - name: Calculate external hash
-        run: |
-          echo "EXTERNAL_PATH=standalone/android-${{ matrix.arch }}/external.sh" >> $GITHUB_ENV
-      - uses: actions/cache@v4
-        with:
-          path: standalone/android-${{ matrix.arch }}/external
-          key: ${{ matrix.config }}-android-${{ matrix.arch }}-external-${{ hashFiles(env.EXTERNAL_PATH) }}
       - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
-      - run: |
-          perl -i -pe"s/0/${{ needs.version.outputs.revision }}/g" src/core/git_version.h
-          perl -i -pe"s/unknown/${{ needs.version.outputs.sha7 }}/g" src/core/git_version.h
-      - run: |
-          perl -i -pe"s/versionCode [0-9]+/versionCode ${{ needs.version.outputs.revision }}/g" standalone/android-${{ matrix.arch }}/android-project/app/build.gradle
-          perl -i -pe"s/versionName \"[0-9\.]+\"/versionName \"${{ needs.version.outputs.tag }}\"/g" standalone/android-${{ matrix.arch }}/android-project/app/build.gradle
-          perl -i -pe"s/\"VPinballX.apk\"/\"VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}.apk\"/g" standalone/android-${{ matrix.arch }}/android-project/app/build.gradle
-      - name: Build
+      - uses: actions/checkout@v4
+      - name: Calculate timestamp
         run: |
-          NUM_PROCS=$(nproc)
+          echo "TIMESTAMP=$(date +%s)" >> $GITHUB_ENV
+      - uses: actions/cache/restore@v4
+        with:
+          path: standalone/android-${{ matrix.arch }}/external/cache
+          key: ${{ matrix.type }}-android-${{ matrix.arch }}-${{ matrix.config }}-external-${{ env.TIMESTAMP }}
+          restore-keys: |
+             ${{ matrix.type }}-android-${{ matrix.arch }}-${{ matrix.config }}-external-
+      - name: Build Deps
+        run: |
           cd standalone/android-${{ matrix.arch }}
-          if [ ! -d "external" ]; then
-             BUILD_TYPE=${{ matrix.config }} ./external.sh
-          fi
-          cd ../..
+          BUILD_TYPE=${{ matrix.config }} ./external.sh
+      - uses: actions/cache/save@v4
+        if: always()
+        with:
+          path: standalone/android-${{ matrix.arch }}/external/cache
+          key: ${{ matrix.type }}-android-${{ matrix.arch }}-${{ matrix.config }}-external-${{ env.TIMESTAMP }}
+      - name: Build VPinball
+        run: |
+          perl -i -pe"s/0/${{ needs.version.outputs.revision }}/g" git_version.h
+          perl -i -pe"s/unknown/${{ needs.version.outputs.sha7 }}/g" git_version.h
+          NUM_PROCS=$(nproc)
           TYPE=$(echo "${{ matrix.type }}" | tr '[:upper:]' '[:lower:]')
           cp standalone/cmake/CMakeLists_${TYPE}-android-${{ matrix.arch }}.txt CMakeLists.txt
           cmake -DCMAKE_BUILD_TYPE=${{ matrix.config }} -B build/${{ matrix.config }}
           cmake --build build/${{ matrix.config }} -- -j${NUM_PROCS}
+      - name: Build Android App
+        run: |
+          perl -i -pe"s/versionCode [0-9]+/versionCode ${{ needs.version.outputs.revision }}/g" standalone/android-${{ matrix.arch }}/android-project/app/build.gradle
+          perl -i -pe"s/versionName \"[0-9\.]+\"/versionName \"${{ needs.version.outputs.tag }}\"/g" standalone/android-${{ matrix.arch }}/android-project/app/build.gradle
+          perl -i -pe"s/\"VPinballX.apk\"/\"VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}.apk\"/g" standalone/android-${{ matrix.arch }}/android-project/app/build.gradle
           cd standalone/android-${{ matrix.arch }}/android-project
           ./gradlew assembleDebug
       - run: |
