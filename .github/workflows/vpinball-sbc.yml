@@ -40,7 +40,7 @@ jobs:
           echo "tag=${TAG}" >> $GITHUB_OUTPUT
 
   build-sbc:
-    name: Build VPinballX_${{ matrix.type }}-${{ matrix.config }}-linux-${{ matrix.arch }}-${{ matrix.board }}
+    name: Build VPinballX_${{ matrix.type }}-linux-${{ matrix.arch }}-${{ matrix.config }}-${{ matrix.board }}
     runs-on: ubuntu-22.04
     needs: [ version ]
     strategy:
@@ -52,13 +52,15 @@ jobs:
         board: [ rpi, rk3588 ]
     steps:
       - uses: actions/checkout@v4
-      - name: Calculate external hash
+      - name: Calculate timestamp
         run: |
-          echo "EXTERNAL_PATH=standalone/linux-${{ matrix.arch }}/external.sh" >> $GITHUB_ENV
-      - uses: actions/cache@v4
+          echo "TIMESTAMP=$(date +%s)" >> $GITHUB_ENV
+      - uses: actions/cache/restore@v4
         with:
-          path: standalone/linux-${{ matrix.arch }}/external
-          key: ${{ matrix.config }}-linux-${{ matrix.arch }}-external-${{ hashFiles(env.EXTERNAL_PATH) }}
+          path: standalone/linux-${{ matrix.arch }}/external/cache
+          key: ${{ matrix.type }}-linux-${{ matrix.arch }}-${{ matrix.config }}-external-${{ env.TIMESTAMP }}
+          restore-keys: |
+             ${{ matrix.type }}-linux-${{ matrix.arch }}-${{ matrix.config }}-external-
       - uses: pguyot/arm-runner-action@v2
         id: arm_runner_make
         with:
@@ -75,9 +77,7 @@ jobs:
             perl -i -pe"s/unknown/${{ needs.version.outputs.sha7 }}/g" src/core/git_version.h
             NUM_PROCS=$(nproc)
             cd standalone/linux-${{ matrix.arch }}
-            if [ ! -d "external" ]; then
-               ./external.sh
-            fi
+            BUILD_TYPE=${{ matrix.config }} ./external.sh
             cd ../..
             TYPE=$(echo "${{ matrix.type }}" | tr '[:upper:]' '[:lower:]')
             cp standalone/cmake/CMakeLists_${TYPE}-linux-${{ matrix.arch }}.txt CMakeLists.txt
@@ -99,6 +99,11 @@ jobs:
             cp -r build/${{ matrix.config }}/docs tmp
             cd tmp
             tar -czf ../VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}-${{ matrix.config }}-linux-${{ matrix.arch }}-${{ matrix.board }}.tar.gz *
+      - uses: actions/cache/save@v4
+        if: always()
+        with:
+          path: standalone/linux-${{ matrix.arch }}/external/cache
+          key: ${{ matrix.type }}-linux-${{ matrix.arch }}-${{ matrix.config }}-external-${{ env.TIMESTAMP }}
       - uses: actions/upload-artifact@v4
         with:
           name: VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}-${{ matrix.config }}-linux-${{ matrix.arch }}-${{ matrix.board }}
