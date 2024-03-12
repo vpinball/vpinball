@@ -1428,9 +1428,13 @@ STDMETHODIMP Light::get_Image(BSTR *pVal)
 
 STDMETHODIMP Light::put_Image(BSTR newVal)
 {
+   Texture *const pinBefore = m_ptable->GetImage(m_d.m_szImage);
    char szImage[MAXTOKEN];
    WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, nullptr, nullptr);
    m_d.m_szImage = szImage;
+   // Detect if we changed the use of images since it changes the rendering texture coordinates and therefore needs the mesh buffer to be updated
+   Texture *const pinAfter = m_ptable->GetImage(m_d.m_szImage);
+   m_lightmapMeshBufferDirty = (pinBefore == nullptr && pinAfter != nullptr) || (pinBefore != nullptr && pinAfter == nullptr);
 
    return S_OK;
 }
