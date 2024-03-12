@@ -1850,7 +1850,7 @@ void LiveUI::UpdateTweakModeUI()
          case BS_Difficulty:
             char label[64];
             snprintf(label, 64, "Difficulty (%.2f° slope and trajectories scattering):", m_live_table->GetPlayfieldSlope());
-            CM_ROW(setting, label, "%.2f", m_live_table->m_globalDifficulty, "%");
+            CM_ROW(setting, label, "%.1f", 100.f * m_live_table->m_globalDifficulty, "%");
             break;
          case BS_Tonemapper: CM_ROW(setting, "Tonemapper: ", "%s", m_renderer->m_toneMapper == 0 ? "Reinhard" : m_renderer->m_toneMapper == 1 ? "Tony McMapFace" : "Filmic", ""); break;
          case BS_MusicVolume: CM_ROW(setting, "Music Volume: ", "%d", m_player->m_MusicVolume, "%"); break;
