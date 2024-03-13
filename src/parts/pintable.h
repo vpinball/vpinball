@@ -876,7 +876,9 @@ public:
    void SetTableWidth(const float value);
    float GetHeight() const;
    void SetHeight(const float value);
+
    float GetPlayfieldSlope() const;
+   float GetPlayfieldOverridenSlope() const;
 
    void SetMDITable(PinTableMDI *const table) { m_mdiTable = table; }
    PinTableMDI *GetMDITable() const { return m_mdiTable; }
@@ -904,6 +906,8 @@ private:
    bool m_moving;
 
    ToneMapper m_toneMapper = ToneMapper::TM_TONY_MC_MAPFACE;
+
+   inline float ApplyDifficulty(float minValue, float MaxValue) const;
 };
 
 class ScriptGlobalTable : 
