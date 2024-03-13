@@ -8904,6 +8904,21 @@ void PinTable::SetHeight(const float value)
     m_bottom = value;
 }
 
+float PinTable::ApplyDifficulty(float minValue, float maxValue) const
+{
+   return minValue + (maxValue - minValue) * m_globalDifficulty;
+}
+
+float PinTable::GetPlayfieldSlope() const
+{
+   return ApplyDifficulty(m_angletiltMin, m_angletiltMax);
+}
+
+float PinTable::GetPlayfieldOverridenSlope() const
+{
+   return ApplyDifficulty(m_fOverrideMinSlope, m_fOverrideMaxSlope);
+}
+
 STDMETHODIMP PinTable::get_Height(float *pVal)
 {
    *pVal = GetHeight();
@@ -9552,10 +9567,10 @@ STDMETHODIMP PinTable::put_Gravity(float newVal)
    if (g_pplayer)
    {
       SetGravity(newVal);
-      const float minSlope = (m_overridePhysics ? m_fOverrideMinSlope : m_angletiltMin);
-      const float maxSlope = (m_overridePhysics ? m_fOverrideMaxSlope : m_angletiltMax);
-      const float slope = minSlope + (maxSlope - minSlope) * m_globalDifficulty;
-      g_pplayer->m_physics->SetGravity(slope, m_overridePhysics ? m_fOverrideGravityConstant : m_Gravity);
+
+      const float slope = (m_overridePhysics ? GetPlayfieldOverridenSlope() : GetPlayfieldSlope());
+      const float strength = (m_overridePhysics ? m_fOverrideGravityConstant : m_Gravity);
+      g_pplayer->m_physics->SetGravity(slope, strength);
    }
    else
    {
@@ -9908,8 +9923,7 @@ STDMETHODIMP PinTable::put_SlopeMax(float newVal)
    if (g_pplayer)
    {
       m_angletiltMax = newVal;
-      const float slope = m_angletiltMin + (m_angletiltMax - m_angletiltMin) * m_globalDifficulty;
-      g_pplayer->m_physics->SetGravity(slope, m_overridePhysics ? m_fOverrideGravityConstant : m_Gravity);
+      g_pplayer->m_physics->SetGravity(GetPlayfieldSlope(), m_overridePhysics ? m_fOverrideGravityConstant : m_Gravity);
    }
    else
    {
@@ -9933,8 +9947,7 @@ STDMETHODIMP PinTable::put_SlopeMin(float newVal)
    if (g_pplayer)
    {
       m_angletiltMin = newVal;
-      const float slope = m_angletiltMin + (m_angletiltMax - m_angletiltMin) * m_globalDifficulty;
-      g_pplayer->m_physics->SetGravity(slope, m_overridePhysics ? m_fOverrideGravityConstant : m_Gravity);
+      g_pplayer->m_physics->SetGravity(GetPlayfieldSlope(), m_overridePhysics ? m_fOverrideGravityConstant : m_Gravity);
    }
    else
    {
