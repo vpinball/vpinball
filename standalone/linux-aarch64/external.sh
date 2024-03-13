@@ -6,10 +6,10 @@ FREEIMAGE_VERSION=3.18.0
 SDL2_VERSION=2.30.0
 SDL2_IMAGE_VERSION=2.8.2
 SDL2_TTF_VERSION=2.22.0
-PINMAME_SHA=963dfb17b27932c7e69e926f7aec8a630156f4f0
+PINMAME_SHA=b06d8d4d48f9e2e9f3638a3f469002cb64035f0a
 LIBALTSOUND_SHA=9ac08a76e2aabc1fba57d3e5a3b87e7f63c09e07
-LIBDMDUTIL_SHA=ba8ed0c1f8d8abef89f109e35a1f3556903bd1f8
-BGFX_CMAKE_VERSION=1.125.8678-462
+LIBDMDUTIL_SHA=0a896af0fe505a6198845f86458632914d80e1d6
+BGFX_CMAKE_VERSION=1.126.8700-463
 FFMPEG_SHA=e38092ef9395d7049f871ef4d5411eb410e283e0
 
 NUM_PROCS=$(nproc)
@@ -96,6 +96,8 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
       -DSDL_TEST=OFF \
       -DSDL_X11=OFF \
       -DSDL_KMSDRM=ON \
+      -DCMAKE_BUILD_WITH_INSTALL_RPATH=TRUE \
+      -DCMAKE_INSTALL_RPATH="\$ORIGIN" \
       -DCMAKE_BUILD_TYPE=Release \
       -B build
    cmake --build build -- -j${NUM_PROCS}
@@ -129,6 +131,8 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
       -DSDL2IMAGE_SAMPLES=OFF \
       -DSDL2_INCLUDE_DIR=../../external/include/SDL2 \
       -DSDL2_LIBRARY=../../external/lib/libSDL2.so \
+      -DCMAKE_BUILD_WITH_INSTALL_RPATH=TRUE \
+      -DCMAKE_INSTALL_RPATH="\$ORIGIN" \
       -DCMAKE_BUILD_TYPE=Release \
       -B build
    cmake --build build -- -j${NUM_PROCS}
@@ -161,6 +165,8 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
       -DSDL2_LIBRARY=../../external/lib/libSDL2.so \
       -DSDL2TTF_VENDORED=ON \
       -DSDL2TTF_HARFBUZZ=ON \
+      -DCMAKE_BUILD_WITH_INSTALL_RPATH=TRUE \
+      -DCMAKE_INSTALL_RPATH="\$ORIGIN" \
       -DCMAKE_BUILD_TYPE=Release \
       -B build
    cmake --build build -- -j${NUM_PROCS}
@@ -289,3 +295,32 @@ fi
 
 cp -r ../${CACHE_DIR}/${CACHE_NAME}/include/* ../external/include
 cp ../${CACHE_DIR}/${CACHE_NAME}/lib/*.so ../external/lib
+
+#
+# build FFMPEG libraries and copy to external
+#
+
+CACHE_NAME="FFmpeg-${FFMPEG_SHA}"
+
+if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
+   curl -sL https://github.com/FFmpeg/FFmpeg/archive/${FFMPEG_SHA}.zip -o ffmpeg.zip
+   unzip ffmpeg.zip
+   cd FFmpeg-$FFMPEG_SHA
+   LDFLAGS=-Wl,-rpath,\''$$$$ORIGIN'\' ./configure \
+      --enable-shared \
+      --disable-static \
+      --disable-programs \
+      --disable-doc
+   make -j${NUM_PROCS}
+   mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/lib
+   for lib in libavcodec libavdevice libavformat libavutil libswresample libswscale; do
+      mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/include/${lib}
+      cp ${lib}/*.h ../../${CACHE_DIR}/${CACHE_NAME}/include/${lib}
+      cp -a ${lib}/*.{so,so.*} ../../${CACHE_DIR}/${CACHE_NAME}/lib
+   done
+   cd ..
+   touch "../${CACHE_DIR}/${CACHE_NAME}.cache"
+fi
+
+cp -r ../${CACHE_DIR}/${CACHE_NAME}/include/* ../external/include
+cp -a ../${CACHE_DIR}/${CACHE_NAME}/lib/*.{so,so.*} ../external/lib

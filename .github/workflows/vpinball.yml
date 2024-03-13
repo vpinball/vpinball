@@ -285,7 +285,7 @@ jobs:
     steps:
       - run: |
           sudo apt-get update
-          sudo apt install cmake bison zlib1g-dev libdrm-dev libgbm-dev libglu1-mesa-dev libegl-dev libudev-dev libx11-dev libxrandr-dev
+          sudo apt install cmake bison nasm zlib1g-dev libdrm-dev libgbm-dev libglu1-mesa-dev libegl-dev libudev-dev libx11-dev libxrandr-dev
       - uses: actions/checkout@v4
       - name: Calculate timestamp
         run: |
