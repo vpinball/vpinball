@@ -7133,7 +7133,7 @@ void PinTable::UseTool(int x, int y, int tool)
 Vertex2D PinTable::TransformPoint(int x, int y) const
 {
 #ifndef __STANDALONE__
-   const CRect rc = m_mdiTable->GetClientRect();
+   const CRect rc = GetClientRect();
 #else
    const CRect rc(this->m_left, this->m_top, this->m_right, this->m_bottom);
 #endif
