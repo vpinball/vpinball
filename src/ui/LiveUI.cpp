@@ -1228,8 +1228,9 @@ void LiveUI::OpenTweakMode()
 
 void LiveUI::CloseTweakMode()
 {
+   if (m_tweakMode)
+      m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 3 /* tweak mode closed event */);
    m_tweakMode = false;
-   m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 3 /* tweak mode closed event */);
 }
 
 void LiveUI::UpdateTweakPage()
@@ -1901,7 +1902,7 @@ void LiveUI::UpdateTweakModeUI()
       m_tweakScroll = clamp(m_tweakScroll, 0.f, maxScroll);
       ImGui::SetNextWindowScroll(ImVec2(0.f, m_tweakScroll));
       ImGui::SetNextWindowSizeConstraints(ImVec2(0.f, 0.f), ImVec2(FLT_MAX, lastHeight));
-      if (ImGui::BeginChild("Rules", ImVec2(0.f, 0.f), 0, ImGuiWindowFlags_NoBackground))
+      if (ImGui::BeginChild("Rules", ImVec2(0.f, 0.f), 0, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoScrollbar /* | ImGuiWindowFlags_AlwaysVerticalScrollbar */))
       {
          markdown_start_id = ImGui::GetItemID();
          ImGui::Markdown(m_table->m_szRules.c_str(), m_table->m_szRules.length(), markdown_config);
