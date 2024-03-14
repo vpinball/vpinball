@@ -333,7 +333,7 @@
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Culture>0x0409</Culture>
-      <AdditionalIncludeDirectories>third-party\include\win32xx\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src;third-party\include\win32xx\include</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>d3d9.lib;d3dx9.lib;dxerr.lib;comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;bass.lib;imm32.lib;setupapi.lib;hid.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -395,7 +395,7 @@
     <ResourceCompile>
       <PreprocessorDefinitions>ENABLE_SDL_VIDEO;ENABLE_OPENGL;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Culture>0x0409</Culture>
-      <AdditionalIncludeDirectories>third-party\include\win32xx\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src;third-party\include\win32xx\include</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>SDL2.lib;SDL2main.lib;opengl32.lib;openvr_api.lib;comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;bass.lib;imm32.lib;setupapi.lib;hid.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -724,7 +724,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Culture>0x0409</Culture>
-      <AdditionalIncludeDirectories>third-party\include\win32xx\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src;third-party\include\win32xx\include</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>d3d9.lib;d3dx9.lib;dxerr.lib;comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;bass.lib;imm32.lib;setupapi.lib;hid.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -788,7 +788,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ResourceCompile>
       <PreprocessorDefinitions>ENABLE_SDL_VIDEO;ENABLE_OPENGL;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Culture>0x0409</Culture>
-      <AdditionalIncludeDirectories>third-party\include\win32xx\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src;third-party\include\win32xx\include</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>SDL2.lib;SDL2main.lib;opengl32.lib;openvr_api.lib;comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;bass.lib;imm32.lib;setupapi.lib;hid.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -861,7 +861,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ResourceCompile>
       <PreprocessorDefinitions>ENABLE_SDL_VIDEO;ENABLE_OPENGL;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Culture>0x0409</Culture>
-      <AdditionalIncludeDirectories>third-party\include\win32xx\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src;third-party\include\win32xx\include</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>SDL2.lib;SDL2main.lib;openvr_api.lib;comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;bass.lib;imm32.lib;setupapi.lib;hid.lib;bgfxRelease.lib;bimg_decodeRelease.lib;bimgRelease.lib;bxRelease.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
