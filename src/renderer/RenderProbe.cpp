@@ -21,9 +21,10 @@ int RenderProbe::GetSaveSize() const
    size += 2 * sizeof(int) + sizeof(int); // TYPE
    size += 2 * sizeof(int) + sizeof(int) + m_name.length(); // NAME
    size += 2 * sizeof(int) + sizeof(int); // RBAS
-   size += 2 * sizeof(int) + sizeof(int); // RCLE
    size += 2 * sizeof(int) + sizeof(vec4); // RPLA
    size += 2 * sizeof(int) + sizeof(int); // RMOD
+   size += 2 * sizeof(int) + sizeof(int); // RLMP
+   size += 2 * sizeof(int); // ENDB
    return (int)size;
 }
 

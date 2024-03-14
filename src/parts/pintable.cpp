@@ -3415,22 +3415,16 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
       }
       bw.WriteStruct(FID(PHMA), phymats.data(), (int)(sizeof(SavePhysicsMaterial)*m_materials.size()));
    }
-   // 10.8+ material saving (this format supports new properties, and can be extended in future versions, and does not perform quantizations)
+   // 10.8+ material saving (this format supports new properties, can be extended in future versions, and does not perform quantizations)
    for (size_t i = 0; i < m_materials.size(); i++)
    {
-      const size_t record_size = m_materials[i]->GetSaveSize() + 2 *sizeof(int);
+      const size_t record_size = m_materials[i]->GetSaveSize();
       HGLOBAL hMem = ::GlobalAlloc(GMEM_MOVEABLE, record_size);
       CComPtr<IStream> spStream;
       const HRESULT hr = ::CreateStreamOnHGlobal(hMem, FALSE, &spStream);
       m_materials[i]->SaveData(spStream, NULL, false);
-      BiffWriter sub_bw(spStream, NULL);
-      sub_bw.WriteTag(FID(ENDB));
       LPVOID pData = ::GlobalLock(hMem);
-      ULONG writ = 0;
-      int id = FID(MATR);
-      bw.WriteRecordSize((int)(sizeof(int) + record_size));
-      bw.WriteBytes(&id, (ULONG)sizeof(int), &writ);
-      bw.WriteBytes(pData, (ULONG)record_size, &writ);
+      bw.WriteStruct(FID(MATR), pData, record_size);
       ::GlobalUnlock(hMem);
    }
 
@@ -3438,19 +3432,13 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
    {
       // Save each render probe as a data blob inside the main gamedata.
       // This allows backward compatibility since the block will be blindly discarded on older versions, still hashing it.
-      const int record_size = m_vrenderprobe[i]->GetSaveSize() + 2 *sizeof(int);
+      const int record_size = m_vrenderprobe[i]->GetSaveSize();
       HGLOBAL hMem = ::GlobalAlloc(GMEM_MOVEABLE, record_size);
       CComPtr<IStream> spStream;
       const HRESULT hr = ::CreateStreamOnHGlobal(hMem, FALSE, &spStream);
       m_vrenderprobe[i]->SaveData(spStream, NULL, false);
-      BiffWriter sub_bw(spStream, NULL);
-      sub_bw.WriteTag(FID(ENDB));
       LPVOID pData = ::GlobalLock(hMem);
-      ULONG writ = 0;
-      int id = FID(RPRB);
-      bw.WriteRecordSize(sizeof(int) + record_size);
-      bw.WriteBytes(&id, sizeof(int), &writ);
-      bw.WriteBytes(pData, record_size, &writ);
+      bw.WriteStruct(FID(RPRB), pData, record_size);
       ::GlobalUnlock(hMem);
    }
 
