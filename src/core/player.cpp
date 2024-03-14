@@ -308,7 +308,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
 
 Player::~Player()
 {
-   assert(g_pplayer == this);
+   assert(g_pplayer == nullptr);
    m_closing = CS_CLOSED;
    m_ptable->StopPlaying();
    delete m_staticPrepassRT;
@@ -691,7 +691,8 @@ void Player::OnClose()
       return;
    }
    assert(g_pplayer == this);
-   g_pplayer->m_closing = CS_CLOSED;
+   g_pplayer = nullptr;
+   m_closing = CS_CLOSED;
    PLOGI << "Closing player... [Player's VBS intepreter is #" << m_ptable->m_pcv->m_pScript << "]";
 
     g_frameProfiler.LogWorstFrame();
@@ -903,8 +904,7 @@ void Player::OnClose()
 #endif
 
    // Destroy this player
-   delete g_pplayer; // Win32xx call Window destroy for us from destructor, don't call it directly or it will crash due to dual destruction
-   g_pplayer = nullptr;
+   delete this; // Win32xx call Window destroy for us from destructor, don't call it directly or it will crash due to dual destruction
    PLOGI << "Player closed.";
 }
 
