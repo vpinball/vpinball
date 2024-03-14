@@ -1152,15 +1152,15 @@ STDMETHODIMP ScriptGlobalTable::get_ActiveTable(ITable **pVal)
    return S_OK;
 }
 
-STDMETHODIMP ScriptGlobalTable::get_Version(int *pVal)
+STDMETHODIMP ScriptGlobalTable::get_Version(DOUBLE *pVal)
 {
-	*pVal = VP_VERSION_MAJOR * 1000 + VP_VERSION_MINOR * 100 + VP_VERSION_REV;
+	*pVal = VP_VERSION_MAJOR * 1000 + VP_VERSION_MINOR * 100 + VP_VERSION_REV + GIT_REVISION / 10000.0f;
 	return S_OK;
 }
 
-STDMETHODIMP ScriptGlobalTable::get_VPBuildVersion(int *pVal)
+STDMETHODIMP ScriptGlobalTable::get_VPBuildVersion(DOUBLE *pVal)
 {
-	*pVal = VP_VERSION_MAJOR * 1000 + VP_VERSION_MINOR * 100 + VP_VERSION_REV;
+	*pVal = VP_VERSION_MAJOR * 1000 + VP_VERSION_MINOR * 100 + VP_VERSION_REV + GIT_REVISION / 10000.0f;
 	return S_OK;
 }
 
@@ -10379,15 +10379,15 @@ STDMETHODIMP PinTable::QuitPlayer(int CloseType)
    return m_vpinball->QuitPlayer(CloseType);
 }
 
-STDMETHODIMP PinTable::get_Version(int *pVal)
+STDMETHODIMP PinTable::get_Version(DOUBLE *pVal)
 {
-   *pVal = VP_VERSION_MAJOR * 1000 + VP_VERSION_MINOR * 100 + VP_VERSION_REV;
+   *pVal = VP_VERSION_MAJOR * 1000 + VP_VERSION_MINOR * 100 + VP_VERSION_REV + GIT_REVISION / 10000.0f;
    return S_OK;
 }
 
-STDMETHODIMP PinTable::get_VPBuildVersion(int *pVal)
+STDMETHODIMP PinTable::get_VPBuildVersion(DOUBLE *pVal)
 {
-   *pVal = VP_VERSION_MAJOR * 1000 + VP_VERSION_MINOR * 100 + VP_VERSION_REV;
+   *pVal = VP_VERSION_MAJOR * 1000 + VP_VERSION_MINOR * 100 + VP_VERSION_REV + GIT_REVISION / 10000.0f;
    return S_OK;
 }
 
