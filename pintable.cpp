@@ -6335,7 +6335,8 @@ void PinTable::OnDelete()
       {
          for (int k = 0; k < m_vcollection[i].m_visel.size(); k++)
          {
-            if (ptr == m_vcollection[i].m_visel.ElementAt(k))
+            // Identify Editable in collection, as well as sub part of collection's editable (like light center for example)
+            if (ptr == m_vcollection[i].m_visel.ElementAt(k) || ptr->GetIEditable() == m_vcollection[i].m_visel.ElementAt(k)->GetIEditable())
             {
                inCollection = true;
                break;
