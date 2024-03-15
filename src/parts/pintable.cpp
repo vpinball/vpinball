@@ -2853,7 +2853,8 @@ HRESULT PinTable::SaveSoundToStream(const PinSound * const pps, IStream *pstm)
 #endif
       return hr;
 
-   if (FAILED(hr = pstm->Write(&pps->m_outputTarget, sizeof(bool), &writ)))
+   SoundOutTypes outputTarget = pps->GetOutputTarget();
+   if (FAILED(hr = pstm->Write(&outputTarget, sizeof(bool), &writ)))
       return hr;
 
    // Begin NEW_SOUND_VERSION data
@@ -3009,11 +3010,13 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
 
    if (LoadFileVersion >= NEW_SOUND_FORMAT_VERSION)
    {
-	   if (FAILED(hr = pstm->Read(&pps->m_outputTarget, sizeof(char), &read)))
+      SoundOutTypes outputTarget;
+	   if (FAILED(hr = pstm->Read(&outputTarget, sizeof(char), &read)))
 	   {
 		   delete pps;
 		   return hr;
 	   }
+      pps->SetOutputTarget(outputTarget);
 	   if (FAILED(hr = pstm->Read(&pps->m_volume, sizeof(int), &read)))
 	   {
 		   delete pps;
@@ -3044,8 +3047,9 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
 		   return hr;
 	   }
 
-	   pps->m_outputTarget = (StrStrI(pps->m_szName.c_str(), "bgout_") != nullptr) || (lstrcmpi(pps->m_szPath.c_str(), "* Backglass Output *") == 0) // legacy behavior, where the BG selection was encoded into the strings directly
-	                      || toBackglassOutput ? SNDOUT_BACKGLASS : SNDOUT_TABLE;
+	   pps->SetOutputTarget((StrStrI(pps->m_szName.c_str(), "bgout_") != nullptr)
+                        || (lstrcmpi(pps->m_szPath.c_str(), "* Backglass Output *") == 0) // legacy behavior, where the BG selection was encoded into the strings directly
+	                     || toBackglassOutput ? SNDOUT_BACKGLASS : SNDOUT_TABLE);
    }
 
    if (FAILED(hr = pps->ReInitialize()))
@@ -4490,7 +4494,7 @@ void PinTable::ReImportSound(const HWND hwndListView, PinSound * const pps, cons
    const int balance = pps->m_balance;
    const int fade = pps->m_fade;
    const int volume = pps->m_volume;
-   const SoundOutTypes outputTarget = pps->m_outputTarget;
+   const SoundOutTypes outputTarget = pps->GetOutputTarget();
    const string szName = pps->m_szName;
 
    //!! meh to all of this: kill old raw sound data and DSound/BASS stuff, then copy new one over
@@ -4513,7 +4517,7 @@ void PinTable::ReImportSound(const HWND hwndListView, PinSound * const pps, cons
    pps->m_balance = balance;
    pps->m_fade = fade;
    pps->m_volume = volume;
-   pps->m_outputTarget = outputTarget;
+   pps->SetOutputTarget(outputTarget);
    pps->m_szName = szName;
 }
 
@@ -4553,7 +4557,7 @@ int PinTable::AddListSound(HWND hwndListView, PinSound * const pps)
 
    ListView_SetItemText(hwndListView, index, 1, (LPSTR)pps->m_szPath.c_str());
 
-   switch (pps->m_outputTarget)
+   switch (pps->GetOutputTarget())
    {
    case SNDOUT_BACKGLASS:
 	   ListView_SetItemText(hwndListView, index, 2, (LPSTR)"Backglass");

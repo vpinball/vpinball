@@ -478,10 +478,8 @@ void SoundDialog::SoundToBG()
             lvitem.iSubItem = 0;
             ListView_GetItem( hSoundList, &lvitem );
             PinSound * const pps = (PinSound *)lvitem.lParam;
-
-            pps->m_outputTarget = (pps->m_outputTarget != SNDOUT_BACKGLASS) ? SNDOUT_BACKGLASS : SNDOUT_TABLE;
-
-            switch (pps->m_outputTarget)
+            pps->SetOutputTarget((pps->GetOutputTarget() != SNDOUT_BACKGLASS) ? SNDOUT_BACKGLASS : SNDOUT_TABLE);
+            switch (pps->GetOutputTarget())
             {
                case SNDOUT_BACKGLASS:
                   ListView_SetItemText(hSoundList, sel, 2, (LPSTR)"Backglass");
@@ -492,7 +490,6 @@ void SoundDialog::SoundToBG()
                   break;
             }
             pt->SetNonUndoableDirty(eSaveDirty);
-
             sel = ListView_GetNextItem(hSoundList, sel, LVNI_SELECTED ); //next selected item
         }
     }
@@ -524,11 +521,10 @@ void SoundDialog::SoundPosition()
 				lvitem.iSubItem = 0;
 				ListView_GetItem(hSoundList, &lvitem);
 				pps = (PinSound *)lvitem.lParam;
-				pps->m_outputTarget = spd.m_cOutputTarget;
+            pps->SetOutputTarget(spd.m_cOutputTarget);
 				pps->m_balance = spd.m_balance;
 				pps->m_fade = spd.m_fade;
 				pps->m_volume = spd.m_volume;
-				pps->ReInitialize();
 
 				pt->SetNonUndoableDirty(eSaveDirty);
 
@@ -595,14 +591,13 @@ SoundPositionDialog::SoundPositionDialog(PinSound * const pps) : CDialog(IDD_SOU
 	m_balance = pps->m_balance;
 	m_fade = pps->m_fade;
 	m_volume = pps->m_volume;
-	m_cOutputTarget = pps->m_outputTarget;
+	m_cOutputTarget = pps->GetOutputTarget();
 	m_pps = pps;
 }
 
 SoundPositionDialog::~SoundPositionDialog()
 {
 	m_pps->Stop();
-	m_pps->ReInitialize();
 }
 
 void SoundPositionDialog::OnDestroy()
@@ -752,17 +747,16 @@ BOOL SoundPositionDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 void SoundPositionDialog::TestSound()
 {
 	// Hold the actual output target temporarily and reinitialize.  It could be reset if dialog is canceled.
-	const SoundOutTypes iOutputTargetTmp = m_pps->m_outputTarget;
+	const SoundOutTypes iOutputTargetTmp = m_pps->GetOutputTarget();
 	GetDialogValues();
-	m_pps->m_outputTarget = m_cOutputTarget;
-	m_pps->ReInitialize();
+	m_pps->SetOutputTarget(m_cOutputTarget);
 
 	const float volume = dequantizeSignedPercent(m_volume);
 	const float pan = dequantizeSignedPercent(m_balance);
 	const float front_rear_fade = dequantizeSignedPercent(m_fade);
 
 	m_pps->Play((1.0f + volume) * 100.0f, 0.0f, 0, pan, front_rear_fade, 0, false);
-	m_pps->m_outputTarget = iOutputTargetTmp;
+   m_pps->SetOutputTarget(iOutputTargetTmp);
 }
 
 void SoundPositionDialog::OnOK()
