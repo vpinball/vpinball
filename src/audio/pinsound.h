@@ -82,9 +82,13 @@ public:
    ~PinSound();
 
    class PinDirectSound *GetPinDirectSound();
+
+	void SetOutputTarget(SoundOutTypes target) {if (m_outputTarget != target) { m_outputTarget = target; ReInitialize(); } }
+	SoundOutTypes GetOutputTarget() const { return m_outputTarget; }
+
    void UnInitialize();
    HRESULT ReInitialize();
-   void SetDevice(); //!! BASS only
+   void SetBassDevice(); //!! BASS only // FIXME move loading code to PinSound and make private
 #ifdef ONLY_USE_BASS
    bool IsWav() const { return false; }
    bool IsWav2() const
@@ -119,7 +123,6 @@ public:
    string m_szName; // only filename, no ext
    string m_szPath; // full filename, incl. path
 
-   SoundOutTypes m_outputTarget;
    int m_balance;
    int m_fade;
    int m_volume;
@@ -135,6 +138,9 @@ public:
    char *m_pdata_org; // save wavs in original raw format
    int m_cdata_org;
 #endif
+
+private:
+   SoundOutTypes m_outputTarget;
 };
 
 
