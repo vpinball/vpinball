@@ -290,6 +290,10 @@ FIXES:
 
 - fix changing the timer settings not marking the table as dirty
 
+- fix 'paste at' (and others) coordinates
+
+- fix deleting of sub part included in a collection warning
+
 - fix keyboard navigation in Material dialogue
 
 - fix .bmp export in the Image Manager
@@ -343,6 +347,10 @@ FIXES:
 - fix saving of custom keys for joypad input
 
 - fix changing the timer settings not marking the table as dirty
+
+- fix 'paste at' (and others) coordinates
+
+- fix deleting of sub part included in a collection warning
 
 - fix .bmp export in the Image Manager
 
