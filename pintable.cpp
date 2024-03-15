@@ -6449,7 +6449,7 @@ void PinTable::UseTool(int x, int y, int tool)
 
 Vertex2D PinTable::TransformPoint(int x, int y) const
 {
-   const CRect rc = m_mdiTable->GetClientRect();
+   const CRect rc = GetClientRect();
 
    const HitSur phs(nullptr, m_zoom, m_offset.x, m_offset.y, rc.right - rc.left, rc.bottom - rc.top, 0, 0, nullptr);
 
