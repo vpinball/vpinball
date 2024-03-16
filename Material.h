@@ -190,6 +190,7 @@ public:
       size += 2 * sizeof(int) + sizeof(float); // ELFO
       size += 2 * sizeof(int) + sizeof(float); // FRIC
       size += 2 * sizeof(int) + sizeof(float); // SCAT
+      size += 2 * sizeof(int); // ENDB
       return size;
    }
 

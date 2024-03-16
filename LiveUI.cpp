@@ -1124,8 +1124,9 @@ void LiveUI::OpenTweakMode()
 
 void LiveUI::CloseTweakMode()
 {
+   if (m_tweakMode)
+      m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 3 /* tweak mode closed event */);
    m_tweakMode = false;
-   m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 3 /* tweak mode closed event */);
 }
 
 void LiveUI::UpdateTweakPage()
@@ -1219,10 +1220,13 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
 
    if (keycode == g_pplayer->m_rgKeys[eLeftFlipperKey] || keycode == g_pplayer->m_rgKeys[eRightFlipperKey])
    {
+      static U32 startOfPress = 0;
+      if (keyEvent != 0)
+         startOfPress = msec();
       if (keyEvent == 2) // Do not react on key up (only key down or long press)
          return;
       const bool up = keycode == g_pplayer->m_rgKeys[eRightFlipperKey];
-      const float thesign = up ? 0.2f : -0.2f;
+      const float incSpeed = (up ? 0.2f : -0.2f) + max(1.f, (msec() - startOfPress) / 1000.0f);
       const float step = up ? 1.f : -1.f;
       ViewSetup &viewSetup = table->mViewSetups[table->m_BG_current_set];
       const bool isWindow = viewSetup.mMode == VLM_WINDOW;
@@ -1257,45 +1261,39 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
          UpdateTweakPage();
          break;
       }
-      case BS_LookAt: viewSetup.mLookAt += 0.5f * thesign; break;
-      case BS_FOV: viewSetup.mFOV += 0.5f * thesign; break;
-      case BS_Layback: viewSetup.mLayback += 0.5f * thesign; break;
-      case BS_ViewHOfs: viewSetup.mViewHOfs += (isWindow ? 0.1f : 0.5f) * thesign; break;
-      case BS_ViewVOfs: viewSetup.mViewVOfs += (isWindow ? 0.1f : 0.5f) * thesign; break;
+      case BS_LookAt: viewSetup.mLookAt += 0.25f * incSpeed; break;
+      case BS_FOV: viewSetup.mFOV += 0.25f * incSpeed; break;
+      case BS_Layback: viewSetup.mLayback += 0.25f * incSpeed; break;
+      case BS_ViewHOfs: viewSetup.mViewHOfs += (isWindow ? 0.5f : 0.25f) * incSpeed; break;
+      case BS_ViewVOfs: viewSetup.mViewVOfs += (isWindow ? 0.5f : 0.25f) * incSpeed; break;
       case BS_XYZScale:
-         viewSetup.mSceneScaleX += 0.0025f * thesign;
-         viewSetup.mSceneScaleY += 0.0025f * thesign;
-         viewSetup.mSceneScaleZ += 0.0025f * thesign;
+         viewSetup.mSceneScaleX += 0.0025f * 0.5f * incSpeed;
+         viewSetup.mSceneScaleY += 0.0025f * 0.5f * incSpeed;
+         viewSetup.mSceneScaleZ += 0.0025f * 0.5f * incSpeed;
          break;
-      case BS_XScale:
-         viewSetup.mSceneScaleX += 0.0025f * thesign;
-         break;
-      case BS_YScale:
-         viewSetup.mSceneScaleY += 0.0025f * thesign;
-         break;
-      case BS_ZScale:
-         viewSetup.mSceneScaleZ += 0.0025f * thesign;
-         break;
+      case BS_XScale: viewSetup.mSceneScaleX += 0.0025f * 0.5f * incSpeed; break;
+      case BS_YScale: viewSetup.mSceneScaleY += 0.0025f * 0.5f * incSpeed; break;
+      case BS_ZScale: viewSetup.mSceneScaleZ += 0.0025f * 0.5f * incSpeed; break;
       case BS_XOffset:
          if (isWindow)
-            table->m_settings.SaveValue(Settings::Player, "ScreenPlayerX"s, table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerX"s, 0.0f) + 0.25f * thesign);
+            table->m_settings.SaveValue(Settings::Player, "ScreenPlayerX"s, table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerX"s, 0.0f) + 0.125f * incSpeed);
          else
-            viewSetup.mViewX += 5.f * thesign;
+            viewSetup.mViewX += 2.5f * incSpeed;
          break;
       case BS_YOffset:
          if (isWindow)
-            table->m_settings.SaveValue(Settings::Player, "ScreenPlayerY"s, table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerY"s, 0.0f) + 0.25f * thesign);
+            table->m_settings.SaveValue(Settings::Player, "ScreenPlayerY"s, table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerY"s, 0.0f) + 0.125f * incSpeed);
          else
-            viewSetup.mViewY += 5.f * thesign;
+            viewSetup.mViewY += 2.5f * incSpeed;
          break;
       case BS_ZOffset:
          if (isWindow)
-            table->m_settings.SaveValue(Settings::Player, "ScreenPlayerZ"s, table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerZ"s, 70.0f) + 0.25f * thesign);
+            table->m_settings.SaveValue(Settings::Player, "ScreenPlayerZ"s, table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerZ"s, 70.0f) + 0.125f * incSpeed);
          else
-            viewSetup.mViewZ += (viewSetup.mMode == VLM_LEGACY ? 50.f : 5.f) * thesign;
+            viewSetup.mViewZ += (viewSetup.mMode == VLM_LEGACY ? 25.f : 2.5f) * incSpeed;
          break;
-      case BS_WndTopZOfs: viewSetup.mWindowTopZOfs += 5.f * thesign; break;
-      case BS_WndBottomZOfs: viewSetup.mWindowBottomZOfs += 5.f * thesign; break;
+      case BS_WndTopZOfs: viewSetup.mWindowTopZOfs += 2.5f * incSpeed; break;
+      case BS_WndBottomZOfs: viewSetup.mWindowBottomZOfs += 2.5f * incSpeed; break;
 
       // Table customization
       case BS_DayNight:
@@ -1793,7 +1791,7 @@ void LiveUI::UpdateTweakModeUI()
       m_tweakScroll = clamp(m_tweakScroll, 0.f, maxScroll);
       ImGui::SetNextWindowScroll(ImVec2(0.f, m_tweakScroll));
       ImGui::SetNextWindowSizeConstraints(ImVec2(0.f, 0.f), ImVec2(FLT_MAX, lastHeight));
-      if (ImGui::BeginChild("Rules", ImVec2(0.f, 0.f), 0, ImGuiWindowFlags_NoBackground))
+      if (ImGui::BeginChild("Rules", ImVec2(0.f, 0.f), 0, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoScrollbar /* | ImGuiWindowFlags_AlwaysVerticalScrollbar */))
       {
          markdown_start_id = ImGui::GetItemID();
          ImGui::Markdown(m_table->m_szRules.c_str(), m_table->m_szRules.length(), markdown_config);

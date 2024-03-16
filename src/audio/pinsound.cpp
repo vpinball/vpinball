@@ -93,7 +93,7 @@ void PinSound::UnInitialize()
    {
       if (m_BASSstream)
       {
-         SetDevice();
+         SetBassDevice();
          BASS_StreamFree(m_BASSstream);
          m_BASSstream = 0;
       }
@@ -116,7 +116,7 @@ HRESULT PinSound::ReInitialize()
    {
 	   const SoundConfigTypes SoundMode3D = (m_outputTarget == SNDOUT_BACKGLASS) ? SNDCFG_SND3D2CH : (SoundConfigTypes)g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "Sound3D"s, (int)SNDCFG_SND3D2CH);
 
-	   SetDevice();
+	   SetBassDevice();
 	   m_BASSstream = BASS_StreamCreateFile(
 		   TRUE,
 		   m_pdata,
@@ -239,7 +239,7 @@ HRESULT PinSound::ReInitialize()
    return S_OK;
 }
 
-void PinSound::SetDevice()
+void PinSound::SetBassDevice()
 {
    const int bass_idx = (m_outputTarget == SNDOUT_BACKGLASS) ? g_pvp->m_ps.bass_BG_idx : g_pvp->m_ps.bass_STD_idx;
    if (bass_idx != -1 && g_pvp->m_ps.bass_STD_idx != g_pvp->m_ps.bass_BG_idx) BASS_SetDevice(bass_idx);
@@ -251,7 +251,7 @@ void PinSound::Play(const float volume, const float randompitch, const int pitch
       PlayInternal(volume, randompitch, pitch, pan, front_rear_fade, flags, restart);
    else if (m_BASSstream)
    {
-      SetDevice();
+      SetBassDevice();
 
       BASS_ChannelSetAttribute(m_BASSstream, BASS_ATTRIB_VOL, sqrtf(saturate(volume*(float)(1.0/100.)))); // to match VP legacy
 
@@ -336,7 +336,7 @@ void PinSound::Stop()
    else
       if (m_BASSstream)
       {
-         SetDevice();
+			SetBassDevice();
          BASS_ChannelStop(m_BASSstream);
       }
 }
@@ -647,9 +647,9 @@ PinSound *AudioMusicPlayer::LoadFile(const string& strFileName)
 	   fread_s(pps->m_pdata, pps->m_cdata, 1, pps->m_cdata, f);
 	   fclose(f);
 
-	   const SoundConfigTypes SoundMode3D = (pps->m_outputTarget == SNDOUT_BACKGLASS) ? SNDCFG_SND3D2CH : (SoundConfigTypes)g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "Sound3D"s, (int)SNDCFG_SND3D2CH);
+	   const SoundConfigTypes SoundMode3D = (pps->GetOutputTarget() == SNDOUT_BACKGLASS) ? SNDCFG_SND3D2CH : (SoundConfigTypes)g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "Sound3D"s, (int)SNDCFG_SND3D2CH);
 
-	   pps->SetDevice();
+	   pps->SetBassDevice();
 	   pps->m_BASSstream = BASS_StreamCreateFile(
 		   TRUE,
 		   pps->m_pdata,
@@ -887,7 +887,7 @@ void PinDirectSoundWavCopy::PlayInternal(const float volume, const float randomp
 		}
 	}
 
-	const SoundConfigTypes SoundMode3D = (m_ppsOriginal->m_outputTarget == SNDOUT_BACKGLASS) ? SNDCFG_SND3D2CH : (SoundConfigTypes)g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "Sound3D"s, (int)SNDCFG_SND3D2CH);
+	const SoundConfigTypes SoundMode3D = (m_ppsOriginal->GetOutputTarget() == SNDOUT_BACKGLASS) ? SNDCFG_SND3D2CH : (SoundConfigTypes)g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "Sound3D"s, (int)SNDCFG_SND3D2CH);
 
 	switch (SoundMode3D)
 	{

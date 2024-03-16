@@ -2853,7 +2853,8 @@ HRESULT PinTable::SaveSoundToStream(const PinSound * const pps, IStream *pstm)
 #endif
       return hr;
 
-   if (FAILED(hr = pstm->Write(&pps->m_outputTarget, sizeof(bool), &writ)))
+   SoundOutTypes outputTarget = pps->GetOutputTarget();
+   if (FAILED(hr = pstm->Write(&outputTarget, sizeof(bool), &writ)))
       return hr;
 
    // Begin NEW_SOUND_VERSION data
@@ -3009,11 +3010,13 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
 
    if (LoadFileVersion >= NEW_SOUND_FORMAT_VERSION)
    {
-	   if (FAILED(hr = pstm->Read(&pps->m_outputTarget, sizeof(char), &read)))
+      SoundOutTypes outputTarget;
+	   if (FAILED(hr = pstm->Read(&outputTarget, sizeof(char), &read)))
 	   {
 		   delete pps;
 		   return hr;
 	   }
+      pps->SetOutputTarget(outputTarget);
 	   if (FAILED(hr = pstm->Read(&pps->m_volume, sizeof(int), &read)))
 	   {
 		   delete pps;
@@ -3044,8 +3047,9 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
 		   return hr;
 	   }
 
-	   pps->m_outputTarget = (StrStrI(pps->m_szName.c_str(), "bgout_") != nullptr) || (lstrcmpi(pps->m_szPath.c_str(), "* Backglass Output *") == 0) // legacy behavior, where the BG selection was encoded into the strings directly
-	                      || toBackglassOutput ? SNDOUT_BACKGLASS : SNDOUT_TABLE;
+	   pps->SetOutputTarget((StrStrI(pps->m_szName.c_str(), "bgout_") != nullptr)
+                        || (lstrcmpi(pps->m_szPath.c_str(), "* Backglass Output *") == 0) // legacy behavior, where the BG selection was encoded into the strings directly
+	                     || toBackglassOutput ? SNDOUT_BACKGLASS : SNDOUT_TABLE);
    }
 
    if (FAILED(hr = pps->ReInitialize()))
@@ -3415,22 +3419,16 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
       }
       bw.WriteStruct(FID(PHMA), phymats.data(), (int)(sizeof(SavePhysicsMaterial)*m_materials.size()));
    }
-   // 10.8+ material saving (this format supports new properties, and can be extended in future versions, and does not perform quantizations)
+   // 10.8+ material saving (this format supports new properties, can be extended in future versions, and does not perform quantizations)
    for (size_t i = 0; i < m_materials.size(); i++)
    {
-      const size_t record_size = m_materials[i]->GetSaveSize() + 2 *sizeof(int);
+      const size_t record_size = m_materials[i]->GetSaveSize();
       HGLOBAL hMem = ::GlobalAlloc(GMEM_MOVEABLE, record_size);
       CComPtr<IStream> spStream;
       const HRESULT hr = ::CreateStreamOnHGlobal(hMem, FALSE, &spStream);
       m_materials[i]->SaveData(spStream, NULL, false);
-      BiffWriter sub_bw(spStream, NULL);
-      sub_bw.WriteTag(FID(ENDB));
       LPVOID pData = ::GlobalLock(hMem);
-      ULONG writ = 0;
-      int id = FID(MATR);
-      bw.WriteRecordSize((int)(sizeof(int) + record_size));
-      bw.WriteBytes(&id, (ULONG)sizeof(int), &writ);
-      bw.WriteBytes(pData, (ULONG)record_size, &writ);
+      bw.WriteStruct(FID(MATR), pData, record_size);
       ::GlobalUnlock(hMem);
    }
 
@@ -3438,19 +3436,13 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
    {
       // Save each render probe as a data blob inside the main gamedata.
       // This allows backward compatibility since the block will be blindly discarded on older versions, still hashing it.
-      const int record_size = m_vrenderprobe[i]->GetSaveSize() + 2 *sizeof(int);
+      const int record_size = m_vrenderprobe[i]->GetSaveSize();
       HGLOBAL hMem = ::GlobalAlloc(GMEM_MOVEABLE, record_size);
       CComPtr<IStream> spStream;
       const HRESULT hr = ::CreateStreamOnHGlobal(hMem, FALSE, &spStream);
       m_vrenderprobe[i]->SaveData(spStream, NULL, false);
-      BiffWriter sub_bw(spStream, NULL);
-      sub_bw.WriteTag(FID(ENDB));
       LPVOID pData = ::GlobalLock(hMem);
-      ULONG writ = 0;
-      int id = FID(RPRB);
-      bw.WriteRecordSize(sizeof(int) + record_size);
-      bw.WriteBytes(&id, sizeof(int), &writ);
-      bw.WriteBytes(pData, record_size, &writ);
+      bw.WriteStruct(FID(RPRB), pData, record_size);
       ::GlobalUnlock(hMem);
    }
 
@@ -4502,7 +4494,7 @@ void PinTable::ReImportSound(const HWND hwndListView, PinSound * const pps, cons
    const int balance = pps->m_balance;
    const int fade = pps->m_fade;
    const int volume = pps->m_volume;
-   const SoundOutTypes outputTarget = pps->m_outputTarget;
+   const SoundOutTypes outputTarget = pps->GetOutputTarget();
    const string szName = pps->m_szName;
 
    //!! meh to all of this: kill old raw sound data and DSound/BASS stuff, then copy new one over
@@ -4525,7 +4517,7 @@ void PinTable::ReImportSound(const HWND hwndListView, PinSound * const pps, cons
    pps->m_balance = balance;
    pps->m_fade = fade;
    pps->m_volume = volume;
-   pps->m_outputTarget = outputTarget;
+   pps->SetOutputTarget(outputTarget);
    pps->m_szName = szName;
 }
 
@@ -4565,7 +4557,7 @@ int PinTable::AddListSound(HWND hwndListView, PinSound * const pps)
 
    ListView_SetItemText(hwndListView, index, 1, (LPSTR)pps->m_szPath.c_str());
 
-   switch (pps->m_outputTarget)
+   switch (pps->GetOutputTarget())
    {
    case SNDOUT_BACKGLASS:
 	   ListView_SetItemText(hwndListView, index, 2, (LPSTR)"Backglass");
@@ -6623,7 +6615,8 @@ void PinTable::OnDelete()
       {
          for (int k = 0; k < m_vcollection[i].m_visel.size(); k++)
          {
-            if (ptr == m_vcollection[i].m_visel.ElementAt(k))
+            // Identify Editable in collection, as well as sub part of collection's editable (like light center for example)
+            if (ptr == m_vcollection[i].m_visel.ElementAt(k) || ptr->GetIEditable() == m_vcollection[i].m_visel.ElementAt(k)->GetIEditable())
             {
                inCollection = true;
                break;
@@ -6737,7 +6730,7 @@ void PinTable::UseTool(int x, int y, int tool)
 
 Vertex2D PinTable::TransformPoint(int x, int y) const
 {
-   const CRect rc = m_mdiTable->GetClientRect();
+   const CRect rc = GetClientRect();
 
    const HitSur phs(nullptr, m_zoom, m_offset.x, m_offset.y, rc.right - rc.left, rc.bottom - rc.top, 0, 0, nullptr);
 
