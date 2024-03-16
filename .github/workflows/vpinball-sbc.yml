@@ -100,7 +100,7 @@ jobs:
             cd tmp
             tar -czf ../VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}-${{ matrix.config }}-linux-${{ matrix.arch }}-${{ matrix.board }}.tar.gz *
       - uses: actions/cache/save@v4
-        if: always()
+        if: ${{ !cancelled() }}
         with:
           path: standalone/linux-${{ matrix.arch }}/external/cache
           key: ${{ matrix.type }}-linux-${{ matrix.arch }}-${{ matrix.config }}-external-${{ env.TIMESTAMP }}

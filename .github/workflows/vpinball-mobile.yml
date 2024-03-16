@@ -68,7 +68,7 @@ jobs:
           cd standalone/ios-${{ matrix.arch }}
           BUILD_TYPE=${{ matrix.config }} ./external.sh
       - uses: actions/cache/save@v4
-        if: always()
+        if: ${{ !cancelled() }}
         with:
           path: standalone/ios-${{ matrix.arch }}/external/cache
           key: ${{ matrix.type }}-ios-${{ matrix.arch }}-${{ matrix.config }}-external-${{ env.TIMESTAMP }}
@@ -127,7 +127,7 @@ jobs:
           cd standalone/android-${{ matrix.arch }}
           BUILD_TYPE=${{ matrix.config }} ./external.sh
       - uses: actions/cache/save@v4
-        if: always()
+        if: ${{ !cancelled() }}
         with:
           path: standalone/android-${{ matrix.arch }}/external/cache
           key: ${{ matrix.type }}-android-${{ matrix.arch }}-${{ matrix.config }}-external-${{ env.TIMESTAMP }}

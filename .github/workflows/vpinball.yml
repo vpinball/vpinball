@@ -236,7 +236,7 @@ jobs:
           cd standalone/macos-${{ matrix.arch }}
           BUILD_TYPE=${{ matrix.config }} ./external.sh
       - uses: actions/cache/save@v4
-        if: always()
+        if: ${{ !cancelled() }}
         with:
           path: standalone/macos-${{ matrix.arch }}/external/cache
           key: ${{ matrix.type }}-macos-${{ matrix.arch }}-${{ matrix.config }}-external-${{ env.TIMESTAMP }}
@@ -301,7 +301,7 @@ jobs:
           cd standalone/linux-${{ matrix.arch }}
           BUILD_TYPE=${{ matrix.config }} ./external.sh
       - uses: actions/cache/save@v4
-        if: always()
+        if: ${{ !cancelled() }}
         with:
           path: standalone/linux-${{ matrix.arch }}/external/cache
           key: ${{ matrix.type }}-linux-${{ matrix.arch }}-${{ matrix.config }}-external-${{ env.TIMESTAMP }}
