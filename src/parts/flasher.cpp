@@ -1235,7 +1235,7 @@ void Flasher::Render(const unsigned int renderMask)
       return;
 
    // Update lightmap before checking anything that uses alpha
-   float alpha = m_d.m_alpha;
+   float alpha = (float) m_d.m_alpha;
    if (m_lightmap)
       alpha *= m_lightmap->m_currentIntensity / (m_lightmap->m_d.m_intensity * m_lightmap->m_d.m_intensity_scale);
 
