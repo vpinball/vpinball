@@ -1221,7 +1221,7 @@ void LiveUI::OpenTweakMode()
    m_ShowSplashModal = false;
    m_renderer->DisableStaticPrePass(true);
    m_tweakMode = true;
-   m_activeTweakPage = m_table->m_szRules.empty()  ? TP_PointOfView : TP_Rules;
+   m_activeTweakPage = m_table->m_szRules.empty() ? (m_player->m_stereo3D == STEREO_VR ? TP_TableOption : TP_PointOfView) : TP_Rules;
    m_activeTweakIndex = 0;
    UpdateTweakPage();
 }
@@ -1344,11 +1344,18 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
          if (keyEvent != 1) // Only keydown
             return;
          int stepi = up ? 1 : TP_Count - 1;
+         TweakPage tp = m_activeTweakPage;
          m_activeTweakPage = (TweakPage)((m_activeTweakPage + stepi) % TP_Count);
-         if (m_activeTweakPage == TP_Rules && m_table->m_szRules.empty())
-            m_activeTweakPage = (TweakPage)((m_activeTweakPage + stepi) % TP_Count);
-         if (m_activeTweakPage == TP_Info && m_table->m_szDescription.empty())
-            m_activeTweakPage = (TweakPage)((m_activeTweakPage + stepi) % TP_Count);
+         while (tp != m_activeTweakPage)
+         {
+            tp = m_activeTweakPage;
+            if (m_activeTweakPage == TP_Info && m_table->m_szDescription.empty())
+               m_activeTweakPage = (TweakPage)((m_activeTweakPage + stepi) % TP_Count);
+            if (m_activeTweakPage == TP_Rules && m_table->m_szRules.empty())
+               m_activeTweakPage = (TweakPage)((m_activeTweakPage + stepi) % TP_Count);
+            if (m_activeTweakPage == TP_PointOfView && m_player->m_stereo3D == STEREO_VR)
+               m_activeTweakPage = (TweakPage)((m_activeTweakPage + stepi) % TP_Count);
+         }
          m_activeTweakIndex = 0;
          m_tweakScroll = 0.f;
          UpdateTweakPage();
@@ -1781,7 +1788,6 @@ void LiveUI::UpdateTweakModeUI()
          ImGui::Text("%s", m_tweakState[id] == 0 ? "  " : m_tweakState[id] == 1 ? " **" : " *"); ImGui::TableNextRow(); \
       }
       #define CM_SKIP_LINE {ImGui::TableNextColumn(); ImGui::Dummy(ImVec2(0.f, m_dpi * 3.f)); ImGui::TableNextRow();}
-      const int nTweakPages = 2 + (m_table->m_szRules.empty() ? 0 : 1) + (m_table->m_szDescription.empty() ? 0 : 1);
       const float realToVirtual = viewSetup.GetRealToVirtualScale(table);
       for (int setting : m_tweakPageOptions)
       {
@@ -1814,10 +1820,13 @@ void LiveUI::UpdateTweakModeUI()
          }
          else switch (setting)
          {
-         case BS_Page:
-               CM_ROW(setting,
-                  "Page "s.append(std::to_string(m_activeTweakPage + 1 - (m_table->m_szRules.empty() ? 1 : 0) - (m_table->m_szDescription.empty() ? 1 : 0)))
-                     .append("/").append(std::to_string(nTweakPages)).c_str(),"%s",
+         case BS_Page: {
+               const int pageIndex = m_activeTweakPage 
+                  - ((m_activeTweakPage > TP_Info && m_table->m_szDescription.empty()) ? 1 : 0)
+                  - ((m_activeTweakPage > TP_Rules && m_table->m_szRules.empty()) ? 1 : 0)
+                  - ((m_activeTweakPage > TP_PointOfView && m_player->m_stereo3D == STEREO_VR) ? 1 : 0);
+               const int nTweakPages = 1 + (m_table->m_szRules.empty() ? 0 : 1) + (m_table->m_szDescription.empty() ? 0 : 1) + (m_player->m_stereo3D == STEREO_VR ? 0 : 1);
+               CM_ROW(setting, "Page "s.append(std::to_string(1 + pageIndex)).append("/").append(std::to_string(nTweakPages)).c_str(), "%s",
                   m_activeTweakPage == TP_TableOption      ? "Table Options"
                      : m_activeTweakPage == TP_PointOfView ? "Point of View"
                      : m_activeTweakPage == TP_Rules       ? "Rules"
@@ -1825,6 +1834,7 @@ void LiveUI::UpdateTweakModeUI()
                   "");
             CM_SKIP_LINE;
             break;
+         }
 
          // View setup
          case BS_ViewMode: CM_ROW(setting, "View Layout Mode:", "%s", isLegacy ? "Legacy" : isCamera ? "Camera" : "Window", ""); CM_SKIP_LINE; break;
