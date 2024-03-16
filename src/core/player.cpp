@@ -1331,7 +1331,7 @@ HRESULT Player::Init()
                                     "lower left/right for Flippers, upper left/right for Magna buttons, top left for Credits and (hold) top right to Exit"s, 12000);
    }
 
-   if (m_playMode == 1 && m_stereo3D != STEREO_VR)
+   if (m_playMode == 1)
       m_liveUI->OpenTweakMode();
    else if (m_playMode == 2 && m_stereo3D != STEREO_VR)
       m_liveUI->OpenLiveUI();

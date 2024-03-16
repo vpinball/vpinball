@@ -1106,7 +1106,7 @@ void Renderer::SubmitFrame()
    // Submit to GPU render queue
    g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_GPU_SUBMIT);
    m_pd3dPrimaryDevice->FlushRenderFrame();
-   if (m_stereo3D == STEREO_VR && m_vrPreview != VRPREVIEW_DISABLED && !g_pplayer->m_liveUI->IsTweakMode())
+   if (m_stereo3D == STEREO_VR && m_vrPreview != VRPREVIEW_DISABLED && !g_pplayer->m_liveUI->IsTweakMode() && g_pplayer->m_liveUI->IsOpened())
    {
       m_pd3dPrimaryDevice->SetRenderTarget("ImgUI-Preview"s, m_pd3dPrimaryDevice->GetOutputBackBuffer(), false);
       g_pplayer->m_liveUI->Update(m_pd3dPrimaryDevice->GetOutputBackBuffer());
@@ -1937,14 +1937,14 @@ void Renderer::PrepareVideoBuffers()
          m_pd3dPrimaryDevice->SetRenderTarget("Left Eye"s, leftTexture, false);
          m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
          m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, leftTexture, true, false, 0, 0, w, h, 0, 0, w, h, 0, 0);
-         if (g_pplayer->m_liveUI->IsTweakMode())
+         if (g_pplayer->m_liveUI->IsTweakMode()) // Render as an overlay in VR (not in preview) at the eye resolution, without depth
             m_pd3dPrimaryDevice->RenderLiveUI();
 
          RenderTarget *rightTexture = m_pd3dPrimaryDevice->GetOffscreenVR(1);
          m_pd3dPrimaryDevice->SetRenderTarget("Right Eye"s, rightTexture, false);
          m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
          m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, rightTexture, true, false, 0, 0, w, h, 0, 0, w, h, 1, 0);
-         if (g_pplayer->m_liveUI->IsTweakMode())
+         if (g_pplayer->m_liveUI->IsTweakMode()) // Render as an overlay in VR (not in preview) at the eye resolution, without depth
             m_pd3dPrimaryDevice->RenderLiveUI();
 
          RenderTarget *outRT = m_pd3dPrimaryDevice->GetOutputBackBuffer();
@@ -2026,7 +2026,7 @@ void Renderer::PrepareVideoBuffers()
       renderedRT = outputRT;
    }
 
-   if (!stereo || m_stereo3D != STEREO_VR)
+   if (m_stereo3D != STEREO_VR)
    {
       // Except for VR, render LiveUI after tonemapping and stereo (otherwise it would break the calibration process for stereo anaglyph)
       g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_MISC);
