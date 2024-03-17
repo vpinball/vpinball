@@ -1766,7 +1766,7 @@ HRESULT Player::Init()
       m_liveUI->PushNotification("You can use Touch controls on this display: bottom left area to Start Game, bottom right area to use the Plunger\n"
                                  "lower left/right for Flippers, upper left/right for Magna buttons, top left for Credits and (hold) top right to Exit"s, 12000);
 
-   if (m_playMode == 1 && m_stereo3D != STEREO_VR)
+   if (m_playMode == 1)
       m_liveUI->OpenTweakMode();
    else if (m_playMode == 2 && m_stereo3D != STEREO_VR)
       m_liveUI->OpenLiveUI();
@@ -3636,14 +3636,14 @@ void Player::PrepareVideoBuffers()
          m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("Left Eye"s, leftTexture, false);
          m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
          m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, leftTexture, true, false, 0, 0, w, h, 0, 0, w, h, 0, 0);
-         if (m_liveUI->IsTweakMode())
+         if (m_liveUI->IsTweakMode()) // Render as an overlay in VR (not in preview) at the eye resolution, without depth
             m_pin3d.m_pd3dPrimaryDevice->RenderLiveUI();
 
          RenderTarget *rightTexture = m_pin3d.m_pd3dPrimaryDevice->GetOffscreenVR(1);
          m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("Right Eye"s, rightTexture, false);
          m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
          m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, rightTexture, true, false, 0, 0, w, h, 0, 0, w, h, 1, 0);
-         if (m_liveUI->IsTweakMode())
+         if (m_liveUI->IsTweakMode()) // Render as an overlay in VR (not in preview) at the eye resolution, without depth
             m_pin3d.m_pd3dPrimaryDevice->RenderLiveUI();
 
          RenderTarget *outRT = m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
@@ -3725,7 +3725,7 @@ void Player::PrepareVideoBuffers()
       renderedRT = outputRT;
    }
 
-   if (!stereo || m_stereo3D != STEREO_VR)
+   if (m_stereo3D != STEREO_VR)
    {
       // Except for VR, render LiveUI after tonemapping and stereo (otherwise it would break the calibration process for stereo anaglyph)
       g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_MISC);
@@ -4088,7 +4088,7 @@ void Player::SubmitFrame()
    // Submit to GPU render queue
    g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_GPU_SUBMIT);
    m_pin3d.m_pd3dPrimaryDevice->FlushRenderFrame();
-   if (m_stereo3D == STEREO_VR && m_vrPreview != VRPREVIEW_DISABLED && !m_liveUI->IsTweakMode())
+   if (m_stereo3D == STEREO_VR && m_vrPreview != VRPREVIEW_DISABLED && !m_liveUI->IsTweakMode() && m_liveUI->IsOpened())
    {
       m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("ImgUI-Preview"s, m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer(), false);
       m_liveUI->Update(m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer());
