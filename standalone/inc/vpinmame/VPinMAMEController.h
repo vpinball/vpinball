@@ -191,6 +191,7 @@ private:
    PinmameGIState* m_pGIBuffer;
    PinmameLEDState* m_pLEDBuffer;
    PinmameSoundCommand* m_pSoundCommandBuffer;
+   PinmameNVRAMState* m_pNVRAMBuffer;
    VPinMAMEGames* m_pGames;
    vector<VPinMAMEDisplay*> m_displays;
    OLE_COLOR m_dmdColor;

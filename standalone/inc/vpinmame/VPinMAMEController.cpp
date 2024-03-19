@@ -191,6 +191,7 @@ VPinMAMEController::VPinMAMEController()
    m_pGIBuffer = new PinmameGIState[PinmameGetMaxGIs()];
    m_pLEDBuffer = new PinmameLEDState[PinmameGetMaxLEDs()];
    m_pSoundCommandBuffer = new PinmameSoundCommand[PinmameGetMaxSoundCommands()];
+   m_pNVRAMBuffer = new PinmameNVRAMState[PinmameGetMaxNVRAM()];
 
    m_pGames = new VPinMAMEGames(this);
    m_pGames->AddRef();
@@ -255,6 +256,7 @@ VPinMAMEController::~VPinMAMEController()
    delete m_pGIBuffer;
    delete m_pLEDBuffer;
    delete m_pSoundCommandBuffer;
+   delete m_pNVRAMBuffer;
    delete m_pPinmameGame;
    delete m_pPinmameMechConfig;
 
@@ -447,14 +449,60 @@ STDMETHODIMP VPinMAMEController::get_RawDmdHeight(int *pVal)
 
 STDMETHODIMP VPinMAMEController::get_NVRAM(VARIANT* pVal)
 {
-   PLOGW << "Not implemented";
+   int uCount = PinmameGetNVRAM(m_pNVRAMBuffer);
+   if (uCount <= 0)
+      return S_FALSE;
+
+   SAFEARRAY* psa = SafeArrayCreateVector(VT_VARIANT, 0, uCount);
+   VARIANT* pData;
+
+   SafeArrayAccessData(psa, (void **)&pData);
+
+   for (int i = 0; i < uCount; i++) {
+      V_VT(&pData[i]) = VT_UI1;
+      V_UI1(&pData[i]) = m_pNVRAMBuffer[i].currStat;
+   }
+
+   SafeArrayUnaccessData(psa);
+
+   V_VT(pVal) = VT_ARRAY | VT_VARIANT;
+   V_ARRAY(pVal) = psa;
 
    return S_OK;
 }
 
 STDMETHODIMP VPinMAMEController::get_ChangedNVRAM(VARIANT* pVal)
 {
-   PLOGW << "Not implemented";
+   int uCount = PinmameGetChangedNVRAM(m_pNVRAMBuffer);
+   if (uCount <= 0) {
+      if (uCount == 0) {
+         V_VT(pVal) = VT_EMPTY;
+         return S_OK;
+      }
+
+      return S_FALSE;
+   }
+
+   SAFEARRAYBOUND Bounds[] = { { (ULONG)uCount, 0 }, { 3, 0 } };
+   SAFEARRAY* psa = SafeArrayCreate(VT_VARIANT, 2, Bounds);
+   LONG ix[3];
+   VARIANT varValue;
+   V_VT(&varValue) = VT_I4;
+
+   for (ix[0] = 0; ix[0] < uCount; ix[0]++) {
+      ix[1] = 0;
+      V_I4(&varValue) = m_pNVRAMBuffer[ix[0]].nvramNo;
+      SafeArrayPutElement(psa, ix, &varValue);
+      ix[1] = 1;
+      V_I4(&varValue) = m_pNVRAMBuffer[ix[0]].currStat;
+      SafeArrayPutElement(psa, ix, &varValue);
+      ix[1] = 2;
+      V_I4(&varValue) = m_pNVRAMBuffer[ix[0]].oldStat;
+      SafeArrayPutElement(psa, ix, &varValue);
+   }
+
+   V_VT(pVal) = VT_ARRAY | VT_VARIANT;
+   V_ARRAY(pVal) = psa;
 
    return S_OK;
 }

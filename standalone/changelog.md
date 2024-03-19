@@ -4,6 +4,9 @@ To keep up with all the changes in master, and make it easier to rebase, this br
 
 The downside of this approach is not accurately keeping track of history:
 
+* 03/18/24
+    * Add support for `PinmameGetNVRAM` and `PinmameGetChangedNVRam`
+
 * 03/11/24
     * Overhaul CI caching strategy for externals
     * Bump libpinmame and libdmdutil to support dmdserver
