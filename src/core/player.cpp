@@ -696,7 +696,7 @@ void Player::OnClose()
     m_ptable->FireVoidEvent(DISPID_GameEvents_Exit);
     if (m_detectScriptHang)
         g_pvp->PostWorkToWorkerThread(HANG_SNOOP_STOP, NULL);
-#ifndef __STANDALONE__
+#ifdef __STANDALONE__
    g_pplayer = nullptr;
 #endif
 
