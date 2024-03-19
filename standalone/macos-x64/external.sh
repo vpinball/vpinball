@@ -117,7 +117,7 @@ cp -a ../${CACHE_DIR}/${CACHE_NAME}/lib/*.dylib ../external/lib
 # build SDL2_image and copy to external
 #
 
-CACHE_NAME="SDL2_image-${SDL2_IMAGE_VERSION}"
+CACHE_NAME="SDL2_image-${SDL2_IMAGE_VERSION}-SDL2-${SDL2_VERSION}"
 
 if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
    curl -sL https://github.com/libsdl-org/SDL_image/releases/download/release-${SDL2_IMAGE_VERSION}/SDL2_image-${SDL2_IMAGE_VERSION}.zip -o SDL2_image-${SDL2_IMAGE_VERSION}.zip
@@ -149,7 +149,7 @@ cp -a ../${CACHE_DIR}/${CACHE_NAME}/lib/*.dylib ../external/lib
 # build SDL2_ttf and copy to external
 #
 
-CACHE_NAME="SDL2_ttf-${SDL2_TTF_VERSION}"
+CACHE_NAME="SDL2_ttf-${SDL2_TTF_VERSION}-SDL2-${SDL2_VERSION}"
 
 if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
    curl -sL https://github.com/libsdl-org/SDL_ttf/releases/download/release-${SDL2_TTF_VERSION}/SDL2_ttf-${SDL2_TTF_VERSION}.zip -o SDL2_ttf-${SDL2_TTF_VERSION}.zip
