@@ -155,7 +155,7 @@ cmake --build build -- -j$(sysctl -n hw.ncpu)
 In a terminal execute the following:
 ```
 sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
-brew install autoconf automake libtool cmake bison curl
+brew install autoconf automake libtool cmake nasm bison curl
 export PATH="$(brew --prefix bison)/bin:$PATH"
 git clone -b standalone https://github.com/vpinball/vpinball
 cd vpinball/standalone/macos-x64
@@ -226,7 +226,7 @@ $ANDROID_HOME/platform-tools/adb -d logcat org.vpinball.app
 
 In a terminal execute the following:
 ```
-sudo apt install git build-essential autoconf automake libtool cmake bison curl zlib1g-dev libdrm-dev libgbm-dev libglu1-mesa-dev libegl-dev libudev-dev libx11-dev libxrandr-dev
+sudo apt install git build-essential autoconf automake libtool cmake nasm bison curl zlib1g-dev libdrm-dev libgbm-dev libglu1-mesa-dev libegl-dev libudev-dev libx11-dev libxrandr-dev
 git clone -b standalone https://github.com/vpinball/vpinball
 cd vpinball/standalone/linux-x64
 ./external.sh
@@ -241,7 +241,7 @@ cmake --build build -- -j$(nproc)
 In a terminal execute the following:
 ```
 sudo dnf groupinstall "Development Tools"
-sudo dnf install gcc-c++ autoconf automake libtool cmake bison curl
+sudo dnf install gcc-c++ autoconf automake libtool cmake nasm bison curl
 git clone -b standalone https://github.com/vpinball/vpinball
 cd vpinball/standalone/linux-x64
 ./external.sh
