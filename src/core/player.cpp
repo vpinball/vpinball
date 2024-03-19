@@ -683,7 +683,9 @@ void Player::OnClose()
       return;
    }
    assert(g_pplayer == this);
+#ifndef __STANDALONE__
    g_pplayer = nullptr;
+#endif
    m_closing = CS_CLOSED;
    PLOGI << "Closing player... [Player's VBS intepreter is #" << m_ptable->m_pcv->m_pScript << "]";
 
@@ -694,6 +696,9 @@ void Player::OnClose()
     m_ptable->FireVoidEvent(DISPID_GameEvents_Exit);
     if (m_detectScriptHang)
         g_pvp->PostWorkToWorkerThread(HANG_SNOOP_STOP, NULL);
+#ifndef __STANDALONE__
+   g_pplayer = nullptr;
+#endif
 
    // Save list of used textures to avoid stuttering in next play
    if ((m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "CacheMode"s, 1) > 0) && FileExists(m_ptable->m_szFileName))
