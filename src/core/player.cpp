@@ -691,7 +691,6 @@ void Player::OnClose()
       return;
    }
    assert(g_pplayer == this);
-   g_pplayer = nullptr;
    m_closing = CS_CLOSED;
    PLOGI << "Closing player... [Player's VBS intepreter is #" << m_ptable->m_pcv->m_pScript << "]";
 
@@ -873,6 +872,8 @@ void Player::OnClose()
    m_controlclsidsafe.clear();
 
    m_changed_vht.clear();
+
+   g_pplayer = nullptr;
 
    restore_win_timer_resolution();
 
