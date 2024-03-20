@@ -195,13 +195,13 @@ void VPinball::GetMyPath()
 }
 
 #ifdef __ANDROID__
-void VPinball::UpdateMyPath(std::string path)
+void VPinball::UpdateMyPath(const std::string& path)
 {
    m_szMyPath = path;
 
-   if (!m_szMyPath.ends_with("/"))
+   if (!m_szMyPath.ends_with('/'))
    {
-      m_szMyPath += "/";
+      m_szMyPath += '/';
    }
 
    // store 2x
