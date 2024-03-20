@@ -3694,7 +3694,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
       const HRESULT hr = ::CreateStreamOnHGlobal(hMem, FALSE, &spStream);
       m_materials[i]->SaveData(spStream, NULL, false);
       LPVOID pData = ::GlobalLock(hMem);
-      bw.WriteStruct(FID(MATR), pData, record_size);
+      bw.WriteStruct(FID(MATR), pData, (int)record_size);
       ::GlobalUnlock(hMem);
    }
 
