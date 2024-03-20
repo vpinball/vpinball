@@ -2219,7 +2219,7 @@ Class cvpmFlips2 'test fastflips switches to rom control after 100ms or so delay
 			SolCallback(FlipperSolNumber(aIdx)) = name & ".RomFlip(" & aIdx & ")="
 			SolCallbackInitialized = False
 			FlipperSub(aIDX) = aInput 'hold old flipper subs
-			Dim cbs: cbs = "Sub XXXFlipperSub_" & aIdx & "(state): " & aInput & " state: End Sub"
+			Dim cbs: cbs = "Sub XXXFlipperSub_" & aIdx & "(state)" & vblf & aInput & " state" & vblf & "End Sub"
 			ExecuteGlobal cbs
 			Set FlipperSubRef(aIDX) = GetRef("XXXFlipperSub_" & aIdx)
 		end if
@@ -2422,8 +2422,8 @@ Sub InitSolCallbacks
 	For sol = 0 To UBound(SolCallback)
 		Set SolCallbackRef(sol) = Nothing
 		Set SolModCallbackRef(sol) = Nothing
-		If SolCallback(sol) <> "" Then cbs = cbs & vblf & "Sub XXXSolCallback_" & sol & "(state): " & SolCallback(sol) & " state: End Sub"
-		If SolModCallback(sol) <> "" Then cbs = cbs & vblf & "Sub XXXSolModCallback_" & sol & "(state): " & SolModCallback(sol) & " state: End Sub"
+		If SolCallback(sol) <> "" Then cbs = cbs & vblf & "Sub XXXSolCallback_" & sol & "(state)" & vblf & SolCallback(sol) & " state" & vblf & "End Sub"
+		If SolModCallback(sol) <> "" Then cbs = cbs & vblf & "Sub XXXSolModCallback_" & sol & "(state)" & vblf & SolModCallback(sol) & " state" & vblf & "End Sub"
 	Next
 	If cbs <> "" Then ExecuteGlobal cbs
 	For sol = 0 To UBound(SolCallback)
