@@ -339,7 +339,7 @@ void PinSound::Stop()
    else
       if (m_BASSstream)
       {
-			SetBassDevice();
+         SetBassDevice();
          BASS_ChannelStop(m_BASSstream);
       }
 }
@@ -527,11 +527,11 @@ void AudioMusicPlayer::InitPinDirectSound(const Settings& settings, const HWND h
    for (unsigned int idx = 0; idx < 2; ++idx)
    {
       int deviceIdx = (idx == 0) ? bass_STD_idx : bass_BG_idx;
-		BASS_INFO info;
+      BASS_INFO info;
       const bool isReInit = BASS_SetDevice(deviceIdx) && BASS_GetInfo(&info);
-      PLOGI << "Initializing BASS device #" << deviceIdx << " [Reinit: " << isReInit << "]";
+      PLOGI << "Initializing BASS device #" << deviceIdx << " [Reinit: " << isReInit << ']';
       if (!BASS_Init(deviceIdx, 44100, 
-				(isReInit ? BASS_DEVICE_REINIT : 0) | ((SoundMode3D != SNDCFG_SND3D2CH) && (idx == 0) ? 0 /*| BASS_DEVICE_MONO*/ /*| BASS_DEVICE_DSOUND*/ : 0),
+            (isReInit ? BASS_DEVICE_REINIT : 0) | ((SoundMode3D != SNDCFG_SND3D2CH) && (idx == 0) ? 0 /*| BASS_DEVICE_MONO*/ /*| BASS_DEVICE_DSOUND*/ : 0),
             g_pvp->GetHwnd(), nullptr)) // note that sample rate is usually ignored and set depending on the input/file automatically
       {
          const int code = BASS_ErrorGetCode();

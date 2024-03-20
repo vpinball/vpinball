@@ -8143,7 +8143,7 @@ void PinTable::AuditTable() const
    delete[] szText;
 
    if (FindIndexOf(identifiers, "execute"s) != -1)
-      ss << ". Warning: Scripts seems to use the 'Execute' command. This command triggers computer security checks and will likely causes stutters during play.\r\n";
+      ss << ". Warning: Scripts seems to use the 'Execute' command. This command triggers computer security checks and will likely cause stutters during play.\r\n";
 
    if (m_glassBottomHeight > m_glassTopHeight)
       ss << ". Warning: Glass height seems invalid: bottom is higher than top\r\n";
@@ -8177,7 +8177,7 @@ void PinTable::AuditTable() const
       TimerDataRoot *tdr = nullptr;
       switch (type)
       {
-      // case eItemPrimitive: tdr = &prim->m_d.m_tdr; break; // Note: primitive have timers but they are not exposed to the UI
+      // case eItemPrimitive: tdr = &prim->m_d.m_tdr; break; // Note: primitives have timers but they are not exposed to the UI
       case eItemSurface: tdr = &surf->m_d.m_tdr; break;
       case eItemTimer: tdr = &((Timer *)part)->m_d.m_tdr; break;
       case eItemLight: tdr = &((Light *)part)->m_d.m_tdr; break;

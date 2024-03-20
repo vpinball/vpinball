@@ -1330,7 +1330,7 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
       if (keyEvent == 2) // Do not react on key up (only key down or long press)
          return;
       const bool up = keycode == g_pplayer->m_rgKeys[eRightFlipperKey];
-      const float incSpeed = (up ? 0.2f : -0.2f) * (1.0f + max(9.f, (msec() - startOfPress) / 500.0f));
+      const float incSpeed = (up ? 0.2f : -0.2f) * (1.0f + min(9.f, (float)(msec() - startOfPress) / 500.0f));
       const float step = up ? 1.f : -1.f;
       ViewSetup &viewSetup = table->mViewSetups[table->m_BG_current_set];
       const bool isWindow = viewSetup.mMode == VLM_WINDOW;

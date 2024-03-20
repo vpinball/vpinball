@@ -521,7 +521,7 @@ void SoundDialog::SoundPosition()
 				lvitem.iSubItem = 0;
 				ListView_GetItem(hSoundList, &lvitem);
 				pps = (PinSound *)lvitem.lParam;
-            pps->SetOutputTarget(spd.m_cOutputTarget);
+				pps->SetOutputTarget(spd.m_cOutputTarget);
 				pps->m_balance = spd.m_balance;
 				pps->m_fade = spd.m_fade;
 				pps->m_volume = spd.m_volume;

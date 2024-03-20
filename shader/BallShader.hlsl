@@ -233,7 +233,7 @@ float4 psBall( const in vout IN, uniform bool equirectangularMap, uniform bool d
         ballImageColor = lerp(ballImageColor, playfieldColor, smoothstep(0.0, 0.15, NdotR) * invTableRes_reflection.z);
     }
 
-	// We can face infinite reflections (ball->playfield->ball->playfield->...) which would overflow, or very bright dots that would cause lighting artefacts, so we saturate to an arbitrary value
+    // We can face infinite reflections (ball->playfield->ball->playfield->...) which would overflow, or very bright dots that would cause lighting artefacts, so we saturate to an arbitrary value
     ballImageColor = min(ballImageColor, float3(15., 15., 15.));
 
     float3 diffuse = cBase_Alpha.rgb*0.075;

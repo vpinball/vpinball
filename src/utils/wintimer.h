@@ -76,7 +76,7 @@ public:
       }
    }
 
-   void EnableWorstFrameLogging(bool enable) { m_logWorstFrame = enable; }
+   void EnableWorstFrameLogging(const bool enable) { m_logWorstFrame = enable; }
 
    void LogWorstFrame()
    {
