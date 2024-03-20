@@ -1107,7 +1107,7 @@ float4 ps_main_BilateralSharp_CAS(const in VS_OUTPUT_2D IN) : COLOR
 
 	float3 sharpen = (e-final_colour/Z) * sharpness;
 
-	const float gs_sharpen = dot(sharpen, 0.333333333333);
+	const float gs_sharpen = (sharpen.x+sharpen.y+sharpen.z) * 0.333333333333;
 	sharpen = lerp(gs_sharpen, sharpen, 0.5);
 
 	return float4(lerp(e, sharpen+e, ampRGB*saturate(sharpness)), 1.0);

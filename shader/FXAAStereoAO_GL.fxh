@@ -1165,7 +1165,7 @@ void main()
 
 	float3 sharpen = (e-final_colour/Z) * sharpness;
 
-	const float gs_sharpen = dot(sharpen, float3(0.333333333333));
+	const float gs_sharpen = (sharpen.x+sharpen.y+sharpen.z) * 0.333333333333;
 	sharpen = lerp(float3(gs_sharpen), sharpen, 0.5);
 
 	color = float4(lerp(e, sharpen+e, ampRGB*saturate(sharpness)), 1.0);
