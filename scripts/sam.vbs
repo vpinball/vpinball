@@ -191,7 +191,7 @@ Class cvpmFFlipsSAM	'test fastflips with support for both Rom and Game-On Soleno
 			FlipperSub(aIdx) = aInput
 			SolCallback(FlipperSolNumber(aIdx)) = name & ".RomFlip(" & aIdx & ")="
 			SolCallbackInitialized = False
-			Dim cbs: cbs = "Sub XXXSAMFlipperSub_" & aIdx & "(state): " & aInput & " state: End Sub"
+			Dim cbs: cbs = "Sub XXXSAMFlipperSub_" & aIdx & "(state)" & vblf & aInput & " state" & vblf & "End Sub"
 			ExecuteGlobal cbs
 			Set FlipperSubRef(aIdx) = GetRef("XXXSAMFlipperSub_" & aIdx)
 		End If
