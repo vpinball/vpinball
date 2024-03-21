@@ -17,6 +17,8 @@ FIXES:
 
 - fix noise on small-scaled DMDs (e.g. on FSS setups)
 
+- fix longstanding bug in the bilateral CAS filter
+
 - fix swapped red & blue channels when exporting from BMPs
 
 - fix Light Debugger dialog 2nd color button
