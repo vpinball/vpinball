@@ -1060,55 +1060,97 @@ float LI(const float3 l)
 
 float4 ps_main_BilateralSharp_CAS(const in VS_OUTPUT_2D IN) : COLOR
 {
-	const float sharpness = 0.625*3.1;
+	const float sharpness = 0.625*3.1; // ~0.1..~2 *3.1
+	const float balance = 0.0;         // [0..1]
 
 	const float2 u = IN.tex0;
 
-	const float3 e = texStereoNoLod(tex_fb_unfiltered, u).xyz;
+	const float3 mid = texStereoNoLod(tex_fb_unfiltered, u).xyz;
 	BRANCH if(w_h_height.w == 1.0) // depth buffer available?
 	{
 		const float depth0 = texStereoNoLod(tex_depth, u).x;
 		BRANCH if((depth0 == 1.0) || (depth0 == 0.0)) // early out if depth too large (=BG) or too small (=DMD,etc)
 		{
-			return float4(e, 1.0);
+			return float4(mid, 1.0);
 		}
 	}
+
+	const float3 e[9] = {
+		texStereoNoLod(tex_fb_unfiltered, float2(u.x -w_h_height.x, u.y -w_h_height.y)),
+		texStereoNoLod(tex_fb_unfiltered, float2(u.x              , u.y -w_h_height.y)),
+		texStereoNoLod(tex_fb_unfiltered, float2(u.x +w_h_height.x, u.y -w_h_height.y)),
+
+		texStereoNoLod(tex_fb_unfiltered, float2(u.x -w_h_height.x, u.y)),
+		mid,
+		texStereoNoLod(tex_fb_unfiltered, float2(u.x +w_h_height.x, u.y)),
+
+		texStereoNoLod(tex_fb_unfiltered, float2(u.x -w_h_height.x, u.y +w_h_height.y)),
+		texStereoNoLod(tex_fb_unfiltered, float2(u.x              , u.y +w_h_height.y)),
+		texStereoNoLod(tex_fb_unfiltered, float2(u.x +w_h_height.x, u.y +w_h_height.y))};
 
 	// Bilateral Blur (crippled)
 	float3 final_colour = float3(0.,0.,0.);
 	float Z = 0.0;
 	UNROLL for (int j=-2; j <= 2; ++j) // 2 = kernelradius
 	{
+		int y = j < 0 ? -3 : 0;
+		y = j > 0 ? 3 : y;
+
 		UNROLL for (int i=-2; i <= 2; ++i)
 		{
-			const float3 cc = texStereoNoLod(tex_fb_unfiltered, float2(u.x + i*(w_h_height.x*0.5), u.y + j*(w_h_height.y*0.5))).xyz; // *0.5 = 1/kernelradius
-			const float factor = normpdf(cc-e, 0.25); // 0.25 = BSIGMA
+			int x = i < 0 ? -1 : 0;
+			x = i > 0 ? 1 : x;
+
+			float3 cc;
+			if((abs(j) == 2 || j == 0) && (abs(i) == 2 || i == 0)) // integer offset pixels, no filtering
+				cc = e[4 + x + y];
+			else
+			{
+				if(abs(j) == 1 && abs(i) == 1)
+					cc = ((e[4] + e[4 + x]) + (e[4 + y] + e[4 + x + y]))*0.25;
+				else
+				{
+					if(abs(j) == 2)
+						cc = e[4 + y] + e[4 + x + y];
+					else
+						if (abs(i) == 2)
+							cc = e[4 + x] + e[4 + x + y];
+						else
+							if (abs(j) == 1)
+								cc = e[4] + e[4 + y];
+							else
+								cc = e[4] + e[4 + x];
+					cc *= 0.5;
+				}
+			}
+
+			const float factor = normpdf(cc-e[4], 0.25); // 0.25 = BSIGMA
 			Z += factor;
 			final_colour += factor*cc;
 		}
 	}
 
 	// CAS (without Better Diagonals)
-	const float2 um1 = u - w_h_height.xy;
-	const float2 up1 = u + w_h_height.xy;
-
-	const float b = LI(texStereoNoLod(tex_fb_unfiltered, float2(u.x, um1.y)).xyz);
-	const float d = LI(texStereoNoLod(tex_fb_unfiltered, float2(um1.x, u.y)).xyz);
-	const float f = LI(texStereoNoLod(tex_fb_unfiltered, float2(up1.x, u.y)).xyz);
-	const float h = LI(texStereoNoLod(tex_fb_unfiltered, float2(u.x, up1.y)).xyz);
-	const float e1 = LI(e);
+	const float b = LI(e[1]);
+	const float d = LI(e[3]);
+	const float f = LI(e[5]);
+	const float h = LI(e[7]);
+	const float e1 = LI(e[4]);
 
 	const float mnRGB = min(min(min(d, e1), min(f, b)), h);
 	const float mxRGB = max(max(max(d, e1), max(f, b)), h);
 
 	// Smooth minimum distance to signal limit divided by smooth max.
 	const float rcpMRGB = rcp(mxRGB);
-	const float ampRGB = saturate(min(mnRGB, 1.0 - mxRGB) * rcpMRGB);
+	float ampRGB = saturate(min(mnRGB, 1.0-mxRGB) * rcpMRGB);
 
-	float3 sharpen = (e-final_colour/Z) * sharpness;
+	float3 sharpen = (e[4]-final_colour/Z) * sharpness;
 
 	const float gs_sharpen = (sharpen.x+sharpen.y+sharpen.z) * 0.333333333333;
-	sharpen = lerp(gs_sharpen, sharpen, 0.5);
+	sharpen = lerp(float3(gs_sharpen), sharpen, 0.5);
 
-	return float4(lerp(e, sharpen+e, ampRGB*saturate(sharpness)), 1.0);
+	ampRGB *= saturate(sharpness);
+	ampRGB  = lerp(ampRGB, 1.0-ampRGB, balance);
+
+	return float4(e[4] + sharpen*ampRGB, 1.0);
 }
