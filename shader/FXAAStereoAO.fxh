@@ -1216,17 +1216,17 @@ float4 ps_main_BilateralSharp_CAS(const in VS_OUTPUT_2D IN) : COLOR
 	}
 
 	const float3 e[9] = {
-		tex2Dlod(texSampler4, float4(u.x -w_h_height.x, u.y -w_h_height.y, 0.,0.)),
-		tex2Dlod(texSampler4, float4(u.x              , u.y -w_h_height.y, 0.,0.)),
-		tex2Dlod(texSampler4, float4(u.x +w_h_height.x, u.y -w_h_height.y, 0.,0.)),
+		tex2Dlod(texSampler4, float4(u.x -w_h_height.x, u.y -w_h_height.y, 0.,0.)).xyz,
+		tex2Dlod(texSampler4, float4(u.x              , u.y -w_h_height.y, 0.,0.)).xyz,
+		tex2Dlod(texSampler4, float4(u.x +w_h_height.x, u.y -w_h_height.y, 0.,0.)).xyz,
 
-		tex2Dlod(texSampler4, float4(u.x -w_h_height.x, u.y, 0.,0.)),
+		tex2Dlod(texSampler4, float4(u.x -w_h_height.x, u.y, 0.,0.)).xyz,
 		mid,
-		tex2Dlod(texSampler4, float4(u.x +w_h_height.x, u.y, 0.,0.)),
+		tex2Dlod(texSampler4, float4(u.x +w_h_height.x, u.y, 0.,0.)).xyz,
 
-		tex2Dlod(texSampler4, float4(u.x -w_h_height.x, u.y +w_h_height.y, 0.,0.)),
-		tex2Dlod(texSampler4, float4(u.x              , u.y +w_h_height.y, 0.,0.)),
-		tex2Dlod(texSampler4, float4(u.x +w_h_height.x, u.y +w_h_height.y, 0.,0.))};
+		tex2Dlod(texSampler4, float4(u.x -w_h_height.x, u.y +w_h_height.y, 0.,0.)).xyz,
+		tex2Dlod(texSampler4, float4(u.x              , u.y +w_h_height.y, 0.,0.)).xyz,
+		tex2Dlod(texSampler4, float4(u.x +w_h_height.x, u.y +w_h_height.y, 0.,0.)).xyz};
 
 	// Bilateral Blur (crippled)
 	float3 final_colour = float3(0.,0.,0.);
@@ -1287,7 +1287,7 @@ float4 ps_main_BilateralSharp_CAS(const in VS_OUTPUT_2D IN) : COLOR
 	float3 sharpen = (e[4]-final_colour/Z) * sharpness;
 
 	const float gs_sharpen = (sharpen.x+sharpen.y+sharpen.z) * 0.333333333333;
-	sharpen = lerp(float3(gs_sharpen), sharpen, 0.5);
+	sharpen = lerp(gs_sharpen, sharpen, 0.5);
 
 	ampRGB *= saturate(sharpness);
 	ampRGB  = lerp(ampRGB, 1.0-ampRGB, balance);
