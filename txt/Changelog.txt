@@ -244,6 +244,8 @@ FIXES:
 
 - fix noise on small-scaled DMDs (e.g. on FSS setups)
 
+- fix longstanding bug in the bilateral CAS filter
+
 - fix swapped red & blue channels when exporting from BMPs
 
 - handle broken tables better and try to load as much as possible
@@ -311,6 +313,8 @@ FIXES:
 - fix longstanding textbox font size bug
 
 - fix noise on small-scaled DMDs (e.g. on FSS setups)
+
+- fix longstanding bug in the bilateral CAS filter
 
 - fix swapped red & blue channels when exporting from BMPs
 
