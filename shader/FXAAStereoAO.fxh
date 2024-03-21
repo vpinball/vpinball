@@ -1076,17 +1076,17 @@ float4 ps_main_BilateralSharp_CAS(const in VS_OUTPUT_2D IN) : COLOR
 	}
 
 	const float3 e[9] = {
-		texStereoNoLod(tex_fb_unfiltered, float2(u.x -w_h_height.x, u.y -w_h_height.y)),
-		texStereoNoLod(tex_fb_unfiltered, float2(u.x              , u.y -w_h_height.y)),
-		texStereoNoLod(tex_fb_unfiltered, float2(u.x +w_h_height.x, u.y -w_h_height.y)),
+		texStereoNoLod(tex_fb_unfiltered, float2(u.x -w_h_height.x, u.y -w_h_height.y)).xyz,
+		texStereoNoLod(tex_fb_unfiltered, float2(u.x              , u.y -w_h_height.y)).xyz,
+		texStereoNoLod(tex_fb_unfiltered, float2(u.x +w_h_height.x, u.y -w_h_height.y)).xyz,
 
-		texStereoNoLod(tex_fb_unfiltered, float2(u.x -w_h_height.x, u.y)),
+		texStereoNoLod(tex_fb_unfiltered, float2(u.x -w_h_height.x, u.y)).xyz,
 		mid,
-		texStereoNoLod(tex_fb_unfiltered, float2(u.x +w_h_height.x, u.y)),
+		texStereoNoLod(tex_fb_unfiltered, float2(u.x +w_h_height.x, u.y)).xyz,
 
-		texStereoNoLod(tex_fb_unfiltered, float2(u.x -w_h_height.x, u.y +w_h_height.y)),
-		texStereoNoLod(tex_fb_unfiltered, float2(u.x              , u.y +w_h_height.y)),
-		texStereoNoLod(tex_fb_unfiltered, float2(u.x +w_h_height.x, u.y +w_h_height.y))};
+		texStereoNoLod(tex_fb_unfiltered, float2(u.x -w_h_height.x, u.y +w_h_height.y)).xyz,
+		texStereoNoLod(tex_fb_unfiltered, float2(u.x              , u.y +w_h_height.y)).xyz,
+		texStereoNoLod(tex_fb_unfiltered, float2(u.x +w_h_height.x, u.y +w_h_height.y)).xyz};
 
 	// Bilateral Blur (crippled)
 	float3 final_colour = float3(0.,0.,0.);
