@@ -2975,7 +2975,10 @@ static HRESULT Global_Join(BuiltinDisp *This, VARIANT *args, unsigned args_cnt, 
         SysFreeString(string);
         string = tmp;
 
-        SysFreeString(conv_str);
+        if (conv_str) {
+            SysFreeString(conv_str);
+            conv_str = NULL;
+        }
     }
 
     SafeArrayUnaccessData(sa);
