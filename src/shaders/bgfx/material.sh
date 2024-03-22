@@ -39,18 +39,18 @@ uniform vec4 Roughness_WrapL_Edge_Thickness; // wrap in [0..1] for rim/wrap ligh
 // Material Helper Functions
 //
 
-float GeometricOpacity(const float NdotV, const float alpha, const float blending, const float t)
+// Lower alpha on border of geometry
+// - blending: amount of effect (0=no darkening, 1=full darkening)
+// - thickness: thickness (0=no darkening, 1=darkening linear with N.V dot product)
+float GeometricOpacity(const float NdotV, const float alpha, const float blending, const float thickness)
 {
-    // blending = cClearcoat_EdgeAlpha.w, no need to pass uniform
-    // t = Roughness_WrapL_Edge_Thickness.w, no need to pass uniform
-
     //old version without thickness
     //return mix(alpha, 1.0, blending*pow(1.0-abs(NdotV),5)); // fresnel for falloff towards silhouette
 
-    //new version (COD/IW, t = thickness), t = 0.05 roughly corresponds to above version
+    //new version (COD/IW, t = thickness), thickness = 0.05 roughly corresponds to above version
     const float x = abs(NdotV); // flip normal in case of wrong orientation (backside lighting)
-    const float g = blending - blending * ( x / (x * (1.0 - t) + t) ); // Smith-Schlick G
-    return mix(alpha, 1.0, g); // fake opacity lerp to ‘shadowed’
+    const float g = blending * (1.0 - (x / (x * (1.0 - thickness) + thickness))); // Smith-Schlick G
+    return mix(alpha, 1.0, g); // fake opacity lerp to 'shadowed'
 }
 
 vec3 FresnelSchlick(const vec3 spec, const float LdotH, const float edge)
@@ -62,18 +62,9 @@ vec3 FresnelSchlick(const vec3 spec, const float LdotH, const float edge)
 
 vec3 DoPointLight(const vec3 pos, const vec3 N, const vec3 V, const vec3 diffuse, const vec3 glossy, const float edge, const float glossyPower, const int i, const bool is_metal) 
 { 
-   // early out here or maybe we can add more material elements without lighting later?
-   BRANCH if (fDisableLighting_top_below.x == 1.0)
-      return diffuse;
-
    //!! do in vertex shader?! or completely before?!
-#if ENABLE_VR
-   // FIXME In VR we need to scale to the overall scene scaling. This causes issue. Scaling the HMD position would be better
-   const vec3 lightDir = (( mul(matView, vec4(lightPos[i].xyz, 1.0)) ).xyz - pos) / fSceneScale.x; 
-#else
    //const vec3 lightDir = mul_w1(lightPos[i].xyz, matView) - pos;
    const vec3 lightDir = ( mul(matView, vec4(lightPos[i].xyz, 1.0)) ).xyz - pos;
-#endif
    const vec3 L = normalize(lightDir);
    const float NdotL = dot(N, L);
    vec3 Out = vec3(0.0,0.0,0.0);
@@ -114,11 +105,7 @@ vec3 DoPointLight(const vec3 pos, const vec3 N, const vec3 V, const vec3 diffuse
 // does /PI-corrected lookup/final color already
 vec3 DoEnvmapDiffuse(const vec3 N, const vec3 diffuse)
 {
-   const vec2 uv = vec2( // remap to 2D envmap coords
-		0.5 + atan2_approx_div2PI(N.y, N.x),
-		acos_approx_divPI(N.z));
-
-   const vec3 env = texture2DLod(tex_diffuse_env, uv, 0.0).xyz;
+   const vec3 env = texture2DLod(tex_diffuse_env, ray_to_equirectangular_uv(N), 0.0).xyz;
    return diffuse * env*fenvEmissionScale_TexWidth.x;
 }
 
@@ -139,16 +126,37 @@ vec3 DoEnvmap2ndLayer(const vec3 color1stLayer, const vec3 pos, const vec3 N, co
    return mix(color1stLayer, env*fenvEmissionScale_TexWidth.x, w); // weight (optional) lower diffuse/glossy layer with clearcoat/specular
 }
 
-vec3 lightLoop(const vec3 pos, vec3 N, const vec3 V, vec3 diffuse, vec3 glossy, const vec3 specular, const float edge, const float fix_normal_orientation, const bool is_metal) // input vectors (N,V) are normalized for BRDF evals
+// ////////////////////////////////////////////////////////////////////////////
+// Apply lighting from the environment and the 2 scene lights
+// - Lighting is kinda PBR since glossy and diffuse are normalized, and the 2nd layer (specular/clearcoat) is 'blended' via Fresnel
+// - Apply the 2 points lights to the diffuse (Lambert with optional rim/wrap) and glossy (Ashikhmin/Blinn) components, clearcoat (a.k.a. specular) is not applied (as point lights).
+//   Light energy can be tweaked in order to have ranged lights instead of the physical 1/d² energy
+//   This lighting can be 'disabled', in fact replacing it by 2 times the diffuse color (backwards compatibility bug)
+// - Apply the environment lighting with diffuse, glossy and a specular/clearcoat layer
+//   Diffuse is applied via a precomputed/'filtered' version of the envmap.
+//   Glossy is performed with a very crude approximation of the BRDF and the roughness parameter (simple mip-mapping of the envmap).
+//   Specular just does a plain lookup in the envmap.
+// - Backside (normal pointing away) is lighted as well as front facing (needed since quite a lot of tables feature wrong normals, or for transparents with 2 pass rendering)
+vec3 lightLoop(const vec3 pos, vec3 N, const vec3 V, vec3 diffuse, vec3 glossy, const vec3 specular, const float edge, const bool is_metal) // input vectors (N,V) are normalized for BRDF evals
 {
+   vec3 color = vec3_splat(0.0);
+
+   float NdotV = dot(N,V);
+   if (NdotV < 0.0)
+   {
+       // Flip normal in case for backside lighting.
+       // Before 10.8, this was disabled when using normal mapping, but since tables are not all well behaving, this caused artefacts (for example Cirqus Voltaire vs Monster Bash), so this is now always performed.
+       N = -N;
+       NdotV = -NdotV;
+   }
+   NdotV = min(NdotV, 1.0); // For some reason I don't get, N (which is normalized) dot V (which is also normalized) may lead to value exceeding 1.0 then causing invalid results (in FresnelSchlick, negative pow)
    // normalize BRDF layer inputs //!! use diffuse = (1-glossy)*diffuse instead?
    const float diffuseMax = max(diffuse.x,max(diffuse.y,diffuse.z));
    const float glossyMax = max(glossy.x,max(glossy.y,glossy.z));
    const float specularMax = max(specular.x,max(specular.y,specular.z)); //!! not needed as 2nd layer only so far
    const float sum = diffuseMax + glossyMax /*+ specularMax*/;
    // energy conservation:
-   if (sum > 1.0
-       && fDisableLighting_top_below.x < 1.0) // but allow overly bright contribution if lighting is disabled
+   if (sum > 1.0 && fDisableLighting_top_below.x < 1.0) // but allow overly bright contribution if lighting is disabled
    {
       const float invsum = 1.0/sum;
       diffuse  *= invsum;
@@ -156,77 +164,31 @@ vec3 lightLoop(const vec3 pos, vec3 N, const vec3 V, vec3 diffuse, vec3 glossy, 
       //specular *= invsum;
    }
 
-   float NdotV = dot(N,V);
-   if (fix_normal_orientation != 0.0 && (NdotV < 0.0)) // flip normal in case of wrong orientation? (backside lighting), currently disabled if normal mapping active, for that case we should actually clamp the normal with respect to V instead (see f.e. 'view-dependant shading normal adaptation')
-   {
-      N = -N;
-      NdotV = -NdotV;
-   }
-
-   vec3 color = vec3(0.0, 0.0, 0.0);
-
-   // 1st Layer
+   // Scene point lights
    BRANCH if ((!is_metal && (diffuseMax > 0.0)) || (glossyMax > 0.0))
    {
-      for (int i = 0; i < NUM_LIGHTS; i++)
+      BRANCH if (fDisableLighting_top_below.x == 1.0)
+         color += float(iLightPointNum) * diffuse; // Old bug kept for backward compatibility: when lighting is disabled, it results to applying it twice
+      else for (int i = 0; i < NUM_LIGHTS; i++)
          color += DoPointLight(pos, N, V, diffuse, glossy, edge, Roughness_WrapL_Edge_Thickness.x, i, is_metal); // no clearcoat needed as only pointlights so far
    }
 
+   // Environment IBL
    BRANCH if (!is_metal && (diffuseMax > 0.0))
-      color += DoEnvmapDiffuse(normalize(( mul(vec4(N,0.0), matView) ).xyz), diffuse); // trafo back to world for lookup into world space envmap // actually: mul(vec4(N,0.0), matViewInverseInverseTranspose), but optimized to save one matrix
-
+      // trafo back to world for lookup into world space envmap // actually: mul(float4(N,0.0), matViewInverseInverseTranspose), but optimized to save one matrix
+      // matView is always an orthonormal matrix, so no need to normalize after transform
+      color += DoEnvmapDiffuse(/*normalize*/(( mul(vec4(N,0.0), matView) ).xyz), diffuse); // trafo back to world for lookup into world space envmap // actually: mul(vec4(N,0.0), matViewInverseInverseTranspose), but optimized to save one matrix
    BRANCH if ((glossyMax > 0.0) || (specularMax > 0.0))
    {
-	   vec3 R = (2.0*NdotV)*N - V; // reflect(-V,n);
-	   R = normalize(( mul(vec4(R,0.0), matView) ).xyz); // trafo back to world for lookup into world space envmap // actually: mul(vec4(R,0.0), matViewInverseInverseTranspose), but optimized to save one matrix
-
-	   const vec2 Ruv = vec2( // remap to 2D envmap coords
-			0.5 + atan2_approx_div2PI(R.y, R.x),
-			acos_approx_divPI(R.z));
-
-#if !ENABLE_VR
+	   vec3 R = (2.0*NdotV)*N - V; // reflect(-V,N);
+	   // trafo back to world for lookup into world space envmap // actually: mul(float4(R,0.0), matViewInverseInverseTranspose), but optimized to save one matrix
+	   // matView is always an orthonormal matrix, so no need to normalize after transform
+	   R = /*normalize*/(( mul(vec4(R,0.0), matView) ).xyz); // trafo back to world for lookup into world space envmap // actually: mul(vec4(R,0.0), matViewInverseInverseTranspose), but optimized to save one matrix
+	   const vec2 Ruv = ray_to_equirectangular_uv(R);
 	   if (glossyMax > 0.0)
 		  color += DoEnvmapGlossy(N, V, Ruv, glossy, Roughness_WrapL_Edge_Thickness.x);
-
-	   // 2nd Layer
 	   if (specularMax > 0.0)
 		  color = DoEnvmap2ndLayer(color, pos, N, V, NdotV, Ruv, specular);
-#else
-      // Abuse mipmaps to reduce shimmering in VR
-      vec4 colorMip;
-      if (is_metal)
-      {
-         // Use low-res mipmap for metallic objects to reduce shimmering in VR
-         // Closer objects we query the lod and add 2 to make it a bit blurrier but always at least 6.0
-         // Far away objects we get smallest lod and divide by 1.6 which is a good trade-off between "metallic enough" and "low shimmer"
-         float mipLevel = min(textureQueryLod(tex_env, Ruv).y+2.0, textureQueryLevels(tex_env)/1.6);
-         if (mipLevel < 6.0)
-            mipLevel = 6.0;
-         colorMip = textureLod(tex_env, Ruv, mipLevel);
-      }
-      else
-      {
-         // For non-metallic objects we use different values
-         //colorMip = texture(tex_env, Ruv);
-         float mipLevel = min(textureQueryLod(tex_env, Ruv).y, textureQueryLevels(tex_env)/2);
-         if (mipLevel < 4.0)
-            mipLevel = 4.0;
-         colorMip = textureLod(tex_env, Ruv, mipLevel);
-      }
-
-      const vec3 envTex = colorMip.rgb;
-
-      // EnvmapGlossy
-      if(glossyMax > 0.0)
-        color += glossy * envTex * fenvEmissionScale_TexWidth.x;
-
-      // Envmap2ndLayer
-      if(fix_normal_orientation != 0.0 && specularMax > 0.0)
-      {
-        const vec3 w = FresnelSchlick(specular, NdotV, Roughness_WrapL_Edge_Thickness.z);
-        color = mix(color, envTex * fenvEmissionScale_TexWidth.x, w);
-      }
-#endif
    }
 
    return /*Gamma(ToneMap(*/color/*))*/;

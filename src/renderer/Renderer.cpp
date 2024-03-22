@@ -926,8 +926,11 @@ void Renderer::UpdateBasicShaderMatrix(const Matrix3D& objectTrafo)
    matrices.matView = GetMVP().GetView();
    matrices.matWorldView = GetMVP().GetModelView();
    matrices.matWorldViewInverseTranspose = GetMVP().GetModelViewInverseTranspose();
+   const int nEyes = ((m_pd3dPrimaryDevice->m_stereo3D != STEREO_OFF) && !m_stereo3DfakeStereo) ? 2 : 1;
+   for (int eye = 0; eye < nEyes; eye++)
+      matrices.matWorldViewProj[eye] = GetMVP().GetModelViewProj(eye);
 
-#if defined(ENABLE_BGFX)
+#if defined(ENABLE_DX9) || defined(ENABLE_BGFX)
    m_pd3dPrimaryDevice->m_basicShader->SetMatrix(SHADER_matWorld, &matrices.matWorld);
    m_pd3dPrimaryDevice->m_basicShader->SetMatrix(SHADER_matView, &matrices.matView);
    m_pd3dPrimaryDevice->m_basicShader->SetMatrix(SHADER_matWorldView, &matrices.matWorldView);
@@ -936,26 +939,11 @@ void Renderer::UpdateBasicShaderMatrix(const Matrix3D& objectTrafo)
    m_pd3dPrimaryDevice->m_flasherShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0]);
    m_pd3dPrimaryDevice->m_lightShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0]);
    m_pd3dPrimaryDevice->m_DMDShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0]);
-
 #elif defined(ENABLE_OPENGL)
-   const int nEyes = m_pd3dPrimaryDevice->m_stereo3D != STEREO_OFF ? 2 : 1;
-   for (int eye = 0; eye < nEyes; eye++)
-      matrices.matWorldViewProj[eye] = GetMVP().GetModelViewProj(eye);
    m_pd3dPrimaryDevice->m_flasherShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0], nEyes);
    m_pd3dPrimaryDevice->m_lightShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0], nEyes);
    m_pd3dPrimaryDevice->m_DMDShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0], nEyes);
    m_pd3dPrimaryDevice->m_basicShader->SetUniformBlock(SHADER_basicMatrixBlock, &matrices.matWorld.m[0][0]);
-
-#elif defined(ENABLE_DX9)
-   matrices.matWorldViewProj[0] = GetMVP().GetModelViewProj(0);
-   m_pd3dPrimaryDevice->m_basicShader->SetMatrix(SHADER_matWorld, &matrices.matWorld);
-   m_pd3dPrimaryDevice->m_basicShader->SetMatrix(SHADER_matView, &matrices.matView);
-   m_pd3dPrimaryDevice->m_basicShader->SetMatrix(SHADER_matWorldView, &matrices.matWorldView);
-   m_pd3dPrimaryDevice->m_basicShader->SetMatrix(SHADER_matWorldViewInverseTranspose, &matrices.matWorldViewInverseTranspose);
-   m_pd3dPrimaryDevice->m_basicShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0]);
-   m_pd3dPrimaryDevice->m_flasherShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0]);
-   m_pd3dPrimaryDevice->m_lightShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0]);
-   m_pd3dPrimaryDevice->m_DMDShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0]);
 #endif
 }
 
@@ -972,25 +960,17 @@ void Renderer::UpdateBallShaderMatrix()
    matrices.matView = GetMVP().GetView();
    matrices.matWorldView = GetMVP().GetModelView();
    matrices.matWorldViewInverse = GetMVP().GetModelViewInverse();
-
-#if defined(ENABLE_BGFX)
-   m_pd3dPrimaryDevice->m_ballShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0]);
-   m_pd3dPrimaryDevice->m_ballShader->SetMatrix(SHADER_matWorldView, &matrices.matWorldView);
-   m_pd3dPrimaryDevice->m_ballShader->SetMatrix(SHADER_matWorldViewInverse, &matrices.matWorldViewInverse);
-   m_pd3dPrimaryDevice->m_ballShader->SetMatrix(SHADER_matView, &matrices.matView);
-
-#elif defined(ENABLE_OPENGL)
-   const int nEyes = m_pd3dPrimaryDevice->m_stereo3D != STEREO_OFF ? 2 : 1;
+   const int nEyes = ((m_pd3dPrimaryDevice->m_stereo3D != STEREO_OFF) && !m_stereo3DfakeStereo) ? 2 : 1;
    for (int eye = 0; eye < nEyes; eye++)
       matrices.matWorldViewProj[eye] = GetMVP().GetModelViewProj(eye);
-   m_pd3dPrimaryDevice->m_ballShader->SetUniformBlock(SHADER_ballMatrixBlock, &matrices.matView.m[0][0]);
 
-#elif defined(ENABLE_DX9)
-   matrices.matWorldViewProj[0] = GetMVP().GetModelViewProj(0);
+#if defined(ENABLE_DX9) || defined(ENABLE_BGFX)
    m_pd3dPrimaryDevice->m_ballShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0]);
    m_pd3dPrimaryDevice->m_ballShader->SetMatrix(SHADER_matWorldView, &matrices.matWorldView);
    m_pd3dPrimaryDevice->m_ballShader->SetMatrix(SHADER_matWorldViewInverse, &matrices.matWorldViewInverse);
    m_pd3dPrimaryDevice->m_ballShader->SetMatrix(SHADER_matView, &matrices.matView);
+#elif defined(ENABLE_OPENGL)
+   m_pd3dPrimaryDevice->m_ballShader->SetUniformBlock(SHADER_ballMatrixBlock, &matrices.matView.m[0][0]);
 #endif
 }
 
@@ -1499,18 +1479,11 @@ void Renderer::RenderDynamics()
 
    // Setup the projection matrices used for refraction
    Matrix3D matProj[2];
-   #if defined(ENABLE_OPENGL)
-   const int nEyes = m_pd3dPrimaryDevice->m_stereo3D != STEREO_OFF ? 2 : 1;
+   const int nEyes = ((m_pd3dPrimaryDevice->m_stereo3D != STEREO_OFF) && !m_stereo3DfakeStereo) ? 2 : 1;
    for (int eye = 0; eye < nEyes; eye++)
       matProj[eye] = GetMVP().GetProj(eye);
    m_pd3dPrimaryDevice->m_basicShader->SetMatrix(SHADER_matProj, &matProj[0], nEyes);
    m_pd3dPrimaryDevice->m_ballShader->SetMatrix(SHADER_matProj, &matProj[0], nEyes);
-   
-   #elif defined(ENABLE_DX9) || defined(ENABLE_BGFX)
-   matProj[0] = GetMVP().GetProj(0);
-   m_pd3dPrimaryDevice->m_basicShader->SetMatrix(SHADER_matProj, &matProj[0]);
-   m_pd3dPrimaryDevice->m_ballShader->SetMatrix(SHADER_matProj, &matProj[0]);
-   #endif
 
    // Update ball pos uniforms
    #define MAX_BALL_SHADOW 8
@@ -1750,10 +1723,14 @@ void Renderer::PrepareVideoBuffers()
       }
 
       // Texture used for LUT color grading must be treated as if they were linear
+      #ifdef ENABLE_BGFX // FIXME BGFX color grade is not yet supported (sRGB vs linear bug)
+      m_pd3dPrimaryDevice->m_FBShader->SetBool(SHADER_color_grade, false);
+      #else
       Texture *const pin = m_table->GetImage(m_table->m_imageColorGrade);
       if (pin)
          m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_tex_color_lut, pin, SF_BILINEAR, SA_CLAMP, SA_CLAMP, true); // FIXME always honor the linear RGB
       m_pd3dPrimaryDevice->m_FBShader->SetBool(SHADER_color_grade, pin != nullptr);
+      #endif
       m_pd3dPrimaryDevice->m_FBShader->SetBool(SHADER_do_dither, m_pd3dPrimaryDevice->GetOutputBackBuffer()->GetColorFormat() != colorFormat::RGBA10);
       m_pd3dPrimaryDevice->m_FBShader->SetBool(SHADER_do_bloom, (m_table->m_bloom_strength > 0.0f && !m_bloomOff && infoMode <= IF_DYNAMIC_ONLY));
 

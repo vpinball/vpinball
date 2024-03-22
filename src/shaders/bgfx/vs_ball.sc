@@ -16,8 +16,8 @@ void main()
 
 	// apply spinning to the normals too to get the sphere mapping effect
 	const vec3 nspin = mul(orientation, vec4(a_normal, 0.0)).xyz;
-	v_normal = normalize(mul(matWorldViewInverse, vec4(nspin, 0.0)).xyz); // actually: mul(vec4(nspin,0.), matWorldViewInverseTranspose), but optimized to save one matrix
-	//v_normal = normalize(mul(matWorldViewInverseTranspose, vec4(nspin, 0.0)).xyz); // actually: mul(vec4(nspin,0.), matWorldViewInverseTranspose), but optimized to save one matrix
+    // Needs to use a 'normal' matrix, and to normalize since we allow non uniform stretching, therefore matWorldView is not orthonormal
+	v_normal = normalize(mul(vec4(nspin, 0.0), matWorldViewInverse).xyz); // actually: mul(vec4(nspin,0.), matWorldViewInverseTranspose), but optimized to save one matrix
 
 	v_texcoord0 = a_texcoord0;
 	v_worldPos = mul(matWorldView, vPosition4).xyz;

@@ -48,8 +48,11 @@ MeshBuffer::~MeshBuffer()
 unsigned int MeshBuffer::GetSortKey() const
 {
    #if defined(ENABLE_BGFX)
-   return ((m_vb->m_isStatic ? m_vb->GetStaticBuffer().idx : m_vb->GetDynamicBuffer().idx)
-      ^ (m_ib->m_isStatic ? m_ib->GetStaticBuffer().idx : m_ib->GetDynamicBuffer().idx));
+   if (m_ib)
+      return ((m_vb->m_isStatic ? m_vb->GetStaticBuffer().idx : m_vb->GetDynamicBuffer().idx)
+         ^ (m_ib->m_isStatic ? m_ib->GetStaticBuffer().idx : m_ib->GetDynamicBuffer().idx));
+   else
+      return m_vb->m_isStatic ? m_vb->GetStaticBuffer().idx : m_vb->GetDynamicBuffer().idx;
    #elif defined(ENABLE_OPENGL)
    return m_vao;
    #elif defined(ENABLE_DX9)

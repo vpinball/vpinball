@@ -132,7 +132,7 @@ void SharedVertexBuffer::Upload()
       {
          assert(!m_isStatic);
          #if defined(ENABLE_BGFX)
-         bgfx::update(m_dvb, upload.offset, upload.mem);
+         bgfx::update(m_dvb, upload.offset / m_bytePerElement, upload.mem);
          
          #elif defined(ENABLE_OPENGL)
          #ifndef __OPENGLES__

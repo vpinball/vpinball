@@ -122,7 +122,7 @@ void SharedIndexBuffer::Upload()
       {
          assert(!m_isStatic);
          #if defined(ENABLE_BGFX)
-         bgfx::update(m_dib, upload.offset, upload.mem);
+         bgfx::update(m_dib, upload.offset / m_bytePerElement, upload.mem);
          
          #elif defined(ENABLE_OPENGL)
             #ifndef __OPENGLES__

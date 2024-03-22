@@ -107,8 +107,6 @@ public:
       LINESTRIP
    };
 
-   SDL_Window* m_sdl_playfieldHwnd = nullptr;
-
 #elif defined(ENABLE_OPENGL)
    enum PrimitiveTypes
    {
@@ -340,6 +338,7 @@ public:
    bgfx::VertexLayout* m_pVertexTexelDeclaration = nullptr;
    bgfx::VertexLayout* m_pVertexNormalTexelDeclaration = nullptr;
    int m_activeViewId = -1;
+   int m_maxViewId = 254;
    uint64_t m_bgfxState = 0L;
    
 #elif defined(ENABLE_OPENGL)

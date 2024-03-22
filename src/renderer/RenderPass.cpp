@@ -318,6 +318,10 @@ bool RenderPass::Execute(const bool log)
    if (m_rt->m_nLayers == 1 || (m_singleLayerRendering < 0 && m_rt->GetRenderDevice()->SupportLayeredRendering()))
    {
       m_rt->Activate();
+      #ifdef ENABLE_BGFX
+      bgfx::setViewName(m_rt->GetRenderDevice()->m_activeViewId, m_name.append(" [RT=").append(m_rt->m_name).append("]").c_str());
+      #endif
+
       for (RenderCommand* cmd : m_commands)
       {
          #if defined(ENABLE_OPENGL) // Layered rendering is not yet implemented for DirectX
@@ -332,6 +336,9 @@ bool RenderPass::Execute(const bool log)
    {
       assert(m_singleLayerRendering < m_rt->m_nLayers);
       m_rt->Activate(m_singleLayerRendering);
+      #ifdef ENABLE_BGFX
+      bgfx::setViewName(m_rt->GetRenderDevice()->m_activeViewId, m_name.append(" [RT=").append(m_rt->m_name).append("]").c_str());
+      #endif
       for (RenderCommand* cmd : m_commands)
       {
          #if defined(ENABLE_OPENGL) // Layered rendering is not yet implemented for DirectX
@@ -347,6 +354,9 @@ bool RenderPass::Execute(const bool log)
       for (int layer = 0; layer < m_rt->m_nLayers; layer++)
       {
          m_rt->Activate(layer);
+         #ifdef ENABLE_BGFX
+         bgfx::setViewName(m_rt->GetRenderDevice()->m_activeViewId, m_name.append(" [RT=").append(m_rt->m_name).append(" / Layer=").append(std::to_string(layer)).append("]").c_str());
+         #endif
          for (RenderCommand* cmd : m_commands)
          {
             #if defined(ENABLE_OPENGL) // Layered rendering is not yet implemented for DirectX

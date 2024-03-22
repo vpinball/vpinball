@@ -236,8 +236,10 @@ Shader::ShaderUniform Shader::shaderUniformNames[SHADER_UNIFORM_COUNT] {
    // Basic Shader
    SHADER_UNIFORM(SUT_Float4, cClearcoat_EdgeAlpha, 1),
    SHADER_UNIFORM(SUT_Float4, cGlossy_ImageLerp, 1),
-   #if defined(ENABLE_OPENGL) || defined(ENABLE_BGFX)
+   #if defined(ENABLE_OPENGL)
    SHADER_UNIFORM(SUT_Bool, doRefractions, 1),
+   #elif defined(ENABLE_BGFX)
+   SHADER_UNIFORM(SUT_Float4, u_basic_shade_mode, 1),
    #endif
    SHADER_UNIFORM(SUT_Float4, refractionTint_thickness, 1),
    SHADER_UNIFORM(SUT_Float4, mirrorNormal_factor, 1),
@@ -649,7 +651,10 @@ void Shader::SetTechniqueMaterial(ShaderTechniques technique, const Material& ma
    const bool isMetal = mat.m_type == Material::MaterialType::METAL;
    
    #if defined(ENABLE_BGFX)
-   // FIXME SetVector(SHADER_u_basic_shade_mode, isMetal, doNormalMapping, doReflections, doRefractions);
+   // For BGFX doReflections is computed from the reflection factor
+   SetVector(SHADER_u_basic_shade_mode, isMetal, doNormalMapping, doRefractions, 0.0f);
+   if (tech == SHADER_TECHNIQUE_basic_with_texture && doAlphaTest)
+      tech = SHADER_TECHNIQUE_basic_with_texture_at;
 
    #elif defined(ENABLE_OPENGL)
    // For OpenGL doReflections is computed from the reflection factor
@@ -914,7 +919,10 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
    case SUT_Float4x4:
       memcpy(dst, src, m_stateSizes[uniformName]);
       #if defined(ENABLE_BGFX)
+      {
+      float* t = (float*)src;
       bgfx::setUniform(desc.handle, src, desc.uniform.count);
+      }
       #elif defined(ENABLE_OPENGL)
       glUniformMatrix4fv(desc.location, desc.uniform.count, GL_FALSE, (const GLfloat*)src);
       #elif defined(ENABLE_DX9)
@@ -1239,12 +1247,12 @@ bool Shader::Load(const std::string& name, const BYTE* code, unsigned int codeSi
    bgfx::ShaderHandle vsh = loadShader(reader, "vs_debug");
    bgfx::ShaderHandle fsh = loadShader(reader, "fs_debug");
    m_debugProgramHandle = bgfx::createProgram(vsh, fsh, true /* destroy shaders when program is destroyed */);
-   /* if (name == "BasicShader"s)
+   if (name == "BasicShader.glfx"s)
    {
-      loadProgram(reader, SHADER_TECHNIQUE_basic_with_texture, "vs_basic_tex", "fs_basic_tex_norefl");
-      loadProgram(reader, SHADER_TECHNIQUE_basic_without_texture, "vs_basic_notex", "fs_basic_notex_norefl");
-      //loadProgram(reader, SHADER_TECHNIQUE_basic_refl_only_with_texture, "vs_basic_tex", "fs_basic_tex_refl");
-      //loadProgram(reader, SHADER_TECHNIQUE_basic_refl_only_without_texture, "vs_basic_notex", "fs_basic_notex_refl");
+      loadProgram(reader, SHADER_TECHNIQUE_basic_with_texture, "vs_basic_tex", "fs_basic_tex_noat_norefl");
+      loadProgram(reader, SHADER_TECHNIQUE_basic_with_texture_at, "vs_basic_tex", "fs_basic_tex_at_norefl");
+      loadProgram(reader, SHADER_TECHNIQUE_basic_without_texture, "vs_basic_notex", "fs_basic_notex_noat_norefl");
+      loadProgram(reader, SHADER_TECHNIQUE_basic_reflection_only, "vs_basic_tex", "fs_basic_tex_at_refl"); // TODO tex & at do not have any effetc on this
       loadProgram(reader, SHADER_TECHNIQUE_light_with_texture, "vs_classic_light_tex_noshadow", "fs_classic_light_tex_noshadow");
       loadProgram(reader, SHADER_TECHNIQUE_light_with_texture_isMetal, "vs_classic_light_tex_noshadow", "fs_classic_light_tex_noshadow");
       loadProgram(reader, SHADER_TECHNIQUE_light_without_texture, "vs_classic_light_notex_noshadow", "fs_classic_light_notex_noshadow");
@@ -1252,21 +1260,73 @@ bool Shader::Load(const std::string& name, const BYTE* code, unsigned int codeSi
       //loadProgram(reader, SHADER_TECHNIQUE_bg_decal_without_texture, "", "");
       //loadProgram(reader, SHADER_TECHNIQUE_bg_decal_with_texture, "", "");
       //loadProgram(reader, SHADER_TECHNIQUE_kickerBoolean, "", "");
-      //loadProgram(reader, SHADER_TECHNIQUE_kickerBoolean_isMetal, "", "");
+      //loadProgram(reader, SHADER_TECHNIQUE_kickerBoolean_isMetal, "", "");*/
    }
-   else if (name == "BallShader"s)
+   else if (name == "BallShader.glfx"s)
    {
-      loadProgram(reader, SHADER_TECHNIQUE_RenderBall, "vs_ball_nodecal_nocab", "fs_ball_nodecal_nocab");
-      loadProgram(reader, SHADER_TECHNIQUE_RenderBall_DecalMode, "vs_ball_decal_nocab", "fs_ball_decal_nocab");
+      loadProgram(reader, SHADER_TECHNIQUE_RenderBall, "vs_ball", "fs_ball_equirectangular_nodecal");
+      loadProgram(reader, SHADER_TECHNIQUE_RenderBall_DecalMode, "vs_ball", "fs_ball_equirectangular_decal");
+      loadProgram(reader, SHADER_TECHNIQUE_RenderBall_SphericalMap, "vs_ball", "fs_ball_spherical_nodecal");
+      loadProgram(reader, SHADER_TECHNIQUE_RenderBall_SphericalMap_DecalMode, "vs_ball", "fs_ball_spherical_decal");
       //loadProgram(reader, SHADER_TECHNIQUE_RenderBallTrail, "", "");
    }
-   else if (name == "LightShader"s)
+   else if (name == "LightShader.glfx"s)
    {
       loadProgram(reader, SHADER_TECHNIQUE_bulb_light, "vs_light_noshadow", "fs_light_noshadow");
       loadProgram(reader, SHADER_TECHNIQUE_bulb_light_with_ball_shadows, "vs_light_ballshadow", "fs_light_ballshadow");
    }
-   else if (name == "FBShader"s)
+   else if (name == "FBShader.glfx"s)
    {
+      // Tonemapping / Dither / Apply AO / Color Grade
+      loadProgram(reader, SHADER_TECHNIQUE_fb_rhtonemap, "vs_postprocess", "fs_pp_reinhard_noao_filter_rgb");
+      loadProgram(reader, SHADER_TECHNIQUE_fb_rhtonemap_AO, "vs_postprocess", "fs_pp_reinhard_noao_filter_rgb");
+      loadProgram(reader, SHADER_TECHNIQUE_fb_rhtonemap_no_filter, "vs_postprocess", "fs_pp_reinhard_noao_nofilter_rgb");
+      loadProgram(reader, SHADER_TECHNIQUE_fb_rhtonemap_AO_no_filter, "vs_postprocess", "fs_pp_reinhard_ao_nofilter_rgb");
+      loadProgram(reader, SHADER_TECHNIQUE_fb_tmtonemap, "vs_postprocess", "fs_pp_tony_noao_filter_rgb");
+      loadProgram(reader, SHADER_TECHNIQUE_fb_tmtonemap_AO, "vs_postprocess", "fs_pp_tony_ao_filter_rgb");
+      loadProgram(reader, SHADER_TECHNIQUE_fb_tmtonemap_no_filter, "vs_postprocess", "fs_pp_tony_noao_nofilter_rgb");
+      loadProgram(reader, SHADER_TECHNIQUE_fb_tmtonemap_AO_no_filter, "vs_postprocess", "fs_pp_tony_ao_nofilter_rgb");
+      loadProgram(reader, SHADER_TECHNIQUE_fb_fmtonemap, "vs_postprocess", "fs_pp_filmic_noao_filter_rgb");
+      loadProgram(reader, SHADER_TECHNIQUE_fb_fmtonemap_AO, "vs_postprocess", "fs_pp_filmic_ao_filter_rgb");
+      loadProgram(reader, SHADER_TECHNIQUE_fb_fmtonemap_no_filter, "vs_postprocess", "fs_pp_filmic_noao_nofilter_rgb");
+      loadProgram(reader, SHADER_TECHNIQUE_fb_fmtonemap_AO_no_filter, "vs_postprocess", "fs_pp_filmic_ao_nofilter_rgb");
+      loadProgram(reader, SHADER_TECHNIQUE_fb_rhtonemap_no_filterRG, "vs_postprocess", "fs_pp_reinhard_noao_nofilter_rg");
+      loadProgram(reader, SHADER_TECHNIQUE_fb_rhtonemap_no_filterR, "vs_postprocess", "fs_pp_reinhard_noao_nofilter_gray");
+   /*
+   SHADER_TECHNIQUE(AO),
+   SHADER_TECHNIQUE(NFAA),
+   SHADER_TECHNIQUE(DLAA_edge),
+   SHADER_TECHNIQUE(DLAA),
+   SHADER_TECHNIQUE(FXAA1),
+   SHADER_TECHNIQUE(FXAA2),
+   SHADER_TECHNIQUE(FXAA3),
+   SHADER_TECHNIQUE(fb_bloom),
+   SHADER_TECHNIQUE(fb_AO), // Display debug AO
+   SHADER_TECHNIQUE(fb_AO_static), // Apply AO during static prerender pass (no tonemapping)
+   SHADER_TECHNIQUE(fb_AO_no_filter_static), // Apply AO during static prerender pass (no tonemapping)
+   SHADER_TECHNIQUE(fb_mirror),
+   SHADER_TECHNIQUE(fb_copy),
+   SHADER_TECHNIQUE(CAS),
+   SHADER_TECHNIQUE(BilateralSharp_CAS),
+   SHADER_TECHNIQUE(SSReflection),
+   SHADER_TECHNIQUE(basic_noLight),
+   SHADER_TECHNIQUE(bulb_light),
+   SHADER_TECHNIQUE(bulb_light_with_ball_shadows),
+   SHADER_TECHNIQUE(SMAA_ColorEdgeDetection),
+   SHADER_TECHNIQUE(SMAA_BlendWeightCalculation),
+   SHADER_TECHNIQUE(SMAA_NeighborhoodBlending),
+   SHADER_TECHNIQUE(stereo_SBS),
+   SHADER_TECHNIQUE(stereo_TB),
+   SHADER_TECHNIQUE(stereo_Int),
+   SHADER_TECHNIQUE(stereo_Flipped_Int),
+   SHADER_TECHNIQUE(Stereo_sRGBAnaglyph),
+   SHADER_TECHNIQUE(Stereo_GammaAnaglyph),
+   SHADER_TECHNIQUE(Stereo_sRGBDynDesatAnaglyph),
+   SHADER_TECHNIQUE(Stereo_GammaDynDesatAnaglyph),
+   SHADER_TECHNIQUE(Stereo_DeghostAnaglyph),
+   SHADER_TECHNIQUE(irradiance),
+   */
+
       loadProgram(reader, SHADER_TECHNIQUE_AO, "vs_postprocess", "fs_pp_ssao");
       loadProgram(reader, SHADER_TECHNIQUE_SSReflection, "vs_postprocess", "fs_pp_ssr");
       loadProgram(reader, SHADER_TECHNIQUE_CAS, "vs_postprocess", "fs_pp_cas");
@@ -1282,15 +1342,8 @@ bool Shader::Load(const std::string& name, const BYTE* code, unsigned int codeSi
       //loadProgram(reader, SHADER_TECHNIQUE_SMAA_NeighborhoodBlending, "vs_postprocess", "");
       loadProgram(reader, SHADER_TECHNIQUE_fb_mirror, "vs_postprocess", "fs_pp_mirror");
       loadProgram(reader, SHADER_TECHNIQUE_fb_bloom, "vs_postprocess", "fs_pp_bloom");
-      // loadProgram(reader, SHADER_TECHNIQUE_fb_AO, "vs_postprocess", "");
-      // loadProgram(reader, SHADER_TECHNIQUE_fb_tonemap, "vs_postprocess", "");
-      //loadProgram(reader, SHADER_TECHNIQUE_fb_tonemap_AO, "vs_postprocess", "fs_pp_tonemap_ao_filter_rgb");
-      //loadProgram(reader, SHADER_TECHNIQUE_fb_tonemap_AO_static, "vs_postprocess", "fs_pp_notonemap_ao_filter_rgb");
-      //loadProgram(reader, SHADER_TECHNIQUE_fb_tonemap_no_filterRGB, "vs_postprocess", "fs_pp_tonemap_noao_nofilter_rgb");
-      //loadProgram(reader, SHADER_TECHNIQUE_fb_tonemap_no_filterRG, "vs_postprocess", "fs_pp_tonemap_noao_nofilter_bw");
-      //loadProgram(reader, SHADER_TECHNIQUE_fb_tonemap_no_filterR, "vs_postprocess", "fs_pp_tonemap_noao_nofilter_gray");
-      //loadProgram(reader, SHADER_TECHNIQUE_fb_tonemap_AO_no_filter, "vs_postprocess", "fs_pp_tonemap_ao_nofilter_rgb");
-      //loadProgram(reader, SHADER_TECHNIQUE_fb_tonemap_AO_no_filter_static, "vs_postprocess", "fs_pp_notonemap_ao_nofilter_rgb");
+
+      // Blur Kernels
       loadProgram(reader, SHADER_TECHNIQUE_fb_blur_horiz7x7, "vs_postprocess", "fs_blur_7_h");
       loadProgram(reader, SHADER_TECHNIQUE_fb_blur_vert7x7, "vs_postprocess", "fs_blur_7_v");
       loadProgram(reader, SHADER_TECHNIQUE_fb_blur_horiz9x9, "vs_postprocess", "fs_blur_9_h");
@@ -1315,11 +1368,11 @@ bool Shader::Load(const std::string& name, const BYTE* code, unsigned int codeSi
       //loadProgram(reader, SHADER_TECHNIQUE_stereo_anaglyph, "vs_postprocess", "");
       //loadProgram(reader, SHADER_TECHNIQUE_stereo_AMD_DEBUG, "vs_postprocess", "");
    }
-   else if (name == "FlasherShader"s)
+   else if (name == "FlasherShader.glfx"s)
    {
       loadProgram(reader, SHADER_TECHNIQUE_basic_noLight, "vs_flasher", "fs_flasher");
    }
-   else if (name == "DMDShader"s)
+   else if (name == "DMDShader.glfx"s)
    {
       // SHADER_TECHNIQUE(basic_DMD_ext),
       // SHADER_TECHNIQUE(basic_DMD_world_ext),
@@ -1329,12 +1382,12 @@ bool Shader::Load(const std::string& name, const BYTE* code, unsigned int codeSi
       loadProgram(reader, SHADER_TECHNIQUE_basic_noDMD, "vs_basic_dmd_noworld", "fs_basic_sprite");
       loadProgram(reader, SHADER_TECHNIQUE_basic_noDMD_world, "vs_basic_dmd_world", "fs_basic_sprite");
    }
-   else if (name == "DMDShaderVR"s)
+   else if (name == "DMDShaderVR.glfx"s)
    {
    }
-   else if (name == "StereoShader"s)
+   else if (name == "StereoShader.glfx"s)
    {
-   }*/
+   }
    delete reader;
    return true;
 }

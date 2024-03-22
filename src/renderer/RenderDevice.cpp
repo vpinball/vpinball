@@ -16,6 +16,7 @@
 
 #if defined(ENABLE_BGFX)
 #include "bx/platform.h"
+#include "bgfx/platform.h"
 
 #elif defined(ENABLE_OPENGL)
 #include "typedefs3D.h"
@@ -579,10 +580,10 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
    bgfx::Init init;
    
    // Untested implementations
-   init.type = bgfx::RendererType::Direct3D12;
-   init.type = bgfx::RendererType::OpenGL;
-   init.type = bgfx::RendererType::Metal; // Unsupported under Windows
-   init.type = bgfx::RendererType::OpenGLES; // Unsupported under Windows
+   init.type = bgfx::RendererType::Direct3D12; // To be tested
+   init.type = bgfx::RendererType::OpenGL;     // Needs explicit uniform handling
+   init.type = bgfx::RendererType::Metal;      // Unsupported under Windows
+   init.type = bgfx::RendererType::OpenGLES;   // Unsupported under Windows
 
    // Tested & working backends
    init.type = bgfx::RendererType::Vulkan;
@@ -609,6 +610,7 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
    #ifdef DEBUG
    init.debug = true;
    #endif
+   bgfx::renderFrame(); // FIXME BGFX this disable BGFX multithreaded
    if (!bgfx::init(init))
    {
       PLOGE << "FAILED";
@@ -617,7 +619,7 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
    //bgfx::setDebug(BGFX_DEBUG_STATS);
    //bgfx::setDebug(BGFX_DEBUG_STATS | BGFX_DEBUG_WIREFRAME);
 
-   // FIXME use desktop or fullscreen backbuffer format
+   // FIXME BGFX use desktop or fullscreen backbuffer format
    back_buffer_format = colorFormat::RGB8;
    
 #elif defined(ENABLE_OPENGL)
@@ -1062,11 +1064,11 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
    // create default vertex declarations for shaders
    #if defined(ENABLE_BGFX)
    m_pVertexTexelDeclaration = new bgfx::VertexLayout; // FIXME delete
-   m_pVertexNormalTexelDeclaration = new bgfx::VertexLayout;
    m_pVertexTexelDeclaration->begin()
       .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
       .add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
       .end();
+   m_pVertexNormalTexelDeclaration = new bgfx::VertexLayout;
    m_pVertexNormalTexelDeclaration->begin()
       .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
       .add(bgfx::Attrib::Normal, 3, bgfx::AttribType::Float)
@@ -1247,6 +1249,7 @@ RenderDevice::~RenderDevice()
    delete m_SMAAsearchTexture;
 
 #if defined(ENABLE_BGFX)
+   while (bgfx::RenderFrame::NoContext != bgfx::renderFrame() ) {};
    bgfx::shutdown();
 
 #elif defined(ENABLE_OPENGL)
@@ -1512,8 +1515,12 @@ void RenderDevice::Flip()
       g_frameProfiler.OnPresent();
    
    #if defined(ENABLE_BGFX)
-   // Advance to next frame. Process submitted rendering primitives.
-   // This is already done by FlushRenderFrame
+   if (m_activeViewId != -1 || m_maxViewId != 254)
+   {
+      bgfx::frame();
+      m_maxViewId = 254;
+      m_activeViewId = -1;
+   }
    #elif defined(ENABLE_OPENGL)
    SDL_GL_SwapWindow(m_sdl_playfieldHwnd);
    #elif defined(ENABLE_DX9)

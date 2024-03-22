@@ -254,8 +254,10 @@ enum ShaderUniforms
    // Basic Shader
    SHADER_UNIFORM(SUT_Float4, cClearcoat_EdgeAlpha, 1),
    SHADER_UNIFORM(SUT_Float4, cGlossy_ImageLerp, 1),
-   #if defined(ENABLE_OPENGL) || defined(ENABLE_BGFX)
+   #if defined(ENABLE_OPENGL)
    SHADER_UNIFORM(SUT_Bool, doRefractions, 1),
+   #elif defined(ENABLE_BGFX)
+   SHADER_UNIFORM(SUT_Float4, u_basic_shade_mode, 1),
    #endif
    SHADER_UNIFORM(SUT_Float4, refractionTint_thickness, 1),
    SHADER_UNIFORM(SUT_Float4, mirrorNormal_factor, 1),
@@ -427,6 +429,10 @@ public:
       {
          assert(other->m_shader == m_shader);
          assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
+         #ifdef ENABLE_BGFX // FIXME BGFX shader uniforms
+         if (m_shader->m_stateOffsets[uniformName] == -1)
+            return;
+         #endif
          assert(m_shader->m_stateOffsets[uniformName] != -1);
          if (copyTo)
             memcpy(other->m_state + m_shader->m_stateOffsets[uniformName], m_state + m_shader->m_stateOffsets[uniformName], m_shader->m_stateSizes[uniformName]);
@@ -437,6 +443,10 @@ public:
       {
          assert(GetCurrentShader() == nullptr);
          assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
+         #ifdef ENABLE_BGFX // FIXME BGFX shader uniforms
+         if (m_shader->m_stateOffsets[uniformName] == -1)
+            return;
+         #endif
          assert(m_shader->m_stateOffsets[uniformName] != -1);
          assert(shaderUniformNames[uniformName].type == SUT_Bool);
          assert(shaderUniformNames[uniformName].count == 1);
@@ -446,6 +456,10 @@ public:
       {
          assert(GetCurrentShader() == nullptr);
          assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
+         #ifdef ENABLE_BGFX // FIXME BGFX shader uniforms
+         if (m_shader->m_stateOffsets[uniformName] == -1)
+            return;
+         #endif
          if (m_shader->m_stateOffsets[uniformName] == -1)
             return; // FIXME layer uniform may be stripped out by compiler (since it is only used for stereo)
          assert(m_shader->m_stateOffsets[uniformName] != -1);
@@ -457,6 +471,10 @@ public:
       {
          assert(GetCurrentShader() == nullptr);
          assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
+         #ifdef ENABLE_BGFX // FIXME BGFX shader uniforms
+         if (m_shader->m_stateOffsets[uniformName] == -1)
+            return;
+         #endif
          assert(m_shader->m_stateOffsets[uniformName] != -1);
          assert(shaderUniformNames[uniformName].type == SUT_Float);
          assert(shaderUniformNames[uniformName].count == 1);
@@ -470,6 +488,10 @@ public:
       {
          assert(GetCurrentShader() == nullptr);
          assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
+         #ifdef ENABLE_BGFX // FIXME BGFX shader uniforms
+         if (m_shader->m_stateOffsets[uniformName] == -1)
+            return 0.f;
+         #endif
          assert(m_shader->m_stateOffsets[uniformName] != -1);
          assert(shaderUniformNames[uniformName].type == SUT_Float);
          assert(shaderUniformNames[uniformName].count == 1);
@@ -479,6 +501,10 @@ public:
       {
          assert(GetCurrentShader() == nullptr);
          assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
+         #ifdef ENABLE_BGFX // FIXME BGFX shader uniforms
+         if (m_shader->m_stateOffsets[uniformName] == -1)
+            return;
+         #endif
          assert(m_shader->m_stateOffsets[uniformName] != -1);
          assert(shaderUniformNames[uniformName].type == SUT_Float2 || shaderUniformNames[uniformName].type == SUT_Float3 || shaderUniformNames[uniformName].type == SUT_Float4 || shaderUniformNames[uniformName].type == SUT_Float4v);
          assert(shaderUniformNames[uniformName].count == count);
@@ -502,6 +528,10 @@ public:
       {
          assert(GetCurrentShader() == nullptr);
          assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
+         #ifdef ENABLE_BGFX // FIXME BGFX shader uniforms
+         if (m_shader->m_stateOffsets[uniformName] == -1)
+             return vec4();
+         #endif
          assert(m_shader->m_stateOffsets[uniformName] != -1);
          assert(shaderUniformNames[uniformName].type == SUT_Float2 || shaderUniformNames[uniformName].type == SUT_Float3 || shaderUniformNames[uniformName].type == SUT_Float4 || shaderUniformNames[uniformName].type == SUT_Float4v);
          const int n = shaderUniformNames[uniformName].type == SUT_Float2 ? 2 : shaderUniformNames[uniformName].type == SUT_Float3 ? 3 : 4;
@@ -516,6 +546,10 @@ public:
       {
          assert(GetCurrentShader() == nullptr);
          assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
+         #ifdef ENABLE_BGFX // FIXME BGFX shader uniforms
+         if (m_shader->m_stateOffsets[uniformName] == -1)
+             return;
+         #endif
          assert(m_shader->m_stateOffsets[uniformName] != -1);
          assert(shaderUniformNames[uniformName].type == SUT_Float3x4 || shaderUniformNames[uniformName].type == SUT_Float4x3 || shaderUniformNames[uniformName].type == SUT_Float4x4);
          assert(count == shaderUniformNames[uniformName].count);
@@ -532,6 +566,10 @@ public:
       {
          assert(GetCurrentShader() == nullptr);
          assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
+         #ifdef ENABLE_BGFX // FIXME BGFX shader uniforms
+         if (m_shader->m_stateOffsets[uniformName] == -1)
+             return;
+         #endif
          assert(m_shader->m_stateOffsets[uniformName] != -1);
          assert(shaderUniformNames[uniformName].type == SUT_DataBlock);
          memcpy(m_state + m_shader->m_stateOffsets[uniformName], pMatrix, m_shader->m_stateSizes[uniformName]);
@@ -540,6 +578,10 @@ public:
       {
          assert(GetCurrentShader() == nullptr);
          assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
+         #ifdef ENABLE_BGFX // FIXME BGFX shader uniforms
+         if (m_shader->m_stateOffsets[uniformName] == -1)
+             return;
+         #endif
          assert(shaderUniformNames[uniformName].type == SUT_Sampler);
          assert(sampler != nullptr);
          #if defined(ENABLE_BGFX) || defined(ENABLE_OPENGL)
@@ -613,7 +655,13 @@ private:
    void loadProgram(bx::FileReaderI* reader, ShaderTechniques tech, const char* vsName, const char* fsName);
 
 public:
-   bgfx::ProgramHandle GetCore() const { return m_techniques[m_technique] == nullptr ? m_debugProgramHandle : m_techniques[m_technique]->program; }
+   bgfx::ProgramHandle GetCore() const { 
+      if (m_techniques[m_technique] == nullptr)
+      {
+         int zz = 1; // for debugging
+      }
+      return m_techniques[m_technique] == nullptr ? m_debugProgramHandle : m_techniques[m_technique]->program; 
+   }
 
 #elif defined(ENABLE_OPENGL)
    ShaderState* m_boundState[SHADER_TECHNIQUE_COUNT]; // The state currently applied to the backend (per technique for OpenGL)

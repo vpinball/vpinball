@@ -241,7 +241,8 @@ void main()
     const float3 playfield_normal = matWorldView[2].xyz;
     const float NdotR = dot(playfield_normal, R);
 
-    const float3 playfield_p0 = mul_w1(float3(/*playfield_pos=*/0.,0.,0.), matWorldView);
+    //const float3 playfield_p0 = mul_w1(float3(/*playfield_pos=*/0.,0.,0.), matWorldView);
+    const float3 playfield_p0 = matWorldView[3].xyz;
     const float t = dot(playfield_normal, worldPos_t0y.xyz - playfield_p0) / NdotR;
     const float3 playfield_hit = worldPos_t0y.xyz - t * R;
 
