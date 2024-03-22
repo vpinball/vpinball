@@ -47,7 +47,7 @@ public:
    Sampler(RenderDevice* rd, BaseTexture* const surf, const bool force_linear_rgb, const SamplerAddressMode clampu = SA_UNDEFINED, const SamplerAddressMode clampv = SA_UNDEFINED, const SamplerFilter filter = SF_UNDEFINED);
 #if defined(ENABLE_BGFX)
    Sampler(RenderDevice* rd, SurfaceType type, bgfx::TextureHandle bgfxTexture, int width, int height, bool ownTexture, bool linear_rgb, const SamplerAddressMode clampu = SA_UNDEFINED, const SamplerAddressMode clampv = SA_UNDEFINED, const SamplerFilter filter = SF_UNDEFINED);
-   bgfx::TextureHandle GetCoreTexture() const { return m_texture; }
+   bgfx::TextureHandle GetCoreTexture();
 #elif defined(ENABLE_OPENGL)
    Sampler(RenderDevice* rd, SurfaceType type, GLuint glTexture, bool ownTexture, bool force_linear_rgb, const SamplerAddressMode clampu = SA_UNDEFINED, const SamplerAddressMode clampv = SA_UNDEFINED, const SamplerFilter filter = SF_UNDEFINED);
    GLuint GetCoreTexture() const { return m_texture; }

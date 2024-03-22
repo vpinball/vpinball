@@ -49,43 +49,37 @@ Sampler::Sampler(RenderDevice* rd, BaseTexture* const surf, const bool force_lin
 
    const bgfx::Memory* data;
    if (upload == nullptr)
-   {
       data = NULL;
-   }
    else if (upload == surf)
-   {
       data = bgfx::copy(upload->data(), m_height * upload->pitch());
-   }
    else
-   {
       data = bgfx::makeRef(upload->data(), m_height * upload->pitch(), [](void* _ptr, void* _userData) { delete _userData; }, upload);
-   }
 
-   // Create base texture without mipmaps (BGFX does not support automatic mipmap gneration for textures)
+   // Create base texture without mipmaps (BGFX does not support automatic mipmap generation for textures)
    uint64_t flags = BGFX_SAMPLER_NONE | (is_srgb ? BGFX_TEXTURE_SRGB : BGFX_TEXTURE_NONE);
    m_texture = bgfx::createTexture2D(m_width, m_height, false, 1, bgfx_format, flags, data);
-   //m_mips_texture = bgfx::createTexture2D(m_width, m_height, false, 1, bgfx_format, flags, data);
    
    // Create a render target and blit texture on it to force BGFX mip map generation
-   // TODO This is fairly hacky, either adding mipmap generation at texture creation or doing a clean GPU mipmap generation with Kaiser filter would be better
-   //flags = BGFX_SAMPLER_NONE | BGFX_TEXTURE_RT | BGFX_TEXTURE_BLIT_DST | (is_srgb ? BGFX_TEXTURE_SRGB : BGFX_TEXTURE_NONE);
-   //m_texture = bgfx::createTexture2D(m_width, m_height, true, 1, bgfx_format, flags);
-   /* bgfx::Attachment m_mips_attachment;
-   m_mips_attachment.init(m_texture);
+   flags = BGFX_SAMPLER_NONE | BGFX_TEXTURE_RT | BGFX_TEXTURE_BLIT_DST | (is_srgb ? BGFX_TEXTURE_SRGB : BGFX_TEXTURE_NONE);
+   m_mips_texture = bgfx::createTexture2D(m_width, m_height, true, 1, bgfx_format, flags);
+   bgfx::Attachment m_mips_attachment;
+   m_mips_attachment.init(m_mips_texture);
    m_mips_framebuffer = bgfx::createFrameBuffer(1, &m_mips_attachment);
-   auto prevPass = m_rd->m_passName;
-   m_rd->NextPass("MipMap"s);
-   bgfx::setViewFrameBuffer(m_rd->m_activeViewId, m_mips_framebuffer);
-   bgfx::setViewRect(m_rd->m_activeViewId, 0, 0, m_width, m_height);
-   bgfx::setViewName(m_rd->m_activeViewId, "MipMaps");
-   bgfx::touch(m_rd->m_activeViewId);
-   bgfx::blit(m_rd->m_activeViewId, m_texture, 0, 0, m_mips_texture);
-   m_rd->NextPass(prevPass);*/
+   bgfx::setViewFrameBuffer(m_rd->m_maxViewId, m_mips_framebuffer);
+   bgfx::setViewRect(m_rd->m_maxViewId, 0, 0, m_width, m_height);
+   bgfx::setViewName(m_rd->m_maxViewId, "MipMaps");
+   bgfx::touch(m_rd->m_maxViewId);
+   // FIXME BGFX a clean GPU mipmap generation with Kaiser filter would be better than doing a blit to trigger render target mipmap generation, to be refactored when fixing dynamic texture
+   bgfx::blit(m_rd->m_maxViewId, m_mips_texture, 0, 0, m_texture);
+   m_rd->m_maxViewId--;
+   if (m_rd->m_activeViewId > m_rd->m_maxViewId - 2)
+   {
+      bgfx::frame();
+      m_rd->m_maxViewId = 254;
+   }
 
    // FIXME release framebuffer and base texture without mipmaps, 2 frames after submit
    m_mips_gpu_frame = bgfx::getStats()->gpuFrameNum;
-
-   // bgfx::setName(m_texture, ); */
 
 #elif defined(ENABLE_OPENGL)
    m_texTarget = GL_TEXTURE_2D;
@@ -231,6 +225,22 @@ Sampler::~Sampler()
    #endif
 }
 
+#if defined(ENABLE_BGFX)
+bgfx::TextureHandle Sampler::GetCoreTexture()
+{
+   if (bgfx::isValid(m_mips_texture) && bgfx::getStats()->gpuFrameNum >= m_mips_gpu_frame + 2)
+   {
+      // Mipmaps have been generated: copy back data to an immutable texture block
+      bgfx::destroy(m_texture);
+      bgfx::destroy(m_mips_framebuffer);
+      m_texture = m_mips_texture; // FIXME data leack, horrible hack to test mipmaps
+      m_mips_texture = BGFX_INVALID_HANDLE;
+      m_mips_gpu_frame = 0;
+   }
+   return m_texture;
+}
+#endif
+
 void Sampler::Unbind()
 {
 #ifdef ENABLE_OPENGL
@@ -247,7 +257,8 @@ void Sampler::Unbind()
 void Sampler::UpdateTexture(BaseTexture* const surf, const bool force_linear_rgb)
 {
 #if defined(ENABLE_BGFX)
-   // FIXME guarantee that surf->data won't be deallaocated for the 2 next frames
+   // FIXME BGFX guarantee that surf->data won't be deallaocated for the 2 next frames
+   // FIXME BGFX manage mipmaps for dynamic textures
    bgfx::updateTexture2D(m_texture, 0, 0, 0, 0, m_width, m_height, bgfx::makeRef(surf->data(), surf->height() * surf->pitch()));
 
 #elif defined(ENABLE_OPENGL)
@@ -320,6 +331,8 @@ void Sampler::SetName(const string& name)
 {
    #if defined(ENABLE_BGFX)
    bgfx::setName(m_texture, name.c_str());
+   if (bgfx::isValid(m_mips_texture))
+      bgfx::setName(m_mips_texture, name.c_str());
    #elif defined(ENABLE_OPENGL) && !defined(__OPENGLES__)
    if (GLAD_GL_VERSION_4_3)
       glObjectLabel(GL_TEXTURE, m_texture, (GLsizei) name.length(), name.c_str());

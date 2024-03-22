@@ -18,9 +18,9 @@ SAMPLER2D(tex_ball_decal, 3);     // ball decal
 SAMPLER2D(tex_ball_playfield, 4); // playfield probe, mixed with based texture
 
 uniform vec4 u_basic_shade_mode;
-#define doMetal       		(u_basic_shade_mode.x)
+#define doMetal             (u_basic_shade_mode.x)
 #define doNormalMapping     (u_basic_shade_mode.y)
-#define doReflections       (u_basic_shade_mode.z)
+#define doRefractions       (u_basic_shade_mode.z != 0.0)
 
 #include "material.sh"
 
@@ -55,7 +55,7 @@ vec3 ballLightLoop(const vec3 pos, vec3 N, vec3 V, vec3 diffuse, vec3 glossy, co
          color += DoPointLight(pos, N, V, diffuse, glossy, edge, Roughness_WrapL_Edge_Thickness.x, i, is_metal); // no clearcoat needed as only pointlights so far
 
    BRANCH if(!is_metal && (diffuseMax > 0.0))
-      color += DoEnvmapDiffuse(normalize(mul(vec4(N, 0.0), matView).xyz), diffuse); // trafo back to world for lookup into world space envmap // actually: mul(vec4(N, 0.0), matViewInverseInverseTranspose)
+      color += DoEnvmapDiffuse(normalize(mul(matView, vec4(N, 0.0)).xyz), diffuse); // trafo back to world for lookup into world space envmap // actually: mul(vec4(N, 0.0), matViewInverseInverseTranspose)
 
    if(specularMax > 0.0)
       color += specular; //!! blend? //!! Fresnel with 1st layer?
@@ -65,41 +65,42 @@ vec3 ballLightLoop(const vec3 pos, vec3 N, vec3 V, vec3 diffuse, vec3 glossy, co
 
 EARLY_DEPTH_STENCIL void main()
 {
-    const vec3 v = normalize(/*camera=0,0,0,1*/-v_worldPos.xyz);
+    const vec3 V = normalize(/*camera=0,0,0,1*/-v_worldPos.xyz);
     const vec3 N = normalize(v_normal.xyz);
     const vec3 R = reflect(V, N);
-	
+    
     vec3 ballImageColor;
     const float edge = dot(V, R);
     // edge falloff to reduce aliasing on edges (picks smaller mipmap -> more blur)
     const float lod = (edge > 0.6) ? edge*(6.0*1.0/0.4)-(6.0*0.6/0.4) : 0.0;
-	#ifdef EQUIRECTANGULAR
-      // Equirectangular Map Reflections
-      // trafo back to world for lookup into world space envmap
-      // matView is always an orthonormal matrix, so no need to normalize after transform
-      const vec3 rv = /*normalize*/((vec4(-R,0.0) * matView).xyz);
-      const vec2 uv = ray_to_equirectangular_uv(rv);
-      ballImageColor = textureLod(tex_ball_color, uv, lod).rgb;
-	#else
-      // Spherical Map Reflections
-      // calculate the intermediate value for the final texture coords. found here http://www.ozone3d.net/tutorials/glsl_texturing_p04.php
-      const float m = (1.0 - R.z > 0.) ? 0.3535533905932737622 * rsqrt(1.0 - R.z) : 0.; // 0.353...=0.5/sqrt(2)
-      const vec2 uv = vec2(0.5 - m * R.x, 0.5 - m * R.y);
-      ballImageColor = textureLod(tex_ball_color, uv, lod).rgb;
-	#endif
+    #ifdef EQUIRECTANGULAR
+        // Equirectangular Map Reflections
+        // trafo back to world for lookup into world space envmap
+        // matView is always an orthonormal matrix, so no need to normalize after transform
+        const vec3 rv = /*normalize*/(mul(vec4(-R,0.0), matView).xyz);
+        const vec2 uv = ray_to_equirectangular_uv(rv);
+        ballImageColor = texture2DLod(tex_ball_color, uv, lod).rgb;
+    #else
+        // Spherical Map Reflections
+        // calculate the intermediate value for the final texture coords. found here http://www.ozone3d.net/tutorials/glsl_texturing_p04.php
+        const float m = (1.0 - R.z > 0.) ? 0.3535533905932737622 * rsqrt(1.0 - R.z) : 0.; // 0.353...=0.5/sqrt(2)
+        const vec2 uv = vec2(0.5 - m * R.x, 0.5 - m * R.y);
+        ballImageColor = texture2DLod(tex_ball_color, uv, lod).rgb;
+    #endif
 
 
 
     const vec4 decalColorT = texture2D(tex_ball_decal, v_texcoord0);
-    vec3 decalColor = decalColorT.xyz;
-	#ifndef DECAL
-       // decal texture is an alpha scratch texture and must be added to the ball texture
-       // the strength of the scratches totally rely on the alpha values.
-       decalColor *= decalColorT.a;
-       ballImageColor += decalColor;
+    vec3 decalColor = decalColorT.rgb;
+    #ifndef DECAL
+        // decal texture is an alpha scratch texture and must be added to the ball texture
+        // the strength of the scratches totally rely on the alpha values.
+        decalColor *= decalColorT.a;
+        ballImageColor += decalColor;
     #else
-       ballImageColor = ScreenHDR(ballImageColor, decalColor);
-	 #endif
+        ballImageColor = ScreenHDR(ballImageColor, decalColor);
+	    
+    #endif
 
     BRANCH if (disableLighting)
     {
@@ -107,11 +108,11 @@ EARLY_DEPTH_STENCIL void main()
        return;
     }
 
-	#ifndef DECAL
-       ballImageColor *= fenvEmissionScale_TexWidth.x;
+    #ifndef DECAL
+        ballImageColor *= fenvEmissionScale_TexWidth.x;
     #else
-       ballImageColor *= 0.5*fenvEmissionScale_TexWidth.x; //!! 0.5=magic
-	#endif
+        ballImageColor *= 0.5*fenvEmissionScale_TexWidth.x; //!! 0.5=magic
+    #endif
 
     // No need to normalize here since the matWorldView matrix is normal (world is identity and view is always orthonormal)
     // No need to use a dedicated 'normal' matrix since the matWorldView is orthonormal (world is identity and view is always orthonormal)
@@ -120,13 +121,13 @@ EARLY_DEPTH_STENCIL void main()
     const vec3 playfield_normal = matWorldView[2].xyz;
     const float NdotR = dot(playfield_normal, R);
 
-    const vec3 playfield_p0 = mul(matWorldView, vec4(/*playfield_pos=*/0.,0.,0.,1.0)).xyz;
-    const float t = dot(playfield_normal, worldPos_t0y.xyz - playfield_p0) / NdotR;
-    const vec3 playfield_hit = worldPos_t0y.xyz - t * R;
+    const vec3 playfield_p0 = mul(vec4(/*playfield_pos=*/0.,0.,0.,1.0), matWorldView).xyz;
+    const float t = dot(playfield_normal, v_worldPos.xyz - playfield_p0) / NdotR;
+    const vec3 playfield_hit = v_worldPos.xyz - t * R;
 
     // New implementation: use previous frame as a reflection probe instead of computing a simplified render (this is faster and more accurate, support playfield mesh, lighting,... but there can be artefacts, with self reflection,...)
     // TODO use previous frame projection instead of the one of the current frame to limit reflection distortion (still this is minimal)
-    const vec4 proj = mul(matProj[int(eye)], vec4(playfield_hit, 1.0));
+    const vec4 proj = mul(matProj, vec4(playfield_hit, 1.0));
     const vec2 uvp = vec2(0.5, 0.5) + proj.xy * (0.5 / proj.w);
     const vec3 playfieldColor = 0.25 * (
           texStereo(tex_ball_playfield, uvp + vec2(w_h_disableLighting.x, 0.)).rgb
@@ -142,23 +143,23 @@ EARLY_DEPTH_STENCIL void main()
             && !(t <= 0.)) // t < 0.0 may happen in some situation where ball intersects the playfield and the reflected point is inside the ball (like in kicker)
     {
         // NdotR allows to fade between playfield (down) and environment (up)
-	    ballImageColor = lerp(ballImageColor, playfieldColor, smoothstep(0.0, 0.15, NdotR) * invTableRes_reflection.z);
+        ballImageColor = lerp(ballImageColor, playfieldColor, smoothstep(0.0, 0.15, NdotR) * invTableRes_reflection.z);
     }
 
-	// We can face infinite reflections (ball->playfield->ball->playfield->...) which would overflow, or very bright dots that would cause lighting artefacts, so we saturate to an arbitrary value
-	ballImageColor = min(ballImageColor, float3(15., 15., 15.));
+    // We can face infinite reflections (ball->playfield->ball->playfield->...) which would overflow, or very bright dots that would cause lighting artefacts, so we saturate to an arbitrary value
+    ballImageColor = min(ballImageColor, float3(15., 15., 15.));
 
     vec3 diffuse = cBase_Alpha.rgb*0.075;
-	#ifndef DECAL
-       diffuse *= decalColor; // scratches make the material more rough
-	#endif
+    #ifndef DECAL
+        diffuse *= decalColor; // scratches make the material more rough
+    #endif
 
     const vec3 glossy = max(diffuse*2.0, vec3(0.1,0.1,0.1)); //!! meh
     
-	vec3 specular = ballImageColor * cBase_Alpha.rgb; //!! meh, too, as only added in ballLightLoop anyhow
-	#ifndef DECAL
+    vec3 specular = ballImageColor * cBase_Alpha.rgb; //!! meh, too, as only added in ballLightLoop anyhow
+    #ifndef DECAL
        specular *= vec3(1.,1.,1.)-decalColor; // see above
-	#endif
+    #endif
 
     gl_FragColor.rgb = ballLightLoop(v_worldPos.xyz, N, V, diffuse, glossy, specular, 1.0, false);
     gl_FragColor.a = cBase_Alpha.a;

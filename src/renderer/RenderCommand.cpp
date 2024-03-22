@@ -255,6 +255,8 @@ void RenderCommand::Execute(const int nInstances, const bool log)
                bgfx::setState(m_rd->m_bgfxState);
             else if (m_primitiveType == RenderDevice::TRIANGLESTRIP)
                bgfx::setState(m_rd->m_bgfxState | BGFX_STATE_PT_TRISTRIP);
+            else if (m_primitiveType == RenderDevice::POINTLIST)
+               bgfx::setState(m_rd->m_bgfxState | BGFX_STATE_PT_POINTS);
             else
                assert(false); // Unsupported primitive type
             bgfx::submit(m_rd->m_activeViewId, m_shader->GetCore());

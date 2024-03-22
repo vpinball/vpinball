@@ -34,7 +34,9 @@ uniform mat4 matView;
 #include "ball_shadows.sh"
 
 uniform vec4 u_basic_shade_mode;
-#define is_metal       		(u_basic_shade_mode.x != 0.0)
+#define doMetal       	    (u_basic_shade_mode.x != 0.0)
+#define doNormalMapping     (u_basic_shade_mode.y != 0.0)
+#define doRefractions       (u_basic_shade_mode.z != 0.0)
 
 void main()
 {
@@ -51,11 +53,11 @@ void main()
     {
         pixel.rgb = saturate(pixel.rgb); // could be HDR
         const vec3 diffuse  = pixel.rgb*cBase_Alpha.rgb;
-        const vec3 glossy   = is_metal ? diffuse : pixel.rgb*cGlossy_ImageLerp.rgb*0.08; //!! use AO for glossy? specular?
+        const vec3 glossy   = doMetal ? diffuse : pixel.rgb*cGlossy_ImageLerp.rgb*0.08; //!! use AO for glossy? specular?
         const vec3 specular = cClearcoat_EdgeAlpha.rgb*0.08;
-        const float  edge   = is_metal ? 1.0 : Roughness_WrapL_Edge_Thickness.z;
+        const float  edge   = doMetal ? 1.0 : Roughness_WrapL_Edge_Thickness.z;
 
-        color.rgb = lightLoop(v_worldPos, normalize(v_normal), normalize(/*camera=0,0,0,1*/-v_worldPos), diffuse, glossy, specular, edge, true, is_metal); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
+        color.rgb = lightLoop(v_worldPos, normalize(v_normal), normalize(/*camera=0,0,0,1*/-v_worldPos), diffuse, glossy, specular, edge, doMetal); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
         color.a = pixel.a;
     }
     color.a *= cBase_Alpha.a;
@@ -88,11 +90,11 @@ void main()
     else
     {
         const vec3 diffuse  = lightColor_intensity.rgb*cBase_Alpha.rgb;
-        const vec3 glossy   = is_metal ? diffuse : lightColor_intensity.rgb*cGlossy_ImageLerp.xyz*0.08;
+        const vec3 glossy   = doMetal ? diffuse : lightColor_intensity.rgb*cGlossy_ImageLerp.xyz*0.08;
         const vec3 specular = cClearcoat_EdgeAlpha.rgb*0.08;
-        const float  edge   = is_metal ? 1.0 : Roughness_WrapL_Edge_Thickness.z;
+        const float  edge   = doMetal ? 1.0 : Roughness_WrapL_Edge_Thickness.z;
 
-        color.rgb = lightLoop(v_worldPos, normalize(v_normal), normalize(/*camera=0,0,0,1*/-v_worldPos), diffuse, glossy, specular, edge, true, is_metal); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
+        color.rgb = lightLoop(v_worldPos, normalize(v_normal), normalize(/*camera=0,0,0,1*/-v_worldPos), diffuse, glossy, specular, edge, doMetal); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
     }
 	color.rgb += result.rgb;
     color.a = cBase_Alpha.a;

@@ -33,9 +33,9 @@ vec3 bloom_cutoff(const vec3 c)
 void main()
 {
     // collect clipped contribution of the 4x4 texels (via box blur, NOT gaussian, as this is wrong) from original FB
-    const vec3 result = (  texture2DLod(tex_fb_filtered, v_texcoord0 - w_h_height.xy                   , 0.0).rgb
-                        +  texture2DLod(tex_fb_filtered, v_texcoord0 + w_h_height.xy                   , 0.0).rgb
-                        +  texture2DLod(tex_fb_filtered, v_texcoord0 + vec2(w_h_height.x,-w_h_height.y), 0.0).rgb
-                        +  texture2DLod(tex_fb_filtered, v_texcoord0 + vec2(-w_h_height.x,w_h_height.y), 0.0).rgb)*0.25; //!! offset for useAA?
-    gl_FragColor = vec4(bloom_cutoff(FBToneMap(result)) * w_h_height.z, 1.0);
+    const vec3 result = (texStereoNoLod(tex_fb_filtered, v_texcoord0 - w_h_height.xy).rgb
+                      +  texStereoNoLod(tex_fb_filtered, v_texcoord0 + w_h_height.xy).rgb
+                      +  texStereoNoLod(tex_fb_filtered, v_texcoord0 + vec2(w_h_height.x,-w_h_height.y)).rgb
+                      +  texStereoNoLod(tex_fb_filtered, v_texcoord0 + vec2(-w_h_height.x,w_h_height.y)).rgb)*0.25; //!! offset for useAA?
+    gl_FragColor = vec4(max(bloom_cutoff(FBToneMap(result)), vec3_splat(0.)) * w_h_height.z, 1.0);
 }
