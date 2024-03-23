@@ -37,6 +37,7 @@ class VPinballActivity : SDLActivity() {
             "zedmd",
             "serum",
             "dmdutil",
+            "dof",
             "sockpp",
             "vpinball"
         )

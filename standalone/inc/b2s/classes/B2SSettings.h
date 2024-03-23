@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../b2s_i.h"
+#include "../plugin/PluginHost.h"
 
 #include <map>
 
@@ -22,7 +23,7 @@ enum B2SSettingsCheckedState {
     B2SSettingsCheckedState_Indeterminate = 2
 };
 
-class B2SData;
+class PluginHost;
 
 class B2SSettings
 {
@@ -34,6 +35,8 @@ public:
    string GetBackglassFileVersion() const { return m_szBackglassFileVersion; }
    void SetBackglassFileVersion(const string& szBackglassFileVersion) { m_szBackglassFileVersion = szBackglassFileVersion; }
 
+   bool ArePluginsOn() const { return m_pluginsOn; }
+   PluginHost* GetPluginHost() const { return m_pPluginHost; }
    bool IsAllOut() const { return m_allOut; }
    void SetAllOut(const bool allOut) { m_allOut = allOut; }
    bool IsAllOff() const { return m_allOff; }
@@ -87,6 +90,8 @@ private:
    ~B2SSettings();
 
    string m_szBackglassFileVersion;
+   bool m_pluginsOn;
+   PluginHost* m_pPluginHost;
    eDMDTypes m_dmdType;
    bool m_allOut;
    bool m_allOff;
@@ -114,8 +119,6 @@ private:
    bool m_formToFront;
    bool m_formToBack;
    bool m_formNoFocus;
-
-   int m_frameSkip;
-
+   
    static B2SSettings* m_pInstance;
 };

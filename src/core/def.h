@@ -660,6 +660,7 @@ bool is_string_numeric(const string& str);
 int string_to_int(const string& str, int default_value = 0);
 string trim_string(const string& str);
 string color_to_hex(OLE_COLOR color);
+bool string_contains_case_insensitive(const string& str1, const string& str2);
 bool string_compare_case_insensitive(const string& str1, const string& str2);
 bool string_starts_with_case_insensitive(const std::string& str, const std::string& prefix);
 vector<string> add_line_numbers(const char* src);

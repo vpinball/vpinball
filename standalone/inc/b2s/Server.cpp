@@ -11,6 +11,7 @@
 #include "classes/LEDDisplayDigitLocation.h"
 #include "classes/CollectData.h"
 #include "classes/AnimationInfo.h"
+#include "plugin/PluginHost.h"
 
 Server::Server()
 {
@@ -48,6 +49,9 @@ Server::~Server()
 
    if (m_pFormBackglass)
       delete m_pFormBackglass;
+
+   if (m_pB2SSettings->ArePluginsOn())
+      m_pB2SSettings->GetPluginHost()->UnregisterAllPlugins();
 }
 
 void Server::TimerElapsed(VP::Timer* pTimer)
@@ -251,7 +255,15 @@ STDMETHODIMP Server::get_Pause(VARIANT_BOOL *pRetVal)
 
 STDMETHODIMP Server::put_Pause(VARIANT_BOOL pRetVal)
 {
-   return m_pB2SData->GetVPinMAME()->put_Pause(pRetVal);
+   HRESULT hres = m_pB2SData->GetVPinMAME()->put_Pause(pRetVal);
+
+   if (m_pB2SSettings->ArePluginsOn()) {
+      if (pRetVal == VARIANT_TRUE)
+         m_pB2SSettings->GetPluginHost()->PinMamePause();
+      else
+         m_pB2SSettings->GetPluginHost()->PinMameContinue();
+   }
+   return hres;
 }
 
 STDMETHODIMP Server::get_Version(BSTR *pRetVal)
@@ -262,6 +274,12 @@ STDMETHODIMP Server::get_Version(BSTR *pRetVal)
 STDMETHODIMP Server::Run(VARIANT handle)
 {
    Startup();
+
+   if (m_pB2SSettings->ArePluginsOn()) {
+      m_pB2SSettings->GetPluginHost()->PluginInit(m_pB2SData->GetTableFileName(), 
+         !m_pB2SSettings->GetB2SName().empty() ? m_pB2SSettings->GetB2SName() : m_pB2SSettings->GetGameName());
+   }
+
    ShowBackglassForm();
 
    if (m_pB2SSettings->IsROMControlled()) {
@@ -269,6 +287,10 @@ STDMETHODIMP Server::Run(VARIANT handle)
       V_VT(&var0) = VT_EMPTY;
       VariantChangeType(&var0, &handle, 0, VT_I4);
       m_pB2SData->GetVPinMAME()->Run(V_I4(&var0));
+
+      if (m_pB2SSettings->ArePluginsOn())
+         m_pB2SSettings->GetPluginHost()->PinMameRun();
+
       VariantClear(&var0);
 
       // start end timer
@@ -285,6 +307,11 @@ STDMETHODIMP Server::Stop()
 
    m_pB2SData->Stop();
    KillBackglassForm();   
+
+   if (m_pB2SSettings->ArePluginsOn()) {
+      m_pB2SSettings->GetPluginHost()->PinMameStop();
+      m_pB2SSettings->GetPluginHost()->PluginFinish();
+   }
 
    return S_OK;
 }
@@ -461,7 +488,10 @@ STDMETHODIMP Server::get_PuPHide(VARIANT_BOOL *pRetVal)
 
 STDMETHODIMP Server::put_PuPHide(VARIANT_BOOL pRetVal)
 {
-   PLOGW << "Not implemented";
+   if (pRetVal == VARIANT_TRUE) {
+      if (m_pB2SSettings->ArePluginsOn())
+         m_pB2SSettings->GetPluginHost()->DisablePup();
+   }
 
    return S_OK;
 }
@@ -491,8 +521,14 @@ STDMETHODIMP Server::get_ChangedLamps(VARIANT *pRetVal)
    m_changedLampsCalled = true;
 
    HRESULT hres = m_pB2SData->GetVPinMAME()->get_ChangedLamps(pRetVal);
+
+   SAFEARRAY* psa = pRetVal && V_VT(pRetVal) == (VT_ARRAY | VT_VARIANT) ? V_ARRAY(pRetVal) : NULL;
+
    if (m_pB2SData->IsLampsData())
-      CheckLamps(pRetVal && V_VT(pRetVal) == (VT_ARRAY | VT_VARIANT) ? V_ARRAY(pRetVal) : NULL);
+      CheckLamps(psa);
+
+   if (m_pB2SSettings->ArePluginsOn())
+      m_pB2SSettings->GetPluginHost()->DataReceive('L', psa);
 
    return hres;
 }
@@ -502,8 +538,14 @@ STDMETHODIMP Server::get_ChangedSolenoids(VARIANT *pRetVal)
    m_changedSolenoidsCalled = true;
 
    HRESULT hres = m_pB2SData->GetVPinMAME()->get_ChangedSolenoids(pRetVal);
+
+   SAFEARRAY* psa = pRetVal && V_VT(pRetVal) == (VT_ARRAY | VT_VARIANT) ? V_ARRAY(pRetVal) : NULL;
+
    if (m_pB2SData->IsSolenoidsData())
-      CheckSolenoids(pRetVal && V_VT(pRetVal) == (VT_ARRAY | VT_VARIANT) ? V_ARRAY(pRetVal) : NULL);
+      CheckSolenoids(psa);
+
+   if (m_pB2SSettings->ArePluginsOn())
+      m_pB2SSettings->GetPluginHost()->DataReceive('S', psa);
 
    return hres;
 }
@@ -513,8 +555,14 @@ STDMETHODIMP Server::get_ChangedGIStrings(VARIANT *pRetVal)
    m_changedGIStringsCalled = true;
 
    HRESULT hres = m_pB2SData->GetVPinMAME()->get_ChangedGIStrings(pRetVal);
+
+   SAFEARRAY* psa = pRetVal && V_VT(pRetVal) == (VT_ARRAY | VT_VARIANT) ? V_ARRAY(pRetVal) : NULL;
+
    if (m_pB2SData->IsGIStringsData())
-      CheckGIStrings(pRetVal && V_VT(pRetVal) == (VT_ARRAY | VT_VARIANT) ? V_ARRAY(pRetVal) : NULL);
+      CheckGIStrings(psa);
+
+   if (m_pB2SSettings->ArePluginsOn())
+      m_pB2SSettings->GetPluginHost()->DataReceive('G', psa);
 
    return hres;
 }
@@ -541,8 +589,13 @@ STDMETHODIMP Server::get_ChangedLEDs(VARIANT mask2, VARIANT mask1, VARIANT mask3
 
    HRESULT hres = m_pB2SData->GetVPinMAME()->get_ChangedLEDs(V_I4(&var0), V_I4(&var1), V_I4(&var2), V_I4(&var3), pRetVal);
 
+   SAFEARRAY* psa = pRetVal && V_VT(pRetVal) == (VT_ARRAY | VT_VARIANT) ? V_ARRAY(pRetVal) : NULL;
+
    if (m_pB2SData->IsLEDsData())
-      CheckLEDs(pRetVal && V_VT(pRetVal) == (VT_ARRAY | VT_VARIANT) ? V_ARRAY(pRetVal) : NULL);
+      CheckLEDs(psa);
+
+   if (m_pB2SSettings->ArePluginsOn())
+      m_pB2SSettings->GetPluginHost()->DataReceive('D', psa);
 
    VariantClear(&var0);
    VariantClear(&var1);
@@ -620,6 +673,9 @@ STDMETHODIMP Server::put_Switch(VARIANT number, VARIANT_BOOL pRetVal)
 
    HRESULT hres = m_pB2SData->GetVPinMAME()->put_Switch(V_I4(&var0), pRetVal);
 
+   if (m_pB2SSettings->ArePluginsOn())
+      m_pB2SSettings->GetPluginHost()->DataReceive('W', V_I4(&var0), pRetVal == VARIANT_TRUE ? 1 : 0 );
+
    VariantClear(&var0);
 
    return hres;
@@ -657,6 +713,9 @@ STDMETHODIMP Server::get_GetMech(VARIANT number, VARIANT *pRetVal)
    V_I4(pRetVal) = val;
 
    CheckGetMech(V_I4(&var0), val);
+
+   if (m_pB2SSettings->ArePluginsOn())
+      m_pB2SSettings->GetPluginHost()->DataReceive('N', V_I4(&var0), val);
 
    VariantClear(&var0);
 
@@ -1409,12 +1468,16 @@ void Server::CheckLamps(SAFEARRAY* psa)
 
       for (ix[0] = 0; ix[0] < uCount; ix[0]++) {
          ix[1] = 0;
+         VariantInit(&varValue);
          SafeArrayGetElement(psa, ix, &varValue);
          lampId = V_I4(&varValue);
+         VariantClear(&varValue);
 
          ix[1] = 1;
+         VariantInit(&varValue);
          SafeArrayGetElement(psa, ix, &varValue);
          lampState = V_I4(&varValue);
+         VariantClear(&varValue);
 
          if (m_pB2SData->IsUseRomLamps() || m_pB2SData->IsUseAnimationLamps()) {
             // collect illumination data
@@ -1562,12 +1625,16 @@ void Server::CheckSolenoids(SAFEARRAY* psa)
 
       for (ix[0] = 0; ix[0] < uCount; ix[0]++) {
          ix[1] = 0;
+         VariantInit(&varValue);
          SafeArrayGetElement(psa, ix, &varValue);
          solenoidId = V_I4(&varValue);
+         VariantClear(&varValue);
 
          ix[1] = 1;
+         VariantInit(&varValue);
          SafeArrayGetElement(psa, ix, &varValue);
          solenoidState = V_I4(&varValue);
+         VariantClear(&varValue);
 
          if (m_pB2SData->IsUseRomSolenoids() || m_pB2SData->IsUseAnimationSolenoids()) {
             // collect illumination data
@@ -1715,12 +1782,16 @@ void Server::CheckGIStrings(SAFEARRAY* psa)
 
       for (ix[0] = 0; ix[0] < uCount; ix[0]++) {
          ix[1] = 0;
+         VariantInit(&varValue);
          SafeArrayGetElement(psa, ix, &varValue);
          gistringId = V_I4(&varValue) + 1;
+         VariantClear(&varValue);
 
          ix[1] = 1;
+         VariantInit(&varValue);
          SafeArrayGetElement(psa, ix, &varValue);
          gistringState = V_I4(&varValue);
+         VariantClear(&varValue);
 
          if (m_pB2SData->IsUseRomGIStrings() || m_pB2SData->IsUseAnimationGIStrings()) {
             // collect illumination data
@@ -1868,12 +1939,16 @@ void Server::CheckLEDs(SAFEARRAY* psa)
 
       for (ix[0] = 0; ix[0] < uCount; ix[0]++) {
          ix[1] = 0;
+         VariantInit(&varValue);
          SafeArrayGetElement(psa, ix, &varValue);
          digit = V_I4(&varValue);
+         VariantClear(&varValue);
 
          ix[1] = 2;
+         VariantInit(&varValue);
          SafeArrayGetElement(psa, ix, &varValue);
          value = V_I4(&varValue);
+         VariantClear(&varValue);
 
          // check whether leds are used
          if (m_pB2SData->IsUseLEDs() || m_pB2SData->IsUseLEDDisplays() || m_pB2SData->IsUseReels())
@@ -2010,6 +2085,9 @@ void Server::MyB2SSetData(int id, int value)
             m_pFormBackglass->StopAnimation(animation->GetAnimationName());
       }
    }
+
+   if (m_pB2SSettings->ArePluginsOn())
+      m_pB2SSettings->GetPluginHost()->DataReceive('E', id, value);
 }
 
 void Server::MyB2SSetData(const string& groupname, int value)
@@ -2141,6 +2219,9 @@ void Server::MyB2SSetScore(int digit, int value, bool animateReelChange, bool us
          (*m_pB2SData->GetReels())[reelname]->SetText(value, animateReelChange);
       }
    }
+
+   if (m_pB2SSettings->ArePluginsOn())
+      m_pB2SSettings->GetPluginHost()->DataReceive('B', digit, value);
 }
 
 void Server::MyB2SSetScore(int digit, int score)
@@ -2187,6 +2268,9 @@ void Server::MyB2SSetScore(int digit, int score)
             (*m_pB2SData->GetReelDisplays())[id]->SetScore_(score);
       }
    }
+
+   if (m_pB2SSettings->ArePluginsOn())
+      m_pB2SSettings->GetPluginHost()->DataReceive('B', digit, score);
 }
 
 void Server::MyB2SSetScorePlayer(int playerno, int score)
@@ -2198,6 +2282,9 @@ void Server::MyB2SSetScorePlayer(int playerno, int score)
       if (m_pB2SData->GetPlayers()->contains(playerno))
          (*m_pB2SData->GetPlayers())[playerno]->SetScore(score);
    }
+
+   if (m_pB2SSettings->ArePluginsOn())
+      m_pB2SSettings->GetPluginHost()->DataReceive('C', playerno, score);
 }
 
 void Server::MyB2SStartAnimation(const string& animationname, bool playreverse)
