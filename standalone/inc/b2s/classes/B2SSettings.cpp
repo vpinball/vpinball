@@ -16,6 +16,7 @@ B2SSettings* B2SSettings::GetInstance()
 B2SSettings::B2SSettings()
 {
    m_gameNameFound = false;
+   m_pPluginHost = NULL;
 
    ClearAll();
 }
@@ -29,6 +30,11 @@ void B2SSettings::Load(bool resetLogs)
    ClearAll();
 
    Settings* const pSettings = &g_pplayer->m_ptable->m_settings;
+
+   m_pluginsOn = pSettings->LoadValueWithDefault(Settings::Standalone, "B2SPlugins"s, false);
+
+   if (m_pluginsOn)
+      m_pPluginHost = PluginHost::GetInstance();
 
    m_hideGrill = (B2SSettingsCheckedState)pSettings->LoadValueWithDefault(Settings::Standalone, "B2SHideGrill"s, (int)B2SSettingsCheckedState_Indeterminate);
    m_hideB2SDMD = pSettings->LoadValueWithDefault(Settings::Standalone, "B2SHideB2SDMD"s, false);
@@ -63,8 +69,4 @@ void B2SSettings::ClearAll()
    m_formToFront = true;
    m_formToBack = false;
    m_formNoFocus = false;
-
-   Settings* const pSettings = &g_pplayer->m_ptable->m_settings;
-
-   m_frameSkip = pSettings->LoadValueWithDefault(Settings::Standalone, "B2SFrameSkip"s, 0);
 }

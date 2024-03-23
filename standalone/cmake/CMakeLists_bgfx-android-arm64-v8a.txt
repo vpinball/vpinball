@@ -535,11 +535,21 @@ add_library(vpinball SHARED
    standalone/inc/b2s/forms/FormBackglass.h
    standalone/inc/b2s/forms/FormDMD.cpp
    standalone/inc/b2s/forms/FormDMD.h
+   standalone/inc/b2s/plugin/Plugin.cpp
+   standalone/inc/b2s/plugin/Plugin.h
+   standalone/inc/b2s/plugin/PluginHost.cpp
+   standalone/inc/b2s/plugin/PluginHost.h
    standalone/inc/b2s/Server.cpp
    standalone/inc/b2s/Server.h
    standalone/inc/b2s/b2s_i_proxy.cpp
    standalone/inc/b2s/b2s_i.c
    standalone/inc/b2s/b2s_i.h
+
+   standalone/inc/dof/DOFPlugin.cpp
+   standalone/inc/dof/DOFPlugin.h
+
+   standalone/Standalone.cpp
+   standalone/Standalone.h
 
    standalone/inc/pup/PinUpPlayerPinDisplay.cpp
    standalone/inc/pup/PinUpPlayerPinDisplay.h
@@ -656,6 +666,7 @@ target_link_libraries(vpinball
    pinmame.3.6
    altsound
    dmdutil
+   dof
    EGL
    GLESv3
    android

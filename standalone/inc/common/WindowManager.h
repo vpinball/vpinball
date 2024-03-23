@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Window.h"
-
 #include <mutex>
 
 namespace VP {
+
+class Window;
 
 class WindowManager final
 {

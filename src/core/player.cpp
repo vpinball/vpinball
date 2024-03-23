@@ -16,7 +16,7 @@
 #endif
 
 #ifdef __STANDALONE__
-#include "DMDUtil/DMDUtil.h"
+#include "standalone/Standalone.h"
 #endif
 
 #include <ctime>
@@ -66,16 +66,6 @@
  #define detect_no_sse !__builtin_cpu_supports("sse")
  #define detect_sse2 __builtin_cpu_supports("sse2")
 #endif
-#endif
-
-#ifdef __STANDALONE__
-void OnDMDUtilLog(const char* format, va_list args)
-{
-   char buffer[4096];
-   vsnprintf(buffer, sizeof(buffer), format, args);
-
-   PLOGI.printf("%s", buffer);
-}
 #endif
 
 Player::Player(PinTable *const editor_table, PinTable *const live_table, const int playMode)
@@ -1216,20 +1206,7 @@ HRESULT Player::Init()
    #endif
 
 #ifdef __STANDALONE__
-   Settings* const pSettings = &m_ptable->m_settings;
-   DMDUtil::Config* pConfig = DMDUtil::Config::GetInstance();
-   pConfig->SetLogCallback(OnDMDUtilLog);
-   pConfig->SetZeDMD(pSettings->LoadValueWithDefault(Settings::Standalone, "ZeDMD"s, true));
-   pConfig->SetZeDMDDevice(pSettings->LoadValueWithDefault(Settings::Standalone, "ZeDMDDevice"s, ""s).c_str());
-   pConfig->SetZeDMDDebug(pSettings->LoadValueWithDefault(Settings::Standalone, "ZeDMDDebug"s, false));
-   pConfig->SetZeDMDRGBOrder(pSettings->LoadValueWithDefault(Settings::Standalone, "ZeDMDRGBOrder"s, -1));
-   pConfig->SetZeDMDBrightness(pSettings->LoadValueWithDefault(Settings::Standalone, "ZeDMDBrightness"s, -1));
-   pConfig->SetZeDMDSaveSettings(pSettings->LoadValueWithDefault(Settings::Standalone, "ZeDMDSaveSettings"s, false));
-   pConfig->SetPixelcade(pSettings->LoadValueWithDefault(Settings::Standalone, "Pixelcade"s, true));
-   pConfig->SetPixelcadeDevice(pSettings->LoadValueWithDefault(Settings::Standalone, "PixelcadeDevice"s, ""s).c_str());
-   pConfig->SetDMDServer(pSettings->LoadValueWithDefault(Settings::Standalone, "DMDServer"s, false));
-   pConfig->SetDMDServerAddr(pSettings->LoadValueWithDefault(Settings::Standalone, "DMDServerAddr"s, "localhost"s).c_str());
-   pConfig->SetDMDServerPort(pSettings->LoadValueWithDefault(Settings::Standalone, "DMDServerPort"s, 6789));
+   Standalone::GetInstance()->Startup();
 #endif
 
    m_pEditorTable->m_progressDialog.SetName("Starting Game Scripts..."s);

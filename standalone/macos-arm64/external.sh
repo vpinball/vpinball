@@ -6,9 +6,10 @@ FREEIMAGE_VERSION=3.18.0
 SDL2_VERSION=2.30.1
 SDL2_IMAGE_VERSION=2.8.2
 SDL2_TTF_VERSION=2.22.0
-PINMAME_SHA=f6b82e9ad61ff6c540139b65149deabfc7817101
+PINMAME_SHA=788aa7af6eae8f777882e42abf44117f95a26bf4
 LIBALTSOUND_SHA=9ac08a76e2aabc1fba57d3e5a3b87e7f63c09e07
-LIBDMDUTIL_SHA=988793a60b6d9706999ee6b70b55d95716db9950
+LIBDMDUTIL_SHA=4e5abe7934bfed1ce7b822b28ffbaf9104359083
+LIBDOF_SHA=92890aac83c03d76ed261424c274e17a9d54f6eb
 BGFX_CMAKE_VERSION=1.126.8700-463
 FFMPEG_SHA=e38092ef9395d7049f871ef4d5411eb410e283e0
 
@@ -22,6 +23,7 @@ echo "  SDL2_TTF_VERSION: ${SDL2_TTF_VERSION}"
 echo "  PINMAME_SHA: ${PINMAME_SHA}"
 echo "  LIBALTSOUND_SHA: ${LIBALTSOUND_SHA}"
 echo "  LIBDMDUTIL_SHA: ${LIBDMDUTIL_SHA}"
+echo "  LIBDOF_SHA: ${LIBDOF_SHA}"
 echo "  BGFX_CMAKE_VERSION: ${BGFX_CMAKE_VERSION}"
 echo "  FFMPEG_SHA: ${FFMPEG_SHA}"
 echo ""
@@ -257,6 +259,36 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
    mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/include
    cp -r include/DMDUtil ../../${CACHE_DIR}/${CACHE_NAME}/include
    cp -r third-party/include/sockpp ../../${CACHE_DIR}/${CACHE_NAME}/include
+   mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/lib
+   cp -a third-party/runtime-libs/macos/arm64/*.dylib ../../${CACHE_DIR}/${CACHE_NAME}/lib
+   cp -a build/*.dylib ../../${CACHE_DIR}/${CACHE_NAME}/lib
+   cd ..
+   touch "../${CACHE_DIR}/${CACHE_NAME}.cache"
+fi
+
+cp -r ../${CACHE_DIR}/${CACHE_NAME}/include/* ../external/include
+cp -a ../${CACHE_DIR}/${CACHE_NAME}/lib/*.dylib ../external/lib
+
+#
+# build libdof (and deps) and copy to external
+#
+
+CACHE_NAME="libdof-${LIBDOF_SHA}"
+
+if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
+   curl -sL https://github.com/jsm174/libdof/archive/${LIBDOF_SHA}.zip -o libdof.zip
+   unzip libdof.zip
+   cd libdof-$LIBDOF_SHA
+   platforms/macos/arm64/external.sh
+   cmake \
+      -DPLATFORM=macos \
+      -DARCH=arm64 \
+      -DBUILD_STATIC=OFF \
+      -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
+      -B build
+   cmake --build build -- -j${NUM_PROCS}
+   mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/include
+   cp -r include/DOF ../../${CACHE_DIR}/${CACHE_NAME}/include
    mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/lib
    cp -a third-party/runtime-libs/macos/arm64/*.dylib ../../${CACHE_DIR}/${CACHE_NAME}/lib
    cp -a build/*.dylib ../../${CACHE_DIR}/${CACHE_NAME}/lib

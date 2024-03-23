@@ -490,6 +490,17 @@ string color_to_hex(OLE_COLOR color)
    return stream.str();
 }
 
+bool string_contains_case_insensitive(const string& str1, const string& str2)
+{
+   string lstr1 = str1;
+   string lstr2 = str2;
+
+   std::transform(lstr1.begin(), lstr1.end(), lstr1.begin(), ::tolower);
+   std::transform(lstr2.begin(), lstr2.end(), lstr2.begin(), ::tolower);
+
+   return str1.find(str2) != string::npos;
+}
+
 bool string_compare_case_insensitive(const string& str1, const string& str2)
 {
    string lstr1 = str1;

@@ -4,6 +4,10 @@ To keep up with all the changes in master, and make it easier to rebase, this br
 
 The downside of this approach is not accurately keeping track of history:
 
+* 03/23/24
+    * Implement B2S `PluginHost` and `Plugin` logic
+    * Added new `DOFPlugin` which calls new `libdof` library
+
 * 03/21/24
     * Fix vbscript `GlobalJoin` when using empty values (@francisdb)
 

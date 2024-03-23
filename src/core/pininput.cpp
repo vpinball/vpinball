@@ -1251,12 +1251,14 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
       g_pplayer->m_vrDevice->TableDown();
 #endif
 
-   for (int i = 0; i < eCKeys; i++)
-      if (keycode == g_pplayer->m_rgKeys[i])
+   for (int i = 0; i < eCKeys; i++) {
+      if (keycode == g_pplayer->m_rgKeys[i]) {
          if (dispid == DISPID_GameEvents_KeyDown)
             m_keyPressedState[i] = true;
          else if (dispid == DISPID_GameEvents_KeyUp)
             m_keyPressedState[i] = false;
+      }
+   }
 
    if (g_pplayer->m_liveUI->IsTweakMode())
    {

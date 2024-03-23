@@ -242,8 +242,8 @@ jobs:
           key: ${{ matrix.type }}-macos-${{ matrix.arch }}-${{ matrix.config }}-external-${{ env.TIMESTAMP }}
       - name: Build
         run: |
-          perl -i -pe"s/0/${{ needs.version.outputs.revision }}/g" git_version.h
-          perl -i -pe"s/unknown/${{ needs.version.outputs.sha7 }}/g" git_version.h
+          perl -i -pe"s/0/${{ needs.version.outputs.revision }}/g" src/core/git_version.h
+          perl -i -pe"s/unknown/${{ needs.version.outputs.sha7 }}/g" src/core/git_version.h
           NUM_PROCS=$(sysctl -n hw.ncpu)
           TYPE=$(echo "${{ matrix.type }}" | tr '[:upper:]' '[:lower:]')
           cp standalone/cmake/CMakeLists_${TYPE}-macos-${{ matrix.arch }}.txt CMakeLists.txt
@@ -307,8 +307,8 @@ jobs:
           key: ${{ matrix.type }}-linux-${{ matrix.arch }}-${{ matrix.config }}-external-${{ env.TIMESTAMP }}
       - name: Build
         run: |
-          perl -i -pe"s/0/${{ needs.version.outputs.revision }}/g" git_version.h
-          perl -i -pe"s/unknown/${{ needs.version.outputs.sha7 }}/g" git_version.h
+          perl -i -pe"s/0/${{ needs.version.outputs.revision }}/g" src/core/git_version.h
+          perl -i -pe"s/unknown/${{ needs.version.outputs.sha7 }}/g" src/core/git_version.h
           NUM_PROCS=$(nproc)
           TYPE=$(echo "${{ matrix.type }}" | tr '[:upper:]' '[:lower:]')
           cp standalone/cmake/CMakeLists_${TYPE}-linux-${{ matrix.arch }}.txt CMakeLists.txt
