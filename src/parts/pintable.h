@@ -309,8 +309,8 @@ public:
    STDMETHOD(get_EnvironmentImage)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(put_EnvironmentImage)(/*[in]*/ BSTR newVal);
 
-   STDMETHOD(get_Version)(/*[out, retval]*/ int *pVal);
-   STDMETHOD(get_VPBuildVersion)(/*[out, retval]*/ int *pVal);
+   STDMETHOD(get_Version)(/*[out, retval]*/ DOUBLE *pVal);
+   STDMETHOD(get_VPBuildVersion)(/*[out, retval]*/ DOUBLE *pVal);
    STDMETHOD(get_VersionMajor)(/*[out, retval]*/ int *pVal);
    STDMETHOD(get_VersionMinor)(/*[out, retval]*/ int *pVal);
    STDMETHOD(get_VersionRevision)(/*[out, retval]*/ int *pVal);
@@ -966,8 +966,8 @@ public:
    STDMETHOD(GetElementByName)(/*[in]*/ BSTR name, /*[out, retval]*/ IDispatch **pVal);
    STDMETHOD(get_ActiveTable)(/*[out, retval]*/ ITable **pVal);
 
-   STDMETHOD(get_Version)(/*[out, retval]*/ int *pVal);
-   STDMETHOD(get_VPBuildVersion)(/*[out, retval]*/ int *pVal);
+   STDMETHOD(get_Version)(/*[out, retval]*/ DOUBLE *pVal);
+   STDMETHOD(get_VPBuildVersion)(/*[out, retval]*/ DOUBLE *pVal);
    STDMETHOD(get_VersionMajor)(/*[out, retval]*/ int *pVal);
    STDMETHOD(get_VersionMinor)(/*[out, retval]*/ int *pVal);
    STDMETHOD(get_VersionRevision)(/*[out, retval]*/ int *pVal);

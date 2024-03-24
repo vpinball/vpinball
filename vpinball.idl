@@ -680,11 +680,11 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propput, id(398), helpstring("property OverwriteAlphaAcc")] HRESULT GlobalAlphaAcc([in] VARIANT_BOOL newVal);
                 [propget, id(588), helpstring("property OverwriteDayNight")] HRESULT GlobalDayNight([out, retval] VARIANT_BOOL *pVal);
                 [propput, id(588), helpstring("property OverwriteDayNight")] HRESULT GlobalDayNight([in] VARIANT_BOOL newVal);
-                [propget, id(219), helpstring("property Version")] HRESULT Version([out, retval] int *pVal);
+                [propget, id(219), helpstring("property Version")] HRESULT Version([out, retval] DOUBLE *pVal);
                 [propget, id(38), helpstring("property VersionMajor")] HRESULT VersionMajor([out, retval] int *pVal);
                 [propget, id(39), helpstring("property VersionMinor")] HRESULT VersionMinor([out, retval] int *pVal);
                 [propget, id(40), helpstring("property VersionRevision")] HRESULT VersionRevision([out, retval] int *pVal);
-                [propget, id(24), helpstring("property VPBuildVersion")] HRESULT VPBuildVersion([out, retval] int *pVal);
+                [propget, id(24), helpstring("property VPBuildVersion")] HRESULT VPBuildVersion([out, retval] DOUBLE *pVal);
 
                 [propget, id(230), helpstring("property Option")] HRESULT Option([in] BSTR OptionName, [in] float MinValue, [in] float MaxValue, [in] float Step, [in] float DefaultValue, [in] int Unit, [in, optional] VARIANT values, [out, retval] float *pVal);
                 [propput, id(230), helpstring("property Option")] HRESULT Option([in] BSTR OptionName, [in] float MinValue, [in] float MaxValue, [in] float Step, [in] float DefaultValue, [in] int Unit, [in, optional] VARIANT values, [in] float val);
@@ -768,11 +768,11 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propput, id(46), helpstring("property DMDPixels")] HRESULT DMDPixels([in] VARIANT pVal);
                 [propput, id(47), helpstring("property DMDColoredPixels")] HRESULT DMDColoredPixels([in] VARIANT pVal);
 
-                [propget, id(219), helpstring("property Version")] HRESULT Version([out, retval] int *pVal);
+                [propget, id(219), helpstring("property Version")] HRESULT Version([out, retval] DOUBLE *pVal);
                 [propget, id(38), helpstring("property VersionMajor")] HRESULT VersionMajor([out, retval] int *pVal);
                 [propget, id(39), helpstring("property VersionMinor")] HRESULT VersionMinor([out, retval] int *pVal);
                 [propget, id(40), helpstring("property VersionRevision")] HRESULT VersionRevision([out, retval] int *pVal);
-                [propget, id(24), helpstring("property VPBuildVersion")] HRESULT VPBuildVersion([out, retval] int *pVal);
+                [propget, id(24), helpstring("property VPBuildVersion")] HRESULT VPBuildVersion([out, retval] DOUBLE  *pVal);
 
                 [id(249), helpstring("method GetSerialDevices")] HRESULT GetSerialDevices([out, retval] VARIANT *pVal);
                 [id(250), helpstring("method OpenSerial")] HRESULT OpenSerial([in] BSTR device);
