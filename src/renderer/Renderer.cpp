@@ -1048,6 +1048,14 @@ void Renderer::PrepareFrame()
    else if (g_pplayer->m_liveUI->IsTweakMode())
       InitLayout();
 
+   // Reinitialize parts that have been modified
+   for (auto renderable : m_renderableToInit)
+   {
+      renderable->RenderRelease();
+      renderable->RenderSetup(m_pd3dPrimaryDevice);
+   }
+   m_renderableToInit.clear();
+
    // Update staticly prerendered parts if needed
    RenderStaticPrepass();
 

@@ -7,6 +7,7 @@
 #include "parts/backGlass.h"
 
 class FrameQueueLimiter;
+class Renderable;
 
 class Renderer
 {
@@ -39,6 +40,8 @@ public:
    void DrawDynamics(bool onlyBalls);
    void DrawSprite(const float posx, const float posy, const float width, const float height, const COLORREF color, Texture* const tex, const float intensity, const bool backdrop = false);
    void DrawSprite(const float posx, const float posy, const float width, const float height, const COLORREF color, Sampler* const tex, const float intensity, const bool backdrop = false);
+
+   void ReinitRenderable(Renderable* part) { m_renderableToInit.push_back(part); }
 
    RenderProbe::ReflectionMode GetMaxReflectionMode() const {
       // For dynamic mode, static reflections are not available so adapt the mode
@@ -130,6 +133,8 @@ private:
    RenderTarget* m_staticPrepassRT = nullptr;
    unsigned int m_statsDrawnStaticTriangles = 0;
    RenderProbe::ReflectionMode m_maxReflectionMode;
+
+   vector<Renderable*> m_renderableToInit;
 
    Texture m_builtinEnvTexture; // loaded from assets folder
 

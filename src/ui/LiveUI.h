@@ -87,12 +87,15 @@ private:
    void CameraProperties(bool is_live);
    void MaterialProperties(bool is_live);
    void TableProperties(bool is_live);
+   void BumperProperties(bool is_live, Bumper *startup_obj, Bumper *live_obj);
    void FlasherProperties(bool is_live, Flasher *startup_obj, Flasher *live_obj);
+   void KickerProperties(bool is_live, Kicker *startup_obj, Kicker *live_obj);
    void LightProperties(bool is_live, Light *startup_obj, Light *live_obj);
    void PrimitiveProperties(bool is_live, Primitive *startup_obj, Primitive *live_obj);
    void RampProperties(bool is_live, Ramp *startup_obj, Ramp *live_obj);
    void RubberProperties(bool is_live, Rubber *startup_obj, Rubber *live_obj);
    void SurfaceProperties(bool is_live, Surface *startup_obj, Surface *live_obj);
+   void TriggerProperties(bool is_live, Trigger *startup_obj, Trigger *live_obj);
 
    // Helpers for property edition
    typedef std::function<void(bool is_live, float prev, float v)> OnFloatPropChange;
@@ -111,6 +114,8 @@ private:
    void PropCombo(const char *label, IEditable *undo_obj, bool is_live, int *startup_v, int *live_v, int n_values, const string labels[], OnIntPropChange chg_callback = nullptr);
    void PropImageCombo(const char *label, IEditable *undo_obj, bool is_live, string *startup_v, string *live_v, PinTable *table, OnStringPropChange chg_callback = nullptr);
    void PropMaterialCombo(const char *label, IEditable *undo_obj, bool is_live, string *startup_v, string *live_v, PinTable *table, OnStringPropChange chg_callback = nullptr);
+   void PropLightmapCombo(const char *label, IEditable *undo_obj, bool is_live, string *startup_v, string *live_v, PinTable *table, OnStringPropChange chg_callback = nullptr);
+   void PropRenderProbeCombo(const char *label, RenderProbe::ProbeType type, IEditable *undo_obj, bool is_live, string *startup_v, string *live_v, PinTable *table, OnStringPropChange chg_callback = nullptr);
 
    // Enter/Exit edit mode (manage table backup, dynamic mode,...)
    void CloseTweakMode();
