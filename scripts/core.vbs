@@ -2436,12 +2436,14 @@ End Sub
 
 Sub vpmDoSolCallback(aNo, aEnabled)
 	InitSolCallbacks
-	Dim cb: Set cb = SolCallbackRef(nsol)
+	Dim cb: Set cb = SolCallbackRef(aNo)
 	If Not cb Is Nothing Then cb CBool(aEnabled)
 End Sub
 
 Sub vpmDoLampUpdate(aNo, aEnabled)
-	On Error Resume Next : Lights(aNo).State = Abs(aEnabled)
+	On Error Resume Next ' FIXME remove as hiding error is not really a good idea since this leads to sharing tables with invalid script
+	Lights(aNo).State = Abs(aEnabled)
+	On Error Goto 0
 End Sub
 
 Sub PinMAMETimer_Timer
