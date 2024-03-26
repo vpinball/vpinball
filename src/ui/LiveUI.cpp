@@ -2735,14 +2735,17 @@ void LiveUI::UpdatePropertyUI()
                   HelpEditableHeader(is_live, startup_obj, live_obj);
                   switch (m_selection.editable->GetItemType())
                   {
-                  // eItemFlipper, eItemTimer, eItemPlunger, eItemTextbox, eItemBumper, eItemTrigger, eItemKicker, eItemDecal, eItemGate, eItemSpinner, eItemTable,
+                  // eItemFlipper, eItemTimer, eItemPlunger, eItemTextbox, eItemDecal, eItemGate, eItemSpinner, eItemTable,
                   // eItemLightCenter, eItemDragPoint, eItemCollection, eItemDispReel, eItemLightSeq, eItemHitTarget,
-                  case eItemFlasher: FlasherProperties(is_live, (Flasher *) startup_obj, (Flasher *)live_obj); break;
+                  case eItemBumper: BumperProperties(is_live, (Bumper *)startup_obj, (Bumper *)live_obj); break;
+                  case eItemFlasher: FlasherProperties(is_live, (Flasher *)startup_obj, (Flasher *)live_obj); break;
+                  case eItemKicker: KickerProperties(is_live, (Kicker *)startup_obj, (Kicker *)live_obj); break;
                   case eItemLight: LightProperties(is_live, (Light *)startup_obj, (Light *)live_obj); break;
                   case eItemPrimitive: PrimitiveProperties(is_live, (Primitive *)startup_obj, (Primitive *)live_obj); break;
                   case eItemSurface: SurfaceProperties(is_live, (Surface *)startup_obj, (Surface *)live_obj); break;
                   case eItemRamp: RampProperties(is_live, (Ramp *)startup_obj, (Ramp *)live_obj); break;
                   case eItemRubber: RubberProperties(is_live, (Rubber *)startup_obj, (Rubber *)live_obj); break;
+                  case eItemTrigger: TriggerProperties(is_live, (Trigger *)startup_obj, (Trigger *)live_obj); break;
                   default: break;
                   }
                }
@@ -3737,23 +3740,53 @@ void LiveUI::MaterialProperties(bool is_live)
    }
 }
 
+void LiveUI::BumperProperties(bool is_live, Bumper *startup_obj, Bumper *live_obj)
+{
+   m_renderer->ReinitRenderable(live_obj);
+   if (ImGui::CollapsingHeader("Visuals", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
+   {
+      PropMaterialCombo("Cap Material", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_szCapMaterial) : nullptr, live_obj ? &(live_obj->m_d.m_szCapMaterial) : nullptr, m_table);
+      PropMaterialCombo("Base Material", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_szBaseMaterial) : nullptr, live_obj ? &(live_obj->m_d.m_szBaseMaterial) : nullptr, m_table);
+      PropMaterialCombo("Skirt Material", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_szSkirtMaterial) : nullptr, live_obj ? &(live_obj->m_d.m_szSkirtMaterial) : nullptr, m_table);
+      PropMaterialCombo("Ring Material", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_szRingMaterial) : nullptr, live_obj ? &(live_obj->m_d.m_szRingMaterial) : nullptr, m_table);
+      PropFloat("Radius", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_radius) : nullptr, live_obj ? &(live_obj->m_d.m_radius) : nullptr, 0.1f, 0.5f, "%.1f");
+      PropFloat("Height Scale", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_heightScale) : nullptr, live_obj ? &(live_obj->m_d.m_heightScale) : nullptr, 0.1f, 0.5f, "%.1f");
+      PropFloat("Orientation", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_orientation) : nullptr, live_obj ? &(live_obj->m_d.m_orientation) : nullptr, 0.1f, 0.5f, "%.1f");
+      PropFloat("Ring Speed", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_ringSpeed) : nullptr, live_obj ? &(live_obj->m_d.m_ringSpeed) : nullptr, 0.1f, 0.5f, "%.1f");
+      PropFloat("Ring Drop", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_ringDropOffset) : nullptr, live_obj ? &(live_obj->m_d.m_ringDropOffset) : nullptr, 0.1f, 0.5f, "%.1f");
+      PropCheckbox("Reflection Enabled", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_reflectionEnabled) : nullptr, live_obj ? &(live_obj->m_d.m_reflectionEnabled) : nullptr);
+      PropCheckbox("Cap Visible", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_capVisible) : nullptr, live_obj ? &(live_obj->m_d.m_capVisible) : nullptr);
+      PropCheckbox("Base Visible", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_baseVisible) : nullptr, live_obj ? &(live_obj->m_d.m_baseVisible) : nullptr);
+      PropCheckbox("Skirt Visible", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_skirtVisible) : nullptr, live_obj ? &(live_obj->m_d.m_skirtVisible) : nullptr);
+      PropCheckbox("Ring Visible", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_ringVisible) : nullptr, live_obj ? &(live_obj->m_d.m_ringVisible) : nullptr);
+      // Missing position
+      ImGui::EndTable();
+   }
+}
+
 void LiveUI::FlasherProperties(bool is_live, Flasher *startup_obj, Flasher *live_obj)
 {
+   m_renderer->ReinitRenderable(live_obj);
    if (ImGui::CollapsingHeader("Visual", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
    {
       PropCheckbox("Visible", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_isVisible) : nullptr, live_obj ? &(live_obj->m_d.m_isVisible) : nullptr);
       PropImageCombo("Image A", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_szImageA) : nullptr, live_obj ? &(live_obj->m_d.m_szImageA) : nullptr, m_table);
       PropImageCombo("Image B", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_szImageB) : nullptr, live_obj ? &(live_obj->m_d.m_szImageB) : nullptr, m_table);
+      // Missing Mode
+      // Missing Filter Image B
+      // Missing Amount
       PropCheckbox("Additive Blend", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_addBlend) : nullptr, live_obj ? &(live_obj->m_d.m_addBlend) : nullptr);
       PropCheckbox("Use Script DMD", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_isDMD) : nullptr, live_obj ? &(live_obj->m_d.m_isDMD) : nullptr);
       PropRGB("Color", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_color) : nullptr, live_obj ? &(live_obj->m_d.m_color) : nullptr);
       PropInt("Opacity", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_alpha) : nullptr, live_obj ? &(live_obj->m_d.m_alpha) : nullptr);
       PropFloat("Modulate", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_modulate_vs_add) : nullptr, live_obj ? &(live_obj->m_d.m_modulate_vs_add) : nullptr, 0.1f, 0.5f);
       PropFloat("Depth bias", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_depthBias) : nullptr, live_obj ? &(live_obj->m_d.m_depthBias) : nullptr, 10.f, 100.f);
+      PropLightmapCombo("Lightmap", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_szLightmap) : nullptr, live_obj ? &(live_obj->m_d.m_szLightmap) : nullptr, m_table);
       ImGui::EndTable();
    }
    if (ImGui::CollapsingHeader("Position", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
    {
+      // FIXME This allows to edit the center but does not update dragpoint coordinates accordingly
       PropVec3("Position", startup_obj, is_live, 
          startup_obj ? &(startup_obj->m_d.m_vCenter.x) : nullptr, startup_obj ? &(startup_obj->m_d.m_vCenter.y) : nullptr, startup_obj ? &(startup_obj->m_d.m_height) : nullptr,
          live_obj    ? &(live_obj   ->m_d.m_vCenter.x) : nullptr, live_obj    ? &(live_obj   ->m_d.m_vCenter.y) : nullptr, live_obj    ? &(live_obj   ->m_d.m_height) : nullptr, "%.0f", ImGuiInputTextFlags_CharsDecimal);
@@ -3764,10 +3797,26 @@ void LiveUI::FlasherProperties(bool is_live, Flasher *startup_obj, Flasher *live
    }
 }
 
+void LiveUI::KickerProperties(bool is_live, Kicker *startup_obj, Kicker *live_obj)
+{
+   m_renderer->ReinitRenderable(live_obj);
+   if (ImGui::CollapsingHeader("Visuals", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
+   {
+      PropMaterialCombo("Material", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_szMaterial) : nullptr, live_obj ? &(live_obj->m_d.m_szMaterial) : nullptr, m_table);
+      static const string shapes[] = { "Invisible"s, "Hole"s, "Cup"s, "Hole Simple"s, "Williams"s, "Gottlieb"s, "Cup 2"s };
+      PropCombo("Shape", startup_obj, is_live, startup_obj ? (int *)&(startup_obj->m_d.m_kickertype) : nullptr, live_obj ? (int *)&(live_obj->m_d.m_kickertype) : nullptr, 7, shapes);
+      PropFloat("Radius", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_radius) : nullptr, live_obj ? &(live_obj->m_d.m_radius) : nullptr, 0.1f, 0.5f, "%.1f");
+      PropFloat("Orientation", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_orientation) : nullptr, live_obj ? &(live_obj->m_d.m_orientation) : nullptr, 0.1f, 0.5f, "%.1f");
+      // Missing position
+      ImGui::EndTable();
+   }
+}
+
 void LiveUI::LightProperties(bool is_live, Light *startup_light, Light *live_light)
 {
-   Light * const light = (is_live ? live_light : startup_light);
-   if (ImGui::CollapsingHeader("Visual", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
+   m_renderer->ReinitRenderable(live_light);
+   Light *const light = (is_live ? live_light : startup_light);
+   if (light && ImGui::CollapsingHeader("Visual", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
    {
       auto upd_intensity = [startup_light, live_light, light](bool is_live, float prev, float v)
       {
@@ -3803,7 +3852,11 @@ void LiveUI::LightProperties(bool is_live, Light *startup_light, Light *live_lig
       PropFloat("Falloff Power", startup_light, is_live, startup_light ? &(startup_light->m_d.m_falloff_power) : nullptr, live_light ? &(live_light->m_d.m_falloff_power) : nullptr, 0.1f, 0.5f, "%.2f");
 
       PropSeparator("Render Mode");
-      // Missing render mode properties
+      static const string modes[] = { "Hidden"s, "Classic"s, "Halo"s };
+      int startup_mode = startup_light ? startup_light->m_d.m_visible ? startup_light->m_d.m_BulbLight ? 2 : 1 : 0 : -1;
+      int live_mode = live_light ? live_light->m_d.m_visible ? live_light->m_d.m_BulbLight ? 2 : 1 : 0 : -1;
+      auto upd_mode = [light](bool is_live, bool prev, int v) { light->m_d.m_visible = (v != 0); light->m_d.m_BulbLight = (v != 1); };
+      PropCombo("Type", startup_light, is_live, startup_mode >= 0 ? &startup_mode : nullptr, live_mode >= 0 ? &live_mode : nullptr, 3, modes, upd_mode);
       if (!light->m_d.m_visible)
       {
       }
@@ -3833,13 +3886,14 @@ void LiveUI::LightProperties(bool is_live, Light *startup_light, Light *live_lig
       PropCheckbox("Raytraced ball shadows", startup_light, is_live, startup_light ? &startup_shadow : nullptr, live_light ? &live_shadow : nullptr, upd_shadow);
 
       PropSeparator("Position");
+      // FIXME This allows to edit the center but does not update dragpoint coordinates accordingly
       PropFloat("X", startup_light, is_live, startup_light ? &(startup_light->m_d.m_vCenter.x) : nullptr, live_light ? &(live_light->m_d.m_vCenter.x) : nullptr, 0.1f, 0.5f, "%.1f");
       PropFloat("Y", startup_light, is_live, startup_light ? &(startup_light->m_d.m_vCenter.y) : nullptr, live_light ? &(live_light->m_d.m_vCenter.y) : nullptr, 0.1f, 0.5f, "%.1f");
       PropFloat("Z", startup_light, is_live, startup_light ? &(startup_light->m_d.m_height) : nullptr, live_light ? &(live_light->m_d.m_height) : nullptr, 0.1f, 0.5f, "%.1f");
 
       ImGui::EndTable();
    }
-   if (ImGui::CollapsingHeader("States", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
+   if (light && ImGui::CollapsingHeader("States", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
    {
       auto upd_inplaystate = [startup_light, live_light](bool is_live, float prev, float v)
       {
@@ -3875,21 +3929,35 @@ void LiveUI::LightProperties(bool is_live, Light *startup_light, Light *live_lig
 
 void LiveUI::PrimitiveProperties(bool is_live, Primitive *startup_obj, Primitive *live_obj)
 {
+   m_renderer->ReinitRenderable(live_obj);
    if (ImGui::CollapsingHeader("Visuals", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
    {
       PropSeparator("Render Options");
-      PropCheckbox("Static Rendering", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_staticRendering) : nullptr, live_obj ? &(live_obj->m_d.m_staticRendering) : nullptr);
       PropCheckbox("Visible", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_visible) : nullptr, live_obj ? &(live_obj->m_d.m_visible) : nullptr);
+      PropCheckbox("Static Rendering", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_staticRendering) : nullptr, live_obj ? &(live_obj->m_d.m_staticRendering) : nullptr);
       PropCheckbox("Reflection Enabled", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_reflectionEnabled) : nullptr, live_obj ? &(live_obj->m_d.m_reflectionEnabled) : nullptr);
       PropFloat("Depth Bias", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_depthBias) : nullptr, live_obj ? &(live_obj->m_d.m_depthBias) : nullptr, 10.f, 50.f, "%.0f");
+      PropCheckbox("Depth Mask", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_useDepthMask) : nullptr, live_obj ? &(live_obj->m_d.m_useDepthMask) : nullptr);
       PropCheckbox("Render Backfaces", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_backfacesEnabled) : nullptr, live_obj ? &(live_obj->m_d.m_backfacesEnabled) : nullptr);
       PropCheckbox("Additive Blend", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_addBlend) : nullptr, live_obj ? &(live_obj->m_d.m_addBlend) : nullptr);
-      PropCheckbox("Depth Mask", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_useDepthMask) : nullptr, live_obj ? &(live_obj->m_d.m_useDepthMask) : nullptr);
+      PropLightmapCombo("Lightmap", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_szLightmap) : nullptr, live_obj ? &(live_obj->m_d.m_szLightmap) : nullptr, m_table);
+
+      PropSeparator("Material");
       PropMaterialCombo("Material", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_szMaterial) : nullptr, live_obj ? &(live_obj->m_d.m_szMaterial) : nullptr, m_table);
-      PropFloat("Disable Light", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_disableLightingTop) : nullptr, live_obj ? &(live_obj->m_d.m_disableLightingTop) : nullptr, 0.01f,
-         0.05f, "%.3f");
-      PropFloat("Disable Light from below", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_disableLightingBelow) : nullptr, live_obj ? &(live_obj->m_d.m_disableLightingBelow) : nullptr, 0.01f, 0.05f, "%.3f");
+      PropImageCombo("Image", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_szImage) : nullptr, live_obj ? &(live_obj->m_d.m_szImage) : nullptr, m_table);
+      PropImageCombo("Normal Map", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_szNormalMap) : nullptr, live_obj ? &(live_obj->m_d.m_szNormalMap) : nullptr, m_table);
+      PropCheckbox("Object Space NM", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_objectSpaceNormalMap) : nullptr, live_obj ? &(live_obj->m_d.m_objectSpaceNormalMap) : nullptr);
+      PropFloat("Disable Spot Lights", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_disableLightingTop) : nullptr, live_obj ? &(live_obj->m_d.m_disableLightingTop) : nullptr, 0.01f, 0.05f, "%.3f");
+      PropFloat("Translucency", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_disableLightingBelow) : nullptr, live_obj ? &(live_obj->m_d.m_disableLightingBelow) : nullptr, 0.01f, 0.05f, "%.3f");
+      PropFloat("Modulate Opacity", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_alpha) : nullptr, live_obj ? &(live_obj->m_d.m_alpha) : nullptr, 0.01f, 0.05f, "%.3f");
+      PropRGB("Modulate Color", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_color) : nullptr, live_obj ? &(live_obj->m_d.m_color) : nullptr);
+
+      PropSeparator("Reflections");
+      PropRenderProbeCombo("Reflection Probe", RenderProbe::PLANE_REFLECTION, startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_szReflectionProbe) : nullptr, live_obj ? &(live_obj->m_d.m_szReflectionProbe) : nullptr, m_table);
       PropFloat("Reflection strength", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_reflectionStrength) : nullptr, live_obj ? &(live_obj->m_d.m_reflectionStrength) : nullptr, 0.01f, 0.05f, "%.3f");
+
+      PropSeparator("Refractions");
+      PropRenderProbeCombo("Refraction Probe", RenderProbe::SCREEN_SPACE_TRANSPARENCY, startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_szRefractionProbe) : nullptr, live_obj ? &(live_obj->m_d.m_szRefractionProbe) : nullptr, m_table);
       PropFloat("Refraction thickness", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_refractionThickness) : nullptr, live_obj ? &(live_obj->m_d.m_refractionThickness) : nullptr, 0.01f, 0.05f, "%.3f");
       ImGui::EndTable();
    }
@@ -3904,45 +3972,102 @@ void LiveUI::PrimitiveProperties(bool is_live, Primitive *startup_obj, Primitive
       PropVec3("Rotation", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_aRotAndTra[6]) : nullptr, live_obj ? &(live_obj->m_d.m_aRotAndTra[6]) : nullptr, "%.0f", ImGuiInputTextFlags_CharsDecimal);
       ImGui::EndTable();
    }
-   if (ImGui::CollapsingHeader("Physics", ImGuiTreeNodeFlags_DefaultOpen))
+   /* if (ImGui::CollapsingHeader("Physics", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
    {
-   }
+      ImGui::EndTable();
+   }*/
 }
 
 void LiveUI::RampProperties(bool is_live, Ramp *startup_obj, Ramp *live_obj)
 {
+   m_renderer->ReinitRenderable(live_obj);
+   if (ImGui::CollapsingHeader("Visuals", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
+   {
+      // Missing type
+      PropImageCombo("Image", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_szImage) : nullptr, live_obj ? &(live_obj->m_d.m_szImage) : nullptr, m_table);
+      PropMaterialCombo("Material", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_szMaterial) : nullptr, live_obj ? &(live_obj->m_d.m_szMaterial) : nullptr, m_table);
+      // Missing World
+      PropCheckbox("Apply Image to Wall", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_imageWalls) : nullptr, live_obj ? &(live_obj->m_d.m_imageWalls) : nullptr);
+      PropFloat("Depth Bias", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_depthBias) : nullptr, live_obj ? &(live_obj->m_d.m_depthBias) : nullptr, 10.f, 50.f, "%.0f");
+      PropCheckbox("Visible", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_visible) : nullptr, live_obj ? &(live_obj->m_d.m_visible) : nullptr);
+      PropCheckbox("Reflection Enabled", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_reflectionEnabled) : nullptr, live_obj ? &(live_obj->m_d.m_reflectionEnabled) : nullptr);
+      // Missing all dimensions
+   }
+   /* if (ImGui::CollapsingHeader("Physics", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
+   {
+      ImGui::EndTable();
+   }*/
 }
 
 void LiveUI::RubberProperties(bool is_live, Rubber *startup_obj, Rubber *live_obj)
 {
+   m_renderer->ReinitRenderable(live_obj);
    if (ImGui::CollapsingHeader("Visuals", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
    {
+      PropImageCombo("Image", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_szImage) : nullptr, live_obj ? &(live_obj->m_d.m_szImage) : nullptr, m_table);
+      PropMaterialCombo("Material", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_szMaterial) : nullptr, live_obj ? &(live_obj->m_d.m_szMaterial) : nullptr, m_table);
       PropCheckbox("Static Rendering", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_staticRendering) : nullptr, live_obj ? &(live_obj->m_d.m_staticRendering) : nullptr);
       PropCheckbox("Visible", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_visible) : nullptr, live_obj ? &(live_obj->m_d.m_visible) : nullptr);
       PropCheckbox("Reflection Enabled", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_reflectionEnabled) : nullptr, live_obj ? &(live_obj->m_d.m_reflectionEnabled) : nullptr);
+
+      PropFloat("Height", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_height) : nullptr, live_obj ? &(live_obj->m_d.m_height) : nullptr, 0.1f, 0.5f, "%.1f");
+      PropInt("Thickness", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_thickness) : nullptr, live_obj ? &(live_obj->m_d.m_thickness) : nullptr);
+      PropVec3("Rotation", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_rotX) : nullptr, startup_obj ? &(startup_obj->m_d.m_rotY) : nullptr, startup_obj ? &(startup_obj->m_d.m_rotZ) : nullptr,
+         live_obj ? &(live_obj->m_d.m_rotX) : nullptr, live_obj ? &(live_obj->m_d.m_rotY) : nullptr, live_obj ? &(live_obj->m_d.m_rotZ) : nullptr, "%.0f", ImGuiInputTextFlags_CharsDecimal);
+
       ImGui::EndTable();
    }
-   if (ImGui::CollapsingHeader("Physics", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
+   /* if (ImGui::CollapsingHeader("Physics", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
    {
       ImGui::EndTable();
-   }
+   }*/
    PROP_TIMER(is_live, startup_obj, live_obj)
 }
 
 void LiveUI::SurfaceProperties(bool is_live, Surface *startup_obj, Surface *live_obj)
 {
+   m_renderer->ReinitRenderable(live_obj);
    if (ImGui::CollapsingHeader("Visuals", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
    {
       PropCheckbox("Top Visible", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_topBottomVisible) : nullptr, live_obj ? &(live_obj->m_d.m_topBottomVisible) : nullptr);
+      PropImageCombo("Top Image", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_szImage) : nullptr, live_obj ? &(live_obj->m_d.m_szImage) : nullptr, m_table);
+      PropMaterialCombo("Top Material", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_szTopMaterial) : nullptr, live_obj ? &(live_obj->m_d.m_szTopMaterial) : nullptr, m_table);
       PropCheckbox("Side Visible", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_sideVisible) : nullptr, live_obj ? &(live_obj->m_d.m_sideVisible) : nullptr);
+      PropImageCombo("Side Image", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_szSideImage) : nullptr, live_obj ? &(live_obj->m_d.m_szSideImage) : nullptr, m_table);
+      PropMaterialCombo("Side Material", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_szSideMaterial) : nullptr, live_obj ? &(live_obj->m_d.m_szSideMaterial) : nullptr, m_table);
+      // Missing animate slingshot
+      // Missing flipbook
+      PropFloat("Disable Spot Lights", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_disableLightingTop) : nullptr, live_obj ? &(live_obj->m_d.m_disableLightingTop) : nullptr, 0.01f, 0.05f, "%.3f");
+      PropFloat("Translucency", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_disableLightingBelow) : nullptr, live_obj ? &(live_obj->m_d.m_disableLightingBelow) : nullptr, 0.01f, 0.05f, "%.3f");
       PropCheckbox("Reflection Enabled", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_reflectionEnabled) : nullptr, live_obj ? &(live_obj->m_d.m_reflectionEnabled) : nullptr);
+      PropFloat("Top Height", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_heighttop) : nullptr, live_obj ? &(live_obj->m_d.m_heighttop) : nullptr, 0.1f, 0.5f, "%.1f");
+      PropFloat("Bottom Height", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_heightbottom) : nullptr, live_obj ? &(live_obj->m_d.m_heightbottom) : nullptr, 0.1f, 0.5f, "%.1f");
       ImGui::EndTable();
    }
-   if (ImGui::CollapsingHeader("Physics", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
+   /* if (ImGui::CollapsingHeader("Physics", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
    {
       ImGui::EndTable();
-   }
+   }*/
    PROP_TIMER(is_live, startup_obj, live_obj)
+}
+
+void LiveUI::TriggerProperties(bool is_live, Trigger *startup_obj, Trigger *live_obj)
+{
+   m_renderer->ReinitRenderable(live_obj);
+   if (ImGui::CollapsingHeader("Visuals", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
+   {
+      PropCheckbox("Visible", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_visible) : nullptr, live_obj ? &(live_obj->m_d.m_visible) : nullptr);
+      PropCheckbox("Reflection Enabled", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_reflectionEnabled) : nullptr, live_obj ? &(live_obj->m_d.m_reflectionEnabled) : nullptr);
+      static const string shapes[] = { "None"s, "Wire A"s, "Star"s, "Wire B"s, "Button"s, "Wire C"s, "Wire D"s, "Inder"s };
+      PropCombo("Shape", startup_obj, is_live, startup_obj ? (int *)&(startup_obj->m_d.m_shape) : nullptr, live_obj ? (int *)&(live_obj->m_d.m_shape) : nullptr, 8, shapes);
+      PropFloat("Wire Thickness", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_wireThickness) : nullptr, live_obj ? &(live_obj->m_d.m_wireThickness) : nullptr, 0.1f, 0.5f, "%.1f");
+      PropFloat("Star Radius", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_radius) : nullptr, live_obj ? &(live_obj->m_d.m_radius) : nullptr, 0.1f, 0.5f, "%.1f");
+      PropFloat("Rotation", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_rotation) : nullptr, live_obj ? &(live_obj->m_d.m_rotation) : nullptr, 0.1f, 0.5f, "%.1f");
+      PropFloat("Anim Speed", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_animSpeed) : nullptr, live_obj ? &(live_obj->m_d.m_animSpeed) : nullptr, 0.1f, 0.5f, "%.1f");
+      PropMaterialCombo("Material", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_szMaterial) : nullptr, live_obj ? &(live_obj->m_d.m_szMaterial) : nullptr, m_table);
+      // Missing position
+      ImGui::EndTable();
+   }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -4224,6 +4349,58 @@ void LiveUI::PropMaterialCombo(const char *label, IEditable *undo_obj, bool is_l
          if (ImGui::Selectable(material->m_szName.c_str()))
          {
             *v = material->m_szName;
+            if (chg_callback)
+               chg_callback(is_live, prev_v, *v);
+            if (!is_live)
+               m_table->SetNonUndoableDirty(eSaveDirty);
+         }
+      }
+      ImGui::EndCombo();
+   }
+   PROP_HELPER_SYNC(string)
+   if (chg_callback)
+      chg_callback(!is_live, prev_ov, *ov);
+   PROP_HELPER_END
+}
+
+void LiveUI::PropLightmapCombo(const char *label, IEditable *undo_obj, bool is_live, string *startup_v, string *live_v, PinTable *table, OnStringPropChange chg_callback)
+{
+   PROP_HELPER_BEGIN(string)
+   const char *const preview_value = v->c_str();
+   if (ImGui::BeginCombo(label, preview_value))
+   {
+      const std::function<string(IEditable *)> map = [](IEditable *pe) -> string { return pe->GetItemType() == ItemTypeEnum::eItemLight ? pe->GetName() : ""s; };
+      for (IEditable *pe : SortedCaseInsensitive(table->m_vedit, map))
+      {
+         if (pe->GetItemType() == ItemTypeEnum::eItemLight && ImGui::Selectable(pe->GetName()))
+         {
+            *v = pe->GetName();
+            if (chg_callback)
+               chg_callback(is_live, prev_v, *v);
+            if (!is_live)
+               m_table->SetNonUndoableDirty(eSaveDirty);
+         }
+      }
+      ImGui::EndCombo();
+   }
+   PROP_HELPER_SYNC(string)
+   if (chg_callback)
+      chg_callback(!is_live, prev_ov, *ov);
+   PROP_HELPER_END
+}
+
+void LiveUI::PropRenderProbeCombo(const char *label, RenderProbe::ProbeType type, IEditable *undo_obj, bool is_live, string *startup_v, string *live_v, PinTable *table, OnStringPropChange chg_callback)
+{
+   PROP_HELPER_BEGIN(string)
+   const char *const preview_value = v->c_str();
+   if (ImGui::BeginCombo(label, preview_value))
+   {
+      const std::function<string(RenderProbe *)> map = [](RenderProbe *probe) -> string { return probe->GetName(); };
+      for (RenderProbe *probe : SortedCaseInsensitive(table->m_vrenderprobe, map))
+      {
+         if (probe->GetType() == type && ImGui::Selectable(probe->GetName().c_str()))
+         {
+            *v = probe->GetName();
             if (chg_callback)
                chg_callback(is_live, prev_v, *v);
             if (!is_live)
