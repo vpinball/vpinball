@@ -600,9 +600,12 @@ void Primitive::GetHitShapesDebug(vector<HitObject*> &pvho)
    // Makes toy primitive selectable in debug ray cast
    if (m_d.m_toy)
    {
+      bool wasCollidable = m_d.m_collidable;
       m_d.m_toy = false;
+      m_d.m_collidable = true;
       GetHitShapes(pvho);
       m_d.m_toy = true;
+      m_d.m_collidable = wasCollidable;
    }
 }
 

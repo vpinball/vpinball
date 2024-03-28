@@ -410,3 +410,10 @@ public:
     short2() {}
     short2(const short _x, const short _y) : x(_x), y(_y) {}
 };
+
+namespace plog
+{
+Record& operator<<(Record& record, const Vertex2D& pt);
+Record& operator<<(Record& record, const Vertex3Ds& pt);
+Record& operator<<(Record& record, const Vertex4D& pt);
+}

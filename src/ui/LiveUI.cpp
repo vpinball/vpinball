@@ -2201,9 +2201,13 @@ void LiveUI::UpdateMainUI()
          const Vertex3Ds v3d  = invMVP * Vertex3Ds{xcoord, ycoord, 0.f};
          const Vertex3Ds v3d2 = invMVP * Vertex3Ds{xcoord, ycoord, 1.f};
          
-         // FIXME this is not working as intended (ball are always picked ok - likely because they live in a different quadtree - but not other parts)
+         // FIXME This is not really great as:
+         // - picking depends on what was visible/enabled when quadtree was built (lazily at first pick), and also uses the physics quadtree for some parts
+         // - primitives can have hit bug (Apron Top and Gottlieb arm of default table for example)
+         // We would need a dedicated quadtree for UI with all parts, and filter after picking by visibility
          vector<HitObject *> vhoHit;
          m_player->m_physics->RayCast(v3d, v3d2, true, vhoHit);
+         //PLOGD << "Ray cast: " << v3d << " => " << v3d2 << " => " << vhoHit.size();
 
          if (vhoHit.empty())
             m_selection.type = Selection::SelectionType::S_NONE;
