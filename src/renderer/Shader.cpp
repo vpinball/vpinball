@@ -1268,7 +1268,7 @@ bool Shader::Load(const std::string& name, const BYTE* code, unsigned int codeSi
       loadProgram(reader, SHADER_TECHNIQUE_RenderBall_DecalMode, "vs_ball", "fs_ball_equirectangular_decal");
       loadProgram(reader, SHADER_TECHNIQUE_RenderBall_SphericalMap, "vs_ball", "fs_ball_spherical_nodecal");
       loadProgram(reader, SHADER_TECHNIQUE_RenderBall_SphericalMap_DecalMode, "vs_ball", "fs_ball_spherical_decal");
-      //loadProgram(reader, SHADER_TECHNIQUE_RenderBallTrail, "", "");
+      loadProgram(reader, SHADER_TECHNIQUE_RenderBallTrail, "vs_ball", "fs_ball_trail");
    }
    else if (name == "LightShader.glfx"s)
    {
@@ -1292,56 +1292,32 @@ bool Shader::Load(const std::string& name, const BYTE* code, unsigned int codeSi
       loadProgram(reader, SHADER_TECHNIQUE_fb_fmtonemap_AO_no_filter, "vs_postprocess", "fs_pp_filmic_ao_nofilter_rgb");
       loadProgram(reader, SHADER_TECHNIQUE_fb_rhtonemap_no_filterRG, "vs_postprocess", "fs_pp_reinhard_noao_nofilter_rg");
       loadProgram(reader, SHADER_TECHNIQUE_fb_rhtonemap_no_filterR, "vs_postprocess", "fs_pp_reinhard_noao_nofilter_gray");
-   /*
-   SHADER_TECHNIQUE(AO),
-   SHADER_TECHNIQUE(NFAA),
-   SHADER_TECHNIQUE(DLAA_edge),
-   SHADER_TECHNIQUE(DLAA),
-   SHADER_TECHNIQUE(FXAA1),
-   SHADER_TECHNIQUE(FXAA2),
-   SHADER_TECHNIQUE(FXAA3),
-   SHADER_TECHNIQUE(fb_bloom),
-   SHADER_TECHNIQUE(fb_AO), // Display debug AO
-   SHADER_TECHNIQUE(fb_AO_static), // Apply AO during static prerender pass (no tonemapping)
-   SHADER_TECHNIQUE(fb_AO_no_filter_static), // Apply AO during static prerender pass (no tonemapping)
-   SHADER_TECHNIQUE(fb_mirror),
-   SHADER_TECHNIQUE(fb_copy),
-   SHADER_TECHNIQUE(CAS),
-   SHADER_TECHNIQUE(BilateralSharp_CAS),
-   SHADER_TECHNIQUE(SSReflection),
-   SHADER_TECHNIQUE(basic_noLight),
-   SHADER_TECHNIQUE(bulb_light),
-   SHADER_TECHNIQUE(bulb_light_with_ball_shadows),
-   SHADER_TECHNIQUE(SMAA_ColorEdgeDetection),
-   SHADER_TECHNIQUE(SMAA_BlendWeightCalculation),
-   SHADER_TECHNIQUE(SMAA_NeighborhoodBlending),
-   SHADER_TECHNIQUE(stereo_SBS),
-   SHADER_TECHNIQUE(stereo_TB),
-   SHADER_TECHNIQUE(stereo_Int),
-   SHADER_TECHNIQUE(stereo_Flipped_Int),
-   SHADER_TECHNIQUE(Stereo_sRGBAnaglyph),
-   SHADER_TECHNIQUE(Stereo_GammaAnaglyph),
-   SHADER_TECHNIQUE(Stereo_sRGBDynDesatAnaglyph),
-   SHADER_TECHNIQUE(Stereo_GammaDynDesatAnaglyph),
-   SHADER_TECHNIQUE(Stereo_DeghostAnaglyph),
-   SHADER_TECHNIQUE(irradiance),
-   */
 
+      // Ambiant Occlusion
       loadProgram(reader, SHADER_TECHNIQUE_AO, "vs_postprocess", "fs_pp_ssao");
-      loadProgram(reader, SHADER_TECHNIQUE_SSReflection, "vs_postprocess", "fs_pp_ssr");
-      loadProgram(reader, SHADER_TECHNIQUE_CAS, "vs_postprocess", "fs_pp_cas");
-      loadProgram(reader, SHADER_TECHNIQUE_BilateralSharp_CAS, "vs_postprocess", "fs_pp_bilateral_cas");
-      loadProgram(reader, SHADER_TECHNIQUE_FXAA1, "vs_postprocess", "fs_pp_fxaa1");
-      loadProgram(reader, SHADER_TECHNIQUE_FXAA2, "vs_postprocess", "fs_pp_fxaa2");
-      loadProgram(reader, SHADER_TECHNIQUE_FXAA3, "vs_postprocess", "fs_pp_fxaa3");
+      //loadProgram(reader, SHADER_TECHNIQUE_fb_AO, "vs_postprocess", "");
+      //loadProgram(reader, SHADER_TECHNIQUE_fb_AO_static, "vs_postprocess", "");
+      //loadProgram(reader, SHADER_TECHNIQUE_fb_AO_no_filter_static, "vs_postprocess", "");
+
+      // Postprocessed antialiasing
       loadProgram(reader, SHADER_TECHNIQUE_NFAA, "vs_postprocess", "fs_pp_nfaa");
       //loadProgram(reader, SHADER_TECHNIQUE_DLAA_edge, "vs_postprocess", "");
       //loadProgram(reader, SHADER_TECHNIQUE_DLAA, "vs_postprocess", "");
+      loadProgram(reader, SHADER_TECHNIQUE_FXAA1, "vs_postprocess", "fs_pp_fxaa1");
+      loadProgram(reader, SHADER_TECHNIQUE_FXAA2, "vs_postprocess", "fs_pp_fxaa2");
+      loadProgram(reader, SHADER_TECHNIQUE_FXAA3, "vs_postprocess", "fs_pp_fxaa3");
+      loadProgram(reader, SHADER_TECHNIQUE_CAS, "vs_postprocess", "fs_pp_cas");
+      loadProgram(reader, SHADER_TECHNIQUE_BilateralSharp_CAS, "vs_postprocess", "fs_pp_bilateral_cas");
       //loadProgram(reader, SHADER_TECHNIQUE_SMAA_ColorEdgeDetection, "vs_postprocess", "");
       //loadProgram(reader, SHADER_TECHNIQUE_SMAA_BlendWeightCalculation, "vs_postprocess", "");
       //loadProgram(reader, SHADER_TECHNIQUE_SMAA_NeighborhoodBlending, "vs_postprocess", "");
-      loadProgram(reader, SHADER_TECHNIQUE_fb_mirror, "vs_postprocess", "fs_pp_mirror");
+
+      // Other post process (SSR, Bloom, mirror, ...)
       loadProgram(reader, SHADER_TECHNIQUE_fb_bloom, "vs_postprocess", "fs_pp_bloom");
+      loadProgram(reader, SHADER_TECHNIQUE_fb_mirror, "vs_postprocess", "fs_pp_mirror");
+      loadProgram(reader, SHADER_TECHNIQUE_fb_copy, "vs_postprocess", "fs_pp_copy");
+      loadProgram(reader, SHADER_TECHNIQUE_SSReflection, "vs_postprocess", "fs_pp_ssr");
+      loadProgram(reader, SHADER_TECHNIQUE_irradiance, "vs_postprocess", "fs_pp_irradiance");
 
       // Blur Kernels
       loadProgram(reader, SHADER_TECHNIQUE_fb_blur_horiz7x7, "vs_postprocess", "fs_blur_7_h");
@@ -1362,11 +1338,6 @@ bool Shader::Load(const std::string& name, const BYTE* code, unsigned int codeSi
       loadProgram(reader, SHADER_TECHNIQUE_fb_blur_vert27x27, "vs_postprocess", "fs_blur_27_v");
       loadProgram(reader, SHADER_TECHNIQUE_fb_blur_horiz39x39, "vs_postprocess", "fs_blur_39_h");
       loadProgram(reader, SHADER_TECHNIQUE_fb_blur_vert39x39, "vs_postprocess", "fs_blur_39_v");
-      //loadProgram(reader, SHADER_TECHNIQUE_stereo, "vs_postprocess", "");
-      //loadProgram(reader, SHADER_TECHNIQUE_stereo_Int, "vs_postprocess", "");
-      //loadProgram(reader, SHADER_TECHNIQUE_stereo_Flipped_Int, "vs_postprocess", "");
-      //loadProgram(reader, SHADER_TECHNIQUE_stereo_anaglyph, "vs_postprocess", "");
-      //loadProgram(reader, SHADER_TECHNIQUE_stereo_AMD_DEBUG, "vs_postprocess", "");
    }
    else if (name == "FlasherShader.glfx"s)
    {
@@ -1374,19 +1345,27 @@ bool Shader::Load(const std::string& name, const BYTE* code, unsigned int codeSi
    }
    else if (name == "DMDShader.glfx"s)
    {
-      // SHADER_TECHNIQUE(basic_DMD_ext),
-      // SHADER_TECHNIQUE(basic_DMD_world_ext),
-      // SHADER_TECHNIQUE(basic_noDMD_notex),
-      loadProgram(reader, SHADER_TECHNIQUE_basic_DMD, "vs_basic_dmd_noworld", "fs_basic_dmd");
-      loadProgram(reader, SHADER_TECHNIQUE_basic_DMD_world, "vs_basic_dmd_world", "fs_basic_dmd");
-      loadProgram(reader, SHADER_TECHNIQUE_basic_noDMD, "vs_basic_dmd_noworld", "fs_basic_sprite");
-      loadProgram(reader, SHADER_TECHNIQUE_basic_noDMD_world, "vs_basic_dmd_world", "fs_basic_sprite");
+      // basic_DMD_ext and basic_DMD_world_ext are not implemented as they are designed for external DMD capture which is not implemented for BGFX (and expected to be rmeoved at some point in future)
+      loadProgram(reader, SHADER_TECHNIQUE_basic_DMD, "vs_basic_dmd_noworld", "fs_basic_dmd_tex");
+      loadProgram(reader, SHADER_TECHNIQUE_basic_DMD_world, "vs_basic_dmd_world", "fs_basic_dmd_tex");
+      loadProgram(reader, SHADER_TECHNIQUE_basic_noDMD, "vs_basic_dmd_noworld", "fs_basic_sprite_tex");
+      loadProgram(reader, SHADER_TECHNIQUE_basic_noDMD_notex, "vs_basic_dmd_noworld", "fs_basic_sprite_notex");
+      loadProgram(reader, SHADER_TECHNIQUE_basic_noDMD_world, "vs_basic_dmd_world", "fs_basic_sprite_tex");
    }
    else if (name == "DMDShaderVR.glfx"s)
    {
    }
    else if (name == "StereoShader.glfx"s)
    {
+      //loadProgram(reader, SHADER_TECHNIQUE_stereo_SBS, "vs_postprocess", "");
+      //loadProgram(reader, SHADER_TECHNIQUE_stereo_TB, "vs_postprocess", "");
+      //loadProgram(reader, SHADER_TECHNIQUE_stereo_Int, "vs_postprocess", "");
+      //loadProgram(reader, SHADER_TECHNIQUE_stereo_Flipped_Int, "vs_postprocess", "");
+      //loadProgram(reader, SHADER_TECHNIQUE_Stereo_sRGBAnaglyph, "vs_postprocess", "");
+      //loadProgram(reader, SHADER_TECHNIQUE_Stereo_GammaAnaglyph, "vs_postprocess", "");
+      //loadProgram(reader, SHADER_TECHNIQUE_Stereo_sRGBDynDesatAnaglyph, "vs_postprocess", "");
+      //loadProgram(reader, SHADER_TECHNIQUE_Stereo_GammaDynDesatAnaglyph, "vs_postprocess", "");
+      //loadProgram(reader, SHADER_TECHNIQUE_Stereo_DeghostAnaglyph, "vs_postprocess", "");
    }
    delete reader;
    return true;

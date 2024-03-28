@@ -1,6 +1,6 @@
 $input v_texcoord0
 
-#include "bgfx_shader.sh"
+#include "common.sh"
 
 //
 // Gaussian Blur Kernels

@@ -1,6 +1,6 @@
 $input v_worldPos, v_tablePos, v_normal, v_texcoord0
 
-#include "bgfx_shader.sh"
+#include "common.sh"
 
 #define NUM_BALL_LIGHTS 0 // just to avoid having too much constant mem allocated
 
@@ -29,7 +29,6 @@ uniform vec4 lightingOff; // single float, passed as vec4 (BGFX does not support
 
 uniform mat4 matView;
 
-#include "common.sh"
 #include "material.sh"
 #include "ball_shadows.sh"
 
@@ -40,10 +39,12 @@ uniform vec4 u_basic_shade_mode;
 
 void main()
 {
-#ifdef TEX
-    vec4 pixel = texture2D(tex_light_color, v_texcoord0);
-    //if (!hdrTexture0)
-    //    pixel.xyz = InvGamma(pixel.xyz); // nowadays done when reading the texture
+    #ifdef TEX
+        // FIXME check tex_light_color declaration
+        vec4 pixel = texNoLod(tex_light_color, v_texcoord0); //!! IN.tex0 abused in backglass mode
+    #else
+        vec4 pixel = vec4(lightColor_intensity.rgb, 1.0);
+    #endif
 
     vec4 color;
     // no lighting if HUD vertices or passthrough mode
@@ -51,7 +52,9 @@ void main()
         color = pixel;
     else
     {
-        pixel.rgb = saturate(pixel.rgb); // could be HDR
+        #ifdef TEX
+            pixel.rgb = saturate(pixel.rgb); // could be HDR
+        #endif
         const vec3 diffuse  = pixel.rgb*cBase_Alpha.rgb;
         const vec3 glossy   = doMetal ? diffuse : pixel.rgb*cGlossy_ImageLerp.rgb*0.08; //!! use AO for glossy? specular?
         const vec3 specular = cClearcoat_EdgeAlpha.rgb*0.08;
@@ -64,47 +67,21 @@ void main()
 
     BRANCH if (lightColor_intensity.w != 0.0)
     {
-        const float len = length(lightCenter_maxRange.xyz - v_tablePos) * lightCenter_maxRange.w; //!! backglass mode passes in position directly via the otherwise named mesh normal!
+        const float len = length(lightCenter_maxRange.xyz - v_tablePos) * lightCenter_maxRange.w;
         const float atten = pow(1.0 - saturate(len), lightColor2_falloff_power.w);
         const vec3 lcolor = mix(lightColor2_falloff_power.rgb, lightColor_intensity.rgb, sqrt(len));
         color += vec4(lcolor*(atten*lightColor_intensity.w), saturate(atten*lightColor_intensity.w));
-        color = OverlayHDR(pixel, color); // could be HDR //!! have mode to choose: if simple mode picked and surface images match then can skip lighting texel above and JUST alpha blend with this here
-        color = ScreenHDR(pixel, color);
+        #ifdef TEX
+            color = OverlayHDR(pixel, color); // could be HDR //!! have mode to choose: if simple mode picked and surface images match then can skip lighting texel above and JUST alpha blend with this here
+            color = ScreenHDR(pixel, color);
+        #endif
     }
 
-#else
-    vec4 result = vec4(0.0, 0.0, 0.0, 0.0);
-    BRANCH if (lightColor_intensity.w != 0.0)
-    {
-        const float len = length(lightCenter_maxRange.xyz - v_tablePos) * lightCenter_maxRange.w; //!! backglass mode passes in position directly via the otherwise named mesh normal!
-        const float atten = pow(1.0 - saturate(len), lightColor2_falloff_power.w);
-        const vec3 lcolor = lerp(lightColor2_falloff_power.rgb, lightColor_intensity.rgb, sqrt(len));
-        result.rgb = lcolor*(atten*lightColor_intensity.w);
-        result.a = saturate(atten*lightColor_intensity.w);
-    }
+    #ifdef BALLSHADOW
+       const vec3 light_dir = v_tablePos - lightCenter_maxRange.xyz;
+       const float light_dist = length(light_dir);
+       color.rgb *= get_light_ball_shadow(lightCenter_maxRange.xyz, light_dir, light_dist);
+    #endif
 
-    vec4 color;
-    // no lighting if HUD vertices or passthrough mode
-    BRANCH if (lightingOff.x != 0.0)
-        color.rgb = lightColor_intensity.rgb;
-    else
-    {
-        const vec3 diffuse  = lightColor_intensity.rgb*cBase_Alpha.rgb;
-        const vec3 glossy   = doMetal ? diffuse : lightColor_intensity.rgb*cGlossy_ImageLerp.xyz*0.08;
-        const vec3 specular = cClearcoat_EdgeAlpha.rgb*0.08;
-        const float  edge   = doMetal ? 1.0 : Roughness_WrapL_Edge_Thickness.z;
-
-        color.rgb = lightLoop(v_worldPos, normalize(v_normal), normalize(/*camera=0,0,0,1*/-v_worldPos), diffuse, glossy, specular, edge, doMetal); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
-    }
-	color.rgb += result.rgb;
-    color.a = cBase_Alpha.a;
-#endif
-
-#ifdef BALLSHADOW
-   const vec3 light_dir = v_tablePos - lightCenter_maxRange.xyz;
-   const float light_dist = length(light_dir);
-   color.xyz *= get_light_ball_shadow(lightCenter_maxRange.xyz, light_dir, light_dist);
-#endif
-
-	gl_FragColor = color;
+    gl_FragColor = color;
 }

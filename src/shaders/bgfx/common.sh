@@ -1,3 +1,4 @@
+#include "bgfx_shader.sh"
 
 #define PI 3.1415926535897932384626433832795
 
@@ -410,3 +411,59 @@ vec4 OverlayHDR (const vec4 cBase, const vec4 cBlend)
 	//cNew.a = 1.0;
 	return cNew;
 }
+
+//vec3 sphere_sample(const vec2 t)
+//{
+//const float phi = t.y * (2.0*3.1415926535897932384626433832795);
+//const float z = 1.0 - t.x*2.0;
+//const float r = sqrt(1.0 - z*z);
+//float sp,cp;
+//sincos(phi,sp,cp);
+//return vec3(cp*r, z, sp*r);
+//}
+
+vec3 cos_hemisphere_sample(const vec2 t) // u,v in [0..1), returns y-up
+{
+	const float phi = t.y * (2.0*3.1415926535897932384626433832795);
+	const float cosTheta = sqrt(1.0 - t.x);
+	const float sinTheta = sqrt(t.x);
+	float sp,cp;
+	sincos(phi,sp,cp);
+	return vec3(cp * sinTheta, cosTheta, sp * sinTheta);
+}
+
+vec3 rotate_to_vector_upper(const vec3 vec, const vec3 normal)
+{
+	if(normal.y > -0.99999)
+	{
+		const float h = 1.0/(1.0+normal.y);
+		const float hz = h*normal.z;
+		const float hzx = hz*normal.x;
+		return vec3(
+			vec.x * (normal.y+hz*normal.z) + vec.y * normal.x - vec.z * hzx,
+			vec.y * normal.y - vec.x * normal.x - vec.z * normal.z,
+			vec.y * normal.z - vec.x * hzx + vec.z * (normal.y+h*normal.x*normal.x));
+	}
+	else return -vec;
+}
+
+/*vec3 cos_hemisphere_sample(const vec3 normal, vec2 uv)
+{
+	const float theta = (2.0*3.1415926535897932384626433832795) * uv.x;
+	uv.y = 2.0 * uv.y - 1.0;
+	float st,ct;
+	sincos(theta,st,ct);
+	const vec3 spherePoint = vec3(sqrt(1.0 - uv.y * uv.y) * vec2(ct, st), uv.y);
+	return normalize(normal + spherePoint);
+}*/
+
+/*vec3 cos_hemisphere_nonunit_sample(const vec3 normal, vec2 uv)
+{
+	const float theta = (2.0*3.1415926535897932384626433832795) * uv.x;
+	uv.y = 2.0 * uv.y - 1.0;
+	float st,ct;
+	sincos(theta,st,ct);
+	const vec3 spherePoint = vec3(sqrt(1.0 - uv.y * uv.y) * vec2(ct, st), uv.y);
+	return normal + spherePoint;
+}*/
+

@@ -1,6 +1,6 @@
 $input v_texcoord0
 
-#include "bgfx_shader.sh"
+#include "common.sh"
 
 
 // w_h_height.xy contains inverse size of source texture (1/w, 1/h), i.e. one texel shift to the upper (DX)/lower (OpenGL) left texel. Since OpenGL has upside down textures it leads to a different texel if not sampled on both sides
@@ -15,5 +15,5 @@ SAMPLER2D(tex_fb_unfiltered,  0); // Framebuffer (unfiltered)
 
 void main()
 {
-	gl_FragColor = vec4(texture2DLod(tex_fb_unfiltered, v_texcoord0, 0.0).rgb * (1. / w_h_height.z), 1.0);
+	gl_FragColor = vec4(texStereo(tex_fb_unfiltered, v_texcoord0).rgb * (1. / w_h_height.z), 1.0);
 }
