@@ -1,6 +1,6 @@
 $input v_worldPos, v_tablePos, v_normal, v_texcoord0
 
-#include "bgfx_shader.sh"
+#include "common.sh"
 
 
 #define NUM_BALL_LIGHTS 0 // just to avoid having too much constant mem allocated
@@ -26,7 +26,7 @@ uniform mat4 matProj;
 uniform vec4 objectSpaceNormalMap; // float extended to vec4 for BGFX FIXME float uniforms are not supported: group or declare as vec4
 
 uniform vec4 u_basic_shade_mode;
-#define doMetal       	    (u_basic_shade_mode.x != 0.0)
+#define doMetal             (u_basic_shade_mode.x != 0.0)
 #define doNormalMapping     (u_basic_shade_mode.y != 0.0)
 #define doRefractions       (u_basic_shade_mode.z != 0.0)
 
@@ -53,7 +53,6 @@ uniform float4 mirrorNormal_factor;
 
 uniform vec4 lightCenter_doShadow;
 
-#include "common.sh"
 #include "material.sh"
 #include "ball_shadows.sh"
 
@@ -96,7 +95,7 @@ vec3 compute_reflection(const vec2 screenCoord, const vec3 N)
    // the smoothstep values are *magic* values taken from visual tests
    // dot(mirrorNormal, N) does not really needs to be done per pixel and could be moved to the vertx shader
    // Offset by half a texel to use GPU filtering for some blur
-   return smoothstep(0.5, 0.9, dot(mirrorNormal.xyz, N)) * mirrorFactor * texture2D(tex_reflection, (screenCoord.xy + vec2_splat(0.5)) * w_h_height.xy).rgb;
+   return smoothstep(0.5, 0.9, dot(mirrorNormal.xyz, N)) * mirrorFactor * texStereo(tex_reflection, (screenCoord.xy + vec2_splat(0.5)) * w_h_height.xy).rgb;
 }
 
 // Compute refractions from screen space probe
@@ -111,10 +110,10 @@ vec3 compute_refraction(const vec3 pos, const vec3 screenCoord, const vec3 N, co
    vec2 uv = vec2(0.5, 0.5) + proj.xy * (0.5 / proj.w);
 
    // Check if the sample position is behind the object pos. If not take don't perform refraction as it would lead to refract things above us (so reflect)
-   const float d = texture2D(tex_probe_depth, uv).x;
+   const float d = texStereo(tex_probe_depth, uv).x;
    if (d < screenCoord.z)
       uv = screenCoord.xy * w_h_height.xy;
-	  
+      
    // The following code gives a smoother transition but depends too much on the POV since it uses homogeneous depth to lerp instead of fragment's world depth
    //const vec3 unbiased = vec3(1.0, 0.0, 0.0);
    //const vec3 biased = vec3(0.0, 1.0, 0.0);
@@ -130,7 +129,7 @@ vec3 compute_refraction(const vec3 pos, const vec3 screenCoord, const vec3 N, co
    if (length(R) < 0.5) // invalid refraction state (no refraction, shown as green for debugging)
       return vec3(0.0, 1.0, 0.0);*/
 
-   return refractionTint.rgb * texture2D(tex_refraction, uv).rgb;
+   return refractionTint.rgb * texStereo(tex_refraction, uv).rgb;
 }
 
 #ifdef AT
@@ -143,21 +142,21 @@ EARLY_DEPTH_STENCIL void main() {
    #ifdef REFL
       // Reflection only pass variant of the basic material shading
       vec3 N = normalize(v_normal);
-      color.rgb = compute_reflection(gl_FragCoord.xy * w_h_height.xy, N);
-	  color.a = 1.0;
+      color.rgb = compute_reflection(gl_FragCoord.xy, N);
+      color.a = 1.0;
 
    #else
       // Full basic material shading
       #ifdef TEX
          vec4 pixel = texture2D(tex_base_color, v_texcoord0);
-		 #ifdef AT
+         #ifdef AT
             if (pixel.a <= alphaTestValue.x)
-               discard;           //stop the pixel shader if alpha test should reject pixel
-	     #endif
+               discard; //stop the pixel shader if alpha test should reject pixel
+         #endif
          
          pixel.a *= cBase_Alpha.a;
          if (fDisableLighting_top_below.x < 1.0) // if there is lighting applied, make sure to clamp the values (as it could be coming from a HDR tex)
-            pixel.rgb = clamp(pixel.rgb, vec3(0.0,0.0,0.0), vec3(1.0,1.0,1.0));
+            pixel.rgb = clamp(pixel.rgb, vec3_splat(0.0), vec3_splat(1.0));
          
          const vec3 diffuse  = pixel.rgb * cBase_Alpha.rgb;
          const vec3 glossy   = doMetal ? diffuse : (pixel.rgb * cGlossy_ImageLerp.w + (1.0-cGlossy_ImageLerp.w)) * cGlossy_ImageLerp.rgb * 0.08; //!! use AO for glossy? specular?
@@ -173,7 +172,7 @@ EARLY_DEPTH_STENCIL void main() {
       #ifdef TEX
          vec3 N = normalize(v_normal);
          BRANCH if (doNormalMapping)
-         N = normal_map(N, normalize(v_worldPos), v_texcoord0);
+             N = normal_map(N, normalize(v_worldPos), v_texcoord0);
       #else
          const vec3 N = normalize(v_normal);
       #endif
@@ -200,7 +199,7 @@ EARLY_DEPTH_STENCIL void main() {
       }
 
       BRANCH if (doReflections)
-         color.rgb += compute_reflection(gl_FragCoord.xy * w_h_height.xy, N);
+         color.rgb += compute_reflection(gl_FragCoord.xy, N);
 
       BRANCH if (doRefractions)
       {

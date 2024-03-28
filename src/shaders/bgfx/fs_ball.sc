@@ -1,6 +1,5 @@
 $input v_worldPos, v_normal, v_texcoord0
 
-#include "bgfx_shader.sh"
 #include "common.sh"
 
 #define NUM_BALL_LIGHTS 8
@@ -25,7 +24,7 @@ uniform vec4 u_basic_shade_mode;
 #include "material.sh"
 
 uniform vec4  invTableRes_reflection;
-uniform vec4  w_h_disableLighting; // float extended to vec4 for BGFX 
+uniform vec4  w_h_disableLighting; 
 #define disableLighting (w_h_disableLighting.z != 0.)
 
 vec3 ballLightLoop(const vec3 pos, vec3 N, vec3 V, vec3 diffuse, vec3 glossy, const vec3 specular, const float edge, const bool is_metal)
@@ -88,8 +87,6 @@ EARLY_DEPTH_STENCIL void main()
         ballImageColor = texture2DLod(tex_ball_color, uv, lod).rgb;
     #endif
 
-
-
     const vec4 decalColorT = texture2D(tex_ball_decal, v_texcoord0);
     vec3 decalColor = decalColorT.rgb;
     #ifndef DECAL
@@ -117,18 +114,19 @@ EARLY_DEPTH_STENCIL void main()
     // No need to normalize here since the matWorldView matrix is normal (world is identity and view is always orthonormal)
     // No need to use a dedicated 'normal' matrix since the matWorldView is orthonormal (world is identity and view is always orthonormal)
     //const vec3 playfield_normal = normalize(mul(vec4(0.,0.,1.,0.), matWorldViewInverse).xyz); //!! normalize necessary? // actually: mul(vec4(0.,0.,1.,0.), matWorldViewInverseTranspose), but optimized to save one matrix
-    //const vec3 playfield_normal = mul(matWorldView, float4(0.,0.,1.,0.)).xyz;
-    const vec3 playfield_normal = matWorldView[2].xyz;
+    const vec3 playfield_normal = mul(matWorldView, float4(0.,0.,1.,0.)).xyz;
+    //const vec3 playfield_normal = matWorldView[2].xyz;
     const float NdotR = dot(playfield_normal, R);
 
-    const vec3 playfield_p0 = mul(vec4(/*playfield_pos=*/0.,0.,0.,1.0), matWorldView).xyz;
-    const float t = dot(playfield_normal, v_worldPos.xyz - playfield_p0) / NdotR;
+    const vec3 playfield_p0 = mul(matWorldView, vec4(/*playfield_pos=*/0.,0.,0.,1.0)).xyz;
+    //const vec3 playfield_p0 = matWorldView[3].xyz;
+	const float t = dot(playfield_normal, v_worldPos.xyz - playfield_p0) / NdotR;
     const vec3 playfield_hit = v_worldPos.xyz - t * R;
 
     // New implementation: use previous frame as a reflection probe instead of computing a simplified render (this is faster and more accurate, support playfield mesh, lighting,... but there can be artefacts, with self reflection,...)
     // TODO use previous frame projection instead of the one of the current frame to limit reflection distortion (still this is minimal)
     const vec4 proj = mul(matProj, vec4(playfield_hit, 1.0));
-    const vec2 uvp = vec2(0.5, 0.5) + proj.xy * (0.5 / proj.w);
+    const vec2 uvp = vec2(0.5, 0.5) + vec2(proj.x, -proj.y) * (0.5 / proj.w);
     const vec3 playfieldColor = 0.25 * (
           texStereo(tex_ball_playfield, uvp + vec2(w_h_disableLighting.x, 0.)).rgb
         + texStereo(tex_ball_playfield, uvp - vec2(w_h_disableLighting.x, 0.)).rgb

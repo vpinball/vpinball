@@ -1,6 +1,5 @@
 $input v_texcoord0
 
-#include "bgfx_shader.sh"
 #include "common.sh"
 
 
@@ -33,15 +32,15 @@ vec3 approx_bump_normal(const vec2 coords, const vec2 offs, const float scale, c
 {
     const vec3 lumw = vec3(0.212655,0.715158,0.072187);
 
-    const float lpx = dot(texture2DLod(tex_fb_filtered, vec2(coords.x+offs.x,coords.y), 0.0).xyz, lumw);
-    const float lmx = dot(texture2DLod(tex_fb_filtered, vec2(coords.x-offs.x,coords.y), 0.0).xyz, lumw);
-    const float lpy = dot(texture2DLod(tex_fb_filtered, vec2(coords.x,coords.y+offs.y), 0.0).xyz, lumw);
-    const float lmy = dot(texture2DLod(tex_fb_filtered, vec2(coords.x,coords.y-offs.y), 0.0).xyz, lumw);
+    const float lpx = dot(texStereoNoLod(tex_fb_filtered, vec2(coords.x+offs.x,coords.y)).xyz, lumw);
+    const float lmx = dot(texStereoNoLod(tex_fb_filtered, vec2(coords.x-offs.x,coords.y)).xyz, lumw);
+    const float lpy = dot(texStereoNoLod(tex_fb_filtered, vec2(coords.x,coords.y-offs.y)).xyz, lumw);
+    const float lmy = dot(texStereoNoLod(tex_fb_filtered, vec2(coords.x,coords.y+offs.y)).xyz, lumw);
 
-    const float dpx = texture2DLod(tex_depth, vec2(coords.x + offs.x, coords.y), 0.0).x;
-    const float dmx = texture2DLod(tex_depth, vec2(coords.x - offs.x, coords.y), 0.0).x;
-    const float dpy = texture2DLod(tex_depth, vec2(coords.x, coords.y + offs.y), 0.0).x;
-    const float dmy = texture2DLod(tex_depth, vec2(coords.x, coords.y - offs.y), 0.0).x;
+    const float dpx = texStereoNoLod(tex_depth, vec2(coords.x + offs.x, coords.y)).x;
+    const float dmx = texStereoNoLod(tex_depth, vec2(coords.x - offs.x, coords.y)).x;
+    const float dpy = texStereoNoLod(tex_depth, vec2(coords.x, coords.y + offs.y)).x;
+    const float dmy = texStereoNoLod(tex_depth, vec2(coords.x, coords.y - offs.y)).x;
 
     const vec2 xymult = max(1.0 - vec2(abs(dmx - dpx), abs(dmy - dpy)) * sharpness, 0.0);
 
@@ -55,11 +54,11 @@ float normal_fade_factor(const vec3 n)
 
 void main()
 {
-	const vec2 u = v_texcoord0 + w_h_height.xy*0.5;
+	const vec2 u = v_texcoord0;
 
-	const vec3 color0 = texture2DLod(tex_fb_unfiltered, u, 0.0).xyz; // original pixel
+	const vec3 color0 = texStereoNoLod(tex_fb_unfiltered, u).xyz; // original pixel
 
-	const float depth0 = texture2DLod(tex_depth, u, 0.0).x;
+	const float depth0 = texStereoNoLod(tex_depth, u).x;
 	BRANCH if((depth0 == 1.0) || (depth0 == 0.0)) //!!! early out if depth too large (=BG) or too small (=DMD,etc -> retweak render options (depth write on), otherwise also screwup with stereo)
 	{
 		gl_FragColor = vec4(color0, 1.0);
@@ -71,7 +70,7 @@ void main()
 	       normal_b = normalize(vec3(normal.xy*normal_b.z + normal_b.xy*normal.z, normal.z*normal_b.z));
 	       normal_b = normalize(lerp(normal,normal_b, SSR_bumpHeight_fresnelRefl_scale_FS.x * normal_fade_factor(normal))); // have less impact of fake bump normals on playfield, etc
 
-	const vec3 V = normalize(vec3(0.5-u, -0.5)); // WTF?! cam is in 0,0,0 but why z=-0.5?
+	const vec3 V = normalize(vec3(0.5 - vec2(u.x, 1.0 - u.y), -0.5)); // WTF?! cam is in 0,0,0 but why z=-0.5?
 
 	const float fresnel = (SSR_bumpHeight_fresnelRefl_scale_FS.y + (1.0-SSR_bumpHeight_fresnelRefl_scale_FS.y) * pow(1.0-saturate(dot(V,normal_b)),5.)) // fresnel for falloff towards silhouette
 	                     * SSR_bumpHeight_fresnelRefl_scale_FS.z // user scale
@@ -92,7 +91,7 @@ void main()
 	const float ReflBlurWidth = 2.2; //!! magic, small enough to not collect too much, and large enough to have cool reflection effects
 
 	const float ushift = /*hash(v_texcoord0) + w_h_height.zw*/ // jitter samples via hash of position on screen and then jitter samples by time //!! see below for non-shifted variant
-	                     /*frac(*/texture2DLod(tex_ao_dither, v_texcoord0/(64.0*w_h_height.xy), 0.0).z /*+ w_h_height.z)*/; // use dither texture instead nowadays // 64 is the hardcoded dither texture size for AOdither.bmp
+	                     /*frac(*/texNoLod(tex_ao_dither, v_texcoord0/(64.0*w_h_height.xy)).z /*+ w_h_height.z)*/; // use dither texture instead nowadays // 64 is the hardcoded dither texture size for AOdither.bmp
 	const vec2 offsMul = normal_b.xy * (/*w_h_height.xy*/ vec2(1.0/1920.0,1.0/1080.0) * ReflBlurWidth * (32./(float)samples)); //!! makes it more resolution independent?? test with 4xSSAA
 
 	// loop in screen space, simply collect all pixels in the normal direction (not even a depth check done!)
@@ -101,18 +100,18 @@ void main()
 	UNROLL for(int i=1; i</*=*/samples; i++) //!! due to jitter
 	{
 		const vec2 offs = u + ((float)i+ushift)*offsMul; //!! jitter per pixel (uses blue noise tex)
-		const vec3 color = texture2DLod(tex_fb_filtered, offs, 0.0).xyz;
+		const vec3 color = texStereoNoLod(tex_fb_filtered, offs).xyz;
 
-		BRANCH if(i==1) // necessary special case as compiler warns/'optimizes' sqrt below into rqsrt?!
+		/*BRANCH if(i==1) // necessary special case as compiler warns/'optimizes' sqrt below into rqsrt?!
 		{
 			refl += color;
 		}
 		else
-		{
+		{*/
 			const float w = sqrt((float)(i-1)/(float)samples); //!! fake falloff for samples more far away
 			refl += color*(1.0-w); //!! dampen large color values in addition?
 			color0w += w;
-		}
+		//}
 	}
 
 	refl += color0*color0w;

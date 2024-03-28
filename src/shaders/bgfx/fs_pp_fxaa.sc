@@ -1,6 +1,6 @@
 $input v_texcoord0
 
-#include "bgfx_shader.sh"
+#include "common.sh"
 
 
 // w_h_height.xy contains inverse size of source texture (1/w, 1/h), i.e. one texel shift to the upper (DX)/lower (OpenGL) left texel. Since OpenGL has upside down textures it leads to a different texel if not sampled on both sides
@@ -29,24 +29,24 @@ float luma(const vec3 l)
 // Approximation of FXAA
 vec4 fxaa1(const vec2 u)
 {
-	const vec3 rMc = texture2DLod(tex_fb_unfiltered, u, 0.0).xyz;
+	const vec3 rMc = texStereoNoLod(tex_fb_unfiltered, u).xyz;
 	BRANCH if(w_h_height.w == 1.0) // depth buffer available?
 	{
-		const float depth0 = texture2DLod(tex_depth, u, 0.0).x;
+		const float depth0 = texStereoNoLod(tex_depth, u).x;
 		BRANCH if((depth0 == 1.0) || (depth0 == 0.0)) // early out if depth too large (=BG) or too small (=DMD,etc)
 			return vec4(rMc, 1.0);
 	}
 
 	const vec2 offs = w_h_height.xy;
-	const float rNW = luma(texture2DLod(tex_fb_unfiltered, u - offs, 0.0).xyz);
-	const float rN = luma(texture2DLod(tex_fb_unfiltered, u - vec2(0.0,offs.y), 0.0).xyz);
-	const float rNE = luma(texture2DLod(tex_fb_unfiltered, u - vec2(-offs.x,offs.y), 0.0).xyz);
-	const float rW = luma(texture2DLod(tex_fb_unfiltered, u - vec2(offs.x,0.0), 0.0).xyz);
+	const float rNW = luma(texStereoNoLod(tex_fb_unfiltered, u - offs).xyz);
+	const float rN = luma(texStereoNoLod(tex_fb_unfiltered, u - vec2(0.0,offs.y)).xyz);
+	const float rNE = luma(texStereoNoLod(tex_fb_unfiltered, u - vec2(-offs.x,offs.y)).xyz);
+	const float rW = luma(texStereoNoLod(tex_fb_unfiltered, u - vec2(offs.x,0.0)).xyz);
 	const float rM = luma(rMc);
-	const float rE = luma(texture2DLod(tex_fb_unfiltered, u + vec2(offs.x,0.0), 0.0).xyz);
-	const float rSW = luma(texture2DLod(tex_fb_unfiltered, u + vec2(-offs.x,offs.y), 0.0).xyz);
-	const float rS = luma(texture2DLod(tex_fb_unfiltered, u + vec2(0.0,offs.y), 0.0).xyz);
-	const float rSE = luma(texture2DLod(tex_fb_unfiltered, u + offs, 0.0).xyz);
+	const float rE = luma(texStereoNoLod(tex_fb_unfiltered, u + vec2(offs.x,0.0)).xyz);
+	const float rSW = luma(texStereoNoLod(tex_fb_unfiltered, u + vec2(-offs.x,offs.y)).xyz);
+	const float rS = luma(texStereoNoLod(tex_fb_unfiltered, u + vec2(0.0,offs.y)).xyz);
+	const float rSE = luma(texStereoNoLod(tex_fb_unfiltered, u + offs).xyz);
 	const float rMrN = rM+rN;
 	const float lumaNW = rMrN+rNW+rW;
 	const float lumaNE = rMrN+rNE+rE;
@@ -65,9 +65,9 @@ vec4 fxaa1(const vec2 u)
 	const float NWNE = lumaNW + lumaNE;
 	vec2 dir = vec2(SWSE - NWNE, (lumaNW + lumaSW) - (lumaNE + lumaSE));
 	const float temp = 1.0/(min(abs(dir.x), abs(dir.y)) + max((NWNE + SWSE)*0.03125, 0.0078125)); //!! tweak?
-	dir = min(8.0, max(-8.0, dir*temp)) * offs; //!! tweak?
-	const vec3 rgbA = 0.5 * (texture2DLod(tex_fb_filtered, u-dir*(0.5/3.0), 0.0).xyz + texture2DLod(tex_fb_filtered, u+dir*(0.5/3.0), 0.0).xyz);
-	const vec3 rgbB = 0.5 * rgbA + 0.25 * (texture2DLod(tex_fb_filtered, u-dir*0.5, 0.0).xyz + texture2DLod(tex_fb_filtered, u+dir*0.5, 0.0).xyz);
+	dir = clamp(dir*temp, vec2_splat(-8.0), vec2_splat(8.0)) * offs; //!! tweak?
+	const vec3 rgbA = 0.5 * (texStereoNoLod(tex_fb_filtered, u-dir*(0.5/3.0)).xyz + texStereoNoLod(tex_fb_filtered, u+dir*(0.5/3.0)).xyz);
+	const vec3 rgbB = 0.5 * rgbA + 0.25 * (texStereoNoLod(tex_fb_filtered, u-dir*0.5).xyz + texStereoNoLod(tex_fb_filtered, u+dir*0.5).xyz);
 	const float lumaB = luma(rgbB);
 	return vec4(((lumaB < lumaMin) || (lumaB > lumaMax)) ? rgbA : rgbB, 1.0);
 }
@@ -79,24 +79,24 @@ vec4 fxaa1(const vec2 u)
 // Full mid-quality PC FXAA 3.11
 vec4 fxaa2(const vec2 u)
 {
-	const vec3 rgbyM = texture2DLod(tex_fb_unfiltered, u, 0.0).xyz;
+	const vec3 rgbyM = texStereoNoLod(tex_fb_unfiltered, u).xyz;
 	BRANCH if(w_h_height.w == 1.0) // depth buffer available?
 	{
-		const float depth0 = texture2DLod(tex_depth, u, 0.0).x;
+		const float depth0 = texStereoNoLod(tex_depth, u).x;
 		BRANCH if((depth0 == 1.0) || (depth0 == 0.0)) // early out if depth too large (=BG) or too small (=DMD,etc)
 			return vec4(rgbyM, 1.0);
 	}
 
 	const vec2 offs = w_h_height.xy;
-	const float lumaNW = luma(texture2DLod(tex_fb_unfiltered, u - offs, 0.0).xyz);
-	float lumaN = luma(texture2DLod(tex_fb_unfiltered, u - vec2(0.0,offs.y), 0.0).xyz);
-	const float lumaNE = luma(texture2DLod(tex_fb_unfiltered, u - vec2(-offs.x,offs.y), 0.0).xyz);
-	const float lumaW = luma(texture2DLod(tex_fb_unfiltered, u - vec2(offs.x,0.0), 0.0).xyz);
+	const float lumaNW = luma(texStereoNoLod(tex_fb_unfiltered, u - offs).xyz);
+	float lumaN = luma(texStereoNoLod(tex_fb_unfiltered, u - vec2(0.0,offs.y)).xyz);
+	const float lumaNE = luma(texStereoNoLod(tex_fb_unfiltered, u - vec2(-offs.x,offs.y)).xyz);
+	const float lumaW = luma(texStereoNoLod(tex_fb_unfiltered, u - vec2(offs.x,0.0)).xyz);
 	const float lumaM = luma(rgbyM);
-	const float lumaE = luma(texture2DLod(tex_fb_unfiltered, u + vec2(offs.x,0.0), 0.0).xyz);
-	const float lumaSW = luma(texture2DLod(tex_fb_unfiltered, u + vec2(-offs.x,offs.y), 0.0).xyz);
-	float lumaS = luma(texture2DLod(tex_fb_unfiltered, u + vec2(0.0,offs.y), 0.0).xyz);
-	const float lumaSE = luma(texture2DLod(tex_fb_unfiltered, u + offs, 0.0).xyz);
+	const float lumaE = luma(texStereoNoLod(tex_fb_unfiltered, u + vec2(offs.x,0.0)).xyz);
+	const float lumaSW = luma(texStereoNoLod(tex_fb_unfiltered, u + vec2(-offs.x,offs.y)).xyz);
+	float lumaS = luma(texStereoNoLod(tex_fb_unfiltered, u + vec2(0.0,offs.y)).xyz);
+	const float lumaSE = luma(texStereoNoLod(tex_fb_unfiltered, u + offs).xyz);
 	const float maxSM = max(lumaS, lumaM);
 	const float minSM = min(lumaS, lumaM);
 	const float maxESM = max(lumaE, maxSM);
@@ -153,9 +153,9 @@ vec4 fxaa2(const vec2 u)
 	vec2 posN = vec2(posB.x - offNP.x * FXAA_QUALITY_P0, posB.y - offNP.y * FXAA_QUALITY_P0);
 	vec2 posP = vec2(posB.x + offNP.x * FXAA_QUALITY_P0, posB.y + offNP.y * FXAA_QUALITY_P0);
 	const float subpixD = -2.0 * subpixC + 3.0;
-	float lumaEndN = luma(texture2DLod(tex_fb_filtered, posN, 0.0).xyz);
+	float lumaEndN = luma(texStereoNoLod(tex_fb_filtered, posN).xyz);
 	const float subpixE = subpixC * subpixC;
-	float lumaEndP = luma(texture2DLod(tex_fb_filtered, posP, 0.0).xyz);
+	float lumaEndP = luma(texStereoNoLod(tex_fb_filtered, posP).xyz);
 	if(!pairN) lumaNN = lumaSS;
 	const float gradientScaled = gradient * (1.0/4.0);
 	const float lumaMM = lumaM - lumaNN * 0.5;
@@ -171,8 +171,8 @@ vec4 fxaa2(const vec2 u)
 	if(!doneP) posP.x += offNP.x * FXAA_QUALITY_P1;
 	if(!doneP) posP.y += offNP.y * FXAA_QUALITY_P1;
 	if(doneNP) {
-		if(!doneN) lumaEndN = luma(texture2DLod(tex_fb_filtered, posN, 0.0).xyz);
-		if(!doneP) lumaEndP = luma(texture2DLod(tex_fb_filtered, posP, 0.0).xyz);
+		if(!doneN) lumaEndN = luma(texStereoNoLod(tex_fb_filtered, posN).xyz);
+		if(!doneP) lumaEndP = luma(texStereoNoLod(tex_fb_filtered, posP).xyz);
 		if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
 		if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
 		doneN = abs(lumaEndN) >= gradientScaled;
@@ -201,7 +201,7 @@ vec4 fxaa2(const vec2 u)
 	const float pl = pixelOffsetSubpix * lengthSign;
 	if(horzSpan) un.y += pl;
 	else un.x += pl;
-	return vec4(texture2DLod(tex_fb_filtered, un, 0.0).xyz, 1.0);
+	return vec4(texStereoNoLod(tex_fb_filtered, un).xyz, 1.0);
 }
 
 #undef FXAA_QUALITY_P0
@@ -224,24 +224,24 @@ vec4 fxaa2(const vec2 u)
 // Full extreme-quality PC FXAA 3.11
 vec4 fxaa3(const vec2 u)
 {
-	const vec3 rgbyM = texture2DLod(tex_fb_unfiltered, u, 0.0).xyz;
+	const vec3 rgbyM = texStereoNoLod(tex_fb_unfiltered, u).xyz;
 	BRANCH if(w_h_height.w == 1.0) // depth buffer available?
 	{
-		const float depth0 = texture2DLod(tex_depth, u, 0.0).x;
+		const float depth0 = texStereoNoLod(tex_depth, u).x;
 		BRANCH if((depth0 == 1.0) || (depth0 == 0.0)) // early out if depth too large (=BG) or too small (=DMD,etc)
 			return vec4(rgbyM, 1.0);
 	}
 
 	const vec2 offs = w_h_height.xy;
-	const float lumaNW = luma(texture2DLod(tex_fb_unfiltered, u - offs, 0.0).xyz);
-	float lumaN = luma(texture2DLod(tex_fb_unfiltered, u - vec2(0.0,offs.y), 0.0).xyz);
-	const float lumaNE = luma(texture2DLod(tex_fb_unfiltered, u - vec2(-offs.x,offs.y), 0.0).xyz);
-	const float lumaW = luma(texture2DLod(tex_fb_unfiltered, u - vec2(offs.x,0.0), 0.0).xyz);
+	const float lumaNW = luma(texStereoNoLod(tex_fb_unfiltered, u - offs).xyz);
+	float lumaN = luma(texStereoNoLod(tex_fb_unfiltered, u - vec2(0.0,offs.y)).xyz);
+	const float lumaNE = luma(texStereoNoLod(tex_fb_unfiltered, u - vec2(-offs.x,offs.y)).xyz);
+	const float lumaW = luma(texStereoNoLod(tex_fb_unfiltered, u - vec2(offs.x,0.0)).xyz);
 	const float lumaM = luma(rgbyM);
-	const float lumaE = luma(texture2DLod(tex_fb_unfiltered, u + vec2(offs.x,0.0), 0.0).xyz);
-	const float lumaSW = luma(texture2DLod(tex_fb_unfiltered, u + vec2(-offs.x,offs.y), 0.0).xyz);
-	float lumaS = luma(texture2DLod(tex_fb_unfiltered, u + vec2(0.0,offs.y), 0.0).xyz);
-	const float lumaSE = luma(texture2DLod(tex_fb_unfiltered, u + offs, 0.0).xyz);
+	const float lumaE = luma(texStereoNoLod(tex_fb_unfiltered, u + vec2(offs.x,0.0)).xyz);
+	const float lumaSW = luma(texStereoNoLod(tex_fb_unfiltered, u + vec2(-offs.x,offs.y)).xyz);
+	float lumaS = luma(texStereoNoLod(tex_fb_unfiltered, u + vec2(0.0,offs.y)).xyz);
+	const float lumaSE = luma(texStereoNoLod(tex_fb_unfiltered, u + offs).xyz);
 	const float maxSM = max(lumaS, lumaM);
 	const float minSM = min(lumaS, lumaM);
 	const float maxESM = max(lumaE, maxSM);
@@ -298,9 +298,9 @@ vec4 fxaa3(const vec2 u)
 	vec2 posN = vec2(posB.x - offNP.x * FXAA_QUALITY_P0, posB.y - offNP.y * FXAA_QUALITY_P0);
 	vec2 posP = vec2(posB.x + offNP.x * FXAA_QUALITY_P0, posB.y + offNP.y * FXAA_QUALITY_P0);
 	const float subpixD = -2.0 * subpixC + 3.0;
-	float lumaEndN = luma(texture2DLod(tex_fb_filtered, posN, 0.0).xyz);
+	float lumaEndN = luma(texStereoNoLod(tex_fb_filtered, posN).xyz);
 	const float subpixE = subpixC * subpixC;
-	float lumaEndP = luma(texture2DLod(tex_fb_filtered, posP, 0.0).xyz);
+	float lumaEndP = luma(texStereoNoLod(tex_fb_filtered, posP).xyz);
 	if(!pairN) lumaNN = lumaSS;
 	const float gradientScaled = gradient * (1.0/4.0);
 	const float lumaMM = lumaM - lumaNN * 0.5;
@@ -316,8 +316,8 @@ vec4 fxaa3(const vec2 u)
 	if(!doneP) posP.x += offNP.x * FXAA_QUALITY_P1;
 	if(!doneP) posP.y += offNP.y * FXAA_QUALITY_P1;
 	BRANCH if(doneNP) {
-		if(!doneN) lumaEndN = luma(texture2DLod(tex_fb_filtered, posN, 0.0).xyz);
-		if(!doneP) lumaEndP = luma(texture2DLod(tex_fb_filtered, posP, 0.0).xyz);
+		if(!doneN) lumaEndN = luma(texStereoNoLod(tex_fb_filtered, posN).xyz);
+		if(!doneP) lumaEndP = luma(texStereoNoLod(tex_fb_filtered, posP).xyz);
 		if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
 		if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
 		doneN = abs(lumaEndN) >= gradientScaled;
@@ -331,8 +331,8 @@ vec4 fxaa3(const vec2 u)
 		//
 
 		if(doneNP) {
-		if(!doneN) lumaEndN = luma(texture2DLod(tex_fb_filtered, posN, 0.0).xyz);
-		if(!doneP) lumaEndP = luma(texture2DLod(tex_fb_filtered, posP, 0.0).xyz);
+		if(!doneN) lumaEndN = luma(texStereoNoLod(tex_fb_filtered, posN).xyz);
+		if(!doneP) lumaEndP = luma(texStereoNoLod(tex_fb_filtered, posP).xyz);
 		if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
 		if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
 		doneN = abs(lumaEndN) >= gradientScaled;
@@ -344,8 +344,8 @@ vec4 fxaa3(const vec2 u)
 		if(!doneP) posP.y += offNP.y * FXAA_QUALITY_P3;
 
 		if(doneNP) {
-		if(!doneN) lumaEndN = luma(texture2DLod(tex_fb_filtered, posN, 0.0).xyz);
-		if(!doneP) lumaEndP = luma(texture2DLod(tex_fb_filtered, posP, 0.0).xyz);
+		if(!doneN) lumaEndN = luma(texStereoNoLod(tex_fb_filtered, posN).xyz);
+		if(!doneP) lumaEndP = luma(texStereoNoLod(tex_fb_filtered, posP).xyz);
 		if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
 		if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
 		doneN = abs(lumaEndN) >= gradientScaled;
@@ -357,8 +357,8 @@ vec4 fxaa3(const vec2 u)
 		if(!doneP) posP.y += offNP.y * FXAA_QUALITY_P4;
 
 		if(doneNP) {
-		if(!doneN) lumaEndN = luma(texture2DLod(tex_fb_filtered, posN, 0.0).xyz);
-		if(!doneP) lumaEndP = luma(texture2DLod(tex_fb_filtered, posP, 0.0).xyz);
+		if(!doneN) lumaEndN = luma(texStereoNoLod(tex_fb_filtered, posN).xyz);
+		if(!doneP) lumaEndP = luma(texStereoNoLod(tex_fb_filtered, posP).xyz);
 		if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
 		if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
 		doneN = abs(lumaEndN) >= gradientScaled;
@@ -370,8 +370,8 @@ vec4 fxaa3(const vec2 u)
 		if(!doneP) posP.y += offNP.y * FXAA_QUALITY_P5;
 
 		if(doneNP) {
-		if(!doneN) lumaEndN = luma(texture2DLod(tex_fb_filtered, posN, 0.0).xyz);
-		if(!doneP) lumaEndP = luma(texture2DLod(tex_fb_filtered, posP, 0.0).xyz);
+		if(!doneN) lumaEndN = luma(texStereoNoLod(tex_fb_filtered, posN).xyz);
+		if(!doneP) lumaEndP = luma(texStereoNoLod(tex_fb_filtered, posP).xyz);
 		if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
 		if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
 		doneN = abs(lumaEndN) >= gradientScaled;
@@ -383,8 +383,8 @@ vec4 fxaa3(const vec2 u)
 		if(!doneP) posP.y += offNP.y * FXAA_QUALITY_P6;
 
 		if(doneNP) {
-		if(!doneN) lumaEndN = luma(texture2DLod(tex_fb_filtered, posN, 0.0).xyz);
-		if(!doneP) lumaEndP = luma(texture2DLod(tex_fb_filtered, posP, 0.0).xyz);
+		if(!doneN) lumaEndN = luma(texStereoNoLod(tex_fb_filtered, posN).xyz);
+		if(!doneP) lumaEndP = luma(texStereoNoLod(tex_fb_filtered, posP).xyz);
 		if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
 		if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
 		doneN = abs(lumaEndN) >= gradientScaled;
@@ -396,8 +396,8 @@ vec4 fxaa3(const vec2 u)
 		if(!doneP) posP.y += offNP.y * FXAA_QUALITY_P7;
 
 		if(doneNP) {
-		if(!doneN) lumaEndN = luma(texture2DLod(tex_fb_filtered, posN, 0.0).xyz);
-		if(!doneP) lumaEndP = luma(texture2DLod(tex_fb_filtered, posP, 0.0).xyz);
+		if(!doneN) lumaEndN = luma(texStereoNoLod(tex_fb_filtered, posN).xyz);
+		if(!doneP) lumaEndP = luma(texStereoNoLod(tex_fb_filtered, posP).xyz);
 		if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
 		if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
 		doneN = abs(lumaEndN) >= gradientScaled;
@@ -409,8 +409,8 @@ vec4 fxaa3(const vec2 u)
 		if(!doneP) posP.y += offNP.y * FXAA_QUALITY_P8;
 
 		if(doneNP) {
-		if(!doneN) lumaEndN = luma(texture2DLod(tex_fb_filtered, posN, 0.0).xyz);
-		if(!doneP) lumaEndP = luma(texture2DLod(tex_fb_filtered, posP, 0.0).xyz);
+		if(!doneN) lumaEndN = luma(texStereoNoLod(tex_fb_filtered, posN).xyz);
+		if(!doneP) lumaEndP = luma(texStereoNoLod(tex_fb_filtered, posP).xyz);
 		if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
 		if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
 		doneN = abs(lumaEndN) >= gradientScaled;
@@ -422,8 +422,8 @@ vec4 fxaa3(const vec2 u)
 		if(!doneP) posP.y += offNP.y * FXAA_QUALITY_P9;
 
 		if(doneNP) {
-		if(!doneN) lumaEndN = luma(texture2DLod(tex_fb_filtered, posN, 0.0).xyz);
-		if(!doneP) lumaEndP = luma(texture2DLod(tex_fb_filtered, posP, 0.0).xyz);
+		if(!doneN) lumaEndN = luma(texStereoNoLod(tex_fb_filtered, posN).xyz);
+		if(!doneP) lumaEndP = luma(texStereoNoLod(tex_fb_filtered, posP).xyz);
 		if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
 		if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
 		doneN = abs(lumaEndN) >= gradientScaled;
@@ -435,8 +435,8 @@ vec4 fxaa3(const vec2 u)
 		if(!doneP) posP.y += offNP.y * FXAA_QUALITY_P10;
 
 		if(doneNP) {
-		if(!doneN) lumaEndN = luma(texture2DLod(tex_fb_filtered, posN, 0.0).xyz);
-		if(!doneP) lumaEndP = luma(texture2DLod(tex_fb_filtered, posP, 0.0).xyz);
+		if(!doneN) lumaEndN = luma(texStereoNoLod(tex_fb_filtered, posN).xyz);
+		if(!doneP) lumaEndP = luma(texStereoNoLod(tex_fb_filtered, posP).xyz);
 		if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
 		if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
 		doneN = abs(lumaEndN) >= gradientScaled;
@@ -474,7 +474,7 @@ vec4 fxaa3(const vec2 u)
 	const float pl = pixelOffsetSubpix * lengthSign;
 	if(horzSpan) un.y += pl;
 	else un.x += pl;
-	return vec4(texture2DLod(tex_fb_filtered, un, 0.0).xyz, 1.0);
+	return vec4(texStereoNoLod(tex_fb_filtered, un).xyz, 1.0);
 }
 
 

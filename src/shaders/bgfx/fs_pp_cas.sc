@@ -1,6 +1,6 @@
 $input v_texcoord0
 
-#include "bgfx_shader.sh"
+#include "common.sh"
 
 
 // w_h_height.xy contains inverse size of source texture (1/w, 1/h), i.e. one texel shift to the upper (DX)/lower (OpenGL) left texel. Since OpenGL has upside down textures it leads to a different texel if not sampled on both sides
@@ -24,10 +24,10 @@ void main()
 
 	const float2 u = v_texcoord0;
 
-	const float3 e = texture2DLod(tex_fb_unfiltered, u, 0.0).xyz;
+	const float3 e = texStereoNoLod(tex_fb_unfiltered, u).xyz;
 	BRANCH if(w_h_height.w == 1.0) // depth buffer available?
 	{
-		const float depth0 = texture2DLod(tex_depth, u, 0.0).x;
+		const float depth0 = texStereoNoLod(tex_depth, u).x;
 		BRANCH if((depth0 == 1.0) || (depth0 == 0.0)) // early out if depth too large (=BG) or too small (=DMD,etc)
 		{
 			gl_FragColor = vec4(e, 1.0);
@@ -42,14 +42,14 @@ void main()
 	const float2 um1 = u - w_h_height.xy;
 	const float2 up1 = u + w_h_height.xy;
 
-	const float3 a = texture2DLod(tex_fb_unfiltered,        um1          , 0.0).xyz;
-	const float3 b = texture2DLod(tex_fb_unfiltered, float2(u.x,   um1.y), 0.0).xyz;
-	const float3 c = texture2DLod(tex_fb_unfiltered, float2(up1.x, um1.y), 0.0).xyz;
-	const float3 d = texture2DLod(tex_fb_unfiltered, float2(um1.x, u.y  ), 0.0).xyz;
-	const float3 g = texture2DLod(tex_fb_unfiltered, float2(um1.x, up1.y), 0.0).xyz; 
-	const float3 f = texture2DLod(tex_fb_unfiltered, float2(up1.x, u.y  ), 0.0).xyz;
-	const float3 h = texture2DLod(tex_fb_unfiltered, float2(u.x,   up1.y), 0.0).xyz;
-	const float3 i = texture2DLod(tex_fb_unfiltered,        up1          , 0.0).xyz;
+	const float3 a = texStereoNoLod(tex_fb_unfiltered,        um1          ).xyz;
+	const float3 b = texStereoNoLod(tex_fb_unfiltered, float2(u.x,   um1.y)).xyz;
+	const float3 c = texStereoNoLod(tex_fb_unfiltered, float2(up1.x, um1.y)).xyz;
+	const float3 d = texStereoNoLod(tex_fb_unfiltered, float2(um1.x, u.y  )).xyz;
+	const float3 g = texStereoNoLod(tex_fb_unfiltered, float2(um1.x, up1.y)).xyz; 
+	const float3 f = texStereoNoLod(tex_fb_unfiltered, float2(up1.x, u.y  )).xyz;
+	const float3 h = texStereoNoLod(tex_fb_unfiltered, float2(u.x,   up1.y)).xyz;
+	const float3 i = texStereoNoLod(tex_fb_unfiltered,        up1          ).xyz;
 
 	// Soft min and max.
 	//  a b c             b

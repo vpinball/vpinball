@@ -1,6 +1,6 @@
 $input v_texcoord0
 
-#include "bgfx_shader.sh"
+#include "common.sh"
 
 
 // w_h_height.xy contains inverse size of source texture (1/w, 1/h), i.e. one texel shift to the upper (DX)/lower (OpenGL) left texel. Since OpenGL has upside down textures it leads to a different texel if not sampled on both sides
@@ -36,14 +36,14 @@ vec2 findContrastByLuminance(const vec2 XYCoord, const float filterSpread)
 	const vec2 upOffset    = vec2(0.0, w_h_height.y * filterSpread);
 	const vec2 rightOffset = vec2(w_h_height.x * filterSpread, 0.0);
 
-	const float topHeight         = GetLuminance(texture2DLod(tex_fb_filtered, XYCoord +               upOffset, 0.0).rgb);
-	const float bottomHeight      = GetLuminance(texture2DLod(tex_fb_filtered, XYCoord -               upOffset, 0.0).rgb);
-	const float rightHeight       = GetLuminance(texture2DLod(tex_fb_filtered, XYCoord + rightOffset           , 0.0).rgb);
-	const float leftHeight        = GetLuminance(texture2DLod(tex_fb_filtered, XYCoord - rightOffset           , 0.0).rgb);
-	const float leftTopHeight     = GetLuminance(texture2DLod(tex_fb_filtered, XYCoord - rightOffset + upOffset, 0.0).rgb);
-	const float leftBottomHeight  = GetLuminance(texture2DLod(tex_fb_filtered, XYCoord - rightOffset - upOffset, 0.0).rgb);
-	const float rightBottomHeight = GetLuminance(texture2DLod(tex_fb_filtered, XYCoord + rightOffset + upOffset, 0.0).rgb);
-	const float rightTopHeight    = GetLuminance(texture2DLod(tex_fb_filtered, XYCoord + rightOffset - upOffset, 0.0).rgb);
+	const float topHeight         = GetLuminance(texStereoNoLod(tex_fb_filtered, XYCoord +               upOffset).rgb);
+	const float bottomHeight      = GetLuminance(texStereoNoLod(tex_fb_filtered, XYCoord -               upOffset).rgb);
+	const float rightHeight       = GetLuminance(texStereoNoLod(tex_fb_filtered, XYCoord + rightOffset           ).rgb);
+	const float leftHeight        = GetLuminance(texStereoNoLod(tex_fb_filtered, XYCoord - rightOffset           ).rgb);
+	const float leftTopHeight     = GetLuminance(texStereoNoLod(tex_fb_filtered, XYCoord - rightOffset + upOffset).rgb);
+	const float leftBottomHeight  = GetLuminance(texStereoNoLod(tex_fb_filtered, XYCoord - rightOffset - upOffset).rgb);
+	const float rightBottomHeight = GetLuminance(texStereoNoLod(tex_fb_filtered, XYCoord + rightOffset + upOffset).rgb);
+	const float rightTopHeight    = GetLuminance(texStereoNoLod(tex_fb_filtered, XYCoord + rightOffset - upOffset).rgb);
 
 #ifdef NFAA_EDGE_DETECTION_VARIANT
 	const float sum0 = rightTopHeight    + bottomHeight + leftTopHeight;
@@ -68,14 +68,14 @@ vec2 findContrastByColor(const vec2 XYCoord, const float filterSpread)
 	const vec2 upOffset    = vec2(0.0, w_h_height.y * filterSpread);
 	const vec2 rightOffset = vec2(w_h_height.x * filterSpread, 0.0);
 
-	const vec3 topHeight         = texture2DLod(tex_fb_filtered, XYCoord +               upOffset, 0.0).rgb;
-	const vec3 bottomHeight      = texture2DLod(tex_fb_filtered, XYCoord -               upOffset, 0.0).rgb;
-	const vec3 rightHeight       = texture2DLod(tex_fb_filtered, XYCoord + rightOffset           , 0.0).rgb;
-	const vec3 leftHeight        = texture2DLod(tex_fb_filtered, XYCoord - rightOffset           , 0.0).rgb;
-	const vec3 leftTopHeight     = texture2DLod(tex_fb_filtered, XYCoord - rightOffset + upOffset, 0.0).rgb;
-	const vec3 leftBottomHeight  = texture2DLod(tex_fb_filtered, XYCoord - rightOffset - upOffset, 0.0).rgb;
-	const vec3 rightBottomHeight = texture2DLod(tex_fb_filtered, XYCoord + rightOffset + upOffset, 0.0).rgb;
-	const vec3 rightTopHeight    = texture2DLod(tex_fb_filtered, XYCoord + rightOffset - upOffset, 0.0).rgb;
+	const vec3 topHeight         = texStereoNoLod(tex_fb_filtered, XYCoord +               upOffset).rgb;
+	const vec3 bottomHeight      = texStereoNoLod(tex_fb_filtered, XYCoord -               upOffset).rgb;
+	const vec3 rightHeight       = texStereoNoLod(tex_fb_filtered, XYCoord + rightOffset           ).rgb;
+	const vec3 leftHeight        = texStereoNoLod(tex_fb_filtered, XYCoord - rightOffset           ).rgb;
+	const vec3 leftTopHeight     = texStereoNoLod(tex_fb_filtered, XYCoord - rightOffset + upOffset).rgb;
+	const vec3 leftBottomHeight  = texStereoNoLod(tex_fb_filtered, XYCoord - rightOffset - upOffset).rgb;
+	const vec3 rightBottomHeight = texStereoNoLod(tex_fb_filtered, XYCoord + rightOffset + upOffset).rgb;
+	const vec3 rightTopHeight    = texStereoNoLod(tex_fb_filtered, XYCoord + rightOffset - upOffset).rgb;
 
 #ifdef NFAA_EDGE_DETECTION_VARIANT
 	const float sum0 = rightTopHeight    + bottomHeight + leftTopHeight;
@@ -109,10 +109,10 @@ void main()
 
 	const vec2 u = v_texcoord0;
 
-	const vec3 Scene0 = texture2DLod(tex_fb_filtered, u, 0.0).rgb;
+	const vec3 Scene0 = texStereoNoLod(tex_fb_filtered, u).rgb;
 	BRANCH if(w_h_height.w == 1.0) // depth buffer available?
 	{
-		const float depth0 = texture2DLod(tex_depth, u, 0.0).x;
+		const float depth0 = texStereoNoLod(tex_depth, u).x;
 		BRANCH if((depth0 == 1.0) || (depth0 == 0.0)) // early out if depth too large (=BG) or too small (=DMD,etc)
 		{
 			gl_FragColor = vec4(Scene0, 1.0);
@@ -137,14 +137,14 @@ void main()
 
 	const vec2 Normal = Vectors * (w_h_height.xy /* * 2.0*/);
 
-	const vec3 Scene1 = texture2DLod(tex_fb_filtered, u + Normal, 0.0).rgb;
-	const vec3 Scene2 = texture2DLod(tex_fb_filtered, u - Normal, 0.0).rgb;
+	const vec3 Scene1 = texStereoNoLod(tex_fb_filtered, u + Normal).rgb;
+	const vec3 Scene2 = texStereoNoLod(tex_fb_filtered, u - Normal).rgb;
 #if defined(NFAA_VARIANT) || defined(NFAA_VARIANT2)
-	const vec3 Scene3 = texture2DLod(tex_fb_filtered, u + vec2(Normal.x, -Normal.y)*0.5, 0.0).rgb;
-	const vec3 Scene4 = texture2DLod(tex_fb_filtered, u - vec2(Normal.x, -Normal.y)*0.5, 0.0).rgb;
+	const vec3 Scene3 = texStereoNoLod(tex_fb_filtered, u + vec2(Normal.x, -Normal.y)*0.5).rgb;
+	const vec3 Scene4 = texStereoNoLod(tex_fb_filtered, u - vec2(Normal.x, -Normal.y)*0.5).rgb;
 #else
-	const vec3 Scene3 = texture2DLod(tex_fb_filtered, u + vec2(Normal.x, -Normal.y), 0.0).rgb;
-	const vec3 Scene4 = texture2DLod(tex_fb_filtered, u - vec2(Normal.x, -Normal.y), 0.0).rgb;
+	const vec3 Scene3 = texStereoNoLod(tex_fb_filtered, u + vec2(Normal.x, -Normal.y)).rgb;
+	const vec3 Scene4 = texStereoNoLod(tex_fb_filtered, u - vec2(Normal.x, -Normal.y)).rgb;
 #endif
 
 #ifdef NFAA_TEST_MODE // debug

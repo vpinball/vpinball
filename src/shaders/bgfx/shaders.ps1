@@ -55,6 +55,8 @@ for($i = 0; $i -lt 5; $i++)
    Write-Host "> Ball shader"
    $Parms = ("-f vs_ball.sc -o " + $outputs[$i] + "/vs_ball.bin " + $targets[$i] + " --type vertex").Split(" ")
    & "$shaderc" $Parms
+   $Parms = ("-f fs_ball_trail.sc -o " + $outputs[$i] + "/fs_ball_trail.bin " + $targets[$i] + " --type fragment").Split(" ")
+   & "$shaderc" $Parms
    $variants = @("EQUIRECTANGULAR", "SPHERICAL")
    foreach ($variant in $variants)
    {
@@ -79,8 +81,13 @@ for($i = 0; $i -lt 5; $i++)
    $variants = @("DMD", "SPRITE")
    foreach ($variant in $variants)
    {
-      $Parms = ("-f fs_dmd.sc -o " + $outputs[$i] + "/fs_basic_" + $variant.ToLower() + ".bin " + $targets[$i] + " --type fragment --define " + $variant).Split(" ")
-      & "$shaderc" $Parms
+       
+      $variants2 = @("TEX", "NOTEX")
+      foreach ($variant2 in $variants2)
+      {
+         $Parms = ("-f fs_dmd.sc -o " + $outputs[$i] + "/fs_basic_" + $variant.ToLower() + "_" + $variant2.ToLower() + ".bin " + $targets[$i] + " --type fragment --define " + $variant + ";" + $variant2).Split(" ")
+         & "$shaderc" $Parms
+      }
    }
 
    ################################
@@ -98,7 +105,7 @@ for($i = 0; $i -lt 5; $i++)
       $variants2 = @("TEX", "NOTEX")
       foreach ($variant2 in $variants2)
       {
-         $Parms = ("-f vs_classic_light.sc -o " + $outputs[$i] + "/vs_classic_light_" + $variant2.ToLower() + "_" + $variant.ToLower() + ".bin " + $targets[$i] + " --type vertex --define " + $variant + ";" + $variant2).Split(" ")
+         $Parms = ("-f vs_basic.sc -o " + $outputs[$i] + "/vs_classic_light_" + $variant2.ToLower() + "_" + $variant.ToLower() + ".bin " + $targets[$i] + " --type vertex --define CLASSIC_LIGHT " + $variant + ";" + $variant2).Split(" ")
          & "$shaderc" $Parms
          $Parms = ("-f fs_classic_light.sc -o " + $outputs[$i] + "/fs_classic_light_" + $variant2.ToLower() + "_" + $variant.ToLower() + ".bin " + $targets[$i] + " --type fragment --define " + $variant + ";" + $variant2).Split(" ")
          & "$shaderc" $Parms
@@ -119,7 +126,13 @@ for($i = 0; $i -lt 5; $i++)
    $Parms = ("-f fs_pp_mirror.sc -o " + $outputs[$i] + "/fs_pp_mirror.bin " + $targets[$i] + " --type fragment").Split(" ")
    & "$shaderc" $Parms
 
+   $Parms = ("-f fs_pp_copy.sc -o " + $outputs[$i] + "/fs_pp_copy.bin " + $targets[$i] + " --type fragment").Split(" ")
+   & "$shaderc" $Parms
+
    $Parms = ("-f fs_pp_bloom.sc -o " + $outputs[$i] + "/fs_pp_bloom.bin " + $targets[$i] + " --type fragment").Split(" ")
+   & "$shaderc" $Parms
+
+   $Parms = ("-f fs_pp_irradiance.sc -o " + $outputs[$i] + "/fs_pp_irradiance.bin " + $targets[$i] + " --type fragment").Split(" ")
    & "$shaderc" $Parms
 
    $Parms = ("-f fs_pp_ssao.sc -o " + $outputs[$i] + "/fs_pp_ssao.bin " + $targets[$i] + " --type fragment").Split(" ")

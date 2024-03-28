@@ -1,4 +1,4 @@
-#include "bgfx_shader.sh"
+#include "common.sh"
 
 void main()
 {
