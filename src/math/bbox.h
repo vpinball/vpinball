@@ -80,6 +80,8 @@ inline bool Intersect(const RECT &rc, const int width, const int height, const P
       return (p.x >= rc.top*width / 100 && p.x <= rc.bottom*width / 100 && p.y <= height - rc.left*height / 100 && p.y >= height - rc.right*height / 100);
 }
 
+/*
+// Disable as it does not gives the expected results as the non SSE implementation below
 #ifdef ENABLE_SSE_OPTIMIZATIONS
 inline bool fRectIntersect3D(const FRect3D &rc1, const FRect3D &rc2)
 {
@@ -90,12 +92,13 @@ inline bool fRectIntersect3D(const FRect3D &rc1, const FRect3D &rc2)
    return ((mask == 3) && rc1.zlow <= rc2.zhigh && rc1.zhigh >= rc2.zlow); //!! use SSE, too?
 }
 #else
-#pragma message ("Warning: No SSE bbox tests")
+#pragma message ("Warning: No SSE bbox tests")*/
 inline bool fRectIntersect3D(const FRect3D &rc1, const FRect3D &rc2)
 {
-   return (rc1.right >= rc2.left && rc1.bottom >= rc2.top && rc1.left <= rc2.right && rc1.top <= rc2.bottom && rc1.zlow <= rc2.zhigh && rc1.zhigh >= rc2.zlow);
+   return (rc1.right >= rc2.left && rc1.bottom >= rc2.top && rc1.zhigh >= rc2.zlow 
+        && rc1.left <= rc2.right && rc1.top <= rc2.bottom && rc1.zlow <= rc2.zhigh);
 }
-#endif
+//#endif
 
 inline bool fRectIntersect3D(const Vertex3Ds &sphere_p, const float sphere_rsqr, const FRect3D &rc) // could also use SSE, but kd and quadtree already have native SSE variants in there
 {
@@ -106,4 +109,10 @@ inline bool fRectIntersect3D(const Vertex3Ds &sphere_p, const float sphere_rsqr,
    ey *= ey;
    ez *= ez;
    return (ex + ey + ez <= sphere_rsqr);
+}
+
+namespace plog
+{
+Record& operator<<(Record& record, const FRect& pt);
+Record& operator<<(Record& record, const FRect3D& pt);
 }

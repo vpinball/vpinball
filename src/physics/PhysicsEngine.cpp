@@ -426,7 +426,7 @@ void PhysicsEngine::RayCast(const Vertex3Ds &source, const Vertex3Ds &target, co
    Ball ballT;
    ballT.m_d.m_pos = source;
    ballT.m_d.m_vel = target - source;
-   ballT.m_d.m_radius = 0.f;
+   ballT.m_d.m_radius = 0.01f;
    ballT.m_coll.m_hittime = 1.0f;
    ballT.CalcHitBBox(); // need to update here, as only done lazily
 
