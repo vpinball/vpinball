@@ -80,16 +80,21 @@ inline bool Intersect(const RECT &rc, const int width, const int height, const P
       return (p.x >= rc.top*width / 100 && p.x <= rc.bottom*width / 100 && p.y <= height - rc.left*height / 100 && p.y >= height - rc.right*height / 100);
 }
 
-/*
-// Disable as it does not gives the expected results as the non SSE implementation below
 #ifdef ENABLE_SSE_OPTIMIZATIONS
 inline bool fRectIntersect3D(const FRect3D &rc1, const FRect3D &rc2)
 {
-   const __m128 rc1128 = _mm_loadu_ps(&rc1.left); // this shouldn't use loadu, but doesn't matter anymore nowadays anyhow
+   /*const __m128 rc1128 = _mm_loadu_ps(&rc1.left); // this shouldn't use loadu, but doesn't matter anymore nowadays anyhow
    const __m128 rc1sh = _mm_shuffle_ps(rc1128, rc1128, _MM_SHUFFLE(1, 0, 3, 2));
    const __m128 test = _mm_cmpge_ps(rc1sh, _mm_loadu_ps(&rc2.left));
    const int mask = _mm_movemask_ps(test);
-   return ((mask == 3) && rc1.zlow <= rc2.zhigh && rc1.zhigh >= rc2.zlow); //!! use SSE, too?
+   return ((mask == 3) && rc1.zlow <= rc2.zhigh && rc1.zhigh >= rc2.zlow); //!! use SSE, too?*/
+   const __m128 rc1128 = _mm_loadu_ps(&rc1.left); // L1.R1.T1.B1
+   const __m128 rc2128 = _mm_loadu_ps(&rc2.left); // L2.R2.T2.B2
+   const __m128 min128 = _mm_shuffle_ps(rc1128, rc2128, _MM_SHUFFLE(1, 3, 1, 3)); // R1.B1.R2.B2
+   const __m128 max128 = _mm_shuffle_ps(rc2128, rc1128, _MM_SHUFFLE(0, 2, 0, 2)); // L2.T2.L1.T1
+   const __m128 test = _mm_cmpge_ps(min128, max128);
+   const int mask = _mm_movemask_ps(test); // bitmask of [R1 >= L2, B1 >= T2, R2 >= L1, B2 >= T1]
+   return ((mask == 15) && rc1.zlow <= rc2.zhigh && rc1.zhigh >= rc2.zlow); //!! use SSE, too?
 }
 #else
 #pragma message ("Warning: No SSE bbox tests")*/
@@ -98,7 +103,7 @@ inline bool fRectIntersect3D(const FRect3D &rc1, const FRect3D &rc2)
    return (rc1.right >= rc2.left && rc1.bottom >= rc2.top && rc1.zhigh >= rc2.zlow 
         && rc1.left <= rc2.right && rc1.top <= rc2.bottom && rc1.zlow <= rc2.zhigh);
 }
-//#endif
+#endif
 
 inline bool fRectIntersect3D(const Vertex3Ds &sphere_p, const float sphere_rsqr, const FRect3D &rc) // could also use SSE, but kd and quadtree already have native SSE variants in there
 {
