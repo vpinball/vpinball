@@ -21,6 +21,7 @@
 #endif
 #include "bx/platform.h"
 #include "bgfx/platform.h"
+#include "bgfx/bgfx.h"
 #ifdef __STANDALONE__
 #pragma pop_macro("_WIN64")
 #endif
@@ -47,7 +48,53 @@
 #include "BallShader.h"
 #endif
 
-#if defined(ENABLE_OPENGL)
+#if defined(ENABLE_BGFX)
+struct tBGFXCallback : public bgfx::CallbackI
+{
+   virtual ~tBGFXCallback() { }
+   virtual void fatal(const char* _filePath, uint16_t _line, bgfx::Fatal::Enum _code, const char* _str) override
+   {
+      //bgfx::trace(_filePath, _line, "BGFX FATAL 0x%08x: %s\n", _code, _str);
+      PLOGE << _filePath << ":" << _line << "BGFX FATAL " << _code << ": " << _str;
+      if (bgfx::Fatal::DebugCheck == _code)
+         bx::debugBreak();
+      else
+         abort();
+   }
+   virtual void traceVargs(const char* _filePath, uint16_t _line, const char* _format, va_list _argList) override
+   {
+      char temp[2048];
+      char* out = temp;
+      va_list argListCopy;
+      va_copy(argListCopy, _argList);
+      int32_t len = bx::snprintf(out, sizeof(temp), "%s (%d): ", _filePath, _line);
+      int32_t total = len + bx::vsnprintf(out + len, sizeof(temp) - len, _format, argListCopy);
+      va_end(argListCopy);
+      if ((int32_t)sizeof(temp) < total)
+      {
+         out = (char*)alloca(total + 1);
+         bx::memCopy(out, temp, len);
+         bx::vsnprintf(out + len, total - len, _format, _argList);
+      }
+      out[total] = '\0';
+      bx::debugOutput(out);
+      if (total > 0 && out[total - 1] == '\n')
+         out[total - 1] = '\0';
+      PLOGI << out;
+   }
+   virtual void profilerBegin(const char* /*_name*/, uint32_t /*_abgr*/, const char* /*_filePath*/, uint16_t /*_line*/) override { }
+   virtual void profilerBeginLiteral(const char* /*_name*/, uint32_t /*_abgr*/, const char* /*_filePath*/, uint16_t /*_line*/) override { }
+   virtual void profilerEnd() override { }
+   virtual uint32_t cacheReadSize(uint64_t /*_id*/) override { return 0; }
+   virtual bool cacheRead(uint64_t /*_id*/, void* /*_data*/, uint32_t /*_size*/) override { return false; }
+   virtual void cacheWrite(uint64_t /*_id*/, const void* /*_data*/, uint32_t /*_size*/) override { }
+   virtual void screenShot(const char* _filePath, uint32_t _width, uint32_t _height, uint32_t _pitch, const void* _data, uint32_t _size, bool _yflip) override { }
+   virtual void captureBegin(uint32_t /*_width*/, uint32_t /*_height*/, uint32_t /*_pitch*/, bgfx::TextureFormat::Enum /*_format*/, bool /*_yflip*/) override { }
+   virtual void captureEnd() override { }
+   virtual void captureFrame(const void* /*_data*/, uint32_t /*_size*/) override { }
+} bgfxCallback;
+
+#elif defined(ENABLE_OPENGL)
 GLuint RenderDevice::m_samplerStateCache[3 * 3 * 5];
 
 #elif defined(ENABLE_DX9)
@@ -597,6 +644,11 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
    // Tested & working backends
    init.type = bgfx::RendererType::Vulkan;
    init.type = bgfx::RendererType::Direct3D11;
+
+   // Native platform
+   init.type = bgfx::RendererType::Count;
+
+   init.callback = &bgfxCallback;
 
 #ifdef __STANDALONE__
    SDL_SysWMinfo wmInfo;
