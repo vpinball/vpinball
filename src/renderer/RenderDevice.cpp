@@ -15,8 +15,18 @@
 #include "shader/SearchTex.h"
 
 #if defined(ENABLE_BGFX)
+#ifdef __STANDALONE__
+#pragma push_macro("_WIN64")
+#undef _WIN64
+#endif
 #include "bx/platform.h"
 #include "bgfx/platform.h"
+#ifdef __STANDALONE__
+#pragma pop_macro("_WIN64")
+#endif
+#ifdef __STANDALONE__
+#include <SDL2/SDL_syswm.h>
+#endif
 
 #elif defined(ENABLE_OPENGL)
 #include "typedefs3D.h"
@@ -36,7 +46,6 @@
 #include "StereoShader.h"
 #include "BallShader.h"
 #endif
-
 
 #if defined(ENABLE_OPENGL)
 GLuint RenderDevice::m_samplerStateCache[3 * 3 * 5];
@@ -588,6 +597,12 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
    // Tested & working backends
    init.type = bgfx::RendererType::Vulkan;
    init.type = bgfx::RendererType::Direct3D11;
+
+#ifdef __STANDALONE__
+   SDL_SysWMinfo wmInfo;
+   SDL_VERSION(&wmInfo.version);
+   SDL_GetWindowWMInfo(g_pplayer->m_sdl_playfieldHwnd, &wmInfo);
+#endif
 
    #if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
    init.platformData.ndt = wmInfo.info.x11.display;

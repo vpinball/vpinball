@@ -4,10 +4,13 @@
 
 #ifdef __STANDALONE__
 #pragma push_macro("_far")
+#pragma push_macro("_WIN64")
 #undef _far
+#undef _WIN64
 #endif
 #include "bx/readerwriter.h"
 #ifdef __STANDALONE__
+#pragma pop_macro("_WIN64")
 #pragma pop_macro("_far")
 #endif
 

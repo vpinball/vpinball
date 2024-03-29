@@ -76,7 +76,14 @@ enum VRPreviewMode
 
 #if defined(ENABLE_BGFX)
 
+#ifdef __STANDALONE__
+#pragma push_macro("_WIN64")
+#undef _WIN64
+#endif
 #include "bgfx/bgfx.h"
+#ifdef __STANDALONE__
+#pragma pop_macro("_WIN64")
+#endif
 
 typedef bgfx::VertexLayout VertexDeclaration;
 

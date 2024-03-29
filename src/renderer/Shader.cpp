@@ -9,11 +9,19 @@
 #include "core/vpversion.h"
 
 #if defined(ENABLE_BGFX)
+#ifdef __STANDALONE__
+#pragma push_macro("_WIN64")
+#undef _WIN64
+#endif
 #include "bx/timer.h"
 #include "bx/file.h"
 #include "bx/readerwriter.h"
 #include "bgfx/bgfx.h"
 #include "bgfx/platform.h"
+#ifdef __STANDALONE__
+#pragma pop_macro("_WIN64")
+#endif
+
 ShaderTechniques Shader::m_boundTechnique = ShaderTechniques::SHADER_TECHNIQUE_INVALID; // FIXME move to render device
 
 #elif defined(ENABLE_OPENGL)
