@@ -238,6 +238,20 @@ cmake -DCMAKE_BUILD_TYPE=Release -B build
 cmake --build build -- -j$(nproc)
 ```
 
+### Linux (Ubuntu 23.10)
+
+In a terminal execute the following:
+```
+sudo apt install git build-essential autoconf automake libtool cmake nasm bison curl zlib1g-dev libdrm-dev libgbm-dev libglu1-mesa-dev libegl-dev libudev-dev libx11-dev libxrandr-dev nasm
+git clone -b standalone https://github.com/vpinball/vpinball
+cd vpinball/standalone/linux-x64
+CC=gcc-13 CXX=g++-13 ./external.sh
+cd ../..
+cp standalone/cmake/CMakeLists_gl-linux-x64.txt CMakeLists.txt
+cmake -DCMAKE_BUILD_TYPE=Release -B build
+cmake --build build -- -j$(nproc)
+```
+
 ### Linux (Fedora 37)
 
 In a terminal execute the following:
