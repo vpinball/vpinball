@@ -57,6 +57,12 @@ void PINMAMECALLBACK VPinMAMEController::OnDisplayAvailable(int index, int displ
          pDisplay->pDMD->SetRomName(pController->m_pPinmameGame->name);
       }
 
+      if (g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Standalone, "Pup"s, true)) {
+         string szPupPath = g_pvp->m_currentTablePath + "PupVideos" + PATH_SEPARATOR_CHAR;
+         pDisplay->pDMD->SetPupPath(szPupPath.c_str());
+         pDisplay->pDMD->SetRomName(pController->m_pPinmameGame->name);
+      }
+
       if (!pController->m_pActiveDisplay) {
          pController->m_pActiveDisplay = pDisplay;
          if (pController->m_pDMDWindow)
