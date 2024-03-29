@@ -50,6 +50,7 @@ void Standalone::Startup()
    pConfig->SetDMDServer(pSettings->LoadValueWithDefault(Settings::Standalone, "DMDServer"s, false));
    pConfig->SetDMDServerAddr(pSettings->LoadValueWithDefault(Settings::Standalone, "DMDServerAddr"s, "localhost"s).c_str());
    pConfig->SetDMDServerPort(pSettings->LoadValueWithDefault(Settings::Standalone, "DMDServerPort"s, 6789));
+   pConfig->SetPUPCapture(pSettings->LoadValueWithDefault(Settings::Standalone, "PUPCapture"s, false));
 
    if (pSettings->LoadValueWithDefault(Settings::Standalone, "B2SPlugins"s, false)) {
       if (pSettings->LoadValueWithDefault(Settings::Standalone, "DOFPlugin"s, true))
