@@ -6,7 +6,6 @@
 class SurfaceData final : public BaseProperty
 {
 public:
-   Vertex2D m_Center;
    TimerDataRoot m_tdr;
    float m_slingshot_threshold;	// speed at which ball needs to trigger slingshot 
    string m_szSideImage;

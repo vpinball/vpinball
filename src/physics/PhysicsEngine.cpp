@@ -398,7 +398,7 @@ Vertex2D PhysicsEngine::GetScreenNudge() const
       return Vertex2D(m_tableDisplacement.x, -m_tableDisplacement.y);
 }
 
-void PhysicsEngine::RayCast(const Vertex3Ds &source, const Vertex3Ds &target, const bool uiCast, vector<HitObject *> &vhoHit)
+void PhysicsEngine::RayCast(const Vertex3Ds &source, const Vertex3Ds &target, const bool uiCast, vector<HitTestResult> &vhoHit)
 {
    // First time the debug hit-testing has been used
    if (uiCast && m_vUIHitObjects.empty())
@@ -430,10 +430,14 @@ void PhysicsEngine::RayCast(const Vertex3Ds &source, const Vertex3Ds &target, co
    ballT.m_coll.m_hittime = 1.0f;
    ballT.CalcHitBBox(); // need to update here, as only done lazily
 
+   // FIXME use a dedicated quadtree for UI picking, don't mix with physics quadtree
    m_hitoctree_dynamic.HitTestXRay(&ballT, vhoHit, ballT.m_coll);
    m_hitoctree.HitTestXRay(&ballT, vhoHit, ballT.m_coll);
    if (uiCast)
       m_UIOctree.HitTestXRay(&ballT, vhoHit, ballT.m_coll);
+
+   // Sort result by distance from viewer
+   sort(vhoHit.begin(), vhoHit.end(), [](const HitTestResult& a, const HitTestResult& b) { return a.m_time < b.m_time; });
 }
 
 
