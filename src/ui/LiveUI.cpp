@@ -2393,18 +2393,6 @@ void LiveUI::UpdateMainUI()
 
 bool LiveUI::GetSelectionTransform(Matrix3D& transform)
 {
-   if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemPrimitive)
-   {
-      Primitive *p = (Primitive *)m_selection.editable;
-      const Matrix3D Smatrix = Matrix3D::MatrixScale(p->m_d.m_vSize.x, p->m_d.m_vSize.y, p->m_d.m_vSize.z);
-      const Matrix3D Tmatrix = Matrix3D::MatrixTranslate(p->m_d.m_vPosition.x, p->m_d.m_vPosition.y, p->m_d.m_vPosition.z);
-      const Matrix3D Rmatrix = (Matrix3D::MatrixRotateZ(ANGTORAD(p->m_d.m_aRotAndTra[2]))
-                              * Matrix3D::MatrixRotateY(ANGTORAD(p->m_d.m_aRotAndTra[1])))
-                              * Matrix3D::MatrixRotateX(ANGTORAD(p->m_d.m_aRotAndTra[0]));
-      transform = (Smatrix * Rmatrix) * Tmatrix; // fullMatrix = Scale * Rotate * Translate
-      return true;
-   }
-
    if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemFlasher)
    {
       Flasher * const p = (Flasher *)m_selection.editable;
@@ -2416,11 +2404,31 @@ bool LiveUI::GetSelectionTransform(Matrix3D& transform)
       return true;
    }
 
+   if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemFlipper)
+   {
+      Flipper *const f = (Flipper *)m_selection.editable;
+      const float height = (m_selection.is_live ? m_live_table : m_table)->GetSurfaceHeight(f->m_d.m_szSurface, f->m_d.m_Center.x, f->m_d.m_Center.y);
+      transform = Matrix3D::MatrixTranslate(f->m_d.m_Center.x, f->m_d.m_Center.y, height);
+      return true;
+   }
+
    if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemLight)
    {
       Light * const l = (Light *)m_selection.editable;
       const float height = (m_selection.is_live ? m_live_table : m_table)->GetSurfaceHeight(l->m_d.m_szSurface, l->m_d.m_vCenter.x, l->m_d.m_vCenter.y);
       transform = Matrix3D::MatrixTranslate(l->m_d.m_vCenter.x, l->m_d.m_vCenter.y, height + l->m_d.m_height);
+      return true;
+   }
+
+   if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemPrimitive)
+   {
+      Primitive *p = (Primitive *)m_selection.editable;
+      const Matrix3D Smatrix = Matrix3D::MatrixScale(p->m_d.m_vSize.x, p->m_d.m_vSize.y, p->m_d.m_vSize.z);
+      const Matrix3D Tmatrix = Matrix3D::MatrixTranslate(p->m_d.m_vPosition.x, p->m_d.m_vPosition.y, p->m_d.m_vPosition.z);
+      const Matrix3D Rmatrix = (Matrix3D::MatrixRotateZ(ANGTORAD(p->m_d.m_aRotAndTra[2]))
+                              * Matrix3D::MatrixRotateY(ANGTORAD(p->m_d.m_aRotAndTra[1])))
+                              * Matrix3D::MatrixRotateX(ANGTORAD(p->m_d.m_aRotAndTra[0]));
+      transform = (Smatrix * Rmatrix) * Tmatrix; // fullMatrix = Scale * Rotate * Translate
       return true;
    }
 
@@ -2487,9 +2495,37 @@ void LiveUI::SetSelectionTransform(const Matrix3D &newTransform, bool clearPosit
    if (clearRotation)
       rotX = rotY = rotZ = 0.f;
 
+   if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemFlasher)
+   {
+      Flasher * const p = (Flasher *)m_selection.editable;
+      const float px = p->m_d.m_vCenter.x, py = p->m_d.m_vCenter.y;
+      p->TranslatePoints(Vertex2D(posX - px, posY - py));
+      p->put_Height(posZ);
+      p->put_RotX(rotX);
+      p->put_RotY(rotY);
+      p->put_RotZ(rotZ);
+   }
+
+   if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemFlipper)
+   {
+      Flipper *const f = (Flipper *)m_selection.editable;
+      const float px = f->m_d.m_Center.x, py = f->m_d.m_Center.y;
+      f->Translate(Vertex2D(posX - px, posY - py));
+   }
+
+   if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemLight)
+   {
+      Light *const l = (Light *)m_selection.editable;
+      const float height = (m_selection.is_live ? m_live_table : m_table)->GetSurfaceHeight(l->m_d.m_szSurface, l->m_d.m_vCenter.x, l->m_d.m_vCenter.y);
+      const float px = l->m_d.m_vCenter.x, py = l->m_d.m_vCenter.y, pz = height + l->m_d.m_height;
+      l->Translate(Vertex2D(posX - px, posY - py));
+      l->m_d.m_height += posZ - pz;
+      l->m_d.m_bulbHaloHeight += posZ - pz;
+   }
+
    if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemPrimitive)
    {
-      Primitive * const p = (Primitive *)m_selection.editable;
+      Primitive *const p = (Primitive *)m_selection.editable;
       p->m_d.m_vPosition.x = posX;
       p->m_d.m_vPosition.y = posY;
       p->m_d.m_vPosition.z = posZ;
@@ -2501,22 +2537,11 @@ void LiveUI::SetSelectionTransform(const Matrix3D &newTransform, bool clearPosit
       p->m_d.m_vSize.z = zscale;
    }
 
-   if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemFlasher)
-   {
-      Flasher * const p = (Flasher *)m_selection.editable;
-      float px = p->m_d.m_vCenter.x, py = p->m_d.m_vCenter.y;
-      p->TranslatePoints(Vertex2D(posX - px, posY - py));
-      p->put_Height(posZ);
-      p->put_RotX(rotX);
-      p->put_RotY(rotY);
-      p->put_RotZ(rotZ);
-   }
-
    if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemSurface)
    {
       Surface *const obj = (Surface *)m_selection.editable;
       Vertex2D center = obj->GetPointCenter();
-      float px = center.x, py = center.y, pz = 0.5f * (obj->m_d.m_heightbottom + obj->m_d.m_heighttop);
+      const float px = center.x, py = center.y, pz = 0.5f * (obj->m_d.m_heightbottom + obj->m_d.m_heighttop);
       obj->TranslatePoints(Vertex2D(posX - px, posY - py));
       obj->m_d.m_heightbottom += posZ - pz;
       obj->m_d.m_heighttop += posZ - pz;
@@ -3899,7 +3924,8 @@ void LiveUI::LightProperties(bool is_live, Light *startup_light, Light *live_lig
       PropCheckbox("Raytraced ball shadows", startup_light, is_live, startup_light ? &startup_shadow : nullptr, live_light ? &live_shadow : nullptr, upd_shadow);
 
       PropSeparator("Position");
-      // FIXME This allows to edit the center but does not update dragpoint coordinates accordingly
+      // FIXME This allows to edit the center but does not update dragpoint coordinates accordingly => add a callback and use Translate
+      // FIXME we also need to save dragpoint change when saving x/y to startup table as well as center pos => add a save callback and copy to startup table
       PropFloat("X", startup_light, is_live, startup_light ? &(startup_light->m_d.m_vCenter.x) : nullptr, live_light ? &(live_light->m_d.m_vCenter.x) : nullptr, 0.1f, 0.5f, "%.1f");
       PropFloat("Y", startup_light, is_live, startup_light ? &(startup_light->m_d.m_vCenter.y) : nullptr, live_light ? &(live_light->m_d.m_vCenter.y) : nullptr, 0.1f, 0.5f, "%.1f");
       PropFloat("Z", startup_light, is_live, startup_light ? &(startup_light->m_d.m_height) : nullptr, live_light ? &(live_light->m_d.m_height) : nullptr, 0.1f, 0.5f, "%.1f");
