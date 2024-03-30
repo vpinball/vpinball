@@ -242,7 +242,7 @@ cmake --build build -- -j$(nproc)
 
 In a terminal execute the following:
 ```
-sudo apt install git build-essential autoconf automake libtool cmake nasm bison curl zlib1g-dev libdrm-dev libgbm-dev libglu1-mesa-dev libegl-dev libudev-dev libx11-dev libxrandr-dev nasm
+sudo apt install git build-essential autoconf automake libtool cmake nasm bison curl zlib1g-dev libdrm-dev libgbm-dev libglu1-mesa-dev libegl-dev libudev-dev libx11-dev libxrandr-dev
 git clone -b standalone https://github.com/vpinball/vpinball
 cd vpinball/standalone/linux-x64
 CC=gcc-13 CXX=g++-13 ./external.sh
@@ -278,7 +278,7 @@ sudo add-apt-repository ppa:liujianfeng1994/rockchip-multimedia
 sudo apt update
 sudo apt dist-upgrade
 sudo apt install mali-g610-firmware rockchip-multimedia-config
-sudo apt-get install git pkg-config autoconf automake libtool cmake bison zlib1g-dev libdrm-dev libgbm-dev libgles2-mesa-dev libgles2-mesa libudev-dev
+sudo apt-get install git pkg-config autoconf automake libtool cmake bison zlib1g-dev libdrm-dev libgbm-dev libgles2-mesa-dev libgles2-mesa libudev-dev libx11-dev libxrandr-dev
 git clone -b standalone https://github.com/vpinball/vpinball
 cd vpinball/standalone/linux-aarch64
 ./external.sh
@@ -292,7 +292,7 @@ cmake --build build
 
 Start with a [Raspberry Pi OS Lite (64-Bit)](https://www.raspberrypi.com/software/operating-systems/#raspberry-pi-os-64-bit) image and execute the following:
 ```
-sudo apt-get install git pkg-config autoconf automake libtool cmake bison zlib1g-dev libdrm-dev libgbm-dev libgles2-mesa-dev libgles2-mesa libudev-dev
+sudo apt-get install git pkg-config autoconf automake libtool cmake bison zlib1g-dev libdrm-dev libgbm-dev libgles2-mesa-dev libgles2-mesa libudev-dev libx11-dev libxrandr-dev
 git clone -b standalone https://github.com/vpinball/vpinball
 cd vpinball/standalone/linux-aarch64
 ./external.sh

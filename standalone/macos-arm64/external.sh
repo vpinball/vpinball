@@ -86,9 +86,9 @@ cp -a ../${CACHE_DIR}/${CACHE_NAME}/lib/*.dylib ../external/lib
 # build SDL2 and copy to external
 #
 
-CACHE_NAME="SDL2-${SDL2_VERSION}"
+SDL2_CACHE_NAME="SDL2-${SDL2_VERSION}"
 
-if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
+if [ ! -f "../${CACHE_DIR}/${SDL2_CACHE_NAME}.cache" ]; then
    curl -sL https://github.com/libsdl-org/SDL/releases/download/release-${SDL2_VERSION}/SDL2-${SDL2_VERSION}.zip -o SDL2-${SDL2_VERSION}.zip
    unzip SDL2-${SDL2_VERSION}.zip
    cd SDL2-${SDL2_VERSION}
@@ -103,23 +103,23 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
    cmake --build build -- -j${NUM_PROCS}
    # cmake does not make a symbolic link for libSDL2.dylib
    ln -s libSDL2-2.0.0.dylib build/libSDL2.dylib
-   mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/include
-   cp include/*.h ../../${CACHE_DIR}/${CACHE_NAME}/include
-   mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/lib
-   cp -a build/*.dylib ../../${CACHE_DIR}/${CACHE_NAME}/lib
+   mkdir -p ../../${CACHE_DIR}/${SDL2_CACHE_NAME}/include
+   cp include/*.h ../../${CACHE_DIR}/${SDL2_CACHE_NAME}/include
+   mkdir -p ../../${CACHE_DIR}/${SDL2_CACHE_NAME}/lib
+   cp -a build/*.dylib ../../${CACHE_DIR}/${SDL2_CACHE_NAME}/lib
    cd ..
-   touch "../${CACHE_DIR}/${CACHE_NAME}.cache"
+   touch "../${CACHE_DIR}/${SDL2_CACHE_NAME}.cache"
 fi
 
 mkdir -p ../external/include/SDL2
-cp -r ../${CACHE_DIR}/${CACHE_NAME}/include/* ../external/include/SDL2
-cp -a ../${CACHE_DIR}/${CACHE_NAME}/lib/*.dylib ../external/lib
+cp -r ../${CACHE_DIR}/${SDL2_CACHE_NAME}/include/* ../external/include/SDL2
+cp -a ../${CACHE_DIR}/${SDL2_CACHE_NAME}/lib/*.dylib ../external/lib
 
 #
 # build SDL2_image and copy to external
 #
 
-CACHE_NAME="SDL2_image-${SDL2_IMAGE_VERSION}-SDL2-${SDL2_VERSION}"
+CACHE_NAME="SDL2_image-${SDL2_IMAGE_VERSION}-${SDL2_CACHE_NAME}"
 
 if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
    curl -sL https://github.com/libsdl-org/SDL_image/releases/download/release-${SDL2_IMAGE_VERSION}/SDL2_image-${SDL2_IMAGE_VERSION}.zip -o SDL2_image-${SDL2_IMAGE_VERSION}.zip
@@ -151,7 +151,7 @@ cp -a ../${CACHE_DIR}/${CACHE_NAME}/lib/*.dylib ../external/lib
 # build SDL2_ttf and copy to external
 #
 
-CACHE_NAME="SDL2_ttf-${SDL2_TTF_VERSION}-SDL2-${SDL2_VERSION}"
+CACHE_NAME="SDL2_ttf-${SDL2_TTF_VERSION}-${SDL2_CACHE_NAME}"
 
 if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
    curl -sL https://github.com/libsdl-org/SDL_ttf/releases/download/release-${SDL2_TTF_VERSION}/SDL2_ttf-${SDL2_TTF_VERSION}.zip -o SDL2_ttf-${SDL2_TTF_VERSION}.zip
