@@ -689,6 +689,7 @@ target_link_libraries(vpinball PUBLIC
    "-lzedmd"
    "-lserum"
    "-ldmdutil"
+   "-lpupdmd"
    "-lsockpp"
    "-ldof"
    "-framework OpenGLES"
