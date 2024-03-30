@@ -17,7 +17,7 @@ private:
    void Reset() { m_children = nullptr; m_hitoct = nullptr; m_start = 0; m_items = 0; }
 
    void HitTestBall(const Ball * const pball, CollisionEvent& coll) const;
-   void HitTestXRay(const Ball * const pball, vector<HitObject*> &pvhoHit, CollisionEvent& coll) const;
+   void HitTestXRay(const Ball* const pball, vector<HitTestResult>& pvhoHit, CollisionEvent& coll) const;
 
    void CreateNextLevel(const unsigned int level, unsigned int level_empty);
 
@@ -71,7 +71,7 @@ public:
 #endif
    }
 
-   void HitTestXRay(const Ball * const pball, vector<HitObject*> &pvhoHit, CollisionEvent& coll) const
+   void HitTestXRay(const Ball* const pball, vector<HitTestResult>& pvhoHit, CollisionEvent& coll) const
    {
       m_rootNode.HitTestXRay(pball, pvhoHit, coll);
    }

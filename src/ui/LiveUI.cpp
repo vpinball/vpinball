@@ -2203,46 +2203,36 @@ void LiveUI::UpdateMainUI()
          
          // FIXME This is not really great as:
          // - picking depends on what was visible/enabled when quadtree was built (lazily at first pick), and also uses the physics quadtree for some parts
-         // - primitives can have hit bug (Apron Top and Gottlieb arm of default table for example)
+         // - primitives can have hit bug (Apron Top and Gottlieb arm of default table for example): degenerated geometry ?
          // We would need a dedicated quadtree for UI with all parts, and filter after picking by visibility
-         vector<HitObject *> vhoHit;
+         vector<HitTestResult> vhoHit;
          m_player->m_physics->RayCast(v3d, v3d2, true, vhoHit);
-         //PLOGD << "Ray cast: " << v3d << " => " << v3d2 << " => " << vhoHit.size();
 
          if (vhoHit.empty())
             m_selection.type = Selection::SelectionType::S_NONE;
          else
          {
-            // TODO allow to select the part we want if there are more than one
-            if (vhoHit[0]->m_editable)
-               m_selection = Selection(true, vhoHit[0]->m_editable);
-            else
-               for (size_t t = 0; t < m_player->m_vball.size(); t++)
-                  if (m_player->m_vball[t] == vhoHit[0])
-                     m_selection = Selection(Selection::SelectionType::S_BALL, true, (int)t);
+            size_t selectionIndex = vhoHit.size();
+            for (size_t i = 0; i <= vhoHit.size(); i++)
+            {
+               if (i < vhoHit.size() && m_selection.type == Selection::S_EDITABLE && vhoHit[i].m_obj->m_editable == m_selection.editable)
+                  selectionIndex = i + 1;
+               else if (i < vhoHit.size() && m_selection.type == Selection::S_BALL && vhoHit[i].m_obj == m_player->m_vball[m_selection.ball_index])
+                  selectionIndex = i + 1;
+               if (i == selectionIndex)
+               {
+                  size_t p = selectionIndex % vhoHit.size();
+                  if (vhoHit[p].m_obj->m_editable)
+                     m_selection = Selection(true, vhoHit[p].m_obj->m_editable);
+                  else
+                     for (size_t t = 0; t < m_player->m_vball.size(); t++)
+                        if (m_player->m_vball[t] == vhoHit[p].m_obj)
+                           m_selection = Selection(Selection::SelectionType::S_BALL, true, (int)t);
+               }
+            }
             // TODO add debug action to make ball active: g_pplayer->m_pactiveballDebug = m_pball;
          }
       }
-      /* { // debug code to visualize the ray cast
-         const Matrix3D RH2LH = Matrix3D::MatrixScale(1.f,  1.f, -1.f);
-         const Matrix3D YAxis = Matrix3D::MatrixScale(1.f, -1.f, 1.f);
-         const Matrix3D view = RH2LH * m_renderer->GetMVP().GetView() * YAxis;
-         const Matrix3D proj = YAxis * m_renderer->GetMVP().GetProj(0);
-         float camViewLH[16];
-         float *const cameraProjection = (float *)(proj.m);
-         memcpy(camViewLH, &view.m[0][0], sizeof(float) * 4 * 4);
-         for (int i = 8; i < 12; i++)
-            camViewLH[i] = -camViewLH[i];
-         Matrix3D transform;
-         static int m = 0;
-         m = (m + 1) % 128;
-         for (int i = 0; i < ((30 * m) / 128); i++)
-         {
-            const float p = i / 29.f;
-            transform = Matrix3D::MatrixTranslate(v3d.x + p * (v3d2.x - v3d.x), v3d.y + p * (v3d2.y - v3d.y), v3d.z + p * (v3d2.z - v3d.z));
-            ImGuizmo::Manipulate(camViewLH, cameraProjection, ImGuizmo::OPERATION::NONE, ImGuizmo::MODE::LOCAL, (float *)(transform.m));
-         }
-      }*/
    }
    if (!ImGui::GetIO().WantCaptureKeyboard)
    {
@@ -2434,6 +2424,14 @@ bool LiveUI::GetSelectionTransform(Matrix3D& transform)
       return true;
    }
 
+   if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemSurface)
+   {
+      Surface *const obj = (Surface *)m_selection.editable;
+      Vertex2D center = obj->GetPointCenter();
+      transform = Matrix3D::MatrixTranslate(center.x, center.y, 0.5f * (obj->m_d.m_heightbottom + obj->m_d.m_heighttop));
+      return true;
+   }
+
    if (m_selection.type == LiveUI::Selection::SelectionType::S_BALL)
    {
       Ball * const ball = m_player->m_vball[m_selection.ball_index];
@@ -2506,12 +2504,22 @@ void LiveUI::SetSelectionTransform(const Matrix3D &newTransform, bool clearPosit
    if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemFlasher)
    {
       Flasher * const p = (Flasher *)m_selection.editable;
-      p->put_X(posX);
-      p->put_Y(posY);
+      float px = p->m_d.m_vCenter.x, py = p->m_d.m_vCenter.y;
+      p->TranslatePoints(Vertex2D(posX - px, posY - py));
       p->put_Height(posZ);
       p->put_RotX(rotX);
       p->put_RotY(rotY);
       p->put_RotZ(rotZ);
+   }
+
+   if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemSurface)
+   {
+      Surface *const obj = (Surface *)m_selection.editable;
+      Vertex2D center = obj->GetPointCenter();
+      float px = center.x, py = center.y, pz = 0.5f * (obj->m_d.m_heightbottom + obj->m_d.m_heighttop);
+      obj->TranslatePoints(Vertex2D(posX - px, posY - py));
+      obj->m_d.m_heightbottom += posZ - pz;
+      obj->m_d.m_heighttop += posZ - pz;
    }
 
    if (m_selection.type == LiveUI::Selection::SelectionType::S_BALL)
@@ -3790,7 +3798,8 @@ void LiveUI::FlasherProperties(bool is_live, Flasher *startup_obj, Flasher *live
    }
    if (ImGui::CollapsingHeader("Position", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
    {
-      // FIXME This allows to edit the center but does not update dragpoint coordinates accordingly
+      // FIXME This allows to edit the center but does not update dragpoint coordinates accordingly => add a callback and use Translate
+      // FIXME we also need to save dragpoint change when saving x/y to startup table as well as center pos => add a save callback and copy to startup table
       PropVec3("Position", startup_obj, is_live, 
          startup_obj ? &(startup_obj->m_d.m_vCenter.x) : nullptr, startup_obj ? &(startup_obj->m_d.m_vCenter.y) : nullptr, startup_obj ? &(startup_obj->m_d.m_height) : nullptr,
          live_obj    ? &(live_obj   ->m_d.m_vCenter.x) : nullptr, live_obj    ? &(live_obj   ->m_d.m_vCenter.y) : nullptr, live_obj    ? &(live_obj   ->m_d.m_height) : nullptr, "%.0f", ImGuiInputTextFlags_CharsDecimal);

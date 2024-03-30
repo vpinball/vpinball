@@ -181,10 +181,20 @@ public:
    for (size_t i = 0; i < dst->points.size(); i++) \
       dst->points[i]->Release(); \
    dst->points.clear(); \
+   CComObject<DragPoint> *pdp; \
    for (size_t i = 0; i < points.size(); i++) \
    { \
-      points[i]->AddRef(); \
-      dst->points.push_back(points[i]); \
+      CComObject<DragPoint>::CreateInstance(&pdp); \
+      if (pdp) \
+      { \
+         pdp->AddRef(); \
+         pdp->Init(this, points[i]->m_v.x, points[i]->m_v.y, points[i]->m_v.z, points[i]->m_smooth); \
+         pdp->m_slingshot = points[i]->m_slingshot; \
+         pdp->m_calcHeight = points[i]->m_calcHeight; \
+         pdp->m_autoTexture = points[i]->m_autoTexture; \
+         pdp->m_texturecoord = points[i]->m_texturecoord; \
+         dst->points.push_back(pdp); \
+      } \
    }
 
 class EventProxyBase;

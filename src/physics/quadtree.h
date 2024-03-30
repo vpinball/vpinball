@@ -42,7 +42,7 @@ public:
 #else
    void HitTestBall(vector<Ball*> ball) const;
 #endif
-   void HitTestXRay(const Ball * const pball, vector<HitObject*> &pvhoHit, CollisionEvent& coll) const;
+   void HitTestXRay(const Ball* const pball, vector<HitTestResult>& pvhoHit, CollisionEvent& coll) const;
 
 
 private:

@@ -30,7 +30,7 @@ public:
    Vertex3Ds GetNudge() const;
    Vertex2D GetScreenNudge() const;
 
-   void RayCast(const Vertex3Ds& source, const Vertex3Ds& target, const bool uiCast, vector<HitObject *> &vhoHit);
+   void RayCast(const Vertex3Ds &source, const Vertex3Ds &target, const bool uiCast, vector<HitTestResult> &vhoHit);
 
    void ResetStats() { m_phys_max = 0; m_phys_max_iterations = 0; m_count = 0; m_phys_total_iterations = 0; }
    int GetPerfNIterations() const { return m_phys_iterations; }

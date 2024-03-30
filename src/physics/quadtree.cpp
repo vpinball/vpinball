@@ -537,7 +537,7 @@ void HitQuadtree::HitTestBallSse(const Ball * const pball, CollisionEvent& coll)
 #endif
 #endif
 
-void HitQuadtree::HitTestXRay(const Ball * const pball, vector<HitObject*> &pvhoHit, CollisionEvent& coll) const
+void HitQuadtree::HitTestXRay(const Ball* const pball, vector<HitTestResult>& pvhoHit, CollisionEvent& coll) const
 {
 #ifdef USE_EMBREE
    ShowError("HitTestXRay not implemented yet");
@@ -557,7 +557,8 @@ void HitQuadtree::HitTestXRay(const Ball * const pball, vector<HitObject*> &pvho
          const float newtime = m_vho[i]->HitTest(pball->m_d, coll.m_hittime, coll);
          if (newtime >= 0.f)
          {
-            pvhoHit.push_back(m_vho[i]);
+            const HitTestResult r { m_vho[i], newtime };
+            pvhoHit.push_back(r);
          }
       }
    }

@@ -83,11 +83,6 @@ inline bool Intersect(const RECT &rc, const int width, const int height, const P
 #ifdef ENABLE_SSE_OPTIMIZATIONS
 inline bool fRectIntersect3D(const FRect3D &rc1, const FRect3D &rc2)
 {
-   /*const __m128 rc1128 = _mm_loadu_ps(&rc1.left); // this shouldn't use loadu, but doesn't matter anymore nowadays anyhow
-   const __m128 rc1sh = _mm_shuffle_ps(rc1128, rc1128, _MM_SHUFFLE(1, 0, 3, 2));
-   const __m128 test = _mm_cmpge_ps(rc1sh, _mm_loadu_ps(&rc2.left));
-   const int mask = _mm_movemask_ps(test);
-   return ((mask == 3) && rc1.zlow <= rc2.zhigh && rc1.zhigh >= rc2.zlow); //!! use SSE, too?*/
    const __m128 rc1128 = _mm_loadu_ps(&rc1.left); // L1.R1.T1.B1
    const __m128 rc2128 = _mm_loadu_ps(&rc2.left); // L2.R2.T2.B2
    const __m128 min128 = _mm_shuffle_ps(rc1128, rc2128, _MM_SHUFFLE(1, 3, 1, 3)); // R1.B1.R2.B2

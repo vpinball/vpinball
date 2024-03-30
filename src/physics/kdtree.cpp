@@ -603,7 +603,7 @@ void HitKDNode::HitTestBallSse(const Ball * const pball, CollisionEvent& coll) c
 }
 #endif
 
-void HitKDNode::HitTestXRay(const Ball * const pball, vector<HitObject*> &pvhoHit, CollisionEvent& coll) const
+void HitKDNode::HitTestXRay(const Ball * const pball, vector<HitTestResult> &pvhoHit, CollisionEvent& coll) const
 {
    const unsigned int org_items = (m_items & 0x3FFFFFFF);
    const unsigned int axis = (m_items >> 30);
@@ -625,7 +625,10 @@ void HitKDNode::HitTestXRay(const Ball * const pball, vector<HitObject*> &pvhoHi
 #endif
          const float newtime = pho->HitTest(pball->m_d, coll.m_hittime, coll);
          if (newtime >= 0)
-            pvhoHit.push_back(pho);
+         {
+            const HitTestResult r { pho, newtime };
+            pvhoHit.push_back(r);
+         }
       }
    }
 

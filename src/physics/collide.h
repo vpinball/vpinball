@@ -213,6 +213,11 @@ public:
    Vertex3Ds m_p;
 };
 
+struct HitTestResult
+{
+   HitObject* m_obj;
+   float m_time;
+};
 
 // Callback for the broadphase collision test.
 // Perform the actual hittest between ball and hit object and update
