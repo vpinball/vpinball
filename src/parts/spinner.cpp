@@ -178,7 +178,7 @@ void Spinner::UIRenderPass2(Sur * const psur)
                    m_d.m_vCenter.x + cs * halflength * 0.65f, m_d.m_vCenter.y + sn * halflength * 0.65f);
 }
 
-void Spinner::GetTimers(vector<HitTimer*> &pvht)
+void Spinner::BeginPlay(vector<HitTimer*> &pvht)
 {
    IEditable::BeginPlay();
    m_phittimer = new HitTimer(GetName(), m_d.m_tdr.m_TimerInterval, this);
@@ -186,6 +186,10 @@ void Spinner::GetTimers(vector<HitTimer*> &pvht)
       pvht.push_back(m_phittimer);
 }
 
+void Spinner::EndPlay()
+{
+   IEditable::EndPlay();
+}
 
 #pragma region Physics
 
@@ -194,52 +198,57 @@ void Spinner::GetTimers(vector<HitTimer*> &pvht)
 // Ported at: VisualPinball.Engine/VPT/Spinner/SpinnerHitGenerator.cs
 //
 
-void Spinner::GetHitShapes(vector<HitObject*> &pvho)
+void Spinner::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
 {
-   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
-   const float h = m_d.m_height + 30.0f;
-
-   const float angleMin = min(m_d.m_angleMin, m_d.m_angleMax); // correct angle inversions
-   const float angleMax = max(m_d.m_angleMin, m_d.m_angleMax);
-
-   m_d.m_angleMin = angleMin;
-   m_d.m_angleMax = angleMax;
-
-   HitSpinner * const phitspinner = new HitSpinner(this, height);
-   m_phitspinner = phitspinner;
-
-   pvho.push_back(phitspinner);
-
-   if (m_d.m_showBracket)
+   if (isUI)
    {
-      /*add a hit shape for the bracket if shown, just in case if the bracket spinner height is low enough so the ball can hit it*/
-      const float halflength = m_d.m_length * 0.5f + (m_d.m_length*0.1875f);
-      const float radangle = ANGTORAD(m_d.m_rotation);
-      const float sn = sinf(radangle);
-      const float cs = cosf(radangle);
+      // FIXME implement UI picking
+   }
+   else
+   {
+      const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
+      const float h = m_d.m_height + 30.0f;
 
-      HitCircle *phitcircle;
-      phitcircle = new HitCircle(Vertex2D(m_d.m_vCenter.x + cs*halflength, m_d.m_vCenter.y + sn*halflength), m_d.m_length*0.075f, height + m_d.m_height, height + h);
-      pvho.push_back(phitcircle);
+      const float angleMin = min(m_d.m_angleMin, m_d.m_angleMax); // correct angle inversions
+      const float angleMax = max(m_d.m_angleMin, m_d.m_angleMax);
 
-      phitcircle = new HitCircle(Vertex2D(m_d.m_vCenter.x - cs*halflength, m_d.m_vCenter.y - sn*halflength), m_d.m_length*0.075f, height + m_d.m_height, height + h);
-      pvho.push_back(phitcircle);
+      m_d.m_angleMin = angleMin;
+      m_d.m_angleMax = angleMax;
+
+      HitSpinner *const phitspinner = new HitSpinner(this, height);
+      m_phitspinner = phitspinner;
+
+      pvho.push_back(phitspinner);
+
+      if (m_d.m_showBracket)
+      {
+            /*add a hit shape for the bracket if shown, just in case if the bracket spinner height is low enough so the ball can hit it*/
+            const float halflength = m_d.m_length * 0.5f + (m_d.m_length * 0.1875f);
+            const float radangle = ANGTORAD(m_d.m_rotation);
+            const float sn = sinf(radangle);
+            const float cs = cosf(radangle);
+
+            HitCircle *phitcircle;
+            phitcircle = new HitCircle(Vertex2D(m_d.m_vCenter.x + cs * halflength, m_d.m_vCenter.y + sn * halflength), m_d.m_length * 0.075f, height + m_d.m_height, height + h);
+            pvho.push_back(phitcircle);
+
+            phitcircle = new HitCircle(Vertex2D(m_d.m_vCenter.x - cs * halflength, m_d.m_vCenter.y - sn * halflength), m_d.m_length * 0.075f, height + m_d.m_height, height + h);
+            pvho.push_back(phitcircle);
+      }
+   }
+}
+
+void Spinner::PhysicRelease(const bool isUI)
+{
+   if (!isUI)
+   {
+      m_phitspinner = nullptr;
    }
 }
 
 //
 // end of license:GPLv3+, back to 'old MAME'-like
 //
-
-void Spinner::GetHitShapesDebug(vector<HitObject*> &pvho)
-{
-}
-
-void Spinner::EndPlay()
-{
-   IEditable::EndPlay();
-   m_phitspinner = nullptr;
-}
 
 #pragma endregion
 
@@ -254,7 +263,7 @@ void Spinner::ExportMesh(ObjLoader& loader)
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
    m_posZ = height + m_d.m_height;
 
-   GetHitShapes(dummyHitObj);
+   PhysicSetup(dummyHitObj, false);
 
    if (m_d.m_showBracket)
    {

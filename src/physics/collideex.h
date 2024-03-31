@@ -216,14 +216,11 @@ class TriggerHitCircle : public HitCircle
 public:
    TriggerHitCircle(const Vertex2D& c, const float r, const float zlow, const float zhigh) : HitCircle(c, r, zlow, zhigh)
    {
-      m_ptrigger = nullptr;
    }
 
    float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const override;
    int GetType() const override { return eTrigger; }
    void Collide(const CollisionEvent& coll) override;
-
-   Trigger *m_ptrigger;
 };
 
 // Arbitrary line segment in 3D space.

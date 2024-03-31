@@ -63,7 +63,7 @@ PhysicsEngine::PhysicsEngine(PinTable *const table) : m_nudgeFilterX("x"), m_nud
          }
 #endif
          const size_t currentsize = m_vho.size();
-         ph->GetHitShapes(m_vho);
+         ph->PhysicSetup(m_vho, false);
          const size_t newsize = m_vho.size();
          // Save the objects the trouble of having to set the idispatch pointer themselves
          for (size_t hitloop = currentsize; hitloop < newsize; hitloop++)
@@ -116,12 +116,30 @@ PhysicsEngine::PhysicsEngine(PinTable *const table) : m_nudgeFilterX("x"), m_nud
 
 PhysicsEngine::~PhysicsEngine()
 {
+   vector<IEditable *> editables;
    for (size_t i = 0; i < m_vho.size(); i++)
+   {
+      if (m_vho[i]->m_editable && FindIndexOf(editables, m_vho[i]->m_editable) == -1)
+      {
+         editables.push_back(m_vho[i]->m_editable);
+         if (m_vho[i]->m_editable->GetIHitable())
+            m_vho[i]->m_editable->GetIHitable()->PhysicRelease(false);
+      }
       delete m_vho[i];
+   }
    m_vho.clear();
 
+   editables.clear();
    for (size_t i = 0; i < m_vUIHitObjects.size(); i++)
+   {
+      if (m_vUIHitObjects[i]->m_editable && FindIndexOf(editables, m_vUIHitObjects[i]->m_editable) == -1)
+      {
+         editables.push_back(m_vUIHitObjects[i]->m_editable);
+         if (m_vUIHitObjects[i]->m_editable->GetIHitable())
+            m_vUIHitObjects[i]->m_editable->GetIHitable()->PhysicRelease(true);
+      }
       delete m_vUIHitObjects[i];
+   }
    m_vUIHitObjects.clear();
 }
 
@@ -408,7 +426,7 @@ void PhysicsEngine::RayCast(const Vertex3Ds &source, const Vertex3Ds &target, co
          if (pe->GetIHitable())
          {
             const size_t currentsize = m_vUIHitObjects.size();
-            pe->GetIHitable()->GetHitShapesDebug(m_vUIHitObjects);
+            pe->GetIHitable()->PhysicSetup(m_vUIHitObjects, true);
             // Save the objects the trouble of having the set the idispatch pointer themselves
             for (size_t hitloop = currentsize, newsize = m_vUIHitObjects.size(); hitloop < newsize; hitloop++)
             {
@@ -432,9 +450,10 @@ void PhysicsEngine::RayCast(const Vertex3Ds &source, const Vertex3Ds &target, co
 
    // FIXME use a dedicated quadtree for UI picking, don't mix with physics quadtree
    m_hitoctree_dynamic.HitTestXRay(&ballT, vhoHit, ballT.m_coll);
-   m_hitoctree.HitTestXRay(&ballT, vhoHit, ballT.m_coll);
    if (uiCast)
       m_UIOctree.HitTestXRay(&ballT, vhoHit, ballT.m_coll);
+   else
+      m_hitoctree.HitTestXRay(&ballT, vhoHit, ballT.m_coll);
 
    // Sort result by distance from viewer
    sort(vhoHit.begin(), vhoHit.end(), [](const HitTestResult& a, const HitTestResult& b) { return a.m_time < b.m_time; });

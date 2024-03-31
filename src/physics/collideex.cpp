@@ -1050,7 +1050,8 @@ void HitLine3D::Collide(const CollisionEvent& coll)
 
 float TriggerLineSeg::HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const
 {
-   if (!m_ptrigger->m_hitEnabled) return -1.0f;
+   if (m_ptrigger  && !m_ptrigger->m_d.m_enabled)
+       return -1.0f;
 
    // approach either face, not lateral-rolling point (assume center), not a rigid body contact
    return HitTestBasic(ball, dtime, coll, false, false, false);

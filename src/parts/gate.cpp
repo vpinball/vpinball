@@ -288,13 +288,15 @@ void Gate::RenderBlueprint(Sur *psur, const bool solid)
 {
 }
 
-void Gate::GetTimers(vector<HitTimer*> &pvht)
+void Gate::BeginPlay(vector<HitTimer*> &pvht)
 {
    IEditable::BeginPlay();
    m_phittimer = new HitTimer(GetName(), m_d.m_tdr.m_TimerInterval, this);
    if (m_d.m_tdr.m_TimerEnabled)
       pvht.push_back(m_phittimer);
 }
+
+void Gate::EndPlay() { IEditable::EndPlay(); }
 
 
 #pragma region Physics
@@ -304,71 +306,72 @@ void Gate::GetTimers(vector<HitTimer*> &pvht)
 // Ported at: VisualPinball.Engine/VPT/Gate/GateHitGenerator.cs
 //
 
-void Gate::GetHitShapes(vector<HitObject*> &pvho)
+void Gate::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
 {
-   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
-   const float h = m_d.m_height;		// relative height of the gate 
-
-   const float halflength = m_d.m_length * 0.5f;
-
-   const float angleMin = min(m_d.m_angleMin, m_d.m_angleMax); // correct angle inversions
-   const float angleMax = max(m_d.m_angleMin, m_d.m_angleMax);
-
-   m_d.m_angleMin = angleMin;
-   m_d.m_angleMax = angleMax;
-
-   const float radangle = ANGTORAD(m_d.m_rotation);
-   const Vertex2D tangent(cosf(radangle), sinf(radangle));
-
-   const Vertex2D rgv[2] = { // oversize by the ball's radius to prevent the ball from clipping through
-      m_d.m_vCenter + (halflength + (float)PHYS_SKIN) * tangent,
-      m_d.m_vCenter - (halflength + (float)PHYS_SKIN) * tangent
-   };
-
-   if (!m_d.m_twoWay)
+   if (isUI)
    {
-      m_plineseg = new LineSeg(rgv[0], rgv[1], height, height + (float)(2.0*PHYS_SKIN)); //!! = ball diameter
-
-      m_plineseg->m_elasticity = m_d.m_elasticity;
-      m_plineseg->SetFriction(m_d.m_friction);
-      m_plineseg->m_scatter = ANGTORAD(m_d.m_scatter);
-
-      pvho.push_back(m_plineseg);
+      // FIXME implement UI picking
    }
-
-   m_phitgate = new HitGate(this, height);
-   m_phitgate->m_twoWay = m_d.m_twoWay;
-   m_phitgate->m_obj = (IFireEvents*)this;
-   m_phitgate->m_fe = true;
-   m_phitgate->m_enabled = m_d.m_collidable;
-
-   pvho.push_back(m_phitgate);
-
-   if (m_d.m_showBracket)
+   else
    {
-      HitCircle *phitcircle;
-      phitcircle = new HitCircle(m_d.m_vCenter + halflength * tangent, 0.01f, height, height + h);
-      pvho.push_back(phitcircle);
+      const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
+      const float h = m_d.m_height; // relative height of the gate
 
-      phitcircle = new HitCircle(m_d.m_vCenter - halflength * tangent, 0.01f, height, height + h);
-      pvho.push_back(phitcircle);
+      const float halflength = m_d.m_length * 0.5f;
+
+      const float angleMin = min(m_d.m_angleMin, m_d.m_angleMax); // correct angle inversions
+      const float angleMax = max(m_d.m_angleMin, m_d.m_angleMax);
+
+      m_d.m_angleMin = angleMin;
+      m_d.m_angleMax = angleMax;
+
+      const float radangle = ANGTORAD(m_d.m_rotation);
+      const Vertex2D tangent(cosf(radangle), sinf(radangle));
+
+      const Vertex2D rgv[2] = { // oversize by the ball's radius to prevent the ball from clipping through
+         m_d.m_vCenter + (halflength + (float)PHYS_SKIN) * tangent, m_d.m_vCenter - (halflength + (float)PHYS_SKIN) * tangent
+      };
+
+      if (!m_d.m_twoWay)
+      {
+          m_plineseg = new LineSeg(rgv[0], rgv[1], height, height + (float)(2.0 * PHYS_SKIN)); //!! = ball diameter
+          m_plineseg->m_elasticity = m_d.m_elasticity;
+          m_plineseg->SetFriction(m_d.m_friction);
+          m_plineseg->m_scatter = ANGTORAD(m_d.m_scatter);
+          pvho.push_back(m_plineseg);
+      }
+
+      m_phitgate = new HitGate(this, height);
+      m_phitgate->m_twoWay = m_d.m_twoWay;
+      m_phitgate->m_obj = (IFireEvents *)this;
+      m_phitgate->m_fe = true;
+      m_phitgate->m_enabled = m_d.m_collidable;
+      pvho.push_back(m_phitgate);
+
+      if (m_d.m_showBracket)
+      {
+          HitCircle *phitcircle;
+          phitcircle = new HitCircle(m_d.m_vCenter + halflength * tangent, 0.01f, height, height + h);
+          pvho.push_back(phitcircle);
+
+          phitcircle = new HitCircle(m_d.m_vCenter - halflength * tangent, 0.01f, height, height + h);
+          pvho.push_back(phitcircle);
+      }
+   }
+}
+
+void Gate::PhysicRelease(const bool isUI)
+{
+   if (!isUI)
+   {
+      m_phitgate = nullptr;
+      m_plineseg = nullptr;
    }
 }
 
 //
 // end of license:GPLv3+, back to 'old MAME'-like
 //
-
-void Gate::GetHitShapesDebug(vector<HitObject*> &pvho)
-{
-}
-
-void Gate::EndPlay()
-{
-   IEditable::EndPlay();
-   m_phitgate = nullptr;
-   m_plineseg = nullptr;
-}
 
 #pragma endregion
 

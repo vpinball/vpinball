@@ -354,14 +354,6 @@ void Textbox::UIRenderPass2(Sur * const psur)
    psur->Rectangle(m_d.m_v1.x, m_d.m_v1.y, m_d.m_v2.x, m_d.m_v2.y);
 }
 
-void Textbox::GetTimers(vector<HitTimer*> &pvht)
-{
-   IEditable::BeginPlay();
-   m_phittimer = new HitTimer(GetName(), m_d.m_tdr.m_TimerInterval, this);
-   if (m_d.m_tdr.m_TimerEnabled)
-      pvht.push_back(m_phittimer);
-}
-
 void Textbox::SetObjectPos()
 {
     m_vpinball->SetObjectPosCur(m_d.m_v1.x, m_d.m_v1.y);
@@ -384,20 +376,31 @@ void Textbox::PutCenter(const Vertex2D& pv)
    m_d.m_v1 = pv;
 }
 
-
-#pragma region Physics
-
-void Textbox::GetHitShapes(vector<HitObject*> &pvho)
+void Textbox::BeginPlay(vector<HitTimer*> &pvht)
 {
-}
-
-void Textbox::GetHitShapesDebug(vector<HitObject*> &pvho)
-{
+   IEditable::BeginPlay();
+   m_phittimer = new HitTimer(GetName(), m_d.m_tdr.m_TimerInterval, this);
+   if (m_d.m_tdr.m_TimerEnabled)
+      pvht.push_back(m_phittimer);
 }
 
 void Textbox::EndPlay()
 {
    IEditable::EndPlay();
+}
+
+#pragma region Physics
+
+void Textbox::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
+{
+   if (isUI)
+   {
+      // FIXME implement UI picking
+   }
+}
+
+void Textbox::PhysicRelease(const bool isUI)
+{
 }
 
 #pragma endregion

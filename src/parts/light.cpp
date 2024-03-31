@@ -257,52 +257,12 @@ void Light::RenderBlueprint(Sur *psur, const bool solid)
    RenderOutline(psur);
 }
 
-void Light::GetTimers(vector<HitTimer*> &pvht)
+void Light::BeginPlay(vector<HitTimer*> &pvht)
 {
    IEditable::BeginPlay();
    m_phittimer = new HitTimer(GetName(), m_d.m_tdr.m_TimerInterval, this);
    if (m_d.m_tdr.m_TimerEnabled)
       pvht.push_back(m_phittimer);
-}
-
-void Light::GetHitShapes(vector<HitObject*> &pvho)
-{
-}
-
-void Light::GetHitShapesDebug(vector<HitObject*> &pvho)
-{
-   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
-
-   switch (m_d.m_shape)
-   {
-   case ShapeCircle:
-   default: {
-      Hit3DPoly * const pcircle = new Hit3DPoly(m_d.m_vCenter.x, m_d.m_vCenter.y, height, m_d.m_falloff, 32);
-      pvho.push_back(pcircle);
-
-      break;
-   }
-
-   case ShapeCustom: {
-      vector<RenderVertex> vvertex;
-      GetRgVertex(vvertex);
-
-      const int cvertex = (int)vvertex.size();
-      Vertex3Ds * const rgv3d = new Vertex3Ds[cvertex];
-
-      for (int i = 0; i < cvertex; i++)
-      {
-         rgv3d[i].x = vvertex[i].x;
-         rgv3d[i].y = vvertex[i].y;
-         rgv3d[i].z = height;
-      }
-
-      Hit3DPoly * const ph3dp = new Hit3DPoly(rgv3d, cvertex);
-      pvho.push_back(ph3dp);
-
-      break;
-   }
-   }
 }
 
 void Light::EndPlay()
@@ -311,6 +271,49 @@ void Light::EndPlay()
    m_lockedByLS = false;
    IEditable::EndPlay();
 }
+
+void Light::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
+{
+   if (isUI)
+   {
+      const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
+
+      switch (m_d.m_shape)
+      {
+      case ShapeCircle:
+      default:
+      {
+         Hit3DPoly *const pcircle = new Hit3DPoly(m_d.m_vCenter.x, m_d.m_vCenter.y, height, m_d.m_falloff, 32);
+         pvho.push_back(pcircle);
+
+         break;
+      }
+
+      case ShapeCustom:
+      {
+         vector<RenderVertex> vvertex;
+         GetRgVertex(vvertex);
+
+         const int cvertex = (int)vvertex.size();
+         Vertex3Ds *const rgv3d = new Vertex3Ds[cvertex];
+
+         for (int i = 0; i < cvertex; i++)
+         {
+            rgv3d[i].x = vvertex[i].x;
+            rgv3d[i].y = vvertex[i].y;
+            rgv3d[i].z = height;
+         }
+
+         Hit3DPoly *const ph3dp = new Hit3DPoly(rgv3d, cvertex);
+         pvho.push_back(ph3dp);
+
+         break;
+      }
+      }
+   }
+}
+
+void Light::PhysicRelease(const bool isUI) { }
 
 float Light::GetDepth(const Vertex3Ds& viewDir) const
 {

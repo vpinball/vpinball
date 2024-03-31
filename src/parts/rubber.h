@@ -116,8 +116,8 @@ public:
    RubberData m_d;
 
 private:
-   void AddHitEdge(vector<HitObject*> &pvho, robin_hood::unordered_set< robin_hood::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j);
-   void SetupHitObject(vector<HitObject*> &pvho, HitObject * obj);
+   void AddHitEdge(vector<HitObject *> &pvho, robin_hood::unordered_set<robin_hood::pair<unsigned, unsigned>> &addedEdges, const unsigned i, const unsigned j, const bool isUI);
+   void SetupHitObject(vector<HitObject*> &pvho, HitObject * obj, const bool isUI);
 
    PinTable *m_ptable;
 

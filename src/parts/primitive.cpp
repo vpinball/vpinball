@@ -471,18 +471,27 @@ void Primitive::WriteRegDefaults()
 #undef strKeyName
 }
 
-void Primitive::GetTimers(vector<HitTimer*> &pvht)
+void Primitive::BeginPlay(vector<HitTimer*> &pvht)
 {
    IEditable::BeginPlay();
 }
 
-void Primitive::GetHitShapes(vector<HitObject*> &pvho)
+void Primitive::EndPlay()
+{
+   IEditable::EndPlay();
+   m_d.m_skipRendering = false;
+   m_d.m_groupdRendering = false;
+}
+
+#pragma region physic
+
+void Primitive::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
 {
    m_d.m_useAsPlayfield = IsPlayfield();
 
    //
 
-   if (m_d.m_toy)
+   if (!isUI && m_d.m_toy)
       return;
 
    RecalculateMatrices();
@@ -490,12 +499,13 @@ void Primitive::GetHitShapes(vector<HitObject*> &pvho)
 
    //
 
-   const unsigned int reduced_vertices = max((unsigned int)pow((double)m_vertices.size(), clamp(1.f - m_d.m_collision_reductionFactor, 0.f, 1.f)*0.25f + 0.75f), 420u); //!! 420 = magic
+   // TODO limit vertex count for UI
+   const unsigned int reduced_vertices = max((unsigned int)pow((double)m_vertices.size(), clamp(1.f - m_d.m_collision_reductionFactor, 0.f, 1.f) * 0.25f + 0.75f), 420u); //!! 420 = magic
 
-//
-// license:GPLv3+
-// Ported at: VisualPinball.Engine/VPT/Primitive/PrimitiveHitGenerator.cs
-//
+   //
+   // license:GPLv3+
+   // Ported at: VisualPinball.Engine/VPT/Primitive/PrimitiveHitGenerator.cs
+   //
 
    if (reduced_vertices < m_vertices.size())
    {
@@ -508,18 +518,18 @@ void Primitive::GetHitShapes(vector<HitObject*> &pvho)
       }
       vector<ProgMesh::tridata> prog_indices(m_mesh.NumIndices() / 3);
       {
-      size_t i2 = 0;
-      for (size_t i = 0; i < m_mesh.NumIndices(); i += 3)
-      {
-         ProgMesh::tridata t;
-         t.v[0] = m_mesh.m_indices[i];
-         t.v[1] = m_mesh.m_indices[i + 1];
-         t.v[2] = m_mesh.m_indices[i + 2];
-         if (t.v[0] != t.v[1] && t.v[1] != t.v[2] && t.v[2] != t.v[0])
-            prog_indices[i2++] = t;
-      }
-      if (i2 < prog_indices.size())
-         prog_indices.resize(i2);
+         size_t i2 = 0;
+         for (size_t i = 0; i < m_mesh.NumIndices(); i += 3)
+         {
+            ProgMesh::tridata t;
+            t.v[0] = m_mesh.m_indices[i];
+            t.v[1] = m_mesh.m_indices[i + 1];
+            t.v[2] = m_mesh.m_indices[i + 2];
+            if (t.v[0] != t.v[1] && t.v[1] != t.v[2] && t.v[2] != t.v[0])
+               prog_indices[i2++] = t;
+         }
+         if (i2 < prog_indices.size())
+            prog_indices.resize(i2);
       }
       vector<unsigned int> prog_map;
       vector<unsigned int> prog_perm;
@@ -545,26 +555,33 @@ void Primitive::GetHitShapes(vector<HitObject*> &pvho)
 
          Vertex3Ds rgv3D[3];
          // NB: HitTriangle wants CCW vertices, but for rendering we have them in CW order
-         rgv3D[0].x = prog_vertices[i0].x; rgv3D[0].y = prog_vertices[i0].y; rgv3D[0].z = prog_vertices[i0].z;
-         rgv3D[1].x = prog_vertices[i2].x; rgv3D[1].y = prog_vertices[i2].y; rgv3D[1].z = prog_vertices[i2].z;
-         rgv3D[2].x = prog_vertices[i1].x; rgv3D[2].y = prog_vertices[i1].y; rgv3D[2].z = prog_vertices[i1].z;
-         SetupHitObject(pvho, new HitTriangle(rgv3D));
+         rgv3D[0].x = prog_vertices[i0].x;
+         rgv3D[0].y = prog_vertices[i0].y;
+         rgv3D[0].z = prog_vertices[i0].z;
+         rgv3D[1].x = prog_vertices[i2].x;
+         rgv3D[1].y = prog_vertices[i2].y;
+         rgv3D[1].z = prog_vertices[i2].z;
+         rgv3D[2].x = prog_vertices[i1].x;
+         rgv3D[2].y = prog_vertices[i1].y;
+         rgv3D[2].z = prog_vertices[i1].z;
+         SetupHitObject(pvho, new HitTriangle(rgv3D), isUI);
 
-         AddHitEdge(pvho, addedEdges, i0, i1, rgv3D[0], rgv3D[2]);
-         AddHitEdge(pvho, addedEdges, i1, i2, rgv3D[2], rgv3D[1]);
-         AddHitEdge(pvho, addedEdges, i2, i0, rgv3D[1], rgv3D[0]);
+         AddHitEdge(pvho, addedEdges, i0, i1, rgv3D[0], rgv3D[2], isUI);
+         AddHitEdge(pvho, addedEdges, i1, i2, rgv3D[2], rgv3D[1], isUI);
+         AddHitEdge(pvho, addedEdges, i2, i0, rgv3D[1], rgv3D[0], isUI);
       }
 
       prog_new_indices.clear();
 
       // add collision vertices
-      for (size_t i = 0; i < prog_vertices.size(); ++i)
-         SetupHitObject(pvho, new HitPoint(prog_vertices[i].x, prog_vertices[i].y, prog_vertices[i].z));
+      if (!isUI)
+         for (size_t i = 0; i < prog_vertices.size(); ++i)
+            SetupHitObject(pvho, new HitPoint(prog_vertices[i].x, prog_vertices[i].y, prog_vertices[i].z), isUI);
    }
 
-//
-// end of license:GPLv3+, back to 'old MAME'-like
-//
+   //
+   // end of license:GPLv3+, back to 'old MAME'-like
+   //
 
    else
    {
@@ -582,31 +599,24 @@ void Primitive::GetHitShapes(vector<HitObject*> &pvho)
          rgv3D[0] = m_vertices[i0];
          rgv3D[1] = m_vertices[i2];
          rgv3D[2] = m_vertices[i1];
-         SetupHitObject(pvho, new HitTriangle(rgv3D));
+         SetupHitObject(pvho, new HitTriangle(rgv3D), isUI);
 
-         AddHitEdge(pvho, addedEdges, i0, i1, rgv3D[0], rgv3D[2]);
-         AddHitEdge(pvho, addedEdges, i1, i2, rgv3D[2], rgv3D[1]);
-         AddHitEdge(pvho, addedEdges, i2, i0, rgv3D[1], rgv3D[0]);
+         AddHitEdge(pvho, addedEdges, i0, i1, rgv3D[0], rgv3D[2], isUI);
+         AddHitEdge(pvho, addedEdges, i1, i2, rgv3D[2], rgv3D[1], isUI);
+         AddHitEdge(pvho, addedEdges, i2, i0, rgv3D[1], rgv3D[0], isUI);
       }
 
       // add collision vertices
-      for (size_t i = 0; i < m_mesh.NumVertices(); ++i)
-         SetupHitObject(pvho, new HitPoint(m_vertices[i]));
+      if (!isUI)
+         for (size_t i = 0; i < m_mesh.NumVertices(); ++i)
+            SetupHitObject(pvho, new HitPoint(m_vertices[i]), isUI);
    }
 }
 
-void Primitive::GetHitShapesDebug(vector<HitObject*> &pvho)
+void Primitive::PhysicRelease(const bool isUI)
 {
-   // Makes toy primitive selectable in debug ray cast
-   if (m_d.m_toy)
-   {
-      bool wasCollidable = m_d.m_collidable;
-      m_d.m_toy = false;
-      m_d.m_collidable = true;
-      GetHitShapes(pvho);
-      m_d.m_toy = true;
-      m_d.m_collidable = wasCollidable;
-   }
+   if (!isUI)
+      m_vhoCollidable.clear();
 }
 
 //
@@ -614,20 +624,19 @@ void Primitive::GetHitShapesDebug(vector<HitObject*> &pvho)
 // Ported at: VisualPinball.Engine/Math/EdgeSet.cs
 //
 
-void Primitive::AddHitEdge(vector<HitObject*> &pvho, robin_hood::unordered_set< robin_hood::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j, const Vertex3Ds &vi, const Vertex3Ds &vj)
+void Primitive::AddHitEdge(vector<HitObject*> &pvho, robin_hood::unordered_set< robin_hood::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j, const Vertex3Ds &vi, const Vertex3Ds &vj, const bool isUI)
 {
    // create pair uniquely identifying the edge (i,j)
    const robin_hood::pair<unsigned, unsigned> p(std::min(i, j), std::max(i, j));
-
-   if (addedEdges.insert(p).second) // edge not yet added?
-      SetupHitObject(pvho, new HitLine3D(vi, vj));
+   if (!isUI && addedEdges.insert(p).second) // edge not yet added?
+      SetupHitObject(pvho, new HitLine3D(vi, vj), isUI);
 }
 
 //
 // end of license:GPLv3+, back to 'old MAME'-like
 //
 
-void Primitive::SetupHitObject(vector<HitObject*> &pvho, HitObject * obj)
+void Primitive::SetupHitObject(vector<HitObject *> &pvho, HitObject *obj, const bool isUI)
 {
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szPhysicsMaterial);
    if (m_d.m_useAsPlayfield)
@@ -652,7 +661,7 @@ void Primitive::SetupHitObject(vector<HitObject*> &pvho, HitObject * obj)
        obj->m_scatter = ANGTORAD(m_d.m_scatter);
    }
 
-   obj->m_enabled = m_d.m_collidable;
+   obj->m_enabled = isUI ? true : m_d.m_collidable;
    obj->m_threshold = m_d.m_threshold;
    obj->m_ObjType = ePrimitive;
    obj->m_obj = (IFireEvents *)this;
@@ -660,16 +669,12 @@ void Primitive::SetupHitObject(vector<HitObject*> &pvho, HitObject * obj)
    obj->m_fe = m_d.m_hitEvent;
 
    pvho.push_back(obj);
-   m_vhoCollidable.push_back(obj); // remember hit components of primitive
+   
+   if (!isUI)
+      m_vhoCollidable.push_back(obj); // remember hit components of primitive
 }
 
-void Primitive::EndPlay()
-{
-   m_d.m_skipRendering = false;
-   m_d.m_groupdRendering = false;
-   m_vhoCollidable.clear();
-   IEditable::EndPlay();
-}
+#pragma endregion
 
 //////////////////////////////
 // Calculation
@@ -2842,23 +2847,17 @@ STDMETHODIMP Primitive::put_Scatter(float newVal)
 
 STDMETHODIMP Primitive::get_Collidable(VARIANT_BOOL *pVal)
 {
-   *pVal = FTOVB((!g_pplayer || m_vhoCollidable.empty()) ? m_d.m_collidable : m_vhoCollidable[0]->m_enabled);
-
+   *pVal = FTOVB(m_d.m_collidable);
    return S_OK;
 }
 
 STDMETHODIMP Primitive::put_Collidable(VARIANT_BOOL newVal)
 {
    const bool val = VBTOb(newVal);
-   if (!g_pplayer)
-      m_d.m_collidable = val;
-   else
-   {
-       if (!m_vhoCollidable.empty() && m_vhoCollidable[0]->m_enabled != val)
-           for (size_t i = 0; i < m_vhoCollidable.size(); i++) //!! costly
-               m_vhoCollidable[i]->m_enabled = val; //copy to hit-testing on entities composing the object
-   }
-
+   m_d.m_collidable = val;
+      if (!m_vhoCollidable.empty() && m_vhoCollidable[0]->m_enabled != val)
+         for (size_t i = 0; i < m_vhoCollidable.size(); i++) //!! costly
+            m_vhoCollidable[i]->m_enabled = val; //copy to hit-testing on entities composing the object
    return S_OK;
 }
 

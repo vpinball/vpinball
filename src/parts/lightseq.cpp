@@ -173,29 +173,28 @@ void LightSeq::RenderBlueprint(Sur *psur, const bool solid)
 //
 // for this sort of object it is basically not really required but hey, somebody might use it..
 //
-void LightSeq::GetTimers(vector<HitTimer*> &pvht)
+void LightSeq::BeginPlay(vector<HitTimer*> &pvht)
 {
    m_phittimer = new HitTimer(GetName(), m_d.m_tdr.m_TimerInterval, this);
    if (m_d.m_tdr.m_TimerEnabled)
       pvht.push_back(m_phittimer);
 }
 
-void LightSeq::GetHitShapes(vector<HitObject*> &pvho)
-{
-}
-
-void LightSeq::GetHitShapesDebug(vector<HitObject*> &pvho)
-{
-}
-
-// This method is called as the game exits..
-// it cleans up any allocated memory used by the instace of the object
-//
 void LightSeq::EndPlay()
 {
-   delete[] m_pgridData;
-   m_pgridData = nullptr;
    IEditable::EndPlay();
+}
+
+void LightSeq::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
+{
+   if (isUI)
+   {
+      // FIXME implement UI picking
+   }
+}
+
+void LightSeq::PhysicRelease(const bool isUI)
+{
 }
 
 #pragma region Rendering
@@ -321,6 +320,8 @@ void LightSeq::RenderSetup(RenderDevice *device)
 
 void LightSeq::RenderRelease()
 {
+   delete[] m_pgridData;
+   m_pgridData = nullptr;
 }
 
 // This function is called each frame. It basically checks to see if the update

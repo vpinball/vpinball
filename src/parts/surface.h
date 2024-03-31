@@ -148,9 +148,8 @@ public:
    bool m_disabled;
 
 private:
-   void CurvesToShapes(vector<HitObject*> &pvho);
-   void SetupHitObject(vector<HitObject*> &pvho, HitObject * const obj);
-   void AddLine(vector<HitObject*> &pvho, const RenderVertex &pv1, const RenderVertex &pv2);
+   void SetupHitObject(vector<HitObject*> &pvho, HitObject * const obj, const bool isUI);
+   void AddLine(vector<HitObject *> &pvho, const RenderVertex &pv1, const RenderVertex &pv2, const bool isUI);
 
    void GenerateMesh(vector<Vertex3D_NoTex2> &topBuf, vector<Vertex3D_NoTex2> &sideBuf, vector<WORD> &topBottomIndices, vector<WORD> &sideIndices);
 
