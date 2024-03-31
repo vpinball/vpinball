@@ -261,6 +261,8 @@ public:
    void CalcHitBBox() override;
    MoverObject *GetMoverObject() override { return &m_plungerMover; }
 
+   virtual void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const { } // FIXME implement
+ 
    PlungerMoverObject m_plungerMover;
 
    Plunger *m_pplunger;

@@ -75,6 +75,8 @@ public:
 
    void Init(Vertex3Ds * const rgv, const int count);
 
+   virtual void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const { } // FIXME implement
+
 private:
    Vertex3Ds *m_rgv;
    Vertex3Ds m_normal;
@@ -96,6 +98,8 @@ public:
 
    bool IsDegenerate() const { return m_normal.IsZero(); }
 
+   virtual void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const;
+
    Vertex3Ds m_rgv[3];
    Vertex3Ds m_normal;
 };
@@ -114,6 +118,8 @@ public:
    int GetType() const override { return ePlane; }
    void Collide(const CollisionEvent& coll) override;
    void CalcHitBBox() override {}  //!! TODO: this is needed if we want to put it in the quadtree, but then again impossible as infinite area
+
+   virtual void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const { } // FIXME implement
 
 private:
    Vertex3Ds m_normal;
@@ -152,6 +158,8 @@ public:
    void CalcHitBBox() override;
 
    MoverObject *GetMoverObject() override { return &m_spinnerMover; }
+
+   virtual void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const;
 
    LineSeg m_lineseg[2];
 
@@ -192,6 +200,8 @@ public:
    void CalcHitBBox() override;
 
    MoverObject *GetMoverObject() override { return &m_gateMover; }
+
+   virtual void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const;
 
    GateMoverObject m_gateMover;
    bool m_twoWay;
@@ -235,6 +245,9 @@ public:
    void Collide(const CollisionEvent& coll) override;
    void CalcHitBBox() override { } // already done in constructor
 
+   virtual void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const;
+
 private:
    Matrix3 m_matrix;
+   Vertex3Ds m_v1, m_v2;
 };

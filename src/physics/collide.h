@@ -32,7 +32,7 @@ extern float c_hardScatter;
 struct BallS;
 class Ball;
 class HitObject;
-
+struct ImDrawList;
 
 class MoverObject // Spinner, Gate, Flipper, Plunger and Ball
 {
@@ -110,6 +110,8 @@ public:
    void SetFriction(const float friction)  { m_friction = friction; }
    void FireHitEvent(Ball * const pball);
 
+   virtual void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const = 0;
+
    IEditable* m_editable = nullptr; // editable that created this hitobject, used for by UI for selecting editables
 
    IFireEvents *m_obj = nullptr; // base object pointer (mainly used as IFireEvents, but also as HitTarget or Primitive or Trigger or Kicker or Gate, see below)
@@ -154,6 +156,8 @@ public:
    float HitTestBasic(const BallS& ball, const float dtime, CollisionEvent& coll, const bool direction, const bool lateral, const bool rigid) const;
    void CalcNormal(); // and also does update length!
 
+   virtual void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const;
+
    Vertex2D normal;
    Vertex2D v1, v2;
    float length;
@@ -176,6 +180,8 @@ public:
 
    float HitTestBasicRadius(const BallS& ball, const float dtime, CollisionEvent& coll, const bool direction, const bool lateral, const bool rigid) const;
 
+   virtual void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const;
+
    Vertex2D center;
    float radius;
 };
@@ -193,6 +199,8 @@ public:
    virtual void Collide(const CollisionEvent& coll) override;
    virtual void CalcHitBBox() override;
 
+   virtual void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const;
+
    Vertex2D m_xy;
    float m_zlow;
    float m_zhigh;
@@ -209,6 +217,8 @@ public:
    virtual int GetType() const override { return ePoint; }
    virtual void Collide(const CollisionEvent& coll) override;
    virtual void CalcHitBBox() override;
+
+   virtual void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const;
 
    Vertex3Ds m_p;
 };

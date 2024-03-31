@@ -53,6 +53,8 @@ public:
 
    void ApplySurfaceImpulse(const Vertex3Ds& rotI, const Vertex3Ds& impulse);
 
+   virtual void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const { } // FIXME implement
+
    // Per frame info
    CCO(BallEx) *m_pballex;   // Object model version of the ball
 
