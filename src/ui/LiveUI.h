@@ -200,6 +200,8 @@ private:
    ImFont *m_overlayFont = nullptr;
    float m_menubar_height = 0.0f;
    float m_toolbar_height = 0.0f;
+   enum PhysicOverlay { PO_NONE, PO_SELECTED, PO_ALL } m_physOverlay = PO_NONE;
+   bool m_selectionOverlay = true;
 
    // UI state
    bool m_ShowUI = false;

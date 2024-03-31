@@ -5,6 +5,7 @@
 static std::mutex mtx;
 #endif
 
+#include "imgui/imgui.h"
 
 float c_hardScatter = 0.0f;
 
@@ -178,6 +179,24 @@ void LineSeg::CalcNormal()
    normal.y = -vT.x * inv_length;
 }
 
+void LineSeg::DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const
+{
+   if (m_enabled)
+   {
+      const ImU32 lCol = ImGui::GetColorU32(ImGuiCol_PlotLines), fCol = ImGui::GetColorU32(ImGuiCol_PlotHistogram);
+      const Vertex2D p0 = project(Vertex3Ds(v1.x, v1.y, m_hitBBox.zlow));
+      const Vertex2D p1 = project(Vertex3Ds(v2.x, v2.y, m_hitBBox.zlow));
+      const Vertex2D p2 = project(Vertex3Ds(v2.x, v2.y, m_hitBBox.zhigh));
+      const Vertex2D p3 = project(Vertex3Ds(v1.x, v1.y, m_hitBBox.zhigh));
+      if (p0.x != FLT_MAX && p1.x != FLT_MAX && p2.x != FLT_MAX && p3.x != FLT_MAX)
+      {
+         drawList->AddQuadFilled(ImVec2(p0.x, p0.y), ImVec2(p1.x, p1.y), ImVec2(p2.x, p2.y), ImVec2(p3.x, p3.y), fCol);
+         drawList->AddQuad(ImVec2(p0.x, p0.y), ImVec2(p1.x, p1.y), ImVec2(p2.x, p2.y), ImVec2(p3.x, p3.y), lCol);
+      }
+   }
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // Ported at: VisualPinball.Unity/VisualPinball.Unity/Physics/Collider/CircleCollider.cs
 
@@ -339,6 +358,36 @@ void HitCircle::Collide(const CollisionEvent& coll)
    coll.m_ball->Collide3DWall(coll.m_hitnormal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);
 }
 
+void HitCircle::DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const
+{
+   if (m_enabled)
+   {
+      const ImU32 lCol = ImGui::GetColorU32(ImGuiCol_PlotLines), fCol = ImGui::GetColorU32(ImGuiCol_PlotHistogram);
+      Vertex2D p0 = project(Vertex3Ds(center.x, center.y, m_hitBBox.zlow)), p1, p2;
+      Vertex2D q0 = project(Vertex3Ds(center.x, center.y, m_hitBBox.zhigh)), q1, q2;
+      for (int i = 0; i <= 32; i++)
+      {
+         p1 = p2;
+         p2 = project(Vertex3Ds(center.x + radius * cosf(i * 2.f * M_PIf / 32.f), center.y + radius * sinf(i * 2.f * M_PIf / 32.f), m_hitBBox.zlow));
+         q1 = q2;
+         q2 = project(Vertex3Ds(center.x + radius * cosf(i * 2.f * M_PIf / 32.f), center.y + radius * sinf(i * 2.f * M_PIf / 32.f), m_hitBBox.zhigh));
+         if (i > 0 && p0.x != FLT_MAX && p1.x != FLT_MAX && p2.x != FLT_MAX)
+         {
+            drawList->AddTriangleFilled(ImVec2(p0.x, p0.y), ImVec2(p1.x, p1.y), ImVec2(p2.x, p2.y), fCol);
+            drawList->AddLine(ImVec2(p1.x, p1.y), ImVec2(p2.x, p2.y), lCol);
+         }
+         if (i > 0 && q0.x != FLT_MAX && q1.x != FLT_MAX && q2.x != FLT_MAX)
+         {
+            drawList->AddTriangleFilled(ImVec2(q0.x, q0.y), ImVec2(q1.x, q1.y), ImVec2(q2.x, q2.y), fCol);
+            drawList->AddLine(ImVec2(q1.x, q1.y), ImVec2(q2.x, q2.y), lCol);
+         }
+         if (i > 0 && p1.x != FLT_MAX && p2.x != FLT_MAX && q1.x != FLT_MAX && q2.x != FLT_MAX)
+            drawList->AddQuadFilled(ImVec2(p1.x, p1.y), ImVec2(p2.x, p2.y), ImVec2(q2.x, q2.y), ImVec2(q1.x, q1.y), fCol);
+      }
+   }
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // Ported at: VisualPinball.Unity/VisualPinball.Unity/Physics/Collider/LineZCollider.cs
 
@@ -435,6 +484,19 @@ void HitLineZ::Collide(const CollisionEvent& coll)
       FireHitEvent(coll.m_ball);
 }
 
+void HitLineZ::DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const
+{
+   if (m_enabled)
+   {
+      const ImU32 lCol = ImGui::GetColorU32(ImGuiCol_PlotLines);
+      const Vertex2D p0 = project(Vertex3Ds(m_xy.x, m_xy.y, m_zlow));
+      const Vertex2D p1 = project(Vertex3Ds(m_xy.x, m_xy.y, m_zhigh));
+      if (p0.x != FLT_MAX && p1.x != FLT_MAX)
+         drawList->AddLine(ImVec2(p0.x, p0.y), ImVec2(p1.x, p1.y), lCol);
+   }
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // Ported at: VisualPinball.Unity/VisualPinball.Unity/Physics/Collider/PointCollider.cs
 
@@ -518,6 +580,17 @@ void HitPoint::Collide(const CollisionEvent& coll)
 
    if (dot <= -m_threshold)
       FireHitEvent(coll.m_ball);
+}
+
+void HitPoint::DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const
+{
+   if (m_enabled)
+   {
+      const ImU32 lCol = ImGui::GetColorU32(ImGuiCol_PlotLines);
+      const Vertex2D p1 = project(m_p);
+      if (p1.x != FLT_MAX)
+         drawList->AddCircleFilled(ImVec2(p1.x, p1.y), 2.f, lCol);
+   }
 }
 
 //

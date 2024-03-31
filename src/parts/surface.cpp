@@ -454,9 +454,6 @@ void Surface::AddLine(vector<HitObject*> &pvho, const RenderVertex &pv1, const R
    const float bottom = m_d.m_heightbottom;
    const float top = m_d.m_heighttop;
 
-   if (isUI)
-      return;
-
    LineSeg *plineseg;
    if (!pv1.slingshot)
    {
@@ -470,7 +467,8 @@ void Surface::AddLine(vector<HitObject*> &pvho, const RenderVertex &pv1, const R
       plinesling->m_force = m_d.m_slingshotforce;
       plinesling->m_psurface = this;
 
-      m_vlinesling.push_back(plinesling);
+      if (!isUI)
+         m_vlinesling.push_back(plinesling);
    }
 
    SetupHitObject(pvho, plineseg, isUI);
@@ -482,20 +480,22 @@ void Surface::AddLine(vector<HitObject*> &pvho, const RenderVertex &pv1, const R
       plineseg->m_threshold = m_d.m_threshold;
    }
 
-   if (m_d.m_heightbottom != 0.f)
-      // add lower edge as a line
+   // add lower edge as a line
+   if (!isUI && m_d.m_heightbottom != 0.f)
       SetupHitObject(pvho, new HitLine3D(Vertex3Ds(pv1.x, pv1.y, bottom), Vertex3Ds(pv2.x, pv2.y, bottom)), isUI);
 
    // add upper edge as a line
-   SetupHitObject(pvho, new HitLine3D(Vertex3Ds(pv1.x, pv1.y, top), Vertex3Ds(pv2.x, pv2.y, top)), isUI);
+   if (!isUI)
+      SetupHitObject(pvho, new HitLine3D(Vertex3Ds(pv1.x, pv1.y, top), Vertex3Ds(pv2.x, pv2.y, top)), isUI);
 
    // create vertical joint between the two line segments
    SetupHitObject(pvho, new HitLineZ(pv1, bottom, top), isUI);
 
    // add upper and lower end points of line
-   if (m_d.m_heightbottom != 0.f)
+   if (!isUI && m_d.m_heightbottom != 0.f)
       SetupHitObject(pvho, new HitPoint(Vertex3Ds(pv1.x, pv1.y, bottom)), isUI);
-   SetupHitObject(pvho, new HitPoint(Vertex3Ds(pv1.x, pv1.y, top)), isUI);
+   if (!isUI)
+      SetupHitObject(pvho, new HitPoint(Vertex3Ds(pv1.x, pv1.y, top)), isUI);
 }
 
 //

@@ -205,6 +205,13 @@ void HitGate::CalcHitBBox()
    m_hitBBox = m_lineseg[0].m_hitBBox;
 }
 
+void HitGate::DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const
+{
+   m_lineseg[0].DrawUI(project, drawList);
+   m_lineseg[1].DrawUI(project, drawList);
+}
+
+
 void GateMoverObject::UpdateDisplacements(const float dtime)
 {
    if (m_pgate->m_d.m_twoWay)
@@ -448,6 +455,13 @@ void HitSpinner::CalcHitBBox()
    m_lineseg[0].CalcHitBBox();
    m_hitBBox = m_lineseg[0].m_hitBBox;
 }
+
+void HitSpinner::DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const
+{
+   m_lineseg[0].DrawUI(project, drawList);
+   m_lineseg[1].DrawUI(project, drawList);
+}
+
 
 void Hit3DPoly::Init(Vertex3Ds * const rgv, const int count)
 {
@@ -862,6 +876,20 @@ void HitTriangle::CalcHitBBox()
    m_hitBBox.zhigh  = max(m_rgv[0].z, max(m_rgv[1].z, m_rgv[2].z));
 }
 
+void HitTriangle::DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const
+{
+   if (m_enabled)
+   {
+      const ImU32 fCol = ImGui::GetColorU32(ImGuiCol_PlotHistogram);
+      const Vertex2D p0 = project(Vertex3Ds(m_rgv[0].x, m_rgv[0].y, m_rgv[0].z));
+      const Vertex2D p1 = project(Vertex3Ds(m_rgv[1].x, m_rgv[1].y, m_rgv[1].z));
+      const Vertex2D p2 = project(Vertex3Ds(m_rgv[2].x, m_rgv[2].y, m_rgv[2].z));
+      if (p0.x != FLT_MAX && p1.x != FLT_MAX && p2.x != FLT_MAX)
+         drawList->AddTriangleFilled(ImVec2(p0.x, p0.y), ImVec2(p1.x, p1.y), ImVec2(p2.x, p2.y), fCol);
+   }
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // Ported at: VisualPinball.Engine/Physics/HitPlane.cs
 //            VisualPinball.Unity/VisualPinball.Unity/Physics/Collider/PlaneCollider.cs
@@ -960,6 +988,8 @@ void HitPlane::Collide(const CollisionEvent& coll)
 //
 
 HitLine3D::HitLine3D(const Vertex3Ds& v1, const Vertex3Ds& v2)
+   : m_v1(v1)
+   , m_v2(v2)
 {
    Vertex3Ds vLine = v2 - v1;
    vLine.Normalize();
@@ -1044,6 +1074,18 @@ void HitLine3D::Collide(const CollisionEvent& coll)
        }
    }
 }
+
+void HitLine3D::DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const
+{
+   if (m_enabled)
+   {
+       const ImU32 lCol = ImGui::GetColorU32(ImGuiCol_PlotLines);
+       const Vertex2D p0 = project(m_v1), p1 = project(m_v2);
+       if (p0.x != FLT_MAX && p1.x != FLT_MAX)
+           drawList->AddLine(ImVec2(p0.x, p0.y), ImVec2(p1.x, p1.y), lCol);
+   }
+}
+
 
 // Ported at: VisualPinball.Engine/VPT/Trigger/TriggerHitLineSeg.cs
 //            VisualPinball.Unity/VisualPinball.Unity/VPT/Trigger/TriggerCollider.cs

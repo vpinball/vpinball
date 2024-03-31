@@ -37,6 +37,9 @@ public:
    int GetPerfLengthMax() const { return m_phys_max; }
    string GetPerfInfo(bool resetMax);
 
+   const vector<HitObject *>& GetHitObjects() const { return m_vho; }
+   const vector<HitObject *> &GetUIObjects() const { return m_vUIHitObjects; }
+
 private:
    void AddCabinetBoundingHitShapes(PinTable *const table);
    void PhysicsSimulateCycle(float dtime); // Perform continuous collision detection for the given amount of delta time

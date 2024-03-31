@@ -94,6 +94,8 @@ public:
 
    float GetHitTime() const { return m_flipperMover.GetHitTime(); }
 
+   virtual void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const { } // FIXME implement
+ 
    FlipperMoverObject m_flipperMover;
 
 private:

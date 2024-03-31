@@ -2061,6 +2061,26 @@ void LiveUI::UpdateMainUI()
          HideUI();
          m_table->QuitPlayer(Player::CS_STOP_PLAY);
       }
+      // TODO move viewport options to the right of the toolbar
+      ImGui::SameLine(ImGui::GetWindowWidth() - 100.f);
+      if (ImGui::Button("O")) // Overlay option menu
+      {
+         ImGui::OpenPopup("Overlay Popup");
+      }
+      if (ImGui::BeginPopup("Overlay Popup"))
+      {
+         ImGui::Checkbox("Overlay selection", &m_selectionOverlay);
+         ImGui::Separator();
+         ImGui::Text("Physic Overlay:");
+         if (ImGui::RadioButton("None", m_physOverlay == PO_NONE))
+            m_physOverlay = PO_NONE;
+         if (ImGui::RadioButton("Selected", m_physOverlay == PO_SELECTED))
+            m_physOverlay = PO_SELECTED;
+         if (ImGui::RadioButton("All", m_physOverlay == PO_ALL))
+            m_physOverlay = PO_ALL;
+         ImGui::EndPopup();
+      }
+
       ImGui::End();
 
       // Side panels
@@ -2148,6 +2168,56 @@ void LiveUI::UpdateMainUI()
    if (m_ShowSplashModal)
       UpdateMainSplashModal();
 
+   // Selection and physic colliders overlay
+   {
+      ImGuiIO &io = ImGui::GetIO();
+      ImGui::SetNextWindowSize(io.DisplaySize);
+      ImGui::SetNextWindowPos(ImVec2(0, 0));
+      ImGui::PushStyleColor(ImGuiCol_WindowBg, 0);
+      ImGui::PushStyleColor(ImGuiCol_Border, 0);
+      ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+      ImGui::Begin("colliders", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoInputs
+         | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoBringToFrontOnFocus);
+      ImDrawList *drawList = ImGui::GetWindowDrawList();
+      ViewPort vp;
+      m_renderer->m_pd3dPrimaryDevice->GetViewport(&vp);
+      const float rClipWidth = (float)vp.Width * 0.5f;
+      const float rClipHeight = (float)vp.Height * 0.5f;
+      Matrix3D mvp = m_renderer->GetMVP().GetModelViewProj(0);
+      auto project = [mvp, rClipWidth, rClipHeight](Vertex3Ds v)
+      {
+         const float xp = mvp._11 * v.x + mvp._21 * v.y + mvp._31 * v.z + mvp._41;
+         const float yp = mvp._12 * v.x + mvp._22 * v.y + mvp._32 * v.z + mvp._42;
+         const float zp = mvp._13 * v.x + mvp._23 * v.y + mvp._33 * v.z + mvp._43;
+         const float wp = mvp._14 * v.x + mvp._24 * v.y + mvp._34 * v.z + mvp._44;
+         if (wp <= 1e-10f) // behind camera (or degenerated)
+            return Vertex2D(FLT_MAX, FLT_MAX);
+         const float inv_wp = 1.0f / wp;
+         return Vertex2D((wp + xp) * rClipWidth / wp, (wp - yp) * rClipHeight / wp);
+      };
+      if (m_selection.type == Selection::S_EDITABLE && m_selectionOverlay)
+      {
+         ImGui::PushStyleColor(ImGuiCol_PlotLines, IM_COL32(255, 128, 0, 255));
+         ImGui::PushStyleColor(ImGuiCol_PlotHistogram, IM_COL32(255, 128, 0, 32));
+         for (auto pho : m_player->m_physics->GetUIObjects())
+            if (pho->m_editable == m_selection.editable)
+               pho->DrawUI(project, drawList);
+         ImGui::PopStyleColor(2);
+      }
+      if (m_physOverlay == PO_ALL || (m_physOverlay == PO_SELECTED && m_selection.type == Selection::S_EDITABLE))
+      {
+         ImGui::PushStyleColor(ImGuiCol_PlotLines, IM_COL32(255, 0, 0, 255)); // We abuse ImGui colors to pass render colors
+         ImGui::PushStyleColor(ImGuiCol_PlotHistogram, IM_COL32(255, 0, 0, 64));
+         for (auto pho : m_player->m_physics->GetHitObjects())
+            if (m_physOverlay == PO_ALL || (m_physOverlay == PO_SELECTED && pho->m_editable == m_selection.editable))
+               pho->DrawUI(project, drawList);
+         ImGui::PopStyleColor(2);
+      }
+      ImGui::End();
+      ImGui::PopStyleVar();
+      ImGui::PopStyleColor(2);
+   }
+
    // Handle uncaught mouse & keyboard interaction
    if (!ImGui::GetIO().WantCaptureMouse)
    {
@@ -2164,7 +2234,7 @@ void LiveUI::UpdateMainUI()
          m_camView = Matrix3D::MatrixLookAtRH(newEye, camTarget, up);
       }
 
-      // Pan mouse
+      // Mouse orbit & pan
       if (ImGui::IsMouseDown(ImGuiMouseButton_Middle))
       {
          const ImVec2 drag = ImGui::GetMouseDragDelta(ImGuiMouseButton_Middle);
@@ -2179,12 +2249,16 @@ void LiveUI::UpdateMainUI()
             camTarget = camTarget - right * drag.x + up * drag.y;
             m_camView = Matrix3D::MatrixLookAtRH(pos - right * drag.x + up * drag.y, camTarget, up);
          }
+         else
+         {
+
+         }
       }
 
       // Select
       if (ImGui::IsMouseClicked(ImGuiMouseButton_Right)) // FIXME for the time being, the guizmo manipulate interfere with this, so we use the other button...
       {
-         // Compute mous position in clip space
+         // Compute mouse position in clip space
          ViewPort vp;
          m_renderer->m_pd3dPrimaryDevice->GetViewport(&vp);
          const float rClipWidth = (float)vp.Width * 0.5f;
