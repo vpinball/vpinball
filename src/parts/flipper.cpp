@@ -181,13 +181,15 @@ void Flipper::WriteRegDefaults()
 }
 
 
-void Flipper::GetTimers(vector<HitTimer*> &pvht)
+void Flipper::BeginPlay(vector<HitTimer*> &pvht)
 {
    IEditable::BeginPlay();
    m_phittimer = new HitTimer(GetName(), m_d.m_tdr.m_TimerInterval, this);
    if (m_d.m_tdr.m_TimerEnabled)
       pvht.push_back(m_phittimer);
 }
+
+void Flipper::EndPlay() { IEditable::EndPlay(); }
 
 #pragma region Physics
 
@@ -239,52 +241,38 @@ void Flipper::UpdatePhysicsSettings()
    }
 }
 
-void Flipper::GetHitShapes(vector<HitObject*> &pvho)
+void Flipper::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
 {
    UpdatePhysicsSettings();
-
-   //
-
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_Center.x, m_d.m_Center.y);
-
    if (m_d.m_FlipperRadiusMin > 0.f && m_d.m_FlipperRadiusMax > m_d.m_FlipperRadiusMin)
    {
       m_d.m_FlipperRadius = m_d.m_FlipperRadiusMax - (m_d.m_FlipperRadiusMax - m_d.m_FlipperRadiusMin) * m_ptable->m_globalDifficulty;
       m_d.m_FlipperRadius = max(m_d.m_FlipperRadius, m_d.m_BaseRadius - m_d.m_EndRadius + 0.05f);
    }
-   else m_d.m_FlipperRadius = m_d.m_FlipperRadiusMax;
-
-   HitFlipper * const phf = new HitFlipper(m_d.m_Center, max(m_d.m_BaseRadius, 0.01f), max(m_d.m_EndRadius, 0.01f),
-      max(m_d.m_FlipperRadius, 0.01f), ANGTORAD(m_d.m_StartAngle), ANGTORAD(m_d.m_EndAngle), height, height + m_d.m_height, this);
-
-   phf->m_flipperMover.m_enabled = m_d.m_enabled;
-   phf->m_flipperMover.m_visible = m_d.m_visible;
-
-   pvho.push_back(phf);
-
-   m_phitflipper = phf;
-}
-
-void Flipper::GetHitShapesDebug(vector<HitObject*> &pvho)
-{
-   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_Center.x, m_d.m_Center.y);
-
-   if (m_d.m_FlipperRadiusMin > 0.f && m_d.m_FlipperRadiusMax > m_d.m_FlipperRadiusMin)
+   else
+      m_d.m_FlipperRadius = m_d.m_FlipperRadiusMax;
+   if (isUI)
    {
-      m_d.m_FlipperRadius = m_d.m_FlipperRadiusMax - (m_d.m_FlipperRadiusMax - m_d.m_FlipperRadiusMin) * m_ptable->m_globalDifficulty;
-      m_d.m_FlipperRadius = max(m_d.m_FlipperRadius, m_d.m_BaseRadius - m_d.m_EndRadius + 0.05f);
+      // FIXME This is very imprecise. We could use the same as physics or create more hit geometry
+      Hit3DPoly *const pcircle = new Hit3DPoly(m_d.m_Center.x, m_d.m_Center.y, height + m_d.m_height, m_d.m_FlipperRadius + m_d.m_EndRadius, 32);
+      pvho.push_back(pcircle);
    }
-   else m_d.m_FlipperRadius = m_d.m_FlipperRadiusMax;
-
-   Hit3DPoly * const pcircle = new Hit3DPoly(m_d.m_Center.x, m_d.m_Center.y, height + m_d.m_height, m_d.m_FlipperRadius + m_d.m_EndRadius, 32);
-   pvho.push_back(pcircle);
+   else
+   {
+      HitFlipper *const phf = new HitFlipper(m_d.m_Center, max(m_d.m_BaseRadius, 0.01f), max(m_d.m_EndRadius, 0.01f), max(m_d.m_FlipperRadius, 0.01f), ANGTORAD(m_d.m_StartAngle),
+         ANGTORAD(m_d.m_EndAngle), height, height + m_d.m_height, this);
+      phf->m_flipperMover.m_enabled = m_d.m_enabled;
+      phf->m_flipperMover.m_visible = m_d.m_visible;
+      m_phitflipper = phf;
+      pvho.push_back(phf);
+   }
 }
 
-void Flipper::EndPlay()
+void Flipper::PhysicRelease(const bool isUI)
 {
-   if (m_phitflipper) // Failed player case
+   if (!isUI)
       m_phitflipper = nullptr;
-   IEditable::EndPlay();
 }
 
 #pragma endregion

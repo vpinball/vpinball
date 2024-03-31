@@ -178,7 +178,7 @@ void DispReel::UIRenderPass2(Sur * const psur)
 // for this sort of object (reel driver) it is basically not really required but hey, somebody
 // might use it..
 //
-void DispReel::GetTimers(vector<HitTimer*> &pvht)
+void DispReel::BeginPlay(vector<HitTimer*> &pvht)
 {
    IEditable::BeginPlay();
    m_phittimer = new HitTimer(GetName(), m_d.m_tdr.m_TimerInterval, this);
@@ -186,20 +186,19 @@ void DispReel::GetTimers(vector<HitTimer*> &pvht)
       pvht.push_back(m_phittimer);
 }
 
+void DispReel::EndPlay() { IEditable::EndPlay(); }
+
 #pragma region Physics
 
-void DispReel::GetHitShapes(vector<HitObject*> &pvho)
+void DispReel::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
 {
+   if (isUI)
+   {
+      // FIXME implement UI picking
+   }
 }
 
-void DispReel::GetHitShapesDebug(vector<HitObject*> &pvho)
-{
-}
-
-void DispReel::EndPlay()
-{
-   IEditable::EndPlay();
-}
+void DispReel::PhysicRelease(const bool isUI) { }
 
 #pragma endregion
 

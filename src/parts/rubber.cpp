@@ -9,7 +9,6 @@ Rubber::Rubber()
    m_d.m_collidable = true;
    m_d.m_visible = true;
    m_d.m_hitEvent = false;
-   m_dynamicVertexBufferRegenerate = true;
    m_propPhysics = nullptr;
    m_propPosition = nullptr;
    m_propVisual = nullptr;
@@ -524,7 +523,7 @@ float Rubber::GetSurfaceHeight(float x, float y) const
 // end of license:GPLv3+, back to 'old MAME'-like
 //
 
-void Rubber::GetTimers(vector<HitTimer*> &pvht)
+void Rubber::BeginPlay(vector<HitTimer*> &pvht)
 {
    IEditable::BeginPlay();
    m_phittimer = new HitTimer(GetName(), m_d.m_tdr.m_TimerInterval, this);
@@ -532,6 +531,10 @@ void Rubber::GetTimers(vector<HitTimer*> &pvht)
       pvht.push_back(m_phittimer);
 }
 
+void Rubber::EndPlay()
+{
+   IEditable::EndPlay();
+}
 
 #pragma region Physics
 
@@ -540,11 +543,12 @@ void Rubber::GetTimers(vector<HitTimer*> &pvht)
 // Ported at: VisualPinball.Engine/VPT/Rubber/RubberHitGenerator.cs
 //
 
-void Rubber::GetHitShapes(vector<HitObject*> &pvho)
+void Rubber::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
 {
    robin_hood::unordered_set<robin_hood::pair<unsigned, unsigned>> addedEdges;
 
-   GenerateMesh(6, true); //!! adapt hacky code in the function if changing the "6" here
+   if (!isUI)
+      GenerateMesh(6, true); //!! adapt hacky code in the function if changing the "6" here
    UpdateRubber(false, m_d.m_hitHeight);
 
    // add collision triangles and edges
@@ -558,39 +562,45 @@ void Rubber::GetHitShapes(vector<HitObject*> &pvho)
       rgv3D[1] = Vertex3Ds(v->x, v->y, v->z);
       v = &m_vertices[m_ringIndices[i + 1]];
       rgv3D[2] = Vertex3Ds(v->x, v->y, v->z);
-      SetupHitObject(pvho, new HitTriangle(rgv3D));
+      SetupHitObject(pvho, new HitTriangle(rgv3D), isUI);
 
-      AddHitEdge(pvho, addedEdges, m_ringIndices[i    ], m_ringIndices[i + 2]);
-      AddHitEdge(pvho, addedEdges, m_ringIndices[i + 2], m_ringIndices[i + 1]);
-      AddHitEdge(pvho, addedEdges, m_ringIndices[i + 1], m_ringIndices[i]);
+      AddHitEdge(pvho, addedEdges, m_ringIndices[i], m_ringIndices[i + 2], isUI);
+      AddHitEdge(pvho, addedEdges, m_ringIndices[i + 2], m_ringIndices[i + 1], isUI);
+      AddHitEdge(pvho, addedEdges, m_ringIndices[i + 1], m_ringIndices[i], isUI);
    }
 
    // add collision vertices
-   for (size_t i = 0; i < m_vertices.size(); ++i)
-   {
-      Vertex3Ds v = Vertex3Ds(m_vertices[i].x, m_vertices[i].y, m_vertices[i].z);
-      SetupHitObject(pvho, new HitPoint(v));
-   }
+   if (!isUI)
+      for (size_t i = 0; i < m_vertices.size(); ++i)
+      {
+         Vertex3Ds v = Vertex3Ds(m_vertices[i].x, m_vertices[i].y, m_vertices[i].z);
+         SetupHitObject(pvho, new HitPoint(v), isUI);
+      }
+}
+
+void Rubber::PhysicRelease(const bool isUI)
+{
+   if (!isUI)
+      m_vhoCollidable.clear();
 }
 
 //
 // end of license:GPLv3+, back to 'old MAME'-like
 //
 
-void Rubber::AddHitEdge(vector<HitObject*> &pvho, robin_hood::unordered_set< robin_hood::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j)
+void Rubber::AddHitEdge(vector<HitObject *> &pvho, robin_hood::unordered_set<robin_hood::pair<unsigned, unsigned>> &addedEdges, const unsigned i, const unsigned j, const bool isUI)
 {
    // create pair uniquely identifying the edge (i,j)
    const robin_hood::pair<unsigned, unsigned> p(std::min(i, j), std::max(i, j));
-
-   if (addedEdges.insert(p).second) // edge not yet added?
+   if (!isUI && addedEdges.insert(p).second) // edge not yet added?
    {
       const Vertex3Ds v1(m_vertices[i].x, m_vertices[i].y, m_vertices[i].z);
       const Vertex3Ds v2(m_vertices[j].x, m_vertices[j].y, m_vertices[j].z);
-      SetupHitObject(pvho, new HitLine3D(v1, v2));
+      SetupHitObject(pvho, new HitLine3D(v1, v2), isUI);
    }
 }
 
-void Rubber::SetupHitObject(vector<HitObject*> &pvho, HitObject * obj)
+void Rubber::SetupHitObject(vector<HitObject *> &pvho, HitObject *obj, const bool isUI)
 {
    const Material *const mat = m_ptable->GetMaterial(m_d.m_szPhysicsMaterial);
    if (!m_d.m_overwritePhysics)
@@ -608,7 +618,7 @@ void Rubber::SetupHitObject(vector<HitObject*> &pvho, HitObject * obj)
       obj->m_scatter = ANGTORAD(m_d.m_scatter);
    }
 
-   obj->m_enabled = m_d.m_collidable;
+   obj->m_enabled = isUI ? true : m_d.m_collidable;
    // the rubber is of type ePrimitive for triggering the event in HitTriangle::Collide()
    obj->m_ObjType = ePrimitive;
    // hard coded threshold for now
@@ -617,12 +627,13 @@ void Rubber::SetupHitObject(vector<HitObject*> &pvho, HitObject * obj)
    obj->m_fe = m_d.m_hitEvent;
 
    pvho.push_back(obj);
-   m_vhoCollidable.push_back(obj);	//remember hit components of primitive
+   
+   if (!isUI)
+      m_vhoCollidable.push_back(obj);	//remember hit components of primitive
 }
 
-void Rubber::GetHitShapesDebug(vector<HitObject*> &pvho)
-{
-}
+#pragma endregion
+
 
 //
 // license:GPLv3+
@@ -669,14 +680,6 @@ void Rubber::AddPoint(int x, int y, const bool smooth)
 //
 // end of license:GPLv3+, back to 'old MAME'-like
 //
-
-void Rubber::EndPlay()
-{
-   IEditable::EndPlay();
-   m_vhoCollidable.clear();
-}
-
-#pragma endregion
 
 
 #pragma region Rendering

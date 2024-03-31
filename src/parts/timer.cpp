@@ -90,7 +90,7 @@ void Timer::RenderBlueprint(Sur *psur, const bool solid)
 {
 }
 
-void Timer::GetTimers(vector<HitTimer*> &pvht)
+void Timer::BeginPlay(vector<HitTimer*> &pvht)
 {
    IEditable::BeginPlay();
    m_phittimer = new HitTimer(GetName(), m_d.m_tdr.m_TimerInterval, this);
@@ -98,20 +98,23 @@ void Timer::GetTimers(vector<HitTimer*> &pvht)
       pvht.push_back(m_phittimer);
 }
 
-#pragma region Physics
-
-void Timer::GetHitShapes(vector<HitObject*> &pvho)
-{
-   m_phittimer = nullptr;
-}
-
-void Timer::GetHitShapesDebug(vector<HitObject*> &pvho)
-{
-}
-
 void Timer::EndPlay()
 {
    IEditable::EndPlay();
+}
+
+#pragma region Physics
+
+void Timer::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
+{
+   if (isUI)
+   {
+      // FIXME implement UI picking
+   }
+}
+
+void Timer::PhysicRelease(const bool isUI)
+{
 }
 
 #pragma endregion
@@ -165,7 +168,7 @@ STDMETHODIMP Timer::put_Enabled(VARIANT_BOOL newVal)
 
    const bool val = VBTOb(newVal);
 
-   if (val != m_d.m_tdr.m_TimerEnabled && m_phittimer)
+   if (g_pplayer && val != m_d.m_tdr.m_TimerEnabled && m_phittimer)
       g_pplayer->DeferTimerStateChange(m_phittimer, val);
 
    m_d.m_tdr.m_TimerEnabled = val;
@@ -188,7 +191,7 @@ STDMETHODIMP Timer::put_Interval(long newVal)
 
    m_d.m_tdr.m_TimerInterval = newVal;
 
-   if (m_phittimer)
+   if (g_pplayer && m_phittimer)
    {
       m_phittimer->m_interval = m_d.m_tdr.m_TimerInterval >= 0 ? max(m_d.m_tdr.m_TimerInterval, MAX_TIMER_MSEC_INTERVAL) : -1;
       m_phittimer->m_nextfire = g_pplayer->m_time_msec + m_phittimer->m_interval;

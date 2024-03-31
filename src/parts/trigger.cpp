@@ -18,7 +18,6 @@ Trigger::Trigger()
    m_animHeightOffset = 0.0f;
    m_vertexBuffer_animHeightOffset = -FLT_MAX;
 
-   m_hitEnabled = true;
    m_menuid = IDR_SURFACEMENU;
    m_propVisual = nullptr;
 }
@@ -31,7 +30,6 @@ Trigger::~Trigger()
 Trigger *Trigger::CopyForPlay(PinTable *live_table)
 {
    STANDARD_EDITABLE_WITH_DRAGPOINT_COPY_FOR_PLAY_IMPL(Trigger, live_table, m_vdpoint)
-   dst->m_hitEnabled = m_hitEnabled;
    return dst;
 }
 
@@ -308,12 +306,17 @@ void Trigger::RenderBlueprint(Sur *psur, const bool solid)
    psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius);
 }
 
-void Trigger::GetTimers(vector<HitTimer*> &pvht)
+void Trigger::BeginPlay(vector<HitTimer*> &pvht)
 {
    IEditable::BeginPlay();
    m_phittimer = new HitTimer(GetName(), m_d.m_tdr.m_TimerInterval, this);
    if (m_d.m_tdr.m_TimerEnabled)
       pvht.push_back(m_phittimer);
+}
+
+void Trigger::EndPlay()
+{
+   IEditable::EndPlay();
 }
 
 #pragma region Physics
@@ -323,155 +326,78 @@ void Trigger::GetTimers(vector<HitTimer*> &pvht)
 // Ported at: VisualPinball.Engine/VPT/Trigger/TriggerHitGenerator.cs
 //
 
-void Trigger::GetHitShapes(vector<HitObject*> &pvho)
-{
-   m_hitEnabled = m_d.m_enabled;
-
-   if (m_d.m_shape == TriggerStar || m_d.m_shape == TriggerButton)
-   {
-      const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
-
-      m_ptriggerhitcircle = new TriggerHitCircle(m_d.m_vCenter, m_d.m_radius, height, height + m_d.m_hit_height);
-
-      m_ptriggerhitcircle->m_enabled = m_d.m_enabled;
-      m_ptriggerhitcircle->m_ObjType = eTrigger;
-      m_ptriggerhitcircle->m_obj = (IFireEvents*)this;
-
-      m_ptriggerhitcircle->m_ptrigger = this;
-
-      pvho.push_back(m_ptriggerhitcircle);
-   }
-   else
-      CurvesToShapes(pvho);
-}
-
-//
-// end of license:GPLv3+, back to 'old MAME'-like
-//
-
-void Trigger::GetHitShapesDebug(vector<HitObject*> &pvho)
+void Trigger::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
 {
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
-   m_hitEnabled = m_d.m_enabled;
-   switch (m_d.m_shape)
+   if (m_d.m_shape == TriggerStar || m_d.m_shape == TriggerButton)
    {
-   case TriggerButton:
-   case TriggerStar:
-   {
-      Hit3DPoly * const pcircle = new Hit3DPoly(m_d.m_vCenter.x, m_d.m_vCenter.y, height + 10, m_d.m_radius, 32);
-      pcircle->m_ObjType = eTrigger;
-      pcircle->m_obj = (IFireEvents*)this;
-
-      pvho.push_back(pcircle);
-      break;
+      TriggerHitCircle* hitcircle = new TriggerHitCircle(m_d.m_vCenter, m_d.m_radius, height, height + m_d.m_hit_height);
+      hitcircle->m_enabled = isUI ? true : m_d.m_enabled;
+      hitcircle->m_ObjType = eTrigger;
+      hitcircle->m_obj = (IFireEvents *)this;
+      if (!isUI) // Keep reference to update enable flag
+      {
+         assert(m_ptriggerhitcircle == nullptr);
+         m_ptriggerhitcircle = hitcircle;
+      }
+      pvho.push_back(hitcircle);
    }
-
-   default:
-   case TriggerWireA:
-   case TriggerWireB:
-   case TriggerWireC:
-   case TriggerWireD:
-   case TriggerInder:
+   else
    {
       vector<RenderVertex> vvertex;
       GetRgVertex(vvertex);
 
-      const int cvertex = (int)vvertex.size();
-      Vertex3Ds * const rgv3d = new Vertex3Ds[cvertex];
-
-      for (int i = 0; i < cvertex; i++)
+      const int count = (int)vvertex.size();
+      for (int i = 0; i < count; i++)
       {
-         rgv3d[i].x = vvertex[i].x;
-         rgv3d[i].y = vvertex[i].y;
-         rgv3d[i].z = height + (float)(PHYS_SKIN*2.0);
+         const RenderVertex &pv1 = vvertex[(i < count - 1) ? (i + 1) : 0];
+         const RenderVertex &pv2 = vvertex[(i < count - 2) ? (i + 2) : (i + 2 - count)];
+
+         TriggerLineSeg *const plineseg = new TriggerLineSeg();
+         plineseg->m_ptrigger = isUI ? nullptr : this; // enable flag is checked through this reference during HitTest
+         plineseg->m_ObjType = eTrigger;
+         plineseg->m_obj = (IFireEvents *)this;
+         plineseg->m_hitBBox.zlow = height;
+         plineseg->m_hitBBox.zhigh = height + max(m_d.m_hit_height - 8.0f, 0.f); //adjust for same hit height as circular
+         plineseg->v1.x = pv1.x;
+         plineseg->v1.y = pv1.y;
+         plineseg->v2.x = pv2.x;
+         plineseg->v2.y = pv2.y;
+         plineseg->CalcNormal();
+         pvho.push_back(plineseg);
       }
 
-      Hit3DPoly * const ph3dp = new Hit3DPoly(rgv3d, cvertex);
-      ph3dp->m_ObjType = eTrigger;
-      ph3dp->m_obj = (IFireEvents*)this;
-
-      pvho.push_back(ph3dp);
-      //ph3dp->m_enabled = false;	//!! disable hit process on polygon body, only trigger edges 
-      break;
-   }
+      Vertex3Ds *const rgv3D = new Vertex3Ds[count];
+      for (int i = 0; i < count; i++)
+      {
+         rgv3D[i].x = vvertex[i].x;
+         rgv3D[i].y = vvertex[i].y;
+         rgv3D[i].z = height + (float)(PHYS_SKIN * 2.0);
+      }
+      Hit3DPoly *const ph3dpoly = new Hit3DPoly(rgv3D, count);
+      ph3dpoly->m_ObjType = eTrigger;
+      ph3dpoly->m_obj = (IFireEvents *)this;
+      if (!isUI) // Keep reference to update enable flag
+      {
+         assert(m_ptriggerhitpoly == nullptr);
+         m_ptriggerhitpoly = ph3dpoly;
+      }
+      pvho.push_back(ph3dpoly);
    }
 }
 
-//
-// license:GPLv3+
-// Ported at: VisualPinball.Engine/VPT/Trigger/TriggerHitGenerator.cs
-//
-
-void Trigger::CurvesToShapes(vector<HitObject*> &pvho)
+void Trigger::PhysicRelease(const bool isUI)
 {
-   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
-   vector<RenderVertex> vvertex;
-   GetRgVertex(vvertex);
-
-   const int count = (int)vvertex.size();
-   RenderVertex * const rgv = new RenderVertex[count];
-   Vertex3Ds * const rgv3D = new Vertex3Ds[count];
-
-   for (int i = 0; i < count; i++)
+   if (!isUI)
    {
-      rgv[i] = vvertex[i];
-      rgv3D[i].x = rgv[i].x;
-      rgv3D[i].y = rgv[i].y;
-      rgv3D[i].z = height + (float)(PHYS_SKIN*2.0);
+      m_ptriggerhitcircle = nullptr;
+      m_ptriggerhitpoly = nullptr;
    }
-#if 1	
-   for (int i = 0; i < count; i++)
-   {
-      const RenderVertex &pv2 = rgv[(i < count - 1) ? (i + 1) : 0];
-      const RenderVertex &pv3 = rgv[(i < count - 2) ? (i + 2) : (i + 2 - count)];
-
-      AddLine(pvho, pv2, pv3, height);
-   }
-#endif
-
-#if 1	
-   Hit3DPoly * const ph3dpoly = new Hit3DPoly(rgv3D, count);
-   ph3dpoly->m_ObjType = eTrigger;
-   ph3dpoly->m_obj = (IFireEvents*)this;
-
-   pvho.push_back(ph3dpoly);
-#else
-   delete[] rgv3D;
-#endif
-
-   delete[] rgv;
-}
-
-void Trigger::AddLine(vector<HitObject*> &pvho, const RenderVertex &pv1, const RenderVertex &pv2, const float height)
-{
-   TriggerLineSeg * const plineseg = new TriggerLineSeg();
-
-   plineseg->m_ptrigger = this;
-   plineseg->m_ObjType = eTrigger;
-   plineseg->m_obj = (IFireEvents*)this;
-
-   plineseg->m_hitBBox.zlow  = height;
-   plineseg->m_hitBBox.zhigh = height + max(m_d.m_hit_height - 8.0f, 0.f); //adjust for same hit height as circular
-
-   plineseg->v1.x = pv1.x;
-   plineseg->v1.y = pv1.y;
-   plineseg->v2.x = pv2.x;
-   plineseg->v2.y = pv2.y;
-
-   pvho.push_back(plineseg);
-
-   plineseg->CalcNormal();
 }
 
 //
 // end of license:GPLv3+, back to 'old MAME'-like
 //
-
-void Trigger::EndPlay()
-{
-   IEditable::EndPlay();
-   m_ptriggerhitcircle = nullptr;
-}
 
 void Trigger::TriggerAnimationHit()
 {
@@ -1196,24 +1122,18 @@ STDMETHODIMP Trigger::put_Surface(BSTR newVal)
 
 STDMETHODIMP Trigger::get_Enabled(VARIANT_BOOL *pVal)
 {
-   *pVal = FTOVB((g_pplayer) ? m_hitEnabled : m_d.m_enabled);
+   *pVal = FTOVB(m_d.m_enabled);
 
    return S_OK;
 }
 
 STDMETHODIMP Trigger::put_Enabled(VARIANT_BOOL newVal)
 {
-   if (g_pplayer)
-   {
-      m_hitEnabled = VBTOb(newVal);
-
-      if (m_ptriggerhitcircle) m_ptriggerhitcircle->m_enabled = m_hitEnabled;
-   }
-   else
-   {
-      m_d.m_enabled = VBTOb(newVal);
-      m_hitEnabled = m_d.m_enabled;
-   }
+   m_d.m_enabled = VBTOb(newVal);
+   if (m_ptriggerhitcircle)
+      m_ptriggerhitcircle->m_enabled = m_d.m_enabled;
+   if (m_ptriggerhitpoly)
+      m_ptriggerhitpoly->m_enabled = m_d.m_enabled;
 
    return S_OK;
 }

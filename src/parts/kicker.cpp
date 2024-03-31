@@ -139,13 +139,15 @@ void Kicker::UIRenderPass2(Sur * const psur)
    psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius*0.25f);
 }
 
-void Kicker::GetTimers(vector<HitTimer*> &pvht)
+void Kicker::BeginPlay(vector<HitTimer*> &pvht)
 {
    IEditable::BeginPlay();
    m_phittimer = new HitTimer(GetName(), m_d.m_tdr.m_TimerInterval, this);
    if (m_d.m_tdr.m_TimerEnabled)
       pvht.push_back(m_phittimer);
 }
+
+void Kicker::EndPlay() { IEditable::EndPlay(); }
 
 #pragma region Physics
 
@@ -154,57 +156,57 @@ void Kicker::GetTimers(vector<HitTimer*> &pvht)
 // Ported at: VisualPinball.Engine/VPT/Kicker/KickerHit.cs
 //
 
-void Kicker::GetHitShapes(vector<HitObject*> &pvho)
+void Kicker::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
 {
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
-
-   KickerHitCircle * const phitcircle = new KickerHitCircle(m_d.m_vCenter, m_d.m_radius *
-      (m_d.m_legacyMode ? (m_d.m_fallThrough ? 0.75f :
-                                               0.6f) // reduce the hit circle radius because only the inner circle of the kicker should start a hit event
-                                             : 1.f),
-      height, height+m_d.m_hit_height); // height of kicker hit cylinder
-
-   if (!m_d.m_legacyMode)
+   const float radius = m_d.m_radius * (m_d.m_legacyMode ? (m_d.m_fallThrough ? 0.75f : 0.6f) // reduce the hit circle radius because only the inner circle of the kicker should start a hit event
+                                                         : 1.f);
+   if (isUI)
    {
-      const float rad = phitcircle->radius * 0.8f;
-      m_hitMesh.resize(kickerHitNumVertices);
-      for (unsigned int t = 0; t < kickerHitNumVertices; t++)
-      {
-         // find the right normal by calculating the distance from current ball position to vertex of the kicker mesh               
-         Vertex3Ds vpos = Vertex3Ds(kickerHitMesh[t].x, kickerHitMesh[t].y, kickerHitMesh[t].z);
-         vpos.x = vpos.x*rad + m_d.m_vCenter.x;
-         vpos.y = vpos.y*rad + m_d.m_vCenter.y;
-         vpos.z = vpos.z*rad + height;
-         m_hitMesh[t] = vpos;
-      }
+      HitCircle *const phitcircle = new HitCircle(m_d.m_vCenter, radius, height, height + m_d.m_hit_height); // height of kicker hit cylinder
+      phitcircle->m_ObjType = eKicker;
+      phitcircle->m_obj = (IFireEvents *)this;
+      pvho.push_back(phitcircle);
    }
-
-   phitcircle->m_enabled = m_d.m_enabled;
-
-   phitcircle->m_ObjType = eKicker;
-   phitcircle->m_obj = (IFireEvents*)this;
-
-   phitcircle->m_pkicker = this;
-
-   pvho.push_back(phitcircle);
-
-   m_phitkickercircle = phitcircle;
+   else
+   {
+      KickerHitCircle *const phitcircle = new KickerHitCircle(m_d.m_vCenter, radius, height, height + m_d.m_hit_height); // height of kicker hit cylinder
+      if (!m_d.m_legacyMode)
+      {
+         const float rad = phitcircle->radius * 0.8f;
+         m_hitMesh.resize(kickerHitNumVertices);
+         for (unsigned int t = 0; t < kickerHitNumVertices; t++)
+         {
+            // find the right normal by calculating the distance from current ball position to vertex of the kicker mesh
+            Vertex3Ds vpos = Vertex3Ds(kickerHitMesh[t].x, kickerHitMesh[t].y, kickerHitMesh[t].z);
+            vpos.x = vpos.x * rad + m_d.m_vCenter.x;
+            vpos.y = vpos.y * rad + m_d.m_vCenter.y;
+            vpos.z = vpos.z * rad + height;
+            m_hitMesh[t] = vpos;
+         }
+      }
+      phitcircle->m_enabled = m_d.m_enabled;
+      phitcircle->m_ObjType = eKicker;
+      phitcircle->m_obj = (IFireEvents *)this;
+      phitcircle->m_pkicker = this;
+      m_phitkickercircle = phitcircle;
+      pvho.push_back(phitcircle);
+   }
 }
+
+void Kicker::PhysicRelease(const bool isUI)
+{
+   if (!isUI)
+   {
+      m_phitkickercircle = nullptr;
+      m_hitMesh.clear();
+   }
+}
+
 
 //
 // end of license:GPLv3+, back to 'old MAME'-like
 //
-
-void Kicker::GetHitShapesDebug(vector<HitObject*> &pvho)
-{
-}
-
-void Kicker::EndPlay()
-{
-   m_phitkickercircle = nullptr;
-   m_hitMesh.clear();
-   IEditable::EndPlay();
-}
 
 #pragma endregion
 

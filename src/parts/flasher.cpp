@@ -247,7 +247,7 @@ void Flasher::RenderBlueprint(Sur *psur, const bool solid)
 {
 }
 
-void Flasher::GetTimers(vector<HitTimer*> &pvht)
+void Flasher::BeginPlay(vector<HitTimer*> &pvht)
 {
    IEditable::BeginPlay();
    m_phittimer = new HitTimer(GetName(), m_d.m_tdr.m_TimerInterval, this);
@@ -255,20 +255,23 @@ void Flasher::GetTimers(vector<HitTimer*> &pvht)
       pvht.push_back(m_phittimer);
 }
 
-void Flasher::GetHitShapes(vector<HitObject*> &pvho)
-{
-}
-
-void Flasher::GetHitShapesDebug(vector<HitObject*> &pvho)
-{
-}
-
-
 void Flasher::EndPlay()
 {
    IEditable::EndPlay();
    // ensure not locked just in case the player exits during a LS sequence
    m_lockedByLS = false;
+}
+
+void Flasher::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
+{
+   if (isUI)
+   {
+      // FIXME implement UI picking
+   }
+}
+
+void Flasher::PhysicRelease(const bool isUI)
+{
 }
 
 void Flasher::SetObjectPos()

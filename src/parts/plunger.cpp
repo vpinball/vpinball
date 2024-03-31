@@ -135,7 +135,7 @@ void Plunger::UIRenderPass2(Sur * const psur)
    }
 }
 
-void Plunger::GetTimers(vector<HitTimer*> &pvht)
+void Plunger::BeginPlay(vector<HitTimer*> &pvht)
 {
    IEditable::BeginPlay();
    m_phittimer = new HitTimer(GetName(), m_d.m_tdr.m_TimerInterval, this);
@@ -143,31 +143,35 @@ void Plunger::GetTimers(vector<HitTimer*> &pvht)
       pvht.push_back(m_phittimer);
 }
 
+void Plunger::EndPlay()
+{
+   IEditable::EndPlay();
+}
 
 #pragma region Physics
 
-void Plunger::GetHitShapes(vector<HitObject*> &pvho)
+void Plunger::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
 {
-   const float zheight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_v.x, m_d.m_v.y);
+   if (isUI)
+   {
+      // FIXME implement UI picking
+   }
+   else
+   {
+      const float zheight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_v.x, m_d.m_v.y);
 
-   HitPlunger * const php = new HitPlunger(m_d.m_v.x - m_d.m_width,
-      m_d.m_v.y + m_d.m_height, m_d.m_v.x + m_d.m_width,
-      zheight, m_d.m_v.y - m_d.m_stroke, m_d.m_v.y,
-      this);
+      HitPlunger *const php = new HitPlunger(m_d.m_v.x - m_d.m_width, m_d.m_v.y + m_d.m_height, m_d.m_v.x + m_d.m_width, zheight, m_d.m_v.y - m_d.m_stroke, m_d.m_v.y, this);
 
-   pvho.push_back(php);
-   php->m_pplunger = this;
-   m_phitplunger = php;
+      pvho.push_back(php);
+      php->m_pplunger = this;
+      m_phitplunger = php;
+   }
 }
 
-void Plunger::GetHitShapesDebug(vector<HitObject*> &pvho)
+void Plunger::PhysicRelease(const bool isUI)
 {
-}
-
-void Plunger::EndPlay()
-{
-   m_phitplunger = nullptr;       // possible memory leak here?
-   IEditable::EndPlay();
+   if (!isUI)
+      m_phitplunger = nullptr; // possible memory leak here?
 }
 
 #pragma endregion

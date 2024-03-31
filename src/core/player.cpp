@@ -775,6 +775,9 @@ void Player::OnClose()
       m_implicitPlayfieldMesh = nullptr;
    }
 
+   delete m_physics;
+   m_physics = nullptr;
+
    for (auto probe : m_ptable->m_vrenderprobe)
       probe->RenderRelease();
    for (auto renderable : m_vhitables)
@@ -806,8 +809,6 @@ void Player::OnClose()
    m_controlclsidsafe.clear();
 
    m_changed_vht.clear();
-
-   delete m_physics;
 
    g_pplayer = nullptr;
 
@@ -1183,7 +1184,7 @@ HRESULT Player::Init()
    for (auto editable : m_ptable->m_vedit)
       if (editable->GetIHitable())
       {
-         editable->GetIHitable()->GetTimers(m_vht);
+         editable->GetIHitable()->BeginPlay(m_vht);
          m_vhitables.push_back(editable->GetIHitable());
       }
    for (RenderProbe* probe : m_ptable->m_vrenderprobe)

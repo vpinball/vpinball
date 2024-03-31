@@ -113,18 +113,14 @@ public:
 
    TriggerData m_d;
 
-   bool m_hitEnabled;		// for custom shape triggers
-
 private:
-   void CurvesToShapes(vector<HitObject*> &pvho);
-   void AddLine(vector<HitObject*> &pvho, const RenderVertex &pv1, const RenderVertex &pv2, const float height);
-
    void InitShape(float x, float y);
    void GenerateMesh();
 
    PinTable *m_ptable;
 
-   TriggerHitCircle *m_ptriggerhitcircle;
+   TriggerHitCircle *m_ptriggerhitcircle = nullptr;
+   Hit3DPoly *m_ptriggerhitpoly = nullptr;
 
    RenderDevice *m_rd = nullptr;
    MeshBuffer *m_meshBuffer = nullptr;

@@ -185,7 +185,7 @@ void Bumper::RenderBlueprint(Sur *psur, const bool solid)
    psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius);
 }
 
-void Bumper::GetTimers(vector<HitTimer*> &pvht)
+void Bumper::BeginPlay(vector<HitTimer*> &pvht)
 {
    IEditable::BeginPlay();
    m_phittimer = new HitTimer(GetName(), m_d.m_tdr.m_TimerInterval, this);
@@ -193,38 +193,35 @@ void Bumper::GetTimers(vector<HitTimer*> &pvht)
       pvht.push_back(m_phittimer);
 }
 
+void Bumper::EndPlay() { IEditable::EndPlay(); }
+
 
 #pragma region Physics
 
-void Bumper::GetHitShapes(vector<HitObject*> &pvho)
+void Bumper::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
 {
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
-
-   BumperHitCircle * const phitcircle = new BumperHitCircle(m_d.m_vCenter,m_d.m_radius,height,height+m_d.m_heightScale);
-
-   phitcircle->m_bumperanim_hitEvent = m_d.m_hitEvent;
-   phitcircle->m_enabled = m_d.m_collidable;
-   phitcircle->m_scatter = ANGTORAD(m_d.m_scatter);
-
-   phitcircle->m_pbumper = this;
-
-   pvho.push_back(phitcircle);
-
-   m_pbumperhitcircle = phitcircle;
+   if (isUI)
+   {
+      HitCircle *const pcircle = new HitCircle(m_d.m_vCenter, m_d.m_radius, height, height + m_d.m_heightScale);
+      pvho.push_back(pcircle);
+   }
+   else
+   {
+      BumperHitCircle *const phitcircle = new BumperHitCircle(m_d.m_vCenter, m_d.m_radius, height, height + m_d.m_heightScale);
+      phitcircle->m_bumperanim_hitEvent = m_d.m_hitEvent;
+      phitcircle->m_enabled = m_d.m_collidable;
+      phitcircle->m_scatter = ANGTORAD(m_d.m_scatter);
+      phitcircle->m_pbumper = this;
+      m_pbumperhitcircle = phitcircle;
+      pvho.push_back(phitcircle);
+   }
 }
 
-void Bumper::GetHitShapesDebug(vector<HitObject*> &pvho)
+void Bumper::PhysicRelease(const bool isUI)
 {
-   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
-
-   Hit3DPoly * const pcircle = new Hit3DPoly(m_d.m_vCenter.x, m_d.m_vCenter.y, height + m_d.m_heightScale, m_d.m_radius, 32);
-   pvho.push_back(pcircle);
-}
-
-void Bumper::EndPlay()
-{
-   IEditable::EndPlay();
-   m_pbumperhitcircle = nullptr;
+   if (!isUI)
+      m_pbumperhitcircle = nullptr;
 }
 
 #pragma endregion

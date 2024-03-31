@@ -329,24 +329,21 @@ void Surface::RenderBlueprint(Sur *psur, const bool solid)
    psur->Polygon(vvertex);
 }
 
-void Surface::GetTimers(vector<HitTimer*> &pvht)
+void Surface::BeginPlay(vector<HitTimer*> &pvht)
 {
    IEditable::BeginPlay();
+
+   m_isDropped = false;
+   m_disabled = false;
+
    m_phittimer = new HitTimer(GetName(), m_d.m_tdr.m_TimerInterval, this);
    if (m_d.m_tdr.m_TimerEnabled)
       pvht.push_back(m_phittimer);
 }
 
-void Surface::GetHitShapes(vector<HitObject*> &pvho)
+void Surface::EndPlay()
 {
-   CurvesToShapes(pvho);
-
-   m_isDropped = false;
-   m_disabled = false;
-}
-
-void Surface::GetHitShapesDebug(vector<HitObject*> &pvho)
-{
+   IEditable::EndPlay();
 }
 
 //
@@ -354,14 +351,14 @@ void Surface::GetHitShapesDebug(vector<HitObject*> &pvho)
 // Ported at: VisualPinball.Engine/VPT/Surface/SurfaceHitGenerator.cs
 //
 
-void Surface::CurvesToShapes(vector<HitObject*> &pvho)
+void Surface::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
 {
    vector<RenderVertex> vvertex;
    GetRgVertex(vvertex);
 
    const int count = (int)vvertex.size();
    Vertex3Ds * const rgv3Dt = new Vertex3Ds[count];
-   Vertex3Ds * const rgv3Db = m_d.m_isBottomSolid ? new Vertex3Ds[count] : nullptr;
+   Vertex3Ds *const rgv3Db = (m_d.m_isBottomSolid || isUI) ? new Vertex3Ds[count] : nullptr;
 
    const float bottom = m_d.m_heightbottom;
    const float top = m_d.m_heighttop;
@@ -384,16 +381,26 @@ void Surface::CurvesToShapes(vector<HitObject*> &pvho)
       const RenderVertex &pv2 = vvertex[(i + 1) % count];
       const RenderVertex &pv3 = vvertex[(i + 2) % count];
 
-      AddLine(pvho, pv2, pv3);
+      AddLine(pvho, pv2, pv3, isUI);
    }
 
    Hit3DPoly * const ph3dpolyt = new Hit3DPoly(rgv3Dt, count);
-   SetupHitObject(pvho, ph3dpolyt);
+   SetupHitObject(pvho, ph3dpolyt, isUI);
 
-   if (m_d.m_isBottomSolid)
+   if (m_d.m_isBottomSolid || isUI)
    {
       Hit3DPoly * const ph3dpolyb = new Hit3DPoly(rgv3Db, count);
-      SetupHitObject(pvho, ph3dpolyb);
+      SetupHitObject(pvho, ph3dpolyb, isUI);
+   }
+}
+
+void Surface::PhysicRelease(const bool isUI)
+{
+   if (!isUI)
+   {
+      m_vlinesling.clear();
+      m_vhoDrop.clear();
+      m_vhoCollidable.clear();
    }
 }
 
@@ -401,7 +408,7 @@ void Surface::CurvesToShapes(vector<HitObject*> &pvho)
 // end of license:GPLv3+, back to 'old MAME'-like
 //
 
-void Surface::SetupHitObject(vector<HitObject*> &pvho, HitObject * const obj)
+void Surface::SetupHitObject(vector<HitObject*> &pvho, HitObject * const obj, const bool isUI)
 {
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szPhysicsMaterial);
    if (!m_d.m_overwritePhysics)
@@ -419,7 +426,7 @@ void Surface::SetupHitObject(vector<HitObject*> &pvho, HitObject * const obj)
       obj->m_scatter = ANGTORAD(m_d.m_scatter);
    }
 
-   obj->m_enabled = m_d.m_collidable;
+   obj->m_enabled = isUI ? true : m_d.m_collidable;
 
    if (m_d.m_hitEvent)
    {
@@ -429,9 +436,12 @@ void Surface::SetupHitObject(vector<HitObject*> &pvho, HitObject * const obj)
    }
 
    pvho.push_back(obj);
-   m_vhoCollidable.push_back(obj);	//remember hit components of wall
-   if (m_d.m_droppable)
-      m_vhoDrop.push_back(obj);
+   if (!isUI)
+   {
+      m_vhoCollidable.push_back(obj); //remember hit components of wall
+      if (m_d.m_droppable)
+         m_vhoDrop.push_back(obj);
+   }
 }
 
 //
@@ -439,10 +449,13 @@ void Surface::SetupHitObject(vector<HitObject*> &pvho, HitObject * const obj)
 // Ported at: VisualPinball.Engine/VPT/Surface/SurfaceHitGenerator.cs
 //
 
-void Surface::AddLine(vector<HitObject*> &pvho, const RenderVertex &pv1, const RenderVertex &pv2)
+void Surface::AddLine(vector<HitObject*> &pvho, const RenderVertex &pv1, const RenderVertex &pv2, const bool isUI)
 {
    const float bottom = m_d.m_heightbottom;
    const float top = m_d.m_heighttop;
+
+   if (isUI)
+      return;
 
    LineSeg *plineseg;
    if (!pv1.slingshot)
@@ -460,7 +473,7 @@ void Surface::AddLine(vector<HitObject*> &pvho, const RenderVertex &pv1, const R
       m_vlinesling.push_back(plinesling);
    }
 
-   SetupHitObject(pvho, plineseg);
+   SetupHitObject(pvho, plineseg, isUI);
 
    if (pv1.slingshot)  // slingshots always have hit events
    {
@@ -471,18 +484,18 @@ void Surface::AddLine(vector<HitObject*> &pvho, const RenderVertex &pv1, const R
 
    if (m_d.m_heightbottom != 0.f)
       // add lower edge as a line
-      SetupHitObject(pvho, new HitLine3D(Vertex3Ds(pv1.x, pv1.y, bottom), Vertex3Ds(pv2.x, pv2.y, bottom)));
+      SetupHitObject(pvho, new HitLine3D(Vertex3Ds(pv1.x, pv1.y, bottom), Vertex3Ds(pv2.x, pv2.y, bottom)), isUI);
 
    // add upper edge as a line
-   SetupHitObject(pvho, new HitLine3D(Vertex3Ds(pv1.x, pv1.y, top), Vertex3Ds(pv2.x, pv2.y, top)));
+   SetupHitObject(pvho, new HitLine3D(Vertex3Ds(pv1.x, pv1.y, top), Vertex3Ds(pv2.x, pv2.y, top)), isUI);
 
    // create vertical joint between the two line segments
-   SetupHitObject(pvho, new HitLineZ(pv1, bottom, top));
+   SetupHitObject(pvho, new HitLineZ(pv1, bottom, top), isUI);
 
    // add upper and lower end points of line
    if (m_d.m_heightbottom != 0.f)
-      SetupHitObject(pvho, new HitPoint(Vertex3Ds(pv1.x, pv1.y, bottom)));
-   SetupHitObject(pvho, new HitPoint(Vertex3Ds(pv1.x, pv1.y, top)));
+      SetupHitObject(pvho, new HitPoint(Vertex3Ds(pv1.x, pv1.y, bottom)), isUI);
+   SetupHitObject(pvho, new HitPoint(Vertex3Ds(pv1.x, pv1.y, top)), isUI);
 }
 
 //
@@ -507,14 +520,6 @@ void Surface::GetBoundingVertices(vector<Vertex3Ds> &bounds, vector<Vertex3Ds> *
 		if (legacy_bounds)
 			legacy_bounds->push_back(pv);
 	}
-}
-
-void Surface::EndPlay()
-{
-   IEditable::EndPlay();
-   m_vlinesling.clear();
-   m_vhoDrop.clear();
-   m_vhoCollidable.clear();
 }
 
 void Surface::UpdateBounds()
@@ -1587,7 +1592,7 @@ STDMETHODIMP Surface::get_IsDropped(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Surface::put_IsDropped(VARIANT_BOOL newVal)
 {
-   if (!g_pplayer || !m_d.m_droppable)
+   if (!m_d.m_droppable)
       return E_FAIL;
 
    const bool val = VBTOb(newVal);
@@ -1766,16 +1771,11 @@ STDMETHODIMP Surface::get_Collidable(VARIANT_BOOL *pVal)
 STDMETHODIMP Surface::put_Collidable(VARIANT_BOOL newVal)
 {
    const bool fNewVal = VBTOb(newVal);
-
-   if (!g_pplayer)
-       m_d.m_collidable = fNewVal;
-   else
-   {
-       const bool b = m_d.m_droppable ? (fNewVal && !m_isDropped) : fNewVal;
-       if (!m_vhoCollidable.empty() && m_vhoCollidable[0]->m_enabled != b)
-           for (size_t i = 0; i < m_vhoCollidable.size(); i++) //!! costly
-              m_vhoCollidable[i]->m_enabled = b; //copy to hit checking on entities composing the object 
-   }
+   m_d.m_collidable = fNewVal;
+   const bool b = m_d.m_droppable ? (fNewVal && !m_isDropped) : fNewVal;
+   if (!m_vhoCollidable.empty() && m_vhoCollidable[0]->m_enabled != b)
+      for (size_t i = 0; i < m_vhoCollidable.size(); i++) //!! costly
+         m_vhoCollidable[i]->m_enabled = b; //copy to hit checking on entities composing the object 
 
    return S_OK;
 }

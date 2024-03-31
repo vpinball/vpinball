@@ -118,11 +118,8 @@ void IEditable::BeginPlay()
 
 void IEditable::EndPlay()
 {
-   if (m_phittimer)
-   {
-      delete m_phittimer;
-      m_phittimer = nullptr;
-   }
+   delete m_phittimer;
+   m_phittimer = nullptr;
 }
 
 void IEditable::RenderBlueprint(Sur *psur, const bool solid)

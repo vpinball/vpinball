@@ -227,11 +227,6 @@ void Decal::UIRenderPass2(Sur * const psur)
    }
 }
 
-void Decal::GetTimers(vector<HitTimer*> &pvht)
-{
-   IEditable::BeginPlay();
-}
-
 void Decal::GetTextSize(int * const px, int * const py)
 {
 #ifndef __STANDALONE__
@@ -522,20 +517,21 @@ HFONT Decal::GetFont()
 }
 
 
+void Decal::BeginPlay(vector<HitTimer *> &pvht) { IEditable::BeginPlay(); }
+
+void Decal::EndPlay() { IEditable::EndPlay(); }
+
 #pragma region Physics
 
-void Decal::GetHitShapes(vector<HitObject*> &pvho)
+void Decal::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
 {
+   if (isUI)
+   {
+      // FIXME implement UI picking
+   }
 }
 
-void Decal::GetHitShapesDebug(vector<HitObject*> &pvho)
-{
-}
-
-void Decal::EndPlay()
-{
-   IEditable::EndPlay();
-}
+void Decal::PhysicRelease(const bool isUI) { }
 
 #pragma endregion
 

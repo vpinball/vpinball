@@ -147,10 +147,10 @@ public:
 	STDMETHOD(GetPredefinedValue)(DISPID dispID, DWORD dwCookie, VARIANT *pVarOut) {return GetPTable()->GetPredefinedValue(dispID, dwCookie, pVarOut, this);} \
 	virtual void SetDefaults(const bool fromMouseClick); \
 	/* Hitable implementation */ \
-	virtual void GetTimers(vector<HitTimer*> &pvht); \
-	virtual void GetHitShapes(vector<HitObject*> &pvho); \
-	virtual void GetHitShapesDebug(vector<HitObject*> &pvho); \
+	virtual void BeginPlay(vector<HitTimer*> &pvht); \
 	virtual void EndPlay(); \
+	virtual void PhysicSetup(vector<HitObject *> &pvho, const bool isUI); \
+	virtual void PhysicRelease(const bool isUI); \
 	/* IRenderable implementation */ \
 	virtual void RenderSetup(RenderDevice *device); \
 	virtual void UpdateAnimation(const float diff_time_msec); \
@@ -275,7 +275,7 @@ public:
    void BeginPlay();
    void EndPlay();
 
-   HitTimer *m_phittimer;
+   HitTimer *m_phittimer = nullptr;
 
    VARIANT m_uservalue;
 

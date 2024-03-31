@@ -359,8 +359,8 @@ private:
 #endif
 
    bool BrowseFor3DMeshFile();
-   void SetupHitObject(vector<HitObject*> &pvho, HitObject * obj);
-   void AddHitEdge(vector<HitObject*> &pvho, robin_hood::unordered_set< robin_hood::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j, const Vertex3Ds &vi, const Vertex3Ds &vj);
+   void SetupHitObject(vector<HitObject *> &pvho, HitObject *obj, const bool isUI);
+   void AddHitEdge(vector<HitObject*> &pvho, robin_hood::unordered_set< robin_hood::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j, const Vertex3Ds &vi, const Vertex3Ds &vj, const bool isUI);
 
    void CalculateBuiltinOriginal();
    void WaitForMeshDecompression();
