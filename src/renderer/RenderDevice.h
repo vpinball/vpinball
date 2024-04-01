@@ -237,6 +237,22 @@ public:
 
    #if defined(ENABLE_BGFX)
    bgfx::ProgramHandle m_program = BGFX_INVALID_HANDLE; // Bound program for next draw submission
+   void NextView()
+   {
+      if (m_activeViewId == 255)
+         SubmitFrame();
+      m_activeViewId++;
+      bgfx::resetView(m_activeViewId);
+      bgfx::setViewMode(m_activeViewId, bgfx::ViewMode::Sequential);
+      bgfx::setViewClear(m_activeViewId, BGFX_CLEAR_NONE);
+      bgfx::touch(m_activeViewId);
+   }
+   void SubmitFrame()
+   {
+      bgfx::frame();
+      RenderTarget::OnFrameFlushed();
+      m_activeViewId = -1;
+   }
    
    #elif defined(ENABLE_OPENGL)
    int getGLVersion() const { return m_GLversion; }
@@ -338,7 +354,6 @@ public:
    bgfx::VertexLayout* m_pVertexTexelDeclaration = nullptr;
    bgfx::VertexLayout* m_pVertexNormalTexelDeclaration = nullptr;
    int m_activeViewId = -1;
-   int m_maxViewId = 254;
    uint64_t m_bgfxState = 0L;
    
 #elif defined(ENABLE_OPENGL)

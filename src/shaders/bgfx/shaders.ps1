@@ -105,7 +105,7 @@ for($i = 0; $i -lt 5; $i++)
       $variants2 = @("TEX", "NOTEX")
       foreach ($variant2 in $variants2)
       {
-         $Parms = ("-f vs_basic.sc -o " + $outputs[$i] + "/vs_classic_light_" + $variant2.ToLower() + "_" + $variant.ToLower() + ".bin " + $targets[$i] + " --type vertex --define CLASSIC_LIGHT " + $variant + ";" + $variant2).Split(" ")
+         $Parms = ("-f vs_basic.sc -o " + $outputs[$i] + "/vs_classic_light_" + $variant2.ToLower() + "_" + $variant.ToLower() + ".bin " + $targets[$i] + " --type vertex --define CLASSIC_LIGHT;" + $variant + ";" + $variant2).Split(" ")
          & "$shaderc" $Parms
          $Parms = ("-f fs_classic_light.sc -o " + $outputs[$i] + "/fs_classic_light_" + $variant2.ToLower() + "_" + $variant.ToLower() + ".bin " + $targets[$i] + " --type fragment --define " + $variant + ";" + $variant2).Split(" ")
          & "$shaderc" $Parms

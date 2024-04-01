@@ -507,7 +507,6 @@ void RenderTarget::CopyTo(RenderTarget* dest, const bool copyColor, const bool c
          bgfx::blit(m_rd->m_activeViewId, dest->m_color_tex, px2, py2, m_color_tex, px1, py1, w1, h1);
       if (m_has_depth && dest->m_has_depth && copyDepth)
          bgfx::blit(m_rd->m_activeViewId, dest->m_depth_tex, px2, py2, m_depth_tex, px1, py1, w1, h1);
-      bgfx::touch(m_rd->m_activeViewId);
    }
    else
    {
@@ -556,23 +555,16 @@ void RenderTarget::CopyTo(RenderTarget* dest, const bool copyColor, const bool c
 
 void RenderTarget::Activate(const int layer)
 {
-   #if defined(ENABLE_BGFX)
-   // FIXME BGFX we always switch to the next view since we need it if a flush has occured, still this is suboptimal
-   m_rd->m_activeViewId++;
-   bgfx::resetView(m_rd->m_activeViewId);
-   bgfx::setViewName(m_rd->m_activeViewId, m_name.c_str());
-   bgfx::setViewClear(m_rd->m_activeViewId, BGFX_CLEAR_NONE);
-   bgfx::setViewMode(m_rd->m_activeViewId, bgfx::ViewMode::Sequential);
-   bgfx::setViewFrameBuffer(m_rd->m_activeViewId, m_framebuffer);
-   bgfx::setViewRect(m_rd->m_activeViewId, 0, 0, m_width, m_height);
-   #endif
-
    if (current_render_target == this && current_render_layer == layer)
       return;
    current_render_target = this;
    current_render_layer = layer;
    
    #if defined(ENABLE_BGFX)
+   m_rd->NextView();
+   bgfx::setViewName(m_rd->m_activeViewId, m_name.c_str());
+   bgfx::setViewFrameBuffer(m_rd->m_activeViewId, m_framebuffer);
+   bgfx::setViewRect(m_rd->m_activeViewId, 0, 0, m_width, m_height);
 
    #elif defined(ENABLE_OPENGL)
    if (m_color_sampler)

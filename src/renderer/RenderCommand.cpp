@@ -126,7 +126,7 @@ void RenderCommand::Execute(const int nInstances, const bool log)
       RenderTarget* rt = RenderTarget::GetCurrentRenderTarget();
       if (rt->m_nLayers > 1)
       {
-         // ImgUI does not support layered rendering, so we need to render once per layer
+         // ImGui does not support layered rendering, so we need to render once per layer
          for (int layer = 0; layer < rt->m_nLayers; layer++)
          {
             rt->Activate(layer);

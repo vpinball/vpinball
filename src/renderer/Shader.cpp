@@ -1262,13 +1262,10 @@ bool Shader::Load(const std::string& name, const BYTE* code, unsigned int codeSi
       loadProgram(reader, SHADER_TECHNIQUE_basic_without_texture, "vs_basic_notex", "fs_basic_notex_noat_norefl");
       loadProgram(reader, SHADER_TECHNIQUE_basic_reflection_only, "vs_basic_tex", "fs_basic_tex_at_refl"); // TODO tex & at do not have any effetc on this
       loadProgram(reader, SHADER_TECHNIQUE_light_with_texture, "vs_classic_light_tex_noshadow", "fs_classic_light_tex_noshadow");
-      loadProgram(reader, SHADER_TECHNIQUE_light_with_texture_isMetal, "vs_classic_light_tex_noshadow", "fs_classic_light_tex_noshadow");
       loadProgram(reader, SHADER_TECHNIQUE_light_without_texture, "vs_classic_light_notex_noshadow", "fs_classic_light_notex_noshadow");
-      loadProgram(reader, SHADER_TECHNIQUE_light_without_texture_isMetal, "vs_classic_light_notex_noshadow", "fs_classic_light_notex_noshadow");
       //loadProgram(reader, SHADER_TECHNIQUE_bg_decal_without_texture, "", "");
       //loadProgram(reader, SHADER_TECHNIQUE_bg_decal_with_texture, "", "");
-      //loadProgram(reader, SHADER_TECHNIQUE_kickerBoolean, "", "");
-      //loadProgram(reader, SHADER_TECHNIQUE_kickerBoolean_isMetal, "", "");*/
+      //loadProgram(reader, SHADER_TECHNIQUE_kickerBoolean, "", "");*/
    }
    else if (name == "BallShader.glfx"s)
    {

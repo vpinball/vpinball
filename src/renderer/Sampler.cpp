@@ -55,31 +55,30 @@ Sampler::Sampler(RenderDevice* rd, BaseTexture* const surf, const bool force_lin
    else
       data = bgfx::makeRef(upload->data(), m_height * upload->pitch(), [](void* _ptr, void* _userData) { delete _userData; }, upload);
 
-   // Create base texture without mipmaps (BGFX does not support automatic mipmap generation for textures)
-   uint64_t flags = BGFX_SAMPLER_NONE | (is_srgb ? BGFX_TEXTURE_SRGB : BGFX_TEXTURE_NONE);
-   m_texture = bgfx::createTexture2D(m_width, m_height, false, 1, bgfx_format, flags, data);
-   
-   // Create a render target and blit texture on it to force BGFX mip map generation
-   flags = BGFX_SAMPLER_NONE | BGFX_TEXTURE_RT | BGFX_TEXTURE_BLIT_DST | (is_srgb ? BGFX_TEXTURE_SRGB : BGFX_TEXTURE_NONE);
-   m_mips_texture = bgfx::createTexture2D(m_width, m_height, true, 1, bgfx_format, flags);
-   bgfx::Attachment m_mips_attachment;
-   m_mips_attachment.init(m_mips_texture);
-   m_mips_framebuffer = bgfx::createFrameBuffer(1, &m_mips_attachment);
-   bgfx::setViewFrameBuffer(m_rd->m_maxViewId, m_mips_framebuffer);
-   bgfx::setViewRect(m_rd->m_maxViewId, 0, 0, m_width, m_height);
-   bgfx::setViewName(m_rd->m_maxViewId, "MipMaps");
-   bgfx::touch(m_rd->m_maxViewId);
-   // FIXME BGFX a clean GPU mipmap generation with Kaiser filter would be better than doing a blit to trigger render target mipmap generation, to be refactored when fixing dynamic texture
-   bgfx::blit(m_rd->m_maxViewId, m_mips_texture, 0, 0, m_texture);
-   m_rd->m_maxViewId--;
-   if (m_rd->m_activeViewId > m_rd->m_maxViewId - 2)
-   {
-      bgfx::frame();
-      m_rd->m_maxViewId = 254;
-   }
-
-   // FIXME release framebuffer and base texture without mipmaps, 2 frames after submit
+   // Create a render target and blit texture on it to force BGFX mip map generation (BGFX does not support automatic mipmap generation for textures)
+   const uint64_t flags = BGFX_SAMPLER_NONE | (is_srgb ? BGFX_TEXTURE_SRGB : BGFX_TEXTURE_NONE);
+   m_texture = bgfx::createTexture2D(m_width, m_height, true, 1, bgfx_format, flags | BGFX_TEXTURE_RT | BGFX_TEXTURE_BLIT_DST);
+   m_mips_texture = bgfx::createTexture2D(m_width, m_height, false, 1, bgfx_format, flags, data); // Base texture without mipmaps
    m_mips_gpu_frame = bgfx::getStats()->gpuFrameNum;
+   bgfx::Attachment m_mips_attachment;
+   m_mips_attachment.init(m_texture);
+   m_mips_framebuffer = bgfx::createFrameBuffer(1, &m_mips_attachment);
+   // Blit to RT
+   if (m_rd->m_activeViewId < 0)
+      m_rd->NextView();
+   // FIXME BGFX a clean GPU mipmap generation with Kaiser filter would be better than doing a blit to trigger render target mipmap generation, to be refactored when fixing dynamic texture
+   bgfx::blit(m_rd->m_activeViewId, m_texture, 0, 0, m_mips_texture);
+   // Force RT resolution, in turns causing mipmap generation
+   m_rd->NextView();
+   bgfx::setViewFrameBuffer(m_rd->m_activeViewId, m_mips_framebuffer);
+   // Get back to the rendering view
+   RenderTarget* activeRT = RenderTarget::GetCurrentRenderTarget();
+   int activeLayer = RenderTarget::GetCurrentRenderLayer();
+   if (activeRT)
+   {
+      RenderTarget::OnFrameFlushed();
+      activeRT->Activate();
+   }
 
 #elif defined(ENABLE_OPENGL)
    m_texTarget = GL_TEXTURE_2D;
@@ -230,11 +229,11 @@ bgfx::TextureHandle Sampler::GetCoreTexture()
 {
    if (bgfx::isValid(m_mips_texture) && bgfx::getStats()->gpuFrameNum >= m_mips_gpu_frame + 2)
    {
-      // Mipmaps have been generated: copy back data to an immutable texture block
-      bgfx::destroy(m_texture);
+      // Mipmaps have been generated, we can release the framebuffer and base version of the texture
+      bgfx::destroy(m_mips_texture);
       bgfx::destroy(m_mips_framebuffer);
-      m_texture = m_mips_texture; // FIXME data leack, horrible hack to test mipmaps
       m_mips_texture = BGFX_INVALID_HANDLE;
+      m_mips_framebuffer = BGFX_INVALID_HANDLE;
       m_mips_gpu_frame = 0;
    }
    return m_texture;

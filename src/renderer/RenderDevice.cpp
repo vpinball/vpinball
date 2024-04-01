@@ -682,6 +682,7 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
    {
       PLOGE << "FAILED";
    }
+   //bgfx::reset(m_width, m_height, BGFX_RESET_NONE, bgfx::TextureFormat::RGB8);
 
    //bgfx::setDebug(BGFX_DEBUG_STATS);
    //bgfx::setDebug(BGFX_DEBUG_STATS | BGFX_DEBUG_WIREFRAME);
@@ -1580,14 +1581,9 @@ void RenderDevice::Flip()
    // Schedule frame presentation (non blocking call, simply queueing the present command in the driver's render queue with a schedule for execution)
    if (m_stereo3D != STEREO_VR)
       g_frameProfiler.OnPresent();
-   
    #if defined(ENABLE_BGFX)
-   if (m_activeViewId != -1 || m_maxViewId != 254)
-   {
-      bgfx::frame();
-      m_maxViewId = 254;
-      m_activeViewId = -1;
-   }
+   //if (m_activeViewId != -1 || m_maxViewId != 254)
+   //   SubmitFrame();
    #elif defined(ENABLE_OPENGL)
    SDL_GL_SwapWindow(m_sdl_playfieldHwnd);
    #elif defined(ENABLE_DX9)
