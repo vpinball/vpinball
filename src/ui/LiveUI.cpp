@@ -2712,22 +2712,13 @@ void LiveUI::UpdateOutlinerUI()
                }
                ImGui::TreePop();
             }
-            if (is_live && ImGui::TreeNode("Live Objects"))
+            if (ImGui::TreeNode("Images"))
             {
-               for (size_t t = 0; t < table->m_vedit.size(); t++)
+               const std::function<string(Texture *)> map = [](Texture *image) -> string { return image->m_szName; };
+               for (Texture *&image : SortedCaseInsensitive(table->m_vimage, map))
                {
-                  ISelect *const psel = table->m_vedit[t]->GetISelect();
-                  if (psel != nullptr && psel->m_layerName.empty())
-                  {
-                     Selection sel(is_live, table->m_vedit[t]);
-                     if (IsOutlinerFiltered(table->m_vedit[t]->GetName()) && ImGui::Selectable(table->m_vedit[t]->GetName(), m_selection == sel))
-                        m_selection = sel;
-                  }
-               }
-               for (size_t t = 0; t < m_player->m_vball.size(); t++)
-               {
-                  Selection sel(Selection::SelectionType::S_BALL, is_live, (int)t);
-                  if (ImGui::Selectable("Ball #"s.append(std::to_string(m_player->m_vball[t]->m_id)).c_str(), m_selection == sel))
+                  Selection sel(is_live, image);
+                  if (IsOutlinerFiltered(image->m_szName) && ImGui::Selectable(image->m_szName.c_str(), m_selection == sel))
                      m_selection = sel;
                }
                ImGui::TreePop();
@@ -2744,6 +2735,26 @@ void LiveUI::UpdateOutlinerUI()
             }
             if (ImGui::TreeNodeEx("Layers", ImGuiTreeNodeFlags_DefaultOpen))
             {
+               if (is_live && ImGui::TreeNode("Live Objects"))
+               {
+                  for (size_t t = 0; t < table->m_vedit.size(); t++)
+                  {
+                     ISelect *const psel = table->m_vedit[t]->GetISelect();
+                     if (psel != nullptr && psel->m_layerName.empty())
+                     {
+                        Selection sel(is_live, table->m_vedit[t]);
+                        if (IsOutlinerFiltered(table->m_vedit[t]->GetName()) && ImGui::Selectable(table->m_vedit[t]->GetName(), m_selection == sel))
+                           m_selection = sel;
+                     }
+                  }
+                  for (size_t t = 0; t < m_player->m_vball.size(); t++)
+                  {
+                     Selection sel(Selection::SelectionType::S_BALL, is_live, (int)t);
+                     if (ImGui::Selectable("Ball #"s.append(std::to_string(m_player->m_vball[t]->m_id)).c_str(), m_selection == sel))
+                        m_selection = sel;
+                  }
+                  ImGui::TreePop();
+               }
                // Very very inefficient...
                robin_hood::unordered_map<std::string, vector<IEditable *>> layers;
                for (size_t t = 0; t < table->m_vedit.size(); t++)
@@ -2813,7 +2824,9 @@ void LiveUI::UpdatePropertyUI()
    ImGui::Begin("PROPERTIES", nullptr, window_flags);
    ImGui::PushItemWidth(PROP_WIDTH);
 
-   if (ImGui::BeginTabBar("Startup/Live", ImGuiTabBarFlags_NoCloseWithMiddleMouseButton))
+   if (m_selection.type == Selection::S_IMAGE)
+      ImageProperties();
+   else if (ImGui::BeginTabBar("Startup/Live", ImGuiTabBarFlags_NoCloseWithMiddleMouseButton))
    {
       for (int tab = 0; tab < 2; tab++)
       {
@@ -3691,6 +3704,38 @@ void LiveUI::CameraProperties(bool is_live)
    ImGui::Text("Absolute position:\nX: %.2f  Y: %.2f  Z: %.2f", -m_renderer->GetMVP().GetView()._41,
       (m_selection.camera == 0 || m_selection.camera == 2) ? m_renderer->GetMVP().GetView()._42 : -m_renderer->GetMVP().GetView()._42, 
       m_renderer->GetMVP().GetView()._43);
+}
+
+void LiveUI::ImageProperties()
+{
+   HelpTextCentered("Image"s);
+   string name = m_selection.image->m_szName;
+   ImGui::BeginDisabled(true); // Editing the name of a live item can break the script
+   if (ImGui::InputText("Name", &name))
+   {
+   }
+   ImGui::EndDisabled();
+   ImGui::Separator();
+   ImGui::BeginDisabled(m_selection.image->m_pdsBuffer == nullptr || !m_selection.image->m_pdsBuffer->has_alpha());
+   if (ImGui::InputFloat("Alpha Mask", &m_selection.image->m_alphaTestValue))
+      m_table->SetNonUndoableDirty(eSaveDirty);
+   ImGui::EndDisabled();
+   ImGui::Separator();
+   Sampler *sampler = g_pplayer->m_renderer->m_pd3dPrimaryDevice->m_texMan.LoadTexture(
+      m_selection.image->m_pdsBuffer, SamplerFilter::SF_BILINEAR, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, false);
+#if defined(ENABLE_BGFX)
+   // FIXME implement
+   ImTextureID image = (void *)nullptr;
+#elif defined(ENABLE_OPENGL)
+   ImTextureID image = sampler ? (void *)(intptr_t)sampler->GetCoreTexture() : nullptr;
+#elif defined(ENABLE_DX9)
+   ImTextureID image = sampler ? (void *)sampler->GetCoreTexture() : nullptr;
+#endif
+   if (image)
+   {
+      float w = ImGui::GetWindowWidth();
+      ImGui::Image(image, ImVec2(w, sampler->GetHeight() * w / (float) sampler->GetWidth()));
+   }
 }
 
 void LiveUI::RenderProbeProperties(bool is_live)
