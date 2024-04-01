@@ -80,24 +80,27 @@ void RenderPass::SortPasses(vector<RenderPass*>& sortedPasses, vector<RenderPass
    // TODO this is slow (but correct). This could be easily done better (but the list is small, so...)
    sort(m_dependencies.begin(), m_dependencies.end(), [this](RenderPass* a, RenderPass* b)
       {
-         // a has the same RT as this: place it at the end (a is not < b)
-         if (a->m_rt == m_rt)
+         // a has the same RT as this but not b: place a after b (a < b is false)
+         if (a->m_rt == m_rt && b->m_rt != m_rt)
             return false;
-         // b has the same RT as this: place it at the end (b is < a)
-         if (b->m_rt == m_rt)
+         // b has the same RT as this but not a: place b after a (a < b is true)
+         if (b->m_rt == m_rt && a->m_rt != m_rt)
             return true;
-         // a reference a RT that is used by b => place a before b
+         // FIXME the following sort cirteria are not valid and will assert aginst STL checks.
+         #if !defined(ENABLE_BGFX) || !defined(_DEBUG)
+         // a reference a RT that is used by b: place a before b (a < b is true)
          for (auto dep : b->m_dependencies)
             for (auto rt : a->m_referencedRT)
                if (dep->m_rt == rt)
                   return true;
-         // b reference a RT that is used by a => place b before a
+         // b reference a RT that is used by a: place b before a (a < b is false)
          for (auto dep : a->m_dependencies)
             for (auto rt : b->m_referencedRT)
                if (dep->m_rt == rt)
                   return false;
+         #endif
          // no criteria to sort
-         return true;
+         return a < b;
       });
    
    // Depth first recursion
