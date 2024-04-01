@@ -82,6 +82,7 @@ private:
    void UpdateHeadTrackingModal();
 
    // UI Selection & properties
+   void ImageProperties();
    void RenderProbeProperties(bool is_live);
    void BallProperties(bool is_live);
    void CameraProperties(bool is_live);
@@ -137,13 +138,14 @@ private:
    Renderer *m_renderer;
    struct Selection
    {
-      enum SelectionType { S_NONE, S_CAMERA, S_MATERIAL, S_BALL, S_EDITABLE, S_RENDERPROBE } type = S_NONE;
+      enum SelectionType { S_NONE, S_CAMERA, S_MATERIAL, S_IMAGE, S_BALL, S_EDITABLE, S_RENDERPROBE } type = S_NONE;
       bool is_live;
       union
       {
          int camera;
          IEditable* editable;
          Material *material;
+         Texture *image;
          RenderProbe *renderprobe;
          int ball_index;
       };
@@ -151,6 +153,7 @@ private:
       Selection(SelectionType t, bool live, int ball) { type = t; is_live = live; ball_index = ball; }
       Selection(bool live, IEditable *data) { type = S_EDITABLE; is_live = live; editable = data; }
       Selection(bool live, Material *data) { type = S_MATERIAL; is_live = live; material = data; }
+      Selection(bool live, Texture *data) { type = S_IMAGE; is_live = live; image = data; }
       Selection(bool live, RenderProbe *data) { type = S_RENDERPROBE; is_live = live; renderprobe = data; }
       bool operator==(Selection s)
       {
@@ -161,6 +164,7 @@ private:
          case S_NONE: return true;
          case S_CAMERA: return camera == s.camera;
          case S_MATERIAL: return material == s.material;
+         case S_IMAGE: return image == s.image;
          case S_BALL: return ball_index == s.ball_index;
          case S_EDITABLE: return editable == s.editable;
          case S_RENDERPROBE: return renderprobe == s.renderprobe;
