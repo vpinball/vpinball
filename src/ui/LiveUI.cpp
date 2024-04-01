@@ -2063,12 +2063,12 @@ void LiveUI::UpdateMainUI()
       }
       // TODO move viewport options to the right of the toolbar
       ImGui::SameLine(ImGui::GetWindowWidth() - 100.f);
-      if (ImGui::Button("O")) // Overlay option menu
-      {
+      if (ImGui::Button(ICON_FK_STICKY_NOTE)) // Overlay option menu
          ImGui::OpenPopup("Overlay Popup");
-      }
       if (ImGui::BeginPopup("Overlay Popup"))
       {
+         ImGui::Text("Overlays:");
+         ImGui::Separator();
          ImGui::Checkbox("Overlay selection", &m_selectionOverlay);
          ImGui::Separator();
          ImGui::Text("Physic Overlay:");
@@ -2080,7 +2080,41 @@ void LiveUI::UpdateMainUI()
             m_physOverlay = PO_ALL;
          ImGui::EndPopup();
       }
+      ImGui::SameLine();
+      if (ImGui::Button(ICON_FK_FILTER)) // Selection filter
+         ImGui::OpenPopup("Selection filter Popup");
+      if (ImGui::BeginPopup("Selection filter Popup"))
+      {
+         bool pf = m_selectionFilter & SelectionFilter::SF_Playfield;
+         bool prims = m_selectionFilter & SelectionFilter::SF_Primitives;
+         bool lights = m_selectionFilter & SelectionFilter::SF_Lights;
+         bool flashers = m_selectionFilter & SelectionFilter::SF_Flashers;
+         ImGui::Text("Selection filters:");
+         ImGui::Separator();
+         if (ImGui::Checkbox("Playfield", &pf))
+            m_selectionFilter = (m_selectionFilter & ~SelectionFilter::SF_Playfield) | (pf ? SelectionFilter::SF_Playfield : 0x0000);
+         if (ImGui::Checkbox("Primitives", &prims))
+            m_selectionFilter = (m_selectionFilter & ~SelectionFilter::SF_Primitives) | (prims ? SelectionFilter::SF_Primitives : 0x0000);
+         if (ImGui::Checkbox("Lights", &lights))
+            m_selectionFilter = (m_selectionFilter & ~SelectionFilter::SF_Lights) | (lights ? SelectionFilter::SF_Lights : 0x0000);
+         if (ImGui::Checkbox("Flashers", &flashers))
+            m_selectionFilter = (m_selectionFilter & ~SelectionFilter::SF_Flashers) | (flashers ? SelectionFilter::SF_Flashers : 0x0000);
+         ImGui::EndPopup();
+      }
+      ImGui::End();
 
+      // Overlay Info Text
+      ImGuiIO &io = ImGui::GetIO();
+      ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x - 200.f * m_dpi, io.DisplaySize.y - m_toolbar_height - m_menubar_height - 5.f * m_dpi)); // Fixed outliner width (to be adjusted when moving ImGui to the docking branch)
+      ImGui::SetNextWindowPos(ImVec2(200.f * m_dpi, m_toolbar_height + m_menubar_height + 5.f * m_dpi));
+      ImGui::Begin("text overlay", NULL, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoNav);
+      switch (m_gizmoOperation)
+      {
+      case ImGuizmo::NONE: ImGui::Text("Select"); break;
+      case ImGuizmo::TRANSLATE: ImGui::Text("Grab"); break;
+      case ImGuizmo::ROTATE: ImGui::Text("Rotate"); break;
+      case ImGuizmo::SCALE: ImGui::Text("Scale"); break;
+      }
       ImGui::End();
 
       // Side panels
@@ -2137,8 +2171,8 @@ void LiveUI::UpdateMainUI()
       Matrix3D prevView(m_camView);
       const float viewManipulateRight = ImGui::GetIO().DisplaySize.x - (m_flyMode ? 0.f : m_properties_width) - 16.f;
       const float viewManipulateTop = m_toolbar_height + m_menubar_height + 16;
-      ImGuizmo::ViewManipulate(cameraView, cameraProjection, m_gizmoOperation, m_gizmoMode, cameraView, m_camDistance,
-         ImVec2(viewManipulateRight - 128, viewManipulateTop + 16), ImVec2(128, 128), 0x10101010);
+      // ImGuizmo::ViewManipulate(cameraView, cameraProjection, m_gizmoOperation, m_gizmoMode, cameraView, m_camDistance, ImVec2(viewManipulateRight - 128, viewManipulateTop + 16), ImVec2(128, 128), 0x10101010); // AutoDesk like orbiting
+      ImGuizmo::ViewManipulateVPX(cameraView, cameraProjection, m_gizmoOperation, m_gizmoMode, cameraView, m_camDistance, ImVec2(), io.DisplaySize); // Blender like orbiting
       if (memcmp(cameraView, prevView.m, 16 * sizeof(float)) != 0)
          m_orthoCam = false; // switch to perspective when user orbit the view
    }
@@ -2234,7 +2268,7 @@ void LiveUI::UpdateMainUI()
          m_camView = Matrix3D::MatrixLookAtRH(newEye, camTarget, up);
       }
 
-      // Mouse orbit & pan
+      // Mouse pan
       if (ImGui::IsMouseDown(ImGuiMouseButton_Middle))
       {
          const ImVec2 drag = ImGui::GetMouseDragDelta(ImGuiMouseButton_Middle);
@@ -2249,14 +2283,10 @@ void LiveUI::UpdateMainUI()
             camTarget = camTarget - right * drag.x + up * drag.y;
             m_camView = Matrix3D::MatrixLookAtRH(pos - right * drag.x + up * drag.y, camTarget, up);
          }
-         else
-         {
-
-         }
       }
 
       // Select
-      if (ImGui::IsMouseClicked(ImGuiMouseButton_Right)) // FIXME for the time being, the guizmo manipulate interfere with this, so we use the other button...
+      if (m_gizmoOperation == ImGuizmo::NONE && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
       {
          // Compute mouse position in clip space
          ViewPort vp;
@@ -2279,8 +2309,26 @@ void LiveUI::UpdateMainUI()
          // - picking depends on what was visible/enabled when quadtree was built (lazily at first pick), and also uses the physics quadtree for some parts
          // - primitives can have hit bug (Apron Top and Gottlieb arm of default table for example): degenerated geometry ?
          // We would need a dedicated quadtree for UI with all parts, and filter after picking by visibility
+         vector<HitTestResult> vhoUnfilteredHit;
+         m_player->m_physics->RayCast(v3d, v3d2, true, vhoUnfilteredHit);
+
          vector<HitTestResult> vhoHit;
-         m_player->m_physics->RayCast(v3d, v3d2, true, vhoHit);
+         bool noPF = !(m_selectionFilter & SelectionFilter::SF_Playfield);
+         bool noPrims = !(m_selectionFilter & SelectionFilter::SF_Primitives);
+         bool noLights = !(m_selectionFilter & SelectionFilter::SF_Lights);
+         bool noFlashers = !(m_selectionFilter & SelectionFilter::SF_Flashers);
+         for (auto hr : vhoUnfilteredHit)
+         {
+            if (noPF && hr.m_obj->m_editable && hr.m_obj->m_editable->GetItemType() == ItemTypeEnum::eItemPrimitive && ((Primitive*)hr.m_obj->m_editable)->IsPlayfield())
+               continue;
+            if (noPrims && hr.m_obj->m_editable && hr.m_obj->m_editable->GetItemType() == ItemTypeEnum::eItemPrimitive)
+               continue;
+            if (noLights && hr.m_obj->m_editable && hr.m_obj->m_editable->GetItemType() == ItemTypeEnum::eItemLight)
+               continue;
+            if (noFlashers && hr.m_obj->m_editable && hr.m_obj->m_editable->GetItemType() == ItemTypeEnum::eItemFlasher)
+               continue;
+            vhoHit.push_back(hr);
+         }
 
          if (vhoHit.empty())
             m_selection.type = Selection::SelectionType::S_NONE;
@@ -2312,12 +2360,12 @@ void LiveUI::UpdateMainUI()
    {
       if (!m_ShowSplashModal)
       {
-         if (ImGui::IsKeyPressed(ImGuiKey_Escape) && m_gizmoOperation != ImGuizmo::NONE)
+         if (ImGui::IsKeyReleased(ImGuiKey_Escape) && m_gizmoOperation != ImGuizmo::NONE)
          {
             // Cancel current operation
             m_gizmoOperation = ImGuizmo::NONE;
          }
-         else if (ImGui::IsKeyReleased(dikToImGuiKeys[m_player->m_rgKeys[eEscape]]) && !m_disable_esc)
+         else if (ImGui::IsKeyReleased(ImGuiKey_Escape) || (ImGui::IsKeyReleased(dikToImGuiKeys[m_player->m_rgKeys[eEscape]]) && !m_disable_esc))
          {
             // Open Main modal dialog
             m_ShowSplashModal = true;
@@ -2325,6 +2373,10 @@ void LiveUI::UpdateMainUI()
          else if (ImGui::IsKeyPressed(ImGuiKey_F))
          {
             m_flyMode = !m_flyMode;
+         }
+         else if (ImGui::IsKeyPressed(ImGuiKey_A) && ImGui::GetIO().KeyAlt)
+         {
+            m_selection = Selection();
          }
          else if (m_useEditorCam && ImGui::IsKeyPressed(ImGuiKey_G))
          {
@@ -3417,9 +3469,13 @@ void LiveUI::UpdateMainSplashModal()
       if (m_tweakMode && m_live_table != nullptr && m_table != nullptr)
          CloseTweakMode();
 
+      // Key shortcut: click on the button, or press escape key (react on key released, otherwise, it would immediately reopen the UI,...)
+      int keyShortcut = 0;
+      if (enableKeyboardShortcuts && (ImGui::IsKeyReleased(ImGuiKey_Escape) || ((ImGui::IsKeyReleased(dikToImGuiKeys[m_player->m_rgKeys[eEscape]]) && !m_disable_esc))))
+         keyShortcut = m_ShowUI ? 3 : m_tweakMode ? 2 : 1;
+
       ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-      // Resume: click on the button, or press escape key (react on key released, otherwise, it would immediately reopen the UI)
-      if (ImGui::Button("Resume Game", size) || (enableKeyboardShortcuts && ((ImGui::IsKeyReleased(dikToImGuiKeys[m_player->m_rgKeys[eEscape]]) && !m_disable_esc))))
+      if (ImGui::Button("Resume Game", size) || (keyShortcut == 1))
       {
          ImGui::CloseCurrentPopup();
          SetupImGuiStyle(1.0f);
@@ -3429,7 +3485,7 @@ void LiveUI::UpdateMainSplashModal()
          HideUI();
       }
       ImGui::SetItemDefaultFocus();
-      if (m_player->m_stereo3D != STEREO_VR && ImGui::Button("Table Options", size))
+      if (ImGui::Button("Table Options", size) || (keyShortcut == 2))
       {
          ImGui::CloseCurrentPopup();
          OpenTweakMode();
@@ -3443,13 +3499,11 @@ void LiveUI::UpdateMainSplashModal()
          m_ShowSplashModal = false;
          popup_headtracking = true;
       }
-      if (m_player->m_stereo3D != STEREO_VR && ImGui::Button("Live Editor", size))
+      if (m_player->m_stereo3D != STEREO_VR && (ImGui::Button("Live Editor", size)  || (keyShortcut == 3)))
       {
          ImGui::CloseCurrentPopup();
          m_ShowUI = true;
          m_ShowSplashModal = false;
-         m_useEditorCam = false;
-         m_orthoCam = false;
          m_renderer->DisableStaticPrePass(true);
          ResetCameraFromPlayer();
       }
