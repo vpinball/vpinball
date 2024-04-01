@@ -2272,7 +2272,7 @@ void LiveUI::UpdateMainUI()
          ImGui::ResetMouseDragDelta(ImGuiMouseButton_Middle);
          if (drag.x != 0.f || drag.y != 0.f)
          {
-            m_orthoCam = false; // switch to perspective when user orbit the view
+            m_useEditorCam = true;
             Matrix3D viewInverse(m_camView);
             viewInverse.Invert();
             vec3 up = viewInverse.GetOrthoNormalUp(), dir = viewInverse.GetOrthoNormalDir();
@@ -2280,10 +2280,8 @@ void LiveUI::UpdateMainUI()
             vec3 camTarget = pos - dir * m_camDistance;
             if (ImGui::GetIO().KeyShift)
             {
-               m_useEditorCam = true;
                camTarget = camTarget - right * drag.x + up * drag.y;
                m_camView = Matrix3D::MatrixLookAtRH(pos - right * drag.x + up * drag.y, camTarget, up);
-               m_orthoCam = false; // switch to perspective when user zoom the view
             }
             else
             {
@@ -2306,6 +2304,7 @@ void LiveUI::UpdateMainUI()
                }
 
                m_camView = Matrix3D::MatrixLookAtRH(camTarget + dir * m_camDistance, camTarget, up);
+               m_orthoCam = false; // switch to perspective when user orbit the view (ortho is only really useful when seen from predefined ortho views)
             }
          }
       }
