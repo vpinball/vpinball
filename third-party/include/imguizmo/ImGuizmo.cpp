@@ -992,7 +992,7 @@ namespace IMGUIZMO_NAMESPACE
    {
       return (gContext.mbUsing && (gContext.mActualID == -1 || gContext.mActualID == gContext.mEditingID)) || gContext.mbUsingBounds;
    }
-   
+
    bool IsUsingAny()
    {
       return gContext.mbUsing || gContext.mbUsingBounds;
@@ -1511,21 +1511,6 @@ namespace IMGUIZMO_NAMESPACE
          drawList->AddText(ImVec2(destinationPosOnScreen.x + 15, destinationPosOnScreen.y + 15), GetColorU32(TEXT_SHADOW), tmps);
          drawList->AddText(ImVec2(destinationPosOnScreen.x + 14, destinationPosOnScreen.y + 14), GetColorU32(TEXT), tmps);
       }
-   }
-
-   static void DrawOriginGizmo(OPERATION op, int type)
-   {
-      ImDrawList* drawList = gContext.mDrawList;
-      if (!drawList)
-      {
-         return;
-      }
-
-      // colors
-      ImU32 colors[7];
-      ComputeColors(colors, type, TRANSLATE);
-
-      drawList->AddCircleFilled(gContext.mScreenSquareCenter, gContext.mStyle.CenterCircleSize, colors[0], 32);
    }
 
    static void DrawTranslationGizmo(OPERATION op, int type)
@@ -2533,7 +2518,7 @@ namespace IMGUIZMO_NAMESPACE
       // behind camera
       vec_t camSpacePosition;
       camSpacePosition.TransformPoint(makeVect(0.f, 0.f, 0.f), gContext.mMVP);
-      if (!gContext.mIsOrthographic && camSpacePosition.z < 0.001f)
+      if (!gContext.mIsOrthographic && camSpacePosition.z < 0.001f && !gContext.mbUsing)
       {
          return false;
       }
@@ -2559,7 +2544,6 @@ namespace IMGUIZMO_NAMESPACE
       gContext.mOperation = operation;
       if (!gContext.mbUsingBounds)
       {
-         DrawOriginGizmo(operation, type);
          DrawRotationGizmo(operation, type);
          DrawTranslationGizmo(operation, type);
          DrawScaleGizmo(operation, type);
@@ -2797,8 +2781,7 @@ namespace IMGUIZMO_NAMESPACE
       static vec_t interpolationUp;
       static vec_t interpolationDir;
       static int interpolationFrames = 0;
-      // VPX change: do not use a fixed up vector
-      //const vec_t referenceUp = makeVect(0.f, 1.f, 0.f);
+      const vec_t referenceUp = makeVect(0.f, 1.f, 0.f);
 
       matrix_t svgView, svgProjection;
       svgView = gContext.mViewMat;
@@ -2819,8 +2802,6 @@ namespace IMGUIZMO_NAMESPACE
 
       vec_t dir = makeVect(viewInverse.m[2][0], viewInverse.m[2][1], viewInverse.m[2][2]);
       vec_t up = makeVect(viewInverse.m[1][0], viewInverse.m[1][1], viewInverse.m[1][2]);
-      // VPX change: use live up vector instead of a fixed reference one
-      const vec_t referenceUp = makeVect(up.x, up.y, up.z);
       vec_t eye = dir * distance;
       vec_t zero = makeVect(0.f, 0.f);
       LookAt(&eye.x, &zero.x, &up.x, cubeView.m16);
@@ -2976,7 +2957,7 @@ namespace IMGUIZMO_NAMESPACE
                interpolationUp = referenceUp;
             }
             interpolationFrames = 40;
-            
+
          }
          isClicking = false;
          isDraging = false;
@@ -3010,77 +2991,6 @@ namespace IMGUIZMO_NAMESPACE
          vec_t newEye = camTarget + newDir * length;
          LookAt(&newEye.x, &camTarget.x, &referenceUp.x, view);
       }
-
-      // restore view/projection because it was used to compute ray
-      ComputeContext(svgView.m16, svgProjection.m16, gContext.mModelSource.m16, gContext.mMode);
-   }
-
-   // VPX modified version of ViewManipulate to support Blender like orbiting:
-   // - fully transparent, without cube
-   // - use middle button to drag
-   // - do not use a fixed up vector
-   void ViewManipulateVPX(float* view, const float* projection, OPERATION operation, MODE mode, float* matrix, float length, ImVec2 position, ImVec2 size)
-   {
-      ImGuiIO& io = ImGui::GetIO();
-      if (!io.MouseDown[2] || io.KeyShift)
-         return;
-
-      // Scale is always local or matrix will be skewed when applying world scale or oriented matrix
-      ComputeContext(view, projection, matrix, (operation & SCALE) ? LOCAL : mode);
-
-      matrix_t svgView, svgProjection;
-      svgView = gContext.mViewMat;
-      svgProjection = gContext.mProjectionMat;
-
-      matrix_t viewInverse;
-      viewInverse.Inverse(*(matrix_t*)view);
-
-      const vec_t camTarget = viewInverse.v.position - viewInverse.v.dir * length;
-
-      // view/projection matrices
-      const float distance = 3.f;
-      matrix_t cubeProjection, cubeView;
-      float fov = acosf(distance / (sqrtf(distance * distance + 3.f))) * RAD2DEG;
-      Perspective(fov / sqrtf(2.f), size.x / size.y, 0.01f, 1000.f, cubeProjection.m16);
-
-      vec_t dir = makeVect(viewInverse.m[2][0], viewInverse.m[2][1], viewInverse.m[2][2]);
-      vec_t up = makeVect(viewInverse.m[1][0], viewInverse.m[1][1], viewInverse.m[1][2]);
-      const vec_t referenceUp = makeVect(up.x, up.y, up.z);
-      vec_t eye = dir * distance;
-      vec_t zero = makeVect(0.f, 0.f);
-      LookAt(&eye.x, &zero.x, &up.x, cubeView.m16);
-
-      // set context
-      gContext.mViewMat = cubeView;
-      gContext.mProjectionMat = cubeProjection;
-      ComputeCameraRay(gContext.mRayOrigin, gContext.mRayVector, position, size);
-
-      const matrix_t res = cubeView * cubeProjection;
-
-      matrix_t rx, ry, roll;
-
-      rx.RotationAxis(referenceUp, -io.MouseDelta.x * 0.01f);
-      ry.RotationAxis(viewInverse.v.right, -io.MouseDelta.y * 0.01f);
-
-      roll = rx * ry;
-
-      vec_t newDir = viewInverse.v.dir;
-      newDir.TransformVector(roll);
-      newDir.Normalize();
-
-      // clamp
-      vec_t planDir = Cross(viewInverse.v.right, referenceUp);
-      planDir.y = 0.f;
-      planDir.Normalize();
-      float dt = Dot(planDir, newDir);
-      if (dt < 0.0f)
-      {
-         newDir += planDir * dt;
-         newDir.Normalize();
-      }
-
-      vec_t newEye = camTarget + newDir * length;
-      LookAt(&newEye.x, &camTarget.x, &referenceUp.x, view);
 
       // restore view/projection because it was used to compute ray
       ComputeContext(svgView.m16, svgProjection.m16, gContext.mModelSource.m16, gContext.mMode);

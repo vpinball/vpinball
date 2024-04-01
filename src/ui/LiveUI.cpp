@@ -2122,61 +2122,6 @@ void LiveUI::UpdateMainUI()
       UpdatePropertyUI();
    }
 
-   // View gizmo
-   if (m_useEditorCam)
-   {
-      // Convert from right handed (ImGuizmo view manipulate is right handed) to VPX's left handed coordinate system
-      // Right Hand to Left Hand (note that RH2LH = inverse(RH2LH), so RH2LH.RH2LH is identity, which property is used below)
-      const Matrix3D RH2LH = Matrix3D::MatrixScale(1.f,  1.f, -1.f);
-      const Matrix3D YAxis = Matrix3D::MatrixScale(1.f, -1.f, -1.f);
-      float zNear, zFar;
-      m_live_table->ComputeNearFarPlane(RH2LH * m_camView * YAxis, 1.f, zNear, zFar);
-
-      ImGuiIO &io = ImGui::GetIO();
-      if (m_orthoCam)
-      {
-         float viewHeight = m_camDistance;
-         float viewWidth = viewHeight * io.DisplaySize.x / io.DisplaySize.y;
-         m_camProj = Matrix3D::MatrixOrthoOffCenterRH(-viewWidth, viewWidth, -viewHeight, viewHeight, zNear, -zFar);
-      }
-      else
-      {
-         m_camProj = Matrix3D::MatrixPerspectiveFovRH(39.6f, io.DisplaySize.x / io.DisplaySize.y, zNear, zFar);
-      }
-      float * const cameraView = (float *)(m_camView.m);
-      float * const cameraProjection = (float *)(m_camProj.m);
-
-      /* Matrix3D gridMatrix;
-      static constexpr float identityMatrix[16] = { 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 1.f };
-      gridMatrix.SetRotateX(M_PI * 0.5);
-      gridMatrix.Scale(10.0f, 1.0f, 10.0f);
-      ImGuizmo::DrawGrid((const float *)(m_camView.m), (const float *)(m_camProj.m), (const float *)(gridMatrix.m), 100.f); */
-      //ImGuizmo::DrawGrid(cameraView, cameraProjection, identityMatrix, 100.f);
-
-      // Selection manipulator
-      Matrix3D transform;
-      if (GetSelectionTransform(transform))
-      {
-         float camViewLH[16];
-         memcpy(camViewLH, &m_camView.m[0][0], sizeof(float) * 4 * 4);
-         for (int i = 8; i < 12; i++)
-            camViewLH[i] = -camViewLH[i];
-         Matrix3D prevTransform(transform);
-         ImGuizmo::Manipulate(camViewLH, cameraProjection, m_gizmoOperation, m_gizmoMode, (float *)(transform.m));
-         if (memcmp(transform.m, prevTransform.m, 16 * sizeof(float)) != 0)
-            SetSelectionTransform(transform);
-      }
-
-      // Camera orbit manipulator
-      Matrix3D prevView(m_camView);
-      const float viewManipulateRight = ImGui::GetIO().DisplaySize.x - (m_flyMode ? 0.f : m_properties_width) - 16.f;
-      const float viewManipulateTop = m_toolbar_height + m_menubar_height + 16;
-      // ImGuizmo::ViewManipulate(cameraView, cameraProjection, m_gizmoOperation, m_gizmoMode, cameraView, m_camDistance, ImVec2(viewManipulateRight - 128, viewManipulateTop + 16), ImVec2(128, 128), 0x10101010); // AutoDesk like orbiting
-      ImGuizmo::ViewManipulateVPX(cameraView, cameraProjection, m_gizmoOperation, m_gizmoMode, cameraView, m_camDistance, ImVec2(), io.DisplaySize); // Blender like orbiting
-      if (memcmp(cameraView, prevView.m, 16 * sizeof(float)) != 0)
-         m_orthoCam = false; // switch to perspective when user orbit the view
-   }
-
    // Popups & Modal dialogs
    if (popup_video_settings)
       ImGui::OpenPopup(ID_VIDEO_SETTINGS);
@@ -2202,17 +2147,64 @@ void LiveUI::UpdateMainUI()
    if (m_ShowSplashModal)
       UpdateMainSplashModal();
 
+   // Invisible full frame window for overlays
+   ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
+   ImGui::SetNextWindowPos(ImVec2(0, 0));
+   ImGui::PushStyleColor(ImGuiCol_WindowBg, 0);
+   ImGui::PushStyleColor(ImGuiCol_Border, 0);
+   ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+   ImGui::Begin("overlays", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoInputs 
+      | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoBringToFrontOnFocus);
+   ImDrawList *const overlayDrawList = ImGui::GetWindowDrawList();
+   ImGui::End();
+   ImGui::PopStyleVar();
+   ImGui::PopStyleColor(2);
+
+   // Update editor camera
+   if (m_useEditorCam)
+   {
+      // Convert from right handed (ImGuizmo view manipulate is right handed) to VPX's left handed coordinate system
+      // Right Hand to Left Hand (note that RH2LH = inverse(RH2LH), so RH2LH.RH2LH is identity, which property is used below)
+      const Matrix3D RH2LH = Matrix3D::MatrixScale(1.f,  1.f, -1.f);
+      const Matrix3D YAxis = Matrix3D::MatrixScale(1.f, -1.f, -1.f);
+      float zNear, zFar;
+      m_live_table->ComputeNearFarPlane(RH2LH * m_camView * YAxis, 1.f, zNear, zFar);
+
+      ImGuiIO &io = ImGui::GetIO();
+      if (m_orthoCam)
+      {
+         float viewHeight = m_camDistance;
+         float viewWidth = viewHeight * io.DisplaySize.x / io.DisplaySize.y;
+         m_camProj = Matrix3D::MatrixOrthoOffCenterRH(-viewWidth, viewWidth, -viewHeight, viewHeight, zNear, -zFar);
+      }
+      else
+      {
+         m_camProj = Matrix3D::MatrixPerspectiveFovRH(39.6f, io.DisplaySize.x / io.DisplaySize.y, zNear, zFar);
+      }
+
+      /*Matrix3D gridMatrix = Matrix3D::MatrixRotateX(M_PI * 0.5);
+      gridMatrix.Scale(10.0f, 1.0f, 10.0f);
+      ImGuizmo::DrawGrid((const float *)(m_camView.m), (const float *)(m_camProj.m), (const float *)(gridMatrix.m), 100.f);*/
+   }
+
+   // Selection manipulator
+   Matrix3D transform;
+   bool isSelectionTransformValid = GetSelectionTransform(transform);
+   if (isSelectionTransformValid)
+   {
+      float camViewLH[16];
+      memcpy(camViewLH, &m_camView.m[0][0], sizeof(float) * 4 * 4);
+      for (int i = 8; i < 12; i++)
+         camViewLH[i] = -camViewLH[i];
+      Matrix3D prevTransform(transform);
+      ImGuizmo::Manipulate(camViewLH, (float *)(m_camProj.m), m_gizmoOperation, m_gizmoMode, (float *)(transform.m));
+      if (memcmp(transform.m, prevTransform.m, 16 * sizeof(float)) != 0)
+         SetSelectionTransform(transform);
+   }
+
    // Selection and physic colliders overlay
    {
       ImGuiIO &io = ImGui::GetIO();
-      ImGui::SetNextWindowSize(io.DisplaySize);
-      ImGui::SetNextWindowPos(ImVec2(0, 0));
-      ImGui::PushStyleColor(ImGuiCol_WindowBg, 0);
-      ImGui::PushStyleColor(ImGuiCol_Border, 0);
-      ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-      ImGui::Begin("colliders", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoInputs
-         | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoBringToFrontOnFocus);
-      ImDrawList *drawList = ImGui::GetWindowDrawList();
       ViewPort vp;
       m_renderer->m_pd3dPrimaryDevice->GetViewport(&vp);
       const float rClipWidth = (float)vp.Width * 0.5f;
@@ -2229,27 +2221,32 @@ void LiveUI::UpdateMainUI()
          const float inv_wp = 1.0f / wp;
          return Vertex2D((wp + xp) * rClipWidth / wp, (wp - yp) * rClipHeight / wp);
       };
+
+      if (isSelectionTransformValid)
+      {
+         Vertex2D pos = project(transform.GetOrthoNormalPos());
+         overlayDrawList->AddCircleFilled(ImVec2(pos.x, pos.y), 3.f * m_dpi, IM_COL32(255, 255, 255, 255), 16);
+      }
+
       if (m_selection.type == Selection::S_EDITABLE && m_selectionOverlay)
       {
          ImGui::PushStyleColor(ImGuiCol_PlotLines, IM_COL32(255, 128, 0, 255));
          ImGui::PushStyleColor(ImGuiCol_PlotHistogram, IM_COL32(255, 128, 0, 32));
          for (auto pho : m_player->m_physics->GetUIObjects())
             if (pho->m_editable == m_selection.editable)
-               pho->DrawUI(project, drawList);
+               pho->DrawUI(project, overlayDrawList);
          ImGui::PopStyleColor(2);
       }
+      
       if (m_physOverlay == PO_ALL || (m_physOverlay == PO_SELECTED && m_selection.type == Selection::S_EDITABLE))
       {
          ImGui::PushStyleColor(ImGuiCol_PlotLines, IM_COL32(255, 0, 0, 255)); // We abuse ImGui colors to pass render colors
          ImGui::PushStyleColor(ImGuiCol_PlotHistogram, IM_COL32(255, 0, 0, 64));
          for (auto pho : m_player->m_physics->GetHitObjects())
             if (m_physOverlay == PO_ALL || (m_physOverlay == PO_SELECTED && pho->m_editable == m_selection.editable))
-               pho->DrawUI(project, drawList);
+               pho->DrawUI(project, overlayDrawList);
          ImGui::PopStyleColor(2);
       }
-      ImGui::End();
-      ImGui::PopStyleVar();
-      ImGui::PopStyleColor(2);
    }
 
    // Handle uncaught mouse & keyboard interaction
@@ -2273,15 +2270,43 @@ void LiveUI::UpdateMainUI()
       {
          const ImVec2 drag = ImGui::GetMouseDragDelta(ImGuiMouseButton_Middle);
          ImGui::ResetMouseDragDelta(ImGuiMouseButton_Middle);
-         Matrix3D view(m_camView);
-         view.Invert();
-         const vec3 right = view.GetOrthoNormalRight(), up = view.GetOrthoNormalUp(), dir = view.GetOrthoNormalDir(), pos = view.GetOrthoNormalPos();
-         vec3 camTarget = pos - dir * m_camDistance;
-         if (ImGui::GetIO().KeyShift)
+         if (drag.x != 0.f || drag.y != 0.f)
          {
-            m_useEditorCam = true;
-            camTarget = camTarget - right * drag.x + up * drag.y;
-            m_camView = Matrix3D::MatrixLookAtRH(pos - right * drag.x + up * drag.y, camTarget, up);
+            m_orthoCam = false; // switch to perspective when user orbit the view
+            Matrix3D viewInverse(m_camView);
+            viewInverse.Invert();
+            vec3 up = viewInverse.GetOrthoNormalUp(), dir = viewInverse.GetOrthoNormalDir();
+            vec3 pos = viewInverse.GetOrthoNormalPos(), right = viewInverse.GetOrthoNormalRight();
+            vec3 camTarget = pos - dir * m_camDistance;
+            if (ImGui::GetIO().KeyShift)
+            {
+               m_useEditorCam = true;
+               camTarget = camTarget - right * drag.x + up * drag.y;
+               m_camView = Matrix3D::MatrixLookAtRH(pos - right * drag.x + up * drag.y, camTarget, up);
+               m_orthoCam = false; // switch to perspective when user zoom the view
+            }
+            else
+            {
+               const Matrix3D rx = Matrix3D::MatrixRotate(drag.x * 0.01f, up);
+               const Matrix3D ry = Matrix3D::MatrixRotate(drag.y * 0.01f, right);
+               const Matrix3D roll = rx * ry;
+               vec3 newDir = viewInverse.GetOrthoNormalDir();
+               dir = roll.MultiplyVectorNoPerspective(dir);
+               dir.Normalize();
+
+               // clamp
+               vec3 planDir = CrossProduct(right, up);
+               planDir.y = 0.f;
+               planDir.Normalize();
+               float dt = planDir.Dot(dir);
+               if (dt < 0.0f)
+               {
+                  dir += planDir * dt;
+                  dir.Normalize();
+               }
+
+               m_camView = Matrix3D::MatrixLookAtRH(camTarget + dir * m_camDistance, camTarget, up);
+            }
          }
       }
 
