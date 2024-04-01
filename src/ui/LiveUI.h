@@ -206,6 +206,8 @@ private:
    float m_toolbar_height = 0.0f;
    enum PhysicOverlay { PO_NONE, PO_SELECTED, PO_ALL } m_physOverlay = PO_NONE;
    bool m_selectionOverlay = true;
+   enum SelectionFilter { SF_Playfield = 0x0001, SF_Primitives = 0x0002, SF_Lights = 0x0004, SF_Flashers = 0x0008};
+   int m_selectionFilter = 0xFFFF;
 
    // UI state
    bool m_ShowUI = false;
