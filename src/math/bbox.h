@@ -83,7 +83,7 @@ inline bool Intersect(const RECT &rc, const int width, const int height, const P
 #ifdef ENABLE_SSE_OPTIMIZATIONS
 inline bool fRectIntersect3D(const FRect3D &rc1, const FRect3D &rc2)
 {
-   const __m128 rc1128 = _mm_loadu_ps(&rc1.left); // L1.R1.T1.B1
+   const __m128 rc1128 = _mm_loadu_ps(&rc1.left); // L1.R1.T1.B1 // this shouldn't use loadu, but doesn't matter anymore nowadays anyhow
    const __m128 rc2128 = _mm_loadu_ps(&rc2.left); // L2.R2.T2.B2
    const __m128 min128 = _mm_shuffle_ps(rc1128, rc2128, _MM_SHUFFLE(1, 3, 1, 3)); // R1.B1.R2.B2
    const __m128 max128 = _mm_shuffle_ps(rc2128, rc1128, _MM_SHUFFLE(0, 2, 0, 2)); // L2.T2.L1.T1
@@ -92,7 +92,7 @@ inline bool fRectIntersect3D(const FRect3D &rc1, const FRect3D &rc2)
    return ((mask == 15) && rc1.zlow <= rc2.zhigh && rc1.zhigh >= rc2.zlow); //!! use SSE, too?
 }
 #else
-#pragma message ("Warning: No SSE bbox tests")*/
+#pragma message ("Warning: No SSE bbox tests")
 inline bool fRectIntersect3D(const FRect3D &rc1, const FRect3D &rc2)
 {
    return (rc1.right >= rc2.left && rc1.bottom >= rc2.top && rc1.zhigh >= rc2.zlow 
