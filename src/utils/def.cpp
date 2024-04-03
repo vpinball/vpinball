@@ -649,7 +649,7 @@ HRESULT external_open_storage(const OLECHAR* pwcsName, IStorage* pstgPriority, D
 #include "standalone/inc/wmp/WMPCore.h"
 #include "standalone/inc/flexdmd/FlexDMD.h"
 #include "standalone/inc/ultradmd/UltraDMDDMDObject.h"
-#include "standalone/inc/pup/PinUpPlayerPinDisplay.h"
+#include "standalone/inc/pup/PUPPinDisplay.h"
 #include "standalone/inc/b2s/Server.h"
 
 HRESULT external_create_object(const WCHAR* progid, IClassFactory* cf, IUnknown* obj)
@@ -669,10 +669,8 @@ HRESULT external_create_object(const WCHAR* progid, IClassFactory* cf, IUnknown*
       hres = (new UltraDMDDMDObject())->QueryInterface(IID_IDMDObject, (void**)obj);
    else if (!wcsicmp(progid, L"B2S.Server"))
       hres = (new Server())->QueryInterface(IID__Server, (void**)obj);
-   else if (!wcsicmp(progid, L"PinUpPlayer.PinDisplay")) {
-      CComObject<PinUpPlayerPinDisplay>* pObj = nullptr;
-      if (SUCCEEDED(CComObject<PinUpPlayerPinDisplay>::CreateInstance(&pObj)))
-         hres = pObj->QueryInterface(IID_IPinDisplay, (void**)obj);
+   else if (!wcsicmp(progid, L"PUP.PinDisplay")) {
+      hres = (new PUPPinDisplay())->QueryInterface(IID_IPinDisplay, (void**)obj);
    }
    else if (!wcsicmp(progid, L"PUPDMDControl.DMD")) {
    }

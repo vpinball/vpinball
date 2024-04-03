@@ -1,11 +1,11 @@
 #pragma once
 
-class PinUpPlayerPlaylist {
+class PUPPlaylist {
 public:
-   PinUpPlayerPlaylist();
-   ~PinUpPlayerPlaylist();
+   PUPPlaylist();
+   ~PUPPlaylist();
 
-   static PinUpPlayerPlaylist* CreateFromCSVLine(string line);
+   static PUPPlaylist* CreateFromCSVLine(string line);
 
    int m_screenNum;
    string m_folder;

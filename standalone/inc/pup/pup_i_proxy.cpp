@@ -1,9 +1,9 @@
 #include "core/stdafx.h"
 #include "olectl.h"
 
-#include "PinUpPlayerPinDisplay.h"
+#include "PUPPinDisplay.h"
 
-STDMETHODIMP PinUpPlayerPinDisplay::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid, DISPID* rgDispId) {
+STDMETHODIMP PUPPinDisplay::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid, DISPID* rgDispId) {
 	static struct {
 		const WCHAR *name;
 		DISPID dispId;
@@ -77,7 +77,7 @@ STDMETHODIMP PinUpPlayerPinDisplay::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgs
 	return DISP_E_MEMBERNOTFOUND;
 }
 
-STDMETHODIMP PinUpPlayerPinDisplay::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr) {
+STDMETHODIMP PUPPinDisplay::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr) {
 	int index = pDispParams->cArgs;
 	VARIANT res;
 	HRESULT hres = DISP_E_UNKNOWNNAME;
@@ -967,12 +967,3 @@ STDMETHODIMP PinUpPlayerPinDisplay::Invoke(DISPID dispIdMember, REFIID /*riid*/,
 	}
 	return hres;
 }
-
-STDMETHODIMP PinUpPlayerPinDisplay::GetDocumentation(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {
-	if (index == MEMBERID_NIL) {
-		*pBstrName = SysAllocString(L"PinDisplay");
-		return S_OK;
-	}
-	return E_NOTIMPL;
-}
-

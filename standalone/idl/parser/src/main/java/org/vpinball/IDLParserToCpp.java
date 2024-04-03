@@ -895,10 +895,10 @@ public class IDLParserToCpp {
 						new IDLInterface("IDMDObject", "UltraDMDDMDObject")));
 
 		parser.parse(
-			"../../inc/pup/PinUpPlayer.idl",
-			"pinupplayer_i_proxy.cpp",
+			"../../inc/pup/PUP.idl",
+			"pup_i_proxy.cpp",
 			Arrays.asList(
-				new IDLInterface("IPinDisplay", "PinUpPlayerPinDisplay", "PinDisplay")));
+				new IDLInterface("IPinDisplay", "PUPPinDisplay", "PinDisplay")));
 
 		parser.parse(
 			"../../inc/flexdmd/FlexDMD.idl",

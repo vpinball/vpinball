@@ -1,22 +1,22 @@
 #include "core/stdafx.h"
-#include "PinUpPlayerTrigger.h"
-#include "PinUpPlayerUtils.h"
+#include "PUPTrigger.h"
+#include "PUPUtils.h"
 
-PinUpPlayerTrigger::PinUpPlayerTrigger()
+PUPTrigger::PUPTrigger()
 {
 }
 
-PinUpPlayerTrigger::~PinUpPlayerTrigger()
+PUPTrigger::~PUPTrigger()
 {
 }
 
-PinUpPlayerTrigger* PinUpPlayerTrigger::CreateFromCSVLine(string line)
+PUPTrigger* PUPTrigger::CreateFromCSVLine(string line)
 {
-   vector<string> parts = PinUpPlayerUtils::ParseCSVLine(line);
+   vector<string> parts = PUPUtils::ParseCSVLine(line);
    if (parts.size() != 14)
       return nullptr;
 
-   PinUpPlayerTrigger* trigger = new PinUpPlayerTrigger();
+   PUPTrigger* trigger = new PUPTrigger();
 
    trigger->m_id = string_to_int(parts[0], 0);
    trigger->m_active = string_to_int(parts[1], 0);

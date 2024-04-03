@@ -2114,6 +2114,7 @@ void LiveUI::UpdateMainUI()
       case ImGuizmo::TRANSLATE: ImGui::Text("Grab"); break;
       case ImGuizmo::ROTATE: ImGui::Text("Rotate"); break;
       case ImGuizmo::SCALE: ImGui::Text("Scale"); break;
+      default: break;
       }
       ImGui::End();
 
@@ -2951,6 +2952,7 @@ void LiveUI::UpdatePropertyUI()
                }
                break;
             }
+            default: break;
             }
             ImGui::EndTabItem();
          }

@@ -1,15 +1,15 @@
 #include "core/stdafx.h"
-#include "PinUpPlayerUtils.h"
+#include "PUPUtils.h"
 
-PinUpPlayerUtils::PinUpPlayerUtils()
+PUPUtils::PUPUtils()
 {
 }
 
-PinUpPlayerUtils::~PinUpPlayerUtils()
+PUPUtils::~PUPUtils()
 {
 }
 
-vector<string> PinUpPlayerUtils::ParseCSVLine(string line)
+vector<string> PUPUtils::ParseCSVLine(string line)
 {
    vector<string> parts;
    string field;

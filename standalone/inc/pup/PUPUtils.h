@@ -1,9 +1,9 @@
 #pragma once
 
-class PinUpPlayerUtils {
+class PUPUtils {
 public:
-   PinUpPlayerUtils();
-   ~PinUpPlayerUtils();
+   PUPUtils();
+   ~PUPUtils();
 
    static vector<string> ParseCSVLine(string line);
 };

@@ -1,11 +1,11 @@
 #pragma once
 
-class PinUpPlayerScreen {
+class PUPScreen {
 public:
-   PinUpPlayerScreen();
-   ~PinUpPlayerScreen();
+   PUPScreen();
+   ~PUPScreen();
 
-   static PinUpPlayerScreen* CreateFromCSVLine(string line);
+   static PUPScreen* CreateFromCSVLine(string line);
 
    int m_screenNum;
    string m_screenDes;

@@ -1,11 +1,11 @@
 #pragma once
 
-class PinUpPlayerTrigger {
+class PUPTrigger {
 public:
-   PinUpPlayerTrigger();
-   ~PinUpPlayerTrigger();
+   PUPTrigger();
+   ~PUPTrigger();
 
-   static PinUpPlayerTrigger* CreateFromCSVLine(string line);
+   static PUPTrigger* CreateFromCSVLine(string line);
 
    int m_id;
    int m_active;

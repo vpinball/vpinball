@@ -1,22 +1,22 @@
 #include "core/stdafx.h"
-#include "PinUpPlayerPlaylist.h"
-#include "PinUpPlayerUtils.h"
+#include "PUPPlaylist.h"
+#include "PUPUtils.h"
 
-PinUpPlayerPlaylist::PinUpPlayerPlaylist()
+PUPPlaylist::PUPPlaylist()
 {
 }
 
-PinUpPlayerPlaylist::~PinUpPlayerPlaylist()
+PUPPlaylist::~PUPPlaylist()
 {
 }
 
-PinUpPlayerPlaylist* PinUpPlayerPlaylist::CreateFromCSVLine(string line)
+PUPPlaylist* PUPPlaylist::CreateFromCSVLine(string line)
 {
-   vector<string> parts = PinUpPlayerUtils::ParseCSVLine(line);
+   vector<string> parts = PUPUtils::ParseCSVLine(line);
    if (parts.size() != 7)
       return nullptr;
 
-   PinUpPlayerPlaylist* playlist = new PinUpPlayerPlaylist();
+   PUPPlaylist* playlist = new PUPPlaylist();
 
    playlist->m_screenNum = string_to_int(parts[0], 0);
    playlist->m_folder = parts[1];

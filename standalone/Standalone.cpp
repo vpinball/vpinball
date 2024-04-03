@@ -4,6 +4,7 @@
 
 #include "inc/b2s/plugin/PluginHost.h"
 #include "inc/dof/DOFPlugin.h"
+#include "inc/pup/PUPPlugin.h"
 
 #include "DMDUtil/Config.h"
 
@@ -55,5 +56,7 @@ void Standalone::Startup()
    if (pSettings->LoadValueWithDefault(Settings::Standalone, "B2SPlugins"s, false)) {
       if (pSettings->LoadValueWithDefault(Settings::Standalone, "DOFPlugin"s, true))
          PluginHost::GetInstance()->RegisterPlugin(new DOFPlugin());
+      if (pSettings->LoadValueWithDefault(Settings::Standalone, "PUPPlugin"s, true))
+         PluginHost::GetInstance()->RegisterPlugin(new PUPPlugin());
    }
 }
