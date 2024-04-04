@@ -1,207 +1,207 @@
 #include "core/stdafx.h"
-#include "PinUpPlayerPinDisplay.h"
+#include "PUPPinDisplay.h"
 
 #include <iostream>
 #include <fstream>
 #include <sstream>
 
-PinUpPlayerPinDisplay::PinUpPlayerPinDisplay()
+PUPPinDisplay::PUPPinDisplay()
 {
 }
 
-PinUpPlayerPinDisplay::~PinUpPlayerPinDisplay()
+PUPPinDisplay::~PUPPinDisplay()
 {
 }
 
-STDMETHODIMP PinUpPlayerPinDisplay::Init(LONG ScreenNum, BSTR RootDir)
-{
-   PLOGW << "Not implemented";
-
-   return S_OK;
-}
-
-STDMETHODIMP PinUpPlayerPinDisplay::playlistadd(LONG ScreenNum, BSTR folder, LONG sort, LONG restSeconds)
+STDMETHODIMP PUPPinDisplay::Init(LONG ScreenNum, BSTR RootDir)
 {
    PLOGW << "Not implemented";
 
    return S_OK;
 }
 
-STDMETHODIMP PinUpPlayerPinDisplay::playlistplay(LONG ScreenNum, BSTR playlist){
-   PLOGW << "Not implemented";
-
-   return S_OK;
-}
-
-STDMETHODIMP PinUpPlayerPinDisplay::playlistplayex(LONG ScreenNum, BSTR playlist, BSTR playfilename, LONG volume, LONG forceplay)
+STDMETHODIMP PUPPinDisplay::playlistadd(LONG ScreenNum, BSTR folder, LONG sort, LONG restSeconds)
 {
    PLOGW << "Not implemented";
 
    return S_OK;
 }
 
-STDMETHODIMP PinUpPlayerPinDisplay::play(LONG ScreenNum, BSTR playlist, BSTR playfilename){
+STDMETHODIMP PUPPinDisplay::playlistplay(LONG ScreenNum, BSTR playlist){
    PLOGW << "Not implemented";
 
    return S_OK;
 }
 
-STDMETHODIMP PinUpPlayerPinDisplay::setWidth(LONG ScreenNum, LONG width){
-   PLOGW << "Not implemented";
-
-   return S_OK;
-}
-
-STDMETHODIMP PinUpPlayerPinDisplay::setHeight(LONG ScreenNum, LONG Height){
-   PLOGW << "Not implemented";
-
-   return S_OK;
-}
-
-STDMETHODIMP PinUpPlayerPinDisplay::setPosX(LONG ScreenNum, LONG Posx){
-   PLOGW << "Not implemented";
-
-   return S_OK;
-}
-
-STDMETHODIMP PinUpPlayerPinDisplay::setPosY(LONG ScreenNum, LONG PosY){
-   PLOGW << "Not implemented";
-
-   return S_OK;
-}
-
-STDMETHODIMP PinUpPlayerPinDisplay::setAspect(LONG ScreenNum, LONG aspectWide, LONG aspectHigh){
-   PLOGW << "Not implemented";
-
-   return S_OK;
-}
-
-STDMETHODIMP PinUpPlayerPinDisplay::setVolume(LONG ScreenNum, LONG vol){
-   PLOGW << "Not implemented";
-
-   return S_OK;
-}
-
-STDMETHODIMP PinUpPlayerPinDisplay::playpause(LONG ScreenNum){
-   PLOGW << "Not implemented";
-
-   return S_OK;
-}
-
-STDMETHODIMP PinUpPlayerPinDisplay::playresume(LONG ScreenNum){
-   PLOGW << "Not implemented";
-
-   return S_OK;
-}
-
-STDMETHODIMP PinUpPlayerPinDisplay::playstop(LONG ScreenNum){
-   PLOGW << "Not implemented";
-
-   return S_OK;
-}
-
-STDMETHODIMP PinUpPlayerPinDisplay::CloseApp(){
-   PLOGW << "Not implemented";
-
-   return S_OK;
-}
-
-STDMETHODIMP PinUpPlayerPinDisplay::get_isPlaying(LONG ScreenNum, LONG *Value){
-   PLOGW << "Not implemented";
-
-   return S_OK;
-}
-
-STDMETHODIMP PinUpPlayerPinDisplay::put_isPlaying(LONG ScreenNum, LONG Value){
-   PLOGW << "Not implemented";
-
-   return S_OK;
-}
-
-STDMETHODIMP PinUpPlayerPinDisplay::SetLength(LONG ScreenNum, LONG StopSecs){
-   PLOGW << "Not implemented";
-
-   return S_OK;
-}
-
-STDMETHODIMP PinUpPlayerPinDisplay::SetLoop(LONG ScreenNum, LONG LoopState){
-   PLOGW << "Not implemented";
-
-   return S_OK;
-}
-
-STDMETHODIMP PinUpPlayerPinDisplay::SetBackGround(LONG ScreenNum, LONG Mode)
+STDMETHODIMP PUPPinDisplay::playlistplayex(LONG ScreenNum, BSTR playlist, BSTR playfilename, LONG volume, LONG forceplay)
 {
    PLOGW << "Not implemented";
 
    return S_OK;
 }
 
-STDMETHODIMP PinUpPlayerPinDisplay::BlockPlay(LONG ScreenNum, LONG Mode){
+STDMETHODIMP PUPPinDisplay::play(LONG ScreenNum, BSTR playlist, BSTR playfilename){
    PLOGW << "Not implemented";
 
    return S_OK;
 }
 
-STDMETHODIMP PinUpPlayerPinDisplay::SetScreen(LONG ScreenNum){
+STDMETHODIMP PUPPinDisplay::setWidth(LONG ScreenNum, LONG width){
    PLOGW << "Not implemented";
 
    return S_OK;
 }
 
-STDMETHODIMP PinUpPlayerPinDisplay::SetScreenEx(LONG ScreenNum, LONG xpos, LONG ypos, LONG swidth, LONG sheight, LONG popup) 
+STDMETHODIMP PUPPinDisplay::setHeight(LONG ScreenNum, LONG Height){
+   PLOGW << "Not implemented";
+
+   return S_OK;
+}
+
+STDMETHODIMP PUPPinDisplay::setPosX(LONG ScreenNum, LONG Posx){
+   PLOGW << "Not implemented";
+
+   return S_OK;
+}
+
+STDMETHODIMP PUPPinDisplay::setPosY(LONG ScreenNum, LONG PosY){
+   PLOGW << "Not implemented";
+
+   return S_OK;
+}
+
+STDMETHODIMP PUPPinDisplay::setAspect(LONG ScreenNum, LONG aspectWide, LONG aspectHigh){
+   PLOGW << "Not implemented";
+
+   return S_OK;
+}
+
+STDMETHODIMP PUPPinDisplay::setVolume(LONG ScreenNum, LONG vol){
+   PLOGW << "Not implemented";
+
+   return S_OK;
+}
+
+STDMETHODIMP PUPPinDisplay::playpause(LONG ScreenNum){
+   PLOGW << "Not implemented";
+
+   return S_OK;
+}
+
+STDMETHODIMP PUPPinDisplay::playresume(LONG ScreenNum){
+   PLOGW << "Not implemented";
+
+   return S_OK;
+}
+
+STDMETHODIMP PUPPinDisplay::playstop(LONG ScreenNum){
+   PLOGW << "Not implemented";
+
+   return S_OK;
+}
+
+STDMETHODIMP PUPPinDisplay::CloseApp(){
+   PLOGW << "Not implemented";
+
+   return S_OK;
+}
+
+STDMETHODIMP PUPPinDisplay::get_isPlaying(LONG ScreenNum, LONG *Value){
+   PLOGW << "Not implemented";
+
+   return S_OK;
+}
+
+STDMETHODIMP PUPPinDisplay::put_isPlaying(LONG ScreenNum, LONG Value){
+   PLOGW << "Not implemented";
+
+   return S_OK;
+}
+
+STDMETHODIMP PUPPinDisplay::SetLength(LONG ScreenNum, LONG StopSecs){
+   PLOGW << "Not implemented";
+
+   return S_OK;
+}
+
+STDMETHODIMP PUPPinDisplay::SetLoop(LONG ScreenNum, LONG LoopState){
+   PLOGW << "Not implemented";
+
+   return S_OK;
+}
+
+STDMETHODIMP PUPPinDisplay::SetBackGround(LONG ScreenNum, LONG Mode)
 {
    PLOGW << "Not implemented";
 
    return S_OK;
 }
 
-STDMETHODIMP PinUpPlayerPinDisplay::get_SN(LONG *Value){
+STDMETHODIMP PUPPinDisplay::BlockPlay(LONG ScreenNum, LONG Mode){
    PLOGW << "Not implemented";
 
    return S_OK;
 }
 
-STDMETHODIMP PinUpPlayerPinDisplay::put_SN(LONG Value){
+STDMETHODIMP PUPPinDisplay::SetScreen(LONG ScreenNum){
    PLOGW << "Not implemented";
 
    return S_OK;
 }
 
-STDMETHODIMP PinUpPlayerPinDisplay::B2SData(BSTR tIndex, int Value)
+STDMETHODIMP PUPPinDisplay::SetScreenEx(LONG ScreenNum, LONG xpos, LONG ypos, LONG swidth, LONG sheight, LONG popup) 
 {
    PLOGW << "Not implemented";
 
    return S_OK;
 }
 
-STDMETHODIMP PinUpPlayerPinDisplay::get_B2SFilter(BSTR *Value){
+STDMETHODIMP PUPPinDisplay::get_SN(LONG *Value){
    PLOGW << "Not implemented";
 
    return S_OK;
 }
 
-STDMETHODIMP PinUpPlayerPinDisplay::put_B2SFilter(BSTR Value){
+STDMETHODIMP PUPPinDisplay::put_SN(LONG Value){
    PLOGW << "Not implemented";
 
    return S_OK;
 }
 
-STDMETHODIMP PinUpPlayerPinDisplay::Show(LONG ScreenNum)
+STDMETHODIMP PUPPinDisplay::B2SData(BSTR tIndex, int Value)
 {
    PLOGW << "Not implemented";
 
    return S_OK;
 }
 
-STDMETHODIMP PinUpPlayerPinDisplay::Hide(LONG ScreenNum)
+STDMETHODIMP PUPPinDisplay::get_B2SFilter(BSTR *Value){
+   PLOGW << "Not implemented";
+
+   return S_OK;
+}
+
+STDMETHODIMP PUPPinDisplay::put_B2SFilter(BSTR Value){
+   PLOGW << "Not implemented";
+
+   return S_OK;
+}
+
+STDMETHODIMP PUPPinDisplay::Show(LONG ScreenNum)
 {
    PLOGW << "Not implemented";
 
    return S_OK;
 }
 
-STDMETHODIMP PinUpPlayerPinDisplay::B2SInit(BSTR TName, BSTR RomName)
+STDMETHODIMP PUPPinDisplay::Hide(LONG ScreenNum)
+{
+   PLOGW << "Not implemented";
+
+   return S_OK;
+}
+
+STDMETHODIMP PUPPinDisplay::B2SInit(BSTR TName, BSTR RomName)
 {
    string szRomName = MakeString(RomName);
 
@@ -222,7 +222,7 @@ STDMETHODIMP PinUpPlayerPinDisplay::B2SInit(BSTR TName, BSTR RomName)
          if (++i == 1)
             continue;
 
-         PinUpPlayerPlaylist* pPlaylist = PinUpPlayerPlaylist::CreateFromCSVLine(line);
+         PUPPlaylist* pPlaylist = PUPPlaylist::CreateFromCSVLine(line);
 
          if (pPlaylist)
             m_playlists.push_back(pPlaylist);
@@ -243,7 +243,7 @@ STDMETHODIMP PinUpPlayerPinDisplay::B2SInit(BSTR TName, BSTR RomName)
          if (++i == 1)
             continue;
 
-         PinUpPlayerTrigger* pTrigger = PinUpPlayerTrigger::CreateFromCSVLine(line);
+         PUPTrigger* pTrigger = PUPTrigger::CreateFromCSVLine(line);
 
          if (pTrigger)
             m_triggers.push_back(pTrigger);
@@ -264,7 +264,7 @@ STDMETHODIMP PinUpPlayerPinDisplay::B2SInit(BSTR TName, BSTR RomName)
          if (++i == 1)
             continue;
 
-         PinUpPlayerScreen* pScreen = PinUpPlayerScreen::CreateFromCSVLine(line);
+         PUPScreen* pScreen = PUPScreen::CreateFromCSVLine(line);
 
          if (pScreen)
             m_screens.push_back(pScreen);
@@ -278,132 +278,132 @@ STDMETHODIMP PinUpPlayerPinDisplay::B2SInit(BSTR TName, BSTR RomName)
    return S_OK;
 }
 
-STDMETHODIMP PinUpPlayerPinDisplay::SendMSG(BSTR cMSG)
+STDMETHODIMP PUPPinDisplay::SendMSG(BSTR cMSG)
 {
    PLOGW << "Not implemented";
 
    return S_OK;
 }
 
-STDMETHODIMP PinUpPlayerPinDisplay::LabelNew(LONG ScreenNum, BSTR LabelName, BSTR FontName, LONG Size, LONG Color, LONG Angle, LONG xAlign, LONG yAlign, LONG xMargin, LONG yMargin, LONG PageNum, LONG Visible)
+STDMETHODIMP PUPPinDisplay::LabelNew(LONG ScreenNum, BSTR LabelName, BSTR FontName, LONG Size, LONG Color, LONG Angle, LONG xAlign, LONG yAlign, LONG xMargin, LONG yMargin, LONG PageNum, LONG Visible)
 {
    PLOGW << "Not implemented";
 
    return S_OK;
 }
 
-STDMETHODIMP PinUpPlayerPinDisplay::LabelSet(LONG ScreenNum, BSTR LabelName, BSTR Caption, LONG Visible, BSTR Special)
+STDMETHODIMP PUPPinDisplay::LabelSet(LONG ScreenNum, BSTR LabelName, BSTR Caption, LONG Visible, BSTR Special)
 {
    PLOGW << "Not implemented";
 
    return S_OK;
 }
 
-STDMETHODIMP PinUpPlayerPinDisplay::LabelSetEx(){
+STDMETHODIMP PUPPinDisplay::LabelSetEx(){
    PLOGW << "Not implemented";
 
    return S_OK;
 }
 
-STDMETHODIMP PinUpPlayerPinDisplay::LabelShowPage(LONG ScreenNum, LONG PageNum, LONG Seconds, BSTR Special)
+STDMETHODIMP PUPPinDisplay::LabelShowPage(LONG ScreenNum, LONG PageNum, LONG Seconds, BSTR Special)
 {
    PLOGW << "Not implemented";
 
    return S_OK;
 }
 
-STDMETHODIMP PinUpPlayerPinDisplay::LabelInit(LONG ScreenNum)
+STDMETHODIMP PUPPinDisplay::LabelInit(LONG ScreenNum)
 {
    PLOGW << "Not implemented";
 
    return S_OK;
 }
 
-STDMETHODIMP PinUpPlayerPinDisplay::get_GetGame(BSTR *Value)
+STDMETHODIMP PUPPinDisplay::get_GetGame(BSTR *Value)
 {
    PLOGW << "Not implemented";
 
    return S_OK;
 }
 
-STDMETHODIMP PinUpPlayerPinDisplay::put_GetGame(BSTR Value)
+STDMETHODIMP PUPPinDisplay::put_GetGame(BSTR Value)
 {
    PLOGW << "Not implemented";
 
    return S_OK;
 }
 
-STDMETHODIMP PinUpPlayerPinDisplay::get_GetRoot(BSTR *Value)
+STDMETHODIMP PUPPinDisplay::get_GetRoot(BSTR *Value)
 {
    PLOGW << "Not implemented";
 
    return S_OK;
 }
 
-STDMETHODIMP PinUpPlayerPinDisplay::put_GetRoot(BSTR Value)
+STDMETHODIMP PUPPinDisplay::put_GetRoot(BSTR Value)
 {
    PLOGW << "Not implemented";
 
    return S_OK;
 }
 
-STDMETHODIMP PinUpPlayerPinDisplay::SoundAdd(BSTR sname, BSTR fname, LONG svol, double sX, double sy, BSTR SP)
+STDMETHODIMP PUPPinDisplay::SoundAdd(BSTR sname, BSTR fname, LONG svol, double sX, double sy, BSTR SP)
 {
    PLOGW << "Not implemented";
 
    return S_OK;
 }
 
-STDMETHODIMP PinUpPlayerPinDisplay::SoundPlay(BSTR sname)
+STDMETHODIMP PUPPinDisplay::SoundPlay(BSTR sname)
 {
    PLOGW << "Not implemented";
 
    return S_OK;
 }
 
-STDMETHODIMP PinUpPlayerPinDisplay::PuPSound(BSTR sname, LONG sX, LONG sy, LONG sz, LONG vol, BSTR SP)
+STDMETHODIMP PUPPinDisplay::PuPSound(BSTR sname, LONG sX, LONG sy, LONG sz, LONG vol, BSTR SP)
 {
    PLOGW << "Not implemented";
 
    return S_OK;
 }
 
-STDMETHODIMP PinUpPlayerPinDisplay::InitPuPMenu(LONG Param1)
+STDMETHODIMP PUPPinDisplay::InitPuPMenu(LONG Param1)
 {
    PLOGW << "Not implemented";
 
    return S_OK;
 }
 
-STDMETHODIMP PinUpPlayerPinDisplay::get_B2SDisplays(BSTR *Value)
+STDMETHODIMP PUPPinDisplay::get_B2SDisplays(BSTR *Value)
 {
    PLOGW << "Not implemented";
 
    return S_OK;
 }
 
-STDMETHODIMP PinUpPlayerPinDisplay::setVolumeCurrent(LONG ScreenNum, LONG vol)
+STDMETHODIMP PUPPinDisplay::setVolumeCurrent(LONG ScreenNum, LONG vol)
 {
    PLOGW << "Not implemented";
 
    return S_OK;
 }
 
-STDMETHODIMP PinUpPlayerPinDisplay::get_GameUpdate(BSTR GameTitle, LONG Func, LONG FuncData, BSTR Extra, LONG *Value)
+STDMETHODIMP PUPPinDisplay::get_GameUpdate(BSTR GameTitle, LONG Func, LONG FuncData, BSTR Extra, LONG *Value)
 {
    PLOGW << "Not implemented";
 
    return S_OK;
 }
 
-STDMETHODIMP PinUpPlayerPinDisplay::GrabDC(LONG pWidth, LONG pHeight, BSTR wintitle, VARIANT *pixels)
+STDMETHODIMP PUPPinDisplay::GrabDC(LONG pWidth, LONG pHeight, BSTR wintitle, VARIANT *pixels)
 {
    PLOGW << "Not implemented";
 
    return S_OK;
 }
 
-STDMETHODIMP PinUpPlayerPinDisplay::GetVersion(BSTR *pver)
+STDMETHODIMP PUPPinDisplay::GetVersion(BSTR *pver)
 {
    int nVersionNo0 = 1;
    int nVersionNo1 = 5;
@@ -421,28 +421,28 @@ STDMETHODIMP PinUpPlayerPinDisplay::GetVersion(BSTR *pver)
    return S_OK;
 }
 
-STDMETHODIMP PinUpPlayerPinDisplay::GrabDC2(LONG pWidth, LONG pHeight, BSTR wintitle, SAFEARRAY **pixels)
+STDMETHODIMP PUPPinDisplay::GrabDC2(LONG pWidth, LONG pHeight, BSTR wintitle, SAFEARRAY **pixels)
 {
    PLOGW << "Not implemented";
 
    return S_OK;
 }
 
-STDMETHODIMP PinUpPlayerPinDisplay::playevent(LONG ScreenNum, BSTR playlist, BSTR playfilename, LONG volume, LONG priority, LONG playtype, LONG Seconds, BSTR Special)
+STDMETHODIMP PUPPinDisplay::playevent(LONG ScreenNum, BSTR playlist, BSTR playfilename, LONG volume, LONG priority, LONG playtype, LONG Seconds, BSTR Special)
 {
    PLOGW << "Not implemented";
 
    return S_OK;
 }
 
-STDMETHODIMP PinUpPlayerPinDisplay::SetPosVideo(LONG ScreenNum, LONG StartPos, LONG EndPos, LONG Mode, BSTR Special)
+STDMETHODIMP PUPPinDisplay::SetPosVideo(LONG ScreenNum, LONG StartPos, LONG EndPos, LONG Mode, BSTR Special)
 {
    PLOGW << "Not implemented";
 
    return S_OK;
 }
 
-STDMETHODIMP PinUpPlayerPinDisplay::PuPClose()
+STDMETHODIMP PUPPinDisplay::PuPClose()
 {
    PLOGW << "Not implemented";
 

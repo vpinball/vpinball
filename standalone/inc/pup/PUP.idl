@@ -10,7 +10,7 @@ import "ocidl.idl";
   version(1.0),
   helpstring("TopperVideoX Library")
 ]
-library PinUpPlayer
+library PUP
 {
     // TLib : OLE Automation : {00020430-0000-0000-C000-000000000046}
     importlib("stdole2.tlb");
@@ -22,7 +22,7 @@ library PinUpPlayer
       odl,
       uuid(7A2CCC8D-6AED-43BE-8EBD-4D2CD802F4CE),
       version(1.0),
-      helpstring("Dispatch interface for PinUpPlayer Object"),
+      helpstring("Dispatch interface for PUP Object"),
       dual,
       oleautomation
     ]

@@ -1,22 +1,22 @@
 #include "core/stdafx.h"
-#include "PinUpPlayerScreen.h"
-#include "PinUpPlayerUtils.h"
+#include "PUPScreen.h"
+#include "PUPUtils.h"
 
-PinUpPlayerScreen::PinUpPlayerScreen()
+PUPScreen::PUPScreen()
 {
 }
 
-PinUpPlayerScreen::~PinUpPlayerScreen()
+PUPScreen::~PUPScreen()
 {
 }
 
-PinUpPlayerScreen* PinUpPlayerScreen::CreateFromCSVLine(string line)
+PUPScreen* PUPScreen::CreateFromCSVLine(string line)
 {
-   vector<string> parts = PinUpPlayerUtils::ParseCSVLine(line);
+   vector<string> parts = PUPUtils::ParseCSVLine(line);
    if (parts.size() != 8)
       return nullptr;
 
-   PinUpPlayerScreen* screen = new PinUpPlayerScreen();
+   PUPScreen* screen = new PUPScreen();
 
    screen->m_screenNum = string_to_int(parts[0], 0);
    screen->m_screenDes = parts[1];

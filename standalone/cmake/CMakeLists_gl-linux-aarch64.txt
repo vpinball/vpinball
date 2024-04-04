@@ -568,19 +568,21 @@ add_executable(vpinball
    standalone/Standalone.cpp
    standalone/Standalone.h
 
-   standalone/inc/pup/PinUpPlayerPinDisplay.cpp
-   standalone/inc/pup/PinUpPlayerPinDisplay.h
-   standalone/inc/pup/PinUpPlayerPlaylist.cpp
-   standalone/inc/pup/PinUpPlayerPlaylist.h
-   standalone/inc/pup/PinUpPlayerTrigger.cpp
-   standalone/inc/pup/PinUpPlayerTrigger.h
-   standalone/inc/pup/PinUpPlayerScreen.cpp
-   standalone/inc/pup/PinUpPlayerScreen.h
-   standalone/inc/pup/PinUpPlayerUtils.cpp
-   standalone/inc/pup/PinUpPlayerUtils.h
-   standalone/inc/pup/pinupplayer_i_proxy.cpp
-   standalone/inc/pup/pinupplayer_i.c
-   standalone/inc/pup/pinupplayer_i.h
+   standalone/inc/pup/PUPPinDisplay.cpp
+   standalone/inc/pup/PUPPinDisplay.h
+   standalone/inc/pup/PUPPlaylist.cpp
+   standalone/inc/pup/PUPPlaylist.h
+   standalone/inc/pup/PUPTrigger.cpp
+   standalone/inc/pup/PUPTrigger.h
+   standalone/inc/pup/PUPScreen.cpp
+   standalone/inc/pup/PUPScreen.h
+   standalone/inc/pup/PUPUtils.cpp
+   standalone/inc/pup/PUPUtils.h
+   standalone/inc/pup/PUPPlugin.cpp
+   standalone/inc/pup/PUPPlugin.h
+   standalone/inc/pup/pup_i_proxy.cpp
+   standalone/inc/pup/pup_i.c
+   standalone/inc/pup/pup_i.h
 
    standalone/inc/common/DMDWindow.cpp
    standalone/inc/common/DMDWindow.h
@@ -650,8 +652,6 @@ target_precompile_headers(vpinball PUBLIC
 
 target_compile_options(vpinball PUBLIC
    -fvisibility=hidden
-   -Wno-inconsistent-missing-override
-   -Wno-missing-exception-spec
    $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
       -fdenormal-fp-math=preserve-sign
       -freciprocal-math
