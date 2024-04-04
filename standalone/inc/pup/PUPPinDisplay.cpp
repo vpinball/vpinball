@@ -205,56 +205,16 @@ STDMETHODIMP PUPPinDisplay::B2SInit(BSTR TName, BSTR RomName)
 {
    string szRomName = MakeString(RomName);
 
-   string path = g_pvp->m_currentTablePath + szRomName;
+   string szPath = g_pvp->m_currentTablePath + szRomName + PATH_SEPARATOR_CHAR;
 
-   if (!DirExists(path)) {
-      PLOGE.printf("Directory does not exist: path=%s", path.c_str());
+   if (!DirExists(szPath)) {
+      PLOGE.printf("Directory does not exist: path=%s", szPath.c_str());
       return S_OK;
    }
 
-   string playlistsPath = path + PATH_SEPARATOR_CHAR + "playlists.pup";
-   std::ifstream playlistsFile;
-   playlistsFile.open(playlistsPath, std::ifstream::in);
-   if (playlistsFile.is_open()) {
-      string line;
-      int i = 0;
-      while (std::getline(playlistsFile, line)) {
-         if (++i == 1)
-            continue;
+   // Screens
 
-         PUPPlaylist* pPlaylist = PUPPlaylist::CreateFromCSVLine(line);
-
-         if (pPlaylist)
-            m_playlists.push_back(pPlaylist);
-      }
-      PLOGI.printf("Playlists loaded: file=%s, size=%d", playlistsPath.c_str(), m_playlists.size());
-   }
-   else {
-      PLOGE.printf("Unable to load %s", playlistsPath.c_str());
-   }
-
-   string triggersPath = path + PATH_SEPARATOR_CHAR + "triggers.pup";
-   std::ifstream triggersFile;
-   triggersFile.open(triggersPath, std::ifstream::in);
-   if (triggersFile.is_open()) {
-      string line;
-      int i = 0;
-      while (std::getline(triggersFile, line)) {
-         if (++i == 1)
-            continue;
-
-         PUPTrigger* pTrigger = PUPTrigger::CreateFromCSVLine(line);
-
-         if (pTrigger)
-            m_triggers.push_back(pTrigger);
-      }
-      PLOGI.printf("Triggers loaded: file=%s, size=%d", triggersPath.c_str(), m_triggers.size());
-   }
-   else {
-      PLOGE.printf("Unable to load %s", triggersPath.c_str());
-   }
-
-   string screensPath = path + PATH_SEPARATOR_CHAR + "screens.pup";
+   string screensPath = szPath + "screens.pup";
    std::ifstream screensFile;
    screensFile.open(screensPath, std::ifstream::in);
    if (screensFile.is_open()) {
@@ -273,6 +233,52 @@ STDMETHODIMP PUPPinDisplay::B2SInit(BSTR TName, BSTR RomName)
    }
    else {
       PLOGE.printf("Unable to load %s", screensPath.c_str());
+   }
+
+   // Playlists
+
+   string playlistsPath = szPath + "playlists.pup";
+   std::ifstream playlistsFile;
+   playlistsFile.open(playlistsPath, std::ifstream::in);
+   if (playlistsFile.is_open()) {
+      string line;
+      int i = 0;
+      while (std::getline(playlistsFile, line)) {
+         if (++i == 1)
+            continue;
+
+         PUPPlaylist* pPlaylist = PUPPlaylist::CreateFromCSVLine(szPath, line);
+
+         if (pPlaylist)
+            m_playlists.push_back(pPlaylist);
+      }
+      PLOGI.printf("Playlists loaded: file=%s, size=%d", playlistsPath.c_str(), m_playlists.size());
+   }
+   else {
+      PLOGE.printf("Unable to load %s", playlistsPath.c_str());
+   }
+
+   // Triggers
+
+   string triggersPath = szPath + "triggers.pup";
+   std::ifstream triggersFile;
+   triggersFile.open(triggersPath, std::ifstream::in);
+   if (triggersFile.is_open()) {
+      string line;
+      int i = 0;
+      while (std::getline(triggersFile, line)) {
+         if (++i == 1)
+            continue;
+
+         PUPTrigger* pTrigger = PUPTrigger::CreateFromCSVLine(line, m_screens, m_playlists);
+
+         if (pTrigger)
+            m_triggers.push_back(pTrigger);
+      }
+      PLOGI.printf("Triggers loaded: file=%s, size=%d", triggersPath.c_str(), m_triggers.size());
+   }
+   else {
+      PLOGE.printf("Unable to load %s", triggersPath.c_str());
    }
 
    return S_OK;

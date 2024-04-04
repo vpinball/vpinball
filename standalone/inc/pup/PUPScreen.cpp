@@ -29,3 +29,15 @@ PUPScreen* PUPScreen::CreateFromCSVLine(string line)
 
    return screen;
 }
+
+string PUPScreen::ToString() const
+{
+   return "screenNum=" + std::to_string(m_screenNum) +
+      ", screenDes=" + m_screenDes +
+      ", playlist=" + m_playList +
+      ", playfile=" + m_playFile +
+      ", loopit=" + m_loopit +
+      ", active=" + std::to_string(m_active) +
+      ", priority=" + std::to_string(m_priority) +
+      ", m_customPos=" + m_customPos;
+}

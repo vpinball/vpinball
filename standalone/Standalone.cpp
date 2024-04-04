@@ -8,7 +8,7 @@
 
 #include "DMDUtil/Config.h"
 
-void OnDMDUtilLog(const char* format, va_list args)
+void OnDMDUtilLog(DMDUtil_LogLevel logLevel, const char* format, va_list args)
 {
    char buffer[4096];
    vsnprintf(buffer, sizeof(buffer), format, args);

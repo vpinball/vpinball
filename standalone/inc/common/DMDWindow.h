@@ -8,7 +8,7 @@ namespace VP {
 class DMDWindow : public VP::Window
 {
 public:
-   DMDWindow(const std::string& szTitle, int x, int y, int w, int h, int rotation, int z);
+   DMDWindow(const string& szTitle, int x, int y, int w, int h, int rotation, int z);
    ~DMDWindow();
 
    bool Init() override;

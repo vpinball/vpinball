@@ -8,7 +8,7 @@
 class FormWindow : public VP::Window
 {
 public:
-   FormWindow(Form* pForm, const std::string& szTitle, int x, int y, int w, int h, int z, int rotation);
+   FormWindow(Form* pForm, const string& szTitle, int x, int y, int w, int h, int z, int rotation);
    ~FormWindow();
 
    bool Init() override;
