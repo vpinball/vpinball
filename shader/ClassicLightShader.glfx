@@ -67,7 +67,7 @@ out vec3 normal;
 
 void main()
 {
-    gl_Layer = eye_gs[0];
+    GS_LAYER_COPY;
     for (int i=0;i<gl_in.length();i++)
     {
         gl_Position = matWorldViewProj[eye_gs[i]]*gl_in[i].gl_Position;
@@ -90,6 +90,7 @@ in vec3 normal;
 
 void main()
 {
+    FS_LAYER_TO_GLOBAL;
     // FIXME check tex_light_color declaration
     float4 pixel = texNoLod(tex_light_color, tex0); //!! IN.tex0 abused in backglass mode
 
@@ -130,6 +131,7 @@ in vec3 normal;
 
 void main()
 {
+    FS_LAYER_TO_GLOBAL;
     float4 result = float4(0.0, 0.0, 0.0, 0.0);
     BRANCH if (lightColor_intensity.w != 0.0)
     {

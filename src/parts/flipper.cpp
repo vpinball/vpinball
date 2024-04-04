@@ -795,7 +795,7 @@ void Flipper::RenderSetup(RenderDevice *device)
    WORD *bufI;
    indexBuffer->lock(0, 0, (void**)&bufI, IndexBuffer::WRITEONLY);
    memcpy(bufI, flipperBaseIndices, flipperBaseNumIndices * sizeof(flipperBaseIndices[0]));
-   for (int i = 0; i < flipperBaseNumIndices; i++)
+   for (int i = 0; i < (int)flipperBaseNumIndices; i++)
       bufI[flipperBaseNumIndices + i] = flipperBaseIndices[i] + flipperBaseVertices;
    indexBuffer->unlock();
    VertexBuffer *vertexBuffer = new VertexBuffer(m_rd, flipperBaseVertices * 2);

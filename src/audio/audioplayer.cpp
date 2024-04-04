@@ -64,18 +64,24 @@ bool AudioPlayer::MusicInit(const string& szFileName, const float volume)
 {
    if (g_pvp->m_ps.bass_BG_idx != -1 && g_pvp->m_ps.bass_STD_idx != g_pvp->m_ps.bass_BG_idx) BASS_SetDevice(g_pvp->m_ps.bass_BG_idx);
 
+#ifndef __STANDALONE__
+   string filename = szFileName;
+#else
+   string filename = normalize_path_separators(szFileName);
+#endif
+
    for (int i = 0; i < 5; ++i)
    {
-      string fileName;
+      string path;
       switch (i)
       {
-      case 0: fileName = szFileName; break;
-      case 1: fileName = g_pvp->m_szMyPath + "music" + PATH_SEPARATOR_CHAR + szFileName; break;
-      case 2: fileName = g_pvp->m_currentTablePath + szFileName; break;
-      case 3: fileName = g_pvp->m_currentTablePath + "music" + PATH_SEPARATOR_CHAR + szFileName; break;
-      case 4: fileName = PATH_MUSIC + szFileName; break;
+      case 0: path = filename; break;
+      case 1: path = g_pvp->m_szMyPath + "music" + PATH_SEPARATOR_CHAR + filename; break;
+      case 2: path = g_pvp->m_currentTablePath + filename; break;
+      case 3: path = g_pvp->m_currentTablePath + "music" + PATH_SEPARATOR_CHAR + filename; break;
+      case 4: path = PATH_MUSIC + filename; break;
       }
-      m_stream = BASS_StreamCreateFile(FALSE, fileName.c_str(), 0, 0, /*BASS_SAMPLE_LOOP*/0); //!! ?
+      m_stream = BASS_StreamCreateFile(FALSE, path.c_str(), 0, 0, /*BASS_SAMPLE_LOOP*/0); //!! ?
       if (m_stream != 0)
          break;
    }
@@ -85,7 +91,7 @@ bool AudioPlayer::MusicInit(const string& szFileName, const float volume)
       const int code = BASS_ErrorGetCode();
       string bla;
       BASS_ErrorMapCode(code, bla);
-      g_pvp->MessageBox(("BASS music/sound library cannot load \"" + szFileName + "\" (error " + std::to_string(code) + ": " + bla + ')').c_str(), "Error", MB_ICONERROR);
+      g_pvp->MessageBox(("BASS music/sound library cannot load \"" + filename + "\" (error " + std::to_string(code) + ": " + bla + ')').c_str(), "Error", MB_ICONERROR);
       return false;
    }
 

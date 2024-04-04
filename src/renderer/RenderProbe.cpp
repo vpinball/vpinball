@@ -425,7 +425,9 @@ void RenderProbe::DoRenderReflectionProbe(const bool render_static, const bool r
    Vertex3Ds n(m_reflection_plane.x, m_reflection_plane.y, m_reflection_plane.z);
    n.Normalize();
    vec4 clip_plane(n.x, n.y, n.z, m_reflection_plane.w);
+#ifndef __OPENGLES__
    m_rd->SetClipPlane(clip_plane);
+#endif
    m_rd->SetRenderState(RenderState::CLIPPLANEENABLE, RenderState::RS_TRUE);
    // Reverse cull mode since we multiply by a reversing matrix (mirror also has a reversing matrix)
    m_rd->SetRenderState(RenderState::CULLMODE, g_pplayer->m_ptable->m_tblMirrorEnabled ? RenderState::CULL_CCW : RenderState::CULL_CW);
