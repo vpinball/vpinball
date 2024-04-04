@@ -68,6 +68,25 @@
 #endif
 #endif
 
+#ifdef __ANDROID__
+#include "jni.h"
+#include <android/log.h>
+
+#define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,"VPX",__VA_ARGS__)
+
+static WebServer android_webServer;
+
+extern "C" JNIEXPORT void JNICALL Java_org_vpinball_app_VPXViewModel_webserver(JNIEnv* env, jobject obj, jboolean state) {
+   if (state) 
+      //android_webServer.Start();
+      LOGE("-> Start Web Server");
+   else
+      //android_webServer.Stop();
+      LOGE("-> Stop Web Server");
+}
+
+#endif
+
 Player::Player(PinTable *const editor_table, PinTable *const live_table, const int playMode)
    : m_pEditorTable(editor_table)
    , m_ptable(live_table)

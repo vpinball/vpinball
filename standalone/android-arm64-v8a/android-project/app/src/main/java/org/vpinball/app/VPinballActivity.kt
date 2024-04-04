@@ -1,7 +1,6 @@
 package org.vpinball.app
 
 import android.os.Bundle
-import android.util.Log
 import org.libsdl.app.SDLActivity
 
 /**
@@ -37,7 +36,6 @@ class VPinballActivity : SDLActivity() {
             "zedmd",
             "serum",
             "dmdutil",
-            "pupdmd",
             "dof",
             "sockpp",
             "vpinball"

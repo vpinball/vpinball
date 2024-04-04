@@ -3,7 +3,6 @@ package org.vpinball.app
 import android.Manifest.permission.READ_EXTERNAL_STORAGE
 import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.net.Uri
@@ -17,26 +16,19 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ElevatedButton
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -44,26 +36,21 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import androidx.core.content.edit
 import androidx.core.net.toUri
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.preferencesDataStore
 import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.vpinball.app.ui.theme.AndroidprojectTheme
@@ -73,28 +60,21 @@ import java.io.IOException
 import java.io.InputStream
 
 class VpxLauncherActivity : ComponentActivity() {
-    val tablesList = mutableStateListOf("")
-    val isConfigured = mutableStateOf(false)
+    val dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
+    val model by viewModels<VPXViewModel> { VPXViewModelFactory(application, dataStore) }
+
     val showErrorDialog = mutableStateOf(false)
     val showWorkingOverlay = mutableStateOf(false)
     val overlayMessage = mutableStateOf("")
-    var vpxDir: Uri? = null
+
+    var vpxDocFile: DocumentFile? = null
     var vpxDirFd: ParcelFileDescriptor? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Retrieve the previously selected VPX directory from preferences
-        vpxDir = getPreferences(Context.MODE_PRIVATE).let {
-            it.getString(VPX_DIR_KEY, null)?.toUri()
-        }
-
-        // The launcher will not display the initial warning page if there is a configured
-        // VPX directory and the user has granted storage permissions
-        isConfigured.value = (vpxDir != null) && checkStoragePermissions()
-
         // Read all tables from the VPX directory
-        if (isConfigured.value) openVpxDirectory()
+        if (model.isConfigured.value) openVpxDirectory()
 
         setContent {
             AndroidprojectTheme {
@@ -117,10 +97,7 @@ class VpxLauncherActivity : ComponentActivity() {
                         )
                     }
 
-                    if (isConfigured.value)
-                        PinballTables(tablesList)
-                    else
-                        InitialMessage()
+                    Navigator(controller = rememberNavController(), model = model)
 
                     if (showWorkingOverlay.value) {
                         WorkingOverlay(overlayMessage)
@@ -151,17 +128,7 @@ class VpxLauncherActivity : ComponentActivity() {
     private val storageActivityResultLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()) {
         showErrorDialog.value = !Environment.isExternalStorageManager()
-        isConfigured.value = !showErrorDialog.value
-    }
-
-    private fun checkStoragePermissions(): Boolean {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            Environment.isExternalStorageManager()
-        } else {
-            val write = ContextCompat.checkSelfPermission(this, WRITE_EXTERNAL_STORAGE)
-            val read = ContextCompat.checkSelfPermission(this, READ_EXTERNAL_STORAGE)
-            read == PERMISSION_GRANTED && write == PERMISSION_GRANTED
-        }
+        model.isConfigured.value = !showErrorDialog.value
     }
 
     // For Android versions below 11
@@ -171,27 +138,26 @@ class VpxLauncherActivity : ComponentActivity() {
         when (requestCode) {
             PERMISSION_REQUEST_CODE -> {
                 showErrorDialog.value = !(grantResults.isNotEmpty() && grantResults[0] == PERMISSION_GRANTED)
-                isConfigured.value = !showErrorDialog.value
+                model.isConfigured.value = !showErrorDialog.value
                 return
             }
         }
     }
 
     fun openVpxDirectory(updateAssets: Boolean = false) {
-        if (!checkStoragePermissions()) requestStoragePermissions()
+        if (!model.checkStoragePermissions()) requestStoragePermissions()
 
         val contentResolver = applicationContext.contentResolver
-        var doc: DocumentFile?
         try {
-            doc = DocumentFile.fromTreeUri(this, vpxDir!!)
-            vpxDirFd = contentResolver.openFileDescriptor(doc!!.uri, "r")
+            vpxDocFile = DocumentFile.fromTreeUri(this, model.vpxDir!!)
+            vpxDirFd = contentResolver.openFileDescriptor(vpxDocFile!!.uri, "r")
 
             // There must be a tables directory under the selected VPX dir
             // Make sure it exists now even though it will be eventually
             // created by copying it from assets
-            var tablesDir = doc.findFile("tables")
+            var tablesDir = vpxDocFile!!.findFile("tables")
             if (tablesDir == null) {
-                tablesDir = doc.createDirectory("tables")
+                tablesDir = vpxDocFile!!.createDirectory("tables")
             }
 
             if (updateAssets) {
@@ -203,7 +169,7 @@ class VpxLauncherActivity : ComponentActivity() {
 
                 // Copy files using a background thread
                 lifecycleScope.launch(Dispatchers.IO) {
-                    copyAssets("", doc)
+                    copyAssets("", vpxDocFile!!)
 
                     Log.d(TAG, "Done copying assets to the selected VPX dir")
                     overlayMessage.value = ""
@@ -214,7 +180,7 @@ class VpxLauncherActivity : ComponentActivity() {
             }
 
             // Tell Compose to display the list of tables
-            isConfigured.value = true
+            model.isConfigured.value = true
 
             updateTables(tablesDir!!)
         } catch (e: Exception) {
@@ -227,13 +193,13 @@ class VpxLauncherActivity : ComponentActivity() {
 
     // Add all VPX tables to the UI
     private fun updateTables(tablesDir: DocumentFile) {
-        tablesList.clear()
-        tablesDir!!.listFiles()
+        model.tablesList.clear()
+        tablesDir.listFiles()
             .filter {
                 it.name?.endsWith(".vpx", ignoreCase = true) == true
             }.forEach {
                 val tableName = it.name!!.dropLast(4)
-                tablesList.add(tableName)
+                model.tablesList.add(tableName)
             }
     }
 
@@ -241,6 +207,11 @@ class VpxLauncherActivity : ComponentActivity() {
     private fun copyAssets(srcDir: String, dstDir: DocumentFile) {
         val files = assets.list(srcDir)
         for (filename in files!!) {
+            // Skip "hidden" files
+            if (filename.startsWith(".")) {
+                continue
+            }
+
             var srcPath = ""
             if (!srcDir.isEmpty()) {
                 srcPath = "$srcDir/"
@@ -299,117 +270,46 @@ class VpxLauncherActivity : ComponentActivity() {
 
                 // Store the uri in the app's preferences file
                 // This way we don't need to ask the user again
-                getPreferences(Context.MODE_PRIVATE).edit {
-                    this.putString(VPX_DIR_KEY, uri.toString())
-                }
-
-                vpxDir = uri
+                model.updateVPXDir(uri)
                 openVpxDirectory(true)
             }
         }
     }
 
+    fun copyVPXLog(): File? {
+        val copiedLog = File.createTempFile("vpx", ".log", getExternalCacheDir())
+        copiedLog.deleteOnExit()
+
+        vpxDocFile?.findFile("vpinball.log")?.let {
+            applicationContext.contentResolver.openInputStream(it.uri)?.use {
+                it.copyTo(copiedLog.outputStream())
+            }
+            return copiedLog
+        }
+
+        return null
+    }
+
     companion object {
         private const val TAG = "VPinballActivity"
-        private const val VPX_DIR_KEY = "VPXMainDir"
         private const val VPX_DIR_CODE = 1000
         private const val PERMISSION_REQUEST_CODE = 1001
-    }
-}
-
-@Composable
-fun InitialMessage() {
-    val activity = LocalContext.current as VpxLauncherActivity
-
-    Column(modifier = Modifier.padding(horizontal = 14.dp)) {
-
-        Column(modifier = Modifier.weight(1f).fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally) {
-            Spacer(modifier = Modifier.height(48.dp))
-            Text(stringResource(R.string.select_dir_msg))
-            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                Button(
-                    onClick = {
-                        // Try to open the VPX directory
-                        activity.openVpxDirectory(true)
-                    }
-                ) {
-                    Text(stringResource(R.string.button_select_dir))
-                }
-            }
-        }
-
-        Text(text = stringResource(R.string.permissions_msg),
-            fontStyle = FontStyle.Italic,
-            modifier = Modifier.padding(vertical = 24.dp))
-    }
-}
-
-// Rudimentary presentation of all tables on a list.
-// It works but it's ugly. Hopefully to be replaced with a nice looking UI.
-@Composable
-fun PinballTables(tablesList: SnapshotStateList<String>) {
-    val tables = remember { tablesList }
-    val activity = LocalContext.current as VpxLauncherActivity
-
-    Column {
-        Text(stringResource(R.string.main_title),
-            fontSize = 24.sp, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier
-                .verticalScroll(rememberScrollState())
-                .weight(1f)
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp)
-        ) {
-            tables.forEach { table ->
-                Text(text = table,
-                    modifier = Modifier.fillMaxWidth().clickable {
-                        val intent = Intent(activity, VPinballActivity::class.java).apply {
-                            putExtra("table", "$table.vpx")
-                            putExtra("dirFd", activity.vpxDirFd!!.detachFd())
-                        }
-                        activity.startActivity(intent)
-                    })
-
-                HorizontalDivider()
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Row(horizontalArrangement = Arrangement.SpaceEvenly,
-            modifier = Modifier
-                .padding(8.dp)
-                .fillMaxWidth()) {
-            ElevatedButton(onClick = { activity.openVpxDirectory(false) }) {
-                Text(stringResource(R.string.button_refresh))
-            }
-
-            ElevatedButton(onClick = {
-                val suggestedVpxDir = File(Environment.getExternalStorageDirectory(), "vpx").toUri()
-                activity.askUserForVpxDirectory(suggestedVpxDir)
-            }) {
-                Text(stringResource(R.string.button_new_dir))
-            }
-        }
-
     }
 }
 
 
 @Composable
 fun WorkingOverlay(message: MutableState<String>) {
-    Box(Modifier
-        .fillMaxSize()
-        .background(Color.Gray.copy(alpha = 0.5f))
-        .pointerInput(Unit) {}
+    Box(
+        Modifier
+            .fillMaxSize()
+            .background(Color.Gray.copy(alpha = 0.5f))
+            .pointerInput(Unit) {}
     ) {
         Column(
-            modifier = Modifier.matchParentSize().padding(horizontal = 16.dp),
+            modifier = Modifier
+                .matchParentSize()
+                .padding(horizontal = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
