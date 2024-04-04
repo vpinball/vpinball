@@ -3,6 +3,10 @@
 #include <mutex>
 static std::mutex mtx; //!! only used for Wine multithreading bug workaround
 
+#ifdef __STANDALONE__
+#include <fstream>
+#endif
+
 bool DirExists(const string& dirPath)
 {
 #ifdef _MSC_VER
@@ -97,7 +101,7 @@ string PathFromFilename(const string &szfilename)
    int end;
    for (end = len; end >= 0; end--)
    {
-      if (szfilename[end] == '\\' || szfilename[end] == '/')
+      if (szfilename[end] == PATH_SEPARATOR_CHAR)
          break;
    }
 
@@ -151,6 +155,7 @@ bool ReplaceExtensionFromFilename(string& szfilename, const string& newextension
 
 bool RawReadFromFile(const char * const szfilename, int *const psize, char **pszout)
 {
+#ifndef __STANDALONE__
    const HANDLE hFile = CreateFile(szfilename,
       GENERIC_READ, FILE_SHARE_READ,
       nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
@@ -172,6 +177,7 @@ bool RawReadFromFile(const char * const szfilename, int *const psize, char **psz
    (*pszout)[*psize + 1] = '\0'; // In case this is a unicode file, end it with a null character properly
 
    /*foo =*/ CloseHandle(hFile);
+#endif
 
    return true;
 }
@@ -184,8 +190,10 @@ BiffWriter::BiffWriter(IStream *pistream, const HCRYPTHASH hcrypthash)
 
 HRESULT BiffWriter::WriteBytes(const void *pv, const ULONG count, ULONG *foo)
 {
+#ifndef __STANDALONE__
    if (m_hcrypthash)
       CryptHashData(m_hcrypthash, (BYTE *)pv, count, 0);
+#endif
 
    return m_pistream->Write(pv, count, foo);
 }
@@ -392,8 +400,10 @@ HRESULT BiffReader::ReadBytes(void * const pv, const ULONG count, ULONG * const 
    if (iow)
       mtx.unlock();
 
+#ifndef __STANDALONE__
    if (m_hcrypthash)
       CryptHashData(m_hcrypthash, (BYTE *)pv, count, 0);
+#endif
 
    return hr;
 }
@@ -486,9 +496,19 @@ HRESULT BiffReader::GetWideString(WCHAR *wzvalue, const DWORD wzvalue_maxlength)
 
    m_bytesinrecordremaining -= len + (int)sizeof(int);
 
+#ifndef __STANDALONE__
    WCHAR * tmp = new WCHAR[len/sizeof(WCHAR)+1];
    hr = ReadBytes(tmp, len, &read);
    tmp[len/sizeof(WCHAR)] = L'\0';
+#else
+   WCHAR * tmp = new WCHAR[len/2+1];
+   memset(tmp, 0, (len/2+1) * sizeof(WCHAR));
+   char* ptr = (char*)tmp;
+   for (int index = 0; index < len/2; index++) {
+      hr = ReadBytes(ptr, 2, &read);
+      ptr += sizeof(WCHAR);
+   }
+#endif
    WideStrNCopy(tmp, wzvalue, wzvalue_maxlength);
    delete[] tmp;
    return hr;
@@ -508,9 +528,20 @@ HRESULT BiffReader::GetWideString(std::basic_string<WCHAR>& wzvalue)
 
    m_bytesinrecordremaining -= len + (int)sizeof(int);
 
+#ifndef __STANDALONE__
    WCHAR * tmp = new WCHAR[len/sizeof(WCHAR)+1];
    hr = ReadBytes(tmp, len, &read);
    tmp[len/sizeof(WCHAR)] = 0;
+#else
+   WCHAR * tmp = new WCHAR[len/2+1];
+   memset(tmp, 0, (len/2+1) * sizeof(WCHAR));
+   char* ptr = (char*)tmp;
+   for (int index = 0; index < len/2; index++) {
+      hr = ReadBytes(ptr, 2, &read);
+      ptr += sizeof(WCHAR);
+   }
+   tmp[len/2] = 0;
+#endif
    wzvalue = tmp;
    delete[] tmp;
    return hr;

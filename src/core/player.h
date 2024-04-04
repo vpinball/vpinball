@@ -7,6 +7,10 @@
 #include "pininput.h"
 #include "LiveUI.h"
 
+#ifdef __STANDALONE__
+#include "standalone/inc/common/WindowManager.h"
+#endif
+
 #define DEFAULT_PLAYER_WIDTH 1024
 #define DEFAULT_PLAYER_FS_WIDTH 1920
 #define DEFAULT_PLAYER_FS_REFRESHRATE 60
@@ -85,6 +89,7 @@ static const string regkey_string[eCKeys] = {
    "PauseKey"s,
    "TweakKey"s
 };
+
 static constexpr int regkey_defdik[eCKeys] = {
    DIK_LSHIFT,
    DIK_RSHIFT,
@@ -94,7 +99,11 @@ static constexpr int regkey_defdik[eCKeys] = {
    DIK_SLASH,
    DIK_SPACE,
    DIK_RETURN,
+#if !defined(__APPLE__) && !defined(__ANDROID__)
    DIK_F11,
+#else
+   DIK_F1,
+#endif
    DIK_O,
    DIK_D,
    DIK_5,
@@ -115,6 +124,7 @@ static constexpr int regkey_defdik[eCKeys] = {
    DIK_P,
    DIK_F12
 };
+
 static constexpr int regkey_idc[eCKeys] = {
    IDC_LEFTFLIPPER,
    IDC_RIGHTFLIPPER,
@@ -146,27 +156,33 @@ static constexpr int regkey_idc[eCKeys] = {
    IDC_TWEAK
 };
 
-#define MAX_TOUCHREGION 8
+#define MAX_TOUCHREGION 11
 
 static constexpr RECT touchregion[MAX_TOUCHREGION] = { //left,top,right,bottom (in % of screen)
-   { 0, 0, 50, 10 },      // ExtraBall
-   { 0, 10, 50, 50 },     // 2nd Left Button
-   { 0, 50, 50, 90 },     // 1st Left Button (Flipper)
-   { 0, 90, 50, 100 },    // Start
-   { 50, 0, 100, 10 },    // Exit
-   { 50, 10, 100, 50 },   // 2nd Right Button
-   { 50, 50, 100, 90 },   // 1st Right Button (Flipper)
-   { 50, 90, 100, 100 }   // Plunger
+   { 0, 0, 50, 10 },      // Extra Ball
+   { 50, 0, 100, 10 },    // Escape
+   { 0, 10, 50, 30 },     // 2nd Left Button
+   { 50, 10, 100, 30 },   // 2nd Right Button
+   { 0, 30, 50, 60 },     // Left Nudge Button
+   { 50, 30, 100, 60 },   // Right Nudge Button
+   { 0, 60, 30, 90 },     // 1st Left Button (Flipper)
+   { 30, 60, 70, 100 },   // Center Nudge Button
+   { 70, 60, 100, 90 },   // 1st Right Button (Flipper)
+   { 0, 90, 30, 100 },    // Start
+   { 70, 90, 100, 100 },  // Plunger
 };
 
 static constexpr EnumAssignKeys touchkeymap[MAX_TOUCHREGION] = {
    eAddCreditKey, //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+   eEscape,
    eLeftMagnaSave,
-   eLeftFlipperKey,
-   eStartGameKey,
-   eExitGame,
    eRightMagnaSave,
+   eLeftTiltKey,
+   eRightTiltKey,
+   eLeftFlipperKey,
+   eCenterTiltKey,
    eRightFlipperKey,
+   eStartGameKey,
    ePlungerKey
 };
 
@@ -573,6 +589,8 @@ public:
 
    #ifdef ENABLE_SDL
    SDL_Window  *m_sdl_playfieldHwnd;
+   float m_wnd_scale_x;
+   float m_wnd_scale_y;
    #endif
 
    void DisableStaticPrePass(const bool disable) { if (m_disableStaticPrepass != disable) { m_disableStaticPrepass = disable; m_isStaticPrepassDirty = true; } }
@@ -757,6 +775,7 @@ private:
 public:
    bool m_supportsTouch; // Display is a touchscreen?
    bool m_showTouchMessage;
+   bool m_showTouchOverlay;
 
    // all kinds of stats tracking, incl. FPS measurement
    int m_lastMaxChangeTime; // Used to update counters every seconds
@@ -770,11 +789,17 @@ private:
 public:
    void OnClose() override;
 
+#ifdef __STANDALONE__
+   VP::WindowManager* m_pWindowManager;
+#endif
+
 #ifdef STEPPING
    U32 m_pauseTimeTarget;
    volatile bool m_pause;
    bool m_step;
 #endif
 
+#ifndef __STANDALONE__
    DebuggerDialog m_debuggerDialog;
+#endif
 };
