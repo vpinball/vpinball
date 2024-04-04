@@ -579,6 +579,7 @@ bool DispReel::LoadToken(const int id, BiffReader * const pbr)
    case FID(UPTM): pbr->GetInt(m_d.m_updateinterval); break;
    case FID(FONT): //!! deprecated, only here to support loading of old tables
    {
+#ifndef __STANDALONE__
       IFont *pIFont;
       FONTDESC fd;
       fd.cbSizeofstruct = sizeof(FONTDESC);
@@ -598,6 +599,18 @@ bool DispReel::LoadToken(const int id, BiffReader * const pbr)
       ips->Load(pbr->m_pistream);
 
       pIFont->Release();
+#else
+      // https://github.com/freezy/VisualPinball.Engine/blob/master/VisualPinball.Engine/VPT/Font.cs#L25
+      char data[255];
+
+      ULONG read;
+      pbr->ReadBytes(data, 3, &read);
+      pbr->ReadBytes(data, 1, &read); // Italic
+      pbr->ReadBytes(data, 2, &read); // Weight
+      pbr->ReadBytes(data, 4, &read); // Size
+      pbr->ReadBytes(data, 1, &read); // nameLen
+      pbr->ReadBytes(data, (int)data[0], &read); // name
+#endif
 
       break;
    }

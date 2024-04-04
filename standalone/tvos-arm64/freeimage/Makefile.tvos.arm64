@@ -1,0 +1,59 @@
+# Configuration for iPhone OS, making static libs
+# this will generate both iPhone (arm) and iPhoneSimulator (i386) libs
+
+include Makefile.srcs
+
+CFLAGS = -std=c99 -g -O2 -Wall -Wmissing-prototypes -ffast-math -fno-strict-aliasing -D__ANSI__ -emit-llvm -Wno-c++11-narrowing -Wno-implicit-function-declaration
+CXXFLAGS = -std=gnu++14 -stdlib=libc++ -D__ANSI__ -emit-llvm -Wno-c++11-narrowing -Wno-implicit-function-declaration -fvisibility-inlines-hidden
+
+PLATFORM_TV = AppleTVOS
+
+ARCH_TV = arm64
+
+PLATFORM_DEVELOPER_BIN_DIR = $(shell xcode-select -print-path)/Toolchains/XcodeDefault.xctoolchain/usr/bin
+
+SDKROOT_TV = $(shell xcode-select -print-path)/Platforms/$(PLATFORM_TV).platform/Developer/SDKs/$(PLATFORM_TV)$(IPHONEOS_SDK).sdk
+$(info VAR is $(SDKROOT_TV))
+
+# Xcode complains about the -mdynamic-no-pic with an Apple Mach-O Linker Warning, so removed
+EXTRA_CFLAGS_TV += -arch $(ARCH_TV) -pipe -fvisibility=hidden $(INCLUDE) -isysroot $(SDKROOT_TV) -DDISABLE_PERF_MEASUREMENT -DPNG_ARM_NEON_OPT=0
+#EXTRA_CFLAGS_TV += -miphoneos-version-min=$(IPHONEOS_DEPLOYMENT_TARGET)
+
+CC = $(PLATFORM_DEVELOPER_BIN_DIR)/clang
+CXX = $(PLATFORM_DEVELOPER_BIN_DIR)/clang++
+LIBTOOL = $(PLATFORM_DEVELOPER_BIN_DIR)/libtool
+
+CFLAGS_TV = $(CFLAGS) $(EXTRA_CFLAGS_TV)
+CXXFLAGS_TV += $(EXTRA_CFLAGS_TV) $(CXXFLAGS)
+
+TARGET = freeimage
+STATICLIB_TV = lib$(TARGET).a
+HEADER = Source/FreeImage.h
+
+.SUFFIXES: .o
+MODULES_TV = $(SRCS:.c=.o)
+MODULES_TV := $(MODULES_TV:.cpp=.o)
+
+default: all
+
+all: dist
+
+dist: FreeImage
+	mkdir -p Dist
+	cp *.a Dist/
+	cp Source/FreeImage.h Dist/
+
+FreeImage: $(STATICLIB_TV)
+
+
+$(STATICLIB_TV): $(MODULES_TV)
+	$(LIBTOOL) -arch_only $(ARCH_TV) -o $@ $(MODULES_TV)
+
+.c.o:
+	$(CC) $(CFLAGS_TV) -c $< -o $@
+
+.cpp.o:
+	$(CXX) $(CXXFLAGS_TV) -c $< -o $@
+
+clean:
+	rm -f core Dist/*.* u2dtmp* $(MODULES_TV) $(STATICLIB_TV)
