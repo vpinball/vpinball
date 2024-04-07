@@ -14,6 +14,7 @@ Ball::Ball()
    m_pinballEnv = nullptr;
    m_pinballDecal = nullptr;
    m_lastEventPos.x = m_lastEventPos.y = m_lastEventPos.z = -10000.0f; // last pos is far far away
+   m_lastEventSqrDist = 0.f;
    m_d.m_lockedInKicker = false;
    m_color = RGB(255, 255, 255);
 #ifdef C_DYNAMIC
