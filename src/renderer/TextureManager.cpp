@@ -8,10 +8,13 @@
 Sampler* TextureManager::LoadTexture(BaseTexture* memtex, const SamplerFilter filter, const SamplerAddressMode clampU, const SamplerAddressMode clampV, const bool force_linear_rgb)
 {
    const Iter it = m_map.find(memtex);
+   // During static part prerendering, trilinear/anisotropic filtering is disabled to get sharper results
+   const bool isPreRender = g_pplayer->IsRenderPass(Player::STATIC_ONLY);
+   const SamplerFilter filter2 = (isPreRender && (filter == SamplerFilter::SF_ANISOTROPIC || filter == SamplerFilter::SF_TRILINEAR)) ? SamplerFilter::SF_BILINEAR : filter;
    if (it == m_map.end())
    {
       MapEntry entry;
-      entry.sampler = new Sampler(&m_rd, memtex, force_linear_rgb, clampU, clampV, filter);
+      entry.sampler = new Sampler(&m_rd, memtex, force_linear_rgb, clampU, clampV, filter2);
       if (g_pplayer->m_pin3d.m_envTexture != nullptr && g_pplayer->m_pin3d.m_envTexture->m_pdsBuffer == memtex)
          entry.sampler->SetName("Env"s);
       else if (g_pplayer->m_pin3d.m_pinballEnvTexture.m_pdsBuffer == memtex)
@@ -33,9 +36,9 @@ Sampler* TextureManager::LoadTexture(BaseTexture* memtex, const SamplerFilter fi
       entry.sampler->m_dirty = false;
       entry.clampU = clampU;
       entry.clampV = clampV;
-      entry.filter = filter;
+      entry.filter = filter2;
       entry.forceLinearRGB = force_linear_rgb;
-      entry.preRenderOnly = g_pplayer->IsRenderPass(Player::STATIC_ONLY);
+      entry.preRenderOnly = isPreRender;
       m_map[memtex] = entry;
       return entry.sampler;
    }
@@ -48,12 +51,12 @@ Sampler* TextureManager::LoadTexture(BaseTexture* memtex, const SamplerFilter fi
          entry.sampler->m_dirty = false;
       }
       entry.sampler->SetClamp(clampU, clampV);
-      entry.sampler->SetFilter(filter);
+      entry.sampler->SetFilter(filter2);
       entry.clampU = clampU;
       entry.clampV = clampV;
-      entry.filter = filter;
+      entry.filter = filter2;
       entry.forceLinearRGB = force_linear_rgb;
-      entry.preRenderOnly &= g_pplayer->IsRenderPass(Player::STATIC_ONLY);
+      entry.preRenderOnly &= isPreRender;
       return entry.sampler;
    }
 }
