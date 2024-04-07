@@ -64,6 +64,7 @@ public:
 
    Vertex3Ds m_oldVel;       // hack for kicker hole handling only
 
+   U32 m_lastEventTime; // last hit event time (to filter hit 'equal' hit events)
    Vertex3Ds m_lastEventPos; // last hit event position (to filter hit 'equal' hit events)
 
    Vertex3Ds m_angularmomentum;

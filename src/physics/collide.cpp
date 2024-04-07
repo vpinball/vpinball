@@ -15,15 +15,22 @@ void HitObject::FireHitEvent(Ball * const pball)
 {
    if (m_obj && m_fe && m_enabled)
    {
-      // is this the same place as last event? if same then ignore it
-      const float dist_ls = (pball->m_lastEventPos - pball->m_d.m_pos).LengthSquared();
-      pball->m_lastEventPos = pball->m_d.m_pos;    // remember last collision position
-
-      const float normalDist = (m_ObjType == eHitTarget) ? 0.0f   // hit targets when used with a captured ball have always a too small distance
-                                                         : 0.25f; //!! magic distance
-
-      if (dist_ls > normalDist) // must be a new place if only by a little
-         ((IFireEvents *)m_obj)->FireGroupEvent(DISPID_HitEvents_Hit);
+      // is this the same place as last event and elapsed time is short enough, then ignores it
+      if ((g_pplayer->m_time_msec - pball->m_lastEventTime) <= 2 * PHYSICS_STEPTIME / 1000)
+      {
+         const float dist_ls = (pball->m_lastEventPos - pball->m_d.m_pos).LengthSquared();
+         const float normalDist = (m_ObjType == eHitTarget) ? 0.0f // hit targets when used with a captured ball have always a too small distance
+                                                            : 0.25f; //!! magic distance
+         if (dist_ls <= normalDist) // must be a new place if only by a little
+         {
+            pball->m_lastEventTime = g_pplayer->m_time_msec;
+            return;
+         }
+      }
+      
+      pball->m_lastEventPos = pball->m_d.m_pos; // remember last collision position
+      pball->m_lastEventTime = g_pplayer->m_time_msec;
+      ((IFireEvents*)m_obj)->FireGroupEvent(DISPID_HitEvents_Hit);
    }
 }
 
