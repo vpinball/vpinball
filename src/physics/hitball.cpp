@@ -498,6 +498,8 @@ void Ball::UpdateDisplacements(const float dtime)
       const Vertex3Ds ds = dtime * m_d.m_vel;
       m_d.m_pos += ds;
 
+      m_lastEventSqrDist += ds.LengthSquared();
+
 #ifdef C_DYNAMIC
       m_drsq = ds.LengthSquared(); // used to determine if static ball
 #endif
