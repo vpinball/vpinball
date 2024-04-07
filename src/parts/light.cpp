@@ -1440,7 +1440,7 @@ STDMETHODIMP Light::put_Image(BSTR newVal)
    m_d.m_szImage = szImage;
    // Detect if we changed the use of images since it changes the rendering texture coordinates and therefore needs the mesh buffer to be updated
    Texture *const pinAfter = m_ptable->GetImage(m_d.m_szImage);
-   m_lightmapMeshBufferDirty = (pinBefore == nullptr && pinAfter != nullptr) || (pinBefore != nullptr && pinAfter == nullptr);
+   m_lightmapMeshBufferDirty |= (pinBefore == nullptr && pinAfter != nullptr) || (pinBefore != nullptr && pinAfter == nullptr);
 
    return S_OK;
 }
