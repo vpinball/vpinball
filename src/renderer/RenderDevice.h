@@ -239,16 +239,17 @@ public:
    bgfx::ProgramHandle m_program = BGFX_INVALID_HANDLE; // Bound program for next draw submission
    void NextView()
    {
-      if (m_activeViewId == 255)
-         SubmitFrame();
+      if (m_activeViewId == 254) // View 255 is reserved for ImGui
+         SubmitAndFlipFrame();
       m_activeViewId++;
       bgfx::resetView(m_activeViewId);
       bgfx::setViewMode(m_activeViewId, bgfx::ViewMode::Sequential);
       bgfx::setViewClear(m_activeViewId, BGFX_CLEAR_NONE);
       bgfx::touch(m_activeViewId);
    }
-   void SubmitFrame()
+   void SubmitAndFlipFrame()
    {
+      // BGFX always flips backbuffer when its render queue is submitted
       bgfx::frame();
       RenderTarget::OnFrameFlushed();
       m_activeViewId = -1;
