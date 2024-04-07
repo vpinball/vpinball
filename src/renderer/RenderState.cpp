@@ -166,6 +166,7 @@ void RenderState::Apply(RenderDevice* device)
    constexpr int functions[] = { GL_ALWAYS, GL_LESS, GL_LEQUAL, GL_GREATER, GL_GEQUAL };
    constexpr int blend_modes[] = { GL_MAX, GL_FUNC_ADD, GL_FUNC_REVERSE_SUBTRACT };
    constexpr int blend_functions[] = { GL_ZERO, GL_ONE, GL_SRC_ALPHA, GL_DST_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE_MINUS_SRC_COLOR };
+   int val;
 
 #elif defined(ENABLE_DX9)
    constexpr int cull_modes[] = { D3DCULL_NONE, D3DCULL_CW, D3DCULL_CCW };
@@ -173,9 +174,9 @@ void RenderState::Apply(RenderDevice* device)
    constexpr int blend_modes[] = { D3DBLENDOP_MAX, D3DBLENDOP_ADD, D3DBLENDOP_REVSUBTRACT };
    constexpr int blend_functions[] = { D3DBLEND_ZERO, D3DBLEND_ONE, D3DBLEND_SRCALPHA, D3DBLEND_DESTALPHA, D3DBLEND_INVSRCALPHA, D3DBLEND_INVSRCCOLOR };
    IDirect3DDevice9* const d3dDevice = device->GetCoreDevice();
+   int val;
 #endif
 
-   int val;
    RenderState& active_state = device->GetActiveRenderState();
    const unsigned previous_state = active_state.m_state;
    unsigned new_state = m_state;

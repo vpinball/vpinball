@@ -677,12 +677,21 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
    #ifdef DEBUG
    init.debug = true;
    #endif
-   bgfx::renderFrame(); // FIXME BGFX this disable BGFX multithreaded
+   
+   bgfx::renderFrame(); // FIXME BGFX this disable BGFX multithreading
    if (!bgfx::init(init))
    {
       PLOGE << "FAILED";
    }
-   //bgfx::reset(m_width, m_height, BGFX_RESET_NONE, bgfx::TextureFormat::RGB8);
+   switch (syncMode)
+   {
+   case VideoSyncMode::VSM_NONE: break;
+   case VideoSyncMode::VSM_VSYNC: break;
+   case VideoSyncMode::VSM_ADAPTIVE_VSYNC: syncMode = VideoSyncMode::VSM_VSYNC; break; // Unsupported
+   case VideoSyncMode::VSM_FRAME_PACING: syncMode = VideoSyncMode::VSM_VSYNC; break; // Unsupported
+   default: break;
+   }
+   bgfx::reset(m_width, m_height, syncMode == VideoSyncMode::VSM_NONE ? BGFX_RESET_NONE : BGFX_RESET_VSYNC, bgfx::TextureFormat::RGB8);
 
    //bgfx::setDebug(BGFX_DEBUG_STATS);
    //bgfx::setDebug(BGFX_DEBUG_STATS | BGFX_DEBUG_WIREFRAME);
@@ -1582,8 +1591,7 @@ void RenderDevice::Flip()
    if (m_stereo3D != STEREO_VR)
       g_frameProfiler.OnPresent();
    #if defined(ENABLE_BGFX)
-   //if (m_activeViewId != -1 || m_maxViewId != 254)
-   //   SubmitFrame();
+   SubmitAndFlipFrame();
    #elif defined(ENABLE_OPENGL)
    SDL_GL_SwapWindow(m_sdl_playfieldHwnd);
    #elif defined(ENABLE_DX9)

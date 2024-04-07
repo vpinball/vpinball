@@ -170,8 +170,6 @@ bool RenderFrame::Execute(const bool log)
       rendered |= pass->Execute(log);
    
    #if defined(ENABLE_BGFX)
-   if (rendered)
-      m_rd->SubmitFrame();
    #elif defined(ENABLE_OPENGL)
    if (rendered)
       glFlush(); // Push command queue to the GPU without blocking (tells the GPU that the render queue is ready to be executed)
