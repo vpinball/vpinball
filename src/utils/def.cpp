@@ -669,7 +669,7 @@ HRESULT external_create_object(const WCHAR* progid, IClassFactory* cf, IUnknown*
       hres = (new UltraDMDDMDObject())->QueryInterface(IID_IDMDObject, (void**)obj);
    else if (!wcsicmp(progid, L"B2S.Server"))
       hres = (new Server())->QueryInterface(IID__Server, (void**)obj);
-   else if (!wcsicmp(progid, L"PUP.PinDisplay")) {
+   else if (!wcsicmp(progid, L"PinUpPlayer.PinDisplay")) {
       hres = (new PUPPinDisplay())->QueryInterface(IID_IPinDisplay, (void**)obj);
    }
    else if (!wcsicmp(progid, L"PUPDMDControl.DMD")) {
