@@ -5,16 +5,6 @@
 
 #include <ifaddrs.h>
 
-#ifdef __ANDROID__
-#define LOG_TAG "WebServer"
-#include "../../../src/utils/AndroidLog.h"
-#define WEBLOGE ALOGE
-#define WEBLOGI ALOGI
-#else
-#define WEBLOGE PLOGE.printf
-#define WEBLOGI PLOGI.printf
-#endif
-
 static string myPath;
 
 void WebServer::EventHandler(struct mg_connection *c, int ev, void *ev_data, void *fn_data)
@@ -373,7 +363,7 @@ void WebServer::Start()
 
    if (m_debug) {
       mg_log_set(MG_LL_DEBUG);
-      WEBLOGI("Web server debug enabled");
+      PLOGI.printf("Web server debug enabled");
    }
 
    string bindUrl = "http://" + addr + ':' + std::to_string(port);
