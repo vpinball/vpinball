@@ -15,6 +15,10 @@ public:
     bool IsRunning();
     string GetUrl();
 
+#ifdef __ANDROID__
+    void Init(string addr, int port, bool debug, string prefPath, string myPath);
+#endif
+
 private:
     bool Unzip(const char* pSource);
     void Files(struct mg_connection *c, struct mg_http_message* hm);
@@ -32,4 +36,9 @@ private:
     bool m_run;
     std::thread* m_pThread;
     string m_url;
+
+    string m_addr;
+    int m_port;
+    bool m_debug;
+    string m_szMyPrefPath;
 };

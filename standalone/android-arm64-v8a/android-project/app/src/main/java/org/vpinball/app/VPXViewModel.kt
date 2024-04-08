@@ -15,12 +15,14 @@ import androidx.core.net.toUri
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import java.lang.Exception
 
 class VPXViewModelFactory(private val application: Application, private val dataStore: DataStore<Preferences>): ViewModelProvider.NewInstanceFactory() {
     override fun <T:ViewModel> create(modelClass: Class<T>): T = VPXViewModel(application, dataStore) as T
@@ -48,11 +50,41 @@ class VPXViewModel(application: Application, dataStore: DataStore<Preferences>):
         // Start/Stop the webserver according to the settings value
         MainScope().launch {
             webServerState.collect {
+                // Read the configuration values from the INI before starting the webserver
+                if (it) {
+                    val vpxDir = DocumentFile.fromTreeUri(application, vpxDir!!)
+                    val iniDocFile = vpxDir?.findFile("VPinballX.ini")
+
+                    val standaloneIni = loadIniSection(application, iniDocFile, "Standalone")
+                    val addr = (standaloneIni["WebServerAddr"] as String?).takeIf { it.isNullOrEmpty() }?.let {
+                        "0.0.0.0"
+                    }
+                    val port = (standaloneIni["WebServerPort"] as String?).let {
+                        try {
+                            it!!.toInt()
+                        } catch (e: Exception) {
+                            2112
+                        }
+                    }
+                    val isDebug = (standaloneIni["WebServerDebug"] as String?).let {
+                        try {
+                            it!!.toBoolean()
+                        } catch (e: Exception) {
+                            false
+                        }
+                    }
+                    val contentResolver = application.contentResolver
+                    contentResolver.openFileDescriptor(vpxDir!!.uri, "r").use {
+                        initwebserver(addr!!, port, isDebug, it!!.fd)
+                    }
+                }
+
                 webserver(it)
             }
         }
     }
 
+    private external fun initwebserver(addr: String, port: Int, debug: Boolean, fd: Int)
     private external fun webserver(state: Boolean)
 
     fun checkStoragePermissions(): Boolean {

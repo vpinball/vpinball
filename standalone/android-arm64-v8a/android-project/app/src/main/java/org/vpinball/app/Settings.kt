@@ -32,7 +32,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavHostController
 import com.alorma.compose.settings.ui.SettingsMenuLink
 import com.alorma.compose.settings.ui.SettingsSwitch
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import java.io.File
 import java.net.Inet4Address
@@ -52,10 +51,6 @@ fun getIpv4HostAddress(): String {
 @Composable
 fun Settings(controller: NavHostController) {
     val activity = LocalContext.current as VpxLauncherActivity
-//    var webServerState = activity.dataStore.data
-//        .map { it[booleanPreferencesKey("webserver")] ?: false }
-//        .collectAsStateWithLifecycle(true)
-
     var webServerState = activity.model.webServerState.collectAsStateWithLifecycle(false)
 
     Scaffold(
@@ -75,7 +70,6 @@ fun Settings(controller: NavHostController) {
 
                 // Web Server toggle
                 SettingsSwitch(
-                    enabled = false, // Disabled until the c++ web server can be made to run standalone
                     state = webServerState.value,
                     onCheckedChange = { state ->
                         activity.lifecycleScope.launch {

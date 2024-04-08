@@ -72,20 +72,33 @@
 #endif
 
 #ifdef __ANDROID__
-#include "jni.h"
-#include <android/log.h>
+#define APPNAME "PLAYER"
+#define LOG_TAG "player"
 
-#define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,"VPX",__VA_ARGS__)
+#include "jni.h"
+#include "../utils/AndroidLog.h"
+#include "../standalone/inc/webserver/WebServer.h"
 
 static WebServer android_webServer;
 
-extern "C" JNIEXPORT void JNICALL Java_org_vpinball_app_VPXViewModel_webserver(JNIEnv* env, jobject obj, jboolean state) {
+extern "C" JNIEXPORT void JNICALL Java_org_vpinball_app_VPXViewModel_initwebserver(JNIEnv* env, jobject obj, 
+                                 jstring addr, jint port, jboolean debug, jint fd) 
+{
+   jboolean isCopy;
+   auto strAddr = env->GetStringUTFChars(addr, &isCopy);
+   auto path = SAFtoPath(fd) + "/";
+
+   android_webServer.Init(strAddr, port, debug, path, path);
+
+   env->ReleaseStringUTFChars(addr, strAddr);
+}
+
+extern "C" JNIEXPORT void JNICALL Java_org_vpinball_app_VPXViewModel_webserver(JNIEnv* env, jobject obj, jboolean state) 
+{
    if (state) 
-      //android_webServer.Start();
-      LOGE("-> Start Web Server");
+      android_webServer.Start();
    else
-      //android_webServer.Stop();
-      LOGE("-> Stop Web Server");
+      android_webServer.Stop();
 }
 
 #endif

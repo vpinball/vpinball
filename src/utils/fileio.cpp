@@ -182,6 +182,40 @@ bool RawReadFromFile(const char * const szfilename, int *const psize, char **psz
    return true;
 }
 
+#ifdef __ANDROID__
+#define LOG_TAG "fileio"
+#include <regex>
+
+// Convert the fd passed from SAF (Storage Access Framework)
+// to a directory path
+string SAFtoPath(int fd)
+{
+   char buf[PATH_MAX];
+   auto fdFilename = "/proc/self/fd/" + std::to_string(fd);
+   auto nbytes = readlink(fdFilename.c_str(), buf, PATH_MAX);
+   auto path = std::string(buf, nbytes);
+   ALOGD("SAF directory %s", path.c_str());
+
+   // If the SAF path was in the mounted /sdcard
+   // the path must use /sdcard instead of the physical path
+   // otherwise Android will deny access to all files
+   std::regex sdcardRegex("\\/mnt\\/user\\/\\d\\/emulated\\/\\d",
+         std::regex_constants::ECMAScript | std::regex_constants::icase);
+
+   // This logic may be handling external sdcards
+   if (std::regex_search(path, sdcardRegex)) 
+   {
+      ALOGD("SAF pointing to a sdcard dir");
+      auto begin = std::sregex_iterator(path.begin(), path.end(), sdcardRegex);
+      std::smatch match = *begin;
+      auto match_str = match.str();
+      path = "/sdcard" + path.substr(match_str.size());
+   }
+
+   return path;
+}
+#endif
+
 BiffWriter::BiffWriter(IStream *pistream, const HCRYPTHASH hcrypthash)
 {
    m_pistream = pistream;
