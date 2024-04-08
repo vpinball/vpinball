@@ -72,11 +72,8 @@
 #endif
 
 #ifdef __ANDROID__
-#define APPNAME "PLAYER"
-#define LOG_TAG "player"
 
 #include "jni.h"
-#include "../utils/AndroidLog.h"
 #include "../standalone/inc/webserver/WebServer.h"
 
 static WebServer android_webServer;
@@ -773,7 +770,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    m_progressDialog.SetProgress("Starting..."s, 100);
    m_ptable->FireVoidEvent(DISPID_GameEvents_UnPaused);
 
-#ifdef __STANDALONE__
+#if defined(__STANDALONE__) && !defined(__ANDROID__)
    if (g_pvp->m_settings.LoadValueWithDefault(Settings::Standalone, "WebServer"s, false))
       g_pvp->m_webServer.Start();
 #endif

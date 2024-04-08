@@ -78,7 +78,7 @@ bool WebServer::Unzip(const char* pSource)
 
    mz_bool status = mz_zip_reader_init_file(&zip_archive, pSource, 0);
    if (!status) {
-      WEBLOGE("Unable to unzip file: source=%s", pSource);
+      PLOGE.printf("Unable to unzip file: source=%s", pSource);
       return false;
    }
 
@@ -100,7 +100,7 @@ bool WebServer::Unzip(const char* pSource)
          std::filesystem::create_directories(path);
       else {
          if (!mz_zip_reader_extract_to_file(&zip_archive, i, path.c_str(), 0)) {
-            WEBLOGE("Unable to extract file: %s", path.c_str());
+            PLOGE.printf("Unable to extract file: %s", path.c_str());
             success = false;
          }
       }
@@ -117,7 +117,7 @@ void WebServer::Files(struct mg_connection *c, struct mg_http_message* hm)
    mg_http_get_var(&hm->query, "q", q, sizeof(q));
    mg_remove_double_dots(q);
 
-   WEBLOGI("Retrieving file list: q=%s", q);
+   PLOGI.printf("Retrieving file list: q=%s", q);
 
    string path = m_szMyPrefPath + q;
 
@@ -178,7 +178,7 @@ void WebServer::Download(struct mg_connection *c, struct mg_http_message* hm)
    mg_http_get_var(&hm->query, "q", q, sizeof(q));
    mg_remove_double_dots(q);
 
-   WEBLOGI("Downloading file: q=%s", q);
+   PLOGI.printf("Downloading file: q=%s", q);
 
    if (*q == '\0') {
       mg_http_reply(c, 400, "", "Bad request");
@@ -197,7 +197,7 @@ void WebServer::Upload(struct mg_connection *c, struct mg_http_message* hm)
    mg_http_get_var(&hm->query, "q", q, sizeof(q));
    mg_remove_double_dots(q);
 
-   WEBLOGI("Uploading file: q=%s", q);
+   PLOGI.printf("Uploading file: q=%s", q);
 
    if (*q == '\0') {
       mg_http_reply(c, 400, "", "Bad request");
@@ -280,7 +280,7 @@ void WebServer::Extract(struct mg_connection *c, struct mg_http_message* hm)
    if (std::filesystem::is_regular_file(path)) {
       if (extension_from_path(path) == "zip") {
          if (Unzip(path.c_str())) {
-            WEBLOGI("File unzipped: q=%s", path.c_str());
+            PLOGI.printf("File unzipped: q=%s", path.c_str());
             mg_http_reply(c, 200, "", "OK");
          }
          else
@@ -300,7 +300,7 @@ void WebServer::Activate(struct mg_connection *c, struct mg_http_message* hm)
    mg_http_get_var(&hm->query, "q", q, sizeof(q));
    mg_remove_double_dots(q);
 
-   WEBLOGI("Activating table: q=%s", q);
+   PLOGI.printf("Activating table: q=%s", q);
 
    if (*q == '\0') {
       mg_http_reply(c, 400, "", "Bad request");
@@ -351,7 +351,7 @@ string WebServer::GetUrl()
 void WebServer::Start()
 {
    if (m_run) {
-      WEBLOGE("Web server already running");
+      PLOGE.printf("Web server already running");
       return;
    }
 
@@ -366,7 +366,7 @@ void WebServer::Start()
       PLOGI.printf("Web server debug enabled");
    }
 
-   string bindUrl = "http://" + addr + ':' + std::to_string(port);
+   string bindUrl = "http://" + m_addr + ':' + std::to_string(m_port);
 
    PLOGI.printf("Starting web server at %s", bindUrl.c_str());
 
@@ -375,14 +375,14 @@ void WebServer::Start()
    if (mg_http_listen(&m_mgr, bindUrl.c_str(), &WebServer::EventHandler, this)) {
       m_run = true;
 
-      WEBLOGI("Web server started");
+      PLOGI.printf("Web server started");
 
       string ip = GetIPAddress();
 
       if (!ip.empty()) {
-         m_url = "http://" + ip + ':' + std::to_string(port);
+         m_url = "http://" + ip + ':' + std::to_string(m_port);
 
-         WEBLOGI("To access the web server, in a browser go to: %s", m_url.c_str());
+         PLOGI.printf("To access the web server, in a browser go to: %s", m_url.c_str());
       }
       else
          m_url.clear();
@@ -394,18 +394,18 @@ void WebServer::Start()
          mg_mgr_free(&m_mgr);
          m_url.clear();
 
-         WEBLOGI("Web server closed");
+         PLOGI.printf("Web server closed");
       });
    }
    else {
-      WEBLOGE("Unable to start web server");
+      PLOGE.printf("Unable to start web server");
    }
 }
 
 void WebServer::Stop()
 {
    if (!m_run) {
-      WEBLOGE("Web server is not running");
+      PLOGE.printf("Web server is not running");
       return;
    }
 

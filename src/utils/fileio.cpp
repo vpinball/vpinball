@@ -183,7 +183,6 @@ bool RawReadFromFile(const char * const szfilename, int *const psize, char **psz
 }
 
 #ifdef __ANDROID__
-#define LOG_TAG "fileio"
 #include <regex>
 
 // Convert the fd passed from SAF (Storage Access Framework)
@@ -194,7 +193,7 @@ string SAFtoPath(int fd)
    auto fdFilename = "/proc/self/fd/" + std::to_string(fd);
    auto nbytes = readlink(fdFilename.c_str(), buf, PATH_MAX);
    auto path = std::string(buf, nbytes);
-   ALOGD("SAF directory %s", path.c_str());
+   PLOGD.printf("SAF directory %s", path.c_str());
 
    // If the SAF path was in the mounted /sdcard
    // the path must use /sdcard instead of the physical path
@@ -205,7 +204,7 @@ string SAFtoPath(int fd)
    // This logic may be handling external sdcards
    if (std::regex_search(path, sdcardRegex)) 
    {
-      ALOGD("SAF pointing to a sdcard dir");
+      PLOGD.printf("SAF pointing to a sdcard dir");
       auto begin = std::sregex_iterator(path.begin(), path.end(), sdcardRegex);
       std::smatch match = *begin;
       auto match_str = match.str();

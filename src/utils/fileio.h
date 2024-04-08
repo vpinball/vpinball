@@ -11,7 +11,6 @@ string TitleAndPathFromFilename(const char * const szfilename);
 bool ReplaceExtensionFromFilename(string& szfilename, const string& newextension);
 
 #ifdef __ANDROID__
-#include "AndroidLog.h"
 string SAFtoPath(int fd);
 #endif
 
