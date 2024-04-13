@@ -2660,7 +2660,7 @@ static HRESULT Global_DateDiff(BuiltinDisp *This, VARIANT *arg, unsigned args_cn
 
     assert(3 <= args_cnt && args_cnt <= 5);
 
-    if (V_VT(arg) != VT_BSTR || V_VT(arg + 1) != VT_DATE || V_VT(arg + 2) != VT_DATE)
+    if (V_VT(arg) != VT_BSTR || !(V_VT(arg + 1) == VT_DATE || V_VT(arg + 1) == VT_BSTR) || V_VT(arg + 2) != VT_DATE)
         return E_INVALIDARG;
 
     interval = V_BSTR(arg);
