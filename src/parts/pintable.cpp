@@ -2566,8 +2566,7 @@ void PinTable::Play(const int playMode)
       // create Player and init that one
 
       PLOGI << "Creating player"; // For profiling
-      g_pplayer = new Player(this, live_table, playMode);
-      g_pplayer->CreateWnd();
+      new Player(this, live_table, playMode);
 
       m_vpinball->ToggleToolbar();
    }
