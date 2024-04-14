@@ -209,16 +209,13 @@ struct TimerOnOff
    bool m_enabled;
 };
 
+
 class Player : public CWnd
 {
 public:
    Player(PinTable *const editor_table, PinTable *const live_table, const int playMode);
    virtual ~Player();
 
-   void CreateWnd(HWND parent = 0);
-   virtual void PreRegisterClass(WNDCLASS& wc) override;
-   virtual void PreCreate(CREATESTRUCT& cs) override;
-   virtual void OnInitialUpdate() override;
    void OnClose() override;
    virtual LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
    void LockForegroundWindow(const bool enable);
@@ -229,8 +226,6 @@ public:
    void RecomputePseudoPauseState();
 
 private:
-   HRESULT Init(); // Called from OnInitialUpdate callback (after native window creation)
-
    const int m_playMode;
 
 public:

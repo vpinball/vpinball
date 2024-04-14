@@ -92,6 +92,10 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    , m_ptable(live_table)
    , m_playMode(playMode)
 {
+   // For the time being, lots of access are made through the global singleton, so ensure we are unique, and define it as soon as needed
+   assert(g_pplayer == nullptr);
+   g_pplayer = this; 
+
    m_pininput.LoadSettings(m_ptable->m_settings);
 
 #if !(defined(_M_IX86) || defined(_M_X64) || defined(_M_AMD64) || defined(__i386__) || defined(__i386) || defined(__i486__) || defined(__i486) || defined(i386) || defined(__ia64__) || defined(__x86_64__))
@@ -228,64 +232,28 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
 
    m_implicitPlayfieldMesh = nullptr;
 
+   #ifdef __STANDALONE__
+      m_pWindowManager = VP::WindowManager::GetInstance();
+   #endif
+
 #ifdef ENABLE_SDL_INPUT
    m_wnd_scale_x=0;
    m_wnd_scale_y=0;
 #endif
-}
 
-Player::~Player()
-{
-   assert(g_pplayer == nullptr);
-   m_closing = CS_CLOSED;
-   m_ptable->StopPlaying();
-   delete m_pBCTarget;
-   delete m_ptable;
+   PLOGI << "Creating main window"; // For profiling
 
-   //!! cleanup the whole mem management for balls, this is a mess!
-
-   // balls are added to the octree, but not the hit object vector
-   for (size_t i = 0; i < m_vball.size(); i++)
-   {
-      Ball *const pball = m_vball[i];
-      if (pball->m_pballex)
-      {
-         pball->m_pballex->m_pball = nullptr;
-         pball->m_pballex->Release();
-      }
-
-      delete pball->m_d.m_vpVolObjs;
-      delete pball;
-   }
-
-   //!! see above
-   //for (size_t i=0;i<m_vho_dynamic.size();i++)
-   //      delete m_vho_dynamic[i];
-   //m_vho_dynamic.clear();
-
-   m_vball.clear();
-}
-
-void Player::PreRegisterClass(WNDCLASS& wc)
-{
-    wc.style = 0;
-    wc.hInstance = g_pvp->theInstance;
-    wc.lpszClassName = "VPPlayer"; // leave as-is as e.g. VPM relies on this
-#ifndef __STANDALONE__
-    wc.hIcon = LoadIcon(g_pvp->theInstance, MAKEINTRESOURCE(IDI_TABLE));
-    wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
-#endif
-    wc.lpszMenuName = nullptr;
-}
-
-void Player::PreCreate(CREATESTRUCT& cs)
-{
-    int display = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Display"s, -1);
-    if (display >= getNumberOfDisplays() || g_pvp->m_primaryDisplay)
-        display = -1; // force primary monitor
-    int x, y;
-    getDisplaySetupByID(display, x, y, m_screenwidth, m_screenheight);
-
+   int display = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Display"s, -1);
+   if (display >= getNumberOfDisplays() || g_pvp->m_primaryDisplay)
+      display = -1; // force primary monitor
+   vector<DisplayConfig> displays;
+   getDisplayList(displays);
+   int adapter = 0;
+   for (vector<DisplayConfig>::iterator dispConf = displays.begin(); dispConf != displays.end(); ++dispConf)
+      if (display == dispConf->display)
+         adapter = dispConf->adapter;
+   int wnd_x, wnd_y;
+   getDisplaySetupByID(display, wnd_x, wnd_y, m_screenwidth, m_screenheight);
    if (m_stereo3D == STEREO_VR)
    {
       m_fullScreen = false;
@@ -311,8 +279,8 @@ void Player::PreCreate(CREATESTRUCT& cs)
 
    if (m_fullScreen)
    {
-      x = 0;
-      y = 0;
+      wnd_x = 0;
+      wnd_y = 0;
       m_screenwidth = m_wnd_width;
       m_screenheight = m_wnd_height;
       m_refreshrate = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "RefreshRate"s, 0);
@@ -332,15 +300,15 @@ void Player::PreCreate(CREATESTRUCT& cs)
          m_wnd_height = m_screenheight;
          m_wnd_width = m_wnd_height * 16 / 9;
       }
-      x += (m_screenwidth - m_wnd_width) / 2;
-      y += (m_screenheight - m_wnd_height) / 2;
+      wnd_x += (m_screenwidth - m_wnd_width) / 2;
+      wnd_y += (m_screenheight - m_wnd_height) / 2;
 
-#ifdef _MSC_VER
+      #ifdef WIN32
       // is this a non-fullscreen window? -> get previously saved window position
       if ((m_wnd_height != m_screenheight) || (m_wnd_width != m_screenwidth))
       {
-         const int xn = g_pvp->m_settings.LoadValueWithDefault(m_stereo3D == STEREO_VR ? Settings::PlayerVR : Settings::Player, "WindowPosX"s, x); //!! does this handle multi-display correctly like this?
-         const int yn = g_pvp->m_settings.LoadValueWithDefault(m_stereo3D == STEREO_VR ? Settings::PlayerVR : Settings::Player, "WindowPosY"s, y);
+         const int xn = g_pvp->m_settings.LoadValueWithDefault(m_stereo3D == STEREO_VR ? Settings::PlayerVR : Settings::Player, "WindowPosX"s, wnd_x); //!! does this handle multi-display correctly like this?
+         const int yn = g_pvp->m_settings.LoadValueWithDefault(m_stereo3D == STEREO_VR ? Settings::PlayerVR : Settings::Player, "WindowPosY"s, wnd_y);
          RECT r;
          r.left = xn;
          r.top = yn;
@@ -348,88 +316,39 @@ void Player::PreCreate(CREATESTRUCT& cs)
          r.bottom = yn + m_wnd_height;
          if (MonitorFromRect(&r, MONITOR_DEFAULTTONULL) != nullptr) // window is visible somewhere, so use the coords from the registry
          {
-            x = xn;
-            y = yn;
+            wnd_x = xn;
+            wnd_y = yn;
          }
       }
-#endif
+      #else
+      wnd_x = SDL_WINDOWPOS_CENTERED_DISPLAY(adapter);
+      wnd_y = SDL_WINDOWPOS_CENTERED_DISPLAY(adapter);
+      #endif
    }
 
-    int windowflags;
-    int windowflagsex;
-
-    const int captionheight = GetSystemMetrics(SM_CYCAPTION);
-
-    if (false) // only do this nowadays if ESC menu is brought up //(!m_fullScreen && ((m_screenheight - m_height) >= (captionheight * 2))) // We have enough room for a frame?
-    {
-        // Add a pretty window border and standard control boxes.
-
-        windowflags = WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_CLIPCHILDREN;
-        windowflagsex = WS_EX_OVERLAPPEDWINDOW;
-
-        //!! does not respect borders so far!!! -> change width/height accordingly ??
-        //!! like this the render window is scaled and thus implicitly blurred!
-        y -= captionheight;
-        m_wnd_height += captionheight;
-    }
-    else // No window border, title, or control boxes.
-    {
-        windowflags = WS_POPUP;
-        windowflagsex = 0;
-    }
-
-    ZeroMemory(&cs, sizeof(cs));
-    cs.x = x; 
-    cs.y = y;
-    cs.cx = m_wnd_width;
-    cs.cy = m_wnd_height;
-    cs.style = windowflags;
-    cs.dwExStyle = windowflagsex;
-    cs.hInstance = g_pvp->theInstance;
-    cs.lpszName = "Visual Pinball Player"; // leave as-is as e.g. VPM relies on this
-    cs.lpszClass = "VPPlayer"; // leave as-is as e.g. VPM relies on this
-}
-
-void Player::CreateWnd(HWND parent /* = 0 */)
-{
-#ifdef ENABLE_SDL_VIDEO
-   // SDL needs to create the window (as of SDL 2.0.22, SDL_CreateWindowFrom does not support OpenGL contexts) so we create it through SDL and attach it to win32++
+#if defined(WIN32) && !defined(__STANDALONE__)
    WNDCLASS wc;
    ZeroMemory(&wc, sizeof(wc));
-
-   CREATESTRUCT cs;
-   ZeroMemory(&cs, sizeof(cs));
-
-   // Set the WNDCLASS parameters
-   PreRegisterClass(wc);
-#ifndef __STANDALONE__
-   if (wc.lpszClassName)
-   {
-      ::RegisterClass(&wc);
-      cs.lpszClass = wc.lpszClassName;
-   }
-   else
-      cs.lpszClass = _T("Win32++ Window");
+   wc.hInstance = g_pvp->theInstance;
+   #ifdef UNICODE
+   wc.lpfnWndProc = ::DefWindowProcW;
+   #else
+   wc.lpfnWndProc = ::DefWindowProcA;
+   #endif
+   wc.lpszClassName = "VPPlayer"; // leave as-is as e.g. VPM relies on this
+   wc.hIcon = LoadIcon(g_pvp->theInstance, MAKEINTRESOURCE(IDI_TABLE));
+   wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
+   ::RegisterClass(&wc);
+   #ifdef ENABLE_SDL_VIDEO
    SDL_RegisterApp(wc.lpszClassName, 0, g_pvp->theInstance);
+   #endif
 #endif
 
-   // Set a reasonable default window style.
-   DWORD dwOverlappedStyle = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX;
-   cs.style = WS_VISIBLE | ((parent) ? WS_CHILD : dwOverlappedStyle);
-
-   // Set a reasonable default window position
-   if (0 == parent)
-   {
-      cs.x = CW_USEDEFAULT;
-      cs.cx = CW_USEDEFAULT;
-      cs.y = CW_USEDEFAULT;
-      cs.cy = CW_USEDEFAULT;
-   }
-
-   // Allow the CREATESTRUCT parameters to be modified.
-   PreCreate(cs);
+   LPCTSTR wnd_title = _T("Visual Pinball Player"); // leave as-is as e.g. VPM relies on this
 
    const int colordepth = m_stereo3D == STEREO_VR ? 32 : m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "ColorDepth"s, 32);
+
+#ifdef ENABLE_SDL_VIDEO
    constexpr bool video10bit = false; //!! Unsupported   m_stereo3D == STEREO_VR ? false : LoadValueWithDefault(Settings::Player, "Render10Bit"s, false);
    int channelDepth = video10bit ? 10 : ((colordepth == 16) ? 5 : 8);
    // We only set bit depth for fullscreen desktop modes (otherwise, use the desktop bit depth)
@@ -466,13 +385,6 @@ void Player::CreateWnd(HWND parent /* = 0 */)
 
    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-   const int display = g_pvp->m_primaryDisplay ? 0 : m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Display"s, 0);
-   vector<DisplayConfig> displays;
-   getDisplayList(displays);
-   int adapter = 0;
-   for (vector<DisplayConfig>::iterator dispConf = displays.begin(); dispConf != displays.end(); ++dispConf)
-      if (display == dispConf->display)
-         adapter = dispConf->adapter;
    int displayX, displayY, displayWidth, displayHeight;
    getDisplaySetupByID(display, displayX, displayY, displayWidth, displayHeight);
 
@@ -483,15 +395,10 @@ void Player::CreateWnd(HWND parent /* = 0 */)
 #endif
 
 #ifdef __STANDALONE__
-   Settings* const pSettings = &g_pplayer->m_ptable->m_settings;
+   Settings* const pSettings = &m_ptable->m_settings;
 
    if (pSettings->LoadValueWithDefault(Settings::Standalone, "HighDPI"s, true))
       flags |= SDL_WINDOW_ALLOW_HIGHDPI;
-#endif
-
-#ifndef _MSC_VER
-   cs.x = SDL_WINDOWPOS_CENTERED_DISPLAY(adapter);
-   cs.y = SDL_WINDOWPOS_CENTERED_DISPLAY(adapter);
 #endif
 
    // Prevent from being top most, to allow DMD, B2S,... to be over the VPX window
@@ -508,13 +415,12 @@ void Player::CreateWnd(HWND parent /* = 0 */)
 
    if (m_fullScreen)
    {
-#ifndef __STANDALONE__
-      //FIXME we have a bug somewhere that will prevent SDL from keeping the focus when in fullscreen mode, so we just run in scaled windowed mode...
-      //m_sdl_playfieldHwnd = SDL_CreateWindow(cs.lpszName, displayX, displayY, m_wnd_width, m_wnd_height, flags | SDL_WINDOW_FULLSCREEN);
-      m_sdl_playfieldHwnd = SDL_CreateWindow(cs.lpszName, displayX, displayY, displayWidth, displayHeight, flags | SDL_WINDOW_FULLSCREEN);
-#else
-      m_sdl_playfieldHwnd = SDL_CreateWindow(cs.lpszName, displayX, displayY, m_wnd_width, m_wnd_height, flags | SDL_WINDOW_FULLSCREEN);
-#endif
+      #ifndef __STANDALONE__
+         //FIXME we have a bug somewhere that will prevent SDL from keeping the focus when in fullscreen mode, so we just run in scaled windowed mode...
+         m_sdl_playfieldHwnd = SDL_CreateWindow(wnd_title, displayX, displayY, m_screenwidth, m_screenheight, flags | SDL_WINDOW_FULLSCREEN);
+      #else
+         m_sdl_playfieldHwnd = SDL_CreateWindow(wnd_title, displayX, displayY, m_wnd_width, m_wnd_height, flags | SDL_WINDOW_FULLSCREEN);
+      #endif
       // Adjust refresh rate
       SDL_DisplayMode mode;
       SDL_GetWindowDisplayMode(m_sdl_playfieldHwnd, &mode);
@@ -523,12 +429,12 @@ void Player::CreateWnd(HWND parent /* = 0 */)
       for (int index = 0; index < SDL_GetNumDisplayModes(adapter); index++)
       {
          SDL_GetDisplayMode(adapter, index, &mode);
-#ifndef __STANDALONE__
-         // if (mode.w == m_wnd_width && mode.h == m_wnd_height && mode.refresh_rate == m_refreshrate && mode.format == format)
-         if (mode.w == displayWidth && mode.h == displayHeight && mode.refresh_rate == m_refreshrate && mode.format == format)
-#else
-         if (mode.w == m_wnd_width && mode.h == m_wnd_height && (m_refreshrate == 0 || mode.refresh_rate == m_refreshrate) && mode.format == format)
-#endif
+         #ifndef __STANDALONE__
+            // if (mode.w == m_wnd_width && mode.h == m_wnd_height && mode.refresh_rate == m_refreshrate && mode.format == format)
+            if (mode.w == displayWidth && mode.h == displayHeight && mode.refresh_rate == m_refreshrate && mode.format == format)
+         #else
+            if (mode.w == m_wnd_width && mode.h == m_wnd_height && (m_refreshrate == 0 || mode.refresh_rate == m_refreshrate) && mode.format == format)
+         #endif
          {
             SDL_SetWindowDisplayMode(m_sdl_playfieldHwnd, &mode);
             found = true;
@@ -541,67 +447,55 @@ void Player::CreateWnd(HWND parent /* = 0 */)
    }
    else
    {
-#ifndef __STANDALONE__
-      // Don't ask fullscreen desktop as it will likely cause issue with overlaying DMD, B2S, Pup,... above VPX
-      //if (cs.cx == displayWidth && cs.cy == displayHeight)
-      //   flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
-#else
-      if (cs.cx == displayWidth && cs.cy == displayHeight)
-         flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
-#endif
-      m_sdl_playfieldHwnd = SDL_CreateWindow(cs.lpszName, cs.x, cs.y, cs.cx, cs.cy, flags);
+      #ifndef __STANDALONE__
+         // Don't ask fullscreen desktop as it will likely cause issue with overlaying DMD, B2S, Pup,... above VPX
+         //if (cs.cx == displayWidth && cs.cy == displayHeight)
+         //   flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+      #else
+         if (cs.cx == displayWidth && cs.cy == displayHeight)
+            flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+      #endif
+      m_sdl_playfieldHwnd = SDL_CreateWindow(wnd_title, wnd_x, wnd_y, m_wnd_width, m_wnd_height, flags);
    }
 
-#ifdef __STANDALONE__
-   const string iconPath = g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "vpinball.png";
-   SDL_Surface* pIcon = IMG_Load(iconPath.c_str());
-   if (pIcon) {
-      SDL_SetWindowIcon(m_sdl_playfieldHwnd, pIcon);
-      SDL_FreeSurface(pIcon);
-   }
-   else {
-      PLOGE << "Failed to load window icon: " << SDL_GetError();
-   }
-#endif
+   #ifdef __STANDALONE__
+      const string iconPath = g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "vpinball.png";
+      SDL_Surface* pIcon = IMG_Load(iconPath.c_str());
+      if (pIcon) {
+         SDL_SetWindowIcon(m_sdl_playfieldHwnd, pIcon);
+         SDL_FreeSurface(pIcon);
+      }
+      else {
+         PLOGE << "Failed to load window icon: " << SDL_GetError();
+      }
+   #endif
 
    SDL_DisplayMode mode;
    SDL_GetWindowDisplayMode(m_sdl_playfieldHwnd, &mode);
    PLOGI << "SDL display mode: " << mode.w << 'x' << mode.h << ' ' << mode.refresh_rate << "Hz " << SDL_GetPixelFormatName(mode.format);
 
+   SDL_GL_GetDrawableSize(m_sdl_playfieldHwnd, &m_wnd_width, &m_wnd_height); // Size in pixels
+   PLOGI << "SDL drawable size: " << m_wnd_width << 'x' << m_wnd_height;
+   int realWindowWidth, realWindowHeight;
+   SDL_GetWindowSize(g_pplayer->m_sdl_playfieldHwnd, &realWindowWidth, &realWindowHeight); // Size in screen coordinates (taking in account HiDPI)
+   m_wnd_scale_x = static_cast<float>(m_wnd_width) / realWindowWidth;
+   m_wnd_scale_y = static_cast<float>(m_wnd_height) / realWindowHeight;
+
+   #ifndef __STANDALONE__
+   // Attach it to default wxx message handling. TODO we should avoid to mix wxx and SDL, and just forward window message to SDL event handling, then process SDL events
    SDL_SysWMinfo wmInfo;
    SDL_VERSION(&wmInfo.version);
    SDL_GetWindowWMInfo(m_sdl_playfieldHwnd, &wmInfo);
-
-#ifndef __STANDALONE__
-   // Attach it (raise a WM_CREATE which in turns call OnInitialUpdate)
    Attach(wmInfo.info.win.window);
-#else
-   m_pWindowManager = VP::WindowManager::GetInstance();
+   #endif
 
-   OnInitialUpdate();
+#else // Default WIN32 (no SDL)
+   HWND wnd = ::CreateWindowEx(0, wc.lpszClassName, wnd_title, WS_POPUP, wnd_x, wnd_y, m_wnd_width, m_wnd_height, NULL, NULL, g_pvp->theInstance, NULL);
+   Attach(wnd);
+
 #endif
 
-#ifndef __STANDALONE__
-   if (cs.style & WS_VISIBLE)
-   {
-      if (cs.style & WS_MAXIMIZE)
-         SDL_MaximizeWindow(m_sdl_playfieldHwnd);
-      else if (cs.style & WS_MINIMIZE)
-         SDL_MinimizeWindow(m_sdl_playfieldHwnd);
-      else
-         SDL_ShowWindow(m_sdl_playfieldHwnd);
-   }
-#else
-   SDL_ShowWindow(m_sdl_playfieldHwnd);
-#endif
-#else
-   PLOGI << "Creating main window"; // For profiling
-   Create();
-#endif // ENABLE_SDL_VIDEO
-}
 
-void Player::OnInitialUpdate()
-{
 #ifndef _MSC_VER
 #if (defined(__APPLE__) && TARGET_OS_IOS) || defined(__ANDROID__)
     m_supportsTouch = true;
@@ -679,255 +573,8 @@ void Player::OnInitialUpdate()
     mixer_init(GetHwnd());
     hid_init();
 
-    const HRESULT result = Init();
-    if (result != S_OK)
-        throw 0; //!! have a more specific code (that is catched in the VPinball PeekMessageA loop)?!
-}
+   // General player initialization
 
-void Player::OnClose()
-{
-   if (g_pplayer == nullptr || g_pplayer->m_closing == CS_CLOSED)
-   {
-      PLOGI << "Player::OnClose discarded since player is already closing";
-      return;
-   }
-   assert(g_pplayer == this);
-   m_closing = CS_CLOSED;
-   PLOGI << "Closing player... [Player's VBS intepreter is #" << m_ptable->m_pcv->m_pScript << "]";
-
-    g_frameProfiler.LogWorstFrame();
-
-    // In Windows 10 1803, there may be a significant lag waiting for WM_DESTROY (msg sent by the delete call below) if script is not closed first.
-    // signal the script that the game is now exited to allow any cleanup
-    m_ptable->FireVoidEvent(DISPID_GameEvents_Exit);
-    if (m_detectScriptHang)
-        g_pvp->PostWorkToWorkerThread(HANG_SNOOP_STOP, NULL);
-
-   // Save list of used textures to avoid stuttering in next play
-   if ((m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "CacheMode"s, 1) > 0) && FileExists(m_ptable->m_szFileName))
-   {
-      string dir = g_pvp->m_szMyPrefPath + "Cache" + PATH_SEPARATOR_CHAR + m_ptable->m_szTitle + PATH_SEPARATOR_CHAR;
-      std::filesystem::create_directories(std::filesystem::path(dir));
-
-      std::map<string, bool> prevPreRenderOnly;
-      if (!m_renderer->IsUsingStaticPrepass() && FileExists(dir + "used_textures.xml"))
-      {
-         std::ifstream myFile(dir + "used_textures.xml");
-         std::stringstream buffer;
-         buffer << myFile.rdbuf();
-         myFile.close();
-         auto xml = buffer.str();
-         tinyxml2::XMLDocument xmlDoc;
-         if (xmlDoc.Parse(xml.c_str()) == tinyxml2::XML_SUCCESS)
-         {
-            auto root = xmlDoc.FirstChildElement("textures");
-            for (auto node = root->FirstChildElement("texture"); node != nullptr; node = node->NextSiblingElement())
-            {
-               bool preRenderOnly = false;
-               const char *name = node->GetText();
-               if (node->QueryBoolAttribute("prerender", &preRenderOnly) == tinyxml2::XML_SUCCESS)
-                  prevPreRenderOnly[name] = preRenderOnly;
-            }
-         }
-      }
-
-      tinyxml2::XMLDocument xmlDoc;
-      tinyxml2::XMLElement *root = xmlDoc.NewElement("textures");
-      xmlDoc.InsertEndChild(xmlDoc.NewDeclaration());
-      xmlDoc.InsertEndChild(root);
-      vector<BaseTexture *> textures = m_renderer->m_pd3dPrimaryDevice->m_texMan.GetLoadedTextures();
-      for (BaseTexture *memtex : textures)
-      {
-         for (Texture *image : m_ptable->m_vimage)
-         {
-            if (image->m_pdsBuffer == memtex)
-            {
-               tinyxml2::XMLElement *node = xmlDoc.NewElement("texture");
-               node->SetText(image->m_szName.c_str());
-               node->SetAttribute("filter", (int)m_renderer->m_pd3dPrimaryDevice->m_texMan.GetFilter(memtex));
-               node->SetAttribute("clampu", (int)m_renderer->m_pd3dPrimaryDevice->m_texMan.GetClampU(memtex));
-               node->SetAttribute("clampv", (int)m_renderer->m_pd3dPrimaryDevice->m_texMan.GetClampV(memtex));
-               node->SetAttribute("linear", m_renderer->m_pd3dPrimaryDevice->m_texMan.IsLinearRGB(memtex));
-               bool preRenderOnly = !m_renderer->IsUsingStaticPrepass() ? (prevPreRenderOnly.find(image->m_szName) != prevPreRenderOnly.end() ? prevPreRenderOnly[image->m_szName] : true)
-                                                                        : m_renderer->m_pd3dPrimaryDevice->m_texMan.IsPreRenderOnly(memtex);
-               node->SetAttribute("prerender", preRenderOnly);
-               root->InsertEndChild(node);
-               break;
-            }
-         }
-      }
-      tinyxml2::XMLPrinter prn;
-      xmlDoc.Print(&prn);
-
-      std::ofstream myfile(dir + "used_textures.xml");
-      myfile << prn.CStr();
-      myfile.close();
-   }
-
-    // Save adjusted VR settings to the edited table
-    if (m_stereo3D == STEREO_VR)
-       m_vrDevice->SaveVRSettings(g_pvp->m_settings);
-
-    if (m_audio)
-        m_audio->MusicPause();
-
-    mixer_shutdown();
-    hid_shutdown();
-
-#ifdef EXT_CAPTURE
-    StopCaptures();
-    g_DXGIRegistry.ReleaseAll();
-#endif
-
-   delete m_liveUI;
-   m_liveUI = nullptr;
-
-   while (ShowCursor(FALSE) >= 0) ;
-   while(ShowCursor(TRUE) < 0) ;
-
-   m_pininput.UnInit();
-
-   if (m_implicitPlayfieldMesh)
-   {
-      RemoveFromVectorSingle(m_ptable->m_vedit, (IEditable *)m_implicitPlayfieldMesh);
-      m_ptable->m_pcv->RemoveItem(m_implicitPlayfieldMesh->GetScriptable());
-      m_implicitPlayfieldMesh = nullptr;
-   }
-
-   delete m_physics;
-   m_physics = nullptr;
-
-   for (auto probe : m_ptable->m_vrenderprobe)
-      probe->RenderRelease();
-   for (auto renderable : m_vhitables)
-      renderable->RenderRelease();
-   for (auto ball : m_vball)
-      ball->m_pballex->RenderRelease();
-   for (auto hitable : m_vhitables)
-      hitable->EndPlay();
-
-   m_dmd = int2(0,0);
-   if (m_texdmd)
-   {
-      m_renderer->m_pd3dPrimaryDevice->m_DMDShader->SetTextureNull(SHADER_tex_dmd);
-      m_renderer->m_pd3dPrimaryDevice->m_texMan.UnloadTexture(m_texdmd);
-      delete m_texdmd;
-      m_texdmd = nullptr;
-   }
-
-#ifdef PLAYBACK
-   if (m_fplaylog)
-      fclose(m_fplaylog);
-#endif
-
-   delete m_audio;
-   m_audio = nullptr;
-
-   for (size_t i = 0; i < m_controlclsidsafe.size(); i++)
-      delete m_controlclsidsafe[i];
-   m_controlclsidsafe.clear();
-
-   m_changed_vht.clear();
-
-   g_pplayer = nullptr;
-
-   restore_win_timer_resolution();
-
-   LockForegroundWindow(false);
-
-   // Reactivate edited table or close application if requested
-#ifndef __STANDALONE__
-   if (m_closing == CS_CLOSE_APP)
-   {
-      g_pvp->PostMessage(WM_CLOSE, 0, 0);
-   }
-   else
-   {
-      g_pvp->GetPropertiesDocker()->EnableWindow();
-      g_pvp->GetLayersDocker()->EnableWindow();
-      g_pvp->GetToolbarDocker()->EnableWindow();
-      if (g_pvp->GetNotesDocker() != nullptr)
-         g_pvp->GetNotesDocker()->EnableWindow();
-      g_pvp->ToggleToolbar();
-      g_pvp->ShowWindow(SW_SHOW);
-      g_pvp->SetForegroundWindow();
-      m_pEditorTable->EnableWindow();
-      m_pEditorTable->SetFocus();
-      m_pEditorTable->SetActiveWindow();
-      m_pEditorTable->SetDirtyDraw();
-      m_pEditorTable->RefreshProperties();
-      m_pEditorTable->BeginAutoSaveCounter();
-   }
-#endif
-
-   // Destroy this player
-   delete this; // Win32xx call Window destroy for us from destructor, don't call it directly or it will crash due to dual destruction
-   PLOGI << "Player closed.";
-}
-
-void Player::InitFPS()
-{
-   m_fps = 0.f;
-   m_lastMaxChangeTime = 0;
-   m_script_max = 0;
-   m_physics->ResetStats();
-   g_frameProfiler.Reset();
-}
-
-InfoMode Player::GetInfoMode() const {
-   return m_infoMode;
-}
-
-ProfilingMode Player::GetProfilingMode() const
-{
-   const InfoMode mode = GetInfoMode();
-   if (mode == IF_PROFILING)
-      return ProfilingMode::PF_ENABLED;
-   else
-      return ProfilingMode::PF_DISABLED;
-}
-
-bool Player::ShowFPSonly() const
-{
-   const InfoMode mode = GetInfoMode();
-   return mode == IF_FPS || mode == IF_STATIC_ONLY || mode == IF_AO_ONLY;
-}
-
-bool Player::ShowStats() const
-{
-   const InfoMode mode = GetInfoMode();
-   return mode == IF_FPS || mode == IF_PROFILING;
-}
-
-void Player::RecomputePauseState()
-{
-   const bool oldPause = m_pause;
-   const bool newPause = !(m_gameWindowActive || m_debugWindowActive);// || m_userDebugPaused;
-
-   if (oldPause && newPause)
-   {
-      m_LastKnownGoodCounter++; // So our catcher doesn't catch on the last value
-      m_noTimeCorrect = true;
-   }
-
-   m_pause = newPause;
-}
-
-void Player::RecomputePseudoPauseState()
-{
-   const bool oldPseudoPause = m_pseudoPause;
-   m_pseudoPause = m_userDebugPaused || m_debugWindowActive;
-   if (oldPseudoPause != m_pseudoPause)
-   {
-      if (m_pseudoPause)
-         PauseMusic();
-      else
-         UnpauseMusic();
-   }
-}
-
-HRESULT Player::Init()
-{
    TRACE_FUNCTION();
 
    PLOGI << "Initializing player"; // For profiling
@@ -953,18 +600,7 @@ HRESULT Player::Init()
 
    //
 
-   const int colordepth = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "ColorDepth"s, 32);
-
    PLOGI << "Initializing renderer (global states & resources)"; // For profiling
-
-#ifdef ENABLE_SDL_VIDEO
-   SDL_GL_GetDrawableSize(m_sdl_playfieldHwnd, &m_wnd_width, &m_wnd_height);
-   PLOGI.printf("Drawable Size: width=%d, height=%d", m_wnd_width, m_wnd_height);
-   int realWindowWidth, realWindowHeight;
-   SDL_GetWindowSize(g_pplayer->m_sdl_playfieldHwnd, &realWindowWidth, &realWindowHeight);
-   m_wnd_scale_x = static_cast<float>(m_wnd_width) / realWindowWidth;
-   m_wnd_scale_y = static_cast<float>(m_wnd_height) / realWindowHeight;
-#endif
 
    // colordepth & refreshrate are only defined if fullscreen is true.
    // width and height may be modified during initialization (for example for VR, they are adapted to the headset resolution)
@@ -977,7 +613,7 @@ HRESULT Player::Init()
       char szFoo[64];
       sprintf_s(szFoo, sizeof(szFoo), "InitRenderer Error code: %x", hr);
       ShowError(szFoo);
-      return hr;
+      throw hr;
    }
 
    m_renderer->DisableStaticPrePass(m_playMode != 0);
@@ -1333,8 +969,280 @@ HRESULT Player::Init()
       m_liveUI->OpenTweakMode();
    else if (m_playMode == 2 && m_stereo3D != STEREO_VR)
       m_liveUI->OpenLiveUI();
+}
 
-   return S_OK;
+Player::~Player()
+{
+   assert(g_pplayer == nullptr);
+   m_closing = CS_CLOSED;
+   m_ptable->StopPlaying();
+   delete m_pBCTarget;
+   delete m_ptable;
+
+   //!! cleanup the whole mem management for balls, this is a mess!
+
+   // balls are added to the octree, but not the hit object vector
+   for (size_t i = 0; i < m_vball.size(); i++)
+   {
+      Ball *const pball = m_vball[i];
+      if (pball->m_pballex)
+      {
+         pball->m_pballex->m_pball = nullptr;
+         pball->m_pballex->Release();
+      }
+
+      delete pball->m_d.m_vpVolObjs;
+      delete pball;
+   }
+
+   //!! see above
+   //for (size_t i=0;i<m_vho_dynamic.size();i++)
+   //      delete m_vho_dynamic[i];
+   //m_vho_dynamic.clear();
+
+   m_vball.clear();
+}
+
+void Player::OnClose()
+{
+   if (g_pplayer == nullptr || g_pplayer->m_closing == CS_CLOSED)
+   {
+      PLOGI << "Player::OnClose discarded since player is already closing";
+      return;
+   }
+   assert(g_pplayer == this);
+   m_closing = CS_CLOSED;
+   PLOGI << "Closing player... [Player's VBS intepreter is #" << m_ptable->m_pcv->m_pScript << "]";
+
+    g_frameProfiler.LogWorstFrame();
+
+    // In Windows 10 1803, there may be a significant lag waiting for WM_DESTROY (msg sent by the delete call below) if script is not closed first.
+    // signal the script that the game is now exited to allow any cleanup
+    m_ptable->FireVoidEvent(DISPID_GameEvents_Exit);
+    if (m_detectScriptHang)
+        g_pvp->PostWorkToWorkerThread(HANG_SNOOP_STOP, NULL);
+
+   // Save list of used textures to avoid stuttering in next play
+   if ((m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "CacheMode"s, 1) > 0) && FileExists(m_ptable->m_szFileName))
+   {
+      string dir = g_pvp->m_szMyPrefPath + "Cache" + PATH_SEPARATOR_CHAR + m_ptable->m_szTitle + PATH_SEPARATOR_CHAR;
+      std::filesystem::create_directories(std::filesystem::path(dir));
+
+      std::map<string, bool> prevPreRenderOnly;
+      if (!m_renderer->IsUsingStaticPrepass() && FileExists(dir + "used_textures.xml"))
+      {
+         std::ifstream myFile(dir + "used_textures.xml");
+         std::stringstream buffer;
+         buffer << myFile.rdbuf();
+         myFile.close();
+         auto xml = buffer.str();
+         tinyxml2::XMLDocument xmlDoc;
+         if (xmlDoc.Parse(xml.c_str()) == tinyxml2::XML_SUCCESS)
+         {
+            auto root = xmlDoc.FirstChildElement("textures");
+            for (auto node = root->FirstChildElement("texture"); node != nullptr; node = node->NextSiblingElement())
+            {
+               bool preRenderOnly = false;
+               const char *name = node->GetText();
+               if (node->QueryBoolAttribute("prerender", &preRenderOnly) == tinyxml2::XML_SUCCESS)
+                  prevPreRenderOnly[name] = preRenderOnly;
+            }
+         }
+      }
+
+      tinyxml2::XMLDocument xmlDoc;
+      tinyxml2::XMLElement *root = xmlDoc.NewElement("textures");
+      xmlDoc.InsertEndChild(xmlDoc.NewDeclaration());
+      xmlDoc.InsertEndChild(root);
+      vector<BaseTexture *> textures = m_renderer->m_pd3dPrimaryDevice->m_texMan.GetLoadedTextures();
+      for (BaseTexture *memtex : textures)
+      {
+         for (Texture *image : m_ptable->m_vimage)
+         {
+            if (image->m_pdsBuffer == memtex)
+            {
+               tinyxml2::XMLElement *node = xmlDoc.NewElement("texture");
+               node->SetText(image->m_szName.c_str());
+               node->SetAttribute("filter", (int)m_renderer->m_pd3dPrimaryDevice->m_texMan.GetFilter(memtex));
+               node->SetAttribute("clampu", (int)m_renderer->m_pd3dPrimaryDevice->m_texMan.GetClampU(memtex));
+               node->SetAttribute("clampv", (int)m_renderer->m_pd3dPrimaryDevice->m_texMan.GetClampV(memtex));
+               node->SetAttribute("linear", m_renderer->m_pd3dPrimaryDevice->m_texMan.IsLinearRGB(memtex));
+               bool preRenderOnly = !m_renderer->IsUsingStaticPrepass() ? (prevPreRenderOnly.find(image->m_szName) != prevPreRenderOnly.end() ? prevPreRenderOnly[image->m_szName] : true)
+                                                                        : m_renderer->m_pd3dPrimaryDevice->m_texMan.IsPreRenderOnly(memtex);
+               node->SetAttribute("prerender", preRenderOnly);
+               root->InsertEndChild(node);
+               break;
+            }
+         }
+      }
+      tinyxml2::XMLPrinter prn;
+      xmlDoc.Print(&prn);
+
+      std::ofstream myfile(dir + "used_textures.xml");
+      myfile << prn.CStr();
+      myfile.close();
+   }
+
+    // Save adjusted VR settings to the edited table
+    if (m_stereo3D == STEREO_VR)
+       m_vrDevice->SaveVRSettings(g_pvp->m_settings);
+
+    if (m_audio)
+        m_audio->MusicPause();
+
+    mixer_shutdown();
+    hid_shutdown();
+
+#ifdef EXT_CAPTURE
+    StopCaptures();
+    g_DXGIRegistry.ReleaseAll();
+#endif
+
+   delete m_liveUI;
+   m_liveUI = nullptr;
+
+   while (ShowCursor(FALSE) >= 0) ;
+   while(ShowCursor(TRUE) < 0) ;
+
+   m_pininput.UnInit();
+
+   if (m_implicitPlayfieldMesh)
+   {
+      RemoveFromVectorSingle(m_ptable->m_vedit, (IEditable *)m_implicitPlayfieldMesh);
+      m_ptable->m_pcv->RemoveItem(m_implicitPlayfieldMesh->GetScriptable());
+      m_implicitPlayfieldMesh = nullptr;
+   }
+
+   delete m_physics;
+   m_physics = nullptr;
+
+   for (auto probe : m_ptable->m_vrenderprobe)
+      probe->RenderRelease();
+   for (auto renderable : m_vhitables)
+      renderable->RenderRelease();
+   for (auto ball : m_vball)
+      ball->m_pballex->RenderRelease();
+   for (auto hitable : m_vhitables)
+      hitable->EndPlay();
+
+   m_dmd = int2(0,0);
+   if (m_texdmd)
+   {
+      m_renderer->m_pd3dPrimaryDevice->m_DMDShader->SetTextureNull(SHADER_tex_dmd);
+      m_renderer->m_pd3dPrimaryDevice->m_texMan.UnloadTexture(m_texdmd);
+      delete m_texdmd;
+      m_texdmd = nullptr;
+   }
+
+#ifdef PLAYBACK
+   if (m_fplaylog)
+      fclose(m_fplaylog);
+#endif
+
+   delete m_audio;
+   m_audio = nullptr;
+
+   for (size_t i = 0; i < m_controlclsidsafe.size(); i++)
+      delete m_controlclsidsafe[i];
+   m_controlclsidsafe.clear();
+
+   m_changed_vht.clear();
+
+   g_pplayer = nullptr;
+
+   restore_win_timer_resolution();
+
+   LockForegroundWindow(false);
+
+   // Reactivate edited table or close application if requested
+#ifndef __STANDALONE__
+   if (m_closing == CS_CLOSE_APP)
+   {
+      g_pvp->PostMessage(WM_CLOSE, 0, 0);
+   }
+   else
+   {
+      g_pvp->GetPropertiesDocker()->EnableWindow();
+      g_pvp->GetLayersDocker()->EnableWindow();
+      g_pvp->GetToolbarDocker()->EnableWindow();
+      if (g_pvp->GetNotesDocker() != nullptr)
+         g_pvp->GetNotesDocker()->EnableWindow();
+      g_pvp->ToggleToolbar();
+      g_pvp->ShowWindow(SW_SHOW);
+      g_pvp->SetForegroundWindow();
+      m_pEditorTable->EnableWindow();
+      m_pEditorTable->SetFocus();
+      m_pEditorTable->SetActiveWindow();
+      m_pEditorTable->SetDirtyDraw();
+      m_pEditorTable->RefreshProperties();
+      m_pEditorTable->BeginAutoSaveCounter();
+   }
+#endif
+
+   // Destroy this player
+   delete this; // Win32xx call Window destroy for us from destructor, don't call it directly or it will crash due to dual destruction
+   PLOGI << "Player closed.";
+}
+
+void Player::InitFPS()
+{
+   m_fps = 0.f;
+   m_lastMaxChangeTime = 0;
+   m_script_max = 0;
+   m_physics->ResetStats();
+   g_frameProfiler.Reset();
+}
+
+InfoMode Player::GetInfoMode() const {
+   return m_infoMode;
+}
+
+ProfilingMode Player::GetProfilingMode() const
+{
+   const InfoMode mode = GetInfoMode();
+   if (mode == IF_PROFILING)
+      return ProfilingMode::PF_ENABLED;
+   else
+      return ProfilingMode::PF_DISABLED;
+}
+
+bool Player::ShowFPSonly() const
+{
+   const InfoMode mode = GetInfoMode();
+   return mode == IF_FPS || mode == IF_STATIC_ONLY || mode == IF_AO_ONLY;
+}
+
+bool Player::ShowStats() const
+{
+   const InfoMode mode = GetInfoMode();
+   return mode == IF_FPS || mode == IF_PROFILING;
+}
+
+void Player::RecomputePauseState()
+{
+   const bool oldPause = m_pause;
+   const bool newPause = !(m_gameWindowActive || m_debugWindowActive);// || m_userDebugPaused;
+
+   if (oldPause && newPause)
+   {
+      m_LastKnownGoodCounter++; // So our catcher doesn't catch on the last value
+      m_noTimeCorrect = true;
+   }
+
+   m_pause = newPause;
+}
+
+void Player::RecomputePseudoPauseState()
+{
+   const bool oldPseudoPause = m_pseudoPause;
+   m_pseudoPause = m_userDebugPaused || m_debugWindowActive;
+   if (oldPseudoPause != m_pseudoPause)
+   {
+      if (m_pseudoPause)
+         PauseMusic();
+      else
+         UnpauseMusic();
+   }
 }
 
 Ball *Player::CreateBall(const float x, const float y, const float z, const float vx, const float vy, const float vz, const float radius, const float mass)

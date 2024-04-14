@@ -205,7 +205,7 @@ Renderer::Renderer(PinTable* const table, const bool fullScreen, const int width
    m_stereo3D = m_stereo3DfakeStereo ? STEREO_OFF : stereo3D;
    m_mvp = new ModelViewProj(m_stereo3D == STEREO_OFF ? 1 : 2);
 
-   const int display = g_pvp->m_primaryDisplay ? 0 : m_table->m_settings.LoadValueWithDefault(Settings::Player, "Display"s, 0);
+   const int display = g_pvp->m_primaryDisplay ? -1 : m_table->m_settings.LoadValueWithDefault(Settings::Player, "Display"s, -1);
    vector<DisplayConfig> displays;
    getDisplayList(displays);
    int adapter = 0;
