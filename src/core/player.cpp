@@ -801,13 +801,6 @@ void Player::OnClose()
 
    m_limiter.Shutdown();
 
-   if (m_implicitPlayfieldMesh)
-   {
-      RemoveFromVectorSingle(m_ptable->m_vedit, (IEditable *)m_implicitPlayfieldMesh);
-      m_ptable->m_pcv->RemoveItem(m_implicitPlayfieldMesh->GetScriptable());
-      m_implicitPlayfieldMesh = nullptr;
-   }
-
    for (auto probe : m_ptable->m_vrenderprobe)
       probe->RenderRelease();
    for (auto renderable : m_vhitables)
@@ -816,6 +809,14 @@ void Player::OnClose()
       ball->m_pballex->RenderRelease();
    for (auto hitable : m_vhitables)
       hitable->EndPlay();
+
+   if (m_implicitPlayfieldMesh)
+   {
+      RemoveFromVectorSingle(m_ptable->m_vedit, (IEditable *)m_implicitPlayfieldMesh);
+      m_ptable->m_pcv->RemoveItem(m_implicitPlayfieldMesh->GetScriptable());
+      delete m_implicitPlayfieldMesh;
+      m_implicitPlayfieldMesh = nullptr;
+   }
 
    for (size_t i = 0; i < m_vho.size(); i++)
       delete m_vho[i];
