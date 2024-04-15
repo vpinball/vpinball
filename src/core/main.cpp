@@ -1342,18 +1342,14 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
       }
       #endif
 
-      #if defined(ENABLE_SDL_VIDEO) || defined(ENABLE_SDL_INPUT)
-      SDL_Init(0
-         #ifdef ENABLE_SDL_VIDEO
-            | SDL_INIT_VIDEO
-         #endif
-         #ifdef ENABLE_SDL_INPUT
-            | SDL_INIT_JOYSTICK
-         #endif
-#ifdef __STANDALONE__
-            | SDL_INIT_TIMER
-#endif
-      );
+      #ifdef ENABLE_SDL_VIDEO
+         SDL_InitSubSystem(SDL_INIT_VIDEO);
+      #endif
+      #ifdef ENABLE_SDL_INPUT
+         SDL_InitSubSystem(SDL_INIT_JOYSTICK);
+      #endif
+      #ifdef __STANDALONE__
+         SDL_InitSubSystem(SDL_INIT_TIMER);
       #endif
 
       plog::init<PLOG_DEFAULT_INSTANCE_ID>();
@@ -1374,8 +1370,15 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
 
       retval = -1;
    }
-   #if defined(ENABLE_SDL_VIDEO) || defined(ENABLE_SDL_INPUT)
-   SDL_Quit();
+   
+   #ifdef ENABLE_SDL_VIDEO
+      SDL_QuitSubSystem(SDL_INIT_VIDEO);
+   #endif
+   #ifdef ENABLE_SDL_INPUT
+      SDL_QuitSubSystem(SDL_INIT_JOYSTICK);
+   #endif
+   #ifdef __STANDALONE__
+      SDL_QuitSubSystem(SDL_INIT_TIMER);
    #endif
 
    #if defined(ENABLE_OPENGL) && !defined(__STANDALONE__) 

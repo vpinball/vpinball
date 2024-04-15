@@ -711,7 +711,7 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
    SDL_DisplayMode mode;
    if (SDL_GetCurrentDisplayMode(m_adapter, &mode) != 0)
    {
-      ShowError("Failed to setup SDL output window");
+      ShowError("Failed to setup OpenGL context");
       exit(-1);
    }
    refreshrate = mode.refresh_rate;
@@ -743,6 +743,41 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
    #ifndef __STANDALONE__
    m_windowHwnd = wmInfo.info.win.window;
    #endif
+
+   int channelDepth = video10bit ? 10 : ((colordepth == 16) ? 5 : 8);
+   // We only set bit depth for fullscreen desktop modes (otherwise, use the desktop bit depth)
+   if (m_fullscreen)
+   {
+      SDL_GL_SetAttribute(SDL_GL_RED_SIZE, channelDepth);
+      SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, channelDepth);
+      SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, channelDepth);
+      SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 0);
+      SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0);
+   }
+
+   // Multisampling is performed on the offscreen buffers, not the window framebuffer
+   SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
+   SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
+
+   #ifndef __OPENGLES__
+      #if defined(__APPLE__) && defined(TARGET_OS_MAC)
+         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+         SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
+         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+      #else
+         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+         //This would enforce a 4.1 context, disabling all recent features (storage buffers, debug information,...)
+         //SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+         //SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+      #endif
+   #else
+      SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+      SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+      SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+   #endif
+
+   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
    m_sdl_context = SDL_GL_CreateContext(m_sdl_playfieldHwnd);
 
