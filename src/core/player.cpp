@@ -1046,13 +1046,6 @@ Player::~Player()
 
    m_pininput.UnInit();
 
-   if (m_implicitPlayfieldMesh)
-   {
-      RemoveFromVectorSingle(m_ptable->m_vedit, (IEditable *)m_implicitPlayfieldMesh);
-      m_ptable->m_pcv->RemoveItem(m_implicitPlayfieldMesh->GetScriptable());
-      m_implicitPlayfieldMesh = nullptr;
-   }
-
    delete m_physics;
    m_physics = nullptr;
 
@@ -1065,7 +1058,15 @@ Player::~Player()
    for (auto hitable : m_vhitables)
       hitable->EndPlay();
 
-   m_dmd = int2(0,0);
+   if (m_implicitPlayfieldMesh)
+   {
+      RemoveFromVectorSingle(m_ptable->m_vedit, (IEditable *)m_implicitPlayfieldMesh);
+      m_ptable->m_pcv->RemoveItem(m_implicitPlayfieldMesh->GetScriptable());
+      delete m_implicitPlayfieldMesh;
+      m_implicitPlayfieldMesh = nullptr;
+   }
+
+   m_dmd = int2(0, 0);
    if (m_texdmd)
    {
       m_renderer->m_pd3dPrimaryDevice->m_DMDShader->SetTextureNull(SHADER_tex_dmd);
@@ -1152,6 +1153,9 @@ Player::~Player()
    if (m_progressDialog.IsWindow())
       m_progressDialog.Destroy();
 #endif
+
+   delete m_renderer;
+   m_renderer = nullptr;
 
 #if defined(_MSC_VER) && !defined(__STANDALONE__)
    ::UnregisterClass(WIN32_WND_CLASSNAME, g_pvp->theInstance);
