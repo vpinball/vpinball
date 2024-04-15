@@ -387,6 +387,9 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
       wnd_flags |= SDL_WINDOW_OPENGL;
    #elif defined(ENABLE_BGFX)
       // FIXME implement SDL_WINDOW_OPENGL / SDL_WINDOW_VULKAN / SDL_WINDOW_METAL for BGFX builds
+      //wnd_flags |= SDL_WINDOW_OPENGL;
+      //wnd_flags |= SDL_WINDOW_VULKAN;
+      //wnd_flags |= SDL_WINDOW_METAL;
    #endif
    #if defined(_MSC_VER) // Win32 (we use _MSC_VER since standalone also defines WIN32 for non Win32 builds)
       wnd_flags |= SDL_WINDOW_BORDERLESS | SDL_WINDOW_HIDDEN | SDL_WINDOW_ALLOW_HIGHDPI;
@@ -945,8 +948,10 @@ Player::~Player()
    m_closing = CS_CLOSED;
    PLOGI << "Closing player... [Player's VBS intepreter is #" << m_ptable->m_pcv->m_pScript << "]";
 
-   #if !defined(__STANDALONE__) && !defined(ENABLE_SDL_VIDEO)
-   DestroyWindow(m_playfieldHWnd);
+   #if defined(ENABLE_SDL_VIDEO)
+      SDL_DestroyWindow(m_playfieldSdlWnd);
+   #else
+      DestroyWindow(m_playfieldHWnd);
    #endif
 
     g_frameProfiler.LogWorstFrame();
