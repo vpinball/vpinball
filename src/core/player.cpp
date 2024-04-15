@@ -104,8 +104,6 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    m_progressDialog.ShowWindow(g_pvp->m_open_minimized ? SW_HIDE : SW_SHOWNORMAL);
    m_progressDialog.SetProgress("Creating Player..."s, 1);
 
-   m_pininput.LoadSettings(m_ptable->m_settings);
-
 #if !(defined(_M_IX86) || defined(_M_X64) || defined(_M_AMD64) || defined(__i386__) || defined(__i386) || defined(__i486__) || defined(__i486) || defined(i386) || defined(__ia64__) || defined(__x86_64__))
  #pragma message ( "Warning: No CPU float ignore denorm implemented" )
 #else
@@ -325,10 +323,10 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
       SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
    #endif
 
-   m_sdl_playfieldHwnd = SDL_CreateWindow(WIN32_WND_TITLE, wnd_x, wnd_y, m_wnd_width, m_wnd_height, wnd_flags);
+   m_playfieldSdlWnd = SDL_CreateWindow(WIN32_WND_TITLE, wnd_x, wnd_y, m_wnd_width, m_wnd_height, wnd_flags);
    
    SDL_DisplayMode mode;
-   SDL_GetWindowDisplayMode(m_sdl_playfieldHwnd, &mode);
+   SDL_GetWindowDisplayMode(m_playfieldSdlWnd, &mode);
    if (m_fullScreen && m_refreshrate != 0 && mode.refresh_rate != m_refreshrate) // Adjust refresh rate if needed
    {
       Uint32 format = mode.format;
@@ -338,7 +336,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
          SDL_GetDisplayMode(adapter, index, &mode);
          if (mode.w == m_wnd_width && mode.h == m_wnd_height && (m_refreshrate == 0 || mode.refresh_rate == m_refreshrate) && mode.format == format)
          {
-            SDL_SetWindowDisplayMode(m_sdl_playfieldHwnd, &mode);
+            SDL_SetWindowDisplayMode(m_playfieldSdlWnd, &mode);
             found = true;
             break;
          }
@@ -353,7 +351,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
       const string iconPath = g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "vpinball.png";
       SDL_Surface* pIcon = IMG_Load(iconPath.c_str());
       if (pIcon) {
-         SDL_SetWindowIcon(m_sdl_playfieldHwnd, pIcon);
+         SDL_SetWindowIcon(m_playfieldSdlWnd, pIcon);
          SDL_FreeSurface(pIcon);
       }
       else {
@@ -362,16 +360,18 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    #endif
 
    #ifndef __STANDALONE__
-   // Attach it to default wxx message handling. TODO we should avoid to mix wxx and SDL, and just forward window message to SDL event handling, then process SDL events
    SDL_SysWMinfo wmInfo;
    SDL_VERSION(&wmInfo.version);
-   SDL_GetWindowWMInfo(m_sdl_playfieldHwnd, &wmInfo);
-   Attach(wmInfo.info.win.window);
+   SDL_GetWindowWMInfo(m_playfieldSdlWnd, &wmInfo);
+   m_playfieldHWnd = wmInfo.info.win.window;
+
+   // FIXME we should avoid to mix wxx and SDL, so port existing event processing to SDL or better ImGui
+   Attach(m_playfieldHWnd); // Attach to default wxx message handling
    #endif
 
 #else // Default WIN32 (no SDL)
-   HWND wnd = ::CreateWindowEx(0, wc.lpszClassName, WIN32_WND_TITLE, WS_POPUP, wnd_x, wnd_y, m_wnd_width, m_wnd_height, NULL, NULL, g_pvp->theInstance, NULL);
-   Attach(wnd);
+   m_playfieldHWnd = ::CreateWindowEx(0, wc.lpszClassName, WIN32_WND_TITLE, WS_POPUP, wnd_x, wnd_y, m_wnd_width, m_wnd_height, NULL, NULL, g_pvp->theInstance, NULL);
+   Attach(m_playfieldHWnd);
 
 #endif
 
@@ -390,13 +390,13 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
     if (!UnregisterTouchWindow)
         UnregisterTouchWindow = (pUnregisterTouchWindow)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "UnregisterTouchWindow");
     if (UnregisterTouchWindow)
-        UnregisterTouchWindow(GetHwnd());
+        UnregisterTouchWindow(m_playfieldHWnd);
 #else // would be useful if handling WM_TOUCH instead of WM_POINTERDOWN
     // Disable palm detection
     if (!RegisterTouchWindow)
         RegisterTouchWindow = (pRegisterTouchWindow)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "RegisterTouchWindow");
     if (RegisterTouchWindow)
-        RegisterTouchWindow(GetHwnd(), 0);
+        RegisterTouchWindow(m_playfieldHWnd, 0);
 
     if (!IsTouchWindow)
         IsTouchWindow = (pIsTouchWindow)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "IsTouchWindow");
@@ -435,23 +435,23 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
     {
         constexpr BOOL enabled = FALSE;
 
-        SetWindowFeedbackSetting(GetHwnd(), FEEDBACK_TOUCH_CONTACTVISUALIZATION, 0, sizeof(enabled), &enabled);
-        SetWindowFeedbackSetting(GetHwnd(), FEEDBACK_TOUCH_TAP, 0, sizeof(enabled), &enabled);
-        SetWindowFeedbackSetting(GetHwnd(), FEEDBACK_TOUCH_DOUBLETAP, 0, sizeof(enabled), &enabled);
-        SetWindowFeedbackSetting(GetHwnd(), FEEDBACK_TOUCH_PRESSANDHOLD, 0, sizeof(enabled), &enabled);
-        SetWindowFeedbackSetting(GetHwnd(), FEEDBACK_TOUCH_RIGHTTAP, 0, sizeof(enabled), &enabled);
+        SetWindowFeedbackSetting(m_playfieldHWnd, FEEDBACK_TOUCH_CONTACTVISUALIZATION, 0, sizeof(enabled), &enabled);
+        SetWindowFeedbackSetting(m_playfieldHWnd, FEEDBACK_TOUCH_TAP, 0, sizeof(enabled), &enabled);
+        SetWindowFeedbackSetting(m_playfieldHWnd, FEEDBACK_TOUCH_DOUBLETAP, 0, sizeof(enabled), &enabled);
+        SetWindowFeedbackSetting(m_playfieldHWnd, FEEDBACK_TOUCH_PRESSANDHOLD, 0, sizeof(enabled), &enabled);
+        SetWindowFeedbackSetting(m_playfieldHWnd, FEEDBACK_TOUCH_RIGHTTAP, 0, sizeof(enabled), &enabled);
 
-        SetWindowFeedbackSetting(GetHwnd(), FEEDBACK_PEN_BARRELVISUALIZATION, 0, sizeof(enabled), &enabled);
-        SetWindowFeedbackSetting(GetHwnd(), FEEDBACK_PEN_TAP, 0, sizeof(enabled), &enabled);
-        SetWindowFeedbackSetting(GetHwnd(), FEEDBACK_PEN_DOUBLETAP, 0, sizeof(enabled), &enabled);
-        SetWindowFeedbackSetting(GetHwnd(), FEEDBACK_PEN_PRESSANDHOLD, 0, sizeof(enabled), &enabled);
-        SetWindowFeedbackSetting(GetHwnd(), FEEDBACK_PEN_RIGHTTAP, 0, sizeof(enabled), &enabled);
+        SetWindowFeedbackSetting(m_playfieldHWnd, FEEDBACK_PEN_BARRELVISUALIZATION, 0, sizeof(enabled), &enabled);
+        SetWindowFeedbackSetting(m_playfieldHWnd, FEEDBACK_PEN_TAP, 0, sizeof(enabled), &enabled);
+        SetWindowFeedbackSetting(m_playfieldHWnd, FEEDBACK_PEN_DOUBLETAP, 0, sizeof(enabled), &enabled);
+        SetWindowFeedbackSetting(m_playfieldHWnd, FEEDBACK_PEN_PRESSANDHOLD, 0, sizeof(enabled), &enabled);
+        SetWindowFeedbackSetting(m_playfieldHWnd, FEEDBACK_PEN_RIGHTTAP, 0, sizeof(enabled), &enabled);
 
-        SetWindowFeedbackSetting(GetHwnd(), FEEDBACK_GESTURE_PRESSANDTAP, 0, sizeof(enabled), &enabled);
+        SetWindowFeedbackSetting(m_playfieldHWnd, FEEDBACK_GESTURE_PRESSANDTAP, 0, sizeof(enabled), &enabled);
     }
 #endif
 
-   mixer_init(GetHwnd());
+   mixer_init(m_playfieldHWnd);
    hid_init();
 
    // General player initialization
@@ -498,9 +498,9 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    }
 
    #ifdef ENABLE_SDL_VIDEO
-   SDL_GL_GetDrawableSize(m_sdl_playfieldHwnd, &m_wnd_width, &m_wnd_height); // Size in pixels
+   SDL_GL_GetDrawableSize(m_playfieldSdlWnd, &m_wnd_width, &m_wnd_height); // Size in pixels
    int realWindowWidth, realWindowHeight;
-   SDL_GetWindowSize(g_pplayer->m_sdl_playfieldHwnd, &realWindowWidth, &realWindowHeight); // Size in screen coordinates (taking in account HiDPI)
+   SDL_GetWindowSize(g_pplayer->m_playfieldSdlWnd, &realWindowWidth, &realWindowHeight); // Size in screen coordinates (taking in account HiDPI)
    m_wnd_scale_x = static_cast<float>(m_wnd_width) / realWindowWidth;
    m_wnd_scale_y = static_cast<float>(m_wnd_height) / realWindowHeight;
    PLOGI << "SDL drawable size: " << m_wnd_width << 'x' << m_wnd_height;
@@ -522,7 +522,8 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
 
    PLOGI << "Initializing inputs & implicit objects"; // For profiling
 
-   m_pininput.Init(GetHwnd());
+   m_pininput.LoadSettings(m_ptable->m_settings);
+   m_pininput.Init(m_playfieldHWnd);
 
 #ifndef __STANDALONE__
    //
@@ -805,7 +806,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
 #endif
 
 #if defined(ENABLE_SDL_VIDEO)
-   SDL_ShowWindow(m_sdl_playfieldHwnd);
+   SDL_ShowWindow(m_playfieldSdlWnd);
 #else
    // Show the window (even without preview, we need to create a window).
    ShowWindow(SW_SHOW);
@@ -1958,7 +1959,7 @@ bool Player::FinishFrame()
 #ifndef __STANDALONE__
       if (!m_debuggerDialog.IsWindow())
       {
-         m_debuggerDialog.Create(GetHwnd());
+         m_debuggerDialog.Create(m_playfieldHWnd);
          m_debuggerDialog.ShowWindow();
       }
       else
@@ -2018,7 +2019,7 @@ LRESULT Player::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 #ifndef __STANDALONE__
 
    #ifndef ENABLE_SDL_VIDEO
-   if (ImGui_ImplWin32_WndProcHandler(GetHwnd(), uMsg, wParam, lParam))
+   if (ImGui_ImplWin32_WndProcHandler(m_playfieldHWnd, uMsg, wParam, lParam))
       return true;
    #endif
 

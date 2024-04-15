@@ -653,7 +653,7 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
 #ifdef __STANDALONE__
    SDL_SysWMinfo wmInfo;
    SDL_VERSION(&wmInfo.version);
-   SDL_GetWindowWMInfo(g_pplayer->m_sdl_playfieldHwnd, &wmInfo);
+   SDL_GetWindowWMInfo(g_pplayer->m_playfieldSdlWnd, &wmInfo);
 #endif
 
    #if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
@@ -736,10 +736,10 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
 
    memset(m_samplerStateCache, 0, sizeof(m_samplerStateCache));
 
-   m_sdl_playfieldHwnd = g_pplayer->m_sdl_playfieldHwnd;
+   m_playfieldSdlWnd = g_pplayer->m_playfieldSdlWnd;
    SDL_SysWMinfo wmInfo;
    SDL_VERSION(&wmInfo.version);
-   SDL_GetWindowWMInfo(m_sdl_playfieldHwnd, &wmInfo);
+   SDL_GetWindowWMInfo(m_playfieldSdlWnd, &wmInfo);
    #ifndef __STANDALONE__
    m_windowHwnd = wmInfo.info.win.window;
    #endif
@@ -779,9 +779,9 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
 
    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-   m_sdl_context = SDL_GL_CreateContext(m_sdl_playfieldHwnd);
+   m_sdl_context = SDL_GL_CreateContext(m_playfieldSdlWnd);
 
-   SDL_GL_MakeCurrent(m_sdl_playfieldHwnd, m_sdl_context);
+   SDL_GL_MakeCurrent(m_playfieldSdlWnd, m_sdl_context);
 
    #ifndef __OPENGLES__
    if (!gladLoadGL((GLADloadfunc)SDL_GL_GetProcAddress))
@@ -1379,7 +1379,7 @@ RenderDevice::~RenderDevice()
    }
 
    SDL_GL_DeleteContext(m_sdl_context);
-   SDL_DestroyWindow(m_sdl_playfieldHwnd);
+   SDL_DestroyWindow(m_playfieldSdlWnd);
 
    assert(m_sharedVAOs.empty());
 
@@ -1628,7 +1628,7 @@ void RenderDevice::Flip()
    #if defined(ENABLE_BGFX)
    SubmitAndFlipFrame();
    #elif defined(ENABLE_OPENGL)
-   SDL_GL_SwapWindow(m_sdl_playfieldHwnd);
+   SDL_GL_SwapWindow(m_playfieldSdlWnd);
    #elif defined(ENABLE_DX9)
    CHECKD3D(m_pD3DDevice->Present(nullptr, nullptr, nullptr, nullptr));
    #endif

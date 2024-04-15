@@ -721,10 +721,10 @@ LiveUI::LiveUI(RenderDevice *const rd)
 
 #if defined(ENABLE_SDL_VIDEO)
    // using the specialized initializer is not needed
-   // ImGui_ImplSDL2_InitForOpenGL(m_player->m_sdl_playfieldHwnd, rd->m_sdl_context);
-   ImGui_ImplSDL2_InitForOther(m_player->m_sdl_playfieldHwnd);
+   // ImGui_ImplSDL2_InitForOpenGL(m_player->m_playfieldSdlWnd, rd->m_sdl_context);
+   ImGui_ImplSDL2_InitForOther(m_player->m_playfieldSdlWnd);
    #if defined(__ANDROID__) || defined(WIN32)
-   int displayIndex = SDL_GetWindowDisplayIndex(m_player->m_sdl_playfieldHwnd);
+   int displayIndex = SDL_GetWindowDisplayIndex(m_player->m_playfieldSdlWnd);
    float ddpi, hdpi, vdpi;
    if (SDL_GetDisplayDPI(displayIndex, &ddpi, &hdpi, &vdpi) == 0)
       m_dpi = (hdpi + vdpi) / 2.0f / 96.0f;
@@ -3650,10 +3650,10 @@ void LiveUI::UpdateMainSplashModal()
             int x, y;
             
             #ifdef ENABLE_SDL_VIDEO
-            SDL_GetWindowPosition(m_player->m_sdl_playfieldHwnd, &x, &y);
+            SDL_GetWindowPosition(m_player->m_playfieldSdlWnd, &x, &y);
             x += (int)drag.x;
             y += (int)drag.y;
-            SDL_SetWindowPosition(m_player->m_sdl_playfieldHwnd, x, y);
+            SDL_SetWindowPosition(m_player->m_playfieldSdlWnd, x, y);
             
             #else
             auto rect = m_player->GetWindowRect();
