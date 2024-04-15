@@ -9,9 +9,10 @@ struct ManufacturerDimensions
    float height;
 };
 
-#define DIM_TABLE_SIZE 40
+#define DIM_TABLE_SIZE 41
 static const ManufacturerDimensions dimTable[DIM_TABLE_SIZE] =
 {
+   { "Alvin G."s, 20.25f, 42.0f },
    { "Atari (widebody)"s, 27.0f, 45.0f },
    { "Bally EM (standard)"s, 20.25f, 41.0f },
    { "Bally (standard)"s, 20.25f, 42.0f },
@@ -35,16 +36,16 @@ static const ManufacturerDimensions dimTable[DIM_TABLE_SIZE] =
    { "Williams EM (standard)"s, 20.25f, 42.0f }, // measured by Bord via a Williams 1965 EM
    { "Williams System 1-11 (standard)"s, 20.25f, 42.0f },
    { "Williams System 1-11 (widebody)"s, 27.0f, 42.0f },
-   { "WMS WPC (standard)"s, 20.5f, 46.0f },
+   { "WMS WPC (standard)"s, 20.25f, 46.0f },
    { "WMS WPC (superpin)"s, 23.25f, 46.0f },
    { "WMS Pinball 2000"s, 20.5f, 43.0f },
    { "Zaccaria (standard)"s, 20.25f, 42.0f },
    { "Black Knight 2000 (1991)"s, 20.25f, 46.0f }, //!! OPA: 20.2756 x 42.0
    { "Bride Of Pinbot (1991)"s, 20.25f, 45.25f }, //!! OPA: 20.2362 x 45.27559
-   { "BSD Dracula (1993)"s, 20.5f, 45.0f }, //!! chepas claims its 20.5 (by pics/compared to TAF), OPA 20.25
+   { "BSD Dracula (1993)"s, 20.25f, 45.0f }, //!! chepas claims its 20.5 (by pics/compared to TAF), OPA 20.25
    { "Doctor Who (1992)"s, 20.25f, 45.0625f },
    { "Future Spa (1979)"s, 26.7717f, 40.55118f },
-   { "Guns N' Roses (1994)"s, 25.0f, 51.75f },
+   { "Guns N' Roses (1994)"s, 23.0f, 46.0f },
    { "Hercules (1979 Atari)"s, 36.0f, 72.0f },
    { "Mystery Castle (1993 Alvin G)"s, 20.25f, 46.0f },
    // Playboy does not have standard size, so around 20.25f, 42.0f ???
