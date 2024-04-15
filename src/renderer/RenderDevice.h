@@ -118,7 +118,7 @@ public:
       LINESTRIP = GL_LINE_STRIP
    };
 
-   SDL_Window* m_sdl_playfieldHwnd = nullptr;
+   SDL_Window* m_playfieldSdlWnd = nullptr;
    SDL_GLContext m_sdl_context = nullptr;
    #ifndef __STANDALONE__
    IDXGIOutput* m_DXGIOutput = nullptr;
