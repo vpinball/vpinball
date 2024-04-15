@@ -303,7 +303,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
       wnd_x += (m_screenwidth - m_wnd_width) / 2;
       wnd_y += (m_screenheight - m_wnd_height) / 2;
 
-      #ifdef WIN32
+      #ifdef _MSC_VER
       // is this a non-fullscreen window? -> get previously saved window position
       if ((m_wnd_height != m_screenheight) || (m_wnd_width != m_screenwidth))
       {
@@ -447,14 +447,8 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    }
    else
    {
-      #ifndef __STANDALONE__
-         // Don't ask fullscreen desktop as it will likely cause issue with overlaying DMD, B2S, Pup,... above VPX
-         //if (cs.cx == displayWidth && cs.cy == displayHeight)
-         //   flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
-      #else
-         if (cs.cx == displayWidth && cs.cy == displayHeight)
-            flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
-      #endif
+      if (m_wnd_width == displayWidth && m_wnd_height == displayHeight)
+         flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
       m_sdl_playfieldHwnd = SDL_CreateWindow(wnd_title, wnd_x, wnd_y, m_wnd_width, m_wnd_height, flags);
    }
 
