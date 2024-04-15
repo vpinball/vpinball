@@ -256,7 +256,7 @@ Renderer::Renderer(PinTable* const table, const bool fullScreen, const int width
    m_viewPort.MaxZ = 1.0f;
 
    try {
-      m_pd3dPrimaryDevice = new RenderDevice(g_pplayer->GetHwnd(), renderWidth, renderHeight, fullScreen, colordepth, 
+      m_pd3dPrimaryDevice = new RenderDevice(g_pplayer->m_playfieldHWnd, renderWidth, renderHeight, fullScreen, colordepth, 
          m_AAfactor, stereo3D, useNvidiaApi, disableDWM, m_BWrendering, nMSAASamples, refreshrate, syncMode, adapter);
    }
    catch (...) {

@@ -8,7 +8,7 @@ int lasthangsnoopvalue;
 VOID CALLBACK HangSnoopProc(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
 {
    const int newvalue = g_pplayer->m_LastKnownGoodCounter;
-   if (!g_pplayer->m_pause && newvalue == lasthangsnoopvalue && !g_pplayer->m_ModalRefCount)
+   if (newvalue == lasthangsnoopvalue && !g_pplayer->m_ModalRefCount && g_pplayer->IsPlaying(false))
    {
       // Nothing happened since the last time - we are probably hung
       EXCEPINFO eiInterrupt = {};

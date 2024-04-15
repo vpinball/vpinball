@@ -74,34 +74,15 @@ BOOL DebuggerDialog::OnCommand(WPARAM wParam, LPARAM lParam)
     switch (LOWORD(wParam))
     {
         case IDC_PLAY:
-        {
-#ifdef STEPPING
-            g_pplayer->m_pauseTimeTarget = 0;
-#endif
-            g_pplayer->m_userDebugPaused = false;
-            g_pplayer->RecomputePseudoPauseState();
-            SendMessage(RECOMPUTEBUTTONCHECK, 0, 0);
+            g_pplayer->SetPlayState(true);
             return TRUE;
-        }
         case IDC_PAUSE:
-        {
-#ifdef STEPPING
-            g_pplayer->m_pauseTimeTarget = 0;
-#endif
-            g_pplayer->m_userDebugPaused = true;
-            g_pplayer->RecomputePseudoPauseState();
-            SendMessage(RECOMPUTEBUTTONCHECK, 0, 0);
+            g_pplayer->SetPlayState(false);
             return TRUE;
-        }
         case IDC_STEP:
         {
-#ifdef STEPPING
             const int ms = GetDlgItemInt(IDC_STEPAMOUNT, FALSE);
-            g_pplayer->m_pauseTimeTarget = g_pplayer->m_time_msec + ms;
-#endif
-            g_pplayer->m_userDebugPaused = false;
-            g_pplayer->RecomputePseudoPauseState();
-            SendMessage(RECOMPUTEBUTTONCHECK, 0, 0);
+            g_pplayer->SetPlayState(false, ms);
             return TRUE;
         }
         case IDC_EXPAND:
@@ -127,26 +108,12 @@ BOOL DebuggerDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 
 void DebuggerDialog::OnClose()
 {
-#ifdef STEPPING
-    g_pplayer->m_pauseTimeTarget = 0;
-#endif
-    g_pplayer->m_userDebugPaused = false;
-    g_pplayer->RecomputePseudoPauseState();
     g_pplayer->m_debugBallSize = GetDlgItemInt(IDC_THROW_BALL_SIZE_EDIT2, FALSE);
-
     const float fv = sz2f(GetDlgItemText(IDC_THROW_BALL_MASS_EDIT2).c_str());
     g_pplayer->m_debugBallMass = fv;
-
     g_pplayer->m_debugMode = false;
     g_pplayer->m_showDebugger = false;
     ShowWindow(SW_HIDE);
-    if ((g_pplayer->m_fullScreen || (g_pplayer->m_wnd_width == g_pplayer->m_screenwidth && g_pplayer->m_wnd_height == g_pplayer->m_screenheight)) // detect windowed fullscreen
-        && !(g_pplayer->m_throwBalls || g_pplayer->m_ballControl || g_pplayer->m_liveUI->IsOpened()))
-    {
-        while (ShowCursor(TRUE)<0) ;
-        while (ShowCursor(FALSE)>=0) ;
-    }
-
     SavePosition();
 }
 
@@ -236,16 +203,14 @@ INT_PTR DebuggerDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             int PauseDown = BST_UNCHECKED;
             int StepDown = BST_UNCHECKED;
 
-            if (g_pplayer->m_userDebugPaused)
+            if (!g_pplayer->IsPlaying(false))
             {
                 PauseDown = BST_CHECKED;
             }
-#ifdef STEPPING
             else if (g_pplayer->m_pauseTimeTarget > 0)
             {
                 StepDown = BST_CHECKED;
             }
-#endif
             else
             {
                 PlayDown = BST_CHECKED;

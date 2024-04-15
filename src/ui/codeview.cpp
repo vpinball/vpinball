@@ -1222,12 +1222,7 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 	m_scriptError = true;
 
 	if (g_pplayer)
-	{
 		g_pplayer->LockForegroundWindow(false);
-#ifndef __STANDALONE__
-		g_pplayer->EnableWindow(FALSE);
-#endif
-	}
 
 	CComObject<PinTable>* const pt = g_pvp->GetActiveTable();
 	if (pt)
@@ -1413,12 +1408,7 @@ STDMETHODIMP CodeViewer::OnScriptErrorDebug(
 	m_scriptError = true;
 
 	if (g_pplayer)
-	{
 		g_pplayer->LockForegroundWindow(false);
-#ifndef __STANDALONE__
-		g_pplayer->EnableWindow(FALSE);
-#endif
-	}
 
 	CComObject<PinTable>* const pt = g_pvp->GetActiveTable();
 	if (pt)

@@ -1721,10 +1721,8 @@ void VPinball::OnClose()
          Sleep(THREADS_PAUSE);
 
 #ifndef __STANDALONE__
-   if (g_pplayer)
-      g_pplayer->OnClose();
-   while (g_pplayer)
-      Sleep(THREADS_PAUSE);
+   delete g_pplayer;
+   g_pplayer = nullptr;
 
    const bool canClose = CanClose();
    if (canClose)
