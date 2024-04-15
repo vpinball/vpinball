@@ -662,7 +662,7 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
    #elif BX_PLATFORM_OSX
    init.platformData.nwh = wmInfo.info.cocoa.window;
    #elif BX_PLATFORM_WINDOWS
-   init.platformData.nwh = g_pplayer->GetHwnd();
+   init.platformData.nwh = g_pplayer->m_playfieldHWnd;
    #elif BX_PLATFORM_STEAMLINK
    init.platformData.ndt = wmInfo.info.vivante.display;
    init.platformData.nwh = wmInfo.info.vivante.window;
@@ -1379,7 +1379,6 @@ RenderDevice::~RenderDevice()
    }
 
    SDL_GL_DeleteContext(m_sdl_context);
-   SDL_DestroyWindow(m_playfieldSdlWnd);
 
    assert(m_sharedVAOs.empty());
 
