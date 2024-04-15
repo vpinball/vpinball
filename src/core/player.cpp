@@ -92,6 +92,91 @@ extern "C" JNIEXPORT void JNICALL Java_org_vpinball_app_VPXViewModel_webserver(J
 #define WIN32_WND_CLASSNAME _T("VPPlayer")
 #define WIN32_WND_TITLE _T("Visual Pinball Player")
 
+#ifndef __STANDALONE__
+// Playfield window proc for Win32
+LRESULT CALLBACK PlayerWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+   if (g_pplayer == nullptr || g_pplayer->m_playfieldHWnd != hwnd)
+      return DefWindowProc(hwnd, uMsg, wParam, lParam);
+
+   #ifndef ENABLE_SDL_VIDEO
+   if (ImGui_ImplWin32_WndProcHandler(g_pplayer->m_playfieldHWnd, uMsg, wParam, lParam))
+      return true;
+   #endif
+
+   switch (uMsg)
+   {
+   case WM_CLOSE:
+      g_pvp->QuitPlayer(Player::CloseState::CS_STOP_PLAY);
+      return 0;
+
+   case WM_ACTIVATE: // Toggle pause state based on window focus
+      g_pplayer->OnFocusChanged(wParam != WA_INACTIVE);
+      break;
+
+   case WM_KEYDOWN: // Hide cursor when playing
+      g_pplayer->ShowMouseCursor(false);
+      break;
+
+   case WM_MOUSEMOVE: // Show cursor if paused ot if user move the mouse
+      {
+         static int m_lastcursorx = 0xfffffff, m_lastcursory = 0xfffffff; // used to detect user moving the mouse, therefore requesting the cursor to be shown
+         if (m_lastcursorx != LOWORD(lParam) || m_lastcursory != HIWORD(lParam))
+         {
+            m_lastcursorx = LOWORD(lParam);
+            m_lastcursory = HIWORD(lParam);
+            g_pplayer->ShowMouseCursor(true);
+         }
+      }
+      break;
+
+   // FIXME the following events are not handled by the SDL implementation (in pininput.cpp)
+   case MM_MIXM_CONTROL_CHANGE: // not implemented for SDL, still the mixer API is fairly buggy (no mapping to the right mixer, fails on some conf)
+      mixer_get_volume();
+      break;
+
+   case WM_POINTERDOWN: // not implemented for SDL (SDL2 does not support touch devices under windows)
+   case WM_POINTERUP:
+   {
+#ifndef TEST_TOUCH_WITH_MOUSE
+      if (!GetPointerInfo)
+         GetPointerInfo = (pGPI)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "GetPointerInfo");
+      if (GetPointerInfo)
+#endif
+      {
+         POINTER_INFO pointerInfo;
+#ifdef TEST_TOUCH_WITH_MOUSE
+         GetCursorPos(&pointerInfo.ptPixelLocation);
+#else
+         if (GetPointerInfo(GET_POINTERID_WPARAM(wParam), &pointerInfo))
+#endif
+         {
+            ScreenToClient(hwnd, &pointerInfo.ptPixelLocation);
+            for (unsigned int i = 0; i < MAX_TOUCHREGION; ++i)
+               if ((g_pplayer->m_touchregion_pressed[i] != (uMsg == WM_POINTERDOWN))
+                  && Intersect(touchregion[i], g_pplayer->m_wnd_width, g_pplayer->m_wnd_height, pointerInfo.ptPixelLocation,
+                     g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].GetRotation(
+                        g_pplayer->m_renderer->m_pd3dPrimaryDevice->m_width, g_pplayer->m_renderer->m_pd3dPrimaryDevice->m_height)
+                        != 0.f))
+               {
+                  g_pplayer->m_touchregion_pressed[i] = (uMsg == WM_POINTERDOWN);
+
+                  DIDEVICEOBJECTDATA didod;
+                  didod.dwOfs = g_pplayer->m_rgKeys[touchkeymap[i]];
+                  didod.dwData = g_pplayer->m_touchregion_pressed[i] ? 0x80 : 0;
+                  g_pplayer->m_pininput.PushQueue(&didod, APP_TOUCH /*, curr_time_msec*/);
+               }
+         }
+      }
+      break;
+   }
+   }
+   return DefWindowProc(hwnd, uMsg, wParam, lParam);
+}
+#endif
+
+
+
 Player::Player(PinTable *const editor_table, PinTable *const live_table, const int playMode)
    : m_pEditorTable(editor_table)
    , m_ptable(live_table)
@@ -239,16 +324,16 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    {
       m_refreshrate = 0; // The default
 
-      // constrain window to screen
+      // constrain window to screen and center it
       if (m_wnd_width > m_screenwidth)
       {
+         m_wnd_height = (m_wnd_height * m_screenwidth) / m_wnd_width;
          m_wnd_width = m_screenwidth;
-         m_wnd_height = m_wnd_width * 9 / 16;
       }
       if (m_wnd_height > m_screenheight)
       {
+         m_wnd_width = (m_wnd_width * m_screenheight) / m_wnd_height;
          m_wnd_height = m_screenheight;
-         m_wnd_width = m_wnd_height * 16 / 9;
       }
       wnd_x += (m_screenwidth - m_wnd_width) / 2;
       wnd_y += (m_screenheight - m_wnd_height) / 2;
@@ -271,8 +356,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
             }
          }
       #else
-         wnd_x = SDL_WINDOWPOS_CENTERED_DISPLAY(adapter);
-         wnd_y = SDL_WINDOWPOS_CENTERED_DISPLAY(adapter);
+         wnd_x = wnd_y = display < 0 ? SDL_WINDOWPOS_CENTERED : SDL_WINDOWPOS_CENTERED_DISPLAY(display);
       #endif
    }
 
@@ -280,7 +364,9 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    WNDCLASS wc;
    ZeroMemory(&wc, sizeof(wc));
    wc.hInstance = g_pvp->theInstance;
-   #ifdef UNICODE
+   #ifndef ENABLE_SDL_VIDEO
+   wc.lpfnWndProc = PlayerWindowProc;
+   #elif defined(UNICODE)
    wc.lpfnWndProc = ::DefWindowProcW;
    #else
    wc.lpfnWndProc = ::DefWindowProcA;
@@ -364,14 +450,10 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    SDL_VERSION(&wmInfo.version);
    SDL_GetWindowWMInfo(m_playfieldSdlWnd, &wmInfo);
    m_playfieldHWnd = wmInfo.info.win.window;
-
-   // FIXME we should avoid to mix wxx and SDL, so port existing event processing to SDL or better ImGui
-   Attach(m_playfieldHWnd); // Attach to default wxx message handling
    #endif
 
 #else // Default WIN32 (no SDL)
    m_playfieldHWnd = ::CreateWindowEx(0, wc.lpszClassName, WIN32_WND_TITLE, WS_POPUP, wnd_x, wnd_y, m_wnd_width, m_wnd_height, NULL, NULL, g_pvp->theInstance, NULL);
-   Attach(m_playfieldHWnd);
 
 #endif
 
@@ -386,47 +468,47 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
     m_supportsTouch = ((GetSystemMetrics(SM_DIGITIZER) & NID_READY) != 0) && ((GetSystemMetrics(SM_DIGITIZER) & NID_MULTI_INPUT) != 0)
         && (GetSystemMetrics(SM_MAXIMUMTOUCHES) != 0);
 
-#if 1 // we do not want to handle WM_TOUCH
-    if (!UnregisterTouchWindow)
-        UnregisterTouchWindow = (pUnregisterTouchWindow)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "UnregisterTouchWindow");
-    if (UnregisterTouchWindow)
-        UnregisterTouchWindow(m_playfieldHWnd);
-#else // would be useful if handling WM_TOUCH instead of WM_POINTERDOWN
-    // Disable palm detection
-    if (!RegisterTouchWindow)
-        RegisterTouchWindow = (pRegisterTouchWindow)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "RegisterTouchWindow");
-    if (RegisterTouchWindow)
-        RegisterTouchWindow(m_playfieldHWnd, 0);
+   #if 1 // we do not want to handle WM_TOUCH
+       if (!UnregisterTouchWindow)
+           UnregisterTouchWindow = (pUnregisterTouchWindow)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "UnregisterTouchWindow");
+       if (UnregisterTouchWindow)
+           UnregisterTouchWindow(m_playfieldHWnd);
+   #else // would be useful if handling WM_TOUCH instead of WM_POINTERDOWN
+       // Disable palm detection
+       if (!RegisterTouchWindow)
+           RegisterTouchWindow = (pRegisterTouchWindow)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "RegisterTouchWindow");
+       if (RegisterTouchWindow)
+           RegisterTouchWindow(m_playfieldHWnd, 0);
 
-    if (!IsTouchWindow)
-        IsTouchWindow = (pIsTouchWindow)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "IsTouchWindow");
+       if (!IsTouchWindow)
+           IsTouchWindow = (pIsTouchWindow)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "IsTouchWindow");
 
-    // Disable Gesture Detection
-    if (!SetGestureConfig)
-        SetGestureConfig = (pSetGestureConfig)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "SetGestureConfig");
-    if (SetGestureConfig)
-    {
-        // http://msdn.microsoft.com/en-us/library/ms812373.aspx
-        const DWORD dwHwndTabletProperty =
-            TABLET_DISABLE_PRESSANDHOLD |      // disables press and hold (right-click) gesture
-            TABLET_DISABLE_PENTAPFEEDBACK |    // disables UI feedback on pen up (waves)
-            TABLET_DISABLE_PENBARRELFEEDBACK | // disables UI feedback on pen button down
-            TABLET_DISABLE_FLICKS;             // disables pen flicks (back, forward, drag down, drag up)
-        LPCTSTR tabletAtom = MICROSOFT_TABLETPENSERVICE_PROPERTY;
+       // Disable Gesture Detection
+       if (!SetGestureConfig)
+           SetGestureConfig = (pSetGestureConfig)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "SetGestureConfig");
+       if (SetGestureConfig)
+       {
+           // http://msdn.microsoft.com/en-us/library/ms812373.aspx
+           const DWORD dwHwndTabletProperty =
+               TABLET_DISABLE_PRESSANDHOLD |      // disables press and hold (right-click) gesture
+               TABLET_DISABLE_PENTAPFEEDBACK |    // disables UI feedback on pen up (waves)
+               TABLET_DISABLE_PENBARRELFEEDBACK | // disables UI feedback on pen button down
+               TABLET_DISABLE_FLICKS;             // disables pen flicks (back, forward, drag down, drag up)
+           LPCTSTR tabletAtom = MICROSOFT_TABLETPENSERVICE_PROPERTY;
 
-        // Get the Tablet PC atom ID
-        const ATOM atomID = GlobalAddAtom(tabletAtom);
-        if (atomID)
-        {
-            // Try to disable press and hold gesture 
-            SetProp(m_playfieldHwnd, tabletAtom, (HANDLE)dwHwndTabletProperty);
-        }
-        // Gesture configuration
-        GESTURECONFIG gc[] = { 0, 0, GC_ALLGESTURES };
-        UINT uiGcs = 1;
-        const BOOL bResult = SetGestureConfig(m_playfieldHwnd, 0, uiGcs, gc, sizeof(GESTURECONFIG));
-    }
-#endif
+           // Get the Tablet PC atom ID
+           const ATOM atomID = GlobalAddAtom(tabletAtom);
+           if (atomID)
+           {
+               // Try to disable press and hold gesture 
+               SetProp(m_playfieldHwnd, tabletAtom, (HANDLE)dwHwndTabletProperty);
+           }
+           // Gesture configuration
+           GESTURECONFIG gc[] = { 0, 0, GC_ALLGESTURES };
+           UINT uiGcs = 1;
+           const BOOL bResult = SetGestureConfig(m_playfieldHwnd, 0, uiGcs, gc, sizeof(GESTURECONFIG));
+       }
+   #endif
 
     // Disable visual feedback for touch, this saves one frame of latency on touchdisplays
     if (!SetWindowFeedbackSetting)
@@ -517,7 +599,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    #if defined(_MSC_VER) && !defined(ENABLE_SDL_VIDEO)
    // FIXME why do we need this? the window creation is already supposed to place the window correctly
    if (m_fullScreen)
-      SetWindowPos(nullptr, 0, 0, m_wnd_width, m_wnd_height, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE);
+      SetWindowPos(m_playfieldHWnd, nullptr, 0, 0, m_wnd_width, m_wnd_height, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE);
    #endif
 
    PLOGI << "Initializing inputs & implicit objects"; // For profiling
@@ -809,9 +891,9 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    SDL_ShowWindow(m_playfieldSdlWnd);
 #else
    // Show the window (even without preview, we need to create a window).
-   ShowWindow(SW_SHOW);
-   SetForegroundWindow();
-   SetFocus();
+   ShowWindow(m_playfieldHWnd, SW_SHOW);
+   SetForegroundWindow(m_playfieldHWnd);
+   SetFocus(m_playfieldHWnd);
 #endif
 
 #ifndef __STANDALONE__
@@ -854,58 +936,18 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
 
 Player::~Player()
 {
-   assert(g_pplayer == nullptr);
-   m_closing = CS_CLOSED;
-   m_ptable->StopPlaying();
-   delete m_pBCTarget;
-   delete m_ptable;
-
-   //!! cleanup the whole mem management for balls, this is a mess!
-
-   // balls are added to the octree, but not the hit object vector
-   for (size_t i = 0; i < m_vball.size(); i++)
-   {
-      Ball *const pball = m_vball[i];
-      if (pball->m_pballex)
-      {
-         pball->m_pballex->m_pball = nullptr;
-         pball->m_pballex->Release();
-      }
-
-      delete pball->m_d.m_vpVolObjs;
-      delete pball;
-   }
-
-   //!! see above
-   //for (size_t i=0;i<m_vho_dynamic.size();i++)
-   //      delete m_vho_dynamic[i];
-   //m_vho_dynamic.clear();
-
-   m_vball.clear();
-
-#ifndef __STANDALONE__
-   if (m_progressDialog.IsWindow())
-      m_progressDialog.Destroy();
-#endif
-
-#if defined(_MSC_VER) && !defined(__STANDALONE__)
-   ::UnregisterClass(WIN32_WND_CLASSNAME, g_pvp->theInstance);
-   #ifdef ENABLE_SDL_VIDEO
-   SDL_UnregisterApp();
-   #endif
-#endif
-}
-
-void Player::OnClose()
-{
+   assert(g_pplayer == this && g_pplayer->m_closing != CS_CLOSED);
    if (g_pplayer == nullptr || g_pplayer->m_closing == CS_CLOSED)
    {
-      PLOGI << "Player::OnClose discarded since player is already closing";
+      PLOGE << "Player::OnClose discarded since player is already closing (destructor called from 2 different places...)";
       return;
    }
-   assert(g_pplayer == this);
    m_closing = CS_CLOSED;
    PLOGI << "Closing player... [Player's VBS intepreter is #" << m_ptable->m_pcv->m_pScript << "]";
+
+   #if !defined(__STANDALONE__) && !defined(ENABLE_SDL_VIDEO)
+   DestroyWindow(m_playfieldHWnd);
+   #endif
 
     g_frameProfiler.LogWorstFrame();
 
@@ -1072,9 +1114,46 @@ void Player::OnClose()
    }
 #endif
 
-   // Destroy this player
-   delete this; // Win32xx call Window destroy for us from destructor, don't call it directly or it will crash due to dual destruction
    PLOGI << "Player closed.";
+
+   m_ptable->StopPlaying();
+   delete m_pBCTarget;
+   delete m_ptable;
+
+   //!! cleanup the whole mem management for balls, this is a mess!
+
+   // balls are added to the octree, but not the hit object vector
+   for (size_t i = 0; i < m_vball.size(); i++)
+   {
+      Ball *const pball = m_vball[i];
+      if (pball->m_pballex)
+      {
+         pball->m_pballex->m_pball = nullptr;
+         pball->m_pballex->Release();
+      }
+
+      delete pball->m_d.m_vpVolObjs;
+      delete pball;
+   }
+
+   //!! see above
+   //for (size_t i=0;i<m_vho_dynamic.size();i++)
+   //      delete m_vho_dynamic[i];
+   //m_vho_dynamic.clear();
+
+   m_vball.clear();
+
+#ifndef __STANDALONE__
+   if (m_progressDialog.IsWindow())
+      m_progressDialog.Destroy();
+#endif
+
+#if defined(_MSC_VER) && !defined(__STANDALONE__)
+   ::UnregisterClass(WIN32_WND_CLASSNAME, g_pvp->theInstance);
+   #ifdef ENABLE_SDL_VIDEO
+   SDL_UnregisterApp();
+   #endif
+#endif
 }
 
 void Player::InitFPS()
@@ -1111,30 +1190,64 @@ bool Player::ShowStats() const
    return mode == IF_FPS || mode == IF_PROFILING;
 }
 
-void Player::RecomputePauseState()
+void Player::SetPlayState(const bool isPlaying, const U32 delayBeforePauseMs)
 {
-   const bool oldPause = m_pause;
-   const bool newPause = !(m_gameWindowActive || m_debugWindowActive);// || m_userDebugPaused;
-
-   if (oldPause && newPause)
+   bool wasPlaying = IsPlaying();
+   if (isPlaying || delayBeforePauseMs == 0)
    {
-      m_LastKnownGoodCounter++; // So our catcher doesn't catch on the last value
-      m_noTimeCorrect = true;
+      m_pauseTimeTarget = 0;
+      bool willPlay = isPlaying && m_focused;
+      if (wasPlaying != willPlay)
+      {
+         ApplyPlayingState(willPlay);
+         m_playing = isPlaying;
+      }
    }
-
-   m_pause = newPause;
+   else if (wasPlaying)
+      m_pauseTimeTarget = m_time_msec + delayBeforePauseMs;
 }
 
-void Player::RecomputePseudoPauseState()
+void Player::OnFocusChanged(const bool isGameFocused)
 {
-   const bool oldPseudoPause = m_pseudoPause;
-   m_pseudoPause = m_userDebugPaused || m_debugWindowActive;
-   if (oldPseudoPause != m_pseudoPause)
+   bool wasPlaying = IsPlaying();
+   bool willPlay = m_playing && isGameFocused;
+   if (wasPlaying != willPlay)
    {
-      if (m_pseudoPause)
-         PauseMusic();
-      else
-         UnpauseMusic();
+      ApplyPlayingState(willPlay);
+      m_focused = isGameFocused;
+   }
+}
+
+void Player::ApplyPlayingState(const bool play)
+{
+   #ifndef __STANDALONE__
+   if(m_debuggerDialog.IsWindow())
+      m_debuggerDialog.SendMessage(RECOMPUTEBUTTONCHECK, 0, 0);
+   #endif
+   if (play)
+   {
+      m_LastKnownGoodCounter++; // Reset hang script detection
+      m_noTimeCorrect = true;   // Disable physics engine time correction on next physic update
+      UnpauseMusic();
+      m_ptable->FireVoidEvent(DISPID_GameEvents_UnPaused); // signal the script that the game is now running again
+   }
+   else
+   {
+      PauseMusic();
+      m_ptable->FireVoidEvent(DISPID_GameEvents_Paused); // signal the script that the game is now paused
+   }
+   UpdateCursorState();
+}
+
+void Player::UpdateCursorState() const
+{
+   if (m_drawCursor || !IsPlaying())
+   {
+      while (ShowCursor(TRUE) < 0); // FIXME on a system without a mouse, it looks like this may result in an infinite loop
+   }
+   else
+   {
+      while (ShowCursor(FALSE) >= 0);
    }
 }
 
@@ -1559,20 +1672,6 @@ string Player::GetPerfInfo()
 
 void Player::LockForegroundWindow(const bool enable)
 {
-    if (m_fullScreen || (m_wnd_width == m_screenwidth && m_wnd_height == m_screenheight)) // detect windowed fullscreen
-    {
-        if(enable)
-        {
-            while (ShowCursor(TRUE) < 0) ;
-            while (ShowCursor(FALSE) >= 0) ;
-        }
-        else
-        {
-            while (ShowCursor(FALSE) >= 0) ;
-            while (ShowCursor(TRUE) < 0) ;
-        }
-    }
-
 #ifdef _MSC_VER
 #if(_WIN32_WINNT >= 0x0500)
     if (m_fullScreen) // revert special tweaks of exclusive fullscreen app
@@ -1699,13 +1798,9 @@ void Player::OnIdle()
       }
 
       // Update physics. Do it continuously for lower latency between input <-> controler/physics (avoid catching up once per frame)
-      if (!m_pause)
-      {
-         // Trigger key events before processing physics, also allows to sync with VPM
-         m_pininput.ProcessKeys(/*sim_msec,*/ -(int)msec());
-         m_physics->UpdatePhysics();
-         PLOGI_IF(debugLog && m_physics->GetPerfNIterations() > 0) << "Input/Physics done (" << m_physics->GetPerfNIterations() << " iterations)";
-      }
+      m_pininput.ProcessKeys(/*sim_msec,*/ -(int)msec()); // Trigger key events before processing physics, also allows to sync with VPM
+      m_physics->UpdatePhysics();
+      PLOGI_IF(debugLog && m_physics->GetPerfNIterations() > 0) << "Input/Physics done (" << m_physics->GetPerfNIterations() << " iterations)";
    }
    else
    {
@@ -1718,11 +1813,10 @@ void Player::OnIdle()
       g_frameProfiler.NewFrame(m_time_msec);
 
       // In pause mode: input, physics, animation and audio are not processed but rendering is still performed. This allows to modify properties (transform, visibility,..) using the debugger and get direct feedback
-      if (!m_pause)
-         m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(m_startFrameTick / 1000)); // trigger key events mainly for VPM<->VP roundtrip
+      m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(m_startFrameTick / 1000)); // trigger key events mainly for VPM<->VP roundtrip
 
       // Physics/Timer updates, done at the last moment, especially to handle key input (VP<->VPM roundtrip) and animation triggers
-      if (!m_pause && m_minphyslooptime == 0) // (vsync) latency reduction code not active? -> Do Physics Updates here
+      if (m_minphyslooptime == 0) // (vsync) latency reduction code not active? -> Do Physics Updates here
          m_physics->UpdatePhysics();
 
       PrepareFrame();
@@ -1730,7 +1824,7 @@ void Player::OnIdle()
       SubmitFrame();
 
       // DJRobX's crazy latency-reduction code active? Insert some Physics updates before vsync'ing
-      if (!m_pause && m_minphyslooptime > 0)
+      if (m_minphyslooptime > 0)
       {
          m_physics->UpdatePhysics();
          m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(m_startFrameTick / 1000)); // trigger key events mainly for VPM<->VP rountrip
@@ -1778,7 +1872,7 @@ void Player::PrepareFrame()
    m_physics->OnPrepareFrame();
 
    // Update visually animated parts (e.g. primitives, reels, gates, lights, bumper-skirts, hittargets, etc)
-   if (!m_pause)
+   if (IsPlaying())
    {
       const float diff_time_msec = (float)(m_time_msec - m_last_frame_time_msec);
       m_last_frame_time_msec = m_time_msec;
@@ -1814,7 +1908,7 @@ void Player::PrepareFrame()
    
    m_renderer->PrepareFrame();
 
-   if (!m_pause && (m_videoSyncMode != VideoSyncMode::VSM_FRAME_PACING))
+   if (m_videoSyncMode != VideoSyncMode::VSM_FRAME_PACING)
       m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(m_startFrameTick / 1000)); // trigger key events mainly for VPM<->VP roundtrip
 
    // Check if we should turn animate the plunger light.
@@ -1866,34 +1960,21 @@ bool Player::FinishFrame()
    ApplyDeferredTimerChanges();
    FireTimers(m_time_msec);
 #else
-   if (!m_pause && (m_videoSyncMode != VideoSyncMode::VSM_FRAME_PACING))
+   if (m_videoSyncMode != VideoSyncMode::VSM_FRAME_PACING)
       m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(m_startFrameTick / 1000)); // trigger key events mainly for VPM<->VP rountrip
 #endif
 
-   // Update music stream
-   if (!m_pause && m_audio)
+   // Detect & fire end of music events
+   if (IsPlaying() && m_audio && !m_audio->MusicActive())
    {
-      if (!m_audio->MusicActive())
-      {
-         delete m_audio;
-         m_audio = nullptr;
-         m_ptable->FireVoidEvent(DISPID_GameEvents_MusicDone);
-      }
+      delete m_audio;
+      m_audio = nullptr;
+      m_ptable->FireVoidEvent(DISPID_GameEvents_MusicDone);
    }
 
    // Pause after performing a simulation step
-   #ifdef STEPPING
    if ((m_pauseTimeTarget > 0) && (m_pauseTimeTarget <= m_time_msec))
-   {
-      m_pauseTimeTarget = 0;
-      m_userDebugPaused = true;
-      RecomputePseudoPauseState();
-#ifndef __STANDALONE__
-      if(m_debuggerDialog.IsWindow())
-        m_debuggerDialog.SendMessage(RECOMPUTEBUTTONCHECK, 0, 0);
-#endif
-   }
-   #endif
+      SetPlayState(false);
 
    // Memory clean up for balls that may have been destroyed from scripts
    for (const Ball *const pball : m_vballDelete)
@@ -1944,7 +2025,7 @@ bool Player::FinishFrame()
    // Close player (moving back to editor or to system is handled after player has been closed)
    if (m_closing == CS_STOP_PLAY || m_closing == CS_CLOSE_APP)
    {
-      OnClose();
+      delete this;
       return true;
    }
 
@@ -1953,8 +2034,6 @@ bool Player::FinishFrame()
    {
       m_debugMode = true;
       m_showDebugger = false;
-      while(ShowCursor(FALSE) >= 0) ;
-      while(ShowCursor(TRUE) < 0) ;
 
 #ifndef __STANDALONE__
       if (!m_debuggerDialog.IsWindow())
@@ -1987,165 +2066,24 @@ bool Player::FinishFrame()
 
 void Player::PauseMusic()
 {
-   if (m_pauseRefCount == 0)
+   if (m_pauseMusicRefCount == 0)
    {
       if (m_audio)
          m_audio->MusicPause();
-
-      // signal the script that the game is now paused
-      m_ptable->FireVoidEvent(DISPID_GameEvents_Paused);
    }
-
-   m_pauseRefCount++;
+   m_pauseMusicRefCount++;
 }
 
 void Player::UnpauseMusic()
 {
-   m_pauseRefCount--;
-   if (m_pauseRefCount == 0)
+   m_pauseMusicRefCount--;
+   if (m_pauseMusicRefCount == 0)
    {
       if (m_audio)
          m_audio->MusicUnpause();
-
-      // signal the script that the game is now running again
-      m_ptable->FireVoidEvent(DISPID_GameEvents_UnPaused);
    }
-   else if (m_pauseRefCount < 0)
-      m_pauseRefCount = 0;
-}
-
-LRESULT Player::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-#ifndef __STANDALONE__
-
-   #ifndef ENABLE_SDL_VIDEO
-   if (ImGui_ImplWin32_WndProcHandler(m_playfieldHWnd, uMsg, wParam, lParam))
-      return true;
-   #endif
-
-    switch (uMsg)
-    {
-    case MM_MIXM_CONTROL_CHANGE:
-        mixer_get_volume();
-        break;
-
-    case WM_KEYDOWN:
-        m_drawCursor = false;
-        SetCursor(nullptr);
-        break;
-
-    case WM_MOUSEMOVE:
-        if (m_lastcursorx != LOWORD(lParam) || m_lastcursory != HIWORD(lParam))
-        {
-            m_drawCursor = true;
-            m_lastcursorx = LOWORD(lParam);
-            m_lastcursory = HIWORD(lParam);
-        }
-        break;
-
-#ifdef STEPPING
-#ifdef MOUSEPAUSE
-    case WM_LBUTTONDOWN:
-        if (m_pause)
-        {
-            m_step = true;
-        }
-        break;
-
-    case WM_RBUTTONDOWN:
-        if (!m_pause)
-        {
-            m_pause = true;
-
-            m_gameWindowActive = false;
-            RecomputePauseState();
-            RecomputePseudoPauseState();
-        }
-        else
-        {
-            m_pause = false;
-
-            m_gameWindowActive = true;
-            SetCursor(nullptr);
-            m_noTimeCorrect = true;
-        }
-        break;
-#endif
-#endif
-    
-
-    case WM_POINTERDOWN:
-    case WM_POINTERUP:
-    {
-#ifndef TEST_TOUCH_WITH_MOUSE
-        if (!GetPointerInfo)
-            GetPointerInfo = (pGPI)GetProcAddress(GetModuleHandle(TEXT("user32.dll")),
-                "GetPointerInfo");
-        if (GetPointerInfo)
-#endif
-        {
-            POINTER_INFO pointerInfo;
-#ifdef TEST_TOUCH_WITH_MOUSE
-            GetCursorPos(&pointerInfo.ptPixelLocation);
-#else
-            if (GetPointerInfo(GET_POINTERID_WPARAM(wParam), &pointerInfo))
-#endif
-            {
-                ScreenToClient(pointerInfo.ptPixelLocation);
-                for (unsigned int i = 0; i < MAX_TOUCHREGION; ++i)
-               if ((m_touchregion_pressed[i] != (uMsg == WM_POINTERDOWN))
-                  && Intersect(touchregion[i], m_wnd_width, m_wnd_height, pointerInfo.ptPixelLocation,
-                     m_ptable->mViewSetups[m_ptable->m_BG_current_set].GetRotation(m_renderer->m_pd3dPrimaryDevice->m_width, m_renderer->m_pd3dPrimaryDevice->m_height) != 0.f))
-                    {
-                        m_touchregion_pressed[i] = (uMsg == WM_POINTERDOWN);
-
-                        DIDEVICEOBJECTDATA didod;
-                        didod.dwOfs = m_rgKeys[touchkeymap[i]];
-                        didod.dwData = m_touchregion_pressed[i] ? 0x80 : 0;
-                        m_pininput.PushQueue(&didod, APP_TOUCH/*, curr_time_msec*/);
-                    }
-            }
-        }
-        break;
-    }
-    
-
-    case WM_ACTIVATE:
-        if (wParam != WA_INACTIVE)
-        {
-           SetCursor(nullptr);
-           m_gameWindowActive = true;
-           m_noTimeCorrect = true;
-           #ifdef STEPPING
-           m_pause = false;
-           #endif
-        }
-        else
-        {
-           m_gameWindowActive = false;
-           #ifdef STEPPING
-           m_pause = true;
-           #endif
-        }
-        RecomputePauseState();
-        break;
-
-    case WM_SETCURSOR:
-        if (LOWORD(lParam) == HTCLIENT && !m_drawCursor) // Inside client area and cursor deactivated ?
-        {
-            SetCursor(nullptr);
-        }
-        else
-        {
-            SetCursor(LoadCursor(nullptr, IDC_ARROW));
-        }
-        return TRUE;
-    }
-
-    return WndProcDefault(uMsg, wParam, lParam);
-#else
-    return 0L;
-#endif
+   else if (m_pauseMusicRefCount < 0)
+      m_pauseMusicRefCount = 0;
 }
 
 #ifdef PLAYBACK

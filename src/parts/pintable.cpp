@@ -692,7 +692,7 @@ STDMETHODIMP ScriptGlobalTable::get_GetPlayerHWnd(long *pVal)
    }
    else
    {
-      *pVal = (size_t)g_pplayer->GetHwnd();
+      *pVal = (size_t)g_pplayer->m_playfieldHWnd;
    }
 
    return S_OK;

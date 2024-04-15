@@ -251,20 +251,26 @@ struct TimerOnOff
 };
 
 
-class Player : public CWnd
+class Player
 {
 public:
    Player(PinTable *const editor_table, PinTable *const live_table, const int playMode);
    virtual ~Player();
 
-   void OnClose() override;
-   virtual LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
    void LockForegroundWindow(const bool enable);
 
    string GetPerfInfo();
 
-   void RecomputePauseState();
-   void RecomputePseudoPauseState();
+private:
+   bool m_playing = true;
+   bool m_focused = false;
+   void ApplyPlayingState(const bool play);
+public:
+   void SetPlayState(const bool isPlaying, const U32 delayBeforePauseMs = 0); // Allow to play/pause during UI interaction or to perform timed simulation steps (still needs the player window to be focused).
+   inline bool IsPlaying(const bool applyWndFocus = true) const { return applyWndFocus ? (m_playing && m_focused) : m_focused; };
+   void OnFocusChanged(const bool isGameFocused); // On focus lost, pause player and show mouse cursor
+   U32 m_pauseTimeTarget = 0;
+   bool m_step = false; // If set to true, the physics engine will do a single physic step and stop simulation (turning this flag to false)
 
    PinTable *const m_pEditorTable; // The untouched version of the table, as it is in the editor (The Player needs it to interact with the UI)
    PinTable *const m_ptable; // The played table, which can be modified by the script
@@ -407,13 +413,18 @@ public:
    EnumAssignKeys m_rgKeys[eCKeys]; // Player's key assignments
    bool m_supportsTouch = false; // Display is a touchscreen?
    bool m_touchregion_pressed[MAX_TOUCHREGION]; // status for each touch region to avoid multitouch double triggers (true = finger on, false = finger off)
+   void ShowMouseCursor(const bool show) { m_drawCursor = show; UpdateCursorState(); }
 
 private:
-   int m_lastcursorx = 0xfffffff, m_lastcursory = 0xfffffff; // used for the dumb task of seeing if the mouse has really moved when we get a WM_MOUSEMOVE message
+   bool m_drawCursor = false;
+   void UpdateCursorState() const;
 #pragma endregion
 
 
 #pragma region Audio
+private:
+   int m_pauseMusicRefCount = 0;
+
 public:
    void PauseMusic();
    void UnpauseMusic();
@@ -442,7 +453,6 @@ private:
    CloseState m_closing = CS_PLAYING;
 
 public:
-   bool m_userDebugPaused = false;
    bool m_debugWindowActive = false;
 #ifndef __STANDALONE__
    DebuggerDialog m_debuggerDialog;
@@ -473,9 +483,6 @@ public:
    int m_screenwidth, m_screenheight, m_refreshrate;
    bool m_fullScreen;
 
-   bool m_drawCursor = false;
-   bool m_gameWindowActive = false;
-
    Primitive *m_implicitPlayfieldMesh = nullptr;
 
    bool m_capExtDMD = false;
@@ -487,10 +494,6 @@ public:
 
    unsigned int m_overall_frames = 0; // amount of rendered frames since start
 
-private:
-   int m_pauseRefCount = 0;
-   bool m_pseudoPause = false;   // Nothing is moving, but we're still redrawing
-
 public:
    // all kinds of stats tracking, incl. FPS measurement
    int m_lastMaxChangeTime; // Used to update counters every seconds
@@ -499,13 +502,6 @@ public:
 
 #ifdef __STANDALONE__
    VP::WindowManager* m_pWindowManager;
-#endif
-
-#ifdef STEPPING
-public:
-   U32 m_pauseTimeTarget = 0;
-   volatile bool m_pause = false;
-   bool m_step = false;
 #endif
 
 #ifdef PLAYBACK

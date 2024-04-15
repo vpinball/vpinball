@@ -831,18 +831,14 @@ void PinInput::HandleSDLEvents(DIDEVICEOBJECTDATA* didod)
             g_pplayer->m_wnd_scale_x = static_cast<float>(g_pplayer->m_wnd_width) / static_cast<float>(e.window.data1);
             g_pplayer->m_wnd_scale_y = static_cast<float>(g_pplayer->m_wnd_height) / static_cast<float>(e.window.data2);
             break;
-         case SDL_WINDOWEVENT_FOCUS_GAINED: g_pplayer->m_gameWindowActive = true; break;
-         case SDL_WINDOWEVENT_FOCUS_LOST: g_pplayer->m_gameWindowActive = false; break;
+         case SDL_WINDOWEVENT_FOCUS_GAINED: g_pplayer->OnFocusChanged(true); break;
+         case SDL_WINDOWEVENT_FOCUS_LOST: g_pplayer->OnFocusChanged(false); break;
          case SDL_WINDOWEVENT_CLOSE: g_pvp->QuitPlayer(Player::CloseState::CS_STOP_PLAY); break;
          }
          break;
-      }
-   #endif
-
-   #ifdef ENABLE_SDL_INPUT
-      if (m_inputApi == 2) switch (e.type) {
-      case SDL_KEYUP:
       case SDL_KEYDOWN:
+         g_pplayer->ShowMouseCursor(false);
+      case SDL_KEYUP:
          if (e.key.repeat == 0) {
             const unsigned int dik = get_dik_from_sdlk(e.key.keysym.sym);
             if (dik != ~0u) {
@@ -853,17 +849,27 @@ void PinInput::HandleSDLEvents(DIDEVICEOBJECTDATA* didod)
                j++; 
             }
          }
+         break;
       case SDL_MOUSEMOTION:
-         if (g_pplayer->m_throwBalls || g_pplayer->m_ballControl)
          {
-            if (g_pplayer->m_ballControl && !g_pplayer->m_throwBalls && m_leftMouseButtonDown && !m_rightMouseButtonDown && !m_middleMouseButtonDown)
+            static Sint32 m_lastcursorx = 0xfffffff, m_lastcursory = 0xfffffff;
+            if (m_lastcursorx != e.motion.x || m_lastcursory != e.motion.y)
             {
-               didod[0].dwData = D_MOUSE_MOVED_LEFT_DOWN;
-               Sint32 x, y;
-               SdlScaleHidpi(e.motion.x, e.motion.y, &x, &y);
-               m_mouseX = x;
-               m_mouseY = y;
-               PushQueue(didod, APP_MOUSE);
+               m_lastcursorx = e.motion.x;
+               m_lastcursory = e.motion.y;
+               g_pplayer->ShowMouseCursor(true);
+            }
+            if (g_pplayer->m_throwBalls || g_pplayer->m_ballControl)
+            {
+               if (g_pplayer->m_ballControl && !g_pplayer->m_throwBalls && m_leftMouseButtonDown && !m_rightMouseButtonDown && !m_middleMouseButtonDown)
+               {
+                  didod[0].dwData = D_MOUSE_MOVED_LEFT_DOWN;
+                  Sint32 x, y;
+                  SdlScaleHidpi(e.motion.x, e.motion.y, &x, &y);
+                  m_mouseX = x;
+                  m_mouseY = y;
+                  PushQueue(didod, APP_MOUSE);
+               }
             }
          }
          break;
@@ -915,6 +921,11 @@ void PinInput::HandleSDLEvents(DIDEVICEOBJECTDATA* didod)
             }
          }
          break;
+      }
+   #endif
+
+   #ifdef ENABLE_SDL_INPUT
+      if (m_inputApi == 2) switch (e.type) {
       #if (defined(__APPLE__) && (defined(TARGET_OS_IOS) && TARGET_OS_IOS)) || defined(__ANDROID__)
       case SDL_FINGERDOWN:
       case SDL_FINGERUP: {
@@ -2098,7 +2109,7 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
          else if (input->dwOfs == (DWORD)g_pplayer->m_rgKeys[ePause])
          {
             if ((input->dwData & 0x80) != 0)
-               g_pplayer->m_liveUI->PausePlayer(!g_pplayer->m_debugWindowActive);
+               g_pplayer->SetPlayState(!g_pplayer->IsPlaying());
          }
          else if (input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eTweak])
          {

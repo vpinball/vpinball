@@ -989,12 +989,10 @@ void LiveUI::OpenMainSplash()
 {
    if (!m_ShowUI && !m_ShowSplashModal)
    {
-      while (ShowCursor(FALSE)>=0) ;
-      while (ShowCursor(TRUE)<0) ;
       m_ShowUI = true;
       m_ShowSplashModal = true;
       m_OpenUITime = msec();
-      PausePlayer(true);
+      m_player->SetPlayState(false);
    }
 }
 
@@ -1002,10 +1000,8 @@ void LiveUI::OpenLiveUI()
 {
    if (!m_ShowUI && !m_ShowSplashModal)
    {
-      while (ShowCursor(FALSE) >= 0) ;
-      while (ShowCursor(TRUE) < 0) ;
       m_OpenUITime = msec();
-      PausePlayer(true);
+      m_player->SetPlayState(false);
       m_ShowUI = true;
       m_ShowSplashModal = false;
       m_useEditorCam = true;
@@ -1967,13 +1963,6 @@ void LiveUI::UpdateTweakModeUI()
    ImGui::End();
 }
 
-void LiveUI::PausePlayer(bool pause)
-{
-   m_player->m_debugWindowActive = pause;
-   m_player->RecomputePauseState();
-   m_player->RecomputePseudoPauseState();
-}
-
 void LiveUI::HideUI()
 { 
    CloseTweakMode();
@@ -1983,9 +1972,7 @@ void LiveUI::HideUI()
    m_ShowUI = false;
    m_flyMode = false;
    m_renderer->DisableStaticPrePass(false);
-   PausePlayer(false);
-   while (ShowCursor(TRUE)<0) ;
-   while (ShowCursor(FALSE)>=0) ;
+   m_player->SetPlayState(true);
 }
 
 void LiveUI::UpdateMainUI()
@@ -2026,7 +2013,7 @@ void LiveUI::UpdateMainUI()
             if (ImGui::MenuItem("Renderer Inspection"))
                m_RendererInspection = true;
             if (ImGui::MenuItem(m_player->m_debugWindowActive ? "Play" : "Pause"))
-               PausePlayer(!m_player->m_debugWindowActive);
+               m_player->SetPlayState(!m_player->IsPlaying());
             ImGui::EndMenu();
          }
          if (ImGui::BeginMenu("Preferences"))
@@ -2050,10 +2037,13 @@ void LiveUI::UpdateMainUI()
       ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0);
       ImGui::Begin("TOOLBAR", nullptr, window_flags);
       ImGui::PopStyleVar();
-      if (ImGui::Button(m_player->m_debugWindowActive ? ICON_FK_PLAY : ICON_FK_PAUSE))
-      {
-         PausePlayer(!m_player->m_debugWindowActive);
-      }
+      if (ImGui::Button(m_player->IsPlaying() ? ICON_FK_PAUSE : ICON_FK_PLAY))
+         m_player->SetPlayState(!m_player->IsPlaying());
+      ImGui::SameLine();
+      ImGui::BeginDisabled(m_player->IsPlaying());
+      if (ImGui::Button(ICON_FK_STEP_FORWARD))
+         m_player->m_step = true;
+      ImGui::EndDisabled();
       ImGui::SameLine();
       if (ImGui::Button(ICON_FK_STOP))
       {
@@ -3656,10 +3646,11 @@ void LiveUI::UpdateMainSplashModal()
             SDL_SetWindowPosition(m_player->m_playfieldSdlWnd, x, y);
             
             #else
-            auto rect = m_player->GetWindowRect();
+            RECT rect;
+            GetWindowRect(m_player->m_playfieldHWnd, &rect);
             x = rect.left + (int)drag.x;
             y = rect.top + (int)drag.y;
-            m_player->SetWindowPos(nullptr, x, y, m_player->m_wnd_width, m_player->m_wnd_height, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
+            SetWindowPos(m_player->m_playfieldHWnd, nullptr, x, y, m_player->m_wnd_width, m_player->m_wnd_height, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
 
             #endif
             g_pvp->m_settings.SaveValue(m_player->m_stereo3D == STEREO_VR ? Settings::PlayerVR : Settings::Player, "WindowPosX"s, x);

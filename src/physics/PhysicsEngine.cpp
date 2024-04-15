@@ -531,9 +531,8 @@ void PhysicsEngine::UpdatePhysics()
       g_pplayer->m_noTimeCorrect = false;
    }
 
-#ifdef STEPPING
 #ifndef EVENPHYSICSTIME
-   if (g_pplayer->m_debugWindowActive || g_pplayer->m_userDebugPaused)
+   if (!g_pplayer->IsPlaying())
    {
       // Shift whole game forward in time
       m_StartTime_usec       += initial_time_usec - m_curPhysicsFrameTime;
@@ -548,13 +547,12 @@ void PhysicsEngine::UpdatePhysics()
          m_curPhysicsFrameTime = initial_time_usec; // 0 time frame
    }
 #endif
-#endif
 
 #ifdef EVENPHYSICSTIME
-   if (!m_pause || m_step)
+   if (g_pplayer->IsPlaying() || g_pplayer->m_step)
    {
       initial_time_usec = m_curPhysicsFrameTime - 3547811060 + 3547825450;
-      m_step = false;
+      g_pplayer->m_step = false;
    }
    else
       initial_time_usec = m_curPhysicsFrameTime;
