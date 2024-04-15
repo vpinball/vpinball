@@ -388,7 +388,6 @@ Renderer::~Renderer()
    delete m_ballImage;
    delete m_decalImage;
    delete m_envRadianceTexture;
-   delete m_pd3dPrimaryDevice;
    delete m_backGlass;
    delete m_ballMeshBuffer;
    #ifdef DEBUG_BALL_SPIN
@@ -400,6 +399,7 @@ Renderer::~Renderer()
    delete m_tonemapLUT;
    delete m_staticPrepassRT;
    delete m_limiter;
+   delete m_pd3dPrimaryDevice;
 }
 
 void Renderer::TransformVertices(const Vertex3D_NoTex2 * const __restrict rgv, const WORD * const __restrict rgi, const int count, Vertex2D * const __restrict rgvout) const

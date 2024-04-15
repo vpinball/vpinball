@@ -1361,7 +1361,7 @@ RenderDevice::~RenderDevice()
    delete m_SMAAsearchTexture;
 
 #if defined(ENABLE_BGFX)
-   while (bgfx::RenderFrame::NoContext != bgfx::renderFrame() ) {};
+   //while (bgfx::RenderFrame::NoContext != bgfx::renderFrame() ) {};
    bgfx::shutdown();
 
 #elif defined(ENABLE_OPENGL)
