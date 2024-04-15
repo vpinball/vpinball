@@ -67,6 +67,9 @@ Sampler::Sampler(RenderDevice* rd, BaseTexture* const surf, const bool force_lin
    if (m_rd->m_activeViewId < 0)
       m_rd->NextView();
    // FIXME BGFX a clean GPU mipmap generation with Kaiser filter would be better than doing a blit to trigger render target mipmap generation, to be refactored when fixing dynamic texture
+   // For a simple and readable reference, see (paramters: alpha=4, stretch=1, m_width=filter half width):
+   //   https://github.com/castano/nvidia-texture-tools/blob/aeddd65f81d36d8cb7b169b469ef25156666077e/src/nvimage/Filter.cpp#L257
+   //   https://github.com/castano/nvidia-texture-tools/blob/aeddd65f81d36d8cb7b169b469ef25156666077e/src/nvimage/Filter.cpp#L64
    bgfx::blit(m_rd->m_activeViewId, m_texture, 0, 0, m_mips_texture);
    // Force RT resolution, in turns causing mipmap generation
    m_rd->NextView();

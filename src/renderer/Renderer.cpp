@@ -1294,6 +1294,7 @@ void Renderer::RenderStaticPrepass()
    int n_iter = IsUsingStaticPrepass() ? (STATIC_PRERENDER_ITERATIONS - 1) : 0;
    for (int iter = n_iter; iter >= 0; --iter) // just do one iteration if in dynamic camera/light/material tweaking mode
    {
+      g_pplayer->m_progressDialog.SetProgress("Prerendering Static Parts..."s, 70 + (((30 * (n_iter + 1 - iter)) / (n_iter + 1))));
       m_pd3dPrimaryDevice->m_curDrawnTriangles = 0;
 
       float u1 = xyLDBNbnot[iter*2  ];  //      (float)iter*(float)(1.0                                /STATIC_PRERENDER_ITERATIONS);
@@ -1350,10 +1351,6 @@ void Renderer::RenderStaticPrepass()
 
       // Finish the frame.
       m_pd3dPrimaryDevice->FlushRenderFrame();
-      #ifndef __STANDALONE__
-      if (g_pplayer->m_pEditorTable->m_progressDialog.IsWindow())
-         g_pplayer->m_pEditorTable->m_progressDialog.SetProgress(70 + (((30 * (n_iter + 1 - iter)) / (n_iter + 1))));
-      #endif
    }
 
    if (accumulationSurface)

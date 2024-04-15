@@ -59,7 +59,7 @@ PhysicsEngine::PhysicsEngine(PinTable *const table) : m_nudgeFilterX("x"), m_nud
             CHAR wzDst[256];
             sprintf_s(wzDst, sizeof(wzDst), "Initializing Object-Physics %s...", bstr2);
             delete [] bstr2;
-            g_pplayer->m_pEditorTable->m_progressDialog.SetName(wzDst);
+            g_pplayer->m_progressDialog.SetProgress(wzDst);
          }
 #endif
          const size_t currentsize = m_vho.size();

@@ -197,25 +197,26 @@ STDMETHODIMP ScriptGlobalTable::PlayMusic(BSTR str, float volume)
          g_pplayer->m_audio = nullptr;
       }
    }
-
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::EndMusic()
 {
-   delete g_pplayer->m_audio;
-   g_pplayer->m_audio = nullptr;
+	if (g_pplayer && g_pplayer->m_audio)
+	{
+      delete g_pplayer->m_audio;
+      g_pplayer->m_audio = nullptr;
+   }
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::put_MusicVolume(float volume)
 {
-	if (g_pplayer && g_pplayer->m_PlayMusic)
+	if (g_pplayer && g_pplayer->m_PlayMusic && g_pplayer->m_audio)
 	{
 		const float MusicVolume = max(min((float)g_pplayer->m_MusicVolume*m_pt->m_TableMusicVolume*volume, 100.0f), 0.0f) * (float)(1.0/100.0);
 		g_pplayer->m_audio->MusicVolume(MusicVolume);
 	}
-
 	return S_OK;
 }
 
@@ -2264,9 +2265,6 @@ void PinTable::SetDirtyDraw()
 
 void PinTable::HandleLoadFailure()
 {
-#ifndef __STANDALONE__
-   m_progressDialog.Destroy();
-#endif
    g_pvp->m_table_played_via_SelectTableOnStart = false;
 
 #ifdef __STANDALONE__
@@ -2284,10 +2282,6 @@ void PinTable::Play(const int playMode)
       return; // Can't play twice
 
    PLOGI << "Starting Play mode [table: " << m_szTableName << ", play mode: " << playMode << ']';
-   m_vpinball->ShowSubDialog(m_progressDialog, !g_pvp->m_open_minimized);
-
-   m_progressDialog.SetProgress(1);
-   m_progressDialog.SetName("Creating Live Table..."s);
 
    PinTable *src = this;
    CComObject<PinTable> *live_table;
@@ -11215,17 +11209,3 @@ BOOL PinTableMDI::OnEraseBkgnd(CDC& dc)
 }
 
 #pragma endregion
-
-ProgressDialog::ProgressDialog() : CDialog(IDD_PROGRESS)
-{
-}
-
-BOOL ProgressDialog::OnInitDialog()
-{
-#ifndef __STANDALONE__
-   AttachItem(IDC_PROGRESS2, m_progressBar);
-   AttachItem(IDC_STATUSNAME, m_progressName);
-#endif
-
-   return TRUE;
-}

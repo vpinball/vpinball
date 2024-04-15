@@ -71,41 +71,6 @@ private:
    VPinball *m_vpinball;
 };
 
-class ProgressDialog : public CDialog
-{
-public:
-   ProgressDialog();
-   void SetProgress(const int value) {
-#ifndef __STANDALONE__
-      m_progressBar.SetPos(value);
-#else
-      if (m_progress != value) {
-         PLOGI.printf("%s %d%%", m_szName.c_str(), value);
-      }
-      m_progress = value;
-#endif
-   }
-
-   void SetName(const string &text) { 
-#ifndef __STANDALONE__
-      m_progressName.SetWindowText(text.c_str());
-#else
-      m_szName = text;
-#endif
-   }
-
-protected:
-   BOOL OnInitDialog() final;
-
-private:
-#ifdef __STANDALONE__
-   string m_szName;
-   int m_progress;
-#endif
-   CProgressBar m_progressBar;
-   CStatic m_progressName;
-};
-
 class PinTable : public CWnd,
                  public CComObjectRootEx<CComSingleThreadModel>,
                  public IDispatchImpl<ITable, &IID_ITable, &LIBID_VPinballLib>,
@@ -822,7 +787,6 @@ public:
 
    HWND m_hMaterialManager;
    SearchSelectDialog m_searchSelectDlg;
-   ProgressDialog m_progressDialog;
 
    volatile std::atomic<bool> m_savingActive;
 

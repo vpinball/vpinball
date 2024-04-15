@@ -200,6 +200,47 @@ enum ProfilingMode
    PF_ENABLED,
 };
 
+////////////////////////////////////////////////////////////////////////////////
+// Startup progress dialog
+
+class ProgressDialog : public CDialog
+{
+public:
+   ProgressDialog() : CDialog(IDD_PROGRESS) { }
+
+   void SetProgress(const string &text, const int value = -1) {
+      #ifndef __STANDALONE__
+      if (IsWindow()) {
+         m_progressName.SetWindowText(text.c_str());
+         if (value != -1)
+            m_progressBar.SetPos(value);
+      }
+      #else
+      if (value != -1 && m_progress != value) {
+         PLOGI.printf("%s %d%%", text.c_str(), value);
+         m_progress = value;
+      }
+      #endif
+   }
+
+protected:
+   BOOL OnInitDialog() final
+   {
+      #ifndef __STANDALONE__
+      AttachItem(IDC_PROGRESS2, m_progressBar);
+      AttachItem(IDC_STATUSNAME, m_progressName);
+      #endif
+      return TRUE;
+   }
+
+private:
+   #ifdef __STANDALONE__
+   int m_progress = -1;
+   #else
+   CProgressBar m_progressBar;
+   CStatic m_progressName;
+   #endif
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -225,20 +266,18 @@ public:
    void RecomputePauseState();
    void RecomputePseudoPauseState();
 
-private:
-   const int m_playMode;
-
-public:
    PinTable *const m_pEditorTable; // The untouched version of the table, as it is in the editor (The Player needs it to interact with the UI)
    PinTable *const m_ptable; // The played table, which can be modified by the script
+
+   ProgressDialog m_progressDialog;
 
    U32 m_time_msec; // current physics time
    U32 m_last_frame_time_msec; // used for non-physics controlled animations to update once per-frame only, aligned with m_time_msec
 
-   Ball *m_pactiveball; // ball the script user can get with ActiveBall
-   Ball *m_pactiveballDebug; // ball the debugger will use as Activeball when firing events
-   Ball *m_pactiveballBC; // ball that the ball control UI will use
-   Vertex3Ds *m_pBCTarget; // if non-null, the target location for the ball to roll towards
+   Ball *m_pactiveball = nullptr; // ball the script user can get with ActiveBall
+   Ball *m_pactiveballDebug = nullptr; // ball the debugger will use as Activeball when firing events
+   Ball *m_pactiveballBC = nullptr; // ball that the ball control UI will use
+   Vertex3Ds *m_pBCTarget = nullptr; // if non-null, the target location for the ball to roll towards
 
    void FireSyncController();
 
@@ -263,8 +302,8 @@ public:
 public:
    void MechPlungerIn(const int z);
 
-   U32 m_movedPlunger; // has plunger moved, must have moved at least three times
-   U32 m_LastPlungerHit; // The last time the plunger was in contact (at least the vicinity) of the ball.
+   U32 m_movedPlunger = 0; // has plunger moved, must have moved at least three times
+   U32 m_LastPlungerHit = 0; // The last time the plunger was in contact (at least the vicinity) of the ball.
    float m_curMechPlungerPos;
 
    void MechPlungerUpdate();
@@ -369,7 +408,7 @@ public:
    bool m_touchregion_pressed[MAX_TOUCHREGION]; // status for each touch region to avoid multitouch double triggers (true = finger on, false = finger off)
 
 private:
-   int m_lastcursorx, m_lastcursory; // used for the dumb task of seeing if the mouse has really moved when we get a WM_MOUSEMOVE message
+   int m_lastcursorx = 0xfffffff, m_lastcursory = 0xfffffff; // used for the dumb task of seeing if the mouse has really moved when we get a WM_MOUSEMOVE message
 #pragma endregion
 
 
@@ -382,7 +421,7 @@ public:
    bool m_PlaySound;
    int m_MusicVolume;
    int m_SoundVolume;
-   AudioPlayer *m_audio;
+   AudioPlayer *m_audio = nullptr;
 #pragma endregion
 
    vector<CLSID*> m_controlclsidsafe; // ActiveX control types which have already been okayed as being safe
@@ -402,8 +441,8 @@ private:
    CloseState m_closing = CS_PLAYING;
 
 public:
-   bool m_userDebugPaused;
-   bool m_debugWindowActive;
+   bool m_userDebugPaused = false;
+   bool m_debugWindowActive = false;
 #ifndef __STANDALONE__
    DebuggerDialog m_debuggerDialog;
 #endif
@@ -411,45 +450,45 @@ public:
    float m_wnd_scale_x;
    float m_wnd_scale_y;
 #endif
-   bool m_debugMode;
-   HWND m_hwndDebugOutput;
-   bool m_showDebugger;
+   bool m_debugMode = false;
+   HWND m_hwndDebugOutput = nullptr;
+   bool m_showDebugger = false;
 
-   bool m_throwBalls;
-   bool m_ballControl;
+   bool m_throwBalls = false;
+   bool m_ballControl = false;
    int  m_debugBallSize;
    float m_debugBallMass;
-   bool m_debugBalls;                   // Draw balls in the foreground via 'O' key
+   bool m_debugBalls = false;           // Draw balls in the foreground via 'O' key
 
-   bool m_noTimeCorrect;                // Used so the frame after debugging does not do normal time correction
+   bool m_noTimeCorrect = false;        // Used so the frame after debugging does not do normal time correction
 
    // Used to detect script hangs (modal is used by script to tell VPX that it is in a modal state, so disabling watch dog)
    bool m_detectScriptHang;
-   int m_LastKnownGoodCounter;
-   int m_ModalRefCount;
+   int m_LastKnownGoodCounter = 0;
+   int m_ModalRefCount = 0;
 
    int m_wnd_width, m_wnd_height; // Window height (requested size before creation, effective size after) which is not directly linked to the render size
 
    int m_screenwidth, m_screenheight, m_refreshrate;
    bool m_fullScreen;
 
-   bool m_drawCursor;
-   bool m_gameWindowActive;
+   bool m_drawCursor = false;
+   bool m_gameWindowActive = false;
 
    Primitive *m_implicitPlayfieldMesh = nullptr;
 
-   bool m_capExtDMD;
+   bool m_capExtDMD = false;
    int2 m_dmd;
-   BaseTexture* m_texdmd;
+   BaseTexture* m_texdmd = nullptr;
 
-   bool m_capPUP;
+   bool m_capPUP = false;
    BaseTexture *m_texPUP = nullptr;
 
-   unsigned int m_overall_frames; // amount of rendered frames since start
+   unsigned int m_overall_frames = 0; // amount of rendered frames since start
 
 private:
-   int m_pauseRefCount;
-   bool m_pseudoPause;   // Nothing is moving, but we're still redrawing
+   int m_pauseRefCount = 0;
+   bool m_pseudoPause = false;   // Nothing is moving, but we're still redrawing
 
 public:
    // all kinds of stats tracking, incl. FPS measurement
@@ -463,9 +502,9 @@ public:
 
 #ifdef STEPPING
 public:
-   U32 m_pauseTimeTarget;
-   volatile bool m_pause;
-   bool m_step;
+   U32 m_pauseTimeTarget = 0;
+   volatile bool m_pause = false;
+   bool m_step = false;
 #endif
 
 #ifdef PLAYBACK
@@ -473,7 +512,7 @@ public:
    float ParseLog(LARGE_INTEGER *pli1, LARGE_INTEGER *pli2);
 
 private:
-   bool m_playback;
-   FILE *m_fplaylog;
+   bool m_playback = false;
+   FILE *m_fplaylog = nullptr;
 #endif
 };

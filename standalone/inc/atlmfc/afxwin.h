@@ -35,8 +35,8 @@ public:
    virtual BOOL OnCommand(WPARAM wparam, LPARAM lparam) { return false; };
    virtual LRESULT OnNotify(WPARAM wparam, LPARAM lparam) { return 0; };
    virtual void Destroy() { };
-
-   BOOL Create(CWnd* pParentWnd) { return true; }
+   inline BOOL ShowWindow(int showCmd /*= SW_SHOWNORMAL*/) const { return true; }
+   BOOL Create(HWND pParentWnd) { return true; }
 
    int MessageBox(LPCTSTR lpText, LPCTSTR lpCaption, UINT uType) 
    {
