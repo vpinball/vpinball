@@ -3488,7 +3488,7 @@ void LiveUI::UpdateMainSplashModal()
       // Key shortcut: click on the button, or press escape key (react on key released, otherwise, it would immediately reopen the UI,...)
       int keyShortcut = 0;
       if (enableKeyboardShortcuts && (ImGui::IsKeyReleased(ImGuiKey_Escape) || ((ImGui::IsKeyReleased(dikToImGuiKeys[m_player->m_rgKeys[eEscape]]) && !m_disable_esc))))
-         keyShortcut = m_ShowUI ? 3 : m_tweakMode ? 2 : 1;
+         keyShortcut = m_ShowUI ? 1 : m_tweakMode ? 2 : 1;
 
       ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
       if (ImGui::Button("Resume Game", size) || (keyShortcut == 1))
