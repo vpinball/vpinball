@@ -256,7 +256,7 @@ Renderer::Renderer(PinTable* const table, const bool fullScreen, const int width
    m_viewPort.MaxZ = 1.0f;
 
    try {
-      m_pd3dPrimaryDevice = new RenderDevice(g_pplayer->m_playfieldHWnd, renderWidth, renderHeight, fullScreen, colordepth, 
+      m_pd3dPrimaryDevice = new RenderDevice(g_pplayer->m_playfieldWnd, renderWidth, renderHeight, fullScreen, colordepth, 
          m_AAfactor, stereo3D, useNvidiaApi, disableDWM, m_BWrendering, nMSAASamples, refreshrate, syncMode, adapter);
    }
    catch (...) {
@@ -1262,7 +1262,7 @@ void Renderer::RenderStaticPrepass()
       return;
 
    #if defined(ENABLE_OPENGL) && defined(__STANDALONE__)
-   SDL_GL_MakeCurrent(g_pplayer->m_playfieldSdlWnd, g_pplayer->m_renderer->m_pd3dPrimaryDevice->m_sdl_context);
+   SDL_GL_MakeCurrent(g_pplayer->m_playfieldWnd->GetCore(), g_pplayer->m_renderer->m_pd3dPrimaryDevice->m_sdl_context);
    #endif
 
    m_isStaticPrepassDirty = false;

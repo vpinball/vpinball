@@ -59,7 +59,11 @@ public:
    void LoadSettings(const Settings& settings);
    ~PinInput();
 
-   void Init(const HWND hwnd);
+   #ifdef _WIN32
+   void Init(HWND focusWnd);
+   #else
+   void Init();
+   #endif
    void UnInit();
 
    // implicitly sync'd with visuals as each keystroke is applied to the sim
@@ -82,18 +86,6 @@ public:
    int GetNextKey();
 
    void GetInputDeviceData(/*const U32 curr_time_msec*/);
-
-#ifdef _WIN32
-#ifdef USE_DINPUT8
-   LPDIRECTINPUT8       m_pDI;
-   LPDIRECTINPUTDEVICE8 m_pJoystick[PININ_JOYMXCNT];
-#else
-   LPDIRECTINPUT        m_pDI;
-   LPDIRECTINPUTDEVICE  m_pJoystick[PININ_JOYMXCNT];
-#endif
-#endif
-
-   HWND m_hwnd;
 
    uint64_t m_leftkey_down_usec;
    unsigned int m_leftkey_down_frame;
@@ -130,17 +122,25 @@ private:
    void HandleSDLEvents(DIDEVICEOBJECTDATA *didod);
 
 #ifdef _WIN32
-#ifdef USE_DINPUT8
-#ifdef USE_DINPUT_FOR_KEYBOARD
-   LPDIRECTINPUTDEVICE8 m_pKeyboard;
-#endif
-   LPDIRECTINPUTDEVICE8 m_pMouse;
-#else
-#ifdef USE_DINPUT_FOR_KEYBOARD
-   LPDIRECTINPUTDEVICE m_pKeyboard;
-#endif
-   LPDIRECTINPUTDEVICE m_pMouse;
-#endif
+   HWND m_focusHWnd = nullptr;
+   STICKYKEYS m_startupStickyKeys;
+   static BOOL CALLBACK EnumObjectsCallbackDI(const DIDEVICEOBJECTINSTANCE *pdidoi, VOID *pContext);
+   static BOOL CALLBACK EnumJoystickCallbackDI(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef);
+   #ifdef USE_DINPUT8
+      LPDIRECTINPUT8 m_pDI;
+      LPDIRECTINPUTDEVICE8 m_pJoystick[PININ_JOYMXCNT];
+      LPDIRECTINPUTDEVICE8 m_pMouse;
+      #ifdef USE_DINPUT_FOR_KEYBOARD
+         LPDIRECTINPUTDEVICE8 m_pKeyboard;
+      #endif
+   #else
+      LPDIRECTINPUT m_pDI;
+      LPDIRECTINPUTDEVICE m_pJoystick[PININ_JOYMXCNT];
+      LPDIRECTINPUTDEVICE m_pMouse;
+      #ifdef USE_DINPUT_FOR_KEYBOARD
+         LPDIRECTINPUTDEVICE m_pKeyboard;
+      #endif
+   #endif
 #endif
 
    int m_mouseX;
@@ -165,10 +165,6 @@ private:
    bool m_tilt_updown;
 
    DIDEVICEOBJECTDATA m_diq[MAX_KEYQUEUE_SIZE]; // circular queue of direct input events
-
-#ifdef _WIN32
-   STICKYKEYS m_startupStickyKeys;
-#endif
 
    int m_head; // head==tail means empty, (head+1)%MAX_KEYQUEUE_SIZE == tail means full
 
@@ -204,17 +200,19 @@ private:
    DWORD m_rumbleOffTime;
    bool m_rumbleRunning;
 #endif
+
 #ifdef ENABLE_SDL_INPUT
    static void SdlScaleHidpi(Sint32 x, Sint32 y, Sint32 *ox, Sint32 *oy);
-#ifdef ENABLE_SDL_GAMECONTROLLER
-   SDL_GameController* m_pSDLGameController;
-   void RefreshSDLGameController();
-#else
-   SDL_Joystick* m_pSDLJoystick;
-   SDL_Haptic* m_pSDLRumbleDevice;
-   void RefreshSDLJoystick();
+   #ifdef ENABLE_SDL_GAMECONTROLLER
+      SDL_GameController* m_pSDLGameController;
+      void RefreshSDLGameController();
+   #else
+      SDL_Joystick* m_pSDLJoystick;
+      SDL_Haptic* m_pSDLRumbleDevice;
+      void RefreshSDLJoystick();
+   #endif
 #endif
-#endif
+
 #ifdef ENABLE_IGAMECONTROLLER
 #endif
 };

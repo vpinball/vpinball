@@ -371,6 +371,7 @@ class SCNotification { };
 #include "physics/kdtree.h"
 
 #include "renderer/trace.h"
+#include "renderer/Window.h"
 
 inline void ShowError(const char* const sz)
 {
@@ -392,11 +393,10 @@ inline void ShowError(const string& sz)
 
 __forceinline float getBGxmult()
 {
-   return (float)g_pplayer->m_wnd_width * (float)(1.0 / EDITOR_BG_WIDTH) * g_pplayer->m_renderer->m_AAfactor;
+   return (float)g_pplayer->m_playfieldWnd->GetWidth() * (float)(1.0 / EDITOR_BG_WIDTH) * g_pplayer->m_renderer->m_AAfactor;
 }
 
 __forceinline float getBGymult()
 {
-   //return getBGxmult() / (((float)g_pplayer->m_screenwidth / (float)g_pplayer->m_screenheight) / (float)((double)EDITOR_BG_WIDTH / EDITOR_BG_HEIGHT));
-   return getBGxmult() / (((float)g_pplayer->m_wnd_width / (float)g_pplayer->m_wnd_height) / (float)((double)EDITOR_BG_WIDTH / EDITOR_BG_HEIGHT));
+   return getBGxmult() / (((float)g_pplayer->m_playfieldWnd->GetWidth() / (float)g_pplayer->m_playfieldWnd->GetHeight()) / (float)((double)EDITOR_BG_WIDTH / EDITOR_BG_HEIGHT));
 }

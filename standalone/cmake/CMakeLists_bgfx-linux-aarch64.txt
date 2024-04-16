@@ -242,6 +242,8 @@ add_executable(vpinball
    src/renderer/ViewSetup.h
    src/renderer/VRDevice.cpp
    src/renderer/VRDevice.h
+   src/renderer/Window.cpp
+   src/renderer/Window.h
 
    src/ui/codeview.cpp
    src/ui/codeview.h

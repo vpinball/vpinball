@@ -7,10 +7,6 @@
   #include "imgui/imgui_impl_win32.h"
 #endif
 
-#ifdef __STANDALONE__
-#include <SDL2/SDL_image.h>
-#endif
-
 #ifndef __STANDALONE__
 #include "BAM/BAMView.h"
 #endif
@@ -89,18 +85,17 @@ extern "C" JNIEXPORT void JNICALL Java_org_vpinball_app_VPXViewModel_webserver(J
 
 
 // leave as-is as e.g. VPM relies on this
-#define WIN32_WND_CLASSNAME _T("VPPlayer")
+#define WIN32_PLAYER_WND_CLASSNAME _T("VPPlayer")
 #define WIN32_WND_TITLE _T("Visual Pinball Player")
 
-#ifndef __STANDALONE__
-// Playfield window proc for Win32
+#if !defined(ENABLE_SDL_VIDEO) // Win32 Windowing
 LRESULT CALLBACK PlayerWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-   if (g_pplayer == nullptr || g_pplayer->m_playfieldHWnd != hwnd)
+   if (g_pplayer == nullptr || g_pplayer->m_playfieldWnd == nullptr || g_pplayer->m_playfieldWnd->GetCore() != hwnd)
       return DefWindowProc(hwnd, uMsg, wParam, lParam);
 
    #ifndef ENABLE_SDL_VIDEO
-   if (ImGui_ImplWin32_WndProcHandler(g_pplayer->m_playfieldHWnd, uMsg, wParam, lParam))
+   if (ImGui_ImplWin32_WndProcHandler(hwnd, uMsg, wParam, lParam))
       return true;
    #endif
 
@@ -154,7 +149,7 @@ LRESULT CALLBACK PlayerWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
             ScreenToClient(hwnd, &pointerInfo.ptPixelLocation);
             for (unsigned int i = 0; i < MAX_TOUCHREGION; ++i)
                if ((g_pplayer->m_touchregion_pressed[i] != (uMsg == WM_POINTERDOWN))
-                  && Intersect(touchregion[i], g_pplayer->m_wnd_width, g_pplayer->m_wnd_height, pointerInfo.ptPixelLocation,
+                  && Intersect(touchregion[i], g_pplayer->m_playfieldWnd->GetWidth(), g_pplayer->m_playfieldWnd->GetHeight(), pointerInfo.ptPixelLocation,
                      g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].GetRotation(
                         g_pplayer->m_renderer->m_pd3dPrimaryDevice->m_width, g_pplayer->m_renderer->m_pd3dPrimaryDevice->m_height)
                         != 0.f))
@@ -270,25 +265,12 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
 
    PLOGI << "Creating main window"; // For profiling
 
-   int display = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Display"s, -1);
-   if (display >= getNumberOfDisplays() || g_pvp->m_primaryDisplay)
-      display = -1; // force primary monitor
-   vector<DisplayConfig> displays;
-   getDisplayList(displays);
-   int adapter = 0;
-   for (vector<DisplayConfig>::iterator dispConf = displays.begin(); dispConf != displays.end(); ++dispConf)
-      if (display == dispConf->display)
-         adapter = dispConf->adapter;
-   int displayX, displayY, displayWidth, displayHeight;
-   getDisplaySetupByID(display, displayX, displayY, displayWidth, displayHeight);
-   int wnd_x = displayX, wnd_y = displayY;
-   m_screenwidth = displayWidth;
-   m_screenheight = displayHeight;
+   int wnd_width, wnd_height;
    if (m_stereo3D == STEREO_VR)
    {
       m_fullScreen = false;
-      m_wnd_width = m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "PreviewWidth"s, 640);
-      m_wnd_height = m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "PreviewHeight"s, 480);
+      wnd_width = m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "PreviewWidth"s, 640);
+      wnd_height = m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "PreviewHeight"s, 480);
    }
    else
    {
@@ -298,67 +280,12 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
          m_fullScreen = false;
       else if (g_pvp->m_disEnableTrueFullscreen == 1)
          m_fullScreen = true;
-      m_wnd_width = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Width"s, m_fullScreen ? -1 : DEFAULT_PLAYER_WIDTH);
-      m_wnd_height = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Height"s, m_wnd_width * 9 / 16);
+      wnd_width = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Width"s, m_fullScreen ? -1 : DEFAULT_PLAYER_WIDTH);
+      wnd_height = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Height"s, wnd_width * 9 / 16);
    }
-   if (m_wnd_width <= 0)
-   {
-      m_wnd_width = m_screenwidth;
-      m_wnd_height = m_screenheight;
-   }
-
-   if (m_fullScreen)
-   {
-      #ifdef ENABLE_SDL_VIDEO
-      wnd_x = displayX; // For SDL, the display is selected through the window position
-      wnd_y = displayY;
-      #else
-      wnd_x = 0;
-      wnd_y = 0;
-      #endif
-      m_screenwidth = m_wnd_width;
-      m_screenheight = m_wnd_height;
-      m_refreshrate = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "RefreshRate"s, 0);
-   }
-   else
-   {
-      m_refreshrate = 0; // The default
-
-      // constrain window to screen and center it
-      if (m_wnd_width > m_screenwidth)
-      {
-         m_wnd_height = (m_wnd_height * m_screenwidth) / m_wnd_width;
-         m_wnd_width = m_screenwidth;
-      }
-      if (m_wnd_height > m_screenheight)
-      {
-         m_wnd_width = (m_wnd_width * m_screenheight) / m_wnd_height;
-         m_wnd_height = m_screenheight;
-      }
-      wnd_x += (m_screenwidth - m_wnd_width) / 2;
-      wnd_y += (m_screenheight - m_wnd_height) / 2;
-
-      #ifdef _MSC_VER
-         // is this a non-fullscreen window? -> get previously saved window position
-         if ((m_wnd_height != m_screenheight) || (m_wnd_width != m_screenwidth))
-         {
-            const int xn = g_pvp->m_settings.LoadValueWithDefault(m_stereo3D == STEREO_VR ? Settings::PlayerVR : Settings::Player, "WindowPosX"s, wnd_x); //!! does this handle multi-display correctly like this?
-            const int yn = g_pvp->m_settings.LoadValueWithDefault(m_stereo3D == STEREO_VR ? Settings::PlayerVR : Settings::Player, "WindowPosY"s, wnd_y);
-            RECT r;
-            r.left = xn;
-            r.top = yn;
-            r.right = xn + m_wnd_width;
-            r.bottom = yn + m_wnd_height;
-            if (MonitorFromRect(&r, MONITOR_DEFAULTTONULL) != nullptr) // window is visible somewhere, so use the coords from the registry
-            {
-               wnd_x = xn;
-               wnd_y = yn;
-            }
-         }
-      #else
-         wnd_x = wnd_y = display < 0 ? SDL_WINDOWPOS_CENTERED : SDL_WINDOWPOS_CENTERED_DISPLAY(display);
-      #endif
-   }
+   const int display = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Display"s, -1);
+   int refreshrate = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "RefreshRate"s, 0);
+   const int colordepth = m_stereo3D == STEREO_VR ? 32 : m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "ColorDepth"s, 32);
 
 #if defined(_MSC_VER) && !defined(__STANDALONE__)
    WNDCLASS wc;
@@ -371,102 +298,24 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    #else
    wc.lpfnWndProc = ::DefWindowProcA;
    #endif
-   wc.lpszClassName = WIN32_WND_CLASSNAME;
+   wc.lpszClassName = WIN32_PLAYER_WND_CLASSNAME;
    wc.hIcon = LoadIcon(g_pvp->theInstance, MAKEINTRESOURCE(IDI_TABLE));
    wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
    ::RegisterClass(&wc);
    #ifdef ENABLE_SDL_VIDEO
-   SDL_RegisterApp(wc.lpszClassName, 0, g_pvp->theInstance);
+   SDL_RegisterApp(WIN32_PLAYER_WND_CLASSNAME, 0, g_pvp->theInstance);
    #endif
 #endif
 
-#ifdef ENABLE_SDL_VIDEO
-   // Create the window.
-   Uint32 wnd_flags = 0;
-   #if defined(ENABLE_OPENGL)
-      wnd_flags |= SDL_WINDOW_OPENGL;
-   #elif defined(ENABLE_BGFX)
-      // FIXME implement SDL_WINDOW_OPENGL / SDL_WINDOW_VULKAN / SDL_WINDOW_METAL for BGFX builds
-      //wnd_flags |= SDL_WINDOW_OPENGL;
-      //wnd_flags |= SDL_WINDOW_VULKAN;
-      //wnd_flags |= SDL_WINDOW_METAL;
-   #endif
-   #if defined(_MSC_VER) // Win32 (we use _MSC_VER since standalone also defines WIN32 for non Win32 builds)
-      wnd_flags |= SDL_WINDOW_BORDERLESS | SDL_WINDOW_HIDDEN | SDL_WINDOW_ALLOW_HIGHDPI;
-   #elif defined(__STANDALONE__)
-      if (m_ptable->m_settings.LoadValueWithDefault(Settings::Standalone, "HighDPI"s, true))
-         wnd_flags |= SDL_WINDOW_ALLOW_HIGHDPI;
-   #endif
-   if (m_fullScreen)
-      wnd_flags |= SDL_WINDOW_FULLSCREEN;
-   else if (m_wnd_width == displayWidth && m_wnd_height == displayHeight)
-      wnd_flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
-      
-   // Prevent from being top most, to allow DMD, B2S,... to be over the VPX window
-   #ifndef __STANDALONE__
-      SDL_SetHint(SDL_HINT_ALLOW_TOPMOST, "0");
-   #endif
-
-   // Prevent full screen window from minimizing when re-arranging external windows
-   #ifdef __STANDALONE__
-      SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
-   #endif
-
-   m_playfieldSdlWnd = SDL_CreateWindow(WIN32_WND_TITLE, wnd_x, wnd_y, m_wnd_width, m_wnd_height, wnd_flags);
-   
-   SDL_DisplayMode mode;
-   SDL_GetWindowDisplayMode(m_playfieldSdlWnd, &mode);
-   if (m_fullScreen && m_refreshrate != 0 && mode.refresh_rate != m_refreshrate) // Adjust refresh rate if needed
-   {
-      Uint32 format = mode.format;
-      bool found = false;
-      for (int index = 0; index < SDL_GetNumDisplayModes(adapter); index++)
-      {
-         SDL_GetDisplayMode(adapter, index, &mode);
-         if (mode.w == m_wnd_width && mode.h == m_wnd_height && (m_refreshrate == 0 || mode.refresh_rate == m_refreshrate) && mode.format == format)
-         {
-            SDL_SetWindowDisplayMode(m_playfieldSdlWnd, &mode);
-            found = true;
-            break;
-         }
-      }
-      if (!found) {
-         PLOGE << "Failed to find a display mode matching the requested refresh rate [" << m_refreshrate << ']';
-      }
-   }
-   PLOGI << "SDL display mode: " << mode.w << 'x' << mode.h << ' ' << mode.refresh_rate << "Hz " << SDL_GetPixelFormatName(mode.format);
-
-   #ifdef __STANDALONE__
-      const string iconPath = g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "vpinball.png";
-      SDL_Surface* pIcon = IMG_Load(iconPath.c_str());
-      if (pIcon) {
-         SDL_SetWindowIcon(m_playfieldSdlWnd, pIcon);
-         SDL_FreeSurface(pIcon);
-      }
-      else {
-         PLOGE << "Failed to load window icon: " << SDL_GetError();
-      }
-   #endif
-
-   #ifndef __STANDALONE__
-   SDL_SysWMinfo wmInfo;
-   SDL_VERSION(&wmInfo.version);
-   SDL_GetWindowWMInfo(m_playfieldSdlWnd, &wmInfo);
-   m_playfieldHWnd = wmInfo.info.win.window;
-   #endif
-
-#else // Default WIN32 (no SDL)
-   m_playfieldHWnd = ::CreateWindowEx(0, wc.lpszClassName, WIN32_WND_TITLE, WS_POPUP, wnd_x, wnd_y, m_wnd_width, m_wnd_height, NULL, NULL, g_pvp->theInstance, NULL);
-
-#endif
+   m_playfieldWnd = new VPX::Window(WIN32_WND_TITLE, "Playfield", display, wnd_width, wnd_height, m_fullScreen, refreshrate, colordepth);
 
    // Touch screen support
 
-#ifndef _MSC_VER // standalone has its own touch screen support through SDL
+#if defined(ENABLE_SDL_VIDEO) // SDL windowing
    #if (defined(__APPLE__) && TARGET_OS_IOS) || defined(__ANDROID__)
        m_supportsTouch = true;
    #endif
-#else
+#else // Win32 Windowing
     // Check for Touch support
     m_supportsTouch = ((GetSystemMetrics(SM_DIGITIZER) & NID_READY) != 0) && ((GetSystemMetrics(SM_DIGITIZER) & NID_MULTI_INPUT) != 0)
         && (GetSystemMetrics(SM_MAXIMUMTOUCHES) != 0);
@@ -475,13 +324,13 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
        if (!UnregisterTouchWindow)
            UnregisterTouchWindow = (pUnregisterTouchWindow)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "UnregisterTouchWindow");
        if (UnregisterTouchWindow)
-           UnregisterTouchWindow(m_playfieldHWnd);
+           UnregisterTouchWindow(m_playfieldWnd->GetCore());
    #else // would be useful if handling WM_TOUCH instead of WM_POINTERDOWN
        // Disable palm detection
        if (!RegisterTouchWindow)
            RegisterTouchWindow = (pRegisterTouchWindow)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "RegisterTouchWindow");
        if (RegisterTouchWindow)
-           RegisterTouchWindow(m_playfieldHWnd, 0);
+           RegisterTouchWindow(m_playfieldWnd->GetCore(), 0);
 
        if (!IsTouchWindow)
            IsTouchWindow = (pIsTouchWindow)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "IsTouchWindow");
@@ -504,12 +353,12 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
            if (atomID)
            {
                // Try to disable press and hold gesture 
-               SetProp(m_playfieldHwnd, tabletAtom, (HANDLE)dwHwndTabletProperty);
+               SetProp(m_playfieldWnd->GetCore(), tabletAtom, (HANDLE)dwHwndTabletProperty);
            }
            // Gesture configuration
            GESTURECONFIG gc[] = { 0, 0, GC_ALLGESTURES };
            UINT uiGcs = 1;
-           const BOOL bResult = SetGestureConfig(m_playfieldHwnd, 0, uiGcs, gc, sizeof(GESTURECONFIG));
+           const BOOL bResult = SetGestureConfig(m_playfieldWnd->GetCore(), 0, uiGcs, gc, sizeof(GESTURECONFIG));
        }
    #endif
 
@@ -520,23 +369,27 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
     {
         constexpr BOOL enabled = FALSE;
 
-        SetWindowFeedbackSetting(m_playfieldHWnd, FEEDBACK_TOUCH_CONTACTVISUALIZATION, 0, sizeof(enabled), &enabled);
-        SetWindowFeedbackSetting(m_playfieldHWnd, FEEDBACK_TOUCH_TAP, 0, sizeof(enabled), &enabled);
-        SetWindowFeedbackSetting(m_playfieldHWnd, FEEDBACK_TOUCH_DOUBLETAP, 0, sizeof(enabled), &enabled);
-        SetWindowFeedbackSetting(m_playfieldHWnd, FEEDBACK_TOUCH_PRESSANDHOLD, 0, sizeof(enabled), &enabled);
-        SetWindowFeedbackSetting(m_playfieldHWnd, FEEDBACK_TOUCH_RIGHTTAP, 0, sizeof(enabled), &enabled);
+        SetWindowFeedbackSetting(m_playfieldWnd->GetCore(), FEEDBACK_TOUCH_CONTACTVISUALIZATION, 0, sizeof(enabled), &enabled);
+        SetWindowFeedbackSetting(m_playfieldWnd->GetCore(), FEEDBACK_TOUCH_TAP, 0, sizeof(enabled), &enabled);
+        SetWindowFeedbackSetting(m_playfieldWnd->GetCore(), FEEDBACK_TOUCH_DOUBLETAP, 0, sizeof(enabled), &enabled);
+        SetWindowFeedbackSetting(m_playfieldWnd->GetCore(), FEEDBACK_TOUCH_PRESSANDHOLD, 0, sizeof(enabled), &enabled);
+        SetWindowFeedbackSetting(m_playfieldWnd->GetCore(), FEEDBACK_TOUCH_RIGHTTAP, 0, sizeof(enabled), &enabled);
 
-        SetWindowFeedbackSetting(m_playfieldHWnd, FEEDBACK_PEN_BARRELVISUALIZATION, 0, sizeof(enabled), &enabled);
-        SetWindowFeedbackSetting(m_playfieldHWnd, FEEDBACK_PEN_TAP, 0, sizeof(enabled), &enabled);
-        SetWindowFeedbackSetting(m_playfieldHWnd, FEEDBACK_PEN_DOUBLETAP, 0, sizeof(enabled), &enabled);
-        SetWindowFeedbackSetting(m_playfieldHWnd, FEEDBACK_PEN_PRESSANDHOLD, 0, sizeof(enabled), &enabled);
-        SetWindowFeedbackSetting(m_playfieldHWnd, FEEDBACK_PEN_RIGHTTAP, 0, sizeof(enabled), &enabled);
+        SetWindowFeedbackSetting(m_playfieldWnd->GetCore(), FEEDBACK_PEN_BARRELVISUALIZATION, 0, sizeof(enabled), &enabled);
+        SetWindowFeedbackSetting(m_playfieldWnd->GetCore(), FEEDBACK_PEN_TAP, 0, sizeof(enabled), &enabled);
+        SetWindowFeedbackSetting(m_playfieldWnd->GetCore(), FEEDBACK_PEN_DOUBLETAP, 0, sizeof(enabled), &enabled);
+        SetWindowFeedbackSetting(m_playfieldWnd->GetCore(), FEEDBACK_PEN_PRESSANDHOLD, 0, sizeof(enabled), &enabled);
+        SetWindowFeedbackSetting(m_playfieldWnd->GetCore(), FEEDBACK_PEN_RIGHTTAP, 0, sizeof(enabled), &enabled);
 
-        SetWindowFeedbackSetting(m_playfieldHWnd, FEEDBACK_GESTURE_PRESSANDTAP, 0, sizeof(enabled), &enabled);
+        SetWindowFeedbackSetting(m_playfieldWnd->GetCore(), FEEDBACK_GESTURE_PRESSANDTAP, 0, sizeof(enabled), &enabled);
     }
 #endif
 
-   mixer_init(m_playfieldHWnd);
+   #ifdef ENABLE_SDL_VIDEO // SDL Windowing
+   mixer_init(nullptr); // FIXME
+   #else // Win32 Windowing
+   mixer_init(m_playfieldWnd->GetCore());
+   #endif
    hid_init();
 
    // General player initialization
@@ -571,8 +424,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    // width and height may be modified during initialization (for example for VR, they are adapted to the headset resolution)
    try
    {
-      const int colordepth = m_stereo3D == STEREO_VR ? 32 : m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "ColorDepth"s, 32);
-      m_renderer = new Renderer(m_ptable, m_fullScreen, m_wnd_width, m_wnd_height, colordepth, m_refreshrate, m_videoSyncMode, m_stereo3D);
+      m_renderer = new Renderer(m_ptable, m_fullScreen, wnd_width, wnd_height, colordepth, refreshrate, m_videoSyncMode, m_stereo3D);
    }
    catch (HRESULT hr)
    {
@@ -582,33 +434,39 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
       throw hr;
    }
 
-   #ifdef ENABLE_SDL_VIDEO
-   SDL_GL_GetDrawableSize(m_playfieldSdlWnd, &m_wnd_width, &m_wnd_height); // Size in pixels
+   #if defined(ENABLE_SDL_VIDEO) && defined(ENABLE_OPENGL)
+   SDL_GL_GetDrawableSize(m_playfieldWnd->GetCore(), &wnd_width, &wnd_height); // Size in pixels
    int realWindowWidth, realWindowHeight;
-   SDL_GetWindowSize(g_pplayer->m_playfieldSdlWnd, &realWindowWidth, &realWindowHeight); // Size in screen coordinates (taking in account HiDPI)
-   m_wnd_scale_x = static_cast<float>(m_wnd_width) / realWindowWidth;
-   m_wnd_scale_y = static_cast<float>(m_wnd_height) / realWindowHeight;
-   PLOGI << "SDL drawable size: " << m_wnd_width << 'x' << m_wnd_height;
+   SDL_GetWindowSize(m_playfieldWnd->GetCore(), &realWindowWidth, &realWindowHeight); // Size in screen coordinates (taking in account HiDPI)
+   m_wnd_scale_x = static_cast<float>(wnd_width) / realWindowWidth;
+   m_wnd_scale_y = static_cast<float>(wnd_height) / realWindowHeight;
+   PLOGI << "SDL drawable size: " << wnd_width << 'x' << wnd_height;
    #endif
 
    m_renderer->DisableStaticPrePass(playMode != 0);
    m_renderer->m_pd3dPrimaryDevice->m_vsyncCount = 1;
-   m_maxFramerate = (m_videoSyncMode != VideoSyncMode::VSM_NONE && m_maxFramerate == 0) ? m_refreshrate : min(m_maxFramerate, m_refreshrate);
-   PLOGI << "Synchronization mode: " << m_videoSyncMode << " with maximum FPS: " << m_maxFramerate << ", display FPS: " << m_refreshrate;
+   m_maxFramerate = (m_videoSyncMode != VideoSyncMode::VSM_NONE && m_maxFramerate == 0) ? refreshrate : min(m_maxFramerate, refreshrate);
+   PLOGI << "Synchronization mode: " << m_videoSyncMode << " with maximum FPS: " << m_maxFramerate << ", display FPS: " << refreshrate;
 
    // Set the output frame buffer size to the size of the window output
-   m_renderer->m_pd3dPrimaryDevice->GetOutputBackBuffer()->SetSize(m_wnd_width, m_wnd_height);
-
-   #if defined(_MSC_VER) && !defined(ENABLE_SDL_VIDEO)
-   // FIXME why do we need this? the window creation is already supposed to place the window correctly
-   if (m_fullScreen)
-      SetWindowPos(m_playfieldHWnd, nullptr, 0, 0, m_wnd_width, m_wnd_height, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE);
-   #endif
+   m_renderer->m_pd3dPrimaryDevice->GetOutputBackBuffer()->SetSize(wnd_width, wnd_height);
 
    PLOGI << "Initializing inputs & implicit objects"; // For profiling
 
    m_pininput.LoadSettings(m_ptable->m_settings);
-   m_pininput.Init(m_playfieldHWnd);
+   #ifdef _WIN32
+      #ifdef ENABLE_SDL_VIDEO // SDL Windowing
+      SDL_SysWMinfo wmInfo;
+      SDL_VERSION(&wmInfo.version);
+      SDL_GetWindowWMInfo(m_playfieldWnd->GetCore(), &wmInfo);
+      HWND hwnd = wmInfo.info.win.window;
+      #else // Win32 Windowing
+      HWND hwnd = m_playfieldWnd->GetCore();
+      #endif
+      m_pininput.Init(hwnd);
+   #else
+      m_pininput.Init();
+   #endif
 
 #ifndef __STANDALONE__
    //
@@ -890,14 +748,8 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    m_pWindowManager->Startup();
 #endif
 
-#if defined(ENABLE_SDL_VIDEO)
-   SDL_ShowWindow(m_playfieldSdlWnd);
-#else
-   // Show the window (even without preview, we need to create a window).
-   ShowWindow(m_playfieldHWnd, SW_SHOW);
-   SetForegroundWindow(m_playfieldHWnd);
-   SetFocus(m_playfieldHWnd);
-#endif
+   // Show the window (for VR, even without preview, we need to create a window).
+   m_playfieldWnd->ShowAndFocus();
 
 #ifndef __STANDALONE__
    // Disable editor (Note that now that the played table use a copy, we could allow editing while playing but problem may arise with shared parts like images and mesh data)
@@ -948,11 +800,7 @@ Player::~Player()
    m_closing = CS_CLOSED;
    PLOGI << "Closing player... [Player's VBS intepreter is #" << m_ptable->m_pcv->m_pScript << "]";
 
-   #if defined(ENABLE_SDL_VIDEO)
-      SDL_DestroyWindow(m_playfieldSdlWnd);
-   #else
-      DestroyWindow(m_playfieldHWnd);
-   #endif
+   delete m_playfieldWnd;
 
     g_frameProfiler.LogWorstFrame();
 
@@ -1158,7 +1006,7 @@ Player::~Player()
    m_renderer = nullptr;
 
 #if defined(_MSC_VER) && !defined(__STANDALONE__)
-   ::UnregisterClass(WIN32_WND_CLASSNAME, g_pvp->theInstance);
+   ::UnregisterClass(WIN32_PLAYER_WND_CLASSNAME, g_pvp->theInstance);
    #ifdef ENABLE_SDL_VIDEO
    SDL_UnregisterApp();
    #endif
@@ -1771,10 +1619,10 @@ void Player::OnIdle()
          }
 
          // If the user asked to sync on a lower frame rate than the refresh rate, then wait for it
-         if (m_maxFramerate != m_refreshrate)
+         if (m_maxFramerate != m_playfieldWnd->GetRefreshRate())
          {
             const U64 now = usec();
-            const int refreshLength = (int)(1000000ul / m_refreshrate);
+            const int refreshLength = (int)(1000000ul / m_playfieldWnd->GetRefreshRate());
             const int minimumFrameLength = 1000000ull / m_maxFramerate;
             const int maximumFrameLength = 5 * refreshLength;
             const int targetFrameLength = clamp(refreshLength - 2000, min(minimumFrameLength, maximumFrameLength), maximumFrameLength);
@@ -1853,7 +1701,7 @@ void Player::OnIdle()
 
       // Adjust framerate if requested by user (i.e. not using a synchronization mode that will lead to blocking calls aligned to the display refresh rate)
       if (m_maxFramerate != 0 // User has requested a target FPS
-      && (m_videoSyncMode == VideoSyncMode::VSM_NONE || m_maxFramerate != m_refreshrate)) // The synchronization is not already performed by the VSYNC
+      && (m_videoSyncMode == VideoSyncMode::VSM_NONE || m_maxFramerate != m_playfieldWnd->GetRefreshRate())) // The synchronization is not already performed by the VSYNC
       {
          const int timeForFrame = (int)(usec() - m_startFrameTick);
          const int targetTime = 1000000 / m_maxFramerate;
@@ -2047,7 +1895,15 @@ bool Player::FinishFrame()
 #ifndef __STANDALONE__
       if (!m_debuggerDialog.IsWindow())
       {
-         m_debuggerDialog.Create(m_playfieldHWnd);
+         #ifdef ENABLE_SDL_VIDEO // SDL Windowing
+         SDL_SysWMinfo wmInfo;
+         SDL_VERSION(&wmInfo.version);
+         SDL_GetWindowWMInfo(m_playfieldWnd->GetCore(), &wmInfo);
+         HWND hwnd = wmInfo.info.win.window;
+         #else // Win32 Windowing
+         HWND hwnd = m_playfieldWnd->GetCore();
+         #endif
+         m_debuggerDialog.Create(hwnd);
          m_debuggerDialog.ShowWindow();
       }
       else

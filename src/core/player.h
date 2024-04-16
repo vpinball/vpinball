@@ -2,6 +2,7 @@
 
 #include "renderer/typedefs3D.h"
 #include "renderer/Renderer.h"
+#include "renderer/Window.h"
 #include "physics/PhysicsEngine.h"
 #include "ui/Debugger.h"
 #include "ui/LiveUI.h"
@@ -390,14 +391,11 @@ public:
 
 #pragma region Rendering
 public:
+   VPX::Window *m_playfieldWnd = nullptr;
    Renderer *m_renderer = nullptr;
    VRDevice *m_vrDevice = nullptr;
    StereoMode m_stereo3D = STEREO_OFF;
    bool m_headTracking = false;
-   HWND m_playfieldHWnd = nullptr;
-#ifdef ENABLE_SDL_VIDEO
-   SDL_Window  *m_playfieldSdlWnd = nullptr;
-   #endif
    bool m_scaleFX_DMD = false;
 
 private:
@@ -478,9 +476,6 @@ public:
    int m_LastKnownGoodCounter = 0;
    int m_ModalRefCount = 0;
 
-   int m_wnd_width, m_wnd_height; // Window height (requested size before creation, effective size after) which is not directly linked to the render size
-
-   int m_screenwidth, m_screenheight, m_refreshrate;
    bool m_fullScreen;
 
    Primitive *m_implicitPlayfieldMesh = nullptr;

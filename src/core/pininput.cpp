@@ -2,6 +2,7 @@
 #include "renderer/VRDevice.h"
 
 #ifdef ENABLE_SDL_VIDEO
+#include <SDL2/SDL_syswm.h>
 #include "imgui/imgui_impl_sdl2.h"
 #endif
 
@@ -321,7 +322,7 @@ void PinInput::RefreshSDLJoystick()
 //		that are found to exist, and scales axes min/max values.
 //-----------------------------------------------------------------------------
 #ifdef _WIN32
-BOOL CALLBACK EnumObjectsCallbackDI(const DIDEVICEOBJECTINSTANCE* pdidoi,
+BOOL CALLBACK PinInput::EnumObjectsCallbackDI(const DIDEVICEOBJECTINSTANCE* pdidoi,
    VOID* pContext)
 {
    const PinInput * const ppinput = (PinInput *)pContext;
@@ -383,7 +384,7 @@ BOOL CALLBACK EnumObjectsCallbackDI(const DIDEVICEOBJECTINSTANCE* pdidoi,
 
 
 // Callback for enumerating joysticks (gamepads)
-BOOL CALLBACK EnumJoystickCallbackDI(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef)
+BOOL CALLBACK PinInput::EnumJoystickCallbackDI(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef)
 {
    DIPROPSTRING dstr;
    dstr.diph.dwSize = sizeof(DIPROPSTRING);
@@ -424,7 +425,7 @@ BOOL CALLBACK EnumJoystickCallbackDI(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef)
    hr = ppinput->m_pJoystick[ppinput->m_num_joy]->SetDataFormat(&c_dfDIJoystick);
 
    // joystick input foreground or background focus
-   hr = ppinput->m_pJoystick[ppinput->m_num_joy]->SetCooperativeLevel(ppinput->m_hwnd, DISCL_NONEXCLUSIVE | DISCL_BACKGROUND);
+   hr = ppinput->m_pJoystick[ppinput->m_num_joy]->SetCooperativeLevel(ppinput->m_focusHWnd, DISCL_NONEXCLUSIVE | DISCL_BACKGROUND);
 
    DIPROPDWORD dipdw;
    dipdw.diph.dwSize = sizeof(DIPROPDWORD);
@@ -485,157 +486,157 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
 {
    DIDEVICEOBJECTDATA didod[INPUT_BUFFER_SIZE]; // Receives buffered data 
 
-#ifdef USE_DINPUT_FOR_KEYBOARD
-   // keyboard
-#ifdef USE_DINPUT8
-   const LPDIRECTINPUTDEVICE8 pkyb = m_pKeyboard;
-#else
-   const LPDIRECTINPUTDEVICE pkyb = m_pKeyboard;
-#endif
-   if (pkyb)
-   {
-      HRESULT hr = pkyb->Acquire();				// try to acquire keyboard input
-      if (hr == S_OK || hr == S_FALSE)
+   #if defined(_WIN32) && defined(USE_DINPUT_FOR_KEYBOARD)
+      // keyboard
+      #ifdef USE_DINPUT8
+         const LPDIRECTINPUTDEVICE8 pkyb = m_pKeyboard;
+      #else
+         const LPDIRECTINPUTDEVICE pkyb = m_pKeyboard;
+      #endif
+      if (pkyb)
       {
-         DWORD dwElements = INPUT_BUFFER_SIZE;
-         hr = pkyb->GetDeviceData(sizeof(DIDEVICEOBJECTDATA), didod, &dwElements, 0);
-
-         if (hr == S_OK || hr == DI_BUFFEROVERFLOW)
+         HRESULT hr = pkyb->Acquire();				// try to acquire keyboard input
+         if (hr == S_OK || hr == S_FALSE)
          {
-            if (m_hwnd == GetForegroundWindow())
-               for (DWORD i = 0; i < dwElements; i++)
-                  PushQueue(&didod[i], APP_KEYBOARD/*, curr_time_msec*/);
-         }
-      }
-   }
-#else
-   // cache to avoid double key triggers
-   static bool oldKeyStates[eCKeys] = { false };
+            DWORD dwElements = INPUT_BUFFER_SIZE;
+            hr = pkyb->GetDeviceData(sizeof(DIDEVICEOBJECTDATA), didod, &dwElements, 0);
 
-#ifdef _WIN32
-   unsigned int i2 = 0;
-   for (unsigned int i = 0; i < eCKeys; ++i)
-   {
-      const unsigned int rgk = (unsigned int)g_pplayer->m_rgKeys[i];
-      const unsigned int vk = get_vk(rgk);
-      if (vk == ~0u)
-         continue;
-
-      const SHORT keyState = GetAsyncKeyState(vk);
-      const bool keyDown = !!((1 << 16) & keyState);
-
-      if (oldKeyStates[i] == keyDown)
-         continue;
-      oldKeyStates[i] = keyDown;
-
-      didod[i2].dwOfs = rgk;
-      didod[i2].dwData = keyDown ? 0x80 : 0;
-      //didod[i2].dwTimeStamp = curr_time_msec;
-      didod[i2].dwSequence = APP_KEYBOARD;
-      PushQueue(&didod[i2], APP_KEYBOARD/*, curr_time_msec*/);
-      ++i2;
-   }
-#endif
-#endif
-
-#ifdef _WIN32
-   // mouse
-   if (m_pMouse && m_enableMouseInPlayer)
-   {
-      HRESULT hr = m_pMouse->Acquire();	// try to acquire mouse input
-      if (hr == S_OK || hr == S_FALSE)
-      {
-         DIMOUSESTATE2 mouseState;
-         hr = m_pMouse->GetDeviceState(sizeof(DIMOUSESTATE2), &mouseState);
-
-         if ((hr == S_OK || hr == DI_BUFFEROVERFLOW) && (m_hwnd == GetForegroundWindow()))
-         {
-            if (g_pplayer->m_throwBalls || g_pplayer->m_ballControl) // debug ball throw functionality
+            if (hr == S_OK || hr == DI_BUFFEROVERFLOW)
             {
-               if ((mouseState.rgbButtons[0] & 0x80) && !m_leftMouseButtonDown && !m_rightMouseButtonDown && !m_middleMouseButtonDown)
-               {
-                  POINT curPos;
-                  GetCursorPos(&curPos);
-                  m_mouseX = curPos.x;
-                  m_mouseY = curPos.y;
-                  m_leftMouseButtonDown = true;
-               }
-               if (!(mouseState.rgbButtons[0] & 0x80) && m_leftMouseButtonDown && !m_rightMouseButtonDown && !m_middleMouseButtonDown)
-               {
-                  POINT curPos;
-                  GetCursorPos(&curPos);
-                  m_mouseDX = curPos.x - m_mouseX;
-                  m_mouseDY = curPos.y - m_mouseY;
-                  didod[0].dwData = D_MOUSE_DRAGGED_LEFT;
-                  PushQueue(didod, APP_MOUSE);
-                  m_leftMouseButtonDown = false;
-               }
-               if ((mouseState.rgbButtons[1] & 0x80) && !m_rightMouseButtonDown && !m_leftMouseButtonDown && !m_middleMouseButtonDown)
-               {
-                  POINT curPos;
-                  GetCursorPos(&curPos);
-                  m_mouseX = curPos.x;
-                  m_mouseY = curPos.y;
-                  m_rightMouseButtonDown = true;
-               }
-               if (!(mouseState.rgbButtons[1] & 0x80) && !m_leftMouseButtonDown && m_rightMouseButtonDown && !m_middleMouseButtonDown)
-               {
-                  POINT curPos;
-                  GetCursorPos(&curPos);
-                  m_mouseDX = curPos.x - m_mouseX;
-                  m_mouseDY = curPos.y - m_mouseY;
-                  didod[0].dwData = D_MOUSE_DRAGGED_RIGHT;
-                  PushQueue(didod, APP_MOUSE);
-                  m_rightMouseButtonDown = false;
-               }
-               if ((mouseState.rgbButtons[2] & 0x80) && !m_rightMouseButtonDown && !m_leftMouseButtonDown && !m_middleMouseButtonDown)
-               {
-                  POINT curPos;
-                  GetCursorPos(&curPos);
-                  m_mouseX = curPos.x;
-                  m_mouseY = curPos.y;
-                  m_middleMouseButtonDown = true;
-               }
-               if (!(mouseState.rgbButtons[2] & 0x80) && !m_rightMouseButtonDown && !m_leftMouseButtonDown && m_middleMouseButtonDown)
-               {
-                  POINT curPos;
-                  GetCursorPos(&curPos);
-                  m_mouseDX = curPos.x - m_mouseX;
-                  m_mouseDY = curPos.y - m_mouseY;
-                  didod[0].dwData = D_MOUSE_DRAGGED_MIDDLE;
-                  PushQueue(didod, APP_MOUSE);
-                  m_middleMouseButtonDown = false;
-               }
-               if (g_pplayer->m_ballControl && !g_pplayer->m_throwBalls && m_leftMouseButtonDown && !m_rightMouseButtonDown && !m_middleMouseButtonDown)
-               {
-                  POINT curPos;
-                  GetCursorPos(&curPos);
-                  didod[0].dwData = D_MOUSE_MOVED_LEFT_DOWN;
-                  m_mouseX = curPos.x;
-                  m_mouseY = curPos.y;
-                  PushQueue(didod, APP_MOUSE);
-               }
-
-            } //if (g_pplayer->m_fThrowBalls)
-            else
-            {
-               for (DWORD i = 0; i < 3; i++)
-               {
-                  if (m_oldMouseButtonState[i] != mouseState.rgbButtons[i])
-                  {
-                     didod[i].dwData = mouseState.rgbButtons[i];
-                     didod[i].dwOfs = i + 1;
-                     didod[i].dwSequence = APP_MOUSE;
-                     PushQueue(&didod[i], APP_MOUSE);
-                     m_oldMouseButtonState[i] = mouseState.rgbButtons[i];
-                  }
-               }
-
+               if (m_focusHWnd == GetForegroundWindow())
+                  for (DWORD i = 0; i < dwElements; i++)
+                     PushQueue(&didod[i], APP_KEYBOARD/*, curr_time_msec*/);
             }
          }
       }
-   }
-#endif
+   #else
+      // cache to avoid double key triggers
+      static bool oldKeyStates[eCKeys] = { false };
+
+      #ifdef _WIN32
+         unsigned int i2 = 0;
+         for (unsigned int i = 0; i < eCKeys; ++i)
+         {
+            const unsigned int rgk = (unsigned int)g_pplayer->m_rgKeys[i];
+            const unsigned int vk = get_vk(rgk);
+            if (vk == ~0u)
+               continue;
+
+            const SHORT keyState = GetAsyncKeyState(vk);
+            const bool keyDown = !!((1 << 16) & keyState);
+
+            if (oldKeyStates[i] == keyDown)
+               continue;
+            oldKeyStates[i] = keyDown;
+
+            didod[i2].dwOfs = rgk;
+            didod[i2].dwData = keyDown ? 0x80 : 0;
+            //didod[i2].dwTimeStamp = curr_time_msec;
+            didod[i2].dwSequence = APP_KEYBOARD;
+            PushQueue(&didod[i2], APP_KEYBOARD/*, curr_time_msec*/);
+            ++i2;
+         }
+      #endif
+   #endif
+
+   #ifdef _WIN32
+      // mouse
+      if (m_pMouse && m_enableMouseInPlayer)
+      {
+         HRESULT hr = m_pMouse->Acquire();	// try to acquire mouse input
+         if (hr == S_OK || hr == S_FALSE)
+         {
+            DIMOUSESTATE2 mouseState;
+            hr = m_pMouse->GetDeviceState(sizeof(DIMOUSESTATE2), &mouseState);
+
+            if ((hr == S_OK || hr == DI_BUFFEROVERFLOW) && (m_focusHWnd == GetForegroundWindow()))
+            {
+               if (g_pplayer->m_throwBalls || g_pplayer->m_ballControl) // debug ball throw functionality
+               {
+                  if ((mouseState.rgbButtons[0] & 0x80) && !m_leftMouseButtonDown && !m_rightMouseButtonDown && !m_middleMouseButtonDown)
+                  {
+                     POINT curPos;
+                     GetCursorPos(&curPos);
+                     m_mouseX = curPos.x;
+                     m_mouseY = curPos.y;
+                     m_leftMouseButtonDown = true;
+                  }
+                  if (!(mouseState.rgbButtons[0] & 0x80) && m_leftMouseButtonDown && !m_rightMouseButtonDown && !m_middleMouseButtonDown)
+                  {
+                     POINT curPos;
+                     GetCursorPos(&curPos);
+                     m_mouseDX = curPos.x - m_mouseX;
+                     m_mouseDY = curPos.y - m_mouseY;
+                     didod[0].dwData = D_MOUSE_DRAGGED_LEFT;
+                     PushQueue(didod, APP_MOUSE);
+                     m_leftMouseButtonDown = false;
+                  }
+                  if ((mouseState.rgbButtons[1] & 0x80) && !m_rightMouseButtonDown && !m_leftMouseButtonDown && !m_middleMouseButtonDown)
+                  {
+                     POINT curPos;
+                     GetCursorPos(&curPos);
+                     m_mouseX = curPos.x;
+                     m_mouseY = curPos.y;
+                     m_rightMouseButtonDown = true;
+                  }
+                  if (!(mouseState.rgbButtons[1] & 0x80) && !m_leftMouseButtonDown && m_rightMouseButtonDown && !m_middleMouseButtonDown)
+                  {
+                     POINT curPos;
+                     GetCursorPos(&curPos);
+                     m_mouseDX = curPos.x - m_mouseX;
+                     m_mouseDY = curPos.y - m_mouseY;
+                     didod[0].dwData = D_MOUSE_DRAGGED_RIGHT;
+                     PushQueue(didod, APP_MOUSE);
+                     m_rightMouseButtonDown = false;
+                  }
+                  if ((mouseState.rgbButtons[2] & 0x80) && !m_rightMouseButtonDown && !m_leftMouseButtonDown && !m_middleMouseButtonDown)
+                  {
+                     POINT curPos;
+                     GetCursorPos(&curPos);
+                     m_mouseX = curPos.x;
+                     m_mouseY = curPos.y;
+                     m_middleMouseButtonDown = true;
+                  }
+                  if (!(mouseState.rgbButtons[2] & 0x80) && !m_rightMouseButtonDown && !m_leftMouseButtonDown && m_middleMouseButtonDown)
+                  {
+                     POINT curPos;
+                     GetCursorPos(&curPos);
+                     m_mouseDX = curPos.x - m_mouseX;
+                     m_mouseDY = curPos.y - m_mouseY;
+                     didod[0].dwData = D_MOUSE_DRAGGED_MIDDLE;
+                     PushQueue(didod, APP_MOUSE);
+                     m_middleMouseButtonDown = false;
+                  }
+                  if (g_pplayer->m_ballControl && !g_pplayer->m_throwBalls && m_leftMouseButtonDown && !m_rightMouseButtonDown && !m_middleMouseButtonDown)
+                  {
+                     POINT curPos;
+                     GetCursorPos(&curPos);
+                     didod[0].dwData = D_MOUSE_MOVED_LEFT_DOWN;
+                     m_mouseX = curPos.x;
+                     m_mouseY = curPos.y;
+                     PushQueue(didod, APP_MOUSE);
+                  }
+
+               } //if (g_pplayer->m_fThrowBalls)
+               else
+               {
+                  for (DWORD i = 0; i < 3; i++)
+                  {
+                     if (m_oldMouseButtonState[i] != mouseState.rgbButtons[i])
+                     {
+                        didod[i].dwData = mouseState.rgbButtons[i];
+                        didod[i].dwOfs = i + 1;
+                        didod[i].dwSequence = APP_MOUSE;
+                        PushQueue(&didod[i], APP_MOUSE);
+                        m_oldMouseButtonState[i] = mouseState.rgbButtons[i];
+                     }
+                  }
+
+               }
+            }
+         }
+      }
+   #endif
 
    // same for joysticks 
    switch (m_inputApi) {
@@ -657,32 +658,32 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
 
 void PinInput::HandleInputDI(DIDEVICEOBJECTDATA *didod)
 {
-#ifdef _WIN32
-   for (int k = 0; k < m_num_joy; ++k)
-   {
-#ifdef USE_DINPUT8
-      const LPDIRECTINPUTDEVICE8 pjoy = m_pJoystick[k];
-#else
-      const LPDIRECTINPUTDEVICE pjoy = m_pJoystick[k];
-#endif
-      if (pjoy)
+   #ifdef _WIN32
+      for (int k = 0; k < m_num_joy; ++k)
       {
-         HRESULT hr = pjoy->Acquire();		// try to acquire joystick input
-         if (hr == S_OK || hr == S_FALSE)
+         #ifdef USE_DINPUT8
+            const LPDIRECTINPUTDEVICE8 pjoy = m_pJoystick[k];
+         #else
+            const LPDIRECTINPUTDEVICE pjoy = m_pJoystick[k];
+         #endif
+         if (pjoy)
          {
-            DWORD dwElements = INPUT_BUFFER_SIZE;
-            hr = pjoy->GetDeviceData(sizeof(DIDEVICEOBJECTDATA), didod, &dwElements, 0);
-
-            if (hr == S_OK || hr == DI_BUFFEROVERFLOW)
+            HRESULT hr = pjoy->Acquire();		// try to acquire joystick input
+            if (hr == S_OK || hr == S_FALSE)
             {
-               if (m_hwnd == GetForegroundWindow())
-                  for (DWORD i = 0; i < dwElements; i++)
-                     PushQueue(&didod[i], APP_JOYSTICK(k)/*, curr_time_msec*/);
+               DWORD dwElements = INPUT_BUFFER_SIZE;
+               hr = pjoy->GetDeviceData(sizeof(DIDEVICEOBJECTDATA), didod, &dwElements, 0);
+
+               if (hr == S_OK || hr == DI_BUFFEROVERFLOW)
+               {
+                  if (m_focusHWnd == GetForegroundWindow())
+                     for (DWORD i = 0; i < dwElements; i++)
+                        PushQueue(&didod[i], APP_JOYSTICK(k)/*, curr_time_msec*/);
+               }
             }
          }
       }
-   }
-#endif
+   #endif
 }
 
 void PinInput::HandleInputXI(DIDEVICEOBJECTDATA *didod)
@@ -828,8 +829,8 @@ void PinInput::HandleSDLEvents(DIDEVICEOBJECTDATA* didod)
          switch (e.window.event)
          {
          case SDL_WINDOWEVENT_RESIZED:
-            g_pplayer->m_wnd_scale_x = static_cast<float>(g_pplayer->m_wnd_width) / static_cast<float>(e.window.data1);
-            g_pplayer->m_wnd_scale_y = static_cast<float>(g_pplayer->m_wnd_height) / static_cast<float>(e.window.data2);
+            g_pplayer->m_wnd_scale_x = static_cast<float>(g_pplayer->m_playfieldWnd->GetWidth()) / static_cast<float>(e.window.data1);
+            g_pplayer->m_wnd_scale_y = static_cast<float>(g_pplayer->m_playfieldWnd->GetHeight()) / static_cast<float>(e.window.data2);
             break;
          case SDL_WINDOWEVENT_FOCUS_GAINED: g_pplayer->OnFocusChanged(true); break;
          case SDL_WINDOWEVENT_FOCUS_LOST: g_pplayer->OnFocusChanged(false); break;
@@ -930,11 +931,11 @@ void PinInput::HandleSDLEvents(DIDEVICEOBJECTDATA* didod)
       case SDL_FINGERDOWN:
       case SDL_FINGERUP: {
          POINT point;
-         point.x = (int)((float)g_pplayer->m_wnd_width * e.tfinger.x);
-         point.y = (int)((float)g_pplayer->m_wnd_height * e.tfinger.y);
+         point.x = (int)((float)g_pplayer->m_playfieldWnd->GetWidth() * e.tfinger.x);
+         point.y = (int)((float)g_pplayer->m_playfieldWnd->GetHeight() * e.tfinger.y);
 
          for (unsigned int i = 0; i < MAX_TOUCHREGION; ++i)
-            if ((g_pplayer->m_touchregion_pressed[i] != (e.type == SDL_FINGERDOWN)) && Intersect(touchregion[i], g_pplayer->m_wnd_width, g_pplayer->m_wnd_height, point, fmodf(g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].mViewportRotation, 360.0f) != 0.f)) {
+            if ((g_pplayer->m_touchregion_pressed[i] != (e.type == SDL_FINGERDOWN)) && Intersect(touchregion[i], g_pplayer->m_playfieldWnd->GetWidth(), g_pplayer->m_playfieldWnd->GetHeight(), point, fmodf(g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].mViewportRotation, 360.0f) != 0.f)) {
                g_pplayer->m_touchregion_pressed[i] = (e.type == SDL_FINGERDOWN);
 
                DIDEVICEOBJECTDATA didod;
@@ -1048,60 +1049,63 @@ void PinInput::PlayRumble(const float lowFrequencySpeed, const float highFrequen
    }
 }
 
-void PinInput::Init(const HWND hwnd)
+#ifdef _WIN32
+void PinInput::Init(HWND focusWnd)
 {
-   m_hwnd = hwnd;
-
-#if defined(ENABLE_SDL_INPUT)
-#ifdef ENABLE_SDL_GAMECONTROLLER
-   SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC);
-   string path = g_pvp->m_szMyPrefPath + "gamecontrollerdb.txt";
-   if (!std::filesystem::exists(path))
-      std::filesystem::copy(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "Default_gamecontrollerdb.txt", path);
-   int count = SDL_GameControllerAddMappingsFromFile(path.c_str());
-   if (count > 0) {
-      PLOGI.printf("Game controller mappings added: count=%d, path=%s", count, path.c_str());
-   }
-   else {
-      PLOGI.printf("No game controller mappings added: path=%s", path.c_str());
-   }
+   m_focusHWnd = focusWnd;
 #else
-   SDL_InitSubSystem(SDL_INIT_JOYSTICK);
+void PinInput::Init()
+{
 #endif
-#endif
+
+   #if defined(ENABLE_SDL_INPUT)
+      #ifdef ENABLE_SDL_GAMECONTROLLER
+         SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC);
+         string path = g_pvp->m_szMyPrefPath + "gamecontrollerdb.txt";
+         if (!std::filesystem::exists(path))
+            std::filesystem::copy(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "Default_gamecontrollerdb.txt", path);
+         int count = SDL_GameControllerAddMappingsFromFile(path.c_str());
+         if (count > 0) {
+            PLOGI.printf("Game controller mappings added: count=%d, path=%s", count, path.c_str());
+         }
+         else {
+            PLOGI.printf("No game controller mappings added: path=%s", path.c_str());
+         }
+      #else
+         SDL_InitSubSystem(SDL_INIT_JOYSTICK);
+      #endif
+   #endif
 
 #ifdef _WIN32
    HRESULT hr;
-#ifdef USE_DINPUT8
-   hr = DirectInput8Create(g_pvp->theInstance, DIRECTINPUT_VERSION, IID_IDirectInput8, (void **)&m_pDI, nullptr);
-#else
-   hr = DirectInputCreate(g_pvp->theInstance, DIRECTINPUT_VERSION, &m_pDI, nullptr);
-#endif
+   #ifdef USE_DINPUT8
+      hr = DirectInput8Create(g_pvp->theInstance, DIRECTINPUT_VERSION, IID_IDirectInput8, (void **)&m_pDI, nullptr);
+   #else
+      hr = DirectInputCreate(g_pvp->theInstance, DIRECTINPUT_VERSION, &m_pDI, nullptr);
+   #endif
 
-#ifdef USE_DINPUT_FOR_KEYBOARD
-   // Create keyboard device
-   hr = m_pDI->CreateDevice(GUID_SysKeyboard, &m_pKeyboard, nullptr); //Standard Keyboard device
+   #ifdef USE_DINPUT_FOR_KEYBOARD
+      // Create keyboard device
+      hr = m_pDI->CreateDevice(GUID_SysKeyboard, &m_pKeyboard, nullptr); //Standard Keyboard device
+      hr = m_pKeyboard->SetDataFormat(&c_dfDIKeyboard);
+      hr = m_pKeyboard->SetCooperativeLevel(m_focusHWnd, DISCL_NONEXCLUSIVE | DISCL_FOREGROUND); //!! exclusive necessary??
 
-   hr = m_pKeyboard->SetDataFormat(&c_dfDIKeyboard);
+      DIPROPDWORD dipdw;
+      dipdw.diph.dwSize = sizeof(DIPROPDWORD);
+      dipdw.diph.dwHeaderSize = sizeof(DIPROPHEADER);
+      dipdw.diph.dwObj = 0;
+      dipdw.diph.dwHow = DIPH_DEVICE;
+      dipdw.dwData = INPUT_BUFFER_SIZE;
 
-   hr = m_pKeyboard->SetCooperativeLevel(hwnd, DISCL_NONEXCLUSIVE | DISCL_FOREGROUND); //!! exclusive necessary??
-
-   DIPROPDWORD dipdw;
-   dipdw.diph.dwSize = sizeof(DIPROPDWORD);
-   dipdw.diph.dwHeaderSize = sizeof(DIPROPHEADER);
-   dipdw.diph.dwObj = 0;
-   dipdw.diph.dwHow = DIPH_DEVICE;
-   dipdw.dwData = INPUT_BUFFER_SIZE;
-
-   hr = m_pKeyboard->SetProperty(DIPROP_BUFFERSIZE, &dipdw.diph);
-#endif
+      hr = m_pKeyboard->SetProperty(DIPROP_BUFFERSIZE, &dipdw.diph);
+   #endif
 
    // Create mouse device
    m_pMouse = nullptr;
    if (m_enableMouseInPlayer && SUCCEEDED(m_pDI->CreateDevice(GUID_SysMouse, &m_pMouse, nullptr)))
    {
       hr = m_pMouse->SetDataFormat(&c_dfDIMouse2);
-      hr = m_pMouse->SetCooperativeLevel(hwnd, DISCL_NONEXCLUSIVE | DISCL_FOREGROUND);
+      hr = m_pMouse->SetCooperativeLevel(m_focusHWnd, DISCL_NONEXCLUSIVE | DISCL_FOREGROUND);
       DIPROPDWORD dipdwm;
       dipdwm.diph.dwSize = sizeof(DIPROPDWORD);
       dipdwm.diph.dwHeaderSize = sizeof(DIPROPHEADER);
@@ -1170,15 +1174,15 @@ void PinInput::Init(const HWND hwnd)
 
    m_rumbleMode = (m_inputApi > 0) ? g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "RumbleMode"s, 3) : 0;
 
-#ifdef _WIN32
-   if (m_inputApi == 0) {
-#ifdef USE_DINPUT8
-      m_pDI->EnumDevices(DI8DEVCLASS_GAMECTRL, EnumJoystickCallbackDI, this, DIEDFL_ATTACHEDONLY); //enum Joysticks
-#else
-      m_pDI->EnumDevices(DIDEVTYPE_JOYSTICK, EnumJoystickCallbackDI, this, DIEDFL_ATTACHEDONLY);   //enum Joysticks
-#endif
-   }
-#endif
+   #ifdef _WIN32
+      if (m_inputApi == 0) {
+         #ifdef USE_DINPUT8
+            m_pDI->EnumDevices(DI8DEVCLASS_GAMECTRL, EnumJoystickCallbackDI, this, DIEDFL_ATTACHEDONLY); //enum Joysticks
+         #else
+            m_pDI->EnumDevices(DIDEVTYPE_JOYSTICK, EnumJoystickCallbackDI, this, DIEDFL_ATTACHEDONLY);   //enum Joysticks
+         #endif
+      }
+   #endif
 
    m_mixerKeyDown = false;
    m_mixerKeyUp = false;
@@ -1478,10 +1482,11 @@ void PinInput::Joy(const unsigned int n, const int updown, const bool start)
 
 void PinInput::ProcessBallControl(const DIDEVICEOBJECTDATA * __restrict input)
 {
+   #ifdef _WIN32
 	if (input->dwData == D_MOUSE_DRAGGED_LEFT || input->dwData == D_MOUSE_DRAGGED_MIDDLE || input->dwData == D_MOUSE_MOVED_LEFT_DOWN)
 	{
 		POINT point = { m_mouseX, m_mouseY };
-		ScreenToClient(m_hwnd, &point);
+		ScreenToClient(m_focusHWnd, &point);
 		delete g_pplayer->m_pBCTarget;
 		g_pplayer->m_pBCTarget = new Vertex3Ds(g_pplayer->m_renderer->Get3DPointFrom2D(point));
 		if (input->dwData == D_MOUSE_DRAGGED_LEFT || input->dwData == D_MOUSE_DRAGGED_MIDDLE)
@@ -1507,14 +1512,16 @@ void PinInput::ProcessBallControl(const DIDEVICEOBJECTDATA * __restrict input)
 			m_lastclick_ballcontrol_usec = cur;
 		}
 	}
+   #endif
 }
 
 void PinInput::ProcessThrowBalls(const DIDEVICEOBJECTDATA * __restrict input)
 {
+   #ifdef _WIN32
    if (input->dwData == D_MOUSE_DRAGGED_LEFT || input->dwData == D_MOUSE_DRAGGED_MIDDLE)
    {
       POINT point = { m_mouseX, m_mouseY };
-      ScreenToClient(m_hwnd, &point);
+      ScreenToClient(m_focusHWnd, &point);
       const Vertex3Ds vertex = g_pplayer->m_renderer->Get3DPointFrom2D(point);
 
       float vx = (float)m_mouseDX*0.1f;
@@ -1529,7 +1536,7 @@ void PinInput::ProcessThrowBalls(const DIDEVICEOBJECTDATA * __restrict input)
 
 		POINT newPoint;
 		GetCursorPos(&newPoint);
-		ScreenToClient(m_hwnd, &newPoint);
+		ScreenToClient(m_focusHWnd, &newPoint);
 		const Vertex3Ds vert = g_pplayer->m_renderer->Get3DPointFrom2D(newPoint);
 
 		if (g_pplayer->m_ballControl)
@@ -1579,7 +1586,7 @@ void PinInput::ProcessThrowBalls(const DIDEVICEOBJECTDATA * __restrict input)
     else if (input->dwData == D_MOUSE_DRAGGED_RIGHT)
     {
         POINT point = { m_mouseX, m_mouseY };
-        ScreenToClient(m_hwnd, &point);
+        ScreenToClient(m_focusHWnd, &point);
         const Vertex3Ds vertex = g_pplayer->m_renderer->Get3DPointFrom2D(point);
 
         for (size_t i = 0; i < g_pplayer->m_vball.size(); i++)
@@ -1594,6 +1601,7 @@ void PinInput::ProcessThrowBalls(const DIDEVICEOBJECTDATA * __restrict input)
             }
         }
     }
+   #endif
 }
 
 void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int curr_time_msec)
