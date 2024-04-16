@@ -59,6 +59,11 @@ const string& PUPTrigger::GetPlayFile()
    return !m_playFile.empty() ? m_playFile : (m_pPlaylist ? m_pPlaylist->GetPlayFile() : szEmptyString);
 }
 
+int PUPTrigger::GetVolume()
+{
+   return !m_playFile.empty() ? m_volume : m_pPlaylist->GetVolume();
+}
+
 string PUPTrigger::ToString() const {
    return "id=" + std::to_string(m_id) +
       ", active=" + ((m_active) ? "true" : "false") +

@@ -30,7 +30,7 @@ const std::string& PUPPlugin::GetName() const
 
 void PUPPlugin::PluginInit(const string& szTableFilename, const string& szRomName)
 {
-   m_szPath = g_pvp->m_currentTablePath + "PupVideos" +
+   m_szPath = g_pvp->m_currentTablePath + "pupvideos" +
       PATH_SEPARATOR_CHAR + szRomName + PATH_SEPARATOR_CHAR;
 
    // Load screens

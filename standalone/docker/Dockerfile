@@ -1,4 +1,5 @@
 FROM ubuntu:22.04
+
 RUN apt-get update && apt-get upgrade -y 
 
 # Upgrade CMake
@@ -15,7 +16,8 @@ RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master
 
 # Install Dependencies
 
-RUN apt-get install -y git unzip vim rsync build-essential autoconf automake libtool cmake bison curl zlib1g-dev libdrm-dev libgbm-dev libglu1-mesa-dev libegl-dev libudev-dev libx11-dev libxrandr-dev
+RUN apt-get update && apt-get upgrade -y
+RUN apt-get install -y git unzip vim rsync build-essential autoconf automake libtool cmake nasm bison curl zlib1g-dev libdrm-dev libgbm-dev libglu1-mesa-dev libegl-dev libudev-dev libx11-dev libxrandr-dev
 
 RUN mkdir -p /home/ubuntu && \
     { \
@@ -24,7 +26,7 @@ RUN mkdir -p /home/ubuntu && \
     echo 'USER=vpinball'; \
     echo 'BRANCH=standalone'; \
     echo 'git clone -b $BRANCH https://github.com/$USER/vpinball'; \
-    echo 'cd vpinball/standalone/linux'; \
+    echo 'cd vpinball/standalone/linux-x64'; \
     echo './external.sh'; \
     echo 'cd ../..'; \
     echo 'cp standalone/cmake/CMakeLists_gl-linux-x64.txt CMakeLists.txt'; \
