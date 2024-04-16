@@ -252,7 +252,7 @@ void* AssetManager::Open(AssetSrc* pSrc)
    }
 
    if (!pAsset) {
-      PLOGW.printf("Asset not loaded: %s", pSrc->GetPath().c_str());
+      PLOGW.printf("Asset not loaded: %s - %s", pSrc->GetPath().c_str(), SDL_GetError());
    }
 
    return pAsset;
