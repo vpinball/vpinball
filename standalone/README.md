@@ -479,9 +479,11 @@ The settings are decimal values based on DirectInput `DIK_` values found [here](
 | LWIN | 219 | Left Windows |
 | RWIN | 220 | Right Windows |
 
-## ZeDMD
+## External DMDs
 
-MacOS, Linux, and Android builds support [ZeDMD](https://www.pincabpassion.net/t14796-zedmd-installation-english) displays.
+MacOS and Linux builds have built in support for [ZeDMD](https://www.pincabpassion.net/t14796-zedmd-installation-english) and [Pixelcade](https://pixelcade.org/) devices.
+
+This feature is powered by [libdmdutil](https://github.com/vpinball/libdmdutil).
 
 ## Paths
 

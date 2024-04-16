@@ -3,10 +3,10 @@
 #include "../common/Window.h"
 
 #if !((defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__))
-#define VIDEO_WINDOW_HAS_LIBS 1
+#define VIDEO_WINDOW_HAS_FFMPEG_LIBS 1
 #endif
 
-#ifdef VIDEO_WINDOW_HAS_LIBS
+#ifdef VIDEO_WINDOW_HAS_FFMPEG_LIBS
 extern "C" {
    #include "libavformat/avformat.h"
    #include "libavdevice/avdevice.h"
@@ -33,7 +33,7 @@ public:
 private:
    void RenderWithOverlay();
 
-#ifdef VIDEO_WINDOW_HAS_LIBS
+#ifdef VIDEO_WINDOW_HAS_FFMPEG_LIBS
    void Cleanup();
    AVCodecContext* OpenVideoStream(AVFormatContext* pInputFormatContext, int stream);
    AVCodecContext* OpenStream(AVFormatContext* pInputFormatContext, int stream);

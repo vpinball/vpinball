@@ -4,6 +4,11 @@ To keep up with all the changes in master, and make it easier to rebase, this br
 
 The downside of this approach is not accurately keeping track of history:
 
+* 04/16/24
+    * Change `PupVideos` to `pupvideos`
+    * Update PuP audio decoding to support FFMPEG 4.4 (needed for Batocera)
+    * Use playlist volume when playfile in trigger is not set
+
 * 04/15/24
     * Start working on `PUPPlugin`
     * More work on `libdof` library

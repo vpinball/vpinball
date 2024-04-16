@@ -16,7 +16,7 @@ VideoWindow::VideoWindow(const string& szTitle, int x, int y, int w, int h, int 
 {
    m_visible = true;
 
-#ifdef VIDEO_WINDOW_HAS_LIBS
+#ifdef VIDEO_WINDOW_HAS_FFMPEG_LIBS
    m_pFormatContext = NULL;
    m_pAudioContext = NULL;
    m_pVideoContext = NULL;
@@ -84,7 +84,7 @@ void VideoWindow::Play(const string& szFilename, int volume)
    m_pThread = new std::thread([this, szFilename, volume]() {
       PLOGI.printf("Playing %s", szFilename.c_str());
 
-#ifdef VIDEO_WINDOW_HAS_LIBS
+#ifdef VIDEO_WINDOW_HAS_FFMPEG_LIBS
       if (avformat_open_input(&m_pFormatContext, szFilename.c_str(), NULL, NULL) != 0) {
          PLOGE.printf("Unable to open: filename=%s", szFilename.c_str());
          Cleanup();
@@ -163,7 +163,7 @@ void VideoWindow::RenderWithOverlay()
    SDL_RenderPresent(m_pRenderer);
 }
 
-#ifdef VIDEO_WINDOW_HAS_LIBS
+#ifdef VIDEO_WINDOW_HAS_FFMPEG_LIBS
 void VideoWindow::Cleanup()
 {
    if (m_pFrame) {
@@ -329,7 +329,8 @@ AVCodecContext* VideoWindow::OpenAudioStream(AVFormatContext* pInputFormatContex
    AVCodecContext* pContext = OpenStream(pInputFormatContext, stream);
 
    if (pContext) {
-      PLOGD.printf("Audio stream: %s %d channels, %d Hz\n", avcodec_get_name(pContext->codec_id), pCodecParameters->ch_layout.nb_channels, pCodecParameters->sample_rate);
+      int channels = av_get_channel_layout_nb_channels(pCodecParameters->channel_layout);
+      PLOGD.printf("Audio stream: %s %d channels, %d Hz", avcodec_get_name(pContext->codec_id), channels, pCodecParameters->sample_rate);
    }
 
    return pContext;
@@ -443,15 +444,16 @@ void VideoWindow::HandleVideoFrame(AVFrame* pFrame, double pts)
 
 void VideoWindow::HandleAudioFrame(AVFrame* pFrame)
 {
-   static AVChannelLayout destChLayout = AV_CHANNEL_LAYOUT_STEREO;
+   static int destNbChannels = av_get_channel_layout_nb_channels(AV_CH_LAYOUT_STEREO);
    static enum AVSampleFormat destFmt = AV_SAMPLE_FMT_S16;
    static int destFreq = 44100;
 
    AVSampleFormat format = (AVSampleFormat)pFrame->format;
    if (!m_pAudioConversionContext || m_audioFormat != format) {
       swr_free(&m_pAudioConversionContext);
-      swr_alloc_set_opts2(&m_pAudioConversionContext, &destChLayout, destFmt, destFreq, &pFrame->ch_layout,
-         (enum AVSampleFormat)pFrame->format, pFrame->sample_rate, 0, NULL);
+      m_pAudioConversionContext = swr_alloc_set_opts(NULL, AV_CH_LAYOUT_STEREO,
+         destFmt, destFreq, av_get_default_channel_layout(pFrame->channels),
+         (AVSampleFormat)pFrame->format, pFrame->sample_rate, 0, NULL);
 
       if (!m_pAudioConversionContext || swr_init(m_pAudioConversionContext) < 0) {
          PLOGE.printf("Failed to initialize the resampling context");
@@ -467,11 +469,9 @@ void VideoWindow::HandleAudioFrame(AVFrame* pFrame)
    uint8_t* pBuffer = NULL;
    unsigned int bufSize = 0;
    uint8_t** ppOut = &pBuffer;
-   int resampledDataSize;
-   int data_size;
    const uint8_t** ppIn = (const uint8_t**)pFrame->extended_data;
    int outCount = (int64_t)wantedNbSamples * destFreq / pFrame->sample_rate + 256;
-   int outSize = av_samples_get_buffer_size(NULL, destChLayout.nb_channels, outCount, destFmt, 0);
+   int outSize = av_samples_get_buffer_size(NULL, destNbChannels, outCount, destFmt, 0);
 
    if (outSize < 0) {
       PLOGE.printf("av_samples_get_buffer_size() failed");
@@ -482,28 +482,32 @@ void VideoWindow::HandleAudioFrame(AVFrame* pFrame)
          wantedNbSamples * destFreq / pFrame->sample_rate) < 0) {
          PLOGE.printf("swr_set_compensation() failed");
          return;
-       }
-    }
-    av_fast_malloc(&pBuffer, &bufSize, outSize);
-    if (!pBuffer)
-       return;
-    int len2 = swr_convert(m_pAudioConversionContext, ppOut, outCount, ppIn, pFrame->nb_samples);
-    if (len2 < 0) {
-       PLOGE.printf("swr_convert() failed");
-       return;
-    }
-    if (len2 == outCount) {
-       PLOGE.printf("audio buffer is probably too small");
-       if (swr_init(m_pAudioConversionContext) < 0) {
-          swr_free(&m_pAudioConversionContext);
-          m_pAudioConversionContext = NULL;
-          return;
-       }
-    }
-    resampledDataSize = len2 * destChLayout.nb_channels * av_get_bytes_per_sample(destFmt);
+      }
+   }
+   av_fast_malloc(&pBuffer, &bufSize, outSize);
+   if (!pBuffer)
+      return;
+   int len2 = swr_convert(m_pAudioConversionContext, ppOut, outCount, ppIn, pFrame->nb_samples);
+   if (len2 < 0) {
+      PLOGE.printf("swr_convert() failed");
+      av_free(pBuffer);
+      return;
+   }
+   if (len2 == outCount) {
+      PLOGE.printf("audio buffer is probably too small");
+      if (swr_init(m_pAudioConversionContext) < 0) {
+         swr_free(&m_pAudioConversionContext);
+         m_pAudioConversionContext = NULL;
+         av_free(pBuffer);
+         return;
+      }
+   }
+   int resampledDataSize = len2 * destNbChannels * av_get_bytes_per_sample(destFmt);
 
-    if (m_pAudioPlayer)
-       m_pAudioPlayer->StreamUpdate(pBuffer, resampledDataSize);
+   if (m_pAudioPlayer)
+      m_pAudioPlayer->StreamUpdate(pBuffer, resampledDataSize);
+
+   av_free(pBuffer);
 }
 #endif
 

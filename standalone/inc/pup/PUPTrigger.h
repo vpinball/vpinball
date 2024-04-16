@@ -17,7 +17,7 @@ public:
    PUPScreen* GetScreen() const { return m_pScreen; }
    PUPPlaylist* GetPlaylist() const { return m_pPlaylist; }
    const string& GetPlayFile();
-   int GetVolume() const { return m_volume; }
+   int GetVolume();
    int GetPriority() const { return m_priority; }
    int GetLength() const { return m_length; }
    int GetCounter() const { return m_counter; }
