@@ -6,10 +6,10 @@ FREEIMAGE_VERSION=3.18.0
 SDL2_VERSION=2.30.2
 SDL2_IMAGE_VERSION=2.8.2
 SDL2_TTF_VERSION=2.22.0
-PINMAME_SHA=8c5f83ef4aedd203755287f81e532b34e5de029f
+PINMAME_SHA=1afb6bb5f5439ec02014e8d1cb60e15e85f02b23
 LIBALTSOUND_SHA=9ac08a76e2aabc1fba57d3e5a3b87e7f63c09e07
-LIBDMDUTIL_SHA=1d176946fb476d9c3b42f0fe9c3f585b7dd8d671
-LIBDOF_SHA=3ea64f3f74cd3d676866c077eb9eb297f87b29b3
+LIBDMDUTIL_SHA=6045a3e9193fcde36fa978b81cffe428fa8c90fc
+LIBDOF_SHA=ac5d1e3487a4a6511953eb6aeef06ef5111510ea
 BGFX_CMAKE_VERSION=1.127.8710-464
 FFMPEG_SHA=e38092ef9395d7049f871ef4d5411eb410e283e0
 
@@ -333,7 +333,7 @@ cp ../${CACHE_DIR}/${CACHE_NAME}/lib/*.so ../external/lib
 # build FFMPEG libraries and copy to external
 #
 
-CACHE_NAME="FFmpeg-${FFMPEG_SHA}"
+CACHE_NAME="FFmpeg-${FFMPEG_SHA}_001"
 
 if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
    curl -sL https://github.com/FFmpeg/FFmpeg/archive/${FFMPEG_SHA}.zip -o ffmpeg.zip
@@ -346,7 +346,7 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
       --disable-doc
    make -j${NUM_PROCS}
    mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/lib
-   for lib in libavcodec libavdevice libavformat libavutil libswresample libswscale; do
+   for lib in libavcodec libavdevice libavfilter libavformat libavutil libswresample libswscale; do
       mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/include/${lib}
       cp ${lib}/*.h ../../${CACHE_DIR}/${CACHE_NAME}/include/${lib}
       cp -a ${lib}/*.{so,so.*} ../../${CACHE_DIR}/${CACHE_NAME}/lib

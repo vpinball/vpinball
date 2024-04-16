@@ -4,6 +4,19 @@ To keep up with all the changes in master, and make it easier to rebase, this br
 
 The downside of this approach is not accurately keeping track of history:
 
+* 04/15/24
+    * Start working on `PUPPlugin`
+    * More work on `libdof` library
+
+* 04/13/24
+    * Update VBScript `DateDiff` to support strings (@francisdb)
+
+* 04/03/24
+    * Rename PuP files in support of future `PUPPlugin`
+
+* 03/30/24
+    * Add support for PUPCapture trigger matching (@mkalkbrenner)
+
 * 03/23/24
     * Implement B2S `PluginHost` and `Plugin` logic
     * Added new `DOFPlugin` which calls new `libdof` library

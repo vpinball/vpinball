@@ -35,10 +35,10 @@ private:
    int m_h;
    int m_z;
    int m_rotation;
-   bool m_visible;
    bool m_init;
 
 protected:
+   bool m_visible;
    SDL_Renderer* m_pRenderer;
 };
 

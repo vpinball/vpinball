@@ -3,7 +3,7 @@
 #include "FormWindow.h"
 #include "Form.h"
 
-FormWindow::FormWindow(Form* pForm, const std::string& szTitle, int x, int y, int w, int h, int z, int rotation)
+FormWindow::FormWindow(Form* pForm, const string& szTitle, int x, int y, int w, int h, int z, int rotation)
     : VP::Window(szTitle, x, y, w, h, z, rotation)
 {
    m_destRect = { 0.0f, 0.0f, (float)w, (float)h };
