@@ -14,6 +14,10 @@
 #include "shader/AreaTex.h"
 #include "shader/SearchTex.h"
 
+#ifdef ENABLE_SDL_VIDEO
+#include <SDL2/SDL_syswm.h>
+#endif
+
 #if defined(ENABLE_BGFX)
 #ifdef __STANDALONE__
 #pragma push_macro("_WIN64")
@@ -303,250 +307,6 @@ void APIENTRY GLDebugMessageCallback(GLenum source, GLenum type, GLuint id,
 
 ////////////////////////////////////////////////////////////////////
 
-int getNumberOfDisplays()
-{
-#if defined(ENABLE_SDL_VIDEO)
-   return SDL_GetNumVideoDisplays();
-#else
-   return GetSystemMetrics(SM_CMONITORS);
-#endif
-}
-
-void EnumerateDisplayModes(const int display, vector<VideoMode>& modes)
-{
-   modes.clear();
-
-   vector<DisplayConfig> displays;
-   getDisplayList(displays);
-   if (display >= (int)displays.size())
-      return;
-   const int adapter = displays[display].adapter;
-
-#if defined(ENABLE_SDL_VIDEO)
-   const int amount = SDL_GetNumDisplayModes(adapter);
-   for (int mode = 0; mode < amount; ++mode) {
-      SDL_DisplayMode sdlMode;
-      SDL_GetDisplayMode(adapter, mode, &sdlMode);
-      VideoMode vmode = {};
-      vmode.width = sdlMode.w;
-      vmode.height = sdlMode.h;
-      switch (sdlMode.format) {
-      case SDL_PIXELFORMAT_RGB24:
-      case SDL_PIXELFORMAT_BGR24:
-      case SDL_PIXELFORMAT_RGB888:
-      case SDL_PIXELFORMAT_RGBX8888:
-      case SDL_PIXELFORMAT_BGR888:
-      case SDL_PIXELFORMAT_BGRX8888:
-      case SDL_PIXELFORMAT_ARGB8888:
-      case SDL_PIXELFORMAT_RGBA8888:
-      case SDL_PIXELFORMAT_ABGR8888:
-      case SDL_PIXELFORMAT_BGRA8888:
-         vmode.depth = 32;
-         break;
-      case SDL_PIXELFORMAT_RGB565:
-      case SDL_PIXELFORMAT_BGR565:
-      case SDL_PIXELFORMAT_ABGR1555:
-      case SDL_PIXELFORMAT_BGRA5551:
-      case SDL_PIXELFORMAT_ARGB1555:
-      case SDL_PIXELFORMAT_RGBA5551:
-         vmode.depth = 16;
-         break;
-      case SDL_PIXELFORMAT_ARGB2101010:
-         vmode.depth = 30;
-         break;
-      default:
-         vmode.depth = 0;
-      }
-      vmode.refreshrate = sdlMode.refresh_rate;
-      modes.push_back(vmode);
-   }
-#else
-   IDirect3D9 *d3d = Direct3DCreate9(D3D_SDK_VERSION);
-   if (d3d == nullptr)
-   {
-      ShowError("Could not create D3D9 object.");
-      return;
-   }
-
-   //for (int j = 0; j < 2; ++j)
-   constexpr int j = 0; // limit to 32bit only nowadays
-   {
-      const D3DFORMAT fmt = (D3DFORMAT)((j == 0) ? colorFormat::RGB8 : colorFormat::RGB5);
-      const unsigned numModes = d3d->GetAdapterModeCount(adapter, fmt);
-
-      for (unsigned i = 0; i < numModes; ++i)
-      {
-         D3DDISPLAYMODE d3dmode;
-         d3d->EnumAdapterModes(adapter, fmt, i, &d3dmode);
-
-         if (d3dmode.Width >= 640)
-         {
-            VideoMode mode;
-            mode.width = d3dmode.Width;
-            mode.height = d3dmode.Height;
-            mode.depth = (fmt == (D3DFORMAT)colorFormat::RGB5) ? 16 : 32;
-            mode.refreshrate = d3dmode.RefreshRate;
-            modes.push_back(mode);
-         }
-      }
-   }
-
-   SAFE_RELEASE(d3d);
-#endif
-}
-
-#ifndef __STANDALONE__
-BOOL CALLBACK MonitorEnumList(__in  HMONITOR hMonitor, __in  HDC hdcMonitor, __in  LPRECT lprcMonitor, __in  LPARAM dwData)
-{
-   std::map<string,DisplayConfig>* data = reinterpret_cast<std::map<string,DisplayConfig>*>(dwData);
-   MONITORINFOEX info;
-   info.cbSize = sizeof(MONITORINFOEX);
-   GetMonitorInfo(hMonitor, &info);
-   DisplayConfig config = {};
-   config.top = info.rcMonitor.top;
-   config.left = info.rcMonitor.left;
-   config.width = info.rcMonitor.right - info.rcMonitor.left;
-   config.height = info.rcMonitor.bottom - info.rcMonitor.top;
-   config.isPrimary = (config.top == 0) && (config.left == 0);
-   config.display = (int)data->size(); // This number does neither map to the number form display settings nor something else.
-   config.adapter = -1;
-   memcpy(config.DeviceName, info.szDevice, CCHDEVICENAME); // Internal display name e.g. "\\\\.\\DISPLAY1"
-   data->insert(std::pair<string, DisplayConfig>(config.DeviceName, config));
-   return TRUE;
-}
-#endif
-
-int getDisplayList(vector<DisplayConfig>& displays)
-{
-   displays.clear();
-
-#if defined(ENABLE_SDL_VIDEO) && defined(_WIN32)
-   // Windows and SDL order of display enumeration do not match, therefore the display identifier will not match between DX and OpenGL version
-   // SDL2 display identifier do not match the id of the native Windows settings
-   // SDL2 does not offer a way to get the adapter (i.e. Graphics Card) associated with a display (i.e. Monitor) so we use the monitor name for both
-   // Get the resolution of all enabled displays as they appear in the Windows settings UI.
-   std::map<string, DisplayConfig> displayMap;
-   EnumDisplayMonitors(nullptr, nullptr, MonitorEnumList, reinterpret_cast<LPARAM>(&displayMap));
-   for (int i = 0; i < SDL_GetNumVideoDisplays(); ++i)
-   {
-      SDL_Rect displayBounds;
-      if (SDL_GetDisplayBounds(i, &displayBounds) == 0)
-      {
-         for (std::map<string, DisplayConfig>::iterator display = displayMap.begin(); display != displayMap.end(); ++display)
-         {
-            if (display->second.left == displayBounds.x && display->second.top == displayBounds.y && display->second.width == displayBounds.w && display->second.height == displayBounds.h)
-            {
-               display->second.adapter = i;
-               strncpy_s(display->second.GPU_Name, SDL_GetDisplayName(display->second.adapter), MAX_DEVICE_IDENTIFIER_STRING - 1);
-            }
-         }
-      }
-   }
-
-   // Apply the same numbering as windows
-   int i = 0;
-   for (std::map<string, DisplayConfig>::iterator display = displayMap.begin(); display != displayMap.end(); ++display)
-   {
-      if (display->second.adapter >= 0)
-      {
-         display->second.display = i;
-         displays.push_back(display->second);
-      }
-      i++;
-   }
-#elif defined(ENABLE_SDL_VIDEO)
-   int i = 0;
-   for (; i < SDL_GetNumVideoDisplays(); ++i)
-   {
-      SDL_Rect displayBounds;
-      if (SDL_GetDisplayBounds(i, &displayBounds) == 0) {
-         DisplayConfig displayConf;
-         displayConf.display = i; // Window Display identifier (the number that appears in the native Windows settings)
-         displayConf.adapter = i; // SDL Display identifier. Will be used for creating the display
-         displayConf.isPrimary = (displayBounds.x == 0) && (displayBounds.y == 0);
-         displayConf.top = displayBounds.y;
-         displayConf.left = displayBounds.x;
-         displayConf.width = displayBounds.w;
-         displayConf.height = displayBounds.h;
-         const string devicename = "\\\\.\\DISPLAY"s.append(std::to_string(i));
-         strncpy_s(displayConf.DeviceName, devicename.c_str(), CCHDEVICENAME - 1);
-         strncpy_s(displayConf.GPU_Name, SDL_GetDisplayName(displayConf.display), MAX_DEVICE_IDENTIFIER_STRING - 1);
-         displays.push_back(displayConf);
-      }
-   }
-#else
-   // Get the resolution of all enabled displays as they appear in the Windows settings UI.
-   std::map<string, DisplayConfig> displayMap;
-   EnumDisplayMonitors(nullptr, nullptr, MonitorEnumList, reinterpret_cast<LPARAM>(&displayMap));
-
-   IDirect3D9* pD3D = Direct3DCreate9(D3D_SDK_VERSION);
-   if (pD3D == nullptr)
-   {
-      ShowError("Could not create D3D9 object.");
-      return -1;
-   }
-   // Map the displays to the DX9 adapter. Otherwise this leads to an performance impact on systems with multiple GPUs
-   const int adapterCount = pD3D->GetAdapterCount();
-   for (int i = 0; i < adapterCount; ++i)
-   {
-      D3DADAPTER_IDENTIFIER9 adapter;
-      pD3D->GetAdapterIdentifier(i, 0, &adapter);
-      std::map<string, DisplayConfig>::iterator display = displayMap.find(adapter.DeviceName);
-      if (display != displayMap.end())
-      {
-         display->second.adapter = i;
-         strncpy_s(display->second.GPU_Name, adapter.Description, sizeof(display->second.GPU_Name) - 1);
-      }
-   }
-   SAFE_RELEASE(pD3D);
-   
-   // Apply the same numbering as windows
-   int i = 0;
-   for (std::map<string, DisplayConfig>::iterator display = displayMap.begin(); display != displayMap.end(); ++display)
-   {
-      if (display->second.adapter >= 0) {
-         display->second.display = i;
-         displays.push_back(display->second);
-      }
-      i++;
-   }
-#endif
-
-   return i;
-}
-
-bool getDisplaySetupByID(const int display, int &x, int &y, int &width, int &height)
-{
-   vector<DisplayConfig> displays;
-   getDisplayList(displays);
-   for (vector<DisplayConfig>::iterator displayConf = displays.begin(); displayConf != displays.end(); ++displayConf) {
-      if ((display == -1 && displayConf->isPrimary) || display == displayConf->display) {
-         x = displayConf->left;
-         y = displayConf->top;
-         width = displayConf->width;
-         height = displayConf->height;
-         return true;
-      }
-   }
-   x = 0;
-   y = 0;
-   width = GetSystemMetrics(SM_CXSCREEN);
-   height = GetSystemMetrics(SM_CYSCREEN);
-   return false;
-}
-
-int getPrimaryDisplay()
-{
-   vector<DisplayConfig> displays;
-   getDisplayList(displays);
-   for (vector<DisplayConfig>::iterator displayConf = displays.begin(); displayConf != displays.end(); ++displayConf)
-      if (displayConf->isPrimary)
-         return displayConf->adapter;
-   return 0;
-}
-
-////////////////////////////////////////////////////////////////////
-
 RenderDeviceState::RenderDeviceState(RenderDevice* rd)
    : m_rd(rd)
    , m_basicShaderState(new Shader::ShaderState(m_rd->m_basicShader))
@@ -586,16 +346,18 @@ static pDF mDwmFlush = nullptr;
 typedef HRESULT(STDAPICALLTYPE *pDEC)(UINT uCompositionAction);
 static pDEC mDwmEnableComposition = nullptr;
 
-RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, 
+RenderDevice::RenderDevice(VPX::Window* const wnd, const int width, const int height, const bool fullscreen, const int colordepth, 
    const float AAfactor, const StereoMode stereo3D, const bool useNvidiaApi, const bool disableDWM, const int BWrendering, 
    int nMSAASamples, int& refreshrate, VideoSyncMode& syncMode, UINT adapterIndex)
-    : m_windowHwnd(hwnd), m_width(width), m_height(height), m_fullscreen(fullscreen), m_colorDepth(colordepth), 
+    : m_width(width), m_height(height), m_fullscreen(fullscreen), m_colorDepth(colordepth), 
       m_AAfactor(AAfactor), m_stereo3D(stereo3D), m_texMan(*this), m_renderFrame(this)
 {
+   m_outputWnd[0] = wnd;
+   
    #if defined(ENABLE_DX9)
-    m_useNvidiaApi = useNvidiaApi;
-    m_INTZ_support = false;
-    NVAPIinit = false;
+      m_useNvidiaApi = useNvidiaApi;
+      m_INTZ_support = false;
+      NVAPIinit = false;
    #endif
 
 #ifndef __STANDALONE__
@@ -650,11 +412,9 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
 
    init.callback = &bgfxCallback;
 
-#ifdef __STANDALONE__
    SDL_SysWMinfo wmInfo;
    SDL_VERSION(&wmInfo.version);
-   SDL_GetWindowWMInfo(g_pplayer->m_playfieldSdlWnd, &wmInfo);
-#endif
+   SDL_GetWindowWMInfo(m_outputWnd[0]->GetCore(), &wmInfo);
 
    #if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
    init.platformData.ndt = wmInfo.info.x11.display;
@@ -662,7 +422,7 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
    #elif BX_PLATFORM_OSX
    init.platformData.nwh = wmInfo.info.cocoa.window;
    #elif BX_PLATFORM_WINDOWS
-   init.platformData.nwh = g_pplayer->m_playfieldHWnd;
+   init.platformData.nwh = wmInfo.info.win.window;
    #elif BX_PLATFORM_STEAMLINK
    init.platformData.ndt = wmInfo.info.vivante.display;
    init.platformData.nwh = wmInfo.info.vivante.window;
@@ -678,7 +438,7 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
    init.debug = true;
    #endif
    
-   bgfx::renderFrame(); // FIXME BGFX this disable BGFX multithreading
+   bgfx::renderFrame(); // FIXME BGFX this disable BGFX multithreading but will fail on second run => need to use a single threaded build of BGFX
    if (!bgfx::init(init))
    {
       PLOGE << "FAILED";
@@ -736,14 +496,6 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
 
    memset(m_samplerStateCache, 0, sizeof(m_samplerStateCache));
 
-   m_playfieldSdlWnd = g_pplayer->m_playfieldSdlWnd;
-   SDL_SysWMinfo wmInfo;
-   SDL_VERSION(&wmInfo.version);
-   SDL_GetWindowWMInfo(m_playfieldSdlWnd, &wmInfo);
-   #ifndef __STANDALONE__
-   m_windowHwnd = wmInfo.info.win.window;
-   #endif
-
    int channelDepth = video10bit ? 10 : ((colordepth == 16) ? 5 : 8);
    // We only set bit depth for fullscreen desktop modes (otherwise, use the desktop bit depth)
    if (m_fullscreen)
@@ -779,9 +531,9 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
 
    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-   m_sdl_context = SDL_GL_CreateContext(m_playfieldSdlWnd);
+   m_sdl_context = SDL_GL_CreateContext(m_outputWnd[0]->GetCore());
 
-   SDL_GL_MakeCurrent(m_playfieldSdlWnd, m_sdl_context);
+   SDL_GL_MakeCurrent(m_outputWnd[0]->GetCore(), m_sdl_context);
 
    #ifndef __OPENGLES__
    if (!gladLoadGL((GLADloadfunc)SDL_GL_GetProcAddress))
@@ -977,7 +729,7 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
     params.MultiSampleType = D3DMULTISAMPLE_NONE;
     params.MultiSampleQuality = 0;
     params.SwapEffect = D3DSWAPEFFECT_DISCARD;
-    params.hDeviceWindow = m_windowHwnd;
+    params.hDeviceWindow = m_outputWnd[0]->GetCore();
     params.Windowed = !m_fullscreen;
     params.EnableAutoDepthStencil = FALSE;
     params.AutoDepthStencilFormat = D3DFMT_UNKNOWN; // ignored
@@ -1045,7 +797,7 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
       hr = m_pD3DEx->CreateDeviceEx(
          m_adapter,
          devtype,
-         m_windowHwnd,
+         m_outputWnd[0]->GetCore(),
          flags /*| D3DCREATE_PUREDEVICE*/,
          &params,
          m_fullscreen ? &mode : nullptr,
@@ -1074,7 +826,7 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
       hr = m_pD3D->CreateDevice(
          m_adapter,
          devtype,
-         m_windowHwnd,
+         m_outputWnd[0]->GetCore(),
          flags /*| D3DCREATE_PUREDEVICE*/,
          &params,
          &m_pD3DDevice);
@@ -1227,34 +979,31 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
    bool hasVSync = false;
    if (m_dwm_enabled && mDwmFlush)
    {
-      PLOGI << "VSync source set to Desktop compositor (DwmFlush)";
+      PLOGI << "VSync source set to Windows Desktop compositor (DwmFlush)";
       hasVSync = true;
    }
    #if defined(ENABLE_DX9)
-   else if (m_pD3DDeviceEx != nullptr)
-   {
-      PLOGI << "VSync source set to DX9Ex WaitForBlank";
-      hasVSync = true;
-   }
-   #endif
-   
-   #if defined(ENABLE_OPENGL)
-   // DXGI VSync source (Windows 7+, only used in OpenGL build)
-   else if (syncMode == VideoSyncMode::VSM_FRAME_PACING)
-   {
-      #ifndef __STANDALONE__
-      DXGIRegistry::Output* out = g_DXGIRegistry.GetForWindow(m_windowHwnd);
-      if (out != nullptr)
-         m_DXGIOutput = out->m_Output;
-      if (m_DXGIOutput != nullptr)
+      else if (m_pD3DDeviceEx != nullptr)
       {
-	      PLOGI << "VSync source set to DXGI WaitForBlank";
+         PLOGI << "VSync source set to DX9Ex WaitForBlank";
          hasVSync = true;
       }
-      #else
-      hasVSync = false;
-      #endif
-   }
+   #elif defined(ENABLE_SDL_VIDEO) && defined(ENABLE_OPENGL) && !defined(__STANDALONE__)
+      // DXGI VSync source (Windows 7+, only used for Win32 SDL with OpenGL)
+      else if (syncMode == VideoSyncMode::VSM_FRAME_PACING)
+      {
+         SDL_SysWMinfo wmInfo;
+         SDL_VERSION(&wmInfo.version);
+         SDL_GetWindowWMInfo(m_outputWnd[0]->GetCore(), &wmInfo);
+         DXGIRegistry::Output* out = g_DXGIRegistry.GetForWindow(wmInfo.info.win.window);
+         if (out != nullptr)
+            m_DXGIOutput = out->m_Output;
+         if (m_DXGIOutput != nullptr)
+         {
+            PLOGI << "VSync source set to DXGI WaitForBlank";
+            hasVSync = true;
+         }
+      }
    #endif
    
    if (syncMode == VideoSyncMode::VSM_FRAME_PACING && !hasVSync)
@@ -1627,7 +1376,7 @@ void RenderDevice::Flip()
    #if defined(ENABLE_BGFX)
    SubmitAndFlipFrame();
    #elif defined(ENABLE_OPENGL)
-   SDL_GL_SwapWindow(m_playfieldSdlWnd);
+   SDL_GL_SwapWindow(m_outputWnd[0]->GetCore());
    #elif defined(ENABLE_DX9)
    CHECKD3D(m_pD3DDevice->Present(nullptr, nullptr, nullptr, nullptr));
    #endif

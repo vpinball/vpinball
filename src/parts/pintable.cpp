@@ -685,6 +685,10 @@ STDMETHODIMP ScriptGlobalTable::get_GetPlayerHWnd(SIZE_T *pVal)
 STDMETHODIMP ScriptGlobalTable::get_GetPlayerHWnd(long *pVal)
 #endif
 {
+   #ifdef ENABLE_SDL_VIDEO // SDL Windowing
+   *pVal = NULL;
+   return E_FAIL;
+   #else // Win32 Windowing
    if (!g_pplayer)
    {
       *pVal = NULL;
@@ -692,10 +696,10 @@ STDMETHODIMP ScriptGlobalTable::get_GetPlayerHWnd(long *pVal)
    }
    else
    {
-      *pVal = (size_t)g_pplayer->m_playfieldHWnd;
+      *pVal = (size_t)g_pplayer->m_playfieldWnd->GetCore();
+      return S_OK;
    }
-
-   return S_OK;
+   #endif
 }
 
 STDMETHODIMP ScriptGlobalTable::AddObject(BSTR Name, IDispatch *pdisp)
@@ -1101,14 +1105,14 @@ STDMETHODIMP ScriptGlobalTable::LoadTexture(BSTR imageName, BSTR fileName)
 STDMETHODIMP ScriptGlobalTable::get_WindowWidth(int *pVal)
 {
    if (g_pplayer)
-      *pVal = g_pplayer->m_wnd_width;
+      *pVal = g_pplayer->m_playfieldWnd->GetWidth();
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_WindowHeight(int *pVal)
 {
    if (g_pplayer)
-      *pVal = g_pplayer->m_wnd_height;
+      *pVal = g_pplayer->m_playfieldWnd->GetHeight();
    return S_OK;
 }
 

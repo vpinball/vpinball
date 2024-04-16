@@ -418,7 +418,7 @@ void Textbox::RenderSetup(RenderDevice *device)
 
    CY size;
    m_pIFontPlay->get_Size(&size);
-   size.int64 = (LONGLONG)(size.int64 / 1.5 * g_pplayer->m_wnd_height * g_pplayer->m_wnd_width);
+   size.int64 = (LONGLONG)(size.int64 / 1.5 * g_pplayer->m_playfieldWnd->GetWidth() * g_pplayer->m_playfieldWnd->GetHeight());
    m_pIFontPlay->put_Size(size);
 #endif
 
@@ -579,7 +579,7 @@ void Textbox::Render(const unsigned int renderMask)
          case TextAlignRight: alignment = DT_RIGHT; break;
          }
 
-         const int border = (4 * g_pplayer->m_wnd_width) / EDITOR_BG_WIDTH;
+         const int border = (4 * g_pplayer->m_playfieldWnd->GetWidth()) / EDITOR_BG_WIDTH;
          RECT rcOut;
          rcOut.left = border;
          rcOut.top = border;

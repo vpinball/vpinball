@@ -1,5 +1,7 @@
 #pragma once
 
+#include "renderer/Window.h"
+
 class VideoOptionsDialog : public CDialog
 {
 public:

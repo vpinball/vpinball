@@ -46,35 +46,9 @@ void ReportError(const char *errorText, const HRESULT hr, const char *file, cons
 bool IsWindowsVistaOr7();
 bool IsWindows10_1803orAbove();
 
-struct VideoMode
-{
-   int width;
-   int height;
-   int depth;
-   int refreshrate;
-};
-
-struct DisplayConfig
-{
-   int display; // Window Display identifier (the number that appears in the native Windows settings)
-   int adapter; // DirectX or SDL display/adapter identifier
-   int top;
-   int left;
-   int width;
-   int height;
-   bool isPrimary;
-   char DeviceName[CCHDEVICENAME]; // Device native identifier, e.g. "\\\\.\\DISPLAY1"
-   char GPU_Name[MAX_DEVICE_IDENTIFIER_STRING]; // GPU name if available, device (monitor) name otherwise
-};
-
-int getNumberOfDisplays();
-void EnumerateDisplayModes(const int display, vector<VideoMode>& modes);
-bool getDisplaySetupByID(const int display, int &x, int &y, int &width, int &height);
-int getDisplayList(vector<DisplayConfig>& displays);
-int getPrimaryDisplay();
-
 class Shader;
 class ModelViewProj;
+namespace VPX { class Window; }
 
 class RenderDeviceState
 {
@@ -118,7 +92,6 @@ public:
       LINESTRIP = GL_LINE_STRIP
    };
 
-   SDL_Window* m_playfieldSdlWnd = nullptr;
    SDL_GLContext m_sdl_context = nullptr;
    #ifndef __STANDALONE__
    IDXGIOutput* m_DXGIOutput = nullptr;
@@ -136,7 +109,7 @@ public:
    };
 #endif
 
-   RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, const float AAfactor,
+   RenderDevice(VPX::Window* const wnd, const int width, const int height, const bool fullscreen, const int colordepth, const float AAfactor,
       const StereoMode stereo3D, const bool useNvidiaApi, const bool disable_dwm, const int BWrendering, int nMSAASamples, 
       int& refreshrate, VideoSyncMode& syncMode, UINT adapterIndex = D3DADAPTER_DEFAULT);
    ~RenderDevice();
@@ -262,8 +235,6 @@ public:
    IDirect3DDevice9* GetCoreDevice() const { return m_pD3DDevice; }
    #endif
 
-   HWND getHwnd() const { return m_windowHwnd; }
-
    const int        m_width;  // Width of the render buffer (not the window width, for example for stereo the render width is doubled, or for VR, the size depends on the headset)
    const int        m_height; // Height of the render buffer
    const bool       m_fullscreen;
@@ -272,8 +243,6 @@ public:
    const float      m_AAfactor;
 
 private:
-   HWND             m_windowHwnd;
-
    void UploadAndSetSMAATextures();
 
 public:
@@ -282,6 +251,10 @@ public:
    Sampler* m_nullTexture = nullptr;
 
 private:
+   unsigned int m_nOutputWnd = 1; // Swap chain always has at least one output window (OpenGL & DX9 only supports one, DX11+/Metal/Vulkan support multiple)
+   VPX::Window* m_outputWnd[8];
+   unsigned int m_adapter; // FIXME remove (part of main output window) : index of the display adapter to use
+
    RenderTarget* m_pBackBuffer = nullptr;
 
    RenderTarget* m_pOffscreenMSAABackBufferTexture = nullptr;
@@ -296,8 +269,6 @@ private:
    RenderTarget* m_pReflectionBufferTexture = nullptr;
    RenderTarget* m_pAORenderTarget1 = nullptr;
    RenderTarget* m_pAORenderTarget2 = nullptr;
-
-   unsigned int m_adapter; // index of the display adapter to use
 
 public:
    void SetSamplerState(int unit, SamplerFilter filter, SamplerAddressMode clamp_u, SamplerAddressMode clamp_v);

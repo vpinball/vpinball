@@ -345,6 +345,9 @@
     <ClCompile Include="src/renderer/VRDevice.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
+    <ClCompile Include="src/renderer/Window.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
     <ClCompile Include="src/utils/memutil.cpp">
       <Filter>utils</Filter>
     </ClCompile>
@@ -984,6 +987,9 @@
       <Filter>renderer</Filter>
     </ClInclude>
     <ClInclude Include="src/renderer/VRDevice.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src/renderer/Window.h">
       <Filter>renderer</Filter>
     </ClInclude>
     <ClInclude Include="src/utils/hash.h">

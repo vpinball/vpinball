@@ -719,19 +719,19 @@ LiveUI::LiveUI(RenderDevice *const rd)
    m_camView = Matrix3D::MatrixLookAtRH(eye, at, up);
    ImGuizmo::AllowAxisFlip(false);
 
-#if defined(ENABLE_SDL_VIDEO)
+#if defined(ENABLE_SDL_VIDEO) // SDL Windowing
    // using the specialized initializer is not needed
    // ImGui_ImplSDL2_InitForOpenGL(m_player->m_playfieldSdlWnd, rd->m_sdl_context);
-   ImGui_ImplSDL2_InitForOther(m_player->m_playfieldSdlWnd);
+   ImGui_ImplSDL2_InitForOther(m_player->m_playfieldWnd->GetCore());
    #if defined(__ANDROID__) || defined(WIN32)
-   int displayIndex = SDL_GetWindowDisplayIndex(m_player->m_playfieldSdlWnd);
+   int displayIndex = SDL_GetWindowDisplayIndex(m_player->m_playfieldWnd->GetCore());
    float ddpi, hdpi, vdpi;
    if (SDL_GetDisplayDPI(displayIndex, &ddpi, &hdpi, &vdpi) == 0)
       m_dpi = (hdpi + vdpi) / 2.0f / 96.0f;
    #endif
-#else
-   ImGui_ImplWin32_Init(rd->getHwnd());
-   m_dpi = ImGui_ImplWin32_GetDpiScaleForHwnd(rd->getHwnd());
+#else // Win32 Windowing
+   ImGui_ImplWin32_Init(m_player->m_playfieldWnd->GetCore());
+   m_dpi = ImGui_ImplWin32_GetDpiScaleForHwnd(m_player->m_playfieldWnd->GetCore());
 #endif
 
    SetupImGuiStyle(1.0f);
@@ -749,7 +749,7 @@ LiveUI::LiveUI(RenderDevice *const rd)
 
    // Overlays are displayed in the VR headset for which we do not have a meaningful DPI. This is somewhat hacky but we would really need 2 UI for VR.
 #ifndef __STANDALONE__
-   const float overlaySize = rd->m_stereo3D == STEREO_VR ? 20.0f : min(32.f * m_dpi, (float)min(m_player->m_wnd_width, m_player->m_wnd_height) / (26.f * 2.0f)); // Fit 26 lines of text on screen
+   const float overlaySize = rd->m_stereo3D == STEREO_VR ? 20.0f : min(32.f * m_dpi, (float)min(m_player->m_playfieldWnd->GetWidth(), m_player->m_playfieldWnd->GetHeight()) / (26.f * 2.0f)); // Fit 26 lines of text on screen
 #else
    const float overlaySize = 13.0f * m_dpi;
 #endif
@@ -1615,7 +1615,7 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
             ViewSetupID id = table->m_BG_current_set;
             ViewSetup &viewSetup = table->mViewSetups[id];
             viewSetup.mViewportRotation = 0.f;
-            const bool portrait = g_pplayer->m_wnd_width < g_pplayer->m_wnd_height;
+            const bool portrait = g_pplayer->m_playfieldWnd->GetWidth() < g_pplayer->m_playfieldWnd->GetHeight();
             switch (id)
             {
             case BG_DESKTOP:
@@ -3633,28 +3633,14 @@ void LiveUI::UpdateMainSplashModal()
       static ImVec2 initial_pos;
       if (m_player && !m_player->m_fullScreen && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
       {
-         if (!hovered  && !(pos.x <= initial_pos.x && initial_pos.x <= max.x && pos.y <= initial_pos.y && initial_pos.y <= max.y))
+         if (!hovered && !(pos.x <= initial_pos.x && initial_pos.x <= max.x && pos.y <= initial_pos.y && initial_pos.y <= max.y))
          {
-
             const ImVec2 drag = ImGui::GetMouseDragDelta();
             int x, y;
-            
-            #ifdef ENABLE_SDL_VIDEO
-            SDL_GetWindowPosition(m_player->m_playfieldSdlWnd, &x, &y);
+            m_player->m_playfieldWnd->GetPos(x, y);
             x += (int)drag.x;
             y += (int)drag.y;
-            SDL_SetWindowPosition(m_player->m_playfieldSdlWnd, x, y);
-            
-            #else
-            RECT rect;
-            GetWindowRect(m_player->m_playfieldHWnd, &rect);
-            x = rect.left + (int)drag.x;
-            y = rect.top + (int)drag.y;
-            SetWindowPos(m_player->m_playfieldHWnd, nullptr, x, y, m_player->m_wnd_width, m_player->m_wnd_height, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
-
-            #endif
-            g_pvp->m_settings.SaveValue(m_player->m_stereo3D == STEREO_VR ? Settings::PlayerVR : Settings::Player, "WindowPosX"s, x);
-            g_pvp->m_settings.SaveValue(m_player->m_stereo3D == STEREO_VR ? Settings::PlayerVR : Settings::Player, "WindowPosY"s, y);
+            m_player->m_playfieldWnd->SetPos(x, y);
          }
       }
       else

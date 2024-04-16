@@ -1190,6 +1190,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="src/renderer/VertexBuffer.cpp" />
     <ClCompile Include="src/renderer/ViewSetup.cpp" />
     <ClCompile Include="src/renderer/VRDevice.cpp" />
+    <ClCompile Include="src/renderer/Window.cpp" />
     <ClCompile Include="src/utils/StackTrace.cpp" />
     <ClCompile Include="src/utils/variant.cpp" />
     <ClCompile Include="src/utils/memutil.cpp" />
@@ -1653,6 +1654,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="src/renderer/VertexBuffer.h" />
     <ClInclude Include="src/renderer/ViewSetup.h" />
     <ClInclude Include="src/renderer/VRDevice.h" />
+    <ClInclude Include="src/renderer/Window.h" />
     <ClInclude Include="src/renderer/trace.h" />
     <ClInclude Include="src/renderer/typedefs3D.h" />
     <ClInclude Include="src/utils/MemoryStatus.h" />
