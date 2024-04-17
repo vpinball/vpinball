@@ -1480,41 +1480,6 @@ void PinInput::Joy(const unsigned int n, const int updown, const bool start)
    if (m_joypmenter == n)    FireKeyEvent(updown, DIK_0);
 }
 
-void PinInput::ProcessBallControl(const DIDEVICEOBJECTDATA * __restrict input)
-{
-   #ifdef _WIN32
-	if (input->dwData == D_MOUSE_DRAGGED_LEFT || input->dwData == D_MOUSE_DRAGGED_MIDDLE || input->dwData == D_MOUSE_MOVED_LEFT_DOWN)
-	{
-		POINT point = { m_mouseX, m_mouseY };
-		ScreenToClient(m_focusHWnd, &point);
-		delete g_pplayer->m_pBCTarget;
-		g_pplayer->m_pBCTarget = new Vertex3Ds(g_pplayer->m_renderer->Get3DPointFrom2D(point));
-		if (input->dwData == D_MOUSE_DRAGGED_LEFT || input->dwData == D_MOUSE_DRAGGED_MIDDLE)
-		{
-			const uint64_t cur = usec();
-			if (m_lastclick_ballcontrol_usec + BALLCONTROL_DOUBLECLICK_THRESHOLD_USEC > cur)
-			{
-				// Double click.  Move the ball directly to the target if possible.   Drop 
-				// it fast from the glass height, so it will appear over any object (or on a raised playfield)
-
-				Ball * const pBall = g_pplayer->m_pactiveballBC;
-				if (pBall && !pBall->m_d.m_lockedInKicker)
-				{
-					pBall->m_d.m_pos.x = g_pplayer->m_pBCTarget->x;
-					pBall->m_d.m_pos.y = g_pplayer->m_pBCTarget->y;
-					pBall->m_d.m_pos.z = g_pplayer->m_ptable->m_glassTopHeight;
-
-					pBall->m_d.m_vel.x = 0.0f;
-					pBall->m_d.m_vel.y = 0.0f;
-					pBall->m_d.m_vel.z = -1000.0f;
-				}
-			}
-			m_lastclick_ballcontrol_usec = cur;
-		}
-	}
-   #endif
-}
-
 void PinInput::ProcessThrowBalls(const DIDEVICEOBJECTDATA * __restrict input)
 {
    #ifdef _WIN32
@@ -2077,8 +2042,6 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
       {
          if (g_pplayer->m_throwBalls)
             ProcessThrowBalls(input);
-         else if (g_pplayer->m_ballControl)
-            ProcessBallControl(input);
          else
          {
             for(int i = 1; i <= 3; ++i)

@@ -1108,6 +1108,31 @@ void LiveUI::Update(const RenderTarget *rt)
       UpdateTweakModeUI();
       ImGui::PopFont();
    }
+   else
+   { // No UI: ball control & throw balls
+      if (m_player->m_ballControl && ImGui::IsMouseDown(ImGuiMouseButton_Left))
+      {
+         // Note that ball control release is handled by pininput
+         const ImVec2 mousePos = ImGui::GetMousePos();
+         POINT point { (LONG)mousePos.x, (LONG)mousePos.y };
+         m_player->m_pBCTarget = new Vertex3Ds(m_renderer->Get3DPointFrom2D(point));
+         if (ImGui::GetMouseClickedCount(ImGuiMouseButton_Left) >= 2)
+         {
+            // Double click.  Move the ball directly to the target if possible.
+            // Drop it from the glass height, so it will appear over any object (or on a raised playfield)
+            Ball *const pBall = m_player->m_pactiveballBC;
+            if (pBall && !pBall->m_d.m_lockedInKicker)
+            {
+                pBall->m_d.m_pos.x = m_player->m_pBCTarget->x;
+                pBall->m_d.m_pos.y = m_player->m_pBCTarget->y;
+                pBall->m_d.m_pos.z = m_player->m_ptable->m_glassTopHeight; // FIXME compute glass height at y position
+                pBall->m_d.m_vel.x = 0.0f;
+                pBall->m_d.m_vel.y = 0.0f;
+                pBall->m_d.m_vel.z = -1000.0f;
+            }
+         }
+      }
+   }
 
    // FPS Overlays
    if (m_show_fps > 0)
