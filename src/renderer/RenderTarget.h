@@ -68,16 +68,16 @@ private:
    bgfx::TextureHandle m_color_tex = BGFX_INVALID_HANDLE;
    bgfx::TextureHandle m_depth_tex = BGFX_INVALID_HANDLE;
 #elif defined(ENABLE_OPENGL)
-   GLuint m_framebuffer;
+   GLuint m_framebuffer = 0;
    GLenum m_texTarget = 0;
-   GLuint m_color_tex;
-   GLuint m_depth_tex;
+   GLuint m_color_tex = 0;
+   GLuint m_depth_tex = 0;
    GLuint m_framebuffer_layers[6];
 #elif defined(ENABLE_DX9)
-   bool m_use_alternate_depth;
-   IDirect3DSurface9* m_color_surface;
-   IDirect3DTexture9* m_color_tex;
-   IDirect3DSurface9* m_depth_surface;
-   IDirect3DTexture9* m_depth_tex;
+   bool m_use_alternate_depth = false;
+   IDirect3DSurface9* m_color_surface = nullptr;
+   IDirect3DTexture9* m_color_tex = nullptr;
+   IDirect3DSurface9* m_depth_surface = nullptr;
+   IDirect3DTexture9* m_depth_tex = nullptr;
 #endif
 };

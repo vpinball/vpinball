@@ -22,7 +22,7 @@ private:
    void LoadSettings();
    void SaveSettings(const bool saveAll);
 
-   vector<VideoMode> m_allVideoModes;
+   vector<VPX::Window::VideoMode> m_allVideoModes;
    int m_initialMaxTexDim;
    Settings* m_editedSettings = nullptr;
    Settings m_appSettings, m_tableSettings;

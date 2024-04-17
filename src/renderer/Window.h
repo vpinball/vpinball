@@ -6,34 +6,6 @@
 #include <windows.h>
 #endif
 
-
-struct VideoMode
-{
-   int width;
-   int height;
-   int depth;
-   int refreshrate;
-};
-
-struct DisplayConfig
-{
-   int display; // Window Display identifier (the number that appears in the native Windows settings)
-   int adapter; // DirectX or SDL display/adapter identifier
-   int top;
-   int left;
-   int width;
-   int height;
-   bool isPrimary;
-   char DeviceName[CCHDEVICENAME]; // Device native identifier, e.g. "\\\\.\\DISPLAY1"
-   char GPU_Name[MAX_DEVICE_IDENTIFIER_STRING]; // GPU name if available, device (monitor) name otherwise
-};
-
-int getNumberOfDisplays();
-void EnumerateDisplayModes(const int display, vector<VideoMode>& modes);
-bool getDisplaySetupByID(const int display, int &x, int &y, int &width, int &height);
-int getDisplayList(vector<DisplayConfig>& displays);
-int getPrimaryDisplay();
-
 namespace VPX
 {
 
@@ -47,9 +19,15 @@ public:
    int GetWidth() const { return m_width; }
    int GetHeight() const { return m_height; }
    int GetRefreshRate() const { return m_refreshrate; }
+   bool IsFullScreen() const { return m_fullscreen; }
+   int GetAdapterId() const { return m_adapter; }
+   int GetBitDepth() const { return m_bitdepth; }
 
    void ShowAndFocus();
    void SetPos(const int x, const int y);
+
+   void SetBackBuffer(RenderTarget* rt) { assert(rt == nullptr || (rt->GetWidth() == m_width && rt->GetHeight() == m_height)); m_backBuffer = rt; }
+   RenderTarget* GetBackBuffer() const { return m_backBuffer; }
 
    #ifdef ENABLE_SDL_VIDEO // SDL Windowing
       SDL_Window * GetCore() const { return m_nwnd; }
@@ -57,12 +35,37 @@ public:
       HWND GetCore() const { return m_nwnd; }
    #endif
    
+   struct VideoMode
+   {
+      int width;
+      int height;
+      int depth;
+      int refreshrate;
+   };
+
+   struct DisplayConfig
+   {
+      int display; // Window Display identifier (the number that appears in the native Windows settings)
+      int adapter; // DirectX9 or SDL display/adapter identifier
+      int top;
+      int left;
+      int width;
+      int height;
+      bool isPrimary;
+      char DeviceName[CCHDEVICENAME]; // Device native identifier, e.g. "\\\\.\\DISPLAY1"
+      char GPU_Name[MAX_DEVICE_IDENTIFIER_STRING]; // GPU name if available, device (monitor) name otherwise
+   };
+
+   static int GetDisplays(vector<DisplayConfig>& displays);
+   static void GetDisplayModes(const int display, vector<VideoMode>& modes);
+   
 private:
    int m_width, m_height;
    int m_display, m_adapter;
    int m_screenwidth, m_screenheight;
    bool m_fullscreen;
-   int m_refreshrate; // Only valid for non windowed fullscreen, 0 otherwise
+   int m_refreshrate;
+   int m_bitdepth;
    string m_settingsId;
 
    class RenderTarget* m_backBuffer = nullptr;

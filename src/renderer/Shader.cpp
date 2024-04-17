@@ -468,30 +468,29 @@ Shader::~Shader()
    delete m_state;
 
    #if defined(ENABLE_BGFX)
-   for (int j = 0; j < SHADER_TECHNIQUE_COUNT; ++j)
-   {
-      if (m_techniques[j] && bgfx::isValid(m_techniques[j]->program))
-         bgfx::destroy(m_techniques[j]->program);
-      delete m_techniques[j];
-      m_techniques[j] = nullptr;
-   }
-   bgfx::destroy(m_debugProgramHandle);
-   m_debugProgramHandle = BGFX_INVALID_HANDLE; 
-   
-   #elif defined(ENABLE_OPENGL)
-   for (int j = 0; j < SHADER_TECHNIQUE_COUNT; ++j)
-   {
-      if (m_techniques[j] != nullptr)
+      for (int j = 0; j < SHADER_TECHNIQUE_COUNT; ++j)
       {
-         glDeleteProgram(m_techniques[j]->program);
+         if (m_techniques[j] && bgfx::isValid(m_techniques[j]->program))
+            bgfx::destroy(m_techniques[j]->program);
          delete m_techniques[j];
-         delete m_boundState[j];
       }
-   }
-   
+      bgfx::destroy(m_debugProgramHandle);
+  
+   #elif defined(ENABLE_OPENGL)
+      for (int j = 0; j < SHADER_TECHNIQUE_COUNT; ++j)
+      {
+         if (m_techniques[j] != nullptr)
+         {
+            glDeleteProgram(m_techniques[j]->program);
+            delete m_techniques[j];
+            delete m_boundState[j];
+         }
+      }
+
    #elif defined(ENABLE_DX9)
-   delete m_boundState;
-   SAFE_RELEASE(m_shader);
+      delete m_boundState;
+      SAFE_RELEASE(m_shader);
+   
    #endif
 }
 

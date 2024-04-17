@@ -155,15 +155,25 @@ void VideoOptionsDialog::UpdateFullscreenModesList()
    LRESULT display = (int)SendDlgItemMessage(IDC_DISPLAY_ID, CB_GETCURSEL, 0, 0);
    if (display == CB_ERR)
       display = 0;
-   EnumerateDisplayModes((int) display, m_allVideoModes);
+   VPX::Window::GetDisplayModes((int) display, m_allVideoModes);
    int screenwidth, screenheight, x, y;
-   getDisplaySetupByID((int)display, x, y, screenwidth, screenheight);
+   vector<VPX::Window::DisplayConfig> displays;
+   VPX::Window::GetDisplays(displays);
+   for (vector<VPX::Window::DisplayConfig>::iterator displayConf = displays.begin(); displayConf != displays.end(); ++displayConf) {
+      if ((display == -1 && displayConf->isPrimary) || display == displayConf->display) {
+         x = displayConf->left;
+         y = displayConf->top;
+         screenwidth = displayConf->width;
+         screenheight = displayConf->height;
+         break;
+      }
+   }
 
    const int depthcur = GetEditedSettings().LoadValueWithDefault(Settings::Player, "ColorDepth"s, 32);
    const int refreshrate = GetEditedSettings().LoadValueWithDefault(Settings::Player, "RefreshRate"s, 0);
    const int widthcur = GetEditedSettings().LoadValueWithDefault(Settings::Player, "Width"s, -1);
    const int heightcur = GetEditedSettings().LoadValueWithDefault(Settings::Player, "Height"s, -1);
-   VideoMode curSelMode;
+   VPX::Window::VideoMode curSelMode;
    curSelMode.width = widthcur;
    curSelMode.height = heightcur;
    curSelMode.depth = depthcur;
@@ -669,14 +679,14 @@ void VideoOptionsDialog::LoadSettings()
 
    int display;
    hr = settings.LoadValue(Settings::Player, "Display"s, display);
-   vector<DisplayConfig> displays;
-   getDisplayList(displays);
+   vector<VPX::Window::DisplayConfig> displays;
+   VPX::Window::GetDisplays(displays);
    if ((!hr) || ((int)displays.size() <= display))
       display = -1;
    hwnd = GetDlgItem(IDC_DISPLAY_ID).GetHwnd();
    SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
    SendMessage(hwnd, CB_RESETCONTENT, 0, 0);
-   for (vector<DisplayConfig>::iterator dispConf = displays.begin(); dispConf != displays.end(); ++dispConf)
+   for (vector<VPX::Window::DisplayConfig>::iterator dispConf = displays.begin(); dispConf != displays.end(); ++dispConf)
    {
       if (display == -1 && dispConf->isPrimary)
          display = dispConf->display;
@@ -752,7 +762,7 @@ void VideoOptionsDialog::SaveSettings(const bool saveAll)
          index = 0;
       if (index >= 0 && (size_t)index < m_allVideoModes.size())
       {
-         const VideoMode* const pvm = &m_allVideoModes[index];
+         const VPX::Window::VideoMode* const pvm = &m_allVideoModes[index];
          settings.SaveValue(Settings::Player, "Width"s, pvm->width, !saveAll);
          settings.SaveValue(Settings::Player, "Height"s, pvm->height, !saveAll);
          settings.SaveValue(Settings::Player, "ColorDepth"s, pvm->depth, !saveAll);
@@ -1090,7 +1100,7 @@ BOOL VideoOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                index = 0;
             if (index >= 0 && (size_t)index < m_allVideoModes.size())
             {
-               const VideoMode* const pvm = &m_allVideoModes[index];
+               const VPX::Window::VideoMode* const pvm = &m_allVideoModes[index];
                SetDlgItemInt(IDC_WIDTH_EDIT, pvm->width, FALSE);
                SetDlgItemInt(IDC_HEIGHT_EDIT, pvm->height, FALSE);
                SendDlgItemMessage(IDC_AR_COMBO, CB_SETCURSEL, 0, 0);

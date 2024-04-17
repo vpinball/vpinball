@@ -939,22 +939,23 @@ public:
 
       if (m_listRes) {
          PLOGI << "Available fullscreen resolutions:";
-         int displays = getNumberOfDisplays();
-         for (int display = 0; display < displays; display++) {
-            vector<VideoMode> allVideoModes;
-            EnumerateDisplayModes(display, allVideoModes);
+         vector<VPX::Window::DisplayConfig> displays;
+         VPX::Window::GetDisplays(displays);
+         for (int display = 0; display < displays.size(); display++) {
+            vector<VPX::Window::VideoMode> allVideoModes;
+            VPX::Window::GetDisplayModes(display, allVideoModes);
             for (size_t i = 0; i < allVideoModes.size(); ++i) {
-               VideoMode mode = allVideoModes.at(i);
-               PLOGI << "display " << display << ": " << mode.width << 'x' << mode.height
+               VPX::Window::VideoMode mode = allVideoModes.at(i);
+               PLOGI << "display " << displays.at(i).adapter << ": " << mode.width << 'x' << mode.height
                      << " (depth=" << mode.depth << ", refreshRate=" << mode.refreshrate << ')';
             }
          }
 
          PLOGI << "Available window fullscreen desktop resolutions:";
-         for (int display = 0; display < displays; display++) {
+         for (int display = 0; display < displays.size(); display++) {
             SDL_DisplayMode displayMode;
-            if (!SDL_GetDesktopDisplayMode(display, &displayMode)) {
-               PLOGI << "display " << display << ": " << displayMode.w << "x" << displayMode.h
+            if (!SDL_GetDesktopDisplayMode(displays.at(display).adapter, &displayMode)) {
+               PLOGI << "display " << displays.at(display).adapter << ": " << displayMode.w << "x" << displayMode.h
                      << " (refreshRate=" << displayMode.refresh_rate << ")";
             }
          }

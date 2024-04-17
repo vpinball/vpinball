@@ -108,7 +108,7 @@ public:
 
 ////////////////////////////////////////////////////////////////////////////////
 
-Renderer::Renderer(PinTable* const table, const bool fullScreen, const int width, const int height, const int colordepth, int& refreshrate, VideoSyncMode& syncMode, const StereoMode stereo3D)
+Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncMode, const StereoMode stereo3D)
    : m_table(table)
 {
    m_stereo3Denabled = m_table->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DEnabled"s, (m_stereo3D != STEREO_OFF));
@@ -116,6 +116,7 @@ Renderer::Renderer(PinTable* const table, const bool fullScreen, const int width
    #if defined(ENABLE_DX9) || defined(ENABLE_BGFX) // DirectX 9 does not support stereo rendering, FIXME it is unimplemented for BGFX
    m_stereo3DfakeStereo = true;
    #endif
+   m_stereo3D = m_stereo3DfakeStereo ? STEREO_OFF : stereo3D;
    m_BWrendering = m_table->m_settings.LoadValueWithDefault(Settings::Player, "BWRendering"s, 0);
    m_toneMapper = (ToneMapper)m_table->m_settings.LoadValueWithDefault(Settings::TableOverride, "ToneMapper"s, m_table->GetToneMapper());
    m_dynamicAO = m_table->m_settings.LoadValueWithDefault(Settings::Player, "DynamicAO"s, true);
@@ -202,16 +203,7 @@ Renderer::Renderer(PinTable* const table, const bool fullScreen, const int width
       m_globalEmissionScale = g_pvp->m_fgles;
    }
 
-   m_stereo3D = m_stereo3DfakeStereo ? STEREO_OFF : stereo3D;
    m_mvp = new ModelViewProj(m_stereo3D == STEREO_OFF ? 1 : 2);
-
-   const int display = g_pvp->m_primaryDisplay ? -1 : m_table->m_settings.LoadValueWithDefault(Settings::Player, "Display"s, -1);
-   vector<DisplayConfig> displays;
-   getDisplayList(displays);
-   int adapter = 0;
-   for (vector<DisplayConfig>::iterator dispConf = displays.begin(); dispConf != displays.end(); ++dispConf)
-      if (display == dispConf->display)
-         adapter = dispConf->adapter;
 
    #if defined(ENABLE_OPENGL) || defined(ENABLE_BGFX)
    const int nMSAASamples = m_table->m_settings.LoadValueWithDefault(Settings::Player, "MSAASamples"s, 1);
@@ -224,40 +216,30 @@ Renderer::Renderer(PinTable* const table, const bool fullScreen, const int width
    int renderWidth, renderHeight;
    if (m_stereo3D == STEREO_VR)
    {
-      // For VR the render view is defined by the HMD
+      // For VR, renders at the HMD native eye resolution
       renderWidth = g_pplayer->m_vrDevice->GetEyeWidth();
       renderHeight = g_pplayer->m_vrDevice->GetEyeHeight();
    }
-   if (m_stereo3D == STEREO_SBS)
+   else if (m_stereo3D == STEREO_SBS)
    {
-      // Side by side needs to fit the 2 views along the width, so each view is half the total width
-      renderWidth = width / 2;
-      renderHeight = height;
+      // Side by side fits the 2 views along the output width, so each view is rendered at half the output width
+      renderWidth = wnd->GetWidth() / 2;
+      renderHeight = wnd->GetHeight();
    }
    else if (m_stereo3D == STEREO_TB || m_stereo3D == STEREO_INT || m_stereo3D == STEREO_FLIPPED_INT)
    {
-      // Top/Bottom (and interlaced) needs to fit the 2 views along the height, so each view is half the total height
-      renderWidth = width;
-      renderHeight = height / 2;
+      // Top/Bottom (and interlaced) fits the 2 views along the output height, so each view is rendered at half the output height
+      renderWidth = wnd->GetWidth();
+      renderHeight = wnd->GetHeight() / 2;
    }
    else
    {
-      // Use the effective size of the created device's window (should be the same as the requested)
-      renderWidth = width;
-      renderHeight = height;
+      renderWidth = wnd->GetWidth();
+      renderHeight = wnd->GetHeight();
    }
    
-   // set the expected viewport for the newly created device
-   m_viewPort.X = 0;
-   m_viewPort.Y = 0;
-   m_viewPort.Width = renderWidth;
-   m_viewPort.Height = renderHeight;
-   m_viewPort.MinZ = 0.0f;
-   m_viewPort.MaxZ = 1.0f;
-
    try {
-      m_pd3dPrimaryDevice = new RenderDevice(g_pplayer->m_playfieldWnd, renderWidth, renderHeight, fullScreen, colordepth, 
-         m_AAfactor, stereo3D, useNvidiaApi, disableDWM, m_BWrendering, nMSAASamples, refreshrate, syncMode, adapter);
+      m_pd3dPrimaryDevice = new RenderDevice(wnd, renderWidth, renderHeight, m_AAfactor, stereo3D, useNvidiaApi, disableDWM, m_BWrendering, nMSAASamples, syncMode);
    }
    catch (...) {
       // TODO better error handling => just let the exception up ?
@@ -273,8 +255,6 @@ Renderer::Renderer(PinTable* const table, const bool fullScreen, const int width
 
    const bool compressTextures = m_table->m_settings.LoadValueWithDefault(Settings::Player, "CompressTextures"s, false);
    m_pd3dPrimaryDevice->CompressTextures(compressTextures);
-
-   m_pd3dPrimaryDevice->SetViewport(&m_viewPort);
 
    //
 
@@ -364,6 +344,14 @@ Renderer::Renderer(PinTable* const table, const bool fullScreen, const int width
 
    m_pd3dPrimaryDevice->ResetRenderState();
    #if defined(ENABLE_DX9)
+   D3DVIEWPORT9 viewPort;
+   viewPort.X = 0;
+   viewPort.Y = 0;
+   viewPort.Width = renderWidth;
+   viewPort.Height = renderHeight;
+   viewPort.MinZ = 0.0f;
+   viewPort.MaxZ = 1.0f;
+   CHECKD3D(m_pd3dPrimaryDevice->GetCoreDevice()->SetViewport(&viewPort));
    CHECKD3D(m_pd3dPrimaryDevice->GetCoreDevice()->SetRenderState(D3DRS_LIGHTING, FALSE));
    CHECKD3D(m_pd3dPrimaryDevice->GetCoreDevice()->SetRenderState(D3DRS_CLIPPING, FALSE));
    CHECKD3D(m_pd3dPrimaryDevice->GetCoreDevice()->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1));
@@ -404,13 +392,13 @@ Renderer::~Renderer()
 
 void Renderer::TransformVertices(const Vertex3D_NoTex2 * const __restrict rgv, const WORD * const __restrict rgi, const int count, Vertex2D * const __restrict rgvout) const
 {
-   RECT viewport { 0, 0, (LONG)m_viewPort.Width, (LONG)m_viewPort.Height };
+   RECT viewport { 0, 0, (LONG)m_pd3dPrimaryDevice->GetOutputBackBuffer()->GetWidth(), (LONG)m_pd3dPrimaryDevice->GetOutputBackBuffer()->GetHeight() };
    m_mvp->GetModelViewProj(0).TransformVertices(rgv, rgi, count, rgvout, viewport);
 }
 
 void Renderer::TransformVertices(const Vertex3Ds* const __restrict rgv, const WORD* const __restrict rgi, const int count, Vertex2D* const __restrict rgvout) const
 {
-   RECT viewport { 0, 0, (LONG)m_viewPort.Width, (LONG)m_viewPort.Height };
+   RECT viewport { 0, 0, (LONG)m_pd3dPrimaryDevice->GetOutputBackBuffer()->GetWidth(), (LONG)m_pd3dPrimaryDevice->GetOutputBackBuffer()->GetHeight() };
    m_mvp->GetModelViewProj(0).TransformVertices(rgv, rgi, count, rgvout, viewport);
 }
 
@@ -825,18 +813,17 @@ Vertex3Ds Renderer::Unproject(const Vertex3Ds& point)
 {
    Matrix3D m2 = m_mvp->GetModelViewProj(0);
    m2.Invert();
-   const Vertex3Ds p(
-       2.0f * (point.x - (float)m_viewPort.X) / (float)m_viewPort.Width - 1.0f,
-       1.0f - 2.0f * (point.y - (float)m_viewPort.Y) / (float)m_viewPort.Height,
-       (point.z - m_viewPort.MinZ) / (m_viewPort.MaxZ - m_viewPort.MinZ));
+   const Vertex3Ds p(2.0f * point.x / (float)m_pd3dPrimaryDevice->GetOutputBackBuffer()->GetWidth() - 1.0f,
+      1.0f - 2.0f * point.y / (float)m_pd3dPrimaryDevice->GetOutputBackBuffer()->GetHeight(),
+       (point.z - 0.f /* MinZ */) / (1.f /* MaxZ */ - 0.f /* MinZ */));
    const Vertex3Ds p3 = m2 * p;
    return p3;
 }
 
 Vertex3Ds Renderer::Get3DPointFrom2D(const POINT& p)
 {
-   const Vertex3Ds pNear((float)p.x,(float)p.y,m_viewPort.MinZ);
-   const Vertex3Ds pFar ((float)p.x,(float)p.y,m_viewPort.MaxZ);
+   const Vertex3Ds pNear((float)p.x, (float)p.y, 0.f /* MinZ */);
+   const Vertex3Ds pFar ((float)p.x, (float)p.y, 1.f /* MaxZ */);
    const Vertex3Ds p1 = Unproject(pNear);
    const Vertex3Ds p2 = Unproject(pFar);
    constexpr float wz = 0.f;
@@ -985,8 +972,8 @@ void Renderer::UpdateStereoShaderState()
       // - Max separation is the separation of a point with a very high depth (compute it from eye separation which is physically measures, and near/far planes)
       // - ZPD is the depth at which separation is 0 (compute it from the zNullSeparation in ViewSetup)
       /*ModelViewProj stereoMVP;
-      m_table->mViewSetups[m_table->m_BG_current_set].ComputeMVP(m_ptable, m_viewPort.Width, m_viewPort.Height, true, stereoMVP);
-      RECT viewport { 0, 0, (LONG)m_viewPort.Width, (LONG)m_viewPort.Height };
+      m_table->mViewSetups[m_table->m_BG_current_set].ComputeMVP(m_ptable, Width, Height, true, stereoMVP);
+      RECT viewport { 0, 0, (LONG)Width, (LONG)Height };
       vec3 deepPt(0.f, 0.f, 0.f); // = 5000.f * stereoMVP.GetModelViewInverse().GetOrthoNormalDir();
       Vertex2D projLeft, projRight;
       stereoMVP.GetModelViewProj(0).TransformVertices(&deepPt, nullptr, 1, &projLeft, viewport);
@@ -1086,7 +1073,13 @@ void Renderer::PrepareFrame()
       RenderDynamics();
 
    // Resolve MSAA buffer to a normal one (noop if not using MSAA), allowing sampling it for postprocessing
-   m_pd3dPrimaryDevice->ResolveMSAA();
+   if (m_pd3dPrimaryDevice->GetMSAABackBufferTexture() != m_pd3dPrimaryDevice->GetBackBufferTexture())
+   {
+      const RenderPass* initial_rt = m_pd3dPrimaryDevice->GetCurrentPass();
+      m_pd3dPrimaryDevice->SetRenderTarget("Resolve MSAA"s, m_pd3dPrimaryDevice->GetBackBufferTexture());
+      m_pd3dPrimaryDevice->BlitRenderTarget(m_pd3dPrimaryDevice->GetMSAABackBufferTexture(), m_pd3dPrimaryDevice->GetBackBufferTexture(), true, true);
+      m_pd3dPrimaryDevice->SetRenderTarget(initial_rt->m_name + '+', initial_rt->m_rt);
+   }
 }
 
 void Renderer::SubmitFrame()
@@ -1857,8 +1850,6 @@ void Renderer::PrepareVideoBuffers()
       RenderTarget *sourceRT = renderedRT;
       m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_tex_fb_filtered, sourceRT->GetColorSampler());
       m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_tex_fb_unfiltered, sourceRT->GetColorSampler());
-      m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_areaTex, m_pd3dPrimaryDevice->m_SMAAareaTexture);
-      m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_searchTex, m_pd3dPrimaryDevice->m_SMAAsearchTexture);
       m_pd3dPrimaryDevice->m_FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / sourceRT->GetWidth()), (float)(1.0 / sourceRT->GetHeight()), (float)sourceRT->GetWidth(), (float)sourceRT->GetHeight());
 
       outputRT = m_pd3dPrimaryDevice->GetPreviousBackBufferTexture(); // We don't need it anymore, so use it as a third postprocess buffer

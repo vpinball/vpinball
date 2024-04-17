@@ -147,28 +147,6 @@ enum textureUsage
    DYNAMIC = 1
 };
 
-struct ViewPort
-{
-   union
-   {
-      struct
-      {
-         //SDL_Rect sdl_rect;
-         float front;
-         float rear;
-      };
-      struct
-      {
-         DWORD X;
-         DWORD Y;
-         DWORD Width;
-         DWORD Height;
-         float MinZ;
-         float MaxZ;
-      };
-   };
-};
-
 enum memoryPool
 {
    SYSTEM = 0,
@@ -279,8 +257,6 @@ enum clearType {
 };
 
 #elif defined(ENABLE_DX9)
-
-typedef D3DVIEWPORT9 ViewPort;
 
 enum colorFormat {
    GREY8 = D3DFMT_L8,

@@ -642,6 +642,8 @@ char* replace(const char* const original, const char* const pattern, const char*
  * @brief Detect whether the program is running on the Wine compatibility layer
  */
 bool IsOnWine();
+bool IsWindowsVistaOr7();
+bool IsWindows10_1803orAbove();
 
 #ifdef __STANDALONE__
 #include "renderer/typedefs3D.h"

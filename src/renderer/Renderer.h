@@ -12,7 +12,7 @@ class Renderable;
 class Renderer
 {
 public:
-   Renderer(PinTable* const table, const bool fullScreen, const int width, const int height, const int colordepth, int& refreshrate, VideoSyncMode& syncMode, const StereoMode stereo3D);
+   Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncMode, const StereoMode stereo3D);
    ~Renderer();
 
    void InitLayout(const float xpixoff = 0.f, const float ypixoff = 0.f);
@@ -109,7 +109,6 @@ public:
    Vertex3Ds m_cam = Vertex3Ds(0.f, 0.f, 0.f);
    float m_inc = 0.f;
 
-   ViewPort m_viewPort; // Viewport of the screen output (different from render size for VR, anaglyph, superscaling,...)
    float m_AAfactor;
 
    bool m_stereo3DfakeStereo;
