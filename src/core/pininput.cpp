@@ -35,27 +35,9 @@
 #define INPUT_BUFFER_SIZE MAX_KEYQUEUE_SIZE
 #define BALLCONTROL_DOUBLECLICK_THRESHOLD_USEC (500 * 1000)
 
-constexpr DWORD D_MOUSE_DRAGGED_LEFT = 1;
-constexpr DWORD D_MOUSE_DRAGGED_RIGHT = 2;
-constexpr DWORD D_MOUSE_DRAGGED_MIDDLE = 3;
-constexpr DWORD D_MOUSE_MOVED_LEFT_DOWN = 4;
-
-
 PinInput::PinInput()
 {
    ZeroMemory(this, sizeof(PinInput));
-
-#ifdef _WIN32
-   m_pDI = nullptr;
-#ifdef USE_DINPUT_FOR_KEYBOARD
-   m_pKeyboard = nullptr;
-#endif
-   m_pMouse = nullptr;
-#endif
-
-   m_leftMouseButtonDown = false;
-   m_rightMouseButtonDown = false;
-   m_middleMouseButtonDown = false;
 
    m_head = m_tail = 0;
 
@@ -157,15 +139,6 @@ PinInput::PinInput()
 
    m_mixerKeyDown = false;
    m_mixerKeyUp = false;
-
-#ifdef ENABLE_SDL_INPUT
-#ifdef ENABLE_SDL_GAMECONTROLLER
-   m_pSDLGameController = nullptr;
-#else
-   m_pSDLJoystick = nullptr;
-   m_pSDLRumbleDevice = nullptr;
-#endif
-#endif
 }
 
 PinInput::~PinInput()
@@ -548,77 +521,9 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
          {
             DIMOUSESTATE2 mouseState;
             hr = m_pMouse->GetDeviceState(sizeof(DIMOUSESTATE2), &mouseState);
-
             if ((hr == S_OK || hr == DI_BUFFEROVERFLOW) && (m_focusHWnd == GetForegroundWindow()))
             {
-               if (g_pplayer->m_throwBalls || g_pplayer->m_ballControl) // debug ball throw functionality
-               {
-                  if ((mouseState.rgbButtons[0] & 0x80) && !m_leftMouseButtonDown && !m_rightMouseButtonDown && !m_middleMouseButtonDown)
-                  {
-                     POINT curPos;
-                     GetCursorPos(&curPos);
-                     m_mouseX = curPos.x;
-                     m_mouseY = curPos.y;
-                     m_leftMouseButtonDown = true;
-                  }
-                  if (!(mouseState.rgbButtons[0] & 0x80) && m_leftMouseButtonDown && !m_rightMouseButtonDown && !m_middleMouseButtonDown)
-                  {
-                     POINT curPos;
-                     GetCursorPos(&curPos);
-                     m_mouseDX = curPos.x - m_mouseX;
-                     m_mouseDY = curPos.y - m_mouseY;
-                     didod[0].dwData = D_MOUSE_DRAGGED_LEFT;
-                     PushQueue(didod, APP_MOUSE);
-                     m_leftMouseButtonDown = false;
-                  }
-                  if ((mouseState.rgbButtons[1] & 0x80) && !m_rightMouseButtonDown && !m_leftMouseButtonDown && !m_middleMouseButtonDown)
-                  {
-                     POINT curPos;
-                     GetCursorPos(&curPos);
-                     m_mouseX = curPos.x;
-                     m_mouseY = curPos.y;
-                     m_rightMouseButtonDown = true;
-                  }
-                  if (!(mouseState.rgbButtons[1] & 0x80) && !m_leftMouseButtonDown && m_rightMouseButtonDown && !m_middleMouseButtonDown)
-                  {
-                     POINT curPos;
-                     GetCursorPos(&curPos);
-                     m_mouseDX = curPos.x - m_mouseX;
-                     m_mouseDY = curPos.y - m_mouseY;
-                     didod[0].dwData = D_MOUSE_DRAGGED_RIGHT;
-                     PushQueue(didod, APP_MOUSE);
-                     m_rightMouseButtonDown = false;
-                  }
-                  if ((mouseState.rgbButtons[2] & 0x80) && !m_rightMouseButtonDown && !m_leftMouseButtonDown && !m_middleMouseButtonDown)
-                  {
-                     POINT curPos;
-                     GetCursorPos(&curPos);
-                     m_mouseX = curPos.x;
-                     m_mouseY = curPos.y;
-                     m_middleMouseButtonDown = true;
-                  }
-                  if (!(mouseState.rgbButtons[2] & 0x80) && !m_rightMouseButtonDown && !m_leftMouseButtonDown && m_middleMouseButtonDown)
-                  {
-                     POINT curPos;
-                     GetCursorPos(&curPos);
-                     m_mouseDX = curPos.x - m_mouseX;
-                     m_mouseDY = curPos.y - m_mouseY;
-                     didod[0].dwData = D_MOUSE_DRAGGED_MIDDLE;
-                     PushQueue(didod, APP_MOUSE);
-                     m_middleMouseButtonDown = false;
-                  }
-                  if (g_pplayer->m_ballControl && !g_pplayer->m_throwBalls && m_leftMouseButtonDown && !m_rightMouseButtonDown && !m_middleMouseButtonDown)
-                  {
-                     POINT curPos;
-                     GetCursorPos(&curPos);
-                     didod[0].dwData = D_MOUSE_MOVED_LEFT_DOWN;
-                     m_mouseX = curPos.x;
-                     m_mouseY = curPos.y;
-                     PushQueue(didod, APP_MOUSE);
-                  }
-
-               } //if (g_pplayer->m_fThrowBalls)
-               else
+               if (!g_pplayer->m_throwBalls && !g_pplayer->m_ballControl)
                {
                   for (DWORD i = 0; i < 3; i++)
                   {
@@ -792,16 +697,6 @@ void PinInput::HandleInputXI(DIDEVICEOBJECTDATA *didod)
 #endif
 }
 
-#ifdef ENABLE_SDL_INPUT
-void PinInput::SdlScaleHidpi(const Sint32 x, const Sint32 y, Sint32* ox, Sint32* oy)
-{
-   // Precision is not great because the events need float coordinates
-   // Fixed in SDL3 https://github.com/libsdl-org/SDL/issues/2999
-   *ox = static_cast<Sint32>(g_pplayer->m_wnd_scale_x * x);
-   *oy = static_cast<Sint32>(g_pplayer->m_wnd_scale_y * y);
-}
-#endif
-
 void PinInput::HandleSDLEvents(DIDEVICEOBJECTDATA* didod)
 {
 #if defined(ENABLE_SDL_INPUT) || defined(ENABLE_SDL_VIDEO)
@@ -828,10 +723,6 @@ void PinInput::HandleSDLEvents(DIDEVICEOBJECTDATA* didod)
       case SDL_WINDOWEVENT:
          switch (e.window.event)
          {
-         case SDL_WINDOWEVENT_RESIZED:
-            g_pplayer->m_wnd_scale_x = static_cast<float>(g_pplayer->m_playfieldWnd->GetWidth()) / static_cast<float>(e.window.data1);
-            g_pplayer->m_wnd_scale_y = static_cast<float>(g_pplayer->m_playfieldWnd->GetHeight()) / static_cast<float>(e.window.data2);
-            break;
          case SDL_WINDOWEVENT_FOCUS_GAINED: g_pplayer->OnFocusChanged(true); break;
          case SDL_WINDOWEVENT_FOCUS_LOST: g_pplayer->OnFocusChanged(false); break;
          case SDL_WINDOWEVENT_CLOSE: g_pvp->QuitPlayer(Player::CloseState::CS_STOP_PLAY); break;
@@ -859,66 +750,6 @@ void PinInput::HandleSDLEvents(DIDEVICEOBJECTDATA* didod)
                m_lastcursorx = e.motion.x;
                m_lastcursory = e.motion.y;
                g_pplayer->ShowMouseCursor(true);
-            }
-            if (g_pplayer->m_throwBalls || g_pplayer->m_ballControl)
-            {
-               if (g_pplayer->m_ballControl && !g_pplayer->m_throwBalls && m_leftMouseButtonDown && !m_rightMouseButtonDown && !m_middleMouseButtonDown)
-               {
-                  didod[0].dwData = D_MOUSE_MOVED_LEFT_DOWN;
-                  Sint32 x, y;
-                  SdlScaleHidpi(e.motion.x, e.motion.y, &x, &y);
-                  m_mouseX = x;
-                  m_mouseY = y;
-                  PushQueue(didod, APP_MOUSE);
-               }
-            }
-         }
-         break;
-      case SDL_MOUSEBUTTONDOWN:
-         if (g_pplayer->m_throwBalls || g_pplayer->m_ballControl)
-         {
-            if (e.button.button == SDL_BUTTON_LEFT)
-               m_leftMouseButtonDown = true;
-            else if (e.button.button == SDL_BUTTON_MIDDLE)
-               m_middleMouseButtonDown = true;
-            else if (e.button.button == SDL_BUTTON_RIGHT)
-               m_rightMouseButtonDown = true;
-            Sint32 x, y;
-            SdlScaleHidpi(e.button.x, e.button.y, &x, &y);
-            m_mouseX = x;
-            m_mouseY = y;
-         }
-         break;
-      case SDL_MOUSEBUTTONUP:
-         if (g_pplayer->m_throwBalls || g_pplayer->m_ballControl)
-         {
-            if (e.button.button == SDL_BUTTON_LEFT)
-            {
-               m_leftMouseButtonDown = false;
-               Sint32 x, y;
-               SdlScaleHidpi(e.button.x, e.button.y, &x, &y);
-               m_mouseDX = x - m_mouseX;
-               m_mouseDY = y - m_mouseY;
-               didod[0].dwData = D_MOUSE_DRAGGED_LEFT;
-               PushQueue(didod, APP_MOUSE);
-            } else if (e.button.button == SDL_BUTTON_MIDDLE)
-            {
-               m_middleMouseButtonDown = false;
-               Sint32 x, y;
-               SdlScaleHidpi(e.button.x, e.button.y, &x, &y);
-               m_mouseDX = x - m_mouseX;
-               m_mouseDY = y - m_mouseY;
-               didod[0].dwData = D_MOUSE_DRAGGED_MIDDLE;
-               PushQueue(didod, APP_MOUSE);
-            } else if (e.button.button == SDL_BUTTON_RIGHT)
-            {
-               m_rightMouseButtonDown = false;
-               Sint32 x, y;
-               SdlScaleHidpi(e.button.x, e.button.y, &x, &y);
-               m_mouseDX = x - m_mouseX;
-               m_mouseDY = y - m_mouseY;
-               didod[0].dwData = D_MOUSE_DRAGGED_RIGHT;
-               PushQueue(didod, APP_MOUSE);
             }
          }
          break;
@@ -1480,95 +1311,6 @@ void PinInput::Joy(const unsigned int n, const int updown, const bool start)
    if (m_joypmenter == n)    FireKeyEvent(updown, DIK_0);
 }
 
-void PinInput::ProcessThrowBalls(const DIDEVICEOBJECTDATA * __restrict input)
-{
-   #ifdef _WIN32
-   if (input->dwData == D_MOUSE_DRAGGED_LEFT || input->dwData == D_MOUSE_DRAGGED_MIDDLE)
-   {
-      POINT point = { m_mouseX, m_mouseY };
-      ScreenToClient(m_focusHWnd, &point);
-      const Vertex3Ds vertex = g_pplayer->m_renderer->Get3DPointFrom2D(point);
-
-      float vx = (float)m_mouseDX*0.1f;
-      float vy = (float)m_mouseDY*0.1f;
-      const float radangle = ANGTORAD(g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].mViewportRotation);
-      const float sn = sinf(radangle);
-      const float cs = cosf(radangle);
-      const float vx2 = cs*vx - sn*vy;
-      const float vy2 = sn*vx + cs*vy;
-      vx = -vx2;
-      vy = -vy2;
-
-		POINT newPoint;
-		GetCursorPos(&newPoint);
-		ScreenToClient(m_focusHWnd, &newPoint);
-		const Vertex3Ds vert = g_pplayer->m_renderer->Get3DPointFrom2D(newPoint);
-
-		if (g_pplayer->m_ballControl)
-		{
-			// If Ball Control and Throw Balls are both checked, that means
-			// we want ball throwing behavior with the sensed active ball, instead
-			// of creating new ones 
-			Ball * const pBall = g_pplayer->m_pactiveballBC;
-			if (pBall)
-			{
-				pBall->m_d.m_pos.x = vert.x;
-				pBall->m_d.m_pos.y = vert.y;
-				pBall->m_d.m_vel.x = vx;
-				pBall->m_d.m_vel.y = vy;
-			}
-		}
-		else
-		{
-			bool ballGrabbed = false;
-			if (input->dwData == D_MOUSE_DRAGGED_LEFT)
-			{
-				for (size_t i = 0; i < g_pplayer->m_vball.size(); i++)
-				{
-					Ball * const pBall = g_pplayer->m_vball[i];
-					const float dx = fabsf(vertex.x - pBall->m_d.m_pos.x);
-					const float dy = fabsf(vertex.y - pBall->m_d.m_pos.y);
-					if (dx < pBall->m_d.m_radius*2.f && dy < pBall->m_d.m_radius*2.f)
-					{
-						ballGrabbed = true;
-						pBall->m_d.m_pos.x = vert.x;
-						pBall->m_d.m_pos.y = vert.y;
-						pBall->m_d.m_vel.x = vx;
-						pBall->m_d.m_vel.y = vy;
-						pBall->Init(1.f);
-						break;
-					}
-				}
-			}
-			if (!ballGrabbed)
-			{
-				const float z = (input->dwData == D_MOUSE_DRAGGED_MIDDLE) ? g_pplayer->m_ptable->m_glassTopHeight : 0.f;
-				Ball * const pball = g_pplayer->CreateBall(vertex.x, vertex.y, z, vx, vy, 0, (float)g_pplayer->m_debugBallSize*0.5f, g_pplayer->m_debugBallMass);
-				pball->m_pballex->AddRef();
-			}
-		}
-    }
-    else if (input->dwData == D_MOUSE_DRAGGED_RIGHT)
-    {
-        POINT point = { m_mouseX, m_mouseY };
-        ScreenToClient(m_focusHWnd, &point);
-        const Vertex3Ds vertex = g_pplayer->m_renderer->Get3DPointFrom2D(point);
-
-        for (size_t i = 0; i < g_pplayer->m_vball.size(); i++)
-        {
-            Ball * const pBall = g_pplayer->m_vball[i];
-            const float dx = fabsf(vertex.x - pBall->m_d.m_pos.x);
-            const float dy = fabsf(vertex.y - pBall->m_d.m_pos.y);
-            if (dx < pBall->m_d.m_radius*2.f && dy < pBall->m_d.m_radius*2.f)
-            {
-                g_pplayer->DestroyBall(pBall);
-                break;
-            }
-        }
-    }
-   #endif
-}
-
 void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int curr_time_msec)
 {
     const int joyk = input->dwSequence - APP_JOYSTICKMN; // joystick index
@@ -2040,9 +1782,7 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
    {
       if (input->dwSequence == APP_MOUSE && g_pplayer && !g_pplayer->m_liveUI->HasMouseCapture())
       {
-         if (g_pplayer->m_throwBalls)
-            ProcessThrowBalls(input);
-         else
+         if (!g_pplayer->m_throwBalls && !g_pplayer->m_ballControl)
          {
             for(int i = 1; i <= 3; ++i)
             {

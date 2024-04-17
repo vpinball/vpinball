@@ -77,8 +77,6 @@ public:
 
    void ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int curr_time_msec);
 
-   void ProcessThrowBalls(const DIDEVICEOBJECTDATA * __restrict input);
-
    // Speed: 0..1
    void PlayRumble(const float lowFrequencySpeed, const float highFrequencySpeed, const int ms_duration);
 
@@ -126,29 +124,22 @@ private:
    static BOOL CALLBACK EnumObjectsCallbackDI(const DIDEVICEOBJECTINSTANCE *pdidoi, VOID *pContext);
    static BOOL CALLBACK EnumJoystickCallbackDI(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef);
    #ifdef USE_DINPUT8
-      LPDIRECTINPUT8 m_pDI;
+      LPDIRECTINPUT8 m_pDI = nullptr;
       LPDIRECTINPUTDEVICE8 m_pJoystick[PININ_JOYMXCNT];
-      LPDIRECTINPUTDEVICE8 m_pMouse;
+      LPDIRECTINPUTDEVICE8 m_pMouse = nullptr;
       #ifdef USE_DINPUT_FOR_KEYBOARD
-         LPDIRECTINPUTDEVICE8 m_pKeyboard;
+         LPDIRECTINPUTDEVICE8 m_pKeyboard = nullptr;
       #endif
    #else
-      LPDIRECTINPUT m_pDI;
+      LPDIRECTINPUT m_pDI = nullptr;
       LPDIRECTINPUTDEVICE m_pJoystick[PININ_JOYMXCNT];
-      LPDIRECTINPUTDEVICE m_pMouse;
+      LPDIRECTINPUTDEVICE m_pMouse = nullptr;
       #ifdef USE_DINPUT_FOR_KEYBOARD
-         LPDIRECTINPUTDEVICE m_pKeyboard;
+         LPDIRECTINPUTDEVICE m_pKeyboard = nullptr;
       #endif
    #endif
 #endif
 
-   int m_mouseX;
-   int m_mouseY;
-   int m_mouseDX;
-   int m_mouseDY;
-   bool m_leftMouseButtonDown;
-   bool m_rightMouseButtonDown;
-   bool m_middleMouseButtonDown;
    BYTE m_oldMouseButtonState[3];
 
    U32 m_firedautostart;
@@ -201,13 +192,12 @@ private:
 #endif
 
 #ifdef ENABLE_SDL_INPUT
-   static void SdlScaleHidpi(Sint32 x, Sint32 y, Sint32 *ox, Sint32 *oy);
    #ifdef ENABLE_SDL_GAMECONTROLLER
-      SDL_GameController* m_pSDLGameController;
+      SDL_GameController* m_pSDLGameController = nullptr;
       void RefreshSDLGameController();
    #else
-      SDL_Joystick* m_pSDLJoystick;
-      SDL_Haptic* m_pSDLRumbleDevice;
+      SDL_Joystick* m_pSDLJoystick = nullptr;
+      SDL_Haptic* m_pSDLRumbleDevice = nullptr;
       void RefreshSDLJoystick();
    #endif
 #endif
