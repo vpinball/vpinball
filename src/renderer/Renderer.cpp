@@ -811,13 +811,13 @@ void Renderer::InitLayout(const float xpixoff, const float ypixoff)
 
 Vertex3Ds Renderer::Unproject(const Vertex3Ds& point)
 {
-   Matrix3D m2 = m_mvp->GetModelViewProj(0);
-   m2.Invert();
-   const Vertex3Ds p(2.0f * point.x / (float)m_pd3dPrimaryDevice->GetOutputBackBuffer()->GetWidth() - 1.0f,
+   Matrix3D invMVP = m_mvp->GetModelViewProj(0);
+   invMVP.Invert();
+   const Vertex3Ds p(
+             2.0f * point.x / (float)m_pd3dPrimaryDevice->GetOutputBackBuffer()->GetWidth()  - 1.0f,
       1.0f - 2.0f * point.y / (float)m_pd3dPrimaryDevice->GetOutputBackBuffer()->GetHeight(),
-       (point.z - 0.f /* MinZ */) / (1.f /* MaxZ */ - 0.f /* MinZ */));
-   const Vertex3Ds p3 = m2 * p;
-   return p3;
+      (point.z - 0.f /* MinZ */) / (1.f /* MaxZ */ - 0.f /* MinZ */));
+   return invMVP * p;
 }
 
 Vertex3Ds Renderer::Get3DPointFrom2D(const POINT& p)
@@ -829,8 +829,7 @@ Vertex3Ds Renderer::Get3DPointFrom2D(const POINT& p)
    constexpr float wz = 0.f;
    const float wx = ((wz - p1.z)*(p2.x - p1.x)) / (p2.z - p1.z) + p1.x;
    const float wy = ((wz - p1.z)*(p2.y - p1.y)) / (p2.z - p1.z) + p1.y;
-   const Vertex3Ds vertex(wx, wy, wz);
-   return vertex;
+   return Vertex3Ds(wx, wy, wz);
 }
 
 void Renderer::SetupShaders()
