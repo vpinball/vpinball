@@ -440,9 +440,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    SDL_GL_GetDrawableSize(m_playfieldWnd->GetCore(), &wnd_width, &wnd_height); // Size in pixels
    int realWindowWidth, realWindowHeight;
    SDL_GetWindowSize(m_playfieldWnd->GetCore(), &realWindowWidth, &realWindowHeight); // Size in screen coordinates (taking in account HiDPI)
-   m_wnd_scale_x = static_cast<float>(wnd_width) / realWindowWidth;
-   m_wnd_scale_y = static_cast<float>(wnd_height) / realWindowHeight;
-   PLOGI << "SDL drawable size: " << wnd_width << 'x' << wnd_height;
+   PLOGI << "SDL drawable size: " << wnd_width << 'x' << wnd_height << " (screen size: " << realWindowWidth << 'x' << realWindowHeight << ")";
    #endif
 
    m_renderer->DisableStaticPrePass(playMode != 0);

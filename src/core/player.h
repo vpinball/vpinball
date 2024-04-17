@@ -455,10 +455,6 @@ public:
 #ifndef __STANDALONE__
    DebuggerDialog m_debuggerDialog;
 #endif
-#ifdef ENABLE_SDL_INPUT
-   float m_wnd_scale_x;
-   float m_wnd_scale_y;
-#endif
    bool m_debugMode = false;
    HWND m_hwndDebugOutput = nullptr;
    bool m_showDebugger = false;

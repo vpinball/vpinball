@@ -1108,15 +1108,109 @@ void LiveUI::Update(const RenderTarget *rt)
       UpdateTweakModeUI();
       ImGui::PopFont();
    }
-   else
-   { // No UI: ball control & throw balls
-      if (m_player->m_ballControl && ImGui::IsMouseDown(ImGuiMouseButton_Left))
+   else if (m_player->m_throwBalls || m_player->m_ballControl)
+   { // No UI displayed: process ball control & throw balls
+      if (m_player->m_throwBalls && ImGui::IsMouseDown(ImGuiMouseButton_Right))
+      {
+         const ImVec2 mousePos = ImGui::GetMousePos();
+         POINT point { (LONG)mousePos.x, (LONG)mousePos.y };
+         const Vertex3Ds vertex = m_renderer->Get3DPointFrom2D(point);
+         for (size_t i = 0; i < g_pplayer->m_vball.size(); i++)
+         {
+            Ball *const pBall = g_pplayer->m_vball[i];
+            const float dx = fabsf(vertex.x - pBall->m_d.m_pos.x);
+            const float dy = fabsf(vertex.y - pBall->m_d.m_pos.y);
+            if (dx < pBall->m_d.m_radius * 2.f && dy < pBall->m_d.m_radius * 2.f)
+            {
+                g_pplayer->DestroyBall(pBall);
+                break;
+            }
+         }
+      }
+      else if (m_player->m_throwBalls && (ImGui::GetMouseDragDelta().x != 0.f || ImGui::GetMouseDragDelta().y != 0.f))
+      {
+         const ImVec2 mousePos = ImGui::GetMousePos();
+         const ImVec2 mouseDrag = ImGui::GetMouseDragDelta();
+         const ImVec2 mouseInitalPos = mousePos - mouseDrag;
+         const POINT point { (LONG)mouseInitalPos.x, (LONG)mouseInitalPos.y };
+         const Vertex3Ds vertex = m_renderer->Get3DPointFrom2D(point);
+         const POINT newPoint { (LONG)mousePos.x, (LONG)mousePos.y };
+         const Vertex3Ds vert = m_renderer->Get3DPointFrom2D(newPoint);
+
+         ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
+         ImGui::SetNextWindowPos(ImVec2(0, 0));
+         ImGui::PushStyleColor(ImGuiCol_WindowBg, 0);
+         ImGui::PushStyleColor(ImGuiCol_Border, 0);
+         ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+         ImGui::Begin("Ball throw overlay", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoBringToFrontOnFocus);
+         ImGui::GetWindowDrawList()->AddLine(mousePos, mouseInitalPos, IM_COL32(255, 128, 0, 255));
+         ImGui::End();
+         ImGui::PopStyleVar();
+         ImGui::PopStyleColor(2);
+
+         if (ImGui::IsMouseReleased(ImGuiMouseButton_Left) || ImGui::IsMouseReleased(ImGuiMouseButton_Middle))
+         {
+            float vx = mouseDrag.x * 0.1f;
+            float vy = mouseDrag.y * 0.1f;
+            const float radangle = ANGTORAD(m_live_table->mViewSetups[m_live_table->m_BG_current_set].mViewportRotation);
+            const float sn = sinf(radangle);
+            const float cs = cosf(radangle);
+            const float vx2 = cs * vx - sn * vy;
+            const float vy2 = sn * vx + cs * vy;
+            vx = -vx2;
+            vy = -vy2;
+
+            if (m_player->m_ballControl)
+            { // If Ball Control and Throw Balls are both checked, that means we want ball throwing behavior with the sensed active ball, instead of creating new ones
+               Ball *const pBall = m_player->m_pactiveballBC;
+               if (pBall)
+               {
+                  pBall->m_d.m_pos.x = vert.x;
+                  pBall->m_d.m_pos.y = vert.y;
+                  pBall->m_d.m_vel.x = vx;
+                  pBall->m_d.m_vel.y = vy;
+               }
+            }
+            else
+            {
+               bool ballGrabbed = false;
+               if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+               {
+                  for (size_t i = 0; i < m_player->m_vball.size(); i++)
+                  {
+                     Ball *const pBall = m_player->m_vball[i];
+                     const float dx = fabsf(vertex.x - pBall->m_d.m_pos.x);
+                     const float dy = fabsf(vertex.y - pBall->m_d.m_pos.y);
+                     if (dx < pBall->m_d.m_radius * 2.f && dy < pBall->m_d.m_radius * 2.f)
+                     {
+                        ballGrabbed = true;
+                        pBall->m_d.m_pos.x = vert.x;
+                        pBall->m_d.m_pos.y = vert.y;
+                        pBall->m_d.m_vel.x = vx;
+                        pBall->m_d.m_vel.y = vy;
+                        pBall->Init(1.f);
+                        break;
+                     }
+                  }
+               }
+               if (!ballGrabbed)
+               {
+                  const float z = ImGui::IsMouseReleased(ImGuiMouseButton_Middle) ? m_live_table->m_glassTopHeight : 0.f;
+                  Ball *const pball = m_player->CreateBall(vertex.x, vertex.y, z, vx, vy, 0, (float)m_player->m_debugBallSize * 0.5f, m_player->m_debugBallMass);
+                  pball->m_pballex->AddRef();
+               }
+            }
+         }
+      }
+      else if (!m_player->m_throwBalls && m_player->m_ballControl && ImGui::IsMouseDown(ImGuiMouseButton_Left))
       {
          // Note that ball control release is handled by pininput
          const ImVec2 mousePos = ImGui::GetMousePos();
          POINT point { (LONG)mousePos.x, (LONG)mousePos.y };
          m_player->m_pBCTarget = new Vertex3Ds(m_renderer->Get3DPointFrom2D(point));
-         if (ImGui::GetMouseClickedCount(ImGuiMouseButton_Left) >= 2)
+         m_player->m_pBCTarget->x = clamp(m_player->m_pBCTarget->x, 0.f, m_live_table->m_right);
+         m_player->m_pBCTarget->y = clamp(m_player->m_pBCTarget->y, 0.f, m_live_table->m_bottom);
+         if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
          {
             // Double click.  Move the ball directly to the target if possible.
             // Drop it from the glass height, so it will appear over any object (or on a raised playfield)
@@ -1125,7 +1219,7 @@ void LiveUI::Update(const RenderTarget *rt)
             {
                 pBall->m_d.m_pos.x = m_player->m_pBCTarget->x;
                 pBall->m_d.m_pos.y = m_player->m_pBCTarget->y;
-                pBall->m_d.m_pos.z = m_player->m_ptable->m_glassTopHeight; // FIXME compute glass height at y position
+                pBall->m_d.m_pos.z = m_live_table->m_glassTopHeight;
                 pBall->m_d.m_vel.x = 0.0f;
                 pBall->m_d.m_vel.y = 0.0f;
                 pBall->m_d.m_vel.z = -1000.0f;
