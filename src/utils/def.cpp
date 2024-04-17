@@ -332,6 +332,63 @@ bool IsOnWine()
    return result;
 }
 
+typedef HRESULT(STDAPICALLTYPE* pRGV)(LPOSVERSIONINFOEXW osi);
+static pRGV mRtlGetVersion = nullptr;
+
+bool IsWindows10_1803orAbove()
+{
+#ifndef __STANDALONE__
+   if (mRtlGetVersion == nullptr)
+      mRtlGetVersion = (pRGV)GetProcAddress(GetModuleHandle(TEXT("ntdll")), "RtlGetVersion"); // apparently the only really reliable solution to get the OS version (as of Win10 1803)
+
+   if (mRtlGetVersion != nullptr)
+   {
+      OSVERSIONINFOEXW osInfo;
+      osInfo.dwOSVersionInfoSize = sizeof(osInfo);
+      mRtlGetVersion(&osInfo);
+
+      if (osInfo.dwMajorVersion > 10)
+         return true;
+      if (osInfo.dwMajorVersion == 10 && osInfo.dwMinorVersion > 0)
+         return true;
+      if (osInfo.dwMajorVersion == 10 && osInfo.dwMinorVersion == 0 && osInfo.dwBuildNumber >= 17134) // which is the more 'common' 1803
+         return true;
+   }
+
+   return false;
+#else
+   return true;
+#endif
+}
+
+bool IsWindowsVistaOr7()
+{
+#ifndef __STANDALONE__
+   OSVERSIONINFOEXW osvi = { sizeof(osvi), 0, 0, 0, 0, { 0 }, 0, 0, 0, 0, 0 };
+   const DWORDLONG dwlConditionMask = //VerSetConditionMask(
+      VerSetConditionMask(VerSetConditionMask(0, VER_MAJORVERSION, VER_EQUAL), VER_MINORVERSION, VER_EQUAL) /*,
+      VER_SERVICEPACKMAJOR, VER_GREATER_EQUAL)*/
+      ;
+   osvi.dwMajorVersion = HIBYTE(_WIN32_WINNT_VISTA);
+   osvi.dwMinorVersion = LOBYTE(_WIN32_WINNT_VISTA);
+   //osvi.wServicePackMajor = 0;
+
+   const bool vista = VerifyVersionInfoW(&osvi, VER_MAJORVERSION | VER_MINORVERSION /*| VER_SERVICEPACKMAJOR*/, dwlConditionMask) != FALSE;
+
+   OSVERSIONINFOEXW osvi2 = { sizeof(osvi), 0, 0, 0, 0, { 0 }, 0, 0, 0, 0, 0 };
+   osvi2.dwMajorVersion = HIBYTE(_WIN32_WINNT_WIN7);
+   osvi2.dwMinorVersion = LOBYTE(_WIN32_WINNT_WIN7);
+   //osvi2.wServicePackMajor = 0;
+
+   const bool win7 = VerifyVersionInfoW(&osvi2, VER_MAJORVERSION | VER_MINORVERSION /*| VER_SERVICEPACKMAJOR*/, dwlConditionMask) != FALSE;
+
+   return vista || win7;
+#else
+   return false;
+#endif
+}
+
+
 #ifdef __STANDALONE__
 void copy_folder(const string& srcPath, const string& dstPath)
 {

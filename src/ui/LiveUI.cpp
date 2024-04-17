@@ -748,11 +748,11 @@ LiveUI::LiveUI(RenderDevice *const rd)
    io.Fonts->AddFontFromMemoryCompressedTTF(fork_awesome_compressed_data, fork_awesome_compressed_size, 13.0f * m_dpi, &icons_config, icons_ranges);
 
    // Overlays are displayed in the VR headset for which we do not have a meaningful DPI. This is somewhat hacky but we would really need 2 UI for VR.
-#ifndef __STANDALONE__
-   const float overlaySize = rd->m_stereo3D == STEREO_VR ? 20.0f : min(32.f * m_dpi, (float)min(m_player->m_playfieldWnd->GetWidth(), m_player->m_playfieldWnd->GetHeight()) / (26.f * 2.0f)); // Fit 26 lines of text on screen
-#else
-   const float overlaySize = 13.0f * m_dpi;
-#endif
+   #ifndef __STANDALONE__
+      const float overlaySize = rd->m_stereo3D == STEREO_VR ? 20.0f : min(32.f * m_dpi, (float)min(m_player->m_playfieldWnd->GetWidth(), m_player->m_playfieldWnd->GetHeight()) / (26.f * 2.0f)); // Fit 26 lines of text on screen
+   #else
+      const float overlaySize = 13.0f * m_dpi;
+   #endif
    m_overlayFont = io.Fonts->AddFontFromMemoryCompressedTTF(droidsans_compressed_data, droidsans_compressed_size, overlaySize);
    m_overlayBoldFont = io.Fonts->AddFontFromMemoryCompressedTTF(droidsansbold_compressed_data, droidsansbold_compressed_size, overlaySize);
    ImFont *H1 = io.Fonts->AddFontFromMemoryCompressedTTF(droidsansbold_compressed_data, droidsansbold_compressed_size, overlaySize * 20.0f / 13.f);
@@ -1074,7 +1074,7 @@ void LiveUI::Update(const RenderTarget *rt)
    // Display notification (except when script has an unaligned rotation)
    const U32 tick = msec();
    float notifY = io.DisplaySize.y * 0.5f;
-   const bool showNotifications = ((float)m_rotate * 90.0f == m_player->m_ptable->mViewSetups[m_player->m_ptable->m_BG_current_set].GetRotation(m_player->m_renderer->m_pd3dPrimaryDevice->m_width, m_player->m_renderer->m_pd3dPrimaryDevice->m_height));
+   const bool showNotifications = ((float)m_rotate * 90.0f == m_player->m_ptable->mViewSetups[m_player->m_ptable->m_BG_current_set].GetRotation(m_player->m_playfieldWnd->GetWidth(), m_player->m_playfieldWnd->GetHeight()));
    ImGui::PushFont(m_overlayFont);
    for (int i = (int)m_notifications.size() - 1; i >= 0; i--)
    {
@@ -2196,10 +2196,8 @@ void LiveUI::UpdateMainUI()
    // Selection and physic colliders overlay
    {
       ImGuiIO &io = ImGui::GetIO();
-      ViewPort vp;
-      m_renderer->m_pd3dPrimaryDevice->GetViewport(&vp);
-      const float rClipWidth = (float)vp.Width * 0.5f;
-      const float rClipHeight = (float)vp.Height * 0.5f;
+      const float rClipWidth = (float)m_player->m_playfieldWnd->GetWidth() * 0.5f;
+      const float rClipHeight = (float)m_player->m_playfieldWnd->GetHeight() * 0.5f;
       Matrix3D mvp = m_renderer->GetMVP().GetModelViewProj(0);
       auto project = [mvp, rClipWidth, rClipHeight](Vertex3Ds v)
       {
@@ -2304,10 +2302,8 @@ void LiveUI::UpdateMainUI()
       if (m_gizmoOperation == ImGuizmo::NONE && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
       {
          // Compute mouse position in clip space
-         ViewPort vp;
-         m_renderer->m_pd3dPrimaryDevice->GetViewport(&vp);
-         const float rClipWidth = (float)vp.Width * 0.5f;
-         const float rClipHeight = (float)vp.Height * 0.5f;
+         const float rClipWidth = (float)m_player->m_playfieldWnd->GetWidth() * 0.5f;
+         const float rClipHeight = (float)m_player->m_playfieldWnd->GetHeight() * 0.5f;
          const float xcoord = ((float)ImGui::GetMousePos().x - rClipWidth) / rClipWidth;
          const float ycoord = (rClipHeight - (float)ImGui::GetMousePos().y) / rClipHeight;
 

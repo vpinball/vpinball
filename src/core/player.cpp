@@ -283,9 +283,13 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
       wnd_width = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Width"s, m_fullScreen ? -1 : DEFAULT_PLAYER_WIDTH);
       wnd_height = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Height"s, wnd_width * 9 / 16);
    }
-   const int display = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Display"s, -1);
-   int refreshrate = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "RefreshRate"s, 0);
-   const int colordepth = m_stereo3D == STEREO_VR ? 32 : m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "ColorDepth"s, 32);
+   const int display = g_pvp->m_primaryDisplay ? -1 : m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Display"s, -1);
+   const int refreshrate = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "RefreshRate"s, 0);
+   const bool video10bit = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Render10Bit"s, false);
+   const int colordepth = (video10bit && m_fullScreen && m_stereo3D != STEREO_VR) ? 30 : 32;
+   if (!m_fullScreen && video10bit)
+      ShowError("10Bit-Monitor support requires 'Force exclusive Fullscreen Mode' to be also enabled!");
+
 
 #if defined(_MSC_VER) && !defined(__STANDALONE__)
    WNDCLASS wc;
@@ -420,16 +424,14 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
 
    PLOGI << "Initializing renderer (global states & resources)"; // For profiling
 
-   // colordepth & refreshrate are only defined if fullscreen is true.
-   // width and height may be modified during initialization (for example for VR, they are adapted to the headset resolution)
    try
    {
-      m_renderer = new Renderer(m_ptable, m_fullScreen, wnd_width, wnd_height, colordepth, refreshrate, m_videoSyncMode, m_stereo3D);
+      m_renderer = new Renderer(m_ptable, m_playfieldWnd, m_videoSyncMode, m_stereo3D);
    }
    catch (HRESULT hr)
    {
       char szFoo[64];
-      sprintf_s(szFoo, sizeof(szFoo), "InitRenderer Error code: %x", hr);
+      sprintf_s(szFoo, sizeof(szFoo), "Renderer initialization error code: %x", hr);
       ShowError(szFoo);
       throw hr;
    }
@@ -447,9 +449,6 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    m_renderer->m_pd3dPrimaryDevice->m_vsyncCount = 1;
    m_maxFramerate = (m_videoSyncMode != VideoSyncMode::VSM_NONE && m_maxFramerate == 0) ? refreshrate : min(m_maxFramerate, refreshrate);
    PLOGI << "Synchronization mode: " << m_videoSyncMode << " with maximum FPS: " << m_maxFramerate << ", display FPS: " << refreshrate;
-
-   // Set the output frame buffer size to the size of the window output
-   m_renderer->m_pd3dPrimaryDevice->GetOutputBackBuffer()->SetSize(wnd_width, wnd_height);
 
    PLOGI << "Initializing inputs & implicit objects"; // For profiling
 
@@ -798,17 +797,17 @@ Player::~Player()
       return;
    }
    m_closing = CS_CLOSED;
-   PLOGI << "Closing player... [Player's VBS intepreter is #" << m_ptable->m_pcv->m_pScript << "]";
+   PLOGI << "Closing player...";
 
-   delete m_playfieldWnd;
+   // signal the script that the game is now exited to allow any cleanup
+   m_ptable->FireVoidEvent(DISPID_GameEvents_Exit);
+   if (m_detectScriptHang)
+      g_pvp->PostWorkToWorkerThread(HANG_SNOOP_STOP, NULL);
 
-    g_frameProfiler.LogWorstFrame();
+   // Stop script engine before destroying objects
+   m_ptable->m_pcv->CleanUpScriptEngine();
 
-    // In Windows 10 1803, there may be a significant lag waiting for WM_DESTROY (msg sent by the delete call below) if script is not closed first.
-    // signal the script that the game is now exited to allow any cleanup
-    m_ptable->FireVoidEvent(DISPID_GameEvents_Exit);
-    if (m_detectScriptHang)
-        g_pvp->PostWorkToWorkerThread(HANG_SNOOP_STOP, NULL);
+   g_frameProfiler.LogWorstFrame();
 
    // Save list of used textures to avoid stuttering in next play
    if ((m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "CacheMode"s, 1) > 0) && FileExists(m_ptable->m_szFileName))
@@ -871,31 +870,25 @@ Player::~Player()
       myfile.close();
    }
 
-    // Save adjusted VR settings to the edited table
-    if (m_stereo3D == STEREO_VR)
-       m_vrDevice->SaveVRSettings(g_pvp->m_settings);
+   // Save adjusted VR settings
+   if (m_stereo3D == STEREO_VR)
+      m_vrDevice->SaveVRSettings(g_pvp->m_settings);
 
-    if (m_audio)
-        m_audio->MusicPause();
+   if (m_audio)
+      m_audio->MusicPause();
+   delete m_audio;
 
-    mixer_shutdown();
-    hid_shutdown();
+   mixer_shutdown();
+   hid_shutdown();
 
 #ifdef EXT_CAPTURE
-    StopCaptures();
-    g_DXGIRegistry.ReleaseAll();
+   StopCaptures();
+   g_DXGIRegistry.ReleaseAll();
 #endif
 
    delete m_liveUI;
-   m_liveUI = nullptr;
-
-   while (ShowCursor(FALSE) >= 0) ;
-   while(ShowCursor(TRUE) < 0) ;
-
    m_pininput.UnInit();
-
    delete m_physics;
-   m_physics = nullptr;
 
    for (auto probe : m_ptable->m_vrenderprobe)
       probe->RenderRelease();
@@ -914,7 +907,6 @@ Player::~Player()
       m_implicitPlayfieldMesh = nullptr;
    }
 
-   m_dmd = int2(0, 0);
    if (m_texdmd)
    {
       m_renderer->m_pd3dPrimaryDevice->m_DMDShader->SetTextureNull(SHADER_tex_dmd);
@@ -928,23 +920,49 @@ Player::~Player()
       fclose(m_fplaylog);
 #endif
 
-   delete m_audio;
-   m_audio = nullptr;
-
    for (size_t i = 0; i < m_controlclsidsafe.size(); i++)
       delete m_controlclsidsafe[i];
    m_controlclsidsafe.clear();
 
    m_changed_vht.clear();
 
+   //!! cleanup the whole mem management for balls, this is a mess!
+   // balls are added to the octree, but not the hit object vector
+   for (size_t i = 0; i < m_vball.size(); i++)
+   {
+      Ball *const pball = m_vball[i];
+      if (pball->m_pballex)
+      {
+         pball->m_pballex->m_pball = nullptr;
+         pball->m_pballex->Release();
+      }
+      delete pball->m_d.m_vpVolObjs;
+      delete pball;
+   }
+   //!! see above
+   //for (size_t i=0;i<m_vho_dynamic.size();i++)
+   //      delete m_vho_dynamic[i];
+   //m_vho_dynamic.clear();
+   m_vball.clear();
+
+   delete m_pBCTarget;
+   delete m_ptable;
+   delete m_renderer;
+   delete m_playfieldWnd;
+
    g_pplayer = nullptr;
 
    restore_win_timer_resolution();
 
    LockForegroundWindow(false);
+   while (ShowCursor(FALSE) >= 0);
+   while (ShowCursor(TRUE) < 0);
+
+#ifndef __STANDALONE__
+   if (m_progressDialog.IsWindow())
+      m_progressDialog.Destroy();
 
    // Reactivate edited table or close application if requested
-#ifndef __STANDALONE__
    if (m_closing == CS_CLOSE_APP)
    {
       g_pvp->PostMessage(WM_CLOSE, 0, 0);
@@ -966,51 +984,14 @@ Player::~Player()
       m_pEditorTable->RefreshProperties();
       m_pEditorTable->BeginAutoSaveCounter();
    }
-#endif
 
-   PLOGI << "Player closed.";
-
-   m_ptable->StopPlaying();
-   delete m_pBCTarget;
-   delete m_ptable;
-
-   //!! cleanup the whole mem management for balls, this is a mess!
-
-   // balls are added to the octree, but not the hit object vector
-   for (size_t i = 0; i < m_vball.size(); i++)
-   {
-      Ball *const pball = m_vball[i];
-      if (pball->m_pballex)
-      {
-         pball->m_pballex->m_pball = nullptr;
-         pball->m_pballex->Release();
-      }
-
-      delete pball->m_d.m_vpVolObjs;
-      delete pball;
-   }
-
-   //!! see above
-   //for (size_t i=0;i<m_vho_dynamic.size();i++)
-   //      delete m_vho_dynamic[i];
-   //m_vho_dynamic.clear();
-
-   m_vball.clear();
-
-#ifndef __STANDALONE__
-   if (m_progressDialog.IsWindow())
-      m_progressDialog.Destroy();
-#endif
-
-   delete m_renderer;
-   m_renderer = nullptr;
-
-#if defined(_MSC_VER) && !defined(__STANDALONE__)
    ::UnregisterClass(WIN32_PLAYER_WND_CLASSNAME, g_pvp->theInstance);
    #ifdef ENABLE_SDL_VIDEO
    SDL_UnregisterApp();
    #endif
 #endif
+
+   PLOGI << "Player closed.";
 }
 
 void Player::InitFPS()
@@ -1066,6 +1047,9 @@ void Player::SetPlayState(const bool isPlaying, const U32 delayBeforePauseMs)
 
 void Player::OnFocusChanged(const bool isGameFocused)
 {
+   // A lost focus event happens during player destruction when the main window is destroyed
+   if (m_closing == CS_CLOSED)
+      return;
    bool wasPlaying = IsPlaying();
    bool willPlay = m_playing && isGameFocused;
    if (wasPlaying != willPlay)
@@ -1773,7 +1757,7 @@ void Player::PrepareFrame()
 
    g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_MISC);
    if (m_stereo3D != STEREO_VR)
-      m_liveUI->Update(m_renderer->m_pd3dPrimaryDevice->GetOutputBackBuffer());
+      m_liveUI->Update(m_playfieldWnd->GetBackBuffer());
    else if (m_liveUI->IsTweakMode())
       m_liveUI->Update(m_renderer->m_pd3dPrimaryDevice->GetOffscreenVR(0));
    g_frameProfiler.ExitProfileSection();

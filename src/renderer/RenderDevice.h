@@ -14,6 +14,7 @@
 #include "TextureManager.h"
 #include "RenderFrame.h"
 #include "RenderPass.h"
+#include "Window.h"
 
 #if defined(ENABLE_SDL_VIDEO)
 #include "SDL2/SDL.h"
@@ -43,12 +44,8 @@ void ReportError(const char *errorText, const HRESULT hr, const char *file, cons
 #define CHECKD3D(s) { s; }
 #endif
 
-bool IsWindowsVistaOr7();
-bool IsWindows10_1803orAbove();
-
 class Shader;
 class ModelViewProj;
-namespace VPX { class Window; }
 
 class RenderDeviceState
 {
@@ -109,9 +106,8 @@ public:
    };
 #endif
 
-   RenderDevice(VPX::Window* const wnd, const int width, const int height, const bool fullscreen, const int colordepth, const float AAfactor,
-      const StereoMode stereo3D, const bool useNvidiaApi, const bool disable_dwm, const int BWrendering, int nMSAASamples, 
-      int& refreshrate, VideoSyncMode& syncMode, UINT adapterIndex = D3DADAPTER_DEFAULT);
+   RenderDevice(VPX::Window* const wnd, const int width, const int height, const float AAfactor, const StereoMode stereo3D, 
+      const bool useNvidiaApi, const bool disable_dwm, const int BWrendering, int nMSAASamples, VideoSyncMode& syncMode);
    ~RenderDevice();
 
    RenderPass* GetCurrentPass() { return m_currentPass; }
@@ -146,15 +142,16 @@ public:
       return false;
       #elif defined(ENABLE_OPENGL)
       // TODO remove geometry shader, and only support layered rendering on driver supporting ARB_shader_viewport_layer_array (all GPU starting GTX950+),
-      // the performance impact will be positive for normal rendering, limited for VR/stereo and these old GPU are not really able to render in VR/Stereo
+      // the performance impact should be positive for normal rendering and VR/stereo (older GPU are not really able to render in VR/Stereo)
       return true;
       #elif defined(ENABLE_DX9)
       return false;
       #endif
    }
 
+// FIXME move all these to the renderer (as they implement the renderer logic and not the render device interface)
+public:
    RenderTarget* GetMSAABackBufferTexture() const { return m_pOffscreenMSAABackBufferTexture ? m_pOffscreenMSAABackBufferTexture : m_pOffscreenBackBufferTexture1; } // Main render target, may be MSAA enabled and not suited for sampling, also may have stereo output (2 viewports)
-   void ResolveMSAA(); // Resolve MSAA back buffer texture to be sample  from back buffer texture
    RenderTarget* GetBackBufferTexture() const { return m_pOffscreenBackBufferTexture1; } // Main render target, with MSAA resolved if any, also may have stereo output (2 viewports)
    RenderTarget* GetPreviousBackBufferTexture() const { return m_pOffscreenBackBufferTexture2; } // Same as back buffer but for previous frame
    RenderTarget* GetPostProcessRenderTarget1();
@@ -168,7 +165,25 @@ public:
    void SwapBackBufferRenderTargets();
    void SwapAORenderTargets();
    void ReleaseAORenderTargets() { delete m_pAORenderTarget1; m_pAORenderTarget1 = nullptr; delete m_pAORenderTarget2; m_pAORenderTarget2 = nullptr; }
-   RenderTarget* GetOutputBackBuffer() const { return m_pBackBuffer; } // The screen render target (the only one which is not stereo when doing stereo rendering)
+
+private:
+   const float   m_AAfactor; // AAfactor applied ot some render buffers
+   RenderTarget* m_pOffscreenMSAABackBufferTexture = nullptr;
+   RenderTarget* m_pOffscreenBackBufferTexture1 = nullptr;
+   RenderTarget* m_pOffscreenBackBufferTexture2 = nullptr;
+   RenderTarget* m_pPostProcessRenderTarget1 = nullptr;
+   RenderTarget* m_pPostProcessRenderTarget2 = nullptr;
+   RenderTarget* m_pOffscreenVRLeft = nullptr;
+   RenderTarget* m_pOffscreenVRRight = nullptr;
+   RenderTarget* m_pBloomBufferTexture = nullptr;
+   RenderTarget* m_pBloomTmpBufferTexture = nullptr;
+   RenderTarget* m_pReflectionBufferTexture = nullptr;
+   RenderTarget* m_pAORenderTarget1 = nullptr;
+   RenderTarget* m_pAORenderTarget2 = nullptr;
+public:
+// End of FIXME move to renderer
+
+   RenderTarget* GetOutputBackBuffer() const { return m_outputWnd[0]->GetBackBuffer(); } // The screen render target (the only one which is not stereo when doing stereo rendering)
 
    bool DepthBufferReadBackAvailable();
 
@@ -188,14 +203,6 @@ public:
    void ApplyRenderStates();
    RenderState& GetActiveRenderState() { return m_current_renderstate; }
 
-private:
-   RenderState m_current_renderstate, m_renderstate, m_defaultRenderState;
-   bool m_logNextFrame = false; // Output a log of next frame to main application log
-
-public:
-   void SetViewport(const ViewPort*);
-   void GetViewport(ViewPort*);
-
    void SetMainTextureDefaultFiltering(const SamplerFilter filter);
    void CompressTextures(const bool enable) { m_compress_textures = enable; }
 
@@ -208,86 +215,20 @@ public:
    unsigned int Perf_GetNumTextureUploads() const   { return m_frameTextureUpdates; }
    unsigned int Perf_GetNumLockCalls() const        { return m_frameLockCalls; }
 
-   #if defined(ENABLE_BGFX)
-   bgfx::ProgramHandle m_program = BGFX_INVALID_HANDLE; // Bound program for next draw submission
-   void NextView()
-   {
-      if (m_activeViewId == 254) // View 255 is reserved for ImGui
-         SubmitAndFlipFrame();
-      m_activeViewId++;
-      bgfx::resetView(m_activeViewId);
-      bgfx::setViewMode(m_activeViewId, bgfx::ViewMode::Sequential);
-      bgfx::setViewClear(m_activeViewId, BGFX_CLEAR_NONE);
-      bgfx::touch(m_activeViewId);
-   }
-   void SubmitAndFlipFrame()
-   {
-      // BGFX always flips backbuffer when its render queue is submitted
-      bgfx::frame();
-      RenderTarget::OnFrameFlushed();
-      m_activeViewId = -1;
-   }
-   
-   #elif defined(ENABLE_OPENGL)
-   int getGLVersion() const { return m_GLversion; }
-   
-   #elif defined(ENABLE_DX9)
-   IDirect3DDevice9* GetCoreDevice() const { return m_pD3DDevice; }
-   #endif
-
-   const int        m_width;  // Width of the render buffer (not the window width, for example for stereo the render width is doubled, or for VR, the size depends on the headset)
-   const int        m_height; // Height of the render buffer
-   const bool       m_fullscreen;
-   const int        m_colorDepth;
+   const int        m_width;  // Width of the render buffers (not the window width, for example for stereo the render is adjusted, or for VR, the size depends on the headset)
+   const int        m_height; // Height of the render buffers
    const StereoMode m_stereo3D;
-   const float      m_AAfactor;
 
-private:
-   void UploadAndSetSMAATextures();
-
-public:
-   Sampler* m_SMAAsearchTexture = nullptr;
-   Sampler* m_SMAAareaTexture = nullptr;
    Sampler* m_nullTexture = nullptr;
 
-private:
-   unsigned int m_nOutputWnd = 1; // Swap chain always has at least one output window (OpenGL & DX9 only supports one, DX11+/Metal/Vulkan support multiple)
-   VPX::Window* m_outputWnd[8];
-   unsigned int m_adapter; // FIXME remove (part of main output window) : index of the display adapter to use
-
-   RenderTarget* m_pBackBuffer = nullptr;
-
-   RenderTarget* m_pOffscreenMSAABackBufferTexture = nullptr;
-   RenderTarget* m_pOffscreenBackBufferTexture1 = nullptr;
-   RenderTarget* m_pOffscreenBackBufferTexture2 = nullptr;
-   RenderTarget* m_pPostProcessRenderTarget1 = nullptr;
-   RenderTarget* m_pPostProcessRenderTarget2 = nullptr;
-   RenderTarget* m_pOffscreenVRLeft = nullptr;
-   RenderTarget* m_pOffscreenVRRight = nullptr;
-   RenderTarget* m_pBloomBufferTexture = nullptr;
-   RenderTarget* m_pBloomTmpBufferTexture = nullptr;
-   RenderTarget* m_pReflectionBufferTexture = nullptr;
-   RenderTarget* m_pAORenderTarget1 = nullptr;
-   RenderTarget* m_pAORenderTarget2 = nullptr;
-
-public:
    void SetSamplerState(int unit, SamplerFilter filter, SamplerAddressMode clamp_u, SamplerAddressMode clamp_v);
 
    bool m_autogen_mipmap;
    bool m_compress_textures;
 
-private:
-   bool m_dwm_was_enabled;
-   bool m_dwm_enabled;
-
-public:
    U64 m_lastVSyncUs = 0;
    unsigned int m_vsyncCount = 0;
 
-private:
-   MeshBuffer* m_quadMeshBuffer = nullptr;       // internal vb for rendering quads
-
-public:
    MeshBuffer* m_quadPNTDynMeshBuffer = nullptr; // internal vb for rendering dynamic quads (position/normal/texture)
    MeshBuffer* m_quadPTDynMeshBuffer = nullptr;  // internal vb for rendering dynamic quads (position/texture)
 
@@ -317,12 +258,45 @@ public:
    TextureManager m_texMan;
 
 private :
+   unsigned int m_nOutputWnd = 1; // Swap chain always has at least one output window (OpenGL & DX9 only supports one, DX10+/Metal/Vulkan support multiple)
+   VPX::Window* m_outputWnd[8];
+
    RenderFrame m_renderFrame;
    RenderPass* m_currentPass = nullptr;
    RenderPass* m_nextRenderCommandDependency = nullptr;
 
+   RenderState m_current_renderstate, m_renderstate, m_defaultRenderState;
+   bool m_logNextFrame = false; // Output a log of next frame to main application log
+
+   bool m_dwm_was_enabled;
+   bool m_dwm_enabled;
+
+   MeshBuffer* m_quadMeshBuffer = nullptr; // internal mesh buffer for rendering quads
+
+   void UploadAndSetSMAATextures();
+   Sampler* m_SMAAsearchTexture = nullptr;
+   Sampler* m_SMAAareaTexture = nullptr;
+
 #if defined(ENABLE_BGFX)
 public:
+   bgfx::ProgramHandle m_program = BGFX_INVALID_HANDLE; // Bound program for next draw submission
+   void NextView()
+   {
+      if (m_activeViewId == 254) // View 255 is reserved for ImGui
+         SubmitAndFlipFrame();
+      m_activeViewId++;
+      bgfx::resetView(m_activeViewId);
+      bgfx::setViewMode(m_activeViewId, bgfx::ViewMode::Sequential);
+      bgfx::setViewClear(m_activeViewId, BGFX_CLEAR_NONE);
+      bgfx::touch(m_activeViewId);
+   }
+   void SubmitAndFlipFrame()
+   {
+      // BGFX always flips backbuffer when its render queue is submitted
+      bgfx::frame();
+      RenderTarget::OnFrameFlushed();
+      m_activeViewId = -1;
+   }
    bgfx::VertexLayout* m_pVertexTexelDeclaration = nullptr;
    bgfx::VertexLayout* m_pVertexNormalTexelDeclaration = nullptr;
    int m_activeViewId = -1;
@@ -330,6 +304,7 @@ public:
    
 #elif defined(ENABLE_OPENGL)
 public:
+   int getGLVersion() const { return m_GLversion; }
    vector<MeshBuffer::SharedVAO*> m_sharedVAOs;
    std::vector<SamplerBinding*> m_samplerBindings;
    GLuint m_curVAO = 0;
@@ -341,6 +316,8 @@ private:
 
 #elif defined(ENABLE_DX9)
 public:
+   IDirect3DDevice9* GetCoreDevice() const { return m_pD3DDevice; }
+
    IDirect3DVertexBuffer9* m_curVertexBuffer = nullptr;
    IDirect3DIndexBuffer9* m_curIndexBuffer = nullptr;
    IDirect3DVertexDeclaration9* m_currentVertexDeclaration = nullptr;

@@ -121,62 +121,6 @@ constexpr D3DVERTEXELEMENT9 VertexNormalTexelElement[] =
 };
 #endif
 
-typedef HRESULT(STDAPICALLTYPE *pRGV)(LPOSVERSIONINFOEXW osi);
-static pRGV mRtlGetVersion = nullptr;
-
-bool IsWindows10_1803orAbove()
-{
-#ifndef __STANDALONE__
-   if (mRtlGetVersion == nullptr)
-      mRtlGetVersion = (pRGV)GetProcAddress(GetModuleHandle(TEXT("ntdll")), "RtlGetVersion"); // apparently the only really reliable solution to get the OS version (as of Win10 1803)
-
-   if (mRtlGetVersion != nullptr)
-   {
-      OSVERSIONINFOEXW osInfo;
-      osInfo.dwOSVersionInfoSize = sizeof(osInfo);
-      mRtlGetVersion(&osInfo);
-
-      if (osInfo.dwMajorVersion > 10)
-         return true;
-      if (osInfo.dwMajorVersion == 10 && osInfo.dwMinorVersion > 0)
-         return true;
-      if (osInfo.dwMajorVersion == 10 && osInfo.dwMinorVersion == 0 && osInfo.dwBuildNumber >= 17134) // which is the more 'common' 1803
-         return true;
-   }
-
-   return false;
-#else
-   return true;
-#endif
-}
-
-bool IsWindowsVistaOr7()
-{
-#ifndef __STANDALONE__
-   OSVERSIONINFOEXW osvi = { sizeof(osvi), 0, 0, 0, 0, { 0 }, 0, 0, 0, 0, 0 };
-   const DWORDLONG dwlConditionMask = //VerSetConditionMask(
-      VerSetConditionMask(VerSetConditionMask(0, VER_MAJORVERSION, VER_EQUAL), VER_MINORVERSION, VER_EQUAL) /*,
-      VER_SERVICEPACKMAJOR, VER_GREATER_EQUAL)*/
-      ;
-   osvi.dwMajorVersion = HIBYTE(_WIN32_WINNT_VISTA);
-   osvi.dwMinorVersion = LOBYTE(_WIN32_WINNT_VISTA);
-   //osvi.wServicePackMajor = 0;
-
-   const bool vista = VerifyVersionInfoW(&osvi, VER_MAJORVERSION | VER_MINORVERSION /*| VER_SERVICEPACKMAJOR*/, dwlConditionMask) != FALSE;
-
-   OSVERSIONINFOEXW osvi2 = { sizeof(osvi), 0, 0, 0, 0, { 0 }, 0, 0, 0, 0, 0 };
-   osvi2.dwMajorVersion = HIBYTE(_WIN32_WINNT_WIN7);
-   osvi2.dwMinorVersion = LOBYTE(_WIN32_WINNT_WIN7);
-   //osvi2.wServicePackMajor = 0;
-
-   const bool win7 = VerifyVersionInfoW(&osvi2, VER_MAJORVERSION | VER_MINORVERSION /*| VER_SERVICEPACKMAJOR*/, dwlConditionMask) != FALSE;
-
-   return vista || win7;
-#else
-   return false;
-#endif
-}
-
 static unsigned int ComputePrimitiveCount(const RenderDevice::PrimitiveTypes type, const int vertexCount)
 {
    switch (type)
@@ -346,11 +290,9 @@ static pDF mDwmFlush = nullptr;
 typedef HRESULT(STDAPICALLTYPE *pDEC)(UINT uCompositionAction);
 static pDEC mDwmEnableComposition = nullptr;
 
-RenderDevice::RenderDevice(VPX::Window* const wnd, const int width, const int height, const bool fullscreen, const int colordepth, 
-   const float AAfactor, const StereoMode stereo3D, const bool useNvidiaApi, const bool disableDWM, const int BWrendering, 
-   int nMSAASamples, int& refreshrate, VideoSyncMode& syncMode, UINT adapterIndex)
-    : m_width(width), m_height(height), m_fullscreen(fullscreen), m_colorDepth(colordepth), 
-      m_AAfactor(AAfactor), m_stereo3D(stereo3D), m_texMan(*this), m_renderFrame(this)
+RenderDevice::RenderDevice(VPX::Window* const wnd, const int width, const int height, const float AAfactor, const StereoMode stereo3D, 
+   const bool useNvidiaApi, const bool disableDWM, const int BWrendering, int nMSAASamples, VideoSyncMode& syncMode)
+   : m_width(width), m_height(height), m_AAfactor(AAfactor), m_stereo3D(stereo3D), m_texMan(*this), m_renderFrame(this)
 {
    m_outputWnd[0] = wnd;
    
@@ -393,8 +335,6 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const int width, const int he
 #if defined(ENABLE_BGFX)
    ///////////////////////////////////
    // BGFX device initialization
-   bool video10bit = false;
-
    bgfx::Init init;
    
    // Untested implementations
@@ -462,20 +402,12 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const int width, const int he
 #elif defined(ENABLE_OPENGL)
    ///////////////////////////////////
    // OpenGL device initialization
-   const int displays = SDL_GetNumVideoDisplays();
-   if ((int)adapterIndex >= displays)
-      m_adapter = 0;
-   else
-      m_adapter = adapterIndex;
-
    SDL_DisplayMode mode;
-   if (SDL_GetCurrentDisplayMode(m_adapter, &mode) != 0)
+   if (SDL_GetCurrentDisplayMode(m_outputWnd[0]->GetAdapterId(), &mode) != 0)
    {
       ShowError("Failed to setup OpenGL context");
       exit(-1);
    }
-   refreshrate = mode.refresh_rate;
-   bool video10bit = mode.format == SDL_PIXELFORMAT_ARGB2101010;
    switch (mode.format)
    {
    case SDL_PIXELFORMAT_RGB565: back_buffer_format = colorFormat::RGB5; break;
@@ -496,9 +428,11 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const int width, const int he
 
    memset(m_samplerStateCache, 0, sizeof(m_samplerStateCache));
 
-   int channelDepth = video10bit ? 10 : ((colordepth == 16) ? 5 : 8);
-   // We only set bit depth for fullscreen desktop modes (otherwise, use the desktop bit depth)
-   if (m_fullscreen)
+   // FIXME We only set bit depth for fullscreen desktop modes (otherwise, use the desktop bit depth)
+   int channelDepth = m_outputWnd[0]->GetBitDepth() == 32 ?  8 :
+                      m_outputWnd[0]->GetBitDepth() == 30 ? 10 :
+                                                             5;
+   if (m_outputWnd[0]->IsFullScreen())
    {
       SDL_GL_SetAttribute(SDL_GL_RED_SIZE, channelDepth);
       SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, channelDepth);
@@ -652,27 +586,20 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const int width, const int he
         }
     }
 
-    m_adapter = m_pD3D->GetAdapterCount() > adapterIndex ? adapterIndex : 0;
+   D3DDEVTYPE devtype = D3DDEVTYPE_HAL;
+   vector<VPX::Window::DisplayConfig> displays;
+   VPX::Window::GetDisplays(displays);
+   for (const VPX::Window::DisplayConfig& disp : displays)
+   {
+      if (disp.adapter == m_outputWnd[0]->GetAdapterId() && strstr(disp.GPU_Name, "PerfHUD") != 0)
+      {
+         devtype = D3DDEVTYPE_REF;
+         break;
+      }
+   }
 
-    D3DDEVTYPE devtype = D3DDEVTYPE_HAL;
-
-    // Look for 'NVIDIA PerfHUD' adapter
-    // If it is present, override default settings
-    // This only takes effect if run under NVPerfHud, otherwise does nothing
-    for (UINT adapter = 0; adapter < m_pD3D->GetAdapterCount(); adapter++)
-    {
-        D3DADAPTER_IDENTIFIER9 Identifier;
-        m_pD3D->GetAdapterIdentifier(adapter, 0, &Identifier);
-        if (strstr(Identifier.Description, "PerfHUD") != 0)
-        {
-            m_adapter = adapter;
-            devtype = D3DDEVTYPE_REF;
-            break;
-        }
-    }
-
-    D3DCAPS9 caps;
-    m_pD3D->GetDeviceCaps(m_adapter, devtype, &caps);
+   D3DCAPS9 caps;
+   m_pD3D->GetDeviceCaps(m_outputWnd[0]->GetAdapterId(), devtype, &caps);
 
     // check which parameters can be used for anisotropic filter
     m_mag_aniso = (caps.TextureFilterCaps & D3DPTFILTERCAPS_MAGFANISOTROPIC) != 0;
@@ -684,29 +611,19 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const int width, const int he
     if (((caps.TextureCaps & D3DPTEXTURECAPS_NONPOW2CONDITIONAL) != 0) || ((caps.TextureCaps & D3DPTEXTURECAPS_POW2) != 0))
         ShowError("D3D device does only support power of 2 textures");
 
-    //if (caps.NumSimultaneousRTs < 2)
-    //   ShowError("D3D device doesn't support multiple render targets!");
-
-    bool video10bit = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Render10Bit"s, false);
-
-    if (!m_fullscreen && video10bit)
-    {
-        ShowError("10Bit-Monitor support requires 'Force exclusive Fullscreen Mode' to be also enabled!");
-        video10bit = false;
-    }
-
     // get the current display format
     D3DFORMAT format;
-    if (!m_fullscreen)
+    if (!m_outputWnd[0]->IsFullScreen())
     {
         D3DDISPLAYMODE mode;
-        CHECKD3D(m_pD3D->GetAdapterDisplayMode(m_adapter, &mode));
+        CHECKD3D(m_pD3D->GetAdapterDisplayMode(m_outputWnd[0]->GetAdapterId(), &mode));
         format = mode.Format;
-        refreshrate = mode.RefreshRate;
     }
     else
     {
-        format = (D3DFORMAT)(video10bit ? colorFormat::RGBA10 : ((m_colorDepth == 16) ? colorFormat::RGB5 : colorFormat::RGB8));
+        format = m_outputWnd[0]->GetBitDepth() == 32 ? D3DFMT_X8R8G8B8 :
+                 m_outputWnd[0]->GetBitDepth() == 30 ? D3DFMT_A2R10G10B10 :
+                                                       D3DFMT_R5G6B5;
     }
     switch (format)
     {
@@ -730,27 +647,27 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const int width, const int he
     params.MultiSampleQuality = 0;
     params.SwapEffect = D3DSWAPEFFECT_DISCARD;
     params.hDeviceWindow = m_outputWnd[0]->GetCore();
-    params.Windowed = !m_fullscreen;
+    params.Windowed = !m_outputWnd[0]->IsFullScreen();
     params.EnableAutoDepthStencil = FALSE;
     params.AutoDepthStencilFormat = D3DFMT_UNKNOWN; // ignored
     params.Flags = /*fullscreen ? D3DPRESENTFLAG_LOCKABLE_BACKBUFFER :*/ /*(stereo3D ?*/ 0 /*: D3DPRESENTFLAG_DISCARD_DEPTHSTENCIL)*/
        ; // D3DPRESENTFLAG_LOCKABLE_BACKBUFFER only needed for SetDialogBoxMode() below, but makes rendering slower on some systems :/
-    params.FullScreen_RefreshRateInHz = m_fullscreen ? refreshrate : 0;
+    params.FullScreen_RefreshRateInHz = m_outputWnd[0]->IsFullScreen() ? m_outputWnd[0]->GetRefreshRate() : 0;
     params.PresentationInterval = syncMode == VideoSyncMode::VSM_VSYNC ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE;
 
    // check if our HDR texture format supports/does sRGB conversion on texture reads, which must NOT be the case as we always set SRGBTexture=true independent of the format!
-   HRESULT hr = m_pD3D->CheckDeviceFormat(m_adapter, devtype, params.BackBufferFormat, D3DUSAGE_QUERY_SRGBREAD, D3DRTYPE_TEXTURE, (D3DFORMAT)colorFormat::RGBA32F);
+   HRESULT hr = m_pD3D->CheckDeviceFormat(m_outputWnd[0]->GetAdapterId(), devtype, params.BackBufferFormat, D3DUSAGE_QUERY_SRGBREAD, D3DRTYPE_TEXTURE, (D3DFORMAT)colorFormat::RGBA32F);
    if (SUCCEEDED(hr))
       ShowError("D3D device does support D3DFMT_A32B32G32R32F SRGBTexture reads (which leads to wrong tex colors)");
    // now the same for our LDR/8bit texture format the other way round
-   hr = m_pD3D->CheckDeviceFormat(m_adapter, devtype, params.BackBufferFormat, D3DUSAGE_QUERY_SRGBREAD, D3DRTYPE_TEXTURE, (D3DFORMAT)colorFormat::RGBA8);
+   hr = m_pD3D->CheckDeviceFormat(m_outputWnd[0]->GetAdapterId(), devtype, params.BackBufferFormat, D3DUSAGE_QUERY_SRGBREAD, D3DRTYPE_TEXTURE, (D3DFORMAT)colorFormat::RGBA8);
    if (!SUCCEEDED(hr))
       ShowError("D3D device does not support D3DFMT_A8R8G8B8 SRGBTexture reads (which leads to wrong tex colors)");
 
    // check if auto generation of mipmaps can be used, otherwise will be done via d3dx
    m_autogen_mipmap = (caps.Caps2 & D3DCAPS2_CANAUTOGENMIPMAP) != 0;
    if (m_autogen_mipmap)
-      m_autogen_mipmap = (m_pD3D->CheckDeviceFormat(m_adapter, devtype, params.BackBufferFormat, textureUsage::AUTOMIPMAP, D3DRTYPE_TEXTURE, (D3DFORMAT)colorFormat::RGBA8) == D3D_OK);
+      m_autogen_mipmap = (m_pD3D->CheckDeviceFormat(m_outputWnd[0]->GetAdapterId(), devtype, params.BackBufferFormat, textureUsage::AUTOMIPMAP, D3DRTYPE_TEXTURE, (D3DFORMAT)colorFormat::RGBA8) == D3D_OK);
 
    //m_autogen_mipmap = false; //!! could be done to support correct sRGB/gamma correct generation of mipmaps which is not possible with auto gen mipmap in DX9! at the moment disabled, as the sRGB software path is super slow for similar mipmap filter quality
 
@@ -760,12 +677,12 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const int width, const int he
    #endif
 
    // Determine if INTZ is supported
-   m_INTZ_support = (m_pD3D->CheckDeviceFormat( m_adapter, devtype, params.BackBufferFormat,
+   m_INTZ_support = (m_pD3D->CheckDeviceFormat(m_outputWnd[0]->GetAdapterId(), devtype, params.BackBufferFormat,
                      D3DUSAGE_DEPTHSTENCIL, D3DRTYPE_TEXTURE, ((D3DFORMAT)(MAKEFOURCC('I','N','T','Z'))))) == D3D_OK;
 
    // check if requested MSAA is possible
    DWORD MultiSampleQualityLevels;
-   if (!SUCCEEDED(m_pD3D->CheckDeviceMultiSampleType(m_adapter,
+   if (!SUCCEEDED(m_pD3D->CheckDeviceMultiSampleType(m_outputWnd[0]->GetAdapterId(),
       devtype, params.BackBufferFormat,
       params.Windowed, params.MultiSampleType, &MultiSampleQualityLevels)))
    {
@@ -785,7 +702,7 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const int width, const int he
    {
       D3DDISPLAYMODEEX mode;
       mode.Size = sizeof(D3DDISPLAYMODEEX);
-      if (m_fullscreen)
+      if (m_outputWnd[0]->IsFullScreen())
       {
          mode.Format = params.BackBufferFormat;
          mode.Width = params.BackBufferWidth;
@@ -795,16 +712,16 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const int width, const int he
       }
 
       hr = m_pD3DEx->CreateDeviceEx(
-         m_adapter,
+         m_outputWnd[0]->GetAdapterId(),
          devtype,
          m_outputWnd[0]->GetCore(),
          flags /*| D3DCREATE_PUREDEVICE*/,
          &params,
-         m_fullscreen ? &mode : nullptr,
+         m_outputWnd[0]->IsFullScreen() ? &mode : nullptr,
          &m_pD3DDeviceEx);
       if (FAILED(hr))
       {
-         if (m_fullscreen)
+         if (m_outputWnd[0]->IsFullScreen())
          {
             const int result = GetSystemMetrics(SM_REMOTESESSION);
             const bool isRemoteSession = (result != 0);
@@ -817,14 +734,14 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const int width, const int he
       m_pD3DDeviceEx->QueryInterface(__uuidof(IDirect3DDevice9), reinterpret_cast<void**>(&m_pD3DDevice));
 
       // Get the display mode so that we can report back the actual refresh rate.
-      CHECKD3D(m_pD3DDeviceEx->GetDisplayModeEx(0, &mode, nullptr)); //!! what is the actual correct value for the swapchain here?
-
-      refreshrate = mode.RefreshRate;
+      // Not done anymore as the refresh rate is validated before creation
+      // CHECKD3D(m_pD3DDeviceEx->GetDisplayModeEx(0, &mode, nullptr)); //!! what is the actual correct value for the swapchain here?
+      // refreshrate = mode.RefreshRate;
    }
    else
    {
       hr = m_pD3D->CreateDevice(
-         m_adapter,
+         m_outputWnd[0]->GetAdapterId(),
          devtype,
          m_outputWnd[0]->GetCore(),
          flags /*| D3DCREATE_PUREDEVICE*/,
@@ -835,15 +752,13 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const int width, const int he
          ReportError("Fatal Error: unable to create D3D device!", hr, __FILE__, __LINE__);
 
       // Get the display mode so that we can report back the actual refresh rate.
-      D3DDISPLAYMODE mode;
-      hr = m_pD3DDevice->GetDisplayMode(m_adapter, &mode);
-      if (FAILED(hr))
-         ReportError("Fatal Error: unable to get supported video mode list!", hr, __FILE__, __LINE__);
-
-      refreshrate = mode.RefreshRate;
+      // Not done anymore as the refresh rate is validated before creation
+      // D3DDISPLAYMODE mode;
+      // CHECKD3D(m_pD3DDevice->GetDisplayMode(m_outputWnd[0]->GetAdapterId(), &mode));
+      // refreshrate = mode.RefreshRate;
    }
 
-   /*if (m_fullscreen)
+   /*if (m_outputWnd[0]->IsFullScreen())
        hr = m_pD3DDevice->SetDialogBoxMode(TRUE);*/ // needs D3DPRESENTFLAG_LOCKABLE_BACKBUFFER, but makes rendering slower on some systems :/
 #endif
 
@@ -855,7 +770,7 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const int width, const int he
    delete surf;
 
    // Retrieve a reference to the back buffer.
-   m_pBackBuffer = new RenderTarget(this, m_width, m_height, back_buffer_format);
+   wnd->SetBackBuffer(new RenderTarget(this, wnd->GetWidth(), wnd->GetHeight(), back_buffer_format));
 
 #if defined(ENABLE_BGFX)
    const colorFormat render_format = ((BWrendering == 1) ? colorFormat::RG16F : ((BWrendering == 2) ? colorFormat::RED16F : colorFormat::RGB16F));
@@ -951,23 +866,15 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const int width, const int he
        1.0f, -1.0f, 0.0f, 1.0f, 1.0f,
       -1.0f, -1.0f, 0.0f, 0.0f, 1.0f
    };
-   delete m_quadMeshBuffer;
    VertexBuffer* quadVertexBuffer = new VertexBuffer(this, 4, verts, false, VertexFormat::VF_POS_TEX);
    m_quadMeshBuffer = new MeshBuffer(L"Fullscreen Quad"s, quadVertexBuffer);
 
    #if defined(ENABLE_OPENGL) || defined(ENABLE_BGFX)
-   delete m_quadPNTDynMeshBuffer;
    VertexBuffer* quadPNTDynVertexBuffer = new VertexBuffer(this, 4, nullptr, true, VertexFormat::VF_POS_NORMAL_TEX);
    m_quadPNTDynMeshBuffer = new MeshBuffer(quadPNTDynVertexBuffer);
 
-   delete m_quadPTDynMeshBuffer;
    VertexBuffer* quadPTDynVertexBuffer = new VertexBuffer(this, 4, nullptr, true, VertexFormat::VF_POS_TEX);
    m_quadPTDynMeshBuffer = new MeshBuffer(quadPTDynVertexBuffer);
-   #endif
-
-   // Always load the (small) SMAA textures since SMAA can be toggled at runtime through the live UI
-   #ifndef __OPENGLES__
-   UploadAndSetSMAATextures();
    #endif
 
    // Force applying a defined initial render state
@@ -1049,10 +956,13 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const int width, const int he
    m_basicShader->SetVector(SHADER_w_h_height, (float)(1.0 / (double)GetMSAABackBufferTexture()->GetWidth()), (float)(1.0 / (double)GetMSAABackBufferTexture()->GetHeight()), 0.0f, 0.0f);
    m_basicShader->SetVector(SHADER_staticColor_Alpha, 1.0f, 1.0f, 1.0f, 1.0f); // No tinting
    m_DMDShader->SetFloat(SHADER_alphaTestValue, 1.0f); // No alpha clipping
-#ifndef __OPENGLES__
-   m_FBShader->SetTexture(SHADER_areaTex, m_SMAAareaTexture);
-   m_FBShader->SetTexture(SHADER_searchTex, m_SMAAsearchTexture);
-#endif
+
+   #ifndef __OPENGLES__
+      // Always load the (small) SMAA textures since SMAA can be toggled at runtime through the live UI
+      UploadAndSetSMAATextures();
+      m_FBShader->SetTexture(SHADER_areaTex, m_SMAAareaTexture);
+      m_FBShader->SetTexture(SHADER_searchTex, m_SMAAsearchTexture);
+   #endif
 }
 
 
@@ -1097,9 +1007,11 @@ RenderDevice::~RenderDevice()
    delete m_pPostProcessRenderTarget2;
    delete m_pReflectionBufferTexture;
 
+   delete m_outputWnd[0]->GetBackBuffer();
+   m_outputWnd[0]->SetBackBuffer(nullptr);
+
    delete m_pBloomBufferTexture;
    delete m_pBloomTmpBufferTexture;
-   delete m_pBackBuffer;
    delete m_pOffscreenVRLeft;
    delete m_pOffscreenVRRight;
 
@@ -1150,7 +1062,7 @@ RenderDevice::~RenderDevice()
    }
    #endif
 
-   //!! if (m_pD3DDeviceEx == m_pD3DDevice) m_pD3DDevice = nullptr; //!! needed for Caligula if m_adapter > 0 ?? weird!! BUT MESSES UP FULLSCREEN EXIT (=hangs)
+   //!! if (m_pD3DDeviceEx == m_pD3DDevice) m_pD3DDevice = nullptr; //!! needed for Caligula if m_outputWnd[0]->GetAdapterId() > 0 ?? weird!! BUT MESSES UP FULLSCREEN EXIT (=hangs)
    SAFE_RELEASE_NO_RCC(m_pD3DDeviceEx);
    #ifdef DEBUG_REFCOUNT_TRIGGER
    SAFE_RELEASE(m_pD3DDevice);
@@ -1254,17 +1166,6 @@ void RenderDevice::SwapAORenderTargets()
    RenderTarget* tmpAO = m_pAORenderTarget1;
    m_pAORenderTarget1 = m_pAORenderTarget2;
    m_pAORenderTarget2 = tmpAO;
-}
-
-void RenderDevice::ResolveMSAA()
-{
-   if (m_pOffscreenMSAABackBufferTexture)
-   {
-      const RenderPass* initial_rt = GetCurrentPass();
-      SetRenderTarget("Resolve MSAA"s, m_pOffscreenBackBufferTexture1);
-      BlitRenderTarget(m_pOffscreenMSAABackBufferTexture, m_pOffscreenBackBufferTexture1, true, true);
-      SetRenderTarget(initial_rt->m_name + '+', initial_rt->m_rt);
-   }
 }
 
 bool RenderDevice::DepthBufferReadBackAvailable()
@@ -1899,26 +1800,4 @@ void RenderDevice::SetMainTextureDefaultFiltering(const SamplerFilter filter)
    Shader::SetDefaultSamplerFilter(SHADER_tex_flasher_B, filter);
    Shader::SetDefaultSamplerFilter(SHADER_tex_base_color, filter);
    Shader::SetDefaultSamplerFilter(SHADER_tex_base_normalmap, filter);
-}
-
-#if defined(ENABLE_BGFX) || defined(ENABLE_OPENGL)
-static ViewPort viewPort;
-#endif
-
-void RenderDevice::SetViewport(const ViewPort* p1)
-{
-#if defined(ENABLE_BGFX) || defined(ENABLE_OPENGL)
-   memcpy(&viewPort, p1, sizeof(ViewPort));
-#elif defined(ENABLE_DX9)
-   CHECKD3D(m_pD3DDevice->SetViewport((D3DVIEWPORT9*)p1));
-#endif
-}
-
-void RenderDevice::GetViewport(ViewPort* p1)
-{
-#if defined(ENABLE_BGFX) || defined(ENABLE_OPENGL)
-   memcpy(p1, &viewPort, sizeof(ViewPort));
-#elif defined(ENABLE_DX9)
-   CHECKD3D(m_pD3DDevice->GetViewport((D3DVIEWPORT9*)p1));
-#endif
 }

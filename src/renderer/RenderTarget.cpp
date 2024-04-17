@@ -33,10 +33,10 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const int width, const int he
    m_depth_sampler = nullptr;
    
    #if defined(ENABLE_BGFX)
-   m_framebuffer = BGFX_INVALID_HANDLE; // Invalid handle is back buffer
+   m_framebuffer = BGFX_INVALID_HANDLE; // Invalid handle is the reserved Id for BGFX's back buffer
    
    #elif defined(ENABLE_OPENGL)
-   glGetIntegerv(GL_FRAMEBUFFER_BINDING, (GLint*)&m_framebuffer); // Not sure about this (taken from VPVR original implementation). Doesn't the back buffer always bind to 0 on OpenGL ?
+   m_framebuffer = 0; // 0 is the reserved Id for the windowing back buffer (see https://registry.khronos.org/OpenGL-Refpages/es2.0/xhtml/glBindFramebuffer.xml)
    m_color_tex = 0;
    m_depth_tex = 0;
    m_texTarget = GL_TEXTURE_2D;

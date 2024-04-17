@@ -5,123 +5,316 @@
 #include <SDL2/SDL_image.h>
 #endif
 
-
-////////////////////////////////////////////////////////////////////
-
-int getNumberOfDisplays()
+namespace VPX
 {
-   #if defined(ENABLE_SDL_VIDEO)
-      return SDL_GetNumVideoDisplays();
-   #else
-      return GetSystemMetrics(SM_CMONITORS);
-   #endif
-}
 
-void EnumerateDisplayModes(const int display, vector<VideoMode>& modes)
+Window::Window(const string& title, const string& settingsId, const int display, const int w, const int h, const bool fullscreen, const int fsBitDeth, const int fsRefreshRate)
 {
-   modes.clear();
-
+   int wnd_x, wnd_y;
    vector<DisplayConfig> displays;
-   getDisplayList(displays);
-   if (display >= (int)displays.size())
-      return;
-   const int adapter = displays[display].adapter;
-
-   #if defined(ENABLE_SDL_VIDEO)
-      const int amount = SDL_GetNumDisplayModes(adapter);
-      for (int mode = 0; mode < amount; ++mode) {
-         SDL_DisplayMode sdlMode;
-         SDL_GetDisplayMode(adapter, mode, &sdlMode);
-         VideoMode vmode = {};
-         vmode.width = sdlMode.w;
-         vmode.height = sdlMode.h;
-         switch (sdlMode.format) {
-         case SDL_PIXELFORMAT_RGB24:
-         case SDL_PIXELFORMAT_BGR24:
-         case SDL_PIXELFORMAT_RGB888:
-         case SDL_PIXELFORMAT_RGBX8888:
-         case SDL_PIXELFORMAT_BGR888:
-         case SDL_PIXELFORMAT_BGRX8888:
-         case SDL_PIXELFORMAT_ARGB8888:
-         case SDL_PIXELFORMAT_RGBA8888:
-         case SDL_PIXELFORMAT_ABGR8888:
-         case SDL_PIXELFORMAT_BGRA8888:
-            vmode.depth = 32;
-            break;
-         case SDL_PIXELFORMAT_RGB565:
-         case SDL_PIXELFORMAT_BGR565:
-         case SDL_PIXELFORMAT_ABGR1555:
-         case SDL_PIXELFORMAT_BGRA5551:
-         case SDL_PIXELFORMAT_ARGB1555:
-         case SDL_PIXELFORMAT_RGBA5551:
-            vmode.depth = 16;
-            break;
-         case SDL_PIXELFORMAT_ARGB2101010:
-            vmode.depth = 30;
-            break;
-         default:
-            vmode.depth = 0;
-         }
-         vmode.refreshrate = sdlMode.refresh_rate;
-         modes.push_back(vmode);
-      }
-   #else
-      IDirect3D9 *d3d = Direct3DCreate9(D3D_SDK_VERSION);
-      if (d3d == nullptr)
+   GetDisplays(displays);
+   m_display = display < displays.size() ? display : -1;
+   // Look for 'NVIDIA PerfHUD' adapter. If it is present, override default settings (this only takes effect if run under NVPerfHud)
+   for (const DisplayConfig& dispConf : displays)
+   {
+      if (strstr(dispConf.GPU_Name, "PerfHUD") != 0)
       {
-         ShowError("Could not create D3D9 object.");
-         return;
+         m_display = dispConf.display;
+         break;
       }
-
-      //for (int j = 0; j < 2; ++j)
-      constexpr int j = 0; // limit to 32bit only nowadays
+   }
+   for (const DisplayConfig& dispConf : displays)
+   {
+      if (dispConf.isPrimary || dispConf.display == m_display)
       {
-         const D3DFORMAT fmt = (D3DFORMAT)((j == 0) ? colorFormat::RGB8 : colorFormat::RGB5);
-         const unsigned numModes = d3d->GetAdapterModeCount(adapter, fmt);
+         wnd_x = dispConf.left;
+         wnd_y = dispConf.top;
+         m_screenwidth = dispConf.width;
+         m_screenheight = dispConf.height;
+         m_adapter = dispConf.adapter;
+         m_display = dispConf.display;
+         if (dispConf.display == display)
+            break;
+      }
+   }
+   assert(m_display != -1); // This should not be possible since we use either the requested display or at least the primary one
+   
+   m_width = w <= 0 ? m_screenwidth : w;
+   m_height = h <= 0 ? m_screenheight : h;
+   m_fullscreen = fullscreen;
+   m_settingsId = settingsId;
+   
+   // FIXME implement bit depth validation and selection (only used for DX9 10bit monitors to limit banding and dithering needs)
+   m_bitdepth = fsBitDeth;
 
-         for (unsigned i = 0; i < numModes; ++i)
+   // Validate fullscreen mode, eventually falling back to windowed mode (at desktop screen resolution)
+   int validatedFSRefreshRate = -1;
+   if (m_fullscreen)
+   {
+      bool fsModeExists = false;
+      vector<VideoMode> allVideoModes;
+      GetDisplayModes(display, allVideoModes);
+      for (VideoMode mode : allVideoModes)
+      {
+         if ((mode.width == m_width) && (mode.height == m_height))
          {
-            D3DDISPLAYMODE d3dmode;
-            d3d->EnumAdapterModes(adapter, fmt, i, &d3dmode);
-
-            if (d3dmode.Width >= 640)
+            if (fsRefreshRate == 0)
             {
-               VideoMode mode;
-               mode.width = d3dmode.Width;
-               mode.height = d3dmode.Height;
-               mode.depth = (fmt == (D3DFORMAT)colorFormat::RGB5) ? 16 : 32;
-               mode.refreshrate = d3dmode.RefreshRate;
-               modes.push_back(mode);
+               fsModeExists = true;
+               validatedFSRefreshRate = mode.refreshrate;
+               break;
+            }
+            else if (mode.refreshrate == fsRefreshRate)
+            {
+               fsModeExists = true;
+               validatedFSRefreshRate = fsRefreshRate;
+               break;
             }
          }
       }
+      if (!fsModeExists)
+      {
+         PLOGE << "Requested fullscreen mode " << m_width << "x" << m_height << " at " << fsRefreshRate << "Hz is not available. Switching to windowed mode";
+         m_fullscreen = false;
+         m_width = m_screenwidth;
+         m_height = m_screenheight;
+      }
+      else
+      {
+         #ifdef ENABLE_SDL_VIDEO // SDL Windowing
+            // For SDL, the display is selected through the window position
+         #else // Win32 Windowing
+            wnd_x = wnd_y = 0; // For DX9, the swap chain selects the display, not the window coordinates
+         #endif
+      }
+   }
 
-      SAFE_RELEASE(d3d);
+   // Constrain window to screen and restore its position (defaults to centered on screen)
+   if (!m_fullscreen)
+   {
+      if (m_width > m_screenwidth)
+      {
+         m_height = (m_height * m_screenwidth) / m_width;
+         m_width = m_screenwidth;
+      }
+      if (m_height > m_screenheight)
+      {
+         m_width = (m_width * m_screenheight) / m_height;
+         m_height = m_screenheight;
+      }
+      wnd_x += (m_screenwidth - m_width) / 2;
+      wnd_y += (m_screenheight - m_height) / 2;
+
+      // Restore saved position of non fullscreen windows
+      if ((m_height != m_screenheight) || (m_width != m_screenwidth))
+      {
+         const int xn = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, m_settingsId + "WndX"s, wnd_x);
+         const int yn = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, m_settingsId + "WndY"s, wnd_y);
+         // Only apply saved position if they fit inside a display
+         #ifdef ENABLE_SDL_VIDEO // SDL Windowing
+            for (int i = 0; i < SDL_GetNumVideoDisplays(); ++i)
+            {
+               SDL_Rect displayBounds;
+               if (SDL_GetDisplayBounds(i, &displayBounds) == 0)
+               {
+                  if (displayBounds.x <= wnd_x && wnd_x + m_width <= displayBounds.x + displayBounds.w
+                   && displayBounds.y <= wnd_y && wnd_y + m_height <= displayBounds.y + displayBounds.h)
+                  {
+                     wnd_x = xn;
+                     wnd_y = yn;
+                     break;
+                  }
+               }
+            }
+         #else // Win32 Windowing
+            RECT r;
+            r.left = xn;
+            r.top = yn;
+            r.right = xn + m_width;
+            r.bottom = yn + m_height;
+            if (MonitorFromRect(&r, MONITOR_DEFAULTTONULL) != nullptr) // window is visible somewhere, so use the coords from the registry
+            {
+               wnd_x = xn;
+               wnd_y = yn;
+            }
+         #endif
+      }
+   }
+
+   #ifdef ENABLE_SDL_VIDEO // SDL Windowing
+      Uint32 wnd_flags = 0;
+      #if defined(ENABLE_OPENGL)
+         wnd_flags |= SDL_WINDOW_OPENGL;
+      #elif defined(ENABLE_BGFX)
+         // BGFX does not need the SDL window to have the SDL_WINDOW_OPENGL / SDL_WINDOW_VULKAN / SDL_WINDOW_METAL flag (see BGFX SDL example)
+      #elif defined(ENABLE_DX9)
+         // DX9 does not need any special flag either
+      #endif
+      #if defined(_MSC_VER) // Win32 (we use _MSC_VER since standalone also defines WIN32 for non Win32 builds)
+         wnd_flags |= SDL_WINDOW_BORDERLESS | SDL_WINDOW_HIDDEN | SDL_WINDOW_ALLOW_HIGHDPI;
+      #elif defined(__STANDALONE__)
+         if (g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Standalone, "HighDPI"s, true))
+            wnd_flags |= SDL_WINDOW_ALLOW_HIGHDPI;
+      #endif
+      if (m_fullscreen)
+         wnd_flags |= SDL_WINDOW_FULLSCREEN;
+      else if (m_width == m_screenwidth && m_height == m_screenheight)
+         wnd_flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+         
+      // Prevent full screen window from minimizing when re-arranging external windows
+      SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
+
+      m_nwnd = SDL_CreateWindow(title.c_str(), wnd_x, wnd_y, m_width, m_height, wnd_flags);
+      
+      SDL_DisplayMode mode;
+      SDL_GetWindowDisplayMode(m_nwnd, &mode);
+      m_refreshrate = mode.refresh_rate;
+      if (m_fullscreen)
+      {
+         m_screenwidth = m_width;
+         m_screenheight = m_height;
+         if (fsRefreshRate > 0 && validatedFSRefreshRate != m_refreshrate) // Adjust refresh rate if needed
+         {
+            Uint32 format = mode.format;
+            bool found = false;
+            for (int index = 0; index < SDL_GetNumDisplayModes(m_adapter); index++)
+            {
+               SDL_GetDisplayMode(m_adapter, index, &mode);
+               if ((mode.w == m_width) && (mode.h == m_height) && (mode.refresh_rate == validatedFSRefreshRate) && (mode.format == format))
+               {
+                  SDL_SetWindowDisplayMode(m_nwnd, &mode);
+                  m_refreshrate = validatedFSRefreshRate;
+                  found = true;
+                  break;
+               }
+            }
+            if (!found) {
+               // Should not happen since the fullscreen values have been validated
+               PLOGE << "Failed to find a display mode matching the requested refresh rate [" << validatedFSRefreshRate << ']';
+            }
+         }
+      }
+      PLOGI << "SDL display mode for window '" << settingsId << "': " << mode.w << 'x' << mode.h << ' ' << mode.refresh_rate << "Hz " << SDL_GetPixelFormatName(mode.format);
+
+      #ifdef __STANDALONE__
+         const string iconPath = g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "vpinball.png";
+         SDL_Surface* pIcon = IMG_Load(iconPath.c_str());
+         if (pIcon) {
+            SDL_SetWindowIcon(m_nwnd, pIcon);
+            SDL_FreeSurface(pIcon);
+         }
+         else {
+            PLOGE << "Failed to load window icon: " << SDL_GetError();
+         }
+      #endif
+
+   #else // Win32 Windowing
+      // TODO this window class is only suitable for main playfield window, use the right one depending on the use scheme
+      m_nwnd = ::CreateWindowEx(0, _T("VPPlayer"), title.c_str(), WS_POPUP, wnd_x, wnd_y, m_width, m_height, NULL, NULL, g_pvp->theInstance, NULL);
+      
+      if (m_fullscreen)
+      {
+         // These values have been validated, so we consider that they will be the right ones when we will switch to fullscreen upon DX9 device creation
+         m_screenwidth = m_width;
+         m_screenheight = m_height;
+         m_refreshrate = validatedFSRefreshRate;
+      }
+      else
+      {
+         IDirect3D9 *d3d = Direct3DCreate9(D3D_SDK_VERSION);
+         if (d3d == nullptr)
+         {
+            ShowError("Could not create D3D9 object.");
+            return;
+         }
+         D3DDISPLAYMODE mode;
+         CHECKD3D(d3d->GetAdapterDisplayMode(m_adapter, &mode));
+         m_refreshrate = mode.RefreshRate;
+         SAFE_RELEASE(d3d);
+      }
+      
+   #endif
+   
+   assert(m_width > 0);
+   assert(m_height > 0);
+   if (m_refreshrate <= 0)
+   {
+      PLOGE << "Failed to get display refresh rate, defaulting to 60Hz";
+      m_refreshrate = 60;
+   }
+}
+
+Window::~Window()
+{
+   #ifdef ENABLE_SDL_VIDEO // SDL Windowing
+      SDL_DestroyWindow(m_nwnd);
+   #else // Win32 Windowing
+      DestroyWindow(m_nwnd);
    #endif
 }
 
-#ifndef __STANDALONE__
+void Window::ShowAndFocus()
+{
+   #if defined(ENABLE_SDL_VIDEO) // SDL Windowing
+      SDL_ShowWindow(m_nwnd);
+   #else // Win32 Windowing
+      ShowWindow(m_nwnd, SW_SHOW);
+      SetForegroundWindow(m_nwnd);
+      SetFocus(m_nwnd);
+   #endif
+}
+
+void Window::GetPos(int& x, int& y) const
+{
+   #ifdef ENABLE_SDL_VIDEO // SDL Windowing
+      SDL_GetWindowPosition(m_nwnd, &x, &y);
+   #else // Win32 Windowing
+      RECT rect;
+      GetWindowRect(m_nwnd, &rect);
+      x = rect.left;
+      y = rect.top;
+   #endif
+}
+
+void Window::SetPos(const int x, const int y)
+{
+   #ifdef ENABLE_SDL_VIDEO // SDL Windowing
+      SDL_SetWindowPosition(m_nwnd, x, y);
+   #else // Win32 Windowing
+      RECT rect;
+      GetWindowRect(m_nwnd, &rect);
+      rect.left = x;
+      rect.top = y;
+      SetWindowPos(m_nwnd, nullptr, x, y, m_width, m_height, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
+   #endif
+   g_pvp->m_settings.SaveValue(Settings::Player, m_settingsId + "WndX"s, x);
+   g_pvp->m_settings.SaveValue(Settings::Player, m_settingsId + "WndY"s, y);
+}
+
+
+
+#if defined(_WIN32) || !defined(ENABLE_SDL_VIDEO)
 BOOL CALLBACK MonitorEnumList(__in  HMONITOR hMonitor, __in  HDC hdcMonitor, __in  LPRECT lprcMonitor, __in  LPARAM dwData)
 {
-   std::map<string,DisplayConfig>* data = reinterpret_cast<std::map<string,DisplayConfig>*>(dwData);
+   std::map<string, VPX::Window::DisplayConfig>* data = reinterpret_cast<std::map<string, VPX::Window::DisplayConfig>*>(dwData);
    MONITORINFOEX info;
    info.cbSize = sizeof(MONITORINFOEX);
    GetMonitorInfo(hMonitor, &info);
-   DisplayConfig config = {};
+   VPX::Window::DisplayConfig config = {};
    config.top = info.rcMonitor.top;
    config.left = info.rcMonitor.left;
    config.width = info.rcMonitor.right - info.rcMonitor.left;
    config.height = info.rcMonitor.bottom - info.rcMonitor.top;
    config.isPrimary = (config.top == 0) && (config.left == 0);
-   config.display = (int)data->size(); // This number does neither map to the number form display settings nor something else.
+   config.display = -1;
    config.adapter = -1;
    memcpy(config.DeviceName, info.szDevice, CCHDEVICENAME); // Internal display name e.g. "\\\\.\\DISPLAY1"
-   data->insert(std::pair<string, DisplayConfig>(config.DeviceName, config));
+   data->insert(std::pair<string, VPX::Window::DisplayConfig>(config.DeviceName, config));
    return TRUE;
 }
 #endif
 
-int getDisplayList(vector<DisplayConfig>& displays)
+int Window::GetDisplays(vector<DisplayConfig>& displays)
 {
    displays.clear();
 
@@ -220,258 +413,87 @@ int getDisplayList(vector<DisplayConfig>& displays)
    return i;
 }
 
-bool getDisplaySetupByID(const int display, int &x, int &y, int &width, int &height)
+void Window::GetDisplayModes(const int display, vector<VideoMode>& modes)
 {
+   modes.clear();
+
    vector<DisplayConfig> displays;
-   getDisplayList(displays);
-   for (vector<DisplayConfig>::iterator displayConf = displays.begin(); displayConf != displays.end(); ++displayConf) {
-      if ((display == -1 && displayConf->isPrimary) || display == displayConf->display) {
-         x = displayConf->left;
-         y = displayConf->top;
-         width = displayConf->width;
-         height = displayConf->height;
-         return true;
-      }
-   }
-   x = 0;
-   y = 0;
-   width = GetSystemMetrics(SM_CXSCREEN);
-   height = GetSystemMetrics(SM_CYSCREEN);
-   return false;
-}
+   GetDisplays(displays);
+   if (display >= (int)displays.size())
+      return;
+   const int adapter = displays[display].adapter;
 
-int getPrimaryDisplay()
-{
-   vector<DisplayConfig> displays;
-   getDisplayList(displays);
-   for (vector<DisplayConfig>::iterator displayConf = displays.begin(); displayConf != displays.end(); ++displayConf)
-      if (displayConf->isPrimary)
-         return displayConf->adapter;
-   assert(false); // This should not be possible (system are supposed to always have a primary display)
-   return 0;
-}
-
-
-
-////////////////////////////////////////////////////////////////////
-
-namespace VPX
-{
-
-Window::Window(const string& title, const string& settingsId, const int display, const int w, const int h, const bool fullscreen, const int fsBitDeth, const int fsRefreshRate)
-{
-   m_display = -1;
-   vector<DisplayConfig> displays;
-   getDisplayList(displays);
-   int wnd_x, wnd_y;
-   for (const DisplayConfig& dispConf : displays)
-   {
-      if (dispConf.isPrimary || dispConf.display == m_display)
-      {
-         wnd_x = dispConf.left;
-         wnd_y = dispConf.top;
-         m_screenwidth = dispConf.width;
-         m_screenheight = dispConf.height;
-         m_adapter = dispConf.adapter;
-         m_display = dispConf.display;
-         if (dispConf.display == display)
+   #if defined(ENABLE_SDL_VIDEO)
+      const int amount = SDL_GetNumDisplayModes(adapter);
+      for (int mode = 0; mode < amount; ++mode) {
+         SDL_DisplayMode sdlMode;
+         SDL_GetDisplayMode(adapter, mode, &sdlMode);
+         VideoMode vmode = {};
+         vmode.width = sdlMode.w;
+         vmode.height = sdlMode.h;
+         switch (sdlMode.format) {
+         case SDL_PIXELFORMAT_RGB24:
+         case SDL_PIXELFORMAT_BGR24:
+         case SDL_PIXELFORMAT_RGB888:
+         case SDL_PIXELFORMAT_RGBX8888:
+         case SDL_PIXELFORMAT_BGR888:
+         case SDL_PIXELFORMAT_BGRX8888:
+         case SDL_PIXELFORMAT_ARGB8888:
+         case SDL_PIXELFORMAT_RGBA8888:
+         case SDL_PIXELFORMAT_ABGR8888:
+         case SDL_PIXELFORMAT_BGRA8888:
+            vmode.depth = 32;
             break;
+         case SDL_PIXELFORMAT_RGB565:
+         case SDL_PIXELFORMAT_BGR565:
+         case SDL_PIXELFORMAT_ABGR1555:
+         case SDL_PIXELFORMAT_BGRA5551:
+         case SDL_PIXELFORMAT_ARGB1555:
+         case SDL_PIXELFORMAT_RGBA5551:
+            vmode.depth = 16;
+            break;
+         case SDL_PIXELFORMAT_ARGB2101010:
+            vmode.depth = 30;
+            break;
+         default:
+            vmode.depth = 0;
+         }
+         vmode.refreshrate = sdlMode.refresh_rate;
+         modes.push_back(vmode);
       }
-   }
-   assert(m_display != -1); // This should not be possible since we use either the requested display or at least the primary one
-   
-   m_width = w <= 0 ? m_screenwidth : w;
-   m_height = h <= 0 ? m_screenheight : h;
-   m_fullscreen = fullscreen;
-   m_settingsId = settingsId;
-   
-   if (m_fullscreen)
-   {
-      #ifdef ENABLE_SDL_VIDEO // SDL Windowing
-         // For SDL, the display is selected through the window position
-      #else // Win32 Windowing
-         wnd_x = 0; // For DX9, the (single window) swap chain select the display, not the window coordinates
-         wnd_y = 0;
-      #endif
-   }
-   else
-   {
-      // Constrain window to screen and center it
-      if (m_width > m_screenwidth)
+   #else
+      IDirect3D9 *d3d = Direct3DCreate9(D3D_SDK_VERSION);
+      if (d3d == nullptr)
       {
-         m_height = (m_height * m_screenwidth) / m_width;
-         m_width = m_screenwidth;
+         ShowError("Could not create D3D9 object.");
+         return;
       }
-      if (m_height > m_screenheight)
-      {
-         m_width = (m_width * m_screenheight) / m_height;
-         m_height = m_screenheight;
-      }
-      wnd_x += (m_screenwidth - m_width) / 2;
-      wnd_y += (m_screenheight - m_height) / 2;
 
-      // Restore saved position of non fullscreen windows
-      if ((m_height != m_screenheight) || (m_width != m_screenwidth))
+      //for (int j = 0; j < 2; ++j)
+      constexpr int j = 0; // limit to 32bit only nowadays
       {
-         const int xn = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, m_settingsId + "WndX"s, wnd_x);
-         const int yn = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, m_settingsId + "WndY"s, wnd_y);
-         // Only apply saved position if they fit inside a display
-         #ifdef ENABLE_SDL_VIDEO // SDL Windowing
-            for (int i = 0; i < SDL_GetNumVideoDisplays(); ++i)
-            {
-               SDL_Rect displayBounds;
-               if (SDL_GetDisplayBounds(i, &displayBounds) == 0)
-               {
-                  if (displayBounds.x <= wnd_x && wnd_x + m_width <= displayBounds.x + displayBounds.w
-                   && displayBounds.y <= wnd_y && wnd_y + m_height <= displayBounds.y + displayBounds.h)
-                  {
-                     wnd_x = xn;
-                     wnd_y = yn;
-                     break;
-                  }
-               }
-            }
-         #else // Win32 Windowing
-            RECT r;
-            r.left = xn;
-            r.top = yn;
-            r.right = xn + m_width;
-            r.bottom = yn + m_height;
-            if (MonitorFromRect(&r, MONITOR_DEFAULTTONULL) != nullptr) // window is visible somewhere, so use the coords from the registry
-            {
-               wnd_x = xn;
-               wnd_y = yn;
-            }
-         #endif
-      }
-   }
+         const D3DFORMAT fmt = (D3DFORMAT)((j == 0) ? colorFormat::RGB8 : colorFormat::RGB5);
+         const unsigned numModes = d3d->GetAdapterModeCount(adapter, fmt);
 
-   #ifdef ENABLE_SDL_VIDEO // SDL Windowing
-      Uint32 wnd_flags = 0;
-      #if defined(ENABLE_OPENGL)
-         wnd_flags |= SDL_WINDOW_OPENGL;
-      #elif defined(ENABLE_BGFX)
-         // BGFX does not need the SDL window to have the SDL_WINDOW_OPENGL / SDL_WINDOW_VULKAN / SDL_WINDOW_METAL flag (see BGFX SDL example)
-      #elif defined(ENABLE_DX9)
-         // DX9 does not need any special flag either
-      #endif
-      #if defined(_MSC_VER) // Win32 (we use _MSC_VER since standalone also defines WIN32 for non Win32 builds)
-         wnd_flags |= SDL_WINDOW_BORDERLESS | SDL_WINDOW_HIDDEN | SDL_WINDOW_ALLOW_HIGHDPI;
-      #elif defined(__STANDALONE__)
-         if (g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Standalone, "HighDPI"s, true))
-            wnd_flags |= SDL_WINDOW_ALLOW_HIGHDPI;
-      #endif
-      if (m_fullscreen)
-         wnd_flags |= SDL_WINDOW_FULLSCREEN;
-      else if (m_width == m_screenwidth && m_height == m_screenheight)
-         wnd_flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
-         
-      // Prevent full screen window from minimizing when re-arranging external windows
-      SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
-
-      m_nwnd = SDL_CreateWindow(title.c_str(), wnd_x, wnd_y, m_width, m_height, wnd_flags);
-      
-      SDL_DisplayMode mode;
-      SDL_GetWindowDisplayMode(m_nwnd, &mode);
-      m_refreshrate = mode.refresh_rate;
-      if (m_fullscreen)
-      {
-         // FIXME select the right bit deth for fullscreen
-      
-         if (fsRefreshRate != 0 && fsRefreshRate != m_refreshrate) // Adjust refresh rate if needed
+         for (unsigned i = 0; i < numModes; ++i)
          {
-            Uint32 format = mode.format;
-            bool found = false;
-            for (int index = 0; index < SDL_GetNumDisplayModes(m_adapter); index++)
+            D3DDISPLAYMODE d3dmode;
+            d3d->EnumAdapterModes(adapter, fmt, i, &d3dmode);
+
+            if (d3dmode.Width >= 640)
             {
-               SDL_GetDisplayMode(m_adapter, index, &mode);
-               if ((mode.w == m_width) && (mode.h == m_height) && (mode.refresh_rate == fsRefreshRate) && (mode.format == format))
-               {
-                  SDL_SetWindowDisplayMode(m_nwnd, &mode);
-                  m_refreshrate = mode.refresh_rate;
-                  found = true;
-                  break;
-               }
-            }
-            if (!found) {
-               PLOGE << "Failed to find a display mode matching the requested refresh rate [" << m_refreshrate << ']';
+               VideoMode mode;
+               mode.width = d3dmode.Width;
+               mode.height = d3dmode.Height;
+               mode.depth = (fmt == (D3DFORMAT)colorFormat::RGB5) ? 16 : 32;
+               mode.refreshrate = d3dmode.RefreshRate;
+               modes.push_back(mode);
             }
          }
-         m_screenwidth = mode.w;
-         m_screenheight = mode.h;
-      }
-      PLOGI << "SDL display mode for window '" << settingsId << "': " << mode.w << 'x' << mode.h << ' ' << mode.refresh_rate << "Hz " << SDL_GetPixelFormatName(mode.format);
-
-      #ifdef __STANDALONE__
-         const string iconPath = g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "vpinball.png";
-         SDL_Surface* pIcon = IMG_Load(iconPath.c_str());
-         if (pIcon) {
-            SDL_SetWindowIcon(m_nwnd, pIcon);
-            SDL_FreeSurface(pIcon);
-         }
-         else {
-            PLOGE << "Failed to load window icon: " << SDL_GetError();
-         }
-      #endif
-
-   #else // Win32 Windowing
-      m_nwnd = ::CreateWindowEx(0, _T("VPPlayer"), title.c_str(), WS_POPUP, wnd_x, wnd_y, m_width, m_height, NULL, NULL, g_pvp->theInstance, NULL);
-      // FIXME gather the refresh rate and bit depth
-      if (m_fullscreen)
-      {
-      }
-      else
-      {
       }
 
+      SAFE_RELEASE(d3d);
    #endif
 }
 
-Window::~Window()
-{
-   #ifdef ENABLE_SDL_VIDEO // SDL Windowing
-      SDL_DestroyWindow(m_nwnd);
-   #else // Win32 Windowing
-      DestroyWindow(m_nwnd);
-   #endif
-}
-
-void Window::ShowAndFocus()
-{
-   #if defined(ENABLE_SDL_VIDEO) // SDL Windowing
-      SDL_ShowWindow(m_nwnd);
-   #else // Win32 Windowing
-      ShowWindow(m_nwnd, SW_SHOW);
-      SetForegroundWindow(m_nwnd);
-      SetFocus(m_nwnd);
-   #endif
-}
-
-void Window::GetPos(int& x, int& y) const
-{
-   #ifdef ENABLE_SDL_VIDEO // SDL Windowing
-      SDL_GetWindowPosition(m_nwnd, &x, &y);
-   #else // Win32 Windowing
-      RECT rect;
-      GetWindowRect(m_nwnd, &rect);
-      x = rect.left;
-      y = rect.top;
-   #endif
-}
-
-void Window::SetPos(const int x, const int y)
-{
-   #ifdef ENABLE_SDL_VIDEO // SDL Windowing
-      SDL_SetWindowPosition(m_nwnd, x, y);
-   #else // Win32 Windowing
-      RECT rect;
-      GetWindowRect(m_nwnd, &rect);
-      rect.left = x;
-      rect.top = y;
-      SetWindowPos(m_nwnd, nullptr, x, y, m_width, m_height, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
-   #endif
-   g_pvp->m_settings.SaveValue(Settings::Player, m_settingsId + "WndX"s, x);
-   g_pvp->m_settings.SaveValue(Settings::Player, m_settingsId + "WndY"s, y);
-}
-
-}
+} // namespace VPX
