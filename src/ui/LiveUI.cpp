@@ -907,7 +907,7 @@ bool LiveUI::HasKeyboardCapture() const {
 
 bool LiveUI::HasMouseCapture() const
 {
-   return ImGui::GetIO().WantCaptureKeyboard;
+   return ImGui::GetIO().WantCaptureMouse;
 }
 
 void LiveUI::Render()
@@ -989,6 +989,7 @@ void LiveUI::OpenMainSplash()
 {
    if (!m_ShowUI && !m_ShowSplashModal)
    {
+      m_esc_mode = 0; // Get back to game if Esc is pressed
       m_ShowUI = true;
       m_ShowSplashModal = true;
       m_OpenUITime = msec();
@@ -2498,6 +2499,7 @@ void LiveUI::UpdateMainUI()
          else if (ImGui::IsKeyReleased(ImGuiKey_Escape) || (ImGui::IsKeyReleased(dikToImGuiKeys[m_player->m_rgKeys[eEscape]]) && !m_disable_esc))
          {
             // Open Main modal dialog
+            m_esc_mode = 3; // Get back to editor if Esc is pressed
             m_ShowSplashModal = true;
          }
          else if (ImGui::IsKeyPressed(ImGuiKey_F))
@@ -3603,7 +3605,7 @@ void LiveUI::UpdateMainSplashModal()
       // Key shortcut: click on the button, or press escape key (react on key released, otherwise, it would immediately reopen the UI,...)
       int keyShortcut = 0;
       if (enableKeyboardShortcuts && (ImGui::IsKeyReleased(ImGuiKey_Escape) || ((ImGui::IsKeyReleased(dikToImGuiKeys[m_player->m_rgKeys[eEscape]]) && !m_disable_esc))))
-         keyShortcut = m_ShowUI ? 3 : m_tweakMode ? 2 : 1;
+         keyShortcut = m_esc_mode == 0 ? 1 : m_esc_mode;
 
       ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
       if (ImGui::Button("Resume Game", size) || (keyShortcut == 1))
