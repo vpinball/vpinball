@@ -3045,6 +3045,10 @@ End Sub
 
 'added thanks to Koadic
 Sub NVOffset(version) ' version 2 for dB2S compatibility
+	if PlatformOS <> "windows" then
+		MsgBox "NVOffset is not supported on standalone versions of Visual Pinball. Similar functionality can be achieved by putting the rom in pinmame/roms next to the table file."
+		Exit Sub
+	End If
 	Dim check,nvcheck,v,vv,nvpath,rom
 	Set check = CreateObject("Scripting.FileSystemObject")
 	Set nvcheck = CreateObject("WScript.Shell")
