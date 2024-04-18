@@ -96,42 +96,100 @@ bool RenderFrame::Execute(const bool log)
       PLOGI << ss1.str() << ']';
    }
 
-   // Sort passes to avoid useless render target switching, allow merging passes for better draw call sorting/batching, drop passes that do not contribute to the final pass
+   // Sort passes to satisfy dependencies, avoid useless render target switching, allow merging passes for better draw call sorting/batching, drop passes that do not contribute to the final pass
    RenderPass* finalPass = m_passes.back();
-   vector<RenderPass*> sortedPasses;
+   vector<RenderPass*> sortedPasses; // FIXME use list since we are populating through insertions
    sortedPasses.reserve(m_passes.size());
-   finalPass->SortPasses(sortedPasses, m_passes);
-   finalPass = sortedPasses.back(); // we need to request it again since it may have changed due to pass merging
-
-   // Add passes that are linked to a specific render command if any (needed for refraction probes)
-   bool splitted = false;
-   for (RenderPass* pass : sortedPasses)
+   vector<RenderPass*> waitingPasses; // Used passes gathered recursively from final pass, waiting to be sorted
+   waitingPasses.reserve(2 * m_passes.size());
+   sortedPasses.push_back(finalPass); // start with the final pass
+   waitingPasses.insert(waitingPasses.begin(), finalPass->m_dependencies.begin(), finalPass->m_dependencies.end());
+   while (waitingPasses.size() > 0)
    {
-      pass->m_sortKey = 0;
-      pass->SortCommands();
-      // Split on command dependencies (commands that needs a pass to be executed just before them)
-      for (std::vector<RenderCommand*>::iterator it = pass->m_commands.begin(); it != pass->m_commands.end(); ++it)
+      // Select first pass not yet inserted
+      RenderPass* pass = waitingPasses.back();
+      waitingPasses.pop_back();
+      if (pass->m_sortKey != 0) continue;
+      // Mark as inserted and enqueue dependencies for later insertion
+      pass->m_sortKey = 1;
+      waitingPasses.insert(waitingPasses.end(), pass->m_dependencies.begin(), pass->m_dependencies.end());
+      // Find first consumers already placed in the sorted list
+      std::vector<RenderPass*>::iterator itPass = sortedPasses.begin();
+      while (FindIndexOf((*itPass)->m_dependencies, pass) == -1)
+         itPass++;
+      std::vector<RenderPass*>::iterator itPassFirstConsumer = itPass;
+      // Select insertion position, moving back from first consumer while dependencies & render target constraints are still satisfied, trying to reach a pass using the same RT to optimize merging
+      while (true)
       {
-         if ((*it)->m_dependency != nullptr)
+         if (itPass == sortedPasses.begin()) // No optimisation found: defaults to place before first consumer
          {
-            // Create a pass from the first commands
-            RenderPass* splitPass = AddPass(pass->m_name, pass->m_rt);
-            splitPass->m_dependencies.insert(splitPass->m_dependencies.begin(), pass->m_dependencies.begin(), pass->m_dependencies.end());
-            splitPass->m_commands.insert(splitPass->m_commands.begin(), pass->m_commands.begin(), it);
-            // Continue with tail, adding dependencies on the splitted pass and the command's dependency
-            (*it)->m_dependency->UpdateDependency(pass->m_rt, splitPass); // update to the latest state (filtered to only apply to first call in RenderPass to avoid cyclic dependencies when using a refraction probe multiple time)
-            pass->AddPrecursor((*it)->m_dependency);
-            pass->AddPrecursor(splitPass);
-            pass->m_commands.erase(pass->m_commands.begin(), it);
-            it = pass->m_commands.begin();
-            splitted = true;
+            itPass = itPassFirstConsumer;
+            break;
+         }
+         itPass--;
+         if (FindIndexOf(pass->m_dependencies, (*itPass)) != -1 // Invalid since we would end up before one of our dependencies: defaults to place before first consumer
+          || FindIndexOf((*itPass)->m_referencedRT, pass->m_rt) != -1) // Invalid since we would overwrite the needed content of a previous pass: defaults to place before first consumer
+         {
+            itPass = itPassFirstConsumer;
+            break;
+         }
+         if ((*itPass)->m_rt == pass->m_rt) // Here would places us just after a pass on the same render target, place after it
+         {
+            break;
          }
       }
+      // Insert pass before the selected place, inherit constraint from follower if any
+      pass->m_referencedRT.insert(pass->m_referencedRT.begin(), (*itPass)->m_referencedRT.begin(), (*itPass)->m_referencedRT.end());
+      itPass = sortedPasses.insert(itPass, pass);
+      // Add render target constraints from our insertion position toward all consumers (to avoid inserting a pass that would overwrite the content of the render target while it is expected by a consumer)
+      std::vector<RenderPass*>::iterator itInsertionPoint = itPass, itPassLastConsumer = itPass;
+      while (itInsertionPoint != sortedPasses.end())
+      {
+         if (FindIndexOf((*itInsertionPoint)->m_dependencies, pass) != -1)
+            itPassLastConsumer = itInsertionPoint;
+         itInsertionPoint++;
+      }
+      while (itPass != itPassLastConsumer)
+      {
+         itPass++;
+         (*itPass)->m_referencedRT.push_back(pass->m_rt);
+      }
    }
-   if (splitted)
+   // Merge consecutive passes using the same RT [Warning, dependencies are not updated (not needed) making the log after sort incorrect]
+   for (std::vector<RenderPass*>::iterator itPass = sortedPasses.begin(); itPass != sortedPasses.end(); )
    {
-      sortedPasses.clear();
-      finalPass->SortPasses(sortedPasses, m_passes);
+      (*itPass)->m_sortKey = 0;
+      std::vector<RenderPass*>::iterator nextPass = itPass + 1;
+      if (nextPass != sortedPasses.end() && (*itPass)->m_rt == (*nextPass)->m_rt)
+      {
+         (*nextPass)->m_depthReadback |= (*itPass)->m_depthReadback;
+         (*nextPass)->m_commands.insert((*nextPass)->m_commands.begin(), (*itPass)->m_commands.begin(), (*itPass)->m_commands.end());
+         (*itPass)->m_commands.clear();
+         itPass = sortedPasses.erase(itPass);
+      }
+      else
+         itPass++;
+   }
+   // Sort commands & split on command level dependencies (commands that needs a pass to be executed just before them, used for refracting parts that uses a screen copy just before using it as a shading texture)
+   for (std::vector<RenderPass*>::iterator itPass = sortedPasses.begin(); itPass != sortedPasses.end(); itPass++)
+   {
+      (*itPass)->SortCommands();
+      for (std::vector<RenderCommand*>::iterator it = (*itPass)->m_commands.begin(); it != (*itPass)->m_commands.end(); ++it)
+      {
+         if ((*it)->m_dependency != nullptr)
+         { // [Warning, dependencies are not updated (not needed) making the log after sort incorrect]
+            RenderPass* splitPass = AddPass((*itPass)->m_name, (*itPass)->m_rt);
+            splitPass->m_commands.insert(splitPass->m_commands.begin(), (*itPass)->m_commands.begin(), it);
+            (*itPass)->m_commands.erase((*itPass)->m_commands.begin(), it);
+            it = (*itPass)->m_commands.begin(); // Continue with remaining commands after split
+            if ((*it)->m_dependency->m_sortKey == 0)
+            { // Add the pass just before the rendercommand. Warning: this only supports the refraction use scheme where we add a single pass to perform the screen copy
+               (*it)->m_dependency->m_sortKey = 1;
+               itPass = sortedPasses.insert(itPass, (*it)->m_dependency) + 1;
+            }
+            itPass = sortedPasses.insert(itPass, splitPass) + 1; // itPass points to the pass after the inserted pass (so the remaining part of the initial pass)
+         }
+      }
    }
 
    if (log)

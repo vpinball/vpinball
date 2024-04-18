@@ -24,7 +24,6 @@ void RenderPass::Reset(const string& name, RenderTarget* const rt)
    m_areaOfInterest.x = m_areaOfInterest.y = m_areaOfInterest.z = m_areaOfInterest.w = FLT_MAX;
    m_depthReadback = false;
    m_sortKey = 0;
-   m_updated = false;
    m_commands.clear();
    m_dependencies.clear();
    m_referencedRT.clear();
@@ -43,99 +42,8 @@ void RenderPass::RecycleCommands(std::vector<RenderCommand*>& commandPool)
 void RenderPass::AddPrecursor(RenderPass* dependency)
 {
    assert(this != dependency);
-   if (std::find(m_dependencies.begin(), m_dependencies.end(), dependency) == m_dependencies.end())
-   {
+   if (FindIndexOf(m_dependencies, dependency) == -1)
       m_dependencies.push_back(dependency);
-      if (std::find(m_referencedRT.begin(), m_referencedRT.end(), dependency->m_rt) == m_referencedRT.end())
-         m_referencedRT.push_back(dependency->m_rt);
-   }
-}
-
-void RenderPass::UpdateDependency(RenderTarget* target, RenderPass* newDependency)
-{
-   if (m_updated)
-      return;
-   m_updated = true;
-   for (std::vector<RenderPass*>::iterator it = m_dependencies.begin(); it != m_dependencies.end(); ++it)
-   {
-      if ((*it)->m_rt == target)
-         *it = newDependency;
-      else
-         (*it)->UpdateDependency(target, newDependency);
-   }
-}
-
-void RenderPass::SortPasses(vector<RenderPass*>& sortedPasses, vector<RenderPass*>& allPasses)
-{
-   // Perform a depth first sort down the precursor list, sorting/grouping/merging by render target
-   if (m_sortKey == 2) // Already processed
-      return;
-   assert(m_sortKey != 1); // Circular dependency between render pass
-   m_sortKey = 1;
-
-   // Sort dependencies:
-   // - start with dependencies wich uses the same RT as we directly reference (to avoid content conflict)
-   // - others
-   // - last are dependencies on the same RT as us (to allow merge)
-   // TODO this is slow (but correct). This could be easily done better (but the list is small, so...)
-   sort(m_dependencies.begin(), m_dependencies.end(), [this](RenderPass* a, RenderPass* b)
-      {
-         // a has the same RT as this but not b: place a after b (a < b is false)
-         if (a->m_rt == m_rt && b->m_rt != m_rt)
-            return false;
-         // b has the same RT as this but not a: place b after a (a < b is true)
-         if (b->m_rt == m_rt && a->m_rt != m_rt)
-            return true;
-         // FIXME the following sort cirteria are not valid and will assert aginst STL checks.
-         #if !defined(ENABLE_BGFX) || !defined(_DEBUG)
-         // a reference a RT that is used by b: place a before b (a < b is true)
-         for (auto dep : b->m_dependencies)
-            for (auto rt : a->m_referencedRT)
-               if (dep->m_rt == rt)
-                  return true;
-         // b reference a RT that is used by a: place b before a (a < b is false)
-         for (auto dep : a->m_dependencies)
-            for (auto rt : b->m_referencedRT)
-               if (dep->m_rt == rt)
-                  return false;
-         #endif
-         // no criteria to sort
-         return a < b;
-      });
-   
-   // Depth first recursion
-   for (RenderPass* dependency : m_dependencies)
-         dependency->SortPasses(sortedPasses, allPasses);
-
-   // Push pass to result, eventually merging it
-   m_sortKey = 2;
-   if (!sortedPasses.empty())
-   {
-      // Merge passes
-      RenderPass* mergedPass = sortedPasses.back();
-      if (mergedPass->m_rt == m_rt
-       && mergedPass->m_areaOfInterest.x == m_areaOfInterest.x && mergedPass->m_areaOfInterest.y == m_areaOfInterest.y 
-       && mergedPass->m_areaOfInterest.z == m_areaOfInterest.z && mergedPass->m_areaOfInterest.w == m_areaOfInterest.w)
-      {
-         for (RenderPass* pass : allPasses)
-         {
-            if (pass == this)
-               RemoveFromVector(pass->m_dependencies, mergedPass);
-            else
-               std::replace(pass->m_dependencies.begin(), pass->m_dependencies.end(), this, mergedPass);
-         }
-         mergedPass->m_depthReadback |= m_depthReadback;
-         mergedPass->m_commands.insert(mergedPass->m_commands.end(), m_commands.begin(), m_commands.end());
-         for (auto dep : m_dependencies)
-            mergedPass->AddPrecursor(dep);
-         //mergedPass->m_dependencies.insert(mergedPass->m_dependencies.end(), m_dependencies.begin(), m_dependencies.end());
-         m_commands.clear();
-         return;
-      }
-   }
-
-   // Add passes
-   sortedPasses.push_back(this);
 }
 
 void RenderPass::SortCommands()
