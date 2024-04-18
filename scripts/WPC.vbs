@@ -2,7 +2,7 @@
 
 'sw116 and sw118 are commonly used for UL and UR flippers(in most WPC pins),
 'while in IJ (i think the only one that has it different?!) these are the ramp switches.
-'Everytime you press the flipper keys those switches are “on”, so one did use the cSingleLFlip variable to prevent that.
+'Everytime you press the flipper keys those switches are "on", so one did use the cSingleLFlip variable to prevent that.
 'Nowadays cSingleLFlip has been replaced by the separate keyStagedFlipperL.
 
 Option Explicit
