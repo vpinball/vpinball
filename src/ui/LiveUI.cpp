@@ -769,8 +769,8 @@ LiveUI::LiveUI(RenderDevice *const rd)
    markdown_config.formatCallback = MarkdownFormatCallback;
 
 #if defined(ENABLE_BGFX)
-   ImGui_Implbgfx_Init(255);
-   bgfx::setViewName(255, "ImGui");
+   ImGui_Implbgfx_Init(bgfx::getCaps()->limits.maxViews - 1);
+   bgfx::setViewName(bgfx::getCaps()->limits.maxViews - 1, "ImGui");
 #elif defined(ENABLE_OPENGL)
    ImGui_ImplOpenGL3_Init();
 #elif defined(ENABLE_DX9)
