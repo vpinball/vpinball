@@ -17,6 +17,9 @@
 #include "freeimage.h"
 #include "ThreadPool.h"
 #include "scalefx.h"
+#ifdef ENABLE_SDL_VIDEO
+#include <SDL2/SDL_syswm.h>
+#endif
 
 #include "serial.h"
 static serial Serial;
@@ -685,21 +688,24 @@ STDMETHODIMP ScriptGlobalTable::get_GetPlayerHWnd(SIZE_T *pVal)
 STDMETHODIMP ScriptGlobalTable::get_GetPlayerHWnd(long *pVal)
 #endif
 {
-   #ifdef ENABLE_SDL_VIDEO // SDL Windowing
-   *pVal = NULL;
-   return E_FAIL;
-   #else // Win32 Windowing
    if (!g_pplayer)
    {
       *pVal = NULL;
       return E_FAIL;
    }
-   else
-   {
+   #ifdef ENABLE_SDL_VIDEO // SDL Windowing
+      #ifdef _WIN32
+         SDL_SysWMinfo wmInfo;
+         SDL_VERSION(&wmInfo.version);
+         SDL_GetWindowWMInfo(g_pplayer->m_playfieldWnd->GetCore(), &wmInfo);
+         *pVal = (size_t)wmInfo.info.win.window;
+      #else
+         *pVal = NULL;
+      #endif
+   #else // Win32 Windowing
       *pVal = (size_t)g_pplayer->m_playfieldWnd->GetCore();
-      return S_OK;
-   }
    #endif
+   return S_OK; // returning E_FAIL would break all PinMame tables that starts PinMame through 'Controller.Run GetPlayerHWnd'
 }
 
 STDMETHODIMP ScriptGlobalTable::AddObject(BSTR Name, IDispatch *pdisp)
