@@ -11,9 +11,7 @@ public:
    void Reset(const string& name, RenderTarget* const rt);
 
    void AddPrecursor(RenderPass* dependency);
-   void UpdateDependency(RenderTarget* target, RenderPass* newDependency);
 
-   void SortPasses(vector<RenderPass*>& sortedPasses, vector<RenderPass*>& allPasses);
    void SortCommands();
 
    void Submit(RenderCommand* command);
@@ -30,8 +28,8 @@ public:
    bool m_depthReadback = false;
 
    vector<RenderCommand*> m_commands;
-   vector<RenderPass*> m_dependencies; // List of render passes that must have been performed before executing this pass
-   vector<RenderTarget*> m_referencedRT; // List of render targets used by dependencies
-   int m_sortKey = 0;
-   bool m_updated = false;
+   vector<RenderPass*> m_dependencies; // List of render passes that must have been performed before executing this pass (i.e. this passes uses the render target of its dependencies)
+
+   int m_sortKey = 0; // Flag used during sorting and pass splitting
+   vector<RenderTarget*> m_referencedRT; // When frame sort passes, it uses this list to avoid render targets overwrite between render passes
 };
