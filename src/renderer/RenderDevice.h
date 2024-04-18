@@ -282,8 +282,11 @@ public:
    bgfx::ProgramHandle m_program = BGFX_INVALID_HANDLE; // Bound program for next draw submission
    void NextView()
    {
-      if (m_activeViewId == 254) // View 255 is reserved for ImGui
+      if (m_activeViewId == bgfx::getCaps()->limits.maxViews - 2) // Last view is reserved for ImGui
+      {
+         PLOGE << "Frame submitted and flipped since BGFX view limit was reached. [BGFX was compiled with a maximum of " << bgfx::getCaps()->limits.maxViews << " views]";
          SubmitAndFlipFrame();
+      }
       m_activeViewId++;
       bgfx::resetView(m_activeViewId);
       bgfx::setViewMode(m_activeViewId, bgfx::ViewMode::Sequential);
