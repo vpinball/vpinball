@@ -196,6 +196,20 @@ Window::Window(const string& title, const string& settingsId, const int display,
       }
       PLOGI << "SDL display mode for window '" << settingsId << "': " << mode.w << 'x' << mode.h << ' ' << mode.refresh_rate << "Hz " << SDL_GetPixelFormatName(mode.format);
 
+      #if defined(__APPLE__)
+         // FIXME remove when porting to SDL3: horrible hack to handle the (strange) way Apple apply DPI: user DPI is applied as other OS but HiDPI of Retina display is applied internally
+         // FIXME this only solves the window size, not its position which is in HiDPI units while it should be in pixel units
+         SDL_GLContext sdl_context = SDL_GL_CreateContext(m_nwnd);
+         SDL_GL_MakeCurrent(m_nwnd, sdl_context);
+         int drawableWidth, drawableHeight;
+         SDL_GL_GetDrawableSize(m_nwnd, &drawableWidth, &drawableHeight); // Size in pixels
+         SDL_GL_DeleteContext(sdl_context);
+         m_hidpiScale = drawableWidth / m_width;
+         PLOGI << "SDL HiDPI defined to " << m_hidpiScale;
+         m_width = drawableWidth;
+         m_height = drawableHeight;
+      #endif
+
       #ifdef __STANDALONE__
          const string iconPath = g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "vpinball.png";
          SDL_Surface* pIcon = IMG_Load(iconPath.c_str());
