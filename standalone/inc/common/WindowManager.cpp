@@ -61,6 +61,8 @@ void WindowManager::RegisterWindow(Window* pWindow)
    if (!pWindow)
       return;
 
+   PLOGI.printf("Register window: %s", pWindow->GetTitle().c_str());
+
    {
       std::lock_guard<std::mutex> guard(m_mutex);
       m_windows.push_back(pWindow);
@@ -85,6 +87,8 @@ void WindowManager::UnregisterWindow(Window* pWindow)
 {
    if (!pWindow)
       return;
+
+   PLOGI.printf("Unregister window: %s", pWindow->GetTitle().c_str());
 
    {
       std::lock_guard<std::mutex> guard(m_mutex);

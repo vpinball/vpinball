@@ -14,6 +14,7 @@ public:
    ~Window();
 
    virtual bool Init();
+   const string& GetTitle() { return m_szTitle; }
    Uint32 GetId() { return m_id; }
    int GetZ() { return m_z; }
    int GetRotation() { return m_rotation; }

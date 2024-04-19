@@ -101,10 +101,11 @@ FormBackglass::FormBackglass()
 
 FormBackglass::~FormBackglass()
 {
-    delete m_pB2SScreen;
     delete m_pStartupTimer;
     delete m_pRotateTimer;
     delete m_pB2SAnimation;
+    delete m_pFormDMD;
+    delete m_pB2SScreen;
 }
 
 void FormBackglass::OnPaint(VP::RendererGraphics* pGraphics)
