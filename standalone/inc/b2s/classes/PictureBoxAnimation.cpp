@@ -82,6 +82,10 @@ PictureBoxAnimation::PictureBoxAnimation(
    }
 }
 
+PictureBoxAnimation::~PictureBoxAnimation() {
+   Stop();
+}
+
 void PictureBoxAnimation::Start()
 {
    // set the start flag

@@ -9,6 +9,8 @@ B2SAnimation::B2SAnimation()
 
 B2SAnimation::~B2SAnimation()
 {
+   for (auto& [key, pPictimer] : m_pictureBoxAnimations)
+      delete pPictimer;
 }
 
 void B2SAnimation::AddAnimation(

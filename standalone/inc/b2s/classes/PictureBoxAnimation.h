@@ -29,6 +29,7 @@ public:
       bool randomStart,
       int randomQuality,
       vector<PictureBoxAnimationEntry*> entries);
+   ~PictureBoxAnimation();
 
    void Start() override;
    void Stop() override;
