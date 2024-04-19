@@ -9,6 +9,8 @@
 namespace VPX
 {
 
+// All coordinates are given in pixels, not logical units.
+// FIXME for MacOS/IOS HiDPI is applied (so giving 'logical' units with Retina scale factor but not user DPI)
 class Window final
 {
 public:
@@ -18,7 +20,7 @@ public:
    void GetPos(int&x, int &y) const;
    int GetWidth() const { return m_width; }
    int GetHeight() const { return m_height; }
-   int GetRefreshRate() const { return m_refreshrate; }
+   int GetRefreshRate() const { return m_refreshrate; } // Refresh rate of the device displaying the window. Window spread over multiple devices are not supported.
    bool IsFullScreen() const { return m_fullscreen; }
    int GetAdapterId() const { return m_adapter; }
    int GetBitDepth() const { return m_bitdepth; }
@@ -60,6 +62,7 @@ public:
    static void GetDisplayModes(const int display, vector<VideoMode>& modes);
    
 private:
+   float m_hidpiScale = 1.f;
    int m_width, m_height;
    int m_display, m_adapter;
    int m_screenwidth, m_screenheight;

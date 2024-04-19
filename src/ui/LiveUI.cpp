@@ -1054,6 +1054,7 @@ void LiveUI::Update(const RenderTarget *rt)
 
    ImGuiIO &io = ImGui::GetIO();
    io.DisplaySize = ImVec2((float)rt->GetWidth(), (float)rt->GetHeight()); // The render size may not match the window size used by ImGui_ImplWin32_NewFrame (for example for VR)
+   io.DisplayFramebufferScale = ImVec2(1.f, 1.f); // Retina display scaling is already applied since we override the value fom NewFrame with the rt size 
    const bool isInteractiveUI = m_ShowUI || m_ShowSplashModal || m_ShowBAMModal;
    // If we are only showing overlays (no mouse interaction), apply main camera rotation
    m_rotate = isInteractiveUI ? 0 : ((int)(m_player->m_ptable->mViewSetups[m_player->m_ptable->m_BG_current_set].GetRotation((int)io.DisplaySize.x, (int)io.DisplaySize.y) / 90.0f));

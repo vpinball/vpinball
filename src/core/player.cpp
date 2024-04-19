@@ -436,13 +436,6 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
       throw hr;
    }
 
-   #if defined(ENABLE_SDL_VIDEO) && defined(ENABLE_OPENGL)
-   SDL_GL_GetDrawableSize(m_playfieldWnd->GetCore(), &wnd_width, &wnd_height); // Size in pixels
-   int realWindowWidth, realWindowHeight;
-   SDL_GetWindowSize(m_playfieldWnd->GetCore(), &realWindowWidth, &realWindowHeight); // Size in screen coordinates (taking in account HiDPI)
-   PLOGI << "SDL drawable size: " << wnd_width << 'x' << wnd_height << " (screen size: " << realWindowWidth << 'x' << realWindowHeight << ")";
-   #endif
-
    m_renderer->DisableStaticPrePass(playMode != 0);
    m_renderer->m_pd3dPrimaryDevice->m_vsyncCount = 1;
    m_maxFramerate = (m_videoSyncMode != VideoSyncMode::VSM_NONE && m_maxFramerate == 0) ? refreshrate : min(m_maxFramerate, refreshrate);
