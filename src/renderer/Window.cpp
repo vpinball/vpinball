@@ -13,7 +13,7 @@ Window::Window(const string& title, const string& settingsId, const int display,
    int wnd_x, wnd_y;
    vector<DisplayConfig> displays;
    GetDisplays(displays);
-   m_display = display < displays.size() ? display : -1;
+   m_display = display < (int) displays.size() ? display : -1;
    // Look for 'NVIDIA PerfHUD' adapter. If it is present, override default settings (this only takes effect if run under NVPerfHud)
    for (const DisplayConfig& dispConf : displays)
    {

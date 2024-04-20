@@ -247,11 +247,11 @@ void RenderProbe::RenderScreenSpaceTransparency()
    if (m_dynamicRT == nullptr)
    {
       const int downscale = GetRoughnessDownscale(m_roughness);
-      const int w = m_rd->GetMSAABackBufferTexture()->GetWidth() / downscale, h = m_rd->GetMSAABackBufferTexture()->GetHeight() / downscale;
-      m_dynamicRT = new RenderTarget(m_rd, m_rd->GetMSAABackBufferTexture()->m_type, m_name, w, h, m_rd->GetMSAABackBufferTexture()->GetColorFormat(), true, 1, "Failed to create refraction render target", nullptr);
+      const int w = m_rd->GetCurrentRenderTarget()->GetWidth() / downscale, h = m_rd->GetCurrentRenderTarget()->GetHeight() / downscale;
+      m_dynamicRT = new RenderTarget(m_rd, m_rd->GetCurrentRenderTarget()->m_type, m_name, w, h, m_rd->GetCurrentRenderTarget()->GetColorFormat(), true, 1, "Failed to create refraction render target", nullptr);
    }
    m_rd->SetRenderTarget(m_name, m_dynamicRT, false);
-   m_rd->BlitRenderTarget(m_rd->GetMSAABackBufferTexture(), m_dynamicRT, true, true);
+   m_rd->BlitRenderTarget(m_rd->GetCurrentRenderTarget(), m_dynamicRT, true, true);
    m_copyPass = m_rd->GetCurrentPass();
    ApplyRoughness(m_dynamicRT, m_roughness);
    m_rd->SetRenderTarget(previousRT->m_name + '+', previousRT->m_rt);
@@ -297,8 +297,8 @@ void RenderProbe::PreRenderStaticReflectionProbe()
    if (m_prerenderRT == nullptr)
    {
       const int downscale = GetRoughnessDownscale(m_roughness);
-      const int w = m_rd->GetMSAABackBufferTexture()->GetWidth() / downscale, h = m_rd->GetMSAABackBufferTexture()->GetHeight() / downscale;
-      m_prerenderRT = new RenderTarget(m_rd, m_rd->GetMSAABackBufferTexture()->m_type, m_name + ".Stat", w, h, m_rd->GetMSAABackBufferTexture()->GetColorFormat(), true, 1,
+      const int w = m_rd->GetCurrentRenderTarget()->GetWidth() / downscale, h = m_rd->GetCurrentRenderTarget()->GetHeight() / downscale;
+      m_prerenderRT = new RenderTarget(m_rd, m_rd->GetCurrentRenderTarget()->m_type, m_name + ".Stat", w, h, m_rd->GetCurrentRenderTarget()->GetColorFormat(), true, 1,
          "Failed to create plane reflection static render target", nullptr);
    }
 
@@ -392,8 +392,8 @@ void RenderProbe::RenderReflectionProbe(const unsigned int renderMask)
    if (m_dynamicRT == nullptr)
    {
       const int downscale = GetRoughnessDownscale(m_roughness);
-      const int w = m_rd->GetMSAABackBufferTexture()->GetWidth() / downscale, h = m_rd->GetMSAABackBufferTexture()->GetHeight() / downscale;
-      m_dynamicRT = new RenderTarget(m_rd, m_rd->GetMSAABackBufferTexture()->m_type, m_name + ".Dyn", w, h, m_rd->GetMSAABackBufferTexture()->GetColorFormat(), true, 1,
+      const int w = m_rd->GetCurrentRenderTarget()->GetWidth() / downscale, h = m_rd->GetCurrentRenderTarget()->GetHeight() / downscale;
+      m_dynamicRT = new RenderTarget(m_rd, m_rd->GetCurrentRenderTarget()->m_type, m_name + ".Dyn", w, h, m_rd->GetCurrentRenderTarget()->GetColorFormat(), true, 1,
          "Failed to create plane reflection dynamic render target", nullptr);
    }
    m_rd->SetRenderTarget(m_name, m_dynamicRT);

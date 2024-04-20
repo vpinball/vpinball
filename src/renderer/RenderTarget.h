@@ -15,9 +15,9 @@ public:
    static RenderTarget* GetCurrentRenderTarget();
    static int GetCurrentRenderLayer();
 
-   Sampler* GetColorSampler() { return m_color_sampler; }
+   Sampler* GetColorSampler() const { return m_color_sampler; }
    void UpdateDepthSampler(bool insideBeginEnd);
-   Sampler* GetDepthSampler() { return m_depth_sampler; }
+   Sampler* GetDepthSampler() const { return m_depth_sampler; }
 
    RenderTarget* Duplicate(const string& name, const bool shareDepthSurface = false);
    void CopyTo(RenderTarget* dest, const bool copyColor = true, const bool copyDepth = true, 

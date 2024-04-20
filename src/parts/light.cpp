@@ -823,9 +823,9 @@ void Light::Render(const unsigned int renderMask)
       {
          Matrix3D matWorldViewProj[2]; // MVP to move from back buffer space (0..w, 0..h) to clip space (-1..1, -1..1)
          matWorldViewProj[0].SetIdentity();
-         matWorldViewProj[0]._11 = 2.0f / (float)m_rd->GetMSAABackBufferTexture()->GetWidth();
+         matWorldViewProj[0]._11 = 2.0f / (float)m_rd->GetCurrentRenderTarget()->GetWidth();
          matWorldViewProj[0]._41 = -1.0f;
-         matWorldViewProj[0]._22 = -2.0f / (float)m_rd->GetMSAABackBufferTexture()->GetHeight();
+         matWorldViewProj[0]._22 = -2.0f / (float)m_rd->GetCurrentRenderTarget()->GetHeight();
          matWorldViewProj[0]._42 = 1.0f;
          #if defined(ENABLE_BGFX)
          // FIXME implement

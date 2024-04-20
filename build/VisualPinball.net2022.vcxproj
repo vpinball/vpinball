@@ -1281,11 +1281,13 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <ExcludedFromBuild Condition="'$(Configuration)'=='Debug_BGFX'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)'=='Release_BGFX'">true</ExcludedFromBuild>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
     </ClCompile>
     <ClCompile Include="third-party/include/imgui/imgui_impl_sdl2.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
     </ClCompile>
     <ClCompile Include="third-party/include/imgui/imgui_impl_opengl3.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
@@ -1293,6 +1295,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <ExcludedFromBuild Condition="'$(Configuration)'=='Debug_BGFX'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)'=='Release_BGFX'">true</ExcludedFromBuild>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
     </ClCompile>
     <ClCompile Include="third-party/include/bgfx-imgui/imgui_impl_bgfx.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
@@ -1300,6 +1303,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <ExcludedFromBuild Condition="'$(Configuration)'=='Debug_GL'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)'=='Release_GL'">true</ExcludedFromBuild>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
     </ClCompile>
     <ClCompile Include="third-party/include/imgui/imgui_impl_dx9.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)'=='Debug_GL'">true</ExcludedFromBuild>
@@ -1307,6 +1311,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <ExcludedFromBuild Condition="'$(Configuration)'=='Debug_BGFX'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)'=='Release_BGFX'">true</ExcludedFromBuild>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
     </ClCompile>
     <ClCompile Include="third-party/include/BAM/BAMView.cpp" />
     <ClCompile Include="third-party/include/glad/src/gl.c">

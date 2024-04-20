@@ -70,7 +70,6 @@ public:
    int m_ballTrailMeshBufferPos = 0;
    bool m_trailForBalls = false;
    float m_ballTrailStrength = 0.5f;
-   bool m_disableLightingForBalls = false;
    bool m_overwriteBallImages = false;
    Texture* m_ballImage = nullptr;
    Texture* m_decalImage = nullptr;
@@ -109,11 +108,13 @@ public:
    Vertex3Ds m_cam = Vertex3Ds(0.f, 0.f, 0.f);
    float m_inc = 0.f;
 
-   float m_AAfactor;
+   float m_AAfactor; // FIXME remove
 
    bool m_stereo3DfakeStereo;
    bool m_stereo3Denabled;
    float m_stereo3DDefocus = 0.f;
+
+   RenderTarget* GetOffscreenVR(int eye) const { return eye == 0 ? m_pOffscreenVRLeft : m_pOffscreenVRRight; }
 
 private:
    void RenderDynamics();
@@ -122,6 +123,40 @@ private:
    void Bloom();
    void SSRefl();
    BaseTexture* EnvmapPrecalc(const Texture* envTex, const unsigned int rad_env_xres, const unsigned int rad_env_yres);
+
+   int m_renderWidth, m_renderHeight; // Render size without supersampling (AAFactor) applied (depends on output VR/Display and stereo mode)
+
+   RenderTarget* m_pOffscreenMSAABackBufferTexture = nullptr;
+   RenderTarget* GetMSAABackBufferTexture() const { return m_pOffscreenMSAABackBufferTexture ? m_pOffscreenMSAABackBufferTexture : m_pOffscreenBackBufferTexture1; } // Main render target, may be MSAA enabled and not suited for sampling, also may have stereo output (2 layers)
+
+   RenderTarget* m_pOffscreenBackBufferTexture1 = nullptr;
+   RenderTarget* m_pOffscreenBackBufferTexture2 = nullptr;
+   RenderTarget* GetBackBufferTexture() const { return m_pOffscreenBackBufferTexture1; } // Main render target, with MSAA resolved if any, also may have stereo output (2 viewports)
+   RenderTarget* GetPreviousBackBufferTexture() const { return m_pOffscreenBackBufferTexture2; } // Same as back buffer but for previous frame
+   void SwapBackBufferRenderTargets();
+
+   RenderTarget* m_pAORenderTarget1 = nullptr;
+   RenderTarget* m_pAORenderTarget2 = nullptr;
+   RenderTarget* GetAORenderTarget(int idx);
+   void SwapAORenderTargets();
+   void ReleaseAORenderTargets() { delete m_pAORenderTarget1; m_pAORenderTarget1 = nullptr; delete m_pAORenderTarget2; m_pAORenderTarget2 = nullptr; }
+
+   RenderTarget* m_pPostProcessRenderTarget1 = nullptr;
+   RenderTarget* m_pPostProcessRenderTarget2 = nullptr;
+   RenderTarget* GetPostProcessRenderTarget1();
+   RenderTarget* GetPostProcessRenderTarget2();
+   RenderTarget* GetPostProcessRenderTarget(RenderTarget* renderedRT);
+
+   RenderTarget* m_pReflectionBufferTexture = nullptr;
+   RenderTarget* GetReflectionBufferTexture();
+
+   RenderTarget* m_pBloomBufferTexture = nullptr;
+   RenderTarget* m_pBloomTmpBufferTexture = nullptr;
+   RenderTarget* GetBloomBufferTexture() const { return m_pBloomBufferTexture; }
+   RenderTarget* GetBloomTmpBufferTexture() const { return m_pBloomTmpBufferTexture; }
+
+   RenderTarget* m_pOffscreenVRLeft = nullptr;
+   RenderTarget* m_pOffscreenVRRight = nullptr;
 
    PinTable* const m_table;
 
