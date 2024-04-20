@@ -22,6 +22,7 @@ public:
    void TransformVertices(const Vertex3Ds* const __restrict rgv, const WORD* const __restrict rgi, const int count, Vertex2D* const __restrict rgvout) const;
    Vertex3Ds Unproject(const Vertex3Ds& point);
    Vertex3Ds Get3DPointFrom2D(const POINT& p);
+   void GetRenderSize(int& w, int& h) const { w = m_renderWidth, h = m_renderHeight; }
 
    void SetupShaders();
    void UpdateBasicShaderMatrix(const Matrix3D& objectTrafo = Matrix3D::MatrixIdentity());
@@ -108,9 +109,8 @@ public:
    Vertex3Ds m_cam = Vertex3Ds(0.f, 0.f, 0.f);
    float m_inc = 0.f;
 
-   float m_AAfactor; // FIXME remove
-
-   bool m_stereo3DfakeStereo;
+   StereoMode m_stereo3D;
+   const bool m_stereo3DfakeStereo;
    bool m_stereo3Denabled;
    float m_stereo3DDefocus = 0.f;
 
@@ -179,7 +179,6 @@ private:
    int m_BWrendering; // 0=off, 1=Black&White from RedGreen, 2=B&W from Red only
 
    bool m_ss_refl;
-   StereoMode m_stereo3D;
    bool m_vrPreviewShrink = false;
    Vertex2D m_ScreenOffset = Vertex2D(0.f, 0.f); // for screen shake effect during nudge
 

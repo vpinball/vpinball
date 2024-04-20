@@ -1836,10 +1836,10 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
          {
             if ((input->dwData & 0x80) != 0)
             {
-               if (IsAnaglyphStereoMode(g_pplayer->m_stereo3D))
+               if (IsAnaglyphStereoMode(g_pplayer->m_renderer->m_stereo3D))
                {
                   // Select next glasses or toggle stereo on/off
-                  int glassesIndex = g_pplayer->m_stereo3D - STEREO_ANAGLYPH_1;
+                  int glassesIndex = g_pplayer->m_renderer->m_stereo3D - STEREO_ANAGLYPH_1;
                   if (!g_pplayer->m_renderer->m_stereo3Denabled && glassesIndex != 0)
                   {
                      g_pplayer->m_liveUI->PushNotification("Stereo enabled"s, 2000);
@@ -1875,7 +1875,7 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
                      {
                         glassesIndex += dir;
                      }
-                     g_pplayer->m_stereo3D = (StereoMode)(STEREO_ANAGLYPH_1 + glassesIndex);
+                     g_pplayer->m_renderer->m_stereo3D = (StereoMode)(STEREO_ANAGLYPH_1 + glassesIndex);
                      if (g_pplayer->m_renderer->m_stereo3Denabled)
                      {
                         string name;
@@ -1886,12 +1886,12 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
                      }
                   }
                }
-               else if (Is3DTVStereoMode(g_pplayer->m_stereo3D))
+               else if (Is3DTVStereoMode(g_pplayer->m_renderer->m_stereo3D))
                {
                   // Toggle stereo on/off
                   g_pplayer->m_renderer->m_stereo3Denabled = !g_pplayer->m_renderer->m_stereo3Denabled;
                }
-               else if (g_pplayer->m_stereo3D == STEREO_VR)
+               else if (g_pplayer->m_renderer->m_stereo3D == STEREO_VR)
                {
                   g_pplayer->m_renderer->m_vrPreview = (VRPreviewMode)((g_pplayer->m_renderer->m_vrPreview + 1) % (VRPREVIEW_BOTH + 1));
                   g_pplayer->m_liveUI->PushNotification(g_pplayer->m_renderer->m_vrPreview == VRPREVIEW_DISABLED ? "Preview disabled"s // Will only display in headset

@@ -687,8 +687,10 @@ void Decal::RenderSetup(RenderDevice *device)
    Vertex3D_NoTex2 *vertices;
    vertexBuffer->Lock(vertices);
    const float z = m_backglass ? 0.f : (height + 0.2f);
-   const float xmult = m_backglass ? getBGxmult() : 1.f;
-   const float ymult = m_backglass ? getBGymult() : 1.f;
+   int renderWidth, renderHeight;
+   g_pplayer->m_renderer->GetRenderSize(renderWidth, renderHeight);
+   const float xmult = m_backglass ? ((float)renderWidth * (float)(1.0 / EDITOR_BG_WIDTH)) : 1.f;
+   const float ymult = m_backglass ? ((float)renderHeight * (float)(1.0 / EDITOR_BG_HEIGHT)) : 1.f;
    const float offs = m_backglass ? 0.5f : 0.f;
 
    vertices[0].x = (m_d.m_vCenter.x + sn*(halfheight + leading) - cs*halfwidth)*xmult-offs;
@@ -756,7 +758,7 @@ void Decal::Render(const unsigned int renderMask)
    const bool isReflectionPass = renderMask & Renderer::REFLECTION_PASS;
    TRACE_FUNCTION();
 
-   if (m_backglass && (!GetPTable()->GetDecalsEnabled() || g_pplayer->m_stereo3D == STEREO_VR))
+   if (m_backglass && (!GetPTable()->GetDecalsEnabled() || g_pplayer->m_renderer->m_stereo3D == STEREO_VR))
       return;
 
    //!! should just check if material has no opacity enabled, but this is crucial for HV setup performance like-is
@@ -803,8 +805,7 @@ void Decal::Render(const unsigned int renderMask)
 
    if (!m_backglass)
    {
-      constexpr float depthbias = -5.f;
-      m_rd->SetRenderStateDepthBias(depthbias);
+      m_rd->SetRenderStateDepthBias(-5.f);
    }
    else
    {

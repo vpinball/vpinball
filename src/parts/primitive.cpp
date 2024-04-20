@@ -1406,8 +1406,7 @@ void Primitive::Render(const unsigned int renderMask)
       {
          m_mesh.UpdateBounds();
          float xMin = 1.f, yMin = 1.f, xMax = -1.f, yMax = -1.f;
-         const int nEyes = m_rd->m_stereo3D != STEREO_OFF ? 2 : 1;
-         for (int eye = 0; eye < nEyes; eye++)
+         for (int eye = 0; eye < m_rd->m_nEyes; eye++)
          {
             const Matrix3D & mvp = g_pplayer->m_renderer->GetMVP().GetModelViewProj(eye);
             for (int i = 0; i < 8; i++)

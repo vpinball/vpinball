@@ -290,9 +290,12 @@ static pDF mDwmFlush = nullptr;
 typedef HRESULT(STDAPICALLTYPE *pDEC)(UINT uCompositionAction);
 static pDEC mDwmEnableComposition = nullptr;
 
-RenderDevice::RenderDevice(VPX::Window* const wnd, const int width, const int height, const StereoMode stereo3D, 
-   const bool useNvidiaApi, const bool disableDWM, const bool compressTextures, const int BWrendering, int nMSAASamples, VideoSyncMode& syncMode)
-   : m_stereo3D(stereo3D), m_texMan(*this), m_renderFrame(this), m_compressTextures(compressTextures)
+RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nEyes, const bool useNvidiaApi, const bool disableDWM, const bool compressTextures, const int BWrendering, int nMSAASamples, VideoSyncMode& syncMode)
+   : m_isVR(isVR)
+   , m_nEyes(nEyes)
+   , m_texMan(*this)
+   , m_renderFrame(this)
+   , m_compressTextures(compressTextures)
 {
    m_outputWnd[0] = wnd;
    
@@ -372,8 +375,8 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const int width, const int he
    init.platformData.backBufferDS = NULL;
    init.resolution.maxFrameLatency = 1;
    init.resolution.reset = BGFX_RESET_NONE;
-   init.resolution.width = width;
-   init.resolution.height = height;
+   init.resolution.width = wnd->GetWidth();
+   init.resolution.height = wnd->GetHeight();
    #ifdef DEBUG
    init.debug = true;
    #endif
@@ -391,7 +394,7 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const int width, const int he
    case VideoSyncMode::VSM_FRAME_PACING: syncMode = VideoSyncMode::VSM_VSYNC; break; // Unsupported
    default: break;
    }
-   bgfx::reset(width, height, syncMode == VideoSyncMode::VSM_NONE ? BGFX_RESET_NONE : BGFX_RESET_VSYNC, bgfx::TextureFormat::RGB8);
+   bgfx::reset(wnd->GetWidth(), wnd->GetHeight(), syncMode == VideoSyncMode::VSM_NONE ? BGFX_RESET_NONE : BGFX_RESET_VSYNC, bgfx::TextureFormat::RGB8);
 
    //bgfx::setDebug(BGFX_DEBUG_STATS);
    //bgfx::setDebug(BGFX_DEBUG_STATS | BGFX_DEBUG_WIREFRAME);
@@ -645,8 +648,8 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const int width, const int he
     }
 
     D3DPRESENT_PARAMETERS params;
-    params.BackBufferWidth = width;
-    params.BackBufferHeight = height;
+    params.BackBufferWidth = wnd->GetWidth();
+    params.BackBufferHeight = wnd->GetHeight();
     params.BackBufferFormat = format;
     params.BackBufferCount = 1;
     params.MultiSampleType = D3DMULTISAMPLE_NONE;
@@ -871,7 +874,7 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const int width, const int he
 
    #if defined(ENABLE_BGFX) || defined(ENABLE_OPENGL)
    m_basicShader = new Shader(this, "BasicShader.glfx"s);
-   m_DMDShader = new Shader(this, m_stereo3D == STEREO_VR ? "DMDShaderVR.glfx"s : "DMDShader.glfx"s);
+   m_DMDShader = new Shader(this, m_isVR ? "DMDShaderVR.glfx"s : "DMDShader.glfx"s);
    #ifndef __OPENGLES__
    m_FBShader = new Shader(this, "FBShader.glfx"s, "SMAA.glfx"s);
    #else
@@ -1132,7 +1135,7 @@ void RenderDevice::Flip()
    FlushRenderFrame();
 
    // Schedule frame presentation (non blocking call, simply queueing the present command in the driver's render queue with a schedule for execution)
-   if (m_stereo3D != STEREO_VR)
+   if (!m_isVR)
       g_frameProfiler.OnPresent();
    #if defined(ENABLE_BGFX)
    SubmitAndFlipFrame();

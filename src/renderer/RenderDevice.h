@@ -67,8 +67,7 @@ public:
 class RenderDevice final
 {
 public:
-   RenderDevice(VPX::Window* const wnd, const int width, const int height, const StereoMode stereo3D, const bool useNvidiaApi, 
-      const bool disable_dwm, const bool compressTextures, const int BWrendering, int nMSAASamples, VideoSyncMode& syncMode);
+   RenderDevice(VPX::Window* const wnd, const bool isVR, const int nEyes, const bool useNvidiaApi, const bool disable_dwm, const bool compressTextures, const int BWrendering, int nMSAASamples, VideoSyncMode& syncMode);
    ~RenderDevice();
 
    #if defined(ENABLE_BGFX)
@@ -171,8 +170,6 @@ public:
 
    void SetMainTextureDefaultFiltering(const SamplerFilter filter);
 
-   const StereoMode m_stereo3D;
-
    void SetSamplerState(int unit, SamplerFilter filter, SamplerAddressMode clamp_u, SamplerAddressMode clamp_v);
    void UnbindSampler(Sampler* sampler);
    Sampler* m_nullTexture = nullptr;
@@ -184,7 +181,8 @@ public:
    vector<SharedIndexBuffer*> m_pendingSharedIndexBuffers;
    vector<SharedVertexBuffer*> m_pendingSharedVertexBuffers;
 
-   Shader *m_basicShader = nullptr;
+   const int m_nEyes;
+   Shader* m_basicShader = nullptr;
    Shader *m_DMDShader = nullptr;
    Shader *m_FBShader = nullptr;
    Shader *m_flasherShader = nullptr;
@@ -212,6 +210,8 @@ public:
 private :
    unsigned int m_nOutputWnd = 1; // Swap chain always has at least one output window (OpenGL & DX9 only supports one, DX10+/Metal/Vulkan support multiple)
    VPX::Window* m_outputWnd[8];
+
+   const bool m_isVR;
 
    RenderFrame m_renderFrame;
    RenderPass* m_currentPass = nullptr;

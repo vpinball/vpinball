@@ -110,13 +110,14 @@ public:
 
 Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncMode, const StereoMode stereo3D)
    : m_table(table)
+   , m_stereo3D(stereo3D)
+   #if defined(ENABLE_DX9) || defined(ENABLE_BGFX) // DirectX 9 does not support stereo rendering, FIXME it is unimplemented for BGFX
+   , m_stereo3DfakeStereo(true)
+   #else
+   , m_stereo3DfakeStereo(stereo3D == STEREO_VR ? false : table->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DFake"s, false))
+   #endif
 {
    m_stereo3Denabled = m_table->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DEnabled"s, (m_stereo3D != STEREO_OFF));
-   m_stereo3DfakeStereo = stereo3D == STEREO_VR ? false : m_table->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DFake"s, false);
-   #if defined(ENABLE_DX9) || defined(ENABLE_BGFX) // DirectX 9 does not support stereo rendering, FIXME it is unimplemented for BGFX
-   m_stereo3DfakeStereo = true;
-   #endif
-   m_stereo3D = m_stereo3DfakeStereo ? STEREO_OFF : stereo3D;
    m_BWrendering = m_table->m_settings.LoadValueWithDefault(Settings::Player, "BWRendering"s, 0);
    m_toneMapper = (ToneMapper)m_table->m_settings.LoadValueWithDefault(Settings::TableOverride, "ToneMapper"s, m_table->GetToneMapper());
    m_dynamicAO = m_table->m_settings.LoadValueWithDefault(Settings::Player, "DynamicAO"s, true);
@@ -212,9 +213,18 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    const bool useNvidiaApi = m_table->m_settings.LoadValueWithDefault(Settings::Player, "UseNVidiaAPI"s, false);
    const bool disableDWM = m_table->m_settings.LoadValueWithDefault(Settings::Player, "DisableDWM"s, false);
    const bool compressTextures = m_table->m_settings.LoadValueWithDefault(Settings::Player, "CompressTextures"s, false);
+   int nEyes = (m_stereo3D == STEREO_VR || (m_stereo3D != STEREO_OFF && !m_stereo3DfakeStereo)) ? 2 : 1;
+   try {
+      m_pd3dPrimaryDevice = new RenderDevice(wnd, m_stereo3D == STEREO_VR, nEyes, useNvidiaApi, disableDWM, compressTextures, m_BWrendering, nMSAASamples, syncMode);
+   }
+   catch (...) {
+      // TODO better error handling => just let the exception up ?
+      throw(E_FAIL);
+   }
+
    if (m_stereo3D == STEREO_VR)
    {
-      // For VR, renders at the HMD native eye resolution
+      // For VR, renders at the HMD native eye resolution (preview will reuse and scale/stretch it)
       m_renderWidth = g_pplayer->m_vrDevice->GetEyeWidth();
       m_renderHeight = g_pplayer->m_vrDevice->GetEyeHeight();
    }
@@ -232,20 +242,13 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    }
    else
    {
+      // Default renders at the output window pixel resolution
       m_renderWidth = wnd->GetWidth();
       m_renderHeight = wnd->GetHeight();
    }
-   m_AAfactor = m_table->m_settings.LoadValueWithDefault(Settings::Player, "AAFactor"s, m_table->m_settings.LoadValueWithDefault(Settings::Player, "USEAA"s, false) ? 2.0f : 1.0f);
-   int renderWidthAA = (int)((float)m_renderWidth * m_AAfactor);
-   int renderHeightAA = (int)((float)m_renderHeight * m_AAfactor);
-   
-   try {
-      m_pd3dPrimaryDevice = new RenderDevice(wnd, renderWidthAA, renderHeightAA, stereo3D, useNvidiaApi, disableDWM, compressTextures, m_BWrendering, nMSAASamples, syncMode);
-   }
-   catch (...) {
-      // TODO better error handling => just let the exception up ?
-      throw(E_FAIL);
-   }
+   float AAfactor = m_table->m_settings.LoadValueWithDefault(Settings::Player, "AAFactor"s, m_table->m_settings.LoadValueWithDefault(Settings::Player, "USEAA"s, false) ? 2.0f : 1.0f);
+   int renderWidthAA = (int)((float)m_renderWidth * AAfactor);
+   int renderHeightAA = (int)((float)m_renderHeight * AAfactor);
    
    if ((m_pd3dPrimaryDevice->GetOutputBackBuffer()->GetColorFormat() == colorFormat::RGBA10) && (m_FXAA == Quality_SMAA || m_FXAA == Standard_DLAA))
       ShowError("SMAA or DLAA post-processing AA should not be combined with 10bit-output rendering (will result in visible artifacts)!");
@@ -261,7 +264,10 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    #elif defined(ENABLE_DX9)
       const colorFormat renderFormat = ((m_BWrendering == 1) ? colorFormat::RG16F : ((m_BWrendering == 2) ? colorFormat::RED16F : colorFormat::RGBA16F));
    #endif
-   SurfaceType rtType = m_stereo3D == STEREO_OFF || !m_pd3dPrimaryDevice->SupportLayeredRendering() ? SurfaceType::RT_DEFAULT : SurfaceType::RT_STEREO;
+   SurfaceType rtType = m_stereo3D == STEREO_OFF 
+                     || (m_stereo3D != STEREO_VR && m_stereo3DfakeStereo)
+                     || !m_pd3dPrimaryDevice->SupportLayeredRendering() 
+                      ? SurfaceType::RT_DEFAULT : SurfaceType::RT_STEREO;
    
    // MSAA render target which is resolved to the non MSAA render target
    if (nMSAASamples > 1) 
@@ -1056,7 +1062,7 @@ void Renderer::UpdateBasicShaderMatrix(const Matrix3D& objectTrafo)
    matrices.matView = GetMVP().GetView();
    matrices.matWorldView = GetMVP().GetModelView();
    matrices.matWorldViewInverseTranspose = GetMVP().GetModelViewInverseTranspose();
-   const int nEyes = ((m_stereo3D != STEREO_OFF) && !m_stereo3DfakeStereo) ? 2 : 1;
+   const int nEyes = m_pd3dPrimaryDevice->m_nEyes;
    for (int eye = 0; eye < nEyes; eye++)
       matrices.matWorldViewProj[eye] = GetMVP().GetModelViewProj(eye);
 
@@ -1090,7 +1096,7 @@ void Renderer::UpdateBallShaderMatrix()
    matrices.matView = GetMVP().GetView();
    matrices.matWorldView = GetMVP().GetModelView();
    matrices.matWorldViewInverse = GetMVP().GetModelViewInverse();
-   const int nEyes = ((m_stereo3D != STEREO_OFF) && !m_stereo3DfakeStereo) ? 2 : 1;
+   const int nEyes = m_pd3dPrimaryDevice->m_nEyes;
    for (int eye = 0; eye < nEyes; eye++)
       matrices.matWorldViewProj[eye] = GetMVP().GetModelViewProj(eye);
 
@@ -1507,7 +1513,7 @@ void Renderer::RenderStaticPrepass()
    {
       PLOGI << "Starting static AO prerendering"; // For profiling
 
-      const bool useAA = GetBackBufferTexture()->GetWidth() != m_renderWidth;
+      const bool useAA = m_renderWidth > GetBackBufferTexture()->GetWidth();
 
       m_pd3dPrimaryDevice->SetRenderTarget("PreRender AO Save Depth"s, m_staticPrepassRT);
       m_pd3dPrimaryDevice->ResetRenderState();
@@ -1621,7 +1627,7 @@ void Renderer::RenderDynamics()
 
    // Setup the projection matrices used for refraction
    Matrix3D matProj[2];
-   const int nEyes = ((m_stereo3D != STEREO_OFF) && !m_stereo3DfakeStereo) ? 2 : 1;
+   const int nEyes = m_pd3dPrimaryDevice->m_nEyes;
    for (int eye = 0; eye < nEyes; eye++)
       matProj[eye] = GetMVP().GetProj(eye);
    m_pd3dPrimaryDevice->m_basicShader->SetMatrix(SHADER_matProj, &matProj[0], nEyes);
@@ -1739,7 +1745,7 @@ void Renderer::Bloom()
 
 void Renderer::PrepareVideoBuffers()
 {
-   const bool useAA = GetBackBufferTexture()->GetWidth() != m_renderWidth;
+   const bool useAA = m_renderWidth > GetBackBufferTexture()->GetWidth();
    const bool stereo = m_stereo3D == STEREO_VR || ((m_stereo3D != STEREO_OFF) && m_stereo3Denabled && (!m_stereo3DfakeStereo || m_pd3dPrimaryDevice->DepthBufferReadBackAvailable()));
    // Since stereo is applied as a postprocess step for fake stereo, it disables AA and sharpening except for top/bottom & side by side modes
    const bool PostProcAA = !m_stereo3DfakeStereo || (!stereo || (m_stereo3D == STEREO_TB) || (m_stereo3D == STEREO_SBS));
@@ -1756,7 +1762,7 @@ void Renderer::PrepareVideoBuffers()
    const bool ss_refl = m_ss_refl && m_table->m_enableSSR && m_pd3dPrimaryDevice->DepthBufferReadBackAvailable() && m_table->m_SSRScale > 0.f;
    const unsigned int sharpen = PostProcAA ? m_sharpen : 0;
    const bool useAO = GetAOMode() == 2;
-   const bool useUpscaler = (GetBackBufferTexture()->GetWidth() < m_renderWidth) && !stereo && (SMAA || DLAA || NFAA || FXAA1 || FXAA2 || FXAA3 || sharpen);
+   const bool useUpscaler = (m_renderWidth < GetBackBufferTexture()->GetWidth()) && !stereo && (SMAA || DLAA || NFAA || FXAA1 || FXAA2 || FXAA3 || sharpen);
 
    RenderTarget *renderedRT = GetBackBufferTexture();
    RenderTarget *outputRT = nullptr;

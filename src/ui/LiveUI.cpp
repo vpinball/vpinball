@@ -749,7 +749,7 @@ LiveUI::LiveUI(RenderDevice *const rd)
 
    // Overlays are displayed in the VR headset for which we do not have a meaningful DPI. This is somewhat hacky but we would really need 2 UI for VR.
    #ifndef __STANDALONE__
-      const float overlaySize = rd->m_stereo3D == STEREO_VR ? 20.0f : min(32.f * m_dpi, (float)min(m_player->m_playfieldWnd->GetWidth(), m_player->m_playfieldWnd->GetHeight()) / (26.f * 2.0f)); // Fit 26 lines of text on screen
+      const float overlaySize = m_renderer->m_stereo3D == STEREO_VR ? 20.0f : min(32.f * m_dpi, (float)min(m_player->m_playfieldWnd->GetWidth(), m_player->m_playfieldWnd->GetHeight()) / (26.f * 2.0f)); // Fit 26 lines of text on screen
    #else
       const float overlaySize = 13.0f * m_dpi;
    #endif
@@ -915,6 +915,12 @@ void LiveUI::Render()
    // For the time being, the UI is only available inside a running player
    if (m_player == nullptr || m_player->GetCloseState() != Player::CS_PLAYING)
       return;
+
+   // Rendering must happen on a render target matching the dimension we used to prepare the UI frame
+   ImGuiIO &io = ImGui::GetIO();
+   assert( ((m_rotate == 0 || m_rotate == 2) && RenderTarget::GetCurrentRenderTarget()->GetWidth() == io.DisplaySize.x && RenderTarget::GetCurrentRenderTarget()->GetHeight() == io.DisplaySize.y)
+        || ((m_rotate == 1 || m_rotate == 3) && RenderTarget::GetCurrentRenderTarget()->GetWidth() == io.DisplaySize.y && RenderTarget::GetCurrentRenderTarget()->GetHeight() == io.DisplaySize.x));
+      
    if (m_rotate != 0 && !m_rotation_callback_added)
    {
       // We hack into ImGui renderer for the simple tooltips that must be displayed facing the user
@@ -1339,7 +1345,7 @@ void LiveUI::OpenTweakMode()
    m_ShowSplashModal = false;
    m_renderer->DisableStaticPrePass(true);
    m_tweakMode = true;
-   m_activeTweakPage = m_table->m_szRules.empty() ? (m_player->m_stereo3D == STEREO_VR ? TP_TableOption : TP_PointOfView) : TP_Rules;
+   m_activeTweakPage = m_table->m_szRules.empty() ? (m_renderer->m_stereo3D == STEREO_VR ? TP_TableOption : TP_PointOfView) : TP_Rules;
    m_activeTweakIndex = 0;
    UpdateTweakPage();
 }
@@ -1471,7 +1477,7 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
                m_activeTweakPage = (TweakPage)((m_activeTweakPage + stepi) % TP_Count);
             if (m_activeTweakPage == TP_Rules && m_table->m_szRules.empty())
                m_activeTweakPage = (TweakPage)((m_activeTweakPage + stepi) % TP_Count);
-            if (m_activeTweakPage == TP_PointOfView && m_player->m_stereo3D == STEREO_VR)
+            if (m_activeTweakPage == TP_PointOfView && m_renderer->m_stereo3D == STEREO_VR)
                m_activeTweakPage = (TweakPage)((m_activeTweakPage + stepi) % TP_Count);
          }
          m_activeTweakIndex = 0;
@@ -1941,8 +1947,8 @@ void LiveUI::UpdateTweakModeUI()
                const int pageIndex = m_activeTweakPage 
                   - ((m_activeTweakPage > TP_Info && m_table->m_szDescription.empty()) ? 1 : 0)
                   - ((m_activeTweakPage > TP_Rules && m_table->m_szRules.empty()) ? 1 : 0)
-                  - ((m_activeTweakPage > TP_PointOfView && m_player->m_stereo3D == STEREO_VR) ? 1 : 0);
-               const int nTweakPages = 1 + (m_table->m_szRules.empty() ? 0 : 1) + (m_table->m_szDescription.empty() ? 0 : 1) + (m_player->m_stereo3D == STEREO_VR ? 0 : 1);
+                  - ((m_activeTweakPage > TP_PointOfView && m_renderer->m_stereo3D == STEREO_VR) ? 1 : 0);
+               const int nTweakPages = 1 + (m_table->m_szRules.empty() ? 0 : 1) + (m_table->m_szDescription.empty() ? 0 : 1) + (m_renderer->m_stereo3D == STEREO_VR ? 0 : 1);
                CM_ROW(setting, "Page "s.append(std::to_string(1 + pageIndex)).append("/").append(std::to_string(nTweakPages)).c_str(), "%s",
                   m_activeTweakPage == TP_TableOption      ? "Table Options"
                      : m_activeTweakPage == TP_PointOfView ? "Point of View"
@@ -3143,7 +3149,7 @@ void LiveUI::UpdateVideoOptionsModal()
          }
       }
 
-      if (m_player->m_stereo3D != STEREO_VR && ImGui::CollapsingHeader("3D Stereo Output", ImGuiTreeNodeFlags_DefaultOpen))
+      if (m_renderer->m_stereo3D != STEREO_VR && ImGui::CollapsingHeader("3D Stereo Output", ImGuiTreeNodeFlags_DefaultOpen))
       {
          if (ImGui::Checkbox("Enable stereo rendering", &m_renderer->m_stereo3Denabled))
             g_pvp->m_settings.SaveValue(Settings::Player, "Stereo3DEnabled"s, m_renderer->m_stereo3Denabled);
@@ -3152,9 +3158,9 @@ void LiveUI::UpdateVideoOptionsModal()
             m_renderer->UpdateStereoShaderState();
             bool modeChanged = false;
             const char *stereo_output_items[] = { "Disabled", "3D TV", "Anaglyph" };
-            int stereo_mode = m_player->m_stereo3D == STEREO_OFF ? 0 : Is3DTVStereoMode(m_player->m_stereo3D) ? 1 : 2;
-            int tv_mode = Is3DTVStereoMode(m_player->m_stereo3D) ? (int) m_player->m_stereo3D - STEREO_TB : 0;
-            int glassesIndex = IsAnaglyphStereoMode(m_player->m_stereo3D) ? (m_player->m_stereo3D - STEREO_ANAGLYPH_1) : 0;
+            int stereo_mode = m_renderer->m_stereo3D == STEREO_OFF ? 0 : Is3DTVStereoMode(m_renderer->m_stereo3D) ? 1 : 2;
+            int tv_mode = Is3DTVStereoMode(m_renderer->m_stereo3D) ? (int)m_renderer->m_stereo3D - STEREO_TB : 0;
+            int glassesIndex = IsAnaglyphStereoMode(m_renderer->m_stereo3D) ? (m_renderer->m_stereo3D - STEREO_ANAGLYPH_1) : 0;
             if (stereo_mode == 0) // Stereo mode may not be activated if the player was started without it (wen can only change between the stereo modes)
                ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
             if (ImGui::Combo("Stereo Output", &stereo_mode, stereo_output_items, IM_ARRAYSIZE(stereo_output_items)))
@@ -3163,9 +3169,11 @@ void LiveUI::UpdateVideoOptionsModal()
                ImGui::PopItemFlag();
             if (stereo_mode != 0) // Stereo settings
             {
-               ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-               ImGui::Checkbox("Use Fake Stereo", &m_renderer->m_stereo3DfakeStereo);
-               ImGui::PopItemFlag();
+               // The renderer does not support switching between fake/real stereo 
+               // ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+               // ImGui::Checkbox("Use Fake Stereo", &m_renderer->m_stereo3DfakeStereo);
+               // ImGui::PopItemFlag();
+               ImGui::Text(m_renderer->m_stereo3DfakeStereo ? "Renderer uses 'fake' stereo from single render" : "Renderer performs real stereo rendering");
                if (m_renderer->m_stereo3DfakeStereo)
                {
                   float stereo3DEyeSep = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DMaxSeparation"s, 0.03f);
@@ -3272,8 +3280,8 @@ void LiveUI::UpdateVideoOptionsModal()
                if (stereo_mode == 2)
                   mode = (StereoMode)(STEREO_ANAGLYPH_1 + glassesIndex);
                g_pvp->m_settings.SaveValue(Settings::Player, "Stereo3D"s, (int) mode);
-               if (m_player->m_stereo3D != STEREO_OFF && mode != STEREO_OFF) // TODO allow live switching stereo on/off
-                  m_player->m_stereo3D = mode;
+               if (m_renderer->m_stereo3D != STEREO_OFF && mode != STEREO_OFF) // TODO allow live switching stereo on/off
+                  m_renderer->m_stereo3D = mode;
             }
          }
       }
@@ -3285,7 +3293,7 @@ void LiveUI::UpdateVideoOptionsModal()
 
 void LiveUI::UpdateAnaglyphCalibrationModal()
 {
-   int glassesIndex = m_player->m_stereo3D - STEREO_ANAGLYPH_1;
+   int glassesIndex = m_renderer->m_stereo3D - STEREO_ANAGLYPH_1;
    if (glassesIndex < 0 || glassesIndex > 9)
       return;
    static float backgroundOpacity = 1.f;
@@ -3633,7 +3641,7 @@ void LiveUI::UpdateMainSplashModal()
          m_ShowSplashModal = false;
          popup_headtracking = true;
       }
-      if (m_player->m_stereo3D != STEREO_VR && (ImGui::Button("Live Editor", size)  || (keyShortcut == 3)))
+      if (m_renderer->m_stereo3D != STEREO_VR && (ImGui::Button("Live Editor", size) || (keyShortcut == 3)))
       {
          ImGui::CloseCurrentPopup();
          m_ShowUI = true;

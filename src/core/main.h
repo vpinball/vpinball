@@ -390,14 +390,3 @@ inline void ShowError(const string& sz)
 }
 
 #include "editablereg.h"
-
-__forceinline float getBGxmult()
-{
-   // FIXME First this is likely wrong, second this should use the target framebuffer dimension instead of computing it here
-   return (float)g_pplayer->m_playfieldWnd->GetWidth() * (float)(1.0 / EDITOR_BG_WIDTH) * g_pplayer->m_renderer->m_AAfactor;
-}
-
-__forceinline float getBGymult()
-{
-   return getBGxmult() / (((float)g_pplayer->m_playfieldWnd->GetWidth() / (float)g_pplayer->m_playfieldWnd->GetHeight()) / (float)((double)EDITOR_BG_WIDTH / EDITOR_BG_HEIGHT));
-}
