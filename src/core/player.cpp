@@ -150,9 +150,7 @@ LRESULT CALLBACK PlayerWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
             for (unsigned int i = 0; i < MAX_TOUCHREGION; ++i)
                if ((g_pplayer->m_touchregion_pressed[i] != (uMsg == WM_POINTERDOWN))
                   && Intersect(touchregion[i], g_pplayer->m_playfieldWnd->GetWidth(), g_pplayer->m_playfieldWnd->GetHeight(), pointerInfo.ptPixelLocation,
-                     g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].GetRotation(
-                        g_pplayer->m_renderer->m_pd3dPrimaryDevice->m_width, g_pplayer->m_renderer->m_pd3dPrimaryDevice->m_height)
-                        != 0.f))
+                     g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].GetRotation(g_pplayer->m_playfieldWnd->GetWidth(), g_pplayer->m_playfieldWnd->GetHeight()) != 0.f))
                {
                   g_pplayer->m_touchregion_pressed[i] = (uMsg == WM_POINTERDOWN);
 
@@ -467,7 +465,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
       || ((lflip != ~0u) && (rflip != ~0u) && (GetAsyncKeyState(lflip) & 0x8000) && (GetAsyncKeyState(rflip) & 0x8000)))
    {
       m_ptable->m_tblMirrorEnabled = true;
-      int rotation = (int)(m_ptable->mViewSetups[m_ptable->m_BG_current_set].GetRotation(m_renderer->m_pd3dPrimaryDevice->m_width, m_renderer->m_pd3dPrimaryDevice->m_height)) / 90;
+      int rotation = (int)(m_ptable->mViewSetups[m_ptable->m_BG_current_set].GetRotation(m_playfieldWnd->GetWidth(), m_playfieldWnd->GetHeight())) / 90;
       m_renderer->GetMVP().SetFlip(rotation == 0 || rotation == 2 ? ModelViewProj::FLIPX : ModelViewProj::FLIPY);
    }
    else
@@ -1750,7 +1748,7 @@ void Player::PrepareFrame()
    if (m_stereo3D != STEREO_VR)
       m_liveUI->Update(m_playfieldWnd->GetBackBuffer());
    else if (m_liveUI->IsTweakMode())
-      m_liveUI->Update(m_renderer->m_pd3dPrimaryDevice->GetOffscreenVR(0));
+      m_liveUI->Update(m_renderer->GetOffscreenVR(0));
    g_frameProfiler.ExitProfileSection();
 
    // Shake screne when nudging

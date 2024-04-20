@@ -290,9 +290,9 @@ static pDF mDwmFlush = nullptr;
 typedef HRESULT(STDAPICALLTYPE *pDEC)(UINT uCompositionAction);
 static pDEC mDwmEnableComposition = nullptr;
 
-RenderDevice::RenderDevice(VPX::Window* const wnd, const int width, const int height, const float AAfactor, const StereoMode stereo3D, 
-   const bool useNvidiaApi, const bool disableDWM, const int BWrendering, int nMSAASamples, VideoSyncMode& syncMode)
-   : m_width(width), m_height(height), m_AAfactor(AAfactor), m_stereo3D(stereo3D), m_texMan(*this), m_renderFrame(this)
+RenderDevice::RenderDevice(VPX::Window* const wnd, const int width, const int height, const StereoMode stereo3D, 
+   const bool useNvidiaApi, const bool disableDWM, const bool compressTextures, const int BWrendering, int nMSAASamples, VideoSyncMode& syncMode)
+   : m_stereo3D(stereo3D), m_texMan(*this), m_renderFrame(this), m_compressTextures(compressTextures)
 {
    m_outputWnd[0] = wnd;
    
@@ -372,8 +372,8 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const int width, const int he
    init.platformData.backBufferDS = NULL;
    init.resolution.maxFrameLatency = 1;
    init.resolution.reset = BGFX_RESET_NONE;
-   init.resolution.width = m_width;
-   init.resolution.height = m_height;
+   init.resolution.width = width;
+   init.resolution.height = height;
    #ifdef DEBUG
    init.debug = true;
    #endif
@@ -391,7 +391,7 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const int width, const int he
    case VideoSyncMode::VSM_FRAME_PACING: syncMode = VideoSyncMode::VSM_VSYNC; break; // Unsupported
    default: break;
    }
-   bgfx::reset(m_width, m_height, syncMode == VideoSyncMode::VSM_NONE ? BGFX_RESET_NONE : BGFX_RESET_VSYNC, bgfx::TextureFormat::RGB8);
+   bgfx::reset(width, height, syncMode == VideoSyncMode::VSM_NONE ? BGFX_RESET_NONE : BGFX_RESET_VSYNC, bgfx::TextureFormat::RGB8);
 
    //bgfx::setDebug(BGFX_DEBUG_STATS);
    //bgfx::setDebug(BGFX_DEBUG_STATS | BGFX_DEBUG_WIREFRAME);
@@ -561,7 +561,6 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const int width, const int he
       binding->clamp_v = SA_UNDEFINED;
       m_samplerBindings.push_back(binding);
    }
-   m_autogen_mipmap = true;
 
    SetRenderState(RenderState::ZFUNC, RenderState::Z_LESSEQUAL);
 
@@ -646,8 +645,8 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const int width, const int he
     }
 
     D3DPRESENT_PARAMETERS params;
-    params.BackBufferWidth = m_width;
-    params.BackBufferHeight = m_height;
+    params.BackBufferWidth = width;
+    params.BackBufferHeight = height;
     params.BackBufferFormat = format;
     params.BackBufferCount = 1;
     params.MultiSampleType = D3DMULTISAMPLE_NONE;
@@ -779,72 +778,11 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const int width, const int he
    // Retrieve a reference to the back buffer.
    wnd->SetBackBuffer(new RenderTarget(this, wnd->GetWidth(), wnd->GetHeight(), back_buffer_format));
 
-#if defined(ENABLE_BGFX)
-   const colorFormat render_format = ((BWrendering == 1) ? colorFormat::RG16F : ((BWrendering == 2) ? colorFormat::RED16F : colorFormat::RGB16F));
-#elif defined(ENABLE_OPENGL)
-   #ifndef __OPENGLES__
-   const colorFormat render_format = ((BWrendering == 1) ? colorFormat::RG16F : ((BWrendering == 2) ? colorFormat::RED16F : colorFormat::RGB16F));
-   #else
-   const colorFormat render_format = ((BWrendering == 1) ? colorFormat::RG16F : ((BWrendering == 2) ? colorFormat::RED16F : colorFormat::RGBA16F));
-   #endif
-#elif defined(ENABLE_DX9)
-   const colorFormat render_format = ((BWrendering == 1) ? colorFormat::RG16F : ((BWrendering == 2) ? colorFormat::RED16F : colorFormat::RGBA16F));
-#endif
-   // alloc float buffer for rendering (optionally AA factor res for manual super sampling)
-   int m_width_aa = (int)((float)m_width * m_AAfactor);
-   int m_height_aa = (int)((float)m_height * m_AAfactor);
-
    // alloc float buffer for rendering
    #if defined(ENABLE_OPENGL)
    int maxSamples;
    glGetIntegerv(GL_MAX_SAMPLES, &maxSamples);
    nMSAASamples = min(maxSamples, nMSAASamples);
-   #endif
-
-   #if defined(ENABLE_OPENGL)
-   SurfaceType rtType = m_stereo3D == STEREO_OFF ? SurfaceType::RT_DEFAULT : SurfaceType::RT_STEREO;
-   #else
-   // For the time being DirectX 9 does not support any fancy stereo
-   SurfaceType rtType = SurfaceType::RT_DEFAULT;
-   #endif
-   
-   // MSAA render target which is resolved to the non MSAA render target
-   if (nMSAASamples > 1) 
-      m_pOffscreenMSAABackBufferTexture = new RenderTarget(this, rtType, "MSAABackBuffer"s, m_width_aa, m_height_aa, render_format, true, nMSAASamples, "Fatal Error: unable to create MSAA render buffer!");
-
-   // Either the main render target for non MSAA, or the buffer where the MSAA render is resolved
-   m_pOffscreenBackBufferTexture1 = new RenderTarget(this, rtType, "BackBuffer1"s, m_width_aa, m_height_aa, render_format, true, 1, "Fatal Error: unable to create offscreen back buffer");
-
-   // Second render target to swap, allowing to read previous frame render for ball reflection and motion blur
-   m_pOffscreenBackBufferTexture2 = m_pOffscreenBackBufferTexture1->Duplicate("BackBuffer2"s, true);
-
-   // alloc bloom tex at 1/4 x 1/4 res (allows for simple HQ downscale of clipped input while saving memory)
-   m_pBloomBufferTexture = new RenderTarget(this, rtType, "BloomBuffer1"s, m_width / 4, m_height / 4, render_format, false, 1, "Fatal Error: unable to create bloom buffer!");
-   m_pBloomTmpBufferTexture = m_pBloomBufferTexture->Duplicate("BloomBuffer2"s);
-
-   #if defined(ENABLE_OPENGL) && defined(ENABLE_VR)
-   if (m_stereo3D == STEREO_VR) {
-      //AMD Debugging
-      colorFormat renderBufferFormatVR;
-      const int textureModeVR = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "EyeFBFormat"s, 1);
-      switch (textureModeVR) {
-      case 0:
-         renderBufferFormatVR = RGB8;
-         break;
-      case 2:
-         renderBufferFormatVR = RGB16F;
-         break;
-      case 3:
-         renderBufferFormatVR = RGBA16F;
-         break;
-      case 1:
-      default:
-         renderBufferFormatVR = RGBA8;
-         break;
-      }
-      m_pOffscreenVRLeft = new RenderTarget(this, SurfaceType::RT_DEFAULT, "VRLeft"s, m_width, m_height, renderBufferFormatVR, false, 1, "Fatal Error: unable to create left eye buffer!");
-      m_pOffscreenVRRight = new RenderTarget(this, SurfaceType::RT_DEFAULT, "VRRight"s, m_width, m_height, renderBufferFormatVR, false, 1, "Fatal Error: unable to create right eye buffer!");
-   }
    #endif
 
    // create default vertex declarations for shaders
@@ -876,7 +814,7 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const int width, const int he
    VertexBuffer* quadVertexBuffer = new VertexBuffer(this, 4, verts, false, VertexFormat::VF_POS_TEX);
    m_quadMeshBuffer = new MeshBuffer(L"Fullscreen Quad"s, quadVertexBuffer);
 
-   #if defined(ENABLE_OPENGL) || defined(ENABLE_BGFX)
+   #if defined(ENABLE_OPENGL)
    VertexBuffer* quadPNTDynVertexBuffer = new VertexBuffer(this, 4, nullptr, true, VertexFormat::VF_POS_NORMAL_TEX);
    m_quadPNTDynMeshBuffer = new MeshBuffer(quadPNTDynVertexBuffer);
 
@@ -960,7 +898,6 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const int width, const int he
    }
 
    // Initialize uniform to default value
-   m_basicShader->SetVector(SHADER_w_h_height, (float)(1.0 / (double)GetMSAABackBufferTexture()->GetWidth()), (float)(1.0 / (double)GetMSAABackBufferTexture()->GetHeight()), 0.0f, 0.0f);
    m_basicShader->SetVector(SHADER_staticColor_Alpha, 1.0f, 1.0f, 1.0f, 1.0f); // No tinting
    m_DMDShader->SetFloat(SHADER_alphaTestValue, 1.0f); // No alpha clipping
 
@@ -976,8 +913,6 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const int width, const int he
 RenderDevice::~RenderDevice()
 {
    delete m_quadMeshBuffer;
-   delete m_quadPTDynMeshBuffer;
-   delete m_quadPNTDynMeshBuffer;
    delete m_nullTexture;
 
 #if defined(ENABLE_DX9)
@@ -1008,22 +943,9 @@ RenderDevice::~RenderDevice()
    m_ballShader = nullptr;
 
    m_texMan.UnloadAll();
-   delete m_pOffscreenBackBufferTexture1;
-   delete m_pOffscreenBackBufferTexture2;
-   delete m_pPostProcessRenderTarget1;
-   delete m_pPostProcessRenderTarget2;
-   delete m_pReflectionBufferTexture;
 
    delete m_outputWnd[0]->GetBackBuffer();
    m_outputWnd[0]->SetBackBuffer(nullptr);
-
-   delete m_pBloomBufferTexture;
-   delete m_pBloomTmpBufferTexture;
-   delete m_pOffscreenVRLeft;
-   delete m_pOffscreenVRRight;
-
-   delete m_pAORenderTarget1;
-   delete m_pAORenderTarget2;
 
    delete m_SMAAareaTexture;
    delete m_SMAAsearchTexture;
@@ -1045,6 +967,9 @@ RenderDevice::~RenderDevice()
          m_samplerStateCache[i] = 0;
       }
    }
+
+   delete m_quadPTDynMeshBuffer;
+   delete m_quadPNTDynMeshBuffer;
 
    SDL_GL_DeleteContext(m_sdl_context);
 
@@ -1102,77 +1027,6 @@ RenderDevice::~RenderDevice()
 
    assert(m_pendingSharedIndexBuffers.empty());
    assert(m_pendingSharedVertexBuffers.empty());
-}
-
-RenderTarget* RenderDevice::GetPostProcessRenderTarget1()
-{
-   if (m_pPostProcessRenderTarget1 == nullptr)
-   {
-      // Buffers for post-processing. Postprocess is done at scene resolution, on a LDR render target without MSAA nor full scene supersampling
-      // excepted when using downsampled render buffer where upscaling is done after postprocessing.
-      const colorFormat pp_format = GetBackBufferTexture()->GetColorFormat() == RGBA10 ? colorFormat::RGBA10 : colorFormat::RGBA8;
-      int width = m_AAfactor < 1 ? m_pOffscreenBackBufferTexture1->GetWidth() : m_width;
-      int height = m_AAfactor < 1 ? m_pOffscreenBackBufferTexture1->GetHeight() : m_height;
-      m_pPostProcessRenderTarget1 = new RenderTarget(this, m_pOffscreenBackBufferTexture1->m_type, "PostProcess1"s, width, height, pp_format, false, 1, 
-         "Fatal Error: unable to create stereo3D/post-processing AA/sharpen buffer!");
-   }
-   return m_pPostProcessRenderTarget1;
-}
-   
-RenderTarget* RenderDevice::GetPostProcessRenderTarget2()
-{
-   if (m_pPostProcessRenderTarget2 == nullptr)
-      m_pPostProcessRenderTarget2 = GetPostProcessRenderTarget1()->Duplicate("PostProcess2"s);
-   return m_pPostProcessRenderTarget2;
-}
-
-RenderTarget* RenderDevice::GetPostProcessRenderTarget(RenderTarget* renderedRT)
-{
-   RenderTarget* pp1 = GetPostProcessRenderTarget1();
-   if (renderedRT == pp1)
-      return GetPostProcessRenderTarget2();
-   else
-      return pp1;
-}
-
-RenderTarget* RenderDevice::GetReflectionBufferTexture()
-{
-   // Lazily alloc buffer for screen space fake reflection rendering
-   if (m_pReflectionBufferTexture == nullptr)
-   {
-      m_pReflectionBufferTexture = new RenderTarget(this, m_pOffscreenBackBufferTexture1->m_type, "ReflectionBuffer"s, 
-         m_pOffscreenBackBufferTexture1->GetWidth(), m_pOffscreenBackBufferTexture1->GetHeight(),
-         m_pOffscreenBackBufferTexture1->GetColorFormat(), false, 1, "Fatal Error: unable to create reflection buffer!");
-   }
-   return m_pReflectionBufferTexture;
-}
-
-RenderTarget* RenderDevice::GetAORenderTarget(int idx)
-{
-   // Lazily creates AO render target since this can be enabled during play from script (at render buffer resolution)
-   if (m_pAORenderTarget1 == nullptr)
-   {
-      m_pAORenderTarget1 = new RenderTarget(this, m_pOffscreenBackBufferTexture1->m_type, "AO1"s, 
-         m_pOffscreenBackBufferTexture1->GetWidth(), m_pOffscreenBackBufferTexture1->GetHeight(), colorFormat::GREY8, false, 1, 
-         "Unable to create AO buffers!\r\nPlease disable Ambient Occlusion.\r\nOr try to (un)set \"Alternative Depth Buffer processing\" in the video options!");
-      m_pAORenderTarget2 = m_pAORenderTarget1->Duplicate("AO2"s);
-
-   }
-   return idx == 0 ? m_pAORenderTarget1 : m_pAORenderTarget2;
-}
-
-void RenderDevice::SwapBackBufferRenderTargets()
-{
-   RenderTarget* tmp = m_pOffscreenBackBufferTexture1;
-   m_pOffscreenBackBufferTexture1 = m_pOffscreenBackBufferTexture2;
-   m_pOffscreenBackBufferTexture2 = tmp;
-}
-
-void RenderDevice::SwapAORenderTargets()
-{
-   RenderTarget* tmpAO = m_pAORenderTarget1;
-   m_pAORenderTarget1 = m_pAORenderTarget2;
-   m_pAORenderTarget2 = tmpAO;
 }
 
 bool RenderDevice::DepthBufferReadBackAvailable()
@@ -1253,7 +1107,6 @@ void RenderDevice::WaitForVSync(const bool asynchronous)
 #endif
       m_vsyncCount++;
       const U64 now = usec();
-      m_lastVSyncUs = now;
       //static U64 lastUs = 0;
       //PLOGD_(PLOG_NO_DBG_OUT_INSTANCE_ID) << "VSYNC " << ((double)(now - lastUs) / 1000.0) << "ms";
       //lastUs = now;

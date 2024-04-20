@@ -247,11 +247,6 @@ void BallEx::Render(const unsigned int renderMask)
    Matrix3D m3D_full = rot * scale * trans;
    m_rd->m_ballShader->SetMatrix(SHADER_orientation, &m3D_full);
 
-   m_rd->m_ballShader->SetVector(SHADER_w_h_disableLighting, 
-      1.5f / (float)m_rd->GetPreviousBackBufferTexture()->GetWidth(), // UV Offset for sampling reflections
-      1.5f / (float)m_rd->GetPreviousBackBufferTexture()->GetHeight(),
-      g_pplayer->m_renderer->m_disableLightingForBalls ? 1.f : 0.f, 0.f);
-
    m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
    bool sphericalMapping;
    if (!m_pball->m_pinballEnv)

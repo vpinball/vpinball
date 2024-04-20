@@ -395,7 +395,7 @@ GLuint Sampler::CreateTexture(BaseTexture* const surf, unsigned int Levels, colo
    }
 
    colorFormat comp_format = Format;
-   if (m_rd->m_compress_textures && ((Width & 3) == 0) && ((Height & 3) == 0) && (Width > 256) && (Height > 256))
+   if (m_rd->m_compressTextures && ((Width & 3) == 0) && ((Height & 3) == 0) && (Width > 256) && (Height > 256))
    {
       if (col_type == GL_FLOAT || col_type == GL_HALF_FLOAT)
       {
@@ -467,7 +467,7 @@ IDirect3DTexture9* Sampler::CreateSystemTexture(BaseTexture* const surf, const b
    else
    {
       texformat = colorFormat::RGBA8;
-      if (m_rd->m_compress_textures && ((texwidth & 3) == 0) && ((texheight & 3) == 0) && (texwidth > 256) && (texheight > 256))
+      if (m_rd->m_compressTextures && ((texwidth & 3) == 0) && ((texheight & 3) == 0) && (texwidth > 256) && (texheight > 256))
          texformat = colorFormat::DXT5;
    }
 

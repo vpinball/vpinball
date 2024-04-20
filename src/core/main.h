@@ -393,6 +393,7 @@ inline void ShowError(const string& sz)
 
 __forceinline float getBGxmult()
 {
+   // FIXME First this is likely wrong, second this should use the target framebuffer dimension instead of computing it here
    return (float)g_pplayer->m_playfieldWnd->GetWidth() * (float)(1.0 / EDITOR_BG_WIDTH) * g_pplayer->m_renderer->m_AAfactor;
 }
 

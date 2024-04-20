@@ -67,51 +67,49 @@ public:
 class RenderDevice final
 {
 public:
-#if defined(ENABLE_BGFX) 
-   enum PrimitiveTypes
-   {
-      TRIANGLEFAN,
-      TRIANGLESTRIP,
-      TRIANGLELIST,
-      POINTLIST,
-      LINELIST,
-      LINESTRIP
-   };
-
-#elif defined(ENABLE_OPENGL)
-   enum PrimitiveTypes
-   {
-      TRIANGLEFAN = GL_TRIANGLE_FAN,
-      TRIANGLESTRIP = GL_TRIANGLE_STRIP,
-      TRIANGLELIST = GL_TRIANGLES,
-      POINTLIST = GL_POINTS,
-      LINELIST = GL_LINES,
-      LINESTRIP = GL_LINE_STRIP
-   };
-
-   SDL_GLContext m_sdl_context = nullptr;
-   #ifndef __STANDALONE__
-   IDXGIOutput* m_DXGIOutput = nullptr;
-   #endif
-
-#elif defined(ENABLE_DX9)
-   enum PrimitiveTypes
-   {
-      TRIANGLEFAN = D3DPT_TRIANGLEFAN,
-      TRIANGLESTRIP = D3DPT_TRIANGLESTRIP,
-      TRIANGLELIST = D3DPT_TRIANGLELIST,
-      POINTLIST = D3DPT_POINTLIST,
-      LINELIST = D3DPT_LINELIST,
-      LINESTRIP = D3DPT_LINESTRIP
-   };
-#endif
-
-   RenderDevice(VPX::Window* const wnd, const int width, const int height, const float AAfactor, const StereoMode stereo3D, 
-      const bool useNvidiaApi, const bool disable_dwm, const int BWrendering, int nMSAASamples, VideoSyncMode& syncMode);
+   RenderDevice(VPX::Window* const wnd, const int width, const int height, const StereoMode stereo3D, const bool useNvidiaApi, 
+      const bool disable_dwm, const bool compressTextures, const int BWrendering, int nMSAASamples, VideoSyncMode& syncMode);
    ~RenderDevice();
 
+   #if defined(ENABLE_BGFX)
+      enum PrimitiveTypes
+      {
+         TRIANGLEFAN,
+         TRIANGLESTRIP,
+         TRIANGLELIST,
+         POINTLIST,
+         LINELIST,
+         LINESTRIP
+      };
+
+   #elif defined(ENABLE_OPENGL)
+      enum PrimitiveTypes
+      {
+         TRIANGLEFAN = GL_TRIANGLE_FAN,
+         TRIANGLESTRIP = GL_TRIANGLE_STRIP,
+         TRIANGLELIST = GL_TRIANGLES,
+         POINTLIST = GL_POINTS,
+         LINELIST = GL_LINES,
+         LINESTRIP = GL_LINE_STRIP
+      };
+
+   #elif defined(ENABLE_DX9)
+      enum PrimitiveTypes
+      {
+         TRIANGLEFAN = D3DPT_TRIANGLEFAN,
+         TRIANGLESTRIP = D3DPT_TRIANGLESTRIP,
+         TRIANGLELIST = D3DPT_TRIANGLELIST,
+         POINTLIST = D3DPT_POINTLIST,
+         LINELIST = D3DPT_LINELIST,
+         LINESTRIP = D3DPT_LINESTRIP
+      };
+   #endif
+
+   ////////////////////////////////////////////////////////////////////////////////////////////////
+   // (retained) RenderFrame API: Following calls will enqueue rendercommand to the renderframe.
+   // Getters returns the state of the renderframe, not the of the renderdevice.
    RenderPass* GetCurrentPass() { return m_currentPass; }
-   const RenderTarget* GetCurrentRenderTarget() const { assert(m_currentPass != nullptr); return m_currentPass->m_rt; }
+   RenderTarget* GetCurrentRenderTarget() const { assert(m_currentPass != nullptr); return m_currentPass->m_rt; }
    void SetRenderTarget(const string& passName, RenderTarget* rt, const bool useRTContent = true, const bool forceNewPass = false);
    void AddRenderTargetDependency(RenderTarget* rt, const bool needDepth = false);
    void AddRenderTargetDependencyOnNextRenderCommand(RenderTarget* rt);
@@ -130,11 +128,26 @@ public:
    void LogNextFrame() { m_logNextFrame = true; }
    bool IsLogNextFrame() const { return m_logNextFrame; }
    void FlushRenderFrame();
+
+   // RenderState used in submitted render command
+   void SetDefaultRenderState() { m_defaultRenderState = m_renderstate; }
+   void ResetRenderState() { m_renderstate = m_defaultRenderState; };
+   RenderState& GetRenderState() { return m_renderstate; }
+   void SetRenderState(const RenderState::RenderStates p1, const RenderState::RenderStateValue p2);
+   void SetRenderStateDepthBias(float bias);
+   void CopyRenderStates(const bool copyTo, RenderState& state);
+   void CopyRenderStates(const bool copyTo, RenderDeviceState& state);
+   void EnableAlphaBlend(const bool additiveBlending, const bool set_dest_blend = true, const bool set_blend_op = true);
+   
+   ////////////////////////////////////////////////////////////////////////////////////////////////
+   // (live) RenderDevice state and operation API
+   
    void Flip();
    void WaitForVSync(const bool asynchronous);
 
-   bool SetMaximumPreRenderedFrames(const DWORD frames);
+   RenderTarget* GetOutputBackBuffer() const { return m_outputWnd[0]->GetBackBuffer(); } // The screen render target (the only one which is not stereo when doing stereo rendering)
 
+   bool DepthBufferReadBackAvailable();
    bool SupportLayeredRendering() const
    {
       #if defined(ENABLE_BGFX)
@@ -149,101 +162,27 @@ public:
       #endif
    }
 
-// FIXME move all these to the renderer (as they implement the renderer logic and not the render device interface)
-public:
-   RenderTarget* GetMSAABackBufferTexture() const { return m_pOffscreenMSAABackBufferTexture ? m_pOffscreenMSAABackBufferTexture : m_pOffscreenBackBufferTexture1; } // Main render target, may be MSAA enabled and not suited for sampling, also may have stereo output (2 viewports)
-   RenderTarget* GetBackBufferTexture() const { return m_pOffscreenBackBufferTexture1; } // Main render target, with MSAA resolved if any, also may have stereo output (2 viewports)
-   RenderTarget* GetPreviousBackBufferTexture() const { return m_pOffscreenBackBufferTexture2; } // Same as back buffer but for previous frame
-   RenderTarget* GetPostProcessRenderTarget1();
-   RenderTarget* GetPostProcessRenderTarget2();
-   RenderTarget* GetPostProcessRenderTarget(RenderTarget* renderedRT);
-   RenderTarget* GetOffscreenVR(int eye) const { return eye == 0 ? m_pOffscreenVRLeft : m_pOffscreenVRRight; }
-   RenderTarget* GetReflectionBufferTexture();
-   RenderTarget* GetBloomBufferTexture() const { return m_pBloomBufferTexture; }
-   RenderTarget* GetBloomTmpBufferTexture() const { return m_pBloomTmpBufferTexture; }
-   RenderTarget* GetAORenderTarget(int idx);
-   void SwapBackBufferRenderTargets();
-   void SwapAORenderTargets();
-   void ReleaseAORenderTargets() { delete m_pAORenderTarget1; m_pAORenderTarget1 = nullptr; delete m_pAORenderTarget2; m_pAORenderTarget2 = nullptr; }
+   bool SetMaximumPreRenderedFrames(const DWORD frames);
+   void SetClipPlane(const vec4& plane);
 
-private:
-   const float   m_AAfactor; // AAfactor applied ot some render buffers
-   RenderTarget* m_pOffscreenMSAABackBufferTexture = nullptr;
-   RenderTarget* m_pOffscreenBackBufferTexture1 = nullptr;
-   RenderTarget* m_pOffscreenBackBufferTexture2 = nullptr;
-   RenderTarget* m_pPostProcessRenderTarget1 = nullptr;
-   RenderTarget* m_pPostProcessRenderTarget2 = nullptr;
-   RenderTarget* m_pOffscreenVRLeft = nullptr;
-   RenderTarget* m_pOffscreenVRRight = nullptr;
-   RenderTarget* m_pBloomBufferTexture = nullptr;
-   RenderTarget* m_pBloomTmpBufferTexture = nullptr;
-   RenderTarget* m_pReflectionBufferTexture = nullptr;
-   RenderTarget* m_pAORenderTarget1 = nullptr;
-   RenderTarget* m_pAORenderTarget2 = nullptr;
-public:
-// End of FIXME move to renderer
-
-   RenderTarget* GetOutputBackBuffer() const { return m_outputWnd[0]->GetBackBuffer(); } // The screen render target (the only one which is not stereo when doing stereo rendering)
-
-   bool DepthBufferReadBackAvailable();
-
-   void SetClipPlane(const vec4 &plane);
-
-   // RenderState used in submitted render command
-   void SetDefaultRenderState() { m_defaultRenderState = m_renderstate; }
-   void ResetRenderState() { m_renderstate = m_defaultRenderState; };
-   RenderState& GetRenderState() { return m_renderstate; }
-   void SetRenderState(const RenderState::RenderStates p1, const RenderState::RenderStateValue p2);
-   void SetRenderStateDepthBias(float bias);
-   void CopyRenderStates(const bool copyTo, RenderState& state);
-   void CopyRenderStates(const bool copyTo, RenderDeviceState& state);
-   void EnableAlphaBlend(const bool additiveBlending, const bool set_dest_blend = true, const bool set_blend_op = true);
-
-   // Active render state
+   // Active (live on GPU) render state
    void ApplyRenderStates();
    RenderState& GetActiveRenderState() { return m_current_renderstate; }
 
    void SetMainTextureDefaultFiltering(const SamplerFilter filter);
-   void CompressTextures(const bool enable) { m_compress_textures = enable; }
 
-   // performance counters
-   unsigned int Perf_GetNumDrawCalls() const        { return m_frameDrawCalls; }
-   unsigned int Perf_GetNumStateChanges() const     { return m_frameStateChanges; }
-   unsigned int Perf_GetNumTextureChanges() const   { return m_frameTextureChanges; }
-   unsigned int Perf_GetNumParameterChanges() const { return m_frameParameterChanges; }
-   unsigned int Perf_GetNumTechniqueChanges() const { return m_frameTechniqueChanges; }
-   unsigned int Perf_GetNumTextureUploads() const   { return m_frameTextureUpdates; }
-   unsigned int Perf_GetNumLockCalls() const        { return m_frameLockCalls; }
-
-   const int        m_width;  // Width of the render buffers (not the window width, for example for stereo the render is adjusted, or for VR, the size depends on the headset)
-   const int        m_height; // Height of the render buffers
    const StereoMode m_stereo3D;
 
-   Sampler* m_nullTexture = nullptr;
-
    void SetSamplerState(int unit, SamplerFilter filter, SamplerAddressMode clamp_u, SamplerAddressMode clamp_v);
+   void UnbindSampler(Sampler* sampler);
+   Sampler* m_nullTexture = nullptr;
+   TextureManager m_texMan;
+   const bool m_compressTextures;
 
-   bool m_autogen_mipmap;
-   bool m_compress_textures;
-
-   U64 m_lastVSyncUs = 0;
    unsigned int m_vsyncCount = 0;
-
-   MeshBuffer* m_quadPNTDynMeshBuffer = nullptr; // internal vb for rendering dynamic quads (position/normal/texture)
-   MeshBuffer* m_quadPTDynMeshBuffer = nullptr;  // internal vb for rendering dynamic quads (position/texture)
 
    vector<SharedIndexBuffer*> m_pendingSharedIndexBuffers;
    vector<SharedVertexBuffer*> m_pendingSharedVertexBuffers;
-
-   // performance counters
-   unsigned int m_curDrawCalls = 0, m_frameDrawCalls = 0;
-   unsigned int m_curStateChanges = 0, m_frameStateChanges = 0;
-   unsigned int m_curTextureChanges = 0, m_frameTextureChanges = 0;
-   unsigned int m_curParameterChanges = 0, m_frameParameterChanges = 0;
-   unsigned int m_curTechniqueChanges = 0, m_frameTechniqueChanges = 0;
-   unsigned int m_curTextureUpdates = 0, m_frameTextureUpdates = 0;
-   unsigned int m_curLockCalls = 0, m_frameLockCalls = 0;
-   unsigned int m_curDrawnTriangles = 0, m_frameDrawnTriangles = 0;
 
    Shader *m_basicShader = nullptr;
    Shader *m_DMDShader = nullptr;
@@ -253,9 +192,22 @@ public:
    Shader *m_stereoShader = nullptr;
    Shader* m_ballShader = nullptr;
 
-   void UnbindSampler(Sampler* sampler);
-
-   TextureManager m_texMan;
+   // performance counters
+   unsigned int Perf_GetNumDrawCalls() const        { return m_frameDrawCalls; }
+   unsigned int Perf_GetNumStateChanges() const     { return m_frameStateChanges; }
+   unsigned int Perf_GetNumTextureChanges() const   { return m_frameTextureChanges; }
+   unsigned int Perf_GetNumParameterChanges() const { return m_frameParameterChanges; }
+   unsigned int Perf_GetNumTechniqueChanges() const { return m_frameTechniqueChanges; }
+   unsigned int Perf_GetNumTextureUploads() const   { return m_frameTextureUpdates; }
+   unsigned int Perf_GetNumLockCalls() const        { return m_frameLockCalls; }
+   unsigned int m_curDrawCalls = 0, m_frameDrawCalls = 0;
+   unsigned int m_curStateChanges = 0, m_frameStateChanges = 0;
+   unsigned int m_curTextureChanges = 0, m_frameTextureChanges = 0;
+   unsigned int m_curParameterChanges = 0, m_frameParameterChanges = 0;
+   unsigned int m_curTechniqueChanges = 0, m_frameTechniqueChanges = 0;
+   unsigned int m_curTextureUpdates = 0, m_frameTextureUpdates = 0;
+   unsigned int m_curLockCalls = 0, m_frameLockCalls = 0;
+   unsigned int m_curDrawnTriangles = 0, m_frameDrawnTriangles = 0;
 
 private :
    unsigned int m_nOutputWnd = 1; // Swap chain always has at least one output window (OpenGL & DX9 only supports one, DX10+/Metal/Vulkan support multiple)
@@ -304,13 +256,19 @@ public:
    bgfx::VertexLayout* m_pVertexNormalTexelDeclaration = nullptr;
    int m_activeViewId = -1;
    uint64_t m_bgfxState = 0L;
-   
+
 #elif defined(ENABLE_OPENGL)
 public:
    int getGLVersion() const { return m_GLversion; }
    vector<MeshBuffer::SharedVAO*> m_sharedVAOs;
    std::vector<SamplerBinding*> m_samplerBindings;
    GLuint m_curVAO = 0;
+   SDL_GLContext m_sdl_context = nullptr;
+   #ifndef __STANDALONE__
+      IDXGIOutput* m_DXGIOutput = nullptr;
+   #endif
+   MeshBuffer* m_quadPNTDynMeshBuffer = nullptr; // internal vb for rendering dynamic quads (position/normal/texture)
+   MeshBuffer* m_quadPTDynMeshBuffer = nullptr; // internal vb for rendering dynamic quads (position/texture)
 
 private:
    GLfloat m_maxaniso;
@@ -327,6 +285,7 @@ public:
    IDirect3DVertexDeclaration9* m_pVertexTexelDeclaration = nullptr;
    IDirect3DVertexDeclaration9* m_pVertexNormalTexelDeclaration = nullptr;
 
+   bool m_autogen_mipmap;
    bool m_useNvidiaApi;
    bool m_INTZ_support;
    bool NVAPIinit;
