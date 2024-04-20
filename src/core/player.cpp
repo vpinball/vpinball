@@ -216,7 +216,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    bool useVR = false;
 #endif
    m_vrDevice = useVR ? new VRDevice() : nullptr;
-   m_stereo3D = useVR ? STEREO_VR : (StereoMode)m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3D"s, (int)STEREO_OFF);
+   StereoMode stereo3D = useVR ? STEREO_VR : (StereoMode)m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3D"s, (int)STEREO_OFF);
    m_headTracking = useVR ? false : m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "BAMHeadTracking"s, false);
    m_detectScriptHang = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "DetectHang"s, false);
 
@@ -264,7 +264,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    PLOGI << "Creating main window"; // For profiling
 
    int wnd_width, wnd_height;
-   if (m_stereo3D == STEREO_VR)
+   if (stereo3D == STEREO_VR)
    {
       m_fullScreen = false;
       wnd_width = m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "PreviewWidth"s, 640);
@@ -284,7 +284,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    const int display = g_pvp->m_primaryDisplay ? -1 : m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Display"s, -1);
    const int refreshrate = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "RefreshRate"s, 0);
    const bool video10bit = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Render10Bit"s, false);
-   const int colordepth = (video10bit && m_fullScreen && m_stereo3D != STEREO_VR) ? 30 : 32;
+   const int colordepth = (video10bit && m_fullScreen && stereo3D != STEREO_VR) ? 30 : 32;
    if (!m_fullScreen && video10bit)
       ShowError("10Bit-Monitor support requires 'Force exclusive Fullscreen Mode' to be also enabled!");
 
@@ -424,7 +424,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
 
    try
    {
-      m_renderer = new Renderer(m_ptable, m_playfieldWnd, m_videoSyncMode, m_stereo3D);
+      m_renderer = new Renderer(m_ptable, m_playfieldWnd, m_videoSyncMode, stereo3D);
    }
    catch (HRESULT hr)
    {
@@ -669,7 +669,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    m_renderer->m_pd3dPrimaryDevice->SetMainTextureDefaultFiltering(forceAniso ? SF_ANISOTROPIC : SF_TRILINEAR);
 
    #if defined(EXT_CAPTURE)
-   if (m_stereo3D == STEREO_VR)
+   if (m_renderer->m_stereo3D == STEREO_VR)
    {
       if (m_capExtDMD)
          StartDMDCapture();
@@ -761,7 +761,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
 #endif
 
    // Popup notification on startup
-   if (m_stereo3D != STEREO_OFF && m_stereo3D != STEREO_VR && !m_renderer->m_stereo3Denabled)
+   if (m_renderer->m_stereo3D != STEREO_OFF && m_renderer->m_stereo3D != STEREO_VR && !m_renderer->m_stereo3Denabled)
       m_liveUI->PushNotification("3D Stereo is enabled but currently toggled off, press F10 to toggle 3D Stereo on"s, 4000);
    const int numberOfTimesToShowTouchMessage = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "NumberOfTimesToShowTouchMessage"s, 10);
    if (m_supportsTouch && numberOfTimesToShowTouchMessage != 0) //!! visualize with real buttons or at least the areas?? Add extra buttons?
@@ -773,7 +773,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
 
    if (playMode == 1)
       m_liveUI->OpenTweakMode();
-   else if (playMode == 2 && m_stereo3D != STEREO_VR)
+   else if (playMode == 2 && m_renderer->m_stereo3D != STEREO_VR)
       m_liveUI->OpenLiveUI();
 }
 
@@ -860,7 +860,7 @@ Player::~Player()
    }
 
    // Save adjusted VR settings
-   if (m_stereo3D == STEREO_VR)
+   if (m_renderer->m_stereo3D == STEREO_VR)
       m_vrDevice->SaveVRSettings(g_pvp->m_settings);
 
    if (m_audio)
@@ -1516,7 +1516,7 @@ void Player::LockForegroundWindow(const bool enable)
 
 void Player::OnIdle()
 {
-   assert(m_stereo3D != STEREO_VR || (m_videoSyncMode == VideoSyncMode::VSM_NONE && m_maxFramerate == 0)); // Stereo must be run unthrottled to let OpenVR set the frame pace according to the head set
+   assert(m_renderer->m_stereo3D != STEREO_VR || (m_videoSyncMode == VideoSyncMode::VSM_NONE && m_maxFramerate == 0)); // Stereo must be run unthrottled to let OpenVR set the frame pace according to the head set
 
    if (m_videoSyncMode == VideoSyncMode::VSM_FRAME_PACING)
    {
@@ -1745,7 +1745,7 @@ void Player::PrepareFrame()
    hid_set_output(HID_OUTPUT_PLUNGER, ((m_time_msec - m_LastPlungerHit) < 512) && ((m_time_msec & 512) > 0));
 
    g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_MISC);
-   if (m_stereo3D != STEREO_VR)
+   if (m_renderer->m_stereo3D != STEREO_VR)
       m_liveUI->Update(m_playfieldWnd->GetBackBuffer());
    else if (m_liveUI->IsTweakMode())
       m_liveUI->Update(m_renderer->GetOffscreenVR(0));
@@ -1771,7 +1771,7 @@ void Player::SubmitFrame()
 
    #ifdef EXT_CAPTURE
    // Trigger captures
-   if (m_stereo3D == STEREO_VR)
+   if (m_renderer->m_stereo3D == STEREO_VR)
       UpdateExtCaptures();
    #endif
 }
@@ -1837,7 +1837,7 @@ bool Player::FinishFrame()
    if (m_closing == CS_USER_INPUT)
    {
       m_closing = CS_PLAYING;
-      if (g_pvp->m_disable_pause_menu || m_stereo3D == STEREO_VR)
+      if (g_pvp->m_disable_pause_menu || m_renderer->m_stereo3D == STEREO_VR)
          m_closing = CS_STOP_PLAY;
       else
          m_liveUI->OpenMainSplash();

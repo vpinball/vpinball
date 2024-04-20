@@ -362,20 +362,11 @@ Shader::Shader(RenderDevice* renderDevice, const std::string& src1, const std::s
    m_renderDevice(renderDevice)
 {
    #ifdef ENABLE_OPENGL
-   if (renderDevice->m_stereo3D != STEREO_OFF)
-   {
-      shaderUniformNames[SHADER_matProj].count = 2;
-      shaderUniformNames[SHADER_matWorldViewProj].count = 2;
-      shaderUniformNames[SHADER_basicMatrixBlock].count = 6 * 16 * 4;
-      shaderUniformNames[SHADER_ballMatrixBlock].count = 5 * 16 * 4;
-   }
-   else
-   {
-      shaderUniformNames[SHADER_matProj].count = 1;
-      shaderUniformNames[SHADER_matWorldViewProj].count = 1;
-      shaderUniformNames[SHADER_basicMatrixBlock].count = 5 * 16 * 4;
-      shaderUniformNames[SHADER_ballMatrixBlock].count = 4 * 16 * 4;
-   }
+   const int nEyes = renderDevice->m_nEyes;
+   shaderUniformNames[SHADER_matProj].count = nEyes;
+   shaderUniformNames[SHADER_matWorldViewProj].count = nEyes;
+   shaderUniformNames[SHADER_basicMatrixBlock].count = (4 + nEyes) * 16 * 4;
+   shaderUniformNames[SHADER_ballMatrixBlock].count = (3 + nEyes) * 16 * 4;
    #endif
 
    m_technique = SHADER_TECHNIQUE_INVALID;
@@ -1383,7 +1374,7 @@ bool Shader::Load(const std::string& name, const BYTE* code, unsigned int codeSi
 bool Shader::UseGeometryShader() const
 {
    // TODO we could (should) move the viewport/layer index from geometry to vertex shader and simplify all of this (a few hardware do not support it but they wan fallback to multi pass rendering)
-   return m_renderDevice->m_stereo3D != STEREO_OFF;
+   return m_renderDevice->m_nEyes > 1;
 }
 
 //parse a file. Is called recursively for includes
@@ -1416,21 +1407,7 @@ bool Shader::parseFile(const string& fileNameRoot, const string& fileName, int l
                   currentElement.append("#define USE_GEOMETRY_SHADER 1\n"s);
                else
                   currentElement.append("#define USE_GEOMETRY_SHADER 0\n"s);
-               if (m_renderDevice->m_stereo3D == STEREO_OFF)
-               {
-                  currentElement.append("#define N_EYES 1\n"s);
-                  currentElement.append("#define ENABLE_VR 0\n"s);
-               }
-               else if (m_renderDevice->m_stereo3D == STEREO_VR)
-               {
-                  currentElement.append("#define N_EYES 2\n"s);
-                  currentElement.append("#define ENABLE_VR 1\n"s);
-               }
-               else
-               {
-                  currentElement.append("#define N_EYES 2\n"s);
-                  currentElement.append("#define ENABLE_VR 0\n"s);
-               }
+               currentElement.append(m_renderDevice->m_nEyes == 1 ? "#define N_EYES 1\n"s : "#define N_EYES 2\n"s);
             } else if (newMode != currentMode) {
                values[currentMode] = currentElement;
                currentElemIt = values.find(newMode);

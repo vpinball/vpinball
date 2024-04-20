@@ -394,7 +394,6 @@ public:
    VPX::Window *m_playfieldWnd = nullptr;
    Renderer *m_renderer = nullptr;
    VRDevice *m_vrDevice = nullptr;
-   StereoMode m_stereo3D = STEREO_OFF;
    bool m_headTracking = false;
    bool m_scaleFX_DMD = false;
 

@@ -535,8 +535,7 @@ void Light::Render(const unsigned int renderMask)
       // Compute projected bounds
       const float radius = m_d.m_falloff;
       float xMin = 1.f, yMin = 1.f, xMax = -1.f, yMax = -1.f;
-      const int nEyes = m_rd->m_stereo3D != STEREO_OFF ? 2 : 1;
-      for (int eye = 0; eye < nEyes; eye++)
+      for (int eye = 0; eye < m_rd->m_nEyes; eye++)
       {
          const Matrix3D &mvp = g_pplayer->m_renderer->GetMVP().GetModelViewProj(eye);
          for (int i = 0; i < 4; i++)
@@ -633,7 +632,7 @@ void Light::Render(const unsigned int renderMask)
       && m_d.m_visible
       && ((m_d.m_reflectionEnabled && ! m_backglass) || !isReflectionPass)
       && (m_lightmapMeshBuffer != nullptr) // in case of degenerate light
-      && (!m_backglass || (GetPTable()->GetDecalsEnabled() && g_pplayer->m_stereo3D != STEREO_VR)))
+      && (!m_backglass || (GetPTable()->GetDecalsEnabled() && g_pplayer->m_renderer->m_stereo3D != STEREO_VR)))
    {
       Texture *offTexel = nullptr;
 
@@ -668,6 +667,7 @@ void Light::Render(const unsigned int renderMask)
       {
          m_rd->SetRenderStateDepthBias(0.0f);
          m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
+         m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
       }
       else
       {
@@ -675,14 +675,13 @@ void Light::Render(const unsigned int renderMask)
          m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
       }
 
-      if (m_backglass)
-         m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
-
+      const float xmult = m_backglass ? ((float)m_rd->GetCurrentRenderTarget()->GetWidth() * (float)(1.0 / EDITOR_BG_WIDTH)) : 1.f;
+      const float ymult = m_backglass ? ((float)m_rd->GetCurrentRenderTarget()->GetHeight() * (float)(1.0 / EDITOR_BG_HEIGHT)) : 1.f;
       Vertex2D centerHUD(m_d.m_vCenter.x, m_d.m_vCenter.y);
       if (m_backglass)
       {
-         centerHUD.x = centerHUD.x * getBGxmult() - 0.5f;
-         centerHUD.y = centerHUD.y * getBGymult() - 0.5f;
+         centerHUD.x = centerHUD.x * xmult - 0.5f;
+         centerHUD.y = centerHUD.y * ymult - 0.5f;
       }
       const vec4 center_range(centerHUD.x, centerHUD.y, GetCurrentHeight(), 1.0f / max(m_d.m_falloff, 0.1f));
 
@@ -736,9 +735,6 @@ void Light::Render(const unsigned int renderMask)
          const float inv_tablewidth = 1.0f / (m_ptable->m_right - m_ptable->m_left);
          const float inv_tableheight = 1.0f / (m_ptable->m_bottom - m_ptable->m_top);
 
-         const float mult = m_backglass ? getBGxmult() : 1.f;
-         const float ymult = m_backglass ? getBGymult() : 1.f;
-
          Vertex3D_NoTex2 *buf;
          m_lightmapMeshBuffer->m_vb->Lock(buf);
          for (unsigned int t = 0; t < m_vvertex.size(); t++)
@@ -766,7 +762,7 @@ void Light::Render(const unsigned int renderMask)
             else
             {
                // Backdrop position
-               buf[t].x = pv0->x * mult - 0.5f;
+               buf[t].x = pv0->x * xmult - 0.5f;
                buf[t].y = pv0->y * ymult - 0.5f;
                buf[t].z = 0.0f;
 
