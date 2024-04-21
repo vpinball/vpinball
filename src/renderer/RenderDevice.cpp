@@ -381,7 +381,8 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    init.debug = true;
    #endif
    
-   bgfx::renderFrame(); // FIXME BGFX this disable BGFX multithreading but will fail on second run => need to use a single threaded build of BGFX
+   // FIXME BGFX this disable BGFX multithreading but will fail on second run => therefore we use a single threaded build of BGFX (build with BGFX_CONFIG_MULTITHREADED=0 defined)
+   // bgfx::renderFrame(); 
    if (!bgfx::init(init))
    {
       PLOGE << "FAILED";
