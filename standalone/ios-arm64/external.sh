@@ -295,6 +295,7 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
       -DCMAKE_OSX_DEPLOYMENT_TARGET=16.0 \
       -DCMAKE_OSX_ARCHITECTURES=arm64 \
       -DBGFX_BUILD_EXAMPLES=OFF \
+      -DBGFX_CONFIG_MULTITHREADED=OFF \
       -DCMAKE_BUILD_TYPE=Release \
       -B build
    cmake --build build -- -j${NUM_PROCS}

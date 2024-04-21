@@ -334,6 +334,7 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
       -DCMAKE_SYSTEM_VERSION=30 \
       -DCMAKE_ANDROID_ARCH_ABI=arm64-v8a \
       -DBGFX_BUILD_EXAMPLES=OFF \
+      -DBGFX_CONFIG_MULTITHREADED=OFF \
       -DCMAKE_BUILD_TYPE=Release \
       -B build
    cmake --build build -- -j${NUM_PROCS}

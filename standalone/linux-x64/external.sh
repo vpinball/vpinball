@@ -313,6 +313,7 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
    cmake -S. \
       -DBGFX_LIBRARY_TYPE=SHARED \
       -DBGFX_BUILD_EXAMPLES=OFF \
+      -DBGFX_CONFIG_MULTITHREADED=OFF \
       -DCMAKE_BUILD_TYPE=Release \
       -B build
    cmake --build build -- -j${NUM_PROCS}

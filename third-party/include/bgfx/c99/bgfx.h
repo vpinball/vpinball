@@ -2225,9 +2225,11 @@ BGFX_C_API void bgfx_set_palette_color_rgba8(uint8_t _index, uint32_t _rgba);
  *
  * @param[in] _id View id.
  * @param[in] _name View name.
+ * @param[in] _len View name length (if length is INT32_MAX, it's expected
+ *  that _name is zero terminated string.
  *
  */
-BGFX_C_API void bgfx_set_view_name(bgfx_view_id_t _id, const char* _name);
+BGFX_C_API void bgfx_set_view_name(bgfx_view_id_t _id, const char* _name, int32_t _len);
 
 /**
  * Set view rectangle. Draw primitive outside view will be clipped.
@@ -2377,10 +2379,12 @@ BGFX_C_API void bgfx_encoder_end(bgfx_encoder_t* _encoder);
  * Sets a debug marker. This allows you to group graphics calls together for easy browsing in
  * graphics debugging tools.
  *
- * @param[in] _marker Marker string.
+ * @param[in] _name Marker name.
+ * @param[in] _len Marker name length (if length is INT32_MAX, it's expected
+ *  that _name is zero terminated string.
  *
  */
-BGFX_C_API void bgfx_encoder_set_marker(bgfx_encoder_t* _this, const char* _marker);
+BGFX_C_API void bgfx_encoder_set_marker(bgfx_encoder_t* _this, const char* _name, int32_t _len);
 
 /**
  * Set render states for draw primitive.
@@ -2947,10 +2951,12 @@ BGFX_C_API uintptr_t bgfx_override_internal_texture(bgfx_texture_handle_t _handl
  * Sets a debug marker. This allows you to group graphics calls together for easy browsing in
  * graphics debugging tools.
  *
- * @param[in] _marker Marker string.
+ * @param[in] _name Marker name.
+ * @param[in] _len Marker name length (if length is INT32_MAX, it's expected
+ *  that _name is zero terminated string.
  *
  */
-BGFX_C_API void bgfx_set_marker(const char* _marker);
+BGFX_C_API void bgfx_set_marker(const char* _name, int32_t _len);
 
 /**
  * Set render states for draw primitive.
@@ -3395,7 +3401,7 @@ BGFX_C_API void bgfx_dispatch(bgfx_view_id_t _id, bgfx_program_handle_t _program
  * @param[in] _flags Discard or preserve states. See `BGFX_DISCARD_*`.
  *
  */
-BGFX_C_API void bgfx_dispatch_indirect(bgfx_view_id_t _id, bgfx_program_handle_t _program, bgfx_indirect_buffer_handle_t _indirectHandle, uint16_t _start, uint16_t _num, uint8_t _flags);
+BGFX_C_API void bgfx_dispatch_indirect(bgfx_view_id_t _id, bgfx_program_handle_t _program, bgfx_indirect_buffer_handle_t _indirectHandle, uint32_t _start, uint32_t _num, uint8_t _flags);
 
 /**
  * Discard previously set state for draw or compute call.
@@ -3733,7 +3739,7 @@ struct bgfx_interface_vtbl
     void (*destroy_occlusion_query)(bgfx_occlusion_query_handle_t _handle);
     void (*set_palette_color)(uint8_t _index, const float _rgba[4]);
     void (*set_palette_color_rgba8)(uint8_t _index, uint32_t _rgba);
-    void (*set_view_name)(bgfx_view_id_t _id, const char* _name);
+    void (*set_view_name)(bgfx_view_id_t _id, const char* _name, int32_t _len);
     void (*set_view_rect)(bgfx_view_id_t _id, uint16_t _x, uint16_t _y, uint16_t _width, uint16_t _height);
     void (*set_view_rect_ratio)(bgfx_view_id_t _id, uint16_t _x, uint16_t _y, bgfx_backbuffer_ratio_t _ratio);
     void (*set_view_scissor)(bgfx_view_id_t _id, uint16_t _x, uint16_t _y, uint16_t _width, uint16_t _height);
@@ -3746,7 +3752,7 @@ struct bgfx_interface_vtbl
     void (*reset_view)(bgfx_view_id_t _id);
     bgfx_encoder_t* (*encoder_begin)(bool _forThread);
     void (*encoder_end)(bgfx_encoder_t* _encoder);
-    void (*encoder_set_marker)(bgfx_encoder_t* _this, const char* _marker);
+    void (*encoder_set_marker)(bgfx_encoder_t* _this, const char* _name, int32_t _len);
     void (*encoder_set_state)(bgfx_encoder_t* _this, uint64_t _state, uint32_t _rgba);
     void (*encoder_set_condition)(bgfx_encoder_t* _this, bgfx_occlusion_query_handle_t _handle, bool _visible);
     void (*encoder_set_stencil)(bgfx_encoder_t* _this, uint32_t _fstencil, uint32_t _bstencil);
@@ -3792,7 +3798,7 @@ struct bgfx_interface_vtbl
     const bgfx_internal_data_t* (*get_internal_data)(void);
     uintptr_t (*override_internal_texture_ptr)(bgfx_texture_handle_t _handle, uintptr_t _ptr);
     uintptr_t (*override_internal_texture)(bgfx_texture_handle_t _handle, uint16_t _width, uint16_t _height, uint8_t _numMips, bgfx_texture_format_t _format, uint64_t _flags);
-    void (*set_marker)(const char* _marker);
+    void (*set_marker)(const char* _name, int32_t _len);
     void (*set_state)(uint64_t _state, uint32_t _rgba);
     void (*set_condition)(bgfx_occlusion_query_handle_t _handle, bool _visible);
     void (*set_stencil)(uint32_t _fstencil, uint32_t _bstencil);
@@ -3829,7 +3835,7 @@ struct bgfx_interface_vtbl
     void (*set_compute_indirect_buffer)(uint8_t _stage, bgfx_indirect_buffer_handle_t _handle, bgfx_access_t _access);
     void (*set_image)(uint8_t _stage, bgfx_texture_handle_t _handle, uint8_t _mip, bgfx_access_t _access, bgfx_texture_format_t _format);
     void (*dispatch)(bgfx_view_id_t _id, bgfx_program_handle_t _program, uint32_t _numX, uint32_t _numY, uint32_t _numZ, uint8_t _flags);
-    void (*dispatch_indirect)(bgfx_view_id_t _id, bgfx_program_handle_t _program, bgfx_indirect_buffer_handle_t _indirectHandle, uint16_t _start, uint16_t _num, uint8_t _flags);
+    void (*dispatch_indirect)(bgfx_view_id_t _id, bgfx_program_handle_t _program, bgfx_indirect_buffer_handle_t _indirectHandle, uint32_t _start, uint32_t _num, uint8_t _flags);
     void (*discard)(uint8_t _flags);
     void (*blit)(bgfx_view_id_t _id, bgfx_texture_handle_t _dst, uint8_t _dstMip, uint16_t _dstX, uint16_t _dstY, uint16_t _dstZ, bgfx_texture_handle_t _src, uint8_t _srcMip, uint16_t _srcX, uint16_t _srcY, uint16_t _srcZ, uint16_t _width, uint16_t _height, uint16_t _depth);
 };

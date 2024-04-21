@@ -147,14 +147,30 @@ namespace bx
 		return _a && !(_a & (_a - 1) );
 	}
 
-	template <typename To, typename From>
-	inline constexpr To bit_cast(const From& value) noexcept
+	template <typename Ty, typename FromT>
+	inline constexpr Ty bitCast(const FromT& _from)
 	{
-		BX_STATIC_ASSERT(sizeof(To) == sizeof(From), "To and From must be the same size.");
-		BX_STATIC_ASSERT(isTriviallyConstructible<To>(), "Destination target must be trivially constructible.");
-		To result;
-		bx::memCopy(&result, &value, sizeof(To));
-		return result;
+		static_assert(sizeof(Ty) == sizeof(FromT)
+			, "bx::bitCast failed! Ty and FromT must be the same size."
+			);
+		static_assert(isTriviallyConstructible<Ty>()
+			, "bx::bitCast failed! Destination target must be trivially constructible."
+			);
+
+		Ty to;
+		memCopy(&to, &_from, sizeof(Ty) );
+
+		return to;
+	}
+
+	template<typename Ty, typename FromT>
+	inline constexpr Ty narrowCast(const FromT& _from, Location _location)
+	{
+		Ty to = static_cast<Ty>(_from);
+		BX_ASSERT_LOC(_location, static_cast<FromT>(to) == _from
+			, "bx::narrowCast failed! Value is truncated!"
+			);
+		return to;
 	}
 
 } // namespace bx
