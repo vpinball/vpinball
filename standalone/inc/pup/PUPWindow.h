@@ -1,5 +1,7 @@
 #pragma once
 
+#include "PUPManager.h"
+
 #include "../common/Window.h"
 
 #if !((defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__))
@@ -18,23 +20,38 @@ extern "C" {
 
 #include <SDL2/SDL_image.h>
 
-namespace VP {
+struct PUPVideo {
+   string filename;
+   int volume;
+   bool isPaused;
+   double playbackPosition;
+   PUP_TRIGGER_PLAY_ACTION action;
+   int priority;
+   string position;
 
-class VideoWindow : public VP::Window
+   PUPVideo(const string& fname, int vol, PUP_TRIGGER_PLAY_ACTION act, int pri, string pos = "")
+        : filename(fname), volume(vol), isPaused(false), playbackPosition(0.0),
+        action(act), priority(pri), position(pos) {}
+};
+
+class PUPWindow : public VP::Window
 {
 public:
-   VideoWindow(const string& szTitle, int x, int y, int w, int h, int rotation, int z);
-   ~VideoWindow();
+   PUPWindow(const string& szTitle, int x, int y, int w, int h, int rotation, int z);
+   ~PUPWindow();
 
    bool Init() override;
-   void Play(const string& szFilename, int volume);
+
+   void Play(const string& szFilename, int volume, PUP_TRIGGER_PLAY_ACTION action, int priority);
+   void SetBG(const string& szFilename, int volume, PUP_TRIGGER_PLAY_ACTION action, int priority);
    void SetOverlay(const string& szFilename);
 
 private:
+   void PlayVideo();
+   void ProcessVideo();
    void RenderWithOverlay();
 
 #ifdef VIDEO_WINDOW_HAS_FFMPEG_LIBS
-   void Cleanup();
    AVCodecContext* OpenVideoStream(AVFormatContext* pInputFormatContext, int stream);
    AVCodecContext* OpenStream(AVFormatContext* pInputFormatContext, int stream);
    AVCodecContext* OpenAudioStream(AVFormatContext* pInputFormatContext, int stream);
@@ -42,7 +59,9 @@ private:
    void HandleVideoFrame(AVFrame* pFrame, double pts);
    void HandleAudioFrame(AVFrame* pFrame);
    SDL_PixelFormatEnum GetVideoFormat(enum AVPixelFormat format);
+   double GetCurrentPlaybackPosition();
    void SetYUVConversionMode(AVFrame* pFrame);
+   void Cleanup();
 
    AVFormatContext* m_pFormatContext;
    AVCodecContext* m_pAudioContext;
@@ -65,11 +84,12 @@ private:
 #endif
    SDL_Texture* m_pVideoTexture;
    SDL_Texture* m_pOverlayTexture;
-
    AudioPlayer* m_pAudioPlayer;
    SDL_Surface* m_pOverlay;
-   bool m_running;
-   std::thread* m_pThread;
+   PUPVideo* m_pBackgroundVideo;
+   PUPVideo* m_pCurrentVideo;
+   std::deque<PUPVideo*> m_playlist;
+   std::mutex m_mutex;
+   std::condition_variable m_cv;
+   bool m_terminate;
 };
-
-}

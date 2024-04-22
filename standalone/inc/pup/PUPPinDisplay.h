@@ -2,11 +2,7 @@
 
 #include "pup_i.h"
 
-#include "PUPPlaylist.h"
-#include "PUPScreen.h"
-#include "PUPTrigger.h"
-
-#include <vector>
+class PUPManager;
 
 class PUPPinDisplay : public IPinDisplay
 {
@@ -109,9 +105,7 @@ public:
    STDMETHOD(PuPClose)();
 
 private:
-   vector<PUPPlaylist*> m_playlists;
-   vector<PUPScreen*> m_screens;
-   vector<PUPTrigger*> m_triggers;
+   PUPManager* m_pManager;
 
    ULONG m_dwRef = 0;
 };

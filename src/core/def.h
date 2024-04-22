@@ -661,6 +661,7 @@ bool try_parse_color(const string& str, OLE_COLOR& value);
 bool is_string_numeric(const string& str);
 int string_to_int(const string& str, int default_value = 0);
 string trim_string(const string& str);
+vector<string> parse_csv_line(const string& line);
 string color_to_hex(OLE_COLOR color);
 bool string_contains_case_insensitive(const string& str1, const string& str2);
 bool string_compare_case_insensitive(const string& str1, const string& str2);
