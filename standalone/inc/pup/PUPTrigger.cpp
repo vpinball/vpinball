@@ -1,13 +1,32 @@
 #include "core/stdafx.h"
+
 #include "PUPTrigger.h"
+
+/*
+   triggers.pup: ID,Active,Descript,Trigger,ScreenNum,PlayList,PlayFile,Volume,Priority,Length,Counter,RestSeconds,Loop,Defaults
+   PuP Pack Editor: Descript,Trigger,Screen,Playlist,PlayFile,Volume,RestSeconds,Priority,Counter,Length(s),PlayAction,Active
+
+   mappings:
+
+     ID = ?
+     Active = Active
+     Descript = Descript
+     Trigger = Trigger
+     ScreenNum = Screen
+     PlayList = Playlist
+     PlayFile = PlayFile
+     Volume = Volume
+     Priority = Priority
+     Length = Length(s)
+     Counter = Counter
+     RestSeconds = RestSeconds
+     Loop = PlayAction
+     Defaults = ?
+*/
 
 PUPTrigger::PUPTrigger()
 {
    m_playAction = PUP_TRIGGER_PLAY_ACTION_NORMAL;
-}
-
-PUPTrigger::~PUPTrigger()
-{
 }
 
 PUPTrigger* PUPTrigger::CreateFromCSVLine(string line)
@@ -23,11 +42,10 @@ PUPTrigger* PUPTrigger::CreateFromCSVLine(string line)
 
    PUPTrigger* pTrigger = new PUPTrigger();
 
-   pTrigger->m_id = string_to_int(parts[0], 0);
    pTrigger->m_active = true;
    pTrigger->m_descript = parts[2];
    pTrigger->m_trigger = parts[3];
-   pTrigger->m_screen = string_to_int(parts[4], 0);
+   pTrigger->m_screenNum = string_to_int(parts[4], 0);
    pTrigger->m_playlist = parts[5];
    pTrigger->m_playFile = parts[6];
    pTrigger->m_volume = string_to_int(parts[7], 0);
@@ -57,17 +75,14 @@ PUPTrigger* PUPTrigger::CreateFromCSVLine(string line)
    else
       pTrigger->m_playAction = PUP_TRIGGER_PLAY_ACTION_NORMAL;
 
-   pTrigger->m_defaults = string_to_int(parts[13], 0);
-
    return pTrigger;
 }
 
 string PUPTrigger::ToString() const {
-   return "id=" + std::to_string(m_id) +
-      ", active=" + ((m_active) ? "true" : "false") +
+   return string("active=") + ((m_active == true) ? "true" : "false") +
       ", descript=" + m_descript +
       ", trigger=" + m_trigger +
-      ", screen=" + std::to_string(m_screen) +
+      ", screenNum=" + std::to_string(m_screenNum) +
       ", playlist=" + m_playlist +
       ", playFile=" + m_playFile +
       ", volume=" + std::to_string(m_volume) +
@@ -75,6 +90,5 @@ string PUPTrigger::ToString() const {
       ", length=" + std::to_string(m_length) +
       ", count=" + std::to_string(m_counter) +
       ", restSeconds=" + std::to_string(m_restSeconds) +
-      ", playAction=" + std::to_string(m_playAction) +
-      ", defaults=" + std::to_string(m_defaults);
+      ", playAction=" + std::to_string(m_playAction);
 }

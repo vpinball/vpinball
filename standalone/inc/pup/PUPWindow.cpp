@@ -85,10 +85,10 @@ void PUPWindow::Play(const string& szFilename, int volume, PUP_TRIGGER_PLAY_ACTI
    m_cv.notify_one();  
 }
   
-void PUPWindow::SetBG(const string& szFilename, int volume, PUP_TRIGGER_PLAY_ACTION action, int priority)
+void PUPWindow::SetBG(const string& szFilename, int volume, int priority)
 {
    std::lock_guard<std::mutex> lock(m_mutex);
-   m_pBackgroundVideo = new PUPVideo(szFilename, volume, action, priority);
+   m_pBackgroundVideo = new PUPVideo(szFilename, volume, PUP_TRIGGER_PLAY_ACTION_LOOP, priority);
    m_cv.notify_one();
 }
 
@@ -105,7 +105,7 @@ void PUPWindow::PlayVideo()
          m_pCurrentVideo = m_playlist.front();
          m_playlist.pop_front();
       }
-      else if (m_pBackgroundVideo && (m_pBackgroundVideo->action == PUP_TRIGGER_PLAY_ACTION_LOOP || m_pCurrentVideo == nullptr)) {
+      else if (m_pBackgroundVideo) {
          m_pCurrentVideo = m_pBackgroundVideo;
          m_pCurrentVideo->isPaused = false;
       }
@@ -119,10 +119,7 @@ void PUPWindow::PlayVideo()
          ProcessVideo();
       lock.lock();
 
-      if (m_pCurrentVideo == m_pBackgroundVideo && m_pCurrentVideo->action != PUP_TRIGGER_PLAY_ACTION_LOOP)
-         m_pCurrentVideo->isPaused = true;
-      else
-         m_pCurrentVideo = nullptr;
+      m_pCurrentVideo = nullptr;
    }
 }
 

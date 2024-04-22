@@ -568,6 +568,8 @@ add_executable(vpinball
    standalone/inc/pup/PUPTrigger.h
    standalone/inc/pup/PUPScreen.cpp
    standalone/inc/pup/PUPScreen.h
+   standalone/inc/pup/PUPCustomPos.cpp
+   standalone/inc/pup/PUPCustomPos.h
    standalone/inc/pup/PUPPlugin.cpp
    standalone/inc/pup/PUPPlugin.h
    standalone/inc/pup/PUPWindow.cpp

@@ -1,16 +1,17 @@
 #pragma once
 
 #include <map>
+#include <vector>
 
 typedef enum
 {
-   PUP_SCREEN_ACTIVE_OFF,
-   PUP_SCREEN_ACTIVE_SHOW,                 // This will use whatever settings are set for this screen’s “default” settings.
-   PUP_SCREEN_ACTIVE_FORCE_ON,             // Forces the window to be the Top most window, and it stays on. A video is always going to be playing in this mode. When a new video starts or the current video restarts, the ForceON action happens and will force the window to be the Top window again.
-   PUP_SCREEN_ACTIVE_FORCE_POP,            // Similar to ForceOn, except the vlc window opens and closes with each video played
-   PUP_SCREEN_ACTIVE_FORCE_BACK,           // Keeps the video window always open, but under the other PuP screens. This can cause any PuP screen with this setting to get pushed behind your game window.
-   PUP_SCREEN_ACTIVE_FORCE_POP_BACK        // Similar to ForceBack, except the vlc window opens and closes with each video played
-} PUP_SCREEN_ACTIVE;
+   PUP_SCREEN_MODE_OFF,
+   PUP_SCREEN_MODE_SHOW,                 // This will use whatever settings are set for this screen’s “default” settings.
+   PUP_SCREEN_MODE_FORCE_ON,             // Forces the window to be the Top most window, and it stays on. A video is always going to be playing in this mode. When a new video starts or the current video restarts, the ForceON action happens and will force the window to be the Top window again.
+   PUP_SCREEN_MODE_FORCE_POP,            // Similar to ForceOn, except the vlc window opens and closes with each video played
+   PUP_SCREEN_MODE_FORCE_BACK,           // Keeps the video window always open, but under the other PuP screens. This can cause any PuP screen with this setting to get pushed behind your game window.
+   PUP_SCREEN_MODE_FORCE_POP_BACK        // Similar to ForceBack, except the vlc window opens and closes with each video played
+} PUP_SCREEN_MODE;
 
 typedef enum
 {
@@ -45,6 +46,7 @@ public:
    ~PUPManager() {}
 
    bool LoadConfig(const string& szRomName);
+   const vector<PUPScreen*>& GetScreens() { return m_screens; }
    PUPScreen* GetScreen(int screenNum);
    PUPScreen* GetScreen(const string& szScreen);
    PUPPlaylist* GetPlaylist(const string& szFolder);
@@ -54,6 +56,7 @@ public:
 private:
    string m_szPath;
 
+   std::vector<PUPScreen*> m_screens;
    std::map<int, PUPScreen*> m_screenMap;
    std::map<string, PUPScreen*> m_screenDesMap;
    std::map<string, PUPPlaylist*> m_playlistMap;

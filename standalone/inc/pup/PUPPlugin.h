@@ -3,6 +3,7 @@
 #include "../b2s/plugin/Plugin.h"
 
 #include "PUPScreen.h"
+#include "PUPCustomPos.h"
 #include "PUPPlaylist.h"
 #include "PUPTrigger.h"
 

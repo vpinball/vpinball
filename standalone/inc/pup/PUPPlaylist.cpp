@@ -1,5 +1,25 @@
 #include "core/stdafx.h"
+
 #include "PUPPlaylist.h"
+
+/*
+   playlists.pup: ScreenNum,Folder,Des,AlphaSort,RestSeconds,Volume,Priority
+   PuP Pack Editor: Folder (Playlist),Description,Randomize,RestSeconds,Volume,Priority
+
+   mappings:
+
+     ScreenNum = ?
+     Folder = Folder (Playlist)
+     Des = Description
+     AlphaSort = Randomize
+     RestSeconds = RestSeconds
+     Volume = Volume
+     Priority = Priority
+
+   notes:
+
+     AlphaSort=0 is Randomize checked
+*/
 
 PUPPlaylist::PUPPlaylist()
 {
@@ -8,6 +28,7 @@ PUPPlaylist::PUPPlaylist()
 
 PUPPlaylist::~PUPPlaylist()
 {
+   m_files.clear();
 }
 
 PUPPlaylist* PUPPlaylist::CreateFromCSVLine(const string& szBasePath, const string& line)
@@ -19,6 +40,11 @@ PUPPlaylist* PUPPlaylist::CreateFromCSVLine(const string& szBasePath, const stri
    PUPPlaylist* pPlaylist = new PUPPlaylist();
 
    pPlaylist->m_folder = parts[1];
+   pPlaylist->m_description = parts[2];
+   pPlaylist->m_randomize = (string_to_int(parts[3], 0) == 0);
+   pPlaylist->m_restSeconds = string_to_int(parts[4], 0);
+   pPlaylist->m_volume = string_to_int(parts[5], 0);
+   pPlaylist->m_priority = string_to_int(parts[6], 0);
 
    if (string_compare_case_insensitive(pPlaylist->m_folder, "PUPOverlays"))
       pPlaylist->m_function = PUP_PLAYLIST_FUNCTION_OVERLAYS;
@@ -30,12 +56,6 @@ PUPPlaylist* PUPPlaylist::CreateFromCSVLine(const string& szBasePath, const stri
       pPlaylist->m_function = PUP_PLAYLIST_FUNCTION_SHAPES;
    else
       pPlaylist->m_function = PUP_PLAYLIST_FUNCTION_DEFAULT;
-
-   pPlaylist->m_des = parts[2];
-   pPlaylist->m_alphaSort = string_to_int(parts[3], 0);
-   pPlaylist->m_restSeconds = string_to_int(parts[4], 0);
-   pPlaylist->m_volume = string_to_int(parts[5], 0);
-   pPlaylist->m_priority = string_to_int(parts[6], 0);
 
    vector<string> files;
 
@@ -65,7 +85,7 @@ const string& PUPPlaylist::GetPlayFile()
    if (m_files.empty())
       return szEmptyString;
 
-   if (m_alphaSort) {
+   if (!m_randomize) {
       if (++m_lastIndex >= m_files.size())
          m_lastIndex = 0;
 
@@ -77,8 +97,8 @@ const string& PUPPlaylist::GetPlayFile()
 
 string PUPPlaylist::ToString() const {
    return "folder=" + m_folder +
-      ", des=" + m_des +
-      ", alphaSort=" + std::to_string(m_alphaSort) +
+      ", description=" + m_description +
+      ", randomize=" + (m_randomize ? "true" : "false") +
       ", restSeconds=" + std::to_string(m_restSeconds) +
       ", volume=" + std::to_string(m_volume) +
       ", priority=" + std::to_string(m_priority) +

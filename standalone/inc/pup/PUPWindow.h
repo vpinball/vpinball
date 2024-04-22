@@ -43,7 +43,7 @@ public:
    bool Init() override;
 
    void Play(const string& szFilename, int volume, PUP_TRIGGER_PLAY_ACTION action, int priority);
-   void SetBG(const string& szFilename, int volume, PUP_TRIGGER_PLAY_ACTION action, int priority);
+   void SetBG(const string& szFilename, int volume, int priority);
    void SetOverlay(const string& szFilename);
 
 private:

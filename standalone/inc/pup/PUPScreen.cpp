@@ -1,14 +1,33 @@
 #include "core/stdafx.h"
 
 #include "PUPScreen.h"
+#include "PUPCustomPos.h"
 #include "PUPTrigger.h"
+
+/*
+   screens.pup: ScreenNum,ScreenDes,PlayList,PlayFile,Loopit,Active,Priority,CustomPos
+   PuP Pack Editor: Mode,ScreenNum,ScreenDes,Background Playlist,Background Filename,Transparent,CustomPos,Volume %
+
+   mappings:
+
+     ScreenNum = ScreenNum
+     ScreenDes = ScreenDes
+     PlayList = Background Playlist
+     PlayFile = Background Filename
+     Loopit = Transparent
+     Active = Mode
+     Priority = Volume %
+     CustomPos = CustomPos
+*/
 
 PUPScreen::PUPScreen()
 {
+   m_pCustomPos = nullptr;
 }
 
 PUPScreen::~PUPScreen()
 {
+   delete m_pCustomPos;
 }
 
 PUPScreen* PUPScreen::CreateFromCSVLine(string line)
@@ -17,31 +36,29 @@ PUPScreen* PUPScreen::CreateFromCSVLine(string line)
    if (parts.size() != 8)
       return nullptr;
 
-   string active = parts[5];
-   if (string_compare_case_insensitive(active, "off"))
-      return nullptr;
-
    PUPScreen* pScreen = new PUPScreen();
+
+   string mode = parts[5];
+   if (string_compare_case_insensitive(mode, "Show"))
+      pScreen->m_mode = PUP_SCREEN_MODE_SHOW;
+   else if (string_compare_case_insensitive(mode, "ForceON"))
+      pScreen->m_mode = PUP_SCREEN_MODE_FORCE_ON;
+   else if (string_compare_case_insensitive(mode, "ForcePoP"))
+      pScreen->m_mode = PUP_SCREEN_MODE_FORCE_POP;
+   else if (string_compare_case_insensitive(mode, "ForceBack"))
+      pScreen->m_mode = PUP_SCREEN_MODE_FORCE_BACK;
+   else if (string_compare_case_insensitive(mode, "ForcePopBack"))
+      pScreen->m_mode = PUP_SCREEN_MODE_FORCE_POP_BACK;
+   else
+      pScreen->m_mode = PUP_SCREEN_MODE_OFF;
 
    pScreen->m_screenNum = string_to_int(parts[0], 0);
    pScreen->m_screenDes = parts[1];
-   pScreen->m_playList = parts[2];
-   pScreen->m_playFile = parts[3];
-   pScreen->m_loopit = (parts[4] == "1");
-
-   if (string_compare_case_insensitive(active, "Show"))
-      pScreen->m_active = PUP_SCREEN_ACTIVE_SHOW;
-   else if (string_compare_case_insensitive(active, "ForceON"))
-      pScreen->m_active = PUP_SCREEN_ACTIVE_FORCE_ON;
-   else if (string_compare_case_insensitive(active, "ForcePoP"))
-      pScreen->m_active = PUP_SCREEN_ACTIVE_FORCE_ON;
-   else if (string_compare_case_insensitive(active, "ForceBack"))
-      pScreen->m_active = PUP_SCREEN_ACTIVE_FORCE_ON;
-   else if (string_compare_case_insensitive(active, "ForcePopBack"))
-      pScreen->m_active = PUP_SCREEN_ACTIVE_FORCE_ON;
-
-   pScreen->m_priority = string_to_int(parts[6], 0);
-   pScreen->m_customPos = parts[7];
+   pScreen->m_backgroundPlaylist = parts[2];
+   pScreen->m_backgroundFilename = parts[3];
+   pScreen->m_transparent = (parts[4] == "1");
+   pScreen->m_volume = string_to_int(parts[6], 0);
+   pScreen->m_pCustomPos = PUPCustomPos::CreateFromCSVLine(parts[7]);
 
    return pScreen;
 }
@@ -63,12 +80,12 @@ void PUPScreen::SetTrigger(PUPTrigger* pTrigger)
 
 string PUPScreen::ToString() const
 {
-   return "screenNum=" + std::to_string(m_screenNum) +
+   return "mode=" + std::to_string(m_mode) +
+      ", screenNum=" + std::to_string(m_screenNum) +
       ", screenDes=" + m_screenDes +
-      ", playlist=" + m_playList +
-      ", playfile=" + m_playFile +
-      ", loopit=" + (m_loopit ? "true" : "false") +
-      ", active=" + std::to_string(m_active) +
-      ", priority=" + std::to_string(m_priority) +
-      ", m_customPos=" + m_customPos;
+      ", backgroundPlaylist=" + m_backgroundPlaylist +
+      ", backgroundFilename=" + m_backgroundFilename +
+      ", transparent=" + (m_transparent ? "true" : "false") +
+      ", volume=" + std::to_string(m_volume) +
+      ", m_customPos={" + (m_pCustomPos ? m_pCustomPos->ToString() : "") + "}";
 }

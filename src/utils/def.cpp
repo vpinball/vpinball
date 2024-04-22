@@ -485,6 +485,12 @@ bool try_parse_int(const string& str, int& value)
    return ((sstr >> value) && sstr.eof());
 }
 
+bool try_parse_float(const string& str, float& value)
+{
+    std::stringstream sstr(trim_string(str));
+    return ((sstr >> value) && sstr.eof());
+}
+
 bool try_parse_color(const string& str, OLE_COLOR& value)
 {
    string hexStr = str;
@@ -522,6 +528,15 @@ int string_to_int(const string& str, int defaultValue)
 {
    int value;
    if (try_parse_int(str, value))
+      return value;
+
+   return defaultValue;
+}
+
+float string_to_float(const string& str, float defaultValue)
+{
+   float value;
+   if (try_parse_float(str, value))
       return value;
 
    return defaultValue;

@@ -1,20 +1,16 @@
 #pragma once
 
-#include "PUPScreen.h"
-#include "PUPPlaylist.h"
+#include "PUPManager.h"
 
 class PUPTrigger {
 public:
-   PUPTrigger();
-   ~PUPTrigger();
+   ~PUPTrigger() {}
 
    static PUPTrigger* CreateFromCSVLine(string line);
-
-   int GetId() const { return m_id; }
    bool IsActive() const { return m_active; }
    const string& GetDescription() const { return m_descript; }
    const string& GetTrigger() const { return m_trigger; }
-   int GetScreen() const { return m_screen; }
+   int GetScreenNum() const { return m_screenNum; }
    const string& GetPlaylist() const { return m_playlist; }
    const string& GetPlayFile() { return m_playFile; }
    int GetVolume() const { return m_volume; }
@@ -23,15 +19,14 @@ public:
    int GetCounter() const { return m_counter; }
    int GetRestSeconds() const { return m_restSeconds; }
    PUP_TRIGGER_PLAY_ACTION GetPlayAction() const { return m_playAction; }
-   int GetDefaults() const { return m_defaults; }
    string ToString() const;
 
 private:
-   int m_id;
+   PUPTrigger();
    bool m_active;
    string m_descript;
    string m_trigger;
-   int m_screen;
+   int m_screenNum;
    string m_playlist;
    string m_playFile;
    int m_volume;
@@ -40,5 +35,4 @@ private:
    int m_counter;
    int m_restSeconds;
    PUP_TRIGGER_PLAY_ACTION m_playAction;
-   int m_defaults;
 };

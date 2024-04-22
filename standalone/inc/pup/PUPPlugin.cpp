@@ -5,13 +5,11 @@
 
 #include "DMDUtil/Config.h"
 
-
 void OnPUPCaptureTrigger(uint16_t id, void* pUserData)
 {
    PUPPlugin* pPlugin = (PUPPlugin*)pUserData;
    pPlugin->QueueData({ 'D', id, 1 });
 }
-
 
 PUPPlugin::PUPPlugin() : Plugin()
 {
@@ -45,6 +43,15 @@ void PUPPlugin::PluginInit(const string& szTableFilename, const string& szRomNam
       return;
    }
 
+   for (PUPScreen* pScreen : m_pManager->GetScreens()) {
+      PUPCustomPos* pCustomPos = pScreen->GetCustomPos();
+      if (pCustomPos) {
+         if (pCustomPos->GetSourceScreen() == m_pBackglass->GetScreenNum()) {
+            PLOGI.printf("PUP backglass child screen found: %s", pScreen->ToString().c_str());
+         }
+      }
+   }
+
    Settings* const pSettings = &g_pplayer->m_ptable->m_settings;
 
    if (!pSettings->LoadValueWithDefault(Settings::Standalone, "PUPWindow"s, true)) {
@@ -63,14 +70,13 @@ void PUPPlugin::PluginInit(const string& szTableFilename, const string& szRomNam
    m_running = true;
 
    m_pThread = new std::thread([this]() {
-      PUPPlaylist* pPlaylist = m_pManager->GetPlaylist(m_pBackglass->GetPlayList());
+      PUPPlaylist* pPlaylist = m_pManager->GetPlaylist(m_pBackglass->GetBackgroundPlaylist());
       if (pPlaylist) {
-         string szPath = m_pManager->GetPath(pPlaylist, m_pBackglass->GetPlayFile());
+         string szPath = m_pManager->GetPath(pPlaylist, m_pBackglass->GetBackgroundFilename());
          if (!szPath.empty())
-            m_pWindow->SetBG(szPath, pPlaylist->GetVolume(),
-               m_pBackglass->IsLoopit() ? PUP_TRIGGER_PLAY_ACTION_LOOP : PUP_TRIGGER_PLAY_ACTION_NORMAL, 0);
+            m_pWindow->SetBG(szPath, m_pBackglass->GetVolume(), 0);
       }
-      
+
       QueueData({ 'D', 0, 1 });
 
       DMDUtil::Config* pConfig = DMDUtil::Config::GetInstance();

@@ -25,11 +25,16 @@ bool PUPManager::LoadConfig(const string& szRomName)
          PUPScreen* pScreen = PUPScreen::CreateFromCSVLine(line);
 
          if (pScreen) {
+            m_screens.push_back(pScreen);
             m_screenMap[pScreen->GetScreenNum()] = pScreen;
             m_screenDesMap[pScreen->GetScreenDes()] = pScreen;
          }
       }
       PLOGI.printf("Screens loaded: file=%s, size=%d", screensPath.c_str(), m_screenMap.size());
+
+      for (PUPScreen* pScreen : m_screens) {
+      }
+
    }
    else {
       PLOGE.printf("Unable to load %s", screensPath.c_str());
@@ -79,13 +84,13 @@ bool PUPManager::LoadConfig(const string& szRomName)
          PUPTrigger* pTrigger = PUPTrigger::CreateFromCSVLine(line);
 
          if (pTrigger) {
-            PUPScreen* pScreen = GetScreen(pTrigger->GetScreen());
+            PUPScreen* pScreen = GetScreen(pTrigger->GetScreenNum());
             if (pScreen) {
                 pScreen->SetTrigger(pTrigger);
                 triggers++;
             }
             else {
-               PLOGW.printf("Screen not found: %d", pTrigger->GetScreen());
+               PLOGW.printf("Screen not found: %d", pTrigger->GetScreenNum());
                delete pTrigger;
             }
          }
