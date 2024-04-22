@@ -88,35 +88,35 @@
 // it's not actually running in a cabinet physically.
 //
 
-NudgeFilter::NudgeFilter(const char * axis) : m_axis(axis)
+NudgeFilter::NudgeFilter(const char * axis) IF_DEBUG_NUDGE(: m_axis(axis))
 {
 }
 
 // Process a sample.  Adds the sample to the running total, and checks
 // to see if a correction should be applied.  Replaces 'a' with the
 // corrected value if a correction is needed.
-void NudgeFilter::sample(float &a, const U64 now)
+void NudgeFilter::sample(float &a, const U64 frameTime)
 {
    IF_DEBUG_NUDGE(char notes[128] = ""; float aIn = a;)
 
    // if we're not roughly at rest, reset the last motion timer
    if (fabsf(a) >= .02f)
-      m_tMotion = now;
+      m_tMotion = frameTime;
 
    // check for a sign change
    if (fabsf(a) > .01f && fabsf(m_prv) > .01f
       && ((a < 0.f && m_prv > 0.f) || (a > 0.f && m_prv < 0.f)))
    {
       // sign change/zero crossing - note the time
-      m_tzc = now;
+      m_tzc = frameTime;
       IF_DEBUG_NUDGE(strncat_s(notes, "zc ", sizeof(notes)-strnlen_s(notes, sizeof(notes))-1);)
    }
    else if (fabsf(a) <= .01f)
    {
       // small value -> not a sustained one-way acceleration
-      m_tzc = now;
+      m_tzc = frameTime;
    }
-   /*else if (fabsf(a) > .05f && now - m_tzc > 500000) // disabling this fixes an issue with Mot-Ion / Pinball Wizard controllers that suffer from calibration drift as they warm up
+   /*else if (fabsf(a) > .05f && frameTime - m_tzc > 500000) // disabling this fixes an issue with Mot-Ion / Pinball Wizard controllers that suffer from calibration drift as they warm up
    {
       // More than 500 ms in motion with same sign - we must be
       // experiencing a gravitational acceleration due to a tilt
@@ -149,9 +149,9 @@ void NudgeFilter::sample(float &a, const U64 now)
 
       // this counts as a zero crossing reset
       m_prv = 0;
-      m_tzc = m_tCorr = now;
+      m_tzc = m_tCorr = frameTime;
    }
-   else if (now - m_tCorr > 50000 || now - m_tMotion > 50000)
+   else if (frameTime - m_tCorr > 50000 || frameTime - m_tMotion > 50000)
    {
       // bring the running total toward neutral
       const float corr = expf(0.33f*logf(fabsf(m_sum*(float)(1.0 / .02)))) * (m_sum < 0.0f ? -.02f : .02f);
@@ -163,7 +163,7 @@ void NudgeFilter::sample(float &a, const U64 now)
       // way to the present - we want to allow another forced
       // correction soon if necessary to get things back to
       // neutral quickly.
-      m_tCorr = now - 40000;
+      m_tCorr = frameTime - 40000;
    }
 
    IF_DEBUG_NUDGE(

@@ -158,7 +158,7 @@ static const string defaultPathSearch[] = { string(), "user"s +PATH_SEPARATOR_CH
 #endif
 
 #ifdef __STANDALONE__
-#define fopen_s(pFile, filename, mode) (((*(pFile)) = fopen((filename), (mode))) == NULL)
+#define fopen_s(pFile, filename, mode) (((*(pFile)) = fopen((filename), (mode))) == nullptr)
 #define fprintf_s fprintf
 #define fread_s(buffer, bufferSize, elementSize, count, stream) fread(buffer, bufferSize, count, stream)
 #define fscanf_s fscanf

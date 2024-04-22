@@ -115,7 +115,7 @@ public:
    virtual Vertex2D GetCenter() const = 0;
    virtual Vertex2D GetScale() const
    {
-      return Vertex2D(1.f, 1.f);
+      return {1.f, 1.f};
    }
    virtual float GetRotate() const
    {

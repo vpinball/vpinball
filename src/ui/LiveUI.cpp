@@ -574,7 +574,7 @@ static void HelpSplash(const string &text, int rotation)
 
           textEnd = nextLineTextEnd;
 
-          while (*textEnd && *textEnd == ' ')
+          while (*textEnd == ' ')
              textEnd++;
        }
    }
@@ -759,7 +759,7 @@ LiveUI::LiveUI(RenderDevice *const rd)
    ImFont *H2 = io.Fonts->AddFontFromMemoryCompressedTTF(droidsansbold_compressed_data, droidsansbold_compressed_size, overlaySize * 18.0f / 13.f);
    ImFont *H3 = io.Fonts->AddFontFromMemoryCompressedTTF(droidsansbold_compressed_data, droidsansbold_compressed_size, overlaySize * 15.0f / 13.f);
    markdown_config.linkCallback = MarkdownLinkCallback;
-   markdown_config.tooltipCallback = NULL;
+   markdown_config.tooltipCallback = nullptr;
    markdown_config.imageCallback = MarkdownImageCallback;
    //markdown_config.linkIcon = ICON_FA_LINK;
    markdown_config.headingFormats[0] = { H1, true };
@@ -2322,7 +2322,6 @@ void LiveUI::UpdateMainUI()
 
    // Selection and physic colliders overlay
    {
-      ImGuiIO &io = ImGui::GetIO();
       const float rClipWidth = (float)m_player->m_playfieldWnd->GetWidth() * 0.5f;
       const float rClipHeight = (float)m_player->m_playfieldWnd->GetHeight() * 0.5f;
       Matrix3D mvp = m_renderer->GetMVP().GetModelViewProj(0);
@@ -2330,12 +2329,12 @@ void LiveUI::UpdateMainUI()
       {
          const float xp = mvp._11 * v.x + mvp._21 * v.y + mvp._31 * v.z + mvp._41;
          const float yp = mvp._12 * v.x + mvp._22 * v.y + mvp._32 * v.z + mvp._42;
-         const float zp = mvp._13 * v.x + mvp._23 * v.y + mvp._33 * v.z + mvp._43;
+         //const float zp = mvp._13 * v.x + mvp._23 * v.y + mvp._33 * v.z + mvp._43;
          const float wp = mvp._14 * v.x + mvp._24 * v.y + mvp._34 * v.z + mvp._44;
          if (wp <= 1e-10f) // behind camera (or degenerated)
             return Vertex2D(FLT_MAX, FLT_MAX);
          const float inv_wp = 1.0f / wp;
-         return Vertex2D((wp + xp) * rClipWidth / wp, (wp - yp) * rClipHeight / wp);
+         return Vertex2D((wp + xp) * rClipWidth * inv_wp, (wp - yp) * rClipHeight * inv_wp);
       };
 
       if (isSelectionTransformValid)
@@ -2404,7 +2403,6 @@ void LiveUI::UpdateMainUI()
                const Matrix3D rx = Matrix3D::MatrixRotate(drag.x * 0.01f, up);
                const Matrix3D ry = Matrix3D::MatrixRotate(drag.y * 0.01f, right);
                const Matrix3D roll = rx * ry;
-               vec3 newDir = viewInverse.GetOrthoNormalDir();
                dir = roll.MultiplyVectorNoPerspective(dir);
                dir.Normalize();
 
@@ -2522,9 +2520,9 @@ void LiveUI::UpdateMainUI()
             // Grab (translate)
             if (ImGui::GetIO().KeyAlt)
             {
-               Matrix3D transform;
-               if (GetSelectionTransform(transform))
-                  SetSelectionTransform(transform, true, false, false);
+               Matrix3D tmp;
+               if (GetSelectionTransform(tmp))
+                  SetSelectionTransform(tmp, true, false, false);
             }
             else
             {
@@ -2537,9 +2535,9 @@ void LiveUI::UpdateMainUI()
             // Scale
             if (ImGui::GetIO().KeyAlt)
             {
-               Matrix3D transform;
-               if (GetSelectionTransform(transform))
-                  SetSelectionTransform(transform, false, true, false);
+               Matrix3D tmp;
+               if (GetSelectionTransform(tmp))
+                  SetSelectionTransform(tmp, false, true, false);
             }
             else
             {
@@ -2552,9 +2550,9 @@ void LiveUI::UpdateMainUI()
             // Rotate
             if (ImGui::GetIO().KeyAlt)
             {
-               Matrix3D transform;
-               if (GetSelectionTransform(transform))
-                  SetSelectionTransform(transform, false, false, true);
+               Matrix3D tmp;
+               if (GetSelectionTransform(tmp))
+                  SetSelectionTransform(tmp, false, false, true);
             }
             else
             {
@@ -2584,9 +2582,9 @@ void LiveUI::UpdateMainUI()
             const vec3 up = view.GetOrthoNormalUp(), dir = view.GetOrthoNormalDir(), pos = view.GetOrthoNormalPos();
             const vec3 camTarget = pos - dir * m_camDistance;
             vec3 newTarget = camTarget;
-            Matrix3D transform;
-            if (GetSelectionTransform(transform))
-               newTarget = vec3(transform._41, transform._42, transform._43);
+            Matrix3D tmp;
+            if (GetSelectionTransform(tmp))
+               newTarget = vec3(tmp._41, tmp._42, tmp._43);
             const vec3 newEye = newTarget + dir * m_camDistance;
             m_camView = Matrix3D::MatrixLookAtRH(newEye, newTarget, up);
          }
@@ -3297,7 +3295,7 @@ void LiveUI::UpdateAnaglyphCalibrationModal()
    if (glassesIndex < 0 || glassesIndex > 9)
       return;
    static float backgroundOpacity = 1.f;
-   ImGuiIO& io = ImGui::GetIO();
+   const ImGuiIO& io = ImGui::GetIO();
    ImGui::SetNextWindowSize(io.DisplaySize);
    ImGui::PushStyleColor(ImGuiCol_PopupBg, ImVec4(0.f, 0.f, 0.f, backgroundOpacity));
    if (ImGui::BeginPopupModal(ID_ANAGLYPH_CALIBRATION, nullptr, (ImGuiWindowFlags_)((int)ImGuiWindowFlags_NoTitleBar | (int)ImGuiNextWindowDataFlags_HasBgAlpha)))
@@ -3916,8 +3914,8 @@ void LiveUI::ImageProperties()
 #endif
    if (image)
    {
-      float w = ImGui::GetWindowWidth();
-      ImGui::Image(image, ImVec2(w, sampler->GetHeight() * w / (float) sampler->GetWidth()));
+      const float w = ImGui::GetWindowWidth();
+      ImGui::Image(image, ImVec2(w, (float)sampler->GetHeight() * w / (float) sampler->GetWidth()));
    }
 }
 
@@ -3940,7 +3938,7 @@ void LiveUI::RenderProbeProperties(bool is_live)
    {
       static const string types[] = { "Reflection"s, "Refraction"s };
 
-      auto upd_normal = [startup_probe, live_probe](bool is_live, vec3& prev, vec3& v)
+      auto upd_normal = [startup_probe, live_probe](bool is_live, vec3& prev, const vec3& v)
       {
          RenderProbe * const probe = (is_live ? live_probe : startup_probe);
          if (probe)

@@ -2556,7 +2556,6 @@ void PinTable::Play(const int playMode)
          live_table->m_renderprobeMap[live_table->m_vrenderprobe[i]->GetName()] = live_table->m_vrenderprobe[i];
 
       // parse the (optional) override-physics-sets that can be set globally
-      float fOverrideContactScatterAngle;
       live_table->m_fOverrideGravityConstant = GRAVITYCONST * m_settings.LoadValueWithDefault(Settings::Player, "TablePhysicsGravityConstant" + std::to_string(live_table->m_overridePhysics - 1), DEFAULT_TABLE_GRAVITY);
       live_table->m_fOverrideContactFriction = m_settings.LoadValueWithDefault(Settings::Player, "TablePhysicsContactFriction"+std::to_string(live_table->m_overridePhysics - 1), DEFAULT_TABLE_CONTACTFRICTION);
       live_table->m_fOverrideElasticity = m_settings.LoadValueWithDefault(Settings::Player, "TablePhysicsElasticity" + std::to_string(live_table->m_overridePhysics - 1), DEFAULT_TABLE_ELASTICITY);
@@ -2564,7 +2563,7 @@ void PinTable::Play(const int playMode)
       live_table->m_fOverrideScatterAngle = m_settings.LoadValueWithDefault(Settings::Player, "TablePhysicsScatterAngle" + std::to_string(live_table->m_overridePhysics - 1), DEFAULT_TABLE_PFSCATTERANGLE);
       live_table->m_fOverrideMinSlope = m_settings.LoadValueWithDefault(Settings::Player, "TablePhysicsMinSlope" + std::to_string(live_table->m_overridePhysics - 1), DEFAULT_TABLE_MIN_SLOPE);
       live_table->m_fOverrideMaxSlope = m_settings.LoadValueWithDefault(Settings::Player, "TablePhysicsMaxSlope" + std::to_string(live_table->m_overridePhysics - 1), DEFAULT_TABLE_MAX_SLOPE);
-      fOverrideContactScatterAngle = m_settings.LoadValueWithDefault(Settings::Player, "TablePhysicsContactScatterAngle"+std::to_string(live_table->m_overridePhysics - 1), DEFAULT_TABLE_SCATTERANGLE);
+      const float fOverrideContactScatterAngle = m_settings.LoadValueWithDefault(Settings::Player, "TablePhysicsContactScatterAngle"+std::to_string(live_table->m_overridePhysics - 1), DEFAULT_TABLE_SCATTERANGLE);
       c_hardScatter = ANGTORAD(live_table->m_overridePhysics ? fOverrideContactScatterAngle : live_table->m_defaultScatter);
 
       // create Player and init that one
@@ -6096,7 +6095,7 @@ void PinTable::ExportBlueprint()
    {
    PaintSur psur(dc.GetHDC(), (float)bmwidth / tablewidth, tablewidth*0.5f, tableheight*0.5f, bmwidth, bmheight, nullptr);
 
-   dc.SelectObject(reinterpret_cast<HBRUSH>(dc.GetStockObject(WHITE_BRUSH)));
+   dc.SelectObject(static_cast<HBRUSH>(dc.GetStockObject(WHITE_BRUSH)));
    dc.PatBlt(0, 0, bmwidth, bmheight, PATCOPY);
 
    if (m_vpinball->m_backglassView)

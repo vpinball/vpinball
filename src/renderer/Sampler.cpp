@@ -12,9 +12,11 @@
 
 Sampler::Sampler(RenderDevice* rd, BaseTexture* const surf, const bool force_linear_rgb, const SamplerAddressMode clampu, const SamplerAddressMode clampv, const SamplerFilter filter) : 
    m_type(SurfaceType::RT_DEFAULT), 
-   m_rd(rd),
    m_dirty(false),
+   m_rd(rd),
+#ifndef ENABLE_BGFX
    m_ownTexture(true),
+#endif
    m_width(surf->width()),
    m_height(surf->height()),
    m_clampu(clampu),
@@ -49,11 +51,11 @@ Sampler::Sampler(RenderDevice* rd, BaseTexture* const surf, const bool force_lin
 
    const bgfx::Memory* data;
    if (upload == nullptr)
-      data = NULL;
+      data = nullptr;
    else if (upload == surf)
       data = bgfx::copy(upload->data(), m_height * upload->pitch());
    else
-      data = bgfx::makeRef(upload->data(), m_height * upload->pitch(), [](void* _ptr, void* _userData) { delete _userData; }, upload);
+      data = bgfx::makeRef(upload->data(), m_height * upload->pitch(), [](void* _ptr, void* _userData) { delete [] (BYTE*)_userData; }, upload);
 
    // Create a render target and blit texture on it to force BGFX mip map generation (BGFX does not support automatic mipmap generation for textures)
    const uint64_t flags = BGFX_SAMPLER_NONE | (is_srgb ? BGFX_TEXTURE_SRGB : BGFX_TEXTURE_NONE);
@@ -76,7 +78,6 @@ Sampler::Sampler(RenderDevice* rd, BaseTexture* const surf, const bool force_lin
    bgfx::setViewFrameBuffer(m_rd->m_activeViewId, m_mips_framebuffer);
    // Get back to the rendering view
    RenderTarget* activeRT = RenderTarget::GetCurrentRenderTarget();
-   int activeLayer = RenderTarget::GetCurrentRenderLayer();
    if (activeRT)
    {
       RenderTarget::OnFrameFlushed();
@@ -141,7 +142,7 @@ Sampler::Sampler(RenderDevice* rd, SurfaceType type, bgfx::TextureHandle bgfxTex
    : m_type(type)
    , m_rd(rd)
    , m_dirty(false)
-   , m_ownTexture(ownTexture)
+   //, m_ownTexture(ownTexture)
    , m_clampu(clampu)
    , m_clampv(clampv)
    , m_filter(filter)

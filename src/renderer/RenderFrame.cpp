@@ -104,7 +104,7 @@ bool RenderFrame::Execute(const bool log)
    waitingPasses.reserve(2 * m_passes.size());
    sortedPasses.push_back(finalPass); // start with the final pass
    waitingPasses.insert(waitingPasses.begin(), finalPass->m_dependencies.begin(), finalPass->m_dependencies.end());
-   while (waitingPasses.size() > 0)
+   while (!waitingPasses.empty())
    {
       // Select first pass not yet inserted
       RenderPass* pass = waitingPasses.back();
@@ -116,7 +116,7 @@ bool RenderFrame::Execute(const bool log)
       // Find first consumers already placed in the sorted list
       std::vector<RenderPass*>::iterator itPass = sortedPasses.begin();
       while (FindIndexOf((*itPass)->m_dependencies, pass) == -1)
-         itPass++;
+         ++itPass;
       std::vector<RenderPass*>::iterator itPassFirstConsumer = itPass;
       // Select insertion position, moving back from first consumer while dependencies & render target constraints are still satisfied, trying to reach a pass using the same RT to optimize merging
       while (true)
@@ -126,7 +126,7 @@ bool RenderFrame::Execute(const bool log)
             itPass = itPassFirstConsumer;
             break;
          }
-         itPass--;
+         --itPass;
          if (FindIndexOf(pass->m_dependencies, (*itPass)) != -1 // Invalid since we would end up before one of our dependencies: defaults to place before first consumer
           || FindIndexOf((*itPass)->m_referencedRT, pass->m_rt) != -1) // Invalid since we would overwrite the needed content of a previous pass: defaults to place before first consumer
          {
@@ -147,11 +147,11 @@ bool RenderFrame::Execute(const bool log)
       {
          if (FindIndexOf((*itInsertionPoint)->m_dependencies, pass) != -1)
             itPassLastConsumer = itInsertionPoint;
-         itInsertionPoint++;
+         ++itInsertionPoint;
       }
       while (itPass != itPassLastConsumer)
       {
-         itPass++;
+         ++itPass;
          (*itPass)->m_referencedRT.push_back(pass->m_rt);
       }
    }
@@ -168,10 +168,10 @@ bool RenderFrame::Execute(const bool log)
          itPass = sortedPasses.erase(itPass);
       }
       else
-         itPass++;
+         ++itPass;
    }
    // Sort commands & split on command level dependencies (commands that needs a pass to be executed just before them, used for refracting parts that uses a screen copy just before using it as a shading texture)
-   for (std::vector<RenderPass*>::iterator itPass = sortedPasses.begin(); itPass != sortedPasses.end(); itPass++)
+   for (std::vector<RenderPass*>::iterator itPass = sortedPasses.begin(); itPass != sortedPasses.end(); ++itPass)
    {
       (*itPass)->SortCommands();
       for (std::vector<RenderCommand*>::iterator it = (*itPass)->m_commands.begin(); it != (*itPass)->m_commands.end(); ++it)

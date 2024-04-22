@@ -456,7 +456,7 @@ float FlipperMoverObject::GetStrokeRatio() const
 // compute the cross product (0,0,rz) x v
 static inline Vertex3Ds CrossZ(const float rz, const Vertex3Ds& v)
 {
-   return Vertex3Ds(-rz * v.y, rz * v.x, 0.f);
+   return {-rz * v.y, rz * v.x, 0.f};
 }
 
 //

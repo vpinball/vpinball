@@ -19,8 +19,7 @@ TextboxVisualsProperty::TextboxVisualsProperty(const VectorProtected<ISelect> *p
 
 TextboxVisualsProperty::~TextboxVisualsProperty()
 {
-    if (m_font)
-        delete m_font;
+    delete m_font;
 }
 
 void TextboxVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)

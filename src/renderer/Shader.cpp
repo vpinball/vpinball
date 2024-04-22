@@ -918,7 +918,6 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
       memcpy(dst, src, m_stateSizes[uniformName]);
       #if defined(ENABLE_BGFX)
       {
-      float* t = (float*)src;
       bgfx::setUniform(desc.handle, src, desc.uniform.count);
       }
       #elif defined(ENABLE_OPENGL)
@@ -1155,13 +1154,13 @@ static const bgfx::Memory* loadMem(bx::FileReaderI* _reader, const char* _filePa
    }
 
    PLOGD << "Failed to load " << _filePath;
-   return NULL;
+   return nullptr;
 }
 
 static bgfx::ShaderHandle loadShader(bx::FileReaderI *reader, const char *name)
 {
    const string prefix = g_pvp->m_szMyPath + ("shaders-" + std::to_string(VP_VERSION_MAJOR) + '.' + std::to_string(VP_VERSION_MINOR) + '.' + std::to_string(VP_VERSION_REV) + PATH_SEPARATOR_CHAR);
-   string shaderPath = "";
+   string shaderPath;
    switch (bgfx::getRendererType())
    {
    case bgfx::RendererType::Noop:
@@ -1219,9 +1218,9 @@ void Shader::loadProgram(bx::FileReaderI* reader, ShaderTechniques technique, co
    bgfx::ShaderHandle vsh = loadShader(reader, vsName);
    bgfx::ShaderHandle fsh = loadShader(reader, fsName);
    m_techniques[technique]->program = bgfx::createProgram(vsh, fsh, true /* destroy shaders when program is destroyed */);
-   bgfx::UniformHandle uniforms[SHADER_UNIFORM_COUNT];
    for (int j = 0; j < 2; j++)
    {
+      bgfx::UniformHandle uniforms[SHADER_UNIFORM_COUNT];
       uint16_t n_uniforms = bgfx::getShaderUniforms(j == 0 ? vsh : fsh, uniforms, SHADER_UNIFORM_COUNT);
       for (int i = 0; i < n_uniforms; i++)
       {

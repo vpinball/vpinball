@@ -85,7 +85,7 @@ void SharedVertexBuffer::Upload()
       // Fill data block
       for (PendingUpload upload : m_pendingUploads)
       {
-         assert(upload.offset >= 0);
+         //assert(upload.offset >= 0);
          assert(upload.offset + upload.size <= size);
          memcpy(data + upload.offset, upload.data, upload.size);
          delete[] upload.data;

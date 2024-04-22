@@ -30,7 +30,7 @@ public:
    void Initialize(const FRect& bounds); // FRect3D for an octree
 
    unsigned int GetObjectCount() const { return (unsigned int) m_vho.size(); }
-   unsigned int GetNLevels() const { return m_nLevels; };
+   unsigned int GetNLevels() const { return m_nLevels; }
 
 #ifdef USE_EMBREE
    void FillFromVector(vector<HitObject*>& vho);

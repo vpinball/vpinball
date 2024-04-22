@@ -130,7 +130,6 @@ public:
 
 private:
    U32            m_timeNextUpdate;
-   int            m_blinkSequence;
    float          m_GridXCenter;
    float          m_GridYCenter;
    int            m_lightSeqGridHeight;

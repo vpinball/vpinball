@@ -18,8 +18,8 @@ int RenderTarget::GetCurrentRenderLayer() { return current_render_layer; }
 
 RenderTarget::RenderTarget(RenderDevice* const rd, const int width, const int height, const colorFormat format)
    : m_name("BackBuffer"s)
-   , m_is_back_buffer(true)
    , m_type(SurfaceType::RT_DEFAULT)
+   , m_is_back_buffer(true)
    , m_nLayers(1)
    , m_rd(rd)
    , m_format(format)
@@ -59,8 +59,8 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const int width, const int he
 
 RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const string& name, const int width, const int height, const colorFormat format, bool with_depth, int nMSAASamples, const char* failureMessage, RenderTarget* sharedDepth)
    : m_name(name)
-   , m_is_back_buffer(false)
    , m_type(type)
+   , m_is_back_buffer(false)
    , m_nLayers(type == RT_DEFAULT ? 1 : type == RT_CUBEMAP ? 6 : 2)
    , m_rd(rd)
    , m_format(format)
@@ -497,7 +497,9 @@ void RenderTarget::CopyTo(RenderTarget* dest, const bool copyColor, const bool c
    int pw1 = w1 == -1 ? GetWidth() : w1, ph1 = h1 == -1 ? GetHeight() : h1;
    int px2 = x2 == -1 ? 0 : x2, py2 = y2 == -1 ? 0 : y2, pz2 = dstLayer == -1 ? 0 : dstLayer;
    int pw2 = w2 == -1 ? dest->GetWidth() : w2, ph2 = h2 == -1 ? dest->GetHeight() : h2;
+#ifdef ENABLE_OPENGL
    int nLayers = srcLayer == -1 ? m_nLayers : 1;
+#endif
    assert(srcLayer != -1 || dstLayer != -1 || m_nLayers == dest->m_nLayers); // Either we copy a single layer or the full set in which case they must match
 
 #if defined(ENABLE_BGFX)

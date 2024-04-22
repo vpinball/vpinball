@@ -55,16 +55,16 @@ class PinTableMDI : public CMDIChild
 {
 public:
    PinTableMDI(VPinball *vpinball);
-   virtual ~PinTableMDI();
+   ~PinTableMDI() override;
    CComObject<PinTable> *GetTable() { return m_table; }
    bool CanClose() const;
 
 protected:
-   virtual void PreCreate(CREATESTRUCT &cs) override;
-   virtual int OnCreate(CREATESTRUCT &cs) override;
-   virtual void OnClose() override;
-   virtual LRESULT OnMDIActivate(UINT msg, WPARAM wparam, LPARAM lparam) override;
-   virtual BOOL OnEraseBkgnd(CDC &dc) override;
+   void PreCreate(CREATESTRUCT &cs) override;
+   int OnCreate(CREATESTRUCT &cs) override;
+   void OnClose() override;
+   LRESULT OnMDIActivate(UINT msg, WPARAM wparam, LPARAM lparam) override;
+   BOOL OnEraseBkgnd(CDC &dc) override;
 
 private:
    CComObject<PinTable> *m_table;
@@ -320,7 +320,7 @@ public:
    /////////////////////////////////////////////
 
    PinTable();
-   virtual ~PinTable();
+   ~PinTable() override;
 
    void ClearForOverwrite() final;
    void InitBuiltinTable(const size_t tableId);
@@ -513,7 +513,7 @@ public:
 
    bool IsNameUnique(const WCHAR *const wzName) const;
    void GetUniqueName(const ItemTypeEnum type, WCHAR *const wzUniqueName, const DWORD wzUniqueName_maxlength) const;
-   void GetUniqueName(const WCHAR *const prefix, WCHAR *const wzUniqueName, const DWORD wzUniqueName_maxlength) const;
+   void GetUniqueName(const WCHAR *const wzRoot, WCHAR *const wzUniqueName, const DWORD wzUniqueName_maxlength) const;
    void GetUniqueNamePasting(const int type, WCHAR *const wzUniqueName, const DWORD wzUniqueName_maxlength);
 
    float GetSurfaceHeight(const string &name, float x, float y) const;
@@ -539,7 +539,7 @@ public:
    void MoveCollectionDown(CComObject<Collection> *pcol);
    void UpdatePropertyImageList();
    void UpdatePropertyMaterialList();
-   int GetDetailLevel() const { return m_settings.LoadValueWithDefault(Settings::Player, "AlphaRampAccuracy"s, 10); }; // used for rubber, ramp and ball
+   int GetDetailLevel() const { return m_settings.LoadValueWithDefault(Settings::Player, "AlphaRampAccuracy"s, 10); } // used for rubber, ramp and ball
    float GetZPD() const;
    float GetMaxSeparation() const;
    float Get3DOffset() const;

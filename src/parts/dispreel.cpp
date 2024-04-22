@@ -224,7 +224,7 @@ void DispReel::RenderSetup(RenderDevice *device)
    }
 
    // get a pointer to the image specified in the object
-   Texture * const pin = m_ptable->GetImage(m_d.m_szImage); // pointer to image information from the image manager
+   const Texture * const pin = m_ptable->GetImage(m_d.m_szImage); // pointer to image information from the image manager
 
    if (!pin)
       return;

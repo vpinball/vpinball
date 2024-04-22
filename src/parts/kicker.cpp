@@ -384,6 +384,8 @@ void Kicker::Render(const unsigned int renderMask)
    m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
 }
 
+#pragma endregion
+
 void Kicker::ExportMesh(ObjLoader& loader)
 {
    if (m_d.m_kickertype == KickerInvisible)

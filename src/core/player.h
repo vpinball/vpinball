@@ -268,7 +268,7 @@ private:
    void ApplyPlayingState(const bool play);
 public:
    void SetPlayState(const bool isPlaying, const U32 delayBeforePauseMs = 0); // Allow to play/pause during UI interaction or to perform timed simulation steps (still needs the player window to be focused).
-   inline bool IsPlaying(const bool applyWndFocus = true) const { return applyWndFocus ? (m_playing && m_focused) : m_focused; };
+   inline bool IsPlaying(const bool applyWndFocus = true) const { return applyWndFocus ? (m_playing && m_focused) : m_focused; }
    void OnFocusChanged(const bool isGameFocused); // On focus lost, pause player and show mouse cursor
    U32 m_pauseTimeTarget = 0;
    bool m_step = false; // If set to true, the physics engine will do a single physic step and stop simulation (turning this flag to false)

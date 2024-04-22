@@ -218,7 +218,7 @@ void PhysicsEngine::RemoveBall(Ball *const ball)
    m_hitoctree_dynamic.FillFromVector(m_vho_dynamic);
 }
 
-bool PhysicsEngine::RecordContact(CollisionEvent& newColl)
+bool PhysicsEngine::RecordContact(const CollisionEvent& newColl)
 {
    if (m_recordContacts) // remember all contacts?
    {
@@ -404,16 +404,16 @@ void PhysicsEngine::UpdateNudge(float dtime)
 
 Vertex3Ds PhysicsEngine::GetNudge() const
 {
-   return Vertex3Ds(m_nudge.x - m_tableVelDelta.x, m_nudge.y - m_tableVelDelta.y, 0.f);
+   return {m_nudge.x - m_tableVelDelta.x, m_nudge.y - m_tableVelDelta.y, 0.f};
 }
 
 Vertex2D PhysicsEngine::GetScreenNudge() const
 {
    // NB: in table coordinates, +Y points down, but in screen coordinates, it points up, so we have to flip the y component
    if (m_legacyNudge)
-      return Vertex2D(m_legacyNudgeBack.x * sqrf((float)m_legacyNudgeTime * 0.01f), -m_legacyNudgeBack.y * sqrf((float)m_legacyNudgeTime * 0.01f));
+      return {m_legacyNudgeBack.x * sqrf((float)m_legacyNudgeTime * 0.01f), -m_legacyNudgeBack.y * sqrf((float)m_legacyNudgeTime * 0.01f)};
    else
-      return Vertex2D(m_tableDisplacement.x, -m_tableDisplacement.y);
+      return {m_tableDisplacement.x, -m_tableDisplacement.y};
 }
 
 void PhysicsEngine::RayCast(const Vertex3Ds &source, const Vertex3Ds &target, const bool uiCast, vector<HitTestResult> &vhoHit)

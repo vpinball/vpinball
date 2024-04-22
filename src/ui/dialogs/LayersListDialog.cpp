@@ -111,7 +111,7 @@ void LayersListDialog::UpdateLayerList(const string& name)
    }
 
    ClearList();
-   const bool checkName = name.empty() ? false : true;
+   const bool checkName = !name.empty();
    string sName{name};
    if (checkName) //transform the name to lower
       std::transform(sName.begin(), sName.end(), sName.begin(), tolower);
@@ -819,7 +819,7 @@ LRESULT LayerTreeView::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
 
          vector<HTREEITEM> layers = GetAllLayerItems();
 
-         for (auto dragItem : m_DragItems)
+         for (const auto& dragItem : m_DragItems)
          {
             TVITEM tvItem = {};
             tvItem.mask = TVIF_PARAM | TVIF_CHILDREN;

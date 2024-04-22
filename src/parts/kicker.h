@@ -170,7 +170,7 @@ public:
    void Collide(const CollisionEvent& coll) final { DoCollide(coll.m_ball, coll.m_hitnormal, coll.m_hitflag, false); }
 
    void DoChangeBallVelocity(Ball * const pball, const Vertex3Ds& hitnormal) const;
-   void DoCollide(Ball * const pball, const Vertex3Ds& hitnormal, const bool hitflag, const bool newBall);
+   void DoCollide(Ball * const pball, const Vertex3Ds& hitnormal, const bool hitbit, const bool newBall);
 
    Kicker *m_pkicker;
    Ball *m_pball;  // The ball inside this kicker

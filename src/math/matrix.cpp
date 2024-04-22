@@ -118,7 +118,7 @@ Vertex3Ds RotateAround(const Vertex3Ds &pvAxis, const Vertex2D &pvPoint, const f
    matrix[1][1] = pvAxis.y*pvAxis.y + rcos*(1.0f - pvAxis.y*pvAxis.y);
    matrix[2][1] = pvAxis.y*pvAxis.z*(1.0f - rcos) - pvAxis.x*rsin;
 
-   return Vertex3Ds(matrix[0][0] * pvPoint.x + matrix[0][1] * pvPoint.y,
-      matrix[1][0] * pvPoint.x + matrix[1][1] * pvPoint.y,
-      matrix[2][0] * pvPoint.x + matrix[2][1] * pvPoint.y);
+   return {matrix[0][0] * pvPoint.x + matrix[0][1] * pvPoint.y,
+           matrix[1][0] * pvPoint.x + matrix[1][1] * pvPoint.y,
+           matrix[2][0] * pvPoint.x + matrix[2][1] * pvPoint.y};
 }

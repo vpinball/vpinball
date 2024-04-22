@@ -27,7 +27,6 @@ HitTarget::HitTarget()
    m_d.m_depthBias = 0.0f;
    m_d.m_reflectionEnabled = true;
 
-   m_propPhysics = nullptr;
    m_propPosition = nullptr;
    m_propVisual = nullptr;
    m_d.m_overwritePhysics = true;
@@ -530,8 +529,9 @@ void HitTarget::UIRenderPass2(Sur * const psur)
     constexpr float halflength = 50.0f;
     constexpr float len1 = halflength * 0.5f;
     constexpr float len2 = len1 * 0.5f;
-    Vertex2D tmp;
     {
+       Vertex2D tmp;
+
        // Draw Arrow
        psur->SetLineColor(RGB(255, 0, 0), false, 1);
 
@@ -635,7 +635,7 @@ void HitTarget::UpdateAnimation(const float diff_time_msec)
         if (m_moveAnimation)
         {
             float step = m_d.m_dropSpeed;
-            const float limit = DROP_TARGET_LIMIT;
+            constexpr float limit = DROP_TARGET_LIMIT;
             if (m_moveDown)
                 step = -step;
             else if ((g_pplayer->m_time_msec - m_timeStamp) < (unsigned int)m_d.m_raiseDelay)

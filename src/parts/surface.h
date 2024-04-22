@@ -165,8 +165,6 @@ private:
    MeshBuffer *m_slingshotMeshBuffer = nullptr;
    MeshBuffer *m_meshBuffer = nullptr;
 
-   PropertyPane *m_propPhysics = nullptr;
-
    bool m_isWall = true;
    bool m_isDynamic = false;
    bool m_isDropped = false;

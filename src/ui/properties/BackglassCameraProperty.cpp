@@ -38,7 +38,7 @@ void BackglassCameraProperty::UpdateVisuals(const int dispid/*=-1*/)
    if (table == nullptr)
       return;
 
-   ViewSetup &viewSetup = table->mViewSetups[table->m_currentBackglassMode];
+   const ViewSetup &viewSetup = table->mViewSetups[table->m_currentBackglassMode];
    if (dispid == IDC_BG_FSS || dispid == -1)
       PropertyDialog::SetCheckboxState(m_hFssModeCheck, table->IsFSSEnabled());
    if (dispid == IDC_BG_TEST_DESKTOP_CHECK || dispid == -1)

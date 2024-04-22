@@ -92,7 +92,7 @@ public:
    void Scale(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter) final;
    void Translate(const Vertex2D &pvOffset) final;
    Vertex2D GetCenter() const final { return GetPointCenter(); }
-   Vertex2D GetScale() const final { return Vertex2D(m_d.m_scaleX, m_d.m_scaleY); }
+   Vertex2D GetScale() const final { return {m_d.m_scaleX, m_d.m_scaleY}; }
    float GetRotate() const final { return m_d.m_rotation; }
 
    void PutCenter(const Vertex2D& pv) final { PutPointCenter(pv); }

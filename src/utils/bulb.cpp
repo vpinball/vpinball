@@ -36,7 +36,7 @@ static bulb_tLampCharacteristics bulbs[BULB_MAX] = {
 // Linear RGB tint of a blackbody for temperatures ranging from 1500 to 3000K. The values are normalized for a relative luminance of 1.
 // These values were evaluated using Blender's blackbody implementation, then normalized using the standard relative luminance formula (see https://en.wikipedia.org/wiki/Relative_luminance)
 // We use a minimum channel value at 0.000001 to avoid divide by 0 in client application.
-static float temperatureToTint[3 * 16] = {
+static constexpr float temperatureToTint[3 * 16] = {
    3.253114f, 0.431191f, 0.000001f,
    3.074210f, 0.484372f, 0.000001f,
    2.914679f, 0.531794f, 0.000001f,

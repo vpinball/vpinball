@@ -323,7 +323,6 @@ public:
    void CreateRenderGroup(const Collection * const collection);
    void RecalculateMatrices();
    void TransformVertices();
-   void RenderObject();
 
    void setInPlayState(const bool newVal);
 
@@ -367,7 +366,6 @@ private:
 
    PropertyPane *m_propVisual;
    PropertyPane *m_propPosition;
-   PropertyPane *m_propPhysics;
 
    vector<HitObject*> m_vhoCollidable; // Objects to that may be collide selectable
 

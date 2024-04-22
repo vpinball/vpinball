@@ -623,7 +623,7 @@ void Decal::RenderSetup(RenderDevice *device)
       dc.CreateCompatibleDC(nullptr);
       const CBitmap oldBmp = dc.SelectObject(hbm);
 
-      dc.SelectObject(reinterpret_cast<HBRUSH>(dc.GetStockObject(WHITE_BRUSH)));
+      dc.SelectObject(static_cast<HBRUSH>(dc.GetStockObject(WHITE_BRUSH)));
       dc.PatBlt(0, 0, rcOut.right, rcOut.bottom, PATCOPY);
 
       hFontOld = dc.SelectObject(hFont);

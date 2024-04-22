@@ -153,8 +153,8 @@ public:
 
    void InitDirectSound(const HWND hwnd, const bool IsBackglass);
    static float PanTo3D(float input);
-   static float PanSSF(float input);
-   static float FadeSSF(float input);
+   static float PanSSF(float pan);
+   static float FadeSSF(float front_rear_fade);
 
    LPDIRECTSOUND m_pDS;
 

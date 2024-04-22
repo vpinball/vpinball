@@ -156,7 +156,7 @@ public:
    float HitTestBasic(const BallS& ball, const float dtime, CollisionEvent& coll, const bool direction, const bool lateral, const bool rigid) const;
    void CalcNormal(); // and also does update length!
 
-   virtual void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const;
+   void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const override;
 
    Vertex2D normal;
    Vertex2D v1, v2;
@@ -173,14 +173,14 @@ public:
       m_hitBBox.zhigh = zhigh;
    }
 
-   virtual float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const override;
-   virtual int GetType() const override { return eCircle; }
-   virtual void Collide(const CollisionEvent& coll) override;
-   virtual void CalcHitBBox() override;
+   float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const override;
+   int GetType() const override { return eCircle; }
+   void Collide(const CollisionEvent& coll) override;
+   void CalcHitBBox() override;
 
    float HitTestBasicRadius(const BallS& ball, const float dtime, CollisionEvent& coll, const bool direction, const bool lateral, const bool rigid) const;
 
-   virtual void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const;
+   void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const override;
 
    Vertex2D center;
    float radius;
@@ -194,12 +194,12 @@ public:
    HitLineZ() {}
    HitLineZ(const Vertex2D& xy, const float zlow, const float zhigh) : m_xy(xy), m_zlow(zlow), m_zhigh(zhigh) {}
 
-   virtual float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const override;
-   virtual int GetType() const override { return eJoint; }
-   virtual void Collide(const CollisionEvent& coll) override;
-   virtual void CalcHitBBox() override;
+   float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const override;
+   int GetType() const override { return eJoint; }
+   void Collide(const CollisionEvent& coll) override;
+   void CalcHitBBox() override;
 
-   virtual void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const;
+   void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const override;
 
    Vertex2D m_xy;
    float m_zlow;
@@ -213,12 +213,12 @@ public:
    HitPoint(const Vertex3Ds& p) : m_p(p) {}
    HitPoint(const float x, const float y, const float z) : m_p(Vertex3Ds(x,y,z)) {}
 
-   virtual float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const override;
-   virtual int GetType() const override { return ePoint; }
-   virtual void Collide(const CollisionEvent& coll) override;
-   virtual void CalcHitBBox() override;
+   float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const override;
+   int GetType() const override { return ePoint; }
+   void Collide(const CollisionEvent& coll) override;
+   void CalcHitBBox() override;
 
-   virtual void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const;
+   void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const override;
 
    Vertex3Ds m_p;
 };

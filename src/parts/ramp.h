@@ -130,7 +130,6 @@ private:
    RenderDevice *m_rd = nullptr;
 
    int m_rampVertex;
-   Vertex2D *m_rgvInit;    // just for setup/static drawing
    float *m_rgheightInit;
 
    int m_numVertices = 0;      // this goes along with dynamicVertexBuffer
@@ -142,8 +141,6 @@ private:
    bool m_dynamicVertexBufferRegenerate = false;
 
    vector<HitObject*> m_vhoCollidable; // Objects to that may be collide selectable
-
-   PropertyPane *m_propPhysics = nullptr;
 
    // Get an approximation of the curve described by the control points of this ramp.
    template <typename T>

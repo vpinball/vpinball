@@ -121,8 +121,6 @@ private:
 
    PinTable *m_ptable;
 
-   Vertex2D *m_rgvInit;    // just for setup/static drawing
-
    RenderDevice *m_rd = nullptr;
    MeshBuffer *m_meshBuffer = nullptr;
    bool m_dynamicVertexBufferRegenerate;
@@ -137,7 +135,6 @@ private:
    Vertex3Ds m_middlePoint;
 
    PropertyPane *m_propVisual;
-   PropertyPane *m_propPhysics;
 
    void GetCentralCurve(vector<RenderVertex> &vv, const float _accuracy = -1.f) const;
 

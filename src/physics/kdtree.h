@@ -60,7 +60,7 @@ public:
    void Finalize();
 
    unsigned int GetObjectCount() const { return m_num_items; }
-   unsigned int GetNLevels() const { return m_nLevels; };
+   unsigned int GetNLevels() const { return m_nLevels; }
 
    void HitTestBall(const Ball * const pball, CollisionEvent& coll) const
    {

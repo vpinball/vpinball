@@ -495,7 +495,7 @@ void Light::RenderSetup(RenderDevice *device)
    }
 
    VertexBuffer *customMoverVBuffer = new VertexBuffer(m_rd, (unsigned int) m_vvertex.size(), nullptr, true);
-   IndexBuffer* customMoverIBuffer = new IndexBuffer(m_rd, (unsigned int) vtri.size(), 0, IndexBuffer::FMT_INDEX16);
+   IndexBuffer* customMoverIBuffer = new IndexBuffer(m_rd, (unsigned int) vtri.size(), false, IndexBuffer::FMT_INDEX16);
    WORD* bufi;
    customMoverIBuffer->Lock(bufi);
    memcpy(bufi, vtri.data(), vtri.size()*sizeof(WORD));

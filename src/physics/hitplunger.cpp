@@ -790,7 +790,7 @@ void HitPlunger::Collide(const CollisionEvent& coll)
 #endif
 
    // figure the basic impulse
-   const float impulse = dot * -1.45f / (1.0f + 1.0f / m_plungerMover.m_mass);
+   const float impulse = dot * -1.45f / (1.0f + 1.0f / PlungerMoverObject::m_mass);
 
    // We hit the ball, so attenuate any plunger bounce we have queued up
    // for a Fire event.  Real plungers bounce quite a bit when fired without
@@ -820,7 +820,7 @@ void HitPlunger::Collide(const CollisionEvent& coll)
       // accounting for the spring tension and friction.
       constexpr float reverseImpulseFudgeFactor = .22f;
       m_plungerMover.m_reverseImpulse = pball->m_d.m_vel.y * impulse
-         * (pball->m_d.m_mass / m_plungerMover.m_mass)
+         * (pball->m_d.m_mass / PlungerMoverObject::m_mass)
          * reverseImpulseFudgeFactor;
    }
 

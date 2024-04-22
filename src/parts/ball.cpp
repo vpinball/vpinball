@@ -109,7 +109,7 @@ void BallEx::Render(const unsigned int renderMask)
    float lightPos[MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES][4] = { 0.0f, 0.0f, 0.0f, 0.0f };
    float lightEmission[MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES][4] = { 0.0f, 0.0f, 0.0f, 0.0f };
    float *pLightPos = (float *)lightPos, *pLightEm = (float *)lightEmission;
-   const int lightStride = 4, lightOfs = 0;
+   constexpr int lightStride = 4, lightOfs = 0;
    #elif defined(ENABLE_DX9)
    struct CLight
    {

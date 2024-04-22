@@ -979,7 +979,7 @@ Vertex3Ds Renderer::Get3DPointFrom2D(const POINT& p)
    constexpr float wz = 0.f;
    const float wx = ((wz - p1.z)*(p2.x - p1.x)) / (p2.z - p1.z) + p1.x;
    const float wy = ((wz - p1.z)*(p2.y - p1.y)) / (p2.z - p1.z) + p1.y;
-   return Vertex3Ds(wx, wy, wz);
+   return {wx, wy, wz};
 }
 
 void Renderer::SetupShaders()

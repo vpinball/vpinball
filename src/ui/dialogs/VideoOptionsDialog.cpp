@@ -917,7 +917,7 @@ void VideoOptionsDialog::SaveSettings(const bool saveAll)
    }
 
    settings.SaveValue(Settings::TableOverride, "OverrideEmissionScale"s, IsDlgButtonChecked(IDC_OVERRIDE_DN) == BST_CHECKED, !saveAll);
-   settings.SaveValue(Settings::Player, "EmissionScale"s, ((int)SendDlgItemMessage(IDC_DAYNIGHT_SLIDER, TBM_GETPOS, 0, 0)) / 100.f, !saveAll);
+   settings.SaveValue(Settings::Player, "EmissionScale"s, (float)SendDlgItemMessage(IDC_DAYNIGHT_SLIDER, TBM_GETPOS, 0, 0) / 100.f, !saveAll);
    settings.SaveValue(Settings::Player, "DynamicDayNight"s, IsDlgButtonChecked(IDC_DYNAMIC_DN) == BST_CHECKED, !saveAll);
    settings.SaveValue(Settings::Player, "Longitude"s, GetDlgItemText(IDC_DN_LONGITUDE).GetString(), !saveAll);
    settings.SaveValue(Settings::Player, "Latitude"s, GetDlgItemText(IDC_DN_LATITUDE).GetString(), !saveAll);
@@ -1104,8 +1104,8 @@ BOOL VideoOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                SetDlgItemInt(IDC_WIDTH_EDIT, pvm->width, FALSE);
                SetDlgItemInt(IDC_HEIGHT_EDIT, pvm->height, FALSE);
                SendDlgItemMessage(IDC_AR_COMBO, CB_SETCURSEL, 0, 0);
-               for (int i = 1; i < sizeof(arFactors) / sizeof(arFactors[0]); i++)
-                  if (pvm->height == (int)(pvm->width / arFactors[i]))
+               for (size_t i = 1; i < sizeof(arFactors) / sizeof(arFactors[0]); i++)
+                  if (pvm->height == (int)((float)pvm->width / arFactors[i]))
                      SendDlgItemMessage(IDC_AR_COMBO, CB_SETCURSEL, i, 0);
             }
          }

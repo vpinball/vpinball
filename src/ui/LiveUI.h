@@ -89,7 +89,7 @@ private:
    void BumperProperties(bool is_live, Bumper *startup_obj, Bumper *live_obj);
    void FlasherProperties(bool is_live, Flasher *startup_obj, Flasher *live_obj);
    void KickerProperties(bool is_live, Kicker *startup_obj, Kicker *live_obj);
-   void LightProperties(bool is_live, Light *startup_obj, Light *live_obj);
+   void LightProperties(bool is_live, Light *startup_light, Light *live_light);
    void PrimitiveProperties(bool is_live, Primitive *startup_obj, Primitive *live_obj);
    void RampProperties(bool is_live, Ramp *startup_obj, Ramp *live_obj);
    void RubberProperties(bool is_live, Rubber *startup_obj, Rubber *live_obj);

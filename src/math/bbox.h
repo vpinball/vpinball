@@ -40,7 +40,7 @@ public:
 
    Vertex2D Center() const
    {
-      return Vertex2D(0.5f*(left + right), 0.5f*(top + bottom));
+      return {0.5f*(left + right), 0.5f*(top + bottom)};
    }
 
    FRect() {}

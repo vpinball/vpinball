@@ -38,7 +38,7 @@ public:
    void GetReflectionPlaneNormal(vec3& normal) const;
    ReflectionMode GetReflectionMode() const { return m_reflection_mode;  }
    void SetReflectionMode(ReflectionMode mode);
-   bool GetReflectionNoLightmaps() const { return m_disableLightReflection; };
+   bool GetReflectionNoLightmaps() const { return m_disableLightReflection; }
    void SetReflectionNoLightmaps(const bool disableLightmaps) { m_disableLightReflection = disableLightmaps; }
    void ExtendAreaOfInterest(const float xMin, const float xMax, const float yMin, const float yMax);
    void ApplyAreaOfInterest(RenderPass* pass = nullptr);

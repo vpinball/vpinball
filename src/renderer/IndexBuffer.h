@@ -77,7 +77,11 @@ public:
    vector<PendingUpload> m_pendingUploads;
 
 protected:
-   PendingUpload m_lock = { nullptr, 0, 0, nullptr };
+   PendingUpload m_lock = { nullptr, 0, 0, nullptr
+#if defined(ENABLE_BGFX)
+      ,nullptr
+#endif
+   };
    vector<Buf*> m_buffers;
    unsigned int m_count = 0;
 };

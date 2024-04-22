@@ -212,7 +212,6 @@ Primitive::Primitive()
 
    m_numIndices = 0;
    m_numVertices = 0;
-   m_propPhysics = nullptr;
    m_propPosition = nullptr;
    m_propVisual = nullptr;
    m_d.m_overwritePhysics = true;
@@ -237,7 +236,6 @@ void Primitive::CreateRenderGroup(const Collection * const collection)
    if (!collection->m_groupElements)
       return;
 
-   size_t overall_size = 0;
    vector<Primitive*> prims;
    vector<Primitive*> renderedPrims;
    for (int i = 0; i < collection->m_visel.size(); i++)
@@ -264,7 +262,7 @@ void Primitive::CreateRenderGroup(const Collection * const collection)
    const Texture * const groupTexel = m_ptable->GetImage(prims[0]->m_d.m_szImage);
    m_numGroupVertices = (int)prims[0]->m_mesh.NumVertices();
    m_numGroupIndices = (int)prims[0]->m_mesh.NumIndices();
-   overall_size = prims[0]->m_mesh.NumIndices();
+   size_t overall_size = prims[0]->m_mesh.NumIndices();
 
    // Now calculate the overall size of indices
    for (size_t i = 1; i < prims.size(); i++)
@@ -1441,7 +1439,7 @@ void Primitive::Render(const unsigned int renderMask)
             m_rd->AddRenderTargetDependency(reflections);
             Vertex3Ds plane_normal;
             reflection_probe->GetReflectionPlaneNormal(plane_normal);
-            Matrix3D matWorldViewInverseTranspose = g_pplayer->m_renderer->GetMVP().GetModelViewInverseTranspose();
+            const Matrix3D matWorldViewInverseTranspose = g_pplayer->m_renderer->GetMVP().GetModelViewInverseTranspose();
             plane_normal = matWorldViewInverseTranspose.MultiplyVectorNoTranslate(plane_normal);
             Vertex3Ds n(plane_normal.x, plane_normal.y, plane_normal.z);
             n.Normalize();
@@ -2077,7 +2075,7 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
 
             SetForegroundWindow(hwndDlg);
 
-            string szInitialDir = g_pvp->m_settings.LoadValueWithDefault(Settings::RecentDir, "ImportDir"s, PATH_TABLES);
+            const string szInitialDir = g_pvp->m_settings.LoadValueWithDefault(Settings::RecentDir, "ImportDir"s, PATH_TABLES);
 
             vector<string> szFileName;
             if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Wavefront obj file (*.obj)\0*.obj\0", "obj", 0))
@@ -2262,7 +2260,7 @@ bool Primitive::LoadMeshDialog()
 void Primitive::ExportMeshDialog()
 {
 #ifndef __STANDALONE__
-   string szInitialDir = g_pvp->m_settings.LoadValueWithDefault(Settings::RecentDir, "ImportDir"s, PATH_TABLES);
+   const string szInitialDir = g_pvp->m_settings.LoadValueWithDefault(Settings::RecentDir, "ImportDir"s, PATH_TABLES);
 
    vector<string> szFileName;
    if (m_vpinball->SaveFileDialog(szInitialDir, szFileName, "Wavefront obj file (*.obj)\0*.obj\0", "obj", OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY))

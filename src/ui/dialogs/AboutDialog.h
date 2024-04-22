@@ -5,7 +5,7 @@ class AboutDialog : public CDialog
 {
 public:
    AboutDialog();
-   virtual ~AboutDialog();
+   ~AboutDialog() override;
 
 protected:
    void OnDestroy() override;

@@ -414,8 +414,8 @@ public:
    public:
       ShaderState(Shader* shader)
          : m_shader(shader)
-         , m_stateSize(shader->m_stateSize)
          , m_state(new BYTE[shader->m_stateSize])
+         , m_stateSize(shader->m_stateSize)
       {
       }
       ~ShaderState() { delete[] m_state; }
@@ -602,7 +602,7 @@ public:
       const unsigned int m_stateSize;
    };
 
-   unsigned int GetStateSize() const { return m_stateSize; };
+   unsigned int GetStateSize() const { return m_stateSize; }
    ShaderState* m_state = nullptr; // State that will be applied for the next begin/end pair
 
 private:

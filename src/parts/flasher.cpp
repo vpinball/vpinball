@@ -1138,7 +1138,7 @@ void Flasher::RenderSetup(RenderDevice *device)
       return;
    }
 
-   IndexBuffer* dynamicIndexBuffer = new IndexBuffer(m_rd, m_numPolys * 3, 0, IndexBuffer::FMT_INDEX16);
+   IndexBuffer* dynamicIndexBuffer = new IndexBuffer(m_rd, m_numPolys * 3, false, IndexBuffer::FMT_INDEX16);
 
    WORD* bufi;
    dynamicIndexBuffer->Lock(bufi);

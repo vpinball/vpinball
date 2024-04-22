@@ -35,8 +35,8 @@ constexpr RenderState::RenderStateMask RenderState::render_state_masks[RENDERSTA
 #undef RENDER_STATE
 
 RenderState::RenderState()
-   : m_depthBias(0.f),
-     m_state(0x001f5146)
+   : m_state(0x001f5146)
+   , m_depthBias(0.f)
 {
    // Default render state is:
    // Blend: { _  A  SA   RSA } Depth: { Z  <=  ZW } Clip: _ Cull: CCW Mask: F
@@ -178,10 +178,10 @@ void RenderState::Apply(RenderDevice* device)
 #endif
 
    RenderState& active_state = device->GetActiveRenderState();
-   const unsigned previous_state = active_state.m_state;
    unsigned new_state = m_state;
 
 #if defined(ENABLE_DX9) || defined(ENABLE_OPENGL)
+   const unsigned previous_state = active_state.m_state;
    unsigned renderstate_mask = previous_state ^ m_state; // Identify differences
    while (renderstate_mask)
    {

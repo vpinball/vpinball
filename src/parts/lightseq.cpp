@@ -1690,13 +1690,13 @@ void LightSeq::SetElementToState(const int index, const LightState State)
    {
       Flasher* const pFlasher = (Flasher*)m_pcollection->m_visel.ElementAt(index);
       pFlasher->m_lockedByLS = true;
-      pFlasher->setInPlayState(State != LightStateOff ? true : false);
+      pFlasher->setInPlayState(State != LightStateOff);
    }
    else if (type == eItemPrimitive) 
    {
       Primitive* const pPrimitive = (Primitive*)m_pcollection->m_visel.ElementAt(index);
       pPrimitive->m_lockedByLS = true;
-      pPrimitive->setInPlayState(State != LightStateOff ? true : false);
+      pPrimitive->setInPlayState(State != LightStateOff);
    }
 }
 

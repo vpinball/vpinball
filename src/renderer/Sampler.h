@@ -76,7 +76,9 @@ public:
    const SurfaceType m_type;
 
 private:
+#ifndef ENABLE_BGFX
    bool m_ownTexture;
+#endif
    bool m_isLinear;
    RenderDevice* m_rd;
    int m_width;

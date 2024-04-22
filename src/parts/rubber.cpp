@@ -9,7 +9,6 @@ Rubber::Rubber()
    m_d.m_collidable = true;
    m_d.m_visible = true;
    m_d.m_hitEvent = false;
-   m_propPhysics = nullptr;
    m_propPosition = nullptr;
    m_propVisual = nullptr;
    m_d.m_overwritePhysics = true;
@@ -355,8 +354,8 @@ Vertex2D *Rubber::GetSplineVertex(int &pcvertex, bool ** const ppfCross, Vertex2
    for (int i = 0; i < cvertex; i++)
    {
       // prev and next wrap around as rubbers always loop
-      const RenderVertex & vprev   = vvertex[(i > 0) ? i - 1 : cvertex-1];
-      const RenderVertex & vnext   = vvertex[(i < (cvertex - 1)) ? i + 1 : 0];
+      const Vertex2D & vprev = vvertex[(i > 0) ? i - 1 : cvertex-1];
+      const Vertex2D & vnext = vvertex[(i < (cvertex - 1)) ? i + 1 : 0];
       const RenderVertex & vmiddle = vvertex[i];
 
       if (ppfCross)

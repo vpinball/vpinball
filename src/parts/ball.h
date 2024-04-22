@@ -60,10 +60,10 @@ public:
       COM_INTERFACE_ENTRY(IDispatch)
    END_COM_MAP()
 
-   virtual void RenderSetup(RenderDevice *device);
-   virtual void UpdateAnimation(const float diff_time_msec);
-   virtual void Render(const unsigned int renderMask);
-   virtual void RenderRelease();
+   void RenderSetup(RenderDevice *device) override;
+   void UpdateAnimation(const float diff_time_msec) override;
+   void Render(const unsigned int renderMask) override;
+   void RenderRelease() override;
 
    bool m_antiStretch = false;
 

@@ -478,8 +478,6 @@ void AudioMusicPlayer::InitPinDirectSound(const Settings& settings, const HWND h
 
    //---- Initialize BASS Audio Library
 
-   int prevBassStdIdx = bass_STD_idx;
-   int prevBassBGIdx = bass_BG_idx;
 #ifndef __STANDALONE__
    bass_STD_idx = -1;
    bass_BG_idx = -1;
@@ -795,7 +793,7 @@ float PinDirectSound::PanSSF(float pan)
 
 float PinDirectSound::FadeSSF(float front_rear_fade)
 {
-	float z = 0.0f;
+	float z;
 
 	// Clip the fade input range to -1.0 to 1.0
 

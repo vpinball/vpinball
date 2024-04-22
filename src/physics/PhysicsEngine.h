@@ -24,7 +24,7 @@ public:
    void UpdatePhysics();
 
    bool IsBallCollisionHandlingSwapped() const { return m_swap_ball_collision_handling; }
-   bool RecordContact(CollisionEvent& newColl);
+   bool RecordContact(const CollisionEvent& newColl);
 
    void Nudge(float angle, float force);
    Vertex3Ds GetNudge() const;

@@ -76,7 +76,7 @@ void SharedIndexBuffer::Upload()
       // Fill data block
       for (PendingUpload upload : m_pendingUploads)
       {
-         assert(upload.offset >= 0);
+         //assert(upload.offset >= 0);
          assert(upload.offset + upload.size <= size);
          memcpy(data + upload.offset, upload.data, upload.size);
          delete[] upload.data;
@@ -151,13 +151,13 @@ void SharedIndexBuffer::Upload()
 }
 
 
-IndexBuffer::IndexBuffer(RenderDevice* rd, const unsigned int indexCount, const bool isDynamic, const IndexBuffer::Format format)
+IndexBuffer::IndexBuffer(RenderDevice* rd, const unsigned int numIndices, const bool isDynamic, const IndexBuffer::Format format)
    : m_rd(rd)
-   , m_count(indexCount)
+   , m_count(numIndices)
    , m_indexFormat(format)
    , m_sizePerIndex(format == FMT_INDEX16 ? 2 : 4)
    , m_isStatic(!isDynamic)
-   , m_size(indexCount * (format == FMT_INDEX16 ? 2 : 4))
+   , m_size(numIndices * (format == FMT_INDEX16 ? 2 : 4))
 {
    for (SharedIndexBuffer* block : m_rd->m_pendingSharedIndexBuffers)
    {

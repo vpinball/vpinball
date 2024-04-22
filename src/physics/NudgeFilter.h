@@ -19,7 +19,7 @@ private:
    IF_DEBUG_NUDGE(void dbg(const char *fmt, ...);)
    IF_DEBUG_NUDGE(virtual const char *axis() const = 0;)
    
-   const char *m_axis;
+   IF_DEBUG_NUDGE(const char *m_axis;)
 
    // running total of samples
    float m_sum = 0.f;

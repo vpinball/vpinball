@@ -289,22 +289,22 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, bool resize_on_low_
    return tex;
 }
 
-BaseTexture* BaseTexture::CreateFromFile(const string& szfile, unsigned int maxTexDim)
+BaseTexture* BaseTexture::CreateFromFile(const string& filename, unsigned int maxTexDim)
 {
-   if (szfile.empty())
+   if (filename.empty())
       return nullptr;
 
    // check the file signature and deduce its format
-   FREE_IMAGE_FORMAT fif = FreeImage_GetFileType(szfile.c_str(), 0);
+   FREE_IMAGE_FORMAT fif = FreeImage_GetFileType(filename.c_str(), 0);
    if (fif == FIF_UNKNOWN) {
       // try to guess the file format from the file extension
-      fif = FreeImage_GetFIFFromFilename(szfile.c_str());
+      fif = FreeImage_GetFIFFromFilename(filename.c_str());
    }
 
    // check that the plugin has reading capabilities ...
    if ((fif != FIF_UNKNOWN) && FreeImage_FIFSupportsReading(fif)) {
       // ok, let's load the file
-      FIBITMAP * const dib = FreeImage_Load(fif, szfile.c_str(), EXR_ALLOW_FOR_FP16);
+      FIBITMAP * const dib = FreeImage_Load(fif, filename.c_str(), EXR_ALLOW_FOR_FP16);
       if (!dib)
          return nullptr;
       
@@ -428,7 +428,6 @@ void BaseTexture::AddAlpha()
    default: assert(!"unknown format in AddAlpha"); break;
    }
 
-   size_t o = 0;
    if (m_format == SRGBA || m_format == RGBA) {
       BYTE* new_data = new BYTE[(size_t)width() * height() * 4];
       copy_rgb_rgba<false>((unsigned int*)new_data, data(), (size_t)width() * height());
@@ -439,6 +438,7 @@ void BaseTexture::AddAlpha()
       BYTE* new_data = new BYTE[(size_t)8 * width() * height()];
       unsigned short* const __restrict dest_data16 = (unsigned short*)new_data;
       const unsigned short* const __restrict src_data16 = (unsigned short*)m_data;
+      size_t o = 0;
       for (unsigned int j = 0; j < height(); ++j)
          for (unsigned int i = 0; i < width(); ++i, ++o)
          {

@@ -55,7 +55,7 @@
 #if defined(ENABLE_BGFX)
 struct tBGFXCallback : public bgfx::CallbackI
 {
-   virtual ~tBGFXCallback() { }
+   ~tBGFXCallback() override { }
    virtual void fatal(const char* _filePath, uint16_t _line, bgfx::Fatal::Enum _code, const char* _str) override
    {
       //bgfx::trace(_filePath, _line, "BGFX FATAL 0x%08x: %s\n", _code, _str);
@@ -370,9 +370,9 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    init.platformData.ndt = wmInfo.info.vivante.display;
    init.platformData.nwh = wmInfo.info.vivante.window;
    #endif // BX_PLATFORM_
-   init.platformData.context = NULL;
-   init.platformData.backBuffer = NULL;
-   init.platformData.backBufferDS = NULL;
+   init.platformData.context = nullptr;
+   init.platformData.backBuffer = nullptr;
+   init.platformData.backBufferDS = nullptr;
    init.resolution.maxFrameLatency = 1;
    init.resolution.reset = BGFX_RESET_NONE;
    init.resolution.width = wnd->GetWidth();

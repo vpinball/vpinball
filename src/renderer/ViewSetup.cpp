@@ -338,7 +338,7 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const float aspect, cons
          * Matrix3D::MatrixScale(1.f / realToVirtual) // We do not apply the scene scale since we want to fit the scaled version of the table as if it was the normal version (otherwise it would reverse the scaling during the fitting)
          * Matrix3D::MatrixTranslate(0.5f * table->m_right, 0.5f * table->m_bottom, windowBotZ) // Reverse center of scaling
          * lookat * rotz * Matrix3D::MatrixScale(1.f, -1.f, -1.f) // Camera pos and inclination, vieport rotation
-         * Matrix3D::MatrixPerspectiveFovLH(90.f, 1.0f, zNear, zFar); // For fitting, we use a vertical FOV of 90°, leading to a yspan of 2, and an aspect ratio of 1, also leading to a xspan of 2
+         * Matrix3D::MatrixPerspectiveFovLH(90.f, 1.0f, zNear, zFar); // For fitting, we use a vertical FOV of 90deg, leading to a yspan of 2, and an aspect ratio of 1, also leading to a xspan of 2
       const float centerAxis = 0.5f * (table->m_left + table->m_right);
       const Vertex3Ds top = fit * Vertex3Ds{centerAxis, table->m_top, windowTopZ};
       const Vertex3Ds bottom = fit * Vertex3Ds{centerAxis, table->m_bottom, windowBotZ};
