@@ -539,6 +539,40 @@ string trim_string(const string& str)
    return s;
 }
 
+vector<string> parse_csv_line(const string& line)
+{
+   vector<string> parts;
+   string field;
+   enum State { Normal, Quoted };
+   State currentState = Normal;
+
+   for (char c : trim_string(line)) {
+      switch (currentState) {
+         case Normal:
+            if (c == '"') {
+               currentState = Quoted;
+            } else if (c == ',') {
+               parts.push_back(field);
+               field.clear();
+            } else {
+               field += c;
+            }
+            break;
+         case Quoted:
+            if (c == '"') {
+               currentState = Normal;
+            } else {
+               field += c;
+            }
+            break;
+      }
+   }
+
+   parts.push_back(field);
+
+   return parts;
+}
+
 string color_to_hex(OLE_COLOR color)
 {
    UINT32 rgba = (GetRValue(color) << 24) | (GetGValue(color) << 16) | (GetBValue(color) << 8) | 0xFF;

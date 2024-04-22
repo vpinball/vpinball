@@ -1,6 +1,7 @@
 #include "core/stdafx.h"
 
 #include "PUPPlugin.h"
+#include "PUPManager.h"
 
 #include "DMDUtil/Config.h"
 
@@ -16,10 +17,13 @@ PUPPlugin::PUPPlugin() : Plugin()
 {
    m_pWindow = nullptr;
    m_pThread = nullptr;
+
+   m_pManager = new PUPManager();
 }
 
 PUPPlugin::~PUPPlugin()
 {
+   delete m_pManager;
 }
 
 const std::string& PUPPlugin::GetName() const
@@ -30,85 +34,16 @@ const std::string& PUPPlugin::GetName() const
 
 void PUPPlugin::PluginInit(const string& szTableFilename, const string& szRomName)
 {
-   m_szPath = g_pvp->m_currentTablePath + "pupvideos" +
-      PATH_SEPARATOR_CHAR + szRomName + PATH_SEPARATOR_CHAR;
-
-   // Load screens
-
-   string screensPath = m_szPath + "screens.pup";
-   std::ifstream screensFile;
-   screensFile.open(screensPath, std::ifstream::in);
-   if (screensFile.is_open()) {
-      string line;
-      int i = 0;
-      while (std::getline(screensFile, line)) {
-         if (++i == 1)
-            continue;
-
-         PUPScreen* pScreen = PUPScreen::CreateFromCSVLine(line);
-
-         if (pScreen)
-            m_screens.push_back(pScreen);
-      }
-      PLOGI.printf("Screens loaded: file=%s, size=%d", screensPath.c_str(), m_screens.size());
-   }
-   else {
-      PLOGE.printf("Unable to load %s", screensPath.c_str());
-
+   if (!m_pManager->LoadConfig(szRomName)) {
+      PLOGW.printf("Unable to load PUP config for %s", szRomName.c_str());
       return;
    }
 
-   // Load Playlists
-
-   string playlistsPath = m_szPath + "playlists.pup";
-   std::ifstream playlistsFile;
-   playlistsFile.open(playlistsPath, std::ifstream::in);
-   if (playlistsFile.is_open()) {
-      string line;
-      int i = 0;
-      while (std::getline(playlistsFile, line)) {
-         if (++i == 1)
-            continue;
-
-         PUPPlaylist* pPlaylist = PUPPlaylist::CreateFromCSVLine(m_szPath, line);
-
-         if (pPlaylist)
-            m_playlists.push_back(pPlaylist);
-      }
-      PLOGI.printf("Playlists loaded: file=%s, size=%d", playlistsPath.c_str(), m_playlists.size());
-   }
-   else {
-      PLOGE.printf("Unable to load %s", playlistsPath.c_str());
-
+   m_pBackglass = m_pManager->GetBackglass();
+   if (!m_pBackglass) {
+      PLOGW.printf("PUP backlass screen not found");
       return;
    }
-
-   // Load Triggers
-
-   string triggersPath = m_szPath + "triggers.pup";
-   std::ifstream triggersFile;
-   triggersFile.open(triggersPath, std::ifstream::in);
-   if (triggersFile.is_open()) {
-      string line;
-      int i = 0;
-      while (std::getline(triggersFile, line)) {
-         if (++i == 1)
-            continue;
-
-         PUPTrigger* pTrigger = PUPTrigger::CreateFromCSVLine(line, m_screens, m_playlists);
-
-         if (pTrigger)
-            m_triggers.push_back(pTrigger);
-      }
-      PLOGI.printf("Triggers loaded: file=%s, size=%d", triggersPath.c_str(), m_triggers.size());
-   }
-   else {
-      PLOGE.printf("Unable to load %s", triggersPath.c_str());
-
-      return;
-   }
-
-   //
 
    Settings* const pSettings = &g_pplayer->m_ptable->m_settings;
 
@@ -117,7 +52,7 @@ void PUPPlugin::PluginInit(const string& szTableFilename, const string& szRomNam
       return;
    }
 
-   m_pWindow = new VP::VideoWindow("PUP",
+   m_pWindow = new PUPWindow("PUP",
       pSettings->LoadValueWithDefault(Settings::Standalone, "PUPWindowX"s, PUP_SETTINGS_X),
       pSettings->LoadValueWithDefault(Settings::Standalone, "PUPWindowY"s, PUP_SETTINGS_Y),
       pSettings->LoadValueWithDefault(Settings::Standalone, "PUPWindowWidth"s, PUP_SETTINGS_WIDTH),
@@ -125,14 +60,22 @@ void PUPPlugin::PluginInit(const string& szTableFilename, const string& szRomNam
       PUP_ZORDER,
       pSettings->LoadValueWithDefault(Settings::Standalone, "PUPWindowRotation"s, 0));
 
-   QueueData({ 'D', 0, 1 });
-
-   DMDUtil::Config* pConfig = DMDUtil::Config::GetInstance();
-   pConfig->SetPUPTriggerCallback(OnPUPCaptureTrigger, this);
-
    m_running = true;
 
    m_pThread = new std::thread([this]() {
+      PUPPlaylist* pPlaylist = m_pManager->GetPlaylist(m_pBackglass->GetPlayList());
+      if (pPlaylist) {
+         string szPath = m_pManager->GetPath(pPlaylist, m_pBackglass->GetPlayFile());
+         if (!szPath.empty())
+            m_pWindow->SetBG(szPath, pPlaylist->GetVolume(),
+               m_pBackglass->IsLoopit() ? PUP_TRIGGER_PLAY_ACTION_LOOP : PUP_TRIGGER_PLAY_ACTION_NORMAL, 0);
+      }
+      
+      QueueData({ 'D', 0, 1 });
+
+      DMDUtil::Config* pConfig = DMDUtil::Config::GetInstance();
+      pConfig->SetPUPTriggerCallback(OnPUPCaptureTrigger, this);
+
       while (m_running) {
          ProcessData();
          SDL_Delay(10);
@@ -151,25 +94,21 @@ void PUPPlugin::ProcessData()
       if (item.value == 0)
          continue;
 
-      for (PUPTrigger* pTrigger : m_triggers) {
-         if ((pTrigger->GetScreen()->GetScreenNum() == 2) && pTrigger->IsActive()) {
-            if (pTrigger->GetTrigger() == item.type + std::to_string(item.number)) {
-               PLOGI.printf("Found pup trigger for type=%c, number=%d, value=%d, trigger={%s}", item.type, item.number, item.value, pTrigger->ToString().c_str());
-
-               if (pTrigger->GetPlaylist()->GetFolder() == "PuPOverlays") {
-                  string szPlayFile = pTrigger->GetPlayFile();
-                  string szPath = m_szPath + pTrigger->GetPlaylist()->GetFolder() + PATH_SEPARATOR_CHAR + szPlayFile;
-                  m_pWindow->SetOverlay(szPath);
-               }
-               else {
-                  string szPlayFile = pTrigger->GetPlayFile();
-                  if (!szPlayFile.empty()) {
-                     string szPath = m_szPath + pTrigger->GetPlaylist()->GetFolder() + PATH_SEPARATOR_CHAR + szPlayFile;
-                     m_pWindow->Play(szPath, pTrigger->GetVolume());
-                  }
-               }
-
-               break;
+      PUPTrigger* pTrigger = m_pBackglass->GetTrigger(item.type + std::to_string(item.number));
+      if (pTrigger) {
+         PLOGI.printf("Found pup trigger for type=%c, number=%d, value=%d, trigger={%s}", item.type, item.number, item.value, pTrigger->ToString().c_str());
+         PUPPlaylist* pPlaylist = m_pManager->GetPlaylist(pTrigger->GetPlaylist());
+         if (pPlaylist) {
+            string szPlayfile = pTrigger->GetPlayFile();
+            string szPath = m_pManager->GetPath(pPlaylist, szPlayfile);
+            if (szPath.empty())
+               continue;
+            if (pPlaylist->GetFunction() == PUP_PLAYLIST_FUNCTION_OVERLAYS) {
+               m_pWindow->SetOverlay(szPath);
+            }
+            else {
+               m_pWindow->Play(szPath, (!szPlayfile.empty() ? pTrigger->GetVolume() : pPlaylist->GetVolume()),
+                  pTrigger->GetPlayAction(), pTrigger->GetPriority());
             }
          }
       }

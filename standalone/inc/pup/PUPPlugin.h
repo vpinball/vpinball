@@ -6,7 +6,7 @@
 #include "PUPPlaylist.h"
 #include "PUPTrigger.h"
 
-#include "../common/VideoWindow.h"
+#include "PUPWindow.h"
 
 #include <queue>
 #include <mutex>
@@ -23,6 +23,8 @@ struct PUPTriggerData {
     int value;
 };
 
+class PUPManager;
+
 class PUPPlugin : public Plugin
 {
 public:
@@ -38,13 +40,13 @@ public:
    void QueueData(PUPTriggerData data);
 
 private:
-   vector<PUPScreen*> m_screens;
-   vector<PUPPlaylist*> m_playlists;
-   vector<PUPTrigger*> m_triggers;
-   string m_szPath;
-   VP::VideoWindow* m_pWindow;
+   PUPWindow* m_pWindow;
+   PUPScreen* m_pBackglass;
+   
    std::queue<PUPTriggerData> m_queue;
    std::mutex m_mutex;
    std::thread* m_pThread;
    bool m_running;
+
+   PUPManager* m_pManager;
 };

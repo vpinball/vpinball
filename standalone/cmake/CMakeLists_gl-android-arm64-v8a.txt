@@ -557,6 +557,8 @@ add_library(vpinball SHARED
    standalone/Standalone.cpp
    standalone/Standalone.h
 
+   standalone/inc/pup/PUPManager.cpp
+   standalone/inc/pup/PUPManager.h
    standalone/inc/pup/PUPPinDisplay.cpp
    standalone/inc/pup/PUPPinDisplay.h
    standalone/inc/pup/PUPPlaylist.cpp
@@ -565,10 +567,10 @@ add_library(vpinball SHARED
    standalone/inc/pup/PUPTrigger.h
    standalone/inc/pup/PUPScreen.cpp
    standalone/inc/pup/PUPScreen.h
-   standalone/inc/pup/PUPUtils.cpp
-   standalone/inc/pup/PUPUtils.h
    standalone/inc/pup/PUPPlugin.cpp
    standalone/inc/pup/PUPPlugin.h
+   standalone/inc/pup/PUPWindow.cpp
+   standalone/inc/pup/PUPWindow.h
    standalone/inc/pup/pup_i_proxy.cpp
    standalone/inc/pup/pup_i.c
    standalone/inc/pup/pup_i.h
@@ -579,8 +581,6 @@ add_library(vpinball SHARED
    standalone/inc/common/Window.h
    standalone/inc/common/DMDWindow.cpp
    standalone/inc/common/DMDWindow.h
-   standalone/inc/common/VideoWindow.cpp
-   standalone/inc/common/VideoWindow.h
    standalone/inc/common/RendererGraphics.cpp
    standalone/inc/common/RendererGraphics.h
    standalone/inc/common/SurfaceGraphics.cpp

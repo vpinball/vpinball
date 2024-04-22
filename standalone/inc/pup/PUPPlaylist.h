@@ -1,6 +1,6 @@
 #pragma once
 
-#include "PUPScreen.h"
+#include "PUPManager.h"
 
 class PUPPlaylist {
 public:
@@ -15,6 +15,7 @@ public:
    int GetRestSeconds() const { return m_restSeconds; }
    int GetVolume() const { return m_volume; }
    int GetPriority() const { return m_priority; }
+   PUP_PLAYLIST_FUNCTION GetFunction() const { return m_function; }
    const string& GetPlayFile();
    string ToString() const;
 
@@ -25,7 +26,7 @@ private:
    int m_restSeconds;
    int m_volume;
    int m_priority;
-
+   PUP_PLAYLIST_FUNCTION m_function;
    int m_lastIndex;
    vector<string> m_files;
 };

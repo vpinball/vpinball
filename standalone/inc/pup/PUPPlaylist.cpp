@@ -1,10 +1,9 @@
 #include "core/stdafx.h"
 #include "PUPPlaylist.h"
-#include "PUPUtils.h"
 
 PUPPlaylist::PUPPlaylist()
 {
-    m_lastIndex = 0;
+   m_lastIndex = 0;
 }
 
 PUPPlaylist::~PUPPlaylist()
@@ -13,13 +12,25 @@ PUPPlaylist::~PUPPlaylist()
 
 PUPPlaylist* PUPPlaylist::CreateFromCSVLine(const string& szBasePath, const string& line)
 {
-   vector<string> parts = PUPUtils::ParseCSVLine(line);
+   vector<string> parts = parse_csv_line(line);
    if (parts.size() != 7)
       return nullptr;
 
    PUPPlaylist* pPlaylist = new PUPPlaylist();
 
    pPlaylist->m_folder = parts[1];
+
+   if (string_compare_case_insensitive(pPlaylist->m_folder, "PUPOverlays"))
+      pPlaylist->m_function = PUP_PLAYLIST_FUNCTION_OVERLAYS;
+   else if (string_compare_case_insensitive(pPlaylist->m_folder, "PUPFrames"))
+      pPlaylist->m_function = PUP_PLAYLIST_FUNCTION_FRAMES;
+   else if (string_compare_case_insensitive(pPlaylist->m_folder, "PUPAlphas"))
+      pPlaylist->m_function = PUP_PLAYLIST_FUNCTION_ALPHAS;
+   else if (string_compare_case_insensitive(pPlaylist->m_folder, "PuPShapes"))
+      pPlaylist->m_function = PUP_PLAYLIST_FUNCTION_SHAPES;
+   else
+      pPlaylist->m_function = PUP_PLAYLIST_FUNCTION_DEFAULT;
+
    pPlaylist->m_des = parts[2];
    pPlaylist->m_alphaSort = string_to_int(parts[3], 0);
    pPlaylist->m_restSeconds = string_to_int(parts[4], 0);
@@ -70,5 +81,6 @@ string PUPPlaylist::ToString() const {
       ", alphaSort=" + std::to_string(m_alphaSort) +
       ", restSeconds=" + std::to_string(m_restSeconds) +
       ", volume=" + std::to_string(m_volume) +
-      ", priority=" + std::to_string(m_priority);
+      ", priority=" + std::to_string(m_priority) +
+      ", function=" + std::to_string(m_function);
 }
