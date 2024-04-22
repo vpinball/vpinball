@@ -78,7 +78,7 @@ class HitFlipper : public HitObject
 public:
    HitFlipper(const Vertex2D& center, const float baser, const float endr, const float flipr, const float angleStart, const float angleEnd,
               const float zlow, const float zhigh, Flipper* const pflipper);
-   ~HitFlipper() { /*m_pflipper->m_phitflipper = nullptr;*/ }
+   ~HitFlipper() override { /*m_pflipper->m_phitflipper = nullptr;*/ }
 
    float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const override;
    int GetType() const override { return eFlipper; }
@@ -94,8 +94,8 @@ public:
 
    float GetHitTime() const { return m_flipperMover.GetHitTime(); }
 
-   virtual void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const { } // FIXME implement
- 
+   void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const override { } // FIXME implement
+
    FlipperMoverObject m_flipperMover;
 
 private:

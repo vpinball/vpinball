@@ -127,8 +127,6 @@ private:
    Texture m_baseTexture;
    Texture m_capTexture;
 
-   PropertyPane *m_propVisual = nullptr;
-
    float   m_baseHeight;
    float   m_skirtCounter = 0.0f;
    bool    m_updateSkirt = false;

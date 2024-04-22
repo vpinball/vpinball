@@ -253,7 +253,7 @@ public:
       const float zheight,
       const float frameTop, const float frameBottom,
       Plunger * const pPlunger);
-   ~HitPlunger() {}
+   ~HitPlunger() override {}
 
    float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const override;
    int GetType() const override { return ePlunger; }
@@ -261,7 +261,7 @@ public:
    void CalcHitBBox() override;
    MoverObject *GetMoverObject() override { return &m_plungerMover; }
 
-   virtual void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const { } // FIXME implement
+   void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const override { } // FIXME implement
  
    PlungerMoverObject m_plungerMover;
 

@@ -66,7 +66,7 @@ class Hit3DPoly : public HitObject
 public:
    Hit3DPoly(Vertex3Ds * const rgv, const int count); // pointer is copied and content deleted in dtor
    Hit3DPoly(const float x, const float y, const float z, const float r, const int sections); // creates a circular hit poly
-   virtual ~Hit3DPoly();
+   ~Hit3DPoly() override;
 
    float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const override;
    int GetType() const override { return e3DPoly; }
@@ -75,7 +75,7 @@ public:
 
    void Init(Vertex3Ds * const rgv, const int count);
 
-   virtual void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const { } // FIXME implement
+   void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const override { } // FIXME implement
 
 private:
    Vertex3Ds *m_rgv;
@@ -89,7 +89,7 @@ class HitTriangle : public HitObject
 {
 public:
    HitTriangle(const Vertex3Ds rgv[3]);    // vertices in counterclockwise order
-   virtual ~HitTriangle() {}
+   ~HitTriangle() override {}
 
    float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const override;
    int GetType() const override { return eTriangle; }
@@ -98,7 +98,7 @@ public:
 
    bool IsDegenerate() const { return m_normal.IsZero(); }
 
-   virtual void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const;
+   void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const override;
 
    Vertex3Ds m_rgv[3];
    Vertex3Ds m_normal;
@@ -119,7 +119,7 @@ public:
    void Collide(const CollisionEvent& coll) override;
    void CalcHitBBox() override {}  //!! TODO: this is needed if we want to put it in the quadtree, but then again impossible as infinite area
 
-   virtual void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const { } // FIXME implement
+   void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const override { } // FIXME implement
 
 private:
    Vertex3Ds m_normal;
@@ -159,7 +159,7 @@ public:
 
    MoverObject *GetMoverObject() override { return &m_spinnerMover; }
 
-   virtual void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const;
+   void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const override;
 
    LineSeg m_lineseg[2];
 
@@ -201,7 +201,7 @@ public:
 
    MoverObject *GetMoverObject() override { return &m_gateMover; }
 
-   virtual void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const;
+   void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const override;
 
    GateMoverObject m_gateMover;
    bool m_twoWay;
@@ -245,7 +245,7 @@ public:
    void Collide(const CollisionEvent& coll) override;
    void CalcHitBBox() override { } // already done in constructor
 
-   virtual void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const;
+   void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const override;
 
 private:
    Matrix3 m_matrix;

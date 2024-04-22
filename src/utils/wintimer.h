@@ -116,6 +116,7 @@ public:
                         ss.clear();
                         ss << "    . " << std::setw(4) << std::fixed << std::setprecision(1) << (v.second.totalLength * 1e-3) << "ms";
                      }
+                     {
                      string name;
                      switch (v.first)
                      {
@@ -142,6 +143,7 @@ public:
                      default: name = "DispID[" + std::to_string(v.first) + ']';
                      }
                      ss << " spent in " << std::setw(3) << v.second.callCount << " calls of " << name;
+                     }
                      if (v.first == 1300)
                      {
                         struct info { int calls; U32 lengths; };
@@ -149,14 +151,14 @@ public:
                         size_t pos = 0;
                         while (pos < m_profileWorstProfileTimersLen[i])
                         {
-                           string name(&m_profileWorstProfileTimers[i][pos]);
-                           pos += name.length() + 1;
+                           string nameip(&m_profileWorstProfileTimers[i][pos]);
+                           pos += nameip.length() + 1;
                            U32 length = *((U32*)&m_profileWorstProfileTimers[i][pos]);
                            pos += 4;
-                           auto it = infos.find(name);
+                           auto it = infos.find(nameip);
                            if (it == infos.end())
                            {
-                              infos[name] = { 1, length };
+                              infos[nameip] = { 1, length };
                            }
                            else
                            {
@@ -165,7 +167,7 @@ public:
                            }
                         }
                         ss << " (";
-                        for (auto pair : infos)
+                        for (const auto& pair : infos)
                            ss << pair.second.calls << " x " << pair.first << " => " << std::setw(4) << std::fixed << std::setprecision(1) << (pair.second.lengths * 1e-3) << "ms, ";
                         ss.seekp(-2, ss.cur);
                         ss << ") ";
