@@ -204,7 +204,7 @@ Window::Window(const string& title, const string& settingsId, const int display,
          int drawableWidth, drawableHeight;
          SDL_GL_GetDrawableSize(m_nwnd, &drawableWidth, &drawableHeight); // Size in pixels
          SDL_GL_DeleteContext(sdl_context);
-         m_hidpiScale = drawableWidth / m_width;
+         m_hidpiScale = (float)drawableWidth / (float)m_width;
          PLOGI << "SDL HiDPI defined to " << m_hidpiScale;
          m_width = drawableWidth;
          m_height = drawableHeight;
