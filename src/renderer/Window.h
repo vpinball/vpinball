@@ -24,7 +24,7 @@ public:
    bool IsFullScreen() const { return m_fullscreen; }
    int GetAdapterId() const { return m_adapter; }
    int GetBitDepth() const { return m_bitdepth; }
-   int GetHiDPIScale() const { return m_hidpiScale; } // HiDPI scale on Apple devices
+   float GetHiDPIScale() const { return m_hidpiScale; } // HiDPI scale on Apple devices
 
    void ShowAndFocus();
    void SetPos(const int x, const int y);
