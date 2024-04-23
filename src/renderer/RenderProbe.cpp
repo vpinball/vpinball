@@ -243,18 +243,20 @@ void RenderProbe::ApplyRoughness(RenderTarget* probe, const int roughness)
 
 void RenderProbe::RenderScreenSpaceTransparency()
 {
-   const RenderPass* const previousRT = m_rd->GetCurrentPass();
+   RenderPass* const renderedPass = m_rd->GetCurrentPass();
    if (m_dynamicRT == nullptr)
    {
       const int downscale = GetRoughnessDownscale(m_roughness);
-      const int w = m_rd->GetCurrentRenderTarget()->GetWidth() / downscale, h = m_rd->GetCurrentRenderTarget()->GetHeight() / downscale;
-      m_dynamicRT = new RenderTarget(m_rd, m_rd->GetCurrentRenderTarget()->m_type, m_name, w, h, m_rd->GetCurrentRenderTarget()->GetColorFormat(), true, 1, "Failed to create refraction render target", nullptr);
+      const int w = renderedPass->m_rt->GetWidth() / downscale, h = renderedPass->m_rt->GetHeight() / downscale;
+      m_dynamicRT = new RenderTarget(m_rd, renderedPass->m_rt->m_type, m_name, w, h, renderedPass->m_rt->GetColorFormat(), true, 1, "Failed to create refraction render target", nullptr);
    }
    m_rd->SetRenderTarget(m_name, m_dynamicRT, false);
-   m_rd->BlitRenderTarget(m_rd->GetCurrentRenderTarget(), m_dynamicRT, true, true);
+   m_rd->BlitRenderTarget(renderedPass->m_rt, m_dynamicRT, true, true);
    m_copyPass = m_rd->GetCurrentPass();
    ApplyRoughness(m_dynamicRT, m_roughness);
-   m_rd->SetRenderTarget(previousRT->m_name + '+', previousRT->m_rt);
+   m_rd->SetRenderTarget(renderedPass->m_name, renderedPass->m_rt, false);
+   m_rd->GetCurrentPass()->AddPrecursor(renderedPass);
+   renderedPass->m_name += '-';
 }
 
 
@@ -292,7 +294,7 @@ void RenderProbe::PreRenderStaticReflectionProbe()
    if (min(m_reflection_mode, g_pplayer->m_renderer->GetMaxReflectionMode()) != REFL_DYNAMIC)
       return;
 
-   const RenderPass* previousRT = m_rd->GetCurrentPass();
+   RenderPass* const previousRT = m_rd->GetCurrentPass();
 
    if (m_prerenderRT == nullptr)
    {
@@ -365,7 +367,10 @@ void RenderProbe::PreRenderStaticReflectionProbe()
    m_rd->FlushRenderFrame(); // Execute before destroying the render target
    delete accumulationSurface;
    if (previousRT)
-      m_rd->SetRenderTarget(previousRT->m_name + '+', previousRT->m_rt);
+   {
+      m_rd->SetRenderTarget(previousRT->m_name, previousRT->m_rt);
+      previousRT->m_name += '-';
+   }
    else
       m_rd->SetRenderTarget(""s, nullptr);
 
@@ -388,7 +393,7 @@ void RenderProbe::RenderReflectionProbe(const unsigned int renderMask)
       return;
 
    m_rendering = true;
-   const RenderPass* const previousRT = m_rd->GetCurrentPass();
+   RenderPass* const previousRT = m_rd->GetCurrentPass();
    if (m_dynamicRT == nullptr)
    {
       const int downscale = GetRoughnessDownscale(m_roughness);
@@ -407,7 +412,8 @@ void RenderProbe::RenderReflectionProbe(const unsigned int renderMask)
    const bool render_dynamic = !isStaticOnly && (mode >= REFL_STATIC_N_DYNAMIC);
    DoRenderReflectionProbe(render_static, render_balls, render_dynamic);
    ApplyRoughness(m_dynamicRT, m_roughness);
-   m_rd->SetRenderTarget(previousRT->m_name + '+', previousRT->m_rt);
+   m_rd->SetRenderTarget(previousRT->m_name, previousRT->m_rt);
+   previousRT->m_name += '-';
    m_rendering = false;
 }
 
