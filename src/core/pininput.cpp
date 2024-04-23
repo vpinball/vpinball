@@ -712,8 +712,8 @@ void PinInput::HandleSDLEvents(DIDEVICEOBJECTDATA* didod)
    {
       // We scale motion data since SDL expects DPI scaled points coordinates on Apple device, while it uses pixel coordinates on other devices (see SDL_WINDOWS_DPI_SCALING)
       // For the time being, VPX always uses pixel coordinates, using setup obtained at window creation time.
-      e.motion.x *= g_pplayer->m_playfieldWnd->GetHiDPIScale();
-      e.motion.y *= g_pplayer->m_playfieldWnd->GetHiDPIScale();
+      e.motion.x = (Sint32) ((float) e.motion.x * g_pplayer->m_playfieldWnd->GetHiDPIScale());
+      e.motion.y = (Sint32) ((float) e.motion.y * g_pplayer->m_playfieldWnd->GetHiDPIScale());
 
    #ifdef ENABLE_SDL_VIDEO
       ImGui_ImplSDL2_ProcessEvent(&e);

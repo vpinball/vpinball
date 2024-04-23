@@ -252,8 +252,8 @@ void RenderProbe::RenderScreenSpaceTransparency()
    }
    m_rd->SetRenderTarget(m_name, m_dynamicRT, false);
    m_rd->BlitRenderTarget(renderedPass->m_rt, m_dynamicRT, true, true);
-   m_copyPass = m_rd->GetCurrentPass();
    ApplyRoughness(m_dynamicRT, m_roughness);
+   m_copyPass = m_rd->GetCurrentPass();
    m_rd->SetRenderTarget(renderedPass->m_name, renderedPass->m_rt, false);
    m_rd->GetCurrentPass()->AddPrecursor(renderedPass);
    renderedPass->m_name += '-';
