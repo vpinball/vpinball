@@ -176,18 +176,16 @@ bool RenderFrame::Execute(const bool log)
       (*itPass)->SortCommands();
       for (std::vector<RenderCommand*>::iterator it = (*itPass)->m_commands.begin(); it != (*itPass)->m_commands.end(); ++it)
       {
-         if ((*it)->m_dependency != nullptr)
+         if ((*it)->m_dependency != nullptr && (*it)->m_dependency->m_sortKey == 0)
          { // [Warning, dependencies are not updated (not needed) making the log after sort incorrect]
-            RenderPass* splitPass = AddPass((*itPass)->m_name, (*itPass)->m_rt);
+            // Add the pass just before the rendercommand. Warning: this only supports the refraction use scheme where we add a single pass to perform the screen copy
+            (*it)->m_dependency->m_sortKey = 1;
+            RenderPass* const splitPass = AddPass((*itPass)->m_name + " [Split before " + (*it)->m_dependency->m_name + "]", (*itPass)->m_rt);
             splitPass->m_commands.insert(splitPass->m_commands.begin(), (*itPass)->m_commands.begin(), it);
             (*itPass)->m_commands.erase((*itPass)->m_commands.begin(), it);
             it = (*itPass)->m_commands.begin(); // Continue with remaining commands after split
-            if ((*it)->m_dependency->m_sortKey == 0)
-            { // Add the pass just before the rendercommand. Warning: this only supports the refraction use scheme where we add a single pass to perform the screen copy
-               (*it)->m_dependency->m_sortKey = 1;
-               itPass = sortedPasses.insert(itPass, (*it)->m_dependency) + 1;
-            }
             itPass = sortedPasses.insert(itPass, splitPass) + 1; // itPass points to the pass after the inserted pass (so the remaining part of the initial pass)
+            itPass = sortedPasses.insert(itPass, (*it)->m_dependency) + 1; // itPass points after the added dependency pass
          }
       }
    }

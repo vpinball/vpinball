@@ -1625,7 +1625,7 @@ void RenderDevice::DrawGaussianBlur(RenderTarget* source, RenderTarget* tmp, Ren
       tech_v = SHADER_TECHNIQUE_fb_blur_vert39x39;
    }
 
-   const RenderPass* initial_rt = GetCurrentPass();
+   RenderPass* const initial_rt = GetCurrentPass();
    RenderState initial_state;
    CopyRenderStates(true, initial_state);
    ResetRenderState();
@@ -1654,7 +1654,8 @@ void RenderDevice::DrawGaussianBlur(RenderTarget* source, RenderTarget* tmp, Ren
       DrawFullscreenTexturedQuad(m_FBShader);
    }
    CopyRenderStates(false, initial_state);
-   SetRenderTarget(initial_rt->m_name + '+', initial_rt->m_rt, true);
+   SetRenderTarget(initial_rt->m_name, initial_rt->m_rt, true);
+   initial_rt->m_name += '-';
 }
 
 void RenderDevice::SetMainTextureDefaultFiltering(const SamplerFilter filter)

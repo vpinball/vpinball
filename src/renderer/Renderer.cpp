@@ -1224,10 +1224,11 @@ void Renderer::PrepareFrame()
    // Resolve MSAA buffer to a normal one (noop if not using MSAA), allowing sampling it for postprocessing
    if (GetMSAABackBufferTexture() != GetBackBufferTexture())
    {
-      const RenderPass* initial_rt = m_pd3dPrimaryDevice->GetCurrentPass();
+      RenderPass* const initial_rt = m_pd3dPrimaryDevice->GetCurrentPass();
       m_pd3dPrimaryDevice->SetRenderTarget("Resolve MSAA"s, GetBackBufferTexture());
       m_pd3dPrimaryDevice->BlitRenderTarget(GetMSAABackBufferTexture(), GetBackBufferTexture(), true, true);
-      m_pd3dPrimaryDevice->SetRenderTarget(initial_rt->m_name + '+', initial_rt->m_rt);
+      m_pd3dPrimaryDevice->SetRenderTarget(initial_rt->m_name, initial_rt->m_rt);
+      initial_rt->m_name += '-';
    }
 }
 
@@ -1253,7 +1254,7 @@ void Renderer::SubmitFrame()
 void Renderer::DrawBulbLightBuffer()
 {
    RenderDevice* p3dDevice = m_pd3dPrimaryDevice;
-   const RenderPass *initial_rt = p3dDevice->GetCurrentPass();
+   RenderPass* const initial_rt = p3dDevice->GetCurrentPass();
    static int id = 0; id++;
 
    // switch to 'bloom' output buffer to collect all bulb lights
@@ -1289,7 +1290,8 @@ void Renderer::DrawBulbLightBuffer()
    }
 
    // Restore state and render target
-   p3dDevice->SetRenderTarget(initial_rt->m_name + '+', initial_rt->m_rt);
+   p3dDevice->SetRenderTarget(initial_rt->m_name, initial_rt->m_rt);
+   initial_rt->m_name += '-';
 
    #if defined(ENABLE_DX9)
    // For some reason, DirectX 9 will not handle correctly the null texture, so we just disable this optimization
