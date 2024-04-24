@@ -274,6 +274,8 @@ add_executable(vpinball
    src/utils/hash.h
    src/utils/objloader.cpp
    src/utils/objloader.h
+   src/utils/logger.cpp
+   src/utils/logger.h
 
    third-party/include/imgui/imconfig.h
    third-party/include/imgui/imgui.cpp
