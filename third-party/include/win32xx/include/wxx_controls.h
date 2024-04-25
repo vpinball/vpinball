@@ -1,9 +1,10 @@
-// Win32++   Version 9.5
-// Release Date: 9th February 2024
+// Win32++   Version 9.5.1
+// Release Date: 24th April 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
+//           https://github.com/DavidNash2024/Win32xx
 //
 //
 // Copyright (c) 2005-2024  David Nash
@@ -535,7 +536,8 @@ namespace Win32xx
         void     SetTipBkColor(COLORREF color) const;
         void     SetTipTextColor(COLORREF color) const;
         void     SetToolInfo(const TOOLINFO& toolInfo) const;
-#if (_WIN32_IE >=0x0500)
+
+#ifdef TTM_GETBUBBLESIZE
         CSize    GetBubbleSize(HWND control, UINT id = -1) const;
 #endif
 
@@ -554,11 +556,11 @@ namespace Win32xx
         void UpdateTipText(LPCTSTR text, HWND control, UINT id = -1) const;
         void UpdateTipText(UINT textID, HWND control, UINT id = -1) const;
 
-#if (_WIN32_IE >=0x0500)
+#ifdef TTM_ADJUSTRECT
         BOOL AdjustRect(RECT& rc, BOOL isLarger = TRUE) const;
-  #ifdef TTM_SETTITLE
+#endif
+#ifdef TTM_SETTITLE
         BOOL SetTitle(UINT icon, LPCTSTR title) const;
-  #endif
 #endif
 #if (WINVER >= 0x0501) && defined(TTM_SETWINDOWTHEME)
         void SetTTWindowTheme(LPCWSTR theme) const;
@@ -573,9 +575,7 @@ namespace Win32xx
     private:
         CToolTip(const CToolTip&);              // Disable copy construction
         CToolTip& operator=(const CToolTip&);   // Disable assignment operator
-
     };
-
 
 } // namespace Win32xx
 
@@ -1267,6 +1267,7 @@ namespace Win32xx
     {
         assert(IsWindow());
         SYSTEMTIME ranges[2];
+        ZeroMemory(&ranges, sizeof(ranges));
         ranges[0] = minRange;
         ranges[1] = maxRange;
         DWORD flags = GDTR_MIN | GDTR_MAX;
@@ -1554,6 +1555,7 @@ namespace Win32xx
         {
             // Call InitCommonControlsEx
             INITCOMMONCONTROLSEX initStruct;
+            ZeroMemory(&initStruct, sizeof(initStruct));
             initStruct.dwSize = sizeof(initStruct);
             initStruct.dwICC = ICC_INTERNET_CLASSES;
             InitCommonControlsEx(&initStruct);
@@ -1860,6 +1862,7 @@ namespace Win32xx
     inline BOOL CMonthCalendar::SetRange(const SYSTEMTIME& minRange, const SYSTEMTIME& maxRange) const
     {
         SYSTEMTIME minMax[2];
+        ZeroMemory(&minMax, sizeof(minMax));
         DWORD limit = GDTR_MIN | GDTR_MAX;
 
         minMax[0] = minRange;
@@ -1873,6 +1876,7 @@ namespace Win32xx
     inline BOOL CMonthCalendar::SetSelRange(const SYSTEMTIME& minRange, const SYSTEMTIME& maxRange) const
     {
         SYSTEMTIME minMax[2];
+        ZeroMemory(&minMax, sizeof(minMax));
         minMax[0] = minRange;
         minMax[1] = maxRange;
 
@@ -2783,7 +2787,7 @@ namespace Win32xx
         SendMessage(TTM_UPDATETIPTEXT, 0, lparam);
     }
 
-#if (_WIN32_IE >=0x0500)
+#ifdef TTM_ADJUSTRECT
 
     // Calculates a ToolTip control's text display rectangle from its window rectangle, or the
     // ToolTip window rectangle needed to display a specified text display rectangle.
@@ -2795,6 +2799,9 @@ namespace Win32xx
         LPARAM lparam = reinterpret_cast<LPARAM>(&rc);
         return static_cast<BOOL>(SendMessage(TTM_ADJUSTRECT, wparam, lparam));
     }
+
+#endif
+#ifdef TTM_GETBUBBLESIZE
 
     // Returns the width and height of a ToolTip control.
     // Refer to TTM_GETBUBBLESIZE in the Windows API documentation for more information.
@@ -2808,6 +2815,7 @@ namespace Win32xx
         return sz;
     }
 
+#endif
 #ifdef TTM_SETTITLE
 
     // Adds a standard icon and title string to a ToolTip.
@@ -2821,8 +2829,6 @@ namespace Win32xx
     }
 
 #endif
-#endif
-
 #if (WINVER >= 0x0501) && defined(TTM_SETWINDOWTHEME)
 
     // Sets the visual style of a ToolTip control.
@@ -2835,8 +2841,6 @@ namespace Win32xx
     }
 
 #endif
-
-
 
 } // namespace Win32xx
 

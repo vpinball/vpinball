@@ -1,9 +1,10 @@
-// Win32++   Version 9.5
-// Release Date: 9th February 2024
+// Win32++   Version 9.5.1
+// Release Date: 24th April 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
+//           https://github.com/DavidNash2024/Win32xx
 //
 //
 // Copyright (c) 2005-2024  David Nash
@@ -325,6 +326,7 @@ namespace Win32xx
         else
         {
             sockaddr_in clientService;
+            ZeroMemory(&clientService, sizeof(clientService));
             clientService.sin_family = AF_INET;
 
 #ifdef _MSC_VER
@@ -400,6 +402,7 @@ namespace Win32xx
         else
         {
             sockaddr_in clientService;
+            ZeroMemory(&clientService, sizeof(clientService));
             clientService.sin_family = AF_INET;
 
 #ifdef _MSC_VER
@@ -482,6 +485,7 @@ namespace Win32xx
         SOCKET& clientSocket = pSocket->m_socket;
 
         WSAEVENT allEvents[2];
+        ZeroMemory(&allEvents, sizeof(allEvents));
         allEvents[0] = ::WSACreateEvent();
         allEvents[1] = reinterpret_cast<WSAEVENT>(stopRequestEvent.GetHandle());  // cast supports Borland v5.5
         long events = FD_READ | FD_WRITE | FD_OOB | FD_ACCEPT | FD_CONNECT | FD_CLOSE;
@@ -761,6 +765,7 @@ namespace Win32xx
         else
         {
             sockaddr_in clientService;
+            ZeroMemory(&clientService, sizeof(clientService));
             clientService.sin_family = AF_INET;
 
 #ifdef _MSC_VER

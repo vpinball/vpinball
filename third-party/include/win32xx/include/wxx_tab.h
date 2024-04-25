@@ -1,9 +1,10 @@
-// Win32++   Version 9.5
-// Release Date: 9th February 2024
+// Win32++   Version 9.5.1
+// Release Date: 24th April 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
+//           https://github.com/DavidNash2024/Win32xx
 //
 //
 // Copyright (c) 2005-2024  David Nash
@@ -271,7 +272,6 @@ namespace Win32xx
         virtual LRESULT OnNotify(WPARAM wparam, LPARAM lparam);
         virtual LRESULT OnSetFocus(UINT, WPARAM, LPARAM);
         virtual BOOL    OnTabClose(int tab);
-        virtual LRESULT OnDpiChangedBeforeParent(UINT, WPARAM, LPARAM);
         virtual LRESULT OnWindowPosChanged(UINT msg, WPARAM wparam, LPARAM lparam);
         virtual void    RecalcLayout();
 
@@ -438,9 +438,6 @@ namespace Win32xx
     // Draws the close button
     inline void CTab::DrawCloseButton(CDC& dc)
     {
-        // The close button isn't displayed on Win95
-        if (GetWinVersion() == 1400)  return;
-
         if (!m_isShowingButtons) return;
         if (!GetActiveView()) return;
         if (!(GetStyle() & TCS_FIXEDWIDTH)) return;
@@ -509,9 +506,6 @@ namespace Win32xx
     // Draws the list button.
     inline void CTab::DrawListButton(CDC& dc)
     {
-        // The list button isn't displayed on Win95.
-        if (GetWinVersion() == 1400)  return;
-
         if (!m_isShowingButtons) return;
         if (!GetActiveView()) return;
         if (!(GetStyle() & TCS_FIXEDWIDTH)) return;
@@ -898,13 +892,14 @@ namespace Win32xx
     inline BOOL CTab::NotifyTabClosing(int page)
     {
         UINT controlID = GetDlgCtrlID();
-        TABNMHDR TabNMHDR;
-        TabNMHDR.hdr.code = UWN_TABCLOSE;
-        TabNMHDR.hdr.hwndFrom = *this;
-        TabNMHDR.hdr.idFrom = controlID;
-        TabNMHDR.page = page;
+        TABNMHDR tabNMHDR;
+        ZeroMemory(&tabNMHDR, sizeof(tabNMHDR));
+        tabNMHDR.hdr.code = UWN_TABCLOSE;
+        tabNMHDR.hdr.hwndFrom = *this;
+        tabNMHDR.hdr.idFrom = controlID;
+        tabNMHDR.page = page;
         WPARAM wparam = static_cast<WPARAM>(controlID);
-        LPARAM lparam = reinterpret_cast<LPARAM>(&TabNMHDR);
+        LPARAM lparam = reinterpret_cast<LPARAM>(&tabNMHDR);
 
         // The default return value is zero.
         return static_cast<BOOL>(GetParent().SendMessage(WM_NOTIFY, wparam, lparam));
@@ -1907,7 +1902,8 @@ namespace Win32xx
     // Creates the TabbedMDI window.
     inline HWND CTabbedMDI::Create(HWND parent /* = 0*/)
     {
-        CLIENTCREATESTRUCT clientcreate ;
+        CLIENTCREATESTRUCT clientcreate;
+        ZeroMemory(&clientcreate, sizeof(clientcreate));
         clientcreate.hWindowMenu  = *this;
         clientcreate.idFirstChild = IDW_FIRSTCHILD ;
         DWORD style = WS_CHILD | WS_VISIBLE | MDIS_ALLCHILDSTYLES | WS_CLIPCHILDREN;
@@ -2128,15 +2124,6 @@ namespace Win32xx
         return TRUE;
     }
 
-    // Called in response to a WM_DPICHANGED_BEFOREPARENT message that is sent to child
-    // windows after a DPI change. A WM_DPICHANGED_BEFOREPARENT is only received when the
-    // application is DPI_AWARENESS_PER_MONITOR_AWARE.
-    inline LRESULT CTabbedMDI::OnDpiChangedBeforeParent(UINT, WPARAM, LPARAM)
-    {
-        RecalcLayout();
-        return 0;
-    }
-
     // Called when the tabbedMDI window is resized.
     inline LRESULT CTabbedMDI::OnWindowPosChanged(UINT msg, WPARAM wparam, LPARAM lparam)
     {
@@ -2249,7 +2236,6 @@ namespace Win32xx
         {
         case WM_SETFOCUS:           return OnSetFocus(msg, wparam, lparam);
         case WM_WINDOWPOSCHANGED:   return OnWindowPosChanged(msg, wparam, lparam);
-        case WM_DPICHANGED_BEFOREPARENT:  return OnDpiChangedBeforeParent(msg, wparam, lparam);
         case UWM_GETCTABBEDMDI:     return reinterpret_cast<LRESULT>(this);
         }
 

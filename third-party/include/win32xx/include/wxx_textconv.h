@@ -1,9 +1,10 @@
-// Win32++   Version 9.5
-// Release Date: 9th February 2024
+// Win32++   Version 9.5.1
+// Release Date: 24th April 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
+//           https://github.com/DavidNash2024/Win32xx
 //
 //
 // Copyright (c) 2005-2024  David Nash
@@ -152,7 +153,7 @@ namespace Win32xx
         CWtoW(LPCWSTR pWStr, UINT codePage = CP_ACP, int charCount = -1);
         operator LPCWSTR() { return m_str; }
         operator LPOLESTR() { return (LPOLESTR)m_str; }
-        LPCWSTR c_str() { return m_str; }
+        LPCWSTR c_str() const { return m_str; }
 
     private:
         CWtoW(const CWtoW&);
@@ -166,7 +167,7 @@ namespace Win32xx
     public:
         CAtoA(LPCSTR str, UINT codePage = CP_ACP, int charCount = -1);
         operator LPCSTR() { return m_str; }
-        LPCSTR c_str() { return m_str; }
+        LPCSTR c_str() const { return m_str; }
 
     private:
         CAtoA(const CAtoA&);

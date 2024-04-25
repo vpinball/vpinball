@@ -1,9 +1,10 @@
-// Win32++   Version 9.5
-// Release Date: 9th February 2024
+// Win32++   Version 9.5.1
+// Release Date: 24th April 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
+//           https://github.com/DavidNash2024/Win32xx
 //
 //
 // Copyright (c) 2005-2024  David Nash
@@ -111,10 +112,10 @@ namespace Win32xx
         virtual ~CColorDialog(){}
 
         virtual INT_PTR DoModal(HWND owner = 0);
-        COLORREF  GetColor() const               { return m_cc.rgbResult;}
-        COLORREF* GetCustomColors()              { return m_customColors;}
+        COLORREF  GetColor() const               { return m_cc.rgbResult; }
+        COLORREF* GetCustomColors()              { return m_customColors; }
         const CHOOSECOLOR& GetParameters() const { return m_cc; }
-        void    SetColor(COLORREF clr)           { m_cc.rgbResult = clr;}
+        void    SetColor(COLORREF clr)           { m_cc.rgbResult = clr; }
         void    SetCustomColors(const COLORREF* pColors = NULL);
         void    SetParameters(const CHOOSECOLOR& cc);
 
@@ -221,7 +222,7 @@ namespace Win32xx
         CString GetReplaceString() const;   // get replacement string
         const   FINDREPLACE& GetParameters() const  { return m_fr; }
         BOOL    IsFindDialogOnly() const            { return m_isFindDialogOnly; }
-        BOOL    IsTerminating();            // TRUE = terminate dialog
+        BOOL    IsTerminating() const;      // TRUE = terminate dialog
         BOOL    MatchCase() const;          // TRUE = matching case
         BOOL    MatchWholeWord() const;     // TRUE = whole words only
         BOOL    ReplaceAll() const;         // TRUE = all occurrences
@@ -1201,7 +1202,7 @@ namespace Win32xx
     }
 
     // Returns TRUE if the user has decided to terminate the dialog box;
-    inline BOOL CFindReplaceDialog::IsTerminating()
+    inline BOOL CFindReplaceDialog::IsTerminating() const
     {
         return (m_fr.Flags & FR_DIALOGTERM)? TRUE : FALSE;
     }

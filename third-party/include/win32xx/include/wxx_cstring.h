@@ -1,9 +1,10 @@
-// Win32++   Version 9.5
-// Release Date: 9th February 2024
+// Win32++   Version 9.5.1
+// Release Date: 24th April 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
+//           https://github.com/DavidNash2024/Win32xx
 //
 //
 // Copyright (c) 2005-2024  David Nash
@@ -241,7 +242,8 @@ namespace Win32xx
         friend CString operator+(const CString& string1, const CHAR* text);
         friend CString operator+(const CString& string1, CHAR ch);
         friend CString operator+(const CString& string1, WCHAR ch);
-        friend CString operator+(const TCHAR* text, const CString& string1);
+        friend CString operator+(const CHAR* text, const CString& string1);
+        friend CString operator+(const WCHAR* text, const CString& string1);
         friend CString operator+(CHAR ch, const CString& string1);
         friend CString operator+(WCHAR ch, const CString& string1);
 
@@ -252,142 +254,29 @@ namespace Win32xx
         CString(LPCWSTR text)                  : CStringT<TCHAR>(WtoT(text))    {}
         CString(LPCSTR text, int length)       : CStringT<TCHAR>(AtoT(text, CP_ACP, length), length) {}
         CString(LPCWSTR text, int length)      : CStringT<TCHAR>(WtoT(text, CP_ACP, length), length) {}
+        CString(CHAR ch, int repeat = 1);
+        CString(WCHAR ch, int repeat = 1);
 
-        CString(char ch, int repeat = 1)
-        {
-            for (int i = 0; i < repeat; ++i)
-            {
-                operator +=(ch);
-            }
-        }
+        CString& operator=(const CString& str);
+        CString& operator=(const CStringT<TCHAR>& str);
+        CString& operator=(CHAR ch);
+        CString& operator=(WCHAR ch);
+        CString& operator=(LPCSTR text);
+        CString& operator=(LPCWSTR text);
+        CString& operator+=(const CString& str);
+        CString& operator+=(LPCSTR text);
+        CString& operator+=(LPCWSTR text);
+        CString& operator+=(CHAR ch);
+        CString& operator+=(WCHAR ch);
 
-        CString(WCHAR ch, int repeat = 1)
-        {
-            for (int i = 0; i < repeat; ++i)
-            {
-                operator +=(ch);
-            }
-        }
-
-        CString& operator=(const CString& str)
-        {
-            m_str.assign(str.GetString());
-            return *this;
-        }
-
-        CString& operator=(const CStringT<TCHAR>& str)
-        {
-            m_str.assign(str.GetString());
-            return *this;
-        }
-
-        CString& operator=(char ch)
-        {
-            AtoT tch(&ch, CP_ACP, 1);
-            m_str.assign(1, tch.c_str()[0]);
-            return *this;
-        }
-
-        CString& operator=(WCHAR ch)
-        {
-            WtoT tch(&ch, CP_ACP, 1);
-            m_str.assign(1, tch.c_str()[0]);
-            return *this;
-        }
-
-        CString& operator=(LPCSTR text)
-        {
-            m_str.assign(AtoT(text));
-            return *this;
-        }
-
-        CString& operator=(LPCWSTR text)
-        {
-            m_str.assign(WtoT(text));
-            return *this;
-        }
-
-        CString& operator+=(const CString& str)
-        {
-            m_str.append(str.m_str);
-            return *this;
-        }
-
-        CString& operator+=(LPCSTR text)
-        {
-            m_str.append(AtoT(text));
-            return *this;
-        }
-
-        CString& operator+=(LPCWSTR text)
-        {
-            m_str.append(WtoT(text));
-            return *this;
-        }
-
-        CString& operator+=(char ch)
-        {
-            AtoT tch(&ch, CP_ACP, 1);
-            m_str.append(1, tch.c_str()[0]);
-            return *this;
-        }
-
-        CString& operator+=(WCHAR ch)
-        {
-            WtoT tch(&ch, CP_ACP, 1);
-            m_str.append(1, tch.c_str()[0]);
-            return *this;
-        }
-
-        CString Left(int count) const
-        {
-            CString str;
-            str = CStringT<TCHAR>::Left(count);
-            return str;
-        }
-
-        CString Mid(int first) const
-        {
-            CString str;
-            str = CStringT<TCHAR>::Mid(first);
-            return str;
-        }
-
-        CString Mid(int first, int count) const
-        {
-            CString str;
-            str = CStringT<TCHAR>::Mid(first, count);
-            return str;
-        }
-
-        CString Right(int count) const
-        {
-            CString str;
-            str = CStringT<TCHAR>::Right(count);
-            return str;
-        }
-
-        CString SpanExcluding(LPCTSTR text) const
-        {
-            CString str;
-            str = CStringT<TCHAR>::SpanExcluding(text);
-            return str;
-        }
-
-        CString SpanIncluding(LPCTSTR text) const
-        {
-            CString str;
-            str = CStringT<TCHAR>::SpanIncluding(text);
-            return str;
-        }
-
-        CString Tokenize(LPCTSTR tokens, int& start) const
-        {
-            CString str;
-            str = CStringT<TCHAR>::Tokenize(tokens, start);
-            return str;
-        }
-
+        // Some compilers require these to be declared here.
+        CString Left(int count) const;
+        CString Mid(int first, int count) const;
+        CString Mid(int first) const;
+        CString Right(int count) const;
+        CString SpanExcluding(LPCTSTR text) const;
+        CString SpanIncluding(LPCTSTR text) const;
+        CString Tokenize(LPCTSTR tokens, int& start) const;
     };
 
 } // namespace Win32xx
@@ -1628,6 +1517,143 @@ namespace Win32xx
        return str;
     }
 
+    /////////////////////////////////////////////
+    // Definition of the CString class
+    //
+    inline CString::CString(CHAR ch, int repeat)
+    {
+        for (int i = 0; i < repeat; ++i)
+        {
+            operator +=(ch);
+        }
+    }
+
+    inline CString::CString(WCHAR ch, int repeat)
+    {
+        for (int i = 0; i < repeat; ++i)
+        {
+            operator +=(ch);
+        }
+    }
+
+    inline CString& CString::operator=(const CString& str)
+    {
+        m_str.assign(str.GetString());
+        return *this;
+    }
+
+    inline CString& CString::operator=(const CStringT<TCHAR>& str)
+    {
+        m_str.assign(str.GetString());
+        return *this;
+    }
+
+    inline CString& CString::operator=(CHAR ch)
+    {
+        AtoT tch(&ch, CP_ACP, 1);
+        m_str.assign(1, tch.c_str()[0]);
+        return *this;
+    }
+
+    inline CString& CString::operator=(WCHAR ch)
+    {
+        WtoT tch(&ch, CP_ACP, 1);
+        m_str.assign(1, tch.c_str()[0]);
+        return *this;
+    }
+
+    inline CString& CString::operator=(LPCSTR text)
+    {
+        m_str.assign(AtoT(text));
+        return *this;
+    }
+
+    inline CString& CString::operator=(LPCWSTR text)
+    {
+        m_str.assign(WtoT(text));
+        return *this;
+    }
+
+    inline CString& CString::operator+=(const CString& str)
+    {
+        m_str.append(str.m_str);
+        return *this;
+    }
+
+    inline CString& CString::operator+=(LPCSTR text)
+    {
+        m_str.append(AtoT(text));
+        return *this;
+    }
+
+    inline CString& CString::operator+=(LPCWSTR text)
+    {
+        m_str.append(WtoT(text));
+        return *this;
+    }
+
+    inline CString& CString::operator+=(CHAR ch)
+    {
+        AtoT tch(&ch, CP_ACP, 1);
+        m_str.append(1, tch.c_str()[0]);
+        return *this;
+    }
+
+    inline CString& CString::operator+=(WCHAR ch)
+    {
+        WtoT tch(&ch, CP_ACP, 1);
+        m_str.append(1, tch.c_str()[0]);
+        return *this;
+    }
+
+    inline CString CString::Left(int count) const
+    {
+        CString str;
+        str = CStringT<TCHAR>::Left(count);
+        return str;
+    }
+
+    inline CString CString::Mid(int first, int count) const
+    {
+        CString str;
+        str = CStringT<TCHAR>::Mid(first, count);
+        return str;
+    }
+
+    inline CString CString::Mid(int first) const
+    {
+        CString str;
+        str = CStringT<TCHAR>::Mid(first);
+        return str;
+    }
+
+    inline CString CString::Right(int count) const
+    {
+        CString str;
+        str = CStringT<TCHAR>::Right(count);
+        return str;
+    }
+
+    inline CString CString::SpanExcluding(LPCTSTR text) const
+    {
+        CString str;
+        str = CStringT<TCHAR>::SpanExcluding(text);
+        return str;
+    }
+
+    inline CString CString::SpanIncluding(LPCTSTR text) const
+    {
+        CString str;
+        str = CStringT<TCHAR>::SpanIncluding(text);
+        return str;
+    }
+
+    inline CString CString::Tokenize(LPCTSTR tokens, int& start) const
+    {
+        CString str;
+        str = CStringT<TCHAR>::Tokenize(tokens, start);
+        return str;
+    }
 
     //////////////////////////////////////////////
     // CString global operator functions
@@ -1656,20 +1682,27 @@ namespace Win32xx
     inline CString operator+(const CString& string1, CHAR ch)
     {
         CString str(string1);
-        CString str1(ch);
-        str += str1;
+        AtoT tch(&ch, CP_ACP, 1);
+        str.m_str.append(1, tch.c_str()[0]);
         return str;
     }
 
     inline CString operator+(const CString& string1, WCHAR ch)
     {
         CString str(string1);
-        CString str1(ch);
-        str += str1;
+        WtoT tch(&ch, CP_ACP, 1);
+        str.m_str.append(1, tch.c_str()[0]);
         return str;
     }
 
-    inline CString operator+(const TCHAR* text, const CString& string1)
+    inline CString operator+(const CHAR* text, const CString& string1)
+    {
+        CString str(text);
+        str.m_str.append(string1);
+        return str;
+    }
+
+    inline CString operator+(const WCHAR* text, const CString& string1)
     {
         CString str(text);
         str.m_str.append(string1);
@@ -1678,17 +1711,15 @@ namespace Win32xx
 
     inline CString operator+(CHAR ch, const CString& string1)
     {
-        CString str1(string1);
         CString str(ch);
-        str += str1;
+        str.m_str.append(string1);
         return str;
     }
 
     inline CString operator+(WCHAR ch, const CString& string1)
     {
-        CString str1(string1);
         CString str(ch);
-        str += str1;
+        str.m_str.append(string1);
         return str;
     }
 

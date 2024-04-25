@@ -1,9 +1,10 @@
-// Win32++   Version 9.5
-// Release Date: 9th February 2024
+// Win32++   Version 9.5.1
+// Release Date: 24th April 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
+//           https://github.com/DavidNash2024/Win32xx
 //
 //
 // Copyright (c) 2005-2024  David Nash
@@ -78,11 +79,11 @@ namespace Win32xx
         BYTE  GetButtonStyle(UINT buttonID) const;
         CString GetButtonText(UINT buttonID) const;
         UINT  GetCommandID(int index) const;
-        CImageList GetDisabledImageList();
+        CImageList GetDisabledImageList() const;
         DWORD GetExtendedStyle() const;
-        CImageList GetHotImageList();
+        CImageList GetHotImageList() const;
         int   GetHotItem() const;
-        CImageList GetImageList();
+        CImageList GetImageList() const;
         CRect GetItemRect(int index) const;
         CSize GetMaxSize() const;
         CSize GetPadding() const;
@@ -480,7 +481,7 @@ namespace Win32xx
 
     // Retrieves the image list that a ToolBar control uses to display inactive buttons.
     // Refer to TB_GETDISABLEDIMAGELIST in the Windows API documentation for more information.
-    inline CImageList CToolBar::GetDisabledImageList()
+    inline CImageList CToolBar::GetDisabledImageList() const
     {
         assert(IsWindow());
         HIMAGELIST images = reinterpret_cast<HIMAGELIST>(SendMessage(TB_GETDISABLEDIMAGELIST, 0, 0));
@@ -498,7 +499,7 @@ namespace Win32xx
 
     // Retrieves the image list that a ToolBar control uses to display hot buttons.
     // Refer to TB_GETHOTIMAGELIST in the Windows API documentation for more information.
-    inline CImageList CToolBar::GetHotImageList()
+    inline CImageList CToolBar::GetHotImageList() const
     {
         assert(IsWindow());
         HIMAGELIST images = reinterpret_cast<HIMAGELIST>(SendMessage(TB_GETHOTIMAGELIST, 0, 0));
@@ -515,7 +516,7 @@ namespace Win32xx
 
     // Retrieves the image list that a ToolBar control uses to display buttons in their default state.
     // Refer to TB_GETIMAGELIST in the Windows API documentation for more information.
-    inline CImageList CToolBar::GetImageList()
+    inline CImageList CToolBar::GetImageList() const
     {
         assert(IsWindow());
         HIMAGELIST images = reinterpret_cast<HIMAGELIST>(SendMessage(TB_GETIMAGELIST, 0, 0));
@@ -720,7 +721,7 @@ namespace Win32xx
     inline int CToolBar::MapAccelerator(TCHAR accelChar) const
     {
         assert(IsWindow());
-        int idButton;
+        int idButton = -1;
         WPARAM wparam = static_cast<WPARAM>(accelChar);
         LPARAM lparam = reinterpret_cast<LPARAM>(&idButton);
         if (!SendMessage(TB_MAPACCELERATOR, wparam, lparam))

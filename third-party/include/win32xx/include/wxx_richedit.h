@@ -1,9 +1,10 @@
-// Win32++   Version 9.5
-// Release Date: 9th February 2024
+// Win32++   Version 9.5.1
+// Release Date: 24th April 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
+//           https://github.com/DavidNash2024/Win32xx
 //
 //
 // Copyright (c) 2005-2024  David Nash
@@ -567,6 +568,7 @@ namespace Win32xx
     {
         assert(IsWindow());
         CHARRANGE range;
+        ZeroMemory(&range, sizeof(range));
 
         LPARAM lparam = reinterpret_cast<LPARAM>(&range);
         SendMessage(EM_EXGETSEL, 0, lparam);
@@ -616,6 +618,7 @@ namespace Win32xx
         assert(IsWindow());
 
         CHARRANGE cr;
+        ZeroMemory(&cr, sizeof(cr));
         LPARAM lparam = reinterpret_cast<LPARAM>(&cr);
         SendMessage(EM_EXGETSEL, 0, lparam);
         return GetTextRange(cr.cpMin, cr.cpMax);
@@ -635,6 +638,7 @@ namespace Win32xx
     {
         assert(IsWindow());
         GETTEXTLENGTHEX gtle;
+        ZeroMemory(&gtle, sizeof(gtle));
         gtle.flags = flags;
         gtle.codepage = codePage;
 
@@ -656,12 +660,14 @@ namespace Win32xx
     {
         assert(IsWindow());
         CHARRANGE range;
+        ZeroMemory(&range, sizeof(range));
         range.cpMin = first;
         range.cpMax = last;
         int lastChar = (last == -1)? GetTextLength() : last;
 
         CString rangeString;
         TEXTRANGE tr;
+        ZeroMemory(&tr, sizeof(tr));
         tr.chrg = range;
         tr.lpstrText = rangeString.GetBuffer(lastChar - first + 1);
         LPARAM lparam = reinterpret_cast<LPARAM>(&tr);
@@ -758,6 +764,7 @@ namespace Win32xx
         assert(IsWindow());
 
         REPASTESPECIAL rps;
+        ZeroMemory(&rps, sizeof(rps));
         rps.dwAspect = aspect;
         rps.dwParam = reinterpret_cast<DWORD_PTR>(mf);
         WPARAM wparam = static_cast<WPARAM>(clipFormat);
@@ -933,6 +940,7 @@ namespace Win32xx
         assert(IsWindow());
 
         CHARRANGE cr;
+        ZeroMemory(&cr, sizeof(cr));
         cr.cpMin = startChar;
         cr.cpMax = endChar;
         LPARAM lparam = reinterpret_cast<LPARAM>(&cr);

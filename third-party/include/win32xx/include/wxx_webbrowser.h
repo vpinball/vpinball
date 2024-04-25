@@ -1,9 +1,10 @@
-// Win32++   Version 9.5
-// Release Date: 9th February 2024
+// Win32++   Version 9.5.1
+// Release Date: 24th April 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
+//           https://github.com/DavidNash2024/Win32xx
 //
 //
 // Copyright (c) 2005-2024  David Nash
@@ -184,36 +185,36 @@ namespace Win32xx
         CString GetType() const;
         BOOL    GetVisible() const;
         long    GetWidth() const;
-        HRESULT SetFullScreen(BOOL isFullScreen);
-        HRESULT SetHeight(long height);
-        HRESULT SetLeft(long leftEdge);
-        HRESULT SetOffline(BOOL isOffline);
-        HRESULT SetRegisterAsBrowser(BOOL isBrowser);
-        HRESULT SetTheaterMode(BOOL isTheaterMode);
-        HRESULT SetTop(long topEdge);
-        HRESULT SetVisible(BOOL isVisible);
-        HRESULT SetWidth(long width);
+        HRESULT SetFullScreen(BOOL isFullScreen) const;
+        HRESULT SetHeight(long height) const;
+        HRESULT SetLeft(long leftEdge) const;
+        HRESULT SetOffline(BOOL isOffline) const;
+        HRESULT SetRegisterAsBrowser(BOOL isBrowser) const;
+        HRESULT SetTheaterMode(BOOL isTheaterMode) const;
+        HRESULT SetTop(long topEdge) const;
+        HRESULT SetVisible(BOOL isVisible) const;
+        HRESULT SetWidth(long width) const;
 
         // Operations
         HRESULT AddWebBrowserControl();
-        HRESULT ExecWB(OLECMDID cmdID, OLECMDEXECOPT cmdExecOpt, VARIANT* pIn, VARIANT* pOut);
-        HRESULT GoBack();
-        HRESULT GoForward();
-        HRESULT GoHome();
-        HRESULT GoSearch();
+        HRESULT ExecWB(OLECMDID cmdID, OLECMDEXECOPT cmdExecOpt, VARIANT* pIn, VARIANT* pOut) const;
+        HRESULT GoBack() const;
+        HRESULT GoForward() const;
+        HRESULT GoHome() const;
+        HRESULT GoSearch() const;
         HRESULT Navigate(LPCTSTR URL, DWORD flags = 0, LPCTSTR targetFrameName = NULL,
-                        LPCTSTR headers = NULL, LPVOID pPostData = NULL, DWORD postDataLen = 0);
-        HRESULT Navigate2(LPITEMIDLIST pIDL, DWORD flags = 0, LPCTSTR targetFrameName = NULL);
+                        LPCTSTR headers = NULL, LPVOID pPostData = NULL, DWORD postDataLen = 0) const;
+        HRESULT Navigate2(LPITEMIDLIST pIDL, DWORD flags = 0, LPCTSTR targetFrameName = NULL) const;
         HRESULT Navigate2(LPCTSTR URL, DWORD flags = 0, LPCTSTR targetFrameName = NULL,
-                         LPCTSTR headers = NULL, LPVOID pPostData = NULL, DWORD postDataLen = 0);
-        HRESULT PutProperty(LPCTSTR propertyName, const VARIANT& value);
-        HRESULT PutProperty(LPCTSTR propertyName, double value);
-        HRESULT PutProperty(LPCTSTR propertyName, long value);
-        HRESULT PutProperty(LPCTSTR propertyName, LPCTSTR value);
-        HRESULT PutProperty(LPCTSTR propertyName, short value);
-        HRESULT Refresh();
-        HRESULT Refresh2(int evel);
-        HRESULT Stop();
+                         LPCTSTR headers = NULL, LPVOID pPostData = NULL, DWORD postDataLen = 0) const;
+        HRESULT PutProperty(LPCTSTR propertyName, const VARIANT& value) const;
+        HRESULT PutProperty(LPCTSTR propertyName, double value) const;
+        HRESULT PutProperty(LPCTSTR propertyName, long value) const;
+        HRESULT PutProperty(LPCTSTR propertyName, LPCTSTR value) const;
+        HRESULT PutProperty(LPCTSTR propertyName, short value) const;
+        HRESULT Refresh() const;
+        HRESULT Refresh2(int evel) const;
+        HRESULT Stop() const;
 
     protected:
         // Override these as required
@@ -229,7 +230,7 @@ namespace Win32xx
         CWebBrowser(const CWebBrowser&);              // Disable copy construction
         CWebBrowser& operator=(const CWebBrowser&);   // Disable assignment operator
 
-        UINT    GetPidlLength(LPITEMIDLIST pidl);
+        UINT    GetPidlLength(LPITEMIDLIST pidl) const;
         CAXHost  m_axHost;              // The ActiveX host
         IWebBrowser2* m_pIWebBrowser2;  // Interface to the ActiveX web browser control
     };
@@ -261,7 +262,7 @@ namespace Win32xx
         HRESULT hr = E_FAIL;
         if (m_pUnk)
         {
-            IOleObject* pObject;
+            IOleObject* pObject = NULL;
             VERIFY(SUCCEEDED(hr = m_pUnk->QueryInterface(IID_IOleObject, reinterpret_cast<void**>(&pObject))));
             if (pObject)
             {
@@ -295,14 +296,14 @@ namespace Win32xx
         m_pUnk = reinterpret_cast<IUnknown*>(*ppUnk);
         if (m_pUnk)
         {
-            IOleObject* pObject;
+            IOleObject* pObject = NULL;
             VERIFY(SUCCEEDED(hr = m_pUnk->QueryInterface(IID_IOleObject, reinterpret_cast<void**>(&pObject))));
             if (pObject)
             {
                 VERIFY(SUCCEEDED(hr = pObject->SetClientSite(this)));
                 pObject->Release();
 
-                IPersistStreamInit* ppsi;
+                IPersistStreamInit* ppsi = NULL;
                 VERIFY(SUCCEEDED(hr = m_pUnk->QueryInterface(IID_IPersistStreamInit, reinterpret_cast<void**>(&ppsi))));
                 if (ppsi)
                 {
@@ -570,7 +571,7 @@ namespace Win32xx
 
         if (m_pUnk)
         {
-            IOleInPlaceObject* pipo;
+            IOleInPlaceObject* pipo = NULL;
             VERIFY(SUCCEEDED(hr = m_pUnk->QueryInterface(IID_IOleInPlaceObject, reinterpret_cast<void**>(&pipo))));
             if (pipo)
             {
@@ -579,7 +580,7 @@ namespace Win32xx
                 pipo->Release();
             }
 
-            IOleObject* pObject;
+            IOleObject* pObject = NULL;
             VERIFY(SUCCEEDED(hr = m_pUnk->QueryInterface(IID_IOleObject, reinterpret_cast<void**>(&pObject))));
             if (pObject)
             {
@@ -648,7 +649,7 @@ namespace Win32xx
         HRESULT hr = E_FAIL;
         if (m_pUnk)
         {
-            IOleInPlaceObject* pipo;
+            IOleInPlaceObject* pipo = NULL;
             VERIFY(SUCCEEDED(hr = m_pUnk->QueryInterface(IID_IOleInPlaceObject, reinterpret_cast<void**>(&pipo))));
             if (pipo)
             {
@@ -690,7 +691,7 @@ namespace Win32xx
         HRESULT hr = E_FAIL;
         if (m_pUnk)
         {
-            IOleObject* pObject;
+            IOleObject* pObject = NULL;
             VERIFY(SUCCEEDED(hr = m_pUnk->QueryInterface(IID_IOleObject, reinterpret_cast<void**>(&pObject))));
             if (pObject)
             {
@@ -927,7 +928,7 @@ namespace Win32xx
     }
 
     // Retrieves the accumulated  length of the ITEMIDLIST.
-    inline UINT CWebBrowser::GetPidlLength(LPITEMIDLIST pidl)
+    inline UINT CWebBrowser::GetPidlLength(LPITEMIDLIST pidl) const
     {
         assert(pidl);
         UINT cbPidl = sizeof(pidl->mkid.cb);
@@ -1013,66 +1014,66 @@ namespace Win32xx
     }
 
     // Sets a value that indicates whether Internet Explorer is in full-screen mode or normal window mode.
-    inline HRESULT CWebBrowser::SetFullScreen(BOOL isFullScreen)
+    inline HRESULT CWebBrowser::SetFullScreen(BOOL isFullScreen) const
     {
         VARIANT_BOOL isFS = isFullScreen ? VARIANT_TRUE : VARIANT_FALSE;
         return GetIWebBrowser2()->put_FullScreen(isFS);
     }
 
     // Sets the height of the object.
-    inline HRESULT CWebBrowser::SetHeight(long height)
+    inline HRESULT CWebBrowser::SetHeight(long height) const
     {
         return GetIWebBrowser2()->put_Height(height);
     }
 
     // Sets the coordinate of the left edge of the object.
-    inline HRESULT CWebBrowser::SetLeft(long leftEdge)
+    inline HRESULT CWebBrowser::SetLeft(long leftEdge) const
     {
         return GetIWebBrowser2()->put_Left(leftEdge);
     }
 
     // Sets a value that indicates whether the object is operating in offline mode.
-    inline HRESULT CWebBrowser::SetOffline(BOOL isOffline)
+    inline HRESULT CWebBrowser::SetOffline(BOOL isOffline) const
     {
         VARIANT_BOOL isOL = isOffline ? VARIANT_TRUE : VARIANT_FALSE;
         return GetIWebBrowser2()->put_Offline(isOL);
     }
 
     // Sets a value that indicates whether the object is registered as a top-level browser window.
-    inline HRESULT CWebBrowser::SetRegisterAsBrowser(BOOL isBrowser)
+    inline HRESULT CWebBrowser::SetRegisterAsBrowser(BOOL isBrowser) const
     {
         VARIANT_BOOL isB = isBrowser ? VARIANT_TRUE : VARIANT_FALSE;
         return GetIWebBrowser2()->put_RegisterAsBrowser(isB);
     }
 
     // Sets the theatre mode state of the object.
-    inline HRESULT CWebBrowser::SetTheaterMode(BOOL isTheaterMode)
+    inline HRESULT CWebBrowser::SetTheaterMode(BOOL isTheaterMode) const
     {
         VARIANT_BOOL isTM = isTheaterMode ? VARIANT_TRUE : VARIANT_FALSE;
         return GetIWebBrowser2()->put_TheaterMode(isTM);
     }
 
     // Sets the coordinate of the top edge of the object.
-    inline HRESULT CWebBrowser::SetTop(long topEdge)
+    inline HRESULT CWebBrowser::SetTop(long topEdge) const
     {
         return GetIWebBrowser2()->put_Top(topEdge);
     }
 
     // Sets a value that indicates whether the object is visible or hidden.
-    inline HRESULT CWebBrowser::SetVisible(BOOL isVisible)
+    inline HRESULT CWebBrowser::SetVisible(BOOL isVisible) const
     {
         VARIANT_BOOL isV = isVisible ? VARIANT_TRUE : VARIANT_FALSE;
         return GetIWebBrowser2()->put_Visible(isV);
     }
 
     // Sets the width of the object.
-    inline HRESULT CWebBrowser::SetWidth(long width)
+    inline HRESULT CWebBrowser::SetWidth(long width) const
     {
         return GetIWebBrowser2()->put_Width(width);
     }
 
     // Executes a command using the IOleCommandTarget interface.
-    inline HRESULT CWebBrowser::ExecWB(OLECMDID cmdID, OLECMDEXECOPT cmdExecOpt, VARIANT* in, VARIANT* out)
+    inline HRESULT CWebBrowser::ExecWB(OLECMDID cmdID, OLECMDEXECOPT cmdExecOpt, VARIANT* in, VARIANT* out) const
     {
         return GetIWebBrowser2()->ExecWB(cmdID, cmdExecOpt, in, out);
     }
@@ -1086,48 +1087,52 @@ namespace Win32xx
     }
 
     // Navigates backward one item in the history list.
-    inline HRESULT CWebBrowser::GoBack()
+    inline HRESULT CWebBrowser::GoBack() const
     {
         return GetIWebBrowser2()->GoBack();
     }
 
     // Navigates forward one item in the history list.
-    inline HRESULT CWebBrowser::GoForward()
+    inline HRESULT CWebBrowser::GoForward() const
     {
         return GetIWebBrowser2()->GoForward();
     }
 
     // Navigates to the current home or start page.
-    inline HRESULT CWebBrowser::GoHome()
+    inline HRESULT CWebBrowser::GoHome() const
     {
         return GetIWebBrowser2()->GoHome();
     }
 
     // Navigates to the current search page.
-    inline HRESULT CWebBrowser::GoSearch()
+    inline HRESULT CWebBrowser::GoSearch() const
     {
         return GetIWebBrowser2()->GoSearch();
     }
 
     // Navigates to a resource identified by a URL or to a file identified by a full path.
     inline HRESULT CWebBrowser::Navigate(LPCTSTR URL,   DWORD flags /*= 0*/, LPCTSTR targetFrameName /*= NULL*/,
-                    LPCTSTR headers /*= NULL*/, LPVOID pPostData /*= NULL*/,   DWORD postDataLen /*= 0*/)
+                    LPCTSTR headers /*= NULL*/, LPVOID pPostData /*= NULL*/,   DWORD postDataLen /*= 0*/) const
     {
         VARIANT flagsVariant;
+        ZeroMemory(&flagsVariant, sizeof(flagsVariant));
         flagsVariant.vt = VT_I4;
         flagsVariant.lVal = static_cast<LONG>(flags);
 
         VARIANT targetVariant;
+        ZeroMemory(&targetVariant, sizeof(targetVariant));
         targetVariant.vt = VT_BSTR;
         targetVariant.bstrVal = SysAllocString(TtoW(targetFrameName));
 
         SAFEARRAY* psa = SafeArrayCreateVector(VT_UI1, 0, postDataLen);
         CopyMemory(psa->pvData, pPostData, postDataLen);
         VARIANT dataVariant;
+        ZeroMemory(&dataVariant, sizeof(dataVariant));
         dataVariant.vt = VT_ARRAY|VT_UI1;
         dataVariant.parray = psa;
 
         VARIANT headersVariant;
+        ZeroMemory(&headersVariant, sizeof(headersVariant));
         headersVariant.vt = VT_BSTR;
         headersVariant.bstrVal = SysAllocString(TtoW(headers));
         BSTR url = SysAllocString(TtoW(URL));
@@ -1144,20 +1149,23 @@ namespace Win32xx
     }
 
     // Navigates the browser to a location specified by a pointer to an item identifier list (PIDL) for an entity in the Microsoft Windows Shell namespace.
-    inline HRESULT CWebBrowser::Navigate2(LPITEMIDLIST pIDL, DWORD flags /*= 0*/, LPCTSTR targetFrameName /*= NULL*/)
+    inline HRESULT CWebBrowser::Navigate2(LPITEMIDLIST pIDL, DWORD flags /*= 0*/, LPCTSTR targetFrameName /*= NULL*/) const
     {
         UINT cb = GetPidlLength(pIDL);
         LPSAFEARRAY pSA = SafeArrayCreateVector(VT_UI1, 0, cb);
         VARIANT pidlVariant;
+        ZeroMemory(&pidlVariant, sizeof(pidlVariant));
         pidlVariant.vt = VT_ARRAY|VT_UI1;
         pidlVariant.parray = pSA;
         CopyMemory(pSA->pvData, pIDL, cb);
 
         VARIANT flagsVariant;
+        ZeroMemory(&flagsVariant, sizeof(flagsVariant));
         flagsVariant.vt = VT_I4;
         flagsVariant.lVal = static_cast<LONG>(flags);
 
         VARIANT targetVariant;
+        ZeroMemory(&targetVariant, sizeof(targetVariant));
         targetVariant.vt = VT_BSTR;
         targetVariant.bstrVal = SysAllocString(TtoW(targetFrameName));
 
@@ -1172,17 +1180,20 @@ namespace Win32xx
 
     // Navigates the browser to a location that is expressed as a URL.
     inline HRESULT CWebBrowser::Navigate2(LPCTSTR URL, DWORD flags /*= 0*/, LPCTSTR targetFrameName /*= NULL*/,
-                     LPCTSTR headers /*= NULL*/,   LPVOID pPostData /*= NULL*/, DWORD postDataLen /*= 0*/)
+                     LPCTSTR headers /*= NULL*/,   LPVOID pPostData /*= NULL*/, DWORD postDataLen /*= 0*/) const
     {
         VARIANT urlVariant;
+        ZeroMemory(&urlVariant, sizeof(urlVariant));
         urlVariant.vt = VT_BSTR;
         urlVariant.bstrVal = SysAllocString(TtoW(URL));
 
         VARIANT flagsVariant;
+        ZeroMemory(&flagsVariant, sizeof(flagsVariant));
         flagsVariant.vt = VT_I4;
         flagsVariant.lVal = static_cast<LONG>(flags);
 
         VARIANT TargetVariant;
+        ZeroMemory(&TargetVariant, sizeof(TargetVariant));
         TargetVariant.vt = VT_BSTR;
         TargetVariant.bstrVal = SysAllocString(TtoW(targetFrameName));
 
@@ -1190,10 +1201,12 @@ namespace Win32xx
         SAFEARRAY* psa = SafeArrayCreateVector(VT_UI1, 0, postDataLen);
         CopyMemory(psa->pvData, pPostData, postDataLen);
         VARIANT dataVariant;
+        ZeroMemory(&dataVariant, sizeof(dataVariant));
         dataVariant.vt = VT_ARRAY|VT_UI1;
         dataVariant.parray = psa;
 
         VARIANT headersVariant;
+        ZeroMemory(&headersVariant, sizeof(headersVariant));
         headersVariant.vt = VT_BSTR;
         headersVariant.bstrVal = SysAllocString(TtoW(headers));
 
@@ -1209,15 +1222,16 @@ namespace Win32xx
     }
 
     // Sets the value of a property associated with the object.
-    inline HRESULT CWebBrowser::PutProperty(LPCTSTR propertyName, const VARIANT& value)
+    inline HRESULT CWebBrowser::PutProperty(LPCTSTR propertyName, const VARIANT& value) const
     {
         return GetIWebBrowser2()->PutProperty(TtoBSTR(propertyName), value);
     }
 
     // Sets the value of a property associated with the object.
-    inline HRESULT CWebBrowser::PutProperty(LPCTSTR propertyName, double value)
+    inline HRESULT CWebBrowser::PutProperty(LPCTSTR propertyName, double value) const
     {
         VARIANT v;
+        ZeroMemory(&v, sizeof(v));
         v.vt = VT_I4;
         v.dblVal = value;
         HRESULT hr = GetIWebBrowser2()->PutProperty(TtoBSTR(propertyName), v);
@@ -1226,9 +1240,10 @@ namespace Win32xx
     }
 
     // Sets the value of a property associated with the object.
-    inline HRESULT CWebBrowser::PutProperty(LPCTSTR propertyName, long value)
+    inline HRESULT CWebBrowser::PutProperty(LPCTSTR propertyName, long value) const
     {
         VARIANT v;
+        ZeroMemory(&v, sizeof(v));
         v.vt = VT_I4;
         v.lVal= value;
         HRESULT hr = GetIWebBrowser2()->PutProperty(TtoBSTR(propertyName), v);
@@ -1237,9 +1252,10 @@ namespace Win32xx
     }
 
     // Sets the value of a property associated with the object.
-    inline HRESULT CWebBrowser::PutProperty(LPCTSTR propertyName, LPCTSTR value)
+    inline HRESULT CWebBrowser::PutProperty(LPCTSTR propertyName, LPCTSTR value) const
     {
         VARIANT v;
+        ZeroMemory(&v, sizeof(v));
         v.vt = VT_BSTR;
         v.bstrVal= SysAllocString(TtoW(value));
         HRESULT hr = GetIWebBrowser2()->PutProperty(TtoBSTR(propertyName), v);
@@ -1248,9 +1264,10 @@ namespace Win32xx
     }
 
     // Sets the value of a property associated with the object.
-    inline HRESULT CWebBrowser::PutProperty(LPCTSTR propertyName, short value)
+    inline HRESULT CWebBrowser::PutProperty(LPCTSTR propertyName, short value) const
     {
         VARIANT v;
+        ZeroMemory(&v, sizeof(v));
         v.vt = VT_I4;
         v.iVal = value;
         HRESULT hr = GetIWebBrowser2()->PutProperty(TtoBSTR(propertyName), v);
@@ -1259,15 +1276,16 @@ namespace Win32xx
     }
 
     // Reloads the file that is currently displayed in the object.
-    inline HRESULT CWebBrowser::Refresh()
+    inline HRESULT CWebBrowser::Refresh() const
     {
         return GetIWebBrowser2()->Refresh();
     }
 
     // Reloads the file that is currently displayed with the specified refresh level.
-    inline HRESULT CWebBrowser::Refresh2(int level)
+    inline HRESULT CWebBrowser::Refresh2(int level) const
     {
         VARIANT v;
+        ZeroMemory(&v, sizeof(v));
         v.vt = VT_I4;
         v.intVal = level;
         HRESULT hr = GetIWebBrowser2()->Refresh2(&v);
@@ -1277,7 +1295,7 @@ namespace Win32xx
 
     // Cancels a pending navigation or download, and stops dynamic page elements,
     // such as background sounds and animations.
-    inline HRESULT CWebBrowser::Stop()
+    inline HRESULT CWebBrowser::Stop() const
     {
         return GetIWebBrowser2()->Stop();
     }

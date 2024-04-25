@@ -1,9 +1,10 @@
-// Win32++   Version 9.5
-// Release Date: 9th February 2024
+// Win32++   Version 9.5.1
+// Release Date: 24th April 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
+//           https://github.com/DavidNash2024/Win32xx
 //
 //
 // Copyright (c) 2005-2024  David Nash
@@ -157,7 +158,7 @@ using namespace Win32xx;
 #define MIN(a,b)        (((a) < (b)) ? (a) : (b))
 
 // Version macro
-#define _WIN32XX_VER 0x0950     // Win32++ version 9.5.0
+#define _WIN32XX_VER 0x0951     // Win32++ version 9.5.1
 
 // Define the TRACE Macro.
 // In debug mode, TRACE send text to the debug/output pane, or an external debugger
@@ -179,6 +180,18 @@ using namespace Win32xx;
   #else
     #define VERIFY(f) assert(f)
   #endif
+#endif
+
+// A macro to support noexcept for new compilers and throw for old compilers.
+// VS2015 and higher, Borland >= version 6), (GNU >= 11), or Clang.
+#if ((defined (_MSC_VER) && (_MSC_VER >= 1900)) || \
+        (defined(__BORLANDC__) && (__BORLANDC__ >= 0x600)) || \
+        (defined(__GNUC__) && (__GNUC__ >= 11)) || \
+        (defined(__clang_major__)))
+
+#define WXX_NOEXCEPT noexcept
+#else
+#define WXX_NOEXCEPT throw()
 #endif
 
 // tString is a TCHAR std::string
@@ -295,16 +308,12 @@ namespace Win32xx
     inline int GetWinVersion()
     {
 
-// if (MSC < VS2008) or (Borland < version 6)
-#if ((defined (_MSC_VER) && (_MSC_VER < 1500)) || defined(__BORLANDC__) && (__BORLANDC__ < 0x600))
-
-        // Use the legacy GetVersionEx function.
-        OSVERSIONINFO osvi;
-        ZeroMemory(&osvi, sizeof(osvi));
-        osvi.dwOSVersionInfoSize = sizeof(osvi);
-        GetVersionEx(&osvi);
-
-#else
+        // if (MSC >= VS2008) or (Borland >= version 6) or (GNU >= 11) or Clang.
+        // TDM_GCC 10.3 32bit doesn't support RtlGetVersion.
+#if ((defined (_MSC_VER) && (_MSC_VER >= 1500)) || \
+        (defined(__BORLANDC__) && (__BORLANDC__ >= 0x600)) || \
+        (defined(__GNUC__) && (__GNUC__ >= 11)) || \
+        (defined(__clang_major__)))
 
         // Use the modern RtlGetVersion function.
         typedef NTSTATUS WINAPI RTLGETVERSION(PRTL_OSVERSIONINFOW);
@@ -323,6 +332,14 @@ namespace Win32xx
                 pfn(&osvi);
             }
         }
+
+#else
+
+        // Use the legacy GetVersionEx function.
+        OSVERSIONINFO osvi;
+        ZeroMemory(&osvi, sizeof(osvi));
+        osvi.dwOSVersionInfoSize = sizeof(osvi);
+        GetVersionEx(&osvi);
 
 #endif
 
@@ -390,18 +407,19 @@ namespace Win32xx
             if (pfnInitEx)
             {
                 // Load the full set of common controls.
-                INITCOMMONCONTROLSEX InitStruct;
-                InitStruct.dwSize = sizeof(InitStruct);
-                InitStruct.dwICC = ICC_WIN95_CLASSES | ICC_BAR_CLASSES | ICC_COOL_CLASSES | ICC_DATE_CLASSES;
+                INITCOMMONCONTROLSEX initStruct;
+                ZeroMemory(&initStruct, sizeof(initStruct));
+                initStruct.dwSize = sizeof(initStruct);
+                initStruct.dwICC = ICC_WIN95_CLASSES | ICC_BAR_CLASSES | ICC_COOL_CLASSES | ICC_DATE_CLASSES;
 
 
 #if (_WIN32_IE >= 0x0401)
                 if (GetComCtlVersion() > 470)
-                    InitStruct.dwICC |= ICC_INTERNET_CLASSES | ICC_NATIVEFNTCTL_CLASS | ICC_PAGESCROLLER_CLASS | ICC_USEREX_CLASSES;
+                    initStruct.dwICC |= ICC_INTERNET_CLASSES | ICC_NATIVEFNTCTL_CLASS | ICC_PAGESCROLLER_CLASS | ICC_USEREX_CLASSES;
 #endif
 
                 // Call InitCommonControlsEx.
-                if (!(pfnInitEx(&InitStruct)))
+                if (!(pfnInitEx(&initStruct)))
                     InitCommonControls();
             }
             else

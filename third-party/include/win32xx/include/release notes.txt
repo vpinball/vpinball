@@ -55,19 +55,19 @@ Win32++ supports the following operating systems
 Features
 --------
 Win32++ code has the following features
- * Object Orientated
- * Subclassing support
- * Notification reflection and message reflection
- * Unicode compliant, with multilingual support
- * Multi-threaded support.
- * Tracing
- * 64 bit support
- * Windows 7 ribbon support
- * Themes support
- * Network support (including IP version 6)
- * Docking windows
- * Tabbed MDIs
- * Print preview support.
+* Open Source.
+* Supports Microsoft, Clang, Borland and GNU C++ compilers.
+* Supports applications based on simple windows, dialogs, forms, property sheets, SDI frames and MDI frames.
+* Supports docking, with tabbed containers and TabbedMDIs.
+* Provides a CString for convenient character string handling.
+* Multi-Thread support.
+* 64 bit support.
+* Print preview support.
+* Support for Task Dialogs available on the Windows Vista and later operating systems.
+* Support for the Ribbon Framework available on Windows 7.
+* Network support. IPv4 and IPv6.
+* Supports applications with per monitor DPI awareness, version 2.
+* Supports dark mode applications.
 
 Frames produced by Win32++ typically have the following:
  * Rebar
@@ -127,6 +127,7 @@ The sample applications include:
  * INIFrame - A simple frame application that stores settings in an INI file.
  * ListView - Demonstrates a listview control with text editing and sorting.
  * MDIFrame - A simple MDI frame application.
+ * MDIDockFrame - A MDI frame that supports docking.
  * MDIFrameDemo - Demonstrates some additional features of MDI frames.
  * MDIFrameSplitter - Demonstrates how to implement splitter windows in MDI Child windows.
  * MetaFile  - Demonstrates how to create and display an enhanced metafile.

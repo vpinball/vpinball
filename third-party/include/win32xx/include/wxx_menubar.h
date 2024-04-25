@@ -1,9 +1,10 @@
-// Win32++   Version 9.5
-// Release Date: 9th February 2024
+// Win32++   Version 9.5.1
+// Release Date: 24th April 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
+//           https://github.com/DavidNash2024/Win32xx
 //
 //
 // Copyright (c) 2005-2024  David Nash
@@ -797,6 +798,7 @@ namespace Win32xx
 
         // Position popup above toolbar if it won't fit below.
         TPMPARAMS tpm;
+        ZeroMemory(&tpm, sizeof(tpm));
         tpm.cbSize = sizeof(tpm);
         tpm.rcExclude = rc;
 
@@ -869,7 +871,10 @@ namespace Win32xx
 
     inline LRESULT CMenuBar::OnSysCommand(UINT msg, WPARAM wparam, LPARAM lparam)
     {
-        if (SC_KEYMENU == wparam)
+        // The "wparam & 0xFFF0" below is a requirement mentioned in the
+        // description of WM_SYSCOMMAND in the Windows API documentation.
+
+        if (SC_KEYMENU == (wparam & 0xFFF0))
         {
             if (lparam == 0)
             {

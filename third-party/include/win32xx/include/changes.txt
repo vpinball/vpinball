@@ -1,3 +1,33 @@
+Version 9.5.1
+=============
+This version has minor improvements to CDocker, CDockContainer and
+CResizer, and adds support for MinGW-w64 version 13.2.0.
+
+New Features and Enhancements
+-----------------------------
+* Updated CDocker and CDockContainer.
+   The dock hinting displayed when a docker is over a dock target has been
+   updated.
+
+* Updated CResizer.
+   The scroll positions are retained when the window's DPI changes.
+
+* Updated the Docker, DockContainer and DockTabbedMDI samples.
+   The DockContainer sample demonstrates how to prevent the frame's last
+   container from being undocked or closed.
+
+* Adds support for MinGW-w64 version 13.2.0.
+
+
+Changes in detail
+-----------------
+Added CDockContainer::UndockContainerGroup
+Added CResizer::OnAfterDpiChange
+Added CResizer::OnBeforeDpiChange
+Removed CDocker::OnWindowPosChanging
+Removed CTabbedMDI::OnDpiChangedBeforeParent
+
+
 Version 9.5
 ===========
 This version adds a CustomPrintDlg sample. This sample provides an

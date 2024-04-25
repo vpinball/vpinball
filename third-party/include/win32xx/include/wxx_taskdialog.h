@@ -1,9 +1,10 @@
-// Win32++   Version 9.5
-// Release Date: 9th February 2024
+// Win32++   Version 9.5.1
+// Release Date: 24th April 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
+//           https://github.com/DavidNash2024/Win32xx
 //
 //
 // Copyright (c) 2005-2024  David Nash
@@ -248,6 +249,7 @@ namespace Win32xx
         for (it = m_buttons.begin(); it != m_buttons.end(); ++it)
         {
             TASKDIALOG_BUTTON tb;
+            ZeroMemory(&tb, sizeof(tb));
             tb.nButtonID = (*it).buttonID;
             tb.pszButtonText = (*it).buttonText;
             buttons.push_back(tb);
@@ -258,6 +260,7 @@ namespace Win32xx
         for (it = m_radioButtons.begin(); it != m_radioButtons.end(); ++it)
         {
             TASKDIALOG_BUTTON tb;
+            ZeroMemory(&tb, sizeof(tb));
             tb.nButtonID = (*it).buttonID;
             tb.pszButtonText = (*it).buttonText;
             radioButtons.push_back(tb);

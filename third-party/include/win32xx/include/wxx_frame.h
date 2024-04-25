@@ -1,9 +1,10 @@
-// Win32++   Version 9.5
-// Release Date: 9th February 2024
+// Win32++   Version 9.5.1
+// Release Date: 24th April 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
+//           https://github.com/DavidNash2024/Win32xx
 //
 //
 // Copyright (c) 2005-2024  David Nash
@@ -1192,7 +1193,7 @@ namespace Win32xx
         CDC drawDC(pDrawItem->hDC);
 
         // Draw the checkmark's background rectangle first.
-        if (IsUsingThemes())
+        if (IsUsingThemes() && !IsUsingVistaMenu())
         {
             drawDC.CreatePen(PS_SOLID, 1, mbt.clrOutline);
             if (IsUsingThemes())
@@ -1362,8 +1363,6 @@ namespace Win32xx
 
             // Draw to ReBar background to the memory DC.
             memDC.SolidFill(rt.clrBkgnd2, rebarRect);
-            CRect rcBkGnd = rebarRect;
-            rcBkGnd.right = 600;
             memDC.GradientFill(rt.clrBkgnd1, rt.clrBkgnd2, rebarRect, FALSE);
 
             if (rt.clrBand1 || rt.clrBand2)
@@ -2537,13 +2536,16 @@ namespace Win32xx
     template <class T>
     inline LRESULT CFrameT<T>::OnSysCommand(UINT msg, WPARAM wparam, LPARAM lparam)
     {
-        if ((SC_KEYMENU == wparam) && (VK_SPACE != lparam) && GetMenuBar().IsWindow())
+        // The "wparam & 0xFFF0" below is a requirement mentioned in the
+        // description of WM_SYSCOMMAND in the Windows API documentation.
+
+        if ((SC_KEYMENU == (wparam & 0xFFF0)) && (VK_SPACE != lparam) && GetMenuBar().IsWindow())
         {
             GetMenuBar().SysCommand(msg, wparam, lparam);
             return 0;
         }
 
-        if (SC_MINIMIZE == wparam)
+        if (SC_MINIMIZE == (wparam & 0xFFF0))
             m_oldFocus = ::GetFocus();
 
         // Pass remaining system commands on for default processing.
@@ -3518,8 +3520,8 @@ namespace Win32xx
     template <class T>
     inline LRESULT CALLBACK CFrameT<T>::StaticKeyboardProc(int code, WPARAM wparam, LPARAM lparam)
     {
-        HWND hFrame = GetApp()->GetMainWnd();
-        CFrameT<T>* pFrame = static_cast< CFrameT<T>* >(CWnd::GetCWndPtr(hFrame));
+        HWND frame = GetApp()->GetMainWnd();
+        CFrameT<T>* pFrame = static_cast< CFrameT<T>* >(CWnd::GetCWndPtr(frame));
         assert(pFrame);
 
         if (pFrame)

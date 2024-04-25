@@ -1,9 +1,10 @@
-// Win32++   Version 9.5
-// Release Date: 9th February 2024
+// Win32++   Version 9.5.1
+// Release Date: 24th April 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
+//           https://github.com/DavidNash2024/Win32xx
 //
 //
 // Copyright (c) 2005-2024  David Nash
@@ -206,7 +207,7 @@ namespace Win32xx
                 MEMORY_BASIC_INFORMATION mbi;
                 ZeroMemory(&mbi, sizeof(mbi));
                 static int address = 0;
-                VirtualQuery(&address, &mbi, sizeof(mbi));
+                ::VirtualQuery(&address, &mbi, sizeof(mbi));
                 assert(mbi.AllocationBase);
                 m_instance = (HINSTANCE)mbi.AllocationBase;
 
@@ -240,7 +241,7 @@ namespace Win32xx
             }
         }
 
-        // Do remaining tidy up
+        // Do remaining tidy up.
         m_allTLSData.clear();
         if (m_tlsData != TLS_OUT_OF_INDEXES)
         {

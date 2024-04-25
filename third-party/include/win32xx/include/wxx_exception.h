@@ -1,9 +1,10 @@
-// Win32++   Version 9.5
-// Release Date: 9th February 2024
+// Win32++   Version 9.5.1
+// Release Date: 24th April 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
+//           https://github.com/DavidNash2024/Win32xx
 //
 //
 // Copyright (c) 2005-2024  David Nash
@@ -71,14 +72,6 @@
 //      // display the exception in a message box
 //      ::MessageBox(0, e.GetText(), AtoT(e.what()), MB_ICONERROR);
 //  }
-
-
-// A macro to support both old and new compilers.
-#if defined(__clang_major__) || (defined (_MSC_VER) && (_MSC_VER >= 1900)) // Clang or VS2015 and higher
-  #define WXX_NOEXCEPT noexcept
-#else
-  #define WXX_NOEXCEPT throw()
-#endif
 
 
 namespace Win32xx
@@ -243,11 +236,8 @@ namespace Win32xx
         m_messageID = rhs.m_messageID;
         m_error = rhs.m_error;
 
-        if (rhs.m_text)
-            StrCopy(m_text, rhs.m_text, WXX_MAX_STRING_SIZE);
-
-        if (rhs.m_errorString)
-            StrCopy(m_errorString, rhs.m_errorString, WXX_MAX_STRING_SIZE);
+        StrCopy(m_text, rhs.m_text, WXX_MAX_STRING_SIZE);
+        StrCopy(m_errorString, rhs.m_errorString, WXX_MAX_STRING_SIZE);
     }
 
     // CException assignment operator.
@@ -259,11 +249,8 @@ namespace Win32xx
         m_messageID = rhs.m_messageID;
         m_error = rhs.m_error;
 
-        if (rhs.m_text)
-            StrCopy(m_text, rhs.m_text, WXX_MAX_STRING_SIZE);
-
-        if (rhs.m_errorString)
-            StrCopy(m_errorString, rhs.m_errorString, WXX_MAX_STRING_SIZE);
+        StrCopy(m_text, rhs.m_text, WXX_MAX_STRING_SIZE);
+        StrCopy(m_errorString, rhs.m_errorString, WXX_MAX_STRING_SIZE);
 
         return *this;
     }
@@ -357,9 +344,7 @@ namespace Win32xx
         : CException(rhs)
     {
         ZeroMemory(m_filePath, WXX_MAX_STRING_SIZE * sizeof(TCHAR));
-
-        if (rhs.m_filePath)
-            StrCopy(m_filePath, rhs.m_filePath, WXX_MAX_STRING_SIZE);
+        StrCopy(m_filePath, rhs.m_filePath, WXX_MAX_STRING_SIZE);
     }
 
     // CFileException assignment operator.
@@ -367,9 +352,7 @@ namespace Win32xx
     {
         CException::operator =(rhs);
         ZeroMemory(m_filePath, WXX_MAX_STRING_SIZE * sizeof(TCHAR));
-
-        if (rhs.m_filePath)
-            StrCopy(m_filePath, rhs.m_filePath, WXX_MAX_STRING_SIZE);
+        StrCopy(m_filePath, rhs.m_filePath, WXX_MAX_STRING_SIZE);
 
         return *this;
     }
