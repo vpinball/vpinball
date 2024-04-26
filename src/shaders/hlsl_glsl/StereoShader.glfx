@@ -1,0 +1,127 @@
+////GLOBAL
+#version 330
+
+
+////DEFINES
+#include "Helpers.fxh"
+
+
+////VERTEX
+layout(location=0) in vec3 vPosition;
+layout(location=1) in float2 tc;
+out float2 tex0;
+
+
+////FRAGMENT
+uniform samplerStereo   tex_stereo_fb;    // Render buffer with either a single render for fake stereo by depth reconstruction or 2 renders in a layered texture
+uniform samplerStereo   tex_stereo_depth; // Depth, only used for fake stereo by depth reconstruction
+
+#include "Stereo.fxh"
+
+in float2 tex0;
+
+out vec4 color;
+#ifdef SHADER_GL410
+flat in int glLayer_gs;
+#endif
+
+
+////vs_main_no_trafo
+void main()
+{
+   gl_Position = vec4(vPosition.x, vPosition.y, 0.0, 1.0);
+   tex0 = float2(tc.x, 1.0-tc.y);
+}
+
+
+////ps_main_tb
+void main()
+{
+   color = float4(gatherEyeColor(float2(tex0.x, tex0.y * 2.0), tex0.y < 0.5), 1.0);
+}
+
+
+////ps_main_sbs
+void main()
+{
+   color = float4(gatherEyeColor(float2(tex0.x * 2.0, tex0.y), tex0.x < 0.5), 1.0);
+}
+
+
+////ps_main_int
+void main()
+{
+   color = float4(gatherEyeColor(tex0, frac(gl_FragCoord.y*0.5) < 0.5), 1.0);
+}
+
+
+////ps_main_flipped_int
+void main()
+{
+   color = float4(gatherEyeColor(tex0, frac(gl_FragCoord.y*0.5) >= 0.5), 1.0);
+}
+
+
+////ps_main_stereo_srgb_anaglyph
+void main()
+{
+   float3 lCol, rCol;
+   gatherLeftRightColors(tex0, lCol, rCol);
+   color = float4(FBGamma(LinearAnaglyph(InvGamma(lCol), InvGamma(rCol))), 1.0);
+}
+
+
+////ps_main_stereo_gamma_anaglyph
+void main()
+{
+   float3 lCol, rCol;
+   gatherLeftRightColors(tex0, lCol, rCol);
+   lCol = pow(lCol, float3(Stereo_LeftLuminance_Gamma.w, Stereo_LeftLuminance_Gamma.w, Stereo_LeftLuminance_Gamma.w));
+   rCol = pow(rCol, float3(Stereo_LeftLuminance_Gamma.w, Stereo_LeftLuminance_Gamma.w, Stereo_LeftLuminance_Gamma.w));
+   color = float4(pow(LinearAnaglyph(lCol, rCol), float3(1./Stereo_LeftLuminance_Gamma.w, 1./Stereo_LeftLuminance_Gamma.w, 1./Stereo_LeftLuminance_Gamma.w)), 1.0);
+}
+
+
+////ps_main_stereo_srgb_dyndesat_anaglyph
+void main()
+{
+   float3 lCol, rCol, lColDesat, rColDesat;
+   gatherLeftRightColors(tex0, lCol, rCol);
+   DynamicDesatAnaglyph(InvGamma(lCol), InvGamma(rCol), lColDesat, rColDesat);
+   color = float4(FBGamma(LinearAnaglyph(lColDesat, rColDesat)), 1.0);
+}
+
+
+////ps_main_stereo_gamma_dyndesat_anaglyph
+void main()
+{
+   float3 lCol, rCol;
+   gatherLeftRightColors(tex0, lCol, rCol);
+   lCol = pow(lCol, float3(Stereo_LeftLuminance_Gamma.w, Stereo_LeftLuminance_Gamma.w, Stereo_LeftLuminance_Gamma.w));
+   rCol = pow(rCol, float3(Stereo_LeftLuminance_Gamma.w, Stereo_LeftLuminance_Gamma.w, Stereo_LeftLuminance_Gamma.w));
+   float3 lColDesat, rColDesat;
+   DynamicDesatAnaglyph(lCol, rCol, lColDesat, rColDesat);
+   color = float4(pow(LinearAnaglyph(lColDesat, rColDesat), float3(1./Stereo_LeftLuminance_Gamma.w, 1./Stereo_LeftLuminance_Gamma.w, 1./Stereo_LeftLuminance_Gamma.w)), 1.0);
+}
+
+
+////ps_main_stereo_deghost_anaglyph
+void main()
+{
+   float3 lCol, rCol;
+   gatherLeftRightColors(tex0, lCol, rCol);
+   color = float4(DeghostAnaglyph(lCol, rCol), 1.0);
+}
+
+
+////TECHNIQUES
+
+stereo_SBS:P0:vs_main_no_trafo():ps_main_sbs()
+stereo_TB:P0:vs_main_no_trafo():ps_main_tb()
+stereo_Int:P0:vs_main_no_trafo():ps_main_int()
+stereo_Flipped_Int:P0:vs_main_no_trafo():ps_main_flipped_int()
+Stereo_sRGBAnaglyph:P0:vs_main_no_trafo():ps_main_stereo_srgb_anaglyph()
+Stereo_GammaAnaglyph:P0:vs_main_no_trafo():ps_main_stereo_gamma_anaglyph()
+Stereo_sRGBDynDesatAnaglyph:P0:vs_main_no_trafo():ps_main_stereo_srgb_dyndesat_anaglyph()
+Stereo_GammaDynDesatAnaglyph:P0:vs_main_no_trafo():ps_main_stereo_gamma_dyndesat_anaglyph()
+Stereo_DeghostAnaglyph:P0:vs_main_no_trafo():ps_main_stereo_deghost_anaglyph()

@@ -1,4 +1,8 @@
+#ifdef STEREO
+$input v_texcoord0, v_eye
+#else
 $input v_texcoord0
+#endif
 
 #include "common.sh"
 
@@ -11,8 +15,8 @@ $input v_texcoord0
 // . for parallax stereo, w_h_height.z keeps source texture height, w_h_height.w keeps the 3D offset
 uniform vec4 w_h_height;
 
-SAMPLER2D(tex_fb_filtered,  0); // Framebuffer (filtered)
-SAMPLER2D(tex_depth,        4); // DepthBuffer
+SAMPLER2DSTEREO(tex_fb_filtered,  0); // Framebuffer (filtered)
+SAMPLER2DSTEREO(tex_depth,        4); // DepthBuffer
 
 
 //#define NFAA_EDGE_DETECTION_VARIANT // different edge detection (sums for finite differences differ)
@@ -31,7 +35,11 @@ float GetLuminance(const vec3 l)
 }
 
 #ifndef NFAA_USE_COLOR
+#ifdef STEREO
+vec2 findContrastByLuminance(const vec2 XYCoord, const float filterSpread, const int v_eye)
+#else
 vec2 findContrastByLuminance(const vec2 XYCoord, const float filterSpread)
+#endif
 {
 	const vec2 upOffset    = vec2(0.0, w_h_height.y * filterSpread);
 	const vec2 rightOffset = vec2(w_h_height.x * filterSpread, 0.0);
@@ -63,7 +71,11 @@ vec2 findContrastByLuminance(const vec2 XYCoord, const float filterSpread)
 
 #else
 
+#ifdef STEREO
+vec2 findContrastByColor(const vec2 XYCoord, const float filterSpread, const int v_eye)
+#else
 vec2 findContrastByColor(const vec2 XYCoord, const float filterSpread)
+#endif
 {
 	const vec2 upOffset    = vec2(0.0, w_h_height.y * filterSpread);
 	const vec2 rightOffset = vec2(w_h_height.x * filterSpread, 0.0);
@@ -121,9 +133,17 @@ void main()
 	}
 
 #ifdef NFAA_USE_COLOR // edges from color
+	#ifdef STEREO
+	vec2 Vectors = findContrastByColor(u, filterSpread, v_eye);
+	#else
 	vec2 Vectors = findContrastByColor(u, filterSpread);
+	#endif
 #else
+	#ifdef STEREO
+	vec2 Vectors = findContrastByLuminance(u, filterSpread, v_eye);
+	#else
 	vec2 Vectors = findContrastByLuminance(u, filterSpread);
+	#endif
 #endif
 
 #ifndef NFAA_VARIANT2

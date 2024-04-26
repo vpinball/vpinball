@@ -1,4 +1,8 @@
+#ifdef STEREO
+$input v_texcoord0, v_eye
+#else
 $input v_texcoord0
+#endif
 
 #include "common.sh"
 
@@ -13,22 +17,30 @@ uniform vec4 w_h_height;
 
 uniform vec4 SSR_bumpHeight_fresnelRefl_scale_FS;
 
-SAMPLER2D(tex_fb_filtered,  0); // Framebuffer (filtered)
-SAMPLER2D(tex_depth,        4); // DepthBuffer
+SAMPLER2DSTEREO(tex_fb_filtered,  0); // Framebuffer (filtered)
+SAMPLER2DSTEREO(tex_depth,        4); // DepthBuffer
 SAMPLER2D(tex_ao_dither,    5); // AO Dither
 
 #define tex_fb_unfiltered tex_fb_filtered
 
 
 
+#ifdef STEREO
+vec3 get_nonunit_normal(const float depth0, const vec2 u, const int v_eye) // use neighboring pixels // quite some tex access by this
+#else
 vec3 get_nonunit_normal(const float depth0, const vec2 u) // use neighboring pixels // quite some tex access by this
+#endif
 {
-   const float depth1 = texture2DLod(tex_depth, float2(u.x, u.y + w_h_height.y), 0.0).x;
-   const float depth2 = texture2DLod(tex_depth, float2(u.x + w_h_height.x, u.y), 0.0).x;
+   const float depth1 = texStereoNoLod(tex_depth, float2(u.x, u.y + w_h_height.y)).x;
+   const float depth2 = texStereoNoLod(tex_depth, float2(u.x + w_h_height.x, u.y)).x;
    return vec3(w_h_height.y * (depth2 - depth0), (depth1 - depth0) * w_h_height.x, w_h_height.y * w_h_height.x); //!!
 }
 
+#ifdef STEREO
+vec3 approx_bump_normal(const vec2 coords, const vec2 offs, const float scale, const float sharpness, const int v_eye)
+#else
 vec3 approx_bump_normal(const vec2 coords, const vec2 offs, const float scale, const float sharpness)
+#endif
 {
     const vec3 lumw = vec3(0.212655,0.715158,0.072187);
 
@@ -65,11 +77,16 @@ void main()
 		return;
 	}
 
+	#ifdef STEREO
+	const vec3 normal = normalize(get_nonunit_normal(depth0,u,v_eye));
+	vec3 normal_b = approx_bump_normal(u, 0.01 * w_h_height.xy / depth0, depth0 / (0.05*depth0 + 0.0001), 1000.0,v_eye); //!! magic
+	#else
 	const vec3 normal = normalize(get_nonunit_normal(depth0,u));
 	vec3 normal_b = approx_bump_normal(u, 0.01 * w_h_height.xy / depth0, depth0 / (0.05*depth0 + 0.0001), 1000.0); //!! magic
-	       normal_b = normalize(vec3(normal.xy*normal_b.z + normal_b.xy*normal.z, normal.z*normal_b.z));
-	       normal_b = normalize(lerp(normal,normal_b, SSR_bumpHeight_fresnelRefl_scale_FS.x * normal_fade_factor(normal))); // have less impact of fake bump normals on playfield, etc
-
+	#endif
+	normal_b = normalize(vec3(normal.xy*normal_b.z + normal_b.xy*normal.z, normal.z*normal_b.z));
+	normal_b = normalize(lerp(normal,normal_b, SSR_bumpHeight_fresnelRefl_scale_FS.x * normal_fade_factor(normal))); // have less impact of fake bump normals on playfield, etc
+	
 	const vec3 V = normalize(vec3(0.5 - vec2(u.x, 1.0 - u.y), -0.5)); // WTF?! cam is in 0,0,0 but why z=-0.5?
 
 	const float fresnel = (SSR_bumpHeight_fresnelRefl_scale_FS.y + (1.0-SSR_bumpHeight_fresnelRefl_scale_FS.y) * pow(1.0-saturate(dot(V,normal_b)),5.)) // fresnel for falloff towards silhouette

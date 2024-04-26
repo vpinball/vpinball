@@ -1,0 +1,170 @@
+// The header part is not needed since this file is included in basic shader
+
+////GLOBAL
+// #version 400
+
+////DEFINES
+// #include "Helpers.fxh"
+
+////VERTEX
+
+////GEOMETRY
+// layout(triangles) in;
+// layout(triangle_strip, max_vertices = 3) out;
+
+// uniform bool disableVertexShader; // To support pretransformed vertices (used for backglass)
+
+////FRAGMENT
+
+uniform vec4 lightColor_intensity;
+uniform vec4 lightColor2_falloff_power;
+uniform vec4 lightCenter_maxRange;
+
+uniform bool lightingOff;
+
+uniform sampler2D tex_light_color; // base texture
+
+////vs_light_main
+
+layout(location=1) in vec3 vNormal;
+layout(location=2) in vec2 tc;
+
+VS_OUT(vec2, tex0);
+VS_OUT(vec3, worldPos);
+VS_OUT(vec3, normal);
+VS_OUT(vec3, tablePos);
+
+void main()
+{
+   float4 pos = float4(vPosition, 1.0);
+   float3 table_pos = (matWorld * pos).xyz;
+
+   VS_EYE;
+   VS_POSITION(matWorldViewProj[eye_vs] * pos, pos);
+   VS_VARYING(tablePos, table_pos);
+   VS_VARYING(tex0, tc);
+   // trafo all into worldview space (as most of the weird trafos happen in view, world is identity so far)
+   VS_VARYING(worldPos, (matWorldView * pos).xyz);
+   // No need to use a dedicated 'normal' matrix and normalize since the matWorldView is orthonormal (world is identity and view is always orthonormal) and we normalize in fragment shader
+   //VS_VARYING(normal, normalize((matWorldViewInverseTranspose * vNormal).xyz));
+   VS_VARYING(normal, (matWorldView * float4(vNormal, 0.0)).xyz);
+   VS_CLIP_DISTANCE(vec4(table_pos.xyz, 1.0));
+}
+
+////gs_light_main
+
+in vec2 tex0_gs[]; 
+out vec2 tex0;
+
+in vec3 worldPos_gs[];
+out vec3 worldPos;
+
+in vec3 tablePos_gs[];
+out vec3 tablePos;
+
+in vec3 normal_gs[];
+out vec3 normal;
+
+void main()
+{
+    GS_LAYER_COPY;
+    for (int i=0;i<gl_in.length();i++)
+    {
+        gl_Position = matWorldViewProj[eye_gs[i]]*gl_in[i].gl_Position;
+        gl_ClipDistance[0] = gl_in[i].gl_ClipDistance[0];
+        tex0 = tex0_gs[i];
+        worldPos = worldPos_gs[i];
+        tablePos = tablePos_gs[i];
+        normal = normal_gs[i];
+        EmitVertex();
+    }
+    EndPrimitive();
+}
+
+////PS_LightWithTexel
+
+in vec2 tex0;
+in vec3 worldPos;
+in vec3 tablePos;
+in vec3 normal;
+
+void main()
+{
+    FS_LAYER_TO_GLOBAL;
+    // FIXME check tex_light_color declaration
+    float4 pixel = texNoLod(tex_light_color, tex0); //!! IN.tex0 abused in backglass mode
+
+    // no lighting if HUD vertices or passthrough mode
+    BRANCH if (lightingOff)
+        color = pixel;
+    else
+    {
+        pixel.xyz = saturate(pixel.xyz); // could be HDR
+        const float3 diffuse  = pixel.xyz*cBase_Alpha.xyz;
+        const float3 glossy   = is_metal ? diffuse : pixel.xyz*cGlossy_ImageLerp.xyz*0.08; //!! use AO for glossy? specular?
+        const float3 specular = cClearcoat_EdgeAlpha.xyz*0.08;
+        const float  edge     = is_metal ? 1.0 : Roughness_WrapL_Edge_Thickness.z;
+
+        color.xyz = lightLoop(worldPos, normalize(normal), normalize(/*camera=0,0,0,1*/-worldPos), diffuse, glossy, specular, edge, is_metal); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
+        color.a = pixel.a;
+    }
+    color.a *= cBase_Alpha.a;
+
+    BRANCH if (lightColor_intensity.w != 0.0)
+    {
+        const float len = length(lightCenter_maxRange.xyz - tablePos) * lightCenter_maxRange.w;
+        const float atten = pow(1.0 - saturate(len), lightColor2_falloff_power.w);
+        const float3 lcolor = lerp(lightColor2_falloff_power.xyz, lightColor_intensity.xyz, sqrt(len));
+        color += float4(lcolor*(atten*lightColor_intensity.w),
+                        saturate(atten*lightColor_intensity.w));
+        color = OverlayHDR(pixel, color); // could be HDR //!! have mode to choose: if simple mode picked and surface images match then can skip lighting texel above and JUST alpha blend with this here
+        color = ScreenHDR(pixel, color);
+    }
+}
+
+////PS_LightWithoutTexel
+
+in vec2 tex0;
+in vec3 worldPos;
+in vec3 tablePos;
+in vec3 normal;
+
+void main()
+{
+    FS_LAYER_TO_GLOBAL;
+    float4 result = float4(0.0, 0.0, 0.0, 0.0);
+    BRANCH if (lightColor_intensity.w != 0.0)
+    {
+        const float len = length(lightCenter_maxRange.xyz - tablePos) * lightCenter_maxRange.w;
+        const float atten = pow(1.0 - saturate(len), lightColor2_falloff_power.w);
+        const float3 lcolor = lerp(lightColor2_falloff_power.xyz, lightColor_intensity.xyz, sqrt(len));
+        result.xyz = lcolor*(atten*lightColor_intensity.w);
+        result.a = saturate(atten*lightColor_intensity.w);
+    }
+
+    // no lighting if HUD vertices or passthrough mode
+    BRANCH if (lightingOff)
+        color.xyz = lightColor_intensity.xyz;
+    else
+    {
+        const float3 diffuse  = lightColor_intensity.xyz*cBase_Alpha.xyz;
+        const float3 glossy   = is_metal ? diffuse : lightColor_intensity.xyz*cGlossy_ImageLerp.xyz*0.08;
+        const float3 specular = cClearcoat_EdgeAlpha.xyz*0.08;
+        const float  edge     = is_metal ? 1.0 : Roughness_WrapL_Edge_Thickness.z;
+
+        color.xyz = lightLoop(worldPos, normalize(normal), normalize(/*camera=0,0,0,1*/-worldPos), diffuse, glossy, specular, edge, is_metal); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
+    }
+    color.a = cBase_Alpha.a;
+
+    color += result;
+}
+
+////TECHNIQUES
+
+light_with_texture:P0:vs_light_main():gs_light_main():PS_LightWithTexel()
+light_without_texture:P0:vs_light_main():gs_light_main():PS_LightWithoutTexel()
+
+//light_with_texture_isMetal:P0:vs_light_main():PS_LightWithTexel(true)
+//light_with_texture_isNotMetal:P0:vs_light_main():PS_LightWithTexel(false)
+//light_without_texture_isMetal:P0:vs_light_main():PS_LightWithoutTexel(true)
+//light_without_texture_isNotMetal:P0:vs_light_main():PS_LightWithoutTexel(false)

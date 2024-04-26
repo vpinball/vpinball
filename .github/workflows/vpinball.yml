@@ -188,7 +188,6 @@ jobs:
           fi
           cp build/${{ matrix.config }}/*.dll tmp
           cp -r build/${{ matrix.config }}/assets tmp
-          cp -r build/${{ matrix.config }}/shaders-${{ needs.version.outputs.version_short }} tmp
           cp -r build/${{ matrix.config }}/scripts tmp
           cp -r build/${{ matrix.config }}/tables tmp
           cp -r build/${{ matrix.config }}/docs tmp
@@ -319,7 +318,9 @@ jobs:
           cp build/${{ matrix.config }}/VPinballX_${{ matrix.type }} tmp
           cp -a build/${{ matrix.config }}/*.{so,so.*} tmp
           cp -r build/${{ matrix.config }}/flexdmd tmp
-          cp -r build/${{ matrix.config }}/shaders-${{ needs.version.outputs.version_short }} tmp
+          if [[ "${{ matrix.type }}" == "GL" ]]; then
+            cp -r build/${{ matrix.config }}/shaders-${{ needs.version.outputs.version_short }} tmp
+          fi
           cp -r build/${{ matrix.config }}/assets tmp
           cp -r build/${{ matrix.config }}/scripts tmp
           cp -r build/${{ matrix.config }}/tables tmp

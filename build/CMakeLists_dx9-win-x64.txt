@@ -44,52 +44,52 @@ set_source_files_properties(
    src/ui/vpinball.rc LANGUAGE RC
 )
 
-set_source_files_properties(shader/BallShader.hlsl PROPERTIES 
+set_source_files_properties(src/shaders/hlsl_glsl/BallShader.hlsl PROPERTIES 
    VS_SHADER_TYPE Effect 
    VS_SHADER_MODEL 2.0 
-   VS_SHADER_OUTPUT_HEADER_FILE "${CMAKE_CURRENT_BINARY_DIR}/$(IntDir)/shader/%(Filename).h"
+   VS_SHADER_OUTPUT_HEADER_FILE "${CMAKE_CURRENT_BINARY_DIR}/$(IntDir)/src/shaders/hlsl_ball.h"
    VS_SHADER_ENTRYPOINT ballShaderCode
 )
 
-set_source_files_properties(shader/BasicShader.hlsl PROPERTIES
+set_source_files_properties(src/shaders/hlsl_glsl/BasicShader.hlsl PROPERTIES
    VS_SHADER_TYPE Effect 
    VS_SHADER_MODEL 2.0
-   VS_SHADER_OUTPUT_HEADER_FILE "${CMAKE_CURRENT_BINARY_DIR}/$(IntDir)/shader/%(Filename).h"
+   VS_SHADER_OUTPUT_HEADER_FILE "${CMAKE_CURRENT_BINARY_DIR}/$(IntDir)/src/shaders/hlsl_basic.h"
    VS_SHADER_ENTRYPOINT basicShaderCode
 )
 
-set_source_files_properties(shader/DMDShader.hlsl PROPERTIES
+set_source_files_properties(src/shaders/hlsl_glsl/DMDShader.hlsl PROPERTIES
    VS_SHADER_TYPE Effect
    VS_SHADER_MODEL 2.0 
-   VS_SHADER_OUTPUT_HEADER_FILE "${CMAKE_CURRENT_BINARY_DIR}/$(IntDir)/shader/%(Filename).h"
+   VS_SHADER_OUTPUT_HEADER_FILE "${CMAKE_CURRENT_BINARY_DIR}/$(IntDir)/src/shaders/hlsl_dmd.h"
    VS_SHADER_ENTRYPOINT dmdShaderCode
 )
 
-set_source_files_properties(shader/FBShader.hlsl PROPERTIES
+set_source_files_properties(src/shaders/hlsl_glsl/FBShader.hlsl PROPERTIES
    VS_SHADER_TYPE Effect 
    VS_SHADER_MODEL 2.0
-   VS_SHADER_OUTPUT_HEADER_FILE "${CMAKE_CURRENT_BINARY_DIR}/$(IntDir)/shader/%(Filename).h"
+   VS_SHADER_OUTPUT_HEADER_FILE "${CMAKE_CURRENT_BINARY_DIR}/$(IntDir)/src/shaders/hlsl_postprocess.h"
    VS_SHADER_ENTRYPOINT FBShaderCode
 )
 
-set_source_files_properties(shader/FlasherShader.hlsl PROPERTIES
+set_source_files_properties(src/shaders/hlsl_glsl/FlasherShader.hlsl PROPERTIES
    VS_SHADER_TYPE Effect 
    VS_SHADER_MODEL 2.0
-   VS_SHADER_OUTPUT_HEADER_FILE "${CMAKE_CURRENT_BINARY_DIR}/$(IntDir)/shader/%(Filename).h"
+   VS_SHADER_OUTPUT_HEADER_FILE "${CMAKE_CURRENT_BINARY_DIR}/$(IntDir)/src/shaders/hlsl_flasher.h"
    VS_SHADER_ENTRYPOINT flasherShaderCode
 )
 
-set_source_files_properties(shader/LightShader.hlsl PROPERTIES
+set_source_files_properties(src/shaders/hlsl_glsl/LightShader.hlsl PROPERTIES
    VS_SHADER_TYPE Effect
    VS_SHADER_MODEL 2.0
-   VS_SHADER_OUTPUT_HEADER_FILE "${CMAKE_CURRENT_BINARY_DIR}/$(IntDir)/shader/%(Filename).h"
+   VS_SHADER_OUTPUT_HEADER_FILE "${CMAKE_CURRENT_BINARY_DIR}/$(IntDir)/src/shaders/hlsl_light.h"
    VS_SHADER_ENTRYPOINT lightShaderCode 
 )
 
-set_source_files_properties(shader/StereoShader.hlsl PROPERTIES
+set_source_files_properties(src/shaders/hlsl_glsl/StereoShader.hlsl PROPERTIES
    VS_SHADER_TYPE Effect
    VS_SHADER_MODEL 2.0
-   VS_SHADER_OUTPUT_HEADER_FILE "${CMAKE_CURRENT_BINARY_DIR}/$(IntDir)/shader/%(Filename).h"
+   VS_SHADER_OUTPUT_HEADER_FILE "${CMAKE_CURRENT_BINARY_DIR}/$(IntDir)/src/shaders/hlsl_stereo.h"
    VS_SHADER_ENTRYPOINT stereoShaderCode 
 )
 
@@ -488,13 +488,13 @@ add_executable(vpinball WIN32
    src/ui/res/trigger.rgs
    src/ui/res/vpinball.rgs
 
-   shader/BallShader.hlsl
-   shader/BasicShader.hlsl
-   shader/DMDShader.hlsl
-   shader/FBShader.hlsl
-   shader/FlasherShader.hlsl
-   shader/LightShader.hlsl
-   shader/StereoShader.hlsl
+   src/shaders/hlsl_glsl/BallShader.hlsl
+   src/shaders/hlsl_glsl/BasicShader.hlsl
+   src/shaders/hlsl_glsl/DMDShader.hlsl
+   src/shaders/hlsl_glsl/FBShader.hlsl
+   src/shaders/hlsl_glsl/FlasherShader.hlsl
+   src/shaders/hlsl_glsl/LightShader.hlsl
+   src/shaders/hlsl_glsl/StereoShader.hlsl
 
    third-party/include/BAM/BAMView.cpp
    third-party/include/BAM/BAMView.h

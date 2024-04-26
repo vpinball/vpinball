@@ -310,7 +310,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>.\;$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include;src;shader;third-party\include;third-party\include\compat\msvc;third-party\include\glad\include;pin;media;third-party\include\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include;src;third-party\include;third-party\include\compat\msvc;third-party\include\glad\include;pin;media;third-party\include\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>ENABLE_DX9;WIN32;_DEBUG;DEBUG_REFCOUNT_TRIGGER;_WINDOWS;MYDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -372,7 +372,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>.\;$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include;src;shader;third-party\include;third-party\include\compat\msvc;third-party\include\glad\include;pin;media;third-party\include\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include;src;third-party\include;third-party\include\compat\msvc;third-party\include\glad\include;pin;media;third-party\include\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>ENABLE_SDL_INPUT;ENABLE_SDL_VIDEO;ENABLE_OPENGL;WIN32;_DEBUG;DEBUG_REFCOUNT_TRIGGER;_WINDOWS;MYDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -441,7 +441,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>.\;$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include;src;shader;third-party\include;third-party\include\compat\msvc;third-party\include\glad\include;pin;media;third-party\include\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include;src;third-party\include;third-party\include\compat\msvc;third-party\include\glad\include;pin;media;third-party\include\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>ENABLE_SDL_INPUT;BX_CONFIG_DEBUG=1;ENABLE_BGFX;ENABLE_SDL_VIDEO;WIN32;_DEBUG;DEBUG_REFCOUNT_TRIGGER;_WINDOWS;MYDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -510,7 +510,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>.\;$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include;src;shader;third-party\include;third-party\include\compat\msvc;third-party\include\glad\include;pin;media;third-party\include\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include;src;third-party\include;third-party\include\compat\msvc;third-party\include\glad\include;pin;media;third-party\include\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>ENABLE_DX9;WIN32;_DEBUG;DEBUG_REFCOUNT_TRIGGER;_WINDOWS;MYDEBUG;DEBUGPHYSICS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -571,7 +571,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>.\;$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include;src;shader;third-party\include;third-party\include\compat\msvc;third-party\include\glad\include;pin;media;third-party\include\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include;src;third-party\include;third-party\include\compat\msvc;third-party\include\glad\include;pin;media;third-party\include\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>ENABLE_SDL_INPUT;ENABLE_SDL_VIDEO;ENABLE_OPENGL;WIN32;_DEBUG;DEBUG_REFCOUNT_TRIGGER;_WINDOWS;MYDEBUG;DEBUGPHYSICS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -632,7 +632,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>.\;$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include;src;shader;third-party\include;third-party\include\compat\msvc;third-party\include\glad\include;pin;media;third-party\include\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include;src;third-party\include;third-party\include\compat\msvc;third-party\include\glad\include;pin;media;third-party\include\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>ENABLE_SDL_INPUT;BX_CONFIG_DEBUG=1;ENABLE_BGFX;ENABLE_SDL_VIDEO;WIN32;_DEBUG;DEBUG_REFCOUNT_TRIGGER;_WINDOWS;MYDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -697,7 +697,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>.\;$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include;src;shader;third-party\include;third-party\include\compat\msvc;third-party\include\glad\include;pin;media;third-party\include\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include;src;third-party\include;third-party\include\compat\msvc;third-party\include\glad\include;pin;media;third-party\include\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>ENABLE_DX9;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -761,7 +761,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>.\;$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include;src;shader;third-party\include;third-party\include\compat\msvc;third-party\include\glad\include;pin;media;third-party\include\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include;src;third-party\include;third-party\include\compat\msvc;third-party\include\glad\include;pin;media;third-party\include\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>ENABLE_SDL_INPUT;ENABLE_SDL_VIDEO;ENABLE_OPENGL;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -834,7 +834,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>.\;$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include;src;shader;third-party\include;third-party\include\compat\msvc;third-party\include\glad\include;pin;media;third-party\include\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include;src;third-party\include;third-party\include\compat\msvc;third-party\include\glad\include;pin;media;third-party\include\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>BX_CONFIG_DEBUG=0;ENABLE_BGFX;ENABLE_SDL_VIDEO;ENABLE_SDL_INPUT;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -907,7 +907,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>.\;$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include;src;shader;third-party\include;third-party\include\compat\msvc;third-party\include\glad\include;pin;media;third-party\include\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include;src;third-party\include;third-party\include\compat\msvc;third-party\include\glad\include;pin;media;third-party\include\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>ENABLE_DX9;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -978,7 +978,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>.\;$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include;src;shader;third-party\include;third-party\include\compat\msvc;third-party\include\glad\include;pin;media;third-party\include\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include;src;third-party\include;third-party\include\compat\msvc;third-party\include\glad\include;pin;media;third-party\include\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>ENABLE_SDL_INPUT;ENABLE_SDL_VIDEO;ENABLE_OPENGL;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -1049,7 +1049,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>.\;$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include;src;shader;third-party\include;third-party\include\compat\msvc;third-party\include\glad\include;pin;media;third-party\include\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include;src;third-party\include;third-party\include\compat\msvc;third-party\include\glad\include;pin;media;third-party\include\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>BX_CONFIG_DEBUG=0;ENABLE_BGFX;ENABLE_SDL_VIDEO;ENABLE_SDL_INPUT;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -1352,27 +1352,27 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="shader/FBShader.fxh" />
-    <None Include="shader/SMAA.fxh" />
-    <None Include="shader/BallShader.glfx" />
-    <None Include="shader/BallShadows.fxh" />
-    <None Include="shader/BasicShader.glfx" />
-    <None Include="shader/ClassicLightShader.glfx" />
-    <None Include="shader/DMDShader.glfx" />
-    <None Include="shader/DMDShaderVR.glfx" />
-    <None Include="shader/FBShader.glfx" />
-    <None Include="shader/FlasherShader.glfx" />
-    <None Include="shader/FXAAStereoAO_GL.fxh" />
-    <None Include="shader/LightShader.glfx" />
-    <None Include="shader/Material_GL.fxh" />
-    <None Include="shader/SMAA.glfx" />
-    <None Include="shader/SSR_GL.fxh" />
-    <None Include="shader/Stereo.fxh" />
-    <None Include="shader/StereoShader.glfx" />
-    <None Include="shader/FXAAStereoAO.fxh" />
-    <None Include="shader/Helpers.fxh" />
-    <None Include="shader/Material.fxh" />
-    <None Include="shader/SSR.fxh" />
+    <None Include="src/shaders/hlsl_glsl/FBShader.fxh" />
+    <None Include="src/shaders/hlsl_glsl/SMAA.fxh" />
+    <None Include="src/shaders/hlsl_glsl/BallShader.glfx" />
+    <None Include="src/shaders/hlsl_glsl/BallShadows.fxh" />
+    <None Include="src/shaders/hlsl_glsl/BasicShader.glfx" />
+    <None Include="src/shaders/hlsl_glsl/ClassicLightShader.glfx" />
+    <None Include="src/shaders/hlsl_glsl/DMDShader.glfx" />
+    <None Include="src/shaders/hlsl_glsl/DMDShaderVR.glfx" />
+    <None Include="src/shaders/hlsl_glsl/FBShader.glfx" />
+    <None Include="src/shaders/hlsl_glsl/FlasherShader.glfx" />
+    <None Include="src/shaders/hlsl_glsl/FXAAStereoAO_GL.fxh" />
+    <None Include="src/shaders/hlsl_glsl/LightShader.glfx" />
+    <None Include="src/shaders/hlsl_glsl/Material_GL.fxh" />
+    <None Include="src/shaders/hlsl_glsl/SMAA.glfx" />
+    <None Include="src/shaders/hlsl_glsl/SSR_GL.fxh" />
+    <None Include="src/shaders/hlsl_glsl/Stereo.fxh" />
+    <None Include="src/shaders/hlsl_glsl/StereoShader.glfx" />
+    <None Include="src/shaders/hlsl_glsl/FXAAStereoAO.fxh" />
+    <None Include="src/shaders/hlsl_glsl/Helpers.fxh" />
+    <None Include="src/shaders/hlsl_glsl/Material.fxh" />
+    <None Include="src/shaders/hlsl_glsl/SSR.fxh" />
     <None Include="src/assets/Default_VPinballX.ini" />
     <None Include="src/assets/TableSizes.csv" />
     <None Include="src/assets/tony_mc_mapface_unrolled.exr" />
@@ -1640,6 +1640,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="src/physics/NudgeFilter.h" />
     <ClInclude Include="src/physics/PhysicsEngine.h" />
     <ClInclude Include="src/physics/quadtree.h" />
+    <ClInclude Include="src/renderer/AreaTex.h" />
     <ClInclude Include="src/renderer/Anaglyph.h" />
     <ClInclude Include="src/renderer/IndexBuffer.h" />
     <ClInclude Include="src/renderer/MeshBuffer.h" />
@@ -1653,6 +1654,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="src/renderer/RenderTarget.h" />
     <ClInclude Include="src/renderer/Renderer.h" />
     <ClInclude Include="src/renderer/Sampler.h" />
+    <ClInclude Include="src/renderer/SearchTex.h" />
     <ClInclude Include="src/renderer/Shader.h" />
     <ClInclude Include="src/renderer/Texture.h" />
     <ClInclude Include="src/renderer/TextureManager.h" />
@@ -1875,9 +1877,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="third-party/include/win32xx/include/wxx_wincore0.h" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="shader/BallShader.hlsl">
+    <FxCompile Include="src/shaders/hlsl_glsl/BallShader.hlsl">
       <EntryPointName>ballShaderCode</EntryPointName>
-      <HeaderFileOutput>shader\%(Filename).h</HeaderFileOutput>
+      <HeaderFileOutput>src/shaders/hlsl_ball.h</HeaderFileOutput>
       <ShaderType>Effect</ShaderType>
       <ShaderModel>2.0</ShaderModel>
       <ObjectFileOutput>
@@ -1887,9 +1889,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <ExcludedFromBuild Condition="'$(Configuration)'=='Debug_BGFX'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)'=='Release_BGFX'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="shader/BasicShader.hlsl">
+    <FxCompile Include="src/shaders/hlsl_glsl/BasicShader.hlsl">
       <EntryPointName>basicShaderCode</EntryPointName>
-      <HeaderFileOutput>shader\%(Filename).h</HeaderFileOutput>
+      <HeaderFileOutput>src/shaders/hlsl_basic.h</HeaderFileOutput>
       <ShaderType>Effect</ShaderType>
       <ShaderModel>2.0</ShaderModel>
       <ObjectFileOutput>
@@ -1899,9 +1901,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <ExcludedFromBuild Condition="'$(Configuration)'=='Debug_BGFX'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)'=='Release_BGFX'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="shader/DMDShader.hlsl">
+    <FxCompile Include="src/shaders/hlsl_glsl/DMDShader.hlsl">
       <EntryPointName>dmdShaderCode</EntryPointName>
-      <HeaderFileOutput>shader\%(Filename).h</HeaderFileOutput>
+      <HeaderFileOutput>src/shaders/hlsl_dmd.h</HeaderFileOutput>
       <ShaderType>Effect</ShaderType>
       <ShaderModel>2.0</ShaderModel>
       <ObjectFileOutput>
@@ -1911,9 +1913,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <ExcludedFromBuild Condition="'$(Configuration)'=='Debug_BGFX'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)'=='Release_BGFX'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="shader/FBShader.hlsl">
+    <FxCompile Include="src/shaders/hlsl_glsl/FBShader.hlsl">
       <EntryPointName>FBShaderCode</EntryPointName>
-      <HeaderFileOutput>shader\%(Filename).h</HeaderFileOutput>
+      <HeaderFileOutput>src/shaders/hlsl_postprocess.h</HeaderFileOutput>
       <ShaderType>Effect</ShaderType>
       <ShaderModel>2.0</ShaderModel>
       <ObjectFileOutput>
@@ -1923,9 +1925,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <ExcludedFromBuild Condition="'$(Configuration)'=='Debug_BGFX'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)'=='Release_BGFX'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="shader/FlasherShader.hlsl">
+    <FxCompile Include="src/shaders/hlsl_glsl/FlasherShader.hlsl">
       <EntryPointName>flasherShaderCode</EntryPointName>
-      <HeaderFileOutput>shader\%(Filename).h</HeaderFileOutput>
+      <HeaderFileOutput>src/shaders/hlsl_flasher.h</HeaderFileOutput>
       <ShaderType>Effect</ShaderType>
       <ShaderModel>2.0</ShaderModel>
       <ObjectFileOutput>
@@ -1935,9 +1937,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <ExcludedFromBuild Condition="'$(Configuration)'=='Debug_BGFX'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)'=='Release_BGFX'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="shader/LightShader.hlsl">
+    <FxCompile Include="src/shaders/hlsl_glsl/LightShader.hlsl">
       <EntryPointName>lightShaderCode</EntryPointName>
-      <HeaderFileOutput>shader\%(Filename).h</HeaderFileOutput>
+      <HeaderFileOutput>src/shaders/hlsl_light.h</HeaderFileOutput>
       <ShaderType>Effect</ShaderType>
       <ShaderModel>2.0</ShaderModel>
       <ObjectFileOutput>
@@ -1947,9 +1949,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <ExcludedFromBuild Condition="'$(Configuration)'=='Debug_BGFX'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)'=='Release_BGFX'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="shader/StereoShader.hlsl">
+    <FxCompile Include="src/shaders/hlsl_glsl/StereoShader.hlsl">
       <EntryPointName>stereoShaderCode</EntryPointName>
-      <HeaderFileOutput>shader\%(Filename).h</HeaderFileOutput>
+      <HeaderFileOutput>src/shaders/hlsl_stereo.h</HeaderFileOutput>
       <ShaderType>Effect</ShaderType>
       <ShaderModel>2.0</ShaderModel>
       <ObjectFileOutput>
@@ -1958,15 +1960,6 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <ExcludedFromBuild Condition="'$(Configuration)'=='Release_GL'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)'=='Debug_BGFX'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)'=='Release_BGFX'">true</ExcludedFromBuild>
-    </FxCompile>
-    <FxCompile Include="shader/ClassicLightShader.hlsl">
-      <EntryPointName>classicLightShaderCode</EntryPointName>
-      <HeaderFileOutput>shader\%(Filename).h</HeaderFileOutput>
-      <ShaderType>Effect</ShaderType>
-      <ShaderModel>2.0</ShaderModel>
-      <ObjectFileOutput>
-      </ObjectFileOutput>
-      <ExcludedFromBuild>true</ExcludedFromBuild>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1994,27 +1987,13 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     </ContentWithTargetPath>
   </ItemGroup>
   <ItemGroup>
-    <ContentWithTargetPath Include="shader/*.glfx" Condition="('$(Configuration)'=='Debug_GL')or('$(Configuration)'=='Release_GL')">
+    <ContentWithTargetPath Include="src/shaders/hlsl_glsl/*.glfx" Condition="('$(Configuration)'=='Debug_GL')or('$(Configuration)'=='Release_GL')">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <TargetPath>shaders-10.8.1\opengl\%(RecursiveDir)\%(Filename)%(Extension)</TargetPath>
+      <TargetPath>shaders-10.8.1\%(RecursiveDir)\%(Filename)%(Extension)</TargetPath>
     </ContentWithTargetPath>
-    <ContentWithTargetPath Include="shader/*.fxh" Condition="('$(Configuration)'=='Debug_GL')or('$(Configuration)'=='Release_GL')">
+    <ContentWithTargetPath Include="src/shaders/hlsl_glsl/*.fxh" Condition="('$(Configuration)'=='Debug_GL')or('$(Configuration)'=='Release_GL')">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <TargetPath>shaders-10.8.1\opengl\%(RecursiveDir)\%(Filename)%(Extension)</TargetPath>
-    </ContentWithTargetPath>
-  </ItemGroup>
-  <ItemGroup>
-    <ContentWithTargetPath Include="src/shaders/bgfx/glsl/**" Condition="('$(Configuration)'=='Debug_BGFX')or('$(Configuration)'=='Release_BGFX')">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <TargetPath>shaders-10.8.1\bgfx-glsl\%(RecursiveDir)\%(Filename)%(Extension)</TargetPath>
-    </ContentWithTargetPath>
-    <ContentWithTargetPath Include="src/shaders/bgfx/hlsl/**" Condition="('$(Configuration)'=='Debug_BGFX')or('$(Configuration)'=='Release_BGFX')">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <TargetPath>shaders-10.8.1\bgfx-hlsl\%(RecursiveDir)\%(Filename)%(Extension)</TargetPath>
-    </ContentWithTargetPath>
-    <ContentWithTargetPath Include="src/shaders/bgfx/spirv/**" Condition="('$(Configuration)'=='Debug_BGFX')or('$(Configuration)'=='Release_BGFX')">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <TargetPath>shaders-10.8.1\bgfx-spirv\%(RecursiveDir)\%(Filename)%(Extension)</TargetPath>
+      <TargetPath>shaders-10.8.1\%(RecursiveDir)\%(Filename)%(Extension)</TargetPath>
     </ContentWithTargetPath>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

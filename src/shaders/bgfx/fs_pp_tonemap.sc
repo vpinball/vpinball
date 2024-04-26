@@ -1,4 +1,8 @@
+#ifdef STEREO
+$input v_texcoord0, v_eye
+#else
 $input v_texcoord0
+#endif
 
 #include "common.sh"
 
@@ -30,18 +34,18 @@ uniform vec4 do_bloom; // converted to vec4 for BGFX
 
 #ifdef NOFILTER
   #define tex_fb tex_fb_unfiltered
-  SAMPLER2D(tex_fb_unfiltered,  0); // Framebuffer
+  SAMPLER2DSTEREO(tex_fb_unfiltered,  0); // Framebuffer
 #else
   #define tex_fb tex_fb_filtered
-  SAMPLER2D(tex_fb_filtered,  0); // Framebuffer
+  SAMPLER2DSTEREO(tex_fb_filtered,  0); // Framebuffer
 #endif
 
-SAMPLER2D(tex_bloom,        1); // Bloom
-SAMPLER2D(tex_color_lut,    2); // Color grade
-SAMPLER2D(tex_ao,           3); // Ambient Occlusion
-SAMPLER2D(tex_depth,        4); // Depth Buffer
-SAMPLER2D(tex_ao_dither,    5); // Ambient Occlusion Dither
-SAMPLER2D(tex_tonemap_lut,  6); // Precomputed Tonemapping LUT
+SAMPLER2DSTEREO(tex_bloom,        1); // Bloom
+SAMPLER2D      (tex_color_lut,    2); // Color grade
+SAMPLER2DSTEREO(tex_ao,           3); // Ambient Occlusion
+SAMPLER2DSTEREO(tex_depth,        4); // Depth Buffer
+SAMPLER2D      (tex_ao_dither,    5); // Ambient Occlusion Dither
+SAMPLER2D      (tex_tonemap_lut,  6); // Precomputed Tonemapping LUT
 
 
 // //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -332,15 +336,15 @@ void main()
 {
    // v_texcoord0 is pixel perfect sampling which here means between the pixels resulting from supersampling (for 2x, it's in the middle of the 2 texels)
    
-   rtype result = texNoLod(tex_fb, v_texcoord0).swizzle;
+   rtype result = texStereoNoLod(tex_fb, v_texcoord0).swizzle;
    
    // moving AO before tonemap does not really change the look
    #ifdef AO
-      result *= texNoLod(tex_ao, v_texcoord0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
+      result *= texStereoNoLod(tex_ao, v_texcoord0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
    #endif
 
    BRANCH if (do_bloom.x > 0.)
-      result += texNoLod(tex_bloom, v_texcoord0).swizzle; //!! offset?
+      result += texStereoNoLod(tex_bloom, v_texcoord0).swizzle; //!! offset?
 
    const float depth0 = texStereoNoLod(tex_depth, v_texcoord0).x;
    BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)

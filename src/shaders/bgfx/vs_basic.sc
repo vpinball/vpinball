@@ -1,5 +1,9 @@
 $input a_position, a_normal, a_texcoord0
+#ifdef STEREO
+$output v_worldPos, v_tablePos, v_normal, v_texcoord0, v_eye
+#else
 $output v_worldPos, v_tablePos, v_normal, v_texcoord0
+#endif
 
 #include "common.sh"
 
@@ -7,7 +11,12 @@ uniform mat4 matWorld;
 uniform mat4 matView;
 uniform mat4 matWorldView;
 uniform mat4 matWorldViewInverseTranspose;
-uniform mat4 matWorldViewProj;
+#ifdef STEREO
+	uniform mat4 matWorldViewProj[2];
+#else
+	uniform mat4 matWorldViewProj;
+#endif
+
 
 void main()
 {
@@ -20,7 +29,13 @@ void main()
     #ifdef TEX
         v_texcoord0 = a_texcoord0;
     #endif
-    gl_Position = mul(matWorldViewProj, pos);
+	#ifdef STEREO
+		gl_Position = mul(matWorldViewProj[gl_InstanceID], pos);
+		gl_Layer = gl_InstanceID;
+		v_eye = gl_InstanceID;
+	#else
+		gl_Position = mul(matWorldViewProj, pos);
+	#endif
     #ifdef CLASSIC_LIGHT
         gl_Position.z = max(gl_Position.z, 0.00006103515625); // clamp lights to near clip plane to avoid them being partially clipped // 0.00006103515625 due to 16bit half float
     #endif

@@ -12,8 +12,16 @@
 
 #define texNoLod(tex, pos) texture2DLod(tex, pos, 0.0)
 
+#ifdef STEREO
+#define SAMPLER2DSTEREO(_name, _reg) SAMPLER2DARRAY(_name, _reg)
+#define texStereo(tex, pos) texture2DArray(tex, vec3((pos).x, (pos).y, v_eye))
+#define texStereoLod(tex, pos, lod) texture2DArrayLod(tex, vec3((pos).x, (pos).y, v_eye), lod)
+#else
+#define SAMPLER2DSTEREO(_name, _reg) SAMPLER2D(_name, _reg)
 #define texStereo(tex, pos) texture2D(tex, pos)
-#define texStereoNoLod(tex, pos) texture2DLod(tex, pos, 0.0)
+#define texStereoLod(tex, pos, lod) texture2DLod(tex, pos, lod)
+#endif
+#define texStereoNoLod(tex, pos) texStereoLod(tex, pos, 0.0)
 
 float sqr(const float v)
 {

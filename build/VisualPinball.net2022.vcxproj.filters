@@ -926,6 +926,9 @@
     <ClInclude Include="src/renderer/Anaglyph.h">
       <Filter>renderer</Filter>
     </ClInclude>
+    <ClInclude Include="src/renderer/AreaTex.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
     <ClInclude Include="src/renderer/captureExt.h">
       <Filter>renderer</Filter>
     </ClInclude>
@@ -963,6 +966,9 @@
       <Filter>renderer</Filter>
     </ClInclude>
     <ClInclude Include="src/renderer/Sampler.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src/renderer/SearchTex.h">
       <Filter>renderer</Filter>
     </ClInclude>
     <ClInclude Include="src/renderer/Shader.h">
@@ -1752,9 +1758,6 @@
     <None Include="src/assets/tony_mc_mapface_unrolled.exr">
       <Filter>assets</Filter>
     </None>
-    <None Include="shader/FBShader.fxh">
-      <Filter>shaders</Filter>
-    </None>
     <None Include="src/assets/TableSizes.csv">
       <Filter>assets</Filter>
     </None>
@@ -2032,96 +2035,99 @@
     <None Include="src/ui/res/wall.cur">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="shader/FXAAStereoAO.fxh">
-      <Filter>shaders</Filter>
-    </None>
-    <None Include="shader/Helpers.fxh">
-      <Filter>shaders</Filter>
-    </None>
-    <None Include="shader/Material.fxh">
-      <Filter>shaders</Filter>
-    </None>
-    <None Include="shader/SSR.fxh">
-      <Filter>shaders</Filter>
-    </None>
     <None Include="src/ui/res/SplitH.cur">
       <Filter>ui\res</Filter>
     </None>
     <None Include="src/ui/res/SplitV.cur">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="shader/BasicShader.glfx">
+    <None Include="src/shaders/hlsl_glsl/BasicShader.glfx">
       <Filter>shaders</Filter>
     </None>
-    <None Include="shader/BallShader.glfx">
+    <None Include="src/shaders/hlsl_glsl/BallShader.glfx">
       <Filter>shaders</Filter>
     </None>
-    <None Include="shader/BallShadows.fxh">
+    <None Include="src/shaders/hlsl_glsl/BallShadows.fxh">
       <Filter>shaders</Filter>
     </None>
-    <None Include="shader/ClassicLightShader.glfx">
+    <None Include="src/shaders/hlsl_glsl/ClassicLightShader.glfx">
       <Filter>shaders</Filter>
     </None>
-    <None Include="shader/DMDShader.glfx">
+    <None Include="src/shaders/hlsl_glsl/DMDShader.glfx">
       <Filter>shaders</Filter>
     </None>
-    <None Include="shader/DMDShaderVR.glfx">
+    <None Include="src/shaders/hlsl_glsl/DMDShaderVR.glfx">
       <Filter>shaders</Filter>
     </None>
-    <None Include="shader/FBShader.glfx">
+    <None Include="src/shaders/hlsl_glsl/FBShader.glfx">
       <Filter>shaders</Filter>
     </None>
-    <None Include="shader/FlasherShader.glfx">
+    <None Include="src/shaders/hlsl_glsl/FBShader.fxh">
       <Filter>shaders</Filter>
     </None>
-    <None Include="shader/FXAAStereoAO_GL.fxh">
+    <None Include="src/shaders/hlsl_glsl/FXAAStereoAO.fxh">
       <Filter>shaders</Filter>
     </None>
-    <None Include="shader/StereoShader.glfx">
+    <None Include="src/shaders/hlsl_glsl/FlasherShader.glfx">
       <Filter>shaders</Filter>
     </None>
-    <None Include="shader/SSR_GL.fxh">
+    <None Include="src/shaders/hlsl_glsl/FXAAStereoAO_GL.fxh">
       <Filter>shaders</Filter>
     </None>
-    <None Include="shader/Material_GL.fxh">
+    <None Include="src/shaders/hlsl_glsl/Helpers.fxh">
       <Filter>shaders</Filter>
     </None>
-    <None Include="shader/LightShader.glfx">
+    <None Include="src/shaders/hlsl_glsl/Material.fxh">
       <Filter>shaders</Filter>
     </None>
-    <None Include="shader/SMAA.glfx">
+    <None Include="src/shaders/hlsl_glsl/Material_GL.fxh">
       <Filter>shaders</Filter>
     </None>
-    <None Include="shader/SMAA.fxh">
+    <None Include="src/shaders/hlsl_glsl/LightShader.glfx">
       <Filter>shaders</Filter>
     </None>
-    <None Include="shader/Stereo.fxh">
+    <None Include="src/shaders/hlsl_glsl/SMAA.glfx">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="src/shaders/hlsl_glsl/SMAA.fxh">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="src/shaders/hlsl_glsl/SSR.fxh">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="src/shaders/hlsl_glsl/SSR_GL.fxh">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="src/shaders/hlsl_glsl/Stereo.fxh">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="src/shaders/hlsl_glsl/StereoShader.glfx">
       <Filter>shaders</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="shader/BallShader.hlsl">
+    <FxCompile Include="src/shaders/hlsl_glsl/BallShader.hlsl">
       <Filter>shaders</Filter>
     </FxCompile>
-    <FxCompile Include="shader/BasicShader.hlsl">
+    <FxCompile Include="src/shaders/hlsl_glsl/BasicShader.hlsl">
       <Filter>shaders</Filter>
     </FxCompile>
-    <FxCompile Include="shader/DMDShader.hlsl">
+    <FxCompile Include="src/shaders/hlsl_glsl/DMDShader.hlsl">
       <Filter>shaders</Filter>
     </FxCompile>
-    <FxCompile Include="shader/FBShader.hlsl">
+    <FxCompile Include="src/shaders/hlsl_glsl/FBShader.hlsl">
       <Filter>shaders</Filter>
     </FxCompile>
-    <FxCompile Include="shader/FlasherShader.hlsl">
+    <FxCompile Include="src/shaders/hlsl_glsl/FlasherShader.hlsl">
       <Filter>shaders</Filter>
     </FxCompile>
-    <FxCompile Include="shader/LightShader.hlsl">
+    <FxCompile Include="src/shaders/hlsl_glsl/LightShader.hlsl">
       <Filter>shaders</Filter>
     </FxCompile>
-    <FxCompile Include="shader/ClassicLightShader.hlsl">
+    <FxCompile Include="src/shaders/hlsl_glsl/ClassicLightShader.hlsl">
       <Filter>shaders</Filter>
     </FxCompile>
-    <FxCompile Include="shader/StereoShader.hlsl">
+    <FxCompile Include="src/shaders/hlsl_glsl/StereoShader.hlsl">
       <Filter>shaders</Filter>
     </FxCompile>
   </ItemGroup>

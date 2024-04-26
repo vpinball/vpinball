@@ -1,4 +1,8 @@
+#ifdef STEREO
+$input v_texcoord0, v_eye
+#else
 $input v_texcoord0
+#endif
 
 #include "common.sh"
 
@@ -11,8 +15,8 @@ $input v_texcoord0
 // . for parallax stereo, w_h_height.z keeps source texture height, w_h_height.w keeps the 3D offset
 uniform vec4 w_h_height;
 
-SAMPLER2D(tex_fb_unfiltered,  0); // Framebuffer (unfiltered)
-SAMPLER2D(tex_depth,          4); // DepthBuffer
+SAMPLER2DSTEREO(tex_fb_unfiltered,  0); // Framebuffer (unfiltered)
+SAMPLER2DSTEREO(tex_depth,          4); // DepthBuffer
 
 
 void main()
